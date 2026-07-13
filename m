@@ -1,81 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-24135-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24136-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0F2A7C43458
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2026 19:22:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C19F5C44501
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2026 19:22:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gzXPR3tTHz2xWY;
-	Tue, 14 Jul 2026 05:22:03 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::72e"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783970523;
-	cv=none; b=KhzNafY67p+mG30nRXZrf68MGz6OqgMdcaXNflsG4AggJQscfPrQhYlIZ3Xbj+twD/yOuTG2ccWIXxBF1vimxk5MX6TrBgzCB+DHcc5bAZW0LnoMfFyOXI0xUH5GDfo1VbvMD40KZan6VUgEJYBp2zCQ+W+mBiE8zlt5XGSwmKDAJgBwnarynETETXam7CF7JdWKm9FBDVrzZyRjugkn9FQYS/qeh/nQeda4k1bgMI+peCADP64t7+cBNPw5bwa7RtEVNwpC4/s2D++Jkv1zgZzPkZBh7KJYnR/U+MM0bELCxTME0w9NoZ1dWVltk1ZsFMb5YhC0yI2UcsrvuqFtAw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gzXQ61G0gz2y1F;
+	Tue, 14 Jul 2026 05:22:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::f30"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783970558;
+	cv=none; b=EMvgXWsRTlWwMFUykQnJ2WfBfBmwZJWjf4cblLBCFLPhRHkpcA4G6xRdNaaBzBpWQmJydQc62h8Q+lNsHobXUF2JZZ3sa6lgdFMWc5JIz7srbq8k6FxHCAltoqw0wQj0tms17q5+h8m2Eo3EwLoMsJ6yJ96J28Uxr0Txj0rGwkKswOReDVuiqU6W5UYM8g5PMZYiRVkUUbM/olmGSXhyyvqCTS/DNq9cjac6r18B/2R2K4Gg/QcS3XXcj7mmoejkl1eW1NCTHH4RJwuX2T/uYTvZmIM+NwD/ooXETUBWx70APCXBSojpIJBXy5Zkdgj/qAYigeApXfVTQ2cpyjmFUg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783970523; c=relaxed/relaxed;
-	bh=Kt1NNWVp5vzCd+THxZiV4tdGJLfhiT0ZXPz0TueqWMw=;
+	t=1783970558; c=relaxed/relaxed;
+	bh=rTUChJSUQ7qBnpi6xNUNbqkdyOGkeoHtaVMHI6/gjvI=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=CYp24wx4ZccFGQ0OOXEsrf42HIMjZbn+7+eXxUD5l9cm9DbtEb7AFmiOWTkAQ+xxnx2VNBJ7kEpewdeRgPkw3Q+DufkH5KMMQSbJt/aT6SZBm1nYVVymhdJbnAJXPHS1kRoOLtJFtio+tvO9CTDchTmUU+HuU+Y0gsl+U96IrQb+U2rixsq0UYJB3SaigP/DCO5IF0xlJL99UJxJEMA2fjAFa+sYlnVvSu4UqkBIalZssQaW/pM5KxGMCCz7vsU2ZaJtoyzFr95Tmx3dyvPE9d5Yl8QCm7PZZ8ixIZat3KCClY745ixVuoPN++pQB4awRJbqEEHXav/QscTK1eEfvw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca; dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=KwZsvayp; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::72e; helo=mail-qk1-x72e.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org) smtp.mailfrom=ziepe.ca
+	 Content-Type:Content-Disposition:In-Reply-To; b=l3bDTeNh3FLm+MJWnUjQ78hjjYaiP29VlkXSPVUgg9rR7gBeXFny9prIU8oPJalUGfFkHzPZW0pSgwg1GBONSvhjG3csv+GflRXfeujQaeE5wdTUEGHjQqVpahXRvM0VQ4WouWnPTGeRcRRdpjuE+2dJ0etyeJL6RLbWwb1S0OH8pAj3XQUYSEu8v9ZOlD3Wq9IRB9dZmzzRs5852odp+WzeNwl5wuoLK+6YofJw+sU/PR4BQE3GVSMHgt9XK1Tiy765cm3MCqHgy8I692GkyIfBFooMYENyXAhJW0PzzAaJUtdk0NNgIYxr3yWooWxWGp5dx6iQF+hAMnWClVhG5w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca; dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=o7brlQ7C; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::f30; helo=mail-qv1-xf30.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org) smtp.mailfrom=ziepe.ca
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=KwZsvayp;
+	dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=o7brlQ7C;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ziepe.ca (client-ip=2607:f8b0:4864:20::72e; helo=mail-qk1-x72e.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org)
-Received: from mail-qk1-x72e.google.com (mail-qk1-x72e.google.com [IPv6:2607:f8b0:4864:20::72e])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ziepe.ca (client-ip=2607:f8b0:4864:20::f30; helo=mail-qv1-xf30.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org)
+Received: from mail-qv1-xf30.google.com (mail-qv1-xf30.google.com [IPv6:2607:f8b0:4864:20::f30])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gzXPQ38ysz2xRw
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2026 05:22:01 +1000 (AEST)
-Received: by mail-qk1-x72e.google.com with SMTP id af79cd13be357-92e55b62640so204982985a.0
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2026 12:22:01 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gzXQ51TpCz2xPb
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2026 05:22:37 +1000 (AEST)
+Received: by mail-qv1-xf30.google.com with SMTP id 6a1803df08f44-9061a795d76so2211456d6.3
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2026 12:22:37 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ziepe.ca; s=google; t=1783970519; x=1784575319; darn=lists.ozlabs.org;
+        d=ziepe.ca; s=google; t=1783970555; x=1784575355; darn=lists.ozlabs.org;
         h=in-reply-to:content-disposition:content-type:mime-version
          :references:message-id:subject:cc:to:from:date:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=Kt1NNWVp5vzCd+THxZiV4tdGJLfhiT0ZXPz0TueqWMw=;
-        b=KwZsvaypWN9GfhrpPxgSxACXrW/mCSZLKuOYnRdqot0JX3l4La0S2b3PjlUENLkoz0
-         c291UMG9tDVZisobGpXEHoyKFASpqs0bajudauixxl4d9Ginh1hqHeZNAGnFRkz/7GeD
-         th/IDbIU0XifNbCaimF+BjDJJ7jYtkE/yCn3JtCClVul0lVwXM8mGTO0rGNMtjJWHVPB
-         8fvUGfQLvnTPiyJ2xZDMKAE6XXqoCJza3hlLNo0e8+h1bRzG5Hucaaxcu+FH0U+vDeUx
-         hLzskNqx1KcfdVehvt0HKYBT82usMbkln/I36jB/qxfulgMNlQBv9UEBGC1dlPcPdUHa
-         R0fA==
+        bh=rTUChJSUQ7qBnpi6xNUNbqkdyOGkeoHtaVMHI6/gjvI=;
+        b=o7brlQ7CkZ1FEeuwkPv1uh2LFKRDrlgjRqB4vxL8iATX/2h9807oVwtNUHjnKMmz8s
+         aFxSma3c8ro8EovS1Rj7lOq4KfFAHGzrnJGG3qssRyaReDdvR5XH7bZVfs7PsETwbBIb
+         N8UJNhD1BKu++CiIJJTu5ovHvBuBdE0lAdQCwp9Q/V9MjLJXcZ5ZH6bRS5t2lVR8tCIa
+         EZb7zYnbkWe3HUx4u+ft+wcSoTq7ercyf5dfKuYsxhtb6OleXK+o8u8SUxQAtQeugZGx
+         XKuQB/iZoQEgofrmGIMETVdIGWIyR6lWrxmXe+5FCG3N5woP5QSam1MBpOkviMbzHgSU
+         iulg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783970519; x=1784575319;
+        d=1e100.net; s=20251104; t=1783970555; x=1784575355;
         h=in-reply-to:content-disposition:content-type:mime-version
          :references:message-id:subject:cc:to:from:date:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=Kt1NNWVp5vzCd+THxZiV4tdGJLfhiT0ZXPz0TueqWMw=;
-        b=eClxgg2zgIVJ7s8saAXVh4ygZFpXCHrvrE0U9R/tEI6GpOrmrG6971qoT481vt+Iwe
-         iP6VYsYz2kNrR9wmgc98N3+TZALjKe/4m5yakzZdo/uPTIzSB51Ql6wk3M+F57D4jhDs
-         pKwUK8w2sqz4a83QQZEIQbeiq8bxzDpOj7mZx+89B9uSW3ycXnhi8VcVDGm1Ux1NwEtM
-         A8JMDduJ6qQbY+2KAqN9RYZ5llKJMuVmWUCJv3jLD8hmvmUDIusIxuUL/QBu827LdEGM
-         CtCaIMW8b1vSO35cBOpEGrz35L/R3rRu7/TitUhXXeHCgZj1Sd7qRNlSFc1a/isHWjDa
-         bJRQ==
-X-Forwarded-Encrypted: i=1; AHgh+RrF5bTfQ6wRnkKrOyG/vldij43oBkZDwX/pPUE8Vlt+BzWLZGwdHyhyzjrp1cp9tvC6QhcKFU3WDzuk1ro=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yx6c6DL0icQRqlefTsBL0OWDThndF4xNhxewozGqGCfLWO91kJS
-	66A73jKXAnabuU27GiFgi9hrWfjcuVk7wLPUSDqY5swhMtu15Faq0w/yOIDEZ5ZZo6w=
-X-Gm-Gg: AfdE7clEO+B3oIRTf/nsEZjufYNxhT5GXwRSiLcVBIPM15L9WJIL95Dq9yLLgq9wqRU
-	IIVYb7U5w80bxlDlW//e3VBhBqdl9VEQjYR9RJFOufZmKbtVrFLa2ewAOzK13FmgNyQu5T0JrnE
-	vIb582LrpFer+B0BRxvqszqX3O681n/uk9DvveT5YsoLCTEUujiuB+HG/b2fGuyIUqiMxqQxtkR
-	R5An5yM62z5mtMN4n4v7UMJ7E8WADqLSXNeGR38JTEMALmx8EySQMnW3oiaLH86j4RNG/iZPMgd
-	82Ie1JqlGNnan5nk3QICxXsYg58Mkt7cwR6zefntThoOcQsOrtEqlPLr9eEZYhe32Dfvj+OsUtY
-	6SBvnOhPKIW5mQexgEJsbunSDRX7lchyU5OFIJstEzQVCvq1ofIEtORLp22Zx9Oo2BUZbVUs=
-X-Received: by 2002:a05:620a:44cf:b0:92b:6805:eae0 with SMTP id af79cd13be357-92ef2c0c787mr987778485a.61.1783970519182;
-        Mon, 13 Jul 2026 12:21:59 -0700 (PDT)
+        bh=rTUChJSUQ7qBnpi6xNUNbqkdyOGkeoHtaVMHI6/gjvI=;
+        b=h+Ku3WDDIu24Mlc5ORrjEOUZha3jPR0Tq+s7dAnHrlIvqtJEkqz1JaPSDqrbGHJd3w
+         Juzkwq8YTL3nTy1tX8xNTDEMJODnb9urSnKi3drfWp1h8IPbsAZ199GdAoTEAQW1mRUp
+         uQijSnw4cBNBVno45JWxXxZr6NkwRdfdctTvd0WwQyUROxyDokomNvSaubavcgaBQMIH
+         vRbDARRQDgS09PT9cuMFJaRrRgVDu8sehACdI7AIe+YRNOuS/qvHpKjmoCSzjGYMJYWK
+         gGWfsCtJxWdljtTIiBI9gH60bkCkoD4UfDyOT3cW4TPLJR83lrh6Q1QvETLco4ItbbTT
+         sFmg==
+X-Forwarded-Encrypted: i=1; AHgh+RrZS6IpfgDFrG2LG9538VD4ruWn6uGYd7zD4GroizxzrWkrduR8TuiMKunJAXTbNcx/9VruOnvRZNZdVtY=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxOChJYb8nbZPV++eyt42htwqpJBoP/qhEL37uF/BWAQ2Oh0jqJ
+	2r6ARtgDE3uV+FVwYWKv8KPVmEJEuygIwKF4l/Lk+wx09S28tpEMeM69/M7qfm6i+vs=
+X-Gm-Gg: AfdE7cnDsDR0QWbCwtb5E6LEX8T6CLY/O7TO8Q03rBWgxOhVNhzvbjhqVg0KrcVK9A6
+	PmhFsKDQ/IfWI3PVWPZdGZ7RxK7Uv4d7BrCI8Ohhag/ml5E3H0heQ+ReA6qsprHJzb3kIURvQIh
+	er/WrneERb31VZl47xeqgKteY2AFsdWo8hRQMIrpQwGdaGm1q50Bd5NQ8E3mLK8g5MZyGv0wrUk
+	DB8RXBeoo0Y6vThAzd3uq+f6opndF9GEUpDNoEHWoRiv5JoEr4OWRrv7AIqxSFrdWsrjjVHKvxF
+	tmkExsJmRDb2yACuGNHA9R6Wd/AqoqPYuJ6tJ3pvsIrV8ZVj5vXihL9elWYFCSPq0o2SqcgO5mY
+	BQ2jG6NBspUiPVAPKkJuCyl2MmJhbgvjCw67+fniCutELLp1ZB3UEGqG9QIcKEiI/l7Z8a/k=
+X-Received: by 2002:ad4:5caf:0:b0:8f1:2607:ad86 with SMTP id 6a1803df08f44-90400b8b562mr134619656d6.4.1783970554874;
+        Mon, 13 Jul 2026 12:22:34 -0700 (PDT)
 Received: from ziepe.ca ([159.2.72.92])
-        by smtp.gmail.com with ESMTPSA id af79cd13be357-92ee5cf7ab2sm1122922585a.30.2026.07.13.12.21.58
+        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-8ffd50df5e2sm138736336d6.4.2026.07.13.12.22.34
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 13 Jul 2026 12:21:58 -0700 (PDT)
+        Mon, 13 Jul 2026 12:22:34 -0700 (PDT)
 Received: from jgg by wakko with local (Exim 4.97)
 	(envelope-from <jgg@ziepe.ca>)
-	id 1wjME1-0000000E53O-3cBb;
-	Mon, 13 Jul 2026 16:21:57 -0300
-Date: Mon, 13 Jul 2026 16:21:57 -0300
+	id 1wjMEb-0000000E54I-3Zkq;
+	Mon, 13 Jul 2026 16:22:33 -0300
+Date: Mon, 13 Jul 2026 16:22:33 -0300
 From: Jason Gunthorpe <jgg@ziepe.ca>
 To: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>
 Cc: iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
@@ -102,12 +102,12 @@ Cc: iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
 	Vasily Gorbik <gor@linux.ibm.com>,
 	Christian Borntraeger <borntraeger@linux.ibm.com>,
 	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org,
-	Jiri Pirko <jiri@nvidia.com>, Michael Kelley <mhklinux@outlook.com>
-Subject: Re: [PATCH v7 10/22] dma-direct: use __DMA_ATTR_ALLOC_CC_SHARED in
- alloc/free paths
-Message-ID: <20260713192157.GQ3133966@ziepe.ca>
+	Michael Kelley <mhklinux@outlook.com>
+Subject: Re: [PATCH v7 12/22] dma: swiotlb: pass mapping attributes by
+ reference
+Message-ID: <20260713192233.GR3133966@ziepe.ca>
 References: <20260701054926.825925-1-aneesh.kumar@kernel.org>
- <20260701054926.825925-11-aneesh.kumar@kernel.org>
+ <20260701054926.825925-13-aneesh.kumar@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -123,50 +123,28 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260701054926.825925-11-aneesh.kumar@kernel.org>
+In-Reply-To: <20260701054926.825925-13-aneesh.kumar@kernel.org>
 
-On Wed, Jul 01, 2026 at 11:19:14AM +0530, Aneesh Kumar K.V (Arm) wrote:
-> Propagate force_dma_unencrypted() into __DMA_ATTR_ALLOC_CC_SHARED in the
-> dma-direct allocation path and use the attribute to drive the related
-> decisions.
+On Wed, Jul 01, 2026 at 11:19:16AM +0530, Aneesh Kumar K.V (Arm) wrote:
+> Change swiotlb_tbl_map_single() to take the DMA mapping attributes by
+> reference and update the direct callers accordingly.
 > 
-> This updates dma_direct_alloc(), dma_direct_free(), and
-> dma_direct_alloc_pages() to fold the forced unencrypted case into attrs.
+> This is a preparatory change for a follow-up patch which updates the
+> attributes based on the selected swiotlb pool. Keeping the signature change
+> separate makes the follow-up patch easier to review.
 > 
-> Tested-by: Jiri Pirko <jiri@nvidia.com>
+> No functional change in this patch.
+> 
 > Tested-by: Michael Kelley <mhklinux@outlook.com>
 > Tested-by: Mostafa Saleh <smostafa@google.com>
 > Reviewed-by: Petr Tesarik <ptesarik@suse.com>
 > Signed-off-by: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>
 > ---
->  kernel/dma/direct.c  | 42 +++++++++++++++++++++++++++++++++---------
->  kernel/dma/mapping.c |  9 +++++++++
->  2 files changed, 42 insertions(+), 9 deletions(-)
-> 
-> diff --git a/kernel/dma/direct.c b/kernel/dma/direct.c
-> index 0cbf2b0835c4..98e47e0b332d 100644
-> --- a/kernel/dma/direct.c
-> +++ b/kernel/dma/direct.c
-> @@ -192,16 +192,22 @@ void *dma_direct_alloc(struct device *dev, size_t size,
->  		dma_addr_t *dma_handle, gfp_t gfp, unsigned long attrs)
->  {
->  	bool remap = false, set_uncached = false;
-> -	bool mark_mem_decrypt = true;
-> +	bool mark_mem_decrypt = false;
->  	struct page *page;
->  	void *ret;
->  
-> +	if (force_dma_unencrypted(dev))
-> +		attrs |= __DMA_ATTR_ALLOC_CC_SHARED;
-
-After going through what was left of force_dma_unencrypted() once the
-series was fully applied you might consider something like
-
-  dma_update_attrs(dev, &attrs);
-
-To remove the frequently duplicated code
-
-It is fine like this too
+>  drivers/iommu/dma-iommu.c | 2 +-
+>  drivers/xen/swiotlb-xen.c | 2 +-
+>  include/linux/swiotlb.h   | 2 +-
+>  kernel/dma/swiotlb.c      | 6 +++---
+>  4 files changed, 6 insertions(+), 6 deletions(-)
 
 Reviewed-by: Jason Gunthorpe <jgg@nvidia.com>
 
