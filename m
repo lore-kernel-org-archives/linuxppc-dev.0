@@ -1,113 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-24128-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24129-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0B8A7C43458
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2026 17:57:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2FD14C43458
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2026 18:04:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gzVWf2wL5z2xLg;
-	Tue, 14 Jul 2026 03:57:18 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::f2e"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783965438;
-	cv=none; b=HkfKD4KVNMTa7C0zl9YjQt5t46nW60frzpKSFdLvb5/5TwFKMHx98G2Ab/ddx8RuhPMvbYv4tQRjwlmMAyBQ4uOzqnPurEdAw1eBg5/yyncy0OVtUJebQmtyFVkuvCC72Pxbi4kWsKHtV9tSt5Mk9ttHf3sjbp5ooFnfVpMbF79IPnmBMrLZ83uxTxYxJGrNgdYd8psPPFuUybgVnvT80mK9yiYcAwkp8SKg4I54L14QXPr3V4a41/aSVHmPKtTG9RNtJak9FY/KoOrQBFz9aJvXOeRwk5JjSxYh2OlEYBrnUaEV03x97huMAPE74ZNyWTJ9jpD9pVSGAoBtfjvPgQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gzVhC2wGwz2xPb;
+	Tue, 14 Jul 2026 04:04:43 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783965883;
+	cv=none; b=OIwzO/S3PUXwELFGQWVDViTmBtwEaskuLyuKUm5pD/eorOkuSFt9qLhEaqEQTqqlK5VjkF7CGQrlxHcc7nBCnDMZmnzLlxn1zINdcoohC09/jjLcqduTleJRcuV2vM34lrVyKnIWeP1vSUuHWXi3nMma6FEjgsoBKk4NUozXhR4kuhn74Z/NeMdZpMNexzqzTsRHAMXx3CibKpytD/GFE00iKlEiJkBA5kRMGbPD2JkQF6aNrdrehXLLQ9lo6hXdj0B6bPgR4ix325rzyGFjyLHrmYoIZCgoNq7LWpNarb0F7eXUhU42FE0IxEmmY2ziY0VAmneUYIOPrlqX6O6LJw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783965438; c=relaxed/relaxed;
-	bh=YGHI47Uk7ivYjDw6pJp4pRueuEDSB7hHUc7Dm7encu0=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=GQ9fdextRP9h6WCy+Wk1hoidoCw7z8LrQmdavOC2gXkP09ffyIuzIZyUypM1p+gGP3tw6rX+0v9hbKNP+Idv92bjI95spODrQVNRtgWqz9Fw7bu/uStji5jVcwBQY/LG5aQRnn1tFQivwV0PYnAG5nwxEvYEJbYTEllLg8HcwLtOKgi4gyggotlJ6iSYa2IIOiaHTd4K28xIQ9zaUcOMr3UGn0rcpUtk/WU8vch3UDzVuiE0xSMhgdeQcBTrXh1q0IP6OhuLyBmtrT5dfDG0KqD/rAexy05xB99bcIMtozIE4Cg0YdnC5e767eVGaepYMRzYahb70lv1VyzLfx1Pig==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca; dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=naerqkYJ; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::f2e; helo=mail-qv1-xf2e.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org) smtp.mailfrom=ziepe.ca
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca
+	t=1783965883; c=relaxed/relaxed;
+	bh=tclAGFfYE4PDh26UAOa0dyz/xTkdP8eKsBQeSZPbdtg=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=BZZNa+adE7WeHjI5KlhV/PlMI6BVnKndn8cVv/MbS5okSHXVJOIXDMFsciz9aYKShJyRYhtH9f3/7Z+cGr6HZ7O/K3rHevSKnB4VHVNtl+84uKWQGP2xDx03t0EwdIGoYsLpb4ut4CEUK8GZO3F4BnnXUK6zmIveBQ4G4A9JzO3SAjEUA3zZw2grIbfUUsN26yAvByq1L+nngkaiC1UC91S/yinKxgERnzuFHQlS27X1U38kk/wA/EKDW0wQE4G/pkXF9QMIbtWGzOY+303wXDox7xZ3EOhAHwzEy+Jb28EMke9a6fk5Ax4Zmri3k8v7oL5T+230WmgBCiIUR9l4/A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PyU85Imi; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=naerqkYJ;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PyU85Imi;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ziepe.ca (client-ip=2607:f8b0:4864:20::f2e; helo=mail-qv1-xf2e.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org)
-Received: from mail-qv1-xf2e.google.com (mail-qv1-xf2e.google.com [IPv6:2607:f8b0:4864:20::f2e])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gzVWd1rJCz2xVY
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2026 03:57:17 +1000 (AEST)
-Received: by mail-qv1-xf2e.google.com with SMTP id 6a1803df08f44-902f92b8504so26291216d6.2
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2026 10:57:16 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ziepe.ca; s=google; t=1783965435; x=1784570235; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=YGHI47Uk7ivYjDw6pJp4pRueuEDSB7hHUc7Dm7encu0=;
-        b=naerqkYJ3STp/sn9mwCz5wCAIlek6ASxBK6B+AjVjwP3DSJaUDkgnI2DILlIBuNP2f
-         YK27+yX2O74hI7IUZNhspGnjqElEbR9aG0L9X2IHD3LYXN88dis/i3pnXJ768Yyb2861
-         +7Ly65BeZnO+YLSg1oKac1IuUS6pp1CHlbU9ErF4F4EFLhFRk+rELUH9zoM9yH1yUUp1
-         uHhemvyM6P2MnQUIvB5BhPoaucrwG67+7xI7geciAAIkVa1iaF7u/pdKi+C90VK2Bpmj
-         Vh4aT/Ud4EF5y2Q3CJ2pWAclHl8Ot5EIb06IEgjEJneebde8FdXh+OC/ADnyYoIKmIoq
-         NvlA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783965435; x=1784570235;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=YGHI47Uk7ivYjDw6pJp4pRueuEDSB7hHUc7Dm7encu0=;
-        b=c1uNWRW4K7edXjnZZkvPQ4iSDQ0pnlu7bMWNJrIFS/RY/GR1qfzs9vmrO7Aojbq+z6
-         f2gOsg9AmN++yoA5nzAtcl5gMR0tD5EmsAfDbkC1By1U2C0zIkDU/ei2Z8mnOIb9r1Zp
-         RQGpsqt/IZCBlbJdfF5BgtZpEO/ka24XdwHHCHWUoZ826vSpKDZY74n+ABTPbmNgL9oV
-         zIfdy2G5+R9bpLP7wbBQQkE3sTlZyUjhK66WLcAYK6EnkFEXt99pQGgHYFDOggULc5+i
-         2Px87pJkaoNsZgc86UlJcKTjaxEVzUck5SDd4Bo845MgC7rWyMgXYPmVi0pj0QqG14kH
-         +axA==
-X-Forwarded-Encrypted: i=1; AHgh+RrCeX6n9qER201/Jry4y0UN293A5x3nqOcO53UGsmZfFRBPxyEJahczlMRmZTr3/IPp+2islAnrsmjK/tY=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwEMTB2bMzcpRZ3yaU8zqYdsIskL/PpG8QiNqk2OIv84DAvHngp
-	5BRtzt1tq+2GK+99OwfSO8rLDE+I8wiT/lnTVRAbQAFrlpkQmfKf6brjwjCbTdf1jZE=
-X-Gm-Gg: AfdE7clKfsbd/wJtBupsMz08h51Stq+unesNMv5/9Gt9LEQMuy7KdJhkDA9iG+V6B12
-	MHo6Xj0nbnjDxwlzO3fO6PSt9UeLFPneNjuTPbtcXBOLmrzjJmmcYnuH9bVCWzkQtDZZYiKhCDX
-	HCZEc0GibuLzcu/n+8mlMyKLS/t8vlN35cL4Q9cwOWItkDaQbBuX5hfAV51frT/MqOQn790Xgci
-	ybSS9K6aEheu4rOwxD7t3tTGTlmnz1ChXU1zoyKvjKc3+Yfv61GUQc2Y1cR3tWV94hfuiXZCEtV
-	YF1G+gr/MdeB3wmhgmd+yS4QAbNGiaX8citoJRUSMAYVaRwikSV6prxNIEhavyyZV+dVCOeQYb4
-	Mg11SjSf21nM2NACGghUr0/IlK+eD6CmxsuQiO1xnQcXWrZ4dzgJ9PmNx4sRq
-X-Received: by 2002:a05:6214:5012:b0:8ff:60cd:8174 with SMTP id 6a1803df08f44-904053d8c92mr120238636d6.60.1783965434905;
-        Mon, 13 Jul 2026 10:57:14 -0700 (PDT)
-Received: from ziepe.ca ([159.2.72.92])
-        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-8ffd50e082csm149305496d6.5.2026.07.13.10.57.14
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 13 Jul 2026 10:57:14 -0700 (PDT)
-Received: from jgg by wakko with local (Exim 4.97)
-	(envelope-from <jgg@ziepe.ca>)
-	id 1wjKu1-0000000DxAz-2t49;
-	Mon, 13 Jul 2026 14:57:13 -0300
-Date: Mon, 13 Jul 2026 14:57:13 -0300
-From: Jason Gunthorpe <jgg@ziepe.ca>
-To: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>
-Cc: iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev,
-	Robin Murphy <robin.murphy@arm.com>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
-	Steven Price <steven.price@arm.com>,
-	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Jiri Pirko <jiri@resnulli.us>, Mostafa Saleh <smostafa@google.com>,
-	Petr Tesarik <ptesarik@suse.com>,
-	Alexey Kardashevskiy <aik@amd.com>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Xu Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
-	linux-s390@vger.kernel.org,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org,
-	Michael Kelley <mhklinux@outlook.com>
-Subject: Re: [PATCH v7 03/22] iommu/dma: Check atomic pool allocation result
- directly
-Message-ID: <20260713175713.GK3133966@ziepe.ca>
-References: <20260701054926.825925-1-aneesh.kumar@kernel.org>
- <20260701054926.825925-4-aneesh.kumar@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gzVhB4vBrz2xLg
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2026 04:04:41 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66DFEYkc2856299;
+	Mon, 13 Jul 2026 18:04:39 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=tclAGF
+	fYE4PDh26UAOa0dyz/xTkdP8eKsBQeSZPbdtg=; b=PyU85ImigTtEAyoWVmOGKu
+	u31cFgnlO8qBP0m9ReuLfwSVIugOpDcrzwlPlW+bgIkxcNrldaeYJZcZx6izTT4G
+	bSd56dfmjOxhnxoKV8YIv2xnLvhryRwMBtcOuUROgkfUGpdky1RmK7g1OVR1Dafk
+	z+WD5cvUTK7PDxftDAYjRxMO0yBKeygnpLphUm7/Q+gp+WhO6iIQCGYe4YjhmmLt
+	NcscoQ5KV/G9jjdVhknbVZd8cv3cPI6cJ0lVzQDHs53zbYKen1nKTp8WZV+cumCw
+	d7MvP0GL4z9Ly5FJmZva9KOtyIdMQ3HxR7Qlhr+hcQGud0XEzTRdUoa//4uUUhSg
+	==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fbegt26ae-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 13 Jul 2026 18:04:38 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66DI4brq019696;
+	Mon, 13 Jul 2026 18:04:37 GMT
+Received: from smtprelay02.wdc07v.mail.ibm.com ([172.16.1.69])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4fc15jq094-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 13 Jul 2026 18:04:37 +0000 (GMT)
+Received: from smtpav05.dal12v.mail.ibm.com (smtpav05.dal12v.mail.ibm.com [10.241.53.104])
+	by smtprelay02.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66DI4aC817040006
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 13 Jul 2026 18:04:36 GMT
+Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2CD9458052;
+	Mon, 13 Jul 2026 18:04:36 +0000 (GMT)
+Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id A18C858056;
+	Mon, 13 Jul 2026 18:04:35 +0000 (GMT)
+Received: from [9.61.45.33] (unknown [9.61.45.33])
+	by smtpav05.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 13 Jul 2026 18:04:35 +0000 (GMT)
+Message-ID: <0fd580ed-b879-471d-9d4e-249999b63086@linux.ibm.com>
+Date: Mon, 13 Jul 2026 11:04:34 -0700
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -121,27 +81,68 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260701054926.825925-4-aneesh.kumar@kernel.org>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 00/29] ibmvfc: Add NVMe-FC support
+To: "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc: james.bottomley@hansenpartnership.com, linux-scsi@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+        brking@linux.ibm.com, davemarq@linux.ibm.com
+References: <20260623013035.3436640-1-tyreld@linux.ibm.com>
+ <yq1wlv0dqws.fsf@ca-mkp.ca.oracle.com>
+Content-Language: en-US
+From: Tyrel Datwyler <tyreld@linux.ibm.com>
+In-Reply-To: <yq1wlv0dqws.fsf@ca-mkp.ca.oracle.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: SAAf7CZVD3wfYUx2qksRI4ut0a2Qvr82
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzEzMDE4NCBTYWx0ZWRfXxwnEyWTzMsWx
+ lACQW4MwhHErGnPLLEqIU2vvS/RMuJ+Wcs+vNzgyR5oW86m4DwQ12DKFH3LbrTc/vVIyWleDcfn
+ VUAF3AZe6f3AyZyyN5knpm70Uw43YAU=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzEzMDE4NCBTYWx0ZWRfXztkI7LfsZ+Mi
+ KpFMlUNIwpSl8CVq6iHa5PqteXFpPQiYPwz4nQj19pLbOCt33xkeRH9+Cj6JTnalGaN+5RItPes
+ rgR0cxfgwDakVzq+F4WQpT4jNHsdRMDbajfQ8QkUrwNHj092md/CxK93c7hHgLBaJZGztSpuBxD
+ 1mTA3Vzyyqszy00wDbJUlVox+BasGafyTl9iPB+N3ZbaOczJVTK46jiT/i9QoQ8OMaNZnyfxwNs
+ 98isstsd7EETjcgS74YriOLWFoN73J/hetCJXbhyoeKRHZDai++MS+Z8daTK/muYW+We5mKvAkd
+ znhxqKmB8D/bassyvhQ41v8Q67UR9agJPq69NEcatBAWirICv+t+nGqzhxhKQ31sX0bIedmSgzB
+ dOZ+nIfVeLv0eoSl6NNZLxb80GRu7gSIE6AHMNHc6fLVT1L9cD0ImVdMK1VdVUvW+tat1WpMyw0
+ l6gUasTCpJODZM7txQw==
+X-Authority-Analysis: v=2.4 cv=IqMutr/g c=1 sm=1 tr=0 ts=6a5528b6 cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+ a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=06I0Qw02cvwELWbZNJIA:9
+ a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: SAAf7CZVD3wfYUx2qksRI4ut0a2Qvr82
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-07-13_04,2026-07-10_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 clxscore=1015 impostorscore=0 malwarescore=0 adultscore=0
+ phishscore=0 suspectscore=0 priorityscore=1501 bulkscore=0 lowpriorityscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607130184
 
-On Wed, Jul 01, 2026 at 11:19:07AM +0530, Aneesh Kumar K.V (Arm) wrote:
-> The non-blocking, non-coherent allocation path uses dma_alloc_from_pool(),
-> which returns the allocated page and fills cpu_addr only on success.
+On 7/12/26 11:06 AM, Martin K. Petersen wrote:
 > 
-> Do not rely on cpu_addr to detect allocation failure in this path. Check
-> the returned page directly before using it for the IOMMU mapping.
+> Tyrel,
 > 
-> Fixes: 9420139f516d ("dma-pool: fix coherent pool allocations for IOMMU mappings")
-> Tested-by: Michael Kelley <mhklinux@outlook.com>
-> Tested-by: Mostafa Saleh <smostafa@google.com>
-> Reviewed-by: Petr Tesarik <ptesarik@suse.com>
-> Signed-off-by: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>
-> ---
->  drivers/iommu/dma-iommu.c | 13 ++++++++-----
->  1 file changed, 8 insertions(+), 5 deletions(-)
+>> This patch series adds NVMe-FC protocol support to the ibmvfc driver,
+>> enabling IBM POWER virtual Fibre Channel adapters to handle both SCSI
+>> and NVMe storage traffic through a unified driver architecture.
+> 
+> Applied to 7.3/scsi-staging, thanks!
+> 
 
-Reviewed-by: Jason Gunthorpe <jgg@nvidia.com>
+Martin,
 
-Jason
+Can you drop this series from the staging branch? I've got a v2 respin that I
+will get sent out today or tomorrow that addresses issues raised by the Sashiko
+review. In particular I clearly had a bad rebase somewhere where I dropped/left
+out some of the remote port processing code. There are also several fixes for
+long standing edge case bugs that Sashiko points out with both the NVMf work and
+Dave's FPIN series.
+
+Thanks,
+
+-Tyrel
 
