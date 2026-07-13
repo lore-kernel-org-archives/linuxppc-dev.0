@@ -1,77 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-24110-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24111-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1C5E9C44501
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2026 11:09:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D6C17C43458
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2026 11:31:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gzKSr3tSlz2yMm;
-	Mon, 13 Jul 2026 21:09:16 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=fail smtp.remote-ip="2a01:111:f403:c200::3"
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783940956;
-	cv=fail; b=k12KqpOE7Q+5mfiwyc2kfApeMeZOZkEy5Ia98AQUYgLjNnC36Vq9Bmd17Po6V41LYa2oUoXhJRP4zsWl29kaH2yksaqH/qoSySa+Xf0VnBy4w0870C6wYrEGpQBxLV0n3sLbolX/xTlICCKdTmXs4P4YKxEU0IRQRUksAZqh6DNedTabRH+5Z+6ezusH5dB9GUUT8O1xRbdWhUBYqbSRhqHn4cQn2DpQuryUJfHfxhpvfQIJspsuvv5R23P0+nVvYnz/77ZtrYBiR21T8x/0EkMrfmFned6VqEvAkZfXeGxtsECrfWLLLsHu78i8USfGggmqfVREDrVgogRRD/gTQw==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783940956; c=relaxed/relaxed;
-	bh=oh2Z7i7v6Y9UrNiQQ8G3N1MWN2EvAcTP1ysqfGnnN2M=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=IpG7siql50kIDVsQEpZAeWwd5zuZPAr0KfCMXNNRoySHfbbOqiQemuLjvpuB/rG/AooBccK/CQ24yWsLpJ0deLAs0L90GMxk93ZfPd0mWPL2yVMs8inKswZ1AyaCHZq666kPqV9Rl/alzbPu4t71Cv72TTpOvPFwxYucFrYq02h6B8g5qMbZcC67xtml4u6zXFE5Ab/rINF7KCleOVbxMAWm4qWn3GBE2QZyQdUqsJzitz2gOu02O8T4Kbs7oJVJWbz7majdOkEgVPhTwThwcUrYhPVRBakaP7aLXxUBTWhPE5Si2ZnY9RBIYIxblo1+8BdWEm/bYcP+K1F13CeAGQ==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=nxp.com; dkim=fail (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=I2CqXhR3 reason="signature verification failed"; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c200::3; helo=du2pr03cu002.outbound.protection.outlook.com; envelope-from=ioana.ciornei@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gzKyd0Gp4z2yMm;
+	Mon, 13 Jul 2026 21:31:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783942296;
+	cv=none; b=hMjbl19en13Wa36IqvNAOV0uNmXZcqv76dTFebCrnewc+zyWIPUZnFpGOgjeOFmhF+/w2uXwAz0ljRzpirjU4Pf9v9HGXgNYUgDy9TtKglaEGOeSI9y8KTLHuVerU1a+vrUNLwIdXESJyni9ZxNO33U2AkXyx7lOffJM1yMO6toeI8VTL2nUiFCQVtUxZYrY4/TNSEPosG6ubiVqy77sxTV4Q20TigLpsSHRJtdDdXUDjtJ06DgihoGgT1/54HUCDyCpdcJF+cbj45yqPV/SmAiNBaXS4u4UxzncHEAAUuMgTfcdnXWsxQM7RobxFBpxOUPyrp3M9h6eA7gUJJx0hQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1783942296; c=relaxed/relaxed;
+	bh=291z0iMy6ACy4umd+5gN9PHfheorz4UXB4xEyqm+dHY=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=RZeA2bMbK8ml98m8c2BA3qragOGQMqFhqan1Xv+PRQOSRoUsHkQZCXvDygZOoiA/eXvaJZ2/dsFeLScWTRhXSjg3fYtWen4QOnVhE67/+Y0N7QHGg6M9wx5QXEX7i3JFWNrsaYaXqjbRNz7sbi+NUVBKWysEZAjn5sHC/3JLARACnRKChUKkkJYuSqjw5qoS9Wey5HhJJvQQUbTQmuOvFfW9QT/hvo6Tq2R7xjHDQNg+B0ws5foH0hYRweF4h8Wk5l7t/+mwjLouvOb0kby22gMyY7AqMGSQ8Wb7abMZ/96vk1kKCf0ggbUcQwDGcd5kKaJMYp9LU5veMrVm1v5JwQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=NFZq0nT6; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=I2CqXhR3;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=NFZq0nT6;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c200::3; helo=du2pr03cu002.outbound.protection.outlook.com; envelope-from=ioana.ciornei@nxp.com; receiver=lists.ozlabs.org)
-Received: from DU2PR03CU002.outbound.protection.outlook.com (mail-northeuropeazlp170110003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c200::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gzKSp2c6kz2y1F
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2026 21:09:13 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=JZxntUCkhcZO0HtPovXvsE27WjHl26dwH65L0bq1X46Im6v/d7P3nJXklMdKkBBNXVMDsS1ShdxG3wQtjiBLeVDV3QGuDYTAI+3d5ERTqQKge8xvnuRjtEbCkcLhbTe8qGv4QABbPpvIO0hyS0lDll63Z19gUmQfpatNoOgphCLxO1l7e4ZCsVmVYpluCHlsTVHqgfNNkKz3agmxsywGFf5W4ZWD/XikQwdtFVWcNErtxVDQpJXa0plUq/42Th/9Ifpb9hPG1Y+cEcmIC4fm3l3dBG1dY7XjCfbcn5RZkF26+pLmJZnr1MEbp1vedjXfZubOdhT968e0vZGgMLaeNg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=ZqZd/0gAEqbKFycYSg/76QIkKOWux91Y+SIQ0FPqU6k=;
- b=UfyxW5wlwo4N5GK3TY3nbHgkxkE+EyfAPWFyIsjTmIIiLmIlgQOMmULfWhDHxtnBLQMa7HDGmQbFdSTnxH0NWiTlOI2d5rkgfyNiEEPBvizXC5slghBFFxYbAm0VZHBSeG/CVqo+n5FjV8nV8Rpw3S6f/djNi+JXr++Z5See/zf7dE827luc6ar31oLsJtfHpCnFMcQnA8rhdK8OCNDw9NskQb0YozLm9PhSwuLCJkLYeypmiMaOpvLYcKKimtW4UNyEbYWyR9QZvQN851nteYtVKNjXhWj1PJdCj1cKtBXhRlro5zEWkKujtP2mjfz9iF0oOvbA/Pc3KL7H6macMQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
- header.d=nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=ZqZd/0gAEqbKFycYSg/76QIkKOWux91Y+SIQ0FPqU6k=;
- b=I2CqXhR3UlccKK+Ev3qH4NCZNw4A0rDZ8CmWUA2rlsILWEl2ymvnzdc5k0YqKzdKW+Qqkbw7VussgBkov6Y6ldyOPpTDF0ov0KZdr3y4b3bRjRWJ3lpVOfxYGCrmbXHBgHNjL7atlLsa7A4EG8HRW1x1OMmaNnJ7gmOk8VCDalIO7bafKyWvBerltqV6+k+M2m18n5GLeDOJxV2E9VY1N0G37kdL76qP9vZ74SgJY3BXUBB+976z5LAAlOwZFSsjQmez0HJLDfdD+BRMq94nskSZrPRb76cT9cbR+Tt9OaWHZS+2uNl0BY0UUT/qeQguIV8/lYwOkbGDuV/o+Jnv2w==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nxp.com;
-Received: from GVXPR04MB12290.eurprd04.prod.outlook.com
- (2603:10a6:150:319::13) by PAXPR04MB9005.eurprd04.prod.outlook.com
- (2603:10a6:102:210::5) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.202.18; Mon, 13 Jul
- 2026 11:08:47 +0000
-Received: from GVXPR04MB12290.eurprd04.prod.outlook.com
- ([fe80::1739:3404:2175:33dd]) by GVXPR04MB12290.eurprd04.prod.outlook.com
- ([fe80::1739:3404:2175:33dd%6]) with mapi id 15.21.0181.014; Mon, 13 Jul 2026
- 11:08:46 +0000
-Date: Mon, 13 Jul 2026 14:08:42 +0300
-From: Ioana Ciornei <ioana.ciornei@nxp.com>
-To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: david.laight.linux@gmail.com, Kees Cook <kees@kernel.org>, 
-	Arnd Bergmann <arnd@kernel.org>, linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH next] drivers/bus/fsl-mc: Use strscpy() to copy strings
- into arrays
-Message-ID: <xwsinrysbg6vqtvj7mbgn7ywtgojkwpozbhkalpyrq6qnmzrhe@losn7mdkeynd>
-References: <20260608095500.2567-1-david.laight.linux@gmail.com>
- <dbd95f4c-cef3-4f7f-8619-375fe37c8852@kernel.org>
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <dbd95f4c-cef3-4f7f-8619-375fe37c8852@kernel.org>
-X-ClientProxiedBy: AS4P189CA0044.EURP189.PROD.OUTLOOK.COM
- (2603:10a6:20b:5dd::13) To GVXPR04MB12290.eurprd04.prod.outlook.com
- (2603:10a6:150:319::13)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gzKyb4NG5z2xlv
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2026 21:31:34 +1000 (AEST)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66D6g7tj1732367;
+	Mon, 13 Jul 2026 11:31:23 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=291z0i
+	My6ACy4umd+5gN9PHfheorz4UXB4xEyqm+dHY=; b=NFZq0nT64XkNedVp2mXpkF
+	NNcyBfJkpAtKROEnPirAHadXIX1DXXSxwrXFkYtvQBbsvk4RZ830+dwCLBtJOz/Y
+	q0RDoKuHDXOl0nuDOwIC8P+6Mu5Z6AX0skkMYd1PQ6D3NvCg5eYLW468ScZKYG9d
+	AfqgwFtB4yIjHBj9s8SOvklEem2t8L65Uvgjxe3UykVGZX9BpN4Nhr6z/eEwRpHy
+	6ImeWJg2i5q95ypErjwuQ5vMRG6MUbpfDlVOaXvanfFjizeTi900TskiqCbJNCpJ
+	WEoaMMywIRd0dQsKgPEQ3/GRdOmkgBG9zdG8K0DnOU1dRTR6sr22RQaNmnBrfczg
+	==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fbegbg12a-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 13 Jul 2026 11:31:23 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66DBJZVd003984;
+	Mon, 13 Jul 2026 11:31:22 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fc2cg566c-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 13 Jul 2026 11:31:22 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66DBVIBQ45023666
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 13 Jul 2026 11:31:18 GMT
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 64F0E20040;
+	Mon, 13 Jul 2026 11:31:18 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id CDF1520065;
+	Mon, 13 Jul 2026 11:31:15 +0000 (GMT)
+Received: from [9.123.14.142] (unknown [9.123.14.142])
+	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 13 Jul 2026 11:31:15 +0000 (GMT)
+Message-ID: <a5f57d59-a246-4279-946f-2e41d1b438a7@linux.ibm.com>
+Date: Mon, 13 Jul 2026 17:00:33 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -85,104 +81,130 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: GVXPR04MB12290:EE_|PAXPR04MB9005:EE_
-X-MS-Office365-Filtering-Correlation-Id: 3a9b5560-ccd1-48f9-78b2-08dee0cf1bf7
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|23010399003|1800799024|376014|19092799006|366016|18002099003|22082099003|56012099006|4143699003|11063799006|6133799003;
-X-Microsoft-Antispam-Message-Info:
-	gs59xyxh4+kDxPKfvkE5MdHQYQGNtDQliYNHOv4I4Pc/M6emxfZ5pSRbKOpm8Hv1vCUuSSU3aUrWhPX8HEwLqmpW5DIyIfnk9qlQPo4AFF+GH0QVxDHV5Sq2DTg+KzPBRsw4USMgYtJ7rQU3P97XRqIMIefaRC5Y1BKDRSjWwK/zxayLzBv79YgExWSMLlLOUFNnP8gnjQjMbZhNlo5XUzsOA+AG3BaScSIG84T48kKVs+TBLq3L8rNvqEO3woXJpqVp/1wM9mnPS5DJ+BeC6sKORKPhahgPv6wYAp525LTR94H0HY+xnZKRvBBg5XDT9gArSndfcAcnTvVWKFA2hiBStDsc1yBx1jjwB6m/qvggdKU+2HuWqlbIHTPi57TUMi1vk7i9TCDt/LJao9pU/Fp8RsD2z9YVhEMC5vFsQGHjeXTkv2m2PLYKEiYTOpPPlRSn7vxgdbTJ0NzYlP8OFyfCX5cQ3XYPj4Wj9IMyUsk9o/88MX6YLbuxE3caEq75BFi31gEZiQbtqiMfRK0CaQS/y/Uy+uTipYocWEL3ErbIyPrT/d1ebvHAjBUP5z2dStDW/qzsb8cCWSTIoIjM1bwiH7mmQpEWgO/FQKt11BPZl2qjgFXrwCb1wfXX1R607klbhZFl5X1v0jMhCGvv3E2rK28+Pht+y7DaubPLWu4=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GVXPR04MB12290.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(1800799024)(376014)(19092799006)(366016)(18002099003)(22082099003)(56012099006)(4143699003)(11063799006)(6133799003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?iso-8859-1?Q?QYV9U/yMbdBOn5PAFoTdijUy2qXhrr65Ck+ibBqk0woQTzbWmkOxPsvnSz?=
- =?iso-8859-1?Q?fXnBZd/PX8fILI6F+3MOfx2dstbw3QoIThB7rf8tetMXE7m2oCIKo0xSJT?=
- =?iso-8859-1?Q?fy9b5CaBO+IDry7uazt6Msu4XDIMc83Ht/yBVsdx8PYC1uWy4Qx9+oM3tX?=
- =?iso-8859-1?Q?17oMe3Y4rqpZfmW2W8fdh8rZQV7SRQb0obVpVG9NrkZn51JXhPxBP7Ph/T?=
- =?iso-8859-1?Q?8okzzkkVMQOHrF9jaNZHk0PDr0UaCS9tplxskUfdBrOQ3c13m/cGkF4ohq?=
- =?iso-8859-1?Q?WnNdTor0DiYT/lzIwsOAsY/6DIYMa5/dqzS9mcgA317oA3Jc2vhT23BDJx?=
- =?iso-8859-1?Q?sVsf0UNz6vM/b2USxcfvQ/zes04IA/T9Sedy7qYqgxeV+uJ+yk43ijmQ5l?=
- =?iso-8859-1?Q?eahHoJP6Eiy3lHjUuCZFkqpsmrMEBxyxW5sqnoEtgBshr2TnbmIyvxu4Bw?=
- =?iso-8859-1?Q?fy9bhnbBR7XoEDOvt1CqAB12ureWfVUeAN0C4Yck4WqugCVxeW5pi8sYUo?=
- =?iso-8859-1?Q?pE4J7XGr9YF+f9t0OxG94nnmcMb/zZ3Jb7QSOJZTWcx5jh5E1kIemKVo47?=
- =?iso-8859-1?Q?NKcmwN+JGRdbUcuFTkiTiaN51dvZd/O8J13mTKo4lqcYvWkkQ1Z1FZq6IZ?=
- =?iso-8859-1?Q?qB5btpKGQIsTFSbRGC53hzdsiL7CSoxf/hEETVncMFYitUHI4MlGEmelcu?=
- =?iso-8859-1?Q?PcVD+STh9GDAhSjfHKPGYjPyv5cKSyt4Aptby7VUbwBwsWlnuDMBAoIiJF?=
- =?iso-8859-1?Q?Q37Qbp1UD7H8FBXw2kXLbMKDEsATwwpV3DZtp2U/4HqtQUpcADsNxiqci/?=
- =?iso-8859-1?Q?QH6SctJCN3xGDac4nB3qpwSGRBPX3oUflHhAsu43a9L42B0rDpA3NhFMdU?=
- =?iso-8859-1?Q?RdFh44ERuJ5VQcaMvDolPane2SAqrpC4e4yuarRQpje2g3UNTrc0LiAfao?=
- =?iso-8859-1?Q?UrKN+HS7m3iQa9n42FSxLNco/GA9wuzVQ5jmuUsvsTsIShsg9zqSarNoIY?=
- =?iso-8859-1?Q?15GQ7wNkNmfVhR5siEoCUbabUun+tunye+SRDK0hVvbp4b7skZvyijkLsd?=
- =?iso-8859-1?Q?9rxgo2kIo2LSIofeNkWGe3LJfFIHfRbdvTXGbUPDY5jUCN/PB1vAoMXrPx?=
- =?iso-8859-1?Q?eOzNegMMwFKzCnxNHaFX2n3oiwtb7ZjqLrSXZhWkUBbb8fZfKGVzNqK1K9?=
- =?iso-8859-1?Q?Y0iOUh8xmHwSi4WxuO6qF0trfgrf0hNRIYeRZZ1xXr+SD75lYXk3BAc6A9?=
- =?iso-8859-1?Q?acJOU4MUENKpqCXuNldnAJGo3vDaSJO7v1FXCaZVsFzESp8D6NAUHnq23l?=
- =?iso-8859-1?Q?z9hf+Bu94AGaPAlwAsKen7hH8SNY4lZVdcSfmtIK3x7xxKq8wConvTsMsO?=
- =?iso-8859-1?Q?lGtMgAk5F8VITfRUtVBKCIA+UQI2ntqERgfXt6qYvEuI8CDpmPGjhqgXcL?=
- =?iso-8859-1?Q?s8F2pSk/cib4XezDdQxus+N3GgjfB3XIYwMN1FpucpNWr4IhpHTQPPVZWx?=
- =?iso-8859-1?Q?wWYzha4WWLUWcr82taTr4wJReLlEalZ3qicTLy4FZIeOy1zuQDaeSQI90Z?=
- =?iso-8859-1?Q?HAlqFXt8xDecszo7maudwtC+auI7unp0ryBNO5+oBpcA/XxmvmxCgfcXTg?=
- =?iso-8859-1?Q?HaGwtLrBJyK8EKqyjMVkLmsBjFReEti+XP+JAqtqWMkVZohRS1E/Gj3o57?=
- =?iso-8859-1?Q?4aO+QkVpMycq7FQj6vaG867xBe/HmdNL/oYiwXPkFC4wZ4qmCklMwQtKOW?=
- =?iso-8859-1?Q?OLXSy0R5vPloAugg8w51s5FrFTOMzSZYpMVcnV1O0cC7TfzS9Lbf7KWPN4?=
- =?iso-8859-1?Q?jpScAEwzMw=3D=3D?=
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 3a9b5560-ccd1-48f9-78b2-08dee0cf1bf7
-X-MS-Exchange-CrossTenant-AuthSource: GVXPR04MB12290.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 Jul 2026 11:08:46.6869
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: BXf/z5JOUbPLqpPro7u2KUYf+UTffOEpzBOZ+oCbQ3k7L0gSO0sf3A9z4829eQjOsQQOmSVzbta2m6rPu5ECqQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PAXPR04MB9005
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 0/3] powerpc/crash: protect kdump from active watchdogs
+To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+        linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com, mpe@ellerman.id.au
+Cc: npiggin@gmail.com, chleroy@kernel.org, shivangu@linux.ibm.com,
+        hbathini@linux.ibm.com, mahesh@linux.ibm.com, adityag@linux.ibm.com,
+        venkat88@linux.ibm.com, stable@vger.kernel.org
+References: <20260713035954.1559605-1-sourabhjain@linux.ibm.com>
+ <mrvvv515.ritesh.list@gmail.com>
+ <91e04278-aa90-4cbc-aeb4-f4663bf1f058@linux.ibm.com>
+ <ldbfv1dl.ritesh.list@gmail.com>
+Content-Language: en-US
+From: Sourabh Jain <sourabhjain@linux.ibm.com>
+In-Reply-To: <ldbfv1dl.ritesh.list@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=fOcJG5ae c=1 sm=1 tr=0 ts=6a54cc8b cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=VnNF1IyMAAAA:8
+ a=VwQbUJbxAAAA:8 a=cAh3PJzBWdOWiawSA5MA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzEzMDExNiBTYWx0ZWRfXyFuHFQ31p+z/
+ C6EH7EwaVouCanqpcEB3Qk5wqoiLIBcVOp0eZOCMADOp1nKPbZSE5eKSiFH1ruBg8kczUQv1d26
+ xXUUC6d/rtdF37wdsogVSxU084yuNZUOo3+cUTEGIuqV2czj23Y8vKWQ9fKIQhaDt29JBbaAb5Y
+ dL2kXOjUNKzzkZc0EaNcAww8WE/kClwoBH6q2E5CAveVDekTdFXO+3MK9db49r7ZkefChm33007
+ PKFLncTLefcCJtrY1kWbWgYs0UJHs1jwd5X5JHDbuhpFmf/uliEXQeKwHlinUZDAfwwW4ImAo1a
+ puP8T32XgY655rZkjQwpZdSam0+PzpgvTTkV/r4LD2xZhI/pdMnmBLIMYn8SbbRSQy1Ae2izqTt
+ Vgu/sIUvz6fV0+sI5MJpWVPgLMm+91pZTQZuzAFwFY/JlLJAVfi/ndbuYCp18tnlnD+A+dW5JXd
+ F2tsU065dVLDYQxCFQw==
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzEzMDExNiBTYWx0ZWRfX9zzHD1JtMzDg
+ DkX4H0AoeQvdZDu5kDiBefEycNkO12CmnJP91HdcKd4r92PNjndycDQARMUvJzeDltwe64WEfam
+ 1wHecTJEPnPBPAu12MOEN6dVlwt84cQ=
+X-Proofpoint-GUID: QUZmTu88xlQjl44bX-V08oYhYM9Ha9lb
+X-Proofpoint-ORIG-GUID: OtDU0bq9Lo8498ENEvjsZ6iwpt4n7laq
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-07-13_02,2026-07-10_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 bulkscore=0 impostorscore=0 suspectscore=0 adultscore=0
+ priorityscore=1501 malwarescore=0 clxscore=1015 phishscore=0
+ lowpriorityscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
+ definitions=main-2607130116
 
-On Sat, Jul 04, 2026 at 11:10:18AM +0200, Christophe Leroy (CS GROUP) wrote:
-> 
-> 
-> Le 08/06/2026 à 11:54, david.laight.linux@gmail.com a écrit :
-> > From: David Laight <david.laight.linux@gmail.com>
-> > 
-> > Replacing strcpy() with strscpy() ensures than overflow of the target
-> > buffer cannot happen.
-> > 
-> > Signed-off-by: David Laight <david.laight.linux@gmail.com>
-> > ---
-> > This is one of a group of patches that remove potentially unbounded
-> > strcpy() calls.
-> > 
-> > They are mostly replaced by strscpy() or, when strlen() has just been
-> > called, with memcpy() (usually including the '\0').
-> > 
-> > Calls with copy string literals into arrays are left unchanged.
-> > They are safe and easily detected as such.
-> > 
-> > The changes were made by getting the compiler to detect the calls and
-> > then fixing the code by hand.
-> > 
-> > Note that all the changes are only compile tested.
-> > 
-> > Some Makefiles were changed to allow files to contain strcpy().
-> > As well as 'difficult to fix' files, this included 'show' functions
-> > as they really need to use sysfs_emit() or seq_printf().
-> > 
-> > All the patches are being sent individually to avoid very long cc lists.
-> > Apologies for the terse commit messages and likely unexpected tags.
-> > (There are about 100 patches in total.)
-> > 
-> >   drivers/bus/fsl-mc/fsl-mc-bus.c | 4 ++--
-> >   1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> Do you expect this patch to go via individual trees or will you apply them
-> all together in a given tree ?
-> 
-> Ioana, as usual I can take it via soc/fsl/ with your Ack.
 
-Yes, you can take the patch through soc/fsl.
 
-Reviewed-by: Ioana Ciornei <ioana.ciornei@nxp.com>
+On 13/07/26 12:10, Ritesh Harjani (IBM) wrote:
+> Sourabh Jain <sourabhjain@linux.ibm.com> writes:
+>
+>> On 13/07/26 10:51, Ritesh Harjani (IBM) wrote:
+>>> Sourabh Jain <sourabhjain@linux.ibm.com> writes:
+>>>
+>>>> Changelog:
+>>>> ==========
+>>>>
+>>>> v2:
+>>>>    - Move H_WATCHDOG definitions to a common header for shared use
+>>>>      across pseries code. 1/3
+>>>>    - Added a new patch to handle pseries watchdog device registration
+>>>>      failure. 2/3
+>>>>    - Stop active watchdogs in crash hanlder. 3/3 Ritesh
+>>>>    - Add suggested-by tag 1/3 & 3/3
+>>> Reviewed the changes and mostly looks good with some minor nits added to
+>>> the individual patches.
+>>>
+>>> Small request -
+>>> Could you please also update test results with v3 in your changelog
+>>> (since you mentioned we are able to reproduce the issue easily with your
+>>> test code).
+>> I tested this fix with the program I shared in cover letter. The watchdog
+>> was successfully stopped even when H_WATCHDOG is called form crash
+>> handler.Â  I will share my test details in v3 cover letter also.
+>>
+>>>
+>>> aah one other thing I just noticed since you are ccing stable and you
+>>> added a Fixes tag in patch-3.
+>>> Patch-3 alone cannot be easily backported now due to patch-1 and
+>>> patch-2. There must be a way to define the dependencies if you are
+>>> looking for backporting the fix patch to stable tree, please check that
+>>> and follow that accordingly in v3.
+>> I thought about that as well, but since they are part of the same patch
+>> series,
+>> I assumed they would be picked together. However, I don't think that
+>> will work
+>> in all cases.
+>>
+>> I checked the older commits and noticed that a backport note was added.
+>> I think
+>> we can do the same for the fix patch. I'll add a note indicating that the
+>> following patches should be backported first:
+>>
+>> powerpc/pseries: Move H_WATCHDOG definitions to a common header
+>> powerpc/pseries: Handle and log pseries-wdt registration failures
+>>
+>> Since these patches are not upstream yet, I'll refer to them by their
+>> commit titles.
+>>
+>> Does that look good to you?
+>>
+> Documentation/process/stable-kernel-rules.rst
+>    Note that for a patch series, you do not have to list as prerequisites the
+>    patches present in the series itself. For example, if you have the following
+>    patch series::
+>
+>      patch1
+>      patch2
+>
+>    where patch2 depends on patch1, you do not have to list patch1 as
+>    prerequisite of patch2 if you have already marked patch1 for stable
+>    inclusion.
+>
+>
+> In that case, I think, we should mark all 3 patches for stable inclusion.
+>
+>    patch 1/3   Cc: stable@vger.kernel.org
+>    patch 2/3   Cc: stable@vger.kernel.org
+>    patch 3/3   Cc: stable@vger.kernel.org
+>                Fixes: 69472ffa6575 ("watchdog/pseries-wdt: initial support for H_WATCHDOG-based watchdog timers"
+
+Okay, for stable tree inclusion, CCing is enough.
+
+Thanks
+Sourabh Jain
+
 
