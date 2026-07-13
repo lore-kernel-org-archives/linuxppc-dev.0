@@ -1,58 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-24099-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24100-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D4130C43458
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2026 07:06:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DB231C43458
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2026 07:22:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gzD4j1lNRz2yVv;
-	Mon, 13 Jul 2026 17:06:29 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783926389;
-	cv=none; b=Ypt51QugyhhrZIGa6l5EMD+w63LkzER/waOVnFmMCdz+85Yg2EwwKvQsMrqYrB3lAM8kjOAsAbMH7FnLct8sOEEzXQJmIT4/QeRf4MYtVjrDPSaQsFYNPIRJ7K8KLIq1so4HIZZBS3WNqpjbcg6x+wIJmOpxaEaN+F15UIrOZrwTXJ9kp10dkTjYPlQY0j/ow6lWOq65/34kh2fxlgK+93zIf0A/ambZIZE/4H8vF8R8eSh+kAIt6b4XZIscdsZRRiA7rfd1RrdjYpa6TzFW5EJzYJ9sXf5Uags9HPjobgio9t6tOE2L/aFKHSbHCcsHzCIS723NCup2n67///O9wQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gzDQw40Wxz2xMW;
+	Mon, 13 Jul 2026 17:22:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.221.171
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783927336;
+	cv=none; b=nzVB1tKiwfCO7pP7wPpO8TXwZ+6RSsSLNN+T05Y54WBfU9Xc0I6qlPQwOenIQmh1v6PrkFXKeBWVa0P1SohI1UKJ2K8O/F/Wmtno9C7nyCS9VSgH23Q8aw/D2nObDU22tZ3S4PRPEuvCWoqOohsNm76ZlY1lfTKutVp4hmrQaIMVEvCwMY55K5ZiLNX5Y1M6JA0kXsszwFK/i9r5u7lxHR/GpPnAghi8no8hyMcFeotgvH8Or43jwJhaY4+UfY/LY25NmVRzjppZw9saxHVIRLstlXqlX6BmS/RGQKBDDMC5omC7xyX2D1wFIPoz68EN6gyIqNdNnOeX102ZfITbRg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783926389; c=relaxed/relaxed;
-	bh=MaoMLNzrQSdilHBAPxvn7cFGYo6KCQRZiQrYmmdeSDg=;
+	t=1783927336; c=relaxed/relaxed;
+	bh=k9efCbe+5Y6ahQNJH2dxKPZ1FaQevv/SuYysWDsVR8s=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=PEDEkMzJW9GWZxz0H2lamEewgkAQtNvhezTW4u7G7fcuWboi1b28LfRvUCqsQPAhRcU2U3SQYIisqTLoq/b8QFvHUE/7yoFwR9ARqZ18GK6/VgubxxW7zYR2pW4sfODx1WUce2Relrs77OVx9TYwn1hIqkmJ2SeEBEtp2JG24RqRvJtor9Ki3fTLdN7N8SkXomVCaz3Sj7+mB5eqMdPAm++yIdADVlwVV0V45OX7qArmMTNiK2u5aIyHK5l88oibATScDkh6sr037o07kKslMYOaaDk+h5C43lrWDLTaZQhviqIiVKgooQV2Qq70QypKCLWjrdZmdAA+EMITvia3LA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TbglOxZr; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=guoren@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TbglOxZr;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=guoren@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+	 To:Cc:Content-Type; b=mLLB4SWRqw25vwk1CIzwM9MH38MYU5kEGqoUxVL1Hr2tWGntK/qRnMYb+uTXVI6zuVSafCukvLpcJ7fcik79BlGS6ssua7BkJGmswYNvg7OokQMzCyeVG3OJfI7m9jlVEVBU7M0kIUKKjJ69mIhDnSZo0dShibKUMpplLwCaHCm/ECFSULyHpzHzMlSE2xMxUmEMKQ4I7Gbq9kGWx2ycrDRGZbRh8ilFeu12XWj/R5uS0HS06zhbUfXNNhOS9HehB3D1nwosrIsjmZVd3gUCupQZZ8p4rCeUdRXPe5N1ggA9v6IlZo8DZv6/+hAuq//PfmA23IKC9uDUkxrtQx8BXQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass (client-ip=209.85.221.171; helo=mail-vk1-f171.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.221.171; helo=mail-vk1-f171.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-vk1-f171.google.com (mail-vk1-f171.google.com [209.85.221.171])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gzD4h06B2z2xqM
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2026 17:06:27 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 9A6EF43B41
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2026 07:06:24 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 821391F00A3E
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2026 07:06:24 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783926384;
-	bh=MaoMLNzrQSdilHBAPxvn7cFGYo6KCQRZiQrYmmdeSDg=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=TbglOxZrZc+8ho1Z2BcK0IhS3egNUSq0c5Yekd6nxDBKZQhVPPnrHghm6ItjXrvW8
-	 myYXJ6x6lFh7QX5ecmuh/vq7Qwc4aN3eTk8kvvmFs1d8wRQY7vrvAGfQK8ML7sZ4Yj
-	 k2WeLrzUteazWoeRwgjCCUDZJ2+PWRLzL1ozd2prV95l5uW3ki91C/T/KpUndY2saf
-	 +I1D4H0CLwMJu74DptZISJOOYDmUct5uhnCyLsAUx2HSrcK3fC5VZsBannIxQYZ7Rq
-	 GNjV6d1+IgN8jsegZ7lli5dbQ5dULez5iyH6dt+oUZzipNLSJVSN9n9AB3HDQyztKw
-	 NLk2nciGwWqEA==
-Received: by mail-wm1-f54.google.com with SMTP id 5b1f17b1804b1-493bc8fda98so16847355e9.0
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2026 00:06:24 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+RoJ0DLDukADUzmUdtDDegUJNFS2/RmGElywO5/Hw5leTSyPL5HfgCZ1/O2vFYslvZvGzJnthwMRHLK+m68=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxOpTnen5kqvnFXVG7t+c1V/K/yPizB1i7MXR4fJc8EZNvM7Ajk
-	aIfAa97Bsm+NEwx+w2hRdhPos+S1qcwID8drjUbKBuq2SHTCCMun9DIZybPNPW/+JMX2PtUBWqs
-	urKXIR/cfRzbMzgOJQkjzSRyC62JfpNI=
-X-Received: by 2002:a05:6000:186c:b0:476:d13f:bb74 with SMTP id
- ffacd0b85a97d-47f2dc9bac8mr8770361f8f.15.1783926382749; Mon, 13 Jul 2026
- 00:06:22 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gzDQv0BFZz2xC3
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2026 17:22:14 +1000 (AEST)
+Received: by mail-vk1-f171.google.com with SMTP id 71dfb90a1353d-5bf95ade656so1216134e0c.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2026 00:22:14 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1783927331; x=1784532131;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=k9efCbe+5Y6ahQNJH2dxKPZ1FaQevv/SuYysWDsVR8s=;
+        b=IfhZPR0OSyr12uTEHQNTBazhjtIeCZ/3FEF+0WEYDiXBoxCOLoOcDeUBCITp2gBq63
+         a79RRyUc3Tc4D82Qw+KjPfUgvqamgoDkdjz1w8cs+19Oh4wsE5QQSLyxkVTnVBqbSeFb
+         2aTouL6AJ5s/S50H3Mmysi3vAq6cXdXcsZnzB5XbYAiODx7Y32Iy7scZntfI99nTxqLO
+         JHwXMHmX69vNvfR60t4wbgo434vCq2JqgjLUdsiYWdlLsI0NJgYF6vOPS/D+ZjG5HayV
+         Cz8tYmV7GpXMRobr5m1+D8ubryWgRpirJDI2DXSXxdaHtd5kJEkMjD2NI+7mlu1CiMAs
+         hEoQ==
+X-Forwarded-Encrypted: i=1; AHgh+Rr6pok5+ouFI2GPEO/TI/oh5qlt3nPaWAmb+Aa7xifffSQVzsgdv6nQxxHCrKhmyLh7U7FW0+lhi5hYVAY=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwNtwndPMxJDHLQ/Uv9NpsFpm4vbXOMpE5MIJ0rlWqNAFz2LcYl
+	vjmkaQieNPiFn6tWi4BPsfN6H4zZ5kET1/ovfYFTRvXaV2/f/A2+Ew3EymW4eWBA
+X-Gm-Gg: AfdE7cn58Zn4dHYSqwZdchhUcdXpV+GE+/OityxhmtWUW/FjXq5BFpmbGIWbtPJu5oo
+	MLFfeKgW6pYVsJBQMLg6R0hTx84bTwOIFAHdTf3nKfLEnKtP6N45fZM1MY5vkZZq87zq7e1SdHg
+	wxpPdybpjSjijERTXjAWptaUUxsg0BF0lNB/v7AYoNwwIRAJMR/1SI3L0mkyu8fiLgTYqVr3ib2
+	26P+31kVc9zPs/0PhKit8lByKIxdD4vi+jWkgCoxWtD7A4t9gwdkf1sq4S4801ZjqRJNwYe/LOm
+	Hr7XLo5fdrFYacZDncyZpF6FJY5AYYz717DXD5pCFTZ66gNlVEnNFHLLFd9eUNXWO+h6SZbWsFX
+	KgYBZMAk0BhWwpDR7QJaM8/MF6X334QbgdZ26VLRhCTA5zLRsjLc/VOImZuLxRWxN6vEo1FyhgD
+	Me5HVT0SxX/JILCV2CpDVnG06ZTbWHKupWIw+rqheVsvKGo1fHOg==
+X-Received: by 2002:a05:6122:459d:b0:56d:b639:5c0d with SMTP id 71dfb90a1353d-5bfbf41eb67mr4444838e0c.13.1783927331218;
+        Mon, 13 Jul 2026 00:22:11 -0700 (PDT)
+Received: from mail-ua1-f45.google.com (mail-ua1-f45.google.com. [209.85.222.45])
+        by smtp.gmail.com with ESMTPSA id 71dfb90a1353d-5bfba710bd9sm4302204e0c.12.2026.07.13.00.22.09
+        for <linuxppc-dev@lists.ozlabs.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 13 Jul 2026 00:22:09 -0700 (PDT)
+Received: by mail-ua1-f45.google.com with SMTP id a1e0cc1a2514c-963f63fe025so709761241.0
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2026 00:22:09 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RoUkhKbadqLv9WlUrrWYprlZOkxCMUWgR9WgDvC0ncB2LHGVAFlU5ZTq+jTT5mI+ueBdfA3LmyQTZkWI7Q=@lists.ozlabs.org
+X-Received: by 2002:a05:6102:26d4:b0:737:783d:1900 with SMTP id
+ ada2fe7eead31-74533bddb5fmr4721253137.9.1783927329441; Mon, 13 Jul 2026
+ 00:22:09 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -66,87 +76,45 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260707181957.433213175@kernel.org> <20260707190253.974626922@kernel.org>
-In-Reply-To: <20260707190253.974626922@kernel.org>
-From: Guo Ren <guoren@kernel.org>
-Date: Mon, 13 Jul 2026 15:06:10 +0800
-X-Gmail-Original-Message-ID: <CAJF2gTTjW0RfZsJmHVAqrRsHpK4cJ+01G_Kkytt=0Wpm4sZpkg@mail.gmail.com>
-X-Gm-Features: AUfX_mzuKA4JwmuMUWB774bzpkP7q4a7PrJvxtp8N1GWwrENQwGP0BULxiqlyqc
-Message-ID: <CAJF2gTTjW0RfZsJmHVAqrRsHpK4cJ+01G_Kkytt=0Wpm4sZpkg@mail.gmail.com>
-Subject: Re: [patch 06/18] riscv/syscall: Use syscall_enter_from_user_mode_randomize_stack()
-To: Thomas Gleixner <tglx@kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, 
-	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, linux-riscv@lists.infradead.org, 
-	Michael Ellerman <mpe@ellerman.id.au>, Shrikanth Hegde <sshegde@linux.ibm.com>, 
-	linuxppc-dev@lists.ozlabs.org, Kees Cook <kees@kernel.org>, 
-	Huacai Chen <chenhuacai@kernel.org>, loongarch@lists.linux.dev, 
-	Sven Schnelle <svens@linux.ibm.com>, linux-s390@vger.kernel.org, x86@kernel.org, 
-	Mark Rutland <mark.rutland@arm.com>, Jinjie Ruan <ruanjinjie@huawei.com>, 
-	Andy Lutomirski <luto@kernel.org>, Oleg Nesterov <oleg@redhat.com>, 
-	Richard Henderson <richard.henderson@linaro.org>, Russell King <linux@armlinux.org.uk>, 
-	Catalin Marinas <catalin.marinas@arm.com>, Geert Uytterhoeven <geert@linux-m68k.org>, 
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Helge Deller <deller@gmx.de>, 
-	Yoshinori Sato <ysato@users.sourceforge.jp>, Richard Weinberger <richard@nod.at>, 
-	Chris Zankel <chris@zankel.net>, linux-arm-kernel@lists.infradead.org, 
-	linux-alpha@vger.kernel.org, linux-csky@vger.kernel.org, 
-	linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org, 
-	linux-parisc@vger.kernel.org, linux-sh@vger.kernel.org, 
-	linux-um@lists.infradead.org, Arnd Bergmann <arnd@arndb.de>, 
-	Vineet Gupta <vgupta@kernel.org>, Will Deacon <will@kernel.org>, Brian Cain <bcain@kernel.org>, 
-	Michal Simek <monstr@monstr.eu>, Dinh Nguyen <dinguyen@kernel.org>, 
-	"David S. Miller" <davem@davemloft.net>, Andreas Larsson <andreas@gaisler.com>, 
-	linux-snps-arc@lists.infradead.org, linux-hexagon@vger.kernel.org, 
-	linux-openrisc@vger.kernel.org, sparclinux@vger.kernel.org, 
-	linux-arch@vger.kernel.org, =?UTF-8?Q?Michal_Such=C3=A1nek?= <msuchanek@suse.de>, 
-	Jonathan Corbet <corbet@lwn.net>, linux-doc@vger.kernel.org
+References: <20260711130931.740719-3-thorsten.blum@linux.dev>
+In-Reply-To: <20260711130931.740719-3-thorsten.blum@linux.dev>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Mon, 13 Jul 2026 09:21:57 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdUK9a+1EwCGFw7dS8tvU=N438Bd2Z=EY0xuaQYPDy2hug@mail.gmail.com>
+X-Gm-Features: AUfX_mx-KZ6ym34u_XnSAl1rHvfZCpzLD6QFC2QtuW07Z8oE-TV1vNB_HazP5kM
+Message-ID: <CAMuHMdUK9a+1EwCGFw7dS8tvU=N438Bd2Z=EY0xuaQYPDy2hug@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/ps3: Fix map failure path in dma_ioc0_map_pages()
+To: Thorsten Blum <thorsten.blum@linux.dev>
+Cc: Geoff Levand <geoff@infradead.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Paul Mackerras <paulus@ozlabs.org>, 
+	MOKUNO Masakazu <mokuno@sm.sony.co.jp>, stable@vger.kernel.org, 
+	Geoff Levand <geoffrey.levand@am.sony.com>, linuxppc-dev@lists.ozlabs.org, 
+	linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 
-On Wed, Jul 8, 2026 at 3:06=E2=80=AFAM Thomas Gleixner <tglx@kernel.org> wr=
-ote:
+On Sat, 11 Jul 2026 at 15:10, Thorsten Blum <thorsten.blum@linux.dev> wrote:
+> If lv1_put_iopte() fails in dma_ioc0_map_pages(), the error path
+> decrements iopage but keeps using the failed mapping's offset. As a
+> result, it repeatedly tries to invalidate the failed IOPTE slot and
+> leaves the already installed IOPTEs valid.
 >
-> syscall_enter_from_user_mode_randomize_stack() replaces
-> syscall_enter_from_user_mode() and the subsequent invocation of
-> add_random_kstack_offset().
+> Recompute offset and invalidate the installed IOPTEs instead.
 >
-> The advantage is that it applies the stack randomization right after
-> enter_from_user_mode() and thereby avoids the overhead of get/put_cpu_var=
-()
-> as that code is invoked with interrupts disabled.
->
-> No functional change.
->
-> Signed-off-by: Thomas Gleixner <tglx@kernel.org>
-> Cc: Paul Walmsley <pjw@kernel.org>
-> Cc: Palmer Dabbelt <palmer@dabbelt.com>
-> Cc: linux-riscv@lists.infradead.org
-> ---
->  arch/riscv/kernel/traps.c |    5 +----
->  1 file changed, 1 insertion(+), 4 deletions(-)
->
-> --- a/arch/riscv/kernel/traps.c
-> +++ b/arch/riscv/kernel/traps.c
-> @@ -7,7 +7,6 @@
->  #include <linux/kernel.h>
->  #include <linux/init.h>
->  #include <linux/irqflags.h>
-> -#include <linux/randomize_kstack.h>
->  #include <linux/sched.h>
->  #include <linux/sched/debug.h>
->  #include <linux/sched/signal.h>
-> @@ -333,9 +332,7 @@ void do_trap_ecall_u(struct pt_regs *reg
->
->                 riscv_v_vstate_discard(regs);
->
-> -               syscall =3D syscall_enter_from_user_mode(regs, syscall);
-> -
-> -               add_random_kstack_offset();
-> +               syscall =3D syscall_enter_from_user_mode_randomize_stack(=
-regs, syscall);
+> Fixes: 6bb5cf102541 ("[POWERPC] PS3: System-bus rework")
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
 
-Reviewed-by: Guo Ren <guoren@kernel.org>
+Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
---=20
-Best Regards
- Guo Ren
+Gr{oetje,eeting}s,
+
+                        Geert
+
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
 
