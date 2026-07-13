@@ -1,41 +1,113 @@
-Return-Path: <linuxppc-dev+bounces-24108-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24109-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C2742C43458
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2026 10:09:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BD1BBC43458
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2026 10:29:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gzJ881Glnz2xlv;
-	Mon, 13 Jul 2026 20:09:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=141.14.17.11
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783937384;
-	cv=none; b=QMbBN1lKtBgu12buuzHLsVFzTk6F42hOghVwJ1HptYsRz8ZmkDckFBmlWWqS3PLrD9SNAvReDh/cy6LQGDEKbeWpswoQImE36AI9ZQMHBLJgxYR9QHguyEead331cq7314svilAfExwvDc03wSqqP/DGDeaGn/FyhWnlHIxR2FMh2bc4r2Yvv4Iibqkv3RrbWGPe9vp/cNYhIQioMA+g5VCUiSWzQx7yk+SOvQ0LFS4IQ/43jklerRUe33M3nTTxQMhF+yMnnuRg05z1iwDuDFsdgvAYeJ2G7ipuRgJkpQ6LwFEvY4Z29T5XRSWfyZQk4fdklkytCsVfYueRG/pMsg==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783937384; c=relaxed/relaxed;
-	bh=UJyHYbseUt69TjEKjWaEAPCOt0IfEYILXBW+jp28rLg=;
-	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
-	 In-Reply-To:Content-Type; b=iZHv/eTgPOJnka9R43qy4tu/atA6Dr0E0ND3qC/FFBjkWnxYFj4yR0MkfYoaTxth+1WWqEQFfeOpYXJlo26Mh17WUibyHxZDaoe33v57/CsnHfjab7SohF4WLRqqB9anDL/dqK5z0WrJEV7Ra0TQFWg6mB8Ca4bAEZyBE6lMj1dy6OUUXvlYJkBv4sXj14RJM2gtWxu6iwTGLh0Qw9d6AXbWqbJYdN28EWiCMVor+4VdlioFzbXnHR5sAhO/M0r5RjNihqhLdehkylXbLsOnIAJtXnssP8JfOncpvuLuLUsJWR2x6A3zm5pZCgnom3cKn/ljd2wBP+Jh02Ck7v8WwQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=molgen.mpg.de; spf=pass (client-ip=141.14.17.11; helo=mx3.molgen.mpg.de; envelope-from=pmenzel@molgen.mpg.de; receiver=lists.ozlabs.org) smtp.mailfrom=molgen.mpg.de
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=molgen.mpg.de
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=molgen.mpg.de (client-ip=141.14.17.11; helo=mx3.molgen.mpg.de; envelope-from=pmenzel@molgen.mpg.de; receiver=lists.ozlabs.org)
-X-Greylist: delayed 420 seconds by postgrey-1.37 at boromir; Mon, 13 Jul 2026 20:09:42 AEST
-Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gzJZq0Q18z2yVZ;
+	Mon, 13 Jul 2026 20:29:23 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=205.220.180.131 arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783938562;
+	cv=pass; b=g6x4C59jWma8NhumXSpcUKw6iq3pJphOJa8dfUet1UvYpKAX2uvQDTC8GB5IFcDzmJftxnZLcdpIrcWWIokJUC9LMLZIrtzokax4LvuV1UlqaVtkKHkIIsPK5+33YaYQtMeTk0fYr7JbkneVKFrFa9RWbMGEK1Eml2SNHKTnRYbCM2FA4V7bcx9A80DmW/GyIxLzBuuWEg6JCeRYLPWj5Jj0UY2BRRtVEf6EB9dXwrMxTR9pFcRhdUM61jWJxQ4homjT+Pl9TZW8yFziXiP53ih6XJtFyZd7UC6dhhZ4Z1RWl0GxmC69uTC5iNA7dhaH/KmhPF1sImCCJTjcR0FxIg==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1783938562; c=relaxed/relaxed;
+	bh=ooopbZ8BXUYSj2UczjbYKP/YkkGSe5M/iCnsrnvSEpM=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=EQ4d8HFz7V+vYrQmV5K6dQGkwjQXTMdZawvUy5ebyw/CH/qZLG1mJIaKdiY6LWP23pMYPg2+4CXIpY+fJdNr0ZQ97O4fzsLW0VdgTaB857MA/HY7S2vrHmU5VH9wL7rw3fjz4BPxGCgx/1AnBlf/+7tCaL0S7bCO99bbVpD8CWWcpKBtPYQQesepa2L743XA+mYboRCK7Xrf0Zh2XxhWaf59jSDXmChys06m/fUtx02ssUXdSmkco2vcA/Jt7vMIbGNc1s6L9VLqRb38GV7Vd4vtUu0LnVZEN5i5O6c7Dwy4Ge5CbtrdaAIe1sONPFk2wr38qgI6BHlOknF5VY48YA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=QNFOxgh3; dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=aoCd7NOU; dkim-atps=neutral; spf=pass (client-ip=205.220.180.131; helo=mx0b-0031df01.pphosted.com; envelope-from=ulf.hansson@oss.qualcomm.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.qualcomm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=QNFOxgh3;
+	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=aoCd7NOU;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oss.qualcomm.com (client-ip=205.220.180.131; helo=mx0b-0031df01.pphosted.com; envelope-from=ulf.hansson@oss.qualcomm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bit raw public key) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gzJ863dVRz2xjN
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2026 20:09:42 +1000 (AEST)
-Received: from [141.14.220.42] (g42.guest.molgen.mpg.de [141.14.220.42])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	(Authenticated sender: pmenzel)
-	by mx.molgen.mpg.de (Postfix) with ESMTPSA id 31ED74C2C37D5E;
-	Mon, 13 Jul 2026 12:02:06 +0200 (CEST)
-Message-ID: <d450fa9b-3573-4e82-a635-b8d1affa733e@molgen.mpg.de>
-Date: Mon, 13 Jul 2026 12:02:05 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gzJZn4WW2z2xjN
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2026 20:29:19 +1000 (AEST)
+Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66D9R8Bw1122940
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2026 10:29:16 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	ooopbZ8BXUYSj2UczjbYKP/YkkGSe5M/iCnsrnvSEpM=; b=QNFOxgh31F+aQwWH
+	ovN+MuWYrQupUnEJ4E05qCBe2S9rP7KHAIzWX8QuWwVLkBnQCTy1Hz9uUXC1S7DF
+	8ziWPWrYXfAPxVQX7yIQ90tkfXiCc0VPr519QCrHicbq5mx/va6EOAY8OJvHnMC3
+	RZF+ARzvL1gWrkTRgAmMOSEPMRMgnJsk3tSucarsmgrls/L4q+xlgyoSuIM/bgkt
+	B+B96eVD2U0ghoOzlEzmHlymMGN9Zy4snq+v8VItrjMOWQ4hjzJIFO+xwOz3UgBn
+	1yZtKxrH/rfPDe0dXOHL2JQMVO51Kqi381IJox02JTjVELMpumm0HRsXH/c9hr2z
+	cyqT8w==
+Received: from mail-qv1-f71.google.com (mail-qv1-f71.google.com [209.85.219.71])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fcwda07ck-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2026 10:29:16 +0000 (GMT)
+Received: by mail-qv1-f71.google.com with SMTP id 6a1803df08f44-8f08560ea44so46289186d6.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2026 03:29:16 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1783938556; cv=none;
+        d=google.com; s=arc-20260327;
+        b=m0/T5Ab+swinMVyyJSRL2LIviGHABO1EB0gNXGI1vv2L8m/lSYGB8I8yiPEBKx6Ebi
+         Uqugv6JpKEhNrfHO6Xv99YivZMWdzEPGU4OmXnrvXkIpy1rAatZlw8ir2+pSnHQ4e+KY
+         xe2fFxFD4/DYX0ATdFCdsUFj7V8ZHh4gsYVFEGa3uHQVoA+Cb1uson4vpD/kr3nEuF3t
+         rla+b0NAJ0rahmfV0JspHOmMunBBX3ChAHIeK4YJRe4qYexMdu35jAuXu7FUl3/nxkMG
+         CrUYst6N5bkEsDruPwBgsDn5hMo7CelaucMdNtUUCqXBObT3wTN63gtdftfoCNRZqrza
+         VwHw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=ooopbZ8BXUYSj2UczjbYKP/YkkGSe5M/iCnsrnvSEpM=;
+        fh=GEri2gPXZkeXcSgTYAZnKWVVV40rUhi4eT1yhxLTXZ4=;
+        b=MS4wZQTV/0jfUFp8+hdVPn6YWGSlnXGA7xI22UMFvLxcrhFuQBTV7zpVIliQeI+NRc
+         tKd96IsonaT3JY69KU+jn0vD7FDq070H5g82qZBqF3/8Wp5OdeFQK4/rDtSe/X7Cnx3b
+         jZU2KEEG5Vh98+LSYrxdOF4z9V01GkcNRgG940YnYYhBeXY2hU8TInSReM9HTtfPb6rS
+         Mx4U13B9pnh+7CvBja15+IJnWIJFZM02Xj3jCmM7sB9WRI4PLLVJQaFL4d7ysrw20k4L
+         rscH32NIdB9ABPWLhLpaoUqNToQlICW7Q6Y3qEUB/VfMMoGnPCRGkRhlPp+hPC0VKyLz
+         DlRg==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1783938556; x=1784543356; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=ooopbZ8BXUYSj2UczjbYKP/YkkGSe5M/iCnsrnvSEpM=;
+        b=aoCd7NOUtZ6caCK8IFEwGBeRTaTJemTNBo3Kntvg/TUsJbEXflWUUl+fgTfRKJwHOK
+         aYw8C6vUckwNqI9jNr1XqlW2LHcMfUQ/FmtT9sGRm7nDxgG1FdT8rVqNhjl35FqIjy4w
+         izRHSs5fvg6rqOv4zM+QzsHsT9cG00XZrnuXiH2IeFhwYyCNH4RX/Fmop637GQdEotIW
+         GAfLeh9Hl5x/L6KeE2GkK7R/xPEVCjhJAG2jicMZNuAdGXpYDLWihvSIee7N3ma0z7UC
+         U0C4s6R0qZb9iDjrEVz264f9A7Ahxd1kG9klrYnTP5AXu81MpGBZZfG/2qXjCQccE8ut
+         EtEg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1783938556; x=1784543356;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=ooopbZ8BXUYSj2UczjbYKP/YkkGSe5M/iCnsrnvSEpM=;
+        b=D4CqUoQrmZ3a7iHuNE3py4PUp5HEpoic6CnugHCVgNBDWuGBWlFAI5w6Jps9DmQ8EC
+         10M3Qf6HGadFlWEhSLiXNaMNJ0kbNmosaOo3vPOuGvPmAqTl1VfiEUy+wRZpVRFsj4OU
+         cxobVE8Jnxvsp5Dm0PkhGiVLkq0E0xbva1TIj8L5fuIrMMtp/VjNNzcCOT9Z4E6HpUcP
+         E2Z/gZ802JyI4znXO2xrzNkrrwJAwxM6DW+Aqmxq34JQ66WD00yt7vg9IKy1fuQYJLp6
+         5xb3qEu/B6DSktPo/h57azOH5CYrDo8R0Ffjt8LMbPgEDmig+wMd6iL01Ak0z9mlXOCo
+         H9Og==
+X-Forwarded-Encrypted: i=1; AHgh+RqZtoMk+h4v2D2mOHI0HiF/cLL81siUp5k7aQuNkTONTerh+aTyuUGal8/c0yXzd2LODnMc4fvhVhFDduE=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwclMiLXRSWii693tyetHCGAtnJ8S0oQ1r7jAI0++2yYbf9lM4Z
+	d3rLN8vIG8WxVOkLj2TgvZHChttRbNkYhmi6yMXyF+TO91xIY77N8cBm5acUQxkZSyZmtCBtUul
+	wMT80iYNhPLOmK6KHvhxEOSihNFGFov2NvoyqnGiPUhvznqxsDxsXY/ynzxZk3VXBRW0TTLK7lr
+	DwY9OaH0bbnlNXfepuQO9uHzXJDbPhXUExn4o2Yj+uFFg=
+X-Gm-Gg: AfdE7ckg563fU8DwqEEkf1A/uzH8mZnUPeDehuL65Q/FxhRrfbrfZH6H/A7FUUMUuvf
+	9ZkD1F5sf7QcVEpg+oQLik3wTuN2YIt/tYCPkKuw+MMl5gvPNZPKePjIKJoA5TmQefmjx/gQUlv
+	uLHjg7+KrPZ1nZzfA6Wgpe9onTmFlwYHXlqCMMvH2MZCM7wIsgZVSCLu22CvJs3OwAWJbJ
+X-Received: by 2002:a05:6214:238f:b0:8dc:2c21:32bd with SMTP id 6a1803df08f44-903ff76144dmr97564936d6.1.1783938555919;
+        Mon, 13 Jul 2026 03:29:15 -0700 (PDT)
+X-Received: by 2002:a05:6214:238f:b0:8dc:2c21:32bd with SMTP id
+ 6a1803df08f44-903ff76144dmr97564106d6.1.1783938555502; Mon, 13 Jul 2026
+ 03:29:15 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -49,180 +121,132 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: powernv_rng_read: Oops: Kernel access of bad area, sig: 11 [#1]
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>,
- Olivia Mackall <olivia@selenic.com>, Herbert Xu
- <herbert@gondor.apana.org.au>, Michael Ellerman <mpe@ellerman.id.au>,
- "Jason A. Donenfeld" <Jason@zx2c4.com>
-Cc: linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- LKML <linux-kernel@vger.kernel.org>
-References: <a159e81a-ccfd-440f-af68-6a56cca09cb2@molgen.mpg.de>
- <0c06bc14-9459-44d5-9e28-b0b78c0fbe36@linux.ibm.com>
- <6f58b950-a997-4dd6-a1a2-95eb72009151@molgen.mpg.de>
- <b507beef-3e1c-46d7-a434-d0235dace30b@molgen.mpg.de>
-Content-Language: en-US
-In-Reply-To: <b507beef-3e1c-46d7-a434-d0235dace30b@molgen.mpg.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+References: <20260706-pdev-fwnode-ref-v3-0-1ff028e33779@oss.qualcomm.com> <20260706-pdev-fwnode-ref-v3-11-1ff028e33779@oss.qualcomm.com>
+In-Reply-To: <20260706-pdev-fwnode-ref-v3-11-1ff028e33779@oss.qualcomm.com>
+From: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
+Date: Mon, 13 Jul 2026 12:29:04 +0200
+X-Gm-Features: AUfX_myf4-1EuuJEsM9iEruoBmhvEE1_shBmpnLHYi6rPSO8vgxEgiRb5eZm2os
+Message-ID: <CAPx+jO-P3Yt6T5Kb97MjmMB1mYeEgjStCkSACM_wsrqsBVFEvA@mail.gmail.com>
+Subject: Re: [PATCH v3 11/20] pmdomain: imx: use platform_device_set_of_node()
+To: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+Cc: Lee Jones <lee@kernel.org>,
+        Mark Brown <broonie@opensource.wolfsonmicro.com>,
+        Thierry Reding <thierry.reding@avionic-design.de>,
+        Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
+        Andrew Lunn <andrew+netdev@lunn.ch>,
+        "David S. Miller" <davem@davemloft.net>,
+        Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
+        Paolo Abeni <pabeni@redhat.com>,
+        Srinivas Kandagatla <srini@kernel.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Vinod Koul <vkoul@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>,
+        Danilo Krummrich <dakr@kernel.org>, Rob Herring <robh@kernel.org>,
+        Saravana Kannan <saravanak@kernel.org>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+        Andi Shyti <andi.shyti@kernel.org>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Joerg Roedel <joro@8bytes.org>, Will Deacon <will@kernel.org>,
+        Robin Murphy <robin.murphy@arm.com>, Doug Berger <opendmb@gmail.com>,
+        Florian Fainelli <florian.fainelli@broadcom.com>,
+        Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
+        Ulf Hansson <ulfh@kernel.org>, Frank Li <Frank.Li@nxp.com>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Fabio Estevam <festevam@gmail.com>,
+        Matthew Brost <matthew.brost@intel.com>,
+        =?UTF-8?Q?Thomas_Hellstr=C3=B6m?= <thomas.hellstrom@linux.intel.com>,
+        Rodrigo Vivi <rodrigo.vivi@intel.com>,
+        David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+        Peter Chen <peter.chen@kernel.org>,
+        Paul Cercueil <paul@crapouillou.net>, Bin Liu <b-liu@ti.com>,
+        Philipp Zabel <p.zabel@pengutronix.de>,
+        Maximilian Luz <luzmaximilian@gmail.com>,
+        Hans de Goede <hansg@kernel.org>,
+        =?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        Benjamin Herrenschmidt <benh@kernel.crashing.org>, brgl@kernel.org,
+        linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, linux-sound@vger.kernel.org,
+        driver-core@lists.linux.dev, devicetree@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org, linux-i2c@vger.kernel.org,
+        iommu@lists.linux.dev, linux-pm@vger.kernel.org, imx@lists.linux.dev,
+        linux-arm-kernel@lists.infradead.org, intel-xe@lists.freedesktop.org,
+        dri-devel@lists.freedesktop.org, linux-usb@vger.kernel.org,
+        linux-mips@vger.kernel.org, platform-driver-x86@vger.kernel.org,
+        mfd@lists.linux.dev
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzEzMDEwOCBTYWx0ZWRfX+VnlJcn/2iFB
+ SnAoSctKSxYstH3TROHUl+rts5uCFwEScPviBWqGBtNEoNPWgFvFVZAok3nhRTGaeeCQrefXJyV
+ L1jdLmP2AP+yhTOGlT8BqYWfjWiqiQc=
+X-Authority-Analysis: v=2.4 cv=cNbQdFeN c=1 sm=1 tr=0 ts=6a54bdfc cx=c_pps
+ a=UgVkIMxJMSkC9lv97toC5g==:117 a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10
+ a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
+ a=3WHJM1ZQz_JShphwDgj5:22 a=EUspDBNiAAAA:8 a=8AirrxEcAAAA:8 a=QyXUC8HyAAAA:8
+ a=VwQbUJbxAAAA:8 a=-ghbRyKqcrg4NgclPfMA:9 a=QEXdDO2ut3YA:10
+ a=1HOtulTD9v-eNWfpl4qZ:22 a=ST-jHhOKWsTCqRlWije3:22
+X-Proofpoint-GUID: Ly4fstZD2ND21w1E8w_V9K8Y3Cdc1qOP
+X-Proofpoint-ORIG-GUID: Ly4fstZD2ND21w1E8w_V9K8Y3Cdc1qOP
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzEzMDEwOCBTYWx0ZWRfXzIgkOr1yAHIn
+ iKyci5Tlsmf5HgwRF4rHkjOQgGEiuaciy0tIboJxJI13IIbx2jyRXtj4yWPsBETdI+xbT3Y5F/x
+ GfQvx4IuyLLmWJ9rlSsnr5pMj3Rwb4WsPMY3mC/IUtMskgPFpWQSAu1a3giCQ2CYR0EjcPWM1XX
+ mKwLHqpoXhWKlUXVcD7IfNKl26BfYi9h88niFO71zpmE39HMpWphaetOTzLdT10BKWcNkqtivOC
+ /a7EU5XqlksHsNcXehP3S3BW+0lfdzkPMPsjTGcLalH1X3Jr1ZVubshUmpLmqPCasnT4I08WRO4
+ 6jsj90/GzS2GsU0kJrutHha6vZSt0t8p1qXE1RSoy571kMjSDLksCJwnYCdXJ4l/2cOu6am4cCE
+ qezzjx2VvYZcWxEZbzoGf4c9ENFMlH9Hep/C+fccLfNoUqzJYqFAf9Mbte0Fa5bI3g1ii1n7riz
+ WoHRBx815spbuXRBclA==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-07-13_02,2026-07-10_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 bulkscore=0 spamscore=0 suspectscore=0 impostorscore=0
+ phishscore=0 clxscore=1015 adultscore=0 malwarescore=0 lowpriorityscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607130108
 
-Dear Madhavan, dear Jason,
+On Mon, Jul 6, 2026 at 2:45=E2=80=AFPM Bartosz Golaszewski
+<bartosz.golaszewski@oss.qualcomm.com> wrote:
+>
+> Ahead of reworking the reference counting logic for platform devices,
+> encapsulate the assignment of the OF node for dynamically allocated
+> platform devices with the provided helper.
+>
+> Reviewed-by: Frank Li <Frank.Li@nxp.com>
+> Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
 
+If not too late, feel free to add:
 
-Am 11.05.26 um 10:03 schrieb Paul Menzel:
+Acked-by: Ulf Hansson <ulfh@kernel.org>
 
-> Am 11.05.26 um 09:00 schrieb Paul Menzel:
-> 
->> Am 07.05.26 um 04:40 schrieb Madhavan Srinivasan:
->>>
->>> On 5/6/26 7:31 PM, Paul Menzel wrote:
->>
->>>> After a long while, on the 8335-GCA POWER8 (raw) 0x4d0200 
->>>> opal:skiboot-5.4.8-5787ad3 PowerNV, I built Linux from Linus’ master 
->>>> branch and rebooted via kexec.
->>>>
->>>> ```
->>>> [    0.000000] Linux version 7.1.0-rc2+ (pmenzel@flughafenberlinbrandenburgwillybrandt.molgen.mpg.de) (gcc (Ubuntu 11.2.0-7ubuntu2) 11.2.0, GNU ld (GNU Binutils for Ubuntu) 2.37) #3 SMP PREEMPT Wed May  6 08:50:58 CEST 2026
->>>> […]
->>>> [   17.901992] Kernel attempted to read user page (0) - exploit attempt? (uid: 0)
->>>> [   17.902011] BUG: Kernel NULL pointer dereference on read at 0x00000000
->>>> [   17.902018] Faulting instruction address: 0xc0000000000e7138
->>>> [   17.902027] Oops: Kernel access of bad area, sig: 11 [#1]
->>>> [   17.902034] LE PAGE_SIZE=64K MMU=Hash  SMP NR_CPUS=2048 NUMA PowerNV
->>>> [   17.902045] Modules linked in: powernv_rng(+) bnx2x ofpart ibmpowernv bfq mdio cmdlinepart powernv_flash ipmi_powernv ipmi_devintf mtd ipmi_msghandler at24(+) vmx_crypto opal_prd sch_fq_codel nfsd parport_pc ppdev auth_rpcgss nfs_acl lp lockd grace parport sunrpc autofs4 btrfs xor libblake2b raid6_pq ast drm_shmem_helper drm_client_lib i2c_algo_bit drm_kms_helper drm ahci drm_panel_orientation_quirks libahci
->>>> [   17.902185] CPU: 147 UID: 0 PID: 2626 Comm: hwrng Not tainted 7.1.0-rc2+ #3 PREEMPTLAZY
->>>> [   17.902197] Hardware name: 8335-GCA POWER8 (raw) 0x4d0200 opal:skiboot-5.4.8-5787ad3 PowerNV
->>>> [   17.902204] NIP:  c0000000000e7138 LR: c00800001ec8013c CTR: c0000000000e70fc
->>>> [   17.902212] REGS: c000000092913c50 TRAP: 0300   Not tainted (7.1.0-rc2+)
->>>> [   17.902222] MSR:  900000000280b033 <SF,HV,VEC,VSX,EE,FP,ME,IR,DR,RI,LE>  CR: 44420220  XER: 20000000
->>>> [   17.902269] CFAR: c00800001ec8026c DAR: 0000000000000000 DSISR: 40000000 IRQMASK: 0
->>>>                GPR00: c00800001ec8013c c000000092913ef0 c000000001c18100 c00000002222d900
->>>>                GPR04: c00000002222d900 0000000000000080 0000000000000001 0000000000000000
->>>>                GPR08: 0000000000000000 c000000002212000 c0000000951e1780 c00800001ec80258
->>>>                GPR12: c0000000000e70fc c00000ffff6fd700 c0000000001d11c0 c00000001b99b9c0
->>>>                GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
->>>>                GPR20: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
->>>>                GPR24: 0000000000000000 c000000002fe6a58 0000000000000000 0000000000000000
->>>>                GPR28: c000000002fe6a20 0000000000000010 000000000000000f c00000002222d900
->>>> [   17.902406] NIP [c0000000000e7138] pnv_get_random_long+0x3c/0x114
->>>> [   17.902426] LR [c00800001ec8013c] powernv_rng_read+0x78/0xc4 [powernv_rng]
->>>> [   17.902444] Call Trace:
->>>> [   17.902448] [c000000092913ef0] [c000000092913f30] 0xc000000092913f30 (unreliable)
->>>> [   17.902463] [c000000092913f30] [c000000000decd58] hwrng_fillfn+0xd4/0x3dc
->>>> [   17.902484] [c000000092913f90] [c0000000001d1328] kthread+0x170/0x1a4
->>>> [   17.902498] [c000000092913fe0] [c00000000000d030] start_kernel_thread+0x14/0x18
->>>> [   17.902513] Code: 60000000 7d2000a6 71290010 418200bc e94d0908 812a0000 39290001 912a0000 e90d0030 3d220060 39299f00 7d08482a <e9280000> 7c0004ac e8e90000 0c070000
->>>> [   17.902569] ---[ end trace 0000000000000000 ]---
->>>> [   18.008801] pstore: backend (nvram) writing error (-1)
->>>>
->>>> [   18.015458] note: hwrng[2626] exited with irqs disabled
->>>> [   18.015483] note: hwrng[2626] exited with preempt_count 1
->>>> ```
->>>>
->>>> Please find the output of `dmesg` attached.
->>>
->>> This is from my yesterday's boot test log in my P8, did not see this 
->>> fail.
->>>
->>> root@ltcppm1:~# uname -a
->>> Linux ltcppm1.ltc.tadn.ibm.com 7.1.0-rc2-00021-gf583bd5f64d4 #1 SMP 
->>> PREEMPT Wed May  6 00:55:45 EDT 2026 ppc64le GNU/Linux
->>> root@ltcppm1:~# dmesg
->>> [    0.000000] [      T0] random: crng init done
->>> [    0.000000] [      T0] hash-mmu: Page sizes from device-tree:
->>> [    0.000000] [      T0] hash-mmu: base_shift=12: shift=12, sllp=0x0000, avpnm=0x00000000, tlbiel=1, penc=0
->>> [    0.000000] [      T0] hash-mmu: base_shift=12: shift=16, sllp=0x0000, avpnm=0x00000000, tlbiel=1, penc=7
->>> [    0.000000] [      T0] hash-mmu: base_shift=12: shift=24, sllp=0x0000, avpnm=0x00000000, tlbiel=1, penc=56
->>> [    0.000000] [      T0] hash-mmu: base_shift=16: shift=16, sllp=0x0110, avpnm=0x00000000, tlbiel=1, penc=1
->>> [    0.000000] [      T0] hash-mmu: base_shift=16: shift=24, sllp=0x0110, avpnm=0x00000000, tlbiel=1, penc=8
->>> [    0.000000] [      T0] hash-mmu: base_shift=24: shift=24, sllp=0x0100, avpnm=0x00000001, tlbiel=0, penc=0
->>> [    0.000000] [      T0] hash-mmu: base_shift=34: shift=34, sllp=0x0120, avpnm=0x000007ff, tlbiel=0, penc=3
->>> [    0.000000] [      T0] Enabling pkeys with max key count 32
->>> [    0.000000] [      T0] Activating Kernel Userspace Access Prevention
->>> [    0.000000] [      T0] Activating Kernel Userspace Execution Prevention
->>> [    0.000000] [      T0] hash-mmu: Page orders: linear mapping = 24, virtual = 16, io = 16, vmemmap = 24
->>> [    0.000000] [      T0] hash-mmu: Using 1TB segments
->>> [    0.000000] [      T0] hash-mmu: Initializing hash mmu with SLB
->>> [    0.000000] [      T0] Linux version 7.1.0-rc2-00021-gf583bd5f64d4 (root@ltcppm1.ltc.tadn.ibm.com) (gcc (GCC) 16.1.1 20260501 (Red Hat 16.1.1-1), GNU ld version 2.46-1.fc44) #1 SMP PREEMPT Wed May  6 00:55:45 EDT 2026
->>> [    0.000000] [      T0] OF: reserved mem: 0x0000000039c00000..0x000000003b6801ff (27136 KiB) map non-reusable ibm,firmware-allocs-memory@39c00000
->>> [    0.000000] [      T0] OF: reserved mem: 0x0000000800000000..0x0000000800e801ff (14848 KiB) map non-reusable ibm,firmware-allocs-memory@800000000
->>> [    0.000000] [      T0] OF: reserved mem: 0x0000001000000000..0x0000001000dc01ff (14080 KiB) map non-reusable ibm,firmware-allocs-memory@1000000000
->>> [    0.000000] [      T0] OF: reserved mem: 0x0000001800000000..0x0000001800e801ff (14848 KiB) map non-reusable ibm,firmware-allocs-memory@1800000000
->>> [    0.000000] [      T0] OF: reserved mem: 0x0000000030000000..0x00000000302fffff (3072 KiB) map non-reusable ibm,firmware-code@30000000
->>> [    0.000000] [      T0] OF: reserved mem: 0x0000000031000000..0x0000000031bfffff (12288 KiB) map non-reusable ibm,firmware-data@31000000
->>> [    0.000000] [      T0] OF: reserved mem: 0x0000000030300000..0x0000000030ffffff (13312 KiB) map non-reusable ibm,firmware-heap@30300000
->>> [    0.000000] [      T0] OF: reserved mem: 0x0000000031c00000..0x0000000033fdffff (36736 KiB) map non-reusable ibm,firmware-stacks@31c00000
->>> [    0.000000] [      T0] OF: reserved mem: 0x0000001ffd510000..0x0000001ffd69ffff (1600 KiB) map non-reusable ibm,hbrt-code-image@1ffd510000
->>> [    0.000000] [      T0] OF: reserved mem: 0x0000001ffd6a0000..0x0000001ffd6fffff (384 KiB) map non-reusable ibm,hbrt-target-image@1ffd6a0000
->>> [    0.000000] [      T0] OF: reserved mem: 0x0000001ffd700000..0x0000001ffd7fffff (1024 KiB) map non-reusable ibm,hbrt-vpd-image@1ffd700000
->>> [    0.000000] [      T0] OF: reserved mem: 0x0000001ffda00000..0x0000001ffdafffff (1024 KiB) map non-reusable ibm,slw-image@1ffda00000
->>> [    0.000000] [      T0] OF: reserved mem: 0x0000001ffde00000..0x0000001ffdefffff (1024 KiB) map non-reusable ibm,slw-image@1ffde00000
->>> [    0.000000] [      T0] OF: reserved mem: 0x0000001ffe200000..0x0000001ffe2fffff (1024 KiB) map non-reusable ibm,slw-image@1ffe200000
->>> [    0.000000] [      T0] OF: reserved mem: 0x0000001ffe600000..0x0000001ffe6fffff (1024 KiB) map non-reusable ibm,slw-image@1ffe600000
->>> [    0.000000] [      T0] Found initrd at 0xc000000006a40000:0xc00000000815ae9e
->>> [    0.000000] [      T0] Hardware name: 8247-22L POWER8E (raw) 0x4b0201 opal:skiboot-v5.4.12 PowerNV
->>> [    0.000000] [      T0] printk: legacy bootconsole [udbg0] enabled
->>> [    0.000000] [      T0] CPU maps initialized for 8 threads per core
->>> [    0.000000] [      T0]  (thread shift is 3)
->>>>> But I my opal version 5.4.12.
->>>
->>> Thanks for reporting the issue, will have an look at it.
->>
->> I bisected it to a change between 5.19-rc3 and 5.19-rc4, and merge 
->> commit 8100775d59a6 (Merge tag 'powerpc-5.19-3' of git:// 
->> git.kernel.org/ pub/scm/linux/kernel/git/powerpc/linux) [1] indeed has 
->> rng related changes
->>
->>>  - Three fixes to wire up our various RNGs earlier in boot so they're
->>>    available for use in the initial seeding in random_init().
-> 
-> I confirmed, that commit f3eac426657d (powerpc/powernv: wire up rng 
-> during setup_arch) [2] introduced the Oops.
-> 
->>> [    0.000000] [      T0] Allocated 4608 bytes for 160 pacas
->>> [    0.000000] [      T0] 
->>> -----------------------------------------------------
->>>
->>> .......
->>>
->>> [   37.407674] [    T900] audit: type=1130 audit(1778043621.931:10): pid=1 uid=0 auid=4294967295 ses=4294967295 msg='unit=lvm2-monitor comm="systemd" exe="/usr/lib/systemd/systemd" hostname=? addr=? terminal=? res=success'
->>> [   37.413015] [    T900] audit: type=1130 audit(1778043621.937:11): pid=1 uid=0 auid=4294967295 ses=4294967295 msg='unit=systemd-sysctl comm="systemd" exe="/usr/lib/systemd/systemd" hostname=? addr=? terminal=? res=success'
->>> [   38.448156] [   T2286] powernv_rng: Registered powernv hwrng.
->>> [   38.575227] [   T2264] tg3 0005:09:00.1 enP5p9s0f1: renamed from eth1
->>> [   38.582176] [   T2223] tg3 0005:09:00.2 enP5p9s0f2: renamed from eth2
->>> ........
->>>
->>> ////cpuinfo output
->>>
->>> processor    : 159
->>>
->>> cpu        : POWER8E (raw), altivec supported
->>> clock        : 2061.000000MHz
->>> revision    : 2.1 (pvr 004b 0201)
->>>
->>> timebase    : 512000000
->>> platform    : PowerNV
->>> model        : 8247-22L
->>> machine        : PowerNV 8247-22L
->>> firmware    : OPAL
->>> MMU        : Hash
->>>
->>>
->>> But my system opal version 5.4.12.
->>> Thanks for reporting the issue, will have an look at it.
+Kind regards
+Uffe
 
-Were you able to take a look? I sent in a patch [3], that hasn’t gotten 
-any response.
-
-
-Kind regards,
-
-Paul
-
-
->> [1]: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=8100775d59a6789c3c6c309de26fac52f129cba8
-> [2]: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=f3eac426657d985b97c92fa5f7ae1d43f04721f3
-[3]: 
-https://lore.kernel.org/all/20260511120413.254934-2-pmenzel@molgen.mpg.de/
+> ---
+>  drivers/pmdomain/imx/gpc.c | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
+>
+> diff --git a/drivers/pmdomain/imx/gpc.c b/drivers/pmdomain/imx/gpc.c
+> index 42e50c9b4fb9ffb96a20a462d4eb5168942a893c..abca5f449a226fbae4213926e=
+1395c413160c950 100644
+> --- a/drivers/pmdomain/imx/gpc.c
+> +++ b/drivers/pmdomain/imx/gpc.c
+> @@ -487,8 +487,7 @@ static int imx_gpc_probe(struct platform_device *pdev=
+)
+>                         domain->ipg_rate_mhz =3D ipg_rate_mhz;
+>
+>                         pd_pdev->dev.parent =3D &pdev->dev;
+> -                       pd_pdev->dev.of_node =3D of_node_get(np);
+> -                       pd_pdev->dev.fwnode =3D of_fwnode_handle(np);
+> +                       platform_device_set_of_node(pd_pdev, np);
+>
+>                         ret =3D platform_device_add(pd_pdev);
+>                         if (ret) {
+>
+> --
+> 2.47.3
+>
 
