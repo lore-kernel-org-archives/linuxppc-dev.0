@@ -1,99 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-24149-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24150-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1B5A1C43458
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2026 21:37:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F32B3C43458
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2026 22:20:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gzbPT211pz2y8p;
-	Tue, 14 Jul 2026 07:37:17 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::433"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783978637;
-	cv=none; b=RCD/ji2aA7r+rKKMZd5WopIygaMXY9LDawUuBEqD/XoHH2MWNIZbrIe9qcBu1ozeODol6aX3/aeSCiXLmVJy9xkzFfcGgxgluBUMWf/XtdzdGOdXwZdvVArR5qODnJIHljzglirNJadKwV/fIlH19QHs3TpWMCKw6mHTJUuOVyswjE8ac4W+V4xzMJmKjKc4lRjxxYhwHax1MMVh4AnztidNlfthZJVjCOdITj4tK/KsWmbCHQL2MUa1nZYUfHo0NEmQ02FnttzBjj3Nrad0zk5g7sIxNj6V/pzmCZtKWR/bTkYi252A8Fw8Vj+lcf/5RTQINXGBEuKXJ1id1KJ1jA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gzcMs6Rnsz2xWY;
+	Tue, 14 Jul 2026 08:20:57 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783981257;
+	cv=none; b=JB/RsDa7t9cO+pRalzdpgAbaRsgHfDw+DgRP9IkBW4UZUuXvqyyg6fC4rb5xUY4/k31lUfhVLWDCGAi+gQhX8rAqAzeShntnR786HUezlnrmjmbKKlVIbDdeO/jj8TbXz4xXhS3DzgB0LlFHKkeWGTmCXiQp6BL6alRzIPgtjz54tvcFFHxOXyhImb0AK6NsAY5ZfFi6h510tzrEA0GTb5D8BXadFd/tcZS1M+x6jtCJzkX3OilGVrzf6OFRpls/ZQsOF2J6d9ErLVjKgYI5QzHR3GeJUdxSjMeFTyVEyVGQZdOrnwwOOStp+cVAzZyfKViXIslP1jAqqv6YD4E1ug==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783978637; c=relaxed/relaxed;
-	bh=KFg02OlTkf2Yn/CkP+xFl6ERBV7PQVQSfXTqSOnpsLE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ofOdI8FuuWtZux34tL8bHgfP684rJ6dYE02/QEJaXevA8kMw4e8DHtbst3MaHfaudQDzcn/bZueXuJr3MrCYLTY8v6CjdWbX3TbzzaKq/ycd/Zb2Dvopy8f21Q65asgVBs7VDhjGOdiG70nNrVveywRLEM3qyGHipg3Ig8fcSQhEj6j99Ha7f9PCcTm9G3ZiNAsTT6+Ou636aIas0yfOrYove/yDzb/MKs94c7dQpIzSaSJZOBmFAS7RZfVP3NjltIg96qefzDYbJFCqzFSgj1Lj+aBPeKFVLw6eLbwFq0mw8sGenksBeqf5NP8coV8oCWlpFmGZhWQ7xvBGUwukaw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=gUItXDqI; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::433; helo=mail-wr1-x433.google.com; envelope-from=olteanv@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1783981257; c=relaxed/relaxed;
+	bh=w3UBKxF49r1FocG/e6uCyLxV81MIS/cKXMKj7GFa2dY=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=WdDBYta8sh+Z6VC87Qy/Bfj9jmDikIJJTDI6rSY3TY0DrBPbY4dlxIluhAR5aqlWFWcEt8VlhnzNAtj3VdyGClktrN2VVhe5hCHwNHnZKnKNyrFHFOnO0y55rZPLipjl77BYlAgEkg/RBpeIXXU+1Jn04uEqvq+e9mkTwl+gBdm8Uf4DEV9H/v28GQu0AY6nStmHIskcMd97bX6Z1LkAJx58wJej+F3287oKG81IediTgf7Tf9KU+1WYMimca/kLtotq9SMGRFJgFfEL5jnbHFV5obctbfoHF1+fGpSjnOV5YKCg2AcB6gXL5FzniZqVjx2u++WRdziObTlA+NtcjQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MpMCkP0Q; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=gUItXDqI;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MpMCkP0Q;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::433; helo=mail-wr1-x433.google.com; envelope-from=olteanv@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-wr1-x433.google.com (mail-wr1-x433.google.com [IPv6:2a00:1450:4864:20::433])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gzbPR59Yjz2y1F
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2026 07:37:14 +1000 (AEST)
-Received: by mail-wr1-x433.google.com with SMTP id ffacd0b85a97d-47debaa89cfso261767f8f.3
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2026 14:37:14 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1783978627; x=1784583427; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=KFg02OlTkf2Yn/CkP+xFl6ERBV7PQVQSfXTqSOnpsLE=;
-        b=gUItXDqITHzPv3wxsOtpsOYCTMmn/75OhlbJlYUI4zW/6gMrG8F7WJic9NhQra9az5
-         OpZ38fdloMMxWvSjNSuBR0QERERhWzmxn3CBKU+SyJM4+V4cQOb3KbRGUeGfca0zgwWp
-         WJ1g9i7QusLbVxg8hpfBsu8Htc/cvoD5sHk1dFshzkJs+dZ/SbCIf6ZvLiX+3weoAv0Z
-         Tkg8pM9cFzd98CNol5a9QCpxkyiG1CCEvW2JgA0bV0Q8QCGTy+c/5iNGSxobpufwvfBc
-         WpUbs1YsHTkiyxgiVkSmv8zSqZeox22Kc3TuEB8f+GKJQ6kJ8/0VLE7SJpFtvtWankSn
-         e7/Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783978627; x=1784583427;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=KFg02OlTkf2Yn/CkP+xFl6ERBV7PQVQSfXTqSOnpsLE=;
-        b=qpquVB0LZmpJsX9szM905OvbS4rkiwimMIl8jO8nI72M1gOL/5obiz7tfsgMjS1nEm
-         zNVxy02Dxh0pKftA8iZilVt958gDBn8KJVEKSpmMDvsWdU7+JL1tHo6AmIPAP/8UFnc4
-         G0AfHVswrJ7LgP6L+ZVYNF9iLMz5aBauciPSt+ROsPj1oHyO3KN2BtjrX1PWGYgxslqL
-         vDoP4I7bgJ/oNMf1Lbv0F9mChv8ydjMu5vXG9OjHz0NtOziM0os7pQBRyRlHOWZHPMar
-         uhm/AQnVBUQclbM47V8Vp7Uk9UD7wszz2B7dSElHOp01ppBHBRownkA42Flf5rHP3Z9L
-         gszg==
-X-Forwarded-Encrypted: i=1; AHgh+RrA0+a79K8dz9uZ6k5nJoSxX6eGkrth7g23rhtl4d58Ai5Iovori6fxX5pOWNukLxPNFR/dAye2ignz3Wk=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyLRzuzWI/o1CWEejUecf0rDt0DzL35rNA3MXGLN6yT4tLJLsXG
-	zghpyuyr2ICd65tvYCshUl5iRmBhaDOzOzaa1F+49qvVZ1K7AvYQHVKT
-X-Gm-Gg: AfdE7cnb4vv+EA7ofejpLHEfg4BZSiTgDU4l+vexuSDyHwV3w3Amscuj8WM3k/oFSlT
-	2/4W6MbHmczD/fIkQ3CIIp1+zPOoZGnv80eLTsRpPqDUMBZe2cWJU/ABB1m6t+6GjxhNGzeB6Bs
-	XP76mA76TGZawdA4gsZ9vADHyw2QfeZNSFpp3uN4On8+hIMWDpYww5Q4BGBnZCR5CcmNcdTuoGJ
-	c67ahaBkzqgtP4Vu7tq4g9dVyhgVPdVwU5jCQ6cEfmOKN7cIE7B2c2DpvB13iKPKn/laM1MUAlV
-	Mcd308sPFuaU+IfT+n5IzS/PVb9/V/XiJzIO2NncPUz5SDovU6+nhQcVqKgwKj3AWPnm9CQtHPE
-	fW1wA3kFGLc2e8qqMtnLqPw774UoAnm4nx3TK9ejLKw6vpZXiBnBGcYPbJ3xSo3Ydy6adCwlW8a
-	4yb++Z
-X-Received: by 2002:a05:6000:1843:b0:47d:ed40:a913 with SMTP id ffacd0b85a97d-47f2dd21ae8mr7457545f8f.7.1783978626485;
-        Mon, 13 Jul 2026 14:37:06 -0700 (PDT)
-Received: from skbuf ([2a02:2f04:d40e:d500:d8f0:7a38:1703:914b])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-47f464c25b2sm2173077f8f.30.2026.07.13.14.37.04
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 13 Jul 2026 14:37:05 -0700 (PDT)
-Date: Tue, 14 Jul 2026 00:37:02 +0300
-From: Vladimir Oltean <olteanv@gmail.com>
-To: "Doruk (0sec)" <doruk@0sec.ai>
-Cc: Andrew Lunn <andrew+netdev@lunn.ch>,
-	Florian Fainelli <f.fainelli@gmail.com>,
-	Woojung Huh <woojung.huh@microchip.com>,
-	Nick Child <nnac123@linux.ibm.com>,
-	"David S. Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@google.com>,
-	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
-	netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, Sabrina Dubroca <sd@queasysnail.net>,
-	Arun Ramadoss <arun.ramadoss@microchip.com>,
-	UNGLinuxDriver@microchip.com, Michael Ellerman <mpe@ellerman.id.au>,
-	stable@vger.kernel.org
-Subject: Re: [PATCH net 1/3] net: dsa: tag_ocelot_8021q: don't read an unset
- MAC header on transmit
-Message-ID: <20260713213702.3kjamxnto2bciqak@skbuf>
-References: <20260713194010.54642-1-doruk@0sec.ai>
- <20260713194010.54642-2-doruk@0sec.ai>
- <20260713200417.dghlrj4ca27b6nd4@skbuf>
- <CAPdMp1qf4q42MAaRqqzYnhYyU9KvdryGQR+TWsFNvJ1oCTnPKw@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gzcMr45y5z2xPb
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2026 08:20:56 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 8B6D060103;
+	Mon, 13 Jul 2026 22:20:53 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9AFF31F000E9;
+	Mon, 13 Jul 2026 22:20:52 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1783981253;
+	bh=w3UBKxF49r1FocG/e6uCyLxV81MIS/cKXMKj7GFa2dY=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date;
+	b=MpMCkP0Q6zqib0sjSPapvsNNpIi4SuIbRx2KpQXXh5WymOk/U9BYtzwUFKFSDJeFr
+	 cs5Si8k2Jro4QstLfelU9720P5WxeuRbAnaxnadJdzaNvoaow0D7p7lmUZbQ5oMrrN
+	 3o5UyHWDonKsgHBAuyv9ZXOcFD4wg3E4vkt4dz4QCFld69S4V95QQDPnbS7bjngziq
+	 2jPG3bUh3nPhORy/xTSX0II1pDeNiDEJxCtsVmFL58A3GaH2iLUQD/2RQGNNGo+4RY
+	 8iH8Ua+ASe9SPzJRnmuCPKTYmEYeFYtAmbx6vPkwBxZlSMFDBbTa0wDk4N8IQubbaz
+	 LFd4xigUG0cCA==
+From: Thomas Gleixner <tglx@kernel.org>
+To: Michal =?utf-8?Q?Such=C3=A1nek?= <msuchanek@suse.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Michael Ellerman
+ <mpe@ellerman.id.au>, Shrikanth Hegde <sshegde@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, Huacai Chen <chenhuacai@kernel.org>,
+ loongarch@lists.linux.dev, Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt
+ <palmer@dabbelt.com>, linux-riscv@lists.infradead.org, Sven Schnelle
+ <svens@linux.ibm.com>, linux-s390@vger.kernel.org, x86@kernel.org, Mark
+ Rutland <mark.rutland@arm.com>, Jinjie Ruan <ruanjinjie@huawei.com>,
+ Magnus Lindholm <linmag7@gmail.com>, "Mukesh Kumar Chaurasiya (IBM)"
+ <mkchauras@gmail.com>, Jonathan Corbet <corbet@lwn.net>, Radu Rendec
+ <radu@rendec.net>
+Subject: Re: [patch 4/4] entry, treewide: Make
+ syscall_enter_from_user_mode[_work]() indicate syscall execution
+In-Reply-To: <alSlg72c8xmjaj48@kunlun.suse.cz>
+References: <20260712134433.549076055@kernel.org>
+ <20260712141346.772209074@kernel.org> <alSlg72c8xmjaj48@kunlun.suse.cz>
+Date: Tue, 14 Jul 2026 00:20:49 +0200
+Message-ID: <871pd6r0ou.ffs@fw13>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -107,56 +76,84 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAPdMp1qf4q42MAaRqqzYnhYyU9KvdryGQR+TWsFNvJ1oCTnPKw@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-On Mon, Jul 13, 2026 at 04:12:20PM -0500, Doruk (0sec) wrote:
-> Hi Vladimir,
-> 
-> Thanks for the review.
-> 
-> I checked the DSA cases with CONFIG_NET_DSA_LOOP=y. Since dsa_loop
-> normally uses DSA_TAG_PROTO_NONE, I used a local repro-only override
-> of dsa_loop_get_protocol() to select the relevant tagger, then sent an
-> AF_PACKET/SOCK_RAW frame with PACKET_QDISC_BYPASS and
-> sll_protocol=ETH_P_IP through lan1.
-> 
-> That leaves skb->mac_header unset (65535) on the direct-xmit path.
-> 
-> For tag_ocelot_8021q, the eth_hdr(skb) version reproduces as:
-> 
->   BUG: KASAN: slab-out-of-bounds in ocelot_xmit()
-> 
-> Switching that site to skb_eth_hdr(skb) makes the same reproducer run clean.
-> 
-> I also checked the LAN937X path the same way by forcing
-> DSA_TAG_PROTO_LAN937X. The eth_hdr(skb) version reproduces as:
-> 
->   BUG: KASAN: slab-out-of-bounds in lan937x_xmit()
-> 
-> and the skb_eth_hdr(skb) version runs clean with the same packet sender.
-> 
-> So yes, for these DSA TX paths this is a real bug on the
-> PACKET_QDISC_BYPASS path, not just a future-proofing cleanup. I have
-> not yet checked ibmveth with a pseries/ibmveth setup.
+On Mon, Jul 13 2026 at 10:44, Michal Such=C3=A1nek wrote:
+> On Sun, Jul 12, 2026 at 11:25:32PM +0200, Thomas Gleixner wrote:
+>> The return values of syscall_enter_from_user_mode[_work]() are
+>> non-intuitive. Both functions return the syscall number which should be
+>> invoked by the architecture specific syscall entry code. The returned
+>> number can be:
+>>=20
+>>   - the unmodified syscall number which was handed in by the caller
+>>=20
+>>   - a modified syscall number (ptrace, seccomp, trace/probe/bpf)
+>>=20
+>> That has an additional twist. If the return value is -1L then the caller=
+ is
+>> not allowed to modify the return value as that indicates that the modify=
+ing
+>> entity requests to abort the syscall and set the return value already. T=
+hat
+>> can obviously not be differentiated from a syscall which handed in -1 as
+>> syscall number.
+>>=20
+>> The most trivial way to deal with that is:
+>>=20
+>>     set_return_value(regs, -ENOSYS);
+>>     nr =3D syscall_enter_from_user_mode(regs, nr);
+>>     if (valid(nr))
+>>     	handle_syscall(regs, nr);
+>>=20
+>> That's what LOONGARCH, RISCV, and X86 do. But PowerPC and S390 do not
+>> preset the return value, so when user space hands in -1 and there is
+>> nothing setting the return value in the entry work code, then the syscall
+>> is skipped but the return value is whatever random data has been in the
+>> return value register.
+>
+> The reason why PowerPC and S390 do not preset the return value is that
+> the return value uses the same register as the syscall number. There are
+> apparently other architectures on which the return value overlaps with
+> the arguments which also do not preset the return value for that reason.
+> If they would use the generic entry the same problem would arise.
 
-Thanks for clarifying your testing procedure (and please do not top-post
-replies).
+That's an implementation choice of PPC/S390 as I explained before, which
+could trivially be solved by having an explicit pt_regs->return_val
+member,
 
-Yes, manually editing dsa_loop_get_protocol() is the current state of
-the art technology.
+>> Change the return values of syscall_enter_from_user_mode[_work]() to
+>> boolean and return false, when either ptrace or seccomp request to skip =
+the
+>
+> There is a difference between seccomp and ptrace.
+>
+> When seccomp indicates to skip the syscall it has also set the syscall
+> return value.
+>
+> However, when the syscall number is -1 and the return value is not
+> preset that does not indicate anything.
 
-> For the older DSA commits you listed, I think they should be treated
-> as stable candidates if they remove eth_hdr()/skb_mac_header() use
-> from the same TX path. I can go through those individually and send a
-> follow-up with the exact stable list if that would be useful.
+I agree it's an invalid syscall, but the current generic entry code made
+the rightful assumption that returning -1L as the syscall number either
+results in -ENOSYS or in the value which was set by one of the entry
+mechanisms as that code originated from the x86 implementation.
 
-Since skb_mac_header() in TX paths is the real problem, I now think
-those commits should need backporting too. I only reworked the
-first-order callers of skb_mac_header(), not realizing that eth_hdr()
-needs rework too - and not having a clear testing procedure at the time.
+It's not the fault of that code that PPC and S390 converted their stuff
+over without paying attention to that detail.
 
-I think it would be great if you could prepare an email to the stable
-mailing list and to the maintainers.
+> The return value can still hold garbage. ptrace does not have the
+> ability to indicate that a syscall is to be skipped, at least on the
+> entry trace. It needs to be skipped based on the syscall number being
+> invalid.
+
+That's what I explained you before and you told me I'm all wrong.
+
+But that's moot as this latest version does not care anymore. The
+architectures whixh preset the return value are correct under all
+circumstances and PPC/S390 can keep their own world view.
+
+Thanks,
+
+        tglx
 
