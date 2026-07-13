@@ -1,86 +1,99 @@
-Return-Path: <linuxppc-dev+bounces-24102-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24103-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0C353C44506
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2026 08:29:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9938FC43458
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2026 08:44:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gzFwF22NWz2xjN;
-	Mon, 13 Jul 2026 18:29:17 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783931357;
-	cv=none; b=DUCj00Me/7IfNVWVyNy5mBNJi2DBjb/MozjgAolT1gvdME4Rr7lbbfgZBQKWqkOuGMIf9AhMe7wrldO7/CeeZPbmBiK+7egxsf2svk15YXK6OLdgomj4ebBffVwWYKrvoH5ns+5bbYtGJS7leEDXZdWdnhovb9xgoSOJ4VzoOg1dzIeEptYJHoNOFLn/0WRRNS9wtqengIXCItDHxjBD0huiZmXmSgG/BkEwBxxNhue6bfskqaXjsaakyvli+w4dQoR+fJr5c6zQIkq/VymiSMWgIeQxjIYG0Rg3UqhW184Y31eindL/ORPfEaPvS4vGNziAzkme5uAWGyO7Dc5mHA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gzGGK6X1bz2xqM;
+	Mon, 13 Jul 2026 18:44:57 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.131
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783932297;
+	cv=none; b=hg6rgEUvGPkE1AtFMiCqjPLd8AY6pqzlLYmadp6lOGqql1beZWXjUCaSMWUBTXoOZIOtGntncGGE3JeAa3+uTqICSa2Ay5PS9YB0YUWjnB+ESUWJdBRTs71iXVDtzpl4464UoGxxDvnAU4ruY7xuzfHIJ9H0Beame0pr1LqSsp6ahs0prWX/iOJ0xpIfNJdCJDcvp8KRDhR76OUCed4C54F2fKW/y44Jqgymw5+DxV4ONmMKgevJrQSgttpOxuTobeiDNRGxw6JCX92nIBKwq8HhCzdioHT9cMzsMdeETZWtY1J1+jxEmqPbhBL6SkwlsLH3UppMgDM/Hx6Nnu6P8A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783931357; c=relaxed/relaxed;
-	bh=vIoEgw5pbLdorvQvxuaFURYG+aA/Uw4f0z74GU1Or3Q=;
+	t=1783932297; c=relaxed/relaxed;
+	bh=wOqYLE7XCd1dyoTtB3Uni1tJhG2ZPfNesMlKhEUlxw0=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=lH/eWdV7Fv42lvApM6IUN6uSpeXycHMmLZRLg7ATCvF07wwSBcW1hYOdumy3aGDChNo2QvxgLq2fRn+Xumbt3/vq9vlMXF42NIeJCtJA+m10drnZnTXfIk7eDUQaEuVrUFCs3EIE2E+xa0KYDQBInZW+jbl/CoPfbRrauvKkjIEKTSxAzSt3l0D3/nurh62i9mvNd2G2uBtALOHUgoDa5t0LkR+Qyp8X/f/PG31wiCKtM6ObJBYWsnLN7gM+mF5RtTZSjlXmiueCeq5xq+weTn36aMvB3ftMnFaIJ2Srr3FnhXAMYP74ehyjKxXpJGcu7owR8pf7qce0PnPnIazcjQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=FcuqLeiq; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=M1UVqj2XQu8TGhl0oDo9OJnMFn4Sa/pYiFO+zUbbTUdM/+wmbUNU9ySjunwX+H7bHLXtp7a/l1MU3p5NewHfd8kB+ba2exButI2pkArywxiL4iGQEm5ZbAkE30laPpXtROazbjDcdZRZbk0wtm24UGQrviSE9oCCvrdALeLcyckMEgxwiPlG896mBCg+jQSIevjYfUUNNTxxT4raJ9qFSJdYhPoDpuZiS7wiA3z7gXi8Kz/soMihkAwebrUm5n7350yHJ6YxTf9LNbJMjcTS/xQRRlqpCk7/i+QC/XpkOJ+ABAu+44c/UotT2deQYQVv0mSI+t7B5CvVHzh54WVLsQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=r+RdOu7X; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=gQkdb4P9; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=r+RdOu7X; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=gQkdb4P9; dkim-atps=neutral; spf=pass (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=FcuqLeiq;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=r+RdOu7X;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=gQkdb4P9;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=r+RdOu7X;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=gQkdb4P9;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gzFwD0rVQz2xRw
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2026 18:29:15 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66D6g47d1672473;
-	Mon, 13 Jul 2026 08:28:54 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=vIoEgw5pbLdorvQvxuaFURYG+aA/Uw
-	4f0z74GU1Or3Q=; b=FcuqLeiqw08Ly1aCdRYrPhro7U7NcLU8d8E3LjkZKVeW5+
-	HcADM1nKsYAtgSP5fmCebxWY4aMTEhWgRQ1TNyvf+YMgyu867oKmyMqM8hZjGaW2
-	mKVTppGILGadHKTQAJ4N+JVgoYNFzv2GdmDlqoIZfDJeAxHm83AN6pWiILVyA6P1
-	6AlynMAfr8NVvogsLyEuc0k6jsoJkKVc6JTSNrVqD4mxgl9OryfFo4BfdzuWWpET
-	Tv3uy7QwvKnl/mnbYr/eZb6JsePb4N6yfHpvcbNWnfVgqLPOQUBizrUdNAEihTYX
-	Ts9rDWzFbod5rBrt37qZvULk3Z7ae7GPPzgOa0SQ==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fbf29y8r7-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 13 Jul 2026 08:28:53 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66D8JcH6019124;
-	Mon, 13 Jul 2026 08:28:53 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fc2uxvg4n-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 13 Jul 2026 08:28:52 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66D8SpDD35520910
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 13 Jul 2026 08:28:51 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1142620043;
-	Mon, 13 Jul 2026 08:28:51 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 53F3C20040;
-	Mon, 13 Jul 2026 08:28:49 +0000 (GMT)
-Received: from fedora (unknown [9.5.7.39])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Mon, 13 Jul 2026 08:28:49 +0000 (GMT)
-Date: Mon, 13 Jul 2026 13:59:02 +0530
-From: Amit Machhiwal <amachhiw@linux.ibm.com>
-To: Thorsten Blum <thorsten.blum@linux.dev>
-Cc: Geoff Levand <geoff@infradead.org>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] powerpc/ps3: Remove unused struct table in setup_areas()
-Message-ID: <20260713134356.62f55781-f6-amachhiw@linux.ibm.com>
-Mail-Followup-To: Thorsten Blum <thorsten.blum@linux.dev>, 
-	Geoff Levand <geoff@infradead.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-References: <20260712151300.3664-3-thorsten.blum@linux.dev>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gzGGJ1TDrz2xlv
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2026 18:44:55 +1000 (AEST)
+Received: from kunlun.suse.cz (unknown [IPv6:2a07:de40:b306:2000::2])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 8BA357744E;
+	Mon, 13 Jul 2026 08:44:52 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1783932292; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=wOqYLE7XCd1dyoTtB3Uni1tJhG2ZPfNesMlKhEUlxw0=;
+	b=r+RdOu7XiG6HWhbr9pAG6XGyeZKMMBFIRjat/72NL2mbYxHP0zrOB3f3QilNPJI7q3w5xs
+	wVeyVaHVmQa0RWsKdSNXdpZ68FK/P6qCgxIqCmH0rzBIz1yc8AtG57aGojuCq+btSgCdJM
+	kMgpjbKEFSn/eBjKsOd+YBfrfwpNGCA=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1783932292;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=wOqYLE7XCd1dyoTtB3Uni1tJhG2ZPfNesMlKhEUlxw0=;
+	b=gQkdb4P9HbkQTKS5EkCscMvwW0dRzYA0YniAiaIdT5hSQuexB294AZ+icFllO6E4kklxGL
+	Yl2ucsTSYxhqrIBA==
+Authentication-Results: smtp-out2.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=r+RdOu7X;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=gQkdb4P9
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1783932292; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=wOqYLE7XCd1dyoTtB3Uni1tJhG2ZPfNesMlKhEUlxw0=;
+	b=r+RdOu7XiG6HWhbr9pAG6XGyeZKMMBFIRjat/72NL2mbYxHP0zrOB3f3QilNPJI7q3w5xs
+	wVeyVaHVmQa0RWsKdSNXdpZ68FK/P6qCgxIqCmH0rzBIz1yc8AtG57aGojuCq+btSgCdJM
+	kMgpjbKEFSn/eBjKsOd+YBfrfwpNGCA=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1783932292;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=wOqYLE7XCd1dyoTtB3Uni1tJhG2ZPfNesMlKhEUlxw0=;
+	b=gQkdb4P9HbkQTKS5EkCscMvwW0dRzYA0YniAiaIdT5hSQuexB294AZ+icFllO6E4kklxGL
+	Yl2ucsTSYxhqrIBA==
+Date: Mon, 13 Jul 2026 10:44:51 +0200
+From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
+To: Thomas Gleixner <tglx@kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>,
+	linuxppc-dev@lists.ozlabs.org, Huacai Chen <chenhuacai@kernel.org>,
+	loongarch@lists.linux.dev, Paul Walmsley <pjw@kernel.org>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	linux-riscv@lists.infradead.org,
+	Sven Schnelle <svens@linux.ibm.com>, linux-s390@vger.kernel.org,
+	x86@kernel.org, Mark Rutland <mark.rutland@arm.com>,
+	Jinjie Ruan <ruanjinjie@huawei.com>,
+	Magnus Lindholm <linmag7@gmail.com>,
+	"Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>,
+	Jonathan Corbet <corbet@lwn.net>, Radu Rendec <radu@rendec.net>
+Subject: Re: [patch 4/4] entry, treewide: Make
+ syscall_enter_from_user_mode[_work]() indicate syscall execution
+Message-ID: <alSlg72c8xmjaj48@kunlun.suse.cz>
+References: <20260712134433.549076055@kernel.org>
+ <20260712141346.772209074@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -96,83 +109,97 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260712151300.3664-3-thorsten.blum@linux.dev>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzEzMDA4NCBTYWx0ZWRfX/GHCChCyVkQa
- Xnp1TF7GNvl9L9B70IbocZZ/v3dlHFmheUFKBQ1QqsW+ifEHO0//g8yyKrgRiZvUNGv8vqauOtl
- P0qnrDRh420uUAAPY0ZUJ092XUs2rDg=
-X-Proofpoint-GUID: 9stl8d43IDgypFfEMXh6aIlS_QiZZl-_
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzEzMDA4NCBTYWx0ZWRfX1Mxp8ycPzAw/
- DCr2dalTiXkv4mGtsqE4CO7NRarWSI3tHu/AuZ+LMhiXDrcH5ZTHdqUdllO8zB8ISEbmtJ1WFjF
- P9r3Ewvv2b+A3/nlrMflnq4Ub+jKzlaYxXBkjDh8lQMuEPBC6R/1AQXcAcn2ETR89aiNMGLbSFk
- k1ruXrft/FfPTXMFRjqKcbbewwdw3fPDUvHHIJBGCcGCPwEIZscxPJ9gYhuU0Av3cZHlAzaTgWh
- I1B1rLPrmX1VbmJS9R0lLAYDx5xl5ixmF+fhQ7RMBrxQ/hiO9avHO6CyGu0uo7e7BorvdCOea9V
- ALFZqP5kncjnSL929WUdfz7tdBNRLZ/D4ebmfynzQXp8kfdP5t4pwMriyVPHRCeE2edeI6+I9sI
- kFMYAO/9WNBix8OqatE1S9JdvrLTA4M8feDVPTRAs4MtkejE0Bau/QijQ1U4qR72Jwgq+4rg9tr
- DGHa/nyTrGlWImKBPUg==
-X-Proofpoint-ORIG-GUID: XrneFJ93c1UjkipwxE3EESJgU5D831og
-X-Authority-Analysis: v=2.4 cv=PvajqQM3 c=1 sm=1 tr=0 ts=6a54a1c6 cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=kj9zAlcOel0A:10 a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VwQbUJbxAAAA:8
- a=W-CXSa3aD2AiFYcJ9rAA:9 a=CjuIK1q_8ugA:10
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-07-13_02,2026-07-10_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 malwarescore=0 bulkscore=0 impostorscore=0 adultscore=0
- clxscore=1011 lowpriorityscore=0 spamscore=0 suspectscore=0 phishscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607130084
+In-Reply-To: <20260712141346.772209074@kernel.org>
+X-Rspamd-Action: add header
+X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
+X-Spamd-Result: default: False [14.88 / 50.00];
+	SPAM_FLAG(5.00)[];
+	NEURAL_SPAM_LONG(3.50)[1.000];
+	BAYES_HAM(-3.00)[100.00%];
+	NEURAL_SPAM_SHORT(2.69)[0.897];
+	HFILTER_HOSTNAME_UNKNOWN(2.50)[];
+	RDNS_NONE(2.00)[];
+	ONCE_RECEIVED(1.20)[];
+	HFILTER_HELO_IP_A(1.00)[kunlun.suse.cz];
+	HFILTER_HELO_NORES_A_OR_MX(0.30)[kunlun.suse.cz];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	MIME_TRACE(0.00)[0:+];
+	ARC_NA(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[19];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com];
+	TO_DN_SOME(0.00)[];
+	DNSWL_BLOCKED(0.00)[2a07:de40:b306:2000::2:from];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	DWL_DNSWL_BLOCKED(0.00)[suse.de:dkim];
+	MISSING_XM_UA(0.00)[];
+	RCVD_COUNT_ZERO(0.00)[0];
+	FREEMAIL_CC(0.00)[vger.kernel.org,ellerman.id.au,linux.ibm.com,lists.ozlabs.org,kernel.org,lists.linux.dev,dabbelt.com,lists.infradead.org,arm.com,huawei.com,gmail.com,lwn.net,rendec.net];
+	DKIM_TRACE(0.00)[suse.de:+];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:dkim]
+X-Spamd-Bar: ++++++++++++++
+X-Rspamd-Queue-Id: 8BA357744E
+X-Spam: Yes
 
-On 2026/07/12 05:13 PM, Thorsten Blum wrote:
-> The local table structure is not used - remove it.
+Hello,
+
+On Sun, Jul 12, 2026 at 11:25:32PM +0200, Thomas Gleixner wrote:
+> The return values of syscall_enter_from_user_mode[_work]() are
+> non-intuitive. Both functions return the syscall number which should be
+> invoked by the architecture specific syscall entry code. The returned
+> number can be:
 > 
-> Remove % in the comment while at it.
+>   - the unmodified syscall number which was handed in by the caller
 > 
-> Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
-> ---
->  arch/powerpc/platforms/ps3/spu.c | 4 +---
->  1 file changed, 1 insertion(+), 3 deletions(-)
+>   - a modified syscall number (ptrace, seccomp, trace/probe/bpf)
 > 
-> diff --git a/arch/powerpc/platforms/ps3/spu.c b/arch/powerpc/platforms/ps3/spu.c
-> index e817def7f424..c904f9fa1caa 100644
-> --- a/arch/powerpc/platforms/ps3/spu.c
-> +++ b/arch/powerpc/platforms/ps3/spu.c
-> @@ -185,13 +185,11 @@ static void spu_unmap(struct spu *spu)
->   * The current HV requires the spu shadow regs to be mapped with the
->   * PTE page protection bits set as read-only.
->   *
-> - * Returns: %0 on success or -errno on error.
-> + * Returns: 0 on success or -errno on error.
+> That has an additional twist. If the return value is -1L then the caller is
+> not allowed to modify the return value as that indicates that the modifying
+> entity requests to abort the syscall and set the return value already. That
+> can obviously not be differentiated from a syscall which handed in -1 as
+> syscall number.
+> 
+> The most trivial way to deal with that is:
+> 
+>     set_return_value(regs, -ENOSYS);
+>     nr = syscall_enter_from_user_mode(regs, nr);
+>     if (valid(nr))
+>     	handle_syscall(regs, nr);
+> 
+> That's what LOONGARCH, RISCV, and X86 do. But PowerPC and S390 do not
+> preset the return value, so when user space hands in -1 and there is
+> nothing setting the return value in the entry work code, then the syscall
+> is skipped but the return value is whatever random data has been in the
+> return value register.
 
-The % prefix should actually be kept here I think. Per the kernel-doc
-documentation [1]:
+The reason why PowerPC and S390 do not preset the return value is that
+the return value uses the same register as the syscall number. There are
+apparently other architectures on which the return value overlaps with
+the arguments which also do not preset the return value for that reason.
+If they would use the generic entry the same problem would arise.
 
-  %CONST
-  Name of a constant. (No cross-referencing, just formatting.)
-  
-  Examples:
-  
-  %0    %NULL    %-1    %-EFAULT    %-EINVAL    %-ENOMEM
+> Change the return values of syscall_enter_from_user_mode[_work]() to
+> boolean and return false, when either ptrace or seccomp request to skip the
 
-So %0 is valid and intentional kernel-doc markup that renders the
-constant 0 with proper formatting.
+There is a difference between seccomp and ptrace.
 
-The struct removal part looks good though.
+When seccomp indicates to skip the syscall it has also set the syscall
+return value.
 
-[1]: https://docs.kernel.org/doc-guide/kernel-doc.html#highlights-and-cross-references
+However, when the syscall number is -1 and the return value is not
+preset that does not indicate anything.
 
-~Amit
+The return value can still hold garbage. ptrace does not have the
+ability to indicate that a syscall is to be skipped, at least on the
+entry trace. It needs to be skipped based on the syscall number being
+invalid.
 
->   */
->  
->  static int __init setup_areas(struct spu *spu)
->  {
-> -	struct table {char* name; unsigned long addr; unsigned long size;};
-> -
->  	spu_pdata(spu)->shadow = ioremap_prot(spu_pdata(spu)->shadow_addr,
->  					      sizeof(struct spe_shadow),
->  					      pgprot_noncached_wc(PAGE_KERNEL_RO));
+Thanks
+
+Michal
 
