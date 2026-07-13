@@ -1,101 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-24122-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24123-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BE5B0C43458
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2026 16:21:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 572B9C44501
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2026 16:39:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gzSP268tbz2xJT;
-	Tue, 14 Jul 2026 02:21:26 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=85.215.255.83 arc.chain=strato.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783959686;
-	cv=pass; b=fmX75B3n6dR60+w6qinrIaDk90iz1YoWCPx5tLDwsuzD5fzNNxUktQPTpKwR4BzVWSmdPG2MAGFt5ZoNB+1Y+KJ8KdfN6LIFFK5n9+PcQNiU55P5Q2fG7y56s3qQh95BVz+07SKclzrUm4cqWuewPpJnZ9wzQRhTVegTPUQZwhToQ2BLjPCL+JyXUd+VfnA0mW/p3140MDH5uZ5gKG8V2G1l8MreUs0xxrZHx1M1rCDA1XZPdie7tJJDY822wUPRPTcWqrWBnQt6APzQbDGCZRvxue31zkOH3e4dxR1QzysFLh1JIM4Z/Dp5fpTN24yMMQnMMdGleoeUp3Nqjeaxaw==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783959686; c=relaxed/relaxed;
-	bh=2+pL6giVJaq6Auts7NJhD55gTdLOvJPAtilgd0ruH84=;
-	h=Subject:From:To:References:Cc:Message-ID:Date:MIME-Version:
-	 In-Reply-To:Content-Type; b=RSY5t7Yu9eC2AQmv7SjPuKOAflRYuZ9kMSL3XOtRBZisCxYgXMsGU1aJsyzDpk9jjVgD+CQglazoWneTwEOGksnGqDXEAfppf4UEE+jIPFivbcUfe9R3AQiWH0AHMke/BdzcrJGlsvYL8JccLcPWl6jDZT0fCTI1gGT0PZ0dCBLGavGo6AZYbYij3+WQR12s/IQjs/i1cu60RG4aqu4WO7gJHWZUK8E1BdSzm7KG8FQYCAM1jqGrkx67Ktb5BPExCWUEFs+g4tEku/AP3X7qn1+iWow/KBZG9MCoQJjGSR71Lcs51n3iQiu7sxQhLDIixCU9GA0YygVH8seAFKER9A==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xenosoft.de; dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=a6MYExWD; dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=bXIqpEI0; dkim-atps=neutral; spf=pass (client-ip=85.215.255.83; helo=mo4-p02-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org) smtp.helo=mo4-p02-ob.smtp.rzone.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xenosoft.de
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gzSnS5XYWz3078;
+	Tue, 14 Jul 2026 02:39:08 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.17
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783960748;
+	cv=none; b=IiBVcWUMzpMafkjiQkXml/1EwkabKEBpO5wnIk29pGVLUh902vhCbTwKApKJu1Y7dD8YQeRY2fhEEmTP3ZvajREC1POzFxHq/bHLbGmZ3bvT5vpjqPpldk14DeR/jBIcPIDMUxRHj9TpP6BJ+7qsV3dJpiQMbxkgTSTcMxmseX8pyn3LeLHYhVZMC3OibXJa8hMUQ8ghbNlhdS1K5FPNY0ZrGL/t/VAFMJHhHpeWJWPKioto/u+nWM9DIGfQn8Zuu5UtekuhdIML+EA6xoYKyOGSnaqYrR054o4AH2yAwjz3VBd8XBgEjvbng155BIFxCMMtK/0OMFp2md+wbAkWog==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1783960748; c=relaxed/relaxed;
+	bh=+8bn+J1m/2WVL2HRQqPjPX3jby4LCx/UUlRbPjdP5Mc=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=XQG/OwncXOzi6Szt2mpEUdqiBqA8LjIRBXCIyHEwOzomlg4JWLfnAdoYNqrEnjluLtlmKgRZDsypDDUuEVsj0yiM7FXtgLlfBtiBGUgTUKJqfbxgFt+yfoa/r7sMyrkCROCtCw4DySr44ZmalfKgyM7rlwZAKeJAsmuiFHZ1gKQZCE6JPiqh9XonBH81Gll8ezSk+/0KgdSieQkW0NkO030prccHxLnoytSQIfePKKL8T66tS/ZfrwE8hKbQf7L8bGrLFTFbc0rI+INN7bkLR+clEW89uO1c2VjMIINEnEBDbAdAPQoDXKl7pqNjyBfotV42h+n3cb1VcAyzBA492w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=YbbtLsxx; dkim-atps=neutral; spf=pass (client-ip=198.175.65.17; helo=mgamail.intel.com; envelope-from=pawan.kumar.gupta@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=a6MYExWD;
-	dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=bXIqpEI0;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=YbbtLsxx;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=mo4-p02-ob.smtp.rzone.de (client-ip=85.215.255.83; helo=mo4-p02-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org)
-X-Greylist: delayed 150 seconds by postgrey-1.37 at boromir; Tue, 14 Jul 2026 02:21:20 AEST
-Received: from mo4-p02-ob.smtp.rzone.de (mo4-p02-ob.smtp.rzone.de [85.215.255.83])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.17; helo=mgamail.intel.com; envelope-from=pawan.kumar.gupta@linux.intel.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 65 seconds by postgrey-1.37 at boromir; Tue, 14 Jul 2026 02:39:05 AEST
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.17])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gzSNw6Ndhz2xJR
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2026 02:21:20 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; t=1783959492; cv=none;
-    d=strato.com; s=strato-dkim-0002;
-    b=CtMlpUhBYzo+EpETjWxkw5OvR4SvX5v+NAOEFlobsv8Y9QWK6RkmwsxOpmMmX7ZmDk
-    uWAL7KsoGVTkCf4ooEBmeH2D3TvNX9vX1d+ZmLTVdEbzf0evTM7FFg7LL/p9RAhiA0Xd
-    uWr9ZXgAcqu/9rCF+msiViDiO0LKtnM3Im72cI6Slf10gTJByrfzw0/U3AZC4rB0a4Z2
-    mU1TDN52AIR+BHeRt+WPHYcPjes55ji+OUZIYkt+EvB4NtRqycKAbwOUF0p1pW3Q7KvT
-    amVfF0M5k9JEOaCTs2WcV43n/hyw/mFjUxiI2SAMXF56v9fagBoHrC3Mw7dwpzYFM4TD
-    Mvog==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1783959492;
-    s=strato-dkim-0002; d=strato.com;
-    h=In-Reply-To:Date:Message-ID:Cc:References:To:From:Subject:Cc:Date:
-    From:Subject:Sender;
-    bh=2+pL6giVJaq6Auts7NJhD55gTdLOvJPAtilgd0ruH84=;
-    b=deCfU058LPoC30jBU4OQwTF1aFmtHh8FctRz7FKmC3b8ZdqwBvpZ0jcOlKjb8Rp3Nh
-    Jx+mDR8Jqi6y65vPkFOnE7JMB2XMkHnBvlXODedcGhO8lbUUb8icEk/yOY5xCXMzGpTU
-    JMTDOQng5zpzbVJvG1DiEXJfSzV3IL2FqV3OI1UQyhePoIgt/hNZ0ZrShvt0duaLgFos
-    lkHbcbuJ5o4CZ4W0xtOwY4oPSF5hQUhfWD0j7ZBFDwOtej9NU9RlrmjB/aCYHKJK7I2U
-    S4xCK6s1jOWLvDyv9ftfxThwiMB8rcYoKT3KKz7p3XUSI6a7uAuXqGRZESuCKzNRFgR4
-    kgNQ==
-ARC-Authentication-Results: i=1; strato.com;
-    arc=none;
-    dkim=none
-X-RZG-CLASS-ID: mo02
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1783959492;
-    s=strato-dkim-0002; d=xenosoft.de;
-    h=In-Reply-To:Date:Message-ID:Cc:References:To:From:Subject:Cc:Date:
-    From:Subject:Sender;
-    bh=2+pL6giVJaq6Auts7NJhD55gTdLOvJPAtilgd0ruH84=;
-    b=a6MYExWDpHUI48W/IzNKz6Ld0i8PoIBDF1oisX31HUW2Pn8npbjk0phuQ/8hJxq0k/
-    XsWTtIDLg80YpCK+eqH/JqfPjfiOf+QFYHQSX7MTDsAtT2DBBSCkMAcQF8SqYcIjYegY
-    lysQ+NlGuF7UwTQczDDipjuVJDkGGW5AyBYTaock/6M4lAFX9xhdB4QScF8PSngVxqpi
-    iqjai2iOEByDTjPE6eXr+qDZGy8SduIDNNUkX8/aK+5cOAIfwPAznmqEnBARjFmw0LCc
-    gOg002cvGZ7TK+vKX9A4wmexw2BWNRdnTcJVYSiT52kqy5MkAMHNL02C3gy+eDXTQoE9
-    KCcQ==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1783959492;
-    s=strato-dkim-0003; d=xenosoft.de;
-    h=In-Reply-To:Date:Message-ID:Cc:References:To:From:Subject:Cc:Date:
-    From:Subject:Sender;
-    bh=2+pL6giVJaq6Auts7NJhD55gTdLOvJPAtilgd0ruH84=;
-    b=bXIqpEI0ttjMyymrh75tCAfe9GHx+ENMRtSFKZxRG8+DHTf1Qr35jshkOy9DE4ZFxK
-    iLAo18ashYAcK9mtbgBg==
-X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGN0rBVhd9dFr4thIFiqT9BURIi+s7Xc="
-Received: from void-ppc.a-eon.tld
-    by smtp.strato.de (RZmta 55.5.6 DYNA|AUTH)
-    with ESMTPSA id e4c84d26DGIB6Ti
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
-	(Client did not present a certificate);
-    Mon, 13 Jul 2026 18:18:11 +0200 (CEST)
-Subject: [PATCH] Connecting the SB600's i8259 controller rather in pasemi's
- pci.c than in pasemi's setup.c.
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>, open list <linux-kernel@vger.kernel.org>
-References: <20260701105501.2093-1-chzigotzky@xenosoft.de>
- <91cfa587-c555-45ad-2a34-83e5191ade7d@xenosoft.de>
-Cc: "R.T.Dickinson" <rtd2@xtra.co.nz>, Damien Stewart <hypexed@yahoo.com.au>,
- Darren Stevens <darren@stevens-zone.net>,
- Christian Zigotzky <info@xenosoft.de>
-Organization: A-EON Open Source
-Message-ID: <e8ae26f2-568a-0848-a8bf-774bcdffc9cc@xenosoft.de>
-Date: Mon, 13 Jul 2026 18:18:10 +0200
-X-Mailer: BrassMonkey/34.2.2
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gzSnP1fLZz306S
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2026 02:39:04 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1783960746; x=1815496746;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=4kZEQHCKkpYpxkKyYJlUA0Zza6SQ8vOAw/fP08uqXDo=;
+  b=YbbtLsxxAB+NLx0mmDQBrIPFaDYhPWaoeCuWiFfpMSRMHYgEodLt24Ot
+   amGwhmcRrGg7UthzqS+7b8yrWQ9EbzJgamw5/Hz07EWGPbUE1Az5oEVTH
+   qHt820kjnoa4yjBTE6QYLr5yo8+qCMBFNw0mAw1zy441Oi7TpSIdfxGF1
+   w22SF5wqWFTi8W4W5EfMHI5T0N8ZLk2KQ709N2ZVrqsFBoNQipc9fil+E
+   E1Q+tpzvaROTBXBgM6LCYEqT1hyCA9k6s7v/XeKoVw4MCCSJnnE5bgVde
+   nzYNDYJcwhL7ZHFBDw/8yZfEG0A4C8xAAaynKN6XVgdKRlowMMYYyX1Pm
+   A==;
+X-CSE-ConnectionGUID: nPhc7rtPSzyTy81hySBLVw==
+X-CSE-MsgGUID: /PfKTQtMQOeb5TLEzBHtZQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11841"; a="84591895"
+X-IronPort-AV: E=Sophos;i="6.25,154,1779174000"; 
+   d="scan'208";a="84591895"
+Received: from fmviesa009.fm.intel.com ([10.60.135.149])
+  by orvoesa109.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Jul 2026 09:37:53 -0700
+X-CSE-ConnectionGUID: hWdotUdbRAyEFlX+x/kfWQ==
+X-CSE-MsgGUID: leJxOZsNRQSKnAtRZj8eFA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.25,154,1779174000"; 
+   d="scan'208";a="249245643"
+Received: from guptapa-desk.jf.intel.com (HELO desk) ([10.165.239.46])
+  by fmviesa009-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Jul 2026 09:37:52 -0700
+Date: Mon, 13 Jul 2026 09:37:45 -0700
+From: Pawan Gupta <pawan.kumar.gupta@linux.intel.com>
+To: bot+bpf-ci@kernel.org
+Cc: stable@vger.kernel.org, gregkh@linuxfoundation.org, sashal@kernel.org, 
+	bpf@vger.kernel.org, linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev, 
+	linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, x86@kernel.org, ast@kernel.org, 
+	daniel@iogearbox.net, andrii@kernel.org, martin.lau@kernel.org, eddyz87@gmail.com, 
+	yonghong.song@linux.dev, clm@meta.com, ihor.solodrai@linux.dev
+Subject: Re: [PATCH 7.1.y 1/6] bpf: Support for hardening against JIT spraying
+Message-ID: <ehtglcrfzb4feb2ysknrcyvz7t2vc2ui2nfbunypteeexbsfu7@x477johvq6pl>
+References: <20260709-cbpf-jit-spray-hardening-7-1-y-v1-1-5ac5a2d6797f@linux.intel.com>
+ <de3ebfe684f280473617b560a9dcf501df07833f835a08eb6e75720cd03662b4@mail.kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -109,110 +81,43 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-In-Reply-To: <91cfa587-c555-45ad-2a34-83e5191ade7d@xenosoft.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <de3ebfe684f280473617b560a9dcf501df07833f835a08eb6e75720cd03662b4@mail.kernel.org>
 
-Is this patch OK? My P.A. Semi Nemo board boots with the patched kernel.
+On Thu, Jul 09, 2026 at 10:52:04PM +0000, bot+bpf-ci@kernel.org wrote:
+> > commit 96cce16e26dd02a8678f1e87f88a4b5cdb63b995 upstream.
+> > The BPF JIT allocator packs many small programs into larger executable
+> > allocations and reuses space within those allocations as programs are
+> > loaded and freed. When fresh code is written into space that a previous
+> > program occupied, an indirect jump into the new program can reuse a branch
+> > prediction left behind by the old one.
+> > Flush the indirect branch predictors before reusing JIT memory so that
+> > indirect jumps into a newly written program don't reuse predictions from an
+> > old program that occupied the same space.
+> > Introduce bpf_arch_pred_flush_enabled static key and bpf_arch_pred_flush
+> > static call for flushing the branch predictors on JIT memory reuse.
+> > Architectures that need a flush, can update it to a predictor flush
+> > function. By default, its a NOP and does not emit any CALL.
+> > Allocations larger than a pack are not covered by this flush. That is safe
+> > because cBPF programs (the unprivileged attack surface) are bounded well
+> > below a pack size. Issue a warning if this assumption is ever violated
+> > while the flush is active.
+> > Signed-off-by: Pawan Gupta <pawan.kumar.gupta@linux.intel.com>
+> > Acked-by: Daniel Borkmann <daniel@iogearbox.net>
+> > Signed-off-by: Daniel Borkmann <daniel@iogearbox.net>
+> 
+> The reuse path this patch hardens (bpf_prog_pack_alloc() finding a free
+> area within a pack, and the size > BPF_PROG_PACK_SIZE branch) comes from
+> the pack allocator that first packed many programs into shared executable
+> allocations and reused freed space within a pack.
+> 
+> Should this carry a Fixes: tag pointing at that commit?
+> 
+>   Fixes: 57631054fae6 ("bpf: Introduce bpf_prog_pack allocator")
 
--- Christian
-
-On 07/07/26 06:31, Christian Zigotzky wrote:
- > Any comments about this patch?
- >
- > Tested-by: Christian Zigotzky <chzigotzky@xenosoft.de>
- >
- > -- Christian
- >
- >
- > On 01/07/26 12:54, Christian Zigotzky wrote:
- > >  "pas_pci_init" was before "nemo_init_IRQ".
- > >  Now "pas_pci_init" is after "nemo_init_IRQ" in the official kernel 
-source
- > >  code.
- > >  I think "pas_pci_init" scans (discovers) the PCI(e) devices
- > >  and after that, "nemo_init_IRQ" assigns interrupt numbers
- > >  to these devices if required.
- > >  It's not possible to assigns interrupt numbers to PCI(e) devices
- > >  which have not been discovered yet.
- > >
- > > Signed-off-by: Christian Zigotzky <chzigotzky@xenosoft.de>
- > > ---
- > >  arch/powerpc/platforms/pasemi/pci.c   | 7 +++++++
- > >  arch/powerpc/platforms/pasemi/setup.c | 7 ++++---
- > >  2 files changed, 11 insertions(+), 3 deletions(-)
- > >
- > > diff --git a/arch/powerpc/platforms/pasemi/pci.c 
-b/arch/powerpc/platforms/pasemi/pci.c
- > > index 2df955274652..7208c325bfc5 100644
- > > --- a/arch/powerpc/platforms/pasemi/pci.c
- > > +++ b/arch/powerpc/platforms/pasemi/pci.c
- > > @@ -25,6 +25,8 @@
- > >
- > >  #define PA_PXP_CFA(bus, devfn, off) (((bus) << 20) | ((devfn) << 
-12) | (off))
- > >
- > > +extern void nemo_init_IRQ(void);
- > > +
- > >  static inline int pa_pxp_offset_valid(u8 bus, u8 devfn, int offset)
- > >  {
- > >      /* Device 0 Function 0 is special: It's config space spans 
-function 1 as
- > > @@ -265,6 +267,11 @@ static int __init pas_add_bridge(struct 
-device_node *dev)
- > >       */
- > >      isa_bridge_find_early(hose);
- > >
- > > +    /*
- > > +     * ISA bridge is now active, add the i8259 cascade (if needed)
- > > +     */
- > > +    nemo_init_IRQ();
- > > +
- > >      return 0;
- > >  }
- > >
- > > diff --git a/arch/powerpc/platforms/pasemi/setup.c 
-b/arch/powerpc/platforms/pasemi/setup.c
- > > index d03b41336901..eec74611be46 100644
- > > --- a/arch/powerpc/platforms/pasemi/setup.c
- > > +++ b/arch/powerpc/platforms/pasemi/setup.c
- > > @@ -214,10 +214,12 @@ static void sb600_8259_cascade(struct 
-irq_desc *desc)
- > >      chip->irq_eoi(&desc->irq_data);
- > >  }
- > >
- > > -static void __init nemo_init_IRQ(struct mpic *mpic)
- > > +void nemo_init_IRQ(void)
- > >  {
- > >      struct device_node *np;
- > >      int gpio_virq;
- > > +    struct mpic *mpic;
- > > +
- > >      /* Connect the SB600's legacy i8259 controller */
- > >      np = of_find_node_by_path("/pxp@0,e0000000");
- > >      i8259_init(np, 0);
- > > @@ -228,6 +230,7 @@ static void __init nemo_init_IRQ(struct mpic *mpic)
- > >      irq_set_chained_handler(gpio_virq, sb600_8259_cascade);
- > >      mpic_unmask_irq(irq_get_irq_data(gpio_virq));
- > >
- > > +    mpic = irq_get_chip_data(gpio_virq);
- > >      irq_set_default_domain(mpic->irqhost);
- > >  }
- > >
- > > @@ -298,8 +301,6 @@ static __init void pas_init_IRQ(void)
- > >          mpic_unmask_irq(irq_get_irq_data(nmi_virq));
- > >      }
- > >
- > > -    nemo_init_IRQ(mpic);
- > > -
- > >      of_node_put(mpic_node);
- > >      of_node_put(root);
- > >  }
- >
- >
-
-
--- 
-Sent with BrassMonkey 34.2.2 
-(https://github.com/chzigotzky/Web-Browsers-and-Suites-for-Linux-PPC/releases/tag/BrassMonkey_34.2.2)
+It doesn't add much value. This commit insn't really buggy, it needs no fix
+for the eBPF. The fact that cBPF is unprivileged, opens a window for a JIT
+spraying attack. Also, the the patch is a backport, so it should stay close
+to upstream.
 
