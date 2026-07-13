@@ -1,90 +1,41 @@
-Return-Path: <linuxppc-dev+bounces-24107-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24108-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 75613C44506
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2026 09:27:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C2742C43458
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2026 10:09:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gzHCm1CWXz2xlv;
-	Mon, 13 Jul 2026 19:27:48 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783934868;
-	cv=none; b=bgimBI7mMeTJtiO9FfKeJuDU15gz8+63kWqOGagog9BOgT9HxtYhBXnJMLq1JnCekP/PSF4ezAASDFSavKo4okwCuGPz+UDXMUFeRDPCDfXBW13yciGmydjm1LyVyEQxxc0bmW86ipk5/VrkQ/DDjO0yeQ5YKR5HsHvYg4C2Oq+QhjGQwkNwkMNOhL2PsJb9fVmn5xWhmwmMDqibz8iMLGBZ/AsOfjIxRrzC59xHdVNlOL+6ACYAtfjw4eI6Va6o8hjVMbUC/sn6A/JfOh2u2sEL4xrOKIquM3DQOrwxUQ1sDJOqGUnDvGzN5Kj52j2mPa7hFXEJ8s9sjY9Oi1HBZg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gzJ881Glnz2xlv;
+	Mon, 13 Jul 2026 20:09:44 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=141.14.17.11
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783937384;
+	cv=none; b=QMbBN1lKtBgu12buuzHLsVFzTk6F42hOghVwJ1HptYsRz8ZmkDckFBmlWWqS3PLrD9SNAvReDh/cy6LQGDEKbeWpswoQImE36AI9ZQMHBLJgxYR9QHguyEead331cq7314svilAfExwvDc03wSqqP/DGDeaGn/FyhWnlHIxR2FMh2bc4r2Yvv4Iibqkv3RrbWGPe9vp/cNYhIQioMA+g5VCUiSWzQx7yk+SOvQ0LFS4IQ/43jklerRUe33M3nTTxQMhF+yMnnuRg05z1iwDuDFsdgvAYeJ2G7ipuRgJkpQ6LwFEvY4Z29T5XRSWfyZQk4fdklkytCsVfYueRG/pMsg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783934868; c=relaxed/relaxed;
-	bh=PR092mdGsoe3SbzvnZtVW8Ro9KyMD2O/0hXxEWFUOEQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=bEXpgnstQW+f4/PZqF8+Uj6K3CZfPY8OBMTjf+L4TN5q6cq+VrnlDJTe9WphTDgj+vTZOXep+oCl9JOmiTwlsaIFV169YW53J1Qipf0ObZPxHsxsJRJDcuQmf+q4YonTF5TN82uiAICcksMkAFCMyoaQP+0iTYIQLxlmi11eMBMVZ9hCRJmKC0DAt9U4poDYIo/ybq0Au0SrdDD2MpahdaU9TJhtL4AaKyqW9AFY73bccSZczSTZuUg6ww1cqk341JBzdhDyFn9PhMQ/xfMwmnc36pr/EnVpRxo0Lo5rgv3JGEAxRsQQKKGU612nLf2WmwSk8YpFJlK7/WRqqaFiKg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JyY+ZVEz; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JyY+ZVEz;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	t=1783937384; c=relaxed/relaxed;
+	bh=UJyHYbseUt69TjEKjWaEAPCOt0IfEYILXBW+jp28rLg=;
+	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
+	 In-Reply-To:Content-Type; b=iZHv/eTgPOJnka9R43qy4tu/atA6Dr0E0ND3qC/FFBjkWnxYFj4yR0MkfYoaTxth+1WWqEQFfeOpYXJlo26Mh17WUibyHxZDaoe33v57/CsnHfjab7SohF4WLRqqB9anDL/dqK5z0WrJEV7Ra0TQFWg6mB8Ca4bAEZyBE6lMj1dy6OUUXvlYJkBv4sXj14RJM2gtWxu6iwTGLh0Qw9d6AXbWqbJYdN28EWiCMVor+4VdlioFzbXnHR5sAhO/M0r5RjNihqhLdehkylXbLsOnIAJtXnssP8JfOncpvuLuLUsJWR2x6A3zm5pZCgnom3cKn/ljd2wBP+Jh02Ck7v8WwQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=molgen.mpg.de; spf=pass (client-ip=141.14.17.11; helo=mx3.molgen.mpg.de; envelope-from=pmenzel@molgen.mpg.de; receiver=lists.ozlabs.org) smtp.mailfrom=molgen.mpg.de
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=molgen.mpg.de
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=molgen.mpg.de (client-ip=141.14.17.11; helo=mx3.molgen.mpg.de; envelope-from=pmenzel@molgen.mpg.de; receiver=lists.ozlabs.org)
+X-Greylist: delayed 420 seconds by postgrey-1.37 at boromir; Mon, 13 Jul 2026 20:09:42 AEST
+Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bit raw public key) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gzHCl2l65z2xQ3
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2026 19:27:46 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66D7vFOE006565;
-	Mon, 13 Jul 2026 09:27:24 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=PR092mdGsoe3SbzvnZtVW8Ro9KyMD2
-	O/0hXxEWFUOEQ=; b=JyY+ZVEz0z2RSWxwbcegX+n1eldVyugm2Ezzhii0Q18rr3
-	mtfnd7t6NQeSYnv8ZQcTXHwhYkofQeCEEHsxnw4ex4zCYJUySGKBu6MmsBInGS9P
-	YL95YT+ABj0cWzpqHrtu6LmSfpHglDYg+pWzFuLHa0xGx/QtuBl47wWyBz7jwHZr
-	V8MGYeKfPWLLZZbhJ6wqzY2s642Qxsd69JHmTtilkpgm/D8U/Vq7KZt7ZkFJIq2v
-	ALa8eaK03A5vjSgFi1nW7VtsZhwotIZAFZ8srErym332fSfWHkSHMgmn/daZ8Fbs
-	lPJCGTBUk5047Fu3rYMUGTFnncXSHFw8QlTPV/bA==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fcv330cvk-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 13 Jul 2026 09:27:23 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66D9JasX013748;
-	Mon, 13 Jul 2026 09:27:22 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fc05pw64e-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 13 Jul 2026 09:27:22 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66D9RJXa21365180
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 13 Jul 2026 09:27:19 GMT
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 043CF20043;
-	Mon, 13 Jul 2026 09:27:19 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id F3D3F20040;
-	Mon, 13 Jul 2026 09:27:16 +0000 (GMT)
-Received: from fedora (unknown [9.5.7.39])
-	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Mon, 13 Jul 2026 09:27:16 +0000 (GMT)
-Date: Mon, 13 Jul 2026 14:57:30 +0530
-From: Amit Machhiwal <amachhiw@linux.ibm.com>
-To: Thorsten Blum <thorsten.blum@linux.dev>
-Cc: Geoff Levand <geoff@infradead.org>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        Amit Machhiwal <amachhiw@linux.ibm.com>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] powerpc/ps3: Remove unused struct table in
- setup_areas()
-Message-ID: <20260713145642.aaa21051-11-amachhiw@linux.ibm.com>
-Mail-Followup-To: Thorsten Blum <thorsten.blum@linux.dev>, 
-	Geoff Levand <geoff@infradead.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, 
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-References: <20260713091731.97212-3-thorsten.blum@linux.dev>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gzJ863dVRz2xjN
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2026 20:09:42 +1000 (AEST)
+Received: from [141.14.220.42] (g42.guest.molgen.mpg.de [141.14.220.42])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: pmenzel)
+	by mx.molgen.mpg.de (Postfix) with ESMTPSA id 31ED74C2C37D5E;
+	Mon, 13 Jul 2026 12:02:06 +0200 (CEST)
+Message-ID: <d450fa9b-3573-4e82-a635-b8d1affa733e@molgen.mpg.de>
+Date: Mon, 13 Jul 2026 12:02:05 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -98,70 +49,180 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260713091731.97212-3-thorsten.blum@linux.dev>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzEzMDA5NSBTYWx0ZWRfX3TU+9z1OQHhz
- VrjTR3CQGTMgS3MbzuZ37s/9lNUL+tvQt1/dKVcK19/eUU0nkucqP7X1ZAgANIe8iY6IChEUSZO
- QUpzxiHbaeeuGf5UX5oOj0kxHoTwrko=
-X-Authority-Analysis: v=2.4 cv=Mp1iLWae c=1 sm=1 tr=0 ts=6a54af7c cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
- a=kj9zAlcOel0A:10 a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=VwQbUJbxAAAA:8
- a=tBb2bbeoAAAA:8 a=VnNF1IyMAAAA:8 a=tDlUD9aaDW1ZiZdEypIA:9 a=CjuIK1q_8ugA:10
- a=Oj-tNtZlA1e06AYgeCfH:22
-X-Proofpoint-GUID: GfUV5dN0PB4O7Mg8SrUEZkq6_76Erl_n
-X-Proofpoint-ORIG-GUID: vmvRo6sn1PvmpKZrUTGOWrrFT4b-Hb2X
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzEzMDA5NSBTYWx0ZWRfXxaBNiY/PQ3GQ
- RnWD2W6vEPe7Kj9oB6oEVSgjGuIUFpBnsHdPdpQcaUfEdd4jkf6fbV8luucLNiFGiNA+WpKZ8gT
- l9TuXF/9rFpwvDj98un7nIbSar5LXZ+FAN57g4Lo/VFSL2hWPVcarfdHOFzGEOE4DHYRuUstPPL
- 3To49iNbTOvR/sCHfGrhN3hUXCAYlMmeyq+fS12XMPqP4nBB0OFIqg2h2p5jvexlA6zYLHw006D
- FOniZMF1KV5i4aXocwJVWnkk1jkW2Dq5I0zEp/cK3huJ+W3PCsDFjnDTi9SDdGxdzCtdjJ0YylZ
- mOluxHM4kPJGoHZ9+BmFTFt7XgWOglRMe4Eul2qB//I4Vs/tLsE5/Py620AdOJx0ttYNkuA8Dx6
- h9WbcWpeYeaE8BpovFFPaSb19+Jysj7/jd4L95GyP/QntPXuFh+10T8bNCDiLg9z6GvpkZo/a9v
- KmNJiu8xWPHFf1pMg2A==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-07-13_02,2026-07-10_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 bulkscore=0 spamscore=0 malwarescore=0 lowpriorityscore=0
- impostorscore=0 priorityscore=1501 suspectscore=0 clxscore=1011 phishscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607130095
+User-Agent: Mozilla Thunderbird
+Subject: Re: powernv_rng_read: Oops: Kernel access of bad area, sig: 11 [#1]
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Olivia Mackall <olivia@selenic.com>, Herbert Xu
+ <herbert@gondor.apana.org.au>, Michael Ellerman <mpe@ellerman.id.au>,
+ "Jason A. Donenfeld" <Jason@zx2c4.com>
+Cc: linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ LKML <linux-kernel@vger.kernel.org>
+References: <a159e81a-ccfd-440f-af68-6a56cca09cb2@molgen.mpg.de>
+ <0c06bc14-9459-44d5-9e28-b0b78c0fbe36@linux.ibm.com>
+ <6f58b950-a997-4dd6-a1a2-95eb72009151@molgen.mpg.de>
+ <b507beef-3e1c-46d7-a434-d0235dace30b@molgen.mpg.de>
+Content-Language: en-US
+In-Reply-To: <b507beef-3e1c-46d7-a434-d0235dace30b@molgen.mpg.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On 2026/07/13 11:17 AM, Thorsten Blum wrote:
-> The local table structure is not used - remove it.
+Dear Madhavan, dear Jason,
+
+
+Am 11.05.26 um 10:03 schrieb Paul Menzel:
+
+> Am 11.05.26 um 09:00 schrieb Paul Menzel:
 > 
-> Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
-> ---
-> Changes in v2:
-> - Drop the %0 change because it is valid kernel-doc markup (Amit)
-
-Thanks for addressing the comment and sending a v2!
-
-Reviewed-by: Amit Machhiwal <amachhiw@linux.ibm.com>
-
-~Amit
-
-> - v1: https://lore.kernel.org/r/20260712151300.3664-3-thorsten.blum@linux.dev/
-> ---
->  arch/powerpc/platforms/ps3/spu.c | 2 --
->  1 file changed, 2 deletions(-)
+>> Am 07.05.26 um 04:40 schrieb Madhavan Srinivasan:
+>>>
+>>> On 5/6/26 7:31 PM, Paul Menzel wrote:
+>>
+>>>> After a long while, on the 8335-GCA POWER8 (raw) 0x4d0200 
+>>>> opal:skiboot-5.4.8-5787ad3 PowerNV, I built Linux from Linus’ master 
+>>>> branch and rebooted via kexec.
+>>>>
+>>>> ```
+>>>> [    0.000000] Linux version 7.1.0-rc2+ (pmenzel@flughafenberlinbrandenburgwillybrandt.molgen.mpg.de) (gcc (Ubuntu 11.2.0-7ubuntu2) 11.2.0, GNU ld (GNU Binutils for Ubuntu) 2.37) #3 SMP PREEMPT Wed May  6 08:50:58 CEST 2026
+>>>> […]
+>>>> [   17.901992] Kernel attempted to read user page (0) - exploit attempt? (uid: 0)
+>>>> [   17.902011] BUG: Kernel NULL pointer dereference on read at 0x00000000
+>>>> [   17.902018] Faulting instruction address: 0xc0000000000e7138
+>>>> [   17.902027] Oops: Kernel access of bad area, sig: 11 [#1]
+>>>> [   17.902034] LE PAGE_SIZE=64K MMU=Hash  SMP NR_CPUS=2048 NUMA PowerNV
+>>>> [   17.902045] Modules linked in: powernv_rng(+) bnx2x ofpart ibmpowernv bfq mdio cmdlinepart powernv_flash ipmi_powernv ipmi_devintf mtd ipmi_msghandler at24(+) vmx_crypto opal_prd sch_fq_codel nfsd parport_pc ppdev auth_rpcgss nfs_acl lp lockd grace parport sunrpc autofs4 btrfs xor libblake2b raid6_pq ast drm_shmem_helper drm_client_lib i2c_algo_bit drm_kms_helper drm ahci drm_panel_orientation_quirks libahci
+>>>> [   17.902185] CPU: 147 UID: 0 PID: 2626 Comm: hwrng Not tainted 7.1.0-rc2+ #3 PREEMPTLAZY
+>>>> [   17.902197] Hardware name: 8335-GCA POWER8 (raw) 0x4d0200 opal:skiboot-5.4.8-5787ad3 PowerNV
+>>>> [   17.902204] NIP:  c0000000000e7138 LR: c00800001ec8013c CTR: c0000000000e70fc
+>>>> [   17.902212] REGS: c000000092913c50 TRAP: 0300   Not tainted (7.1.0-rc2+)
+>>>> [   17.902222] MSR:  900000000280b033 <SF,HV,VEC,VSX,EE,FP,ME,IR,DR,RI,LE>  CR: 44420220  XER: 20000000
+>>>> [   17.902269] CFAR: c00800001ec8026c DAR: 0000000000000000 DSISR: 40000000 IRQMASK: 0
+>>>>                GPR00: c00800001ec8013c c000000092913ef0 c000000001c18100 c00000002222d900
+>>>>                GPR04: c00000002222d900 0000000000000080 0000000000000001 0000000000000000
+>>>>                GPR08: 0000000000000000 c000000002212000 c0000000951e1780 c00800001ec80258
+>>>>                GPR12: c0000000000e70fc c00000ffff6fd700 c0000000001d11c0 c00000001b99b9c0
+>>>>                GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+>>>>                GPR20: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+>>>>                GPR24: 0000000000000000 c000000002fe6a58 0000000000000000 0000000000000000
+>>>>                GPR28: c000000002fe6a20 0000000000000010 000000000000000f c00000002222d900
+>>>> [   17.902406] NIP [c0000000000e7138] pnv_get_random_long+0x3c/0x114
+>>>> [   17.902426] LR [c00800001ec8013c] powernv_rng_read+0x78/0xc4 [powernv_rng]
+>>>> [   17.902444] Call Trace:
+>>>> [   17.902448] [c000000092913ef0] [c000000092913f30] 0xc000000092913f30 (unreliable)
+>>>> [   17.902463] [c000000092913f30] [c000000000decd58] hwrng_fillfn+0xd4/0x3dc
+>>>> [   17.902484] [c000000092913f90] [c0000000001d1328] kthread+0x170/0x1a4
+>>>> [   17.902498] [c000000092913fe0] [c00000000000d030] start_kernel_thread+0x14/0x18
+>>>> [   17.902513] Code: 60000000 7d2000a6 71290010 418200bc e94d0908 812a0000 39290001 912a0000 e90d0030 3d220060 39299f00 7d08482a <e9280000> 7c0004ac e8e90000 0c070000
+>>>> [   17.902569] ---[ end trace 0000000000000000 ]---
+>>>> [   18.008801] pstore: backend (nvram) writing error (-1)
+>>>>
+>>>> [   18.015458] note: hwrng[2626] exited with irqs disabled
+>>>> [   18.015483] note: hwrng[2626] exited with preempt_count 1
+>>>> ```
+>>>>
+>>>> Please find the output of `dmesg` attached.
+>>>
+>>> This is from my yesterday's boot test log in my P8, did not see this 
+>>> fail.
+>>>
+>>> root@ltcppm1:~# uname -a
+>>> Linux ltcppm1.ltc.tadn.ibm.com 7.1.0-rc2-00021-gf583bd5f64d4 #1 SMP 
+>>> PREEMPT Wed May  6 00:55:45 EDT 2026 ppc64le GNU/Linux
+>>> root@ltcppm1:~# dmesg
+>>> [    0.000000] [      T0] random: crng init done
+>>> [    0.000000] [      T0] hash-mmu: Page sizes from device-tree:
+>>> [    0.000000] [      T0] hash-mmu: base_shift=12: shift=12, sllp=0x0000, avpnm=0x00000000, tlbiel=1, penc=0
+>>> [    0.000000] [      T0] hash-mmu: base_shift=12: shift=16, sllp=0x0000, avpnm=0x00000000, tlbiel=1, penc=7
+>>> [    0.000000] [      T0] hash-mmu: base_shift=12: shift=24, sllp=0x0000, avpnm=0x00000000, tlbiel=1, penc=56
+>>> [    0.000000] [      T0] hash-mmu: base_shift=16: shift=16, sllp=0x0110, avpnm=0x00000000, tlbiel=1, penc=1
+>>> [    0.000000] [      T0] hash-mmu: base_shift=16: shift=24, sllp=0x0110, avpnm=0x00000000, tlbiel=1, penc=8
+>>> [    0.000000] [      T0] hash-mmu: base_shift=24: shift=24, sllp=0x0100, avpnm=0x00000001, tlbiel=0, penc=0
+>>> [    0.000000] [      T0] hash-mmu: base_shift=34: shift=34, sllp=0x0120, avpnm=0x000007ff, tlbiel=0, penc=3
+>>> [    0.000000] [      T0] Enabling pkeys with max key count 32
+>>> [    0.000000] [      T0] Activating Kernel Userspace Access Prevention
+>>> [    0.000000] [      T0] Activating Kernel Userspace Execution Prevention
+>>> [    0.000000] [      T0] hash-mmu: Page orders: linear mapping = 24, virtual = 16, io = 16, vmemmap = 24
+>>> [    0.000000] [      T0] hash-mmu: Using 1TB segments
+>>> [    0.000000] [      T0] hash-mmu: Initializing hash mmu with SLB
+>>> [    0.000000] [      T0] Linux version 7.1.0-rc2-00021-gf583bd5f64d4 (root@ltcppm1.ltc.tadn.ibm.com) (gcc (GCC) 16.1.1 20260501 (Red Hat 16.1.1-1), GNU ld version 2.46-1.fc44) #1 SMP PREEMPT Wed May  6 00:55:45 EDT 2026
+>>> [    0.000000] [      T0] OF: reserved mem: 0x0000000039c00000..0x000000003b6801ff (27136 KiB) map non-reusable ibm,firmware-allocs-memory@39c00000
+>>> [    0.000000] [      T0] OF: reserved mem: 0x0000000800000000..0x0000000800e801ff (14848 KiB) map non-reusable ibm,firmware-allocs-memory@800000000
+>>> [    0.000000] [      T0] OF: reserved mem: 0x0000001000000000..0x0000001000dc01ff (14080 KiB) map non-reusable ibm,firmware-allocs-memory@1000000000
+>>> [    0.000000] [      T0] OF: reserved mem: 0x0000001800000000..0x0000001800e801ff (14848 KiB) map non-reusable ibm,firmware-allocs-memory@1800000000
+>>> [    0.000000] [      T0] OF: reserved mem: 0x0000000030000000..0x00000000302fffff (3072 KiB) map non-reusable ibm,firmware-code@30000000
+>>> [    0.000000] [      T0] OF: reserved mem: 0x0000000031000000..0x0000000031bfffff (12288 KiB) map non-reusable ibm,firmware-data@31000000
+>>> [    0.000000] [      T0] OF: reserved mem: 0x0000000030300000..0x0000000030ffffff (13312 KiB) map non-reusable ibm,firmware-heap@30300000
+>>> [    0.000000] [      T0] OF: reserved mem: 0x0000000031c00000..0x0000000033fdffff (36736 KiB) map non-reusable ibm,firmware-stacks@31c00000
+>>> [    0.000000] [      T0] OF: reserved mem: 0x0000001ffd510000..0x0000001ffd69ffff (1600 KiB) map non-reusable ibm,hbrt-code-image@1ffd510000
+>>> [    0.000000] [      T0] OF: reserved mem: 0x0000001ffd6a0000..0x0000001ffd6fffff (384 KiB) map non-reusable ibm,hbrt-target-image@1ffd6a0000
+>>> [    0.000000] [      T0] OF: reserved mem: 0x0000001ffd700000..0x0000001ffd7fffff (1024 KiB) map non-reusable ibm,hbrt-vpd-image@1ffd700000
+>>> [    0.000000] [      T0] OF: reserved mem: 0x0000001ffda00000..0x0000001ffdafffff (1024 KiB) map non-reusable ibm,slw-image@1ffda00000
+>>> [    0.000000] [      T0] OF: reserved mem: 0x0000001ffde00000..0x0000001ffdefffff (1024 KiB) map non-reusable ibm,slw-image@1ffde00000
+>>> [    0.000000] [      T0] OF: reserved mem: 0x0000001ffe200000..0x0000001ffe2fffff (1024 KiB) map non-reusable ibm,slw-image@1ffe200000
+>>> [    0.000000] [      T0] OF: reserved mem: 0x0000001ffe600000..0x0000001ffe6fffff (1024 KiB) map non-reusable ibm,slw-image@1ffe600000
+>>> [    0.000000] [      T0] Found initrd at 0xc000000006a40000:0xc00000000815ae9e
+>>> [    0.000000] [      T0] Hardware name: 8247-22L POWER8E (raw) 0x4b0201 opal:skiboot-v5.4.12 PowerNV
+>>> [    0.000000] [      T0] printk: legacy bootconsole [udbg0] enabled
+>>> [    0.000000] [      T0] CPU maps initialized for 8 threads per core
+>>> [    0.000000] [      T0]  (thread shift is 3)
+>>>>> But I my opal version 5.4.12.
+>>>
+>>> Thanks for reporting the issue, will have an look at it.
+>>
+>> I bisected it to a change between 5.19-rc3 and 5.19-rc4, and merge 
+>> commit 8100775d59a6 (Merge tag 'powerpc-5.19-3' of git:// 
+>> git.kernel.org/ pub/scm/linux/kernel/git/powerpc/linux) [1] indeed has 
+>> rng related changes
+>>
+>>>  - Three fixes to wire up our various RNGs earlier in boot so they're
+>>>    available for use in the initial seeding in random_init().
 > 
-> diff --git a/arch/powerpc/platforms/ps3/spu.c b/arch/powerpc/platforms/ps3/spu.c
-> index e817def7f424..2c785bc72565 100644
-> --- a/arch/powerpc/platforms/ps3/spu.c
-> +++ b/arch/powerpc/platforms/ps3/spu.c
-> @@ -190,8 +190,6 @@ static void spu_unmap(struct spu *spu)
->  
->  static int __init setup_areas(struct spu *spu)
->  {
-> -	struct table {char* name; unsigned long addr; unsigned long size;};
-> -
->  	spu_pdata(spu)->shadow = ioremap_prot(spu_pdata(spu)->shadow_addr,
->  					      sizeof(struct spe_shadow),
->  					      pgprot_noncached_wc(PAGE_KERNEL_RO));
+> I confirmed, that commit f3eac426657d (powerpc/powernv: wire up rng 
+> during setup_arch) [2] introduced the Oops.
+> 
+>>> [    0.000000] [      T0] Allocated 4608 bytes for 160 pacas
+>>> [    0.000000] [      T0] 
+>>> -----------------------------------------------------
+>>>
+>>> .......
+>>>
+>>> [   37.407674] [    T900] audit: type=1130 audit(1778043621.931:10): pid=1 uid=0 auid=4294967295 ses=4294967295 msg='unit=lvm2-monitor comm="systemd" exe="/usr/lib/systemd/systemd" hostname=? addr=? terminal=? res=success'
+>>> [   37.413015] [    T900] audit: type=1130 audit(1778043621.937:11): pid=1 uid=0 auid=4294967295 ses=4294967295 msg='unit=systemd-sysctl comm="systemd" exe="/usr/lib/systemd/systemd" hostname=? addr=? terminal=? res=success'
+>>> [   38.448156] [   T2286] powernv_rng: Registered powernv hwrng.
+>>> [   38.575227] [   T2264] tg3 0005:09:00.1 enP5p9s0f1: renamed from eth1
+>>> [   38.582176] [   T2223] tg3 0005:09:00.2 enP5p9s0f2: renamed from eth2
+>>> ........
+>>>
+>>> ////cpuinfo output
+>>>
+>>> processor    : 159
+>>>
+>>> cpu        : POWER8E (raw), altivec supported
+>>> clock        : 2061.000000MHz
+>>> revision    : 2.1 (pvr 004b 0201)
+>>>
+>>> timebase    : 512000000
+>>> platform    : PowerNV
+>>> model        : 8247-22L
+>>> machine        : PowerNV 8247-22L
+>>> firmware    : OPAL
+>>> MMU        : Hash
+>>>
+>>>
+>>> But my system opal version 5.4.12.
+>>> Thanks for reporting the issue, will have an look at it.
+
+Were you able to take a look? I sent in a patch [3], that hasn’t gotten 
+any response.
+
+
+Kind regards,
+
+Paul
+
+
+>> [1]: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=8100775d59a6789c3c6c309de26fac52f129cba8
+> [2]: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=f3eac426657d985b97c92fa5f7ae1d43f04721f3
+[3]: 
+https://lore.kernel.org/all/20260511120413.254934-2-pmenzel@molgen.mpg.de/
 
