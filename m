@@ -1,82 +1,79 @@
-Return-Path: <linuxppc-dev+bounces-24087-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24088-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 305ABC43458
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2026 04:24:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 32C79C43458
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2026 04:26:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gz8Tb1Wj1z2xjN;
-	Mon, 13 Jul 2026 14:24:19 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::52b"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783916659;
-	cv=none; b=YqmK3LGPOYCDKg7HWFaxgckefkedqnTXpj+Zt0/8fz9vKANp4Ypn2hOFBi85VA1pqywA1mTaX+Sp7BaaULXmVFna0VzvnA3ebUA6aRN5P3SRsIPW/c1tFrJA8S0RvTZC+kwnRcPO8mdw5Fji+LEULGpJe7EJJy5ifwwt6H+6GBawUZ6MQFP9J+J2MGX6z9SoS+zK2yqAhGrp42Fe5+ZkQHLuAx8p58I1qp9H3GjwVswW15P9SiQ9LynZ0c4zRQODWmKGmEGtejRo5c6Rxqrunnq2EX80+RFTLLXKGdSSdtU4+Z8mbH61Izm9IkLZLJjTvMptTWQ/YvR+EICq37Iw3Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gz8Xd5Ddfz2xjN;
+	Mon, 13 Jul 2026 14:26:57 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783916817;
+	cv=none; b=EIMWX7XCRXElHMtskNQapGOYDXDWQsLnznp/Z5I5wuXI167aKqb1xOmNWpYphXBsfGIdoAHjY4ycEEtn4mo/6aYNXd2X1bBqylRj76IdxITUwWW5fftN8B96VDh0ZpNogjGgHwG/TlmTkJ/Z0aJz6YjvZ/JX8IyaC61PAqoLyqZJ1BjZe+JMO3LWJHvrB05h++imlWrYQGW/CXn1btSsXdsNzUPDdd1gLIbO0IH6X8Lew6ZVnSkreriAJM1/wLLSil1W2N9A81S8FOXFOT+UgPc8S1zU4WXkeQ7qzS3uqz1BoOQS8OvlqcT0w8FNo3JneL1RS8o6Ovh2A3qEesdhDw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783916659; c=relaxed/relaxed;
-	bh=C58B2cKbjinGkAAF6rks5KVUbvwkNc4eqillvWc3cV4=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=gADmyBoRldgN1+rYd5YPHECFnXw8aCHMTbOFE3uXVhP1SVXKQ+vZ7BtMBNyNhc0oISps+i+iwIJMRkkPoXXdQX3GmDy+SrjkfQq6dGRHtsqYfs4AlBNrAKJWwyzbpcvSH8/sBNsLOK8bGSCwe4MsCm/4YSsp+sjmOjwo8Iby92DzGZQs2kP3xzisk0a0akOGgAef93RITi86RcWjH3o/Vm2xbZiap0x/V/d0O/2IYk1Utv97BIq8WmknWo908e4ckv2tJ9LC+98eKSIiec+hkwAuFY/KOJ60/8nWCrxECx+fdMD13XijUxbXMPZEN+6ucF95v/NLlscBaWBnOCynSw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=qqAGTTf0; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::52b; helo=mail-pg1-x52b.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1783916817; c=relaxed/relaxed;
+	bh=mqLuyZFebgY4+9zKQ6zLMqqW1yWcOHqBGwwEaqwUVF4=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=f+YGNhFNwo2aARQ67k4Qjz87BbPv+hG5Cu8/yePJrhaPYS9Mytq+MUJlnSyLeozqsu61CDHtHRa+Iog28T8t7Gb3cEyXvmt++QrUdGmUjl1kmmv2qu+suLBb+zwRl8ApJNsg/ZjylqYkSYHcpkcSx/3aPP1Fk62kNxJeMiiboCh1m4J5NQT4LQ8ifmdKOT+hokk/j/JpcU7q6xOlFOIBzAZy0zzuwXs9AR+zyekKFB5ETT/C3xfLvr/7tJLEFUOPT3eVQesHBLcSxxUPKvEGaIM6hxsR6CUPAtMsL8rNvuYYaP6AxVW2VrAQxUsJrKauz6AN91BdrnsgUn7JLNO2SQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=TBO1QauO; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=qqAGTTf0;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=TBO1QauO;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::52b; helo=mail-pg1-x52b.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x52b.google.com (mail-pg1-x52b.google.com [IPv6:2607:f8b0:4864:20::52b])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gz8TY3wxxz2xVY
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2026 14:24:16 +1000 (AEST)
-Received: by mail-pg1-x52b.google.com with SMTP id 41be03b00d2f7-c9ef3e1337fso1724669a12.2
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Jul 2026 21:24:16 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1783916654; x=1784521454; darn=lists.ozlabs.org;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=C58B2cKbjinGkAAF6rks5KVUbvwkNc4eqillvWc3cV4=;
-        b=qqAGTTf0gms4e6qq7PRRDe3SzmgFo9wbMAeDFW7btxkwTzU1FJmif2HZLWiR/dky1x
-         R047Vl9I16jFi568GD7D9Y4Qant5kug2Wgn35WN7hoMik2Vl2M/nAw+Gn/eYsb/8rjF5
-         35Y/JzgfqrGIPINsWXUZD9ON0eYWPE0eb2vmxml7T3VFK95Q0tDFEXDDuBUoM/Tr9drJ
-         oXHqPR1V7OmRRwN09wJGw8u9iTVu2z/S8k9KZhRaDwLs59uAGACaISYW5GYOJ2JK9qaj
-         xWC9BlvFYF8EghdW6TNZlZzM0c0t6ZxLAsjNgpBW4Mya8FdYHrhwfRsm9RoMvCvEwHa0
-         9iBg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783916654; x=1784521454;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=C58B2cKbjinGkAAF6rks5KVUbvwkNc4eqillvWc3cV4=;
-        b=jeEM6Ci5LsmfWFNBgiHf6j/7/6zmUQSPZwQkMe624tUqjCMLI9jG6AEAX9bML1JUdY
-         UEU5Vg52f1XSgHGjtyj7DA0zfx1N5Xf9OoT0wwLE+Xi7AsPaHWiueYK/ljWitrE12WB/
-         tQP5zi+B9DlqlAmqMdfEUlyBsLdLuws7IrdObOkgeIpGsA9ZYcu+bXtfmcIvbf/3PEpR
-         2v2MILl3e7qk3wTr1ilnqKDkZnxmIi8ZcZR+ToDeR+NcFbFabP8RnhUbMZ35u17ScCf+
-         eW8NXJ3MXN7l2hEq6TwFdk6num+SPDxZ7CSrPXZggqgqryD01NaLrsBPg14OT6PEp1GF
-         iziQ==
-X-Forwarded-Encrypted: i=1; AHgh+RpQyInon2n8FvQVSTbGR7A70QJ4b+14is5DELwRbUzRj5QxWj3NzjgR0WjNgUFIB9ZcuwoFLmDd5ICYQWU=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyiZAne8mMBGaOq6z3LXRZXn/VXBqAlR31PQyIRfMXKIS4scM5t
-	k6vHxX2wczeEdAvJB/frPSEB/iiefbu203P8K9sHZLSCWfiePlsJWgH4
-X-Gm-Gg: AfdE7cmyuZGsb69Qk47hqRxcE1beVfL5LVPJ90aHOLdNw1S32qx+nfkpIY3zPGnaQhI
-	nJz6gbo7E9BgC215ip/6D4W3Wqb3V5AIRENbp//Zr5opt/Td4Kub4edrWH+vXMwFcP7iCHKoSb8
-	1b3WVWKMXyFbPw7KhUl0ioUWxq1TtBiph08Jz3g2l9aCWBnCpG3zh4ZMgaqeV8UPIRmw9VBjDn/
-	cVuEAdJCWWfnggDlDXMz+fSqTN25bnCpS2FmtWNRhtadxgVtRz3x/gSwszTKmx7sJYDEOxz0wPi
-	ThmAJd0pxD+/iMynTlbLpTXOAYk+J+nAFrMzume46q/SuD+ZBGPE5NVTT8iyG8L93SO6h89hB05
-	KzmjNN0iVU/LPF8mFT1ibGRkJ/6nj7Snl+WM+FPnTeRswHI22XEKuz++tg2JnaFbRW5xzYI1LHH
-	81HXYJYmaZPcY=
-X-Received: by 2002:a05:6a20:e292:b0:3bf:e449:3316 with SMTP id adf61e73a8af0-3c110a17884mr7791913637.14.1783916654109;
-        Sun, 12 Jul 2026 21:24:14 -0700 (PDT)
-Received: from pve-server ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-13b987fc629sm14773232c88.0.2026.07.12.21.24.08
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 12 Jul 2026 21:24:13 -0700 (PDT)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: Sourabh Jain <sourabhjain@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com, mpe@ellerman.id.au
-Cc: npiggin@gmail.com, chleroy@kernel.org, shivangu@linux.ibm.com, hbathini@linux.ibm.com, mahesh@linux.ibm.com, adityag@linux.ibm.com, venkat88@linux.ibm.com, stable@vger.kernel.org, Sourabh Jain <sourabhjain@linux.ibm.com>
-Subject: Re: [PATCH v2 1/3] powerpc/pseries: Move H_WATCHDOG definitions to a common header
-In-Reply-To: <20260713035954.1559605-2-sourabhjain@linux.ibm.com>
-Date: Mon, 13 Jul 2026 09:48:57 +0530
-Message-ID: <se5nv7wu.ritesh.list@gmail.com>
-References: <20260713035954.1559605-1-sourabhjain@linux.ibm.com> <20260713035954.1559605-2-sourabhjain@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gz8Xc5B3Lz2xVY
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2026 14:26:56 +1000 (AEST)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66D3C4SH1284114;
+	Mon, 13 Jul 2026 04:26:49 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=mqLuyZFebgY4+9zKQ6zLMqqW1yWcOHqBGwwEaqwUV
+	F4=; b=TBO1QauOifAt6AHKy67ZqqA3vfHy2P7yctzTicd1XO727fNvexdtHbhsC
+	h65uUdWbKT07V8KBLRT5f9Wln9LXalSRsSbzki3L1tWZoJMSvrE6mzuS+1IpU6Hf
+	BmFsabaPbQhS+Ib0GKbx/8MbbwNG/7E9vuPhUxbJOrPlThm5WEhe+VWQJrrbq3FD
+	9BP9ajCVdbSc05PxKsdcj/6lsBpRld0dBPtkzOI1qXUEclmSM/EfPkae235Wr88d
+	lNCM5qXtBMFZYK+n1a8vGLJB74ov0gRJzeFHsztPLz57rK+3w9B11xY9XWvfvhsH
+	RGR5GPsNrBKAuDFV3rmzrsJ2FyqBQ==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fber86ks0-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 13 Jul 2026 04:26:48 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66D4JaSK031333;
+	Mon, 13 Jul 2026 04:26:47 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fc2uxuqhh-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 13 Jul 2026 04:26:47 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66D4QhCt36241892
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 13 Jul 2026 04:26:43 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 98F9620040;
+	Mon, 13 Jul 2026 04:26:43 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id B907F2004B;
+	Mon, 13 Jul 2026 04:26:40 +0000 (GMT)
+Received: from li-4f5ba44c-27d4-11b2-a85c-a08f5b49eada.bl1-in.ibm.com (unknown [9.123.14.142])
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 13 Jul 2026 04:26:40 +0000 (GMT)
+From: Sourabh Jain <sourabhjain@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com, mpe@ellerman.id.au,
+        ritesh.list@gmail.com
+Cc: npiggin@gmail.com, chleroy@kernel.org, shivangu@linux.ibm.com,
+        hbathini@linux.ibm.com, mahesh@linux.ibm.com, adityag@linux.ibm.com,
+        venkat88@linux.ibm.com, Sourabh Jain <sourabhjain@linux.ibm.com>
+Subject: [PATCH v2 0/2] powerpc/fadump: remove deprecated sysfs compatibility links
+Date: Mon, 13 Jul 2026 09:56:33 +0530
+Message-ID: <20260713042636.1599868-1-sourabhjain@linux.ibm.com>
+X-Mailer: git-send-email 2.52.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,96 +86,75 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzEzMDAzOSBTYWx0ZWRfXylZwstqwi1/Y
+ rkx+RqSnqKuCSijrXyve2kGmE6kTVQU1bwNCsInFGWDfF7VyvVO2hZGAPwDHdXdqm5PR4z8Hq8I
+ UwYsTavfs42T+JGl9wKOS3ei4zSmBPtS92laU4Gtruu1XIG0HPN8WoZ73Mzu29MwbBNr5Ngau9N
+ IqK/HpuhLS18CyFm5IWriyDVelZfLCyKRuuPUuFuvTuOCx8jEv7RJhkkrgGFDaNp4n/NnGpznLt
+ S6MSh/dKklhGiNyhGhpOjIPDMvcMB+5BF4WGdSE5nSBaXzs42xZQLa/qk8e00+MRSLIaeUvKSXI
+ qU6MRBI+Q1hsMnVjjLjVfy1OzDFYN1Oa1jSr5970RE43lsMqgoOjAlL5K1KgDMAAtkUwifb40se
+ mVVBZ1+W1w8ogPsXOJVIAF8xM/GmXp/uI0u2N16eJxMyv9klFS594W+HGuUdr8g6gUFqtbOXDsE
+ JHoCTCgYnwDCvWe6PHg==
+X-Proofpoint-ORIG-GUID: 9y9rzqRiMQWuWeBAco-tqpYrohR6ibqA
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzEzMDAzOSBTYWx0ZWRfX/JIdGt0LSFsx
+ SVQrMMSJeYXQ7zWaeUUSMCnLlHlU4RZmmz1MuhQq2mnW2v7GATdCOeUrxP2X0Bjl2nz6U65/ADh
+ IpDaCAMKJDKR7R60JJ/tFojd/tVhxA0=
+X-Authority-Analysis: v=2.4 cv=TpzWQjXh c=1 sm=1 tr=0 ts=6a546908 cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=uAbxVGIbfxUO_5tXvNgY:22 a=c-FhyHnyx8AdMRAp0osA:9
+X-Proofpoint-GUID: 579pQ4H-SGNFlU_KaCXnALpwHKJttjCF
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-07-13_01,2026-07-10_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 priorityscore=1501 impostorscore=0 malwarescore=0 bulkscore=0
+ lowpriorityscore=0 adultscore=0 spamscore=0 clxscore=1015 phishscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607130039
 
-Sourabh Jain <sourabhjain@linux.ibm.com> writes:
+The FADump sysfs interface was reorganized in 2019 by moving the
+/sys/kernel/fadump_* files under /sys/kernel/fadump/ and marking the
+old paths as deprecated. Compatibility symlinks were retained to avoid
+breaking existing userspace.
 
-> The H_WATCHDOG input and output definitions are currently local to the
-> pseries watchdog driver. The next patch in this series also needs these
-> definitions to issue H_WATCHDOG hypercalls outside the watchdog driver.
->
-> Move the H_WATCHDOG definitions to a new common header,
-> asm/papr-watchdog.h, so they can be shared without duplicating the
-> PAPR watchdog definitions.
->
-> No functional changes.
->
-> Suggested-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-> Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
-> ---
->  arch/powerpc/include/asm/papr-watchdog.h | 58 ++++++++++++++++++++++++
->  drivers/watchdog/pseries-wdt.c           | 53 +---------------------
->  2 files changed, 59 insertions(+), 52 deletions(-)
->  create mode 100644 arch/powerpc/include/asm/papr-watchdog.h
->
-> diff --git a/arch/powerpc/include/asm/papr-watchdog.h b/arch/powerpc/include/asm/papr-watchdog.h
-> new file mode 100644
-> index 000000000000..fb3a511aa861
-> --- /dev/null
-> +++ b/arch/powerpc/include/asm/papr-watchdog.h
-> @@ -0,0 +1,58 @@
-> +/* SPDX-License-Identifier: GPL-2.0-only */
-> +
-> +#ifndef _ASM_POWERPC_CRASHDUMP_PPC64_H
-> +#define _ASM_POWERPC_CRASHDUMP_PPC64_H
+The following deprecated compatibility symlinks are removed by this
+series:
 
-should be _ASM_POWERPC_PAPR_WATCHDOG_H
+/sys/kernel/fadump_enabled
+/sys/kernel/fadump_registered
+/sys/kernel/fadump_release_mem
 
-> +
-> +/*
-> + * H_WATCHDOG Input
-> + *
-> + * R4: "flags":
-> + *
-> + *         Bits 48-55: "operation"
-> + */
-> +#define PSERIES_WDTF_OP_START	0x100UL		/* start timer */
-> +#define PSERIES_WDTF_OP_STOP	0x200UL		/* stop timer */
-> +#define PSERIES_WDTF_OP_QUERY	0x300UL		/* query timer capabilities */
-> +
-> +/*
-> + *         Bits 56-63: "timeoutAction" (for "Start Watchdog" only)
-> + */
-> +#define PSERIES_WDTF_ACTION_HARD_POWEROFF	0x1UL	/* poweroff */
-> +#define PSERIES_WDTF_ACTION_HARD_RESTART	0x2UL	/* restart */
-> +#define PSERIES_WDTF_ACTION_DUMP_RESTART	0x3UL	/* dump + restart */
-> +
-> +/*
-> + * H_WATCHDOG Output
-> + *
-> + * R3: Return code
-> + *
-> + *     H_SUCCESS    The operation completed.
-> + *
-> + *     H_BUSY	    The hypervisor is too busy; retry the operation.
-> + *
-> + *     H_PARAMETER  The given "flags" are somehow invalid.  Either the
-> + *                  "operation" or "timeoutAction" is invalid, or a
-> + *                  reserved bit is set.
-> + *
-> + *     H_P2         The given "watchdogNumber" is zero or exceeds the
-> + *                  supported maximum value.
-> + *
-> + *     H_P3         The given "timeoutInMs" is below the supported
-> + *                  minimum value.
-> + *
-> + *     H_NOOP       The given "watchdogNumber" is already stopped.
-> + *
-> + *     H_HARDWARE   The operation failed for ineffable reasons.
-> + *
-> + *     H_FUNCTION   The H_WATCHDOG hypercall is not supported by this
-> + *                  hypervisor.
-> + *
-> + * R4:
-> + *
-> + * - For the "Query Watchdog Capabilities" operation, a 64-bit
-> + *   structure:
-> + */
-> +#define PSERIES_WDTQ_MIN_TIMEOUT(cap)	(((cap) >> 48) & 0xffff)
-> +#define PSERIES_WDTQ_MAX_NUMBER(cap)	(((cap) >> 32) & 0xffff)
-> +
-> +#endif /* _ASM_POWERPC_CRASHDUMP_PPC64_H */
+The corresponding supported interfaces remain:
 
-ditto
+/sys/kernel/fadump/enabled
+/sys/kernel/fadump/registered
+/sys/kernel/fadump/release_mem
 
--ritesh
+The major userspace consumers have since been updated to use the new
+interface, and the deprecated paths have remained supported for several
+years. This series completes the transition by removing the compatibility
+symlinks and updating the documentation to reference only the current
+sysfs interface.
+
+Sourabh Jain (2):
+  powerpc/fadump: remove old sysfs symlink
+  Documentation/ABI: remove old fadump sysfs doc
+
+ .../ABI/obsolete/sysfs-kernel-fadump_enabled  |  9 -----
+ .../obsolete/sysfs-kernel-fadump_registered   | 10 ------
+ .../obsolete/sysfs-kernel-fadump_release_mem  | 10 ------
+ .../arch/powerpc/firmware-assisted-dump.rst   | 33 ++++++-----------
+ arch/powerpc/kernel/fadump.c                  | 36 -------------------
+ 5 files changed, 11 insertions(+), 87 deletions(-)
+ delete mode 100644 Documentation/ABI/obsolete/sysfs-kernel-fadump_enabled
+ delete mode 100644 Documentation/ABI/obsolete/sysfs-kernel-fadump_registered
+ delete mode 100644 Documentation/ABI/obsolete/sysfs-kernel-fadump_release_mem
+
+-- 
+2.52.0
+
 
