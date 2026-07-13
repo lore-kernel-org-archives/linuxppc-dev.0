@@ -1,60 +1,113 @@
-Return-Path: <linuxppc-dev+bounces-24125-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24126-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 683B3C43458
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2026 17:50:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 225EEC43458
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2026 17:54:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gzVMM4rgFz2xPb;
-	Tue, 14 Jul 2026 03:50:07 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783965007;
-	cv=none; b=XEqfsbBJlddM8hp7q+CBpyvganWyDmP2q9X/PC3rHc5z61dzl+2x9p204x1KconKC1Iug8TnVYqIFBsmCz03rl5tqJcyopZooehYudfR7x0ba2u8T+tKHpz9tqjE0lm30K8qZiwB3ltsf5zSwMq+2YARlCJxDRE4FYNCZ/NTAlpKQ73LXjw3Th7fr65Zu5OOPA8bPiSmA+i7ev8SSDEAmxk0KbcLnS7O1fzFQqu3WE0LekpQRXCHYRZSv6fLKI63rbNSIn046rKfvzgbjKG3WJu9LB4zLDxCuRFU3V4pydfCa8GxQRiDCO3LWiKNnY3Bs3cnP4yU74bKcJxucTMQFA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gzVSb28JKz2yfD;
+	Tue, 14 Jul 2026 03:54:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::736"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783965279;
+	cv=none; b=e6OquWIE+BjdYNnOBzTkuh/5mBPaXgKG6wlkltr6EJXZaijqYih/jDw2DeI17arSa7Rtsjiz/R+0K2bQlOvfZMJP3svt4595fKBTrKYHlTG5nJ1rjvQMGdOJTpgFnF1cqvdfGCQIzBrYlYvkpJd4uTLjc8vwrq/xFa4HH2ZYcvdm4NiUglQf0Z3lv/5dCG6i4Ay98kATV5spXeCllRDDvnLFFe6ixCmM8kBU0N7mLg6jWeH3IfDYALH1lebaMhjC5aOVqtxGcqlFOz9abQBgBlldzcZzbrB5oirdE5jbxwwkB/fXQc7iFzqpN391izIUWVDdsPK/nVMkmmIGn8Whag==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783965007; c=relaxed/relaxed;
-	bh=oTqpNPCaWrQxOsBv2avmtmBMYaMvgyoucn1YWrXaago=;
-	h=From:To:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=SEpZMmmDSaBkRDLe9t4K+0A1EE2KArpw/hYpTT5L8YQWkb1Jq/4S6AFFpIXjR7Idv4STLW4EfxX3sN/WDKrYZXm/8ci3XOqNRg9bJx+qpLLslaWiT+r8NKY9moepRDgekWVOHW3TYB/bFaqjjqdIihn4QShgE2obDwjzYlTGOTfEbOdExgDxnmI+5pK6x3oQfT2qSkINK9lXsgDQuzfOAW/3RRGUcq6SG4AFpv7HR0TSnfzpLxea+rc28/2qJ0VABhLvw19lSg/7TNv83GnmkSRphI/yCjuUv4BR2sdxHWM1Ib8w0WksKjcCw9Ni8y0VsTt09BmDqQo6k68vlwF/XA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XKgx89sE; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1783965279; c=relaxed/relaxed;
+	bh=Yflr35iQtozkrKsWPSXMB3haiCYqPE+VDxf/660hH9k=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=S6cWryOukDbG4Tn8v7ITkv80zr40HsAfxKCA7+xutp5Jz/3+d4n667fYOzBo5UzjTT+Xmio+x5+ugCqLzzEOE8WkNierr1FlUAIvb3K9S48PckpfFKCwpb5nszEhxYXvd1NiF4Wjxg57FSEL/w14h9tXtQMzzU31swPTbiT8O+ml8lkypyv+R0AAulL5vMSQlaxIcN+Cic9LQGjUKtAhf5/ZNpC6TGYOlqzHpkfOipgjzYUVsylhRpL6ajhjgudswUn1igPn3RrXe+O+3AxvUe5nE3QiG/gdQuX3qaIWr2pqiHwxkceWM0zwwXCe37JBhUehnIE5CnNLJvw+WoHhjw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca; dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=k2B4su4w; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::736; helo=mail-qk1-x736.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org) smtp.mailfrom=ziepe.ca
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XKgx89sE;
+	dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=k2B4su4w;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ziepe.ca (client-ip=2607:f8b0:4864:20::736; helo=mail-qk1-x736.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org)
+Received: from mail-qk1-x736.google.com (mail-qk1-x736.google.com [IPv6:2607:f8b0:4864:20::736])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gzVML4VTCz2xLg
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2026 03:50:06 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 8BDC160008;
-	Mon, 13 Jul 2026 17:50:03 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0FD8F1F000E9;
-	Mon, 13 Jul 2026 17:50:00 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783965003;
-	bh=oTqpNPCaWrQxOsBv2avmtmBMYaMvgyoucn1YWrXaago=;
-	h=From:To:In-Reply-To:References:Subject:Date;
-	b=XKgx89sEZ/fdakH+d1jsihzM+Hf1QrNEJmCO6B+ZxC4EvVwq/RqbtVp5gsleEvsXe
-	 Sjcm3pxdeLZbvdQuU1VehdGGY39NusKqkyM07/JMobVlGYaosw7VvZ2j2xlGejgKda
-	 yXVoP0uFJS4esAzIQENF7YXHTy46UF0T5GolMgsS2Td/7lpqbkEh0A8nqj33A6M0iE
-	 G+l6s4AtFu9UyE/f5ctBrNL6OXPJRDuDQEBSJlhfgiDE6BQ27QotEABBJYMTNxgIoH
-	 BZngLeZpYglHNB4YdNgyXcwLFOCaKS852SVVW0ElaSksKH7ufEnXpd0XyNgtxUwEnl
-	 GBbclhO5Qf6yA==
-From: Mark Brown <broonie@kernel.org>
-To: shengjiu.wang@gmail.com, Xiubo.Lee@gmail.com, festevam@gmail.com, 
- nicoleotsuka@gmail.com, lgirdwood@gmail.com, perex@perex.cz, tiwai@suse.com, 
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
- linux-sound@vger.kernel.org, Chancel Liu <chancel.liu@oss.nxp.com>
-In-Reply-To: <20260710070835.3749817-1-chancel.liu@oss.nxp.com>
-References: <20260710070835.3749817-1-chancel.liu@oss.nxp.com>
-Subject: Re: [PATCH v2] ASoC: fsl_sai: Fix spurious BCLK on resume by
- clearing BYP
-Message-Id: <178394658034.7914.749887010931841655.b4-ty@b4>
-Date: Mon, 13 Jul 2026 13:43:00 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gzVSZ1r2sz2xVY
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2026 03:54:37 +1000 (AEST)
+Received: by mail-qk1-x736.google.com with SMTP id af79cd13be357-92e50979c71so338136085a.3
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2026 10:54:37 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ziepe.ca; s=google; t=1783965275; x=1784570075; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=Yflr35iQtozkrKsWPSXMB3haiCYqPE+VDxf/660hH9k=;
+        b=k2B4su4whF+xVEfprbscEwcIrtBSheYVKDOwd8IkwJL2Cpgi+Osl3M9LyfJ3qk6Fql
+         BpQM+R1uykZ+9cphjQH3oFSlgAp/dX00Jlfl2tca5RKQG/+1yWLCuIw4H7N4v5lDi2jv
+         yO4kFUdlh20YcZ3YyE1iIBLh9eVRUvTMzztgnmhAbj+Fguo61vRQwyCUyohusOHuc0fT
+         CWiFNP3MVqsYsjx010eAeaOqDo8ZQXy1JPMjXXLSVmT2gW76KJQrHNkkijN/GYazLWW/
+         tdV/HrirtJTlEvjrhgh4zTdRttYIFENeGxT3tg6MKmt7LpwpzMYuDJgAhXzgho7hVFtS
+         ZpCA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1783965275; x=1784570075;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=Yflr35iQtozkrKsWPSXMB3haiCYqPE+VDxf/660hH9k=;
+        b=NUTW8MTSQ+rw0SGw9Vx7EZeknPZmVq2clKg8bDVM+en6np04yOSvAKoytsEhR3Ro7r
+         d6AUWmYrQQOM+5RcXt0v29zk3Mt3y9/FWT6+E2NDUZYLrk7//pSgGjfL3YJ4WHiMYsP1
+         pS6gCCquFQDCZXpBYBZEhKxm2KanqZqEDKx9Uh1drVAXwd7/0fWxs3DyoqSf8Tx3kMg2
+         ZYkaVDmHkOMbOxDDsfmQNvmolJjdo4mXqZ8XDa0NPJCR4gXVnFS2tmIC4C9xbzVxfRwj
+         9Knq+REKruoGY9htQfIXKTG7uhp0TSKpB9zo8ue93mqgyrIMOf01UelCpeBdHoVANEZ4
+         TnRw==
+X-Forwarded-Encrypted: i=1; AHgh+Rp+SNy0YnQV0ZZT3AXzG6QS0IKQ71LhnuSJA9HxfXbYnoraTzRxOI/MN2lG0EAsReGVyAMTYFEMCnGotuk=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yy/MwPMPFO/8U0G8A3q0ta9istp+ycH0VgsckvMlBHvTZJjnDWB
+	NJjUWlzjh+jSfOQfK5BuaniAiF1q2sLc5aubeGrqFi2SjW7igb3mP/4fYci/CLQ5koc=
+X-Gm-Gg: AfdE7ck4oc0KjFuJh/bsFLYfk2ofGnCLeWOAPnKZJX9fetc28LT3TXTwY6LUYiuR1O7
+	R0dUjJt0JzHMvIkxzGjfIpXQ3aObgLsnwnT+wwuA82e0n73VaaO2vEqE489kwZ7dW/QVdTCW92D
+	BVx6RFHVzxDH98CjdI/LAmPX0h8HmjRxpBKUZWUx4n9iPAq5MNDIp/bXrbdiuxqbJXyp/o658Qi
+	8espBA6wN+ADym73zOjj42jkmaVvoo3v6tbG/IJO2Kfggf2BYzqocBdiRoMeHe/ExqvEiShMCMg
+	9Z3HZiNTTrfu7WdOYoXYFVxe75nk+8mERWKVa7jH4nhYUOSGuGmFQtvH2/6XMS/n24fyq4bmFWN
+	563WU/Y7NfUo/htAS1+ZTYsIz6cvzPCU23yBAqSIPZ0kjCGGI2uSLhZ2yXLdy
+X-Received: by 2002:a05:620a:469e:b0:915:94f7:55df with SMTP id af79cd13be357-92ef2bd609cmr983527785a.20.1783965274729;
+        Mon, 13 Jul 2026 10:54:34 -0700 (PDT)
+Received: from ziepe.ca ([159.2.72.92])
+        by smtp.gmail.com with ESMTPSA id af79cd13be357-92ee5cfdf6fsm1229104285a.24.2026.07.13.10.54.34
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 13 Jul 2026 10:54:34 -0700 (PDT)
+Received: from jgg by wakko with local (Exim 4.97)
+	(envelope-from <jgg@ziepe.ca>)
+	id 1wjKrR-0000000DwzJ-2as1;
+	Mon, 13 Jul 2026 14:54:33 -0300
+Date: Mon, 13 Jul 2026 14:54:33 -0300
+From: Jason Gunthorpe <jgg@ziepe.ca>
+To: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>
+Cc: iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev,
+	Robin Murphy <robin.murphy@arm.com>,
+	Marek Szyprowski <m.szyprowski@samsung.com>,
+	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
+	Steven Price <steven.price@arm.com>,
+	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Jiri Pirko <jiri@resnulli.us>, Mostafa Saleh <smostafa@google.com>,
+	Petr Tesarik <ptesarik@suse.com>,
+	Alexey Kardashevskiy <aik@amd.com>,
+	Dan Williams <dan.j.williams@intel.com>,
+	Xu Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+	linux-s390@vger.kernel.org,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org,
+	Michael Kelley <mhklinux@outlook.com>
+Subject: Re: [PATCH v7 02/22] dma-pool: fix page leak in atomic_pool_expand()
+ cleanup
+Message-ID: <20260713175433.GI3133966@ziepe.ca>
+References: <20260701054926.825925-1-aneesh.kumar@kernel.org>
+ <20260701054926.825925-3-aneesh.kumar@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -68,50 +121,34 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.16-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1133; i=broonie@kernel.org;
- h=from:subject:message-id; bh=WtYPtV4MJog93ZrJwWt4xWHTXtBb2ZPTGPHT9LdEwVo=;
- b=owEBbQGS/pANAwAKASTWi3JdVIfQAcsmYgBqVSVI9NfilzGwGrSIbV2rLiUxrG76zo2fxrROo
- Egxs2c1VECJATMEAAEKAB0WIQSt5miqZ1cYtZ/in+ok1otyXVSH0AUCalUlSAAKCRAk1otyXVSH
- 0JnAB/4rmEQnGy06Oxp63y64WqHpuVgj2i/+Q2l0NCUNs6XjWAPuN5VesKQc+BMOOZd26HIHiFp
- pS+4ipcRwKkhAtPNuU5rmp72gqK2rUkAurZOM6H4wEmsyiZ2vj3hZUXarmBvUnFaFBuJn50DD61
- JefN0tFt3F7IQf1JxEhp2PndCUROzTs3bRFoYensPBEhOp+17OVHRBnYOSwDGSarlEU4WlrWwVH
- TDL6mOnMg/Wh3cJnM1ZIMcZJMmBfnKufWqAUhIsEDHvi8SvOsq7XTOqXsAMeC3Zd3ERqG0nsQpa
- vDzPl3UvG7jGuFvVMJjwq3Q/Ah9saLYf0rmOeH8z4chmkekj
-X-Developer-Key: i=broonie@kernel.org; a=openpgp;
- fpr=3F2568AAC26998F9E813A1C5C3F436CA30F5D8EB
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260701054926.825925-3-aneesh.kumar@kernel.org>
 
-On Fri, 10 Jul 2026 16:08:35 +0900, Chancel Liu wrote:
-> ASoC: fsl_sai: Fix spurious BCLK on resume by clearing BYP
+On Wed, Jul 01, 2026 at 11:19:06AM +0530, Aneesh Kumar K.V (Arm) wrote:
+> @@ -115,8 +116,10 @@ static int atomic_pool_expand(struct gen_pool *pool, size_t pool_size,
+>  	 */
+>  	ret = set_memory_decrypted((unsigned long)page_to_virt(page),
+>  				   1 << order);
+> -	if (ret)
+> +	if (ret) {
+> +		leak_pages = true;
+>  		goto remove_mapping;
+> +	}
 
-Applied to
+Truely these _set_memory_decrypted() things are an insane API. So a if
+it fails to decrypt it can be in any messy state?
 
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-7.2
+> @@ -130,14 +133,15 @@ static int atomic_pool_expand(struct gen_pool *pool, size_t pool_size,
+>  				   1 << order);
+>  	if (WARN_ON_ONCE(ret)) {
+>  		/* Decrypt succeeded but encrypt failed, purposely leak */
+> -		goto out;
+> +		leak_pages = true;
 
-Thanks!
+At least this one makes some sense..
 
-[1/1] ASoC: fsl_sai: Fix spurious BCLK on resume by clearing BYP
-      https://git.kernel.org/broonie/sound/c/d091132889c1
+Reviewed-by: Jason Gunthorpe <jgg@nvidia.com>
 
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.
-
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
-
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
-
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
-
-Thanks,
-Mark
-
+Jason
 
