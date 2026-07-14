@@ -1,128 +1,106 @@
-Return-Path: <linuxppc-dev+bounces-24192-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24193-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 07308C43458
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2026 08:20:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 55F78C44501
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2026 08:40:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gzsgc1256z2y8p;
-	Tue, 14 Jul 2026 18:20:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gzt6H4Hclz2xVY;
+	Tue, 14 Jul 2026 18:40:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.130
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784017228;
-	cv=none; b=hxxuEYzvSib5bLcn2aIfQdCAJC12ZXxDQsyeF4WTbvj1eSd/9tx+w2RjOyFB0XLdBlanlyqZqK/4BehVbMaII91/Aw83gdX7TEVBdWwSN0DybQtOnvtWNNRsLidBxLnMkN9Ev8tc+WUN44FztGEF+Li5aiyKkF71v75dQY6OkWiOSw+zobzMlgyqGJTp7li0h1FsdYQ+rVzFfTf5I3j6yvdibcnO1DTS/4D8ckx/APwOJ1KJM+9vK0mOyvNuvFcvd1gtZYSAvq9micDQzM3wgKKQf5CYGnbCmgLpX+/KZHOBgsHhVvDoQwNbi6vpJhkm55+C/MsHjN20Rzu70M/xqw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784018407;
+	cv=none; b=BiiLVhRt5T6fxLbTbTOLmRldvWLgDw5e/DzEmgfbAP8gOwPGrL/pf4vH+hSpEYjeXjld1KixYLFaf9eBfqNne6Ve1kWyUiqaPCBNeNNBvjWC6mOUh18O7O59jnGk7EZCew0EeMOCMG672oUNHYmAKHvF4XrimQFAB9JJietymfyB+Eelgc3qsnG2sV1blmC0rbM0y0w26Rm6bBJD8dhiMK3rWV6Bbhc9oHNPnzmRVgfsD7AeTUOq5neq3/0W3pOSdHHxYOzA/vfu6by914JJJ30lHkATvzc9qNxnwMR7KUXOl/w0kH48QEmH6MNSf5Eb48w2GknU7GPgwtmoQ9na/Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784017228; c=relaxed/relaxed;
-	bh=j1nzoIiIS1i6/8kifcmUM+0AdKBs7HiZlyka0H+4a9w=;
+	t=1784018407; c=relaxed/relaxed;
+	bh=w9715Yz9COQgcSHQikGgGymVBJrFS/wJDfe2eKWAzmY=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=G6EZ/I910s/blXL+4QR/OzjbjU+x+LOKlC7XMzDCdbnqiXUenZywDMId1+8GGWXXjCn4d4ccmcWWoVSVITEvUQnlv2Pd5j+uUZkIpvUnERzGhnOFPTHEVJaKl5cOALe8pb80HBV3X8hdX7bQmiMAhY1t7vHQWu07/nL0jVNZk7Cz3EXxkr06nBPVZ9t8TwupBL83rS+klCQHzMwLA2oTRA+rY4ktP7VwGZBMnWUaj8onku0F+Xde5AVVOKNo8fJm+8DciLYUQjXTPTd+/HkaRaDaok0wSgCjRue512V9hT/tqbUBzxM4L3xHuSgR6gwBMLb6bkiTUvzSFZNUY7+rog==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=DKJ09ll/; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=kyKADJBo; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=DKJ09ll/; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=kyKADJBo; dkim-atps=neutral; spf=pass (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
+	 Content-Type:Content-Disposition:In-Reply-To; b=StJZbmUx9KUdsRRHDKteWMaSN3RO2UlHuUtmjxqCCBhUezpq2eW9cdAdMUjQksWFZsZSF5m0J61QjQd6QkFXinSDH1EHHklbroY7EewK6z10D0pDT33RlIf3N7/VqMdxbCschVK3+tZQ6Xw0L2z8xFl2BvMCnf3fC+k3pY5dPV2BWupmXJs9YRgmtAjjdeOY7uh2UzVmlOWXcrPNAEFk24EE/TDaO/3pQev/Pcv7ib1Eoi6WzCM3wEM5HgyNcXkIOb7UpdsUnvmn4ajfWYoDP/V/XtwGZ3oyngMFMlYiRFV3GbLcQvmJvaFC+7e0R2eb3/uIQbj3cdi33SaM1Lepeg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=fd90Yu/v; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=ZLKthYKr; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=swPFPzDc; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=yGiPbGwq; dkim-atps=neutral; spf=pass (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=DKJ09ll/;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=kyKADJBo;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=DKJ09ll/;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=kyKADJBo;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=fd90Yu/v;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=ZLKthYKr;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=swPFPzDc;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=yGiPbGwq;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org)
 Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gzsgZ2Bcmz2y7W
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2026 18:20:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gzt6G27qQz2xRs
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2026 18:40:06 +1000 (AEST)
 Received: from kunlun.suse.cz (unknown [IPv6:2a07:de40:b306:2000::2])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 5B37B77D67;
-	Tue, 14 Jul 2026 08:20:21 +0000 (UTC)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id BFAE277D88;
+	Tue, 14 Jul 2026 08:40:02 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1784017221; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1784018403; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=j1nzoIiIS1i6/8kifcmUM+0AdKBs7HiZlyka0H+4a9w=;
-	b=DKJ09ll/zFwCXlbl6voF6Ew/i+nGfuIXvwr6+pPYyJYkjrugeEud/q+Ki5j7VPl5fqg4RU
-	7v0Fr5aEHfh6wFz8BRS8uap35P8g2QzVdrMcXNhwITMtJjhdQjQ/wGAESjusjginjvTIaB
-	s/IaH99ENQnMIs5WMPNIymEU1PqEzNQ=
+	bh=w9715Yz9COQgcSHQikGgGymVBJrFS/wJDfe2eKWAzmY=;
+	b=fd90Yu/vYqin+DOmDo2grtNXGLfs/4fl+7Ivvh4GJRpGOavVQ0e0E35Sv7Ow7Aaxd/A/Q2
+	i4gB8qLldsbRqxmXPDhEacFuNqb8gaLjdP1esJ5/W4GyNh6LYdzY0m0hiJKJEu86lwsy6r
+	n8O+jsJQgHwWcMDbOVg4RL49AkwH0Bs=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1784017221;
+	s=susede2_ed25519; t=1784018403;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=j1nzoIiIS1i6/8kifcmUM+0AdKBs7HiZlyka0H+4a9w=;
-	b=kyKADJBodi7qpCF8SOU3elSKX6/nsxl0ZSGyW3McIGkcmKNlth+AD/XvcaQdtO7s/xaBLW
-	/BdlcT2IZYRDreCA==
+	bh=w9715Yz9COQgcSHQikGgGymVBJrFS/wJDfe2eKWAzmY=;
+	b=ZLKthYKrCuejE3fTIMfqv83NTR83YNCQml6R8ku17Vga3LwVRNbnafLfo6b0SX47fqIJoB
+	i0VeYcs90YvokhBg==
 Authentication-Results: smtp-out1.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b="DKJ09ll/";
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=kyKADJBo
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=swPFPzDc;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=yGiPbGwq
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1784017221; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1784018402; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=j1nzoIiIS1i6/8kifcmUM+0AdKBs7HiZlyka0H+4a9w=;
-	b=DKJ09ll/zFwCXlbl6voF6Ew/i+nGfuIXvwr6+pPYyJYkjrugeEud/q+Ki5j7VPl5fqg4RU
-	7v0Fr5aEHfh6wFz8BRS8uap35P8g2QzVdrMcXNhwITMtJjhdQjQ/wGAESjusjginjvTIaB
-	s/IaH99ENQnMIs5WMPNIymEU1PqEzNQ=
+	bh=w9715Yz9COQgcSHQikGgGymVBJrFS/wJDfe2eKWAzmY=;
+	b=swPFPzDcs8ZGYwuQDuJ0V5yul8A9oQIF/esqALj1kVj0w9dIfq3r+3W7zxHry1UROiQ+80
+	oqSZbbTm7ZmLh4N0ZOb4kxQpomPOCgb+Q9XcWvFEXCapw8CQA0kITGEqapRNisjdoHdpf5
+	5zekOTzHk/+6np+AAxSb2SQ7aTKvL18=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1784017221;
+	s=susede2_ed25519; t=1784018402;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=j1nzoIiIS1i6/8kifcmUM+0AdKBs7HiZlyka0H+4a9w=;
-	b=kyKADJBodi7qpCF8SOU3elSKX6/nsxl0ZSGyW3McIGkcmKNlth+AD/XvcaQdtO7s/xaBLW
-	/BdlcT2IZYRDreCA==
-Date: Tue, 14 Jul 2026 10:20:20 +0200
+	bh=w9715Yz9COQgcSHQikGgGymVBJrFS/wJDfe2eKWAzmY=;
+	b=yGiPbGwqtW7Lt8OjX6gJRodZOTMEtzl9msgc/30cP/QVfPyq7E2RA0QfMPO3OGCKfQc4Nc
+	IWnrgidLqmHVo0Dg==
+Date: Tue, 14 Jul 2026 10:40:01 +0200
 From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
 To: Thomas Gleixner <tglx@kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
-	Peter Zijlstra <peterz@infradead.org>,
 	Michael Ellerman <mpe@ellerman.id.au>,
 	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	linuxppc-dev@lists.ozlabs.org, Kees Cook <kees@kernel.org>,
-	Huacai Chen <chenhuacai@kernel.org>, loongarch@lists.linux.dev,
-	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+	linuxppc-dev@lists.ozlabs.org, Huacai Chen <chenhuacai@kernel.org>,
+	loongarch@lists.linux.dev, Paul Walmsley <pjw@kernel.org>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
 	linux-riscv@lists.infradead.org,
 	Sven Schnelle <svens@linux.ibm.com>, linux-s390@vger.kernel.org,
 	x86@kernel.org, Mark Rutland <mark.rutland@arm.com>,
 	Jinjie Ruan <ruanjinjie@huawei.com>,
-	Andy Lutomirski <luto@kernel.org>, Oleg Nesterov <oleg@redhat.com>,
-	Richard Henderson <richard.henderson@linaro.org>,
-	Russell King <linux@armlinux.org.uk>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Guo Ren <guoren@kernel.org>,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	Helge Deller <deller@gmx.de>,
-	Yoshinori Sato <ysato@users.sourceforge.jp>,
-	Richard Weinberger <richard@nod.at>,
-	Chris Zankel <chris@zankel.net>,
-	linux-arm-kernel@lists.infradead.org, linux-alpha@vger.kernel.org,
-	linux-csky@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
-	linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org,
-	linux-sh@vger.kernel.org, linux-um@lists.infradead.org,
-	Arnd Bergmann <arnd@arndb.de>, Vineet Gupta <vgupta@kernel.org>,
-	Will Deacon <will@kernel.org>, Brian Cain <bcain@kernel.org>,
-	Michal Simek <monstr@monstr.eu>, Dinh Nguyen <dinguyen@kernel.org>,
-	"David S. Miller" <davem@davemloft.net>,
-	Andreas Larsson <andreas@gaisler.com>,
-	linux-snps-arc@lists.infradead.org, linux-hexagon@vger.kernel.org,
-	linux-openrisc@vger.kernel.org, sparclinux@vger.kernel.org,
-	linux-arch@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
-	linux-doc@vger.kernel.org
-Subject: Re: [patch 13/18] entry: Make trace_syscall_enter() return type bool
-Message-ID: <alXxRMjQsBas4AJv@kunlun.suse.cz>
-References: <20260707181957.433213175@kernel.org>
- <20260707190254.338083894@kernel.org>
- <ak5ySpil83TNWxeq@kunlun.suse.cz>
- <87se5tqkyp.ffs@fw13>
- <alDQ7isUKJFl8Va4@kunlun.suse.cz>
- <87a4rxqnar.ffs@fw13>
+	Magnus Lindholm <linmag7@gmail.com>,
+	"Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>,
+	Jonathan Corbet <corbet@lwn.net>, Radu Rendec <radu@rendec.net>
+Subject: Re: [patch 4/4] entry, treewide: Make
+ syscall_enter_from_user_mode[_work]() indicate syscall execution
+Message-ID: <alX14R_pxloY_baW@kunlun.suse.cz>
+References: <20260712134433.549076055@kernel.org>
+ <20260712141346.772209074@kernel.org>
+ <alSlg72c8xmjaj48@kunlun.suse.cz>
+ <871pd6r0ou.ffs@fw13>
+ <alXlSUcT2TWOlM7r@kunlun.suse.cz>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -139,113 +117,89 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <87a4rxqnar.ffs@fw13>
-X-Spamd-Bar: +++++++++++++
-X-Rspamd-Queue-Id: 5B37B77D67
+In-Reply-To: <alXlSUcT2TWOlM7r@kunlun.suse.cz>
+X-Spamd-Bar: ++++++++++++++
+X-Rspamd-Queue-Id: BFAE277D88
 X-Rspamd-Action: add header
 X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
-X-Spamd-Result: default: False [13.02 / 50.00];
+X-Spamd-Result: default: False [14.86 / 50.00];
 	SPAM_FLAG(5.00)[];
 	NEURAL_SPAM_LONG(3.50)[1.000];
 	BAYES_HAM(-3.00)[100.00%];
+	NEURAL_SPAM_SHORT(2.67)[0.891];
 	HFILTER_HOSTNAME_UNKNOWN(2.50)[];
 	RDNS_NONE(2.00)[];
 	ONCE_RECEIVED(1.20)[];
 	HFILTER_HELO_IP_A(1.00)[kunlun.suse.cz];
-	NEURAL_SPAM_SHORT(0.83)[0.278];
 	HFILTER_HELO_NORES_A_OR_MX(0.30)[kunlun.suse.cz];
 	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
 	MIME_GOOD(-0.10)[text/plain];
 	MX_GOOD(-0.01)[];
-	MIME_TRACE(0.00)[0:+];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
 	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	RCPT_COUNT_TWELVE(0.00)[19];
 	ARC_NA(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmx.de];
-	FREEMAIL_CC(0.00)[vger.kernel.org,infradead.org,ellerman.id.au,linux.ibm.com,lists.ozlabs.org,kernel.org,lists.linux.dev,dabbelt.com,lists.infradead.org,arm.com,huawei.com,redhat.com,linaro.org,armlinux.org.uk,linux-m68k.org,alpha.franken.de,gmx.de,users.sourceforge.jp,nod.at,zankel.net,lists.linux-m68k.org,arndb.de,monstr.eu,davemloft.net,gaisler.com,lwn.net];
+	MIME_TRACE(0.00)[0:+];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com];
+	TO_DN_SOME(0.00)[];
 	DNSWL_BLOCKED(0.00)[2a07:de40:b306:2000::2:from];
 	FROM_EQ_ENVFROM(0.00)[];
 	FROM_HAS_DN(0.00)[];
-	TO_DN_SOME(0.00)[];
-	RCPT_COUNT_GT_50(0.00)[52];
-	MISSING_XM_UA(0.00)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
 	RCVD_COUNT_ZERO(0.00)[0];
 	DKIM_TRACE(0.00)[suse.de:+];
-	R_RATELIMIT(0.00)[to_ip_from(RLs1yuyu6ywojxyk8y3ncu5g39)];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:dkim]
+	MISSING_XM_UA(0.00)[];
+	FREEMAIL_CC(0.00)[vger.kernel.org,ellerman.id.au,linux.ibm.com,lists.ozlabs.org,kernel.org,lists.linux.dev,dabbelt.com,lists.infradead.org,arm.com,huawei.com,gmail.com,lwn.net,rendec.net];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:dkim,kunlun.suse.cz:mid,kunlun.suse.cz:helo]
 X-Spam: Yes
 
-On Sat, Jul 11, 2026 at 10:33:16PM +0200, Thomas Gleixner wrote:
-> Michal!
-> 
-> On Fri, Jul 10 2026 at 13:01, Michal Suchánek wrote:
-> > On Wed, Jul 08, 2026 at 10:34:38PM +0200, Thomas Gleixner wrote:
-> >> does not make #2 magically go away. It's still the same problem whether
-> >> you like it or not.
-> >
-> > However, reading the syscall number from pt_regs only after
-> > syscall_enter_from_user_mode exits does.
-> 
-> That does not solve anything at all.
-> 
-> TBH, your communication style is annoying as hell. You fail to provide
-> any useful arguments and explanations despite me giving you a proper
-> analysis. And I'm absolutely tired of this.
-> 
-> So let me try again for _ONE_ last time to explain you why your ppc/s390
-> world view is broken and let's look at the current code (irrelevant
-> portions omitted).
-> 
-> static __always_inline long syscall_trace_enter(struct pt_regs *regs, unsigned long work)
-> {
-> 	if (work & SYSCALL_WORK_SYSCALL_USER_DISPATCH) {
-> #1		if (syscall_user_dispatch(regs))
-> 			return -1L;
-> 	}
->         
-> 	if (work & (SYSCALL_WORK_SYSCALL_TRACE | SYSCALL_WORK_SYSCALL_EMU)) {
-> #2		ret = arch_ptrace_report_syscall_entry(regs);
-> 		if (ret || (work & SYSCALL_WORK_SYSCALL_EMU))
-> 			return -1L;
-> 	}
-> 
-> 	/* Do seccomp after ptrace, to catch any tracer changes. */
-> 	if (work & SYSCALL_WORK_SECCOMP) {
-> #3		ret = __secure_computing();
-> 		if (ret == -1L)
-> 			return ret;
-> 	}
-> 
-> 	/* Either of the above might have changed the syscall number */
-> #4	syscall = syscall_get_nr(current, regs);
-> 
-> 	if (unlikely(work & SYSCALL_WORK_SYSCALL_TRACEPOINT))
-> #5		syscall = trace_syscall_enter(regs, syscall);
-> 
->         return syscall;
-> }
-> 
-> #1) The user dispatch mechanism does not modify the syscall return
->     value, but it can rollback the syscall and tell the call site to
->     skip the invocation.
-> 
->     The mechanism used in upstream today is to return -1L as the syscall
->     number which makes the architecture specific entry code skip the
->     syscall and refrain from touching the return value.
-> 
-> #2) ptrace
-> 
->     ptrace can poke whatever it wants into the syscall number storage
->     via ptrace_set_syscall_info_entry() -> syscall_set_nr()
-> 
->     It does not set the return code.
-> 
->     It does not abort the syscall when the poked syscall number is -1L.
+On Tue, Jul 14, 2026 at 09:29:13AM +0200, Michal Suchánek wrote:
+> On Tue, Jul 14, 2026 at 12:20:49AM +0200, Thomas Gleixner wrote:
+> > On Mon, Jul 13 2026 at 10:44, Michal Suchánek wrote:
+> > > On Sun, Jul 12, 2026 at 11:25:32PM +0200, Thomas Gleixner wrote:
+> > >> The return values of syscall_enter_from_user_mode[_work]() are
+> > >> non-intuitive. Both functions return the syscall number which should be
+> > >> invoked by the architecture specific syscall entry code. The returned
+> > >> number can be:
+> > >> 
+> > >>   - the unmodified syscall number which was handed in by the caller
+> > >> 
+> > >>   - a modified syscall number (ptrace, seccomp, trace/probe/bpf)
+> > >> 
+> > >> That has an additional twist. If the return value is -1L then the caller is
+> > >> not allowed to modify the return value as that indicates that the modifying
+> > >> entity requests to abort the syscall and set the return value already. That
+> > >> can obviously not be differentiated from a syscall which handed in -1 as
+> > >> syscall number.
+> > >> 
+> > >> The most trivial way to deal with that is:
+> > >> 
+> > >>     set_return_value(regs, -ENOSYS);
+> > >>     nr = syscall_enter_from_user_mode(regs, nr);
+> > >>     if (valid(nr))
+> > >>     	handle_syscall(regs, nr);
+> > >> 
+> > >> That's what LOONGARCH, RISCV, and X86 do. But PowerPC and S390 do not
+> > >> preset the return value, so when user space hands in -1 and there is
+> > >> nothing setting the return value in the entry work code, then the syscall
+> > >> is skipped but the return value is whatever random data has been in the
+> > >> return value register.
+> > >
+> > > The reason why PowerPC and S390 do not preset the return value is that
+> > > the return value uses the same register as the syscall number. There are
+> > > apparently other architectures on which the return value overlaps with
+> > > the arguments which also do not preset the return value for that reason.
+> > > If they would use the generic entry the same problem would arise.
+> > 
+> > That's an implementation choice of PPC/S390 as I explained before, which
+> > could trivially be solved by having an explicit pt_regs->return_val
+> > member,
 
-Indeed, it does not abort on -1 syscall number anymore although there
-are still comments around that claim that setting the syscall number to
--1 is special.
+Sorry, I got confused, and was looking at the previous revision of the
+patchset.
+
+In this revision I do not see any obvious problem that did not exist
+before.
 
 Thanks
 
