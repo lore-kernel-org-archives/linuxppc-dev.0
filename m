@@ -1,46 +1,46 @@
-Return-Path: <linuxppc-dev+bounces-24231-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24232-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 32A0EC44501
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2026 14:07:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 037CCC44501
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2026 14:07:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h01MS0T3pz3c44;
-	Wed, 15 Jul 2026 00:07:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h01Mb4gNGz3c52;
+	Wed, 15 Jul 2026 00:07:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784038020;
-	cv=none; b=bLaQDh5Rh2kNOpormVrW5636KGcabE2E7SmibwkMEeExGV/GjGPGe6RJBNLkT1FpdmafjWKDTIsx9aA61PRtG0a7ftOxIRbDi8MN5El+y/S11QlhnArpSQAAmLD2zmZR9GdvwLdVS8Bydafzly44O7U2v9rAboIq4NkI1lmYcK/wnwjiRNcMcNPrItwnHF3AEEJM9OeeAVoLriS8Hq+XaDlDTe2lG3cHfTH+I4r9ZC8UlBxq5NNXf6ZZygcZWekk27KdkQXcXloMv2Gd1MrDUqR/kliOfoa3x71U1BoXR3Rn9AamQCwaCNxjzDWTMIE01xn7MuPkLbtnSMrQcoWwhw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784038027;
+	cv=none; b=j/aYwztVdGBMsQzyyZ8DjgZEccNmtxHyxyGhwtCSGDgF8c6MYD5VmWnM9WUbSpejD21mVmb1XW1/ZDpd9oFTgavOBjMbydFRcC2eWfcs0lFSL64OCvr/cKwEoS23iUHiJ3VfjGqx7e0/689wX5R28hauaRa4rqt059KOBcu/RQFmNWJd8VVo2MPxBF7BwpGl7208D7X949YreIpXnZPqJkNMs0oI2E6j26/4iIDd5XjnEoaWPq9PpZdUZgoA3BD/Ow2bPLgxn2+Fx2PPrb4d14HzVFnaSXTyEfdWFq9HbQMtov5XV4vLwjXkcm3MelXz004lDLDbj1A+nKdmfyGajw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784038020; c=relaxed/relaxed;
-	bh=W11OhnWcGHVOZmGTaRtReQ7d9g+T7FOsV0FghI7A38A=;
+	t=1784038027; c=relaxed/relaxed;
+	bh=iM8SB61kZfRlZBBjK1HisTzxprKerLF7NioQQq06LHM=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=JninpEWf96CaDk0pVdvNOWy10iXMv1EoHd10LCojnF/x7ALazBYq0X/l8NVH9W9wwNrA4U23ULmkUm0MSwyvsdS9xuxHx76iw1j9A5M3+MVuxV5N+Gy4pv3CRMSsTLnJZYikW0uH2AKuH8YdxUj+NUzgnx2mVObO1lhyf3T+9BKsOt+M/jxMAYJ2XF893Mb8XMtlvbs/UHnekMsS0QQACZsHPA0ptJwuWpetW2hbO4h64RZHFAE+YZbaJmPLIsUA6v83kcGdEJuyPQuSSPfd4JC3qxkmxuMxpb6UQ9deR3q5qTNttkOYtAcw7nn1WUn7a0OuJ6Gs1mpY8YIXzEsIfA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=Vw/Dcaip; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
+	 In-Reply-To:To:Cc; b=mAvOIRKshGNSZs2AeW9SWgijR+l0s8tga+17wM8KcOoxtOjUpxqkZ2W5ixCuHRb4VAuaabXvYWpu+vqVKUD7OfHKSKVF/Mg5b7SIVIJF/CQN+kAJ/niqbM7q0MgfBDWlM2sqlMmiouVnhq7nqfnacZUiIlxffNKt9P+2Tc0zDP8Q2+nw92gWrl+ZoOBzHdvNB7lo94T+KpFAOsnVd9RjISSxxSaIDQoyKqdZe2FWYEjlL1WKGVNV1vLFnw64BvsTSvxguMdNsdE4Vvwx2zmLkhvvdRo/6JQXlRv0Q/Xlq7HgegjqdHtAGzli9CoNQirp1j/Q/hSts/nvHR888IEShw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=YzY9thwi; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=Vw/Dcaip;
+	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=YzY9thwi;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org)
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h01MQ6CN6z3092
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2026 00:06:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h01MZ4M3Wz3c4y
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2026 00:07:06 +1000 (AEST)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 357EF1BCA;
-	Tue, 14 Jul 2026 07:06:23 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id E8A9E1BF3;
+	Tue, 14 Jul 2026 07:06:30 -0700 (PDT)
 Received: from localhost.localdomain (e123572-lin.cambridge.arm.com [10.2.208.46])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 0D7CA3F7B4;
-	Tue, 14 Jul 2026 07:06:19 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id BE3913F7B4;
+	Tue, 14 Jul 2026 07:06:27 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1784037987; bh=0Ls2F5YWtI+Ww29NmMlh3ILvDXBv7NqjYutzPTWlWAY=;
+	t=1784037995; bh=brubU8ipNy1ujnPWOSJsU4D9Csfsl5oNxDWj3XnSBxg=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=Vw/DcaipPFO7n11+mYGQ7sNvjiW4bDFKvxM87pb4Zb7kuc57MeI8Zk26C7/35oDk9
-	 zqUNmHcLyquGe9NI65E4Her4eCylK5913yMxY4xf0bE1WBcJGqN4rBz8A8PaHgPJxY
-	 8H47S03cWv8hSaCgq8C8KHighveKeuoCTTOKDHQY=
+	b=YzY9thwiHc65wNiUxU67y6/tJ7ZmfWCBeoA2a4LNQMo0O7ibHK6ctA9ComeTUEm9C
+	 I/qi+0IpZSq41xPb+OZ7Z3/G4uCkw9cLd6IhSMUabwxmOQOqx2sF6D5jJAoetl8ck9
+	 oA5zuyScXswzHCcI9ibhnX1aroPeO+YpvDY2p/3g=
 From: Kevin Brodsky <kevin.brodsky@arm.com>
-Date: Tue, 14 Jul 2026 15:03:59 +0100
-Subject: [PATCH 10/22] sparc: mm: use mm_is_kernel() for kernel mm checks
+Date: Tue, 14 Jul 2026 15:04:00 +0100
+Subject: [PATCH 11/22] um: mm: use mm_is_kernel() in TLB sync
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -56,7 +56,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260714-remove_pgtable_cdtor-v1-10-44be8a7685d7@arm.com>
+Message-Id: <20260714-remove_pgtable_cdtor-v1-11-44be8a7685d7@arm.com>
 References: <20260714-remove_pgtable_cdtor-v1-0-44be8a7685d7@arm.com>
 In-Reply-To: <20260714-remove_pgtable_cdtor-v1-0-44be8a7685d7@arm.com>
 To: linux-mm@kvack.org
@@ -95,11 +95,11 @@ Cc: Kevin Brodsky <kevin.brodsky@arm.com>,
  "Matthew Wilcox (Oracle)" <willy@infradead.org>, 
  linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1784037902; l=3538;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1784037902; l=784;
  i=kevin.brodsky@arm.com; s=20260427; h=from:subject:message-id;
- bh=0Ls2F5YWtI+Ww29NmMlh3ILvDXBv7NqjYutzPTWlWAY=;
- b=VJPLQX/cB8CHz8XN2ewL2VVdeyfHItZBmFDR5s9RbTft/6Q4d42mZh1rja83yviws3jmyIGiU
- WKKijSfDJjoB4fJ0orVPQbnc54Akn8lFl91qUqv6PDas/mRRckHwzdj
+ bh=brubU8ipNy1ujnPWOSJsU4D9Csfsl5oNxDWj3XnSBxg=;
+ b=/PzTb9tRgc6q7ZO/WLmLmpzghLV5CdRWiA/u95e31NiKnKwzFm+3cKJU2/zrnT5S/P+reJB4V
+ ezvWWMbftRCD/SWI9ofvYfumKl5AhLTyCVWAwhB/2VFq3mOJHXdgNVl
 X-Developer-Key: i=kevin.brodsky@arm.com; a=ed25519;
  pk=N2QG+eJKrvkNovwhhwJhnJ4+ScVfsGCHldmqLfcMTFs=
 
@@ -109,90 +109,25 @@ against &init_mm.
 
 No functional change, as only init_mm has MMF_KERNEL set for now.
 
-pgtable_64.h previously forward-declared init_mm to avoid pulling
-in mm_types.h. It seems that including mm_types.h is not causing
-troubles any more, so we can also use mm_is_kernel() there and drop
-the forward declaration.
-
 Assisted-by: Codex:GPT-5.5
 Signed-off-by: Kevin Brodsky <kevin.brodsky@arm.com>
 ---
- arch/sparc/include/asm/mmu_context_64.h | 2 +-
- arch/sparc/include/asm/pgtable_64.h     | 6 ++----
- arch/sparc/mm/init_64.c                 | 2 +-
- arch/sparc/mm/tlb.c                     | 2 +-
- 4 files changed, 5 insertions(+), 7 deletions(-)
+ arch/um/kernel/tlb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/sparc/include/asm/mmu_context_64.h b/arch/sparc/include/asm/mmu_context_64.h
-index 78bbacc14d2d..e88bc61aeb04 100644
---- a/arch/sparc/include/asm/mmu_context_64.h
-+++ b/arch/sparc/include/asm/mmu_context_64.h
-@@ -83,7 +83,7 @@ static inline void switch_mm(struct mm_struct *old_mm, struct mm_struct *mm, str
- 	int cpu = smp_processor_id();
+diff --git a/arch/um/kernel/tlb.c b/arch/um/kernel/tlb.c
+index 1f175716b474..fa34a710203e 100644
+--- a/arch/um/kernel/tlb.c
++++ b/arch/um/kernel/tlb.c
+@@ -171,7 +171,7 @@ int um_tlb_sync(struct mm_struct *mm)
+ 		return 0;
  
- 	per_cpu(per_cpu_secondary_mm, cpu) = mm;
--	if (unlikely(mm == &init_mm))
-+	if (unlikely(mm_is_kernel(mm)))
- 		return;
- 
- 	spin_lock_irqsave(&mm->context.lock, flags);
-diff --git a/arch/sparc/include/asm/pgtable_64.h b/arch/sparc/include/asm/pgtable_64.h
-index 0837ebbc5dce..960f8bf1ec5a 100644
---- a/arch/sparc/include/asm/pgtable_64.h
-+++ b/arch/sparc/include/asm/pgtable_64.h
-@@ -86,6 +86,7 @@ extern unsigned long VMALLOC_END;
- #define vmemmap			((struct page *)VMEMMAP_BASE)
- 
- #include <linux/sched.h>
-+#include <linux/mm_types.h>
- #include <asm/tlbflush.h>
- 
- bool kern_addr_valid(unsigned long addr);
-@@ -885,9 +886,6 @@ static inline unsigned long pud_pfn(pud_t pud)
- #define p4d_set(p4dp, pudp)	\
- 	(p4d_val(*(p4dp)) = (__pa((unsigned long) (pudp))))
- 
--/* We cannot include <linux/mm_types.h> at this point yet: */
--extern struct mm_struct init_mm;
--
- /* Actual page table PTE updates.  */
- void tlb_batch_add(struct mm_struct *mm, unsigned long vaddr,
- 		   pte_t *ptep, pte_t orig, int fullmm,
-@@ -903,7 +901,7 @@ static void maybe_tlb_batch_add(struct mm_struct *mm, unsigned long vaddr,
- 	 * SUN4V NOTE: _PAGE_VALID is the same value in both the SUN4U
- 	 *             and SUN4V pte layout, so this inline test is fine.
- 	 */
--	if (likely(mm != &init_mm) && pte_accessible(mm, orig))
-+	if (likely(!mm_is_kernel(mm)) && pte_accessible(mm, orig))
- 		tlb_batch_add(mm, vaddr, ptep, orig, fullmm, hugepage_shift);
- }
- 
-diff --git a/arch/sparc/mm/init_64.c b/arch/sparc/mm/init_64.c
-index 103db4683b16..e0b678349e3a 100644
---- a/arch/sparc/mm/init_64.c
-+++ b/arch/sparc/mm/init_64.c
-@@ -788,7 +788,7 @@ static void mmu_context_wrap(void)
- 		 */
- 		mm = per_cpu(per_cpu_secondary_mm, cpu);
- 
--		if (unlikely(!mm || mm == &init_mm))
-+		if (unlikely(!mm || mm_is_kernel(mm)))
- 			continue;
- 
- 		old_ctx = mm->context.sparc64_ctx_val;
-diff --git a/arch/sparc/mm/tlb.c b/arch/sparc/mm/tlb.c
-index 6d9dd5eb1328..47083c287a94 100644
---- a/arch/sparc/mm/tlb.c
-+++ b/arch/sparc/mm/tlb.c
-@@ -179,7 +179,7 @@ static void tlb_batch_pmd_scan(struct mm_struct *mm, unsigned long vaddr,
- static void __set_pmd_acct(struct mm_struct *mm, unsigned long addr,
- 			   pmd_t orig, pmd_t pmd)
- {
--	if (mm == &init_mm)
-+	if (mm_is_kernel(mm))
- 		return;
- 
- 	if ((pmd_val(pmd) ^ pmd_val(orig)) & _PAGE_PMD_HUGE) {
+ 	ops.mm_idp = &mm->context.id;
+-	if (mm == &init_mm) {
++	if (mm_is_kernel(mm)) {
+ 		ops.mmap = kern_map;
+ 		ops.unmap = kern_unmap;
+ 	} else {
 
 -- 
 2.51.2
