@@ -1,48 +1,48 @@
-Return-Path: <linuxppc-dev+bounces-24165-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24166-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 02EBCC43458
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2026 01:45:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 98306C44508
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2026 01:45:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gzhvL29J2z2ybK;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gzhvL6kpMz30Qv;
 	Tue, 14 Jul 2026 11:45:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:7c80:54:3::133"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783993502;
-	cv=none; b=kW19D8Hb7Hh6/tE+9x7f4cXFwPJiWcSFlZGtoIzDkah3WVxcKvYVwhjmKLCYjqdxoIPnNEF/GrzP7hFPHBclBHkZwDGEQcwUK5CJVRFSwE5Qmyw4P39nGgRClMhCYg3Pwj1VEOYi6HSNZfSMigZkQYD+7/CEjjuEdzvHDEIXlOT74fa4QDts2LTVRT6pgpgT8BjCP8eFe5as8/56BocM8Z7fA8Aa5pD+XZSUY6+qMszh++/UW0opAMNjGcbOM8yAI2QVcGNTIUuGqEgGSiY9NvZ1vu/FSh/RxOzrTwhXd5NZM2/mnnMnjDcyvXGFJqjucdm6w9vcgPHBrF/5Yi6b0g==
+	cv=none; b=BjS8fajGNADIY0rNzB5Q5PKWhkoaZbPmYqke2Yy9jGGbxr0n5Ru7hIbSnXXpf+NmYojfNODGDWn+l2nbLcM08kA7TxrHCC4m8m801tHpq1Q6Hw96ecBoaS13p2wsda1KdfJgRVY5YsMOx6i1Ugybxa5pGpKwaFDHjyUUUe57lmXWAdmsglq0FCS+99/D9nMfvl8e2QvP6l41OHOoxNLk8//Nj7lONK86LPFfitbg5WXlErdMXHqCgZv+GtwE4k516TsTqs4ZK3Kt66P4+PRBg5NtYd1UZj1hW6tp8g6ngiZU86WJyegYhnDjelfWtkDjrAKL4CfyM2csKqQU2P7szg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1783993502; c=relaxed/relaxed;
-	bh=O1RY4YTRO+E3JFGGHiFCdt1Y9JLMfH6rQLhyRiyEVpk=;
+	bh=+PwZcettfGvI8Lm1XoNHMC02UlU18VC13AXj5oPS12E=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=MaqBxuIftA5Y4wUBoqSxZdRihxglxKV9TnoOpURXDsTD/xe3W3w2V+KvZuASXAQAXj7wflpJNO0rNoU2izTp8a0UCx7id12aIhpW2dNnDP0Atwfy55916Yau77lnjrd2wRM+GmC3P6BLz0N9uvunZWRX86bLgf6s1jWWcOxiLqf73c5KoKIlIcfEAlZCN1sSQiLlWAjMjZfJv3rw7R4XFkte0HtODoGIKT2rmX30ZYlR8c8Gh+c/LEWaRQmNVWdD7g6RyNwmB9Ks6TvnZqwIZWqmVd5q2LY4Qd+FoSY23obcTyRcG/awcKASQq8s8hz1HVwlSro5z1JvWLI3V/WH+Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=tGcKHVi9; dkim-atps=neutral; spf=pass (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=rdunlap@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
+	 MIME-Version; b=hXVMRT7PpePAvv/Hz1Z7YS7uTuuutZQdPBz72nJnPn6cISoZdjqvs8/sHd8W2wOZzLtOmZaPuCJoSiPJEhvXMtJrd0YzYrFW6RsV/+oj0TeW5b6q91nSBwGYCqpBWJ5Rb73jWUzhsFjDmYU8Tfmol1I2gFm2+XigjBO3WfX+sdv2t13Aw5Kkbk4UE6mKl2aIlt4F4oFsiFkHQttZvLTFSwHFp3HhVnBaCyPwyLfadk424RFJxU/AxHp1MPz/FQvLeSiS519XmGwceGDBy0pfVJD9Ll9412550ilppppEyEZPt58XjEozt2D3yNHn30E2KrK26f80Nfxd5o3JonduUQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=UTNrwKVR; dkim-atps=neutral; spf=pass (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=rdunlap@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=tGcKHVi9;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=UTNrwKVR;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=infradead.org (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=rdunlap@infradead.org; receiver=lists.ozlabs.org)
 Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gzhvC1wXVz2yft
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2026 11:44:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gzhvB2Y0Dz2xVY
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2026 11:44:52 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
 	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender
 	:Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=O1RY4YTRO+E3JFGGHiFCdt1Y9JLMfH6rQLhyRiyEVpk=; b=tGcKHVi9AwCj1XFCaN4NL2qKtE
-	gS+AOSrXnV1NfEHSP54O2iaBlMxG8IlSFG/ZxxDJAQyVmW+uyry2qu09vRflGZdAaS67qZDdkNUDL
-	6srtLBsd6TQHehENmG79eNts3QyQ2mlKJTg43FtnWyqtAojZkUVj1HcSVwRg7dKy9zYrq/hfWR6mk
-	YKgJk8OmIo+c1n7ZzgMbFwBQ070VWsxhzssTvpWga787JNCC2VCWIA/LO9Qi3yLDfOiGtAQQVSoU7
-	zNscJJyE+WLWRef5tOaVkKM5AWMZScPThHqTD1AVTX2vh5LsWgzfmMUuwG2VVd4JaF3KW7sxJ3N/J
-	uyTO8V/Q==;
+	bh=+PwZcettfGvI8Lm1XoNHMC02UlU18VC13AXj5oPS12E=; b=UTNrwKVRFbWWxYCulCRzRwkfIw
+	0peg4L4N1QTxWpk3AeIEnyBytYiYN88/soUvG/oLw1i1SXzB0LtFpjU+Akt0QXPly9ZX0mN976kpT
+	vi+QQ9HgioKWOnOvoDgCEYJzZnqX8KFtCjo7cNDRGnIuPQ589DRe8JunhuXC1diOQt+s37I9DM9Ld
+	Bat4Ygnhtj/Z+8ALUJxnP7DCvEvt8nebzzbmKvIjE2HPdWyHDx1Hhht/M7PdhhGhvA0Nh5JpHs5AJ
+	B9vRf3TZtf/2NvEYa3Ujvbv5DRI3RjIarsabsk6sx/wKW7BPkTjM+QjXCgyeIYbpNFVRXsSx+gLPU
+	u+Y10Xmg==;
 Received: from [50.53.43.113] (helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtpsa (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wjSCZ-0000000AgsR-3mCf;
-	Tue, 14 Jul 2026 01:44:51 +0000
+	id 1wjSCW-0000000AgsR-46ef;
+	Tue, 14 Jul 2026 01:44:49 +0000
 From: Randy Dunlap <rdunlap@infradead.org>
 To: linux-sound@vger.kernel.org
 Cc: Randy Dunlap <rdunlap@infradead.org>,
@@ -62,9 +62,9 @@ Cc: Randy Dunlap <rdunlap@infradead.org>,
 	linux-arm-msm@vger.kernel.org,
 	Liam Girdwood <lgirdwood@gmail.com>,
 	Mark Brown <broonie@kernel.org>
-Subject: [PATCH 08/14] ASoC: fsl: p1022_ds: repair kernel-doc short descriptions
-Date: Mon, 13 Jul 2026 18:44:39 -0700
-Message-ID: <20260714014445.569992-9-rdunlap@infradead.org>
+Subject: [PATCH 03/14] ASoC: fsl_asrc: avoid kernel-doc warnings
+Date: Mon, 13 Jul 2026 18:44:34 -0700
+Message-ID: <20260714014445.569992-4-rdunlap@infradead.org>
 X-Mailer: git-send-email 2.55.0
 In-Reply-To: <20260714014445.569992-1-rdunlap@infradead.org>
 References: <20260714014445.569992-1-rdunlap@infradead.org>
@@ -83,12 +83,12 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The kernel-doc short description is assumed to be a function unless
-indicated by a keyword. Add the missing keyword (struct, var) to avoid
-kernel-doc warnings:
+Use the struct keyword to describe structs in kernel-doc format. This
+prevents kernel-doc warnings:
 
-Warning: sound/soc/fsl/p1022_ds.c:62 cannot understand function prototype: 'struct machine_data'
-Warning: sound/soc/fsl/p1022_ds.c:182 cannot understand function prototype: 'const struct snd_soc_ops p1022_ds_ops ='
+Warning: ../sound/soc/fsl/fsl_asrc.h:452 cannot understand function prototype: 'struct fsl_asrc_soc_data'
+Warning: ../sound/soc/fsl/fsl_asrc.h:463 cannot understand function prototype: 'struct fsl_asrc_pair_priv'
+Warning: ../sound/soc/fsl/fsl_asrc.h:475 cannot understand function prototype: 'struct fsl_asrc_priv'
 
 Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
 ---
@@ -100,27 +100,36 @@ Cc: Fabio Estevam <festevam@gmail.com>
 Cc: Nicolin Chen <nicoleotsuka@gmail.com>
 Cc: linuxppc-dev@lists.ozlabs.org
 
- sound/soc/fsl/p1022_ds.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ sound/soc/fsl/fsl_asrc.h |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
---- linext-2026-0710.orig/sound/soc/fsl/p1022_ds.c
-+++ linext-2026-0710/sound/soc/fsl/p1022_ds.c
-@@ -55,7 +55,7 @@ static inline void guts_set_dmuxcr(struc
- static phys_addr_t guts_phys;
+--- linext-2026-0710.orig/sound/soc/fsl/fsl_asrc.h
++++ linext-2026-0710/sound/soc/fsl/fsl_asrc.h
+@@ -444,7 +444,7 @@ struct dma_block {
+ };
  
  /**
-- * machine_data: machine-specific ASoC device data
-+ * struct machine_data - machine-specific ASoC device data
+- * fsl_asrc_soc_data: soc specific data
++ * struct fsl_asrc_soc_data - soc specific data
   *
-  * This structure contains data for a single sound platform device on an
-  * P1022 DS.  Some of the data is taken from the device tree.
-@@ -178,7 +178,7 @@ static int p1022_ds_machine_remove(struc
- }
+  * @use_edma: using edma as dma device or not
+  * @channel_bits: width of ASRCNCR register for each pair
+@@ -457,7 +457,7 @@ struct fsl_asrc_soc_data {
+ };
  
  /**
-- * p1022_ds_ops: ASoC machine driver operations
-+ * var p1022_ds_ops - ASoC machine driver operations
+- * fsl_asrc_pair_priv: ASRC Pair private data
++ * struct fsl_asrc_pair_priv - ASRC Pair private data
+  *
+  * @config: configuration profile
   */
- static const struct snd_soc_ops p1022_ds_ops = {
- 	.startup = p1022_ds_startup,
+@@ -466,7 +466,7 @@ struct fsl_asrc_pair_priv {
+ };
+ 
+ /**
+- * fsl_asrc_priv: ASRC private data
++ * struct fsl_asrc_priv - ASRC private data
+  *
+  * @asrck_clk: clock sources to driver ASRC internal logic
+  * @soc: soc specific data
 
