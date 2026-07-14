@@ -1,72 +1,74 @@
-Return-Path: <linuxppc-dev+bounces-24273-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24274-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5D4C4C44507
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2026 19:00:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A02E5C4450A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2026 19:08:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h07sb0Gqpz2yln;
-	Wed, 15 Jul 2026 05:00:03 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.8
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784055602;
-	cv=none; b=Kv1U77xBJMzlLGGOV+8RbolWZ44U6wj5A+859BR709Cdpy9YPgWQ5k3DCgVSfm0z2HVTumtJTqSh4wPgnjElAWcMrcpChxLxkDplOpDKvyemM2CyIgpKdDplPb/puraWcdfg15ctx63QdXdHP+7vM+p4G8TfwimATMcDlpI4g3FZGh/Ukws+Q6v7fN/A1M2DGos6Yb5GXygF4ilspT5tM9bJjciplnZ9en7KmiUTZub2m+CbrYKbCu2fftuwDgsrrZJBTh9eDnfzWBf4Cmc2PtKfuO2AEZb/6duu1kDcGI3a65x1Duep/yzSzNgLrpMbu+xAyiYZnptmKlhLm8n14Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h083h1Knxz2xyj;
+	Wed, 15 Jul 2026 05:08:48 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784056128;
+	cv=none; b=PTu/TlAXVSCHHIvuOY4zlfN5ZplcumwrUiytPTFgf3V3UKRcR1HyC+/wO81Tcu3DglsjEzhTyO92+naKizczmvHWBsRdTSzz2lQxZIpVsXz4b6F5/i09z3BibKaslLdmFoNAWQ7dVDN1pt4DhrKV+8Ac7sHSV/MM5ZG0W280vIIBgSJ8Q3rFdpaOF1XRQUTeZB/FQhegQt8WrhB4lWHEH66s5y+p05f6/qpAgImaAnCqvgyn+/UHM2YZiZPgXe8lYcylxIlYKZqLHYAKo2tBFt8Dz6X7oCvcnBaxMdUg/MuBiHZm1Cii12Drjsb+8kI56N20KWEvMLAFIF7ohAhgAg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784055602; c=relaxed/relaxed;
-	bh=QzZVFbgbmv1vCUvZWeyfyaG2u155mvnyt4yNEuC5u+g=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Wt/Ji7U5A93wec9VcTIKjir08veyqQ0FjrLY3bbvn8T90Ul6lZ0PbS7wYT1EY1mlC7VtRGeNDB3tMw08tqCnrhAycNSdjqHxYxUkl1C2ET9dQ4DEscnA+XJkSFLgFI7tI5OR/x0zKm6Trm9DhFdQAEIodR9be+rxtFvEGIMIqzWz0MEw/QWW0+55OrWtlGsNXOp877glQ2N7+3sJaySwn20Kl5RRg7LOWoRnP2cAHumA6hbmCH4UXj2k5UBw4dYZRjqZoZnq3mO0H9cL48KgrMRGlPHcXJ5zxmUwV1ndrdsuuSAmAABeIn285UiPKJ4/yP2QfMWYhaKVl7DqcEgbvw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Ilb+DptL; dkim-atps=neutral; spf=pass (client-ip=192.198.163.8; helo=mgamail.intel.com; envelope-from=pawan.kumar.gupta@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+	t=1784056128; c=relaxed/relaxed;
+	bh=Vuj+Ht+bWBXgdR7o6mAha/AiCqLJrI8F71+vJEzBqiA=;
+	h=Content-Type:Message-ID:Date:MIME-Version:Subject:To:References:
+	 From:In-Reply-To; b=CQyyGGekicpVhV/BAbwPTL07YQkcsnkPlm03AhC7QPldP+kZKFloXBHesQvncUCJD2uav0j+sKlgMgeRYw0Cc6r3S9ekJ3HcTe522uakrHggPKWRqvg0Bffcejef2/jzcMJIKgXraaxIoXLqnvqke0JFxqakKHo8iDfHnnKQigPXYiXOgJn8/j+JTNFiX7D+eZ24fZbvrcltFhUvixRsY1343oeNpC0Vg1NkS4nRfBcIOy/6gQx3YXSP37WkVQ5LvWk6MsY2zTrpUEeojoUfZ83g9upQkSftegkSdu1vx6ADb6T1L6HrSuH6YAvLkdH15QgektktYJw2WPj03FyUIw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=k9Mmq61y; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nikhilks@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Ilb+DptL;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=k9Mmq61y;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.8; helo=mgamail.intel.com; envelope-from=pawan.kumar.gupta@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nikhilks@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h07sY4J3nz2ygX
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2026 05:00:01 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1784055602; x=1815591602;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=ikwe3QzBMYqyLtMu8y0CioWHL4Q5Qo0Uc8ghNJ9gyv8=;
-  b=Ilb+DptLhW2FEq9e241hpRQXOaJWyyqusfZoLEt+Vzwyul21Vf4mZgt+
-   4Ois9n8edY+icTow3xZ8p5c5UAQUqisNHUCMhDkp8zDx4Z01hq8o/mezk
-   nMqnHrCphpyTvaUrrPPgMeJDNhUJCRtIL/vLAWPAlK5a8Q5KCyNPrj512
-   E0OGekdpt80xsN+k7O7SYMdz8YTRVj8wkOariTIPGzLIWXWeE32rkAld7
-   KKxhy0GuCgrBX0rdKSZoKeebGbiqTWyelXA519+mqrYq+MrJ1K2n+dCmd
-   oalRVUtx0jhhOyl93vZFosDqZ3gQ8OqA/rqF4x2mkkVIKl+J51iHio00A
-   w==;
-X-CSE-ConnectionGUID: yHsTRwiiSQaKMQ++KbuUcA==
-X-CSE-MsgGUID: Im3IezTESJ2kCHRVGCTP6g==
-X-IronPort-AV: E=McAfee;i="6800,10657,11847"; a="102241388"
-X-IronPort-AV: E=Sophos;i="6.25,164,1779174000"; 
-   d="scan'208";a="102241388"
-Received: from fmviesa002.fm.intel.com ([10.60.135.142])
-  by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Jul 2026 11:59:57 -0700
-X-CSE-ConnectionGUID: 95cGieXzRFy9UhU+YBoKFQ==
-X-CSE-MsgGUID: kfliOx19SOG+1mAaLyHOnA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,164,1779174000"; 
-   d="scan'208";a="279225339"
-Received: from guptapa-desk.jf.intel.com (HELO desk) ([10.165.239.46])
-  by fmviesa002-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Jul 2026 11:59:57 -0700
-Date: Tue, 14 Jul 2026 11:59:57 -0700
-From: Pawan Gupta <pawan.kumar.gupta@linux.intel.com>
-To: stable@vger.kernel.org, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sasha Levin <sashal@kernel.org>
-Cc: bpf@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, 
-	x86@kernel.org, Alexei Starovoitov <ast@kernel.org>, 
-	Daniel Borkmann <daniel@iogearbox.net>
-Subject: [PATCH 6.16.y 6/6] bpf: Prefer dirty packs for eBPF allocations
-Message-ID: <20260714-cbpf-jit-spray-hardening-6-16-y-v1-6-2fc3e16263ac@linux.intel.com>
-X-Mailer: b4 0.16-dev
-References: <20260714-cbpf-jit-spray-hardening-6-16-y-v1-0-2fc3e16263ac@linux.intel.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h083f6cQ7z2xqM
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2026 05:08:46 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66EGBeLN1812773
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2026 19:08:44 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=
+	content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=pp1; bh=Vuj+Ht+bWBXgdR7o6mAha/AiCqLJrI
+	8F71+vJEzBqiA=; b=k9Mmq61yNsBNzVMbfOSL84uBj944rl9GqpqjPOm6rwnvgz
+	I1JxDdo0jlBUb2gF6U37MnJ69/MWPJPfY07zkgmwO2YP2zukeS26OAxJkpgLhmzW
+	YqeUv8eeYXpqRMKR+bETdC9/6+U48YZhKjRy2KzwYtxNSQydX7ICOlmWDZ4Ihqpf
+	E4nGYCPXNRMECxh/iDvXIQLbslEKSCAd4IqFX5CMaQeH4ubistKYfStkh46apsyA
+	eyDFlPxRI5utJ+OE1cWCIYD6YEpLq5yUkblZKhSU9IaH/0fsX9gjj7VMh463tR1w
+	kcLy6pnAw/JkqQg+1sdj/t1Ai/My5G0iNZVNe+zg==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fbegt7xph-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2026 19:08:44 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66EJ53dA004167
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2026 19:08:43 GMT
+Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fc2cgc46s-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2026 19:08:43 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66EJ8fqm61079964
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2026 19:08:41 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 8396320043
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2026 19:08:41 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id ADD3720040
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2026 19:08:40 +0000 (GMT)
+Received: from [9.67.149.23] (unknown [9.67.149.23])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2026 19:08:40 +0000 (GMT)
+Content-Type: multipart/alternative;
+ boundary="------------GeC8Rz7OlfKB00t0csMADy6a"
+Message-ID: <404f6d27-db62-4a21-b364-4c312eb28f87@linux.ibm.com>
+Date: Wed, 15 Jul 2026 00:38:38 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,51 +82,104 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260714-cbpf-jit-spray-hardening-6-16-y-v1-0-2fc3e16263ac@linux.intel.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3] PCI: pnv_php: Add null checks for OpenCAPI PHBs
+To: linuxppc-dev@lists.ozlabs.org
+References: <20260609084903.1352581-1-adityag@linux.ibm.com>
+Content-Language: en-US
+From: Nikhil Kumar Singh <nikhilks@linux.ibm.com>
+In-Reply-To: <20260609084903.1352581-1-adityag@linux.ibm.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: lB1Yl2MfiUdnK4Y8OQmy-sa2a4555u8P
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzE0MDE5MyBTYWx0ZWRfX9F/1uL9zKwR5
+ IeBH7vvD0MZ31U63Ae7BRDglpou3XSy9HviAULjUDJ3Z8Ex/wXuZa7mqggLHo90JSmMJZVOPqCh
+ QCW5ju3t9BdZiBZoYKPhIgO+GAKJzYc=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzE0MDE5MyBTYWx0ZWRfX0z4Zy3xQxmrq
+ aZvPBxdrF1M3i2u6tN86nX7qARgRH312Khd5F2V5kRVf5H2QDK1PBPFzGAtC/3XVF1apEXdTLAQ
+ 9L3eUjEeprrdlSYwSB6cxuibBGYRoAMXIrO5NhhrHYEPq5gF0hNEvLLzPL6kLpcz37AMfVLJseJ
+ IsH3Y5hbHXuY0i7k7mzWxjYKUaBe2idJ67HQlHsHxV1sdP4u14bdb+y2JiM9YsjJWkgOiISws9Y
+ iHiXPbwlLFKBxHz/1wRExaLFN4Hz50PKKKutTrSTuZ4eewDaizlJAA1X6cbuqwVxBywIxRrcC3J
+ buqqCI6XGPg9B9wQmsIzG/zx81WnhmXly6wSE7fVaVCyM7enltk1s9lme2vVMpLAjT0p5soadbr
+ 8j2rOCurqvHi+kypPTS0QbjWgl+KHaKi2kz0TzPhyOi2khHdVDBqueNsHlQj1HeACtZ/ymGaCZj
+ MKHecLPbfLuo3CjVFRw==
+X-Authority-Analysis: v=2.4 cv=IqMutr/g c=1 sm=1 tr=0 ts=6a56893c cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=U7nrCbtTmkRpXpFmAIza:22 a=r77TgQKjGQsHNAKrUKIA:9 a=h1lzkvbI6--FBJ429TUA:9
+ a=QEXdDO2ut3YA:10 a=VnNF1IyMAAAA:8 a=SZfh5tWvwiCKCnnFSAkA:9
+ a=IPrSfL2mXS_VxbUp:21 a=_W_S_7VecoQA:10
+X-Proofpoint-GUID: lB1Yl2MfiUdnK4Y8OQmy-sa2a4555u8P
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-07-14_04,2026-07-14_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 clxscore=1015 impostorscore=0 malwarescore=0 adultscore=0
+ phishscore=0 suspectscore=0 priorityscore=1501 bulkscore=0 lowpriorityscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607140193
 
-commit b72e29e0f7ee329d89f86db8700c8ea99b4a370a upstream.
+This is a multi-part message in MIME format.
+--------------GeC8Rz7OlfKB00t0csMADy6a
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-The pack allocator only flushes predictors when reusing a dirty pack for
-cBPF, eBPF allocations never trigger a flush. Currently, eBPF picks the
-first free pack, which could be a clean pack. As an optimization, leaving
-a clean pack for cBPF can avoid flushes.
+Hi Aditya,
 
-Prefer dirty packs for eBPF and keep clean packs free for cBPF. This
-mirrors the existing cBPF preference for clean packs: each program kind
-prefers the pack that avoids an extra flush, and falls back to the other
-kind only when no preferred pack has room. eBPF reuse of a dirty pack is
-harmless since eBPF being privileged does not flush.
+The added NULL checks for OpenCAPI/direct PHB slots make sense. The 
+patch looks overall good to me but I have one question about below change:
 
-Signed-off-by: Pawan Gupta <pawan.kumar.gupta@linux.intel.com>
-Acked-by: Daniel Borkmann <daniel@iogearbox.net>
-Signed-off-by: Daniel Borkmann <daniel@iogearbox.net>
----
- kernel/bpf/core.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+On 09/06/26 14:19, Aditya Gupta wrote:
+> +	if (!bridge) {
+> +		*state = 0;
+> +		return 0;
+> +	}
+> +
 
-diff --git a/kernel/bpf/core.c b/kernel/bpf/core.c
-index 81ba423d0f8e..0bed7fe9821e 100644
---- a/kernel/bpf/core.c
-+++ b/kernel/bpf/core.c
-@@ -998,10 +998,10 @@ void *bpf_prog_pack_alloc(u32 size, bpf_jit_fill_hole_t bpf_fill_ill_insns, bool
- 			goto found_free_area;
- 		/*
- 		 * cBPF reuse of a dirty pack triggers a flush, so prefer a
--		 * clean pack for cBPF. eBPF never flushes, so pick the first
--		 * free pack, dirty or clean.
-+		 * clean pack for cBPF. eBPF never flushes, so steer it to a
-+		 * dirty pack and keep clean packs free for cBPF.
- 		 */
--		if (!was_classic || !pack->arch_flush_needed)
-+		if (was_classic ^ pack->arch_flush_needed)
- 			goto found_free_area;
- 		if (!fallback_pack) {
- 			fallback_pack = pack;
+Is returning success with an indicator state of 0 the expected behaviour 
+for slots without a bridge, or would returning an error such as 
+-EOPNOTSUPP(Operation Not Supported) or -ENODEV(No Such Device) be more 
+appropriate?
 
--- 
-2.43.0
+Thanks,
+~ Nikhil
+--------------GeC8Rz7OlfKB00t0csMADy6a
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  </head>
+  <body>
+    <p>Hi Aditya,<br>
+      <br>
+      The added NULL checks for OpenCAPI/direct PHB slots make sense.
+      The patch looks overall good to me but I have one question about
+      below change:<br>
+      <br>
+    </p>
+    <div class="moz-cite-prefix">On 09/06/26 14:19, Aditya Gupta wrote:<span
+      style="white-space: pre-wrap"> </span></div>
+    <blockquote type="cite"
+      cite="mid:20260609084903.1352581-1-adityag@linux.ibm.com">
+      <pre wrap="" class="moz-quote-pre">+	if (!bridge) {
++		*state = 0;
++		return 0;
++	}
++</pre>
+    </blockquote>
+    <br>
+    Is returning success with an indicator state of 0 the expected
+    behaviour for slots without a bridge, or would returning an error
+    such as -EOPNOTSUPP(Operation Not Supported) or -ENODEV(No Such
+    Device) be more appropriate?<br>
+    <br>
+    Thanks,<br>
+    ~ Nikhil
+  </body>
+</html>
+
+--------------GeC8Rz7OlfKB00t0csMADy6a--
 
 
