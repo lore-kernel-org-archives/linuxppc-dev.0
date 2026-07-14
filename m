@@ -1,88 +1,54 @@
-Return-Path: <linuxppc-dev+bounces-24200-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24201-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B11ECC43458
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2026 09:52:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C1791C43458
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2026 10:00:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gzvk45PD9z2y71;
-	Tue, 14 Jul 2026 19:52:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784022764;
-	cv=none; b=G2tW0VgUqHRdz6EgNy0n4/jWuh8iqmt2MGgbJYHfPO7f0JOIi8yQ0oh5GN+SJPloTEeM9LG/Xms32wz5yOxvdWjnsZzaVG4co+xOil3NT/qXdTu2wmxIynXovkSNUPB1/T/iaBK/6FSi/qbAZ4jqov8Sa8uJSdh6ibzfPz68X6tS8PFNuYkFHgU7LtM6WW6w3rlzGd0WUPP3i8wy609e+jbHCzo44aac7WQjj43N/bxIkyaSx6sKth6TFgSj8LAvM3ZN5kpP04rJweSPTyS3S0tsn3UgT9KtUZ07K6Ze9lH8Lf/0oepYjtsp1QGZuHiThpKXwWxzbCfNbEzMHoWhNw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gzvv15mZdz2y71;
+	Tue, 14 Jul 2026 20:00:29 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=210.118.77.11
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784023229;
+	cv=none; b=GnGrcUVadmeMl0nZomcJgysw+uPM8ml6Ec2NVTmpr+5jCq9Zdw37MTiiLUiQ2gLdEiiWGAQpB/xb0QEOskBfGQr945GYjcWO5x7b44ECTreV7iy7/UGaF2slLAQLuHjY53CgzsNuhsdIcLlOemy1KZGb1vN17VukTPSyHe4h6zxv/SX0YwGpLzrc0tn9zBUTb61ykdSX291Bo1h3jNB6eKj+tBkYgmn7WhoJeNyjGKg5i4o9yW35p+Birqq4lheZgom1pKvDyqITRIEl658Y5Jm38UiIsPzxfkNVYx4AaGccQmPCDjnNugbmVlZuQNn1uEYioQ2X/shgvt+wROcE/A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784022764; c=relaxed/relaxed;
-	bh=+C5nG+xtG3hyYyQwRUQFGYH75JNuc0Lk0Ty5BqRmWNU=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=lGy1CEeQKgcd2G8nJWVmm9wGmuGW8Oa9T5wcNFWniagJW705HcTtAYL1Xa9Qre5PMBpARDvYpwXkIpjFmHbL9rR0Tzv1eFI+3HHuGd12As9rUXQT3tJwT8M0U911p3Yox3v7u3mGPWw0Fw4j4OpsGdabe5u+MFFY8BY9JCgef4SCHrkPU81Lnf0lTRGrC4tY8h+vkEkMYoBxrLBLOrJ1DfkrZNIaOG3277UxFSN3lQKmv4GBKBAaEoX/pne2JsLCcjMEh75+262SL/XT1sSvtOkBLcIYbfjlpDc+PSGIislsT0y/ZfHEUQZ7u7kzgGJwNg08FQ5xARPPrKAtyDulPQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ZgSMxxsh; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1784023229; c=relaxed/relaxed;
+	bh=IUra5EJSRaUGl/khGQ/hVpRAn7fp80t3QbcNAonpnHo=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:From:In-Reply-To:
+	 Content-Type:References; b=KIUf/qVPniV0NUUKFSEktILddOL4d7yosWyivmP/EUlPRpCYMsZDGl9kjQdTqE+sALNLTS4TWvvfXEEwpoIUUjr0HTy56WnqLW8aXFOVddpkBA0pemNvbpqjD1g0+u+DYaOHdcU6t/cvNsb/Y29MPTJksl/TMiMYqD6dQuO2lwe/gi4QtSn7YuB8O6kDzSwg3eSdm6knrvb7IhK/u+4sXGy7drPMaKM/11mEgcj8Bt4U/bTxkXXZ/udF7vT5IlakDKPCQFy2qDARPu/faDVbIPUv9M1dRaarSsBha7kmjWZpi+yVG+JQsWGSjdmWvnJVvh/d7qIRGp/TcZ+s1fcflg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=samsung.com; dkim=pass (1024-bit key; unprotected) header.d=samsung.com header.i=@samsung.com header.a=rsa-sha256 header.s=mail20170921 header.b=NMjfCsqZ; dkim-atps=neutral; spf=pass (client-ip=210.118.77.11; helo=mailout1.w1.samsung.com; envelope-from=m.szyprowski@samsung.com; receiver=lists.ozlabs.org) smtp.mailfrom=samsung.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=samsung.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ZgSMxxsh;
+	dkim=pass (1024-bit key; unprotected) header.d=samsung.com header.i=@samsung.com header.a=rsa-sha256 header.s=mail20170921 header.b=NMjfCsqZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=samsung.com (client-ip=210.118.77.11; helo=mailout1.w1.samsung.com; envelope-from=m.szyprowski@samsung.com; receiver=lists.ozlabs.org)
+Received: from mailout1.w1.samsung.com (mailout1.w1.samsung.com [210.118.77.11])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gzvk35t5cz2xqn
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2026 19:52:43 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 1FBCD601EC;
-	Tue, 14 Jul 2026 09:52:41 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 232391F00A3A;
-	Tue, 14 Jul 2026 09:52:30 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1784022760;
-	bh=+C5nG+xtG3hyYyQwRUQFGYH75JNuc0Lk0Ty5BqRmWNU=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date;
-	b=ZgSMxxsh1Lu8MR5Z6WZ7OI+nq6F3YqTn9IBm2AINDs8o2Z/nh/SpZWcv4glu+VhPe
-	 cXy87Qxg3XbvgFKPnL50ydX2ZmeXZ+Y2m0e04PAZRMRDiI7yd819Ia6OkzoYI4l8hi
-	 bQ5nmUAEKOPB1JNlOSIgfbjVYFEy/Nt7TJrcZZrSwXI52rztJjb2qGdZlVK+Mik1C2
-	 MqZlsgx86ioBdN1tVdskpyUDQ5X3kf6HF+H7N5Qp+yw+MWEZGk2dutdazlT0Q42W8G
-	 2WBALzw60ZoYjzJMEjfOp8k80iBpzrMV5Er054iRnji2EAX6IYZOtyYaIq4WMAy0e3
-	 LsRNlLUiQVPTA==
-X-Mailer: emacs 30.2 (via feedmail 11-beta-1 I)
-From: Aneesh Kumar K.V <aneesh.kumar@kernel.org>
-To: Marek Szyprowski <m.szyprowski@samsung.com>,
-	Jason Gunthorpe <jgg@ziepe.ca>
-Cc: iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev,
-	Robin Murphy <robin.murphy@arm.com>,
-	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
-	Steven Price <steven.price@arm.com>,
-	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Jiri Pirko <jiri@resnulli.us>,
-	Mostafa Saleh <smostafa@google.com>,
-	Petr Tesarik <ptesarik@suse.com>,
-	Alexey Kardashevskiy <aik@amd.com>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Xu Yilun <yilun.xu@linux.intel.com>,
-	linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org
-Subject: Re: [PATCH v7 00/22] dma-mapping: Track shared DMA state through
- direct, pool and swiotlb paths
-In-Reply-To: <cd5d0504-1592-4b48-89ea-1efe8aa57968@samsung.com>
-References: <20260701054926.825925-1-aneesh.kumar@kernel.org>
- <CGME20260707080628eucas1p13fa8a57e60ef5dd3ec651e19e42af0a1@eucas1p1.samsung.com>
- <yq5av7argr65.fsf@kernel.org>
- <fc804746-4fb8-4ea9-997f-a4cae9ba8c14@samsung.com>
- <20260713194323.GC3133966@ziepe.ca>
- <cd5d0504-1592-4b48-89ea-1efe8aa57968@samsung.com>
-Date: Tue, 14 Jul 2026 15:22:27 +0530
-Message-ID: <yq5aldbdnbj8.fsf@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gzvty5gjFz2xqn
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2026 20:00:26 +1000 (AEST)
+Received: from eucas1p2.samsung.com (unknown [182.198.249.207])
+	by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id 20260714100016euoutp010b64ed20ec9ba1c6447f10b7abae08b8~CH6nFLiNZ1160011600euoutp01a;
+	Tue, 14 Jul 2026 10:00:16 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com 20260714100016euoutp010b64ed20ec9ba1c6447f10b7abae08b8~CH6nFLiNZ1160011600euoutp01a
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+	s=mail20170921; t=1784023216;
+	bh=IUra5EJSRaUGl/khGQ/hVpRAn7fp80t3QbcNAonpnHo=;
+	h=Date:Subject:To:Cc:From:In-Reply-To:References:From;
+	b=NMjfCsqZ5hnUEU0WETu01Q9nOdFTV987l1OyEpSxVC3qsrjuo+pdKGHJOn1P/uqy9
+	 0ML3iTMDQp8jsFJA5eqo2WdyOclP9r+hDHP0Qb9E1dtE0XTKwa/FLLs+p4+9q/ScPz
+	 8vhb3Wq8om+OapgJr8LiPPxclNzpInm/pkQwvQpQ=
+Received: from eusmtip1.samsung.com (unknown [203.254.199.221]) by
+	eucas1p2.samsung.com (KnoxPortal) with ESMTPA id
+	20260714100016eucas1p2bbfe02d5fc02fcf561dc5409c7ecb5ab~CH6mtujgB0401004010eucas1p2d;
+	Tue, 14 Jul 2026 10:00:16 +0000 (GMT)
+Received: from [106.210.134.192] (unknown [106.210.134.192]) by
+	eusmtip1.samsung.com (KnoxPortal) with ESMTPA id
+	20260714100014eusmtip1f8ce1c67533271011f679d0bcf054f91~CH6lJz-Yt2122621226eusmtip1M;
+	Tue, 14 Jul 2026 10:00:14 +0000 (GMT)
+Message-ID: <6f35eaae-f3d2-48fb-abce-9a2cc124b0ef@samsung.com>
+Date: Tue, 14 Jul 2026 12:00:13 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -96,30 +62,69 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Betterbird (Windows)
+Subject: Re: [PATCH v7 00/22] dma-mapping: Track shared DMA state through
+ direct, pool and swiotlb paths
+To: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Jason Gunthorpe
+	<jgg@ziepe.ca>
+Cc: iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev, Robin Murphy
+	<robin.murphy@arm.com>, Will Deacon <will@kernel.org>, Marc Zyngier
+	<maz@kernel.org>, Steven Price <steven.price@arm.com>, Suzuki K Poulose
+	<Suzuki.Poulose@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Jiri
+	Pirko <jiri@resnulli.us>, Mostafa Saleh <smostafa@google.com>, Petr Tesarik
+	<ptesarik@suse.com>, Alexey Kardashevskiy <aik@amd.com>, Dan Williams
+	<dan.j.williams@intel.com>, Xu Yilun <yilun.xu@linux.intel.com>,
+	linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, Madhavan
+	Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>, "Christophe Leroy (CS GROUP)"
+	<chleroy@kernel.org>, Alexander Gordeev <agordeev@linux.ibm.com>, Gerald
+	Schaefer <gerald.schaefer@linux.ibm.com>, Heiko Carstens
+	<hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, Christian
+	Borntraeger <borntraeger@linux.ibm.com>, Sven Schnelle
+	<svens@linux.ibm.com>, x86@kernel.org
+Content-Language: en-US
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+In-Reply-To: <yq5aldbdnbj8.fsf@kernel.org>
+Content-Transfer-Encoding: 8bit
+X-CMS-MailID: 20260714100016eucas1p2bbfe02d5fc02fcf561dc5409c7ecb5ab
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="utf-8"
+X-RootMTR: 20260707080628eucas1p13fa8a57e60ef5dd3ec651e19e42af0a1
+X-EPHeader: CA
+X-CMS-RootMailID: 20260707080628eucas1p13fa8a57e60ef5dd3ec651e19e42af0a1
+References: <20260701054926.825925-1-aneesh.kumar@kernel.org>
+	<CGME20260707080628eucas1p13fa8a57e60ef5dd3ec651e19e42af0a1@eucas1p1.samsung.com>
+	<yq5av7argr65.fsf@kernel.org>
+	<fc804746-4fb8-4ea9-997f-a4cae9ba8c14@samsung.com>
+	<20260713194323.GC3133966@ziepe.ca>
+	<cd5d0504-1592-4b48-89ea-1efe8aa57968@samsung.com>
+	<yq5aldbdnbj8.fsf@kernel.org>
 
-Marek Szyprowski <m.szyprowski@samsung.com> writes:
+On 14.07.2026 11:52, Aneesh Kumar K.V wrote:
+> Marek Szyprowski <m.szyprowski@samsung.com> writes:
+>> On 13.07.2026 21:43, Jason Gunthorpe wrote:
+>>> On Tue, Jul 07, 2026 at 03:03:48PM +0200, Marek Szyprowski wrote:
+>>>> I'm fine with merging on top of the topic branch and I assume that this
+>>>> patchset is mature enough to give it a try in linux-next, but first I
+>>>> would like to get a review or at least acks from others with good CC
+>>>> knowledge or experience.
+>>> I think it is good to go from a CC perspective, there are still some
+>>> more items to fix up (like the MMIO) but I'd rather they be followups
+>>> at this point.
+>> Great. Aneesh, any chance You could send v8 with the remaining items
+>> fixed till end of this week? I will be happy to push it to
+>> dma-mapping-for-next for testing in linux-next asap.
+>>
+> Sure. You need this rebased on top of the pKVM changes, right?
+> Otherwise, we'll end up with conflicts when you do the final pull
+> request.
+Ah, indeed. I forgot about the pKVM changes. If there is a stable
+branch with those patches, please base v8 on top of it.
 
-> On 13.07.2026 21:43, Jason Gunthorpe wrote:
->> On Tue, Jul 07, 2026 at 03:03:48PM +0200, Marek Szyprowski wrote:
->>> I'm fine with merging on top of=C2=A0the topic branch and I assume that=
- this
->>> patchset is mature enough to give it a try in linux-next, but first I
->>> would like to get a review or at least acks from others with good CC
->>> knowledge or experience.
->> I think it is good to go from a CC perspective, there are still some
->> more items to fix up (like the MMIO) but I'd rather they be followups
->> at this point.
->
-> Great. Aneesh, any chance You could send v8 with the remaining items
-> fixed till end of this week? I will be happy to push it to
-> dma-mapping-for-next for testing in linux-next asap.
->
+Best regards
+-- 
+Marek Szyprowski, PhD
+Samsung R&D Institute Poland
 
-Sure. You need this rebased on top of the pKVM changes, right?
-Otherwise, we'll end up with conflicts when you do the final pull
-request.
-
--aneesh
 
