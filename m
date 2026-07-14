@@ -1,46 +1,46 @@
-Return-Path: <linuxppc-dev+bounces-24223-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24224-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 39D4EC44501
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2026 14:06:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DFC7FC44508
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2026 14:06:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h01LF6w80z30CZ;
-	Wed, 15 Jul 2026 00:05:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h01LP4fswz2yXj;
+	Wed, 15 Jul 2026 00:06:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784037957;
-	cv=none; b=bV4wsBKI0pSqr062MnX+4ei61EfosZK4B4yvEXDSEoua0Rl9oNHpJNuCYd3034/z5s6LvNiSyjPvz628/VZZhr1w+C4715gMRFkpaHN+1j8Rr+dRVXYrSBs8g3FQvEBi0B/C9nhNBh2icjI+eJWxOo0Ea8SD4kL0Yvn3zCzozOPlPPtO0X0jwGQyBCrpI2DSdAbMvZKNut/+Iwou23P6LHszE0wlqCPrfFZqcJv84/IjjIQNJLTvmqaYHR+YXkTswKxydaASKDlUDDISMFeoXZGuEHnqH7bgO70X1sA6fSG0iObdn23AokW2So6ZuDKRh0BnThVpvlLMP9lz5GZCZQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784037965;
+	cv=none; b=BXewe6imR8LdEfK3wLaBSrY6KzftKwOJwi63QkzCsPIgrSP2lzOLDI6xwWe1Zi8Mhi7Y7ZP14VDJF3I7vkTY21AJwvnNlFlxX4Uqqlwd2dWwYmbRO9paxCB/M/3/70WiSkQnePdGo9HGwa+E8o63OAJ8LIxU1xITQevpPGJ6K3hx/uVjavdAFQixwcYIqfXil18uDSD/6vEuHnHakOqSMP7dd5Xdno+wNshc02AZM/D0/p0i1yr9VZJ+1fLewwvE5GTpen1GtrQHRgLF6DFc9hMESLWpMtsy6f1ny4bN1G5GBuwJtr745m5IWVZ8VCbf5GQSyr9ZWKYc/AVhxN8IEA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784037957; c=relaxed/relaxed;
-	bh=ng20Y1WVsLH0VrG9X7Anb28wNw6mpkVst635uOI6nRo=;
+	t=1784037965; c=relaxed/relaxed;
+	bh=Sn+zU8yNJHIyNq+aM/0w0FGWDdrVU1gUm/tv5PTPfjM=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=U8xEKNb1UMYnSWojj6C+UGCUhuO/v2sZo7O4Jo9NGd980KFoiGfjkRyl6ndvA4a7gBJU2uK/NilC1eNxyhATwui3A6pA31X92AJx/fvwFsOcgj4RIIyUjCoYOMLaNiPliNCJYJstd3ZDwDaiesYxYyxtr5rHhpro+zRbJa/dNy4UAPsgNcvKd8XILK9K1qHUMqcwMmrY4n8XR2+gOyw0H6jSZGacnQecAQwENuxj+86y5ZZGfDQGW1fbz969wM4W5oM45eyC3S0Ed7Duk+8MY3uBjYtXnxWSFtUeJV4gyWiQA19Dxn9IM5MytDkBRvdp90K3eZppPKYMKrC5S5Unvw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=L/UyKrDH; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
+	 In-Reply-To:To:Cc; b=fmNJu4Fgl5VjPRmb6/U/VRscnxv7VbvZOQE97PijZFkPsc+8jmTW9kqvy0WaMItgvNMw6RASkJgrCOKXxw/BJbm4upzlZzPW6V5eFviGtIz3ohMMGOLDXWpZTeVoX2SlI9F7lVfnIiLzxprM46++VshOFKhYHpHNkGynsCQfr8fitQ3ax76rUhqR6LeXhIXvGrBasCPrqDSv6vNvKdrwhbgE5sKYRLbeZXMxblqU0D9GdGgz4nukpa+Ec/N4ZXCPLx3VxvdmijqKf4YWb0plEZHIUDA6pY+h//PLBVKmooP2ZaBDk4T+EVYxxjaLonIjUHk1mDPVDe4D7x1Kz099ag==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=Bm1/z7nw; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=L/UyKrDH;
+	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=Bm1/z7nw;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org)
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h01LD6s4Cz2y8p
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2026 00:05:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h01LN4MJsz2y8p
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2026 00:06:04 +1000 (AEST)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 63C3B339;
-	Tue, 14 Jul 2026 07:05:21 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 224CC152B;
+	Tue, 14 Jul 2026 07:05:29 -0700 (PDT)
 Received: from localhost.localdomain (e123572-lin.cambridge.arm.com [10.2.208.46])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 3A07F3F7B4;
-	Tue, 14 Jul 2026 07:05:18 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id ECA813F7B4;
+	Tue, 14 Jul 2026 07:05:25 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1784037925; bh=xWJCKsvCSbOTf1MrL+nqfsWcuzx4IBI4MMfjRE6PTH4=;
+	t=1784037933; bh=FInc2gTxhVQc4LYtwtKoJPw43dSvFTnMs+LPVQ5s9u0=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=L/UyKrDH31P2AxfsB5zaY1mh6o9sykjNj6yB/yMXG8ePSNTlccGqvWENIvdaG1tfJ
-	 Wk0YZEQWyX1mVS8XhODJBz5n9MI25kkc+YIk8/N9y9yuoLWoSBYTDhb1fyTBkqd7HI
-	 cav7VW0lg3rVkGLnx2wAlICXEbNLvp2RP9uBMl74=
+	b=Bm1/z7nw3ZrVQHSoXKrtxTQs91wc4RUrXfic6nvC1VPB3At2KepfWXr7Aw3HYFpkn
+	 ioHo5OCLJkJiU6MHz48diP4nr6YFWtjQg3UL72aeFoQQSfWxPSBxVE10gNTyxwI//k
+	 BrtCJZVqyK4Ji57oD58xPcYajyNM3z8AN78Fhrlw=
 From: Kevin Brodsky <kevin.brodsky@arm.com>
-Date: Tue, 14 Jul 2026 15:03:51 +0100
-Subject: [PATCH 02/22] mm: move mm_flags helpers to mm_types.h
+Date: Tue, 14 Jul 2026 15:03:52 +0100
+Subject: [PATCH 03/22] mm: introduce MMF_KERNEL flag and set it for init_mm
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -56,7 +56,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260714-remove_pgtable_cdtor-v1-2-44be8a7685d7@arm.com>
+Message-Id: <20260714-remove_pgtable_cdtor-v1-3-44be8a7685d7@arm.com>
 References: <20260714-remove_pgtable_cdtor-v1-0-44be8a7685d7@arm.com>
 In-Reply-To: <20260714-remove_pgtable_cdtor-v1-0-44be8a7685d7@arm.com>
 To: linux-mm@kvack.org
@@ -95,120 +95,78 @@ Cc: Kevin Brodsky <kevin.brodsky@arm.com>,
  "Matthew Wilcox (Oracle)" <willy@infradead.org>, 
  linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1784037902; l=3490;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1784037902; l=2504;
  i=kevin.brodsky@arm.com; s=20260427; h=from:subject:message-id;
- bh=xWJCKsvCSbOTf1MrL+nqfsWcuzx4IBI4MMfjRE6PTH4=;
- b=hjHVW6q/l9oVND5egfxNDc6FE64eNht6hv1NYHcLYYfk3GK4zKlatRLYEID3yBr+Cr2y6GvLX
- wE73qcbXnDpDJQn8OyUXgdNbqTA1wZVDqiAytR24UH8BGEWoTGJECyr
+ bh=FInc2gTxhVQc4LYtwtKoJPw43dSvFTnMs+LPVQ5s9u0=;
+ b=LLyApQy3cCX+sEK7+yEv+wdSQwFfqhZ/PtGYmJI+JJbZMoulhtvHZSYrG2onhzlRcBnCeJhTe
+ oQ14mia3FhGBEfCDsSpVX5EPWBdyUPXpBCd8WmZOxEP54NLEVWz9CaD
 X-Developer-Key: i=kevin.brodsky@arm.com; a=ed25519;
  pk=N2QG+eJKrvkNovwhhwJhnJ4+ScVfsGCHldmqLfcMTFs=
 
-Some of the mm_flags helpers are defined in <linux/mm_types.h>,
-while others are defined in <linux/mm.h>. We will soon need to call
-one of the latter helpers from mm_types.h.
+mm code often needs to know whether some mm represents a kernel or
+user address space. This is currently done by comparing the mm
+pointer with &init_mm; besides not being particularly elegant, this
+ignores the fact that other mm's (e.g. efi_mm) may also represent
+parts of the kernel address space.
 
-Regroup all the helpers in mm_types.h to keep things simple.
+Introduce a new mm flag MMF_KERNEL and set it for init_mm.
+Subsequent patches will use this flag to replace comparisons with
+&init_mm. No functional change is introduced for now.
 
-Also remove #include's that were added specifically for these
-helpers in mm.h.
-
+Assisted-by: Codex:GPT-5.5
 Signed-off-by: Kevin Brodsky <kevin.brodsky@arm.com>
 ---
- include/linux/mm.h       | 32 --------------------------------
- include/linux/mm_types.h | 30 ++++++++++++++++++++++++++++++
- 2 files changed, 30 insertions(+), 32 deletions(-)
+ include/linux/mm_types.h | 10 ++++++++++
+ mm/init-mm.c             |  1 +
+ 2 files changed, 11 insertions(+)
 
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 32bb723ffbb9..7a4b8e7ac8f4 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -34,8 +34,6 @@
- #include <linux/slab.h>
- #include <linux/cacheinfo.h>
- #include <linux/rcuwait.h>
--#include <linux/bitmap.h>
--#include <linux/bitops.h>
- #include <linux/iommu-debug-pagealloc.h>
- #include <linux/kcsan-checks.h>
- 
-@@ -948,36 +946,6 @@ static inline void assert_fault_locked(const struct vm_fault *vmf)
- }
- #endif /* CONFIG_PER_VMA_LOCK */
- 
--static inline bool mm_flags_test(int flag, const struct mm_struct *mm)
--{
--	return test_bit(flag, ACCESS_PRIVATE(&mm->flags, __mm_flags));
--}
--
--static inline bool mm_flags_test_and_set(int flag, struct mm_struct *mm)
--{
--	return test_and_set_bit(flag, ACCESS_PRIVATE(&mm->flags, __mm_flags));
--}
--
--static inline bool mm_flags_test_and_clear(int flag, struct mm_struct *mm)
--{
--	return test_and_clear_bit(flag, ACCESS_PRIVATE(&mm->flags, __mm_flags));
--}
--
--static inline void mm_flags_set(int flag, struct mm_struct *mm)
--{
--	set_bit(flag, ACCESS_PRIVATE(&mm->flags, __mm_flags));
--}
--
--static inline void mm_flags_clear(int flag, struct mm_struct *mm)
--{
--	clear_bit(flag, ACCESS_PRIVATE(&mm->flags, __mm_flags));
--}
--
--static inline void mm_flags_clear_all(struct mm_struct *mm)
--{
--	bitmap_zero(ACCESS_PRIVATE(&mm->flags, __mm_flags), NUM_MM_FLAG_BITS);
--}
--
- extern const struct vm_operations_struct vma_dummy_vm_ops;
- 
- static inline void vma_init(struct vm_area_struct *vma, struct mm_struct *mm)
 diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
-index b4129beb9c4a..a2e0dc5892ff 100644
+index a2e0dc5892ff..7838ea3aac00 100644
 --- a/include/linux/mm_types.h
 +++ b/include/linux/mm_types.h
-@@ -1414,6 +1414,36 @@ struct mm_struct {
+@@ -1414,6 +1414,8 @@ struct mm_struct {
  	char flexible_array[] __aligned(__alignof__(unsigned long));
  };
  
-+static inline bool mm_flags_test(int flag, const struct mm_struct *mm)
-+{
-+	return test_bit(flag, ACCESS_PRIVATE(&mm->flags, __mm_flags));
-+}
++#define MM_FLAGS_INIT(flags)	{ .__mm_flags = { BITMAP_FROM_U64(flags) } }
 +
-+static inline bool mm_flags_test_and_set(int flag, struct mm_struct *mm)
-+{
-+	return test_and_set_bit(flag, ACCESS_PRIVATE(&mm->flags, __mm_flags));
-+}
-+
-+static inline bool mm_flags_test_and_clear(int flag, struct mm_struct *mm)
-+{
-+	return test_and_clear_bit(flag, ACCESS_PRIVATE(&mm->flags, __mm_flags));
-+}
-+
-+static inline void mm_flags_set(int flag, struct mm_struct *mm)
-+{
-+	set_bit(flag, ACCESS_PRIVATE(&mm->flags, __mm_flags));
-+}
-+
-+static inline void mm_flags_clear(int flag, struct mm_struct *mm)
-+{
-+	clear_bit(flag, ACCESS_PRIVATE(&mm->flags, __mm_flags));
-+}
-+
-+static inline void mm_flags_clear_all(struct mm_struct *mm)
-+{
-+	bitmap_zero(ACCESS_PRIVATE(&mm->flags, __mm_flags), NUM_MM_FLAG_BITS);
-+}
-+
- /* Copy value to the first system word of mm flags, non-atomically. */
- static inline void __mm_flags_overwrite_word(struct mm_struct *mm, unsigned long value)
+ static inline bool mm_flags_test(int flag, const struct mm_struct *mm)
  {
+ 	return test_bit(flag, ACCESS_PRIVATE(&mm->flags, __mm_flags));
+@@ -2001,6 +2003,9 @@ enum {
+ #define MMF_TOPDOWN		31	/* mm searches top down by default */
+ #define MMF_TOPDOWN_MASK	BIT(MMF_TOPDOWN)
+ 
++#define MMF_KERNEL		32	/* mm belongs to the kernel */
++#define MMF_KERNEL_MASK		BIT_ULL(MMF_KERNEL)
++
+ #define MMF_INIT_LEGACY_MASK	(MMF_DUMP_FILTER_MASK |\
+ 				 MMF_DISABLE_THP_MASK | MMF_HAS_MDWE_MASK |\
+ 				 MMF_VM_MERGE_ANY_MASK | MMF_TOPDOWN_MASK)
+@@ -2008,6 +2013,11 @@ enum {
+ /* Legacy flags must fit within 32 bits. */
+ static_assert((u64)MMF_INIT_LEGACY_MASK <= (u64)UINT_MAX);
+ 
++static inline bool mm_is_kernel(const struct mm_struct *mm)
++{
++	return mm && mm_flags_test(MMF_KERNEL, mm);
++}
++
+ /*
+  * Initialise legacy flags according to masks, propagating selected flags on
+  * fork. Further flag manipulation can be performed by the caller.
+diff --git a/mm/init-mm.c b/mm/init-mm.c
+index 3e792aad7626..93773269bf87 100644
+--- a/mm/init-mm.c
++++ b/mm/init-mm.c
+@@ -34,6 +34,7 @@ struct mm_struct init_mm = {
+ 	.pgd		= swapper_pg_dir,
+ 	.mm_users	= ATOMIC_INIT(2),
+ 	.mm_count	= ATOMIC_INIT(1),
++	.flags		= MM_FLAGS_INIT(MMF_KERNEL_MASK),
+ 	.write_protect_seq = SEQCNT_ZERO(init_mm.write_protect_seq),
+ 	MMAP_LOCK_INITIALIZER(init_mm)
+ 	.page_table_lock =  __SPIN_LOCK_UNLOCKED(init_mm.page_table_lock),
 
 -- 
 2.51.2
