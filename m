@@ -1,115 +1,101 @@
-Return-Path: <linuxppc-dev+bounces-24209-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24210-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 84609C43458
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2026 12:26:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 83AF6C43458
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2026 12:28:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gzz7l6HvTz2y8p;
-	Tue, 14 Jul 2026 22:26:43 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::f32"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784032003;
-	cv=none; b=NFYZyXhkg0V+9VfmHQKkMRDXQhKDAGS3NW/vLda4q3F3zGs5eUP0SbAjVcsGzehOsW2N9rgDttmRgBl9U6jQhw1RbcgbFTeHS+BnqWAjBDECGABN/4+U3+Po/yWRAizOZr62et+LySaRvKJYHpuECjU7lZVVkkcpl2BsnvgvxxM1oPAJHMpMZQeAzHWJ063Aflg7vSmpNkTDm0/He/UA2ZatgS4W2Dch8oDcnGWbLsBQDyYXojVyGd9h8SfVoJ2Kwjp5VRtyHixNN9MSKY7YPzZh0TBwAsZqXB3E1kpYf25g6SSj9B4yNlA2ElfKrW/M9YNlrrA2nbf6cdHIfkt84Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gzz9H675sz2yMn;
+	Tue, 14 Jul 2026 22:28:03 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.130
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784032083;
+	cv=none; b=XTgNncUjg/2FiikA0nWoE+ib+9ZfqojemLSy9T+2Mhrm8LeS7pqB6Ssv0PEj8kJ6jdqydudTGWU9KNZOoEpW6Z6nn1R+4TP7CpL/wqhz+iLyZUyaDBSM9tOKKV3Fc5w60VG18y5t1r+f4eyvOZJVs7D28OKfNoOmcTbp9xCwhHP8jrdSAhbwFT/bKoUP6F0CSppPjnYgClr1W4p0qArd6C+uUV5LzltoK6bEt11MEcPW8Ux0WUuA87F7bcmTEuzl9xvMi67VgtVxCY+wRYdUXt6s/LAQeu4CQS3ZuaKvfI+0lUUnTTWrkKZE4A0fY0/ltqMFeI+8YLrbkVJbTGHF8Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784032003; c=relaxed/relaxed;
-	bh=AuDF+BU2wT5tVoACVa1l/BwLN4UR/axOeynKCGX6Iio=;
+	t=1784032083; c=relaxed/relaxed;
+	bh=Mv55jrFDO93gjGYIsU0f7D2xrkBLg3m+YQNtif0jQGw=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=DpEMMfJ36jaklG9h8YELAzQfwy2xJcP0h6vUQRjD/axAQweidJVDaEqa6ifhhhL5IC2GUNla3/DS8BF9NdeuQ73HTHYdhWG8FNFuWVKEeEehOhacVputdFfIIa9O9hgZ7C+KP9XQ8EQTIiy30ydLwU+C4N/35ZUjHcM+TN4QU7xd7MbsSKhCK0dZPF3YMmCqe0F7+ejDYk2GEgkN7Yc8/CF4AhVPcxVup83HuBKuD7M6AbNT/DWZx6AdRV+K5tzwfkhiwmw+KICcuaLCHY68fE89Y4NPogpfJBTgot6bWsTHfMfbF0TuYs1xmBFXgOyWrC6NbYVedTbndynyEutJ0g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca; dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=WjUZNroJ; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::f32; helo=mail-qv1-xf32.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org) smtp.mailfrom=ziepe.ca
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca
+	 Content-Type:Content-Disposition:In-Reply-To; b=IK455lNtdH+AxqB+6jInqNsMi4rwaNjMXQmWU8wx2n2++4hD58EcLZdlofVey+HpkeimUuCISyNeaTFJRkVyit+lJXY+qllrId0lpCGOF/LEk/3sMMwmMh5pZZlXx4biQOoTl8JmOBbCxrUOAOJClcOVxTBHpRjU1VRLv3Wsj0TeQ9Enw6tJenQjcJOSSoqrQRKitfnDgQiSRygqtB44406p7Mmw6Nd/YKNCN/Teb2KFxmvpqPsnRdCkp9hRIFDGDk7uMYiohdgM6sJq49jmg5J/zgrUegJMrM+8JfmaTJOpTxEfsIj5x4b2csUyazUz77dCQWhpIGcDMu0bryqemA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=ZlsG22+2; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=SHQYjcVL; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=ZlsG22+2; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=SHQYjcVL; dkim-atps=neutral; spf=pass (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=WjUZNroJ;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=ZlsG22+2;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=SHQYjcVL;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=ZlsG22+2;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=SHQYjcVL;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ziepe.ca (client-ip=2607:f8b0:4864:20::f32; helo=mail-qv1-xf32.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org)
-Received: from mail-qv1-xf32.google.com (mail-qv1-xf32.google.com [IPv6:2607:f8b0:4864:20::f32])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gzz7k45GHz2xqn
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2026 22:26:42 +1000 (AEST)
-Received: by mail-qv1-xf32.google.com with SMTP id 6a1803df08f44-8f18d92172aso12773456d6.2
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2026 05:26:42 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ziepe.ca; s=google; t=1784032000; x=1784636800; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=AuDF+BU2wT5tVoACVa1l/BwLN4UR/axOeynKCGX6Iio=;
-        b=WjUZNroJbtZJDlEuHbGhjjU3vVXN9oVZII//KHQi3seAe5GmVkLArHqh+7uLvuMXDq
-         Dg/7fRwBEGSccbksvWzi5PwWQKQvEmYqQLzAtdaF/f+tV93aEevDtjWlWdzvUfo4tjKm
-         PwUl/2tWl3u8Yxk7KK9Vs8qgnHpstjVa3Hmqf8olRBHyQpUFS5t9F6TMZ6/pvshQPB2M
-         VBwz77cOw84l6pBgTcCZOMROnynuoGgtG2s2RnQymvsoltGV79pV2xH4EqKjlxClhefL
-         0dadq1i/Fz4zNYRQnRaONybSBy7KPsuDvuSr1k+bNyZkhh3UBvNpHgRZ59vpHooXtBYo
-         CYyA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784032000; x=1784636800;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=AuDF+BU2wT5tVoACVa1l/BwLN4UR/axOeynKCGX6Iio=;
-        b=d/6rmmn53p8+JKTn3kQ8Ikje+Z6AUye4aaVOqXX+YKjgiqOW+uPIehX64CYpPB1yZ5
-         vnNrFoSX+SqCLxXYwOpieICBsBaBes/zZJeKbzT5drjeMGIFCgSa0TFNNJxw8w8b7ah6
-         CjGqUrqoAyl2XM4DvDgOZ51pwrvCcjGz11/3uHXmAGxm+7PwrhZOrAZOScRl7KQcN+hr
-         /PN55thW0Sw8qFS3OIV/9YJxl4ECpkA15tcSwQq1uu+wdKdhI3jK+ruRLH7Xlx/pDay4
-         QybepyZV1FK6rAyF9e8hNt9wndVObjHyQf0ZYjB4rjcJPi39hqjtmt8UzuDZBI27f7Rx
-         GFrw==
-X-Forwarded-Encrypted: i=1; AHgh+Rr/qYvyR+/HgH0uU2chN2qFvKaa2+3Ui9mrr9EUJ6qhHTs3DFUXAK7r2Ej40Hn1KOeu2cF9xQujkJIJm1s=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxoLA1kzHo/LN/id+wtKX0hd9yE4TXr1KwCCKWFghpD7DoZtxCk
-	SzJ5ckqHq+l46aby57EiOFx3Y6YXaDQx3uGxyc9CZhzybsgTLPe66uhtUw6r9kZvhP8=
-X-Gm-Gg: AfdE7ckCDXqiUTjBQdISAj+szsVcb8pqPGrZWXkIslVlez5mdh31zdEcgX/IN9a6HhF
-	lfHViaVujNequBiTM159dj+NNx3p1PmzHT2NrQFH+SgqHKVfNLOb9YwZ1QjHNiGUZo6MrueR6qr
-	4GWbK9Vr2Y44VGZcdhny2AZK+pxsBD47aoCXnNnZn6yySXDyxBITvif3YIbOl8YQfzXaCLycYb4
-	wNYM1xrmi2q855iPoZY/SHay3FZnJWdRqlenBvmFT6kFPJYl7SfNr+r8C1o2D/VDl0CIW10rYs/
-	mtzORybxkbVvBqDpNoIW9f+q92h2mW0vkxnaUHD8p1jsyV7fKGBDVc+cg58VuPSHMSJttwHyOw0
-	G4Qf0iteflWJZW47iOjUqiQImGuEiIsWFY1fNDDarNHCA57I3qZzJrXbypRo4
-X-Received: by 2002:a05:6214:1cc6:b0:8e9:f5de:d629 with SMTP id 6a1803df08f44-9040423dcecmr141353846d6.56.1784032000167;
-        Tue, 14 Jul 2026 05:26:40 -0700 (PDT)
-Received: from ziepe.ca ([159.2.72.92])
-        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-8ffd7c1ec84sm168106996d6.29.2026.07.14.05.26.39
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 14 Jul 2026 05:26:39 -0700 (PDT)
-Received: from jgg by wakko with local (Exim 4.97)
-	(envelope-from <jgg@ziepe.ca>)
-	id 1wjcDf-0000000FRvu-0Ugk;
-	Tue, 14 Jul 2026 09:26:39 -0300
-Date: Tue, 14 Jul 2026 09:26:39 -0300
-From: Jason Gunthorpe <jgg@ziepe.ca>
-To: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>
-Cc: iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev,
-	Robin Murphy <robin.murphy@arm.com>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
-	Steven Price <steven.price@arm.com>,
-	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Jiri Pirko <jiri@resnulli.us>, Mostafa Saleh <smostafa@google.com>,
-	Petr Tesarik <ptesarik@suse.com>,
-	Alexey Kardashevskiy <aik@amd.com>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Xu Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
-	linux-s390@vger.kernel.org,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gzz9G4FzNz2y8p
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2026 22:28:02 +1000 (AEST)
+Received: from kunlun.suse.cz (unknown [IPv6:2a07:de40:b306:2000::2])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 7B1CE77E59;
+	Tue, 14 Jul 2026 12:27:59 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1784032079; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Mv55jrFDO93gjGYIsU0f7D2xrkBLg3m+YQNtif0jQGw=;
+	b=ZlsG22+2qJHsdTgdkxvwmSlcE2jpD1rDFltZ2XBaaBUdxSXZ9XTNs5pK/w4lCTCHx6x/us
+	rdRAWawR7siq4niXzhUqnNnE5zb9rtW+qo+o2fR+aSW99C2RM5JEfmFuQ+Ug1+/rcEi/8D
+	zneyg7bhMeggThQytWIj8e9LdbZpxPk=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1784032079;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Mv55jrFDO93gjGYIsU0f7D2xrkBLg3m+YQNtif0jQGw=;
+	b=SHQYjcVL5VrOKoaQAh2ZpNoUXIv2pbv4B/7Mv1feXJEdCMZcbfPGQCL5NBPQDmIOG9kGxC
+	PRv0lwkN6hB1BSAQ==
+Authentication-Results: smtp-out1.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=ZlsG22+2;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=SHQYjcVL
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1784032079; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Mv55jrFDO93gjGYIsU0f7D2xrkBLg3m+YQNtif0jQGw=;
+	b=ZlsG22+2qJHsdTgdkxvwmSlcE2jpD1rDFltZ2XBaaBUdxSXZ9XTNs5pK/w4lCTCHx6x/us
+	rdRAWawR7siq4niXzhUqnNnE5zb9rtW+qo+o2fR+aSW99C2RM5JEfmFuQ+Ug1+/rcEi/8D
+	zneyg7bhMeggThQytWIj8e9LdbZpxPk=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1784032079;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Mv55jrFDO93gjGYIsU0f7D2xrkBLg3m+YQNtif0jQGw=;
+	b=SHQYjcVL5VrOKoaQAh2ZpNoUXIv2pbv4B/7Mv1feXJEdCMZcbfPGQCL5NBPQDmIOG9kGxC
+	PRv0lwkN6hB1BSAQ==
+Date: Tue, 14 Jul 2026 14:27:58 +0200
+From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
+To: Thomas Gleixner <tglx@kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
 	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org,
-	Jiri Pirko <jiri@nvidia.com>, Michael Kelley <mhklinux@outlook.com>
-Subject: Re: [PATCH v7 11/22] dma-pool: track decrypted atomic pools and
- select them via attrs
-Message-ID: <20260714122639.GH3133966@ziepe.ca>
-References: <20260701054926.825925-1-aneesh.kumar@kernel.org>
- <20260701054926.825925-12-aneesh.kumar@kernel.org>
- <20260713184810.GM3133966@ziepe.ca>
- <yq5aqzl6mc00.fsf@kernel.org>
+	Shrikanth Hegde <sshegde@linux.ibm.com>,
+	linuxppc-dev@lists.ozlabs.org, Huacai Chen <chenhuacai@kernel.org>,
+	loongarch@lists.linux.dev, Paul Walmsley <pjw@kernel.org>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	linux-riscv@lists.infradead.org,
+	Sven Schnelle <svens@linux.ibm.com>, linux-s390@vger.kernel.org,
+	x86@kernel.org, Mark Rutland <mark.rutland@arm.com>,
+	Jinjie Ruan <ruanjinjie@huawei.com>,
+	Magnus Lindholm <linmag7@gmail.com>,
+	"Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>,
+	Jonathan Corbet <corbet@lwn.net>, Radu Rendec <radu@rendec.net>
+Subject: Re: [patch 0/4] entry: Rework syscall skip logic
+Message-ID: <alYrTktEcosLvGiw@kunlun.suse.cz>
+References: <20260712134433.549076055@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -123,21 +109,95 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <yq5aqzl6mc00.fsf@kernel.org>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20260712134433.549076055@kernel.org>
+X-Spamd-Bar: ++
+X-Rspamd-Queue-Id: 7B1CE77E59
+X-Rspamd-Action: no action
+X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
+X-Spamd-Result: default: False [2.49 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	HFILTER_HOSTNAME_UNKNOWN(2.50)[];
+	RDNS_NONE(2.00)[];
+	ONCE_RECEIVED(1.20)[];
+	HFILTER_HELO_IP_A(1.00)[kunlun.suse.cz];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	HFILTER_HELO_NORES_A_OR_MX(0.30)[kunlun.suse.cz];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	NEURAL_HAM_SHORT(-0.20)[-0.999];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	ARC_NA(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[19];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	MIME_TRACE(0.00)[0:+];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com];
+	FREEMAIL_CC(0.00)[vger.kernel.org,ellerman.id.au,linux.ibm.com,lists.ozlabs.org,kernel.org,lists.linux.dev,dabbelt.com,lists.infradead.org,arm.com,huawei.com,gmail.com,lwn.net,rendec.net];
+	TO_DN_SOME(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	DNSWL_BLOCKED(0.00)[2a07:de40:b306:2000::2:from];
+	MISSING_XM_UA(0.00)[];
+	RCVD_COUNT_ZERO(0.00)[0];
+	DKIM_TRACE(0.00)[suse.de:+];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[kunlun.suse.cz:mid,kunlun.suse.cz:helo,suse.de:email,suse.de:dkim]
 
-On Tue, Jul 14, 2026 at 09:57:43AM +0530, Aneesh Kumar K.V wrote:
-> >
-> > But I don't view this as that important, the CC hypervisor is probably
-> > going to use the S2 page table to force cachable on all system memory
-> > so the non-cached pgprot is a NOP, but the extra vmap is wasteful and
-> > it is confusing.. So maybe a little fixme is all that is needed here.
-> >
+On Sun, Jul 12, 2026 at 11:25:12PM +0200, Thomas Gleixner wrote:
+> This are the reworked leftovers of the larger entry logic rework series,
+> which can be found here:
 > 
-> Something like?
+>   https://lore.kernel.org/lkml/20260707181957.433213175@kernel.org
+> 
+> The undisputed part of the series has been merged into:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git core/entry
+> 
+> After a fruitless discussion about the most resilent approach, I decided to
+> give up wasting my time and reworked the series so it caters to the desire
+> of powerpc and s390 to be special.
+> 
+> That results in almost identical behavior except for the case where
+> tracing/probe/BPF sets the syscall number to -1 (or any other out of range
+> value) and also sets the syscall return value to something different than
+> -ENOSYS.
+> 
+> PowerPC and S390 will overwrite that value with -ENOSYS.
+> 
+> Loongarch, RISC-V and x86 will not overwrite it because those architectures
+> preset the return value to -ENOSYS and skip out of range syscalls
+> completely. Loongarch and RISC-V always did the out of range skip. X86
+> gained that in the already applied rework, which means that the final patch
+> which splits the skip decision from the syscall number does not longer
+> change x86 behavior for the above case.
+> 
+> Documentation is also updated and describes the two implementation variants
+> and the subtle difference in the resulting behavior.
+> 
+> The series applies on top of:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git core/entry
+> 
+> and is also available from git:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/tglx/devel.git entry/rework
 
-Yeah
+Hello,
 
-Jason
+applying this on top of 7.2~rc3 and running tests for the cases that
+were reported as problematic I see results as expected.
+
+This version of the patchset works for me.
+
+Tested-by: Michal Suchánek <msuchanek@suse.de>
+
+This is certainly not comprehensive, there are many corner cases not
+tested. Some were broken to start with as well.
+
+Thanks
+
+Michal
 
