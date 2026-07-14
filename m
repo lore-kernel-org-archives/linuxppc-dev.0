@@ -1,48 +1,48 @@
-Return-Path: <linuxppc-dev+bounces-24171-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24172-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E447EC43458
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2026 01:45:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 94077C44507
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2026 01:45:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gzhvR2PW8z3c13;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gzhvR4n45z3c1L;
 	Tue, 14 Jul 2026 11:45:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:7c80:54:3::133"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783993506;
-	cv=none; b=Sbt/Qo5z10W55pIE4FUC92KjSBEZLzi5Q8aJM5on/J6xF3tzDXEdUiln2iJ1UIMeLDeVjp2bLNeNJkEOjyzxifklJwXfGOq+Gijn0t/1V+Hx2pATfuJspzXEI6CIWOEk6QDunACYAHHVLFFn/H0t2Yb/veozUOd7wBYThT5EksrkU7fS0XeNFkL3fb5Srj9tDmsdEDlcSrTn62eKVBABvzTB7zZvzYwe7Oel5peSQDHWAg8zX/J2+9ivGhKhlMyjDggIcrpveL2H3o+7IEc9oI9UFdaFxGe35rYgBSQuifGUpi+hIqYvtF5zhtF8sMI6Cv+dhmt7iF/JIUmNrS1PEw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783993507;
+	cv=none; b=JSUcuxdsBOzFyfazREvupuGxE1FPrEARCNYMsaaSXYnZhHBujTdZbBP0uKjIxiYb7wsgtaFoMZ2z03LFCbL1sa06hUAHz7J8ZxUcw4Iq5mSvB76tRqwxHXg7vf6UtpAFlXhUBT9BXsC+cNRAoBxcTLjznoRD3AgFy76zHgEco6V6WLHCQRPncaitGLypaE5YRnYdWPO8cpHdfZxGVUmXzGVz84RoOgKkNfVldXGHPLm4GaOEDG3rs9j2s/7Mi1mqsU0q3zAUjC4xNcVWtUaPDyUbwOH/ALdn4yhjNAvuujCz6prMyimL0OcOIUDKSfSACi7mATBODiUtZLPwgImiIA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783993506; c=relaxed/relaxed;
-	bh=UPVlbpyK7pCvn9FniuWKtZdUWJg+hYJv1PxfFdkhpfU=;
+	t=1783993507; c=relaxed/relaxed;
+	bh=Wzo+p7kjYg1zo7BvQPSNimvM1GKqs370chQONJWgl9E=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Z89O7m6+xpzEaWDkzvhjEDCz3Q3bwLBsHXyTqUALESrxdWIIA/9u2JTq62TfLmYSgVwj5wOv2hmzrwXTbN0cop6Tv2fZj4qGT2aci1Zyk+WTkdemxHfjfT5mePueOhqMRsu379tsR9CrWB6f0SEOvJ9JEE1jwyLn8J0ApLk4jmXG+hzr301AvIOwLTFPCTW3LPb6GcGT7H1ZjlLR7zmmEF5V2GWBziAr0fmS/2K+vElvbDaM/Xt6M25aVfHjfSroO8cJKSxE9atIXkQMgzvxYapM+KT8nhZamsJnd04FmpVdqCURPBGqIczXf7uCUuyGdc6rI81VerUwX08GPrFXKA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=kEdhg6ai; dkim-atps=neutral; spf=pass (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=rdunlap@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
+	 MIME-Version; b=S6EDGx0kTn1BI25Cqi3dmIHDySVNXConyxhHMHa7BZMJ8MWAKNAuhOSYBPlAYgb+KLqkVaKwojg1IiPep6rSsbdz4gyhcJWO/PqthMrVIB/6r6Gwc90jd0zgKtNpv/w0y/cDivMgg1bN5G2bhk5GcPKnICvRhMyqfXOuRIcY+aaECNDvo1ZOOcVTYFMLnxk4B7A21umPn1XrBL65w6+CtOmuv2sc4d6ja8dYW1PESmzM0G7JeVr7wfH3A2Z5YFwecPXNZ51prxZWD9CPDipkJadWMyRzv6WLxfdvzLSTBaSmT39txj3rlU4jTLYQqXhXG6S0Rr9MxMzYKPqAoUNc3g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=vM0exWra; dkim-atps=neutral; spf=pass (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=rdunlap@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=kEdhg6ai;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=vM0exWra;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=infradead.org (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=rdunlap@infradead.org; receiver=lists.ozlabs.org)
 Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gzhvG3x6Xz2yl0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gzhvH0DgHz2yln
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2026 11:44:58 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
 	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender
 	:Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=UPVlbpyK7pCvn9FniuWKtZdUWJg+hYJv1PxfFdkhpfU=; b=kEdhg6aiPFOlfQFoSz9Weif1jT
-	tFuR/sdxV3Ihrsf5Sqv5v5cTO91MamoRRArbzKAW6nk07OS6b6HJvqq2ac4spkgfaZvJiEjdJtH7A
-	jeLZiAUEJ8ieit+7cRsIm2rq2r6g7GlBLzBIy5GbfclGbNLwspY6ohE59qZO9jwUkXoRFICUwy+mM
-	LeHuFFw12FbDr1lkZ6a7Y8+QwQ01zh3bqMgvX1C5gjE/cIpa7cPtTeMlvhr4VbGbykaJU51nbPlT+
-	zGwS9/lpC4npEcE7SOQ3eD4T1LYa6nJcwVaDPdgulFQxRMURlTEm5iIN76p0jdotDKigJK8w1sGxW
-	BNC1Naog==;
+	bh=Wzo+p7kjYg1zo7BvQPSNimvM1GKqs370chQONJWgl9E=; b=vM0exWraEZ+kdHXAEppLxIFTfI
+	OmYMJ/qGZ+LrbRrEhYU3k+gOEMto5M9WhQrXiM0/P5vXLhB3olLHmvhW85Re79hPTpvJHSjIkidOx
+	MtUzephqKDGpelmORpwQtfC7D2wBVvYG/o6dulk5Lk66bXvw1UeAgsaz9A2364arzbrk8z776VKi7
+	qwKrqtQQaMiJ5efVBWz73dKgknQjCt3KVl57K6fQfTwOG60eTeCPeyZ3AauIx5sZIdFMf7Ue1NwpM
+	vjC/YZBg08hf8ZVJ0hsZeGOUoScyL8xuE0i1fEhcJdBMQZ3PVeIHs4Aej2L9KEk1EeOyxCd9xm8Ih
+	8FoW6qEw==;
 Received: from [50.53.43.113] (helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtpsa (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wjSCa-0000000AgsR-209b;
-	Tue, 14 Jul 2026 01:44:52 +0000
+	id 1wjSCd-0000000AgsR-1Kwy;
+	Tue, 14 Jul 2026 01:44:55 +0000
 From: Randy Dunlap <rdunlap@infradead.org>
 To: linux-sound@vger.kernel.org
 Cc: Randy Dunlap <rdunlap@infradead.org>,
@@ -62,9 +62,9 @@ Cc: Randy Dunlap <rdunlap@infradead.org>,
 	linux-arm-msm@vger.kernel.org,
 	Liam Girdwood <lgirdwood@gmail.com>,
 	Mark Brown <broonie@kernel.org>
-Subject: [PATCH 09/14] ASoC: uniphier: don't use "/**" for non-kernel-doc comment
-Date: Mon, 13 Jul 2026 18:44:40 -0700
-Message-ID: <20260714014445.569992-10-rdunlap@infradead.org>
+Subject: [PATCH 14/14] ASoC: wm8904: don't use "/**" for non-kernel-doc comments
+Date: Mon, 13 Jul 2026 18:44:45 -0700
+Message-ID: <20260714014445.569992-15-rdunlap@infradead.org>
 X-Mailer: git-send-email 2.55.0
 In-Reply-To: <20260714014445.569992-1-rdunlap@infradead.org>
 References: <20260714014445.569992-1-rdunlap@infradead.org>
@@ -83,31 +83,40 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Use a C-style "/*" comment to avoid multiple kernel-doc warnings:
+Modify these errant comments to use "/*" since they are not kernel-doc
+comments.
 
-Warning: ../sound/soc/uniphier/aio.h:159 Cannot find identifier on line:
- * 'SoftWare MAPping' setting of UniPhier AIO registers.
-Warning: ../sound/soc/uniphier/aio.h:160 Cannot find identifier on line: *
-Warning: ../sound/soc/uniphier/aio.h:161 This comment starts with '/**', but isn't a kernel-doc comment.
- * We have to setup 'virtual' register maps to access 'real' registers of AIO.
+Warning: include/sound/wm8904.h:119 This comment starts with '/**', but isn't a kernel-doc comment.
+ * DRC configurations are specified with a label and a set of register
+Warning: ../include/sound/wm8904.h:134 This comment starts with '/**', but isn't a kernel-doc comment.
+ * ReTune Mobile configurations are specified with a label, sample
 
 Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
 ---
 Cc: Liam Girdwood <lgirdwood@gmail.com>
 Cc: Mark Brown <broonie@kernel.org>
 
- sound/soc/uniphier/aio.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ include/sound/wm8904.h |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- linext-2026-0710.orig/sound/soc/uniphier/aio.h
-+++ linext-2026-0710/sound/soc/uniphier/aio.h
-@@ -156,7 +156,7 @@ struct uniphier_aio_selector {
- 	int hw;
+--- linext-2026-0710.orig/include/sound/wm8904.h
++++ linext-2026-0710/include/sound/wm8904.h
+@@ -116,7 +116,7 @@
+ #define WM8904_DRC_REGS  4
+ #define WM8904_EQ_REGS   24
+ 
+-/**
++/*
+  * DRC configurations are specified with a label and a set of register
+  * values to write (the enable bits will be ignored).  At runtime an
+  * enumerated control will be presented for each DRC block allowing
+@@ -131,7 +131,7 @@ struct wm8904_drc_cfg {
+ 	u16 regs[WM8904_DRC_REGS];
  };
  
 -/**
 +/*
-  * 'SoftWare MAPping' setting of UniPhier AIO registers.
+  * ReTune Mobile configurations are specified with a label, sample
+  * rate and set of values to write (the enable bits will be ignored).
   *
-  * We have to setup 'virtual' register maps to access 'real' registers of AIO.
 
