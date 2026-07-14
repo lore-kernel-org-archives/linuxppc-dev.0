@@ -1,62 +1,96 @@
-Return-Path: <linuxppc-dev+bounces-24189-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24190-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C0681C43458
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2026 07:29:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 49198C43458
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2026 07:59:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gzrXc3LNrz2y71;
-	Tue, 14 Jul 2026 17:29:20 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a07:de40:b251:101:10:150:64:1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784014160;
-	cv=none; b=RS/Jg8eoQRgiLsqHDD+e3z0Hvhb+eC+K02OpItwbK7z8JlVBu86JQdeLdPJrz/5XGqjpyM+6TWU0i8bv7XU9WCYwUb3UiCohQGo+Bqlg67Speqc+T4KIu4plSCbEsr0w6HkZWVamolnn7Cm3eNmwgbZypmsvsh/sS4JP3VDGXeafCnlVY2EkAKe8wnrMXY7WBvDGVmZJQ3oLMJL4VC5yj8BZGCKnkLNB9/pMFkTRc8weozhmOa0kwukYJtzVyEY3ld1tTm9JsYpO11Tgazc68NexOsSC+OAzFnDGnUIteHA4A4ijD7UxdvjQzHazCm2b1BosB6laE7fT57MT08ZgSg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gzsCp4VxQz2y71;
+	Tue, 14 Jul 2026 17:59:50 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::535"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784015990;
+	cv=none; b=ohZOswi5Bxj+1H06Oc28uvzkX/SE9tcouElOUvJb1K7B94AbB1benrRQlVHj8+EYP4cCk0ZojedLqEiJjbwNvb5rOZCBJo1wmP3Y1STcXMbh0jwxG1VtSIWyH24g6w/Wj3c9jSjDWm6OWteOG8vq2YZp4ls1B+COxhYpfrztPpWwNk9OK1kssG+QGcQWgmkll7gESDqi3pdT5NC/cnmmdGHsTM/NaI/+0AzaQlOMNKETbszWuEI44IW65mn2HpFs1l832VY4pZFswqzAPJ2FOrY4bCZy6hOF+BlHLTbhX08Zq0zEDDPof5nLEStNd4WEarGr5iadDVUE4ves3ceBwg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784014160; c=relaxed/relaxed;
-	bh=7oQy++gQVcbJeCZVwlXy7MNx94CpG6jaAajm+FSFAIQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=e3BIzYU3j5e9s/d35g2MVq6V9lmNJsbLq4TkoAHevZcfX8Nw5aatHiUUimM9BqmOLu/PZZMbRb+DIsVCvapDjCjudzi4dalrXCoeeKf7jEJjQLYZXOp2BsvpHgQ/2TShOz+qNDyTppBpmb1tuXNxDGXRrDTm5yoxDEVRhBnnVsJB92n2bQPH6hUXNLdimZ854DKoXiThL+UUcfifoAVcMlDYhG04XljdoE95bKXR6jMVJBrAsCigRgH4TsAw1uqSe5gFa9DmJXpPqXwp717Pt11xImbv9/lo0hulvllh4Sr43ODJZ5J239q8zd3vui/+wbfgQrBmYTywM/EezlNqZQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass (client-ip=2a07:de40:b251:101:10:150:64:1; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2a07:de40:b251:101:10:150:64:1; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2a07:de40:b251:101:10:150:64:1])
+	t=1784015990; c=relaxed/relaxed;
+	bh=yj5ApoHt9xXhC677bK+ujyDHWz19Ntuz1e97qTuHnZM=;
+	h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type; b=moWTxvJTVGWqh6Laazc1ROXwEHSuSbwkJy475U8ronNA+UKY49IjKiw1fJ7zR+/+HCGnQzk6gVN96RGpOL+AVWHdAyzXV3ZJNGvZOmKhzj7P0B9TkKDqNJI4W4UK0L5xBKSKE/+RUxUMH1C1FPEo8fMLdbvocPY/BNbQfdZ1IEKNg2adkFWBYim5iO0kiJC05CXDD3JDbeWsZruJ5UiPdVn+jq2uhCW9iquP7+nIYQp0YuQlMREDymSItlEgRnSLeOmyFUrsnb3as8VRLmoRnLid5rQYRMPdaf7ZQoKI1bj/vaA0LJXu3SlpGzvM+5tGafkWT2d6lpx4uvNMOupVUQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=P3nYVUec; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::535; helo=mail-pg1-x535.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=P3nYVUec;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::535; helo=mail-pg1-x535.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x535.google.com (mail-pg1-x535.google.com [IPv6:2607:f8b0:4864:20::535])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gzrXb5Xlmz2xqn
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2026 17:29:19 +1000 (AEST)
-Received: from kunlun.suse.cz (unknown [IPv6:2a07:de40:b306:2000::2])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id D0B5C77D39;
-	Tue, 14 Jul 2026 07:29:14 +0000 (UTC)
-Authentication-Results: smtp-out1.suse.de;
-	none
-Date: Tue, 14 Jul 2026 09:29:13 +0200
-From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
-To: Thomas Gleixner <tglx@kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	linuxppc-dev@lists.ozlabs.org, Huacai Chen <chenhuacai@kernel.org>,
-	loongarch@lists.linux.dev, Paul Walmsley <pjw@kernel.org>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	linux-riscv@lists.infradead.org,
-	Sven Schnelle <svens@linux.ibm.com>, linux-s390@vger.kernel.org,
-	x86@kernel.org, Mark Rutland <mark.rutland@arm.com>,
-	Jinjie Ruan <ruanjinjie@huawei.com>,
-	Magnus Lindholm <linmag7@gmail.com>,
-	"Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>,
-	Jonathan Corbet <corbet@lwn.net>, Radu Rendec <radu@rendec.net>
-Subject: Re: [patch 4/4] entry, treewide: Make
- syscall_enter_from_user_mode[_work]() indicate syscall execution
-Message-ID: <alXlSUcT2TWOlM7r@kunlun.suse.cz>
-References: <20260712134433.549076055@kernel.org>
- <20260712141346.772209074@kernel.org>
- <alSlg72c8xmjaj48@kunlun.suse.cz>
- <871pd6r0ou.ffs@fw13>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gzsCn1dVvz2xqn
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2026 17:59:48 +1000 (AEST)
+Received: by mail-pg1-x535.google.com with SMTP id 41be03b00d2f7-ca80d708489so495179a12.1
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2026 00:59:48 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1784015986; x=1784620786; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:mime-version:message-id:date
+         :subject:to:from:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=yj5ApoHt9xXhC677bK+ujyDHWz19Ntuz1e97qTuHnZM=;
+        b=P3nYVUecYoAm2z1L5pP3qPcD4/si4H61h7sGP88jr1RhMwL4wtkeRv2v6ce4OtVYjH
+         877/0Clw/fFOhrUA/AUoH9X4/CaK+NbGQHvQdW+CS8qtLhJtspSLDaMD0LVNpwtDld7U
+         chf52TIMMd6A215WW+scLX7I/v1m7SS2PumxacrDiHnKZuClSm/JYjNlfkXf404ARaLn
+         fJ8MV7DkSZLbGSfQYh2U7HJQizoKfJ5OnLdOFn98LUPpCebvwb7ycf/SEWgAkQWCf7lG
+         JWtHONbFQH1eDRSeMwt5Q3UJVBQ1AMVe4jO6L36F8+M5sZuPwwbFvpeWM7gBofE7LVbg
+         x73g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1784015986; x=1784620786;
+        h=content-transfer-encoding:content-type:mime-version:message-id:date
+         :subject:to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=yj5ApoHt9xXhC677bK+ujyDHWz19Ntuz1e97qTuHnZM=;
+        b=iDc6UeeuPv7HlDgnLJqq7bbU0zYVfHmeKrfe7Kn43WCBAboiZFQZkLzagyep/haPEY
+         /VoikiABJBAF8FEmakl18DagS19no01k9yfAYmmYyI9AaRjoOb5l/wpyipE7OkHYMQLY
+         mP5lQdjsYsd0TnchYm78vOfUHbtCWXkfbrhH3g+9BHQIZIzoLUPEHCi3gj7cGagKTNp9
+         2cRRxbPOkKvuMRLkBaXWmxf7/t7UEGl55rTUwwKPQmMvrSBU+grzifqYNwE3q75lm8Zi
+         X3g9TVHH9XqqCu/A3TYdojinOUDluwU3zHHZ1JOHBpLzZrew6f5577ezahJibni4LOSN
+         BwcQ==
+X-Forwarded-Encrypted: i=1; AHgh+RrB2pZWs6fu1q5nyfdu+aaH3RnwHZYmzrMSk8CE38s0cf55wdEi7qSjmvQeqO0BOpFQO+E4M3VZ2RZxHDQ=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzU+Nfmn/jC1cLRoHGIEtbUDWRpXpLT7Z9Ta9oSnjHNNJzAW7T+
+	mZcOWG0DeiL41974+jhtvjCmbrMG8n6nAFBKj5FRjRpjoW6oW9N090OE
+X-Gm-Gg: AfdE7cmfUqFJI68r9zUA3CIklVlozoQY1/VnAxBvGGNn+/88N5KMxD5dRBk4Bd4i9E5
+	vsEQIRc/ua171iuR4BYwkTs7Tszh91VPTvwn4J1jvvMWK0bji5EhZzUOCdLQVeSj26wki8/gw7K
+	2N28kAq4GllNBKgzGckdS5MchF9mDfvXCy3oWJi30j6xYL211ur8xKKG71XGcjLQJE4QRMaql07
+	5bEFffJfZe1Q3PFE8Flse157tighm2+Dmq1VYWIMWX7mY5uzOTC+2d3E0AaBOgoH3E/P2vnRyaw
+	D13OSk/o3+P2uXnRhWmFeQjArMmoJEKxfs9VNWENU9XdrhnFwDQNx+xPnNQSKmKkIrIPQ2EQcp0
+	WeqK515t4pqwI6bZrwtR4EPDNO+RAmJI47vUcrTk/bcOo2NuoVdP+xRGxENhxkm9MuJw/9Nf9FY
+	MsTEM3fIsSFpd1pPF4ayqTGuHjF8T35F98Q93a0YsJKTQS+e4hH1Wyp8EwaGIjKxxMsLrYc7qPc
+	3h+
+X-Received: by 2002:a05:6a20:748e:b0:3c0:2808:4732 with SMTP id adf61e73a8af0-3c112c5fec5mr10483937637.16.1784015985376;
+        Tue, 14 Jul 2026 00:59:45 -0700 (PDT)
+Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com.com ([106.51.164.116])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-31174accb0esm80362644eec.30.2026.07.14.00.59.40
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 14 Jul 2026 00:59:45 -0700 (PDT)
+From: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
+To: oleg@redhat.com,
+	maddy@linux.ibm.com,
+	mpe@ellerman.id.au,
+	npiggin@gmail.com,
+	chleroy@kernel.org,
+	msuchanek@suse.de,
+	mchauras@linux.ibm.com,
+	mkchauras@gmail.com,
+	sshegde@linux.ibm.com,
+	segher@kernel.crashing.org,
+	thuth@redhat.com,
+	kees@kernel.org,
+	ryan.roberts@arm.com,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH V5] powerpc/syscall: Fix syscall skip handling for seccomp and ptrace
+Date: Tue, 14 Jul 2026 13:29:35 +0530
+Message-ID: <20260714075935.1830145-1-mkchauras@gmail.com>
+X-Mailer: git-send-email 2.55.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -70,104 +104,203 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <871pd6r0ou.ffs@fw13>
-X-Rspamd-Pre-Result: action=no action;
-	module=replies;
-	Message is reply to one we originated
-X-Rspamd-Queue-Id: D0B5C77D39
-X-Rspamd-Action: no action
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
-X-Rspamd-Pre-Result: action=no action;
-	module=replies;
-	Message is reply to one we originated
-X-Spamd-Result: default: False [-2.00 / 50.00];
-	REPLY(-4.00)[];
-	RDNS_NONE(2.00)[]
 
-On Tue, Jul 14, 2026 at 12:20:49AM +0200, Thomas Gleixner wrote:
-> On Mon, Jul 13 2026 at 10:44, Michal Such�nek wrote:
-> > On Sun, Jul 12, 2026 at 11:25:32PM +0200, Thomas Gleixner wrote:
-> >> The return values of syscall_enter_from_user_mode[_work]() are
-> >> non-intuitive. Both functions return the syscall number which should be
-> >> invoked by the architecture specific syscall entry code. The returned
-> >> number can be:
-> >> 
-> >>   - the unmodified syscall number which was handed in by the caller
-> >> 
-> >>   - a modified syscall number (ptrace, seccomp, trace/probe/bpf)
-> >> 
-> >> That has an additional twist. If the return value is -1L then the caller is
-> >> not allowed to modify the return value as that indicates that the modifying
-> >> entity requests to abort the syscall and set the return value already. That
-> >> can obviously not be differentiated from a syscall which handed in -1 as
-> >> syscall number.
-> >> 
-> >> The most trivial way to deal with that is:
-> >> 
-> >>     set_return_value(regs, -ENOSYS);
-> >>     nr = syscall_enter_from_user_mode(regs, nr);
-> >>     if (valid(nr))
-> >>     	handle_syscall(regs, nr);
-> >> 
-> >> That's what LOONGARCH, RISCV, and X86 do. But PowerPC and S390 do not
-> >> preset the return value, so when user space hands in -1 and there is
-> >> nothing setting the return value in the entry work code, then the syscall
-> >> is skipped but the return value is whatever random data has been in the
-> >> return value register.
-> >
-> > The reason why PowerPC and S390 do not preset the return value is that
-> > the return value uses the same register as the syscall number. There are
-> > apparently other architectures on which the return value overlaps with
-> > the arguments which also do not preset the return value for that reason.
-> > If they would use the generic entry the same problem would arise.
-> 
-> That's an implementation choice of PPC/S390 as I explained before, which
-> could trivially be solved by having an explicit pt_regs->return_val
-> member,
-> 
-> >> Change the return values of syscall_enter_from_user_mode[_work]() to
-> >> boolean and return false, when either ptrace or seccomp request to skip the
-> >
-> > There is a difference between seccomp and ptrace.
-> >
-> > When seccomp indicates to skip the syscall it has also set the syscall
-> > return value.
-> >
-> > However, when the syscall number is -1 and the return value is not
-> > preset that does not indicate anything.
-> 
-> I agree it's an invalid syscall, but the current generic entry code made
-> the rightful assumption that returning -1L as the syscall number either
-> results in -ENOSYS or in the value which was set by one of the entry
-> mechanisms as that code originated from the x86 implementation.
+After enabling GENERIC_ENTRY on PowerPC, syscall_enter_from_user_mode()
+returns -1 as a sentinel to signal that seccomp or ptrace has intercepted
+the syscall and already set a return value via syscall_set_return_value().
+system_call_exception() was not handling this sentinel, and since -1UL
+is >= NR_syscalls, the code fell into the out-of-range path and returned
+-ENOSYS, overwriting the errno already placed in regs->gpr[3].
 
-You know, the world is not x86. For 20+ years that is not true.
+The naive fix of checking r0 == -1L before the NR_syscalls bounds check
+is ambiguous: a user legitimately calling syscall(-1) also produces r0 ==
+-1L, and a tracer intercepting such a call would have its injected return
+value silently discarded.
 
-> 
-> It's not the fault of that code that PPC and S390 converted their stuff
-> over without paying attention to that detail.
+Fix this properly by introducing regs->entry_flags, a kernel-internal
+field in struct pt_regs (consuming one slot of the existing __pt_regs_pad
+so the ABI is preserved), with SYSCALL_ENTRY_RET_SET as an out-of-band
+flag. syscall_set_return_value() sets this flag whenever seccomp or ptrace
+injects a return value. system_call_exception() zeros entry_flags before
+calling syscall_enter_from_user_mode(), then checks and clears the flag
+afterwards: if set, it returns regs->gpr[3] directly regardless of what
+syscall number the user originally requested.
 
-So this is not generic entry but rather x86-like entry do I get it
-correct?
+This handles all seccomp actions correctly:
 
-> 
-> > The return value can still hold garbage. ptrace does not have the
-> > ability to indicate that a syscall is to be skipped, at least on the
-> > entry trace. It needs to be skipped based on the syscall number being
-> > invalid.
-> 
-> That's what I explained you before and you told me I'm all wrong.
-> 
-> But that's moot as this latest version does not care anymore. The
-> architectures whixh preset the return value are correct under all
-> circumstances and PPC/S390 can keep their own world view.
+  - SECCOMP_RET_ERRNO, SECCOMP_RET_TRACE (no tracer), SECCOMP_RET_USER_NOTIF:
+    all call syscall_set_return_value(), flag is set, injected value returned.
+  - SECCOMP_RET_TRAP, SECCOMP_RET_KILL: call syscall_rollback() and deliver
+    a signal; flag is not set, but the process is dying so the return value
+    is irrelevant.
 
-So do I get it that you do not care about breaking userspace then?
+The fix covers both ppc32 and ppc64 with no #ifdefs.
 
-Thanks
+Fixes: bee25f97ad24 ("powerpc: Enable GENERIC_ENTRY feature")
+Reported-by: Michal Suchánek <msuchanek@suse.de>
+Closes: https://lore.kernel.org/all/ajpp-_XnbF3UTM_E@kunlun.suse.cz/
+Tested-by: Michal Suchánek <msuchanek@suse.de>
+Reviewed-by: Michal Suchánek <msuchanek@suse.de>
+Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
+---
+v4 -> v5:
+ - Fixed build failure where BITS macro is not available
+v3 -> v4:
+ - Use syscall_get_error (Michal)
+v2 -> v3:
+ - Last fix is not working for -1 syscall. Fixed that with this.
+v2: https://lore.kernel.org/all/20260629182946.419552-1-mkchauras@gmail.com
 
-Michal
+v1 -> v2:
+ - Fix issues in the previous fix (Michal)
+v1: https://lore.kernel.org/all/20260624171520.772408-1-mkchauras@gmail.com
+
+
+ arch/powerpc/include/asm/ptrace.h      | 23 ++++++++++++++++++++++-
+ arch/powerpc/include/asm/syscall.h     |  6 ++++++
+ arch/powerpc/include/uapi/asm/ptrace.h |  6 ++++--
+ arch/powerpc/kernel/ptrace/ptrace.c    |  2 ++
+ arch/powerpc/kernel/syscall.c          | 18 ++++++++++++++++++
+ 5 files changed, 52 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/ptrace.h b/arch/powerpc/include/asm/ptrace.h
+index fdeb97421785..363a89787f1c 100644
+--- a/arch/powerpc/include/asm/ptrace.h
++++ b/arch/powerpc/include/asm/ptrace.h
+@@ -19,6 +19,7 @@
+ #ifndef _ASM_POWERPC_PTRACE_H
+ #define _ASM_POWERPC_PTRACE_H
+ 
++#include <linux/bits.h>
+ #include <linux/err.h>
+ #include <uapi/asm/ptrace.h>
+ #include <asm/asm-const.h>
+@@ -54,8 +55,9 @@ struct pt_regs
+ 			};
+ 			unsigned long result;
+ 			unsigned long exit_flags;
++			unsigned long entry_flags;
+ 			/* Maintain 16 byte interrupt stack alignment */
+-			unsigned long __pt_regs_pad[3];
++			unsigned long __pt_regs_pad[2];
+ 		};
+ 	};
+ #if defined(CONFIG_PPC64) || defined(CONFIG_PPC_KUAP)
+@@ -233,6 +235,25 @@ static inline unsigned long frame_pointer(struct pt_regs *regs)
+ #define current_pt_regs() \
+ 	((struct pt_regs *)((unsigned long)task_stack_page(current) + THREAD_SIZE) - 1)
+ 
++/*
++ * SYSCALL_ENTRY_RET_SET: seccomp or ptrace called syscall_set_return_value()
++ * and wants the syscall skipped; regs->gpr[3] already holds the return value.
++ */
++#define SYSCALL_ENTRY_RET_SET	BIT(0)
++
++static inline void set_syscall_entry_ret(struct pt_regs *regs)
++{
++	regs->entry_flags |= SYSCALL_ENTRY_RET_SET;
++}
++
++static inline bool test_and_clear_syscall_entry_ret(struct pt_regs *regs)
++{
++	bool set = !!(regs->entry_flags & SYSCALL_ENTRY_RET_SET);
++
++	regs->entry_flags &= ~SYSCALL_ENTRY_RET_SET;
++	return set;
++}
++
+ /*
+  * The 4 low bits (0xf) are available as flags to overload the trap word,
+  * because interrupt vectors have minimum alignment of 0x10. TRAP_FLAGS_MASK
+diff --git a/arch/powerpc/include/asm/syscall.h b/arch/powerpc/include/asm/syscall.h
+index 834fcc4f7b54..9ae79326abe3 100644
+--- a/arch/powerpc/include/asm/syscall.h
++++ b/arch/powerpc/include/asm/syscall.h
+@@ -98,6 +98,12 @@ static inline void syscall_set_return_value(struct task_struct *task,
+ 			regs->gpr[3] = val;
+ 		}
+ 	}
++	/*
++	 * Mark that a return value has been explicitly set by seccomp or
++	 * ptrace so that system_call_exception() can skip the syscall
++	 * unconditionally, even when the user requested syscall(-1).
++	 */
++	set_syscall_entry_ret(regs);
+ }
+ 
+ static inline void syscall_get_arguments(struct task_struct *task,
+diff --git a/arch/powerpc/include/uapi/asm/ptrace.h b/arch/powerpc/include/uapi/asm/ptrace.h
+index a393b7f2760a..2f2a43414fe6 100644
+--- a/arch/powerpc/include/uapi/asm/ptrace.h
++++ b/arch/powerpc/include/uapi/asm/ptrace.h
+@@ -56,7 +56,8 @@ struct pt_regs
+ 	unsigned long dsisr;		/* on 4xx/Book-E used for ESR */
+ 	unsigned long result;		/* Result of a system call */
+ 	unsigned long exit_flags;	/* System call exit flags */
+-	unsigned long __pt_regs_pad[3];	/* Maintain 16 byte interrupt stack alignment */
++	unsigned long entry_flags;	/* System call entry flags */
++	unsigned long __pt_regs_pad[2];	/* Maintain 16 byte interrupt stack alignment */
+ };
+ 
+ #endif /* __ASSEMBLER__ */
+@@ -117,7 +118,8 @@ struct pt_regs
+ #define PT_DSISR 42
+ #define PT_RESULT 43
+ #define PT_EXIT_FLAGS 44
+-#define PT_PAD 47 /* 3 times */
++#define PT_ENTRY_FLAGS 45
++#define PT_PAD 46 /* 2 times */
+ #define PT_DSCR 48
+ #define PT_REGS_COUNT 48
+ 
+diff --git a/arch/powerpc/kernel/ptrace/ptrace.c b/arch/powerpc/kernel/ptrace/ptrace.c
+index 316d4f5ead8e..440d00690cf2 100644
+--- a/arch/powerpc/kernel/ptrace/ptrace.c
++++ b/arch/powerpc/kernel/ptrace/ptrace.c
+@@ -235,6 +235,8 @@ void __init pt_regs_check(void)
+ 		     offsetof(struct user_pt_regs, dsisr));
+ 	BUILD_BUG_ON(offsetof(struct pt_regs, result) !=
+ 		     offsetof(struct user_pt_regs, result));
++	BUILD_BUG_ON(offsetof(struct pt_regs, entry_flags) !=
++		     offsetof(struct user_pt_regs, entry_flags));
+ 
+ 	BUILD_BUG_ON(sizeof(struct user_pt_regs) > sizeof(struct pt_regs));
+ 
+diff --git a/arch/powerpc/kernel/syscall.c b/arch/powerpc/kernel/syscall.c
+index a9da2af6efa8..a43d3a9428cc 100644
+--- a/arch/powerpc/kernel/syscall.c
++++ b/arch/powerpc/kernel/syscall.c
+@@ -19,9 +19,27 @@ notrace long system_call_exception(struct pt_regs *regs, unsigned long r0)
+ 	long ret;
+ 	syscall_fn f;
+ 
++	/*
++	 * Zero entry_flags before syscall_enter_from_user_mode() so that
++	 * syscall_set_return_value() can set SYSCALL_ENTRY_RET_SET as an
++	 * unambiguous out-of-band signal.  The field is not initialised by
++	 * the entry assembly.
++	 */
++	regs->entry_flags = 0;
+ 	add_random_kstack_offset();
+ 	r0 = syscall_enter_from_user_mode(regs, r0);
+ 
++	/*
++	 * Seccomp or ptrace may have set a return value and requested that
++	 * the syscall be skipped. syscall_set_return_value() sets
++	 * SYSCALL_ENTRY_RET_SET in regs->entry_flags as an
++	 * unambiguous out-of-band signal. This avoids the ambiguity of
++	 * using r0 == -1 as the skip sentinel when the user themselves
++	 * called syscall(-1).
++	 */
++	if (unlikely(test_and_clear_syscall_entry_ret(regs)))
++		return syscall_get_error(current, regs);
++
+ 	if (unlikely(r0 >= NR_syscalls)) {
+ 		if (unlikely(trap_is_unsupported_scv(regs))) {
+ 			/* Unsupported scv vector */
+-- 
+2.55.0
+
 
