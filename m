@@ -1,47 +1,46 @@
-Return-Path: <linuxppc-dev+bounces-24241-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24242-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 769E9C44501
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2026 14:08:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8DE17C44508
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2026 14:08:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h01Nx1TGLz3br2;
-	Wed, 15 Jul 2026 00:08:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h01P46FZ3z2yY0;
+	Wed, 15 Jul 2026 00:08:24 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784038097;
-	cv=none; b=Ue/ehmB3qENx5B3rUYBSliWGtTTQGK6SDooPdLNv8nt2zTWzVmShMc61saxoIwMEVBthhI8HEAkt0owcedlFagSlhsn46Hni4Vkzo3EXOiHpFAB/yOiUwBg8zIAfu/MXhLW626xQCFyWulMIXbF7Tc8iV4uwjhdbWQPXDKyWkhRYaz/ZXILkqKxxXyZ+QwMU7gU8G/C9sudLaajG3NhAoW2fnl1Z+o49bh9TAIqPXMJj7Td00iUrLzH1Gr0XjqAR/ssxJ/zqGBXOVTyLXAV43yjTJ1Y8kbcoVDwGpgT5ONDx7I5RhmV4T+ETxbwvWKnwfL//CaXHjMNY4PAaCFg9ZA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784038104;
+	cv=none; b=ZYymYmgebFVhmE+zNqgRE+vo3E2+nqdQcYGG8lWFgyfU5fsoZBLsi/k0aCjxNBJAqoyxZYjBeyA/u2xERPsoP3Yymz4c/dcrWm9AeiK6stKtkRPb4GAPbJR1qmQ6BeKqD15sHSL4RYmM8FFcPGvEblFOeKWFGM4xzj4Yww2c0njmfnQinFSutktPI3RQJSXFelwSEJfVLsujipCA9zjGBQdEdZr25dFGJ7qalOGM8oN5bLFw+es+t1uAfIKMcDC69c8wZwujbmC2EqRxjU9oC51m3FfqBbT3ljSDs8y10s6ScSalam0FOtvAoGPBAm+VtEdK6DAsJS7KZNXffG0+NA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784038097; c=relaxed/relaxed;
-	bh=QijdDTjMkAjvjZJxIvdsoZwXayQlCL9Ojr4kYYybSUU=;
+	t=1784038104; c=relaxed/relaxed;
+	bh=NDua9YY87aM7LX6RKGHHq5cosBzReZwnFG+9/6p63CY=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=SDQEAfSQ18sdl5IsSrWNtL7cF3zbHxmLAEPXN2ZAYUkx38Iugejoen2+krpI+eruDFevTkPHQrmucK5rk8GqJrTOTkk9EeBOwrTqEP22FaakpTD7EKutAPI1GOp8Od6vJcFDDYJKVeth/30hSBoB7yEpMhOhBQ5F7FjK9xvqGvTR6Vy41scM0gXRhDTB4idcbE0WDMcqHFHXlAbHajITk19IBkv/a52aPTCqFxfmp81klw1+Nr+GoUKl2TrhAO+TD8taN1n+wkhNWPBaFYlfcwt5uOkYm627GFOxNoqUpTz02OboPHsxssGWfJT9UsGxz2A4N9pe+whytuHwG7SvMg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=dz+aSvQ4; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
+	 In-Reply-To:To:Cc; b=U5hvlEiHGVvbniN6rqgEc9TWr/V4w1RecmEC3BW6Mixw7TGrMCCNGR/10vqlpj5pDeM21ZTtOkILShlhzwEz8bc1kE9YC5Pjs2fKUA0ezyDsvTVq4bwiBeSxWwBFpLXG7/je8CVvCYI3PjrTNOkM7h/5UNqY+XxSiWmtEZ8BM0Es6MXnSAh4du9qJgRP2ufV3/4LJRlI4HosoVagU6SlLb2rXdLxbWhHQ0rbOfJ9L8CPtk4R7P44HnLimeIDJvVe3fq3O31ofqj7yaUsF9nkWIQPAmJefrAkEN4U4GhKIUtzjvWd8KEP+2HKOCRxFBbtqfiMTvdmoxuqFR4nKW3dRA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=vjhfq5hu; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=dz+aSvQ4;
+	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=vjhfq5hu;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org)
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h01Nw0tNcz3bpx
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2026 00:08:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h01P34d8Gz3brH
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2026 00:08:23 +1000 (AEST)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 76CF11D34;
-	Tue, 14 Jul 2026 07:07:40 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 2DE4E1CE0;
+	Tue, 14 Jul 2026 07:07:48 -0700 (PDT)
 Received: from localhost.localdomain (e123572-lin.cambridge.arm.com [10.2.208.46])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 4C05B3F7B4;
-	Tue, 14 Jul 2026 07:07:37 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 0A8183F7B4;
+	Tue, 14 Jul 2026 07:07:44 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1784038064; bh=eNgm2wK/htg6bJpbLSoGRu/x8u/9VaQ86dX9GXxA/zM=;
+	t=1784038072; bh=8oYQ9MXuYWmm90weLSF/t4FrSgRMmgMLSgcdK785vME=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=dz+aSvQ4IIcP5/jB1TnLsl+9MnbX6Bwx+0Lqjr8x5S3Rd06ehciwldTY2ZsmAHOfx
-	 2p1hk4Zezbl29IQIBcUEBscEe0HFjjITDWWe4jQ+rPyb/sbhmBJo91kiol4raAMUFc
-	 aSB5BRahC2yYplDRD719ZRvsn/Bk4aIHLvc9u2go=
+	b=vjhfq5hujZgmkhySuJNw6Ovi0ZDPllrwytdpUl1CFaMMmQ7YlrA+FTdxr6ytaSSAO
+	 1u9NsJ08KRRDg8iJcOgusKSxciglroRswKdfyUOkoGu8QXjmncAKV2aqeRer5z/ygB
+	 q8OYyTsSmA+9Qr1jQYJQdHlBqhCMBgipf8FFPhm0=
 From: Kevin Brodsky <kevin.brodsky@arm.com>
-Date: Tue, 14 Jul 2026 15:04:09 +0100
-Subject: [PATCH 20/22] arm64: mm: drop ctor/dtor calls for kernel page
- tables
+Date: Tue, 14 Jul 2026 15:04:10 +0100
+Subject: [PATCH 21/22] arm: mm: drop ctor call for kernel page tables
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -57,7 +56,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260714-remove_pgtable_cdtor-v1-20-44be8a7685d7@arm.com>
+Message-Id: <20260714-remove_pgtable_cdtor-v1-21-44be8a7685d7@arm.com>
 References: <20260714-remove_pgtable_cdtor-v1-0-44be8a7685d7@arm.com>
 In-Reply-To: <20260714-remove_pgtable_cdtor-v1-0-44be8a7685d7@arm.com>
 To: linux-mm@kvack.org
@@ -96,278 +95,43 @@ Cc: Kevin Brodsky <kevin.brodsky@arm.com>,
  "Matthew Wilcox (Oracle)" <willy@infradead.org>, 
  linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1784037902; l=9717;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1784037902; l=861;
  i=kevin.brodsky@arm.com; s=20260427; h=from:subject:message-id;
- bh=eNgm2wK/htg6bJpbLSoGRu/x8u/9VaQ86dX9GXxA/zM=;
- b=5eP0RdQOzgReDDpM+wlyav4lmQqmzUAUIXx1RW3HbowrbhPLxRPz5GfX/Bq9XXmijz2/LPmIY
- buMwtuXHOIlAyPhXdjAIkFQlvZ539XeVYb71j+kHGgtFElURkk2a/ok
+ bh=8oYQ9MXuYWmm90weLSF/t4FrSgRMmgMLSgcdK785vME=;
+ b=nhPVpPwxc0Tgep45F4r22gVJiYH4IqNiA/Z9S3Ix77hbH+m9X9zzxN6EovZVFIEF1e8oAreuL
+ YHrL6dXW1utB0IBYjmbnRvx5pXQ0zPIU5EqMprfu37YqfA5Aaxh0XUC
 X-Developer-Key: i=kevin.brodsky@arm.com; a=ed25519;
  pk=N2QG+eJKrvkNovwhhwJhnJ4+ScVfsGCHldmqLfcMTFs=
 
 Thanks to recent changes:
 
-* pagetable_*_ctor() and pagetable_dtor() do nothing for kernel page
-  tables.
+* pagetable_pte_ctor() does nothing for kernel page tables.
 
 * efi_mm is also treated like a kernel mm by the page table logic,
   including ctors.
 
-We can therefore drop the calls to ctors when allocating special
-kernel page tables in mmu.c, as well as the dtor call when freeing
-hotplug page tables.
-
-Since we no longer need the owning mm or page table level when
-allocating them, we can also remove both the init_mm/special_mm
-wrappers and the pgtable_level callback argument.
+We can therefore drop the ctor call when allocating special kernel
+page tables in mmu.c.
 
 Signed-off-by: Kevin Brodsky <kevin.brodsky@arm.com>
 ---
- arch/arm64/mm/mmu.c | 82 +++++++++++++++--------------------------------------
- 1 file changed, 23 insertions(+), 59 deletions(-)
+ arch/arm/mm/mmu.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/arch/arm64/mm/mmu.c b/arch/arm64/mm/mmu.c
-index f723bcf68174..f1400c6f68ba 100644
---- a/arch/arm64/mm/mmu.c
-+++ b/arch/arm64/mm/mmu.c
-@@ -103,7 +103,7 @@ pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
- }
- EXPORT_SYMBOL(phys_mem_access_prot);
+diff --git a/arch/arm/mm/mmu.c b/arch/arm/mm/mmu.c
+index 23b87b5ef7f1..c8de77a6f01e 100644
+--- a/arch/arm/mm/mmu.c
++++ b/arch/arm/mm/mmu.c
+@@ -728,8 +728,7 @@ static void *__init late_alloc(unsigned long sz)
+ 	void *ptdesc = pagetable_alloc(GFP_PGTABLE_KERNEL & ~__GFP_HIGHMEM,
+ 			get_order(sz));
  
--static phys_addr_t __init early_pgtable_alloc(enum pgtable_level pgtable_level)
-+static phys_addr_t __init early_pgtable_alloc(void)
- {
- 	phys_addr_t phys;
- 
-@@ -195,7 +195,7 @@ static bool pte_range_has_valid_noncont(pte_t *ptep)
- static int alloc_init_cont_pte(pmd_t *pmdp, unsigned long addr,
- 			       unsigned long end, phys_addr_t phys,
- 			       pgprot_t prot,
--			       phys_addr_t (*pgtable_alloc)(enum pgtable_level),
-+			       phys_addr_t (*pgtable_alloc)(void),
- 			       int flags)
- {
- 	unsigned long next;
-@@ -210,7 +210,7 @@ static int alloc_init_cont_pte(pmd_t *pmdp, unsigned long addr,
- 		if (flags & NO_EXEC_MAPPINGS)
- 			pmdval |= PMD_TABLE_PXN;
- 		BUG_ON(!pgtable_alloc);
--		pte_phys = pgtable_alloc(PGTABLE_LEVEL_PTE);
-+		pte_phys = pgtable_alloc();
- 		if (pte_phys == INVALID_PHYS_ADDR)
- 			return -ENOMEM;
- 		ptep = pte_set_fixmap(pte_phys);
-@@ -251,7 +251,7 @@ static int alloc_init_cont_pte(pmd_t *pmdp, unsigned long addr,
- 
- static int init_pmd(pmd_t *pmdp, unsigned long addr, unsigned long end,
- 		    phys_addr_t phys, pgprot_t prot,
--		    phys_addr_t (*pgtable_alloc)(enum pgtable_level), int flags)
-+		    phys_addr_t (*pgtable_alloc)(void), int flags)
- {
- 	unsigned long next;
- 
-@@ -303,7 +303,7 @@ static bool pmd_range_has_valid_noncont(pmd_t *pmdp)
- static int alloc_init_cont_pmd(pud_t *pudp, unsigned long addr,
- 			       unsigned long end, phys_addr_t phys,
- 			       pgprot_t prot,
--			       phys_addr_t (*pgtable_alloc)(enum pgtable_level),
-+			       phys_addr_t (*pgtable_alloc)(void),
- 			       int flags)
- {
- 	int ret;
-@@ -322,7 +322,7 @@ static int alloc_init_cont_pmd(pud_t *pudp, unsigned long addr,
- 		if (flags & NO_EXEC_MAPPINGS)
- 			pudval |= PUD_TABLE_PXN;
- 		BUG_ON(!pgtable_alloc);
--		pmd_phys = pgtable_alloc(PGTABLE_LEVEL_PMD);
-+		pmd_phys = pgtable_alloc();
- 		if (pmd_phys == INVALID_PHYS_ADDR)
- 			return -ENOMEM;
- 		pmdp = pmd_set_fixmap(pmd_phys);
-@@ -361,7 +361,7 @@ static int alloc_init_cont_pmd(pud_t *pudp, unsigned long addr,
- 
- static int alloc_init_pud(p4d_t *p4dp, unsigned long addr, unsigned long end,
- 			  phys_addr_t phys, pgprot_t prot,
--			  phys_addr_t (*pgtable_alloc)(enum pgtable_level),
-+			  phys_addr_t (*pgtable_alloc)(void),
- 			  int flags)
- {
- 	int ret = 0;
-@@ -376,7 +376,7 @@ static int alloc_init_pud(p4d_t *p4dp, unsigned long addr, unsigned long end,
- 		if (flags & NO_EXEC_MAPPINGS)
- 			p4dval |= P4D_TABLE_PXN;
- 		BUG_ON(!pgtable_alloc);
--		pud_phys = pgtable_alloc(PGTABLE_LEVEL_PUD);
-+		pud_phys = pgtable_alloc();
- 		if (pud_phys == INVALID_PHYS_ADDR)
- 			return -ENOMEM;
- 		pudp = pud_set_fixmap(pud_phys);
-@@ -428,7 +428,7 @@ static int alloc_init_pud(p4d_t *p4dp, unsigned long addr, unsigned long end,
- 
- static int alloc_init_p4d(pgd_t *pgdp, unsigned long addr, unsigned long end,
- 			  phys_addr_t phys, pgprot_t prot,
--			  phys_addr_t (*pgtable_alloc)(enum pgtable_level),
-+			  phys_addr_t (*pgtable_alloc)(void),
- 			  int flags)
- {
- 	int ret;
-@@ -443,7 +443,7 @@ static int alloc_init_p4d(pgd_t *pgdp, unsigned long addr, unsigned long end,
- 		if (flags & NO_EXEC_MAPPINGS)
- 			pgdval |= PGD_TABLE_PXN;
- 		BUG_ON(!pgtable_alloc);
--		p4d_phys = pgtable_alloc(PGTABLE_LEVEL_P4D);
-+		p4d_phys = pgtable_alloc();
- 		if (p4d_phys == INVALID_PHYS_ADDR)
- 			return -ENOMEM;
- 		p4dp = p4d_set_fixmap(p4d_phys);
-@@ -480,7 +480,7 @@ static int alloc_init_p4d(pgd_t *pgdp, unsigned long addr, unsigned long end,
- static int __create_pgd_mapping_locked(pgd_t *pgdir, phys_addr_t phys,
- 				       unsigned long virt, phys_addr_t size,
- 				       pgprot_t prot,
--				       phys_addr_t (*pgtable_alloc)(enum pgtable_level),
-+				       phys_addr_t (*pgtable_alloc)(void),
- 				       int flags)
- {
- 	int ret;
-@@ -513,7 +513,7 @@ static int __create_pgd_mapping_locked(pgd_t *pgdir, phys_addr_t phys,
- static int __create_pgd_mapping(pgd_t *pgdir, phys_addr_t phys,
- 				unsigned long virt, phys_addr_t size,
- 				pgprot_t prot,
--				phys_addr_t (*pgtable_alloc)(enum pgtable_level),
-+				phys_addr_t (*pgtable_alloc)(void),
- 				int flags)
- {
- 	int ret;
-@@ -529,7 +529,7 @@ static int __create_pgd_mapping(pgd_t *pgdir, phys_addr_t phys,
- static void early_create_pgd_mapping(pgd_t *pgdir, phys_addr_t phys,
- 				     unsigned long virt, phys_addr_t size,
- 				     pgprot_t prot,
--				     phys_addr_t (*pgtable_alloc)(enum pgtable_level),
-+				     phys_addr_t (*pgtable_alloc)(void),
- 				     int flags)
- {
- 	int ret;
-@@ -540,55 +540,20 @@ static void early_create_pgd_mapping(pgd_t *pgdir, phys_addr_t phys,
- 		panic("Failed to create page tables\n");
+-	if (!ptdesc || !pagetable_pte_ctor(NULL, ptdesc))
+-		BUG();
++	BUG_ON(!ptdesc);
+ 	return ptdesc_address(ptdesc);
  }
  
--static phys_addr_t __pgd_pgtable_alloc(struct mm_struct *mm, gfp_t gfp,
--				       enum pgtable_level pgtable_level)
-+static phys_addr_t pgd_pgtable_alloc_gfp(gfp_t gfp)
- {
- 	/* Page is zeroed by init_clear_pgtable() so don't duplicate effort. */
- 	struct ptdesc *ptdesc = pagetable_alloc(gfp & ~__GFP_ZERO, 0);
--	phys_addr_t pa;
- 
- 	if (!ptdesc)
- 		return INVALID_PHYS_ADDR;
- 
--	pa = page_to_phys(ptdesc_page(ptdesc));
--
--	switch (pgtable_level) {
--	case PGTABLE_LEVEL_PTE:
--		BUG_ON(!pagetable_pte_ctor(mm, ptdesc));
--		break;
--	case PGTABLE_LEVEL_PMD:
--		BUG_ON(!pagetable_pmd_ctor(mm, ptdesc));
--		break;
--	case PGTABLE_LEVEL_PUD:
--		pagetable_pud_ctor(ptdesc);
--		break;
--	case PGTABLE_LEVEL_P4D:
--		pagetable_p4d_ctor(ptdesc);
--		break;
--	case PGTABLE_LEVEL_PGD:
--		VM_WARN_ON(1);
--		break;
--	}
--
--	return pa;
--}
--
--static phys_addr_t
--pgd_pgtable_alloc_init_mm_gfp(enum pgtable_level pgtable_level, gfp_t gfp)
--{
--	return __pgd_pgtable_alloc(&init_mm, gfp, pgtable_level);
--}
--
--static phys_addr_t __maybe_unused
--pgd_pgtable_alloc_init_mm(enum pgtable_level pgtable_level)
--{
--	return pgd_pgtable_alloc_init_mm_gfp(pgtable_level, GFP_PGTABLE_KERNEL);
-+	return page_to_phys(ptdesc_page(ptdesc));
- }
- 
--static phys_addr_t
--pgd_pgtable_alloc_special_mm(enum pgtable_level pgtable_level)
-+static phys_addr_t pgd_pgtable_alloc(void)
- {
--	return  __pgd_pgtable_alloc(NULL, GFP_PGTABLE_KERNEL, pgtable_level);
-+	return pgd_pgtable_alloc_gfp(GFP_PGTABLE_KERNEL);
- }
- 
- static void split_contpte(pte_t *ptep)
-@@ -609,7 +574,7 @@ static int split_pmd(pmd_t *pmdp, pmd_t pmd, gfp_t gfp, bool to_cont)
- 	pte_t *ptep;
- 	int i;
- 
--	pte_phys = pgd_pgtable_alloc_init_mm_gfp(PGTABLE_LEVEL_PTE, gfp);
-+	pte_phys = pgd_pgtable_alloc_gfp(gfp);
- 	if (pte_phys == INVALID_PHYS_ADDR)
- 		return -ENOMEM;
- 	ptep = (pte_t *)phys_to_virt(pte_phys);
-@@ -656,7 +621,7 @@ static int split_pud(pud_t *pudp, pud_t pud, gfp_t gfp, bool to_cont)
- 	pmd_t *pmdp;
- 	int i;
- 
--	pmd_phys = pgd_pgtable_alloc_init_mm_gfp(PGTABLE_LEVEL_PMD, gfp);
-+	pmd_phys = pgd_pgtable_alloc_gfp(gfp);
- 	if (pmd_phys == INVALID_PHYS_ADDR)
- 		return -ENOMEM;
- 	pmdp = (pmd_t *)phys_to_virt(pmd_phys);
-@@ -1035,7 +1000,7 @@ void __init create_pgd_mapping(struct mm_struct *mm, phys_addr_t phys,
- 		flags = NO_BLOCK_MAPPINGS | NO_CONT_MAPPINGS;
- 
- 	early_create_pgd_mapping(mm->pgd, phys, virt, size, prot,
--				 pgd_pgtable_alloc_special_mm, flags);
-+				 pgd_pgtable_alloc, flags);
- }
- 
- static void update_mapping_prot(phys_addr_t phys, unsigned long virt,
-@@ -1249,7 +1214,7 @@ static void __init declare_vma(struct vm_struct *vma,
- 
- static phys_addr_t kpti_ng_temp_alloc __initdata;
- 
--static phys_addr_t __init kpti_ng_pgd_alloc(enum pgtable_level pgtable_level)
-+static phys_addr_t __init kpti_ng_pgd_alloc(void)
- {
- 	kpti_ng_temp_alloc -= PAGE_SIZE;
- 	return kpti_ng_temp_alloc;
-@@ -1357,7 +1322,7 @@ static int __init map_entry_trampoline(void)
- 	memset(tramp_pg_dir, 0, PGD_SIZE);
- 	early_create_pgd_mapping(tramp_pg_dir, pa_start, TRAMP_VALIAS,
- 				 entry_tramp_text_size(), prot,
--				 pgd_pgtable_alloc_init_mm, NO_BLOCK_MAPPINGS);
-+				 pgd_pgtable_alloc, NO_BLOCK_MAPPINGS);
- 
- 	/* Map both the text and data into the kernel page table */
- 	for (i = 0; i < DIV_ROUND_UP(entry_tramp_text_size(), PAGE_SIZE); i++)
-@@ -1445,7 +1410,6 @@ static void free_hotplug_page_range(struct page *page, size_t size,
- 
- static void free_hotplug_pgtable_page(struct page *page)
- {
--	pagetable_dtor(page_ptdesc(page));
- 	free_hotplug_page_range(page, PAGE_SIZE, NULL);
- }
- 
-@@ -1958,7 +1922,7 @@ int arch_add_memory(int nid, u64 start, u64 size,
- 		flags |= NO_BLOCK_MAPPINGS | NO_CONT_MAPPINGS;
- 
- 	ret = __create_pgd_mapping(swapper_pg_dir, start, __phys_to_virt(start),
--				   size, params->pgprot, pgd_pgtable_alloc_init_mm,
-+				   size, params->pgprot, pgd_pgtable_alloc,
- 				   flags);
- 	if (ret)
- 		goto err;
 
 -- 
 2.51.2
