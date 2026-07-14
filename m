@@ -1,87 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-24264-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24265-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3DA80C44508
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2026 17:55:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 28495C44507
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2026 18:43:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h06Qd2ZHnz2yH5;
-	Wed, 15 Jul 2026 03:55:05 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784051705;
-	cv=none; b=lshB7DPAdl5dx3jLYHxaunV5lkJm35sXHuFo4yMG0MkcUrRi2wFr5Q4SjW+lGC31LxOhD9pd2937O/PFR6WpT0imwEfV44vIyJucIx06nL7aD6hkMaOHiO/mF4LcizQcIbBkRwRhlRJYNjfKIcUk7T5klZftW1jB4Vcl4xdoZrQXB0sNatYALsPz+0KP6pBAiNFYTV1KMjBMDYx/6DmJD2MXsbXeEiztL8i5MguchTJRvjfE3s0iUbUHRnnflFVFZzY1KoJ1od8kv3A3XRZhGmd7JzXU6i2Bp+udlcnQj+5cwC36AQzrhKUSDDNgQqpfpf0tBVoKLpbimPy/CGpOyA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h07Vg5k8mz2xyj;
+	Wed, 15 Jul 2026 04:43:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::44a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784054619;
+	cv=none; b=ev6PWP49dNOPdacW6Xn/9L6IkCcnmfiWxDXoD5SjzzWeyC5C03wlIcTnsLO2DcWZRLJPYyyAEom+Vc0KX2g78Q6sTvr8FYka2nW0XUEczVhEon51qKxaB1nL/qhxOsqOL9+IVsdoXxnGLIiw2qLRT5URh7uihxCm5w75SWFicWCQWX+pEHSnn+9lnNLANif2Bkk7p3jwRQovqoPqspkTs+07STE0nYrsiKNqhjQ0psjMaWzO5qigJVobojArsxAzrPlCQqsyG847lOHdE3ivnDkJCzbPXOv1uIpIVb0E4shJ+TlJ046eYhaFbDRNLXHrfswDTLaf9FPNz9WZQSygoA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784051705; c=relaxed/relaxed;
-	bh=LFybZzeITUOP25+o2cmJqHBpXtAGSmITfUto8DJFke8=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=YuWR7+n86K0vUFZXz4imfUkJo0OTVPI0y2alsm36EVaEcGuzTn2icP/J9C642ZGWCWknjjYpA6xVwUevJd2bRjblGmmSzQutcJJg81a/lyZtm5w7mkeM3ygpr3lDSVX48683ls+P+Ud0xVAiFt9G1p15SDOqh4yFR6b8vX4hMXiHhKy42Yy+DLnrLDwnFfGG4m4ocj13BWJwIJJ5/9B/fcKhhdACIofWPxrIKvi9gjW6QyWTLPfxDvvvVYr/zQcEW0Q1db+2Pb8GQoNjYnPt28mexOihGhJkBScfwbbVm+I4aRsEX4cr829tH/O8sVsNN7LvEjHDikWbG7f6SFw45A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=hecl8GT3; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1784054619; c=relaxed/relaxed;
+	bh=rFM73Nl0bWyUMJUomM5RdFpNF5aybZxuz1pkz9xV3sw=;
+	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
+	 To:Cc:Content-Type; b=l/OLQ9OZgL/S6/Mr3nl0VvmUw9LRn3og+b7qebQkF/a7Inq88JtSG59RSK7TtLUm5vewqvZidp3x0y2Be+6pC7IRwiTEgo+WxhPK+DLtmo7oXkjd7zW7XeWu6hdhKMCnuKf5e9Vl3YGSX0Ts0YivlTVGcOofeW1ZutiZEMf+VO09D7HAgq5dYXzjNdsxDNI3QkPwuWqlVChelEp38OxP2iN/zfmQ1FLaZhFuWndtH/Vur4PS2Aaq4h9P5pQBu3vY3pssLyx0LuVjrIxdX/Y8OWHYiREVeNfWV1MgZkHX1hkcL/bJgkKuwzsGBFA6XNcUhV1jBRL/myI/hCJooVQbjw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=DZh0kvuS; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::44a; helo=mail-pf1-x44a.google.com; envelope-from=3vonwagykdbe9vr40tx55x2v.t532z4be66t-uvc2z9a9.5g2rs9.58x@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=hecl8GT3;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=DZh0kvuS;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::44a; helo=mail-pf1-x44a.google.com; envelope-from=3vonwagykdbe9vr40tx55x2v.t532z4be66t-uvc2z9a9.5g2rs9.58x@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x44a.google.com (mail-pf1-x44a.google.com [IPv6:2607:f8b0:4864:20::44a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h06Qc2D4Bz2xjN
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2026 03:55:03 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66EGC0Zj1725692;
-	Tue, 14 Jul 2026 17:54:53 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=LFybZzeITUOP25+o2cmJqHBpXtAGSmITfUto8DJFk
-	e8=; b=hecl8GT3cmtWyg91MSsWDXE6NwPGR6mXof7IffY/Plax1echuHVuMjprQ
-	2OmNw07GdyVUbS4pzknF969oe/9muJcZD7gPUfpX8iJzewfdGVZNSCNykoZrFDou
-	PcptczGNhdPUwYc89WJX9+G9BfTb7N0ePdr6PkaVZEQKSe/27BbBDpgTz3zZj9LJ
-	0jCyTB6q+6P9ENyVEbdg3qYQC2pd+vclcrjp0xU6h+jX8tW97BzdSI111EuYUPhx
-	fCyveogTQ5HcVcUYSf9Kzu0+3x669ZF0OYNl8nfP6ckix6u4SFRNl34F11WBuU8t
-	L1T3Il+oTYO55OhB8mUIcxIeVswCg==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fbf2a725m-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 14 Jul 2026 17:54:52 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66EHnZWZ029296;
-	Tue, 14 Jul 2026 17:54:51 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fc2uy3qd2-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 14 Jul 2026 17:54:51 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66EHslOP53084530
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 14 Jul 2026 17:54:47 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9400D20040;
-	Tue, 14 Jul 2026 17:54:47 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 901FE20043;
-	Tue, 14 Jul 2026 17:54:43 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.124.218.195])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 14 Jul 2026 17:54:43 +0000 (GMT)
-From: Amit Machhiwal <amachhiw@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Amit Machhiwal <amachhiw@linux.ibm.com>,
-        Vaibhav Jain <vaibhav@linux.ibm.com>,
-        Harsh Prateek Bora <harshpb@linux.ibm.com>,
-        Ritesh Harjani <ritesh.list@gmail.com>,
-        Anushree Mathur <anushree.mathur@linux.ibm.com>,
-        Gautam Menghani <gautam@linux.ibm.com>,
-        Mukesh Kumar Chaurasiya <mkchauras@gmail.com>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        Thomas Huth <thuth@redhat.com>, kvm@vger.kernel.org,
-        stable@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v5] KVM: PPC: Book3S HV: Validate arch_compat against host compatibility mode
-Date: Tue, 14 Jul 2026 23:24:32 +0530
-Message-ID: <20260714175432.86388-1-amachhiw@linux.ibm.com>
-X-Mailer: git-send-email 2.50.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h07Vf0mJtz2xqM
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2026 04:43:37 +1000 (AEST)
+Received: by mail-pf1-x44a.google.com with SMTP id d2e1a72fcca58-848d21bbb55so5898578b3a.0
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2026 11:43:37 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20251104; t=1784054615; x=1784659415; darn=lists.ozlabs.org;
+        h=content-type:cc:to:from:subject:message-id:references:mime-version
+         :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=rFM73Nl0bWyUMJUomM5RdFpNF5aybZxuz1pkz9xV3sw=;
+        b=DZh0kvuSIlJLTJs0/POKqxYDFbTa/eER8XvHauAmwLKdXif2ciOcj0QaRuSg7K3R/k
+         FzqnEh2au992tEGQ/b8uf4vTUGeFtUJsiaX84dtavVVxNN7LiPD6aUB9g8266IdErXyK
+         uzaWbP4nd7RDh2Ka0d56NeZItrG1hTzXReQRzvoB4dX9fQgF9VcCWT5HsDyBUi1OVn3/
+         QuIq+3gQ1ChXJRkUJLjIdHZacDRbqY5s4BC2saHx9qfSU96XCC6TS0+RHHNpCP7Wx8Q4
+         iC6WhCmZB+/rj94i/gkz5OAxl+QVkpleU6+66dMR4yXNZ8DNYuZXgSCSnLhCqmuMocna
+         GsxQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1784054615; x=1784659415;
+        h=content-type:cc:to:from:subject:message-id:references:mime-version
+         :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=rFM73Nl0bWyUMJUomM5RdFpNF5aybZxuz1pkz9xV3sw=;
+        b=ibxojw2Nmq8Oumgi9DJrDiQE7T04ZC5MOlkV2kREUd/MD8H5xDsjuj1BgtCV5+sznw
+         UnU8Q+5goY7nnCjWC9w56g6ld4Cncp+3KXhXmpYMf8fnG2y+GRrdLIWzCxJ/mLnsB3iJ
+         XgMd/UNgOcRbgJs3WVP6taXpD37469Ze1t4ERfbxIZPaPzsvLbtYEHhvF5UvhsumRXLD
+         7YHHphwNSa0DkHufS2wbhAv0Kva/e/M9VmIjTh33+DUdzUS0Vf5cHgZye2AO4IRvxsC2
+         rwHN6rd/ta+to28AOS4v2OGoZWD+JIptuaL9Zm0/Qgx/1bz6eZZLYqcNhD/fsLOoIMPV
+         Qx7A==
+X-Forwarded-Encrypted: i=1; AHgh+RpkLJ1EfX8RV9QVKeyHYXnpz6ZFGC4jDXRVE5894MePN26LlVq5b/bTdPCPg63QpiN3AdwO7N5xaCSnbkw=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzNy3cFgfQwsOKTmDFVidWz//0vWHqFe6voZL0F8/1/25tQ+aBe
+	spqRi8z8IIbf0IpVF8Pbgd/fCUreF3E6LlXNhmCJeQxq0ZHTEyOaf7kLY6l4ZzKIQ9TlRPkMSox
+	00dam0g==
+X-Received: from pfnw16.prod.google.com ([2002:aa7:8590:0:b0:848:57f0:bf20])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a00:3d55:b0:845:4fec:3f8f
+ with SMTP id d2e1a72fcca58-84a55894653mr3684533b3a.40.1784054614662; Tue, 14
+ Jul 2026 11:43:34 -0700 (PDT)
+Date: Tue, 14 Jul 2026 11:41:09 -0700
+In-Reply-To: <1782119051448443.14545.seg@mailgw.kylinos.cn>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -94,232 +77,41 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzE0MDE4MyBTYWx0ZWRfX1RjrIYX1qU+e
- gTGjK3xjG89AfaMwiVVX4NpUBdfDRwsJEMOyJot2RZysLR90ZSrFslu3vYUpZTAz9CtAufI3Yz2
- JQKPHQSYqRwKGBaCq37YR0oW53HsuSQ=
-X-Proofpoint-GUID: lGEopBmkUNErqpT_2Notwg3gCspzMrZ4
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzE0MDE4MyBTYWx0ZWRfXyjfVmmHmu8eK
- +S28NHWb8Ms/kifuxdIxssZb2nGpZMVqbd3q/j5cElD7c4Jde62VYmEglxSQ0f4+FqYN2wjj4/6
- frQa+v06Cgld57eWXRg8EHQZTDW/2NjegEGEA9cwPSsH2kHHSgvglKLcqgaLYjSgCIllagwZ9xr
- exCsOnGjV9fVS/mRNgNV+VxjMAR278Z9ChtCeKqCx+ta7NiRLeIu3vAjhKL8aAzMh2dWkBSqkzv
- ByHuHvPKT1XlR3OWISlobxiRUk1ZPtLCv26XaZPnIcOr0a879R6PTnZ0N1fofn5s9EUgVpLlXXr
- 8uYm+14RhvyS+Hs8vbGNacppcp4JbcDvKRNgmsPtvPfRpfq946bQptI86ySy2l2L7jFrpbtY3o4
- zNwMM6CXCe6XPXU8+Voce6EDQSgTdRB0iFLlzcQYBLew71CrvX78FoWGuZGDKx0ER06z+wssqsw
- YlPkPXmsrkqAADOOVDg==
-X-Proofpoint-ORIG-GUID: 8HWXmtpBoW1TgEgTUa9JVA3K6G6OH88R
-X-Authority-Analysis: v=2.4 cv=PvajqQM3 c=1 sm=1 tr=0 ts=6a5677ec cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VwQbUJbxAAAA:8 a=QyXUC8HyAAAA:8 a=VnNF1IyMAAAA:8
- a=pGLkceISAAAA:8 a=wmCt_sBD4itdXaQGqCMA:9
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-07-14_04,2026-07-14_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 malwarescore=0 bulkscore=0 impostorscore=0 adultscore=0
- clxscore=1015 lowpriorityscore=0 spamscore=0 suspectscore=0 phishscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607140183
+Mime-Version: 1.0
+References: <1782119051448443.14545.seg@mailgw.kylinos.cn>
+X-Mailer: git-send-email 2.55.0.141.g00534a21ce-goog
+Message-ID: <178405354318.3120836.11122335012620649935.b4-ty@google.com>
+Subject: Re: [PATCH] KVM: Nullify irqfd->producer when add_producer() fails
+From: Sean Christopherson <seanjc@google.com>
+To: Sean Christopherson <seanjc@google.com>, leixiang <leixiang@kylinos.cn>
+Cc: stable@vger.kernel.org, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Paolo Bonzini <pbonzini@redhat.com>, 
+	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
+	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, 
+	"H. Peter Anvin" <hpa@zytor.com>, Paul Mackerras <paulus@ozlabs.org>, 
+	Suresh Warrier <warrier@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org, 
+	kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
 
-On IBM POWER systems, newer processor generations can operate in
-compatibility modes corresponding to earlier generations. This becomes
-relevant for nested virtualization, where nested KVM guests may need to
-run with a specific processor compatibility level.
+On Mon, 22 Jun 2026 15:51:01 +0800, leixiang wrote:
+> The x86 and powerpc add_producer() callbacks set irqfd->producer before the
+> fallible setup and never clear it on error.  The bypass manager doesn't
+> register a producer whose add_producer() failed -- producer->eventfd is
+> left NULL, so the later unregister early-returns and del_producer() is
+> never called -- so nothing ever drops the pointer.
+> 
+> For VFIO PCI the producer is embedded in struct vfio_pci_irq_ctx and freed
+> when the vector is disabled, after which a routing update dereferences the
+> dangling pointer via kvm_arch_update_irqfd_routing().
+> 
+> [...]
 
-Currently, when running a nested KVM guest (L2) inside a Power11 pSeries
-logical partition (L1) booted in Power10 compatibility mode, the guest
-fails to boot while setting 'arch_compat'. This happens because the CPU
-class is derived from the hardware PVR (via mfspr()), which reflects the
-physical processor generation (Power11), rather than the effective
-compatibility mode (Power10).
+Applied to kvm-x86 fixes, thanks!
 
-As a result, userspace may request a Power11 arch_compat for the L2
-guest. However, the L1 partition, running in Power10 compatibility, has
-only negotiated support up to Power10 with the Power Hypervisor (L0).
-When H_GUEST_SET_STATE is invoked with a Power11 Logical PVR, the
-hypervisor rejects the request, leading to a late guest boot failure:
+[1/1] KVM: Nullify irqfd->producer when add_producer() fails
+      https://github.com/kvm-x86/linux/commit/ed446e8aa894
 
-  KVM-NESTEDv2: couldn't set guest wide elements
-  [..KVM reg dump..]
-
-This situation should be detected earlier and rejected by KVM. Without
-proper validation, if userspace ignores the error, the guest may continue
-to boot in Power11 raw mode on a Power10 compatibility host, which should
-not be allowed.
-
-Introduce a validation mechanism that detects unsupported arch_compat
-values early in the guest initialization path. When an unsupported
-arch_compat is requested (e.g., Power11 on a Power10 compatibility mode
-host), kvmppc_set_arch_compat() uses cpu_has_feature(CPU_FTR_P11_PVR) to
-detect the mismatch and sets arch_compat to PVR_ARCH_INVALID (0xffffffff).
-This sentinel value is architecturally safe: PAPR specifies that valid
-logical PVR values must have 0x0f as the first byte, ensuring 0xffffffff
-lies permanently outside the specification-defined range. Setting this
-value triggers kvmppc_sanity_check() to mark the vCPU as invalid by
-setting vcpu->arch.sane to false. On the next vCPU run, kvmppc_vcpu_run_hv()
-checks this flag and returns -EINVAL, preventing the guest from running
-with an invalid processor compatibility configuration.
-
-With this, when a Power11 arch_compat is requested on a Power10
-compatibility mode host, the guest fails early during boot with:
-
-  error: kvm run failed Invalid argument
-
-This provides a much clearer failure mode compared to the previous
-behavior where the guest could boot in Power11 raw mode (if userspace
-ignored the error) or fail late during H_GUEST_SET_STATE.
-
-Suggested-by: Vaibhav Jain <vaibhav@linux.ibm.com>
-Reviewed-by: Vaibhav Jain <vaibhav@linux.ibm.com>
-Tested-by: Anushree Mathur <anushree.mathur@linux.ibm.com>
-Acked-by: Gautam Menghani <gautam@linux.ibm.com>
-Cc: stable@vger.kernel.org # v6.13+
-Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-Reviewed-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
-Signed-off-by: Amit Machhiwal <amachhiw@linux.ibm.com>
----
-Testing: Both Anushree and I have tested the below scenarios:
-1. P11 guest on P11 host - Works
-2. P10 compat guest on P11 host - Works
-3. P11 guest on compat-P10 host - Correctly fails with "Invalid argument"
-4. P10 guest on compat-P10 host - Works
-
-Changes in v5:
-* Guarded the new vcpu->arch.vcore->arch_compat check in
-  kvmppc_sanity_check() with #if defined(CONFIG_KVM_BOOK3S_HV_POSSIBLE)
-  to fix a build failure in randconfig builds where CONFIG_PPC_BOOK3S is
-  not set and struct kvmppc_vcore is not fully defined [Reported by
-  kernel test robot]
-* Report: https://lore.kernel.org/all/202607142107.CrgQhmsx-lkp@intel.com/
-* v4: https://lore.kernel.org/all/20260616163405.96962-1-amachhiw@linux.ibm.com/
-
-Changes in v4:
-* Added documentation for PVR_ARCH_INVALID explaining why 0xffffffff is
-  architecturally safe to use as a sentinel value (PAPR constraint on
-  first byte being 0x0f) [Ritesh]
-* Updated commit message
-* v3: https://lore.kernel.org/all/20260609053327.61563-1-amachhiw@linux.ibm.com/
-
-Changes in v3:
-* Fixed null pointer dereference in kvmppc_sanity_check(): added check for
-  vcpu->arch.vcore before accessing arch_compat, as vcore is NULL for Book3S
-  PR and BookE guests (only Book3S HV uses vcore) [Reported by Sashiko AI]
-* Added Reviewed-by tag from Vaibhav
-* v2: https://lore.kernel.org/all/20260608201001.65760-1-amachhiw@linux.ibm.com/
-
-Changes in v2:
-* Fixed issue where v1 allowed guest to boot in Power11 raw mode when
-  userspace ignored the error, by adding validation in kvmppc_sanity_check()
-  to ensure early failure during vCPU run [Found the issue after posting v1,
-  also reported by Gautam.]
-* Introduced PVR_ARCH_INVALID constant for marking invalid arch_compat
-* Dropped all Reviewed-by and Tested-by tags due to code changes; requesting
-  fresh reviews
-* v1: https://lore.kernel.org/all/20260603141539.47620-1-amachhiw@linux.ibm.com/
-
-Changes in v1:
-* Moved this patch out of the v3 series [1] as discussed here [2]
-* Addressed below review comments from Ritesh:
-  - Based the PVR validation on cpu features
-  - Fixed hcall name typo
-  - Stable backport
-
-[1] https://lore.kernel.org/all/20260522152744.55251-1-amachhiw@linux.ibm.com/
-[2] https://lore.kernel.org/all/20260522152744.55251-2-amachhiw@linux.ibm.com/
----
- arch/powerpc/include/asm/reg.h | 12 ++++++++++++
- arch/powerpc/kvm/book3s_hv.c   | 15 ++++++++++++++-
- arch/powerpc/kvm/powerpc.c     |  6 ++++++
- 3 files changed, 32 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index 3449dd2b577d..b9ab9df1e2bc 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -1357,6 +1357,18 @@
- #define PVR_ARCH_31	0x0f000006
- #define PVR_ARCH_31_P11	0x0f000007
- 
-+/*
-+ * Kernel-internal sentinel for invalid processor compatibility modes.
-+ * PAPR specifies that the first byte of a valid logical PVR value is
-+ * 0x0f. So 0xffffffff lies permanently outside the PAPR-defined range
-+ * and is safe to repurpose. KVM stores it in vcpu->arch.arch_compat
-+ * when userspace requests an unsupported compatibility mode (e.g.,
-+ * Power11 PVR on a Power11 host booted in Power10 compat).
-+ * kvmppc_sanity_check() detects this and prevents the vCPU from
-+ * running with an unsupported arch_compat.
-+ */
-+#define PVR_ARCH_INVALID	0xffffffff
-+
- /* Macros for setting and retrieving special purpose registers */
- #ifndef __ASSEMBLER__
- 
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 61dbeea317f3..f9380ef65750 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -446,7 +446,19 @@ static int kvmppc_set_arch_compat(struct kvm_vcpu *vcpu, u32 arch_compat)
- 			guest_pcr_bit = PCR_ARCH_300;
- 			break;
- 		case PVR_ARCH_31:
-+			guest_pcr_bit = PCR_ARCH_31;
-+			break;
- 		case PVR_ARCH_31_P11:
-+			/*
-+			 * Need to check this for ISA 3.1, as Power10 and
-+			 * Power11 share the same PCR. For any subsequent ISA
-+			 * versions, this will be taken care of by the guest vs
-+			 * host PCR comparison below.
-+			 */
-+			if (!cpu_has_feature(CPU_FTR_P11_PVR)) {
-+				arch_compat = PVR_ARCH_INVALID;
-+				goto out;
-+			}
- 			guest_pcr_bit = PCR_ARCH_31;
- 			break;
- 		default:
-@@ -469,6 +481,7 @@ static int kvmppc_set_arch_compat(struct kvm_vcpu *vcpu, u32 arch_compat)
- 			return -EINVAL;
- 	}
- 
-+out:
- 	spin_lock(&vc->lock);
- 	vc->arch_compat = arch_compat;
- 	kvmhv_nestedv2_mark_dirty(vcpu, KVMPPC_GSID_LOGICAL_PVR);
-@@ -479,7 +492,7 @@ static int kvmppc_set_arch_compat(struct kvm_vcpu *vcpu, u32 arch_compat)
- 	vc->pcr = (host_pcr_bit - guest_pcr_bit) | PCR_MASK;
- 	spin_unlock(&vc->lock);
- 
--	return 0;
-+	return kvmppc_sanity_check(vcpu);
- }
- 
- static void kvmppc_dump_regs(struct kvm_vcpu *vcpu)
-diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index 00302399fc37..b6b83fe3233f 100644
---- a/arch/powerpc/kvm/powerpc.c
-+++ b/arch/powerpc/kvm/powerpc.c
-@@ -258,6 +258,12 @@ int kvmppc_sanity_check(struct kvm_vcpu *vcpu)
- 	if (!vcpu->arch.pvr)
- 		goto out;
- 
-+#if defined(CONFIG_KVM_BOOK3S_HV_POSSIBLE)
-+	if (vcpu->arch.vcore &&
-+	    vcpu->arch.vcore->arch_compat == PVR_ARCH_INVALID)
-+		goto out;
-+#endif
-+
- 	/* PAPR only works with book3s_64 */
- 	if ((vcpu->arch.cpu_type != KVM_CPU_3S_64) && vcpu->arch.papr_enabled)
- 		goto out;
-
-base-commit: 3b029c035b34bbc693405ddf759f0e9b920c27f1
--- 
-2.50.1 (Apple Git-155)
-
+--
+https://github.com/kvm-x86/linux/tree/next
 
