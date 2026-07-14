@@ -1,88 +1,166 @@
-Return-Path: <linuxppc-dev+bounces-24198-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24199-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 25AB8C44501
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2026 09:30:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C7AF5C44508
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2026 09:35:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gzvD54WxYz2y8p;
-	Tue, 14 Jul 2026 19:30:13 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784021413;
-	cv=none; b=NvWtzH/bOC6BmUI/j3GzLC4ac0MDIVm1ExpuSzq7WubRe5Eyp040TNM62rTLLQlsZYtkMDSMhuwfJhj3TG73JXycLtG4RfUzxERv1ZkHgGFUa+CwFvVZFOpPBMgkjmqkdwuchtYjQGV9nDtzMQY6AmRauZOG9DilXb/ieJeNlJq30GOzqlkGnvm5hehxIHKlPD+CdENUVFe4YkMMfIhCuQ00gWpc0EACe+8otKG1rC6+aGOW/xdq5o+h/viEG5ofO+CGT0Wo8b1O6LVRoSq0CSMt6IcPDcWN+iYXarZmlqr+nTmhTitGxJZD1FxfUrLQwTmvvMATRoo7cUWfVDk3tA==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784021413; c=relaxed/relaxed;
-	bh=KsLqHTsSjtEyTiMvODN6Jo4cCBjfs+wJF6eDvu5pKs8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Vf2vDICYoR3aDbmPKHGwA+dzE4ljKVBRw30xPd5WLVepGRimlda58viCtybmnWFBx6mmnSerZ6ypo4vlhugW7QNTydij0y/UWmO4cUc4Hf+glpzCbxEWlpBANcQfxrh948VlLcV3Y1hZoL4BszlQqwZsheAr6uYE4od7CRyqbDNg/uIjvbJoJ6WNGKcfDGIu9dN5234kliGRj1qDb3j+YLfDrTSksbgnx5jVqfURPzaktkCUEtjtsCKV8CTkSj4gZlXVwcm8d2CTju2divSLim0yWFy2cM2zJaO8H/sRg+4UhVm9wor8+8lMKg64Wc7mHvim06spgwbMLGu5cqkNUA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=oSkWYJJT; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=srikar@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gzvKr4YZQz2yMn;
+	Tue, 14 Jul 2026 19:35:12 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=fail smtp.remote-ip=198.175.65.17
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784021712;
+	cv=fail; b=b1KpvecKmuQ6zXT41t2lE6DxEr+LWVLZsknmAdipLmDsSD1fUhBI+RDFHKB0d4w017Vp/8UAMKAe+tZrHtr/XqPomppZd86aBXgnc3OniqpndoGMggs5N5VtTrjYHUPrnIyRZCT+gm0zrAOAhP6WclzGc5MvEDq4+i5htB9fxDK0lnnBm6K48EJhcv9t0gr98pyMCKKvmxo+zZaGdc91tHFz6b5i8gAcWGJ504JgJLNSWxTDbecgJu8HZCR2qSj2Wcy90cv6pHLepTB03Udpc5LH58cLG/N7ne0t945yaZgQdw4gr5R00g715ZWoaiAbeB4GWd1H5Ty78kiq0eN/Lw==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1784021712; c=relaxed/relaxed;
+	bh=6bzcUh0NeTVNFO0dsN2oH13jNagu/WW2Eke4TUjbiss=;
+	h=Message-ID:Date:Subject:To:CC:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=Pru0rNFK9CIvOP8fl9Z97DI/KHNhuq1GZvEi1U1UtniuXtVO59U2ThFyX2JuIpl+uS2RXxjIK53kiJWzr/m0kfsxcmL/ZWRHraTE7NrpER4F/I+Kg8btTXz98i8pFtWFQwfm32zfynekj7TqBxY0YtMGgXWyRnv7/ozJaOzH1YIx7kTtgEhCu0I2r6FhbqxoF2E4MoLhtDdNA3aCLa7OnbOEPNsLrNWM1BiHCuO45+IAYL0tVfYStwS3eLHs948p5CfLlJGF/8kRNI5hDbT0g1fJmUV2YKF/7vhXVZ0QDv/zdqD2NI5e2jEaTnc3VR1x+y15LGn/Ige6s/UxodGgHw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Lg8hZr8h; dkim-atps=neutral; spf=pass (client-ip=198.175.65.17; helo=mgamail.intel.com; envelope-from=adrian.hunter@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=oSkWYJJT;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Lg8hZr8h;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=srikar@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.17; helo=mgamail.intel.com; envelope-from=adrian.hunter@intel.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 65 seconds by postgrey-1.37 at boromir; Tue, 14 Jul 2026 19:35:07 AEST
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.17])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gzvD45PHyz2y7W;
-	Tue, 14 Jul 2026 19:30:12 +1000 (AEST)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66E6fxd3547339;
-	Tue, 14 Jul 2026 09:29:54 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:to; s=pp1; bh=KsLqHTsSjtEyTiMvODN6J
-	o4cCBjfs+wJF6eDvu5pKs8=; b=oSkWYJJTuizqtVfu34shHhYLIH6fXXOH2pUYL
-	5dB9f2EHryrPGpaI2OOLJV/lgWP0eBah2t1+60V7mYHPKebO/k2D0dlK1P8XdF9Y
-	Gc3VyglT26TXBbSM307Bar2ZY00T9Rq3m1o/CtIlgqOsARj09sorE6dvMcKjIQyD
-	B4aiUrjWPaQd/sNAghdBBnsQl4KlBDjyWq8jkDbRXdRrNFF1NTAaL4BrpyCtX0S2
-	PKPCA+rfHIVJpq7kIb+70/fwG8eoPhvqMraz/K3/AjNc3o5yd9cSa1AGlJbfHDc4
-	RpYGQxPJdxTW3hE59Uv/ZeJFMQKUCcwUPh0kJzNN9RZOX7GyQ==
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fbegbmxh4-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 14 Jul 2026 09:29:53 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66E9JbGo031203;
-	Tue, 14 Jul 2026 09:29:53 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4fc1nh9y26-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 14 Jul 2026 09:29:53 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66E9TnGh50004258
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 14 Jul 2026 09:29:49 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 2148E20043;
-	Tue, 14 Jul 2026 09:29:49 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 51BA220040;
-	Tue, 14 Jul 2026 09:29:44 +0000 (GMT)
-Received: from linux.ibm.com (unknown [9.126.150.29])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with SMTP;
-	Tue, 14 Jul 2026 09:29:44 +0000 (GMT)
-Date: Tue, 14 Jul 2026 14:59:42 +0530
-From: Srikar Dronamraju <srikar@linux.ibm.com>
-To: Ritesh Harjani <ritesh.list@gmail.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Christophe Leroy <christophe.leroy@csgroup.eu>,
-        Naveen N Rao <naveen@kernel.org>, skiboot@lists.ozlabs.org,
-        arbab@linux.ibm.com, mahesh@linux.ibm.com, chleroy@kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 2/3] powerpc/numa: Allow cpu_to_coregroup_id without
- PPC_SPLPAR
-Message-ID: <alYBhu2wN0QeXJB0@linux.ibm.com>
-Reply-To: Srikar Dronamraju <srikar@linux.ibm.com>
-References: <20260605055242.1757485-5-srikar@linux.ibm.com>
- <20260605055242.1757485-7-srikar@linux.ibm.com>
- <wlv3v6ag.ritesh.list@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gzvKl5yvPz2y7W;
+	Tue, 14 Jul 2026 19:35:07 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1784021709; x=1815557709;
+  h=message-id:date:subject:to:cc:references:from:
+   in-reply-to:content-transfer-encoding:mime-version;
+  bh=83KHyJ/b2FtbERA6/65ngMJebElt5Qh4alz8bB5cPN0=;
+  b=Lg8hZr8h797y4CfGU+e+gzhLRem5rlGdIVAoem8210UMTmpjn7lP8def
+   0vYFqhbUpjJCq7K9GCIdCmbc/3XBYUJz3HhTZG++aWKZzmHv8Nj3S3dxB
+   Pch7VBMnGQBybL9MC1KSgaHYGc1do3hGL0ExnqTlwmWf6ADOCZbvmSfHk
+   GEXFgO70Yk897SUFRcysXPZsRtz6LunD8IKpZl1wjgkk0WFqBBU5gqCr2
+   uf+4lKGAYeOM5/E2MPUY5hQr5ixN0lcGGBHbZ7RRUBjKtJ8VCXGTTjyqr
+   SvOvBHye7YL2NpQ+MpJVw+zZarSava5nXUCx4oRF22IlBNQf5AAUMGrGT
+   g==;
+X-CSE-ConnectionGUID: Shxw2jRGSdK41Y4ThsOYrQ==
+X-CSE-MsgGUID: /elfhEcPQeW5ebGv3Vu5ag==
+X-IronPort-AV: E=McAfee;i="6800,10657,11846"; a="84661533"
+X-IronPort-AV: E=Sophos;i="6.25,163,1779174000"; 
+   d="scan'208";a="84661533"
+Received: from fmviesa002.fm.intel.com ([10.60.135.142])
+  by orvoesa109.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Jul 2026 02:33:56 -0700
+X-CSE-ConnectionGUID: gNS4ltISRpWvhIvYooZwgg==
+X-CSE-MsgGUID: o9FhYcdkQJm9A4g8pPc3rQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.25,163,1779174000"; 
+   d="scan'208";a="279079121"
+Received: from fmsmsx902.amr.corp.intel.com ([10.18.126.91])
+  by fmviesa002.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Jul 2026 02:33:56 -0700
+Received: from FMSMSX903.amr.corp.intel.com (10.18.126.92) by
+ fmsmsx902.amr.corp.intel.com (10.18.126.91) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.43; Tue, 14 Jul 2026 02:33:55 -0700
+Received: from fmsedg903.ED.cps.intel.com (10.1.192.145) by
+ FMSMSX903.amr.corp.intel.com (10.18.126.92) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.43 via Frontend Transport; Tue, 14 Jul 2026 02:33:55 -0700
+Received: from CY7PR03CU001.outbound.protection.outlook.com (40.93.198.35) by
+ edgegateway.intel.com (192.55.55.83) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.43; Tue, 14 Jul 2026 02:33:55 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=D1vZ1Adz8a1F+PtsoBOLAyB8osC+xY4wsqooIVejyGIZFPwGXyMFMIR3+1xo1ZpNhVHGnVWwO+coOFEhiJ6AaaULT7igKAnbSj2gH6w6oVBt1dQDsba7YrJ7xjYbrbC0+ZZNhh/8vbzzhhxPTe1IVwYHe3CgU9Y02TspenTGXfrA434O7tf2fXC89BUPd+iJq8BdvMffPhF8qtdGIFhdLpoXGG3qzG+5dKI3fICe2g/EhXX9653sKCJMfAX9lUo5iOjFc5XRtu6oj/SgkoeCdf111TFOa5i0+v4olpSV263JV6JGrJnG+CY40PCfOIJq7U5BBsA5TcuqugFf01xFSg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=6bzcUh0NeTVNFO0dsN2oH13jNagu/WW2Eke4TUjbiss=;
+ b=BR/NLzKhy8VGsgKjuSF8u/q12LiaD9GV9V0R+RzViv5QmBpyjG8tafkPd4oCD0P01r7hqi2bZP8NLp3eiNazd+S+L8FzEAY8/3aF8aiegvXCRhOsXxYPu5jfxWkFDjJXIeV7IbRazP3mIYNLdhxmIEX2bWZw3EaBU+N6eC7fCna4ycJjWRr7WT7TerkyyB9mN+r807IsINS5L2r0F4ESKROd7WCk4juP9U4mnmVSxLYeoOh/RYd8Yf5tV8sXe/RmQ1QrVH5gSyV9UJTRhDtpaJXI0STQe8mtbsf6VMWz3XX9MeXr0gTKY5rbInkl0/lf6NOCCpkOZ8SqtGrtC/Dtaw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Received: from IA1PR11MB7198.namprd11.prod.outlook.com (2603:10b6:208:419::15)
+ by SA1PR11MB5948.namprd11.prod.outlook.com (2603:10b6:806:23c::18) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.223.9; Tue, 14 Jul
+ 2026 09:33:51 +0000
+Received: from IA1PR11MB7198.namprd11.prod.outlook.com
+ ([fe80::2c4e:e92a:4fa:a456]) by IA1PR11MB7198.namprd11.prod.outlook.com
+ ([fe80::2c4e:e92a:4fa:a456%3]) with mapi id 15.21.0181.019; Tue, 14 Jul 2026
+ 09:33:51 +0000
+Message-ID: <a822ae4b-1bc3-4b55-b65b-9503dad39c20@intel.com>
+Date: Tue, 14 Jul 2026 12:33:31 +0300
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 23/42] mmc: sdhci-of-bst: Use
+ devm_of_reserved_mem_device_init_by_idx()
+To: Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>, Bjorn Andersson
+	<andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, Liviu Dudau
+	<liviu.dudau@arm.com>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+	Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
+	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, "Joel
+ Stanley" <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>,
+	"Paul Cercueil" <paul@crapouillou.net>, Anitha Chrisanthus
+	<anitha.chrisanthus@intel.com>, Paul Kocialkowski <paulk@sys-base.io>, "Linus
+ Walleij" <linusw@kernel.org>, Chen-Yu Tsai <wens@kernel.org>, Jernej Skrabec
+	<jernej.skrabec@gmail.com>, Samuel Holland <samuel@sholland.org>, "Alexey
+ Brodkin" <abrodkin@synopsys.com>, Laurent Pinchart
+	<laurent.pinchart@ideasonboard.com>, Tomi Valkeinen
+	<tomi.valkeinen@ideasonboard.com>, Michal Simek <michal.simek@amd.com>,
+	Daniel Scally <dan.scally@ideasonboard.com>, Jacopo Mondi
+	<jacopo.mondi@ideasonboard.com>, Mauro Carvalho Chehab <mchehab@kernel.org>,
+	Eddie James <eajames@linux.ibm.com>, Tiffany Lin <tiffany.lin@mediatek.com>,
+	Andrew-CT Chen <andrew-ct.chen@mediatek.com>, Yunfei Dong
+	<yunfei.dong@mediatek.com>, Minghsiu Tsai <minghsiu.tsai@mediatek.com>,
+	Houlong Wei <houlong.wei@mediatek.com>, Matthias Brugger
+	<matthias.bgg@gmail.com>, AngeloGioacchino Del Regno
+	<angelogioacchino.delregno@collabora.com>, Joseph Liu <kwliu@nuvoton.com>,
+	Marvin Lin <kflin@nuvoton.com>, Dmitry Osipenko
+	<dmitry.osipenko@collabora.com>, Krzysztof Kozlowski <krzk@kernel.org>,
+	Thierry Reding <thierry.reding@kernel.org>, Jonathan Hunter
+	<jonathanh@nvidia.com>, Srinivas Kandagatla <srini@kernel.org>, Arnd Bergmann
+	<arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ge Gordon
+	<gordon.ge@bst.ai>, Ulf Hansson <ulfh@kernel.org>, Rob Herring
+	<robh@kernel.org>, Saravana Kannan <saravanak@kernel.org>, Mathieu Poirier
+	<mathieu.poirier@linaro.org>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai
+	<tiwai@suse.com>, Shengjiu Wang <shengjiu.wang@gmail.com>, Xiubo Li
+	<Xiubo.Lee@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown
+	<broonie@kernel.org>, Frank Li <Frank.Li@nxp.com>, Sascha Hauer
+	<s.hauer@pengutronix.de>, Peter Ujfalusi <peter.ujfalusi@linux.intel.com>,
+	Bard Liao <yung-chuan.liao@linux.intel.com>, Daniel Baluta
+	<daniel.baluta@nxp.com>, Orson Zhai <orsonzhai@gmail.com>, Baolin Wang
+	<baolin.wang@linux.alibaba.com>, Peter Chen <peter.chen@cixtech.com>, "Fugang
+ Duan" <fugang.duan@cixtech.com>
+CC: Ekansh Gupta <ekansh.gupta@oss.qualcomm.com>, "BST Linux Kernel Upstream
+ Group" <bst-upstream@bstai.top>, Fabio Estevam <festevam@gmail.com>, "Nicolin
+ Chen" <nicoleotsuka@gmail.com>, Pengutronix Kernel Team
+	<kernel@pengutronix.de>, Kai Vehmanen <kai.vehmanen@linux.intel.com>,
+	Pierre-Louis Bossart <pierre-louis.bossart@linux.dev>, Vijendar Mukunda
+	<Vijendar.Mukunda@amd.com>, Chunyan Zhang <zhang.lyra@gmail.com>, "CIX Linux
+ Kernel Upstream Group" <cix-kernel-upstream@cixtech.com>,
+	<linux-arm-msm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+	<dri-devel@lists.freedesktop.org>, <linux-aspeed@lists.ozlabs.org>,
+	<linux-arm-kernel@lists.infradead.org>, <linux-mips@vger.kernel.org>,
+	<linux-sunxi@lists.linux.dev>, <linux-media@vger.kernel.org>,
+	<openbmc@lists.ozlabs.org>, <linux-mediatek@lists.infradead.org>,
+	<kernel@collabora.com>, <linux-tegra@vger.kernel.org>,
+	<linux-mmc@vger.kernel.org>, <devicetree@vger.kernel.org>,
+	<linux-remoteproc@vger.kernel.org>, <linux-staging@lists.linux.dev>,
+	<linux-sound@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+	<imx@lists.linux.dev>, <sound-open-firmware@alsa-project.org>
+References: <20260703193855.110619-1-mukesh.ojha@oss.qualcomm.com>
+ <20260703193855.110619-24-mukesh.ojha@oss.qualcomm.com>
+Content-Language: en-US
+From: Adrian Hunter <adrian.hunter@intel.com>
+Organization: Intel Finland Oy, Registered Address: c/o Alberga Business Park,
+ 6 krs, Bertel Jungin Aukio 5, 02600 Espoo, Business Identity Code: 0357606 -
+ 4, Domiciled in Helsinki
+In-Reply-To: <20260703193855.110619-24-mukesh.ojha@oss.qualcomm.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: DB9PR06CA0007.eurprd06.prod.outlook.com
+ (2603:10a6:10:1db::12) To IA1PR11MB7198.namprd11.prod.outlook.com
+ (2603:10b6:208:419::15)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -96,158 +174,115 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <wlv3v6ag.ritesh.list@gmail.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=fOcJG5ae c=1 sm=1 tr=0 ts=6a560192 cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
- a=8nJEP1OIZ-IA:10 a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=pGLkceISAAAA:8
- a=VnNF1IyMAAAA:8 a=_vDUOehEt5VO5bzHM80A:9 a=wPNLvfGTeEIA:10
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzE0MDA5NiBTYWx0ZWRfXwkHTqBS2vHQM
- lIOMSRypr+EcnLE9AnafC/7yF+UM9JXryB/mNEklY1gc4dEEgby9Ky8cF6Wobm7NwLfFv75TIvb
- EX29jaeQVye/ImVdXQsmU0OYWtnpH4O94GrOKh8xtToMh+E8r32e2cxF68aiRhHnXTbr6nDaQiu
- DQceZdHDyI7QpkDOCLJGuNILexZFz7rLhDFxoPFj/pMFBo1KRv22/4zuSNOJNmZi/U/XGXz2wbQ
- CFsU7Y/DKDnkbZJRm3xRcxksCXNgb/L+vPnjcyrACh2M2eAyWTLXA8C81KuY6F18KvdymXWMCbK
- 2ImaaNpWfCy3Df0FFc8/X5GCMYMvtbuU4UYnUmDMFKJmvtaIwHQY7SEb5+H2HA/RMbnljGi5FaV
- 7a5aHkiKhGhBDM/IQoAkvhBeobxBr11eiQsOx5ZOcpahOnafqJvQYXQmcot0mUZb73jzdSC/qNz
- BPhT9TJL2wtDRk6ZNmw==
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzE0MDA5NiBTYWx0ZWRfX0JQatvh/4dzx
- 8tXT5Qh1+iP0MCrxheWS/Ykj7mcDkqaj15RnlzBZw8NIOTCsktYjaMc3r7TDU7VHIcuDzcZnz+5
- N6OIYhgjyMdf+pNzlHF6nBLgGODbRg8=
-X-Proofpoint-GUID: pNIlILCeCA6qbR2nvGoWNEZQ68j9bdsL
-X-Proofpoint-ORIG-GUID: BN0Z4-sYrpmzj3oPZNB2utw6EWluaR_b
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-07-14_02,2026-07-10_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 bulkscore=0 impostorscore=0 suspectscore=0 adultscore=0
- priorityscore=1501 malwarescore=0 clxscore=1015 phishscore=0
- lowpriorityscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
- definitions=main-2607140096
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: IA1PR11MB7198:EE_|SA1PR11MB5948:EE_
+X-MS-Office365-Filtering-Correlation-Id: 4325f7c8-c50c-4021-36f4-08dee18b0373
+X-LD-Processed: 46c98d88-e344-4ed4-8496-4ed7712e255d,ExtAddr
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|376014|7416014|366016|1800799024|23010399003|921020|18002099003|22082099003|4143699003|56012099006|11063799006;
+X-Microsoft-Antispam-Message-Info: mLuVenHFAgU3xwyWjzjD/YkQsDks53sEakK/j3atPYHwWC9pPNfyeZGUBnOLsPz//XhTpmSxVONdMl917Of0tfRP9Ls0NyFm/5g98gdhaS47FT8jUzyWIDtm5/yYJI7/RHvKPJyX9DXQBA4iTa1Uaz/uwE1DsDMTDoNnSR6qhNeRaSK1HymNamWNi2OLTTkobBvTD/X1qK7Qc9rau78ODgKxhkLtV/ERKMUX7trUXsRi1QBtskZpa/OwFV3F0O56wAwSG462jE3M9TD7QhLX98eqYfIkGXVDuJMbkTFTcXeSeOX0bhWkGD2Xj4pHvDsl1SS2yBHVvYoemB12CMvHpAEwtStFIbowdtnAaFjIAGMws0kzhorWD4xY/Y8sUiqxs1VYCkmY0XdMZtiaCjO6dVFrPqIB4GxS5puTGnXfI0TuH6G1gnfsq53fc3HkCXLL7bshKujEQRnpYn2CGH/ewXM5qpE7LF/KhcK9cwQeT8IGro4fjPpR9eD343AlIlkGl36th/FwgGk8CylJIb9OZbITPbLHb7MbXVmCC0prjHLCX7499iy9y9UUH8BZeIPkpSxL7rbm3bkJjPYNZhXP9jOYvcNx08bPqMPa2z583yP9co6/R2c9eI8A5HPSZB2joQQqE7nbuW44VCGgPinWT1Zd1CcVnmPIQeMmGtf/+a2GVTgAvXaXIaqLsWjBLo3np00nN8UMwZLoPBEGZAsAqA==
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:IA1PR11MB7198.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(366016)(1800799024)(23010399003)(921020)(18002099003)(22082099003)(4143699003)(56012099006)(11063799006);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?eThXd0ZPZHJvdkZRb05GL1llck1zZGZ1eUxuOTNvc0N6a0U2dzRPclZMbFAv?=
+ =?utf-8?B?ajJ6S2V1OWpmamt2L1A5TG9xcDRHNTc2YS9GcmIzNi9iRWliVEpsZzV2bmdW?=
+ =?utf-8?B?TDhyUHBEUnJ3NE9ENDlGdjc3eVp4MHc3Tk9hWlVVL2MzKytQcDRNQWhVYmxE?=
+ =?utf-8?B?eTRsa2s0cmNZMlJXcE5JQ2tVTnUyQ0ZTUWpaekJpOGw4VGhFOEpRLzRTeTY5?=
+ =?utf-8?B?Zkd1ay8wR2JURy9Ba1RSWi9hVUg0UXFrUnEvaHFLTDMzZVN3Z0xFS1RDaWRt?=
+ =?utf-8?B?VVFVSlk0MFVXVm9xakZpdWtkRVZJU1dxc09hVWV6MWZHVmpoSTBDWllBMms5?=
+ =?utf-8?B?bytER2pLZFZRWlIweHpLY2FmZVJIOWl0VzB0b0ZLRDVrL1EybmZ2d0RwdlRR?=
+ =?utf-8?B?L3dCK2NENHpmaG1XOElzTmN5U0k3bXhNQllEVVpkY1ptbGM2Z3FFSzdEc3V2?=
+ =?utf-8?B?S0cydzU4Z0RUQ1dSUDdmRll5dDRWWXpqQlNDSkdCTlVLb29Udis2a2ZZemt1?=
+ =?utf-8?B?RU1SeWxZZDZYeWhORldIYnViLzU0eVVTYkFkTXZWb0RQWkdGMTlZV0FWdTVU?=
+ =?utf-8?B?RnR1MHRwTWlobWNTUHhlekxtcEltZUpQcmtUTHR4NGhtMGtNSnFhNldLK0hB?=
+ =?utf-8?B?anovQzFCWEs3S2ptMGlNajFsZFNQaHA2SXZ5Ti9YTUc1S282cHEzeGE5UGho?=
+ =?utf-8?B?LysyMzlSZkh6eGVvclZnNjF2OUMzRXI4N3Rnc1A1cHEzQTQyTldrUnlDVjN2?=
+ =?utf-8?B?NzNPNERrZW43TU9xeXFYbzZuMDRQMGQ5MTFweFk1aTJnNUVvRjljdlFiSTVN?=
+ =?utf-8?B?MGpCN3U2TFREYm9tODNBVjZPdS84dkJQUmlIM2xIUVJqbE03NmJrNWx6ak5w?=
+ =?utf-8?B?a0tUTGhJc0FlTlVoQTBzaEkvT1dORFM2MlUzZ0NNV2IrNnFVeVVsMk5Ra0Iz?=
+ =?utf-8?B?R1pGMHhnL2UwZ2hWZnFkK0Rrdk00RFpKT1dNVkxkYkViVFB2WjBGcnNEazV4?=
+ =?utf-8?B?U0I5K0FHK1lmOEVDSGZyUnJ5aEYzcVFNSFI5N0N2Zy9MQkpyTEphTmRLeGhu?=
+ =?utf-8?B?L3Z4NHNUYVRGckxPSk5BN0lwZmlRMEhVZkovWnpINU9jdjVqN3lsT2RmUFY5?=
+ =?utf-8?B?S1k2RkJmR3oyUjlYcU5OMENCa0lnMGNjNU1JM0JFU0RPT1pCcWpXMExTOEVK?=
+ =?utf-8?B?TjhXQzFrdE5mMjZPeVVsV3pWSDZLMXNzUDMzZWF1bEV1SUJycVd3ajhkOEpn?=
+ =?utf-8?B?RmxzdnhKNTBBdjZyVWltclhScnoxQ3ZHWjdramU4SFFKZ0tKUFZQekthcGFS?=
+ =?utf-8?B?QnI1VU5tV3NZUEFINmRIWEFYdVBieStrdHgxNDdTS05KaG92MjFCd2ZsbExQ?=
+ =?utf-8?B?OW12Um1YV1o2TjQ1Q3U3TytMYUtWa0Y1TjdlU3pzcVMvMDcraW9acU51S1Vh?=
+ =?utf-8?B?ejFEUG10UnhTaHczUWZqYjJ4YWFCNFZCb3U2UW9yWGZQdzhpUElDaVFicFFa?=
+ =?utf-8?B?UEhYamVMUldUeUZzbUlBNXlpN1E0SFRwUkhuSHp5Y0FLdU1heG5HNG0wU1g0?=
+ =?utf-8?B?T3lTQnFlWWJtYldkM2RrOWV2OGJUUnlaTGhlL3kxNnlQcGJFNFc3Sjl1ekhH?=
+ =?utf-8?B?M09nbkpZSXNnTHI2d1FZWjl0NlB6MTVzSlVPc0ExWFVaWGxONnFndDBZMWQ4?=
+ =?utf-8?B?eFJPa1JTZVZsaFVKZ2NZL25qV2pmSEhFa1hmSGZkQ0ppQXJyQzVaQnpmZE10?=
+ =?utf-8?B?RC9WUFJkNS9ZdzA1aVJaZUVzY2xFYUxCUzErM2R4QVU2RzhzUGVjaUcyUW44?=
+ =?utf-8?B?YTdZRjZmbXJXVGRROVRsVXNYdXFNaHlnQWNjZUhXS0dFOEY2M244V3dlNHow?=
+ =?utf-8?B?TEdyMDJ5T21OR0VoZzVVNXAyN2xEZXBrSU9vTG41Vkw1OEE3QU1TczZNQ3Rz?=
+ =?utf-8?B?NjNNYnlGZ2JvRFhWSEN3bkNCTWRqR1Fxb1B1ZUxKVzcxd2VzYmVUTUxYbm1W?=
+ =?utf-8?B?QTBFazV4WU5GWjZaVms3aDRkcGg4aW5jM2hiM2FRaW9vZjVVVXU4eXBjc2hm?=
+ =?utf-8?B?T1VXTzl4Ym9DdGhyMlViSFRyMWU4czBlbldUZzFiTGxxMzJQMkZYUHlqSVkz?=
+ =?utf-8?B?SlNlZ1hTZDJxQ0N3SzNhS3E1QkhBL2xXNEN2Zm53S2dlUGx5TUN2anlad3Ry?=
+ =?utf-8?B?QVBTWVVrWmlzbVR3djVaVXpPaVYzdk0vNnlJelAwWDlZNWRuUi9Ubk1ZSzd6?=
+ =?utf-8?B?WVN1VG5kdnpoNloyT01LaHdLN3B6YVlGM0M5M3Nndy9Sd3RodFJnaE5ySDRv?=
+ =?utf-8?B?Y0FIczlTZ21iNUJmK1B2OGs3WXdVVm1jdXNJL0RQTHBlR3dNUElwMHFUcWRt?=
+ =?utf-8?Q?S05dAGM5QphIvG+0=3D?=
+X-Exchange-RoutingPolicyChecked: ASmWy+HYE36u6olMgt3DDWeHRYL3ZzYuoOK5jiEJNw0KXCgIC2CgzRbNHmVQWVFvUELyVMzdDFABIJcaU4osYFWoCuguMBdWXzD/Tkx5sjxWLLhfzRKiEqQri37eH2IyHrcn/s6+E8K41gecT7tV9qtHi/BwXmHVDI8qlG+bfXGpUghJVkvrwfZhED+f+CjqpsVzEynrnG4LmCnbgf89zUn4xUJQNKmVwh812tcJ4leXueNeDru3MdJ4wUknGyikV2G07qgVvSqU4hMZh+C0muXZ/84kk3cnNXYsk1RnIbaWsq60wkwJl9p9Awixkhhrhacv8NTX4NB4c381IsxzEQ==
+X-MS-Exchange-CrossTenant-Network-Message-Id: 4325f7c8-c50c-4021-36f4-08dee18b0373
+X-MS-Exchange-CrossTenant-AuthSource: IA1PR11MB7198.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 14 Jul 2026 09:33:50.9994
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 2da2RgD5tAjivEP34EyjeABap+LOcNWNDA6RCPTE/2Li5U9RbM1HKE1FIod7RhbXSALmevsJClPAYrwAHBG5ew==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA1PR11MB5948
+X-OriginatorOrg: intel.com
 
-* Ritesh Harjani <ritesh.list@gmail.com> [2026-07-10 09:34:55]:
-
-> Srikar Dronamraju <srikar@linux.ibm.com> writes:
+On 03/07/2026 22:38, Mukesh Ojha wrote:
+> Use the devres-managed devm_of_reserved_mem_device_init_by_idx() instead
+> of the manual of_reserved_mem_device_init_by_idx()/
+> of_reserved_mem_device_release() pair, letting the device resource
+> manager handle cleanup automatically.
 > 
-> > Make cpu_to_coregroup_id() available outside PPC_SPLPAR so it can be
-> > used by platforms that do not rely on the SPLPAR-specific VPHN path.
-> >
-> > Keep the existing fallback behavior by returning the core ID when
-> > coregroup information is unavailable.
-> >
+> Signed-off-by: Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>
+
+Acked-by: Adrian Hunter <adrian.hunter@intel.com>
+
+> ---
+>  drivers/mmc/host/sdhci-of-bst.c | 7 ++-----
+>  1 file changed, 2 insertions(+), 5 deletions(-)
 > 
-> Looks like this mainly brings the cpu_to_coregroup_id() outside of
-> CONFIG_PPC_SPLPAR gate. 
-> 
+> diff --git a/drivers/mmc/host/sdhci-of-bst.c b/drivers/mmc/host/sdhci-of-bst.c
+> index f8d3df715e1a..304554ced690 100644
+> --- a/drivers/mmc/host/sdhci-of-bst.c
+> +++ b/drivers/mmc/host/sdhci-of-bst.c
+> @@ -405,7 +405,6 @@ static void sdhci_bst_free_bounce_buffer(struct sdhci_host *host)
+>  				  host->bounce_buffer, host->bounce_addr);
+>  		host->bounce_buffer = NULL;
+>  	}
+> -	of_reserved_mem_device_release(mmc_dev(host->mmc));
+>  }
+>  
+>  static int sdhci_bst_alloc_bounce_buffer(struct sdhci_host *host)
+> @@ -417,7 +416,7 @@ static int sdhci_bst_alloc_bounce_buffer(struct sdhci_host *host)
+>  	/* Fixed SRAM bounce size to 32KB: verified config under 32-bit DMA addressing limit */
+>  	bounce_size = SZ_32K;
+>  
+> -	ret = of_reserved_mem_device_init_by_idx(mmc_dev(mmc), mmc_dev(mmc)->of_node, 0);
+> +	ret = devm_of_reserved_mem_device_init_by_idx(mmc_dev(mmc), mmc_dev(mmc)->of_node, 0);
+>  	if (ret) {
+>  		dev_err(mmc_dev(mmc), "Failed to initialize reserved memory\n");
+>  		return ret;
+> @@ -425,10 +424,8 @@ static int sdhci_bst_alloc_bounce_buffer(struct sdhci_host *host)
+>  
+>  	host->bounce_buffer = dma_alloc_coherent(mmc_dev(mmc), bounce_size,
+>  						 &host->bounce_addr, GFP_KERNEL);
+> -	if (!host->bounce_buffer) {
+> -		of_reserved_mem_device_release(mmc_dev(mmc));
+> +	if (!host->bounce_buffer)
+>  		return -ENOMEM;
+> -	}
+>  
+>  	host->bounce_buffer_size = bounce_size;
+>  
 
-Yes, thats the intent of the patch
-
-
-> > Signed-off-by: Srikar Dronamraju <srikar@linux.ibm.com>
-> > ---
-> > Changelog from v1:
-> > - Handle comments from Christophe Leroy; Remove extern key word in
-> >   declaration
-> >
-> >  arch/powerpc/include/asm/topology.h | 15 +++++++--------
-> >  arch/powerpc/mm/numa.c              | 22 ++++++++++++++++------
-> >  2 files changed, 23 insertions(+), 14 deletions(-)
-> >
-> > diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/asm/topology.h
-> > index 66ed5fe1b718..385715f1ad56 100644
-> > --- a/arch/powerpc/include/asm/topology.h
-> > +++ b/arch/powerpc/include/asm/topology.h
-> > @@ -71,6 +71,7 @@ extern void map_cpu_to_node(int cpu, int node);
-> >  extern void unmap_cpu_from_node(unsigned long cpu);
-> >  #endif /* CONFIG_HOTPLUG_CPU */
-> >  
-> > +int cpu_to_coregroup_id(int cpu);
-> >  #else
-> >  
-> >  static inline int early_cpu_to_node(int cpu) { return 0; }
-> > @@ -107,14 +108,6 @@ static inline void map_cpu_to_node(int cpu, int node) {}
-> >  static inline void unmap_cpu_from_node(unsigned long cpu) {}
-> >  #endif /* CONFIG_HOTPLUG_CPU */
-> >  #endif /* CONFIG_SMP */
-> > -
-> > -#endif /* CONFIG_NUMA */
-> > -
-> > -#if defined(CONFIG_NUMA) && defined(CONFIG_PPC_SPLPAR)
-> > -void find_and_update_cpu_nid(int cpu);
-> > -extern int cpu_to_coregroup_id(int cpu);
-> > -#else
-> > -static inline void find_and_update_cpu_nid(int cpu) {}
-> >  static inline int cpu_to_coregroup_id(int cpu)
-> >  {
-> >  #ifdef CONFIG_SMP
-> > @@ -124,6 +117,12 @@ static inline int cpu_to_coregroup_id(int cpu)
-> >  #endif
-> >  }
-> >  
-> > +#endif /* CONFIG_NUMA */
-> > +
-> > +#if defined(CONFIG_NUMA) && defined(CONFIG_PPC_SPLPAR)
-> > +void find_and_update_cpu_nid(int cpu);
-> > +#else
-> > +static inline void find_and_update_cpu_nid(int cpu) {}
-> >  #endif /* CONFIG_NUMA && CONFIG_PPC_SPLPAR */
-> >  
-> >  #include <asm-generic/topology.h>
-> > diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-> > index c44a80d8fc11..9aa71eb7e96b 100644
-> > --- a/arch/powerpc/mm/numa.c
-> > +++ b/arch/powerpc/mm/numa.c
-> > @@ -1428,6 +1428,21 @@ void find_and_update_cpu_nid(int cpu)
-> >  	pr_debug("%s:%d cpu %d nid %d\n", __func__, __LINE__, cpu, new_nid);
-> >  }
-> >  
-> > +static int topology_update_init(void)
-> > +{
-> > +	topology_inited = 1;
-> > +	return 0;
-> > +}
-> > +device_initcall(topology_update_init);
-> > +
-> > +#else
-> > +static long vphn_get_associativity(unsigned long cpu,
-> > +					__be32 *associativity)
-> > +{
-> > +	return -1;
-> > +}
-> > +#endif /* CONFIG_PPC_SPLPAR */
-> > +
-> >  int cpu_to_coregroup_id(int cpu)
-> >  {
-> >  	__be32 associativity[VPHN_ASSOC_BUFSIZE] = {0};
-> > @@ -1453,10 +1468,5 @@ int cpu_to_coregroup_id(int cpu)
-> >  	return cpu_to_core_id(cpu);
-> >  }
-> >  
-> > -static int topology_update_init(void)
-> > -{
-> > -	topology_inited = 1;
-> > -	return 0;
-> > +	return coregroup_id;
-> >  }
-> 
-> These above two lines seems to be out of any function scope. So applying
-> only patch-1 & patch-2 will give a compile error. This needs fixing.
-> 
-
-Yes, will fix this
-
-> -ritesh
-> 
-> > -device_initcall(topology_update_init);
-> > -#endif /* CONFIG_PPC_SPLPAR */
-> > -- 
-> > 2.43.0
-
--- 
-Thanks and Regards
-Srikar Dronamraju
 
