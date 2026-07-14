@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-24219-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24220-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 23865C43458
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2026 13:08:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DE092C43458
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2026 13:15:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h003S4zY8z2yMn;
-	Tue, 14 Jul 2026 23:08:04 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784034484;
-	cv=none; b=a+W5S+EJ9bJ17M3buwWvbT4eQeL3RGwyVw9PgNmFdwwq4j8uON/7vWkNECGe6kei+1wNhP+njR9olfV2jFZKJyIp2+2Z/Wp9m1lXE9PQB4L3lXDdZFY3IGAVUYMM2/NKni7Mr+/7PVbv5e2x2u4KlRqSpo6dQMADtW9641nf+9FwYUxs+r8qpMkwI1t5hBsHauK1yLBjgdb+N/hmBhv1ahCrsp5E06ZYr4jXO9PakRIuIHm85YcuZZYWcZyZEAAp1iBHb202DqfGyZv8T7U/C3lqKuzlBEv5D0XQ5oZe1gDR0AzERkfbBeIpQxR4A/jE+Sdu6juq2dYFQaDVQWfLVA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h00Ch2NLDz2yRl;
+	Tue, 14 Jul 2026 23:15:12 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784034912;
+	cv=none; b=POMU5VLacrpDGDI4sikvku9nr0cREJIdffX10ZrGrSphj9pGxYEytwLOZXegpy+cn1BPWtmu+nVP6fTqQhWW8eIehVlI9UbUcVYw7pLQItYxP4uGoCvlceJflb6/A1r4ubod34eYUM5QKzgXhloGqKxrMZOAdQfyJCIgG/wO/W8aT0YQiU8Q0Tlw7hPs5clTp1ByPWJL7N53C9CrPmpvQmbj+toSesqxGfe4oFhNjKzoCufAXBwwZ6WLhRB22Gs/iqpcmyuSOGx1281HOQjIzQheY4CrQbHHAOa+fH3N7qKp7XxKjDfepY8rhnd6Y1uMeHGMFBgeWS6rrvOvWDLZJg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784034484; c=relaxed/relaxed;
-	bh=OR+TALXUbrDqxIOAyEwXOdpwUaeeSd6LxkFLp/LQ0xY=;
+	t=1784034912; c=relaxed/relaxed;
+	bh=NBo8CYi3Y72SAdTjIf2wrjxpjS/L+HX8XmDUHz8O1ZI=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=BZ2o9Grs/5d2OPtsKQ4YMY1zd9PsNfJRDD5GCKOVqtZLBuxDCatTCnM5N45DP+mtj7Pr7TOhXrvAVF8z+P4xS0/Lry5BSKxsPmj+dpL7WCvFpfk2SHJIE7L/PVfMRl0atKV0C/UGcpUL5o58tRk2FPO7oipDlUuUn1UKd74Wb0tcFdt9Guuriragk2xI3kTT+3roaPt5Qiqy8dy0F8q2KtK7rzViwbCy++vKcLHCduCLE1j7zbJ0tFElKuGKkkS+aV1W5ASLrPMoGf/Cu1sorSfptEJrZL9ZPfYfUBNJGVQDxILmJ2XfK1vjUtXei6Pawb3nThbCrrYzE4vV/Rm20Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=RfSX1rbs; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=horms@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=WUCKLgvpIN9deyzTQCC8uS58Ug4EDof6CleaW9Le/D5m8XDRw1sdcjEDHELbIakBVASZf5C92u+Ay9FUsLoeS6x0C0gy04KkrRuSSj8a4f7Q05GqD/nP+kp/znqZz3piI9oZjYD+1gf226XH9Utn8FzGVukK/WH0FrU1AgOmnXrzwHRBtF12aXCjwxwuf0GVJ9iVNX2sdFppfsOnMxMQ6SQfs742eU7oAyaC2rIvIaYIdOOf7wJwhVFDaRk2zMYG/nOitf+AonTDzSOYVpoHWYjC+JMTtHXcWQ4eteTh3T32KrAfSTUHrNRn+HHhCcktl+eDBHMeijDsw/qzlQi/TA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ITK9trsY; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=horms@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=RfSX1rbs;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ITK9trsY;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=horms@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=horms@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h003R5n1hz2yH5
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2026 23:08:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h00Cg11hTz2xjN
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2026 23:15:11 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 2C41440986;
-	Tue, 14 Jul 2026 13:08:02 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C16021F000E9;
-	Tue, 14 Jul 2026 13:07:59 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id D016640A89;
+	Tue, 14 Jul 2026 13:15:08 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6FBC11F000E9;
+	Tue, 14 Jul 2026 13:15:06 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1784034482;
-	bh=OR+TALXUbrDqxIOAyEwXOdpwUaeeSd6LxkFLp/LQ0xY=;
+	s=k20260515; t=1784034908;
+	bh=NBo8CYi3Y72SAdTjIf2wrjxpjS/L+HX8XmDUHz8O1ZI=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=RfSX1rbszvo/lzps5iz4Gm8FU0W6pSskBwPU8lPBHXly0vlOL/70m/UOWKYGzhlrr
-	 2/EZo2jDlOpmSwU6j/Hv2vHvmIctbhJ/5HwmRGTW1NtkFkXyylt7Gjl4DNfmsv59g9
-	 8muh0afsUEHpFHcqptKt3spGlSQ4mcFLjV9VwEQjp1ZrOINtMREMYwU06DL3Z5clK3
-	 P5vK5nVmH+BQu7wP58z1ldhse0HYqQ7Dv1pPgm8wQudq9jvZvyJAAEdjnjjjOYlohP
-	 WN9qhgJK8EoBMbtgRedIKczJd8fT3SPn8LOiLmqMJmmzHvjuYgDzX4a8cD+Z6bVvv7
-	 eBK+sB+LqioiA==
+	b=ITK9trsY7zH++52/IA5fwEbrrJfbKgz8On2K5PUCSWTX5ziv09P/H3w5XrK3V6cls
+	 giF2rwY1waEQSge3WHRJax2ZL/xmvMmQEqdMchuusSTVMxKYL/mMTk8VoWaWG4EGf8
+	 8BSGa7kWltC/1l8i3YXSjOunWry85KucAqOxhaUNHNf6ZoN9cyvP3kdkSaHBw0bLmc
+	 EoeZ2nXxQXGRs9iXfrjAasSdvD+3qePddubbOGBF/8bRc/fKqqSmW5QHej/iNSuy1F
+	 MJw03vsujVu188gHxa4FX4/yj9yD2xlBCkUC8EB+q+S/lQyJ6VkdSEvEq//Vb4eJWy
+	 l9JNG8IRfqmdA==
 From: Simon Horman <horms@kernel.org>
 To: mmc@linux.ibm.com
 Cc: Simon Horman <horms@kernel.org>,
@@ -58,12 +58,12 @@ Cc: Simon Horman <horms@kernel.org>,
 	maddy@linux.ibm.com,
 	mpe@ellerman.id.au,
 	davemarq@linux.ibm.com
-Subject: Re: [PATCH net-next v3 14/15] ibmveth: Wire ethtool set_channels to MQ RX queue resize
-Date: Tue, 14 Jul 2026 14:07:52 +0100
-Message-ID: <20260714130752.1844153-1-horms@kernel.org>
+Subject: Re: [PATCH net-next v3 15/15] ibmveth: Fix MQ RX poll and shutdown hangs after queue resize
+Date: Tue, 14 Jul 2026 14:10:54 +0100
+Message-ID: <20260714131053.1844276-2-horms@kernel.org>
 X-Mailer: git-send-email 2.54.0
-In-Reply-To: <20260706193603.8039-15-mmc@linux.ibm.com>
-References: <20260706193603.8039-15-mmc@linux.ibm.com>
+In-Reply-To: <20260706193603.8039-16-mmc@linux.ibm.com>
+References: <20260706193603.8039-16-mmc@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -83,115 +83,83 @@ This is an AI-generated review of your patch. The human sending this
 email has considered the AI review valid, or at least plausible.
 Full review at: https://sashiko.dev
 ---
-ibmveth: Wire ethtool set_channels to MQ RX queue resize
+ibmveth: Fix MQ RX poll and shutdown hangs after queue resize
 
-Expose incremental RX resize through ethtool channel control.
-get_channels() reports rx_count from adapter->num_rx_queues and max_rx
-as IBMVETH_MAX_RX_QUEUES when MQ firmware is enabled, else 1.
-set_channels() validates rx_count is within 1..IBMVETH_MAX_RX_QUEUES.
+This commit fixes polling hangs in the ibmveth driver after queue resize
+by skipping over bad correlators instead of retrying endlessly. It also
+ensures NAPI completes when the interface is down or being disabled.
 
 > diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
-> index ac4d89a66a8db..50a332ab83fd3 100644
+> index 50a332ab83fd3..eb84b4e5f69fd 100644
 > --- a/drivers/net/ethernet/ibm/ibmveth.c
 > +++ b/drivers/net/ethernet/ibm/ibmveth.c
-> @@ -2534,19 +2534,69 @@ static int ibmveth_set_channels(struct net_device *netdev,
->  				struct ethtool_channels *channels)
->  {
->  	struct ibmveth_adapter *adapter = netdev_priv(netdev);
-[ ... ]
-> -	if (!(netdev->flags & IFF_UP))
-> +	if (!(netdev->flags & IFF_UP)) {
-> +		if (goal_rx > 1 && !adapter->multi_queue) {
-[ ... ]
-> +		/* Stash desired RX count; open() publishes it via
-> +		 * netif_set_real_num_rx_queues() after queue registration.
-> +		 */
-> +		if (goal_rx != adapter->num_rx_queues)
-> +			adapter->num_rx_queues = goal_rx;
-> +
->  		return netif_set_real_num_tx_queues(netdev, goal);
 
-[Severity: Medium]
-If netif_set_real_num_tx_queues() fails and returns an error, the TX
-configuration command will fail, but the RX queue count has already been
-permanently modified in adapter->num_rx_queues. Will this leave the device in
-an inconsistent state where the new RX count is applied on the next open
-despite the command failing?
+[ ... ]
 
+> @@ -2959,8 +2978,23 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
+>  			__sum16 iph_check = 0;
+>  
+>  			skb = ibmveth_rxq_get_buffer(adapter, queue_index);
+> -			if (unlikely(!skb))
+> -				break;
+> +			if (unlikely(!skb)) {
+> +				if (net_ratelimit())
+> +					netdev_err(netdev,
+
+[Severity: High]
+This isn't a bug introduced by this patch, but can the unvalidated packet
+lengths and offsets from hardware descriptors trigger an skb_over_panic()
+here?
+
+Further down in ibmveth_poll(), the driver reads length and offset directly
+from the hardware receive descriptor and passes them to skb_reserve() and
+skb_put() on the reused SKB:
+
+    int length = ibmveth_rxq_frame_length(adapter, queue_index);
+    int offset = ibmveth_rxq_frame_offset(adapter, queue_index);
+    ...
+    } else {
+        rc = ibmveth_rxq_harvest_buffer(adapter, queue_index, false);
+        if (unlikely(rc))
+            break;
+        skb_reserve(skb, offset);
+    }
+
+    skb_put(skb, length);
+
+If a faulty hypervisor provides an abnormally large length or offset,
+skb_put() will extend the tail past the end of the buffer, which triggers an
+skb_over_panic() and causes a crash.
+
+Should the driver validate that offset + length is within the known buffer
+size before modifying the boundaries?
+
+[ ... ]
+
+> @@ -3034,8 +3068,11 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
+>  
+>  	ibmveth_replenish_task(adapter, queue_index);
+>  
+> -	if (frames_processed == budget)
+> +	if (frames_processed == budget) {
+> +		if (!netif_running(netdev) || napi_disable_pending(napi))
+> +			napi_complete_done(napi, frames_processed);
+>  		goto out;
 > +	}
-[ ... ]
-> +	if (goal_rx != old_rx) {
-> +		rc = ibmveth_resize_rx_queues_incremental(adapter, goal_rx,
-> +							  rxq_entries);
 
 [Severity: High]
-Does this new ethtool scale-down path expose an interrupt storm?
+Does calling napi_complete_done() here conflict with the NAPI core contract?
 
-Looking at ibmveth_resize_rx_queues_incremental(), when scaling down queues it
-disables NAPI before disabling the hardware interrupt:
+If the polling loop exhausts its budget (frames_processed == budget), returning 
+the full budget after calling napi_complete_done() might cause issues with the 
+NAPI state machine. The NAPI core (__napi_poll) will operate on the instance 
+assuming it still holds the NAPIF_STATE_SCHED bit. 
 
-drivers/net/ethernet/ibm/ibmveth.c:ibmveth_resize_rx_queues_incremental() {
-    ...
-		for (i = new_count; i < old_count; i++)
-			napi_disable(&adapter->napi[i]);
+If napi_disable_pending() is true, the core calls napi_complete(), which will 
+hit a WARN_ON_ONCE. 
 
-		for (i = new_count; i < old_count; i++)
-			ibmveth_drain_rx_queue(adapter, i);
-
-		synchronize_net();
-    ...
-		/* Disable hypervisor interrupts and wait for handlers to complete
-		 * before updating num_rx_queues.
-		 */
-		for (i = new_count; i < old_count; i++) {
-			ibmveth_disable_irq(adapter, i);
-    ...
-}
-
-If the hypervisor delivers a packet during this window, ibmveth_interrupt()
-will execute. Since NAPI is disabled, napi_schedule_prep() fails, causing the
-handler to return IRQ_HANDLED without disabling the hardware interrupt. Will
-this leave the virtual interrupt asserted and force an infinite interrupt loop?
-
-> +		if (rc) {
-> +			netdev_err(netdev, "Failed to resize RX queues: %d\n", rc);
-> +			return rc;
-> +		}
-> +	}
->  
->  	/* We have IBMVETH_MAX_QUEUES netdev_queue's allocated
->  	 * but we may need to alloc/free the ltb's.
->  	 */
-
-[Severity: High]
-This is a pre-existing issue, but does this function use an uninitialized
-variable in the error path?
-
-When decreasing the number of TX queues (goal < old), the allocation loop for
-(i = old; i < goal; i++) is skipped, leaving 'i' uninitialized. If
-netif_set_real_num_tx_queues() then fails, the error path assigns old = i;. 
-
-The cleanup loop then uses this garbage value:
-	for (i = old; i > goal; i--) {
-		if (adapter->tx_ltb_ptr[i - 1])
-
-Will this access adapter->tx_ltb_ptr out of bounds and pass arbitrary pointers
-to ibmveth_free_tx_ltb()?
-
-> @@ -2580,7 +2630,7 @@ static int ibmveth_set_channels(struct net_device *netdev,
->  
->  	netif_tx_wake_all_queues(netdev);
->  
-> -	return rc;
-> +	return 0;
-
-[Severity: High]
-Does this unconditional return of 0 mask TX queue configuration failures?
-
-If applying the new TX queue count via netif_set_real_num_tx_queues() fails,
-the code handles it locally, but the function exits with 0 regardless. Will
-this mislead userspace into believing the TX channel count was successfully
-modified?
-
->  }
+If napi_disable_pending() is false but !netif_running() is true, the core will
+add the NAPI instance back to the poll_list. Since the driver cleared 
+NAPIF_STATE_SCHED, a subsequent interrupt can trigger another napi_schedule(), 
+causing a double list_add_tail() and potentially leading to list corruption.
 
