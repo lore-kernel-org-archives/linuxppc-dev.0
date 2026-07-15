@@ -1,74 +1,72 @@
-Return-Path: <linuxppc-dev+bounces-24303-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24304-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E65CEC44501
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2026 21:27:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9FAFCC4450A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2026 21:28:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h0q5g51jWz2yl0;
-	Thu, 16 Jul 2026 07:27:51 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.15
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784150871;
-	cv=none; b=NmFOYQHe/I06GSkVPT7oIRCrF/dXfno4NtQM5rXZiSkdJ76Xss4PkrNYLkJNljLkUF/CJN6peUWFEZcMMBeyGbPgwJEQ+Evof4kAr4mgkP6p+4t/tIwWyR0FqYo5jdMYx2LzS8+g6/uu+aoX47IDVueKlUsvqdvB16qm9MXAgNu0aHouM5mh90uZOPftHCZei8y3Rb0oyhKgsZOi5vjn1FSeyP71xZVNIdgVSedSXGGePz5xHZwaUfgfNf/77pUyI1icvXcmOFNBYglCid4A8ZRKP5rPIRrslA94kXe5SVs4uP3Kq087wAixvVBJ0PY6hMuEu94n8jTxQ8IokQHUNw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h0q5r73Ysz309r;
+	Thu, 16 Jul 2026 07:28:00 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.15
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784150880;
+	cv=none; b=VuBCskN6N9zTdXb+YC3tlgGmPE7sp1LcL0XvPBs3YHVsrEOrnjinZktBWaHEib0yZBdx7YSPqm7sp+JgdOLx0F4qeB+RBI8LfuApp/gxwp2OCEHxoqZDSEuRO81B2IXe5VqVT7eqI/Qu3IQY7W2rMXrhp9M7ANn05OpayE1LlX5mwKpAP7R7+0kn4z3CSadog+R4SwK8Xk+UpGRQ5uHG9Mm/x6LSYxeTtfLZXIOYgLv8Uhpb8D+5dl1VdHvC+RNmT0VurrINMKzAMe2gqWRSiPDZJRF1/xT0ayZmF9VHCZxqed6ycFtTInA1AOIDpg5mSb0nxlVm72YUOTDM8Yz2hA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784150871; c=relaxed/relaxed;
-	bh=GTlIlgSZPByv4eAEE2x71p1IKay+EOZkljJXLymjOJM=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition; b=OeZ42IGQb4m+ydxs1MU9+wR0PKB+Y0yRxwAexAucVkQoQBEl33+sAySPHld6RjgOzegNoW9yp9axne+LNTFm6TA4AjDi5tKwZB3to4zS3LBMDWjjxExp/7P5hd9dkahm87GXVA6PjBYP5HLWwFjL9LWw0ka14DKCShMb0K47yZlsVo900ct5yaAn+N6mHxTMNA+uUU8dyOpnPigdTs4JiXiaRy2DUMmlZDgNa6tV0tdNsbOIYrxN6pl+E+zzKtPN/g91ZW/DsmlQC7xJKSL3yucod5qWi8kHRlvk+4KN2j6bPs+mpe60VhJDwDLZ7b942L1EwqTE3UIaTi2z2eNQOA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=CVM/GD97; dkim-atps=neutral; spf=pass (client-ip=198.175.65.15; helo=mgamail.intel.com; envelope-from=pawan.kumar.gupta@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+	t=1784150880; c=relaxed/relaxed;
+	bh=Dl8JEahk0X2JqH4h8TRCGWw2TeAq1apdhc9MFdlM7vI=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=QvlG4Nn8gz40Vs1PaltKQ5kocPxewMHawC8eSbD0ubmHfWwxIPPeTM1w6EuqvZALDSdB2tjBqQLsO+K4Mq/XX9Y+lbXRNGCVAU+ZfDObH6n3VShZOZXGJTC44v6tCi50l0dbXi+9al+mJaKyO6dg3hvjgiNbja39HPjmmF83p6r5u+PIHu8V2vZ0QxETQs8X1C8abd4LHpGVGZt8hBfjwnYmUSvQBBzBHse8S9XNKKp3tubSYFTIuqKCApIjg6Gsi9/aDmK0y3fDHAs83A9aBEaYpO3R3uz/sXU1fY5CZDBc1L9JSKjnfSoyklcrovEnu/SrPkw0dHy7iX8tfkuf2g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=VpBkD2C2; dkim-atps=neutral; spf=pass (client-ip=192.198.163.15; helo=mgamail.intel.com; envelope-from=pawan.kumar.gupta@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=CVM/GD97;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=VpBkD2C2;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.15; helo=mgamail.intel.com; envelope-from=pawan.kumar.gupta@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.15; helo=mgamail.intel.com; envelope-from=pawan.kumar.gupta@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.15])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h0q5c0FD8z2yb9
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2026 07:27:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h0q5q5Gwvz2yb9
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2026 07:27:59 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1784150868; x=1815686868;
-  h=date:from:to:cc:subject:message-id:mime-version;
-  bh=Zcl/hJP8vOoXfaWvVzA1OXL0SRddDjKbhCcj2uRFlLk=;
-  b=CVM/GD97LoVqyiQc0XvtyxIQCYJ1643cWYlAoOHA68WDWVMSYXSkEIx+
-   VvRo2jB1vX+Jpcx/lgjvYPH4pBY/38eShxTMKa5NMUjJoYlL0ozkeucCe
-   SUDkAUBvdLJXZFPI/9YCE1e2giqjjxeiLM/f4RLkDEGIBhjsxE4QRaQY0
-   OXtnYLOZD8H2YS09TTC+TWQFBJUuU2xLtOaedAckBoEcjFKgw86c9G0Hh
-   ZhQfNIVmWbYmPtevKm3GspH1jHlymaOlkZnF6Ezh5qO99vk9sKSBEXlef
-   Z4ZQvEMl+DXe6shD31+An/oyPpJnp42Y8UQDRn1gP4E7Fz+7ztUnnGy+C
-   g==;
-X-CSE-ConnectionGUID: sKpaM8whTZKa87f7Oa1KLw==
-X-CSE-MsgGUID: CjWYHvjkToKI9yu1EcgOqA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11847"; a="88481982"
+  t=1784150880; x=1815686880;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=rDhOV47kGvstJrZnnghBwt7GAjyF50DeKIV2yQhoOjI=;
+  b=VpBkD2C2Zm2nBHO2p3zqcWyfJ9djMYdJCeS/ESAKkef4nMf+w7YtRjxD
+   t3qV3fqC4B/WgP7MRHCMN7mPstJ2YkXfGasPYOFIdzLlNqIiYmrZZmkK9
+   3nuICUimL1YYZpxnhI4lAjWBEr1unClWX59JhWc4ehTcQoyFfvNfe/gTe
+   Nop3+Xdkx6mgnhL+N82YNgZ1pWptXzPo/VCLFr6w6xF2jcC0SbES/duYU
+   NKBgwnK0i3DZ7Ai29qiz/XhknLA2gE7Q/5DzByoYEXlEIdxQ6FvkM65aU
+   6NyEB9j2ZtIqQhNk0xf+WITvBOyvdYTg3MAEdI7RJm/o2bPbG9MnBxLj7
+   w==;
+X-CSE-ConnectionGUID: 2RGT8u+BQgCzpmHvhR2GfA==
+X-CSE-MsgGUID: 5ZNR4DZVTgCu/9x9WY7SNQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11847"; a="84919101"
 X-IronPort-AV: E=Sophos;i="6.25,166,1779174000"; 
-   d="scan'208";a="88481982"
-Received: from orviesa002.jf.intel.com ([10.64.159.142])
-  by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Jul 2026 14:27:39 -0700
-X-CSE-ConnectionGUID: r4pyfzu7Q7+IwAqhuwZT7A==
-X-CSE-MsgGUID: c+t89wMuTT2M218KSPaJIw==
+   d="scan'208";a="84919101"
+Received: from orviesa007.jf.intel.com ([10.64.159.147])
+  by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Jul 2026 14:27:55 -0700
+X-CSE-ConnectionGUID: IVdSJfmRSAats+wpBhywKw==
+X-CSE-MsgGUID: Js/lpuGgQ6Koj0tacy4uQg==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.25,166,1779174000"; 
-   d="scan'208";a="286384073"
+   d="scan'208";a="256356357"
 Received: from guptapa-desk.jf.intel.com (HELO desk) ([10.165.239.46])
-  by orviesa002-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Jul 2026 14:27:40 -0700
-Date: Wed, 15 Jul 2026 14:27:39 -0700
+  by orviesa007-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Jul 2026 14:27:54 -0700
+Date: Wed, 15 Jul 2026 14:27:54 -0700
 From: Pawan Gupta <pawan.kumar.gupta@linux.intel.com>
 To: stable@vger.kernel.org, 
 	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sasha Levin <sashal@kernel.org>
 Cc: bpf@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
 	loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, 
 	x86@kernel.org, Alexei Starovoitov <ast@kernel.org>, 
-	Daniel Borkmann <daniel@iogearbox.net>, Dave Hansen <dave.hansen@linux.intel.com>
-Subject: [PATCH 6.12.y 0/6] cBPF JIT spray hardening
-Message-ID: <20260715-cbpf-jit-spray-hardening-6-12-y-v1-0-d8585a9aed80@linux.intel.com>
-X-B4-Tracking: v=1; b=H4sIAPf6V2oC/yWNsQ6CMBRFf4W82UdoIwXciIujg5txKOUBj6E2L
- Robwr9bdDw3N+esEMgzBThlK3h6c+CnTSAOGZhJ25GQ+8QgC6mKShzRdG7AmRcMzuuIk/Y9WbY
- jKhQSI6qmFKYuha6aGpLFeRr48yvc4drezpd9VbmQeYTH/xBe3Uxm2TuwbV9vroONlAAAAA==
-X-Change-ID: 20260714-cbpf-jit-spray-hardening-6-12-y-6951c851a798
+	Daniel Borkmann <daniel@iogearbox.net>
+Subject: [PATCH 6.12.y 1/6] bpf: Support for hardening against JIT spraying
+Message-ID: <20260715-cbpf-jit-spray-hardening-6-12-y-v1-1-d8585a9aed80@linux.intel.com>
 X-Mailer: b4 0.16-dev
+References: <20260715-cbpf-jit-spray-hardening-6-12-y-v1-0-d8585a9aed80@linux.intel.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -84,58 +82,120 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20260715-cbpf-jit-spray-hardening-6-12-y-v1-0-d8585a9aed80@linux.intel.com>
 
-Hi,
+commit 96cce16e26dd02a8678f1e87f88a4b5cdb63b995 upstream.
 
-These backports harden BPF JIT against spectre-v2 class of attacks. Without
-a predictor flush, execution of new BPF program may use stale prediction
-left behind by the freed one.
+The BPF JIT allocator packs many small programs into larger executable
+allocations and reuses space within those allocations as programs are
+loaded and freed. When fresh code is written into space that a previous
+program occupied, an indirect jump into the new program can reuse a branch
+prediction left behind by the old one.
 
-To avoid this, issue an IBPB flush on all CPUs on JIT program allocation.
-The flush is conditional to spectre-v2 mitigation applied.
+Flush the indirect branch predictors before reusing JIT memory so that
+indirect jumps into a newly written program don't reuse predictions from an
+old program that occupied the same space.
 
-Patch 1-2: Adds the predictor flush hook and enables it on x86 via IBPB.
+Introduce bpf_arch_pred_flush_enabled static key and bpf_arch_pred_flush
+static call for flushing the branch predictors on JIT memory reuse.
+Architectures that need a flush, can update it to a predictor flush
+function. By default, its a NOP and does not emit any CALL.
 
-	  bpf: Support for hardening against JIT spraying
-	  x86/bugs: Enable IBPB flush on BPF JIT allocation
+Allocations larger than a pack are not covered by this flush. That is safe
+because cBPF programs (the unprivileged attack surface) are bounded well
+below a pack size. Issue a warning if this assumption is ever violated
+while the flush is active.
 
-Patch 3-6: Narrow the flush to only unprivileged JIT allocations
-	   to avoid redundant flushes. Also adds pack-selection changes
-	   that minimizes flushes.
-
-	  bpf: Restrict JIT predictor flush to cBPF
-	  bpf: Skip redundant IBPB in pack allocator
-	  bpf: Prefer packs that won't trigger an IBPB flush on allocation
-	  bpf: Prefer dirty packs for eBPF allocations
-
-Conflicts resolved in patch 2 and 3.
-
+Signed-off-by: Pawan Gupta <pawan.kumar.gupta@linux.intel.com>
+Acked-by: Daniel Borkmann <daniel@iogearbox.net>
+Signed-off-by: Daniel Borkmann <daniel@iogearbox.net>
 ---
-Pawan Gupta (6):
-      bpf: Support for hardening against JIT spraying
-      x86/bugs: Enable IBPB flush on BPF JIT allocation
-      bpf: Restrict JIT predictor flush to cBPF
-      bpf: Skip redundant IBPB in pack allocator
-      bpf: Prefer packs that won't trigger an IBPB flush on allocation
-      bpf: Prefer dirty packs for eBPF allocations
+ include/linux/filter.h | 10 ++++++++++
+ kernel/bpf/core.c      | 19 +++++++++++++++++++
+ 2 files changed, 29 insertions(+)
 
- arch/arm64/net/bpf_jit_comp.c        |  4 +--
- arch/powerpc/net/bpf_jit_comp.c      |  2 +-
- arch/riscv/net/bpf_jit_comp64.c      |  2 +-
- arch/riscv/net/bpf_jit_core.c        |  3 +-
- arch/x86/include/asm/nospec-branch.h |  4 +++
- arch/x86/kernel/cpu/bugs.c           | 50 +++++++++++++++++++++++---
- arch/x86/net/bpf_jit_comp.c          |  5 +--
- include/linux/filter.h               | 15 ++++++--
- kernel/bpf/core.c                    | 68 ++++++++++++++++++++++++++++++++----
- kernel/bpf/dispatcher.c              |  2 +-
- 10 files changed, 134 insertions(+), 21 deletions(-)
----
-base-commit: 296aabce459470a4c1b68ffd0c0c0920e563aaad
-change-id: 20260714-cbpf-jit-spray-hardening-6-12-y-6951c851a798
+diff --git a/include/linux/filter.h b/include/linux/filter.h
+index a91f2babf425..8046cd2a39c6 100644
+--- a/include/linux/filter.h
++++ b/include/linux/filter.h
+@@ -22,6 +22,7 @@
+ #include <linux/vmalloc.h>
+ #include <linux/sockptr.h>
+ #include <crypto/sha1.h>
++#include <linux/static_call.h>
+ #include <linux/u64_stats_sync.h>
+ 
+ #include <net/sch_generic.h>
+@@ -1238,6 +1239,15 @@ extern long bpf_jit_limit_max;
+ 
+ typedef void (*bpf_jit_fill_hole_t)(void *area, unsigned int size);
+ 
++/*
++ * Flush the indirect branch predictors before reusing JIT memory, so that
++ * indirect jumps into a newly written program don't reuse predictions left
++ * behind by an old program that occupied the same space.
++ */
++void bpf_arch_pred_flush(void);
++DECLARE_STATIC_CALL(bpf_arch_pred_flush, bpf_arch_pred_flush);
++DECLARE_STATIC_KEY_FALSE(bpf_pred_flush_enabled);
++
+ void bpf_jit_fill_hole_with_zero(void *area, unsigned int size);
+ 
+ struct bpf_binary_header *
+diff --git a/kernel/bpf/core.c b/kernel/bpf/core.c
+index 517710c89fa5..5f676320c53b 100644
+--- a/kernel/bpf/core.c
++++ b/kernel/bpf/core.c
+@@ -38,6 +38,7 @@
+ #include <linux/bpf_mem_alloc.h>
+ #include <linux/memcontrol.h>
+ #include <linux/execmem.h>
++#include <linux/static_call.h>
+ 
+ #include <asm/barrier.h>
+ #include <linux/unaligned.h>
+@@ -892,6 +893,15 @@ void bpf_jit_fill_hole_with_zero(void *area, unsigned int size)
+ 	memset(area, 0, size);
+ }
+ 
++DEFINE_STATIC_CALL_NULL(bpf_arch_pred_flush, bpf_arch_pred_flush);
++
++/*
++ * Enabled once bpf_arch_pred_flush points at a real flush routine. Lets the
++ * pack allocator test "is a predictor flush wired up at all" with a cheap
++ * static branch instead of repeatedly querying the static call target.
++ */
++DEFINE_STATIC_KEY_FALSE(bpf_pred_flush_enabled);
++
+ #define BPF_PROG_SIZE_TO_NBITS(size)	(round_up(size, BPF_PROG_CHUNK_SIZE) / BPF_PROG_CHUNK_SIZE)
+ 
+ static DEFINE_MUTEX(pack_mutex);
+@@ -951,6 +961,14 @@ void *bpf_prog_pack_alloc(u32 size, bpf_jit_fill_hole_t bpf_fill_ill_insns)
+ 
+ 	mutex_lock(&pack_mutex);
+ 	if (size > BPF_PROG_PACK_SIZE) {
++		/*
++		 * Allocations larger than a pack get their own pages, and
++		 * predictors are not flushed for such allocation. This is only
++		 * safe because cBPF programs (the unprivileged attack surface)
++		 * are bounded well below a pack size.
++		 */
++		if (static_branch_unlikely(&bpf_pred_flush_enabled))
++			pr_warn_once("BPF: Predictors not flushed for allocations greater than BPF_PROG_PACK_SIZE\n");
+ 		size = round_up(size, PAGE_SIZE);
+ 		ptr = bpf_jit_alloc_exec(size);
+ 		if (ptr) {
+@@ -981,6 +999,7 @@ void *bpf_prog_pack_alloc(u32 size, bpf_jit_fill_hole_t bpf_fill_ill_insns)
+ 	pos = 0;
+ 
+ found_free_area:
++	static_call_cond(bpf_arch_pred_flush)();
+ 	bitmap_set(pack->bitmap, pos, nbits);
+ 	ptr = (void *)(pack->ptr) + (pos << BPF_PROG_CHUNK_SHIFT);
+ 
 
-Best regards,
---  
-Pawan
+-- 
+2.43.0
+
 
 
