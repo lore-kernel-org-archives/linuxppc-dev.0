@@ -1,48 +1,48 @@
-Return-Path: <linuxppc-dev+bounces-24276-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24277-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3D05FC4450B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2026 00:05:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 773A7C44507
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2026 00:05:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h0GfD407Mz303X;
-	Wed, 15 Jul 2026 10:05:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h0GfF3zh3z309r;
+	Wed, 15 Jul 2026 10:05:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:7c80:54:3::133"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784073940;
-	cv=none; b=Tasb7ileBtqxilh+Eu8GAFcdowYQ7uwmcIXoPOkNEZI7/DsmQkqH2daWqQ9u7tuamt9cWdn0N5n3g9tHfia3lCn7byb/p9A6nC7X7EZZFA680/ZTmmze3N90508pVqS2yasXcjkBoLj23ZRHomH9Z+ab234rApo39kV+C8kfFeP5MV/mX+Bn77BuXGa0QrcvTps+P/sGHflEh4pW8Ptt/C53O2aDX0PmtTWP/KoTR5/6xAHLuOnfCpxAGAJmQIIDu9o2SjoTjIo6s7YEwkIjTqt00kcgxuK5EJyMLfM4Ih8Div13Zjt5XFFiDNb+f6P6khdD0jIh0rVvw88U+8AOQQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784073941;
+	cv=none; b=AzEkeceIZmj1ByzzpJoNQT+oi/qJGCW6ZSE4qeS1VIv8fmF+MNcUuJqeatxNjskx72uAz7wa8qb2LaXFPH68H4FTXVXYgiKoXFrAHIam4sia691dnYmJr3ffJGEqy0XmgeZFSlkmKzkQ3j5lbadXiomouzdHtwT/54g/Gc6ejjmE6rgSUliEI69A8CgDuxKQOAxnRBkjCJ4HYrLFd014VLznJPvzWedMCfg31BFBB140AeeX+fm2QZTzUdhYoOhguOdpzwt0Joi46/pAvzMhWjmqa9KaREy3ALc7x0fDZz/qOIKkrksLfbEPqcP93Updlz9WiMPr5THv1ApJQ2wNLQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784073940; c=relaxed/relaxed;
-	bh=G+ICPr4j5N29bqgssjH6/kLVysBy2Z2WmiFI+/aQQHg=;
+	t=1784073941; c=relaxed/relaxed;
+	bh=whUJBq9j7Gjt4+AHK6WYV+GQWugxRvRw0PxjhsMjkDE=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=mIuTqUVrXRC1RKleA+F0y/oxwZPapLO+u8pCJ+TWpKYY6S/fBS1m4l5z8sJwiK23tOIeRWiSVUKY437nrKEjO/TViUxBRWGiSBVvUs7tul7EjQ0fImbD9OUV5neXrjDmWObP39gZzSDrNCSJnVGcJfrrWcMWxQNEoQHMteXRfZ11bU4RSG7kr/2YjMFFY7mObe3rVjdIDic42e5IBmNll94kE7d9+7D321GZxRKovpErZBEX5mVwztBRIpUVYZ8YQ7pkABvJBA1+t6FBaHAbnMHReyciNfwBLtEuj9U+vV6vSSp5gMbPwFdem4zlQRkjrywcNlUPC4x6ri3Kdz7mPw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=T0CUoKFP; dkim-atps=neutral; spf=pass (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=rdunlap@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
+	 MIME-Version; b=TKeiVQ7/7RZ82qZaiYeRGN0w8Bin9tJJddbtl7oBlQvHLn69J8Vi90g3a1sQxv6IKO0tlZaF/NQSJnDQ5dlXn5IS9Get/QrcklCNuRx5aaedimoaFxTFkoEbJPWevqyH/kgPSQj8et7itSeGjoNd+Mh6GqFiOmWapNtiRsCuhiycRKsLUnJ3Cb8RohB4Etq2TuAZUfkm0PCPVwte2rDXc7GHaVSI1bS3+bzFJW379OVs9kYkUPhtiiEhGs72gjyCPEBaV7vdt+O+1yZ9oqCSHnRMd/PkPpGlqURKwPRei6daYyP28r324VvG46gclCGuGwGpO+IfEKTbsd5VgKnf1g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=A8d0NQ+F; dkim-atps=neutral; spf=pass (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=rdunlap@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=T0CUoKFP;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=A8d0NQ+F;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=infradead.org (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=rdunlap@infradead.org; receiver=lists.ozlabs.org)
 Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h0GfB3JYMz2xLk
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h0GfB4XkDz2yfD
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2026 10:05:36 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
 	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender
 	:Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=G+ICPr4j5N29bqgssjH6/kLVysBy2Z2WmiFI+/aQQHg=; b=T0CUoKFPmf9OVYNj4ZoWHojS2u
-	z4Gwx70W/kY+Hr1XC3YRzifUDHCih/fhoTwNy6/TpckrZWQW2RMcSu4g9QYujWZY3czHi5SXLs2yv
-	dkL9nB2kEPr2UoFbLyL3tvpLIpCQbtuGJZuR85aCsKXNndfBGx0JMWBiMwHOLQs+kBrK8Hrr7i14c
-	EYKoT9Lg0uvo8pwqqL7c0IuyK2cIK6iHNWJdofGjhaDwo8h7QMTaLTy5qWxLe7lazjVkr4BqQV4lf
-	mApc2S+FMlWkVUmLma9nuRubnFTSz7/tOrHT7FYl1RjBM8yxAlxjITdrqwIl0vsAidsGp3HKL7v+W
-	IuU66hOA==;
+	bh=whUJBq9j7Gjt4+AHK6WYV+GQWugxRvRw0PxjhsMjkDE=; b=A8d0NQ+FTZXw7OoJA2+XIB1Hkn
+	+RlrilZKqSNHdalqtsNGkPjs9/c0Tm2w9bXHd2Q76r2Hk4zwFSuc7kw+LKLBgDcdy23yIjZP7GaB7
+	1LNE4RIiSdzU7psxeFqilDGB93VzJrYax6oEz7Eexo18fzv08lmcu+bgZV+XZXwftyLBT/5M8DmAn
+	YfpIS0+69viuum399syVOGg/adjeRcKnP+FlMGNdYPnol2DInd1FoZJNYR7V70cCcrkaAiqIjpKWS
+	3tp4EiKziVDcF7CC3LpIF5WzO6L3uyxBLnd+JLHyFwapMn5InV7T4OO+f3pSwqGD64XQBBg5P9V0z
+	5OEasVjw==;
 Received: from [50.53.43.113] (helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtpsa (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wjn7y-0000000DTcu-1XYG;
-	Wed, 15 Jul 2026 00:05:30 +0000
+	id 1wjn7w-0000000DTcu-2ZXa;
+	Wed, 15 Jul 2026 00:05:28 +0000
 From: Randy Dunlap <rdunlap@infradead.org>
 To: linux-sound@vger.kernel.org
 Cc: Randy Dunlap <rdunlap@infradead.org>,
@@ -62,9 +62,9 @@ Cc: Randy Dunlap <rdunlap@infradead.org>,
 	patches@opensource.cirrus.com,
 	Srinivas Kandagatla <srini@kernel.org>,
 	linux-arm-msm@vger.kernel.org
-Subject: [PATCH 04/14 v2] ASoC: fsl-dma: fix all kernel-doc warnings
-Date: Tue, 14 Jul 2026 17:05:15 -0700
-Message-ID: <20260715000525.739874-5-rdunlap@infradead.org>
+Subject: [PATCH 01/14 v2] ASoC: codecs: NeoFidelity: repair the kernel-doc format
+Date: Tue, 14 Jul 2026 17:05:12 -0700
+Message-ID: <20260715000525.739874-2-rdunlap@infradead.org>
 X-Mailer: git-send-email 2.55.0
 In-Reply-To: <20260715000525.739874-1-rdunlap@infradead.org>
 References: <20260715000525.739874-1-rdunlap@infradead.org>
@@ -83,12 +83,17 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Don't use "/**" for non-kernel-doc comments to avoid kernel-doc warnings:
+Don't use "/**" for a non-kernel-doc comment.
+Use kernel-doc notation to document the parameters and return value of
+ntpfw_load().
 
-Warning: ../sound/soc/fsl/fsl_dma.h:95 This comment starts with '/**', but isn't a kernel-doc comment.
- *  List Descriptor for extended chaining mode DMA operations.
-Warning: ../sound/soc/fsl/fsl_dma.h:110 This comment starts with '/**', but isn't a kernel-doc comment.
- *  Link Descriptor for basic and extended chaining mode DMA operations.
+Fixes these warnings:
+Warning: ../sound/soc/codecs/ntpfw.h:2 This comment starts with '/**', but isn't a kernel-doc comment.
+ * ntpfw.h - Firmware helper functions for Neofidelity codecs
+Warning: sound/soc/codecs/ntpfw.h:20 function parameter 'i2c' not described in 'ntpfw_load'
+Warning: sound/soc/codecs/ntpfw.h:20 function parameter 'name' not described in 'ntpfw_load'
+Warning: sound/soc/codecs/ntpfw.h:20 function parameter 'magic' not described in 'ntpfw_load'
+Warning: sound/soc/codecs/ntpfw.h:20 No description found for return value of 'ntpfw_load'
 
 Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
 ---
@@ -97,33 +102,33 @@ v2: no change
 Cc: Liam Girdwood <lgirdwood@gmail.com>
 Cc: Mark Brown <broonie@kernel.org>
 Cc: linux-sound@vger.kernel.org
-Cc: Shengjiu Wang <shengjiu.wang@gmail.com>
-Cc: Xiubo Li <Xiubo.Lee@gmail.com>
-Cc: Fabio Estevam <festevam@gmail.com>
-Cc: Nicolin Chen <nicoleotsuka@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org
 
- sound/soc/fsl/fsl_dma.h |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ sound/soc/codecs/ntpfw.h |   11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
 
---- linext-2026-0710.orig/sound/soc/fsl/fsl_dma.h
-+++ linext-2026-0710/sound/soc/fsl/fsl_dma.h
-@@ -92,7 +92,7 @@ static inline u32 CCSR_DMA_ECLNDAR_ADDR(
- #define CCSR_DMA_ATR_SNOOP      	0x00050000
- #define CCSR_DMA_ATR_ESAD_MASK  	0x0000000F
- 
+--- linext-2026-0710.orig/sound/soc/codecs/ntpfw.h
++++ linext-2026-0710/sound/soc/codecs/ntpfw.h
+@@ -1,5 +1,5 @@
+ /* SPDX-License-Identifier: GPL-2.0-only */
 -/**
 +/*
-  *  List Descriptor for extended chaining mode DMA operations.
+  * ntpfw.h - Firmware helper functions for Neofidelity codecs
   *
-  *  The CLSDAR register points to the first (in a linked-list) List
-@@ -107,7 +107,7 @@ struct fsl_dma_list_descriptor {
- 	u8 res[8];      	/* Reserved */
- } __attribute__ ((aligned(32), packed));
+  * Copyright (c) 2024, SaluteDevices. All Rights Reserved.
+@@ -13,10 +13,11 @@
+ /**
+  * ntpfw_load - load firmware to amplifier over i2c interface.
+  *
+- * @i2c		Pointer to amplifier's I2C client.
+- * @name	Firmware file name.
+- * @magic	Magic number to validate firmware.
+- * @return	0 or error code upon error.
++ * @i2c:	Pointer to amplifier's I2C client.
++ * @name:	Firmware file name.
++ * @magic:	Magic number to validate firmware.
++ *
++ * Returns:	0 or error code upon error.
+  */
+ int ntpfw_load(struct i2c_client *i2c, const char *name, const u32 magic);
  
--/**
-+/*
-  *  Link Descriptor for basic and extended chaining mode DMA operations.
-  *
-  *  A Link Descriptor points to a single DMA buffer.  Each link descriptor
 
