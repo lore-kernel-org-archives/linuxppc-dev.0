@@ -1,70 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-24312-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24313-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D1972C44507
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2026 03:10:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DE9EFC44501
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2026 06:30:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h0yhc3Jhjz2xd2;
-	Thu, 16 Jul 2026 13:10:08 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.11
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784171408;
-	cv=none; b=G4MuSUQZKjb+HcTBa00S3kK6A86y0JDw8Ia9tqQ1Te4sEANDCRzqT4mndx2v5ND/oVdKz4qWKJnbKbp1asMfhJbQwiiQMdu6Sc6ZztbDjKFp4MyNsghjVj24AdGwxxHtqhKKrsJvk4dWc/5zKV8uGCtkPO/wiG21NJCsBsRmd82amTjJ6ISr+RPPt49yHzJs6OiPkR5Vm/Az0VB1Ci6OTNXXJzcyVuAcbsiyDOpphaY2g8gTvMJXYQ+jTFS96PXc8eWwbO4O1bTjb+J1tnD2DgyOliCbTweQH4SvQVcN7m077t3whqjf65EUCGbdqq8xzqeQagaLz66MKpyXodRCMA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h137G3sfDz2yRF;
+	Thu, 16 Jul 2026 16:30:02 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::534"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784183402;
+	cv=none; b=TwfZtgrMRtOw+3a8bFPJqX/zBrvPFVoTs5e6/e/9CaQpI7+kzyhTrXjlKBpoeA2AwYch9p1JwN9B/GPu42W6K3A8FilBmACplpPGcw060aMRk80A17SWic6ILzsq2zYx7H2EYWn1OzxgXlcLfAD64mvnLxOScWyGi4hiHIdyJ7c0MTz+JdnUCQFy/+Eyz7/C9doN6ov+jfDfimtuRCpOE+jLGFHf4ThDCHbBQ+Wa7KDp9RiWnAIrd5uyrrGD6KI9tC1E42MoiHz6ItTkFsbgF/At02WQuxrf2mrpbmM7WgzT3s2awckrhB2hIEuGh5Wu01L3WWWFvbsWz8A8MtCARA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784171408; c=relaxed/relaxed;
-	bh=s9tYm0IkTA0YJ0RwPq9kg8bPOGU8vsO2O8CJJdk8K0A=;
-	h=Date:From:To:Cc:Subject:Message-ID; b=B6Gp+sUEaxPKilOrkOWq3Sb5P5OJBg3Nzk7bphB4p8v/AUOX3WObJM5JncAEp9Dctq6RtHA2x15Pmm8OoFTuJa//+RdKJemFH7oPdiGgabDcteMvrCyrMry7TeNcRxBaCv0RV2aaZiYjE4KpCGwsIuRhciIr+JLfxzu3ubsex09QsMWYWxyxRXkrW+6+H364Pwxfnvlvfn/mx6HFMEel5Rk9AyQYVZ3vTBj0Xbw/dBTRdHTbkktViRXy6GBOvMlEon170LarKu4afvidG+5iwdfAv+BZKRn8kog/1RzjpmFSK27oxY534U5nzV4HUZoxNJwQDu2Kj+LrqdQXwmRNFg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=L0If1LMO; dkim-atps=neutral; spf=pass (client-ip=192.198.163.11; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	t=1784183402; c=relaxed/relaxed;
+	bh=n2hc1u0Rsq2BO6lcSFliSHkUB8MwQfikqH3yIF9qcoA=;
+	h=From:To:Subject:In-Reply-To:Date:Message-ID:References; b=RYBgWZ78pMcdCGjhFA9h7HqcX1z6I/GZ+ImwAJOT61IopOYlRD+Es+YnRVEhBRopFEBhVr2vNqj2ht3WDB4Ux8+51RImheWha63aKagVqt8Eaqxrlropqm8ctILCRnmNduJuNyrAkZ2qISyP7CFKwgTVlGSbf00tV1r7gFWLdBEJ4/x0EIfDV16WMnvNXtnLPRiOtpuPZn6Wr3lLeZn1pP2ctSatDDUrGUKAwR1GM19jm5RKh04qArKK763sRVyYnTzil/P5D3/fqG7QICOYe/SqheiMB50oSn3HRk8kVR7xHI5bhfrXR66g9LIEFIcuxBL49FfB+3U0sqozsVrByQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=O6jQNTZm; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::534; helo=mail-pg1-x534.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=L0If1LMO;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=O6jQNTZm;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.11; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::534; helo=mail-pg1-x534.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x534.google.com (mail-pg1-x534.google.com [IPv6:2607:f8b0:4864:20::534])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h0yhb0mqcz308Y
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2026 13:10:06 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1784171407; x=1815707407;
-  h=date:from:to:cc:subject:message-id;
-  bh=V+uV3PF+Dqui36ANmEj9vlch1MWldwczavheD4/PNfM=;
-  b=L0If1LMOV04ceW7b6T0mL1VO61JEkrvnfRB+ZlSgakhfpkP+0JCXhWqe
-   pbkq0uCBUyUGDWX+eGufJheDd7KhrLqgN9YdpIqf8JvLCZD+1UXBafutl
-   uXyslX2kCQqEMMORUkRcbZMJqe0IMumjaZHBSJ3B+OYD/JTuCMpGiweW2
-   Lf8VhTZVcy6Bmxo59OS3J4Cj2X50FHCEUU1RN3jvzTrtTNdaAN3rZn9w/
-   9vkv65sKb6EjUIJ1ijuJyPM4SWTwnDX0L4OZoEz5FO4yJ18JaY5oZgh53
-   KmtOOm/StQIYo/rNIfN9rcxSpH2t/91mEjFrgWbq82dUGDH5KoSQCF99W
-   g==;
-X-CSE-ConnectionGUID: 8HNCjNeFRZCahnYFfOZ7/Q==
-X-CSE-MsgGUID: zOvMO+jQT4qj11B3sY+B4w==
-X-IronPort-AV: E=McAfee;i="6800,10657,11847"; a="95425570"
-X-IronPort-AV: E=Sophos;i="6.25,166,1779174000"; 
-   d="scan'208";a="95425570"
-Received: from orviesa004.jf.intel.com ([10.64.159.144])
-  by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Jul 2026 20:09:57 -0700
-X-CSE-ConnectionGUID: tBdVVz1QQlu24bSF8hK4AA==
-X-CSE-MsgGUID: 9b9Ya0uOQQuDej59ug0oyA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,166,1779174000"; 
-   d="scan'208";a="260176699"
-Received: from lkp-server02.sh.intel.com (HELO ea128546eb3d) ([10.239.97.151])
-  by orviesa004.jf.intel.com with ESMTP; 15 Jul 2026 20:09:56 -0700
-Received: from kbuild by ea128546eb3d with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1wkCTx-00000000OFy-2NHH;
-	Thu, 16 Jul 2026 03:09:53 +0000
-Date: Thu, 16 Jul 2026 11:07:55 +0800
-From: kernel test robot <lkp@intel.com>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [powerpc:fixes-test] BUILD SUCCESS
- 359cfbbc8527990d76a9d75b74c9c1268ce2f64d
-Message-ID: <202607161143.2peWVr1D-lkp@intel.com>
-User-Agent: s-nail v14.9.25
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h137F47v1z2xQD
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2026 16:30:01 +1000 (AEST)
+Received: by mail-pg1-x534.google.com with SMTP id 41be03b00d2f7-c9b373d5af0so4603837a12.2
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2026 23:30:01 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1784183398; x=1784788198; darn=lists.ozlabs.org;
+        h=references:message-id:date:in-reply-to:subject:to:from:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=n2hc1u0Rsq2BO6lcSFliSHkUB8MwQfikqH3yIF9qcoA=;
+        b=O6jQNTZmqlMR1xjVbT/+RC7vZBGwS3YHQhhMBffrub/+cCT43ktAVspsMuKOXH9sxY
+         2oTw9/pJOcWPIuMdO6sXUbhfiuMMilbViCjkY8bB+keztmZuD31LsmPU0WQtqJtMzMXF
+         JNGabuYLhjewqAcxb9uq9yoXkLiGs0eagGGUdnHAs0DRHnaeEDjHGvCwEmc8Ce0YxSB4
+         hJJ157567UKxDEovZiZMwWnIFttHpsJbv3NCm4iOYrI97Cjr3qtdTjS/NjTj9zw0s865
+         exTaAayJqRlM/NmjePKcqKEXRY3HQqvvEr278Kn6PSlaThUw6PJX1cri2CWGCaA2xWU1
+         Xnug==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1784183398; x=1784788198;
+        h=references:message-id:date:in-reply-to:subject:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=n2hc1u0Rsq2BO6lcSFliSHkUB8MwQfikqH3yIF9qcoA=;
+        b=krdkw7262gpvXDsqJ/SxAeDa1eb09T6sISXvs3nIqIf7ntv79rm90DGttgpM2JQbrL
+         ErIBffQ1/OSZ+NAqVd/3G5IHIfD1O/Ryt6IZnL/q5G5xhTcGIHFUa4u3fEjzOTMGScKx
+         /QkixOP0DWIZjSYxdwnMpl2Tnmlj70H6WlEq6ewCfBHjDPlccqKT2Y4VstpQfhwQrmgL
+         rbZC2mAVXrdzgwEfALl6KnnLMahDrlfBKEmank2eTvX9Or0IDxSWeMD1wMOOW1zlR9NM
+         ptZk551/QA4KZDHvX6cuyUi9nSYfI+gaQman6OjwNavatMtDhhqW5pzGGQ/XMF338Mn0
+         6Meg==
+X-Forwarded-Encrypted: i=1; AHgh+Rpj6zDGvL6FB9ZVw/oOoxt99BXmxObNBF6NfIH2WYN8ZCbnxGcnZCV1lA886wv6nIQQw3P2sOzLPsSN+7U=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwdovOR18eeHomYiZegzHLwKGCMa9XBTazm9Dh50Zwq7oFsiLRv
+	NV2QuZUbgSVMOEhl15KhrevydNekpPtt0XdFZX8BhEIkScZkUl8cYOyd
+X-Gm-Gg: AfdE7cmumcRfuHwvwPadpLNC1FpOymjIRqD/P8N0kemfq/mt/m6FGYCXsPJH1aZEpC0
+	VCO79BvIvdTUmUamsmwk4J165De+4ungD2zmTdNqaUltB1jfCK7A70FZ7CKL6YtE8z20mfnGz8e
+	DmGcwaZ7rpOs3fjS3J5SjDCnpr28WT9dW0nkDnCMkat1bRhKQG7NXKSe3uNThgPYAIQtdxiciCi
+	qyQlJpFHAY/7cnlhtd/1rJ8S7AXIDzaSraNk0mzfer1KdvMUbf8S8cRAKm5Ocx/CLWp+tYgwtM4
+	NoMPcO1Z1nQH6472zMkReKM24fcxCCkdbNmd6VVYmCL9CNLtBGVXoJ1rIQALvA4RYO1RKBfVfH7
+	kkQP9vtezf5eB+1NzAeJk2vg/K9MBdsUS8hweQ0ojFbj8Is6E5VpLWIlgJ3zvcZKDpFPFpZpZub
+	QV
+X-Received: by 2002:a05:6a20:d706:b0:3c3:4ab3:608f with SMTP id adf61e73a8af0-3c36c1eadbcmr6801577637.29.1784183398290;
+        Wed, 15 Jul 2026 23:29:58 -0700 (PDT)
+Received: from pve-server ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-13cd432e848sm8204494c88.9.2026.07.15.23.29.53
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 15 Jul 2026 23:29:56 -0700 (PDT)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Sourabh Jain <sourabhjain@linux.ibm.com>, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, Venkat Rao Bagalkote <venkat88@linux.ibm.com>, Narayana Murty N <nnmlinux@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, shivang upadhyay <shivangu@linux.ibm.com>, sbhat@linux.ibm.com
+Subject: Re: powerpc/pseries: EEH detected with xhci_hcd
+In-Reply-To: <29f33de0-0861-459f-b6a0-440354fac785@linux.ibm.com>
+Date: Thu, 16 Jul 2026 10:21:03 +0530
+Message-ID: <cxwnv8p4.ritesh.list@gmail.com>
+References: <2ad00297-eca5-4f36-ad01-138837f6fa4f@linux.ibm.com> <29f33de0-0861-459f-b6a0-440354fac785@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -78,22 +89,52 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git fixes-test
-branch HEAD: 359cfbbc8527990d76a9d75b74c9c1268ce2f64d  powerpc: Remove dead non-preemption code
+Sourabh Jain <sourabhjain@linux.ibm.com> writes:
 
-elapsed time: 726m
+> This issue only occurs with the Radix MMU.
+> Booting the same kernel with disable_radix=1 does not reproduce the issue.
+>
+> The system also has pmem.
 
-configs tested: 2
-configs skipped: 305
+@Sourabh,
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Few requests -
+1. Could you also attach the boot logs from the same system with the
+   same kernel but with disable_radix=1?
 
-tested configs:
-powerpc  allmodconfig    gcc-16.1.0
-powerpc   allnoconfig    gcc-16.1.0
+2. I can't really tell on how is MMU related to this issue? But I think
+   if you could share the working dmesg logs from Hash that might give
+   some more info. I am suspecting what if the firmware negotiates
+   different page sizes even for TCEs for Radix v/s Hash.
 
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+3. Would it be possible for you to try git bisect and identify the
+   culprit commit?
+
+
+Btw, to clarify I think there are two issues here:
+1. EEH triggered for the USB adapter - I think you meant that with Hash
+   you don't even see EEH error being triggered at all. 
+
+2. Second problem is - EEH recovery causing this WARNING.
+
+[   17.375534] [    T118] WARNING: arch/powerpc/kernel/eeh_pe.c:439 at eeh_pe_tree_remove+0xf8/0x2f0, CPU#10: eehd/118
+<...>
+[   17.375599] [    T118] CPU: 10 UID: 0 PID: 118 Comm: eehd Tainted: G            E       7.2.0-rc3upstream+ #3 PREEMPT(lazy)  f29942c1738362234fefd88de0d1ed711f1a557e
+[   17.375603] [    T118] Tainted: [E]=UNSIGNED_MODULE
+[   17.375604] [    T118] Hardware name: IBM,9080-HEX Power11 (architected) 0x820200 0xf000007 of:IBM,FW1120.00 (NH1120_135) hv:phyp pSeries
+<...>
+[   17.375650] [    T118] NIP [c00000000004a048] eeh_pe_tree_remove+0xf8/0x2f0
+[   17.375654] [    T118] LR [c00000000004ba6c] eeh_pe_detach_dev+0x5c/0xa0
+[   17.375658] [    T118] Call Trace:
+[   17.375659] [    T118] [c00000000a357c90] [c00000000dd32800] 0xc00000000dd32800 (unreliable)
+[   17.375668] [    T118] [c00000000a357d30] [c00000000004ba6c] eeh_pe_detach_dev+0x5c/0xa0
+[   17.375672] [    T118] [c00000000a357d60] [c0000000000496ec] eeh_pe_traverse+0x6c/0xf0
+[   17.375676] [    T118] [c00000000a357da0] [c00000000004e100] eeh_reset_device+0x1f8/0x298
+[   17.375680] [    T118] [c00000000a357e50] [c00000000004ce5c] eeh_handle_normal_event+0x61c/0xa60
+[   17.375685] [    T118] [c00000000a357f30] [c00000000004e298] eeh_event_handler+0xf8/0x190
+[   17.375689] [    T118] [c00000000a357f90] [c00000000025dab4] kthread+0x194/0x1b0
+
+
+-ritesh
+
 
