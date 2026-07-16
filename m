@@ -1,72 +1,95 @@
-Return-Path: <linuxppc-dev+bounces-24309-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24310-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 33CB3C44507
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2026 21:29:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 65863C44501
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2026 01:56:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h0q7H4p0Jz303X;
-	Thu, 16 Jul 2026 07:29:15 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.18
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784150955;
-	cv=none; b=X2fdPwcAD3e+1WhATzP7Z/STJyZAa+FPw1FEObpvigq79Ot1LZNRoDQt9hGXMVGZDIe5d+aPImiTh7/3RXGudJBPb1LubgAXAFwPZLQyf+oNiW6gqEowN98KWXazYcMAx/bMjMixjPYcP3ai1p3N/uz3yna5nqqPrZtGnyUdhAr/i7wqImCdLQFsVXLmkqfPSKUjN2bDUQFg+A9hCGqqdDGrQmeBE0VhSZ2TwG81AGM8RQ6iyyUjaDQECMRhiGVZCuTzVKGrevJFm2cJjcz+jteK03td6gcMIw7qkmMAHL5puHiSIxysXh6oVwO0keXi83KdtrHBrAc/zoWV/TT1dQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784150955; c=relaxed/relaxed;
-	bh=oFbrdS1ZnHWLy4eHMzggHVidMa+q5j7UyKEvqy0jdjw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=iBcD59m0JxYXdq51qo2TlGt7iRxhBi1lO4OJz/JwUWDI09fn/ivkhev8XxY7WMcLVV8ezpeUbupOrPmo6822pOL2OLjyz2D52BJUImQzkXEf4v/Tu/JrcFae+ysBw3h+DkdODvMSODbiDeNT69Xk9rm2sIiYJEErrSG+YlkHimi1J6mBduAwZ3Qpt33jb7thk7pGcCU3h4H/gep39hqeJ7EqiqCjdCs2jKef+RSfWxv3rzH8OK+I81JdlQ4hWgTnVOZhPIXV+MiP8al1MhZ7ZTXbRlMCVWKGheYFrJJyoqWBRW6Llms5foaBi+m66ZgN+Jnq3t2CJ9SrrpTcynNiwQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=aahzRCGb; dkim-atps=neutral; spf=pass (client-ip=198.175.65.18; helo=mgamail.intel.com; envelope-from=pawan.kumar.gupta@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h0x364xdLz2yT0;
+	Thu, 16 Jul 2026 11:56:02 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c111::9" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784166962;
+	cv=pass; b=VDSKkangNaLZKpGrEghpD37scQFwVZVHjY6l38HgIa0/kMq8k8ABdq+Vmq2Qb9ROShFIFxrNmG0Vlr7Wh3nfstMUe4kkmIzifaq8gCcGBAVQgNcZWqIJni7M4qzianxbnxGoVn/7T8E/cCnAS/16tgbPB1woMsgJ83/baP0cpKKjNlA+j5OB5c5ApHr4sFeFY+RoC7NCIykPNvfO75pAeIoXzlb7nLCu/1b1YN9I2IQ2UtJPY7fGSvARXvV4QpjrFXIj/4DJ0AQOUp+RIm27piOa1qHgehG1eT7gMCYHkLGCWEfmjNMRjdPmn6+EAdwb6pj6+vxcoDxuWTs4RdIapw==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1784166962; c=relaxed/relaxed;
+	bh=+/nm4eBTeryvdummOUlc9sparb30fgg4Vsv5lLPFgO8=;
+	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=MCTnjuAxIj2MljbPkbtVEdTsj3SdSxQwTL4376H3+UXzCUW7fe2Bi5EMuI5WaCBF5X4rSeZLjXu//NvdMcdd/0DRnKBPBjEqFqZym4aA9ArMgyd3UAW01A9t2SFSxlbPpyxUIvNutehIQVeiwONp2t39C9CbOp3rfLB0VFw2ETOQckkGYhG/4aNsNpIjNm9EhMoYwQqAjqVZ2082m1tBylZy+jskfgTm05QPIrukc9SuFXNmmNM6XWKf5kbmYUPOPQfYAwpjST1glzwIL0n7TjvZK1IwczQ0UQ+XdnTDHupqODz5YwuPP7tH4VTptshU9bbricCvUHVJACVxUvuHmA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=KcGX72NG; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c111::9; helo=dm5pr21cu001.outbound.protection.outlook.com; envelope-from=alexey.kardashevskiy@amd.com; receiver=lists.ozlabs.org) smtp.mailfrom=amd.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=aahzRCGb;
+	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=KcGX72NG;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.18; helo=mgamail.intel.com; envelope-from=pawan.kumar.gupta@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=amd.com (client-ip=2a01:111:f403:c111::9; helo=dm5pr21cu001.outbound.protection.outlook.com; envelope-from=alexey.kardashevskiy@amd.com; receiver=lists.ozlabs.org)
+Received: from DM5PR21CU001.outbound.protection.outlook.com (mail-centralusazlp170110009.outbound.protection.outlook.com [IPv6:2a01:111:f403:c111::9])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h0q7G2gDbz2yl0
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2026 07:29:13 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1784150955; x=1815686955;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=wDb0ezA9eFyOvG4pCNK3eJil6YKm7mNmDWs3yGdmdkc=;
-  b=aahzRCGbyqGg3cKkJZHcrcy9MXz+9RG0sIsA4XsV/a5x9DDuCy1tjfEa
-   P0tPWPy8BcCmdzzAdpLWHpXC3Gfqy7lJBQSKbuy8qdsQfr8/oFw8rHlMH
-   DQt2pt2GGWcPXcA3gf5j+TD7YSv5bqFVhpERmZ4IigoXbsuNYjijd8PTD
-   aYe+DoKZanQU0QBWKQyf4E+6s+l2AKYAsM9Y3waVzi07y5NHh4bnodrIa
-   bQylV/g3oT/wW8BF9mDgXaTRJcgWb74rVCY0FCrb0VDNklfopyU3Vyl1C
-   TEPMaAOB36vwupDu17ZCl/cRSvMg/W8z5VnsEo9SLtkg25lP470vGNHrQ
-   g==;
-X-CSE-ConnectionGUID: 03+TRQzCRE6IoY7vQNKE5g==
-X-CSE-MsgGUID: vnqBEy2TQv2RMWLM4DLKHQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11847"; a="84897319"
-X-IronPort-AV: E=Sophos;i="6.25,166,1779174000"; 
-   d="scan'208";a="84897319"
-Received: from orviesa005.jf.intel.com ([10.64.159.145])
-  by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Jul 2026 14:29:11 -0700
-X-CSE-ConnectionGUID: j2zqk8J3TmyP7lamzXyFAg==
-X-CSE-MsgGUID: sHu8xZFPQjSTg5dDdA8UPg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,166,1779174000"; 
-   d="scan'208";a="260616267"
-Received: from guptapa-desk.jf.intel.com (HELO desk) ([10.165.239.46])
-  by orviesa005-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Jul 2026 14:29:11 -0700
-Date: Wed, 15 Jul 2026 14:29:11 -0700
-From: Pawan Gupta <pawan.kumar.gupta@linux.intel.com>
-To: stable@vger.kernel.org, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sasha Levin <sashal@kernel.org>
-Cc: bpf@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, 
-	x86@kernel.org, Alexei Starovoitov <ast@kernel.org>, 
-	Daniel Borkmann <daniel@iogearbox.net>
-Subject: [PATCH 6.12.y 6/6] bpf: Prefer dirty packs for eBPF allocations
-Message-ID: <20260715-cbpf-jit-spray-hardening-6-12-y-v1-6-d8585a9aed80@linux.intel.com>
-X-Mailer: b4 0.16-dev
-References: <20260715-cbpf-jit-spray-hardening-6-12-y-v1-0-d8585a9aed80@linux.intel.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h0x3457j4z2xRs
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2026 11:55:59 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=XJGCzjVhW8V8zendMo67b56lWFWHiAfdaUJqmG2xoVlfeKfj0vrK/uBCsLUznY60fI8lnT0LyF3g+yM60rcSWpWApL7dwolGr+s7hjwMkpCbLHwwZqcuquUjlv10Smpq9HK06c6jUb99SF6K6ZyjRrWfaoKWhp32yOCFhYZUKn9mnDRtBfRcX3YKSbEzOjIFLiKDKDIhfK4rVUXLCPWGQN8ATNT+RPJLBRRVdIbIMkVNnapGtXHCsXhmaS1/yEyJtFJsor0j5EINpkyb4kRwHbDHHIlazBsHSEyM5402dSrYauFKQYYKVbB6+eAlEwooLs3HoxUanqg4RYSeFlHDcw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=+/nm4eBTeryvdummOUlc9sparb30fgg4Vsv5lLPFgO8=;
+ b=oxl8fPtD6VbZN5H562GTWZWZqsMW/rpFNHEG6N9QBnN0/tikHW6AzK/lbk4CnV/50z4IIqr0CaaAflpfr2nGxrPnSSURNklwvn4p/M4PtEHe34oY5sePC+ZT88HGwivVpu2WihlzrZaESS8wY5JVF6v1hy6uN16RGVR/0U9fXYoZi2PjsvFobUoVy9HbV9oonALBoRC7yXzBl2xLdMDdOejoCseVGI7JYUMnd4VnqYcjZWN7b/VAmYLtS+IUblWkf0wMcJuc0TMu7aWgH3gpEsP3lM/rCxB0cgGszxANKHYdUvDgfkgSQfZNsYZlrZ/gX9ee1c5y0kHfzOfNz8YpMw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
+ header.d=amd.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=+/nm4eBTeryvdummOUlc9sparb30fgg4Vsv5lLPFgO8=;
+ b=KcGX72NGwop+JAvjIIpxxzb2cTgbUhu08TZW6o9eHuMFCT9in3wsxdOwA698R00LhRSE/ZHdjgSZ1z8ilR+VTSjj0TqZSoEcL04g8VJYuHcRxOBB8wTlP2mExCxu7wDBY1cD7rDZxIZf0q4lPZR1ihDL0ISKdV2s+TrO+Uwd0S4=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=amd.com;
+Received: from SA1PR12MB999228.namprd12.prod.outlook.com
+ (2603:10b6:806:4db::10) by CYXPR12MB9442.namprd12.prod.outlook.com
+ (2603:10b6:930:e3::22) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.223.12; Thu, 16 Jul
+ 2026 01:55:34 +0000
+Received: from SA1PR12MB999228.namprd12.prod.outlook.com
+ ([fe80::4dba:119e:8e7c:37b3]) by SA1PR12MB999228.namprd12.prod.outlook.com
+ ([fe80::4dba:119e:8e7c:37b3%4]) with mapi id 15.21.0223.008; Thu, 16 Jul 2026
+ 01:55:34 +0000
+Message-ID: <9d83ec13-3b1e-4c1b-8bab-16ea057cfba0@amd.com>
+Date: Thu, 16 Jul 2026 11:55:20 +1000
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v7 16/22] dma-direct: make dma_direct_map_phys() honor
+ DMA_ATTR_CC_SHARED
+To: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>,
+ Catalin Marinas <catalin.marinas@arm.com>
+Cc: iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
+ linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev,
+ Robin Murphy <robin.murphy@arm.com>,
+ Marek Szyprowski <m.szyprowski@samsung.com>, Will Deacon <will@kernel.org>,
+ Marc Zyngier <maz@kernel.org>, Steven Price <steven.price@arm.com>,
+ Suzuki K Poulose <Suzuki.Poulose@arm.com>, Jiri Pirko <jiri@resnulli.us>,
+ Jason Gunthorpe <jgg@ziepe.ca>, Mostafa Saleh <smostafa@google.com>,
+ Petr Tesarik <ptesarik@suse.com>, Dan Williams <dan.j.williams@intel.com>,
+ Xu Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ Alexander Gordeev <agordeev@linux.ibm.com>,
+ Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+ Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org,
+ Jiri Pirko <jiri@nvidia.com>, Michael Kelley <mhklinux@outlook.com>
+References: <20260701054926.825925-1-aneesh.kumar@kernel.org>
+ <20260701054926.825925-17-aneesh.kumar@kernel.org> <ak42F240d-53QeFN@arm.com>
+ <yq5apl0xgy89.fsf@kernel.org>
+Content-Language: en-US
+From: Alexey Kardashevskiy <aik@amd.com>
+In-Reply-To: <yq5apl0xgy89.fsf@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: SY5P282CA0051.AUSP282.PROD.OUTLOOK.COM
+ (2603:10c6:10:20a::14) To SA1PR12MB999228.namprd12.prod.outlook.com
+ (2603:10b6:806:4db::10)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,51 +103,171 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260715-cbpf-jit-spray-hardening-6-12-y-v1-0-d8585a9aed80@linux.intel.com>
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SA1PR12MB999228:EE_|CYXPR12MB9442:EE_
+X-MS-Office365-Filtering-Correlation-Id: 1cdefcaa-7381-4e34-8787-08dee2dd532c
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|23010399003|376014|7416014|1800799024|366016|56012099006|4143699003|11063799006|5023799004|10067099003|22082099003|18002099003;
+X-Microsoft-Antispam-Message-Info:
+	LDI9dnkp/bF59M2uVsgk+p1VyUnj+a0ovCMfeGxDu8kn8ISn2bHyaqKWKcoYtCkMtOWVQqpWGQg1LKK66LO8lbIGd4vvli32OrN5L8Vdj+aWo8ZEudTBOcYdGcacai0RZFvd+Vp/59oWBMtrIaAP53ciwxNPgTCDfTw/8UTnID9/+yH726IHDIlV6tLTuE6cHWIkMVY9/33Wg0DsPhfuqbdwbcv1ad/2HpZoxqwDmH5sUkLOZrMxNq8pwUv3nej6p61h6Hpdw1lwaytpPXaU5SNVafEIKzxGxDeKeMbkDiH3O0t9X0UFzQegSRFi2hxRgOEgY+dKT8OOjb8JtdiiOj/N5bJXXvQPZpmDehEXvRIHHKWfR13yriInWfDxi4pg965kwJ0BR6ACX5uKoRp+kJCN9ZXfeWx9VV/AI0NmKShCFZ2iJbrRfu9VFgVqew633KFDYMNHEPhbhOFqKD6AhUsYdjTTALFBZQ5KY3dEBOD0oQ0T2Dgkbh08XX0Mw3Zrdq4AOwsDK9YgJS/zNVvE7SVHq/S8mVrejx4Iyz2nNZpx9+GrMBLFrWAUfzESUkNP/SO1TYZmBGyOt9v5wac+sx0j61cJZ8i39PNr+sPik8v1PPNVf/ghGEekUhUrENW+WyRDG+24mcP9AMue18gejScPQFCvCJfjreSs+7gf1dY=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SA1PR12MB999228.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(376014)(7416014)(1800799024)(366016)(56012099006)(4143699003)(11063799006)(5023799004)(10067099003)(22082099003)(18002099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?SzFVSE1DWXRLSVozWXNDR0lKRWdTOFhLY3NIbkZNZ2JvRzRSdnVVQ0xQOS9m?=
+ =?utf-8?B?eDJtMmEra1VhdVdkUzJhT3d3NG9EaGZKYXNycnBJUWl0YUxmMmlpUlZVM04y?=
+ =?utf-8?B?R1YvTTg4WlRMbHA4cnlOSXpqUVlsczBnWTRjY1JVaU0xUGdZVlhndW9qSzJo?=
+ =?utf-8?B?QldNRHptb2Q3SU9RSDdRT0tkb09oK3VRVGN2Z1JIKytuYWtQbjdGRDJOdzhU?=
+ =?utf-8?B?aXVrdHRCdzI1My93UGZHMDBNMlE2NWYvMitQLzVQLzR2Q1dQMjFDQkdvYU1z?=
+ =?utf-8?B?d2VlSVB1V25vWXVXZWdWNmdVZ00wREw5VHA4aTdCWmRvQ1ZUNm1PYUhNRCt6?=
+ =?utf-8?B?Yi9sS1kySkVvOWhlVytIVEU0bnJVTE9uQk5xdnZQcWdjMVFJbk0rTmJXSld5?=
+ =?utf-8?B?enNnUC92ZnBURHhCc0sweWt0YzFSY1BuTDJHMjB3UTNpblBERDlHYk9SYXVa?=
+ =?utf-8?B?Z1grMkRDNk5kWFBaWm0vVGE5RGlVTXZlMXkwZGxlZ01GTjZwVUcrZzJtMXZZ?=
+ =?utf-8?B?eEpPa3UrS1NUUTlidW1oK3h2Y3Y1ZVlERVY4eWVpVDZDSDlGcUM1eU5VQ2po?=
+ =?utf-8?B?VDg5eUs1aGszd2w1RWltQmwzc01XcTZ6QWxEa2dKTjhQU0VVQnZyNzFtQXpw?=
+ =?utf-8?B?Rk1SM1o2TlRKNWQxY2FqZ0ZuVllGcmxnNlczU3kzR0UvTkRBcG9zSGdNeUpm?=
+ =?utf-8?B?VHpHRDZUd09RdFJVRC9NUkNQbVpvK0YxV0Z4WExNQVpFNThuNjVSTzcrT1c3?=
+ =?utf-8?B?aWl2aURDbkFFNVdiZEJlaFhRK0VmT3Z1bzE1em95QlhWa05HNTExVFVjVkF3?=
+ =?utf-8?B?QnN5b1FFL1hkVkppL3g2V24wdyswUlF6RkZKVEhQam14SCtZdUFJNzF3WFJ6?=
+ =?utf-8?B?VG1pTkVvWUxkancrbElXWlpnY25SbFNPNDVtTHN0eEZaWkhBZFczVmoycXZC?=
+ =?utf-8?B?M0U2VW1yUVUwejdHTWhlR2Y1aUdzL1AzLzZnRXlUMm5QbWQyeHFvQjJIK0ky?=
+ =?utf-8?B?TWEwYWZPWitOOC9kY3hHVjJQYkwyZXF5RXdCYlVUdVh1elJIbWpodnQ4V3N2?=
+ =?utf-8?B?YmZFdmd2V3o0TUczQU9EaGtRY2NYdkM5ejl4UGluaUpUZXhDR1dOTnZ5VnJa?=
+ =?utf-8?B?K3BpZnQzai95VW5jOFA2SHQ4NHQydnF0ME5YNFJTWVJ3eHkrWlpDNGtmMS91?=
+ =?utf-8?B?Um1vbUNRRE5lWnY0SXB5S3NBcWRJMFVwZGVmUHNZTW1GNHhtenYxR1RZd0U4?=
+ =?utf-8?B?c25YUXIvYzhWblJKejlVWTdCTUJ1M3g2S3ZQek1PRXpNS004V1lLM2JZLzFR?=
+ =?utf-8?B?QTh4U3cwdWtqQU9yazBOWjlmNmN5bFFPdmUyZ1YwZ0tTczIyWm1ETGxRL2Iz?=
+ =?utf-8?B?bTE2VkNrUHBseEY0U1RQRGZpN0tYa0NVT0poYTRaSzBYL28wOFhvbTlublh0?=
+ =?utf-8?B?YTZ2TndrQ200UEY4L2N1QUVRN0M4TUlzWnpVRFR3WGdEbmp4MlErcHduLyts?=
+ =?utf-8?B?NVU0cG1VNDJIL1hwM1gzaDIwTFVBR1hTeldyK3V2Tm5aY1QrSjVSYzZtRHpJ?=
+ =?utf-8?B?K0RFejZvTzllSEgyOEU1T1BxZ3RXdndWVXArSDkvaTExZGNTcWMxSDBqZkR2?=
+ =?utf-8?B?T09CNXVMUkkrWmNqM3p4VE8zVVRYUzhhcGp3ZzV2UExwSHBtS2QwSWI0ZTB0?=
+ =?utf-8?B?Q0NmbmF3YldzNnpYRVJhZ2ZRUjZHUzNiQkQ4QmdiYTVWbzV0S0tCTEpNbXJh?=
+ =?utf-8?B?TmNWMmwwN1Nqd2NCSDM2TjVzZ1huZEZRNDVZNy9QdFQ3c1NrQjJ6d2ZOeWRl?=
+ =?utf-8?B?bFZYRHFlTUViL000YmNLQnRybm1PWnF3Z0R4ZzhvQzJKMnJsYzZMdDgwUE43?=
+ =?utf-8?B?RWFEZHVWa1paRjJZVjNYUjh5ZTVtNGZWL2V0YTNGSS9BYjZHUnZtdWdQR1Qx?=
+ =?utf-8?B?RDY4RFhQcEhCanhQbG9Xd2JRVGZtdFhGQWN4Um5ra2xOa1dsbjBZUis0YUlT?=
+ =?utf-8?B?UkM2UENkTWkrUC9RM2FTM2d0ODJpcVlBSStraXZUNG5TcGd1U05HS0hWbE9V?=
+ =?utf-8?B?clFsNm9pZTVwL2lNZXQxeXYxalFDWWhiTThzZ2FJM2JBY280dXpXcXlnWWRL?=
+ =?utf-8?B?NEdTa2hGYmRQU3MxUVg4anF2VnNPYi9FMFlUVHlvbWhWbnZDSGVvaUxXTHhG?=
+ =?utf-8?B?dTYxWTM5dUd3eVFnRHBMQTgrOE81UVFTOUE2cFRjK1FsTTc4dXRPSWhzN3Ft?=
+ =?utf-8?B?S2RWc3lsRFk2b3daS1QrOEhpSWw0ZllRem1oYklTeFVVWTMrbzViT1krVEs3?=
+ =?utf-8?B?VkNSRXdNb2dIVW9rYVZQS2RvTDVmeUZ4MnZVWHNCVENSb1VjVHk2UT09?=
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 1cdefcaa-7381-4e34-8787-08dee2dd532c
+X-MS-Exchange-CrossTenant-AuthSource: SA1PR12MB999228.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 16 Jul 2026 01:55:34.5049
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 0n5fry6jt8DThgczWTNwKlzhtrsb0/6iVovs4Qy5f5Y4ikDmhsqRfq5HVp0yi31ijwYyR/astGrc8zioZRpeAA==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CYXPR12MB9442
 
-commit b72e29e0f7ee329d89f86db8700c8ea99b4a370a upstream.
+On 9/7/26 03:58, Aneesh Kumar K.V wrote:
+> Catalin Marinas <catalin.marinas@arm.com> writes:
+> 
+>> On Wed, Jul 01, 2026 at 11:19:20AM +0530, Aneesh Kumar K.V (Arm) wrote:
+>>> diff --git a/arch/arm64/mm/init.c b/arch/arm64/mm/init.c
+>>> index 97987f850a33..acf67c7064db 100644
+>>> --- a/arch/arm64/mm/init.c
+>>> +++ b/arch/arm64/mm/init.c
+>>> @@ -338,10 +338,8 @@ void __init arch_mm_preinit(void)
+>>>   	unsigned int flags = SWIOTLB_VERBOSE;
+>>>   	bool swiotlb = max_pfn > PFN_DOWN(arm64_dma_phys_limit);
+>>>   
+>>> -	if (is_realm_world()) {
+>>> +	if (is_realm_world())
+>>>   		swiotlb = true;
+>>> -		flags |= SWIOTLB_FORCE;
+>>> -	}
+>>
+>> For this part:
+>>
+>> Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
+>>
+>>> diff --git a/kernel/dma/direct.h b/kernel/dma/direct.h
+>>> index e05dc7649366..f3fc28f352ba 100644
+>>> --- a/kernel/dma/direct.h
+>>> +++ b/kernel/dma/direct.h
+>>> @@ -88,37 +88,40 @@ static inline dma_addr_t dma_direct_map_phys(struct device *dev,
+>>>   {
+>>>   	dma_addr_t dma_addr;
+>>>   
+>>> +	/*
+>>> +	 * For a device requiring unencrypted DMA, MMIO memory is treated
+>>> +	 * as shared by default.
+>>> +	 */
+>>> +	if (force_dma_unencrypted(dev) && (attrs & DMA_ATTR_MMIO))
+>>> +		attrs |= DMA_ATTR_CC_SHARED;
+>>> +
+>>>   	if (is_swiotlb_force_bounce(dev)) {
+>>> -		if (!(attrs & DMA_ATTR_CC_SHARED)) {
+>>> -			if (attrs & (DMA_ATTR_MMIO | DMA_ATTR_REQUIRE_COHERENT))
+>>> -				return DMA_MAPPING_ERROR;
+>>> +		if (attrs & (DMA_ATTR_MMIO | DMA_ATTR_REQUIRE_COHERENT))
+>>> +			return DMA_MAPPING_ERROR;
+>>>   
+>>> -			return swiotlb_map(dev, phys, size, dir, attrs);
+>>> -		}
+>>> -	} else if (attrs & DMA_ATTR_CC_SHARED) {
+>>> -		return DMA_MAPPING_ERROR;
+>>> +		return swiotlb_map(dev, phys, size, dir, attrs);
+>>>   	}
+>>>   
+>>> -	if (attrs & DMA_ATTR_MMIO) {
+>>> -		dma_addr = phys;
+>>> -		if (unlikely(!dma_capable(dev, dma_addr, size, false, attrs)))
+>>> -			goto err_overflow;
+>>> -	} else if (attrs & DMA_ATTR_CC_SHARED) {
+>>> +	if (attrs & DMA_ATTR_CC_SHARED)
+>>>   		dma_addr = phys_to_dma_unencrypted(dev, phys);
+>>> +	else
+>>> +		dma_addr = phys_to_dma_encrypted(dev, phys);
+>>
+>> For AMD/SME, on host with memory encryption we now end up setting the C
+>> bit for DMA_ATTR_MMIO. This is fine for RAM but not sure whether
+>> some other MMIO bus understands this attribute. Maybe we should stick to
+>> something like __phys_to_dma() for the !CC_SHARED && MMIO path. Or,
+>> since this is not universally defined, just use the old dma_addr = phys
+>> if MMIO and ignore any unlikely DMA offsets.
+>>
+> 
+> Considering for AMD/SME system an unencrypted dma addr is one without C
+> bit, will this be good?
 
-The pack allocator only flushes predictors when reusing a dirty pack for
-cBPF, eBPF allocations never trigger a flush. Currently, eBPF picks the
-first free pack, which could be a clean pack. As an optimization, leaving
-a clean pack for cBPF can avoid flushes.
 
-Prefer dirty packs for eBPF and keep clean packs free for cBPF. This
-mirrors the existing cBPF preference for clean packs: each program kind
-prefers the pack that avoids an extra flush, and falls back to the other
-kind only when no preferred pack has room. eBPF reuse of a dirty pack is
-harmless since eBPF being privileged does not flush.
+Normally both encrypted and unencrypted DMA addresses do not have Cbit, with the only exception of "iommu=pt" (which is not the default afaik). And in this case, having Cbit in DMA handles only makes sense if p2p trafic goes via the root port (== IOMMU in passthrough mode, and I am not sure even about if the root port will convert this Cbit to T=1 MMIO in this mode) but if it goes via some PCI bridge - then Cbit won't mean encryption for sure. But I do not know much about p2p (never touched). But in any case force_dma_unencrypted() seems to make no sense here.
 
-Signed-off-by: Pawan Gupta <pawan.kumar.gupta@linux.intel.com>
-Acked-by: Daniel Borkmann <daniel@iogearbox.net>
-Signed-off-by: Daniel Borkmann <daniel@iogearbox.net>
----
- kernel/bpf/core.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/kernel/bpf/core.c b/kernel/bpf/core.c
-index 665f8423b760..d9131b235f79 100644
---- a/kernel/bpf/core.c
-+++ b/kernel/bpf/core.c
-@@ -998,10 +998,10 @@ void *bpf_prog_pack_alloc(u32 size, bpf_jit_fill_hole_t bpf_fill_ill_insns, bool
- 			goto found_free_area;
- 		/*
- 		 * cBPF reuse of a dirty pack triggers a flush, so prefer a
--		 * clean pack for cBPF. eBPF never flushes, so pick the first
--		 * free pack, dirty or clean.
-+		 * clean pack for cBPF. eBPF never flushes, so steer it to a
-+		 * dirty pack and keep clean packs free for cBPF.
- 		 */
--		if (!was_classic || !pack->arch_flush_needed)
-+		if (was_classic ^ pack->arch_flush_needed)
- 			goto found_free_area;
- 		if (!fallback_pack) {
- 			fallback_pack = pack;
+> 
+> 	/*
+> 	 * For host memory encryption and device requiring unencrypted DMA,
+> 	 * MMIO memory is treated as shared by default.
+> 	 */
+> 	if (attrs & DMA_ATTR_MMIO) {
+> 		if (cc_platform_has(CC_ATTR_HOST_MEM_ENCRYPT) || force_dma_unencrypted(dev))
+> 			attrs |= DMA_ATTR_CC_SHARED;
+> 	}
+> 
+> 
+>>
+>> In the other case, for an arm CCA guest, if the MMIO is shared we end up
+>> setting the shared attribute but that's fine, it's only an IPA address.
+
+IPA == guest physical address? Thanks,
+
+
+>>
+>> -- 
+>> Catalin
+> 
+> -aneesh
 
 -- 
-2.43.0
-
+Alexey
 
 
