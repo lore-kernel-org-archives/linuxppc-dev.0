@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-24376-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24377-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EB5ABC44515
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2026 18:08:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 73E2CC44515
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2026 18:08:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h1yZp32G8z3c89;
-	Sat, 18 Jul 2026 04:08:34 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784311714;
-	cv=none; b=KJKBYEATyc82bPTCCHNrqt3BWKkqegbLahAsNmHRUq5dD18mqOrk/J0rVwhFrj4sWGpUeV0D6sZGDGzRoBbMN2JUolWuSYd3NfGiuLf4nf2e+fQq8+EC5EczV010FcEVOwgTCL8lJTgWG3XdZXwUWQhtyx2X1tWOt0Cuxu4vaz05d4zUJysHQ4kzs/YoWLFGnTcUunYBO7VvDqGok2uW028jntGhiFsgK+jcVizSooAuo74GbSXcJjHJKf385pTcb1lOxSJ490bKMsgNwoLBJDHpEvOgrvL++8DloPoBqCsFxWCXohn/9C9395Ich2DfWCxn4tR3ylcn73e4i9YdIQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h1yb30314z3c8G;
+	Sat, 18 Jul 2026 04:08:47 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784311726;
+	cv=none; b=CfVNvZqCFPZFLlT9K4XiuOxMj+hppRfwGoiu29AHFqWg3WWJ5tO1QeWLhsRfzTl3ZSMju8M462KMmH5/k8eDZmDgVOqXXk+yaSpjpKQufLBdjpESr6kN1NbM7jsOS+7UJMYK75cuXY5ZUw3nHfzDBwv9S0RQKEoRZeNXthB4RxQumI4U5L9yklTVxJ1VipkGFDraGh5w9L4frbISTslye0ZerRHws+oPNcaf0Sr15rVbbquJe2urHIJ9XIombTQBfMLlZcuFy+rjwNi6JlJbFvtPHWEJWSMtDKsSHbtnr9pABIgTmzP4OyVEe/h5qkjcIMZVnInd82MLBDLyObykNg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784311714; c=relaxed/relaxed;
-	bh=gZrGl+jtrdO3STdBAPtI9YcrqokEMnK381jHPPxX4QM=;
+	t=1784311726; c=relaxed/relaxed;
+	bh=5bS+J6Rwxh/WXwnquOaDBNcfrARTnQLlbkZ3NkMBgPI=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Y82Z1DilraC8VQnQX8XJs4x3EBdGhsNy1Il8uA4LMWqi2rtGQMfdWon4hTCVRZQswxmGcNu99ui7S7218r8Ml6Ee+W2bHIFEfaBAkj+SCEJN7KB6S9o3Hj47MmNYXL3PXMkUCJ6fRsntdRw3zCdT3JsCTA2UwmKJ/6hDDfWJIneB98wh0ZWwGi2imcKO0smJKGqfDrJO7nAZKY8RFXC0rIUEv5SUVpfhfZ2AvGHVi7+ENoT9JAgFiciYW4gP2bA0d+53tvzm2ZpAgJrQT0ZkvSz6FSmhjiKtNa11a8Z5qEucbLReREekX4aYJY7liFjPGoS4oMK3/ObNyONzp8s7sQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Q33giytp; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=FUfRj2PXEMjywBYA9/zILLzH+sL/jGU2/1OSxG/AkEAgI8ywAqwFo4DBjAshf6uWFM70LOESEK0f8y60jfFa1x8PEdWP76yYvaeIiwOSBMjlaeQeuH5jqyUoowg48oYeyDInaZ1rxO5FlARWD08cgxs/e+1hvcVLjEacmJkxRBW47nxXf2PljmO4qsQJTOuN/ymyaOaTR/yc9HLGQPFkdPOh9b1+JMaGJtXwGbQzUinOXURwEUNdEqIzm+0HPbNCdsAHQeDRYEFaYPaA/U47lwIOD+O9Q1+x88tDuo5v8ULspd7upV5kEhPw8eziqgDsOSceEKHXly8EDFGdnPKcng==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=m8fJtpWw; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Q33giytp;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=m8fJtpWw;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h1yZn3xsRz3c4Y
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jul 2026 04:08:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h1yb20l70z3c4l
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jul 2026 04:08:46 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id A2F35600DA;
+	by sea.source.kernel.org (Postfix) with ESMTP id 573544038D;
+	Fri, 17 Jul 2026 18:08:43 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1DC221F00A3A;
 	Fri, 17 Jul 2026 18:08:31 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 099D01F000E9;
-	Fri, 17 Jul 2026 18:08:19 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1784311711;
-	bh=gZrGl+jtrdO3STdBAPtI9YcrqokEMnK381jHPPxX4QM=;
+	s=k20260515; t=1784311723;
+	bh=5bS+J6Rwxh/WXwnquOaDBNcfrARTnQLlbkZ3NkMBgPI=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=Q33giytp3Pgs15qPJ1uZX7Rj8NcL8zDMsdhdsUMfr0vCKfMSuT9Tet9T2sH4Fvtdx
-	 RVYNPIJsmev0Bviu6bDXydJJ6XRIwsRJ6+4NoLaVoFGNN8V1B9G2C6xvTEPbUYmcEx
-	 3qjf2tvr5H6hjTN2aJ4+BAycTPse4r+/+bfvf9r3rV8LUYuvqv6lrjdSRm26w5lUsB
-	 eT/9KpcWPKmdW2ypdaJm1YEauyXbohdQePWmzwPFF+tEr+EMyeekRReFWj54UC7V1J
-	 zCQfT0waCLsxriu+oXFree30DZaF1SLCRyMJTrZUZ212KRje67qrdih8qmWBNGP5ON
-	 IaaSbzUWq9fMA==
+	b=m8fJtpWwBWHB9Ahirb07ZBZx03wpyr0HvEFiaOWqchFPaIHlOfOF8nIxp255RlCqc
+	 SA5lvDtSPSORHGBbXXe4ESMuP1HJ9TN2IktHo7lqFU4dEvpGz6SdLKKWBU3Jqy3dX8
+	 dgDnw9Z4VAp5LeDo7M07SWRQ0ucTOCo4445a2InOiCz+dHLvzFSjW+KIWHYr6MTTid
+	 HCl/6afcZD5n5aVyJfVbbvZmRaMv9fI/ZA6mzhnlGUuldBmAZMvl8HImPa6Kb2BaTj
+	 aXPintlcklxZ6GlqObb+V/NV2vZBAQxpaENAkHBkzy/kvt74XPCY9FobR3QT/5MGXi
+	 u4DoaX4q93Pqg==
 From: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>
 To: iommu@lists.linux.dev,
 	linux-arm-kernel@lists.infradead.org,
@@ -80,9 +80,9 @@ Cc: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>,
 	Jason Gunthorpe <jgg@nvidia.com>,
 	Jiri Pirko <jiri@nvidia.com>,
 	Michael Kelley <mhklinux@outlook.com>
-Subject: [PATCH v8 18/23] dma-direct: set decrypted flag for remapped DMA allocations
-Date: Fri, 17 Jul 2026 23:34:36 +0530
-Message-ID: <20260717180442.110954-19-aneesh.kumar@kernel.org>
+Subject: [PATCH v8 19/23] dma-direct: select DMA address encoding from __DMA_ATTR_ALLOC_CC_SHARED
+Date: Fri, 17 Jul 2026 23:34:37 +0530
+Message-ID: <20260717180442.110954-20-aneesh.kumar@kernel.org>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260717180442.110954-1-aneesh.kumar@kernel.org>
 References: <20260717180442.110954-1-aneesh.kumar@kernel.org>
@@ -101,16 +101,14 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Devices that are DMA non-coherent and require a remap were skipping
-dma_set_decrypted(), leaving DMA buffers encrypted even when the device
-requires unencrypted access. Move the call after the if (remap) branch
-so that both the direct and remapped allocation paths correctly mark the
-allocation as decrypted (or fail cleanly) before use.
+Make the dma-direct helpers derive the DMA address encoding from
+__DMA_ATTR_ALLOC_CC_SHARED instead of implicitly relying on
+force_dma_unencrypted() inside phys_to_dma_direct()
 
-Fix dma_direct_alloc() and dma_direct_free() to apply set_memory_*() to the
-linear-map alias of the backing pages instead of the remapped CPU address.
-Also disallow highmem pages for __DMA_ATTR_ALLOC_CC_SHARED, because highmem
-buffers do not provide a usable linear-map address.
+Pass an explicit unencrypted/decrypted state into phys_to_dma_direct(),
+make the alloc paths return DMA addresses that match the requested buffer
+encryption state. Also only call dma_set_decrypted() when
+__DMA_ATTR_ALLOC_CC_SHARED is actually set.
 
 Reviewed-by: Jason Gunthorpe <jgg@nvidia.com>
 Tested-by: Jiri Pirko <jiri@nvidia.com>
@@ -118,126 +116,124 @@ Tested-by: Michael Kelley <mhklinux@outlook.com>
 Tested-by: Mostafa Saleh <smostafa@google.com>
 Signed-off-by: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>
 ---
- kernel/dma/direct.c | 56 +++++++++++++++++++++++++++++++++++----------
- 1 file changed, 44 insertions(+), 12 deletions(-)
+ kernel/dma/direct.c | 43 ++++++++++++++++++++++++++-----------------
+ 1 file changed, 26 insertions(+), 17 deletions(-)
 
 diff --git a/kernel/dma/direct.c b/kernel/dma/direct.c
-index fed901c0224e..f7f064323bd9 100644
+index f7f064323bd9..eb0ce0787885 100644
 --- a/kernel/dma/direct.c
 +++ b/kernel/dma/direct.c
-@@ -198,14 +198,23 @@ void *dma_direct_alloc(struct device *dev, size_t size,
+@@ -26,11 +26,11 @@
+ u64 zone_dma_limit __ro_after_init = DMA_BIT_MASK(24);
+ 
+ static inline dma_addr_t phys_to_dma_direct(struct device *dev,
+-		phys_addr_t phys)
++		phys_addr_t phys, bool unencrypted)
  {
- 	bool remap = false, set_uncached = false;
- 	bool mark_mem_decrypt = false;
-+	bool allow_highmem = true;
- 	struct page *page;
- 	void *ret;
+-	if (force_dma_unencrypted(dev))
++	if (unencrypted)
+ 		return phys_to_dma_unencrypted(dev, phys);
+-	return phys_to_dma(dev, phys);
++	return phys_to_dma_encrypted(dev, phys);
+ }
  
- 	if (force_dma_unencrypted(dev))
- 		attrs |= __DMA_ATTR_ALLOC_CC_SHARED;
+ static inline struct page *dma_direct_to_page(struct device *dev,
+@@ -41,8 +41,9 @@ static inline struct page *dma_direct_to_page(struct device *dev,
  
--	if (attrs & __DMA_ATTR_ALLOC_CC_SHARED)
-+	if (attrs & __DMA_ATTR_ALLOC_CC_SHARED) {
-+		/*
-+		 * Unencrypted/shared DMA requires a linear-mapped buffer
-+		 * address to look up the PFN and set architecture-required PFN
-+		 * attributes. This is not possible with HighMem. Avoid HighMem
-+		 * allocation.
-+		 */
-+		allow_highmem = false;
- 		mark_mem_decrypt = true;
-+	}
+ u64 dma_direct_get_required_mask(struct device *dev)
+ {
++	bool require_decrypted = force_dma_unencrypted(dev);
+ 	phys_addr_t phys = ((phys_addr_t)max_pfn << PAGE_SHIFT) - 1;
+-	u64 max_dma = phys_to_dma_direct(dev, phys);
++	u64 max_dma = phys_to_dma_direct(dev, phys, require_decrypted);
  
- 	size = PAGE_ALIGN(size);
- 	if (attrs & DMA_ATTR_NO_WARN)
-@@ -270,7 +279,7 @@ void *dma_direct_alloc(struct device *dev, size_t size,
- 	}
+ 	return (1ULL << (fls64(max_dma) - 1)) * 2 - 1;
+ }
+@@ -71,7 +72,8 @@ static gfp_t dma_direct_optimal_gfp_mask(struct device *dev, u64 *phys_limit)
  
- 	/* we always manually zero the memory once we are done */
--	page = __dma_direct_alloc_pages(dev, size, gfp & ~__GFP_ZERO, true);
-+	page = __dma_direct_alloc_pages(dev, size, gfp & ~__GFP_ZERO, allow_highmem);
+ bool dma_coherent_ok(struct device *dev, phys_addr_t phys, size_t size)
+ {
+-	dma_addr_t dma_addr = phys_to_dma_direct(dev, phys);
++	bool require_decrypted = force_dma_unencrypted(dev);
++	dma_addr_t dma_addr = phys_to_dma_direct(dev, phys, require_decrypted);
+ 
+ 	if (dma_addr == DMA_MAPPING_ERROR)
+ 		return false;
+@@ -81,17 +83,18 @@ bool dma_coherent_ok(struct device *dev, phys_addr_t phys, size_t size)
+ 
+ static int dma_set_decrypted(struct device *dev, void *vaddr, size_t size)
+ {
+-	if (!force_dma_unencrypted(dev))
+-		return 0;
+-	return set_memory_decrypted((unsigned long)vaddr, PFN_UP(size));
++	int ret;
++
++	ret = set_memory_decrypted((unsigned long)vaddr, PFN_UP(size));
++	if (ret)
++		pr_warn_ratelimited("leaking DMA memory that can't be decrypted\n");
++	return ret;
+ }
+ 
+ static int dma_set_encrypted(struct device *dev, void *vaddr, size_t size)
+ {
+ 	int ret;
+ 
+-	if (!force_dma_unencrypted(dev))
+-		return 0;
+ 	ret = set_memory_encrypted((unsigned long)vaddr, PFN_UP(size));
+ 	if (ret)
+ 		pr_warn_ratelimited("leaking DMA memory that can't be re-encrypted\n");
+@@ -171,7 +174,8 @@ static struct page *dma_direct_alloc_from_pool(struct device *dev, size_t size,
+ 				   dma_coherent_ok);
  	if (!page)
  		return NULL;
+-	*dma_handle = phys_to_dma_direct(dev, page_to_phys(page));
++	*dma_handle = phys_to_dma_direct(dev, page_to_phys(page),
++					 attrs & __DMA_ATTR_ALLOC_CC_SHARED);
+ 	return page;
+ }
  
-@@ -285,6 +294,14 @@ void *dma_direct_alloc(struct device *dev, size_t size,
- 		set_uncached = false;
- 	}
- 
-+	if (mark_mem_decrypt) {
-+		void *lm_addr;
-+
-+		lm_addr = page_address(page);
-+		if (set_memory_decrypted((unsigned long)lm_addr, PFN_UP(size)))
-+			goto out_leak_pages;
-+	}
-+
- 	if (remap) {
- 		pgprot_t prot = dma_pgprot(dev, PAGE_KERNEL, attrs);
- 
-@@ -295,29 +312,36 @@ void *dma_direct_alloc(struct device *dev, size_t size,
- 		ret = dma_common_contiguous_remap(page, size, prot,
- 				__builtin_return_address(0));
- 		if (!ret)
--			goto out_free_pages;
-+			goto out_encrypt_pages;
- 	} else {
- 		ret = page_address(page);
--		if (mark_mem_decrypt && dma_set_decrypted(dev, ret, size))
--			goto out_leak_pages;
- 	}
- 
- 	memset(ret, 0, size);
- 
- 	if (set_uncached) {
-+		void *uncached_cpu_addr;
-+
+@@ -187,9 +191,11 @@ static void *dma_direct_alloc_no_mapping(struct device *dev, size_t size,
+ 	/* remove any dirty cache lines on the kernel alias */
+ 	if (!PageHighMem(page))
  		arch_dma_prep_coherent(page, size);
--		ret = arch_dma_set_uncached(ret, size);
--		if (IS_ERR(ret))
--			goto out_encrypt_pages;
-+		uncached_cpu_addr = arch_dma_set_uncached(ret, size);
-+		if (IS_ERR(uncached_cpu_addr))
-+			goto out_free_remap_pages;
-+		ret = uncached_cpu_addr;
+-
+-	/* return the page pointer as the opaque cookie */
+-	*dma_handle = phys_to_dma_direct(dev, page_to_phys(page));
++	/*
++	 * return the page pointer as the opaque cookie.
++	 * Never used for unencrypted allocation
++	 */
++	*dma_handle = phys_to_dma_encrypted(dev, page_to_phys(page));
+ 	return page;
+ }
+ 
+@@ -329,7 +335,8 @@ void *dma_direct_alloc(struct device *dev, size_t size,
+ 		ret = uncached_cpu_addr;
  	}
  
- 	*dma_handle = phys_to_dma_direct(dev, page_to_phys(page));
+-	*dma_handle = phys_to_dma_direct(dev, page_to_phys(page));
++	*dma_handle = phys_to_dma_direct(dev, page_to_phys(page),
++					 attrs & __DMA_ATTR_ALLOC_CC_SHARED);
  	return ret;
  
-+
-+out_free_remap_pages:
-+	if (remap)
-+		dma_common_free_remap(ret, size);
-+
- out_encrypt_pages:
--	if (mark_mem_decrypt && dma_set_encrypted(dev, page_address(page), size))
--		return NULL;
--out_free_pages:
-+	if (mark_mem_decrypt &&
-+	    dma_set_encrypted(dev, page_address(page), size))
-+		goto out_leak_pages;
-+
- 	if (!swiotlb_free(dev, page, size))
- 		dma_free_contiguous(dev, page, size);
- 	return NULL;
-@@ -380,8 +404,16 @@ void dma_direct_free(struct device *dev, size_t size,
- 	} else {
- 		if (IS_ENABLED(CONFIG_ARCH_HAS_DMA_CLEAR_UNCACHED))
- 			arch_dma_clear_uncached(cpu_addr, size);
--		if (mark_mem_encrypted && dma_set_encrypted(dev, cpu_addr, size))
-+	}
-+
-+	if (mark_mem_encrypted) {
-+		void *lm_addr;
-+
-+		lm_addr = phys_to_virt(phys);
-+		if (set_memory_encrypted((unsigned long)lm_addr, PFN_UP(size))) {
-+			pr_warn_ratelimited("leaking DMA memory that can't be re-encrypted\n");
- 			return;
-+		}
- 	}
  
- 	if (swiotlb_pool)
+@@ -450,11 +457,13 @@ struct page *dma_direct_alloc_pages(struct device *dev, size_t size,
+ 		return NULL;
+ 
+ 	ret = page_address(page);
+-	if (dma_set_decrypted(dev, ret, size))
++	if ((attrs & __DMA_ATTR_ALLOC_CC_SHARED) &&
++	    dma_set_decrypted(dev, ret, size))
+ 		goto out_leak_pages;
+ setup_page:
+ 	memset(ret, 0, size);
+-	*dma_handle = phys_to_dma_direct(dev, page_to_phys(page));
++	*dma_handle = phys_to_dma_direct(dev, page_to_phys(page),
++					 attrs & __DMA_ATTR_ALLOC_CC_SHARED);
+ 	return page;
+ out_leak_pages:
+ 	return NULL;
 -- 
 2.43.0
 
