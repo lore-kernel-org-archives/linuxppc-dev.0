@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-24380-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24381-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CAE42C4451B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2026 18:09:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 744A6C4451B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2026 18:09:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h1ybh1gTRz3c9Z;
-	Sat, 18 Jul 2026 04:09:20 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784311760;
-	cv=none; b=a0f0ADvnrdVcVvVOApsiMwggN5pBxNH8i8igccCPkxWP4K04WeCKGnJ3nUmn5e9YEYu9Zed7P5aIAloJlG5IGnOFUG4pztn/R2Xj5cQtRi0UkXduvpZlVgl4/QiR5NgSJlOLjCKv3mp5++oJ5ai8UBVtIyfGaOnYtkxGYoiiXhOTGSj1vy4eyqJir4VZLV3e1Hm7uiQ4b+h91cVQpDnZbqs2VDSAC51Jxpq8u4EKos4Vz0IC3AP5O/99dX4qvEPWX0vX1X2CUfKogqIuzALen+sbApSd2enjR6I4IB7mTE0dfQ5j1aHd16IL4Lh1CZvWspqk0FkTPjsDFbrbDIR3ag==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h1ybv6HPnz3c9k;
+	Sat, 18 Jul 2026 04:09:31 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784311771;
+	cv=none; b=oqs0HqAjpJtdkDj0/RtsOfiWWjkO1rmTCf8UDXB77HXEyif+AtAKZQLumAaCjpUlNsnXuClcBtGNMK5NrV498EHVJTrhMR8n5pJ3GTpO8D0kT4gTR/+MtG7GFX18bm+s1iqHVgDXixYidU4KcHYbaILZARKGdZSx1YET0M/I3YponOlzd71bDtg5Rr0D/LWGmOpAEoyu24dw47T2ck6XFlCGpJNcoWX9lKGziKroPFsTHKn69U03iCyVEorAP1f5WaTClmAkXA2HPgL0WjwOFT+qqp2IElAJ0dnr/cenXOxp16J4goEJj31fXPRPDxWt4V25fDsKd57iiduNzOO+/A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784311760; c=relaxed/relaxed;
-	bh=wekj/NDLmWCmZxzHsUwUUJzzNTnKgpVzqdkg0KE+9sA=;
+	t=1784311771; c=relaxed/relaxed;
+	bh=tkXR0ipZ7ma+5T3tic3bVYqHfLRJ5/MS0548pdfa6Q4=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=GBy6XH5WsoWI0noIxPuiUYzMHTErTFt/3141NUciYDtNfcccYI82ur/n/jn93FyiUVKh0RE5znq9x4c6TyqHW2zpYwBaZ6coooNlfW7kB/NrYqtZEn3cnJhi/MuNl/v/ov8pn9t6xyWOsdVIiKt0OEjvd5cEa+LRXW3DiKgJZXVlD2fdv2AEqsFYJk0MF4dKAl372TW7jHnuMqhc5l1O5JEtjRP8JuYNahISPGQG3n1HCNmLFgQhnPQqxhMuQLX2jdtV3V1JLsTsh260Xvn2OkohhVI1yvE7zooeccVsMGanlMGjGQ4hcX3uQxowsxYvkm0etMfGkxv7Kq/ZIqXKwA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=GXAYsOaH; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=SezRcyaGISM0p+eu6rYt4Bl6ykAhyxZEq3DyAiQUzKm00lGLIR7DxPL50WlSkaNf7/JI0I4qtWAvIroaktRhDSBhZ0gN4ImdSdB2IUIbNB1LCCdJfDSz46zE3jdJ+KlR+YeLtYEOm0wqfEjgKD7rcDQOZkGryhgGOruhdtbBlaQEm/TPDLvFW5/ZIDt6tYQO9/unUsE87W5/p8VpH2gjWj37dzRh6M9Qf7eq1hJjKjE4R0paUedrXd+vDWxSL4Z++P/DgjkG5YeNUTvMDAwqnq+ltHRIWu7Y1bYDIctdykUXiMmZNnp04t/fB5E5YgWuKk5DpZF4YR3UIa6p0hkjzA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ZKEaTtkj; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=GXAYsOaH;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ZKEaTtkj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h1ybg32gNz3c9T
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jul 2026 04:09:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h1ybv0FVmz3c9j
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jul 2026 04:09:31 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id D3BB6409E9;
-	Fri, 17 Jul 2026 18:09:17 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C834D1F000E9;
-	Fri, 17 Jul 2026 18:09:06 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 13D5560A6D;
+	Fri, 17 Jul 2026 18:09:29 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 63CFE1F00A3A;
+	Fri, 17 Jul 2026 18:09:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1784311757;
-	bh=wekj/NDLmWCmZxzHsUwUUJzzNTnKgpVzqdkg0KE+9sA=;
+	s=k20260515; t=1784311768;
+	bh=tkXR0ipZ7ma+5T3tic3bVYqHfLRJ5/MS0548pdfa6Q4=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=GXAYsOaHOvwy0ZJpRZO5dho+WvfBB9pgk11RR+R9CcBsTOa5l02MR708hIyxwV3Wa
-	 KL17plk3f2oFf6I7XXRAYeLfbuk0WW0XF4KJ+SdRhqp0bQecjj2Uq5qkPyyiDP5QyN
-	 nLw0k2c/iBxOQByS8wqfcaMKe4gKNPlmKEgFl+pl/DrXRZ/usfEMrTXvp9Jbo3RZPI
-	 SzkblS2p02DDN+XmOjvOBWEaLmm7ZFx4KSl4f20ZL0vNVgrINurAAMJo5m9+P92PuJ
-	 iqrot+YS6pcDf5mAApMj4m/PGzRry1hrvyKjdo9kXjQPr8FcQ1ue12sspd3O0hnAme
-	 SaVV9tqbcS7Tg==
+	b=ZKEaTtkjlsYTecPUwUZYY5boRz8Hl5p9D2dk5Y5OHE5V+KrdaCWiMHICIVvyeZo8l
+	 bfDENN6CkL/X2Nhd1Dhikwp79Ii7RZhp6+TdbxOWmncy5evwDeUC0PrecgKYvOfJ2i
+	 z5t5X7pIAq2lJxusYJVvtvqityS5Yt1NuT1GCEYBv/ZX+VxYwD85Oz7Abz4+1TQJdX
+	 wcai+O3Dp9MiHid7sAM+sdbkz+TE4Ihrj2BOXgkzKovblm2cKclw8oi9o7WFLwiD3J
+	 OUQsZBxyG2lJSEe2eHv3+KJZZXFXBOwVqSpI2S4/WrMB2IqHdqF6IqWNhGaswGM9hg
+	 XgoRYSziMoMAQ==
 From: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>
 To: iommu@lists.linux.dev,
 	linux-arm-kernel@lists.infradead.org,
@@ -77,11 +77,10 @@ Cc: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>,
 	Christian Borntraeger <borntraeger@linux.ibm.com>,
 	Sven Schnelle <svens@linux.ibm.com>,
 	x86@kernel.org,
-	Jason Gunthorpe <jgg@nvidia.com>,
-	Michael Kelley <mhklinux@outlook.com>
-Subject: [PATCH v8 22/23] dma: swiotlb: handle set_memory_decrypted() failures
-Date: Fri, 17 Jul 2026 23:34:40 +0530
-Message-ID: <20260717180442.110954-23-aneesh.kumar@kernel.org>
+	Jason Gunthorpe <jgg@nvidia.com>
+Subject: [PATCH v8 23/23] swiotlb: remove unused SWIOTLB_FORCE flag
+Date: Fri, 17 Jul 2026 23:34:41 +0530
+Message-ID: <20260717180442.110954-24-aneesh.kumar@kernel.org>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260717180442.110954-1-aneesh.kumar@kernel.org>
 References: <20260717180442.110954-1-aneesh.kumar@kernel.org>
@@ -100,192 +99,47 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Check the return value when converting swiotlb pools between encrypted and
-decrypted mappings. If the default pool cannot be decrypted after early
-initialization, mark the pool fully used so it cannot satisfy future bounce
-allocations.
+SWIOTLB_FORCE has no remaining in-tree users. Forced bouncing is now
+controlled through the swiotlb=force command line option via
+swiotlb_force_bounce.
 
-For late initialization, return the `set_memory_decrypted()` failure. For
-restricted DMA pools, fail device initialization if the reserved pool
-cannot be decrypted.
-
-This prevents swiotlb from using pools whose encryption attributes do not
-match their metadata, and avoids returning pages with uncertain encryption
-state back to the allocator.
+Remove the unused flag and simplify the force_bounce initialization.
 
 Reviewed-by: Jason Gunthorpe <jgg@nvidia.com>
-Tested-by: Michael Kelley <mhklinux@outlook.com>
-Tested-by: Mostafa Saleh <smostafa@google.com>
-Reviewed-by: Petr Tesarik <ptesarik@suse.com>
 Signed-off-by: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>
 ---
- kernel/dma/swiotlb.c | 80 +++++++++++++++++++++++++++++++++++---------
- 1 file changed, 65 insertions(+), 15 deletions(-)
+ include/linux/swiotlb.h | 3 +--
+ kernel/dma/swiotlb.c    | 3 +--
+ 2 files changed, 2 insertions(+), 4 deletions(-)
 
+diff --git a/include/linux/swiotlb.h b/include/linux/swiotlb.h
+index c3bf7ed6f7a6..9caca923c380 100644
+--- a/include/linux/swiotlb.h
++++ b/include/linux/swiotlb.h
+@@ -15,8 +15,7 @@ struct page;
+ struct scatterlist;
+ 
+ #define SWIOTLB_VERBOSE	(1 << 0) /* verbose initialization */
+-#define SWIOTLB_FORCE	(1 << 1) /* force bounce buffering */
+-#define SWIOTLB_ANY	(1 << 2) /* allow any memory for the buffer */
++#define SWIOTLB_ANY	(1 << 1) /* allow any memory for the buffer */
+ 
+ /*
+  * Maximum allowable number of contiguous slabs to map,
 diff --git a/kernel/dma/swiotlb.c b/kernel/dma/swiotlb.c
-index 4d0f2c04d891..8b7e47504304 100644
+index 8b7e47504304..897aba538c5b 100644
 --- a/kernel/dma/swiotlb.c
 +++ b/kernel/dma/swiotlb.c
-@@ -248,6 +248,23 @@ static inline unsigned long nr_slots(u64 val)
- 	return DIV_ROUND_UP(val, IO_TLB_SIZE);
- }
- 
-+static void swiotlb_mark_pool_used(struct io_tlb_pool *pool)
-+{
-+	unsigned long i;
-+
-+	for (i = 0; i < pool->nareas; i++) {
-+		pool->areas[i].index = 0;
-+		pool->areas[i].used = pool->area_nslabs;
-+	}
-+
-+	for (i = 0; i < pool->nslabs; i++) {
-+		pool->slots[i].list = 0;
-+		pool->slots[i].orig_addr = INVALID_PHYS_ADDR;
-+		pool->slots[i].alloc_size = 0;
-+		pool->slots[i].pad_slots = 0;
-+	}
-+}
-+
- /*
-  * Early SWIOTLB allocation may be too early to allow an architecture to
-  * perform the desired operations.  This function allows the architecture to
-@@ -272,8 +289,16 @@ void __init swiotlb_update_mem_attributes(void)
+@@ -400,8 +400,7 @@ void __init swiotlb_init_remap(bool addressing_limit, unsigned int flags,
+ 	if (swiotlb_force_disable)
  		return;
- 	bytes = PAGE_ALIGN(mem->nslabs << IO_TLB_SHIFT);
  
--	if (io_tlb_default_mem.cc_shared)
--		set_memory_decrypted((unsigned long)mem->vaddr, bytes >> PAGE_SHIFT);
-+	if (io_tlb_default_mem.cc_shared) {
-+		int ret;
-+
-+		ret = set_memory_decrypted((unsigned long)mem->vaddr,
-+					   bytes >> PAGE_SHIFT);
-+		if (ret) {
-+			pr_warn("Failed to decrypt default memory pool, disabling it\n");
-+			swiotlb_mark_pool_used(mem);
-+		}
-+	}
- }
+-	io_tlb_default_mem.force_bounce =
+-		swiotlb_force_bounce || (flags & SWIOTLB_FORCE);
++	io_tlb_default_mem.force_bounce = swiotlb_force_bounce;
  
- static void swiotlb_init_io_tlb_pool(struct io_tlb_pool *mem, phys_addr_t start,
-@@ -442,9 +467,10 @@ int swiotlb_init_late(size_t size, gfp_t gfp_mask,
- {
- 	struct io_tlb_pool *mem = &io_tlb_default_mem.defpool;
- 	unsigned long nslabs = ALIGN(size >> IO_TLB_SHIFT, IO_TLB_SEGSIZE);
-+	unsigned int order, area_order, slot_order;
-+	bool leak_pages = false;
- 	unsigned int nareas;
- 	unsigned char *vstart = NULL;
--	unsigned int order, area_order;
- 	bool retried = false;
- 	int rc = 0;
- 
-@@ -504,6 +530,7 @@ int swiotlb_init_late(size_t size, gfp_t gfp_mask,
- 			(PAGE_SIZE << order) >> 20);
- 	}
- 
-+	rc = -ENOMEM;
- 	nareas = limit_nareas(default_nareas, nslabs);
- 	area_order = get_order(array_size(sizeof(*mem->areas), nareas));
- 	mem->areas = (struct io_tlb_area *)
-@@ -511,14 +538,20 @@ int swiotlb_init_late(size_t size, gfp_t gfp_mask,
- 	if (!mem->areas)
- 		goto error_area;
- 
-+	slot_order = get_order(array_size(sizeof(*mem->slots), nslabs));
- 	mem->slots = (void *)__get_free_pages(GFP_KERNEL | __GFP_ZERO,
--		get_order(array_size(sizeof(*mem->slots), nslabs)));
-+					      slot_order);
- 	if (!mem->slots)
- 		goto error_slots;
- 
--	if (io_tlb_default_mem.cc_shared)
--		set_memory_decrypted((unsigned long)vstart,
--				     (nslabs << IO_TLB_SHIFT) >> PAGE_SHIFT);
-+	if (io_tlb_default_mem.cc_shared) {
-+		rc = set_memory_decrypted((unsigned long)vstart,
-+					  (nslabs << IO_TLB_SHIFT) >> PAGE_SHIFT);
-+		if (rc) {
-+			leak_pages = true;
-+			goto error_decrypt;
-+		}
-+	}
- 
- 	swiotlb_init_io_tlb_pool(mem, virt_to_phys(vstart), vstart, nslabs, true,
- 				 nareas);
-@@ -527,16 +560,20 @@ int swiotlb_init_late(size_t size, gfp_t gfp_mask,
- 	swiotlb_print_info();
- 	return 0;
- 
-+error_decrypt:
-+	free_pages((unsigned long)mem->slots, slot_order);
- error_slots:
- 	free_pages((unsigned long)mem->areas, area_order);
- error_area:
--	free_pages((unsigned long)vstart, order);
--	return -ENOMEM;
-+	if (!leak_pages)
-+		free_pages((unsigned long)vstart, order);
-+	return rc;
- }
- 
- void __init swiotlb_exit(void)
- {
- 	struct io_tlb_pool *mem = &io_tlb_default_mem.defpool;
-+	bool leak_pages = false;
- 	unsigned long tbl_vaddr;
- 	size_t tbl_size, slots_size;
- 	unsigned int area_order;
-@@ -552,19 +589,23 @@ void __init swiotlb_exit(void)
- 	tbl_size = PAGE_ALIGN(mem->end - mem->start);
- 	slots_size = PAGE_ALIGN(array_size(sizeof(*mem->slots), mem->nslabs));
- 
--	if (io_tlb_default_mem.cc_shared)
--		set_memory_encrypted(tbl_vaddr, tbl_size >> PAGE_SHIFT);
-+	if (io_tlb_default_mem.cc_shared) {
-+		if (set_memory_encrypted(tbl_vaddr, tbl_size >> PAGE_SHIFT))
-+			leak_pages = true;
-+	}
- 
- 	if (mem->late_alloc) {
- 		area_order = get_order(array_size(sizeof(*mem->areas),
- 			mem->nareas));
- 		free_pages((unsigned long)mem->areas, area_order);
--		free_pages(tbl_vaddr, get_order(tbl_size));
-+		if (!leak_pages)
-+			free_pages(tbl_vaddr, get_order(tbl_size));
- 		free_pages((unsigned long)mem->slots, get_order(slots_size));
- 	} else {
- 		memblock_free(mem->areas,
- 			array_size(sizeof(*mem->areas), mem->nareas));
--		memblock_phys_free(mem->start, tbl_size);
-+		if (!leak_pages)
-+			memblock_phys_free(mem->start, tbl_size);
- 		memblock_free(mem->slots, slots_size);
- 	}
- 
-@@ -1957,9 +1998,18 @@ static int rmem_swiotlb_device_init(struct reserved_mem *rmem,
- 		 * restricted mem pool is shared by default
- 		 */
- 		if (cc_platform_has(CC_ATTR_MEM_ENCRYPT)) {
-+			int ret;
-+
- 			mem->cc_shared = true;
--			set_memory_decrypted((unsigned long)phys_to_virt(rmem->base),
--					     rmem->size >> PAGE_SHIFT);
-+			ret = set_memory_decrypted((unsigned long)phys_to_virt(rmem->base),
-+						   rmem->size >> PAGE_SHIFT);
-+			if (ret) {
-+				dev_err(dev, "Failed to decrypt restricted DMA pool\n");
-+				kfree(pool->areas);
-+				kfree(pool->slots);
-+				kfree(mem);
-+				return ret;
-+			}
- 		} else {
- 			mem->cc_shared = false;
- 		}
+ #ifdef CONFIG_SWIOTLB_DYNAMIC
+ 	if (!remap)
 -- 
 2.43.0
 
