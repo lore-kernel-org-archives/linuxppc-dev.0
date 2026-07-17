@@ -1,64 +1,105 @@
-Return-Path: <linuxppc-dev+bounces-24348-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24349-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B89EC44515
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2026 15:51:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9953CC44515
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2026 15:56:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h1vXb50Zpz3c1C;
-	Sat, 18 Jul 2026 01:51:27 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784303487;
-	cv=none; b=jENhVd3xDW43JL2Vi0A2F9jPMkc/Bom7r352FX7qIXb81sEPssc68KuVo4ukeQgiUFTctxJHTggTha6Zl8usGbViSjtFl+RlO5ASKQ/Dj+G94JQgwEubzM++Krs1JDdWqjF6m44lwoQauYTuehQUJJ4BR8LApnIIoTVZrUHrmwIActE6F/DLykd9gNuMZsZGF/vmu0yhepeD1I2e//ORm3Qfk0rJeqALmMYS6q7XW9MwX+b3FQZXInMjjMCLdC9amW1tu4Xz+0vrXGLUH/kYiajmSJieeS9dYc0eegqE/Bxo5cd5qAQ4lZ7q2b0ARCdpJEomJmunqzVTt9a24GLT5w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h1vfG5rWvz3c2C;
+	Sat, 18 Jul 2026 01:56:22 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.37.111.173
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784303782;
+	cv=none; b=apEJo1yaryBrKX7RRhcGlQFh+jGfPJRYxG7OQbl78q1NhiuJJiSpJ33l4NLpxHEHik2tDMuKOJJrMiwmfHsd/ium5VN+ZrV6B18EpqtLmpHdVr0Vx1bCVbJNxtg6OzKP97KD7a/udvLD9EuVOjFQsIQRWUr9DSDi9i+Pz21vjMSMq7Oe5RbZyifi9TN6rmBCysGzFIlkrjvtWzkxLaCuhfJCXTgxOkDKHBJsFinODMHkCyAIYqp3nvbIYI/M0OVo1oxTq4B9DwFJTzPlpUmoQDCu3lATq3I5QpYShSS1v011ydJjwJkjlS1E+HKeqWsMcZgXaXNgaYzUy4mD7GU0ig==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784303487; c=relaxed/relaxed;
-	bh=0oqxau51EGKx57oku9xsQOfk6GBi1jETcfV+2YVQ3ow=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=DoPpc+ovxD2GzEZP7T+UtUmIt/bQjYrOF2tO/6auuhdPeZHoO9rMJEw27ijHizSuCLzI8C5sr1xBTLWXB4Qy/74hp2H65uVJpACHpuwn2XA/ibqwvMUv37mg0Q6VjLvPx72OXUb14VcHCm+B81f2Oymxk8xoYrXmX+Fg6w0fO5hNXdm6ZUHKucWH/J0EI9FWYS2JGp8EbQa1dXmvVpiHaJbQV/Su9mTLtXZeIoHEDPwDhexQliBKQkTtzX1uDGcPs78jGA+1z15cDVFOPcg1AxLttz1VuLrIQCuvfox3u0KHlwoX43ovZIVzUlWZirdINMffHF30Iygpb6WaaDxsrw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=co5XnJeO; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=johan@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1784303782; c=relaxed/relaxed;
+	bh=sjmpLek5JsfmdeNd2NlY6/p7Vq6b0mjOFKYaIFXBJmg=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=nG74byfQRWTdCWUSeVbC1w2qpHquu0lmVpN/s8xZVv14digPeCJynA26KkeY18BrjB6LTHAckVPX5W3OWRJ/sz/ZkqtstYKDRbBuvXCuqgfKHmbGrglmWT3v5ic+xi5WZPFKNVP09BAYt8Erg5TxsvVbR5iFfcT9GFRJIoBec5fldCpJmcUzQYLmqCJN/EZJa+xiJfhfnoIU1qen2B2/pjw7eb5VgwL6wZB//egS3idPjWd8fBBeqFWt+GjNkuDMhq6hSgUrKL8a+QCUHhzCHcwmUQIe5J12klXILTl/wS2LNRYX4WS37zAJTWmBrZyX7rbYHNNZKCZwXAC0MIc06w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=HansenPartnership.com; dkim=pass (1024-bit key; secure) header.d=hansenpartnership.com header.i=@hansenpartnership.com header.a=rsa-sha256 header.s=20151216 header.b=pE4JSA7L; dkim-atps=neutral; spf=pass (client-ip=198.37.111.173; helo=lamorak.hansenpartnership.com; envelope-from=james.bottomley@hansenpartnership.com; receiver=lists.ozlabs.org) smtp.mailfrom=hansenpartnership.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=HansenPartnership.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=co5XnJeO;
+	dkim=pass (1024-bit key; secure) header.d=hansenpartnership.com header.i=@hansenpartnership.com header.a=rsa-sha256 header.s=20151216 header.b=pE4JSA7L;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=johan@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=hansenpartnership.com (client-ip=198.37.111.173; helo=lamorak.hansenpartnership.com; envelope-from=james.bottomley@hansenpartnership.com; receiver=lists.ozlabs.org)
+Received: from lamorak.hansenpartnership.com (lamorak.hansenpartnership.com [198.37.111.173])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h1vXY0rz3z3c0H
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jul 2026 01:51:24 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id EE4EB40466;
-	Fri, 17 Jul 2026 15:51:21 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id ACE8F1F000E9;
-	Fri, 17 Jul 2026 15:51:21 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1784303481;
-	bh=0oqxau51EGKx57oku9xsQOfk6GBi1jETcfV+2YVQ3ow=;
-	h=From:To:Cc:Subject:Date;
-	b=co5XnJeOeQhVC3VInEvUrEbB8ZDoww+NXJe4cyoVIOLUZSYJtI0GColUNDUFhaDRj
-	 VIHm23b8Moeb0jEmLlh7Xd9EMK/USiXzJkTz4Kdxl7jqOrWIhk0xbSl30y+ZWq59wE
-	 cQlcHdrGVdfC86ZUGjtexmuNYbNp3g8zVf4zb+IGaAOOuo5wSicxlEeN2HU6Y7NLof
-	 drXzJvvIt5rUcQaSAgrrv844lxNCu6kBEvVL/offm9ZguSDOtGus8VjlB20zUZ2Y6Q
-	 nI7gnJxJqPbfTRU8dXQiUkveAR1UVNSVjiiN+BcuiL2JhJuIi+/JD6G3YinfvTyDC1
-	 fvh4WpU8eIGBw==
-Received: from johan by xi.lan with local (Exim 4.99.4)
-	(envelope-from <johan@kernel.org>)
-	id 1wkkqN-00000007mKZ-2FbP;
-	Fri, 17 Jul 2026 17:51:19 +0200
-From: Johan Hovold <johan@kernel.org>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-usb@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	Johan Hovold <johan@kernel.org>,
-	stable@vger.kernel.org,
-	Mark Brown <broonie@kernel.org>
-Subject: [PATCH] USB: phy: fsl-usb: fix missing static keywords
-Date: Fri, 17 Jul 2026 17:49:57 +0200
-Message-ID: <20260717154957.1853976-1-johan@kernel.org>
-X-Mailer: git-send-email 2.54.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h1vfF0bRVz3c20
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jul 2026 01:56:19 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+	d=hansenpartnership.com; s=20151216; t=1784303776;
+	bh=8E/aCvafBerjGcyt/czXHn8A+QbSJiP1ZLClAh2Nqf8=;
+	h=Message-ID:Subject:From:To:Date:In-Reply-To:References:From;
+	b=pE4JSA7LDo31TtOH6lVhRGLmgo69Rq7uIrlsGvhRqaaCuqGH7NIbVKEBzPNgbzlr0
+	 HfhhSUxH3Jy6Mco8uMYCXMhJUMKRW6EZYi47aVY5QkDAHN2pfU1WiTnh9hqOrO5bQR
+	 i7p7VxY4n38UceajEGhvjud0cMrlCjcs/V9aUfxM=
+Received: from lingrow.int.hansenpartnership.com (unknown [IPv6:2601:5c4:4300:d341::8c71])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519MLKEM768 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lamorak.hansenpartnership.com (Postfix) with ESMTPSA id AA4091C029F;
+	Fri, 17 Jul 2026 11:56:15 -0400 (EDT)
+Message-ID: <976f1a8316438d5b7c2f446a0369dcda3289cc92.camel@HansenPartnership.com>
+Subject: Re: [PATCH 35/60] kvm: Add VCPU plane-scheduling state and helpers
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: "Saenz Julienne, Nicolas" <nsaenz@amazon.es>, 
+ =?ISO-8859-1?Q?J=F6rg_R=F6del?=
+	 <joro@8bytes.org>, Paolo Bonzini <pbonzini@redhat.com>
+Cc: Sean Christopherson <seanjc@google.com>, Tom Lendacky	
+ <thomas.lendacky@amd.com>, "ashish.kalra@amd.com" <ashish.kalra@amd.com>, 
+ "michael.roth@amd.com"	 <michael.roth@amd.com>, "Orazgaliyeva, Anel"
+ <anelkz@amazon.de>, Melody Wang	 <huibo.wang@amd.com>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>, 
+ "linux-kernel@vger.kernel.org"	 <linux-kernel@vger.kernel.org>,
+ "kvmarm@lists.linux.dev"	 <kvmarm@lists.linux.dev>,
+ "loongarch@lists.linux.dev"	 <loongarch@lists.linux.dev>,
+ "linux-mips@vger.kernel.org"	 <linux-mips@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org"	 <linuxppc-dev@lists.ozlabs.org>,
+ "kvm-riscv@lists.infradead.org"	 <kvm-riscv@lists.infradead.org>,
+ "x86@kernel.org" <x86@kernel.org>,  "coconut-svsm@lists.linux.dev"	
+ <coconut-svsm@lists.linux.dev>, "joerg.roedel@amd.com"
+ <joerg.roedel@amd.com>
+Date: Fri, 17 Jul 2026 11:56:15 -0400
+In-Reply-To: <DK0W6G329B6W.2KGT7FAVSKNYS@amazon.com>
+References: <20260608144252.351443-1-joro@8bytes.org>
+	 <20260608144252.351443-36-joro@8bytes.org>
+	 <e7eb0dba-790a-4644-9895-5c9a7420d7fe@redhat.com>
+	 <aib8n5lO6HKbLC4Y@8bytes.org>
+	 <CABgObfbUsDeStnZF-7oyR-W-Bvd4qTMoeUwGizgn10UTdKtZ2A@mail.gmail.com>
+	 <aigE2EvJyZlYDz0V@8bytes.org> <DK0W6G329B6W.2KGT7FAVSKNYS@amazon.com>
+Autocrypt: addr=James.Bottomley@HansenPartnership.com;
+ keydata=mQENBE58FlABCADPM714lRLxGmba4JFjkocqpj1/6/Cx+IXezcS22azZetzCXDpm2MfNE
+ lecY3qkFjfnoffQiw5rrOO0/oRSATOh8+2fmJ6el7naRbDuh+i8lVESfdlkoqX57H5R8h/UTIp6gn
+ 1mpNlxjQv6QSZbl551zQ1nmkSVRbA5TbEp4br5GZeJ58esmYDCBwxuFTsSsdzbOBNthLcudWpJZHU
+ RfMc0ew24By1nldL9F37AktNcCipKpC2U0NtGlJjYPNSVXrCd1izxKmO7te7BLP+7B4DNj1VRnaf8
+ X9+VIApCi/l4Kdx+ZR3aLTqSuNsIMmXUJ3T8JRl+ag7kby/KBp+0OpotABEBAAG0N0phbWVzIEJvd
+ HRvbWxleSA8SmFtZXMuQm90dG9tbGV5QEhhbnNlblBhcnRuZXJzaGlwLmNvbT6JAVgEEwEIAEICGw
+ MGCwkIBwMCBhUIAgkKCwQWAgMBAh4BAheAAhkBFiEE1WBuc8i0YnG+rZrfgUrkfCFIVNYFAml2ZBI
+ FCS3GUMIACgkQgUrkfCFIVNZKjQf/deRzlXZClKxTC/Ee2yEPqqS7mm/INUA49KdQQ5oIhSxkUBy0
+ 9J4qjMIo5F8ZFkFTqikBqeL35LKu7O7rn8WETfX8Bxvos3HUsl3jHo34DES4MUFIpoQPgtiLRGwLb
+ K0cVCAArR2u2qj4ABmTRrs1I1kvdjEw6gatOuXtEe/j5O2fvfzTq9GBr0Q3n2IAsFXi4hLlx6VPE8
+ tyWUZ8BWJKtih3JAeUiXFvASL3McV0rV9RnU0VbjEQEhSE7PMYhWpnDC9AyBb0lXJllQRvC3NSkUB
+ 8KVQgNNxRPss0WE/nBoZ4dFA42jTyzTz8lNylxZoAWV7WJb3QxVg4oCodRVrxxrQhSmFtZXMgQm90
+ dG9tbGV5IDxqZWpiQGtlcm5lbC5vcmc+iQFVBBMBCAA/AhsDBgsJCAcDAgYVCAIJCgsEFgIDAQIeA
+ QIXgBYhBNVgbnPItGJxvq2a34FK5HwhSFTWBQJgS5mYBQkbNYS9AAoJEIFK5HwhSFTWBpwIAL5Bk3
+ 5FB34U6iHmDzzgdCbxLTs43T/YQyJpcGIvopBvnI/fDY8oSG6Df64/O6B+1R+A8TDp6ZG5ysUWnCC
+ 6GuIaEHemBYkitMPglR6+sGCMQY7O0mlsPvdssvKK1KI9Bno4VU6ogaF2qVzefSqg1Djmf/DcsxWP
+ rI/jdJ8FB5AYR2rjIdDFc+zRdAJuavo1/anyY2wgpFh/3R8IOYAEfWV9nGgYkf9+tA4EIn1sxE0I3
+ L5oW2N3mbyRrkzuBwO8ztMCwqEPk7moWzhokcZqMXiAIahaZdkashJC+s2X2RZSGCy+g+pvY5NN4B
+ BVG5XwLgVBqbHMTcxE0fbmPqz+q6O0LEphbWVzIEJvdHRvbWxleSA8amVqYkBoYW5zZW5wYXJ0bmV
+ yc2hpcC5jb20+iQFXBBMBCABBFiEE1WBuc8i0YnG+rZrfgUrkfCFIVNYFAmODZ5ACGwMFCRs1hL0F
+ CwkIBwICIgIGFQoJCAsCBBYCAwECHgcCF4AACgkQgUrkfCFIVNZu0Af/TzvL2/NdgAcw9uN3x60H8
+ jc4QUq14VpxcFEFEMpcj1morkX/G93V+56HBBaXZj+yK8PhxIA/SIz+sU7C/0YvKuvzakP8ZX/7WJ
+ e32SOUtjfr/VTaqjIBzNj6OxLvZpmNbBw7s6DwhhNpHOWqJ/1ml+PtDRDV71IB58yVqQjp1xlNKVl
+ ZppcJ5908EJzsFnRIVjiQiDSKoppqB2BCibBbrWcln7CiWMyOC/cco6SIn6twH+f7+aivJ3xGcOE2
+ a9gBKF5rNi9TBoX9oyPmshv/TDmnohsVrH7AYXlGYfZTk15SWEiROh1QX8/uD9wl/gcIv5EDUpT/F
+ L2jzOsA5663bw==
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.56.2 
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -72,278 +113,89 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 
-A recent change enabling compile testing of a Freescale dual-role
-controller indirectly enabled a USB PHY driver to be built. That driver
-in turn is missing a bunch of static keywords which results in warnings
-like:
+On Fri, 2026-07-17 at 13:48 +0000, Saenz Julienne, Nicolas wrote:
+> Hi Joerg, I'm a bit late to the discussion hope it helps nonetheless,
+>=20
+> On Tue Jun 9, 2026 at 2:37 PM CEST, J=C3=B6rg R=C3=B6del wrote:
+> > CAUTION: This email originated from outside of the organization. Do
+> > not click links or open attachments unless you can confirm the
+> > sender and know the content is safe.
+> >=20
+> > > The idea of the userspace scheduling was that you're not forced
+> > > to use it - the kernel can always choose to override it if it's
+> > > using an accelerated implementation of planes (and of plane
+> > > switching). But it also leaves some leeway to different
+> > > accelerated implementations, each of which can pick their own
+> > > algorithm.
+> > >=20
+> > > Conceptually I'd rather keep the possibility of userspace
+> > > scheduling. But maybe it doesn't add much.
+> >=20
+> > My preference is to keep plane scheduling at one place (in the
+> > kernel) to keep it simple. But if you see a need for user-mode to
+> > interact there as well (only really works for VSM), then I can add
+> > it.
+>=20
+> The responsibility split we had in mind when we built a VSM emulation
+> prototype [1] was to keep all VTL policing in user-space. This
+> includes VTL switching, Cross VTL IPIs, Intercepts (Memory, MSRs,
+> Insns, CPU regs), VTL aware SMP bring-up, etc. Even with KVM Planes
+> in place, my thinking was to keep it as such. While all this could be
+> implemented in the kernel, in practical terms, I think it'll be
+> easier to get VSM support upstream the more we move the
+> implementation into user-space.
 
-drivers/usb/phy/phy-fsl-usb.c:105:5: error: no previous prototype for 'write_ulpi' [-Werror=missing-prototypes]
-  105 | int write_ulpi(u8 addr, u8 data)
-        |     ^~~~~~~~~~
+I looked at the kernel bit.  The vsm/dev branch contains 72 patches
+over 6.12 which is quite a lot ...
 
-which consequently breaks -Werror builds.
+However, from a quick skim, the main thing is that you used multiple
+KVM structures to manage the planes which means each plane naturally
+gets its own address space.  In the current planes model so far there's
+only one address space (or two if you have SMM).  SNP doesn't need
+anything above this because the VMPL protection is naturally managed
+inside the guest (so not really visible to the host) but a VTL
+implementation will.  So I think the big question becomes how are we
+going to achieve address space separation for planes?  It's tempting to
+say simply one address space per plane and make SMM its own plane with
+different switching but it's an awful lot of overhead especially as
+most VMs won't even use planes, so it looks like there has to be a more
+opportunistic model for planes address spaces.
 
-Add the missing static keywords.
+> More importantly, I think the area of Virtualization Based Security
+> would benefit from a versatile Planes implementation. Forcing
+> specific plane switching semantics might prevent the introduction VSM
+> alternatives or extensions. Heki and lVBS come to mind here.
+>=20
+> > I read a bit more about VSM and it seems their prioritization of
+> > VTLs is a bit more complicated. VTL0 has the least privileges but
+> > boots first, then sets up VTL1. But VTL1 is only higher-privileged
+> > once it is locked by VTL0. Another way to look at it is that VTL0
+> > de-prioritizes itself.
+> >=20
+> > The patches here are built around the assumption that plane0 is the
+> > highest privileged one and is always runnable. Running any lower-
+> > privilege plane must be triggered by the guest. This is clearly not
+> > sufficient for VSM, the question is how to solve that.
+>=20
+> I'd suggest inverting the priorities, with higher planes being more
+> privileged. It'll make introducing higher privilege levels easier.
+> This is especially useful with VSM, where it's not possible to know
+> how many levels will be enabled before launching the VM.
 
-Fixes: 0807c500a1a6 ("USB: add Freescale USB OTG Transceiver driver")
-Cc: stable@vger.kernel.org	# 3.0
-Reported-by: Mark Brown <broonie@kernel.org>
-Link: https://lore.kernel.org/r/4f9f5ff9-8eaa-4bd5-9331-37119f78e13f@sirena.org.uk
-Signed-off-by: Johan Hovold <johan@kernel.org>
----
- drivers/usb/phy/phy-fsl-usb.c | 52 +++++++++++++++++------------------
- drivers/usb/phy/phy-fsl-usb.h |  6 ++--
- 2 files changed, 29 insertions(+), 29 deletions(-)
+I already addressed this in a different reply
 
-diff --git a/drivers/usb/phy/phy-fsl-usb.c b/drivers/usb/phy/phy-fsl-usb.c
-index 35d79f11b03d..1986f7e9d9be 100644
---- a/drivers/usb/phy/phy-fsl-usb.c
-+++ b/drivers/usb/phy/phy-fsl-usb.c
-@@ -46,7 +46,7 @@
- 
- static const char driver_name[] = "fsl-usb2-otg";
- 
--const pm_message_t otg_suspend_state = {
-+static const pm_message_t otg_suspend_state = {
- 	.event = 1,
- };
- 
-@@ -57,11 +57,11 @@ static struct fsl_otg *fsl_otg_dev;
- static int srp_wait_done;
- 
- /* FSM timers */
--struct fsl_otg_timer *a_wait_vrise_tmr, *a_wait_bcon_tmr, *a_aidl_bdis_tmr,
-+static struct fsl_otg_timer *a_wait_vrise_tmr, *a_wait_bcon_tmr, *a_aidl_bdis_tmr,
- 	*b_ase0_brst_tmr, *b_se0_srp_tmr;
- 
- /* Driver specific timers */
--struct fsl_otg_timer *b_data_pulse_tmr, *b_vbus_pulse_tmr, *b_srp_fail_tmr,
-+static struct fsl_otg_timer *b_data_pulse_tmr, *b_vbus_pulse_tmr, *b_srp_fail_tmr,
- 	*b_srp_wait_tmr, *a_wait_enum_tmr;
- 
- static struct list_head active_timers;
-@@ -102,7 +102,7 @@ static void (*_fsl_writel)(u32 v, unsigned __iomem *p);
- #define fsl_writel(val, addr)	writel(val, addr)
- #endif /* CONFIG_PPC32 */
- 
--int write_ulpi(u8 addr, u8 data)
-+static int write_ulpi(u8 addr, u8 data)
- {
- 	u32 temp;
- 
-@@ -115,7 +115,7 @@ int write_ulpi(u8 addr, u8 data)
- /* Operations that will be called from OTG Finite State Machine */
- 
- /* Charge vbus for vbus pulsing in SRP */
--void fsl_otg_chrg_vbus(struct otg_fsm *fsm, int on)
-+static void fsl_otg_chrg_vbus(struct otg_fsm *fsm, int on)
- {
- 	u32 tmp;
- 
-@@ -133,7 +133,7 @@ void fsl_otg_chrg_vbus(struct otg_fsm *fsm, int on)
- }
- 
- /* Discharge vbus through a resistor to ground */
--void fsl_otg_dischrg_vbus(int on)
-+static void fsl_otg_dischrg_vbus(int on)
- {
- 	u32 tmp;
- 
-@@ -151,7 +151,7 @@ void fsl_otg_dischrg_vbus(int on)
- }
- 
- /* A-device driver vbus, controlled through PP bit in PORTSC */
--void fsl_otg_drv_vbus(struct otg_fsm *fsm, int on)
-+static void fsl_otg_drv_vbus(struct otg_fsm *fsm, int on)
- {
- 	u32 tmp;
- 
-@@ -169,7 +169,7 @@ void fsl_otg_drv_vbus(struct otg_fsm *fsm, int on)
-  * Pull-up D+, signalling connect by periperal. Also used in
-  * data-line pulsing in SRP
-  */
--void fsl_otg_loc_conn(struct otg_fsm *fsm, int on)
-+static void fsl_otg_loc_conn(struct otg_fsm *fsm, int on)
- {
- 	u32 tmp;
- 
-@@ -188,7 +188,7 @@ void fsl_otg_loc_conn(struct otg_fsm *fsm, int on)
-  * port.  In host mode, controller will automatically send SOF.
-  * Suspend will block the data on the port.
-  */
--void fsl_otg_loc_sof(struct otg_fsm *fsm, int on)
-+static void fsl_otg_loc_sof(struct otg_fsm *fsm, int on)
- {
- 	u32 tmp;
- 
-@@ -203,7 +203,7 @@ void fsl_otg_loc_sof(struct otg_fsm *fsm, int on)
- }
- 
- /* Start SRP pulsing by data-line pulsing, followed with v-bus pulsing. */
--void fsl_otg_start_pulse(struct otg_fsm *fsm)
-+static void fsl_otg_start_pulse(struct otg_fsm *fsm)
- {
- 	u32 tmp;
- 
-@@ -219,7 +219,7 @@ void fsl_otg_start_pulse(struct otg_fsm *fsm)
- 	fsl_otg_add_timer(fsm, b_data_pulse_tmr);
- }
- 
--void b_data_pulse_end(unsigned long foo)
-+static void b_data_pulse_end(unsigned long foo)
- {
- #ifdef HA_DATA_PULSE
- #else
-@@ -230,7 +230,7 @@ void b_data_pulse_end(unsigned long foo)
- 	fsl_otg_pulse_vbus();
- }
- 
--void fsl_otg_pulse_vbus(void)
-+static void fsl_otg_pulse_vbus(void)
- {
- 	srp_wait_done = 0;
- 	fsl_otg_chrg_vbus(&fsl_otg_dev->fsm, 1);
-@@ -238,7 +238,7 @@ void fsl_otg_pulse_vbus(void)
- 	fsl_otg_add_timer(&fsl_otg_dev->fsm, b_vbus_pulse_tmr);
- }
- 
--void b_vbus_pulse_end(unsigned long foo)
-+static void b_vbus_pulse_end(unsigned long foo)
- {
- 	fsl_otg_chrg_vbus(&fsl_otg_dev->fsm, 0);
- 
-@@ -251,7 +251,7 @@ void b_vbus_pulse_end(unsigned long foo)
- 	fsl_otg_add_timer(&fsl_otg_dev->fsm, b_srp_wait_tmr);
- }
- 
--void b_srp_end(unsigned long foo)
-+static void b_srp_end(unsigned long foo)
- {
- 	fsl_otg_dischrg_vbus(0);
- 	srp_wait_done = 1;
-@@ -266,7 +266,7 @@ void b_srp_end(unsigned long foo)
-  * a_host will start by SRP.  It needs to set b_hnp_enable before
-  * actually suspending to start HNP
-  */
--void a_wait_enum(unsigned long foo)
-+static void a_wait_enum(unsigned long foo)
- {
- 	VDBG("a_wait_enum timeout\n");
- 	if (!fsl_otg_dev->phy.otg->host->b_hnp_enable)
-@@ -276,13 +276,13 @@ void a_wait_enum(unsigned long foo)
- }
- 
- /* The timeout callback function to set time out bit */
--void set_tmout(unsigned long indicator)
-+static void set_tmout(unsigned long indicator)
- {
- 	*(int *)indicator = 1;
- }
- 
- /* Initialize timers */
--int fsl_otg_init_timers(struct otg_fsm *fsm)
-+static int fsl_otg_init_timers(struct otg_fsm *fsm)
- {
- 	/* FSM used timers */
- 	a_wait_vrise_tmr = otg_timer_initializer(&set_tmout, TA_WAIT_VRISE,
-@@ -339,7 +339,7 @@ int fsl_otg_init_timers(struct otg_fsm *fsm)
- }
- 
- /* Uninitialize timers */
--void fsl_otg_uninit_timers(void)
-+static void fsl_otg_uninit_timers(void)
- {
- 	/* FSM used timers */
- 	kfree(a_wait_vrise_tmr);
-@@ -391,7 +391,7 @@ static struct fsl_otg_timer *fsl_otg_get_timer(enum otg_fsm_timer t)
- }
- 
- /* Add timer to timer list */
--void fsl_otg_add_timer(struct otg_fsm *fsm, void *gtimer)
-+static void fsl_otg_add_timer(struct otg_fsm *fsm, void *gtimer)
- {
- 	struct fsl_otg_timer *timer = gtimer;
- 	struct fsl_otg_timer *tmp_timer;
-@@ -421,7 +421,7 @@ static void fsl_otg_fsm_add_timer(struct otg_fsm *fsm, enum otg_fsm_timer t)
- }
- 
- /* Remove timer from the timer list; clear timeout status */
--void fsl_otg_del_timer(struct otg_fsm *fsm, void *gtimer)
-+static void fsl_otg_del_timer(struct otg_fsm *fsm, void *gtimer)
- {
- 	struct fsl_otg_timer *timer = gtimer;
- 	struct fsl_otg_timer *tmp_timer, *del_tmp;
-@@ -443,7 +443,7 @@ static void fsl_otg_fsm_del_timer(struct otg_fsm *fsm, enum otg_fsm_timer t)
- }
- 
- /* Reset controller, not reset the bus */
--void otg_reset_controller(void)
-+static void otg_reset_controller(void)
- {
- 	u32 command;
- 
-@@ -455,7 +455,7 @@ void otg_reset_controller(void)
- }
- 
- /* Call suspend/resume routines in host driver */
--int fsl_otg_start_host(struct otg_fsm *fsm, int on)
-+static int fsl_otg_start_host(struct otg_fsm *fsm, int on)
- {
- 	struct usb_otg *otg = fsm->otg;
- 	struct device *dev;
-@@ -522,7 +522,7 @@ int fsl_otg_start_host(struct otg_fsm *fsm, int on)
-  * Call suspend and resume function in udc driver
-  * to stop and start udc driver.
-  */
--int fsl_otg_start_gadget(struct otg_fsm *fsm, int on)
-+static int fsl_otg_start_gadget(struct otg_fsm *fsm, int on)
- {
- 	struct usb_otg *otg = fsm->otg;
- 	struct device *dev;
-@@ -704,7 +704,7 @@ static int fsl_otg_start_hnp(struct usb_otg *otg)
-  * intact.  It needs to have knowledge of some USB interrupts
-  * such as port change.
-  */
--irqreturn_t fsl_otg_isr(int irq, void *dev_id)
-+static irqreturn_t fsl_otg_isr(int irq, void *dev_id)
- {
- 	struct otg_fsm *fsm = &((struct fsl_otg *)dev_id)->fsm;
- 	struct usb_otg *otg = ((struct fsl_otg *)dev_id)->phy.otg;
-@@ -830,7 +830,7 @@ static int fsl_otg_conf(struct platform_device *pdev)
- }
- 
- /* OTG Initialization */
--int usb_otg_start(struct platform_device *pdev)
-+static int usb_otg_start(struct platform_device *pdev)
- {
- 	struct fsl_otg *p_otg;
- 	struct usb_phy *otg_trans = usb_get_phy(USB_PHY_TYPE_USB2);
-@@ -1002,7 +1002,7 @@ static void fsl_otg_remove(struct platform_device *pdev)
- 		pdata->exit(pdev);
- }
- 
--struct platform_driver fsl_otg_driver = {
-+static struct platform_driver fsl_otg_driver = {
- 	.probe = fsl_otg_probe,
- 	.remove = fsl_otg_remove,
- 	.driver = {
-diff --git a/drivers/usb/phy/phy-fsl-usb.h b/drivers/usb/phy/phy-fsl-usb.h
-index 95bfe7f1b83a..b754077875c3 100644
---- a/drivers/usb/phy/phy-fsl-usb.h
-+++ b/drivers/usb/phy/phy-fsl-usb.h
-@@ -373,6 +373,6 @@ struct fsl_otg_config {
- 
- #define FSL_OTG_NAME		"fsl-usb2-otg"
- 
--void fsl_otg_add_timer(struct otg_fsm *fsm, void *timer);
--void fsl_otg_del_timer(struct otg_fsm *fsm, void *timer);
--void fsl_otg_pulse_vbus(void);
-+static void fsl_otg_add_timer(struct otg_fsm *fsm, void *timer);
-+static void fsl_otg_del_timer(struct otg_fsm *fsm, void *timer);
-+static void fsl_otg_pulse_vbus(void);
--- 
-2.54.0
+https://lore.kernel.org/kvm/570f82e8b8bc968a31a4ba859145f6c324e41247.camel@=
+HansenPartnership.com/
 
+but basically I think hierarchical privilege will be too limiting.  I
+agree we need to have enough primitives to bring up hierarchical VSMs
+if that's what the guest wants (Windows definitely will) but this
+shouldn't be the only thing we can arrange planes as.  The mutually
+distrusting model has a lot going for it in terms of security
+properties.
+
+Regards,
+
+James
 
