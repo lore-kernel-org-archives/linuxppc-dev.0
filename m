@@ -1,178 +1,64 @@
-Return-Path: <linuxppc-dev+bounces-24347-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24348-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CEB07C4451B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2026 15:38:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B89EC44515
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2026 15:51:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h1vFW0XGxz3c1C;
-	Sat, 18 Jul 2026 01:38:23 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=205.220.168.131
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784302702;
-	cv=none; b=i0TyPkWJ7SlQsJGhNaaR4r1wXz85ev2YSP99vXHkyefNOaCJVodD9Vh/xsoyGTAzesT/UZAn6FJycu1HaN1crtFgjBY88BwfR1Jka81PhxIZkIriubzdpnZA7hRqSkrqSqqilG/H3DTde9dcR6J14GV86iC+K2HpQthklh1+2ALq7154c2uV51CuEKhBxL+8AV0I02kgHD1bZ2iDJyO7DEXsqIgj8yYhVcorjvVphZN9h5W+JJOb0P8/S6tm4fp4xLXzkxga8FRnYlDq+L+neBX6jrwMfh12TfeoXIR+/l6758E++yrcnwmdQ29US2qTlcE3+1MCgKAhFAYZ/an+Nw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h1vXb50Zpz3c1C;
+	Sat, 18 Jul 2026 01:51:27 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784303487;
+	cv=none; b=jENhVd3xDW43JL2Vi0A2F9jPMkc/Bom7r352FX7qIXb81sEPssc68KuVo4ukeQgiUFTctxJHTggTha6Zl8usGbViSjtFl+RlO5ASKQ/Dj+G94JQgwEubzM++Krs1JDdWqjF6m44lwoQauYTuehQUJJ4BR8LApnIIoTVZrUHrmwIActE6F/DLykd9gNuMZsZGF/vmu0yhepeD1I2e//ORm3Qfk0rJeqALmMYS6q7XW9MwX+b3FQZXInMjjMCLdC9amW1tu4Xz+0vrXGLUH/kYiajmSJieeS9dYc0eegqE/Bxo5cd5qAQ4lZ7q2b0ARCdpJEomJmunqzVTt9a24GLT5w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784302702; c=relaxed/relaxed;
-	bh=mU5plK4wOuXslrH5tzmT1LzfM6TA652cX7f9RNduBGg=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=AYxSDjW8b6EBE2iaIBtHp3xv1+bHm52ACrC/4VxXLc3X4j9aS+08+kky/Q0LkG2ojfL7rZxiY6qHLK/0qUQLrGMc5AmvoAhJct5XUgwR8dcSPOM/jhEXVYASqiNA+IMm+A7/3d5E18TunE55UwlVtPItEijCKlBFNyPiOkjc2eCRLJzf4PB8TPOhRZDbpGFjh9FexEHiNK3Ymgr19rDBEgbH9XEY2a0LVjlrzzdDOleQLg4PSv/5UA/ta+f48PkOYa6vFFGfzRdJKhRmGwPlt8FMtfbVSM4EGTqIPiTM5wrPbaI6YpcMzKmsq7klEMSdLyZBHvorHBJygSWXDXnPNw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=Ym4T26FG; dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=Qp4gc25w; dkim-atps=neutral; spf=pass (client-ip=205.220.168.131; helo=mx0a-0031df01.pphosted.com; envelope-from=mukesh.ojha@oss.qualcomm.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.qualcomm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+	t=1784303487; c=relaxed/relaxed;
+	bh=0oqxau51EGKx57oku9xsQOfk6GBi1jETcfV+2YVQ3ow=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=DoPpc+ovxD2GzEZP7T+UtUmIt/bQjYrOF2tO/6auuhdPeZHoO9rMJEw27ijHizSuCLzI8C5sr1xBTLWXB4Qy/74hp2H65uVJpACHpuwn2XA/ibqwvMUv37mg0Q6VjLvPx72OXUb14VcHCm+B81f2Oymxk8xoYrXmX+Fg6w0fO5hNXdm6ZUHKucWH/J0EI9FWYS2JGp8EbQa1dXmvVpiHaJbQV/Su9mTLtXZeIoHEDPwDhexQliBKQkTtzX1uDGcPs78jGA+1z15cDVFOPcg1AxLttz1VuLrIQCuvfox3u0KHlwoX43ovZIVzUlWZirdINMffHF30Iygpb6WaaDxsrw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=co5XnJeO; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=johan@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=Ym4T26FG;
-	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=Qp4gc25w;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=co5XnJeO;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oss.qualcomm.com (client-ip=205.220.168.131; helo=mx0a-0031df01.pphosted.com; envelope-from=mukesh.ojha@oss.qualcomm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=johan@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h1vFT128jz3c0H
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jul 2026 01:38:18 +1000 (AEST)
-Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66HE7p5u1675636
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2026 15:38:15 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=qcppdkim1; bh=mU5plK4wOuXslrH5tzmT1Lzf
-	M6TA652cX7f9RNduBGg=; b=Ym4T26FGSboWTOc59JBr4POlPj3J+PuT82mbDSwY
-	XRzYDLR7OkRMjCjKvvmpRPZUEZNEZMcUJ1TZdM4i/OaecTGpd6cyft7WENJinH3I
-	tt+dg/pjeYGey+bAGfsUAHGHYuXb2P2XVE+y2CZlw+s3g6Hy/zxMT+dzsg7x9s5B
-	aEFFYNAT2NBk2//h4axm8Mdozm7fS+2wo7KaY/Zvpq078psWnAojwMnMNp90TaNv
-	f4rpRtOOsOiOi80JUSgnZflxbXIVULuHMQJnsoJ97l4BNPwX9SwsLB1iLasZBlsI
-	jxlOgKg2QlM/2l2jEprhcugzH/8XqpQggUULE2Sxb8hRsA==
-Received: from mail-pj1-f72.google.com (mail-pj1-f72.google.com [209.85.216.72])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4ffj78s91m-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2026 15:38:15 +0000 (GMT)
-Received: by mail-pj1-f72.google.com with SMTP id 98e67ed59e1d1-38869800848so11959433a91.0
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2026 08:38:15 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1784302694; x=1784907494; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=mU5plK4wOuXslrH5tzmT1LzfM6TA652cX7f9RNduBGg=;
-        b=Qp4gc25w2u5SXeUjWQfS44XIwWEde4GXFvxdfMDaFw62LWft3TwnCczOAN7Yj8TOq2
-         7cgbTwCgG33h7b6xzUdTRNr1Lyx1M9QJRUKNr0LFhpNtx6p/g+J21RG1HR20k3RHxcfx
-         1NP7cOtc84wQiycQqYZ6wKC3vozQxXXmLzno6Lp6xFlbOpmqx/PIg1VZqqJ1e6U24V17
-         AzRc5IW95T0D6EsenttiQLcvQaZGlW6n4zKDlI/g1n2FVBLoIO5GDc4CTGVLeN4dgdur
-         vUgL8q3SC2TidRsJFIZ2TUDaeZPjQyrhSTgNjSkClH3/ozREmE6dhxIbH29AkA7XOa49
-         gErw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784302694; x=1784907494;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=mU5plK4wOuXslrH5tzmT1LzfM6TA652cX7f9RNduBGg=;
-        b=LSq37HgebP9zLp47xEx61nZQiZR1bGFsgeJRVFtSsqh2Fc2FVP1xZccb0mKQ9OX1O6
-         2W/Q2PD0gVOAN3RO90fARiZgJU8VRCl1csqNVRPtNaRpsRLCgePDIgtxuuLNBNkGxv1c
-         7xvGnfdwS7VS7Fh571u7juQBQkQ2INi7qL8VgMol9ArBOHElMGm8t0cNVlP5Vk+iB7DH
-         aQESEj9veAYE6mJcvwT+0JRx/mhMsOT5nX9Bn9BW2AuWiJszwhQ6VVrOzdWDW0mzt+Pn
-         yp8whNIkMhThsUXcnkPFfljZg4kfqgxqeS/aF7tqpz7XUnCI/TBAHui7a1wYQ0jUamzB
-         KCDg==
-X-Forwarded-Encrypted: i=1; AHgh+Ro76wX6l6GOPfH8/BAfYfsKLOY/QBSJQmDkWzPB7Un0J+VNK2bzskKMjK7MVmvAaFB0UZE6cwZfdamOFYA=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzPZwmF0RwAvAGC+/JDMKk8NJ6VWES3nVc/WnymGNgEbiDDrHzI
-	PNTii2/VGpjONi2i4K/M7Bq9MYe77EiXtuBiySTGVtjbBmB0Ozsix25DeqAfT8P6lEKQo4x7vdB
-	92Z0uzFLNJ5NWRka7TUOA3l2a0CiZ6SM56pGA0hW6VndZMEhh29hcwea4YqxEnVJSBMB6
-X-Gm-Gg: AfdE7clq7uIDMnAjc/YIGOY27mLTkbJEOgHyD9E3nThDm+mGucg06ovh1G90h+zmFOG
-	5K4UsNYoEl73OhPmf+GusgN4gZ4WntbGM1HgBXU6eLv1n4xPxAY9I78VlByhjGpJB3Z+IkrgLDU
-	M1mEKxCEVHWgsUjNo+Cc+KTsdeJ+z/PqtDps+ohoivpGxGUTn8RJFo/oJuKAgqQrdCoNdMS0KZT
-	aNvS+KSPD7Cm34Qa8vRqFvI498gW6xpUwIMfMIoT76hL/PTlsBAkCJSWEZ8WFeFk8gK19F7DqHL
-	yXh/ZJ+2dEnN34lhgPCJMF5bbri2EVvoGdITN/Y13/Ul/0O9J6rPuIR2r/rkLuvEqg8BU0LrWa+
-	OkmFJOjPKNFmisLK90Sl/2LPVJuQ=
-X-Received: by 2002:a17:90b:2684:b0:38d:f5bb:e0f4 with SMTP id 98e67ed59e1d1-38e4b3e1473mr3203823a91.1.1784302694250;
-        Fri, 17 Jul 2026 08:38:14 -0700 (PDT)
-X-Received: by 2002:a17:90b:2684:b0:38d:f5bb:e0f4 with SMTP id 98e67ed59e1d1-38e4b3e1473mr3203716a91.1.1784302693542;
-        Fri, 17 Jul 2026 08:38:13 -0700 (PDT)
-Received: from hu-mojha-hyd.qualcomm.com ([202.46.23.25])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3142a1ddeb6sm10087302eec.20.2026.07.17.08.37.48
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 17 Jul 2026 08:38:13 -0700 (PDT)
-Date: Fri, 17 Jul 2026 21:07:45 +0530
-From: Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>
-To: Rob Herring <robh@kernel.org>
-Cc: Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>,
-        Liviu Dudau <liviu.dudau@arm.com>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
-        Joel Stanley <joel@jms.id.au>,
-        Andrew Jeffery <andrew@codeconstruct.com.au>,
-        Paul Cercueil <paul@crapouillou.net>,
-        Anitha Chrisanthus <anitha.chrisanthus@intel.com>,
-        Paul Kocialkowski <paulk@sys-base.io>,
-        Linus Walleij <linusw@kernel.org>, Chen-Yu Tsai <wens@kernel.org>,
-        Jernej Skrabec <jernej.skrabec@gmail.com>,
-        Samuel Holland <samuel@sholland.org>,
-        Alexey Brodkin <abrodkin@synopsys.com>,
-        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
-        Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>,
-        Michal Simek <michal.simek@amd.com>,
-        Daniel Scally <dan.scally@ideasonboard.com>,
-        Jacopo Mondi <jacopo.mondi@ideasonboard.com>,
-        Mauro Carvalho Chehab <mchehab@kernel.org>,
-        Eddie James <eajames@linux.ibm.com>,
-        Tiffany Lin <tiffany.lin@mediatek.com>,
-        Andrew-CT Chen <andrew-ct.chen@mediatek.com>,
-        Yunfei Dong <yunfei.dong@mediatek.com>,
-        Minghsiu Tsai <minghsiu.tsai@mediatek.com>,
-        Houlong Wei <houlong.wei@mediatek.com>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
-        Joseph Liu <kwliu@nuvoton.com>, Marvin Lin <kflin@nuvoton.com>,
-        Dmitry Osipenko <dmitry.osipenko@collabora.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Thierry Reding <thierry.reding@kernel.org>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Srinivas Kandagatla <srini@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Ge Gordon <gordon.ge@bst.ai>, Adrian Hunter <adrian.hunter@intel.com>,
-        Ulf Hansson <ulfh@kernel.org>, Saravana Kannan <saravanak@kernel.org>,
-        Mathieu Poirier <mathieu.poirier@linaro.org>,
-        Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
-        Shengjiu Wang <shengjiu.wang@gmail.com>,
-        Xiubo Li <Xiubo.Lee@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>, Frank Li <Frank.Li@nxp.com>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        Peter Ujfalusi <peter.ujfalusi@linux.intel.com>,
-        Bard Liao <yung-chuan.liao@linux.intel.com>,
-        Daniel Baluta <daniel.baluta@nxp.com>,
-        Orson Zhai <orsonzhai@gmail.com>,
-        Baolin Wang <baolin.wang@linux.alibaba.com>,
-        Peter Chen <peter.chen@cixtech.com>,
-        Fugang Duan <fugang.duan@cixtech.com>,
-        Ekansh Gupta <ekansh.gupta@oss.qualcomm.com>,
-        BST Linux Kernel Upstream Group <bst-upstream@bstai.top>,
-        Fabio Estevam <festevam@gmail.com>,
-        Nicolin Chen <nicoleotsuka@gmail.com>,
-        Pengutronix Kernel Team <kernel@pengutronix.de>,
-        Kai Vehmanen <kai.vehmanen@linux.intel.com>,
-        Pierre-Louis Bossart <pierre-louis.bossart@linux.dev>,
-        Vijendar Mukunda <Vijendar.Mukunda@amd.com>,
-        Chunyan Zhang <zhang.lyra@gmail.com>,
-        CIX Linux Kernel Upstream Group <cix-kernel-upstream@cixtech.com>,
-        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-aspeed@lists.ozlabs.org,
-        linux-arm-kernel@lists.infradead.org, linux-mips@vger.kernel.org,
-        linux-sunxi@lists.linux.dev, linux-media@vger.kernel.org,
-        openbmc@lists.ozlabs.org, linux-mediatek@lists.infradead.org,
-        kernel@collabora.com, linux-tegra@vger.kernel.org,
-        linux-mmc@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-remoteproc@vger.kernel.org, linux-staging@lists.linux.dev,
-        linux-sound@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        imx@lists.linux.dev, sound-open-firmware@alsa-project.org,
-        Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-Subject: Re: [PATCH 01/42] of: reserved_mem: Introduce devres-managed
- initialization functions
-Message-ID: <20260717153745.geqmmgm4o3j3vhom@hu-mojha-hyd.qualcomm.com>
-References: <20260703193855.110619-1-mukesh.ojha@oss.qualcomm.com>
- <20260703193855.110619-2-mukesh.ojha@oss.qualcomm.com>
- <20260716200048.GA1183026-robh@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h1vXY0rz3z3c0H
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jul 2026 01:51:24 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id EE4EB40466;
+	Fri, 17 Jul 2026 15:51:21 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id ACE8F1F000E9;
+	Fri, 17 Jul 2026 15:51:21 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1784303481;
+	bh=0oqxau51EGKx57oku9xsQOfk6GBi1jETcfV+2YVQ3ow=;
+	h=From:To:Cc:Subject:Date;
+	b=co5XnJeOeQhVC3VInEvUrEbB8ZDoww+NXJe4cyoVIOLUZSYJtI0GColUNDUFhaDRj
+	 VIHm23b8Moeb0jEmLlh7Xd9EMK/USiXzJkTz4Kdxl7jqOrWIhk0xbSl30y+ZWq59wE
+	 cQlcHdrGVdfC86ZUGjtexmuNYbNp3g8zVf4zb+IGaAOOuo5wSicxlEeN2HU6Y7NLof
+	 drXzJvvIt5rUcQaSAgrrv844lxNCu6kBEvVL/offm9ZguSDOtGus8VjlB20zUZ2Y6Q
+	 nI7gnJxJqPbfTRU8dXQiUkveAR1UVNSVjiiN+BcuiL2JhJuIi+/JD6G3YinfvTyDC1
+	 fvh4WpU8eIGBw==
+Received: from johan by xi.lan with local (Exim 4.99.4)
+	(envelope-from <johan@kernel.org>)
+	id 1wkkqN-00000007mKZ-2FbP;
+	Fri, 17 Jul 2026 17:51:19 +0200
+From: Johan Hovold <johan@kernel.org>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-usb@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	Johan Hovold <johan@kernel.org>,
+	stable@vger.kernel.org,
+	Mark Brown <broonie@kernel.org>
+Subject: [PATCH] USB: phy: fsl-usb: fix missing static keywords
+Date: Fri, 17 Jul 2026 17:49:57 +0200
+Message-ID: <20260717154957.1853976-1-johan@kernel.org>
+X-Mailer: git-send-email 2.54.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -186,88 +72,278 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260716200048.GA1183026-robh@kernel.org>
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzE3MDE2MCBTYWx0ZWRfX8VefX/cLgtJE
- IIEXBKVjzN7O5uJtUtBL7kzZ1hyBSbHUxCwMjLRdsGzod2Yl51vyVVBmG1fc21o5hZfGwp9XdU6
- 2sO/jUvFrrr9xURrGBh4PGuiXPJJ3FTPqTpPII9ZFyESN6QsCwePX8XS11HUrN6CRMFZIrSR5Jd
- P/38UCTllm83+1QNDGWEoaScTCnWT3YnALDslWQbdRtIHBqNtGef4yJbH4H1ZRH5JCPDhrLRnu9
- 9rg3gPRZbivGHXJ2Bz8i+wQHHFdFico4j6m2XuKVhAGpT481dQyNYGHTuATRQIan4VmMTdCPLyf
- JHzD41kF8ooXrt77uHIs/oA1L+YLG0g0nABNSf3e1V5MRuU5BllThxe0CLNv6VUtOih3DtRmQPD
- 1p6gypTAcenU6FCuuwq7auajNXiKrtSkqqCua+wO9aUrJqfYAafMUdRK0pxgwX5VTUitUjvDXlw
- Ege7+aTskG2IItwP3CQ==
-X-Proofpoint-ORIG-GUID: RgAn0cUz9o4o9jSJUP5f7XD-gVMw4xem
-X-Authority-Analysis: v=2.4 cv=U9Ciy+ru c=1 sm=1 tr=0 ts=6a5a4c67 cx=c_pps
- a=RP+M6JBNLl+fLTcSJhASfg==:117 a=ZePRamnt/+rB5gQjfz0u9A==:17
- a=kj9zAlcOel0A:10 a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=DJpcGTmdVt4CTyJn9g5Z:22
- a=EUspDBNiAAAA:8 a=9JV1VVRos5_Q502CX78A:9 a=CjuIK1q_8ugA:10
- a=iS9zxrgQBfv6-_F4QbHw:22
-X-Proofpoint-GUID: RgAn0cUz9o4o9jSJUP5f7XD-gVMw4xem
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzE3MDE2MCBTYWx0ZWRfX/jIpLJIhlPax
- Jkh8n1H/QQUGJJCgU0qjcxVYjSI2XK4JRavd6U/Aldm2miRT5BNKR44sWsnPnjA7Wzp60qve/4l
- 8wKS+EjlQlxosGcKCqLdWGleJJZmTzg=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-07-17_04,2026-07-17_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 suspectscore=0 phishscore=0 spamscore=0 lowpriorityscore=0
- clxscore=1015 priorityscore=1501 malwarescore=0 impostorscore=0 bulkscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607170160
+Content-Transfer-Encoding: 8bit
 
-On Thu, Jul 16, 2026 at 03:00:48PM -0500, Rob Herring wrote:
-> On Sat, Jul 04, 2026 at 01:08:14AM +0530, Mukesh Ojha wrote:
-> > From: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-> > 
-> > Introduce devres-based helpers for of_reserved_mem_device_init(_by_idx)
-> > to help fight dangling references and ever so slightly reduce the
-> > number of boilerplate deinitialization calls.
-> > 
-> > Signed-off-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-> > Signed-off-by: Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>
-> > ---
-> >  drivers/of/of_reserved_mem.c    | 41 +++++++++++++++++++++++++++++++++
-> >  include/linux/of_reserved_mem.h | 25 ++++++++++++++++++++
-> >  2 files changed, 66 insertions(+)
-> > 
-> > diff --git a/drivers/of/of_reserved_mem.c b/drivers/of/of_reserved_mem.c
-> > index 82222bd45ac6..b35541e9fbe8 100644
-> > --- a/drivers/of/of_reserved_mem.c
-> > +++ b/drivers/of/of_reserved_mem.c
-> > @@ -787,6 +787,47 @@ void of_reserved_mem_device_release(struct device *dev)
-> >  }
-> >  EXPORT_SYMBOL_GPL(of_reserved_mem_device_release);
-> >  
-> > +static void devm_of_reserved_mem_device_release(struct device *dev, void *res)
-> > +{
-> > +	of_reserved_mem_device_release(*(struct device **)res);
-> > +}
-> > +
-> > +/**
-> > + * devm_of_reserved_mem_device_init_by_idx() - Resource managed of_reserved_mem_device_init_by_idx()
-> > + * @dev: Pointer to the device to configure
-> > + * @np: Pointer to the device node with 'memory-region' property
-> > + * @idx: Index of selected region
-> > + *
-> > + * This is a resource managed version of of_reserved_mem_device_init_by_idx().
-> > + * The reserved memory region will be released automatically when the device
-> > + * is unbound.
-> > + *
-> > + * Returns: Negative errno on failure or zero on success.
-> > + */
-> > +int devm_of_reserved_mem_device_init_by_idx(struct device *dev,
-> > +					    struct device_node *np, int idx)
-> 
-> It looks to me like the only 2? users of this could be converted to 
-> devm_of_reserved_mem_device_init() instead. The mmc one obviously can. 
-> The imx one depends if np is dev->of_node. I'm not a fan of APIs with 
-> only a few users.
+A recent change enabling compile testing of a Freescale dual-role
+controller indirectly enabled a USB PHY driver to be built. That driver
+in turn is missing a bunch of static keywords which results in warnings
+like:
 
-You are right, mmc can be but imx can't. I can make this static and drop
-the API usage from imx but fix the leak by release function.
+drivers/usb/phy/phy-fsl-usb.c:105:5: error: no previous prototype for 'write_ulpi' [-Werror=missing-prototypes]
+  105 | int write_ulpi(u8 addr, u8 data)
+        |     ^~~~~~~~~~
 
+which consequently breaks -Werror builds.
+
+Add the missing static keywords.
+
+Fixes: 0807c500a1a6 ("USB: add Freescale USB OTG Transceiver driver")
+Cc: stable@vger.kernel.org	# 3.0
+Reported-by: Mark Brown <broonie@kernel.org>
+Link: https://lore.kernel.org/r/4f9f5ff9-8eaa-4bd5-9331-37119f78e13f@sirena.org.uk
+Signed-off-by: Johan Hovold <johan@kernel.org>
+---
+ drivers/usb/phy/phy-fsl-usb.c | 52 +++++++++++++++++------------------
+ drivers/usb/phy/phy-fsl-usb.h |  6 ++--
+ 2 files changed, 29 insertions(+), 29 deletions(-)
+
+diff --git a/drivers/usb/phy/phy-fsl-usb.c b/drivers/usb/phy/phy-fsl-usb.c
+index 35d79f11b03d..1986f7e9d9be 100644
+--- a/drivers/usb/phy/phy-fsl-usb.c
++++ b/drivers/usb/phy/phy-fsl-usb.c
+@@ -46,7 +46,7 @@
+ 
+ static const char driver_name[] = "fsl-usb2-otg";
+ 
+-const pm_message_t otg_suspend_state = {
++static const pm_message_t otg_suspend_state = {
+ 	.event = 1,
+ };
+ 
+@@ -57,11 +57,11 @@ static struct fsl_otg *fsl_otg_dev;
+ static int srp_wait_done;
+ 
+ /* FSM timers */
+-struct fsl_otg_timer *a_wait_vrise_tmr, *a_wait_bcon_tmr, *a_aidl_bdis_tmr,
++static struct fsl_otg_timer *a_wait_vrise_tmr, *a_wait_bcon_tmr, *a_aidl_bdis_tmr,
+ 	*b_ase0_brst_tmr, *b_se0_srp_tmr;
+ 
+ /* Driver specific timers */
+-struct fsl_otg_timer *b_data_pulse_tmr, *b_vbus_pulse_tmr, *b_srp_fail_tmr,
++static struct fsl_otg_timer *b_data_pulse_tmr, *b_vbus_pulse_tmr, *b_srp_fail_tmr,
+ 	*b_srp_wait_tmr, *a_wait_enum_tmr;
+ 
+ static struct list_head active_timers;
+@@ -102,7 +102,7 @@ static void (*_fsl_writel)(u32 v, unsigned __iomem *p);
+ #define fsl_writel(val, addr)	writel(val, addr)
+ #endif /* CONFIG_PPC32 */
+ 
+-int write_ulpi(u8 addr, u8 data)
++static int write_ulpi(u8 addr, u8 data)
+ {
+ 	u32 temp;
+ 
+@@ -115,7 +115,7 @@ int write_ulpi(u8 addr, u8 data)
+ /* Operations that will be called from OTG Finite State Machine */
+ 
+ /* Charge vbus for vbus pulsing in SRP */
+-void fsl_otg_chrg_vbus(struct otg_fsm *fsm, int on)
++static void fsl_otg_chrg_vbus(struct otg_fsm *fsm, int on)
+ {
+ 	u32 tmp;
+ 
+@@ -133,7 +133,7 @@ void fsl_otg_chrg_vbus(struct otg_fsm *fsm, int on)
+ }
+ 
+ /* Discharge vbus through a resistor to ground */
+-void fsl_otg_dischrg_vbus(int on)
++static void fsl_otg_dischrg_vbus(int on)
+ {
+ 	u32 tmp;
+ 
+@@ -151,7 +151,7 @@ void fsl_otg_dischrg_vbus(int on)
+ }
+ 
+ /* A-device driver vbus, controlled through PP bit in PORTSC */
+-void fsl_otg_drv_vbus(struct otg_fsm *fsm, int on)
++static void fsl_otg_drv_vbus(struct otg_fsm *fsm, int on)
+ {
+ 	u32 tmp;
+ 
+@@ -169,7 +169,7 @@ void fsl_otg_drv_vbus(struct otg_fsm *fsm, int on)
+  * Pull-up D+, signalling connect by periperal. Also used in
+  * data-line pulsing in SRP
+  */
+-void fsl_otg_loc_conn(struct otg_fsm *fsm, int on)
++static void fsl_otg_loc_conn(struct otg_fsm *fsm, int on)
+ {
+ 	u32 tmp;
+ 
+@@ -188,7 +188,7 @@ void fsl_otg_loc_conn(struct otg_fsm *fsm, int on)
+  * port.  In host mode, controller will automatically send SOF.
+  * Suspend will block the data on the port.
+  */
+-void fsl_otg_loc_sof(struct otg_fsm *fsm, int on)
++static void fsl_otg_loc_sof(struct otg_fsm *fsm, int on)
+ {
+ 	u32 tmp;
+ 
+@@ -203,7 +203,7 @@ void fsl_otg_loc_sof(struct otg_fsm *fsm, int on)
+ }
+ 
+ /* Start SRP pulsing by data-line pulsing, followed with v-bus pulsing. */
+-void fsl_otg_start_pulse(struct otg_fsm *fsm)
++static void fsl_otg_start_pulse(struct otg_fsm *fsm)
+ {
+ 	u32 tmp;
+ 
+@@ -219,7 +219,7 @@ void fsl_otg_start_pulse(struct otg_fsm *fsm)
+ 	fsl_otg_add_timer(fsm, b_data_pulse_tmr);
+ }
+ 
+-void b_data_pulse_end(unsigned long foo)
++static void b_data_pulse_end(unsigned long foo)
+ {
+ #ifdef HA_DATA_PULSE
+ #else
+@@ -230,7 +230,7 @@ void b_data_pulse_end(unsigned long foo)
+ 	fsl_otg_pulse_vbus();
+ }
+ 
+-void fsl_otg_pulse_vbus(void)
++static void fsl_otg_pulse_vbus(void)
+ {
+ 	srp_wait_done = 0;
+ 	fsl_otg_chrg_vbus(&fsl_otg_dev->fsm, 1);
+@@ -238,7 +238,7 @@ void fsl_otg_pulse_vbus(void)
+ 	fsl_otg_add_timer(&fsl_otg_dev->fsm, b_vbus_pulse_tmr);
+ }
+ 
+-void b_vbus_pulse_end(unsigned long foo)
++static void b_vbus_pulse_end(unsigned long foo)
+ {
+ 	fsl_otg_chrg_vbus(&fsl_otg_dev->fsm, 0);
+ 
+@@ -251,7 +251,7 @@ void b_vbus_pulse_end(unsigned long foo)
+ 	fsl_otg_add_timer(&fsl_otg_dev->fsm, b_srp_wait_tmr);
+ }
+ 
+-void b_srp_end(unsigned long foo)
++static void b_srp_end(unsigned long foo)
+ {
+ 	fsl_otg_dischrg_vbus(0);
+ 	srp_wait_done = 1;
+@@ -266,7 +266,7 @@ void b_srp_end(unsigned long foo)
+  * a_host will start by SRP.  It needs to set b_hnp_enable before
+  * actually suspending to start HNP
+  */
+-void a_wait_enum(unsigned long foo)
++static void a_wait_enum(unsigned long foo)
+ {
+ 	VDBG("a_wait_enum timeout\n");
+ 	if (!fsl_otg_dev->phy.otg->host->b_hnp_enable)
+@@ -276,13 +276,13 @@ void a_wait_enum(unsigned long foo)
+ }
+ 
+ /* The timeout callback function to set time out bit */
+-void set_tmout(unsigned long indicator)
++static void set_tmout(unsigned long indicator)
+ {
+ 	*(int *)indicator = 1;
+ }
+ 
+ /* Initialize timers */
+-int fsl_otg_init_timers(struct otg_fsm *fsm)
++static int fsl_otg_init_timers(struct otg_fsm *fsm)
+ {
+ 	/* FSM used timers */
+ 	a_wait_vrise_tmr = otg_timer_initializer(&set_tmout, TA_WAIT_VRISE,
+@@ -339,7 +339,7 @@ int fsl_otg_init_timers(struct otg_fsm *fsm)
+ }
+ 
+ /* Uninitialize timers */
+-void fsl_otg_uninit_timers(void)
++static void fsl_otg_uninit_timers(void)
+ {
+ 	/* FSM used timers */
+ 	kfree(a_wait_vrise_tmr);
+@@ -391,7 +391,7 @@ static struct fsl_otg_timer *fsl_otg_get_timer(enum otg_fsm_timer t)
+ }
+ 
+ /* Add timer to timer list */
+-void fsl_otg_add_timer(struct otg_fsm *fsm, void *gtimer)
++static void fsl_otg_add_timer(struct otg_fsm *fsm, void *gtimer)
+ {
+ 	struct fsl_otg_timer *timer = gtimer;
+ 	struct fsl_otg_timer *tmp_timer;
+@@ -421,7 +421,7 @@ static void fsl_otg_fsm_add_timer(struct otg_fsm *fsm, enum otg_fsm_timer t)
+ }
+ 
+ /* Remove timer from the timer list; clear timeout status */
+-void fsl_otg_del_timer(struct otg_fsm *fsm, void *gtimer)
++static void fsl_otg_del_timer(struct otg_fsm *fsm, void *gtimer)
+ {
+ 	struct fsl_otg_timer *timer = gtimer;
+ 	struct fsl_otg_timer *tmp_timer, *del_tmp;
+@@ -443,7 +443,7 @@ static void fsl_otg_fsm_del_timer(struct otg_fsm *fsm, enum otg_fsm_timer t)
+ }
+ 
+ /* Reset controller, not reset the bus */
+-void otg_reset_controller(void)
++static void otg_reset_controller(void)
+ {
+ 	u32 command;
+ 
+@@ -455,7 +455,7 @@ void otg_reset_controller(void)
+ }
+ 
+ /* Call suspend/resume routines in host driver */
+-int fsl_otg_start_host(struct otg_fsm *fsm, int on)
++static int fsl_otg_start_host(struct otg_fsm *fsm, int on)
+ {
+ 	struct usb_otg *otg = fsm->otg;
+ 	struct device *dev;
+@@ -522,7 +522,7 @@ int fsl_otg_start_host(struct otg_fsm *fsm, int on)
+  * Call suspend and resume function in udc driver
+  * to stop and start udc driver.
+  */
+-int fsl_otg_start_gadget(struct otg_fsm *fsm, int on)
++static int fsl_otg_start_gadget(struct otg_fsm *fsm, int on)
+ {
+ 	struct usb_otg *otg = fsm->otg;
+ 	struct device *dev;
+@@ -704,7 +704,7 @@ static int fsl_otg_start_hnp(struct usb_otg *otg)
+  * intact.  It needs to have knowledge of some USB interrupts
+  * such as port change.
+  */
+-irqreturn_t fsl_otg_isr(int irq, void *dev_id)
++static irqreturn_t fsl_otg_isr(int irq, void *dev_id)
+ {
+ 	struct otg_fsm *fsm = &((struct fsl_otg *)dev_id)->fsm;
+ 	struct usb_otg *otg = ((struct fsl_otg *)dev_id)->phy.otg;
+@@ -830,7 +830,7 @@ static int fsl_otg_conf(struct platform_device *pdev)
+ }
+ 
+ /* OTG Initialization */
+-int usb_otg_start(struct platform_device *pdev)
++static int usb_otg_start(struct platform_device *pdev)
+ {
+ 	struct fsl_otg *p_otg;
+ 	struct usb_phy *otg_trans = usb_get_phy(USB_PHY_TYPE_USB2);
+@@ -1002,7 +1002,7 @@ static void fsl_otg_remove(struct platform_device *pdev)
+ 		pdata->exit(pdev);
+ }
+ 
+-struct platform_driver fsl_otg_driver = {
++static struct platform_driver fsl_otg_driver = {
+ 	.probe = fsl_otg_probe,
+ 	.remove = fsl_otg_remove,
+ 	.driver = {
+diff --git a/drivers/usb/phy/phy-fsl-usb.h b/drivers/usb/phy/phy-fsl-usb.h
+index 95bfe7f1b83a..b754077875c3 100644
+--- a/drivers/usb/phy/phy-fsl-usb.h
++++ b/drivers/usb/phy/phy-fsl-usb.h
+@@ -373,6 +373,6 @@ struct fsl_otg_config {
+ 
+ #define FSL_OTG_NAME		"fsl-usb2-otg"
+ 
+-void fsl_otg_add_timer(struct otg_fsm *fsm, void *timer);
+-void fsl_otg_del_timer(struct otg_fsm *fsm, void *timer);
+-void fsl_otg_pulse_vbus(void);
++static void fsl_otg_add_timer(struct otg_fsm *fsm, void *timer);
++static void fsl_otg_del_timer(struct otg_fsm *fsm, void *timer);
++static void fsl_otg_pulse_vbus(void);
 -- 
--Mukesh Ojha
+2.54.0
+
 
