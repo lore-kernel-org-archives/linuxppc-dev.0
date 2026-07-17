@@ -1,66 +1,74 @@
-Return-Path: <linuxppc-dev+bounces-24350-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24351-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BAD10C4451B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2026 15:58:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E3755C4451B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2026 17:05:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h1vhk07CMz3c1D;
-	Sat, 18 Jul 2026 01:58:30 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784303909;
-	cv=none; b=baFTCX7jAheuKgAv3v7cpdp9A9LvAILEDGYvJMpwdknL8JpI2V3BriWJniING/4u09wA2lBCKwJXuOvV3HkHp1VyhR7emMOI+2Q3aZbZRgOXnjnKOsDErvFKq8/MsrKhChUO94+d3FD4qI4gTKaVZeY9Pft3ZAJM7w8TiRHhgu0WcVb1LVCnvWH4dOIInRkWRgQ5Juiiq0MKVSE2wdLkNbZeeXvbWL3Usm1giFOu3y4p94eyZQiBNX9PZdvGiQcbNVQkvUM3kl3ox7CUSNl9f83cyrjqS9zTXJM/oEpxGZxzoRFjqK/O8G14y8OEa/HFqwR42RTL29KBg59RXiv+xA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h1xBD1FLzz3c1w;
+	Sat, 18 Jul 2026 03:05:40 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.15
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784307940;
+	cv=none; b=WQbfSpadB+/GlvsoQfiPxwIHfiGqbtw8h0WevoddPTTvFf7zQdMIuAg3hiXEMHq1yBwiA817wQFjGlwnnAMvcfj4TdUO84VXQgrBgNkbh5qc1E18M4TIkKffRz64+5MSNLlaGnUsH9wYjKpi0CgIoeEteDXpeOa6iRJOh6JZ5SjqyJfB6FDyMWv4zZ+p8V1uCa1VbDO47+oVcYN9RhiL4J78IQ7at4ul0ADhfnzhSR9Z8Qi9JSDG8T3OTXtyAU5g8r4xV64PcPKSBCMVkRCqFFjvzUXyZuf3RdAseGWwo1Peoq48X8XPnoZ+gXUTCNTmcPQM2QYavyVzYRzbK/KEig==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784303909; c=relaxed/relaxed;
-	bh=cDNky78Ax+2bxijT+XdR4K1/f42IbTC+Qw15KNlIByM=;
-	h=Subject:From:In-Reply-To:References:Message-Id:Date:To:Cc; b=P+6s0Ay9YTJaECBQkX+2zT0ifJb0ac0jGrnkjGZgPr5DDGkZM0DC77fZ4i7JDlnAwWI/TUPUs7n8k3XCZimpJ4Vuggg10yFiZFJfmxn8csRZGGFvUzDjip3tDFU8decGRfjrRNJFgp9vCUb48oelBmVfeRcDxeoBxbmZq5ppHuPTGUcZT+3Y56BcA10WsVNM+tkMGippSjyqzQ4nTepC/4LPBdspx9urBwDdoDp/baN1VX9DKT1Ip/AGh85P79SXjGpsnbMS1zns7VNotBJzFj9uGuftynACfY4YHGH8i9bm5DnTMVG0FEoDJBilq8p+g+HlfAYav+UWpJ7RWU/aJQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Y9eQVkh9; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=pr-tracker-bot@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1784307940; c=relaxed/relaxed;
+	bh=43Rqns9o7zuxB8Q2tRjk8vnUv6HyspLxI1P0dak7QN8=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition; b=J96dasuL6GV1LByf+QKbaK9hz+G5cUAh5CAW++YT/ZC9uG/7Z/9H8zUErzakIbAHWr3KxBbxOgQFUT95lkVK8z3MHO3OUn95Rahjpb+GdJVNIZ6Fe2IPyncpbinuu3jwFc19CseCIAPeROSXtwut93692KhUXLtePRYTmo0TYxOf2fhVDn4gMiErujGOvJh4Cr+jHIcEj0zQyrzazSMIjov1C36NjDXVp/6LA6+ZO76OHn/edHiJxfcBC7It7HgJEzB9WilodFTPrLQP5cKtShdffPkfcv/cR0GG7PDHbKSqLsU8GpmZCpkorVr4VyuLInNcYZ80ldecPTWIDLTNdA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=jY5iqSWN; dkim-atps=neutral; spf=pass (client-ip=198.175.65.15; helo=mgamail.intel.com; envelope-from=pawan.kumar.gupta@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Y9eQVkh9;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=jY5iqSWN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=pr-tracker-bot@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.15; helo=mgamail.intel.com; envelope-from=pawan.kumar.gupta@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h1vhj2swmz3c0H
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jul 2026 01:58:29 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 1DB7260A59;
-	Fri, 17 Jul 2026 15:58:27 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B3B641F00A3F;
-	Fri, 17 Jul 2026 15:58:26 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1784303906;
-	bh=cDNky78Ax+2bxijT+XdR4K1/f42IbTC+Qw15KNlIByM=;
-	h=Subject:From:In-Reply-To:References:Date:To:Cc;
-	b=Y9eQVkh92uF8Q0EhmGOa10lckjMAQavzMwf/QlLHtschax9pKaydSZREKAgw8xDzG
-	 3PX0v0OtzasdYRKcS6uuh9wamiaTUyFWPZpM4kSEzQksHQkE14d+9F1ydTE543PWGw
-	 6blg/D5qVbsoI4ybsKfC0xD3nxGE6QItLj2FXEgtUHs2B7uA+2AIHiiiDhp+T0cdjE
-	 5kbvD298s1y32znj+UBQWuVv86KAhiXIWHDEIn3t/+ozR9AIsYML1oFtbdz5gz02c6
-	 Cc6yr9uCkGtGGJBIZxNHixxChvYEsI/rYA9MYbDRnzDD/GBK7epSJqfUrnReToWuzu
-	 C3+trVCUH/ypA==
-Received: from [10.30.226.235] (localhost [IPv6:::1])
-	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 56E34380CEF7;
-	Fri, 17 Jul 2026 15:58:00 +0000 (UTC)
-Subject: Re: [GIT PULL] Please pull powerpc/linux.git powerpc-7.2-2 tag
-From: pr-tracker-bot@kernel.org
-In-Reply-To: <65137690-360f-424a-b2f2-b62d5f40ee31@linux.ibm.com>
-References: <65137690-360f-424a-b2f2-b62d5f40ee31@linux.ibm.com>
-X-PR-Tracked-List-Id: <linuxppc-dev.lists.ozlabs.org>
-X-PR-Tracked-Message-Id: <65137690-360f-424a-b2f2-b62d5f40ee31@linux.ibm.com>
-X-PR-Tracked-Remote: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-7.2-2
-X-PR-Tracked-Commit-Id: a2c02aa0c6ca3ec9fab6f1c99912a440c7b8bfdb
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: 6917aa77675f48e7bd33392ed6590c8837001697
-Message-Id: <178430387899.1777518.13543830087342458219.pr-tracker-bot@kernel.org>
-Date: Fri, 17 Jul 2026 15:57:58 +0000
-To: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, amachhiw@linux.ibm.com, chleroy@kernel.org, christophe.leroy@csgroup.eu, enelsonmoore@gmail.com, gautam@linux.ibm.com, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, moonafterrain@outlook.com, mpe@ellerman.id.au, naveen@kernel.org, npiggin@gmail.com, rosenp@gmail.com, sshegde@linux.ibm.com, thorsten.blum@linux.dev
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h1xB84qRgz3c1S
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jul 2026 03:05:34 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1784307938; x=1815843938;
+  h=date:from:to:cc:subject:message-id:mime-version;
+  bh=kO8aFzuGHwtDypuu15ShB7rQhwfq0S6rbdCVU3OLqX4=;
+  b=jY5iqSWNKqV4gHHtLbhWsuvED8FUClu1SPuuiTzGFlC/yvW4jgD8xIDO
+   Nwriq3FH44fARDhG5xafLUUxTZeXDgtu1TiyIjauUHOfayk7qnsW4E5Qy
+   HBW3VIayK8RYdZ6t4r+Tnza184KG2gbEvdY1nhPwxFiQllY7U+hoqOyjG
+   KjueoJa4Q8/5opl0fCWqlQJcvTR7KukF44ii8McJ3Ct0cDebIpqkAe2KT
+   X85qC6rU+2vkRP5c+9yes2uJpErgK2qDyrCUWGtoqLfqJQ4Yk3Odf8O0w
+   bsG0QJFIX3R+gvyA9mUF9oqE33aCP/pOUkw/a1XSXzef1g7DIU6BpUod3
+   A==;
+X-CSE-ConnectionGUID: 7lJRqeCRS62ZvNv4g4Lscg==
+X-CSE-MsgGUID: TAuN8tIQQISs5ZWzdknKnA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11849"; a="88660701"
+X-IronPort-AV: E=Sophos;i="6.25,169,1779174000"; 
+   d="scan'208";a="88660701"
+Received: from orviesa001.jf.intel.com ([10.64.159.141])
+  by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Jul 2026 10:05:31 -0700
+X-CSE-ConnectionGUID: eUr5wEqQRASVPpk+SZIHHw==
+X-CSE-MsgGUID: KJ60gS9dSwGhwnT/tiyPxQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.25,169,1779174000"; 
+   d="scan'208";a="295027652"
+Received: from guptapa-desk.jf.intel.com (HELO desk) ([10.165.239.46])
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Jul 2026 10:05:31 -0700
+Date: Fri, 17 Jul 2026 10:05:30 -0700
+From: Pawan Gupta <pawan.kumar.gupta@linux.intel.com>
+To: stable@vger.kernel.org, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sasha Levin <sashal@kernel.org>
+Cc: bpf@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, 
+	x86@kernel.org, Alexei Starovoitov <ast@kernel.org>, 
+	Daniel Borkmann <daniel@iogearbox.net>, Dave Hansen <dave.hansen@linux.intel.com>
+Subject: [PATCH 6.6.y 0/6] cBPF JIT spray hardening
+Message-ID: <20260717-cbpf-jit-spray-hardening-6-6-y-v1-0-e04f1b2893de@linux.intel.com>
+X-B4-Tracking: v=1; b=H4sIANleWmoC/yWNMQvCMBCF/0q52SttlAu4iYujg5s4pMmlvQ4xJ
+ FUspf/dVHnT9x68b4HMSTjDsVog8VuyPEOBdleBHUzoGcUVBtUoanRLaLvocZQJc0xmxsEkx0F
+ Cj1Qyo7FErP1B7bWDchITe/n8BHe4nm7ny9ZSTfUMj/+eX93IdtossK5fuD+rQZIAAAA=
+X-Change-ID: 20260716-cbpf-jit-spray-hardening-6-6-y-ac66e7f4237d
+X-Mailer: b4 0.16-dev
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -73,17 +81,57 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-The pull request you sent on Fri, 17 Jul 2026 10:31:13 +0530:
+Hi,
 
-> https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-7.2-2
+These backports harden BPF JIT against spectre-v2 class of attacks. Without
+a predictor flush, execution of new BPF program may use stale prediction
+left behind by the freed one.
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/6917aa77675f48e7bd33392ed6590c8837001697
+To avoid this, issue an IBPB flush on all CPUs on JIT program allocation.
+The flush is conditional to spectre-v2 mitigation applied.
 
-Thank you!
+Patch 1-2: Adds the predictor flush hook and enables it on x86 via IBPB.
 
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/prtracker.html
+	  bpf: Support for hardening against JIT spraying
+	  x86/bugs: Enable IBPB flush on BPF JIT allocation
+
+Patch 3-6: Narrow the flush to only unprivileged JIT allocations
+	   to avoid redundant flushes. Also adds pack-selection changes
+	   that minimizes flushes.
+
+	  bpf: Restrict JIT predictor flush to cBPF
+	  bpf: Skip redundant IBPB in pack allocator
+	  bpf: Prefer packs that won't trigger an IBPB flush on allocation
+	  bpf: Prefer dirty packs for eBPF allocations
+
+---
+Pawan Gupta (6):
+      bpf: Support for hardening against JIT spraying
+      x86/bugs: Enable IBPB flush on BPF JIT allocation
+      bpf: Restrict JIT predictor flush to cBPF
+      bpf: Skip redundant IBPB in pack allocator
+      bpf: Prefer packs that won't trigger an IBPB flush on allocation
+      bpf: Prefer dirty packs for eBPF allocations
+
+ arch/riscv/net/bpf_jit_core.c        |  3 +-
+ arch/x86/include/asm/nospec-branch.h |  4 +++
+ arch/x86/kernel/cpu/bugs.c           | 50 +++++++++++++++++++++++---
+ arch/x86/net/bpf_jit_comp.c          |  3 +-
+ include/linux/filter.h               | 15 ++++++--
+ kernel/bpf/core.c                    | 68 ++++++++++++++++++++++++++++++++----
+ kernel/bpf/dispatcher.c              |  2 +-
+ 7 files changed, 129 insertions(+), 16 deletions(-)
+---
+base-commit: da47cbc254661aa66d61ef061485a7080305c4be
+change-id: 20260716-cbpf-jit-spray-hardening-6-6-y-ac66e7f4237d
+
+Best regards,
+--  
+Pawan
+
+
 
