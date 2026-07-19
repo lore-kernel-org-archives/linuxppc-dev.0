@@ -1,45 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-24487-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24488-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5AE50C44515
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jul 2026 12:59:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 84BCAC4452A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jul 2026 13:20:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h3gb32kMZz2y8F;
-	Mon, 20 Jul 2026 22:59:43 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784552383;
-	cv=none; b=iL/0JaEZL9sOzST3JjZ20QlDti0+9PAO8h5mvfDIqnFE70zYjxJaUM/VMK5/udU5F+zjZKrkiFeuMb9CcqIW+u0mcBOKIjJuaIbpg8NB4yaeGf0bEn1nuujz1QhkbITo8T/6wTkEoTbHgM6Kj8Or+iN7mZd/TSkqL0hSYpI3TRYu+YW7VsZ0MPN56h6A8JUKmgCwjWvQlHF9Yy84nJIJIQvTss4z+QIGX93Mxp30NqiXqTSKWtBkPKHBz++iIi7Ra0OsETDOAm1HEXcGFnLb0HITjD98x8/Ctu+IoYNvRpv4bTCVg3YSrR0H2ek9mm3YbEmLcdS2HbDtw5uCt11R2A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h3h2T46Mvz2y8F;
+	Mon, 20 Jul 2026 23:20:01 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784553601;
+	cv=none; b=g4nuFS2Vdwvkrmn6z+1L/KZrlyqmlZeYG9k+V20jQfHKSt9j1Wd/01Eb+P4qBEXIZPfvNYTdTpajB/qbtZ6JMqSRz1T9modCnO/dNkXF9tzn0+efsrzWHvg+J4JObIjJHucQnc4X3Xiq75C8SmX2gGtQ5eOINmth5sr5aTFOa+qqfLslSHhDtljkvNhzF4Eb/Q4xTdMvXWag44yaruPOFkmhQqYc9x+tYIwINKF7RpF7ZnRXojDl4urmp4M1DRwKZX6NkQmOxnZQI/28OmxA73FlY+5YWcEzaUyVgBvgCqMrXARuXFLMaa/kBfuTB5TXgPFlwnVRQjaevy0Bw8tsIw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784552383; c=relaxed/relaxed;
-	bh=X6oZONNfb5uP+JaptYLp2osr1QmMr2AutfOA1S9NH7M=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=NXqBO9024hvOk8AQ6JQUQ9kxCwXJu/hg9K3FRLev0eZMrO/r53W1REVoovlaK6pg9RHoNhXxOOD3hUBh88DZgHNlJyPRbf5dKUU501lzAEjtgChGO/w2nyL9sOPHS+jPp0E9NMc81Ot766SjJMYNZNy/H9niYbfIFRu/YXTgJuttZCcg8VG/iceP5B+IZtMnSg4lSaCZOYJAKW5PD55hOYxHsibN8Bdu/F9wnNAGDHnmse1xo1xGtLFYEYHNi5CSKf3BZhCUfbEWCuhEp2fdFNqvqf5aw8awo33OVOURCf31Nw04yH5WsstLHXsrvbc7zvcd29LSEhUJ0oNuiqebcw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=dKmABXHE; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=robin.murphy@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
+	t=1784553601; c=relaxed/relaxed;
+	bh=2t+YL248Mr9Z837045als8fjyHNXIgMDrmnmORlfQTg=;
+	h=From:To:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=O1ugH+q0p5+v2JSvlreRhxhVrJToQFurSquiN4y6wyodGa/0Ae3I/FRrNcm4PeDvRqBo0/58k8F3VE1scLM2WU6l0UJDs74dUyuf1F1v7U/FngMp/taG/3Ic1k2GZRQtZSQMTkQAbibo17SDH4JtQSgUQEx4n3XDvMmVhf9bQN9LzbOFxOwgWz/yjhUAgplHFkRBs63wd6wH73drk4dFUowEkFhNYRkCR6qwrqjB+IjGnvk5p8Dn5U1eQ7BDS+FMz0dEMLKfWaWINSx6y/fp8qTnBJZKVC5k86l5cZuelmTY/SMm2ocfiYrjN+Nrxn+t7FAGxgUm+FIGwjKS5VmFKg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jxwwIgUR; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=dKmABXHE;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jxwwIgUR;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=robin.murphy@arm.com; receiver=lists.ozlabs.org)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h3gb00yqfz2xlZ
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2026 22:59:38 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 2F0EC2B;
-	Mon, 20 Jul 2026 05:59:01 -0700 (PDT)
-Received: from [10.2.212.23] (e121345-lin.cambridge.arm.com [10.2.212.23])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id B928E3F99C;
-	Mon, 20 Jul 2026 05:58:40 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1784552345; bh=tj7DETiWrYqcYhPQBV0lQIQF5ojnhC7kaKJUMMnBNUs=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=dKmABXHEllSGT7FeFg6oxaG2ujJktWVxIXZ3hFzKw45EJWrXdCv86Cdi8Lk3ybb+P
-	 2eyzZw9sSqz4kKd+F7OoRuZNUZsH093wu+fiiSmVRvRLMFKAt3uEPGr18dcBdv9V/F
-	 kKFNdv+XlRp4DjEuV/4GCCvpzaekEZeXf66xmNSY=
-Message-ID: <e4f9b266-8d9e-48fe-99c0-58b61e02c9bd@arm.com>
-Date: Mon, 20 Jul 2026 13:58:27 +0100
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h3h2S44cmz2xlZ
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2026 23:20:00 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id D4F4C43D9D;
+	Mon, 20 Jul 2026 13:19:57 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CBF811F000E9;
+	Mon, 20 Jul 2026 13:19:55 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1784553597;
+	bh=2t+YL248Mr9Z837045als8fjyHNXIgMDrmnmORlfQTg=;
+	h=From:To:In-Reply-To:References:Subject:Date;
+	b=jxwwIgURoVT8Vrae3qlAaW7LcR5o7PVIobD/XdPOTz4CM2tSwtqXPABMRe+UVdqwF
+	 pUcqxT/2nNlONdKdhaqDKlMHnjuhLvA3FqvL5rl6a5+RHxBQqR3rAYKeYcDsBUhZdE
+	 MpLGg9V4n/9UYbomqmqO3jZAhtrDPW504pFmhRD+MCd9auQImkYuo7OPCh7lgaqc8n
+	 fL+QCVDIibhy4AT+jLR+ZRqiqB4n4NG6kyqmVtRROS62Ww042ITn063b82W4q4B0qX
+	 Po1+UBiL8RUYm54XxyNx4ZI1KEjY++8jnWNW1j3Tg6yJMoHiR5C6gNEh1WnIt+030e
+	 7D2osucdgf0ZQ==
+From: Mark Brown <broonie@kernel.org>
+To: shengjiu.wang@gmail.com, Xiubo.Lee@gmail.com, festevam@gmail.com, 
+ nicoleotsuka@gmail.com, lgirdwood@gmail.com, perex@perex.cz, tiwai@suse.com, 
+ linux-sound@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+ linux-kernel@vger.kernel.org, shengjiu.wang@oss.nxp.com
+In-Reply-To: <20260715024758.1252801-1-shengjiu.wang@oss.nxp.com>
+References: <20260715024758.1252801-1-shengjiu.wang@oss.nxp.com>
+Subject: Re: [PATCH 0/2] ASoC: fsl: fix m2m_init error path cleanup in
+ fsl_asrc and fsl_easrc
+Message-Id: <178449635293.33801.10581976168356848104.b4-ty@b4>
+Date: Sun, 19 Jul 2026 22:25:52 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -53,77 +68,62 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 3/8] iommu/fsl: use platform_device_set_fwnode()
-To: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "Rafael J. Wysocki" <rafael@kernel.org>, Danilo Krummrich <dakr@kernel.org>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- Andi Shyti <andi.shyti@kernel.org>, "Joerg Roedel (AMD)" <joro@8bytes.org>,
- Will Deacon <will@kernel.org>,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Doug Berger <opendmb@gmail.com>,
- Florian Fainelli <florian.fainelli@broadcom.com>,
- Broadcom internal kernel review list
- <bcm-kernel-feedback-list@broadcom.com>, Andrew Lunn
- <andrew+netdev@lunn.ch>, "David S. Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, Ulf Hansson <ulfh@kernel.org>,
- Frank Li <Frank.Li@nxp.com>, Sascha Hauer <s.hauer@pengutronix.de>,
- Pengutronix Kernel Team <kernel@pengutronix.de>,
- Fabio Estevam <festevam@gmail.com>, Lee Jones <lee@kernel.org>,
- Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
- Srinivas Kandagatla <srini@kernel.org>
-Cc: brgl@kernel.org, driver-core@lists.linux.dev,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-i2c@vger.kernel.org, iommu@lists.linux.dev, netdev@vger.kernel.org,
- linux-pm@vger.kernel.org, imx@lists.linux.dev,
- linux-arm-kernel@lists.infradead.org, mfd@lists.linux.dev,
- linux-arm-msm@vger.kernel.org, linux-sound@vger.kernel.org
-References: <20260720-pdev-set-fwnode-instead-of-of-node-v1-0-2dee93f42c54@oss.qualcomm.com>
- <20260720-pdev-set-fwnode-instead-of-of-node-v1-3-2dee93f42c54@oss.qualcomm.com>
-From: Robin Murphy <robin.murphy@arm.com>
-Content-Language: en-GB
-In-Reply-To: <20260720-pdev-set-fwnode-instead-of-of-node-v1-3-2dee93f42c54@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.16-dev
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1720; i=broonie@kernel.org;
+ h=from:subject:message-id; bh=oQe+beuZjmzwnLK52btt31QnTUNpwWyqi/eN8PscjeM=;
+ b=owEBbQGS/pANAwAKASTWi3JdVIfQAcsmYgBqXiB6pTfeH6LNKoV/iC6ikxYYZkr8eFjIcm1vW
+ jimlyAMHGWJATMEAAEKAB0WIQSt5miqZ1cYtZ/in+ok1otyXVSH0AUCal4gegAKCRAk1otyXVSH
+ 0MLBB/9JAkDcAmUamcu/Wge21/eVrvdIpnQ8tAwrM5i7U+Ds2xqzyaqDTKGglD3VbmNdFBtKvtz
+ 0q7rFGmqGV+BTz50CTgQf+j3Id4WNYRs89CdXnygWTDOYMI8ntCcAuhmWbPu1Y7dz2th727DbLl
+ +xYI7lXEmcctUKCYNLUp6xkHR3YACxgX7DKAR3n2NBXkRZEQI9itk2EsJ0euZg6z6eH8Sok2GHt
+ O8Q1QgBXtEb5PoYPsYhMagymhcFVavxAZtVQGV/6Tu6MN1jIrtHLkMReXAG65Ojn9YJYFCpqO0B
+ yQKtLhAePAL/Qmls3zhQn3psd0+sBuB5ay5VDLGgF30/u2JX
+X-Developer-Key: i=broonie@kernel.org; a=openpgp;
+ fpr=3F2568AAC26998F9E813A1C5C3F436CA30F5D8EB
 
-On 20/07/2026 10:24 am, Bartosz Golaszewski wrote:
-> Prefer the higher-level platform_device_set_fwnode() over the
-> OF-specific platform_device_set_of_node() for dynamically allocated
-> platform devices.
-
-This is very much non-portable code specific to OF-only platforms, but 
-if the intention is to remove platform_device_set_of_node() again 
-already, then FWIW,
-
-Acked-by: Robin Murphy <robin.murphy@arm.com>
-
-(Although I'm slightly puzzled by the cover letter - AFAICS in -next, 
-platform_device_set_of_node() is itself very much a user of 
-platform_device_set_fwnode(), however in terms of symbol exports, 
-perhaps the former could now just be a static inline wrapper?)
-
-> Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-> ---
->   drivers/iommu/fsl_pamu.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
+On Wed, 15 Jul 2026 10:47:56 +0800, shengjiu.wang@oss.nxp.com wrote:
+> ASoC: fsl: fix m2m_init error path cleanup in fsl_asrc and fsl_easrc
 > 
-> diff --git a/drivers/iommu/fsl_pamu.c b/drivers/iommu/fsl_pamu.c
-> index c83bbc3faad56d6ee1c89b0a7f74028af02c81e9..268a1f752fbceab4fd24013aeea5df1b6982fbb1 100644
-> --- a/drivers/iommu/fsl_pamu.c
-> +++ b/drivers/iommu/fsl_pamu.c
-> @@ -975,7 +975,7 @@ static __init int fsl_pamu_init(void)
->   		goto error_device_alloc;
->   	}
->   
-> -	platform_device_set_of_node(pdev, np);
-> +	platform_device_set_fwnode(pdev, of_fwnode_handle(np));
->   
->   	ret = pamu_domain_init();
->   	if (ret)
+> From: Shengjiu Wang <shengjiu.wang@nxp.com>
 > 
+> Both fsl_asrc_probe() and fsl_easrc_probe() call fsl_asrc_m2m_init()
+> near the end of their probe functions. On failure, the original code
+> did a bare return ret, bypassing the existing error labels that call
+> pm_runtime_disable(). This leaves runtime PM enabled and the device
+> in an inconsistent state after a failed probe.
+> 
+> [...]
+
+Applied to
+
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-7.2
+
+Thanks!
+
+[1/2] ASoC: fsl_asrc: fix m2m_init error path to use goto instead of bare return
+      https://git.kernel.org/broonie/sound/c/890b4253134f
+[2/2] ASoC: fsl_easrc: fix m2m_init error path to use goto instead of bare return
+      https://git.kernel.org/broonie/sound/c/a54bc0eef90e
+
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.
+
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
+
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
+
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
+
+Thanks,
+Mark
 
 
