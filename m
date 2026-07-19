@@ -1,73 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-24412-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24413-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 21823C44512
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 19 Jul 2026 05:25:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 62ED3C4450A
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 19 Jul 2026 07:09:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h2sYN0wwVz2yQL;
-	Sun, 19 Jul 2026 15:25:28 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784438728;
-	cv=none; b=UxXIBsu9/F989CyH6XX7hiKLN64PYoy8KspqBeP0oTPdYEwPJNsXlWjzS3ogkeGs9kWNr36DPODEMasUDUOZT4FSK6vD8MXm97GgjemOR+BethlFGq8uJn5F/M56HpyxTzNulJjnuyOg+sWdiEPmA9FtKh8yJFoXUhpWyvH//Zklxp9x5jhn3VPbkKTud8SEuKnMsbEDjqMwMoK6La4vBaonQONe+OHoIXvhStZ3saoJhwJSO+A9Tc1dbflMJUafk3KzMZnz2qIxgtcEK8gGwuSB80ibMW/tgMY6d58voA9CYmFgv2Eky+NeF5X9mlpbV+138azapxpCcnWnQuOwvA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h2vsS2LlDz2yQJ;
+	Sun, 19 Jul 2026 17:09:32 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784444972;
+	cv=none; b=b397izPfvRuX0E4J785yw5wT0sJek+Kv2dcZvLuQXynVmKxCMC/tNsTiYJ7Au6kZ1cXOU/xn3THikWncVJSo+Ec/LfIRUTpHxFE1EiKna8IoHIBUmuoBv9Fy1BtsBUR6oO+7wAfCw4PdqSkyWJe7GIlZmh9zR6icmw1oIcKlvWBS4phfdgF9BFsX3oDOPZwd8jckVrBm+XJLo93f/zGP4GUktB91tSgAgQrttcD7BZVoh2z+41347Jki3HYbAy8QxRdFEqJuNd9W6UHbMphAng9N/kiJBQWNeyw4W0RqazpB+JaJhSepYNYi8z2HbB2Bcyo5nr6a9XaDAXhtxO85fw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784438728; c=relaxed/relaxed;
-	bh=oKYjhojuwDvo32426MMsCToSDjYywvvyNFa9r+O1Gpw=;
-	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=dxEOJRKDAbfQNCJkMSj2Z2GDtiLk1ASTh9E8qcBDpJy/+Bmd3Z6ET8liOXvWK7H8uVMAAcko8TDBYB/lj3WdKe+bxqrlVcVkTumsvi7jlr3UA4vJdHHnvUhqBXmPd0rRczDrCdiiZPrijmXlTEImkTl/IMYoLuRkzZAitlfCY/mqkqMmhP3/w5tgHAoXKNDRDsw1qrkk3ozvaPinQOGPPRak4S/Cu3KmCxEo3/l58NCbfX177cd/f/VqWz3jub7pc4bvdGVMrvTSnffzfDYAH5AroG/AI+kMd44NEKPjwhKwoOGXhb4kwbbPeiGNcsMEnB0y8c9a/DGo+qznl0nUXw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=FS5Nvyd1; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nnmlinux@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1784444972; c=relaxed/relaxed;
+	bh=NOZUa9azFhnwHZt0tWFJabR96zBoYc4KTwGj0dV68W0=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=LRi4C1sqDLKvR7VSIV6GHcnRgo5/LM8v+vgPTgJ1G56Mkv/22y77jC7NFuVCjGXPtQrg7wVcozvVP3GulxGJgU9L4VIBReqiI4PUwJ+nvrALK93Atomb8spGYTeM3jbJdo/QKiZV1wl2W7cd4BuZTldpQjWbWSA9gv2peLBVdZUiYpG3NEKFR7rB5OoQpokKwTm6Lm4eh41q/y3X1PRrmt2Zl3Ad0XSQZzBjXUyCO2ungiv5YA+yWPwdeQdRHDudfUv4WWZjOXY3iHmyPHTw7nvf89sgp/PKSav/g2K5PXjHqdc3bub8bgUIOZWblOahr8wewRHOnFbGXarC8NxXgQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JtGNA0gC; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=FS5Nvyd1;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JtGNA0gC;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nnmlinux@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h2sYM22xFz2yQJ
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Jul 2026 15:25:26 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66J5BoTI772863;
-	Sun, 19 Jul 2026 05:25:12 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=
-	content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=oKYjho
-	juwDvo32426MMsCToSDjYywvvyNFa9r+O1Gpw=; b=FS5Nvyd1oM+lW9i6pEOaVB
-	N2OJMFX43d2av9tjI7oF62rLeSgr2XblFOOZxza4gLGF+OZciMadeaoHIlYu/Q+1
-	bk5sz7pIHOaeYdMoJk6yXqD91CJlQRypoCMgHp52AfyDew26xkhp9whka22PdFVv
-	1YcSY5/bptxoiHv59K3IGjRqnWdUp/JCN1eMwqLSQVeT9e9d0bd5jGlbVEzNiC1l
-	AHqCMEP1FP4EqkRBQOQqrOonKxC6mu7wtsc0qeGsFV3uq+q3A1NUfUh4pxqnFH86
-	54DMHeeaKBZqTdlQrvvZ31cPW+X7pEqdEnOxd5v2DR3luktdk36v/XL/lILoMCTA
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h2vsQ5flTz2xYg
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Jul 2026 17:09:30 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66J5CZnT2562410;
+	Sun, 19 Jul 2026 07:09:11 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=NOZUa9
+	azFhnwHZt0tWFJabR96zBoYc4KTwGj0dV68W0=; b=JtGNA0gCyK5a60TPOglRLL
+	weMkQtcwquLleUqywvvYNbnkhgIqvMUF2bR0mpJ//MStpyGoVoYEbyEz5AAYXk+O
+	Z9LuHDpP8kJwn08AEW2TkmddZRWmr8G4/blkX44C8o5f5Bb8N5wke8uF4+fvkV7l
+	j0LTdqkhOtH8hERgrR0KvUMIfhw5VgHhIRjt6VlD+OXTdjvBdy6+WBogn7kIaPOc
+	vvd0gLoD1LEFADXO72o6rpQmJrlbXwTBIkG6hU+NvcEaEtJiGnK2B9dTCNGfa5EJ
+	geD42PQp47APWT1SErTSCO7DGPwJlSiWzxwKqBBAsyKoByxY2BatBIioEdWI20Lw
 	==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fg77a2g0v-1
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fg78ftm5a-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 19 Jul 2026 05:25:11 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66J5JhmK020106;
-	Sun, 19 Jul 2026 05:25:10 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4fgm6vrp08-1
+	Sun, 19 Jul 2026 07:09:11 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66J74hnx005955;
+	Sun, 19 Jul 2026 07:09:10 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fgktpry8v-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 19 Jul 2026 05:25:10 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66J5P6e146268830
+	Sun, 19 Jul 2026 07:09:10 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66J796px21627248
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sun, 19 Jul 2026 05:25:06 GMT
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3FB292004B;
-	Sun, 19 Jul 2026 05:25:06 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 77E4E20043;
-	Sun, 19 Jul 2026 05:25:03 +0000 (GMT)
-Received: from [9.39.16.63] (unknown [9.39.16.63])
-	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Sun, 19 Jul 2026 05:25:03 +0000 (GMT)
-Message-ID: <251a81b8-fa29-4704-b264-25ec12ec3c8b@linux.ibm.com>
-Date: Sun, 19 Jul 2026 10:55:02 +0530
+	Sun, 19 Jul 2026 07:09:06 GMT
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 85A8B2004B;
+	Sun, 19 Jul 2026 07:09:06 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 58EA320040;
+	Sun, 19 Jul 2026 07:09:03 +0000 (GMT)
+Received: from [9.124.218.25] (unknown [9.124.218.25])
+	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Sun, 19 Jul 2026 07:09:03 +0000 (GMT)
+Message-ID: <446c84c2-8639-4ecb-8a46-1e203a166e46@linux.ibm.com>
+Date: Sun, 19 Jul 2026 12:39:01 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,304 +82,98 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: powerpc/pseries: EEH detected with xhci_hcd
-To: Sourabh Jain <sourabhjain@linux.ibm.com>,
-        Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
-        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-        Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        shivang upadhyay <shivangu@linux.ibm.com>, sbhat@linux.ibm.com
-References: <2ad00297-eca5-4f36-ad01-138837f6fa4f@linux.ibm.com>
- <29f33de0-0861-459f-b6a0-440354fac785@linux.ibm.com>
- <ad7eefde-0439-4258-92a7-4ab782a32d42@linux.ibm.com>
- <e1733e27-1210-4d73-bfa2-b86c085ebd6c@linux.ibm.com>
+Subject: Re: [PATCH] ppc/fadump: collect dump if the collected size is lesser
+ than reserved
+To: Shivang Upadhyay <shivangu@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+        linux-kernel@vger.kernel.org
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+        chleroy@kernel.org, adri.vero.dev@gmail.com, adityag@linux.ibm.com,
+        anushree.mathur@linux.vnet.ibm.com
+References: <20260714173010.615682-1-shivangu@linux.ibm.com>
 Content-Language: en-US
-From: Narayana Murty N <nnmlinux@linux.ibm.com>
-In-Reply-To: <e1733e27-1210-4d73-bfa2-b86c085ebd6c@linux.ibm.com>
+From: Sourabh Jain <sourabhjain@linux.ibm.com>
+In-Reply-To: <20260714173010.615682-1-shivangu@linux.ibm.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: R8Z3PVc_w6VoviOgOQLurYdgIf_qpvf-
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzE5MDA1MiBTYWx0ZWRfX4+ztSeRDDam/
- KhKyo2fkr+QrsRnz0kP/VBudtnkneeqvFJr2AoyRc/Nwqrp4cSozKacMLgxD8vipCf2edCsWPTG
- dSBaoFMhZ9ZK00lsTxl+XT2WbCwO+AU=
-X-Proofpoint-GUID: J99uMarTtYtkHunz8wz34uhBGWPJvr2x
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzE5MDA1MiBTYWx0ZWRfX44ZsYi9IeuEc
- 7N8azzpSb5vyR92jfBRy9gyR7WFBMUwtOavzos5jYmr9U5eccLYSuCK/ztoM9NVfKuGOHPHQBmz
- ZTv0NS51qAhH8JA0JXXGEW6CTTqP/f1yFg3AVw2Aa+ajqcXerLhHpFvvHK8rUnReD/W4eiUtpvC
- 1tcJxcIlxXXIKRK+3jZYpWP7vh+nOyXJtR46Ph/8oNF36133b1V9zVDKhnECfZaiCRUHU3vgluh
- 5UmqMVNivpIlRBLVZ2nCALqoRKOlZAMWBXHiU2x/G8dPfBYInFSLnZx4V+CNc+umZk6uudH5CHN
- A5CxDUYvUoQWk0B4jO5m9EdJzzH/hGTzb4lYvNnWtsd0wuZUtRAmjX3JsPu7gHW76u/kWU3XItY
- jkyMA1LOXM0drbdrSx6/SCvnQVZjnrixxctKUbGKJPl/TlPXWtVPMFERrrngwFU4ST2VikVCyf+
- ghTzLnd550ZlLT/LG/Q==
-X-Authority-Analysis: v=2.4 cv=K7AS2SWI c=1 sm=1 tr=0 ts=6a5c5fb7 cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzE5MDA2OSBTYWx0ZWRfX2/whJCHOH5ta
+ U6tYMkEmvgp+z/0R3VfaDjsdlc+FmHfpL2yeWdRahh1siUDTnVg2aZu7nyfgfrNGF+HHR1iDL3A
+ xkYorPTB7yC1iFCDWfB/HeSB/S6sPk3SQ8sNjgCsN6/Vkx9WqiBZm3OMZOWqS0wVvlBx6AImeiC
+ dNaK99CkfYA9phMXqjXrPeEPyaHYAnWiDAMjRyOpH8inbo8ijXONKrm2ONKuZpf2rjvko9fdGQB
+ 2ukXfsa6Nn9hxhAtXjHTnYKxp+W94xtQZwvAEq73yODDhlyTwefTyFBo28JezoRjt1ThehwNJDJ
+ xePhzuRExNfXfH+IBfiV/SQV+7fvJHdEjvu31vzY6OaYYgllIiS6mSy7iUJMBNrY6KstfTc1fw8
+ iaV9AhEiUdgFMRF5LkIRvepCxKq4CP7tT/+N6niEqfOpjqr87jaJbEtjL0/iAeWRfsN5SOW6C0s
+ eisJy3RQ8urqA7vcPtw==
+X-Proofpoint-GUID: JVdP_FG8F3TL1qyHM0_NLU0QR-X2v-gs
+X-Authority-Analysis: v=2.4 cv=MelcfZ/f c=1 sm=1 tr=0 ts=6a5c7817 cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
  a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=pm-6HpYkShnnoCZWuv8A:9
- a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VnNF1IyMAAAA:8
+ a=CW4pDy2IeZdmWy9cdccA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzE5MDA2OSBTYWx0ZWRfX/pk3BGNG1671
+ dfAg54zo1AAcoumRwEdxkQs+9sHia7uTxXJmp8GsV4MGLJ9mkq8ryZxeRWkiHZswJ7h+64oTayI
+ li9qdY7LQSRnrHexlkxTMQ+E7P9TBu0=
+X-Proofpoint-ORIG-GUID: uAs7vl-SaC5vVN1AuXHG8Y8NzUSQ2PDa
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-07-19_02,2026-07-17_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0 suspectscore=0 bulkscore=0 clxscore=1015
- priorityscore=1501 spamscore=0 phishscore=0 malwarescore=0 adultscore=0
- impostorscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
- definitions=main-2607190052
+ impostorscore=0 lowpriorityscore=0 priorityscore=1501 bulkscore=0 spamscore=0
+ clxscore=1015 malwarescore=0 phishscore=0 adultscore=0 suspectscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607190069
+
+Could you please reword the commit title to make it a bit clearer?
 
 
+On 14/07/26 23:00, Shivang Upadhyay wrote:
+> When a machine is subjected to CPUs add/remove, using dlpar
+> operations, the number of collected CPU_NOTES can change.
+> As per PAPR, collected dump size should not be more than
+> allocated size. Reflecting the same in source.
 
-On 19/07/26 9:47 AM, Sourabh Jain wrote:
+Can you add more details about the problem you are trying to solve
+with this patch and how.
+
+Adding the error message and scenario would be really helpful in
+understanding the problem.
+
+Can you add Closes tag if it is reported upstream and if possible fixes 
+tag too.
+
+> Signed-off-by: Shivang Upadhyay <shivangu@linux.ibm.com>
+> ---
+>   arch/powerpc/platforms/pseries/rtas-fadump.c | 3 ++-
+>   1 file changed, 2 insertions(+), 1 deletion(-)
 >
->
-> On 17/07/26 10:26, Narayana Murty N wrote:
->>
->>
->> On 15/07/26 7:33 PM, Sourabh Jain wrote:
->>>
->>> This issue only occurs with the Radix MMU.
->>> Booting the same kernel with disable_radix=1 does not reproduce the 
->>> issue.
->>>
->>> The system also has pmem.
->>>
->>> +CC Shivang and Shiva
->>>
->>> - Sourabh Jain
->>>
->>>
->>> On 15/07/26 15:01, Sourabh Jain wrote:
->>>> Hello,
->>>>
->>>> Upstream kernel with head at commit 
->>>> 3b029c035b34bbc693405ddf759f0e9b920c27f1
->>>> hitting EEH with xhci_hcd during kernel boot.
->>>>
->>>> The issue was not observed on the distro kernel running on the the 
->>>> same machine.
->>>>
->>>> Trace:
->>>> [    2.130359] [      C8] ibmvscsi 30000066: SRP_LOGIN succeeded
->>>> [    2.132280] [    T362] xhci_hcd 0014:01:00.0: xHCI Host Controller
->>>> [    2.132289] [    T362] xhci_hcd 0014:01:00.0: new USB bus 
->>>> registered, assigned bus number 1
->>>> [    2.132449] [    T362] xhci_hcd 0014:01:00.0: 
->>>> ibm,query-pe-dma-windows(53) 10000 8000000 20000014 returned 0, 
->>>> lb=1000000 ps=103 wn=1
->>>> [    2.132453] [    T362] xhci_hcd 0014:01:00.0: Skipping ibm,pmemory
->>>> [    2.141861] [    T110] scsi 0:0:1:0: Direct-Access  AIX VDASD    
->>>>         0001 PQ: 0 ANSI: 3
->>>> [    2.143707] [    T362] xhci_hcd 0014:01:00.0: 
->>>> ibm,create-pe-dma-window(54) 10000 8000000 20000014 15 28 returned 
->>>> 0 (liobn = 0x70000014 starting addr = 8000000 0)
->>>> [    2.147236] [    T362] xhci_hcd 0014:01:00.0: lsa_required: 0, 
->>>> lsa_enabled: 0, direct mapping: 1
->>>> [    2.147239] [    T362] xhci_hcd 0014:01:00.0: iommu: 64-bit OK 
->>>> but direct DMA is limited by 800010000000000
->>>> [    2.147250] [    T362] xhci_hcd 0014:01:00.0: lsa_required: 0, 
->>>> lsa_enabled: 0, direct mapping: 1
->>>> [    2.147252] [    T362] xhci_hcd 0014:01:00.0: iommu: 64-bit OK 
->>>> but direct DMA is limited by 800010000000000
->>>> [    2.147476] [    T362] xhci_hcd 0014:01:00.0: hcc params 
->>>> 0x0270f06d hci version 0x96 quirks 0x0000000004000000
->>>> [    2.149530] [    T362] xhci_hcd 0014:01:00.0: xHCI Host Controller
->>>> [    2.149536] [    T362] xhci_hcd 0014:01:00.0: new USB bus 
->>>> registered, assigned bus number 2
->>>> [    2.149542] [    T362] xhci_hcd 0014:01:00.0: Host supports USB 
->>>> 3.0 SuperSpeed
->>>> [    2.149638] [    T362] usb usb1: New USB device found, 
->>>> idVendor=1d6b, idProduct=0002, bcdDevice= 7.02
->>>> [    2.149642] [    T362] usb usb1: New USB device strings: Mfr=3, 
->>>> Product=2, SerialNumber=1
->>>> [    2.149644] [    T362] usb usb1: Product: xHCI Host Controller
->>>> [    2.149646] [    T362] usb usb1: Manufacturer: Linux 
->>>> 7.2.0-rc3upstream+ xhci-hcd
->>>> [    2.149647] [    T362] usb usb1: SerialNumber: 0014:01:00.0
->>>> [    2.149817] [    T362] hub 1-0:1.0: USB hub found
->>>> [    2.149937] [    T362] hub 1-0:1.0: 4 ports detected
->>>> [    2.150020] [    T362] xhci_hcd 0014:01:00.0: xHCI host 
->>>> controller not responding, assume dead
->>>> [    2.150044] [    T362] xhci_hcd 0014:01:00.0: HC died; cleaning up
->>>> [    2.150125] [    T118] EEH: Recovering PHB#14-PE#10000
->>>> [    2.150135] [    T118] EEH: PE location: N/A, PHB location: N/A
->>>> [    2.150143] [    T118] EEH: Frozen PHB#14-PE#10000 detected
->>>> [    2.150149] [    T118] EEH: Call Trace:
->>>> [    2.150154] [    T362] xhci_hcd 0014:01:00.0: HC died; cleaning up
->>>> [    2.150154] [    T118] EEH: [0000000066e7b6f8] 
->>>> __eeh_send_failure_event+0xa8/0x190
->>>> [    2.150167] [    T362] xhci_hcd 0014:01:00.0: USB bus 2 
->>>> deregistered
->>>> [    2.150171] [    T362] xhci_hcd 0014:01:00.0: remove, state 1
->>>> [    2.150174] [    T118] EEH: [000000004754a593] 
->>>> eeh_dev_check_failure+0x408/0x7a0
->>>> [    2.150177] [    T362] usb usb1: USB disconnect, device number 1
->>>> [    2.150185] [    T118] EEH: [00000000063df7cc] 
->>>> xhci_portsc_readl+0x64/0x90 [xhci_hcd]
->>>> [    2.150216] [    T118] EEH: [00000000593ad484] 
->>>> xhci_hub_control+0xe28/0x27f0 [xhci_hcd]
->>>> [    2.150244] [    T118] EEH: [00000000190f1012] 
->>>> usb_hcd_submit_urb+0x508/0xd30 [usbcore]
->>>> [    2.150276] [    T118] EEH: [0000000072d7c35d] 
->>>> usb_submit_urb+0x254/0x840 [usbcore]
->>>> [    2.150303] [    T118] EEH: [0000000009787909] 
->>>> usb_start_wait_urb+0x88/0x270 [usbcore]
->>>> [    2.150331] [    T118] EEH: [00000000e6ec433e] 
->>>> usb_control_msg+0x134/0x1f0 [usbcore]
->>>> [    2.150357] [    T118] EEH: [00000000d77b1b30] 
->>>> hub_probe+0x570/0x12b8 [usbcore]
->>>> [    2.150385] [    T118] EEH: [0000000091c7d281] 
->>>> usb_probe_interface+0x124/0x490 [usbcore]
->>>> [    2.150412] [    T118] EEH: [00000000dc656a09] 
->>>> really_probe+0x118/0x580
->>>> [    2.150425] [    T118] EEH: [00000000131d8dfb] 
->>>> __driver_probe_device+0xc4/0x270
->>>> [    2.150434] [    T118] EEH: [00000000e26dfd1d] 
->>>> driver_probe_device+0x5c/0x110
->>>> [    2.150442] [    T118] EEH: [000000006312c397] 
->>>> __device_attach_driver+0x10c/0x210
->>>> [    2.150451] [    T118] EEH: [000000004edd640b] 
->>>> bus_for_each_drv+0xb0/0x130
->>>> [    2.150460] [    T118] EEH: [000000009b173e09] 
->>>> __device_attach+0xdc/0x2a0
->>>> [    2.150467] [    T118] EEH: [000000004588b69c] 
->>>> device_initial_probe+0x70/0x80
->>>> [    2.150473] [    T118] EEH: [000000003dba8fbb] 
->>>> bus_probe_device+0x50/0xf0
->>>> [    2.150479] [    T118] EEH: [00000000f1fd4a53] 
->>>> device_add+0x8f0/0xc00
->>>> [    2.150486] [    T118] EEH: [00000000a74fc843] 
->>>> usb_set_configuration+0x78c/0xb60 [usbcore]
->>>> [    2.150526] [    T118] EEH: [000000001df4c94f] 
->>>> usb_generic_driver_probe+0x78/0xd0 [usbcore]
->>>> [    2.150556] [    T118] EEH: [00000000a7086db7] 
->>>> usb_probe_device+0x60/0x200 [usbcore]
->>>> [    2.150584] [    T118] EEH: [00000000dc656a09] 
->>>> really_probe+0x118/0x580
->>>> [    2.150591] [    T118] EEH: [00000000131d8dfb] 
->>>> __driver_probe_device+0xc4/0x270
->>>> [    2.150603] [    T118] EEH: [00000000e26dfd1d] 
->>>> driver_probe_device+0x5c/0x110
->>>> [    2.150611] [    T118] EEH: [000000006312c397] 
->>>> __device_attach_driver+0x10c/0x210
->>>> [    2.150620] [    T118] EEH: [000000004edd640b] 
->>>> bus_for_each_drv+0xb0/0x130
->>>> [    2.150629] [    T118] EEH: [000000009b173e09] 
->>>> __device_attach+0xdc/0x2a0
->>>> [    2.150636] [    T118] EEH: [000000004588b69c] 
->>>> device_initial_probe+0x70/0x80
->>>> [    2.150648] [    T118] EEH: [000000003dba8fbb] 
->>>> bus_probe_device+0x50/0xf0
->>>> [    2.150655] [    T118] EEH: [00000000f1fd4a53] 
->>>> device_add+0x8f0/0xc00
->>>> [    2.150664] [    T118] EEH: [000000005bca6639] 
->>>> usb_new_device+0x2f4/0x890 [usbcore]
->>>> [    2.150693] [    T118] EEH: [0000000023d4a3a1] 
->>>> register_root_hub+0x1e4/0x2a0 [usbcore]
->>>> [    2.150721] [    T118] EEH: [00000000941149db] 
->>>> usb_add_hcd+0x82c/0x8f0 [usbcore]
->>>> [    2.150749] [    T118] EEH: [00000000f13842f6] 
->>>> xhci_pci_common_probe+0x1e4/0x3d0 [xhci_pci]
->>>> [    2.150760] [    T118] EEH: [00000000862a8445] 
->>>> local_pci_probe+0x64/0x100
->>>> [    2.150770] [    T118] EEH: [00000000c124ce3b] 
->>>> pci_device_probe+0x330/0x370
->>>> [    2.150778] [    T118] EEH: [00000000dc656a09] 
->>>> really_probe+0x118/0x580
->>>> [    2.150792] [    T118] EEH: [00000000131d8dfb] 
->>>> __driver_probe_device+0xc4/0x270
->>>> [    2.150800] [    T118] EEH: [00000000e26dfd1d] 
->>>> driver_probe_device+0x5c/0x110
->>>> [    2.150808] [    T118] EEH: [00000000f3819f2a] 
->>>> __driver_attach+0x12c/0x2d0
->>>> [    2.150816] [    T118] EEH: [00000000b7c6a37c] 
->>>> bus_for_each_dev+0xa4/0x130
->>>> [    2.150824] [    T118] EEH: [000000009bdf640c] 
->>>> driver_attach+0x30/0x50
->>>> [    2.150836] [    T118] EEH: [0000000039921381] 
->>>> bus_add_driver+0x1c0/0x380
->>>> [    2.150844] [    T118] EEH: [0000000034a0727d] 
->>>> driver_register+0x9c/0x1b0
->>>> [    2.150852] [    T362] xhci_hcd 0014:01:00.0: USB bus 1 
->>>> deregistered
->>>> [    2.150851] [    T118] EEH: [000000002faf9b88] 
->>>> __pci_register_driver+0x64/0x80
->>>> [    2.150861] [    T118] EEH: [000000005142b255] 
->>>> xhci_pci_init+0x90/0xb0 [xhci_pci]
->>>> [    2.150869] [    T118] EEH: [00000000a9fe4af6] 
->>>> do_one_initcall+0x5c/0x40c
->>>> [    2.150883] [    T118] EEH: [00000000e2b1b716] 
->>>> do_init_module+0xac/0x3c0
->>>> [    2.150893] [    T118] EEH: [00000000fc06f562] 
->>>> init_module_from_file+0x120/0x1b0
->>>> [    2.150902] [    T118] EEH: [000000004ca14a9d] 
->>>> sys_finit_module+0x1b4/0x4d0
->>>> [    2.150910] [    T118] EEH: [000000005e56c4e5] 
->>>> system_call_exception+0x184/0x430
->>>> [    2.150919] [    T362] xhci_hcd 0014:01:00.0: probe with driver 
->>>> xhci_hcd failed with error -108
->>>> [    2.150930] [    T118] EEH: [0000000024ebcbb3] 
->>>> system_call_vectored_common+0x15c/0x2ec
->>>> [    2.150941] [    T118] EEH: This PCI device has failed 1 times 
->>>> in the last hour and will be permanently disabled after 5 failures.
->>>> [    2.150943] [    T118] EEH: Notify device drivers to shutdown
->>>> [    2.150947] [    T118] EEH: Beginning: 'error_detected(IO frozen)'
->>>>
->>>> Snip.....
->>>> And after sometime the device is disabled.
->>>>
->>>> [   40.450010] [    T118] EEH: PHB#14-PE#10000 has failed 6 times 
->>>> in the last hour and has been permanently disabled.
->>>> [   40.450027] [    T118] EEH: Unable to recover from failure from 
->>>> PHB#14-PE#10000.
->>>>                           Please try reseating or replacing it
->>>>
->>>> Attached the kernel config and dmesg.
->>>>
->>>> - Sourabh Jain
->>>
->> Is the device EEH capable? it seems
->> error_detected is not invoked any driver
->> callbacks. 
->
-> How to verify that? Is the below data enough to conclude the above 
-> statement?
->
-> root> lspci 0014:01:00.0 USB controller: Texas Instruments TUSB73x0 
-> SuperSpeed USB 3.0 xHCI Host Controller (rev 02)
->
-> root> cat /sys/bus/pci/devices/0014\:01\:00.0/eeh_mode
-> 0x200
->
-> root> cat /sys/bus/pci/devices/0014\:01\:00.0/eeh_pe_config_addr
-> 0x10000
->
-> root> cat /sys/bus/pci/devices/0014\:01\:00.0/eeh_pe_state
-> 0x00000000 0x00000003
+> diff --git a/arch/powerpc/platforms/pseries/rtas-fadump.c b/arch/powerpc/platforms/pseries/rtas-fadump.c
+> index 3bb4ac2ab6cc..19a5adaf326b 100644
+> --- a/arch/powerpc/platforms/pseries/rtas-fadump.c
+> +++ b/arch/powerpc/platforms/pseries/rtas-fadump.c
+> @@ -469,7 +469,8 @@ static int __init rtas_fadump_process(struct fw_dump *fadump_conf)
+>   				pr_err("Dump taken by platform is not valid (%d)\n", i);
+>   				rc = -EINVAL;
+>   			}
+> -			if (fdm_active->rgn[i].bytes_dumped != fdm_active->rgn[i].source_len) {
+> +			if (be64_to_cpu(fdm_active->rgn[i].bytes_dumped)
+> +			    > be64_to_cpu(fdm_active->rgn[i].source_len)) {
 
-Could you please verify whether the bound driver provides the minimum 
-EEH recovery callbacks by running:
+Can you please share your observations about `bytes_dump` for both QEMU 
+and a
+real system (LPAR) where the number of online CPUs is not equal to the 
+maximum
+number of CPUs?
 
-|BDF=0014:01:00.0 lspci -Dk -s "$BDF" echo "$BDF" > 
-/sys/kernel/debug/powerpc/eeh_dev_can_recover echo $? |
+I agree that you're making these changes to comply with PAPR, but since 
+this has been
+working for so long, it would be good to have all the data before making 
+this change.
 
-A return status of |0| confirms that the driver provides the required 
-|error_detected()| and |slot_reset()| callbacks.
+- Sourabh Jain
 
-If the write fails with |Operation not supported|, the driver does not 
-support driver-assisted EEH recovery.
-
-Please also check the EEH log for either:
-
-|EEH: Invoking <driver>->error_detected(...) |
-
-or:
-
-|EEH: driver not EEH aware |
-
->
-> - Sourabh Jain
+>   				pr_err("Dump taken by platform is incomplete (%d)\n", i);
+>   				rc = -EINVAL;
+>   			}
 
 
