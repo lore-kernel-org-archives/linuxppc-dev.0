@@ -1,81 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-24409-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24408-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EE203C44520
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9732AC4450A
 	for <linuxppc-dev@archiver.kernel.org>; Sun, 19 Jul 2026 05:23:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h2sVq2ztbz2yVZ;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h2sVq2Wmnz2yQL;
 	Sun, 19 Jul 2026 15:23:15 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62f"
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::529"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784438595;
-	cv=none; b=D5FfnBqPDP1QxLyYanxPgtlnH2WglhRhKs03gTh6ZJG1UVHnIrotYXZPz0R1CyHTyYlkxrtfYBAjfRIH61MwPcnNkmTofmEau99gE3/xukAA0rPjKZUiT5/dgeyzHetx711cHid2mcniS6N1jZHVyKRbGAmWmeIw+ABzT/hNIoyy+otfb14ymcuZH6kRaedM7TU2F59350QaI6xv5dYzPfx2UJeCqRvSu4sf7VTkKVanHwNtiwFWdi1aJgZHtGPKYZjcZno3ebucswQIVsGWCV5ZFYRi43uT9WfWsNIuDn7nYvS/tonR29Ti6rK+KxU3tyKBc34MZxGrOG5OgXOzpQ==
+	cv=none; b=Gt48xUymEYYChNwhqVskOIyksBaq16HtOU8B5M9wg9006QqAWHI3qYqHOW+X8BcXytI2GuxFwftLFGkue7JyRY6VweUWwp3VetGaEWxT0dLLeUh/hWDgOjWly8PvCAUEadfOMjkGcUJ3JWE+L8PhKkcNTgE639PlWf8hhzuESQfQrCh+11M3Aw+Y/s3cCvDB67U1E6fLit6SrJ/8e6TplY5yyPd5LqJkHh1Szor5GXvtjwxxpUUn1mLcSvpT8YKYWQAw2WRRO4xYNKUYNzZavZO/cFihSKU5vGaLVxHP/ul+TTcrdV20MnReJiEWaikgXY0z/qW2IHtdbUPEhpUR1w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1784438595; c=relaxed/relaxed;
-	bh=pBC9wGN5WcqQqnbJA19I3YxiEUTegSJ8uL/Ced5d0n8=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=Qk5nSe9860Nk+tDu40zHO8FvobgTJ1ZUzM/az/l0eb7gd/CFjwp35IRzSeaS/l5Oo9EcrdNXFFo2AEhXhxEmCKFc4PHF0uZvLdfoRT/3tQ7bZxSMWO3HhrIJDysIZYN9Ec1PMhGG0o/1aJNc+Y0oD3Lgn7ds3zLAJ8AbQ62wpGlFggPT551HC74m/7k0hE5uSW9/4Ysl1akKtdV8AHf+JKsP24I9dP/Mlf5wwm9w3u+nsQ/zKRrivYAaoOGdcxtTzA1RIlppIQiEB9jSGyEUMuyJQ+C/ZqllulSICBbJXr+rOCoaePTveJjAXvPK7thqSdUvJR95mwoHsqDyji3rXg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=enJ/3ijs; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62f; helo=mail-pl1-x62f.google.com; envelope-from=dmitry.torokhov@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	bh=lQcYHP742JQAyp0Zxye8wRRdYiQ3akELTcoPNLHuwtg=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=RBGcbfD+fjr9HAeArLdPyyyWtJE5LRV+Wy316diJt6LB5wkNdymbhW4VHGEURkiGa+Cp4S+/Wn+kSwF9YhBKPl96VKCJSOSd32nEecWBRPZTbsZngKOO9T6BtBWIiunIrb8JpDRgKBHzKzscwvoGEw3C7vpeVUqeO1hxjlkBiNJF/MIbarSnYigF0orKNoj3VFI2x4wTI4ALMNO8T7LYAJIb7FbdyC7kL8+6Z/JU3nEdX+01lbhJb1o31tdBc/ISx6mE1VhLl4mrfgLx/y9aj2Zo+3m8bZXS6wG1W8opmL8WGHbWam4kSLTpiVzyz47U9EkJbNj5hLRaS5R40zHWfw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=WV+83Hh5; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::529; helo=mail-pg1-x529.google.com; envelope-from=dmitry.torokhov@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=enJ/3ijs;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=WV+83Hh5;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62f; helo=mail-pl1-x62f.google.com; envelope-from=dmitry.torokhov@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x62f.google.com (mail-pl1-x62f.google.com [IPv6:2607:f8b0:4864:20::62f])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::529; helo=mail-pg1-x529.google.com; envelope-from=dmitry.torokhov@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x529.google.com (mail-pg1-x529.google.com [IPv6:2607:f8b0:4864:20::529])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h2sVp4LGMz2yQJ
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Jul 2026 15:23:14 +1000 (AEST)
-Received: by mail-pl1-x62f.google.com with SMTP id d9443c01a7336-2cace91f112so91726065ad.0
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jul 2026 22:23:14 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h2sVn5tzjz2xyh
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Jul 2026 15:23:12 +1000 (AEST)
+Received: by mail-pg1-x529.google.com with SMTP id 41be03b00d2f7-ca00f126b7eso6044710a12.2
+        for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jul 2026 22:23:12 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1784438592; x=1785043392; darn=lists.ozlabs.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=pBC9wGN5WcqQqnbJA19I3YxiEUTegSJ8uL/Ced5d0n8=;
-        b=enJ/3ijsGr17nxBB1BWTeQ3rBXXcBzwxPCEX5wKbgi0wf1JUMrh8OVoFhRkdwhcd4t
-         K8SpArQ6rJo9kF5mABh32vvVggiTbPuTMOwVc9MNHFe+Luj+D42yRqfV3FpTm7fNh/hj
-         bgLKg6p34aiYBdNE86hE3DwSabucAhNta07sd7NmYzckaapdBStcyhTcq2GX0WSU0iwJ
-         8/7wnxF1YLB2YDBCulnerFlPl8n2ruZ8gmkv7nauBiWnsg4giJltXkbMfrPFQ1B5jURv
-         F4s0qNPz93WcnA0jY2EJ4hqivoenowse4vF61KIjY0P+PCJwqwYiHWMYJ/TQMX+Hpk3p
-         bF3A==
+        d=gmail.com; s=20251104; t=1784438589; x=1785043389; darn=lists.ozlabs.org;
+        h=cc:to:content-transfer-encoding:content-type:mime-version
+         :message-id:date:subject:from:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=lQcYHP742JQAyp0Zxye8wRRdYiQ3akELTcoPNLHuwtg=;
+        b=WV+83Hh5Wq3wHm3OoCXNMU4iyFPTqT0QnMQYHINX3AmN7nOCLh9QNCFMBR8nmhiatU
+         eJwBQqUeuUKXZ+X+ThLHSrmNXL7JYOIVksJAjZAGwnd0sJuYm862uUg8XTtfa8xrHs4U
+         R52jz74qvRwhziY++kTwfUluTL21WzRr8vX8Rp0Z0DSIA0iW+pkaK3t0B5tRZogEA08s
+         cnQBOLz2mxoMJ1E+ZwP0+RbtWd6lSk2g4pLENLDPWtRG4kvOfISBbLb5toptTD3SZX3J
+         cvveyIxoyw8YpLEseAjUzGwGKtVVZbSZ3lndx7YFIRAfidxDsiTu5VeyhY2dR1TSElgb
+         2x8Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784438592; x=1785043392;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=pBC9wGN5WcqQqnbJA19I3YxiEUTegSJ8uL/Ced5d0n8=;
-        b=FkB+7aVQ9FKCMCcnmtVqbfmTaEkoujRJdGVHMqpCx/8a096lJB3GHqNrqihc00yXjM
-         12yB4tIGVZelLBuGHFDXwrmMj6UmOufp+ZwH3mpdxa6YfrH6I20IrzIeQCeZ2PCmv0Qj
-         VwHE7ZmmDtUMwd4ZR9MqWtaUBS/T+jmUZ8jh5/G4365u3HbdpVGDj/cYe9RepkcHLGWa
-         Ri4VYHeyn25IVoLB71KYUeG91AEDxswjtD++XHT4J5BonQ65jx1TOBwJZcJYLmWE3LP/
-         bMQez7z1Q7H805fI6jaL9/XtqT5lmCrL08HYGQdBBBePxPMktT3W0GcQByZeIitvnCPH
-         RCRA==
-X-Forwarded-Encrypted: i=1; AHgh+RpNBdZc9kGjyP91bghNIySyRwB1llMxbxGFuKYKw05iAt9wKY3LUgfQi2o7IESKSERS1wzui1aafvWHxx8=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Ywt21ZjAbuYvXUOcGG6yJdJp104rCxs8/0HHw99gsA1MksOL2nA
-	UwlDVksYKIVBEwwlCRWS3QJAObLQ45+GHgDgufspbDZprEy9wxATAHsF
-X-Gm-Gg: AfdE7cl15lvx2pNdXBRw3u6JQqcfWFDJCJ8nzdWT877Hy1Y8CWIg3PDrYR9g6k+rsKS
-	XbSFn0BnXXFhtr+wunmy6HxTaWCr2cchB9n6MTa+3PTKR1PKIjbCAUM/P3smVhTvBr8XuWym/q2
-	k4COMeK+WLSuRf8EOpwILCBzHF/mDIq7kKxx+cS2p1m+d3O7u6XWGNxCRKBBlRf9mH3gPTuigIs
-	n5rlxAyjttlotzAoA+CZIM41qmRAOOoLMNYq9bHT3C8mdfZGaiHT72/t4MaAkfB+JJoGNu9O5YD
-	sivrAsKVMl5aL478QGukHkXZbe+6Fqu0v05K61bIUg9vJ6oSj0vC1MVcufC+ns0S3g93vBGNSy3
-	bYStoch8I2OMXHHAWV9dZ04ETAmUe0Pa2mEjtPHZtYjgbGGouaFMVPDZO7SZ9ggjUP3EZU2VbfK
-	6C+W6CrgFtw3fP/+aREaSlHjaLhzBmT+ebemVhdMV97o5Na04SIdOcBJoRQyi0zbjMfA==
-X-Received: by 2002:a05:6a21:828c:b0:3c3:7e9c:e292 with SMTP id adf61e73a8af0-3c3ad7ac45dmr9339204637.25.1784438592174;
-        Sat, 18 Jul 2026 22:23:12 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1784438589; x=1785043389;
+        h=cc:to:content-transfer-encoding:content-type:mime-version
+         :message-id:date:subject:from:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=lQcYHP742JQAyp0Zxye8wRRdYiQ3akELTcoPNLHuwtg=;
+        b=qiL+DBx9WYmeQSu9FSV/5B/474p7QsyEl6ENQSXi2XSSXMvA4Vdt1gPH2brfe5+f1c
+         ez94ALNuEFfGy+eylkRogZJdt1ULf+4lIftc2x043w17hz4W91LnEwhHPOZ7jq3u29bB
+         klj33pngvvYNrU/+YQ3+D94pXAm62rQaTWpNg6HJp0Knuo30bn2LoBOE+VXL7rOvfEVN
+         xbKHynqXiyMnnFLgf9cyrCv6fEQbYNY065xYzV3dVnqQDE6HVWzFf54W3V7WaWJ1VHJg
+         3m8xJrQYvYe6HU1RPJv2duyNFXLrKMYJsmYm6LH5F4wMf+F67lpzU17/5bG+y4fpr3mj
+         D31g==
+X-Forwarded-Encrypted: i=1; AHgh+RrDfIudY6HVALEd0kVeNn2cGLT/GcQpS05s43OnP5VIIlh4bm7Tc+h0rGQDG0p1HVTW0K3u1vveLMabyPE=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwT1ZPqQ7ozqsboTmpzA5qgFF4jMyuw0fQEBHJEl/+ox7l2KkHn
+	m9xx3PCJv2sis/32WzpfeHYDbIqtFVohNOg2F3ZmKpkJM1gr0NL64Yx4
+X-Gm-Gg: AfdE7cm1XBxXalZhYFwUwB+WylwnQCI6KOMFyg2qAfaPFUYyibfkT+w1EK9EL9hISjX
+	6MvcRtBKxZup+9fHn8zyLIyxsYxwoNW3OS4269H/JB5ecGqAnWd/k/qbCcW9p4UiiDb5eCIYB5D
+	yXwAAix137RAv6ZopH5Z8uZ/wn009gEsZGOzm6hO1EqF7vURaunRbNt2OVvEvUxpInRnQqngX53
+	ITXlfpIQeyia3Kce9UtVvBeHcbvPayvlHKJYVUXXwc6Ec48nOD/0p/bU56VKVVk4aZJdHg8zfsw
+	QKU++z2PS0RlBV+GkNHmRiPJUHJ3KTKwW+qfprCZM3iSGuMzxjeoJzwHyD25qb2QUZ8z7Gb3CB/
+	9eSAeF2CyUsmUGU2Ge/phwEuqPIuSd5G0tLgL3If3QI8u+Clr4EiKCp/asRCn40vjaKlaRCnAlD
+	q888bprNBU/VqEV7EpMakay0UXYNobHtNMmWJqMNP6DigS46Yzx/U3YmSESpGPVmAsPdPWl0ZhU
+	KvS
+X-Received: by 2002:a05:6a20:9f8d:b0:3c3:ad17:edf7 with SMTP id adf61e73a8af0-3c3ada267d8mr9727040637.63.1784438588669;
+        Sat, 18 Jul 2026 22:23:08 -0700 (PDT)
 Received: from dtor-ws.sjc.corp.google.com ([2a00:79e0:2ebe:8:431d:c6bc:133f:2959])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3142a1bbab9sm25950461eec.15.2026.07.18.22.23.08
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3142a1bbab9sm25950461eec.15.2026.07.18.22.23.02
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 18 Jul 2026 22:23:09 -0700 (PDT)
+        Sat, 18 Jul 2026 22:23:06 -0700 (PDT)
 From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Date: Sat, 18 Jul 2026 22:22:53 -0700
-Subject: [PATCH 1/3] powerpc/dts: mpc5121: Move GPIO controller properties
- to SoC dtsi
+Subject: [PATCH 0/3] powerpc: 512x: Convert ADS7845 touchscreen on PDM360NG
+ to device tree
+Date: Sat, 18 Jul 2026 22:22:52 -0700
+Message-Id: <20260718-ads7846-pdm360ng-v1-0-f318f85cda57@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,9 +91,10 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260718-ads7846-pdm360ng-v1-1-f318f85cda57@gmail.com>
-References: <20260718-ads7846-pdm360ng-v1-0-f318f85cda57@gmail.com>
-In-Reply-To: <20260718-ads7846-pdm360ng-v1-0-f318f85cda57@gmail.com>
+X-B4-Tracking: v=1; b=H4sIACxfXGoC/yXMQQqDMBBA0avIrBuIsWTUq5QuNJnoCEbJtEUQ7
+ 26qy7f4fwehxCTQFjsk+rHwEjPKRwFu7OJAin02GG2sxhJV5wXrp1Wrnyur46DIIfkmoAm1gZy
+ tiQJv1/L1vi3ffiL3+X/gOE7wwndQdAAAAA==
+X-Change-ID: 20260717-ads7846-pdm360ng-ec7ed9f72f82
 To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
  Conor Dooley <conor+dt@kernel.org>, 
  Madhavan Srinivasan <maddy@linux.ibm.com>, 
@@ -104,66 +105,51 @@ Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org
 X-Mailer: b4 0.16-dev-b242f
 
-Define gpio@1100 with label gpio_pic as a GPIO controller and
-interrupt controller directly in mpc5121.dtsi so all MPC5121 boards
-inherit the correct controller capabilities.
+The reason for this series is to remove support for platform data in the
+ads7846 touchscreen driver, as pdm360ng is the last user of legacy
+platform data in the kernel for this driver.
 
-Remove the redundant local controller property declaration block from
-ac14xx.dts.
+This series converts the ADS7845 touchscreen on the PDM360NG board to
+use Device Tree bindings instead of legacy platform data callbacks:
 
-Assisted-by: Antigravity:gemini-3.5-flash
+- Move GPIO controller capabilities into mpc5121.dtsi so all MPC5121
+  boards inherit proper controller definitions, and remove redundant
+  local declarations from ac14xx.dts
+- Update pdm360ng.dts to use "ti,ads7845" with pendown-gpio and
+  interrupt-parent referencing gpio_pic
+- Add "ifm,pdm360ng" to mpc512x_generic.c and delete obsolete
+  pdm360ng.c.
+
+This change has been discussed in '24i but I just got around to
+implementing this:
+
+https://lore.kernel.org/r/ZoNHLjmSvCN12vU5@google.com/
+
+Note that this should compile but I have not tried this on real
+hardware.
+
 Signed-off-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 ---
- arch/powerpc/boot/dts/ac14xx.dts   | 13 -------------
- arch/powerpc/boot/dts/mpc5121.dtsi |  6 +++++-
- 2 files changed, 5 insertions(+), 14 deletions(-)
+Dmitry Torokhov (3):
+      powerpc/dts: mpc5121: Move GPIO controller properties to SoC dtsi
+      powerpc/dts: pdm360ng: Convert ADS7845 touchscreen to DT bindings
+      powerpc/512x: Remove pdm360ng platform setup in favor of mpc512x_generic
 
-diff --git a/arch/powerpc/boot/dts/ac14xx.dts b/arch/powerpc/boot/dts/ac14xx.dts
-index 5d8877e1f4ad..05fcf08df1ca 100644
---- a/arch/powerpc/boot/dts/ac14xx.dts
-+++ b/arch/powerpc/boot/dts/ac14xx.dts
-@@ -148,19 +148,6 @@ clock@f00 {
- 			compatible = "fsl,mpc5121rev2-clock", "fsl,mpc5121-clock";
- 		};
- 
--		/*
--		 * GPIO PIC:
--		 * interrupts cell = <pin nr, sense>
--		 * sense == 8: Level, low assertion
--		 * sense == 2: Edge, high-to-low change
--		 */
--		gpio_pic: gpio@1100 {
--			gpio-controller;
--			#gpio-cells = <2>;
--			interrupt-controller;
--			#interrupt-cells = <2>;
--		};
--
- 		sdhc@1500 {
- 			cd-gpios = <&gpio_pic 23 0>;	/* card detect */
- 			wp-gpios = <&gpio_pic 24 0>;	/* write protect */
-diff --git a/arch/powerpc/boot/dts/mpc5121.dtsi b/arch/powerpc/boot/dts/mpc5121.dtsi
-index a278fb7b9e71..9c5dacb94b92 100644
---- a/arch/powerpc/boot/dts/mpc5121.dtsi
-+++ b/arch/powerpc/boot/dts/mpc5121.dtsi
-@@ -146,10 +146,14 @@ pmc@1000 {
- 			interrupts = <83 0x8>;
- 		};
- 
--		gpio@1100 {
-+		gpio_pic: gpio@1100 {
- 			compatible = "fsl,mpc5121-gpio";
- 			reg = <0x1100 0x100>;
- 			interrupts = <78 0x8>;
-+			gpio-controller;
-+			#gpio-cells = <2>;
-+			interrupt-controller;
-+			#interrupt-cells = <2>;
- 		};
- 
- 		can@1300 {
+ arch/powerpc/boot/dts/ac14xx.dts              |  13 ---
+ arch/powerpc/boot/dts/mpc5121.dtsi            |   6 +-
+ arch/powerpc/boot/dts/pdm360ng.dts            |   7 +-
+ arch/powerpc/platforms/512x/Kconfig           |   3 +-
+ arch/powerpc/platforms/512x/Makefile          |   1 -
+ arch/powerpc/platforms/512x/mpc512x_generic.c |   1 +
+ arch/powerpc/platforms/512x/pdm360ng.c        | 126 --------------------------
+ 7 files changed, 12 insertions(+), 145 deletions(-)
+---
+base-commit: 8e9685d3c41c35dd1b37df70d854137abcb2fbac
+change-id: 20260717-ads7846-pdm360ng-ec7ed9f72f82
+
+Thanks.
 
 -- 
-2.55.0.229.g6434b31f56-goog
+Dmitry
 
 
