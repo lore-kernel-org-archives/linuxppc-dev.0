@@ -1,77 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-24567-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24568-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4165CC44515
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2026 02:16:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4C47AC44520
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2026 02:18:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h41Gd2XvWz2xjd;
-	Tue, 21 Jul 2026 12:16:41 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::431"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784555337;
-	cv=none; b=JeCd6mXh7nYXgvhdgOqvZdLK7Ymxl4j6/mTiWhgux/SADqSB4Ar6MG7NZIzPpym+lk48bt9RqY9v4CTH60dB1MVRLE4wiqTWGK41riiJsIVngZMAn6q/UjngMiT3HWbRsxnciSS8jGs6RmGFw9o4sQumDZu9VMHUb/eFrWWpwmnJgRqe626H8YBuxIPFNWsd6fbZ1rrX8QZydAZyG9E7r9pDKLCIA/16dcPVlXakl2DeN1M7xWNKvzK696SVTa6VGzlleFzzsfUxtBAYi1Bx6gFz9m3NEDC2GnzPOAcMxNVoLZ/isIS2W9AQlcQxJjYMBUcnT2r6Oq0q7xKnEooisw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h41Js3Hwxz2xqJ;
+	Tue, 21 Jul 2026 12:18:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::630"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784556150;
+	cv=none; b=AAmF+dnQDdR1kYnuIODPmhf0UXCNzoYF7ONJXGZLmwTGFIxuGzAF+DcCHOcIjo/WfOikrT51QUxQss16GVIQSpklN0GWYxyyLxImTL4DDD3YeMBFwvOlti2A+e/F1kYeiuKvmyNDOCWKSXgRsstdxDHSMKIhz5qTrBfMdIUT/6UDLguAnzIiXfNkz4ROgJ/63TJtJ1dYcNyPxu8SFsj5LQW+ACDPOesvwqStyYZicqs9+SAsSRd/UKPICh3SlCoW8kMgE4oxHbZoLsu5I7yEEYMyBmgUGPYGzhbMVnPLGFALpR+gMSyVM1U2frE4sI26kGNPk17ubS/5gkuBABFMKg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784555337; c=relaxed/relaxed;
-	bh=exgSZUy4mQ+gBayEGCoSCzUgfoiRVrcGM1wITQ8aelo=;
+	t=1784556150; c=relaxed/relaxed;
+	bh=jjgcDbEk+UwGPrm8p3ddZGJiNEptTi23fs+y3mGJy60=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Ik1IJk70P9cxYsGF8h6PInKbi4lmgupQ3k2nhNegcOnfwFY5pOMAU8XcSV8x6Yhkadb/n7S1FquU/YyqDL5glShW86cUqcVsHrkBf2t/nG/s0Mc1otKvisqs2U+j5oYZ4z1gZNTocoUfnm4BjxDEjGeFZ424pNB6rnimjRMyTy3qYnB9inLrGeG1LqvmKl17st3i4Kzc870Sz1EobjQVheF0u5FVF2l3WENma6J6kV/NNwfgoKq5GZIPVwlZ+GRWKvJcgA8EMSkBCC7kZQlP73JDxaMse7DzMP0Y70w2N1kMvsxgDNDODm0JXiAxKFf16HPM6GPC2ih5lrtXqwOFsg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=dama.to; dkim=pass (2048-bit key; unprotected) header.d=dama-to.20251104.gappssmtp.com header.i=@dama-to.20251104.gappssmtp.com header.a=rsa-sha256 header.s=20251104 header.b=l0bqs4qi; dkim-atps=neutral; spf=none (client-ip=2607:f8b0:4864:20::431; helo=mail-pf1-x431.google.com; envelope-from=joe@dama.to; receiver=lists.ozlabs.org) smtp.mailfrom=dama.to
+	 Content-Type:Content-Disposition:In-Reply-To; b=XkfqC5Z7qgkKCcd+RBvX3uelZR2eNh61YbJNX/f8XIkibmiImWuRe6Kxo+CuiSiFPz2swDOm1ixEXShS3CuUWMvW1UwmRq3ZYoc8ppK8BGAF44WuVonm1G7/OhQSzEABwUjPq7+jJF8GWj1oh6/0rUC+qTFa8F+ZK2aiYe+0A3FxL4B3JxOWPnP7JyFcjdrh73Eiarb6Mm3g4xq7JO5m0Eyb/vxqpJg+NV7maLB6k6qV+duH7NFL0eZfrrLQDyJepGq8uxD8rSNCyymT4GXSzSBT8sFcPpFw3GGDRpxHbRelxFNlREsAHzsgtS8kQNCs22ZcVdLYqPn+ilaqfS7xkQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=dama.to; dkim=pass (2048-bit key; unprotected) header.d=dama-to.20251104.gappssmtp.com header.i=@dama-to.20251104.gappssmtp.com header.a=rsa-sha256 header.s=20251104 header.b=RDYuq0Ay; dkim-atps=neutral; spf=none (client-ip=2607:f8b0:4864:20::630; helo=mail-pl1-x630.google.com; envelope-from=joe@dama.to; receiver=lists.ozlabs.org) smtp.mailfrom=dama.to
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=dama.to
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=dama-to.20251104.gappssmtp.com header.i=@dama-to.20251104.gappssmtp.com header.a=rsa-sha256 header.s=20251104 header.b=l0bqs4qi;
+	dkim=pass (2048-bit key; unprotected) header.d=dama-to.20251104.gappssmtp.com header.i=@dama-to.20251104.gappssmtp.com header.a=rsa-sha256 header.s=20251104 header.b=RDYuq0Ay;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=dama.to (client-ip=2607:f8b0:4864:20::431; helo=mail-pf1-x431.google.com; envelope-from=joe@dama.to; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x431.google.com (mail-pf1-x431.google.com [IPv6:2607:f8b0:4864:20::431])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=dama.to (client-ip=2607:f8b0:4864:20::630; helo=mail-pl1-x630.google.com; envelope-from=joe@dama.to; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x630.google.com (mail-pl1-x630.google.com [IPv6:2607:f8b0:4864:20::630])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h3hgr5ThZz2xF8
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2026 23:48:56 +1000 (AEST)
-Received: by mail-pf1-x431.google.com with SMTP id d2e1a72fcca58-84a4d8fd6ecso6509210b3a.1
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2026 06:48:56 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h3hzS5CCdz2xF8
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2026 00:02:27 +1000 (AEST)
+Received: by mail-pl1-x630.google.com with SMTP id d9443c01a7336-2cce6a0c9c3so91236445ad.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2026 07:02:27 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=dama-to.20251104.gappssmtp.com; s=20251104; t=1784555334; x=1785160134; darn=lists.ozlabs.org;
+        d=dama-to.20251104.gappssmtp.com; s=20251104; t=1784556146; x=1785160946; darn=lists.ozlabs.org;
         h=in-reply-to:content-disposition:content-type:mime-version
          :references:mail-followup-to:message-id:subject:cc:to:from:date:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=exgSZUy4mQ+gBayEGCoSCzUgfoiRVrcGM1wITQ8aelo=;
-        b=l0bqs4qim/v6IEZC+Y0Rz2sH1vFsGVJyt+BUbT3N/YDyDvFseIEgpn6ffKuXXbDL0b
-         n+i1JYHvUNU1C9hKKINO3dpiDlTzVXRRXgvwTEVAFtmKlnPQqQzLD6AVIJIn+4WQ0h2h
-         nQM1lAhMFaIJQFyj+qLc4LA9BnYXyVi4XFpQB4MA12OyrSI6Pq/7jLAKBjq8yH2TM9zS
-         GWCG9aAh9SSNOw4ZpSA+417tL/ybdRwuQFnNrJphVAcLcfuto9Ar3JXdk/EK/lOLBExC
-         DUwQwmBLnu+hNs+oQcZ2szLH5ncq7zIT0rmREkvo12hoL85YDO7Xf/58AbKDuV2EwTtw
-         sU3Q==
+        bh=jjgcDbEk+UwGPrm8p3ddZGJiNEptTi23fs+y3mGJy60=;
+        b=RDYuq0AyF2GhOPLz634qzBb4ojKeXz3MUWmg5Z6r8oovg6GcTsd32m3xb88q6N2wRv
+         fzP6KDW+8ujX/3KtXgRFtsnQvEPiJLKRUHtzDxEskgkLH7H6FjCpn8WWjfdR0KJhzONr
+         8JKjbqET4jTinXmXlq2O5PRmVAzFBcfMQsVwnxsaLi+rvyqMgTASrFVxUn1q4feLx5SF
+         9DakQanuetulYExiUof5kKl6HJkkgYJjZTLJgBxfkXH3VSvtVSdIogO62FK/6IzoYdSJ
+         ak1GQ6ROpSgC5voV68rWdvdtbZmcvOuCZL7bKVo/BpGGMWwgbT15XkuXux2dD2VCEq1Q
+         FUgg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784555334; x=1785160134;
+        d=1e100.net; s=20251104; t=1784556146; x=1785160946;
         h=in-reply-to:content-disposition:content-type:mime-version
          :references:mail-followup-to:message-id:subject:cc:to:from:date
          :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to:content-type;
-        bh=exgSZUy4mQ+gBayEGCoSCzUgfoiRVrcGM1wITQ8aelo=;
-        b=Wq6UuUJ5z+EVPBg0Y9C1Sel0UF+/QoAQ75KaDCMKbeI07cmqS0bLc6BSjoaeWKmn/S
-         As/wNofYwkeVcA7c33rvMmtELG1Cr/oVZutA0VIsXLpDDcZ39oykQ780qfpCibkHcODY
-         0LYqxv5o2mdD+xnIsejgqoGnx56GaA3QkEuczi5bTv8ir/frWX+g8KOOPVJyyUJCr8oR
-         ueBIz0NnqZrzTZ46ki4PNDQZaN/OEMYBP9dyb+YqFvVaT6B+2ZMcSuA8BzJKzJr5nncJ
-         RtOdlaO91TLju1J0KlrXT/Ux9OiRTksd3VmWEhpaWU5vfblHe1+rlG6ABhh1OdnQbLFz
-         NXbQ==
-X-Forwarded-Encrypted: i=1; AHgh+Rq0EdLpQK+NGydtQetX3Zz7ZK1IJa36CW+LvxiAEA5c56mEhl2e+6IIv6XJAy/uqXRArThEyAgJ7bY83qg=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzRaxP22Gl6Xe98Q/0L7d+OyulwjyawoQ8XpgNOg0Ym/2b1yrJs
-	8yJFqmHSfrP9uvxNChujcvYuDrRDc9pbbjnWljcrv+5OW8PzHKYqtIQQyzIUB/TQpMA=
-X-Gm-Gg: AfdE7cnmcSwLOX1fR5SMwNutsOLhK5/ASp1RfiB0ECQpcUuEUQ8PpCMBzCYwgc3ccZY
-	8PugvQWITtQxDaZiu7MLfg0aSfN1KBkpK8vZk3Aioy3wFBtFqVyzToHhjJyudAwTJpXThAp9B+l
-	eg17D49KtXiWTYYnNlpkEWB9/ZZRYhzh4rTRJitoHk/goJRN2KG5zsejJ/WkoHiiNWDxw+cwvE+
-	UeaLnkxJzQJjDlWyKvAIV97O9ZfD7SJ89rY4oqhs92d5MENz7ClLCL7xBEbVRDfaN7fPeTN6Hk9
-	/6IbZwtzDwnjlY4FLPxJxLIdxgoogt9gI8k01tbwzog52CrT9uRLzZ1vEht53+oiaXEUD1pGBpK
-	H8y6DbuJ1EEHuf4VGoaeE2pIha2eYGJgfLEr78MpfKlloZsHkAftIcCg=
-X-Received: by 2002:a05:6a00:998:b0:845:eb73:411c with SMTP id d2e1a72fcca58-84c2946f027mr14586475b3a.45.1784555334640;
-        Mon, 20 Jul 2026 06:48:54 -0700 (PDT)
-Received: from localhost ([2a03:2880:2ff::])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-84c2adc3466sm5844378b3a.15.2026.07.20.06.48.53
+        bh=jjgcDbEk+UwGPrm8p3ddZGJiNEptTi23fs+y3mGJy60=;
+        b=A3DqMtxkGSlmJWGYSvgaTrKY4iRqzSeHfv8Pj5hTXX+n+uWVxyJKTQJlPEZjO2LOud
+         d18D3Tu9r9G4S1DsTS7UuSLQYspGSfXbWVBhz1BbO0zp1bYQhNMfuBglYIjAgcPUrqvJ
+         aXp8Fg20FT3wgRhdRGFdnmgLPAB453wmFM365+vXxKFF5sUe5ZEyJbLJwaiG0JMSfNep
+         Lp+Cw8irf5QiIKH227I+WGtiWenHUfQqV3vGB+1zZxXEmhBHbnEpraekPS1TAkNIkkd/
+         LCIkIt7DKSFeZXoYBhLfFyMF8xrzFHovPlMcKYXHwyzGacT5MH+UjTzR5tQSwpWfcjnA
+         3/zg==
+X-Forwarded-Encrypted: i=1; AHgh+RrrhHIgc6LMmslvq2UT8TkCwCUmPkEJSyzY/TpR88kfxagX95yJU3GWqWyciLlQw4I1d/NmD4myCVcgvH8=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yzxo0jLSyUiOdrQnLeSRaTdW1YKRfDPOaPRunqSqCLxUiFixVmz
+	48H43dRQYhBNuz0qKXBysn41KJ8Osw30rgqZVE2Ei5EmWrvC2R5EZceQIwm6M+eFYDE=
+X-Gm-Gg: AR+sD13zVhtti9Hf9QIxdWsF7PZjciL7IBKvOQKLs5iK1tVIakn/awAtEDAosa8W59k
+	GcCirViu2F1NcGoZChJ4uekEYfD3AzRxEb03UwVxdpRKYOoLhtFpF9dHottZi03RxuUvWJ6IJ8i
+	8fdWDtbHn2AnfkF9JyffSfeooRE9T2F/76daw5WbuBWhjrFW5tvKYGAhzxQ2Lg2snyju/LvNDz/
+	/mc04/KZBpIo/pgMxe6QpVFiQu0KBlur16kWyBeauS4HfMt9wSbNoE65mnjgSz/X9Xlgn+J5SZu
+	3JsxMHtSMDO6D+Wh/B4bIcZzsR7OxipYscoKz+DWCFj0ndWHJwkGizf04oT4Vm97yBmQ/PgvjPa
+	04HYWipB6PjANI/DtIzIHmiO2iWgkbWZw1vQaf0x+14uscrC+w9QpeL8ZFQJ4CR1Nl38y0A==
+X-Received: by 2002:a17:902:f78c:b0:2cb:3f5b:6663 with SMTP id d9443c01a7336-2cf348bee75mr154491725ad.11.1784556145405;
+        Mon, 20 Jul 2026 07:02:25 -0700 (PDT)
+Received: from localhost ([2a03:2880:2ff:43::])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2cf346db113sm56870065ad.39.2026.07.20.07.02.22
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 20 Jul 2026 06:48:53 -0700 (PDT)
-Date: Mon, 20 Jul 2026 06:48:53 -0700
+        Mon, 20 Jul 2026 07:02:22 -0700 (PDT)
+Date: Mon, 20 Jul 2026 07:02:21 -0700
 From: Joe Damato <joe@dama.to>
 To: wei.fang@oss.nxp.com
 Cc: claudiu.manoil@nxp.com, vladimir.oltean@nxp.com, xiaoning.wang@nxp.com,
@@ -81,9 +81,9 @@ Cc: claudiu.manoil@nxp.com, vladimir.oltean@nxp.com, xiaoning.wang@nxp.com,
 	imx@lists.linux.dev, netdev@vger.kernel.org,
 	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
 	linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH RESEND v4 net-next 14/14] net: enetc: use kzalloc_flex()
- for enetc_psfp_gate allocation
-Message-ID: <al4nRS6hB8siUx3f@devvm20253.cco0.facebook.com>
+Subject: Re: [PATCH RESEND v4 net-next 01/14] net: enetc: extract common
+ helpers for MAC promiscuous mode setting
+Message-ID: <al4qbRV8h1a5nZCd@devvm20253.cco0.facebook.com>
 Mail-Followup-To: Joe Damato <joe@dama.to>, wei.fang@oss.nxp.com,
 	claudiu.manoil@nxp.com, vladimir.oltean@nxp.com,
 	xiaoning.wang@nxp.com, andrew+netdev@lunn.ch, davem@davemloft.net,
@@ -93,7 +93,7 @@ Mail-Followup-To: Joe Damato <joe@dama.to>, wei.fang@oss.nxp.com,
 	netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 References: <20260720014317.1059359-1-wei.fang@oss.nxp.com>
- <20260720014317.1059359-15-wei.fang@oss.nxp.com>
+ <20260720014317.1059359-2-wei.fang@oss.nxp.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -109,43 +109,74 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260720014317.1059359-15-wei.fang@oss.nxp.com>
+In-Reply-To: <20260720014317.1059359-2-wei.fang@oss.nxp.com>
 
-On Mon, Jul 20, 2026 at 09:43:16AM +0800, wei.fang@oss.nxp.com wrote:
+On Mon, Jul 20, 2026 at 09:43:03AM +0800, wei.fang@oss.nxp.com wrote:
 > From: Wei Fang <wei.fang@nxp.com>
 > 
-> Replace the open-coded struct_size() + kzalloc() pattern with the
-> kzalloc_flex() helper when allocating struct enetc_psfp_gate. This
-> removes the intermediate entries_size local variable and makes the
-> allocation site more concise.
+> The PSIPMMR (Port Station Interface Promiscuous MAC Mode Register) in
+> ENETC v4 has the same bit layout as the PSIPMR register in ENETC v1: bit
+> n controls unicast promiscuous mode for SI n, and bit (n + 16) controls
+> multicast promiscuous mode for SI n. The only difference between the two
+> hardware generations is the register address offset.
+> 
+> Since the register functionality is identical, the MAC promiscuous mode
+> setting code can be shared between ENETC v1 and v4 drivers.
+> 
+> Rename ENETC_PSIPMR to ENETC_PSIPMMR in enetc_hw.h to match the actual
+> register name used in the reference manual, and extract two new common
+> helper functions, enetc_set_si_uc_promisc() and
+> enetc_set_si_mc_promisc(), into enetc_pf_common.c. These helpers select
+> the correct register offset based on the hardware revision via
+> is_enetc_rev1().
+> 
+> Remove the v4-specific enetc4_pf_set_si_mac_promisc() function from
+> enetc4_pf.c and the duplicate PSIPMMR_SI_MAC_UP/MP macro definitions
+> from enetc4_hw.h, as they are now superseded by the shared code.
 > 
 > Signed-off-by: Wei Fang <wei.fang@nxp.com>
 > ---
->  drivers/net/ethernet/freescale/enetc/enetc_qos.c | 4 +---
->  1 file changed, 1 insertion(+), 3 deletions(-)
+>  .../net/ethernet/freescale/enetc/enetc4_hw.h  |  2 -
+>  .../net/ethernet/freescale/enetc/enetc4_pf.c  | 21 +--------
+>  .../ethernet/freescale/enetc/enetc_ethtool.c  |  2 +-
+>  .../net/ethernet/freescale/enetc/enetc_hw.h   |  7 +--
+>  .../net/ethernet/freescale/enetc/enetc_pf.c   | 11 ++---
+>  .../freescale/enetc/enetc_pf_common.c         | 44 +++++++++++++++++++
+>  .../freescale/enetc/enetc_pf_common.h         |  2 +
+>  7 files changed, 56 insertions(+), 33 deletions(-)
 > 
-> diff --git a/drivers/net/ethernet/freescale/enetc/enetc_qos.c b/drivers/net/ethernet/freescale/enetc/enetc_qos.c
-> index 7b17bca24f26..2aa0fcaafcd2 100644
-> --- a/drivers/net/ethernet/freescale/enetc/enetc_qos.c
-> +++ b/drivers/net/ethernet/freescale/enetc/enetc_qos.c
-> @@ -1135,7 +1135,6 @@ static int enetc_psfp_parse_clsflower(struct enetc_ndev_priv *priv,
->  	struct flow_action_entry *entry;
->  	struct action_gate_entry *e;
->  	u8 sfi_overwrite = 0;
-> -	int entries_size;
->  	int i, err;
+> diff --git a/drivers/net/ethernet/freescale/enetc/enetc4_hw.h b/drivers/net/ethernet/freescale/enetc/enetc4_hw.h
+> index f18437556a0e..6a8f2ed56017 100644
+> --- a/drivers/net/ethernet/freescale/enetc/enetc4_hw.h
+> +++ b/drivers/net/ethernet/freescale/enetc/enetc4_hw.h
+> @@ -69,8 +69,6 @@
 >  
->  	if (f->common.chain_index >= priv->psfp_cap.max_streamid) {
-> @@ -1242,8 +1241,7 @@ static int enetc_psfp_parse_clsflower(struct enetc_ndev_priv *priv,
->  		goto free_filter;
->  	}
->  
-> -	entries_size = struct_size(sgi, entries, entryg->gate.num_entries);
-> -	sgi = kzalloc(entries_size, GFP_KERNEL);
-> +	sgi = kzalloc_flex(*sgi, entries, entryg->gate.num_entries);
->  	if (!sgi) {
->  		err = -ENOMEM;
->  		goto free_filter;
+>  /* Port Station interface promiscuous MAC mode register */
+>  #define ENETC4_PSIPMMR			0x200
+> -#define  PSIPMMR_SI_MAC_UP(a)		BIT(a) /* a = SI index */
+> -#define  PSIPMMR_SI_MAC_MP(a)		BIT((a) + 16)
+
+[...]
+  
+> diff --git a/drivers/net/ethernet/freescale/enetc/enetc_hw.h b/drivers/net/ethernet/freescale/enetc/enetc_hw.h
+> index bf99b65d7598..66bfda60da9c 100644
+> --- a/drivers/net/ethernet/freescale/enetc/enetc_hw.h
+> +++ b/drivers/net/ethernet/freescale/enetc/enetc_hw.h
+> @@ -180,9 +180,10 @@ enum enetc_bdr_type {TX, RX};
+>  #define ENETC_PMR_PSPEED_1000M	BIT(9)
+>  #define ENETC_PMR_PSPEED_2500M	BIT(10)
+>  #define ENETC_PSR		0x0004 /* RO */
+> -#define ENETC_PSIPMR		0x0018
+> -#define ENETC_PSIPMR_SET_UP(n)	BIT(n) /* n = SI index */
+> -#define ENETC_PSIPMR_SET_MP(n)	BIT((n) + 16)
+> +#define ENETC_PSIPMMR		0x0018
+> +#define  PSIPMMR_SI_MAC_UP(n)	BIT(n) /* n = SI index */
+> +#define  PSIPMMR_SI_MAC_MP(n)	BIT((n) + 16)
+
+I probably would have fixed the leading spaces when copying/pasting the macro,
+but that seems like a nit.
+
+I read the rest of the code a few times and it looks right to me.
 
 Reviewed-by: Joe Damato <joe@dama.to>
 
