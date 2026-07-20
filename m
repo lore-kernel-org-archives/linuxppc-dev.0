@@ -1,82 +1,67 @@
-Return-Path: <linuxppc-dev+bounces-24504-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24505-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 32F59C44515
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jul 2026 14:44:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 133E4C44515
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jul 2026 15:11:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h3jvL3Vg5z2yWK;
-	Tue, 21 Jul 2026 00:43:58 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=156.67.10.101
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784558638;
-	cv=none; b=iJ+oYNcNT+G4glpRqGeprgvndZxU29wQnpvbtZg0UlMwFtc2ZD8GEAT5tI8gB5SmLog+Cbb1jwbi5EEYtIT8rjyC1j08pRuWLfhVlZAwnGHp7GTEs47uSTCF17/LlmTmmTnrmPjUCtzceFqNRluw8QNUIbenNf8KksoCFM6lRvbCZFbIfK8LTrjKFXTwNGpREucpM/UsHwtNc+1xifAIG7JSslWq8RUPj9kir73u6yz4WlWdS5QnrD0keunD9ru7ZqORXRm7VOyQGc7IkduniamD/WWErdpiI6D/f8Ix6UAtAxyeGdnwh9hxtKu93WB/2L+csJv1zhpGzSSzLtOhWA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h3kVT6fMkz2ybK;
+	Tue, 21 Jul 2026 01:10:57 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=220.197.31.3
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784560257;
+	cv=none; b=ecX4oqDv042dHvm2+ESCHLRQ0jxgGdKIk700/De3dp5mc3whq46pRKIvQwNMMq+P/3s0UfLiGemQwWLKdIlUfpWetgw7FnsMWeQoVUrLUWrs9wLw4Yj3tQzoWNbFOQGjaQx3V+EqTgiL3lvKgGff98GM+SbjvyODza/DYg6zsk/VT4krl/XHd8L7RiUigMGf60j78KKGK/LExeOnO7qxJb8pqeI1HslOvINjRTTUBaNfwXPPg2XZpMH9+qBJpPjlp1pSs4HyaaDg2J6jlvOogEAZnr6ezwfC0I3xkfpC/ovBoO0zhDa7ES0PLYz3vd9cWmdsV522FCCRzLNRkB7mkA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784558638; c=relaxed/relaxed;
-	bh=BXhfFoqflgF82KRwFNK0K4F+WC7W4X52vQ4MqWkibHk=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=GhnfXQNo8tezaa4gHt+Ticz1va3UXBR1T/jRif03dH7NbbAug/9yIeOysA5qV0aL5UTohBSOV9uMuq5eZuQB4kryMp46NJkrFD3X9jrvrIwJHGE8oG8kU7kJmQoG4uU7mJoj4W4CZNupnQ8++CWRHnt0SwcQvA5RrnT7dOMTOd3GBCOgb1ZfFxQ2uSQXt5bBUiXWjpFBRLo+0GDf2RHxKjlM395CV6kWnedkjBvVC+3aJ9Eqk0JGfgK48H3HbQBKIcfj1UnWGh/fGFC8ZtI8jT4JpRYcv8kmBorZbZ7V7VSx8NGlBRJamf9T4oBHZDH0vCQdYtTxWmUHQJ6+5MA+6Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch; dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=u87EBpi0; dkim-atps=neutral; spf=pass (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org) smtp.mailfrom=lunn.ch
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch
+	t=1784560257; c=relaxed/relaxed;
+	bh=sC5IK7rcAYFVlcW/qRjCYlhzV8RYd8qBA49KkuguIVM=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=MWZ+09PgyDgdc5Ok7uUlNnxoATy1k923wTy129hDJ9EOSuugjKdBITmBalOwUYMgH7vnmhimvdX/gS7Nq5cnA7U82Hqw+ie86/NhjjqvlVjUyQSvGTxh+EwIcr64o4WF2sox+uXJZ25KI9ADIdHU5mo9HOL/DTG1+J1ontOvgnmAH9AdnNfRQwVxPv/Y3WOZ2cMCOVEMVBOnnSMPVJ8P+2XhxGV29mkoFjNrJSsVznJ4iVliOPA2xjJ15ZqwehiNtZeCw/Jv4kzzpO2NiwNXIADrB0hwZraJGQZQB84Bh6JksQPHFy46AnC2iGXdSdTBNGjL03Mp9B1WbuL4jJBmAg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=163.com; dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=U1xIB7cY; dkim-atps=neutral; spf=pass (client-ip=220.197.31.3; helo=m16.mail.163.com; envelope-from=18255117159@163.com; receiver=lists.ozlabs.org) smtp.mailfrom=163.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=163.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=u87EBpi0;
+	dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=U1xIB7cY;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lunn.ch (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org)
-Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=163.com (client-ip=220.197.31.3; helo=m16.mail.163.com; envelope-from=18255117159@163.com; receiver=lists.ozlabs.org)
+Received: from m16.mail.163.com (m16.mail.163.com [220.197.31.3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h3jvK5cCVz2ySN
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2026 00:43:57 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
-	s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
-	Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
-	Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
-	bh=BXhfFoqflgF82KRwFNK0K4F+WC7W4X52vQ4MqWkibHk=; b=u87EBpi0W7PcezV9DBKXdXN4/P
-	p9UYaLCZFtgUyOGYdytHLutMvSSNyvUcIgRfwGDopHvUqq9ZIlniLUGgYPwPRrDPsFmM1fCmmLkzn
-	A985PR89vvPMIsZsJvQqT/OtMNtLd8+M4EQYIuLAiGvk2F3QoNojNtnckKSJnLpXICWU=;
-Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
-	(envelope-from <andrew@lunn.ch>)
-	id 1wlpDY-00DHCs-Cz; Mon, 20 Jul 2026 16:43:40 +0200
-Date: Mon, 20 Jul 2026 16:43:40 +0200
-From: Andrew Lunn <andrew@lunn.ch>
-To: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Danilo Krummrich <dakr@kernel.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Andi Shyti <andi.shyti@kernel.org>,
-	"Joerg Roedel (AMD)" <joro@8bytes.org>,
-	Will Deacon <will@kernel.org>, Robin Murphy <robin.murphy@arm.com>,
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-	Doug Berger <opendmb@gmail.com>,
-	Florian Fainelli <florian.fainelli@broadcom.com>,
-	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
-	Andrew Lunn <andrew+netdev@lunn.ch>,
-	"David S. Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@google.com>,
-	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
-	Ulf Hansson <ulfh@kernel.org>, Frank Li <Frank.Li@nxp.com>,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	Fabio Estevam <festevam@gmail.com>, Lee Jones <lee@kernel.org>,
-	Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
-	Srinivas Kandagatla <srini@kernel.org>, brgl@kernel.org,
-	driver-core@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org,
-	iommu@lists.linux.dev, netdev@vger.kernel.org,
-	linux-pm@vger.kernel.org, imx@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org, mfd@lists.linux.dev,
-	linux-arm-msm@vger.kernel.org, linux-sound@vger.kernel.org
-Subject: Re: [PATCH 7/8] net: mv643xx: use platform_device_set_fwnode()
-Message-ID: <86b2aba7-b049-47e6-bc94-6cb499b30ce4@lunn.ch>
-References: <20260720-pdev-set-fwnode-instead-of-of-node-v1-0-2dee93f42c54@oss.qualcomm.com>
- <20260720-pdev-set-fwnode-instead-of-of-node-v1-7-2dee93f42c54@oss.qualcomm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h3kVP6xqpz2ySN
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2026 01:10:51 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
+	s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=sC
+	5IK7rcAYFVlcW/qRjCYlhzV8RYd8qBA49KkuguIVM=; b=U1xIB7cYYmtHDba2Gg
+	Aiy0ph56gAshFRwCfzdpxVDWPwdWnSX4lYYp2WwdOnuINDqBSSa5mMHpJgc97vM2
+	Gr5ydSMhFv7KNMtNYF3saeMz/EFrze2OhzMB6X8PDhdsaYJXwqaH63YV74W9Yd/t
+	aXWMFCUldUyUPgObP/gCPc78s=
+Received: from zhb.. (unknown [])
+	by gzga-smtp-mtada-g0-2 (Coremail) with SMTP id _____wDX+mO9OV5q8LEOKg--.8910S6;
+	Mon, 20 Jul 2026 23:07:47 +0800 (CST)
+From: Hans Zhang <18255117159@163.com>
+To: bhelgaas@google.com,
+	lpieralisi@kernel.org,
+	kwilczynski@kernel.org,
+	mani@kernel.org,
+	jingoohan1@gmail.com
+Cc: imx@lists.linux.dev,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-amlogic@lists.infradead.org,
+	linux-rockchip@lists.infradead.org,
+	linux-arm-msm@vger.kernel.org,
+	sophgo@lists.linux.dev,
+	linux-riscv@lists.infradead.org,
+	spacemit@lists.linux.dev,
+	linux-tegra@vger.kernel.org,
+	linux-pci@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Hans Zhang <18255117159@163.com>
+Subject: [PATCH v3 04/16] PCI: dwc: layerscape-ep: Use cached PCIe capability offset
+Date: Mon, 20 Jul 2026 23:06:07 +0800
+Message-Id: <20260720150619.24733-5-18255117159@163.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20260720150619.24733-1-18255117159@163.com>
+References: <20260720150619.24733-1-18255117159@163.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,35 +75,79 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260720-pdev-set-fwnode-instead-of-of-node-v1-7-2dee93f42c54@oss.qualcomm.com>
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:_____wDX+mO9OV5q8LEOKg--.8910S6
+X-Coremail-Antispam: 1Uf129KBjvJXoWxZF15KF4kXF1ktr18Gry8Xwb_yoW5GF1kpF
+	WUXF4YkF18Jr4SgFsrZan8Wr13GF9akFy7J397Kr1aqry2vryUGa90yry5tFn7GFWqkFyj
+	934rtFy7u345JrUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0pigAw7UUUUU=
+X-Originating-IP: [240e:b8f:91b3:d000:f138:f837:e143:4264]
+X-CM-SenderInfo: rpryjkyvrrlimvzbiqqrwthudrp/xtbCxAOwVGpeOcMFQQAA3p
 
-On Mon, Jul 20, 2026 at 11:24:54AM +0200, Bartosz Golaszewski wrote:
-> Prefer the higher-level platform_device_set_fwnode() over the
-> OF-specific platform_device_set_of_node() for dynamically allocated
-> platform devices.
-> 
-> Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-> ---
->  drivers/net/ethernet/marvell/mv643xx_eth.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/net/ethernet/marvell/mv643xx_eth.c b/drivers/net/ethernet/marvell/mv643xx_eth.c
-> index 9caa1e47c174c9d7a161b7f2e2ee12a829b813d4..2f2d6cce8d852b9ec3ab42678a04a7915d1f00cc 100644
-> --- a/drivers/net/ethernet/marvell/mv643xx_eth.c
-> +++ b/drivers/net/ethernet/marvell/mv643xx_eth.c
-> @@ -2780,7 +2780,7 @@ static int mv643xx_eth_shared_of_add_port(struct platform_device *pdev,
->  		goto put_err;
->  	}
->  	ppdev->dev.coherent_dma_mask = DMA_BIT_MASK(32);
-> -	platform_device_set_of_node(ppdev, pnp);
-> +	platform_device_set_fwnode(ppdev, of_fwnode_handle(pnp));
+Replace these with dw_pcie_get_pcie_cap(). The hardware is already enabled
+by the driver before ls_pcie_ep_probe() and before the interrupt handler
+runs. dw_pcie_get_pcie_cap() will cache the offset on first call, and
+subsequent calls (including inside dw_pcie_ep_init) will use the cached
+value without re-searching.
 
-This is definitely an OF only driver. There are no other calls to
-fwnode functions in this driver, so this is the wrong thing to do.
+Signed-off-by: Hans Zhang <18255117159@163.com>
+---
+In pci-layerscape-ep, dw_pcie_find_capability() is called in:
 
-Sorry, NACK.
+  ls_pcie_ep_probe()
+    -> offset = dw_pcie_find_capability()
+    -> pcie->lnkcap = dw_pcie_readl_dbi(offset + PCI_EXP_LNKCAP)
+    -> dw_pcie_ep_init()
+    -> ls_pcie_ep_interrupt_init()
+        -> devm_request_irq(..., ls_pcie_ep_event_handler)
+          -> ls_pcie_ep_event_handler()
+            -> dw_pcie_find_capability()
+---
+ drivers/pci/controller/dwc/pci-layerscape-ep.c | 9 +++------
+ 1 file changed, 3 insertions(+), 6 deletions(-)
 
-       Andrew
+diff --git a/drivers/pci/controller/dwc/pci-layerscape-ep.c b/drivers/pci/controller/dwc/pci-layerscape-ep.c
+index 8936975ff104..b2d0b51df3c5 100644
+--- a/drivers/pci/controller/dwc/pci-layerscape-ep.c
++++ b/drivers/pci/controller/dwc/pci-layerscape-ep.c
+@@ -74,7 +74,6 @@ static irqreturn_t ls_pcie_ep_event_handler(int irq, void *dev_id)
+ 	struct ls_pcie_ep *pcie = dev_id;
+ 	struct dw_pcie *pci = pcie->pci;
+ 	u32 val, cfg;
+-	u8 offset;
+ 
+ 	val = ls_pcie_pf_lut_readl(pcie, PEX_PF0_PME_MES_DR);
+ 	ls_pcie_pf_lut_writel(pcie, PEX_PF0_PME_MES_DR, val);
+@@ -83,9 +82,6 @@ static irqreturn_t ls_pcie_ep_event_handler(int irq, void *dev_id)
+ 		return IRQ_NONE;
+ 
+ 	if (val & PEX_PF0_PME_MES_DR_LUD) {
+-
+-		offset = dw_pcie_find_capability(pci, PCI_CAP_ID_EXP);
+-
+ 		/*
+ 		 * The values of the Maximum Link Width and Supported Link
+ 		 * Speed from the Link Capabilities Register will be lost
+@@ -93,7 +89,8 @@ static irqreturn_t ls_pcie_ep_event_handler(int irq, void *dev_id)
+ 		 * that configured by the Reset Configuration Word (RCW).
+ 		 */
+ 		dw_pcie_dbi_ro_wr_en(pci);
+-		dw_pcie_writel_dbi(pci, offset + PCI_EXP_LNKCAP, pcie->lnkcap);
++		dw_pcie_writel_dbi(pci, pci->pcie_cap + PCI_EXP_LNKCAP,
++				   pcie->lnkcap);
+ 		dw_pcie_dbi_ro_wr_dis(pci);
+ 
+ 		cfg = ls_pcie_pf_lut_readl(pcie, PEX_PF0_CONFIG);
+@@ -266,7 +263,7 @@ static int __init ls_pcie_ep_probe(struct platform_device *pdev)
+ 
+ 	platform_set_drvdata(pdev, pcie);
+ 
+-	offset = dw_pcie_find_capability(pci, PCI_CAP_ID_EXP);
++	offset = dw_pcie_get_pcie_cap(pci);
+ 	pcie->lnkcap = dw_pcie_readl_dbi(pci, offset + PCI_EXP_LNKCAP);
+ 
+ 	ret = dw_pcie_ep_init(&pci->ep);
+-- 
+2.34.1
+
 
