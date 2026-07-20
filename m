@@ -1,80 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-24469-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24470-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B92D8C44515
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jul 2026 10:35:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D0A95C44515
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jul 2026 10:45:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h3cNG6dDMz2xm3;
-	Mon, 20 Jul 2026 20:35:10 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::333"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784543710;
-	cv=none; b=eiP6GZe4xl5Y+r0fBzoGeimmtrdxZmZIXju41z9RzfVghKgoBAqzd6niV9ZAOILqhbIIZL9GUocb8273ToM5g0fOjD9IfWHu1u1TkSEbpmMbDJ+A/CUMPSL+Aew1YBoWB22I0eX9UJjMXaLulQ2ARvksba9aLNz/bD2VijNZ6LSIi+c0bblEORZ3dxHlyCyoTmr/nial99n4RXtqujKrLAWkYYjDKWaJ733TWfitkryIoyk882L56LfvD7r0WDInbwzofWCBPUvwBiBGA3bqV3Z/lGdd0kt8DX8SQKNqkg5LW+zTngYtd4JDpi3djEH2RZwYFb4xMmxSB5RNeMXxNg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h3cc26NWpz2yXj;
+	Mon, 20 Jul 2026 20:45:22 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784544322;
+	cv=none; b=Xx3X0Tq4pYdcKYNYagRp1uFgbOwheUc2+WGVws3m9vJVuYr7Cn8yLorswUKWh3OuDPs89e3/uNmYcYZiFg3v0INybfNNd62Hko19n4q+g5x2sNvBch0DqVSfC/Iz5gjeFepNG8AxqaAv5qvcvhdx5Srq55ClBqrGzHyWjhTN69JnprWVIXw9o1Xu4qvN10u4iXwstPK9oYb93g3Wfm61ElsH0BFWAubEknYFFBZhvNnl299COtmSnIw70Akfru8CjsdFusKHS9oGz5v/yb5BWGyb2tP1O4FHGEDCUe9ekyADqBeHMhNDcEufceHWpifrjSeY3UmLsg14s+rlxteFsw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784543710; c=relaxed/relaxed;
-	bh=k37RWmWff7zt+PtsvHIuhzz9otckpy6kRhbc8EISwX4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=VC2pLjZ582onK7q70AzzwdUDclhYVjzFwNW3QaeD6fyn3iWFSkmIth3T6VsEbAnHZhVlkvWS1oFX30+T8LT8o56j+Icjgu9Z5OF8piswoDQvGzq9UsUerG9PQqHaDAKSOnEaIsJ8EIJbrqOFGYBdsJA/NqfTA+ZFBmdjDs+WQY3n+//8FGctJ9wdm95tt6oWqivHiSmlQS94LXfgIOF3kLyW6Ak1Ek84ugfFeX51ZREcCBNf7FoYDwQQ0/afeRcsVRqQc+QTEVOAF8wXGDoIqhxFu9ueEpmPbM/EKDjIwLOrAz+zOSXjaWVqwpIblhmzqb3Z09SaEOCMIdu2HsbZyw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=WwhTSAw8; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::333; helo=mail-wm1-x333.google.com; envelope-from=jgross@suse.com; receiver=lists.ozlabs.org) smtp.mailfrom=suse.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
+	t=1784544322; c=relaxed/relaxed;
+	bh=X7B+rO0uk5VvDP+WyNkFsP4wMufza7Yvi+ZLjGWz1WU=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=IwPykfh3NyUihhbhIXCQFXftnKkgAaqN+M2i/PN2vgUAiGdD0yYbkgj0iKIJSaXQP1TRJnr8nvtskLTXHuASVjhAac0G4GHpBpziXL73MPPgKIwQk8+WXa2aNxNBEOtniDA/sloSX5CyUgl7rqNtLZKHMhKlBJUAsOpw5RQbVCFsDPN5Iem/1blSXC3Z6t8ZoGALi//RrhYyvLv49/qAY/kLd44/c1UaYO5Mzrf8451Hjx6aKOl2ZpL8YOIfJZRS4IemBx4Ll0hb64NuP58J5tM7PDhIRLRrNudD6zRKosTPpmIA6lsxDuGf9R9ARodplrc8gIk74TjR+It+nT7C/g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rbVYanp8; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=WwhTSAw8;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rbVYanp8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=2a00:1450:4864:20::333; helo=mail-wm1-x333.google.com; envelope-from=jgross@suse.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x333.google.com (mail-wm1-x333.google.com [IPv6:2a00:1450:4864:20::333])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h3cND6MQ0z2xF8
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2026 20:35:08 +1000 (AEST)
-Received: by mail-wm1-x333.google.com with SMTP id 5b1f17b1804b1-493f75f7172so78024125e9.1
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2026 03:35:08 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1784543705; x=1785148505; darn=lists.ozlabs.org;
-        h=content-type:in-reply-to:autocrypt:from:content-language:references
-         :cc:to:subject:user-agent:mime-version:date:message-id:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=k37RWmWff7zt+PtsvHIuhzz9otckpy6kRhbc8EISwX4=;
-        b=WwhTSAw84njn65uHs/XyKMDeiD+aUxjgG3GCn0ko/1d8cFcsqTAVFOFR6jlCqFKKnM
-         UGmTWIS0UiJly8LD8c3XOCznJYV8KlvlbbLapShoISFwpKC86qAPiN83EZtlqy5CeSDs
-         EsAEaOSoqxrcs9s16TOWBoxdBgUZZZqXdSF5Jf2YykyuEiZb+wWtzbQ/povxazKiozVz
-         JlY2QhyifBArtlbXCalam4W11/MdtB51G7wDEFB8hPDmcd9rnjmnlCBuhV+qJ6jk42db
-         4+jlu0EeozQ68hHTU4P1tdjwVW84PqXsql6PL/16M+23ykCmdVP4KdZ0tP4h//52zPOk
-         vxtg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784543705; x=1785148505;
-        h=content-type:in-reply-to:autocrypt:from:content-language:references
-         :cc:to:subject:user-agent:mime-version:date:message-id:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=k37RWmWff7zt+PtsvHIuhzz9otckpy6kRhbc8EISwX4=;
-        b=gcuzyRnn5sU8jCLh0CLUeLkcCWWNANLC/O3CQ4dc160awumoEdhgs6UD8bdi51p5Gr
-         +fLcrc3L40nrrCXcBppD/PeSWNQ/C+qCc+0k6r4FCbqke2VODRUCLpmdp0Y1prkFm7mG
-         woLrvN+z8czCvFjz7DZ0u9AuecV3NWCuVAVkor6s3XVKX2TGpqB+UAPxY+KYqYkvOgZC
-         KchmRLJSdv18j1bX16Q09MJZFPqNHyjEl35bH2s/G/BvXtF7c9iKLMiRc7AfS9nGgzvg
-         UNTmmz6VLZ15aQSosH2BZz0hmZKV3YWFRwSKa639csZj31TThsnMqenQxKUsokAG/9za
-         1afA==
-X-Forwarded-Encrypted: i=1; AHgh+RoMSa+gE/CvPTqqTvE2gVrvXMsNFYde49w/Tjkf65EkD13UWt562L7Qmz3FIxIuQPksItOo5AqNHwxoKxs=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yzl4unTYcyHaabjKix6H6nYhEexdaPNPXlgtj0LYlT3RCjxfsaZ
-	uZHPVl9c4WBVbE/+WqlSzm+UkDgLlDPGTtLdv5NcArlIIKaMlSLD0jESuEl1ASLsw8Q=
-X-Gm-Gg: AfdE7clm6j0YjwZhDiQ/ESYkyCMxT+opPjHj46qrQHlnM3esx/gUbNg19kymQDpiRs7
-	4ZcmfdxcyCNo+I1t5KVK7HMQjJ3coT4ze6tXBhOAbD/ZiLSqcVAB3wFBX+HS3XOc2D02ccsfRJD
-	0WrcIbQfhYSjqw0efEjZq0miDDDflTpn3t0pWrzrLqjrrnCOTZQ4W1sJETZXKmQRNdHUpNnSTBS
-	6Dwd/cRFJ+Cx+dehqEJ48h/X7r7RaNtbNjfniW+7Ane0oATIylrxX1GSqMrOYOmEfICgeKmwEKT
-	OGFCGpRCvAdf9Hlj/nYj197Jpa5Gf1Z78xXkdEzsHh3494Bh1KCApzOiWD//f3Jwz4WjAmPSeiQ
-	tVhgm4Sxhim8GPRhBQLgN1rQN6HOfQWmV8jBA+c9utXFNrCo/qhQBmxESWjeP+wqBxElPMW1tvh
-	T8jH9rYPDtbQ7rYPSS42/QU8SWFFD2XgWPqmPB9OMuBsTB3Hmz/ek4eM3gyc1bIuFwTFAq+zkaL
-	ZiQNR241WQ6C9cgJroM1evtbv/2/3wF
-X-Received: by 2002:a05:600c:4f14:b0:495:5ce6:9c18 with SMTP id 5b1f17b1804b1-4955ce6a33cmr61097885e9.27.1784543704827;
-        Mon, 20 Jul 2026 03:35:04 -0700 (PDT)
-Received: from ?IPV6:2a00:12d0:af5d:ad01:5d3f:14e6:9bcb:5112? (2a00-12d0-af5d-ad01-5d3f-14e6-9bcb-5112.ip.tng.de. [2a00:12d0:af5d:ad01:5d3f:14e6:9bcb:5112])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4954a2b074csm291431975e9.6.2026.07.20.03.35.03
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 20 Jul 2026 03:35:04 -0700 (PDT)
-Message-ID: <e258581c-a17f-4b5a-aafd-82e513a6288e@suse.com>
-Date: Mon, 20 Jul 2026 12:35:02 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h3cc16tBjz2ySN
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2026 20:45:21 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66KABmsD1913539;
+	Mon, 20 Jul 2026 10:45:20 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=pp1; bh=X7B+rO0uk5VvDP+Wy
+	NkFsP4wMufza7Yvi+ZLjGWz1WU=; b=rbVYanp83TzjJFuLpvhgQTyW4Usmg1YIE
+	g5l2JdUrVY7we9HlfYpMmVnWMg7l8o6o4U4k5R4IdWnBM8jQYLZ6Or1TVeNS5Wh9
+	Hrz+Lj31d3sqU1HQpdtX9LHjXbGHQN7QNe3iNV1+yBhR3YxX1dlNiK76Ut6pT41U
+	jU5zfrSQd30CZD4yWOgXIYo9N7BIB/yLOvG4pBY3Z4CpEId9+yODj9/lgDtoj+VH
+	eOlUftVeHsmVqwvp2RKxXF+wsXES75M4R9LV3+fbbsITXAFLwCxegHhoBNsYnog4
+	mtiGg8nS6EpNie0BY3mdTErb3PBANBpOAZxdQnV6pDG+gbPtB0afQ==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fg790q0w2-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 20 Jul 2026 10:45:19 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66KAYdu0012984;
+	Mon, 20 Jul 2026 10:45:18 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fgp1g50yt-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 20 Jul 2026 10:45:18 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66KAjDdA39977340
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 20 Jul 2026 10:45:13 GMT
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 0C4AE2004E;
+	Mon, 20 Jul 2026 10:45:13 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id AFB5B2004B;
+	Mon, 20 Jul 2026 10:45:10 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.39.16.54])
+	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 20 Jul 2026 10:45:10 +0000 (GMT)
+From: Athira Rajeev <atrajeev@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com
+Cc: linux-perf-users@vger.kernel.org, atrajeev@linux.ibm.com,
+        hbathini@linux.vnet.ibm.com, tejas05@linux.ibm.com,
+        venkat88@linux.ibm.com, tshah@linux.ibm.com, usha.r2@ibm.com
+Subject: [PATCH V2 1/6] powerpc/perf: Add HTM PMU driver to expose Hardware Trace Macro data
+Date: Mon, 20 Jul 2026 16:14:42 +0530
+Message-Id: <20260720104447.11843-2-atrajeev@linux.ibm.com>
+X-Mailer: git-send-email 2.39.5 (Apple Git-154)
+In-Reply-To: <20260720104447.11843-1-atrajeev@linux.ibm.com>
+References: <20260720104447.11843-1-atrajeev@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,225 +89,496 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 2/3] sched: Convert paravirt_steal to new static key APIs
-To: Hongyan Xia <hongyan.xia@transsion.com>,
- "mingo@redhat.com" <mingo@redhat.com>,
- "peterz@infradead.org" <peterz@infradead.org>,
- "juri.lelli@redhat.com" <juri.lelli@redhat.com>,
- "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>,
- "dietmar.eggemann@arm.com" <dietmar.eggemann@arm.com>,
- "rostedt@goodmis.org" <rostedt@goodmis.org>,
- "bsegall@google.com" <bsegall@google.com>, "mgorman@suse.de"
- <mgorman@suse.de>, "vschneid@redhat.com" <vschneid@redhat.com>,
- "kprateek.nayak@amd.com" <kprateek.nayak@amd.com>,
- Ajay Kaher <ajay.kaher@broadcom.com>,
- Alexey Makhalov <alexey.makhalov@broadcom.com>,
- Broadcom internal kernel review list
- <bcm-kernel-feedback-list@broadcom.com>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
- Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
- Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
- Thomas Gleixner <tglx@kernel.org>, Borislav Petkov <bp@alien8.de>,
- Dave Hansen <dave.hansen@linux.intel.com>, "x86@kernel.org"
- <x86@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
- Paolo Bonzini <pbonzini@redhat.com>, Vitaly Kuznetsov <vkuznets@redhat.com>,
- Stefano Stabellini <sstabellini@kernel.org>,
- Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
-Cc: Jiazi Li <jiazi.li@transsion.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "virtualization@lists.linux.dev" <virtualization@lists.linux.dev>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>,
- "loongarch@lists.linux.dev" <loongarch@lists.linux.dev>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- "xen-devel@lists.xenproject.org" <xen-devel@lists.xenproject.org>
-References: <cover.1784538478.git.hongyan.xia@transsion.com>
- <773bbd8fcd5ef2ebfe1c64303c7a71a56368de69.1784538478.git.hongyan.xia@transsion.com>
-Content-Language: en-US
-From: =?UTF-8?B?SsO8cmdlbiBHcm/Dnw==?= <jgross@suse.com>
-Autocrypt: addr=jgross@suse.com; keydata=
- xsBNBFOMcBYBCACgGjqjoGvbEouQZw/ToiBg9W98AlM2QHV+iNHsEs7kxWhKMjrioyspZKOB
- ycWxw3ie3j9uvg9EOB3aN4xiTv4qbnGiTr3oJhkB1gsb6ToJQZ8uxGq2kaV2KL9650I1SJve
- dYm8Of8Zd621lSmoKOwlNClALZNew72NjJLEzTalU1OdT7/i1TXkH09XSSI8mEQ/ouNcMvIJ
- NwQpd369y9bfIhWUiVXEK7MlRgUG6MvIj6Y3Am/BBLUVbDa4+gmzDC9ezlZkTZG2t14zWPvx
- XP3FAp2pkW0xqG7/377qptDmrk42GlSKN4z76ELnLxussxc7I2hx18NUcbP8+uty4bMxABEB
- AAHNH0p1ZXJnZW4gR3Jvc3MgPGpncm9zc0BzdXNlLmNvbT7CwHkEEwECACMFAlOMcK8CGwMH
- CwkIBwMCAQYVCAIJCgsEFgIDAQIeAQIXgAAKCRCw3p3WKL8TL8eZB/9G0juS/kDY9LhEXseh
- mE9U+iA1VsLhgDqVbsOtZ/S14LRFHczNd/Lqkn7souCSoyWsBs3/wO+OjPvxf7m+Ef+sMtr0
- G5lCWEWa9wa0IXx5HRPW/ScL+e4AVUbL7rurYMfwCzco+7TfjhMEOkC+va5gzi1KrErgNRHH
- kg3PhlnRY0Udyqx++UYkAsN4TQuEhNN32MvN0Np3WlBJOgKcuXpIElmMM5f1BBzJSKBkW0Jc
- Wy3h2Wy912vHKpPV/Xv7ZwVJ27v7KcuZcErtptDevAljxJtE7aJG6WiBzm+v9EswyWxwMCIO
- RoVBYuiocc51872tRGywc03xaQydB+9R7BHPzsBNBFOMcBYBCADLMfoA44MwGOB9YT1V4KCy
- vAfd7E0BTfaAurbG+Olacciz3yd09QOmejFZC6AnoykydyvTFLAWYcSCdISMr88COmmCbJzn
- sHAogjexXiif6ANUUlHpjxlHCCcELmZUzomNDnEOTxZFeWMTFF9Rf2k2F0Tl4E5kmsNGgtSa
- aMO0rNZoOEiD/7UfPP3dfh8JCQ1VtUUsQtT1sxos8Eb/HmriJhnaTZ7Hp3jtgTVkV0ybpgFg
- w6WMaRkrBh17mV0z2ajjmabB7SJxcouSkR0hcpNl4oM74d2/VqoW4BxxxOD1FcNCObCELfIS
- auZx+XT6s+CE7Qi/c44ibBMR7hyjdzWbABEBAAHCwF8EGAECAAkFAlOMcBYCGwwACgkQsN6d
- 1ii/Ey9D+Af/WFr3q+bg/8v5tCknCtn92d5lyYTBNt7xgWzDZX8G6/pngzKyWfedArllp0Pn
- fgIXtMNV+3t8Li1Tg843EXkP7+2+CQ98MB8XvvPLYAfW8nNDV85TyVgWlldNcgdv7nn1Sq8g
- HwB2BHdIAkYce3hEoDQXt/mKlgEGsLpzJcnLKimtPXQQy9TxUaLBe9PInPd+Ohix0XOlY+Uk
- QFEx50Ki3rSDl2Zt2tnkNYKUCvTJq7jvOlaPd6d/W0tZqpyy7KVay+K4aMobDsodB3dvEAs6
- ScCnh03dDAFgIq5nsB11j3KPKdVoPlfucX2c7kGNH+LUMbzqV6beIENfNexkOfxHfw==
-In-Reply-To: <773bbd8fcd5ef2ebfe1c64303c7a71a56368de69.1784538478.git.hongyan.xia@transsion.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------xRaoXSGgLc0vY9TPQoiqAmqD"
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: vwaks7bePSmHPECytW27Ps734HuDcWsv
+X-Authority-Analysis: v=2.4 cv=V6RNF+ni c=1 sm=1 tr=0 ts=6a5dfc3f cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=U7nrCbtTmkRpXpFmAIza:22 a=VnNF1IyMAAAA:8 a=BrJbKb1y8XBlBzz4AjEA:9
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzIwMDExOSBTYWx0ZWRfX0kSqAlLCcwiG
+ 3XGQP9F1wOO3sMYWf0SOFkIPw8sHX+np5GjNQRnsdNDymtWqxJK4zAiDlcLQc6EThN8ds6moLg1
+ EkvyzOJtn9UU1sJBEXyIUu4HTCQpLCQ=
+X-Proofpoint-GUID: vwaks7bePSmHPECytW27Ps734HuDcWsv
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzIwMDExOSBTYWx0ZWRfX+yR/tHFqLcuw
+ neJyfneXryqdkrRo5WusGsdbdbX1n35wAZtTc0JWfmz5UH30lc6BQ2xTpjj5IfWtyxLg8tennGf
+ NPu/Hwd5el7IqYjrP/cNTwTPfu9spXUecQiopvGEV/bQsr2vii2X0hO8bjZ1LVLkIRZI9z2VqHb
+ e/+Kd414j54Ozgr90jKF6LkyhpeleTZ0fyFQI5ZPIFv9RbgnlXVxW0X8+IIP+ufO0JmYTYhj1kj
+ FKpz/p+3tYeUHXtRvj59/hBQh8Y42YcRxA0U2x6FQuP1KnTsDU2oFrsI1lVUErTB8TFIsTmTkNs
+ m5jOhOOLQ7ekgHcfOnZxqaqL6g6fZ06fiulF4P1tXkHCfO0OBB5SPNLT2krmtV5YzoynFFVFJTi
+ 8yyaSwyIAyE3z0c1Z8K0FfuGBNuIBNkbmVM2V3tXLMv09wvBa+B95zK2H20DT913Jt2YLaPOgyn
+ bIX1Yh03oj0gOsNoX0g==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-07-20_02,2026-07-17_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 adultscore=0 bulkscore=0 lowpriorityscore=0 clxscore=1015
+ spamscore=0 impostorscore=0 phishscore=0 priorityscore=1501 suspectscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607200119
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------xRaoXSGgLc0vY9TPQoiqAmqD
-Content-Type: multipart/mixed; boundary="------------GCGLUHAC00omEipMv2gl1qSr";
- protected-headers="v1"
-From: =?UTF-8?B?SsO8cmdlbiBHcm/Dnw==?= <jgross@suse.com>
-To: Hongyan Xia <hongyan.xia@transsion.com>,
- "mingo@redhat.com" <mingo@redhat.com>,
- "peterz@infradead.org" <peterz@infradead.org>,
- "juri.lelli@redhat.com" <juri.lelli@redhat.com>,
- "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>,
- "dietmar.eggemann@arm.com" <dietmar.eggemann@arm.com>,
- "rostedt@goodmis.org" <rostedt@goodmis.org>,
- "bsegall@google.com" <bsegall@google.com>, "mgorman@suse.de"
- <mgorman@suse.de>, "vschneid@redhat.com" <vschneid@redhat.com>,
- "kprateek.nayak@amd.com" <kprateek.nayak@amd.com>,
- Ajay Kaher <ajay.kaher@broadcom.com>,
- Alexey Makhalov <alexey.makhalov@broadcom.com>,
- Broadcom internal kernel review list
- <bcm-kernel-feedback-list@broadcom.com>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
- Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
- Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
- Thomas Gleixner <tglx@kernel.org>, Borislav Petkov <bp@alien8.de>,
- Dave Hansen <dave.hansen@linux.intel.com>, "x86@kernel.org"
- <x86@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
- Paolo Bonzini <pbonzini@redhat.com>, Vitaly Kuznetsov <vkuznets@redhat.com>,
- Stefano Stabellini <sstabellini@kernel.org>,
- Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
-Cc: Jiazi Li <jiazi.li@transsion.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "virtualization@lists.linux.dev" <virtualization@lists.linux.dev>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>,
- "loongarch@lists.linux.dev" <loongarch@lists.linux.dev>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- "xen-devel@lists.xenproject.org" <xen-devel@lists.xenproject.org>
-Message-ID: <e258581c-a17f-4b5a-aafd-82e513a6288e@suse.com>
-Subject: Re: [PATCH 2/3] sched: Convert paravirt_steal to new static key APIs
-References: <cover.1784538478.git.hongyan.xia@transsion.com>
- <773bbd8fcd5ef2ebfe1c64303c7a71a56368de69.1784538478.git.hongyan.xia@transsion.com>
-In-Reply-To: <773bbd8fcd5ef2ebfe1c64303c7a71a56368de69.1784538478.git.hongyan.xia@transsion.com>
+The H_HTM hypervisor call (hcall) provides an interface to the Hardware
+Trace Macro (HTM) function on POWER systems.  HTM captures hardware-level
+trace data for a specific node/chip/core target within a logical partition.
 
---------------GCGLUHAC00omEipMv2gl1qSr
-Content-Type: multipart/mixed; boundary="------------mHisnunnxH4NBSrCYMbsXcuq"
+Add a new "htm" Performance Monitoring Unit (PMU) that exposes HTM control
+via the standard perf interface.  The event configuration is a 28-bit value
+packed into the perf config field:
 
---------------mHisnunnxH4NBSrCYMbsXcuq
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+  bits  0-3:  htm_type         (HTM_CORE=2, HTM_NEST=1)
+  bits  4-11: nodeindex
+  bits 12-19: nodalchipindex
+  bits 20-27: coreindexonchip
 
-T24gMjAuMDcuMjYgMTE6MzgsIEhvbmd5YW4gWGlhIHdyb3RlOg0KPiBGcm9tOiBIb25neWFu
-IFhpYSA8aG9uZ3lhbi54aWFAdHJhbnNzaW9uLmNvbT4NCj4gDQo+IHBhcmF2aXJ0X3N0ZWFs
-X3JxX2VuYWJsZWQgYW5kIHBhcmF2aXJ0X3N0ZWFsX2VuYWJsZWQgdXNlIHJhdyBzdGF0aWNf
-a2V5DQo+IEFQSXMgd2hpY2ggYXJlIG5vdyBkZXByZWNhdGVkLiBVc2UgdGhlIG5ldyBBUEkg
-aW5zdGVhZC4NCj4gDQo+IE5vIGZ1bmN0aW9uYWwgY2hhbmdlLg0KPiANCj4gU2lnbmVkLW9m
-Zi1ieTogSG9uZ3lhbiBYaWEgPGhvbmd5YW4ueGlhQHRyYW5zc2lvbi5jb20+DQoNCkFja2Vk
-LWJ5OiBKdWVyZ2VuIEdyb3NzIDxqZ3Jvc3NAc3VzZS5jb20+DQoNCg0KSnVlcmdlbg0K
---------------mHisnunnxH4NBSrCYMbsXcuq
-Content-Type: application/pgp-keys; name="OpenPGP_0xB0DE9DD628BF132F.asc"
-Content-Disposition: attachment; filename="OpenPGP_0xB0DE9DD628BF132F.asc"
-Content-Description: OpenPGP public key
-Content-Transfer-Encoding: quoted-printable
+PMU lifecycle:
 
------BEGIN PGP PUBLIC KEY BLOCK-----
+  add/del:    Issue H_HTM_OP_CONFIGURE / H_HTM_OP_DECONFIGURE to reserve
+              and release the hardware trace resource.
 
-xsBNBFOMcBYBCACgGjqjoGvbEouQZw/ToiBg9W98AlM2QHV+iNHsEs7kxWhKMjri
-oyspZKOBycWxw3ie3j9uvg9EOB3aN4xiTv4qbnGiTr3oJhkB1gsb6ToJQZ8uxGq2
-kaV2KL9650I1SJvedYm8Of8Zd621lSmoKOwlNClALZNew72NjJLEzTalU1OdT7/i
-1TXkH09XSSI8mEQ/ouNcMvIJNwQpd369y9bfIhWUiVXEK7MlRgUG6MvIj6Y3Am/B
-BLUVbDa4+gmzDC9ezlZkTZG2t14zWPvxXP3FAp2pkW0xqG7/377qptDmrk42GlSK
-N4z76ELnLxussxc7I2hx18NUcbP8+uty4bMxABEBAAHNHEp1ZXJnZW4gR3Jvc3Mg
-PGpnQHBmdXBmLm5ldD7CwHkEEwECACMFAlOMcBYCGwMHCwkIBwMCAQYVCAIJCgsE
-FgIDAQIeAQIXgAAKCRCw3p3WKL8TL0KdB/93FcIZ3GCNwFU0u3EjNbNjmXBKDY4F
-UGNQH2lvWAUy+dnyThpwdtF/jQ6j9RwE8VP0+NXcYpGJDWlNb9/JmYqLiX2Q3Tye
-vpB0CA3dbBQp0OW0fgCetToGIQrg0MbD1C/sEOv8Mr4NAfbauXjZlvTj30H2jO0u
-+6WGM6nHwbh2l5O8ZiHkH32iaSTfN7Eu5RnNVUJbvoPHZ8SlM4KWm8rG+lIkGurq
-qu5gu8q8ZMKdsdGC4bBxdQKDKHEFExLJK/nRPFmAuGlId1E3fe10v5QL+qHI3EIP
-tyfE7i9Hz6rVwi7lWKgh7pe0ZvatAudZ+JNIlBKptb64FaiIOAWDCx1SzR9KdWVy
-Z2VuIEdyb3NzIDxqZ3Jvc3NAc3VzZS5jb20+wsB5BBMBAgAjBQJTjHCvAhsDBwsJ
-CAcDAgEGFQgCCQoLBBYCAwECHgECF4AACgkQsN6d1ii/Ey/HmQf/RtI7kv5A2PS4
-RF7HoZhPVPogNVbC4YA6lW7DrWf0teC0RR3MzXfy6pJ+7KLgkqMlrAbN/8Dvjoz7
-8X+5vhH/rDLa9BuZQlhFmvcGtCF8eR0T1v0nC/nuAFVGy+67q2DH8As3KPu0344T
-BDpAvr2uYM4tSqxK4DURx5INz4ZZ0WNFHcqsfvlGJALDeE0LhITTd9jLzdDad1pQ
-SToCnLl6SBJZjDOX9QQcyUigZFtCXFst4dlsvddrxyqT1f17+2cFSdu7+ynLmXBK
-7abQ3rwJY8SbRO2iRulogc5vr/RLMMlscDAiDkaFQWLoqHHOdfO9rURssHNN8WkM
-nQfvUewRz80hSnVlcmdlbiBHcm9zcyA8amdyb3NzQG5vdmVsbC5jb20+wsB5BBMB
-AgAjBQJTjHDXAhsDBwsJCAcDAgEGFQgCCQoLBBYCAwECHgECF4AACgkQsN6d1ii/
-Ey8PUQf/ehmgCI9jB9hlgexLvgOtf7PJnFOXgMLdBQgBlVPO3/D9R8LtF9DBAFPN
-hlrsfIG/SqICoRCqUcJ96Pn3P7UUinFG/I0ECGF4EvTE1jnDkfJZr6jrbjgyoZHi
-w/4BNwSTL9rWASyLgqlA8u1mf+c2yUwcGhgkRAd1gOwungxcwzwqgljf0N51N5Jf
-VRHRtyfwq/ge+YEkDGcTU6Y0sPOuj4Dyfm8fJzdfHNQsWq3PnczLVELStJNdapwP
-OoE+lotufe3AM2vAEYJ9rTz3Cki4JFUsgLkHFqGZarrPGi1eyQcXeluldO3m91NK
-/1xMI3/+8jbO0tsn1tqSEUGIJi7ox80eSnVlcmdlbiBHcm9zcyA8amdyb3NzQHN1
-c2UuZGU+wsB5BBMBAgAjBQJTjHDrAhsDBwsJCAcDAgEGFQgCCQoLBBYCAwECHgEC
-F4AACgkQsN6d1ii/Ey+LhQf9GL45eU5vOowA2u5N3g3OZUEBmDHVVbqMtzwlmNC4
-k9Kx39r5s2vcFl4tXqW7g9/ViXYuiDXb0RfUpZiIUW89siKrkzmQ5dM7wRqzgJpJ
-wK8Bn2MIxAKArekWpiCKvBOB/Cc+3EXE78XdlxLyOi/NrmSGRIov0karw2RzMNOu
-5D+jLRZQd1Sv27AR+IP3I8U4aqnhLpwhK7MEy9oCILlgZ1QZe49kpcumcZKORmzB
-TNh30FVKK1EvmV2xAKDoaEOgQB4iFQLhJCdP1I5aSgM5IVFdn7v5YgEYuJYx37Io
-N1EblHI//x/e2AaIHpzK5h88NEawQsaNRpNSrcfbFmAg987ATQRTjHAWAQgAyzH6
-AOODMBjgfWE9VeCgsrwH3exNAU32gLq2xvjpWnHIs98ndPUDpnoxWQugJ6MpMncr
-0xSwFmHEgnSEjK/PAjppgmyc57BwKII3sV4on+gDVFJR6Y8ZRwgnBC5mVM6JjQ5x
-Dk8WRXljExRfUX9pNhdE5eBOZJrDRoLUmmjDtKzWaDhIg/+1Hzz93X4fCQkNVbVF
-LELU9bMaLPBG/x5q4iYZ2k2ex6d47YE1ZFdMm6YBYMOljGkZKwYde5ldM9mo45mm
-we0icXKLkpEdIXKTZeKDO+Hdv1aqFuAcccTg9RXDQjmwhC3yEmrmcfl0+rPghO0I
-v3OOImwTEe4co3c1mwARAQABwsBfBBgBAgAJBQJTjHAWAhsMAAoJELDendYovxMv
-Q/gH/1ha96vm4P/L+bQpJwrZ/dneZcmEwTbe8YFsw2V/Buv6Z4Mysln3nQK5ZadD
-534CF7TDVft7fC4tU4PONxF5D+/tvgkPfDAfF77zy2AH1vJzQ1fOU8lYFpZXTXIH
-b+559UqvIB8AdgR3SAJGHHt4RKA0F7f5ipYBBrC6cyXJyyoprT10EMvU8VGiwXvT
-yJz3fjoYsdFzpWPlJEBRMedCot60g5dmbdrZ5DWClAr0yau47zpWj3enf1tLWaqc
-suylWsviuGjKGw7KHQd3bxALOknAp4dN3QwBYCKuZ7AddY9yjynVaD5X7nF9nO5B
-jR/i1DG86lem3iBDXzXsZDn8R3/CwO0EGAEIACAWIQSFEmdy6PYElKXQl/ew3p3W
-KL8TLwUCWt3w0AIbAgCBCRCw3p3WKL8TL3YgBBkWCAAdFiEEUy2wekH2OPMeOLge
-gFxhu0/YY74FAlrd8NAACgkQgFxhu0/YY75NiwD/fQf/RXpyv9ZX4n8UJrKDq422
-bcwkujisT6jix2mOOwYBAKiip9+mAD6W5NPXdhk1XraECcIspcf2ff5kCAlG0DIN
-aTUH/RIwNWzXDG58yQoLdD/UPcFgi8GWtNUp0Fhc/GeBxGipXYnvuWxwS+Qs1Qay
-7/Nbal/v4/eZZaWs8wl2VtrHTS96/IF6q2o0qMey0dq2AxnZbQIULiEndgR625EF
-RFg+IbO4ldSkB3trsF2ypYLij4ZObm2casLIP7iB8NKmQ5PndL8Y07TtiQ+Sb/wn
-g4GgV+BJoKdDWLPCAlCMilwbZ88Ijb+HF/aipc9hsqvW/hnXC2GajJSAY3Qs9Mib
-4Hm91jzbAjmp7243pQ4bJMfYHemFFBRaoLC7ayqQjcsttN2ufINlqLFPZPR/i3IX
-kt+z4drzFUyEjLM1vVvIMjkUoJs=3D
-=3DeeAB
------END PGP PUBLIC KEY BLOCK-----
+  start/stop: Issue H_HTM_OP_START / H_HTM_OP_STOP to control tracing.
+              HTM traces at node/chip/core scope continuously for the
+              duration of the event.  Context-switch-triggered start/stop
+              callbacks (PERF_EF_RELOAD / PERF_EF_UPDATE) are ignored to
+              keep tracing uninterrupted.  Explicit ioctl(ENABLE/DISABLE)
+              and event deletion do control the hardware.
 
---------------mHisnunnxH4NBSrCYMbsXcuq--
+State tracking uses event->pmu_private (HTM_TRACING_ACTIVE/INACTIVE) as
+the source of information, with event->hw.state kept in sync as
+a hint for the perf core.  This avoids conflicts with infrastructure
+writes to event->hw.state.
 
---------------GCGLUHAC00omEipMv2gl1qSr--
+The H_HTM hcall may return H_BUSY (transient, retried up to MAX_RETRIES)
+or H_LONG_BUSY_* (long delay required, not retried to avoid deadlocks in
+atomic contexts).
 
---------------xRaoXSGgLc0vY9TPQoiqAmqD
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature.asc"
+After this patch the PMU is visible under sysfs:
 
------BEGIN PGP SIGNATURE-----
+ # ls /sys/bus/event_source/devices/ |grep htm
+ htm
 
-wsB5BAABCAAjFiEEhRJncuj2BJSl0Jf3sN6d1ii/Ey8FAmpd+dYFAwAAAAAACgkQsN6d1ii/Ey+9
-dQf+MNwHi0AEoRwM0kGFqoNIkbCEeUDIsEPaZE6ECmiLVl6im8D6Tu03Xw92X3m4V6P4h8KP0cln
-E8xuh65pmvJfOkhbG6w3tnHb2DSaHJ3uBB1XN0hhnoe5LC2FjhTSrxSvUC9FTEmia3pQ/bsUMq1g
-s1BGaaxWDZhqOb5KP+W7tHOds08mT0VosshO8KzjtGtIpD+Hge6qd/LrxV6unk6MKQNSVdDJWwEl
-jB01KSXN6J0RnTSyvU9e/oCJWCrUdEBsjxd2JOFyef4dVLLVeFCm0gp0PLDEZEA+1VQSW0CE6Rjk
-TWjyd5V7/0D5UL8U6E38KHqqAuYS7WBJJGJF/Nx96Q==
-=Pl2M
------END PGP SIGNATURE-----
+ # ls /sys/bus/event_source/devices/htm/
+ events  format  perf_event_mux_interval_ms  power  subsystem  type  uevent
 
---------------xRaoXSGgLc0vY9TPQoiqAmqD--
+Signed-off-by: Athira Rajeev <atrajeev@linux.ibm.com>
+---
+Changes in V2:
+- Replaced direct H_HTM_OP_CONFIGURE/DECONFIGURE calls in htm_event_add()
+  and htm_event_del() with separate htm_event_init() and destroy paths.
+  State tracking is now via event->pmu_private (HTM_TRACING_ACTIVE /
+  HTM_TRACING_INACTIVE) as the authoritative source, with event->hw.state
+  kept in sync as a hint for the perf core, avoiding conflicts with
+  infrastructure writes to event->hw.state.
+- Context-switch callbacks (PERF_EF_RELOAD / PERF_EF_UPDATE) are now
+  explicitly ignored in htm_event_start()/stop() to keep tracing
+  uninterrupted across task switches; previously these paths were absent.
+- H_BUSY retry loop is capped at MAX_RETRIES; H_LONG_BUSY_* is not
+  retried in atomic context to avoid deadlocks (was unconditionally
+  retried in V1).
+
+ arch/powerpc/perf/Makefile   |   2 +-
+ arch/powerpc/perf/htm-perf.c | 379 +++++++++++++++++++++++++++++++++++
+ 2 files changed, 380 insertions(+), 1 deletion(-)
+ create mode 100644 arch/powerpc/perf/htm-perf.c
+
+diff --git a/arch/powerpc/perf/Makefile b/arch/powerpc/perf/Makefile
+index 78dd7e25219e..26ef30c0693c 100644
+--- a/arch/powerpc/perf/Makefile
++++ b/arch/powerpc/perf/Makefile
+@@ -14,7 +14,7 @@ obj-$(CONFIG_PPC_POWERNV)	+= imc-pmu.o
+ obj-$(CONFIG_FSL_EMB_PERF_EVENT) += core-fsl-emb.o
+ obj-$(CONFIG_FSL_EMB_PERF_EVENT_E500) += e500-pmu.o e6500-pmu.o
+ 
+-obj-$(CONFIG_HV_PERF_CTRS) += hv-24x7.o hv-gpci.o hv-common.o vpa-dtl.o
++obj-$(CONFIG_HV_PERF_CTRS) += hv-24x7.o hv-gpci.o hv-common.o vpa-dtl.o htm-perf.o
+ 
+ obj-$(CONFIG_VPA_PMU) += vpa-pmu.o
+ 
+diff --git a/arch/powerpc/perf/htm-perf.c b/arch/powerpc/perf/htm-perf.c
+new file mode 100644
+index 000000000000..abecc9bb58dc
+--- /dev/null
++++ b/arch/powerpc/perf/htm-perf.c
+@@ -0,0 +1,379 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++/*
++ * Perf interface to expose HTM Trace data.
++ *
++ * Copyright (C) 2026 Athira Rajeev, IBM Corporation
++ */
++
++#define pr_fmt(fmt) "htm: " fmt
++
++#include <asm/dtl.h>
++#include <linux/perf_event.h>
++#include <asm/plpar_wrappers.h>
++#include <asm/firmware.h>
++
++#define EVENT(_name, _code)	enum{_name = _code}
++#define	MAX_RETRIES	100
++
++EVENT(HTM_CORE,		0x2);
++EVENT(HTM_NEST,		0x1);
++
++GENERIC_EVENT_ATTR(htm_core, HTM_CORE);
++GENERIC_EVENT_ATTR(htm_nest, HTM_NEST);
++
++PMU_FORMAT_ATTR(event, "config:0-27");
++PMU_FORMAT_ATTR(htm_type, "config:0-3");
++PMU_FORMAT_ATTR(nodeindex, "config:4-11");
++PMU_FORMAT_ATTR(nodalchipindex, "config:12-19");
++PMU_FORMAT_ATTR(coreindexonchip, "config:20-27");
++
++static struct attribute *events_attr[] = {
++	GENERIC_EVENT_PTR(HTM_NEST),
++	GENERIC_EVENT_PTR(HTM_CORE),
++	NULL
++};
++
++static struct attribute_group event_group = {
++	.name = "events",
++	.attrs = events_attr,
++};
++
++static struct attribute *format_attrs[] = {
++	&format_attr_event.attr,
++	&format_attr_htm_type.attr,
++	&format_attr_nodeindex.attr,
++	&format_attr_nodalchipindex.attr,
++	&format_attr_coreindexonchip.attr,
++	NULL,
++};
++
++static const struct attribute_group format_group = {
++	.name = "format",
++	.attrs = format_attrs,
++};
++
++static const struct attribute_group *attr_groups[] = {
++	&format_group,
++	&event_group,
++	NULL,
++};
++
++static u64 htmflags = H_HTM_FLAGS_NOWRAP;
++
++struct htm_config {
++	u32 htmtype;
++	u32 nodeindex;
++	u32 nodalchipindex;
++	u32 coreindexonchip;
++};
++
++/*
++ * Per-event private state.  Allocated in htm_event_init(), freed via the
++ * event->destroy callback (reset_htm_active()).
++ *
++ * cfg stores the HTM target identity parsed from event->attr.config.
++ * tracing_active tracks whether H_HTM_OP_START has been successfully issued
++ * for this event. It is the source of information used by
++ * htm_event_start() and htm_event_stop() to make hcall decisions.
++ * event->hw.state is kept in sync for the perf core only.
++ */
++struct htm_target_id {
++	struct htm_config cfg;
++	int tracing_active;		/* HTM_TRACING_ACTIVE / HTM_TRACING_INACTIVE */
++};
++
++/* Helper to parse the 28-bit event config into distinct fields */
++static inline void parse_htm_config(u64 config, struct htm_config *cfg)
++{
++	cfg->htmtype = config & 0xf;
++	cfg->nodeindex = (config >> 4) & 0xff;
++	cfg->nodalchipindex = (config >> 12) & 0xff;
++	cfg->coreindexonchip = (config >> 20) & 0xff;
++}
++
++/*
++ * Check the return code for H_HTM hcall.
++ * Return 1 if either H_PARTIAL or H_SUCCESS is returned.
++ * Return 0 if H_NOT_AVAILABLE.
++ * Return exact negative error codes for expected issues.
++ */
++static ssize_t htm_return_check(int rc)
++{
++	switch (rc) {
++	case H_SUCCESS:
++	case H_PARTIAL:
++		return 1;
++	case H_NOT_AVAILABLE:
++		return 0;
++	case H_BUSY:
++		/* Transient busy: retry loop will spin up to MAX_RETRIES */
++		return -EBUSY;
++	case H_LONG_BUSY_ORDER_1_MSEC:
++	case H_LONG_BUSY_ORDER_10_MSEC:
++	case H_LONG_BUSY_ORDER_100_MSEC:
++	case H_LONG_BUSY_ORDER_1_SEC:
++	case H_LONG_BUSY_ORDER_10_SEC:
++	case H_LONG_BUSY_ORDER_100_SEC:
++		/*
++		 * Hypervisor requests a long delay before retry (1ms-100s).
++		 * Spinning in a kernel retry loop for this duration risks
++		 * deadlocks in atomic contexts.  Return -EAGAIN so callers
++		 * exit immediately; the operation will fail and userspace
++		 * can retry the perf_event_open() call.
++		 * Note: all retry loops check ret == -EBUSY only, so
++		 * -EAGAIN exits without retrying, this is intentional.
++		 */
++		return -EAGAIN;
++	case H_PARAMETER:
++	case H_P2:
++	case H_P3:
++	case H_P4:
++	case H_P5:
++	case H_P6:
++		return -EINVAL;
++	case H_STATE:
++		return -EIO;
++	case H_AUTHORITY:
++		return -EPERM;
++	default:
++		/* Prevent silent fallthrough mapping of unhandled errors to 1 */
++		return -EIO;
++	}
++}
++
++/*
++ * HTM_TRACING_ACTIVE/INACTIVE: values for htm_target_id.tracing_active.
++ * Tracks whether H_HTM_OP_START has been successfully issued.
++ * HTM traces at node/chip/core scope, not per-task. Once started,
++ * context-switch-triggered stop/start (PERF_EF_UPDATE / PERF_EF_RELOAD)
++ * must not stop/restart the hardware. Only explicit API calls
++ * (ioctl DISABLE/ENABLE) and event_del should control the hcall.
++ */
++#define HTM_TRACING_ACTIVE	1
++#define HTM_TRACING_INACTIVE	0
++
++static void reset_htm_active(struct perf_event *event)
++{
++	kfree(event->pmu_private);
++	event->pmu_private = NULL;
++}
++
++static int htm_event_init(struct perf_event *event)
++{
++	u64 config = event->attr.config;
++	struct htm_config cfg;
++
++	if (event->attr.inherit)
++		return -EOPNOTSUPP;
++
++	if (event->attr.type != event->pmu->type)
++		return -ENOENT;
++
++	if (!perfmon_capable())
++		return -EACCES;
++
++	if (!is_sampling_event(event))
++		return -EOPNOTSUPP;
++
++	if (has_branch_stack(event))
++		return -EOPNOTSUPP;
++
++	parse_htm_config(config, &cfg);
++	switch (cfg.htmtype) {
++	case HTM_CORE:
++	case HTM_NEST:
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	/* Allocate per-event private state; freed via event->destroy */
++	event->pmu_private = kzalloc(sizeof(struct htm_target_id), GFP_KERNEL);
++	if (!event->pmu_private)
++		return -ENOMEM;
++
++	((struct htm_target_id *)event->pmu_private)->cfg = cfg;
++	event->destroy = reset_htm_active;
++	return 0;
++}
++
++static void htm_event_start(struct perf_event *event, int flags)
++{
++	int rc, ret, retries = 0;
++	struct htm_config cfg;
++	struct htm_target_id *target = event->pmu_private;
++
++	/*
++	 * Ignore context-switch re-enables. The perf core passes
++	 * PERF_EF_RELOAD on context-switch-in. HTM tracing is
++	 * continuous at hardware level, no hcall needed.
++	 */
++	if (flags & PERF_EF_RELOAD)
++		return;
++
++	/* Already tracing, don't issue a second start hcall */
++	if (target->tracing_active == HTM_TRACING_ACTIVE)
++		return;
++
++	cfg = target->cfg;
++
++	/* Only retry on transient H_BUSY; H_LONG_BUSY_* (-EAGAIN) exits immediately */
++	do {
++		rc = htm_hcall_wrapper(htmflags, cfg.nodeindex, cfg.nodalchipindex,
++				       cfg.coreindexonchip, cfg.htmtype,
++				       H_HTM_OP_START, 0, 0, 0);
++		ret = htm_return_check(rc);
++	} while (ret == -EBUSY && ++retries < MAX_RETRIES);
++
++	if (ret > 0) {
++		target->tracing_active = HTM_TRACING_ACTIVE;
++		event->hw.state &= ~PERF_HES_STOPPED;
++	}
++}
++
++static void htm_event_stop(struct perf_event *event, int flags)
++{
++	int rc, ret, retries = 0;
++	struct htm_config cfg;
++	struct htm_target_id *target = event->pmu_private;
++
++	/*
++	 * Ignore context-switch-out stops. The perf core passes
++	 * PERF_EF_UPDATE on context-switch-out. Do not stop the hcall.
++	 */
++	if (flags & PERF_EF_UPDATE)
++		return;
++
++	/* Not tracing, nothing to stop */
++	if (target->tracing_active == HTM_TRACING_INACTIVE)
++		return;
++
++	cfg = target->cfg;
++
++	/* Only retry on transient H_BUSY; H_LONG_BUSY_* (-EAGAIN) exits immediately */
++	do {
++		rc = htm_hcall_wrapper(htmflags, cfg.nodeindex, cfg.nodalchipindex,
++				       cfg.coreindexonchip, cfg.htmtype,
++				       H_HTM_OP_STOP, 0, 0, 0);
++		ret = htm_return_check(rc);
++	} while (ret == -EBUSY && ++retries < MAX_RETRIES);
++
++	/*
++	 * Only mark stopped if the hcall succeeded.  If the stop failed
++	 * (e.g. -EAGAIN on long-busy), leave tracing_active as ACTIVE so
++	 * that htm_event_del will retry the stop hcall rather than
++	 * skipping it and leaving the hypervisor permanently configured.
++	 */
++	if (ret > 0) {
++		target->tracing_active = HTM_TRACING_INACTIVE;
++		event->hw.state |= PERF_HES_STOPPED;
++	}
++}
++
++static int htm_event_add(struct perf_event *event, int flags)
++{
++	int rc, ret, retries = 0;
++	unsigned long param1 = -1, param2 = -1;
++	struct htm_target_id *target = event->pmu_private;
++	struct htm_config cfg = target->cfg;
++
++	/* Configure the hardware, only retry on transient H_BUSY */
++	do {
++		rc = htm_hcall_wrapper(htmflags, cfg.nodeindex, cfg.nodalchipindex,
++				       cfg.coreindexonchip, cfg.htmtype,
++				       H_HTM_OP_CONFIGURE, param1, param2, 0);
++		ret = htm_return_check(rc);
++	} while (ret == -EBUSY && ++retries < MAX_RETRIES);
++
++	if (ret <= 0)
++		return (ret == 0) ? -ENODEV : ret;
++
++	/*
++	 * htm_event_init() allocated event->pmu_private (struct htm_target_id)
++	 * and set event->destroy = reset_htm_active to free it on teardown.
++	 * Initialise the tracing state and hw.state before calling start.
++	 */
++	target->tracing_active = HTM_TRACING_INACTIVE;
++	event->hw.state = PERF_HES_STOPPED;
++
++	/*
++	 * Start tracing via the .start callback so the standard
++	 * PERF_EF_START / ioctl(ENABLE) path is honoured.
++	 */
++	if (flags & PERF_EF_START) {
++		htm_event_start(event, 0);	/* flags=0: not a context switch */
++		if (target->tracing_active == HTM_TRACING_INACTIVE) {
++			/* Start failed, deconfigure to avoid resource leak */
++			retries = 0;
++			do {
++				rc = htm_hcall_wrapper(htmflags, cfg.nodeindex,
++						       cfg.nodalchipindex, cfg.coreindexonchip,
++						       cfg.htmtype, H_HTM_OP_DECONFIGURE, 0, 0, 0);
++				ret = htm_return_check(rc);
++			} while (ret == -EBUSY && ++retries < MAX_RETRIES);
++			return -EIO;
++		}
++	}
++
++	return 0;
++}
++
++static void htm_event_del(struct perf_event *event, int flags)
++{
++	int rc, ret, retries = 0;
++	struct htm_target_id *target = event->pmu_private;
++	struct htm_config cfg = target->cfg;
++
++	/* Stop tracing, flags=0 so htm_event_stop issues the hcall */
++	htm_event_stop(event, 0);
++
++	/* Deconfigure */
++	do {
++		rc = htm_hcall_wrapper(htmflags, cfg.nodeindex, cfg.nodalchipindex,
++				       cfg.coreindexonchip, cfg.htmtype,
++				       H_HTM_OP_DECONFIGURE, 0, 0, 0);
++		ret = htm_return_check(rc);
++	} while (ret == -EBUSY && ++retries < MAX_RETRIES);
++
++	/* pmu_private freed by event->destroy = reset_htm_active */
++}
++
++static void htm_event_read(struct perf_event *event)
++{
++}
++
++static struct pmu htm_pmu = {
++	.task_ctx_nr  = perf_invalid_context,
++	.name         = "htm",
++	.attr_groups  = attr_groups,
++	.event_init   = htm_event_init,
++	.add          = htm_event_add,
++	.del          = htm_event_del,
++	.read         = htm_event_read,
++	.start        = htm_event_start,
++	.stop         = htm_event_stop,
++	.capabilities = PERF_PMU_CAP_NO_EXCLUDE | PERF_PMU_CAP_EXCLUSIVE,
++};
++
++static int htm_init(void)
++{
++	int r;
++
++	if (!firmware_has_feature(FW_FEATURE_LPAR)) {
++		pr_debug("Only supported on LPAR platforms running under a Hypervisor\n");
++		return -ENODEV;
++	}
++
++	if (is_kvm_guest()) {
++		pr_debug("Only supported for L1 host system\n");
++		return -ENODEV;
++	}
++
++	r = perf_pmu_register(&htm_pmu, htm_pmu.name, -1);
++	if (r)
++		return r;
++
++	return 0;
++}
++
++device_initcall(htm_init);
+-- 
+2.43.0
+
 
