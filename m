@@ -1,113 +1,78 @@
-Return-Path: <linuxppc-dev+bounces-24445-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24446-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4CDDBC4451B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jul 2026 06:24:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6E029C44521
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jul 2026 07:14:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h3Vpz3xtDz2xm3;
-	Mon, 20 Jul 2026 16:24:27 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::333"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784528667;
-	cv=none; b=STWZy3OrfwNjNkDtIarIemlc1/PUAHhhjKWN6nLBHLMuR6ox54p8z4N4jlxmclpEcc2/hLrzvostS29V3R63FyuObm8soJS0r0FdL0aVFQSGCJlUgosTIW9U4mmD/rYySashjlYCVEnojsNGUdZgezEIg4siiPWoAro4/zwv7qiynCYCLjEcH+qTdc4HsQx6YRgnj+zYjJjA9YntMEUp96aQ+PLQdSf1dNFcZv5IgjaJhkb6Xt7+3XnXKeHpcSir3lgMw1UKiOZ4NiXqJGuRI5HvGYr3xrqxZ8tLSeEgiWZWj7XCy98HoS4xqPOf+nqFy5qfzRtwwVp4xygmNQ8O4A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h3WwS2lhkz2xm3;
+	Mon, 20 Jul 2026 17:14:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784531656;
+	cv=none; b=b9/gFCEPx2iC6n+LmlTITFuUuzZAAmFz95efU+pnoBZKV/WGwbwIRqMFCt9323yEURyqEnZY0kq4i98625n7TksUFZxCGzIwwVgAiuhkLQHKKH3bmCsQz4C62SHQmsqt+GfKtmu8ooLpo3hwCy4ysJsuECJ1hy4Mn2UU7kXpKAUpzcY6xk3NB7/xmlXcSPizWPcvsUdWS4OPCRO+KIBrvQnna8KU48DvOh/QW6IVjBenPCKDwmjjjfNkviRd/EQj8HKTxWsTje0PTz4HGYKtNh4DYJDd0n+mblEZmhbTAHZlqi69Kuisck3xh1kOApsAAwoXC4X6mHK80pRO8cOP+Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784528667; c=relaxed/relaxed;
-	bh=YeGYNprjO9RozTDm6r0Dm+rCthz+7k4Z0dmrZWw1tp8=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=O1ozE0vF1Zae7WfU+NZ383lR2WZfjamHMtJV64+xojhqTpGl/TWzsDM1OHxH8jgIO6QD4gjX/zMD4KXR71qj3AdcSoM3IKG1YQEV1xry1tGqdVDvxMYLBFs1tClTnVMCmS1gDmU8Vs2wp5mmnNgZpr9+nL1eso3/kURLULP5Yrx69b0nXSZsbRCXxWeNdDvwyt60pg02GPdfwzbhIP2WPjtb0Pmsmj13RVXfc5N2/iAaG/VzRnYrKtjkvwXzk5FfAjCKl/frtxAAA4dYZ5EfiDss20A9AjNCYUGy7H7NxVLGurYWwtNyfBM/0YUk6R/mk4kpac4U9ow2EIiFEFc1WQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=baylibre.com; dkim=pass (2048-bit key; secure) header.d=baylibre.com header.i=@baylibre.com header.a=rsa-sha256 header.s=google header.b=aOGGEoFR; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::333; helo=mail-wm1-x333.google.com; envelope-from=ukleinek@baylibre.com; receiver=lists.ozlabs.org) smtp.mailfrom=baylibre.com
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=baylibre.com
+	t=1784531656; c=relaxed/relaxed;
+	bh=pAaUtZNmpRfoGv8bXIRkYLhTd/cf4mRLU/Y8Dr/TvU4=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=RKMbXw4ip8skJNxCFwMTWopPSRNm9hajGoQ9qITHcgbTMzZKLEr0zJ8d7aTKK95BJZb5AggEdd/bHoazcrDA3IC3HSNnSN9Wgur7Qe08DZ3TQTZ2ex7gapknvkc+Gzs1WL25BjrxSf5AI2LmthmIl9CY4sHlUDoWzxyXnT0/rXoGoYJvzMfe/vm9zPRT5QjBndw+CQ1Xhv5BcnCy7KGXWEmZuivzmny6HKTMTU63Epr/GsQxfyw8YClVjOAxbFJkDSwtyRa48VWyB+vCmcpXX9XO0KpfsMPUsGnCDg1/zh0kHSf7ebsHUTMvDZcN54h13SLHOoRiU49jkgn3EemKTw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=OU4sqlgH; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=skb99@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=baylibre.com header.i=@baylibre.com header.a=rsa-sha256 header.s=google header.b=aOGGEoFR;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=OU4sqlgH;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=baylibre.com (client-ip=2a00:1450:4864:20::333; helo=mail-wm1-x333.google.com; envelope-from=ukleinek@baylibre.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x333.google.com (mail-wm1-x333.google.com [IPv6:2a00:1450:4864:20::333])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=skb99@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h3Vpy2Nf9z2xlZ
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2026 16:24:26 +1000 (AEST)
-Received: by mail-wm1-x333.google.com with SMTP id 5b1f17b1804b1-4954dff6536so14128195e9.0
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Jul 2026 23:24:26 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre.com; s=google; t=1784528663; x=1785133463; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=YeGYNprjO9RozTDm6r0Dm+rCthz+7k4Z0dmrZWw1tp8=;
-        b=aOGGEoFRxXrIN50TXmRtOeKu6ZGZGElGaNr72jwFBubimhwG99rTwg47fjwGBzuAR2
-         iusFVQ71B8wDrl9M7D9Fnms6ALXHkgdB8jg8EOOAN0G952dPogrrW2HOyR9JzSvX++D9
-         n6Fqyxc1YgTVeK6BgYjREmWCUqtskHxYiiVd7j8ZfuSzyWEY98BjgmKuieD5GRFmojB5
-         8hKKg/Szso6OVbv9eUt9lZg+Qw1H3Qa6I1Z17iy312mvdfZoG5aHRFUDUtYr1gkmBjsJ
-         oGzX0wP1mO9KVxc56HX73os4+K23uWtrw3fPwQjBLVbdf7K/3zVAHtSAJ5TjRKY+XwK9
-         FBeA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784528663; x=1785133463;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=YeGYNprjO9RozTDm6r0Dm+rCthz+7k4Z0dmrZWw1tp8=;
-        b=eq/6lTHB/GXeZaC24+UFRKRyZl3Pjv77w7A0KaROTbjz81//81M2ihiYDMUoIg7LTg
-         1nF8He8K1ml5sHozjWvVhpieq3T7wuEIvP1GrwoS8u3ucQ2TePzEqUPwbufRJgRuvJJ0
-         SAv3VpKr5c793yoo1tlh8rAQp4z9z9MB2/mr1pxYLoeSxX91zDsUsrB0/pLO/f0fPLC6
-         /qrCTafinn5OlJVScq+EvtcW5D29waZaU7da4hGFhIZ0Au6nHq8N6Y4eTli1s1IHCDfJ
-         jmVPnZRgW+EXEl0i82frPrcT1qrRnutZH3BpzdqXoZdCEkFh5wmeGTi9rzMmeBuYlfOd
-         83NA==
-X-Forwarded-Encrypted: i=1; AHgh+RpsuCQIgKR8UYpF35M8UdblH86ZM/leC9oAypj1h2XM10BwztorRzpoXMakVNzS5kTCNJE20THLvRPGLRM=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwgLstXAKy6fkFZ/XXEbfoihta0qIP10JOr8rrB11AJLF9JaYfp
-	mzhaQyDFv/11/1UluzNPA1rA9fF9WrGngFiG/LXkmhcl+gwLcJruW/jzhDst8H+WucU=
-X-Gm-Gg: AfdE7clBZCQ6cAW67YG3tz0UqteU05ZU4ABe/8tmyu7qaYlZe/wHHqyPTqFO410X9Jr
-	V89yYck3ePpB34aLStMIxlzapa9Gx1+V17bcSjrSf+sC3L9wDs7Ey361Ak1Ypn25PTut+lXRuyX
-	mOwwrAUKRi8LDjeMi02OgRtE5uRPNR/nWDFzeMbxksGOz5oYwvC0m8TYetmeGOrbL3ITtTA3Orq
-	n8IfALQodXHkML9YkzLe4axuR2JLrEOVuWHwnURojEvlq0zKSQq2Lgc682QtzFtScdZz1UL+RyW
-	A0NLQ+vEu27GhHniSmeYB7eelEVjJXq9QBbrTZfhRRkJ/yj+xoEP5YeIcBMoW57ywnAT/v0bVb1
-	85GaC5bIMyRjleBFrcv02Q9O7Vn8nYZf9Iaj3vqQp9PAO3B6xaWcIA2zw5xh6yuSPYxPlINts6H
-	E/+IgkIT/aSvzjn9dqtA==
-X-Received: by 2002:a05:600c:1d1b:b0:493:f7c8:eae2 with SMTP id 5b1f17b1804b1-4954a3db7dbmr131890425e9.15.1784528663074;
-        Sun, 19 Jul 2026 23:24:23 -0700 (PDT)
-Received: from localhost ([2a02:8071:56d1:2de0:1d24:d58d:2b65:c291])
-        by smtp.gmail.com with UTF8SMTPSA id 5b1f17b1804b1-4954a2b87c6sm455259245e9.7.2026.07.19.23.24.22
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 19 Jul 2026 23:24:22 -0700 (PDT)
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig=20=28The=20Capable=20Hub=29?= <u.kleine-koenig@baylibre.com>
-To: Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>
-Cc: Jaroslav Kysela <perex@perex.cz>,
-	Takashi Iwai <tiwai@suse.com>,
-	Lars-Peter Clausen <lars@metafoo.de>,
-	=?utf-8?q?Nuno_S=C3=A1?= <nuno.sa@analog.com>,
-	Srinivas Kandagatla <srini@kernel.org>,
-	Shengjiu Wang <shengjiu.wang@gmail.com>,
-	Xiubo Li <Xiubo.Lee@gmail.com>,
-	Fabio Estevam <festevam@gmail.com>,
-	Nicolin Chen <nicoleotsuka@gmail.com>,
-	Frank Li <Frank.Li@nxp.com>,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	Cezary Rojewski <cezary.rojewski@intel.com>,
-	Peter Ujfalusi <peter.ujfalusi@linux.intel.com>,
-	Bard Liao <yung-chuan.liao@linux.intel.com>,
-	Kai Vehmanen <kai.vehmanen@linux.intel.com>,
-	Pierre-Louis Bossart <pierre-louis.bossart@linux.dev>,
-	Sylwester Nawrocki <s.nawrocki@samsung.com>,
-	Charles Keepax <ckeepax@opensource.cirrus.com>,
-	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
-	=?utf-8?q?Amadeusz_S=C5=82awi=C5=84ski?= <amadeuszx.slawinski@linux.intel.com>,
-	linux-sound@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-arm-msm@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	imx@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org
-Subject: [PATCH v2 6/6] ASOC: Unify code style for platform_device_id arrays
-Date: Mon, 20 Jul 2026 08:23:50 +0200
-Message-ID:  <093867d47c079d2aaab06bccaae734c54c342a7d.1784528081.git.u.kleine-koenig@baylibre.com>
-X-Mailer: git-send-email 2.55.0.11.g153666a7d9bb
-In-Reply-To: <cover.1784528081.git.u.kleine-koenig@baylibre.com>
-References: <cover.1784528081.git.u.kleine-koenig@baylibre.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h3WwQ1vBXz2xF8
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2026 17:14:13 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66K6gCeU1471307;
+	Mon, 20 Jul 2026 07:13:56 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=pAaUtZNmpRfoGv8bXIRkYLhTd/cf4mRLU/Y8Dr/Tv
+	U4=; b=OU4sqlgH/bzFXYkMj7UREElzeVG7WjN1NrRWBfaZUDsze77mhMiyzERSc
+	KOL6lBfXkveZLLqRhTD1scvPcWUbE+8SywMMpMmHIk/+fJZusDAg8RUQG+GOkBVS
+	4INk2BrPc4K7RWbFoWh4ubMVcIC/gKTNOxOvt1zdaVKZYVRRFYuoCq0gcUDkr80x
+	BY78XqTr8R0BEbOOupiFsgHqiuC5JexJRXFYMrAiIYvWLcerTc2AKd/+HulpbWbS
+	PYysLqWWWjWXyykVNNcFpgEtx69Ac9NNeH3THnz2UoUChyJkJyM3F1H+ET2mWrd2
+	zgRvVfh3/nEeFEKNQ3+c23attjIrg==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fg790p842-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 20 Jul 2026 07:13:55 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66K74cdt020366;
+	Mon, 20 Jul 2026 07:13:55 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fgp1g4anv-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 20 Jul 2026 07:13:55 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66K7DpuP57016780
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 20 Jul 2026 07:13:51 GMT
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 7113720040;
+	Mon, 20 Jul 2026 07:13:51 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id F09B52004B;
+	Mon, 20 Jul 2026 07:13:48 +0000 (GMT)
+Received: from li-1cb9f04c-2ae1-11b2-a85c-a8a0a83790a8.ibm.com.com (unknown [9.39.16.91])
+	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 20 Jul 2026 07:13:48 +0000 (GMT)
+From: Saket Kumar Bhaskar <skb99@linux.ibm.com>
+To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+        chleroy@kernel.org, hbathini@linux.ibm.com, venkat88@linux.ibm.com,
+        yeswanth@linux.ibm.com
+Subject: [PATCH] powerpc/irq: Fix missing r2 clobber in PCREL inline assembly
+Date: Mon, 20 Jul 2026 12:43:47 +0530
+Message-ID: <dc021f42afa10396052499cbeda1772e30b7ca64.1784530547.git.skb99@linux.ibm.com>
+X-Mailer: git-send-email 2.54.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -121,428 +86,134 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=13598; i=u.kleine-koenig@baylibre.com; h=from:subject:message-id; bh=iR1LqIFM5kpqU9FhK7AKXR85Ty5byfvUM0BITDHvv+A=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBqXb7/ZjkV1xENnv57f8GUMRLZBCpZ1LZrci46v TNMnyy6QuCJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCal2+/wAKCRCPgPtYfRL+ Tk+/B/4zvL3PZkVE/LvqrCiNOp093/fSaf+JA33aGPRnYdd3KE4PbdhEyLN92lv8dUj8MS+5U/C nd/3Jw3tR64O4+HgjFbfwaFuQnkUnsAkl1y3vrsscJpaV5FfRy/q3Fe/rMxYj3rEB5B2S+eR9f9 9eqlrwN6uNkJfN+cCAjdjKOVgZflj7GY5J4tXcqRR9KG0dr2h186sG/16b6M7ocumP8SmSnlkor MIMG/xs6Yj+5RLaWHP4wsA3g6iAcmK4nA66jB3h44Eneonrp/xOpjrN+JJBxEmJOolDyTgsUgP3 bzcA38YgoukL02WmEgrd6mYHAhsOsBbKUz+ap5KbL2kWMmwU
-X-Developer-Key: i=u.kleine-koenig@baylibre.com; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-ORIG-GUID: YX3XWUcUQqlrp_QnmSJ2iwxtY1luX4ch
+X-Authority-Analysis: v=2.4 cv=V6RNF+ni c=1 sm=1 tr=0 ts=6a5dcab4 cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=U7nrCbtTmkRpXpFmAIza:22 a=Vt2AcnKqAAAA:8 a=mDV3o1hIAAAA:8 a=VnNF1IyMAAAA:8
+ a=mIWQ1yeg06SgcoFEzZ0A:9 a=v10HlyRyNeVhbzM4Lqgd:22
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzIwMDA3OCBTYWx0ZWRfX+dxrVq3Z2h4Q
+ oP456RwG0MCr9cdMUfuZEMKjWtzesQEpF+/lcx7O+YuC5tIVo9xhgr7LBpTcgfU8GS247sy+ayr
+ UjIpxP2YWM/toF988U8tr5i2BrLWPJA=
+X-Proofpoint-GUID: I3o90qVe9dwAVifHQoZ7YRUpTALCswvR
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzIwMDA3OCBTYWx0ZWRfX5GgXKXR1kob7
+ VMhbw+gnegAdc7paWq34+wyRWi+V+MPDb/BQx88TjO0MFhSqBArR7sAb2s9CbrgaS0pJoOGh0mi
+ +Vt74qx65SBIEupUZ1iHu8lpprJ39+tgYG/TNklYmbrHgdzSVGN5ZuzUJ7AHLBLvjy8HmMZH/SA
+ lwVDwF9tdv8y4EZy0CMlIFwrWj08TbXceUZC8gdusVINOgulcmVjpjNwXrGmbrYj85djb8LP1cE
+ 3BiLuhrVOvnN8gzktD1gbVRmgOEvQlH9Jz4lWkQUP5Ka0A6P5e4+d8zbe+JiolwWIVuBOgRLO5J
+ 2Ao+F3OLYvuRuuC9WgF5Lh2CkkV+WKZXq4donQwHIPCSPt2GNksWOHsrntdtKp4YDVWNAIez0pv
+ eImDrhal0uULKYKHpbbCurpdVBfvxIntu8ZYorKfY7vj/tt1ErbKgg44rTdR8t84w8nh4vJZyQX
+ zfMWN2gtzsFhwheRQzQ==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-07-20_01,2026-07-17_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 adultscore=0 bulkscore=0 lowpriorityscore=0 clxscore=1011
+ spamscore=0 impostorscore=0 phishscore=0 priorityscore=1501 suspectscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607200078
 
- - Add a trailing comma for initializers unless the closing brace is on
-   the same line and for the list terminator;
- - Use a single space in the list terminator;
- - Use compact one-line style for small entries;
- - s/\t=/ =/ were the tab is only one char wide anyhow;
+In CONFIG_PPC_KERNEL_PCREL mode, r2 is no longer reserved for the TOC
+pointer and is available as a caller-saved register [0].
 
-Signed-off-by: Uwe Kleine-König (The Capable Hub) <u.kleine-koenig@baylibre.com>
+Both call_do_irq() and call_do_softirq() use inline assembly to call
+functions with stack switching, but fail to list r2 in their clobber
+lists. This causes the compiler to assume r2 is preserved across these
+calls, leading to register corruption when the called functions
+(__do_irq and __do_softirq) clobber r2.
+
+As a result of this kernel crash during interrupt handling is seen and
+the kernel fails to boot:
+
+BUG: Unable to handle kernel data access on write at 0xc000000404697638
+Faulting instruction address: 0xc0000000000181ec
+Oops: Kernel access of bad area, sig: 11 [#1]
+NIP [c0000000000181ec] __do_IRQ+0x6c/0xc0
+
+With older GCC, the compiler would conservatively allocate
+callee-saved registers (like r31) for values spanning function calls,
+accidentally avoiding the bug:
+
+<__do_IRQ>:
+00 00 00 60 	nop
+a6 02 08 7c 	mflr    r0
+f8 ff e1 fb 	std     r31,-8(r1)
+f0 ff c1 fb 	std     r30,-16(r1)
+2d 03 10 06 	pla     r31,53297316
+
+...
+
+3d e8 ff 4b 	bl      c0000000000165ac <__do_irq>
+00 00 21 e8 	ld      r1,0(r1)
+28 00 4d e9 	ld      r10,40(r13)
+40 00 21 38 	addi    r1,r1,64
+2a f9 aa 7f 	stdx    r29,r10,r31
+
+With newer GCC 14, the compiler uses r2 for such values, exposing the
+missing clobber specification:
+
+<__do_IRQ>:
+00 00 00 60     nop
+a6 02 08 7c     mflr    r0
+f0 ff c1 fb     std     r30,-16(r1)
+f8 ff e1 fb     std     r31,-8(r1)
+29 02 10 06     pla     r2,36252592     # c0000000022aadc0 <__irq_regs>
+
+...
+
+85 dc ff 4b 	bl      c000000000015ee0 <__do_irq>
+00 00 21 e8 	ld      r1,0(r1)
+28 00 2d e9 	ld      r9,40(r13)
+30 00 21 38 	addi    r1,r1,48
+2a 11 c9 7f 	stdx    r30,r9,r2
+
+Fix this by adding r2 to the clobber list for both call_do_irq() and
+call_do_softirq() when CONFIG_PPC_KERNEL_PCREL is enabled.
+
+[0]: https://www.mail-archive.com/gcc-patches@gcc.gnu.org/msg313226.html
+
+Fixes: 7e3a68be42e1 ("powerpc/64: vmlinux support building with PCREL addresing")
+Signed-off-by: Saket Kumar Bhaskar <skb99@linux.ibm.com>
 ---
- sound/soc/au1x/db1200.c                |  2 +-
- sound/soc/codecs/adau7118-hw.c         |  2 +-
- sound/soc/codecs/bt-sco.c              | 10 +++-------
- sound/soc/codecs/wcd934x.c             |  6 ++----
- sound/soc/fsl/imx-pcm-rpmsg.c          |  6 +++---
- sound/soc/intel/avs/boards/da7219.c    |  6 ++----
- sound/soc/intel/avs/boards/dmic.c      |  6 ++----
- sound/soc/intel/avs/boards/es8336.c    |  6 ++----
- sound/soc/intel/avs/boards/hdaudio.c   |  6 ++----
- sound/soc/intel/avs/boards/i2s_test.c  |  6 ++----
- sound/soc/intel/avs/boards/max98357a.c |  6 ++----
- sound/soc/intel/avs/boards/max98373.c  |  6 ++----
- sound/soc/intel/avs/boards/max98927.c  |  6 ++----
- sound/soc/intel/avs/boards/nau8825.c   |  6 ++----
- sound/soc/intel/avs/boards/pcm3168a.c  |  6 ++----
- sound/soc/intel/avs/boards/probe.c     |  2 +-
- sound/soc/intel/avs/boards/rt274.c     |  2 +-
- sound/soc/intel/avs/boards/rt286.c     |  2 +-
- sound/soc/intel/avs/boards/rt298.c     |  2 +-
- sound/soc/intel/avs/boards/rt5514.c    |  2 +-
- sound/soc/intel/avs/boards/rt5640.c    |  2 +-
- sound/soc/intel/avs/boards/rt5663.c    |  2 +-
- sound/soc/intel/avs/boards/rt5682.c    |  2 +-
- sound/soc/intel/avs/boards/ssm4567.c   |  2 +-
- sound/soc/samsung/i2s.c                |  2 +-
- 25 files changed, 40 insertions(+), 66 deletions(-)
+ arch/powerpc/kernel/irq.c | 14 ++++++++++++--
+ 1 file changed, 12 insertions(+), 2 deletions(-)
 
-diff --git a/sound/soc/au1x/db1200.c b/sound/soc/au1x/db1200.c
-index 81abe2e18402..78346cd7959c 100644
---- a/sound/soc/au1x/db1200.c
-+++ b/sound/soc/au1x/db1200.c
-@@ -42,7 +42,7 @@ static const struct platform_device_id db1200_pids[] = {
- 		.name		= "db1550-i2s",
- 		.driver_data	= 5,
- 	},
--	{},
-+	{ }
- };
- MODULE_DEVICE_TABLE(platform, db1200_pids);
- 
-diff --git a/sound/soc/codecs/adau7118-hw.c b/sound/soc/codecs/adau7118-hw.c
-index 92b226b8b4bb..4342eb7dd9e5 100644
---- a/sound/soc/codecs/adau7118-hw.c
-+++ b/sound/soc/codecs/adau7118-hw.c
-@@ -22,7 +22,7 @@ static const struct of_device_id adau7118_of_match[] = {
- MODULE_DEVICE_TABLE(of, adau7118_of_match);
- 
- static const struct platform_device_id adau7118_id[] = {
--	{ .name	= "adau7118" },
-+	{ .name = "adau7118" },
- 	{ }
- };
- MODULE_DEVICE_TABLE(platform, adau7118_id);
-diff --git a/sound/soc/codecs/bt-sco.c b/sound/soc/codecs/bt-sco.c
-index c0bf45b76cb8..b085885e3f18 100644
---- a/sound/soc/codecs/bt-sco.c
-+++ b/sound/soc/codecs/bt-sco.c
-@@ -85,13 +85,9 @@ static int bt_sco_probe(struct platform_device *pdev)
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index a0e8b998c9b5..26df38bdd334 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -218,7 +218,12 @@ static __always_inline void call_do_softirq(const void *sp)
+ 		   [callee] "i" (__do_softirq)
+ 		 : // Clobbers
+ 		   "lr", "xer", "ctr", "memory", "cr0", "cr1", "cr5", "cr6",
+-		   "cr7", "r0", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10",
++		   "cr7", "r0",
++		  /* r2 is clobbered in PCREL mode */
++#ifdef CONFIG_PPC_KERNEL_PCREL
++		   "r2",
++#endif
++		   "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10",
+ 		   "r11", "r12"
+ 	);
  }
- 
- static const struct platform_device_id bt_sco_driver_ids[] = {
--	{
--		.name		= "dfbmcs320",
--	},
--	{
--		.name		= "bt-sco",
--	},
--	{},
-+	{ .name = "dfbmcs320" },
-+	{ .name = "bt-sco" },
-+	{ }
- };
- MODULE_DEVICE_TABLE(platform, bt_sco_driver_ids);
- 
-diff --git a/sound/soc/codecs/wcd934x.c b/sound/soc/codecs/wcd934x.c
-index bc41a1466c70..a9e6f2923099 100644
---- a/sound/soc/codecs/wcd934x.c
-+++ b/sound/soc/codecs/wcd934x.c
-@@ -5899,10 +5899,8 @@ static int wcd934x_codec_probe(struct platform_device *pdev)
+@@ -276,7 +281,12 @@ static __always_inline void call_do_irq(struct pt_regs *regs, void *sp)
+ 		   [callee] "i" (__do_irq)
+ 		 : // Clobbers
+ 		   "lr", "xer", "ctr", "memory", "cr0", "cr1", "cr5", "cr6",
+-		   "cr7", "r0", "r4", "r5", "r6", "r7", "r8", "r9", "r10",
++		   "cr7", "r0",
++		  /* r2 is clobbered in PCREL mode */
++#ifdef CONFIG_PPC_KERNEL_PCREL
++		   "r2",
++#endif
++		   "r4", "r5", "r6", "r7", "r8", "r9", "r10",
+ 		   "r11", "r12"
+ 	);
  }
- 
- static const struct platform_device_id wcd934x_driver_id[] = {
--	{
--		.name = "wcd934x-codec",
--	},
--	{},
-+	{ .name = "wcd934x-codec" },
-+	{ }
- };
- MODULE_DEVICE_TABLE(platform, wcd934x_driver_id);
- 
-diff --git a/sound/soc/fsl/imx-pcm-rpmsg.c b/sound/soc/fsl/imx-pcm-rpmsg.c
-index ee741f3d79bd..7086fb7fc1eb 100644
---- a/sound/soc/fsl/imx-pcm-rpmsg.c
-+++ b/sound/soc/fsl/imx-pcm-rpmsg.c
-@@ -810,9 +810,9 @@ static const struct dev_pm_ops imx_rpmsg_pcm_pm_ops = {
- };
- 
- static const struct platform_device_id imx_rpmsg_pcm_id_table[] = {
--	{ .name	= "rpmsg-audio-channel" },
--	{ .name	= "rpmsg-micfil-channel" },
--	{ },
-+	{ .name = "rpmsg-audio-channel" },
-+	{ .name = "rpmsg-micfil-channel" },
-+	{ }
- };
- MODULE_DEVICE_TABLE(platform, imx_rpmsg_pcm_id_table);
- 
-diff --git a/sound/soc/intel/avs/boards/da7219.c b/sound/soc/intel/avs/boards/da7219.c
-index 2b17abcbd2bc..163d9982d797 100644
---- a/sound/soc/intel/avs/boards/da7219.c
-+++ b/sound/soc/intel/avs/boards/da7219.c
-@@ -259,10 +259,8 @@ static int avs_da7219_probe(struct platform_device *pdev)
- }
- 
- static const struct platform_device_id avs_da7219_driver_ids[] = {
--	{
--		.name = "avs_da7219",
--	},
--	{},
-+	{ .name = "avs_da7219" },
-+	{ }
- };
- MODULE_DEVICE_TABLE(platform, avs_da7219_driver_ids);
- 
-diff --git a/sound/soc/intel/avs/boards/dmic.c b/sound/soc/intel/avs/boards/dmic.c
-index bf6f580a5164..8d36bc7ddf16 100644
---- a/sound/soc/intel/avs/boards/dmic.c
-+++ b/sound/soc/intel/avs/boards/dmic.c
-@@ -104,10 +104,8 @@ static int avs_dmic_probe(struct platform_device *pdev)
- }
- 
- static const struct platform_device_id avs_dmic_driver_ids[] = {
--	{
--		.name = "avs_dmic",
--	},
--	{},
-+	{ .name = "avs_dmic" },
-+	{ }
- };
- MODULE_DEVICE_TABLE(platform, avs_dmic_driver_ids);
- 
-diff --git a/sound/soc/intel/avs/boards/es8336.c b/sound/soc/intel/avs/boards/es8336.c
-index 301cfb3cf15b..36c13db3a272 100644
---- a/sound/soc/intel/avs/boards/es8336.c
-+++ b/sound/soc/intel/avs/boards/es8336.c
-@@ -309,10 +309,8 @@ static int avs_es8336_probe(struct platform_device *pdev)
- }
- 
- static const struct platform_device_id avs_es8336_driver_ids[] = {
--	{
--		.name = "avs_es8336",
--	},
--	{},
-+	{ .name = "avs_es8336" },
-+	{ }
- };
- MODULE_DEVICE_TABLE(platform, avs_es8336_driver_ids);
- 
-diff --git a/sound/soc/intel/avs/boards/hdaudio.c b/sound/soc/intel/avs/boards/hdaudio.c
-index aec769e2396c..03cfd91202d3 100644
---- a/sound/soc/intel/avs/boards/hdaudio.c
-+++ b/sound/soc/intel/avs/boards/hdaudio.c
-@@ -231,10 +231,8 @@ static int avs_hdaudio_probe(struct platform_device *pdev)
- }
- 
- static const struct platform_device_id avs_hdaudio_driver_ids[] = {
--	{
--		.name = "avs_hdaudio",
--	},
--	{},
-+	{ .name = "avs_hdaudio" },
-+	{ }
- };
- MODULE_DEVICE_TABLE(platform, avs_hdaudio_driver_ids);
- 
-diff --git a/sound/soc/intel/avs/boards/i2s_test.c b/sound/soc/intel/avs/boards/i2s_test.c
-index 9a6b89ffdf14..787d781ba1d9 100644
---- a/sound/soc/intel/avs/boards/i2s_test.c
-+++ b/sound/soc/intel/avs/boards/i2s_test.c
-@@ -107,10 +107,8 @@ static int avs_i2s_test_probe(struct platform_device *pdev)
- }
- 
- static const struct platform_device_id avs_i2s_test_driver_ids[] = {
--	{
--		.name = "avs_i2s_test",
--	},
--	{},
-+	{ .name = "avs_i2s_test" },
-+	{ }
- };
- MODULE_DEVICE_TABLE(platform, avs_i2s_test_driver_ids);
- 
-diff --git a/sound/soc/intel/avs/boards/max98357a.c b/sound/soc/intel/avs/boards/max98357a.c
-index e9a87804f918..389a50923d3b 100644
---- a/sound/soc/intel/avs/boards/max98357a.c
-+++ b/sound/soc/intel/avs/boards/max98357a.c
-@@ -136,10 +136,8 @@ static int avs_max98357a_probe(struct platform_device *pdev)
- }
- 
- static const struct platform_device_id avs_max98357a_driver_ids[] = {
--	{
--		.name = "avs_max98357a",
--	},
--	{},
-+	{ .name = "avs_max98357a" },
-+	{ }
- };
- MODULE_DEVICE_TABLE(platform, avs_max98357a_driver_ids);
- 
-diff --git a/sound/soc/intel/avs/boards/max98373.c b/sound/soc/intel/avs/boards/max98373.c
-index 8b45b643ca29..b8231f71d3d6 100644
---- a/sound/soc/intel/avs/boards/max98373.c
-+++ b/sound/soc/intel/avs/boards/max98373.c
-@@ -191,10 +191,8 @@ static int avs_max98373_probe(struct platform_device *pdev)
- }
- 
- static const struct platform_device_id avs_max98373_driver_ids[] = {
--	{
--		.name = "avs_max98373",
--	},
--	{},
-+	{ .name = "avs_max98373" },
-+	{ }
- };
- MODULE_DEVICE_TABLE(platform, avs_max98373_driver_ids);
- 
-diff --git a/sound/soc/intel/avs/boards/max98927.c b/sound/soc/intel/avs/boards/max98927.c
-index db073125fa4d..d657e7da1cc0 100644
---- a/sound/soc/intel/avs/boards/max98927.c
-+++ b/sound/soc/intel/avs/boards/max98927.c
-@@ -188,10 +188,8 @@ static int avs_max98927_probe(struct platform_device *pdev)
- }
- 
- static const struct platform_device_id avs_max98927_driver_ids[] = {
--	{
--		.name = "avs_max98927",
--	},
--	{},
-+	{ .name = "avs_max98927" },
-+	{ }
- };
- MODULE_DEVICE_TABLE(platform, avs_max98927_driver_ids);
- 
-diff --git a/sound/soc/intel/avs/boards/nau8825.c b/sound/soc/intel/avs/boards/nau8825.c
-index d44edacbfc9a..d7ea08bb27cd 100644
---- a/sound/soc/intel/avs/boards/nau8825.c
-+++ b/sound/soc/intel/avs/boards/nau8825.c
-@@ -293,10 +293,8 @@ static int avs_nau8825_probe(struct platform_device *pdev)
- }
- 
- static const struct platform_device_id avs_nau8825_driver_ids[] = {
--	{
--		.name = "avs_nau8825",
--	},
--	{},
-+	{ .name = "avs_nau8825" },
-+	{ }
- };
- MODULE_DEVICE_TABLE(platform, avs_nau8825_driver_ids);
- 
-diff --git a/sound/soc/intel/avs/boards/pcm3168a.c b/sound/soc/intel/avs/boards/pcm3168a.c
-index b5bebadbbcb2..9d415fd0499a 100644
---- a/sound/soc/intel/avs/boards/pcm3168a.c
-+++ b/sound/soc/intel/avs/boards/pcm3168a.c
-@@ -132,10 +132,8 @@ static int avs_pcm3168a_probe(struct platform_device *pdev)
- }
- 
- static const struct platform_device_id avs_pcm3168a_driver_ids[] = {
--	{
--		.name = "avs_pcm3168a",
--	},
--	{},
-+	{ .name = "avs_pcm3168a" },
-+	{ }
- };
- MODULE_DEVICE_TABLE(platform, avs_pcm3168a_driver_ids);
- 
-diff --git a/sound/soc/intel/avs/boards/probe.c b/sound/soc/intel/avs/boards/probe.c
-index 73884f8a535c..4053d14289b9 100644
---- a/sound/soc/intel/avs/boards/probe.c
-+++ b/sound/soc/intel/avs/boards/probe.c
-@@ -64,7 +64,7 @@ static const struct platform_device_id avs_probe_mb_driver_ids[] = {
- 	{
- 		.name = "avs_probe_mb",
- 	},
--	{},
-+	{ }
- };
- MODULE_DEVICE_TABLE(platform, avs_probe_mb_driver_ids);
- 
-diff --git a/sound/soc/intel/avs/boards/rt274.c b/sound/soc/intel/avs/boards/rt274.c
-index a689f4c80867..289f1230851f 100644
---- a/sound/soc/intel/avs/boards/rt274.c
-+++ b/sound/soc/intel/avs/boards/rt274.c
-@@ -261,7 +261,7 @@ static const struct platform_device_id avs_rt274_driver_ids[] = {
- 	{
- 		.name = "avs_rt274",
- 	},
--	{},
-+	{ }
- };
- MODULE_DEVICE_TABLE(platform, avs_rt274_driver_ids);
- 
-diff --git a/sound/soc/intel/avs/boards/rt286.c b/sound/soc/intel/avs/boards/rt286.c
-index 4c9ac545555a..9364d60cfcc7 100644
---- a/sound/soc/intel/avs/boards/rt286.c
-+++ b/sound/soc/intel/avs/boards/rt286.c
-@@ -231,7 +231,7 @@ static const struct platform_device_id avs_rt286_driver_ids[] = {
- 	{
- 		.name = "avs_rt286",
- 	},
--	{},
-+	{ }
- };
- MODULE_DEVICE_TABLE(platform, avs_rt286_driver_ids);
- 
-diff --git a/sound/soc/intel/avs/boards/rt298.c b/sound/soc/intel/avs/boards/rt298.c
-index 2d7a7748d577..5d3b3cdc9564 100644
---- a/sound/soc/intel/avs/boards/rt298.c
-+++ b/sound/soc/intel/avs/boards/rt298.c
-@@ -250,7 +250,7 @@ static const struct platform_device_id avs_rt298_driver_ids[] = {
- 	{
- 		.name = "avs_rt298",
- 	},
--	{},
-+	{ }
- };
- MODULE_DEVICE_TABLE(platform, avs_rt298_driver_ids);
- 
-diff --git a/sound/soc/intel/avs/boards/rt5514.c b/sound/soc/intel/avs/boards/rt5514.c
-index 22139eaad83a..e448bc9fa5ad 100644
---- a/sound/soc/intel/avs/boards/rt5514.c
-+++ b/sound/soc/intel/avs/boards/rt5514.c
-@@ -178,7 +178,7 @@ static const struct platform_device_id avs_rt5514_driver_ids[] = {
- 	{
- 		.name = "avs_rt5514",
- 	},
--	{},
-+	{ }
- };
- MODULE_DEVICE_TABLE(platform, avs_rt5514_driver_ids);
- 
-diff --git a/sound/soc/intel/avs/boards/rt5640.c b/sound/soc/intel/avs/boards/rt5640.c
-index 2990d32f2301..c4e33d71e82f 100644
---- a/sound/soc/intel/avs/boards/rt5640.c
-+++ b/sound/soc/intel/avs/boards/rt5640.c
-@@ -252,7 +252,7 @@ static const struct platform_device_id avs_rt5640_driver_ids[] = {
- 	{
- 		.name = "avs_rt5640",
- 	},
--	{},
-+	{ }
- };
- MODULE_DEVICE_TABLE(platform, avs_rt5640_driver_ids);
- 
-diff --git a/sound/soc/intel/avs/boards/rt5663.c b/sound/soc/intel/avs/boards/rt5663.c
-index 68fea325376a..aadbd3f2a1b2 100644
---- a/sound/soc/intel/avs/boards/rt5663.c
-+++ b/sound/soc/intel/avs/boards/rt5663.c
-@@ -249,7 +249,7 @@ static const struct platform_device_id avs_rt5663_driver_ids[] = {
- 	{
- 		.name = "avs_rt5663",
- 	},
--	{},
-+	{ }
- };
- MODULE_DEVICE_TABLE(platform, avs_rt5663_driver_ids);
- 
-diff --git a/sound/soc/intel/avs/boards/rt5682.c b/sound/soc/intel/avs/boards/rt5682.c
-index 81863728da1d..d33699cca595 100644
---- a/sound/soc/intel/avs/boards/rt5682.c
-+++ b/sound/soc/intel/avs/boards/rt5682.c
-@@ -325,7 +325,7 @@ static const struct platform_device_id avs_rt5682_driver_ids[] = {
- 	{
- 		.name = "avs_rt5682",
- 	},
--	{},
-+	{ }
- };
- MODULE_DEVICE_TABLE(platform, avs_rt5682_driver_ids);
- 
-diff --git a/sound/soc/intel/avs/boards/ssm4567.c b/sound/soc/intel/avs/boards/ssm4567.c
-index ae0e6e27a8b8..d7c9bff37556 100644
---- a/sound/soc/intel/avs/boards/ssm4567.c
-+++ b/sound/soc/intel/avs/boards/ssm4567.c
-@@ -180,7 +180,7 @@ static const struct platform_device_id avs_ssm4567_driver_ids[] = {
- 	{
- 		.name = "avs_ssm4567",
- 	},
--	{},
-+	{ }
- };
- MODULE_DEVICE_TABLE(platform, avs_ssm4567_driver_ids);
- 
-diff --git a/sound/soc/samsung/i2s.c b/sound/soc/samsung/i2s.c
-index 56d11741dabd..81d5dd36a246 100644
---- a/sound/soc/samsung/i2s.c
-+++ b/sound/soc/samsung/i2s.c
-@@ -1675,7 +1675,7 @@ static const struct platform_device_id samsung_i2s_driver_ids[] = {
- 		.name           = "samsung-i2s",
- 		.driver_data	= (kernel_ulong_t)&i2sv3_dai_type,
- 	},
--	{},
-+	{ }
- };
- MODULE_DEVICE_TABLE(platform, samsung_i2s_driver_ids);
- 
 -- 
-2.55.0.11.g153666a7d9bb
+2.54.0
 
 
