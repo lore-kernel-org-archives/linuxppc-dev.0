@@ -1,43 +1,43 @@
-Return-Path: <linuxppc-dev+bounces-24511-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24512-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 92ED5C44515
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jul 2026 15:11:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DB759C44515
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jul 2026 15:11:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h3kVZ3JByz30NF;
-	Tue, 21 Jul 2026 01:11:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=220.197.31.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784560262;
-	cv=none; b=JKEb3iCR+J0lNZSNE6XgM49hNSPV5kC+SfB7ndYWliH0sDI1/4LYuR+bgKipd3cQZu5YZTPmcJk+PJyNV5efxaqZ64GGX0Nb2o51ev6mpaXxHpgK8JIOfOXFcerEzmEHdZcnhws8j5cMejvCo8c3kSg6xJji9f0g9o6Umd47LMl/vgwLRtZHGxKhvjTX7qoz21Eh9yFVPI2jRrEoszPZi3kmPdrjMjMQgbSYsILNKWu1Wtkunw6pJfIrDXlz6ZwgJXEuXs0fZcBEY/oc8zFZhVIZu3/w2x0xBDAUWMslQ6cV1Goa618quPOJvTCm/CfjT7vICcTHrv4+tfOuB8pWsg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h3kVb1LWtz3bqD;
+	Tue, 21 Jul 2026 01:11:03 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=117.135.210.3
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784560263;
+	cv=none; b=Hsy/OLHhWWwG8ZZffnfUmmRggSa0iKyfCb9JioayYkWvm+ESco4cFSB3g7sarWhgTNjGYNwsDdjkwQbWnAg+z3k2aRLM2Tw9EhIdkTDFYt3ixd3rgIb/yLRxAu8eYh8L5jhP/fh2Yp88EpoWEc3f/iSp0ycHM4tTXueHOfLCD3euF4YzCJuBe6PMGgcpG+Ut9Dpmt9AaGoc66zBnZI/yL8CQEDEfnhl+M8I1BEt7Lr08bZhVcxGk0HkycdRAaV9qXsXBOAXn70uqwKvap8Mt1gFOMJZli9nTJRwxs7H83BBl49iNcSsmXAGFmOM8qMySixZ8GXR/TmsHsNRQH4DcmA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784560262; c=relaxed/relaxed;
-	bh=/SB7jvifzYR7GkBWCB3qlrfMX4gh0Gr4R+CcLe5/I0k=;
+	t=1784560263; c=relaxed/relaxed;
+	bh=OmuI2Spp3n9kV5Al6PVnZ7ZuVvU00LmjtW0tSnMTkU8=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=dHMm+i7YXXX1GUVlHjTEFADPfF1l9F40YrEsg9Bu4q3LY5P9O8QK5PnQ5gGgpbkb922qxaar31CgejF1CW0dTMlV38DEupNOBOERwMAQRIDdxdRfxUKtHCEbksvdy/62g4FPfcTAVkqxtjG7scwjVoqX2/H0Af1fIu0t2MVCFP/R4rDOjl93skrnQSDWWCAzRr+QJgr9JXoJl/b37oVV0vOu0j+8pVdl7Ieu5bwF4QWFK6Krqi0GJrxvDDH2Isar82Y+r78izqIxDu61MRrxXnFAcvDhHg/pWL1R+e2v6LZueHAemOtkDaVHhdaSlkRVCGPaPdl2kMwDcXOAR6LmeQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=163.com; dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=glyoB2ln; dkim-atps=neutral; spf=pass (client-ip=220.197.31.5; helo=m16.mail.163.com; envelope-from=18255117159@163.com; receiver=lists.ozlabs.org) smtp.mailfrom=163.com
+	 MIME-Version; b=AMN5bee/DUUR8voMPGv0FfaUWgpn7x9ZInESjmfPlknVk0ADN+b50rQb97t+5QdPW59XqtYMbZhG4BF3eh1yEx7TKCQFXWYa+NOHda8MBYIL/0fCWJg8XJn+oOoHm2QsHVfrJS2A9ZlTb/QkIhhSLqS5BzvvWRl64c/zkMCqvN0xlgY4SNvmQfWUQfRpSxdEU8qPOgCtuFdudVPlBXuVgOd0U2Bex8qJLUwdXjzUPGNdlKzHUoWWjtK0VPpiCFzhIzZ2n2cNCml+/S0PAMYS13yTeidkhysAoCK0TIkqBVc/hCWsmQDJxPwK6/KCi4osDn+k3Ip7bbRy5tOYIo0lwg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=163.com; dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=X+REq//w; dkim-atps=neutral; spf=pass (client-ip=117.135.210.3; helo=m16.mail.163.com; envelope-from=18255117159@163.com; receiver=lists.ozlabs.org) smtp.mailfrom=163.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=163.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=glyoB2ln;
+	dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=X+REq//w;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=163.com (client-ip=220.197.31.5; helo=m16.mail.163.com; envelope-from=18255117159@163.com; receiver=lists.ozlabs.org)
-Received: from m16.mail.163.com (m16.mail.163.com [220.197.31.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=163.com (client-ip=117.135.210.3; helo=m16.mail.163.com; envelope-from=18255117159@163.com; receiver=lists.ozlabs.org)
+Received: from m16.mail.163.com (m16.mail.163.com [117.135.210.3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h3kVP6zS1z2yWK
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2026 01:10:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h3kVQ10hmz2yY0
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2026 01:10:53 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=/S
-	B7jvifzYR7GkBWCB3qlrfMX4gh0Gr4R+CcLe5/I0k=; b=glyoB2lnLVd7f+Nq+d
-	vlaSVI90dgg0bU5S3wjAW14RUXKb5ea59uEsW5HnTbRHRxrROTXY9B7Iaria71Fs
-	GuEJQXXsGS1jzxxr2n6Hhf+w7ptJ1tR/Y+an0rm1j2HlGhoF2ZECc4i6mdm4FVSn
-	o+Hd0tMxyv64sOsyyHunjBcAQ=
+	s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=Om
+	uI2Spp3n9kV5Al6PVnZ7ZuVvU00LmjtW0tSnMTkU8=; b=X+REq//wOe+JPBVZRf
+	iKQ/Wg1l8eNIl04rCuJGnuOUVa50cGEdGMeJCu2Yh+d9tcScIZQEApLrC9W3a70f
+	gFUMjuZVKj/ff/b7qjLQIxhMNH/WvppMBSfysyFsyVfa/P89hnK1ajV01wTpR5+r
+	8+94fpUyPI8nU9fmA6j71Lkxw=
 Received: from zhb.. (unknown [])
-	by gzga-smtp-mtada-g0-2 (Coremail) with SMTP id _____wDX+mO9OV5q8LEOKg--.8910S4;
-	Mon, 20 Jul 2026 23:07:45 +0800 (CST)
+	by gzga-smtp-mtada-g1-1 (Coremail) with SMTP id _____wD3b1rIOV5qyHOjKQ--.35310S9;
+	Mon, 20 Jul 2026 23:08:01 +0800 (CST)
 From: Hans Zhang <18255117159@163.com>
 To: bhelgaas@google.com,
 	lpieralisi@kernel.org,
@@ -56,9 +56,9 @@ Cc: imx@lists.linux.dev,
 	linux-pci@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	Hans Zhang <18255117159@163.com>
-Subject: [PATCH v3 02/16] PCI: dwc: Use cached PCIe capability offset in core
-Date: Mon, 20 Jul 2026 23:06:05 +0800
-Message-Id: <20260720150619.24733-3-18255117159@163.com>
+Subject: [PATCH v3 15/16] PCI: dwc: tegra194: Use cached PCIe capability offset
+Date: Mon, 20 Jul 2026 23:06:18 +0800
+Message-Id: <20260720150619.24733-16-18255117159@163.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20260720150619.24733-1-18255117159@163.com>
 References: <20260720150619.24733-1-18255117159@163.com>
@@ -76,132 +76,71 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:_____wDX+mO9OV5q8LEOKg--.8910S4
-X-Coremail-Antispam: 1Uf129KBjvJXoWxtr1xCFWfZw4UCFW3tr4kXrb_yoW7WFy5pa
-	y3XFyFyF18Ar45ZFsI9as5XF13tFnxArWUCa9agr1SvFy7AFW2qa10yry3trn7KFsFvryY
-	9w18trW3Cwn8JFUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0zidHUfUUUUU=
+X-CM-TRANSID:_____wD3b1rIOV5qyHOjKQ--.35310S9
+X-Coremail-Antispam: 1Uf129KBjvJXoW7trWfJrW7KFWkXFWkKFy3urg_yoW8KF18pa
+	yfXrWFkr1UJr4SqFsrAan8ZF1F93sIyrW7GanagwsIvr17C347WwsYk3y5tF17CFZFyryU
+	Cr18tFy7Gr15J37anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0pi9a9hUUUUU=
 X-Originating-IP: [240e:b8f:91b3:d000:f138:f837:e143:4264]
-X-CM-SenderInfo: rpryjkyvrrlimvzbiqqrwthudrp/xtbCwwGwVGpeOcEAMgAA3Y
+X-CM-SenderInfo: rpryjkyvrrlimvzbiqqrwthudrp/xtbCwxG0WGpeOdEBugAA3Z
 
-Modify the DWC core functions to use the cached pcie_cap offset instead
-of calling dw_pcie_find_capability() each time.
+In host mode: tegra_pcie_dw_host_init() runs inside .start_link, which is
+called after dw_pcie_host_init() has cached the offset. However, the
+driver's own initialization already enables hardware, so calling
+dw_pcie_get_pcie_cap() is safe and will return the cached value.
 
-In the DWC core, dw_pcie_find_capability() is called at several locations:
-- dw_pcie_ep_init_non_sticky_registers()
-- dw_pcie_wait_for_link()
-- dw_pcie_link_set_max_speed()
-- dw_pcie_link_get_max_link_width()
-- dw_pcie_link_set_max_link_width()
+In endpoint mode: pex_ep_event_pex_rst_deassert() runs after hardware is
+enabled (PERST# deassert). Because the core no longer caches automatically,
+we call dw_pcie_get_pcie_cap() here to cache the offset for subsequent
+accesses. The helper performs the DBI read only when hardware is ready.
 
-The cached offset is initialized after hardware is ready:
-- In host mode: dw_pcie_host_init() calls pp->ops->host_init() (enables
-  clocks/resets), then dw_pcie_get_pcie_cap() caches the offset.
-- In endpoint mode: the core no longer caches automatically. Instead,
-  drivers must call dw_pcie_get_pcie_cap() after hardware is enabled
-  (e.g., after PERST# deassert). dw_pcie_ep_init_non_sticky_registers()
-  is called after that point, so it can safely use pci->pcie_cap.
-
-dw_pcie_ep_init_non_sticky_registers() now assumes pci->pcie_cap is
-valid. if not, it prints a warning and skips the operation. The other
-functions run after probe, so pci->pcie_cap is already valid and can
-be used directly.
+Thus, the private pcie_cap_base is always valid and can still be used for
+register accesses.
 
 Signed-off-by: Hans Zhang <18255117159@163.com>
 ---
- drivers/pci/controller/dwc/pcie-designware-ep.c   |  2 +-
- drivers/pci/controller/dwc/pcie-designware-host.c |  2 ++
- drivers/pci/controller/dwc/pcie-designware.c      | 15 ++++++---------
- 3 files changed, 9 insertions(+), 10 deletions(-)
+In pcie-tegra194, dw_pcie_find_capability() appears in:
 
-diff --git a/drivers/pci/controller/dwc/pcie-designware-ep.c b/drivers/pci/controller/dwc/pcie-designware-ep.c
-index 7d2794945704..14228be8bbce 100644
---- a/drivers/pci/controller/dwc/pcie-designware-ep.c
-+++ b/drivers/pci/controller/dwc/pcie-designware-ep.c
-@@ -1246,7 +1246,7 @@ static void dw_pcie_ep_init_non_sticky_registers(struct dw_pcie *pci)
- 	 * to all other functions as well.
- 	 */
- 	if (funcs > 1) {
--		offset = dw_pcie_find_capability(pci, PCI_CAP_ID_EXP);
-+		offset = pci->pcie_cap;
- 		func0_lnkcap = dw_pcie_readl_dbi(pci, offset + PCI_EXP_LNKCAP);
- 		func0_lnkcap = FIELD_GET(PCI_EXP_LNKCAP_MLW |
- 					 PCI_EXP_LNKCAP_SLS, func0_lnkcap);
-diff --git a/drivers/pci/controller/dwc/pcie-designware-host.c b/drivers/pci/controller/dwc/pcie-designware-host.c
-index 06722259d2e3..fee800ac56d4 100644
---- a/drivers/pci/controller/dwc/pcie-designware-host.c
-+++ b/drivers/pci/controller/dwc/pcie-designware-host.c
-@@ -593,6 +593,8 @@ int dw_pcie_host_init(struct dw_pcie_rp *pp)
- 			goto err_free_ecam;
+  static const struct dw_pcie_ops tegra_dw_pcie_ops = {
+    .start_link = tegra_pcie_dw_start_link,
+  };
+  tegra_pcie_dw_start_link()
+    -> tegra_pcie_dw_host_init()
+      -> dw_pcie_find_capability()
+
+  tegra_pcie_dw_probe()
+    case DW_PCIE_EP_TYPE:
+      tegra_pcie_config_ep()
+        -> pex_ep_event_pex_rst_deassert()
+	  -> dw_pcie_find_capability()
+---
+ drivers/pci/controller/dwc/pcie-tegra194.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/pci/controller/dwc/pcie-tegra194.c b/drivers/pci/controller/dwc/pcie-tegra194.c
+index 795cef5a915d..bf482bc66a92 100644
+--- a/drivers/pci/controller/dwc/pcie-tegra194.c
++++ b/drivers/pci/controller/dwc/pcie-tegra194.c
+@@ -905,8 +905,7 @@ static int tegra_pcie_dw_host_init(struct dw_pcie_rp *pp)
+ 	pp->bridge->ops = &tegra_pci_ops;
+ 
+ 	if (!pcie->pcie_cap_base)
+-		pcie->pcie_cap_base = dw_pcie_find_capability(&pcie->pci,
+-							      PCI_CAP_ID_EXP);
++		pcie->pcie_cap_base = dw_pcie_get_pcie_cap(pci);
+ 
+ 	val = dw_pcie_readl_dbi(pci, PCI_IO_BASE);
+ 	val &= ~(IO_BASE_IO_DECODE | IO_BASE_IO_DECODE_BIT8);
+@@ -1889,8 +1888,7 @@ static void pex_ep_event_pex_rst_deassert(struct tegra_pcie_dw *pcie)
+ 		dw_pcie_writel_dbi(pci, GEN3_RELATED_OFF, val);
  	}
  
-+	dw_pcie_get_pcie_cap(pci);
-+
- 	if (pci_msi_enabled()) {
- 		pp->use_imsi_rx = !(pp->ops->msi_init ||
- 				     of_property_present(np, "msi-parent") ||
-diff --git a/drivers/pci/controller/dwc/pcie-designware.c b/drivers/pci/controller/dwc/pcie-designware.c
-index ec4722ed9303..810729b91892 100644
---- a/drivers/pci/controller/dwc/pcie-designware.c
-+++ b/drivers/pci/controller/dwc/pcie-designware.c
-@@ -766,7 +766,7 @@ const char *dw_pcie_ltssm_status_string(enum dw_pcie_ltssm ltssm)
-  */
- int dw_pcie_wait_for_link(struct dw_pcie *pci)
- {
--	u32 offset, val, ltssm;
-+	u32 val, ltssm;
- 	int retries;
+-	pcie->pcie_cap_base = dw_pcie_find_capability(&pcie->pci,
+-						      PCI_CAP_ID_EXP);
++	pcie->pcie_cap_base = dw_pcie_get_pcie_cap(pci);
  
- 	/* Check if the link is up or not */
-@@ -806,8 +806,7 @@ int dw_pcie_wait_for_link(struct dw_pcie *pci)
- 
- 	pci_host_common_link_train_delay(pci->max_link_speed);
- 
--	offset = dw_pcie_find_capability(pci, PCI_CAP_ID_EXP);
--	val = dw_pcie_readw_dbi(pci, offset + PCI_EXP_LNKSTA);
-+	val = dw_pcie_readw_dbi(pci, pci->pcie_cap + PCI_EXP_LNKSTA);
- 
- 	dev_info(pci->dev, "PCIe Gen.%u x%u link up\n",
- 		 FIELD_GET(PCI_EXP_LNKSTA_CLS, val),
-@@ -843,7 +842,7 @@ EXPORT_SYMBOL_GPL(dw_pcie_upconfig_setup);
- static void dw_pcie_link_set_max_speed(struct dw_pcie *pci)
- {
- 	u32 cap, ctrl2, link_speed;
--	u8 offset = dw_pcie_find_capability(pci, PCI_CAP_ID_EXP);
-+	u8 offset = pci->pcie_cap;
- 
- 	cap = dw_pcie_readl_dbi(pci, offset + PCI_EXP_LNKCAP);
- 
-@@ -890,7 +889,7 @@ static void dw_pcie_link_set_max_speed(struct dw_pcie *pci)
- int dw_pcie_link_get_max_link_width(struct dw_pcie *pci)
- {
- 	u8 cap = dw_pcie_find_capability(pci, PCI_CAP_ID_EXP);
--	u32 lnkcap = dw_pcie_readl_dbi(pci, cap + PCI_EXP_LNKCAP);
-+	u32 lnkcap = dw_pcie_readl_dbi(pci, pci->pcie_cap + PCI_EXP_LNKCAP);
- 
- 	return FIELD_GET(PCI_EXP_LNKCAP_MLW, lnkcap);
- }
-@@ -898,7 +897,6 @@ int dw_pcie_link_get_max_link_width(struct dw_pcie *pci)
- static void dw_pcie_link_set_max_link_width(struct dw_pcie *pci, u32 num_lanes)
- {
- 	u32 lnkcap, lwsc, plc;
--	u8 cap;
- 
- 	if (!num_lanes)
- 		return;
-@@ -935,10 +933,9 @@ static void dw_pcie_link_set_max_link_width(struct dw_pcie *pci, u32 num_lanes)
- 	dw_pcie_writel_dbi(pci, PCIE_PORT_LINK_CONTROL, plc);
- 	dw_pcie_writel_dbi(pci, PCIE_LINK_WIDTH_SPEED_CONTROL, lwsc);
- 
--	cap = dw_pcie_find_capability(pci, PCI_CAP_ID_EXP);
--	lnkcap = dw_pcie_readl_dbi(pci, cap + PCI_EXP_LNKCAP);
-+	lnkcap = dw_pcie_readl_dbi(pci, pci->pcie_cap + PCI_EXP_LNKCAP);
- 	FIELD_MODIFY(PCI_EXP_LNKCAP_MLW, &lnkcap, num_lanes);
--	dw_pcie_writel_dbi(pci, cap + PCI_EXP_LNKCAP, lnkcap);
-+	dw_pcie_writel_dbi(pci, pci->pcie_cap + PCI_EXP_LNKCAP, lnkcap);
- }
- 
- void dw_pcie_iatu_detect(struct dw_pcie *pci)
+ 	/* Clear Slot Clock Configuration bit if SRNS configuration */
+ 	if (pcie->enable_srns) {
 -- 
 2.34.1
 
