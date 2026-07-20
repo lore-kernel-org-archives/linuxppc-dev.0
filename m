@@ -1,59 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-24494-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24495-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 791FCC4452A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jul 2026 13:37:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 53D77C4452A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jul 2026 13:38:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h3hQY3vf2z3bSw;
-	Mon, 20 Jul 2026 23:37:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h3hQZ3v9yz3brV;
+	Mon, 20 Jul 2026 23:37:26 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c201::1" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784554645;
-	cv=pass; b=PfDVkDw0fSAiTlrgDT7TcvvfuV15116TECCEO5RXtOzDj5cyDOG8nAmqpsklOzi6MLOvk8g3yOiQB7P40W2LvWUeqkbfVV7T7uuey2zO6gxfL90MAuHn49LyKQdA5pPHrHGwfGVtWwBMk37taCue3WmDZsZiW9AG5CI3EiI8xp2R0QweZ+OrG1vNu7KHtNgKV6h9RZc/QtlcCAsHKUQIfHHOr7IinXJGky5K8wv3s9LNFjXnybhHCUhbrF+lAkDBsVlG+7QDpUvZIn9FrX9afLBPHdT0p62UnGhepbhR/OkYqwtr2Nzj7OeNRwEyw7jQv7eTCIlhwthILWXqF6PBMQ==
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784554646;
+	cv=pass; b=n6wWYl65mLDhyeiSB7UhTdYFflNk+c/gF3LSTDPIr6OLLorBFD0v6pwzMEoJLSLS2n5JJzD1NJqb3ZQUCuzMPMV3u7QjC5JTyIH9DXFbu6PnA2yGIXEjQ1kgdWvcvvoRiZaiWVVQrK4GtrUsmoA8Xv+S3BX9IeRCZFI/KXKtqDcwZd6nNwuPF/kChf6/1DisCxwz/nr1hQ1hpeCEY95dyiz4uyy2QUSC46yi1n/DHKUXRgHel2AKNlYnXHV1BLD02u2X5k33xd2HC7jvl6BuJj+ATONyt27J1ra8yyhZYaJn2V1IEgy9vVWqo0eQj8uxbaznQ3UB3x683e2VApBwuw==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784554645; c=relaxed/relaxed;
-	bh=MKbNWjlj0GZzffPL+87mG9kIpzvyW6qUxqyRKw0NRAk=;
+	t=1784554646; c=relaxed/relaxed;
+	bh=3JMDgNBI7b696XJL8xSeBFjF60/yKWE2k7dnvfk4lZk=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=Yu3UVVwFRpOCHw0MMr2h6i8zC69vVgiQsqW3HSo7or8CTwWeIGHi1/JpB3hB94lTlYWszlYn5gkDdj+gZhZuVB42ABG7TpuER8wm2fKCkdQuWvJxOTkz2fd4VsXA8wCsEGu2gtQWtnZrAShbma4Oj+s9owRc19tI4S7EJ8mPMTkFDEu7vTniYlmRL7edwER1pJ5duxNA6urDm4B/hbPXYzaC0C+NHJ/4LhFMUlxdaLfaLDK8hVE6yZWgmS+BrwVWaXbqY9GaKEjd2AhRHa92cM8UXen9EBfrOMH4MiGDCClGZMijLRY0WR7vOC7q0NqUlA21/5VwicHu74GrSnA5yA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=ec8c2gNS; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c201::1; helo=am0pr83cu005.outbound.protection.outlook.com; envelope-from=vladimir.oltean@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
+	 Content-Type:MIME-Version; b=XBLGy0UkctycyHN3Ols6gKxBmmnEVJYq0+sCuwo7hMsB3+9DcbmFS/M+/qfPtNAa+sBnaJ730J82gFQQ22eAOTqZhkwmHPjH9/bnvkIHdcPp66TRJuC8/LIhIFVnnu7wEgzQfTmNBM5kk71pt0Cz0o7bhQbGF2DuPRux9YdHkPJC25x+QUbfMfwGpRhwt8/Kh2vNjDgDoVMkE058P4Vq8vhSMKq8Zp9TkRCOLOTt2p2JqfrLCc0fQvWwmmcppQIe0YCfrzHJLM5KnbZz9P2tTLRV6u7TeHHsWQz6k8W/l3V/oGCxXVgDW0RT/6Wva1aAyCSpzn6IGbIkuoZNYgH4Aw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=jILkBl7Y; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c201::1; helo=am0pr83cu005.outbound.protection.outlook.com; envelope-from=vladimir.oltean@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=ec8c2gNS;
+	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=jILkBl7Y;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c201::1; helo=am0pr83cu005.outbound.protection.outlook.com; envelope-from=vladimir.oltean@nxp.com; receiver=lists.ozlabs.org)
 Received: from AM0PR83CU005.outbound.protection.outlook.com (mail-westeuropeazlp170100001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c201::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h3hQX5N8Kz30CZ
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2026 23:37:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h3hQY5sPHz3bps
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2026 23:37:25 +1000 (AEST)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=ecgJUNqWTlJyD43YhH2yvxLGZAP71RZ37BCWk7jEAXoOEQ3FX8IP8Lp5A7ct1KHg04+fpmKi0BT/SNplKc10t+HDdIc72Ju0MRMsGHuxV44NJXaLEKNaLCSPfhU3Dc/hNot8MxVriE4d1DTBfMHX7EyRVDoz8hr0VpzDw7epudQ58cor3dTfRL0DM3CaYfEYvE/WAVh1f8/6tMPrwbvY6xzZXWhrOO3n19Nuhr+h9D/v7Xgju0O5+opkcQHosPsq9Ak4IC/7r3+NczV+vI6UPdewnhUeE6s9i6uzrLe+TfgWSGdJbd74r2T1/DllS5Bj+NlKYAypHUJ8zJSF2Cq9eA==
+ b=swz6cHeH5hM8sSuzn81YoSlWHsLVGEcZPgxEYSZmIj2IawMDjaFwkP20Egv/h1R37HIUPH0UeSUystkvvUGWNBS6TDOrcf7augilSeyijWXmL7NvWsDKRuLLTL/lnGKPhzhypXqn4snH4cABvA1OwsmZ1Orx0FDNCWHoCDZTaJrgqs22gQo9A6BOLQZeclP9OGIXufsH1cLcbR09SL4WfQC1HPJT3+vB2uk8fmlAS5GlRRsdj5p8OR9sHZPoyuQPm34kEdYLC3RHN6Or95PLZoA77CUGAVn6cFrgt7KTzdGHOAXDuLiQ/KqziinWQRBqEvNUSEOrLzSrlQC2AN+aog==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=MKbNWjlj0GZzffPL+87mG9kIpzvyW6qUxqyRKw0NRAk=;
- b=lL0o9vUWSRoq0Fns/m9K2zImYnYz+nuaxvoV5m6cOOvpdXJ8lJi+WUJgkOTtUQi3H7TqIuPJkHxwb7A2He0tg6FrC4FCixFBNnIbOI5VvyhrWpm26Lkg876RxlF5XdNAhcube5FDJOz6R1ffJeJ4EC8fC+SaIFr70AfN/JevYJK0mouNfHHl7qJnjLRKMeoSXei/h2pGPQuNyarKNAPAceCsz2R7pMNnps4aZOCYuSx6BRo6WI7wZAazF1FxKS7gUY8j2bAV4uR+AGZUnXxE4zfreM6yryIM1Q39qD5bQmkWNPpOsJMd7B0fWGLw0KR7359Gy/uiNxEfc3NL2tMkSQ==
+ bh=3JMDgNBI7b696XJL8xSeBFjF60/yKWE2k7dnvfk4lZk=;
+ b=qLz9XrnQcJXKAMJ6FsyK0lS5NhJLfC6QCwhRTj6Ot2G29w6MAD2G+oAnHufAIHIC/Sl3Ewk6I9+o1JlpMP46GrDVFBdRgj5Os5PRKabR5xpPWHGpxUCbBOUT4HW/PUzY6ToKhbTFAPb9CStsjl+Cwj1HYN1RlPSZS0CgxU+nce5zYAVRRDkfhr/ANpd7VH69jOZjV3tTgb67Mdc6Lfe6+fufAKeWmXiI/SmLLtCbuu/LXVblRZoESNtTGz18NJpHAcOja3xNZ5Vyz1z+CJ1iZV+0C06z2gAK847uRct4N3u8hpZ11UEQ5xtkLJ+bNxIgyBPc0M6Owv1TcHuYpZ8MQA==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
  header.d=nxp.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=MKbNWjlj0GZzffPL+87mG9kIpzvyW6qUxqyRKw0NRAk=;
- b=ec8c2gNSaUzegKfY3rE8aeFHaMHqkZb5fwQKFV0RiqeBBxvnEDXcwgpG1zMjkf3O6qPQekwNkJ7+jpioz2CEXjhbVH5VWiyOWCuQk8/5xCU0/9P7GndxamwkzV3XaPNvXhbz1zf+3miqvkxhVXcaLyqr7liLWFfY6Q6wFKeidDwTGoXa/M6VJd6BeIu4uMAI4M4zrnbqWxMi3rVD0mIvl8yg+8Nnle5CuplLSy5hIUtzVYaF5DOsYj+DuefAG+QIj3Q/gQqc9lCtSOVLpEwDRJVQNbfkOMwVGw//UW1JZkBmANTP1LjtX9c9hkKbRlzE0w8IrxDlEdeVbiJee9FM0A==
+ bh=3JMDgNBI7b696XJL8xSeBFjF60/yKWE2k7dnvfk4lZk=;
+ b=jILkBl7YoXHZ4QX/f/C2u3ht/a+MZUchesn8CDMHei53FZaVTWNkrwSTv7F1gsvcAyqxGlcbUBcad/M7/5GwGnhKWPrp9LNKnFUj2O6UWRj1m4CgGACkjeBdS5g9CYq1r9wXKEbnW+uNdtjFB0Fq3QShSfU+KJ4zmnbEKJimiADunHu3CukXxZTtUNKDmCrScIHdxD4zVAZDWX9ahFQl0oClqcl9z0bOgQ/FZjiPyzRxHFYo7gQgv367UJIWVz8ZAMnzxps+dSWzw49EvG5XLxwcU2M8KLIZDZzb+sogklUjbJekcOG0BtUcEuoj/MZ9i9JIqprDk87gewY4LN1w7g==
 Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=nxp.com;
 Received: from AM0PR04MB6900.eurprd04.prod.outlook.com (2603:10a6:208:17d::10)
  by PR3PR04MB7259.eurprd04.prod.outlook.com (2603:10a6:102:8a::18) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.223.18; Mon, 20 Jul
- 2026 13:37:01 +0000
+ 2026 13:37:03 +0000
 Received: from AM0PR04MB6900.eurprd04.prod.outlook.com
  ([fe80::7fda:8431:ca1b:b023]) by AM0PR04MB6900.eurprd04.prod.outlook.com
  ([fe80::7fda:8431:ca1b:b023%5]) with mapi id 15.21.0223.017; Mon, 20 Jul 2026
- 13:37:01 +0000
+ 13:37:03 +0000
 From: Vladimir Oltean <vladimir.oltean@nxp.com>
 To: linux-phy@lists.infradead.org
 Cc: devicetree@vger.kernel.org,
@@ -67,17 +67,21 @@ Cc: devicetree@vger.kernel.org,
 	Michael Walle <mwalle@kernel.org>,
 	Shawn Guo <shawnguo@kernel.org>,
 	Frank Li <Frank.Li@nxp.com>,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH v3 phy-next 5/8] soc: fsl: guts: make fsl_soc_data available after fsl_guts_init()
-Date: Mon, 20 Jul 2026 16:36:39 +0300
-Message-Id: <20260720133642.136324-6-vladimir.oltean@nxp.com>
+	linux-kernel@vger.kernel.org,
+	Conor Dooley <conor.dooley@microchip.com>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Rob Herring <robh@kernel.org>
+Subject: [PATCH v3 phy-next 6/8] dt-bindings: fsl: layerscape-dcfg: define DCFG_DCSR region
+Date: Mon, 20 Jul 2026 16:36:40 +0300
+Message-Id: <20260720133642.136324-7-vladimir.oltean@nxp.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20260720133642.136324-1-vladimir.oltean@nxp.com>
 References: <20260720133642.136324-1-vladimir.oltean@nxp.com>
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
-X-ClientProxiedBy: AS4PR10CA0003.EURPRD10.PROD.OUTLOOK.COM
- (2603:10a6:20b:5dc::16) To AM0PR04MB6900.eurprd04.prod.outlook.com
+X-ClientProxiedBy: AS4PR10CA0005.EURPRD10.PROD.OUTLOOK.COM
+ (2603:10a6:20b:5dc::13) To AM0PR04MB6900.eurprd04.prod.outlook.com
  (2603:10a6:208:17d::10)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -94,140 +98,143 @@ Precedence: list
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
 X-MS-TrafficTypeDiagnostic: AM0PR04MB6900:EE_|PR3PR04MB7259:EE_
-X-MS-Office365-Filtering-Correlation-Id: 99f6ef24-b753-438b-c4e7-08dee663fa4b
+X-MS-Office365-Filtering-Correlation-Id: 05d02c92-86fa-4e62-7f56-08dee663fbff
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|23010399003|19092799006|366016|7416014|376014|1800799024|3023799007|56012099006|11063799006|10067099003|18002099003|22082099003;
+	BCL:0;ARA:13230040|23010399003|19092799006|366016|7416014|376014|1800799024|3023799007|56012099006|5023799004|11063799006|10067099003|6133799003|18002099003|22082099003;
 X-Microsoft-Antispam-Message-Info:
-	tQ8bXbql6OcbaRQXdxxRfXgRmLjV6a1VCo4dNeSb5mYGTqxAO9AHSrJ1H8jKWjMTBskvUXNd9rUErC+T21yC7AyzQST4e7QvveQOU/t5XKXlVcXfO6hj6oXp288qI+48I/Pk+4iJQSxOmmyESAktfflNsBq+giPPtkHOlVZX+4MzyaJ7dPHsRw5YJGiwRbss3VF4wb30GN/6zbRQ5VXyP57KZ/DBpWsOL3hnlq7fCM32hjoy6bJbOeZoBVV1IkN1PSYMbY9uSq+SLDUsbLCRSGElxaz2obL5cQwT5UW6agiyRYKlAOV1gw8qhVUDfSkVKqnOgKra4gt2FaBtGgZzuSnxbTer3Zk0/gakT4F5hzNMnW2eVpfam7/0xFVxcsu9POdhXw2Fsh782qTnc3b8Q1sDXYdgp1vLIV5B07lx//dcbFixXpZ4XTZZpvV2Vlam69wOiLQqIRadHd0IsMKHQAqtMy5fuBAhqQBJSGeftqBfMvLRNu3bbCqbGCde6Tm3R6qUAyLxsMYyrDsY9xdL5+YQmcjIX5SajT4TfvgLpzT/MpR3JrlcczxlTjCAGyatBO/E4c1p/eHEmjD+PDof3VDoI4qXsbnzQCQctq/t9qfAwXGvaWCSsXDvnACSlye1/Hitb1aKI9oNqiydYJxZXg==
+	Ru9U42Nb8QoFgvNJPa2gXWbOd387WUxCOwJOJHyWj345gxy7B4mfJeJ/6w0aJlKwJHZhgF4G8KsF6MiWNwAt6/jrBYkPaOf+9Gh3UTasLFpoyw1H11zr7FbLtvAyWV419QU7E7lb2YUH7hPllSixr+dA7t+9OIUsb0fV5bUKMZXPOqOQkwSPEcijfFcYr+yme/UtJ9HS1yZB66cmxGAjyLwLgRHklsC5muhuZinMHCLTlec/jvsNBRt9s0O5cAB1aiAH5EZWmVlRaLkSdnD3gtYJKkONuALcZQYqyijJ7Su2QhxutEIwCpr5xlUl7VNYhIIbtFxMC0dK45UWrHHxb97EwIjPm+AfMkSk8Yr9nhCeIo6cUkqsePZlOWMTAdUsFapYowh0pIYrEW16LO6Uwvnr5PlRhW3JObwY250xbJzvzdUoZanzpVN+5KC17DdGzN1EQHQcUNHIQ2D17M9e/Xx0EOAu2rStjAAvVF3hpMGXfI+HV9O0wwHCJuVO6dvXjyAXjoIk3bSoBH1L5hXsTxLvi7e6hVZhI4eI5UgP05WZqAzQLeK5GlINJ8pRekaiTBJmdbBeabgiSlxIypyXbjwM27vRwisTk7bQpNQb7ZhCMQIzrv98tkfjNgIPxvbCGkUKwWMf4wZ7MTYKcxo15ssBnexBWpbLLVqpy5FUjik=
 X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM0PR04MB6900.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(19092799006)(366016)(7416014)(376014)(1800799024)(3023799007)(56012099006)(11063799006)(10067099003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM0PR04MB6900.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(19092799006)(366016)(7416014)(376014)(1800799024)(3023799007)(56012099006)(5023799004)(11063799006)(10067099003)(6133799003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?xgqWjPRGaYYC3GVEBCPbtjtgDImnJH/+mHEzAc7UFc88UNN22ARgLzqwAk2x?=
- =?us-ascii?Q?s2QDVlg+GPMtEBhvbmYXE41xyiNjH7G6HBzFLviRcJOAd2RSMGpsXeEvEklb?=
- =?us-ascii?Q?ASt/kAOHnzh/fKv0xiQhiVorg02aFsbEvnXICL04Hx0Wywz2tWeXTOvJ+5sa?=
- =?us-ascii?Q?PUPPMhdcXrqCa7eI2uzTUA/YOpl4FGxj+xQsDMbD0kR3Kf7c4swtt6QNGlQ0?=
- =?us-ascii?Q?PszUCn9zZR3DKWGulNsLeqmAEfshUfSRki13mQafchBESzNOSe6sRKgnKi8N?=
- =?us-ascii?Q?8lzZLuWU+KWRboSDjWzc2LArNp8N/qM/qkCBhdwbtbewmuw0eLxa7CZkxihJ?=
- =?us-ascii?Q?VrqpCRjHi4PLLMXy0kHfZkbym+krbzUEnZXKFt83n2avoDYTvacGVxUCRl9E?=
- =?us-ascii?Q?cjqi5rMWaMP3qcG++VfIi0/TPYoNi87azxuNbDVtDElO6vIG31Pun4SyaHYj?=
- =?us-ascii?Q?M1XlkR3/6L8FC4zmyPORVEa9S4qrfd1U4YDnExdoyWPuUpA+HDgrQq/k63/G?=
- =?us-ascii?Q?BiHzQvo19Rl1oCxunQHbrMWkRWkWOkYdln0hmxF7MioN4jZe7BEw2Pcbr1Ei?=
- =?us-ascii?Q?h5dCFEZxOcLgz2k/8z0LTGfaOqlEa0kXgEn7Pfv+6d0EHSyc9WJiMG0lAG5e?=
- =?us-ascii?Q?UeRAYSTJE8Uhq2q7LuNDbi2AV7N1Q+Y5kufNFP0LU1sSCu3BIWoDiQbusuLp?=
- =?us-ascii?Q?ojI1xtI8m1HplBD2DFjMoMhsYuOpGo/3sDspYnoM4SMMhatiDhh9rcB/Vd8i?=
- =?us-ascii?Q?O0+H/TFqVzL1GoxIyFXv+RESA8lBkbUtAJzjzCiL3zqtQeuNdq9MDNeFKmMb?=
- =?us-ascii?Q?m/hHsJKj1xUFiQAm9wqCXw2L6EHSLr4OKS+GPsHCTARPFO7YJU6xzyLZ6PBq?=
- =?us-ascii?Q?33e5M53SEkkr5ErMz/eMuchhzRfhEAKyNv1sSi9cHLS18926IyxLrWDw90d8?=
- =?us-ascii?Q?gImcsgUHu149s1GhpmzjUJrfHssPsagloY3DQNj4TaUGAMQyH3gCdWYOuv05?=
- =?us-ascii?Q?TeWSY9pomDYkRxzQR+0pTvrF/huCFzbsd7Ekt7NRucy4rVKoz2W8E/OjRPd/?=
- =?us-ascii?Q?BOZmWKm21oBVYU8dsFiu/msdG6ZMmf4QYNjdGWvT+Lm7gvAd3/PxRiGT/B1p?=
- =?us-ascii?Q?rALjc7JavPBGr3gI7p20s3kpoSeoIyVqpKCNq6ZhIXAy3rw7chlHr5UTIU6U?=
- =?us-ascii?Q?fulMB2qnuuCphBIYQ1wzZNQKzOsW8oqUE/CfUb1bblaVeBDIjM3Mbj+mmxpL?=
- =?us-ascii?Q?7yrXDNCHO0Qfu5aJlkeid/k9h0tCz5ohNldmTmrG23xu1aU5paqFtotjcYdA?=
- =?us-ascii?Q?fF0KiYA4BstBnYA1uoPQMNKWPNN7Z2eIjySY2f/Z+rvDwtvQ2PhyB6JCZioS?=
- =?us-ascii?Q?srm62Wh1GQlddfV0uUgnxHa0PHxqxnTlBudKLCDbBAq1vL/iE6o1qDc8gX9H?=
- =?us-ascii?Q?9yn1EPW8fDwOiCtiD23TxA0QjMRyhNTeBJLt37eJKz1Ly4lh52fnZtuu5m8K?=
- =?us-ascii?Q?Y3H71fHEWESiE7kMAAD+xYFO6ShdNX9nHy1lI8eiyvRjFJSGO+pXBcED3hCr?=
- =?us-ascii?Q?4O+E81Ho6nPHD0X61jJcvpweviQ57lqiAbIfX91QwQsWTwDhW1eS9TqFAJS6?=
- =?us-ascii?Q?f9nztFV8hLJweJA/noqs4Sk+IFYM1SYJP1FW6yECgHtd1cGiAhFttFX4LXI/?=
- =?us-ascii?Q?DPvKXAbAlHniBBZ6NRTsct6gHf8QqP/+9avEYHDC5toiRJ+inrbKAluwqBNV?=
- =?us-ascii?Q?fO/Jlrzhpw=3D=3D?=
+	=?us-ascii?Q?MgQYzMEWB87dVWaliCWK+AI/SsG8QrLVQi9oy171HYUYR/P4UoKeeZeZ0fMb?=
+ =?us-ascii?Q?4vkl73x3bq1ZZFUFhGHRrsRCciVjjXhuksitUL7omsomQ1nEwxwB5GDOPQm/?=
+ =?us-ascii?Q?EDlSZ8nuRZ1mVjxyxDCT+XubzAqQHhlQicXMxU+IhPM6XRZR2axTtC40Qsbo?=
+ =?us-ascii?Q?UARPRwQLPAT2QM5UCzVwvtqTIgpgFCsfMVqzmJlgAqAhMifC2OxdqqlbvVP2?=
+ =?us-ascii?Q?hHbwl8pioObVp0o0ggBEHXD35tHAwtC+yZsyRfxXRogHBBD2Fs+XBJnzMOTP?=
+ =?us-ascii?Q?dbvUnbwVTlpSfaFerOakoPBZVuqdXGvj7rmw8MZTsMkiiU0ovrRJEUWd+6WS?=
+ =?us-ascii?Q?60fjz6INpgOTJGeusrfB0EHC9K0vCMHAO29ZkA+JWTY5WNdCLAUnOUR3IfUr?=
+ =?us-ascii?Q?j99ea9wZFQuS/oM5AqdgtUbw1ZlDDBNIbGOLWC1jIZ426kLVMCMB0oAE3dzl?=
+ =?us-ascii?Q?WCRiTGrMN8l/ft613+UOjNGVWMtdbqYVbUFmea/3ax1qXb71tuGAJELfHVpu?=
+ =?us-ascii?Q?e/9y2an0IpeD/miMj66dMhVtBy/P0+SIOq+zTSWGozaaR4twrpYFZqk6l80o?=
+ =?us-ascii?Q?IgqR9SRCq6sILapTkLa5B7qdo3qWrywhkix8P/yBEsbV/ZHwBU30VnUJRwV+?=
+ =?us-ascii?Q?YXulFxzReekLbXWFIXJbJQrpwqB2m1XeRXQwwaBIxALFwbjjruOzU9PH86gz?=
+ =?us-ascii?Q?SsnFyT8np+Og7QHuZsJNjnltAFJriXF00JO+D4vtNto8l1XPRjkZoXPiDZD3?=
+ =?us-ascii?Q?dTHY4Vn3/VUT6fULgg/T/YF9KUWA4RTx8Dey3rWBldsHnygCZJXVbDSJyX2o?=
+ =?us-ascii?Q?e+R03zwWlN/rbuS+paQVap3c6oRgwmn94uO5z0ZhkC6I4qtBkwlm3FudUy+q?=
+ =?us-ascii?Q?zkLvmT1yVJKfY6u+/AAduFRGz4mdMS2YMoU1QLzvLl1OLXj0nhCvLOpt/h7t?=
+ =?us-ascii?Q?Jr4hUr5jFYG/Vus7XaAEtlWQZJ36+xzW4/AyYbmVZ2Tvuxmrz17y1G8cAEKy?=
+ =?us-ascii?Q?y27LQ4vXpLCLDLVOsnFiOJMsv702weasS6bCSygHwfhwB+8HYUCqH+5EyoCJ?=
+ =?us-ascii?Q?2YZnS085jFB3svsWuZOxy9e7iBH5WgxeAt7D705A4Y2JRJl2I/X73QP3M6fQ?=
+ =?us-ascii?Q?H6uKUCABpslTwqWQhHcCNbdWKjR83RVrH9J1rEecSetj5eAWH7+IVZzULxu9?=
+ =?us-ascii?Q?7CxpUqnjMx+Ez011xGasR8mDFGlBZgDUCXgM1+40fBpMezjq3IoNdcUnVvtP?=
+ =?us-ascii?Q?b5OQ1atNvpXFWtEuYdSIYMiN72XpfBLYcOmGPzgNfHhImJEP+oFgSWldW6e9?=
+ =?us-ascii?Q?62x95FsDxfYbzJAZtkryymKadKD7rhTiV+c+ORbOcNXH3vclqIMJ4VP62Soc?=
+ =?us-ascii?Q?OsWoxG/HxjGdGPWi7pwbE6IMF8nMfkXpKj/JftiY9VdZqy4eRTmooFgHZOOR?=
+ =?us-ascii?Q?sYWmC+idAi1iYXBKYBVdMkRMr8gHyqAtBMckjyG1JVT5eTyckdN0kcDsB8Lu?=
+ =?us-ascii?Q?snFECKgQ6ls/y4WNbMS265ludpU2CkZIezTrylWUcIkitq71lwHdteRavnez?=
+ =?us-ascii?Q?e0wroOxFQi67oGJaIqpThmF6jeyHQGzD/vcy/PyRWRzAIKlwpVui+vJmfJJM?=
+ =?us-ascii?Q?f6oav2zsoRFF0Zg+bx27rkj7601XGJiS1Aqvem0rHR3+kw7bTD5Az/y1Z8HS?=
+ =?us-ascii?Q?m4i7nwqcp1oW3pPwNqb4YLfQ0aOAV/3rE4M1OYmaeiW4yCluFdVhRdEbaurd?=
+ =?us-ascii?Q?H6mSUhAU+w=3D=3D?=
 X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 99f6ef24-b753-438b-c4e7-08dee663fa4b
+X-MS-Exchange-CrossTenant-Network-Message-Id: 05d02c92-86fa-4e62-7f56-08dee663fbff
 X-MS-Exchange-CrossTenant-AuthSource: AM0PR04MB6900.eurprd04.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 20 Jul 2026 13:37:00.9723
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 20 Jul 2026 13:37:03.8208
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: s6atRRUPvaR3mCiU1GCMNxc5qFqk1XZ8MsKm1YljHZNW1S7KB8+YKRwvSanlKXTmsFK7osYQAxYLD7gI3Ie82w==
+X-MS-Exchange-CrossTenant-UserPrincipalName: qeJjwPSw8mQuWNmIShKb4eyWj7wQh0H0nI795gkoyXmh9ovtNx6SZ/RUeGGEQTaOk4H0S2S+L2dOR+KSCpwYNg==
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: PR3PR04MB7259
 
-In a future change, struct fsl_soc_data will be extended with methods
-for performing RCW override.
+In Layerscape (Arm) and QorIQ (PowerPC) devices, hardware peripherals
+are accessed by the CPU through a portion of the SoC address space
+called CCSR ("Configuration, Control, and Status Registers"). All
+hardware IP blocks have their registers mapped here, and the Device
+Configuration block makes no exception.
 
-Since this will be performed from a calling context outside
-fsl_guts_init(), we need to keep track of the soc_data that we determine
-at fsl_guts_init() time, so we can reference it later.
+However, there exists a secondary range of the address space named DCSR
+("Debug Control and Status Registers") which, like CCSR, also holds
+registers of hardware IP blocks, except the DCSR contents is hidden in
+all public reference manuals.
+
+The intention of the CCSR/DCSR split, to the best of my knowledge, was
+to place the functionality that is too low level for normal use, and
+which is necessary only for debug, in a completely separate address
+space which can be hidden.
+
+A use case has appeared where networking SerDes lanes need to be
+reconfigured at runtime for a different protocol (example: 10GBase-R to
+SGMII), and the architecture of the SoCs does not normally permit that.
+The Reset Configuration Word (RCW) is a data structure read by the SoC
+preboot loader (PBL) which contains stuff like pinmuxing and SerDes
+protocol mapping for each lane.
+
+The RCW that the PBL has loaded is visible in the DCFG block's normal
+status registers (from CCSR), as read only. Turns out, the RCW is also
+mapped in the DCFG's shadow register map (in DCSR), in a write-only
+form. Writing to the RCW registers from the DCFG's DCSR space to change
+what the PBL has loaded is called "RCW override".
+
+It has been validated that the RCW override procedure is necessary to
+reconfigure the networking data path when a SerDes lane performs a major
+protocol change. It changes some internal muxes which connect the PCS to
+either the 10G MAC or to the 1G MAC.
+
+Defining the DCSR area of the DCFG as a secondary 'reg' array element
+allows operating systems to perform RCW overrides. Since it is
+introduced late in the binding's lifetime, it is optional. It can be
+identified by name, but also by index (first 'reg' is CCSR).
+
+Note that while all SoCs should have a DCFG register block in DCSR, we
+only need to expose it for the SoCs where the RCW override procedure is
+known to be needed and has been validated.
 
 Signed-off-by: Vladimir Oltean <vladimir.oltean@nxp.com>
+Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
 ---
-v2->v3: don't leave soc.data a valid pointer if fsl_guts_init() fails
-v1->v2: none
----
- drivers/soc/fsl/guts.c | 21 ++++++++++++---------
- 1 file changed, 12 insertions(+), 9 deletions(-)
+Cc: Conor Dooley <conor+dt@kernel.org>
+Cc: Krzysztof Kozlowski <krzk+dt@kernel.org>
+Cc: Rob Herring <robh@kernel.org>
 
-diff --git a/drivers/soc/fsl/guts.c b/drivers/soc/fsl/guts.c
-index 922560d98782..b9973ca3a440 100644
---- a/drivers/soc/fsl/guts.c
-+++ b/drivers/soc/fsl/guts.c
-@@ -138,6 +138,7 @@ static const struct fsl_soc_die_attr fsl_soc_die[] = {
+v2->v3: none
+v1->v2:
+- add Conor's review tag
+- update email addresses of DT maintainers
+---
+ .../bindings/soc/fsl/fsl,layerscape-dcfg.yaml     | 15 ++++++++++++++-
+ 1 file changed, 14 insertions(+), 1 deletion(-)
+
+diff --git a/Documentation/devicetree/bindings/soc/fsl/fsl,layerscape-dcfg.yaml b/Documentation/devicetree/bindings/soc/fsl/fsl,layerscape-dcfg.yaml
+index 3fb0534ea597..fc14fd0bf84b 100644
+--- a/Documentation/devicetree/bindings/soc/fsl/fsl,layerscape-dcfg.yaml
++++ b/Documentation/devicetree/bindings/soc/fsl/fsl,layerscape-dcfg.yaml
+@@ -36,7 +36,20 @@ properties:
+           - const: simple-mfd
  
- static struct fsl_soc_guts {
- 	struct ccsr_guts __iomem *dcfg_ccsr;
-+	const struct fsl_soc_data *data;
- 	bool little_endian;
- 	u32 svr;
- } soc;
-@@ -231,10 +232,9 @@ static const struct of_device_id fsl_guts_of_match[] = {
+   reg:
+-    maxItems: 1
++    minItems: 1
++    items:
++      - description:
++          Customer-visible DCFG register map from CCSR address space
++          (Configuration, Control and Status Registers)
++      - description:
++          Customer-hidden DCFG register map from DCSR address space
++          (Debug Control and Status Registers)
++
++  reg-names:
++    minItems: 1
++    items:
++      - const: dcfg_ccsr
++      - const: dcfg_dcsr
  
- static int __init fsl_guts_init(void)
- {
--	struct soc_device_attribute *soc_dev_attr;
-+	struct soc_device_attribute *soc_dev_attr = NULL;
- 	static struct soc_device *soc_dev;
- 	const struct fsl_soc_die_attr *soc_die;
--	const struct fsl_soc_data *soc_data;
- 	const struct of_device_id *match;
- 	struct device_node *np;
- 	u64 soc_uid = 0;
-@@ -243,12 +243,12 @@ static int __init fsl_guts_init(void)
- 	np = of_find_matching_node_and_match(NULL, fsl_guts_of_match, &match);
- 	if (!np)
- 		return 0;
--	soc_data = match->data;
-+	soc.data = match->data;
- 
- 	soc.dcfg_ccsr = of_iomap(np, DCFG_CCSR);
- 	if (!soc.dcfg_ccsr) {
- 		of_node_put(np);
--		return -ENOMEM;
-+		goto err_nomem;
- 	}
- 
- 	soc.little_endian = of_property_read_bool(np, "little-endian");
-@@ -283,9 +283,9 @@ static int __init fsl_guts_init(void)
- 	if (!soc_dev_attr->revision)
- 		goto err_nomem;
- 
--	if (soc_data)
--		soc_uid = fsl_guts_get_soc_uid(soc_data->sfp_compat,
--					       soc_data->uid_offset);
-+	if (soc.data)
-+		soc_uid = fsl_guts_get_soc_uid(soc.data->sfp_compat,
-+					       soc.data->uid_offset);
- 	if (soc_uid)
- 		soc_dev_attr->serial_number = kasprintf(GFP_KERNEL, "%016llX",
- 							soc_uid);
-@@ -311,8 +311,11 @@ static int __init fsl_guts_init(void)
- 	kfree(soc_dev_attr->revision);
- 	kfree(soc_dev_attr->serial_number);
- 	kfree(soc_dev_attr);
--	iounmap(soc.dcfg_ccsr);
--	soc.dcfg_ccsr = NULL;
-+	if (soc.dcfg_ccsr) {
-+		iounmap(soc.dcfg_ccsr);
-+		soc.dcfg_ccsr = NULL;
-+	}
-+	soc.data = NULL;
- 
- 	return ret;
- }
+   little-endian: true
+   big-endian: true
 -- 
 2.34.1
 
