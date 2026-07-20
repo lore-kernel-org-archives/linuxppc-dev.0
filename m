@@ -1,77 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-24569-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24570-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 41786C4452D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2026 02:22:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C4188C44524
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2026 02:22:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h41Pc2ftPz2xqJ;
-	Tue, 21 Jul 2026 12:22:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::102e"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784561216;
-	cv=none; b=e3aSIZEk61fA1FZ6glFDk5t/sZ9TipCB6WnaGxphA0sjzi5vLAnTjHDXhjzUKYmD4EoDWTxDXsVRlK9m2kMLi/KkzRkPYix/8X4MO4EUY2/EVxmvSZMbXWidE87naXY7VtNt/AYG/rkQGxRp3Rg/EsB7CufCQ5KUgGeemCzkzMpIi7uveGGPcfjUgyn5XNxXslNfoST2iYknhKsMoL0yxSp1FWC2YCVuLedW/tdWN/+CorHSgSHem/OpP/EvhYIEZY0p3+72OjFYW3Gp7RxcV2nfFVJ+BCVndaFTU/hsdK4Y/PcsrXZ9OkdF/8ysxeRQKvDAAmZUU/ukLU5mhZrGSg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h41Pn2DKMz2xqJ;
+	Tue, 21 Jul 2026 12:22:53 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62b"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784561342;
+	cv=none; b=IwdTBzErCb6y7jy8Rtqc0Uc2KdUSBwWKPSEW61LESNYrNfgKS9qPhxmUH1xbUxMr8ckysX0bX6c1wugMZ/64M7rSH1Dp3Yfz0xcUYgqh8zwMLIyPcN5SJPlrVTCw86wF5aKbuzoSakV3n1RfkXpktYf78s4ZDg3ku4jbOe+N7/M4uVa0jdMNldqwvUTqG8VBergQLYbOoRvAKni/o+Y/uSMX6c05oKPF5w+n58Nb9iI2vGT1pA62YiB7chDEuycWklr/nS6yEz+BtkfF8P1rPniFyoUyQ4r97DYr9BICfbrhCE8FFsL5QbeRoYhFKDxZICLhOBrFBTHoRJ+hNacYlQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784561216; c=relaxed/relaxed;
-	bh=3VTZ9zHl9OoQneFVX7eJwf/WovVc3pD60nK1eidpzDA=;
+	t=1784561342; c=relaxed/relaxed;
+	bh=bgz7Y8qBkufWfij3p6tfrGVbR4yOWWu3669don02deQ=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=AmuecIj7XN3H2zb6YtZGb7gfz08rG71LeQh5/xFBKwsTCM1ae3vnMcMI1xPEYdVDzp9wW2DjcN5M7+NZhwg2QHldm7kT3+PpXN5GCYS26x8CQb+DH459p1qC5JFk+NENxpG2iVAYSmYwiKCN78GT7pLvwGHvQ0zArU24XS/QJVMuAL94a6ynCgFEY6KK6cJ59G1gzS7+qMbqeK0yh3k8xlSuiW/hST7c7AAhqa7rIj4jntaVrdnw+TlBALZPxqPH4BJrpieaZiN1xzMZCxaFmvyTs3O7B/w9YHEWL5V2AG+y8NWve3PiDKbJuacG9wy9zXu6BAJHcrShOJ6O5Pa5ww==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=dama.to; dkim=pass (2048-bit key; unprotected) header.d=dama-to.20251104.gappssmtp.com header.i=@dama-to.20251104.gappssmtp.com header.a=rsa-sha256 header.s=20251104 header.b=UJGU1Ikj; dkim-atps=neutral; spf=none (client-ip=2607:f8b0:4864:20::102e; helo=mail-pj1-x102e.google.com; envelope-from=joe@dama.to; receiver=lists.ozlabs.org) smtp.mailfrom=dama.to
+	 Content-Type:Content-Disposition:In-Reply-To; b=fuhvZuJISxAOHb9byJvbecXA0fEFKgpImdbZgvoCBwjlEGDUM/BPk2RlU5Um0/jPb2os+H2SFXMEQROhpcHTp9iGyo4JQyLgEvr/Ej6sQEQTEolKL34xxN+44TluAe1VfUif2I8d4VigCSebesXm2nn0Z38+1QUC4oPnRH9gp0nfeuSI/O0RD4cG9dhmzcgT7wKP8sKtwCddUWDcnZvokFTPc8tpqplXIQERvmfdcpwrlYA97Ee6bFptokb8Vi9mklRoFpf06yr/kq0Zzk4kDV6xEQxWFbYXJ4EcsazqHhO8mqS+qVpmdXb7+W6vjNOTO6GjgAZKs0RexgCqMWGtZw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=dama.to; dkim=pass (2048-bit key; unprotected) header.d=dama-to.20251104.gappssmtp.com header.i=@dama-to.20251104.gappssmtp.com header.a=rsa-sha256 header.s=20251104 header.b=hDqSysrn; dkim-atps=neutral; spf=none (client-ip=2607:f8b0:4864:20::62b; helo=mail-pl1-x62b.google.com; envelope-from=joe@dama.to; receiver=lists.ozlabs.org) smtp.mailfrom=dama.to
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=dama.to
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=dama-to.20251104.gappssmtp.com header.i=@dama-to.20251104.gappssmtp.com header.a=rsa-sha256 header.s=20251104 header.b=UJGU1Ikj;
+	dkim=pass (2048-bit key; unprotected) header.d=dama-to.20251104.gappssmtp.com header.i=@dama-to.20251104.gappssmtp.com header.a=rsa-sha256 header.s=20251104 header.b=hDqSysrn;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=dama.to (client-ip=2607:f8b0:4864:20::102e; helo=mail-pj1-x102e.google.com; envelope-from=joe@dama.to; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x102e.google.com (mail-pj1-x102e.google.com [IPv6:2607:f8b0:4864:20::102e])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=dama.to (client-ip=2607:f8b0:4864:20::62b; helo=mail-pl1-x62b.google.com; envelope-from=joe@dama.to; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x62b.google.com (mail-pl1-x62b.google.com [IPv6:2607:f8b0:4864:20::62b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h3krt28mmz2xlZ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2026 01:26:53 +1000 (AEST)
-Received: by mail-pj1-x102e.google.com with SMTP id 98e67ed59e1d1-38e071ed6aeso6345509a91.0
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2026 08:26:53 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h3kvK4lB8z2xF8
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2026 01:29:01 +1000 (AEST)
+Received: by mail-pl1-x62b.google.com with SMTP id d9443c01a7336-2ceae1ed204so81131675ad.0
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2026 08:29:01 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=dama-to.20251104.gappssmtp.com; s=20251104; t=1784561210; x=1785166010; darn=lists.ozlabs.org;
+        d=dama-to.20251104.gappssmtp.com; s=20251104; t=1784561339; x=1785166139; darn=lists.ozlabs.org;
         h=in-reply-to:content-disposition:content-type:mime-version
          :references:mail-followup-to:message-id:subject:cc:to:from:date:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=3VTZ9zHl9OoQneFVX7eJwf/WovVc3pD60nK1eidpzDA=;
-        b=UJGU1IkjjIVbPNImRKxy8GAmnUnq+IcBDZMq8hH4BnW171tct43e7Qi5nX9RAYgVrW
-         DUP5Y/Idf66X1+zEIVf6n8y3dMLbVBiRwOp92e/WtRR1wqPPVG+okdRgtB7yWGlnN1wC
-         aZJrCYhbRwvWg2EHBw/ECpXdHrAto/t2l9ntZJ/7UMknGXR9Xd8by/XVwEhKyWnpoggp
-         GDElmKScSNtDLwz5RyokorlBSVFp2SralFsH00pN4sQJlHhvv2zmHSe+A1mhI4fDKQEV
-         8iR0suwHp7s4waBzguqg3JyVo/5JFfgWPhAP0i4cpJzXgpFviO0u5pB/cyTVcoxidZ1c
-         i1sw==
+        bh=bgz7Y8qBkufWfij3p6tfrGVbR4yOWWu3669don02deQ=;
+        b=hDqSysrnk0F8tB6uLCjOiHmzI1in1qSMzESOK+57lks7eykc5UVavqwHXn8OH0nLO1
+         XuMo8QGFKCN9bl9nhEYKRbcnk43cxOPhLXHR3oaXGRH5n8oCxQVb4F3/abvO6jcYtzde
+         n0+VHa0O8IrvCKXZHCEETUxJGM0sTHVn1ZgE2UrWWxQBogaawZBfadHD8WMj9qxQPj2L
+         CABbImHvIekAlvgRp63NaRhCFDQODIRBc7gkBJRjAQJOXdD0l0rqOOkOxjSZqvj0zUHk
+         cKbbOS6hUCiVEukJ092Q+7P1TilrQKWnBxcquaVYQjAKfwsmSU6vUsIajd44YDJNkoQf
+         v1xw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784561210; x=1785166010;
+        d=1e100.net; s=20251104; t=1784561339; x=1785166139;
         h=in-reply-to:content-disposition:content-type:mime-version
          :references:mail-followup-to:message-id:subject:cc:to:from:date
          :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to:content-type;
-        bh=3VTZ9zHl9OoQneFVX7eJwf/WovVc3pD60nK1eidpzDA=;
-        b=FLaC5mD7icdQCKQGh/nndYUvKKQh80uJYFNdcEVD8+zc32CQA+d2aPAizBxEXWdc6k
-         pxTXxPWF0VLFd4dNuxmQaBzunXYulGWlU28nztutlbWUajhj1ZJ6DsAoWc+9Q/Llimt4
-         RUffDYk0RtaaVPL0XgQAfapSqWG99jyvlJNQUSL9NnWLxow6OL5Zcr8rl/BD5LHm4ouw
-         l0B6RO7B1Zn3O7ye59l+ckeJHx9rSESFYtv2T+p3fZOUup7+IvO6fM+5JtowYyBWy6Qm
-         QIv4GpVGdNEvDnEJu2k4gTNBniAxs8EasQDbEZTbCtxQjkUOLGcMJgF75BxJz7jhW9yy
-         Z5gQ==
-X-Forwarded-Encrypted: i=1; AHgh+RqSMYI4rX4Ku8SE4TIn64H1A1q+Xp1E+06SKcIlPagXv9mDdL4LulJJ3zt4ncg2r6bZl+igMo3K4l111/I=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yx6v9L/5Vb68XEtGSc7Sin1RzbLGlEUta6ZgYm/EeXzmg4HQoAY
-	kUt2koziM/bSgcn6+FRp5LHzB5tw0Z6wgPzOzBxWCrNBKI0epYmrc3kn7TOgSS30t8U=
-X-Gm-Gg: AR+sD12GvQ/0W7LcbS6IQQ/bhuVX1rCoUVoPeoUmTfvFQP21JO2u9XO+jvJUDC1kon8
-	0KyCw9nAWuKaOkYczKspXTOBMVsXBdfX5dzbHfwXSSP99mWPzNVXNW2sW598TMMPoJ2hb/rdVBX
-	ujjHThQ8+ia+x2KPS29i1qzoJZ2dFq23o7YcGUnAs8s1bHsNAwAD7YII5vyKhKsRb7x9fBl4m5q
-	Mwf0+02QNTelF91UhNtnAqotzEKyN3jE4kDc7I+f6VKePuIWNYLaxoNEbV3L0lpoNJXKAWc8ptN
-	neBx+uNY2FsdopOcYJd8QDrqUUfN0AcpI8himYSJ/x7yNoHYxOCGhNDZBz+tUweUcyPpabXNED5
-	mcvdDdn4TjJzb14BgT63MyoDwEmfJsP3+e5Y2sOjAX4c2yMl6z133oKza2Fs=
-X-Received: by 2002:a17:90b:58b0:b0:38e:7239:b945 with SMTP id 98e67ed59e1d1-38e7239ba36mr4798636a91.21.1784561210391;
-        Mon, 20 Jul 2026 08:26:50 -0700 (PDT)
-Received: from localhost ([2a03:2880:2ff:55::])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-38e4afcd3fesm6080875a91.2.2026.07.20.08.26.49
+        bh=bgz7Y8qBkufWfij3p6tfrGVbR4yOWWu3669don02deQ=;
+        b=ZrvXVZRzP4t2bSYuNkG7wmU0b0Vbap0gAT/8yZQCLfuB+UPLBUS8FYQnMuOsDkLZ2R
+         56YTlHOAOc+y+33jhV2QFtf/DFR665O2RjkcJbTAQqdjL5/bniCB/Eoa/LryQLGGRXPa
+         Tm4OjtBRasMCj/Kl+QVfz57iQIJ3T8lpc4xBn8op8R2zHhdvKiTQyzb37IPAAx5baeDU
+         DArMIIbuinNSSstVdxZgHl64sNfUurZ/gNdvxhQsGTiVEsjPuCVsoREfVspGSYlyAczJ
+         jqaDFF84qxZ1TE8yQo76wI9rhLl/ZGZRzxQFw6UDQLVAEXeKe5OYTOUC8v2T1zTayaO8
+         Z9rQ==
+X-Forwarded-Encrypted: i=1; AHgh+RrvScQcG5jFlq6L5JKJtsMUHq1+VQD2pvEjj5Ld3fpAHRujGfCGgTCti0gpHQFLyChqlFkI8VTZXLRYDLw=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyH0SeS1Hb5A5jsSnedaQs1ln2OJb7mxygEWPh5sCZbq/E1TGXu
+	XuK7Op6ykjrUhJS5hDimrMhDklNC+26IBtWhfEDcolncOhm1Rx6xy3PmSeHxgHZzGp8=
+X-Gm-Gg: AR+sD136dxfckyalKQuO9kwGsMeDSHaucV699H8aBWgWEP0l/sFwHVu5oLtGcBztUeS
+	6lXRVAE1C14ovpeOfbtiBBUMbeA/iz2no5Kznfoi3qZoC4hVtQA9AbwLvX7JhFnH0dYnz9j/Gtx
+	Bl41ay0wrqqZhSAu5qOEoWnsykeh9n9wkhT1NCszQuU5BT4gCa6fjQaDdfe2u0LoWA70P7OyLfy
+	DWK2SnyPkKTWPkydDjdL4vt+e4+yZ8S2CMVE2ucK6zGJdzW25jPv96BI5i2IwByXiyL3XxLgsbg
+	l3BTKa5fT1DUYSrcM8FcET6pumw2qsWL5lRvzlDt56/J7BiGserP/Iz3o1c+IFe6zdjtw24toey
+	tn5xxNaKPNWUb1FzjeU07t1n5gKgwRO2tvoELhb3isvPh8HdmtIpkshBhJ6o=
+X-Received: by 2002:a17:903:1b25:b0:2ca:3b31:ef4f with SMTP id d9443c01a7336-2cf34a0a6b5mr140652465ad.40.1784561339559;
+        Mon, 20 Jul 2026 08:28:59 -0700 (PDT)
+Received: from localhost ([2a03:2880:2ff:51::])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2cf34730e35sm58695305ad.64.2026.07.20.08.28.58
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 20 Jul 2026 08:26:49 -0700 (PDT)
-Date: Mon, 20 Jul 2026 08:26:49 -0700
+        Mon, 20 Jul 2026 08:28:58 -0700 (PDT)
+Date: Mon, 20 Jul 2026 08:28:58 -0700
 From: Joe Damato <joe@dama.to>
 To: wei.fang@oss.nxp.com
 Cc: claudiu.manoil@nxp.com, vladimir.oltean@nxp.com, xiaoning.wang@nxp.com,
@@ -81,9 +81,9 @@ Cc: claudiu.manoil@nxp.com, vladimir.oltean@nxp.com, xiaoning.wang@nxp.com,
 	imx@lists.linux.dev, netdev@vger.kernel.org,
 	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
 	linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH RESEND v4 net-next 09/14] net: enetc: open-code
- enetc4_set_default_si_vlan_promisc()
-Message-ID: <al4+OXBo7rVJiLb0@devvm20253.cco0.facebook.com>
+Subject: Re: [PATCH RESEND v4 net-next 11/14] net: enetc: move
+ enetc_set_si_vlan_promisc() to enetc_pf_common.c
+Message-ID: <al4+uiiXKgaNBa91@devvm20253.cco0.facebook.com>
 Mail-Followup-To: Joe Damato <joe@dama.to>, wei.fang@oss.nxp.com,
 	claudiu.manoil@nxp.com, vladimir.oltean@nxp.com,
 	xiaoning.wang@nxp.com, andrew+netdev@lunn.ch, davem@davemloft.net,
@@ -93,7 +93,7 @@ Mail-Followup-To: Joe Damato <joe@dama.to>, wei.fang@oss.nxp.com,
 	netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 References: <20260720014317.1059359-1-wei.fang@oss.nxp.com>
- <20260720014317.1059359-10-wei.fang@oss.nxp.com>
+ <20260720014317.1059359-12-wei.fang@oss.nxp.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -109,53 +109,36 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260720014317.1059359-10-wei.fang@oss.nxp.com>
+In-Reply-To: <20260720014317.1059359-12-wei.fang@oss.nxp.com>
 
-On Mon, Jul 20, 2026 at 09:43:11AM +0800, wei.fang@oss.nxp.com wrote:
+On Mon, Jul 20, 2026 at 09:43:13AM +0800, wei.fang@oss.nxp.com wrote:
 > From: Wei Fang <wei.fang@nxp.com>
 > 
-> The function enetc4_set_default_si_vlan_promisc() is only called once,
-> from enetc4_configure_port_si(). Open-code the loop at the call site
-> and remove the single-use wrapper.
+> The PSIPVMR in ENETC v4 has the same bit layout and functionality as the
+> PSIPVMR register in ENETC v1: bit n (n <= 15) controls VLAN promiscuous
+> mode for SI n. The only difference between the two hardware generations
+> is the register address offset.
+> 
+> Since the register functionality is identical, the VLAN promiscuous mode
+> setting code can be shared between ENETC v1 and v4 drivers.
+> 
+> Move enetc_set_si_vlan_promisc() from enetc_pf.c to enetc_pf_common.c
+> and export it so that it can be shared between the two drivers. Add a
+> revision check using is_enetc_rev1() to select the correct register
+> offset (ENETC_PSIPVMR for v1 and ENETC4_PSIPVMR for v4) while keeping
+> the same logic.
+> 
+> Remove the v4-specific enetc4_pf_set_si_vlan_promisc() from enetc4_pf.c
+> and replace its call site with the new common enetc_set_si_vlan_promisc()
+> to eliminate code duplication.
 > 
 > Signed-off-by: Wei Fang <wei.fang@nxp.com>
 > ---
->  drivers/net/ethernet/freescale/enetc/enetc4_pf.c | 15 +++------------
->  1 file changed, 3 insertions(+), 12 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/freescale/enetc/enetc4_pf.c b/drivers/net/ethernet/freescale/enetc/enetc4_pf.c
-> index 859b02f5170a..505e4abf6c37 100644
-> --- a/drivers/net/ethernet/freescale/enetc/enetc4_pf.c
-> +++ b/drivers/net/ethernet/freescale/enetc/enetc4_pf.c
-> @@ -307,17 +307,6 @@ static void enetc4_pf_set_si_vlan_promisc(struct enetc_hw *hw, int si, bool en)
->  	enetc_port_wr(hw, ENETC4_PSIPVMR, val);
->  }
->  
-> -static void enetc4_set_default_si_vlan_promisc(struct enetc_pf *pf)
-> -{
-> -	struct enetc_hw *hw = &pf->si->hw;
-> -	int num_si = pf->caps.num_vsi + 1;
-> -	int i;
-> -
-> -	/* enforce VLAN promiscuous mode for all SIs */
-> -	for (i = 0; i < num_si; i++)
-> -		enetc4_pf_set_si_vlan_promisc(hw, i, true);
-> -}
-> -
->  /* Allocate the number of MSI-X vectors for per SI. */
->  static void enetc4_set_si_msix_num(struct enetc_pf *pf)
->  {
-> @@ -361,7 +350,9 @@ static void enetc4_configure_port_si(struct enetc_pf *pf)
->  	/* Outer VLAN tag will be used for VLAN filtering */
->  	enetc_port_wr(hw, ENETC4_PSIVLANFMR, PSIVLANFMR_VS);
->  
-> -	enetc4_set_default_si_vlan_promisc(pf);
-> +	/* Enforce VLAN promiscuous mode for all SIs */
-> +	for (int i = 0; i < pf->caps.num_vsi + 1; i++)
-> +		enetc4_pf_set_si_vlan_promisc(hw, i, true);
->  
->  	/* Disable SI MAC multicast & unicast promiscuous */
->  	enetc_port_wr(hw, ENETC4_PSIPMMR, 0);
+>  .../net/ethernet/freescale/enetc/enetc4_pf.c  | 17 ++------------
+>  .../net/ethernet/freescale/enetc/enetc_pf.c   | 16 --------------
+>  .../freescale/enetc/enetc_pf_common.c         | 22 +++++++++++++++++++
+>  .../freescale/enetc/enetc_pf_common.h         |  1 +
+>  4 files changed, 25 insertions(+), 31 deletions(-)
 
 Reviewed-by: Joe Damato <joe@dama.to>
 
