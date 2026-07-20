@@ -1,79 +1,103 @@
-Return-Path: <linuxppc-dev+bounces-24537-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24538-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B9EB2C44515
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jul 2026 20:30:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 40A0AC44515
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jul 2026 20:37:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h3sbQ0HmHz2yLY;
-	Tue, 21 Jul 2026 06:30:42 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784579442;
-	cv=none; b=OxdkMl5XVa16492k34DUH+EQu/z//dGaL2h/F+AGshKVLBKf64sHv/UiCIzNR10FWKPcLF3GjN4MXEuZ9xBTCL3ot/DZ7FGmFpcc9udrDDDJkLq1PVaEHM5zD4+lWSm1BzxS+pQTEtNZ8WsZZfi/GPDrIXJ4KHxXVBMSFyxPir3Lppo71b1dDVHnRn+GPHR7Alb4nZfC5oK8ZW95ZT8b3s3Q7X8/crOBgJrMRPkSO/Ky4MwIPL+Y5E7JeNpCEfjOITL5V44Hdez6HPEO4ft4sNL1a47iOUGy+9Nj3ourMPWgDmWbkGfyyVyFf0LY2D+4VY+UgLysULyrAJ3HJePcHw==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784579442; c=relaxed/relaxed;
-	bh=B170ktvBJvb7IdCG3ZTa+eB9QaJTpQOOQSG14E40pM4=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ngPYp+3evzw9DGc/t1U9HnhuGsg5sbJbcpmfLX7YxjmsaD6Vw6hUkTmJl6qZisDiEh0GupULFOHDL8v2koxJERX7aw1gNxcfLZbcj8e0LYHG62m26aNim/Rl5YI68FKj9v4ZtctjwqaxR1MyKgWbkylLR7dvlfC46VRDVUWSVLj0+278ppD2BCHveusJIkNUPVALjm6T0ev4siffks5t0xzLvZrN/hnqvans1hvnWmXG4TPMh3i4Zgx6zRnKwCac87F6wEplCuRkoRc2XWjqyNXSCxU2itglZ8+lBSuJ89gnEBTBO3O3qbydZH3sZLf8RgCSdwN6Yk6gMDtKS5AfoA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=HRfMpuHj; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=gbatra@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h3sl22z4dz2yLY;
+	Tue, 21 Jul 2026 06:37:18 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c111::9" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784579838;
+	cv=pass; b=TNd4bukUSaEITDpt2B7IPOVXfbpOM0cA3pscgQDFpiBj4xnVau6D3GHcOvGg1cM0uEIjHD02qLcelaEgabaGcKdDUaX1P28JIpBpO3d6rylF8VnDo9vMnIdJAxoyoZWULTgWD4czYgyyWuGH8SdLcz2ph7Ty0Nr780QAnb2XzOFdw4vSL7JqhNWXo3bLs7g9NwGzAMWZZM2f0PHBQqR1oPCrr7wejnDUOUaPNN3AZueuRG5iClI/VaEz6EwY3CcmjvkJuBjOnUIhGJH+A5bqP0iqBB2Wm78pa2iD3j3beQzmyo6pNdODAPamwJ/Zj+/GNcvBqp9F8FhMQs0KadeOGA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1784579838; c=relaxed/relaxed;
+	bh=VV9jv4KN2UC7juYDomNeD2eX8sNdqXOKJszrQBMikRU=;
+	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=PDOPUMcHWGOodqkLjYoHnylBw/uqmSPMsrshISjQeg7zMYB/XZce70HVnv/zJQy1bJz/2GWV53Rh2eHMucR8xyiyqasRh6qutdK1vAG2OLbRsWvr5wXlY7lMifLl0vjLYkMbU+iAg3UWMsnFOSeAkXI06HL53qeEHlxoh4+sptrQN5oK0vhAYu23aR7lq1FAGMAbniCaaRrusFqWj06x9oFDs5XbnpaSpBPHa/t8Ns9dFMQaq80AxtXN+98mFnUYB2z1t2UuJSY5H+oVY7gZRsIAJM3DX6KzHIpRUFkUpeav7xjmJPiuggUAGhCg3ZZHsEeSJE2Sk7s1HGKry1zK3Q==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=UjpFZNzQ; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c111::9; helo=dm5pr21cu001.outbound.protection.outlook.com; envelope-from=terry.bowman@amd.com; receiver=lists.ozlabs.org) smtp.mailfrom=amd.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=HRfMpuHj;
+	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=UjpFZNzQ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=gbatra@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=amd.com (client-ip=2a01:111:f403:c111::9; helo=dm5pr21cu001.outbound.protection.outlook.com; envelope-from=terry.bowman@amd.com; receiver=lists.ozlabs.org)
+Received: from DM5PR21CU001.outbound.protection.outlook.com (mail-centralusazlp170110009.outbound.protection.outlook.com [IPv6:2a01:111:f403:c111::9])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h3sbP1ZmBz2yDs
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2026 06:30:40 +1000 (AEST)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66KJfjx83128808
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2026 20:30:39 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=B170ktvBJvb7IdCG3ZTa+eB9QaJTpQOOQSG14E40p
-	M4=; b=HRfMpuHj9+yy+2hpsjI1WFelAMCKlLCXxC4AvKdEflG7FviEYZtXGxtKV
-	tyAC1JSxVafaockiq1n+dPvZuy2/ZVWyIJmrQvrBRxiJV1AEwcWMtSNlj3T/4DDQ
-	vSllC+crJ70BV2KHJnt1zsgH5P3Wp2QcsYCDTQ7e6/LfmhSt37Kje/pl/kd8OQ8o
-	b7HGgtllS6ie9CE+vTyQoql1KXPste+CspGPo8fjkA3i8m0MooSfp/SPTCJhd5k2
-	YEWwXNC/H3A6kvmP57+glKCFYOUZ2ZXECkygHvl4jDBP3wXodX9rn8epQBsVFYn8
-	bLLII20iS4+dPHglUCXrm8RFEsvfg==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fg7ah12kw-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 20 Jul 2026 20:30:38 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66KKJb4A015427;
-	Mon, 20 Jul 2026 20:30:37 GMT
-Received: from smtprelay07.dal12v.mail.ibm.com ([172.16.1.9])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fgp1g72dq-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 20 Jul 2026 20:30:37 +0000 (GMT)
-Received: from smtpav01.dal12v.mail.ibm.com (smtpav01.dal12v.mail.ibm.com [10.241.53.100])
-	by smtprelay07.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66KKUaZL1639026
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 20 Jul 2026 20:30:36 GMT
-Received: from smtpav01.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 42C5058059;
-	Mon, 20 Jul 2026 20:30:36 +0000 (GMT)
-Received: from smtpav01.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 619A658058;
-	Mon, 20 Jul 2026 20:30:35 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.67.184.84])
-	by smtpav01.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 20 Jul 2026 20:30:35 +0000 (GMT)
-From: Gaurav Batra <gbatra@linux.ibm.com>
-To: maddy@linux.ibm.com
-Cc: npiggin@gmail.com, ltc-dev@lists.linux.ibm.com,
-        linuxppc-dev@lists.ozlabs.org, sbhat@linux.ibm.com,
-        ritesh.list@gmail.com, harshpb@linux.ibm.com, vaibhav@linux.ibm.com,
-        Gaurav Batra <gbatra@linux.ibm.com>
-Subject: [PATCH] powerpc/pseries/iommu: switch to Default DMA window during kdump
-Date: Mon, 20 Jul 2026 15:30:34 -0500
-Message-ID: <20260720203034.95244-1-gbatra@linux.ibm.com>
-X-Mailer: git-send-email 2.50.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h3sl04nrCz2yDs
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2026 06:37:15 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=mJOGKU26PSsJolTOoxgxCo+JBWzhyPHdJT3Fh1SdywXWpnjZfqIl1S6lMGfrK8MQwBSiTHP5+d0BGYEcCfGHr1G3YY2N1j01szxR6nC998aOcjBaL1DOZ656JHHUBojLs59l5SCxZ5wziEpak/O52NPKNUjDfFBFwkURzytXqsiVOXOsknZgtcwBcD1DVol03ul0PBZEjwyuyPH9q6DY3IXnJDDfHWfuXR1lLhUnMNGaU2B5pcfs3RTdTJ/Nyv1R8R+Fslycbnu/mspaOZOn71sH3KSGKlLQv78ae9jeaeZMBVjGrdhNM6QraBSzFXOh9/2Gu/wDfWq6ADcMGri4Mw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=VV9jv4KN2UC7juYDomNeD2eX8sNdqXOKJszrQBMikRU=;
+ b=hJ7lfQ/UJB9Aldz1DoElXnxE3r0VvLSp53IOSx5XUpMlnM2Af1LwoMt27YfPM1SFq3ewLl/8fD87NMmZ2CRwDVCQXZwMU0x0/y7FXPzepzBxV4sN50Z4zAqeElevxfRYTjGJpMwfQjCKBBrqO8MtaRGQRuYN/28vPn3QqdbHoxiUT59O+Gfk/qmdau8Syg8HAs0ImDbKudxyEdERAa4pyOeb+TipYiFNCx4jphJs37U+E+W/hLb0JIqZgIDbCEpvdEyruUIdQGwRk0L2+Hv/xwWzyQL4et7ptTEB57m/YI1JU+AKYrTJG5d+AKoG/OMqjRLC08Nij8bltF5dl6XIDw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
+ header.d=amd.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=VV9jv4KN2UC7juYDomNeD2eX8sNdqXOKJszrQBMikRU=;
+ b=UjpFZNzQaa29tV9nqxjfHGRhZT8JUZwQ9pW1J36KtDeZsKUkfqlFkUUaMZRrwVqfwHXf85N+Gg/8j8xNt7V/6inmQdci9XwJszK+lG8iXEXQ6CcpmpsgI6mQBh5ppp1EQhl+yfZGvq7ouALu2tBzqtEUbZP+GqT2PWQy3lta5r4=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=amd.com;
+Received: from CH8PR12MB9766.namprd12.prod.outlook.com (2603:10b6:610:2b6::10)
+ by MN6PR12MB8543.namprd12.prod.outlook.com (2603:10b6:208:47b::5) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.223.18; Mon, 20 Jul
+ 2026 20:36:44 +0000
+Received: from CH8PR12MB9766.namprd12.prod.outlook.com
+ ([fe80::be0f:431f:5f27:96d9]) by CH8PR12MB9766.namprd12.prod.outlook.com
+ ([fe80::be0f:431f:5f27:96d9%3]) with mapi id 15.21.0223.017; Mon, 20 Jul 2026
+ 20:36:44 +0000
+Message-ID: <15afee5e-403e-4ab4-a1aa-2677a9c0ca5c@amd.com>
+Date: Mon, 20 Jul 2026 15:36:39 -0500
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v18 01/13] cxl/ras: Fix cxl_rch_get_aer_severity() wrong
+ severity register
+To: Dave Jiang <dave.jiang@intel.com>, Bjorn Helgaas <bhelgaas@google.com>,
+ Dan Williams <djbw@kernel.org>, Ira Weiny <iweiny@kernel.org>,
+ Jonathan Cameron <jic23@kernel.org>, Len Brown <lenb@kernel.org>,
+ "Rafael J . Wysocki" <rafael@kernel.org>, Robert Richter <rrichter@amd.com>
+Cc: linux-acpi@vger.kernel.org, linux-cxl@vger.kernel.org,
+ linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Alejandro Lucero <alucerop@amd.com>,
+ Alison Schofield <alison.schofield@intel.com>,
+ Ankit Agrawal <ankita@nvidia.com>, Ard Biesheuvel <ardb@kernel.org>,
+ Ben Cheatham <Benjamin.Cheatham@amd.com>, Borislav Petkov <bp@alien8.de>,
+ Breno Leitao <leitao@debian.org>, Davidlohr Bueso <dave@stgolabs.net>,
+ "Fabio M . De Francesco" <fabio.m.de.francesco@linux.intel.com>,
+ Gregory Price <gourry@gourry.net>, Hanjun Guo <guohanjun@huawei.com>,
+ Jonathan Corbet <corbet@lwn.net>, Kees Cook <kees@kernel.org>,
+ Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>,
+ Li Ming <ming.li@zohomail.com>, Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+ Mauro Carvalho Chehab <mchehab@kernel.org>,
+ Oliver O'Halloran <oohall@gmail.com>, Shiju Jose <shiju.jose@huawei.com>,
+ Shuah Khan <skhan@linuxfoundation.org>,
+ Shuai Xue <xueshuai@linux.alibaba.com>,
+ Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com>,
+ Tony Luck <tony.luck@intel.com>, Vishal Verma <vishal.l.verma@intel.com>,
+ "linux-cxl@vger.kernel.org" <linux-cxl@vger.kernel.org>,
+ linux-acpi@vger.kernel.org, linux-doc@vger.kernel.org,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ linuxppc-dev@lists.ozlabs.org
+References: <20260717222706.3540281-1-terry.bowman@amd.com>
+ <20260717222706.3540281-2-terry.bowman@amd.com>
+ <9c371c59-c871-4988-83d7-2aa780d8e6c4@intel.com>
+Content-Language: en-US
+From: "Bowman, Terry" <terry.bowman@amd.com>
+In-Reply-To: <9c371c59-c871-4988-83d7-2aa780d8e6c4@intel.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: CH0PR03CA0225.namprd03.prod.outlook.com
+ (2603:10b6:610:e7::20) To CH8PR12MB9766.namprd12.prod.outlook.com
+ (2603:10b6:610:2b6::10)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -87,139 +111,121 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: McVNhb5keE3Z9RNj62uU-MwpVpar1Fxa
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzIwMDIyMCBTYWx0ZWRfX3878tUrEVNXL
- MGA92/V/ZEgiwOmZvjIsU5x+UzxGNKkVRZXdl5nRuug4I18T1xufBmfUvE3ABh05sB2HTbgVi3y
- tQVbOtaQzyYzMk/SWFvLestCoJc2S79XxdnjMqLtNVnOPl07TLwUk6yN1mrwid70/Wfz8k7zQvH
- Puh2XmPmUoLEiNK2JAmjvQGO3dX1o07Ggs9e8gVtAutl9fN8EZLkGrpUhfpmDswV1pJRliq57FG
- /8eSP4z+vbjkRzaDHBTpb7GhAG/WzuXzmNvLIv1A904Sfdd/hVKJH+RwqMlITLDcHNnJ64u7cFH
- g8bbEO4YvndTCco9OdOqeGOmvd3F5jK9D3eYbnWKupqfRE+km7xgKZ6GbANikXugUQaVHjhY3of
- UMJ4O0qNUZjXCjoBVFsSXyU5BQ3dDwBcWWUwpzogNxomE0L+f4PlGrPMUK/LRVz2FNyS9qoEpFt
- QhLLmnOOeI/foRyuTDg==
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzIwMDIyMCBTYWx0ZWRfX36eE1DRfih8h
- 0N3KgAdzfCq958Qs5GyyADMfNtf9HDX7cwOKLmLMTsCOVRWO7cllNFP6BWaCV2srgaZe+ZO3ZTa
- 4enMm6ipJQXF3QQr87qugPfJppgHaS0=
-X-Proofpoint-GUID: tmYlRTqlmdBmTNn6tO3i_Iso2kue51BD
-X-Authority-Analysis: v=2.4 cv=SM5ykuvH c=1 sm=1 tr=0 ts=6a5e856e cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=RzCfie-kr_QcCd8fBx8p:22 a=VnNF1IyMAAAA:8 a=Hr_sB0k_5zeya_QuA1YA:9
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-07-20_05,2026-07-20_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 lowpriorityscore=0 bulkscore=0 suspectscore=0 adultscore=0
- spamscore=0 malwarescore=0 priorityscore=1501 phishscore=0 impostorscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607200220
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: CH8PR12MB9766:EE_|MN6PR12MB8543:EE_
+X-MS-Office365-Filtering-Correlation-Id: f465fc29-2ff2-4c14-c0f4-08dee69e9cac
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|366016|23010399003|1800799024|7416014|376014|10067099003|56012099006|4143699003|11063799006|18002099003|22082099003;
+X-Microsoft-Antispam-Message-Info:
+	88HLLGzt3zrFOiFsRPaMHH6EJ8QYxiU4Woop+jbAEKOHcjrtHc5fGO+dCyAcHokxIfrWDlAoV7paE9Hl/Ea4dvl6HcUgnjSAgoZ4RZs6yjIIw/euwcQAyg1wFJlUEY/tSgUt5JyZlVg1mnwW3nZg3rUimqIg1QMTfif7NzKMrh+u+0654KeqlUyWX9+6AgmYWjt8nNLJwkDfbODjwMrTgtBRLLTWVUub3r3ezgWS8XOTrJCfRCHmzRJOZ4kukb6bx7scUidulbm6Qh36Kwpr0JP3Mx1Qi1bqWiXKcT+q6DH6gnEUnxf1+MX6KRElhooSaFdRI9EaLRl3kg6Vz/2a82pGXhgLWLvS+F6ME6Ik1IINYenRv8b7ZrRa3l9KsxvSrNFzbzJyZdrUJcADwkH2c98jLXtuCnIRaNdCIDo2/b58c3ZoMnjrfdeAQ21sSG5vAJ871kTxCF2BcKcm7R53WE1hSSncb8RMi71g61U1MJ/gptZ+BD6nfdEHq5ssVYB6pykHK0gWM4c2jVuB41R50LfIJeg+xZwkNS+eBj+MoYDy6ZB8xgC36Pg2bBwCjiT60hkEpNCQPZl6YOwI/DqRBVDxC3u7ypvrlem0AgJDig2jw1EI3hyuJgYxHuLRoAXKpMJFzKypCWeFhxKMf9NsSJlpO/zahStdQPdaUIQgsdE=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CH8PR12MB9766.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(23010399003)(1800799024)(7416014)(376014)(10067099003)(56012099006)(4143699003)(11063799006)(18002099003)(22082099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?aTh1UmJwc2JpekNUUU5UTGI4cnlqbmF0eThoVmZzMkdDSThvR1plSkI2b3Nl?=
+ =?utf-8?B?eVFFZ0lxc25HVWxBQW1aSnNWaGRmTk5ZWkpuK3l0Z2NSZ0FQeFk2bWc1aUJx?=
+ =?utf-8?B?SGR1TnJYbnkvVllhZmJabEtsa2JoSXJqNzdTOWNVNVVtK2t1d1o5em5JZ3lY?=
+ =?utf-8?B?ZlkxSXErR3IzQWtWempqQlpQY29PdVRsQUQwQnZoLzJIQ0Naa0tNWmdiWXp3?=
+ =?utf-8?B?amt0ZVVJNUJWYVFHbXdMVk00SjRmVjUxei9Qb2NPTjQyTHUzUUM5VW5nc2NR?=
+ =?utf-8?B?ejYxZXBzaW5QSlkrdm5zb3Y5YVdTY054MG05ZHVPRWJGK1AvTmpWblBrTXpL?=
+ =?utf-8?B?cXFVUFA0OXluNHBHV09sN1FjbC9vS2wzVEVQUklEZUZqcmZ0N3MzQnVxS054?=
+ =?utf-8?B?VFJyTDFTellYNDhFMnQrK2NoeWpsRExvNUdHbjhVT1FXdXBDV1pBZzZxTElm?=
+ =?utf-8?B?QTdiRjBoNFZHR2JBRFFwOFVmMGkxaEVWRnF6TUpMVmRySEMzcHNua3hIOURY?=
+ =?utf-8?B?dVZDTGhUWXNsL0sxcHdNejA4Yzk1d1hIRjc1b3RKalNyN3JDUTNGeEZOMXZP?=
+ =?utf-8?B?UHUzQWNXSVIvUTdnaG9mTEZIS0p6My96NnQ0QmhjQlFsUHFsN1pDVkRqR1l2?=
+ =?utf-8?B?ZlZvZUtGSGhLSGl5RW94dE1rN2F4QzBxOGJIWktvdjU4MnVhMHRLVW9kWCtl?=
+ =?utf-8?B?Z01ZK3pTOXplUkJsc0tzTmoyZFZpYU1icWZFWVNBL2dPVVFmbG9CdWphT1JL?=
+ =?utf-8?B?VXFaa0Zua2REOXg3OS9OaGFGWTRGK01oeU8xekgwdmdzdTZxazhWaU5IRi9H?=
+ =?utf-8?B?ZE9kMm1XS1R4b05qeHQwbkthZWpaWEloWkZnKzA4ZEZCSWl0Z2V1ZkRmKzJq?=
+ =?utf-8?B?TTRpKzdqUkpKdW9ESTNvVW1iVzl3a1ZjSDZkM0kxYmZ1YXQwcEpiL3d1VGh1?=
+ =?utf-8?B?enZFbHdMbVVHTzN3OEtjckM1aWdXTVE1TUtBaVJQZXR5VW5sSGRtTnIzandX?=
+ =?utf-8?B?ajc3cWNkbXhxQ2tKalBNM2NoY0s0TzB1Wjgya0NkT1YyZnV0c3JMVHZRWE1J?=
+ =?utf-8?B?UUJ0L05OdU5DVEZsQnNFL0tyNXlZWm90akx5dUgzdWFpM2oxZUVkbHJCcTNN?=
+ =?utf-8?B?VXFqSzZkOTFiR1B5VFFmbFlEVDVwLy81cmRuRWozTVFTVTErdjU5LzNDbzVQ?=
+ =?utf-8?B?ZzVmQWN1cWpEYXpEVGJ6M2JuN1FkdEllNS8xbTZHVzI5M2VUTENCVkNCeDh4?=
+ =?utf-8?B?QUs3Y3hxNGJ3K2RCN2JQOG1Cc2ZZYjhMbHdwbFlTMG1TVE9ZeURrbG56d0gv?=
+ =?utf-8?B?TGxhTXdBKzBKUkxpK0F5OCtSSGNDc2VsQVRIWWRBOUFQYlE4TzlmTS9kVWdt?=
+ =?utf-8?B?cFJWRlJjeVoyWVBLWVhpcnVuU0ZrNnNjb0FoM3NoVFE4U0xrWmlneW9veVpp?=
+ =?utf-8?B?OHBkM0U1YUxBckdEdTRHUm1tZnZDVENsTVZNZktXd2FQMEpvdkpZMlczMU8r?=
+ =?utf-8?B?MHlMNzI2YmQyNHpIODl1NDdtRk9PL1Y3Kzc2cElXdit5WmlsSi9GekhSQVQ2?=
+ =?utf-8?B?VUZiQ2N6WkRUZDBlQUlYeWlLdUJvZE9ic0p3MWNzMi9QdVNKWFVuK20waVFt?=
+ =?utf-8?B?Z0lPVFowZ2Y4SG5xNyttRnVTQld4bXdSNWFtNUx3OXlPeHd0T2srazI1cXhq?=
+ =?utf-8?B?K1h1U2d0TGNXSXJiM0JTMHJWSzNSdTFDTWpIZjVjSVhvTWtXbk52aEVITTVZ?=
+ =?utf-8?B?QTRud28vbUVTR0FLaWpmZnJ3TXhWcy9TMlh6ZTZJSjQzeW9ubVpIOGVlUUJ1?=
+ =?utf-8?B?WG9iVDNxRXpYcHVkNjl2bTcwYXBNUDNJaE1nakRPb2hLT2VxelJoUDdOQVcz?=
+ =?utf-8?B?dzNCSW9DTWlsdnZFREcvK1gweWxoalZmWmFPM241Y0pHbUMxUWlXdjh1REts?=
+ =?utf-8?B?WnBSdnRZRG1UZ1ZPSFFQb204eGt6UGhJdEpTTHpnZ2Jna0ZQejh2d3BScjEz?=
+ =?utf-8?B?OFV3WVBVOFQvcTJpbU96a1hjbzdBRGpXU0t2NmN6NTVvRlp5MGNud0IyVTdh?=
+ =?utf-8?B?eDZVTjI5STErMHQ2d3JSQmlCWHE4bWJDNTB5N25Rc2xseGtZNHEyK1NIbU9J?=
+ =?utf-8?B?bVBnVU8zdHVnOTZtZlVNbWZHVHRlVUJBNjRUQzMwR01mZGFCNjJxZXc5anFW?=
+ =?utf-8?B?RTl3ajhVMmtJalgwbDlPZmZ6OTB3RWFXQXhHditVYWpvUzJwd1I5S0sxdTVT?=
+ =?utf-8?B?alhhaFlocVJoMVZPR3N6WXRyRE1qSmpqTXV1SHpFSFJCMElIb3ZtQzJXTi9F?=
+ =?utf-8?Q?SI9lDDFaIjUOxNLA15?=
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: f465fc29-2ff2-4c14-c0f4-08dee69e9cac
+X-MS-Exchange-CrossTenant-AuthSource: CH8PR12MB9766.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 20 Jul 2026 20:36:44.2054
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: +gYjYizdXSp20gA7uhL5CT9lDfDU2O8QfukgWbS5um2+6d5DZdkbDWlfMmp41gqpY/bDC1ba+bFq01GF7IDwug==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MN6PR12MB8543
 
-In PowerPC (pseries) a non-virtualized adapter will have 2 DMA windows -
-2GB default and a larger Dynamic DMA Window (DDW). DDW is large enough to
-map total RAM to a device.
+On 7/20/2026 3:09 PM, Dave Jiang wrote:
+> 
+> 
+> On 7/17/26 3:26 PM, Terry Bowman wrote:
+>> cxl_rch_get_aer_severity() classifies RCH Downstream Port uncorrectable
+>> errors as fatal or non-fatal by ANDing uncorrectable status with
+>> PCI_ERR_ROOT_FATAL_RCV. This is wrong because PCI_ERR_ROOT_FATAL_RCV is a
+>> Root Error Status register bit (bit 6), not a severity bit. ANDing it
+>> against uncorrectable status tests a reserved bit and produces incorrect
+>> severity classification.
+>>
+>> Fix by ANDing the unmasked uncor_status against uncor_severity. Per
+>> PCIe Base Spec r6.0 Section 7.8.4.4, each bit in the Uncorrectable
+>> Error Severity register indicates whether the corresponding error is
+>> fatal (1) or non-fatal (0).
+>>
+>> Fixes: 6ac07883dbb5 ("cxl/pci: Add RCH downstream port error logging")
+>> Cc: stable@vger.kernel.org
+>> Signed-off-by: Terry Bowman <terry.bowman@amd.com>
+> 
+> Reviewed-by: Dave Jiang <dave.jiang@intel.com>
+> 
+> This can be picked up ahead looks like?
+> 
+Yes.
 
-During normal functioning of OS, since RAM is pre-mapped, 2GB default
-window is not used. The only scenario it might get used is when buffers in
-pmemory are mapped to the device for DMA.
+-Terry
 
-As of today, during kdump, during early device discovery, pci_dma_find()
-finds that the device has 2 DMA windows. It selects to use DDW. This is a
-kdump path and DMA window is needed for IO to the device.
-
-Since, in the previous life of the LPAR (before panic), RAM was pre-mapped
-via DDW, the DDW is completely full. So, in the iommu table initialization
-code, iommu_table_clear() frees KDUMP_MIN_TCE_ENTRIES (2K) number of
-TCEs.
-
-But, it seems these are not enough for NVMe over Fibre-channel. When kdump
-is trying to save vmcore on storage device, which is NVMe-FC, the
-TCE usage is much more than 2K number of entries. The driver is mapping
-a lot more buffers for DMA. After all the TCEs are consumed, iommu returns
-iommu_alloc failures and the driver is not able to further map buffers for
-IO. kdump fails to copy vmcore to NVMe-FC storage device.
-
-Here are the driver logs and stack
-
-lpfc 0153:70:00.0: iommu_alloc failed,
-tbl 0000000034ebcf5e vaddr 00000000d814df0b npages 1
-lpfc 0153:70:00.0: FCP Op failed - cmdiu dma mapping failed.
-lpfc 0153:70:00.0: iommu_alloc failed,
-tbl 0000000034ebcf5e vaddr 000000009779e4d2 npages 1
-lpfc 0153:70:00.0: FCP Op failed - cmdiu dma mapping failed.
-
-iommu_map_phys+0x1c4/0x1f0 (unreliable)
-dma_iommu_map_phys+0x54/0xa0
-dma_map_phys+0x3f8/0x590
-__nvme_fc_init_request+0x110/0x300 [nvme_fc]
-nvme_fc_init_request+0x60/0xb8 [nvme_fc]
-blk_mq_alloc_map_and_rqs+0x388/0x510
-blk_mq_alloc_tag_set+0x2a4/0x5f0
-nvme_alloc_io_tag_set+0xe0/0x1e0 [nvme_core]
-nvme_fc_connect_ctrl_work+0x85c/0xdac [nvme_fc]
-process_one_work+0x1e4/0x5a0
-worker_thread+0x1ec/0x3e0
-
-Increasing the number of free TCE entries in iommu_table_clear() will
-increase the probability of hitting EEH since there could still be some
-active IOs from the previous life of the kernel.
-
-Instead, during kdump, we can switch to default 2GB DMA window. This window
-will mostly be empty. Or, could be slightly used if buffers in pmemory
-were mapped for IO.
-
-Fixes: 09a3c1e46142 ("powerpc/pseries/iommu: IOMMU table is not initialized for kdump over SR-IOV")
-Signed-off-by: Gaurav Batra <gbatra@linux.ibm.com>
----
- arch/powerpc/platforms/pseries/iommu.c | 23 ++++++++++++-----------
- 1 file changed, 12 insertions(+), 11 deletions(-)
-
-diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-index 3e1f915fe4f6..272e9aab66d4 100644
---- a/arch/powerpc/platforms/pseries/iommu.c
-+++ b/arch/powerpc/platforms/pseries/iommu.c
-@@ -812,18 +812,11 @@ static struct device_node *pci_dma_find(struct device_node *dn,
- 
- 	/* parse DMA window property. During normal system boot, only default
- 	 * DMA window is passed in OF. But, for kdump, a dedicated adapter might
--	 * have both default and DDW in FDT. In this scenario, DDW takes precedence
--	 * over default window.
-+	 * have both default and DDW in FDT. In this scenario, default window
-+	 * takes precedence over DDW. For a dedicated adapter, default window will
-+	 * potentially have more unused TCEs.
- 	 */
--	if (ddw_win) {
--		struct dynamic_dma_window_prop *p;
--
--		p = (struct dynamic_dma_window_prop *)ddw_prop;
--		prop->liobn = p->liobn;
--		prop->dma_base = p->dma_base;
--		prop->tce_shift = p->tce_shift;
--		prop->window_shift = p->window_shift;
--	} else if (default_win) {
-+	if (default_win) {
- 		unsigned long offset, size, liobn;
- 
- 		of_parse_dma_window(rdn, default_prop, &liobn, &offset, &size);
-@@ -832,6 +825,14 @@ static struct device_node *pci_dma_find(struct device_node *dn,
- 		prop->dma_base = cpu_to_be64(offset);
- 		prop->tce_shift = cpu_to_be32(IOMMU_PAGE_SHIFT_4K);
- 		prop->window_shift = cpu_to_be32(order_base_2(size));
-+	} else {
-+		struct dynamic_dma_window_prop *p;
-+
-+		p = (struct dynamic_dma_window_prop *)ddw_prop;
-+		prop->liobn = p->liobn;
-+		prop->dma_base = p->dma_base;
-+		prop->tce_shift = p->tce_shift;
-+		prop->window_shift = p->window_shift;
- 	}
- 
- 	return rdn;
-
-base-commit: 4549871118cf616eecdd2d939f78e3b9e1dddc48
--- 
-2.39.3
+>>
+>> ---
+>>
+>> Changes in v17 -> v18:
+>> - New patch.
+>> ---
+>>  drivers/cxl/core/ras_rch.c | 3 ++-
+>>  1 file changed, 2 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/cxl/core/ras_rch.c b/drivers/cxl/core/ras_rch.c
+>> index 0a8b3b9b63884..44b335d560708 100644
+>> --- a/drivers/cxl/core/ras_rch.c
+>> +++ b/drivers/cxl/core/ras_rch.c
+>> @@ -80,7 +80,8 @@ static bool cxl_rch_get_aer_severity(struct aer_capability_regs *aer_regs,
+>>  				     int *severity)
+>>  {
+>>  	if (aer_regs->uncor_status & ~aer_regs->uncor_mask) {
+>> -		if (aer_regs->uncor_status & PCI_ERR_ROOT_FATAL_RCV)
+>> +		if ((aer_regs->uncor_status & ~aer_regs->uncor_mask) &
+>> +		    aer_regs->uncor_severity)
+>>  			*severity = AER_FATAL;
+>>  		else
+>>  			*severity = AER_NONFATAL;
+> 
 
 
