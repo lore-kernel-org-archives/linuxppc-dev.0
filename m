@@ -1,85 +1,127 @@
-Return-Path: <linuxppc-dev+bounces-24528-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24529-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00C4BC44520
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jul 2026 18:29:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B8CC7C4452D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jul 2026 19:05:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h3pv93HMvz2ySN;
-	Tue, 21 Jul 2026 04:29:09 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=156.67.10.101
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784572149;
-	cv=none; b=BZ8QrSRwL4ZrJ5JtToNpg8kwdks5TbAy2P/i7asj+icPMtnnhSTtps5q+rxwrvu0s5opK9AkiENrTgdXdTm7qf4cmEnp/4nRn2xKCX+3Q/A4N3J00n8MHTPaMYxPAEa4x4WQHp/A2x4LkMhhAJ+p9zNZohA+OvFKf6IY/fsqFa2o3YLOGORZPirW7HblejrZAkNR7hzM+pWLuBgkD7BqG6CDh8IgPD2pz3L+Amm7Qo3FNGZFhZ9VQUPtpWd+B8fkBoKefDeAAeDfZ33D4HSLVomBocVmOJ1NfO1fi1Hmbe1FO3Wktg+yaACNyEu5F0zriAqnSNMrtsKiuy4qVdmZqw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h3qht6XlCz2ySN;
+	Tue, 21 Jul 2026 05:05:18 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::635"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784574318;
+	cv=none; b=AO4PiSiKCWmSZQO4dnCEJP7QVenx8661l2RQj+5EOh1ipxGYHybYocU8OsK0NAeg7l7hpvdsdjUR3+uji+lP1VvM0SouHErIH1hBd1HRPLdndXZQmd12dLZYY611kibYQuuPsR6caehx99Zh26PcQL015NZ2tz+Qd7trCrABs5W3l5PzhwXJs6X8U3vmLpdDzIxL6eTXSVKUmWKFNfQWGRtOEOgv0zXDdopt66Xg1ZOPDC+9yfDJsHRVcuK205YTSkFKEI6pzM3OuletUFnsjMWQgsOICR4nnkp90GCADCB0CLMSCM+uH2FrV3vYE6Ju64C8aJTvc5cucb1OTrZVPw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784572149; c=relaxed/relaxed;
-	bh=yLMgkHL29YuNPW+/3QaUsRDGEETcaDq11JerkMxi71U=;
+	t=1784574318; c=relaxed/relaxed;
+	bh=kPMaiKQm/Lrn2+15jJw1Tz84+egEdnjBHflNkHpDaxg=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ewytJlU+omEDtd0bfG+B0ZWhz2zBixMk4ekgLZixhR2bTbQnrilzXewBqtHnUEOLefzpOG1P4cjOS8FfYGx0dfmZrQPWUaa4as142bN4htUZ7X5BLhZHuBqRp0CLmrZp3gnu26DVura9JZDNZQ0iS/U+ORJLrqoQwkvIDvG3S2B16NRo4e5MrzAPknAm583pmVlSS6aPoAtN0rmbwnQKw1YC2+3nyPjNj3bofoRpFUess6Cx3mWg3PwKJ0d7ZmKcGmqLM1YjhNuMU+VgXVDXpYzeoNavEQqBKmMiDTrGG97BRTS5QVsD4s1IV7hx8H3whjlpofNG+YKKruxE8CnvIA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch; dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=aXfSe1ax; dkim-atps=neutral; spf=pass (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org) smtp.mailfrom=lunn.ch
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch
+	 Content-Type:Content-Disposition:In-Reply-To; b=TVFJkHySOzp+d03g/QldnhKrqlzkrWYKBfmRVmIH6830DU3T/t3flQq6l9Ulrem8I/sE0mrJ623GAZGzYpOmhYaTXuTCbcngmwjTDYHsUaa0gR0Jm/paZSZ616GZsMi/wtwAjvEsMuvTrmFCRHhtPbN/dWpbmSpaN8TG9IJvIb8jU7q3IEyGYJbGSPtEPZ6wyfbtxvQIPwcEteWlHAErVYvoCdzLFj35zgJIwnxMGNtuAL41rrqmui+KUZS0zseYSTso8Ak6MC6weSG8A0GlwLQwK9lQndmlnqC+iqXNL+734cDDVmJyjwWTiLnv8W92V9FGeS1FjUltDEUz3Bo4yQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=XgHM4gUC; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::635; helo=mail-pl1-x635.google.com; envelope-from=vishal.moola@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=aXfSe1ax;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=XgHM4gUC;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lunn.ch (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org)
-Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::635; helo=mail-pl1-x635.google.com; envelope-from=vishal.moola@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x635.google.com (mail-pl1-x635.google.com [IPv6:2607:f8b0:4864:20::635])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h3pv82qHsz2xqJ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2026 04:29:08 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
-	s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
-	Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
-	Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
-	bh=yLMgkHL29YuNPW+/3QaUsRDGEETcaDq11JerkMxi71U=; b=aXfSe1axWn1ivOd2Cu9BO1RFeq
-	hWgF1UgIJeW3prZhNqGQBXWrgbuTuwyexLgmgUNYx2N/ldKGruFnJsUHlN1z27mAm6jFGqs2hs9gA
-	ahOJFCbMr0Yi7Jx28dCpVd/erX67Wj6OVBy/j8nQ7Y54VjyLQTQQ9WeRLH9Gg27QXLhQ=;
-Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
-	(envelope-from <andrew@lunn.ch>)
-	id 1wlsjH-00DJ6A-QN; Mon, 20 Jul 2026 20:28:39 +0200
-Date: Mon, 20 Jul 2026 20:28:39 +0200
-From: Andrew Lunn <andrew@lunn.ch>
-To: Bartosz Golaszewski <brgl@kernel.org>
-Cc: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Danilo Krummrich <dakr@kernel.org>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h3qhs2S08z2xqJ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2026 05:05:16 +1000 (AEST)
+Received: by mail-pl1-x635.google.com with SMTP id d9443c01a7336-2ceae1ed204so84113055ad.0
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2026 12:05:16 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1784574313; x=1785179113; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=kPMaiKQm/Lrn2+15jJw1Tz84+egEdnjBHflNkHpDaxg=;
+        b=XgHM4gUCtXEepCYa4RkEpI4Bx1zGfCHTNIwiK4J14313b+rF4ydoq5kZqvQSVoojr0
+         dH8J9hU49tiDxLZWjNC9sQvcBGCsv8CwCExzMi05d8dIrzswmOUT31MNNwYiMqa71OUe
+         Qfbl8Dq/0H/AudRtzvVYCOVc2Tlfey1Bhv5GxYy9oadtsjyBB+4MkvLmZ9mjptKmxj7v
+         EEEbRGDfaD27NMBHb4q+Yyjc4IcuCflSAFuE0817G4Iu11YTuyLU4l/2SR/aLxUDiUc1
+         7IpRx5xF/uOSNUiQWDTTCWoo2HbI0Bs/5G5Y/8AuNNZGRSx7caGD2D4yx+NmcTVT+155
+         RGRg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1784574313; x=1785179113;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=kPMaiKQm/Lrn2+15jJw1Tz84+egEdnjBHflNkHpDaxg=;
+        b=i7dtZX0UnTReFD7TV7/RIkUk+7VzdloSY/XeMtJXixeBfSxj9XrGzGvQ6L3Xsx4NeR
+         OWkEMeNvg4OqCTGUiEnp4e/Neu32rstLgJ+ebeUEFtQaPcn25lOBczPhvmkSvwn129yW
+         Irq/w+ctRwIld37JPjq5qlhDqrUeyo75vWzfAhhGgEbz54JB80/JeHcDeYaO+GoUlWOL
+         UWLNlER1DmtN5/Rhb7MSCiZmUhCRvodZ1RXSwUYj95PC47VSkMQMUE5PEaqptd98NM3c
+         i/f2ESwoSvNGK6O+cvP6GXXEPG8Fk7ebeDzX3mWLG4ULPXLW/nBKEBUYrg6Oa0m5/a8K
+         oiDA==
+X-Forwarded-Encrypted: i=1; AHgh+Rp+oJxTJRDqlJwjk4QTqpAtBkLYwnld4S2laLLCyNw7kizTK5n6Myb+PJ94AwSKDwxO6JJB7TAQrEOkm4g=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yzm+S9KDHsHi3isMvzfi1ktu93x3QqmKfN7d/PFOrqsXS0ySXg6
+	de5uOIUYw+hNvmeFYi39jXTLrwtxqiAWa5ZW1pTrLhAvtEoKqc5P/er5
+X-Gm-Gg: AR+sD11j5H9lkH6E5pelSfAMxcg1i7yPk8ev2S8n2cvK+YWZMS8CZJZwuRVwW4+V6g9
+	sEZ1h2LyacnTpuBfDp3z83iUu1M6HR55zSHHsMpKGo7+UaEu8gWlCsafnoERhCw6/jiV6zNzfZJ
+	LpBqFuIMX+r3OKzsdVJ7oqWfayyVlY6FP6hLSQyfHwBSZL3FWvwKLeTLnQfgJx09yDlRrrdCShU
+	sYnrNjG3koftqGbJ/lAmO6f/1k4ibsBJfYtm97MaIEO9rzLH8WjzwlIMBYNKcGqwnV/U6u5FDY+
+	yyratANhGXSIqPXQKNzZAwBmb38L7TPE5ITPBMUfhmyDWZp37Q6ZIlGBFAAAclIyqRrF7MBu5oM
+	h4Jdwuep5vUFbUsxB80P7e7A6ND3Yrvpnmy0m+/wJGBU6iQQEObSkDTN2RhzuU5oPdvitQQ8auN
+	euseVQGgR2NzkYX87V3MTxIYSgVYwHk0n2Bw==
+X-Received: by 2002:a17:902:f681:b0:2ca:3e3f:4956 with SMTP id d9443c01a7336-2cf34a35445mr164591015ad.44.1784574312756;
+        Mon, 20 Jul 2026 12:05:12 -0700 (PDT)
+Received: from fedora ([2601:644:937c:6c90:6d4e:7b2d:4a39:fb0c])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2cf3448f73esm60735085ad.16.2026.07.20.12.05.09
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 20 Jul 2026 12:05:11 -0700 (PDT)
+Date: Mon, 20 Jul 2026 12:05:08 -0700
+From: Vishal Moola <vishal.moola@gmail.com>
+To: Kevin Brodsky <kevin.brodsky@arm.com>
+Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
+	David Hildenbrand <david@kernel.org>,
+	Lorenzo Stoakes <ljs@kernel.org>,
+	"Liam R. Howlett" <liam@infradead.org>,
+	Vlastimil Babka <vbabka@kernel.org>,
+	Mike Rapoport <rppt@kernel.org>,
+	Suren Baghdasaryan <surenb@google.com>,
+	Michal Hocko <mhocko@suse.com>,
+	Pasha Tatashin <pasha.tatashin@soleen.com>,
+	Russell King <linux@armlinux.org.uk>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Will Deacon <will@kernel.org>, Ryan Roberts <ryan.roberts@arm.com>,
+	linux-arm-kernel@lists.infradead.org,
+	Huacai Chen <chenhuacai@kernel.org>, loongarch@lists.linux.dev,
+	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+	Helge Deller <deller@gmx.de>, linux-parisc@vger.kernel.org,
 	Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Andi Shyti <andi.shyti@kernel.org>,
-	"Joerg Roedel (AMD)" <joro@8bytes.org>,
-	Will Deacon <will@kernel.org>, Robin Murphy <robin.murphy@arm.com>,
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-	Doug Berger <opendmb@gmail.com>,
-	Florian Fainelli <florian.fainelli@broadcom.com>,
-	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
-	Andrew Lunn <andrew+netdev@lunn.ch>,
-	"David S. Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@google.com>,
-	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
-	Ulf Hansson <ulfh@kernel.org>, Frank Li <Frank.Li@nxp.com>,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	Fabio Estevam <festevam@gmail.com>, Lee Jones <lee@kernel.org>,
-	Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
-	Srinivas Kandagatla <srini@kernel.org>, driver-core@lists.linux.dev,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	linux-i2c@vger.kernel.org, iommu@lists.linux.dev,
-	netdev@vger.kernel.org, linux-pm@vger.kernel.org,
-	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
-	mfd@lists.linux.dev, linux-arm-msm@vger.kernel.org,
-	linux-sound@vger.kernel.org
-Subject: Re: [PATCH 7/8] net: mv643xx: use platform_device_set_fwnode()
-Message-ID: <3e14e41f-ecd5-432b-9f52-690a05b38a8a@lunn.ch>
-References: <20260720-pdev-set-fwnode-instead-of-of-node-v1-0-2dee93f42c54@oss.qualcomm.com>
- <20260720-pdev-set-fwnode-instead-of-of-node-v1-7-2dee93f42c54@oss.qualcomm.com>
- <86b2aba7-b049-47e6-bc94-6cb499b30ce4@lunn.ch>
- <CAMRc=Mduv_KiB42d4AZddTrFSHmKogd2wh6vBDXomW6ssdfq9A@mail.gmail.com>
+	linuxppc-dev@lists.ozlabs.org, Paul Walmsley <pjw@kernel.org>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>, linux-riscv@lists.infradead.org,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	linux-s390@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
+	Andreas Larsson <andreas@gaisler.com>, sparclinux@vger.kernel.org,
+	Richard Weinberger <richard@nod.at>,
+	Anton Ivanov <anton.ivanov@cambridgegreys.com>,
+	Johannes Berg <johannes@sipsolutions.net>,
+	linux-um@lists.infradead.org, Thomas Gleixner <tglx@kernel.org>,
+	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	"H. Peter Anvin" <hpa@zytor.com>, Andy Lutomirski <luto@kernel.org>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Ning Sun <ning.sun@intel.com>, x86@kernel.org,
+	tboot-devel@lists.sourceforge.net, Ard Biesheuvel <ardb@kernel.org>,
+	Ilias Apalodimas <ilias.apalodimas@linaro.org>,
+	linux-efi@vger.kernel.org, Alistair Popple <apopple@nvidia.com>,
+	"Matthew Wilcox (Oracle)" <willy@infradead.org>,
+	linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+Subject: Re: [PATCH 14/22] mm: set page table page type when allocated
+Message-ID: <al5xZHiFwatn518I@fedora>
+References: <20260714-remove_pgtable_cdtor-v1-0-44be8a7685d7@arm.com>
+ <20260714-remove_pgtable_cdtor-v1-14-44be8a7685d7@arm.com>
+ <alZSwAM4pwmMOeaD@fedora>
+ <f3afa5df-73f3-49da-87a6-d75eb5f3610f@arm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -95,63 +137,57 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <CAMRc=Mduv_KiB42d4AZddTrFSHmKogd2wh6vBDXomW6ssdfq9A@mail.gmail.com>
+In-Reply-To: <f3afa5df-73f3-49da-87a6-d75eb5f3610f@arm.com>
 
-On Mon, Jul 20, 2026 at 06:01:37PM +0200, Bartosz Golaszewski wrote:
-> On Mon, 20 Jul 2026 16:43:40 +0200, Andrew Lunn <andrew@lunn.ch> said:
-> > On Mon, Jul 20, 2026 at 11:24:54AM +0200, Bartosz Golaszewski wrote:
-> >> Prefer the higher-level platform_device_set_fwnode() over the
-> >> OF-specific platform_device_set_of_node() for dynamically allocated
-> >> platform devices.
-> >>
-> >> Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-> >> ---
-> >>  drivers/net/ethernet/marvell/mv643xx_eth.c | 2 +-
-> >>  1 file changed, 1 insertion(+), 1 deletion(-)
-> >>
-> >> diff --git a/drivers/net/ethernet/marvell/mv643xx_eth.c b/drivers/net/ethernet/marvell/mv643xx_eth.c
-> >> index 9caa1e47c174c9d7a161b7f2e2ee12a829b813d4..2f2d6cce8d852b9ec3ab42678a04a7915d1f00cc 100644
-> >> --- a/drivers/net/ethernet/marvell/mv643xx_eth.c
-> >> +++ b/drivers/net/ethernet/marvell/mv643xx_eth.c
-> >> @@ -2780,7 +2780,7 @@ static int mv643xx_eth_shared_of_add_port(struct platform_device *pdev,
-> >>  		goto put_err;
-> >>  	}
-> >>  	ppdev->dev.coherent_dma_mask = DMA_BIT_MASK(32);
-> >> -	platform_device_set_of_node(ppdev, pnp);
-> >> +	platform_device_set_fwnode(ppdev, of_fwnode_handle(pnp));
-> >
-> > This is definitely an OF only driver. There are no other calls to
-> > fwnode functions in this driver, so this is the wrong thing to do.
-> >
-> > Sorry, NACK.
-> >
+On Thu, Jul 16, 2026 at 11:49:31AM +0200, Kevin Brodsky wrote:
+> On 14/07/2026 17:16, Vishal Moola wrote:
+> > On Tue, Jul 14, 2026 at 03:04:03PM +0100, Kevin Brodsky wrote:
+> >> As a step towards removing pagetable ctor/dtor calls for kernel
+> >> mm's, move the page type updates from the ctor/dtor to
+> >> pagetable_{alloc,free}.
+> > Thanks for doing this patchset.
 > 
-> I'm not going to die on this hill but drivers are OF-only until they're not.
-> For example, Qualcomm is now working on a hybrid ACPI-OF approach for
-> laptops[1] and we may end up needing to start converting drivers to fwnode
-> after all.
+> Thanks for suggesting it :) It's turning out to be quite a bit more
+> involved than I expected though! (There are multiple cases where we call
+> the ctor/dtor without using pagetable_{alloc,free}, see my reply to the
+> cover letter.)
 > 
-> There's no real benefit to sticking to OF-specific APIs unless you need to
-> iterate over all properties of a node or use some other functionality not
-> available in fwnode. The overhead is minimal and it's never a hot path.
+> > We should switch over from __folio_set_pgtable() to __SetPagePgtable()
+> > in this patch. Ptdescs and folios should be treated as distinctly
+> > independent of each other.
+> 
+> I sure remember the previous discussion, but my reading of your comments
+> [1] is that we cannot really change this as long as pagetable_alloc()
+> can be called with order > 0, right? Multiple archs still rely on that.
 
-There is a lot of benefit to sticking to OF specific APIs, because
-within the kernel OF is well maintained, has active maintainers, there
-are tools to validate bindings, etc. ACPI is a Wild West, each driver
-is a snow flake, there is no review, no binding documentation, no
-validation tools etc.
+Kinda...
 
-I hope you allow plenty of time to convert any networking drivers,
-where Linux is driving the hardware, to ACPI. Your first stop will be
-the UEFI forum making a proposal for MDIO busses, because that
-currently is not part of ACPI. You will then need to spend time
-understanding the DT bindings, and figuring out which properties are
-deprecated so need to stay OF only, and which can be converted to dual
-OF/ACPI. I've seen too many naive attempts which blindly convert
-everything, copying all the past errors in the DT binding into the
-brand new ACPI binding. That will get NACKed.
+The concern was about callers accessing tail pages directly for that
+information. Using the folio API ensures that we always look into the
+head page.
 
-OF != ACPI
+Since we're now doing it at allocation time, we know we always have the
+head page, so it's fine.
 
-	Andrew
+The dtor/free should be more questionable because the underlying api
+uses virt_to_page() which could look at a tail page... oopsie. I
+haven't seen any reports tied to it so its probably fine (the
+setting/clearing has been using the folio API since ptdescs).
+
+We can say thats a happy accident that makes distinguishing ptdescs
+and folios easier :)
+
+> > Eventually, we want to replace the memcg accounting as well, but
+> > there's no existing API for that right now. Lets leave that as is for
+> > now; this patchset is big enough already ;)
+> 
+> Yep, looks like there was an attempt to improve this but it had to be
+> reverted [2].
+> 
+> - Kevin
+> 
+> [1] https://lore.kernel.org/all/aha321ndGSdReBJR@fedora/
+> [2]
+> https://lore.kernel.org/all/20260225002434.2953895-1-axelrasmussen@google.com/
+> 
 
