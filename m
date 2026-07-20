@@ -1,43 +1,43 @@
-Return-Path: <linuxppc-dev+bounces-24513-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24514-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 013CDC4452B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jul 2026 15:11:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 80C99C4452A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jul 2026 15:11:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h3kVc54Pjz3bx5;
-	Tue, 21 Jul 2026 01:11:04 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h3kVd1mH9z3byP;
+	Tue, 21 Jul 2026 01:11:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=117.135.210.2
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784560264;
-	cv=none; b=fWz6G5bcw+TTNa/KlUyRm547p9rZ6sPU4/4mhvx5xXQlx9eO+ytCUFIuCZYzu6aa9ig5j3tYAxrPYWKekPcM+HFr8gMd6Rk+iq1ctfHWIYvrCbHObc1+LDW5iTN0PV8Xp34lgWBzn6peTBX1TspotNa4GiOqTYJ2VP8rIcxIUBwJbonyEARafn0/xJT5D9SOrNdrLOUIzz7Z1dYH5MYRbC8vKGS0YoDj4SJbuncHj2qXXeGkKtLcZBdXBetmTZ09RbvlET6GBMVz34gPaqkM22x2Gneelzzt68hJ9n0JMs2KypK9f5P2HL495XIFVIEzBpImB0Z5evNn4VemY2EuZQ==
+	cv=none; b=L8n7yHiYwTbrTQHrtf1lDPHtN7fJD9zI34ko0qJUJLDdXpASS7WitR3ezQ7vX0t4K8G7LApN902b/+f0R0usW0riLpo2fWhqhkdvzszB0rmX+BFa2ZvYzajFRXhTboWk70cZj0LL+C8dwIhJvQ7K26j/O57XGJMOfLxykjTRYwC2KLQM3/nCkUj87B9ZamxWdKa/F56Za8mdRBTxToWaOdU+44yHJ9ZsLrzE6rsW1tzTKvaCrupXVTw38O45ZcURWy4xBuECY8TPOO5PnytYuiIzhQfljP3/CRU2gxsWYKBh8cRGZ62Qvbc+eVNarMoNk+cP01V27jsIxQQoZ6lSTQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1784560264; c=relaxed/relaxed;
-	bh=mA809+5dKgIh5hEU/u2sEYn54hA7ngIexLFJ1RFII/4=;
+	bh=P5dtUmSCJE7DzqsEwcI8FKsNsEzR7pCOmSoVvece9QE=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=D3kPHxY03N2A7Hgd26xXYZYXnR362/iEy1DBuQnjEgKZzrwst7pgoeEKFmFmZ+mNWPpKEHfLX1mPNoeUAD4u2eCqmg3r3KQEFFq8zr/uMl9uFiBeWz6YssHM8NVG9wuPym6KfRBpU0zDB8Dmq0DXwCQbTB+Jlwp7SMQmjUPi+B0sLjgDFjS/6JWy8CKuUqiw4kwtKcAlsYJKGVnEn5SFtAv5RAQN8HCXIkgwLJAIFb3c6ZniwtAO9pzzXfcd8o919t7wsAyeNpR0fdG2ACZqtLf00BTWVjiJgsdKr1Tom/1Xp/Un3AxP4+1chk4YQHmf9di65BB5H+Qrn4DTijFpvA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=163.com; dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=Rsa4jCy4; dkim-atps=neutral; spf=pass (client-ip=117.135.210.2; helo=m16.mail.163.com; envelope-from=18255117159@163.com; receiver=lists.ozlabs.org) smtp.mailfrom=163.com
+	 MIME-Version; b=VbyGKuqC3G673j34ktCv64XIO6wL0FucqloK6QPo26d/HvnFS9SPRgS7JhQjPNl/mgQXcUfmGsYnREsdhcFvb5cmErAp5fMOEb8dEGgWa8jH5BUBjBZJ8e+BsTOxy7Bt4Hr8FSthRLP6N7H8Ee/VijMLdA1Whib05dB5qiUQ14g2/1VrxdxJ1WRVIZgvrjdteBjpshNE/yIO0w/2kfxNn0n+hwMURzhsKSS+ZXpdjAfpcWjWLAtieXr7DjoDU4tLgVJMASgu2jBEaLGE3QJLQBz7byaf4h6WKvlA8caTWqpk6u+/lI64h12VKQAK49+gXaTPStILt/8vVNnhWTZpGA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=163.com; dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=WHD25rbD; dkim-atps=neutral; spf=pass (client-ip=117.135.210.2; helo=m16.mail.163.com; envelope-from=18255117159@163.com; receiver=lists.ozlabs.org) smtp.mailfrom=163.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=163.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=Rsa4jCy4;
+	dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=WHD25rbD;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=163.com (client-ip=117.135.210.2; helo=m16.mail.163.com; envelope-from=18255117159@163.com; receiver=lists.ozlabs.org)
 Received: from m16.mail.163.com (m16.mail.163.com [117.135.210.2])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h3kVQ5qRsz2yYf
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2026 01:10:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h3kVQ13dbz2yY1
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2026 01:10:53 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=mA
-	809+5dKgIh5hEU/u2sEYn54hA7ngIexLFJ1RFII/4=; b=Rsa4jCy4DZD7SMWYo7
-	jBSCqh9Uym3kU3QnHscX2w+T5j8CfHl4x70kbASd0ua39cOpmpSZfFOEqU+hASMB
-	M+lRnw9Rx7nT0npcoOUrBMQgY64hXsZ64tQML0k0CFYlpkNBIyZMKl7H1U0izOe6
-	EZuBeYsiFHxPVCQ09c8uU66gY=
+	s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=P5
+	dtUmSCJE7DzqsEwcI8FKsNsEzR7pCOmSoVvece9QE=; b=WHD25rbD+O3j/PT/bT
+	hZqCaT6y3aNagSE1KNUgmZzKqZzOjklu7qJiEGkfnex+zdNyzT4/sZb7/ExrlHfy
+	I4u2eHHcW3SLMybgrWivdvpxISrVGWvUVfkR7jTgf03CFB4Dr4OPWN8z/k2quiWE
+	mw5891+p7BDY6f5GDoCuVDVew=
 Received: from zhb.. (unknown [])
-	by gzga-smtp-mtada-g1-1 (Coremail) with SMTP id _____wD3b1rIOV5qyHOjKQ--.35310S6;
-	Mon, 20 Jul 2026 23:07:59 +0800 (CST)
+	by gzga-smtp-mtada-g1-1 (Coremail) with SMTP id _____wD3b1rIOV5qyHOjKQ--.35310S4;
+	Mon, 20 Jul 2026 23:07:57 +0800 (CST)
 From: Hans Zhang <18255117159@163.com>
 To: bhelgaas@google.com,
 	lpieralisi@kernel.org,
@@ -56,9 +56,9 @@ Cc: imx@lists.linux.dev,
 	linux-pci@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	Hans Zhang <18255117159@163.com>
-Subject: [PATCH v3 12/16] PCI: dwc: sophgo: Use cached PCIe capability offset
-Date: Mon, 20 Jul 2026 23:06:15 +0800
-Message-Id: <20260720150619.24733-13-18255117159@163.com>
+Subject: [PATCH v3 10/16] PCI: dwc: qcom-ep: Use cached PCIe capability offset
+Date: Mon, 20 Jul 2026 23:06:13 +0800
+Message-Id: <20260720150619.24733-11-18255117159@163.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20260720150619.24733-1-18255117159@163.com>
 References: <20260720150619.24733-1-18255117159@163.com>
@@ -76,50 +76,78 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:_____wD3b1rIOV5qyHOjKQ--.35310S6
-X-Coremail-Antispam: 1Uf129KBjvJXoW7CF48WFW5tr1rXryrCry3Arb_yoW8Jw1kpa
-	y5Zr4FkF4rJF4Yqa1Iy3WkZr1Yq3sxAryxJa93Gw4av34akFyDJw45tFyYgFnrGFWjyry3
-	KFn8t3W3WF98AwUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0pi9a9hUUUUU=
+X-CM-TRANSID:_____wD3b1rIOV5qyHOjKQ--.35310S4
+X-Coremail-Antispam: 1Uf129KBjvJXoWxAw4kWFW3Cw4fAFy7JFy3CFg_yoW5GFy8pa
+	s0qrsIyr18Jr48XrsFka98XFnxWrn8Ary7Aa97Kw1fZa42v347Ja1jyryftFn7GFW7KryU
+	Cr4rt3yxu3WYyFUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0pEzB-NUUUUU=
 X-Originating-IP: [240e:b8f:91b3:d000:f138:f837:e143:4264]
-X-CM-SenderInfo: rpryjkyvrrlimvzbiqqrwthudrp/xtbC6w+zV2peOc9vigAA3n
+X-CM-SenderInfo: rpryjkyvrrlimvzbiqqrwthudrp/xtbCww2zV2peOc0BRQAA3u
 
-dw_pcie_host_init() calls .init before caching, so we must call
-dw_pcie_get_pcie_cap() inside .init. The hardware is already enabled by
-the driver's own initialization before this point. The helper will cache
-the offset and avoid redundant searches.
+dw_pcie_ep_init() no longer caches the offset automatically. For qcom-ep,
+hardware (clocks, PHY) is enabled only after PERST# deassert. Therefore,
+we must call dw_pcie_get_pcie_cap() in qcom_pcie_perst_deassert() after
+the resources are enabled, before any DBI access. This ensures the cached
+offset is valid for subsequent uses in interrupt handlers and ICC updates.
 
 Signed-off-by: Hans Zhang <18255117159@163.com>
 ---
-In pcie-sophgo, the call chain is:
+In pcie-qcom-ep, dw_pcie_find_capability() appears in:
 
-  static const struct dw_pcie_host_ops sophgo_pcie_host_ops = {
-    .init = sophgo_pcie_host_init,
-  };
-  sophgo_pcie_host_init()
-    -> sophgo_pcie_disable_l0s_l1()
-      -> dw_pcie_find_capability()
+  qcom_pcie_ep_probe()
+    -> dw_pcie_ep_init()
+    -> qcom_pcie_ep_enable_irq_resources()
+      -> qcom_pcie_ep_global_irq_thread()
+	-> qcom_pcie_ep_icc_update()
+	  -> dw_pcie_find_capability()
+	-> qcom_pcie_ep_perst_irq_thread()
+	  -> qcom_pcie_perst_deassert()
+	    -> offset = dw_pcie_find_capability()  (called twice)
 ---
- drivers/pci/controller/dwc/pcie-sophgo.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ drivers/pci/controller/dwc/pcie-qcom-ep.c | 13 ++++++-------
+ 1 file changed, 6 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/pci/controller/dwc/pcie-sophgo.c b/drivers/pci/controller/dwc/pcie-sophgo.c
-index 044088898819..39703d2b7b5f 100644
---- a/drivers/pci/controller/dwc/pcie-sophgo.c
-+++ b/drivers/pci/controller/dwc/pcie-sophgo.c
-@@ -164,9 +164,10 @@ static void sophgo_pcie_msi_enable(struct dw_pcie_rp *pp)
- static void sophgo_pcie_disable_l0s_l1(struct dw_pcie_rp *pp)
+diff --git a/drivers/pci/controller/dwc/pcie-qcom-ep.c b/drivers/pci/controller/dwc/pcie-qcom-ep.c
+index 56184e6ca6e6..16b0891f9571 100644
+--- a/drivers/pci/controller/dwc/pcie-qcom-ep.c
++++ b/drivers/pci/controller/dwc/pcie-qcom-ep.c
+@@ -307,15 +307,13 @@ static void qcom_pcie_dw_write_dbi2(struct dw_pcie *pci, void __iomem *base,
+ static void qcom_pcie_ep_icc_update(struct qcom_pcie_ep *pcie_ep)
  {
- 	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
--	u32 offset, val;
-+	u8 offset;
-+	u32 val;
+ 	struct dw_pcie *pci = &pcie_ep->pci;
+-	u32 offset, status;
+-	int speed, width;
+-	int ret;
++	int speed, width, ret;
++	u32 status;
+ 
+ 	if (!pcie_ep->icc_mem)
+ 		return;
  
 -	offset = dw_pcie_find_capability(pci, PCI_CAP_ID_EXP);
-+	offset = dw_pcie_get_pcie_cap(pci);
+-	status = readw(pci->dbi_base + offset + PCI_EXP_LNKSTA);
++	status = readw(pci->dbi_base + pci->pcie_cap + PCI_EXP_LNKSTA);
+ 
+ 	speed = FIELD_GET(PCI_EXP_LNKSTA_CLS, status);
+ 	width = FIELD_GET(PCI_EXP_LNKSTA_NLW, status);
+@@ -491,14 +489,15 @@ static int qcom_pcie_perst_deassert(struct dw_pcie *pci)
  
  	dw_pcie_dbi_ro_wr_en(pci);
  
++	dw_pcie_get_pcie_cap(pci);
++
+ 	/* Set the L0s Exit Latency to 2us-4us = 0x6 */
+-	offset = dw_pcie_find_capability(pci, PCI_CAP_ID_EXP);
++	offset = pci->pcie_cap;
+ 	val = dw_pcie_readl_dbi(pci, offset + PCI_EXP_LNKCAP);
+ 	FIELD_MODIFY(PCI_EXP_LNKCAP_L0SEL, &val, 0x6);
+ 	dw_pcie_writel_dbi(pci, offset + PCI_EXP_LNKCAP, val);
+ 
+ 	/* Set the L1 Exit Latency to be 32us-64 us = 0x6 */
+-	offset = dw_pcie_find_capability(pci, PCI_CAP_ID_EXP);
+ 	val = dw_pcie_readl_dbi(pci, offset + PCI_EXP_LNKCAP);
+ 	FIELD_MODIFY(PCI_EXP_LNKCAP_L1EL, &val, 0x6);
+ 	dw_pcie_writel_dbi(pci, offset + PCI_EXP_LNKCAP, val);
 -- 
 2.34.1
 
