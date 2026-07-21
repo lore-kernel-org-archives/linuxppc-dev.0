@@ -1,46 +1,46 @@
-Return-Path: <linuxppc-dev+bounces-24613-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24614-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 69DDCC4452D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2026 18:04:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1B1B9C4452B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2026 18:57:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h4QHr27NKz2xqM;
-	Wed, 22 Jul 2026 04:04:08 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784657048;
-	cv=none; b=GgyZZVk5/WETX7Uh7ArVWyzn5dQyUAH2EtG4mh1MCrJ8mYDCeHRjf1cD8blohxPuI7l9WADmOGzG9nY7PUZNakhE73LOwTgFEzRNvfbSv62vE+HIJtn4iSRbg/xdyBbb3LeSG8qPzDo2ysSAJGp+bO28/RhjfNoINAggxUM04vkgausOFlaqUtNII7MBHXNBQt5xPAiquh9eao37CzLuDQ1X6OuXFxER9pp1+bM7syDjFIVEFwcHETPYSifzmM07VnsFe6OP+ycJV6MIqGZdGr/VvboqPaehEpG/EERSkR1GIJIY/rky1Dk1CW7i3WQWzA/iVM5ieGLPcg8qt7oNbw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h4RT912xFz2xqM;
+	Wed, 22 Jul 2026 04:57:17 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784660237;
+	cv=none; b=LcXcdfVPQnGYCZ95pyzkoShXmqxotV2OkBox4icFs1D/0ehae3wiqsqi+QsWq3TaMyDytZWU/5OWqNZvyz7tVb3eZ50ZVloCSE71MGGo71xy+JEMImW8zLd4c6NozRhrK5+1E+TlBeJ4kjOa6KV8mPgEaZEG70+N6KUx7bZCLF1sNx0gfZfoKQMnp4MB9OWUflrlvdtGhx+qBdlUXkOukCvio27a9I5cN6McpNBQMuqhfjPVLqFxaAyWPcn8oMC+RiBiSpYUs2BR7/kcYZH+BUhfFYDfIkREa67wA76808CiHYFphBmujlPBCbKOgKPcGVHoqq3t8T0J8jbxwql0uw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784657048; c=relaxed/relaxed;
-	bh=5xtMHxx34PEXevzT53PfQsB9wuoA9FIAYguQR3et/pA=;
+	t=1784660237; c=relaxed/relaxed;
+	bh=KoT2TsS6gtGe74KLPWSGIUIoVkvWimK3dE2FWgygnh8=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=ATWp3bOJehFMMmYoNtnUnqvHa544VazHgrWUI0DnEtYEFuh4i/suZHtdQyiE//cUj6iTiJelppZfdB+km0zPd28RdRar5wJ91OlR2G7NzuTJRQt2UuljFvyJusJFCsAi1N764Lxy2mTOPH8FqNJxd5TB/g2DEJAt9jz2ox01eWXJjbVX5Bec1vRCdpJKU8Gl2UXo+4nTJY0w6jyCo22sHzJos+umu9WcEdlSd1wVlvmBtaa3KTodSF/zX0NPTHKOdWsdwhQcRFMl35ThW1Zm2cgYFfKQr4DYMYGQbWVxDizDFfIybQzDi1enunDnhnbNMtKWGzQqB/JnMoC0DgYyDw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=H8069EYN; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linuxfoundation.org
+	 MIME-Version; b=cgu89GSRZtH/7kz/1SOLE15rZGEbbHzIUF+AzJifQ7avnIDodW9NzbkftYuuJJN9zMzzX7b0G+aNqRaD13I5SbYsnZ335z4Wda9E/+Jt2AjBtvcBCklmbnxP1trt9f4cEgR9+81L0cKiB/8JAmY+eO4+ahGt2NXualHU9G7HL5h4NI4njQRW0WBj7DlOvAZb1IOaU/lpY1fJG1ZUIrAtxrikHZTTjT1hCRJbZb8hLPsmC67OVjdrlV++qmI1PDQfLuQZxcD7vUsQXe/ulxDAsysWTpVY48X4AfDNGmcFOHRsOK2su2zFfviaISOdzGvC40TjoeOGnSJmj8pg8cHwLw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=qLaitttU; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=H8069EYN;
+	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=qLaitttU;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h4QHq3psLz2xJR
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2026 04:04:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h4RT75Txfz2xqJ
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2026 04:57:15 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id CDE99416C8;
-	Tue, 21 Jul 2026 18:04:04 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0D5481F000E9;
-	Tue, 21 Jul 2026 18:04:04 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 4ED82600D8;
+	Tue, 21 Jul 2026 18:57:12 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5D5DB1F000E9;
+	Tue, 21 Jul 2026 18:57:11 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linuxfoundation.org;
-	s=korg; t=1784657044;
-	bh=5xtMHxx34PEXevzT53PfQsB9wuoA9FIAYguQR3et/pA=;
+	s=korg; t=1784660232;
+	bh=KoT2TsS6gtGe74KLPWSGIUIoVkvWimK3dE2FWgygnh8=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=H8069EYNu3GVzhQNBEbIEE9BKJlXVe5DMOFUYj7pnMa48MKcey3IGLgKnRindt5os
-	 6UtXerLbN5aWYQ2Llv1jJidSvytHRLeOb6wzfuGm2urI0enWLIZsyJ9C7RJsK4W80V
-	 p2JHoYx5mQ5vGZpqwKuoRrFdRaqd95tCZJky/hMI=
+	b=qLaitttUKP1kkMKUiYajS0ZobTYQ3s5ukfeb2Umb4lTEqZ47NJP7LLLBNI4XuwpZS
+	 TmdNv+kVD+RDjV6eg1GjtP0L4ZNZIcZtcddMjbL98rlJIoq7nbjJh8OfarP137Xr9z
+	 joytXDV0CrUBvLaERSJRYz75K/Y1g6BM8xJvkSIA=
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To: stable@vger.kernel.org
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -60,12 +60,12 @@ Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
 	Thomas Richter <tmricht@linux.ibm.com>,
 	Arnaldo Carvalho de Melo <acme@redhat.com>,
 	Sasha Levin <sashal@kernel.org>
-Subject: [PATCH 6.18 0617/1611] powerpc tools perf: Initialize error code in auxtrace_record_init function
-Date: Tue, 21 Jul 2026 17:12:13 +0200
-Message-ID: <20260721152529.263859692@linuxfoundation.org>
+Subject: [PATCH 7.1 0901/2077] powerpc tools perf: Initialize error code in auxtrace_record_init function
+Date: Tue, 21 Jul 2026 17:09:34 +0200
+Message-ID: <20260721152614.070795462@linuxfoundation.org>
 X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20260721152514.750365251@linuxfoundation.org>
-References: <20260721152514.750365251@linuxfoundation.org>
+In-Reply-To: <20260721152552.646164743@linuxfoundation.org>
+References: <20260721152552.646164743@linuxfoundation.org>
 User-Agent: quilt/0.69
 X-stable: review
 X-Patchwork-Hint: ignore
@@ -84,7 +84,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-6.18-stable review patch.  If anyone has any objections, please let me know.
+7.1-stable review patch.  If anyone has any objections, please let me know.
 
 ------------------
 
@@ -168,10 +168,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  2 files changed, 7 insertions(+)
 
 diff --git a/tools/perf/arch/powerpc/util/auxtrace.c b/tools/perf/arch/powerpc/util/auxtrace.c
-index 62c6f67f1bbe66..57f2910c0b0198 100644
+index e39deff6c857a8..4600a1661b4fe3 100644
 --- a/tools/perf/arch/powerpc/util/auxtrace.c
 +++ b/tools/perf/arch/powerpc/util/auxtrace.c
-@@ -70,6 +70,12 @@ struct auxtrace_record *auxtrace_record__init(struct evlist *evlist,
+@@ -71,6 +71,12 @@ struct auxtrace_record *auxtrace_record__init(struct evlist *evlist,
  	struct evsel *pos;
  	int found = 0;
  
@@ -185,10 +185,10 @@ index 62c6f67f1bbe66..57f2910c0b0198 100644
  		if (strstarts(pos->name, "vpa_dtl")) {
  			found = 1;
 diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
-index b1fb87016d5aa9..2563ef66a4d946 100644
+index 4a5eba498c0259..708825747af5da 100644
 --- a/tools/perf/builtin-record.c
 +++ b/tools/perf/builtin-record.c
-@@ -867,6 +867,7 @@ static int record__auxtrace_init(struct record *rec)
+@@ -865,6 +865,7 @@ static int record__auxtrace_init(struct record *rec)
  	}
  
  	if (!rec->itr) {
