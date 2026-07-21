@@ -1,102 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-24615-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24616-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EC07FC4452D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2026 21:00:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 22B72C4452B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2026 22:07:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h4VBt55H8z2yb9;
-	Wed, 22 Jul 2026 07:00:06 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c10d::1" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784667606;
-	cv=pass; b=F1owmJbuZAiDPh54cgm2v5K0E7tWT0kSFqIFpeQYZ+H1Km78DWANQaaIE8y8PU7uaiKxfrSnaMWJ4rH8EIm7kP1+vw3MiMH4MBPJ1VNgs6wn3n5FMoYoWSZeDhlHqX0tv7XJgF0B32BXOxIq5GsROaJ4Gqa9EZoa3fky/a3m0ntcEf9Yy4ceg+35MzjG2Fi7c0hcuQQmiKr5HeH8IVp0LFmLg2nu7keoje9svVcHoKH7H9ALHa6qxP+M/H80xNd/h0M757I8nk1ZfyKHw2TV0ZiYnbfYvPkKksnzYmoUmeR4BUI++q4SOqSWch1r2dVv1B4REvXt+PiaWVzKx5a2jQ==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784667606; c=relaxed/relaxed;
-	bh=wB53e5x2wgeqj9sBbbnGjtfJi2sYLQhdyQHwQjlNJDo=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=EPRSKA+4ffw9h0IMGgUQe11I19+oRJ6wXbnrQuKsyNEIAhYTV0/EpccXutzqcq8QUsP/wJtWqZ3xezXOpbF8WvRubwnh7iykNhG00k7+kqy1KriWJsKW27BMZj9iTefQZHtDwWUcNWifG0ucaYpyST+KeZRZfyy70zp1SvRXE+nB4CodglBSalOIIDifrkdPHVzaVteSqi9ZRx9S/l++VTtLv4L5KYMpyHhH1tLBWMjFVSZ7TrR0rCWolh9OPgVa7q7ReiLOz0qY26YwcYVXGmOd4bvAuV65/dyLgfsZuPMQd7U+WBrrrZxkfXYOrrwp/8iKy9Amz+NfGJMfQzm2qQ==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=xkaiAZ4M; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c10d::1; helo=sn4pr2101cu001.outbound.protection.outlook.com; envelope-from=terry.bowman@amd.com; receiver=lists.ozlabs.org) smtp.mailfrom=amd.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h4Wj916Ydz2xJR;
+	Wed, 22 Jul 2026 08:07:57 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784653949;
+	cv=none; b=Yfj0923fXh1Rc2KD0/Ox29DxFTazQHK4uu4e9jkGUyEXDfzumeJ3wdHoIDyAYWH+f0nliXPXirJH6QauLRrIUyLW7AuK330z9ujL1UWG47FBFWf4OynXEYJ8z4eS2InUaLRnJv1nRfI920noIP5/uOeBW3EKdK86ldmYy2FMrtez3rWHTzC+id+2nk2BkWMUsFuzbMw66DIw6S9sJqAbGLsjWsm2fgY2MoSAxMxDg+PiGsW79VWC+tL79sAY3sU2ahUD3oE3i9P2pxjviJkBrjl5DcogYbQhJLXlY0JmIPP53aB54GQkiXJu5d5Amu0+BMBAFRHMVJY6aorNfzlbLg==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1784653949; c=relaxed/relaxed;
+	bh=JlnBXXFLqSPOhrvoqxmlfnQRdDb3byg2AarOIYliRow=;
+	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
+	 In-Reply-To:Content-Type; b=D6F4lmBP1kxZ3aK+HybYbdsK07b7Geumw8CTkFA/4rgAhVSS39NsSdyVbTjJ16J4SUJAoxWCXLD7j9VP1GRr5AFcA6nyn9YTOXNUubMr9fIzkqkAfMpC1vxl+9U3wlUdm8+wFMZSGoB3LViiIWuOAw0nGZVnwkw8zX84Sk3y/kyDvzrJbqxGn58e46Av0WVX9m9nhV5PPe0F3iuEkqDCYXVOqL+3Ne3O5ZRT35+KFKgq3itjO18qqkzkAV3Gn6SdNzp0iai/jCrJajROmO3+tr7KtCVTgVAFW/NHI8TfxyVCsrtDjJGhxQQFo1CE3udbds1A+0iPqf1hykceb1FrTQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PSw1Zgb5; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=asahu1x@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=xkaiAZ4M;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PSw1Zgb5;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=amd.com (client-ip=2a01:111:f403:c10d::1; helo=sn4pr2101cu001.outbound.protection.outlook.com; envelope-from=terry.bowman@amd.com; receiver=lists.ozlabs.org)
-Received: from SN4PR2101CU001.outbound.protection.outlook.com (mail-southcentralusazlp170120001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c10d::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=asahu1x@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h4VBq42Dlz2y8g
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2026 07:00:02 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=jvf65H8acdmx6b67UQwNQY3ZIJJyx+5YYmAoOmdy8/C5n3szi5dOAx3V66cF6cGpzW2v9gqVWLXtnM6F054xJExO+gEocQBWnBbdnbSiJaUOtv/LjW+f45RIiAc0LfwgYW5RK6Wi5xRFIM3t8GRH7nE3Wx5Ncem5UhZ5IV4Fi0QhEwVjEcJ56TfyOLTtRw4z2M+sPaYEXwvDLT1W+DzIaXbSuYC91mH2m3KXiJiR6ubgcTPPzrbFjsswSBaWPCGVNviDRmN0XL0v4kJgkLpgP21b3C14AZT1mXQYdyM0kkqwio6VFZdcR0JvGMseZsxgK6oZH71K//6KQOeTOMtJtg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=wB53e5x2wgeqj9sBbbnGjtfJi2sYLQhdyQHwQjlNJDo=;
- b=bV94U9StCpU/39QcAILKU27CKhMV+NChLKnxiGFJH09g2LhJj83ikzmIpkFeq9NaQSnZoyRjCWhoOv2t/K14IvSp9fbaJ0kuKxCnJv33UcYRcuLHg4LN/gCJTi+i/1THQ/6nh38tn5yADaLQQfYoLIk4Ixc7h4sL8E5fuV7Yl03zWKxJmFYY8UKt8BwBpzcmWBZw/ibo8yyvTBtIndLcO4QNZcpRsUQFROZWAPhNHpLVlOWhddYxkywCPLuL2HHoH/Iplo8mzlHVI7HP9b2HTfXYTkypSIZxt3HjaWu0l/aoBG3/sTqX+HuWZyaBo3W3WHyyF0rqIMRLZ1vz7vZlKA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
- header.d=amd.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=wB53e5x2wgeqj9sBbbnGjtfJi2sYLQhdyQHwQjlNJDo=;
- b=xkaiAZ4MytmHVxpk5bPjvfkm5Y63YxzEl7ICWv38MwG5vcyxwX1GIWy1EqzrbAEVy8J2j+Xb3m9H0VxUZepWB71klP31XqzxHqtaLC/U7BJDMeBn5MWqdsRqMltu/PdlFRPWLvYBpx02Ncmx6W/4BWWIDEomb45a/Odb2eeqT2Y=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=amd.com;
-Received: from DS2PR12MB9749.namprd12.prod.outlook.com (2603:10b6:8:2b9::14)
- by DS0PR12MB6485.namprd12.prod.outlook.com (2603:10b6:8:c6::9) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.223.18; Tue, 21 Jul 2026 20:59:35 +0000
-Received: from DS2PR12MB9749.namprd12.prod.outlook.com
- ([fe80::ad8d:e59a:e61:4e9e]) by DS2PR12MB9749.namprd12.prod.outlook.com
- ([fe80::ad8d:e59a:e61:4e9e%5]) with mapi id 15.21.0245.009; Tue, 21 Jul 2026
- 20:59:33 +0000
-Message-ID: <d68019bc-dbd7-4990-9fee-d12276bee531@amd.com>
-Date: Tue, 21 Jul 2026 15:59:28 -0500
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v18 10/13] cxl: Add port and dport identifiers to CXL AER
- trace events
-To: Jonathan Cameron <jic23@kernel.org>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, Dan Williams <djbw@kernel.org>,
- Dave Jiang <dave.jiang@intel.com>, Ira Weiny <iweiny@kernel.org>,
- Len Brown <lenb@kernel.org>, "Rafael J . Wysocki" <rafael@kernel.org>,
- Robert Richter <rrichter@amd.com>, linux-acpi@vger.kernel.org,
- linux-cxl@vger.kernel.org, linux-doc@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Alejandro Lucero <alucerop@amd.com>,
- Alison Schofield <alison.schofield@intel.com>,
- Ankit Agrawal <ankita@nvidia.com>, Ard Biesheuvel <ardb@kernel.org>,
- Ben Cheatham <Benjamin.Cheatham@amd.com>, Borislav Petkov <bp@alien8.de>,
- Breno Leitao <leitao@debian.org>, Davidlohr Bueso <dave@stgolabs.net>,
- "Fabio M . De Francesco" <fabio.m.de.francesco@linux.intel.com>,
- Gregory Price <gourry@gourry.net>, Hanjun Guo <guohanjun@huawei.com>,
- Jonathan Corbet <corbet@lwn.net>, Kees Cook <kees@kernel.org>,
- Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>,
- Li Ming <ming.li@zohomail.com>, Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
- Mauro Carvalho Chehab <mchehab@kernel.org>,
- Oliver O'Halloran <oohall@gmail.com>, Shiju Jose <shiju.jose@huawei.com>,
- Shuah Khan <skhan@linuxfoundation.org>,
- Shuai Xue <xueshuai@linux.alibaba.com>,
- Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com>,
- Tony Luck <tony.luck@intel.com>, Vishal Verma <vishal.l.verma@intel.com>,
- linux-acpi@vger.kernel.org,
- "linux-cxl@vger.kernel.org" <linux-cxl@vger.kernel.org>,
- linux-doc@vger.kernel.org,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
-References: <20260717222706.3540281-1-terry.bowman@amd.com>
- <20260717222706.3540281-11-terry.bowman@amd.com>
- <20260721010050.7b5654fb@jic23-huawei>
-Content-Language: en-US
-From: "Bowman, Terry" <terry.bowman@amd.com>
-In-Reply-To: <20260721010050.7b5654fb@jic23-huawei>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: CH5PR02CA0004.namprd02.prod.outlook.com
- (2603:10b6:610:1ed::21) To DS2PR12MB9749.namprd12.prod.outlook.com
- (2603:10b6:8:2b9::14)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h4P8D0j3Bz2xJR
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2026 03:12:27 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66LHBk9u1544136;
+	Tue, 21 Jul 2026 17:12:22 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=JlnBXX
+	FLqSPOhrvoqxmlfnQRdDb3byg2AarOIYliRow=; b=PSw1Zgb5CZE5R0nrl0tp9A
+	OKtQDS4ZQxviWbTFxLesbi57zHiDlXoEEZ8y0Gh6VZi+fZO1UeUq8nTg/AgmoCoF
+	gCQMKDMKlnTaqONizaVHdBr3xjjeZaH9/2EmlKmjVRv1mkTwnRfpmqSEsK3z3Cca
+	e7M9l5r4RTiTnhIlwNSbuBn4+jXf3BIr2zzuCcwPfHj6IUBF54Hj7Jst9HAus3yc
+	Xo5e5vnAcAVdSzr5u6WQFSErGP3+NoiOa4tmVxPsmwFNqrJ8m8eIjovQCrTNkLTc
+	oD2cCh8ih8nFbYIuQvWclsTTEaVLZNjWGqLpQ+Qy9+Tt0tZitTgdE5HLCalPV1fw
+	==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fg78g5e2a-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 21 Jul 2026 17:12:22 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66LH7Nkx024973;
+	Tue, 21 Jul 2026 17:12:21 GMT
+Received: from smtprelay01.wdc07v.mail.ibm.com ([172.16.1.68])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4fgnah39xb-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 21 Jul 2026 17:12:21 +0000 (GMT)
+Received: from smtpav04.dal12v.mail.ibm.com (smtpav04.dal12v.mail.ibm.com [10.241.53.103])
+	by smtprelay01.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66LHCKj652625858
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 21 Jul 2026 17:12:20 GMT
+Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 1926E58056;
+	Tue, 21 Jul 2026 17:12:20 +0000 (GMT)
+Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 50FA258062;
+	Tue, 21 Jul 2026 17:12:16 +0000 (GMT)
+Received: from [9.39.17.135] (unknown [9.39.17.135])
+	by smtpav04.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 21 Jul 2026 17:12:15 +0000 (GMT)
+Message-ID: <0b4fe641-ac79-416d-8b8e-8dc9adaa1041@linux.ibm.com>
+Date: Tue, 21 Jul 2026 22:42:14 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -110,268 +81,154 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DS2PR12MB9749:EE_|DS0PR12MB6485:EE_
-X-MS-Office365-Filtering-Correlation-Id: c6c70a75-7630-4aa8-d6c8-08dee76af73d
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|1800799024|7416014|23010399003|376014|22082099003|18002099003|4143699003|3023799007|11063799006|56012099006|10067099003|6133799003;
-X-Microsoft-Antispam-Message-Info:
-	eZO2NDZAJ0+jUlWGgKyTYfr5NH+g8+Np5gzOtzSI4rMCV7I0d0PyGwbEGLJrp7QYHCgzm85VJXxaJxHSUzsiZI0CB4+0sGr3gI3O8Up88UNSnLMmtTd3ZVY7CcogBrAgpfGGzml9hxagEcQ10Dy5dvQRIHTTf2iDVj16+IQlZ08U7HaIiAC5aON2o8FHH9eIfmfyaBeFWFjJU47k81+1eKdwSz23BA6gQn+WPoM0ndrcAB/wsCnrZ9UYcFWTFCjSdIwyLsdoYZKZ8sv2GKhDxQ42L3jpy+TM5bqHOp9znGOPcFHTKHQgoroXSUTgwJVs+5oDFYzV6yqruuSAtf1mN7V7rA3P01JFX87OgYpUdKHDu9oti7RkYk6zqYwfDRNIqgClOprcbppsSa/NQ4doGYRhKTnmyKZgihteDb75yBRspPx0LrzPFPNttVFEVhK5MRytAASP2xnX43RD2p3Kz/Eb2ch2DAKA+sVFwUQbKGDiC2zdGaGIHbJRSHSJNx1T9zq0ANaVG9JPisbwITYT0VDdHT26hy9sALLFVqEIcU2M7kf8NEdTPUqvuvLYe6QzfYXIbwXX7DXUwDf7EaeFynSn2eVS7mQDlmZiePbgzMFUFIMA4C8yPxrdjbvfhf9mmLJhZ7YLDefnm4YxJlQqN8kO4F08o28GIcdmAjFvCEg=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DS2PR12MB9749.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(7416014)(23010399003)(376014)(22082099003)(18002099003)(4143699003)(3023799007)(11063799006)(56012099006)(10067099003)(6133799003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?R1ByYlBYbHpXV1RZc1E2UTdqWCtDVk9LR3UzaFFwMWRvN243N3BYTUg5bHhM?=
- =?utf-8?B?VnMrSk1wVVplbTl6WHZwVVNKbTRja1hBZEZFaTBXaXY3Yjhzc3VtaGRsV2Vx?=
- =?utf-8?B?cEZPQmVIQWlVSXladS9DMjhXWFZkMDRtR0g1UzFNWDVQT0k0RXBWSlhjc1dW?=
- =?utf-8?B?UnFnblhVL2QxWHY5MWJyanpTSGJCb1k3dkxHZms0Ulg5ZVRmY2prWXRLMHdr?=
- =?utf-8?B?WlhaTlB4cE5lSWNGYm5oc2VYMFNoajB0NXBVT2NKdW0xSnJjcTlTVEp6MWh0?=
- =?utf-8?B?U1FYRzNabVJNQXFJdXNwd0M0NEhMNElqSFVBdEpzaWdSV0pzcEpZMVBORERa?=
- =?utf-8?B?Uy9xRTBCWW5FMnhMYUhCdXRLRTVpWVF5eG14aFo2TithUlMrS1dmVHFGbmxC?=
- =?utf-8?B?aGR0RmxlQjNyTGNNRm9yNy82LzR2WTdQVG41ckxsT0k5bXhWNzRVVE5OcVlT?=
- =?utf-8?B?YkZkYzlqL01yQ3M2K3Bxb2hZejIySitjQXJoVGg0bG85RktWWG1YaG5mcEV4?=
- =?utf-8?B?NnhHUFdMRTBOM0tNbGVLZWN5ZjNSNzZjZEJqM25YSFNvTU5RUXI2djlvQTFF?=
- =?utf-8?B?eFVmSzF0SWdrazlIakdnMFhIZmk0UkRaWU1QbzJLSG1pVVJLN2RsL3dwZGJp?=
- =?utf-8?B?RCtkNHo3V2prZFJzZGNEay90NmxCMWNUZDhwMmFtakl2RTVJNEwzZlFiRXZp?=
- =?utf-8?B?VzlibWFuZGE5aFBnc0syYkdVSkFvaWJIaExjeXByRG9paHZmcHF5Mlcrd2hx?=
- =?utf-8?B?K1ZOWVJrZDNaTFQrTHFpQnZIVDZUcVdhT3ZpVm96cXcyeHhKVm1nUFVXZWkx?=
- =?utf-8?B?MGFreEVDMG9mT1A4bGM5Wk1ZbHJoRDFjZzNyQ0NjMkV2RW1uR2tGYnMyVnRQ?=
- =?utf-8?B?dFcwUFZBUTNhTnRJRUVIZWVlbTFZU3hKaXorUmU5WU8vaUhyMVh0ajV6UHVR?=
- =?utf-8?B?WlVGQkc3VVlhRlVHOHl3dnhxYUtWWkhtYVdQOEZibnMwSEp2S0FBQ213S0VH?=
- =?utf-8?B?TjlLbHd0SHlkc2NXK29YWWhoNnpjNXlZNGxaTmtGQTg0eUpOcUg3ell0MGRK?=
- =?utf-8?B?Sk5LdGFsenFoZzljZWtScHVBVnArTndpVlU5MTFaYitJZ0NEVUN2MHdmV2Qr?=
- =?utf-8?B?Mm82ckZpb3JXWlh6ZUFtZTd3K2NleDM0V285S1NRMWY3aDc4b0RNbnUyLzg5?=
- =?utf-8?B?M1VHTkhhcE1TeTZ4MHRlaGdUUmcvQmZIQXJSQ2J5K1ROTXlEdHpWa0I4N3Qy?=
- =?utf-8?B?bGVZOStLQXRydStlWjc3blAxVzU5NUI3S0p2Vm16VUd6ZmhTM1Vadjd2N2t2?=
- =?utf-8?B?U0hXNy80ZTBsYklKTithN1VMNDhvL29rRUoraEJpZE9SMEJ3UlJTVTh3UUVN?=
- =?utf-8?B?M0FlOHVRalZLMzViWUJPTWw1MVlPaGVFYU0zSDRZbzRhY0RocmYwL0ZBeGt2?=
- =?utf-8?B?dzZuUWNrejRyM1E1YkZuNThIa1ArRGVSZ1c3R3NFVytPY2RQdDNiM2tFWG5n?=
- =?utf-8?B?MURYQmxIMWZERlMreWhYU3dLYmFaSkxpZ2F0UkI0emx2MmQvNWpZV3V0enhm?=
- =?utf-8?B?eUowa1orUkRDeC91dmRLUnpVdytwd0xjNUtXWS9UZ2xxejVmWTZVNVkzRGVG?=
- =?utf-8?B?Y0NSRnJ3MFoxbmdXZFJYbitGbklRMndVUElRVHBJbnRrZjVWZDFBd3pyVFdI?=
- =?utf-8?B?VHRwUmg2SmVCMTNvVWpBZjNiYkVZczJjNTVlbklJOW03VHR3NUJVOHB2UGFZ?=
- =?utf-8?B?UU4vUnlUYVZwQWRXem15NFhJRmdHd1gvbGpPUm1JaGpUR2ZUOUVoNFZKNEMr?=
- =?utf-8?B?UHBSZ2JCNUhya2NoWkwxUlFGTDRoUjk1d1I0WnRSTzdMZHJ5SHpwWVliRG96?=
- =?utf-8?B?Q3U5RlJCVkU4ei9sQ1Avd3BjL1lDVXh3RkdvUEJpbmZlUWgzN2xsSG5MN04v?=
- =?utf-8?B?dEZldUpQNlVIa3Bwa3hVTXNBdytLd3RFYW1aNE9IY2taTUw2VExTL2I1QjBj?=
- =?utf-8?B?ZWxYSDFLKzJYL3BNWWhmcGFjTEZ5RHNpUW5jRlcvY3R5emdjOXEyVVJuQ29m?=
- =?utf-8?B?S2p1MnVJRjJScEk5TWc3bVByTXNQMVNvYWM4ZWtSRWhYODZGQzJFN3NLQ3RT?=
- =?utf-8?B?TEFHdFpiOWllWFZ3RzFsdEpRY1U4aXV0VFhEUjVqZlhFUnpoTmNVY1Z2Vnd3?=
- =?utf-8?B?S0h6MldKbFhFd3Y2V2E1dTVYb2d0ZzE1eUZxeHZYMjJzdGozQy9EVE1Vajd0?=
- =?utf-8?B?S2N5dWpYVVYrb0tsV1ZpaVdLZGtOZ1BhS3dneG9IL0RGajRjdC8xWmY2MXdJ?=
- =?utf-8?Q?7PkAZY/zIliwjWlMPI?=
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: c6c70a75-7630-4aa8-d6c8-08dee76af73d
-X-MS-Exchange-CrossTenant-AuthSource: DS2PR12MB9749.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 21 Jul 2026 20:59:33.5067
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: US4SMnzXenJKUOE4D/ni4IznbEHNy0s+nj/NyGCKHkaviOM8qOxdCoHWMmQwuxKeDpMwsf1jIUb8W0S+Zq/PMg==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS0PR12MB6485
+User-Agent: Mozilla Thunderbird
+Subject: Re: [kvm-unit-tests PATCH v2 0/6] powerpc improvements
+From: Aniket Sahu <asahu1x@linux.ibm.com>
+To: Chinmay Rath <rathc@linux.ibm.com>, thuth@redhat.com
+Cc: npiggin@gmail.com, harshpb@linux.ibm.com, lvivier@redhat.com,
+        linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+        andrew.jones@linux.dev, sbhat@linux.ibm.com, asahu1x@linux.ibm.com
+References: <20260719130027.2347519-1-rathc@linux.ibm.com>
+ <7cf674d9-6928-47a3-9d80-c1bd22ae6f7b@linux.ibm.com>
+Content-Language: en-US
+In-Reply-To: <7cf674d9-6928-47a3-9d80-c1bd22ae6f7b@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzIxMDE4MSBTYWx0ZWRfX4IIKSa4QJ3rH
+ RgixbFh5lWVG8zRP315PQ659q2y2E70MV6gmbcdoo4f30ZpVVv5YhjEBGxZXmTMY9lG+VeyvqrR
+ MBfXmcgDAek/O4Jtfic8ALRq9amvoGvvs0xznuIMlADQDm3Kez2b9vtG5wbTQMVRgCTefatVtLw
+ yj9EgJmk2Z4JoCYBQ4BPtSstFAD4BQi23aucDKTb7WJDGIQW68o3fycbuWlzk0lS1lqh+WFaCD0
+ Q9IXsuJ89hJymJ/bOGkZVD9+WULCqQ0aGufD7WMNFiq6Y2FyO7weHV/Ptnh66Zs0UJkZEToBTnq
+ Tmk0jwIvX1/ksU5Acyofy2glKpcmteh94FkB1tl0nqn2WZkgOe38lnKsVq6wn1J65uby/sjpowz
+ pThG0o7RJr2J92otGfvQ8lTt/2snVNH7IoLIeyj6uaM+HB9NRAvty4JHNUBTy5TWbx/hkyfP4WI
+ wY9mKLkk5PbeKT9i+Zw==
+X-Proofpoint-GUID: giPh5XzHR3pJXqeJ8CZDOLYzH_-1BwAC
+X-Authority-Analysis: v=2.4 cv=MelcfZ/f c=1 sm=1 tr=0 ts=6a5fa876 cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+ a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VnNF1IyMAAAA:8
+ a=jDKATvllps1Oe7LPM_oA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzIxMDE4MSBTYWx0ZWRfX4r4YQcqAMyrm
+ aWCDCjKkl7TRn4Js/ycVn0nxGnzdi/+bGbBSrjbLxi3xmYm67TgfA4tqiT3fHbhmTPQbz+q8thN
+ G8VEMUWSpR//neh664o0JKcZ3w7n1xY=
+X-Proofpoint-ORIG-GUID: 22rp3vZ0agM4Yywxq_jhtfULvbimLyYY
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-07-21_03,2026-07-21_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 lowpriorityscore=0 priorityscore=1501 bulkscore=0 spamscore=0
+ clxscore=1011 malwarescore=0 phishscore=0 adultscore=0 suspectscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607210181
 
-On 7/20/2026 7:00 PM, Jonathan Cameron wrote:
-> On Fri, 17 Jul 2026 17:27:03 -0500
-> Terry Bowman <terry.bowman@amd.com> wrote:
-> 
->> From: Dan Williams <djbw@kernel.org>
->>
->> Pass struct cxl_port * and struct cxl_dport * to the cxl_aer_*
->> trace events instead of a plain struct device * derived at the
->> caller. The trace event helpers then derive the right strings for
->> endpoints, switch ports, root ports, and RCH downstream ports
->> consistently across the CPER and native AER paths.
->>
->> The unified cxl_aer_* events keep "memdev" as the legacy field
->> (endpoint events populate it with the memdev name; non-endpoint
->> events emit memdev="") and add new "port" and "dport" string fields
->> populated for all CXL device classes. Updated userspace can key
->> off "port" and "dport" without a parallel set of events.
->>
->> Remove the separate cxl_port_aer_uncorrectable_error and
->> cxl_port_aer_correctable_error trace events. All CXL AER events now
->> use the unified cxl_aer_* events with port and dport fields.
->>
->> Rework cxl_cper_handle_prot_err() to use find_cxl_port_by_dev() and
->> the unified trace helpers, replacing the per-port-type branching and
->> bus_find_device() memdev lookup.
->>
->> The TP_printk format string places "port=%s dport=%s" between
->> "memdev=%s" and "host=%s", changing the text-mode field order from
->> the pre-patch output. This does not affect consumers such as
->> rasdaemon that use libtraceevent to parse fields by name rather than
->> by fixed text position.
->>
->> For non-endpoint events (switch port, root port, RCH dport),
->> "memdev" is empty and "port"/"dport" carry the topology information.
->>
->> The serial number is retrieved via pci_get_dsn() which performs live
->> PCI configuration space reads. A following patch ("PCI: Cache PCI
->> DSN into pci_dev->dsn during probe") replaces these with a cached
->> serial number to avoid config space access in error handlers and panic
->> paths.
->>
->> Below are examples of the different CXL devices' error trace logs
->> after this patch:
->>
->>      ---------------------
->>      | CXL RP - 0C:00.0  |
->>      ---------------------
->>                |
->>      ---------------------
->>      | CXL USP - 0D:00.0 |
->>      ---------------------
->>                |
->>      --------------------
->>      | CXL DSP - 0E:00.0 |
->>      --------------------
->>                |
->>      ---------------------
->>      | CXL EP - 0F:00.0  |
->>      ---------------------
->>
->> Root Port:
->> cxl_aer_correctable_error: memdev= port=port1 dport=0000:0c:00.0 \
->>    host=pci0000:0c serial=0: status: 'Memory Data ECC Error'
->>
->> cxl_aer_uncorrectable_error: memdev= port=port1 dport=0000:0c:00.0 \
->>    host=pci0000:0c serial=0: status: 'Cache Address Parity Error'  \
->>    first_error: 'Cache Address Parity Error'
->>
->> Upstream Switch Port:
->> cxl_aer_correctable_error: memdev= port=port2 dport= host=0000:0d:00.0 \
->>    serial=0: status: 'Memory Data ECC Error'
->>
->> UCE NA - Upstream Switch Port UCE's are handled in the portdrv driver's
->> PCI AER callbacks that are not CXL aware.
->>
->> Downstream Switch Port:
->> cxl_aer_correctable_error: memdev= port=port2 dport=0000:0e:00.0 \
->>    host=0000:0d:00.0 serial=0: status: 'Memory Data ECC Error'
->>
->> cxl_aer_uncorrectable_error: memdev= port=port2 dport=0000:0e:00.0 \
->>    host=0000:0d:00.0 serial=0: status: 'Cache Address Parity Error' \
->>    first_error: 'Cache Address Parity Error'
->>
->> Endpoint:
->> cxl_aer_uncorrectable_error: memdev=mem1 port=endpoint4 dport= \
->>    host=0000:0f:00.0 serial=0: status: 'Cache Address Parity Error' \
->>    first_error: 'Cache Address Parity Error'
->>
->> cxl_aer_correctable_error: memdev=mem1 port=endpoint4 dport= host=0000:0f:00.0 \
->>    serial=0: status: 'Memory Data ECC Error'
->>
->> Co-developed-by: Terry Bowman <terry.bowman@amd.com>
->> Signed-off-by: Terry Bowman <terry.bowman@amd.com>
->> Signed-off-by: Dan Williams <djbw@kernel.org>
-> 
-> One question inline about reference counts for the port.
-> 
->>
->> diff --git a/drivers/cxl/core/ras.c b/drivers/cxl/core/ras.c
->> index d5dc2c22565da..acf40b2396c3b 100644
->> --- a/drivers/cxl/core/ras.c
->> +++ b/drivers/cxl/core/ras.c
-> ...
->>  
->> @@ -109,47 +77,34 @@ static struct cxl_port *find_cxl_port_by_dev(struct device *dev, struct cxl_dpor
->>  
->>  void cxl_cper_handle_prot_err(struct cxl_cper_prot_err_work_data *data)
->>  {
->> +	struct cxl_dport *dport;
->>  	unsigned int devfn = PCI_DEVFN(data->prot_err.agent_addr.device,
->>  				       data->prot_err.agent_addr.function);
->> -	struct pci_dev *pdev __free(pci_dev_put) =
->> -		pci_get_domain_bus_and_slot(data->prot_err.agent_addr.segment,
->> -					    data->prot_err.agent_addr.bus,
->> -					    devfn);
->> -	struct cxl_memdev *cxlmd;
->> -	int port_type;
->> -
->> -	if (!pdev)
->> -		return;
->> -
->> -	port_type = pci_pcie_type(pdev);
->> -	if (port_type == PCI_EXP_TYPE_ROOT_PORT ||
->> -	    port_type == PCI_EXP_TYPE_DOWNSTREAM ||
->> -	    port_type == PCI_EXP_TYPE_UPSTREAM) {
->> -		if (data->severity == AER_CORRECTABLE)
->> -			cxl_cper_trace_corr_port_prot_err(pdev, data->ras_cap);
->> -		else
->> -			cxl_cper_trace_uncorr_port_prot_err(pdev, data->ras_cap);
->> -
->> +	struct pci_dev *pdev __free(pci_dev_put) = pci_get_domain_bus_and_slot(
->> +		data->prot_err.agent_addr.segment, data->prot_err.agent_addr.bus, devfn);
->> +	if (!pdev) {
->> +		pr_err_ratelimited("Failed to find CPER device in CXL topology\n");
->>  		return;
->>  	}
->>  
->> -	guard(device)(&pdev->dev);
->> -	if (!pdev->dev.driver) {
->> -		dev_warn_ratelimited(&pdev->dev,
->> -				     "Device is unbound, abort CPER error handling\n");
->> +	struct cxl_port *port __free(put_cxl_port) = find_cxl_port_by_dev(&pdev->dev, NULL);
->> +	if (!port) {
->> +		dev_err_ratelimited(&pdev->dev,
->> +				    "Failed to find parent port device in CXL topology\n");
->>  		return;
->>  	}
->>  
->> -	struct device *mem_dev __free(put_device) = bus_find_device(
->> -		&cxl_bus_type, NULL, pdev, match_memdev_by_parent);
->> -	if (!mem_dev)
->> -		return;
->> +	guard(device)(&port->dev);
-> 
-> Don't we have a reference for this from find_cxl_port_by_dev()?
-> 
-> Superficially scope looks the same.
-> 
-> 
+Sorry for the formatting mess in my previous email, my mail client 
+stripped the linebreaks. Here is the readable version:
 
-I somehow missed this yesterday. Yes, find_cxl_port_by_dev() ref increments. 
+On Sun, 19 Jul 2026, Chinmay Rath wrote:
+ > This series aims to add a couple of new powerpc tests and improve
+ > the powerpc build structure.
 
->> +
->> +	/* dport is NULL for Endpoint and Upstream Port devices */
->> +	dport = cxl_find_dport_by_dev(port, &pdev->dev);
->>  
->> -	cxlmd = to_cxl_memdev(mem_dev);
->>  	if (data->severity == AER_CORRECTABLE)
->> -		cxl_cper_trace_corr_prot_err(cxlmd, data->ras_cap);
->> +		cxl_cper_trace_corr_prot_err(port, dport, pci_get_dsn(pdev),
->> +					     &data->ras_cap);
->>  	else
->> -		cxl_cper_trace_uncorr_prot_err(cxlmd, data->ras_cap);
->> +		cxl_cper_trace_uncorr_prot_err(port, dport, pci_get_dsn(pdev),
->> +					       &data->ras_cap);
->>  }
->>  EXPORT_SYMBOL_GPL(cxl_cper_handle_prot_err);
->>  
->> @@ -240,14 +195,14 @@ void cxl_do_recovery(struct pci_dev *pdev, struct cxl_port *port, struct cxl_dpo
->>  		return;
->>  	}
->>  
->> -	if (cxl_handle_ras(port, dport, ras_base))
->> +	if (cxl_handle_ras(port, dport, ras_base, pci_get_dsn(pdev)))
->>  		panic("CXL cachemem error");
->>  
->>  	dev_dbg(&pdev->dev,
->>  		"CXL UCE signaled but no CXL RAS status bits set\n");
->>  }
->>  
->> -void cxl_handle_cor_ras(struct cxl_port *port, struct cxl_dport *dport, void __iomem *ras_base)
->> +void cxl_handle_cor_ras(struct cxl_port *port, struct cxl_dport *dport, void __iomem *ras_base, u64 serial)
-> That's over even the modern 100 char limit. Needs a line break.
->>  {
-> 
+Tested on POWER10 (native KVM, ppc64le).
 
-Yup, I'll linewrap at 75-80. Thanks.
+Tested-by: Aniket Sahu <asahu1x@linux.ibm.com>
 
-- Terry
+--- Environment ---
 
+   Host CPU   : POWER10 (architected), altivec supported
+   Kernel     : Linux 7.0.0-27-generic #27-Ubuntu SMP PREEMPT_DYNAMIC
+                Thu Jun 18 19:14:19 UTC 2026 ppc64le GNU/Linux
+   OS         : Ubuntu 26.04 LTS (Resolute Raccoon)
+   QEMU       : 10.2.1 (Debian 1:10.2.1+ds-1ubuntu3.1)
+   Accelerator: KVM (-accel kvm -machine pseries,cap-ccf-assist=off)
+   Branch     : origin/ppc64 @ dde8f397
+
+--- Test: pmu (Patch 1) ---
+
+   $ ./run_tests.sh -a powerpc pmu
+   PASS pmu (22 tests, 1 known failure)
+
+Full log:
+
+   timeout -k 1s --foreground 90s \
+     /usr/bin/qemu-system-ppc64 -nodefaults -accel kvm \
+     -machine pseries,cap-ccf-assist=off -bios powerpc/boot_rom.bin \
+     -display none -serial stdio -kernel powerpc/pmu.elf -smp 1
+
+   PASS: pmu: pmc56: PMC5 zeroed
+   PASS: pmu: pmc56: PMC6 zeroed
+   PASS: pmu: pmc56: PMC5 frozen
+   PASS: pmu: pmc56: PMC6 frozen
+   PASS: pmu: pmc56: PMC5 counting
+   PASS: pmu: pmc56: PMC6 counting
+   PASS: pmu: pmc56: PMC6 ratio to reported clock frequency is 116%
+   PASS: pmu: pmc56: PMC5 counts instructions precisely 900
+   PASS: pmu: pmc56: PMC5 counts instructions exactly 21
+   PASS: pmu: pmc56: PMC5 counts instructions with branch 21
+   PASS: pmu: pmc56: PMC5 counts instructions wth conditional branch 24
+   PASS: pmu: pmc56: PMC5 counts instructions with illegal instruction
+   PASS: pmu: pmc56: PMC5 counts instructions with fault
+   PASS: pmu: pmc56: PMC5 counts instructions with syscall
+   PASS: pmu: pmc56: PMC5 counts instructions with rfid 2
+   PASS: pmu: pmc56: PMC5 counts instructions with ldat
+   PASS: pmu: pmi: PMAO caused interrupt
+   PASS: pmu: bhrb: BHRB is frozen
+   PASS: pmu: bhrb: BHRB has been written
+   KFAIL: pmu: bhrb: BHRB has written 8 entries
+   PASS: pmu: bhrb: BHRB has written 4 entries
+   PASS: pmu: bhrb: correct conditional branch address
+   SUMMARY: 22 tests, 1 known failure
+
+   EXIT: STATUS=1
+
+Note: The KFAIL on "BHRB has written 8 entries" is expected. POWER10
+records 4 BHRB entries when other threads are active on the core; the
+test explicitly accounts for this with a fallback 4-entry check which
+passes. STATUS=1 is the correct exit code when known failures exist.
+
+--- Test: selftest-setup (Patch 3/build structure) ---
+
+   $ ./run_tests.sh -a powerpc selftest-setup
+   PASS selftest-setup (2 tests)
+
+Full log:
+
+   timeout -k 1s --foreground 90s \
+     /usr/bin/qemu-system-ppc64 -nodefaults -accel kvm \
+     -machine pseries,cap-ccf-assist=off -bios powerpc/boot_rom.bin \
+     -display none -serial stdio -kernel powerpc/selftest.elf \
+     -smp 2 -append setup smp=2 mem=1024 -m 1g
+
+   PASS: selftest: setup: smp: nr_cpus_present = 2
+   PASS: selftest: setup: mem: size = 1024 MB
+   SUMMARY: 2 tests
+
+   EXIT: STATUS=1
+
+--- Test: selftest-panic (Patches 5 & 6) ---
+
+   $ ./run_tests.sh -a powerpc selftest-panic
+   PASS selftest-panic
+
+Full log:
+
+   run_panic timeout -k 1s --foreground 90s \
+     /usr/bin/qemu-system-ppc64 -nodefaults -accel kvm \
+     -machine pseries,cap-ccf-assist=off -bios powerpc/boot_rom.bin \
+     -display none -serial stdio -kernel powerpc/selftest.elf \
+     -smp 1 -append panic
+
+   qemu-system-ppc64: OS terminated: rtas_os_panic
+   PASS: guest panicked
+
+   EXIT: STATUS=1
+
+Note: The panic test validates both the new rtas_os_panic() RTAS call
+(Patch 6) and the run_panic() exit status fix (Patch 5). QEMU exits
+with "OS terminated: rtas_os_panic" confirming the ibm,os-term RTAS
+token is correctly invoked, and the test runner correctly identifies
+this as a successful (expected) panic.
+
+Aniket Sahu
 
