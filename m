@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-24604-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24605-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C240FC44529
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2026 14:57:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 58E2EC44533
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2026 15:04:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h4L8q745kz2xqJ;
-	Wed, 22 Jul 2026 00:57:47 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784645867;
-	cv=none; b=GV8e+GthyLpWQlPCw31GLcOUmZ+wf/3f9IqslWhp3N/kICgo9ok/w+bhvGJ5ZvtnP24RK35VF4MRsTpWpVkE3kd6ym5ykHqd9vxT/loxlMelToV1qMMQU4MjxLulgH1Ot686oZh5tHUyyAgW4qWIVsm5iGZZn2sYEQhSSbZbXxSvrNL86wHrK9oJm7UDwzCUhSLXU7bZ1+G+hnrI/zJh2VYoogeXUdItOaNrokA7uc3vu7/gu7BceBzOzyzJbJvR52WPH0YURKH7BLhnr8NNTDoPbTPue08BTgKZabuuX5mErefz2bHlRXmctQnLW5U0QcwRdgMC/qBfzW8tUDditw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h4LK06Nj0z2xm3;
+	Wed, 22 Jul 2026 01:04:52 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784646292;
+	cv=none; b=gO+ucj7BM6DJhdFzveiXB1iD7yHoUeIYubwaow3/F1Si7FmgHGW1WRprAXryK7ivYi2sbnoxCAz5iYFVT4hNSw9V/A2Fn93GRhii9u2ckVvRKpzFUV4dpqwV8vyorQdsIC6lHHgZuIr1lce04Thhp1mSelp508QYPzPBCxNa7gb7TdJqMor1K9nVGzZRnT+z/CreRfPXTdjaaSNp2abHxQbkbpGuBSpYn/6VwW8uwrt4J7QdCBct7R6QSB+buKI5Xo54I/tz7UktAW6lfxa2xCmPTPGTx/SKPE5dCK09ngwL7xdY+O9t++SX6zSETON6vZ80tmw0ZfsMnLVL0Ywbvg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784645867; c=relaxed/relaxed;
-	bh=FE8BGgQW0fYMcN8NBCYcnkW6qzjkh5NcrjtCMjU8eh4=;
+	t=1784646292; c=relaxed/relaxed;
+	bh=KvFlBOSAAN25BmqEyf7MAcVM6Drefi3m8EoY83MJzfk=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=nwic1mHxKWe+6BbmlMJVj9ElO3goKo24KwZ+UelqsQKg7B1fa07+fX2nFuBEvuTavmylxtbXOrOv901QQ550Y0Sv24yACOaMdwGH6ckQlxNOFXS7I30t2Yh42xd6CSVWGyyeSZ8rCqjSVak9S7O0JX5RZJW0/rSipyXGtPcZlaHSsFO3IC4cZILQqdNUS7H7ZZsIILMVgoymtIquhAX87w3IQOB8jQ67U2rUT4biRAVfwa7QA+q3zyXb/cu04+khXeQ2V2PMBPYWhjO4jN+HHy4Ra531AltTpo9A9dotlK+mfUsPNQ5xAFivaDP5GSudVTvKEkjlhkG2Orj1UIO9Zg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CF605gLh; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=ACjStHIxQPW9u8mqClQDS/CFIdc6Xkv5m/EtU5D/5sYagC0oNr7KXDmmyMJXOc1PO2tjvBg7fHsd34XyBpHgfxqzpnY7L++VtymHHfhvKQJnogAv9Nfwf8tUPWu9Zmq4R/fMfUHCadS065vrM7gmpFtX6vjWsQFW25KoW0cYli8EHiVP9eOr9+1JCYXkb2epkx11BAzXUkviOQMp1/gTRND74s9mn4wLj3mCQrdZO4keFKcVV8fH3rSPhnhRqbNLYiNVAMBKs1JsEwvfFborAlbgKUtpM3TTlU4nAFbpLcjxqgkmEHp1qkGUIvwvxTB/IipOkoXNgpzMAXl1eME9oQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=A7zv8FYY; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CF605gLh;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=A7zv8FYY;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h4L8q1zjqz2xm3
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2026 00:57:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h4LJy1HwWz2xJR
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2026 01:04:50 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id B185842E54;
-	Tue, 21 Jul 2026 14:57:45 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 51D9E1F000E9;
-	Tue, 21 Jul 2026 14:57:32 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id CAC91414B7;
+	Tue, 21 Jul 2026 15:04:47 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 253511F000E9;
+	Tue, 21 Jul 2026 15:04:34 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1784645865;
-	bh=FE8BGgQW0fYMcN8NBCYcnkW6qzjkh5NcrjtCMjU8eh4=;
+	s=k20260515; t=1784646287;
+	bh=KvFlBOSAAN25BmqEyf7MAcVM6Drefi3m8EoY83MJzfk=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=CF605gLhkL6zeNadf6XOk+7+Xs2t0BTo91YzpcEjV43Dy4ytRnKlrI1fy3IfzLfr2
-	 H237T7YQRtv9qWHYksEwmMf5RE3ZYvRoJSOeXXL+2yh4D1dEUPcTyLwLec9+Zn3EgK
-	 qqCNVLPEojFqEefP3dviDr8CHO/fP2J8TwcR2ZYzx237I42d3HVsZR1VLnvfEXyRKs
-	 0SKBkLrnKLIE8EkkKJgQ+T6TW+p6uojk9GEgxOrVIp+aEpxVUV3oDZJRz7AsXfNubY
-	 ynooLXX47XDmMejrp+qJn7sUW0kyUeIx0eFx+Ch1dtyXdtQo0kiZamHTYgY5ojROd/
-	 /R4xf4Sm53OYw==
-Message-ID: <4da506a7-11e2-4cfd-9f0b-ad8635190e89@kernel.org>
-Date: Tue, 21 Jul 2026 16:57:30 +0200
+	b=A7zv8FYYS3BagE62jjvD73Uo/224uS+6js4DUo1TwI40rxRLe9Jy+r9SjEyOaqeU5
+	 rrJBY4oVg3W901xWvxUgvAaN9pRWVrH2l4W2I/qQ5dqtTJ7UGaFX2JCrkU4eOJlqcD
+	 jxL2cK2LvZK45Y/FKSigYw2lIsYEm8O2UBS6UV1NJX6apyOK6foKBUIuE2snq0pRW2
+	 8XXBKWZtHyGR2+qVvCUv9YcmaWJjt6iRu03x4OeaKWzLsttCkNZ0wQAKhXTJ1cXNRV
+	 6VmOsoQBDpTz9vZqaykrZj3UP9etcPWzq5QO5kU0Ljog+5Hjy2ATYcv4TUr/wX9mdf
+	 dN7NNkgocFuig==
+Message-ID: <0bab816d-5de9-4814-b97d-11e89322c413@kernel.org>
+Date: Tue, 21 Jul 2026 17:04:33 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,18 +60,19 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 02/22] mm: move mm_flags helpers to mm_types.h
-To: Kevin Brodsky <kevin.brodsky@arm.com>, linux-mm@kvack.org
-Cc: Andrew Morton <akpm@linux-foundation.org>,
- Lorenzo Stoakes <ljs@kernel.org>, "Liam R. Howlett" <liam@infradead.org>,
- Vlastimil Babka <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>,
- Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>,
- Pasha Tatashin <pasha.tatashin@soleen.com>,
+Subject: Re: [PATCH 03/22] mm: introduce MMF_KERNEL flag and set it for
+ init_mm
+To: Kevin Brodsky <kevin.brodsky@arm.com>,
+ "Lorenzo Stoakes (ARM)" <ljs@kernel.org>, Dave Hansen <dave.hansen@intel.com>
+Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
+ "Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>,
+ Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>,
+ Michal Hocko <mhocko@suse.com>, Pasha Tatashin <pasha.tatashin@soleen.com>,
  Russell King <linux@armlinux.org.uk>,
  Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
  Ryan Roberts <ryan.roberts@arm.com>, linux-arm-kernel@lists.infradead.org,
  Huacai Chen <chenhuacai@kernel.org>, loongarch@lists.linux.dev,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+ "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
  Helge Deller <deller@gmx.de>, linux-parisc@vger.kernel.org,
  Madhavan Srinivasan <maddy@linux.ibm.com>,
  Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
@@ -96,7 +97,9 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
  "Matthew Wilcox (Oracle)" <willy@infradead.org>,
  linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
 References: <20260714-remove_pgtable_cdtor-v1-0-44be8a7685d7@arm.com>
- <20260714-remove_pgtable_cdtor-v1-2-44be8a7685d7@arm.com>
+ <20260714-remove_pgtable_cdtor-v1-3-44be8a7685d7@arm.com>
+ <71045fa8-89fe-4a0b-a05b-67e19ce89834@intel.com> <alZOs30ziqa7l_Lq@lucifer>
+ <5ce00109-c0ea-43f0-881d-f58a0fda8dcb@arm.com>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -143,24 +146,66 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <20260714-remove_pgtable_cdtor-v1-2-44be8a7685d7@arm.com>
+In-Reply-To: <5ce00109-c0ea-43f0-881d-f58a0fda8dcb@arm.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 7/14/26 16:03, Kevin Brodsky wrote:
-> Some of the mm_flags helpers are defined in <linux/mm_types.h>,
-> while others are defined in <linux/mm.h>. We will soon need to call
-> one of the latter helpers from mm_types.h.
+On 7/16/26 11:33, Kevin Brodsky wrote:
+> On 14/07/2026 17:04, Lorenzo Stoakes (ARM) wrote:
+>> On Tue, Jul 14, 2026 at 07:47:43AM -0700, Dave Hansen wrote:
+>>> Could we give this some nice comments explaining what a kernel mm is,
+>>> please? Part of the problem with the init_mm checks is that they're
+>>> magic and it's not always clear what's special about init_mm.
 > 
-> Regroup all the helpers in mm_types.h to keep things simple.
+> Agreed, we need to define what this property means exactly, and your
+> comments on patch 14 show that extending it to efi_mm isn't necessarily
+> as benign as it appeared to me at first.
 > 
-> Also remove #include's that were added specifically for these
-> helpers in mm.h.
+> My motivation really is about how page tables are handled (in particular
+> whether ptlocks are used), so as you suggested on patch 19 maybe this
+> flag should be narrower in scope, and the naming should reflect it.
+> Possibly MMF_KERNEL_PGTABLES? That's at least one thing that should be
+> true of all of init_mm, efi_mm and tboot_mm: their page tables use
+> kernel permissions, not user, and should follow the same rules including
+> not using ptlocks.
 > 
-> Signed-off-by: Kevin Brodsky <kevin.brodsky@arm.com>
-> ---
+>>> Maybe start with this list?
+>>>
+>>> 1. There's only one of them.
+>>> 2. All kernel threads share it. tsk->mm is the same for all kernel
+>>>    threads.
+>>> 3. It holds the reference copy of the kernel page tables
+>>> 4. Userspace can't be entered when it is the current mm
+>>> 5. It has different TLB flushing rules than userspace mms
+>>>
+>>> I _think_ those are universal across all architectures.
+>> Well point 1 isn't true of efimm or tboot_mm so we possibly need a better
+>> name :)
+>>
+>> "Special" is overloaded too much already. I quite like "eternal" so:
+>>
+>> 	static inline bool mm_is_eternal(const struct mm_struct *mm)
+>> 	{
+>> 		return mm && mm_flags_test(MMF_ETERNAL, mm);
+>> 	}
+> 
+> Cheeky but why not! I do wonder whether this conveys the right idea
+> though. The main point of this flag is that page tables are
+> allocated/initialised/locked differently; in principle you could have a
+> temporary non-user mm.
 
-Acked-by: David Hildenbrand (Arm) <david@kernel.org>
+I mean, we talk about MMs that are not used for actual user space processes?
+
+IOW, the following:
+
+arch/x86/kernel/tboot.c:static struct mm_struct tboot_mm = {
+drivers/firmware/efi/efi.c:struct mm_struct efi_mm = {
+drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3-test.c:static struct mm_struct sva_mm = {
+mm/init-mm.c:struct mm_struct init_mm = {
+
+
+So "user" vs. "kernel" is quite intuitive. Sure, there can be multiple
+"kernel" ones, but each with a distinct purpose (IOW, we don't have multiple init_mm MMs).
 
 -- 
 Cheers,
