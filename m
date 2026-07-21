@@ -1,85 +1,87 @@
-Return-Path: <linuxppc-dev+bounces-24581-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24582-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5D73EC4451C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2026 08:15:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 51BC3C4451C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2026 08:17:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h49Ds3mGMz2xlb;
-	Tue, 21 Jul 2026 18:15:41 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784621741;
-	cv=none; b=WsWQa+inZOW7OEqDj2NN4r/OCl1B/KTwb63bdAJHAMaYWQd+F0Q7LaJS4ljZwCKhE3GyYqbLztTZjotaSZ6ed9oFrqGjIvDSLJihvcj4sIB4OdcsMYKIdYdnK1n0O1BG0S61S0XCzKzXP0xzfe9Z6wCQG5u6j1g0Yty7eOEQYt9B2dTJA9hibf5g2AYl4eMKyauTR/aMK0IA3oYzlSbcfKW0e5yrFLFNSrb19K90LCFOF8nNvMg/ez6qAwoylZqlpmk3heJUFH7LrOgSPjb8XkuMg7cHcceGyu5ZdCs28T/ERu+Qf12Q/XUskhINeZNlsUzzhYPpK9R29Qe0+ju0Qg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h49HR6M8Sz2xm3;
+	Tue, 21 Jul 2026 18:17:55 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784621875;
+	cv=none; b=HlUqCXc73Y1O9279YQq4Q8RqA60jitd4QEjwLIkgZm5POdBgehO0UT7HA3ZOXikRHvyZPJ3YQusfKOjHD1XIlMaRRdFbKNFXxB7+e+0iGiJnPI+MgzGT5Ht2tj8Rgmp0tDR1SsciccN66ik6qtnOaswU/d5qy4RPeKyMTsEgnSdAM0VnWqNJuwlmcbVzpy9UkwQT329htPlrN/9Fqj100PRVh0l4nm6ZQZiQ68CcWdaKL3f2QTFfnYzMmq1p3XswgpVPCUzVoq26vxGuGUYilE9O6bAvc+5Qt2ExxnHqhrPGnk3p1HOh3SQhmn7vEsuoSsP/Bj/XFGzcCQtRNbGSWQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784621741; c=relaxed/relaxed;
-	bh=F70kyBctfVYKO4Lf5A5/F90+zjATHA6JYsGkkxtvG5k=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=UnktOr8qysZvn3dj0ZFx5KXuysdrDeFd9VMzz2GPzfKbZDAem6HkYfwFpSkKxuVDfIw88CBnNNDmjY8GBSw1WWc3PWemhL/l1Cw8vzSIGi7A12t7Y1KpseuGOe2fOkMvNLFiF0S8pRMVGKHGJ1UqObWdcwB9AMMKDb+xkkwFJ3WNEFsp3NrID3wcps3n2vu4WGmHgicNzj2bJ+h+3F+VTUDcg2eg0/74uQJmOtyhlcFw4BJjLdJFmTMTC7Hs8ONT9H+xgCaxltvKJpyKk6Hi8hg3bCZQ9hjJK+B3cXjnlg6NmrbiYO/4qwmqP6sY5PVBqAy2W5IMTiIkzis4l7B8eA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=TCmHIqAS; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1784621875; c=relaxed/relaxed;
+	bh=T6g9AHg6Msysl37eYnjnLtQmEqUs+OTtZKGs9WFjvSk=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=ivPSH4sQRqYDuGyCD5cPLyZOmvttbDgwjw+wJw5pRZaq6gJgP79JuwG7ZIIOMpeX83zgk32nAY8drvJ7ziGL+FBdVZ6FdDGRp4Iaq7S0bZYACviVaqro0gjleEIPi5QOTYBN34PMD7TV08WT9ojkc1RpszfEduJm+PpXP0jhHEw4hc5qwXpz0C5uWDmAliE6iTi66LXL46dYYJCOD0EewZlua3xUkLGEV7M7Maz4edPMlbUEapVZF9HnoC68n/d23hN85Wsym4HdIj1jS/3kNR7QDW8IxA8XXohpZRmoPFK02Z8o5WxaNNv8rHtsbyGWlgV41/t/4w9KLOTeP8THuw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gzjjESdF; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=TCmHIqAS;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gzjjESdF;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h49Dr59P0z2xjd
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2026 18:15:40 +1000 (AEST)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66KNDZ1r3560230;
-	Tue, 21 Jul 2026 08:15:28 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=F70kyB
-	ctfVYKO4Lf5A5/F90+zjATHA6JYsGkkxtvG5k=; b=TCmHIqASwV7TTgRkV8w5qw
-	RpRNqVfkHeJsCCy8ZAcVxxf6ipJ6xKO+tQAO6BkIr9Mc5IK363cVvMA8I+QTj5MD
-	MXAtnrdHDbC2RNdwCVAIcOwDgBGYgny0mKQHKis6VOxHuu8nMmw3r072+dhiaA0N
-	XvlnQtJ1b4pCn7FTcg6+rF8JZ7u9ihGXUwTeKhUxES8I+vLhge0IWiT+jD8jKuz/
-	vKYvcIy6To3hbTR3DgqJsFNMP+FAo7fNOr+JSshMC6+BGlmsYElwib77RTAuMAH3
-	L+1s6u6MiSdpirp8/GvwBXo5r74pOgIpEevHKM8meIpZ79AbQOQCthiA9orl/s9Q
-	==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fg7ah36x5-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 21 Jul 2026 08:15:27 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66L84dbg013964;
-	Tue, 21 Jul 2026 08:15:26 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fgpgy94am-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 21 Jul 2026 08:15:25 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66L8FN6s24183084
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 21 Jul 2026 08:15:23 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 88A4920040;
-	Tue, 21 Jul 2026 08:15:23 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 319C920043;
-	Tue, 21 Jul 2026 08:15:21 +0000 (GMT)
-Received: from Linuxdev.bl1-in.ibm.com (unknown [9.123.5.176])
-	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 21 Jul 2026 08:15:20 +0000 (GMT)
-From: Madhavan Srinivasan <maddy@linux.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        Kees Cook <kees@kernel.org>,
-        "Pratik R. Sampat" <psampat@linux.ibm.com>,
-        Thorsten Blum <thorsten.blum@linux.dev>
-Cc: stable@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] powerpc/pseries: fix memory leak on krealloc failure in papr_init
-Date: Tue, 21 Jul 2026 13:45:20 +0530
-Message-ID: <178462153940.1974055.8113813222024917054.b4-ty@linux.ibm.com>
-X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20260614142356.658212-2-thorsten.blum@linux.dev>
-References: <20260614142356.658212-2-thorsten.blum@linux.dev>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h49HR06g1z2xlb
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2026 18:17:54 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 684E260A9B;
+	Tue, 21 Jul 2026 08:17:52 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7485D1F000E9;
+	Tue, 21 Jul 2026 08:17:51 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1784621872;
+	bh=T6g9AHg6Msysl37eYnjnLtQmEqUs+OTtZKGs9WFjvSk=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date;
+	b=gzjjESdF8CyzkjGgzLW39bNILuphzcta3sLi1URSjyAFzJLipC3UmTrXu3jFFA61P
+	 pi0PV5sSxroT5MC4vSB4irmB8zkSTQpTKtCfEXUbyhmwF4wWaIQ7lbNCZq0H7DmKFK
+	 8I7OxSO8hwMcqfwnwS7791wWvgudq6KYGJc2fT4Fg1b9+hIgTc7vYx2BwdLm81gs4i
+	 wUS79qiWoSovsixtK4st1zKQHQc+AVAWsjP8+JuFDiWzJmzXtUEBmK6h+qeN8XDX1T
+	 q37KCU+p9yvcznsgWiTAyqiGmNVH8Q7lJHO4++M0Slhqh7kAciZtfiGRWhaqAlyvHz
+	 9t2nZgwHDG8hg==
+From: Thomas Gleixner <tglx@kernel.org>
+To: Magnus Lindholm <linmag7@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra
+ <peterz@infradead.org>, Michael Ellerman <mpe@ellerman.id.au>, Shrikanth
+ Hegde <sshegde@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, Kees Cook
+ <kees@kernel.org>, Huacai Chen <chenhuacai@kernel.org>,
+ loongarch@lists.linux.dev, Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt
+ <palmer@dabbelt.com>, linux-riscv@lists.infradead.org, Sven Schnelle
+ <svens@linux.ibm.com>, linux-s390@vger.kernel.org, x86@kernel.org, Mark
+ Rutland <mark.rutland@arm.com>, Jinjie Ruan <ruanjinjie@huawei.com>, Andy
+ Lutomirski <luto@kernel.org>, Oleg Nesterov <oleg@redhat.com>, Richard
+ Henderson <richard.henderson@linaro.org>, Russell King
+ <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Guo
+ Ren <guoren@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Thomas
+ Bogendoerfer <tsbogend@alpha.franken.de>, Helge Deller <deller@gmx.de>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, Richard Weinberger
+ <richard@nod.at>, Chris Zankel <chris@zankel.net>,
+ linux-arm-kernel@lists.infradead.org, linux-alpha@vger.kernel.org,
+ linux-csky@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
+ linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org,
+ linux-sh@vger.kernel.org, linux-um@lists.infradead.org, Arnd Bergmann
+ <arnd@arndb.de>, Vineet Gupta <vgupta@kernel.org>, Will Deacon
+ <will@kernel.org>, Brian Cain <bcain@kernel.org>, Michal Simek
+ <monstr@monstr.eu>, Dinh Nguyen <dinguyen@kernel.org>, "David S. Miller"
+ <davem@davemloft.net>, Andreas Larsson <andreas@gaisler.com>,
+ linux-snps-arc@lists.infradead.org, linux-hexagon@vger.kernel.org,
+ linux-openrisc@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-arch@vger.kernel.org, Michal =?utf-8?Q?Such=C3=A1nek?=
+ <msuchanek@suse.de>, Jonathan
+ Corbet <corbet@lwn.net>, linux-doc@vger.kernel.org
+Subject: Re: [patch 00/18] entry: Consolidate and rework syscall entry handling
+In-Reply-To: <CA+=Fv5Sd5+-K3-MOiEc2N8z_5CoLQPVPUwjiugSj3u8cBWJXXQ@mail.gmail.com>
+References: <20260707181957.433213175@kernel.org>
+ <CA+=Fv5TDNH8+JAojV9_W36kUkEE68uiA00FQ7i0vJunebqs1sA@mail.gmail.com>
+ <87wluplb6k.ffs@fw13>
+ <CA+=Fv5Sd5+-K3-MOiEc2N8z_5CoLQPVPUwjiugSj3u8cBWJXXQ@mail.gmail.com>
+Date: Tue, 21 Jul 2026 10:17:49 +0200
+Message-ID: <87ecgwlpsi.ffs@fw13>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -93,47 +95,27 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: rrEshY317-BZh5KwPmuNcttFlUxINT1B
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzIxMDA4NSBTYWx0ZWRfX7gUHnNFy1aJC
- VpMp1uO4o41CeU7huqd0OKq6b6Q6Q2cOTpFyR/bPQpDyoNDrImgprYvyrn9n0mTgqbsb/UicGq0
- vSbEghnXOlPXSvcyupeGJODHL+t2aTZYfUZ7tOpyv8RM1rCfizLc6hC1FCAUShXLV+AXLUcYSNL
- DCD/DGR/dYQ6LbM4cE5Zzi0CiOSA8H5PLI07SiAmvNaAWaI9FAOIdDuJfIwUD8Sq9AOaRxPTDe+
- OGrhu3Z/DuL8XKzR2A0xBFrqof+4mC0UK7XTpCw6kdD8YEN6XIAXYUnyc1SdMS/nqlFayZ7Czqt
- xmoRrQdoEb80sXVUCMv2X4tagzXq1Flryi9YbAHZyKhc0Ym5jiqvjRcwHhZCA79i1t1d9H8xWaX
- XS8HKlumOwzOsxQ+2Nj1iS1zB/arPFI5JX5mncv/qBc68K40LNUMV3oVPx5tFKxcwIywqZhqQiH
- rLqPNidmf2xajCNJh9A==
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzIxMDA4NSBTYWx0ZWRfXzC9uLrVhI+NT
- 6PGWz3h/9HGWLNzTyztmRX1RFYLgJWUCpAeoxQxdlBEo4+IZj96yJJhEYQh33CQxkkC+s6Y2y+R
- ZdoiOltRcseeOJ41hcWJpWzWxio7hVc=
-X-Proofpoint-GUID: DSQnKxNtjYMrz4O3uPWlw_biJFDRwg7c
-X-Authority-Analysis: v=2.4 cv=SM5ykuvH c=1 sm=1 tr=0 ts=6a5f2a9f cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=VwQbUJbxAAAA:8
- a=CC3r_jQr0_LCWo4q_HgA:9 a=QEXdDO2ut3YA:10 a=zZCYzV9kfG8A:10
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-07-20_06,2026-07-20_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 lowpriorityscore=0 bulkscore=0 suspectscore=0 adultscore=0
- spamscore=0 malwarescore=0 priorityscore=1501 phishscore=0 impostorscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607210085
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-On Sun, 14 Jun 2026 16:23:56 +0200, Thorsten Blum wrote:
-> When krealloc() fails, free the original esi_buf before returning to
-> avoid a memory leak.
-> 
-> 
+Magnus!
 
-Applied to powerpc/fixes.
+On Tue, Jul 21 2026 at 00:01, Magnus Lindholm wrote:
+> On Mon, Jul 20, 2026 at 9:21=E2=80=AFPM Thomas Gleixner <tglx@kernel.org>=
+ wrote:
+>> If you want to base your stuff on that for 7.3, I can add a tag which
+>> makes it immutable so it can be pulled into the alpha tree.
+>
+> Yes, please. There is still some ongoing testing/review of my Alpha
+> GENERIC_ENTRY series, but assuming it is ready in time for the 7.3 merge
+> window, an immutable tag would be very helpful.
 
-[1/1] powerpc/pseries: fix memory leak on krealloc failure in papr_init
-      https://git.kernel.org/powerpc/c/bd83c98b988d2c560531084e296dbfb530aff829
+Here you go:
 
-cheers
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git core-entry-for=
+-arch-07-21-26
+
+Thanks,
+
+        tglx
 
