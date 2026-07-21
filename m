@@ -1,80 +1,146 @@
-Return-Path: <linuxppc-dev+bounces-24564-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24565-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 989A1C44515
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2026 00:46:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A26AEC44515
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2026 02:01:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h3zGv6VdDz2ySg;
-	Tue, 21 Jul 2026 10:46:47 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784594807;
-	cv=none; b=Dukcvd2qxwv9Av3vCqFtfo9DYqlgOMncJIGbk7kGJn7UuI15VJOpbbkOxli2U3gQHAyG2/HpIiQlWLXF+kly0432xIdjxiAWdjEl5JSdfXuJ7ZFUaAlrngoQTujLwaa8+LgGeWeIEhbBqR/h58ajQjqe+D1YN3T7F1cR8LbE4ij+I7aI1foZZEqW1cWpWX6yAshIS2U69ZK62VE7CmnuDSOLtmbX5qvrWqqp31g8Cy4ssId1XN/hojk1zBoEiAboFAika6dxz+17Zb6DT0GsSWzLFceQMH+/90PbUFAEBLl2mupnu42DQycVzBoSj7a7qLbMNowejx+OVRwaZgAxBg==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784594807; c=relaxed/relaxed;
-	bh=tyjDL6Bg5Az8j/9WD/q2xY+18VD/UjY4klZbAbgMCyc=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=aQu2A73davqcGSpzXND5b1+5efC4D40aZXyz4VPtrdDzOd7eAcUsQt4RSPMVHe/7rrO4OwrVuN1PTO75DtkYnpMJgPuZk/Qio3DmuCASeVuUu/PIYHYTpVuNqbQZhM1RJMTfYx2dYUyZPVYcWA9EpL3C1h4SVEXcOHyUbzkcjggQHTkChjZiCWaw/e5GACrXJQynK1EC7Yi4JjUz3DSES0USOLJbp+K6HfGqyVCmaTKukX/E8AoPnDDbsSmdO5U3wp36/7ZjcSZo6ldlPn4i8cicSv5xr/HdPQ1nqnuywMbz+w7wUJ92+fwAccXoCcTd4O8r29bqaRK/AMKAn/5KMQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QRALKiV1; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=jic23@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h40xF4JPqz2xKh;
+	Tue, 21 Jul 2026 12:01:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c200::5" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784599297;
+	cv=pass; b=lGY0opwsr1S0NhfGMNmggGr9LCYp4F7cNy0XLqGRQUEaK+yKogE9K5gLK0UP8LhZwwkcfGL0m0KZlCQuTRHA0X1781zTOVLYiCFoFyzGwdP9YHQquF1fQYRBxdIdjQjAyx1xuIWArRKXiyfy0M4LdZ1+23fTIhFunVkuy+1FUtPoifQQUy7heNIGBsVIAf6Gez/JrNHnonczGyJTXU1mgpF5a5miX84pkDzESx5OKBsyxspUWVqN42/dnBWKPxX9sYt7cLAbV/D2uNc6e/aWuOPmbbs5/v6CXSfbV2kME5HIjtLKUqkiNgPzySYxSbU+DCXqYX4RwudCvvaHMelAWA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1784599297; c=relaxed/relaxed;
+	bh=YjH+el5z1xmWRtNVU1C8S1Fciw0M30ZKLTPyXeRG5rE=;
+	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=aDpxypmpIGRvP/+pKnCaIsd54KZbQaprzZDM2nrzTLhO0D6Q87/9Kg3wakQGrjRXDs7O/xq8QDmGnl4foxNzG/sPoDFZ80oCDqzWKemZWRbu+XGYsMAvrx27/6VIsaq7fcBCu9HRI3EFbr6XUPm9mO2Cgjy8rJTNlq2PDkNBo6AvICQDUcQmiSFdrK4D7rNWNdrZophmgPiTijNn2seFlj3dxrv71AyNgk/53/350O6U1ybICkpTLPuUL4CjcgCJ/Qs7Mx+15g728AoY7FCvNEIfcynb4ZU0HoTr75rZWs4qWVtbAGKfw8lkmupktgf376uKjScK93GMZ8gj6ehilQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=V6qLY2H+; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c200::5; helo=duzpr83cu001.outbound.protection.outlook.com; envelope-from=wei.fang@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
+Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QRALKiV1;
+	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=V6qLY2H+;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=jic23@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:c200::5; helo=duzpr83cu001.outbound.protection.outlook.com; envelope-from=wei.fang@oss.nxp.com; receiver=lists.ozlabs.org)
+Received: from DUZPR83CU001.outbound.protection.outlook.com (mail-northeuropeazlp170120005.outbound.protection.outlook.com [IPv6:2a01:111:f403:c200::5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h3zGt5Zvrz2xFc
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2026 10:46:46 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id AFC7A60A7C;
-	Tue, 21 Jul 2026 00:46:43 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D126F1F000E9;
-	Tue, 21 Jul 2026 00:46:38 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1784594803;
-	bh=tyjDL6Bg5Az8j/9WD/q2xY+18VD/UjY4klZbAbgMCyc=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References;
-	b=QRALKiV1VD5gb2QhM2IPcwMj+gn7HrpVlL7pWf+8eMXlbzM92zGpgkmLyDEwfI+2E
-	 2IhrNhDZByEdVlgO2elYvobfFvPlDd28sPPerSuQ1JVRs7GQa8HheTC3fZCTL9uf1U
-	 j0/q1SR3h4QKIemZI4Arns3QHs3r8b3tlEnESLag93GeJNX3ZdX8M4/Pb4h+sA3VBx
-	 wwiINJPHQiCKimKUDe6g83woVaahni1LTobSBkcbaiQHv4TJUZiVC3o4XqnHQq58um
-	 FvwbHlZ01UP4ja5saK2H3FJAfHFoaaxDendp96P7BclXVqupbuO6jw9g/yuesCNcRv
-	 JTO/tEiXBgrww==
-Date: Tue, 21 Jul 2026 01:46:35 +0100
-From: Jonathan Cameron <jic23@kernel.org>
-To: "Bowman, Terry" <terry.bowman@amd.com>
-Cc: Ashok Raj <ashok.raj@oss.qualcomm.com>, Bjorn Helgaas
- <bhelgaas@google.com>, Dan Williams <djbw@kernel.org>, Dave Jiang
- <dave.jiang@intel.com>, Ira Weiny <iweiny@kernel.org>, Len Brown
- <lenb@kernel.org>, "Rafael J . Wysocki" <rafael@kernel.org>, Robert Richter
- <rrichter@amd.com>, linux-acpi@vger.kernel.org, linux-cxl@vger.kernel.org,
- linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Alejandro Lucero
- <alucerop@amd.com>, Alison Schofield <alison.schofield@intel.com>, Ankit
- Agrawal <ankita@nvidia.com>, Ard Biesheuvel <ardb@kernel.org>, Ben Cheatham
- <Benjamin.Cheatham@amd.com>, Borislav Petkov <bp@alien8.de>, Breno Leitao
- <leitao@debian.org>, Davidlohr Bueso <dave@stgolabs.net>, "Fabio M . De
- Francesco" <fabio.m.de.francesco@linux.intel.com>, Gregory Price
- <gourry@gourry.net>, Hanjun Guo <guohanjun@huawei.com>, Jonathan Corbet
- <corbet@lwn.net>, Kees Cook <kees@kernel.org>, Kuppuswamy Sathyanarayanan
- <sathyanarayanan.kuppuswamy@linux.intel.com>, Li Ming
- <ming.li@zohomail.com>, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, Mauro
- Carvalho Chehab <mchehab@kernel.org>, Oliver O'Halloran <oohall@gmail.com>,
- Shiju Jose <shiju.jose@huawei.com>, Shuah Khan <skhan@linuxfoundation.org>,
- Shuai Xue <xueshuai@linux.alibaba.com>, Smita Koralahalli
- <Smita.KoralahalliChannabasappa@amd.com>, Tony Luck <tony.luck@intel.com>,
- Vishal Verma <vishal.l.verma@intel.com>
-Subject: Re: [RFC] cxl: Device protocol AER injection
-Message-ID: <20260721014635.74d89853@jic23-huawei>
-In-Reply-To: <62c40932-0f9c-4a67-8ff6-4bc7ba24f40e@amd.com>
-References: <20260717225700.3543801-1-terry.bowman@amd.com>
-	<20260720220430.30b7e3ef@jic23-huawei>
-	<62c40932-0f9c-4a67-8ff6-4bc7ba24f40e@amd.com>
-X-Mailer: Claws Mail 4.4.0 (GTK 3.24.52; x86_64-pc-linux-gnu)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h40xC3HwVz2xC3
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2026 12:01:34 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=n4ZE8izu5svbdXNgBzcGWHgN/p4Tvc+lA4z5W5WLYkWn0gf/lcS3PjFisalpPVqY5txBwrHmLO3rBrDi+BgIiAieOeXSaqY1hZ5dqh7DQ6XTI3uieoRWQ2hOlYmi3vmp4Vs0CDGHurFNhL7bUmULpOUuq4TS4UTnaUDDfOSWu10pcpsSlBNYv7j8MRcfj6Jt/Kkc6Kbc5+KhSEgwmWKaN/WpLtbXb4GvSVca6X/h0ThzxJwLlrEMxtHuO9I06Cbv/qdx9K6z124IIERflS9e0zv2jdeE1NothKR+Hk2w6HnL+SNLXPg5crFeSOt0bAEt4jPxLCjMQrnBd/dVOV7FXg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=YjH+el5z1xmWRtNVU1C8S1Fciw0M30ZKLTPyXeRG5rE=;
+ b=mQH/ZOoDvhmw705bHGPvfImuME3DC5exrYpu7ZBvdCOjw8PQtbaOyEJa8l6u0VwKd6yVJzD+a37jGOjZa95DVjkJRnQKmJuVIldTncRJDXT6SdJPRKDNulwtEsMIWH8bx7GKuNhV2iyvXTmfZsOIFiaq5kvD3eVr5ZtJgKnKjAVxQKBUmueU1LibMfNfqEsPRI48Ot+yGvLB5pcxccA9aluykPEFpMGsEupnTrhYemmfHD6XY8DUqyL7jqLu3caYj85TtkDHQ11C8ikA/6D7daJrVG+P9WjAQo49v6VWcTmGPnIwsvDs5FyvIE7Xjrco2dOmw3uD97EkKeDnGVUtFg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
+ dkim=pass header.d=oss.nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
+ s=selector1-NXP1-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=YjH+el5z1xmWRtNVU1C8S1Fciw0M30ZKLTPyXeRG5rE=;
+ b=V6qLY2H+KGwfO9AqAxfJC4OjqDQXx6gmxqBvHfD+cV6gGoSgiUlP3NUVPsmJ66dUzG5GexQXIe5nqiYc1EM/NbpunrkYg6i9Sgptxyq3nA/SG45oh+RoV9uWyJ+ayr1XMKUraOUcS4+ANXL2gT4EVSeSU6Bf1vY39227kufC/e8rN+u6y7oWhro1s9EuKpN+TxrB/YAIyiV/SqwuxiCWjVrxUf0YYuY4FiirflNI0qSvWiOjO5ETR2X+OV1QiTCxW40FcqXJBCM1zfmm5D50IwfYvoiRWvlPYck/WI3sCNNUPYW1fRmL1UF72L9/D8+y9z/Zw5HrwCYAVwdxWE4NxQ==
+Received: from GV2PR04MB11739.eurprd04.prod.outlook.com
+ (2603:10a6:150:2fc::18) by PAXPR04MB8078.eurprd04.prod.outlook.com
+ (2603:10a6:102:1c1::16) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.223.18; Tue, 21 Jul
+ 2026 02:01:06 +0000
+Received: from GV2PR04MB11739.eurprd04.prod.outlook.com
+ ([fe80::71c2:937b:d466:174a]) by GV2PR04MB11739.eurprd04.prod.outlook.com
+ ([fe80::71c2:937b:d466:174a%6]) with mapi id 15.21.0223.017; Tue, 21 Jul 2026
+ 02:01:06 +0000
+From: "Wei Fang (OSS)" <wei.fang@oss.nxp.com>
+To: Joe Damato <joe@dama.to>, "Wei Fang (OSS)" <wei.fang@oss.nxp.com>
+CC: Claudiu Manoil <claudiu.manoil@nxp.com>, Vladimir Oltean
+	<vladimir.oltean@nxp.com>, Clark Wang <xiaoning.wang@nxp.com>,
+	"andrew+netdev@lunn.ch" <andrew+netdev@lunn.ch>, "davem@davemloft.net"
+	<davem@davemloft.net>, "edumazet@google.com" <edumazet@google.com>,
+	"kuba@kernel.org" <kuba@kernel.org>, "pabeni@redhat.com" <pabeni@redhat.com>,
+	"linux@armlinux.org.uk" <linux@armlinux.org.uk>, Wei Fang <wei.fang@nxp.com>,
+	"chleroy@kernel.org" <chleroy@kernel.org>, "maxime.chevallier@bootlin.com"
+	<maxime.chevallier@bootlin.com>, "imx@lists.linux.dev" <imx@lists.linux.dev>,
+	"netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+	"linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Subject: RE: [PATCH RESEND v4 net-next 13/14] net: enetc: use
+ alloc_etherdev_mqs() to create netdev for VF driver
+Thread-Topic: [PATCH RESEND v4 net-next 13/14] net: enetc: use
+ alloc_etherdev_mqs() to create netdev for VF driver
+Thread-Index: AQHdF+1U0b1XT98MNEmlt9MrKMcSSLZ2rJwAgACNGPA=
+Date: Tue, 21 Jul 2026 02:01:06 +0000
+Message-ID:
+ <GV2PR04MB117390E882DC4BB22CC3E808288C22@GV2PR04MB11739.eurprd04.prod.outlook.com>
+References: <20260720014317.1059359-1-wei.fang@oss.nxp.com>
+ <20260720014317.1059359-14-wei.fang@oss.nxp.com>
+ <al5cgs6CqVKsy/gh@devvm20253.cco0.facebook.com>
+In-Reply-To: <al5cgs6CqVKsy/gh@devvm20253.cco0.facebook.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=oss.nxp.com;
+x-ms-exchange-messagesentrepresentingtype: 1
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: GV2PR04MB11739:EE_|PAXPR04MB8078:EE_
+x-ms-office365-filtering-correlation-id: 8f3dde7e-f181-42c0-311f-08dee6cbed24
+x-ms-exchange-sharedmailbox-routingagent-processed: True
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam:
+ BCL:0;ARA:13230040|376014|7416014|1800799024|19092799006|23010399003|366016|4143699003|22082099003|18002099003|38070700021|10067099003|11063799006|56012099006;
+x-microsoft-antispam-message-info:
+ /goJ4NjGL2TqFP8JqC9DUXpsa69ekjkydAelhh5H3cehST7jnVEDxIaRDHOBH/ZTST45ONRrM8m562KVZfFEoNli4+W1ve/XeKDnLe7P7MMfetLY6i85pnvy0op3x4DWqZ2vzse12MfWvvnPC1eoBSvfAkQgYVIMi6sr1yfMwV3YAU8eMsxLrZEyYW36jSAMawmQ2rsILPV09HwHQ1xa1MyiFUschyLTx+JPm72liQrvVgTn09kuXjqonBH/eMssh0fM481HHuCDxk6+a4EYV2SPNAay68P0s/OD/nb7Jjw2LKGiOmGXANlot3I5uSm9T+QM7VKa78hcsNusy4MVgpjI5ZNmxBWYsKIsAO88xJ7EmpkMbwmtx9GrfUm1cYcnkkX0WYSL7pAq135SNZmMeP5SkJ0OeMP6eGCwjeKDTjYDww3LwlCUNTzHEcP6v6ht0GzYF+ZrRhUPpDZNQ1TBrpOxWbawjjPl9rPLf5MptwxpHd3jIUitEYmZAOzlQp4mb7o1g95vsyC3TWZauWm7Ar7kyGtqcypA2ulHzqV+ekXbcLJMcgXhoQHLfW74RTOCNtoOoYWm0kile6YBAZZjzlKgk7+Y5/VP7vxaYo/4ltxPdKI/BXs/ZiHBPEJpsclMy+w+eB20nw8K2v+8nBlVd5nyl9F9rzjkVJu2orRvY/CRaHRIQWLFcI/vx6WWevWDqDnJf7F0DXpMs6rCi8bNfJZaomKUNNfIXNQqYE2FJT4=
+x-forefront-antispam-report:
+ CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GV2PR04MB11739.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(1800799024)(19092799006)(23010399003)(366016)(4143699003)(22082099003)(18002099003)(38070700021)(10067099003)(11063799006)(56012099006);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:
+ =?utf-8?B?UWs2MmthMUNmeVpFdk8zV3UzNG1NUkpXNm1ScDF3SytoaUJNVnA1ckJEb2FL?=
+ =?utf-8?B?UlNTOWtJc1dETjhtTEpJaEVnTGNXSXJ2anJtTG9OVU5vVGtDU3BTRnpYMWls?=
+ =?utf-8?B?R1B3UTJITnlqTTZtYklLNTNlaEwrQ0xuaktBR1pBVmkraTN2Z1R2aDduanhi?=
+ =?utf-8?B?cGwwQSt0RDVrTjBMM0laM3RNb0lnT0gralY3SFhwOHRJcVRBcWoxc3pwVnRm?=
+ =?utf-8?B?aFVjd0k1Y3NkM21mY0I4ZEQwMUloQlovQXFodHhJSkdydWlpS1VUSmVEZ2ZB?=
+ =?utf-8?B?aUU1OCtqQUNEMHI5VEVKeXo5M0pHbjVBb2grc3B4aS9GQzN6WGxGaWRRZTV4?=
+ =?utf-8?B?SXlCaDZXR0M5SExFWHhMa050RHRYcEpXZEFjVWN5YUp2NnJtTFBHUlN6VjhG?=
+ =?utf-8?B?S2tGUlRHME54Wm5BcXEyYlUyVDNhTFZTdFhENEh5bHFKemp2N1dlVXF1QTY4?=
+ =?utf-8?B?T0FNT0E1Q3p5Y3JjU1RxOUNtNmE2a2tmL2NQcXpzem44SmpZQlV1UFRPVFc2?=
+ =?utf-8?B?YkFLRUdCZzVuK1NWRXpXTTJqZkw1NGpmVW5OK0VmRDlxRFFSMWRBMGlrYzJa?=
+ =?utf-8?B?M3djZ3J3blYzSDhRVTRRY3RHS1FJemFpSDY3T0wvMi9JRXpEQjAwTDBDaWVW?=
+ =?utf-8?B?RTdmYUoxNHkrK0psTnB2TVJ5ZjVEbTZia1d4aHBGNDVrbUt0dFk3SEw1ZnlM?=
+ =?utf-8?B?b255aE1pMjZVOWF3eE8vei9EdCt1RWw3RTk0S3pVYkljVXRSeFdnL1RyN3hq?=
+ =?utf-8?B?V2hCVFd6L3I3TkdUaTI3K3RTWVdVZFFNRXI3ZkRZOTd6RENmOFVMWHNrVGNP?=
+ =?utf-8?B?U1BXc21lc3lJTGVXc2w0TnJMYXFKRWlDQld6cStzR2xZeVNtN2RLdXNpejVO?=
+ =?utf-8?B?YzR4a0FhQUFDK291Y1EyNWZHK3R4R0drNXlWU3hub0RDbjMzeUhBZjQ4dWFQ?=
+ =?utf-8?B?Y210QnkyR08yd2tDdVhaelM1UHlUTlEyTVdtNGpETFJYT2k4U05oTzFMN2Fv?=
+ =?utf-8?B?UWg5M09CTXVjSEdOOG5ocnpjZjh3K2FIRzBCRTJFT25DNnF6V0tabDZjZ1kx?=
+ =?utf-8?B?MENTTlRqRDUzWGpRMktseHFyMkNEQzVyQ3NZUHVJL3dXWVZYM3l1emVrNDhl?=
+ =?utf-8?B?em5Edy9xNCtEczgxdSs2WDNMZEF0aEdadExrWE9qQVpiYXdXM2dDZ3hnTmpO?=
+ =?utf-8?B?eDBsWEZUTWxtK01kcjRueC9pSFJaMjUwVDYvTzgwam1jdXYyV1dZZlBmRlpN?=
+ =?utf-8?B?UTl2QysyMFdOTHQ0REVhSG1pUjhldVdsYTJwU1RTZ2NwV1YrWXE5VUNSb3Yz?=
+ =?utf-8?B?SUtmOVExY0orSzhDOWlaT0JBUm5VTlQ5RDBWOWRjQklSeDZlclFzNVBJZmV5?=
+ =?utf-8?B?ZzlqRXh6TzZ5OFBDSG9wZ2lXWCtVYWsvRGJvRVlMTDBWWWl4c0RyeGpBdzgw?=
+ =?utf-8?B?RFVGMHQxcFEwdDdwU0dnTEJPNVdDOUhCTG1zVy9Ibk90MFU2UTBFSE1MOGw5?=
+ =?utf-8?B?TEsvOFhaOEMzcWx2cjl6a3F1L2ZFeWtZL01tbkNUeldORmZCODZkUXNDSWxk?=
+ =?utf-8?B?akhxUlZPc1YwWVNMNTNkcmNZRXQrV24ycnYzZjhsQU0wcHpOZVpuaGxSMHNF?=
+ =?utf-8?B?UlN0NFRpejhTRFhuYVVEYXFuSHMyKzJEdkFKNkdva2pibzc2bnhiOS9pcUxu?=
+ =?utf-8?B?LzhtWVNJWlBQOFlWOGxyb1pJVkIyNjE4Mzd5cVdtdjI2NkIvbHdBcTQyaXBY?=
+ =?utf-8?B?K3pGMEZkMkpaR3R6d2tkbWtUQ05WeTJ3NlgrYXRTckQ4QklGaHdNMEtvNm5a?=
+ =?utf-8?B?UUNTaWJmR0J1WnpmWkd0RWtML3ZxcVZQcUwrUmE5QzFMV0hwdGRHU2FVR1dI?=
+ =?utf-8?B?SlV6SDc3OVA1Mkx6Qm9SUkplbE1kbi9vUnRQdm9ldmNyWHVDVngycFdZTW4w?=
+ =?utf-8?B?RHRYbXVJaHU0V3J1NVEwMDd2Q2N3UjlCdzNkMTJ2amVCU0NKZmNCV1AzRk9o?=
+ =?utf-8?B?NjhuWG5kMDRVaG5RZFVhQ21MYUoxRkZySU5HaVRybGdjTk5JTERKYStWMXBL?=
+ =?utf-8?B?cGRmZ1poWm10TVJHK3pxbkpueDZDcUNpR3c4UkxNMHBXN3dmWU1JalVJM09B?=
+ =?utf-8?B?RlpaVWl2M0FBUFVpVzBwdW5oNzZGb1JyQTlCTkFWWnVvTFd0akNKMXcwRndG?=
+ =?utf-8?B?VWlHUitOSFpNd3RRVUZhYUcrUE1kRysvNWl4WENtcjhDckdPaHdjSTNqbXlS?=
+ =?utf-8?B?bTc5VjNJSjJGZ2Iza2ZhZmpnNjllSEh1aytKRnh1SEpKRllBN0tkcTF4ampB?=
+ =?utf-8?Q?rVVuJmk3muXFmV+2Do?=
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,281 +154,66 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-OriginatorOrg: oss.nxp.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: GV2PR04MB11739.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 8f3dde7e-f181-42c0-311f-08dee6cbed24
+X-MS-Exchange-CrossTenant-originalarrivaltime: 21 Jul 2026 02:01:06.4169
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: WtX31DqEMWg+pjJkoZaQE5bncUpmF9t2fddo0CW/FeoMNQUwftNDmzjFnY1f3KtvfgUC1xaZ6F8vVvoIEIvOGw==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PAXPR04MB8078
 
-
-> > 
-> > Why is this an RFC rather than a final proposal?  There should always
-> > be something to give the reviewer that info in the patch description.
-> > I'd actually be tempted to throw a cover letter in to have somewhere
-> > out of the way to put that information.
-> > 
-> > Is it simply because it only makes sense once the other seris lands. 
-> >   
-> 
-> The immediate priority was providing a testing procedure for the v18 series.
-> I wasn't sure how the design would be received. For instance, the to_einj_ras_base() 
-> could be moved into cxl-test as a to_ras_base() mock implemented function or 
-> it could remain in ras.c (or maybe even ras_einj.c) outside of cxl-mock. I'm 
-> looking forward to Alison's review and comments. 
-> 
-> My preference is to introduce core/ras_einj,c and add these changes. This 
-> would be to isolate all the changes except for: cxl_ras_einj_init(), cxl_ras_einj_exit(), 
-> and to_einj_ras_base(). I've started moving forward with making these changes 
-> knowing the direction could change once this receives more reviews.
-> 
-> Also worth discussing is the commandline takes multiple parameters for
-> a single sysfs file which I know isn't acceptable by everyone. I personally 
-> like the interface as-is because its simpler to use in comparison to multiple 
-> files that must be set individually.
-
-It is debugfs so rules are much more flexible than sysfs.
-
-
-
-
-> >> ---
-> >>  drivers/cxl/Kconfig           |  13 +++
-> >>  drivers/cxl/core/core.h       |  21 ++++
-> >>  drivers/cxl/core/port.c       |   2 +-
-> >>  drivers/cxl/core/ras.c        | 208 ++++++++++++++++++++++++++++++++++
-> >>  drivers/cxl/core/ras_rch.c    |  12 ++
-> >>  drivers/pci/pcie/aer_inject.c |  29 ++---
-> >>  include/linux/aer.h           |  15 +++
-> >>  7 files changed, 281 insertions(+), 19 deletions(-)
-> >>
-> >> diff --git a/drivers/cxl/Kconfig b/drivers/cxl/Kconfig
-> >> index 80aeb0d556bd7..ef449228b2549 100644
-> >> --- a/drivers/cxl/Kconfig
-> >> +++ b/drivers/cxl/Kconfig
-> >> @@ -238,6 +238,19 @@ config CXL_RAS
-> >>  	def_bool y
-> >>  	depends on ACPI_APEI_GHES && PCIEAER && CXL_BUS
-> >>  
-> >> +config CXL_PROTO_AER_EINJ
-> >> +	bool "CXL: RAS Protocol Error Injection using AER EINJ"
-> >> +	depends on CXL_RAS
-> >> +	depends on PCIEAER_INJECT  
-> > 
-> > Do we think anyone who has CXL and PCIEAER_INJECT support will want
-> > to carefully not build this?  I'm just wondering if we can avoid asking
-> > the question and base the built or not on the combination of those.
-> >   
-> 
-> Good question: How do we incorporate this with the existing CXL EINJ 
-> functionality making them complementary and consistant? The existing 
-> EINJ is true ACPI injection but only supports RPs. The ACPI EINJ callouts 
-> are currrently in core/port.c. We should consider moving it into a common file 
-> such as core/ras_einj.c. With that move it will help force us merge the interfaces
-> where/if possible and at least give central location for error RAS injection.
-> I think folding the AER injection into PCIEAER_INJECT kernel config is 
-> reasonable but looking for others feedback.
-> 
-
-I hadn't really thought about the injection method.  Indeed raises
-interesting questions of how it should be done.  Add an ABI doc
-in Documentation/ABI for next version.
-
-> >   
-> >> +static DEFINE_MUTEX(cxl_aer_einj_mutex);  
-> > 
-> > Needs a comment for what data it is protecting.
-> >   
-> >> +
-> >> +struct cxl_aer_einj cxl_aer_einj = {
-> >> +	.lock = &cxl_aer_einj_mutex,
-> >> +};
-> >> +
-> >> +static const char cxl_aer_einj_usage[] =
-> >> +	"ssss:bb:dd.f [UCE|CE] AER_STATUS RAS_STATUS [RCH]\n";
-> >> +
-> >> +static int cxl_aer_inject_error(struct pci_dev *pdev, bool correctable,
-> >> +				u32 aer_status, u32 ras_status)
-> >> +{
-> >> +	/* RCD errors are signaled as internal errors on the associated RCEC */
-> >> +	if (pci_pcie_type(pdev) == PCI_EXP_TYPE_RC_END) {
-> >> +		if (!pdev->rcec)
-> >> +			return -ENODEV;
-> >> +		pdev = pdev->rcec;
-> >> +	}
-> >> +
-> >> +	struct aer_error_inj einj = {
-> >> +		.bus = pdev->bus->number,
-> >> +		.dev = PCI_SLOT(pdev->devfn),
-> >> +		.fn = PCI_FUNC(pdev->devfn),
-> >> +		.domain = pci_domain_nr(pdev->bus),
-> >> +	};
-> >> +	int ret;
-> >> +	int aer_offset;
-> >> +	int ras_offset;
-> >> +
-> >> +	if (correctable) {
-> >> +		einj.cor_status = aer_status | PCI_ERR_COR_INTERNAL;
-> >> +		aer_offset = PCI_ERR_COR_STATUS / sizeof(u32);
-> >> +		ras_offset = CXL_RAS_CORRECTABLE_STATUS_OFFSET / sizeof(u32);  
-> > 
-> > Given these are offsets into cxl_aer_einj.aer_registers / ras_registers
-> > can we use sizeof(*cxl_aer_einj.aer_registers) etc
-> >   
-> We could but that assumes the CEs are book ending the register blocks. And this would 
-> be inconsistent with UCE case below, right? Tell me if I misunderstaood the question.
-
-I just meant to replace those sizeof(u32) with something that indicates
-where the size is coming from.  Applies equally below.
-
-
-> >   
-> >> +
-> >> +static void __iomem *to_einj_ras_base(struct cxl_port *port, struct cxl_dport *dport)
-> >> +{
-> >> +	if (dport) {
-> >> +		if (cxl_aer_einj.is_rch) {
-> >> +			if (cxl_aer_einj.dev == dport->dport_dev) {
-> >> +				cxl_aer_einj.dev = NULL;
-> >> +				return (__force void __iomem *)cxl_aer_einj.ras_registers;  
-> > 
-> > Given the output of this is always force cast, maybe move that force up to the caller?
-> >   
-> 
-> I think that works if it remains an internal helper and isn't made a mock function to to_ras_base(). 
-> If to_einj_ras_base() is used as a mock than it would require changing the to_ras_base() 
-> as well. 
-> 
-> >> +			}
-> >> +		} else {
-> >> +			if (cxl_aer_einj.dev == dport->dport_dev) {
-> >> +				pci_dev_put(to_pci_dev(cxl_aer_einj.dev));  
-> > 
-> > Not locally obvious why a thing called to_einj_ras_base should put anything it didn't
-> > get.  I think this needs a restructure to more obviously be tidying up references
-> > that were held over the queue. At very leads needs a comment.
-> > /* Reference held from X no longer needed so drop */
-> >   
-> 
-> The ref was incremented in cxl_aer_einj_write() on invoking injection. The ref is 
-> decremented here after its usage. RCHs are excluded because they dont have a SBDF.
-
-Just add minimal reference for that.
-
-> 
-> >> +				cxl_aer_einj.dev = NULL;
-> >> +				return (__force void __iomem *)cxl_aer_einj.ras_registers;
-> >> +			}
->
-> >> +	if (cxl_aer_einj.dev) {
-> >> +		void __iomem *einj = to_einj_ras_base(port, dport);
-> >> +		if (einj)
-> >> +			return einj;
-> >> +	}
-> >> +#endif
-> >> +
-> >>  	if (dport)
-> >>  		return dport->regs.ras;
-> >>  
-> >> @@ -458,10 +656,20 @@ void cxl_ras_init(void)
-> >>  	cxl_cper_register_prot_err_work(&cxl_cper_prot_err_work);
-> >>  	cxl_register_proto_err_work(&cxl_proto_err_work,
-> >>  				   cxl_proto_err_do_flush);
-> >> +#if IS_ENABLED(CONFIG_CXL_PROTO_AER_EINJ)
-> >> +	cxl_ras_create_debugfs(cxl_debugfs);  
-> > stub that in a header.
-> >   
-> 
-> Actually, during rework today I moved it to cxl_ras_einj_init(),
-> a new function. Thoughts?
-
-Sounds good.
-
-> >> diff --git a/drivers/pci/pcie/aer_inject.c b/drivers/pci/pcie/aer_inject.c
-> >> index 09bfc7194ef31..b313adef680ae 100644
-> >> --- a/drivers/pci/pcie/aer_inject.c
-> >> +++ b/drivers/pci/pcie/aer_inject.c
-> >> @@ -14,6 +14,7 @@
-> >>  
-> >>  #define dev_fmt(fmt) "aer_inject: " fmt
-> >>  
-> >> +#include <linux/aer.h>
-> >>  #include <linux/module.h>
-> >>  #include <linux/init.h>
-> >>  #include <linux/interrupt.h>
-> >> @@ -31,19 +32,6 @@
-> >>  static bool aer_mask_override;
-> >>  module_param(aer_mask_override, bool, 0);
-> >>  
-> >> -struct aer_error_inj {
-> >> -	u8 bus;
-> >> -	u8 dev;
-> >> -	u8 fn;
-> >> -	u32 uncor_status;
-> >> -	u32 cor_status;
-> >> -	u32 header_log0;
-> >> -	u32 header_log1;
-> >> -	u32 header_log2;
-> >> -	u32 header_log3;
-> >> -	u32 domain;
-> >> -};
-> >> -
-> >>  struct aer_error {
-> >>  	struct list_head list;
-> >>  	u32 domain;
-> >> @@ -316,7 +304,7 @@ static int pci_bus_set_aer_ops(struct pci_bus *bus)
-> >>  	return 0;
-> >>  }
-> >>  
-> >> -static int aer_inject(struct aer_error_inj *einj)
-> >> +int aer_inject(struct aer_error_inj *einj)
-> >>  {
-> >>  	struct aer_error *err, *rperr;
-> >>  	struct aer_error *err_alloc = NULL, *rperr_alloc = NULL;
-> >> @@ -332,10 +320,14 @@ static int aer_inject(struct aer_error_inj *einj)
-> >>  	dev = pci_get_domain_bus_and_slot(einj->domain, einj->bus, devfn);
-> >>  	if (!dev)
-> >>  		return -ENODEV;
-> >> -	rpdev = pcie_find_root_port(dev);
-> >> -	/* If Root Port not found, try to find an RCEC */
-> >> -	if (!rpdev)
-> >> -		rpdev = dev->rcec;
-> >> +	if (pci_pcie_type(dev) == PCI_EXP_TYPE_RC_EC)   
-> > 
-> > { }
-> > as the else is multiline (see coding standard)
-> >   
-> 
-> Ok
-> 
-> > Maybe need a comment for why it might be an RCEC for injection.
-> > Is this an RCH specific path where there is nothing else to target?
-> >   
-> >> +		rpdev = dev;
-> >> +	else {
-> >> +		rpdev = pcie_find_root_port(dev);
-> >> +		/* If Root Port not found, try to find an RCEC */
-> >> +		if (!rpdev)
-> >> +			rpdev = dev->rcec;
-> >> +	}
-> >>  	if (!rpdev) {
-> >>  		pci_err(dev, "Neither Root Port nor RCEC found\n");
-> >>  		ret = -ENODEV;
-> >> @@ -482,6 +474,7 @@ static int aer_inject(struct aer_error_inj *einj)
-> >>  	pci_dev_put(dev);
-> >>  	return ret;
-> >>  }
-> >> +EXPORT_SYMBOL_GPL(aer_inject);  
-> > I wonder if we want to restrict this to specific modules?
-> > 
-> > One for Bjorn probably.
-> >   
-> Because right now it injects AER to any PCI device. 
-> 
-> Also, worth discussing is the commandline currently uses multiple parameters for
-> a single sysfs file. I mentioned this at the top.
-> 
-> 
-> Thanks for reviewing Jonathan.
-> 
-> -Terry
-
-> 
-
+PiBPbiBNb24sIEp1bCAyMCwgMjAyNiBhdCAwOTo0MzoxNUFNICswODAwLCB3ZWkuZmFuZ0Bvc3Mu
+bnhwLmNvbSB3cm90ZToNCj4gPiBGcm9tOiBXZWkgRmFuZyA8d2VpLmZhbmdAbnhwLmNvbT4NCj4g
+Pg0KPiA+IFRoZSBWRiBkcml2ZXIgdXNlcyBhbGxvY19ldGhlcmRldl9tcSgpIHdpdGggRU5FVENf
+TUFYX05VTV9UWFFTIGFzIHRoZQ0KPiA+IHF1ZXVlIGNvdW50LCB3aGljaCBmb3JjZXMgdGhlIFRY
+IGFuZCBSWCBxdWV1ZSBjb3VudHMgdG8gYmUgZXF1YWwgYW5kDQo+ID4gdXNlcyBhIGNvbXBpbGUt
+dGltZSBjb25zdGFudCByYXRoZXIgdGhhbiB0aGUgYWN0dWFsIGhhcmR3YXJlIGNhcGFiaWxpdHku
+DQo+ID4NCj4gPiBBZnRlciBlbmV0Y19nZXRfc2lfY2FwcygpIGlzIGNhbGxlZCwgc2ktPm51bV90
+eF9yaW5ncyBhbmQNCj4gPiBzaS0+bnVtX3J4X3JpbmdzIHJlZmxlY3QgdGhlIGFjdHVhbCBudW1i
+ZXIgb2YgcmluZ3MgYXNzaWduZWQgdG8gdGhlIFZGDQo+ID4gYnkgdGhlIFBGLiBGb3IgdGhlIEVO
+RVRDIFZGIG9uIExTMTAyOEEgYW5kIHRoZSB1cGNvbWluZyBpLk1YOTUvOTQsIHRoZWlyDQo+ID4g
+U29DcyBoYXZlIG5vIG1vcmUgdGhhbiA2IENQVXMsIGFuZCB0aGUgbnVtYmVyIG9mIFRYL1JYIHJp
+bmdzIGFsbG9jYXRlZA0KPiA+IHRvIHRoZSBWRiBpcyBsZXNzIHRoYW4gOC4NCj4gPg0KPiA+IFRo
+ZXJlZm9yZSwgc3dpdGNoIHRvIGFsbG9jX2V0aGVyZGV2X21xcygpIHNvIHRoYXQgdGhlIFRYIGFu
+ZCBSWCBxdWV1ZQ0KPiA+IGNvdW50cyBhcmUgc2V0IGluZGVwZW5kZW50bHksIGVhY2ggY2FwcGVk
+IGF0IEVORVRDX01BWF9OVU1fVFhRUywgYmFzZWQNCj4gPiBvbiB0aGUgYWN0dWFsIG51bWJlciBv
+ZiByaW5ncyBhc3NpZ25lZCB0byB0aGUgVkYgYnkgdGhlIFBGLg0KPiA+DQo+ID4gTm90ZSB0aGF0
+IGlmIGZ1dHVyZSBTb0NzIGhhdmUgbW9yZSB0aGFuIDYgQ1BVcyBhbmQgbW9yZSB0aGFuIDYgUlgg
+cmluZ3MNCj4gPiBhbGxvY2F0ZWQgdG8gVkZzLCB0aGUgc2l6ZSBvZiB0aGUgaW50X3ZlY3RvciBh
+cnJheSBpbiBzdHJ1Y3QNCj4gPiBlbmV0Y19uZGV2X3ByaXYgd2lsbCBuZWVkIHRvIGJlIG1vZGlm
+aWVkLiBTaW1pbGFybHksIGlmIG1vcmUgdGhhbiA4IFRYDQo+ID4gcmluZ3MgYXJlIGFsbG9jYXRl
+ZCB0byBlYWNoIGludF92ZWN0b3IsIEVORVRDX01BWF9OVU1fVFhRUyB3aWxsIGFsc28NCj4gPiBu
+ZWVkIHRvIGJlIG1vZGlmaWVkLg0KPiA+DQo+ID4gU2lnbmVkLW9mZi1ieTogV2VpIEZhbmcgPHdl
+aS5mYW5nQG54cC5jb20+DQo+ID4gLS0tDQo+ID4gIGRyaXZlcnMvbmV0L2V0aGVybmV0L2ZyZWVz
+Y2FsZS9lbmV0Yy9lbmV0Y192Zi5jIHwgOSArKysrKysrKy0NCj4gPiAgMSBmaWxlIGNoYW5nZWQs
+IDggaW5zZXJ0aW9ucygrKSwgMSBkZWxldGlvbigtKQ0KPiA+DQo+ID4gZGlmZiAtLWdpdCBhL2Ry
+aXZlcnMvbmV0L2V0aGVybmV0L2ZyZWVzY2FsZS9lbmV0Yy9lbmV0Y192Zi5jDQo+IGIvZHJpdmVy
+cy9uZXQvZXRoZXJuZXQvZnJlZXNjYWxlL2VuZXRjL2VuZXRjX3ZmLmMNCj4gPiBpbmRleCA5Y2Ri
+MGE0ZDZiYWYuLjdkY2I0YTAyNDZmNSAxMDA2NDQNCj4gPiAtLS0gYS9kcml2ZXJzL25ldC9ldGhl
+cm5ldC9mcmVlc2NhbGUvZW5ldGMvZW5ldGNfdmYuYw0KPiA+ICsrKyBiL2RyaXZlcnMvbmV0L2V0
+aGVybmV0L2ZyZWVzY2FsZS9lbmV0Yy9lbmV0Y192Zi5jDQo+ID4gQEAgLTMxNyw3ICszMTcsMTQg
+QEAgc3RhdGljIGludCBlbmV0Y192Zl9wcm9iZShzdHJ1Y3QgcGNpX2RldiAqcGRldiwNCj4gPg0K
+PiA+ICAgICAgIGVuZXRjX2dldF9zaV9jYXBzKHNpKTsNCj4gPg0KPiA+IC0gICAgIG5kZXYgPSBh
+bGxvY19ldGhlcmRldl9tcShzaXplb2YoKnByaXYpLCBFTkVUQ19NQVhfTlVNX1RYUVMpOw0KPiA+
+ICsgICAgIC8qIEN1cnJlbnRseSwgdGhlIHN1cHBvcnRlZCBTb0NzIGhhdmUgYSBtYXggb2YgNiBD
+UFVzIGFuZCB0aGUgVkZzDQo+ID4gKyAgICAgICogaGF2ZSBsZXNzIHRoYW4gNiBSWC9UWCByaW5n
+cy4gU28gbm8gaXNzdWVzIGZvciB0aGVzZSBzdXBwb3J0ZWQNCj4gPiArICAgICAgKiBTb0NzLCBi
+dXQgZm9yIGZ1dHVyZSBTb0NzIHdoaWNoIGhhdmUgbW9yZSBDUFVzIG9yIG1vcmUgVFgvUlgNCj4g
+PiArICAgICAgKiByaW5ncywgYWxsIHRoZSByZWxhdGVkIGxvZ2ljIG5lZWRzIHRvIGJlIGltcHJv
+dmVkLg0KPiA+ICsgICAgICAqLw0KPiA+ICsgICAgIG5kZXYgPSBhbGxvY19ldGhlcmRldl9tcXMo
+c2l6ZW9mKCpwcml2KSwNCj4gPiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIG1pbihz
+aS0+bnVtX3R4X3JpbmdzLA0KPiBFTkVUQ19NQVhfTlVNX1RYUVMpLA0KPiA+ICsgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgbWluKHNpLT5udW1fcnhfcmluZ3MsDQo+IEVORVRDX01BWF9O
+VU1fVFhRUykpOw0KPiANCj4gQ29kZSBsb29rcyByaWdodCwgYnV0IGxvb2tzIGFsbW9zdCBsaWtl
+IGEgdHlwby4gSSBndWVzcyBpdCB3b3VsZCByZWFkIG5pY2VyIGlmDQo+IEVORVRDX01BWF9OVU1f
+UlhRUyBleGlzdGVkPw0KDQpZZXMsIEVORVRDX01BWF9OVU1fUlhRUyBpcyBjbGVhcmVyLiBIb3dl
+dmVyLCBFTkVUQ19NQVhfTlVNX1JYUVMNCmRvZXMgbm90IGV4aXN0OyBpbiBmYWN0LCB0aGVpciB2
+YWx1ZXMg4oCL4oCLYXJlIGVxdWFsLCBhbmQgd2UgcGxhbiB0byByZW1vdmUNCkVORVRDX01BWF9O
+VU1fVFhRUyBsYXRlciwgc28gYSBuZXcgbWFjcm8gRU5FVENfTUFYX05VTV9SWFFTDQp3YXMgbm90
+IGFkZGVkIGluIHRoaXMgcGF0Y2guDQoNCj4gDQo+IFRoYXQgc2FpZDoNCj4gDQo+IFJldmlld2Vk
+LWJ5OiBKb2UgRGFtYXRvIDxqb2VAZGFtYS50bz4NCg==
 
