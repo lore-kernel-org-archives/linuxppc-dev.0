@@ -1,80 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-24594-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24595-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3EEA8C4452F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2026 12:41:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E64CEC4451C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2026 13:08:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h4H762fzVz2xqJ;
-	Tue, 21 Jul 2026 22:41:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h4Hkf0xPPz2xqJ;
+	Tue, 21 Jul 2026 23:08:26 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784637666;
-	cv=none; b=ZZXb06RpGFnXkLq0plxi5eqTiulbqu+5jkJ5CEnnKq8sQ4f/9SgIlgfU/VXN/uCerEJDHSm446SnsctLSeJq3Q1zcwjGTH4oM86FozAIwxcxa+KHj7AjAAdol1Dt80eUKmPlron8VlQ71SxiW5wMHR5ouGL2f+4XhvCy6DOAieRsUY/H1eu112vmXnRKRv1FdB9gYbDOtyRcVwvyyM/SGs0tXlBoudMrxWrMXrvamUd39VE2T51EKHVdMZXXjjFkq2Cny2vMvhWG8WTrGzq/P/PpRzXAROXUEPeV+XoaMgNUSzkecblWmu4cpa8sXC6cX4DkPJW4ZOBFtCMjGxQK1Q==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784639306;
+	cv=none; b=TqIlAZZ7mE1QOXAWMDGSRa4WRHdbWy/DLJYNUP+Q2pRO0R5UozV2UKluS2w5HhFtzQwJomtRMmI7CVJhNF+0jh2rBMFKKn4XQ+gxuirMsoy7E64+th3pTSIkomOe+2Cd3PkKvfuxalKowE2VxFpu9uhQzcREYyjPMtnRD7+0rh8+eT5y7PN8bVbKpBrWlZrcO1oEGtinqnmMlyt03j7rFgJvqLgAXh5wJfYzUfSL6z7cEyD1gq2OWOWx0XXpRPtoQGaKiBX/18+EJEmlfwtQD7MiP2mWTOh28OmrMFOX63LW38HISM8UuKCHNlTlS8yIdBhBwNJu8Itv9lq1izGpaA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784637666; c=relaxed/relaxed;
-	bh=hHR20QdKLO7v/A9MVkG/crlJxAvTVIREme8pDXPWdpk=;
+	t=1784639306; c=relaxed/relaxed;
+	bh=TYa/G9Ikx6NJ1Cb3jjSRc0JJzXsBaNhe6e1UGVGm/9A=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=PGLgxkQ9UQnjJAuDlgBAA12Iog8yEnOuESf5QmIjuleprd6nfoJrH+kVVLyGWNSyW954yG7QJq5YgBhRF4ge5Lh5SzlEdYEBfR2BiDXA3CmkTH0ocvuMHsIYqFIDBiiCf8kq2ODfPvVPGkZyNQbaoph1av4RxTr8XQ/nbtrrg63P4m1hr9nOXZvFDT8sCqtlj0pjDPjVDOQq4eDg3JRx2wO4lhfPeEi4Br9flpC8i47eyHBKr79PthlFl9Z2AWbv7MGYz0gfY+RHtgs4x5dOVa/TkGqCwWbQWrEE41B1tlJrriG8EaK5BbMkSYy8gHdSE6R0kmcBrrN5lgJmhrClxg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=NAJKKs0m; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=YBYIzfPI+ENwvayis3dijmJOx+v9HX2orW1Hz019LycfAq5zZsB/i4481qxtcDuTgU34kQgdlMrEqLkeyauwkeJZykUxy1i9ssMji/Z3ovGxP7ggSeS8v2D8SPiWlbBXdX5qZJWK05GCzespp0AKx4qsO0zA65vq9Lp5chnB3tG4FJlLskCpFA0lq6MwhkroUnRCrwwKtn63812/0O5dc1ulpW+cntZvd0P87kMxralJxKNh6S1LSCSIJxOD6srK8j4DrFs2h5jyEtol+eDyUwkxBJVTBegeiB5b8JHyOoTLQ9dFaFrr2+8UpIGyhnV0RpqSJRerSkaGuLIwITbzVg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=d6/V2aPE; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linuxfoundation.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=NAJKKs0m;
+	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=d6/V2aPE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h4H754nDRz2xm3
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2026 22:41:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h4Hkc6Y40z2xm3
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2026 23:08:24 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 6A5D7404B3;
-	Tue, 21 Jul 2026 12:41:02 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 192681F000E9;
-	Tue, 21 Jul 2026 12:41:01 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1784637662;
-	bh=hHR20QdKLO7v/A9MVkG/crlJxAvTVIREme8pDXPWdpk=;
+	by sea.source.kernel.org (Postfix) with ESMTP id 4BA4841AC7;
+	Tue, 21 Jul 2026 13:08:21 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B2A081F00A3A;
+	Tue, 21 Jul 2026 13:08:20 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linuxfoundation.org;
+	s=korg; t=1784639301;
+	bh=TYa/G9Ikx6NJ1Cb3jjSRc0JJzXsBaNhe6e1UGVGm/9A=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=NAJKKs0mp2HmwOSTJulMZY5zyU9KSHD4BEHyX/3KSxaa6O0e2VNfyFDvHcEQrBIUW
-	 bd82xmmgnk756BP7oXclO74C3UoYQ1RpyBCIMyFCTPKScXjr6JuhakROp532PhlGii
-	 7+tvviJq58faR47mZtEi7AqNFpFYy9IdeQC20flk26Vt7yInq2BpBVQ+uTWDrRFQIw
-	 +FUaxo2v+2zrzcANJTXCpP90ZjjCTSjtH3May7B81OOEfG5gnjI+7xflXFP/VICNWm
-	 ngwbXG7eIyqM2nFDwd/Nrju8ruvTr6mFAlwtP7QUprRc0YvAWx8z4toMr8/O9/l88w
-	 etg8T2ReDZfXA==
-Date: Tue, 21 Jul 2026 15:40:56 +0300
-From: Leon Romanovsky <leon@kernel.org>
-To: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>,
-	Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev,
-	Robin Murphy <robin.murphy@arm.com>, Will Deacon <will@kernel.org>,
-	Marc Zyngier <maz@kernel.org>, Steven Price <steven.price@arm.com>,
-	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Jiri Pirko <jiri@resnulli.us>, Jason Gunthorpe <jgg@ziepe.ca>,
-	Mostafa Saleh <smostafa@google.com>,
-	Petr Tesarik <ptesarik@suse.com>,
-	Alexey Kardashevskiy <aik@amd.com>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Xu Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
-	linux-s390@vger.kernel.org,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org
-Subject: Re: [PATCH v8 00/23] dma-mapping: Track shared DMA state through
- direct, pool and swiotlb paths
-Message-ID: <20260721124056.GK110966@unreal>
-References: <20260717180442.110954-1-aneesh.kumar@kernel.org>
+	b=d6/V2aPEpPAB2I6Ua7LPwlcHwngi1zJi/XHIgdgpWsC+OpJGb8lJA2aRw5XgvUCSk
+	 5IZrdAIm+bmynNmQblXUQu5K3mThBRK4gT3ERximvLzMKDANxWBbmBkq/iBUG9clUc
+	 4TcfxO32nUe0BTZC9S93Hw6aq20MtO0npuydVBV4=
+Date: Tue, 21 Jul 2026 15:08:11 +0200
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Pawan Gupta <pawan.kumar.gupta@linux.intel.com>
+Cc: stable@vger.kernel.org, Sasha Levin <sashal@kernel.org>,
+	bpf@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
+	linux-riscv@lists.infradead.org, x86@kernel.org,
+	Alexei Starovoitov <ast@kernel.org>,
+	Daniel Borkmann <daniel@iogearbox.net>,
+	Dave Hansen <dave.hansen@linux.intel.com>
+Subject: Re: [PATCH 6.16.y 0/6] cBPF JIT spray hardening
+Message-ID: <2026072151-outsell-suburb-64ea@gregkh>
+References: <20260714-cbpf-jit-spray-hardening-6-16-y-v1-0-2fc3e16263ac@linux.intel.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,25 +69,40 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260717180442.110954-1-aneesh.kumar@kernel.org>
+In-Reply-To: <20260714-cbpf-jit-spray-hardening-6-16-y-v1-0-2fc3e16263ac@linux.intel.com>
 
-On Fri, Jul 17, 2026 at 11:34:18PM +0530, Aneesh Kumar K.V (Arm) wrote:
-> This series tracks confidential-computing shared DMA state through the
-> dma-direct, dma-pool, and swiotlb paths so that encrypted and decrypted
-> DMA buffers are handled consistently.
+On Tue, Jul 14, 2026 at 11:58:24AM -0700, Pawan Gupta wrote:
+> Hi,
+> 
+> These backports harden BPF JIT against spectre-v2 class of attacks. Without
+> a predictor flush, execution of new BPF program may use stale prediction
+> left behind by the freed one.
+> 
+> To avoid this, issue an IBPB flush on all CPUs on JIT program allocation.
+> The flush is conditional to spectre-v2 mitigation applied.
+> 
+> Patch 1-2: Adds the predictor flush hook and enables it on x86 via IBPB.
+> 
+> 	  bpf: Support for hardening against JIT spraying
+> 	  x86/bugs: Enable IBPB flush on BPF JIT allocation
+> 
+> Patch 3-6: Narrow the flush to only unprivileged JIT allocations
+> 	   to avoid redundant flushes. Also adds pack-selection changes
+> 	   that minimizes flushes.
+> 
+> 	  bpf: Restrict JIT predictor flush to cBPF
+> 	  bpf: Skip redundant IBPB in pack allocator
+> 	  bpf: Prefer packs that won't trigger an IBPB flush on allocation
+> 	  bpf: Prefer dirty packs for eBPF allocations
+> 
+> This one is mostly similar to 6.18:
+> 
+>   https://lore.kernel.org/all/20260713-cbpf-jit-spray-hardening-6-18-y-v1-0-755f60c55705@linux.intel.com/
 
-<...>
+There is no active 6.16.y kernel branch, so why is this being sent to
+us?
 
-> - makes dma_direct_map_phys() choose the DMA address encoding from
->   DMA_ATTR_CC_SHARED and fall back to swiotlb when a shared DMA request
->   cannot use the direct mapping, which lets arm64 and x86 CCA guests stop
->   relying on SWIOTLB_FORCE for DMA mappings
+confused,
 
-Why don't we continue the effort to remove "struct page" entirely
-from the DMA API internals?
-
-IMHO, everything not exposed to DMA API users should use
-phys_addr_t, including the DMA address pool.
-
-Thanks
+greg k-h
 
