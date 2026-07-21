@@ -1,86 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-24610-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24612-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 92590C44532
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2026 15:35:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D60A8C4451C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2026 15:54:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h4Lzt5Rq1z2y8p;
-	Wed, 22 Jul 2026 01:35:06 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784648106;
-	cv=none; b=iKhPC/cnUS7xM21Dyh6UYChcJPdbcvXziui4mu0is3fREBnhyqJA9qrmec79xfxNLl++67Rfw/tNEKA5KeU2HnLtaI0NuYuKh3UUpYkDUE01L8H0OqVcW/mflisBIbLLtbfg+cpxaQONoqHNVLR+lJe1qrdJQvkCmCFjg7h3ZpLbegEBfQ/zFS1R6Px114jaXBtY83NpqRJQ+5Ws8/+cPFc9UV2fuuANsanc/EVZ69I6GhOFA/JORzD9Yt4Brw7RODM7Fb2gkKmLhyy+KCNTxVXgVZMs3cCN4141Bj5Iv9RCakEYu32IuGIrC5m8C47//x78lliP2CJJ5E9W/WqFew==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h4MQd3dZ5z2yR5;
+	Wed, 22 Jul 2026 01:54:49 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=91.218.175.177
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784649289;
+	cv=none; b=FSjvAOiAiWolwgGJV+/Yd56mDHTbkpx/glFzFqsdB23M0QHufxPxFhB9LWdnaOH2vfG5cc1QFlbHbFhZ6bxxkf33BWSXdAQHxfq4ZIkRNaSfxoJQdEWmohvrD1LyrE4iQlteH+UlwyU3Z0DvQ7teag2K+X9jw1P0Jhd+AEqhSCVvr2ksGYuy81xYTSgFn9EC2qkcEu8q4ZObznBovZWh4CvQEBvayCvyqkHZOAfDCZPIw5+btEH3wLdtpcy8Iy9Yavm77sSyFd3SZy0YjtEbb238m4pNTK8uUxbkmOLxz0QLwSdE293n6L10RkvvBG0TMioaymEokF3j2S/126nnlg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784648106; c=relaxed/relaxed;
-	bh=QVePzAEvk/HRAZDkJnNSAQ/f5uWHK1anOdVi7+q3VC8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=CGsrEWrKGs7Tdy6ZH7VKJiI0OM4KkbDVoJjrP8ZfV6kO8DujENpV+ZtzVmDAHiZm7QO6Is78TDLT+LyA01Pg2QnPEsOw569ngz81L4eCoH/+GgpG1FVsPu4rYes+fN9/KEaDdawXTxClNErJLwB86953dzeLtPllo30CRcR6p9AJnrw0ZfDKXpHh+AkqXVSXu6Bgi3bkj1cOsiW0REt0lGABo6wyiLNz2Mlv9RT+APYiF3/wQD4JaRnmAWZll2Cz4djCEASrwzSrn17Qw2+j/NvuFi2wjLxh2M6/WNtgm3He1CtUGqyxjtz6nguSXjyBzRjmYZP5bHBMkWHBWuy/Ag==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=IJiPu+RZ; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1784649289; c=relaxed/relaxed;
+	bh=VzIcHGjxX1dcSz7+14+ettkC++8S0LxutXTYkBjO25k=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=MlV+zxV4YuHhQ4/2gQS15GkLLOeawFElR3rWeRuGx29dhj4C74Les8UqD9jVtyP/dVowRmQkj7o9HTP9IVYC+llOMzkBHTgNc1rUGOGfwlpKztslff0CQ1RAMMBLelhRI9QNZASB2FTzl1iKsEHg7ixis1e81PdgdhttbyN3oMb2VFfxE23iXDVp81rEYETgB/adg7TSqZh6YRbUEvAsgFB+HDHJuwItdLyR+q66WTObSZ2AG2mDPeMWk2S0c95xDUGrKzgMNiseWziFfGn58K6UKeuUY6VHw/B/oJExg79tunjvDkn4xAef3oti7yZ3jlCwuks2v39IMN4hO+ISBQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=A+r3IduV; dkim-atps=neutral; spf=pass (client-ip=91.218.175.177; helo=out-177.mta0.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=IJiPu+RZ;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=A+r3IduV;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=91.218.175.177; helo=out-177.mta0.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org)
+Received: from out-177.mta0.migadu.com (out-177.mta0.migadu.com [91.218.175.177])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h4Lzs5Pkjz2xqJ
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2026 01:35:05 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 28E7D43AB4;
-	Tue, 21 Jul 2026 15:35:02 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A8D001F000E9;
-	Tue, 21 Jul 2026 15:35:00 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1784648102;
-	bh=QVePzAEvk/HRAZDkJnNSAQ/f5uWHK1anOdVi7+q3VC8=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=IJiPu+RZcRhgVPKAHX5VV+zkTpGbxlaIRt8LxXNBYciu1fuMPhhgYPKJQ96TwVCRB
-	 3n+JiLog3a27/oOTINg2GG5gDlhgSmxXdIOL+JxMBbJBKdkjaOmMJ+qUFIRhCQswJt
-	 RyFoKN8CBSq9d43YYEEbCAToMoDtSj2osByB1nu529L9d5iwVIM8Chf46dxyH7IXiF
-	 mv6Mt4mlVUU73mvkDpfQ+y/6Ov42XFQI740FHvBbKbsKR0gJgcOGnQAHeOGj1DRBJo
-	 RVu3b7leBlQogcOqXBk0V9pb/AfRcNa77YB1xLEHV8PPgq6WzgTFVNUdArT+9LHotq
-	 mk+vfcLOSch0w==
-Date: Tue, 21 Jul 2026 18:34:57 +0300
-From: Leon Romanovsky <leon@kernel.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>
-Cc: iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev,
-	Robin Murphy <robin.murphy@arm.com>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
-	Steven Price <steven.price@arm.com>,
-	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Jiri Pirko <jiri@resnulli.us>, Jason Gunthorpe <jgg@ziepe.ca>,
-	Mostafa Saleh <smostafa@google.com>,
-	Petr Tesarik <ptesarik@suse.com>,
-	Alexey Kardashevskiy <aik@amd.com>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Xu Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
-	linux-s390@vger.kernel.org,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h4MQZ4kXRz2xm3
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2026 01:54:46 +1000 (AEST)
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1784649266;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=VzIcHGjxX1dcSz7+14+ettkC++8S0LxutXTYkBjO25k=;
+	b=A+r3IduVgZBI+mzurlk1ToEay9DLcu22/XqjU/lVT3HfeuI3S2UOcU+SBGDB3kusfHjxrF
+	BJfNmxcz/yGCaOB7KNyPpTsVhQYgp2jksqynj+faUwWj8p+vA+njE4F+0jekBkw8VqJVhn
+	9fZJjDEJgJ59jeSbsSsXBX7V0910U6A=
+From: Thorsten Blum <thorsten.blum@linux.dev>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Michael Ellerman <mpe@ellerman.id.au>,
 	Nicholas Piggin <npiggin@gmail.com>,
 	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org,
-	Jason Gunthorpe <jgg@nvidia.com>,
-	Michael Kelley <mhklinux@outlook.com>
-Subject: Re: [PATCH v8 02/23] dma-pool: fix page leak in atomic_pool_expand()
- cleanup
-Message-ID: <20260721153457.GP110966@unreal>
-References: <20260717180442.110954-1-aneesh.kumar@kernel.org>
- <20260717180442.110954-3-aneesh.kumar@kernel.org>
- <20260721123107.GJ110966@unreal>
- <yq5aqzkw76ch.fsf@kernel.org>
+	Kees Cook <kees@kernel.org>
+Cc: Thorsten Blum <thorsten.blum@linux.dev>,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH 2/2] powerpc/pseries: Avoid strlen() in do_{remove,update}_property()
+Date: Tue, 21 Jul 2026 17:53:46 +0200
+Message-ID: <20260721155346.121975-4-thorsten.blum@linux.dev>
+In-Reply-To: <20260721155346.121975-3-thorsten.blum@linux.dev>
+References: <20260721155346.121975-3-thorsten.blum@linux.dev>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -94,107 +67,39 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <yq5aqzkw76ch.fsf@kernel.org>
+X-Developer-Signature: v=1; a=openpgp-sha256; l=975; i=thorsten.blum@linux.dev; h=from:subject; bh=zRRNcErEeZUzqUVDgfD4he8/ABa1ClK+vt73aKmxWDM=; b=owGbwMvMwCUWt7pQ4caZUj3G02pJDFnx06R9WOqmbz76eqVjw4Tc9XOfam7Yn2TXdqxNoFbir 3FZweLMjlIWBjEuBlkxRZYHs37M8C2tqdxkErETZg4rE8gQBi5OAZjImQsM/5MLGee93JzTcWIG x9YFzFPeWekqNO92YTXdwqm8XvrL42cM/6t7o5Jsff6y1V5k2DuBy3iFpaOKBsvaJ3sUHjJ8/Ln RjQEA
+X-Developer-Key: i=thorsten.blum@linux.dev; a=openpgp; fpr=1D60735E8AEF3BE473B69D84733678FD8DFEEAD4
+Content-Transfer-Encoding: 8bit
+X-Migadu-Flow: FLOW_OUT
 
-On Tue, Jul 21, 2026 at 08:11:34PM +0530, Aneesh Kumar K.V wrote:
-> Leon Romanovsky <leon@kernel.org> writes:
-> 
-> > On Fri, Jul 17, 2026 at 11:34:20PM +0530, Aneesh Kumar K.V (Arm) wrote:
-> >> atomic_pool_expand() frees the allocated pages from the remove_mapping
-> >> error path only when CONFIG_DMA_DIRECT_REMAP is enabled.
-> >> 
-> >> When CONFIG_DMA_DIRECT_REMAP is disabled, failures after page allocation,
-> >> such as gen_pool_add_virt(), jump to remove_mapping and return without
-> >> freeing the pages.
-> >> 
-> >> Move __free_pages(page, order) out of the CONFIG_DMA_DIRECT_REMAP block so
-> >> that cleanup paths always release the allocation.
-> >> 
-> >> Reviewed-by: Jason Gunthorpe <jgg@nvidia.com>
-> >> Tested-by: Michael Kelley <mhklinux@outlook.com>
-> >> Tested-by: Mostafa Saleh <smostafa@google.com>
-> >> Signed-off-by: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>
-> >> ---
-> >>  kernel/dma/pool.c | 10 +++++++---
-> >>  1 file changed, 7 insertions(+), 3 deletions(-)
-> >> 
-> >> diff --git a/kernel/dma/pool.c b/kernel/dma/pool.c
-> >> index 2b2fbb709242..b0303efbc153 100644
-> >> --- a/kernel/dma/pool.c
-> >> +++ b/kernel/dma/pool.c
-> >> @@ -81,6 +81,7 @@ static int atomic_pool_expand(struct gen_pool *pool, size_t pool_size,
-> >>  {
-> >>  	unsigned int order;
-> >>  	struct page *page = NULL;
-> >> +	bool leak_pages = false;
-> >>  	void *addr;
-> >>  	int ret = -ENOMEM;
-> >>  
-> >> @@ -115,8 +116,10 @@ static int atomic_pool_expand(struct gen_pool *pool, size_t pool_size,
-> >>  	 */
-> >>  	ret = set_memory_decrypted((unsigned long)page_to_virt(page),
-> >>  				   1 << order);
-> >> -	if (ret)
-> >> +	if (ret) {
-> >> +		leak_pages = true;
-> >>  		goto remove_mapping;
-> >> +	}
-> >>  	ret = gen_pool_add_virt(pool, (unsigned long)addr, page_to_phys(page),
-> >>  				pool_size, NUMA_NO_NODE);
-> >>  	if (ret)
-> >> @@ -130,14 +133,15 @@ static int atomic_pool_expand(struct gen_pool *pool, size_t pool_size,
-> >>  				   1 << order);
-> >>  	if (WARN_ON_ONCE(ret)) {
-> >>  		/* Decrypt succeeded but encrypt failed, purposely leak */
-> >> -		goto out;
-> >> +		leak_pages = true;
-> >
-> > Instead of doing this dance with temporal variable, change "goto out" to
-> > be "return true".
-> >
-> 
-> 
-> I didn't follow the return true part. A failure in
-> set_memory_encrypted() or set_memory_decrypted() requires the pages to
-> be leaked, so this is not the only call site that sets leak_pages =
-> true. There is a similar case a few lines above.
+Check only the first byte instead of scanning the entire string with
+strlen().
 
-Comment about "leaked" is enough. There is no need to introduce
-convoluted flow just to check that page != NULL.
+Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
+---
+ arch/powerpc/platforms/pseries/reconfig.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Thanks
-
-> 
-> 
-> >
-> >>  	}
-> >>  remove_mapping:
-> >>  #ifdef CONFIG_DMA_DIRECT_REMAP
-> >>  	dma_common_free_remap(addr, pool_size);
-> >>  free_page:
-> >
-> > Remove free_page label, and change leftover of "goto free_page" to be
-> > "goto out"
-> >
-> >> -	__free_pages(page, order);
-> >>  #endif
-> >> +	if (!leak_pages)
-> >> +		__free_pages(page, order);
-> >
-> > Put these checks under out label and rely on page != NULL as a marker.
-> > if (page)
-> >  __free_pages(page, order);
-> >
-> >>  out:
-> >>  	return ret;
-> >>  }
-> >> -- 
-> >> 2.43.0
-> >> 
-> >> 
-> 
-> -aneesh
-> 
+diff --git a/arch/powerpc/platforms/pseries/reconfig.c b/arch/powerpc/platforms/pseries/reconfig.c
+index 7faebcffc9df..18e3f1a036e3 100644
+--- a/arch/powerpc/platforms/pseries/reconfig.c
++++ b/arch/powerpc/platforms/pseries/reconfig.c
+@@ -307,7 +307,7 @@ static int do_remove_property(char *buf, size_t bufsize)
+ 	if (tmp)
+ 		*tmp = '\0';
+ 
+-	if (strlen(buf) == 0)
++	if (*buf == '\0')
+ 		return -EINVAL;
+ 
+ 	return of_remove_property(np, of_find_property(np, buf, NULL));
+@@ -330,7 +330,7 @@ static int do_update_property(char *buf, size_t bufsize)
+ 	if (!next_prop)
+ 		return -EINVAL;
+ 
+-	if (!strlen(name))
++	if (*name == '\0')
+ 		return -ENODEV;
+ 
+ 	newprop = new_property(name, length, value, NULL);
 
