@@ -1,52 +1,52 @@
-Return-Path: <linuxppc-dev+bounces-24601-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24602-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 021E9C44529
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2026 14:29:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 824F3C44529
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2026 14:41:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h4KXD0VzPz2xqJ;
-	Wed, 22 Jul 2026 00:29:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h4KpR6BFyz2xqJ;
+	Wed, 22 Jul 2026 00:41:51 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784644171;
-	cv=none; b=bqkpy932zYiZooSqq4nWilzYQQpCiO2SFa+8fVNDSNrjmXhFJ2PJlLvGQdVvY2LqtOJH5ROj2x5E+sGqjRQXe+0pGolS007vImlTF/qqo3ILkedtByniq5Y+WaWRotpimWYUpFujVX8FhNOTBnC2eArxjjDqgnVAKA4CtOl/5tfSO1/5veN+eAW9nScj/0A2VjwfaoZHHTLPKmtTfHYS1HuFYlA5bcJJDepIPEBZoe/QntnyfrNyISxP18YE1LxEh6ADxlICM3PSOlJG8JZJopH9OjNF4qqOKzQnScnA0mTpHg/NJnF+mXhPuCKvYXFISScO4i8vsw/ppPBLoXBMuQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784644911;
+	cv=none; b=Q9cMr/v2zCfnpz5DOqP1C65wyMB/DJ18H8gI3YDvNApwDinCXzSrFj7xHYoqWxhZkKhyxqCYdyEqHhBTIAkyfbelTyYM4VIo01aHzoTLSShSNtq1TOe4RyqbVvwt5tt/LfrhBkkeVhcYTDy/AeIVvrTWsTkQN9qsFt+avbTQlPJxCLRgTAw3ciVpniD4LGaLLFxhW1DGaGU1xLQlh7IBhSr3+huG1imjcf05txe9NpYK/bISi7mIhy9zEu3AHJJ/56BDa+VcFu5giFsGQz9hgw2wpY17a69XV8cDQsvVMebAoV31EgUBSSqgX4BLwKGH0Scx0OoOQHzgiF/RlloKTQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784644171; c=relaxed/relaxed;
-	bh=1soRxN4hiDcUXCxjs1PA7SeZGbKgmvbO8BnI4N1ZFe8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=jicpbK00z1c9P8pslH5QyA7xv5e7r6aRkWEsrzg/SgCgx/79CEoF1MFNaKW06BJomWZductd2ejwDVEEcVwuAZ+1v7vTeXILOLi4CBbjd1CtJLr7fKdnxfDMMT5IXpSCT71yLRGV7X4uSJezRtH98XMYNdoo1YbxGkUa9Lh3Y9kvyX2wvE5jn36+l/0iwCS1FKiH7CK2O0eJzyaBIKsJuGY3paYp4i6QeCQmeKSf/n3j3MIpzZrwB6MXdASaaAwyokanUdtKZvnNWZRMxTfaeuQd8z9EQioc3wQ70HmgZyWJjpjM5j7qzFLtiksqVh3WCUt7oC1RCyneeucJljpuYA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Z6Y53Eln; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1784644911; c=relaxed/relaxed;
+	bh=cbjfsvMUtOM597sXFYSy4LMyCCKlivTlN6bg0GYZbig=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=JpyP0a4/desGfO6IRhSTwpaJr/AZ3FJsbDlV8sLk3/28marFUeEsv/XP0+jVGB7edSOKwAfRKx3eDAXrkaXJbaV2ZQZ6kxlYNdWQEYePWJBh0Fuj7QR0vovJo/GTlR+kMrJpOMlm7OJE7tmD8EYqLNUnqbfD4k1Zhpe709RT+92M+28M2fk9xN5SSc/N6ZcNbHLrmMHHrTyEyz5YL6owOnMyv19IkjU9+8CamVB+tNmnV9mSKAUclJ122su5hWbQ96iV01RoAZ9mRW1ZiO+zWu34fqdLHbEUOkUiq4xh0x6tnI5uWXR4usvFhXIZnOSOPJW9eSYhsUzrOkhzxzEbJg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=a9sMx8Tl; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Z6Y53Eln;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=a9sMx8Tl;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h4KXC18Zjz2xJR
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2026 00:29:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h4KpQ5kgBz2xJR
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2026 00:41:50 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 659DC403A9;
-	Tue, 21 Jul 2026 14:29:28 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D7F491F000E9;
-	Tue, 21 Jul 2026 14:29:26 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id EB94842D81;
+	Tue, 21 Jul 2026 14:41:48 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B9F6E1F00AC4;
+	Tue, 21 Jul 2026 14:41:38 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1784644168;
-	bh=1soRxN4hiDcUXCxjs1PA7SeZGbKgmvbO8BnI4N1ZFe8=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=Z6Y53ElnThJz/QmjNlBI90Yu7tbBuCvQU60QJ4DbRT5TXWdL7w3KuZzUdsCjKtoL/
-	 71ZaLms1OHJ+aJGCsLyIDPyM7gGELMJkUoUEEKbfKXlEoG+CcCrbpbAg43lxbizIqO
-	 yXWwFnJWX4Ru3nShSGjh7T+m6/UYy1o50khWKiQF8rvhylkfkDK/1Kki7v+jYxq5aI
-	 gO/tbH5nUZoF4TeZXpFnsJTsnW6/YStJLzyv9G5e7g6RhjKNbNUznJMyPNGHNkYE0+
-	 ZTUeuFNaF4ExWmaFhhdtjEOn8TaeQv52hbnyhHF4K8laJqqVGxQz+/SpgRyB1FtKpa
-	 iraCr9pMDtqtA==
-Date: Tue, 21 Jul 2026 17:29:21 +0300
-From: Leon Romanovsky <leon@kernel.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>
+	s=k20260515; t=1784644908;
+	bh=cbjfsvMUtOM597sXFYSy4LMyCCKlivTlN6bg0GYZbig=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date;
+	b=a9sMx8TlLU2rGUvpHoxNcYyMDx/kraTiQ25aOr5lNDOnmZaWccTNeAMKsWTIfXblc
+	 Ep70skfYp6qXTCsQAA/kIwueiGEp4e7ZiYRPJYNmsnVW0fa1/6Hqf2cphc4qIQ78FB
+	 xwK26DYrQnIMXproaXvVtR8riyHv/FmjZBQcRCCIz3L556YvFQ4sx8zc70mUNJOkMX
+	 y/G46IpQzBIjnS7IWD7Id+pYRhSq5V+YCyP0xMGyXBEG0eqv0Jj39WI9et8O6YsJoq
+	 /1FpVoYDunZEVtzPRG/eSUAmdBc/cDXEl8oWt4qLu7jZ4duE3/2D5WVldSKMmAXEVv
+	 0Uyp0VWxjGPYQ==
+X-Mailer: emacs 30.2 (via feedmail 11-beta-1 I)
+From: Aneesh Kumar K.V <aneesh.kumar@kernel.org>
+To: Leon Romanovsky <leon@kernel.org>
 Cc: iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev,
 	Robin Murphy <robin.murphy@arm.com>,
@@ -55,13 +55,14 @@ Cc: iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
 	Steven Price <steven.price@arm.com>,
 	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
 	Catalin Marinas <catalin.marinas@arm.com>,
-	Jiri Pirko <jiri@resnulli.us>, Jason Gunthorpe <jgg@ziepe.ca>,
+	Jiri Pirko <jiri@resnulli.us>,
+	Jason Gunthorpe <jgg@ziepe.ca>,
 	Mostafa Saleh <smostafa@google.com>,
 	Petr Tesarik <ptesarik@suse.com>,
 	Alexey Kardashevskiy <aik@amd.com>,
 	Dan Williams <dan.j.williams@intel.com>,
-	Xu Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
-	linux-s390@vger.kernel.org,
+	Xu Yilun <yilun.xu@linux.intel.com>,
+	linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
 	Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Michael Ellerman <mpe@ellerman.id.au>,
 	Nicholas Piggin <npiggin@gmail.com>,
@@ -72,15 +73,16 @@ Cc: iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
 	Vasily Gorbik <gor@linux.ibm.com>,
 	Christian Borntraeger <borntraeger@linux.ibm.com>,
 	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org,
-	stable@vger.kernel.org, Michael Kelley <mhklinux@outlook.com>,
-	Jason Gunthorpe <jgg@nvidia.com>
-Subject: Re: [PATCH v8 01/23] dma-direct: return struct page from
- dma_direct_alloc_from_pool()
-Message-ID: <20260721142921.GN110966@unreal>
+	Jason Gunthorpe <jgg@nvidia.com>,
+	Michael Kelley <mhklinux@outlook.com>
+Subject: Re: [PATCH v8 02/23] dma-pool: fix page leak in
+ atomic_pool_expand() cleanup
+In-Reply-To: <20260721123107.GJ110966@unreal>
 References: <20260717180442.110954-1-aneesh.kumar@kernel.org>
- <20260717180442.110954-2-aneesh.kumar@kernel.org>
- <20260721115456.GI110966@unreal>
- <yq5atsps77c5.fsf@kernel.org>
+ <20260717180442.110954-3-aneesh.kumar@kernel.org>
+ <20260721123107.GJ110966@unreal>
+Date: Tue, 21 Jul 2026 20:11:34 +0530
+Message-ID: <yq5aqzkw76ch.fsf@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -94,105 +96,97 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <yq5atsps77c5.fsf@kernel.org>
+Content-Type: text/plain
 
-On Tue, Jul 21, 2026 at 07:50:10PM +0530, Aneesh Kumar K.V wrote:
-> Leon Romanovsky <leon@kernel.org> writes:
-> 
-> > On Fri, Jul 17, 2026 at 11:34:19PM +0530, Aneesh Kumar K.V (Arm) wrote:
-> >> Commit 5b138c534fda ("dma-direct: factor out a dma_direct_alloc_from_pool
-> >> helper") changed dma_direct_alloc_from_pool() to return the CPU address
-> >> from dma_alloc_from_pool(). That fits dma_direct_alloc(), but
-> >> dma_direct_alloc_pages() also uses the helper and expects a struct page *.
-> >> 
-> >> Fix this by making dma_direct_alloc_from_pool() return the struct page *
-> >> again, and pass the CPU address back through an out-parameter for the
-> >> dma_direct_alloc() caller.
-> >> 
-> >> Fixes: 5b138c534fda ("dma-direct: factor out a dma_direct_alloc_from_pool helper")
-> >> Cc: stable@vger.kernel.org
-> >> Tested-by: Michael Kelley <mhklinux@outlook.com>
-> >> Tested-by: Mostafa Saleh <smostafa@google.com>
-> >> Reviewed-by: Jason Gunthorpe <jgg@nvidia.com>
-> >> Signed-off-by: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>
-> >> ---
-> >>  kernel/dma/direct.c | 18 ++++++++++--------
-> >>  1 file changed, 10 insertions(+), 8 deletions(-)
-> >> 
-> >> diff --git a/kernel/dma/direct.c b/kernel/dma/direct.c
-> >> index d8219efe3273..363d984d90e7 100644
-> >> --- a/kernel/dma/direct.c
-> >> +++ b/kernel/dma/direct.c
-> >> @@ -164,22 +164,21 @@ static bool dma_direct_use_pool(struct device *dev, gfp_t gfp)
-> >>  	return !gfpflags_allow_blocking(gfp) && !is_swiotlb_for_alloc(dev);
-> >>  }
-> >>  
-> >> -static void *dma_direct_alloc_from_pool(struct device *dev, size_t size,
-> >> -		dma_addr_t *dma_handle, gfp_t gfp)
-> >> +static struct page *dma_direct_alloc_from_pool(struct device *dev, size_t size,
-> >> +		dma_addr_t *dma_handle, void **cpu_addr, gfp_t gfp)
-> >>  {
-> >>  	struct page *page;
-> >>  	u64 phys_limit;
-> >> -	void *ret;
-> >>  
-> >>  	if (WARN_ON_ONCE(!IS_ENABLED(CONFIG_DMA_COHERENT_POOL)))
-> >>  		return NULL;
-> >>  
-> >>  	gfp |= dma_direct_optimal_gfp_mask(dev, &phys_limit);
-> >> -	page = dma_alloc_from_pool(dev, size, &ret, gfp, dma_coherent_ok);
-> >> +	page = dma_alloc_from_pool(dev, size, cpu_addr, gfp, dma_coherent_ok);
-> >>  	if (!page)
-> >>  		return NULL;
-> >>  	*dma_handle = phys_to_dma_direct(dev, page_to_phys(page));
-> >> -	return ret;
-> >> +	return page;
-> >>  }
-> >>  
-> >>  static void *dma_direct_alloc_no_mapping(struct device *dev, size_t size,
-> >> @@ -247,8 +246,11 @@ void *dma_direct_alloc(struct device *dev, size_t size,
-> >>  	 * the atomic pools instead if we aren't allowed block.
-> >>  	 */
-> >>  	if ((remap || force_dma_unencrypted(dev)) &&
-> >> -	    dma_direct_use_pool(dev, gfp))
-> >> -		return dma_direct_alloc_from_pool(dev, size, dma_handle, gfp);
-> >> +	    dma_direct_use_pool(dev, gfp)) {
-> >> +		page = dma_direct_alloc_from_pool(dev, size, dma_handle,
-> >> +						  &ret, gfp);
-> >> +		return page ? ret : NULL;
-> >
-> > Sorry for joining the discussion late, but the line above caught my
-> > attention.
-> >
-> > Why do we need both ret and page? We can derive cpu_addr from page and
-> > vice versa. Do we really need the &ret parameter? Or, more generally, do
-> > we really need "struct page *"?
-> >
-> > static struct page *__dma_alloc_from_pool(struct device *dev, size_t size,
-> > 		struct gen_pool *pool, void **cpu_addr,
-> > 		bool (*phys_addr_ok)(struct device *, phys_addr_t, size_t))
-> > {
-> > ...
-> > 	*cpu_addr = (void *)addr;
-> > 	memset(*cpu_addr, 0, size);
-> > 	return pfn_to_page(__phys_to_pfn(phys));
-> > }
-> >
-> > Why
-> >
-> 
-> With CONFIG_DMA_DIRECT_REMAP the cpu_addr can be different from
-> page_address.
+Leon Romanovsky <leon@kernel.org> writes:
 
-Can you please point to the code there it can happen?
-__dma_alloc_from_pool() has direct connection between physical address
-and struct page.
+> On Fri, Jul 17, 2026 at 11:34:20PM +0530, Aneesh Kumar K.V (Arm) wrote:
+>> atomic_pool_expand() frees the allocated pages from the remove_mapping
+>> error path only when CONFIG_DMA_DIRECT_REMAP is enabled.
+>> 
+>> When CONFIG_DMA_DIRECT_REMAP is disabled, failures after page allocation,
+>> such as gen_pool_add_virt(), jump to remove_mapping and return without
+>> freeing the pages.
+>> 
+>> Move __free_pages(page, order) out of the CONFIG_DMA_DIRECT_REMAP block so
+>> that cleanup paths always release the allocation.
+>> 
+>> Reviewed-by: Jason Gunthorpe <jgg@nvidia.com>
+>> Tested-by: Michael Kelley <mhklinux@outlook.com>
+>> Tested-by: Mostafa Saleh <smostafa@google.com>
+>> Signed-off-by: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>
+>> ---
+>>  kernel/dma/pool.c | 10 +++++++---
+>>  1 file changed, 7 insertions(+), 3 deletions(-)
+>> 
+>> diff --git a/kernel/dma/pool.c b/kernel/dma/pool.c
+>> index 2b2fbb709242..b0303efbc153 100644
+>> --- a/kernel/dma/pool.c
+>> +++ b/kernel/dma/pool.c
+>> @@ -81,6 +81,7 @@ static int atomic_pool_expand(struct gen_pool *pool, size_t pool_size,
+>>  {
+>>  	unsigned int order;
+>>  	struct page *page = NULL;
+>> +	bool leak_pages = false;
+>>  	void *addr;
+>>  	int ret = -ENOMEM;
+>>  
+>> @@ -115,8 +116,10 @@ static int atomic_pool_expand(struct gen_pool *pool, size_t pool_size,
+>>  	 */
+>>  	ret = set_memory_decrypted((unsigned long)page_to_virt(page),
+>>  				   1 << order);
+>> -	if (ret)
+>> +	if (ret) {
+>> +		leak_pages = true;
+>>  		goto remove_mapping;
+>> +	}
+>>  	ret = gen_pool_add_virt(pool, (unsigned long)addr, page_to_phys(page),
+>>  				pool_size, NUMA_NO_NODE);
+>>  	if (ret)
+>> @@ -130,14 +133,15 @@ static int atomic_pool_expand(struct gen_pool *pool, size_t pool_size,
+>>  				   1 << order);
+>>  	if (WARN_ON_ONCE(ret)) {
+>>  		/* Decrypt succeeded but encrypt failed, purposely leak */
+>> -		goto out;
+>> +		leak_pages = true;
+>
+> Instead of doing this dance with temporal variable, change "goto out" to
+> be "return true".
+>
 
-Thanks
 
-> 
-> -aneesh
-> 
+I didn't follow the return true part. A failure in
+set_memory_encrypted() or set_memory_decrypted() requires the pages to
+be leaked, so this is not the only call site that sets leak_pages =
+true. There is a similar case a few lines above.
+
+
+>
+>>  	}
+>>  remove_mapping:
+>>  #ifdef CONFIG_DMA_DIRECT_REMAP
+>>  	dma_common_free_remap(addr, pool_size);
+>>  free_page:
+>
+> Remove free_page label, and change leftover of "goto free_page" to be
+> "goto out"
+>
+>> -	__free_pages(page, order);
+>>  #endif
+>> +	if (!leak_pages)
+>> +		__free_pages(page, order);
+>
+> Put these checks under out label and rely on page != NULL as a marker.
+> if (page)
+>  __free_pages(page, order);
+>
+>>  out:
+>>  	return ret;
+>>  }
+>> -- 
+>> 2.43.0
+>> 
+>> 
+
+-aneesh
 
