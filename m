@@ -1,102 +1,84 @@
-Return-Path: <linuxppc-dev+bounces-24591-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24592-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6D2C8C44529
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2026 10:44:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0FFBCC44529
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2026 11:55:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h4DXr2CW8z2xqJ;
-	Tue, 21 Jul 2026 20:44:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.131
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784630684;
-	cv=none; b=OlnzdP4A0SKUo+210W1oYmiOlx91Ba3gX/CmGp/jgEILZ3HJgM/HRghQs9gM0HKgTTaNI3+RxRXtcMPyqDufDYInLIKh017nWMS+eoKtFyginTZXFY/9NPuBMsdBVMdi+omRxaOs/PvEddZBdSSVwtQZUZuiB/wXnTXkhh2S4ij9uYT50g/ffXH1OVN9MtI8xfmhm7vpb4xvTZ25bREGSN9H83Yr2UwibRt9bM29FzaOgDfctpvPcg0cAzo+Og6rhF8lTDGeYmYipuwRNM9Z6aWJAx2yNSCW+lGTQ+7UtW4Sw6FQeAnwTz3ru+Jonk657c2n6fv3f4r+QBq7OB4++A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h4G630TMKz2xqJ;
+	Tue, 21 Jul 2026 21:55:07 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784634906;
+	cv=none; b=hQ67TM6lbX2R9lDTLXBhfoBcEurA1eEFiLHXLdvSd9Zwoe82k7xw9IhIzlet0hqCeoUi6ar0iOdRAJrRQ4AQahfDSyqbx4h2rB0pCQXRXym1wlKt0bmQU/EkdSlPfJLETGxyl+fOIMeJwM1/AMN1VwFbHXXKSKwmN9b5qXYMWsdwecCIHhJaMtQK6+HV9tKMJIkUyeednzjj0YeXGuKLybbCWxwQnt0KcPyZyUv/83DFFZQFSoS+KKj3gGALtqTJmbwyGugyV3TiECpqiN44rr69jnWgKSeQKQ60/gKuTwHqd6CWfv5B1ZccBwmVD0RaUATvHudLOCEFtEC7797k+A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784630684; c=relaxed/relaxed;
-	bh=B0Py5B3mwQHc+JOXafe3hbEgSFjr03UEdbTua5LDYRg=;
+	t=1784634906; c=relaxed/relaxed;
+	bh=UJXno+NE2LaIdHpYv/4s8ue4/cjDLWXaEa8lFS8q5GY=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=PzmbmkyZR4gJ6xtXl8LqaW9dljXS0CrOVXQ9NQ5OCo8IZRwk6VuBlHmjn1DclwYHbzQxMM+V3x7hlwFA/MW4MqJC46IOcYTojjeElmV3mAbB6Ei/0SZwlxKnRCTGAH9theTM5QKjUWoybRSvChGigTa7wCS8JEuMIOwW2uq29Jc9a/dwdNwOqInT4eJBsimsvlWghDva8Q+q8p2jzwntw976fRmvQ5amDfZ9WgEsAxMHLXNCDrK/DZ9XhkUNGY1+zUyMELDlf2iQ1RiNNq1Tsnu4da/pJeuZP4k+Z3eDHh/GytcrAZY199aHJiXAvjr/yopkRI28JAKTZSu/3/knqw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=JtQP6lge; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=y2frQJ8p; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=JtQP6lge; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=y2frQJ8p; dkim-atps=neutral; spf=pass (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
+	 Content-Type:Content-Disposition:In-Reply-To; b=LtePpi3zlNsBuRioTo3UoKUXQD4zd/qaBexDb0uu4TryZ2MqlcLK/33HpJy4klG2lvt7feed2mMQruzUWwHpw4Nvpbr74Ta72xh1skz5FVXvOYjexpgSuE1Ls0zYdmz3Vi7OR24eu0XPj1YIKdsEbRboYtRT1rVoRs9oYVObO6IjnmPynKGfWzLOQGNw5r4kC7ekOy9rP4aupXy6TV/QQEijaKpEx0nUlGm7+R1xuHj5msgmeJsfYTAwSwqhvMWom1z5Hv7UbU3Yrmkw0LrMDetZZWQMctLN/mgyh6d802xidGhdgBgG6P0EPAV7xhVaAJzUfBg712NWqwNk4s2p6A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=F95kPevl; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=JtQP6lge;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=y2frQJ8p;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=JtQP6lge;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=y2frQJ8p;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=F95kPevl;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h4DXp3bFzz2xm3
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2026 20:44:42 +1000 (AEST)
-Received: from kunlun.suse.cz (unknown [IPv6:2a07:de40:b306:2000::2])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 531843E07;
-	Tue, 21 Jul 2026 10:44:38 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1784630678; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=B0Py5B3mwQHc+JOXafe3hbEgSFjr03UEdbTua5LDYRg=;
-	b=JtQP6lged4KTQ9qwSmJWoFVAqDxIRDZ+BQwSXLtHg+hxvrs0KZqezKv7NOpLhu1e843nkg
-	JT1pK7pnMGMQMv8FU5RcH5t+x4oxP4g/E6bssli90KGK+L+lwzEkt2iJceUzwLYI/PZ++9
-	PvGiUBNZ/4KSC7Vpjng9OD92j/wQyII=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1784630678;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=B0Py5B3mwQHc+JOXafe3hbEgSFjr03UEdbTua5LDYRg=;
-	b=y2frQJ8pJWgRl/gkkNhGtA7abbAg0ghd3xXR7bRLXh8+ijdsEq5T6omONmmn2klKmyD0HA
-	vXo1mY9eOZlpodCA==
-Authentication-Results: smtp-out2.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=JtQP6lge;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=y2frQJ8p
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1784630678; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=B0Py5B3mwQHc+JOXafe3hbEgSFjr03UEdbTua5LDYRg=;
-	b=JtQP6lged4KTQ9qwSmJWoFVAqDxIRDZ+BQwSXLtHg+hxvrs0KZqezKv7NOpLhu1e843nkg
-	JT1pK7pnMGMQMv8FU5RcH5t+x4oxP4g/E6bssli90KGK+L+lwzEkt2iJceUzwLYI/PZ++9
-	PvGiUBNZ/4KSC7Vpjng9OD92j/wQyII=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1784630678;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=B0Py5B3mwQHc+JOXafe3hbEgSFjr03UEdbTua5LDYRg=;
-	b=y2frQJ8pJWgRl/gkkNhGtA7abbAg0ghd3xXR7bRLXh8+ijdsEq5T6omONmmn2klKmyD0HA
-	vXo1mY9eOZlpodCA==
-Date: Tue, 21 Jul 2026 12:44:37 +0200
-From: Michal Suchanek <msuchanek@suse.de>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Kees Cook <kees@kernel.org>, Andy Lutomirski <luto@amacapital.net>,
-	Will Drewry <wad@chromium.org>, Paul Walmsley <pjw@kernel.org>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
-	linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org,
-	Thomas Gleixner <tglx@kernel.org>,
-	Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h4G614b07z2xJR
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2026 21:55:05 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 4482241FA5;
+	Tue, 21 Jul 2026 11:55:01 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E50E81F000E9;
+	Tue, 21 Jul 2026 11:54:59 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1784634901;
+	bh=UJXno+NE2LaIdHpYv/4s8ue4/cjDLWXaEa8lFS8q5GY=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=F95kPevlSn1NQmmXdgfNRRHtm8wP1sXWeSsajbmTVkqIVzEt4omP7+o8h/zzqgon8
+	 aO2X352TPWBumHybCH5wICorK7tHQOJ+DLfga1PMxYtgGyqAr1d75R36jZQcoAZQ0G
+	 u4Ltzvzc8UN19pVa60sSITfwm9xlmo7Hr5kTf7or5X1dbKVS99JrE6bfnBoFbv+ckQ
+	 REkQsHFwee8HrNaRT8lHJe7QWLL3u2KfR4piTx/+d8f8FoJDJV6XZZXLGbwgVG6/2w
+	 R3oYpiCOUEawrQ7xZmqfEe7FPeRTR/3x9h6o8gh9596QPZeiwtdrlz0QLXVFYHGROp
+	 Opr9JesAwQ3ow==
+Date: Tue, 21 Jul 2026 14:54:56 +0300
+From: Leon Romanovsky <leon@kernel.org>
+To: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>
+Cc: iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev,
+	Robin Murphy <robin.murphy@arm.com>,
+	Marek Szyprowski <m.szyprowski@samsung.com>,
+	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
+	Steven Price <steven.price@arm.com>,
+	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Jiri Pirko <jiri@resnulli.us>, Jason Gunthorpe <jgg@ziepe.ca>,
+	Mostafa Saleh <smostafa@google.com>,
+	Petr Tesarik <ptesarik@suse.com>,
+	Alexey Kardashevskiy <aik@amd.com>,
+	Dan Williams <dan.j.williams@intel.com>,
+	Xu Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+	linux-s390@vger.kernel.org,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Michael Ellerman <mpe@ellerman.id.au>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	linuxppc-dev@lists.ozlabs.org, Huacai Chen <chenhuacai@kernel.org>,
-	loongarch@lists.linux.dev, Sven Schnelle <svens@linux.ibm.com>,
-	linux-s390@vger.kernel.org, x86@kernel.org,
-	Mark Rutland <mark.rutland@arm.com>,
-	Jinjie Ruan <ruanjinjie@huawei.com>,
-	Magnus Lindholm <linmag7@gmail.com>,
-	"Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>,
-	Jonathan Corbet <corbet@lwn.net>, Radu Rendec <radu@rendec.net>,
-	Renzo Davoli <renzo@cs.unibo.it>, Oleg Nesterov <oleg@redhat.com>
-Subject: [PATCH] seccomp: Fix syscall skip logic on ptrace
-Message-ID: <al9NlZi20xHMvla2@kunlun.suse.cz>
-References: <20260707181957.433213175@kernel.org>
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org,
+	stable@vger.kernel.org, Michael Kelley <mhklinux@outlook.com>,
+	Jason Gunthorpe <jgg@nvidia.com>
+Subject: Re: [PATCH v8 01/23] dma-direct: return struct page from
+ dma_direct_alloc_from_pool()
+Message-ID: <20260721115456.GI110966@unreal>
+References: <20260717180442.110954-1-aneesh.kumar@kernel.org>
+ <20260717180442.110954-2-aneesh.kumar@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -112,88 +94,104 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260707181957.433213175@kernel.org>
-X-Rspamd-Action: no action
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
-X-Spamd-Result: default: False [2.49 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	HFILTER_HOSTNAME_UNKNOWN(2.50)[];
-	RDNS_NONE(2.00)[];
-	ONCE_RECEIVED(1.20)[];
-	HFILTER_HELO_IP_A(1.00)[kunlun.suse.cz];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	HFILTER_HELO_NORES_A_OR_MX(0.30)[kunlun.suse.cz];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b306:2000::2:from];
-	ARC_NA(0.00)[];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	RCPT_COUNT_TWELVE(0.00)[28];
-	MIME_TRACE(0.00)[0:+];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com];
-	DKIM_TRACE(0.00)[suse.de:+];
-	TO_DN_SOME(0.00)[];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	FREEMAIL_CC(0.00)[kernel.org,amacapital.net,chromium.org,dabbelt.com,eecs.berkeley.edu,ghiti.fr,vger.kernel.org,lists.infradead.org,suse.de,ellerman.id.au,linux.ibm.com,lists.ozlabs.org,lists.linux.dev,arm.com,huawei.com,gmail.com,lwn.net,rendec.net,cs.unibo.it,redhat.com];
-	DNSWL_BLOCKED(0.00)[2a07:de40:b306:2000::2:from];
-	MISSING_XM_UA(0.00)[];
-	RCVD_COUNT_ZERO(0.00)[0];
-	R_RATELIMIT(0.00)[to_ip_from(RLgmbm6kmdycgna1ji64zx9jke)];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:email,suse.de:dkim,kunlun.suse.cz:helo,kunlun.suse.cz:mid]
-X-Spamd-Bar: ++
-X-Rspamd-Queue-Id: 531843E07
+In-Reply-To: <20260717180442.110954-2-aneesh.kumar@kernel.org>
 
-seccomp takes a shortcut here. When the syscall number is re-read after
-ptrace and the sign bit is set in the syscall number the syscall is
-skipped right away.
+On Fri, Jul 17, 2026 at 11:34:19PM +0530, Aneesh Kumar K.V (Arm) wrote:
+> Commit 5b138c534fda ("dma-direct: factor out a dma_direct_alloc_from_pool
+> helper") changed dma_direct_alloc_from_pool() to return the CPU address
+> from dma_alloc_from_pool(). That fits dma_direct_alloc(), but
+> dma_direct_alloc_pages() also uses the helper and expects a struct page *.
+> 
+> Fix this by making dma_direct_alloc_from_pool() return the struct page *
+> again, and pass the CPU address back through an out-parameter for the
+> dma_direct_alloc() caller.
+> 
+> Fixes: 5b138c534fda ("dma-direct: factor out a dma_direct_alloc_from_pool helper")
+> Cc: stable@vger.kernel.org
+> Tested-by: Michael Kelley <mhklinux@outlook.com>
+> Tested-by: Mostafa Saleh <smostafa@google.com>
+> Reviewed-by: Jason Gunthorpe <jgg@nvidia.com>
+> Signed-off-by: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>
+> ---
+>  kernel/dma/direct.c | 18 ++++++++++--------
+>  1 file changed, 10 insertions(+), 8 deletions(-)
+> 
+> diff --git a/kernel/dma/direct.c b/kernel/dma/direct.c
+> index d8219efe3273..363d984d90e7 100644
+> --- a/kernel/dma/direct.c
+> +++ b/kernel/dma/direct.c
+> @@ -164,22 +164,21 @@ static bool dma_direct_use_pool(struct device *dev, gfp_t gfp)
+>  	return !gfpflags_allow_blocking(gfp) && !is_swiotlb_for_alloc(dev);
+>  }
+>  
+> -static void *dma_direct_alloc_from_pool(struct device *dev, size_t size,
+> -		dma_addr_t *dma_handle, gfp_t gfp)
+> +static struct page *dma_direct_alloc_from_pool(struct device *dev, size_t size,
+> +		dma_addr_t *dma_handle, void **cpu_addr, gfp_t gfp)
+>  {
+>  	struct page *page;
+>  	u64 phys_limit;
+> -	void *ret;
+>  
+>  	if (WARN_ON_ONCE(!IS_ENABLED(CONFIG_DMA_COHERENT_POOL)))
+>  		return NULL;
+>  
+>  	gfp |= dma_direct_optimal_gfp_mask(dev, &phys_limit);
+> -	page = dma_alloc_from_pool(dev, size, &ret, gfp, dma_coherent_ok);
+> +	page = dma_alloc_from_pool(dev, size, cpu_addr, gfp, dma_coherent_ok);
+>  	if (!page)
+>  		return NULL;
+>  	*dma_handle = phys_to_dma_direct(dev, page_to_phys(page));
+> -	return ret;
+> +	return page;
+>  }
+>  
+>  static void *dma_direct_alloc_no_mapping(struct device *dev, size_t size,
+> @@ -247,8 +246,11 @@ void *dma_direct_alloc(struct device *dev, size_t size,
+>  	 * the atomic pools instead if we aren't allowed block.
+>  	 */
+>  	if ((remap || force_dma_unencrypted(dev)) &&
+> -	    dma_direct_use_pool(dev, gfp))
+> -		return dma_direct_alloc_from_pool(dev, size, dma_handle, gfp);
+> +	    dma_direct_use_pool(dev, gfp)) {
+> +		page = dma_direct_alloc_from_pool(dev, size, dma_handle,
+> +						  &ret, gfp);
+> +		return page ? ret : NULL;
 
-This works fairly well on x86 where the return value of the syscall is
-preset before seccomp is processed.
+Sorry for joining the discussion late, but the line above caught my
+attention.
 
-However, on some architectures the syscall return value overlaps with
-the syscall number or syscall arguments, and as a result the return
-value cannot be preset in advance.
+Why do we need both ret and page? We can derive cpu_addr from page and
+vice versa. Do we really need the &ret parameter? Or, more generally, do
+we really need "struct page *"?
 
-For these architectures seccomp needs to exit without flagging the
-syscall as skipped. Then processing of invalid syscall number in the
-architecture code should set the return value to -ENOSYS and skip the
-syscall.
+static struct page *__dma_alloc_from_pool(struct device *dev, size_t size,
+		struct gen_pool *pool, void **cpu_addr,
+		bool (*phys_addr_ok)(struct device *, phys_addr_t, size_t))
+{
+...
+	*cpu_addr = (void *)addr;
+	memset(*cpu_addr, 0, size);
+	return pfn_to_page(__phys_to_pfn(phys));
+}
 
-This introduces a change: If the syscall number has the sign bit
-set, such as -1, previously the filter re-check would not be done, not
-applying the filter after trace. Now the re-check is done both for
-syscall nubers with and without sign bit set. This would only make a
-difference if the syscall number or the filter was changed by the
-tracer. Otherwise the filter would be resolved the first time around.
+Why 
 
-Signed-off-by: Michal Suchanek <msuchanek@suse.de>
----
- kernel/seccomp.c | 5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
-
-diff --git a/kernel/seccomp.c b/kernel/seccomp.c
-index 066909393c38..9e40a38aaedf 100644
---- a/kernel/seccomp.c
-+++ b/kernel/seccomp.c
-@@ -1318,11 +1318,8 @@ static int __seccomp_filter(int this_syscall, const bool recheck_after_trace)
- 		 */
- 		if (fatal_signal_pending(current))
- 			goto skip;
--		/* Check if the tracer forced the syscall to be skipped. */
--		this_syscall = syscall_get_nr(current, current_pt_regs());
--		if (this_syscall < 0)
--			goto skip;
- 
-+		this_syscall = syscall_get_nr(current, current_pt_regs());
- 		/*
- 		 * Recheck the syscall, since it may have changed. This
- 		 * intentionally uses a NULL struct seccomp_data to force
--- 
-2.51.0
-
+> +	}
+>  
+>  	/* we always manually zero the memory once we are done */
+>  	page = __dma_direct_alloc_pages(dev, size, gfp & ~__GFP_ZERO, true);
+> @@ -357,7 +359,7 @@ struct page *dma_direct_alloc_pages(struct device *dev, size_t size,
+>  	void *ret;
+>  
+>  	if (force_dma_unencrypted(dev) && dma_direct_use_pool(dev, gfp))
+> -		return dma_direct_alloc_from_pool(dev, size, dma_handle, gfp);
+> +		return dma_direct_alloc_from_pool(dev, size, dma_handle, &ret, gfp);
+>  
+>  	page = __dma_direct_alloc_pages(dev, size, gfp, false);
+>  	if (!page)
+> -- 
+> 2.43.0
+> 
+> 
 
