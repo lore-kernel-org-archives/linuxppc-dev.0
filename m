@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-24603-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24604-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 909EDC44533
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2026 14:57:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C240FC44529
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2026 14:57:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h4L8J6spdz2xm3;
-	Wed, 22 Jul 2026 00:57:20 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h4L8q745kz2xqJ;
+	Wed, 22 Jul 2026 00:57:47 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784645840;
-	cv=none; b=Cda2GjMmAekXcdP+fPSH7VmB9kOjOhFcIi4Cpc8QFGAXDEC9pdLw480W+EQcjlqa2DhAH81GzG7BOazUO3nuwZ57d0znvJpTBPy8GApsc56svaFUlPSU08DzJskR3JAiR1x07//LC2y9tMo7jl7SaqsAhTEyM5MZr13VNk1iFVzcfIvZrPwTqmg9iClss7oXXWy1S6QQWmlv7VccPsA6ckPhcDuSjV5fDycSKQx2rzUkm84DlhG/HyspZ9l1DBRAROIJVyXoLPKk1mmKXpz0tLQpogXI8hUX6ZPmo+I5v8NxYgdXWg6jfR55dwMVz4XTqpyXLSg3woxcU//Y58z8Bw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784645867;
+	cv=none; b=GV8e+GthyLpWQlPCw31GLcOUmZ+wf/3f9IqslWhp3N/kICgo9ok/w+bhvGJ5ZvtnP24RK35VF4MRsTpWpVkE3kd6ym5ykHqd9vxT/loxlMelToV1qMMQU4MjxLulgH1Ot686oZh5tHUyyAgW4qWIVsm5iGZZn2sYEQhSSbZbXxSvrNL86wHrK9oJm7UDwzCUhSLXU7bZ1+G+hnrI/zJh2VYoogeXUdItOaNrokA7uc3vu7/gu7BceBzOzyzJbJvR52WPH0YURKH7BLhnr8NNTDoPbTPue08BTgKZabuuX5mErefz2bHlRXmctQnLW5U0QcwRdgMC/qBfzW8tUDditw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784645840; c=relaxed/relaxed;
-	bh=X2h5bpBFH+7npqK5spxeWS5f6StKH/bYQuKFvgmb620=;
+	t=1784645867; c=relaxed/relaxed;
+	bh=FE8BGgQW0fYMcN8NBCYcnkW6qzjkh5NcrjtCMjU8eh4=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=I54mZjDYlFQN9IC5kCp1zprVvutLo4TTd1cOM1nb8JsgClAGsfZTM6JE6qOE/FcoR27xV+Wlz28OhM24ZnMDsviTYuj0M5JoFi7Tr5jlO1Ac//Ro8Hr3m5dJlrD4UnAYIFSqOrCtOMEqOAWKnlvf8n3q55NV/CO0O5ywmlyWEy+sn/8mvAtjcgdQ7cA1TkBrqjzsVAjChOkwQM2Nwcrl+5OCIRVM2D9GGPQeOLMBLHmXS2YZnwqK9AQnvDb7YcTaAcYZgFMLKYJhjfKvuFVLNcblHuq9rBmJ2Sojef/BrD5eL0GL+hYfGz8VWpIlctGv6LAQh/jZl9hMwQfIu2b8OA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WgSfBD18; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=nwic1mHxKWe+6BbmlMJVj9ElO3goKo24KwZ+UelqsQKg7B1fa07+fX2nFuBEvuTavmylxtbXOrOv901QQ550Y0Sv24yACOaMdwGH6ckQlxNOFXS7I30t2Yh42xd6CSVWGyyeSZ8rCqjSVak9S7O0JX5RZJW0/rSipyXGtPcZlaHSsFO3IC4cZILQqdNUS7H7ZZsIILMVgoymtIquhAX87w3IQOB8jQ67U2rUT4biRAVfwa7QA+q3zyXb/cu04+khXeQ2V2PMBPYWhjO4jN+HHy4Ra531AltTpo9A9dotlK+mfUsPNQ5xAFivaDP5GSudVTvKEkjlhkG2Orj1UIO9Zg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CF605gLh; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WgSfBD18;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CF605gLh;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h4L8J053Wz2xJR
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2026 00:57:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h4L8q1zjqz2xm3
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2026 00:57:47 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 29BDA41E6F;
-	Tue, 21 Jul 2026 14:57:18 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 629C01F000E9;
-	Tue, 21 Jul 2026 14:57:05 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id B185842E54;
+	Tue, 21 Jul 2026 14:57:45 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 51D9E1F000E9;
+	Tue, 21 Jul 2026 14:57:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1784645838;
-	bh=X2h5bpBFH+7npqK5spxeWS5f6StKH/bYQuKFvgmb620=;
+	s=k20260515; t=1784645865;
+	bh=FE8BGgQW0fYMcN8NBCYcnkW6qzjkh5NcrjtCMjU8eh4=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=WgSfBD18nsRmmrJbieRHbTVnpndeVh/tD76HjXec6RXFgapMArMcgsdjnj3ag9o+z
-	 gRz5mmhtSTZHrmYy5ISeCHWFYOTq7G1IN/AumKXpJns+CtzdzduEIoHtuwoerwhrZ9
-	 o+cHYXj3YXpuJr8AKYsSMPqZD19eTtjcpMp2+2Cc2bAb4BA8C0oZQBcuuIci3G3RQU
-	 ifhNI6BDFoki0rZELq87NBJ4bnC/uCZ1USuEO623tHk4h8hxI+SQsbYiOmFvQARDUZ
-	 nwmxkjaQnS2o0Ipn8VUe3e09evZb5SLADluS5GaT349oximkYtUuU/T1Q9kT98BPoX
-	 VnzApXzpWL2iw==
-Message-ID: <45118388-cf5e-4407-b2a2-ec67727cc4a4@kernel.org>
-Date: Tue, 21 Jul 2026 16:57:03 +0200
+	b=CF605gLhkL6zeNadf6XOk+7+Xs2t0BTo91YzpcEjV43Dy4ytRnKlrI1fy3IfzLfr2
+	 H237T7YQRtv9qWHYksEwmMf5RE3ZYvRoJSOeXXL+2yh4D1dEUPcTyLwLec9+Zn3EgK
+	 qqCNVLPEojFqEefP3dviDr8CHO/fP2J8TwcR2ZYzx237I42d3HVsZR1VLnvfEXyRKs
+	 0SKBkLrnKLIE8EkkKJgQ+T6TW+p6uojk9GEgxOrVIp+aEpxVUV3oDZJRz7AsXfNubY
+	 ynooLXX47XDmMejrp+qJn7sUW0kyUeIx0eFx+Ch1dtyXdtQo0kiZamHTYgY5ojROd/
+	 /R4xf4Sm53OYw==
+Message-ID: <4da506a7-11e2-4cfd-9f0b-ad8635190e89@kernel.org>
+Date: Tue, 21 Jul 2026 16:57:30 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,7 +60,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 01/22] mm: drop unused __mm_flags_set_mask_bits_word()
+Subject: Re: [PATCH 02/22] mm: move mm_flags helpers to mm_types.h
 To: Kevin Brodsky <kevin.brodsky@arm.com>, linux-mm@kvack.org
 Cc: Andrew Morton <akpm@linux-foundation.org>,
  Lorenzo Stoakes <ljs@kernel.org>, "Liam R. Howlett" <liam@infradead.org>,
@@ -96,7 +96,7 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
  "Matthew Wilcox (Oracle)" <willy@infradead.org>,
  linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
 References: <20260714-remove_pgtable_cdtor-v1-0-44be8a7685d7@arm.com>
- <20260714-remove_pgtable_cdtor-v1-1-44be8a7685d7@arm.com>
+ <20260714-remove_pgtable_cdtor-v1-2-44be8a7685d7@arm.com>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -143,20 +143,20 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <20260714-remove_pgtable_cdtor-v1-1-44be8a7685d7@arm.com>
+In-Reply-To: <20260714-remove_pgtable_cdtor-v1-2-44be8a7685d7@arm.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 7/14/26 16:03, Kevin Brodsky wrote:
-> Commit 39f8049cd49f ("mm: update coredump logic to correctly
-> use bitmap mm flags") added coredump-specific helpers for the
-> remaining masked mm-flags update users.
+> Some of the mm_flags helpers are defined in <linux/mm_types.h>,
+> while others are defined in <linux/mm.h>. We will soon need to call
+> one of the latter helpers from mm_types.h.
 > 
-> That left __mm_flags_set_mask_bits_word() without any callers.
-> This is a special-purpose helper that is unlikely to be useful for
-> other purposes; best to remove it.
+> Regroup all the helpers in mm_types.h to keep things simple.
 > 
-> Assisted-by: Codex:GPT-5.5
+> Also remove #include's that were added specifically for these
+> helpers in mm.h.
+> 
 > Signed-off-by: Kevin Brodsky <kevin.brodsky@arm.com>
 > ---
 
