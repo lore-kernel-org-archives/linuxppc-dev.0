@@ -1,82 +1,79 @@
-Return-Path: <linuxppc-dev+bounces-24640-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24641-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AA1CAC44539
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2026 10:41:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E8853C44532
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2026 11:01:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h4rR71cq8z2ydn;
-	Wed, 22 Jul 2026 20:41:55 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784716915;
-	cv=none; b=fjOuBzjEGiaUWG5z77Q1JRtT1cOXnVV9XbQYCcfcYj3e42VkYBErJbxV9TzyP6cisLpc3GAjqRJDFSWAw0l2aF6k5Lb1074lB7wYrL+vDOI2RhEmb2HcwOF4Axd1h18BjKQA3VuSJYq9OcH5QYMtnK8CGO5FeZ96y3glQyoILk3DlDrJ7M/ahoVx5hBe7TlEqHfGMkWl0qP7Zi0WPWI1cefIrppD8FANj0ZIxP5JiqHmqfCU+SeQZ2sgrjn2P495KU+8vLAuTg0csAYrmF1q8GnuaHJ6y6pols5Y80qWUOJvw6RtVr9fmkduzghKQKZxtZ0HapOgPSwkUNcJ3kdWIg==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784716915; c=relaxed/relaxed;
-	bh=WsrC9+ziIUZXrztaTXCNepnyNzn+NRJNPbsqew/0bek=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=B7Q+rcX9IsA2HrhSQg+r3f/M2XtLminNxshraidi2W7ByyHpDOZKR7xBVLMp7DEv02wTERo8Iiw2l19xH3zDe4HCFBipSKuV/3nvhtjsz7DWPQMZgJ3pjS49Mho1I+gyNeTH/fGTKToFLRJCdkWG4V2X5kTowBfhBHJ3yThoFdddvGQiBOYqRVVnAi6MeA28CJlDGBWJPRoEzzMNNCwvKR4MxHUWcJ0yntpcjdw/JtK6moJsEC+aKS0JHyLUY7rxcHkNvFfY0D4peAxeFpo8pdMup4ny9DsqNiLTMyClagWwAwBGERaUwPnkzf4dbWduKVM7HSfFUHaYv0Jo8Qmw7w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ER3wBCCz; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=skb99@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h4rt206QVz2ydn;
+	Wed, 22 Jul 2026 21:01:46 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c20f::7" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784718105;
+	cv=pass; b=OB/z1eOot/gvNxJ/jruc7TDzsTDk1FZ3ibPHS5Mbz7JbjqiZDPBry0mFydKJjU0U2jljsB8voD/wv2Yj0B0f+JZNBT+l1aG3Y7tpRAKM5V1MGYq+uvrHa5TPDCt9VO22hl771AVBKD+/6CCRA4tzqtlrF4nJI2wTfy7hLj5YAkAF7cXyERe/5YQBZLs6feKgALbX6bMsPUi7AoMW1jYD+uJQQvXJ23xbqQLBuPw+x7N026Vy5wM3/lUZxhzGMxueTVNRSIZIxIeJSOz6Vu+8N36FoIcryIUPr8SIvVtccSOZDG532BajlOQHIzQI1Qs1DR0sAjRfth7l8PmIQzh4iA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1784718105; c=relaxed/relaxed;
+	bh=sVMK55xDG6B3zAQsQTMbDzUHCdtkVL0JfcOKf5RzWhk=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=e7rfonLRZj1Y0gbjKDSysdbrKNEDb0HXpQ0lB1f3/WpT+ZXErQhNTE4hz51hBDxG9k3+1kR/tr24qWVNaDMmkKsMP5fIePWVq4FU7Par5TUtVMyXKRmII471DBMaZatIbW8ZsadL2rfFvOZrkAlUASAzaCa+DzU9d9nI7cG3zcAZka5zjKyfw9MyZBz9Yb2KOqANChobQZoTdZLnpMIxNbO8gRnCFYbTr30WD2aMJUOYX8/V2fFqvR8pvd4cPv2Ol7o15dmwQI0aoTtgVIv+J9FuP4Dl2gKlQM2rJbVfdfd0mWjg4ZEvnEwyv7dLhnD/ufJMLiF9uDbISfRMO3lh3A==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=OL4Fjnxl; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c20f::7; helo=osppr02cu001.outbound.protection.outlook.com; envelope-from=ioana.ciornei@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ER3wBCCz;
+	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=OL4Fjnxl;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=skb99@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c20f::7; helo=osppr02cu001.outbound.protection.outlook.com; envelope-from=ioana.ciornei@nxp.com; receiver=lists.ozlabs.org)
+Received: from OSPPR02CU001.outbound.protection.outlook.com (mail-norwayeastazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c20f::7])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h4rR573Ddz2xLm
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2026 20:41:52 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66M9C6Ku3592524;
-	Wed, 22 Jul 2026 10:41:39 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=WsrC9+ziIUZXrztaTXCNepnyNzn+NR
-	JNPbsqew/0bek=; b=ER3wBCCz88cm7YphNArQ4svw0txKwX8UMKLiC6n/Vm1Xf2
-	hrwBqevxJz9KedaqbrLFIGKOtl+uDp2j5l+O7ZDSh4WtiA5EdGUFLXv2RufZcRDx
-	NlMRIaBU8cPRrGG4IYPz6BwmGxdEbnL+3wobmE6Bqmb/QgheodxYgk2nXiLHcjjK
-	KQOw6bodUTnkMOHN2PV367UeT6CI4DXDBH1PnLu84kqcGSfESB1pA9TPhqZ9gWcr
-	L6hBNWbSh1zhs4zbHde5m7DCseVM92ithne2P0vpx2FGi5O0nwYTQiEwd3GnKw3U
-	wb9fStI+I/xvEA95US1pYXnxdZk+rFVVXzgbBlaw==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fg77k98j6-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 22 Jul 2026 10:41:38 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66MAJaLw010522;
-	Wed, 22 Jul 2026 10:41:37 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fgp1gepvq-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 22 Jul 2026 10:41:37 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66MAfYjv50659598
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 22 Jul 2026 10:41:34 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id F126D2006B;
-	Wed, 22 Jul 2026 10:41:33 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id CC65E20070;
-	Wed, 22 Jul 2026 10:41:30 +0000 (GMT)
-Received: from linux.ibm.com (unknown [9.124.220.116])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Wed, 22 Jul 2026 10:41:30 +0000 (GMT)
-Date: Wed, 22 Jul 2026 16:11:14 +0530
-From: Saket Kumar Bhaskar <skb99@linux.ibm.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
-        chleroy@kernel.org, hbathini@linux.ibm.com, venkat88@linux.ibm.com,
-        yeswanth@linux.ibm.com
-Subject: Re: [PATCH] powerpc/irq: Fix missing r2 clobber in PCREL inline
- assembly
-Message-ID: <amCeSt9ygusnVhX5@linux.ibm.com>
-References: <dc021f42afa10396052499cbeda1772e30b7ca64.1784530547.git.skb99@linux.ibm.com>
- <al33jmn9PmMJwYlz@gate>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h4rsz6yMTz2xLm
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2026 21:01:43 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=v/SwW2TRg4R9d8wzAvRo++VQ8QjihDBEefCLWeMiDCCQ+t1hxcgH9BFOE3RbvtP1KW6wqRkiIoj0xQwbfuvyW3qkgzAfP/ZtVMJWyD3t7uncOyY0O/a1YKZAR9EjfRoSgDoxPVojtX1HoJ/mIR0QqUylKs9C4kyixPWMjRE1xxuX7KXn/f395IICkgTYev6yEEJpFsft5MYtH/+EcKrcOVkTsVVA8aDEjNfuZlGCvxX3ffQunl6u3vWtnpFKxVDyl2Vhv9ykvNT1Uqvsc1eHWqVl1Ob4v/Vrg5SyFZSDORGWdFJfoccp43IX47q3JWznyVf7phgToEX92kvA+UWCmA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=sVMK55xDG6B3zAQsQTMbDzUHCdtkVL0JfcOKf5RzWhk=;
+ b=W1xmZDkmy8j67iRDxxsOgM+hS0b4uow9EsR3tj1CECZ3lrxH8IyRq0XH+2wjnX7VCXpz7B8bPuLMVrRsp9V65tkuhgGh+JkzaDNvEhLZrmltthCOTg+eeA7YpSjM7S2w/CpLKoi8gHzXc09T1vlf4C4zfb9kLSQxymF9LKuTWfwxQkQdOPGhXuzHXpGiW3Mjs6ZZ/RC7fXaMBcLBSaX8RJBZc+A8Va5DvuCpgn+Cz7g+eH5Yeh0VhkGlhGHcq3hAaabPtsDyN/WCAp0UyaSSorPvqCK6MTkSN4KKfiyPfUWzvDxwhD8fAUcEW2/94g3nnorT25MIZ2UCxrFz9cjchA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=sVMK55xDG6B3zAQsQTMbDzUHCdtkVL0JfcOKf5RzWhk=;
+ b=OL4Fjnxl6Xed7JK2NKozlSckAOBj9GS1VZW7bBYEw7Rxr9xC0r5lZQFMoKVZ53FWWE/q0YK9s6UhwfiBm9gWa76f7D5RQluFfRb99jL0VOA//s5f6ClGwgwAYjLWNslC+55Lo+12ouayN3l7MbVwOu2BB0VkxzyN3IqY7nEU5i6y6jvLL4ITrs/wnOEdeQ4UFPknE1/T40vDSsh9eWN/IiJaq0RLa42WpXN3ezhAheCBj4uokd8kYMcXmjTlwQp0O+zJylysTWkWCOch1lrandOlXJX/+M011Fkm8vAMOWPLFGdRmGtXvLSvOlWpGpMopV8ZeThxfUmzICUeGwg/iw==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nxp.com;
+Received: from GVXPR04MB12290.eurprd04.prod.outlook.com
+ (2603:10a6:150:319::13) by VI0PR04MB10805.eurprd04.prod.outlook.com
+ (2603:10a6:800:25f::22) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.223.18; Wed, 22 Jul
+ 2026 11:01:18 +0000
+Received: from GVXPR04MB12290.eurprd04.prod.outlook.com
+ ([fe80::1739:3404:2175:33dd]) by GVXPR04MB12290.eurprd04.prod.outlook.com
+ ([fe80::1739:3404:2175:33dd%6]) with mapi id 15.21.0245.009; Wed, 22 Jul 2026
+ 11:01:16 +0000
+Date: Wed, 22 Jul 2026 14:01:12 +0300
+From: Ioana Ciornei <ioana.ciornei@nxp.com>
+To: Vladimir Oltean <vladimir.oltean@nxp.com>
+Cc: linux-phy@lists.infradead.org, devicetree@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, 
+	Vinod Koul <vkoul@kernel.org>, Neil Armstrong <neil.armstrong@linaro.org>, 
+	Tanjeff Moos <tanjeff.moos@westermo.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
+	Michael Walle <mwalle@kernel.org>, Shawn Guo <shawnguo@kernel.org>, Frank Li <Frank.Li@nxp.com>, 
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v4 phy-next 8/9] soc: fsl: guts: implement the RCW
+ override procedure
+Message-ID: <xumth3wb3bvui6ywrithgazf6fombn42hisikprtywkbuexypn@kugdqyce226c>
+References: <20260721231603.67865-1-vladimir.oltean@nxp.com>
+ <20260721231603.67865-9-vladimir.oltean@nxp.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260721231603.67865-9-vladimir.oltean@nxp.com>
+X-ClientProxiedBy: FR4P281CA0398.DEUP281.PROD.OUTLOOK.COM
+ (2603:10a6:d10:cf::16) To GVXPR04MB12290.eurprd04.prod.outlook.com
+ (2603:10a6:150:319::13)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,103 +87,84 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <al33jmn9PmMJwYlz@gate>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=HJXz0Itv c=1 sm=1 tr=0 ts=6a609e63 cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=kj9zAlcOel0A:10 a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=QfpCyNM8KlB_h1IiE5UA:9
- a=CjuIK1q_8ugA:10
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzIyMDA5OCBTYWx0ZWRfX8LP3msKbVmnz
- oKzvKukWIwzC6yCAndnNCWtv8JkLi31RDc1V7zS3rOAD6n1Hns1OsA2qDzCSp/7d7HFmZ8wBoGw
- XuOH+vJtSaagRTOy6ohNP7KcRwX2BrgusB5js4ELmHWHA5pV4h7rxB2kXZ5uAz6dIvPu6viSUyV
- +IA4RqNLSmRVuDdRt+3rp4fbaXvkKJuRSfhtIPnV1M3/1p18BNFiapGlc6fwMSFGQgoeQXRU6Tp
- qoDFXigMonfKsSFsKGiFFpwwe6wdXOmnfbxqx4SkgEyPRLtr2VhlQqLzIr9tMFjmTivZBrP2OTV
- j+UpdeUvJ4YUnb0KqIjrU1FN2U710ZQVo3RbRq+1VeTQmVyfMT7XE0PUdje7eEKhkCxcY62O/T4
- c1IsmuPptavA8qmqRru4muqk/Ethunozbb6deuvz7xcr1sacbB/A/PSM0dEJ55UkWahFJ6k6MBT
- UZdRxgIwlj7nVtSgh1Q==
-X-Proofpoint-ORIG-GUID: SStoUwGfBLGCEfxv758EmCz_S3HYIYon
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzIyMDA5OCBTYWx0ZWRfX6+vYQ7RmSwde
- 08Ufqg7ulwEzbbvK2KgkuUiXSoffdAoW08gGIlqRo3prXUB4JDWnSvOYG5nkxAuAvg8sgp90dq7
- Bn0Z67ko2JsTqhceUNVDlAEVeXFR4wU=
-X-Proofpoint-GUID: Oi4oJgHey68BdrMq8G81AWCzJR5sIYib
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-07-22_03,2026-07-21_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 priorityscore=1501 lowpriorityscore=0 suspectscore=0
- malwarescore=0 impostorscore=0 clxscore=1011 phishscore=0 spamscore=0
- adultscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
- definitions=main-2607220098
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: GVXPR04MB12290:EE_|VI0PR04MB10805:EE_
+X-MS-Office365-Filtering-Correlation-Id: 11ac55c5-a0cc-4f4b-031f-08dee7e08d5e
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|19092799006|366016|1800799024|23010399003|7416014|376014|18002099003|22082099003|4143699003|3023799007|10067099003|11063799006|56012099006|6133799003;
+X-Microsoft-Antispam-Message-Info:
+	gPhVywYvXAD6cxc/nEnVAwOIneunXOWblsvzWXrgxIigLsyTmVs+Pcde2Q1LxZ8wbo3v8UX125tZg95i7HRibOxt7iSPqtssAaFsEGF5ns5+URsHnXyZacmtuzaiCyW+nu6OTJHDs20fXgEdT5F/j+iuTgN6Q2sRl9lOjVJaL2ZTj2GkdItE3l26zx6wWShYzl1VYNSs2ZU7ce5TgoAQdxpaXkjhVT/XdcPDBugNc9Op+Yld1ts7r4zwPxEfq0ogQG4ZU6GZ36oNBE1DxTowMYDa+RF2JiHDZ2WlUQCa4p0rFe9N03w6KbXcqYQf4WloNnyxY1cfQFrYRvXoWm8i1X4c6wTpqRJ3qwBMW6DwW4LfkP93CH5UVrDmBIE7LVxQdHLO0eo74im9wOnz6a4wOUZnn+nHlxGYWyqV3u/B3mkAzENL2zkzz5jUG2vP9UjJ9vN2LNdVQml3PwKr1SJaY8pwWuebFfGyh80DR6JWs60j0r5XODBwyeSGp5vVdcMVyN+tYGAQw/P6OJHejI/akuIl7AV16fiM4KkDWCjghOPNhekzNWRY2P5e+niXWeQtTCQ4/ebAC6LJajiOLDqvfwHWY/bzQlDuQhPnOARkIrzgH/wd0yQgKDIQpbTuOscfprVd8eWEkl80HvBuHMnYGQ==
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GVXPR04MB12290.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(19092799006)(366016)(1800799024)(23010399003)(7416014)(376014)(18002099003)(22082099003)(4143699003)(3023799007)(10067099003)(11063799006)(56012099006)(6133799003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?1i5me2SzcPvYHupJr5lL7hv7F+asRuH8H/zUJWxna7FIaw0sRcBEsSy0t28N?=
+ =?us-ascii?Q?hZsb75u3kXNrq5rAxSWEVFQmqsrMjv6tJoQm4b8FeNsS+rp26HhmqMlVXc0C?=
+ =?us-ascii?Q?3X63xa6oWAMv3B4mpPJX4fjPG0grd19SabfxPVL0+5xNEs+nNHjN3XUdEXy5?=
+ =?us-ascii?Q?r7CVeEOBVedwVb/lbyRVklVFWAXENOmaBmJ0S4bixvbzHQAqEBvbXJWM0fqe?=
+ =?us-ascii?Q?xzVJEck3rJPkiFeAYHkuNHthHw/Gnddfm6ExxUaPTOsw0/PHbWQiKmUY8eoW?=
+ =?us-ascii?Q?H9SNj1Xkosms/s3OD3slmehN0MqW+e96wPmPXYqvzVxlKdSvQv2JbZQ7XvgU?=
+ =?us-ascii?Q?L4GC0+3059bCm6Tj6VDodnFBsCUl/tMrk1wHUg6Mn6bXMYD2s+dZo9OVGiEi?=
+ =?us-ascii?Q?fVCpicI3myiwoKuj/OA+ruMDjJBLgmHLAPxaPX5udP3KyO72NDDGbwb9tYTP?=
+ =?us-ascii?Q?BSpR2KoTkXqIDE8TKHhOAY5hGzci2S+dRcyc/C0xcjpLkqIi9TN1t3cgXvZl?=
+ =?us-ascii?Q?0LKeuIopB2CbdDcgx0eluU7/Y9JOQn31E4RiQQ1ysdFdfE+I9C0E9CcpWi8W?=
+ =?us-ascii?Q?NN3YyvmRh1ItK0k3hgVCAKUwYPmc718gC3kwUs0PvjS2NOqy0IUoPj/nGUf1?=
+ =?us-ascii?Q?0tghR6C1WFpaDCYerPNrnpp+YxWj8XmRWxWqM8C+72qqdnwsTi6M0guuLvuX?=
+ =?us-ascii?Q?Xch0FdSa0ClxEOYlcYjXFbwGxno9S9UpoTHnwAEHgl5LYal8WsCXY8yhRlV9?=
+ =?us-ascii?Q?ceShFol1Z6jX9gdzXEkgqe5Mr46CEve1U4XCZdCx8fuGahecXkQ9e08b9rzw?=
+ =?us-ascii?Q?44FDU4uERf6JBDCL1DecCViyfo9jvMfAlqe8kAuiRZQr5QDrTAHhc3vsznly?=
+ =?us-ascii?Q?A9gtJulSoNzhEuYfjZVkHbZP7Do83821vvmT8VfC/gJkoRrx2PQ9KWnAfqCo?=
+ =?us-ascii?Q?vQ5j3n9bIIp2lIoUXc2+U0T1IdtVyQ8TtFeXa3AqQllvwAjab4in9JPOjZ8Q?=
+ =?us-ascii?Q?tMgYyxwP112x2RXv7TyNuV+IqtEIVdrh/R/yfaVl59FMiZMtZ1TwZtAmP1bw?=
+ =?us-ascii?Q?6iKzAlhmgdeZ4vcKeL4bhBB0Yr4twobZQTp/2BjZiDOULlUhUXrxxZ5fEgE/?=
+ =?us-ascii?Q?3sGP2RLpnkJql7dFKiT1payYvUh8ttarx6RQ9yCuoqq4TIcVLP2snfkLs37x?=
+ =?us-ascii?Q?1RdaBgDQ8uXOCJMLmuluNPKKklGUJgPwVW2ZaVth3uibtd5QvBajYj+tS5KH?=
+ =?us-ascii?Q?mYKJcn3YSdFxluD+5xGE9J6S7vqUue1blWVsQlYZ9G57Iznsxf9X2wLlq7Ki?=
+ =?us-ascii?Q?a6UhELgsbB3LtvCIGtK40P6tMqxXxRHkspKQ57a2f0JbP8zVA2XkeikqgPKk?=
+ =?us-ascii?Q?DD86wSuRyHeFfxmddsHOBbzSCvbSPr6NBfR6IolrcVnoxDZsftxIduNHmI29?=
+ =?us-ascii?Q?nI+KhbORfmWvvZ7tAWMsFC3+sqGhdMRjLmQ3fijOFs9TkwueIAI01OKRrsHW?=
+ =?us-ascii?Q?gzzvjO9U3+uodHyWXnWAtP4YoMw5H/G8wij99TH2PnMqAXf6YI+u4oNpqQGj?=
+ =?us-ascii?Q?LQSPFrD+i6T5/9zA5+3zLe+XUvn7IjgM975m4GOSWjk7v9HIokHAbOUQZkH/?=
+ =?us-ascii?Q?drpHss8Hf2ZUDatPljWf8AUDO/GXRR0xtDdvofEusQUZFN5xhG4zj+E2YMyB?=
+ =?us-ascii?Q?eTInKlIaqzZGK+rap5mIIrhBoReM3ObOrjHuFlzu9LoNvMAwng+6snTMo3AJ?=
+ =?us-ascii?Q?V3ifIL9tqw=3D=3D?=
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 11ac55c5-a0cc-4f4b-031f-08dee7e08d5e
+X-MS-Exchange-CrossTenant-AuthSource: GVXPR04MB12290.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 22 Jul 2026 11:01:16.4864
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 1i7dCdyiGJ+Qxw/f+Xv8fFr4Oo6m9qilIi4vWB2xVHcyQO4Q0L7SuBdkwm9HdrJ8JFTfRFvRaebq+8TKW5VF9g==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI0PR04MB10805
 
-On Mon, Jul 20, 2026 at 05:25:18AM -0500, Segher Boessenkool wrote:
-> Hi!
+On Wed, Jul 22, 2026 at 02:16:02AM +0300, Vladimir Oltean wrote:
+> Add support for the RCW override procedure which enables runtime
+> reconfiguration of the protocol running on a SerDes lane. The procedure
+> is done through the DCFG DCSR space which now can be defined as the
+> second memory region of the guts DT node.
+> Support is added on the following SoCs: LS1046A, LS1088A, LS2088A.
 > 
-> On Mon, Jul 20, 2026 at 12:43:47PM +0530, Saket Kumar Bhaskar wrote:
-> > In CONFIG_PPC_KERNEL_PCREL mode, r2 is no longer reserved for the TOC
-> > pointer and is available as a caller-saved register [0].
+> The procedure is exported to the "client" driver - the Lynx10G SerDes
+> PHY driver - through the following functions:
+> - fsl_guts_lane_validate() used to validate that changing the protocol
+>   on a specific lane is supported.
+> - fsl_guts_lane_set_mode() which can be used to request the RCW
+>   procedure be executed for a specific lane.
 > 
-> Just like on many more ABIs.  Yeah.  It's the first that PowerPC Linux
-> supports though :-)
+> Since the RCW override procedure is different depending on the SoC, the
+> private fsl_soc_data structure is updated with two new per SoC callbacks
+> (.serdes_get_rcw_override() and .serdes_init_rcwcr()) which get used
+> from the generic fsl_guts_lane_set_mode() function. These two callbacks
+> hide all the SoC specific register offsets, masks and values so that the
+> _set_mode() procedure is straightforward.
 > 
-> > Both call_do_irq() and call_do_softirq() use inline assembly to call
-> > functions with stack switching, but fail to list r2 in their clobber
-> > lists. This causes the compiler to assume r2 is preserved across these
-> > calls, leading to register corruption when the called functions
-> > (__do_irq and __do_softirq) clobber r2.
-> 
-> Yeah.
-> 
-> > index a0e8b998c9b5..26df38bdd334 100644
-> > --- a/arch/powerpc/kernel/irq.c
-> > +++ b/arch/powerpc/kernel/irq.c
-> > @@ -218,7 +218,12 @@ static __always_inline void call_do_softirq(const void *sp)
-> >  		   [callee] "i" (__do_softirq)
-> >  		 : // Clobbers
-> >  		   "lr", "xer", "ctr", "memory", "cr0", "cr1", "cr5", "cr6",
-> > -		   "cr7", "r0", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10",
-> > +		   "cr7", "r0",
-> > +		  /* r2 is clobbered in PCREL mode */
-> 
-> "Note that r2 may be clobbered in the call, when using the ELF V2 ABI"?
-> 
-> PCREL has nothing to do with it.  Well, not directly :-)  And the
-> clobber list does not specify registers that definitely *are* clobbered,
-> but registers that *may be* clobbered, instead :-)  Registers that *are*
-> clobbered are in the output list (and given a name there so that the new
-> value can be accessed, etc.)
-> 
-Thanks for the review. Will send v2 with updated comments as:
+> Signed-off-by: Ioana Ciornei <ioana.ciornei@nxp.com>
+> Signed-off-by: Vladimir Oltean <vladimir.oltean@nxp.com>
 
-r2 may be clobbered by the callee when using the ELFv2 ABI.
-
--Saket
-> > +#ifdef CONFIG_PPC_KERNEL_PCREL
-> > +		   "r2",
-> > +#endif
-> > +		   "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10",
-> >  		   "r11", "r12"
-> >  	);
-> >  }
-> > @@ -276,7 +281,12 @@ static __always_inline void call_do_irq(struct pt_regs *regs, void *sp)
-> >  		   [callee] "i" (__do_irq)
-> >  		 : // Clobbers
-> >  		   "lr", "xer", "ctr", "memory", "cr0", "cr1", "cr5", "cr6",
-> > -		   "cr7", "r0", "r4", "r5", "r6", "r7", "r8", "r9", "r10",
-> > +		   "cr7", "r0",
-> > +		  /* r2 is clobbered in PCREL mode */
-> > +#ifdef CONFIG_PPC_KERNEL_PCREL
-> > +		   "r2",
-> > +#endif
-> > +		   "r4", "r5", "r6", "r7", "r8", "r9", "r10",
-> >  		   "r11", "r12"
-> >  	);
-> >  }
-> 
-> 
-> Segher
+Reviewed-by: Ioana Ciornei <ioana.ciornei@nxp.com>
 
