@@ -1,81 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-24643-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24644-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2AFA0C44536
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2026 11:40:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B25F9C4453E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2026 12:34:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h4sks2Hdnz2xLm;
-	Wed, 22 Jul 2026 21:40:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784720437;
-	cv=none; b=j823A4nn8x0xb6c8L15z98GCcG5qoAICd5ki0/xrqx4wrAKupqBd/0HEZoQpQOINUgBCLZaqxB7QiL2QL14UeFThGF/MeH5SAS69meXGgcrqK89+2t8F3mFVuck53tQ33DMRnSqhukmIAYWxCh7ZmGmnAjUNWdPBoddpGeXhKWQ/6MSXLV5rIJOHMBTZ0JlvJu0OslvlcidTfXVktSwmSt03ClvRxs+2BDzf715RhTuqlhVV7G+gxxtmzRlzga0brrq3XIskS1liMj0kaeLWOV/FciP1QUB7A2sImUGMpmvtonP2INp2yDt23wkgm/QfTvV3YcEZ3CBSCj/vdQmEDg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h4tww1WFrz2y8p;
+	Wed, 22 Jul 2026 22:34:24 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784723664;
+	cv=none; b=g+aL+j4n5hbyFAVRdZ09D2I0ccnXvqwzQb28puq7L+o0WymJd5twTLGCxyE4Ipctm08TUfF+7gzktUS2cFV2xYb6iOz/n8yBGpAxgeFzPR9sMKN4GjScbZofnx3T4xgLQqGTqDtmK3hrbrOSkPCYEYx0sIymzUH8hJYFRGWTejMe435z/16RMIpDsq+nBDq8r7P1kc4dofkIPd+YuUVs8QiXKP5LXlxLe41ytQUBrdCZs4clyQT6iowygffklwyX3Z5WejQb4StYrWHKBmwtmZZlwoIlTBEC9gVDh4ivWN9E1hycNOLVYl8nFIDxYVCSrcEExrasG9aKaIpa9lp+qA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784720437; c=relaxed/relaxed;
-	bh=w7d7iOIr4JYo5xD1xds79ix5oGBdZQ9fFETxdf9csPQ=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=eopk51VOqjnmYGVSJD6y0KqqFQerg2RUanAEMyqp4EBvq7O4H6rxRq66aibr0A/BtbQ+UGW3Zlff47bn0aPfYeUpdyzhmYLDTNUqibSIaTj8PdAiM5F8S5Zk/BEkVUGOeIFWyOqp4/bGx8BPpofrUj94DG2bTIJqzGKozBvweFqFtdlxJ8yo3ruCKSTLdCT4EM7J8IKU9gX3hKB9nZJgKQzgJWcIZmJzsVUBwmRNbWMcH+FxIgS1cYX1C3rmm1jp5JOSaxaF5/Mo+6qiiWOlMBCCF0by/8icHTXc5/fG57sSeaWmrO1kW4UTk6bAZLGqVGtz1ts10K4hbQWDMbhtrQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DX4QAEx+; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=tshah@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1784723664; c=relaxed/relaxed;
+	bh=UnTZnEO1RmvpgW4LLUlogfu73djdSpGYvoqvHkTazF4=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=RL/507tz/0vMvXVfJr2ZOvovUMNelf8v+z93uw7TIPf53x65wqj3Dc6Q9tD1NgeaSKD7mpLSACZYno1TUl0OjBl+zcNRv/3crMEnqHHtk8vR2fK2lUgvacp1xYjWcTEQ//xAgOodyA3yE/WnJJuqgLcxdjtxQfCzkt8VqXXNVUEKC08scgfpSdM7XYGGIpm01DQduF1NEhRXZExJrtI7/LWo5CKUhHRsfl9fp/HVPmkKT8kroL5AxBbpUOC7jRCtorQsVxSGiVmRgyuMuetsCZD65EtkiRRm56QAid0fKjHzSQsgQ5H/O1aTYHBTNsiYvvCQ7vMbdC7GP9Tcze3RwA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bzvHdx8L; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=mani@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DX4QAEx+;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bzvHdx8L;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=tshah@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=mani@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h4skr0cm1z2xJT
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2026 21:40:35 +1000 (AEST)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66M9Bt0k3671763;
-	Wed, 22 Jul 2026 11:40:27 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=w7d7iOIr4JYo5xD1xds79ix5oGBdZQ9fFETxdf9cs
-	PQ=; b=DX4QAEx+CWVySPpwTb3BJNV1hTrxK9X0Qhyw4ANeKn64Uqms9XFalM/8D
-	8jRf7SGZnOBT3RU3qNvgJKMnNTALLPR5WDWFPy6DmsBWM6YMCVt3SIcTce/+IOqc
-	HxE0WPKldUAOyehUnFQ0dJOxSzBtwbZHfNsscBEJjJ0asLov0NGjkJQG+wUbbdCh
-	ZHJ18M6Cm9esI0zSoS+YWcN1HX6Xo6AadXY4754mqZSM41bCwasFdhGQ6+s2Fivg
-	BWffYBR6ck2YAutMB4WQxwk1EMCZglu9HjPM8sQocF3RY52bR7kHwpLtX6qv8PDv
-	c2ecE7fFaDMZO4WExr23PkcdiknFQ==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fg7ah9ds6-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 22 Jul 2026 11:40:27 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66MBYdt0001355;
-	Wed, 22 Jul 2026 11:40:26 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fgp1gevdd-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 22 Jul 2026 11:40:26 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66MBeMrD32506170
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 22 Jul 2026 11:40:22 GMT
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B6CB62004B;
-	Wed, 22 Jul 2026 11:40:22 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A837C20040;
-	Wed, 22 Jul 2026 11:40:07 +0000 (GMT)
-Received: from li-4c4c4544-0047-4210-804e-b5c04f423534.ibm.com.com (unknown [9.39.17.145])
-	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 22 Jul 2026 11:40:07 +0000 (GMT)
-From: Tanushree Shah <tshah@linux.ibm.com>
-To: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
-        vmolnaro@redhat.com, mpetlan@redhat.com, tmricht@linux.ibm.com,
-        maddy@linux.ibm.com, irogers@google.com, namhyung@kernel.org
-Cc: linux-perf-users@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        atrajeev@linux.ibm.com, hbathini@linux.ibm.com, Tejas.Manhas1@ibm.com,
-        Tanushree.Shah@ibm.com, Shivani.Nittor@ibm.com,
-        Tanushree Shah <tshah@linux.ibm.com>
-Subject: [PATCH] perf trace-event: Fix buffer overflow in read_string()
-Date: Wed, 22 Jul 2026 17:05:54 +0530
-Message-ID: <20260722113552.191143-3-tshah@linux.ibm.com>
-X-Mailer: git-send-email 2.54.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h4twt4yZPz2xBb
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2026 22:34:22 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 0E175600AF;
+	Wed, 22 Jul 2026 12:34:19 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D017C1F000E9;
+	Wed, 22 Jul 2026 12:34:11 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1784723658;
+	bh=UnTZnEO1RmvpgW4LLUlogfu73djdSpGYvoqvHkTazF4=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=bzvHdx8LoV6t9yiZxpbzqhBsdprPK4HsXqvJ40GzizC08zdeQ6izK0Njcytxoqz/m
+	 qZ6os7sPm0i/jHQ4UkxtoU+RTGzMLVkV4DuBqCdX6SoSvik3b1tBTTgEZNKF9S6NSK
+	 ObP5a14FZxCSqlPzlXcBd0h1S9o4cXMlWKa1hSwDH4IC6ioTLLqhcY8+To9HiGHel/
+	 79ott/JeefLTFIsGvRVdU6VgheaTqwLovfBhYBNlGgPQBzu5rCVKgYk8dSpA079QRf
+	 ihhWOulVs7cjZ9DaZIrgz8o1dAX/rTQfFu8z8VtqSqeeoWNxnRTA6wlxfq0HU3qJYl
+	 tB+dIONxnwnmA==
+Date: Wed, 22 Jul 2026 14:34:07 +0200
+From: Manivannan Sadhasivam <mani@kernel.org>
+To: Niklas Cassel <cassel@kernel.org>
+Cc: manivannan.sadhasivam@oss.qualcomm.com, 
+	Bjorn Helgaas <bhelgaas@google.com>, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, 
+	Oliver O'Halloran <oohall@gmail.com>, Will Deacon <will@kernel.org>, 
+	Lorenzo Pieralisi <lpieralisi@kernel.org>, Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kwilczynski@kernel.org>, 
+	Rob Herring <robh@kernel.org>, Heiko Stuebner <heiko@sntech.de>, 
+	Philipp Zabel <p.zabel@pengutronix.de>, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, 
+	linux-arm-msm@vger.kernel.org, linux-rockchip@lists.infradead.org, 
+	Wilfred Mallawa <wilfred.mallawa@wdc.com>, Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>, 
+	Lukas Wunner <lukas@wunner.de>, Richard Zhu <hongxing.zhu@nxp.com>, 
+	Brian Norris <briannorris@chromium.org>, Wilson Ding <dingwei@marvell.com>, Frank Li <Frank.Li@nxp.com>
+Subject: Re: [PATCH v7 0/4] PCI: Add support for resetting the Root Ports in
+ a platform specific way
+Message-ID: <fij5nuydnb7d6o3i7mwq2nz64wnkicr6hgs4r6dpv6uca7cnyf@ujn4andla3iq>
+References: <20260310-pci-port-reset-v7-0-9dd00ccc25ab@oss.qualcomm.com>
+ <abFMa6DCGGLUHddA@fedora>
+ <dp2rem4gj7zhfgykvekmcrhq4ticm6m6ido6tbgflwzfcuuwkl@4wuxgle27eyx>
+ <srdn3bspgwff7f7tnst7wzg4us4buifrv7o3ylo527hmuciyl3@6ioyrl6rfhaz>
+ <abk3rU2EDKjkefUD@ryzen>
+ <tgsh3cum6qxrqjzbdeqjsp6bf7cqedj7il77hww3oxecadndin@idjnwib7cz4z>
+ <agybt3onTAJO2Dl9@ryzen>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,66 +81,100 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: IH3K8sC4xbwUZdRWUfkS5Z0-Jx0su8TV
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzIyMDEwOSBTYWx0ZWRfX4gSFAA3ui2d0
- rjpy8C5s+b9ypx7epq7Wmig/LJLlCdc6JPyjE6U70FZWVGAT33+JWJI22H/F7KEVRfBYEd58oMl
- HrFcAbKYi4HNLFDAI7YURk9jnyDC+i1ntDEQ9v5ySHZvdQ7JNghhAbbV2W7IdAn0ZGlwtalRQW4
- au/JQ8YMpMXr+h0ix+dSXVpL+uYD8k0nPL8ZivN33RwNBqntjXTTx2VqSYdvM/whzHnppEszqKE
- oY+Wu+9Peywh/QlI+L3DYaoYxUowCalFtywHrqILB5WqkRxMCsj4ugTTrgFaTWZWKZsUobPi2ul
- C/szwV8Kfa6amjC/tNSV+1j0OxZce38QdXxPL0ZhSiadPkta9vAfqwZlhVPUsOs5fUM8aXxHqLM
- KDkkViN2YHgJT90kISDn5BfKTFbF8W1Ppcw8rsDi+A9gOfuejpUbdZoz8eE41k2XhLu3nQHdUtI
- q5Yfkmh2soDibzAxGSg==
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzIyMDEwOSBTYWx0ZWRfXygLOrSfbec70
- ZcLSlSrRoW21WB1hqnpwRE2RSVW+53drel6vd5W0s6cXbRugDimoXxmZEw2iqQ1nxn8XevIlUXu
- otNv+xW2g5ZYmdGasGvGRxNoYxtKfpM=
-X-Proofpoint-GUID: 3KK8R3ZqYVz4hUkQvnfmDDtcy9DTfAnm
-X-Authority-Analysis: v=2.4 cv=SM5ykuvH c=1 sm=1 tr=0 ts=6a60ac2b cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=RzCfie-kr_QcCd8fBx8p:22 a=VnNF1IyMAAAA:8 a=dRiuFSZL0wyzTp01T68A:9
- a=zgiPjhLxNE0A:10
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-07-22_03,2026-07-21_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 lowpriorityscore=0 bulkscore=0 suspectscore=0 adultscore=0
- spamscore=0 malwarescore=0 priorityscore=1501 phishscore=0 impostorscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607220109
+In-Reply-To: <agybt3onTAJO2Dl9@ryzen>
 
-read_string() writes into buf[BUFSIZ] one byte at a time without
-checking 'size' against the buffer bound before each write. A
-string longer than BUFSIZ in the input overflows the stack buffer.
+On Tue, May 19, 2026 at 07:19:51PM +0200, Niklas Cassel wrote:
+> Hello Mani,
+> 
+> On Mon, May 18, 2026 at 11:51:56AM +0530, Manivannan Sadhasivam wrote:
+> > > 
+> > > With the patch above. There is zero difference before/after reset, and all
+> > > the BAR tests pass. However, MSI/MSI-X tests still fail with:
+> > > 
+> > > # pci_endpoint_test.c:143:MSI_TEST:Expected 0 (0) == ret (-110) 
+> > > # pci_endpoint_test.c:143:MSI_TEST:Test failed for MSI1
+> > > 
+> > > ETIMEDOUT.
+> > > 
+> > > This suggests that pci_endpoint_test on the host side did not receive an
+> > > interrupt.
+> > > 
+> > > I don't know why, but considering that lspci output is now (with the
+> > > save+restore) identical, I assume that the problem is not related to
+> > > the host. Unless somehow the host will use a new/different MSI address
+> > > after the root port has been reset, and we restore the old MSI address,
+> > > but looking at the code, dw_pcie_msi_init() is called by
+> > > dw_pcie_setup_rc(), so I would expect the MSI address to be the same.
+> > > 
+> > 
+> > Hi Niklas,
+> > 
+> > When I rebased this series on top of v7.1-rc1, I ended up seeing the issue what
+> > you described here (not sure why I didn't see it earlier). So after the Root
+> > Port reset, MSI tests fail, but BAR tests succeed. Also, I got IOMMU faults on
+> > the host after endpoint triggers MSI.
+> > 
+> > I investigated it and found that the MSI iATU mapping gets cleared in hw after
+> > LDn happens. But the host continues to use the same address/size for the
+> > endpoint MSI even after reset. Due to this, the existing checks in
+> > dw_pcie_ep_raise_msi_irq() don't pass and the stale MSI iATU mapping gets
+> > reused.
+> > 
+> > The fix would be to clear the mapping in dw_pcie_ep_cleanup(), which gets called
+> > as part of the PERST# assert/deassert sequence post LDn and also set
+> > msi_iatu_mapped flag to 'false'. This will force dw_pcie_ep_raise_msi_irq() to
+> > use fresh iATU mapping when it gets called for the first time:
+> > 
+> > diff --git a/drivers/pci/controller/dwc/pcie-designware-ep.c b/drivers/pci/controller/dwc/pcie-designware-ep.c
+> > index d4dc3b24da60..4ae0e1b55f39 100644
+> > --- a/drivers/pci/controller/dwc/pcie-designware-ep.c
+> > +++ b/drivers/pci/controller/dwc/pcie-designware-ep.c
+> > @@ -1035,6 +1035,11 @@ void dw_pcie_ep_cleanup(struct dw_pcie_ep *ep)
+> >  {
+> >         struct dw_pcie *pci = to_dw_pcie_from_ep(ep);
+> >  
+> > +       if (ep->msi_iatu_mapped) {
+> > +               dw_pcie_ep_unmap_addr(ep->epc, 0, 0, ep->msi_mem_phys);
+> > +               ep->msi_iatu_mapped = false;
+> > +       }
+> > +
+> >         dwc_pcie_debugfs_deinit(pci);
+> >         dw_pcie_edma_remove(pci);
+> >  }
+> > 
+> > With this change, MSI works after Root Port reset without any issues on our Qcom
+> > endpoint/host setup.
+> > 
+> > Please test this change on your rockchip setup as well. You have to make sure
+> > that dw_pcie_ep_cleanup() is called during PERST# assert/deassert.
+> > 
+> > I'm going to respin the series with this fix. If you confirm it works for you,
+> > then we can merge your Rockchip Root Port change.
 
-Add a bounds check before each write to prevent overflow. On
-overflow the function returns NULL, matching its other error paths.
+Somehow, this reply fell into the cracks...
 
-Fixes: 9215545e99d8 ("perf: Convert perf tracing data into a tracing_data event")
-Signed-off-by: Tanushree Shah <tshah@linux.ibm.com>
----
- tools/perf/util/trace-event-read.c | 5 +++++
- 1 file changed, 5 insertions(+)
+> 
+> I am happy to hear that you managed to find the root cause!
+> 
+> Hopefully your series can finally move forward :)
+> 
+> While e.g. RK3588 does have a PERST# input GPIO, so it could theoretically
+> add a perst_deassert()/assert() function. However, when the EPC support was
+> added, you did not want that, since I remember that you said that you only
+> wanted that for drivers that required an external refclock.
+> 
 
-diff --git a/tools/perf/util/trace-event-read.c b/tools/perf/util/trace-event-read.c
-index ecbbb93f0185..afd458cf1387 100644
---- a/tools/perf/util/trace-event-read.c
-+++ b/tools/perf/util/trace-event-read.c
-@@ -127,6 +127,11 @@ static char *read_string(void)
- 			}
- 		}
- 
-+		if (size >= (int)sizeof(buf) - 1) {
-+			pr_debug("string too long (max %zu bytes)", sizeof(buf) - 1);
-+			goto out;
-+		}
-+
- 		buf[size++] = c;
- 
- 		if (!c)
+Hmm, I don't recall exactly that conversation, but if I said that then I was
+wrong. PERST# assert()/dessert() have nothing to do with REFCLK. Maybe I was too
+focused on doing things assuming that REFCLK won't be available.
+
+But anyhow, feel free to add it now.
+
+- Mani
+
 -- 
-2.47.3
-
+மணிவண்ணன் சதாசிவம்
 
