@@ -1,85 +1,96 @@
-Return-Path: <linuxppc-dev+bounces-24638-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24639-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3951BC44539
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2026 09:39:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 08B54C44539
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2026 10:30:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h4q3M3ywKz2y1F;
-	Wed, 22 Jul 2026 19:39:43 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784713183;
-	cv=none; b=gvVtuzYP8c6B4tj8t+NIeZOqlvRfJjlWhu51nWkTMhuw5aiQo1Sxwo7R3tqyh9ezf88GrVgHg88FUzXWX6wSdSHa7IJ7Y8/KxWWoewimcKXolHEtKmgrgUVzqOKo363jtH/cYi7a6i/WOtCZxOSN2ezngtOPYHxJlcWKy/qb1Z0mK1NVJ8cm7/0NDqioBTXZoDGWNtnsWv76VmDKHme+YJz1VWresteQFQbKelpwL6IkLsfp6OYfK3H9luQVtTTLa05m3kcz321Xo6XYglNygpBj+nQ9fBY+1t1Rqx7mb503WtxYFMd0A7Y0W9jBt1ulA/gYJFdBEXFnNJUWEFxHrg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h4rB90qWWz2ydn;
+	Wed, 22 Jul 2026 20:30:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::429"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784716241;
+	cv=none; b=MPIQ4n0+Sb1ZiAxr0PM7krYxdR0FRt2ANKnCnk1TaJ2JTutdyBXeAAMIQ5/0lHb0lKcUEXz46VLQeyJauGXuKDF4cGDx0x66MI7iyPTm3WmMLFy9whMiAAHnFZYRKdYuFZ2ePhRcvHbpew3qy0iaULn0H75VBTQE2mkuAMKFyEj/A6nqrQ07wrl9C5DKqX0nReRxs+aU5VSEwfNOwNAX0FXgFKlwWO8Rlgtoa0MMToWeY7s4iqcD2JEABE3BLBxTM2a8ZC5QzjT9Dg0A5PhxHZd9mwAaIR4Ohk3nkPkyk+6j7FGX/XhBNn1E7rBJMfT677cyPVnUuDVLkTqqBB3ruw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784713183; c=relaxed/relaxed;
-	bh=3+NNsGyiK9CxewWiMiMkQYrP5ogKxMRH0y8i6UkvTHk=;
+	t=1784716241; c=relaxed/relaxed;
+	bh=Bqw75Hr9cbMZdN/VJ7ycHVSH3fkXQ/VbjraTfaTJVxo=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=SGd3eD0gHPib9JAAe8AMwSodzY41rxfqxvZJE/I+DCKCbeK5YkwRuiURwQTlkIMkGWvvsV6fQnhKnMYMPu+Wq52+PiDGFqQVeghKNrAQqtOdCtg783Hy58EevVkMMoSyiR+Hj/2C0wm74rKXq2jfKA2V/rUWSkgu7wNms3q/zo/GxhG7CzDUo0T03WaWDnF3Wxmup1gVYikDhGh/EmAG1NVQHVAap/Zc2FnH1Y6fIAZ0fblm6zQ9kQyDO29pn7nHdfCa8LrEPR3oEVq3y09pGB+eNLH15I1OzeGZzzSeH4QtzF98qMyLuhZrl/iZRueIdayDPA5yTL9UhKurc8JlwA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qn7RaQGA; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=hX5HOnjdxPuRRQjB5A8dsby1PvH4tTbOUeA0kO2MvUwXIvEaPEuIT9sp4xRj0XOvcNtUDZfDG6FAxM16MRxA9qPp7e04rCpzAIDKk85hawuV27lLMwgJc4Y7Gti6nbeGvgfho883hWKPenIL+TSKd5Zj7Sa8XnnsXV6iZhDwTLH7FqEdAgLILmCu6ork2lK1R0rahdwEhglU+FZJ/FR7H71IhDvKhzWHAQw+MyUIPnmcmLDeqTBVi+vhNeOcsN6oNL82mRvAKA6/wJY+Gf9SOY3X17VVnfD/8cw8VeItSeI0ulkpitrQI5AGEz+5vVDS7M1+gI78h84IgK9R3UXcQQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=eAYQxnVw; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::429; helo=mail-pf1-x429.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qn7RaQGA;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=eAYQxnVw;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::429; helo=mail-pf1-x429.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x429.google.com (mail-pf1-x429.google.com [IPv6:2607:f8b0:4864:20::429])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h4q3L5r4Vz2xpn
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2026 19:39:42 +1000 (AEST)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66M9BdLx3662534;
-	Wed, 22 Jul 2026 09:39:23 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=3+NNsGyiK9CxewWiMiMkQYrP5ogKxM
-	RH0y8i6UkvTHk=; b=qn7RaQGA+MzpEz4j2DGVf6RyxAUDVpIBCcVo4lPURrGCkh
-	tUHGQSu2FsUmZiKqlT+1E/KaSP/n0v0FkR/sOIevt7lrOS08hQd8S4CN4uxg+wqm
-	0nWay96pYy0C0fhRqmZr1OosbQMDxo5KW97u5UyjNjyFEwzVT6kYPbN6imCiXC9J
-	okPp+0FM690MPlaZyv77N2OVMheaYJ6zFD51kkKeVwPP8Y6vleO+uOdBH4U0F+pn
-	RLrP2Y7BD3WTH/DyaZsT5ip0bds9lzdXWi6H1mKdp3oC5bc3xYtz/TjOeYpqMiQg
-	wTg0mHCctBYUypRkvrs3jLF8gTv+DinNTl2v1YrQ==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fg7abhdeq-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 22 Jul 2026 09:39:22 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66M9YaLp005959;
-	Wed, 22 Jul 2026 09:39:21 GMT
-Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fgktq6u8c-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 22 Jul 2026 09:39:21 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66M9dJuw55968114
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 22 Jul 2026 09:39:19 GMT
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C4024200C5;
-	Wed, 22 Jul 2026 09:39:19 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id F1F21200BD;
-	Wed, 22 Jul 2026 09:39:17 +0000 (GMT)
-Received: from fedora (unknown [9.5.7.39])
-	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Wed, 22 Jul 2026 09:39:17 +0000 (GMT)
-Date: Wed, 22 Jul 2026 15:09:22 +0530
-From: Amit Machhiwal <amachhiw@linux.ibm.com>
-To: longlong yan <yanlonglong@kylinos.cn>
-Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
-        chleroy@kernel.org, linuxppc-dev@lists.ozlabs.org,
-        linux-kselftest@vger.kernel.org, shuah@kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] selftests/powerpc: use MAP_FAILED instead of (void *)-1
- in  tm-signal-context-force-tm
-Message-ID: <20260722135555.0e8fd8a6-a7-amachhiw@linux.ibm.com>
-Mail-Followup-To: longlong yan <yanlonglong@kylinos.cn>, 
-	maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, linux-kselftest@vger.kernel.org, shuah@kernel.org, 
-	linux-kernel@vger.kernel.org
-References: <20260722023428.932-1-yanlonglong@kylinos.cn>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h4rB7425lz2yVd
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2026 20:30:38 +1000 (AEST)
+Received: by mail-pf1-x429.google.com with SMTP id d2e1a72fcca58-84e0a4334b6so1342467b3a.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2026 03:30:38 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1784716235; x=1785321035; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=Bqw75Hr9cbMZdN/VJ7ycHVSH3fkXQ/VbjraTfaTJVxo=;
+        b=eAYQxnVwOdeV9JH1Yu3QlXAjLP0xIlzjoiJR3SmAP5vAnR0UzLorafywekVf+PYBfm
+         2M+ZXMJ3KfXttuVbXfllmSVJMPKZwtQsbWK4G5jiP+8N8wODuwpODNfTAC1MNPLIPJa1
+         8oDeE64uNJlJ2eceStG6St0Jbvfjaq1vyGiK5ASI8vCCfdEdPBK5EVTDdcKksgCzqH1U
+         Z07ZEEg0XWr0qmq9vD1soQ/UmQfc/6Ph6wNqOE/buLJwbR9ZU/YTxLe12qY1L2a7B5kh
+         G5iBYCawNZzBwM9XRQMUWIjz+xWL/pPDkyXxeevb6rwIq/ALdxSuD65cIJsZaDdUxhjx
+         ++cA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1784716235; x=1785321035;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=Bqw75Hr9cbMZdN/VJ7ycHVSH3fkXQ/VbjraTfaTJVxo=;
+        b=Udwiy2zes95qVBLnZFmnojm9q1PPaRAMhU8YvQpRUoYOjonFmCBiw3muSofP3NWqBh
+         KFHICuYcxp3QaOqPXrrXAmNe/1ur5lO+GBLe218ddpqGhL2IGwTzFoMEJfm7KX2CN9au
+         GLeXy8jLNvYsmscdhvXYBPG5NOwEgjXIvmWMTVUoLhIp9NQ1qxmWaenfnL6QoI4d1dTq
+         2Ii8VJjtf1i307VoSatHX3TnWykVjwv1N/xXdoHlcsQcFLUd8654LmjeeBQpouzMgpbV
+         2jN0BO/bB3xob6SDzyNd1bcbQvVawCA8pnxFbegd7n9X4Akr7Qj7wpOAjw7StXSootBv
+         ZZAg==
+X-Forwarded-Encrypted: i=1; AHgh+RoulvbRaohzoWhsPlSNiLHW9EuLg+sfNcaXyrjOvhr99sj9C5imGoIYV780qDckJBQ/jIDj25za1HppNjg=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyL7oyT+72QtaOUDgBqbwrQmhkeblLdXd26Q5cyEiuGsVypfR0q
+	pVLrWu+2pqLNPGE5xnj4aFNcWY4M+ixLbX9hh1l/SzgO0AmQo7H3G2PR
+X-Gm-Gg: AR+sD13icON78LQB8Ecw9n8UNIwSrgMJF3gyCSYDTuNRNN/VtwA0+3UrpDn9GE5imLd
+	A4ZURkbzOEvz17M/eq6w6kg2PzZO+3KHx4TBpY4jWWdtTmlgCtKdHmQ8x1qfUcU9CkuvUAomqRO
+	p+9zUxIg4B64ufAX+21q3Uq0dOTVLUwHGgcJWOmSm9fIZ7TOGq3AXm/ZH6bUBhknKII7tX3P2XP
+	q7WRLqIV/HjjcUw7cMsgGPMeU74bw8f2HU8BOO3r6pYfM7ULlos2jBIA/zWG+gjNZbcUZ5JKp5U
+	Aa9G9wH0hSRFVj+cZ7+Pl39954S496AN2wpjcxFE0/Iihs0hQhQKEU5o1VNb3W+eMkyKG8aN6kb
+	hGt+hhnEGBT/38wSFW7zs7w/blrcydSFFZ8QA2ez9kuJTJHOqPDxpq4+ZECMdwscSHgmtNESOcw
+	Q/FF21kQs3HfaLmjuhsanqOxj+0snIaQER2Ydey/HwluPM0Pla
+X-Received: by 2002:aa7:8744:0:b0:84e:89a:b8ed with SMTP id d2e1a72fcca58-84e089ab9d8mr5006303b3a.70.1784716234595;
+        Wed, 22 Jul 2026 03:30:34 -0700 (PDT)
+Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([106.51.160.24])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-84e1760025esm1104697b3a.57.2026.07.22.03.30.24
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 22 Jul 2026 03:30:34 -0700 (PDT)
+Date: Wed, 22 Jul 2026 16:00:21 +0530
+From: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
+To: Florian Weimer <fweimer@redhat.com>
+Cc: "Dmitry V. Levin" <ldv@strace.io>, 
+	Mukesh Kumar Chaurasiya <mkchauras@linux.ibm.com>, maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
+	chleroy@kernel.org, ryabinin.a.a@gmail.com, glider@google.com, andreyknvl@gmail.com, 
+	dvyukov@google.com, vincenzo.frascino@arm.com, oleg@redhat.com, kees@kernel.org, 
+	luto@amacapital.net, wad@chromium.org, mchauras@linux.ibm.com, thuth@redhat.com, 
+	ruanjinjie@huawei.com, sshegde@linux.ibm.com, akpm@linux-foundation.org, 
+	charlie@rivosinc.com, deller@gmx.de, macro@orcam.me.uk, segher@kernel.crashing.org, 
+	peterz@infradead.org, bigeasy@linutronix.de, namcao@linutronix.de, tglx@linutronix.de, 
+	mark.barnett@arm.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+	kasan-dev@googlegroups.com
+Subject: Re: [PATCH v4 5/8] powerpc: add exit_flags field in pt_regs
+Message-ID: <amCawOZu7-tgJssG@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+References: <20260123073916.956498-1-mkchauras@linux.ibm.com>
+ <20260123073916.956498-6-mkchauras@linux.ibm.com>
+ <20260722070155.GA11808@strace.io>
+ <lhuzezj8nng.fsf@oldenburg.str.redhat.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -95,85 +106,45 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260722023428.932-1-yanlonglong@kylinos.cn>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzIyMDA4NyBTYWx0ZWRfX3EJ4oTO02D0+
- MJ9C1aI1iW0AU2hKL3NxaiKlJV0SFGC6XT4kmaTrEa5/nMrn1C5OBfJXL5uZ+9WB/IoRr/Z2TXn
- 9Qu6EjhTVYQ/SECtDKnfbZVc7ZkTVYdqpOkdY5KywF03oXt3eGgfcX0OoGrHuQhswNEg3v1QRwT
- 0SbSq8Jto3VBwnDS/ojm/paAjB3MJms96BLqiTN2f/4SF2QvzevZseEFwRITkU9ed6ob9lI1J3/
- pYRYFwL5HbOslbeDYiKVaeCwlU42UqI+RhTOUdFO+blkZdGb3ZdzD+5SBOOVQaTi2b2ig2NBbv2
- lHSJ4bfozFBzZQgKUkhQx0Pq2iX+AF2W7yw6/LJO4GoGin7xGhyNnU1yhiCiDszQ+gGL9AQF+c0
- wo8joivqsDB/ca5rq6I+dNKwRhxVRygI0Uq3Av+tkK9kX9X5T4PG/BtHPH1CW4RwUG+R7FYb+18
- 4hJqdf637+e2REgyq+w==
-X-Authority-Analysis: v=2.4 cv=F7ZnsKhN c=1 sm=1 tr=0 ts=6a608fcb cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
- a=kj9zAlcOel0A:10 a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=VnNF1IyMAAAA:8
- a=OvgY56bCG6SZeGXbB8IA:9 a=CjuIK1q_8ugA:10
-X-Proofpoint-ORIG-GUID: uVD3uq5iQkjy7GnyEMm0LyidBBjU9xxS
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzIyMDA4NyBTYWx0ZWRfX0hD15Edo+WUO
- zon4CbqAkFGHDXysnfmJScoNaL6L5MVhZ2ZGyDpuK2HHTk6m19sKmuHW/sftOzvSYFVNvJu7iAM
- 85HK1cviAUwXde5QTWnrTljUD6c63Qs=
-X-Proofpoint-GUID: PdQ9SSURt5SCdnwv_5KZXaKmhnRrZD8a
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-07-22_03,2026-07-21_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 phishscore=0 bulkscore=0 clxscore=1011 priorityscore=1501
- impostorscore=0 lowpriorityscore=0 suspectscore=0 malwarescore=0 adultscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607220087
+In-Reply-To: <lhuzezj8nng.fsf@oldenburg.str.redhat.com>
 
-On 2026/07/22 10:34 AM, longlong yan wrote:
-> mmap() is documented to return MAP_FAILED on error, but
-> tm-signal-context-force-tm.c compares the return value against
-> (void *)-1. Replace these with the standard MAP_FAILED macro for
-> better readability and type safety.
-
-The mmap man page does confirm:
-
-  RETURN VALUE
-         On success, mmap() returns a pointer to the mapped area.  On
-         error, the value MAP_FAILED (that is, (void *) -1) is returned,
-         and errno is set to indicate the error.
-
-So, the MAP_FAILED substitution looks correct. Please feel free to add:
-
-Reviewed-by: Amit Machhiwal <amachhiw@linux.ibm.com>
-
-Thanks,
-Amit
-
+On Wed, Jul 22, 2026 at 09:54:43AM +0200, Florian Weimer wrote:
+> * Dmitry V. Levin:
 > 
-> Signed-off-by: longlong yan <yanlonglong@kylinos.cn>
-> ---
->  .../testing/selftests/powerpc/tm/tm-signal-context-force-tm.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+> > On Fri, Jan 23, 2026 at 01:09:13PM +0530, Mukesh Kumar Chaurasiya wrote:
+> >> From: Mukesh Kumar Chaurasiya <mchauras@linux.ibm.com>
+> >> 
+> >> Add a new field `exit_flags` in the pt_regs structure. This field will hold
+> >> the flags set during interrupt or syscall execution that are required during
+> >> exit to user mode.
+> >
+> > Apparently, this change breaks PTRACE_GETREGS as the latter has no means
+> > to communicate the size of struct pt_regs being written to userspace.
+> >
+> > As result, the kernel with this patch will write to userpsace 32 more
+> > bytes than before, and unless the userspace is re-compiled with the latest
+> > ptrace.h, 32 bytes of userspace memory after struct pt_regs will be
+> > overwritten.
+> >
+> > This issue was detected by strace test suite, specifically, the test that
+> > checks whether the actual number of bytes written by
+> > ptrace(PTRACE_GETREGS) matches sizeof(struct pt_regs), and that test failed
+> > with runtime version v7.1 and headers version v7.2-rc1.
 > 
-> diff --git a/tools/testing/selftests/powerpc/tm/tm-signal-context-force-tm.c b/tools/testing/selftests/powerpc/tm/tm-signal-context-force-tm.c
-> index 0a4bc479ae39..5dc0f12f467d 100644
-> --- a/tools/testing/selftests/powerpc/tm/tm-signal-context-force-tm.c
-> +++ b/tools/testing/selftests/powerpc/tm/tm-signal-context-force-tm.c
-> @@ -60,7 +60,7 @@ void usr_signal_handler(int signo, siginfo_t *si, void *uc)
->  	ucp->uc_link = mmap(NULL, sizeof(ucontext_t),
->  			    PROT_READ | PROT_WRITE,
->  			    MAP_PRIVATE | MAP_ANONYMOUS, 0, 0);
-> -	if (ucp->uc_link == (void *)-1) {
-> +	if (ucp->uc_link == MAP_FAILED) {
->  		perror("Mmap failed");
->  		exit(-1);
->  	}
-> @@ -129,7 +129,7 @@ void tm_trap_test(void)
->  		ss.ss_size = SIGSTKSZ;
->  		ss.ss_flags = 0;
->  
-> -		if (ss.ss_sp == (void *)-1) {
-> +		if (ss.ss_sp == MAP_FAILED) {
->  			perror("mmap error\n");
->  			exit(-1);
->  		}
-> -- 
-> 2.43.0
+> I think this needs to be reverted because it breaks existing ptrace
+> users.  This isn't like iptables, where kernel updates did mandate
+> specific versions of the userspace tools.
 > 
+> Thanks,
+> Florian
+> 
+Hey,
+
+Thanks for reporting this. I was unaware that this would break userspace.
+I am working on a fix for this, I am trying to maintain this state
+somewhere else than pt_regs. That would make the userspace work without
+recompilation.
+
+Regards,
+Mukesh
 
