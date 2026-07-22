@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-24650-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24651-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4B950C44536
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2026 14:31:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E52FDC531BC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2026 14:35:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h4xXL4KnYz2xJT;
-	Thu, 23 Jul 2026 00:31:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h4xcM2c6Cz2xnK;
+	Thu, 23 Jul 2026 00:35:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784730706;
-	cv=none; b=Ce5iFg4gbgBhuPP5D5O8eZM1PC3vfZcenusQRCkhtHHwwcvkiFKXsAHRnh0Z8zSeQJ1U+uwtkDc0TCJVn8c6iCL8t1bzm59Dc0n3TMVKJW3WUrYJDl5+Dzs2tl4NxzLWWJnmhaW0KodN/Urkf+WZJNZVLnK8mfRWq49lGDU+RjAUmLcGr+cw57N8+OhjGPIyrSHx+rG+KLdbinCxgjBM/MJa+3ocoWkiQWKsHvRbm9kjkOvUtqziBp5GACxzoN6JLIn9X358IPeliv8iLRHqluQBQmKJhIHFpUTMDwwaZUegLtNp1Vqdal1f3Vw01OoszlHZbACt+fiyARucfjBhAg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784730915;
+	cv=none; b=dZKV2cXLCpVDr+KQmAjz+zKfdznhjKCjtKYXCUlQ7tmUvVaQbLEvY6q1ztV8v5RPDBl3rKCvfA4dycsQEtB8OIVldA5ZqL7y/AzquKHXE7JdqgWXuESUjyHreO+Gp9MNkg5Pvw90MV2sU/NZmlJSRMtPzzO5Ir81Z+Zo75TNfj8ETJSgpEhPNLMmruMwB6txneSgoiJT7Sb2d1Oa4Yf7Y0u/65vjBEJ6bPdQb31NPJkCLO7ukvcqFO/xK5E1h1oBYeSP5PnYTmiCH6ei9LXLGan4AnLmex6n62QlwlK+Zlby9OpN9gJMtTDrVz53fzMdeIo1HUZipzXAhX1jwOmvDw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784730706; c=relaxed/relaxed;
-	bh=OvPrDFwM1EEVYtQ4pZxzQ4Crg7V635gU058Fwjy4pjg=;
+	t=1784730915; c=relaxed/relaxed;
+	bh=v3Dka0Kxl0RaJGtuTH0yTzaDEXoIUNO9u9IFv8oVYKs=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=C9KgDxuJVdRQDgPBc/mVhPQJ3ZjnUxEst+PypSbFHNHh1CxEBLM6jxr1qZDyETy6v7cvBZS8hErzFlMV5bYJ1cB4RIBaaysb7Ckqu+4e5kbpfN9fbooPjZF/WsKcGgQwOGEj07TLPyfM4/siZO4n8nCrwLgvRcupGo66lx7tyIctwJwhACPPgmDFloQ0ZlqL785TA27Y2OsKsL0dnfPS3fr7tDvyvYUpuXkgB7t9k6djcHnCelqH5EIufL8FP1rkqb4BeMSfOF4ZUnpWrfTVaOq4TBaMZxANVRI3Mi7hBxnEa7pkJYy7qvhmziXxaN1wjharV42zUAw/PuxEfZOOYg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Z312ICh0; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=vbabka@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=iCM8ABJPUiPxg+fGXkbu3rPZsX5gHqM5tOp3SSUyiqzFzFZBfOy/zuxyuKynwe8bCemi0UCoSug5nkx89Rc3YDP3+HZe3SS14G2E4yp7ooC2nC+PKcL28UJJpC1GsAwhyWsJKuwTbjaL0TZcSgYax4vwETc7xn3OIioBJ7jHujzZJ+h5hgi/5owoA8pqYfmD0ZDo2s3J69QdG7E5iaTtEQ6jD7xfWjym9HSFG1zX+1oUZWvUNSytZ99tjXUv7N5tnRPVE0cqMX6TSzsmxemMG0EJuj13PYSn23jbH1HbqchAU5l4ehRvk/gl6nTk5Fk0zZYvBY5Gt1Y1TCEcFfHQuw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BoNSrvzJ; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=vbabka@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Z312ICh0;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BoNSrvzJ;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=vbabka@kernel.org; receiver=lists.ozlabs.org)
 Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h4xXK39Rzz2xBb
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2026 00:31:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h4xcL1jStz2xJT
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2026 00:35:14 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 664DE600AF;
-	Wed, 22 Jul 2026 14:31:42 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 735B01F00A3A;
-	Wed, 22 Jul 2026 14:31:24 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 4AEBF600AB;
+	Wed, 22 Jul 2026 14:35:11 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 526301F000E9;
+	Wed, 22 Jul 2026 14:34:53 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1784730702;
-	bh=OvPrDFwM1EEVYtQ4pZxzQ4Crg7V635gU058Fwjy4pjg=;
+	s=k20260515; t=1784730911;
+	bh=v3Dka0Kxl0RaJGtuTH0yTzaDEXoIUNO9u9IFv8oVYKs=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=Z312ICh01hwf5PNipjdUbCmTEpxOFlzpFrFpEbvVg2M62vqBeTEwf2myPaFZw7tPE
-	 VB8S2/xH3Cb64UA1VtTgUUNTgWkDHNnMSRIScWWwylFYdqQUJf29ZSBT+8tvuVKFT+
-	 qpgOuQvv4nbvr4jbtsA43T6qNk4ivRr13hGczyw/g2FSRI/UCbh4ijU+6nZylJLPk5
-	 +vUMLKp/zTcjlaGh9h6kCxmkwMXMYDyA4hWh4uxOZC5o0Hhq3C4INZyEa9oR4qk8id
-	 AL8BavBz/vrgJflUQPB3q0Ym1iVOZACXNzbgj3bOumnwJsWuqmyNhwK6KU112+LaeT
-	 oiB3ruF4FVC7g==
-Message-ID: <0c9b4dbb-95c2-4d19-935e-18a45d8aefd2@kernel.org>
-Date: Wed, 22 Jul 2026 16:31:22 +0200
+	b=BoNSrvzJYQLAEfX3sCIxyc7ZkwirgsWknsff/Mra8/IlU74HXActL9HeMA579jh44
+	 T9qmfb4rlcf+ZSuQDXLSpBUeDY2tak0s32nJdFgrBrk09Qk7VXEx5T5+B2A9t2i4lb
+	 T7KREF6hvGI4oAnK+1xITP1UHiLneP8l7RBubqbljEBi0slULes/fvkmxRdOX71MpV
+	 bMSLulS5NDO9ufYBlKQbRqcLa2jMXn1Kw4jzPErEyJEwl6CA4ywx5ldWZSfTgLsHwM
+	 sBj+KtFeUnsVFLsqvy7yitX1QTr82nsrUT3PDi6UDnxpJzhWaBjScQs6EGuKMa4pWl
+	 ZBBB1SQ2Xhywg==
+Message-ID: <eea9c6bf-5ff9-45de-ac92-784a174ff61b@kernel.org>
+Date: Wed, 22 Jul 2026 16:34:51 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,7 +60,8 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 05/13] mm: prefer mm->def_vma_flags in mm logic
+Subject: Re: [PATCH v2 06/13] mm/vma: convert vm_pgprot_modify() to use
+ vma_flags_t and rename
 Content-Language: en-US
 To: Lorenzo Stoakes <ljs@kernel.org>,
  Andrew Morton <akpm@linux-foundation.org>,
@@ -128,7 +129,7 @@ Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  intel-xe@lists.freedesktop.org, xen-devel@lists.xenproject.org,
  linux-fbdev@vger.kernel.org, linux-sound@vger.kernel.org
 References: <20260711-b4-vma-flags-mm-v2-0-0fa2357d5431@kernel.org>
- <20260711-b4-vma-flags-mm-v2-5-0fa2357d5431@kernel.org>
+ <20260711-b4-vma-flags-mm-v2-6-0fa2357d5431@kernel.org>
 From: "Vlastimil Babka (SUSE)" <vbabka@kernel.org>
 Autocrypt: addr=vbabka@kernel.org; keydata=
  xsFNBFZdmxYBEADsw/SiUSjB0dM+vSh95UkgcHjzEVBlby/Fg+g42O7LAEkCYXi/vvq31JTB
@@ -169,33 +170,28 @@ Autocrypt: addr=vbabka@kernel.org; keydata=
  NcaZ+c6J4H+nEJGi2SkHAUJz5oBzuThvPudLvPA/SK8sKoM01IRxSihev/S/5WLazXB1PGem
  OCbvzC1IjWJJraxiDJ5IygokapUa2RP7+WBR22skQ3SSl6G107QgWKSyTOGWEaRmV53vxQLV
  jXuCmzSSasTL60zq5yGrT4/DYQVSNEUiUbG4pYekxJujNeEDkUlky0Y=
-In-Reply-To: <20260711-b4-vma-flags-mm-v2-5-0fa2357d5431@kernel.org>
+In-Reply-To: <20260711-b4-vma-flags-mm-v2-6-0fa2357d5431@kernel.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 7/11/26 20:45, Lorenzo Stoakes wrote:
-> Currently mm->def_flags (of type vm_flags_t) is union'd with
-> mm->def_vma_flags (of type vma_flags_t).
+> Update vm_pgprot_modify() to use the new VMA flags type vma_flags_t, and
+> rename to vma_pgprot_modify() accordingly.
 > 
-> As part of the effort to convert vm_flags_t usage to vma_flags_t (in order
-> to no longer be arbitrarily limited to a system word size for VMA flags),
-> prefer mm->def_vma_flags to mm->def_flags throughout the mm logic.
+> This is part of the ongoing work to convert vm_flags_t to vma_flags_t, in
+> order to eliminate the arbitrary limit of the number of bits in a system
+> word on available VMA flags.
 > 
-> We update dump_mm() to use the %*pb format which means we make no
-> assumption about the number of VMA flag bits on output when outputting
-> default VMA flags.
+> Update VMA userland tests accordingly, updating vma_set_page_prot() to no
+> longer inline vma_pgprot_modify(), rather we can simply define
+> vma_pgprot_modify() as a static inline function and the tests will pick it
+> up from vma.h.
 > 
 > No functional change intended.
 > 
 > Reviewed-by: Lance Yang <lance.yang@linux.dev>
 > Reviewed-by: Zi Yan <ziy@nvidia.com>
 > Signed-off-by: Lorenzo Stoakes <ljs@kernel.org>
-> ---
->  mm/debug.c |  5 +++--
->  mm/mlock.c | 13 +++++++------
->  mm/mmap.c  | 11 ++++++-----
->  mm/vma.c   |  2 +-
->  4 files changed, 17 insertions(+), 14 deletions(-)
 
 Reviewed-by: Vlastimil Babka (SUSE) <vbabka@kernel.org>
 
