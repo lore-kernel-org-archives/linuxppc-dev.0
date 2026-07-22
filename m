@@ -1,63 +1,52 @@
-Return-Path: <linuxppc-dev+bounces-24630-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24631-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1A264C44512
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2026 06:18:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9D623C44512
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2026 07:10:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h4kbS5Pjvz2y1F;
-	Wed, 22 Jul 2026 16:18:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=124.126.103.232
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784701124;
-	cv=none; b=ct1u4w3z1MJDwWi2AEyNBesrzM84CnHLkSdwiAoatvM4VLwZb2ihsO5RMw7li48hgAQ7Cfl1K7etRvH3jUt4qwABGavXN+0GIgsdfnrBpkHwxcAjJJCCFoZCVvq6b9E3C/Xhs/UxkFva8VDhMX4W85VdtEpgw9VuALvaHHGMboYP9RktCq7zT1GkvOOR9TubCLJ700uygmvBmiwavsXyL5yDyf9E0VE6vMDLTXg3WFCgbcgvc9pQ7jOIsPQ+zxlm/+FzZRMKDXVCODRuV0uhnyZ8qGo8nb1DPFEJRrrWsKVCJ30VBC+2W17knfMoRCJWJ252qpJAYogOgWZI+yQJuA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h4llB69JZz2yVd;
+	Wed, 22 Jul 2026 17:10:30 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=194.107.17.57
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784704230;
+	cv=none; b=OlvL85Nle1gT1dEjrwOj7Gk1pNVt2rjGi8ll2hHq1rhkIVnxEia6ot2xjWbxKXzIF5S1lF51k5H5dK774Mx8WSHtqD3lQKpO06ioucMZHQhy9T6QVa/CH2sMJkLDDCkO5cN1XQjBOSTcsMlt8+o6yYl/rzVD2Rpl+Z77eCwXhZyVsAoKGLhNOFrjEaxZUCOrQqd83yeqo4KZyO3VxmwVW+Uw9hWxD5BTEvSegHigQsurcnwviqe1x+7JIWLv751CLGxDOkiUIVNB/kGrhqyAmFd23k5bl0NtjRuVK+D2YbE82yh1QYEpcxrv4xANXj2w8JyNK+Acx2T9j+RS4dtzew==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784701124; c=relaxed/relaxed;
-	bh=+RY4L5637dtEBGtqU+gxLE6YAXSuSZ/eYjSPe0gHPdI=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=HGraWF63+sMpC4t+Mfpm7oKs173b04s/XVngvZYmu90V1BGtpUnzzAmQgBoXnd4ViPhmNs/eGhJ19RHSCpoqi4hkfshvwY3P3YxvqMKIU6xBoC+2mn4HWPwaJwXVj6r3oKqZC7blyuAneyzcZbb0Eb9lmoVD4Ou2iSwwP0C5YyL70SOONtcfRUXLPW13dYixcf9YXqATfziS3YNckOj7vEN3mCOHCO5fgawiG1QeSQ6luv/oMrrzbP4Mdc+A+rlN+TpUCfQW1JUpGtexvA2s6UT+tbJ7C4grR+cRDrhCIRFB0ptIzHYVTWsMmQ5ntn4S7odZc+Jl2wFigPL+ooeyjw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass (client-ip=124.126.103.232; helo=mailgw.kylinos.cn; envelope-from=yanlonglong@kylinos.cn; receiver=lists.ozlabs.org) smtp.mailfrom=kylinos.cn
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kylinos.cn (client-ip=124.126.103.232; helo=mailgw.kylinos.cn; envelope-from=yanlonglong@kylinos.cn; receiver=lists.ozlabs.org)
-Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h4kbQ6cLyz2xJT
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2026 16:18:41 +1000 (AEST)
-X-UUID: 044b22b2859511f1aa26b74ffac11d73-20260722
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.3.12,REQID:ecdad7f1-9146-4cd4-b471-ccd7cf387132,IP:0,U
-	RL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:
-	release,TS:0
-X-CID-META: VersionHash:e7bac3a,CLOUDID:3dd24d8d6561eeb933e135cf2820da91,BulkI
-	D:nil,BulkQuantity:0,Recheck:0,SF:102|136|850|865|898,TC:nil,Content:0|15|
-	50,EDM:-3,IP:nil,URL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0
-	,OSA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
-X-CID-BVR: 2,SSN|SDN
-X-CID-BAS: 2,SSN|SDN,0,_
-X-CID-FACTOR: TF_CID_SPAM_SNR
-X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
-X-UUID: 044b22b2859511f1aa26b74ffac11d73-20260722
-X-User: yanlonglong@kylinos.cn
-Received: from localhost.localdomain [(10.44.16.150)] by mailgw.kylinos.cn
-	(envelope-from <yanlonglong@kylinos.cn>)
-	(Generic MTA with TLSv1.3 TLS_AES_256_GCM_SHA384 256/256)
-	with ESMTP id 2048049471; Wed, 22 Jul 2026 14:17:29 +0800
-From: longlong yan <yanlonglong@kylinos.cn>
-To: maddy@linux.ibm.com,
-	mpe@ellerman.id.au
-Cc: npiggin@gmail.com,
-	chleroy@kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kselftest@vger.kernel.org,
-	shuah@kernel.org,
-	linux-kernel@vger.kernel.org,
-	longlong yan <yanlonglong@kylinos.cn>
-Subject: [PATCH] selftests/powerpc: fix typos in tm-signal-stack comment
-Date: Wed, 22 Jul 2026 14:17:11 +0800
-Message-ID: <20260722061712.948-1-yanlonglong@kylinos.cn>
-X-Mailer: git-send-email 2.47.1.windows.2
+	t=1784704230; c=relaxed/relaxed;
+	bh=2IBuQ8+74HxacixMbCSzXuBWRoKTCrYoIXzz4TrhDIU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=MGQcnXeicMFCbgA9NFi1AX21Cp19/GqPLnDpzPaqQof6/zh+/eTlJtC7Ke1bHeApffQWrxonlB2R/1iRqtnDag0MHvIAPMfCFoIWfg4zYA4Jzih/7XOFm01iFM4u1kzybSumaEimbWQcRDRqVpe6FFPZMQjaoy60/qnfvgix7i2UbHOUf5DaMHxAplAo6HDNZQBNdbvy1fPa357get+S5LbkpgDqbaLL61xqIpDHKOqxeHy3bUQIQ/fZ/x9oMUo+B56KKlc5f2OqnWybm/MFW4m2fleANmezinXFmSs0eLuRgYDioqcNbFyHk5eaeL0nN4EHcw7ts/MpHzAL9B1PEA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=strace.io; spf=pass (client-ip=194.107.17.57; helo=vmicros1.altlinux.org; envelope-from=ldv@altlinux.org; receiver=lists.ozlabs.org) smtp.mailfrom=altlinux.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=strace.io
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=altlinux.org (client-ip=194.107.17.57; helo=vmicros1.altlinux.org; envelope-from=ldv@altlinux.org; receiver=lists.ozlabs.org)
+X-Greylist: delayed 510 seconds by postgrey-1.37 at boromir; Wed, 22 Jul 2026 17:10:30 AEST
+Received: from vmicros1.altlinux.org (vmicros1.altlinux.org [194.107.17.57])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h4llB0jM5z2xJT
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2026 17:10:30 +1000 (AEST)
+Received: from mua.local.altlinux.org (mua.local.altlinux.org [192.168.1.14])
+	by vmicros1.altlinux.org (Postfix) with ESMTP id BCF1772C8CC;
+	Wed, 22 Jul 2026 10:01:55 +0300 (MSK)
+Received: by mua.local.altlinux.org (Postfix, from userid 508)
+	id AC7427CCB3A; Wed, 22 Jul 2026 10:01:55 +0300 (IDT)
+Date: Wed, 22 Jul 2026 10:01:55 +0300
+From: "Dmitry V. Levin" <ldv@strace.io>
+To: Mukesh Kumar Chaurasiya <mkchauras@linux.ibm.com>
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+	chleroy@kernel.org, ryabinin.a.a@gmail.com, glider@google.com,
+	andreyknvl@gmail.com, dvyukov@google.com, vincenzo.frascino@arm.com,
+	oleg@redhat.com, kees@kernel.org, luto@amacapital.net,
+	wad@chromium.org, mchauras@linux.ibm.com, thuth@redhat.com,
+	ruanjinjie@huawei.com, sshegde@linux.ibm.com,
+	akpm@linux-foundation.org, charlie@rivosinc.com, deller@gmx.de,
+	macro@orcam.me.uk, segher@kernel.crashing.org, peterz@infradead.org,
+	bigeasy@linutronix.de, namcao@linutronix.de, tglx@linutronix.de,
+	mark.barnett@arm.com, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, kasan-dev@googlegroups.com
+Subject: Re: [PATCH v4 5/8] powerpc: add exit_flags field in pt_regs
+Message-ID: <20260722070155.GA11808@strace.io>
+References: <20260123073916.956498-1-mkchauras@linux.ibm.com>
+ <20260123073916.956498-6-mkchauras@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -71,42 +60,44 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260123073916.956498-6-mkchauras@linux.ibm.com>
 
-Fix three spelling errors in the file header comment:
-  - "delievery" -> "delivery"
-  - "trelaim" -> "treclaim"
-  - "hance" -> "hence"
+On Fri, Jan 23, 2026 at 01:09:13PM +0530, Mukesh Kumar Chaurasiya wrote:
+> From: Mukesh Kumar Chaurasiya <mchauras@linux.ibm.com>
+> 
+> Add a new field `exit_flags` in the pt_regs structure. This field will hold
+> the flags set during interrupt or syscall execution that are required during
+> exit to user mode.
 
-Signed-off-by: longlong yan <yanlonglong@kylinos.cn>
----
- tools/testing/selftests/powerpc/tm/tm-signal-stack.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+Apparently, this change breaks PTRACE_GETREGS as the latter has no means
+to communicate the size of struct pt_regs being written to userspace.
 
-diff --git a/tools/testing/selftests/powerpc/tm/tm-signal-stack.c b/tools/testing/selftests/powerpc/tm/tm-signal-stack.c
-index 68807aac8dd3..3bc3a2e1526d 100644
---- a/tools/testing/selftests/powerpc/tm/tm-signal-stack.c
-+++ b/tools/testing/selftests/powerpc/tm/tm-signal-stack.c
-@@ -2,15 +2,15 @@
- /*
-  * Copyright 2015, Michael Neuling, IBM Corp.
-  *
-- * Test the kernel's signal delievery code to ensure that we don't
-- * trelaim twice in the kernel signal delivery code.  This can happen
-+ * Test the kernel's signal delivery code to ensure that we don't
-+ * treclaim twice in the kernel signal delivery code.  This can happen
-  * if we trigger a signal when in a transaction and the stack pointer
-  * is bogus.
-  *
-  * This test case registers a SEGV handler, sets the stack pointer
-  * (r1) to NULL, starts a transaction and then generates a SEGV.  The
-  * SEGV should be handled but we exit here as the stack pointer is
-- * invalid and hance we can't sigreturn.  We only need to check that
-+ * invalid and hence we can't sigreturn.  We only need to check that
-  * this flow doesn't crash the kernel.
-  */
- 
+As result, the kernel with this patch will write to userpsace 32 more
+bytes than before, and unless the userspace is re-compiled with the latest
+ptrace.h, 32 bytes of userspace memory after struct pt_regs will be
+overwritten.
+
+This issue was detected by strace test suite, specifically, the test that
+checks whether the actual number of bytes written by
+ptrace(PTRACE_GETREGS) matches sizeof(struct pt_regs), and that test failed
+with runtime version v7.1 and headers version v7.2-rc1.
+
+> diff --git a/arch/powerpc/include/uapi/asm/ptrace.h b/arch/powerpc/include/uapi/asm/ptrace.h
+> index 01e630149d48..a393b7f2760a 100644
+> --- a/arch/powerpc/include/uapi/asm/ptrace.h
+> +++ b/arch/powerpc/include/uapi/asm/ptrace.h
+> @@ -55,6 +55,8 @@ struct pt_regs
+>  	unsigned long dar;		/* Fault registers */
+>  	unsigned long dsisr;		/* on 4xx/Book-E used for ESR */
+>  	unsigned long result;		/* Result of a system call */
+> +	unsigned long exit_flags;	/* System call exit flags */
+> +	unsigned long __pt_regs_pad[3];	/* Maintain 16 byte interrupt stack alignment */
+>  };
+>  
+>  #endif /* __ASSEMBLER__ */
+
 -- 
-2.43.0
-
+ldv
 
