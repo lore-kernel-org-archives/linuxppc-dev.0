@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-24656-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24657-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B1BCAC4453E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2026 16:04:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 661EEC4453E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2026 16:08:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h4zbZ2W6fz2xLm;
-	Thu, 23 Jul 2026 02:04:42 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784736282;
-	cv=none; b=ZVtWOtoEphbUvoLfHxoTCiV19UFR1CAfcbLpsRLbYB3hGs1DVmlSCPv1t0Los7Ff4Z1xUHTSYZMt1GORW3zwMwaF8sR4kKnttML3oHHc+1VdzHqAyDMXMfx+PqazmFr9u4e6AmAaiNEgrB35SfJW9nTLgUc87WaZzxYLrheSldmKRmKg9uxuXAX+DKzF3luYaxoF7yBzEktgCEBzFWO/SejuWLIwOLJ8JlCSGGeUYuvXym9pZEU+WEDEhMLJyHaSWxh68M8sJbGK9WVLf9zu+Ntc5mWPbAbQSc28MJY6aZRxCgd2QjIA11/vQ/Wu/nANNnjoqO5QjeSKKLTv34DZXg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h4zgp5lTbz2yYf;
+	Thu, 23 Jul 2026 02:08:22 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784736502;
+	cv=none; b=Gbiu+m9GAKsgiRZkfpADwStMugXO8sC7xCJDySivtVuDfQUDe6qsv6Gp8KXylmjNaMYnMMlXYNtFjur/9PRW3VMogXyO2yx39dIXvkcHgOo1BfpzgVYt2fPUcyd2wORoA5yULIdgg+75N2q62bci0JSaDkeFhkjzs5pZMlcULeO2cVRl0VyLR9P7a7/vF3AktyqLmtpdbpBjlNITDp0sykrqVInR7MJr4KdxGB4eLAT3SojjiqHQUP2/FE9epv0Mob5vQ+Aww+0/tGyN07CBcNJhkAhWUATdn5TYmy2xEdwt5+LrDPnSxbQt1aRvIJBFKMvDs24YMoqADX5eFDMkRw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784736282; c=relaxed/relaxed;
-	bh=JGI6yPwNeBlQcmkYkwZnOGVunqjOzUuog/BHm26YT2g=;
+	t=1784736502; c=relaxed/relaxed;
+	bh=70Ep7Q7Q+hOHdHGDd1WlBsRT3Q12DveziwsIcTZZXqU=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=hVStvn6DTyWCVjADuAJ1iEzruzCz1dP+Uq1jMRQS7oUz/SB4HxE6JEIG3cxnrnXNRPywUCCRppPxcEqfMHQzAJsWl5KAQp/jxNZxqxNZ6DtUGmNbnndd4TPBhirsFa1C2F9SIx+4NEJTtvm5zTbrIRjIyvHG1JPSujHDDcUrkSJ2QVn1VOcLaNpMbowlNRhBhD+bAyB9KTTijSe+HXqaNCRD9ksrvfuzx6oZi0HFXb/TWgwzAmvvRWD0Ks8HlSXl07rnlnxdht5KoAua5/NJz78x4A24noeuWpIC16B+AZI0s0GFDu/AmICXP6U/rmf3p1WSrmhwDEQMffsNwD4Tfw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Ms6o+w4c; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=vbabka@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=cQOulSduqpFz/fPKjF/KV3lGjBsStsRz/2886zLxa8UzvylCx4qvXr8g4kV0gjM53nAAttpu5OGRHREHpCMqbX+zMkKSlOjSs7vBT21UTsdEFBpX1Yc4gL/wpQ2aRb7nIzddtAweBkvx0RS/NR6HPGO/m+nShXR7VkYpu4pHRpe2AG3VSfsHMZwDpEjbWNCAch8a2DlTcnj/AUnnfFrF9a8PMDHd5TQlOc1dXknp9hM8D0FSvyZcTIBEXRLI9oHxRCz6j/U4o0zj7DWMmWvH5jJkTKPMKKF9SxEM2uJYraFP8TofjKe7/FTVet4gUMqCDVTCIsiBpgUr1agwIdhL2g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lnL+GDOW; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=vbabka@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Ms6o+w4c;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lnL+GDOW;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=vbabka@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=vbabka@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h4zbY2sW9z2xBb
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2026 02:04:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h4zgp0SZ5z2xyj
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2026 02:08:21 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id B8E7A40DA9;
-	Wed, 22 Jul 2026 16:04:38 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3754D1F000E9;
-	Wed, 22 Jul 2026 16:04:21 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 8D58B4071F;
+	Wed, 22 Jul 2026 16:08:19 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 482441F00A3F;
+	Wed, 22 Jul 2026 16:08:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1784736278;
-	bh=JGI6yPwNeBlQcmkYkwZnOGVunqjOzUuog/BHm26YT2g=;
+	s=k20260515; t=1784736499;
+	bh=70Ep7Q7Q+hOHdHGDd1WlBsRT3Q12DveziwsIcTZZXqU=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=Ms6o+w4c+2Xirt4wfC02ta/k/1aAw+NVhQXCtWhHHBgGhc26HNZ6GokEaoDd/oT1n
-	 1Z4WoxFTQnFlX/5jbkXGg4b0auOB24CqXpo7xPvVMgmywlqaGJXPKO5XCs7UAhrhN+
-	 frCMgd+z7SKYWLV0DCRn1hYlKmvxDbGPdz0M0t48FHDVBH/q8dru6Wzl7Ix7/AqcT8
-	 gehnFY5/MRkKV7Y45Sqdjv3T9DFlx9vLAMdBkUxFFwrOIoku3EDIgyOwrPaaU0OHkc
-	 D0ulgeLOR5tFCS7ytlEEnUrMeRFCrrgUo6xWzkFU+g1g5scLc4rvdvMNmuUo3BJ5sX
-	 Vk/ngokFr4u7Q==
-Message-ID: <aca6e793-c2dc-40cd-b489-80fb638dced4@kernel.org>
-Date: Wed, 22 Jul 2026 18:04:19 +0200
+	b=lnL+GDOW1RNyK8faVj+xog2qSVNXd5RW5OZ1TweaueH4vffC3geYYJCYWnNruwaiS
+	 SQlqDRNKNPkeFV8pd50akmXs+sysIAJx0dl4qQI1kgjZ6kfYnGNgnNyvZO2RHeen8x
+	 X1qP6AX16FvbgJG94v217TFQnJ+LPOkihf1JEqv8cWcYINv3KHgBTg196eAiyyVzED
+	 ODqqwmPRIhhkkPjChZPamQYcsNbf0LXo6MAgOs9eBCf+KjRIMLkkN7puHDnEuCp48e
+	 gcPqy9EHh5p23lLq8nqHqbWffgpAuBPw/rHyQ4KXf/Fx6ZkfX9yv/WIyidH3EEOx9c
+	 uKXxeAZUsAjDg==
+Message-ID: <c363ab95-8d8d-46e0-b9ec-d827664b21a8@kernel.org>
+Date: Wed, 22 Jul 2026 18:07:58 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,8 +60,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 10/13] mm/vma: convert miscellaneous uses of VMA flags
- in core mm
+Subject: Re: [PATCH v2 11/13] mm/mlock: convert mlock code to use vma_flags_t
 Content-Language: en-US
 To: Lorenzo Stoakes <ljs@kernel.org>,
  Andrew Morton <akpm@linux-foundation.org>,
@@ -129,7 +128,7 @@ Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  xen-devel@lists.xenproject.org, linux-fbdev@vger.kernel.org,
  linux-sound@vger.kernel.org
 References: <20260711-b4-vma-flags-mm-v2-0-0fa2357d5431@kernel.org>
- <20260711-b4-vma-flags-mm-v2-10-0fa2357d5431@kernel.org>
+ <20260711-b4-vma-flags-mm-v2-11-0fa2357d5431@kernel.org>
 From: "Vlastimil Babka (SUSE)" <vbabka@kernel.org>
 Autocrypt: addr=vbabka@kernel.org; keydata=
  xsFNBFZdmxYBEADsw/SiUSjB0dM+vSh95UkgcHjzEVBlby/Fg+g42O7LAEkCYXi/vvq31JTB
@@ -170,17 +169,20 @@ Autocrypt: addr=vbabka@kernel.org; keydata=
  NcaZ+c6J4H+nEJGi2SkHAUJz5oBzuThvPudLvPA/SK8sKoM01IRxSihev/S/5WLazXB1PGem
  OCbvzC1IjWJJraxiDJ5IygokapUa2RP7+WBR22skQ3SSl6G107QgWKSyTOGWEaRmV53vxQLV
  jXuCmzSSasTL60zq5yGrT4/DYQVSNEUiUbG4pYekxJujNeEDkUlky0Y=
-In-Reply-To: <20260711-b4-vma-flags-mm-v2-10-0fa2357d5431@kernel.org>
+In-Reply-To: <20260711-b4-vma-flags-mm-v2-11-0fa2357d5431@kernel.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 7/11/26 20:45, Lorenzo Stoakes wrote:
-> Update various uses of legacy flags in vma.c and mmap.c to the new
-> vma_flags_t type, updating comments alongside them to be consistent.
+> Replace use of the legacy vm_flags_t flags with vma_flags_t values
+> throughout the mlock logic.
+> 
+> Additionally update comments to reflect the changes to be consistent.
 > 
 > No functional change intended.
 > 
 > Reviewed-by: Zi Yan <ziy@nvidia.com>
+> Reviewed-by: Lance Yang <lance.yang@linux.dev>
 > Signed-off-by: Lorenzo Stoakes <ljs@kernel.org>
 
 Reviewed-by: Vlastimil Babka (SUSE) <vbabka@kernel.org>
