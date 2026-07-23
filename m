@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-24727-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24728-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D6C10C531CA
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2026 12:59:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C60A8C531CA
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2026 13:00:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h5WRv2MFyz2yVZ;
-	Thu, 23 Jul 2026 22:59:55 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=43.155.80.173
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784795184;
-	cv=none; b=bOa7ovG9ah6L3GWMkpGVPQZFOXW2FO/ZuwQwZmWaFxr8K37zxmLEIDligaJLYbSI7rbkGsmqgE1pH4tWakLW+IFeSU3mdh6qDcxym5B27OmBJ+zNaG1HcDkdTizHzrKof35SZB8t8vnAJpdg65f8wXrK7WwE3i4PDRprUSUdzmsMPo6DIX7OZFmytK7djzxD+sbxYX5ryvFzcvuiayrMQQcKrPHfx+o4/Z9MXDhZKKj0UhIfCRY8tulLuUZfmYbWUWvos2TDbFqD0v2UIDZR+FqDRoMDodcGmwzOwcUk+DPV162D8OCZaI/8+0J0+Pn/gEfbsqjg1mpTOGtWD7O7kg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h5WS80pgJz2ygt;
+	Thu, 23 Jul 2026 23:00:08 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=54.254.200.92
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784795193;
+	cv=none; b=bHVLqyv6xoBYoSR63z6TY4ZY0N+U/JRP2jLPr5yB5W79oIyqkKWG3KZ+wgw+eIMe605zvKpdBcmx2+DlvTvREL8Y9QRu5E6QfZo9Ubw0R1sYoh/4KdkdFXzpE7po74KWZxWd8HLfNcQt9TdULErUIRfQNLHcIxV6D8P6AytePaz91Eqn0ytOIOeF6XU/CZWloPagEh1YnLakCqFFw24yQF48K2jQ6Z5cIEDcEoP99e3fb4k/my6koUPNrd3krtVhLUtDv2RWf1xJ0duSwFQ4IDPrs/Pcjogd942OndPixAMBaKaqw/2a3a76+juAt96drFYVOWJOGhzsSaL4WAvC4g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784795184; c=relaxed/relaxed;
-	bh=M/ih3PE8BMb0rsQpbXEWQtv8rMoC5z+b1JH5VZrcmKA=;
+	t=1784795193; c=relaxed/relaxed;
+	bh=zyZoSgcSvPZa4Lztf92xnmwggXjnsZ8IVuTRvt3SQnI=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=iWtLROZFv1q/Xg55STIZEtTgt9EXN1qcRkDjjI7W/GQN6h8Uyzg+r79flCS2sYx9tS1q7wZQvm+ZGxiDaK7vbZPZmzPFMgm3ppB5gmPe2JmJSe00RXVXIM8AWvKVPv7Tm5/aai/j043zwWkbdCmdLUHQiUfpZsdlimsxsuz3rMq3qmcfYSqoQ13aMzbAiysUBPgEi1Vvq+SbBZ18Pe7n8tDzx2hQyI2r0GcsU7lXMDxBny2+ByMMn4MW2I6/TB86IqhxAVYyumKKwcUrQUxM0EAY4viftsGn0b4vykwaVetPf9EKDEp0Du9GoJL34TqOlNtkzSCOHE2fuXf9ulOHqA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=uniontech.com; dkim=pass (1024-bit key; unprotected) header.d=uniontech.com header.i=@uniontech.com header.a=rsa-sha256 header.s=onoh2408 header.b=l4Y86vTT; dkim-atps=neutral; spf=pass (client-ip=43.155.80.173; helo=bg5.exmail.qq.com; envelope-from=gouhao@uniontech.com; receiver=lists.ozlabs.org) smtp.mailfrom=uniontech.com
+	 MIME-Version; b=bFf1SzE+Q4TQq0KDBFZ37Irf0EnglKQdQmOpGiMOd86nKy7TrdgThv/Oov5HXhtoanUKgaB0krBtVtostal+7zvgOkSipI6qgiNGw5lxv9yoJft4ZJB5rSh2QE8mDSYskGKuqFAYtDegqKeVQD77djPALLTjQwUyzJQE1Qc+GwTBP8U2wyjQhpEabN8FT5hwk52bvxW1hUm43piIVhIzSwy7Bogq/ArxwksUXCL7Wcf10rdIKZAhkBYs6LfeV7HsVS/JDdQRf4bg7/KzDgYus7a5ZH5SRA8Xv7xJnD0Nq8c8I+jqDacF9mjXi13/NtNHSdHxt6vs+Nx7/WGgACg27Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=uniontech.com; dkim=pass (1024-bit key; unprotected) header.d=uniontech.com header.i=@uniontech.com header.a=rsa-sha256 header.s=onoh2408 header.b=JU5vL2Fi; dkim-atps=neutral; spf=pass (client-ip=54.254.200.92; helo=smtpbgsg1.qq.com; envelope-from=gouhao@uniontech.com; receiver=lists.ozlabs.org) smtp.mailfrom=uniontech.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=uniontech.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=uniontech.com header.i=@uniontech.com header.a=rsa-sha256 header.s=onoh2408 header.b=l4Y86vTT;
+	dkim=pass (1024-bit key; unprotected) header.d=uniontech.com header.i=@uniontech.com header.a=rsa-sha256 header.s=onoh2408 header.b=JU5vL2Fi;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=uniontech.com (client-ip=43.155.80.173; helo=bg5.exmail.qq.com; envelope-from=gouhao@uniontech.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 373 seconds by postgrey-1.37 at boromir; Thu, 23 Jul 2026 18:26:23 AEST
-Received: from bg5.exmail.qq.com (bg5.exmail.qq.com [43.155.80.173])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=uniontech.com (client-ip=54.254.200.92; helo=smtpbgsg1.qq.com; envelope-from=gouhao@uniontech.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 393 seconds by postgrey-1.37 at boromir; Thu, 23 Jul 2026 18:26:32 AEST
+Received: from smtpbgsg1.qq.com (smtpbgsg1.qq.com [54.254.200.92])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h5PNH2Lgrz2yFg
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2026 18:26:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h5PNS4KvCz2xJT
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2026 18:26:32 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=uniontech.com;
-	s=onoh2408; t=1784795139;
-	bh=M/ih3PE8BMb0rsQpbXEWQtv8rMoC5z+b1JH5VZrcmKA=;
+	s=onoh2408; t=1784795142;
+	bh=zyZoSgcSvPZa4Lztf92xnmwggXjnsZ8IVuTRvt3SQnI=;
 	h=From:To:Subject:Date:Message-Id:MIME-Version;
-	b=l4Y86vTTQBksDstEaRtGVNKGp83bqDKKInMX2RrTjo5zxztI7wgX2/tlWv1mc7fuY
-	 iB+CGPnYh3aaWbJxXT6TzurFcYCx3lQUJH6/4RaPNxe13++Hmw0i1/NFVQzBRpUsGR
-	 YZodF96wIDW9BEa0AIUulUm96XI0wxEl/gCvM9Zc=
-X-QQ-mid: zesmtpip2t1784794703tfaa1232e
-X-QQ-Originating-IP: Vy8SA80zHSIgO+PkAaA5Jfe2lJklerHx6qvJlapt3Sk=
+	b=JU5vL2Fi6InlRISIhDGfiI7RNJvk+wlIbfU0JuMWvg59ruRvP6LSyA1lNskCXZHEp
+	 W5Uhjks1SLKDG6h1GJB8PU17Frg0KaVafr29wJ44nX84Sa8JO8oXqR/FtVHrpeHB1E
+	 GGbDV0DC8WlKhz7Iu85JLVElln+2T8Oel/P9WOps=
+X-QQ-mid: zesmtpip2t1784794708t1baceda8
+X-QQ-Originating-IP: p0+WvO88PZWVCksv0PxY0bE07sYlxrtU4deG1JLaxR0=
 Received: from localhost.localdomain ( [localhost])
 	by bizesmtp.qq.com (ESMTP) with 
-	id ; Thu, 23 Jul 2026 16:18:20 +0800 (CST)
+	id ; Thu, 23 Jul 2026 16:18:25 +0800 (CST)
 X-QQ-SSF: 0000000000000000000000000000000
 X-QQ-GoodBg: 1
-X-BIZMAIL-ID: 6715730035353289087
+X-BIZMAIL-ID: 8067794102828428792
 EX-QQ-RecipientCnt: 26
 From: Gou Hao <gouhao@uniontech.com>
 To: maddy@linux.ibm.com,
@@ -72,9 +72,9 @@ Cc: linuxppc-dev@lists.ozlabs.org,
 	linux-mm@kvack.org,
 	gouhaojake@163.com,
 	kernel@uniontech.com
-Subject: [PATCH 1/4] powerpc/xive: remove dead NULL check after GFP_NOFAIL allocation
-Date: Thu, 23 Jul 2026 16:18:10 +0800
-Message-Id: <20260723081813.176792-2-gouhao@uniontech.com>
+Subject: [PATCH 2/4] drm: remove dead WARN_ON NULL check after GFP_NOFAIL allocation
+Date: Thu, 23 Jul 2026 16:18:11 +0800
+Message-Id: <20260723081813.176792-3-gouhao@uniontech.com>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20260723081813.176792-1-gouhao@uniontech.com>
 References: <20260723081813.176792-1-gouhao@uniontech.com>
@@ -94,47 +94,50 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-QQ-SENDSIZE: 520
 Feedback-ID: zesmtpip:uniontech.com:qybglogicsvrgz:qybglogicsvrgz5b-2
-X-QQ-XMAILINFO: N2/jAoEINgTTroA5CUbOYIjYTE95pJvrJSmDCiXZyRiFJp4GkcgN3dZM
-	Ol6xSGQRhOPR3fIjT2evaH5gbUy+aU6DvAk+CRgLlVdPdOb2TiEpa/WjRPpG8SCleG6lySN
-	xbJWSPKHd6k7qUKf+HgWwiWfhqablRwdTWbfkEG9p82yVkxzTWQK4+53U6CTRnlITg/WRRG
-	FwEDDnYjFJObiKRbsU4hPIb9xOE/zq2RkOhPjRK6bVnKBdoyKtvlK2mqTKd9dppZkYKsVeB
-	irYn7OSLnHWmYhUeT0Gfpw9/VSd4pp911/Ss61xjw0gApGQZ/5lDlb0x/idZf+hi+5QZxWJ
-	wBBDw/+pVle8ySSPfx4DsEcCu0nXcm0KpFs76S5kMGrwvGk2xXTWmoDuXFdNgScXWwKR5oc
-	y6bKxZpuCQVEQELXldz5aNCnt65bjL606Ib2dYXDU/TuAHWjoa0vgdDg2Y8QdcYkH/awiL9
-	OhIjD3anTvlT4DjworINbhj9WI4hTPM01FzcvkM/KG0qU1tSjOmy3WFbvyqLnBTXGKpCFJv
-	d5eat3h2pO0hxJrPbuJu6gprp77N2r88CWYsDpJQTxkp2bFwIIEqK6ZTW3bl6CiIjQaEYBi
-	IWx0JtXDks6Cc9nZBqHQZnexaCglVuUEOj/lITdkgwY1xtkAF6EZpdG/rMpqFT2jqav6Uo2
-	UScZALEVZla5in5DujQ98rpemh/JgAyJ4wfQjyqu44ZQsj8NRi+Tibps59mIRV8U6qKfNS/
-	GojcERx2uBcMKZooNu1QNLf3e65mNVDjFv+5uUaxa7vhEvkaJL9Ixp4qzdJxAVrw5VRQpH2
-	miUXt5H3XP8hZ24Rjh1Hd7e1GjWNbWf91h6U3IBq2snpZ1zhaCUoIBpJ2kVKtz5Kzm6nJ/E
-	kS3NfQO+iMU3V4vaDpysXdSWJhuvQpl5pGwUzB39gVl1sKHoqTJzt4sXMTFCDYb1ShzZ+P/
-	0jXomWHZkENP71WYi4KC6trLgT2lZsCHLZEp6/vr2psQaqO0WaaLXlfJPBHLcNUP+mikEOx
-	m6zo/AUUgDpz9S8mT59qA60Fk8Cn+ltd10b9hl/kZEq/hj7hJW
-X-QQ-XMRINFO: NS+P29fieYNwqS3WCnRCOn9D1NpZuCnCRA==
+X-QQ-XMAILINFO: OZZSS56D9fAjckDqlfzJlu9LL6jBKKnBs3gN4vl4RgIFRz2rr4g8u2r/
+	5oDA1kxi4D8m7gKqcKBytHZ37/d8kwxMNxytFpufJvo+1PoNJ2yCo9XGLog2QHCoZti7Cq1
+	rTMvmRVNkwt1AFI5oZFmHCgnjf6m8vXKDWhIsjNMZ4THr/WZCvyubhK7V2yE2gqnBrUgNlT
+	A8xpfIptvF/+QqPZheqkaPB7jDeTEai5zIxc/7O4LRdTu3qneA68tVNsjEcujdRXxZY7pM4
+	T1/XjdgWKo8D95AZNJRxRRtc9IO0FFEVnOFAFJFcDlAh+V3vN/DCZA4wUmcYv3VrY3jrKAO
+	88WVuBtRJtMfw2yIqF5WAd5hgS44ov50EVRAd5UqmQAwHDgwORRuDiSY8KLTJO5JkgU3zaV
+	MvjF1GsPH5xzkoXO5e085ynR17nlBKBK5TbZDkm3qQc4mgi2uq4uHGVcxCE5fVOUApbf2F8
+	fyEt1Y28wVIm44VveTYi7cvtwcGhX4PpZHYyHyyQ+7RtqwXMAOuS8jC2eLBoTXkxMTLiJkP
+	0WaL6Hncyu/HHCPyxQoCiP9xgvhtCznehDios/nZV78b+Yeh4IVvA27OKlbhZ73PVaiuoBH
+	sHOkDXp3Oh/xksbsWxJSsMFhUknNFvFkV8JqFIRHRV5tIVTVGapobfwc5Ck5Fqcupv4TopU
+	DouW0oD02RaPDMhDNINyT7hUtmdQ0Qyp54o6kwaL01D6dW3rMkZpYBXAUvHEA4pBDeDigDb
+	2EuQKWkiSkABXumCUexXAKqGA/chEtMcVio01Z2XT3lENWDz1zsTaiin4d9nY79gp0JTuBU
+	alUC6kMwwcgF3O2AFlzlEWrbpTadhv0DNYmRGokf6fuv5NXra1KDvH6CFA3FgRkdqiKyb2a
+	hYVeXKPMLUZTlEtqVvmxgBNQRepTc0mJJwAeyboK8eLn7/+SmXnSM4ZvvbThgNs4XcHd/Bi
+	eiM+zPXJq5HgaAeofIGJ8WX6CZI7WIlgnlwaXYHIBlTiCJxNnRn17rZAV5lGwxOboazVfn1
+	IwQr9vBNH8WooN6fdVNH5+HGpWmnzHJEkPgPrtVUN5qwimQtbvvfYhQZ12BQZJEpiacjbDN
+	w==
+X-QQ-XMRINFO: M/715EihBoGS47X28/vv4NpnfpeBLnr4Qg==
 X-QQ-RECHKSPAM: 0
 
-kzalloc_objs with the __GFP_NOFAIL flag will never return NULL, so the
-subsequent NULL check is unreachable dead code. Remove it.
+kzalloc_obj with the __GFP_NOFAIL flag will never return NULL, so the
+subsequent WARN_ON(!ctx) is unreachable dead code. Remove it.
 
 Signed-off-by: Gou Hao <gouhao@uniontech.com>
 ---
- arch/powerpc/sysdev/xive/common.c | 3 ---
- 1 file changed, 3 deletions(-)
+ drivers/gpu/drm/drm_modeset_lock.c | 4 ----
+ 1 file changed, 4 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
-index dadd1f46ec93..79d7854259cb 100644
---- a/arch/powerpc/sysdev/xive/common.c
-+++ b/arch/powerpc/sysdev/xive/common.c
-@@ -1134,9 +1134,6 @@ static int __init xive_init_ipis(void)
+diff --git a/drivers/gpu/drm/drm_modeset_lock.c b/drivers/gpu/drm/drm_modeset_lock.c
+index 2c806b0146d6..e14814c30d8c 100644
+--- a/drivers/gpu/drm/drm_modeset_lock.c
++++ b/drivers/gpu/drm/drm_modeset_lock.c
+@@ -149,11 +149,7 @@ void drm_modeset_lock_all(struct drm_device *dev)
+ 	int ret;
  
- 	xive_ipis = kzalloc_objs(*xive_ipis, nr_node_ids,
- 				 GFP_KERNEL | __GFP_NOFAIL);
--	if (!xive_ipis)
--		goto out_free_domain;
+ 	ctx = kzalloc_obj(*ctx, GFP_KERNEL | __GFP_NOFAIL);
+-	if (WARN_ON(!ctx))
+-		return;
 -
- 	for_each_node(node) {
- 		struct xive_ipi_desc *xid = &xive_ipis[node];
- 		struct xive_ipi_alloc_info info = { node };
+ 	mutex_lock(&config->mutex);
+-
+ 	drm_modeset_acquire_init(ctx, 0);
+ 
+ retry:
 -- 
 2.20.1
 
