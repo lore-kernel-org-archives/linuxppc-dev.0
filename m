@@ -1,94 +1,82 @@
-Return-Path: <linuxppc-dev+bounces-24714-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24715-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CF772C4453E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2026 05:54:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 218D8C531CB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2026 07:51:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h5L1J1mgmz2xrL;
-	Thu, 23 Jul 2026 15:54:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=65.109.113.108
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784786084;
-	cv=none; b=c/Va7nc3Ju+/08790anuSv6wR0jO8CxwIuBLguAa3PEnRLSH1Icq/sliOWyRWEplMBsC7dKU+8BLIr2wWWsuSVbi8y0O+mCWYS3VLjxIejUzBGrdo0/J821X+xZZhfiwUxcpYNH0cIzM/XzkUb0Ob8ifum84yyiptL5lG8q0sL+HwrPEuhXSDyjZD5dLVZIfzgBMcumteJuKkU9tq99wD/kTGfMDuKa5NN7E/uu6JXouB2xKvHz5un0bNYBvHCsxUdJW2Wu9wRW3cbLEPgMd02xi7nM26lVkX+BeWyqBLzpfyrO1wjBvkqGxE1tWWa4KQcKuWN/Y29rlgBf8tShMWw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h5Nbx2FRzz2yFg;
+	Thu, 23 Jul 2026 17:51:25 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784793085;
+	cv=none; b=O+qyNF+wuqONAuRUvNfdwr04ZZLBekFuUnb5XT1DO8+WDxuYlqmzQAFkQC5N0zs87rPavfhC3C0Q9otI+DH3519PDp6QIPDVR4nQOGGEVEPhV8eOjlxpblybT1Vjn3k0f7r+fljlJuKUn8JKGs3jPvQt4YW/EliMyX0q6owgqcW6q+0Jjnd+dkHbL5ZobOWdzr/sJEw5X9mFSamyClgIcAhn1OjmBnjGvnVlXXOV8nTVPda14GnCsuMa8yPpy5oay23xFcbz2TWeiibuUm+I5zp8L54q0SI3nflp3NaejxPxyKVJ99+nYFh4HXtc5UPFheNcJf+kB+uXKvMUTZdVNw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784786084; c=relaxed/relaxed;
-	bh=aXME5abyiM2FcxO7X1xQmBbHpKRCAC/9uxeBwGv3xMs=;
+	t=1784793085; c=relaxed/relaxed;
+	bh=oS1NMvx865gW2UoErMylGfTUK0dtoB1K+HlWaCkJDOs=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=QF/X1MJYNQONof8YpGJjW8QnFDiCmSLnMKzzi28rj07Y7Cm9Ss7HusdiiNG+oRTZdnyydNh6uB3wq5F1R+eHvyN3JzC2qHB5K0zw7Re4glgGV6n+hm4UAuQOdSauwh9EY7eqOE1wP+qDjGDI+f/j12Bbds9MG7eY2l1L8hLIoPl5NGhgHkqOut9xmAoxZXBnTibqrYkUbLS7X8pXe3+Ho/r24U3kC8p/Fs7g7inCEIVaheF18TqTbW5zkfXwwCJoKxazzHSRofWZ04Fyv4duyvgFaSa4c8OsXZihC5bS8lI97DYu6TOirnMddnc6zs75yjM8V+eF29A0/pk2eng1ww==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=alien8.de; dkim=pass (4096-bit key; unprotected) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256 header.s=alien8 header.b=PGctRurX; dkim-atps=neutral; spf=pass (client-ip=65.109.113.108; helo=mail.alien8.de; envelope-from=bp@alien8.de; receiver=lists.ozlabs.org) smtp.mailfrom=alien8.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=alien8.de
+	 Content-Type:Content-Disposition:In-Reply-To; b=VFsfkft0H4KRbniYmf/ERG6djy0OIEjvJanE5+TOlXLIcpzs2mTBcIXyDL4IcwwaFB0XcMJavZNM498qk8nVbEZRsPlHYlHCA6O0/HhHMSEL08ltvXk2dFgH14ZSyhkBS1AAmhpJHFYnEkIYuHGxA7lZOsYn+BqwtqQ49GNH0eGF+v8fDL6qDCJ1AM+SAUg/8XW5q8ZMUswiiZhzRK8TYY9rnmcJ14YC4C1kd2PjxtZ0uesiURFb8QY/KY/572BbT9CK1GL7MPnoojL5c/tiitzZINz4YXKQZTj6z2vDv0Gf+uyhkIhPvzNBwXb5CtDRTM2QDnEwlSPclJT1sBto7w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=C5yVtX07; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (4096-bit key; unprotected) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256 header.s=alien8 header.b=PGctRurX;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=C5yVtX07;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=alien8.de (client-ip=65.109.113.108; helo=mail.alien8.de; envelope-from=bp@alien8.de; receiver=lists.ozlabs.org)
-Received: from mail.alien8.de (mail.alien8.de [65.109.113.108])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h5L1H0fFvz2xqJ
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2026 15:54:41 +1000 (AEST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by mail.alien8.de (SuperMail on ZX Spectrum 128k) with ESMTP id 0DD8540E014C;
-	Thu, 23 Jul 2026 05:54:37 +0000 (UTC)
-X-Virus-Scanned: Debian amavisd-new at mail.alien8.de
-Authentication-Results: mail.alien8.de (amavisd-new); dkim=pass (4096-bit key)
-	header.d=alien8.de
-Received: from mail.alien8.de ([127.0.0.1])
-	by localhost (mail.alien8.de [127.0.0.1]) (amavisd-new, port 10026)
-	with ESMTP id IfZZW43a_hB5; Thu, 23 Jul 2026 05:54:26 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=alien8;
-	t=1784786065; bh=aXME5abyiM2FcxO7X1xQmBbHpKRCAC/9uxeBwGv3xMs=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=PGctRurXJKTEW2YvBriW7lCS7WhfSyajw1bnCuPeviUMT+0x6NagYuptYbij+f3qO
-	 UR7nNWjT60I55kQn8KVkEFT4CzS9rsz41VK0vb0OSHPlr1Q0IxxyzlU1dwnPjQ5WSq
-	 TFCmrM6hToC17Tyx1eq330KOAW7qrYTrljZ21VFrACkyQj+3wPNHq61G3o06Q4CuHd
-	 o0mu93GU04hrXUyF4Py56rx+pf903NOEPrzehmwHVXNQElwcT/L1NabQD4f2ffM5Ot
-	 xkHZCBagPv0iQgFYA08v5AVxAubbJSAjb9HudxedE7xjnymAJ2fgTnaXh09qqdkIzy
-	 FzVqHf7WtVm1/3pHyazyb4ucJT7tEbj7/5ing2oxJsy8evoc80J1h2KsOWShPwr5VU
-	 CwkSU0UMyyk/Z5wtaDe36hPdbpv5MEgIYo9MVCRInwhRspbYqgohoyeCy9nAl5OGL4
-	 gJ/bfUGhfZd5QjZZXgYnC+ZjoPQykUzpDqoldn99CrTGjEWIu1xs18IomT0tdKWQEF
-	 +KPSt/qEenYZ2ebfhemLbU/wyn9/1x8mZ2/QXFo06RpJvuYNlBlSGJ/+rgQWWiPE7s
-	 uLfT/7KPvIalk8nIK5sitbpSX25as+sElMn6NQWSp8lfHlXMJcIapikTjsrE3iEmEd
-	 ASmQxBa98HokJ59dcKrjsVE8=
-Received: from stx.tnic (unknown [IPv6:2600:1700:38ca:c00::2b])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature ECDSA (P-256) server-digest SHA256)
-	(No client certificate requested)
-	by mail.alien8.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id DF04D40E00DC;
-	Thu, 23 Jul 2026 05:53:50 +0000 (UTC)
-Date: Wed, 22 Jul 2026 22:53:47 -0700
-From: Borislav Petkov <bp@alien8.de>
-To: Ahmed Tiba <ahmed.tiba@arm.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Tony Luck <tony.luck@intel.com>, Hanjun Guo <guohanjun@huawei.com>,
-	Mauro Carvalho Chehab <mchehab@kernel.org>,
-	Shuai Xue <xueshuai@linux.alibaba.com>, Len Brown <lenb@kernel.org>,
-	Saket Dumbre <saket.dumbre@intel.com>,
-	Davidlohr Bueso <dave@stgolabs.net>,
-	Jonathan Cameron <jic23@kernel.org>,
-	Dave Jiang <dave.jiang@intel.com>,
-	Alison Schofield <alison.schofield@intel.com>,
-	Vishal Verma <vishal.l.verma@intel.com>,
-	Dan Williams <djbw@kernel.org>, Ira Weiny <iweiny@kernel.org>,
-	Li Ming <ming.li@zohomail.com>,
-	Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
-	Oliver O'Halloran <oohall@gmail.com>,
-	Bjorn Helgaas <bhelgaas@google.com>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Shuah Khan <skhan@linuxfoundation.org>,
-	linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-	acpica-devel@lists.linux.dev, linux-cxl@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-edac@vger.kernel.org,
-	linux-doc@vger.kernel.org, Dmitry.Lamerov@arm.com
-Subject: Re: [PATCH v7 00/10] ACPI: APEI: share GHES CPER helpers and add DT
- FFH provider
-Message-ID: <20260723055347.GHamGsaxesLkMbSnfR@fat_crate.local>
-References: <20260708-topics-ahmtib01-ras_ffh_arm_internal_review-v7-0-8b3a85216cef@arm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h5Nbw2Myhz2xqJ
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2026 17:51:24 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 587A360A6C;
+	Thu, 23 Jul 2026 07:51:21 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BEBAF1F000E9;
+	Thu, 23 Jul 2026 07:51:19 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1784793081;
+	bh=oS1NMvx865gW2UoErMylGfTUK0dtoB1K+HlWaCkJDOs=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=C5yVtX07ZkUJj3b2b+kYtfuR23XpTFRkdHRdENTWAARDLYmTf2IRILt6XAP3lcQ3i
+	 guxWOSpqvbZxIkPudGanZc9oRLKmaWg7jWE5nWdWWffLISp3ZQ+ad4Ihoe02/FYjI0
+	 zawcqNvZ4YMD98rRRw9KmxbnYTZO2a2pevFxO+lic7WvlenUPBRb/qjJSo021Hq+fK
+	 RnJUL29qw9dIMmgyNVWejeSnfUWslCr7nlHO+wb/2jqEuc0/cAk14jRWF5Uc2ySZeT
+	 fSQ5DwAeoStwg7yjuT2gjGQyNTVPQV9uRZe39mcHkbKAqEo5c/lhrEDQ+DHZjlr32v
+	 nL9nveFp0YtMA==
+Date: Thu, 23 Jul 2026 10:51:08 +0300
+From: Leon Romanovsky <leon@kernel.org>
+To: Jason Gunthorpe <jgg@ziepe.ca>
+Cc: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>,
+	Marek Szyprowski <m.szyprowski@samsung.com>, iommu@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+	linux-coco@lists.linux.dev, Robin Murphy <robin.murphy@arm.com>,
+	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
+	Steven Price <steven.price@arm.com>,
+	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Jiri Pirko <jiri@resnulli.us>, Mostafa Saleh <smostafa@google.com>,
+	Petr Tesarik <ptesarik@suse.com>,
+	Alexey Kardashevskiy <aik@amd.com>,
+	Dan Williams <dan.j.williams@intel.com>,
+	Xu Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+	linux-s390@vger.kernel.org,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org
+Subject: Re: [PATCH v8 00/23] dma-mapping: Track shared DMA state through
+ direct, pool and swiotlb paths
+Message-ID: <20260723075108.GB110966@unreal>
+References: <20260717180442.110954-1-aneesh.kumar@kernel.org>
+ <20260721124056.GK110966@unreal>
+ <amEglRH3u6UFFnIQ@ziepe.ca>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -102,34 +90,46 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260708-topics-ahmtib01-ras_ffh_arm_internal_review-v7-0-8b3a85216cef@arm.com>
+In-Reply-To: <amEglRH3u6UFFnIQ@ziepe.ca>
 
-On Wed, Jul 08, 2026 at 02:58:59PM +0100, Ahmed Tiba wrote:
-> This is v7 of the GHES refactor series. Compared to v6, it addresses
-> the Sashiko-reported issues including pre-existing ones and fixes
-> the ACPI-disabled cper-x86 build break.
+On Wed, Jul 22, 2026 at 04:57:09PM -0300, Jason Gunthorpe wrote:
+> On Tue, Jul 21, 2026 at 03:40:56PM +0300, Leon Romanovsky wrote:
 > 
-> The DT firmware-first CPER provider is intended for the upstream zena-css
-> platform. Validation so far has been on FVP.
+> > Why don't we continue the effort to remove "struct page" entirely
+> > from the DMA API internals?
+> > 
+> > IMHO, everything not exposed to DMA API users should use
+> > phys_addr_t, including the DMA address pool.
 > 
-> Changes in v7:
-> - Address Sashiko-reported issues for this series, including pre-existing ones.
+> The alloc interfaces return a struct page, that is why this stuff is
+> organized like this. Look at dma_alloc_pages()
 
-And Sashiko flagged more:
+And I didn't say that we should change dma_alloc_pages(). It is external
+API, which needs to be struct *page. I'm talking about internals.
 
-https://sashiko.dev/#/patchset/20260708-topics-ahmtib01-ras_ffh_arm_internal_review-v7-0-8b3a85216cef%40arm.com
+Even dma_alloc_pages() flow shows how convoluted and non-uniform
+the code underneath which performs translations all the time.
 
-I'd leave this to Rafael to decide but I would fix them all first before we go
-and carve out things. Maybe we can share the effort and such. I see an EDAC
-one which I wanna take a look when I get a chance.
+dma_alloc_pages()
+	->  __dma_alloc_pages()
+		-> dma_direct_alloc_pages()
+....
+	ret = page_address(page);             <--- here we need virt address
+	if (dma_set_decrypted(dev, ret, size))
+		goto out_leak_pages;
+	memset(ret, 0, size);
+	*dma_handle = phys_to_dma_direct(dev, page_to_phys(page)); <- and here we need phys address
+	return page;
 
-Thx.
+So my point is that internal flows should not require struct page
+and should not depend on it.
 
--- 
-Regards/Gruss,
-    Boris.
-
-https://people.kernel.org/tglx/notes-about-netiquette
+> 
+> There is also an API that forms a scatterlist that has to be struct
+> page as well
+> 
+> Jason
+> 
 
