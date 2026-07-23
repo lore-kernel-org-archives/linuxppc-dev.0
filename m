@@ -1,83 +1,37 @@
-Return-Path: <linuxppc-dev+bounces-24743-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24744-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7F327C531D1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2026 15:01:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4FB4CC531F7
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2026 15:07:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h5Z8K2t2Gz2yhD;
-	Fri, 24 Jul 2026 01:01:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c20f::7" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784818897;
-	cv=pass; b=D1aDte5B0KmqZIfYWaioF+8KVGl179OKAuN5Zc3CzL+Pspq4TIx39jK84fV6NnHijU1pjhjpf7kM9Oe7Sy86Hku8fYb9A/D68GLkMxHfgqckA7bZGR7teRT9Jxj4oCH1Ge86yCzMDQZKKBtHMa7Ni7FN830tDRuyK/jGKjuaFo0EiP7sZI/fFQbjDDSWCFKqhTt7T0u65BnBIqAIyNQlDkYX8O15f+nQvw4zNYFj4CbBFF84Y8yp6TL51nCjIrijbRH+hOabVWtx7rzbbvGzzTkwqJrRhIQR2DS5bqeWM+cCaNu5piDdqLeBdfEGCiO4x7gPLLZ4SwmolvGV+TSWQw==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784818897; c=relaxed/relaxed;
-	bh=Su8mcUR9YFhnTPYPiJSIa/mrW/RVdPNcEzgnPNm8aCU=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=R6UWwk7glkmbPk8ycDY9EpmHzLAixNBShXYANR1p7lhbwerbFIuigv30ZfmpMU7kicXeGDe6AIR8zVQPVtH2lZ06V5B6S5RHsW8wLe3TI4//oIYc215QqVqWY6Ts2p1h1onPknnmw+Dy94tgkKDBYaS3AvFcQ9s96z5V818P/OLOOr1RXXn3qF6f28e/VAejD3z3EJPKR26s/c8/NPloymATJ+bx+XhRUMW7CKKE+1r1o2XJEJUUoVP9omE8iglmMT6iw01lphR7eK9TYfVRJXUI5QPQiieGjU4TwvcnwSu+eCumpLV8WuJ3c5TraV1kzeOml2KWvo1riMPmpZa7Lw==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=TIzgtQKs; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c20f::7; helo=osppr02cu001.outbound.protection.outlook.com; envelope-from=vladimir.oltean@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=TIzgtQKs;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c20f::7; helo=osppr02cu001.outbound.protection.outlook.com; envelope-from=vladimir.oltean@nxp.com; receiver=lists.ozlabs.org)
-Received: from OSPPR02CU001.outbound.protection.outlook.com (mail-norwayeastazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c20f::7])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h5ZHD4Cddz2yhY;
+	Fri, 24 Jul 2026 01:07:36 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784819256;
+	cv=none; b=m/keb1zJXodzREknrBbJ1IPr/FP+Z/zQ/rekGhLGSyMZWzFrR2zKYu+eEE9TjpugZMQdgiZ/P8ULy/NwTPg9AAVmh+iLiJl/QBJQ95kKcb7W8fJa81WsyJTPJPjhtq1GTmhwsI3VymIvAwbHUPhPC3mbjEq1TyPFYSVUNSYhb9G5Q0cza3I+4t3XPgOMLy4mfayWgW5KQjje6AIU5zmYkjDP/fT803FO7gFnP+c3xXSzPrg8jku/KbDVemXCI9hZwMizyepBL3ULDNfejcHHF4MqqQTuW+FXt8KTSP8YcydkmynVRTSoAXBgpIyGOKRtFaZ9DD1tMtNHn6CIA1AQmQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1784819256; c=relaxed/relaxed;
+	bh=tzQHUghdrVrIrOI0vJOosaA1fJi+VhG4ztN+axtl+o8=;
+	h=Content-Type:MIME-Version:Message-Id:In-Reply-To:References:
+	 Subject:From:To:Cc:Date; b=JQ625nfhlgdu2LRwbzp2U0kVkWhe4zyj7kRNclo+CzEJLPnZQfSog4BTjI1q5iQtFoYAyQj3d6aP2ketc3GQ9EXSFozIU846ZcJrQWbkSUQkOOhiP7OuZ1EqA30LU3S1XoA7LmGYP3Qcqpb7GaAnT4xuojnxgMcPI8h3xz9AsPd4Tvn7eiNlAW0lTiousTO85Fgggi4btzFXeXNbUpyAzNTvBmA8Yvj7Xjyiw8wnncZ58akk3I5kjVUvyr71x/qBdAFPO7UHY7TuNdRPty15QH2eacok/4ZUl7xA+BmuRJSl8Z0qHXKo/EKxLcpb1TNHeijCDr+7nxMujAfspJI6pw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=bot+bpf-ci@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=bot+bpf-ci@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h5Z8H4RFLz2ygt
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jul 2026 01:01:34 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=Tnq3a2JCPS63oW+hvR5LA0/bvgXBEAYDcsVKkAq0z+CjLR81HG32xKMv8VhGiY1zGnpRiGzQWEKi8aUK8oJ++zkdj7C37GIwpLY3f96gAauFW8YtzIr0lFG2qGp4Yrx3PlGLN6IJa01QYDzkeNzg/BfK9hnkCmClCp8CslL+E0geSSP0a9CgHiwmDOgAvpq67Qrp3edm8b9CmokTZyj88F8QgGFUh+JX2RhkM04WpjhsLnCS1Sb/DbXNF8CpWxPamW2x/+sdAMKce/8/zoneVpYZjYKhmpSWfN2VOwbYtYqgww4NShaup1uFPdby2gMEja60y3rsnj7yQRnvAeWBrQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=Su8mcUR9YFhnTPYPiJSIa/mrW/RVdPNcEzgnPNm8aCU=;
- b=iujKGYxDCLz529LUzzFjxrFBrkATXYhgTgBHPgIqMHqotJOE5PYo52GHnfxZgPV9wDGT2zAki1Azp2bJ9O3vNG+IWtI9Hx6/02EBvXiwm7/eZIgq4VQ0tYoobWNvH2hhckF/VbNct02ULv0ENW03pBqIyRdw0Znyve5/TXglhv0Y+BM4/+shs80gmRubSNPNgKKobmu1obXATxccEM8uke4FmSJJIUc1Dnn9MaID9CGQJGB31DmUXrCdmEeEFo7CJZAiveAQwVH0SxOVKVrxKpA/hfljfAe452VwOe6jHut5SGKAuHXOref5aGhix/lUzBiCUclzrohdDQgrsvpZhw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
- header.d=nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=Su8mcUR9YFhnTPYPiJSIa/mrW/RVdPNcEzgnPNm8aCU=;
- b=TIzgtQKs0LkLsIRLcdYfAjkTjK3AH7Y/TrkJGKTiwJpYbIk52lJ35hIOarU7FHc9N9TW03iK+Z2oA98WSsiMoZzrCPwMRezSewc40iwON569XjnDTk8qPSS4CQ8TnqBRupOdgXWD16HtU14WhzXd1/v1BkgDSvk1pHT84yILJO90ytCFO8fmixyWNiek3sX4/GhXXBvkdZSkB0E4Ox5pnO4+qZxFCMlcAYKXd6NKkGcTVt2pxKM56XRHDGl4FKLveNX2iEnMHvCvUMHkrEggiARVz64sEgYUw5y1FWk6gSuIkgVIsY1umF4727WB7BVpEvNOEUlusScimMBF2LQICQ==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nxp.com;
-Received: from AM0PR04MB6900.eurprd04.prod.outlook.com (2603:10a6:208:17d::10)
- by AM0PR04MB7011.eurprd04.prod.outlook.com (2603:10a6:208:193::10) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.245.10; Thu, 23 Jul
- 2026 15:01:10 +0000
-Received: from AM0PR04MB6900.eurprd04.prod.outlook.com
- ([fe80::7fda:8431:ca1b:b023]) by AM0PR04MB6900.eurprd04.prod.outlook.com
- ([fe80::7fda:8431:ca1b:b023%5]) with mapi id 15.21.0245.010; Thu, 23 Jul 2026
- 15:01:09 +0000
-Date: Thu, 23 Jul 2026 18:01:05 +0300
-From: Vladimir Oltean <vladimir.oltean@nxp.com>
-To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Vinod Koul <vkoul@kernel.org>
-Cc: linux-phy@lists.infradead.org, devicetree@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
-	Ioana Ciornei <ioana.ciornei@nxp.com>,
-	Neil Armstrong <neil.armstrong@linaro.org>,
-	Tanjeff Moos <tanjeff.moos@westermo.com>,
-	Michael Walle <mwalle@kernel.org>, Shawn Guo <shawnguo@kernel.org>,
-	Frank Li <Frank.Li@nxp.com>, linux-kernel@vger.kernel.org,
-	Conor Dooley <conor+dt@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v4 phy-next 0/9] RCW override for 10G Lynx dynamic
- protocol reconfiguration
-Message-ID: <20260723150105.da2cqgtb7t5vw2d3@skbuf>
-References: <20260721231603.67865-1-vladimir.oltean@nxp.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260721231603.67865-1-vladimir.oltean@nxp.com>
-X-ClientProxiedBy: WA1P291CA0020.POLP291.PROD.OUTLOOK.COM
- (2603:10a6:1d0:19::24) To AM0PR04MB6900.eurprd04.prod.outlook.com
- (2603:10a6:208:17d::10)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h5ZHC1RTDz2yhD
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jul 2026 01:07:35 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id B701260A82;
+	Thu, 23 Jul 2026 15:07:32 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2CC831F00A3A;
+	Thu, 23 Jul 2026 15:07:25 +0000 (UTC)
+Content-Type: multipart/mixed; boundary="===============8746857589958803762=="
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,86 +45,977 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: AM0PR04MB6900:EE_|AM0PR04MB7011:EE_
-X-MS-Office365-Filtering-Correlation-Id: a9c90f67-e9f9-4ac1-6150-08dee8cb3a64
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|19092799006|1800799024|366016|7416014|376014|10070799003|23010399003|11063799006|10067099003|56012099006|18002099003|22082099003|3023799007;
-X-Microsoft-Antispam-Message-Info:
-	TUoR9Sjer26d2HB3+x+Dv4zOk0dZPP8MguT+nPSM1Faoz/4s+W98iKfE0Tnb9ho9FW9bN2einzEciZOElIREMTDQuyzJdP/vJ0J5N4w91Ryh1UmuH5rOpDK31G1h6bAY3+X8vRLDj3/6T+4jpqjtWGM7qV6bqup7NawMoBWsqyCcBrv6qSM5XvUnatkD2GhJ5MKuZ1zj/080PT4ha08BOn+JhzQED0r7pXZnmNKdQOA8n20LIwrNZCUoDla6AkHh5nqF3iZyDpIuYQ+dTkPAdhFw+uVfEfxJDI8Z7qm+/5NFm4tNNVwwr2jmt4Xz1YC6+isRydbpVTDEGq6UTFqa34EDLvyN9nqAmjT1Z2obYTS8P1wqsnWAr5DVWAstFo4+4CMXa1Ihax6QjB5tyIg+aS0SwtvD0VbyFnK9Q2iYJBVkVzAlNhov+y3yGiQQp4d+pOushvpPkOH0ClCfYHKIe1BPcboYnfTMkGamsi8ZWxFddl8XUeEb24k+nZkPB0F8OOUgG6NNO0+eHFJiqYSxkUQPiqaC4jW/GlQSbXcRdJKXP/t5WZYh5xsmlihAU6OtL4XE6dbTz7dZqocuD+f2a+2MHoW1c5z5AWv1+Ft93TCyKkxnufTXMz2yPVd9s0TgEB7wCKf78qi8SFcx6sydMuIg481pAMke/bAAe0uG/1Y=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM0PR04MB6900.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(19092799006)(1800799024)(366016)(7416014)(376014)(10070799003)(23010399003)(11063799006)(10067099003)(56012099006)(18002099003)(22082099003)(3023799007);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 2
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?5zgYoT2K+4IswEkzDcL60ppXNn4eKvLQ5oGrVwLopS28cEclym83w8KMGtxE?=
- =?us-ascii?Q?bqW6zt7aBoKrjthCS/T6zCfp6+henwe8dcTiilb6mOzdXt+G5go6oKG++WRS?=
- =?us-ascii?Q?awxwstOmbdJQqqrS7UVYrhCGEw79SN+DAlNWXvFaK1EMGFCrMY8VsBgTE+Nk?=
- =?us-ascii?Q?uwo1jcT4CoEi2kfrx9Uz9WM3FG87UEJVdF4OY995gXaTZgxJ5A3GUViXyJ5H?=
- =?us-ascii?Q?jgypp4oVFpzG/5YtD3rvMUlHhwTv8Gn6uelJrtBNdaC2eKvKnhX9B305ps0N?=
- =?us-ascii?Q?1Rz30BD3tuFs7nQn8RSG/KVJbdA643JU36dIIp/1v4mDKdAuRm+7k9XpgHKZ?=
- =?us-ascii?Q?90rJoeAUhMGuxgn3oNPQ7NV4+TKF7XItHQsO4ew0QVf1pa5POJLx7sauDpiQ?=
- =?us-ascii?Q?cMQOV3mUR+Yw3egSxxlElp4rcHRRj6S0KJQ022Llpggu7U/lpmrnFeyfQ+or?=
- =?us-ascii?Q?obw0x+DwCxVNq4xM0jDzh3Ppi2Fx0MJ6qQRbaHtIDxgeJu9Lgxo7KwO21/YC?=
- =?us-ascii?Q?beB3jpMfn+HlOZ8BmStcXlerj+jf3MpAQgVeJyAOT+UpFTHnqbZOgf5ZiK+7?=
- =?us-ascii?Q?fDPFzTAnnAmNs5XkR+jNXl0Mq19sERcVPzwpLlTHF984QGlLzx9vlIcxqayu?=
- =?us-ascii?Q?yNmt+lfwILrJI2AiuMpVUkKBiuZ5urbE+19gIAQY615JE6U/GtlkqSdJYbyx?=
- =?us-ascii?Q?pBb3du8XhiHGbs+9nyodqMMiax9tBhfw7WGieaksMhd5ifd8tvEgt0QHNnb5?=
- =?us-ascii?Q?JroYcwsA5p9DhAqhvy047k5KUCXvY3nKi/r14cvfHbNOAycwcKBjwhIiBpH5?=
- =?us-ascii?Q?QUoVyKLHJwmGwtjvhfsAmYucDSMYLIs37cLLr2aQdO3phw6iZAJe+hXa38qR?=
- =?us-ascii?Q?+DOc3mvrcMskjxNGWYDf8VscYxaNvNmWeXl23Mg7JhFGli2Gf8QiVsYMqaS9?=
- =?us-ascii?Q?MOksu8GB/qG8d92J5bnf0Q41LMAXCIkx/ZO9o972aIFD3VqmrMaP30bylUer?=
- =?us-ascii?Q?l/NLbse/gN01U0qSjmtICOqoZzuHfZAqnmue5C+T/+Cv+Rxreg9W9mY+72EP?=
- =?us-ascii?Q?ZgPfDZPg2Ii+R+eQDWhq9zvSsQEVILUhoDeVMHN1ghD2gW02DhECmmSGKoOi?=
- =?us-ascii?Q?50+/zpjrkVYbmZZ53u3jp9PJj96NPxwxPcYpw108P+NPRE+URi9UiJALtTTY?=
- =?us-ascii?Q?x2ldvJT6QKnN5EBWwdP6CuDKE9ARiZ4esmUQDBXLj5Mn3PiEc1vFk63/ZlAb?=
- =?us-ascii?Q?DurgvzAUaC/J+09DWe2nUH8w//LffPw+jlvTglj27uU8aMNRlxsBiBk/gMuk?=
- =?us-ascii?Q?QK8QIa0DSQh7XGp6Qt5wSzBG3cySVsZQbyHPz3yFWGrLMauDCJ3oQuWabjRW?=
- =?us-ascii?Q?nk4t1IgyR/93PfQIzm7xq+P8sDBV7bwldmKq/ko0aad/kU1u7Oh6278GHSnx?=
- =?us-ascii?Q?KCAsHoqV+TfKTrazNOU0wmLm0IoOJyg9iN1KYcAinwQXFQzbOM8Q/0diNG0A?=
- =?us-ascii?Q?3UkJAGvibtTGmsvFJZqgsfpq5b07j5XOFjF9B7bsEfCP0Zl5lwdQvW5OF1pU?=
- =?us-ascii?Q?X0Xb2SkEKExoM9/VJ1bSNogKgA+ldI+Xxh6jL9toe1vfT/hv7bPSmpsCv4qf?=
- =?us-ascii?Q?DdJtqaq48n0WbgtLsqYTE2d/MldKfEugsy46mHY/9UPvM+fdsrvjNi6bsz90?=
- =?us-ascii?Q?i64bXvQfQoqdpne969lsTCtnbqEZkRP0hQonHOR2ND2p9WSVeBHDLxtQx6xg?=
- =?us-ascii?Q?5Y4+SIyGOPffBZlqwPl2LlmrppxjnGtcxwrHb3X2Cf4tHxTk1ZrgtjZKKMoh?=
-X-MS-Exchange-AntiSpam-MessageData-1: GYl9YVPciE/VPXuv0qA1uQz4zlqKgCFOpTQ=
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: a9c90f67-e9f9-4ac1-6150-08dee8cb3a64
-X-MS-Exchange-CrossTenant-AuthSource: AM0PR04MB6900.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 23 Jul 2026 15:01:09.1176
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 7if4pV/YghCoEv97r3NyphLfngKVS1mNg/E14U1M/mrSwf1oxtjgrD/j3gtp9ET4sWrTlzKEIjDV1Jwcn78MMQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM0PR04MB7011
+Message-Id: <cd7b155ba1d02f1a0de26dbac9529e0fce0561ba3e4335fe206b99ef0ab5ae60@mail.kernel.org>
+In-Reply-To: <48f2d61f-d468-49b7-881e-f00777db073f@web.de>
+References: <48f2d61f-d468-49b7-881e-f00777db073f@web.de>
+Subject: Re: [PATCH] tools: Use fputc() calls in some functions
+From: bot+bpf-ci@kernel.org
+To: Markus.Elfring@web.de, acpica-devel@lists.linux.dev,
+	bpf@vger.kernel.org, coresight@lists.linaro.org, kvm@vger.kernel.org,
+	linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	linux-gpio@vger.kernel.org, linux-kselftest@vger.kernel.org,
+	linux-mm@kvack.org, linux-perf-users@vger.kernel.org,
+	linux-pm@vger.kernel.org, linux-trace-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, mptcp@lists.linux.dev,
+	netdev@vger.kernel.org, platform-driver-x86@vger.kernel.org,
+	virtualization@lists.linux.dev, adrian.hunter@intel.com,
+	amastro@fb.com, alex@shazbot.org, alexander.shishkin@linux.intel.com,
+	ast@kernel.org, ak@linux.intel.com, andrew+netdev@lunn.ch,
+	akpm@linux-foundation.org, andrii@kernel.org,
+	ankur.a.arora@oracle.com, acme@kernel.org, brgl@kernel.org,
+	bobbyeshleman@meta.com, borntraeger@linux.ibm.com,
+	chleroy@kernel.org, ctshao@google.com, imbrenda@linux.ibm.com,
+	costa.shul@redhat.com, crwood@redhat.com, daniel@iogearbox.net,
+	daniel.lezcano@kernel.org, david@kernel.org, dmatlack@google.com,
+	davem@davemloft.ne, t@lists.ozlabs.org, donald.hunter@gmail.com,
+	eddyz87@gmail.com, emil@etsalapatis.com, edumazet@google.com,
+	gmonaco@redhat.com, geliang@kernel.org, irogers@google.com,
+	mingo@redhat.com, ipravdin.official@gmail.com, kuba@kernel.org,
+	james.clark@linaro.org, frankja@linux.ibm.com,
+	kerneljasonxing@gmail.com, jolsa@kernel.org, joe@dama.to,
+	john.g.garry@oracle.com, jpoimboe@kernel.org,
+	kaushlendra.kumar@intel.com, warthog618@gmail.com, memxor@gmail.com,
+	lenb@kernel.org, leo.yan@linux.dev, lukasz.luba@arm.com,
+	maddy@linux.ibm.com, mark.rutland@arm.com, martin.lau@linux.dev,
+	mhiramat@kernel.org, martineau@kernel.org, matttbe@kernel.org,
+	mpe@ellerman.id.au, mike.leach@arm.com, almasrymina@google.com,
+	yatsenko@meta.com, namcao@linutronix.de, namhyung@kernel.org,
+	npiggin@gmail.com, pabeni@redhat.com, pbonzini@redhat.com,
+	pawel.chmielewski@intel.com, peterz@infradead.org, qmo@kernel.org,
+	rafael@kernel.org, rananta@google.com, saket.dumbre@intel.com,
+	shuah@kernel.org, horms@kernel.org, song@kernel.org,
+	srinivas.pandruvada@linux.intel.com, sdf@fomichev.me,
+	sgarza@lists.ozlabs.org, re@redhat.com, rostedt@goodmis.org,
+	suzuki.poulose@arm.com, swapnil.sapkal@amd.com, linux@weissschuh.net,
+	tglozar@redhat.com, vipinsh@google.com, wander@redhat.com,
+	will@kernel.org, willemdebruijn.kernel@gmail.com, w@1wt.eu,
+	yonghong.song@linux.dev, zhangchujun@cmss.chinamobile.com,
+	rui.zhang@intel.com
+Cc: linux-kernel@vger.kernel.org,kernel-janitors@vger.kernel.org,ast@kernel.org,andrii@kernel.org,daniel@iogearbox.net,martin.lau@kernel.org,eddyz87@gmail.com,yonghong.song@linux.dev,clm@meta.com,ihor.solodrai@linux.dev
+Date: Thu, 23 Jul 2026 15:07:25 +0000 (UTC)
 
-On Wed, Jul 22, 2026 at 02:15:54AM +0300, Vladimir Oltean wrote:
-> Ioana Ciornei (4):
->   soc: fsl: guts: use a macro to encode the DCFG CCSR space
->   soc: fsl: guts: add a global structure to hold state
->   soc: fsl: guts: add a central fsl_guts_read() function
->   soc: fsl: guts: make it easier to determine on which SoC we are
->     running
-> 
-> Vladimir Oltean (5):
->   soc: fsl: guts: perform fsl_guts_init() error teardown in reverse
->     order of setup
->   soc: fsl: guts: make fsl_soc_data available after fsl_guts_init()
->   dt-bindings: fsl: layerscape-dcfg: define DCFG_DCSR region
->   soc: fsl: guts: implement the RCW override procedure
->   phy: lynx-10g: use RCW override procedure for dynamic protocol change
+--===============8746857589958803762==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
 
-Even though I intended these changes for linux-phy (they are also
-build-tested there), I'm fine either with these changes taken through
-Vinod's tree with Christophe's ACK for patches 1-8, or through
-Christophe's tree with Vinod's ACK for patch 9, really.
+> diff --git a/tools/bpf/bpftool/common.c b/tools/bpf/bpftool/common.c
+> --- a/tools/bpf/bpftool/common.c
+> +++ b/tools/bpf/bpftool/common.c
+> @@ -53,7 +53,7 @@ void p_err(const char *fmt, ...)
+>  	} else {
+>  		fprintf(stderr, "Error: ");
+>  		vfprintf(stderr, fmt, ap);
+> -		fprintf(stderr, "\n");
+> +		fputc(stderr, '\n');
+                     ^^^^^^
 
-I see on Patchwork there's a minor issue in the commit message of patch 3/9:
-https://patchwork.kernel.org/project/linux-phy/patch/20260721231603.67865-4-vladimir.oltean@nxp.com/
-"WARNING: 'struture' may be misspelled - perhaps 'structure'?"
+The fputc() arguments are reversed. The C standard signature is
+`int fputc(int c, FILE *stream)` - the character comes first, the stream
+second. This passes the FILE* stderr as the int c parameter and '\n' as
+the FILE* stream parameter.
 
-Could this be fixed up while applying, if there is no other feedback?
+Correct form is `fputc('\n', stderr)`.
+
+This constraint violation triggers a -Werror=int-conversion diagnostic and
+breaks the build. If it compiled, at runtime fputc would dereference
+(FILE*)10, crashing the program.
+
+The same argument reversal occurs in 67 conversions across this patch.
+
+> @@ -67,7 +67,7 @@ void p_info(const char *fmt, ...)
+>
+>  	va_start(ap, fmt);
+>  	vfprintf(stderr, fmt, ap);
+> -	fprintf(stderr, "\n");
+> +	fputc(stderr, '\n');
+                     ^^^^^^
+
+Same reversed-argument bug.
+
+> diff --git a/tools/bpf/bpftool/main.c b/tools/bpf/bpftool/main.c
+> --- a/tools/bpf/bpftool/main.c
+> +++ b/tools/bpf/bpftool/main.c
+> @@ -273,7 +273,7 @@ void fprint_hex(FILE *f, void *arg, unsigned int n, const char *sep)
+>  		if (!i)
+>  			/* nothing */;
+>  		else if (!(i % 16))
+> -			fprintf(f, "\n");
+> +			fputc(f, '\n');
+
+Arguments reversed: `fputc(f, '\n')` should be `fputc('\n', f)`.
+
+> diff --git a/tools/bpf/bpftool/prog.c b/tools/bpf/bpftool/prog.c
+> --- a/tools/bpf/bpftool/prog.c
+> +++ b/tools/bpf/bpftool/prog.c
+> @@ -1266,7 +1266,7 @@ static void hex_print(void *data, unsigned int size, FILE *f)
+>  			fprintf(f, "%c%s", c, j == i + 7 ? " " : "");
+>  		}
+>
+> -		fprintf(f, "\n");
+> +		fputc(f, '\n');
+
+Arguments reversed.
+
+> diff --git a/tools/include/nolibc/err.h b/tools/include/nolibc/err.h
+> --- a/tools/include/nolibc/err.h
+> +++ b/tools/include/nolibc/err.h
+> @@ -27,7 +27,7 @@ void vwarnx(const char *fmt, va_list args)
+>  {
+>  	fprintf(stderr, "%s: ", program_invocation_short_name);
+>  	vfprintf(stderr, fmt, args);
+> -	fprintf(stderr, "\n");
+> +	fputc(stderr, '\n');
+
+Arguments reversed. This is in a nolibc header - nolibc's fputc
+(tools/include/nolibc/stdio.h) does `write(fileno(stream), &ch, 1)`.
+With stream==(FILE*)10 fileno dereferences a bogus pointer and crashes.
+
+> diff --git a/tools/mm/page_owner_sort.c b/tools/mm/page_owner_sort.c
+> --- a/tools/mm/page_owner_sort.c
+> +++ b/tools/mm/page_owner_sort.c
+> @@ -867,7 +867,7 @@ struct option longopts[] = {
+>  			}
+>  			if (cull & CULL_STACKTRACE)
+>  				fprintf(fout, ":\n%s", list[i].stacktrace);
+> -			fprintf(fout, "\n");
+> +			fputc(fout, '\n');
+
+Arguments reversed: should be `fputc('\n', fout)`.
+
+> diff --git a/tools/net/ynl/ynltool/main.c b/tools/net/ynl/ynltool/main.c
+> --- a/tools/net/ynl/ynltool/main.c
+> +++ b/tools/net/ynl/ynltool/main.c
+> @@ -156,7 +156,7 @@ void p_err(const char *fmt, ...)
+>  	} else {
+>  		fprintf(stderr, "Error: ");
+>  		vfprintf(stderr, fmt, ap);
+> -		fprintf(stderr, "\n");
+> +		fputc(stderr, '\n');
+>  	}
+>  	va_end(ap);
+>  }
+> @@ -170,7 +170,7 @@ void p_info(const char *fmt, ...)
+>
+>  	va_start(ap, fmt);
+>  	vfprintf(stderr, fmt, ap);
+> -	fprintf(stderr, "\n");
+> +	fputc(stderr, '\n');
+
+Both conversions reverse the arguments.
+
+> diff --git a/tools/objtool/builtin-check.c b/tools/objtool/builtin-check.c
+> --- a/tools/objtool/builtin-check.c
+> +++ b/tools/objtool/builtin-check.c
+> @@ -297,7 +297,7 @@ int make_backup(void)
+>  			fprintf(stderr, " %s", arg);
+>  	}
+>
+> -	fprintf(stderr, "\n");
+> +	fputc(stderr, '\n');
+
+Arguments reversed. objtool runs during the kernel build, so a build
+failure or crash here breaks the build.
+
+> diff --git a/tools/objtool/disas.c b/tools/objtool/disas.c
+> --- a/tools/objtool/disas.c
+> +++ b/tools/objtool/disas.c
+> @@ -537,7 +537,7 @@ void disas_print_insn(FILE *stream, struct disas_context *dctx,
+>  		return;
+>
+>  	if (strcmp(format, "\n") == 0) {
+> -		fprintf(stream, "\n");
+> +		fputc(stream, '\n');
+
+Arguments reversed.
+
+> diff --git a/tools/perf/builtin-c2c.c b/tools/perf/builtin-c2c.c
+> --- a/tools/perf/builtin-c2c.c
+> +++ b/tools/perf/builtin-c2c.c
+> @@ -2511,7 +2511,7 @@ struct perf_hpp hpp = {
+>  		hists__fprintf_headers(&c2c_hists->hists, out);
+>  		once = true;
+>  	} else {
+> -		fprintf(out, "\n");
+> +		fputc(out, '\n');
+>  	}
+
+[ ... ]
+
+> @@ -2590,15 +2590,15 @@ static void perf_c2c__hists_fprintf(FILE *out, struct perf_session *session)
+>  	setup_pager();
+>
+>  	print_c2c__display_stats(out);
+> -	fprintf(out, "\n");
+> +	fputc(out, '\n');
+>  	print_shared_cacheline_info(out);
+> -	fprintf(out, "\n");
+> +	fputc(out, '\n');
+>  	print_c2c_info(out, session);
+>
+>  	if (c2c.stats_only)
+>  		return;
+>
+> -	fprintf(out, "\n");
+> +	fputc(out, '\n');
+
+[ ... ]
+
+> @@ -2606,7 +2606,7 @@ static void perf_c2c__hists_fprintf(FILE *out, struct perf_session *session)
+>
+>  	hists__fprintf(&c2c.hists.hists, true, 0, 0, 0, stdout, true);
+>
+> -	fprintf(out, "\n");
+> +	fputc(out, '\n');
+
+All four conversions reverse the arguments.
+
+> diff --git a/tools/perf/builtin-daemon.c b/tools/perf/builtin-daemon.c
+> --- a/tools/perf/builtin-daemon.c
+> +++ b/tools/perf/builtin-daemon.c
+> @@ -691,7 +691,7 @@ static int cmd_session_list(struct daemon *daemon, union cmd *cmd, FILE *out)
+>  			/* session up time */
+>  			csv_sep, (uint64_t)((curr - daemon->start) / 60));
+>
+> -		fprintf(out, "\n");
+> +		fputc(out, '\n');
+>  	} else {
+
+[ ... ]
+
+> @@ -730,7 +730,7 @@
+>  				/* session up time */
+>  				csv_sep, (uint64_t)((curr - session->start) / 60));
+>
+> -			fprintf(out, "\n");
+> +			fputc(out, '\n');
+
+Both conversions reverse the arguments.
+
+> diff --git a/tools/perf/builtin-lock.c b/tools/perf/builtin-lock.c
+> --- a/tools/perf/builtin-lock.c
+> +++ b/tools/perf/builtin-lock.c
+> @@ -1319,9 +1319,9 @@ static void print_result(void)
+>
+>  		list_for_each_entry(key, &lock_keys, list) {
+>  			key->print(key, st);
+> -			fprintf(lock_output, " ");
+> +			fputc(lock_output, ' ');
+>  		}
+> -		fprintf(lock_output, "\n");
+> +		fputc(lock_output, '\n');
+
+Both `fputc(lock_output, ' ')` and `fputc(lock_output, '\n')` reverse the
+arguments. Correct form: `fputc(' ', lock_output)` and
+`fputc('\n', lock_output)`.
+
+> @@ -1598,7 +1598,7 @@ static void print_header_csv(const char *sep)
+>  		fprintf(lock_output, "%s%s %s", "type", sep, "caller");
+>  		if (verbose > 0)
+>  			fprintf(lock_output, "%s %s", sep, "stacktrace");
+> -		fprintf(lock_output, "\n");
+> +		fputc(lock_output, '\n');
+
+[ ... ]
+
+> @@ -1629,7 +1629,7 @@ static void print_lock_stat_stdio(struct lock_contention *con, struct lock_stat *st)
+>
+>  	list_for_each_entry(key, &lock_keys, list) {
+>  		key->print(key, st);
+> -		fprintf(lock_output, " ");
+> +		fputc(lock_output, ' ');
+>  	}
+
+[ ... ]
+
+> @@ -1687,7 +1687,7 @@ static void print_lock_stat_csv(struct lock_contention *con, struct lock_stat *st,
+>  	case LOCK_AGGR_CALLER:
+>  		fprintf(lock_output, "%s%s %s", get_type_flags_name(st->flags), sep, st->name);
+>  		if (verbose <= 0)
+> -			fprintf(lock_output, "\n");
+> +			fputc(lock_output, '\n');
+
+[ ... ]
+
+> @@ -1721,7 +1721,7 @@ static void print_lock_stat_csv(struct lock_contention *con, struct lock_stat *st,
+>  			get_symbol_name_offset(kmap, sym, ip, buf, sizeof(buf));
+>  			fprintf(lock_output, "%s %#lx %s", i ? ":" : sep, (unsigned long) ip, buf);
+>  		}
+> -		fprintf(lock_output, "\n");
+> +		fputc(lock_output, '\n');
+>  	}
+>  }
+
+[ ... ]
+
+> @@ -1781,7 +1781,7 @@ static void print_footer_csv(int total, int bad, struct lock_contention_fails *fails,
+>  		for (i = 0; i < BROKEN_MAX; i++)
+>  			fprintf(lock_output, "%s bad_%s=%d", sep, name[i], bad_hist[i]);
+>  	}
+> -	fprintf(lock_output, "\n");
+> +	fputc(lock_output, '\n');
+
+All six conversions in builtin-lock.c reverse the arguments.
+
+> diff --git a/tools/perf/builtin-script.c b/tools/perf/builtin-script.c
+> --- a/tools/perf/builtin-script.c
+> +++ b/tools/perf/builtin-script.c
+> @@ -2561,7 +2561,7 @@
+>
+>  	perf_sample__fprintf_ipc(sample, evsel, fp);
+>
+> -	fprintf(fp, "\n");
+> +	fputc(fp, '\n');
+
+[ ... ]
+
+> @@ -2815,7 +2815,7 @@
+>  				    cursor, symbol_conf.bt_stop_list, fp);
+>  	}
+>
+> -	fprintf(fp, "\n");
+> +	fputc(fp, '\n');
+
+[ ... ]
+
+> @@ -3271,11 +3271,11 @@ static int list_available_languages_cb(struct scripting_ops *ops, const char *spec)
+>
+>  static void list_available_languages(void)
+>  {
+> -	fprintf(stderr, "\n");
+> +	fputc(stderr, '\n');
+>  	fprintf(stderr, "Scripting language extensions (used in "
+>  		"perf script -s [spec:]script.[spec]):\n\n");
+>  	script_spec__for_each(&list_available_languages_cb);
+> -	fprintf(stderr, "\n");
+> +	fputc(stderr, '\n');
+
+All four conversions reverse the arguments.
+
+> diff --git a/tools/perf/ui/gtk/util.c b/tools/perf/ui/gtk/util.c
+> --- a/tools/perf/ui/gtk/util.c
+> +++ b/tools/perf/ui/gtk/util.c
+> @@ -37,7 +37,7 @@ static int perf_gtk__error(const char *format, va_list args)
+>  	    vasprintf(&msg, format, args) < 0) {
+>  		fprintf(stderr, "Error:\n");
+>  		vfprintf(stderr, format, args);
+> -		fprintf(stderr, "\n");
+> +		fputc(stderr, '\n');
+>  		return -1;
+>  	}
+>
+> @@ -62,7 +62,7 @@ static int perf_gtk__warning_info_bar(const char *format, va_list args)
+>  	    vasprintf(&msg, format, args) < 0) {
+>  		fprintf(stderr, "Warning:\n");
+>  		vfprintf(stderr, format, args);
+> -		fprintf(stderr, "\n");
+> +		fputc(stderr, '\n');
+>  		return -1;
+>  	}
+>
+> @@ -83,7 +83,7 @@ static int perf_gtk__warning_statusbar(const char *format, va_list args)
+>  	    vasprintf(&msg, format, args) < 0) {
+>  		fprintf(stderr, "Warning:\n");
+>  		vfprintf(stderr, format, args);
+> -		fprintf(stderr, "\n");
+> +		fputc(stderr, '\n');
+
+All three conversions reverse the arguments.
+
+> diff --git a/tools/perf/ui/stdio/hist.c b/tools/perf/ui/stdio/hist.c
+> --- a/tools/perf/ui/stdio/hist.c
+> +++ b/tools/perf/ui/stdio/hist.c
+> @@ -691,7 +691,7 @@
+>  		}
+>
+>  next_line:
+> -		fprintf(fp, "\n");
+> +		fputc(fp, '\n');
+>  	}
+
+[ ... ]
+
+> @@ -783,7 +783,7 @@ hists__fprintf_standard_headers(struct hists *hists,
+>  		if (line)
+>  			fprintf(fp, "# ");
+>  		fprintf_line(hists, hpp, line, fp);
+> -		fprintf(fp, "\n");
+> +		fputc(fp, '\n');
+>  	}
+
+[ ... ]
+
+> @@ -806,10 +806,10 @@ hists__fprintf_standard_headers(struct hists *hists,
+>
+>  		width = fmt->width(fmt, hpp, hists);
+>  		for (i = 0; i < width; i++)
+> -			fprintf(fp, ".");
+> +			fputc(fp, '.');
+>  	}
+>
+> -	fprintf(fp, "\n");
+> +	fputc(fp, '\n');
+
+All four conversions reverse the arguments.
+
+> diff --git a/tools/perf/util/debug.c b/tools/perf/util/debug.c
+> --- a/tools/perf/util/debug.c
+> +++ b/tools/perf/util/debug.c
+> @@ -350,7 +350,7 @@ void __dump_stack(FILE *file, void **stackdump, size_t stackdump_size)
+>  			fprintf(file, "    #%zd %p ", i, stackdump[i]);
+>
+>  		map__fprintf_srcline(al.map, al.addr, "", file);
+> -		fprintf(file, "\n");
+> +		fputc(file, '\n');
+
+Arguments reversed.
+
+> diff --git a/tools/perf/util/header.c b/tools/perf/util/header.c
+> --- a/tools/perf/util/header.c
+> +++ b/tools/perf/util/header.c
+> @@ -2454,7 +2454,7 @@ static void __print_pmu_caps(FILE *fp, int nr_caps, char **caps, char *pmu_name)
+>  		delimiter = ", ";
+>  	}
+>
+> -	fprintf(fp, "\n");
+> +	fputc(fp, '\n');
+>  }
+
+[ ... ]
+
+> @@ -2513,7 +2513,7 @@ static void print_pmu_mappings(struct feat_fd *ff, FILE *fp)
+>  		pmu_num--;
+>  	}
+>
+> -	fprintf(fp, "\n");
+> +	fputc(fp, '\n');
+
+[ ... ]
+
+> @@ -4349,7 +4349,7 @@ int perf_header__fprintf_info(struct perf_session *session, FILE *fp, bool full)
+>  			fprintf(fp, "%s ", feat_ops[bit].name);
+>  	}
+>
+> -	fprintf(fp, "\n");
+> +	fputc(fp, '\n');
+
+All three conversions reverse the arguments.
+
+> diff --git a/tools/perf/util/intel-pt-decoder/intel-pt-log.c b/tools/perf/util/intel-pt-decoder/intel-pt-log.c
+> --- a/tools/perf/util/intel-pt-decoder/intel-pt-log.c
+> +++ b/tools/perf/util/intel-pt-decoder/intel-pt-log.c
+> @@ -70,14 +70,14 @@ static void intel_pt_print_data(const unsigned char *buf, int len, uint64_t pos,
+>  	int i;
+>
+>  	for (i = 0; i < indent; i++)
+> -		fprintf(f, " ");
+> +		fputc(f, ' ');
+>
+>  	fprintf(f, "  %08" PRIx64 ": ", pos);
+>  	for (i = 0; i < len; i++)
+>  		fprintf(f, " %02x", buf[i]);
+>  	for (; i < 16; i++)
+>  		fprintf(f, "   ");
+> -	fprintf(f, " ");
+> +	fputc(f, ' ');
+>  }
+>
+>  static void intel_pt_print_no_data(uint64_t pos, int indent)
+> @@ -85,12 +85,12 @@ static void intel_pt_print_no_data(uint64_t pos, int indent)
+>  	int i;
+>
+>  	for (i = 0; i < indent; i++)
+> -		fprintf(f, " ");
+> +		fputc(f, ' ');
+>
+>  	fprintf(f, "  %08" PRIx64 ": ", pos);
+>  	for (i = 0; i < 16; i++)
+>  		fprintf(f, "   ");
+> -	fprintf(f, " ");
+> +	fputc(f, ' ');
+>  }
+
+All four conversions reverse the arguments.
+
+> diff --git a/tools/perf/util/libbfd.c b/tools/perf/util/libbfd.c
+> --- a/tools/perf/util/libbfd.c
+> +++ b/tools/perf/util/libbfd.c
+> @@ -603,7 +603,7 @@
+>  		} else
+>  			srcline = NULL;
+>
+> -		fprintf(s, "\n");
+> +		fputc(s, '\n');
+
+Arguments reversed. The variable s is an open_memstream() stream.
+
+> diff --git a/tools/perf/util/stat-display.c b/tools/perf/util/stat-display.c
+> --- a/tools/perf/util/stat-display.c
+> +++ b/tools/perf/util/stat-display.c
+> @@ -529,7 +529,7 @@ static void print_metric_json(struct perf_stat_config *config __maybe_unused,
+>  		}
+>  	}
+>  	if (!config->metric_only)
+> -		fprintf(out, "}");
+> +		fputc(out, '}');
+>  }
+
+[ ... ]
+
+> @@ -1316,7 +1316,7 @@ static void print_header_std(struct perf_stat_config *config,
+>  	FILE *output = config->output;
+>  	int i;
+>
+> -	fprintf(output, "\n");
+> +	fputc(output, '\n');
+>  	fprintf(output, " Performance counter stats for ");
+
+[ ... ]
+
+> @@ -1333,7 +1333,7 @@ static void print_header_std(struct perf_stat_config *config,
+>  	else
+>  		fprintf(output, "thread id \'%s", _target->tid);
+>
+> -	fprintf(output, "\'");
+> +	fputc(output, '\'');
+
+[ ... ]
+
+> @@ -1406,9 +1406,9 @@ static void print_table(struct perf_stat_config *config, FILE *output, double avg)
+>  		fprintf(output, " %17.9f (%+.9f) ", run, run - avg);
+>
+>  		for (h = 0; h < n; h++)
+> -			fprintf(output, "#");
+> +			fputc(output, '#');
+>
+> -		fprintf(output, "\n");
+> +		fputc(output, '\n');
+>  	}
+
+[ ... ]
+
+> @@ -1428,7 +1428,7 @@ static void print_footer(struct perf_stat_config *config)
+>  		return;
+>
+>  	if (!config->null_run)
+> -		fprintf(output, "\n");
+> +		fputc(output, '\n');
+
+All six conversions reverse the arguments.
+
+> diff --git a/tools/perf/util/values.c b/tools/perf/util/values.c
+> --- a/tools/perf/util/values.c
+> +++ b/tools/perf/util/values.c
+> @@ -217,7 +217,7 @@ static void perf_read_values__display_pretty(FILE *fp,
+>  	fprintf(fp, "# %*s  %*s", pidwidth, "PID", tidwidth, "TID");
+>  	for (j = 0; j < values->num_counters; j++)
+>  		fprintf(fp, "  %*s", counterwidth[j], evsel__name(values->counters[j]));
+> -	fprintf(fp, "\n");
+> +	fputc(fp, '\n');
+
+[ ... ]
+
+> @@ -225,7 +225,7 @@ static void perf_read_values__display_pretty(FILE *fp,
+>  		for (j = 0; j < values->num_counters; j++)
+>  			fprintf(fp, "  %*" PRIu64,
+>  				counterwidth[j], values->value[i][j]);
+> -		fprintf(fp, "\n");
+> +		fputc(fp, '\n');
+
+Both conversions reverse the arguments.
+
+> diff --git a/tools/power/acpi/tools/acpidump/apdump.c b/tools/power/acpi/tools/acpidump/apdump.c
+> --- a/tools/power/acpi/tools/acpidump/apdump.c
+> +++ b/tools/power/acpi/tools/acpidump/apdump.c
+> @@ -171,7 +171,7 @@ ap_dump_table_buffer(struct acpi_table_header *table,
+>  	acpi_ut_dump_buffer_to_file(gbl_output_file,
+>  				    ACPI_CAST_PTR(u8, table), table_length,
+>  				    DB_BYTE_DISPLAY, 0);
+> -	fprintf(gbl_output_file, "\n");
+> +	fputc(gbl_output_file, '\n');
+
+Arguments reversed.
+
+> diff --git a/tools/power/x86/intel-speed-select/isst-display.c b/tools/power/x86/intel-speed-select/isst-display.c
+> --- a/tools/power/x86/intel-speed-select/isst-display.c
+> +++ b/tools/power/x86/intel-speed-select/isst-display.c
+> @@ -122,7 +122,7 @@ static void format_and_print(FILE *outf, int level, char *header, char *value)
+>
+>  	if (level == 0) {
+>  		if (header)
+> -			fprintf(outf, "{");
+> +			fputc(outf, '{');
+
+[ ... ]
+
+> @@ -138,7 +138,7 @@ static void format_and_print(FILE *outf, int level, char *header, char *value)
+>
+>  		if (value) {
+>  			if (last_level != level)
+> -				fprintf(outf, "\n");
+> +				fputc(outf, '\n');
+
+[ ... ]
+
+> @@ -156,7 +156,7 @@ static void format_and_print(FILE *outf, int level, char *header, char *value)
+>  					fprintf(outf, "\n%s}", delimiters);
+>  			}
+>  			if (abs(last_level - level) < 3)
+> -				fprintf(outf, "\n");
+> +				fputc(outf, '\n');
+
+All three conversions reverse the arguments.
+
+> diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+> --- a/tools/power/x86/turbostat/turbostat.c
+> +++ b/tools/power/x86/turbostat/turbostat.c
+> @@ -9099,7 +9099,7 @@ void dump_cpuid_hypervisor(void)
+>  	dump_word_chars(ebx);
+>  	dump_word_chars(ecx);
+>  	dump_word_chars(edx);
+> -	fprintf(outf, "\n");
+> +	fputc(outf, '\n');
+>  }
+
+[ ... ]
+
+> @@ -9749,7 +9749,7 @@
+>  		fprintf(outf, " siblings");
+>  		for (ht_id = 0; ht_id <= MAX_HT_ID; ++ht_id)
+>  			fprintf(outf, " %d", cpus[i].ht_sibling_cpu_id[ht_id]);
+> -		fprintf(outf, "\n");
+> +		fputc(outf, '\n');
+
+Both conversions reverse the arguments.
+
+> diff --git a/tools/testing/selftests/bpf/benchs/bench_htab_mem.c b/tools/testing/selftests/bpf/benchs/bench_htab_mem.c
+> --- a/tools/testing/selftests/bpf/benchs/bench_htab_mem.c
+> +++ b/tools/testing/selftests/bpf/benchs/bench_htab_mem.c
+> @@ -148,7 +148,7 @@ static const struct htab_mem_use_case *htab_mem_find_use_case_or_exit(const char *name)
+>  	fprintf(stderr, "available use case:");
+>  	for (i = 0; i < ARRAY_SIZE(use_cases); i++)
+>  		fprintf(stderr, " %s", use_cases[i].name);
+> -	fprintf(stderr, "\n");
+> +	fputc(stderr, '\n');
+
+Arguments reversed.
+
+> diff --git a/tools/testing/selftests/bpf/jit_disasm_helpers.c b/tools/testing/selftests/bpf/jit_disasm_helpers.c
+> --- a/tools/testing/selftests/bpf/jit_disasm_helpers.c
+> +++ b/tools/testing/selftests/bpf/jit_disasm_helpers.c
+> @@ -228,7 +228,7 @@ struct bpf_prog_info info = {};
+>  	for (pc = 0, i = 0; i < jited_funcs; ++i) {
+>  		fprintf(text_out, "func #%d:\n", i);
+>  		disasm_one_func(text_out, image + pc, func_lens[i]);
+> -		fprintf(text_out, "\n");
+> +		fputc(text_out, '\n');
+
+Arguments reversed.
+
+> diff --git a/tools/testing/selftests/bpf/test_progs.c b/tools/testing/selftests/bpf/test_progs.c
+> --- a/tools/testing/selftests/bpf/test_progs.c
+> +++ b/tools/testing/selftests/bpf/test_progs.c
+> @@ -383,7 +383,7 @@ static void print_test_result(const struct prog_test_def *test, const struct test_state *test_state)
+>  	else
+>  		fprintf(env.stdout_saved, "OK (SKIP: %d/%d)", skipped_cnt, subtests_cnt);
+>
+> -	fprintf(env.stdout_saved, "\n");
+> +	fputc(env.stdout_saved, '\n');
+>  }
+
+[ ... ]
+
+> @@ -391,7 +391,7 @@ static void print_test_log(char *log_buf, size_t log_cnt)
+>  	log_buf[log_cnt] = '\0';
+>  	fprintf(env.stdout_saved, "%s", log_buf);
+>  	if (log_buf[log_cnt - 1] != '\n')
+> -		fprintf(env.stdout_saved, "\n");
+> +		fputc(env.stdout_saved, '\n');
+>  }
+
+[ ... ]
+
+> @@ -409,7 +409,7 @@ static void print_subtest_name(int test_num, int subtest_num,
+>  	if (result)
+>  		fprintf(env.stdout_saved, ":%s", result);
+>
+> -	fprintf(env.stdout_saved, "\n");
+> +	fputc(env.stdout_saved, '\n');
+
+All three conversions reverse the arguments.
+
+> diff --git a/tools/testing/selftests/drivers/net/hw/ncdevmem.c b/tools/testing/selftests/drivers/net/hw/ncdevmem.c
+> --- a/tools/testing/selftests/drivers/net/hw/ncdevmem.c
+> +++ b/tools/testing/selftests/drivers/net/hw/ncdevmem.c
+> @@ -135,7 +135,7 @@ static void pr_err(const char *fmt, ...)
+>
+>  	if (errno != 0)
+>  		fprintf(stderr, ": %s", strerror(errno));
+> -	fprintf(stderr, "\n");
+> +	fputc(stderr, '\n');
+
+Arguments reversed.
+
+> diff --git a/tools/testing/selftests/kvm/s390/keyop.c b/tools/testing/selftests/kvm/s390/keyop.c
+> --- a/tools/testing/selftests/kvm/s390/keyop.c
+> +++ b/tools/testing/selftests/kvm/s390/keyop.c
+> @@ -117,7 +117,7 @@ static void dump_sk(const unsigned char skeys[], const char *descr)
+>  		fprintf(stderr, "# %3d: ", i);
+>  		for (j = 0; j < 32; j++)
+>  			fprintf(stderr, "%02x ", skeys[i + j]);
+> -		fprintf(stderr, "\n");
+> +		fputc(stderr, '\n');
+
+Arguments reversed.
+
+> diff --git a/tools/testing/selftests/net/mptcp/pm_nl_ctl.c b/tools/testing/selftests/net/mptcp/pm_nl_ctl.c
+> --- a/tools/testing/selftests/net/mptcp/pm_nl_ctl.c
+> +++ b/tools/testing/selftests/net/mptcp/pm_nl_ctl.c
+> @@ -208,7 +208,7 @@
+>  		}
+>  		if (server_side)
+>  			fprintf(stderr, ",server_side:1");
+> -		fprintf(stderr, "\n");
+> +		fputc(stderr, '\n');
+
+Arguments reversed.
+
+> diff --git a/tools/testing/selftests/net/psock_tpacket.c b/tools/testing/selftests/net/psock_tpacket.c
+> --- a/tools/testing/selftests/net/psock_tpacket.c
+> +++ b/tools/testing/selftests/net/psock_tpacket.c
+> @@ -116,7 +116,7 @@ static int pfsocket(int ver)
+>  static void status_bar_update(void)
+>  {
+>  	if (total_packets % 10 == 0) {
+> -		fprintf(stderr, ".");
+> +		fputc(stderr, '.');
+
+[ ... ]
+
+> @@ -825,7 +825,7 @@ static int test_tpacket(int version, int type)
+>  	unmap_ring(sock, &ring);
+>  	close(sock);
+>
+> -	fprintf(stderr, "\n");
+> +	fputc(stderr, '\n');
+
+Both conversions reverse the arguments.
+
+> diff --git a/tools/testing/selftests/net/txtimestamp.c b/tools/testing/selftests/net/txtimestamp.c
+> --- a/tools/testing/selftests/net/txtimestamp.c
+> +++ b/tools/testing/selftests/net/txtimestamp.c
+> @@ -200,10 +200,10 @@ static void __print_timestamp(const char *name, struct timespec *cur,
+>  		ts_delta = timespec_to_ns64(cur) - timespec_to_ns64(&ts_usr);
+>  		fprintf(stderr, "  (USR +");
+>  		__print_ts_delta_formatted(ts_delta);
+> -		fprintf(stderr, ")");
+> +		fputc(stderr, ')');
+>  	}
+>
+> -	fprintf(stderr, "\n");
+> +	fputc(stderr, '\n');
+>  }
+
+[ ... ]
+
+> @@ -254,7 +254,7 @@ static void print_timing_event(char *name, struct timing_event *te)
+>  	__print_ts_delta_formatted(te->min);
+>  	fprintf(stderr, ", max=");
+>  	__print_ts_delta_formatted(te->max);
+> -	fprintf(stderr, "\n");
+> +	fputc(stderr, '\n');
+>  }
+
+[ ... ]
+
+> @@ -271,7 +271,7 @@ static void print_payload(char *data, int len)
+>  	fprintf(stderr, "payload: ");
+>  	for (i = 0; i < len; i++)
+>  		fprintf(stderr, "%02hhx ", data[i]);
+> -	fprintf(stderr, "\n");
+> +	fputc(stderr, '\n');
+>  }
+
+[ ... ]
+
+> @@ -933,7 +933,7 @@ int main(int argc, char **argv)
+>  	fprintf(stderr, "protocol:     %s\n", sock_names[cfg_proto]);
+>  	fprintf(stderr, "payload:      %u\n", cfg_payload_len);
+>  	fprintf(stderr, "server port:  %u\n", dest_port);
+> -	fprintf(stderr, "\n");
+> +	fputc(stderr, '\n');
+
+All four conversions reverse the arguments.
+
+> diff --git a/tools/testing/selftests/powerpc/nx-gzip/gunz_test.c b/tools/testing/selftests/powerpc/nx-gzip/gunz_test.c
+> --- a/tools/testing/selftests/powerpc/nx-gzip/gunz_test.c
+> +++ b/tools/testing/selftests/powerpc/nx-gzip/gunz_test.c
+> @@ -363,7 +363,7 @@
+>  			goto err3;
+>  		fprintf(stderr, "%02x ", tmp[i]);
+>  		if (i == 5)
+> -			fprintf(stderr, "\n");
+> +			fputc(stderr, '\n');
+
+Arguments reversed.
+
+> diff --git a/tools/testing/selftests/vfio/lib/include/libvfio/assert.h b/tools/testing/selftests/vfio/lib/include/libvfio/assert.h
+> --- a/tools/testing/selftests/vfio/lib/include/libvfio/assert.h
+> +++ b/tools/testing/selftests/vfio/lib/include/libvfio/assert.h
+> @@ -10,7 +10,7 @@ #define SELFTESTS_VFIO_LIB_INCLUDE_LIBVFIO_ASSERT_H
+>
+>  #define VFIO_LOG_AND_EXIT(...) do {		\
+>  	fprintf(stderr, "  " __VA_ARGS__);	\
+> -	fprintf(stderr, "\n");			\
+> +	fputc(stderr, '\n');			\
+
+Arguments reversed in a widely-used macro. Every expansion of this macro
+is broken.
+
+> diff --git a/tools/testing/selftests/vfio/lib/libvfio.c b/tools/testing/selftests/vfio/lib/libvfio.c
+> --- a/tools/testing/selftests/vfio/lib/libvfio.c
+> +++ b/tools/testing/selftests/vfio/lib/libvfio.c
+> @@ -60,16 +60,16 @@ char **vfio_selftests_get_bdfs(int *argc, char *argv[], int *nr_bdfs)
+>  	}
+>
+>  	fprintf(stderr, "Unable to determine which device(s) to use, skipping test.\n");
+> -	fprintf(stderr, "\n");
+> +	fputc(stderr, '\n');
+>  	fprintf(stderr, "To pass the device address via environment variable:\n");
+> -	fprintf(stderr, "\n");
+> +	fputc(stderr, '\n');
+>  	fprintf(stderr, "    export VFIO_SELFTESTS_BDF=\"segment:bus:device.function\"\n");
+>  	fprintf(stderr, "    %s [options]\n", argv[0]);
+> -	fprintf(stderr, "\n");
+> +	fputc(stderr, '\n');
+>  	fprintf(stderr, "To pass the device address(es) via argv:\n");
+> -	fprintf(stderr, "\n");
+> +	fputc(stderr, '\n');
+>  	fprintf(stderr, "    %s [options] segment:bus:device.function ...\n", argv[0]);
+> -	fprintf(stderr, "\n");
+> +	fputc(stderr, '\n');
+
+All five conversions reverse the arguments.
+
+> diff --git a/tools/testing/vsock/vsock_diag_test.c b/tools/testing/vsock/vsock_diag_test.c
+> --- a/tools/testing/vsock/vsock_diag_test.c
+> +++ b/tools/testing/vsock/vsock_diag_test.c
+> @@ -86,7 +86,7 @@ static void print_vsock_addr(FILE *fp, unsigned int cid, unsigned int port)
+>  		fprintf(fp, "%u:", cid);
+>
+>  	if (port == VMADDR_PORT_ANY)
+> -		fprintf(fp, "*");
+> +		fputc(fp, '*');
+
+[ ... ]
+
+> @@ -94,7 +94,7 @@ static void print_vsock_addr(FILE *fp, unsigned int cid, unsigned int port)
+>  static void print_vsock_stat(FILE *fp, struct vsock_stat *st)
+>  {
+>  	print_vsock_addr(fp, st->msg.vdiag_src_cid, st->msg.vdiag_src_port);
+> -	fprintf(fp, " ");
+> +	fputc(fp, ' ');
+
+Both conversions reverse the arguments.
+
+> diff --git a/tools/thermal/tmon/sysfs.c b/tools/thermal/tmon/sysfs.c
+> --- a/tools/thermal/tmon/sysfs.c
+> +++ b/tools/thermal/tmon/sysfs.c
+> @@ -522,7 +522,7 @@ int update_thermal_data()
+>  	}
+>
+>  	if (tmon_log) {
+> -		fprintf(tmon_log, "\n");
+> +		fputc(tmon_log, '\n');
+
+Arguments reversed.
+
+> diff --git a/tools/thermal/tmon/tmon.c b/tools/thermal/tmon/tmon.c
+> --- a/tools/thermal/tmon/tmon.c
+> +++ b/tools/thermal/tmon/tmon.c
+> @@ -199,7 +199,7 @@
+>  		fprintf(tmon_log, "%s%d ", ptdata.cdi[i].type,
+>  			ptdata.cdi[i].instance);
+>
+> -	fprintf(tmon_log, "\n");
+> +	fputc(tmon_log, '\n');
+
+Arguments reversed.
+
+> diff --git a/tools/tracing/latency/latency-collector.c b/tools/tracing/latency/latency-collector.c
+> --- a/tools/tracing/latency/latency-collector.c
+> +++ b/tools/tracing/latency/latency-collector.c
+> @@ -1999,7 +1999,7 @@
+>  "been enabled. Random sleep is intended for the following tracers:\n");
+>  			for (i = 0; random_tracers[i]; i++)
+>  				fprintf(stderr, "%s\n", random_tracers[i]);
+> -			fprintf(stderr, "\n");
+> +			fputc(stderr, '\n');
+
+Arguments reversed.
+
+> diff --git a/tools/tracing/rtla/src/common.c b/tools/tracing/rtla/src/common.c
+> --- a/tools/tracing/rtla/src/common.c
+> +++ b/tools/tracing/rtla/src/common.c
+> @@ -449,7 +449,7 @@ void common_usage(const char *tool, const char *mode,
+>  		fprintf(stderr, "%s [-h] ", mode);
+>
+>  	print_msg_array(start_msgs);
+> -	fprintf(stderr, "\n");
+> +	fputc(stderr, '\n');
+
+Arguments reversed.
+
+> diff --git a/tools/tracing/rtla/src/utils.c b/tools/tracing/rtla/src/utils.c
+> --- a/tools/tracing/rtla/src/utils.c
+> +++ b/tools/tracing/rtla/src/utils.c
+> @@ -67,7 +67,7 @@ void fatal(const char *fmt, ...)
+>  	va_start(ap, fmt);
+>  	vfprintf(stderr, fmt, ap);
+>  	va_end(ap);
+> -	fprintf(stderr, "\n");
+> +	fputc(stderr, '\n');
+
+Arguments reversed.
+
+> diff --git a/tools/usb/ffs-test.c b/tools/usb/ffs-test.c
+> --- a/tools/usb/ffs-test.c
+> +++ b/tools/usb/ffs-test.c
+> @@ -562,7 +562,7 @@ empty_out_buf(struct thread *ignore, const void *buf, size_t nbytes)
+>  				fprintf(stderr, "%4zd:", len);
+>  			fprintf(stderr, " %02x", *p);
+>  			if (31 == (len % 32))
+> -				fprintf(stderr, "\n");
+> +				fputc(stderr, '\n');
+
+Arguments reversed.
+
+> diff --git a/tools/verification/rv/src/in_kernel.c b/tools/verification/rv/src/in_kernel.c
+> --- a/tools/verification/rv/src/in_kernel.c
+> +++ b/tools/verification/rv/src/in_kernel.c
+> @@ -667,7 +667,7 @@ static void ikm_usage_print_reactors(void)
+>  		end = strstr(start, "\n");
+>  	}
+>
+> -	fprintf(stderr, "\n");
+> +	fputc(stderr, '\n');
+
+Arguments reversed.
+
+Looking at the lore discussion by Andi Kleen and Steven Rostedt, they
+raised a concern that GCC already performs this fprintf->fputc optimization
+automatically, making the patch unnecessary code churn. The author has not
+responded to this feedback.
+
+Beyond the optimization question, the technical implementation has a
+systematic bug: every fputc() conversion in this patch reverses the
+argument order.
+
+
+---
+AI reviewed your patch. Please fix the bug or email reply why it's not a bug.
+See: https://github.com/kernel-patches/vmtest/blob/master/ci/claude/README.md
+
+CI run summary: https://github.com/kernel-patches/bpf/actions/runs/30016526959
+--===============8746857589958803762==--
 
