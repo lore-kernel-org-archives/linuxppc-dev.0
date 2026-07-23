@@ -1,78 +1,78 @@
-Return-Path: <linuxppc-dev+bounces-24683-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24685-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E5E17C4453D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2026 00:03:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 596CEC44532
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2026 00:04:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h5BBj4yF5z30gX;
-	Thu, 23 Jul 2026 10:02:21 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h5BBk2vr8z3brL;
+	Thu, 23 Jul 2026 10:02:22 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784764941;
-	cv=none; b=gq4GqMqGBeZNTMwvLgxF7njphyFlv0GAHfBa8H7ZGFApr7aS6gZ1uEJOHmS7/kme8PClibsKqB1+LGZX3O7rFNEWrlvcE0TTsjUdiaN/4Fl02L8wfT3ZKVATxRgcyWgw16Lk97bkorzalDp21XYcp4eADkU1x/+s6SYF4bc4jRhjGcKyO1Jy6fJa3H7i/QT32InOyfDKxlcuDMU7b5ofmlGB+A/PfGYq62HnRkxiWbc5MHF8oUqnyq9ofk/UsFOILcMDBS7Wc6fiaQ4rN60cNg270gw2XJhCOY6OP0GiPOO5aSsxkI5arJkcW2gm1YSUpMdqfY1/xxaYPe8HzLOmpA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784764942;
+	cv=none; b=fD3Ry6XZk66i5hMjabABtzE3zzMs1JsIprQoJ8kWjGIQ0a2z8+astaE+uRdWfiXZhvbTRmq3oJxq6rmX4X85OyWmzP0+alY6FWQk6AzesQF5lYQQKus4AupacK4hmzAWuSGD1tP1Mq2T5HN/JwpHgmLeagGyvO/Y1UNyS3cGUqhJdA+a/k/7+3eJbyq9rwXN2l5mEZYS/UBIwaRG3VE9ixwBTQYhp+W2k0CT6Lq1jhGRN0H8FDP244JQ9CnmTJrh4qkAzN/g3PseQVxFzSnwT+BbB0OTnQt60jJMaEF2HiIbGxWD4WvkVvKU7r6Up6HzGoCfvZsfPBEvGHMIGVRMrQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784764941; c=relaxed/relaxed;
-	bh=9oZF5eKYWTktbd3MCUKEqg1YGV0TwxcKFYdkYfPr/j8=;
+	t=1784764942; c=relaxed/relaxed;
+	bh=aTujkMcgyHlk3C9g4oRTB5pn7toMmHXYhqj5kr7m5UU=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Myojvyrnm4CwYYZBL3KYtZ29pWg9uTpf0Ee4VKnrIQhqKXIvL7b1V/OXT02hgjZqzHiI35rnITJqDUBFJZHKOeRQA7ja0ORAWiKNaVJLuUXj4C7OG11lo54vlJLgqNH8zwCdOKcp/rhvXIRLX9WsJa1gdNApdpN5PI5itEqFNARWsKlY9H2rO3MJ0ktj52fmJTymL49USh2p9a5ugTLV09aZiR2pk1VCmbFcupBQG/cwDcy+O+vBivQPBC4rPblGgZ4sYEi//4FcUv6dO2yuSuluMmrU7Eu7wWPlUJ5TxAtg8IvsL7PFPJOUnilHmaVTuJLizrw3g634sB8TTX1vmw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JBXKYCDG; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 MIME-Version; b=PugIa1cQ7NDMAqrAvGACpgpTpXFjQtBuqowOt7Nydv1JoBloTHSKdcKZ+5E5pWaPCkWaxuKOJwwtUiE/P2nJ6Aeeobx6WJoJhPXqreOHQOONLnNZOOL1YdqGdq+/QftbxC+H/8XDJYPzDmCohMzfyOUc/ylmAZGGaIQVEo7/9uUDDwMqyr1kWboqZEowDgGNc1OaIHiR+DMCwuQO4FMbRMqVsdk0/hauNBdz0ZA8gsxU/SUfFzodeRxz/9Vobv8uUtmpwE7gZoUa1VCCKKfpUJwkrguWFDjTrohZcgok4gb9fZ/0gaj8xJ2HdtqZq/Q/WhVA5fcNybPQm5sXLv1P6A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=hOAJAkcO; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JBXKYCDG;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=hOAJAkcO;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h5BBR3Zsmz2ynH
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2026 10:02:06 +1000 (AEST)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66MIBops704742;
-	Thu, 23 Jul 2026 00:02:03 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h5BBZ5tQDz2yvV
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2026 10:02:14 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66MICBC9713996;
+	Thu, 23 Jul 2026 00:02:12 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=9oZF5eKYWTktbd3MC
-	UKEqg1YGV0TwxcKFYdkYfPr/j8=; b=JBXKYCDGE2Qt4MxZ/47dd5HnP+bc4o0tt
-	dM9OSZyy3v9aL9aiJVBtQMGW9c8mApWJYrd3Pqp6uDlmWRPf6+nSqrVNW0oj6GnP
-	/NVERgCRKyipbdUgEbCvdTA2qn2ESH5F1NvLSWiOnO9dmbr0V6yjwaT9Zp9cPj8U
-	vqc9Bx779YYRovSIc0ByaGdKufppJOVZPXaie4vIRAHxUlhqYyMk9PG7gJjeoYSK
-	eQUDna9HxYAb35ZowGZgcZ0HiSsRxGrwBQ9norMM3uvw+Jq17Ftv3TsfFisnPrQu
-	7mpRLqfuRWGVg4mTf/furGGh1dwhZd2ImzGmD0Owb1XSDyZM/WXjQ==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fg7abmyn6-1
+	:mime-version:references:subject:to; s=pp1; bh=aTujkMcgyHlk3C9g4
+	oRTB5pn7toMmHXYhqj5kr7m5UU=; b=hOAJAkcOE1N7y7OE6eRKz+IWo06uLtamL
+	mo4/EAacc/7nDTYXDi6boyK8IvFNgk8lH2DoOT/UiNmFhe0dvURKC7BmSYOMrAqi
+	+llbcmEPC51xUFgRX3pft5S2zjyEQ96i5S3XKNGV0xfbFKFQb6qjQiHN8F03Z4mz
+	MvbdozgFlDWC/WjmTAr8aDoM4GW1GjELTbreBj2VlPmkTDQeHQHKHMjUFI9I8fuu
+	ZyxFXI3fHgsexF2hmeGqso+r07oejIT7mfArwQ3QG4/pFCQmPyA6IHYEE3guNVjX
+	NIMRxMW9YRC3uJmEfUWDOPtlikA39QwhdZ+y2bap7CJTTqPiS51Dg==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fg7914xq5-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 23 Jul 2026 00:02:03 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66MNnfgA032317;
-	Thu, 23 Jul 2026 00:02:02 GMT
-Received: from smtprelay02.dal12v.mail.ibm.com ([172.16.1.4])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4fgmtk1rry-1
+	Thu, 23 Jul 2026 00:02:11 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66MNncpe009383;
+	Thu, 23 Jul 2026 00:02:10 GMT
+Received: from smtprelay06.dal12v.mail.ibm.com ([172.16.1.8])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fgp1ghjaj-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 23 Jul 2026 00:02:02 +0000 (GMT)
+	Thu, 23 Jul 2026 00:02:10 +0000 (GMT)
 Received: from smtpav03.dal12v.mail.ibm.com (smtpav03.dal12v.mail.ibm.com [10.241.53.102])
-	by smtprelay02.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66N021Dk20579026
+	by smtprelay06.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66N02ALJ9896646
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 23 Jul 2026 00:02:01 GMT
+	Thu, 23 Jul 2026 00:02:10 GMT
 Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id DD54958060;
-	Thu, 23 Jul 2026 00:02:00 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 08D435805A;
+	Thu, 23 Jul 2026 00:02:10 +0000 (GMT)
 Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 47D125805A;
-	Thu, 23 Jul 2026 00:02:00 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 5DC4C5803F;
+	Thu, 23 Jul 2026 00:02:09 +0000 (GMT)
 Received: from li-4c4c4544-0054-3910-8039-c3c04f423534.ibm.com.com (unknown [9.61.118.58])
 	by smtpav03.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 23 Jul 2026 00:02:00 +0000 (GMT)
+	Thu, 23 Jul 2026 00:02:09 +0000 (GMT)
 From: Tyrel Datwyler <tyreld@linux.ibm.com>
 To: james.bottomley@hansenpartnership.com, martin.petersen@oracle.com
 Cc: linux-scsi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
         linux-kernel@vger.kernel.org, brking@linux.ibm.com,
         davemarq@linux.ibm.com, Tyrel Datwyler <tyreld@linux.ibm.com>
-Subject: [PATCH v2 10/33] ibmvfc: add logic for protocol specific fabric logins
-Date: Wed, 22 Jul 2026 17:01:26 -0700
-Message-ID: <20260723000149.969416-11-tyreld@linux.ibm.com>
+Subject: [PATCH v2 22/33] ibmvfc: update state machine to process NVMe/FC targets
+Date: Wed, 22 Jul 2026 17:01:38 -0700
+Message-ID: <20260723000149.969416-23-tyreld@linux.ibm.com>
 X-Mailer: git-send-email 2.55.0
 In-Reply-To: <20260723000149.969416-1-tyreld@linux.ibm.com>
 References: <20260723000149.969416-1-tyreld@linux.ibm.com>
@@ -91,443 +91,157 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzIyMDIzNCBTYWx0ZWRfX7znpq3SV6KD5
- BS+5OFaVXXfFLNr5dUXO5p+DYyjX40dw5X2bgFIks1SDBC1qV93MOpJLeKlBGMjAgVRSpnp+kXI
- qdpX5cJCM/amujoIz5b3DvSqtiiTmEYR+GY/2W01YsKLiE/YrEZE8/Aw8CwqRm4cdcP0XTcQKxC
- HWLbkgmmvkLk1RM5kbRBEOD2UGg3GvG/FaGHiZmX30shMmGsXpYJafqbo9GMHRpCFK57ZFcQf6/
- fwd8TErQLgz0xC9jPzdfBCc5QUms7ChU2sXuyCAJUppfRpwMGPleMXYb4xvvOX8T1bVtOuoFaI8
- u4V6Hq/1V0MB6mph2vvHz7K4523bv3RQ4143jqdiG0WBfX6qx+tD+f0K+VOIUClRA3shP9a3gtb
- YXQR2/79ezI6v5HbAcbF1KSnhDdPYBlnxFYFvg7hD6QUOimC8cdsavmWZDuGcJFK1zervuAuhdW
- Z1n/xWScR8p649rHfOw==
-X-Authority-Analysis: v=2.4 cv=F7ZnsKhN c=1 sm=1 tr=0 ts=6a6159fb cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+X-Proofpoint-ORIG-GUID: 6SJd1A_AZabApK0vWY6pDand2DOy9YZq
+X-Authority-Analysis: v=2.4 cv=V6RNF+ni c=1 sm=1 tr=0 ts=6a615a03 cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
  a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=iQ6ETzBq9ecOQQE5vZCe:22 a=VnNF1IyMAAAA:8 a=FovE9xXL7NGL95JtJZEA:9
-X-Proofpoint-ORIG-GUID: tglKqAi-9u085gSVshxuUWz2BRKYHBOI
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzIyMDIzNCBTYWx0ZWRfX4iEH84kD29GD
- mb/bwG7UqoQ5iMs+VFKL21z/2qqBhRjvqas3eYRhSCSqnh/rqYY03rH4k+bLkzfFUFv2ulwQHNF
- 9PDLWjcYKhgl34mMLXOexJEfqCdr6JA=
-X-Proofpoint-GUID: tglKqAi-9u085gSVshxuUWz2BRKYHBOI
+ a=U7nrCbtTmkRpXpFmAIza:22 a=VnNF1IyMAAAA:8 a=-uFVuYJf3eyC8FhR5LMA:9
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzIyMDIzNCBTYWx0ZWRfXwdOr8wzGz50v
+ 4SrCqWrZSJqQA737BDjP3ZGtd5eyy4/nqeX1Stt72Y+bVUUJEoqW7USJD7jVtp62gtjrL03DkVK
+ Fm5WyThtUtRQx4il5/vn0epXSsKRmjM=
+X-Proofpoint-GUID: 6SJd1A_AZabApK0vWY6pDand2DOy9YZq
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzIyMDIzNCBTYWx0ZWRfXyOIA8lJXw4U9
+ huoeOEf50G/2uw7lrC1y2Fa1y8tyzkPEo1Hzp++ia58I+bGU1/XxwGqAHegqWQKniBuq+nbWirM
+ vi3olpJjZnGj7JG9oMwzzHxUa39nBp7Zu3GYjqCvaFSBiTmikxzPnvleomekL9JjbivVgNdo2P0
+ HsKtea9eyAECCXggCuI2cl1GIMobBIchax0g6v4ESOD+lhGzRHbZ74I/DuzIluh8zdYkdkvvv5A
+ BN0Adows6kg5Rg6CM908fOb1624mJjdg8npO8b23RJM4mwmo5x19FT1gLZadwG4kDKg/gRlln1O
+ K7OOicpME4MVaRREO9dO5DfSswyFpmG/8dfM0utU9moaNNVUQRU8bt0cpo8XjQMVIT6yk/q/ZDV
+ ZQJPjdKw/XEDuA40rYmzUZtsDA0udNPgLyt46JVo49vgJE3Hbjuwc6GgKHSFW2OkpCdADOL1Nzl
+ 5CjzS7TMsOD+IC9Lx2Q==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-07-22_05,2026-07-22_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 phishscore=0 bulkscore=0 clxscore=1015 priorityscore=1501
- impostorscore=0 lowpriorityscore=0 suspectscore=0 malwarescore=0 adultscore=0
+ malwarescore=0 adultscore=0 bulkscore=0 lowpriorityscore=0 clxscore=1015
+ spamscore=0 impostorscore=0 phishscore=0 priorityscore=1501 suspectscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607220234
 
-Add support for the protocol-specific fabric login flow introduced by
-the updated client/VIOS interface.
+Update the host work loop and target state-machine helpers to process
+NVMe targets in addition to SCSI targets.
 
-After NPIV login, a VIOS that advertises protocol-specific support
-requires separate fabric login MADs for SCSI and NVMe/FC. Track whether
-SCSI and NVMe/FC fabric login are needed, extend channel enquiry/setup
-handling to negotiate both SCSI and NVMe queue counts, and issue the
-appropriate fabric login MADs before target discovery begins.
+Check both protocol-specific target lists when determining whether there
+is initialization or logout work pending, and extend the query, target
+init, and target delete phases to dispatch work for NVMe targets using
+the same common state-machine callbacks.
 
-Also update command layout selection so the driver uses the v3 command
-format when the VIOS advertises NVMe/FC-capable framing.
+This allows the existing discovery and login state machine to drive
+NVMe/FC targets through query, login, and deletion without duplicating
+the control flow.
 
 Signed-off-by: Tyrel Datwyler <tyreld@linux.ibm.com>
 ---
- drivers/scsi/ibmvscsi/ibmvfc-core.c | 230 ++++++++++++++++++++++++----
- drivers/scsi/ibmvscsi/ibmvfc.h      |  11 +-
- 2 files changed, 206 insertions(+), 35 deletions(-)
+ drivers/scsi/ibmvscsi/ibmvfc-core.c | 42 +++++++++++++++++++++++++++++
+ 1 file changed, 42 insertions(+)
 
 diff --git a/drivers/scsi/ibmvscsi/ibmvfc-core.c b/drivers/scsi/ibmvscsi/ibmvfc-core.c
-index d8c2b56258ee..e0edd71e9fd4 100644
+index 1185d72a8a73..ff84ca0f9f45 100644
 --- a/drivers/scsi/ibmvscsi/ibmvfc-core.c
 +++ b/drivers/scsi/ibmvscsi/ibmvfc-core.c
-@@ -210,7 +210,9 @@ static int ibmvfc_check_caps(struct ibmvfc_host *vhost, unsigned long cap_flags)
- static struct ibmvfc_fcp_cmd_iu *ibmvfc_get_fcp_iu(struct ibmvfc_host *vhost,
- 						   struct ibmvfc_cmd *vfc_cmd)
- {
--	if (ibmvfc_check_caps(vhost, IBMVFC_HANDLE_VF_WWPN))
-+	if (ibmvfc_check_caps(vhost, IBMVFC_SUPPORT_NVMEOF))
-+		return &vfc_cmd->v3scsi.iu;
-+	else if (ibmvfc_check_caps(vhost, IBMVFC_HANDLE_VF_WWPN))
- 		return &vfc_cmd->v2.iu;
- 	else
- 		return &vfc_cmd->v1.iu;
-@@ -219,7 +221,9 @@ static struct ibmvfc_fcp_cmd_iu *ibmvfc_get_fcp_iu(struct ibmvfc_host *vhost,
- static struct ibmvfc_fcp_rsp *ibmvfc_get_fcp_rsp(struct ibmvfc_host *vhost,
- 						 struct ibmvfc_cmd *vfc_cmd)
- {
--	if (ibmvfc_check_caps(vhost, IBMVFC_HANDLE_VF_WWPN))
-+	if (ibmvfc_check_caps(vhost, IBMVFC_SUPPORT_NVMEOF))
-+		return &vfc_cmd->v3scsi.rsp;
-+	else if (ibmvfc_check_caps(vhost, IBMVFC_HANDLE_VF_WWPN))
- 		return &vfc_cmd->v2.rsp;
- 	else
- 		return &vfc_cmd->v1.rsp;
-@@ -961,6 +965,8 @@ static int ibmvfc_reenable_crq_queue(struct ibmvfc_host *vhost)
- 	spin_lock(vhost->crq.q_lock);
- 	vhost->do_enquiry = 1;
- 	vhost->using_channels = 0;
-+	vhost->do_scsi_login = 0;
-+	vhost->do_nvme_login = 0;
- 	spin_unlock(vhost->crq.q_lock);
- 	spin_unlock_irqrestore(vhost->host->host_lock, flags);
- 
-@@ -1000,6 +1006,8 @@ static int ibmvfc_reset_crq(struct ibmvfc_host *vhost)
- 	vhost->logged_in = 0;
- 	vhost->do_enquiry = 1;
- 	vhost->using_channels = 0;
-+	vhost->do_scsi_login = 0;
-+	vhost->do_nvme_login = 0;
- 
- 	/* Clean out the queue */
- 	memset(crq->msgs.crq, 0, PAGE_SIZE);
-@@ -1512,7 +1520,7 @@ static void ibmvfc_set_login_info(struct ibmvfc_host *vhost)
- 	max_cmds = scsi_qdepth + IBMVFC_NUM_INTERNAL_REQ;
- 	if (mq_enabled)
- 		max_cmds += (scsi_qdepth + IBMVFC_NUM_INTERNAL_SUBQ_REQ) *
--			vhost->scsi_scrqs.desired_queues;
-+			(vhost->scsi_scrqs.desired_queues + vhost->nvme_scrqs.desired_queues);
- 
- 	memset(login_info, 0, sizeof(*login_info));
- 
-@@ -1530,8 +1538,14 @@ static void ibmvfc_set_login_info(struct ibmvfc_host *vhost)
- 	login_info->max_cmds = cpu_to_be32(max_cmds);
- 	login_info->capabilities = cpu_to_be64(IBMVFC_CAN_MIGRATE | IBMVFC_CAN_SEND_VF_WWPN);
- 
--	if (vhost->mq_enabled || vhost->using_channels)
-+	if (vhost->mq_enabled || vhost->using_channels) {
- 		login_info->capabilities |= cpu_to_be64(IBMVFC_CAN_USE_CHANNELS);
-+		if (vhost->nvme_enabled) {
-+			login_info->capabilities |= cpu_to_be64(IBMVFC_YES_NVMEOF);
-+			login_info->capabilities |= cpu_to_be64(IBMVFC_YES_SCSI);
-+			login_info->capabilities |= cpu_to_be64(IBMVFC_CAN_USE_WWPN_ALL);
-+		}
+@@ -5718,6 +5718,11 @@ static int ibmvfc_dev_init_to_do(struct ibmvfc_host *vhost)
+ 		    tgt->action == IBMVFC_TGT_ACTION_INIT_WAIT)
+ 			return 1;
+ 	}
++	list_for_each_entry(tgt, &vhost->nvme_scrqs.targets, queue) {
++		if (tgt->action == IBMVFC_TGT_ACTION_INIT ||
++		    tgt->action == IBMVFC_TGT_ACTION_INIT_WAIT)
++			return 1;
 +	}
  
- 	login_info->async.va = cpu_to_be64(vhost->async_crq.msg_token);
- 	login_info->async.len = cpu_to_be32(async_crq->size *
-@@ -1956,11 +1970,13 @@ static struct ibmvfc_cmd *ibmvfc_init_vfc_cmd(struct ibmvfc_event *evt, struct s
- 	size_t offset;
- 
- 	memset(vfc_cmd, 0, sizeof(*vfc_cmd));
--	if (ibmvfc_check_caps(vhost, IBMVFC_HANDLE_VF_WWPN)) {
-+	if (ibmvfc_check_caps(vhost, IBMVFC_SUPPORT_NVMEOF))
-+		offset = offsetof(struct ibmvfc_cmd, v3scsi.rsp);
-+	else if (ibmvfc_check_caps(vhost, IBMVFC_HANDLE_VF_WWPN))
- 		offset = offsetof(struct ibmvfc_cmd, v2.rsp);
--		vfc_cmd->target_wwpn = cpu_to_be64(rport->port_name);
--	} else
-+	else
- 		offset = offsetof(struct ibmvfc_cmd, v1.rsp);
-+	vfc_cmd->target_wwpn = cpu_to_be64(rport->port_name);
- 	vfc_cmd->resp.va = cpu_to_be64(be64_to_cpu(evt->crq.ioba) + offset);
- 	vfc_cmd->resp.len = cpu_to_be32(sizeof(*rsp));
- 	vfc_cmd->frame_type = cpu_to_be32(IBMVFC_SCSI_FCP_TYPE);
-@@ -5052,14 +5068,141 @@ static void ibmvfc_discover_targets(struct ibmvfc_host *vhost)
- 		ibmvfc_link_down(vhost, IBMVFC_LINK_DEAD);
+ 	return 0;
+ }
+@@ -5738,6 +5743,11 @@ static int ibmvfc_dev_logo_to_do(struct ibmvfc_host *vhost)
+ 		    tgt->action == IBMVFC_TGT_ACTION_LOGOUT_RPORT_WAIT)
+ 			return 1;
+ 	}
++	list_for_each_entry(tgt, &vhost->nvme_scrqs.targets, queue) {
++		if (tgt->action == IBMVFC_TGT_ACTION_LOGOUT_RPORT ||
++		    tgt->action == IBMVFC_TGT_ACTION_LOGOUT_RPORT_WAIT)
++			return 1;
++	}
+ 	return 0;
  }
  
-+static void ibmvfc_fabric_login_nvme_done(struct ibmvfc_event *evt)
-+{
-+	struct ibmvfc_host *vhost = evt->vhost;
-+	struct ibmvfc_fabric_login_mad *rsp = &evt->xfer_iu->fabric_login;
-+	u32 mad_status = be16_to_cpu(rsp->common.status);
-+	int level = IBMVFC_DEFAULT_LOG_LEVEL;
-+
-+	switch (mad_status) {
-+	case IBMVFC_MAD_SUCCESS:
-+		ibmvfc_dbg(vhost, "NVMe fabric login succeeded\n");
-+		break;
-+	case IBMVFC_MAD_FAILED:
-+		if (ibmvfc_retry_cmd(be16_to_cpu(rsp->status), be16_to_cpu(rsp->error)))
-+			level += ibmvfc_retry_host_init(vhost);
-+		else
-+			ibmvfc_link_down(vhost, IBMVFC_LINK_DEAD);
-+		ibmvfc_log(vhost, level, "NVMe fabric login failed: %s (%x:%x)\n",
-+			   ibmvfc_get_cmd_error(be16_to_cpu(rsp->status), be16_to_cpu(rsp->error)),
-+			   be16_to_cpu(rsp->status), be16_to_cpu(rsp->error));
-+		ibmvfc_free_event(evt);
-+		return;
-+	case IBMVFC_MAD_DRIVER_FAILED:
-+		ibmvfc_free_event(evt);
-+		return;
-+	default:
-+		dev_err(vhost->dev, "Invalid NVMe fabric login response: 0x%x\n", mad_status);
-+		ibmvfc_link_down(vhost, IBMVFC_LINK_DEAD);
-+		break;
-+	}
-+
-+	ibmvfc_free_event(evt);
-+
-+	ibmvfc_set_host_action(vhost, IBMVFC_HOST_ACTION_QUERY);
-+	wake_up(&vhost->work_wait_q);
-+}
-+
-+static void ibmvfc_fabric_login_nvme(struct ibmvfc_host *vhost)
-+{
-+	struct ibmvfc_fabric_login_mad *mad;
-+	struct ibmvfc_event *evt = ibmvfc_get_reserved_event(&vhost->crq);
-+
-+	if (!evt) {
-+		ibmvfc_retry_host_init(vhost);
-+		return;
-+	}
-+
-+	ibmvfc_init_event(evt, ibmvfc_fabric_login_nvme_done, IBMVFC_MAD_FORMAT);
-+	mad = &evt->iu.fabric_login;
-+	memset(mad, 0, sizeof(*mad));
-+	mad->common.version = cpu_to_be32(1);
-+	mad->common.opcode = cpu_to_be32(IBMVFC_NVMF_FABRIC_LOGIN);
-+	mad->common.length = cpu_to_be16(sizeof(*mad));
-+
-+	ibmvfc_set_host_action(vhost, IBMVFC_HOST_ACTION_INIT_WAIT);
-+
-+	if (!ibmvfc_send_event(evt, vhost, default_timeout))
-+		ibmvfc_dbg(vhost, "Send NVMe fabric login\n");
-+	else
-+		ibmvfc_link_down(vhost, IBMVFC_LINK_DEAD);
-+}
-+
-+static void ibmvfc_fabric_login_scsi_done(struct ibmvfc_event *evt)
-+{
-+	struct ibmvfc_host *vhost = evt->vhost;
-+	struct ibmvfc_fabric_login_mad *rsp = &evt->xfer_iu->fabric_login;
-+	u32 mad_status = be16_to_cpu(rsp->common.status);
-+	int level = IBMVFC_DEFAULT_LOG_LEVEL;
-+
-+	switch (mad_status) {
-+	case IBMVFC_MAD_SUCCESS:
-+		ibmvfc_dbg(vhost, "SCSI fabric login succeeded\n");
-+		break;
-+	case IBMVFC_MAD_FAILED:
-+		if (ibmvfc_retry_cmd(be16_to_cpu(rsp->status), be16_to_cpu(rsp->error)))
-+			level += ibmvfc_retry_host_init(vhost);
-+		else
-+			ibmvfc_link_down(vhost, IBMVFC_LINK_DEAD);
-+		ibmvfc_log(vhost, level, "SCSI fabric login failed: %s (%x:%x)\n",
-+			   ibmvfc_get_cmd_error(be16_to_cpu(rsp->status), be16_to_cpu(rsp->error)),
-+			   be16_to_cpu(rsp->status), be16_to_cpu(rsp->error));
-+		ibmvfc_free_event(evt);
-+		return;
-+	case IBMVFC_MAD_DRIVER_FAILED:
-+		ibmvfc_free_event(evt);
-+		return;
-+	default:
-+		dev_err(vhost->dev, "Invalid SCSI fabric login response: 0x%x\n", mad_status);
-+		ibmvfc_link_down(vhost, IBMVFC_LINK_DEAD);
-+		break;
-+	}
-+
-+	ibmvfc_free_event(evt);
-+
-+	if (vhost->do_nvme_login) {
-+		ibmvfc_fabric_login_nvme(vhost);
-+	} else {
-+		ibmvfc_set_host_action(vhost, IBMVFC_HOST_ACTION_QUERY);
-+		wake_up(&vhost->work_wait_q);
-+	}
-+}
-+
-+static void ibmvfc_fabric_login_scsi(struct ibmvfc_host *vhost)
-+{
-+	struct ibmvfc_fabric_login_mad *mad;
-+	struct ibmvfc_event *evt = ibmvfc_get_reserved_event(&vhost->crq);
-+
-+	if (!evt) {
-+		ibmvfc_retry_host_init(vhost);
-+		return;
-+	}
-+
-+	ibmvfc_init_event(evt, ibmvfc_fabric_login_scsi_done, IBMVFC_MAD_FORMAT);
-+	mad = &evt->iu.fabric_login;
-+	memset(mad, 0, sizeof(*mad));
-+	mad->common.version = cpu_to_be32(1);
-+	mad->common.opcode = cpu_to_be32(IBMVFC_FABRIC_LOGIN);
-+	mad->common.length = cpu_to_be16(sizeof(*mad));
-+
-+	ibmvfc_set_host_action(vhost, IBMVFC_HOST_ACTION_INIT_WAIT);
-+
-+	if (!ibmvfc_send_event(evt, vhost, default_timeout))
-+		ibmvfc_dbg(vhost, "Send SCSI fabric login\n");
-+	else
-+		ibmvfc_link_down(vhost, IBMVFC_LINK_DEAD);
-+}
-+
- static void ibmvfc_channel_setup_done(struct ibmvfc_event *evt)
- {
- 	struct ibmvfc_host *vhost = evt->vhost;
- 	struct ibmvfc_channel_setup *setup = vhost->channel_setup_buf;
--	struct ibmvfc_channels *scrqs = &vhost->scsi_scrqs;
-+	struct ibmvfc_channels *scsi = &vhost->scsi_scrqs;
-+	struct ibmvfc_channels *nvme = &vhost->nvme_scrqs;
- 	u32 mad_status = be16_to_cpu(evt->xfer_iu->channel_setup.common.status);
- 	int level = IBMVFC_DEFAULT_LOG_LEVEL;
--	int flags, active_queues, i;
-+	int flags, i;
- 
- 	ibmvfc_free_event(evt);
- 
-@@ -5068,22 +5211,28 @@ static void ibmvfc_channel_setup_done(struct ibmvfc_event *evt)
- 		ibmvfc_dbg(vhost, "Channel Setup succeeded\n");
- 		flags = be32_to_cpu(setup->flags);
- 		vhost->do_enquiry = 0;
--		active_queues = be32_to_cpu(setup->num_scsi_subq_channels);
--		scrqs->active_queues = active_queues;
-+		scsi->active_queues = be32_to_cpu(setup->num_scsi_subq_channels);
-+		nvme->active_queues = be32_to_cpu(setup->num_nvme_subq_channels);
- 
- 		if (flags & IBMVFC_CHANNELS_CANCELED) {
- 			ibmvfc_dbg(vhost, "Channels Canceled\n");
- 			vhost->using_channels = 0;
--		} else {
--			if (active_queues)
--				vhost->using_channels = 1;
--			for (i = 0; i < active_queues; i++)
--				scrqs->scrqs[i].vios_cookie =
--					be64_to_cpu(setup->channel_handles[i]);
--
--			ibmvfc_dbg(vhost, "Using %u channels\n",
--				   vhost->scsi_scrqs.active_queues);
-+			break;
+@@ -5766,9 +5776,15 @@ static int __ibmvfc_work_to_do(struct ibmvfc_host *vhost)
+ 		list_for_each_entry(tgt, &vhost->scsi_scrqs.targets, queue)
+ 			if (tgt->action == IBMVFC_TGT_ACTION_INIT)
+ 				return 1;
++		list_for_each_entry(tgt, &vhost->nvme_scrqs.targets, queue)
++			if (tgt->action == IBMVFC_TGT_ACTION_INIT)
++				return 1;
+ 		list_for_each_entry(tgt, &vhost->scsi_scrqs.targets, queue)
+ 			if (tgt->action == IBMVFC_TGT_ACTION_INIT_WAIT)
+ 				return 0;
++		list_for_each_entry(tgt, &vhost->nvme_scrqs.targets, queue)
++			if (tgt->action == IBMVFC_TGT_ACTION_INIT_WAIT)
++				return 0;
+ 		return 1;
+ 	case IBMVFC_HOST_ACTION_TGT_DEL:
+ 	case IBMVFC_HOST_ACTION_TGT_DEL_FAILED:
+@@ -5777,9 +5793,15 @@ static int __ibmvfc_work_to_do(struct ibmvfc_host *vhost)
+ 		list_for_each_entry(tgt, &vhost->scsi_scrqs.targets, queue)
+ 			if (tgt->action == IBMVFC_TGT_ACTION_LOGOUT_RPORT)
+ 				return 1;
++		list_for_each_entry(tgt, &vhost->nvme_scrqs.targets, queue)
++			if (tgt->action == IBMVFC_TGT_ACTION_LOGOUT_RPORT)
++				return 1;
+ 		list_for_each_entry(tgt, &vhost->scsi_scrqs.targets, queue)
+ 			if (tgt->action == IBMVFC_TGT_ACTION_LOGOUT_RPORT_WAIT)
+ 				return 0;
++		list_for_each_entry(tgt, &vhost->nvme_scrqs.targets, queue)
++			if (tgt->action == IBMVFC_TGT_ACTION_LOGOUT_RPORT_WAIT)
++				return 0;
+ 		return 1;
+ 	case IBMVFC_HOST_ACTION_LOGO:
+ 	case IBMVFC_HOST_ACTION_INIT:
+@@ -5967,6 +5989,8 @@ static void ibmvfc_do_work(struct ibmvfc_host *vhost)
+ 	case IBMVFC_HOST_ACTION_QUERY:
+ 		list_for_each_entry(tgt, &vhost->scsi_scrqs.targets, queue)
+ 			ibmvfc_init_tgt(tgt, ibmvfc_tgt_query_target);
++		list_for_each_entry(tgt, &vhost->nvme_scrqs.targets, queue)
++			ibmvfc_init_tgt(tgt, ibmvfc_tgt_query_target);
+ 		ibmvfc_set_host_action(vhost, IBMVFC_HOST_ACTION_QUERY_TGTS);
+ 		break;
+ 	case IBMVFC_HOST_ACTION_QUERY_TGTS:
+@@ -5976,6 +6000,12 @@ static void ibmvfc_do_work(struct ibmvfc_host *vhost)
+ 				break;
+ 			}
  		}
-+
-+		if (scsi->active_queues || nvme->active_queues)
-+			vhost->using_channels = 1;
-+		for (i = 0; i < scsi->active_queues; i++)
-+			scsi->scrqs[i].vios_cookie =
-+				be64_to_cpu(setup->channel_handles[i]);
-+		for (i = 0; i < nvme->active_queues; i++)
-+			nvme->scrqs[i].vios_cookie =
-+				be64_to_cpu(setup->channel_handles[scsi->active_queues + i]);
-+
-+		ibmvfc_dbg(vhost, "Using %u SCSI channels\n",
-+			   scsi->active_queues);
-+		ibmvfc_dbg(vhost, "Using %u NVMe channels\n",
-+			   nvme->active_queues);
- 		break;
- 	case IBMVFC_MAD_FAILED:
- 		level += ibmvfc_retry_host_init(vhost);
-@@ -5098,8 +5247,12 @@ static void ibmvfc_channel_setup_done(struct ibmvfc_event *evt)
- 		return;
- 	}
++		list_for_each_entry(tgt, &vhost->nvme_scrqs.targets, queue) {
++			if (tgt->action == IBMVFC_TGT_ACTION_INIT) {
++				tgt->job_step(tgt);
++				break;
++			}
++		}
  
--	ibmvfc_set_host_action(vhost, IBMVFC_HOST_ACTION_QUERY);
--	wake_up(&vhost->work_wait_q);
-+	if (vhost->do_scsi_login) {
-+		ibmvfc_fabric_login_scsi(vhost);
-+	} else {
-+		ibmvfc_set_host_action(vhost, IBMVFC_HOST_ACTION_QUERY);
-+		wake_up(&vhost->work_wait_q);
-+	}
- }
+ 		if (!ibmvfc_dev_init_to_do(vhost))
+ 			ibmvfc_set_host_action(vhost, IBMVFC_HOST_ACTION_TGT_DEL);
+@@ -5988,6 +6018,12 @@ static void ibmvfc_do_work(struct ibmvfc_host *vhost)
+ 				break;
+ 			}
+ 		}
++		list_for_each_entry(tgt, &vhost->nvme_scrqs.targets, queue) {
++			if (tgt->action == IBMVFC_TGT_ACTION_LOGOUT_RPORT) {
++				tgt->job_step(tgt);
++				break;
++			}
++		}
  
- static void ibmvfc_channel_setup(struct ibmvfc_host *vhost)
-@@ -5107,9 +5260,12 @@ static void ibmvfc_channel_setup(struct ibmvfc_host *vhost)
- 	struct ibmvfc_channel_setup_mad *mad;
- 	struct ibmvfc_channel_setup *setup_buf = vhost->channel_setup_buf;
- 	struct ibmvfc_event *evt = ibmvfc_get_reserved_event(&vhost->crq);
--	struct ibmvfc_channels *scrqs = &vhost->scsi_scrqs;
--	unsigned int num_channels =
--		min(scrqs->desired_queues, vhost->max_vios_scsi_channels);
-+	struct ibmvfc_channels *scsi = &vhost->scsi_scrqs;
-+	struct ibmvfc_channels *nvme = &vhost->nvme_scrqs;
-+	unsigned int scsi_channels =
-+		min(scsi->desired_queues, vhost->max_vios_scsi_channels);
-+	unsigned int nvme_channels =
-+		min(nvme->desired_queues, vhost->max_vios_nvme_channels);
- 	int level = IBMVFC_DEFAULT_LOG_LEVEL;
- 	int i;
+ 		if (ibmvfc_dev_logo_to_do(vhost)) {
+ 			spin_unlock_irqrestore(vhost->host->host_lock, flags);
+@@ -6075,6 +6111,12 @@ static void ibmvfc_do_work(struct ibmvfc_host *vhost)
+ 				break;
+ 			}
+ 		}
++		list_for_each_entry(tgt, &vhost->nvme_scrqs.targets, queue) {
++			if (tgt->action == IBMVFC_TGT_ACTION_INIT) {
++				tgt->job_step(tgt);
++				break;
++			}
++		}
  
-@@ -5120,12 +5276,17 @@ static void ibmvfc_channel_setup(struct ibmvfc_host *vhost)
- 	}
- 
- 	memset(setup_buf, 0, sizeof(*setup_buf));
--	if (num_channels == 0)
-+	if (!scsi_channels && !nvme_channels)
- 		setup_buf->flags = cpu_to_be32(IBMVFC_CANCEL_CHANNELS);
- 	else {
--		setup_buf->num_scsi_subq_channels = cpu_to_be32(num_channels);
--		for (i = 0; i < num_channels; i++)
--			setup_buf->channel_handles[i] = cpu_to_be64(scrqs->scrqs[i].cookie);
-+		setup_buf->num_scsi_subq_channels = cpu_to_be32(scsi_channels);
-+		setup_buf->num_nvme_subq_channels = cpu_to_be32(nvme_channels);
-+		for (i = 0; i < scsi_channels; i++)
-+			setup_buf->channel_handles[i] =
-+				cpu_to_be64(scsi->scrqs[i].cookie);
-+		for (i = 0; i < nvme_channels; i++)
-+			setup_buf->channel_handles[scsi_channels + i] =
-+				cpu_to_be64(nvme->scrqs[i].cookie);
- 	}
- 
- 	ibmvfc_init_event(evt, ibmvfc_channel_setup_done, IBMVFC_MAD_FORMAT);
-@@ -5156,6 +5317,7 @@ static void ibmvfc_channel_enquiry_done(struct ibmvfc_event *evt)
- 	case IBMVFC_MAD_SUCCESS:
- 		ibmvfc_dbg(vhost, "Channel Enquiry succeeded\n");
- 		vhost->max_vios_scsi_channels = be32_to_cpu(rsp->num_scsi_subq_channels);
-+		vhost->max_vios_nvme_channels = be32_to_cpu(rsp->num_nvme_subq_channels);
- 		ibmvfc_free_event(evt);
- 		break;
- 	case IBMVFC_MAD_FAILED:
-@@ -5290,8 +5452,14 @@ static void ibmvfc_npiv_login_done(struct ibmvfc_event *evt)
- 	vhost->host->can_queue = be32_to_cpu(rsp->max_cmds) - IBMVFC_NUM_INTERNAL_REQ;
- 	vhost->host->max_sectors = npiv_max_sectors;
- 
--	if (ibmvfc_check_caps(vhost, IBMVFC_CAN_SUPPORT_CHANNELS) && vhost->do_enquiry) {
--		ibmvfc_channel_enquiry(vhost);
-+
-+	if (ibmvfc_check_caps(vhost, IBMVFC_CAN_SUPPORT_CHANNELS)) {
-+		if (ibmvfc_check_caps(vhost, IBMVFC_SUPPORT_SCSI))
-+			vhost->do_scsi_login = 1;
-+		if (ibmvfc_check_caps(vhost, IBMVFC_SUPPORT_NVMEOF))
-+			vhost->do_nvme_login = 1;
-+		if (vhost->do_enquiry)
-+			ibmvfc_channel_enquiry(vhost);
- 	} else {
- 		vhost->do_enquiry = 0;
- 		ibmvfc_set_host_action(vhost, IBMVFC_HOST_ACTION_QUERY);
-diff --git a/drivers/scsi/ibmvscsi/ibmvfc.h b/drivers/scsi/ibmvscsi/ibmvfc.h
-index 01c49d81b135..454968de925b 100644
---- a/drivers/scsi/ibmvscsi/ibmvfc.h
-+++ b/drivers/scsi/ibmvscsi/ibmvfc.h
-@@ -617,9 +617,9 @@ struct ibmvfc_channel_enquiry {
- #define IBMVFC_SUPPORT_VARIABLE_SUBQ_MSG	0x02
- #define IBMVFC_NO_N_TO_M_CHANNELS_SUPPORT	0x04
- 	__be32 num_scsi_subq_channels;
--	__be32 num_nvmeof_subq_channels;
-+	__be32 num_nvme_subq_channels;
- 	__be32 num_scsi_vas_channels;
--	__be32 num_nvmeof_vas_channels;
-+	__be32 num_nvme_vas_channels;
- } __packed __aligned(8);
- 
- struct ibmvfc_channel_setup_mad {
-@@ -636,9 +636,9 @@ struct ibmvfc_channel_setup {
- #define IBMVFC_CHANNELS_CANCELED	0x04
- 	__be32 reserved;
- 	__be32 num_scsi_subq_channels;
--	__be32 num_nvmeof_subq_channels;
-+	__be32 num_nvme_subq_channels;
- 	__be32 num_scsi_vas_channels;
--	__be32 num_nvmeof_vas_channels;
-+	__be32 num_nvme_vas_channels;
- 	struct srp_direct_buf buffer;
- 	__be64 reserved2[5];
- 	__be64 channel_handles[IBMVFC_MAX_CHANNELS];
-@@ -979,6 +979,7 @@ struct ibmvfc_host {
- 	int log_level;
- 	struct mutex passthru_mutex;
- 	unsigned int max_vios_scsi_channels;
-+	unsigned int max_vios_nvme_channels;
- 	int task_set;
- 	int init_retries;
- 	int discovery_threads;
-@@ -991,6 +992,8 @@ struct ibmvfc_host {
- 	unsigned int using_channels:1;
- 	unsigned int do_enquiry:1;
- 	unsigned int nvme_enabled:1;
-+	unsigned int do_scsi_login:1;
-+	unsigned int do_nvme_login:1;
- 	unsigned int aborting_passthru:1;
- 	unsigned int scan_complete:1;
- 	int scan_timeout;
+ 		if (!ibmvfc_dev_init_to_do(vhost))
+ 			ibmvfc_set_host_action(vhost, IBMVFC_HOST_ACTION_TGT_DEL_FAILED);
 -- 
 2.55.0
 
