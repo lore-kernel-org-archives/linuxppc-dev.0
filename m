@@ -1,94 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-24706-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24707-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 21425C4453A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2026 02:20:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 24A02C4453D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2026 02:38:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h5FFx0Y80z2ygL;
-	Thu, 23 Jul 2026 12:20:21 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c201::3" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784773221;
-	cv=pass; b=HF54i3tmE0pcZKxAhHIjzPJz01Xluw04h4OngdHBK56ToDU2oX3SPwUo3+zSQfLrTb34GAJesmxGLXJmY0ZReMSYMov4YmWViJQUXvoj3RCCEYrl87g7GdOWEPtEDMb0MF2CiZuv2Yca+BtP/3v5jTkLas3uaoO39Mzfx6AUg0fEB7hw5HyXdwHJARzdb3TI2tyG1U0X/nMKpZmM71wXygFuFAdnEpYXfZP1z33jHYOr1fGSUEwSL20HlZMdguM5ipjKxkD/xEb4470BtNJWZ6GEPu5kvAT/vpJqAVq+81UEdgMTCoxko3o6PNdX5lAEDKuAs2ZA5IbS+2ytpNcOXQ==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784773221; c=relaxed/relaxed;
-	bh=gwzohd4gnzgydc8pnQ27HyzZf77uVO8FACmnw7IqlZU=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=Xcn2f86nJDxaKnN+nQ7IkdkYbZ7wUY1VvmLBW3S6r32f6VlwqzNm/23m/s4oqhyG1EE6Aby3qyFRgKixeV87p4DWoYk7mRlofN/A8fRBHZvnwA4ZTgT9kQTqs9UrKTqjy120BE//CbB/9Pkz/ZiFW2Uw9z0iNgv5BkpG44GQZaSBbpVsgXf9TKj6kgYPodaZxeW0KJL9R/faRGPmfF1w0MKh+eVuleqUK7TeU7IqzEdEzivMm6ioftWJtIasg/CyGWpcJYzHaJQMRqCA1EymYa7kAF2i7Z/N6gTjNEizvZ7lq1YGYtRjgqflqhoKpUpYF8/5OZwjmcjzTLfF8f59Yg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=F2zpgrwS; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c201::3; helo=as8pr04cu009.outbound.protection.outlook.com; envelope-from=shengjiu.wang@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h5FgC4fLmz2yVZ;
+	Thu, 23 Jul 2026 12:38:47 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784774327;
+	cv=none; b=kNq+kUUoQVJTuKurz8lJQbtZDypSCDJE+jShV24eiIOPJVjl/q7ytlUVqK79Tw2UzYPc4NLM5JVpQvwdSpZcqGxwy+9/nHvqW7OYmAJ7vfGJTyGeOKowAcr9eROxQ4i1gOJt14Ks6s1565wE5V1LK+dEGbw3HUlyEB+Fh0r04zeBtr9t93eAQK8A2/BAUC+Ph72+GnxXkfrBOnjcQZNuzQzJFvaXTFQ813JkUPiYG6Sk0XZ73vGWYeYY5oF7x9m6KVBB16RG3KkP+SPw7EFokoD2QIataKzJrPpYTiyFIDm/aFCdlHcGcQtcHWRN0kygLoozgTUlpn4u3BRTBPZHKQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1784774327; c=relaxed/relaxed;
+	bh=Us5bRphmngrDUYh6s9JPYR65iyLcVLgCHGDEnO73Yks=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=edh9nybD9IR2GW26JwVSmu7EPaQ1i7ksdrgObbCANeAtvD6KQ1QOgOsnSNUBNN9NRrqPGq4At3OB0VxMfc9r3nwc9QcGbr7m1PTpckiFRuRqo36bzP7wNO/8qM0CsJ9CnTirUekUKoM0iLFcigeNjE7cU2Qk39GN3nBlJQaPOSMrjXxnTVQuzxjSSZlR1cLiudgzO+3B513j6nUsLYxPBmpMgKX+NrJ7Fo5SURO/kUGoATww4Wja9UdcL2tMurmhnQWqxyK8UxnhEz9eBGeZEjnsdst01Mn2Q1LPW/QueUPHqCYr2MGzYZ7YE3UUjF1A8yff00KBq7NNC61cE/iuCA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kXL39hoO; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=F2zpgrwS;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kXL39hoO;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:c201::3; helo=as8pr04cu009.outbound.protection.outlook.com; envelope-from=shengjiu.wang@oss.nxp.com; receiver=lists.ozlabs.org)
-Received: from AS8PR04CU009.outbound.protection.outlook.com (mail-westeuropeazlp170110003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c201::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h5FFw0GKQz2yrL
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2026 12:20:19 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=gKtLFg96qOW4LczZK5A4sQVss3mmLB6ogBgUV0ekSrE3ot6TGDoKsnkqcqry3R3s77qWEK3UBkez25gOQxCVlxMkMyObqgox5dMapvC0I/fnR2G67E2QVsNsKd5iD9eky73WUo8vFnqQ6/Aa3D0VerZuOV2HiVo44KmZsn2Z5gV6LThuod4KyOLfZ2ZcJEf1rTkQXdc3PQlol6SmNP7l9EO/tE+99mESrytpRhYCiUetnWOBMaV9+mWWut30Nmkd/wXvTHIgAIj6q0r84KeY0xDvgyKTFZ8nGoQcNsfEmqYjYmvrDVwtfOuWO99+G9xx/HS6qlWzhfHeJBiqBGsSiA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=gwzohd4gnzgydc8pnQ27HyzZf77uVO8FACmnw7IqlZU=;
- b=beOhpqxwfELwTW9h01rQX0YIToQO8YX5/xKeKotAddfP0eRUj5ZxXshHdUKVAmEN9FkDm0w1hik3kwTC4YqI1bBVkACLD405cYxnqoP1Ar1CL68KOChDuCmrRuerpOFLM8wnhJ8CS9uYuY3ktzvTZOvwCtrSEP13Gi0GPN6aaXLCs2Ok29107MwewZTLmf/K0V8hEaazEhNlgiq05eJHXdhiBnUKQm/wKKgFKuLknsE/KvajpiwXH2W4kmihnupWz8RlZei85twi8eYMDmSvDLxHBdTYLj+L6TabNiUkKeXXULC9jBCaT55wm0O5rCI5/6NFCd+RpYGuIu9mFM1ZGA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
- dkim=pass header.d=oss.nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
- s=selector1-NXP1-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=gwzohd4gnzgydc8pnQ27HyzZf77uVO8FACmnw7IqlZU=;
- b=F2zpgrwSth64kdiL0tghylsbPqNf5nAaTbx3OLnSjG6WLuCIdnJbx1F5cH/j/j97YxpCBGzHYW56snZeL6FCIGQ93aUecNtoU3czXAnoIuJMHGH8AlQBatRStvbhjg89MqkokUbwfMX5XuHNErKz+D2lxJVux/EL69OmSjzunKbmKLYuaY6l2W1UwlNyPfb7qG55L485NZxbUpYrSWjuPsFEuOUebwz70NxFetDjft0D2iEEuv3tMsdmT4VECeFOzEC9XZxljlWPm3kFXw30Dn1+Pnc4y4ydJ2CHtf8kn/vX+kIxUFbLEny0mBQJva+DgBjrnNiGhvpnKth+YMdbcQ==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=oss.nxp.com;
-Received: from PAXPR04MB9351.eurprd04.prod.outlook.com (2603:10a6:102:2b6::17)
- by DU0PR04MB9252.eurprd04.prod.outlook.com (2603:10a6:10:353::11) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.245.10; Thu, 23 Jul
- 2026 02:19:56 +0000
-Received: from PAXPR04MB9351.eurprd04.prod.outlook.com
- ([fe80::1058:a430:52c1:5aa]) by PAXPR04MB9351.eurprd04.prod.outlook.com
- ([fe80::1058:a430:52c1:5aa%6]) with mapi id 15.21.0245.009; Thu, 23 Jul 2026
- 02:19:55 +0000
-From: shengjiu.wang@oss.nxp.com
-To: lgirdwood@gmail.com,
-	broonie@kernel.org,
-	robh@kernel.org,
-	krzk+dt@kernel.org,
-	conor+dt@kernel.org,
-	Frank.Li@nxp.com,
-	s.hauer@pengutronix.de,
-	kernel@pengutronix.de,
-	festevam@gmail.com,
-	shawnguo@kernel.org,
-	linux-sound@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	imx@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	shengjiu.wang@gmail.com,
-	Xiubo.Lee@gmail.com,
-	nicoleotsuka@gmail.com,
-	perex@perex.cz,
-	tiwai@suse.com,
-	linuxppc-dev@lists.ozlabs.org
-Cc: Shengjiu Wang <shengjiu.wang@nxp.com>
-Subject: [PATCH v2 5/5] ASoC: fsl_easrc: expose individual DAIs per conversion path
-Date: Thu, 23 Jul 2026 10:23:13 +0800
-Message-Id: <20260723022313.1905051-6-shengjiu.wang@oss.nxp.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20260723022313.1905051-1-shengjiu.wang@oss.nxp.com>
-References: <20260723022313.1905051-1-shengjiu.wang@oss.nxp.com>
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: MA5P287CA0141.INDP287.PROD.OUTLOOK.COM
- (2603:1096:a01:1d2::6) To PAXPR04MB9351.eurprd04.prod.outlook.com
- (2603:10a6:102:2b6::17)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h5FgB4g7qz2xl6
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2026 12:38:46 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66N0g4OE1521912;
+	Thu, 23 Jul 2026 02:37:50 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=Us5bRp
+	hmngrDUYh6s9JPYR65iyLcVLgCHGDEnO73Yks=; b=kXL39hoOI7OKd45/KHXE7g
+	r8D/w0LloR1JkJ3PDInYIZ6wfzBvdJM2DzhPrFaebPYalTFfz9bOSfA7ZDk/rWZv
+	CFCriSQcoHWvInVTbo+2K6oJGTwpWIERaMUojCOqZ81xIOs0OKQghEfc3398f9HC
+	s0JJjVP8TlYci2rwngDsHhSrzB0lJUAttGmSHIHdabjj+HVIS73Uqx5Cs1mX87yQ
+	JINXTd8iBdjqjpj+hNCbW1RFQqM4mSK3bocdF7iYLBLGjF5jgfrZB0dz4OSTS0bi
+	iStFhaLaLi2GBm0ZtyIwBYouN7AHGv69Ib9H7e3JhpAzF81/kjXVPCo9cGERKlNA
+	==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fg7abndm8-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 23 Jul 2026 02:37:49 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66N2Yabn022994;
+	Thu, 23 Jul 2026 02:37:48 GMT
+Received: from smtprelay03.wdc07v.mail.ibm.com ([172.16.1.70])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4fgnaha5yn-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 23 Jul 2026 02:37:48 +0000 (GMT)
+Received: from smtpav05.dal12v.mail.ibm.com (smtpav05.dal12v.mail.ibm.com [10.241.53.104])
+	by smtprelay03.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66N2bAZY16384582
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 23 Jul 2026 02:37:11 GMT
+Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 6943258056;
+	Thu, 23 Jul 2026 02:37:46 +0000 (GMT)
+Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id A1A2E58052;
+	Thu, 23 Jul 2026 02:37:36 +0000 (GMT)
+Received: from [9.123.5.176] (unknown [9.123.5.176])
+	by smtpav05.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Thu, 23 Jul 2026 02:37:36 +0000 (GMT)
+Message-ID: <a68d04e4-baa1-4a36-b118-59def0d52a49@linux.ibm.com>
+Date: Thu, 23 Jul 2026 08:07:34 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -102,221 +81,93 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PAXPR04MB9351:EE_|DU0PR04MB9252:EE_
-X-MS-Office365-Filtering-Correlation-Id: 87156165-146a-4887-15a9-08dee860e303
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|7416014|376014|23010399003|19092799006|1800799024|366016|921020|6133799003|56012099006|11063799006|10067099003|18002099003|22082099003;
-X-Microsoft-Antispam-Message-Info:
-	5cegR5ddw3b2VdZRONhKF4uRifJ10vGTPTcSzUq0LJl83m/JpB8jbQvDW4vdFQ8BnFvU0cczUTXiRqqMnKjlC/bzB2/cQxZlogGzjRqhb5uB9Lo3KyPlddnWLFObZsbgVEg2wR8zyCLo2sKIK4cr77SYGb7GVor/Y+2PmKb6RvbRDBBFI8tNLh7JuAR7knHj05mHSkAIlnaZBzVRz3bo0oBL6Eb/akyEVUC6IghfJyK5LDUxu4Vi6EWYnOnbYvrcbmDN8EySNAdOruKdDkKmwSDvkh+Ck8NGFCi8aXgtEyCMxBgoRJTv90bYgZ1saHixKK/IMycvsw3mLQS9qNLcJ2iDa3UkJMjOSKrSuCHN8zwCXJcQTtJNo60TUSO1uOtj8yRvaMese3OdkSxsN5YS3rvuCgEZV7hR4GRuw56tkXBRj66LlY3AinWWkmieq+PlR7bf8rtCsNuDAiBuHoLDdpqYVGpoKj4A/mnpfPRKV6NWZuXXdutnQymULMYbokS892hOA9jva0h2AulCJjLfBHK/nyKj5chJund0mRlGZ2I9Oa2XRnkZN+c+HF+b4+kF0iNsLgJSEz1CzfPRFQr7d7jc3AkW5ZSJbNh1KStPVp6fw2mL4PcxvWK1C3GiUWcDdlAhfdHpc0YTt2OXMLeGYRfh+Ueche0g7euncKbCvBegcuN6dwUaPsqOHwAR6PDrqeinv3aH5rSCzeZqcKZTYg==
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PAXPR04MB9351.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(23010399003)(19092799006)(1800799024)(366016)(921020)(6133799003)(56012099006)(11063799006)(10067099003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?NttoXwrSW7xEzo3bfKTCC/LnzDLGDhBzPd42aneiCDL4zemNJkIRKT0esgLC?=
- =?us-ascii?Q?nwAVg/u5zzF7JlGHYRmo5zth4s69WUHJk/zR2VoRnP/FYC4WAY8Aqr9+Yj/z?=
- =?us-ascii?Q?HU0awkClh2Fo/snYkqFdIDT4J48SNP5pI13XN4HBqzKfbYxvQUC/cwrRa4/+?=
- =?us-ascii?Q?q2gal+uQfeKB8R/6hMA1SvWO2n6XfhpO4pOLxd3r3m6Dx57qpDbJ5Vd/Vi4+?=
- =?us-ascii?Q?hVo+dTyczQgmNCN9LE8e0MvSlfkNiPeYKD2xcbPOQaq4LIaDOXW4wNi9DAHu?=
- =?us-ascii?Q?/6VwViuUxQspWkuN9bsPPzn1LZWzitSS0H7bggC08nixrcobF2q4ELZslqNJ?=
- =?us-ascii?Q?GRMkl0u5jBBjF6FPXHpqssQZLSE0Qe3UvHnIERt4+L79zly++PpJbiq3AxEl?=
- =?us-ascii?Q?h66P/2pK+l1yGuvbW/Wezi4APLCfU6Zp473kPYa4ePZEyZVte0q6yKaKb9uO?=
- =?us-ascii?Q?2dfDk71bC/D4A/Kf6ZUgnWf2+8ost5fJK/jAt/vuPh6xe2m3zzekQfaY5OPi?=
- =?us-ascii?Q?Cxelb3FkTS8LTHeZ5dFtyzwRdMWTo+jS23FLR20jfXkJloksc5awR1aIY42z?=
- =?us-ascii?Q?G5LjPb+zFNQ0KoMJTOOCzru5+87iep7nhywtUwq4EoNouIb+Z665fneS01MD?=
- =?us-ascii?Q?nu6BGFGeWGo5velg5qKyfii6Gox4bYYqWo04dSUISuDFnPdNXZdCLGMVkcGd?=
- =?us-ascii?Q?IEqIISwUvfjNXBlph5yNv66dyx95DKesxYkEBpt9bFVFwWiYccQDR03IZezt?=
- =?us-ascii?Q?1L8zzWr44zTaA2c7WlXAj1cd4D54HXAbtjGWpcAS4CUEM63qBVjfBH+uPGL8?=
- =?us-ascii?Q?pK7/jG0+hQxcYWofu2mNMdHOadoAj1HohHGRzCD0s56rZhK3XFiGzJ+pC/Rs?=
- =?us-ascii?Q?JDdRssAgnr0glYzdxcV5ACTpmMeJNVABvGGgvkbYa19kn5Ah8neTcaP5FKwH?=
- =?us-ascii?Q?1lAJHaD6/V1oRb7EYLpU6LfJSRlnYLmETI8dLsWWCetd4mDi7I1WPKXarwB3?=
- =?us-ascii?Q?rHivSQZrrGnIn6wPdbmqrw1VLpeF4+u5sfjNLgRIrI99osPNZPcTI2QH/lY1?=
- =?us-ascii?Q?pmmfkT9L6op4yRBOT0UqyhOySKnZmlt7wEt7kWQQvKsV7qZSIXAReqzB8xSN?=
- =?us-ascii?Q?a7Ns3yepUuaefoyCpLTzjQO6w6PhvK6QNt07AmlQ59FIZ36qLufZ42BD+MJf?=
- =?us-ascii?Q?2WJ4eD2Xxbnl6uOT1oL0oC7Awk0fXjAOCirwYUORYQ+RsWFZv6M8q1tiLfic?=
- =?us-ascii?Q?Zknj9jMUmm8rbc0pglm34la9v5Smhek8IstsX+gXLNM85IKAni0WPZCnbpYQ?=
- =?us-ascii?Q?9ouTDznxCsQfJMtsvBot8ueBWwjB3E9pIXoh7J7tp5TyXMJukF13aW5tvufR?=
- =?us-ascii?Q?keo7cIgSnSSqIlhNEKf8UoQqZ4aH3zutHaDWMx/HVdR1RfOqPQ//ZwQm5IrI?=
- =?us-ascii?Q?x8Z8UkzjEmO3CP4q0sw4DQhVsMAJdS3MxHleuOT4tqkRUuxxCR5E2Cei/8sa?=
- =?us-ascii?Q?RW1nETRAS7AVBvYs21ke7JvLGWZ8UowdG8hGGXTgnF6njVNAlamGMN+IlcGT?=
- =?us-ascii?Q?bdTSYeuAh1OKD4KVk8tSo8sBXCZKaObZfnPHqJacc8bV3/JmElnD4jxh2dm8?=
- =?us-ascii?Q?cu1gVkRfPc7L6MOSA8qBaG/9ctj/RqJMnoIsVHykYYaicmCKmoiJOOXknwkG?=
- =?us-ascii?Q?r40/DXGzSWXzI18v5lXWvH3BP0Xtr07h8Q6RmeOgExAO8iZ+bX7eIKb9ZPPj?=
- =?us-ascii?Q?jEqS+2jgv3BfcacgHbF6PlXpfo4/7OUyyWUHfBC6Ea6PDYPYt0LB?=
-X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 87156165-146a-4887-15a9-08dee860e303
-X-MS-Exchange-CrossTenant-AuthSource: PAXPR04MB9351.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 23 Jul 2026 02:19:55.8142
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: LzIp2vl/d4sp9qEGA2L/ny8LprmmtWMW8AIE6UM9wez3rg2lkP9Uk3W54U1WU6mulzAJ+I4Hxz7qrAc1iLwaUadF5oHYMj0GAGvUtZ6iSwAGa91fzyDPdyDKYXzVRqFk
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DU0PR04MB9252
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 5/8] powerpc: add exit_flags field in pt_regs
+To: "Dmitry V. Levin" <ldv@strace.io>,
+        Mukesh Kumar Chaurasiya <mkchauras@linux.ibm.com>
+Cc: mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org,
+        ryabinin.a.a@gmail.com, glider@google.com, andreyknvl@gmail.com,
+        dvyukov@google.com, vincenzo.frascino@arm.com, oleg@redhat.com,
+        kees@kernel.org, luto@amacapital.net, wad@chromium.org,
+        mchauras@linux.ibm.com, thuth@redhat.com, ruanjinjie@huawei.com,
+        sshegde@linux.ibm.com, akpm@linux-foundation.org, charlie@rivosinc.com,
+        deller@gmx.de, macro@orcam.me.uk, segher@kernel.crashing.org,
+        peterz@infradead.org, bigeasy@linutronix.de, namcao@linutronix.de,
+        tglx@linutronix.de, mark.barnett@arm.com,
+        linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+        kasan-dev@googlegroups.com
+References: <20260123073916.956498-1-mkchauras@linux.ibm.com>
+ <20260123073916.956498-6-mkchauras@linux.ibm.com>
+ <20260722070155.GA11808@strace.io>
+Content-Language: en-US
+From: Madhavan Srinivasan <maddy@linux.ibm.com>
+In-Reply-To: <20260722070155.GA11808@strace.io>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzIzMDAyMCBTYWx0ZWRfX2Hq/g4yybqGu
+ wQzGMsme4gAzQN4UJnCs9Tq6s8ouUEVnOc627pRED6njT+30AO7x2C9XvdPSEU1XzG9We3f0mUG
+ 1+HlGYUE2LGWgbPYj7DqIHINOg5f84eOGbXvEzOMfX9NOzjp9jatGVJBMfUjYQZy9NiEG++l/Hh
+ YP48Aj3erBH5uyyWv/ON0VlMbO8GIlziSGHyZd5Yx7hU4gnN1jtMO7k85f78slKo7by1phudddO
+ BbE36//wBzWUI5ypTt1rbzh1xqmRxLjC/UGg5i6vuGkts9WIVM/9Bb7NisLV2d+gT5q2Uu2YuW4
+ 98m3r2MiZRP6H5rrIVIGxBhPZBrvyJv5FbR94Nm1jzMAlj0FsW2YFSwSz56TGNuDq7AElNCzj1o
+ iAIyOTHdRgZdWOyEbEoAP04dICam2/8VCwnbnFRQzyYXnj7+n0AxrMuUjnIfACdO84FvEL8CXjQ
+ AGwlqXGk/R5OI3I7atw==
+X-Authority-Analysis: v=2.4 cv=F7ZnsKhN c=1 sm=1 tr=0 ts=6a617e7d cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+ a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=VnNF1IyMAAAA:8
+ a=qIVBIAJNVL5Tnlm7AV4A:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-ORIG-GUID: lDaye0mxTD91XvAu3S5x8TCSG4Ip6YYG
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzIzMDAyMCBTYWx0ZWRfX/d2omvyBS/te
+ 0clmY3eLICR2Iaw/SHqnlo9CauZK2jvmcdrBx65NgKxt1ANsnLFYRDhY0tSIZdqoPj7AWpua0ob
+ L57vm2kyvp17jLPt/kdUJSyESzfKons=
+X-Proofpoint-GUID: vouE8ss57iOTnrsdCdpkOawVldg4Xt3Z
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-07-23_01,2026-07-22_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 phishscore=0 bulkscore=0 clxscore=1011 priorityscore=1501
+ impostorscore=0 lowpriorityscore=0 suspectscore=0 malwarescore=0 adultscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607230020
 
-From: Shengjiu Wang <shengjiu.wang@nxp.com>
 
-The i.MX EASRC hardware supports four independent conversion contexts
-(A, B, C, D). The driver previously registered a single DAI with generic
-stream names "ASRC-Playback" and "ASRC-Capture", which prevents
-multiple independent conversion paths from being used simultaneously.
-
-Replace the single fsl_easrc_dai instance with an array of four DAI
-drivers to allow up to four independent conversion paths to be active
-at the same time:
-
-  easrc-0 -- ASRC-Playback / ASRC-Capture (backward compatible)
-  easrc-1 -- ASRC1-Playback / ASRC1-Capture
-  easrc-2 -- ASRC2-Playback / ASRC2-Capture
-  easrc-3 -- ASRC3-Playback / ASRC3-Capture
-
-easrc-0 retains the original generic stream names to preserve backward
-compatibility with existing machine drivers and board configurations.
-Each DAI retains the same channel, rate and format capabilities as the
-original, including IEC958 subframe support on the capture side. Update
-the devm_snd_soc_register_component() call to register all four DAIs.
-
-Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
----
- sound/soc/fsl/fsl_easrc.c | 112 +++++++++++++++++++++++++++++++-------
- 1 file changed, 92 insertions(+), 20 deletions(-)
-
-diff --git a/sound/soc/fsl/fsl_easrc.c b/sound/soc/fsl/fsl_easrc.c
-index e68f6cbdd653..8571fa0bfabd 100644
---- a/sound/soc/fsl/fsl_easrc.c
-+++ b/sound/soc/fsl/fsl_easrc.c
-@@ -1589,27 +1589,99 @@ static const struct snd_soc_dai_ops fsl_easrc_dai_ops = {
- 	.hw_free	= fsl_easrc_hw_free,
- };
- 
--static struct snd_soc_dai_driver fsl_easrc_dai = {
--	.playback = {
--		.stream_name = "ASRC-Playback",
--		.channels_min = 1,
--		.channels_max = 32,
--		.rate_min = 8000,
--		.rate_max = 768000,
--		.rates = SNDRV_PCM_RATE_KNOT,
--		.formats = FSL_EASRC_FORMATS,
-+static struct snd_soc_dai_driver fsl_easrc_dai[] = {
-+	{
-+		.name = "easrc-0",
-+		.playback = {
-+			.stream_name = "ASRC-Playback",
-+			.channels_min = 1,
-+			.channels_max = 32,
-+			.rate_min = 8000,
-+			.rate_max = 768000,
-+			.rates = SNDRV_PCM_RATE_KNOT,
-+			.formats = FSL_EASRC_FORMATS,
-+		},
-+		.capture = {
-+			.stream_name = "ASRC-Capture",
-+			.channels_min = 1,
-+			.channels_max = 32,
-+			.rate_min = 8000,
-+			.rate_max = 768000,
-+			.rates = SNDRV_PCM_RATE_KNOT,
-+			.formats = FSL_EASRC_FORMATS |
-+				   SNDRV_PCM_FMTBIT_IEC958_SUBFRAME_LE,
-+		},
-+		.ops = &fsl_easrc_dai_ops,
- 	},
--	.capture = {
--		.stream_name = "ASRC-Capture",
--		.channels_min = 1,
--		.channels_max = 32,
--		.rate_min = 8000,
--		.rate_max = 768000,
--		.rates = SNDRV_PCM_RATE_KNOT,
--		.formats = FSL_EASRC_FORMATS |
--			   SNDRV_PCM_FMTBIT_IEC958_SUBFRAME_LE,
-+	{
-+		.name = "easrc-1",
-+		.playback = {
-+			.stream_name = "ASRC1-Playback",
-+			.channels_min = 1,
-+			.channels_max = 32,
-+			.rate_min = 8000,
-+			.rate_max = 768000,
-+			.rates = SNDRV_PCM_RATE_KNOT,
-+			.formats = FSL_EASRC_FORMATS,
-+		},
-+		.capture = {
-+			.stream_name = "ASRC1-Capture",
-+			.channels_min = 1,
-+			.channels_max = 32,
-+			.rate_min = 8000,
-+			.rate_max = 768000,
-+			.rates = SNDRV_PCM_RATE_KNOT,
-+			.formats = FSL_EASRC_FORMATS |
-+				   SNDRV_PCM_FMTBIT_IEC958_SUBFRAME_LE,
-+		},
-+		.ops = &fsl_easrc_dai_ops,
-+	},
-+	{
-+		.name = "easrc-2",
-+		.playback = {
-+			.stream_name = "ASRC2-Playback",
-+			.channels_min = 1,
-+			.channels_max = 32,
-+			.rate_min = 8000,
-+			.rate_max = 768000,
-+			.rates = SNDRV_PCM_RATE_KNOT,
-+			.formats = FSL_EASRC_FORMATS,
-+		},
-+		.capture = {
-+			.stream_name = "ASRC2-Capture",
-+			.channels_min = 1,
-+			.channels_max = 32,
-+			.rate_min = 8000,
-+			.rate_max = 768000,
-+			.rates = SNDRV_PCM_RATE_KNOT,
-+			.formats = FSL_EASRC_FORMATS |
-+				   SNDRV_PCM_FMTBIT_IEC958_SUBFRAME_LE,
-+		},
-+		.ops = &fsl_easrc_dai_ops,
-+	},
-+	{
-+		.name = "easrc-3",
-+		.playback = {
-+			.stream_name = "ASRC3-Playback",
-+			.channels_min = 1,
-+			.channels_max = 32,
-+			.rate_min = 8000,
-+			.rate_max = 768000,
-+			.rates = SNDRV_PCM_RATE_KNOT,
-+			.formats = FSL_EASRC_FORMATS,
-+		},
-+		.capture = {
-+			.stream_name = "ASRC3-Capture",
-+			.channels_min = 1,
-+			.channels_max = 32,
-+			.rate_min = 8000,
-+			.rate_max = 768000,
-+			.rates = SNDRV_PCM_RATE_KNOT,
-+			.formats = FSL_EASRC_FORMATS |
-+				   SNDRV_PCM_FMTBIT_IEC958_SUBFRAME_LE,
-+		},
-+		.ops = &fsl_easrc_dai_ops,
- 	},
--	.ops = &fsl_easrc_dai_ops,
- };
- 
- static const struct snd_soc_component_driver fsl_easrc_component = {
-@@ -2234,7 +2306,7 @@ static int fsl_easrc_probe(struct platform_device *pdev)
- 	regcache_cache_only(easrc->regmap, true);
- 
- 	ret = devm_snd_soc_register_component(dev, &fsl_easrc_component,
--					      &fsl_easrc_dai, 1);
-+					      fsl_easrc_dai, ARRAY_SIZE(fsl_easrc_dai));
- 	if (ret) {
- 		dev_err(dev, "failed to register ASoC DAI\n");
- 		goto err_pm_disable;
--- 
-2.34.1
-
+On 7/22/26 12:31 PM, Dmitry V. Levin wrote:
+> On Fri, Jan 23, 2026 at 01:09:13PM +0530, Mukesh Kumar Chaurasiya wrote:
+>> From: Mukesh Kumar Chaurasiya <mchauras@linux.ibm.com>
+>>
+>> Add a new field `exit_flags` in the pt_regs structure. This field will hold
+>> the flags set during interrupt or syscall execution that are required during
+>> exit to user mode.
+> Apparently, this change breaks PTRACE_GETREGS as the latter has no means
+> to communicate the size of struct pt_regs being written to userspace.
+We added the exit_flag at the end of the struct so that other element
+offsets will not be affected with this change.
+> As result, the kernel with this patch will write to userpsace 32 more
+> bytes than before, and unless the userspace is re-compiled with the latest
+> ptrace.h, 32 bytes of userspace memory after struct pt_regs will be
+> overwritten.
+We are looking at other options and thanks for reporting this
+Maddy
+>
+> This issue was detected by strace test suite, specifically, the test that
+> checks whether the actual number of bytes written by
+> ptrace(PTRACE_GETREGS) matches sizeof(struct pt_regs), and that test failed
+> with runtime version v7.1 and headers version v7.2-rc1.
+>
+>> diff --git a/arch/powerpc/include/uapi/asm/ptrace.h b/arch/powerpc/include/uapi/asm/ptrace.h
+>> index 01e630149d48..a393b7f2760a 100644
+>> --- a/arch/powerpc/include/uapi/asm/ptrace.h
+>> +++ b/arch/powerpc/include/uapi/asm/ptrace.h
+>> @@ -55,6 +55,8 @@ struct pt_regs
+>>   	unsigned long dar;		/* Fault registers */
+>>   	unsigned long dsisr;		/* on 4xx/Book-E used for ESR */
+>>   	unsigned long result;		/* Result of a system call */
+>> +	unsigned long exit_flags;	/* System call exit flags */
+>> +	unsigned long __pt_regs_pad[3];	/* Maintain 16 byte interrupt stack alignment */
+>>   };
+>>   
+>>   #endif /* __ASSEMBLER__ */
 
