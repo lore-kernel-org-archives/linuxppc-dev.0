@@ -1,103 +1,83 @@
-Return-Path: <linuxppc-dev+bounces-24742-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24743-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5F185C531D4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2026 14:34:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7F327C531D1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2026 15:01:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h5YXj3lqGz2yh4;
-	Fri, 24 Jul 2026 00:34:13 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=216.40.44.11
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784817253;
-	cv=none; b=BUtxeBLOGkhbUOpnQNk0fQTm7Tk/rhwVN1AxPUoqhlxqys0piXwwO7VVzOKuXrzJP+mbZUkrYFI3TBqrIrZ0j8aZVcZnJmOp2Equ0IKMfbyB7tx2vBEHgYctOynnQaa9HR9kc2vnD1Yoqkx4Qt+ivOeZYBkaICg3vCOAQs50KmVCs4VnxYG+lkTTdTMOyy88AGgEBLQTgVOGq9TKHeMOgwthhvWWGykYwo21lPTaENJNimDWkPQ9+pCfDuuxDz77SjDbqUyxHv5tKjsyu7aK1v0ntSHA/ILT+J88X1GegufoQaywjp46pQEJgyWs42ewfNJ0Z0wxo3wa55So73M+7A==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784817253; c=relaxed/relaxed;
-	bh=G62WB70PUaQjO1QNjtuHJOMdsuoe1S9HaxOa9yS7sRY=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=Ec4DcXBLPWfFPBGG9k8fspw+Im0xa7g9s2B4prKtP1eUJbQky5Xu4QHSSZgRyP3aG3pauJs/F0X5YlIA/qYnR9VqcXI5aTbhX8/yUdYCbn9HIhWzXsGVLUnMmXo2h3ZsD43Q3ET8sIdUBVIA0XlXJ1vRzqR/tArWP4phs6yI4GywP/RCOIgwtpWO8yK2RvNrK6FWZJ1GNHplYFFhGIx/SXDxhCcHMo/heFChBhHNmlUWsXRq65xyqUUpk0g5AcXMV7tOCOjs7SZR2lK4XNk53FAjSVcAdzGIR/z7QKmA8wwiVL9GKDD2VSVKWMwrFADVeIHDGNLout4IlWiVr7aUrg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=goodmis.org; spf=pass (client-ip=216.40.44.11; helo=relay.hostedemail.com; envelope-from=rostedt@goodmis.org; receiver=lists.ozlabs.org) smtp.mailfrom=goodmis.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=goodmis.org
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=goodmis.org (client-ip=216.40.44.11; helo=relay.hostedemail.com; envelope-from=rostedt@goodmis.org; receiver=lists.ozlabs.org)
-Received: from relay.hostedemail.com (smtprelay0011.hostedemail.com [216.40.44.11])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h5Z8K2t2Gz2yhD;
+	Fri, 24 Jul 2026 01:01:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c20f::7" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784818897;
+	cv=pass; b=D1aDte5B0KmqZIfYWaioF+8KVGl179OKAuN5Zc3CzL+Pspq4TIx39jK84fV6NnHijU1pjhjpf7kM9Oe7Sy86Hku8fYb9A/D68GLkMxHfgqckA7bZGR7teRT9Jxj4oCH1Ge86yCzMDQZKKBtHMa7Ni7FN830tDRuyK/jGKjuaFo0EiP7sZI/fFQbjDDSWCFKqhTt7T0u65BnBIqAIyNQlDkYX8O15f+nQvw4zNYFj4CbBFF84Y8yp6TL51nCjIrijbRH+hOabVWtx7rzbbvGzzTkwqJrRhIQR2DS5bqeWM+cCaNu5piDdqLeBdfEGCiO4x7gPLLZ4SwmolvGV+TSWQw==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1784818897; c=relaxed/relaxed;
+	bh=Su8mcUR9YFhnTPYPiJSIa/mrW/RVdPNcEzgnPNm8aCU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=R6UWwk7glkmbPk8ycDY9EpmHzLAixNBShXYANR1p7lhbwerbFIuigv30ZfmpMU7kicXeGDe6AIR8zVQPVtH2lZ06V5B6S5RHsW8wLe3TI4//oIYc215QqVqWY6Ts2p1h1onPknnmw+Dy94tgkKDBYaS3AvFcQ9s96z5V818P/OLOOr1RXXn3qF6f28e/VAejD3z3EJPKR26s/c8/NPloymATJ+bx+XhRUMW7CKKE+1r1o2XJEJUUoVP9omE8iglmMT6iw01lphR7eK9TYfVRJXUI5QPQiieGjU4TwvcnwSu+eCumpLV8WuJ3c5TraV1kzeOml2KWvo1riMPmpZa7Lw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=TIzgtQKs; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c20f::7; helo=osppr02cu001.outbound.protection.outlook.com; envelope-from=vladimir.oltean@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=TIzgtQKs;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c20f::7; helo=osppr02cu001.outbound.protection.outlook.com; envelope-from=vladimir.oltean@nxp.com; receiver=lists.ozlabs.org)
+Received: from OSPPR02CU001.outbound.protection.outlook.com (mail-norwayeastazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c20f::7])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h5YXg6rTkz2xs1
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jul 2026 00:34:09 +1000 (AEST)
-Received: from omf12.hostedemail.com (lb01a-stub [10.200.18.249])
-	by unirelay09.hostedemail.com (Postfix) with ESMTP id 9876C804F4;
-	Thu, 23 Jul 2026 14:34:00 +0000 (UTC)
-Received: from [HIDDEN] (Authenticated sender: rostedt@goodmis.org) by omf12.hostedemail.com (Postfix) with ESMTPA id 056E717;
-	Thu, 23 Jul 2026 14:33:13 +0000 (UTC)
-Date: Thu, 23 Jul 2026 10:33:36 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Andi Kleen <ak@linux.intel.com>
-Cc: Markus Elfring <Markus.Elfring@web.de>, acpica-devel@lists.linux.dev,
- bpf@vger.kernel.org, coresight@lists.linaro.org, kvm@vger.kernel.org,
- linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-gpio@vger.kernel.org, linux-kselftest@vger.kernel.org,
- linux-mm@kvack.org, linux-perf-users@vger.kernel.org,
- linux-pm@vger.kernel.org, linux-trace-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, mptcp@lists.linux.dev,
- netdev@vger.kernel.org, platform-driver-x86@vger.kernel.org,
- virtualization@lists.linux.dev, Adrian Hunter <adrian.hunter@intel.com>,
- Alex Mastro <amastro@fb.com>, Alex Williamson <alex@shazbot.org>, Alexander
- Shishkin <alexander.shishkin@linux.intel.com>, Alexei Starovoitov
- <ast@kernel.org>, Andrew Lunn <andrew+netdev@lunn.ch>, Andrew Morton
- <akpm@linux-foundation.org>, Andrii Nakryiko <andrii@kernel.org>, Ankur
- Arora <ankur.a.arora@oracle.com>, Arnaldo Carvalho de Melo
- <acme@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>, Bobby Eshleman
- <bobbyeshleman@meta.com>, Christian =?UTF-8?B?Qm9ybnRyw6RnZXI=?=
- <borntraeger@linux.ibm.com>, Christophe Leroy <chleroy@kernel.org>,
- Chun-Tse Shao <ctshao@google.com>, Claudio Imbrenda
- <imbrenda@linux.ibm.com>, Costa Shulyupin <costa.shul@redhat.com>, Crystal
- Wood <crwood@redhat.com>, Daniel Borkmann <daniel@iogearbox.net>, Daniel
- Lezcano <daniel.lezcano@kernel.org>, David Hildenbrand <david@kernel.org>,
- David Matlack <dmatlack@google.com>, "David S. Miller"
- <davem@davemloft.net>, Donald Hunter <donald.hunter@gmail.com>, Eduard
- Zingerman <eddyz87@gmail.com>, Emil Tsalapatis <emil@etsalapatis.com>, Eric
- Dumazet <edumazet@google.com>, Gabriele Monaco <gmonaco@redhat.com>,
- Geliang Tang <geliang@kernel.org>, Ian Rogers <irogers@google.com>, Ingo
- Molnar <mingo@redhat.com>, Ivan Pravdin <ipravdin.official@gmail.com>,
- Jakub Kicinski <kuba@kernel.org>, James Clark <james.clark@linaro.org>,
- Janosch Frank <frankja@linux.ibm.com>, Jason Xing
- <kerneljasonxing@gmail.com>, Jiri Olsa <jolsa@kernel.org>, Joe Damato
- <joe@dama.to>, John Garry <john.g.garry@oracle.com>, Josh Poimboeuf
- <jpoimboe@kernel.org>, Kaushlendra Kumar <kaushlendra.kumar@intel.com>,
- Kent Gibson <warthog618@gmail.com>, Kumar Kartikeya Dwivedi
- <memxor@gmail.com>, Len Brown <lenb@kernel.org>, Leo Yan
- <leo.yan@linux.dev>, Lukasz Luba <lukasz.luba@arm.com>, Madhavan Srinivasan
- <maddy@linux.ibm.com>, Mark Rutland <mark.rutland@arm.com>, Martin KaFai
- Lau <martin.lau@linux.dev>, Masami Hiramatsu <mhiramat@kernel.org>, Mat
- Martineau <martineau@kernel.org>, Matthieu Baerts <matttbe@kernel.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Mike Leach <mike.leach@arm.com>,
- Mina Almasry <almasrymina@google.com>, Mykyta Yatsenko <yatsenko@meta.com>,
- Nam Cao <namcao@linutronix.de>, Namhyung Kim <namhyung@kernel.org>,
- Nicholas Piggin <npiggin@gmail.com>, Paolo Abeni <pabeni@redhat.com>, Paolo
- Bonzini <pbonzini@redhat.com>, Pawel Chmielewski
- <pawel.chmielewski@intel.com>, Peter Zijlstra <peterz@infradead.org>,
- Quentin Monnet <qmo@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>,
- Raghavendra Rao Ananta <rananta@google.com>, Saket Dumbre
- <saket.dumbre@intel.com>, Shuah Khan <shuah@kernel.org>, Simon Horman
- <horms@kernel.org>, Song Liu <song@kernel.org>, Srinivas Pandruvada
- <srinivas.pandruvada@linux.intel.com>, Stanislav Fomichev
- <sdf@fomichev.me>, Stefano Garzarella <sgarzare@redhat.com>, Suzuki K
- Poulose <suzuki.poulose@arm.com>, Swapnil Sapkal <swapnil.sapkal@amd.com>,
- Thomas =?UTF-8?B?V2Vpw59zY2h1aA==?= <linux@weissschuh.net>, Tomas Glozar
- <tglozar@redhat.com>, Vipin Sharma <vipinsh@google.com>, Wander Lairson
- Costa <wander@redhat.com>, Will Deacon <will@kernel.org>, Willem de Bruijn
- <willemdebruijn.kernel@gmail.com>, Willy Tarreau <w@1wt.eu>, Yonghong Song
- <yonghong.song@linux.dev>, Zhang Chujun <zhangchujun@cmss.chinamobile.com>,
- Zhang Rui <rui.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>,
- kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH] tools: Use fputc() calls in some functions
-Message-ID: <20260723103336.6593118b@gandalf.local.home>
-In-Reply-To: <amIbVOIsOeZgcBZF@tassilo>
-References: <48f2d61f-d468-49b7-881e-f00777db073f@web.de>
-	<amIbVOIsOeZgcBZF@tassilo>
-X-Mailer: Claws Mail 3.20.0git84 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h5Z8H4RFLz2ygt
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jul 2026 01:01:34 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=Tnq3a2JCPS63oW+hvR5LA0/bvgXBEAYDcsVKkAq0z+CjLR81HG32xKMv8VhGiY1zGnpRiGzQWEKi8aUK8oJ++zkdj7C37GIwpLY3f96gAauFW8YtzIr0lFG2qGp4Yrx3PlGLN6IJa01QYDzkeNzg/BfK9hnkCmClCp8CslL+E0geSSP0a9CgHiwmDOgAvpq67Qrp3edm8b9CmokTZyj88F8QgGFUh+JX2RhkM04WpjhsLnCS1Sb/DbXNF8CpWxPamW2x/+sdAMKce/8/zoneVpYZjYKhmpSWfN2VOwbYtYqgww4NShaup1uFPdby2gMEja60y3rsnj7yQRnvAeWBrQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=Su8mcUR9YFhnTPYPiJSIa/mrW/RVdPNcEzgnPNm8aCU=;
+ b=iujKGYxDCLz529LUzzFjxrFBrkATXYhgTgBHPgIqMHqotJOE5PYo52GHnfxZgPV9wDGT2zAki1Azp2bJ9O3vNG+IWtI9Hx6/02EBvXiwm7/eZIgq4VQ0tYoobWNvH2hhckF/VbNct02ULv0ENW03pBqIyRdw0Znyve5/TXglhv0Y+BM4/+shs80gmRubSNPNgKKobmu1obXATxccEM8uke4FmSJJIUc1Dnn9MaID9CGQJGB31DmUXrCdmEeEFo7CJZAiveAQwVH0SxOVKVrxKpA/hfljfAe452VwOe6jHut5SGKAuHXOref5aGhix/lUzBiCUclzrohdDQgrsvpZhw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=Su8mcUR9YFhnTPYPiJSIa/mrW/RVdPNcEzgnPNm8aCU=;
+ b=TIzgtQKs0LkLsIRLcdYfAjkTjK3AH7Y/TrkJGKTiwJpYbIk52lJ35hIOarU7FHc9N9TW03iK+Z2oA98WSsiMoZzrCPwMRezSewc40iwON569XjnDTk8qPSS4CQ8TnqBRupOdgXWD16HtU14WhzXd1/v1BkgDSvk1pHT84yILJO90ytCFO8fmixyWNiek3sX4/GhXXBvkdZSkB0E4Ox5pnO4+qZxFCMlcAYKXd6NKkGcTVt2pxKM56XRHDGl4FKLveNX2iEnMHvCvUMHkrEggiARVz64sEgYUw5y1FWk6gSuIkgVIsY1umF4727WB7BVpEvNOEUlusScimMBF2LQICQ==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nxp.com;
+Received: from AM0PR04MB6900.eurprd04.prod.outlook.com (2603:10a6:208:17d::10)
+ by AM0PR04MB7011.eurprd04.prod.outlook.com (2603:10a6:208:193::10) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.245.10; Thu, 23 Jul
+ 2026 15:01:10 +0000
+Received: from AM0PR04MB6900.eurprd04.prod.outlook.com
+ ([fe80::7fda:8431:ca1b:b023]) by AM0PR04MB6900.eurprd04.prod.outlook.com
+ ([fe80::7fda:8431:ca1b:b023%5]) with mapi id 15.21.0245.010; Thu, 23 Jul 2026
+ 15:01:09 +0000
+Date: Thu, 23 Jul 2026 18:01:05 +0300
+From: Vladimir Oltean <vladimir.oltean@nxp.com>
+To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Vinod Koul <vkoul@kernel.org>
+Cc: linux-phy@lists.infradead.org, devicetree@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+	Ioana Ciornei <ioana.ciornei@nxp.com>,
+	Neil Armstrong <neil.armstrong@linaro.org>,
+	Tanjeff Moos <tanjeff.moos@westermo.com>,
+	Michael Walle <mwalle@kernel.org>, Shawn Guo <shawnguo@kernel.org>,
+	Frank Li <Frank.Li@nxp.com>, linux-kernel@vger.kernel.org,
+	Conor Dooley <conor+dt@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v4 phy-next 0/9] RCW override for 10G Lynx dynamic
+ protocol reconfiguration
+Message-ID: <20260723150105.da2cqgtb7t5vw2d3@skbuf>
+References: <20260721231603.67865-1-vladimir.oltean@nxp.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260721231603.67865-1-vladimir.oltean@nxp.com>
+X-ClientProxiedBy: WA1P291CA0020.POLP291.PROD.OUTLOOK.COM
+ (2603:10a6:1d0:19::24) To AM0PR04MB6900.eurprd04.prod.outlook.com
+ (2603:10a6:208:17d::10)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -111,46 +91,86 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Stat-Signature: ncsjbmpq4hct7p4sj4iefr1r53tacukj
-X-Rspamd-Server: rspamout02
-X-Rspamd-Queue-Id: 056E717
-X-Session-Marker: 726F737465647440676F6F646D69732E6F7267
-X-Session-ID: U2FsdGVkX1+f7u83oRUulG9XwKl2P+q3kHYGrSLtLJ0=
-X-HE-Tag: 1784817193-538669
-X-HE-Meta: U2FsdGVkX19mSJrQ4yCgpa5T21s3DOyupJQtrDkbhb4BdFNkpGoXwq/ibfVmVhXFNmqX8uwKJldaBwfXYwLpcFxk6WAoDZEXT/gOP4/87ir9dCPM++yAwBRZudspVL4fEcLJ8BQR+IIioDSpRN3BUfGiJrTRVS7/uta9AmYBpm0bV/zvbFblUCnE1I0vyxTsAPHkh0LX+JrCxO4Fb8yldd7jKVRG3hDwMmD/y539S+5vq64BAxIp9RMpMFz5panzgBl/T6DnlC5NF2X6cBflLJ9t5of1YaVukjrextWC1Mkdf4ypcuVGdK7IR4N2F6BEhF3E+awXwxrLnbww9pI6GrXPJih6633rwSWNy/mC4FmaOinac79jHA==
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: AM0PR04MB6900:EE_|AM0PR04MB7011:EE_
+X-MS-Office365-Filtering-Correlation-Id: a9c90f67-e9f9-4ac1-6150-08dee8cb3a64
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|19092799006|1800799024|366016|7416014|376014|10070799003|23010399003|11063799006|10067099003|56012099006|18002099003|22082099003|3023799007;
+X-Microsoft-Antispam-Message-Info:
+	TUoR9Sjer26d2HB3+x+Dv4zOk0dZPP8MguT+nPSM1Faoz/4s+W98iKfE0Tnb9ho9FW9bN2einzEciZOElIREMTDQuyzJdP/vJ0J5N4w91Ryh1UmuH5rOpDK31G1h6bAY3+X8vRLDj3/6T+4jpqjtWGM7qV6bqup7NawMoBWsqyCcBrv6qSM5XvUnatkD2GhJ5MKuZ1zj/080PT4ha08BOn+JhzQED0r7pXZnmNKdQOA8n20LIwrNZCUoDla6AkHh5nqF3iZyDpIuYQ+dTkPAdhFw+uVfEfxJDI8Z7qm+/5NFm4tNNVwwr2jmt4Xz1YC6+isRydbpVTDEGq6UTFqa34EDLvyN9nqAmjT1Z2obYTS8P1wqsnWAr5DVWAstFo4+4CMXa1Ihax6QjB5tyIg+aS0SwtvD0VbyFnK9Q2iYJBVkVzAlNhov+y3yGiQQp4d+pOushvpPkOH0ClCfYHKIe1BPcboYnfTMkGamsi8ZWxFddl8XUeEb24k+nZkPB0F8OOUgG6NNO0+eHFJiqYSxkUQPiqaC4jW/GlQSbXcRdJKXP/t5WZYh5xsmlihAU6OtL4XE6dbTz7dZqocuD+f2a+2MHoW1c5z5AWv1+Ft93TCyKkxnufTXMz2yPVd9s0TgEB7wCKf78qi8SFcx6sydMuIg481pAMke/bAAe0uG/1Y=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM0PR04MB6900.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(19092799006)(1800799024)(366016)(7416014)(376014)(10070799003)(23010399003)(11063799006)(10067099003)(56012099006)(18002099003)(22082099003)(3023799007);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 2
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?5zgYoT2K+4IswEkzDcL60ppXNn4eKvLQ5oGrVwLopS28cEclym83w8KMGtxE?=
+ =?us-ascii?Q?bqW6zt7aBoKrjthCS/T6zCfp6+henwe8dcTiilb6mOzdXt+G5go6oKG++WRS?=
+ =?us-ascii?Q?awxwstOmbdJQqqrS7UVYrhCGEw79SN+DAlNWXvFaK1EMGFCrMY8VsBgTE+Nk?=
+ =?us-ascii?Q?uwo1jcT4CoEi2kfrx9Uz9WM3FG87UEJVdF4OY995gXaTZgxJ5A3GUViXyJ5H?=
+ =?us-ascii?Q?jgypp4oVFpzG/5YtD3rvMUlHhwTv8Gn6uelJrtBNdaC2eKvKnhX9B305ps0N?=
+ =?us-ascii?Q?1Rz30BD3tuFs7nQn8RSG/KVJbdA643JU36dIIp/1v4mDKdAuRm+7k9XpgHKZ?=
+ =?us-ascii?Q?90rJoeAUhMGuxgn3oNPQ7NV4+TKF7XItHQsO4ew0QVf1pa5POJLx7sauDpiQ?=
+ =?us-ascii?Q?cMQOV3mUR+Yw3egSxxlElp4rcHRRj6S0KJQ022Llpggu7U/lpmrnFeyfQ+or?=
+ =?us-ascii?Q?obw0x+DwCxVNq4xM0jDzh3Ppi2Fx0MJ6qQRbaHtIDxgeJu9Lgxo7KwO21/YC?=
+ =?us-ascii?Q?beB3jpMfn+HlOZ8BmStcXlerj+jf3MpAQgVeJyAOT+UpFTHnqbZOgf5ZiK+7?=
+ =?us-ascii?Q?fDPFzTAnnAmNs5XkR+jNXl0Mq19sERcVPzwpLlTHF984QGlLzx9vlIcxqayu?=
+ =?us-ascii?Q?yNmt+lfwILrJI2AiuMpVUkKBiuZ5urbE+19gIAQY615JE6U/GtlkqSdJYbyx?=
+ =?us-ascii?Q?pBb3du8XhiHGbs+9nyodqMMiax9tBhfw7WGieaksMhd5ifd8tvEgt0QHNnb5?=
+ =?us-ascii?Q?JroYcwsA5p9DhAqhvy047k5KUCXvY3nKi/r14cvfHbNOAycwcKBjwhIiBpH5?=
+ =?us-ascii?Q?QUoVyKLHJwmGwtjvhfsAmYucDSMYLIs37cLLr2aQdO3phw6iZAJe+hXa38qR?=
+ =?us-ascii?Q?+DOc3mvrcMskjxNGWYDf8VscYxaNvNmWeXl23Mg7JhFGli2Gf8QiVsYMqaS9?=
+ =?us-ascii?Q?MOksu8GB/qG8d92J5bnf0Q41LMAXCIkx/ZO9o972aIFD3VqmrMaP30bylUer?=
+ =?us-ascii?Q?l/NLbse/gN01U0qSjmtICOqoZzuHfZAqnmue5C+T/+Cv+Rxreg9W9mY+72EP?=
+ =?us-ascii?Q?ZgPfDZPg2Ii+R+eQDWhq9zvSsQEVILUhoDeVMHN1ghD2gW02DhECmmSGKoOi?=
+ =?us-ascii?Q?50+/zpjrkVYbmZZ53u3jp9PJj96NPxwxPcYpw108P+NPRE+URi9UiJALtTTY?=
+ =?us-ascii?Q?x2ldvJT6QKnN5EBWwdP6CuDKE9ARiZ4esmUQDBXLj5Mn3PiEc1vFk63/ZlAb?=
+ =?us-ascii?Q?DurgvzAUaC/J+09DWe2nUH8w//LffPw+jlvTglj27uU8aMNRlxsBiBk/gMuk?=
+ =?us-ascii?Q?QK8QIa0DSQh7XGp6Qt5wSzBG3cySVsZQbyHPz3yFWGrLMauDCJ3oQuWabjRW?=
+ =?us-ascii?Q?nk4t1IgyR/93PfQIzm7xq+P8sDBV7bwldmKq/ko0aad/kU1u7Oh6278GHSnx?=
+ =?us-ascii?Q?KCAsHoqV+TfKTrazNOU0wmLm0IoOJyg9iN1KYcAinwQXFQzbOM8Q/0diNG0A?=
+ =?us-ascii?Q?3UkJAGvibtTGmsvFJZqgsfpq5b07j5XOFjF9B7bsEfCP0Zl5lwdQvW5OF1pU?=
+ =?us-ascii?Q?X0Xb2SkEKExoM9/VJ1bSNogKgA+ldI+Xxh6jL9toe1vfT/hv7bPSmpsCv4qf?=
+ =?us-ascii?Q?DdJtqaq48n0WbgtLsqYTE2d/MldKfEugsy46mHY/9UPvM+fdsrvjNi6bsz90?=
+ =?us-ascii?Q?i64bXvQfQoqdpne969lsTCtnbqEZkRP0hQonHOR2ND2p9WSVeBHDLxtQx6xg?=
+ =?us-ascii?Q?5Y4+SIyGOPffBZlqwPl2LlmrppxjnGtcxwrHb3X2Cf4tHxTk1ZrgtjZKKMoh?=
+X-MS-Exchange-AntiSpam-MessageData-1: GYl9YVPciE/VPXuv0qA1uQz4zlqKgCFOpTQ=
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: a9c90f67-e9f9-4ac1-6150-08dee8cb3a64
+X-MS-Exchange-CrossTenant-AuthSource: AM0PR04MB6900.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 23 Jul 2026 15:01:09.1176
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 7if4pV/YghCoEv97r3NyphLfngKVS1mNg/E14U1M/mrSwf1oxtjgrD/j3gtp9ET4sWrTlzKEIjDV1Jwcn78MMQ==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM0PR04MB7011
 
-On Thu, 23 Jul 2026 06:47:00 -0700
-Andi Kleen <ak@linux.intel.com> wrote:
-
-> > The source code was transformed by using the Coccinelle software.  
+On Wed, Jul 22, 2026 at 02:15:54AM +0300, Vladimir Oltean wrote:
+> Ioana Ciornei (4):
+>   soc: fsl: guts: use a macro to encode the DCFG CCSR space
+>   soc: fsl: guts: add a global structure to hold state
+>   soc: fsl: guts: add a central fsl_guts_read() function
+>   soc: fsl: guts: make it easier to determine on which SoC we are
+>     running
 > 
-> gcc already does this transformation automatically.
+> Vladimir Oltean (5):
+>   soc: fsl: guts: perform fsl_guts_init() error teardown in reverse
+>     order of setup
+>   soc: fsl: guts: make fsl_soc_data available after fsl_guts_init()
+>   dt-bindings: fsl: layerscape-dcfg: define DCFG_DCSR region
+>   soc: fsl: guts: implement the RCW override procedure
+>   phy: lynx-10g: use RCW override procedure for dynamic protocol change
 
-Yep, I showed this in my talk[1] that looked at what printf("Hello World!")
-does. Doing an objdump of:
+Even though I intended these changes for linux-phy (they are also
+build-tested there), I'm fine either with these changes taken through
+Vinod's tree with Christophe's ACK for patches 1-8, or through
+Christophe's tree with Vinod's ACK for patch 9, really.
 
-#include <stdio.h>
+I see on Patchwork there's a minor issue in the commit message of patch 3/9:
+https://patchwork.kernel.org/project/linux-phy/patch/20260721231603.67865-4-vladimir.oltean@nxp.com/
+"WARNING: 'struture' may be misspelled - perhaps 'structure'?"
 
-int main(void) {
-	printf("Hello World!\n");
-	return 0;
-}
-
-has:
-
-0000000000001139 <main>:
-    1139:       55                      push   %rbp
-    113a:       48 89 e5                mov    %rsp,%rbp
-    113d:       48 8d 05 c0 0e 00 00    lea    0xec0(%rip),%rax        # 2004 <_IO_stdin_used+0x4>
-    1144:       48 89 c7                mov    %rax,%rdi
-    1147:       e8 e4 fe ff ff          call   1030 <puts@plt>  <<<--- puts and not printf
-    114c:       b8 00 00 00 00          mov    $0x0,%eax
-    1151:       5d                      pop    %rbp
-    1152:       c3                      ret
-
--- Steve
-
-[1] https://www.youtube.com/watch?v=JRyrhsx-L5Y
+Could this be fixed up while applying, if there is no other feedback?
 
