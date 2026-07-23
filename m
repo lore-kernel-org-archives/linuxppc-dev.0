@@ -1,78 +1,78 @@
-Return-Path: <linuxppc-dev+bounces-24670-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24671-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A6A18C4453D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2026 00:02:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CA1A7C44536
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2026 00:02:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h5BBR42KZz2ynW;
-	Thu, 23 Jul 2026 10:02:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h5BBW40xtz2yrW;
+	Thu, 23 Jul 2026 10:02:11 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784764926;
-	cv=none; b=MZoUUKrxp2n5NmrmqlMVGPx4kz56+9Q6eJg2LSMNQjxs7ebNum2aExHBASTlY3k4QbExhyUyo3CnBKKlOVFpkP3JRxFO6M8BcUjGGnNgKo2R9nPmili6juvZcGmkGEB8KKO0qT+ZhnqH4cPuoPPTd2ShQPk9PXFO/FKvjWvl8IE+dhYmwLqeSw2kVSvx+sfLCMOpAbKVyvbA+gfntJdawYgPYmj2o1GjnRzVnuuZYbzkQhgeOA+bi1HrZuVQlkQdoJxNtIDBCsL3tjmTZu9q36BYB0iB5GLrmZYPQWDWwdDLTMUqU5VqR9lFeGAU7a7gY//WbHTHRmWShJ5Z5Ux4Hw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784764931;
+	cv=none; b=Bdx3rIM//8sHVGmXXGhpXO3YzbstA87A2Vsl/i8a5Wi/V+1U0XQexuXJcUo1FTk9WCWMQgcmLRqICdlHGHRwrIKi++qnjz3Hh37S8v5HQgDyiq0TseXUYt8IKIs56NHQyxF+5HadYKz5iVp3xfCp3jSS54f1YEF+zMZ8Dbwr1Sxmk1nD9PnqzHEJ6n7vFjF7iUW8EdlS3D8suH7laZ9B0rY3d4KjeYJQLZ1vSkwOzDh2vUgXDbOUHjqP1bIbYyuXulblRUkcdtnaPlbVHACCDXY9zlx1U7GcePaThnU2f5YzZarzIRr1WchEqzO8GGYCm/g3m6Nkd501WVBNdT/e/Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784764926; c=relaxed/relaxed;
-	bh=QTcx3GUwnUGWervFwOBNbS/xCBTHJ2fcCNdUSchFYis=;
+	t=1784764931; c=relaxed/relaxed;
+	bh=JzjuO0piW/Wlabhoj6SakOr3QawIrQcZMn/ofM3+RiU=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=ZGORE636FcdPEmPVQM/iQmTaOKiqzhR5GjJdcXJV/03Vvo9r8hn9jGSajbCYYRsU4cGVFhHIAGDnTCU98VrbOX0dFX6t2lY9gBCkYK8QcvWyUMzmsRCmiBCKsbonx+lF8F6Edsf8Xc6XmFl8KMo+FMwyeoii+QtQJ+NTpdsradpf1bHaPTc/34f94HjFCRaS2FMzQ7qBFlJCe3ekihTSatr70crxcEkbGN9PaxgkLs86fGFO3dvn13Ax5dLnQwswKbbdGbM4TFemYvqPPJaW0PYKO7rvKh5RqQLV+TI4vVgUqaKKXPZPlJRixcINel9ZysUjssq+uGf1bi5/N1afjw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=dxkapA0D; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 MIME-Version; b=BCbRMgkr3IsasCJbETxsOlvUWNSea0JU/Q1uFK2FKXLq80LNapsXP/zs0dqe7pO6ETKFF/f6WBww9VTQmfivXEB5YmXEFM6wdXzfWeugNRv4OG/wB3agYaU8KHpKucAj1hvd/UcOV/XtQy/Ufr6ruAJQtrM1d/6fXBOrmSh11c74SvKdlB83/vv4TGZjYJe2KkNpLe7iLOuatAJC9OyliQrdkTY5v7iKNRG2Vj1ctR46oau4rsAIcTlGUWfLAOeeWECMlmkyNix0zakC3bUwcsCdNzE4lSyMz9g0+nZKC8LlO6LS4xD9rjcDSSOzsXTj+kN9EpMLXD+gX/rD6pcebw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=m2vl2Yc9; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=dxkapA0D;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=m2vl2Yc9;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h5BBL2j6Jz2ygg
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2026 10:02:01 +1000 (AEST)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66MIC04w713608;
-	Thu, 23 Jul 2026 00:01:58 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h5BBP3ykpz2ykX
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2026 10:02:05 +1000 (AEST)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66MIC1nf634553;
+	Thu, 23 Jul 2026 00:02:03 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=QTcx3GUwnUGWervFw
-	OBNbS/xCBTHJ2fcCNdUSchFYis=; b=dxkapA0DX/yryGShitVIbxLiedarpRWgf
-	lroCRb80XjgmXnfj+BVVhiBlFLW14wOXmsrvqqrOh52pQ5yr3Y3dDFFF0f5o4zx7
-	t1zCraz4qUEG1fjnnGo0vEcmrJMPECjhI2VExIl4GYe5LViU0UdHNLvjOfD7Awwz
-	r+gF8lsW4wL6rUiutUS1Ge7n5wq1hc/hFuxiYGzrtR5ZVjII3CVpEdugPZlRQ9jd
-	ZgqQRAsYkRjdomjBFfPE9Ho8ki7Rq46vj5qq65ST6ZPDCnRsN/mCd5dkxs3KRIdH
-	sZe8vRXvegQR9Lvn9bQgs+dGtf3+vB9CgcpnFvgG87pSUH/hY7H7g==
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fg7ahccsq-1
+	:mime-version:references:subject:to; s=pp1; bh=JzjuO0piW/Wlabhoj
+	6SakOr3QawIrQcZMn/ofM3+RiU=; b=m2vl2Yc9CTTm1ivWTyLdw6cFknOHwpvkj
+	vTMMpklyg+0DdETudapUi2C454GPPO0gjVUgW0K67KoVULmQ8nGXoIpkm0R/7HQ8
+	ECP2C3ZorPEycxgXKWhh9IRyaDGOCByRTNDpF/DBrrZQG32iNUesbtQu7zj4/5O/
+	DnnBGJDo/FQKQdQ2tdxcx9ZprtqubJ69V/SHG+m0V9K2I6fIrMCcrsKp6KXJ1lPZ
+	5rM1SEOrWwOTxo/nABP/UodlgGCDndAXTZN5Bos0/kSYyXnvUgZlghRo2QLqJfWs
+	EVmfO+k3WlAuRv8c9AJLUPR9Zatt88/9IO/zWzKOkSCzY/fajG8Hw==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fg77kce64-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 23 Jul 2026 00:01:58 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66MNnaIF028159;
-	Thu, 23 Jul 2026 00:01:57 GMT
-Received: from smtprelay07.wdc07v.mail.ibm.com ([172.16.1.74])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4fgnah9q27-1
+	Thu, 23 Jul 2026 00:02:02 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66MNnbAd009379;
+	Thu, 23 Jul 2026 00:02:02 GMT
+Received: from smtprelay02.wdc07v.mail.ibm.com ([172.16.1.69])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fgp1ghj9v-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 23 Jul 2026 00:01:57 +0000 (GMT)
+	Thu, 23 Jul 2026 00:02:01 +0000 (GMT)
 Received: from smtpav03.dal12v.mail.ibm.com (smtpav03.dal12v.mail.ibm.com [10.241.53.102])
-	by smtprelay07.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66N01usj30802528
+	by smtprelay02.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66N020ks12321392
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 23 Jul 2026 00:01:56 GMT
+	Thu, 23 Jul 2026 00:02:00 GMT
 Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 8723258068;
-	Thu, 23 Jul 2026 00:01:56 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 2BE1F58063;
+	Thu, 23 Jul 2026 00:02:00 +0000 (GMT)
 Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D47AE58064;
-	Thu, 23 Jul 2026 00:01:55 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 8C62D58061;
+	Thu, 23 Jul 2026 00:01:59 +0000 (GMT)
 Received: from li-4c4c4544-0054-3910-8039-c3c04f423534.ibm.com.com (unknown [9.61.118.58])
 	by smtpav03.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 23 Jul 2026 00:01:55 +0000 (GMT)
+	Thu, 23 Jul 2026 00:01:59 +0000 (GMT)
 From: Tyrel Datwyler <tyreld@linux.ibm.com>
 To: james.bottomley@hansenpartnership.com, martin.petersen@oracle.com
 Cc: linux-scsi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
         linux-kernel@vger.kernel.org, brking@linux.ibm.com,
         davemarq@linux.ibm.com, Tyrel Datwyler <tyreld@linux.ibm.com>
-Subject: [PATCH v2 04/33] ibmvfc: free ibmvfc_target allocations with mempool_free
-Date: Wed, 22 Jul 2026 17:01:20 -0700
-Message-ID: <20260723000149.969416-5-tyreld@linux.ibm.com>
+Subject: [PATCH v2 09/33] ibmvfc: alloc/dealloc sub-queues for nvme channels
+Date: Wed, 22 Jul 2026 17:01:25 -0700
+Message-ID: <20260723000149.969416-10-tyreld@linux.ibm.com>
 X-Mailer: git-send-email 2.55.0
 In-Reply-To: <20260723000149.969416-1-tyreld@linux.ibm.com>
 References: <20260723000149.969416-1-tyreld@linux.ibm.com>
@@ -91,57 +91,111 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: 7D5iPR5E4_REOKeDKMM0Iu3NaGJykQ58
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzIyMDIzNCBTYWx0ZWRfX7FLFT9meQCbW
- jQjq1zgmjGDz3mphtB8RFcuA4VhyMDfnJrNK+Ao7SjY6+pYniSiSiDl/vGxwyShoPsFN1Up+W07
- uk/BW2Lw85LKjNrOWqgn9g+N5GCBBfgbh4PKNCvD8InIMhREQm+8FgUGBjg96zfhlH+gHx9X5wI
- Ks9GRwdAH6vjTeQ80IkXlCGUNsTNoBq+R4uUfsuFjS/wAO5nNbhPUKTHnGYSYCdWhn3nV9nnuk+
- tV78cztRXQ4wRDsQSp9qc4UhFlwOae8ha9gphBMipwYGbIjfr7olm/m6BvQi3Uedzv7HFEjtVrN
- 28cWddPpretQYr5kcjWgx450l84l11wKI73V+6qLn7qx8EhnzG3jWKDDadDi8KIi8Amxe0GbntJ
- raw3Q7B7SPITjP0oNSDDWAzyHvQV85NAq39xYhJREo0t1aM1DYpgoAabCXX4nB9AzhT7VocwQhj
- bvyhB4kbjJnHCV0AIAw==
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzIyMDIzNCBTYWx0ZWRfX/UHiy6AMRO9v
- laFRAsVxJIw2qEiIuUZL7hkRmlNNqKOhyDHfl0GufDw0JQCrgrK4oNg6Bp1gQku4EngtY3Jcqlm
- OHO9fUpZq0awSrjZ75VA4usl2SXzD+4=
-X-Proofpoint-GUID: 7D5iPR5E4_REOKeDKMM0Iu3NaGJykQ58
-X-Authority-Analysis: v=2.4 cv=SM5ykuvH c=1 sm=1 tr=0 ts=6a6159f6 cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+X-Authority-Analysis: v=2.4 cv=HJXz0Itv c=1 sm=1 tr=0 ts=6a6159fa cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
  a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=RzCfie-kr_QcCd8fBx8p:22 a=VnNF1IyMAAAA:8 a=CDwl4yW-xjfRfShkF8wA:9
+ a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VnNF1IyMAAAA:8 a=7MaZqFay8etFDbkFh6wA:9
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzIyMDIzNCBTYWx0ZWRfX3kqUY5UjD2J5
+ 6wRyu46FJFxRrjTpjbyGZ1CQ92s+lD5TRu0ae0RqRFk4PPD1lIGCSQSfASVCeEjkUwMfsIsk2Ml
+ jEunYab0eXutNjmW5uKv91/Q39xevSlfb29BHTV+bVYBVMAoutEpLLea0AXK/5zobONYEd9jST6
+ lkRU13iAbtIut1cvU72zCmU1ujiDXY5Y56hzSnarpRjsXIEIQ/hBc/c8+RUtkf3iS12AP7PGLjE
+ 8hX3eg2y4jLDBLtWOlVB1SLH4RfLuAwjh9SmlANaVNRrV3G9zU6V7dfKkMB6TFbJrZmKgs6Q16U
+ meuanUyuW1H2apO3u639Yi9yYREXTw8JiKrwu7ydoydBmuKaT5DOBNuxsMhW4G5YSRw8tyv9G7y
+ Arg48AcCZ8thjreYU6qR1VR84KZNG6Xytz/b7GsfcaxJCtgnt1CsQPVs4vZd0YHoIwi9LluIGkB
+ s5td8QXEvkNV/InoFgA==
+X-Proofpoint-ORIG-GUID: V_8h92FWuiE2fwYQs9oMiTylfnaI_xJw
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzIyMDIzNCBTYWx0ZWRfX5amWqg59Owi5
+ d1DRuOMBSXZaioNmgGBBetWpZ1z4BcQy/PDwrjZ9KqdXUllBgOuQPj2j53Up8m057PV7xL0Z1vD
+ qZkyilirOxdnRF12O+wdMtxLIiIDLYA=
+X-Proofpoint-GUID: V_8h92FWuiE2fwYQs9oMiTylfnaI_xJw
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-07-22_05,2026-07-22_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 lowpriorityscore=0 bulkscore=0 suspectscore=0 adultscore=0
- spamscore=0 malwarescore=0 priorityscore=1501 phishscore=0 impostorscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607220234
+ bulkscore=0 priorityscore=1501 lowpriorityscore=0 suspectscore=0
+ malwarescore=0 impostorscore=0 clxscore=1015 phishscore=0 spamscore=0
+ adultscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
+ definitions=main-2607220234
 
-The ibmvfc_target *tgt structures for discovery are allocated using
-mempool_alloc but in turn free'd via kfree in ibmvfc_release_target
-breaking pool guarentees.
+Allocate, register, deregister, and release NVMe subordinate CRQs
+alongside the existing SCSI sub-CRQs.
 
-Fixup ibmvfc_release_target to call mempool_free instead so that memory
-is properly returned to the mempool instead of the general allocator.
+Update the CRQ reset and re-enable paths to tear down and recreate NVMe
+sub-queues, extend sub-CRQ initialization to allocate NVMe channels when
+enabled, and release NVMe channel resources during adapter teardown.
+
+This keeps the NVMe queue lifecycle aligned with the existing SCSI queue
+lifecycle so both protocols are reset consistently across probe, remove,
+and connection recovery.
 
 Signed-off-by: Tyrel Datwyler <tyreld@linux.ibm.com>
 ---
- drivers/scsi/ibmvscsi/ibmvfc.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/scsi/ibmvscsi/ibmvfc-core.c | 15 ++++++++++++++-
+ 1 file changed, 14 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
-index 59102dd1c787..412e946abcb7 100644
---- a/drivers/scsi/ibmvscsi/ibmvfc.c
-+++ b/drivers/scsi/ibmvscsi/ibmvfc.c
-@@ -1366,7 +1366,7 @@ static void ibmvfc_set_rport_dev_loss_tmo(struct fc_rport *rport, u32 timeout)
- static void ibmvfc_release_tgt(struct kref *kref)
- {
- 	struct ibmvfc_target *tgt = container_of(kref, struct ibmvfc_target, kref);
--	kfree(tgt);
-+	mempool_free(tgt, tgt->vhost->tgt_pool);
+diff --git a/drivers/scsi/ibmvscsi/ibmvfc-core.c b/drivers/scsi/ibmvscsi/ibmvfc-core.c
+index 5b6570232df3..d8c2b56258ee 100644
+--- a/drivers/scsi/ibmvscsi/ibmvfc-core.c
++++ b/drivers/scsi/ibmvscsi/ibmvfc-core.c
+@@ -945,6 +945,7 @@ static int ibmvfc_reenable_crq_queue(struct ibmvfc_host *vhost)
+ 	unsigned long flags;
+ 
+ 	ibmvfc_dereg_sub_crqs(vhost, &vhost->scsi_scrqs);
++	ibmvfc_dereg_sub_crqs(vhost, &vhost->nvme_scrqs);
+ 
+ 	/* Re-enable the CRQ */
+ 	do {
+@@ -964,6 +965,7 @@ static int ibmvfc_reenable_crq_queue(struct ibmvfc_host *vhost)
+ 	spin_unlock_irqrestore(vhost->host->host_lock, flags);
+ 
+ 	ibmvfc_reg_sub_crqs(vhost, &vhost->scsi_scrqs);
++	ibmvfc_reg_sub_crqs(vhost, &vhost->nvme_scrqs);
+ 
+ 	return rc;
+ }
+@@ -983,6 +985,7 @@ static int ibmvfc_reset_crq(struct ibmvfc_host *vhost)
+ 	struct ibmvfc_queue *crq = &vhost->crq;
+ 
+ 	ibmvfc_dereg_sub_crqs(vhost, &vhost->scsi_scrqs);
++	ibmvfc_dereg_sub_crqs(vhost, &vhost->nvme_scrqs);
+ 
+ 	/* Close the CRQ */
+ 	do {
+@@ -1016,6 +1019,7 @@ static int ibmvfc_reset_crq(struct ibmvfc_host *vhost)
+ 	spin_unlock_irqrestore(vhost->host->host_lock, flags);
+ 
+ 	ibmvfc_reg_sub_crqs(vhost, &vhost->scsi_scrqs);
++	ibmvfc_reg_sub_crqs(vhost, &vhost->nvme_scrqs);
+ 
+ 	return rc;
+ }
+@@ -6119,6 +6123,13 @@ static void ibmvfc_init_sub_crqs(struct ibmvfc_host *vhost)
+ 
+ 	ibmvfc_reg_sub_crqs(vhost, &vhost->scsi_scrqs);
+ 
++	if (vhost->nvme_enabled) {
++		if (ibmvfc_alloc_channels(vhost, &vhost->nvme_scrqs))
++			vhost->nvme_enabled = 0;
++		else
++			ibmvfc_reg_sub_crqs(vhost, &vhost->nvme_scrqs);
++	}
++
+ 	LEAVE;
  }
  
- /**
+@@ -6147,8 +6158,10 @@ static void ibmvfc_release_sub_crqs(struct ibmvfc_host *vhost)
+ 		return;
+ 
+ 	ibmvfc_dereg_sub_crqs(vhost, &vhost->scsi_scrqs);
+-
+ 	ibmvfc_release_channels(vhost, &vhost->scsi_scrqs);
++
++	ibmvfc_dereg_sub_crqs(vhost, &vhost->nvme_scrqs);
++	ibmvfc_release_channels(vhost, &vhost->nvme_scrqs);
+ 	LEAVE;
+ }
+ 
 -- 
 2.55.0
 
