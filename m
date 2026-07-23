@@ -1,81 +1,133 @@
-Return-Path: <linuxppc-dev+bounces-24698-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24699-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C2FF3C44536
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2026 01:13:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 53AE0C44536
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2026 01:18:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h5Cmz031nz2xl6;
-	Thu, 23 Jul 2026 11:13:39 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784769218;
-	cv=none; b=j0rsw+aQLRDNRvfpoWrRg0QIMCRIBjp6J+upOMgbm5uOnBxwP1DM19Cm0czeqQHJbAhzQao3V8OKohVjvb1nt7249qg6kWM7a97ggWVOeklQ2nRw8dzGd3yol5vlUjWlA63A0sbmPvqgJcetDBDtTgQ46cbn7G+oUzY+M19ppebyBiA0Jvm78n8aZ71nFh0gOfwhoB+xoM0E4jup4HGOx6+YuyhRQjBJpFNeTeENrqIomJzR6dLRBYm/Ydy6JPeY/Z6y5WbwYcQPnqWL7E6Oef0XoE177PRufdrJdrkAWOIEsfXUBaSKF9fbqwua/xCFIVQ9+eBjQrWDTJ7/5sUQkg==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784769218; c=relaxed/relaxed;
-	bh=prYcbuWCVd6ViwbzAvLmQBGVfQ93OQI+gDSd9Mn/J8o=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=ht/BDqB/ABAVmt/ZNtf2FoFXZVcps0JR/Cx0NfR2BAq4phYd9xrWx8iQwg0mv1oJpEK9iWyI7MuxhcTr5SurL+GX/0Kx5tdhh9U9bKfcRQPZ7aCculFZy8Txu0lB17vwU+fQDMyKs+gyPPLoGYCbKb3UUhX0xpmc+6/xiGW/X3riJIwobUsj6ixkTLG9AsdjSGanenJQl/Wb0SzbV0xSdU8NRTLQX86Q2+7CJKuxeyLtA4ttAC8GXxoeV9xdS2ci8glwwh8wwX0sn8+ZnlYt6PQOtc6yPgX1xHE1z6uJVAmlvT7XOiKSTfvD4LmZnBnZls+cGxJocQTH7XbdoVgHDw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=TjzKHnYd; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h5Ctk1yggz2xl6;
+	Thu, 23 Jul 2026 11:18:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c20f::7" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784769518;
+	cv=pass; b=C7GdNwkCulSGeSgqQTcu0X2kaLuzAvPJA9KbrwrojNOk7SPv3sZjEOvccPKfaHY4I9/VFXofB3Kup5VjbIrdmvK3SxuUez9GwPi4+YA3k1Ypp3aRvbkSpHFuZox0cTd5dy7tDDMIaQutpVpSX4y8xF3tQahu5EZNq9xOXNTLRJycLHCW2SxoytkgjPh1OSEiB7HU2fD3zhjae7MyJ2SHQQTE0KxOntAXncsK225cOqq8oUDiFcPfVTnJUmg4vzH7BbZVWt/knT4BD4XIrxfVsjmwgrKDYGMatiVlm8KFgpcUM28FdATtE9lmS6q2l6ybC6jdgp1l9MvRvDnMHrDsYw==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1784769518; c=relaxed/relaxed;
+	bh=klKU2GZtPXRyCh6iQm3N3OfLMwTD8mTqyzJhp1lf/8E=;
+	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=TOkDtBVHP3KodRLCcYinc6GH2WWuKYtehHzdU5JLCzxbGycpXED9Fh1oWqLQUZJNcvZ0sTnxtspSEF4acW8SMuwT8vlNg9vLy57Meu1FmFj5nC1sWeHrMU8bK6M0Oe+HjteVhjUlLNMxDO6E096YfrAC0o4caJGJ+hBvDoabAWpT+cF+9ei5a8yRDVSZ/pTqf8mH7uzDR1jBDIuzSYJr30f2y4ftN17Qt6NRbOPZo0eHTKXgmhvVjEoDI5Fo832YpkO4byhXkzfmhoDWkntBMVaCYJObmgbHEm/7CUhJw6Kj0T1aY1+AVSG9vGIvKB4zgS4MNHRTtLdB+YRJHVrXXA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=KbYWCBH/; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c20f::7; helo=osppr02cu001.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=TjzKHnYd;
+	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=KbYWCBH/;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c20f::7; helo=osppr02cu001.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org)
+Received: from OSPPR02CU001.outbound.protection.outlook.com (mail-norwayeastazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c20f::7])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h5Cmx62jcz2xJT
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2026 11:13:37 +1000 (AEST)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66MIBwbC713588;
-	Thu, 23 Jul 2026 00:02:19 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=prYcbuWCVd6ViwbzA
-	vLmQBGVfQ93OQI+gDSd9Mn/J8o=; b=TjzKHnYds4M/AiLD5z0GK6bh00ycuGiK/
-	J6877zozRSJcv2J6GYMHs3YVsonkIXsI+X851+6lo36WfM/kfEVXSKyt/Ah3bHiE
-	+DSycPnJMygHIYzFpvCAZ8pKXVGfSjq52W70ZXpDDrLGDcKa/tzx2m2NgUj9W/xe
-	Z0RT3IbEBoG7JD8kcnkeGYAUZsC2wNlvh0GriF93nOMT+/4h+SKrgH0XVw56ftq1
-	iXb1HA7aN8xdr6tJPksmaGv6dwIJXsTPjqQWKYQaCf1lqXuyFoyUmAq8QOFA4kR3
-	lDcvRKa0k6colz1V5hiTDc1muLObWS6k1OhVHQ1K0/z1otAOpuaWA==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fg7ahcctu-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 23 Jul 2026 00:02:18 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66MNnhbo021767;
-	Thu, 23 Jul 2026 00:02:18 GMT
-Received: from smtprelay05.dal12v.mail.ibm.com ([172.16.1.7])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4fgm6w9ukn-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 23 Jul 2026 00:02:18 +0000 (GMT)
-Received: from smtpav03.dal12v.mail.ibm.com (smtpav03.dal12v.mail.ibm.com [10.241.53.102])
-	by smtprelay05.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66N02H2Q15139448
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 23 Jul 2026 00:02:17 GMT
-Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3699658060;
-	Thu, 23 Jul 2026 00:02:17 +0000 (GMT)
-Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 8ED2158056;
-	Thu, 23 Jul 2026 00:02:16 +0000 (GMT)
-Received: from li-4c4c4544-0054-3910-8039-c3c04f423534.ibm.com.com (unknown [9.61.118.58])
-	by smtpav03.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 23 Jul 2026 00:02:16 +0000 (GMT)
-From: Tyrel Datwyler <tyreld@linux.ibm.com>
-To: james.bottomley@hansenpartnership.com, martin.petersen@oracle.com
-Cc: linux-scsi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        linux-kernel@vger.kernel.org, brking@linux.ibm.com,
-        davemarq@linux.ibm.com, Tyrel Datwyler <tyreld@linux.ibm.com>
-Subject: [PATCH v2 31/33] ibmvfc: implement nvme-fc LS abort handling callback
-Date: Wed, 22 Jul 2026 17:01:47 -0700
-Message-ID: <20260723000149.969416-32-tyreld@linux.ibm.com>
-X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20260723000149.969416-1-tyreld@linux.ibm.com>
-References: <20260723000149.969416-1-tyreld@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h5Cth1n3Wz2xJT
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2026 11:18:35 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=WL7J8zuZsL9n3I9LR+CtDuj6dh/r/1BeVHLefv7eE1juyvjW36uWcWRu2HdqX/z6jwUN4xXj/tTNMg3MjqBzf+pL9k9QlO4pXaNwox2l+kBcxjyZWyjcI/sculti7PNrYJPtQftY3q99OACdE3nEJcWfEbxjxjTFktyrD4ghbaxCvCkyIoSUC67YZUJUyvxWqV6Lq39JxeClK6yU+kjbBwmURPM+u9tUer75zs+DYHikKc2Cw9Iui8CHeF2KhcO2Sq9XW96GdBFb4ZC4YhPNQtTZD3DJtBbiHqBdK2EbDSR0sQjXFX8zjNeVSBl21kXyr9wWpN6ae/0LJKoBpr49RA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=klKU2GZtPXRyCh6iQm3N3OfLMwTD8mTqyzJhp1lf/8E=;
+ b=y2huGvwn2402c8kseIreWg/+DEQQAH8HC+3HJw1piW0d1K9tNy2VQL3msgLiFSsnO8A+AL7zuB/u9FWGzeG6aOx2x75Ardgy4xO01fJjpoJOBLySax9h7XHmhsw378PSpVHeJJXB6MiC482o2dZl+RuhrWG7o0ksb11wsK23KiHc7+hKwu2KfLmm8z+Ohky76ESXfDx/fWLaYhDvbZqP7ugZ8aVWVyXD/Or5JQ8vP/exhgXn+B0f1/LhFgoLGPNq6rxx6C1BVA8WaKXeQqNM5mjAkXQLmOsvW5x/0hNRv3R8yVuaKqwoCE3KWtIut+ImvUmvEcQmt7F9SKlkRMCOmA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=klKU2GZtPXRyCh6iQm3N3OfLMwTD8mTqyzJhp1lf/8E=;
+ b=KbYWCBH/F5rsnJWtm29PBtHedIlCkKlr2PA8MW3DYOUgr5xk96RDKMM5CuFgIkO41UuZWe65kXkG5q3dpTeL5iCfGe1dhtW/lIjVV9vHMnTHil+ix7a1jBWJSxC22AsrfsfFTX2nM6z0SIDqN3MjXXqR0i2EgCtbqEZxwv/EcXNKHkcExTdv8PQCqf3j9LxvPtCOnXzOxnj0RbMXxpNxv2E2Dj3PHZFhQ2UBchGBtA7CQcdtO6TBok662UGsSJtvvjwvXMNXsDEp9Ttfa7nRUr8KyWUybmhmS66zwvVyAy40xgz/kBpfTl0vinpozm1WYm6bDzFHdmZZgvx83QHOrA==
+Received: from GV2PR04MB11739.eurprd04.prod.outlook.com
+ (2603:10a6:150:2fc::18) by DB9PR04MB9991.eurprd04.prod.outlook.com
+ (2603:10a6:10:4c4::11) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.223.18; Thu, 23 Jul
+ 2026 01:18:06 +0000
+Received: from GV2PR04MB11739.eurprd04.prod.outlook.com
+ ([fe80::71c2:937b:d466:174a]) by GV2PR04MB11739.eurprd04.prod.outlook.com
+ ([fe80::71c2:937b:d466:174a%6]) with mapi id 15.21.0245.009; Thu, 23 Jul 2026
+ 01:18:05 +0000
+From: Wei Fang <wei.fang@nxp.com>
+To: Joe Damato <joe@dama.to>, "Wei Fang (OSS)" <wei.fang@oss.nxp.com>
+CC: Claudiu Manoil <claudiu.manoil@nxp.com>, Vladimir Oltean
+	<vladimir.oltean@nxp.com>, Clark Wang <xiaoning.wang@nxp.com>,
+	"andrew+netdev@lunn.ch" <andrew+netdev@lunn.ch>, "davem@davemloft.net"
+	<davem@davemloft.net>, "edumazet@google.com" <edumazet@google.com>,
+	"kuba@kernel.org" <kuba@kernel.org>, "pabeni@redhat.com" <pabeni@redhat.com>,
+	"linux@armlinux.org.uk" <linux@armlinux.org.uk>, "chleroy@kernel.org"
+	<chleroy@kernel.org>, "maxime.chevallier@bootlin.com"
+	<maxime.chevallier@bootlin.com>, "imx@lists.linux.dev" <imx@lists.linux.dev>,
+	"netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+	"linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Subject: RE: [PATCH RESEND v4 net-next 10/14] net: enetc: refactor SI VLAN
+ promiscuous mode configuration
+Thread-Topic: [PATCH RESEND v4 net-next 10/14] net: enetc: refactor SI VLAN
+ promiscuous mode configuration
+Thread-Index: AQHdF+1I8fWr44qhJkG8IHPkqQ1oArZ5iywAgADG9dA=
+Date: Thu, 23 Jul 2026 01:18:05 +0000
+Message-ID:
+ <GV2PR04MB1173938AA2F6026E023B8476588C02@GV2PR04MB11739.eurprd04.prod.outlook.com>
+References: <20260720014317.1059359-1-wei.fang@oss.nxp.com>
+ <20260720014317.1059359-11-wei.fang@oss.nxp.com>
+ <amDEtJmcET788Lls@devvm20253.cco0.facebook.com>
+In-Reply-To: <amDEtJmcET788Lls@devvm20253.cco0.facebook.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nxp.com;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: GV2PR04MB11739:EE_|DB9PR04MB9991:EE_
+x-ms-office365-filtering-correlation-id: ead0d4a2-cbc5-4d74-f937-08dee8583f98
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam:
+ BCL:0;ARA:13230040|19092799006|366016|1800799024|7416014|23010399003|376014|22082099003|18002099003|38070700021|10067099003|5023799004|56012099006|4143699003|11063799006|6133799003;
+x-microsoft-antispam-message-info:
+ wf1QCvX5Y8X4rqzJr0o451PMzNU6Bve5d6sPjQjHtF2utdy6qBBGDqAJO6cqRllsSUheEcBqOBqWmeiyE/cZTAy68cj5vIpg8Z5p7lTtwPVQ3rwKu2QldCMoagkhr3wkYbRdM22sHGflJ+2C9w7+fu8lUhfDcNnaCQR3KgJ9F6kRSjnhJj2JHMKttIzkmIF2gN9Hiyi1H4xHj5yruTJpz0NLtKXNa8BP1KMxAwI7Vry507jNXmeqtjqkCRVQjtAf22K1MaeU5m7uZhU6JNHtx5dQtuUJ4eGNoDJeGjjDClM7Y3oe9+h0p5H63QugiXGWU0CpmpYghzlfmKV4g8W5CTRl97yoxiAsWrszHSsLl2Kkabgayldz9e3bAFkbpfyoOyNY8zdu9F0ctVwqdv9ub/ImxvrEu7KEK+iiQjCqHf9Z4613Q6xXE+nEtzXapszz3uBoRKepGZLthvjmS6jJMBeS5VDHqtM+SnIa4ZTG1dgbpBe7GyQKldbcPCb/gNmx0iyxFGqOYwh6HR31zDN89Tz+LNXZmDv7CuQi1b4RQlPZkFWzEAuaHtp89XH2MkHoBZJkgdAtlkx7Ve5IpcqH4e4MfUpWsXBjxxipp6RQlHT5iNbotWKFdJf92a/JrELSIAr7Z4CmUwxVWP/ynRHzwlBc8ypyDfY374UpiSP9oOXyXyOYB6GK0BOiiKmZL6kYE3F7qfK1lfEDgrQeYTZZ/P8oMak/YQnborAYHyx/f1Q=
+x-forefront-antispam-report:
+ CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GV2PR04MB11739.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(19092799006)(366016)(1800799024)(7416014)(23010399003)(376014)(22082099003)(18002099003)(38070700021)(10067099003)(5023799004)(56012099006)(4143699003)(11063799006)(6133799003);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:
+ =?us-ascii?Q?cshZouDiUGd7q14uOvRy3hY2UAmv8/ACs685XIeIMNlFvDC0T5Ni1zEcz4lv?=
+ =?us-ascii?Q?uX4nnDqV2/jx1lXW7QYGmUb7RsdscsfFkmTl2n/mMhqRvlFh14EkiRnKQgs3?=
+ =?us-ascii?Q?D94HgDmS1t18e/j54QWWQREXGEhZJNovGPdY/EhfBeG2SozvgBAq3SsfuQq4?=
+ =?us-ascii?Q?WoA8l5KXeW9UiQiXfVlV32sttxajdT/yoNvfgL6RqQHOJ641dpKKgRMwFNau?=
+ =?us-ascii?Q?FQLUZiCY4J0ZO/uPiyCXRHagdWcF8aHhWwrVzl4j5fECshWH6yWUZsnX77yf?=
+ =?us-ascii?Q?MdjT+l++qB/C5alOGF9V7KaAMW2pjsFbs6aSetU1IKaHvV/FktdwUXAIQQcS?=
+ =?us-ascii?Q?AU6xfWjdMRcpUX2pK8/EZz5dhTQ06bjL6AT0VV8M6vvvFwTYrmZNRiTb+kv8?=
+ =?us-ascii?Q?ZHPkikX1L35TJIJiRm6cUjPdE4mLKd1W8+acdGOEpLQDbk6AQcGuTBNcrnAn?=
+ =?us-ascii?Q?jsnD0DMIQP+Q4PMq5OnS56cu39hTVWpodtJ7fc+P1QTU6gXOsLv9KbiEqtxt?=
+ =?us-ascii?Q?tlqv3RMOLVeq8N16fntxf1HAP50kU6y3zQd80Uba1Qp9TSm8qlNDEtOvcZAW?=
+ =?us-ascii?Q?t+s8GD5QeD4NfvyBw7nMqQ3sHXMPqcPOSlVSQGETetVpMId6hdIZ+GjoocDz?=
+ =?us-ascii?Q?9rpJnwuKHPfhhWCgIscG0jP1qBz3JoXX2OIIboYjWjSEwg0UB1kasSZ/Xrxm?=
+ =?us-ascii?Q?utm+fwq5xOMqKUtwXp1Kw1OVFpHhuV2RJarBXfektqsW1Foxrcf9oLH8InVo?=
+ =?us-ascii?Q?luiu/kHGkDz82u35sXC/I8enIkR0D9GqmufhZwW+5bpsM1XTWQHWogb1vlh7?=
+ =?us-ascii?Q?v9dsJj0YN6YKz1mdnQ//SDauYsO1BuvdodzkpzT/lO9KWIaEolehXrWiOIYk?=
+ =?us-ascii?Q?6LJ2E/XKUYtKKkjdZQRl4747JNhWrMF98gZQ9yywVmDpgxecfebeLS5xoxNd?=
+ =?us-ascii?Q?pUQPKwrLNLbqmppTkrZIsHzlUiwwDE0m9vpH0qm5wAziAyMFJXQGXOC+VBmS?=
+ =?us-ascii?Q?zVUrymi/juyiTEr18jaMkBPANG+Qlqx9UQt60o8Syi5zslaWf/UcDMcWntM0?=
+ =?us-ascii?Q?7wOqbDSkLk/lJb1DVucPidj+cyHHtxWjZBNLpv1ik/Aq417p+GG43rnPh/4K?=
+ =?us-ascii?Q?09hMxCZcvZ6itNQlTAkTU6pzmC42+uciWdtVf68R+weViVMRqvmhSwWvlppi?=
+ =?us-ascii?Q?8S1FKupdVpoWUMuBWv638Us97cLVX41fTAHfrHUeImlOEELk+8sVPuTtDdZX?=
+ =?us-ascii?Q?ZFfARjjmtidiVfkls4b5Lqug+Qf0e7i4U596jos36JBldWlVFxkEzLIavTrJ?=
+ =?us-ascii?Q?oFHKmNaYBr49eQdrqVYgZf9MXcR1wW/d7XpHLCGC3k5Toc8jtyue1kuideCO?=
+ =?us-ascii?Q?+gqgpbXWAGJJ5qrr+dUzCjrBEC1nXX0RKat6+cMeVsViaYT8bR7VPjknTj2R?=
+ =?us-ascii?Q?Hh/sMNwRytDzruVPCimJ5dhTyEVYsUZ/0a8SFH9fA+CHrnGHbjd/hqka15NS?=
+ =?us-ascii?Q?v+MKVjH4lIXkwN3yrrLT6pHP6TI3f3kLRolMzFs24yVQs+3E7rkyTKAacNZ+?=
+ =?us-ascii?Q?huz6UCEh2w+ZscKq8IismD7tqHLDYGv1zW5igNT8p5sTTtp2aYbzn0aJP5h8?=
+ =?us-ascii?Q?/Ay8qb6PhH/ZhD8pxGtKfMM9BvOce0smFEa90yf2BNfWzNzbzvDwHMVDbu57?=
+ =?us-ascii?Q?7P0pKbAwfTwKUI9QukfAi/iR8lwgoTZcWN2/EFtOyV/A0+Rx?=
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,133 +141,66 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: dMgBv_ffQzlj--f7jnjHDWEfNGPUAYOK
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzIyMDIzNCBTYWx0ZWRfX3DvrZ+0qbzy1
- WrKfnNau+wtJUS1qw4PRY2AEtw1Xr9JkCdZm+oW0MzQXAtB7s3ruyj5VrJtZpa71VabRunCLlBt
- T8IvkOTfa9Ml74XMkyEtZA35pLvAL1Rmim1JI8m+37yplmGiLPUavPlRERPMn/6l5Qjx1ppDBr2
- 2OBIMaY2K7PWWAnjwOmh+Bph657HSvxRMQL2VgGSyf1lxDrwim0PjnJ5inXpuVVCTvxYUG1+zi6
- EJcupr0p+kYGeGYoApjK1GENhiYWiXUm95Dxy8AEe4Obs8pO9veqAbnJVXXjYKijScfgv+m86Ly
- 0ygQ40IKiCxb/dBY/IzHBxgH0r5xoDU6bQFqIZR/Klu9s9OwUaSEKzme79Sn+o07LWu29FKDcCb
- JGymOoOpCGg66x5U0OXMlx/XJsrZOCP5ywcyTezwWp/TICDZ232D+vPy58cgQ2ehx1VL4VJ+xoZ
- tUbLrt9RuMiepdmr98w==
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzIyMDIzNCBTYWx0ZWRfX2RDDTAEy01hw
- qn/S/IAWvFJXQjKGY0Xz7ihvA1Ozzscif7qxMQRmVB5Wa00p+Y9Qj6HGCSdaaiGFEpQTslrHl2g
- vK3mmtVpKqHh18jm6oqRWaNQuFxCESI=
-X-Proofpoint-GUID: dMgBv_ffQzlj--f7jnjHDWEfNGPUAYOK
-X-Authority-Analysis: v=2.4 cv=SM5ykuvH c=1 sm=1 tr=0 ts=6a615a0b cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=RzCfie-kr_QcCd8fBx8p:22 a=VnNF1IyMAAAA:8 a=i_vXdmPKhaR3-41kbpgA:9
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-07-22_05,2026-07-22_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 lowpriorityscore=0 bulkscore=0 suspectscore=0 adultscore=0
- spamscore=0 malwarescore=0 priorityscore=1501 phishscore=0 impostorscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607220234
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: GV2PR04MB11739.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: ead0d4a2-cbc5-4d74-f937-08dee8583f98
+X-MS-Exchange-CrossTenant-originalarrivaltime: 23 Jul 2026 01:18:05.4307
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: HTcVK1OUKWFAwFErFPmoFjGeljhCMDBMehQoGjuy3w7905O3aBBJPvE0F91VjWZZSyw7upp+zlESNNMjuqs90Q==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DB9PR04MB9991
 
-Implement the NVMe FC-LS abort callback by issuing an ibmvfc cancel MAD
-to the VIOS for the outstanding link-service request.
+> > Remove the enetc_set_vlan_promisc(), enetc_enable_si_vlan_promisc() and
+> > enetc_disable_si_vlan_promisc() functions, and introduce a new unified
+> > function enetc_set_si_vlan_promisc() to enable or disable VLAN
+> > promiscuous mode for a specific SI. This simplifies the logic and makes
+> > the interface more straightforward. The vlan_promisc_simap field in
+> > struct enetc_pf is no longer needed to track the current state.
+> >
+> > As ENETC V4 only changes the address offset of PSIPVMR register compare=
+d
+> > to V1 without any functional difference, enetc_set_si_vlan_promisc() ca=
+n
+> > be moved to enetc_pf_common.c in the future with minor adjustments to b=
+e
+> > reused by the ENETC V4 driver
+> >
+> > Signed-off-by: Wei Fang <wei.fang@nxp.com>
+> > ---
+> >  .../net/ethernet/freescale/enetc/enetc_hw.h   |  5 ++-
+> >  .../net/ethernet/freescale/enetc/enetc_pf.c   | 36 ++++++++-----------
+> >  .../net/ethernet/freescale/enetc/enetc_pf.h   |  1 -
+> >  3 files changed, 16 insertions(+), 26 deletions(-)
+> >
+> > diff --git a/drivers/net/ethernet/freescale/enetc/enetc_hw.h
+> b/drivers/net/ethernet/freescale/enetc/enetc_hw.h
+> > index 66bfda60da9c..16da732dc5de 100644
+> > --- a/drivers/net/ethernet/freescale/enetc/enetc_hw.h
+> > +++ b/drivers/net/ethernet/freescale/enetc/enetc_hw.h
+> > @@ -185,9 +185,8 @@ enum enetc_bdr_type {TX, RX};
+> >  #define  PSIPMMR_SI_MAC_MP(n)	BIT((n) + 16)
+> >
+> >  #define ENETC_PSIPVMR		0x001c
+> > -#define ENETC_VLAN_PROMISC_MAP_ALL	0x7
+> > -#define ENETC_PSIPVMR_SET_VP(simap)	((simap) & 0x7)
+> > -#define ENETC_PSIPVMR_SET_VUTA(simap)	(((simap) & 0x7) << 16)
+> > +#define  PSIPVMR_SI_VLAN_P(n)	BIT(n) /* n =3D SI index */
+>=20
+> I suppose it would have been nice to only have a single space after #defi=
+ne
+> above.
 
-Use the saved event pointer from the original FC-LS request to identify
-the command to cancel, submit the cancel operation, and complete the
-abort request based on the returned status.
+I intentionally used two spaces for the macros that define the new register
+bit fields to distinguish them from the macros that define the register off=
+sets,
+making the hierarchy clearer. :)
 
-Signed-off-by: Tyrel Datwyler <tyreld@linux.ibm.com>
----
- drivers/scsi/ibmvscsi/ibmvfc-nvme.c | 64 +++++++++++++++++++++++++++++
- 1 file changed, 64 insertions(+)
-
-diff --git a/drivers/scsi/ibmvscsi/ibmvfc-nvme.c b/drivers/scsi/ibmvscsi/ibmvfc-nvme.c
-index d31e7e9ea7a9..390410e44f0d 100644
---- a/drivers/scsi/ibmvscsi/ibmvfc-nvme.c
-+++ b/drivers/scsi/ibmvscsi/ibmvfc-nvme.c
-@@ -13,6 +13,8 @@
- 
- #include "ibmvfc-nvme.h"
- 
-+static unsigned int default_timeout = IBMVFC_DEFAULT_TIMEOUT;
-+
- static void ibmvfc_nvme_localport_delete(struct nvme_fc_local_port *lport)
- {
- 	struct ibmvfc_host *vhost = lport->private;
-@@ -159,10 +161,72 @@ static int ibmvfc_nvme_ls_req(struct nvme_fc_local_port *lport,
- 	return 0;
- }
- 
-+static void ibmvfc_sync_nvme_completion(struct ibmvfc_event *evt)
-+{
-+	/* copy the response back */
-+	if (evt->sync_iu)
-+		*evt->sync_iu = *evt->xfer_iu;
-+
-+	complete(&evt->comp);
-+}
-+
-+static void ibmvfc_init_ls_abort(struct ibmvfc_event *evt, struct nvmefc_ls_req *ls_abort)
-+{
-+	struct ibmvfc_tmf *tmf;
-+	struct ibmvfc_event *abt_evt = ls_abort->private;
-+	struct ibmvfc_target *tgt = abt_evt->tgt;
-+	struct ibmvfc_host *vhost = evt->vhost;
-+
-+	tmf = &evt->iu.tmf;
-+	memset(tmf, 0, sizeof(*tmf));
-+	tmf->common.version = cpu_to_be32(2);
-+	tmf->target_wwpn = cpu_to_be64(tgt->wwpn);
-+	tmf->common.opcode = cpu_to_be32(IBMVFC_NVMF_TMF_MAD);
-+	tmf->common.length = cpu_to_be16(sizeof(*tmf));
-+	if (vhost->state != IBMVFC_ACTIVE)
-+		if (!ibmvfc_check_caps(vhost, IBMVFC_CAN_SUPPRESS_ABTS))
-+			tmf->flags = cpu_to_be32(IBMVFC_TMF_SUPPRESS_ABTS);
-+	tmf->cancel_key = cpu_to_be32((u64)abt_evt);
-+	tmf->my_cancel_key = cpu_to_be32((u64)evt);
-+	tmf->assoc_id = cpu_to_be64(tgt->assoc_id);
-+
-+	init_completion(&evt->comp);
-+}
-+
- static void ibmvfc_nvme_ls_abort(struct nvme_fc_local_port *lport,
- 				struct nvme_fc_remote_port *rport,
- 				struct nvmefc_ls_req *ls_abort)
- {
-+	struct ibmvfc_host *vhost = lport->private;
-+	struct ibmvfc_target *tgt = rport->private;
-+	struct ibmvfc_event *evt;
-+	union ibmvfc_iu rsp;
-+	unsigned long flags;
-+	u16 status;
-+
-+	evt = ibmvfc_get_event(&vhost->crq);
-+	if (!vhost->logged_in || !evt)
-+		return;
-+
-+	spin_lock_irqsave(vhost->host->host_lock, flags);
-+	kref_get(&tgt->kref);
-+	ibmvfc_init_event(evt, ibmvfc_sync_nvme_completion, IBMVFC_MAD_FORMAT);
-+	ibmvfc_init_ls_abort(evt, ls_abort);
-+	evt->sync_iu = &rsp;
-+
-+	if (ibmvfc_send_event(evt, vhost, default_timeout))
-+		goto out;
-+
-+	spin_unlock_irqrestore(vhost->host->host_lock, flags);
-+
-+	wait_for_completion(&evt->comp);
-+	status = be16_to_cpu(rsp.mad_common.status);
-+	spin_lock_irqsave(vhost->host->host_lock, flags);
-+	ibmvfc_free_event(evt);
-+out:
-+	spin_unlock_irqrestore(vhost->host->host_lock, flags);
-+	ibmvfc_dbg(vhost, "ls_abort: cancel failed with rc=%x\n", status);
-+	kref_put(&tgt->kref, ibmvfc_release_tgt);
- }
- 
- static void ibmvfc_nvme_done(struct ibmvfc_event *evt)
--- 
-2.55.0
-
+>=20
+> The rest of the code looks right and I think the promisc logic is clearer=
+, so:
+>=20
+> Reviewed-by: Joe Damato <joe@dama.to>
 
