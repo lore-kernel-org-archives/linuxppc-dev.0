@@ -1,50 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-24732-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24733-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2698FC531CB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2026 13:12:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 73C05C531CA
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2026 13:12:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h5Wkm3mzZz2ygm;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h5Wkm4Ggxz2ygn;
 	Thu, 23 Jul 2026 23:12:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.221
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784812368;
-	cv=none; b=iQ6IZeEIukw7nCHMc0rFqj0ffN4r8TqZhQR9uNFFSyL++W1iXyzqr3wuBK/By1PVOQ9t7DfF1ScPoOhQC6qWhB8uZtDzsCj9c1vaNP5wVLkr0Xwm5cflzmmiNOlezEtUxrJNzHlAu7SOyzyz3Tn7DHOKjaDBySmhQXxt7gC9GsSCbwscc+n5AtxpvCPs+O36a1yHLwfzwMkpW1rb/KsNidJmcEEzjStbUgw7ypPKxxu6+LTB7yfBv0jqDtz5FABc2ygBWZKrC/1yV+Nicpxzi4iH5U/sz5geHBPqRK6EtR1zi5OmORixTuPaACig+8PZhWcGk0wSD/fIRBNCI5ORFQ==
+	cv=none; b=KBPGNvxmeul4RU7J387yQ3WFthTYNjDKhcE7ieRqiwqf2jgGgtqGv30byctFpMFs59uHFiNikOpbvRJ92Z62ZjG57S6eAI84pXTbs50hFcIZvJgdaMmSxuG55ENk1oZexzxlRL0uII3CM+K7Tix08HUZelqa1S1f7ByktYwAEJZT5c3LKj1Q8KQhGWcICoUKh6rJ4kYJ5bsJloqJt5zVdGbz63XKuFchWS4CNHN6oMokaupg3NrMyhSCyRKVRimtytRi0wYSQHnlC7i0HG+eSx6GZ/AzUcYwkTqJ0DPCdzvCWgPZIsDvLJL1VQuEzYVI+EfbRZTdo9IpBAsFWsd5sA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1784812368; c=relaxed/relaxed;
-	bh=nSc6H1n8CfUvbxJc0ENwagioj/mFRPueC/MDVwFsPJ0=;
-	h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type; b=LE66GonDWUv5zfon2eKPGdiQ8hGTGci29JgMnWtkIFCLO584VdKmX0JqJJAqrvWga1TBqMeiScWrxb4mwsIBncAG9obQCtajVGRmUH8O1ji4/ZcXcnPOvMzgEYvZ8idytomsQrvwJ0m2wIUOkPVcoDPOfDJL5p/9/WNrUV4vS8eCXyYdQY+PXKHy6Bx+Wpg2UFsFt2yAObCkNqNLPJl+DwW/cQGZzifmKcCY6VQOI8AneQ8US05LoB9pYxcYGOofUFOZ3yOrGWaCGi9I/hcIo4HK996b1K+XOyEjG1gMXOaDAnR24WGR55OIZjMDwPKUl+MwTBVAUKHD+0DLb6PWFA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=LZrc17Nj; dkim-atps=neutral; spf=pass (client-ip=113.46.200.221; helo=canpmsgout06.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+	bh=BxzLiWI4cdI/ksC9wsJhk90k2fWRCD0GRES3OUH/72g=;
+	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=TtF2J9jDgxT9gsxvk94fOs0BbATRgufpmpDeewUXXBOPDO91y09HbaghLAaGHYc0qBCfQx7F1POCooC9ceuW7AEsZeq1BL0AAUrOU3Xxqha+yyeKG9RFMv+LEcgqUw7Ts6oJeBXEIyQ5FcX1geiUDzGXzKb3u7bTKa30bmwNkuzLhymYZ2+rEDIURELSpjJKQ9oJ7uWrqmsYLsKLkgrT1AB+Y0YoXyiL1uNXrU/iUHed7Aty0cGZFwcqORtN1nKZhiV32LuIR1pxYrPKZaq/ff3guVTCL3z+Xque/bzzYgLfGOQiddqBguQI3EDtNfEvftFtOGzJz9cW3pZ9qzvKyA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=ktXP12RJ; dkim-atps=neutral; spf=pass (client-ip=113.46.200.221; helo=canpmsgout06.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=LZrc17Nj;
+	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=ktXP12RJ;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.221; helo=canpmsgout06.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
 Received: from canpmsgout06.his.huawei.com (canpmsgout06.his.huawei.com [113.46.200.221])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h5Wkk1BMsz2ygK
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2026 23:12:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h5Wkk1FgPz2ygW
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2026 23:12:44 +1000 (AEST)
 dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
 	c=relaxed/relaxed; q=dns/txt;
 	h=From;
-	bh=nSc6H1n8CfUvbxJc0ENwagioj/mFRPueC/MDVwFsPJ0=;
-	b=LZrc17NjvFuqc0ZNMkyYqGJLxhfCEHwM6Ms7VhwB4lOZhWJBOzAe0Ye+sIM3YgqNFnOnNAqj2
-	vbCWf1cS2hlJ4LgzWQGI8VnjMtIUf6PP9YLAIcOJ4rviEC2IzBoNRx/iogz3rARiSK64MjrQ8Cq
-	Escl3Ykk99yeG1PQAvVzi7Q=
-Received: from mail.maildlp.com (unknown [172.19.162.197])
-	by canpmsgout06.his.huawei.com (SkyGuard) with ESMTPS id 4h5WWk57tnzRhV9;
-	Thu, 23 Jul 2026 21:03:14 +0800 (CST)
+	bh=BxzLiWI4cdI/ksC9wsJhk90k2fWRCD0GRES3OUH/72g=;
+	b=ktXP12RJZscAAV64qHCLX9bFBZTEthSmNzZJA32uDAc8Jl1wLU/UCJKG9ppMSBN8YTgKj42MP
+	ctEVPL1wW/rBxnvWU0S9zFc66jOO/Vjv2w2HwpjycCNWS3mNp4ID7gv4FR1cg5jdOBz4ebeRJ8t
+	as4UYiMhA2km2qDToX7J+8g=
+Received: from mail.maildlp.com (unknown [172.19.162.144])
+	by canpmsgout06.his.huawei.com (SkyGuard) with ESMTPS id 4h5WWq1zYMzRhVH;
+	Thu, 23 Jul 2026 21:03:19 +0800 (CST)
 Received: from dggpemf500011.china.huawei.com (unknown [7.185.36.131])
-	by mail.maildlp.com (Postfix) with ESMTPS id DC4684057D;
-	Thu, 23 Jul 2026 21:12:36 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id 742B040538;
+	Thu, 23 Jul 2026 21:12:41 +0800 (CST)
 Received: from huawei.com (10.90.53.73) by dggpemf500011.china.huawei.com
  (7.185.36.131) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Thu, 23 Jul
- 2026 21:12:33 +0800
+ 2026 21:12:39 +0800
 From: Jinjie Ruan <ruanjinjie@huawei.com>
 To: <catalin.marinas@arm.com>, <will@kernel.org>, <maddy@linux.ibm.com>,
 	<mpe@ellerman.id.au>, <npiggin@gmail.com>, <chleroy@kernel.org>,
@@ -59,10 +60,12 @@ To: <catalin.marinas@arm.com>, <will@kernel.org>, <maddy@linux.ibm.com>,
 	<jbouron@amazon.com>, <bauerman@linux.ibm.com>, <bgwin@google.com>,
 	<linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
 	<linuxppc-dev@lists.ozlabs.org>, <kexec@lists.infradead.org>
-Subject: [PATCH 0/8] arm64: crash: Add crash hotplug support
-Date: Thu, 23 Jul 2026 21:12:34 +0800
-Message-ID: <20260723131242.1537633-1-ruanjinjie@huawei.com>
+Subject: [PATCH 3/8] powerpc/kexec_file: Prevent kexec range truncation
+Date: Thu, 23 Jul 2026 21:12:37 +0800
+Message-ID: <20260723131242.1537633-4-ruanjinjie@huawei.com>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20260723131242.1537633-1-ruanjinjie@huawei.com>
+References: <20260723131242.1537633-1-ruanjinjie@huawei.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,60 +85,90 @@ X-Originating-IP: [10.90.53.73]
 X-ClientProxiedBy: kwepems100001.china.huawei.com (7.221.188.238) To
  dggpemf500011.china.huawei.com (7.185.36.131)
 
-When CPU or memory hotplug events occur, the elfcorehdr in the kdump image
-becomes stale, potentially leading to incomplete crash dumps.
+Sashiko AI review pointed out the following issue.
 
-Currently, userspace udev rules reload the entire kdump image upon such
-events, which is inefficient and leaves kdump inactive for a long time.
+The __merge_memory_ranges() function incorrectly handles overlapping
+memory ranges when merging them. Although sort_memory_ranges() sorts all
+ranges by their start address in ascending order beforehand, the merge
+logic remains defective in two ways:
 
-Commit 247262756121 ("crash: add generic infrastructure for crash hotplug
-support") introduced a kernel mechanism to update only the elfcorehdr.
-This patch set implements crash hotplug support for arm64.
+1. It compares the current range's start against the previous element (i-1)
+   instead of the running target index (idx)
 
-It also addresses and fixes several critical pre-existing code issues
-and Sashiko AI review findings extracted from the previous patch set,
-following Baoquan's suggestions.
+2. It unconditionally overwrites 'ranges[idx].end' with 'ranges[i].end'.
 
-The major improvements and fixes included in this series are:
+This logic flaw leads to critical memory truncation when a larger memory
+range completely subsumes subsequent smaller ranges.
 
-- Fix powerpc memory leak, null-ptr-def and overlapping memory
-  range truncation bug.
+For example, consider a sorted input array with three ranges:
+  Range A (idx=0): [0x1000 - 0x9000]
+  Range B (i=1):   [0x2000 - 0x5000] (completely inside Range A)
+  Range C (i=2):   [0x6000 - 0x8000] (completely inside Range A)
 
-- Fix several memory leaks for arm64.
+1. When i=1 (Range B):
+   ranges[1].start (0x2000) <= ranges[0].end + 1 (0x9001) is TRUE.
+   The code executes: ranges[0].end = ranges[1].end, which erroneously
+   shrinks Range A's end from 0x9000 down to 0x5000.
 
-- Simplify arm64 load_other_segments().
+2. When i=2 (Range C):
+   ranges[2].start (0x6000) <= ranges[1].end + 1 (0x5001) is FALSE.
+   The code falls into the else block, creating a broken new range.
 
-- Implement infrastructure for arm64 crash memory hotplug support.
+As a result, valid memory fragments [0x5001 - 0x5fff] and [0x8001 - 0x9000]
+are completely lost from the kexec exclude lists, potentially allowing
+the crash kernel to overwrite active memory, causing data corruption
+or crashes.
 
-This patch set is rebased on liveupdate/crashkernel-cma.
+Fix this by ensuring the start of the current range is compared against the
+end of the active merged range (idx), and use max() to safely prevent the
+outer boundary from being truncated.
 
-Link: https://lore.kernel.org/all/20260601094805.2928614-1-ruanjinjie@huawei.com/
+Cc: Sourabh Jain <sourabhjain@linux.ibm.com>
+Cc: Hari Bathini <hbathini@linux.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: stable@vger.kernel.org
+Fixes: 180adfc532a8 ("powerpc/kexec_file: Add helper functions for getting memory ranges")
+Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
+---
+ arch/powerpc/kexec/ranges.c | 12 +++++-------
+ 1 file changed, 5 insertions(+), 7 deletions(-)
 
-Jinjie Ruan (8):
-  powerpc/crash: Fix possible memory leak in update_crash_elfcorehdr()
-  powerpc/kexec_file: Fix null-ptr-def in extra size calculation
-  powerpc/kexec_file: Prevent kexec range truncation
-  kexec: Extract kexec_free_segment_cma() from kimage_free_cma()
-  arm64: kexec_file: Fix CMA page leaks in segment placement retry loops
-  arm64: kexec_file: Fix image->elf_headers memory leak during retry
-    loop
-  arm64: kexec_file: Simplify load_other_segments()
-  arm64: crash: Add crash hotplug support
-
- arch/arm64/Kconfig                     |   3 +
- arch/arm64/include/asm/kexec.h         |  13 +++
- arch/arm64/kernel/Makefile             |   2 +-
- arch/arm64/kernel/crash.c              | 148 +++++++++++++++++++++++++
- arch/arm64/kernel/kexec_image.c        |   1 +
- arch/arm64/kernel/machine_kexec_file.c |  76 ++++++-------
- arch/powerpc/kexec/crash.c             |   2 +-
- arch/powerpc/kexec/file_load_64.c      |   2 +-
- arch/powerpc/kexec/ranges.c            |  12 +-
- include/linux/kexec.h                  |   2 +
- kernel/kexec_core.c                    |  25 +++--
- 11 files changed, 223 insertions(+), 63 deletions(-)
- create mode 100644 arch/arm64/kernel/crash.c
-
+diff --git a/arch/powerpc/kexec/ranges.c b/arch/powerpc/kexec/ranges.c
+index e5fea23b191b..539061d14a77 100644
+--- a/arch/powerpc/kexec/ranges.c
++++ b/arch/powerpc/kexec/ranges.c
+@@ -21,6 +21,7 @@
+ #include <linux/of.h>
+ #include <linux/slab.h>
+ #include <linux/memblock.h>
++#include <linux/minmax.h>
+ #include <linux/crash_core.h>
+ #include <asm/sections.h>
+ #include <asm/kexec_ranges.h>
+@@ -105,19 +106,16 @@ static void __merge_memory_ranges(struct crash_mem *mem_rngs)
+ 	struct range *ranges;
+ 	int i, idx;
+ 
+-	if (!mem_rngs)
++	if (!mem_rngs || mem_rngs->nr_ranges <= 1)
+ 		return;
+ 
+ 	idx = 0;
+-	ranges = &(mem_rngs->ranges[0]);
++	ranges = mem_rngs->ranges;
+ 	for (i = 1; i < mem_rngs->nr_ranges; i++) {
+-		if (ranges[i].start <= (ranges[i-1].end + 1))
+-			ranges[idx].end = ranges[i].end;
++		if (ranges[i].start <= (ranges[idx].end + 1))
++			ranges[idx].end = max(ranges[idx].end, ranges[i].end);
+ 		else {
+ 			idx++;
+-			if (i == idx)
+-				continue;
+-
+ 			ranges[idx] = ranges[i];
+ 		}
+ 	}
 -- 
 2.34.1
 
