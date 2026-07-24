@@ -1,43 +1,42 @@
-Return-Path: <linuxppc-dev+bounces-24763-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24764-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 88E7AC531CC
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2026 03:32:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CF73EC531D0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2026 03:33:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h5tpy4qz4z2xYh;
-	Fri, 24 Jul 2026 13:32:42 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=117.135.210.8
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h5tqq1KCrz2yYq;
+	Fri, 24 Jul 2026 13:33:27 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=117.135.210.7
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784859472;
-	cv=none; b=jPxidUeMPJhiCSJFyJyHXUFSKakGKnMOwNP3IIY3Xs8db0p8eM5qRNsYF5n85qJN8K6/a9g9mA+LQJMwOrGfWUE7/sRbtAqNXpPqq71ddzNcztNVlsGGyrIZEjMZjV/XtFcFXPCINboD1V0vP/RqUOHsRjG/dr16Ywiv69sxyPBw+wb/YtPazpYtI48GSc0TwG29+VUvkjRYxto+/eGXM80qECRQwp1MvTE8IyLQl/aAJ2lEAF/r+ffwgBtUu2Jxo01ld98UKfAeR2RL8jG2mly7xypZYO2SgsxagGgLTg8KWcvpT7CcG1cse5BQHNqcB96YpFIB6pQUMEl0aa50KQ==
+	cv=none; b=FhiyxH6H31ECEh9Yg7LJmNUjra/wM3CO7BDWw4t9JTqhpCWxmDvSL9RwuMRz17bAcQZL0urBkAYh3Y1DrDDHSCmnO0OuToW3KidCvUrWhSy3r61vf6ZYSPstQGmd6dqtqHJQQvYxk9LP/sB4XmPRv8Vr3uWb71qNAjcf3a9/f315aOJ3hhhw62F1qtmNGsvX+FJhP+SV095Z9/njnIHoiHWxeKekteHjGYlLPdx7z38yDu+8RoB2icXST67FqBpIP2WsGhIBs9VUWD+EEIFZl1yFsYP7HYZ1mLU7OO9R3yTIhDIiutJV2RaYJUJiCYdQbb5ss2IT+F77NfXgLRdWbg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1784859472; c=relaxed/relaxed;
-	bh=R0fZk7cw47NM3PZyeQotTKEsd6zLI7x4WIDlkM2CwcM=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Q83CWkeaGDlELjncpzGTxRw2qd3ro5kaA6GdpMRDwgmxxMMgMOm9tuU08IbDK+U12MYG8IID73TMQCBZ4aT31r1YZhF8aXpJ25CYPAXcy9gICF8VqB3+wpl+3k9pSDLFlcKuWkLff8fp/ylaSN6glb+F9tM9ktuOUdQgv4T20cHMKkbIxdMb5n4GpiuWOO2iW1e4zz0X67ATJAcXgj4GZn4DeI+Unk1IUmfRvFE/cJW65qP80vt2UYguQ8GVOVDBYWXI7WdEI68ZEwEZ5+SgLFHZFxlBs6j73T4U2uV6VYqYiLqdOn1+9ZyuSaMi4k3hHwNCNLYpRSjT5ILYpD4e0g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=126.com; dkim=pass (1024-bit key; unprotected) header.d=126.com header.i=@126.com header.a=rsa-sha256 header.s=s110527 header.b=e4V5LBZg; dkim-atps=neutral; spf=pass (client-ip=117.135.210.8; helo=m16.mail.126.com; envelope-from=chensong_2000@126.com; receiver=lists.ozlabs.org) smtp.mailfrom=126.com
+	bh=77TlUQQ5Ug6Bo+r9yStAO1cYSC7lbr5tqO3K9ciX64s=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=kVkDTc6Vfqt90D+N8Ec8kHm20+i6JDf7Pj5DrkqqVRzXGEE0gK7CgoFR04BWShgit2SgfP6AqK5kseJ/BJUg17Erqw5Qfshsnfa5CNIoo/upVZljb/6Nu2GX2GWDHdFpYNuUip5zJk1EePyb8Amd8jgsXuMQ8MuSW23V+XuOTzYyGw0jD8rMFBmdx528r2R4KnevT6OZb7aoL2eUJZE1ywGzgMCklwCuWlpXZVwQCuwLWlMTQG7QGguhUmlkhZU3MG/1Anz1ACGfdm39p85K4+4SYqoTpXLLFGRcICuRkUVNcUG9suNNCFkVHAZpsUSn8bnvOi4CjGqOGMq9LMP37g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=126.com; dkim=pass (1024-bit key; unprotected) header.d=126.com header.i=@126.com header.a=rsa-sha256 header.s=s110527 header.b=A58Q0hC7; dkim-atps=neutral; spf=pass (client-ip=117.135.210.7; helo=m16.mail.126.com; envelope-from=chensong_2000@126.com; receiver=lists.ozlabs.org) smtp.mailfrom=126.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=126.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=126.com header.i=@126.com header.a=rsa-sha256 header.s=s110527 header.b=e4V5LBZg;
+	dkim=pass (1024-bit key; unprotected) header.d=126.com header.i=@126.com header.a=rsa-sha256 header.s=s110527 header.b=A58Q0hC7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=126.com (client-ip=117.135.210.8; helo=m16.mail.126.com; envelope-from=chensong_2000@126.com; receiver=lists.ozlabs.org)
-Received: from m16.mail.126.com (m16.mail.126.com [117.135.210.8])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=126.com (client-ip=117.135.210.7; helo=m16.mail.126.com; envelope-from=chensong_2000@126.com; receiver=lists.ozlabs.org)
+Received: from m16.mail.126.com (m16.mail.126.com [117.135.210.7])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h5s8Y1Tmlz2yLY
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jul 2026 12:17:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h5s8Z2Tr6z2yYf
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jul 2026 12:17:49 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=126.com;
-	s=s110527; h=From:To:Subject:Date:Message-ID:MIME-Version; bh=R0
-	fZk7cw47NM3PZyeQotTKEsd6zLI7x4WIDlkM2CwcM=; b=e4V5LBZgUcm5oq799U
-	7a3h6abrPnRrCCVAvummdZRPY8PbC0JeoIi/jMUsu3oBmHVz0vsso+pLxULG/D1v
-	xCoCVPqs72DWoIg/AsQRHgzlMviTeGpOYmqNBW1jHGynpeFYHGo6XiuVKyQ4sbm/
-	oxpAlt6fWlzkbCvbLcBdYsNNA=
+	s=s110527; h=From:To:Subject:Date:Message-ID:MIME-Version; bh=77
+	TlUQQ5Ug6Bo+r9yStAO1cYSC7lbr5tqO3K9ciX64s=; b=A58Q0hC7pBgmyd1P0k
+	hLdauK2xNyRBVzvhAisrBvhwe51IYuU3v9CdBPEmeUuNhaOUQCGDOQWF5MJocr6d
+	sUDDytIRZ4RCNVAsuNo5OmI5d3/Yw40nyoy5CkXb3KuvjzGCqY5FdMsT584qwXjb
+	/BY0wrzWkU1UlbE8vhPU3x/hE=
 Received: from song-MS-7D48.. (unknown [])
-	by gzsmtp2 (Coremail) with SMTP id PSkvCgDnr+wRymJqH7z4DA--.34972S4;
-	Fri, 24 Jul 2026 10:12:43 +0800 (CST)
+	by gzsmtp2 (Coremail) with SMTP id PSkvCgDnr+wRymJqH7z4DA--.34972S2;
+	Fri, 24 Jul 2026 10:12:35 +0800 (CST)
 From: Song Chen <chensong_2000@126.com>
 To: arnd@arndb.de,
 	kees@kernel.org,
@@ -76,12 +75,10 @@ Cc: linux-arm-kernel@lists.infradead.org,
 	linux-arch@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	Song Chen <chensong_2000@126.com>
-Subject: [RFC PATCH v2 2/3] btrfs: Allow error injection on btrfs_data_csum_ok
-Date: Fri, 24 Jul 2026 10:12:28 +0800
-Message-ID: <20260724021229.47302-3-chensong_2000@126.com>
+Subject: [RFC PATCH v2 0/3] btrfs: add error injection support for checksum verification
+Date: Fri, 24 Jul 2026 10:12:26 +0800
+Message-ID: <20260724021229.47302-1-chensong_2000@126.com>
 X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260724021229.47302-1-chensong_2000@126.com>
-References: <20260724021229.47302-1-chensong_2000@126.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -96,56 +93,51 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:PSkvCgDnr+wRymJqH7z4DA--.34972S4
-X-Coremail-Antispam: 1Uf129KBjvJXoW7uFWfZr4kWFykJw4xJFWrXwb_yoW8Xw4fpr
-	WUGw1ruFWDXr97Wrs7Gay09ryFg3yDWa10gFnxZw4YywsIkw1FqrZay3WxGa48KrZrX343
-	Z3Z0gw17ZF1DAFJanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07USeH9UUUUU=
+X-CM-TRANSID:PSkvCgDnr+wRymJqH7z4DA--.34972S2
+X-Coremail-Antispam: 1Uf129KBjvJXoW7CF1xWr1UWw47tryUKF4Durg_yoW8GF1rpr
+	y3u3s3uryrC34fCrnxAay8Zw1Fkrs5W34UXFnrG348W343Za4qq3WkKa4UJ3WS9rWUGw17
+	X3WUKr4UWr1UAFJanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07UonmiUUUUU=
 X-Originating-IP: [221.238.56.48]
-X-CM-SenderInfo: xfkh02prqjsjqqqqqiyswou0bp/xtbBpRvra2piyhtNggAA3o
+X-CM-SenderInfo: xfkh02prqjsjqqqqqiyswou0bp/xtbBsxPpaWpiyhNNnAAA3g
 
-btrfs_data_csum_ok validates the checksum of a data block
-after a read I/O completes. A mismatch between the on-disk
-checksum and the one computed from the read data indicates
-silent data corruption, which can be caused by bit flips due
-to DRAM errors, storage media degradation, or bus transmission
-faults.
+This patchset adds fault injection support for btrfs_data_csum_ok,
+enabling controlled simulation of checksum mismatches to test btrfs
+silent data corruption detection and reporting paths.
 
-Testing the error handling path that responds to such
-corruption, including any warning output and uspace
-notification, normally requires reproducing the hardware
-fault, which is not always feasible.
+The first patch extends the error injection framework with a new type,
+EI_ETYPE_FALSE, which allows bool-returning functions to be overridden
+with a false return value directly.
 
-Mark btrfs_data_csum_ok with ALLOW_ERROR_INJECTION so that
-the fail_function infrastructure can override its return value
-to false, simulating a checksum mismatch without requiring
-actual data corruption. This enables validation of the full
-error detection and reporting path in a controlled environment.
+The second patch marks btrfs_data_csum_ok with ALLOW_ERROR_INJECTION
+using this new type.
 
-Usage:
-        cd /sys/kernel/debug/fail_function
-        echo btrfs_data_csum_ok > inject
-        echo 0 > btrfs_data_csum_ok/retval
-        echo 100 > probability
-        echo N > times
+The third patch adds a parent field to fei_attr to allow fault injection
+on a function only when called from a specific parent function. 
 
-Signed-off-by: Song Chen <chensong_2000@126.com>
+Song Chen (3):
+  error-injection: Introduce EI_ETYPE_FALSE for fail_function
+  btrfs: Allow error injection on btrfs_data_csum_ok
+  error-injection: Introduce parent in fei_attr
+
+ arch/arm/lib/error-inject.c           |  6 ++
+ arch/arm64/lib/error-inject.c         |  6 ++
+ arch/csky/lib/error-inject.c          |  6 ++
+ arch/loongarch/lib/error-inject.c     |  6 ++
+ arch/powerpc/lib/error-inject.c       |  6 ++
+ arch/riscv/lib/error-inject.c         |  6 ++
+ arch/s390/lib/error-inject.c          |  6 ++
+ arch/x86/lib/error-inject.c           |  6 ++
+ fs/btrfs/inode.c                      |  1 +
+ include/asm-generic/error-injection.h |  6 ++
+ kernel/fail_function.c                | 98 ++++++++++++++++++++++++++-
+ 11 files changed, 152 insertions(+), 1 deletion(-)
+
 ---
- fs/btrfs/inode.c | 1 +
- 1 file changed, 1 insertion(+)
+changelog:
+v1 --- v2:
+Add a parent field to struct fei_attr.
 
-diff --git a/fs/btrfs/inode.c b/fs/btrfs/inode.c
-index 906d5c21ebc4..6be3e920b954 100644
---- a/fs/btrfs/inode.c
-+++ b/fs/btrfs/inode.c
-@@ -3574,6 +3574,7 @@ bool btrfs_data_csum_ok(struct btrfs_bio *bbio, struct btrfs_device *dev,
- 		memzero_page(phys_to_page(paddrs[i]), offset_in_page(paddrs[i]), step);
- 	return false;
- }
-+ALLOW_ERROR_INJECTION(btrfs_data_csum_ok, FALSE);
- 
- /*
-  * Perform a delayed iput on @inode.
 -- 
 2.43.0
 
