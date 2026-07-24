@@ -1,52 +1,52 @@
-Return-Path: <linuxppc-dev+bounces-24768-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24769-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AE6D9C531C9
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2026 04:55:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 85CBEC531F9
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2026 04:55:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h5wfp2P71z2yYd;
-	Fri, 24 Jul 2026 14:55:46 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=51.210.91.58
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784868946;
-	cv=none; b=Zu+hK0fGf/Ab95gLwIwp8mNtewSkqCEYsRLBhVaEYP//SPvOA5lGclBx50Nekvjjv8+JhBdO3XcF+DI+ZfFpc2HybVyDWUfpIBipLz8oyaZApJrIMd4FX1VQ1hgAY76e0cRwdeChavzhsIa6HnNKrhUlMXw5q/SsU3grplGphtRRGzAu5ylzsVmOCYYlK9QOij3XIBxKGhaF2yostcLrlBpAYJvBW5T/fiOhdpvolfntGwEAv0tjZ7nxUHMEuqsuoSrRmCtXIfbBiW+lF06nQ3UBqzuMqaVqYccsm0cdN8d7RQEadxDqAwBpwDql574+tcZwt2EHkmoGcMRl3EKaQA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h5wg001S0z2yYd;
+	Fri, 24 Jul 2026 14:55:56 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=51.210.91.25
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784868955;
+	cv=none; b=gvxejHBRg7igTkaFiHwxAV805PCS2rBePHTEU/6Qi39SMqEpX74yr+vNSwJLv686cdO31fctvGpP+3DGY7Wba5zHu5DEJu3Ai509GpuQbP62VwO5lueAMHHWi/9LRkJ1BXK7hhxnBU72BKZO0CMOt2rFuVAvvZJzoamXMq1h7PLE4Kdxb+KqncSH6X1kYjs6Eqqb+fZKWbjTmlp4tu4gmE780r/xB5YmU6ocaWdjscnl2NuFy5eTBHWmTT2vA+ky697/4D+LmLN+DpI09+dQzEpyM8px35BISkBQ+Vrteh7XMFTqZnvPzG2vW1bP/3hkrQMsLGyMPHo3s6ZuIGg79w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784868946; c=relaxed/relaxed;
-	bh=McrFHMF4OqCuGHN2JECR9Xz9tBdtSI1b0xMZalX69Vg=;
+	t=1784868955; c=relaxed/relaxed;
+	bh=lpsNKuaDzpZhNqp4w16ugJf4ExexmLy2gskQEsg/tcU=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=fdo32e855pzFV3jpFeXmfS7aLZgk2P1fSsrl7h6tA7gCDoJOdExiXSmGqfHR0QP00B4w6rRreakWiqVpCiW6skwEVrqWz+MAMuvp19RzaQjPq68j+u6OkRZish+KtEB92fgBmXoqxUyUDH6ahT4MM0swClaBhPdm5xWxD5HVjYYsweOb6ULZTk2BjwcmKIHL/ya1etz5nL4SFpf9KZMDgjK1/44KyyA1os1FMuDOKQ9vRwgsz0LA046OP5l1rgHL9C7NwSQH1513muxmUEAu6FGLNAFekLgkDAIYhDJLw1oZUxgN0GOmwOJDWN1XU7AAxoyluNBPKNUAzhFdhbJtVw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kaod.org; dkim=pass (2048-bit key; unprotected) header.d=kaod.org header.i=@kaod.org header.a=rsa-sha256 header.s=ovhmo393970-selector1 header.b=Jrl9vdmH; dkim-atps=neutral; spf=pass (client-ip=51.210.91.58; helo=smtpout9.mo540.mail-out.ovh.net; envelope-from=clg@kaod.org; receiver=lists.ozlabs.org) smtp.mailfrom=kaod.org
+	 In-Reply-To:Content-Type; b=XW+cm2QxIxBsQB91yjuRtJGDcKA7LQVG0h9biau4BPzsK0+HqMcUIq6QaZwMqFOD4P11j9Tms1LV1ZR+hAUuEk+9bvuHqMxisE6g1Cwzj/MXJrk11Q67X/0D+KCElaR7heLallIRORtypX97fHLjZHozh67tCF9tU1pd7cvib64YHjjQsDVsHwrvQKT+Guw+5BIiuqmeVZoCycLe++mjPGN8Mn9HYwT5ihlE9C8A9rDYF9IAN0IwXkebM2BCdqRUMkl0VOYuaVV3nEME3y8KRmIKc/UbAPQ9+o54JWLzo+/NY+/Mxw0R5Px9EZ5FtIfZ1gIAgi0REBe3K2sTtqY5+A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kaod.org; dkim=pass (2048-bit key; unprotected) header.d=kaod.org header.i=@kaod.org header.a=rsa-sha256 header.s=ovhmo393970-selector1 header.b=fptsVdey; dkim-atps=neutral; spf=pass (client-ip=51.210.91.25; helo=smtpout6.mo537.mail-out.ovh.net; envelope-from=clg@kaod.org; receiver=lists.ozlabs.org) smtp.mailfrom=kaod.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kaod.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kaod.org header.i=@kaod.org header.a=rsa-sha256 header.s=ovhmo393970-selector1 header.b=Jrl9vdmH;
+	dkim=pass (2048-bit key; unprotected) header.d=kaod.org header.i=@kaod.org header.a=rsa-sha256 header.s=ovhmo393970-selector1 header.b=fptsVdey;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kaod.org (client-ip=51.210.91.58; helo=smtpout9.mo540.mail-out.ovh.net; envelope-from=clg@kaod.org; receiver=lists.ozlabs.org)
-Received: from smtpout9.mo540.mail-out.ovh.net (smtpout9.mo540.mail-out.ovh.net [51.210.91.58])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kaod.org (client-ip=51.210.91.25; helo=smtpout6.mo537.mail-out.ovh.net; envelope-from=clg@kaod.org; receiver=lists.ozlabs.org)
+Received: from smtpout6.mo537.mail-out.ovh.net (smtpout6.mo537.mail-out.ovh.net [51.210.91.25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h5wfk1LLVz2yPR
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jul 2026 14:55:40 +1000 (AEST)
-Received: from director2.derp.mail-out.ovh.net (director2.derp.mail-out.ovh.net [79.137.60.36])
-	by mo540.mail-out.ovh.net (Postfix) with ESMTPS id 4h5wfY2K4qz3wbY;
-	Fri, 24 Jul 2026 04:55:33 +0000 (UTC)
-Received: from director2.derp.mail-out.ovh.net (director2.derp.mail-out.ovh.net. [127.0.0.1])
-        by director2.derp.mail-out.ovh.net (inspect_sender_mail_agent) with SMTP
-        for <gouhaojake@163.com>; Fri, 24 Jul 2026 04:55:33 +0000 (UTC)
-Received: from mta2.priv.ovhmail-u2.ea.mail.ovh.net (unknown [10.110.101.119])
-	by director2.derp.mail-out.ovh.net (Postfix) with ESMTPS id 4h5wfY0fFRz1xp5;
-	Fri, 24 Jul 2026 04:55:33 +0000 (UTC)
-Received: from kaod.org (unknown [10.1.6.3])
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h5wfz1VRhz2yPR
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jul 2026 14:55:54 +1000 (AEST)
+Received: from director5.derp.mail-out.ovh.net (director5.derp.mail-out.ovh.net [57.128.106.70])
+	by mo537.mail-out.ovh.net (Postfix) with ESMTPS id 4h5wfr2v2qz3yvC;
+	Fri, 24 Jul 2026 04:55:48 +0000 (UTC)
+Received: from director5.derp.mail-out.ovh.net (director5.derp.mail-out.ovh.net. [127.0.0.1])
+        by director5.derp.mail-out.ovh.net (inspect_sender_mail_agent) with SMTP
+        for <gouhaojake@163.com>; Fri, 24 Jul 2026 04:55:48 +0000 (UTC)
+Received: from mta11.priv.ovhmail-u2.ea.mail.ovh.net (unknown [10.110.0.198])
+	by director5.derp.mail-out.ovh.net (Postfix) with ESMTPS id 4h5wfq6fzlz7t8k;
+	Fri, 24 Jul 2026 04:55:47 +0000 (UTC)
+Received: from kaod.org (unknown [10.1.6.4])
 	(Authenticated sender: clg@kaod.org)
-	by mta2.priv.ovhmail-u2.ea.mail.ovh.net (Postfix) with ESMTPSA id E5285941A0E;
-	Fri, 24 Jul 2026 04:55:29 +0000 (UTC)
-Authentication-Results:garm.ovh; auth=pass (GARM-101G00445b33efe-36d1-4677-9dbd-4ef779dd762a,
+	by mta11.priv.ovhmail-u2.ea.mail.ovh.net (Postfix) with ESMTPSA id 809112403E2D;
+	Fri, 24 Jul 2026 04:55:44 +0000 (UTC)
+Authentication-Results:garm.ovh; auth=pass (GARM-114S00855f22b5d-b6d8-4a3d-b7a1-ab384e72409e,
                     4BD6B7741D2B27CC5BC6F5428A99E4613CF72FD8) smtp.auth=clg@kaod.org
 X-OVh-ClientIp:82.64.250.170
-Message-ID: <87ff73dc-3d4b-400d-93f9-f9640c5196a6@kaod.org>
-Date: Fri, 24 Jul 2026 06:55:29 +0200
+Message-ID: <82bebd8a-0376-4fd6-8e8b-125bd895208e@kaod.org>
+Date: Fri, 24 Jul 2026 06:55:43 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -61,8 +61,8 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 1/6] powerpc/xive: remove dead NULL check after
- GFP_NOFAIL allocation
+Subject: Re: [PATCH v2 2/6] powerpc/xive: add error return value to
+ xive_smp_probe()
 To: Gou Hao <gouhao@uniontech.com>, maddy@linux.ibm.com, mpe@ellerman.id.au,
  npiggin@gmail.com, chleroy@kernel.org, maarten.lankhorst@linux.intel.com,
  mripard@kernel.org, tzimmermann@suse.de, airlied@gmail.com, simona@ffwll.ch,
@@ -73,7 +73,7 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  dri-devel@lists.freedesktop.org, linux-rdma@vger.kernel.org,
  linux-mm@kvack.org, gouhaojake@163.com, kernel@uniontech.com
 References: <20260724022851.466017-1-gouhao@uniontech.com>
- <20260724022851.466017-2-gouhao@uniontech.com>
+ <20260724022851.466017-3-gouhao@uniontech.com>
 Content-Language: en-US, fr
 From: =?UTF-8?Q?C=C3=A9dric_Le_Goater?= <clg@kaod.org>
 Autocrypt: addr=clg@kaod.org; keydata=
@@ -118,56 +118,83 @@ Autocrypt: addr=clg@kaod.org; keydata=
  3GlqivBNkmYsHYSlFsbxc37E1HpTEaSWsGfAHQoPn9qrDJgsgcbBVc1gkUT6hnxShKPp4Pls
  ZVMNjvPAnr5TEBgHkk54HQRhhwcYv1T2QumQizDiU6iOrUzBThaMhZO3i927SG2DwWDVzZlt
  KrCMD1aMPvb3NU8FOYRhNmIFR3fcalYr+9gDuVKe8BVz4atMOoktmt0GWTOC8P4=
-In-Reply-To: <20260724022851.466017-2-gouhao@uniontech.com>
+In-Reply-To: <20260724022851.466017-3-gouhao@uniontech.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-x-ovh-tracer-id: 17313244342570036456
+x-ovh-tracer-id: 17317466469420608744
 X-VR-SPAMSTATE: OK
 X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: dmFkZTFag79TUuknUcEyJ+fUBsqHM0xcaveY2xgVNjxV+qnKwhwsNTHa/2zdKcagVjzZotwGF8tiTuYDFnLfCREPZ40TItmps8VQlgCYXtQ5s/8YhU27P1l3fNA5vFk0wHWnMhXlAGEERA1YXEkq6NvX3J7mbulyb4PCNyOiCS02W8K6KQos/fdl/UFRJLB+bcrtLX5zpkrqLCS8UVIBGkLg2pXo1dt253286tHqmpjN4aJU4Momxnq4NCIh4qjGOU8oLxiXXbSRp93kS9K9HRz8GsPUGJVR2g6ypPWuPrcsxVVwSadqKe62E2LhGeYWeQK5G59ftKSi6eFNdIHZZqSwCU/JZgUTU2jQdp4fspPo3fPc+HP2egDV1EgUQzjxFw2a9A0wMtH5xWzPjQWRAF+Sg635i6W7cB4f3mMjRG7+yRxV1dsUXEG767heBlRrqZr6fLWKRZ+fvtQ5LVaoEnlx6Ht+BxYS5/Z/50NYJvsBrzTkngXeqe90vtZ1wS+mqVfi6dyIM27fChLynqPhuW4tfkFg1Zo6miZLGXX8BLGGc5mbauuAe2273a3bCM3BX1Db9UaW0FYe2HqxNXCA1Q8gEfl4x7UOC3VeJlgqD6btGHUq+zVcARFFkfqSmP+dxy3oGOa4myNk+cI0ojqOw3aWmNQLUXW6yG3Pgeys3eP+VZywcw
-DKIM-Signature: a=rsa-sha256; bh=McrFHMF4OqCuGHN2JECR9Xz9tBdtSI1b0xMZalX69Vg=;
+X-VR-SPAMCAUSE: dmFkZTFag79TUuknUcEyJ+fUBsqHM0xcaveY2xgVNjxV+qnKwhwsNTHa/2zdKcagVjzZotwGF8tiTuYDFnLfCREPZ40TItmps8VQlgCYXtQ5s/8YhU27P1l3fNA5vFk0wHWnMhXlAGEERA1YXEkq6NvX3J7mbulyb4PCNyOiCS02W8K6KQos/fdl/UFRJLB+bcrtLX5zpkrqLCS8UVIBGkLg2pXo1dt253286tHqmpjN4aJU4Momxnq4NCIh4qjGOU8oLxiXXbSRp93kS9K9HRz8GsPUGJVR2g6ypPWuPrcsxVVwSadqKe62E2LhGeYWeQK5G59ftKSi6eFNdIHZZqSwCU/JaoOMXGmkxCnRclM/OCuhglaDeN3BHUfDx3r50MC2T73P2UNZ4JGhwl2sLnvSRV5LGbJuTiqZGgGzrzVM58GD4zLNB/RZeH1wc/0zRk//2Xue9NMmuW3qm/WtzV0vO0tyeZ6VmTIaU8OL/f9xBiPfV0fE/kMqrHEve6qNThviQfG/EHH3yRZxfJigHWxirAmm9MAf+s4tK0hD0PvourVEzAQseAzpPKZt+8rZhPPA6izowE5nGl+xljFZggcijL58lcU0Yms0/rAA2LHfWPtHKlO6eeyK0wVywjt04umh2B8l/lldWqZzfzJYrhkT2FaXaL+nW6q+n2cziaIMo66PEg
+DKIM-Signature: a=rsa-sha256; bh=lpsNKuaDzpZhNqp4w16ugJf4ExexmLy2gskQEsg/tcU=;
  c=relaxed/relaxed; d=kaod.org; h=From; s=ovhmo393970-selector1;
- t=1784868935; v=1;
- b=Jrl9vdmH9ieiS5O1IR6RPvsCe6nbV3My+drtWyHnNimGFqNrk9xS2t6F95Jp0+/mkGW4lTra
- cNzcfHHg7EGzqFY4EFcUh5r8PatIIQhwDgODODrVtUU5dvrhViZSZmFI5ZJUQk8JXOGeT3MVtZ4
- wdkhxLfIBDmVr35+w4fSRxa3tXVAwqP+BH+AyElt9BhcL7dfy4CnObRW2j+pmVdgdv/1ZEg7tcM
- TnFasx/O4qYkAlFPqI+/2Li99Y7zDe9YY6qguVGd7xbWnBaKFte7zDOEVOCEM1znrzZbpR25eBL
- aaba/1mL1nEGtRW+y/gGaprznU29+DYZC1c9dCahQ7SjQ==
+ t=1784868951; v=1;
+ b=fptsVdeywA8AchGltVZrfsyqfHnxUSVi6auYkCr/g+DeI4HXpU8HYp+DbN7oTXhYVS2ihiKM
+ 4b69/7eP+iHECpIXC2LTivylvJ98jAv0CMv3u85/H74PB67ZB4u19dNmFN3fhoLr2igRhuRorVL
+ 5Eh+uV+CGcQJ2/NOqO2nTQb9bZPtg8O0vEXVncHpTp+XokQWucfrtmkurvAXbAv8RHiaMCg1jFc
+ 6G3Tomtqc5CGsr8TvF/Fq5RYYeCLQAyy7kMYRDt1Z32/CHdfoZuS8+YrrvNvhICbwMvmJ3tzjU8
+ avuwNOU2N25aPFejN/Y4ZZC0k/R8/U/JNu484CDDGZbmQ==
 
 On 7/24/26 04:28, Gou Hao wrote:
-> kzalloc_objs with the __GFP_NOFAIL flag will never return NULL, so the
-> subsequent NULL check is unreachable dead code. Remove it.
+> xive_smp_probe() calls xive_init_ipis() which can fail, but its
+> return value is currently ignored.  Change xive_smp_probe() to
+> return int so that errors can be propagated to callers.
+> 
+> This is a preparatory patch for the next one.
+> 
+> No functional change yet; the return value is always 0 at this point.
 > 
 > Signed-off-by: Gou Hao <gouhao@uniontech.com>
 > Reviewed-by: Wentao Guan <guanwentao@uniontech.com>
 > Reviewed-by: jiazhenyuan <jiazhenyuan@uniontech.com>
 > ---
->   arch/powerpc/sysdev/xive/common.c | 5 +----
->   1 file changed, 1 insertion(+), 4 deletions(-)
+>   arch/powerpc/include/asm/xive.h   | 4 ++--
+>   arch/powerpc/sysdev/xive/common.c | 4 +++-
+>   2 files changed, 5 insertions(+), 3 deletions(-)
 > 
+> diff --git a/arch/powerpc/include/asm/xive.h b/arch/powerpc/include/asm/xive.h
+> index efb0f5effcc69..4e3e3358993c0 100644
+> --- a/arch/powerpc/include/asm/xive.h
+> +++ b/arch/powerpc/include/asm/xive.h
+> @@ -91,7 +91,7 @@ static inline bool xive_enabled(void) { return __xive_enabled; }
+>   
+>   bool xive_spapr_init(void);
+>   bool xive_native_init(void);
+> -void xive_smp_probe(void);
+> +int xive_smp_probe(void);
+>   int  xive_smp_prepare_cpu(unsigned int cpu);
+>   void xive_smp_setup_cpu(void);
+>   void xive_smp_disable_cpu(void);
+> @@ -153,7 +153,7 @@ static inline bool xive_enabled(void) { return false; }
+>   
+>   static inline bool xive_spapr_init(void) { return false; }
+>   static inline bool xive_native_init(void) { return false; }
+> -static inline void xive_smp_probe(void) { }
+> +static inline int xive_smp_probe(void) { return -EINVAL; }
+>   static inline int  xive_smp_prepare_cpu(unsigned int cpu) { return -EINVAL; }
+>   static inline void xive_smp_setup_cpu(void) { }
+>   static inline void xive_smp_disable_cpu(void) { }
 > diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
-> index dadd1f46ec939..f2904a5c2b7bf 100644
+> index f2904a5c2b7bf..f9a1229cede73 100644
 > --- a/arch/powerpc/sysdev/xive/common.c
 > +++ b/arch/powerpc/sysdev/xive/common.c
-> @@ -1134,9 +1134,6 @@ static int __init xive_init_ipis(void)
+> @@ -1254,7 +1254,7 @@ noinstr static void xive_cleanup_cpu_ipi(unsigned int cpu, struct xive_cpu *xc)
+>   	xive_ops->put_ipi(cpu, xc);
+>   }
 >   
->   	xive_ipis = kzalloc_objs(*xive_ipis, nr_node_ids,
->   				 GFP_KERNEL | __GFP_NOFAIL);
-> -	if (!xive_ipis)
-> -		goto out_free_domain;
-> -
->   	for_each_node(node) {
->   		struct xive_ipi_desc *xid = &xive_ipis[node];
->   		struct xive_ipi_alloc_info info = { node };
-> @@ -1158,7 +1155,7 @@ static int __init xive_init_ipis(void)
+> -void __init xive_smp_probe(void)
+> +int __init xive_smp_probe(void)
+>   {
+>   	smp_ops->cause_ipi = xive_cause_ipi;
 >   
->   out_free_xive_ipis:
->   	kfree(xive_ipis);
-> -out_free_domain:
-> +	xive_ipis = NULL;
->   	irq_domain_remove(ipi_domain);
->   out_free_fwnode:
->   	irq_domain_free_fwnode(fwnode);
+> @@ -1263,6 +1263,8 @@ void __init xive_smp_probe(void)
+>   
+>   	/* Allocate and setup IPI for the boot CPU */
+>   	xive_setup_cpu_ipi(smp_processor_id());
+> +
+> +	return 0;
+>   }
+>   
+>   #endif /* CONFIG_SMP */
 
 Reviewed-by: Cédric Le Goater <clg@kaod.org>
 
