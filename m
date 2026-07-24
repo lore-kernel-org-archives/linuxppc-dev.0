@@ -1,73 +1,52 @@
-Return-Path: <linuxppc-dev+bounces-24767-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24768-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 04C8DC531C9
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2026 03:52:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AE6D9C531C9
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2026 04:55:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h5vFy3nk7z2xYh;
-	Fri, 24 Jul 2026 13:52:38 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784865158;
-	cv=none; b=jHimIPH+FhrJw8aaEnwFgdU1eWijUAGoI17m/fhGFf3G0LDuwqEhgZn9htNdE3PeRAvbYqVIb4rYuxHbkiFQ20j917q2XendgpiKyGUFhiRgyiHZsq5yK1Ou2eupDf1N07u4ym06yuqky7BLcyohPNd6QxisoCRO4DwP4IPnYlS4FKTlDEZ0ZRuj2MSoMygazgyf0ulOJLfnB0qaAwbTWqELJVF6tjeBSUR97wduDHHmpmtClunrAjAG1E3T9uXDjzK0upPWb1YGFFx7MR4PlwQq0lAL281bXzGE6vQ28oqgDcqBOT0kIom5/gHMliAb0SHDa9OIcNWV14QB78I27w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h5wfp2P71z2yYd;
+	Fri, 24 Jul 2026 14:55:46 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=51.210.91.58
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784868946;
+	cv=none; b=Zu+hK0fGf/Ab95gLwIwp8mNtewSkqCEYsRLBhVaEYP//SPvOA5lGclBx50Nekvjjv8+JhBdO3XcF+DI+ZfFpc2HybVyDWUfpIBipLz8oyaZApJrIMd4FX1VQ1hgAY76e0cRwdeChavzhsIa6HnNKrhUlMXw5q/SsU3grplGphtRRGzAu5ylzsVmOCYYlK9QOij3XIBxKGhaF2yostcLrlBpAYJvBW5T/fiOhdpvolfntGwEAv0tjZ7nxUHMEuqsuoSrRmCtXIfbBiW+lF06nQ3UBqzuMqaVqYccsm0cdN8d7RQEadxDqAwBpwDql574+tcZwt2EHkmoGcMRl3EKaQA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784865158; c=relaxed/relaxed;
-	bh=AnFlBDvFE4f4gf2zpigswmnFOjeM7Bj+4bzfKCuL/4k=;
-	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
-	 Message-Id:References:To; b=QIgRNrjFnW/SrWFd5XxhiOfNNjtbKaD6fz+vDYDy0RTM2qjzClI56Nm3tNhAISBCWNYV8Eiu/pOr+FzJLiEuq5FThH1YoSzlt4MPQzWUUwD+60I7Zi/uoqZBixqMgB2NSfbliimhtlb80GgS4DzcOc1NmIDrMMsMQTAhW5HEx3/mV46ZET2XuStun1eQoiauy3j0Nff8hN+ozsj7r9YHUuh1P4nmu3hrlVckAqXxUBqJdMA1aI/vFP/zUhJFPuoW9L7N/UEedJ7WGFebG40I+yeqqiZ1aaLpirVFt0CbMq2MUp6zNrPdZaa21XriLp9xtJ/cC+U7Ts5M2Z2YnU6dTg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=I6yDHu1R; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1784868946; c=relaxed/relaxed;
+	bh=McrFHMF4OqCuGHN2JECR9Xz9tBdtSI1b0xMZalX69Vg=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=fdo32e855pzFV3jpFeXmfS7aLZgk2P1fSsrl7h6tA7gCDoJOdExiXSmGqfHR0QP00B4w6rRreakWiqVpCiW6skwEVrqWz+MAMuvp19RzaQjPq68j+u6OkRZish+KtEB92fgBmXoqxUyUDH6ahT4MM0swClaBhPdm5xWxD5HVjYYsweOb6ULZTk2BjwcmKIHL/ya1etz5nL4SFpf9KZMDgjK1/44KyyA1os1FMuDOKQ9vRwgsz0LA046OP5l1rgHL9C7NwSQH1513muxmUEAu6FGLNAFekLgkDAIYhDJLw1oZUxgN0GOmwOJDWN1XU7AAxoyluNBPKNUAzhFdhbJtVw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kaod.org; dkim=pass (2048-bit key; unprotected) header.d=kaod.org header.i=@kaod.org header.a=rsa-sha256 header.s=ovhmo393970-selector1 header.b=Jrl9vdmH; dkim-atps=neutral; spf=pass (client-ip=51.210.91.58; helo=smtpout9.mo540.mail-out.ovh.net; envelope-from=clg@kaod.org; receiver=lists.ozlabs.org) smtp.mailfrom=kaod.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kaod.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=I6yDHu1R;
+	dkim=pass (2048-bit key; unprotected) header.d=kaod.org header.i=@kaod.org header.a=rsa-sha256 header.s=ovhmo393970-selector1 header.b=Jrl9vdmH;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kaod.org (client-ip=51.210.91.58; helo=smtpout9.mo540.mail-out.ovh.net; envelope-from=clg@kaod.org; receiver=lists.ozlabs.org)
+Received: from smtpout9.mo540.mail-out.ovh.net (smtpout9.mo540.mail-out.ovh.net [51.210.91.58])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h5vFx24xpz2xKh
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jul 2026 13:52:36 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66NLfuXY4080470;
-	Fri, 24 Jul 2026 03:52:17 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=AnFlBD
-	vFE4f4gf2zpigswmnFOjeM7Bj+4bzfKCuL/4k=; b=I6yDHu1RfBUH0O4iRcbsFI
-	3NeEiZEmBzFINNP7jMf0ppQFoa7X1ni+vzaCj/6y2gBmrO2b+hSuyZjlVRqSeRWp
-	zNONJhRAqm5oogMGagLUqZZvRA3kTOHf/lELvn4A9Y6thbEVZ4bdtHJ6GujHThAs
-	W+gA6aLJAjYZCv9FwSI9tQ0io6EmhjJClBPZuV0tdxwP7BHYDi/OjvshoWoURPNI
-	ciwNBQ9WjVUz0t8T3vST3XEwE+eWnbe3geJU6CQUyoSqMDgkFO248/g/g3RRa/im
-	XALDlBSzbOu3hh9S+sPqNWp/h/9nSV0T6KOfp/A7chODASmDnZbHtDKTOdfAzxrA
-	==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fg78gj5kd-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 24 Jul 2026 03:52:17 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66O3nbGM003143;
-	Fri, 24 Jul 2026 03:52:16 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4fgmtk796e-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 24 Jul 2026 03:52:16 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66O3qCbU46465296
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 24 Jul 2026 03:52:12 GMT
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 506262010D;
-	Fri, 24 Jul 2026 03:52:12 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 934E320111;
-	Fri, 24 Jul 2026 03:52:09 +0000 (GMT)
-Received: from smtpclient.apple (unknown [9.124.222.110])
-	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Fri, 24 Jul 2026 03:52:09 +0000 (GMT)
-Content-Type: text/plain;
-	charset=utf-8
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h5wfk1LLVz2yPR
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jul 2026 14:55:40 +1000 (AEST)
+Received: from director2.derp.mail-out.ovh.net (director2.derp.mail-out.ovh.net [79.137.60.36])
+	by mo540.mail-out.ovh.net (Postfix) with ESMTPS id 4h5wfY2K4qz3wbY;
+	Fri, 24 Jul 2026 04:55:33 +0000 (UTC)
+Received: from director2.derp.mail-out.ovh.net (director2.derp.mail-out.ovh.net. [127.0.0.1])
+        by director2.derp.mail-out.ovh.net (inspect_sender_mail_agent) with SMTP
+        for <gouhaojake@163.com>; Fri, 24 Jul 2026 04:55:33 +0000 (UTC)
+Received: from mta2.priv.ovhmail-u2.ea.mail.ovh.net (unknown [10.110.101.119])
+	by director2.derp.mail-out.ovh.net (Postfix) with ESMTPS id 4h5wfY0fFRz1xp5;
+	Fri, 24 Jul 2026 04:55:33 +0000 (UTC)
+Received: from kaod.org (unknown [10.1.6.3])
+	(Authenticated sender: clg@kaod.org)
+	by mta2.priv.ovhmail-u2.ea.mail.ovh.net (Postfix) with ESMTPSA id E5285941A0E;
+	Fri, 24 Jul 2026 04:55:29 +0000 (UTC)
+Authentication-Results:garm.ovh; auth=pass (GARM-101G00445b33efe-36d1-4677-9dbd-4ef779dd762a,
+                    4BD6B7741D2B27CC5BC6F5428A99E4613CF72FD8) smtp.auth=clg@kaod.org
+X-OVh-ClientIp:82.64.250.170
+Message-ID: <87ff73dc-3d4b-400d-93f9-f9640c5196a6@kaod.org>
+Date: Fri, 24 Jul 2026 06:55:29 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,90 +59,120 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3864.300.41.1.7\))
-Subject: Re: [PATCH] powerpc/perf: Use strstarts() to simplify
- is_thread_imc_pmu()
-From: Athira Rajeev <atrajeev@linux.ibm.com>
-In-Reply-To: <20260704121353.201583-3-thorsten.blum@linux.dev>
-Date: Fri, 24 Jul 2026 09:21:56 +0530
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        Kees Cook <kees@kernel.org>, Shrikanth Hegde <sshegde@linux.ibm.com>,
-        Yury Norov <ynorov@gmail.com>, linuxppc-dev@lists.ozlabs.org,
-        linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <EB483C96-97AD-4F3E-A513-141D6AD4186A@linux.ibm.com>
-References: <20260704121353.201583-3-thorsten.blum@linux.dev>
-To: Thorsten Blum <thorsten.blum@linux.dev>
-X-Mailer: Apple Mail (2.3864.300.41.1.7)
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzI0MDAzMSBTYWx0ZWRfX2Sa++PNjJ7ou
- kNvoFi+D7p+rqZu4HRpCw5DpgDcEWN7HMwrqAX6t7WL/xMYNlU/m5D3GsASqaDy9llFD0SA2U6x
- qFYfnRo3cuNfV6RWFkIi53CSH0Y55rjovoESLpQ9z7UIJTMngy+ZUfp7KTbWhQcAm12gmMqucat
- 8f5Ny9UGTRvjU1XJBQlgxDYgQdi3cyiyWXulQhXW02K7ppaUe2z5Q0F9s2obqy8xQCrMkdR7VWa
- LXdd/0CSSf+ZVqh1SuQT3FWO4w0QC6hGF0I1HCqrmAy8RDYYX822rlb81p3LGpTxsDtj+K0FV0t
- TGrmthhnqiFUaQ2d5og0XaIsrQsVYr/lf2sC24xbMfIiO/CKoSimZykcZwT8EJ2fjegF5Z/dT2v
- wIDCJaQCucbzd221DnGHHk7R61RMbR9PDURCUsur54jgMqCiJXo87EzVeODmLw9n1A6fWBAUeoO
- HkT8k9oGszmrc4mMkKg==
-X-Proofpoint-GUID: -RaiNgnBe2qWdLOD8l49rDHOqEPHp0-D
-X-Authority-Analysis: v=2.4 cv=MelcfZ/f c=1 sm=1 tr=0 ts=6a62e171 cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VnNF1IyMAAAA:8
- a=Cw_hki6syGx7dABp6GMA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzI0MDAzMSBTYWx0ZWRfX0GJ1Vdog9ex4
- TOQ7MJLywYJQahKmYNHW+33T0jxUXSLrUXWZz4PYIWpL5rRWtO4b4Br3gDoFSj6mnFSV2+NdS7T
- blD6YQ1KemINeZ2RSWCpvmiQBMU6U6U=
-X-Proofpoint-ORIG-GUID: 7-f_pZfEC4vuewt5VHtGP0LepScp6Juz
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-07-23_07,2026-07-22_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 lowpriorityscore=0 priorityscore=1501 bulkscore=0 spamscore=0
- clxscore=1011 malwarescore=0 phishscore=0 adultscore=0 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607240031
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 1/6] powerpc/xive: remove dead NULL check after
+ GFP_NOFAIL allocation
+To: Gou Hao <gouhao@uniontech.com>, maddy@linux.ibm.com, mpe@ellerman.id.au,
+ npiggin@gmail.com, chleroy@kernel.org, maarten.lankhorst@linux.intel.com,
+ mripard@kernel.org, tzimmermann@suse.de, airlied@gmail.com, simona@ffwll.ch,
+ bharat@chelsio.com, jgg@ziepe.ca, leon@kernel.org,
+ akpm@linux-foundation.org, namcao@linutronix.de, ynorov@nvidia.com,
+ sshegde@linux.ibm.com, nilay@linux.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-rdma@vger.kernel.org,
+ linux-mm@kvack.org, gouhaojake@163.com, kernel@uniontech.com
+References: <20260724022851.466017-1-gouhao@uniontech.com>
+ <20260724022851.466017-2-gouhao@uniontech.com>
+Content-Language: en-US, fr
+From: =?UTF-8?Q?C=C3=A9dric_Le_Goater?= <clg@kaod.org>
+Autocrypt: addr=clg@kaod.org; keydata=
+ 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
+In-Reply-To: <20260724022851.466017-2-gouhao@uniontech.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+x-ovh-tracer-id: 17313244342570036456
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: dmFkZTFag79TUuknUcEyJ+fUBsqHM0xcaveY2xgVNjxV+qnKwhwsNTHa/2zdKcagVjzZotwGF8tiTuYDFnLfCREPZ40TItmps8VQlgCYXtQ5s/8YhU27P1l3fNA5vFk0wHWnMhXlAGEERA1YXEkq6NvX3J7mbulyb4PCNyOiCS02W8K6KQos/fdl/UFRJLB+bcrtLX5zpkrqLCS8UVIBGkLg2pXo1dt253286tHqmpjN4aJU4Momxnq4NCIh4qjGOU8oLxiXXbSRp93kS9K9HRz8GsPUGJVR2g6ypPWuPrcsxVVwSadqKe62E2LhGeYWeQK5G59ftKSi6eFNdIHZZqSwCU/JZgUTU2jQdp4fspPo3fPc+HP2egDV1EgUQzjxFw2a9A0wMtH5xWzPjQWRAF+Sg635i6W7cB4f3mMjRG7+yRxV1dsUXEG767heBlRrqZr6fLWKRZ+fvtQ5LVaoEnlx6Ht+BxYS5/Z/50NYJvsBrzTkngXeqe90vtZ1wS+mqVfi6dyIM27fChLynqPhuW4tfkFg1Zo6miZLGXX8BLGGc5mbauuAe2273a3bCM3BX1Db9UaW0FYe2HqxNXCA1Q8gEfl4x7UOC3VeJlgqD6btGHUq+zVcARFFkfqSmP+dxy3oGOa4myNk+cI0ojqOw3aWmNQLUXW6yG3Pgeys3eP+VZywcw
+DKIM-Signature: a=rsa-sha256; bh=McrFHMF4OqCuGHN2JECR9Xz9tBdtSI1b0xMZalX69Vg=;
+ c=relaxed/relaxed; d=kaod.org; h=From; s=ovhmo393970-selector1;
+ t=1784868935; v=1;
+ b=Jrl9vdmH9ieiS5O1IR6RPvsCe6nbV3My+drtWyHnNimGFqNrk9xS2t6F95Jp0+/mkGW4lTra
+ cNzcfHHg7EGzqFY4EFcUh5r8PatIIQhwDgODODrVtUU5dvrhViZSZmFI5ZJUQk8JXOGeT3MVtZ4
+ wdkhxLfIBDmVr35+w4fSRxa3tXVAwqP+BH+AyElt9BhcL7dfy4CnObRW2j+pmVdgdv/1ZEg7tcM
+ TnFasx/O4qYkAlFPqI+/2Li99Y7zDe9YY6qguVGd7xbWnBaKFte7zDOEVOCEM1znrzZbpR25eBL
+ aaba/1mL1nEGtRW+y/gGaprznU29+DYZC1c9dCahQ7SjQ==
 
-
-
-> On 4 Jul 2026, at 5:43=E2=80=AFPM, Thorsten Blum =
-<thorsten.blum@linux.dev> wrote:
->=20
-> Replace the open-coded implementation with strstarts() to simplify
-> is_thread_imc_pmu().
->=20
-> Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
+On 7/24/26 04:28, Gou Hao wrote:
+> kzalloc_objs with the __GFP_NOFAIL flag will never return NULL, so the
+> subsequent NULL check is unreachable dead code. Remove it.
+> 
+> Signed-off-by: Gou Hao <gouhao@uniontech.com>
+> Reviewed-by: Wentao Guan <guanwentao@uniontech.com>
+> Reviewed-by: jiazhenyuan <jiazhenyuan@uniontech.com>
 > ---
-> arch/powerpc/perf/imc-pmu.c | 5 +----
-> 1 file changed, 1 insertion(+), 4 deletions(-)
->=20
-> diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
-> index e3822f36c419..1d2db6d3e226 100644
-> --- a/arch/powerpc/perf/imc-pmu.c
-> +++ b/arch/powerpc/perf/imc-pmu.c
-> @@ -1023,10 +1023,7 @@ static int thread_imc_event_init(struct =
-perf_event *event)
->=20
-> static bool is_thread_imc_pmu(struct perf_event *event)
-> {
-> - if (!strncmp(event->pmu->name, "thread_imc", strlen("thread_imc")))
-> - return true;
+>   arch/powerpc/sysdev/xive/common.c | 5 +----
+>   1 file changed, 1 insertion(+), 4 deletions(-)
+> 
+> diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
+> index dadd1f46ec939..f2904a5c2b7bf 100644
+> --- a/arch/powerpc/sysdev/xive/common.c
+> +++ b/arch/powerpc/sysdev/xive/common.c
+> @@ -1134,9 +1134,6 @@ static int __init xive_init_ipis(void)
+>   
+>   	xive_ipis = kzalloc_objs(*xive_ipis, nr_node_ids,
+>   				 GFP_KERNEL | __GFP_NOFAIL);
+> -	if (!xive_ipis)
+> -		goto out_free_domain;
 > -
-> - return false;
-> + return strstarts(event->pmu->name, "thread_imc");
-> }
->=20
+>   	for_each_node(node) {
+>   		struct xive_ipi_desc *xid = &xive_ipis[node];
+>   		struct xive_ipi_alloc_info info = { node };
+> @@ -1158,7 +1155,7 @@ static int __init xive_init_ipis(void)
+>   
+>   out_free_xive_ipis:
+>   	kfree(xive_ipis);
+> -out_free_domain:
+> +	xive_ipis = NULL;
+>   	irq_domain_remove(ipi_domain);
+>   out_free_fwnode:
+>   	irq_domain_free_fwnode(fwnode);
 
-Reviewed-by: Athira Rajeev <atrajeev@linux.ibm.com>
+Reviewed-by: Cédric Le Goater <clg@kaod.org>
 
-Thanks
-Athira
+Thanks,
 
-> static __be64 *get_event_base_addr(struct perf_event *event)
->=20
->=20
+C.
 
 
