@@ -1,45 +1,54 @@
-Return-Path: <linuxppc-dev+bounces-24802-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24803-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2FF36C531C9
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2026 16:32:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6C37FC531C9
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2026 17:23:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h6D6X3zvJz2yYf;
-	Sat, 25 Jul 2026 02:32:20 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784910740;
-	cv=none; b=lXw90T91xt4+h5m/+9BOwEFvTYReOP42OuifYWG5R4lornJPaAtzcGEsjUySp6w/5OistW2rEVrW+dxl2kvrPn4y7kaVjLm+LJXAq2xRdxe0HvqhHpWgp19NYlHaVks9tOUqqo22rfCBOQmgqnjwqx+70rYVGQrpOxmv/xteXDciaTFQGPnf2st+0jLEpv5qgB62E8wdGz8zJEPq4G+XUlAVxyHkVk/L0A/Rnq3QaS9QdFIOPV4sjGmUKm6A4vpPcog0l0CrEdi5uzLqjSdDqe4nd8F2FlFC9i9f3ZxX00edz4ng5E2HTsw5u1YkGTyuxj/NswF0Cr7XpeiwLflOkw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h6FF941JJz2xnQ;
+	Sat, 25 Jul 2026 03:23:09 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=95.215.58.186
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784913789;
+	cv=none; b=NDzniUfZK2VcikcOn5Y8lz9v9e+CIWSqMui9gkRQGY4H6Ops+fE+ECdAvttUgODVRvp3huXajO/5T8ta3B67ZyNcENOjColQK8nAbocVctBqKfHhi1iX1rHEup3yWjZ+qxO09xqSxtjeeeH7axYGkuiPu/H5j7v5gGQ8PlnvH5IK6BA8Nsf/74ALg3d1yLKkYrT8AMLNEvBT/9LEeCKpJDjvAqn/cYCaIDUReSM7QtcGK8yx92YEm90L7rnHPhvGCiu/3gyH4WZXCkHWEXZT3ZgOxpttvr7PS7j7SAEZ7pcuAf4SLoULm8yPj0baRW8GXqrx9nIRK1RO05Gi8EEhGQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784910740; c=relaxed/relaxed;
-	bh=NEwnT35D7tuzT3xeTQQMHkJEWGepfSu0cwMv30sxXLk=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=PkMK9IJaSXgknaz97dInXSEL9SjblYn3sH0bN+7plRP7WrnC2wkoUzpF3XErZ3+OoTnP2/3j8Qx/2U1I9onhspyStkSy2O6dtj9Nt4MObkONExf6wEDEFr9uPKDGB3Nk6PRkUth7WUiY8CbBOjV2aRseaRBeyaCMx96pHD/TM3zeN+HHRYDclLYcbjucV8megNMNPp/BUzOuRW64yS8lUiziMHByH0ZxAw5UAKJfPWSsGdBZtGEGFUR9OffIALM8kOB8g00rQWs0YqQyOM7mQso+ey2V3+g8Uwqw8bjD/Sz38etzQPsiTmzRg9KD7TQG7acj1E0i4apvfIHMD7eb9A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=rJ2DJJ7D; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
+	t=1784913789; c=relaxed/relaxed;
+	bh=gQQLAIe3XW3GJhhBGiEY/9V43XiC+l3cHhMKbxCqABA=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=JBbPbTy83FbLCsBaQWDWjCw96zEXoaABGRTLdOkoOvc6x6c7pR44ck+b4faLgEMGuBb9M6J34C7T+p4TLpEC2MiCgnIg7pF1ZYsgIsx5zuAkRUz7B7RrnqlUtWYBKY0ymbe/FjgzoFFMFeTkypjZaFaAEmPi+BDVwRApiyziZqkNwEqcAgwAYbEnbI8/x6kqAPmXwLegKJoWnGX2SRzZ6Go4PCgTk5bg2xwEGnzbkH8DmAYLWJix88fg+fM+Bk60XlGHoclm1Zrzwxr3OtauqdVpt5M5zjJ+CfzZPwe996fOUnfU0ydQaF5G0vdg8Wy3Z24X3Ui6I/XJWS+WF97+7A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=rmhESXMY; dkim-atps=neutral; spf=pass (client-ip=95.215.58.186; helo=out-186.mta1.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=rJ2DJJ7D;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=rmhESXMY;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h6D6W4RxQz2yPR
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jul 2026 02:32:18 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 4AE7F1BB2;
-	Fri, 24 Jul 2026 09:31:43 -0700 (PDT)
-Received: from [10.57.0.90] (unknown [10.57.0.90])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id ACA703F66F;
-	Fri, 24 Jul 2026 09:31:35 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1784910707; bh=NEwnT35D7tuzT3xeTQQMHkJEWGepfSu0cwMv30sxXLk=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=rJ2DJJ7D9c7D1FVu9FvWF7Hq7v5HoLI/CdhriAp1fJ4dLBnD8EJRRWBa3d3TSeSRj
-	 y4giJ+zCCtRJVGca1Zy4119yCr4CT8kuPBEs9cPEAEswfrfTiiEZd9fOxFya5yiDAq
-	 5lH15CX22toaprtjLQyFDxQHqVRAyMvOmxdmryBU=
-Message-ID: <c17ccb0b-9f6b-4521-a992-bdc658b91597@arm.com>
-Date: Fri, 24 Jul 2026 18:31:32 +0200
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=95.215.58.186; helo=out-186.mta1.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org)
+Received: from out-186.mta1.migadu.com (out-186.mta1.migadu.com [95.215.58.186])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h6FF701Rtz2xRs
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jul 2026 03:23:05 +1000 (AEST)
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1784913764;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=gQQLAIe3XW3GJhhBGiEY/9V43XiC+l3cHhMKbxCqABA=;
+	b=rmhESXMY8FOu5xEiZ2cLwils0NkXk7/EXqmJ2J8L21O3tipr6Fp2RDXUoDEhMnsxVF2Z9+
+	ttD/rvQlNwvL5QCE22PL9Aiwr29ojF8anOIe05JJvO24aE/z8fKC08DYZQE2VUz2GFl/Um
+	m0edQnJMABXvlVwSgS4Cy4RHg7gEMaU=
+From: Thorsten Blum <thorsten.blum@linux.dev>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: Thorsten Blum <thorsten.blum@linux.dev>,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] powerpc/boot: Remove unused sprintf()
+Date: Fri, 24 Jul 2026 19:21:58 +0200
+Message-ID: <20260724172200.208722-2-thorsten.blum@linux.dev>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -53,91 +62,56 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 14/22] mm: set page table page type when allocated
-To: Vishal Moola <vishal.moola@gmail.com>
-Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
- David Hildenbrand <david@kernel.org>, Lorenzo Stoakes <ljs@kernel.org>,
- "Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>,
- Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>,
- Michal Hocko <mhocko@suse.com>, Pasha Tatashin <pasha.tatashin@soleen.com>,
- Russell King <linux@armlinux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
- Ryan Roberts <ryan.roberts@arm.com>, linux-arm-kernel@lists.infradead.org,
- Huacai Chen <chenhuacai@kernel.org>, loongarch@lists.linux.dev,
- "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
- Helge Deller <deller@gmx.de>, linux-parisc@vger.kernel.org,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
- Albert Ou <aou@eecs.berkeley.edu>, linux-riscv@lists.infradead.org,
- Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
- Alexander Gordeev <agordeev@linux.ibm.com>,
- Gerald Schaefer <gerald.schaefer@linux.ibm.com>, linux-s390@vger.kernel.org,
- "David S. Miller" <davem@davemloft.net>,
- Andreas Larsson <andreas@gaisler.com>, sparclinux@vger.kernel.org,
- Richard Weinberger <richard@nod.at>,
- Anton Ivanov <anton.ivanov@cambridgegreys.com>,
- Johannes Berg <johannes@sipsolutions.net>, linux-um@lists.infradead.org,
- Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
- Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>,
- "H. Peter Anvin" <hpa@zytor.com>, Andy Lutomirski <luto@kernel.org>,
- Peter Zijlstra <peterz@infradead.org>, Ning Sun <ning.sun@intel.com>,
- x86@kernel.org, tboot-devel@lists.sourceforge.net,
- Ard Biesheuvel <ardb@kernel.org>,
- Ilias Apalodimas <ilias.apalodimas@linaro.org>, linux-efi@vger.kernel.org,
- Alistair Popple <apopple@nvidia.com>,
- "Matthew Wilcox (Oracle)" <willy@infradead.org>,
- linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-References: <20260714-remove_pgtable_cdtor-v1-0-44be8a7685d7@arm.com>
- <20260714-remove_pgtable_cdtor-v1-14-44be8a7685d7@arm.com>
- <alZSwAM4pwmMOeaD@fedora> <f3afa5df-73f3-49da-87a6-d75eb5f3610f@arm.com>
- <al5xZHiFwatn518I@fedora>
-From: Kevin Brodsky <kevin.brodsky@arm.com>
-Content-Language: en-GB
-In-Reply-To: <al5xZHiFwatn518I@fedora>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1392; i=thorsten.blum@linux.dev; h=from:subject; bh=xg8oj3CjtFVR2VxGZDsIUIMQRudEZuz2B6O10N+zv5o=; b=owGbwMvMwCUWt7pQ4caZUj3G02pJDFnJ8y2U2DjLWgNTWz2tnU4pP3FfyutfNtvhd/7VigO81 3naZl7qKGVhEONikBVTZHkw68cM39Kayk0mETth5rAygQxh4OIUgIkU8zIyfJVoPPYksOuv15Zb fkVdl/3l/b19LKYcbWJsbV+17YiDJSPDm7nHtm03u14f3iWjpDS36HlkWNSRE8fE21ZdXftt7bI 8BgA=
+X-Developer-Key: i=thorsten.blum@linux.dev; a=openpgp; fpr=1D60735E8AEF3BE473B69D84733678FD8DFEEAD4
+Content-Transfer-Encoding: 8bit
+X-Migadu-Flow: FLOW_OUT
 
-On 20/07/2026 21:05, Vishal Moola wrote:
-> On Thu, Jul 16, 2026 at 11:49:31AM +0200, Kevin Brodsky wrote:
->>> We should switch over from __folio_set_pgtable() to __SetPagePgtable()
->>> in this patch. Ptdescs and folios should be treated as distinctly
->>> independent of each other.
->> I sure remember the previous discussion, but my reading of your comments
->> [1] is that we cannot really change this as long as pagetable_alloc()
->> can be called with order > 0, right? Multiple archs still rely on that.
-> Kinda...
->
-> The concern was about callers accessing tail pages directly for that
-> information. Using the folio API ensures that we always look into the
-> head page.
->
-> Since we're now doing it at allocation time, we know we always have the
-> head page, so it's fine.
+There have been no sprintf() callers in the boot wrapper since commit
+e275e023aa69 ("powerpc/44x: Warp patches for the new NDFC driver").
 
-Ah got it, that makes sense.
+Remove the function definition and declaration.
 
->
-> The dtor/free should be more questionable because the underlying api
-> uses virt_to_page() which could look at a tail page... oopsie. I
-> haven't seen any reports tied to it so its probably fine (the
-> setting/clearing has been using the folio API since ptdescs).
+Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
+---
+ arch/powerpc/boot/stdio.c | 11 -----------
+ arch/powerpc/boot/stdio.h |  3 ---
+ 2 files changed, 14 deletions(-)
 
-Right, that should be fine - calling pagetable_free() on anything else
-than a ptdesc allocated by pagetable_alloc() is a bug, so if we get any
-crash because of this we should just go and fix the underlying issue.
-I'd still switch to __SetPagePgtable() in a separate commit to improve
-bisectability.
-
-FWIW there are definitely cases where pagetable_free() and
-pagetable_alloc() calls aren't properly matched (see my reply to the
-cover letter), this needs to be addressed for this series anyway.
-
-> We can say thats a happy accident that makes distinguishing ptdescs
-> and folios easier :)
-
-Indeed!
-
-- Kevin
+diff --git a/arch/powerpc/boot/stdio.c b/arch/powerpc/boot/stdio.c
+index 31eece29f56d..b12aa2c0b8e7 100644
+--- a/arch/powerpc/boot/stdio.c
++++ b/arch/powerpc/boot/stdio.c
+@@ -326,17 +326,6 @@ int vsprintf(char *buf, const char *fmt, va_list args)
+ 	return str-buf;
+ }
+ 
+-int sprintf(char * buf, const char *fmt, ...)
+-{
+-	va_list args;
+-	int i;
+-
+-	va_start(args, fmt);
+-	i=vsprintf(buf,fmt,args);
+-	va_end(args);
+-	return i;
+-}
+-
+ static char sprint_buf[1024];
+ 
+ int
+diff --git a/arch/powerpc/boot/stdio.h b/arch/powerpc/boot/stdio.h
+index 884d5959a9ae..d5a7a0f54453 100644
+--- a/arch/powerpc/boot/stdio.h
++++ b/arch/powerpc/boot/stdio.h
+@@ -12,9 +12,6 @@ extern int printf(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
+ 
+ #define fprintf(fmt, args...)	printf(args)
+ 
+-extern int sprintf(char *buf, const char *fmt, ...)
+-	__attribute__((format(printf, 2, 3)));
+-
+ extern int vsprintf(char *buf, const char *fmt, va_list args);
+ 
+ #endif				/* _PPC_BOOT_STDIO_H_ */
 
