@@ -1,52 +1,52 @@
-Return-Path: <linuxppc-dev+bounces-24769-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24770-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 85CBEC531F9
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2026 04:55:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00D96C531F9
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2026 04:59:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h5wg001S0z2yYd;
-	Fri, 24 Jul 2026 14:55:56 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=51.210.91.25
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784868955;
-	cv=none; b=gvxejHBRg7igTkaFiHwxAV805PCS2rBePHTEU/6Qi39SMqEpX74yr+vNSwJLv686cdO31fctvGpP+3DGY7Wba5zHu5DEJu3Ai509GpuQbP62VwO5lueAMHHWi/9LRkJ1BXK7hhxnBU72BKZO0CMOt2rFuVAvvZJzoamXMq1h7PLE4Kdxb+KqncSH6X1kYjs6Eqqb+fZKWbjTmlp4tu4gmE780r/xB5YmU6ocaWdjscnl2NuFy5eTBHWmTT2vA+ky697/4D+LmLN+DpI09+dQzEpyM8px35BISkBQ+Vrteh7XMFTqZnvPzG2vW1bP/3hkrQMsLGyMPHo3s6ZuIGg79w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h5wkh2mdGz2yPR;
+	Fri, 24 Jul 2026 14:59:08 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=46.105.34.251
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784869148;
+	cv=none; b=lbsvAeQvtRIyP5argshZWN3XA0iKvBkKdSFFzjV8W5LAOkBOp2TOTi5fB7bc9WEwZCwWoDrBEucOIe3ONGsS/oOb5KwjvegdEBr9k4Cg+7SFQKgCqEly4+JJSqeZL7rtShZOQPLZXihmoROvRi0um5eDuq4wv0jzaBv/R+lX6Xv0H0ZPigIl+U1z7hI+m/wULylym1xwD59y7LEAkwir63ovVZZnwKZ6QWh3sO1S5n44yX5L4WNAUT0f8uGXnnZ1mvrfUY2FfHoKWcH6W2LdeeQEhyLPzjj58+QKWNdqXqO5KI9rV5wFguSuhs6+njdX+iWKfG6vycDl9cqK37hEow==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784868955; c=relaxed/relaxed;
-	bh=lpsNKuaDzpZhNqp4w16ugJf4ExexmLy2gskQEsg/tcU=;
+	t=1784869148; c=relaxed/relaxed;
+	bh=CufKqRzRWGP5C9wDDHrJPSM5oQL0vrGLL/dJi11OdLg=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=XW+cm2QxIxBsQB91yjuRtJGDcKA7LQVG0h9biau4BPzsK0+HqMcUIq6QaZwMqFOD4P11j9Tms1LV1ZR+hAUuEk+9bvuHqMxisE6g1Cwzj/MXJrk11Q67X/0D+KCElaR7heLallIRORtypX97fHLjZHozh67tCF9tU1pd7cvib64YHjjQsDVsHwrvQKT+Guw+5BIiuqmeVZoCycLe++mjPGN8Mn9HYwT5ihlE9C8A9rDYF9IAN0IwXkebM2BCdqRUMkl0VOYuaVV3nEME3y8KRmIKc/UbAPQ9+o54JWLzo+/NY+/Mxw0R5Px9EZ5FtIfZ1gIAgi0REBe3K2sTtqY5+A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kaod.org; dkim=pass (2048-bit key; unprotected) header.d=kaod.org header.i=@kaod.org header.a=rsa-sha256 header.s=ovhmo393970-selector1 header.b=fptsVdey; dkim-atps=neutral; spf=pass (client-ip=51.210.91.25; helo=smtpout6.mo537.mail-out.ovh.net; envelope-from=clg@kaod.org; receiver=lists.ozlabs.org) smtp.mailfrom=kaod.org
+	 In-Reply-To:Content-Type; b=ZF+bLQtfi3aRRIN75xjFEXlVrWtmFk2GuQ1fjUp5ul7Yo9WB1VKbIxemurczr4ocEEVtd7InWWJiwSB7Fjx6K3MEzeQnqIPY1lV8R/4nuET9INzqK+uJBiWlb5yf6x00p7U8Ux1yiW7a3+FclULYh6M3fOynYR/tJbnrhpw7JN4/BlwmLYz6pZNa49tsrADEOIeqYs25e3Ti3aSsC4JwF5+MsWkXl76qe6hW2Zj+OKUEvRRJWhjcPCc4I5Imb4AHFQX7hJBqI+ny6QisNjRiaMrXK9lXPndidEdzVmZkr35HfS+VBtPbg8IomLCPeqjHWyc+2iB+CAYwZRCqGsycFw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kaod.org; dkim=pass (2048-bit key; unprotected) header.d=kaod.org header.i=@kaod.org header.a=rsa-sha256 header.s=ovhmo393970-selector1 header.b=Oi9DC1Sq; dkim-atps=neutral; spf=pass (client-ip=46.105.34.251; helo=smtpout1.mo528.mail-out.ovh.net; envelope-from=clg@kaod.org; receiver=lists.ozlabs.org) smtp.mailfrom=kaod.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kaod.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kaod.org header.i=@kaod.org header.a=rsa-sha256 header.s=ovhmo393970-selector1 header.b=fptsVdey;
+	dkim=pass (2048-bit key; unprotected) header.d=kaod.org header.i=@kaod.org header.a=rsa-sha256 header.s=ovhmo393970-selector1 header.b=Oi9DC1Sq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kaod.org (client-ip=51.210.91.25; helo=smtpout6.mo537.mail-out.ovh.net; envelope-from=clg@kaod.org; receiver=lists.ozlabs.org)
-Received: from smtpout6.mo537.mail-out.ovh.net (smtpout6.mo537.mail-out.ovh.net [51.210.91.25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kaod.org (client-ip=46.105.34.251; helo=smtpout1.mo528.mail-out.ovh.net; envelope-from=clg@kaod.org; receiver=lists.ozlabs.org)
+Received: from smtpout1.mo528.mail-out.ovh.net (smtpout1.mo528.mail-out.ovh.net [46.105.34.251])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h5wfz1VRhz2yPR
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jul 2026 14:55:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h5wkg4qVgz2yYd
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jul 2026 14:59:06 +1000 (AEST)
 Received: from director5.derp.mail-out.ovh.net (director5.derp.mail-out.ovh.net [57.128.106.70])
-	by mo537.mail-out.ovh.net (Postfix) with ESMTPS id 4h5wfr2v2qz3yvC;
-	Fri, 24 Jul 2026 04:55:48 +0000 (UTC)
+	by mo528.mail-out.ovh.net (Postfix) with ESMTPS id 4h5wkW3LJQz65Y5;
+	Fri, 24 Jul 2026 04:58:59 +0000 (UTC)
 Received: from director5.derp.mail-out.ovh.net (director5.derp.mail-out.ovh.net. [127.0.0.1])
         by director5.derp.mail-out.ovh.net (inspect_sender_mail_agent) with SMTP
-        for <gouhaojake@163.com>; Fri, 24 Jul 2026 04:55:48 +0000 (UTC)
-Received: from mta11.priv.ovhmail-u2.ea.mail.ovh.net (unknown [10.110.0.198])
-	by director5.derp.mail-out.ovh.net (Postfix) with ESMTPS id 4h5wfq6fzlz7t8k;
-	Fri, 24 Jul 2026 04:55:47 +0000 (UTC)
-Received: from kaod.org (unknown [10.1.6.4])
+        for <gouhaojake@163.com>; Fri, 24 Jul 2026 04:58:59 +0000 (UTC)
+Received: from mta7.priv.ovhmail-u2.ea.mail.ovh.net (unknown [10.109.254.225])
+	by director5.derp.mail-out.ovh.net (Postfix) with ESMTPS id 4h5wkV75Bsz7t8k;
+	Fri, 24 Jul 2026 04:58:58 +0000 (UTC)
+Received: from kaod.org (unknown [10.1.6.2])
 	(Authenticated sender: clg@kaod.org)
-	by mta11.priv.ovhmail-u2.ea.mail.ovh.net (Postfix) with ESMTPSA id 809112403E2D;
-	Fri, 24 Jul 2026 04:55:44 +0000 (UTC)
-Authentication-Results:garm.ovh; auth=pass (GARM-114S00855f22b5d-b6d8-4a3d-b7a1-ab384e72409e,
+	by mta7.priv.ovhmail-u2.ea.mail.ovh.net (Postfix) with ESMTPSA id A7BCB203E0D;
+	Fri, 24 Jul 2026 04:58:55 +0000 (UTC)
+Authentication-Results:garm.ovh; auth=pass (GARM-114S008995c4a97-46e5-4ed8-9387-61dacf530b60,
                     4BD6B7741D2B27CC5BC6F5428A99E4613CF72FD8) smtp.auth=clg@kaod.org
 X-OVh-ClientIp:82.64.250.170
-Message-ID: <82bebd8a-0376-4fd6-8e8b-125bd895208e@kaod.org>
-Date: Fri, 24 Jul 2026 06:55:43 +0200
+Message-ID: <988bb08e-3c6b-49ff-9e33-0263b9216a65@kaod.org>
+Date: Fri, 24 Jul 2026 06:58:54 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -61,8 +61,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 2/6] powerpc/xive: add error return value to
- xive_smp_probe()
+Subject: Re: [PATCH v2 3/6] powerpc/xive: fix use-after-free of xive_ipis
 To: Gou Hao <gouhao@uniontech.com>, maddy@linux.ibm.com, mpe@ellerman.id.au,
  npiggin@gmail.com, chleroy@kernel.org, maarten.lankhorst@linux.intel.com,
  mripard@kernel.org, tzimmermann@suse.de, airlied@gmail.com, simona@ffwll.ch,
@@ -73,7 +72,7 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  dri-devel@lists.freedesktop.org, linux-rdma@vger.kernel.org,
  linux-mm@kvack.org, gouhaojake@163.com, kernel@uniontech.com
 References: <20260724022851.466017-1-gouhao@uniontech.com>
- <20260724022851.466017-3-gouhao@uniontech.com>
+ <20260724022851.466017-4-gouhao@uniontech.com>
 Content-Language: en-US, fr
 From: =?UTF-8?Q?C=C3=A9dric_Le_Goater?= <clg@kaod.org>
 Autocrypt: addr=clg@kaod.org; keydata=
@@ -118,83 +117,103 @@ Autocrypt: addr=clg@kaod.org; keydata=
  3GlqivBNkmYsHYSlFsbxc37E1HpTEaSWsGfAHQoPn9qrDJgsgcbBVc1gkUT6hnxShKPp4Pls
  ZVMNjvPAnr5TEBgHkk54HQRhhwcYv1T2QumQizDiU6iOrUzBThaMhZO3i927SG2DwWDVzZlt
  KrCMD1aMPvb3NU8FOYRhNmIFR3fcalYr+9gDuVKe8BVz4atMOoktmt0GWTOC8P4=
-In-Reply-To: <20260724022851.466017-3-gouhao@uniontech.com>
+In-Reply-To: <20260724022851.466017-4-gouhao@uniontech.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-x-ovh-tracer-id: 17317466469420608744
+x-ovh-tracer-id: 17371228191519649000
 X-VR-SPAMSTATE: OK
 X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: dmFkZTFag79TUuknUcEyJ+fUBsqHM0xcaveY2xgVNjxV+qnKwhwsNTHa/2zdKcagVjzZotwGF8tiTuYDFnLfCREPZ40TItmps8VQlgCYXtQ5s/8YhU27P1l3fNA5vFk0wHWnMhXlAGEERA1YXEkq6NvX3J7mbulyb4PCNyOiCS02W8K6KQos/fdl/UFRJLB+bcrtLX5zpkrqLCS8UVIBGkLg2pXo1dt253286tHqmpjN4aJU4Momxnq4NCIh4qjGOU8oLxiXXbSRp93kS9K9HRz8GsPUGJVR2g6ypPWuPrcsxVVwSadqKe62E2LhGeYWeQK5G59ftKSi6eFNdIHZZqSwCU/JaoOMXGmkxCnRclM/OCuhglaDeN3BHUfDx3r50MC2T73P2UNZ4JGhwl2sLnvSRV5LGbJuTiqZGgGzrzVM58GD4zLNB/RZeH1wc/0zRk//2Xue9NMmuW3qm/WtzV0vO0tyeZ6VmTIaU8OL/f9xBiPfV0fE/kMqrHEve6qNThviQfG/EHH3yRZxfJigHWxirAmm9MAf+s4tK0hD0PvourVEzAQseAzpPKZt+8rZhPPA6izowE5nGl+xljFZggcijL58lcU0Yms0/rAA2LHfWPtHKlO6eeyK0wVywjt04umh2B8l/lldWqZzfzJYrhkT2FaXaL+nW6q+n2cziaIMo66PEg
-DKIM-Signature: a=rsa-sha256; bh=lpsNKuaDzpZhNqp4w16ugJf4ExexmLy2gskQEsg/tcU=;
+X-VR-SPAMCAUSE: dmFkZTGaLDmC1sGz9F5x4qvEOawfsm4Qoc4PI5XkON1B5NhPBXhuasc2fQjXH+VDsmM8u20AJO5uw9QqMPdxtLUwzW4JHiund27yNotetwU2aoTKlSByjpVbPXNhOAm6Sbrj0YxwiaiRSE6c9ur3YhDfD71mXV5UmnBjw55DxC2402dux2yrfi55r5CK/DrF2UJJtPJ286dwRRmaSI8PMt00k91NBWQVZLH0x/WvzQLiEKxFqHDIN+rylQfVV+7TlQk8VLKe6IPkp1wpOzMV2quZF6Z2kCTGNe4BGIGTxDslcGATaCAjurvDo0ZhXXEBlCGlV6DzbWEZMkizxW3KZwTMjfSZFbyKXqSekAL1vm6pEBopH+PbZpV31cz44toPdcY+W23WTq2U2Z2wWgGPyHgTbrR/SjTpmdKXRd3WA/OL1C3MxvCbRXaEc2zN/xMgjFDHTdX/FZLFtDVoXf5m7gzWokQlFyav3Gx8WNXx8JUPWH5a4rm2+dD4+YexO+u0xNT9DMrGjkVABvkpWiVQ0EREuN2imnjX8yREyvRhjttusUNeEFdCWn82sNpOatRzHBukjfhAoZ0DzsOseDDPycnEnVJUpfFexpqRW0I+K2A0QazKCQPVe0HDupddfFM8R0YlH/d6o6GujYiFMJZBncFaPO7+LdSOLohtnsFrXxlz0sL4TA
+DKIM-Signature: a=rsa-sha256; bh=CufKqRzRWGP5C9wDDHrJPSM5oQL0vrGLL/dJi11OdLg=;
  c=relaxed/relaxed; d=kaod.org; h=From; s=ovhmo393970-selector1;
- t=1784868951; v=1;
- b=fptsVdeywA8AchGltVZrfsyqfHnxUSVi6auYkCr/g+DeI4HXpU8HYp+DbN7oTXhYVS2ihiKM
- 4b69/7eP+iHECpIXC2LTivylvJ98jAv0CMv3u85/H74PB67ZB4u19dNmFN3fhoLr2igRhuRorVL
- 5Eh+uV+CGcQJ2/NOqO2nTQb9bZPtg8O0vEXVncHpTp+XokQWucfrtmkurvAXbAv8RHiaMCg1jFc
- 6G3Tomtqc5CGsr8TvF/Fq5RYYeCLQAyy7kMYRDt1Z32/CHdfoZuS8+YrrvNvhICbwMvmJ3tzjU8
- avuwNOU2N25aPFejN/Y4ZZC0k/R8/U/JNu484CDDGZbmQ==
+ t=1784869142; v=1;
+ b=Oi9DC1SqdS+C169kqp7ZTc1rba+g6496Rbb8hgeNT6xdrYDQgtoU2Epb3yN+SadIbIyWphHo
+ 4/zyeJEaLnxlIVrcy2hJRVSHdtMSEjuRS/jee9HRb0LH90GlXQBVvwmpZfsm4YXeTaxLCMppjQt
+ RDtSBO48JUD2v8/Af6T1Wz50Rw3/mE5JnwKDAg8rgubPuruBP+F+TvXbhPq0lAva4mbyAOPWPX4
+ OIhzq2b8OkwIUynO8AThJKeWDgflQt4VvdHRCP/fsUDlKIXh7zrmvG8fULQEK1tc8XqIb3Kckzm
+ KaItUQ9ikaeZFd0wYoD2ZSOd3I5OaCZGTj8lCb+U/jf+Q==
 
 On 7/24/26 04:28, Gou Hao wrote:
-> xive_smp_probe() calls xive_init_ipis() which can fail, but its
-> return value is currently ignored.  Change xive_smp_probe() to
-> return int so that errors can be propagated to callers.
+> When irq_domain_alloc_irqs() fails in xive_init_ipis(), the error
+> path frees the global xive_ipis array via kfree().  However,
+> xive_smp_probe() ignores the error return and proceeds to call
+> xive_setup_cpu_ipi(), which dereferences the already-freed xive_ipis
+> pointer, resulting in a use-after-free.
 > 
-> This is a preparatory patch for the next one.
+> Propagate the error from xive_init_ipis() through xive_smp_probe()
+> and check it in both pnv_smp_probe() and pSeries_smp_probe() so that
+> IPI setup is aborted cleanly on failure.
 > 
-> No functional change yet; the return value is always 0 at this point.
-> 
+> Fixes: 7dcc37b3eff9 ("powerpc/xive: Map one IPI interrupt per node")
 > Signed-off-by: Gou Hao <gouhao@uniontech.com>
 > Reviewed-by: Wentao Guan <guanwentao@uniontech.com>
 > Reviewed-by: jiazhenyuan <jiazhenyuan@uniontech.com>
 > ---
->   arch/powerpc/include/asm/xive.h   | 4 ++--
->   arch/powerpc/sysdev/xive/common.c | 4 +++-
->   2 files changed, 5 insertions(+), 3 deletions(-)
+>   arch/powerpc/platforms/powernv/smp.c | 8 +++++---
+>   arch/powerpc/platforms/pseries/smp.c | 8 +++++---
+>   arch/powerpc/sysdev/xive/common.c    | 6 +++++-
+>   3 files changed, 15 insertions(+), 7 deletions(-)
 > 
-> diff --git a/arch/powerpc/include/asm/xive.h b/arch/powerpc/include/asm/xive.h
-> index efb0f5effcc69..4e3e3358993c0 100644
-> --- a/arch/powerpc/include/asm/xive.h
-> +++ b/arch/powerpc/include/asm/xive.h
-> @@ -91,7 +91,7 @@ static inline bool xive_enabled(void) { return __xive_enabled; }
+> diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
+> index 8f41ef364fc6f..b1201dbafcaf6 100644
+> --- a/arch/powerpc/platforms/powernv/smp.c
+> +++ b/arch/powerpc/platforms/powernv/smp.c
+> @@ -332,10 +332,12 @@ static void pnv_cause_ipi(int cpu)
 >   
->   bool xive_spapr_init(void);
->   bool xive_native_init(void);
-> -void xive_smp_probe(void);
-> +int xive_smp_probe(void);
->   int  xive_smp_prepare_cpu(unsigned int cpu);
->   void xive_smp_setup_cpu(void);
->   void xive_smp_disable_cpu(void);
-> @@ -153,7 +153,7 @@ static inline bool xive_enabled(void) { return false; }
+>   static void __init pnv_smp_probe(void)
+>   {
+> -	if (xive_enabled())
+> -		xive_smp_probe();
+> -	else
+> +	if (xive_enabled()) {
+> +		if (xive_smp_probe() < 0)
+> +			return;
+> +	} else {
+>   		xics_smp_probe();
+> +	}
 >   
->   static inline bool xive_spapr_init(void) { return false; }
->   static inline bool xive_native_init(void) { return false; }
-> -static inline void xive_smp_probe(void) { }
-> +static inline int xive_smp_probe(void) { return -EINVAL; }
->   static inline int  xive_smp_prepare_cpu(unsigned int cpu) { return -EINVAL; }
->   static inline void xive_smp_setup_cpu(void) { }
->   static inline void xive_smp_disable_cpu(void) { }
+>   	if (cpu_has_feature(CPU_FTR_DBELL)) {
+>   		ic_cause_ipi = smp_ops->cause_ipi;
+> diff --git a/arch/powerpc/platforms/pseries/smp.c b/arch/powerpc/platforms/pseries/smp.c
+> index db99725e752bd..14cd0634eeca8 100644
+> --- a/arch/powerpc/platforms/pseries/smp.c
+> +++ b/arch/powerpc/platforms/pseries/smp.c
+> @@ -194,10 +194,12 @@ static int pseries_cause_nmi_ipi(int cpu)
+>   
+>   static __init void pSeries_smp_probe(void)
+>   {
+> -	if (xive_enabled())
+> -		xive_smp_probe();
+> -	else
+> +	if (xive_enabled()) {
+> +		if (xive_smp_probe() < 0)
+> +			return;
+> +	} else {
+>   		xics_smp_probe();
+> +	}
+>   
+>   	/* No doorbell facility, must use the interrupt controller for IPIs */
+>   	if (!cpu_has_feature(CPU_FTR_DBELL))
 > diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
-> index f2904a5c2b7bf..f9a1229cede73 100644
+> index f9a1229cede73..bb6ce07c1699e 100644
 > --- a/arch/powerpc/sysdev/xive/common.c
 > +++ b/arch/powerpc/sysdev/xive/common.c
-> @@ -1254,7 +1254,7 @@ noinstr static void xive_cleanup_cpu_ipi(unsigned int cpu, struct xive_cpu *xc)
->   	xive_ops->put_ipi(cpu, xc);
->   }
+> @@ -1256,10 +1256,14 @@ noinstr static void xive_cleanup_cpu_ipi(unsigned int cpu, struct xive_cpu *xc)
 >   
-> -void __init xive_smp_probe(void)
-> +int __init xive_smp_probe(void)
+>   int __init xive_smp_probe(void)
 >   {
+> +	int ret;
+> +
 >   	smp_ops->cause_ipi = xive_cause_ipi;
 >   
-> @@ -1263,6 +1263,8 @@ void __init xive_smp_probe(void)
+>   	/* Register the IPI */
+> -	xive_init_ipis();
+> +	ret = xive_init_ipis();
+> +	if (ret < 0)
+> +		return ret;
 >   
 >   	/* Allocate and setup IPI for the boot CPU */
 >   	xive_setup_cpu_ipi(smp_processor_id());
-> +
-> +	return 0;
->   }
->   
->   #endif /* CONFIG_SMP */
 
 Reviewed-by: Cédric Le Goater <clg@kaod.org>
 
