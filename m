@@ -1,78 +1,114 @@
-Return-Path: <linuxppc-dev+bounces-24820-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24821-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 639A5C531C9
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Jul 2026 07:28:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 637E2C531D0
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Jul 2026 14:32:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h6c0z1NxDz2ygG;
-	Sat, 25 Jul 2026 17:28:51 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784964531;
-	cv=none; b=nqMWaNbSbAxw6Lv/cxtOY65o0EXOhqNPzKY3+gEgfTL3Y0vzQO2OKh533NMTVPMKxmNdyokA9iCEViScU3TmplwCbipQUOSZKQe4TgJt2wAdBzwmYLUaj2i5CTvfztRULHupj9w0ZCuUFWE6HAeoWsYBC/IVpJCNcXOm+jnCMf4SmXiuZTBGatey/16O/w/176QfdmMiknGS1pW/3QUwEgJaUXvfzsNYO+0COUY8+OkNg+1xgiCy6jrSGQ75fIY2K6mXFOFOBXscCrdLDuaui4wcZUrW8DrdUyBGgUFkA2UggVVFnS8AzxcQN0D//hltYPwu++q5x9z2TbUPF8pd0A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h6nQ517pBz2yYY;
+	Sun, 26 Jul 2026 00:32:45 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::e31"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784989965;
+	cv=none; b=HU9DJh1HEXkJRm3RPC2t6lsb6Ig/Io14oIjSSwiGOUjIAK74o/EKEku6pRX3oooqcfQzFrZVbKN+BhAlYCA0HA9qVt+bDAO3aCLRqve6q6EB30qnuRSuym+f8K22feUzBMfJpOJLcLcnehOZTvqJtVWoh8ymvP5rQiidQ+Cfr50MpoQlWijFxinFcrFwl7EUsHhAIgt5zScidGIb1jh8AVYAf8CO6hTvoW2wQolnezrqKQzwPHA7pPPGdRWZiSUdOkJlbKbipAl8zWmSeqbG074ARIQM9A10FqyV964qh/45HJzicNUsUzH9vzppuIIyApHPo0jfMAD/naYPyA4F/Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784964531; c=relaxed/relaxed;
-	bh=MEZ6TFTX5X33kUGMSTH0hjC2sWyiz9SsjtTTG5OOTZk=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=OSF0J5rUAF++UhxO3Wfhc0ck/P2hvdxP0aq4Zu4D36BZ9GPZa1/e60U5s5/4zj7LKwL3s1ss3n7SQYXg0uY2BSRZuI21Q2P6+QPSsq0VFgwwWK/nVZTpE4Mq2W91A7a5BPjt/YX2b/ALw9aVlZU7jBzIf4Ydd4wFCZ0QSARCDqug4MBmx6A1U9XyRwAHQsysuWgRlMJA4TqDh2KBdboMnz2hwQm3tpKTQKpVFribVklss2/P6QG59f0EnTA8MG+XxPwGKIGrqhUjGG+479HIwmBTv8ImXmHqjoNV1hzlu3jptG6CxUg8LwmyLddXZD5NmlpOvjHrt98A6HTN7r+kBw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=D4+bdefG; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1784989965; c=relaxed/relaxed;
+	bh=MDjgTbE6npl3ZujjcO5BO0pJ+G7Th/Ah/Rj5MPFfgH0=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=dUz0jujg8xmicLaqyymJnbJ2eBQrG9wZRFktubyF4XAeb5jyNU5qCypnFZnvysWqvG8/ibqsSJlZ1V1wE7KcRFC3JJbFoblh2b09pvabPm9tISft0ZQx6YH+SSRW0NL3M6dLp5lnpFgBxD2veOdNc2ySoInlyhLPr7/p7UuUsda5Ksrsoc+JEkGgZIhF1GeGICRIiQB9BGj0/aXDm5l4B4Qj0Uvrsls1rbAuJAU03tfk6t9X7acGHn3wmu1IABnjWMrGEjCU+iu9G2HBmsEONi6qqkyfjKfuFhfDTq+mQMfbxPyf/JX6LttZD9VId3fPdoYZ4vUeXAi+FIdGcrJvRg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca; dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=arxB0pu5; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::e31; helo=mail-vs1-xe31.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org) smtp.mailfrom=ziepe.ca
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=D4+bdefG;
+	dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=arxB0pu5;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ziepe.ca (client-ip=2607:f8b0:4864:20::e31; helo=mail-vs1-xe31.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org)
+Received: from mail-vs1-xe31.google.com (mail-vs1-xe31.google.com [IPv6:2607:f8b0:4864:20::e31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h6c0t6NK1z2yYY
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jul 2026 17:28:46 +1000 (AEST)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66P5CDsm3980575;
-	Sat, 25 Jul 2026 07:28:44 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=MEZ6TFTX5X33kUGMSTH0hjC2sWyiz9SsjtTTG5OOT
-	Zk=; b=D4+bdefGADtIEh2+BBGJ+dDbUs4nmZPXut2SU9EqlgV+N8g7LX1RG/aoO
-	9odtroh4Vc/eiQmLiKmO9i0vaVDk8bwxT0POU7KiFThpcjqZ/vAb8nCtRKpgjaQ3
-	oUaHFIDyzugGtFGpa5Ru2ciOBKhpF+g6v2oR4qYfEmeGyQWRVz0Kj8FAwE7oD+D8
-	Hv7chHjkK/g1QO3WKTLLhYS+V0OsAZsRgEXyoDK6Orgosb4X4tuvCZ5i/yiI/Npw
-	N6ZTRUQkhRmngscWCQtO0IrPiO1ncpWP3zt0yeEn0y5R3vkWuSXpFWCIfHcK3Qsy
-	4OQXRcFkXZ94xfxULUBX1zsBIRg9g==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fmmst0kek-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 25 Jul 2026 07:28:43 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66P7QFe5011365;
-	Sat, 25 Jul 2026 07:28:43 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4fmn330jee-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 25 Jul 2026 07:28:43 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66P7SbGW48366012
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sat, 25 Jul 2026 07:28:37 GMT
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9659420095;
-	Sat, 25 Jul 2026 06:59:57 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 6ED7B2009B;
-	Sat, 25 Jul 2026 06:59:55 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.124.222.178])
-	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Sat, 25 Jul 2026 06:59:55 +0000 (GMT)
-From: Athira Rajeev <atrajeev@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com
-Cc: linux-perf-users@vger.kernel.org, atrajeev@linux.ibm.com,
-        hbathini@linux.vnet.ibm.com, tejas05@linux.ibm.com,
-        venkat88@linux.ibm.com, tshah@linux.ibm.com, usha.r2@ibm.com
-Subject: [PATCH V3 0/6] powerpc/perf: Add HTM PMU driver and perf AUX support
-Date: Sat, 25 Jul 2026 12:29:36 +0530
-Message-Id: <20260725065942.78839-1-atrajeev@linux.ibm.com>
-X-Mailer: git-send-email 2.39.5 (Apple Git-154)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h6nQ35YX8z2ySJ
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jul 2026 00:32:42 +1000 (AEST)
+Received: by mail-vs1-xe31.google.com with SMTP id ada2fe7eead31-7473e927969so360044137.3
+        for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jul 2026 07:32:42 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ziepe.ca; s=google; t=1784989958; x=1785594758; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=MDjgTbE6npl3ZujjcO5BO0pJ+G7Th/Ah/Rj5MPFfgH0=;
+        b=arxB0pu5wd7pgK2OL5IVbWQzx/+PhW2zlLxeL7mthk5qr3nI8otQtNCCLa1rS8xvUl
+         imqpHqS46sS5n/e7io7qd3eE4RXysmkh+VOv2XdGQmjg/tQ4dIyAAhQUD15HKkmfNDwF
+         tN2FR92k+2Lvw2bUltbHgjyh3CEGForRla0+WtE7+C0PSysYhy3I3M3Vih77gH/zxgod
+         nqzegQGm7q5xnTUqwBqbmelaosn7LQ02Nbjv/3B3Jh1EqoXBN79hkNu43gkCHiQWlaeY
+         Cp26FMHl/6y1SOvuqy8M5w9KDVktVS1Zbs7GFBCk+OW8d9RjfUagxhpi5c55T5PPhNMa
+         wSJw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1784989958; x=1785594758;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=MDjgTbE6npl3ZujjcO5BO0pJ+G7Th/Ah/Rj5MPFfgH0=;
+        b=c08FhEKABaZE2BZpM2lOnOslhqoXVDcp7vG+9pYULMRClI1ZOhPJmcLXGE3K9dlO70
+         0aAUDbg2YUlI5lhB1DVHJnvvajbBk1KQG2xTCQ3y4F0iTKRp83yEZ+ZclbVQBisg+T7Z
+         ccNO5MS0Cq6LVq0y7VN/QePELYXTQN6YJoaaBgQ/LNpQ47DmADSmnoEbplv/YS/Ws2FC
+         tJ1wrTwTd1m1fHzjweRiVhwuVRTsIdQDlHyBEhA81O8UScdoVoUAi4JXS3VN5OULC6Rz
+         c5p5rrWvf/+QObhcWk0Njn1Q5yy+UOr0I6LLN+7/dgqWUeTl9NGSsvxjsFguYLfDnZSM
+         tqJg==
+X-Forwarded-Encrypted: i=1; AHgh+Rq044I/HrMklruuN9+oefFyAdUGG7jIDdcceThtX+pnPmrUBkL4QjPqGRcj5UaAn1wV0URprK2I6jWeH70=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzHAjOAN3oMxfOfPvgBbqXgblRlqpu0P7nDMAVCMl23uKKeM2cW
+	PmfMIb5zYy+ZpBADxCUYd4Cw11tYaIS86cn2j9dJRQ0hgZTzf5K4ELIe/mqQczhQAbY=
+X-Gm-Gg: AR+sD12NKp5HBHf+Mzf9+Xg4ZQP2UwZb3HC+4Gx6sPz/fXeG4M4NDZNBb1bTMLF/zaz
+	zxqSURsS1bnHXrWEpn+RVOZ6H9skc0CoNSE9cKiUyXYFv1MD/50fHl2KPpdogrvOUfXkgy+58wC
+	oxEFDwxsRa9mPjK3fSXIP4I81zIQzn79Ew2txhu4bMuO2zz3Wre9E686P99GQg4u5fDqRkIkrVN
+	lAGW4S6skVbYM96vkV4aI11ygcrCyz0oabkS+0HfSagEK6XPiWmS+vGQUTX0JwBiv5sSHW0syfG
+	CUKXNwLyr/98RPzE8/Q3BbXynkcmgxj+lA7UxYhtIvIpwW+pKO/yZgG63sTA+yhjnPc4jAlGWJL
+	51TjLU5i6euDvah+rcgsjaPDU/mHMim2e+XWz7T2dlXjgGaCIO1JWC+SpHRT0jDI=
+X-Received: by 2002:a05:6102:5794:b0:74a:b5e3:e96f with SMTP id ada2fe7eead31-7503e26761cmr1503853137.7.1784989958188;
+        Sat, 25 Jul 2026 07:32:38 -0700 (PDT)
+Received: from ziepe.ca ([12.18.163.234])
+        by smtp.gmail.com with ESMTPSA id ada2fe7eead31-750362e67cfsm1546647137.8.2026.07.25.07.32.37
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 25 Jul 2026 07:32:37 -0700 (PDT)
+Received: from jgg by NV-9X0Z6D3.localdomain with local (Exim 4.97)
+	(envelope-from <jgg@ziepe.ca>)
+	id 1wndQX-000000000hB-3EP5;
+	Sat, 25 Jul 2026 11:32:33 -0300
+Date: Sat, 25 Jul 2026 11:32:33 -0300
+From: Jason Gunthorpe <jgg@ziepe.ca>
+To: Leon Romanovsky <leon@kernel.org>
+Cc: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>,
+	Marek Szyprowski <m.szyprowski@samsung.com>, iommu@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+	linux-coco@lists.linux.dev, Robin Murphy <robin.murphy@arm.com>,
+	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
+	Steven Price <steven.price@arm.com>,
+	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Jiri Pirko <jiri@resnulli.us>, Mostafa Saleh <smostafa@google.com>,
+	Petr Tesarik <ptesarik@suse.com>,
+	Alexey Kardashevskiy <aik@amd.com>,
+	Dan Williams <dan.j.williams@intel.com>,
+	Xu Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+	linux-s390@vger.kernel.org,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org
+Subject: Re: [PATCH v8 00/23] dma-mapping: Track shared DMA state through
+ direct, pool and swiotlb paths
+Message-ID: <amTJAXNy9fGFrve6@ziepe.ca>
+References: <20260717180442.110954-1-aneesh.kumar@kernel.org>
+ <20260721124056.GK110966@unreal>
+ <amEglRH3u6UFFnIQ@ziepe.ca>
+ <20260723075108.GB110966@unreal>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -86,147 +122,34 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Authority-Analysis: v=2.4 cv=COgamxrD c=1 sm=1 tr=0 ts=6a6465ab cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=RzCfie-kr_QcCd8fBx8p:22 a=zQHK5bSOx5GkbYARfgoA:9
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzI1MDA2NiBTYWx0ZWRfX28/Vx655UFoC
- LOnMs9HozJr2qLgWdCHtlUmtnzzBBzHaKnqnz6cCVxvjrvFN3adwkt9uLGlmK+qsDD+5jgUvCUE
- qOHKLdTHlu5EVHb3tGS+V5pz2ok9MGo=
-X-Proofpoint-ORIG-GUID: VKDusf4RcKY5A3hs486gIPDa13YGXxBl
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzI1MDA2NiBTYWx0ZWRfX1uYUvWWU5aLz
- u0wR3DWeaUpSVTIl01BxLoQVaThiHkEKrnZUzIxSaAFgO6+61PCooQp1yVGwp4W9A3sFHlGkJZE
- RlA8hhUKe41xKOMgbc0rbnpXn5NpI8wW8puQ66eohkDDDI5/HEcrSCOPhNPHboFTPBAhBI7KaX8
- nSHwBHmk8drX+ZVmu8yY1ZS5dqwHDp8NlyI7Dkm/0dIKGDv6i3BL7pFtVxuRSbPOxz2+UX/a3Ij
- qiRi/xsJkTGPKn+GEI3giznWzXA3eUm9e/4YZvCY3GF5xY600khzU5sHqqX/M8q3b+0+hharWsW
- W+oNtp0mA4ql4rqUmHKVIPWb8PpenJTozLgu1Gpy7VtuIIidVb81k4Kj/007YEupa7x5BHR1wy7
- 4fCo9ZasoZPpWq8rYdcSN1m/EUaItxHAkIp6XDiszTfSNJ9WsZBuz2I1r9g17Xw2mWvmHsR5dhC
- 5zfxM3O7H+XUxq1uqDg==
-X-Proofpoint-GUID: VKDusf4RcKY5A3hs486gIPDa13YGXxBl
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-07-25_02,2026-07-24_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 clxscore=1015 malwarescore=0 suspectscore=0 impostorscore=0
- lowpriorityscore=0 spamscore=0 bulkscore=0 priorityscore=1501 phishscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607250066
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260723075108.GB110966@unreal>
 
-Overview:
-The Hardware Trace Macro (HTM) on POWER systems provides hardware-level
-bus-trace data for a specific node/chip/core target within a logical
-partition.  It is accessed via the H_HTM hypervisor call and traces
-continuously at node, chip, or core scope independent of task scheduling.
+On Thu, Jul 23, 2026 at 10:51:08AM +0300, Leon Romanovsky wrote:
+> On Wed, Jul 22, 2026 at 04:57:09PM -0300, Jason Gunthorpe wrote:
+> > On Tue, Jul 21, 2026 at 03:40:56PM +0300, Leon Romanovsky wrote:
+> > 
+> > > Why don't we continue the effort to remove "struct page" entirely
+> > > from the DMA API internals?
+> > > 
+> > > IMHO, everything not exposed to DMA API users should use
+> > > phys_addr_t, including the DMA address pool.
+> > 
+> > The alloc interfaces return a struct page, that is why this stuff is
+> > organized like this. Look at dma_alloc_pages()
+> 
+> And I didn't say that we should change dma_alloc_pages(). It is external
+> API, which needs to be struct *page. I'm talking about internals.
+> 
+> Even dma_alloc_pages() flow shows how convoluted and non-uniform
+> the code underneath which performs translations all the time.
 
-This series adds a new "htm" PMU driver under arch/powerpc/perf/ that
-exposes HTM trace collection via the standard perf interface using the
-perf AUX buffer infrastructure, together with ABI and RST documentation.
+Yeah, but I don't really want to go from phys/virt to page, I'd rather
+see the other direction that is easier to reason about
 
-Patch overview:
-Patch 1 introduces the core HTM PMU driver (htm-perf.c).  The event
-configuration encodes the trace target as a 28-bit value in
-perf_event_attr.config:
+Maybe some small wrapper that returned phys or whatever would clean
+this up
 
-  bits  0-3:  htm_type         (HTM_CORE=2, HTM_NEST=1)
-  bits  4-11: nodeindex
-  bits 12-19: nodalchipindex
-  bits 20-27: coreindexonchip
-
-The PMU lifecycle maps to H_HTM_OP_CONFIGURE/DECONFIGURE at add/del time
-and H_HTM_OP_START/STOP at start/stop time.  Context-switch callbacks
-(PERF_EF_RELOAD / PERF_EF_UPDATE) are intentionally ignored because HTM
-traces the hardware scope, not individual tasks.  Tracing state is kept
-in event->pmu_private (HTM_TRACING_ACTIVE / HTM_TRACING_INACTIVE) as the
-authoritative source, with event->hw.state kept in sync as a hint for the
-perf core.
-
-Patch 2 adds duplicate-reservation protection.  When 'perf record -a' is
-used, perf opens system-wide events on all CPUs in parallel.  Without
-driver-side tracking, concurrent opens for the same HTM target (node,
-chip, core, type) can race and issue duplicate H_HTM_OP_CONFIGURE flows.
-A global reserved-targets list is added; htm_event_init() rejects any
-open that matches an already-reserved tuple, while different targets can
-still be opened simultaneously on different CPUs.
-
-Patch 3 adds AUX ring-buffer support so that high-volume trace data can
-be streamed into a perf AUX buffer.  The driver opts into
-PERF_PMU_CAP_AUX_NO_SG | PERF_PMU_CAP_AUX_PREFER_LARGE to request
-physically contiguous allocations, which H_HTM_OP_DUMP_DATA requires.
-A page-by-page physical-continuity scan is performed before each dump to
-detect and bound any fragmentation gaps, preventing silent memory
-corruption.  event->count is set to the number of 128-byte HTM trace
-records written on a successful dump, 1 when the AUX buffer is
-temporarily full but the hypervisor stream is intact, and 0 when the
-stream is exhausted or a hard error occurs; the perf tool uses this as
-a drain signal to decide whether another read pass is needed before
-closing the event.
-
-Patch 4 adds system memory configuration capture.  After writing trace
-data to the AUX buffer, htm_event_read() calls H_HTM_OP_DUMP_SYSMEM_CONF
-and emits the returned physical-to-logical address mapping records as
-PERF_SAMPLE_RAW data.  Keeping trace data in the AUX stream and memory
-configuration in raw samples allows each to be decoded independently in
-userspace.
-
-Patch 5 adds ABI documentation for the sysfs entries under
-/sys/bus/event_source/devices/htm/, covering the format attribute
-(config bit layout) and the events attribute group.
-
-Patch 6 extends Documentation/arch/powerpc/htm.rst with a new section
-on the perf interface: event syntax, required options, the two output
-files (htm.bin.nX.pX.cX and translation.nX.pX.cX), and how to pass
-them to htmdecode for trace decoding.
-
-Usage example:
-Collect HTM trace data from two simultaneous chip targets:
-
-  # perf record -m,256                                          \
-      -e htm/nodalchipindex=2,nodeindex=0,htm_type=1,cpu=8/    \
-      -e htm/nodalchipindex=1,nodeindex=0,htm_type=1,cpu=9/    \
-      -a -- sleep 10
-
-  # perf report
-
-Output files written by perf report:
-
-  htm.bin.n0.p2.c0       raw HTM bus-trace, chip 2
-  htm.bin.n0.p1.c0       raw HTM bus-trace, chip 1
-  translation.n0.p2.c0   memory config records, chip 2
-  translation.n0.p1.c0   memory config records, chip 1
-
-The htm.bin.* files can then be decoded with htmdecoder to produce
-trace output.
-
-Testing:
-Tested on POWER10 with two simultaneous HTM targets.  Both htm.bin.*
-and translation.* files are produced correctly.
-
-  # perf record -C 9 -m,256 \
-      -e htm/nodalchipindex=2,nodeindex=0,htm_type=1/ sleep 3
-  [ perf record: Woken up 1 times to write data ]
-  [ perf record: Captured and wrote 256.277 MB perf.data ]
-
-Athira Rajeev (6):
-  powerpc/perf: Add HTM PMU driver to expose Hardware Trace Macro data
-  powerpc/perf: Reject duplicate HTM target reservations
-  powerpc/perf: Add AUX buffer management to capture HTM trace data
-  powerpc/perf: Capture the HTM memory configuration as part of perf
-    data
-  docs: ABI: sysfs-bus-event_source-devices-htm: Document sysfs event
-    format entries for htm pmu
-  powerpc/perf/htm: Add documentation for Hardware Trace Macro PMU
-
- .../sysfs-bus-event_source-devices-htm        |  34 +
- Documentation/arch/powerpc/htm.rst            | 158 ++-
- arch/powerpc/perf/Makefile                    |   2 +-
- arch/powerpc/perf/htm-perf.c                  | 907 ++++++++++++++++++
- 4 files changed, 1097 insertions(+), 4 deletions(-)
- create mode 100644 Documentation/ABI/testing/sysfs-bus-event_source-devices-htm
- create mode 100644 arch/powerpc/perf/htm-perf.c
-
--- 
-2.43.0
-
+Jason
 
