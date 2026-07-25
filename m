@@ -1,81 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-24810-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24811-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CCB3FC531C9
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Jul 2026 07:00:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0CD22C531C9
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Jul 2026 07:08:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h6bNN4rJzz2ygJ;
-	Sat, 25 Jul 2026 17:00:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h6bY95Ggqz2yYY;
+	Sat, 25 Jul 2026 17:08:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784962836;
-	cv=none; b=cZVqvmHkWTDLxLmkb2zaeN1sNi5k8+rH1AlHxf3Knhe7rsEJifcHsbeKdYkJLKOoVBMZ1YwTatoBYOI4HSv2NkccatVMgZffEblRiM+QymvB5Ju9wd2kBfPJj7aAVMjJttHXrShkDVpxFeenjzwZH/w8zUGSIBuj034dsVdhvyE0ZXS0vZcLt7dvYtO7SgJgQR5q6EholMkVFGaVIKGmfFKwmns1nTgeV4XA1IvEUn6KMoP2VRw2TcOyfmr/UgtznVF2nPUGw98IyIPBJmGair1c9cU0tVCeO16E/CYZe+qnpX0TYQXHQH9ke3VZG2U0eeBM2GWarrX6nNSri5gXxQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784963293;
+	cv=none; b=eRGLuMeCF1DCS7bkCHHrSezIP4Vh9+OfoDuSN2YMzULHGEvR0aKwkDvrmopnoyOzqVopXIQHHtvf7xLF/bHLDT3pDGUWr/9nJH7umWwxXQQLlY2qIBLee3C/fXdciHrPfF9iDDU7gactHEadK2BQP/oIWiZ+c5aLfk3MATjbHW1llsJMEkcGsyJFBaxlS2j4/6Hk3vnOpPpSLMDskoycK2sY7+lk6I9lYkKLPrB23qD5ilrHkESiHq5PuyqrjcobiF4WaJfmH3EME0JTPwDjGd6Nq/X5eMcTg2TKXsZfawI5rIBXvMIpyz9l3Xyo9V7AdQplD3irzVIpEpZFwp5xCg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784962836; c=relaxed/relaxed;
-	bh=TAbc+0KUKMduW0G4Ws33F9oJtE6kKp6K3iXTwbxkt90=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=QA+kzNyFFIdQgqaAJi5KRLAPOXmCcWvrYSnHULkfHD8rAqARSI7Teogeir10E39QBdfPGmwKdPeBlDxvXwZX7Biui/R6rLSUyGaZZTP/iBy5gRmo117XnDiaYpXmGs1qum4GnDX8W7e7OjvQSE9wRv+4/CGddMGOBk3qozJJQ+ATOv/0A5Q+0U4XEo0UrIh42zeN3ELnJi/357NhNLRPeKH00TRt4S4buggMXQ+KL5z4tM6Pov1a8pjtmzeh3hYAMpC2iYp/pTjMFhm/KTAWL9V2xu+w1fbbMCdhaSHQrZkscQiyfKIInPLU4vFgUYHabSfXbIASzUKTNhL4rdCMXw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=msnhbJ5g; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1784963293; c=relaxed/relaxed;
+	bh=06iF2XW7NM7IOGFvRLvPzULXDKEXorZtKiQy3/FxJtU=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=bz3EnuxqgGiBe6M0/M8TxXps3hutBVf9VrjeticLbJWjSaoByS5Ow9ZCdb3ui2JW+6n/pYutryvATz5EbutgNcc1jcoQ+Vcsrfp/BbLxn+UpoetZ5OLBuZ+m0dRDdTcvKwrdpc0oNOjjI8mGLH1jbmVHaH9s9FHT+yyCK3YiFXZv01IsiJi/DANCZKAaQkYEFxVOBHi1OGl8BEUOIFbS0aF6cGesjY9Uj7pfyVOWWjqX3EWu8YRNvGnshpV6I8XOvJMZz8m1yTqsjJmjLALss1GxHX7ZIoWbHgnKDahZrmnqGeviJLDeQKkxd9XFCulr8e6bflW1nvgNVvvQgWXXGw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=HTu7D0cf; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=msnhbJ5g;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=HTu7D0cf;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h6bNJ31fyz2ygG
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jul 2026 17:00:32 +1000 (AEST)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66P5BwZ53980213;
-	Sat, 25 Jul 2026 07:00:29 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h6bY83h28z2ySJ
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jul 2026 17:08:12 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66P5DPIA3852303;
+	Sat, 25 Jul 2026 07:08:06 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=TAbc+0KUKMduW0G4W
-	s33F9oJtE6kKp6K3iXTwbxkt90=; b=msnhbJ5g7jRtxfvbcgyZD/LKH8shD23Wp
-	UEftMkBZiA0fmuahwafaJH5yWNi2ULLXFGTa6e95hW5KiMVzO6OUuyaVSd0D1s5E
-	XUKNek1yH2GBzkzEZo2vmG71KcTALjNnFxZ9jjNhCZMplUpirvGdK5pGDIeybiE2
-	oOF51U3dDl2fa+Q9Xx+h25JN7/h+wPUTRpSPNrLLXq0FqaZQ+5ug0VY7h7MKVyzL
-	pK0QQq+JXKHIxef7pFUO/p9QY5EEs0DWt9TQZHmsHDi7uGGPw8WJsFNiG0IomwEX
-	+XqDrOOmmuOn7Df+GHOhUCZzhv+/1SF6b9rT7VRY2KzH5ybAXlqrg==
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fmmst0hgg-1
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=06iF2XW7NM7IOGFvRLvPzULXDKEXorZtKiQy3/FxJ
+	tU=; b=HTu7D0cf/mO4TRz8Zz/J0+ja4t8O0LDT/z5dv6tLUnPz2WpfAYaxTjHK8
+	Z46dEtYX7OB+V5IK5MX5PFt88bGrJpPzHViArIAjaLPR30lAFXPBuTdieqiu/Kfs
+	giJYAT2Jh7Ak80PKelybR5ULrWAI4FNQI9qyfr6XKCUOv5U+fgW+RZ9aoUU0Qn3n
+	RKR/fk9PrFCIdiFTOeww66FUdKMqc+LHSCTW7tQ4V7ld+mvTaKfA8slzPAA3nwUP
+	rkfyXgK9dyBvX9pwyiI2Du+b8pWKl1WGSsEvOEtDvUNRudVD5S/hSNGi9L18gEYz
+	otsntDsVF8gKTmMP5X2qvXf/9JReA==
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fmkje8qpm-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 25 Jul 2026 07:00:29 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66P6uWxK015593;
-	Sat, 25 Jul 2026 07:00:28 GMT
+	Sat, 25 Jul 2026 07:08:05 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66P6uNdF018205;
+	Sat, 25 Jul 2026 07:08:04 GMT
 Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4fmn1u0grb-1
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fmn12ghgc-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 25 Jul 2026 07:00:28 +0000 (GMT)
+	Sat, 25 Jul 2026 07:08:04 +0000 (GMT)
 Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66P70N3C44499410
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66P780vl52953380
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sat, 25 Jul 2026 07:00:23 GMT
+	Sat, 25 Jul 2026 07:08:00 GMT
 Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 195122012C;
-	Sat, 25 Jul 2026 07:00:23 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 7152420168;
+	Sat, 25 Jul 2026 07:08:00 +0000 (GMT)
 Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1B7372011F;
-	Sat, 25 Jul 2026 07:00:11 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 7B9C520169;
+	Sat, 25 Jul 2026 07:07:56 +0000 (GMT)
 Received: from localhost.localdomain (unknown [9.124.222.178])
 	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Sat, 25 Jul 2026 07:00:10 +0000 (GMT)
+	Sat, 25 Jul 2026 07:07:56 +0000 (GMT)
 From: Athira Rajeev <atrajeev@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com
-Cc: linux-perf-users@vger.kernel.org, atrajeev@linux.ibm.com,
-        hbathini@linux.vnet.ibm.com, tejas05@linux.ibm.com,
-        venkat88@linux.ibm.com, tshah@linux.ibm.com, usha.r2@ibm.com
-Subject: [PATCH V3 6/6] powerpc/perf/htm: Add documentation for Hardware Trace Macro PMU
-Date: Sat, 25 Jul 2026 12:29:42 +0530
-Message-Id: <20260725065942.78839-7-atrajeev@linux.ibm.com>
+To: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
+        maddy@linux.ibm.com, irogers@google.com, namhyung@kernel.org
+Cc: linux-perf-users@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        atrajeev@linux.ibm.com, hbathini@linux.vnet.ibm.com,
+        tejas05@linux.ibm.com, tshah@linux.ibm.com, venkat88@linux.ibm.com,
+        usha.r2@ibm.com
+Subject: [PATCH V3 0/6] tools/perf: Add powerpc HTM auxtrace support
+Date: Sat, 25 Jul 2026 12:37:41 +0530
+Message-Id: <20260725070747.81435-1-atrajeev@linux.ibm.com>
 X-Mailer: git-send-email 2.39.5 (Apple Git-154)
-In-Reply-To: <20260725065942.78839-1-atrajeev@linux.ibm.com>
-References: <20260725065942.78839-1-atrajeev@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,276 +90,169 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Authority-Analysis: v=2.4 cv=COgamxrD c=1 sm=1 tr=0 ts=6a645f0d cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=YvY/gYYX c=1 sm=1 tr=0 ts=6a6460d5 cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
  a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=RzCfie-kr_QcCd8fBx8p:22 a=VnNF1IyMAAAA:8 a=9lDVIUTEpXIqPQKb_LQA:9
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzI1MDA2MSBTYWx0ZWRfX3WkKu4srnsys
- xMQ/Ato7eu5XKnmZ9wBna+1/5oirxgC7144Yf67ndgvIW15354ohhArbUMKZm3t/3ArCFu4rqjG
- 3hm51Ltl0GVq77ZqeRo9rdKE10svlPk=
-X-Proofpoint-ORIG-GUID: EX42MpXr4PsoNtMwF7-sb5YqH6n42x6t
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzI1MDA2MSBTYWx0ZWRfX1eAoD0Wiqy71
- Rxi/p/jTm2P3KqbigsrZKhJ/NMjS7M3msHBJK4QfMF+5Db0IRHTqucu3oKFEaxTkuO1zi8OiRv0
- 46OpaYSKZODSHOYFGL/KMkT/GGRYivuJbirjBAV1G8mDCIiyHA+p2zZxHme4Bc4FFxg7m+6DZAT
- fYnyE7ODfH0GnnKJRewuDJ3HSB7N/WmZ5BXByAR+ijJb5Enu5ir6/0YqxW5ZMHmRBeX3P0fBuAt
- eIko12JjbsL6hAxpf/DZhtW+p6UGv4BB/zow11SDsFQKw2fjhjAokk83W0FyafTd/arUu96ww4Y
- H0umHqitgD+I76g8W6I94a/sPXS4jjoVvylRDAGVMAT++B1RaXPefoYKsaK2rNut1lUHdMKoX0f
- bqzT2OhyMebNKupQodxsDVPGaYZZgpCyHfh6Ju2x+2mq+2+aAPCUxKK1imLai8S1IocnDM03fYt
- hvKP2yV+cotc+OxbQdQ==
-X-Proofpoint-GUID: EX42MpXr4PsoNtMwF7-sb5YqH6n42x6t
+ a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
+ a=Lql3lfElDkBJbt6mtbwA:9
+X-Proofpoint-GUID: ao8pUc_nXAWz6nk0jdeT2vr27DUaW33c
+X-Proofpoint-ORIG-GUID: zlJmbyQUIhYpDW7txe3Am4oP0bO_QAMw
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzI1MDA2MSBTYWx0ZWRfX+2Gzv/vmvWiV
+ Z26ecFjqy5iqVC3Dn6tGI1Mo7Xck1XW197OwHY9f4UClUp5AC9s6OrsZLSWJyGk2DhMvWspsWdv
+ 8qj9kS4imQ9oSjOTFYJZr0YFfc33FI2n2AXBXgOU9dO+9kRVVZAOFT84Td6Nt+fgOaxZlX6lVLn
+ L93IQ2dcUiHidZFdskret9M0B0sTk6+8e0jTotM/xTqkVt1DqfDMVMpbObcx0YUf8hEdvsN8wWU
+ Mp2ZUWRe38Xx+fx6ya/M+WOAdB4GkSXTIkytZe3IBisWgfkTTjcA164Tcchl/zcGncGSN/DasBz
+ hFluiHvKOnIGu3HCy/LAtipEPlFSfouR4EsTO2n4t47scWFoJ5gLRuACK0jlIWWrETMcdMYUiWj
+ XBEs4R6qBnrvy2ox7q1pFUmrzOpPyZoCHzT8mIrvCx1cFfV2AcArrmWGrdWbf/PRwX1cJ6fSxwK
+ 2qyPOF66kf+Q+wPHd4g==
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzI1MDA2MSBTYWx0ZWRfX97Eu043KJcGU
+ 3nnoiPmgfsFgJGY45wzAyMzty65SqDQ8Fy09jKFpDKP5mzTxukjT03QOvC6FG7MlTf5tPRbjCrm
+ Ev+C7MU5VmE6QnNsqsX4STqiUXIJVzQ=
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-07-25_02,2026-07-24_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 clxscore=1015 malwarescore=0 suspectscore=0 impostorscore=0
- lowpriorityscore=0 spamscore=0 bulkscore=0 priorityscore=1501 phishscore=0
+ clxscore=1015 impostorscore=0 adultscore=0 spamscore=0 priorityscore=1501
+ lowpriorityscore=0 bulkscore=0 malwarescore=0 suspectscore=0 phishscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607250061
 
-Extend Documentation/arch/powerpc/htm.rst with a new section covering
-the HTM perf PMU interface.
+Overview:
+This series adds perf tool support for capturing and processing Hardware
+Trace Macro (HTM) trace data on POWER systems.  HTM exposes raw bus-trace
+data via the H_HTM hypervisor call.  The kernel-side HTM PMU driver
+(submitted separately) streams this data into perf AUX buffers and emits
+memory configuration as PERF_SAMPLE_RAW records.
 
-The added documentation covers:
+This series wires up the record and report sides in the perf tool so that
+'perf record' collects HTM data and 'perf report' writes the trace and
+memory configuration to files ready for post-processing with htmdecode.
 
-  - How to open HTM events using perf record, including the event
-    syntax (nodalchipindex, nodeindex, htm_type, cpu=N) and the
-    required AUX buffer size (-m,256).
+Patch overview:
+Patch 1 refactors the existing powerpc auxtrace dispatch.  All VPA-DTL
+recording logic is moved from arch/powerpc/util/auxtrace.c into its own
+file, arch/powerpc/util/vpa-dtl.c, leaving auxtrace_record__init() as a
+thin per-PMU dispatcher.  This is a prerequisite for adding the HTM
+recording path cleanly.
 
-  - The two output files produced by perf report:
-      htm.bin.nX.pX.cX     raw bus-trace AUX data
-      translation.nX.pX.cX memory-configuration records
+Patch 2 adds the HTM recording path (arch/powerpc/util/htm.c and
+util/powerpc-htm.h).  htm_recording_init() sets up the auxtrace_record
+callbacks.  htm_info_fill() stores the PMU type and a (cpu, attr.config)
+pair for each htm evsel into the PERF_RECORD_AUXTRACE_INFO priv[] area.
+The decode side reads these back to map each AUX buffer to its
+(node, chip, core) target using event->auxtrace.cpu.  PERF_SAMPLE_RAW is
+also enabled here so that memory configuration records are captured
+alongside the AUX stream.
 
-  - How to pass the output files to htmdecode for trace decoding.
+Patch 3 adds a generic weak arch_perf_record__need_read() hook in
+builtin-record.c.  When the hook returns non-zero, perf record performs
+an extra mmap-read pass before disabling events.  The drain loop runs
+until the hook returns 0 or no forward progress is made, then the events
+are disabled and closed normally.
 
-  - Notes on system-wide collection (-a) vs CPU-pinned collection
-    (cpu=N in event config) and the one-event-per-target PMU
-    restriction.
+Patch 4 implements arch_perf_record__need_read() for powerpc.  It reads
+event->count for all open htm evsels via perf_evsel__read() and
+accumulates the values.  The kernel driver sets this count to the number
+of 128-byte HTM trace records written on a successful dump, 1 when the
+AUX buffer is temporarily full but the hypervisor stream is intact, and
+0 once the stream is exhausted or a hard error occurs.  A non-zero total
+causes the recording loop to perform another read pass.
 
-The existing debugfs interface documentation is retained unchanged.
-A brief cross-reference is added at the top to point readers to the
-new perf interface section.
+Patch 5 adds PERF_AUXTRACE_POWERPC_HTM to the auxtrace_type enum and
+wires the dispatch in perf_event__process_auxtrace_info().  It also
+amends htm_info_fill() to set auxtrace_info->type now that the constant
+is available.
 
-Signed-off-by: Athira Rajeev <atrajeev@linux.ibm.com>
----
-Changes in V3:
-- Fixed "After running perf record, the following files are generated":
-  htm.bin.* and translation.* are written by perf report (which runs
-  powerpc_htm_process_auxtrace_info), not by perf record.  perf record
-  produces only perf.data.  Corrected the Output Files section and the
-  Complete Workflow example accordingly.  Note: powerpc_htm_process_-
-  auxtrace_info() is implemented in the companion tools/perf patch series
-  ("tools/perf: Add perf tool support for processing powerpc HTM AUXTRACE
-  records"); the documentation is written against the complete two-series
-  feature, which is standard practice for kernel+tools PMU submissions.
-- Fixed "perf report -D" in the workflow: perf report -D only prints
-  AUX buffer sizes; it does not produce htm.bin.* or translation.*.
-  The output files are produced by plain "perf report".
-- Added the missing htmdecode usage section (referenced in commit
-  message and V2 changelog but absent from the doc body).
-- Added the missing PMU restriction note: the HTM PMU uses
-  PERF_PMU_CAP_EXCLUSIVE so only one event per target (node/chip/core)
-  is allowed; a second event on the same target returns -EBUSY.  Also
-  noted that cpu=N in the event config is the supported way to pin
-  collection to a CPU, and -a without cpu=N causes -EBUSY from the
-  kernel (HTM events require cpu=N since the PMU operates on physical
-  hardware addresses, not per-task context).
-- Fixed typo "htmtype" -> "htm_type" in the config description list.
-- Fixed grammar "To open the event on a specific cpu can be specified
-  using" -> "To specify a CPU, include the cpu= parameter".
-- Fixed typo "Target code 6" -> "Target core 6".
+Patch 6 adds the full HTM decode path in util/powerpc-htm.c.
+powerpc_htm_process_auxtrace_info() reads the (cpu, config) pairs from
+priv[] and builds a cpu_configs[] lookup table.  As each
+PERF_RECORD_AUXTRACE event arrives, process_auxtrace_event() maps it to
+the correct target and writes the data to htm.bin.nX.pX.cX immediately.
+PERF_RECORD_SAMPLE RAW records are written to translation.nX.pX.cX by
+process_event().  Per-run first-write tracking (htm_target_seen) ensures
+O_TRUNC on the first write and O_APPEND on subsequent writes.
 
-Changes in V2:
-- Added a new perf-interface section to Documentation/arch/powerpc/htm.rst
-  describing perf record usage, required AUX buffer size (-m,256), the
-  two output files (htm.bin.nX.pX.cX and translation.nX.pX.cX), and how
-  to pass them to htmdecode.
-- Added notes on system-wide (-a) vs CPU-pinned collection and
-  the one-event-per-target PMU restriction introduced in patch 2.
-- A cross-reference is added at the top of htm.rst pointing readers to
-  the new perf interface section.
-- The existing debugfs interface documentation is retained unchanged.
-- Patch is now 6/6 instead of 5/5.
+Patches not included in V2:
+Three patches present in V1 are intentionally dropped from this series
+and will be submitted as a follow-on once the core infrastructure gets
+integrated:
 
- Documentation/arch/powerpc/htm.rst | 158 ++++++++++++++++++++++++++++-
- 1 file changed, 155 insertions(+), 3 deletions(-)
+  - htmdecode integration: V1 patch 6 invoked the external htmdecode
+    tool via fork/exec after writing htm.bin.* to decode the raw
+    bus-trace data in-process.  This is deferred because the interface
+    between perf and an external decode tool needs more discussion.
 
-diff --git a/Documentation/arch/powerpc/htm.rst b/Documentation/arch/powerpc/htm.rst
-index fcb4eb6306b1..15e7484f2836 100644
---- a/Documentation/arch/powerpc/htm.rst
-+++ b/Documentation/arch/powerpc/htm.rst
-@@ -18,9 +18,10 @@ H_HTM is used as an interface for executing Hardware Trace Macro (HTM)
- functions, including setup, configuration, control and dumping of the HTM data.
- For using HTM, it is required to setup HTM buffers and HTM operations can
- be controlled using the H_HTM hcall. The hcall can be invoked for any core/chip
--of the system from within a partition itself. To use this feature, a debugfs
--folder called "htmdump" is present under /sys/kernel/debug/powerpc.
-+of the system from within a partition itself.
- 
-+To use this feature, a debugfs folder called "htmdump" is present under
-+/sys/kernel/debug/powerpc. Another interface is via perf.
- 
- HTM debugfs example usage
- =========================
-@@ -94,7 +95,158 @@ This trace file will contain the relevant instruction traces
- collected during the workload execution. And can be used as
- input file for trace decoders to understand data.
- 
--Benefits of using HTM debugfs interface
-+HTM perf interface usage
-+========================
-+
-+The HTM (Hardware Trace Macro) perf interface enables collection and analysis
-+of hardware trace data from PowerPC systems. This interface allows users to
-+capture detailed execution traces for performance analysis and debugging.
-+
-+Event Configuration
-+-------------------
-+
-+Use ``perf record`` with the htm PMU event. The event is configured using
-+named parameters that specify the target hardware location and trace type:
-+
-+.. list-table::
-+   :header-rows: 1
-+   :widths: 25 75
-+
-+   * - Parameter
-+     - Description
-+   * - htm_type
-+     - Type of HTM trace to collect (bits 0-3)
-+   * - nodeindex
-+     - Node index in the system topology (bits 4-11)
-+   * - nodalchipindex
-+     - Chip index within the specified node (bits 12-19)
-+   * - coreindexonchip
-+     - Core index on the specified chip (bits 20-27)
-+
-+- event: "config:0-27"
-+- htm_type: "config:0-3"
-+- nodeindex: "config:4-11"
-+- nodalchipindex: "config:12-19"
-+- coreindexonchip: "config:20-27"
-+
-+1) nodeindex, nodalchipindex, coreindexonchip: this specifies
-+   which partition to configure the HTM for.
-+2) htm_type: specifies the type of HTM.
-+
-+Event Syntax
-+------------
-+
-+The event configuration uses named parameters::
-+
-+   htm/nodeindex=N,nodalchipindex=C,coreindexonchip=R,htm_type=T/
-+
-+Opening the event on a specific CPU can be specified::
-+
-+   htm/nodeindex=N,nodalchipindex=C,coreindexonchip=R,htm_type=T,cpu=x/
-+
-+Where:
-+
-+- N = node index
-+- C = chip index within the node
-+- R = core index on the chip
-+- T = HTM type
-+- x = CPU number
-+
-+Basic Usage Example
-+-------------------
-+
-+To collect HTM trace data for a specific chip:
-+
-+.. code-block:: sh
-+
-+   # perf record -C 1 -e htm/nodalchipindex=2,nodeindex=0,htm_type=1/ <workload>
-+
-+In this example:
-+
-+- ``-C 1``: Collect on CPU 1
-+- ``nodeindex=0``: Target node 0
-+- ``nodalchipindex=2``: Target chip 2 within node 0
-+- ``htm_type=1``: HTM trace type 1
-+
-+.. code-block:: sh
-+
-+   # perf record -m,256 -e htm/coreindexonchip=6,nodalchipindex=0,nodeindex=0,htm_type=2,cpu=16/ -a sleep 1
-+
-+In this example:
-+
-+- ``cpu=16``: Collect on CPU 16
-+- ``nodeindex=0``: Target node 0
-+- ``nodalchipindex=0``: Target chip 0 within node 0
-+- ``coreindexonchip=6``: Target core 6
-+- ``htm_type=2``: HTM trace type 2
-+- ``-m,256``: specifies number of mmap pages
-+
-+Running trace collection for multiple targets:
-+
-+.. code-block:: sh
-+
-+   # perf record -m,256 -e htm/nodalchipindex=2,nodeindex=0,htm_type=1,cpu=8/ -e htm/nodalchipindex=1,nodeindex=0,htm_type=1,cpu=9/ -a sleep 1
-+
-+
-+In this example, trace is collected for two events on different target chips
-+
-+Output Files
-+------------
-+
-+``perf record`` produces ``perf.data``.  Running ``perf report`` on that
-+file invokes the HTM auxtrace handler, which writes the output files:
-+
-+- **htm.bin.nX.pX.cX** : raw bus-trace AUX data for node X, chip X, core X
-+- **translation.nX.pX.cX** : memory-configuration records for the same target
-+
-+.. code-block:: sh
-+
-+   # perf report
-+   # ls htm.bin.* translation.*
-+   htm.bin.n0.p2.c0  translation.n0.p2.c0
-+
-+Note: ``perf report -D`` prints AUX buffer sizes but does not produce
-+the output files.  Use plain ``perf report`` to extract trace data.
-+
-+Decoding Output Files
-+---------------------
-+
-+Pass the generated files to htmdecode for trace decoding::
-+
-+   htmdecode htm.bin.n0.p2.c0 translation.n0.p2.c0
-+
-+PMU Restrictions
-+----------------
-+
-+The HTM PMU uses ``PERF_PMU_CAP_EXCLUSIVE``, which enforces a limit of one
-+active event per target (node/chip/core tuple) at a time.  Attempting to open
-+a second event on the same target returns ``-EBUSY``.
-+
-+HTM events must be pinned to a CPU using the ``cpu=N`` parameter in the event
-+config.  Using ``-a`` (system-wide) without ``cpu=N`` causes ``-EBUSY`` from
-+the kernel because the HTM PMU operates on physical hardware addresses and
-+requires an explicit CPU binding.
-+
-+Complete Workflow Example
-+-------------------------
-+
-+.. code-block:: sh
-+
-+   # Step 1: Collect trace data
-+   perf record -m,256 -e htm/nodalchipindex=2,nodeindex=0,htm_type=1,cpu=9/ -a sleep 5
-+
-+   # Step 2: Extract trace and memory-config files
-+   perf report
-+
-+   # Step 3: Verify output files
-+   ls htm.bin.*          # htm.bin.n0.p2.c0
-+   ls translation.*      # translation.n0.p2.c0
-+   ls perf.data
-+
-+   # Step 4: Decode the trace
-+   htmdecode htm.bin.n0.p2.c0 translation.n0.p2.c0
-+
-+Benefits of using HTM interface
- =======================================
- 
- It is now possible to collect traces for a particular core/chip
+  - Physical-to-logical address mapping: V1 patch 7 read the current
+    partition ID from /proc/powerpc/lparcfg, parsed the translation.*
+    memory map entries, and mapped physical addresses in the decoded
+    trace to logical addresses within the LPAR.
+
+  - Synthetic sample generation: V1 patches 8 and 9 created a
+    PERF_TYPE_SYNTH event named "htm", injected synthetic perf samples
+    with the translated logical addresses as sample IP, and wrote a
+    separate .out.l file with logical addresses alongside the decoded
+    trace.  The appropriate abstraction for synthetic HTM samples in the
+    perf tool requires further discussion.
+
+Usage example:
+Collect HTM trace data from a single chip target:
+
+  # perf record -C 9 -m,256 \
+      -e htm/nodalchipindex=2,nodeindex=0,htm_type=1/ sleep 3
+  [ perf record: Woken up 1 times to write data ]
+  [ perf record: Captured and wrote 256.277 MB perf.data ]
+
+  # perf report
+
+Output files written by perf report:
+
+  htm.bin.n0.p2.c0       raw HTM bus-trace data
+  translation.n0.p2.c0   memory configuration records
+
+Multiple targets can be collected simultaneously:
+
+  # perf record -m,256 \
+      -e htm/nodalchipindex=2,nodeindex=0,htm_type=1,cpu=8/ \
+      -e htm/nodalchipindex=1,nodeindex=0,htm_type=1,cpu=9/ \
+      -a sleep 10
+
+Testing:
+Tested on POWER10.  Both htm.bin.* and translation.* files are produced
+correctly for single and dual target collection.
+
+Note: Link to kernel patches:
+https://lore.kernel.org/linuxppc-dev/20260725065942.78839-2-atrajeev@linux.ibm.com/T/#t
+
+Athira Rajeev (6):
+  tools/perf: Move powerpc VPA-DTL auxtrace init into a separate file
+  tools/perf: Add AUXTRACE recording support for powerpc HTM
+  tools/perf: Add arch hook to drain remaining data before event close
+  tools/perf: Add powerpc callback support for
+    arch_perf_record__need_read
+  tools/perf: Add powerpc HTM auxtrace event processing support
+  tools/perf: Add perf tool support for processing powerpc HTM AUXTRACE
+    records
+
+ tools/perf/arch/powerpc/util/Build      |   2 +
+ tools/perf/arch/powerpc/util/auxtrace.c |  93 +----
+ tools/perf/arch/powerpc/util/evsel.c    |  55 +++
+ tools/perf/arch/powerpc/util/htm.c      | 170 +++++++++
+ tools/perf/arch/powerpc/util/vpa-dtl.c  |  96 ++++++
+ tools/perf/builtin-record.c             |  68 ++++
+ tools/perf/util/Build                   |   1 +
+ tools/perf/util/auxtrace.c              |   4 +
+ tools/perf/util/auxtrace.h              |   1 +
+ tools/perf/util/powerpc-htm.c           | 441 ++++++++++++++++++++++++
+ tools/perf/util/powerpc-htm.h           |  43 +++
+ tools/perf/util/powerpc-vpadtl.h        |   1 +
+ tools/perf/util/record.h                |   3 +
+ 13 files changed, 902 insertions(+), 76 deletions(-)
+ create mode 100644 tools/perf/arch/powerpc/util/htm.c
+ create mode 100644 tools/perf/arch/powerpc/util/vpa-dtl.c
+ create mode 100644 tools/perf/util/powerpc-htm.c
+ create mode 100644 tools/perf/util/powerpc-htm.h
+
 -- 
 2.43.0
 
