@@ -1,52 +1,83 @@
-Return-Path: <linuxppc-dev+bounces-24824-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24825-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4B42AC531C9
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Jul 2026 17:03:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D4D6FC531C9
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Jul 2026 18:50:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h6rmL4Ybjz2yFg;
-	Sun, 26 Jul 2026 03:03:46 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.71.208.13
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784999026;
-	cv=none; b=dkTSFHIaROgfgvbK/5vBlRB/2bHgyVgl7b4NmlM+zeIHaf1kXNO+T49Se4qopB3nxMtKp6aAcKFJX6WuTZD3bjl//WY2qL8xguAPjhF6rK4Y4Yv76xJZpgVubP0Z/x78SCGpLSShGzEepmnUVaXNrZYuCR7Lgss6t89aa12A1fvuFDvmoX6etoZKC/waaJyvhDyEMlU9nXaGkdHatk4YhVYB5OD6MPiAIdkt1/IpN0OJBIRhMYaDCJktus6CHvb0RFGE+3Xd2Dfd6lHmP4rn+6zgrSTSgjBbEXUIXeAaog11s6lBIKgTtxjj2+Dm5SJD6J9KDuyKgqjT0r0HwycEmw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h6v7N6qgQz2yYY;
+	Sun, 26 Jul 2026 04:50:24 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785005424;
+	cv=none; b=NPUef3xzsjx8kF/bHAThrrb8pG2t1hgVRZHR/yxMIyncbTBqqjZXUSEhLNmLl4XR1wm24u07SdbH0jRX5i9y9tJuOTCRYooaY7DOuAwACC2Wtk+sOcSbNX22TkRETjPKfOOV3CCLA1puZhe/pDl2riUWzUisC3aqnyQBhi7p7Y2G3n/DVZhd6+lcTjWMy6c61OOsbHWuDCvZgotubM7WZMpDf+72yUTs5AXRPTccUnsr5rCHD56wSc9rRbRbwLXzlIf5DouoiG1+d1ilYNV8YD8wJd22rAX0zbxQgGEOU1pPuiGNiqHr6QubdusJMEqsB5vBIbefOacM6keK4SAsOQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784999026; c=relaxed/relaxed;
-	bh=Wqzc1rdrD9/zZgtfkeN/lk6lY1WJu6IQP1Gt28locAY=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=KD/szt2/LTk4K30HxKUzGWxtdrxacL1bFa5VRoeDKmm9CLPaTtx/FHFnasZXfXek5Y7QkSPdvr6Mf5uPIgJ7CIzDDQpBxGYNMPV4eN/98AVueXoaB7nAwolt13x4LEozBJFiqivj2kIZ3Z2YJE5Vl3xhmIprctFMkhJHLeTmddEJolgJ+8qP7mmT54LK1dKJyIFQWVee+Um++1svelJrk8AmlYnDsnwp9r+23rGpQjtHMs4khkoop5MjlAFv6W5dhVwUKWE8Nq5mtbzqFnu2SYwhS4nRStEVy+BMzLtiCXXMffzYXj7+cy52PVPlwiq2A5lePLsTunutJgEWO6aEpg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=bell.net; dkim=pass (2048-bit key; unprotected) header.d=bell.net header.i=@bell.net header.a=rsa-sha256 header.s=selector1 header.b=MdseikFF; dkim-atps=neutral; spf=pass (client-ip=209.71.208.13; helo=cmx-mtlrgo002.bell.net; envelope-from=dave.anglin@bell.net; receiver=lists.ozlabs.org) smtp.mailfrom=bell.net
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=bell.net
+	t=1785005424; c=relaxed/relaxed;
+	bh=w7d7iOIr4JYo5xD1xds79ix5oGBdZQ9fFETxdf9csPQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=fybK2+iBwXr+PDy1rO6sAoorIv2GQcTjQPZXut/jvvkG62waKOnl3lQSIEWnmQdBPFSg6oIIF25ilEnL+BHxQ1RhxPmh43gPHHhoun96HT4q9iPkGK+ziPWEalRrza0cF4QN9q2PLEV6UtXkZs12SHr/RN7mwA7p8VsRe/cNDsCC90zLpGDnNsBNaILOrYDdx8uVBfTKWcFKyY4cKetpDpT6CxmR92YWGTXJH1zvRhCgs5EQWe6DCF+EkwdZUoxx5baesTYaHJiBUVeFpH0m5L4fVuwxitgcTzyiyH48HN6kl3+EhzqowfDdm82xUEfLMLKnlA1gvMtlCFfYiVX20w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=H0Xr/Ijd; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=tshah@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bell.net header.i=@bell.net header.a=rsa-sha256 header.s=selector1 header.b=MdseikFF;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=H0Xr/Ijd;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bell.net (client-ip=209.71.208.13; helo=cmx-mtlrgo002.bell.net; envelope-from=dave.anglin@bell.net; receiver=lists.ozlabs.org)
-X-Greylist: delayed 95 seconds by postgrey-1.37 at boromir; Sun, 26 Jul 2026 03:03:43 AEST
-Received: from cmx-mtlrgo002.bell.net (mta-mtl-003.bell.net [209.71.208.13])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=tshah@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h6rmH15yMz2xfB
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jul 2026 03:03:42 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bell.net; s=selector1; t=1784999023; 
-        bh=Wqzc1rdrD9/zZgtfkeN/lk6lY1WJu6IQP1Gt28locAY=;
-        h=Message-ID:Date:MIME-Version:Subject:To:References:From:In-Reply-To:Content-Type;
-        b=MdseikFFb36eNXeSXfCw6BZ4FfjoAW0KRJzBzHWC0iUTzmVuJkc5CQLIadsJC8TRbsVmf0QVCSodl4rPljLs9n90+aeTI8sMArvylAN1O6VuxE0j9frT06jIZFNvNkggnUrFxBoy0d/JQVABfDx3vvdermjV7HRZgX04ia+fgH+6Abmb6UzkTYcQK1DShyRQKbNdrLVKCEQqqOZaqxYt6GQyPaf3YSCoXsBWS1rTzeGaN/+3O5a8QsU8Hne8onH40DsNNX9FRU13Kpyltm6Y+eMwJbkTAGncaZQX88ZVB9Kp2fbBXRF/O0Ovch/UZne/nB6MasHBTVVYjMnCGjCa8Q==
-X-RG-SOPHOS: Clean
-X-RG-VADE-SC: 0
-X-RG-VADE: Clean
-X-Originating-IP: [70.26.67.32]
-X-RG-Env-Sender: dave.anglin@bell.net
-X-RG-Rigid: 69B7AEA70B5C1637
-X-RazorGate-Vade: dmFkZTFBL85r2oEp4gvfdK9Qq+Fk279rWqVJnzUbNG9fBvLFR/dedrP8wVgFqykZFUTtnttUvrht+OPOiRl/1oU1X3DnhmkwJ+4FUfJN4YMM1Uvc+FmDjW+MWZJ4A0FjpNpERM53NIjMWcPZhyZQFlG4htjVqZ7TJEV4FI7ta2yH4wzyax6s/4E4T4WCOk4oS7RVnzZ9H7irp28HQyCyZeltVxOz9AOr3uOwK79TyneqiRNx+3a7ieGIx7Rrh1xt7fPNGAbDlI7/re/7tVsLMnTzaM8sIoSYfJrV5YxItpSXdxwsobLjy7j764yoaItE9IWqOZ8nHnzugNBwWYuDikcsYd4ZIeOFwBtFev92vMT/vouaEKz+Ah1vjLT+QwgLhdKduIi9iaJDNNkjELFJJE/yNIszKpKlgjW1HQwxXcm3pFfMYsehZFbAmRqL5QVr4EPAW+cvXuonKobvy9fNczSRBD1tyEDCCz/SgvyoOPUZfFsRv1qGgvtqzStwN7Zbtrj68SxbRBYbLYJaroia6vW6b+bLrsEw/meOFF91HfqL8XVq9KdlPKuyvJg40LZ7ScGPqA+pM8+6XXzL1HD4rQYkQoM2CqPSkFuWO81zqkSvf6vLU4tetFZnIofxXAd0aTEd9y+bczB4IJxuzjc+nVt1JlVepAHkbCONpd6s8mfBgySdAQ
-X-RazorGate-Vade-Verdict: clean 0
-X-RazorGate-Vade-Classification: clean
-Received: from [192.168.2.49] (70.26.67.32) by cmx-mtlrgo002.bell.net (authenticated as dave.anglin@bell.net)
-        id 69B7AEA70B5C1637; Sat, 25 Jul 2026 13:00:55 -0400
-Message-ID: <4606e13f-6827-45d0-b3b8-6bc26358f7ae@bell.net>
-Date: Sat, 25 Jul 2026 13:00:55 -0400
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h6v7M5lTMz2xrC
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jul 2026 04:50:22 +1000 (AEST)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66PHIIfO1239122;
+	Sat, 25 Jul 2026 18:50:17 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=pp1; bh=w7d7iOIr4JYo5xD1x
+	ds79ix5oGBdZQ9fFETxdf9csPQ=; b=H0Xr/IjdQigSaldXnV/94OVebNyVJH2XM
+	BnLGkdFsw+YV2tqMwcm33nM8xN//U/Lt3+gu/QCJFbFjhzrEVOe4IYyD1MCwHx1j
+	jwLuG3NGe+PvQ52fHuQKJNrVu2XAymBUOB0nv4iJ9QQ5+Nr5qrVY57XYuiPErX1c
+	e8YH1/3Q8gN7f6N9RMNxAOqt/MllZ5fzbM9Xql7EH+hTBtJnoAle8AAiWpHPeX9z
+	47YoACrK5NfU/UGDJTfpDmlAwKwYj4l85CNmhQdVEa4p7GpJfdP0apRIrF7tGaV3
+	wgr00uTyJ3BI2ZJyBLIOQKOjZArk0TMpHxP1NJqTTstxfL9fBFipA==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fmuwch30n-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sat, 25 Jul 2026 18:50:16 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66PIfG16007773;
+	Sat, 25 Jul 2026 18:50:15 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fmn5ha775-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sat, 25 Jul 2026 18:50:15 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66PIoBgd38142354
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Sat, 25 Jul 2026 18:50:11 GMT
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id A4E172008D;
+	Sat, 25 Jul 2026 18:50:11 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id AF5F62008B;
+	Sat, 25 Jul 2026 18:50:06 +0000 (GMT)
+Received: from li-4c4c4544-0047-4210-804e-b5c04f423534.ibm.com.com (unknown [9.39.22.45])
+	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Sat, 25 Jul 2026 18:50:06 +0000 (GMT)
+From: Tanushree Shah <tshah@linux.ibm.com>
+To: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
+        vmolnaro@redhat.com, mpetlan@redhat.com, tmricht@linux.ibm.com,
+        maddy@linux.ibm.com, irogers@google.com, namhyung@kernel.org
+Cc: linux-perf-users@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        atrajeev@linux.ibm.com, hbathini@linux.ibm.com, Tejas.Manhas1@ibm.com,
+        Tanushree.Shah@ibm.com, Tanushree Shah <tshah@linux.ibm.com>
+Subject: [PATCH v4 1/5] perf trace-event: Fix buffer overflow in read_string()
+Date: Sun, 26 Jul 2026 00:19:49 +0530
+Message-ID: <20260725184953.234759-2-tshah@linux.ibm.com>
+X-Mailer: git-send-email 2.54.0
+In-Reply-To: <20260725184953.234759-1-tshah@linux.ibm.com>
+References: <20260725184953.234759-1-tshah@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,165 +91,66 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 3/5] mm/parisc: constify ptep_get() argument
-To: Helge Deller <deller@gmx.de>, Usama Arif <usama.arif@linux.dev>,
- Pedro Falcato <pfalcato@suse.de>
-Cc: Matthew Wilcox <willy@infradead.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- David Hildenbrand <david@kernel.org>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
- "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Lorenzo Stoakes <ljs@kernel.org>,
- "Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>,
- Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>,
- Michal Hocko <mhocko@suse.com>, Jan Kara <jack@suse.cz>,
- Zi Yan <ziy@nvidia.com>, Baolin Wang <baolin.wang@linux.alibaba.com>,
- Nico Pache <npache@redhat.com>, Ryan Roberts <ryan.roberts@arm.com>,
- Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>,
- Lance Yang <lance.yang@linux.dev>, Kevin Brodsky <kevin.brodsky@arm.com>,
- Muhammad Usama Anjum <usama.anjum@arm.com>,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-mm@kvack.org, linux-fsdevel@vger.kernel.org
-References: <20260724102017.141532-1-pfalcato@suse.de>
- <20260724102017.141532-4-pfalcato@suse.de>
- <0fd713a8-e4ab-4c07-b36e-79dd138b4a86@linux.dev>
- <amNzLXuwflIZFKtI@casper.infradead.org>
- <253f7ac0-205b-42f1-9fb5-d19eceb581b6@linux.dev>
- <amOEUZlp1BxYh6_t@pedro-suse>
- <fd239383-dcbe-4daf-b337-32facef07076@linux.dev>
- <3e9dece8-4e86-4ce5-bd74-b3ec305f3003@gmx.de>
-Content-Language: en-US
-From: John David Anglin <dave.anglin@bell.net>
-Autocrypt: addr=dave.anglin@bell.net; keydata=
- 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
- T70V9SSrl2hiw38vRzsl
-In-Reply-To: <3e9dece8-4e86-4ce5-bd74-b3ec305f3003@gmx.de>
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-ORIG-GUID: rSXIlTL0onPWCmq7ZfJPLqdO7PjrDHVA
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzI1MDE3OCBTYWx0ZWRfXwFQEE4va6rNZ
+ HzNnwpkyoXyI7KI0ezEhes+Lqvrm5vaHh9/TniZqcTD5PjWhYNQbNSYb4fd542+nufGlyUqcFhF
+ auEGaw58H42nQLFt2RN1CGVWMJy4BvE=
+X-Authority-Analysis: v=2.4 cv=E/z9Y6dl c=1 sm=1 tr=0 ts=6a650568 cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=RzCfie-kr_QcCd8fBx8p:22 a=VnNF1IyMAAAA:8 a=dRiuFSZL0wyzTp01T68A:9
+ a=zgiPjhLxNE0A:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzI1MDE3OCBTYWx0ZWRfX1/2TD08awFx2
+ +jMzABs5bGuiC0AjBF1yXLvcypJlpGbn3sYmd5GLiTEZ6INuL9eMo5fy4ql0jawzcoB0n3aHbds
+ OlVh/KPBAlrq8YIAagcAAXM+1vzky5iB+Yreh8brZ65BrY82IZuPYPNIB5/OqstSJY4KFYJzzcB
+ amM8AOnRgeDst4CG0tpIOhKIwiey4GynevHEYUaF+DjFBbKIX5Ce2SYaFGAdb0O4kR+vsNCW0uw
+ aCtFI4gpXBnDcqu+Z4K0iDcOEEGD2oBUvnfgTul/HnfarbqRzZ/tEzhanUutpLqBHJI4arvpCrc
+ 6kpHGdoi6pfkiFBDIylvFqID2fAEDuRidRJe5uP3+BPiH5xi1Q8dfzHmpDo4Vvs6Ok2VFpK+yjw
+ kMapW+haDSq03Cipo23aShUVzNxZryD0UogNkR+cCX6mbL2ZVr1fIC8mJktGBETPYR3KSrae8j8
+ beCTEuQJxjHIkT8I3bQ==
+X-Proofpoint-GUID: b5cK79YeVKnAPPZA77kkk4BQk3hyUObk
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-07-25_05,2026-07-24_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ adultscore=0 priorityscore=1501 spamscore=0 clxscore=1015 phishscore=0
+ lowpriorityscore=0 bulkscore=0 malwarescore=0 impostorscore=0 suspectscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607250178
 
-On 2026-07-25 12:27 p.m., Helge Deller wrote:
-> On 7/24/26 17:48, Usama Arif wrote:
->>
->>
->> On 24/07/2026 16:32, Pedro Falcato wrote:
->>> On Fri, Jul 24, 2026 at 04:03:44PM +0100, Usama Arif wrote:
->>>>
->>>>
->>>> On 24/07/2026 15:14, Matthew Wilcox wrote:
->>>>> On Fri, Jul 24, 2026 at 02:36:59PM +0100, Usama Arif wrote:
->>>>>>
->>>>>>
->>>>>> On 24/07/2026 11:20, Pedro Falcato wrote:
->>>>>>> ptep_get() does not need write access to the PTE.
->>>>>>>
->>>>>>> Signed-off-by: Pedro Falcato <pfalcato@suse.de>
->>>>>>> ---
->>>>>>>   arch/parisc/include/asm/pgtable.h | 2 +-
->>>>>>>   1 file changed, 1 insertion(+), 1 deletion(-)
->>>>>>>
->>>>>> hmm I think you might break build bisectibility if
->>>>>> you separate out the patches, you should squash patch 3 and 4,
->>>>>> with patch 1.
->>>>>
->>>>> I don't see how this breaks bisectability.  Can you elaborate on what
->>>>> you think would break?
->>>>
->>>> Patch 1 does:
->>>>
->>>> -static inline pte_t ptep_get_lockless(pte_t *ptep)
->>>> +static inline pte_t ptep_get_lockless(const pte_t *ptep)
->>>>   {
->>>>       return ptep_get(ptep);
->>>>   }
->>>>
->>>>
->>>> ptep_get() takes a non-const arg till patch 3 for example for parsic.
->>>> I don't think you can pass a const variable to non const function arg?
->>>>
->>>> So parsic won't compile in patch 1 and 2, powerprc wont compile
->>>> for patches 1, 2 and 3..
->>>
->>> Aha, yes, nice catch! I'll have to rethink that. Maybe squashing the patches
->>> would be the cleanest way forward.
->>>
->>
->> Yes, squashing is the simplest way forward.
->>
->>> FWIW, the vast majority of architectures aren't doing funny things on
->>> ptep_get(). E.g PA-RISC, loongarch only define these so they can use it in
->>> their own asm/pgtable.h. I'd really like to delete these but I can't tell
->>> if they are *actually* required.
->>>
->>
->> Ah maybe there is something in git history on why it was needed?
->>
->> If not, hopefully someone from the arch lists could clarify..
-> I tried to remove ptep_get() and ptep_test_and_clear_young() from
-> arch/parisc/include/asm/pgtable.h, but this then triggers compile errors:
-> 
->  CC      arch/parisc/kernel/asm-offsets.s
-> In file included from /home/cvs/parisc/git-kernel/linus-linux-2.6/include/linux/mm.h:31,
->                  from /home/cvs/parisc/git-kernel/linus-linux-2.6/include/linux/pid_namespace.h:7,
->                  from /home/cvs/parisc/git-kernel/linus-linux-2.6/include/linux/ptrace.h:10,
->                  from /home/cvs/parisc/git-kernel/linus-linux-2.6/arch/parisc/kernel/asm-offsets.c:21:
-> /home/cvs/parisc/git-kernel/linus-linux-2.6/include/linux/pgtable.h: In function ‘clear_young_dirty_ptes’:
-> /home/cvs/parisc/git-kernel/linus-linux-2.6/include/linux/pgtable.h:683:25: error: implicit declaration of function ‘ptep_test_and_clear_young’;
-> did you mean ‘pmdp_test_and_clear_young’? [-Wimplicit-function-declaration]
->   683 |                         ptep_test_and_clear_young(vma, addr, ptep);
->       |                         ^~~~~~~~~~~~~~~~~~~~~~~~~
->       |                         pmdp_test_and_clear_young
-> 
-> So, I think the answer is, that the local copy of ptep_get() is used in the parisc implementation of
-> ptep_test_and_clear_young() function.
-> 
-> Switching to the default include/linux/pgtable.h seems not easy doable....
+read_string() writes into buf[BUFSIZ] one byte at a time without
+checking 'size' against the buffer bound before each write. A
+string longer than BUFSIZ in the input overflows the stack buffer.
 
-Did you remove define for __HAVE_ARCH_PTEP_TEST_AND_CLEAR_YOUNG in parisc version of pgtable.h?
+Add a bounds check before each write to prevent overflow. On
+overflow the function returns NULL, matching its other error paths.
 
-Dave
+Fixes: 9215545e99d8 ("perf: Convert perf tracing data into a tracing_data event")
+Signed-off-by: Tanushree Shah <tshah@linux.ibm.com>
+---
+ tools/perf/util/trace-event-read.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/tools/perf/util/trace-event-read.c b/tools/perf/util/trace-event-read.c
+index ecbbb93f0185..afd458cf1387 100644
+--- a/tools/perf/util/trace-event-read.c
++++ b/tools/perf/util/trace-event-read.c
+@@ -127,6 +127,11 @@ static char *read_string(void)
+ 			}
+ 		}
+ 
++		if (size >= (int)sizeof(buf) - 1) {
++			pr_debug("string too long (max %zu bytes)", sizeof(buf) - 1);
++			goto out;
++		}
++
+ 		buf[size++] = c;
+ 
+ 		if (!c)
 -- 
-John David Anglin  dave.anglin@bell.net
+2.47.3
+
 
