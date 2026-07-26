@@ -1,51 +1,57 @@
-Return-Path: <linuxppc-dev+bounces-24844-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24845-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 17A01C531C9
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Jul 2026 18:19:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BD7D2C531C9
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Jul 2026 18:30:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h7VPT0NRXz2xyk;
-	Mon, 27 Jul 2026 04:19:41 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:e0a:1040:9780:49:5ff:fe41:d261"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785089980;
-	cv=none; b=fBQgi3ymxq7UbZ1JX0gUjBUMOEXOsfa60LIWAAZuiqrU+Cr/EY1yTPVesAGNYeXesge3YW+t5oh/hM9635k+29p9Tfbtm80+rVbKRsgFHbDyNriuG+78h9xoXrkqfADYZADi3KUQVaGKw/z97KiCHNwSWFXBBY+fiZGS7NVYxiqpXVWwornVsNsH7CHUqSrj7c855fas5RitbEXpeGuizquhDpNGQkEB+CUAgPe6qLGAfgAgyFi/NI8toGPLAe36jFS9ZCpbaMaF61L2fSXibPWjMGRJ2khz81TBj7+oSYgbe15BWCxM9g4hj7tX68fAqhfkNkWIbumbcjANkIT5Bw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h7VfN6tW8z2xyk;
+	Mon, 27 Jul 2026 04:30:52 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=91.218.175.173
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785090652;
+	cv=none; b=JiK1mmrWALUPiY7bEsBs2BtYeYFDQScduvnk0vRX13dc/8xgpHV93nwENBkBXhtfyxXE+pSJJmnVbfwLTa5paoWy2psj1M38S6/TXz0DM3P2kNh8oz+ghzHwnnzAdbymDs0JQ8MyWjRgCWV/6a+muYInzAOi/Ffzv0IG5O2LdcVd/OaXeuBLMRCphqin2iWnlYXLnAI7ozfptz4RAlKN8r7L/MpEGMXVx2QWy/Dl/kri24pLgjPXaCOgJLTVqKNzwqBbxy4FOS50TQHdycJKhaYYHEWIR192mr6YeXnxy3HhO+7wVOlBKd5fE90iRkbAGhjdm9c8suhpXTgxGprL0g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785089980; c=relaxed/relaxed;
-	bh=IsOzB8x/LpNBKVoFXO16AxjWNFHxoy7IV6c9YvDgm0U=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=bautKFt3q09qrQlGPolQRRgQ1P2rzhBn3YSktqTdX5kwXsCEKnnxAf9YmOy9/ddCU1/PPVPpNUYXhU3RucA1P27Hy/QcNi6s3fXn/2yrDZ9HXwbtORoobGfS1Cbtka/e26GEbSHBOl5NzsEO4UW6D9kp5NL9UnNekNvi6yZnGCjmNvw81C0oj/rYqtwlymub6sccu3IbNh+EsuZGHxiIawKWrF3gggmOtH3MOwsd0X1hM7uxrxwHaDlilhz6z/yFK2alNt5e7uw47GJXDqZffF/GjEkVH6GG2YJJjDpJe9HhaxmEt84lgEY/Ef6auk1fUML7AHY5pfsN0/6ZWTpRRw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linkmauve.fr; spf=pass (client-ip=2a01:e0a:1040:9780:49:5ff:fe41:d261; helo=luna.linkmauve.fr; envelope-from=linkmauve@linkmauve.fr; receiver=lists.ozlabs.org) smtp.mailfrom=linkmauve.fr
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linkmauve.fr
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linkmauve.fr (client-ip=2a01:e0a:1040:9780:49:5ff:fe41:d261; helo=luna.linkmauve.fr; envelope-from=linkmauve@linkmauve.fr; receiver=lists.ozlabs.org)
-Received: from luna.linkmauve.fr (unknown [IPv6:2a01:e0a:1040:9780:49:5ff:fe41:d261])
+	t=1785090652; c=relaxed/relaxed;
+	bh=2FapaJtArv3w0NX/NrQ1WqcO8+Jt47BumXxf9OJr+uw=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=NBXubm+zpB9uOgBPDijUyDFbmttN52m2pBOX4ISXfNERr/Ckp38pa3ZVCOhWgD40AxJ4jkEGwbqi4xivw+lse/z4BQ/mqid4QJEvJIduPxZnTaA/WrMUhLiGe9I6+xGy4tBJI0OBdCiySY9qb2Vn/il7m2unDBYUTM8025o5B0m/+ktTO/r3Umrkg9KHTzzjg3SUSXUqve+e1v43AkIvHF7Bve6F0VqX/azgG+Esytd39/wa99bUx5ZkPBLldxx/DBuJLyIcZsfZkY1cntQQcUMwt5OQd2weCZdKaePw0K0s0v4waEcPKpvAx54VTAs/wIkTHLSNy0P5ilfSryQ2Lw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=jD1n144V; dkim-atps=neutral; spf=pass (client-ip=91.218.175.173; helo=out-173.mta0.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=jD1n144V;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=91.218.175.173; helo=out-173.mta0.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org)
+Received: from out-173.mta0.migadu.com (out-173.mta0.migadu.com [91.218.175.173])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h7VPP2Zvxz2xWY
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2026 04:19:35 +1000 (AEST)
-Received: by luna.linkmauve.fr (Postfix, from userid 1000)
-	id 0B081F40DE2; Sun, 26 Jul 2026 20:19:27 +0200 (CEST)
-From: Link Mauve <linkmauve@linkmauve.fr>
-To: Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>
-Cc: Link Mauve <linkmauve@linkmauve.fr>,
-	=?UTF-8?q?J=2E=20Neusch=C3=A4fer?= <j.ne@posteo.net>,
-	techflashYT <officialTechflashYT@gmail.com>,
-	Ash Logan <ash@heyquark.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h7VfJ44x3z2xd2
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2026 04:30:47 +1000 (AEST)
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1785090625;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=2FapaJtArv3w0NX/NrQ1WqcO8+Jt47BumXxf9OJr+uw=;
+	b=jD1n144VZPsULvosmbwW5AKDlw7qzAZXAJZSYbRsxjpPfiasR1WnqbeWCIgyrF3NrzTQXS
+	r7kClvavsjAx7ru2JRuAwu2uFISj6c6NeqcJp66HGKii9s1RnMdT/45nr6DvnPgw4G+FTz
+	oB+MSRmpGJ+R3iN6cp8W3giyUUpmJd0=
+From: Thorsten Blum <thorsten.blum@linux.dev>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Michael Ellerman <mpe@ellerman.id.au>,
 	Nicholas Piggin <npiggin@gmail.com>,
 	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	devicetree@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
+	Sourabh Jain <sourabhjain@linux.ibm.com>,
+	Aditya Gupta <adityag@linux.ibm.com>,
+	Hari Bathini <hbathini@linux.ibm.com>,
+	Thorsten Blum <thorsten.blum@linux.dev>
+Cc: linuxppc-dev@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc: wii: Add the fixed OTP layout
-Date: Sun, 26 Jul 2026 20:19:19 +0200
-Message-ID: <20260726181921.16269-1-linkmauve@linkmauve.fr>
-X-Mailer: git-send-email 2.55.0
+Subject: [PATCH] powerpc/kexec: Remove stale comment from check_realloc_usable_mem()
+Date: Sun, 26 Jul 2026 20:30:16 +0200
+Message-ID: <20260726183016.372197-2-thorsten.blum@linux.dev>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,69 +65,31 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+X-Developer-Signature: v=1; a=openpgp-sha256; l=946; i=thorsten.blum@linux.dev; h=from:subject; bh=+2HKhIw9DL7XrnA/vRvYbVcnPvv1GFP9Qe/uNwdpT9Q=; b=owGbwMvMwCUWt7pQ4caZUj3G02pJDFlpQRbWjWeNnttUvkxgdd/w29alnbOFU3/ySRX56p9rv pXIz+7pKGVhEONikBVTZHkw68cM39Kayk0mETth5rAygQxh4OIUgIlsOMTI0KqVLvFm7Saej3sZ nM6oaEt73Oba/Mbh1+aYmR3MWe90rjL8z/hyae8ML6dA2YM5dwtFznRHf6zjO/NMXPXKtvyajeq ZTAA=
+X-Developer-Key: i=thorsten.blum@linux.dev; a=openpgp; fpr=1D60735E8AEF3BE473B69D84733678FD8DFEEAD4
 Content-Transfer-Encoding: 8bit
+X-Migadu-Flow: FLOW_OUT
 
-These 128 bytes have a known fixed layout, so we can expose those as
-cells for either kernel or userspace consumption.
+check_realloc_usable_mem() does not free the buffer if memory allocation
+fails - remove the misleading comment. The buffer is owned and freed by
+update_usable_mem_fdt().
 
-Signed-off-by: Link Mauve <linkmauve@linkmauve.fr>
+Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
 ---
- arch/powerpc/boot/dts/wii.dts | 38 +++++++++++++++++++++++++++++++++++
- 1 file changed, 38 insertions(+)
+ arch/powerpc/kexec/file_load_64.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/wii.dts b/arch/powerpc/boot/dts/wii.dts
-index 473d9feb9cdb..0d1806273d43 100644
---- a/arch/powerpc/boot/dts/wii.dts
-+++ b/arch/powerpc/boot/dts/wii.dts
-@@ -233,6 +233,44 @@ control@d800100 {
- 		otp@d8001ec {
- 			compatible = "nintendo,hollywood-otp";
- 			reg = <0x0d8001ec 0x8>;
-+
-+			nvmem-layout {
-+				compatible = "fixed-layout";
-+				#address-cells = <1>;
-+				#size-cells = <1>;
-+
-+				boot1_sha1@0 {
-+					reg = <0x00 0x14>;
-+				};
-+
-+				common_key@14 {
-+					reg = <0x14 0x10>;
-+				};
-+
-+				device_id@24 {
-+					reg = <0x24 0x4>;
-+				};
-+
-+				device_private_key@28 {
-+					reg = <0x28 0x1c>;
-+				};
-+
-+				nand_hmac_key@44 {
-+					reg = <0x44 0x14>;
-+				};
-+
-+				nand_key@58 {
-+					reg = <0x58 0x10>;
-+				};
-+
-+				backup_key@68 {
-+					reg = <0x68 0x10>;
-+				};
-+
-+				unknown@78 {
-+					reg = <0x78 0x8>;
-+				};
-+			};
- 		};
- 
- 		disk@d806000 {
-
-base-commit: 9eebf259d5352b87080d67758f483583d9e763d7
--- 
-2.55.0
-
+diff --git a/arch/powerpc/kexec/file_load_64.c b/arch/powerpc/kexec/file_load_64.c
+index c3503d698428..6d0c818ac619 100644
+--- a/arch/powerpc/kexec/file_load_64.c
++++ b/arch/powerpc/kexec/file_load_64.c
+@@ -69,8 +69,6 @@ int arch_check_excluded_range(struct kimage *image, unsigned long start,
+  * @um_info:                  Usable memory buffer and ranges info.
+  * @cnt:                      No. of entries to accommodate.
+  *
+- * Frees up the old buffer if memory reallocation fails.
+- *
+  * Returns buffer on success, NULL on error.
+  */
+ static __be64 *check_realloc_usable_mem(struct umem_info *um_info, int cnt)
 
