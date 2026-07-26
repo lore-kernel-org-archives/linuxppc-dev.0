@@ -1,63 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-24833-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24834-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 96F78C531D0
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Jul 2026 03:26:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5A48EC531F9
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Jul 2026 07:10:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h76b44v3Cz2xfB;
-	Sun, 26 Jul 2026 13:26:40 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785036400;
-	cv=none; b=gI3QbFdNxDVpWlneg814ZRZ9uEJO8ksocmQejY3idFvu0HnSGMwX4t0lgzFf9SCfQbhvawcxmd3gxuCJGl6vcPgas/W7Q/E1D3veZtkgSH1yT3q3ojl94o9BS3rpkcSiqyplSuCeGjZBekdwwDqA/EdxjIsAFS/Ew5LWzh6+JCMmhR902DnuOm+qy5o4c6PwMDquoonOSKXGillyjtkE048ibYbKS/pxVrVwfRClN41eMQ4CMu1xKhSSZ+rKVTE5Qw0cUXk39J46GBDDMvReMafXsNVWRE1rSiGYKJ30+JfMUpWgibEzeLZGLblQx1Pd1LX8/a9wW3Uh6N52lzODdg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h7CYc4dDVz2xyk;
+	Sun, 26 Jul 2026 17:10:44 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785049844;
+	cv=none; b=o0XbNlsdOA6EF+8RC9H3oTC+S9qsNynYOmi+MC/Ayx9g33hfiqpKo7B2eCSB00Ijm7/Ll+uNZRyNTW/Ru1N+pbNv2Xo4gMPuGlDrRP7NwDYpvXKGFlh825xzVGx0dc8rTLFBDQ9cmRcfdwVkLGwn+12vjWcGoOs3sfCGlwCkCFEbCpgy2EIIkFzY65wtzI69QY2ER1qDdYspZHYlS/7ZEcFMVTzV9kRETT7GFP+9Fsof68j0yAPOEtyocKw73EM76KjZd/BgkXrENPw1h+LURzesbQfopOej2otE31zvW5ifH7O32J+pEjjitkIG6DN3k9X1sTdabADfaVBoKbhGCg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785036400; c=relaxed/relaxed;
-	bh=ujoywRATcrbjMYNELLJctilgrlUcGvbj5yO2i928VnY=;
-	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
-	 Mime-Version:Content-Type; b=aCFmgaEFyEZg5vQX5awVyENjYY+MOYVjjCs7A/gVGE7jc6GBUDram6KcvPrD81MF947eRBpXVxXWCP4We3EY+tB536HzMNgFlxainN8mZI67la3dXG+2uzozMRvsHjHWwPGTHgC4YRiZTpFS7mg0GMa30O9BkbUNTTq3W9mpySpVuIKNnMxhFccCH0ZZoksejGkzq1j9N9FJ70y+s7a3Q5iRJTNQ20/WgEaOPVIyW7/fbfzquXOOdX7R9BfJ2wohN/Ws+No0EwWPcuCltWu6cPtc3TTOoM2Gq2hUN1+2YJVoN+huGG+LCD2Y98ar2qmsg7ycGW2lo3L0L/vytVRz9w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=C5hXFeas; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linux-foundation.org
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+	t=1785049844; c=relaxed/relaxed;
+	bh=spr/SmfOjPmaJI8lzrFOgqnfwsvYYhOk1VLcniRBUcI=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=oupefEX0z5dZeFayvwJfTN1LOs7NAO9P0gQbTVzd280ef02HxxLtoS8qV73ANKJT78nP2L1L1afxOqMr8hB1eMMZ3e5dbnUwKziNC4BpHNg74U102+ucQGz2KIBY/oyXIEQY+rR5BR6cJY+QmaQEQ446GQe4yafnXCMTm6G/nPJt0VE1bHzOaXt2S99hzptDX/D8m8dPz3tUVJMrtEo7rQnVgkgiujrmXjhSyNIVHYz8jKpR/utPn0GakLJJvlMHA4dvrLD7vaFQa7jcwisTvrwhX5jLNGMxV4cIZOgIkU78UvA8nONNNMmarAvqrVjRC4c4tnDQtqAHuEW+rD8gsQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gBlvMIxQ; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=C5hXFeas;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gBlvMIxQ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux-foundation.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h76b23jQ5z2xLg
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jul 2026 13:26:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h7CYb5sLyz2xfB
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jul 2026 17:10:43 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 96EC56011F;
-	Sun, 26 Jul 2026 03:26:33 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 97FE51F000E9;
-	Sun, 26 Jul 2026 03:26:32 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=linux-foundation.org; s=korg; t=1785036393;
-	bh=ujoywRATcrbjMYNELLJctilgrlUcGvbj5yO2i928VnY=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References;
-	b=C5hXFeasm97leSm2ZFfgZdr5aKD+zPJYh6c32nLRB1bv6kA4jy/H7lC8P2kfLh68z
-	 hpzsypaqVIG8c0DNYMPxTwYHqTO3Zwx0j7wz5lFUlc7HCG17VugyR3yUSar6eLk5qo
-	 hyEtqM+UNXtcBuSoDm6nCAbM8QzwSd9ylJaeAjqA=
-Date: Sat, 25 Jul 2026 20:26:32 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Gou Hao <gouhao@uniontech.com>
-Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
- chleroy@kernel.org, maarten.lankhorst@linux.intel.com, mripard@kernel.org,
- tzimmermann@suse.de, airlied@gmail.com, simona@ffwll.ch,
- bharat@chelsio.com, jgg@ziepe.ca, leon@kernel.org, namcao@linutronix.de,
- ynorov@nvidia.com, sshegde@linux.ibm.com, nilay@linux.ibm.com,
- clg@kaod.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-rdma@vger.kernel.org,
- linux-mm@kvack.org, gouhaojake@163.com, kernel@uniontech.com
-Subject: Re: [PATCH v2 0/6] remove dead NULL checks after GFP_NOFAIL
- allocations and fix xive use-after-free
-Message-Id: <20260725202632.dcb325658896a470df91cf57@linux-foundation.org>
-In-Reply-To: <20260724022851.466017-1-gouhao@uniontech.com>
-References: <20260724022851.466017-1-gouhao@uniontech.com>
-X-Mailer: Sylpheed 3.8.0beta1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+	by sea.source.kernel.org (Postfix) with ESMTP id DE63742BA3;
+	Sun, 26 Jul 2026 07:10:40 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 14FEE1F000E9;
+	Sun, 26 Jul 2026 07:10:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1785049840;
+	bh=spr/SmfOjPmaJI8lzrFOgqnfwsvYYhOk1VLcniRBUcI=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=gBlvMIxQNWBBWE7Se28bgQLzPVqN60xYrY8DlKRT3aGhfXwM8DKtw8In3lCobQ+vh
+	 g1alBRmrjg+8NOKIsr6dN74Qz13AjE1dQsVdjl6fwHz7Yb0wOX5eWvws0BGYptghk2
+	 i4iSDdK5BoYB+vqxQipvZkJ2hIFjkGWGwrSZ3xFTcOPHJYt4S6nJ/H9u/L0wEKET8U
+	 W5MyT1QYk4EwhlkHvjB/+6b9XzbffrdGgMPZjCN0vvyv74t8mMjAWQDBnADVb0bqdK
+	 9IHJMRT6viJlszcCge90+kKqr6OeZq16xrvYmvl0Nne/PLbB/VO5iGADt/petKQbvO
+	 uuZU1LSBTLg3Q==
+Date: Sun, 26 Jul 2026 10:10:26 +0300
+From: Mike Rapoport <rppt@kernel.org>
+To: Jinjie Ruan <ruanjinjie@huawei.com>
+Cc: catalin.marinas@arm.com, will@kernel.org, maddy@linux.ibm.com,
+	mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org,
+	akpm@linux-foundation.org, baoquan.he@linux.dev,
+	pasha.tatashin@soleen.com, pratyush@kernel.org, thuth@redhat.com,
+	vladimir.murzin@arm.com, mark.rutland@arm.com, ardb@kernel.org,
+	james.morse@arm.com, leitao@debian.org, yeoreum.yun@arm.com,
+	robh@kernel.org, kees@kernel.org, coxu@redhat.com,
+	sourabhjain@linux.ibm.com, ritesh.list@gmail.com,
+	adityag@linux.ibm.com, hbathini@linux.ibm.com, makb@juniper.net,
+	piliu@redhat.com, graf@amazon.com, liaoyuanhong@vivo.com,
+	jbouron@amazon.com, bauerman@linux.ibm.com, bgwin@google.com,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, kexec@lists.infradead.org
+Subject: Re: [PATCH 0/8] arm64: crash: Add crash hotplug support
+Message-ID: <amWy4u9tXoWX6Wtp@kernel.org>
+References: <20260723131242.1537633-1-ruanjinjie@huawei.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -70,44 +75,78 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260723131242.1537633-1-ruanjinjie@huawei.com>
 
-On Fri, 24 Jul 2026 10:28:45 +0800 Gou Hao <gouhao@uniontech.com> wrote:
+Hi Jinjie,
 
-> This is a code cleanup series that removes unreachable
-> NULL checks (and associated error handling) that follow allocations
-> using __GFP_NOFAIL, which guarantees non-NULL return.
+On Thu, Jul 23, 2026 at 09:12:34PM +0800, Jinjie Ruan wrote:
+> When CPU or memory hotplug events occur, the elfcorehdr in the kdump image
+> becomes stale, potentially leading to incomplete crash dumps.
+> 
+> Currently, userspace udev rules reload the entire kdump image upon such
+> events, which is inefficient and leaves kdump inactive for a long time.
+> 
+> Commit 247262756121 ("crash: add generic infrastructure for crash hotplug
+> support") introduced a kernel mechanism to update only the elfcorehdr.
+> This patch set implements crash hotplug support for arm64.
+> 
+> It also addresses and fixes several critical pre-existing code issues
+> and Sashiko AI review findings extracted from the previous patch set,
+> following Baoquan's suggestions.
+> 
+> The major improvements and fixes included in this series are:
+> 
+> - Fix powerpc memory leak, null-ptr-def and overlapping memory
+>   range truncation bug.
+> 
+> - Fix several memory leaks for arm64.
+> 
+> - Simplify arm64 load_other_segments().
+> 
+> - Implement infrastructure for arm64 crash memory hotplug support.
+> 
+> This patch set is rebased on liveupdate/crashkernel-cma.
+> 
+> Link: https://lore.kernel.org/all/20260601094805.2928614-1-ruanjinjie@huawei.com/
+> 
+> Jinjie Ruan (8):
+>   powerpc/crash: Fix possible memory leak in update_crash_elfcorehdr()
+>   powerpc/kexec_file: Fix null-ptr-def in extra size calculation
+>   powerpc/kexec_file: Prevent kexec range truncation
 
-Sigh.
+It's weird to see powerpc fixes in a series that adds a feature for arm64.
+Judging by the subjects, they are completely unrelated to to crash support
+for hotplug and should be sent as a separate set.
 
-Back when Linux ran on an abacus, I added __GFP_NOFAIL because four or
-five sites (file systems) were infinitely looping on alloc_pages until
-it succeeded.  I figured we should move this operation into the page
-allocator so we could easily find those sites and fix them to Not Do
-That.
+>   kexec: Extract kexec_free_segment_cma() from kimage_free_cma()
+>   arm64: kexec_file: Fix CMA page leaks in segment placement retry loops
+>   arm64: kexec_file: Fix image->elf_headers memory leak during retry
+>     loop
+>   arm64: kexec_file: Simplify load_other_segments()
+>   arm64: crash: Add crash hotplug support
+> 
+>  arch/arm64/Kconfig                     |   3 +
+>  arch/arm64/include/asm/kexec.h         |  13 +++
+>  arch/arm64/kernel/Makefile             |   2 +-
+>  arch/arm64/kernel/crash.c              | 148 +++++++++++++++++++++++++
+>  arch/arm64/kernel/kexec_image.c        |   1 +
+>  arch/arm64/kernel/machine_kexec_file.c |  76 ++++++-------
+>  arch/powerpc/kexec/crash.c             |   2 +-
+>  arch/powerpc/kexec/file_load_64.c      |   2 +-
+>  arch/powerpc/kexec/ranges.c            |  12 +-
+>  include/linux/kexec.h                  |   2 +
+>  kernel/kexec_core.c                    |  25 +++--
+>  11 files changed, 223 insertions(+), 63 deletions(-)
+>  create mode 100644 arch/arm64/kernel/crash.c
+> 
+> -- 
+> 2.34.1
+> 
 
-I made it very clear (changelog and code comments) that no new code
-should use __GFP_NOFAIL.  How did that work out?
-
-hp2:/usr/src/linux-7.2-rc4> grep -r __GFP_NOFAIL | wc -l
-241
-
-So much lameness!   My immediate reaction to your patchset is "No.  Fix
-the damn code instead".  But I've resoundingly lost that fight.
-
-
-Thanks, I'll scoop up the entire series.  If individual patches pop up
-in linux-next then I'll drop the mm.git copies.
-
-
-
-AI review has a shower of possible pre-existing issues.  I'm seeing
-use-after-free, double-free, leak, system hang, NULL pointer
-dereference, usual stuff :(
-
-They're in powerpc and cxgb4, if maintainers are interested.
-
-	https://sashiko.dev/#/patchset/20260724022851.466017-1-gouhao@uniontech.com
+-- 
+Sincerely yours,
+Mike.
 
