@@ -1,73 +1,52 @@
-Return-Path: <linuxppc-dev+bounces-24841-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24842-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9246CC531CC
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Jul 2026 11:29:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C5286C531F9
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Jul 2026 16:57:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h7KHz129jz2yd7;
-	Sun, 26 Jul 2026 21:29:19 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785065359;
-	cv=none; b=o0eihzh0vKpXa/BfwHIVDa2kJi/geGmiuHTI/2OzBiioTSa+/n27S+Br0k7CtXgwhJaXM0DoXes1YjF4CLwq2K2/Ply6HW+cCzQp8lN0oE4sfFnMfMzbn8hxNFSeerr+weW5SYkgb/OWuWzxUhnImb2ZA3SxJW12/2KIS94FqSeCC9WUcZ1mlLxl5lQhO9GnrXVpKMsJZFUrNSGrnWiFQLRm8SmW2kVS7Dvd4NmzKd2A9LF7GvohSBYA6nLMwATfvEqsvKlyrjBlWVMkiUjjjPeF02AZq7AQZ/L2TTlgQBPaTxOtDX21J8joQgJnPO+RoFZ+a4ZolV6k6UZTDb3O+Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h7SZf6K16z2xyk;
+	Mon, 27 Jul 2026 02:57:30 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=51.210.91.33
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785085050;
+	cv=none; b=PCi9zVkL8Xw3Xart80G4KKpRDt9oUYRjWVCqmXnyjOVs5BVRZdEbSxS4m0GT3PD+o5bhydfT9Pz5/5ITVg78EtxVfOYENPZXG7vF8GRpIE17fMibvYByzb1/Bzv0G91mnqFjZNiGgQ0Zs8e/cno84bwHW/ykW2eSeKt73PVZMKzIldCN1gtIfRoPoZUqJ+13NINoIzBj66d6gP3CchKYtAybAD36Ut5HRsL5zb1fWGYAI5Eq9PNL08ZxqhciooMwz0W6CdXWvpnwQUXzWdYBSGuYTN1PVRqTqGqAA/4fvmRUoTevOubzg8mjNo06qK2MsuKHXIJbeFtCJf0V+XGVPw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785065359; c=relaxed/relaxed;
-	bh=1gKc/tEHvIl6NSsUGto1KyvngLRO0l7pwSc7l5wphWE=;
+	t=1785085050; c=relaxed/relaxed;
+	bh=leejA4oXNKzlCWvwsksqJsxtR+ZVpBQOirzyOlDDiHc=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=juoiGJeHxNSmSrhhOI/p5sqe7ptzAjA2lenu4sIhwmyVsuel5uK6OxksmuA/DEXj1drP/i5k3FOoJqtIQEb30/b+uA/NKRmUji0xvG0vNWZ/VEV1xvaQVdFOo0Q8HnFc9VdfZB8LLJnVZRdsAg8pxLhslwiqM6dWRORyjOJSsyq8rN2p7IM6cAvWTl0euPIBpLYbAZelfLhAsIjQ2tEuRF69LjEJH1pv5MF4BrhCQfbMab7s2hMGzTmWRbY75mRyX3roLsy2RPrXCdPGxZ5wvjEY/eUILQFomt0jHT7HAMJFOIlF7NsLTMFzuvsloP1LcM/ts8lmeniP9/BrYWCoxw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=il+5rbZc; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	 In-Reply-To:Content-Type; b=Q0xEhImcSicvMyjCM/TL6HOKdIKL0VWbpfdh3aRxsbtZZWd9ldyPYMPVfyUdSlqLRwgN/h3p+rBx9lKr4Tc15/N+ca2exGZZMWxvcZBA96O/nByDu7oURUDFuuLDiXW2UooZCNoXyR6GybIZNDRUYlB3V7zig4j4pmjigdZSnatEKPxOlb38gXnF61Cs2xUe+4Msv4VT+UY+TJgt+xwmFpGp6rzlvfnSjxQXUBK3CXlrMGSX7FmHUASlpy+iMlWB/4xBtE5PJivusREyoFSJMYi5Xkz6ByCXweOQOBOrREK9YcNJw1Bv+Hq1zqLNphSgIh5279ScgaMpVfv3PL2sXA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kaod.org; dkim=pass (2048-bit key; unprotected) header.d=kaod.org header.i=@kaod.org header.a=rsa-sha256 header.s=ovhmo393970-selector1 header.b=pO2ygG3O; dkim-atps=neutral; spf=pass (client-ip=51.210.91.33; helo=smtpout4.mo538.mail-out.ovh.net; envelope-from=clg@kaod.org; receiver=lists.ozlabs.org) smtp.mailfrom=kaod.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kaod.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=il+5rbZc;
+	dkim=pass (2048-bit key; unprotected) header.d=kaod.org header.i=@kaod.org header.a=rsa-sha256 header.s=ovhmo393970-selector1 header.b=pO2ygG3O;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kaod.org (client-ip=51.210.91.33; helo=smtpout4.mo538.mail-out.ovh.net; envelope-from=clg@kaod.org; receiver=lists.ozlabs.org)
+Received: from smtpout4.mo538.mail-out.ovh.net (smtpout4.mo538.mail-out.ovh.net [51.210.91.33])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h7KHx71ylz2yRl
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jul 2026 21:29:17 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66QBHaBg1467447;
-	Sun, 26 Jul 2026 11:29:08 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=1gKc/t
-	EHvIl6NSsUGto1KyvngLRO0l7pwSc7l5wphWE=; b=il+5rbZcVZ/Xi9CY2Cgkgm
-	FDjl/GRxQ37Do8ztELmeXQO1UucXK93Dp4zoWPtVg/dZsRAFEDiTzdiSAPJuaJB+
-	TfSoO+zcH6AzdU3qD1fUuZwmU5NO+FmevEDz4k12KBHzJnQ72FMQoi09el/AncRJ
-	Kr8lzZgIAviRa9tlgfopwCZ/98HpVD4M8oy51vjEbqZTkY4X0tLAq+vCa6XtlsiH
-	woeS5Eirv4X6UWkgrZpwgcTgpORTWnuAf6ZxoKTB5W+vfJrH5sE7kJiCP7RCjLQz
-	7kxnisKKtEDj4icgBFtLNruG83EeJuR17Hhq+i/pBQUYcBU5Bl+tvpAdFW/xAsPA
-	==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fmuyc3du7-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 26 Jul 2026 11:29:07 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66QBQQFv015424;
-	Sun, 26 Jul 2026 11:29:06 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4fn7uvsg4p-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 26 Jul 2026 11:29:06 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66QBT2IY32506246
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sun, 26 Jul 2026 11:29:02 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 98651200A7;
-	Sun, 26 Jul 2026 10:57:01 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 72043200A5;
-	Sun, 26 Jul 2026 10:56:56 +0000 (GMT)
-Received: from [9.124.223.5] (unknown [9.124.223.5])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Sun, 26 Jul 2026 10:56:56 +0000 (GMT)
-Message-ID: <30f314c6-35ae-4fec-b6b4-41e57d013c75@linux.ibm.com>
-Date: Sun, 26 Jul 2026 16:26:55 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h7SZZ51kRz2xd2
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2026 02:57:25 +1000 (AEST)
+Received: from director1.derp.mail-out.ovh.net (director1.derp.mail-out.ovh.net [51.210.158.128])
+	by mo538.mail-out.ovh.net (Postfix) with ESMTPS id 4h7SZP1B6jz6GZp;
+	Sun, 26 Jul 2026 16:57:17 +0000 (UTC)
+Received: from director1.derp.mail-out.ovh.net (director1.derp.mail-out.ovh.net. [127.0.0.1])
+        by director1.derp.mail-out.ovh.net (inspect_sender_mail_agent) with SMTP
+        for <gouhaojake@163.com>; Sun, 26 Jul 2026 16:57:16 +0000 (UTC)
+Received: from mta10.priv.ovhmail-u2.ea.mail.ovh.net (unknown [10.110.188.121])
+	by director1.derp.mail-out.ovh.net (Postfix) with ESMTPS id 4h7SZN4q0Bz60Mc;
+	Sun, 26 Jul 2026 16:57:16 +0000 (UTC)
+Received: from kaod.org (unknown [10.1.6.3])
+	(Authenticated sender: clg@kaod.org)
+	by mta10.priv.ovhmail-u2.ea.mail.ovh.net (Postfix) with ESMTPSA id 8E1C11923E00;
+	Sun, 26 Jul 2026 16:57:13 +0000 (UTC)
+Authentication-Results:garm.ovh; auth=pass (GARM-100R003d6fbf843-6826-49c1-85f4-e5f44afdaee1,
+                    31B54A7FFB7E7F23FF6B7C3EC947DBF3CB6BDBDE) smtp.auth=clg@kaod.org
+X-OVh-ClientIp:82.64.250.170
+Message-ID: <518d7bc3-06a5-4afc-8d40-5cf6f538c402@kaod.org>
+Date: Sun, 26 Jul 2026 18:57:13 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,238 +61,171 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 4/4] powerpc/kdump: add support for high crashkernel
- reservation
-To: Sourabh Jain <sourabhjain@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
-        maddy@linux.ibm.com, mpe@ellerman.id.au
-Cc: npiggin@gmail.com, chleroy@kernel.org, ritesh.list@gmail.com,
-        shivangu@linux.ibm.com, mahesh@linux.ibm.com, adityag@linux.ibm.com,
-        venkat88@linux.ibm.com
-References: <20260708143357.673251-1-sourabhjain@linux.ibm.com>
- <20260708143357.673251-5-sourabhjain@linux.ibm.com>
-Content-Language: en-US
-From: Hari Bathini <hbathini@linux.ibm.com>
-In-Reply-To: <20260708143357.673251-5-sourabhjain@linux.ibm.com>
+Subject: Re: [PATCH v2 3/6] powerpc/xive: fix use-after-free of xive_ipis
+To: Gou Hao <gouhao@uniontech.com>, maddy@linux.ibm.com, mpe@ellerman.id.au,
+ npiggin@gmail.com, chleroy@kernel.org, maarten.lankhorst@linux.intel.com,
+ mripard@kernel.org, tzimmermann@suse.de, airlied@gmail.com, simona@ffwll.ch,
+ bharat@chelsio.com, jgg@ziepe.ca, leon@kernel.org,
+ akpm@linux-foundation.org, namcao@linutronix.de, ynorov@nvidia.com,
+ sshegde@linux.ibm.com, nilay@linux.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-rdma@vger.kernel.org,
+ linux-mm@kvack.org, gouhaojake@163.com, kernel@uniontech.com
+References: <20260724022851.466017-1-gouhao@uniontech.com>
+ <20260724022851.466017-4-gouhao@uniontech.com>
+Content-Language: en-US, fr
+From: =?UTF-8?Q?C=C3=A9dric_Le_Goater?= <clg@kaod.org>
+Autocrypt: addr=clg@kaod.org; keydata=
+ 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
+In-Reply-To: <20260724022851.466017-4-gouhao@uniontech.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: 89Yb6WM1QG86L6o7WeS7MFOWZkpvRGOe
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzI2MDExMyBTYWx0ZWRfX+kKmFhDau3ph
- gY0M/dQlL5KhlFdsgEsFmenCMFlkSRXDH0Ry7ITxdtbIaw3Uk543I6loml5xadE+D0DEXbZAvzC
- v7NdFmTAt0IPV87XzrcOg7GWpB/Rohqjkax2WL6RGFqPFrPS0bEXxtD1p8+QfD0AKwZZJfr2YbK
- nTGoehLkQFaX1JmQVFykCETJh+xW6cjVD/jE+rDrr9DQzuBoPzKFoU9pl4U3QkbDOvw1JSbVffH
- +uanKEYsdT8MCGu9G0YwIxjfPVY3xDicrHNgPB7SA0exWASJf9RWratfIg1wuXWPB3eF5b3mPdj
- WeFqRHIe02IxIUNOXlOAMIIjbJidsmxdAwwc3yoB1LY6AEada15V/WGgoXzIEWte7xrX9zcz1au
- NLMuPYH4zzJHxNVXWMcmheoaEWn+FL68SIh6COZ5Pf/LKWX8VUNcAg5GbQRW1Vcnhcoc5RLj/9g
- N4mkLrlyEOFRoj8MmsA==
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzI2MDExMyBTYWx0ZWRfXw9r/te/qorep
- KoZIXY/bEefWbcmGKOulyFUz3G80JHgf8ktutGJ/ihRkgbnN3jAdSLYA8YvzptFzMfOahIgUGBA
- TG01LBlpzJzmp6XeekLIRCBVrY0AqTw=
-X-Authority-Analysis: v=2.4 cv=AZeB2XXG c=1 sm=1 tr=0 ts=6a65ef84 cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=VnNF1IyMAAAA:8
- a=RZoRp3Lhb-INW950ffIA:9 a=QEXdDO2ut3YA:10 a=O8hF6Hzn-FEA:10
-X-Proofpoint-GUID: T4E5GGTODsV15z-5dQp2f3wD-cn3x0m8
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-07-26_03,2026-07-24_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 priorityscore=1501 phishscore=0 adultscore=0 impostorscore=0
- clxscore=1015 malwarescore=0 suspectscore=0 lowpriorityscore=0 bulkscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607260113
+x-ovh-tracer-id: 4353854940871437544
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: dmFkZTElj8EdMObDu/kTnUp4apBD75PFPnpQg7NK68v/jHHR89xrg/xRx6yL7/M5JszXyamJKVqXasWixZpg+jG5pUnq2FJQf3RcH/p7BKF9ShGlxlpKb3medBYbwthOHi6WsKyEAUII4SyASMtTZ67ElEmVWlENG6n9/a9Xy2ya7vcBVw8XB9wVn4imkDjuTq6JWRHyLfhwScsQhrHfaxNwybRQY2TYKagJKm/0LjebKQNrDxRvOJTt3x1m+Q96I2WYaK+roFi2QVhsaL+TOm0mxD0rN7fdAcld8gqKDR8O0FAZfQq93UO3beSddZOvIXhUq/Du8CZbFzlxVR1/YoZGE97eAe1nD/pvpp/H9wjYlmpd6En5TEwzRgHnwgA0hn4jZxKIwAZl1a2WuQm9q6Ajq6t/2pISIXe8NrYhNveZxkW5AmvJ9PA7UsRYqILeFJa4l/t+ziBmkl2C3mhB9K9WBgl028n0/N/mogcwCkGh9Dohg09N9e/NkWowVYe8bXOADLN+Ehv2sOxfFwCb9C5r/If3VHWeZdfCtqtV4oXnzqL52JTOrcYLCZQRwcBSYfVag5LP9W6Kq9KTyBusOQMf+Lzj07P9l8h4R9C/uaJKnLf9IWEigh7DrBb8Y+NbF9hrvtCeJQ7PzrWJPe5j7JV4mg8NOfRjA1xcvX2Fs8q1ysm3cA
+DKIM-Signature: a=rsa-sha256; bh=leejA4oXNKzlCWvwsksqJsxtR+ZVpBQOirzyOlDDiHc=;
+ c=relaxed/relaxed; d=kaod.org; h=From; s=ovhmo393970-selector1;
+ t=1785085039; v=1;
+ b=pO2ygG3Oy8MBfiWrP1EukCLQ33a59NiKcul5zOMyXuQbsm5GLsEiJCxoLEb4hFA4eaDGCFxC
+ r3qr3Zn1XUrKX5VY9IdN8AhewaV1axthkVBO7D2sxIJVIJJ7yxpVCpueehGbUL5B/6o1WhzKlo4
+ GtM+3XgyHYfY3bJJTGhXRGhcJMlzbRYpq7EU9WgReJpKgmAN+H6judUya9S0BNHN9V48ghl+p8q
+ k+j0li5RJqNkXRzBfqqm4rg/MJP1WeNA3JkjJaGzaXwRuVS3+IBiUNfvVc3qgN976jtcMaaGlLy
+ y2pKYNDOuzw5FfcvM2dxM13TPgvLPaJXLBka1twHqaYwA==
 
-
-
-On 08/07/26 8:03 pm, Sourabh Jain wrote:
-> With this changes included crashkernel=xxM,high will be supported on
-> powerpc. This allow user to allocated crashkernel memory on higer memory
-> region and keeping the low memory allocation minimal.
+On 7/24/26 04:28, Gou Hao wrote:
+> When irq_domain_alloc_irqs() fails in xive_init_ipis(), the error
+> path frees the global xive_ipis array via kfree().  However,
+> xive_smp_probe() ignores the error return and proceeds to call
+> xive_setup_cpu_ipi(), which dereferences the already-freed xive_ipis
+> pointer, resulting in a use-after-free.
 > 
-> The low memory reservation is by default set to 64 MB and it is reserved
-> below RTAS_INSTANTIATE_MAX (1G) to make sure rtas instantiation work
-> properly.
+> Propagate the error from xive_init_ipis() through xive_smp_probe()
+> and check it in both pnv_smp_probe() and pSeries_smp_probe() so that
+> IPI setup is aborted cleanly on failure.
 > 
-> powerpc uses generic crashkernel parser and reserve functions and they
-> are capable of handling high crashkernel reservtion so
-> arch_reserve_crashkernel() is updated call generic crashkernel praser
-> and reserve function with resptive options to make
-> crashkernel=XXM,high prase and make crashkernel memory get reserved on
-> higher memory regions.
-> 
-> Note: High crashkernel is supported only on PPC 64-bit systems when
-> 64-bit RTAS is instantiated and Radix MMU is enabled; otherwise, the
-> crashkernel reservation falls back to the default, even if the kernel
-> command includes crashkernel=XXM,high.
-> 
-> Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
+> Fixes: 7dcc37b3eff9 ("powerpc/xive: Map one IPI interrupt per node")
+> Signed-off-by: Gou Hao <gouhao@uniontech.com>
+> Reviewed-by: Wentao Guan <guanwentao@uniontech.com>
+> Reviewed-by: jiazhenyuan <jiazhenyuan@uniontech.com>
 > ---
->   arch/powerpc/include/asm/crash_reserve.h |  6 ++++
->   arch/powerpc/include/asm/kexec.h         |  1 +
->   arch/powerpc/include/asm/rtas.h          |  9 +++++
->   arch/powerpc/kexec/core.c                | 45 +++++++++++++++++-------
->   4 files changed, 49 insertions(+), 12 deletions(-)
+>   arch/powerpc/platforms/powernv/smp.c | 8 +++++---
+>   arch/powerpc/platforms/pseries/smp.c | 8 +++++---
+>   arch/powerpc/sysdev/xive/common.c    | 6 +++++-
+>   3 files changed, 15 insertions(+), 7 deletions(-)
 > 
-> diff --git a/arch/powerpc/include/asm/crash_reserve.h b/arch/powerpc/include/asm/crash_reserve.h
-> index d1b570ddbf98..4f2096984736 100644
-> --- a/arch/powerpc/include/asm/crash_reserve.h
-> +++ b/arch/powerpc/include/asm/crash_reserve.h
-> @@ -2,6 +2,8 @@
->   #ifndef _ASM_POWERPC_CRASH_RESERVE_H
->   #define _ASM_POWERPC_CRASH_RESERVE_H
+> diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
+> index 8f41ef364fc6f..b1201dbafcaf6 100644
+> --- a/arch/powerpc/platforms/powernv/smp.c
+> +++ b/arch/powerpc/platforms/powernv/smp.c
+> @@ -332,10 +332,12 @@ static void pnv_cause_ipi(int cpu)
 >   
-> +#include <asm/rtas.h>
-> +
->   /* crash kernel regions are Page size agliged */
->   #define CRASH_ALIGN             PAGE_SIZE
->   
-> @@ -12,5 +14,9 @@ static inline bool arch_add_crash_res_to_iomem(void)
->   }
->   #define arch_add_crash_res_to_iomem arch_add_crash_res_to_iomem
->   #endif
-> +#define DEFAULT_CRASH_KERNEL_LOW_SIZE SZ_64M
-> +
-> +#define CRASH_ADDR_LOW_MAX	RTAS_INSTANTIATE_MAX
-> +#define CRASH_ADDR_HIGH_MAX	memblock_end_of_DRAM()
->   
->   #endif /* _ASM_POWERPC_CRASH_RESERVE_H */
-> diff --git a/arch/powerpc/include/asm/kexec.h b/arch/powerpc/include/asm/kexec.h
-> index e02710d6a2e1..9e676bd3bf03 100644
-> --- a/arch/powerpc/include/asm/kexec.h
-> +++ b/arch/powerpc/include/asm/kexec.h
-> @@ -118,6 +118,7 @@ int setup_new_fdt_ppc64(const struct kimage *image, void *fdt, struct crash_mem
->   int __init overlaps_crashkernel(unsigned long start, unsigned long size);
->   extern void arch_reserve_crashkernel(void);
->   extern void kdump_cma_reserve(void);
-> +unsigned long long __init get_crash_base(unsigned long long crash_base);
->   #else
->   static inline void arch_reserve_crashkernel(void) {}
->   static inline int overlaps_crashkernel(unsigned long start, unsigned long size) { return 0; }
-> diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
-> index aaa4c3bc1d61..d290437d8131 100644
-> --- a/arch/powerpc/include/asm/rtas.h
-> +++ b/arch/powerpc/include/asm/rtas.h
-> @@ -561,6 +561,14 @@ static inline int page_is_rtas_user_buf(unsigned long pfn)
->   	return 0;
->   }
->   
-> +static inline bool is_rtas_high_crashkernel_capable(void)
-> +{
-> +	if (rtas_64)
-> +		return true;
-> +
-> +	return false;
-> +}
-> +
->   /* Not the best place to put pSeries_coalesce_init, will be fixed when we
->    * move some of the rtas suspend-me stuff to pseries */
->   void pSeries_coalesce_init(void);
-> @@ -569,6 +577,7 @@ void rtas_initialize(void);
->   static inline int page_is_rtas_user_buf(unsigned long pfn) { return 0;}
->   static inline void pSeries_coalesce_init(void) { }
->   static inline void rtas_initialize(void) { }
-
-> +static inline bool is_rtas_high_crashkernel_capable(void) { return true; }
-
-Though !CONFIG_PPC_RTAS may imply radix MMU and high crashkernel
-capable, is_rtas_high_crashkernel_capable() returning true for
-!CONFIG_PPC_RTAS case seems counter-intuitive. Have a single
-generic (non-rtas specific) function that accounts for high
-crashkernel support in different scenarios?
-
->   #endif
->   
->   #ifdef CONFIG_HV_PERF_CTRS
-> diff --git a/arch/powerpc/kexec/core.c b/arch/powerpc/kexec/core.c
-> index dc44f11be353..81fc437377c8 100644
-> --- a/arch/powerpc/kexec/core.c
-> +++ b/arch/powerpc/kexec/core.c
-> @@ -15,6 +15,7 @@
->   #include <linux/irq.h>
->   #include <linux/ftrace.h>
->   
-> +#include <asm/rtas.h>
->   #include <asm/kdump.h>
->   #include <asm/machdep.h>
->   #include <asm/pgalloc.h>
-> @@ -64,7 +65,7 @@ void machine_kexec(struct kimage *image)
->   
->   static unsigned long long crashk_cma_size;
->   
-> -static unsigned long long __init get_crash_base(unsigned long long crash_base)
-> +unsigned long long __init get_crash_base(unsigned long long crash_base)
+>   static void __init pnv_smp_probe(void)
 >   {
->   
->   #ifndef CONFIG_NONSTATIC_KERNEL
-> @@ -104,35 +105,55 @@ static unsigned long long __init get_crash_base(unsigned long long crash_base)
->   #endif
->   }
->   
-> +static bool high_crashkernel_supported(void)
-> +{
-> +#if defined(CONFIG_PPC64) && (defined(CONFIG_PPC_PSERIES) || defined(CONFIG_PPC_POWERNV))
-> +	if (early_radix_enabled() && is_rtas_high_crashkernel_capable())
-> +		return true;
-> +#endif
-> +	return false;
-> +}
-> +
->   void __init arch_reserve_crashkernel(void)
->   {
-> -	unsigned long long crash_size, crash_base, crash_end;
-> +	unsigned long long crash_size, crash_base, crash_end, low_size = 0;
->   	unsigned long long kernel_start, kernel_size;
->   	unsigned long long total_mem_sz;
-> +	bool high = false;
->   	int ret;
->   
->   	total_mem_sz = memory_limit ? memory_limit : memblock_phys_mem_size();
->   
->   	/* use common parsing */
->   	ret = parse_crashkernel(boot_command_line, total_mem_sz, &crash_size,
-> -				&crash_base, NULL, &crashk_cma_size, NULL);
-> +				&crash_base, &low_size, &crashk_cma_size, &high);
->   
->   	if (ret)
->   		return;
->   
-> -	crash_base = get_crash_base(crash_base);
-> -	crash_end = crash_base + crash_size - 1;
-> +	if (high && !high_crashkernel_supported()) {
-> +		high = false;
-> +		low_size = 0;
-> +		pr_warn("High crashkernel unsupported, using standard reservation");
+> -	if (xive_enabled())
+> -		xive_smp_probe();
+> -	else
+> +	if (xive_enabled()) {
+> +		if (xive_smp_probe() < 0)
+> +			return;
+> +	} else {
+>   		xics_smp_probe();
 > +	}
 >   
-> -	kernel_start = __pa(_stext);
-> -	kernel_size = _end - _stext;
-> +	if (high) {
-> +		crash_base = 0;
-> +	} else {
-> +		crash_base = get_crash_base(crash_base);
-> +		crash_end = crash_base + crash_size - 1;
+>   	if (cpu_has_feature(CPU_FTR_DBELL)) {
+>   		ic_cause_ipi = smp_ops->cause_ipi;
+> diff --git a/arch/powerpc/platforms/pseries/smp.c b/arch/powerpc/platforms/pseries/smp.c
+> index db99725e752bd..14cd0634eeca8 100644
+> --- a/arch/powerpc/platforms/pseries/smp.c
+> +++ b/arch/powerpc/platforms/pseries/smp.c
+> @@ -194,10 +194,12 @@ static int pseries_cause_nmi_ipi(int cpu)
 >   
-> -	/* The crash region must not overlap the current kernel */
-> -	if ((kernel_start + kernel_size > crash_base) && (kernel_start <= crash_end)) {
-> -		pr_warn("Crash kernel can not overlap current kernel\n");
-> -		return;
-> +		kernel_start = __pa(_stext);
-> +		kernel_size = _end - _stext;
-> +
-> +		/* The crash region must not overlap the current kernel */
-> +		if ((kernel_start + kernel_size > crash_base) && (kernel_start <= crash_end)) {
-> +			pr_warn("Crash kernel can not overlap current kernel\n");
+>   static __init void pSeries_smp_probe(void)
+>   {
+> -	if (xive_enabled())
+> -		xive_smp_probe();
+> -	else
+> +	if (xive_enabled()) {
+> +		if (xive_smp_probe() < 0)
 > +			return;
-> +		}
->   	}
+> +	} else {
+>   		xics_smp_probe();
+> +	}
 >   
-> -	reserve_crashkernel_generic(crash_size, crash_base, 0, false);
-> +	reserve_crashkernel_generic(crash_size, crash_base, low_size, high);
->   }
+>   	/* No doorbell facility, must use the interrupt controller for IPIs */
+>   	if (!cpu_has_feature(CPU_FTR_DBELL))
+> diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
+> index f9a1229cede73..bb6ce07c1699e 100644
+> --- a/arch/powerpc/sysdev/xive/common.c
+> +++ b/arch/powerpc/sysdev/xive/common.c
+> @@ -1256,10 +1256,14 @@ noinstr static void xive_cleanup_cpu_ipi(unsigned int cpu, struct xive_cpu *xc)
 >   
->   void __init kdump_cma_reserve(void)
+>   int __init xive_smp_probe(void)
+>   {
+> +	int ret;
+> +
+>   	smp_ops->cause_ipi = xive_cause_ipi;
+>   
+>   	/* Register the IPI */
+> -	xive_init_ipis();
+> +	ret = xive_init_ipis();
+> +	if (ret < 0)
+> +		return ret;
 
-- Hari
+the cause_ipi handler assignment should be moved when we know
+IPIs have been allocated. Here :
+
+    smp_ops->cause_ipi = xive_cause_ipi;
+
+
+>   
+>   	/* Allocate and setup IPI for the boot CPU */
+>   	xive_setup_cpu_ipi(smp_processor_id());
+
+
+Thanks,
+
+C.
+
+
 
