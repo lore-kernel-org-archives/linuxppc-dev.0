@@ -1,65 +1,67 @@
-Return-Path: <linuxppc-dev+bounces-24836-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24837-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B60DAC531CC
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Jul 2026 08:23:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2CB42C531CC
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Jul 2026 08:24:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h7F9Y6pKrz2yFP;
-	Sun, 26 Jul 2026 18:23:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h7FBd6H81z2yRl;
+	Sun, 26 Jul 2026 18:24:25 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785054209;
-	cv=none; b=MyUvXiWh8lrTcwZNqx5DP2yqhRF06rGH+JOloy4cXLK5QBjtkAHTKX1dgrI3YmzndIFKpDFKyb0IkRfVAaPdnBy50Z8WXDUxoi8I0bdn0j55OQ7W7QnBMQuM/ApQ7SmeatOk2YgLqLdpREirNOZz+iR2zHq3Owrm8GBHxCfPpXDmR/gFAGYVxbZZZAJk8isVJPcyEgh4JSweo4dCITNzOxWrXqXTK0yd3obwuxW6JeYWRMZbqJ0AfdqWx+77m+7hZXm7Uzycl6Xyad3S9+siIb9nLEgy8jGQaT/YYmZ+/W73/aO0EGghTv6KpXMyjdIRnOvEM4+rF7e+MTVsApM6iw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785054265;
+	cv=none; b=MiRCbHuIZeokSFwAV7/LtlhKyl59b6aHwIfEy7V1VlAn2A9yHtJ/0fo3mPm/Da5fch89nNTAXwMaRgboN7RNZFe0F72JyDO9vzmshWjaGPvCY9lkV/BX4DdeXIqVNj/rkBnAzLFU8WnB7GYLyNj5p5JWEBumE91Y9ktxY0X+XCrC/EFvGL1QSy1gf/2VL7C+kKVJsUwu2VJfzFp33bEq9hzwKvliF9w+mqLpgfZsEWgMqJHvejfax8epLnk3988B3taH+tAtzCinBMEjLuuKt5vxs6RbdIJlqz0IdeMdtkVlEKl3SrVUnO3/75hOGYWGioMc9b4Yr5Plh6d0TtUCVA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785054209; c=relaxed/relaxed;
-	bh=EURZIPTZJFvZM2NBjtixgY4zUoPQrTRaxQBigdxQ/mU=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=F5Fsb64T/QjD9qVVVpfRVF05MOcK1If9ZJAeVEf+mufeUQIjrUcU/gnE4gRndDAeQE0Why0MnMNG/DZVwW+CE1wc3CRFvLUQZQUijh8D1oUxH6QlDKlLdwWPtpfR1bM9PhCp9kFTQJaBmo2ueTpMeoXPtCRbR+imRoCeVG7T6jgsg76hAnR6kTD+H+liXkNRpes24fbAYi6iejdzMUSZQpEN1MJSlWSUGCXr0zePGZj0Z0kbsmh19oonzrBIHgizC6xJB70DH5IA8eAg2OOGtvR/ENQKUMN7s/k3cpJ5/IkNiImV8xjaYxijhw2/cMl3VgFWtiJxjQYD3eHxJeSwqA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TeXg6iMc; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1785054265; c=relaxed/relaxed;
+	bh=1h8J0+r+HKDH96f38eGX//+FYYpw9kc8NPw1oyEbaDg=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=IM9napSWNZZmhazx/Nu09NflZIKQZlTW5O+DhWYFFdkemTydUttUTxmGPIfqY6zpPeVk9L5JRe05ytZFteLePRIOdRZJrNr0FLmeLCWSaIIZn1tEwEcFuCZpLox/xmAc0r95dksZswHUqBPyD/2awLa0oxtpqufoo1QN+oBGqXdIDXV3WDJdfEkL8hR8tQ/GdO3UBV71ZOWjeACEUCgAuz4jOFO8WHGu5Pekbj3P2Ujhs4j9VgTY0l57VJKKCw0vP/MLlZ7n1aX+uYTy+srFqoDVbCg7U5Xa/k1ZsViLRyuB6q9DoENfUaj/mooRE/KxLG3tT37BaSMX6MJG/P5wKA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=naYCHlv2; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TeXg6iMc;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=naYCHlv2;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h7F9Y1pH1z2xyk
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jul 2026 18:23:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h7FBc6Ylfz2yFP
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jul 2026 18:24:24 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 996224074B;
-	Sun, 26 Jul 2026 08:23:25 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EB45B1F000E9;
-	Sun, 26 Jul 2026 08:23:24 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id C015640AEE;
+	Sun, 26 Jul 2026 08:24:22 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E9CFF1F000E9;
+	Sun, 26 Jul 2026 08:24:21 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785054205;
-	bh=EURZIPTZJFvZM2NBjtixgY4zUoPQrTRaxQBigdxQ/mU=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date;
-	b=TeXg6iMcktCeyB0+3f1Wqj6isZ1zp0BU3PodckqWnMC2VKkG+ycD66oY2ApKlngBf
-	 yAlCvF0EiSAcdRWOHejLHvFI2lp/BfVYEJaNEAezyC1m7Z22pItQAbp+G5n7Fw7F1/
-	 7rHkZrbYeJQC0lUoE/g5t+gYdHVntH5IjWPqatLleUPfDUGmpwWFAv1WIK5Td3Iztu
-	 JvyEsSwzlU8o+f2iHWM0Iqfkryb7ufpyENncD3S78477VweJHa2DypdYjOEzepQBD7
-	 6Dyr29IFlCQZX6ZEICY+Ba6YdflI6c05BKNRGKONCtuOWHMgQXReJZs33Ey9qNuJz6
-	 /Ff3R3RjZRV0Q==
+	s=k20260515; t=1785054262;
+	bh=1h8J0+r+HKDH96f38eGX//+FYYpw9kc8NPw1oyEbaDg=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=naYCHlv2BL4Vo5IMZ+rucI1IUcm2W+5FvAdPLeFy/8TMfofkrUngKY0lHlo/vG6F4
+	 Lrr+4uVz6/cfuXZg0bnFRsvN2neMPceWNnPfBHNLESE+J5QuKgZ1YioVZSyBz5oJtJ
+	 ze2up/U4UFtMocCPZjFKPedCx8NGK25mUxbyfXm7gzZOOz/U5J95ePcwWQiSnduZia
+	 ZyS0JORzuiIOFYHqZDSK6REAX4/Td3RhawVi2D5joirUlDtFDsZ6vA1RSYiIc4ixK9
+	 4TddXhyhT4jfAdrJmhVXMLJFQ1qORwSvUj8wIbVzE81kkbXNMgjtbTKzuymVgH9sGl
+	 Wlt66JKBy459Q==
+Date: Sun, 26 Jul 2026 11:24:19 +0300
 From: Leon Romanovsky <leon@kernel.org>
-To: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
- chleroy@kernel.org, maarten.lankhorst@linux.intel.com, mripard@kernel.org, 
- tzimmermann@suse.de, airlied@gmail.com, simona@ffwll.ch, bharat@chelsio.com, 
- jgg@ziepe.ca, akpm@linux-foundation.org, namcao@linutronix.de, 
- ynorov@nvidia.com, sshegde@linux.ibm.com, nilay@linux.ibm.com, clg@kaod.org, 
- Gou Hao <gouhao@uniontech.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
- dri-devel@lists.freedesktop.org, linux-rdma@vger.kernel.org, 
- linux-mm@kvack.org, gouhaojake@163.com, kernel@uniontech.com
-In-Reply-To: <20260724022851.466017-1-gouhao@uniontech.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Gou Hao <gouhao@uniontech.com>, maddy@linux.ibm.com, mpe@ellerman.id.au,
+	npiggin@gmail.com, chleroy@kernel.org,
+	maarten.lankhorst@linux.intel.com, mripard@kernel.org,
+	tzimmermann@suse.de, airlied@gmail.com, simona@ffwll.ch,
+	bharat@chelsio.com, jgg@ziepe.ca, namcao@linutronix.de,
+	ynorov@nvidia.com, sshegde@linux.ibm.com, nilay@linux.ibm.com,
+	clg@kaod.org, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+	linux-rdma@vger.kernel.org, linux-mm@kvack.org, gouhaojake@163.com,
+	kernel@uniontech.com
+Subject: Re: [PATCH v2 0/6] remove dead NULL checks after GFP_NOFAIL
+ allocations and fix xive use-after-free
+Message-ID: <20260726082419.GF12003@unreal>
 References: <20260724022851.466017-1-gouhao@uniontech.com>
-Subject: Re: (subset) [PATCH v2 0/6] remove dead NULL checks after
- GFP_NOFAIL allocations and fix xive use-after-free
-Message-Id: <178505420268.4050106.14417810250582879470.b4-ty@kernel.org>
-Date: Sun, 26 Jul 2026 04:23:22 -0400
+ <20260725202632.dcb325658896a470df91cf57@linux-foundation.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -73,30 +75,50 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.15-dev-18f8f
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260725202632.dcb325658896a470df91cf57@linux-foundation.org>
 
-
-On Fri, 24 Jul 2026 10:28:45 +0800, Gou Hao wrote:
-> Changes in v2:
-> - Remove the now-unused out_free_domain error label in the xive
->   patch after deleting the unreachable NULL check goto.
-> - Fix a use-after-free of xive_ipis: when xive_init_ipis() fails,
->   the error path frees xive_ipis but xive_smp_probe() ignores the
->   error and proceeds to dereference it in xive_setup_cpu_ipi().
->   Propagate the error return through xive_smp_probe() and check
->   it in both pnv_smp_probe() and pSeries_smp_probe().
+On Sat, Jul 25, 2026 at 08:26:32PM -0700, Andrew Morton wrote:
+> On Fri, 24 Jul 2026 10:28:45 +0800 Gou Hao <gouhao@uniontech.com> wrote:
 > 
-> [...]
+> > This is a code cleanup series that removes unreachable
+> > NULL checks (and associated error handling) that follow allocations
+> > using __GFP_NOFAIL, which guarantees non-NULL return.
+> 
+> Sigh.
+> 
+> Back when Linux ran on an abacus, I added __GFP_NOFAIL because four or
+> five sites (file systems) were infinitely looping on alloc_pages until
+> it succeeded.  I figured we should move this operation into the page
+> allocator so we could easily find those sites and fix them to Not Do
+> That.
+> 
+> I made it very clear (changelog and code comments) that no new code
+> should use __GFP_NOFAIL.  How did that work out?
+> 
+> hp2:/usr/src/linux-7.2-rc4> grep -r __GFP_NOFAIL | wc -l
+> 241
+> 
+> So much lameness!   My immediate reaction to your patchset is "No.  Fix
+> the damn code instead".  But I've resoundingly lost that fight.
+> 
+> 
+> Thanks, I'll scoop up the entire series.  If individual patches pop up
+> in linux-next then I'll drop the mm.git copies.
+> 
+> 
+> 
+> AI review has a shower of possible pre-existing issues.  I'm seeing
+> use-after-free, double-free, leak, system hang, NULL pointer
+> dereference, usual stuff :(
+> 
+> They're in powerpc and cxgb4, if maintainers are interested.
+> 
+> 	https://sashiko.dev/#/patchset/20260724022851.466017-1-gouhao@uniontech.com
 
-Applied, thanks!
+Regarding cxgb4, yes, I'm looking into it.
 
-[6/6] RDMA/cxgb4: remove dead NULL checks after GFP_NOFAIL allocations
-      https://git.kernel.org/rdma/rdma/c/a273210687f255
-
-Best regards,
--- 
-Leon Romanovsky <leon@kernel.org>
+Thanks
 
 
