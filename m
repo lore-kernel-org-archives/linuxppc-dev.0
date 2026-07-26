@@ -1,73 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-24840-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24841-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 79155C531F9
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Jul 2026 11:24:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9246CC531CC
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Jul 2026 11:29:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h7K9x10Pxz2xyk;
-	Sun, 26 Jul 2026 21:24:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h7KHz129jz2yd7;
+	Sun, 26 Jul 2026 21:29:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785065045;
-	cv=none; b=I013Wh0sv4YGJr6DegY6yxfU0xy+65oAZJ/oDVjH3R6c509p/Y8rp0DtCghChNbHf3z9quEBBLrO/IDm01Y99YHb42/V90rzQD1fBlGsLN19myQgUBkFrXloqj8qtw74tKp0HQt3zzIc4MLh1nb7jz9n8FzFzDtapZUumg3UsSQzzqpixw5Gu7lApHpBjNH1TS9euh/g0agarKRURfGGZ0hztiiMBbAwwoXAP9Hz1s43Qeom4Gmxg3gMp5GdeP+5WHcHQiOfDmOTboOzxdh22GNj/jS+FmUHHEFEITXkrogVZzpaeJcx7mXxvHF0F0JjsH1CEVTIXZzHrY0T1Pc/7w==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785065359;
+	cv=none; b=o0eihzh0vKpXa/BfwHIVDa2kJi/geGmiuHTI/2OzBiioTSa+/n27S+Br0k7CtXgwhJaXM0DoXes1YjF4CLwq2K2/Ply6HW+cCzQp8lN0oE4sfFnMfMzbn8hxNFSeerr+weW5SYkgb/OWuWzxUhnImb2ZA3SxJW12/2KIS94FqSeCC9WUcZ1mlLxl5lQhO9GnrXVpKMsJZFUrNSGrnWiFQLRm8SmW2kVS7Dvd4NmzKd2A9LF7GvohSBYA6nLMwATfvEqsvKlyrjBlWVMkiUjjjPeF02AZq7AQZ/L2TTlgQBPaTxOtDX21J8joQgJnPO+RoFZ+a4ZolV6k6UZTDb3O+Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785065045; c=relaxed/relaxed;
-	bh=xmQqYyQGngcf7GUPNeSLLM0nntYzp8fV+RRBoKwCKhw=;
+	t=1785065359; c=relaxed/relaxed;
+	bh=1gKc/tEHvIl6NSsUGto1KyvngLRO0l7pwSc7l5wphWE=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=kMz9BLD6Su4SyFA7MtQQ449oQRJ6Qr1ERpdh9Ctpm4ux62ZhANw4xUoLfQiVVN6fG6AA6MphjP+Gtt9keP+56vfM7Dh6wssIolHpBw5cf6i7+GMDmkAx/7Aqkddpx9DnWrMgiPtPFpfKWovUZ70+CUVHqPQNb98r+S76vhUEN44ssqXA2v884Ei2UGX1w8Xd31Ft4mpTyJoQRqRE5Tv+Eiho3HMVbXsbPB0GGWs7akVYM2+SEW0GenWxUllvgKqRoXY53HcbN8GfBU93+Z1mnH+EB0ElUPyMJtsdAyQU1u6X0ZIbPKMFOWGzexxt97r8lbelTnC8R6tzXab/wz05uQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=S/NvPJAg; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 In-Reply-To:Content-Type; b=juoiGJeHxNSmSrhhOI/p5sqe7ptzAjA2lenu4sIhwmyVsuel5uK6OxksmuA/DEXj1drP/i5k3FOoJqtIQEb30/b+uA/NKRmUji0xvG0vNWZ/VEV1xvaQVdFOo0Q8HnFc9VdfZB8LLJnVZRdsAg8pxLhslwiqM6dWRORyjOJSsyq8rN2p7IM6cAvWTl0euPIBpLYbAZelfLhAsIjQ2tEuRF69LjEJH1pv5MF4BrhCQfbMab7s2hMGzTmWRbY75mRyX3roLsy2RPrXCdPGxZ5wvjEY/eUILQFomt0jHT7HAMJFOIlF7NsLTMFzuvsloP1LcM/ts8lmeniP9/BrYWCoxw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=il+5rbZc; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=S/NvPJAg;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=il+5rbZc;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h7K9w1L3Gz2xfB
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jul 2026 21:24:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h7KHx71ylz2yRl
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jul 2026 21:29:17 +1000 (AEST)
 Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66QBHcSS1467491;
-	Sun, 26 Jul 2026 11:23:55 GMT
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66QBHaBg1467447;
+	Sun, 26 Jul 2026 11:29:08 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=xmQqYy
-	QGngcf7GUPNeSLLM0nntYzp8fV+RRBoKwCKhw=; b=S/NvPJAgUum9MumeLLd630
-	5ILr8YLSgGlLXlrg1e7UfPjI583V1QQ4Co/DW3tIxFYaXU7URErHJqKVoUlFZ8Qc
-	xZDqtCJthksOWmqwZQXdSpjOkPMifIbFRoHlNgDKizBaEl8ltA1fHRYMez15YP5Y
-	1H8lEOdGMOhDkSTB5p0pO/OMF5SYGV1UpxFvV/g3b6YpkOxTX+mivhBnwWtmllR9
-	vO9NrcFTzIOpPDuzEf2+TJFgsdk1HKw/SIiP9CTbxBEnmxEsqbcHfnHHykGMOWvy
-	c/hsSc/FoISMbDjx01ublSLeIcrde7bKPVn7kTgvt/eSXE/3cMt5OU+lnqPtUz7A
+	:message-id:mime-version:references:subject:to; s=pp1; bh=1gKc/t
+	EHvIl6NSsUGto1KyvngLRO0l7pwSc7l5wphWE=; b=il+5rbZcVZ/Xi9CY2Cgkgm
+	FDjl/GRxQ37Do8ztELmeXQO1UucXK93Dp4zoWPtVg/dZsRAFEDiTzdiSAPJuaJB+
+	TfSoO+zcH6AzdU3qD1fUuZwmU5NO+FmevEDz4k12KBHzJnQ72FMQoi09el/AncRJ
+	Kr8lzZgIAviRa9tlgfopwCZ/98HpVD4M8oy51vjEbqZTkY4X0tLAq+vCa6XtlsiH
+	woeS5Eirv4X6UWkgrZpwgcTgpORTWnuAf6ZxoKTB5W+vfJrH5sE7kJiCP7RCjLQz
+	7kxnisKKtEDj4icgBFtLNruG83EeJuR17Hhq+i/pBQUYcBU5Bl+tvpAdFW/xAsPA
 	==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fmuyc3dfx-1
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fmuyc3du7-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 26 Jul 2026 11:23:54 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66QBCeQg001541;
-	Sun, 26 Jul 2026 11:23:53 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fn7fq1hkq-1
+	Sun, 26 Jul 2026 11:29:07 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66QBQQFv015424;
+	Sun, 26 Jul 2026 11:29:06 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4fn7uvsg4p-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 26 Jul 2026 11:23:53 +0000 (GMT)
+	Sun, 26 Jul 2026 11:29:06 +0000 (GMT)
 Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66QBNnVa32047660
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66QBT2IY32506246
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sun, 26 Jul 2026 11:23:49 GMT
+	Sun, 26 Jul 2026 11:29:02 GMT
 Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id BFEB120201;
-	Sun, 26 Jul 2026 11:23:49 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 98651200A7;
+	Sun, 26 Jul 2026 10:57:01 +0000 (GMT)
 Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 69974201FD;
-	Sun, 26 Jul 2026 11:23:33 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 72043200A5;
+	Sun, 26 Jul 2026 10:56:56 +0000 (GMT)
 Received: from [9.124.223.5] (unknown [9.124.223.5])
 	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Sun, 26 Jul 2026 11:23:33 +0000 (GMT)
-Message-ID: <ffd8a15f-9526-413d-8a0e-f86b4b6964b8@linux.ibm.com>
-Date: Sun, 26 Jul 2026 16:53:22 +0530
+	Sun, 26 Jul 2026 10:56:56 +0000 (GMT)
+Message-ID: <30f314c6-35ae-4fec-b6b4-41e57d013c75@linux.ibm.com>
+Date: Sun, 26 Jul 2026 16:26:55 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -98,24 +98,24 @@ Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: d2lDklp6muUMoOl_8-2LyLElY_ltCoJ-
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzI2MDExMyBTYWx0ZWRfXwaTYeY4qk0AW
- +qtHAML93VieBsT790ne92esX/CUmtZ0V+w5CozOPVXnt8DBAIIbz+BMs6sauFNnWIE2yVzRMtv
- 2RMREfRcrfkgk/Ex+RgGlnwf4FKUeOfJ6aQhTX/AZoQR9uHF431nT8zc/ogSDFWMnELieFz05Ca
- qXyfSz0RS5qL3+cm6Gnx4FfzxCSEFFynW07dICD2dFB97FQOJBn/uIX3s7YWbCNCWjt+zAHuROR
- dUbv1wJJVZsXz0AiS92+OIgkq9XHb5HRyPsLlvzEsTdu/6RPBPhFua84UVbanWoV3Ht9rKWgcWo
- pHyS9JEFqrkesfBWAsvezCmLQjHM9VAIVr9om7YX9iIj92LaTiRYFXEhqamMkyyTyv/GjgKFp+m
- noyRfGcjMpN1l9bUlpc7c/DoxFStwmwCznV/bWruKrXVqYo6A4kG1cK5xsOqUIHWLMKJcsZeD1A
- c0wRELng9hMCJ9wb/Pg==
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzI2MDExMyBTYWx0ZWRfX6jS9NGl4zyAM
- oD7FofHnirSpWE0MpExLm3Yg76AV1iipZMpUANnOIsXNZjPk1HB6IKeVYzCGL1W4DAW0eoLCxHK
- cxKpgGsM3FkgVbvGbRqIfCZ+jeoA1KY=
-X-Authority-Analysis: v=2.4 cv=AZeB2XXG c=1 sm=1 tr=0 ts=6a65ee4b cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+X-Proofpoint-ORIG-GUID: 89Yb6WM1QG86L6o7WeS7MFOWZkpvRGOe
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzI2MDExMyBTYWx0ZWRfX+kKmFhDau3ph
+ gY0M/dQlL5KhlFdsgEsFmenCMFlkSRXDH0Ry7ITxdtbIaw3Uk543I6loml5xadE+D0DEXbZAvzC
+ v7NdFmTAt0IPV87XzrcOg7GWpB/Rohqjkax2WL6RGFqPFrPS0bEXxtD1p8+QfD0AKwZZJfr2YbK
+ nTGoehLkQFaX1JmQVFykCETJh+xW6cjVD/jE+rDrr9DQzuBoPzKFoU9pl4U3QkbDOvw1JSbVffH
+ +uanKEYsdT8MCGu9G0YwIxjfPVY3xDicrHNgPB7SA0exWASJf9RWratfIg1wuXWPB3eF5b3mPdj
+ WeFqRHIe02IxIUNOXlOAMIIjbJidsmxdAwwc3yoB1LY6AEada15V/WGgoXzIEWte7xrX9zcz1au
+ NLMuPYH4zzJHxNVXWMcmheoaEWn+FL68SIh6COZ5Pf/LKWX8VUNcAg5GbQRW1Vcnhcoc5RLj/9g
+ N4mkLrlyEOFRoj8MmsA==
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzI2MDExMyBTYWx0ZWRfXw9r/te/qorep
+ KoZIXY/bEefWbcmGKOulyFUz3G80JHgf8ktutGJ/ihRkgbnN3jAdSLYA8YvzptFzMfOahIgUGBA
+ TG01LBlpzJzmp6XeekLIRCBVrY0AqTw=
+X-Authority-Analysis: v=2.4 cv=AZeB2XXG c=1 sm=1 tr=0 ts=6a65ef84 cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
  a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22
  a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=VnNF1IyMAAAA:8
- a=G5My4F1WUEdX3S119JUA:9 a=QEXdDO2ut3YA:10 a=O8hF6Hzn-FEA:10
-X-Proofpoint-GUID: fiwVdYKhhT1EXoOHtvUsykNP6sEOF75d
+ a=RZoRp3Lhb-INW950ffIA:9 a=QEXdDO2ut3YA:10 a=O8hF6Hzn-FEA:10
+X-Proofpoint-GUID: T4E5GGTODsV15z-5dQp2f3wD-cn3x0m8
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-07-26_03,2026-07-24_02,2025-10-01_01
@@ -219,7 +219,9 @@ On 08/07/26 8:03 pm, Sourabh Jain wrote:
 
 Though !CONFIG_PPC_RTAS may imply radix MMU and high crashkernel
 capable, is_rtas_high_crashkernel_capable() returning true for
-!CONFIG_PPC_RTAS case seems counter-intuitive.
+!CONFIG_PPC_RTAS case seems counter-intuitive. Have a single
+generic (non-rtas specific) function that accounts for high
+crashkernel support in different scenarios?
 
 >   #endif
 >   
@@ -249,7 +251,6 @@ capable, is_rtas_high_crashkernel_capable() returning true for
 >   #endif
 >   }
 >   
-
 > +static bool high_crashkernel_supported(void)
 > +{
 > +#if defined(CONFIG_PPC64) && (defined(CONFIG_PPC_PSERIES) || defined(CONFIG_PPC_POWERNV))
@@ -258,10 +259,61 @@ capable, is_rtas_high_crashkernel_capable() returning true for
 > +#endif
 > +	return false;
 > +}
-
-Have this function that accounts for high crashkernel support in
-different scenarios and drop is_rtas_high_crashkernel_capable()?
+> +
+>   void __init arch_reserve_crashkernel(void)
+>   {
+> -	unsigned long long crash_size, crash_base, crash_end;
+> +	unsigned long long crash_size, crash_base, crash_end, low_size = 0;
+>   	unsigned long long kernel_start, kernel_size;
+>   	unsigned long long total_mem_sz;
+> +	bool high = false;
+>   	int ret;
+>   
+>   	total_mem_sz = memory_limit ? memory_limit : memblock_phys_mem_size();
+>   
+>   	/* use common parsing */
+>   	ret = parse_crashkernel(boot_command_line, total_mem_sz, &crash_size,
+> -				&crash_base, NULL, &crashk_cma_size, NULL);
+> +				&crash_base, &low_size, &crashk_cma_size, &high);
+>   
+>   	if (ret)
+>   		return;
+>   
+> -	crash_base = get_crash_base(crash_base);
+> -	crash_end = crash_base + crash_size - 1;
+> +	if (high && !high_crashkernel_supported()) {
+> +		high = false;
+> +		low_size = 0;
+> +		pr_warn("High crashkernel unsupported, using standard reservation");
+> +	}
+>   
+> -	kernel_start = __pa(_stext);
+> -	kernel_size = _end - _stext;
+> +	if (high) {
+> +		crash_base = 0;
+> +	} else {
+> +		crash_base = get_crash_base(crash_base);
+> +		crash_end = crash_base + crash_size - 1;
+>   
+> -	/* The crash region must not overlap the current kernel */
+> -	if ((kernel_start + kernel_size > crash_base) && (kernel_start <= crash_end)) {
+> -		pr_warn("Crash kernel can not overlap current kernel\n");
+> -		return;
+> +		kernel_start = __pa(_stext);
+> +		kernel_size = _end - _stext;
+> +
+> +		/* The crash region must not overlap the current kernel */
+> +		if ((kernel_start + kernel_size > crash_base) && (kernel_start <= crash_end)) {
+> +			pr_warn("Crash kernel can not overlap current kernel\n");
+> +			return;
+> +		}
+>   	}
+>   
+> -	reserve_crashkernel_generic(crash_size, crash_base, 0, false);
+> +	reserve_crashkernel_generic(crash_size, crash_base, low_size, high);
+>   }
+>   
+>   void __init kdump_cma_reserve(void)
 
 - Hari
-
 
