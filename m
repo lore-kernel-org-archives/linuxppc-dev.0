@@ -1,73 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-24838-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24839-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D6DFCC531F9
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Jul 2026 10:55:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 98F1DC531CC
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Jul 2026 10:56:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h7JXl0Xnbz2xyk;
-	Sun, 26 Jul 2026 20:55:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h7JZ60s49z2xyk;
+	Sun, 26 Jul 2026 20:56:30 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785063318;
-	cv=none; b=dBgCy5QvBB3mEjHlXq0ru5QcPEyGMZKIEGZI7X/f7uT26doCm3TAtg9BVPSd+sJHAwPYjkXcpNXzcqknZyhMqTTe6iwo52iRdmw8/tmtQhgAC/GPbjBhi2f/cQJc9x/DL36DH7qnDvjFbMxWXuFhHqFRE19VKik8w/c8gYFIh5vRo5XbRzdkBndoQWDLAVgBqhh9btb8ldMOAaD+ho0khTFrKlZZj2a0CaSpIwVv2uyT76RpLD7t9914LI2qbTGx8iw8xoKQWooHjkBPKWqCD10xj2VmT1Ievfb3oGQdnNnj58iqvYKN0ouNUM8HIlp0JkHLXbPvPCd23uGovxcZCg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785063390;
+	cv=none; b=iODNE1nAq66j4w6YpAc5cMZHMIYa3cLpqSvE8VOTMEmEdo7qwss3ue6TNeJEV5PTTWU2JdnDQAWC8J9ERMegBhMY8RcJqm9LRXP4sQdi9gvVDmeBNw9GGGEUqaN9ax9nsUswxMp+XDMAqVIcgiBaEkX6QaaSChm/sjpgN/a0xHbSAtIDfRXlimw5bFC4GsNt037dnm4B/X4HAmkjbuycWlZi3bx+IwyPmeyNSj4WqIhYI0faiBSLmxx5rsVEUgb7X2/ryScYdSNlr33btGm5lSJpDrD08pwHqQWRKqjPygNnzbOl3WBhQssFqkD2IiLEVYPGarNAUzzHTwKASJBZhg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785063318; c=relaxed/relaxed;
-	bh=TVQiQ6GJzlMIZwPFREBVoOZjG80dXj2ZyjsEnnlKM94=;
+	t=1785063390; c=relaxed/relaxed;
+	bh=KV3m1dn52zoVb8jzYlp2Z+VtTF0YAiEIOSmGPTga5nc=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=b9BTZxG9fxDlZoUH8L57HW4hk+WH8Z+XwOFxsVo4ssVozS42B/dl6wAf1BcOPVSyjGgW4McaMeM5v3AEUeLk2jjBpSGNWI0iO/o+t8ZM3gKtakECdTjWWsHFuL3riDl38f0x5zESmtB0xULM7D+f/FCjuY+EiJ8h/9FQ4/qi9znx221F49acSDwtOfcujjjW7t/ySzXrd/u1jO+v9/KlOGMnfJtS+91Jq18REewrmQ9s0NqMSN6h7d9W0UYAgjpj6pr+8a0afz3TnkQ7CbO/74O8fA31icaXvNC4xOvE/4juzz0IT/OrovbnAScVRyZRI5iBz++6jgBtFJQTma9y4Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=BN4RwIbj; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 In-Reply-To:Content-Type; b=DtEKKWKI5Tv3WoGefJ87A39/3h4P2eVpu4YwpfeCOToM5MwwR12PBMFXEVy+4VJQvQigw8iUfAcAYXYdu0w10kvfxcpa/utyLKs+OOvcDl/0pz84TtlkDGPRDxLxdV4ziDenJQfFFpxu04f3XpoVwherUOpVjkNSXGYYZvms/SsC5Q+HVAogeMM4nxHzTkuY/LzxtE67AHxu4kVBuk/riBwDkgABuQHT21kJGlLlZC9BfLKwyfi/1cJPw8ywwXe4aBla0tuQe2WO0mDrR+au1+dD4yIElq5uCQuqUvu/5NPHqpKG+RilKpFex786awXwiJ/4C+Vxo815N1ZSKDfK+g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pASgYtHs; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=BN4RwIbj;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pASgYtHs;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h7JXj5nJTz2xfB
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jul 2026 20:55:16 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66Q8HoVP1106228;
-	Sun, 26 Jul 2026 10:54:59 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h7JZ513Qcz2xfB
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jul 2026 20:56:28 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66Q8Hn222978845;
+	Sun, 26 Jul 2026 10:56:21 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=TVQiQ6
-	GJzlMIZwPFREBVoOZjG80dXj2ZyjsEnnlKM94=; b=BN4RwIbjI24Pn+3ikBwlmb
-	/9nVMcTHKLwf+NSoR2iHM40D1l8kjxTuzJDUhOeRibNeP5QiAS3O2LRnlVgkBQt6
-	ztKdfa9jX3WK6sNZs+jnlx0YWJ3f7ioSR/R92r4pv1o52yKqQOLY59b36Il9BQJA
-	E+9vPMm36mMK4s9IMDo2RCpjF8eafM8dukSxjPNhGLy0tH3YqyZe5NmzUOhS9YpW
-	8i9ClU6OBfsU/+DFBqn5+wpIIQtJm+fwgJ3TxHJZtoKLi0YVcE6Y3gq9ozzbTti2
-	O0NyDW9nfZgeVyl3J95ZUv9izw6ufxlW5TdE+A7IVfaFVbsTMwl4h3jWMjRPMulg
+	:message-id:mime-version:references:subject:to; s=pp1; bh=KV3m1d
+	n52zoVb8jzYlp2Z+VtTF0YAiEIOSmGPTga5nc=; b=pASgYtHsI/F0NS3u1t3tC7
+	ruITFBMAXHXpjV784jY9CXv4WO3rabhLVIke/yomAdDkoGataZ4EuoxzV+vC0c1f
+	MqWjCyqelQzqnPLnnQYHln2baY1ik9yibeA4AJuh19yN1wiAsa5WOCs67iaVfjET
+	0gqydZKZQGZzlHusWLfvLAGFNSYsqcwtCIJE3rhzqBpU4/ItMt6aDSkSNevGUd8p
+	sR5scaPs2jrhSYtMTuE1NAIjndO6qxhr6B8S9ECYEsuApL109hxnK+1y2Oh2Kr24
+	e+TnfLdU/KRD0YfNbf6mp+xx7rmCflhISwyJhaG6fJrk+pi2XiaMZ1JMqURb479A
 	==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fmuyc3b0d-1
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fmuw73bms-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 26 Jul 2026 10:54:58 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66QAfW4L031319;
-	Sun, 26 Jul 2026 10:54:58 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fna5xs1fk-1
+	Sun, 26 Jul 2026 10:56:20 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66QAuJFQ016284;
+	Sun, 26 Jul 2026 10:56:19 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4fn8yh184k-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 26 Jul 2026 10:54:57 +0000 (GMT)
+	Sun, 26 Jul 2026 10:56:19 +0000 (GMT)
 Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66QAssnA51970420
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66QAuF8j40829340
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sun, 26 Jul 2026 10:54:54 GMT
+	Sun, 26 Jul 2026 10:56:15 GMT
 Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3479E20093;
-	Sun, 26 Jul 2026 10:54:54 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 2763C200A0;
+	Sun, 26 Jul 2026 10:56:15 +0000 (GMT)
 Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id BF1A720092;
-	Sun, 26 Jul 2026 10:54:40 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id B916E2009B;
+	Sun, 26 Jul 2026 10:55:43 +0000 (GMT)
 Received: from [9.124.223.5] (unknown [9.124.223.5])
 	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Sun, 26 Jul 2026 10:54:40 +0000 (GMT)
-Message-ID: <ad7e2f73-d3c6-4696-b596-9c1c1da05a9f@linux.ibm.com>
-Date: Sun, 26 Jul 2026 16:24:39 +0530
+	Sun, 26 Jul 2026 10:55:43 +0000 (GMT)
+Message-ID: <aef7f210-c070-4a84-a3c3-e9abc00d26d5@linux.ibm.com>
+Date: Sun, 26 Jul 2026 16:25:42 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,205 +82,313 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 1/4] powerpc/mmu: do MMU type discovery before
- crashkernel reservation
+Subject: Re: [PATCH v2 2/4] powerpc: move to 64-bit RTAS
 To: Sourabh Jain <sourabhjain@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
         maddy@linux.ibm.com, mpe@ellerman.id.au
 Cc: npiggin@gmail.com, chleroy@kernel.org, ritesh.list@gmail.com,
         shivangu@linux.ibm.com, mahesh@linux.ibm.com, adityag@linux.ibm.com,
         venkat88@linux.ibm.com
 References: <20260708143357.673251-1-sourabhjain@linux.ibm.com>
- <20260708143357.673251-2-sourabhjain@linux.ibm.com>
+ <20260708143357.673251-3-sourabhjain@linux.ibm.com>
 Content-Language: en-US
 From: Hari Bathini <hbathini@linux.ibm.com>
-In-Reply-To: <20260708143357.673251-2-sourabhjain@linux.ibm.com>
+In-Reply-To: <20260708143357.673251-3-sourabhjain@linux.ibm.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: ioFTjGHh6dpN31l5t0EsRPMi3inWEqLT
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzI2MDEwNyBTYWx0ZWRfX4XbJGokym4wV
- TL1jO3Dkg+5qfFMpGelhWaZK/uNRKG6nLpidzsxMdO3YO72rvVUGz9nyeJvit2HoXWEJ0IX3BR+
- IJBtQhz/b3zxt7jz0PbifxGHnVCO5DPPcw6YHRvrBQg3wAHr3ZlXERG+l4OjzLQhe6Bcv7iw32x
- XXlT+Cnjo//ui9+9YG/e8Jvt2us16nfcPTXJNNdFE0RCElVNqXFjx0p8/30gO9CBhSCLSmjcXNe
- WeheDo3fVTF13YG8zIjJsdj59rTQ3UCLq/a37oP7QBCeVtTO2FjYnhsg1CjRXwePuUKgVFARqpK
- 1y8LX3x7OzDkhpoBQTdh8/tQZc8U8iMicJJ/eqT+SRIw4R2ycwTqjjRHe6EtgZj8W3+L1Il9AAn
- RfDSjE0zk4YXfMMg4GDwLNbNKWV4YWfTmGjW9kos3TSOtNY/sM5a/8QTR4SUbDdV33fcnxW538G
- k44wQm5xbco2d6BKXMA==
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzI2MDEwNyBTYWx0ZWRfXwyhklBb7Hymw
- dnkTjWzEKL/TtSupXNrf01/XePnG2zovytnZU668VsxuM6N37KfiLh39k0COeDsTECIXRkT8yYR
- gUL5vg98UszuQBlB+L+ZvgrfMJMgw5Q=
-X-Authority-Analysis: v=2.4 cv=AZeB2XXG c=1 sm=1 tr=0 ts=6a65e783 cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+X-Proofpoint-GUID: Eg4EaEazWMdR3UHD4g8KIBFEe8Yawiu8
+X-Proofpoint-ORIG-GUID: 6O4pBe7J6_VaT86ktnw2LiSrpKQzvfBd
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzI2MDEwNyBTYWx0ZWRfXwlEAw6SzHUlf
+ dTvdar+89OFyvgpZ8CKvOyYAB5WmCMzAd1vu3EKjcG50jmSplWv84UWVB/2j4EMGi0g7hJAdUgw
+ oNU2GgzEK07r1RQZsjW2OyYhEEZ7GAg2cntXxMrCpCMJDuftDWVZMaIo9AkgNEa6fECP9D/Ms0G
+ HwTsLDQH5qbvjyWsCwpuR1esL2rIeA6sGiaVhSNUr8h6NujCi6Ns/j0iPMPeEH6gBxfJj+hFR5D
+ z/XCURUsakVy252KW6EOu62tQpNdBvmOs0AeAmwZPNNWDmk4w20/8txm7a50pstiniHTRiI6ICA
+ CwN3ksWJVodw5Sc6MITiWkc/iXhRNLjrx8zWkje1oXxbuNtic+gYayCFqRYQpMn9kvUDbvOA0eC
+ 23AP/C+iP5/8vdCZcwJbxzsoecyIEycCFEzuSb7wJ8MTr+M/46QQjXeAdJ62SRi44Iq/UzviKik
+ BYw+q43hfyY1ICAg51w==
+X-Authority-Analysis: v=2.4 cv=SKFykuvH c=1 sm=1 tr=0 ts=6a65e7d4 cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
  a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=VnNF1IyMAAAA:8
- a=DU61bVZrTOL0X21X56gA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-GUID: m5bEhSaEHQdQqE9T6EcwqakK4Se19wWW
+ a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=VnNF1IyMAAAA:8
+ a=tc68g34gb2g_7EadzUYA:9 a=QEXdDO2ut3YA:10 a=O8hF6Hzn-FEA:10
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzI2MDEwNyBTYWx0ZWRfX92J7VbuFY3dj
+ JC7MceIeNkbeSdyrfw3le/9FSoGhXo7UeB2hfNqJ9hEEClzHAiILHuIcIZaVsdRfa8xf3wbBzrq
+ 9RSR+ycVqsLqoXdlX94ENxDU72Idyvc=
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-07-26_02,2026-07-24_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 priorityscore=1501 phishscore=0 adultscore=0 impostorscore=0
- clxscore=1011 malwarescore=0 suspectscore=0 lowpriorityscore=0 bulkscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607260107
+ priorityscore=1501 malwarescore=0 clxscore=1015 adultscore=0
+ lowpriorityscore=0 bulkscore=0 impostorscore=0 phishscore=0 spamscore=0
+ suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
+ definitions=main-2607260107
 
-Couple of minor nits below..
+
 
 On 08/07/26 8:03 pm, Sourabh Jain wrote:
-> Crashkernel reservation on high memory depends on the MMU type, so
-> finalize the MMU type before calling arch_reserve_crashkernel().
+> Kdump kernels loaded at high addresses (above 4G) could not boot
+> because the kernel used 32-bit RTAS.
 > 
-> With the changes introduced here, early_radix_enabled() becomes usable
-> and will be used in arch_reserve_crashkernel() in the upcoming patch.
+> Until now, the kernel always used 32-bit RTAS, even for 64-bit kernels.
+> Before making an RTAS call, it clears the SF bit in MSR and uses LR as
+> the return address from RTAS. For kdump kernels loaded above 4G, RTAS
+> returns to a 32-bit truncated LR address, typically causing an exception
+> and kernel panic.
 > 
-> early_radix_enabled() depends on cur_cpu_spec->mmu_features to find
-> out if the radix MMU is enabled. The radix MMU bit in mmu_features is
-> discovered from the FDT and kernel configs. To make sure the MMU type is
-> finalized before arch_reserve_crashkernel() is called, the function that
-> scans the FDT and sets mmu_features, along with some bits from
-> mmu_early_type_finalize(), has been moved above
-> arch_reserve_crashkernel().
+> Fix this by switching to 64-bit RTAS support on systems where firmware
+> advertises "ibm,rtas-64-capable". The kernel instantiates 64-bit RTAS,
+> passes RTAS arguments using a 64-bit argument structure, and sets the
+> SF bit in MSR before entering RTAS. This ensures RTAS can correctly
+> return to addresses above 4G and allows high-address kdump kernels to
+> boot successfully.
+> 
+> If 64-bit RTAS is not supported or initialization fails, the kernel
+> continues to use 32-bit RTAS. In that case, high-address kdump kernels
+> will not be allowed (handled in upcoming patches), and RTAS calls will
+> continue to run with the SF bit cleared.
+> 
+> Changes made to support 64-bit RTAS:
+> - Detect firmware support using "ibm,rtas-64-capable"
+> - Initialize 64-bit RTAS in prom_init and add a new FDT property
+>    "linux,rtas-64"
+> - Read "linux,rtas-64" during boot and track RTAS mode using rtas_64
+> - Add 64-bit RTAS argument handling and return value conversion
+> - Prepare MSR appropriately for 32-bit or 64-bit RTAS calls
 > 
 > Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
 > ---
->   arch/powerpc/include/asm/book3s/64/mmu.h |  1 +
->   arch/powerpc/include/asm/mmu.h           |  1 +
->   arch/powerpc/kernel/prom.c               | 28 +++++++++++++-----------
->   arch/powerpc/mm/init_64.c                | 27 ++++++++++++++---------
->   4 files changed, 34 insertions(+), 23 deletions(-)
+>   arch/powerpc/include/asm/rtas-types.h |  8 +++++
+>   arch/powerpc/include/asm/rtas.h       |  2 ++
+>   arch/powerpc/kernel/prom_init.c       | 20 +++++++++--
+>   arch/powerpc/kernel/rtas.c            | 48 +++++++++++++++++++++++++--
+>   arch/powerpc/kernel/rtas_entry.S      | 17 +++++++++-
+>   5 files changed, 88 insertions(+), 7 deletions(-)
 > 
-> diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/include/asm/book3s/64/mmu.h
-> index 48631365b48c..7a3b2ff02041 100644
-> --- a/arch/powerpc/include/asm/book3s/64/mmu.h
-> +++ b/arch/powerpc/include/asm/book3s/64/mmu.h
-> @@ -208,6 +208,7 @@ extern int mmu_vmemmap_psize;
+> diff --git a/arch/powerpc/include/asm/rtas-types.h b/arch/powerpc/include/asm/rtas-types.h
+> index 5d40d187b965..de794b3e0fbd 100644
+> --- a/arch/powerpc/include/asm/rtas-types.h
+> +++ b/arch/powerpc/include/asm/rtas-types.h
+> @@ -14,6 +14,14 @@ struct rtas_args {
+>   	rtas_arg_t *rets;     /* Pointer to return values in args[]. */
+>   } __aligned(8);
 >   
->   /* MMU initialization */
->   void mmu_early_init_devtree(void);
-> +void mmu_early_type_finalize(void);
->   void hash__early_init_devtree(void);
->   void radix__early_init_devtree(void);
->   #ifdef CONFIG_PPC_PKEY
-> diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
-> index 5f9c5d436e17..c40dc6349e55 100644
-> --- a/arch/powerpc/include/asm/mmu.h
-> +++ b/arch/powerpc/include/asm/mmu.h
-> @@ -384,6 +384,7 @@ extern void early_init_mmu_secondary(void);
->   extern void setup_initial_memory_limit(phys_addr_t first_memblock_base,
->   				       phys_addr_t first_memblock_size);
->   static inline void mmu_early_init_devtree(void) { }
-> +static inline void mmu_early_type_finalize(void) { }
+> +struct rtas_args_64 {
+> +        __be64 token;
+> +        __be64 nargs;
+> +        __be64 nret;
+> +        __be64 args[16];
+> +        __be64 *rets;     /* Pointer to return values in args[]. */
+> +} __aligned(8);
+> +
+>   struct rtas_t {
+>   	unsigned long entry;		/* physical address pointer */
+>   	unsigned long base;		/* physical address pointer */
+> diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
+> index d046bbd5017d..aaa4c3bc1d61 100644
+> --- a/arch/powerpc/include/asm/rtas.h
+> +++ b/arch/powerpc/include/asm/rtas.h
+> @@ -10,6 +10,8 @@
+>   #include <linux/time.h>
+>   #include <linux/cpumask.h>
 >   
->   static inline void pkey_early_init_devtree(void) {}
+> +extern int rtas_64;
+> +
+>   /*
+>    * Definitions for talking to the RTAS on CHRP machines.
+>    *
+> diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+> index 53503937de0e..be7c5ea0b75d 100644
+> --- a/arch/powerpc/kernel/prom_init.c
+> +++ b/arch/powerpc/kernel/prom_init.c
+> @@ -1841,6 +1841,7 @@ static void __init prom_instantiate_rtas(void)
+>   	u32 base, entry = 0;
+>   	__be32 val;
+>   	u32 size = 0;
+> +	u32 rtas_64 = 0;
 >   
-> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-> index 9ed9dde7d231..db1615f26075 100644
-> --- a/arch/powerpc/kernel/prom.c
-> +++ b/arch/powerpc/kernel/prom.c
-> @@ -853,6 +853,21 @@ void __init early_init_devtree(void *params)
->   	if (PHYSICAL_START > MEMORY_START)
->   		memblock_reserve(MEMORY_START, int_vector_size);
->   	reserve_kdump_trampoline();
-> +
-> +	DBG("Scanning CPUs ...\n");
-> +
-> +	dt_cpu_ftrs_scan();
-> +
-> +	/* Retrieve CPU related informations from the flat tree
-> +	 * (altivec support, boot CPU ID, ...)
-> +	 */
-> +	of_scan_flat_dt(early_init_dt_scan_cpus, NULL);
-> +	if (boot_cpuid < 0) {
-> +		printk("Failed to identify boot CPU !\n");
-> +		BUG();
+>   	prom_debug("prom_instantiate_rtas: start...\n");
+>   
+> @@ -1865,15 +1866,24 @@ static void __init prom_instantiate_rtas(void)
+>   		return;
+>   	}
+>   
+> +	/* Check for rtas 64-bit support */
+> +	if (prom_getprop(rtas_node, "ibm,rtas-64-capable",
+> +			 &val, sizeof(val)) != PROM_ERROR) {
+> +		rtas_64 = 1;
+> +		prom_debug("Node ibm,rtas-64-capable: %x\n", val);
 > +	}
 > +
-
-> +	mmu_early_type_finalize();
->   #if defined(CONFIG_FA_DUMP) || defined(CONFIG_PRESERVE_FA_DUMP)
-
-Please add a blank line here
-
->   	/*
->   	 * If we fail to reserve memory for firmware-assisted dump then
-> @@ -884,19 +899,6 @@ void __init early_init_devtree(void *params)
->   	 * FIXME .. and the initrd too? */
->   	move_device_tree();
+>   	prom_printf("instantiating rtas at 0x%x...", base);
 >   
-> -	DBG("Scanning CPUs ...\n");
-> -
-> -	dt_cpu_ftrs_scan();
-> -
-> -	/* Retrieve CPU related informations from the flat tree
-> -	 * (altivec support, boot CPU ID, ...)
-> -	 */
-> -	of_scan_flat_dt(early_init_dt_scan_cpus, NULL);
-> -	if (boot_cpuid < 0) {
-> -		printk("Failed to identify boot CPU !\n");
-> -		BUG();
-> -	}
-> -
->   	save_fscr_to_task();
+> +	const char *method = rtas_64 ? "instantiate-rtas-64" : "instantiate-rtas";
+> +
+>   	if (call_prom_ret("call-method", 3, 2, &entry,
+> -			  ADDR("instantiate-rtas"),
+> -			  rtas_inst, base) != 0
+> -	    || entry == 0) {
+> +			  ADDR(method), rtas_inst, base) != 0 ||
+> +			  entry == 0) {
+>   		prom_printf(" failed\n");
+>   		return;
+>   	}
+> +
+>   	prom_printf(" done\n");
 >   
->   #if defined(CONFIG_SMP) && defined(CONFIG_PPC64)
-> diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-> index 64f0df5bb5cd..2fd533bc17cc 100644
-> --- a/arch/powerpc/mm/init_64.c
-> +++ b/arch/powerpc/mm/init_64.c
-> @@ -614,8 +614,10 @@ static void __init early_init_memory_block_size(void)
->   	of_scan_flat_dt(probe_memory_block_size, &memory_block_size);
+>   	reserve_mem(base, size);
+> @@ -1884,6 +1894,9 @@ static void __init prom_instantiate_rtas(void)
+>   	val = cpu_to_be32(entry);
+>   	prom_setprop(rtas_node, "/rtas", "linux,rtas-entry",
+>   		     &val, sizeof(val));
+> +	val = cpu_to_be32(rtas_64);
+> +	prom_setprop(rtas_node, "/rtas", "linux,rtas-64",
+> +		     &val, sizeof(val));
+>   
+>   	/* Check if it supports "query-cpu-stopped-state" */
+>   	if (prom_getprop(rtas_node, "query-cpu-stopped-state",
+> @@ -1893,6 +1906,7 @@ static void __init prom_instantiate_rtas(void)
+>   	prom_debug("rtas base     = 0x%x\n", base);
+>   	prom_debug("rtas entry    = 0x%x\n", entry);
+>   	prom_debug("rtas size     = 0x%x\n", size);
+> +	prom_debug("rtas 64-bit   = 0x%x\n", rtas_64);
+>   
+>   	prom_debug("prom_instantiate_rtas: end...\n");
+>   }
+> diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
+> index 8d81c1e7a8db..b7b9bd0b5b43 100644
+> --- a/arch/powerpc/kernel/rtas.c
+> +++ b/arch/powerpc/kernel/rtas.c
+> @@ -45,6 +45,8 @@
+>   #include <asm/trace.h>
+>   #include <asm/udbg.h>
+>   
+> +int rtas_64;
+> +
+>   struct rtas_filter {
+>   	/* Indexes into the args buffer, -1 if not used */
+>   	const int buf_idx1;
+> @@ -569,6 +571,7 @@ static struct rtas_function rtas_function_table[] __ro_after_init = {
+>    */
+>   static DEFINE_RAW_SPINLOCK(rtas_lock);
+>   static struct rtas_args rtas_args;
+> +static struct rtas_args_64 rtas_args_64;
+>   
+>   /**
+>    * rtas_function_token() - RTAS function token lookup.
+> @@ -690,13 +693,48 @@ static const struct rtas_function *rtas_token_to_function(s32 token)
+>   	return NULL;
 >   }
 >   
-> -void __init mmu_early_init_devtree(void)
+> +static void populate_rtas_args_64(struct rtas_args *args)
+> +{
+> +	int i;
 > +
-
-> +void __init mmu_early_type_finalize(void)
->   {
+> +	rtas_args_64.token = cpu_to_be64((s64)(s32)be32_to_cpu(args->token));
+> +	rtas_args_64.nargs = cpu_to_be64((s64)(s32)be32_to_cpu(args->nargs));
+> +	rtas_args_64.nret  = cpu_to_be64((s64)(s32)be32_to_cpu(args->nret));
+> +	rtas_args_64.rets  = &rtas_args_64.args[be32_to_cpu(args->nargs)];
 > +
-
-Please remove this extra blank line
-
->   	bool hvmode = !!(mfmsr() & MSR_HV);
->   
->   	/* Disable radix mode based on kernel command line. */
-> @@ -626,6 +628,20 @@ void __init mmu_early_init_devtree(void)
->   			pr_warn("WARNING: Ignoring cmdline option disable_radix\n");
->   	}
->   
-> +	/*
-> +	 * Check /chosen/ibm,architecture-vec-5 if running as a guest.
-> +	 * When running bare-metal, we can use radix if we like
-> +	 * even though the ibm,architecture-vec-5 property created by
-> +	 * skiboot doesn't have the necessary bits set.
-> +	 */
-> +	if (!hvmode)
-> +		early_check_vec5();
+> +	for (i = 0; i < be32_to_cpu(args->nargs); ++i)
+> +		rtas_args_64.args[i] = cpu_to_be64((s64)(s32)be32_to_cpu(args->args[i]));
+> +
+> +	for (i = 0; i < be32_to_cpu(args->nret); ++i)
+> +		rtas_args_64.rets[i] = 0;
 > +}
 > +
-> +void __init mmu_early_init_devtree(void)
+> +static void rtas_args_copy_64_32(struct rtas_args *args)
 > +{
-> +	bool hvmode = !!(mfmsr() & MSR_HV);
+> +	int i;
 > +
->   	of_scan_flat_dt(dt_scan_mmu_pid_width, NULL);
->   	if (hvmode && !mmu_lpid_bits) {
->   		if (early_cpu_has_feature(CPU_FTR_ARCH_207S))
-> @@ -638,15 +654,6 @@ void __init mmu_early_init_devtree(void)
->   			mmu_pid_bits = 20; /* POWER9-10 */
->   	}
+> +	for (i = 0; i < (s32)be64_to_cpu(rtas_args_64.nret); ++i)
+> +		args->rets[i] = cpu_to_be32((s32)be64_to_cpu(rtas_args_64.rets[i]));
+> +}
+> +
+>   /* This is here deliberately so it's only used in this file */
+>   void enter_rtas(unsigned long);
 >   
-> -	/*
-> -	 * Check /chosen/ibm,architecture-vec-5 if running as a guest.
-> -	 * When running bare-metal, we can use radix if we like
-> -	 * even though the ibm,architecture-vec-5 property created by
-> -	 * skiboot doesn't have the necessary bits set.
-> -	 */
-> -	if (!hvmode)
-> -		early_check_vec5();
-> -
->   	early_init_memory_block_size();
+> +static void _do_enter_rtas_64(struct rtas_args *args)
+> +{
+> +	populate_rtas_args_64(args);
+> +	enter_rtas(__pa(&rtas_args_64));
+> +	rtas_args_copy_64_32(args);
+> +}
+> +
+>   static void __do_enter_rtas(struct rtas_args *args)
+>   {
+> -	enter_rtas(__pa(args));
+> -	srr_regs_clobbered(); /* rtas uses SRRs, invalidate */
+> +	if (rtas_64)
+> +		_do_enter_rtas_64(args);
+> +	else
+> +		enter_rtas(__pa(args));
+> +
+> +	srr_regs_clobbered();
+>   }
 >   
->   	if (early_radix_enabled()) {
+>   static void __do_enter_rtas_trace(struct rtas_args *args)
+> @@ -2078,7 +2116,7 @@ void __init rtas_initialize(void)
+>   int __init early_init_dt_scan_rtas(unsigned long node,
+>   		const char *uname, int depth, void *data)
+>   {
+> -	const u32 *basep, *entryp, *sizep;
+> +	const u32 *basep, *entryp, *sizep, *val;
+>   
+>   	if (depth != 1 || strcmp(uname, "rtas") != 0)
+>   		return 0;
+> @@ -2086,6 +2124,10 @@ int __init early_init_dt_scan_rtas(unsigned long node,
+>   	basep  = of_get_flat_dt_prop(node, "linux,rtas-base", NULL);
+>   	entryp = of_get_flat_dt_prop(node, "linux,rtas-entry", NULL);
+>   	sizep  = of_get_flat_dt_prop(node, "rtas-size", NULL);
+> +	val    = of_get_flat_dt_prop(node, "linux,rtas-64", NULL);
+> +
+
+> +	if (*val)
+
+prom_init() is skipped during kexec boot. So, "val" cannot be
+dereferenced directly as it can be NULL when kexec booted into
+a newer kernel (kernel with these patches) from an older kernel...
+
+> +		rtas_64 = 1;
+>   
+>   #ifdef CONFIG_PPC64
+>   	/* need this feature to decide the crashkernel offset */
+> diff --git a/arch/powerpc/kernel/rtas_entry.S b/arch/powerpc/kernel/rtas_entry.S
+> index 6ce95ddadbcd..df776f0103c9 100644
+> --- a/arch/powerpc/kernel/rtas_entry.S
+> +++ b/arch/powerpc/kernel/rtas_entry.S
+> @@ -54,6 +54,10 @@ _ASM_NOKPROBE_SYMBOL(enter_rtas)
+>   /*
+>    * 32-bit rtas on 64-bit machines has the additional problem that RTAS may
+>    * not preserve the upper parts of registers it uses.
+> + *
+> + * Note: In 64-bit RTAS, the SF bit is set so that RTAS can return
+> + * correctly if the return address is above 4 GB. Everything else
+> + * works the same as in 32-bit RTAS.
+>    */
+>   _GLOBAL(enter_rtas)
+>   	mflr	r0
+> @@ -113,7 +117,18 @@ __enter_rtas:
+>   	 * from the saved MSR value and insert into the value RTAS will use.
+>   	 */
+>   	extrdi	r0, r6, 1, 63 - MSR_HV_LG
+> -	LOAD_REG_IMMEDIATE(r6, MSR_ME | MSR_RI)
+> +
+> +	LOAD_REG_ADDR(r7, rtas_64)	/* Load the address rtas_64 into r7 */
+> +	ld      r8, 0(r7)               /* Load the value of rtas_64 from memory into r8 */
+> +	cmpdi   r8, 0                   /* Compare r8 with 0 (check if rtas_64 is zero) */
+> +	beq     no_sf_bit               /* Branch to no_sf_bit if rtas_64 is zero */
+> +	LOAD_REG_IMMEDIATE(r6, MSR_ME | MSR_RI | MSR_SF)	/* r6 = ME|RI|SF */
+> +	b       continue
+> +
+> +no_sf_bit:
+> +	LOAD_REG_IMMEDIATE(r6, MSR_ME | MSR_RI)		/* r6 = ME|RI (NO SF bit in MSR) */
+> +
+> +continue:
+>   	insrdi	r6, r0, 1, 63 - MSR_HV_LG
+>   
+>   	li      r0,0
 
 - Hari
 
