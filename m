@@ -1,90 +1,65 @@
-Return-Path: <linuxppc-dev+bounces-24835-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24836-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5D987C531CC
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Jul 2026 08:18:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B60DAC531CC
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Jul 2026 08:23:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h7F3K2zyhz2xyk;
-	Sun, 26 Jul 2026 18:18:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h7F9Y6pKrz2yFP;
+	Sun, 26 Jul 2026 18:23:29 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785053885;
-	cv=none; b=gp5o+IGRNCckWq3NfPNcI3WKl9R7fm0sH87vpy+yZI2R0oXrlyIAzIzgK9ewe6xpAgkMsckjeGhbKEtd0vZaBDGKiP48M4mxIHJgpV9dScOvQ93113nW34Z/IG7bm/Kfvn8aR3DH1yS018BsmOcIyOmfRAgA6Uefrqy/WCPLlIjXWo50XbY+xiT1gglVSNKojoJ+2+FYEgIY7CVzWT0EEWxB4KidsJrt4vs9/gVpv5wkoXIV8lcDueoieR0st8YWsSAPtq8KrZkdcIRjnclqOdA8Komubz/5l4pm0RDHzbreU5FSWEZVPquQaJhYx0MRQYVweQxVI8UiT2CLkJTsFQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785054209;
+	cv=none; b=MyUvXiWh8lrTcwZNqx5DP2yqhRF06rGH+JOloy4cXLK5QBjtkAHTKX1dgrI3YmzndIFKpDFKyb0IkRfVAaPdnBy50Z8WXDUxoi8I0bdn0j55OQ7W7QnBMQuM/ApQ7SmeatOk2YgLqLdpREirNOZz+iR2zHq3Owrm8GBHxCfPpXDmR/gFAGYVxbZZZAJk8isVJPcyEgh4JSweo4dCITNzOxWrXqXTK0yd3obwuxW6JeYWRMZbqJ0AfdqWx+77m+7hZXm7Uzycl6Xyad3S9+siIb9nLEgy8jGQaT/YYmZ+/W73/aO0EGghTv6KpXMyjdIRnOvEM4+rF7e+MTVsApM6iw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785053885; c=relaxed/relaxed;
-	bh=rV3KV7vBjyfzuXzvKP70K3FcZTJiIsGPcCYGDQB6sAE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ZpkYsy8Ycs2qv2pdXHHO2sJ53zFcIz/3W7eH5CT+GgrMC+y25tbgAuFVbHVJ95Xz7TXxrrEo46fhFdm7eB+tvyJyfI9STk9kqiEOJ4EVMSvmk1FqZr+6DTbmiD7NJDYMb6mtZ1FaQUiximRFXEVMq10O0WYMH7OYcFborWH2QhdTUCDEIM239FNDEcCtfIbiQ4cjFBVKBGHdwVdoic96rxUWurAApGHzpNzD6m5liXkHLGRg5eD7hRSQy6FEJ1K4lPULgJIk2VZoZW1oGnGrMDgHM03yoeeb/rwbcHz+fbcvJ/qHKx+E3OMLoxWp92G1awvGnapvwOkrx04jQqXkIg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QSh6v7Ln; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1785054209; c=relaxed/relaxed;
+	bh=EURZIPTZJFvZM2NBjtixgY4zUoPQrTRaxQBigdxQ/mU=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=F5Fsb64T/QjD9qVVVpfRVF05MOcK1If9ZJAeVEf+mufeUQIjrUcU/gnE4gRndDAeQE0Why0MnMNG/DZVwW+CE1wc3CRFvLUQZQUijh8D1oUxH6QlDKlLdwWPtpfR1bM9PhCp9kFTQJaBmo2ueTpMeoXPtCRbR+imRoCeVG7T6jgsg76hAnR6kTD+H+liXkNRpes24fbAYi6iejdzMUSZQpEN1MJSlWSUGCXr0zePGZj0Z0kbsmh19oonzrBIHgizC6xJB70DH5IA8eAg2OOGtvR/ENQKUMN7s/k3cpJ5/IkNiImV8xjaYxijhw2/cMl3VgFWtiJxjQYD3eHxJeSwqA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TeXg6iMc; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QSh6v7Ln;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TeXg6iMc;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h7F3J2nQwz2xLg
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jul 2026 18:18:04 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h7F9Y1pH1z2xyk
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jul 2026 18:23:29 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id F349B432FC;
-	Sun, 26 Jul 2026 08:17:59 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 72CAF1F000E9;
-	Sun, 26 Jul 2026 08:17:58 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 996224074B;
+	Sun, 26 Jul 2026 08:23:25 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EB45B1F000E9;
+	Sun, 26 Jul 2026 08:23:24 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785053879;
-	bh=rV3KV7vBjyfzuXzvKP70K3FcZTJiIsGPcCYGDQB6sAE=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=QSh6v7LnboLYO6xF16A2+7oGN8HoXODtGw5S8YO/FkrMU2s6CN6sTfDR1dR/lfKoz
-	 2qUJFoixbeZXmsG6d/uilEjj2PxxfrzsGPE5BQ6jhQ7HBFfdBcaRGpQouUb6azeUgi
-	 n34cs0woLHoRxqtxV+r8p4J5+gDE7MQ2o8/RgCRL+DPKTM2UP/nwvcwVwn7QnpLOsV
-	 UEkEXGiiy6JDqh7Ys0iN1ikcBqAGMSkjH68/0zQ4NQTKpbdrGGQ02iEM4JloZieZQY
-	 oOKoUoPlmPX5blblYslJfGJhkNgUevihiOHrfRA+gi9U3BaHvOnD+uI6bcD17dyw+v
-	 MOsVc9tnoXHPw==
-Date: Sun, 26 Jul 2026 11:17:53 +0300
+	s=k20260515; t=1785054205;
+	bh=EURZIPTZJFvZM2NBjtixgY4zUoPQrTRaxQBigdxQ/mU=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date;
+	b=TeXg6iMcktCeyB0+3f1Wqj6isZ1zp0BU3PodckqWnMC2VKkG+ycD66oY2ApKlngBf
+	 yAlCvF0EiSAcdRWOHejLHvFI2lp/BfVYEJaNEAezyC1m7Z22pItQAbp+G5n7Fw7F1/
+	 7rHkZrbYeJQC0lUoE/g5t+gYdHVntH5IjWPqatLleUPfDUGmpwWFAv1WIK5Td3Iztu
+	 JvyEsSwzlU8o+f2iHWM0Iqfkryb7ufpyENncD3S78477VweJHa2DypdYjOEzepQBD7
+	 6Dyr29IFlCQZX6ZEICY+Ba6YdflI6c05BKNRGKONCtuOWHMgQXReJZs33Ey9qNuJz6
+	 /Ff3R3RjZRV0Q==
 From: Leon Romanovsky <leon@kernel.org>
-To: Jason Gunthorpe <jgg@ziepe.ca>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, iommu@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	linux-coco@lists.linux.dev, Robin Murphy <robin.murphy@arm.com>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
-	Steven Price <steven.price@arm.com>,
-	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Jiri Pirko <jiri@resnulli.us>, Mostafa Saleh <smostafa@google.com>,
-	Petr Tesarik <ptesarik@suse.com>,
-	Alexey Kardashevskiy <aik@amd.com>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Xu Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
-	linux-s390@vger.kernel.org,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org,
-	stable@vger.kernel.org, Michael Kelley <mhklinux@outlook.com>
-Subject: Re: [PATCH v8 01/23] dma-direct: return struct page from
- dma_direct_alloc_from_pool()
-Message-ID: <20260726081753.GD12003@unreal>
-References: <20260717180442.110954-1-aneesh.kumar@kernel.org>
- <20260717180442.110954-2-aneesh.kumar@kernel.org>
- <20260721115456.GI110966@unreal>
- <yq5atsps77c5.fsf@kernel.org>
- <20260721142921.GN110966@unreal>
- <yq5ao6g0750v.fsf@kernel.org>
- <20260721153321.GO110966@unreal>
- <amEhEKQW0_HJ9cLN@ziepe.ca>
- <20260723075704.GC110966@unreal>
- <amTJY_CdE-uDgoGG@ziepe.ca>
+To: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
+ chleroy@kernel.org, maarten.lankhorst@linux.intel.com, mripard@kernel.org, 
+ tzimmermann@suse.de, airlied@gmail.com, simona@ffwll.ch, bharat@chelsio.com, 
+ jgg@ziepe.ca, akpm@linux-foundation.org, namcao@linutronix.de, 
+ ynorov@nvidia.com, sshegde@linux.ibm.com, nilay@linux.ibm.com, clg@kaod.org, 
+ Gou Hao <gouhao@uniontech.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+ dri-devel@lists.freedesktop.org, linux-rdma@vger.kernel.org, 
+ linux-mm@kvack.org, gouhaojake@163.com, kernel@uniontech.com
+In-Reply-To: <20260724022851.466017-1-gouhao@uniontech.com>
+References: <20260724022851.466017-1-gouhao@uniontech.com>
+Subject: Re: (subset) [PATCH v2 0/6] remove dead NULL checks after
+ GFP_NOFAIL allocations and fix xive use-after-free
+Message-Id: <178505420268.4050106.14417810250582879470.b4-ty@kernel.org>
+Date: Sun, 26 Jul 2026 04:23:22 -0400
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -98,61 +73,30 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <amTJY_CdE-uDgoGG@ziepe.ca>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.15-dev-18f8f
 
-On Sat, Jul 25, 2026 at 11:34:11AM -0300, Jason Gunthorpe wrote:
-> On Thu, Jul 23, 2026 at 10:57:04AM +0300, Leon Romanovsky wrote:
-> > On Wed, Jul 22, 2026 at 04:59:12PM -0300, Jason Gunthorpe wrote:
-> > > On Tue, Jul 21, 2026 at 06:33:21PM +0300, Leon Romanovsky wrote:
-> > > 
-> > > > Something like, but probably void* needs to be phys_addr_t:
-> > > > 
-> > > > static inline struct page *dma_phys_to_page(void *addr)
-> > > > {
-> > > > #ifdef CONFIG_DMA_DIRECT_REMAP
-> > > > 	return vmalloc_to_page(addr);
-> > > > #else
-> > > > 	return virt_to_page(addr);
-> > > > #endif
-> > > > }
-> > > 
-> > > I don't like this, we don't know for sure the addr will be in a vmap
-> > > and this will fail if it isn't.
-> > 
-> > Of course we know. The existing "#ifdef CONFIG_DMA_DIRECT_REMAP" is
-> > relevant for addresses acquired from pool.
+
+On Fri, 24 Jul 2026 10:28:45 +0800, Gou Hao wrote:
+> Changes in v2:
+> - Remove the now-unused out_free_domain error label in the xive
+>   patch after deleting the unreachable NULL check goto.
+> - Fix a use-after-free of xive_ipis: when xive_init_ipis() fails,
+>   the error path frees xive_ipis but xive_smp_probe() ignores the
+>   error and proceeds to dereference it in xive_setup_cpu_ipi().
+>   Propagate the error return through xive_smp_probe() and check
+>   it in both pnv_smp_probe() and pSeries_smp_probe().
 > 
-> Yeah, but I still don't like it :) It is hard to follow if you make
-> those kinds of leaps, someone will call this new helper on something
-> they shouldn't
+> [...]
 
-This issue is straightforward to address today. Limit the scope, use
-an appropriate function name, and add a comment indicating that the
-function is local to and specific to the pool. The latter helps
-AI-based review tools flag incorrect usage outside the intended scope.
+Applied, thanks!
 
-> 
-> > dma_phys_to_page() is a bad name for some low-level conversion function.
-> > It needs to be internal to DMA logic, in the level when we convert from
-> > phys to page.
-> 
-> I think we should not convert from phys to page, that's also easy to
-> do wrong
+[6/6] RDMA/cxgb4: remove dead NULL checks after GFP_NOFAIL allocations
+      https://git.kernel.org/rdma/rdma/c/a273210687f255
 
-Perhaps I'll reiterate my complaint. DMA internals are already hard to
-understand. Part of that complexity is necessary to support every
-possible use case, but another part comes from a maze of types that is
-entirely self-inflicted. I think this code only makes the latter worse.
+Best regards,
+-- 
+Leon Romanovsky <leon@kernel.org>
 
-Currently, the phys type universally describes memory and can be
-reliably translated into any required representation. It is the most
-fundamental type we have.
-
-Thanks
-
-> 
-> Jason
-> 
 
