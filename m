@@ -1,99 +1,63 @@
-Return-Path: <linuxppc-dev+bounces-24832-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24833-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E64CEC531C9
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Jul 2026 20:31:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 96F78C531D0
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Jul 2026 03:26:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h6xMm03ttz2yYY;
-	Sun, 26 Jul 2026 06:31:16 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785011475;
-	cv=none; b=Wcw7J+koSFLpTpPymlkpCBp0SdPKGRrdes/zpH/KC1V+fZElNQjNEM9brgMr7DH416G5lcTfCllp1rNCqtPdBME0utdRpEdvTOfx0LmW1dNxaVuZiKQIMG0EApEr9tY1A8ZzYyh2rtfFQJAXvZMj+oSPD1DWHa5MSi63sJtmN5hKHND3bWo4Edjzypg9QZhfJVOa80oKO7h6geVC8nG2hhPpcDnqPjit9g/KHyXi1kTpEaQuvZhcpYx1hLMLRV3XHjbjpjHbDjNBqyQrSynz1/GkhPWTEeau06vL7z8h1zvakXoSwRgMVnqsEhGgQ1aRDuxlyGaM3T0seBOZjhJwSQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h76b44v3Cz2xfB;
+	Sun, 26 Jul 2026 13:26:40 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785036400;
+	cv=none; b=gI3QbFdNxDVpWlneg814ZRZ9uEJO8ksocmQejY3idFvu0HnSGMwX4t0lgzFf9SCfQbhvawcxmd3gxuCJGl6vcPgas/W7Q/E1D3veZtkgSH1yT3q3ojl94o9BS3rpkcSiqyplSuCeGjZBekdwwDqA/EdxjIsAFS/Ew5LWzh6+JCMmhR902DnuOm+qy5o4c6PwMDquoonOSKXGillyjtkE048ibYbKS/pxVrVwfRClN41eMQ4CMu1xKhSSZ+rKVTE5Qw0cUXk39J46GBDDMvReMafXsNVWRE1rSiGYKJ30+JfMUpWgibEzeLZGLblQx1Pd1LX8/a9wW3Uh6N52lzODdg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785011475; c=relaxed/relaxed;
-	bh=e6KMoD3bd5/q6p3xQeg23qgiuejFXySUo/aGZ6esyCc=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=SeIWwruh8jX3r/C7D1pq1IMB+6i/diC/EnDL9yZVDm0LFOTkf55ZKKGXRCw1wxdatam57Qa3Mbodm6vwVaayJLX3up88djeqmmlW+l+bKbb448rQ4dnm1WG2ab3/YtnPBF9KwpBYQVQBTQhCIOd8iEPtEDtwI7SMp/cF7iWLiz2Scl0O1tFTRFr304M6Lr/6fFoMCUou+CcsFEhquVVRlLqrCNZeaP7hM9/byv13gI2LAVW33SlFEoIfDzUh5EiTlcdYR0UVqbIxcCvwYQr+S/O1gxo+XH7OWDdnlBm7Zl7WCBjjhidwzLjla3qu2+2cfnUnx7fb3QtkEbR4nJYuQw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hAfTn9kP; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1785036400; c=relaxed/relaxed;
+	bh=ujoywRATcrbjMYNELLJctilgrlUcGvbj5yO2i928VnY=;
+	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
+	 Mime-Version:Content-Type; b=aCFmgaEFyEZg5vQX5awVyENjYY+MOYVjjCs7A/gVGE7jc6GBUDram6KcvPrD81MF947eRBpXVxXWCP4We3EY+tB536HzMNgFlxainN8mZI67la3dXG+2uzozMRvsHjHWwPGTHgC4YRiZTpFS7mg0GMa30O9BkbUNTTq3W9mpySpVuIKNnMxhFccCH0ZZoksejGkzq1j9N9FJ70y+s7a3Q5iRJTNQ20/WgEaOPVIyW7/fbfzquXOOdX7R9BfJ2wohN/Ws+No0EwWPcuCltWu6cPtc3TTOoM2Gq2hUN1+2YJVoN+huGG+LCD2Y98ar2qmsg7ycGW2lo3L0L/vytVRz9w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=C5hXFeas; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linux-foundation.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hAfTn9kP;
+	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=C5hXFeas;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux-foundation.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h6xMk4wBxz2yFg
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jul 2026 06:31:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h76b23jQ5z2xLg
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jul 2026 13:26:37 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 15DAD60A6E;
-	Sat, 25 Jul 2026 20:31:11 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DFFA01F000E9;
-	Sat, 25 Jul 2026 20:31:09 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785011470;
-	bh=e6KMoD3bd5/q6p3xQeg23qgiuejFXySUo/aGZ6esyCc=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date;
-	b=hAfTn9kP3ZABFKIwidJBkzkwUEnV03/r5N7p8kmUos3uDtUKUWtEJzQPpdypzC87s
-	 s8zXrjsDbl2M4eM1W7J86H4KiLLuZnMtxMMILtEw98qiQcngdzhm3Z933lwVaUuZ1u
-	 NLkyUWEUlaRXQiJD2BrV3+doGFNu5m2sLbsSq0EGZklaA6R4wtvLOLLa2OnPQe5qNl
-	 qRc/eqpUyUDjcyObmg1ruSpXH9PI078U1i4aarlF7k3SAVuPPwJdBfCiYHUHqv1JgK
-	 gHSHbd+Pb+4KEwvFVr0Xj05kVhoMd7+HPlRE8f80fEhbz02ckPWPFwbzdqixw/v4UL
-	 pVfAw00n8dMXA==
-From: Thomas Gleixner <tglx@kernel.org>
-To: Petr Pavlu <petr.pavlu@suse.com>, Tony Luck <tony.luck@intel.com>,
- Borislav Petkov <bp@alien8.de>, Ingo Molnar <mingo@redhat.com>, Dave
- Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, "H. Peter Anvin"
- <hpa@zytor.com>, Philipp Reisner <philipp.reisner@linbit.com>, Lars
- Ellenberg <lars.ellenberg@linbit.com>, Christoph =?utf-8?Q?B=C3=B6hmwalde?=
- =?utf-8?Q?r?=
- <christoph.boehmwalder@linbit.com>, Jens Axboe <axboe@kernel.dk>, Johan
- Hovold <johan@kernel.org>, Alex Elder <elder@kernel.org>, Greg
- Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki"
- <rafael@kernel.org>, Michal Januszewski <spock@gentoo.org>, Helge Deller
- <deller@gmx.de>, Alexander Viro <viro@zeniv.linux.org.uk>, Christian
- Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>, Trond Myklebust
- <trondmy@kernel.org>, Anna Schumaker <anna@kernel.org>, Chuck Lever
- <cel@kernel.org>, Jeff Layton <jlayton@kernel.org>, NeilBrown
- <neil@brown.name>, Olga Kornievskaia <okorniev@redhat.com>, Dai Ngo
- <Dai.Ngo@oracle.com>, Tom Talpey <tom@talpey.com>, Mark Fasheh
- <mark@fasheh.com>, Joel Becker <jlbec@evilplan.org>, Joseph Qi
- <joseph.qi@linux.alibaba.com>, Tejun Heo <tj@kernel.org>, Johannes Weiner
- <hannes@cmpxchg.org>, Michal =?utf-8?Q?Koutn=C3=BD?= <mkoutny@suse.com>,
- Luis Chamberlain
- <mcgrof@kernel.org>, Petr Pavlu <petr.pavlu@suse.com>, Daniel Gomez
- <da.gomez@kernel.org>, Sami Tolvanen <samitolvanen@google.com>, Aaron
- Tomlin <atomlin@atomlin.com>, Pavel Machek <pavel@kernel.org>, Len Brown
- <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Danilo
- Krummrich <dakr@kernel.org>, Nikolay Aleksandrov <razor@blackwall.org>,
- Ido Schimmel <idosch@nvidia.com>, "David S. Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, Simon Horman <horms@kernel.org>, David
- Howells <dhowells@redhat.com>, Jarkko Sakkinen <jarkko@kernel.org>, Paul
- Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>, "Serge E.
- Hallyn" <serge@hallyn.com>, Kentaro Takeda <takedakn@nttdata.co.jp>,
- Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Cc: linux-edac@vger.kernel.org, linux-kernel@vger.kernel.org,
- drbd-dev@lists.linux.dev, linux-block@vger.kernel.org,
- greybus-dev@lists.linaro.org, linuxppc-dev@lists.ozlabs.org,
- linux-acpi@vger.kernel.org, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-fsdevel@vger.kernel.org,
- linux-nfs@vger.kernel.org, ocfs2-devel@lists.linux.dev,
- cgroups@vger.kernel.org, linux-modules@vger.kernel.org,
- linux-pm@vger.kernel.org, driver-core@lists.linux.dev,
- bridge@lists.linux.dev, netdev@vger.kernel.org, keyrings@vger.kernel.org,
- linux-security-module@vger.kernel.org
-Subject: Re: [PATCH v2 2/3] time/jiffies: Include linux/sysctl.h for
- proc_int_u2k_conv_uop(), ...
-In-Reply-To: <20260721131207.803760-3-petr.pavlu@suse.com>
-References: <20260721131207.803760-1-petr.pavlu@suse.com>
- <20260721131207.803760-3-petr.pavlu@suse.com>
-Date: Sat, 25 Jul 2026 22:31:07 +0200
-Message-ID: <874ihmke0k.ffs@fw13>
+	by tor.source.kernel.org (Postfix) with ESMTP id 96EC56011F;
+	Sun, 26 Jul 2026 03:26:33 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 97FE51F000E9;
+	Sun, 26 Jul 2026 03:26:32 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=linux-foundation.org; s=korg; t=1785036393;
+	bh=ujoywRATcrbjMYNELLJctilgrlUcGvbj5yO2i928VnY=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References;
+	b=C5hXFeasm97leSm2ZFfgZdr5aKD+zPJYh6c32nLRB1bv6kA4jy/H7lC8P2kfLh68z
+	 hpzsypaqVIG8c0DNYMPxTwYHqTO3Zwx0j7wz5lFUlc7HCG17VugyR3yUSar6eLk5qo
+	 hyEtqM+UNXtcBuSoDm6nCAbM8QzwSd9ylJaeAjqA=
+Date: Sat, 25 Jul 2026 20:26:32 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Gou Hao <gouhao@uniontech.com>
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+ chleroy@kernel.org, maarten.lankhorst@linux.intel.com, mripard@kernel.org,
+ tzimmermann@suse.de, airlied@gmail.com, simona@ffwll.ch,
+ bharat@chelsio.com, jgg@ziepe.ca, leon@kernel.org, namcao@linutronix.de,
+ ynorov@nvidia.com, sshegde@linux.ibm.com, nilay@linux.ibm.com,
+ clg@kaod.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-rdma@vger.kernel.org,
+ linux-mm@kvack.org, gouhaojake@163.com, kernel@uniontech.com
+Subject: Re: [PATCH v2 0/6] remove dead NULL checks after GFP_NOFAIL
+ allocations and fix xive use-after-free
+Message-Id: <20260725202632.dcb325658896a470df91cf57@linux-foundation.org>
+In-Reply-To: <20260724022851.466017-1-gouhao@uniontech.com>
+References: <20260724022851.466017-1-gouhao@uniontech.com>
+X-Mailer: Sylpheed 3.8.0beta1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -106,28 +70,44 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-On Tue, Jul 21 2026 at 15:11, Petr Pavlu wrote:
+On Fri, 24 Jul 2026 10:28:45 +0800 Gou Hao <gouhao@uniontech.com> wrote:
 
-> The kernel/time/jiffies.c file uses proc_int_u2k_conv_uop(),
+> This is a code cleanup series that removes unreachable
+> NULL checks (and associated error handling) that follow allocations
+> using __GFP_NOFAIL, which guarantees non-NULL return.
 
-jiffies.c uses ...
+Sigh.
 
-> proc_int_k2u_conv_kop(), proc_int_conv(), proc_dointvec_conv() and
-> proc_doulongvec_minmax_conv(), which are declared in linux/sysctl.h. It
-> currently relies on this header being included indirectly through
-> linux/module.h -> linux/kmod.h. Add the missing include in preparation for
-> removing the linux/sysctl.h include from linux/kmod.h.
+Back when Linux ran on an abacus, I added __GFP_NOFAIL because four or
+five sites (file systems) were infinitely looping on alloc_pages until
+it succeeded.  I figured we should move this operation into the page
+allocator so we could easily find those sites and fix them to Not Do
+That.
 
-Can you please split that spaghetti sentence into paragraphs?
+I made it very clear (changelog and code comments) that no new code
+should use __GFP_NOFAIL.  How did that work out?
 
-https://docs.kernel.org/process/maintainer-tip.html#changelog
+hp2:/usr/src/linux-7.2-rc4> grep -r __GFP_NOFAIL | wc -l
+241
 
-> Signed-off-by: Petr Pavlu <petr.pavlu@suse.com>
+So much lameness!   My immediate reaction to your patchset is "No.  Fix
+the damn code instead".  But I've resoundingly lost that fight.
 
-Other than that.
 
-Acked-by: Thomas Gleixner <tglx@kernel.org>
+Thanks, I'll scoop up the entire series.  If individual patches pop up
+in linux-next then I'll drop the mm.git copies.
+
+
+
+AI review has a shower of possible pre-existing issues.  I'm seeing
+use-after-free, double-free, leak, system hang, NULL pointer
+dereference, usual stuff :(
+
+They're in powerpc and cxgb4, if maintainers are interested.
+
+	https://sashiko.dev/#/patchset/20260724022851.466017-1-gouhao@uniontech.com
 
