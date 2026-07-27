@@ -1,51 +1,92 @@
-Return-Path: <linuxppc-dev+bounces-24910-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24911-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3F794C531D0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2026 18:29:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 01370C53219
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2026 20:31:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h86Yz6l5Gz2yhD;
-	Tue, 28 Jul 2026 04:29:11 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785176951;
-	cv=none; b=GSSMUTdnac5Fws+81W0ZTNGyUUipA51e7I24bUGXrBEEd9C09tUp2lDdiMKr75Zmte2c8VmgpvO4dF36FGR/8FLRErvgHGFUsDerezYf00Z5O5DJe3T/B5LggCDrmDdollbW8ING0AQmEsk+DlpLwC9wQ5u1lkCnKc8sXqXfmo8FC36VRPlxWdc0PRW11+2lKcLpjHth39BI0aioN5sFcJRGKB0+8FUcs+wbUFazt7Idsv20caJz0tBCPRSZ18Zc+0ppzy3LfaexoJGlyptKuHgf4z/AR1XkhEg9Ed5tvhj6qRciOPux4InYRO4K55evEDteXwtOck2UhzBpnU11cw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h89Gx69bfz2ygh;
+	Tue, 28 Jul 2026 06:31:21 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::634"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785184281;
+	cv=none; b=ah73fYiuYsob7/ytxrQo7cd9cgApdcrGSTKNM4tGHMy8XQ2a3g12UA0Gr2ghZSkZ7uCFvJALAzN9V343LRpc/PP3lfslJkBFEn5oevX0Xj0t3orH222ffjbF3DdHg4NqEqyz1onPRfVWzgGLkHbz+jFBx1KomDBY/mMm7Ibtr3cxJ1tDfdlacEaTMxp7NtD16wbgdntUaLPbaq0ieOoP/ENTR1Pjzy4MGdWcWTNqDVgDbA7uhAqBqUv8OJCToeqRyJ1OLHLLPs/1CQHcM7XmDkUSsd3NJooup/6wHx9PtTDPcbFD+LJxrPfzZe48UipvMxSqAvOX0jRtPgivpAsTMw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785176951; c=relaxed/relaxed;
-	bh=WA5IH2DyW1h9ppaWcLGXuslqAZapCSDasbKWS+alQLM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=An97f2F1kLusEcVf4JpcfvwK0xkrrOpYrKIrOUb2uMF/A7b//V7JapnhGlaDS91DRqj+vU399ZE5aduvyFrgbfh5iaQXujXCjnWmt8U+QrWDAmjT0hiOWIEjV6gPHnilS0EdlvwzJkd3BmMj4pplFp8p1lYFnOUZDmJkV+96/Vh68tlD7f9TpzdP9xQqQ8fkA8ZDFDKBEUNAjPtTk8C64qpbWIx4K1A7nbUbY+IEw6t4bzWumJoZ8e0/E9xnMwj2J/2JK9JS025Y4SSV5enoaL9zCzZpukOLpehPXuzOSD7vLiPzlus3P7bC2j7HKSe1g+W/t6LOAan23fu44zkVIw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bZu1NLqW; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1785184281; c=relaxed/relaxed;
+	bh=DQRhM3rT7FoTMhNOjiuobMB557pHWoxuWR/j4jNacaU=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=KTJb+KN5hRtFFIJEOf4ZBrHOivtYvh61o7gBpz4YAFLx0kv/E9fHvZwKuGUVAeGyoeH/m59T/WwWKL+DXGilyq5KbiCYZW66BNZuNpBkRG9By95WINmFodNHUHm2ytDhULbdrTGBMFyos2lZOWoFadWan9H6psh/BaQcwy48HtOpRggjOhxLa+lKAasra+bEdRd1dyXWdC8OL8R+rlGIwv/8KQwC5CaTSA/orLAkxkeBnRA67IK1driDqZJIeUjzZMgg+saygeD8Ma278C654XnmiSz2FssKBXLzUDXl9pdaikl6J4PKeWOr9rvmeTZRdpctw/RcU9W9MWj3bfkWPA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=sDwyB3TU; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::634; helo=mail-pl1-x634.google.com; envelope-from=allen.lkml@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bZu1NLqW;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=sDwyB3TU;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::634; helo=mail-pl1-x634.google.com; envelope-from=allen.lkml@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x634.google.com (mail-pl1-x634.google.com [IPv6:2607:f8b0:4864:20::634])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h86Yy6C4Wz2xll
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2026 04:29:10 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id DDF8940B8A;
-	Mon, 27 Jul 2026 18:29:05 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 153891F000E9;
-	Mon, 27 Jul 2026 18:29:02 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785176945;
-	bh=WA5IH2DyW1h9ppaWcLGXuslqAZapCSDasbKWS+alQLM=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=bZu1NLqWWZ98krkcVG48/8nVqirUkK7bubnXmDSGrGX3b71IlKrMHRJkP89Irc78d
-	 31YZDzKxOVWCUVm2LxGE6YQSTeTf2TICBY7L+3IPHkLduMe2KKpBG3rJJJKfdZlkBq
-	 ULNQZn6h+iPJDx7ckzIIxZY/TADTKcEtwDzEFj96dBlCjydR19qaT2NQzsIKXp/Igu
-	 7suMXf7sRVOUaCrFJeefECjmIH6evl1Ew1Cggzt5KXrQUZe2SUdJmwGD7eEtMBTQfJ
-	 /qiiNat0URQq5zw30V4gazE9JAw0nVBYVqRmYQtIi4GXzhqT+iKTVe1SE467zg4A4F
-	 SmFgsl8rMmPDw==
-Message-ID: <f81777c3-e341-4ec5-8d61-b333d7170b3f@kernel.org>
-Date: Mon, 27 Jul 2026 20:29:00 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h89Gw1c3wz2xll
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2026 06:31:19 +1000 (AEST)
+Received: by mail-pl1-x634.google.com with SMTP id d9443c01a7336-2cc7e86e7aeso35146725ad.2
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2026 13:31:18 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1785184276; x=1785789076; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=DQRhM3rT7FoTMhNOjiuobMB557pHWoxuWR/j4jNacaU=;
+        b=sDwyB3TUlMrJ0Rdx2bvK4bWj5tWnKdM/puEg8nmFgaOtMsceSpi7C5hiX+BoUbpoWa
+         b9YyyLmo9O/Atv9HkAxQukjfvW5t3DoDcXXilO7Y33N9Ypd21rXonuhoqszH7LOhUpLd
+         R8leIsDr20NxAcOLVElkAkE1FackNcsBs8QJqZanfTP9uScK6WsFEwiWrDniqeC610rz
+         g5mI+M54D/vQNzttSw/PAmeaRELiA+ESI2NIhXZH6UINDku9HE7xqxWGH3NSE0Qcah32
+         isQuBQhc7A8kaO4XukMIemk987YgW420Xl+OdO8YUHLrJppiv8r+4c/fOSssXukrffmj
+         kkCg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1785184276; x=1785789076;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=DQRhM3rT7FoTMhNOjiuobMB557pHWoxuWR/j4jNacaU=;
+        b=True7xECCOUmCSRDr0egEdpzfILg105Svcryv3ptCM8g3G0SxH8zKjI7cUyerFZN7C
+         Eo8xFXOJY6PofVXRiUr8d6wjCwT5/fDnHKZTFH0OWw0Ww1qdcWGZHJSPKAONCCJFyI1Q
+         FtjZ+ef9b4wctUGaWejZ2/yRX1ajk92uTGN5BmkbQgvr6kSjpX1bQiKilC6Rxu9d1c7m
+         mqJL6NQhsn07bJlwSRCUUoOKeer7KsRkoufILg/4xhmER+haTXcNvlBD5tZ/im4k9pxa
+         jTT27tx72+IWMTd0+bRWB2y1q/qUWdFRnjRjyHFgtzLYDVCnGhCkq1bl9bc+0WOiSK1J
+         pG0A==
+X-Forwarded-Encrypted: i=1; AHgh+Rp5ch5JTyz4/QQCufzAjP5BiExhAdXrFONvV9gmZd4K5ro0BkjTJGXDakR2oIhx9C75OSgFZ7cUa7p2wcI=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyZ4Rq/GWJPnkiLfhVzTLukQq468+TYvAwf2pZY+L3j6RAQwa5C
+	hAFmOtB0eDim1gaJGzyXWakVrTXB9YH97ac5Oin/amgDaxJX8SP/5dVh
+X-Gm-Gg: AR+sD13cial3LPfusmMWiEcWVJaN6VMIDwRmjYa6LDm4QiNIx1IyQJoY2o45atPA9Ur
+	UUqv4J+nItvGJxQ0At0b4+gQJm3APjaQ+sCsZOFpRPUXBexeHGCuTpmdnyFe05+DAdkEI4KO3Jh
+	aYVihZeYUrboOKh3koWFnyid3VTBhKEKnGHoSUhmtrRYyXwVkpPzGBMsvSL9GbBZQlmtlqNnOti
+	7QoIb2wI+nAhnkUe0RO/1Dg4ygY+/xD3Hsa3MgdLeevaIdLvNBq+CTFYQDdSim63X9U/BLLi1dp
+	XBPMhyT041hZA3tV9Wk5NTEoouOCeMMsDZxSE6FAXAQ5zbb1YhVd3j7g99u3jkA8Nf+9Z+C7AqT
+	uwKJLEl5b+bi5IUeUmA8/pPjWNp3pzvuLV8FtEynp5VcsIiiIfbaMhNHXwMYU7AhHdIgJHYN2Mr
+	v2BuqY
+X-Received: by 2002:a17:903:234e:b0:2c8:f34c:82c0 with SMTP id d9443c01a7336-2cfde683786mr92287575ad.2.1785184275736;
+        Mon, 27 Jul 2026 13:31:15 -0700 (PDT)
+Received: from cryptic.lan ([2001:569:7fab:e200:3789:64f9:8855:c0af])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2cfde59b768sm41551805ad.4.2026.07.27.13.31.09
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 27 Jul 2026 13:31:12 -0700 (PDT)
+From: Allen Pais <allen.lkml@gmail.com>
+To: Vinod Koul <vkoul@kernel.org>,
+	Frank Li <Frank.Li@kernel.org>
+Cc: Allen Pais <allen.lkml@gmail.com>,
+	dmaengine@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Arnd Bergmann <arnd@arndb.de>,
+	Kees Cook <kees@kernel.org>,
+	Zhang Wei <zw@zh-kernel.org>,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 06/64] dmaengine: fsldma: migrate tasklet to dma_chan BH
+Date: Mon, 27 Jul 2026 13:28:34 -0700
+Message-ID: <8a4883ce4557e4cc5804b9d29ee56e6a2570af6b.1785183549.git.allen.lkml@gmail.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <cover.1785183549.git.allen.lkml@gmail.com>
+References: <20260108080332.2341725-1-allen.lkml@gmail.com> <cover.1785183549.git.allen.lkml@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,143 +100,67 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 1/1] powerpc: enable dynamic preemption
-To: Shrikanth Hegde <sshegde@linux.ibm.com>, Jirka Hladky
- <jhladky@redhat.com>, paulmck@kernel.org
-Cc: maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au,
- npiggin@gmail.com, bigeasy@linutronix.de, will@kernel.org,
- linux-kernel@vger.kernel.org
-References: <20250210184334.567383-1-sshegde@linux.ibm.com>
- <20250210184334.567383-2-sshegde@linux.ibm.com>
- <CAE4VaGBwMp3Ke1+Bt11-v6CCE0h=mPm8k_Cf8DazFSQNT9Mz8g@mail.gmail.com>
- <c0f51eda-21c4-4e9d-95e9-75b2740c3f43@linux.ibm.com>
- <500d8e8c-088c-4e6d-ab53-868ade6b0eda@paulmck-laptop>
- <CAE4VaGDGS8wkZj4SF5XVC3-1yDmvJxjUjThTPqVw3kxg56ssQA@mail.gmail.com>
- <e013e88a-6137-4de8-9dfd-925b707f2e01@linux.ibm.com>
-Content-Language: fr-FR
-From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-In-Reply-To: <e013e88a-6137-4de8-9dfd-925b707f2e01@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
-Hi Shrikanth,
+Replace the per-channel tasklet with the shared dma_chan BH helper.
+The handler continues to run in softirq context while dmaengine owns
+the common scheduling and teardown mechanism.
 
-Le 27/07/2026 à 19:10, Shrikanth Hegde a écrit :
-> Hi Jirka.
-> 
-> On 7/27/26 10:20 PM, Jirka Hladky wrote:
->> On Mon, Jul 27, 2026 at 6:16 PM Paul E. McKenney <paulmck@kernel.org> 
->> wrote:
->>> Yes, non-preemptible RCU's __rcu_read_{,un}lock() are (almost) no-ops,
->>> but preemptible RCU must actually execute real code.  But I would not
->>> expect *this* much overhead.
->>
-> 
-> Thanks for doing these experiment.
-> 
->> I've now isolated the PREEMPT_RCU cost with a controlled experiment.
->> Built two kernels from the same 6.15-rc6 upstream source on the same
->> POWER10 machine, no CONFIG_PREEMPT_DYNAMIC in either case:
->>
->> Config A: CONFIG_PREEMPT_VOLUNTARY=y (no PREEMPT_RCU)
->> Config B: CONFIG_PREEMPT=y           (PREEMPT_RCU=y) 
-> 
-> That's full preemption mode.
-> 
->>
->> Results (stress-ng --kill 1 -t 23, SELinux enforcing):
->>
->> Kernel                       PREEMPT_RCU   kill bogo-ops/sec
->> ---------------------------  -----------   -----------------
->> 6.15-rc6-voluntary-test      no            105,014
->> 6.15-rc6-preempt-test        yes            73,317
->> Delta                                      -30.2%
->>
-> 
-> That is voluntary -> full preemption change.
-> 
-> When preemption mode changes preempt_enable/disable which were just a
-> barrier earlier now become real preemption points. If the code path
-> repeatedly does the exact same thing, it might pop up.
-> But, can we say is that number expected? it is difficult to put a number 
-> to it.
-> 
-> What I was asking is below. (You can do this only with below 7.0)
-> 
-> Config A: CONFIG_PREEMPT_VOLUNTARY=y (CONFIG_PREEMPT_DYNAMIC=n i.e no 
-> PREEMPT_RCU)
-> Config B: CONFIG_PREEMPT_VOLUNTARY=y (CONFIG_PREEMPT_DYNAMIC=y i.e 
-> PREEMPT_RCU)
-> 
-> That should keep in voluntary preemption.
-> You can confirm with dynamic preemption using /sys/kerenl/debug/sched/ 
-> preempt.
-> 
-> In Config B, though there is rcu_read_lock/unlock it should be just a 
-> barrier.
-> 
-> 
->> PREEMPT_RCU alone accounts for ~30% on this workload. The kill()
->> path hits rcu_read_lock/unlock very heavily through the SELinux AVC
->> (avc_has_perm -> avc_lookup wraps every hash table lookup in an RCU
->> read-side critical section).
->>
->> This also answers Shrikanth's question about whether the regression
->> is from the preemption mode change (voluntary -> lazy) or from
->> PREEMPT_RCU. Since no PREEMPT_DYNAMIC is involved in either build,
->> the preemption mode is not a factor. Additionally, switching between
->> full and lazy at runtime on 7.1 showed only ~1% difference (57,476
->> vs 56,892), further confirming the mode doesn't matter.
-> 
-> Lazy/full switch is same. There will not be any additional overhead.
-> The real concern is none/voluntary vs lazy/full.
+Signed-off-by: Allen Pais <allen.lkml@gmail.com>
+---
+ drivers/dma/fsldma.c | 10 +++++-----
+ drivers/dma/fsldma.h |  1 -
+ 2 files changed, 5 insertions(+), 6 deletions(-)
 
-That's right with CONFIG_PREEMPT_DYNAMIC=y
-
-With CONFIG_PREEMT_DYNAMIC=n:
-- CONFIG_PREEMPT (full) implies CONFIG_PREEMPT_RCU
-- CONFIG_PREEMPT_LAZY (lazy) doesn't imply CONFIG_PREEMPT_RCU
-
-because of kernel/rcu/Kconfig,
-
-config PREEMPT_RCU
-	bool
-	default y if (PREEMPT || PREEMPT_RT || PREEMPT_DYNAMIC)
-	select TREE_RCU
-
-Christophe
-
-
-> 
->>
->>> OK, if you are executing an isync or an lwsync instruction in each call
->>> to __rcu_read_{,un}lock(), that would explain the overhead.
->>
->> Yes, that's what perf shows. __rcu_read_lock and __rcu_read_unlock
->> together consume ~9% of total cycles on ppc64le with PREEMPT_RCU,
->> vs essentially 0% without.
->>
->>> CONFIG_PREEMPT_DYNAMIC=n for the win?
->>
->> That's the simplest distro workaround for ppc64le. But since commit
->> 7dadeaa6e851 ("sched: Further restrict the preemption modes")
->> removed PREEMPT_VOLUNTARY as an option for architectures with
->> ARCH_HAS_PREEMPT_LAZY (which includes powerpc), distros that want
->> voluntary preemption on ppc64le would need to disable PREEMPT_DYNAMIC
->> anyway.
->>
->> Is there any path to reducing the barrier cost in
->> __rcu_read_lock/__rcu_read_unlock on weakly-ordered architectures?
->> Or is the current implementation fundamentally constrained by the
->> memory model?
->>
-> 
-> Are you saying you see regression with voluntary with 
-> CONFIG_PREEMPT_DYNAMIC=y?
-> 
->> Jirka
->>
-> 
+diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+index 22d62d958abd..1cb6ce327078 100644
+--- a/drivers/dma/fsldma.c
++++ b/drivers/dma/fsldma.c
+@@ -968,18 +968,18 @@ static irqreturn_t fsldma_chan_irq(int irq, void *data)
+ 		chan_err(chan, "irq: unhandled sr 0x%08x\n", stat);
+ 
+ 	/*
+-	 * Schedule the tasklet to handle all cleanup of the current
++	 * Queue the BH worker to handle all cleanup of the current
+ 	 * transaction. It will start a new transaction if there is
+ 	 * one pending.
+ 	 */
+-	tasklet_schedule(&chan->tasklet);
++	dma_chan_schedule_bh(&chan->common);
+ 	chan_dbg(chan, "irq: Exit\n");
+ 	return IRQ_HANDLED;
+ }
+ 
+-static void dma_do_tasklet(struct tasklet_struct *t)
++static void dma_do_tasklet(struct dma_chan *c)
+ {
+-	struct fsldma_chan *chan = from_tasklet(chan, t, tasklet);
++	struct fsldma_chan *chan = to_fsl_chan(c);
+ 
+ 	chan_dbg(chan, "tasklet entry\n");
+ 
+@@ -1152,7 +1152,7 @@ static int fsl_dma_chan_probe(struct fsldma_device *fdev,
+ 	}
+ 
+ 	fdev->chan[chan->id] = chan;
+-	tasklet_setup(&chan->tasklet, dma_do_tasklet);
++	dma_chan_init_bh(&chan->common, dma_do_tasklet);
+ 	snprintf(chan->name, sizeof(chan->name), "chan%d", chan->id);
+ 
+ 	/* Initialize the channel */
+diff --git a/drivers/dma/fsldma.h b/drivers/dma/fsldma.h
+index d7b7a3138b85..cab33d010d51 100644
+--- a/drivers/dma/fsldma.h
++++ b/drivers/dma/fsldma.h
+@@ -173,7 +173,6 @@ struct fsldma_chan {
+ 	struct device *dev;		/* Channel device */
+ 	int irq;			/* Channel IRQ */
+ 	int id;				/* Raw id of this channel */
+-	struct tasklet_struct tasklet;
+ 	u32 feature;
+ 	bool idle;			/* DMA controller is idle */
+ #ifdef CONFIG_PM
+-- 
+2.43.0
 
 
