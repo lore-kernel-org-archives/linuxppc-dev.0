@@ -1,92 +1,90 @@
-Return-Path: <linuxppc-dev+bounces-24886-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24887-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E6926C531D0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2026 11:32:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AA2E2C53219
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2026 11:40:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h7xKZ0vH1z2yhY;
-	Mon, 27 Jul 2026 21:32:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::430"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785151970;
-	cv=none; b=bU0QFwDkBoL45Jq8BuNM2c2iebRFhEa/g7EKv9aygZuXo/KWzdyD7d6dec42liEqFa5llt+Cxv4HCUmsMwoZQu2xdzLmfxZ7xZ3HaL7S18pcl4mPGR6p6l0kZts6nsVYuMndRRwmtJiXT2/b70c710rd0+xR71EvKKJcdSb2EV+FuxBX6TOOHAVB65PsgjTgTtnp7yKzPD5ICseNiVP0RZk9+DO9xGyXUs5w2YTSS5CxUMapyJotnMBgvsMbZeMYpF6vdWZ5oNSBkvg6Jm0ZrMHUnUvaDMun9xO9sxqAEtu2zy46vv4S090Pr4htM9UB8JZrmljQM3b4ksvmWc3xNQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h7xVL1Mcbz2yhY;
+	Mon, 27 Jul 2026 21:40:26 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785152426;
+	cv=none; b=odAOrwkXv9nIfMe0/SyrMbSwP6SAcVjFC9B9vrWtkMk6oA7vOjj+LqzD71BwYKiVLLvthAaWqedqkYbPNGw8+UndXyurKQKqKeHZmQ7raQq0sutcHXlWLxP1d7Jird6VtfoJOHzx+AwYHczJF9dCmeAj3y+6RAJKvdsLnUZza41pb8ywxi+XPFUvpk921VWfToxhKIs0vAOvTIHqnKhxsTGPtiBhyLAP3jaZzLvtPmqlmqP4TltS7eiDYlvaNE/Rrq7PfISU5SztucUiMQm5g2pt5CUBG+cSSeTbQcX4MQGWGxd3gYfmXLlwIP292tK+scMUV4Ob4ztUgeYTojS0Kw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785151970; c=relaxed/relaxed;
-	bh=zEenGUm5RioXWNnfd2RzwGu/SqP7QkoWXITZGeqYw+o=;
+	t=1785152426; c=relaxed/relaxed;
+	bh=n2qS5mLYUTp7Uhtq7TiQK32AVf+rs7o35+jqHSIQjdw=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Njdj/FQOYhLnwolY3+i192Bh2ftk78aFYHjn9RIvkBYCNXbKzbo738YOZV22+pEtllEuVMA4E8S/5sXv4SZGt9Ks6qwvRiW6K40iLWSWBaVIboxmkoNcCi0i5bMuuvfhN/YerwUvNcFRhTp43ATtgEMydw9rbM0W/vRsZpAuyA27QLwGrE+urtX5edP23TmFOkXESRDxQV2Z7yBT0bX/3jI0r32Mtzw7v1/pkcOuVWc4ZdleWJdb66flEiB7LTrqRe+eqIirNDVqIuXBs+05JxMWYjF2oYumxgjMA5l8ypBkHjNrRq/WMwlK4g0ONNm0rmhxP6Al0+3n7/eLEb/83g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=SXIGb6Op; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::430; helo=mail-pf1-x430.google.com; envelope-from=error27@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=k05WJrFPZEUtIvZB+bb166SJvfYKYCL32k0eG4MPPBtZNoonjkVqxlAiB3I6D5dk5f1iPDE/39n8yk+toOX1v6qteESJSVlYGGN6uRlqnhw4idjaqqyGmdWUftpAuL9laAfB7Z6y4OLVLTzle8c7FFgfcz436MQXP+q3pFZdvzh5sr63/bdSFjQAMcwitSrMVo3hAZZmmshuGBqdx0FCRIad0Ocj2sIbjKgPAR39pNNsFMFPIsHFD8K0wRDphc6t55EWBVtiUKrh0C/fus4enih8gkFwGyvm/ZbnBFbYaUDyNnoopYZ4v+xIVBW+3BVfUzCVjKSGjRSZUzipBDcybA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=T7OMLWX0; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=SXIGb6Op;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=T7OMLWX0;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::430; helo=mail-pf1-x430.google.com; envelope-from=error27@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x430.google.com (mail-pf1-x430.google.com [IPv6:2607:f8b0:4864:20::430])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h7xKY17cGz2yhD
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2026 21:32:49 +1000 (AEST)
-Received: by mail-pf1-x430.google.com with SMTP id d2e1a72fcca58-84a652535dcso1435463b3a.3
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2026 04:32:49 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1785151966; x=1785756766; darn=lists.ozlabs.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :content-type:mime-version:references:message-id:subject:cc:to:from
-         :date:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=zEenGUm5RioXWNnfd2RzwGu/SqP7QkoWXITZGeqYw+o=;
-        b=SXIGb6OpeouA7qUNduKtk7roiVd4kNIC4IkVX8jQxnapok6infwVP+tsuPc7LUhb2u
-         u6ujT1o/bBAAd4+ZqUh9CYdIgomG6tRGvP3gUUfNBiWZh/UWH5ROfnxql+PkDzfgurFh
-         jlqYdnnuAzCgBrZ9QkON/Ia30NWinLoEW9GQvzM0km1E31WSO05E2K8yfjVne6Xtbka6
-         NkSUfCaPwQS3JFE7qXIcvsyq4HtBMSCY9+zqbiTWnmFgcuvEwrzUY5/6PNI5GcvZ9DY2
-         4XA7lpW8mR2u8irUDAfnBn9oBN5w0twKAWKyhoeLAhaOjjj0Cs05B2MQkgYIFCYO3tH+
-         TE1g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785151966; x=1785756766;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :content-type:mime-version:references:message-id:subject:cc:to:from
-         :date:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=zEenGUm5RioXWNnfd2RzwGu/SqP7QkoWXITZGeqYw+o=;
-        b=gVvlbOpeBqDTDdLGrHnftYah7JXXqCZcNrxqE2n+p5uhtA8K7uyz1C78FnY04K7ibg
-         jUSDQlELPnPmcPG24T/i7WZJ7uuH56xyfEcnIAMZmwNpFAepccTrHpvHtVHb1rm2z1IT
-         IeY5eaQtHwzi2ydQih1Aw7EUeA/GFmYCgLaTBxPcURXwq39eYc7n8wo7zxxQ2UtdmfKM
-         NDOu7K0mknf+BdCXu8Pi29SceqBcUubCz+/DeqjHggX9YN7/LLQc4YiePzPqKw2rvNtf
-         qQqMOYxbDFb98kj8inE83+ARcmJOoG3ki6o5rU1Jzr1ZkEo8dZ5+rX1K60xxSSzl2jl8
-         vw9Q==
-X-Forwarded-Encrypted: i=1; AHgh+Rq9fOkYUaGPGpLn3pxxFnSP1s3Zs//WazZ6trByB7kXtgGfQkHzZlQ7qP7E8COkVmEnhyUpid3uWKERMLw=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxjjTA8WbvMmAxdIZNxyHC0bYzdbr6goFBeydnbrIJTrPUWIIbY
-	GqlmF/qqj3CoZjfcBJZhkzYY+MPa1eL+gnuKcc18PbTDJOWg5iTe7EIs
-X-Gm-Gg: AR+sD11qHSNqduNvXVlD5p277iih54lx+FGONIJYuAeQ+Saz3zaFKqcLeLFe0QOSMN0
-	0qDfFQtLiZWdObOAQbyAR3tJdo6g3AiyxH0HbaGAlMr+hsIq68YJ1bm4JbidEmbIbYT1mpiRFJb
-	KezZ1n+SN1+zYnMcgXUOkrL6fXqlW5zU57iGnHC36ebZFpbADrbw3JfPC31HayT0rf7VFEQNP1D
-	37TlKSPe0QDu1j1ycI7aE60HywrPaZC0hvI7Qrp0tLhzv/RXgGK9/mIdhxALOQGW6X6pVqVGnA0
-	2OCoSheCwSxgOWL0JQwSx3MIfoZzinv/aK2eBQubWr5AT9TIefa/yq78T1S5iRWTUbuEf9Sshig
-	N73jNMAWMIFzGf/dkAf7LyVgwuk034QPqbh84cFEM9iGU8Jelm3F7Hlc44fidjpe1d0XpoawE/j
-	nVSjzE9vc=
-X-Received: by 2002:a05:6a00:f03:b0:848:469b:3d19 with SMTP id d2e1a72fcca58-84e59462fcemr6582221b3a.29.1785151966109;
-        Mon, 27 Jul 2026 04:32:46 -0700 (PDT)
-Received: from localhost ([172.216.252.11])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-84e53253d70sm2900157b3a.2.2026.07.27.04.32.44
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 27 Jul 2026 04:32:45 -0700 (PDT)
-Date: Mon, 27 Jul 2026 14:32:40 +0300
-From: Dan Carpenter <error27@gmail.com>
-To: Markus Elfring <Markus.Elfring@web.de>
-Cc: linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
-	Christophe Leroy <chleroy@kernel.org>,
-	Roy Pledge <Roy.Pledge@nxp.com>,
-	LKML <linux-kernel@vger.kernel.org>,
-	kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH v2 2/2] soc: fsl: dpio: Use scope-based resource
- management in dpaa2_io_create()
-Message-ID: <amdB2K43gRBDhBPI@stanley.mountain>
-References: <690827f2-e746-4378-bb7c-9948cd69dc15@web.de>
- <d95d2f4c-f3cf-44eb-b61b-79ba7891674d@kernel.org>
- <d2e5df25-c8b7-4ee6-8ebf-1725542baabd@web.de>
- <f47abd6e-9337-404c-a24f-39a9dd7454d2@web.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h7xVK1Cz9z2ygn
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2026 21:40:25 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id E42B64387E;
+	Mon, 27 Jul 2026 11:40:22 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 970C81F000E9;
+	Mon, 27 Jul 2026 11:40:21 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1785152422;
+	bh=n2qS5mLYUTp7Uhtq7TiQK32AVf+rs7o35+jqHSIQjdw=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=T7OMLWX0gYiwKXEiXgssU5fPiaQe6F++mUD+fwHLVNHIk9HOv1Yvhh9ZRchQz32Nt
+	 LnQ5LDiAdizYA+qmqA1SVxRHHAR0hoEt/bd4mCi8k6Hq/JFkP6WuOj8ApoNfm3Ly9K
+	 iuAxRMvaicTI+NcpJiKAWEuPtZCNJ1uOO9vIJPigpr6q+2V+HODr643mVFec0Q3OrI
+	 XE3oGi3J/mM0RfCrQrwZDKOfBEgBLA8zQrBUI4xB2kD+tO8gQRyhCXqmt6Oi4fDDXH
+	 nqQ7sees8iukt4+eTNpLhy3yicdte/VE2pqIL3ZlBXQZzdpHfIAHUuH8PK7DK1aaWx
+	 A5wogUb8a0VKg==
+Date: Mon, 27 Jul 2026 14:40:15 +0300
+From: Leon Romanovsky <leon@kernel.org>
+To: Jason Gunthorpe <jgg@ziepe.ca>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, iommu@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+	linux-coco@lists.linux.dev, Robin Murphy <robin.murphy@arm.com>,
+	Marek Szyprowski <m.szyprowski@samsung.com>,
+	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
+	Steven Price <steven.price@arm.com>,
+	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Jiri Pirko <jiri@resnulli.us>, Mostafa Saleh <smostafa@google.com>,
+	Petr Tesarik <ptesarik@suse.com>,
+	Alexey Kardashevskiy <aik@amd.com>,
+	Dan Williams <dan.j.williams@intel.com>,
+	Xu Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+	linux-s390@vger.kernel.org,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org,
+	stable@vger.kernel.org, Michael Kelley <mhklinux@outlook.com>
+Subject: Re: [PATCH v8 01/23] dma-direct: return struct page from
+ dma_direct_alloc_from_pool()
+Message-ID: <20260727114015.GL12003@unreal>
+References: <20260721115456.GI110966@unreal>
+ <yq5atsps77c5.fsf@kernel.org>
+ <20260721142921.GN110966@unreal>
+ <yq5ao6g0750v.fsf@kernel.org>
+ <20260721153321.GO110966@unreal>
+ <amEhEKQW0_HJ9cLN@ziepe.ca>
+ <20260723075704.GC110966@unreal>
+ <amTJY_CdE-uDgoGG@ziepe.ca>
+ <20260726081753.GD12003@unreal>
+ <ambdXXcfgK+cxqxa@ziepe.ca>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -100,31 +98,50 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <f47abd6e-9337-404c-a24f-39a9dd7454d2@web.de>
+In-Reply-To: <ambdXXcfgK+cxqxa@ziepe.ca>
 
-On Mon, Jul 06, 2026 at 12:40:09PM +0200, Markus Elfring wrote:
-> From: Markus Elfring <elfring@users.sourceforge.net>
-> Date: Mon, 6 Jul 2026 11:18:39 +0200
+On Mon, Jul 27, 2026 at 01:23:57AM -0300, Jason Gunthorpe wrote:
+> On Sun, Jul 26, 2026 at 11:17:53AM +0300, Leon Romanovsky wrote:
 > 
-> Scope-based resource management became supported for some
-> programming interfaces by contributions of Peter Zijlstra on 2023-05-26.
-> See also the commit 54da6a0924311c7cf5015533991e44fb8eb12773 ("locking:
-> Introduce __cleanup() based infrastructure").
+> > Currently, the phys type universally describes memory and can be
+> > reliably translated into any required representation. It is the most
+> > fundamental type we have.
 > 
-> * Thus use the attribute “__free(kfree)”.
+> You cannot go from phys to page reliably unless you make assumptions
+> about the phys, that's the whole issue here. If the callchain expects
+> and intends to use a page it should really stay in a page and not take
+> a side trip to phys.
 > 
-> * Omit two kfree() calls accordingly.
+> I agree it would help to have some helpers that were more phys based
+> for the callchains that want that since we are mixing two fairly
+> different activities in these functions..
+
+Yes, we are agreed here.
+
 > 
-> * Reduce the scopes for the local variables “obj”
->   and “qman_256_cycles_per_ns”.
+> But making phys the only output out of the pool isn't going to be an
+> improvement.
 
-Why?  No one does this except bcachefs and that was removed.
+I don't know, phys was natural suggestion due to multiple
+page_to_phys/phys_to_page conversions down the road.
 
-regards,
-dan carpenter
+> 
+> BTW how does a struct page even work for decrypted memory? You can't
+> actually use it that way right? If you try to access it then you'll
+> get the wrong IPA and it should explode?
+> 
+> Maybe we should be blocking the struct page path entirely for CC
+> shared?
 
+It will simplify things. Ultimately, this series demonstrates that
+CC users must be aware of the memory attribute (CC_SHARED) and struct
+page is too generic.
 
+Thanks
+
+> 
+> Jason
+> 
 
