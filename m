@@ -1,66 +1,64 @@
-Return-Path: <linuxppc-dev+bounces-24870-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24871-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 94BB7C531D0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2026 10:18:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7A85AC5321C
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2026 10:18:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h7vgt1S5wz2yhv;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h7vgt4YYLz2yjg;
 	Mon, 27 Jul 2026 20:18:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785147514;
-	cv=none; b=i/ofkhOcH1WKcC/1/hJiQAyuytySzZnpaMd7ha6+EuXfGGy0uB2VjLNNDMwsKbyo83foSbe1lp5QN17VsL5/Dwn2dSyIsGo9nsy/FJwtkXW3qPsBCAwMg/ZjmjxOewgBWiwkWWEwKeEDH+Ix0aUT6cMS02BtrxpSJXaqL8sXcmMk84DsA50kbgS7nMxWaI3yq1lQqKlBXE6ZUTsyDhasNaKfSNBuQ7z5w3CJNbkqe9xtFF3wRME9YL/lh/6z3MDjKxWY8AtdZ9yGy2rSkF/dMGGeF38uJIHNGH4ZI+aCO+DcZLexUjwGrR02tsMFxKvLDtDwuvM9EiC3+Lrp0RkxLA==
+	cv=none; b=b761sroOuZG/Dw2Rr8AS0HX9dVdId6fOcgyUjJvoPSU8G3XgLfhSXd1djThmVaiBmPJBW9TP5FzJenoQqJ68SPNg1Q+emNrb4/IwgDM/42OiQsuhpNg6morjttLsANf78QRwVXv6aBUywbfrQhtyGzLMsI6sV8+UWCqZLdKDPbEx3aV4ZDwACND3gg9WzNWaoGWkR+webHESCak+8A4N8Tp8/xTfwlbNEbkymVljvz5OQmgnh1EWeSxbM8sN6uSDsZl3oqLIuSPDqsV7WLsKAQsAHzUrnItuStmUIkshEecJYADQie/bY5coPOrSDXf//3jQoKBsKniRS8VjqkhBtQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1785147514; c=relaxed/relaxed;
-	bh=tm4bX5EaMEcOm+KUpSmElRPonEmmie0f+X4ECTvvYHI=;
+	bh=dYQwJyuPm8mudO0A82O+YdFMew2F6X5ocyHqJKJlVts=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=Tno0uqgyHe9T/RseuzML3A0M2kD3gWAamlR0MdyTQ6Jjc+T5FVOI8M1GIrFzA3aBZj51yJNOeKzCtC9JvPWSxvS2rAUN3q9nilfPQibve3IjS8VrwdIlpp2g0oyD/y7agze/dHFqIPC3gVfC35Ljmi6pNO28YuxGFvM+GsYIeB7Zl4Hlc+pIdujUjwuolSL5jZ/ssguczAnX6rTvBxAfvnxKYR0zcMA1tdpv2ekUH8ft0XOB1kYbGUR3K3vW2LudIwJjj+mdxJCVxbQrfwBS3F5hs3GC0XH8ayWyvpL3OMU5W2J1ojKlC6DE0y+mv2bnaErZBw66OCZw6jfpeg6JhQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jYxixka0; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version:Content-Type; b=kCSJvqxoRCEaeNJk3HnFEebIWcy3U6TqAGDjWlbxZOrJYRW/andaTQeeS5GsJfuu4iO21lxGneOrnIdypnPzdk797H2eTpkPZqclgWrEYJotHy4fBCrZbu6Xag32fjiFreNE8fsf9kEbtK7aUzvesJvZHKQ9tlQWMdDjKXfrztBOiEMjJmgFFQ2GACGuEWNrfe/DQ0PLClSYKdKxZkls6C90RuoLolOAQ6gyIDhCQs5O5fD7SwUa3Xblfa6M+QZ+BiyQLz/V+ONIAdfzC/7YKLX9Z7L5kyfrRRmMdD1lBnyy/P17FFkurzPZmT/sU/yuGW8EBT8YnadWmdyxqDfbZQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=KT/ip6M7; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jYxixka0;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=KT/ip6M7;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
 Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h7vgs2czLz2yhY
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h7vgt0hGvz2yhb
 	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2026 20:18:33 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id EAB60601DE;
+	by tor.source.kernel.org (Postfix) with ESMTP id 14D7660A6D;
+	Mon, 27 Jul 2026 10:18:32 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1AC941F00A3A;
 	Mon, 27 Jul 2026 10:18:29 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9FE4C1F000E9;
-	Mon, 27 Jul 2026 10:18:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785147509;
-	bh=tm4bX5EaMEcOm+KUpSmElRPonEmmie0f+X4ECTvvYHI=;
+	s=k20260515; t=1785147511;
+	bh=dYQwJyuPm8mudO0A82O+YdFMew2F6X5ocyHqJKJlVts=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=jYxixka0FlhauT4YJqj3Jfq5JgaoHCfQuUzMJ940VOmDeZ2ucrFT10LpKaeOY5aX9
-	 Fsb5w94VOsRF+1E04eufzieRAL9zebAV/UEr9GkHBO93efzHnJQ0DngR2pSHa6LKJd
-	 +FuvAr+gmMUSr8aqIKFMZVwWd/D1qTTjLq6RMR/bpST2nvoUyDmXhooRO5Z5g/2RcK
-	 NlpFszwwKZ/FueD8GbXIeoQcouRlVvm5i7djRDiB9Os99FONj7gH9LS2Y62GBq+0Q5
-	 TImTyF+igaEB/3WT6ZThTL/BNkADmgUkG+2hUrLnXUqRwzxJpHcuJXjd8lRGb7jDxI
-	 jd7HvIhSy/8Ew==
+	b=KT/ip6M7L+3VK1XpOBQn7hYOugi9szjNGfpYyqJ0BoSqVMihiw0Ma0Vp1rmeXkxsw
+	 ezt577ls+SXAzVcmlwtmACP0uGuVzXPBKsp6tQrYjts1pROtqXgBJ9YBP2ULo4KWuS
+	 GXifjhDzV4srf0ChfpaO7sUBECKTUX2S6YNvByfsz4nTx1a1mwBVHGtwCDGeiItdtw
+	 90fSLMz7H5tq2cT5sCkjG6+T4P4vkhGNwxyzQsD2HPoxUbvWN78lty9DOQbBU2Lt/a
+	 qsCF9lE2KqhoAQ5rI06208fAY1kH4qDKr++Ez3D3YG7/U41CxejmY83IEqWXFTM105
+	 JraMshIDVPGkA==
 From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Qiang Zhao <qiang.zhao@nxp.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	linuxppc-dev@lists.ozlabs.org,
+To: Kees Cook <kees@kernel.org>,
+	linux-hardening@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-usb@vger.kernel.org
-Subject: Re: [PATCH v2] powerpc: Move CONFIG_QE_GPIO to SoC
-Date: Mon, 27 Jul 2026 12:17:59 +0200
-Message-ID: <178514745088.65524.3935355950831235390.b4-ty@kernel.org>
+	linuxppc-dev@lists.ozlabs.org,
+	david.laight.linux@gmail.com
+Cc: Christophe Leroy <chleroy@kernel.org>,
+	Arnd Bergmann <arnd@kernel.org>,
+	Ioana Ciornei <ioana.ciornei@nxp.com>
+Subject: Re: [PATCH next] drivers/bus/fsl-mc: Use strscpy() to copy strings into arrays
+Date: Mon, 27 Jul 2026 12:18:00 +0200
+Message-ID: <178514745085.65524.5154457607232721554.b4-ty@kernel.org>
 X-Mailer: git-send-email 2.54.0
-In-Reply-To: <9a7131d15a94e2017877e628f0e97f9aa2e0aae9.1785140877.git.chleroy@kernel.org>
-References: <9a7131d15a94e2017877e628f0e97f9aa2e0aae9.1785140877.git.chleroy@kernel.org>
+In-Reply-To: <20260608095500.2567-1-david.laight.linux@gmail.com>
+References: <20260608095500.2567-1-david.laight.linux@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -75,28 +73,21 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-X-Developer-Signature: v=1; a=openpgp-sha256; l=708; i=chleroy@kernel.org; h=from:subject:message-id; bh=uN4DlDlGUY5Xyerk30O+tWmKQX/egw2gDnpOL+pthDo=; b=owGbwMvMwCV2d0KB2p7V54MZT6slMWSlG0Qz821INK3tnj4tvcWuuDhDnvHzm75w1sots+dsm 1Bb3Xeqo5SFQYyLQVZMkeX4f+5dM7q+pOZP3aUPM4eVCWQIAxenAEzkqxHD/1IbnygBmyABewNf k6W31CSKzc/dcb2nKKO6Tz9s7i8RPoY/3MtW8bV8UmjQ67UI2mC3Y8XEf2kvrvlkTPB+8N3404R aFgA=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=398; i=chleroy@kernel.org; h=from:subject:message-id; bh=axsqdnFVyozTb7QT2kt9d7xybmK2/K1u7HJn6I4CUT4=; b=owGbwMvMwCV2d0KB2p7V54MZT6slMWSlGyQ5hnLK1M0VbCy2akn8f4LthAHL5WX+enyzXivzM TZnMXl3lLIwiHExyIopshz/z71rRteX1Pypu/Rh5rAygQxh4OIUgIlc2cbwh3/dbitrpTkSv1ax cF2xt5x8Iq/MMdoy8llDxbcuw3R7MYb/Od4S82bY9GepO0xaeGe9U96utvX78/yWK/7ziazepd3 JDAA=
 X-Developer-Key: i=chleroy@kernel.org; a=openpgp; fpr=10FFE6F8B390DE17ACC2632368A92FEB01B8DD78
 Content-Transfer-Encoding: 8bit
 
 
-On Mon, 27 Jul 2026 10:45:37 +0200, Christophe Leroy (CS GROUP) wrote:
-> Commit 7aa1aa6ecec2 ("QE: Move QE from arch/powerpc to drivers/soc")
-> moved QE into drivers/soc including gpio.c but left CONFIG_QE_GPIO
-> in powerpc's Kconfig.
+On Mon, 08 Jun 2026 10:54:56 +0100, david.laight.linux@gmail.com wrote:
+> Replacing strcpy() with strscpy() ensures than overflow of the target
+> buffer cannot happen.
 > 
-> Move it to SoC as well as it is the only place it is used:
 > 
->   drivers/soc/fsl/qe/Makefile:obj-$(CONFIG_QE_GPIO)       += gpio.o qe_ports_ic.o
->   include/soc/fsl/qe/qe.h:#ifdef CONFIG_QE_GPIO
->   include/soc/fsl/qe/qe.h:#endif /* CONFIG_QE_GPIO */
-> 
-> [...]
 
 Applied, thanks!
 
-[1/1] powerpc: Move CONFIG_QE_GPIO to SoC
-      commit: 6599935a1e4be0354326086ea6c73dcb8f43b881
+[1/1] drivers/bus/fsl-mc: Use strscpy() to copy strings into arrays
+      commit: e0bdf39890814b5dd5481c8f9c80c5f8399fa6cb
 
 Best regards,
 -- 
