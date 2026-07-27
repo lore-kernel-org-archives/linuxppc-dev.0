@@ -1,48 +1,48 @@
-Return-Path: <linuxppc-dev+bounces-24876-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24877-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D0D2FC531D0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2026 10:43:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4967FC53219
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2026 10:43:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h7wDc0tZ9z2ygn;
-	Mon, 27 Jul 2026 20:43:28 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=54.206.16.166
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785149008;
-	cv=none; b=mR+BaVNBKRNztuVnxpgGTvSbjAGWAy8/YNDOQIkwsrhjDbJQmf3XGis6gvIuXgk7KB04dagQvAWpqeohFElfSYQ35zDQMDfXMqprU5RW3tk8Ygs6tXa13+JFY6j/z8BKSNYL7RxudPbMDGUd5+ceUnkbsFhe1pqa/xJMs4TURy48j6W3xixPXhOLfUrhWGq4K1/esBOsYp4rJKv4tBl2w9EwN8o+bCskza1bCSam4Do8OQOeJKOogFE8w9vrby765/HESqS2p0ZRjLf9OhQEsf8SX2q/QukWh37k2Y1tqdZwAZOqAnq1xIkj55fig7fJg3ZQuT8xukI+l5S+CHpfGA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h7wDj608Yz2yjx;
+	Mon, 27 Jul 2026 20:43:33 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=114.132.124.171
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785149013;
+	cv=none; b=j7wr0E/Q96eSxUSBd5GeigWmfR2PDoTctTl4SoawuXTFblStIaIUs7M/cIs3tvcYuZRQuR2cyEUYgNIFucPekX4gM33H7OyiR958JWtHQF/i/KF4XNHX0w7f9p1avt3Gkr/Bjxq3wKrLj/ct+9XBVWfArTRudGtIJBj/E0L9PdR4XKaV+PwoGtCQl5RADtVD9z7fAt73rJsbANh2DkL7Aqhf5dqx0uJYOD7DEHyPbF85eLLdLHohfkIuXixDWf7x/ej7CYIEI8vU51L/b4BUCpmcYYnsTHGQwDlpohwCJ5inYh+MZe8Ke0f9eUwYOHYp2YQkpbVibMd+09yO1cX9vw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785149008; c=relaxed/relaxed;
-	bh=amQkJBx/VTXWtfwDC8s+JiVB9zRjVH9H9qnr7Wd/IU0=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=gwgDfi+Kem23gHlUd26TdGEfEskhuPDcfU2nhaJiq//09TeziaTgNISoKgM8JxlEf4eoWcnsf7BGAbjdlIjhaykhnLMgZ7NSo1fn2mgndIdyUMeCgUi0ucJ0WyGkLd5QWaVSpb+ZZpcQ6Ii9SQ6CnC2jGdv3iZbG53VQjl2BiJyhyqaZ6/RzOP/WPVQAA7rUf1QFk1C5kXOVFXg8A9TevARSaM703yNExXiPl4xAry2WNtoOB9jew3Gxn18rEuXS+W4RYYUznd2FfXA9K2Ppm+5ugz/Y0fzm5ft2YOos3Zp5t3IjH1IsiNLuq59R9ke1EA8W9G20xTS/PkkyLjPA7Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=uniontech.com; dkim=pass (1024-bit key; unprotected) header.d=uniontech.com header.i=@uniontech.com header.a=rsa-sha256 header.s=onoh2408 header.b=SsvmN2EG; dkim-atps=neutral; spf=pass (client-ip=54.206.16.166; helo=smtpbgau1.qq.com; envelope-from=gouhao@uniontech.com; receiver=lists.ozlabs.org) smtp.mailfrom=uniontech.com
+	t=1785149013; c=relaxed/relaxed;
+	bh=ivoAljloOvAb8QMpRzM/ZymLdYHI6z1Q7H435Lx28TY=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version:Content-Type; b=Bt/h2ZUM0VTNZuN+ZyydKISzXFX+gpMGRk5nfKckN2wVRJ3CKvr6A2E6enGq84hvWnE2XT8BKMiE+67i8ldNCxwmHlp/1TQxKbzTOYTlzoQeazj7T/HAwayQ5uRfcwvfWr5/oWXbsVy6d/kHBRLqIHO/LK27cb7o+7WVczwHH0e6QphTzQYNNJ88d5gxmoaxD3+OJpWjZODi/GZUgpLIlyCXzFpKZwtoPabex3b5Dp8coDP6PuzujEODZmq+owx3T60aqMAeDiGDGPtR0+XVqwa6H3m3Uv/h+rBoDUZP0oHPS/JHDp9p1J6+N2AUKo+P7dzdSOEMb5MYCa+G8spbWA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=uniontech.com; dkim=pass (1024-bit key; unprotected) header.d=uniontech.com header.i=@uniontech.com header.a=rsa-sha256 header.s=onoh2408 header.b=HTenXkyW; dkim-atps=neutral; spf=pass (client-ip=114.132.124.171; helo=bg1.exmail.qq.com; envelope-from=gouhao@uniontech.com; receiver=lists.ozlabs.org) smtp.mailfrom=uniontech.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=uniontech.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=uniontech.com header.i=@uniontech.com header.a=rsa-sha256 header.s=onoh2408 header.b=SsvmN2EG;
+	dkim=pass (1024-bit key; unprotected) header.d=uniontech.com header.i=@uniontech.com header.a=rsa-sha256 header.s=onoh2408 header.b=HTenXkyW;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=uniontech.com (client-ip=54.206.16.166; helo=smtpbgau1.qq.com; envelope-from=gouhao@uniontech.com; receiver=lists.ozlabs.org)
-Received: from smtpbgau1.qq.com (smtpbgau1.qq.com [54.206.16.166])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=uniontech.com (client-ip=114.132.124.171; helo=bg1.exmail.qq.com; envelope-from=gouhao@uniontech.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 27022 seconds by postgrey-1.37 at boromir; Mon, 27 Jul 2026 20:43:32 AEST
+Received: from bg1.exmail.qq.com (bg1.exmail.qq.com [114.132.124.171])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h7wDX2q9hz2xll
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2026 20:43:20 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h7wDh19K7z2xll
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2026 20:43:31 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=uniontech.com;
-	s=onoh2408; t=1785148958;
-	bh=amQkJBx/VTXWtfwDC8s+JiVB9zRjVH9H9qnr7Wd/IU0=;
+	s=onoh2408; t=1785148954;
+	bh=ivoAljloOvAb8QMpRzM/ZymLdYHI6z1Q7H435Lx28TY=;
 	h=From:To:Subject:Date:Message-Id:MIME-Version;
-	b=SsvmN2EGa45UXrVkkDSkB9kyWjlfsdpskbbMWrFt9HVPxu3g2/vvFceLgRzG4nKvt
-	 dq3mF/vQF9vE5OuQlLSCZl5OoTtKA9tCrhjpZlhpjXTMzGhEysMO1VkYKKK4uRHHiB
-	 G9p7Gng7KczNK+S0oBI1EVzfLLLI01zPfV8cbEMk=
-X-QQ-mid: zesmtpip2t1785148944t6dfcc41a
-X-QQ-Originating-IP: SqqlL9OqxNRDVT626BIWVwQXYXnjMUjufYNhI9LUY3Y=
+	b=HTenXkyWZsGjg8j0WvVyM/oaPdyRUMtlGHuKL2gtN+o59dQVHr2C+HCRu9j6Nruk2
+	 Uuqqi3e5OPMDV9kZVBpxrb86TzFPeddUmKyupbBfSVgTVwMw+l83c2dIS3KdclofFF
+	 PsjYU9pTAnRsjJxy3SuWPnAzFJNyHdZ91jHoJ4VE=
+X-QQ-mid: zesmtpip2t1785148939t8c74e3a2
+X-QQ-Originating-IP: rzAA9TqFOLBYfdxsYDpmvcJtB7XPvL+WcxRh3OZXpgU=
 Received: from localhost.localdomain ( [localhost])
 	by bizesmtp.qq.com (ESMTP) with 
-	id ; Mon, 27 Jul 2026 18:42:21 +0800 (CST)
+	id ; Mon, 27 Jul 2026 18:42:15 +0800 (CST)
 X-QQ-SSF: 0000000000000000000000000000000
 X-QQ-GoodBg: 1
-X-BIZMAIL-ID: 12286011520992601610
+X-BIZMAIL-ID: 2473966333756403746
 EX-QQ-RecipientCnt: 21
 From: Gou Hao <gouhao@uniontech.com>
 To: maddy@linux.ibm.com,
@@ -66,12 +66,10 @@ Cc: linuxppc-dev@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org,
 	gouhaojake@163.com,
 	kernel@uniontech.com
-Subject: [PATCH v3 1/5] powerpc/xive: make xive IPI allocation NULL-safe
-Date: Mon, 27 Jul 2026 18:42:11 +0800
-Message-Id: <20260727104215.184786-2-gouhao@uniontech.com>
+Subject: [PATCH v3 0/5] powerpc/xive: remove __GFP_NOFAIL and fix IPI error handling
+Date: Mon, 27 Jul 2026 18:42:10 +0800
+Message-Id: <20260727104215.184786-1-gouhao@uniontech.com>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20260727104215.184786-1-gouhao@uniontech.com>
-References: <20260727104215.184786-1-gouhao@uniontech.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,109 +87,71 @@ Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-QQ-SENDSIZE: 520
 Feedback-ID: zesmtpip:uniontech.com:qybglogicsvrgz:qybglogicsvrgz5b-2
-X-QQ-XMAILINFO: Mh0xRtMdhgZRI/SVuefY9v4qPo0ufnpvxm5LRe1EwsfTUKduNcrgshyP
-	B2DayNZvrEa19fMTVyiJ6A5SfkRfsRfPG0CXWbM2KkRK6L+yFFoOTH55JRvd0BSjyzZpnl0
-	6LWj9hv+u65muoSC6/JolZ4kDEJ7ZRfaxQK080PWSfoxmG4GeLMSTt3+LlRQvSK0DMuO2gv
-	4Yv7Z50SA2agIZzw02/0szMWr92J/rKJPLMxLRn+jc4r89R2UANc8woM9BiSAlBwqKZZbQ/
-	Rs6nCR1IzkyqnMRUljBkaVYbL+n3MqSdCRBkKGIDjZRRay/8Y4SB21YC2EbNKeikB6frdCh
-	N1vF6wanwrNSC8oZQRBsasq2C0igbLzQIgsRtzT3NQFcIMrPwMg9jiXQnCnfWD5R/9onu7x
-	m6+l0/26lE46o05Zh8fAkLWdoSwxptOU4F9B2mOsgk4imVbWbdrU3AorExP2cFVtVAVlN1K
-	y6k0mEXD/KyVkZn/g+OqycqFH3Ny7c7Dh0AvB0ksl9H3QZY+Xv9eeomHqA9QkWLs5Gw3/C0
-	GBXqgN8IuyAVrsDY4cedaK4ZVNysUf9Ipea4wMi3dJuvobegimIfF3+rwaVY17OAX+c157U
-	en4wlGqGbQuzXeL7kJ2RGY8fgR3o8uBc93fPHIDHrvazar0qzXTBolsGXpKl+27m2zStfMz
-	Rp0mSNBlhLN+TLh50e6ZIX0LHqlUl7C5id5zCTnCG8o98PR9TKhCsAIv65LOLSODyGMkRu7
-	ZYqz9MsBjM5+0+R8QX3+caQiCR2GEAFK+Oba2HLUCDiSVAz3zCgkUmkXu/DW+bx452oUgQ8
-	h89m/SGfign6pPNJ4Qm2breOQW1aCbnIyW2739cq92+3rGPV92Ryr0vd+gdjsqEqRcHYDCN
-	YDuzUj2BkbHfR6NLPWLv41V8dpF12VLTJOSyOUp6IAC5RhPiPOhoSUT1wAQyPSVHb5KPcYa
-	/pDWt8fMUHTzsVZjHGjrzHXeNTUlKY1NlaSuv5e9bB1QtNPsjFkTip/ctB531gAoX33toxm
-	KUjUQ4xLLKCHo6bm1vj2WrzU6JNQix/nbL7FKXtYrqiixaphCDT0hcFZ2XNM6Em2xiBL+e1
-	A==
+X-QQ-XMAILINFO: MKbpLBOB35np3H9KmPzUfVtEnPfWPzEQylbsu715kooClnQu0ahDYP2/
+	zUwiV5DOOMiSjD5xuJYnXMz7PH2cq8ENxEGODjX4qzYu8cngVaYUwUj/MwuI9YYkuZkYdkQ
+	VJ0VYrNqltox8Jtn5wWQbLNHRWgavPZ8XDgAudrvXEWvHXPhxXqLlR3uK4+sdTnPelAdxnV
+	wnsyRPu66UFbkSWYUAK6sroQ/m3iJomyEaiS7+1ZsKu/WpSD+OjCw8kKfb+slh8rEu9DEsd
+	J26Wlz9O444RGr3Fc9/1W/m85Xain4lyz5KVoTHTQY9fCQcnBi+0XuP5C57XWsbUDiu9zWU
+	hElNYjFjdBR2lVM0YXVnvOo+FxebbkLORPkuOvtfkA7wFQMlbpRfzWh4+tyA2Nd1ReuddnR
+	PAVo4rjqjDCj6yvbk8CE5qhsn2jTUUY4EVaOXtKD2u8BW1/3h1Lv5ECz529HKjVLluLS5xn
+	+GNAeNbObzpZllYYfgpoXuT8sXozYi0M4KpUxy9VpHsrX/VQXhSiMNLz3lkON1lQVLWnRaZ
+	1nYtiCL0/VVgkyh6srNCPw5Zh0AKXzzfqQXXcfmDlM8z+Te3SbAq8B8RJzFyHNd5gRBv7Nx
+	uHenstbM5fzRrGFXVFkXpzgl6jPqnR7tpkdeRTD3D9fBgHi1zXBd8jSUdOyeJ2Ww35I/IzR
+	RG/5YS6MmvrmTGhemEZcuQoGFkQjEej8YsXOXR5hA9TbbNks7ixTis2Yd+CLJcH7IQeLWFs
+	h2r6OYbyXq1DRaGcEPX/7j7LTLGyV5BUqyJq9mVx6Hq5/9gNL1umXdET60LQzDqc4jlpSUO
+	Qo+uuuT0lWUzIzhoefiHxIx2ErSJYoTQTMxtUvozAsFxNov/96eUEoID+cDnnKurhdbzYsY
+	j5OnW9LNOj/7CQZbYPRqHt4Rfhu0J88GiIJvQgoRs0VDMgwiGqD1SMVjUt6653bCOH1+0f0
+	1UWiNYnK2wTAvXxpwpwqiTkxg7b8OPbkbAf2mYLTJrUc94SWN+dX9hogMlwPgtKhsXaPhfs
+	oBtvSz12nwVfKbjt4k+v/qsqm88OLT3RjsGmgrfjmBImPMgZ7hdvBeATncMGQ=
 X-QQ-XMRINFO: Mp0Kj//9VHAxzExpfF+O8yhSrljjwrznVg==
 X-QQ-RECHKSPAM: 0
 
-__GFP_NOFAIL should not be used in new code [1].  xive_init_ipis()
-allocates the xive_ipis array with __GFP_NOFAIL, which makes the
-subsequent NULL check unreachable dead code.
+Changes in v3:
+- Split into a separate xive-only series; the drm, test_hmm
+  and cxgb4 patches are unchanged since v1 and will no longer be updated here.
+- Rework the first patch: instead of simply removing the unreachable
+  NULL check, remove __GFP_NOFAIL from the IPI allocation and make
+  all xive_ipis access paths NULL-safe (suggested by Andrew Morton [1]
+  and Cédric Le Goater).
+- Add a patch to defer setting cause_ipi until IPI init succeeds,
+  so that smp_muxed_ipi_message_pass() does not call into a
+  half-initialized IPI path.
+- Add a defensive NULL guard for cause_ipi in
+  smp_muxed_ipi_message_pass() as a safety net.
 
-Remove __GFP_NOFAIL so the allocation can fail, and make all xive_ipis
-access paths NULL-safe:
+[1] https://lore.kernel.org/all/20260725202632.dcb325658896a470df91cf57@linux-foundation.org/
 
-- Return XIVE_BAD_IRQ from xive_ipi_cpu_to_irq() when xive_ipis is NULL.
-- Set xive_ipis to NULL after kfree() in the error path to prevent
-  use-after-free.
-- Guard xive_setup_cpu_ipi() and xive_cleanup_cpu_ipi() against
-  xive_ipi_irq == XIVE_BAD_IRQ to avoid dereferencing an uninitialized
-  or already-freed xive_ipis array.
+Changes in v2:
+- Remove the now-unused out_free_domain error label in the xive
+  patch after deleting the unreachable NULL check goto.
+- Fix a use-after-free of xive_ipis: when xive_init_ipis() fails,
+  the error path frees xive_ipis but xive_smp_probe() ignores the
+  error and proceeds to dereference it in xive_setup_cpu_ipi().
+  Propagate the error return through xive_smp_probe() and check
+  it in both pnv_smp_probe() and pSeries_smp_probe().
 
-No functional change when allocation succeeds.
+This is a code cleanup series that removes unreachable
+NULL checks (and associated error handling) that follow allocations
+using __GFP_NOFAIL, which guarantees non-NULL return.
 
-Link: https://lore.kernel.org/all/20260725202632.dcb325658896a470df91cf57@linux-foundation.org/ [1]
-Fixes: 7dcc37b3eff9 ("powerpc/xive: Map one IPI interrupt per node")
-Signed-off-by: Gou Hao <gouhao@uniontech.com>
-Reviewed-by: Wentao Guan <guanwentao@uniontech.com>
-Reviewed-by: jiazhenyuan <jiazhenyuan@uniontech.com>
-Suggested-by: Andrew Morton <akpm@linux-foundation.org>
-Suggested-by: Cédric Le Goater <clg@kaod.org>
-Suggested-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
-Reviewed-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
-Reviewed-by: Cédric Le Goater <clg@kaod.org>
-Reviewed-by: Andrew Morton <akpm@linux-foundation.org>
----
- arch/powerpc/sysdev/xive/common.c | 12 ++++++++++--
- 1 file changed, 10 insertions(+), 2 deletions(-)
+v2: https://lore.kernel.org/all/20260724022851.466017-1-gouhao@uniontech.com/
+v1: https://lore.kernel.org/all/20260723081813.176792-1-gouhao@uniontech.com/
 
-diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
-index dadd1f46ec93..86c78af1f68e 100644
---- a/arch/powerpc/sysdev/xive/common.c
-+++ b/arch/powerpc/sysdev/xive/common.c
-@@ -74,6 +74,8 @@ static struct xive_ipi_desc {
-  */
- static unsigned int xive_ipi_cpu_to_irq(unsigned int cpu)
- {
-+	if (!xive_ipis)
-+		return XIVE_BAD_IRQ;
- 	return xive_ipis[early_cpu_to_node(cpu)].irq;
- }
- #endif
-@@ -1132,8 +1134,7 @@ static int __init xive_init_ipis(void)
- 	if (!ipi_domain)
- 		goto out_free_fwnode;
- 
--	xive_ipis = kzalloc_objs(*xive_ipis, nr_node_ids,
--				 GFP_KERNEL | __GFP_NOFAIL);
-+	xive_ipis = kzalloc_objs(*xive_ipis, nr_node_ids, GFP_KERNEL);
- 	if (!xive_ipis)
- 		goto out_free_domain;
- 
-@@ -1158,6 +1159,7 @@ static int __init xive_init_ipis(void)
- 
- out_free_xive_ipis:
- 	kfree(xive_ipis);
-+	xive_ipis = NULL;
- out_free_domain:
- 	irq_domain_remove(ipi_domain);
- out_free_fwnode:
-@@ -1190,6 +1192,9 @@ static int xive_setup_cpu_ipi(unsigned int cpu)
- 
- 	pr_debug("Setting up IPI for CPU %d\n", cpu);
- 
-+	if (xive_ipi_irq == XIVE_BAD_IRQ)
-+		return -EIO;
-+
- 	xc = per_cpu(xive_cpu, cpu);
- 
- 	/* Check if we are already setup */
-@@ -1234,6 +1239,9 @@ noinstr static void xive_cleanup_cpu_ipi(unsigned int cpu, struct xive_cpu *xc)
- 
- 	/* Disable the IPI and free the IRQ data */
- 
-+	if (xive_ipi_irq == XIVE_BAD_IRQ)
-+		return;
-+
- 	/* Already cleaned up ? */
- 	if (xc->hw_ipi == XIVE_BAD_IRQ)
- 		return;
+Gou Hao (5):
+  powerpc/xive: make xive IPI allocation NULL-safe
+  powerpc/xive: add error return value to xive_smp_probe()
+  powerpc/xive: propagate IPI init errors to prevent use-after-free
+  powerpc/xive: defer setting cause_ipi until IPI init succeeds
+  powerpc/smp: add NULL guard for cause_ipi in
+    smp_muxed_ipi_message_pass
+
+ arch/powerpc/include/asm/xive.h      |  4 ++--
+ arch/powerpc/kernel/smp.c            |  3 +++
+ arch/powerpc/platforms/powernv/smp.c |  8 +++++---
+ arch/powerpc/platforms/pseries/smp.c |  8 +++++---
+ arch/powerpc/sysdev/xive/common.c    | 28 ++++++++++++++++----------
+ 5 files changed, 37 insertions(+), 14 deletions(-)
+
 -- 
 2.20.1
-
 
