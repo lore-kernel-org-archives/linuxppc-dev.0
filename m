@@ -1,78 +1,89 @@
-Return-Path: <linuxppc-dev+bounces-24882-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24883-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EBCB3C531D0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2026 10:59:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1BFD8C53219
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2026 10:59:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h7wb72XCtz2yhD;
-	Mon, 27 Jul 2026 20:59:31 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785149971;
-	cv=none; b=lvIuKNpbiOglLNM91YirjuaG2ZogImq1hSpcwda4f0hdxrt2aNvn+qGT+oc8HuPQA8us0eBJwhUmsD/IMPRTkFMRI355Sy5nsQ0Kvwu56qVE5kXwdholqhROc9lbEYj0uy4eUI07BAdNNTKrnGxM498N8GUkBSXJTEnKHJIseAmQ+OQRjKR8YeZuvmRAGR7QQbDzQ/kyd6oEChIuBt33GkcsvAjYbmEsAUXa1Gg+LgZx4AZkFJNP/67AcaVV4sRqOX7bOJ/TvB18liYHRslBYIguiFAjjW1yDkdRK2X0YLwPzxoTqR2PaR8Guq0j8bSdPv0ORMJkpHHTXdGh/8Qaug==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h7wbL3GMsz2yhY;
+	Mon, 27 Jul 2026 20:59:42 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785149982;
+	cv=none; b=i+gxtNt+0z39zbDSAS0lnX0hDIkasqXXXm0XA3RtKcfBdP8Yw4uJONPI6Ag/VgbuhFL/XE4txbvjVZd4qKERKCvmwnjD6LuZl9Y8gRso+eg9btU+7hKc2ms8lJv0D595bM/x2b8klwvZzKJwFJHfpEhP23L7RusPvYlJKXizwLj/7Z1rzHlMGqCeXLbI66Ay4OV5yYtsnr02v8TnFe/4lzFQcLkuk3K1PA71TaTzgk+Xio3G1L/CIMnf9pauMIKnAO6qPa1IyrEiqGN8vQCOQivPhQ5qJ7OZRv/95iaLry09QnAZOf8rggRCe3f1XUalgxKVah7LG4dXFEDxk4Vkrw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785149971; c=relaxed/relaxed;
-	bh=VUnq0MRcGVbjRzqtzkwVG624df+X1hKJLudP5jeJR2Q=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=I55x9t22mp1yEngBKJd34i1I8x5do0HJaKjHdYGNbJtWr4oJXl8CvWxWFmCj9nF2KxZBeqZeY0zrix77jbfBQRLLULvW1quWsbBMDFBiGVMAAUB4EJp2k79WDypq38w3KP47JtTDsLYPsk2ZjxVPHEpOJpNtJkKaF2JeTPI0Oyu3nLC2mxLtAuuHJ3V1cQ/WzOlYOROPOjU4pXHUA8sqMQzngxkTnG6zDr8V7Zpfh7RntKw/BtcPomGpaZJeCnvz9KVpURxjbMxE935q/1lYhq1NGFIHzyRjzM/G//6mhL8zChnyiWS8YZRTwBEfRkd9yxDZi3AuD7oY5rFZ1vPD6A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=CtT/nMDF; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=skb99@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1785149982; c=relaxed/relaxed;
+	bh=WMiWSnOQ64xTj4+vdJ19aK6+fipsHH2WeYASnOPcjnU=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=IGG4HgE3FaG6cZQiHXNT3nBMrGpCwwjf82snaHRw5gtmWuklzVQ872Tw35qImmGabeCaPPqZRtvXCFFjW0ptpebgrEriIC+yxbYW9zs+BLB8XsIsChTB9KCA7yQ6bvxe8+eSSTI4+nPikqQ53IV08XMsvNi7IxzHBHvND7wE7fWCHD+m+gZs/OVXEDdX3v6f33mJpn7RJn45EM4m/vA+Xifjym8zsY4mrRCZpu7myrSAzrDa3PPOjO5sDzLYVW+IxaiiH/Toi03hjd2WW4A/EnwrdlQHLST+vE3zys0Rr4P4kkIUTLy9Mr2Sy7aa2DiC6j8wf3pEEefTWZEH6CoHTA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=b5ncA0x3; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=b5ncA0x3; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=jhladky@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=CtT/nMDF;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=b5ncA0x3;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=b5ncA0x3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=skb99@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=jhladky@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h7wb613SVz2ygn
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2026 20:59:29 +1000 (AEST)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66RAIjAU1956312;
-	Mon, 27 Jul 2026 10:59:09 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=VUnq0MRcGVbjRzqtzkwVG624df+X1hKJLudP5jeJR
-	2Q=; b=CtT/nMDFrIyWXzrSvrXhhYXcNdCeM7qQ6n1ivnAmE8K6Zv1qov7UnCBOM
-	1iQUQCf7cyv373S6OrTtwSdMMBiIDiWZbYuT6f4eOK/qiiHRBxN3GnbZZYSSb2N6
-	e9U48FK7pJo9yHN9ccXuY7eQ/2VBafhwm+bbw482SaJ8ptGApyPMENSLq2VIugwA
-	7x1jQxhHlehCY0YiK5eUJpTiY8k6alciFc8xkpHxdWqZZXAVEHUUnT/jwnx7uMxe
-	Lf1X5u/yP8g8iYUOtZf25j8MdjbNEBNBBRE2jGP64YwQRn91A2O7ykEK6HECxWvG
-	AIr5rrYSHboe+AsioklU9sppVXimA==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fmv0xfkhw-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 27 Jul 2026 10:59:09 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66RAuNMo028347;
-	Mon, 27 Jul 2026 10:59:08 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fn9pg4usk-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 27 Jul 2026 10:59:08 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66RAx46x26280254
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 27 Jul 2026 10:59:04 GMT
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 791302008B;
-	Mon, 27 Jul 2026 10:59:04 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5F3A320083;
-	Mon, 27 Jul 2026 10:59:02 +0000 (GMT)
-Received: from li-1cb9f04c-2ae1-11b2-a85c-a8a0a83790a8.bl1-in.ibm.com (unknown [9.123.13.162])
-	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 27 Jul 2026 10:59:02 +0000 (GMT)
-From: Saket Kumar Bhaskar <skb99@linux.ibm.com>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
-        chleroy@kernel.org, segher@kernel.crashing.org, hbathini@linux.ibm.com,
-        venkat88@linux.ibm.com, yeswanth@linux.ibm.com, skb99@linux.ibm.com
-Subject: [PATCH v2] powerpc/irq: Fix missing r2 clobber in PCREL inline assembly
-Date: Mon, 27 Jul 2026 16:28:52 +0530
-Message-ID: <7c84fa5e24263d8247b4723118e6130d63b40912.1785131859.git.skb99@linux.ibm.com>
-X-Mailer: git-send-email 2.54.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h7wbK23gHz2ygn
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2026 20:59:40 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1785149976;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=WMiWSnOQ64xTj4+vdJ19aK6+fipsHH2WeYASnOPcjnU=;
+	b=b5ncA0x3AvwKSN2MrQDd3+rEXgFQ04UegPjrGDXTndamMkjgZ5MMTxcH1f8hbjxDWBw+D/
+	CffG6X0FmY4mBWt5bazTbnKIDpjdQg4+AUi+ggW/BLl0PuaNfx0HJPGC+K7rRacl9dVVbz
+	4NlpvSehZeF3qxcUfzU9TFpKD0y2nTA=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1785149976;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=WMiWSnOQ64xTj4+vdJ19aK6+fipsHH2WeYASnOPcjnU=;
+	b=b5ncA0x3AvwKSN2MrQDd3+rEXgFQ04UegPjrGDXTndamMkjgZ5MMTxcH1f8hbjxDWBw+D/
+	CffG6X0FmY4mBWt5bazTbnKIDpjdQg4+AUi+ggW/BLl0PuaNfx0HJPGC+K7rRacl9dVVbz
+	4NlpvSehZeF3qxcUfzU9TFpKD0y2nTA=
+Received: from mail-vk1-f198.google.com (mail-vk1-f198.google.com
+ [209.85.221.198]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-343-4QZ2U6eUNPG0Ad5tcZWyLQ-1; Mon, 27 Jul 2026 06:59:35 -0400
+X-MC-Unique: 4QZ2U6eUNPG0Ad5tcZWyLQ-1
+X-Mimecast-MFC-AGG-ID: 4QZ2U6eUNPG0Ad5tcZWyLQ_1785149974
+Received: by mail-vk1-f198.google.com with SMTP id 71dfb90a1353d-5c2e166dbc4so2398666e0c.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2026 03:59:34 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1785149974; x=1785754774;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=WMiWSnOQ64xTj4+vdJ19aK6+fipsHH2WeYASnOPcjnU=;
+        b=AhmnslBGTvKNwwb+VwIISKJ+HoadhRf6KCmuMnhEuGQ7ymOqSTwujGwGXSqI/pqKz9
+         8U4GW4jwA31Q9hG1DQH764nRcS/CAawI8gDSPzL3hcucV2YlpXvsUOYOkj0i7+NNhMTw
+         jNlSodp9R6H/Lv8kyXxo2M9gmFd+BgmjxUyv5eig8eNb5Cgu2jiDitVeTqsATAE5eYSJ
+         QRjm+5NWeQyGhmXZ2jL5M3ZazJTIs8iEZToH0P3fmb152Zb9N52ACakHRSt1x1WI+RUM
+         BMA0G0VBPRiDA5QtZZiJqK6r+84G2rr7/mbXmG40fO3EIOliLNcMdA4VfP1U2bUGkFz4
+         OukA==
+X-Forwarded-Encrypted: i=1; AHgh+RquBeyOTr06xV75lFq9ZuidRonkvgCSEIAh05m6tktGgyOGj233j9jRXpFBtfQHJRwacTwTxKCqQFcv7Vo=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yz6t/WC0tXzv0lW3nalkjVeeVjzUNVxWMWo3wxHbHV1z98DTe/w
+	EWJRM6uG8NsDsNS5TdvPCEG82z4DVqAwLHULysHcOEWXeSHWdxVQ1HbmK3z/OgQFyxS8exFFVSL
+	7mhYSK2BTWHqGVHWyY/NZeAQqVPDu//KFiBEWIcaBujX/Mcqhip25oLXLMDE0/DilA9Sc4SpQjP
+	E2O0RJvMAPY0pmI/YEqvWsI/E/cH8MFuRgXYssbIFzyQ==
+X-Gm-Gg: AR+sD11Wibov08oMr53D5itSaeIGm++bmCEBBCFCUZQaMLPXdhU98DC/R16XLYVe001
+	qn8G/fx3uWyIVGuyz2wb7gHqogN44zksboqpzdABqyqtQz3bmhZzeC6Bl+CuKmaIg6fiKE0oe6W
+	UeJb/g+41JwzspoMmxbNIlRbB4ztpncOHBZZfGZThBhyU/N2oYaq8Kzis=
+X-Received: by 2002:a05:6122:7d3:b0:5bf:bc5e:e24 with SMTP id 71dfb90a1353d-5c306d72c10mr3617390e0c.12.1785149974455;
+        Mon, 27 Jul 2026 03:59:34 -0700 (PDT)
+X-Received: by 2002:a05:6122:7d3:b0:5bf:bc5e:e24 with SMTP id
+ 71dfb90a1353d-5c306d72c10mr3617381e0c.12.1785149974106; Mon, 27 Jul 2026
+ 03:59:34 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -86,140 +97,92 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: ZLbWoVapn89nIltNKAVQOSKh_yrFCGi4
-X-Proofpoint-ORIG-GUID: KuLq4tfwNcoQGbQaXWShtgirGhXoL2kK
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzI3MDEwNSBTYWx0ZWRfXzwFIK/vpvf3z
- noUZSuX029rUbi/o+Z1HoyEfv/ZyHkNIyVoOpaEV3Iwcc/fvKLYXRRaW/vQ9biymrDP4FM6I8hB
- 5nlnsqpN0iKd+9ymRI+Y6lDKrG/ARno=
-X-Authority-Analysis: v=2.4 cv=dYuwG3Xe c=1 sm=1 tr=0 ts=6a6739fd cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=U7nrCbtTmkRpXpFmAIza:22 a=Vt2AcnKqAAAA:8 a=mDV3o1hIAAAA:8 a=VwQbUJbxAAAA:8
- a=VnNF1IyMAAAA:8 a=mIWQ1yeg06SgcoFEzZ0A:9 a=v10HlyRyNeVhbzM4Lqgd:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzI3MDEwNSBTYWx0ZWRfXz8yZoqBY2wMb
- sKEGroKGH1M0jBDb3LcFNKA4cqkezeAZR6xg+3nzI6/eV8JViaq0SOV+StL3lpWQHuuUnew/Cgb
- oJGcl+dIevewZEtLPZ56fC09VT4LtpV2n5CVBQ3yPYx2/HSSD2I2lAQzpLDI3JOrpvgwYvKO0rk
- vrR4j2n/FNTDetIC6+dRB6wvehOQGXCIJBZ1BH8xtGUc9YM+UtozijBYrv3D8XivrSszKYFOEnZ
- qvfKh5/hSFgQL93NeDwDAANKkvvzgnAYT2YM63HmiQtIjx4r5oolZMaOgB26h/Z3AtMADyqFviW
- 69ZeiOhfRENv7hrs3nw746/t7OWv1UlK9RILwzf9TMa9knQXBUanMtAHpDRZciJawdPdBpngFzd
- c0TMdm2v3iehxvg0/MGa4BrT4L+n+5++7LGO8jnQ515Oypmkf9Mx/bft5HiHY1wJ+2KF9tO4OeS
- cYwneezjUOSRUCVX2bA==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-07-27_03,2026-07-24_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 impostorscore=0 clxscore=1015 phishscore=0 malwarescore=0
- spamscore=0 lowpriorityscore=0 bulkscore=0 suspectscore=0 adultscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607270105
+References: <20250210184334.567383-1-sshegde@linux.ibm.com>
+ <20250210184334.567383-2-sshegde@linux.ibm.com> <CAE4VaGBwMp3Ke1+Bt11-v6CCE0h=mPm8k_Cf8DazFSQNT9Mz8g@mail.gmail.com>
+ <c0f51eda-21c4-4e9d-95e9-75b2740c3f43@linux.ibm.com> <CAE4VaGB-W9i0nNzH=VN9GJr6Dy9R46NtMC3V3ELUxdDhypj8bw@mail.gmail.com>
+ <85cb5e0e-feb5-4a54-b7b6-a5f6a053dcda@linux.ibm.com>
+In-Reply-To: <85cb5e0e-feb5-4a54-b7b6-a5f6a053dcda@linux.ibm.com>
+From: Jirka Hladky <jhladky@redhat.com>
+Date: Mon, 27 Jul 2026 12:59:22 +0200
+X-Gm-Features: AUfX_mxs9ZFQ9PXlMHxPVidmeR61Eru4qQ08yQacaj1lgUMFRVUpahfr80wqRkM
+Message-ID: <CAE4VaGArvyKqvysRP_FC39XTLAsiPhGMkR1v3UM4+ykWBHJYyg@mail.gmail.com>
+Subject: Re: [PATCH v4 1/1] powerpc: enable dynamic preemption
+To: Shrikanth Hegde <sshegde@linux.ibm.com>
+Cc: maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, 
+	christophe.leroy@csgroup.eu, mpe@ellerman.id.au, npiggin@gmail.com, 
+	bigeasy@linutronix.de, will@kernel.org, linux-kernel@vger.kernel.org, 
+	"Paul E . McKenney" <paulmck@kernel.org>
+X-Mimecast-Spam-Score: 0
+X-Mimecast-MFC-PROC-ID: fBixMj-ZZUVohsardgmd_hQul5qviw9drF5R0eqTc18_1785149974
+X-Mimecast-Originator: redhat.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-In CONFIG_PPC_KERNEL_PCREL mode, r2 is no longer reserved for the TOC
-pointer and is available as a caller-saved register [0].
+On Mon, Jul 27, 2026 at 12:29=E2=80=AFPM Shrikanth Hegde <sshegde@linux.ibm=
+.com> wrote:
+> That means comparison is between preempt=3Dvoluntary vs preempt=3Dlazy.
+>
+> If you make it full preemption in 6.15 you will likely see similar
+> data as 7.1+. Only on 7.0/7.1 there is force switch to lazy/full.
+> Can you give that a try?
+>
+> If it shows same data, that implies the regression is mainly due to
+> change of preemption modes, rather than the static key stuff.
 
-Both call_do_irq() and call_do_softirq() use inline assembly to call
-functions with stack switching, but fail to list r2 in their clobber
-lists. This causes the compiler to assume r2 is preserved across these
-calls, leading to register corruption when the called functions
-(__do_irq and __do_softirq) clobber r2.
+Tested on 7.1 by switching the runtime mode via
+/sys/kernel/debug/sched/preempt:
 
-As a result of this kernel crash during interrupt handling is seen and
-the kernel fails to boot:
+Mode       kill bogo-ops/sec
+----       -----------------
+full       57,476
+lazy       56,892
+Delta      ~1% (noise)
 
-BUG: Unable to handle kernel data access on write at 0xc000000404697638
-Faulting instruction address: 0xc0000000000181ec
-Oops: Kernel access of bad area, sig: 11 [#1]
-NIP [c0000000000181ec] __do_IRQ+0x6c/0xc0
+The preemption mode (full vs lazy) makes no difference. The regression
+is from CONFIG_PREEMPT_RCU being enabled, not from the choice of
+preemption mode.
 
-With older GCC, the compiler would conservatively allocate
-callee-saved registers (like r31) for values spanning function calls,
-accidentally avoiding the bug:
+And as Christophe pointed out, it's CONFIG_PREEMPT_DYNAMIC that pulls
+in CONFIG_PREEMPT_RCU, not CONFIG_PREEMPT_LAZY:
 
-<__do_IRQ>:
-00 00 00 60 	nop
-a6 02 08 7c 	mflr    r0
-f8 ff e1 fb 	std     r31,-8(r1)
-f0 ff c1 fb 	std     r30,-16(r1)
-2d 03 10 06 	pla     r31,53297316
+  config PREEMPT_RCU
+        default y if (PREEMPT || PREEMPT_RT || PREEMPT_DYNAMIC)
 
-...
+So the chain is: your patch enables HAVE_PREEMPT_DYNAMIC_KEY ->
+CONFIG_PREEMPT_DYNAMIC takes effect -> CONFIG_PREEMPT_RCU=3Dy ->
+expensive rcu_read_lock/unlock on ppc64le.
 
-3d e8 ff 4b 	bl      c0000000000165ac <__do_irq>
-00 00 21 e8 	ld      r1,0(r1)
-28 00 4d e9 	ld      r10,40(r13)
-40 00 21 38 	addi    r1,r1,64
-2a f9 aa 7f 	stdx    r29,r10,r31
+> Plus, it may call schedule in lazy/pull preemption.
 
-With newer GCC 14, the compiler uses r2 for such values, exposing the
-missing clobber specification:
+The full vs lazy results above suggest extra scheduling is not a
+significant factor here.
 
-<__do_IRQ>:
-00 00 00 60     nop
-a6 02 08 7c     mflr    r0
-f0 ff c1 fb     std     r30,-16(r1)
-f8 ff e1 fb     std     r31,-8(r1)
-29 02 10 06     pla     r2,36252592     # c0000000022aadc0 <__irq_regs>
+> This seems strange. How come rcu lock/unlock depends on SELinux
+> policy? One should call rcu lock/unlock if they are working with
+> rcu updated fields.
+>
+> Does the policy change itself protected with rcu lock/unlock?
 
-...
+The rcu_read_lock/unlock calls don't depend on SELinux policy -- they
+are in the SELinux *code path* itself. SELinux uses RCU to protect
+its AVC (Access Vector Cache) lookups. Every call to avc_has_perm()
+takes rcu_read_lock() around the avc_lookup() hash table access.
 
-85 dc ff 4b 	bl      c000000000015ee0 <__do_irq>
-00 00 21 e8 	ld      r1,0(r1)
-28 00 2d e9 	ld      r9,40(r13)
-30 00 21 38 	addi    r1,r1,48
-2a 11 c9 7f 	stdx    r30,r9,r2
+When you boot with selinux=3D0, the SELinux LSM hooks are never called,
+so the AVC code path (and its rcu_read_lock/unlock pairs) is never
+reached. That's why disabling SELinux removes those call sites from
+the hot path.
 
-Fix this by adding r2 to the clobber list for both call_do_irq() and
-call_do_softirq() when CONFIG_PPC_KERNEL_PCREL is enabled.
+The call chain is:
+  sys_kill -> check_kill_permission -> security_task_kill
+    -> selinux_task_kill -> avc_has_perm
+      -> rcu_read_lock()
+      -> avc_lookup()    <-- hash table lookup under RCU protection
+      -> rcu_read_unlock()
 
-[0]: https://www.mail-archive.com/gcc-patches@gcc.gnu.org/msg313226.html
+With selinux=3D0, security_task_kill() is essentially a no-op and none
+of the avc/rcu code runs.
 
-Fixes: 7e3a68be42e1 ("powerpc/64: vmlinux support building with PCREL addresing")
-Signed-off-by: Saket Kumar Bhaskar <skb99@linux.ibm.com>
----
-Changes since v1:
-Addressed comments from Segher:
-* Modified comments to "clobber may happen"
-
-v1: https://lore.kernel.org/all/dc021f42afa10396052499cbeda1772e30b7ca64.1784530547.git.skb99@linux.ibm.com/
-
- arch/powerpc/kernel/irq.c | 14 ++++++++++++--
- 1 file changed, 12 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index a0e8b998c9b5..b5343cfd6c9f 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -218,7 +218,12 @@ static __always_inline void call_do_softirq(const void *sp)
- 		   [callee] "i" (__do_softirq)
- 		 : // Clobbers
- 		   "lr", "xer", "ctr", "memory", "cr0", "cr1", "cr5", "cr6",
--		   "cr7", "r0", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10",
-+		   "cr7", "r0",
-+		  /* r2 may be clobbered by the callee when using the ELFv2 ABI */
-+#ifdef CONFIG_PPC_KERNEL_PCREL
-+		   "r2",
-+#endif
-+		   "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10",
- 		   "r11", "r12"
- 	);
- }
-@@ -276,7 +281,12 @@ static __always_inline void call_do_irq(struct pt_regs *regs, void *sp)
- 		   [callee] "i" (__do_irq)
- 		 : // Clobbers
- 		   "lr", "xer", "ctr", "memory", "cr0", "cr1", "cr5", "cr6",
--		   "cr7", "r0", "r4", "r5", "r6", "r7", "r8", "r9", "r10",
-+		   "cr7", "r0",
-+		  /* r2 may be clobbered by the callee when using the ELFv2 ABI */
-+#ifdef CONFIG_PPC_KERNEL_PCREL
-+		   "r2",
-+#endif
-+		   "r4", "r5", "r6", "r7", "r8", "r9", "r10",
- 		   "r11", "r12"
- 	);
- }
--- 
-2.54.0
+Jirka
 
 
