@@ -1,51 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-24851-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24852-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0069BC53200
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2026 03:13:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3A3E5C531D0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2026 04:19:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h7kF86hNhz2y1F;
-	Mon, 27 Jul 2026 13:13:16 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=43.155.80.173
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785121996;
-	cv=none; b=QepROWfRtFIbdEXFrjo4ARAjmD1HveTaM93ev8pSc20WX7dx+RfJO1RfZPz/5960lbimFF1lQdma31ITuhlcXc0kwjBMJcW8UvYpPVjah5tSY4erqv8pssmN6wq9M3swu/Xcv2ocnaG9eOSYkWN4J8P8xTYYvkDdq6UtFKz3IPUEVdRxs9pFokV1hFpPsS0xScW1qndcKv2J/yeNgrgJfSgYKDf/8UwnVU2CqAvL47k/DMY+DMMRGsu9FmVloYDXH7d6yX8HBfHmHSBCC13u5WmmKAON4hMXtkXqz72KSbKTSriazMuDoj1tDbX+FcifnHahfTIpyPYR2jr6FpdJpQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h7lj80Lnmz2y1F;
+	Mon, 27 Jul 2026 14:19:08 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785125947;
+	cv=none; b=XpjGE3WDNHDz/FnrSi1GNQQ+7aAoLy55R3bHYPZQuHdT92+b+s/b4t+2S1+WtlLd+VxU1F7OAHBiCvX6y17sqE3V/P56li/t+jdYxaoN0ZHhg5YstoE42Tc/+gAvL6/lZU6sF5AP0+EiuLD/VMpimBquZ7Fe4Q1VSlVhpPcCdTkZZ+qEezZUJGZTs6XD4i1uHOSWfF4/Jo2+m6ZRaKdLN4A+EbxPpg+xxyFI5DJpZez919R5eDzpz+iXjPuohnRPuRLmmOAgQwUVeBeyD1VXU+FnWvWpzZQVg2ZPx1hgerBjhNQefGCMWNis8RlaJgcXoRSrw+kuHWTxFmCpY5Ns0Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785121996; c=relaxed/relaxed;
-	bh=jJpzWOd2AQ0qcTlQZVOnkgLY7Mxhg/fTu1TETcsiZ1I=;
+	t=1785125947; c=relaxed/relaxed;
+	bh=s+e7jkFKJSm7jW1mU0dq9zB64RdZT8FHKFStWfM48sw=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Y9HwSdgPjU6YWWBdo8f2mclxqBsQoXgKacUhwgMBPRJ/04qDctE8o0zJNn3SQfcBzbR9QvUCEZQwc7m3VnQ8AI9Eum1rB901A15Hb9R58QqAGQKYJqFSOZ9QitI+pNqNnYE7etDLB2mEqA/MFICiCfN/VSSULdesQgbNw6m9AmbAJIWiZHYe2HXsaVPSkBhadYK8fjP2/QfURIG0KioCyT/H9izAQagkebAY1cYTRaW55S7AFg3x0NqOXc7B4jl5m50IjSBzCTeciw0V7N+4gxS4jvgJKR7xIMLLbOIOqZJb4gJwVWioseq1D3lc4eqLs/t8RdJCkbVj9+a9cJoRhg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=uniontech.com; dkim=pass (1024-bit key; unprotected) header.d=uniontech.com header.i=@uniontech.com header.a=rsa-sha256 header.s=onoh2408 header.b=IZHEJfIL; dkim-atps=neutral; spf=pass (client-ip=43.155.80.173; helo=bg5.exmail.qq.com; envelope-from=gouhao@uniontech.com; receiver=lists.ozlabs.org) smtp.mailfrom=uniontech.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=uniontech.com
+	 In-Reply-To:Content-Type; b=aRze9EYd9mZBKh5ZnOe/OtvFnsGfrx7HnnzSx6BLgvxDn0HXGmRVT52ybd3nMtbsYjIKJt4d8DPxrkjkKi5um7BQf9/npD4tCU506roKdn6xynLIr5649XZtkuEl4t+KX1SQdTop6kWDd3F73Pzrzsb4AUAOGFFJkVlSw8x4GX+XUEnguq1XzMuHxjhC5tet/R+GhOR8zcU63gVo+XqbEo7qpHIJoCIWg9LXT2Ry2bTKR/4tAQVGa9zU/gS6HjX5YmM3CtJ3tudlWdcFbS5RYRTURw86ScsC7KGVW5bWoIAkWLYGzBoG8w0FMLCy2UvN08zXQIUU+ZMPFC7QPfPoUw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=o4qgM4Mx; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=uniontech.com header.i=@uniontech.com header.a=rsa-sha256 header.s=onoh2408 header.b=IZHEJfIL;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=o4qgM4Mx;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=uniontech.com (client-ip=43.155.80.173; helo=bg5.exmail.qq.com; envelope-from=gouhao@uniontech.com; receiver=lists.ozlabs.org)
-Received: from bg5.exmail.qq.com (bg5.exmail.qq.com [43.155.80.173])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h7kF54KS3z2xfB
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2026 13:13:13 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=uniontech.com;
-	s=onoh2408; t=1785121918;
-	bh=jJpzWOd2AQ0qcTlQZVOnkgLY7Mxhg/fTu1TETcsiZ1I=;
-	h=Message-ID:Date:MIME-Version:Subject:To:From;
-	b=IZHEJfILfjskUgMmZGNHrmCzLAlhFokY2rkrfaWvb21Z/H0n/c7pIqscwxCpzy3a6
-	 JO8GcBhH6AfbOgpd31mvxFhbAnKi3hNNKdyLmd4yUk+BZj56/n0Gan7ycmYywBZwUp
-	 dRH+d99+fNPs6vzealCHRWiLv02QWh7yKX3+tUeU=
-X-QQ-mid: zesmtpip4t1785121908t349a5306
-X-QQ-Originating-IP: eeOVjjpr6h1nN30mzWPlymvg2gXH398TA2mHByZ2jLo=
-Received: from [IPV6:240e:659:1b0:640::113:101 ( [localhost])
-	by bizesmtp.qq.com (ESMTP) with 
-	id ; Mon, 27 Jul 2026 11:11:45 +0800 (CST)
-X-QQ-SSF: 0000000000000000000000000000000
-X-QQ-GoodBg: 1
-X-BIZMAIL-ID: 12037815108902466553
-EX-QQ-RecipientCnt: 25
-Message-ID: <AEAA5D0F00F603DD+457fbbba-bb97-42f8-afbd-3dd9c2dacd6e@uniontech.com>
-Date: Mon, 27 Jul 2026 11:11:44 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h7lj71Xqxz2xKh
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2026 14:19:06 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66R1lmfF769497;
+	Mon, 27 Jul 2026 04:18:33 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=s+e7jk
+	FKJSm7jW1mU0dq9zB64RdZT8FHKFStWfM48sw=; b=o4qgM4Mx/VXZYdgKgoqdBA
+	6IH3WPb9v09SEvxvQaNzQv9c1CVYoWN3JT0qaxjWbQa5Sxi0LzP79E/s1d33cgSX
+	mvI70syOqOzddVxKrW/IqLoTZlWUAsDYir1RKpbREV3gfyWsDWAPtwYlxIetoA0q
+	m9NkuCKFCYEVpCpJ5k/qOQfcEJwEKZVnEGqu9exOhksapsz6WCZkEGkzoK4tLZcs
+	upHmneBFs/RPvCnMuRLO7/vZatiYd5dCNBYVnfCvHr7Zna8TSKkKWPH4MDL/eaku
+	iFZpcvesh8RLefLKDhWMcc5AbTxT0hvke9/fUuhTR2hLfpVo5Et8LMemoHFjgc2g
+	==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fmv0ndpg6-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 27 Jul 2026 04:18:32 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66R4BPhT024341;
+	Mon, 27 Jul 2026 04:18:31 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4fn8fjuu8p-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 27 Jul 2026 04:18:31 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66R4ITBO12517774
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 27 Jul 2026 04:18:29 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 70DED2006E;
+	Mon, 27 Jul 2026 04:18:29 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id F1B182006C;
+	Mon, 27 Jul 2026 04:18:26 +0000 (GMT)
+Received: from [9.39.23.10] (unknown [9.39.23.10])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 27 Jul 2026 04:18:26 +0000 (GMT)
+Message-ID: <c0f51eda-21c4-4e9d-95e9-75b2740c3f43@linux.ibm.com>
+Date: Mon, 27 Jul 2026 09:48:25 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,112 +82,125 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 1/6] powerpc/xive: remove dead NULL check after
- GFP_NOFAIL allocation
-To: =?UTF-8?Q?C=C3=A9dric_Le_Goater?= <clg@kaod.org>, maddy@linux.ibm.com,
- mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org,
- maarten.lankhorst@linux.intel.com, mripard@kernel.org, tzimmermann@suse.de,
- airlied@gmail.com, simona@ffwll.ch, bharat@chelsio.com, jgg@ziepe.ca,
- leon@kernel.org, akpm@linux-foundation.org, namcao@linutronix.de,
- ynorov@nvidia.com, sshegde@linux.ibm.com, nilay@linux.ibm.com
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-rdma@vger.kernel.org,
- linux-mm@kvack.org, gouhaojake@163.com, kernel@uniontech.com
-References: <20260724022851.466017-1-gouhao@uniontech.com>
- <20260724022851.466017-2-gouhao@uniontech.com>
- <3fba3c54-ea4f-449c-8cd3-f24c516bb31d@kaod.org>
-Reply-To: 3fba3c54-ea4f-449c-8cd3-f24c516bb31d@kaod.org
-From: Gou Hao <gouhao@uniontech.com>
-In-Reply-To: <3fba3c54-ea4f-449c-8cd3-f24c516bb31d@kaod.org>
+Subject: Re: [PATCH v4 1/1] powerpc: enable dynamic preemption
+To: Jirka Hladky <jhladky@redhat.com>
+Cc: maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org,
+        christophe.leroy@csgroup.eu, mpe@ellerman.id.au, npiggin@gmail.com,
+        bigeasy@linutronix.de, will@kernel.org, linux-kernel@vger.kernel.org,
+        "Paul E . McKenney" <paulmck@kernel.org>
+References: <20250210184334.567383-1-sshegde@linux.ibm.com>
+ <20250210184334.567383-2-sshegde@linux.ibm.com>
+ <CAE4VaGBwMp3Ke1+Bt11-v6CCE0h=mPm8k_Cf8DazFSQNT9Mz8g@mail.gmail.com>
+Content-Language: en-US
+From: Shrikanth Hegde <sshegde@linux.ibm.com>
+In-Reply-To: <CAE4VaGBwMp3Ke1+Bt11-v6CCE0h=mPm8k_Cf8DazFSQNT9Mz8g@mail.gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-QQ-SENDSIZE: 520
-Feedback-ID: zesmtpip:uniontech.com:qybglogicsvrgz:qybglogicsvrgz5b-2
-X-QQ-XMAILINFO: Nq568l2fjb0ETx1z47ieAjHTFU6M8K+VsJ0+LVpGNXOlon28F/NxmqGa
-	XbRp4d8sE521XJpwDNBe2KXuh1/q4Vj6ZU28SboOCNCDkWv09keyXakL56Rda1SHg1+4ECA
-	pQvkMJLoIK0yWjQEw8207TQlQ0cbChC1qrqkg5nWTVteEY7eegQoN5CIrrBq/nXcYaiodGk
-	cx7+C6GzodOVvV7lmUn5AAcVaZFixiccvoqpKTpKSnkYs4eM/cNR++9v1IOUwv2BhYbzPVY
-	8CDKNBoFtmy4mBSVVZqdSZU6PLnQ7GLZgQYxTs/NiS1fTHCprfdswG3+p42nLKWe90q/wjT
-	rVTKl0E444x9zQ0KyI7pxaLxyhw6HdBa382C3y/I6AzWD3Fvg+2OYsg8zeiAkz2TW8ZV7rc
-	aZcA98UeXgQU88o7wpKa4g6s/45KczhP6bFY5PfP+nVDQ0+JbbHdFn2jkRCMDeewHtbsp/B
-	vOR6NadfalcDFLssoUW4gb1VvVWd7q1+mGtsRflMxfKYF1JEc7JoawtycvBr0gDoG7XWJVG
-	r3j2TVdEy117jcoxYIjTzO+/3aRZySoeqbkhs92iu4AlpJc6AcMhMr/Al2/VFV3HGovWUdm
-	OwzctXqb/v2pYVQRK+yrEo8RxUK2wN/twBS9b9tCILUiJR6U+Y3Fq+SidK1fKveYVZ7Z5zp
-	cZOCFK0OqcZuzYcVpms5wXkNVkFpsIdQKnvALAIesouvS0jdr0n+kFA/ScAQyTwwmaBPdXB
-	T0kT3Q6eQ1MHUCIe0uXZG58FHIl049fHbMsZU2ULhuOhcortEiH0GZLj2w5D8HVIxxc9NaY
-	Dv7RqEhh60c4q//35uBcOh1Bhe+6bQitRa+bNVxPTbKRc90P2GWu4C+pcBhuCvEkDq0fSYE
-	DsZFGsKRWqehO7HJiwvTcSPWORVtN/fqgSSwmgH/h2k461Wg9HlSMGnDRFp10nDLxLfDutZ
-	+yvCUtafIbMk+1kJdvYxQqxfJCoXE7R/tbdZJ9KjiuH+IoZgnf0UeEOJ2X3Caz43GUTsJV5
-	+DYEFfrB0LQ/Bz4h3HqIcw5fUoX23rCyS0yeQDTqkFe8Y0g5MN6YYTmZV9VdDjjb9mehZDO
-	Bn5rPRFyXPi
-X-QQ-XMRINFO: Mp0Kj//9VHAxzExpfF+O8yhSrljjwrznVg==
-X-QQ-RECHKSPAM: 0
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzI3MDAzOSBTYWx0ZWRfX0dyuVLO7WMA6
+ waj8ATPcBTCocJ4/0195AvdHHf/7CGCoBEgsPOhfd2aquSKMpxQQF8Bf0LocLZ5TzPkalAa/mCn
+ nuhJiZ9hVCr4TCp0VMdKCUhM1Gh3OlE=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzI3MDAzOSBTYWx0ZWRfX5Syog1p798Je
+ Wj6X8JEm40AahqWASLaPg2OrIxw4OAhi6upIg4Y9siDCKbK3W9Evn9ej+n2yUAbj8kNla6tizpI
+ 2zXJWcwMRWwKgdZlHxSLsalSzBxE98NSWzEax3znGfjaTAnI6ktMM5HXgQ1dCFd6R9cr9tJ1Ynn
+ tYyww+mNMmgYVmBfec2EiAiWMmoTU/phL8GoCXojNyxA9LIuapFjf4wztLvQ6uuMs50ma5rbBVd
+ IQApIw/AcK1V2QcNG6WLFr2gu+2xJ6bnrXuCJtu4GqkyLsfquI8xnnXud2sF8p7xKDGfCHn4aAh
+ 4cEW+ZivGZcNE8ATwxzuIvjsws7hAOc7cCxuFCl0VVyfzrwzl0nG4lggp2TyRc+wnt2QBz3T7qC
+ ROT8yLGBSWcxbDztmXyTlAdgDdxXXIHOAWmDt4TvNyqwY4ErLmUbWfDy5gnYjQHWimCuJKKeLAK
+ UgzbvQUISBnZFydX+wA==
+X-Authority-Analysis: v=2.4 cv=b5WCJNGx c=1 sm=1 tr=0 ts=6a66dc18 cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+ a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=WCvXFVo8NGMObP1iTCQA:9
+ a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: Y7O2bbFrWB8ZbNPYQkJ4CreFfKHts4oh
+X-Proofpoint-ORIG-GUID: V0sD5WmVoqZRmlE5UDM33GA9tPAK-UOA
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-07-27_01,2026-07-24_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 spamscore=0 adultscore=0 malwarescore=0 impostorscore=0
+ bulkscore=0 phishscore=0 suspectscore=0 clxscore=1011 lowpriorityscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607270039
 
-On 7/27/26 01:04, Cédric Le Goater wrote:
-> As suggested by Andrew, let's change the approach and remove entirely
-> __GFP_NOFAIL instead and make all xive_ipis access paths NULL-safe.
++cc paul for any further/RCU insights.
 
-Yes, that's better.
+On 7/27/26 12:03 AM, Jirka Hladky wrote:
+>    Hi Shrikanth, Christophe,
+> 
 
-> On 7/24/26 04:28, Gou Hao wrote:
->> kzalloc_objs with the __GFP_NOFAIL flag will never return NULL, so the
->> subsequent NULL check is unreachable dead code. Remove it.
->>
->> Signed-off-by: Gou Hao <gouhao@uniontech.com>
->> Reviewed-by: Wentao Guan <guanwentao@uniontech.com>
->> Reviewed-by: jiazhenyuan <jiazhenyuan@uniontech.com>
->> ---
->>   arch/powerpc/sysdev/xive/common.c | 5 +----
->>   1 file changed, 1 insertion(+), 4 deletions(-)
->>
->> diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/ 
->> xive/common.c
->> index dadd1f46ec939..f2904a5c2b7bf 100644
->> --- a/arch/powerpc/sysdev/xive/common.c
->> +++ b/arch/powerpc/sysdev/xive/common.c
->> @@ -1134,9 +1134,6 @@ static int __init xive_init_ipis(void)
->>       xive_ipis = kzalloc_objs(*xive_ipis, nr_node_ids,
->>                    GFP_KERNEL | __GFP_NOFAIL);
-> 
-> So let's remove __GFP_NOFAIL here.
-> 
->> -    if (!xive_ipis)
->> -        goto out_free_domain;
->> -
-> 
-> Let's keep it now that allocation can really fail.
-> 
->>       for_each_node(node) {>           struct xive_ipi_desc *xid = 
->> &xive_ipis[node];
->>           struct xive_ipi_alloc_info info = { node };
->> @@ -1158,7 +1155,7 @@ static int __init xive_init_ipis(void)
->>   out_free_xive_ipis:
->>       kfree(xive_ipis);
->> -out_free_domain:
-> 
-> and keep the out_free_domain label
-> 
->> +    xive_ipis = NULL;
-> 
-> and yes we should add 'xive_ipis = NULL;'
-> 
->>       irq_domain_remove(ipi_domain);
->>   out_free_fwnode:
->>       irq_domain_free_fwnode(fwnode);
-> 
-> 
-> The prepare_cpu() path is broken. To fix, we need to check xive_ipis
-> is not NULL in xive_setup_cpu_ipi() and xive_cleanup_cpu_ipi(). It
-> should be a straight forward local change. Nothing complex.
-> 
-> You can test with QEMU. The pSeries and the PowerNV machines are well
-> supported under emulation. Ping me if you need help.
-> 
-Thank you for the review. I will fix these issues in the next version of 
-the patch, and test locally.
+Hi Jirka, thanks for the report.
 
--- 
-Thanks,
-Gou Hao
+>   I'm seeing a significant performance regression on ppc64le after this
+>   patch landed in 6.16, caused by CONFIG_PREEMPT_RCU becoming active
+>   once HAVE_PREEMPT_DYNAMIC_KEY is selected.
+> 
 
+This is true only if user selected PREEMPT_DYNAMIC option i think.
+
+config PREEMPT_RCU
+         bool
+         default y if (PREEMPT || PREEMPT_RT || PREEMPT_DYNAMIC)
+         select TREE_RCU
+
+
+>   Benchmark: stress-ng kill stressor (tight kill() syscall loop),
+>   single thread, POWER10 LPAR (8 vCPUs, 1 core SMT-8).
+> 
+>   Bisected across Fedora ELN kernel builds on ppc64le:
+> 
+>     kernel               CONFIG_PREEMPT_RCU   kill bogo-ops/sec
+>   ---  6.15-rc6 (eln148)    no                   103,207
+>     6.16     (eln150)          yes                   70,281    (-32%)
+>     6.18     (eln154)          yes                   72,552    (-30%)
+> 
+
+Does your preemption mode remain the same in two cases?
+
+>   For comparison, x86_64 (AMD EPYC 9355P) with the same config change
+>   shows only a 2.8% regression:
+> 
+>     6.12 x86_64          37,436
+>     7.2  x86_64           36,392    (-2.8%)
+> 
+>   perf report shows the overhead comes from rcu_read_lock/unlock in the
+>   SELinux AVC path (check_kill_permission -> security_task_kill ->
+>   selinux_task_kill -> avc_has_perm -> avc_lookup):
+> 
+>     Function               6.15 (no PREEMPT_RCU)   6.16 (PREEMPT_RCU)
+>   ---  avc_lookup                          15.23%              24.79%
+>     __rcu_read_lock                      ~0%                 4.52%
+>     __rcu_read_unlock                    ~0%                 4.17%
+>     selinux_task_kill                    6.23%               7.35%
+>     audit_signal_info*                   0.94%               3.59%
+> 
+>   On x86_64, rcu_read_lock/unlock are cheap thanks to static calls
+>   (HAVE_PREEMPT_DYNAMIC_CALL). On ppc64le with the KEY-based
+>   implementation, the weak memory model requires real barriers
+>   (lwsync/isync) making each RCU read-side critical section
+>   significantly more expensive.
+
+Weak memory model would need barriers irrespective of HAVE_PREEMPT_DYNAMIC_CALL
+or HAVE_PREEMPT_DYNAMIC_KEY. That's my assumption. I will look
+more into it. Also i don't know much about PREEMPT_RCU. So might take a while.
+
+> 
+>   This aligns with Christophe's earlier review comment that
+>   HAVE_PREEMPT_DYNAMIC_CALL should be more performant. Would
+>   implementing static calls for ppc64 be feasible to close this gap?
+> 
+
+Static key too is expected to minimal cost. There maybe more into this.
+
+>   Test details:
+>   - Machine: IBM POWER10 (pvr 0080 0200), pHyp virtualization
+>   - stress-ng 0.21.03, gcc 14.3.1, glibc 2.39
+>   - Tuned profile: virtual-guest
+>   - SELinux: enforcing (permissive recovers only ~7%)
+> 
+>   Happy to run additional tests if needed.
+> 
+> 
 
