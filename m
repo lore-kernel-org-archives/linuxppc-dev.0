@@ -1,89 +1,122 @@
-Return-Path: <linuxppc-dev+bounces-24861-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24862-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2949EC53219
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2026 08:53:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 84CCBC5321C
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2026 09:15:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h7snj20BWz2yhD;
-	Mon, 27 Jul 2026 18:53:29 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1035"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785142409;
-	cv=none; b=QYu2K7q0nOmLZERfys4wOdyvXVtDP7hKG16WWs1GbxOVrMlvi/9GGonb3gTrRuJVutEHGAr95BzkZ0Ktp2Wc/L861WHHwapykC45KKpRQrfdmm1xRylQxQsaBTcsAAdEZLyhZQIrEHVnb7gqQZLTYLduKuijLH583bIGdt9l7VJdxBWQHnTWKtRkxZ7OwZg0gY3wGXpV8nTthXoMhu5LDgW+69dHDTNXgPc7CdPpBduHVFw5XDopQjFFj6Y3WajMB8IcFH/flYlX3nDlbBeRX2YuKqWvSEKRkNcr9o8YKXdjHHDMb69ttejj7qXHsVhh/+J62TB/0d2y2fW6M/1l7Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h7tGm6RGRz2yhD;
+	Mon, 27 Jul 2026 19:15:12 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.130
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785143712;
+	cv=none; b=V6BvNZwMDlySOKhI7T4xkD5QfG9rIV3netIRtHj4BfN5T92LffJ0/9Xde7Le1jLUcKgv6z0cf4B3MIDIkre5qUAMPC3Wwqc5rmurkYPJn9g4KtHjFbWLC0jGxn20eVUlvwJxyhavDi3RFcd9DGSicfZQG2IxHOW+r6JOzM3MvoThUN2CYzO85F8Yw4ksAXRPP5syp7ABpmAk/rHmLKwzYfB1NZgAx9bHZDLLTPXj/kmKHF1vUs+AMgNx2ZigaC+THPNoA6YheMZrtRynyTUAS2t09cjPxdbC7EQLYJwN8Scji7x5MC/Ii2fUgRmRCQuObesKxEZb3RzPa5xE1GW3/Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785142409; c=relaxed/relaxed;
-	bh=7dMFEoF91A93RkH7H1rBOpobi2kQnvVchlTgD43NN+Q=;
+	t=1785143712; c=relaxed/relaxed;
+	bh=Nofef/k2ghi2COUtOHG8Fiu5zrxha6Onv0LZX52ftP4=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=C+ftmKBjdf/SkaDTRR7xNccyD+hNY8IFp5yZVK+krLs9vYLDL9SrWLvjAOxMwrcKuR4MvWcQwPN0yiMk1z8DClkDahSK611W47hNJmOS45nP+1wqchi2hRj1SWzFKFNeVjHyR5H8qoSz8ALbjB4hjGvIic/yERqlzV4K67s4ijI6D59nJqgmLqal+6gyiiVebd5mIuNRi9jyPOzRVbopRv8JSXV9ZCgEiDC3j9niNAgg8umtjXqhraEH0caxOx1+ZFz9NtcOl8HrJTeX6Z0l/KiCnLnI6X2eQXWisLJoGaCyC30JcJv9fD0Bo+BrN/lp7JSb5iu8QPFSs3W/1aO0jw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=mezhAQRX; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1035; helo=mail-pj1-x1035.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=cHkZZFb+FCPMNgm3BsZA5P06UqB5iAPodfwQ0xbwiWqNNbI7yQb2l2tf/ZjM5LwIn1q8WqatJioMzkcFTQDadRjvB3rn4u2QYqhWrMalznyitOFmz2w63zGLBzmGHI2fHwgKlHHiZ/SKbHChH7WfO4XMFW4cIbH92hLi7WwC2DvMQM4WDcr3Wtv880Gki137FCsfeL7Fd0+Bq8z00nY5vmNM+pqvnDjvXxUY2i9lGNumx7l5JFezRI20KkIly5DsQOTjBYH8v01lH7ApFQeK1X5T4hyAutnrgx4/8e0E4JHUN/1ZfSqyB7QuxCWNIzOMVKjL1OJpz9sRlUNVXEFUMw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=XH4COWUi; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=bdm02+CD; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=gT14ov0W; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=59Y51aLI; dkim-atps=neutral; spf=pass (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=pfalcato@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=mezhAQRX;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=XH4COWUi;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=bdm02+CD;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=gT14ov0W;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=59Y51aLI;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1035; helo=mail-pj1-x1035.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x1035.google.com (mail-pj1-x1035.google.com [IPv6:2607:f8b0:4864:20::1035])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=pfalcato@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h7sng6CnHz2yRl
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2026 18:53:27 +1000 (AEST)
-Received: by mail-pj1-x1035.google.com with SMTP id 98e67ed59e1d1-38dc4553f62so2307033a91.0
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2026 01:53:27 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1785142405; x=1785747205; darn=lists.ozlabs.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :content-type:mime-version:references:message-id:subject:cc:to:from
-         :date:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=7dMFEoF91A93RkH7H1rBOpobi2kQnvVchlTgD43NN+Q=;
-        b=mezhAQRXOsYUd8thHDYNHYnPNx/AghZcBYv6jmdtfwAJJ+g1GVfdaV7RQvQKmYx6dM
-         Ir163mvxq7wuptBrg0683dl/7OA/ZcchB3uzbkW2SKqIFvUoqoWVD2QIMibMRqu0pZ1P
-         EiKWX6E3a6JxTVR2IctANVWDcCz+fwQms3jKp5T9qAH2VdycUmWYEioLMH+2WL1YNElV
-         8p66jKf4Wt844guHUgF4TZVhi1PSjVMyNO0Ggw2uFLp1p8SQebigCnvMryBgRO6o865Y
-         kNhIcE3LnNdYA91k3jbWLMh8p5Hg5mH863+Q2+s84J2/SICR5hiRCyIAYp8hpUIrrRxR
-         anlw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785142405; x=1785747205;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :content-type:mime-version:references:message-id:subject:cc:to:from
-         :date:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=7dMFEoF91A93RkH7H1rBOpobi2kQnvVchlTgD43NN+Q=;
-        b=TwJwyvtZXr/+TL4az3jO4AdksyCJRhOlWpIG/GJscJi96nHczfMivRsJnLBdD4ketY
-         6Hxg9pSH4zq4y/Mc0XJvG3ZffE4wRjbQUnaDwC4vqWyl02QiDkciX5jzursz0w/5s0M4
-         V6unzziVk4HcdbwhLJ/5ZAVjVYLj9k9RqewPTIi3leI1Zu9osSJ/zNsztxLq1HZEYg5E
-         dEW42f9Pv+arLBnnUXhQTbpT9W4xfjWAPphv9KAyKh9uCKramMg3arvsqfBEgPXFy/E8
-         dmq21G0Ku/nZZQGSamtigUyIs7tM2x0EzXspJ/9bf0hTw5LeTdUBO6mBa6CpqkiMbht4
-         PsDg==
-X-Forwarded-Encrypted: i=1; AHgh+Ro0TBn5cWsIcgpVyWN2YP2SjUaOZBig6E+5oOLfcIIt3YzrMorNubSb0QsuhgjJQ28PL0VChbrF1EjYX7k=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yw/WsP3Nkr7Prg2bdOuITla1oX0T+V6eYTMO6ruPxLjo8eUNQoW
-	A8iVtAvYf1avx9yztzs84DP/1pTZnWU9vZmdmXxr7RNHh826/DLie5TI
-X-Gm-Gg: AR+sD11UzY7Uu77NKsGS38Mfbbk3gU+zyLmNpYutS+rpdybsZ8z0SXTRo2sgUa7Ptih
-	XBZlq2cYYPi9gVDrgCVgTIBYuF+EjDs3/XLN0e/c1ZLe3cbkgY0uxk42Suef/7TKhnYptn+LipM
-	6fXtWgsS5cVP8Db0QeiCSQIz2MZJcTRSZNlYU15J61C4OVoGRerbc3yIOW0BVwVvVIhsraQC3yL
-	zHcz7BWQ3p6Yl+zFzJvbc5HRbjojMYeaUqx2A5F4i+WCHLIpYB3qSYBe2tQTUxhU4oXGjdmB5zV
-	LoQ/q+Y5Tqt2XzXI0vLXh5lkBtrIDcxZ8J1rxEGFB6bS7QJGDyYHygsgHmoWjJbxd8ZE0od/Xv8
-	8ha6YfgIwejsHU0DxlOAgqm+uCvIsv6gFmVKmrx1BPRPpEle8ntlFOAmfCmIfAEqWdl1kJXXYDs
-	9jeXp3g/F0Xbkj4E8npH0Xc1dTlkCjJem8rAnY5VPUvHHpuQ==
-X-Received: by 2002:a17:90b:1d84:b0:38d:c0f9:30be with SMTP id 98e67ed59e1d1-38f297805a1mr7163331a91.38.1785142404666;
-        Mon, 27 Jul 2026 01:53:24 -0700 (PDT)
-Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([129.41.58.4])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-38f2951eb8dsm2752840a91.13.2026.07.27.01.53.19
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 27 Jul 2026 01:53:24 -0700 (PDT)
-Date: Mon, 27 Jul 2026 14:23:17 +0530
-From: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
-To: Michal =?utf-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
-Cc: oleg@redhat.com, maddy@linux.ibm.com, mpe@ellerman.id.au, 
-	npiggin@gmail.com, chleroy@kernel.org, mchauras@linux.ibm.com, 
-	sshegde@linux.ibm.com, segher@kernel.crashing.org, thuth@redhat.com, kees@kernel.org, 
-	ryan.roberts@arm.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH V5] powerpc/syscall: Fix syscall skip handling for
- seccomp and ptrace
-Message-ID: <amccXKnzrfNl7GjH@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-References: <20260714075935.1830145-1-mkchauras@gmail.com>
- <amcQ5N42Svm7oE7j@kunlun.suse.cz>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h7tGl54fgz2yRl
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2026 19:15:11 +1000 (AEST)
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 214317DA77;
+	Mon, 27 Jul 2026 09:14:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1785143702; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Nofef/k2ghi2COUtOHG8Fiu5zrxha6Onv0LZX52ftP4=;
+	b=XH4COWUi/uVSTTItRb/nUmfm8hm6XLb+2ccrA+RSH9hDCrCENsMx7DdG1OWFISHT6yiJar
+	na1H2WcWdnbTJhAmma6fHG2fZdoBEv0sNydB8Z028wX4I5FNCCSh+4CvoK0zBQnxUDz5sv
+	fK0AfBjzu45udqdKvJg4xwhvU+eyHcE=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1785143702;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Nofef/k2ghi2COUtOHG8Fiu5zrxha6Onv0LZX52ftP4=;
+	b=bdm02+CDJ05kV++dhJds+LNeKzhLGoPjHgz72E0kyd3TFAyzK2ZG2IlQFCaDm8PiZrpNT2
+	rCtsIQeQl1/lYUDg==
+Authentication-Results: smtp-out1.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=gT14ov0W;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=59Y51aLI
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1785143698; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Nofef/k2ghi2COUtOHG8Fiu5zrxha6Onv0LZX52ftP4=;
+	b=gT14ov0WCez/rIUxEy8m1tADx6vn9TvWYnVIlGDTGvvTkjqgKfNlsTpWeYmj3zns/HRrah
+	yetFtSmLwPTMVM2yAdcVmh9IB0etgC+Ko7dJ0vjckI/njniugxrFqPUNdwhmH9agXU+RvH
+	Vv24fXObUNvrvroqv5eY8mBjjk6l63M=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1785143698;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Nofef/k2ghi2COUtOHG8Fiu5zrxha6Onv0LZX52ftP4=;
+	b=59Y51aLI6YcXix+Z2oMApRzqEq+GdCAi5lSa72SMl9lcyKfcsYff4UnevNIIfGg1Xje3eG
+	/vP8AY5Z6JDlUaAw==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 0A492779B9;
+	Mon, 27 Jul 2026 09:14:55 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id Gy7HOo8hZ2r9DwAAD6G6ig
+	(envelope-from <pfalcato@suse.de>); Mon, 27 Jul 2026 09:14:55 +0000
+Date: Mon, 27 Jul 2026 10:14:54 +0100
+From: Pedro Falcato <pfalcato@suse.de>
+To: Helge Deller <deller@kernel.org>
+Cc: John David Anglin <dave.anglin@bell.net>, 
+	Usama Arif <usama.arif@linux.dev>, Helge Deller <deller@gmx.de>, 
+	Matthew Wilcox <willy@infradead.org>, Andrew Morton <akpm@linux-foundation.org>, 
+	David Hildenbrand <david@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, 
+	Will Deacon <will@kernel.org>, "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+	Lorenzo Stoakes <ljs@kernel.org>, "Liam R. Howlett" <liam@infradead.org>, 
+	Vlastimil Babka <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>, 
+	Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, Jan Kara <jack@suse.cz>, 
+	Zi Yan <ziy@nvidia.com>, Baolin Wang <baolin.wang@linux.alibaba.com>, 
+	Nico Pache <npache@redhat.com>, Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, 
+	Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, 
+	Kevin Brodsky <kevin.brodsky@arm.com>, Muhammad Usama Anjum <usama.anjum@arm.com>, 
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-parisc@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 3/5] mm/parisc: constify ptep_get() argument
+Message-ID: <amchbBH5zF7Rq5LT@pedro-suse>
+References: <20260724102017.141532-1-pfalcato@suse.de>
+ <20260724102017.141532-4-pfalcato@suse.de>
+ <0fd713a8-e4ab-4c07-b36e-79dd138b4a86@linux.dev>
+ <amNzLXuwflIZFKtI@casper.infradead.org>
+ <253f7ac0-205b-42f1-9fb5-d19eceb581b6@linux.dev>
+ <amOEUZlp1BxYh6_t@pedro-suse>
+ <fd239383-dcbe-4daf-b337-32facef07076@linux.dev>
+ <3e9dece8-4e86-4ce5-bd74-b3ec305f3003@gmx.de>
+ <4606e13f-6827-45d0-b3b8-6bc26358f7ae@bell.net>
+ <amT0j_bBT3CCxPcg@p100>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -97,223 +130,186 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <amcQ5N42Svm7oE7j@kunlun.suse.cz>
+In-Reply-To: <amT0j_bBT3CCxPcg@p100>
+X-Rspamd-Action: no action
+X-Rspamd-Queue-Id: 214317DA77
+X-Spamd-Result: default: False [-2.51 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	SUSPICIOUS_RECIPS(1.50)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	MID_RHS_NOT_FQDN(0.50)[];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	ARC_NA(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[34];
+	MIME_TRACE(0.00)[0:+];
+	FREEMAIL_ENVRCPT(0.00)[bell.net,gmx.de];
+	FREEMAIL_CC(0.00)[bell.net,linux.dev,gmx.de,infradead.org,linux-foundation.org,kernel.org,arm.com,hansenpartnership.com,linux.ibm.com,ellerman.id.au,google.com,suse.com,suse.cz,nvidia.com,linux.alibaba.com,redhat.com,lists.infradead.org,vger.kernel.org,lists.ozlabs.org,kvack.org];
+	RCVD_TLS_ALL(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	TO_DN_SOME(0.00)[];
+	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
+	MISSING_XM_UA(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	DKIM_TRACE(0.00)[suse.de:+];
+	R_RATELIMIT(0.00)[to_ip_from(RL764437jfm1qe6abtk9nwyx8m)];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[gmx.de:email,imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns,bell.net:email,linux.dev:email]
+X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
 
-On Mon, Jul 27, 2026 at 10:03:48AM +0200, Michal Such�nek wrote:
-> Hello,
+On Sat, Jul 25, 2026 at 07:38:23PM +0200, Helge Deller wrote:
+> * John David Anglin <dave.anglin@bell.net>:
+> > On 2026-07-25 12:27 p.m., Helge Deller wrote:
+> > > On 7/24/26 17:48, Usama Arif wrote:
+> > >>
+> > >>
+> > >> On 24/07/2026 16:32, Pedro Falcato wrote:
+> > >>> On Fri, Jul 24, 2026 at 04:03:44PM +0100, Usama Arif wrote:
+> > >>>>
+> > >>>>
+> > >>>> On 24/07/2026 15:14, Matthew Wilcox wrote:
+> > >>>>> On Fri, Jul 24, 2026 at 02:36:59PM +0100, Usama Arif wrote:
+> > >>>>>>
+> > >>>>>>
+> > >>>>>> On 24/07/2026 11:20, Pedro Falcato wrote:
+> > >>>>>>> ptep_get() does not need write access to the PTE.
+> > >>>>>>>
+> > >>>>>>> Signed-off-by: Pedro Falcato <pfalcato@suse.de>
+> > >>>>>>> ---
+> > >>>>>>>   arch/parisc/include/asm/pgtable.h | 2 +-
+> > >>>>>>>   1 file changed, 1 insertion(+), 1 deletion(-)
+> > >>>>>>>
+> > >>>>>> hmm I think you might break build bisectibility if
+> > >>>>>> you separate out the patches, you should squash patch 3 and 4,
+> > >>>>>> with patch 1.
+> > >>>>>
+> > >>>>> I don't see how this breaks bisectability.  Can you elaborate on what
+> > >>>>> you think would break?
+> > >>>>
+> > >>>> Patch 1 does:
+> > >>>>
+> > >>>> -static inline pte_t ptep_get_lockless(pte_t *ptep)
+> > >>>> +static inline pte_t ptep_get_lockless(const pte_t *ptep)
+> > >>>>   {
+> > >>>>       return ptep_get(ptep);
+> > >>>>   }
+> > >>>>
+> > >>>>
+> > >>>> ptep_get() takes a non-const arg till patch 3 for example for parsic.
+> > >>>> I don't think you can pass a const variable to non const function arg?
+> > >>>>
+> > >>>> So parsic won't compile in patch 1 and 2, powerprc wont compile
+> > >>>> for patches 1, 2 and 3..
+> > >>>
+> > >>> Aha, yes, nice catch! I'll have to rethink that. Maybe squashing the patches
+> > >>> would be the cleanest way forward.
+> > >>>
+> > >>
+> > >> Yes, squashing is the simplest way forward.
+> > >>
+> > >>> FWIW, the vast majority of architectures aren't doing funny things on
+> > >>> ptep_get(). E.g PA-RISC, loongarch only define these so they can use it in
+> > >>> their own asm/pgtable.h. I'd really like to delete these but I can't tell
+> > >>> if they are *actually* required.
+> > >>>
+> > >>
+> > >> Ah maybe there is something in git history on why it was needed?
+> > >>
+> > >> If not, hopefully someone from the arch lists could clarify..
+> > > I tried to remove ptep_get() and ptep_test_and_clear_young() from
+> > > arch/parisc/include/asm/pgtable.h, but this then triggers compile errors:
+> > > 
+> > >  CC      arch/parisc/kernel/asm-offsets.s
+> > > In file included from /home/cvs/parisc/git-kernel/linus-linux-2.6/include/linux/mm.h:31,
+> > >                  from /home/cvs/parisc/git-kernel/linus-linux-2.6/include/linux/pid_namespace.h:7,
+> > >                  from /home/cvs/parisc/git-kernel/linus-linux-2.6/include/linux/ptrace.h:10,
+> > >                  from /home/cvs/parisc/git-kernel/linus-linux-2.6/arch/parisc/kernel/asm-offsets.c:21:
+> > > /home/cvs/parisc/git-kernel/linus-linux-2.6/include/linux/pgtable.h: In function ‘clear_young_dirty_ptes’:
+> > > /home/cvs/parisc/git-kernel/linus-linux-2.6/include/linux/pgtable.h:683:25: error: implicit declaration of function ‘ptep_test_and_clear_young’;
+> > > did you mean ‘pmdp_test_and_clear_young’? [-Wimplicit-function-declaration]
+> > >   683 |                         ptep_test_and_clear_young(vma, addr, ptep);
+> > >       |                         ^~~~~~~~~~~~~~~~~~~~~~~~~
+> > >       |                         pmdp_test_and_clear_young
+> > > 
+> > > So, I think the answer is, that the local copy of ptep_get() is used in the parisc implementation of
+> > > ptep_test_and_clear_young() function.
+> > > 
+> > > Switching to the default include/linux/pgtable.h seems not easy doable....
+> > 
+> > Did you remove define for __HAVE_ARCH_PTEP_TEST_AND_CLEAR_YOUNG in parisc version of pgtable.h?
 > 
-> this should be probably adjusted to match
+> Indeed, I missed to remove that.
 > 
-> https://lore.kernel.org/linuxppc-dev/20260723194809.4046600-1-mkchauras@gmail.com/
-> 
-> Thanks
-> 
-> Michal
-> 
-Hey Michal,
+> Usama, if you want you can add the patch below to your patch set, thus
+> simplifying your series?
 
-Yeah, i am working towards this.
+It's actually my series but thanks Helge I'll pick it up!
 
-Regards,
-Mukesh
-> On Tue, Jul 14, 2026 at 01:29:35PM +0530, Mukesh Kumar Chaurasiya (IBM) wrote:
-> > After enabling GENERIC_ENTRY on PowerPC, syscall_enter_from_user_mode()
-> > returns -1 as a sentinel to signal that seccomp or ptrace has intercepted
-> > the syscall and already set a return value via syscall_set_return_value().
-> > system_call_exception() was not handling this sentinel, and since -1UL
-> > is >= NR_syscalls, the code fell into the out-of-range path and returned
-> > -ENOSYS, overwriting the errno already placed in regs->gpr[3].
-> > 
-> > The naive fix of checking r0 == -1L before the NR_syscalls bounds check
-> > is ambiguous: a user legitimately calling syscall(-1) also produces r0 ==
-> > -1L, and a tracer intercepting such a call would have its injected return
-> > value silently discarded.
-> > 
-> > Fix this properly by introducing regs->entry_flags, a kernel-internal
-> > field in struct pt_regs (consuming one slot of the existing __pt_regs_pad
-> > so the ABI is preserved), with SYSCALL_ENTRY_RET_SET as an out-of-band
-> > flag. syscall_set_return_value() sets this flag whenever seccomp or ptrace
-> > injects a return value. system_call_exception() zeros entry_flags before
-> > calling syscall_enter_from_user_mode(), then checks and clears the flag
-> > afterwards: if set, it returns regs->gpr[3] directly regardless of what
-> > syscall number the user originally requested.
-> > 
-> > This handles all seccomp actions correctly:
-> > 
-> >   - SECCOMP_RET_ERRNO, SECCOMP_RET_TRACE (no tracer), SECCOMP_RET_USER_NOTIF:
-> >     all call syscall_set_return_value(), flag is set, injected value returned.
-> >   - SECCOMP_RET_TRAP, SECCOMP_RET_KILL: call syscall_rollback() and deliver
-> >     a signal; flag is not set, but the process is dying so the return value
-> >     is irrelevant.
-> > 
-> > The fix covers both ppc32 and ppc64 with no #ifdefs.
-> > 
-> > Fixes: bee25f97ad24 ("powerpc: Enable GENERIC_ENTRY feature")
-> > Reported-by: Michal Such�nek <msuchanek@suse.de>
-> > Closes: https://lore.kernel.org/all/ajpp-_XnbF3UTM_E@kunlun.suse.cz/
-> > Tested-by: Michal Such�nek <msuchanek@suse.de>
-> > Reviewed-by: Michal Such�nek <msuchanek@suse.de>
-> > Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
-> > ---
-> > v4 -> v5:
-> >  - Fixed build failure where BITS macro is not available
-> > v3 -> v4:
-> >  - Use syscall_get_error (Michal)
-> > v2 -> v3:
-> >  - Last fix is not working for -1 syscall. Fixed that with this.
-> > v2: https://lore.kernel.org/all/20260629182946.419552-1-mkchauras@gmail.com
-> > 
-> > v1 -> v2:
-> >  - Fix issues in the previous fix (Michal)
-> > v1: https://lore.kernel.org/all/20260624171520.772408-1-mkchauras@gmail.com
-> > 
-> > 
-> >  arch/powerpc/include/asm/ptrace.h      | 23 ++++++++++++++++++++++-
-> >  arch/powerpc/include/asm/syscall.h     |  6 ++++++
-> >  arch/powerpc/include/uapi/asm/ptrace.h |  6 ++++--
-> >  arch/powerpc/kernel/ptrace/ptrace.c    |  2 ++
-> >  arch/powerpc/kernel/syscall.c          | 18 ++++++++++++++++++
-> >  5 files changed, 52 insertions(+), 3 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/include/asm/ptrace.h b/arch/powerpc/include/asm/ptrace.h
-> > index fdeb97421785..363a89787f1c 100644
-> > --- a/arch/powerpc/include/asm/ptrace.h
-> > +++ b/arch/powerpc/include/asm/ptrace.h
-> > @@ -19,6 +19,7 @@
-> >  #ifndef _ASM_POWERPC_PTRACE_H
-> >  #define _ASM_POWERPC_PTRACE_H
-> >  
-> > +#include <linux/bits.h>
-> >  #include <linux/err.h>
-> >  #include <uapi/asm/ptrace.h>
-> >  #include <asm/asm-const.h>
-> > @@ -54,8 +55,9 @@ struct pt_regs
-> >  			};
-> >  			unsigned long result;
-> >  			unsigned long exit_flags;
-> > +			unsigned long entry_flags;
-> >  			/* Maintain 16 byte interrupt stack alignment */
-> > -			unsigned long __pt_regs_pad[3];
-> > +			unsigned long __pt_regs_pad[2];
-> >  		};
-> >  	};
-> >  #if defined(CONFIG_PPC64) || defined(CONFIG_PPC_KUAP)
-> > @@ -233,6 +235,25 @@ static inline unsigned long frame_pointer(struct pt_regs *regs)
-> >  #define current_pt_regs() \
-> >  	((struct pt_regs *)((unsigned long)task_stack_page(current) + THREAD_SIZE) - 1)
-> >  
-> > +/*
-> > + * SYSCALL_ENTRY_RET_SET: seccomp or ptrace called syscall_set_return_value()
-> > + * and wants the syscall skipped; regs->gpr[3] already holds the return value.
-> > + */
-> > +#define SYSCALL_ENTRY_RET_SET	BIT(0)
-> > +
-> > +static inline void set_syscall_entry_ret(struct pt_regs *regs)
-> > +{
-> > +	regs->entry_flags |= SYSCALL_ENTRY_RET_SET;
-> > +}
-> > +
-> > +static inline bool test_and_clear_syscall_entry_ret(struct pt_regs *regs)
-> > +{
-> > +	bool set = !!(regs->entry_flags & SYSCALL_ENTRY_RET_SET);
-> > +
-> > +	regs->entry_flags &= ~SYSCALL_ENTRY_RET_SET;
-> > +	return set;
-> > +}
-> > +
-> >  /*
-> >   * The 4 low bits (0xf) are available as flags to overload the trap word,
-> >   * because interrupt vectors have minimum alignment of 0x10. TRAP_FLAGS_MASK
-> > diff --git a/arch/powerpc/include/asm/syscall.h b/arch/powerpc/include/asm/syscall.h
-> > index 834fcc4f7b54..9ae79326abe3 100644
-> > --- a/arch/powerpc/include/asm/syscall.h
-> > +++ b/arch/powerpc/include/asm/syscall.h
-> > @@ -98,6 +98,12 @@ static inline void syscall_set_return_value(struct task_struct *task,
-> >  			regs->gpr[3] = val;
-> >  		}
-> >  	}
-> > +	/*
-> > +	 * Mark that a return value has been explicitly set by seccomp or
-> > +	 * ptrace so that system_call_exception() can skip the syscall
-> > +	 * unconditionally, even when the user requested syscall(-1).
-> > +	 */
-> > +	set_syscall_entry_ret(regs);
-> >  }
-> >  
-> >  static inline void syscall_get_arguments(struct task_struct *task,
-> > diff --git a/arch/powerpc/include/uapi/asm/ptrace.h b/arch/powerpc/include/uapi/asm/ptrace.h
-> > index a393b7f2760a..2f2a43414fe6 100644
-> > --- a/arch/powerpc/include/uapi/asm/ptrace.h
-> > +++ b/arch/powerpc/include/uapi/asm/ptrace.h
-> > @@ -56,7 +56,8 @@ struct pt_regs
-> >  	unsigned long dsisr;		/* on 4xx/Book-E used for ESR */
-> >  	unsigned long result;		/* Result of a system call */
-> >  	unsigned long exit_flags;	/* System call exit flags */
-> > -	unsigned long __pt_regs_pad[3];	/* Maintain 16 byte interrupt stack alignment */
-> > +	unsigned long entry_flags;	/* System call entry flags */
-> > +	unsigned long __pt_regs_pad[2];	/* Maintain 16 byte interrupt stack alignment */
-> >  };
-> >  
-> >  #endif /* __ASSEMBLER__ */
-> > @@ -117,7 +118,8 @@ struct pt_regs
-> >  #define PT_DSISR 42
-> >  #define PT_RESULT 43
-> >  #define PT_EXIT_FLAGS 44
-> > -#define PT_PAD 47 /* 3 times */
-> > +#define PT_ENTRY_FLAGS 45
-> > +#define PT_PAD 46 /* 2 times */
-> >  #define PT_DSCR 48
-> >  #define PT_REGS_COUNT 48
-> >  
-> > diff --git a/arch/powerpc/kernel/ptrace/ptrace.c b/arch/powerpc/kernel/ptrace/ptrace.c
-> > index 316d4f5ead8e..440d00690cf2 100644
-> > --- a/arch/powerpc/kernel/ptrace/ptrace.c
-> > +++ b/arch/powerpc/kernel/ptrace/ptrace.c
-> > @@ -235,6 +235,8 @@ void __init pt_regs_check(void)
-> >  		     offsetof(struct user_pt_regs, dsisr));
-> >  	BUILD_BUG_ON(offsetof(struct pt_regs, result) !=
-> >  		     offsetof(struct user_pt_regs, result));
-> > +	BUILD_BUG_ON(offsetof(struct pt_regs, entry_flags) !=
-> > +		     offsetof(struct user_pt_regs, entry_flags));
-> >  
-> >  	BUILD_BUG_ON(sizeof(struct user_pt_regs) > sizeof(struct pt_regs));
-> >  
-> > diff --git a/arch/powerpc/kernel/syscall.c b/arch/powerpc/kernel/syscall.c
-> > index a9da2af6efa8..a43d3a9428cc 100644
-> > --- a/arch/powerpc/kernel/syscall.c
-> > +++ b/arch/powerpc/kernel/syscall.c
-> > @@ -19,9 +19,27 @@ notrace long system_call_exception(struct pt_regs *regs, unsigned long r0)
-> >  	long ret;
-> >  	syscall_fn f;
-> >  
-> > +	/*
-> > +	 * Zero entry_flags before syscall_enter_from_user_mode() so that
-> > +	 * syscall_set_return_value() can set SYSCALL_ENTRY_RET_SET as an
-> > +	 * unambiguous out-of-band signal.  The field is not initialised by
-> > +	 * the entry assembly.
-> > +	 */
-> > +	regs->entry_flags = 0;
-> >  	add_random_kstack_offset();
-> >  	r0 = syscall_enter_from_user_mode(regs, r0);
-> >  
-> > +	/*
-> > +	 * Seccomp or ptrace may have set a return value and requested that
-> > +	 * the syscall be skipped. syscall_set_return_value() sets
-> > +	 * SYSCALL_ENTRY_RET_SET in regs->entry_flags as an
-> > +	 * unambiguous out-of-band signal. This avoids the ambiguity of
-> > +	 * using r0 == -1 as the skip sentinel when the user themselves
-> > +	 * called syscall(-1).
-> > +	 */
-> > +	if (unlikely(test_and_clear_syscall_entry_ret(regs)))
-> > +		return syscall_get_error(current, regs);
-> > +
-> >  	if (unlikely(r0 >= NR_syscalls)) {
-> >  		if (unlikely(trap_is_unsupported_scv(regs))) {
-> >  			/* Unsupported scv vector */
-> > -- 
-> > 2.55.0
-> > 
+> 
+> Helge
+> 
+> ------
+> 
+> From: Helge Deller <deller@gmx.de>
+> Date: Sat, 25 Jul 2026 19:19:55 +0200
+> Subject: [PATCH] parisc: Drop own implementations for ptep_get() and
+>  ptep_test_and_clear_young()
+> 
+> Switch to the generic implementations, which are identical.
+> 
+> Suggested-by: Usama Arif <usama.arif@linux.dev>
+> Suggested-by: John David Anglin <dave.anglin@bell.net>
+> Signed-off-by: Helge Deller <deller@gmx.de>
+> 
+> diff --git a/arch/parisc/include/asm/pgtable.h b/arch/parisc/include/asm/pgtable.h
+> index 467b8547ac8b..d92dee9fef3f 100644
+> --- a/arch/parisc/include/asm/pgtable.h
+> +++ b/arch/parisc/include/asm/pgtable.h
+> @@ -432,25 +432,6 @@ static inline pte_t pte_swp_clear_exclusive(pte_t pte)
+>  	return pte;
+>  }
+>  
+> -static inline pte_t ptep_get(pte_t *ptep)
+> -{
+> -	return READ_ONCE(*ptep);
+> -}
+> -#define ptep_get ptep_get
+> -
+> -static inline bool ptep_test_and_clear_young(struct vm_area_struct *vma,
+> -		unsigned long addr, pte_t *ptep)
+> -{
+> -	pte_t pte;
+> -
+> -	pte = ptep_get(ptep);
+> -	if (!pte_young(pte)) {
+> -		return false;
+> -	}
+> -	set_pte_at(vma->vm_mm, addr, ptep, pte_mkold(pte));
+> -	return true;
+> -}
+> -
+>  bool ptep_clear_flush_young(struct vm_area_struct *vma, unsigned long addr, pte_t *ptep);
+>  pte_t ptep_clear_flush(struct vm_area_struct *vma, unsigned long addr, pte_t *ptep);
+>  
+> @@ -491,7 +472,6 @@ static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long addr,
+>  #define HAVE_ARCH_UNMAPPED_AREA
+>  #define HAVE_ARCH_UNMAPPED_AREA_TOPDOWN
+>  
+> -#define __HAVE_ARCH_PTEP_TEST_AND_CLEAR_YOUNG
+>  #define __HAVE_ARCH_PTEP_CLEAR_YOUNG_FLUSH
+>  #define __HAVE_ARCH_PTEP_CLEAR_FLUSH
+>  #define __HAVE_ARCH_PTEP_SET_WRPROTECT
+
+-- 
+Pedro
 
