@@ -1,83 +1,92 @@
-Return-Path: <linuxppc-dev+bounces-24857-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24858-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 78E38C531D0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2026 05:35:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7A5CCC531FC
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2026 06:16:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h7nNc3cymz2yps;
-	Mon, 27 Jul 2026 15:34:56 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785130496;
-	cv=none; b=IV0g6ycAlFeaJA4e9PnsnzkzYh2/jdMMa6vAvdGEf2m6WghTkd7xUsp+2veEuE8cLFXYXGLvSQ6qdRXhDfkVenRaq62UQka9MEcD43ysNJuMy4wk0LsIDjpqUVVIPi6XuCDLGV6KfKtDB7ND4ciUynjo4ORK6KGxxgGGbeOpthsZeyunMbLiqEaqtxZwVSmWSw1KWXbDbiP6D3jcOMowau9EVnuDNWloD15lcTdjfvWicK4vy0GthaRpzaF25MneihbrKhMrVunuvf2FNGPYhBZ53AgJ574XH+4vaH7tLkyQTO4FEw3c6TH5t2bY5m0lvy172c4sp8kSCXkF+XJK2g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h7pK36blNz2yhD;
+	Mon, 27 Jul 2026 16:16:55 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::436"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785133015;
+	cv=none; b=JsnG6+ch3qlonZBPxNM2tWxHHXXDz/ylLdEcpLpGPcyQnSNWYD/rQM6RxNuS7fKGWeRzxA4BLkDGLa+tDrxOYqqXzRRgPmopzfVULPWVR9OG6j6CHlchCEYLi/xKCouujXr+8Fuqu7vbxvd3l06ec6Wxst0pCZax9VbaqxRiLzwl41BdW9IeG4woHJHY9fyq9v/kPqn4Zd2OFxzz3WR/LSlDKjn9tOfmW4HpB74+3vZr+vOU8vv4lVdO9r11IoExPDywv+8yrIiYpMo9LXZdDZjRIVK75XJPxImgrA4nelsID0FTkBc01kep4JDHlSIUVNE3+wA2DzE4KW7ILQI3Fw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785130496; c=relaxed/relaxed;
-	bh=MiSz5oENnFf7Ep0gqhWcsz/w141huOtWKt+qnyYLNN0=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=hqCksKmU+tJkSNFTSDLeQ8u/ZEozac2TFMxDs79lNWSTEtlft3TmSz9U8HPV8X7MvCplxDgkdVnnDZnJEhIpke4oBfS1LcvCMIfwZ/Jix7OUMg5XkZbmgLygQB3emFbpc6+m8OMt9+n6w2P4JoukMJ7AdzFjc4/6im9fivp1DnLAI1UOI8jZ9BWKEtUxk/AWnZCWl2JfVx/NHedm76edBwbEHkBpq7zxKff9MV0G5b7FUCYlPId83SAezGtSmyoC1wAGLV/uDDaNhKt4ug36DgearqiOoiodcK0EucG5VsawNHh4G4uEEvq9wunMtxWT7n481BfOPi4FUouKbbYzYQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rXqyr+Bh; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1785133015; c=relaxed/relaxed;
+	bh=xkvd3GaxfP8zwg2THjBwEOUnMuoDnas1hdLWEj3iqG8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=NvciA9wtmAJQqZgf0mB6Jv8TjQ/TYD6xCZsB7J8rXYiAehuqjJKAvMx45Ei1jWenLX6bq7CUpXqQIKwHQTiK9blWpH8SsjEi6mK+/5HIcq8N2XdiKgmjtkOFi3UETQObhL+Q1rjh1Z7p+TdPnpSzeW69teQc23S6g15vHWGtLQCn7W3CF/ekYWLQ1RLzZDZxRk1zZIpAcQhPdIvrf2E5Ki/mGtl8FaC30Sun6bazpSFbSnqjvIPSPEUvuQv/1DErC3FaYfxBhdtEundlOq+romlAWaes5eXS25tPYtVZUVG3JRHLr1cvB+63S8tghTzHjbKbv+Yr9gELdC4QjhAiTQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=szO6Jcnl; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::436; helo=mail-pf1-x436.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rXqyr+Bh;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=szO6Jcnl;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::436; helo=mail-pf1-x436.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x436.google.com (mail-pf1-x436.google.com [IPv6:2607:f8b0:4864:20::436])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h7nNb6sDVz2xyj
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2026 15:34:55 +1000 (AEST)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66R1luJ9856474;
-	Mon, 27 Jul 2026 05:34:47 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=MiSz5oENnFf7Ep0gq
-	hWcsz/w141huOtWKt+qnyYLNN0=; b=rXqyr+BheUnoSxTtHACRrSZSqkF3b8UoE
-	3EQHDdCFX0zYrAGN9Y3mDkvLsNd1ZQ1oaBSXoaFt06NijklDrZxzLrQWmOGpiHky
-	TtTeeyYxtGSmqqywjC3GeBh5dU5BPAGmrIlg8ao4IGMi0cNP3WjFeAyaWuFdVp66
-	HaqlOEmteb/l2d8NFW4jA5knWwJPHnWA7Bw3HXhObHVb1vSl0jWpXJYQR2HAPBry
-	U621LlrV2/3wXd/exw5ycKd8uDc3ukYiJMm21gz0GNilHQCqIxc28O8jvtfgkyD8
-	QV2LRvjF2QSi/BTlHnxboZZO77Bgd4P+Pxx9hYmjN4E9D8AD616Iw==
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fmuw769h9-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 27 Jul 2026 05:34:46 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66R5QJTc020602;
-	Mon, 27 Jul 2026 05:34:45 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4fn8yh3y8h-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 27 Jul 2026 05:34:45 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66R5Yfkv12976432
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 27 Jul 2026 05:34:41 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A9E922013A;
-	Mon, 27 Jul 2026 05:34:41 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B059020139;
-	Mon, 27 Jul 2026 05:34:38 +0000 (GMT)
-Received: from li-4f5ba44c-27d4-11b2-a85c-a08f5b49eada.bl1-in.ibm.com (unknown [9.123.14.142])
-	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 27 Jul 2026 05:34:38 +0000 (GMT)
-From: Sourabh Jain <sourabhjain@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com, mpe@ellerman.id.au,
-        ritesh.list@gmail.com
-Cc: npiggin@gmail.com, chleroy@kernel.org, shivangu@linux.ibm.com,
-        hbathini@linux.ibm.com, mahesh@linux.ibm.com, adityag@linux.ibm.com,
-        venkat88@linux.ibm.com, Sourabh Jain <sourabhjain@linux.ibm.com>,
-        stable@vger.kernel.org, Mahesh Kumar G <mahe657@linux.ibm.com>
-Subject: [PATCH v3 3/3] powerpc/crash: stop watchdogs before booting kdump kernel
-Date: Mon, 27 Jul 2026 11:04:16 +0530
-Message-ID: <20260727053416.276317-4-sourabhjain@linux.ibm.com>
-X-Mailer: git-send-email 2.52.0
-In-Reply-To: <20260727053416.276317-1-sourabhjain@linux.ibm.com>
-References: <20260727053416.276317-1-sourabhjain@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h7pK240ylz2ygn
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2026 16:16:53 +1000 (AEST)
+Received: by mail-pf1-x436.google.com with SMTP id d2e1a72fcca58-84862b0d5f8so1737739b3a.3
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jul 2026 23:16:53 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1785133011; x=1785737811; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=xkvd3GaxfP8zwg2THjBwEOUnMuoDnas1hdLWEj3iqG8=;
+        b=szO6Jcnl+IdGmRffxlm9rsbmCErk3vei8eF2gPg+snlj/UydtlqrjDjPxR4Xz3hlKO
+         QHC/jGX66QPPBYjC1SakHTQfNozR8n3pIb5rAHL4o4OvRJnbTVs3UjX5Jj1Hgu1a7H+p
+         Y0tG8go1/nWPwDjBT8C/mcovro/NHypaFd/HMwzrosQOt4Du0T5otnaCfJzooGlkBJQe
+         tNNkbMO2xkV3Tu+TI9Py7pPAmInf45XVRM4kMEAuoYBfAuZvdA2RkIwMRNYcnrA6jVvU
+         EQhz6JFkrKacngePFx8l8XxV0gLdG5lTRB8nnpCRW4RximMNkp++mK7RtB5PPdZJgSLc
+         Vd3w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1785133011; x=1785737811;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=xkvd3GaxfP8zwg2THjBwEOUnMuoDnas1hdLWEj3iqG8=;
+        b=A/oQdTvv/+7CwBpd7fQc6j1kH/hKkG5Nuyibs47hY8SByH1T5LFaTjNyXvYJpiSKmI
+         3+ihjVD2/Yg8zVJtbF3jJY30yYh7RTwiyztIdVAQOWq8zvrL6g5bFXVNrHeVIps4goJ8
+         GZLsS5WS1L8xQHxM8Azmltpw9VPI2d0Km/kGWtL/t4eso9cW8HFj733ZvaLv3FSYzJzf
+         pZpXF3DxdFMMUPogf+8AyC1uDumKc19EOB//eYp0IZU/wwpGwy4ErJzkFEbedTAkCAOR
+         mj6wEgGHyYREwRZyo3mOF0KkvAPOgeoXQ+eoW42eKaTDW8toQ0Qy9FkaJXH+sHbei7/s
+         dwcQ==
+X-Forwarded-Encrypted: i=1; AHgh+RrFs15ypjj1tBdjqnBzeDNZIRzBW64VNxA2F5KK1nratYZEjA+s/XXhh5rWuqlseU72cFpSQHEY+RZRgrw=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxFjKgwAYEmESx5fdgKDZ45PqeAOpwRK7yE+KXwRRIK/cAh1Y32
+	QHhgqTfiw3Sn2CxStfEyFfQuX+0l85wnFKw+u37THznjxibu7y+eEbuGs1Wu6A==
+X-Gm-Gg: AR+sD11WhqNI1MAVBXD/NV6+zansocQaOtDjh6Oke653bXYK0h5aBm0ewg8mih6ZcXo
+	kQThdFv2A16TGzHqd4ZCcd2oPdVxEcDUMPFj6QoNkhculpbHbrecgiLfUysuIcR4S+JPl2E9rb+
+	OFt6tVT8bZ3TwoAWb4PgtQEW9G8rjHni27/JqGxj2G4iIPFUN9Ob2L+a2Ct57LpQv8wl8yjmKZE
+	zg8+5IwAy/LttOkRC8ugXAEVXDUP/MrVAT1p/UM8GkiI1ozifwjvcxb6e9BNtSLN4Ao4OP4m3bT
+	my4BBwvAsARJ5IkZD5KrhVAYnAU7Cb3FMgWpsows2lnPKMT7J4rvrkS1R80JCvFbr4z/1s0gqtD
+	72Z+GFq3qpd9YiFediB71LPjBx7KwQeIF4E5Ym8JfqU1FpsNbma+T264jYpWneuca8FVztm80Cv
+	sYg0tdAXuB4m58MItOC0w0tp3PR5t1wsqPdRKtZk3mNXJn9w==
+X-Received: by 2002:a05:6a00:4ac8:b0:84e:1db7:2f86 with SMTP id d2e1a72fcca58-84e59572bddmr5479084b3a.49.1785133011409;
+        Sun, 26 Jul 2026 23:16:51 -0700 (PDT)
+Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([129.41.58.4])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-84e5343a9c6sm2607131b3a.51.2026.07.26.23.16.44
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 26 Jul 2026 23:16:51 -0700 (PDT)
+Date: Mon, 27 Jul 2026 11:46:42 +0530
+From: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
+To: Gou Hao <gouhao@uniontech.com>
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
+	chleroy@kernel.org, maarten.lankhorst@linux.intel.com, mripard@kernel.org, 
+	tzimmermann@suse.de, airlied@gmail.com, simona@ffwll.ch, bharat@chelsio.com, 
+	jgg@ziepe.ca, leon@kernel.org, akpm@linux-foundation.org, namcao@linutronix.de, 
+	ynorov@nvidia.com, sshegde@linux.ibm.com, nilay@linux.ibm.com, clg@kaod.org, 
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+	linux-rdma@vger.kernel.org, linux-mm@kvack.org, gouhaojake@163.com, kernel@uniontech.com
+Subject: Re: [PATCH v2 1/6] powerpc/xive: remove dead NULL check after
+ GFP_NOFAIL allocation
+Message-ID: <amb3uArRk2MlHRuc@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+References: <20260724022851.466017-1-gouhao@uniontech.com>
+ <20260724022851.466017-2-gouhao@uniontech.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,117 +100,46 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: AYxFhtFkEhslfZGikY7Y1B167EMdbSrq
-X-Proofpoint-ORIG-GUID: XlrdPJiqfPnGm94R65KXUoz7Pc5bBvxC
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzI3MDA1MCBTYWx0ZWRfX2288HoRpaPwg
- TfWQUcK8BPYZRK7aFkK5mitSPFHyNF1EpGmy8IzUrok9o8TcOKbcUzEtAcy19+jhEqSuPNFBiQk
- hJMyMHHCAYIDD4wsW1Wt5BYe1JkOzOwgMt7YLCbyOBV9NJz7vp/5noiyFB7NcsRoRKSk2pIbdXY
- td6BIOE0zveArYpyYVm/y+W9Ap8/CTjMTGFtJzI4b1PTKapnJDWlwCnelx0AVooP2OXHYZgEGo2
- cU5RZnpdmMWCxLJQ5ObNBO3begQyxGavCWtKJN+dKtayaQOA3bqsjJ3xjKSc/ODm/eopgBPZ9uy
- kTB42Vvkfml31m/BbU8O5EpKuPyt4AMFFp3ktUR7cfCjSZ6hEYbE1+dk3knqMJg24VhuTJyXok1
- 8LzKCdYEJVDt/gPnPrutHid28Ql/BZWPVqvxBXW0/5FxERzg6li+b8R+50r7wJT6WfFolnxU/Nk
- 1oEGS1fgUiEXGhdXdKw==
-X-Authority-Analysis: v=2.4 cv=SKFykuvH c=1 sm=1 tr=0 ts=6a66edf7 cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
- a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=iQ6ETzBq9ecOQQE5vZCe:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8 a=pGLkceISAAAA:8
- a=1VxKY9m5oVtvVnzyWT4A:9
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzI3MDA1MCBTYWx0ZWRfX46LApJ8UMd45
- EaGaAtA/YXYo3gm2O7qNSPwjljFEV4e/Y7WBtLIWVExpUGuhXTP0DSjBZwgJ0jmnNo2Vd7DbTxc
- fhQGxGs5Cb258/iqFRQOCkC/V4FNZAw=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-07-27_01,2026-07-24_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 malwarescore=0 clxscore=1015 adultscore=0
- lowpriorityscore=0 bulkscore=0 impostorscore=0 phishscore=0 spamscore=0
- suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
- definitions=main-2607270050
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260724022851.466017-2-gouhao@uniontech.com>
 
-On pseries LPAR systems, watchdog timers configured from userspace can
-remain active after a kernel panic. When a panic triggers kdump, the
-crashing kernel jumps directly to the kdump kernel without stopping
-active watchdogs. As a result, the watchdogs remain active after the
-kdump kernel starts.
-
-If dump capture takes longer than the watchdog timeout, PHYP resets the
-LPAR before the dump is fully captured, causing dump capture to fail.
-
-Fix this by issuing the `H_WATCHDOG` hcall during the crash shutdown
-sequence to stop all active watchdogs before booting the kdump kernel.
-
-Cc: stable@vger.kernel.org
-Fixes: 69472ffa6575 ("watchdog/pseries-wdt: initial support for H_WATCHDOG-based watchdog timers")
-Reported-by: Mahesh Kumar G <mahe657@linux.ibm.com>
-Suggested-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
----
- arch/powerpc/include/asm/papr-watchdog.h |  6 ++++++
- arch/powerpc/platforms/pseries/setup.c   | 14 ++++++++++++++
- 2 files changed, 20 insertions(+)
-
-diff --git a/arch/powerpc/include/asm/papr-watchdog.h b/arch/powerpc/include/asm/papr-watchdog.h
-index 308ffb73932d..bf876fc2caae 100644
---- a/arch/powerpc/include/asm/papr-watchdog.h
-+++ b/arch/powerpc/include/asm/papr-watchdog.h
-@@ -21,6 +21,12 @@
- #define PSERIES_WDTF_ACTION_HARD_RESTART	0x2UL	/* restart */
- #define PSERIES_WDTF_ACTION_DUMP_RESTART	0x3UL	/* dump + restart */
- 
-+/*
-+ * R5: "watchdogNumber":
-+ *       PAPR says use -1 (all ones) to stop all watchdogs.
-+ */
-+#define PSERIES_WDT_NUM_ALL	((unsigned long)-1)
-+
- /*
-  * H_WATCHDOG Output
-  *
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index aed12412c600..f29e7547c995 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -77,6 +77,7 @@
- #include <asm/dtl.h>
- #include <asm/hvconsole.h>
- #include <asm/setup.h>
-+#include <asm/papr-watchdog.h>
- 
- #include "pseries.h"
- 
-@@ -185,6 +186,16 @@ static void __init fwnmi_init(void)
- #endif
- }
- 
-+static void pseries_crash_stop_watchdogs(void)
-+{
-+	long rc;
-+
-+	rc = plpar_hcall_norets_notrace(H_WATCHDOG, PSERIES_WDTF_OP_STOP,
-+					PSERIES_WDT_NUM_ALL);
-+	if (rc != H_SUCCESS && rc != H_NOOP)
-+		pr_warn("Could not stop watchdogs before kdump rc=%ld\n", rc);
-+}
-+
- /*
-  * Affix a device for the first timer to the platform bus if
-  * we have firmware support for the H_WATCHDOG hypercall.
-@@ -203,6 +214,9 @@ static __init int pseries_wdt_init(void)
- 		return PTR_ERR(pdev);
- 	}
- 
-+	if (crash_shutdown_register(pseries_crash_stop_watchdogs))
-+		pr_warn("Could not register watchdog crash shutdown handler\n");
-+
- 	return 0;
- }
- machine_subsys_initcall(pseries, pseries_wdt_init);
--- 
-2.52.0
-
+On Fri, Jul 24, 2026 at 10:28:46AM +0800, Gou Hao wrote:
+> kzalloc_objs with the __GFP_NOFAIL flag will never return NULL, so the
+> subsequent NULL check is unreachable dead code. Remove it.
+> 
+> Signed-off-by: Gou Hao <gouhao@uniontech.com>
+> Reviewed-by: Wentao Guan <guanwentao@uniontech.com>
+> Reviewed-by: jiazhenyuan <jiazhenyuan@uniontech.com>
+> ---
+>  arch/powerpc/sysdev/xive/common.c | 5 +----
+>  1 file changed, 1 insertion(+), 4 deletions(-)
+> 
+> diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
+> index dadd1f46ec939..f2904a5c2b7bf 100644
+> --- a/arch/powerpc/sysdev/xive/common.c
+> +++ b/arch/powerpc/sysdev/xive/common.c
+> @@ -1134,9 +1134,6 @@ static int __init xive_init_ipis(void)
+>  
+>  	xive_ipis = kzalloc_objs(*xive_ipis, nr_node_ids,
+>  				 GFP_KERNEL | __GFP_NOFAIL);
+> -	if (!xive_ipis)
+> -		goto out_free_domain;
+> -
+>  	for_each_node(node) {
+>  		struct xive_ipi_desc *xid = &xive_ipis[node];
+>  		struct xive_ipi_alloc_info info = { node };
+> @@ -1158,7 +1155,7 @@ static int __init xive_init_ipis(void)
+>  
+>  out_free_xive_ipis:
+>  	kfree(xive_ipis);
+> -out_free_domain:
+> +	xive_ipis = NULL;
+>  	irq_domain_remove(ipi_domain);
+>  out_free_fwnode:
+>  	irq_domain_free_fwnode(fwnode);
+> -- 
+> 2.20.1
+> 
+Reviewed-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
 
