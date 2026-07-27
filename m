@@ -1,89 +1,58 @@
-Return-Path: <linuxppc-dev+bounces-24907-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24908-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 78AE3C53209
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2026 16:51:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 31600C53209
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2026 16:51:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h84Nx3X9xz2yhD;
-	Tue, 28 Jul 2026 02:51:13 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785171073;
-	cv=none; b=oLr1vSM5MUPUwGwSd0GebDzBItQEyrE9FaTefxqx72EJ9FX2JQ0SWeFRJqdRMHXK6vjwUfpXJ9nz7LrsyzojzdKzgZYVgIAPpndaolU2ksUxnskK3qqe0gsdcwqjgC3Cq7LiRUyFmpFCtOthwYuyTakHzmpwtrlnOxjvhq+yrWqe7dtgxpEmkI4J2fSLGc7fTN1+zkYerg9gCS/KCWtvmaTmsS659Fo9+uoJmws3fepSyoT7FuyTWRCH6kxPSz2MlzNeA6lvTi52T9jwsaQCn0zcGGXEAu+MZAmwCTuhE1nPXhVxsQls4qt1v1SRC7SHBKe704NU4W1NAJJkhTVBnA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h84PZ23Jhz2yhD;
+	Tue, 28 Jul 2026 02:51:46 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785171106;
+	cv=none; b=KYmruGFN0FG+8lH1aVCyiGVWAobgcrQnp7RWIdNfFGluzjWgvtUVXxnghLM31EmDvlqjNVrvp6iSwM2Fy3FGU1WTJwN3jWXESJ5BA9Pm/0m3a+txk0/PN7ZI2a/U3YXWZ0a+lN2IR70Y8qCH+uQbS69iYoDj43xJldpY5KM6uACxv5OYvaSnGbDvdygPPZkKuPHgZmHk2BIjlGlADMRwkVYWbib0EaD8N/JILJ9kwrnH3EWWehpJEzv3itoN8PyRr9+nyuIDPrFoObH6N5Keevfmj1i6GFl/58YdWGWogQMdbxiLMlrGnP72jNBkp+stwZCAkURzlGvHb5BAQ5UdGg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785171073; c=relaxed/relaxed;
-	bh=BFjxn6x+L0rJFkoMgfgfBpq4xsckI9hhjCm2UbTJMyY=;
+	t=1785171106; c=relaxed/relaxed;
+	bh=xxJEZg7vUALjJuP8RoVIiQSVR2Zrzga/oBqizYY9xTI=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=L5OAoDvFXuuIN9XfQriIt/nmox3uu2QJnSwoV/tdv0Xz4I4YfvZqrzX0pwY4lfy3D+h63ATAotpaDgJvrWSz8XF31ImdMidMlQ3wy3zFW/PwVALaBtiV3Pe2OP0Ja2HZyV4ITitpHic8HMAks7zLwIiu3uFbqTjDFkmNPat3IuRpnS0+7+rQ84AfBS/NAHWXQ2UbwHyHqlCu6XLbI/fSr5pQWVAWC7uRv1hfp7LKRzsMsSJ+Y9pdMypQLIuWP9Af07zwAO+XsdeGOYIWU7fe5yf4Mqbo4PaY/2sldvnyzeQm1qBaZ7ANZijqaE57EUpM07/PQzoFils4Y4F3+Q/2xw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=L3Hw6+s4; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=L66CV+fW; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=jhladky@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+	 To:Cc:Content-Type; b=gN0z5VXc4JahkVieVnrVgxXP3DXWlYpAzyfMDHlfj8jyZVVhpKRWbXuHwll118wKVQPX6p0VL4Uh5z30JQUH10LYU88jQ2g3tB1sqYo4pdqCc7FUgytLJX0nLrl3fdE6h6PzcXgLbiphM53DP2uJQ6x/DN2loXVC+Dgi9hb0owZRCcO9XGnJyQE071Mi0zeXJPFV2nCCEEh4f5zqHNlBUgdvslc/gxYQ4IoZ2Ds4y5T5SlPGHmnqbdYUe3vv9R+yAmCN/3QJ7tCAn0jaUD/yqfRIgD5oiDEvlrLvJy7drAcubLj2UEWQQy7kGqf8F7K1JQPBcAeZvl+MOVFUq0YOYw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bAHtcCYE; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=yosry@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=L3Hw6+s4;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=L66CV+fW;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bAHtcCYE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=jhladky@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=yosry@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h84Nw0vtpz2yRl
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2026 02:51:10 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1785171066;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=BFjxn6x+L0rJFkoMgfgfBpq4xsckI9hhjCm2UbTJMyY=;
-	b=L3Hw6+s48JGGB4G8NIZHGVb6xd+ABTuKfMuhjxWYO9AlvvgX7adVOWtRqRkHl9SPw3t3zT
-	zE+qSCqk+G97MFQVRVjKEovuzuNux7QMp/+POy8FicSlEgSS8f1rHaJnl1MCa8PeCYV1N8
-	uTsBXxCL/d4kz479KIrkZZf+694mCYc=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1785171067;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=BFjxn6x+L0rJFkoMgfgfBpq4xsckI9hhjCm2UbTJMyY=;
-	b=L66CV+fWl1jbQH3CpdKr4q7Egk5WsU46Q1/B8CWBkB//if32CbhPQaN7Nzi9G0h7oQ6xsi
-	rC/R00kcpywelSHHGyfwlhswvzR+2Vg99SsrK1C0m8fePlRlPtODdgRCX5YOlHWds9M2Xs
-	zv6FWSp5haUvLopPJgTDuBM7DL4bj6o=
-Received: from mail-ua1-f72.google.com (mail-ua1-f72.google.com
- [209.85.222.72]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-178-pjX1_zb1PV-AjBaItFGruw-1; Mon, 27 Jul 2026 12:51:04 -0400
-X-MC-Unique: pjX1_zb1PV-AjBaItFGruw-1
-X-Mimecast-MFC-AGG-ID: pjX1_zb1PV-AjBaItFGruw_1785171064
-Received: by mail-ua1-f72.google.com with SMTP id a1e0cc1a2514c-9771a7eaf48so38050241.1
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2026 09:51:04 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785171063; x=1785775863;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=BFjxn6x+L0rJFkoMgfgfBpq4xsckI9hhjCm2UbTJMyY=;
-        b=Mms0b/xFa4N9ofhSchFsGLZF9lY7irRxSHvfC2NjtMf15r55Yn7g1Yd6hDGbX5nNkU
-         NpkqBY7pcOz5Ept19r77k5r7F5yzX9Ab9BwZGlIWQbJbdoKsqlljQxJF6aUqYpYVhtoV
-         776Hj1Z2xWeWg7KJpZ62TDHuwQENvr59jKb+HCV/rtP52ZM7XKs9Gj6tyzVyIX8YOimJ
-         UO8dFzqH6w2r/4RNWmuyirEazU97ZzdBPTehlSTg3WdoiHAfDAmR/Q+Q08lP/8cLDjw/
-         0mLTAP2lYYUb+cqc8zFBn2Duy+X8qCuZwa5C6gNVcjqc0tdhv4QS939vWOsCv9hN6n3Q
-         JV5Q==
-X-Forwarded-Encrypted: i=1; AHgh+RrIled+47Uz+42/i7OshwcLkWUePAaftaEX0qp5qMKh3cqGdwiMn72pFeU1JiXX40sRoUeeyJqRkDIyZ8g=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yzl6mqPUF5LulkhWoWU7R52BAcb3rcChQS8QQvdf6dPaLg2xJDn
-	SmE78J3Nw4U6LGfscIQ5oWWeW3+iJ8ogLaqSnYi+b8cre93g8s7ydogX7YYQMjMWEIrsjktZG4Y
-	H5M4fsPtWLVBg7rzaB9JO1XaOvH8Xr2k3DKJtHHYpjEMIu5mp+Iiovh9Db70VKAGSOBUaIkl+iQ
-	Z1x7TkjSIdO3y2gjSMd6V7RDxgJ6SZ3ertC8Fb4PhKbg==
-X-Gm-Gg: AR+sD12DLMTvqv1tLoAnZC8tgSpyLRhvMiMb6cz59wP8xNB4JqyIfSIwk7oFNhPfmyC
-	5I/CZmzwl6/LJJxnGuem28x5nvN/s5xgW2W8h+zxO5W1Gn9HVrfEDyj6zW2KXNUFNZQa1IkP2WA
-	Eb7GPsnItHj33UMenrakh69pLOB+bfrG/5C57BPFuMdzyw+onc3GeunSU=
-X-Received: by 2002:a05:6122:378d:b0:5bd:8dd8:146e with SMTP id 71dfb90a1353d-5c33945f733mr139967e0c.4.1785171063577;
-        Mon, 27 Jul 2026 09:51:03 -0700 (PDT)
-X-Received: by 2002:a05:6122:378d:b0:5bd:8dd8:146e with SMTP id
- 71dfb90a1353d-5c33945f733mr139954e0c.4.1785171063182; Mon, 27 Jul 2026
- 09:51:03 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h84PX1H43z2yRl
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2026 02:51:44 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 9262140A10
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2026 16:51:39 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7584D1F00A3A
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2026 16:51:39 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1785171099;
+	bh=xxJEZg7vUALjJuP8RoVIiQSVR2Zrzga/oBqizYY9xTI=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=bAHtcCYEPLLZMcB12uriiK9CeM1tDIud+edM/OOPsFCsd73ujkTWp1xIJeaENrAPT
+	 7DozkQDG6X9tfeEJB4HFBQvHSv8FUFnYe8gmCb62xdmaQNB0rHEfAP66VDT9h0oWfu
+	 cXjvKyBI1ccNVDFh4yxqpSSPKrAjo8LrdYUeT26krAnVYF0ODNuxaQz/GsNOdzS5uH
+	 3ruzuNXWWzsCwtnqBNy+zWvsVHH1WybPRXJ2IG1SrpqjDurmejKRp6pU+NBltqYWIi
+	 jrs5kEUFh9VvyoknyTFJFpaDsOXAHt42ehs7Q8iKOUyj3omYXLOPaVGndj7Pta4A4d
+	 OpW06MeL5V5dg==
+Received: by mail-ed1-f42.google.com with SMTP id 4fb4d7f45d1cf-69f7130b47dso5090067a12.3
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2026 09:51:39 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RryI/C+fs9FS0/0+q3OdmJg/MAj9g32W4sx5gzqvF7MeUIqqDCl/93o2ECiEDneKpxAmOsyn7naFzUn6f4=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxvaZmsxI12HpRrePSwCWx1IAH6UKyPjTefRxA2PwCYL+Hz55hx
+	g9LXm4dL36PUIx7fm8mw6LShLtEBVRZLk5ZsB8kVvJOsCXsIf17qVl3RFXr9p9pBQSKlGsd6wv7
+	hTE2cNx8iXI4Wr75ZeFRzcvmBvQsyFZc=
+X-Received: by 2002:a17:907:2684:b0:c15:cee4:5244 with SMTP id
+ a640c23a62f3a-c1f1ed4d28bmr438177566b.21.1785171098345; Mon, 27 Jul 2026
+ 09:51:38 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -97,80 +66,80 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20250210184334.567383-1-sshegde@linux.ibm.com>
- <20250210184334.567383-2-sshegde@linux.ibm.com> <CAE4VaGBwMp3Ke1+Bt11-v6CCE0h=mPm8k_Cf8DazFSQNT9Mz8g@mail.gmail.com>
- <c0f51eda-21c4-4e9d-95e9-75b2740c3f43@linux.ibm.com> <500d8e8c-088c-4e6d-ab53-868ade6b0eda@paulmck-laptop>
-In-Reply-To: <500d8e8c-088c-4e6d-ab53-868ade6b0eda@paulmck-laptop>
-From: Jirka Hladky <jhladky@redhat.com>
-Date: Mon, 27 Jul 2026 18:50:51 +0200
-X-Gm-Features: AUfX_mzrHlMmbdRyaVgwJI5GGq3lk8w5ugGyIwBmH7pAfT7A9G7FHaCbkjewpSM
-Message-ID: <CAE4VaGDGS8wkZj4SF5XVC3-1yDmvJxjUjThTPqVw3kxg56ssQA@mail.gmail.com>
-Subject: Re: [PATCH v4 1/1] powerpc: enable dynamic preemption
-To: paulmck@kernel.org
-Cc: Shrikanth Hegde <sshegde@linux.ibm.com>, maddy@linux.ibm.com, 
-	linuxppc-dev@lists.ozlabs.org, christophe.leroy@csgroup.eu, 
-	mpe@ellerman.id.au, npiggin@gmail.com, bigeasy@linutronix.de, will@kernel.org, 
+References: <20260724004757.131420-1-seanjc@google.com> <20260724004757.131420-2-seanjc@google.com>
+In-Reply-To: <20260724004757.131420-2-seanjc@google.com>
+From: Yosry Ahmed <yosry@kernel.org>
+Date: Mon, 27 Jul 2026 09:51:27 -0700
+X-Gmail-Original-Message-ID: <CAO9r8zM+8yZaBgTWU7+1hkH05xKB5HXTA_LfL3XufAsmbchfBg@mail.gmail.com>
+X-Gm-Features: AUfX_mwlM5e4kOP6Ulc-v-gUb2eG_h55GI6PTI7lcg4kw_x84uqtH3R6cnOk_Rg
+Message-ID: <CAO9r8zM+8yZaBgTWU7+1hkH05xKB5HXTA_LfL3XufAsmbchfBg@mail.gmail.com>
+Subject: Re: [PATCH 1/6] KVM: nVMX: Ensure KVM_REQ_GET_NESTED_STATE_PAGES is
+ cleared on VM-Exit
+To: Sean Christopherson <seanjc@google.com>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>, Paolo Bonzini <pbonzini@redhat.com>, 
+	Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, 
 	linux-kernel@vger.kernel.org
-X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: -wtCJdKzeCCComKXHOCFV3TTvSmwPPNhWmbDsTs9uRg_1785171064
-X-Mimecast-Originator: redhat.com
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Jul 27, 2026 at 6:16=E2=80=AFPM Paul E. McKenney <paulmck@kernel.or=
-g> wrote:
-> Yes, non-preemptible RCU's __rcu_read_{,un}lock() are (almost) no-ops,
-> but preemptible RCU must actually execute real code.  But I would not
-> expect *this* much overhead.
+On Thu, Jul 23, 2026 at 5:48=E2=80=AFPM Sean Christopherson <seanjc@google.=
+com> wrote:
+>
+> Always check and clear KVM_REQ_GET_NESTED_STATE_PAGES when emulating a
+> nested VM-Exit to ensure the request is cleared, even when KVM was built
+> with CONFIG_KVM_HYPERV=3Dn, as KVM subtly relies on the "check" to clear
+> the flag and thus avoid double-mapping the vmcs12 pages, e.g. if KVM
+> manages to bail from VM-Enter without processing the request, and then
+> emulates VMLAUNCH or VMRESUME.
+>
+> Fixes: b4f69df0f65e ("KVM: x86: Make Hyper-V emulation optional")
+> Cc: stable@vger.kernel.org
+> Reported-by: Yosry Ahmed <yosry@kernel.org>
+> Signed-off-by: Sean Christopherson <seanjc@google.com>
+> ---
+>  arch/x86/kvm/vmx/nested.c | 5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
+>
+> diff --git a/arch/x86/kvm/vmx/nested.c b/arch/x86/kvm/vmx/nested.c
+> index b5460de4b1a7..f2518d67e7de 100644
+> --- a/arch/x86/kvm/vmx/nested.c
+> +++ b/arch/x86/kvm/vmx/nested.c
+> @@ -5066,8 +5066,9 @@ void __nested_vmx_vmexit(struct kvm_vcpu *vcpu, u32=
+ vm_exit_reason,
+>         /* trying to cancel vmlaunch/vmresume is a bug */
+>         kvm_warn_on_nested_run_pending(vcpu);
+>
+> -#ifdef CONFIG_KVM_HYPERV
+> +       /* Note, "checking" the request also clears the request. */
 
-I've now isolated the PREEMPT_RCU cost with a controlled experiment.
-Built two kernels from the same 6.15-rc6 upstream source on the same
-POWER10 machine, no CONFIG_PREEMPT_DYNAMIC in either case:
+kvm_check_request() is in dire need of a rename.
+kvm_test_clear_request()? Then we wouldn't need such a comment.
+Obviously not as part of the stable fix, maybe another patch or even
+separate from this series? I can also send a patch if you prefer so.
 
-Config A: CONFIG_PREEMPT_VOLUNTARY=3Dy (no PREEMPT_RCU)
-Config B: CONFIG_PREEMPT=3Dy           (PREEMPT_RCU=3Dy)
+For this patch:
 
-Results (stress-ng --kill 1 -t 23, SELinux enforcing):
+Reviewed-by: Yosry Ahmed <yosry@kernel.org>
 
-Kernel                       PREEMPT_RCU   kill bogo-ops/sec
----------------------------  -----------   -----------------
-6.15-rc6-voluntary-test      no            105,014
-6.15-rc6-preempt-test        yes            73,317
-Delta                                      -30.2%
 
-PREEMPT_RCU alone accounts for ~30% on this workload. The kill()
-path hits rcu_read_lock/unlock very heavily through the SELinux AVC
-(avc_has_perm -> avc_lookup wraps every hash table lookup in an RCU
-read-side critical section).
-
-This also answers Shrikanth's question about whether the regression
-is from the preemption mode change (voluntary -> lazy) or from
-PREEMPT_RCU. Since no PREEMPT_DYNAMIC is involved in either build,
-the preemption mode is not a factor. Additionally, switching between
-full and lazy at runtime on 7.1 showed only ~1% difference (57,476
-vs 56,892), further confirming the mode doesn't matter.
-
-> OK, if you are executing an isync or an lwsync instruction in each call
-> to __rcu_read_{,un}lock(), that would explain the overhead.
-
-Yes, that's what perf shows. __rcu_read_lock and __rcu_read_unlock
-together consume ~9% of total cycles on ppc64le with PREEMPT_RCU,
-vs essentially 0% without.
-
-> CONFIG_PREEMPT_DYNAMIC=3Dn for the win?
-
-That's the simplest distro workaround for ppc64le. But since commit
-7dadeaa6e851 ("sched: Further restrict the preemption modes")
-removed PREEMPT_VOLUNTARY as an option for architectures with
-ARCH_HAS_PREEMPT_LAZY (which includes powerpc), distros that want
-voluntary preemption on ppc64le would need to disable PREEMPT_DYNAMIC
-anyway.
-
-Is there any path to reducing the barrier cost in
-__rcu_read_lock/__rcu_read_unlock on weakly-ordered architectures?
-Or is the current implementation fundamentally constrained by the
-memory model?
-
-Jirka
-
+>         if (kvm_check_request(KVM_REQ_GET_NESTED_STATE_PAGES, vcpu)) {
+> +#ifdef CONFIG_KVM_HYPERV
+>                 /*
+>                  * KVM_REQ_GET_NESTED_STATE_PAGES is also used to map
+>                  * Enlightened VMCS after migration and we still need to
+> @@ -5075,8 +5076,8 @@ void __nested_vmx_vmexit(struct kvm_vcpu *vcpu, u32=
+ vm_exit_reason,
+>                  * the first L2 run.
+>                  */
+>                 (void)nested_get_evmcs_page(vcpu);
+> -       }
+>  #endif
+> +       }
+>
+>         /* Service pending TLB flush requests for L2 before switching to =
+L1. */
+>         kvm_service_local_tlb_flush_requests(vcpu);
+> --
+> 2.55.0.229.g6434b31f56-goog
+>
 
