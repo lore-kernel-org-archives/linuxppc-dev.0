@@ -1,78 +1,78 @@
-Return-Path: <linuxppc-dev+bounces-24943-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24944-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C63FFC53219
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2026 14:25:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D9526C54F4C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2026 14:26:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h8d6F0Mg4z2yjN;
-	Wed, 29 Jul 2026 00:25:25 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::32a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785248725;
-	cv=none; b=ZVWqQqLPfL3M3HzbaWmcRQnDP7fneW7u8LXxbZJXs+7Ux8j2wR+NCEDMnPCxUUXfZnbGOYGQ1D7lS5tafXFNxrUna6kGmOfwg0ahjqAz7FU+x2cJwIns0oDUYvQpQ/F9lI+dyczRXmgzk+RcadCeq60ema4jndhJpFmJR98+2imcug1DlIvXq9Ibgzc6QdBOj6eQdMsO9Qi9yELFddTrrOXisowd1RtAg21cZKWZ6BB+y8BYylG9qD8/VTz6Ew4N9ucedFrXQiCUBI7s5mEWr/A0WdEq6eVNtBng3LL/mLxHPIV6Kf8K04YnTELK6qhA1p6K/K61v9cz5ZvMLmpATw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h8d7934mZz2yjN;
+	Wed, 29 Jul 2026 00:26:13 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::335"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785248773;
+	cv=none; b=NtF0Uq5srT5w93C+z7hzruCiSBVz0ukSORAT9K7YUnsSGJ5WKEd2W3EJWGglrnG5iRxmWvTna+KhoqIABiJxWTh4Y15SpA6TILUdde9Z6DlBOYiDlPoAyegoVh+ogF9VqIIjjLfwXcTutuu41g1F5N237M3Mpw+uOwiLk53Zg/d/mlENXL4DKtmicnhZJWG5CRv+MAxJymzyg0vG+FQxyQpZDvsPlMcDrYfnBMjsaDcqS5rP30VubCOcP3nH6hWUIIb9wdWS3e1rbIN2OPrw6VQRItcZ7M9LYn3EvoD9HclxtRogtI5VB0YSIYUegaY6mswmALUOsD6t+d6SNZPtJA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785248725; c=relaxed/relaxed;
-	bh=Hhyo6VG61tN8AV0h0asytp+Vqc/+CnuTmYLnyeoXGkw=;
+	t=1785248773; c=relaxed/relaxed;
+	bh=vpWtv0pYfxndfeslGolf2QwgOrAZhpu3GPmCVKvsSLo=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=bvD3TxJa/kcuA4N/4Jy1r0TDmoNgyQl616hjv1P7kxJ66qCyMUCYYqWHW9unEiXzcJkcl+/LhMiOPEOf2Wwxio/gqVCiEvA5VlhoDtID26wECgryCaBp2xyED3uAERRM70MM0DPNtRwTWgx8iUXjaOXhrp4TJSt/I+3sjO170SY/35FVyH+Wss/EbH2Iac7sPXKAS3VvDRMfSvPkgGXNSB7pqIW4OzN8Wp9vsQGHUpzSHWQbUiEiDrSYnH/lcheHaCYNbR1AIIzrmwLqRrXAjeM7RjAgIwdFUhGkvGF7yyJjPZxM76lqYFP0LS00efTw0yTSM37h8S+VAhrAOhn/fA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=QBdEjFp+; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::32a; helo=mail-wm1-x32a.google.com; envelope-from=smostafa@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=E2iroKBIxpYbk8xo44EMF/JtBLs1lMK4uvPh92STKfCVi2JOnu3oHRqsXD033yseuE4BdfpSkk3BiYi3IZMuC9lu0/PQo0V6v2upgvG0SzhYIp+jEeivzzc5t8jq/feQbYohwNtt5Ij6tp6j9riv6761Uo623idZbSPnHP2Cxzq43s07kznUQGYOgBbBfGS6i5+7El+Ur4r+G+GDtXd84VK1Zp8MT1SmqXI1xWn36VfKW2casQUOirBKy0FAraiKVhJ7q3vCqmWQR7ikwhzwg7rtLIqcsFQbhPql9Vmv4asG9YsZsEgHlx8CyHHAuvcjI9vYZ4vvJbe9AA+1CEm+MQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=NzDCYhIy; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::335; helo=mail-wm1-x335.google.com; envelope-from=smostafa@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=QBdEjFp+;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=NzDCYhIy;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::32a; helo=mail-wm1-x32a.google.com; envelope-from=smostafa@google.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x32a.google.com (mail-wm1-x32a.google.com [IPv6:2a00:1450:4864:20::32a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::335; helo=mail-wm1-x335.google.com; envelope-from=smostafa@google.com; receiver=lists.ozlabs.org)
+Received: from mail-wm1-x335.google.com (mail-wm1-x335.google.com [IPv6:2a00:1450:4864:20::335])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h8d6C71b7z2yj1
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2026 00:25:23 +1000 (AEST)
-Received: by mail-wm1-x32a.google.com with SMTP id 5b1f17b1804b1-4954d5d814fso69905e9.0
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2026 07:25:23 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h8d783Yhkz2yj1
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2026 00:26:12 +1000 (AEST)
+Received: by mail-wm1-x335.google.com with SMTP id 5b1f17b1804b1-493be0fbcc5so62285e9.0
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2026 07:26:12 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1785248721; x=1785853521; darn=lists.ozlabs.org;
+        d=google.com; s=20251104; t=1785248769; x=1785853569; darn=lists.ozlabs.org;
         h=in-reply-to:content-disposition:content-type:mime-version
          :references:message-id:subject:cc:to:from:date:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=Hhyo6VG61tN8AV0h0asytp+Vqc/+CnuTmYLnyeoXGkw=;
-        b=QBdEjFp+P2GjqrqSl//SC559d2JcxA4GjyMbDkGnVFf10o4vWTq0tpvhmzTNKhkLIE
-         nLQIRNWUa0w3FxYiWxY2v8+dcbc7gaS4bFsCz5BoS6jldd0tG1lAk6EQ+IaeScrqB+VQ
-         88OvSeCTPDzZde5j7svQXYAzJZguOc1EXPpZoRrmgOeOmok9MjCZymhqHlOPVkCydlYZ
-         CGOaz97xn6zh6fo0ngxpDdJYo1YrWdkdaOuDkYMD2yLkgwo2U0YY3yWWgPZuCkIA0gTC
-         z6ryPl/6SMxPCh/2kgY/BEwsl3wxQTpFo1lDfjm+yTUHtzuOMcRjOexXCXDKist9XVmu
-         N6MQ==
+        bh=vpWtv0pYfxndfeslGolf2QwgOrAZhpu3GPmCVKvsSLo=;
+        b=NzDCYhIy7ighw0tr58jkkTvDyx4q9L+Vr/2nYQAgS50thAMw6xdNHkdSHg+HFHr5n7
+         dIs1s+1AiCCeE41+/swlPGw8/CDsS7wNymiarTCDsV+IVXbMFw1iHoacOdAJEgYgS8m/
+         +JSOmhUI9Yc/TaAjv4a01tQFpDEvt0RfTusii1e8H5ZWkwKuxncsjB+hhlIMUG/jmRA3
+         3HPneNYAVo0R6aaA+lBB5EdtZP/KCXWivjzFOpev0U/sP5DFWgsaDyCQBQZ6Yr/D7fPq
+         DX/I9d46rs9BFJSED7DlCqLw/H2OLjJzSluXzBDn78uQ5U6fI2kd8qnwby8LC6/QhMFH
+         cMgg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785248721; x=1785853521;
+        d=1e100.net; s=20251104; t=1785248769; x=1785853569;
         h=in-reply-to:content-disposition:content-type:mime-version
          :references:message-id:subject:cc:to:from:date:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=Hhyo6VG61tN8AV0h0asytp+Vqc/+CnuTmYLnyeoXGkw=;
-        b=RqUn/uTbEF3Z85zoKyQFJ4Wn68sVRxMETNEdXMJowcLTSSh8Hi+7VVZUt85T8Y6fT7
-         Nw6zoD/CUe/9mM8aSd1nxww4qf0wzcwub3GQ2rOGMAUUsoTNMBK9MN7SSXapk3Ujw5bm
-         edk2npHZx5BQc3FJNYmH4W9RsD+5BBu6b9PkEZgAy/ZnGCGXaWC+LlSXMxbFJISsi7q1
-         djxAhryH7IFj/bJ+EMlvInMJljX6dhmkUUmmGDW7qfBzOWjhJtZ4n+t7jgTbLacm+dz+
-         qkgco45tKXtn7N1RbJrlg7JyNHgfnRiSOjHE22fbe7BRYRvsJ6u6fcPdYMyibPAZkh21
-         Yt9A==
-X-Forwarded-Encrypted: i=1; AHgh+Rr6OqlPOpQzsm5+RggVeA2+0ZtG3HuORjjnnC+ayqtiW7tCZHDf6etdotD4TQROL0HSoK8zvYYHnpGeeQ4=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yx6/vkkjvZ7GeJw6f2xhuabJhisyL/4UKbyrgdh09r1lRenykh1
-	HWCpoxJi53Kk9HIjSzDXZgdREGZ4iIwCgWL45/JNvWO7eyG2S8TGn6arAA58Xi8iiw==
-X-Gm-Gg: AR+sD11HzBH7/GogT1rbNQkqvJcW7CZZ/MenFefvws6dUeXZ3Vk5Nu5Ve+yMCidRK5H
-	KBwRmstg4Lpe8AY0aHaAFf5FwX1wxx5GAIA++wKss1sN0KbtXZ6UhO0HByiGe0nzV63RgZnyw5J
-	xTQGc199dAm5vQdv6HNzYOXiTR211gyEwH20SC+5M7/9NjB+QPuTqxXcE71CpWd01n4f4G1EDHS
-	210kgN0ih/aSQQdrHmB+cZDHaSOI7wy4niNhjRUD3wp2azPhe7NEuf7a/v+3U3JLe7T/aMDum1N
-	lTskyq4dHDZ2nQRfUQQ+l+cULvJoaKmHhMa3vFW2o4X4kHrG5byWut0aT43KbJ+w4DZogV0GtHx
-	jNgSZdsTR3Pqh1yJQrk5yLBR1hS0a9d2IwcMwUe++OXdIAmuvXe6H1uRZT1ktQGgZLKbX6CV5ZS
-	oDotvSE2+RXOlBaMcx3qp7M+b2LNR+P6KQyg8G3uMvnJ4=
-X-Received: by 2002:a05:600c:6a8d:b0:493:b47f:a24 with SMTP id 5b1f17b1804b1-496b4d2f236mr4342575e9.6.1785248720307;
-        Tue, 28 Jul 2026 07:25:20 -0700 (PDT)
+        bh=vpWtv0pYfxndfeslGolf2QwgOrAZhpu3GPmCVKvsSLo=;
+        b=U/HY77Ujc8cXMvKf1Bi3kqHjk0Wse+oIZEgFBx/gE0T2eDkdblkBHuPAmJ6RgeZgxQ
+         0Ta6filYUIVizDtseRGocRb11HtBAMHrzJn8p+if6oHx4MyXGm5+OnpSfyZn7sdK5DG3
+         VXTYXxGGpytGVTh2ArTRigCQXzaFhkg1nct7EXOSUCeaEz5I0re6SRxykqz8Ad95ZyIE
+         PhMOsQthi4LQf9hO1cND5RbwCUM5SQj69tkkTfDTfABK5RzyjzQblsQNIZIekb7Fr03a
+         tXCFAwfsSWHvGKWy1beXvml+Thrmvl7qnJLJNhc8H4QjCWsmMiDHX2O8LoUkkhAeTO7U
+         IiJQ==
+X-Forwarded-Encrypted: i=1; AHgh+RqJMThZcvjlWNgo4pnyyNt76QPskbxkw/Ad6crM0C7yBF0KWwmNkjmPLdXk0fmy00WEV8IqO2Mhse5UTIM=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yx6mm7aEyB8ub5utUkvRSfsPq939T/KJp1+c7q67oSFQ5fH4nFb
+	dCTVYfMnhiUfeYup/JZbLWFb1b/dGFUuzzmhuJCAqPtZ/WfmEFB21EG/d+t+6FxwbA==
+X-Gm-Gg: AR+sD12uWz1stKs+8juQqlq644u7GYOsagEazTT0kaArKgEMudgkzAY5fty/NEw9OY4
+	VaafL7lmTVWv0u72zTnkVITYuEVHWOXzdPDDELQVe85aK3i0KfZx0wM/vOouhG6XjIh7XaPd3nK
+	cdtNj7UXus0XhYGeIpsFdylXmU0rWcZjMeldRK0+fjY7i15HiDM/OJiZZ5eDQ4TWwuAtRQ75f8x
+	N+D4lrz/8Ms7BqDXiYcEpG2tkXr4XUFqSVxRqo2b9RLzkApqux20zADEjcYb8VIQebPubUXxBIk
+	Rpky2hMWJ3c3CeMvcqCFL9dcrKc5CA0Uy3Ozv9MgvrhFWVO1qpYyTcik2SY38Q9IWRp3yXQ0eiB
+	PTV9cp9/O2DTn7PkXXg3ILSEP4S1km3DcFLid7eqf/aeAoyC2eZBV6DcTAmbG2qLFtnveQBt2pE
+	C1Bc5voqTteiYriK4RDYei5V5WLtoDhSWLCWL/BWJ6JiU=
+X-Received: by 2002:a05:600c:4583:b0:493:aca0:32e2 with SMTP id 5b1f17b1804b1-496b4cf6c38mr21115e9.4.1785248768109;
+        Tue, 28 Jul 2026 07:26:08 -0700 (PDT)
 Received: from google.com (250.192.189.35.bc.googleusercontent.com. [35.189.192.250])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-496c45e0424sm84654015e9.13.2026.07.28.07.25.19
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-47f85bb57cfsm60556481f8f.11.2026.07.28.07.26.07
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 28 Jul 2026 07:25:19 -0700 (PDT)
-Date: Tue, 28 Jul 2026 14:25:11 +0000
+        Tue, 28 Jul 2026 07:26:07 -0700 (PDT)
+Date: Tue, 28 Jul 2026 14:25:58 +0000
 From: Mostafa Saleh <smostafa@google.com>
 To: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>
 Cc: iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
@@ -99,13 +99,12 @@ Cc: iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
 	Vasily Gorbik <gor@linux.ibm.com>,
 	Christian Borntraeger <borntraeger@linux.ibm.com>,
 	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org,
-	Jason Gunthorpe <jgg@nvidia.com>,
-	Michael Kelley <mhklinux@outlook.com>
-Subject: Re: [PATCH v8 05/23] swiotlb: Preserve allocation virtual address
- for dynamic pools
-Message-ID: <ami7x9uXfRLmjVhK@google.com>
+	Jason Gunthorpe <jgg@nvidia.com>
+Subject: Re: [PATCH v8 09/23] dma-mapping: Add internal shared allocation
+ attribute
+Message-ID: <ami79lwqbqcaFpqo@google.com>
 References: <20260717180442.110954-1-aneesh.kumar@kernel.org>
- <20260717180442.110954-6-aneesh.kumar@kernel.org>
+ <20260717180442.110954-10-aneesh.kumar@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -121,29 +120,22 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260717180442.110954-6-aneesh.kumar@kernel.org>
+In-Reply-To: <20260717180442.110954-10-aneesh.kumar@kernel.org>
 
-On Fri, Jul 17, 2026 at 11:34:23PM +0530, Aneesh Kumar K.V (Arm) wrote:
-> swiotlb_alloc_tlb() can allocate from the DMA atomic pool when a decrypted
-> pool is needed from atomic context. With CONFIG_DMA_DIRECT_REMAP, the
-> atomic pool is backed by remapped virtual addresses, which are not the same
-> as the direct-map addresses returned by phys_to_virt().
+On Fri, Jul 17, 2026 at 11:34:27PM +0530, Aneesh Kumar K.V (Arm) wrote:
+> DMA_ATTR_CC_SHARED describes an existing DMA mapping whose backing memory
+> is already shared, or decrypted, for confidential computing. It is a
+> mapping attribute: callers use it to request a shared DMA address encoding
+> for memory that has already been prepared for shared DMA.
 > 
-> swiotlb_init_io_tlb_pool() currently reconstructs the pool virtual address
-> from the physical start address. For atomic-pool backed allocations this
-> stores the wrong address in pool->vaddr. Later, swiotlb_free_tlb() passes
-> that address to dma_free_from_pool(), which will fail to recognize the
-> chunk
+> Allocation paths need a related but different state. Once the DMA core
+> decides that an allocation must use shared backing pages, the lower-level
+> allocation helpers need to select shared pools, decrypt newly allocated
+> pages, derive the DMA address with the shared-memory translation and
+> restore encryption on free. That state is internal to the DMA-mapping
+> implementation and should not be passed by drivers to dma_alloc_attrs().
 > 
-> Pass the virtual address returned by the allocation path into
-> swiotlb_init_io_tlb_pool(), and store that address in pool->vaddr. This
-> keeps the pool free path using the same virtual address as the allocator.
-> 
-> Fixes: 79636caad361 ("swiotlb: if swiotlb is full, fall back to a transient memory pool")
 > Reviewed-by: Jason Gunthorpe <jgg@nvidia.com>
-> Tested-by: Michael Kelley <mhklinux@outlook.com>
-> Tested-by: Mostafa Saleh <smostafa@google.com>
-> Reviewed-by: Petr Tesarik <ptesarik@suse.com>
 > Signed-off-by: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>
 
 Reviewed-by: Mostafa Saleh <smostafa@google.com>
@@ -152,126 +144,81 @@ Thanks,
 Mostafa
 
 > ---
->  kernel/dma/swiotlb.c | 31 +++++++++++++++++++------------
->  1 file changed, 19 insertions(+), 12 deletions(-)
+>  Documentation/core-api/dma-attributes.rst | 29 +++++++++++++++++++++++
+>  include/linux/dma-mapping.h               |  8 +++++++
+>  include/trace/events/dma.h                |  3 ++-
+>  3 files changed, 39 insertions(+), 1 deletion(-)
 > 
-> diff --git a/kernel/dma/swiotlb.c b/kernel/dma/swiotlb.c
-> index 1abd3e6146f4..6e8db52866bf 100644
-> --- a/kernel/dma/swiotlb.c
-> +++ b/kernel/dma/swiotlb.c
-> @@ -266,9 +266,9 @@ void __init swiotlb_update_mem_attributes(void)
->  }
+> diff --git a/Documentation/core-api/dma-attributes.rst b/Documentation/core-api/dma-attributes.rst
+> index 123c8468d58f..eee743184acd 100644
+> --- a/Documentation/core-api/dma-attributes.rst
+> +++ b/Documentation/core-api/dma-attributes.rst
+> @@ -179,3 +179,32 @@ interface when building their uAPIs, when possible.
 >  
->  static void swiotlb_init_io_tlb_pool(struct io_tlb_pool *mem, phys_addr_t start,
-> -		unsigned long nslabs, bool late_alloc, unsigned int nareas)
-> +		void *vaddr, unsigned long nslabs, bool late_alloc,
-> +		unsigned int nareas)
->  {
-> -	void *vaddr = phys_to_virt(start);
->  	unsigned long bytes = nslabs << IO_TLB_SHIFT, i;
->  
->  	mem->nslabs = nslabs;
-> @@ -409,7 +409,7 @@ void __init swiotlb_init_remap(bool addressing_limit, unsigned int flags,
->  		return;
->  	}
->  
-> -	swiotlb_init_io_tlb_pool(mem, __pa(tlb), nslabs, false, nareas);
-> +	swiotlb_init_io_tlb_pool(mem, __pa(tlb), tlb, nslabs, false, nareas);
->  	add_mem_pool(&io_tlb_default_mem, mem);
->  
->  	if (flags & SWIOTLB_VERBOSE)
-> @@ -507,7 +507,7 @@ int swiotlb_init_late(size_t size, gfp_t gfp_mask,
->  
->  	set_memory_decrypted((unsigned long)vstart,
->  			     (nslabs << IO_TLB_SHIFT) >> PAGE_SHIFT);
-> -	swiotlb_init_io_tlb_pool(mem, virt_to_phys(vstart), nslabs, true,
-> +	swiotlb_init_io_tlb_pool(mem, virt_to_phys(vstart), vstart, nslabs, true,
->  				 nareas);
->  	add_mem_pool(&io_tlb_default_mem, mem);
->  
-> @@ -605,25 +605,26 @@ static struct page *alloc_dma_pages(gfp_t gfp, size_t bytes, u64 phys_limit)
->   * @bytes:	Size of the buffer.
->   * @phys_limit:	Maximum allowed physical address of the buffer.
->   * @gfp:	GFP flags for the allocation.
-> + * @vaddr:	Receives the virtual address for the allocated buffer.
->   *
->   * Return: Allocated pages, or %NULL on allocation failure.
->   */
->  static struct page *swiotlb_alloc_tlb(struct device *dev, size_t bytes,
-> -		u64 phys_limit, gfp_t gfp)
-> +		u64 phys_limit, gfp_t gfp, void **vaddr)
->  {
->  	struct page *page;
->  
-> +	*vaddr = NULL;
+>  It must never be used in an in-kernel driver that only works with
+>  kernel memory.
 > +
->  	/*
->  	 * Allocate from the atomic pools if memory is encrypted and
->  	 * the allocation is atomic, because decrypting may block.
->  	 */
->  	if (!gfpflags_allow_blocking(gfp) && dev && force_dma_unencrypted(dev)) {
-> -		void *vaddr;
-> -
->  		if (!IS_ENABLED(CONFIG_DMA_COHERENT_POOL))
->  			return NULL;
+> +DMA_ATTR_CC_SHARED
+> +------------------
+> +
+> +This attribute indicates that a DMA mapping is shared, or decrypted, for
+> +confidential computing guests. For normal system memory, the caller must
+> +already have marked the memory decrypted with set_memory_decrypted(). CPU
+> +PTEs for the mapping must use pgprot_decrypted(), and the same shared
+> +semantic may be passed to a vIOMMU when it sets up the IOPTE.
+> +
+> +This attribute describes an existing mapping. It does not allocate shared
+> +backing pages and must not be passed to dma_alloc_attrs(). For MMIO, use
+> +this together with DMA_ATTR_MMIO to indicate shared MMIO. Unless
+> +DMA_ATTR_MMIO is provided, the mapping requires a struct page.
+> +
+> +__DMA_ATTR_ALLOC_CC_SHARED
+> +--------------------------
+> +
+> +This is an internal DMA-mapping attribute for confidential computing guests.
+> +It is used by allocation paths after the DMA core has determined that the
+> +backing pages must be shared, or decrypted. For example, the direct DMA and
+> +SWIOTLB allocation paths use it to select shared DMA pools, decrypt newly
+> +allocated pages, derive DMA addresses using the shared-memory translation, and
+> +restore encryption on free.
+> +
+> +__DMA_ATTR_ALLOC_CC_SHARED differs from DMA_ATTR_CC_SHARED in that it is not
+> +a caller-visible DMA API attribute. DMA_ATTR_CC_SHARED describes an
+> +already-shared mapping and requires the caller to have prepared normal
+> +system memory before mapping it.
+> diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
+> index cc0823a99cfd..a3e880649fa4 100644
+> --- a/include/linux/dma-mapping.h
+> +++ b/include/linux/dma-mapping.h
+> @@ -103,6 +103,14 @@
+>   */
+>  #define DMA_ATTR_CC_SHARED	(1UL << 13)
 >  
-> -		return dma_alloc_from_pool(dev, bytes, &vaddr, gfp,
-> +		return dma_alloc_from_pool(dev, bytes, vaddr, gfp,
->  					   dma_coherent_ok);
->  	}
+> +/*
+> + * __DMA_ATTR_ALLOC_CC_SHARED: Internal DMA-mapping attribute used by
+> + * allocation paths that create shared (decrypted) backing pages for
+> + * confidential computing guests. Drivers must not pass this attribute to
+> + * dma_alloc_attrs().
+> + */
+> +#define __DMA_ATTR_ALLOC_CC_SHARED	(1UL << 14)
+> +
+>  /*
+>   * A dma_addr_t can hold any valid DMA or bus address for the platform.  It can
+>   * be given to a device to use as a DMA source or target.  It is specific to a
+> diff --git a/include/trace/events/dma.h b/include/trace/events/dma.h
+> index 31c9ddf72c9d..9df02c1511de 100644
+> --- a/include/trace/events/dma.h
+> +++ b/include/trace/events/dma.h
+> @@ -35,7 +35,8 @@ TRACE_DEFINE_ENUM(DMA_NONE);
+>  		{ DMA_ATTR_MMIO, "MMIO" }, \
+>  		{ DMA_ATTR_DEBUGGING_IGNORE_CACHELINES, "CACHELINES_OVERLAP" }, \
+>  		{ DMA_ATTR_REQUIRE_COHERENT, "REQUIRE_COHERENT" }, \
+> -		{ DMA_ATTR_CC_SHARED, "CC_SHARED" })
+> +		{ DMA_ATTR_CC_SHARED, "CC_SHARED" }, \
+> +		{ __DMA_ATTR_ALLOC_CC_SHARED, "ALLOC_CC_SHARED" })
 >  
-> @@ -645,6 +646,8 @@ static struct page *swiotlb_alloc_tlb(struct device *dev, size_t bytes,
->  			return NULL;
->  	}
->  
-> +	if (page)
-> +		*vaddr = phys_to_virt(page_to_phys(page));
->  	return page;
->  }
->  
-> @@ -685,6 +688,7 @@ static struct io_tlb_pool *swiotlb_alloc_pool(struct device *dev,
->  {
->  	struct io_tlb_pool *pool;
->  	unsigned int slot_order;
-> +	void *tlb_vaddr;
->  	struct page *tlb;
->  	size_t pool_size;
->  	size_t tlb_size;
-> @@ -701,7 +705,8 @@ static struct io_tlb_pool *swiotlb_alloc_pool(struct device *dev,
->  	pool->areas = (void *)pool + sizeof(*pool);
->  
->  	tlb_size = nslabs << IO_TLB_SHIFT;
-> -	while (!(tlb = swiotlb_alloc_tlb(dev, tlb_size, phys_limit, gfp))) {
-> +	while (!(tlb = swiotlb_alloc_tlb(dev, tlb_size, phys_limit, gfp,
-> +					 &tlb_vaddr))) {
->  		if (nslabs <= minslabs)
->  			goto error_tlb;
->  		nslabs = ALIGN(nslabs >> 1, IO_TLB_SEGSIZE);
-> @@ -715,11 +720,12 @@ static struct io_tlb_pool *swiotlb_alloc_pool(struct device *dev,
->  	if (!pool->slots)
->  		goto error_slots;
->  
-> -	swiotlb_init_io_tlb_pool(pool, page_to_phys(tlb), nslabs, true, nareas);
-> +	swiotlb_init_io_tlb_pool(pool, page_to_phys(tlb), tlb_vaddr, nslabs,
-> +				 true, nareas);
->  	return pool;
->  
->  error_slots:
-> -	swiotlb_free_tlb(page_address(tlb), tlb_size);
-> +	swiotlb_free_tlb(tlb_vaddr, tlb_size);
->  error_tlb:
->  	kfree(pool);
->  error:
-> @@ -1851,7 +1857,8 @@ static int rmem_swiotlb_device_init(struct reserved_mem *rmem,
->  
->  		set_memory_decrypted((unsigned long)phys_to_virt(rmem->base),
->  				     rmem->size >> PAGE_SHIFT);
-> -		swiotlb_init_io_tlb_pool(pool, rmem->base, nslabs,
-> +		swiotlb_init_io_tlb_pool(pool, rmem->base, phys_to_virt(rmem->base),
-> +					 nslabs,
->  					 false, nareas);
->  		mem->force_bounce = true;
->  		mem->for_alloc = true;
+>  DECLARE_EVENT_CLASS(dma_map,
+>  	TP_PROTO(struct device *dev, phys_addr_t phys_addr, dma_addr_t dma_addr,
 > -- 
 > 2.43.0
 > 
