@@ -1,93 +1,102 @@
-Return-Path: <linuxppc-dev+bounces-24937-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24938-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EC026C54F52
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2026 12:32:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1E759C54F4C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2026 12:50:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h8ZbW2mrSz2xyk;
-	Tue, 28 Jul 2026 22:32:07 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785241927;
-	cv=none; b=C8vKmUq/PI2vLq1TarG8yNtUn6wQvKZ77rFZD9OpOCGgd37v2CgR8tHKKSXqzB081rEzhb2jCkRB+QZdxsHG8Hd0OMVn2TN1HVSURzSmasb8zSsxIezKU/w9Se/ow6Yv1gQqCGffo2VnirphJXR8lswVIRY3AZQc+UXB6KGu/gug9b2PWXp66Nl+1s0SFmsT3qagusNFvfE9GhRCeQqd3Ali38OANYIJrVfc75btfZEey4URg8O6lljbNSJEQrohV5ReyT4vqxVR8O8ZtoaEh32KSojPDpvdR0diZYy/PuHdVQdBakzE+tIQglSQaCWDi4WhzAynt1caN2jPTv79Nw==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785241927; c=relaxed/relaxed;
-	bh=lSkwhKAcEsyJqT/0xqVJXtxYxIXWD0v9uCPSjTmMF2M=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=byXxRqWZAA7Siv4kn8a5DHORtaAd2M4I/FcIGIHN8OX44zXoTovb74GmDBqcTod2ribWWh25Y2/lNZRXauDqAnNUrSMVOREHbZteluIsOGDfJQDpZaiRHrdJYHxlidI4wCFRsPWbqXS8XjUSl14p3YruR8n6S9tZvA2RqXAqJTUmk7EwBlliWBxKS3087qVJPZxfxVdKC3TWULOurrJonD50E6GaPYUbMbhZGwT8ONSJ4NKmasvUBEPnqprfIOQkfVZ2BdLfHuTtmBogGrtO1DNPr32hxOiGIvh46GCIAyaYVquwHcdw+2x4kHV4qOBiIi11N78/6/nGBBhOzRJwUw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WEM01trD; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h8b1F2j1Dz2ygm;
+	Tue, 28 Jul 2026 22:50:57 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=85.215.255.53 arc.chain=strato.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785243057;
+	cv=pass; b=QDyCJ2X9bKGUynoT9uzXlRebkOumdnOc8QXWwwJrw5Bddqibkb76OVGExWHwcZvlf1pilsxWkBxyydRtDIqrJSOcUdEJjVcYCzyou6eL6XUNNF1Tv6Eq+RBbS0uiD+PIQ4f/QHEt4eyTl4RDew3zijaYAs5pR+hVMAi6BCKrrQ/na4hoAVv/39+8Wp7nGFVByVQfSBofJYmZHuRFgQ4Zm95UdUO+QXjrbvxhO/bDwPu/nMCzRV4EBo7WaFarXqz3n+t05M3F5RPIiG0k4kkDI1N8MqjFnG5aU+VmxVW9oVlxS6nRxpZXPpEonKOy9ixBCOdVYcn6yLp1akAbKOjWZA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1785243057; c=relaxed/relaxed;
+	bh=iWZz2i8JhyKcjU7uV9AvajZg2gmBVrrjukI2EI12+yg=;
+	h=Subject:To:References:Cc:From:Message-ID:Date:MIME-Version:
+	 In-Reply-To:Content-Type; b=FaXEdzs6btSU2t1z4M0kdHyN7P/64YOCXeJHYuryaDNLN0+JCvHU78EBCsNaw0U4/tHPXvrJPBnNuHXNqCOmBuy0RAPRFk/3tfmRKJ74FJErnUaus3DDfNpMk9oolMURkLeGeZXWYumnJzGDQH/xxGrmvtQlCB0REnP2mGvDTrh3y4z2SnwBer4f8C/wiYR/OYNpyM/WGj4NcOes3Tih2+aTvnTXY4aKvw0iNjXpibkYHp4X6A9uVvpSLuemm5WZJ2vVZdxDudKJu5Q+TIIa0y2QxNdOuWy/BoedDutU1rW75CJlMRoTJsex0GsS0rldNex8CxRm/1lrLlOqTLz7nQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xenosoft.de; dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=bIQisLPA; dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=2cfhalPf; dkim-atps=neutral; spf=pass (client-ip=85.215.255.53; helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org) smtp.helo=mo4-p01-ob.smtp.rzone.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xenosoft.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WEM01trD;
+	dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=bIQisLPA;
+	dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=2cfhalPf;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=mo4-p01-ob.smtp.rzone.de (client-ip=85.215.255.53; helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org)
+Received: from mo4-p01-ob.smtp.rzone.de (mo4-p01-ob.smtp.rzone.de [85.215.255.53])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h8ZbV1SZ0z2xlQ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2026 22:32:06 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id B021A40321;
-	Tue, 28 Jul 2026 12:32:00 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 95E771F000E9;
-	Tue, 28 Jul 2026 12:31:49 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785241920;
-	bh=lSkwhKAcEsyJqT/0xqVJXtxYxIXWD0v9uCPSjTmMF2M=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date;
-	b=WEM01trD462HpzukrLQzJYedOMo/krm72PvzqlsPIr95pA22pK97BItUkKTq0RiE1
-	 BafhKgnPLjt9aVTzvU1dFa7RMbB40i5ZGyvy+Uq+GD3nlFNKGJAlh6v5YCczVVs88W
-	 XLgMqJmGuxCudWp7Pe+Yi+kgsFNJVH9ZJXfZCAW/9lfgbs+iqFLXWZDleq9blMw7mP
-	 +MH5pd841sVe9ss5f/WYkSBvsx7eS76Efavuj5k30SQrM2EWKd6eLiQqbz9Kr4x/nz
-	 YGdV+Rm3lqSrOuShxDdIBjk4LGOrgQZRl5vevgtv94weDxSm1UhqL4Mz6Y3mDajtlK
-	 HdSaygY48BoeQ==
-X-Mailer: emacs 30.2 (via feedmail 11-beta-1 I)
-From: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>
-To: Leon Romanovsky <leon@kernel.org>
-Cc: Jason Gunthorpe <jgg@ziepe.ca>, iommu@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev,
-	Robin Murphy <robin.murphy@arm.com>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
-	Steven Price <steven.price@arm.com>,
-	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Jiri Pirko <jiri@resnulli.us>,
-	Mostafa Saleh <smostafa@google.com>,
-	Petr Tesarik <ptesarik@suse.com>,
-	Alexey Kardashevskiy <aik@amd.com>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Xu Yilun <yilun.xu@linux.intel.com>,
-	linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org,
-	stable@vger.kernel.org, Michael Kelley <mhklinux@outlook.com>
-Subject: Re: [PATCH v8 01/23] dma-direct: return struct page from
- dma_direct_alloc_from_pool()
-In-Reply-To: <20260726081753.GD12003@unreal> (Leon Romanovsky's message of
-	"Sun, 26 Jul 2026 11:17:53 +0300")
-References: <20260717180442.110954-1-aneesh.kumar@kernel.org>
-	<20260717180442.110954-2-aneesh.kumar@kernel.org>
-	<20260721115456.GI110966@unreal> <yq5atsps77c5.fsf@kernel.org>
-	<20260721142921.GN110966@unreal> <yq5ao6g0750v.fsf@kernel.org>
-	<20260721153321.GO110966@unreal> <amEhEKQW0_HJ9cLN@ziepe.ca>
-	<20260723075704.GC110966@unreal> <amTJY_CdE-uDgoGG@ziepe.ca>
-	<20260726081753.GD12003@unreal>
-User-Agent: mu4e 1.14.1; emacs 30.2
-Date: Tue, 28 Jul 2026 18:01:45 +0530
-Message-ID: <yq5ah5ljjnwu.fsf@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h8b175k9Jz2yH4
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2026 22:50:48 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; t=1785243006; cv=none;
+    d=strato.com; s=strato-dkim-0002;
+    b=bu7+qmmzS/DHHbO5g8ZdZehMa7DDsAcJZpw69RALJBWAhir7EogG9MBEiUqEcSZ73J
+    OZlZwN1849ovCMBFNK/I+q/5R0Msumd4MCNebsgpSDCTjWSKWIY1hsZmv4lweMm7329R
+    4JIuejmfEpg3rRtBfgQgKK3KKvGwYCRowqOHpjIj7zrB+i/VQ9yaLU86cADUWo30H5/9
+    pd3Mf/TR9rl/UdzQVCBTzvUC0O4MK0kcN3whRfYGeHLyFxboxQtYXxTmRevS5gYCnVGB
+    PDTR3Qf6YcwXTCVnKEkbAA5/Kz87MaygFIdIHM1SHTevtIYfYtBAQ9UYSMxYls+ULj9e
+    QIzw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1785243006;
+    s=strato-dkim-0002; d=strato.com;
+    h=In-Reply-To:Date:Message-ID:From:Cc:References:To:Subject:Cc:Date:
+    From:Subject:Sender;
+    bh=iWZz2i8JhyKcjU7uV9AvajZg2gmBVrrjukI2EI12+yg=;
+    b=fg7KE/mN4+HI12vYDZfDjFqklje8gdmIOpUwmMiTxGiVXIHPhVQ8uquK+6fCZTnzMe
+    PlapH59cvrNB9KHjCqTFreB1ahlNOt4PrcWsUUiUAatzaS5qYiRthQQzuldQfcWjdhca
+    Jjzi5jwCR9XhkOICjX1TDduogdlYQDzi/nFOhT7ei+Ig5sPf0tGwwP0gh64wIvIrwHLU
+    w2TLZlZN68K4sVGm0iQhbtWG3FdGZdHJ/JSPumYTJfDYTY1RpjeTgXItOrvs6Ed4Es35
+    4jtmdg4kj6M5ww0YmfwimD5fLULQ5ovKQNyCV5W+5X7vJo5mF6ZVOWYfxPfvuiUsZhZy
+    iGDw==
+ARC-Authentication-Results: i=1; strato.com;
+    arc=none;
+    dkim=none
+X-RZG-CLASS-ID: mo01
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1785243006;
+    s=strato-dkim-0002; d=xenosoft.de;
+    h=In-Reply-To:Date:Message-ID:From:Cc:References:To:Subject:Cc:Date:
+    From:Subject:Sender;
+    bh=iWZz2i8JhyKcjU7uV9AvajZg2gmBVrrjukI2EI12+yg=;
+    b=bIQisLPAQjsEM0+uVWrx46H9IIOtp//qMRhfcPCU7XtojYo2U4IrlYFnxgl7+Ks0jp
+    lCxXe3qXFQytrECsS0o14MPMs25BaSxwzgcdgZoE5ud0uVs4DWENHCuK8RL7xSCVb50C
+    Hj4NyTDE8C4fehImZIB4yT3xQPIy1FayCx5kL6iWCHLYP4zzp43Gmm0eH7B49Q56XZvH
+    MN0zetjv1knksVInH6vBpiydOVFVaPCFNF4dQFJVZRc7+I3vLx8cEK+yNMlYZKlD+w6f
+    avFZ6+J45W2IiGFrDSeJQjbef2gTg/QcRKE0hAmwUHwbksekSRjjvyJ3ZgIO7vqGWI6t
+    TrSA==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1785243006;
+    s=strato-dkim-0003; d=xenosoft.de;
+    h=In-Reply-To:Date:Message-ID:From:Cc:References:To:Subject:Cc:Date:
+    From:Subject:Sender;
+    bh=iWZz2i8JhyKcjU7uV9AvajZg2gmBVrrjukI2EI12+yg=;
+    b=2cfhalPfcmyQgR9YWGD8hFenDHspGqQwh+VFr8cQeY2voIiylfA5jff1INuT6MY5Dx
+    vGAaxeMdYCMFE2aP7CAg==
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGN0rBVhd9dFr4thIFiqT9BURIi+t73c="
+Received: from void-ppc.a-eon.tld
+    by smtp.strato.de (RZmta 55.5.6 DYNA|AUTH)
+    with ESMTPSA id eed0ee26SCo5Ysg
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
+	(Client did not present a certificate);
+    Tue, 28 Jul 2026 14:50:05 +0200 (CEST)
+Subject: Re: [PATCH] Connecting the SB600's i8259 controller rather in
+ pasemi's pci.c than in pasemi's setup.c.
+To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>, open list <linux-kernel@vger.kernel.org>
+References: <20260701125941.906-2-chzigotzky@xenosoft.de>
+ <656742f7-ff8f-43f5-829d-5b5f0f6c8c95@kernel.org>
+Cc: "R.T.Dickinson" <rtd2@xtra.co.nz>, mad skateman <madskateman@gmail.com>,
+ Damien Stewart <hypexed@yahoo.com.au>,
+ Darren Stevens <darren@stevens-zone.net>,
+ Christian Zigotzky <info@xenosoft.de>
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Organization: A-EON Open Source
+Message-ID: <f5ed5a79-4235-31b6-5bd9-c68d1a6b50cf@xenosoft.de>
+Date: Tue, 28 Jul 2026 14:50:04 +0200
+X-Mailer: BrassMonkey/34.2.2
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -101,66 +110,141 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <656742f7-ff8f-43f5-829d-5b5f0f6c8c95@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-Leon Romanovsky <leon@kernel.org> writes:
+On 27/07/26 15:43, Christophe Leroy (CS GROUP) wrote:
+ >
+ > Should be better in arch/powerpc/platforms/pasemi/pasemi.h
+ >
 
-> On Sat, Jul 25, 2026 at 11:34:11AM -0300, Jason Gunthorpe wrote:
->> On Thu, Jul 23, 2026 at 10:57:04AM +0300, Leon Romanovsky wrote:
->> > On Wed, Jul 22, 2026 at 04:59:12PM -0300, Jason Gunthorpe wrote:
->> > > On Tue, Jul 21, 2026 at 06:33:21PM +0300, Leon Romanovsky wrote:
->> > > 
->> > > > Something like, but probably void* needs to be phys_addr_t:
->> > > > 
->> > > > static inline struct page *dma_phys_to_page(void *addr)
->> > > > {
->> > > > #ifdef CONFIG_DMA_DIRECT_REMAP
->> > > > 	return vmalloc_to_page(addr);
->> > > > #else
->> > > > 	return virt_to_page(addr);
->> > > > #endif
->> > > > }
->> > > 
->> > > I don't like this, we don't know for sure the addr will be in a vmap
->> > > and this will fail if it isn't.
->> > 
->> > Of course we know. The existing "#ifdef CONFIG_DMA_DIRECT_REMAP" is
->> > relevant for addresses acquired from pool.
->> 
->> Yeah, but I still don't like it :) It is hard to follow if you make
->> those kinds of leaps, someone will call this new helper on something
->> they shouldn't
->
-> This issue is straightforward to address today. Limit the scope, use
-> an appropriate function name, and add a comment indicating that the
-> function is local to and specific to the pool. The latter helps
-> AI-based review tools flag incorrect usage outside the intended scope.
->
->> 
->> > dma_phys_to_page() is a bad name for some low-level conversion function.
->> > It needs to be internal to DMA logic, in the level when we convert from
->> > phys to page.
->> 
->> I think we should not convert from phys to page, that's also easy to
->> do wrong
->
-> Perhaps I'll reiterate my complaint. DMA internals are already hard to
-> understand. Part of that complexity is necessary to support every
-> possible use case, but another part comes from a maze of types that is
-> entirely self-inflicted. I think this code only makes the latter worse.
->
-> Currently, the phys type universally describes memory and can be
-> reliably translated into any required representation. It is the most
-> fundamental type we have.
->
+Hello Christophe,
 
-I think we can address the suggested changes as a follow-up patch series
-on top of this.
+Thank you for your answer. I modified the patch today. The Nemo board 
+boots without any problems if I compile the RC5 of kernel 7.2 with this 
+patch.
 
-How about we get this picked up for the next merge window first, so that
-we can get the CC_SHARED related changes in? The follow-up changes
-should be easier once we have agreement on the overall design, and can
-then be done as incremental cleanups.
+Could you please check the following modified patch?
 
--aneesh
+Thanks,
+Christian
+
+---
+
+powerpc/pasemi: Move Nemo i8259 initialization to pci.c
+
+The Nemo board requires the PCIe ports to be initialized before the
+SB600 ISA bridge can be accessed.
+
+Since pas_pci_init() is now called later during boot, the i8259
+initialization in pas_init_IRQ() happens too early and accesses
+registers that are not yet mapped, preventing the board from booting.
+
+Move the Nemo-specific i8259 initialization to pas_add_bridge(),
+after the ISA bridge has been discovered.
+
+Suggested-by: Darren Stevens <darren@stevens-zone.net>
+Tested-by: Christian Zigotzky <chzigotzky@xenosoft.de>
+Signed-off-by: Christian Zigotzky <chzigotzky@xenosoft.de>
+
+---
+v2:
+- Move Nemo i8259 initialization out of pas_init_IRQ() and into
+   pas_add_bridge() after the ISA bridge has been discovered.
+- Change nemo_init_IRQ() to no longer depend on the MPIC instance passed
+   from the IRQ setup path.
+- Move the nemo_init_IRQ() declaration to pasemi.h and add a no-op stub
+   for non-Nemo builds.
+- Fix missing prototype warning reported by Christophe Leroy.
+- Fix indentation and clean up the commit message.
+
+diff -rupN a/arch/powerpc/platforms/pasemi/pasemi.h 
+b/arch/powerpc/platforms/pasemi/pasemi.h
+--- a/arch/powerpc/platforms/pasemi/pasemi.h    2026-07-26 
+23:45:48.000000000 +0200
++++ b/arch/powerpc/platforms/pasemi/pasemi.h    2026-07-28 
+07:44:31.924168227 +0200
+@@ -7,6 +7,12 @@ extern void pas_pci_init(void);
+  struct pci_dev;
+  extern void pas_pci_dma_dev_setup(struct pci_dev *dev);
+
++#ifdef CONFIG_PPC_PASEMI_NEMO
++extern void __init nemo_init_IRQ(void);
++#else
++static inline void __init nemo_init_IRQ(void) { }
++#endif
++
+  void __iomem *__init pasemi_pci_getcfgaddr(struct pci_dev *dev, int 
+offset);
+
+  extern void __init pasemi_map_registers(void);
+diff -rupN a/arch/powerpc/platforms/pasemi/pci.c 
+b/arch/powerpc/platforms/pasemi/pci.c
+--- a/arch/powerpc/platforms/pasemi/pci.c    2026-07-26 
+23:45:48.000000000 +0200
++++ b/arch/powerpc/platforms/pasemi/pci.c    2026-07-28 
+07:34:37.036634023 +0200
+@@ -265,6 +265,11 @@ static int __init pas_add_bridge(struct
+       */
+      isa_bridge_find_early(hose);
+
++    /*
++     * ISA bridge is now active, add the i8259 cascade (if needed)
++     */
++    nemo_init_IRQ();
++
+      return 0;
+  }
+
+diff -rupN a/arch/powerpc/platforms/pasemi/setup.c 
+b/arch/powerpc/platforms/pasemi/setup.c
+--- a/arch/powerpc/platforms/pasemi/setup.c    2026-07-26 
+23:45:48.000000000 +0200
++++ b/arch/powerpc/platforms/pasemi/setup.c    2026-07-28 
+07:54:54.147863161 +0200
+@@ -214,10 +214,12 @@ static void sb600_8259_cascade(struct ir
+      chip->irq_eoi(&desc->irq_data);
+  }
+
+-static void __init nemo_init_IRQ(struct mpic *mpic)
++void __init nemo_init_IRQ(void)
+  {
+      struct device_node *np;
+      int gpio_virq;
++    struct mpic *mpic;
++
+      /* Connect the SB600's legacy i8259 controller */
+      np = of_find_node_by_path("/pxp@0,e0000000");
+      i8259_init(np, 0);
+@@ -228,14 +230,10 @@ static void __init nemo_init_IRQ(struct
+      irq_set_chained_handler(gpio_virq, sb600_8259_cascade);
+      mpic_unmask_irq(irq_get_irq_data(gpio_virq));
+
++    mpic = irq_get_chip_data(gpio_virq);
+      irq_set_default_domain(mpic->irqhost);
+  }
+
+-#else
+-
+-static inline void nemo_init_IRQ(struct mpic *mpic)
+-{
+-}
+  #endif
+
+  static __init void pas_init_IRQ(void)
+@@ -297,9 +295,7 @@ static __init void pas_init_IRQ(void)
+          irq_set_irq_type(nmi_virq, IRQ_TYPE_EDGE_RISING);
+          mpic_unmask_irq(irq_get_irq_data(nmi_virq));
+      }
+-
+-    nemo_init_IRQ(mpic);
+-
++
+      of_node_put(mpic_node);
+      of_node_put(root);
+  }
+
+
+
 
