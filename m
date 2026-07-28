@@ -1,47 +1,47 @@
-Return-Path: <linuxppc-dev+bounces-24915-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24916-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E10DEC54F4D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2026 00:49:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99C5EC53209
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2026 00:49:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h8H1409Kvz2ygh;
-	Tue, 28 Jul 2026 10:49:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h8H156Y9cz2ygW;
+	Tue, 28 Jul 2026 10:49:45 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:7c80:54:3::133"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785199783;
-	cv=none; b=NYXkht56CFHO4wNKkXK4nAF3nOPNQFOuc+G4OUstKrZjdQ/eAB0qRFa6muwXEEqc4bY1DrCLmHzTDlvZO7OEbKYgosCh2yD5dYo98wxdcdKsUuMFA2HLVRJ8iEVbZbV0YT681s8H9R9+xtQ/BszZBFQ5Pc6Fl6X/NBJnyMrJaSW8oclqC+rcFbXd0Asey8Ez7GsM5srSHAv58iaqHU8KyTbUkZZh2bthkTkcH5lwk/umFwsh0y4wIsfYdC6BPOQ7es8Q0z120tP0PtVfD3Qygq0J0FNmEjL61KzeXnL6Gf03hMHPnn1vs2u/iF2ZPStWPqLLsh1Q3gEzU0Y4k7VBmw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785199785;
+	cv=none; b=UzzrbH/JqAMQlIVnssLJ18nw9AEiLhDhLfmtqPYBEyf4cAqWb+dK+JeH2ZErqjBrvoTuYyUmckOUkUkvsTnxXm96t+ohnD501PZnZ0QAHsxOikvhAYz7CCUYXqBTSNT7j2ahg4jEypLsrWNVQ4Ghe3pSHyiKrzLFvf4SEZ7svtQMG+BBklENaZaJ/+LYbUSJqK/jyFh8o/wgb2D+/Mssz7EOSvBVVxGXLz/vyyTYPunMw/VeqMmFaL/1phl6OXpH+vtofUGHZ+ld57ZiCyc8sGQviLLvYMoibZJxp1ACufWdTgPhIYdwJlgxOzVIC/PWP/Pp3odkcYfM7/bIHewPKg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785199783; c=relaxed/relaxed;
-	bh=LQr626GGE0piZ3C4A6XO0P6Jwi5RDZH9w5gxGAWoUKo=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=YA4i0R/LmnkLCETGasDk/1Puz0uXBv9ZKGgbTDYLroodi9I1nsCqsJkj1NO22i6n9xIstxcq69V16mAnGnKE5qL7GOwGOd3Idd08ZO5UAUh7bH+cwU61P+ak/opSBaW0kyWNepYFSS/BUPUpxtC9VpCqs8sYFjNu8Zz5wD3l0Q4OesV+dUIjo5g90gc+YQKpyhHsHCiSNmzFKm/GLvsg8q5qbeHmixTwgrGM10nVZY81damUAH7WzCq3Hfd/Z9262nCFL1n2GCc9ElQnABnlSWVC1MUyszizL62DC3caOHb6aA8TZ4ZZSRxzscr8g/SV+5VOaTwYjHZ8vLKqFlErEw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=mV3fcjBu; dkim-atps=neutral; spf=pass (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=rdunlap@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
+	t=1785199785; c=relaxed/relaxed;
+	bh=yBaqld3TmYtpvcCuMNwP5V/ALj/CVjmTGKnWI1UmjDo=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=b+vZxt+Kk9rqIaFBBKNseNFxvpfe6+rUAemJglxjKGFqfzZ7lNv2M1bKNiFOO9x0zXYAqdaW4o3eF+cU4X7FiIVY1+RoodzaYJ6PbrOBivOPpeEDOJeFj2GYYf+9qHz4FO3pt7GsXKHzml+pLq+xwY/fJM+9Poc0NnaQze7cM68m0K1tPt4wt3yit++tVGDn/Ue/txwe5Shwl4x6uNCt/e/7NJwkegRxuWS+G0oiutOYHXlg+HvmQXDY94/4UNKv3Ek/ObQhVw6RVoE/o8XMc7t+1Fk5TJ9gsoO6B+Z4/oqG/TiRzp6cD9tb7WIszXqByOACgMkwXrZmjR8/zKP6Cg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=RwR9nACB; dkim-atps=neutral; spf=pass (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=rdunlap@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=mV3fcjBu;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=RwR9nACB;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=infradead.org (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=rdunlap@infradead.org; receiver=lists.ozlabs.org)
 Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h8H114WCgz2ygW
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2026 10:49:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h8H0x2Xjyz2yH4
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2026 10:49:33 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
 	MIME-Version:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:
 	Content-ID:Content-Description:In-Reply-To:References;
-	bh=LQr626GGE0piZ3C4A6XO0P6Jwi5RDZH9w5gxGAWoUKo=; b=mV3fcjBuYaAfWlIF+/dcayNL6k
-	NEmFPJGZ4WSFfMU0DOq58JgSJi3LA0zbC+rnSi1pBWBFosZ1P95TsoXQirL+2QNFPX9cDXRdMWn+8
-	q4q1dyZUFgOC/gZTxZBnF0r6lfd8PxtQE1EdAxaL2Ou1KiLVNH4Jrrrajo/3BW7GNPQFg0DlVmMYn
-	hXlcxODPIEDo5RtbbkNyx0cF0+ZFGI6T5lN5JuT3eWMFeaPU1Sj8YW7wityrf+tcfKexs+s50uXrU
-	/l0m1RGpg+Ak4nY/fnHFHdU0eulM7ZxSg+ZCUT0b7YmwJlA38on9L5frKAFB7U3Lrdn5sHmFMpSCM
-	G9sHPbNA==;
+	bh=yBaqld3TmYtpvcCuMNwP5V/ALj/CVjmTGKnWI1UmjDo=; b=RwR9nACBdDIdNGYz8AJfkJ9wNP
+	zNje5gNVL7GftJklvgXD17k0lxo3sG8jQa8pj91xxbU1uiCo05bDlWs4td88JepEmDzr70lDe/1fL
+	ejKM9qIlJI4y6aeVE1kj+x+/KDEw9CJTC3y1t5IbvlGsVYDWpwd5ZmtcZ7zvEXYh8TzcHFabYe3oP
+	OnQmG8Fm26v2Y7MCxsxgvQxnMN3TJr8P56YfO4OuNsYANkT9gzrfUDFattr/iMg6F3kNa4ayL+EQ0
+	sU4vdrytfqDHhXK9jIXpMSLtRcwVDbq+vi5OljqGG2S0ntaV9Tq0QfF8g8joWuClruCTB5EWtcP9Q
+	+Vcdntuw==;
 Received: from [50.53.43.113] (helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtpsa (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1woW0o-000000049YW-3Bmg;
-	Tue, 28 Jul 2026 00:49:38 +0000
+	id 1woW0a-000000049Wf-3dcl;
+	Tue, 28 Jul 2026 00:49:24 +0000
 From: Randy Dunlap <rdunlap@infradead.org>
 To: linux-kernel@vger.kernel.org
 Cc: Randy Dunlap <rdunlap@infradead.org>,
@@ -51,9 +51,9 @@ Cc: Randy Dunlap <rdunlap@infradead.org>,
 	Frank Li <Frank.Li@nxp.com>,
 	Guanhua Gao <guanhua.gao@nxp.com>,
 	Roy Pledge <Roy.Pledge@nxp.com>
-Subject: [PATCH v3] soc: fsl: dpio: fix kernel-doc typos
-Date: Mon, 27 Jul 2026 17:49:38 -0700
-Message-ID: <20260728004938.905415-1-rdunlap@infradead.org>
+Subject: [PATCH v3] soc: fsl: fix kernel-doc warnings and typos
+Date: Mon, 27 Jul 2026 17:49:24 -0700
+Message-ID: <20260728004924.904210-1-rdunlap@infradead.org>
 X-Mailer: git-send-email 2.55.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -70,7 +70,11 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Correct spelling of 2 words.
+Correct spelling of "list".
+
+Fix a kernel-doc warning by describing the nested structure completely:
+
+include/soc/fsl/dpaa2-fd.h:52: warning: Function parameter or member 'simple' not described in 'dpaa2_fd'
 
 Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
 Cc: Li Yang <leoyang.li@nxp.com>
@@ -83,27 +87,42 @@ Cc: Roy Pledge <Roy.Pledge@nxp.com>
 v2:  update Cc: list, rebase
 v3:  rebase & resend
 
- include/soc/fsl/dpaa2-io.h |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ include/soc/fsl/dpaa2-fd.h |   19 ++++++++++---------
+ 1 file changed, 10 insertions(+), 9 deletions(-)
 
---- linux-next-20260727.orig/include/soc/fsl/dpaa2-io.h
-+++ linux-next-20260727/include/soc/fsl/dpaa2-io.h
-@@ -22,7 +22,7 @@ struct device;
-  * DOC: DPIO Service
-  *
-  * The DPIO service provides APIs for users to interact with the datapath
-- * by enqueueing and dequeing frame descriptors.
-+ * by enqueueing and dequeueing frame descriptors.
-  *
-  * The following set of APIs can be used to enqueue and dequeue frames
-  * as well as producing notification callbacks when data is available
-@@ -33,7 +33,7 @@ struct device;
+--- linux-next-20260727.orig/include/soc/fsl/dpaa2-fd.h
++++ linux-next-20260727/include/soc/fsl/dpaa2-fd.h
+@@ -25,14 +25,15 @@
  
  /**
-  * struct dpaa2_io_desc - The DPIO descriptor
-- * @receives_notifications: Use notificaton mode. Non-zero if the DPIO
-+ * @receives_notifications: Use notification mode. Non-zero if the DPIO
-  *                  has a channel.
-  * @has_8prio:      Set to non-zero for channel with 8 priority WQs.  Ignored
-  *                  unless receives_notification is TRUE.
+  * struct dpaa2_fd - Struct describing FDs
+- * @words:         for easier/faster copying the whole FD structure
+- * @addr:          address in the FD
+- * @len:           length in the FD
+- * @bpid:          buffer pool ID
+- * @format_offset: format, offset, and short-length fields
+- * @frc:           frame context
+- * @ctrl:          control bits...including dd, sc, va, err, etc
+- * @flc:           flow context address
++ * @words:                for easier/faster copying the whole FD structure
++ * @simple:               struct for the FD fields
++ * @simple.addr:          address in the FD
++ * @simple.len:           length in the FD
++ * @simple.bpid:          buffer pool ID
++ * @simple.format_offset: format, offset, and short-length fields
++ * @simple.frc:           frame context
++ * @simple.ctrl:          control bits...including dd, sc, va, err, etc
++ * @simple.flc:           flow context address
+  *
+  * This structure represents the basic Frame Descriptor used in the system.
+  */
+@@ -497,7 +498,7 @@ static inline void dpaa2_fl_set_addr(str
+  * dpaa2_fl_get_frc() - Get the frame context in the FLE
+  * @fle: the given frame list entry
+  *
+- * Return the frame context field in the frame lsit entry.
++ * Return the frame context field in the frame list entry.
+  */
+ static inline u32 dpaa2_fl_get_frc(const struct dpaa2_fl_entry *fle)
+ {
 
