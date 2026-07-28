@@ -1,54 +1,78 @@
-Return-Path: <linuxppc-dev+bounces-24934-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24935-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CF46EC531F9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2026 11:16:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1A958C53219
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2026 11:16:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h8Xvk1CkHz2xyk;
-	Tue, 28 Jul 2026 21:16:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=212.227.15.4
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785237362;
-	cv=none; b=MCRks09aUyXsmZ2HzlZRCSEMsEGkXOpOrVrOLZICmUuG17NqTgLAv1eSfdru4enJhYjqLZ+f5Obo7TCaVqyvg7S+oR0p0LuUDH/9ouaSyqSsvvfjJ9EVSoknSI6pzyM4n2zGRuMpYYDZu8buJEcb572P38crTusKESYA+Y1OkWeIIjjpbBTjKu0OSa3I+73wh/YSbWvxBxi15NPxNjomkFh0XHiAwrDNlU5UuD/eUYbkjDrppk2M1vnkm4SobeQ8DQuxi5xLoxBrNYP2ut/4p8q7zjoTevbKXtVIhBieAoG0ZFaas6VDW9+msYzWZWkDnoYz/FBfgcm4lxGOhltnCg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h8Xw249WWz2xyk;
+	Tue, 28 Jul 2026 21:16:18 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::329"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785236354;
+	cv=none; b=o2uaM1FE3C6sJhaJC38gi+cwVNW/j8mWWyQWGJv/KC7lJum/9olZhdK5fuat3iiYBonAoe24gqdg0VYPy8NbcyZjYC/GJYI83lU5kdpTc6g6nPUThdVP1BeLSq4rnXKzveknsmSf7wD3GV2Eii1FSvMtWQyIhXm4FC7IDoKz5bzIF/vUyyyCmlkUNCNdFa8wmzQr+gmr5OeEGIVkAoSpcUcwbPZTLY3K1Adbdd4zFZSBiY2Ucg2/WMv4INr6lzjtyqPmRYY3teoy2gCsRNLRWeFdz0WGgwTMkU3ILUKFexRC50nMFloTUxMJFrimQgCSvmdkgHo7FGreamg/LMdT9A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785237362; c=relaxed/relaxed;
-	bh=kdGvc5zVFTVg5hEMq4ScSQ8q5bqHIRstMjtbKuPq0HA=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=WyJiLp/SSbAM/e193LE6e6s6EJZwambsshXX6KaWfSLABYmxrQrDjF0GloUsSbF1PYrBjRKdQmO9E1vjJ979Ymye2TGNv0tl2gWyA4BqDfreMEC/XWvz3WVMXl9ohfRa6Y/4ff1nq3HUyYih9Wf0QOeDazbYzRKfehRy7pTRXp/vBX9L1Wp0ieuxzl8C0AtHaD1WI+fTd96oMc/H1pYI88Brubujy58RUxJqprhdc7smPRwp1BBdWx/0VeDzuEhRksoSS4E22GG1nt4UInjcp1qo6+KlYgTEf/KIBpk/sugeAjQMXGuux8zWJ96gXir681ElYjEUu/7PGYDE6SWZFQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=web.de; dkim=pass (2048-bit key; secure) header.d=web.de header.i=markus.elfring@web.de header.a=rsa-sha256 header.s=s29768273 header.b=Mg/Nu7qA; dkim-atps=neutral; spf=pass (client-ip=212.227.15.4; helo=mout.web.de; envelope-from=markus.elfring@web.de; receiver=lists.ozlabs.org) smtp.mailfrom=web.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=web.de
+	t=1785236354; c=relaxed/relaxed;
+	bh=PkzrPROsbva/YpLFO9tFoN00fEkvGr3SpS1eH/m/1Ik=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=jbd/lW4OIhoEWDySxfemfznP8yQbVHdRR7TzCdejbRYb0nHL1YBmskE+Tgr7PcLdEUBiuKQ42WaoSmze0Pmz0hXyUzf3cIcFghdBn57J1/nYwfbj3C8fseC3fEm2jdtjACt11GqcJypjVQiW4e8fYbM/cjcwnZZLcwZPiVY83/9JEgTz2MPxgCHAJHxi1yZPwYCHvsY1GnkQf/ijgpJJ58w0Zv7u/GDBNXcgMxjMM8AnGiwWeN6UgHRTmCjrY4M06Gq/ot0MAyy0Pq7Sv4L/ZwSZhiW7Q9H6fyW4FIYgpUwoTLcPcQHOlPGDmHVFu+gc6UJNvtos/1CrqZ5V1zwhZA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=thegoodpenguin.co.uk; dkim=pass (2048-bit key; unprotected) header.d=thegoodpenguin-co-uk.20251104.gappssmtp.com header.i=@thegoodpenguin-co-uk.20251104.gappssmtp.com header.a=rsa-sha256 header.s=20251104 header.b=crNO1rlJ; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::329; helo=mail-wm1-x329.google.com; envelope-from=pzalewski@thegoodpenguin.co.uk; receiver=lists.ozlabs.org) smtp.mailfrom=thegoodpenguin.co.uk
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=thegoodpenguin.co.uk
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=web.de header.i=markus.elfring@web.de header.a=rsa-sha256 header.s=s29768273 header.b=Mg/Nu7qA;
+	dkim=pass (2048-bit key; unprotected) header.d=thegoodpenguin-co-uk.20251104.gappssmtp.com header.i=@thegoodpenguin-co-uk.20251104.gappssmtp.com header.a=rsa-sha256 header.s=20251104 header.b=crNO1rlJ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=web.de (client-ip=212.227.15.4; helo=mout.web.de; envelope-from=markus.elfring@web.de; receiver=lists.ozlabs.org)
-Received: from mout.web.de (mout.web.de [212.227.15.4])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=thegoodpenguin.co.uk (client-ip=2a00:1450:4864:20::329; helo=mail-wm1-x329.google.com; envelope-from=pzalewski@thegoodpenguin.co.uk; receiver=lists.ozlabs.org)
+Received: from mail-wm1-x329.google.com (mail-wm1-x329.google.com [IPv6:2a00:1450:4864:20::329])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h8Xvf6Nt3z2xJR
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2026 21:15:56 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=web.de;
-	s=s29768273; t=1785237323; x=1785842123; i=markus.elfring@web.de;
-	bh=kdGvc5zVFTVg5hEMq4ScSQ8q5bqHIRstMjtbKuPq0HA=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
-	 References:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:cc:content-transfer-encoding:
-	 content-type:date:from:message-id:mime-version:reply-to:subject:
-	 to;
-	b=Mg/Nu7qAOyD/Fd2Ib1tHGx+URjl0/PQDpgaZrRtZHERJBuYZlkKu8XVE19v/6xB4
-	 i1s8bWKuG+zZA8Wr/+TdL585lA1bAk3TwkYjvZNYU5r7HdyTsWkaPDkFKYnfXnh+t
-	 450SaOs/SPfaXFI8VklnO2DlyRdw7E4DR6ias0tv59jS5tW6XL6CS2Fi1xgUln9Rh
-	 d/mklIRM1kJwJLGEeRM3xZt3nHKF7bEoo+gT/TU/YIVYUrqE0AGDufGgMp24Z8tm1
-	 qV+hhclHUYyTkZPdvcVQP/Ib3znORgYJS+VnQHZtbtzHZSxx/UJmxKVjYrgIfFLJq
-	 nsWWR4eQzSwv+FqR5A==
-X-UI-Sender-Class: 814a7b36-bfc1-4dae-8640-3722d8ec6cd6
-Received: from client.hidden.invalid by smtp.web.de (mrweb006
- [213.165.67.108]) with ESMTPSA (Nemesis) id 1MEUWM-1wifFA3phS-001aHv; Tue, 28
- Jul 2026 13:15:22 +0200
-Message-ID: <1bf1506a-e689-4a5a-b087-acf99e7fb1a0@web.de>
-Date: Tue, 28 Jul 2026 13:15:16 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h8XXJ4hn1z2xlQ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2026 20:59:11 +1000 (AEST)
+Received: by mail-wm1-x329.google.com with SMTP id 5b1f17b1804b1-4954aff6088so32508245e9.3
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2026 03:59:11 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=thegoodpenguin-co-uk.20251104.gappssmtp.com; s=20251104; t=1785236347; x=1785841147; darn=lists.ozlabs.org;
+        h=cc:to:message-id:content-transfer-encoding:content-type
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=PkzrPROsbva/YpLFO9tFoN00fEkvGr3SpS1eH/m/1Ik=;
+        b=crNO1rlJguImFTpcRqQv7BqZhNu70KGjcNOOJliwf2EQZbvbIgpW1VoGB3QbGrWsxz
+         Wtu7lkEn8tijD8rBR6YBShZKT3szaQ8ojTZmqRVaBdlbEDF459GXX7EN4xPgGdCnwKMO
+         K+kygU8qjHyaFFwl12a9Y8ND8bR2XqGcbOPiAPOTvFZt5LXHV9v9VSk9cFRU6Hy5qlA7
+         e0U6WJS793zwQ4AIL6NKNoXkqtAwHoYBwKCf/VXX2DwHCYX1a8DsDoJlYAxnL4KChXl6
+         SkCSCUK370tyHJ85zGOnE952JuwjzsS6MdopURqRzQfp69yCvJhM3F/pgwEfWONsOD8R
+         FpIQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1785236347; x=1785841147;
+        h=cc:to:message-id:content-transfer-encoding:content-type
+         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to:content-type;
+        bh=PkzrPROsbva/YpLFO9tFoN00fEkvGr3SpS1eH/m/1Ik=;
+        b=WoIqjfgI/7yanhBdx4U3umqQKai7uEULXnqoVY4viyv8n3EYaahotWGXsVZLiPyd8J
+         Qwn4Chc5Ul0yx/uphn3vPIH7mYuFgsU75WQFMBOrVzQ4MxIAAGRTb1hXoLUCSpY9JPZh
+         ky9VK8hG84uddF3XwtaaX25kpCqtb/knQuNrVvk5iE3ROXbe3KtoVdNYQl8vQvlp83xF
+         L+NY2cqtDIKeXL9KqjugmG1RCOUH+1oV5/QJHnKRmd4OXyNx5Pi/glGDKfDrxyh/U7uf
+         8ab1Tn/gekwbpvHxLCzuEMGwYn5JE2JPGvcgUNcN1GWxtcjg5lyB9Qr/dBV9yOvIQ/9i
+         8nYw==
+X-Gm-Message-State: AOJu0Yy+p7v7YhrpnhJ2L64R7axNsm2XNNCZPupx2J4E+vaJX+OnpBLR
+	rgTDFe15VP6bq1SbJzf2E2nJSq2jf94OMaqdq7tGTpvXu1SiKFHJ++W/N/hW1iT7QL8=
+X-Gm-Gg: AR+sD12CAWfXNHTcH5exoYEheMB0NJm/Buu544Rq/Jp+G8UEyPcN2wx/e+1x1N4mP3R
+	RjlaYVEcXD+a/q/e6tr1rjAOLwVm8SwO/Ddh1pEFheO9I5zp4X+XZjFJ/3U9Drh8jI0pP8UQaGU
+	S3gxy3a20P+zREqRtCMZ+60cD4aSkXXv44xccs/9XoHPTSI5ebSntjgR/ylsngmopYr4S7E/dpV
+	T4JPCc6QGbt/W4rdD3Z+J8lWXbtqJZKlk7JwoofuReztKfvpEOTifnCa93RxyrCOI2VLVszrlny
+	KYb6pizP2D+VXQjf/iFXXbRrQc9lvvRdZ+AWSzy4TT+ze+D0QI7ZAghcWO9+syA+LOxTQ4+Rd6C
+	+XUBokAHeE9Ct43Sjh+qsSe/qhB/PDC8BB9/hShwnjBofakh/Q9YBxIPpOHa7stKkri8m5XSO4J
+	nvEb2774BLI8/eljG32Gk=
+X-Received: by 2002:a05:600c:a51:b0:495:5b4a:53c9 with SMTP id 5b1f17b1804b1-496c65a2d71mr22488525e9.39.1785236346952;
+        Tue, 28 Jul 2026 03:59:06 -0700 (PDT)
+Received: from [10.42.0.1] ([2a00:23c7:1d1a:9c01:364d:4a01:2121:cbde])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-496c45bb2e7sm73484875e9.7.2026.07.28.03.59.06
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 28 Jul 2026 03:59:06 -0700 (PDT)
+From: "Pawel Zalewski (The Capable Hub)" <pzalewski@thegoodpenguin.co.uk>
+Date: Tue, 28 Jul 2026 11:58:56 +0100
+Subject: [PATCH] bus: fsl-mc: drop unused assignment of
+ acpi_device_id::driver_data
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,145 +86,58 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [v2 1/2] soc: fsl: dpio: Use scope-based resource management in
- dpaa2_io_store_create()
-To: Ioana Ciornei <ioana.ciornei@nxp.com>,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
-Cc: Christophe Leroy <chleroy@kernel.org>, Dan Carpenter <error27@gmail.com>,
- James Bottomley <James.Bottomley@hansenpartnership.com>,
- Peter Zijlstra <peterz@infradead.org>, Roy Pledge <Roy.Pledge@nxp.com>,
- Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
- kernel-janitors@vger.kernel.org
-References: <690827f2-e746-4378-bb7c-9948cd69dc15@web.de>
- <d95d2f4c-f3cf-44eb-b61b-79ba7891674d@kernel.org>
- <d2e5df25-c8b7-4ee6-8ebf-1725542baabd@web.de>
- <6607bb4e-a747-4791-b93f-f82f26e4a334@web.de>
- <y2h44um2grcbecnpkck44cvudugha6df2itq2uy5y46whxjouh@yy2kebig3ia5>
- <802ea627-4bae-4267-b1fa-7da2499f2ab6@web.de>
- <55dkpjlibtfurmrrzxzznq6e3dhxvo76rsrjnokkaquwktl74r@omft73n4kp52>
- <3588f06e-7d11-4e94-b141-008e676bb28b@web.de>
- <6woig227u5snmdsrjfuw7gfcf3vk5iwaap4yf7ow6b6s3pba7z@yg4vmdoaak3h>
-Content-Language: en-GB, de-DE
-From: Markus Elfring <Markus.Elfring@web.de>
-In-Reply-To: <6woig227u5snmdsrjfuw7gfcf3vk5iwaap4yf7ow6b6s3pba7z@yg4vmdoaak3h>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:NXDMpQeusq0/3h0ArwYU9Ve76RPVkb0Vnr7BmOOh5yQxh9HWKac
- /7R23POzVILDEYp4UXoZBr5RSiDrhUa7V0Y2gvQfKOExLk+FKaKnaNFuVYhcEfT3/JzypX9
- 0Oka71ouE7dreDBeyNxjE0/0Jr/Ndp8XUS7UWtnfRO2t9WfGGjK4yA1xtXZiEIA1UVJBOpO
- F67UYHnYBWJgyRBsIS6uw==
-UI-OutboundReport: notjunk:1;M01:P0:sFrYP3dnSpw=;lhf37Z68Ai7yNKJr1b4EWI0e57W
- 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
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260728-acpi-bus-v1-1-12ff25fdea9b@thegoodpenguin.co.uk>
+X-B4-Tracking: v=1; b=H4sIAG+LaGoC/yXMQQ5AMBCF4avIrDXRLkpcRSyqMxgLpINImt5ds
+ fyS/70IQoFJoC0iBLpYeFszdFmAn906kWLMBlMZW9WmUc7vrIZTlEPbeNSjRY2Q8z3QyPd31fW
+ /5RwW8se7h5Qey68Hm2wAAAA=
+X-Change-ID: 20260728-acpi-bus-ad68cd1f6d1d
+To: Ioana Ciornei <ioana.ciornei@nxp.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+ "Pawel Zalewski (The Capable Hub)" <pzalewski@thegoodpenguin.co.uk>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1785236346; l=1168;
+ i=pzalewski@thegoodpenguin.co.uk; s=20260430; h=from:subject:message-id;
+ bh=mucCZf1NS0fqiFUADE3n7xyqr9AOroSST9K2LCuKKWo=;
+ b=BH384Q69MA/2LGMLx5Ou4eT5qIbk//2B3ufcJ9Grc+zwP8Q594exHGE+TYej2jgVU9zAMWkzx
+ hTiwbCeF45aCyP5RJCgvY50uJhnWcqfUuDVwuQ74q8mWpOuNAxCO6/j
+X-Developer-Key: i=pzalewski@thegoodpenguin.co.uk; a=ed25519;
+ pk=vHq4n9IonORH2GTzLv8r6CWAFHzgfBuNkQPXA8NSly0=
 
->> How will development concerns evolve further also according to previous=
- clarification attempts?
->>
->> Clarifying confusion of our variable placement rules caused by cleanup.=
-h
->> https://lore.kernel.org/ksummit/CAHk-=3DwhPZoi03ZwphxiW6cuWPtC3nyKYS8_B=
-ThgztCdgPWP1WA@mail.gmail.com/
->> https://lkml.org/lkml/2025/11/18/1766
->=20
-> My preference still stands and I do not think they contradict the views
-> expressed in the above links:
+This module sets the acpi_device_id::driver_data to 0 but
+the field is not actually used within the module, we can
+just drop it from the table.
 
-It seems that more time and guidance adjustments would be needed
-to adapt development habits into further directions.
+While we are at it - use a named initializer for the
+acpi_device_id::id field as well to make the code more
+readable.
 
+Signed-off-by: Pawel Zalewski (The Capable Hub) <pzalewski@thegoodpenguin.co.uk>
+---
+ drivers/bus/fsl-mc/fsl-mc-bus.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> - Variables which do not have anything to do with cleanup.h should still
->   be defined at the start of the function. This is the case of the
->   qman_256_cycles_per_ns which you moved in 2/2 without any motive.
-> - In the case of a variable used with __free, if it can be done, I
->   prefer to see the definition and initialization done at the start of
->   the function.
+diff --git a/drivers/bus/fsl-mc/fsl-mc-bus.c b/drivers/bus/fsl-mc/fsl-mc-bus.c
+index 64d75eed0d34..ce024a0fb7e4 100644
+--- a/drivers/bus/fsl-mc/fsl-mc-bus.c
++++ b/drivers/bus/fsl-mc/fsl-mc-bus.c
+@@ -1202,7 +1202,7 @@ static const struct of_device_id fsl_mc_bus_match_table[] = {
+ MODULE_DEVICE_TABLE(of, fsl_mc_bus_match_table);
+ 
+ static const struct acpi_device_id fsl_mc_bus_acpi_match_table[] = {
+-	{"NXP0008", 0 },
++	{ .id = "NXP0008" },
+ 	{ }
+ };
+ MODULE_DEVICE_TABLE(acpi, fsl_mc_bus_acpi_match_table);
 
-The discussed function implementations contain also input parameter valida=
-tion.
-Thus I imagine that it would occasionally be nicer to avoid extra data pro=
-cessing accordingly.
+---
+base-commit: 62cc90241548d5570ee68e01aaba6506964e9811
+change-id: 20260728-acpi-bus-ad68cd1f6d1d
 
-Regards,
-Markus
+Best regards,
+--  
+Pawel Zalewski (The Capable Hub) <pzalewski@thegoodpenguin.co.uk>
+
 
