@@ -1,78 +1,69 @@
-Return-Path: <linuxppc-dev+bounces-24935-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24936-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1A958C53219
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2026 11:16:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8B22CC531F9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2026 11:56:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h8Xw249WWz2xyk;
-	Tue, 28 Jul 2026 21:16:18 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::329"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785236354;
-	cv=none; b=o2uaM1FE3C6sJhaJC38gi+cwVNW/j8mWWyQWGJv/KC7lJum/9olZhdK5fuat3iiYBonAoe24gqdg0VYPy8NbcyZjYC/GJYI83lU5kdpTc6g6nPUThdVP1BeLSq4rnXKzveknsmSf7wD3GV2Eii1FSvMtWQyIhXm4FC7IDoKz5bzIF/vUyyyCmlkUNCNdFa8wmzQr+gmr5OeEGIVkAoSpcUcwbPZTLY3K1Adbdd4zFZSBiY2Ucg2/WMv4INr6lzjtyqPmRYY3teoy2gCsRNLRWeFdz0WGgwTMkU3ILUKFexRC50nMFloTUxMJFrimQgCSvmdkgHo7FGreamg/LMdT9A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h8YpZ2P0Cz2xyk;
+	Tue, 28 Jul 2026 21:56:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785239798;
+	cv=none; b=infAfkfituC5mWc2C3WPLoddJo4nlLgB0a9bl+Hwb9eNrnrFUBfmlZ3vAcWhBSoRtGaTM7WiGtnTaqRyIsWM0PWM+yTWLd/vOlJ/eIEOTW21qim8GXwtWj/DNCEjxBwzncboDGOMIgxNyHZjBZ7AIa2/c8a9Pl/MMctL/pdVRF4FmKGSwVw77mX1N6dV/CQ+0S71lthYJEWiKrzkUm6qO6NnahKGhSNPlRBnOfJW6RxoD4yKeliQdXnmmlC/xDO+t4SwH22pu+5UGsBw27BgWWRmSpErh56wuuxdx9BoCbaF+6q1xDoH1BFUo513f2Als8IdW/cK1HjCrmQhd+JqFQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785236354; c=relaxed/relaxed;
-	bh=PkzrPROsbva/YpLFO9tFoN00fEkvGr3SpS1eH/m/1Ik=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=jbd/lW4OIhoEWDySxfemfznP8yQbVHdRR7TzCdejbRYb0nHL1YBmskE+Tgr7PcLdEUBiuKQ42WaoSmze0Pmz0hXyUzf3cIcFghdBn57J1/nYwfbj3C8fseC3fEm2jdtjACt11GqcJypjVQiW4e8fYbM/cjcwnZZLcwZPiVY83/9JEgTz2MPxgCHAJHxi1yZPwYCHvsY1GnkQf/ijgpJJ58w0Zv7u/GDBNXcgMxjMM8AnGiwWeN6UgHRTmCjrY4M06Gq/ot0MAyy0Pq7Sv4L/ZwSZhiW7Q9H6fyW4FIYgpUwoTLcPcQHOlPGDmHVFu+gc6UJNvtos/1CrqZ5V1zwhZA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=thegoodpenguin.co.uk; dkim=pass (2048-bit key; unprotected) header.d=thegoodpenguin-co-uk.20251104.gappssmtp.com header.i=@thegoodpenguin-co-uk.20251104.gappssmtp.com header.a=rsa-sha256 header.s=20251104 header.b=crNO1rlJ; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::329; helo=mail-wm1-x329.google.com; envelope-from=pzalewski@thegoodpenguin.co.uk; receiver=lists.ozlabs.org) smtp.mailfrom=thegoodpenguin.co.uk
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=thegoodpenguin.co.uk
+	t=1785239798; c=relaxed/relaxed;
+	bh=eNwZQCkHKwYFKkrNjWZTS93nuqW+VicG7takxDF9Vgg=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=iJ4l/YAlg22uaNNaz3u4wHP0Ckhc3f+ZV+KvPpu0JqjmU0oFxg8oh2qPefvd3pYbxCo4tG0VaTG7Tvfk53wcYObyB3x1LhIIXCQgXMkUytOKurLziDJCohJann3xLGZL89R8fhXKVGP8Ku2uEYTJwZB0hjF7bYghez6Fx4v4yljh5MbQDlFMtOY2rF+kAjG24gg0YOFq/L/+WArOwVZb1chyBMkdvpgcJ9FFsr4fAO49drbVYIvnRUw9JryHG9UJdkZYYO+ab4IGYQFj1aH6Py++TWOwJLVWCqhdaxRZGp39qFaSTuYHZsBCto4HVLCtROX6zDX0D7GUMZLfgD2WTg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=eASZFug7; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=mani@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=thegoodpenguin-co-uk.20251104.gappssmtp.com header.i=@thegoodpenguin-co-uk.20251104.gappssmtp.com header.a=rsa-sha256 header.s=20251104 header.b=crNO1rlJ;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=eASZFug7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=thegoodpenguin.co.uk (client-ip=2a00:1450:4864:20::329; helo=mail-wm1-x329.google.com; envelope-from=pzalewski@thegoodpenguin.co.uk; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x329.google.com (mail-wm1-x329.google.com [IPv6:2a00:1450:4864:20::329])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=mani@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h8XXJ4hn1z2xlQ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2026 20:59:11 +1000 (AEST)
-Received: by mail-wm1-x329.google.com with SMTP id 5b1f17b1804b1-4954aff6088so32508245e9.3
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2026 03:59:11 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=thegoodpenguin-co-uk.20251104.gappssmtp.com; s=20251104; t=1785236347; x=1785841147; darn=lists.ozlabs.org;
-        h=cc:to:message-id:content-transfer-encoding:content-type
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=PkzrPROsbva/YpLFO9tFoN00fEkvGr3SpS1eH/m/1Ik=;
-        b=crNO1rlJguImFTpcRqQv7BqZhNu70KGjcNOOJliwf2EQZbvbIgpW1VoGB3QbGrWsxz
-         Wtu7lkEn8tijD8rBR6YBShZKT3szaQ8ojTZmqRVaBdlbEDF459GXX7EN4xPgGdCnwKMO
-         K+kygU8qjHyaFFwl12a9Y8ND8bR2XqGcbOPiAPOTvFZt5LXHV9v9VSk9cFRU6Hy5qlA7
-         e0U6WJS793zwQ4AIL6NKNoXkqtAwHoYBwKCf/VXX2DwHCYX1a8DsDoJlYAxnL4KChXl6
-         SkCSCUK370tyHJ85zGOnE952JuwjzsS6MdopURqRzQfp69yCvJhM3F/pgwEfWONsOD8R
-         FpIQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785236347; x=1785841147;
-        h=cc:to:message-id:content-transfer-encoding:content-type
-         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=PkzrPROsbva/YpLFO9tFoN00fEkvGr3SpS1eH/m/1Ik=;
-        b=WoIqjfgI/7yanhBdx4U3umqQKai7uEULXnqoVY4viyv8n3EYaahotWGXsVZLiPyd8J
-         Qwn4Chc5Ul0yx/uphn3vPIH7mYuFgsU75WQFMBOrVzQ4MxIAAGRTb1hXoLUCSpY9JPZh
-         ky9VK8hG84uddF3XwtaaX25kpCqtb/knQuNrVvk5iE3ROXbe3KtoVdNYQl8vQvlp83xF
-         L+NY2cqtDIKeXL9KqjugmG1RCOUH+1oV5/QJHnKRmd4OXyNx5Pi/glGDKfDrxyh/U7uf
-         8ab1Tn/gekwbpvHxLCzuEMGwYn5JE2JPGvcgUNcN1GWxtcjg5lyB9Qr/dBV9yOvIQ/9i
-         8nYw==
-X-Gm-Message-State: AOJu0Yy+p7v7YhrpnhJ2L64R7axNsm2XNNCZPupx2J4E+vaJX+OnpBLR
-	rgTDFe15VP6bq1SbJzf2E2nJSq2jf94OMaqdq7tGTpvXu1SiKFHJ++W/N/hW1iT7QL8=
-X-Gm-Gg: AR+sD12CAWfXNHTcH5exoYEheMB0NJm/Buu544Rq/Jp+G8UEyPcN2wx/e+1x1N4mP3R
-	RjlaYVEcXD+a/q/e6tr1rjAOLwVm8SwO/Ddh1pEFheO9I5zp4X+XZjFJ/3U9Drh8jI0pP8UQaGU
-	S3gxy3a20P+zREqRtCMZ+60cD4aSkXXv44xccs/9XoHPTSI5ebSntjgR/ylsngmopYr4S7E/dpV
-	T4JPCc6QGbt/W4rdD3Z+J8lWXbtqJZKlk7JwoofuReztKfvpEOTifnCa93RxyrCOI2VLVszrlny
-	KYb6pizP2D+VXQjf/iFXXbRrQc9lvvRdZ+AWSzy4TT+ze+D0QI7ZAghcWO9+syA+LOxTQ4+Rd6C
-	+XUBokAHeE9Ct43Sjh+qsSe/qhB/PDC8BB9/hShwnjBofakh/Q9YBxIPpOHa7stKkri8m5XSO4J
-	nvEb2774BLI8/eljG32Gk=
-X-Received: by 2002:a05:600c:a51:b0:495:5b4a:53c9 with SMTP id 5b1f17b1804b1-496c65a2d71mr22488525e9.39.1785236346952;
-        Tue, 28 Jul 2026 03:59:06 -0700 (PDT)
-Received: from [10.42.0.1] ([2a00:23c7:1d1a:9c01:364d:4a01:2121:cbde])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-496c45bb2e7sm73484875e9.7.2026.07.28.03.59.06
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 28 Jul 2026 03:59:06 -0700 (PDT)
-From: "Pawel Zalewski (The Capable Hub)" <pzalewski@thegoodpenguin.co.uk>
-Date: Tue, 28 Jul 2026 11:58:56 +0100
-Subject: [PATCH] bus: fsl-mc: drop unused assignment of
- acpi_device_id::driver_data
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h8YpY0m99z2xJR
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2026 21:56:36 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 1407C40E33;
+	Tue, 28 Jul 2026 11:56:31 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B78B81F000E9;
+	Tue, 28 Jul 2026 11:56:23 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1785239791;
+	bh=eNwZQCkHKwYFKkrNjWZTS93nuqW+VicG7takxDF9Vgg=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=eASZFug7jzWnrOF3OuHWC4dJIdUSnjJMhAZUEWqUVi4S7MXbtF5ibFVRSy4+s537i
+	 XUoY0kXJCaCx8MxtLhr+lrqq7NBntmoWdrBHhwp89a1vo6ad9Be0OIxrxYWGthQELk
+	 RqQ0blwKXaXTZmXrJFZgO2OKqLo7ZWy1fBwW1QPIGDXU1mei6Oh2U7348bqhX6Ij1F
+	 utV4CnZhplr9TkSvfz0vgnkLdUys67sBj2wznd3JK92mKYhvuAzLwbPqxgom8dj0rh
+	 GxzUUzbP6wspjvSYYLHIQ6Tlw8fhCAnoo+ZdRHNGcd1kuoMAUM8GVTYLJ4ROhBtRXu
+	 isnidYxLb535g==
+Date: Tue, 28 Jul 2026 13:56:18 +0200
+From: Manivannan Sadhasivam <mani@kernel.org>
+To: Niklas Cassel <cassel@kernel.org>
+Cc: manivannan.sadhasivam@oss.qualcomm.com, 
+	Bjorn Helgaas <bhelgaas@google.com>, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, 
+	Oliver O'Halloran <oohall@gmail.com>, Will Deacon <will@kernel.org>, 
+	Lorenzo Pieralisi <lpieralisi@kernel.org>, Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kwilczynski@kernel.org>, 
+	Rob Herring <robh@kernel.org>, Heiko Stuebner <heiko@sntech.de>, 
+	Philipp Zabel <p.zabel@pengutronix.de>, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, 
+	linux-arm-msm@vger.kernel.org, linux-rockchip@lists.infradead.org, 
+	Wilfred Mallawa <wilfred.mallawa@wdc.com>, Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>, 
+	Lukas Wunner <lukas@wunner.de>, Richard Zhu <hongxing.zhu@nxp.com>, 
+	Brian Norris <briannorris@chromium.org>, Wilson Ding <dingwei@marvell.com>
+Subject: Re: [PATCH v8 1/5] PCI: dwc: ep: Clear MSI iATU mapping in
+ dw_pcie_ep_cleanup()
+Message-ID: <k5zkz2wnvkb2kzwyazafghgncqefv4cvuzrwwek6xi27vvldej@o4ostebesrbm>
+References: <20260518-pci-port-reset-v8-0-eb5a7d331dfc@oss.qualcomm.com>
+ <20260518-pci-port-reset-v8-1-eb5a7d331dfc@oss.qualcomm.com>
+ <ameE3SBWqbiE8PJp@ryzen>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -86,58 +77,51 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260728-acpi-bus-v1-1-12ff25fdea9b@thegoodpenguin.co.uk>
-X-B4-Tracking: v=1; b=H4sIAG+LaGoC/yXMQQ5AMBCF4avIrDXRLkpcRSyqMxgLpINImt5ds
- fyS/70IQoFJoC0iBLpYeFszdFmAn906kWLMBlMZW9WmUc7vrIZTlEPbeNSjRY2Q8z3QyPd31fW
- /5RwW8se7h5Qey68Hm2wAAAA=
-X-Change-ID: 20260728-acpi-bus-ad68cd1f6d1d
-To: Ioana Ciornei <ioana.ciornei@nxp.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
- "Pawel Zalewski (The Capable Hub)" <pzalewski@thegoodpenguin.co.uk>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1785236346; l=1168;
- i=pzalewski@thegoodpenguin.co.uk; s=20260430; h=from:subject:message-id;
- bh=mucCZf1NS0fqiFUADE3n7xyqr9AOroSST9K2LCuKKWo=;
- b=BH384Q69MA/2LGMLx5Ou4eT5qIbk//2B3ufcJ9Grc+zwP8Q594exHGE+TYej2jgVU9zAMWkzx
- hTiwbCeF45aCyP5RJCgvY50uJhnWcqfUuDVwuQ74q8mWpOuNAxCO6/j
-X-Developer-Key: i=pzalewski@thegoodpenguin.co.uk; a=ed25519;
- pk=vHq4n9IonORH2GTzLv8r6CWAFHzgfBuNkQPXA8NSly0=
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <ameE3SBWqbiE8PJp@ryzen>
 
-This module sets the acpi_device_id::driver_data to 0 but
-the field is not actually used within the module, we can
-just drop it from the table.
+On Mon, Jul 27, 2026 at 06:18:37PM +0200, Niklas Cassel wrote:
+> On Mon, May 18, 2026 at 08:29:13PM +0530, Manivannan Sadhasivam via B4 Relay wrote:
+> > From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
+> > 
+> > The MSI iATU mapping is currently only cleared when the endpoint is
+> > stopped via configfs or when the host updates the MSI address/size.
+> > This avoids redundant iATU reconfiguration every time the endpoint
+> > raises an MSI interrupt.
+> > 
+> > However, a fundamental reset triggered by PERST# assert/deassert
+> > resets all iATU inbound/outbound registers without going through the
+> > configfs stop path. If the host also retains the same MSI address/size
+> > after PERST# deassert, the driver never clears the stale MSI iATU
+> > mapping. It then continues using this stale mapping to raise the MSI
+> > interrupts, which can cause IOMMU faults and MSI failures on the host.
+> > 
+> > Fix this by clearing the MSI iATU mapping inside dw_pcie_ep_cleanup(),
+> > which is already called as part of the PERST# assert/deassert sequence.
+> > This unmaps the MSI iATU region and sets the msi_iatu_mapped flag to
+> > false, ensuring that dw_pcie_ep_raise_msi_irq() performs a fresh iATU
+> > mapping on its next invocation, regardless of whether the host changed
+> > the MSI address/size.
+> > 
+> > Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
+> 
+> Doesn't this need a Fixes tag?
+> 
 
-While we are at it - use a named initializer for the
-acpi_device_id::id field as well to make the code more
-readable.
+It needs one yes!
 
-Signed-off-by: Pawel Zalewski (The Capable Hub) <pzalewski@thegoodpenguin.co.uk>
----
- drivers/bus/fsl-mc/fsl-mc-bus.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Side node: It seems like this series does no longer apply on pci/next.
+> 
+> Perhaps need to rebase and resend?
+> 
 
-diff --git a/drivers/bus/fsl-mc/fsl-mc-bus.c b/drivers/bus/fsl-mc/fsl-mc-bus.c
-index 64d75eed0d34..ce024a0fb7e4 100644
---- a/drivers/bus/fsl-mc/fsl-mc-bus.c
-+++ b/drivers/bus/fsl-mc/fsl-mc-bus.c
-@@ -1202,7 +1202,7 @@ static const struct of_device_id fsl_mc_bus_match_table[] = {
- MODULE_DEVICE_TABLE(of, fsl_mc_bus_match_table);
- 
- static const struct acpi_device_id fsl_mc_bus_acpi_match_table[] = {
--	{"NXP0008", 0 },
-+	{ .id = "NXP0008" },
- 	{ }
- };
- MODULE_DEVICE_TABLE(acpi, fsl_mc_bus_acpi_match_table);
+Yep. I'm preparing th next version. Will post it asap.
 
----
-base-commit: 62cc90241548d5570ee68e01aaba6506964e9811
-change-id: 20260728-acpi-bus-ad68cd1f6d1d
+- Mani
 
-Best regards,
---  
-Pawel Zalewski (The Capable Hub) <pzalewski@thegoodpenguin.co.uk>
-
+-- 
+மணிவண்ணன் சதாசிவம்
 
