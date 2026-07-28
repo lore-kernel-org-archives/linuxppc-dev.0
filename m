@@ -1,102 +1,84 @@
-Return-Path: <linuxppc-dev+bounces-24938-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24939-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1E759C54F4C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2026 12:50:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AC1E4C53219
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2026 13:48:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h8b1F2j1Dz2ygm;
-	Tue, 28 Jul 2026 22:50:57 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=85.215.255.53 arc.chain=strato.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785243057;
-	cv=pass; b=QDyCJ2X9bKGUynoT9uzXlRebkOumdnOc8QXWwwJrw5Bddqibkb76OVGExWHwcZvlf1pilsxWkBxyydRtDIqrJSOcUdEJjVcYCzyou6eL6XUNNF1Tv6Eq+RBbS0uiD+PIQ4f/QHEt4eyTl4RDew3zijaYAs5pR+hVMAi6BCKrrQ/na4hoAVv/39+8Wp7nGFVByVQfSBofJYmZHuRFgQ4Zm95UdUO+QXjrbvxhO/bDwPu/nMCzRV4EBo7WaFarXqz3n+t05M3F5RPIiG0k4kkDI1N8MqjFnG5aU+VmxVW9oVlxS6nRxpZXPpEonKOy9ixBCOdVYcn6yLp1akAbKOjWZA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h8cHP5GSCz2xyh;
+	Tue, 28 Jul 2026 23:48:17 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c200::5" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785246497;
+	cv=pass; b=Yl9L4CWiz4Xfj05alXFgusJ34Snq0VIWBe3FJHFzHy+dNTNX9yQNuNKVJsriVt4mqtSVYAwzUJyseNRLDvyJGawmDlK+XbhVkZODaShpT4zZTVsEZR8JAiLiUKpa1UnX/yL5ECRAvsuyHA5Iv4WPUBh826lyKrusn8ppXov9XM1iov6hyNEQd9dsy0P3WGo+R3tpFtJm99pEvW36yc7tnMJSFdE2uxt0o5dcGmVYuWEmUgCuClBZa7inAP88x2j1+AGyN6hbIwy/1I5XWzTJQ+S3lJDloL2QACeYqXKEcnvDAVsbn3qtahHUat+nGbp3fZJS1H1+o09EStS1HdBD5w==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785243057; c=relaxed/relaxed;
-	bh=iWZz2i8JhyKcjU7uV9AvajZg2gmBVrrjukI2EI12+yg=;
-	h=Subject:To:References:Cc:From:Message-ID:Date:MIME-Version:
-	 In-Reply-To:Content-Type; b=FaXEdzs6btSU2t1z4M0kdHyN7P/64YOCXeJHYuryaDNLN0+JCvHU78EBCsNaw0U4/tHPXvrJPBnNuHXNqCOmBuy0RAPRFk/3tfmRKJ74FJErnUaus3DDfNpMk9oolMURkLeGeZXWYumnJzGDQH/xxGrmvtQlCB0REnP2mGvDTrh3y4z2SnwBer4f8C/wiYR/OYNpyM/WGj4NcOes3Tih2+aTvnTXY4aKvw0iNjXpibkYHp4X6A9uVvpSLuemm5WZJ2vVZdxDudKJu5Q+TIIa0y2QxNdOuWy/BoedDutU1rW75CJlMRoTJsex0GsS0rldNex8CxRm/1lrLlOqTLz7nQ==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xenosoft.de; dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=bIQisLPA; dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=2cfhalPf; dkim-atps=neutral; spf=pass (client-ip=85.215.255.53; helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org) smtp.helo=mo4-p01-ob.smtp.rzone.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xenosoft.de
+	t=1785246497; c=relaxed/relaxed;
+	bh=JlU3GC/lZWKWvY0pjhRkOV34jKOVc8c3N92R/QR+uY8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=LKH0FwZszMmwjMjPUNWyT5DFoRc6JQuR6ueZGu7vT/gYR/wl3s9TMqgQE8QIVl+Bt5nMFAnxXFaJQI8GsNIFVYdbetmDqQltjrt3YuBSEdklhAytBHhvHNcVawUJ7gcDUXvnvIw5PA9mI3hrr7JVVuASZQmt35RN9ZVj12CQ5TYBFON54SXUmJ/j/d38O1Ba1lximtZ+QcgRYcdtO/fgD7D4u+agr522gYrXQdfUpNjcAZbhZiHuOhUSy20bc5sIXG99Up+sta0rLgPU6lJJhoTCAO8Ja0IdPGw7T31QGY/tOZbidvk1ZdOg5lKzxRsEUBmxtVlH6Nx2qm3ZDn3UGg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=KZQCYhJx; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c200::5; helo=duzpr83cu001.outbound.protection.outlook.com; envelope-from=vladimir.oltean@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=bIQisLPA;
-	dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=2cfhalPf;
+	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=KZQCYhJx;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=mo4-p01-ob.smtp.rzone.de (client-ip=85.215.255.53; helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org)
-Received: from mo4-p01-ob.smtp.rzone.de (mo4-p01-ob.smtp.rzone.de [85.215.255.53])
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c200::5; helo=duzpr83cu001.outbound.protection.outlook.com; envelope-from=vladimir.oltean@nxp.com; receiver=lists.ozlabs.org)
+Received: from DUZPR83CU001.outbound.protection.outlook.com (mail-northeuropeazlp170120005.outbound.protection.outlook.com [IPv6:2a01:111:f403:c200::5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h8b175k9Jz2yH4
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2026 22:50:48 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; t=1785243006; cv=none;
-    d=strato.com; s=strato-dkim-0002;
-    b=bu7+qmmzS/DHHbO5g8ZdZehMa7DDsAcJZpw69RALJBWAhir7EogG9MBEiUqEcSZ73J
-    OZlZwN1849ovCMBFNK/I+q/5R0Msumd4MCNebsgpSDCTjWSKWIY1hsZmv4lweMm7329R
-    4JIuejmfEpg3rRtBfgQgKK3KKvGwYCRowqOHpjIj7zrB+i/VQ9yaLU86cADUWo30H5/9
-    pd3Mf/TR9rl/UdzQVCBTzvUC0O4MK0kcN3whRfYGeHLyFxboxQtYXxTmRevS5gYCnVGB
-    PDTR3Qf6YcwXTCVnKEkbAA5/Kz87MaygFIdIHM1SHTevtIYfYtBAQ9UYSMxYls+ULj9e
-    QIzw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1785243006;
-    s=strato-dkim-0002; d=strato.com;
-    h=In-Reply-To:Date:Message-ID:From:Cc:References:To:Subject:Cc:Date:
-    From:Subject:Sender;
-    bh=iWZz2i8JhyKcjU7uV9AvajZg2gmBVrrjukI2EI12+yg=;
-    b=fg7KE/mN4+HI12vYDZfDjFqklje8gdmIOpUwmMiTxGiVXIHPhVQ8uquK+6fCZTnzMe
-    PlapH59cvrNB9KHjCqTFreB1ahlNOt4PrcWsUUiUAatzaS5qYiRthQQzuldQfcWjdhca
-    Jjzi5jwCR9XhkOICjX1TDduogdlYQDzi/nFOhT7ei+Ig5sPf0tGwwP0gh64wIvIrwHLU
-    w2TLZlZN68K4sVGm0iQhbtWG3FdGZdHJ/JSPumYTJfDYTY1RpjeTgXItOrvs6Ed4Es35
-    4jtmdg4kj6M5ww0YmfwimD5fLULQ5ovKQNyCV5W+5X7vJo5mF6ZVOWYfxPfvuiUsZhZy
-    iGDw==
-ARC-Authentication-Results: i=1; strato.com;
-    arc=none;
-    dkim=none
-X-RZG-CLASS-ID: mo01
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1785243006;
-    s=strato-dkim-0002; d=xenosoft.de;
-    h=In-Reply-To:Date:Message-ID:From:Cc:References:To:Subject:Cc:Date:
-    From:Subject:Sender;
-    bh=iWZz2i8JhyKcjU7uV9AvajZg2gmBVrrjukI2EI12+yg=;
-    b=bIQisLPAQjsEM0+uVWrx46H9IIOtp//qMRhfcPCU7XtojYo2U4IrlYFnxgl7+Ks0jp
-    lCxXe3qXFQytrECsS0o14MPMs25BaSxwzgcdgZoE5ud0uVs4DWENHCuK8RL7xSCVb50C
-    Hj4NyTDE8C4fehImZIB4yT3xQPIy1FayCx5kL6iWCHLYP4zzp43Gmm0eH7B49Q56XZvH
-    MN0zetjv1knksVInH6vBpiydOVFVaPCFNF4dQFJVZRc7+I3vLx8cEK+yNMlYZKlD+w6f
-    avFZ6+J45W2IiGFrDSeJQjbef2gTg/QcRKE0hAmwUHwbksekSRjjvyJ3ZgIO7vqGWI6t
-    TrSA==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1785243006;
-    s=strato-dkim-0003; d=xenosoft.de;
-    h=In-Reply-To:Date:Message-ID:From:Cc:References:To:Subject:Cc:Date:
-    From:Subject:Sender;
-    bh=iWZz2i8JhyKcjU7uV9AvajZg2gmBVrrjukI2EI12+yg=;
-    b=2cfhalPfcmyQgR9YWGD8hFenDHspGqQwh+VFr8cQeY2voIiylfA5jff1INuT6MY5Dx
-    vGAaxeMdYCMFE2aP7CAg==
-X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGN0rBVhd9dFr4thIFiqT9BURIi+t73c="
-Received: from void-ppc.a-eon.tld
-    by smtp.strato.de (RZmta 55.5.6 DYNA|AUTH)
-    with ESMTPSA id eed0ee26SCo5Ysg
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
-	(Client did not present a certificate);
-    Tue, 28 Jul 2026 14:50:05 +0200 (CEST)
-Subject: Re: [PATCH] Connecting the SB600's i8259 controller rather in
- pasemi's pci.c than in pasemi's setup.c.
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h8cHN0k9qz2xJR
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2026 23:48:15 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=tIjm/P9mt/IkI3g0KaT2J9wTTN8ZaOQBl+DAo271yOPGGQqg9U3qBkIvNr/JdUh12i3L0vik/B0wOlggM13PeJtwXEv4CSNYLZbAVm3mKrikp9qa3QxpS2l64BrGWzNpyDGOXatjzZpfkjU7/4rGZMZRz9lPIAsjMNWRLQE6w0mznGzeDr+rBkBZrTWWfJlRrVnLTYoVbiJLJZBuCmBHiglUTQkLtuA2BGuU0hoaFMKWhQOvz7lzoRMtpRK836JOtaL9whtb03xn67UMScNcSwHFBcMYyQr1sPJrAqqZ6g+cJI1mO5lTsWtGPPs6AejauRt9yFec5pBbux48hDJuEg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=JlU3GC/lZWKWvY0pjhRkOV34jKOVc8c3N92R/QR+uY8=;
+ b=HO2g+z1KpbnSePcDO0ZNKdPzOsy1n66vhEzvT5WziiCdc9tZRDILrf/wsE5J1JuvjRHxZdyer41CsxMyHiItJCMKzuWoLO5eVvMkWqDVfWurUTMvxv8KAwWKHsaN/4knA6Qx+DLCSNWYhowyCTtQm/eqoDx4x1Xg6+0+5k/TPtMEQLXLSv911SLH+MO2yN1LXcxJWhrt/D7Fjg+3zH2C4b9eQT6oNfr9qdJaQLuHWMKWT4ityMl1UEBQlh5dy3Sh988Ec95BSau/KbR5vXljReBS5cA/jXlSsxqrbN8MOzbiPhmQeJYynj0vyMeeUZ1ZuBAniJx4CFNaeZAaJFTFYQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=JlU3GC/lZWKWvY0pjhRkOV34jKOVc8c3N92R/QR+uY8=;
+ b=KZQCYhJxM+RCOlCWPP+8yIewbcejbNOr2plDurDXtoGKDMma+/1yE3GH2yBRSNTBiMNWy4s8POEnbRoRd8Sq/ekRUEtkCkX3fpCTFKHFXkNt3m2JR46A0jsOHSfzxRzKv4cGfQF5+Wt9XQ7pQB/Jw8cBI+OeJKHZrgoJvrZsSJYnpsjT0yWUJ/CtJZGErzVUtQBhm9Flu0e+HAkIgcJn8VGd97fPe6QTU12FrdWZUPqm91LXIDyzAQRGMUmnZjivK75bpLZwKOrF+14smUhxHJdpfUTBkQqzd+lBAv1bsF/0y/ZA414e/Y5Oaua+Pq+SuE2c13cka5O9RpZO9n4qSQ==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nxp.com;
+Received: from AM0PR04MB6900.eurprd04.prod.outlook.com (2603:10a6:208:17d::10)
+ by AM9PR04MB8666.eurprd04.prod.outlook.com (2603:10a6:20b:43d::21) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.245.13; Tue, 28 Jul
+ 2026 13:47:50 +0000
+Received: from AM0PR04MB6900.eurprd04.prod.outlook.com
+ ([fe80::7fda:8431:ca1b:b023]) by AM0PR04MB6900.eurprd04.prod.outlook.com
+ ([fe80::7fda:8431:ca1b:b023%5]) with mapi id 15.21.0270.009; Tue, 28 Jul 2026
+ 13:47:50 +0000
+Date: Tue, 28 Jul 2026 16:47:46 +0300
+From: Vladimir Oltean <vladimir.oltean@nxp.com>
 To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>, open list <linux-kernel@vger.kernel.org>
-References: <20260701125941.906-2-chzigotzky@xenosoft.de>
- <656742f7-ff8f-43f5-829d-5b5f0f6c8c95@kernel.org>
-Cc: "R.T.Dickinson" <rtd2@xtra.co.nz>, mad skateman <madskateman@gmail.com>,
- Damien Stewart <hypexed@yahoo.com.au>,
- Darren Stevens <darren@stevens-zone.net>,
- Christian Zigotzky <info@xenosoft.de>
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-Organization: A-EON Open Source
-Message-ID: <f5ed5a79-4235-31b6-5bd9-c68d1a6b50cf@xenosoft.de>
-Date: Tue, 28 Jul 2026 14:50:04 +0200
-X-Mailer: BrassMonkey/34.2.2
+	Vinod Koul <vkoul@kernel.org>
+Cc: linux-phy@lists.infradead.org, devicetree@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+	Ioana Ciornei <ioana.ciornei@nxp.com>,
+	Neil Armstrong <neil.armstrong@linaro.org>,
+	Tanjeff Moos <tanjeff.moos@westermo.com>,
+	Michael Walle <mwalle@kernel.org>, Shawn Guo <shawnguo@kernel.org>,
+	Frank Li <Frank.Li@nxp.com>, linux-kernel@vger.kernel.org,
+	Conor Dooley <conor+dt@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v4 phy-next 0/9] RCW override for 10G Lynx dynamic
+ protocol reconfiguration
+Message-ID: <20260728134746.p7zqstau6376xifj@skbuf>
+References: <20260721231603.67865-1-vladimir.oltean@nxp.com>
+ <20260723150105.da2cqgtb7t5vw2d3@skbuf>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260723150105.da2cqgtb7t5vw2d3@skbuf>
+X-ClientProxiedBy: WA1PEPF00005B89.POLP291.PROD.OUTLOOK.COM
+ (2603:10a6:1d8::637) To AM0PR04MB6900.eurprd04.prod.outlook.com
+ (2603:10a6:208:17d::10)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -110,141 +92,100 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-In-Reply-To: <656742f7-ff8f-43f5-829d-5b5f0f6c8c95@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: AM0PR04MB6900:EE_|AM9PR04MB8666:EE_
+X-MS-Office365-Filtering-Correlation-Id: e2e3ebdd-efba-42fe-6056-08deecaed0d0
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|376014|7416014|10070799003|23010399003|19092799006|366016|1800799024|18002099003|22082099003|3023799007|4143699003|56012099006|11063799006|10067099003;
+X-Microsoft-Antispam-Message-Info:
+	BWGoUu3W1r4cDYJbnzfdzwTwsNcb+lVoLDR+30DgfKpFQIqFvlbkuztPONQa8WmtdS5J0N4GmyC3vnGuVuANmaU7do7Bs1DqPCLu6GzNl8tKUGcOjz+WMx21b2QK1uB+QiFWtmgM4nS8xS69dY37hvqgVxYav2fPs9smGpTCjsrlAc0C17mAM57ysvoabRyMyd243IyAJrSfesUV7K+r7Y3f6TkkEzR8SFj6QdSOauGKNAhmmKRGgDq7cZIxf56ZJI7EPHEE2tDBKewrauKYdbdlnLAcy/DpxXrXBEVAmAkV20MXAaxf4NzUw+3B3bAc/3MNZkx3cC+ZsBRh7kfAZ1EIQLW0du2KbQlREZj5QX+dln1VfeFZbWJb6ETTmSiaO0We7J8aUG+xhv1NvnO4MC62Hsncg8VOD/JTv3bSUOO8ULrrKptdBjFAWdTUIzATNjbMmgcuYCdrDXh9MIl5kkvgsc7Wsc0Rd6560xlc6S003iaVLtuyFWQWijoUSyeCNyfr6GiOqEi9GHlVIC7JuKbNES1ld6agjLWZU3D2hL4dngkxV1sHMMYBTzRiRGIQ1Cu7jOrKyEU+lQopKm1V2bWv8tMrdYvdzM1khEi+dQwWm2PShbQZaY1mwZok/rRBQjEfaXLg2eDPbLgrfXUDJ2zpEFwyOFPEGNs9kF7yUu0=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM0PR04MB6900.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(10070799003)(23010399003)(19092799006)(366016)(1800799024)(18002099003)(22082099003)(3023799007)(4143699003)(56012099006)(11063799006)(10067099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 2
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?/6nah6eYhYNIrWqDv/jLMRpM8EgfUP/rk2yy1jssModKUOFbKJ6F3GjWmiPc?=
+ =?us-ascii?Q?e3+tkeWUoGHoc8zm6w2M0/fgNnjyGJsV0/RAHA8K5dGRvQfKV55oC0VyewVA?=
+ =?us-ascii?Q?IiXpuFUEAe1MXktLS/PCGW7T5MMm1ocwhDICk2VTpCvxqcFEx5sGiiDYWJe4?=
+ =?us-ascii?Q?Vendp5M1nTuWHrWx0KDNaxNDjSkc35hXtDIYe9Bh/YcrejcK0ZgsDewh1wrn?=
+ =?us-ascii?Q?0cQwSt3z7qAlXtS4pQR+NDoPE63I1s4tg5DkEeTMa4aBl5B1bl1WZON7J8w4?=
+ =?us-ascii?Q?8QmUxsh45DOrsdXyssIa6nkEFyiW+oB2E8WYcObrORTuq4FQJJs+gOH2uUtr?=
+ =?us-ascii?Q?/XdiyBflnh2NSolovwNJuygXXTPUm0mdEkbMeEqrF9EEZYFJvoGsgIKaoo5J?=
+ =?us-ascii?Q?Nqw5OTklAJGYkotyFcSWP9ZmVLD/Tsxnd6efIF+UGrRL1isXLo/YHzTjxwgX?=
+ =?us-ascii?Q?nWNqAQmywl7IbwR86n5qLIkQ2wPOOh5ra4fSz/ppFlingk6QxTzr/1Qj7b1O?=
+ =?us-ascii?Q?XyFZV54WU5rDh9gVGT/Y0p0U1M8pqIXQySNkxvG4p3cJqKfStvOgdw4go4MA?=
+ =?us-ascii?Q?LctRDBCVxWmxbJcuZVnP60S1zVx5EAFASsFFpy6rNgZfclOJZkfI9F5qIlCQ?=
+ =?us-ascii?Q?w15LRdMEvvtrExeT7tdqI3qeX6GyLNQtk4b4mK02pFEzYqSUXL/N+THsa2k6?=
+ =?us-ascii?Q?JxyHVuZYhZBU42pze+myy3IslE+biAUC1aGxuZfTLqh3+P5j2/G08udUO1K2?=
+ =?us-ascii?Q?oJ3GQC3RW0kuGiL4gGC/ghglXJYnulCzJMU4d+vFL1J2wCWcs0Qvx74cvH6n?=
+ =?us-ascii?Q?byOB2QuAnuVbxWtb3HSx6ykknBQSwryfNE0MsNAB6Rc64iVOKTQ2JPpucXo6?=
+ =?us-ascii?Q?5+P2ML0DvIQg1UFzQ1BGbXLDdkc/5u9e9FLKMfp8gUN6YKLv64ohYvAHkIYq?=
+ =?us-ascii?Q?j91/TtaXf4qJHvwkmYNjdQdeq1OzZq13o8cM5nCJkz3W7mHjtO/odfIunqhP?=
+ =?us-ascii?Q?aBUS+hdEO0wVJbDacWx9JIqh5dAx2AJTKqMiNAO/DzaRz91VvMXPBLt1OzXJ?=
+ =?us-ascii?Q?EcF3UepFDY1p0vp4PrJb/pUVsDlLYEcnq49N1vq7jXWf3LFu+LYAP7GPNqhO?=
+ =?us-ascii?Q?pfugO3US5WOfm5pvXY7LO4UqRUL9hVQd9NGXZf5UDiLFNVl1NW2poACxMi+N?=
+ =?us-ascii?Q?F+yEjeMQ7jHlJn8tU7RIPOt/HIW6109opSWki95wLt3GaBYLJFrbfsE3Ba7t?=
+ =?us-ascii?Q?xNkZOjClK30X+GIpc5mfPSl/wAXD1ceboDRoxo7X7RZ/2Lh4h1TVWHxei1bk?=
+ =?us-ascii?Q?YobUptAOFFMeJZGvuFUW71MGoiS8j0aCQtbyNXulmitk2eRO+i8oeh5DzI00?=
+ =?us-ascii?Q?LQqbELhWrcQ2y0XJZFrUMRlX9fYs1Wmc1XBh6tAaZhUNyh3P9pIWedG+L1Dt?=
+ =?us-ascii?Q?KxZowZGZplhSOhL4X1TGl2YRWB7GvDlJvN3zp430A7noIOda8si1Lf6er7cx?=
+ =?us-ascii?Q?BCRrlB6DfL4GwrM1/YC6Rjy4NLRHmdZ5+ms0+Qqtj1M1XmO85Xezo7L4dGZC?=
+ =?us-ascii?Q?uv2bHy3XW/365nCnnQk2hw7PQ1NcdG3Zsnjpo/IMLkK3/xDksRF80tRXQfuk?=
+ =?us-ascii?Q?XmtS1XXBe4Ne2Ppcj7pBocCq3OHIUrTYD3KXGtWK5G33Mqc1RUoXsPuJ4Ze7?=
+ =?us-ascii?Q?STTO/JSIoQBpVsZsBIAuHjA4IzBQVEQndgU7aBX8dqaCMxr8PB70W0vOomY5?=
+ =?us-ascii?Q?VD6CtJlWPWb4L8sa6U1vpJSYNK75rdYhVs7LW5FSRQabXJdvWXVrlZyzUV55?=
+X-MS-Exchange-AntiSpam-MessageData-1: fHFVlo7oXjLr/UKcSFHsTvp1BZQ8XjrT/Uc=
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: e2e3ebdd-efba-42fe-6056-08deecaed0d0
+X-MS-Exchange-CrossTenant-AuthSource: AM0PR04MB6900.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 28 Jul 2026 13:47:50.7745
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: PBK2+LKgIryy3D459e7eQSgd8UhZIBc0lKKqiuG80LzOdjG10a5AnVMAJB1dU6wbhlDItK+8hRhoaJDDcTQrxg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM9PR04MB8666
 
-On 27/07/26 15:43, Christophe Leroy (CS GROUP) wrote:
- >
- > Should be better in arch/powerpc/platforms/pasemi/pasemi.h
- >
+Hi Christophe,
 
-Hello Christophe,
+On Thu, Jul 23, 2026 at 06:01:05PM +0300, Vladimir Oltean wrote:
+> On Wed, Jul 22, 2026 at 02:15:54AM +0300, Vladimir Oltean wrote:
+> > Ioana Ciornei (4):
+> >   soc: fsl: guts: use a macro to encode the DCFG CCSR space
+> >   soc: fsl: guts: add a global structure to hold state
+> >   soc: fsl: guts: add a central fsl_guts_read() function
+> >   soc: fsl: guts: make it easier to determine on which SoC we are
+> >     running
+> > 
+> > Vladimir Oltean (5):
+> >   soc: fsl: guts: perform fsl_guts_init() error teardown in reverse
+> >     order of setup
+> >   soc: fsl: guts: make fsl_soc_data available after fsl_guts_init()
+> >   dt-bindings: fsl: layerscape-dcfg: define DCFG_DCSR region
+> >   soc: fsl: guts: implement the RCW override procedure
+> >   phy: lynx-10g: use RCW override procedure for dynamic protocol change
+> 
+> Even though I intended these changes for linux-phy (they are also
+> build-tested there), I'm fine either with these changes taken through
+> Vinod's tree with Christophe's ACK for patches 1-8, or through
+> Christophe's tree with Vinod's ACK for patch 9, really.
+> 
+> I see on Patchwork there's a minor issue in the commit message of patch 3/9:
+> https://patchwork.kernel.org/project/linux-phy/patch/20260721231603.67865-4-vladimir.oltean@nxp.com/
+> "WARNING: 'struture' may be misspelled - perhaps 'structure'?"
+> 
+> Could this be fixed up while applying, if there is no other feedback?
 
-Thank you for your answer. I modified the patch today. The Nemo board 
-boots without any problems if I compile the RC5 of kernel 7.2 with this 
-patch.
+Do you have feedback/a preference for how these patches should be handled?
 
-Could you please check the following modified patch?
+I see Vinod acked patch 9, so I guess that means his preference would be
+for you to pick up the entire series (which is indivisible).
 
-Thanks,
-Christian
+I checked that the patches apply to your soc_fsl branch:
+https://git.kernel.org/pub/scm/linux/kernel/git/chleroy/linux.git/?h=soc_fsl
 
----
-
-powerpc/pasemi: Move Nemo i8259 initialization to pci.c
-
-The Nemo board requires the PCIe ports to be initialized before the
-SB600 ISA bridge can be accessed.
-
-Since pas_pci_init() is now called later during boot, the i8259
-initialization in pas_init_IRQ() happens too early and accesses
-registers that are not yet mapped, preventing the board from booting.
-
-Move the Nemo-specific i8259 initialization to pas_add_bridge(),
-after the ISA bridge has been discovered.
-
-Suggested-by: Darren Stevens <darren@stevens-zone.net>
-Tested-by: Christian Zigotzky <chzigotzky@xenosoft.de>
-Signed-off-by: Christian Zigotzky <chzigotzky@xenosoft.de>
-
----
-v2:
-- Move Nemo i8259 initialization out of pas_init_IRQ() and into
-   pas_add_bridge() after the ISA bridge has been discovered.
-- Change nemo_init_IRQ() to no longer depend on the MPIC instance passed
-   from the IRQ setup path.
-- Move the nemo_init_IRQ() declaration to pasemi.h and add a no-op stub
-   for non-Nemo builds.
-- Fix missing prototype warning reported by Christophe Leroy.
-- Fix indentation and clean up the commit message.
-
-diff -rupN a/arch/powerpc/platforms/pasemi/pasemi.h 
-b/arch/powerpc/platforms/pasemi/pasemi.h
---- a/arch/powerpc/platforms/pasemi/pasemi.h    2026-07-26 
-23:45:48.000000000 +0200
-+++ b/arch/powerpc/platforms/pasemi/pasemi.h    2026-07-28 
-07:44:31.924168227 +0200
-@@ -7,6 +7,12 @@ extern void pas_pci_init(void);
-  struct pci_dev;
-  extern void pas_pci_dma_dev_setup(struct pci_dev *dev);
-
-+#ifdef CONFIG_PPC_PASEMI_NEMO
-+extern void __init nemo_init_IRQ(void);
-+#else
-+static inline void __init nemo_init_IRQ(void) { }
-+#endif
-+
-  void __iomem *__init pasemi_pci_getcfgaddr(struct pci_dev *dev, int 
-offset);
-
-  extern void __init pasemi_map_registers(void);
-diff -rupN a/arch/powerpc/platforms/pasemi/pci.c 
-b/arch/powerpc/platforms/pasemi/pci.c
---- a/arch/powerpc/platforms/pasemi/pci.c    2026-07-26 
-23:45:48.000000000 +0200
-+++ b/arch/powerpc/platforms/pasemi/pci.c    2026-07-28 
-07:34:37.036634023 +0200
-@@ -265,6 +265,11 @@ static int __init pas_add_bridge(struct
-       */
-      isa_bridge_find_early(hose);
-
-+    /*
-+     * ISA bridge is now active, add the i8259 cascade (if needed)
-+     */
-+    nemo_init_IRQ();
-+
-      return 0;
-  }
-
-diff -rupN a/arch/powerpc/platforms/pasemi/setup.c 
-b/arch/powerpc/platforms/pasemi/setup.c
---- a/arch/powerpc/platforms/pasemi/setup.c    2026-07-26 
-23:45:48.000000000 +0200
-+++ b/arch/powerpc/platforms/pasemi/setup.c    2026-07-28 
-07:54:54.147863161 +0200
-@@ -214,10 +214,12 @@ static void sb600_8259_cascade(struct ir
-      chip->irq_eoi(&desc->irq_data);
-  }
-
--static void __init nemo_init_IRQ(struct mpic *mpic)
-+void __init nemo_init_IRQ(void)
-  {
-      struct device_node *np;
-      int gpio_virq;
-+    struct mpic *mpic;
-+
-      /* Connect the SB600's legacy i8259 controller */
-      np = of_find_node_by_path("/pxp@0,e0000000");
-      i8259_init(np, 0);
-@@ -228,14 +230,10 @@ static void __init nemo_init_IRQ(struct
-      irq_set_chained_handler(gpio_virq, sb600_8259_cascade);
-      mpic_unmask_irq(irq_get_irq_data(gpio_virq));
-
-+    mpic = irq_get_chip_data(gpio_virq);
-      irq_set_default_domain(mpic->irqhost);
-  }
-
--#else
--
--static inline void nemo_init_IRQ(struct mpic *mpic)
--{
--}
-  #endif
-
-  static __init void pas_init_IRQ(void)
-@@ -297,9 +295,7 @@ static __init void pas_init_IRQ(void)
-          irq_set_irq_type(nmi_virq, IRQ_TYPE_EDGE_RISING);
-          mpic_unmask_irq(irq_get_irq_data(nmi_virq));
-      }
--
--    nemo_init_IRQ(mpic);
--
-+
-      of_node_put(mpic_node);
-      of_node_put(root);
-  }
-
-
-
+Thanks!
+Vladimir
 
