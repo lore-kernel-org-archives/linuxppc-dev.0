@@ -1,80 +1,63 @@
-Return-Path: <linuxppc-dev+bounces-25020-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25021-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D3AF1C54FCD
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jul 2026 14:54:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2F6E4C53219
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jul 2026 15:14:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h9FjC5jVmz2yrW;
-	Thu, 30 Jul 2026 00:54:23 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785336863;
-	cv=none; b=cbRKXXIGJQ3idvD81osTBY+qnzv+DtyY3qoKgUjiTfur/PSRIHx3U/dzIRPkIdTuaw1gQg4hyzqw3yk0EZDMUWOSdgOOdf+l+U3vpNAmUmyJfB/Ni/R3Wbi+knfKYWh1pE338GiciVNDpkJw4ZKBGfknBnlEspCIxrZ/B+UepMD8drHRtgEl+umAudYtF1RStlPCD58PHfHib4SG/+k3HAOGKRjzxwiG+FaMd51uF95vcqwFlRIaddBu0lO6WqSakeUZu5h2Jv+WQVKrlJd0gsTt9rpPnPOjJUCxxa1xrjrAFeNi8la9Ho0jM3j1Mel4L1dhIUOz+hwy46qrcd+9Kw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h9G8Q5Cbxz2xwP;
+	Thu, 30 Jul 2026 01:14:30 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785338070;
+	cv=none; b=HeJPrJwyBo8oT4B8wM9M5fXIR5Er8YElaZHqRUdjm/fDSYMdfqj8zsVF9Ur7tpLPLH2MHby7aePdAm4/jzPmfKbRBtEl44VoZgksvWNXZLgzJECZ3Fnu9l9yBMBjAcqYKCDj0dHglgkYZ1AAXyhC5fMWTZXuPS2BBhPGTsgm85hp6DDLyX/ZTX7m4OWxGRuwmHQWamV/dZ4SBXo3FmNCnBmv6hFSJMzhGlEinRqTUpilhjeQg4n0l+79EyEFkpMI/REJks7yi2DxQ0jiDuZiK028wSoGeOSlGLdMlOxxE7vTw0TrMR3BTD5KPAn+2vkoj/0ew039UbZLu7L910q8ZQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785336863; c=relaxed/relaxed;
-	bh=TYREk4qFbcNQ4lb7wMhmnUu7yaJoyq6fQbdGgSxfq+o=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=J+6cdZUtCXBQU3x9akTcSN0Gv0F4jWCYQEa0rYVKsqolgsKrBIZpkjF8gp4i5o01MZfCi1uhFVGDqvx5XUBRSTIt+//vahwZca/4DASmoEoQbW/V/H6JFmLlj3drA5KbuAF1Q608JKh9QfK8nFISx/9In8Vp0ey9aJUN4VYolSaAYiAUyk1RDzzBSq5AaY+9fRwiPegRq1pi2D7J2zhSr0CYl2Y02C3W+K4vlL9Sa0bd1Y4JlfEO033e+YGjedT1+XPDd/ufi+001yoaK9sofUmpwl910+8gGx/FDe8fqUyc3XPSG5XdLE+UaEoU3rHqXjJjYkCU4zBRUAMs5BENYw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=e/tGRlsL; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mahesh@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1785338070; c=relaxed/relaxed;
+	bh=Pjb1vpRxRg6idVjUGQ6jYMC5oC/fHi4m7ISfSHpWDj4=;
+	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=VkAbKg8uZMe1eCQjYGpr96Axq8A/JKLupjqvFuoleex2oogjHsU/VBL/j8wRhhh77/rS3FU5kPtGGWR6fuKVv9VjIcROgjYa79qpG1hwjllGrzKE+uWFMlh1sRHPb2NxMoteuNFYnAN3aL37nG+xrJDuPWslP3O/l9Vro6Gj2in1XUNkKhT0o3gxfGb5eGRYmH0A8POI9tdp3hSsmoNcor16q6cGhT/lIEuC+of/pi0Rqh6aYz/YrMQAOrbVt1gBPRDcmV71Y1Vk4ZYq080CQq5760+CB+JZuCsYT0z+9qOv9zgtcIi6UdAfck4lMg8Mrl2lTkJa4wkmFZG6NEl+wg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TiC4qDhG; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brgl@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=e/tGRlsL;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TiC4qDhG;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mahesh@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brgl@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h9FjB3LCvz2yks
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2026 00:54:22 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66TEmNQe218617
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2026 14:54:19 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=TYREk4qFbcNQ4lb7w
-	MhmnUu7yaJoyq6fQbdGgSxfq+o=; b=e/tGRlsLdck37qSs9sdqDIiva1+iUC3iW
-	+6/bL40/ne5AiT1x9C9/+pZlkAOcSxSZXLu9OWlDvSRYY721mHC48t2Gwg0TA8xg
-	8BTzqBzjsAV29z+MAWyfhvXgcO+Hw3cY2YKoAEkdIcOmdnXN7t/mq8lzOd0uOlH/
-	nIUthdlZ/mp2BGU0Hc8tqRk98Lkc0F+0wBCtDslQg7g96GvbRJqQHL2NbY+c3I5Y
-	jRrR97ukI/b1G59o92o4QMGwBxpxnqwHmm5+YjgPjT1j33UAGd/uba4jJY2KEHV0
-	mqc7/flt9wxxyO9P6blBfHPApD2aVj+rDX+zPucj/Lm4G8cAh5NYA==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fmv0ntejr-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2026 14:54:19 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66TEfN4c013305
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2026 14:54:18 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fn7fqfaxk-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2026 14:54:18 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66TEsENg51380666
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 29 Jul 2026 14:54:14 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 717452004B;
-	Wed, 29 Jul 2026 14:54:14 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 2B04320040;
-	Wed, 29 Jul 2026 14:54:13 +0000 (GMT)
-Received: from jupiter.ibm.com (unknown [9.39.23.158])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 29 Jul 2026 14:54:12 +0000 (GMT)
-From: Mahesh Salgaonkar <mahesh@linux.ibm.com>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Cc: Athira Rajeev <atrajeev@linux.ibm.com>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>
-Subject: [PATCH 4/4] powerpc/perf: Add power12 Base Performance Monitoring support
-Date: Wed, 29 Jul 2026 20:24:05 +0530
-Message-ID: <20260729145405.3230272-5-mahesh@linux.ibm.com>
-X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20260729145405.3230272-1-mahesh@linux.ibm.com>
-References: <20260729145405.3230272-1-mahesh@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h9G8P5fXWz2xnp
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2026 01:14:29 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 75E826001D
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2026 15:14:26 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2C2851F00A3D
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2026 15:14:26 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1785338066;
+	bh=Pjb1vpRxRg6idVjUGQ6jYMC5oC/fHi4m7ISfSHpWDj4=;
+	h=From:In-Reply-To:References:Date:Subject:To:Cc;
+	b=TiC4qDhGeGugJluJmFdqS2DloAvtqigdBJGEUTdS5+tPI2P37u1YLNqupYJKmMpCk
+	 txfbV96Y1eY5OmlLq+hF/P0nl/lA5Luvle+eFzrBlRh7sbAxjsAottBZaRUFStPgOM
+	 d6VlqHU4mi/DQe5QgFcZmgp6HPb20WMaCg7q1SY91BEapGLkA/04rPKsaaxYdHvV0V
+	 bWwd619V+RGx3FTzyRgkIncQSD6A2ByOBiyAoZavqMgOiTefVD4KPvSPLTWA43N3r4
+	 Ml3BrxHQpjLsnx9rBQncvGvXDI1ZoMf41hemERgivF6pcB82MqEoFzVtiYdHA2ErXF
+	 vPSMwy2AYqRgw==
+Received: by mail-lf1-f45.google.com with SMTP id 2adb3069b0e04-5aeb8c19017so1345395e87.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2026 08:14:26 -0700 (PDT)
+X-Gm-Message-State: AOJu0Yz43Oqi6ziMZewlfoyHW73wlOdIVA2YrvoIsXLoJnyiuJUB9DzP
+	sV9biUd/AW7YDeHufl6Ia+MAkWSAh9Vb+/LwmJECsX7HPLgS62XDigehR63bXhIeaUmchZ2Krl5
+	ve8ifWjifmWfUEXQE40eZGXvea4pXkFyoVRgwMrILBg==
+X-Received: by 2002:a05:6512:6181:b0:5ad:55f6:1ec3 with SMTP id
+ 2adb3069b0e04-5b2d0213884mr1392852e87.5.1785338064921; Wed, 29 Jul 2026
+ 08:14:24 -0700 (PDT)
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Wed, 29 Jul 2026 15:14:22 +0000
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Wed, 29 Jul 2026 15:14:22 +0000
+From: Bartosz Golaszewski <brgl@kernel.org>
+In-Reply-To: <04dc047f8958a78a920f0a88ca3bd8bf70c56187.1785333986.git.chleroy@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,647 +71,31 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzI5MDEyMCBTYWx0ZWRfX6XXFxnjZx6TB
- LOxdpW9ecGJAhVjU2Z+J/nu5YNEsiHXwWE7NTSK6u1QpBNafpEwVMoOpu8rMdphYnCMmjoHL/YJ
- u3r6CZD8RPS5yqZwgfXxiYSoSno2bU4=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzI5MDEyMCBTYWx0ZWRfX9cQq5zYoEWNm
- O8SJ8K+LKbRBbahRpldt3SXsSvnazPaMufMs+36LxinhwjOLx/RCW4hEFUu+vcIjRFVbRZrxnSY
- Vb0D/TrfEh8saRiKzqyWpSCBC7oI6PS8YHX0X2sCgqp3hCANdVvkGA58xANEzPh7XcQNgvdOqh4
- FI+xzLsxfGN/1CTJmnGtn8Fsgb3c6xlItw4y2dA8lXz7ZdIQfYhe2dDctp3YcMDHWI6WiE1VMRa
- LfA+C6Phhl851g++VzVxJjQKgRJhu1MvGHkluS1MptjSl/FqIN9YKFtTX5oRVcv0wqVo+ITYsIx
- L0q9yxN+VGqXOyvRCSKsQqfwLE6qgPFCpeu1/7BM0SxPfutLOZlcOCrrebSmF8ZpLUqAFdJG3s5
- 9wXXvbSWuAp6PTbOSnUu6JQKXhw5wvKqc1klB3g9ySIs6PvuP5De6FLakj9J7WN//8Kse1noz9y
- n9iU0PXPBbl6zEeDaOQ==
-X-Authority-Analysis: v=2.4 cv=b5WCJNGx c=1 sm=1 tr=0 ts=6a6a141b cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
- a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=V8glGbnc2Ofi9Qvn3v5h:22 a=VnNF1IyMAAAA:8 a=2l87ty8nhBJ9UoGYMqwA:9
-X-Proofpoint-GUID: L3xdZbO7Lc2_37OzH84wNRKFsXc_-i9L
-X-Proofpoint-ORIG-GUID: L3xdZbO7Lc2_37OzH84wNRKFsXc_-i9L
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-07-29_06,2026-07-28_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 spamscore=0 adultscore=0 malwarescore=0 impostorscore=0
- bulkscore=0 phishscore=0 suspectscore=0 clxscore=1015 lowpriorityscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607290120
+References: <04dc047f8958a78a920f0a88ca3bd8bf70c56187.1785333986.git.chleroy@kernel.org>
+Date: Wed, 29 Jul 2026 15:14:22 +0000
+X-Gmail-Original-Message-ID: <CAMRc=MdFhcarvziP=jQwOKubJPe-v0W6Xck_S8mhm8327F7tsw@mail.gmail.com>
+X-Gm-Features: AUfX_myblFT7OCuXOW4dHEmx6cmElNBqUeZuq2_eLJUx_Ak4F74FLfotacPCQ-k
+Message-ID: <CAMRc=MdFhcarvziP=jQwOKubJPe-v0W6Xck_S8mhm8327F7tsw@mail.gmail.com>
+Subject: Re: [PATCH] soc: fsl: qe: properly scan GPIO nodes at startup
+To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, 
+	linux-kernel@vger.kernel.org, Bartosz Golaszewski <brgl@kernel.org>, 
+	Herve Codina <herve.codina@bootlin.com>, Paul Louvel <paul.louvel@bootlin.com>
+Content-Type: text/plain; charset="UTF-8"
 
-From: Athira Rajeev <atrajeev@linux.ibm.com>
+On Wed, 29 Jul 2026 16:10:36 +0200, "Christophe Leroy (CS GROUP)"
+<chleroy@kernel.org> said:
+> Before commit 156460811def ("soc: fsl: qe: Change GPIO driver to a
+> proper platform driver") qe_add_gpiochips() was walking the device
+> tree to find all nodes with compatible "fsl,mpc8323-qe-pario-bank".
+>
+> After that commit the discovery is handled by the platform core,
+> therefore it is necessary to call of_platform_default_populate() on
+> the par_io node.
+>
+> Fixes: 156460811def ("soc: fsl: qe: Change GPIO driver to a proper platform driver")
+> Signed-off-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
+> ---
 
-Base enablement patch to register performance monitoring hardware
-support for power12. Patch introduce the raw event encoding format,
-defines the supported list of events, config fields for the event
-attributes and their corresponding bit values which are exported via
-sysfs.
-
-Signed-off-by: Athira Rajeev <atrajeev@linux.ibm.com>
-Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>
----
- arch/powerpc/perf/Makefile              |   2 +-
- arch/powerpc/perf/core-book3s.c         |   2 +
- arch/powerpc/perf/internal.h            |   1 +
- arch/powerpc/perf/power12-events-list.h |  78 ++++
- arch/powerpc/perf/power12-pmu.c         | 466 ++++++++++++++++++++++++
- 5 files changed, 548 insertions(+), 1 deletion(-)
- create mode 100644 arch/powerpc/perf/power12-events-list.h
- create mode 100644 arch/powerpc/perf/power12-pmu.c
-
-diff --git a/arch/powerpc/perf/Makefile b/arch/powerpc/perf/Makefile
-index 78dd7e25219e..bcc804c41338 100644
---- a/arch/powerpc/perf/Makefile
-+++ b/arch/powerpc/perf/Makefile
-@@ -7,7 +7,7 @@ obj-$(CONFIG_PPC_PERF_CTRS)	+= core-book3s.o
- obj64-$(CONFIG_PPC_PERF_CTRS)	+= ppc970-pmu.o power5-pmu.o \
- 				   power5+-pmu.o power6-pmu.o power7-pmu.o \
- 				   isa207-common.o power8-pmu.o power9-pmu.o \
--				   generic-compat-pmu.o power10-pmu.o bhrb.o
-+				   generic-compat-pmu.o power10-pmu.o bhrb.o power12-pmu.o
- obj32-$(CONFIG_PPC_PERF_CTRS)	+= mpc7450-pmu.o
- 
- obj-$(CONFIG_PPC_POWERNV)	+= imc-pmu.o
-diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index 720b1a500922..10ded865583c 100644
---- a/arch/powerpc/perf/core-book3s.c
-+++ b/arch/powerpc/perf/core-book3s.c
-@@ -2613,6 +2613,8 @@ static int __init init_ppc64_pmu(void)
- 		return 0;
- 	else if (!init_power11_pmu())
- 		return 0;
-+	else if (!init_power12_pmu())
-+		return 0;
- 	else if (!init_ppc970_pmu())
- 		return 0;
- 	else
-diff --git a/arch/powerpc/perf/internal.h b/arch/powerpc/perf/internal.h
-index a70ac471a5a5..84d6ca209c49 100644
---- a/arch/powerpc/perf/internal.h
-+++ b/arch/powerpc/perf/internal.h
-@@ -11,4 +11,5 @@ int __init init_power8_pmu(void);
- int __init init_power9_pmu(void);
- int __init init_power10_pmu(void);
- int __init init_power11_pmu(void);
-+int __init init_power12_pmu(void);
- int __init init_generic_compat_pmu(void);
-diff --git a/arch/powerpc/perf/power12-events-list.h b/arch/powerpc/perf/power12-events-list.h
-new file mode 100644
-index 000000000000..6c043e42cb00
---- /dev/null
-+++ b/arch/powerpc/perf/power12-events-list.h
-@@ -0,0 +1,78 @@
-+/* SPDX-License-Identifier: GPL-2.0-or-later */
-+/*
-+ * Performance counter support for POWER12 processors.
-+ *
-+ * Copyright 2026 Athira Rajeev, IBM Corporation.
-+ */
-+
-+/*
-+ * Power12 event codes.
-+ */
-+EVENT(PM_CYC,				0x600f4);
-+EVENT(PM_DISP_STALL_CYC,			0x100f8);
-+EVENT(PM_EXEC_STALL,				0x30008);
-+EVENT(PM_INST_CMPL,				0x500fa);
-+EVENT(PM_BR_CMPL,                               0x4d05e);
-+EVENT(PM_BR_MPRED_CMPL,                         0x400f6);
-+EVENT(PM_BR_FIN,				0x10068);
-+EVENT(PM_MPRED_BR_FIN,				0x27098);
-+EVENT(PM_LD_DEMAND_MISS_L1_FIN,			0x400f0);
-+
-+/* All L1 D cache load references counted at finish, gated by reject */
-+EVENT(PM_LD_REF_L1,				0x100fc);
-+/* Load Missed L1 */
-+EVENT(PM_LD_MISS_L1,				0x3e054);
-+/* Store Missed L1 */
-+EVENT(PM_ST_MISS_L1,				0x300f0);
-+/* L1 cache data prefetches */
-+EVENT(PM_LD_PREFETCH_CACHE_LINE_MISS,		0x1002c);
-+/* Demand iCache Miss */
-+EVENT(PM_L1_ICACHE_MISS,			0x200fc);
-+/* Instruction fetches from L1 */
-+EVENT(PM_INST_FROM_L1,				0x04080);
-+/* Instruction Demand sectors wriittent into IL1 */
-+EVENT(PM_INST_FROM_L1MISS,			0x03F00000001C040);
-+/* Instruction prefetch written into IL1 */
-+EVENT(PM_IC_PREF_REQ,				0x040a0);
-+/* The data cache was reloaded from local core's L3 due to a demand load */
-+EVENT(PM_DATA_FROM_L3,				0x10340000003C040);
-+/* Demand LD - L3 Miss (not L2 hit and not L3 hit) */
-+EVENT(PM_DATA_FROM_L3MISS,			0x300fe);
-+/* All successful D-side store dispatches for this thread */
-+EVENT(PM_L2_ST,					0x010000046080);
-+/* All successful D-side store dispatches for this thread that were L2 Miss */
-+EVENT(PM_L2_ST_MISS,				0x26880);
-+/* Total HW L3 prefetches(Load+store) */
-+EVENT(PM_L3_PF_MISS_L3,				0x100000016080);
-+/* Data PTEG reload */
-+EVENT(PM_DTLB_MISS,				0x300fc);
-+/* ITLB Reloaded */
-+EVENT(PM_ITLB_MISS,				0x400fc);
-+
-+EVENT(PM_CYC_ALT,				0x0001e);
-+EVENT(PM_INST_CMPL_ALT,				0x00002);
-+
-+/*
-+ * Memory Access Events
-+ *
-+ * Primary PMU event used here is PM_MRK_INST_CMPL (0x401e0)
-+ * To enable capturing of memory profiling, these MMCRA bits
-+ * needs to be programmed and corresponding raw event format
-+ * encoding.
-+ *
-+ * MMCRA bits encoding needed are
-+ *     SM (Sampling Mode)
-+ *     EM (Eligibility for Random Sampling)
-+ *     TECE (Threshold Event Counter Event)
-+ *     TS (Threshold Start Event)
-+ *     TE (Threshold End Event)
-+ *
-+ * Corresponding Raw Encoding bits:
-+ *     sample [EM,SM]
-+ *     thresh_sel (TECE)
-+ *     thresh start (TS)
-+ *     thresh end (TE)
-+ */
-+
-+EVENT(MEM_LOADS,				0x35340401e0);
-+EVENT(MEM_STORES,				0x353c0401e0);
-diff --git a/arch/powerpc/perf/power12-pmu.c b/arch/powerpc/perf/power12-pmu.c
-new file mode 100644
-index 000000000000..89cc704b8324
---- /dev/null
-+++ b/arch/powerpc/perf/power12-pmu.c
-@@ -0,0 +1,466 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+/*
-+ * Performance counter support for Power12 processors.
-+ *
-+ * Copyright 2026 Athira Rajeev, IBM Corporation.
-+ */
-+
-+#define pr_fmt(fmt)	"power12-pmu: " fmt
-+
-+#include "isa207-common.h"
-+
-+/*
-+ * Raw event encoding for Power12:
-+ *
-+ *        60        56        52        48        44        40        36        32
-+ * | - - - - | - - - - | - - - - | - - - - | - - - - | - - - - | - - - - | - - - - |
-+ *   | | [ ]   [ src_match ] [  src_mask ]   | [ ] [ l2l3_sel ]  [  thresh_ctl   ]
-+ *   | |  |                                  |  |                         |
-+ *   | |  *- IFM (Linux)                     |  |        thresh start/stop -*
-+ *   | *- BHRB (Linux)                       |  src_sel
-+ *   *- EBB (Linux)                          *invert_bit
-+ *
-+ *        28        24        20        16        12         8         4         0
-+ * | - - - - | - - - - | - - - - | - - - - | - - - - | - - - - | - - - - | - - - - |
-+ *   [   ] [  sample ]   [ ] [ ]   [ pmc ]   [unit ]   [ ] |  m   [    pmcxsel    ]
-+ *     |        |        |    |                        |   |  |
-+ *     |        |        |    |                        |   |  *- mark
-+ *     |        |        |    *- L1/L2/L3 cache_sel    |   |*-radix_scope_qual
-+ *     |        |        sdar_mode                     |
-+ *     |        *- sampling mode for marked events     *- combine
-+ *     |
-+ *     *- thresh_sel
-+ *
-+ * Below uses IBM bit numbering.
-+ *
-+ * MMCR1[x:y] = unit    (PMCxUNIT)
-+ * MMCR1[24]   = pmc1combine[0]
-+ * MMCR1[25]   = pmc1combine[1]
-+ * MMCR1[26]   = pmc2combine[0]
-+ * MMCR1[27]   = pmc2combine[1]
-+ * MMCR1[28]   = pmc3combine[0]
-+ * MMCR1[29]   = pmc3combine[1]
-+ * MMCR1[30]   = pmc4combine[0]
-+ * MMCR1[31]   = pmc4combine[1]
-+ *
-+ * if pmc == 3 and unit == 0 and pmcxsel[0:6] == 0b0101011
-+ *	MMCR1[20:27] = thresh_ctl
-+ * else if pmc == 4 and unit == 0xf and pmcxsel[0:6] == 0b0101001
-+ *	MMCR1[20:27] = thresh_ctl
-+ * else
-+ *	MMCRA[48:55] = thresh_ctl   (THRESH START/END)
-+ *
-+ * if thresh_sel:
-+ *	MMCRA[45:47] = thresh_sel
-+ *
-+ * if l2l3_sel:
-+ * MMCR2[56:60] = l2l3_sel[0:4]
-+ *
-+ * MMCR1[16] = cache_sel[0]
-+ * MMCR1[17] = cache_sel[1]
-+ * MMCR1[18] = radix_scope_qual
-+ *
-+ * if mark:
-+ *	MMCRA[63]    = 1		(SAMPLE_ENABLE)
-+ *	MMCRA[57:59] = sample[0:2]	(RAND_SAMP_ELIG)
-+ *	MMCRA[61:62] = sample[3:4]	(RAND_SAMP_MODE)
-+ *
-+ * if EBB and BHRB:
-+ *	MMCRA[32:33] = IFM
-+ *
-+ * MMCRA[SDAR_MODE]  = sdar_mode[0:1]
-+ */
-+
-+/*
-+ * Some power12 event codes.
-+ */
-+#define EVENT(_name, _code)     enum{_name = _code}
-+
-+#include "power12-events-list.h"
-+
-+#undef EVENT
-+
-+/* MMCRA IFM bits - POWER12 */
-+#define POWER12_MMCRA_IFM1		0x0000000040000000UL
-+#define POWER12_MMCRA_IFM2		0x0000000080000000UL
-+#define POWER12_MMCRA_IFM3		0x00000000C0000000UL
-+#define POWER12_MMCRA_BHRB_MASK		0x00000000C0000000UL
-+
-+extern u64 PERF_REG_EXTENDED_MASK;
-+
-+/* Table of alternatives, sorted by column 0 */
-+static const unsigned int power12_event_alternatives[][MAX_ALT] = {
-+	{ PM_INST_CMPL_ALT,		PM_INST_CMPL },
-+	{ PM_CYC_ALT,			PM_CYC },
-+};
-+
-+static int power12_get_alternatives(u64 event, unsigned int flags, u64 alt[])
-+{
-+	int num_alt = 0;
-+
-+	num_alt = isa207_get_alternatives(event, alt,
-+					  ARRAY_SIZE(power12_event_alternatives), flags,
-+					  power12_event_alternatives);
-+
-+	return num_alt;
-+}
-+
-+static int power12_check_attr_config(struct perf_event *ev)
-+{
-+	u64 val;
-+	u64 event = ev->attr.config;
-+
-+	val = (event >> EVENT_SAMPLE_SHIFT) & EVENT_SAMPLE_MASK;
-+	if (val == 0x10 || isa3XX_check_attr_config(ev))
-+		return -EINVAL;
-+
-+	return 0;
-+}
-+
-+GENERIC_EVENT_ATTR(cpu-cycles,			PM_CYC);
-+GENERIC_EVENT_ATTR(instructions,		PM_INST_CMPL);
-+GENERIC_EVENT_ATTR(branch-instructions,		PM_BR_FIN);
-+GENERIC_EVENT_ATTR(branch-misses,		PM_MPRED_BR_FIN);
-+GENERIC_EVENT_ATTR(cache-references,		PM_LD_REF_L1);
-+GENERIC_EVENT_ATTR(cache-misses,		PM_LD_DEMAND_MISS_L1_FIN);
-+GENERIC_EVENT_ATTR(mem-loads,			MEM_LOADS);
-+GENERIC_EVENT_ATTR(mem-stores,			MEM_STORES);
-+
-+CACHE_EVENT_ATTR(L1-dcache-load-misses,		PM_LD_MISS_L1);
-+CACHE_EVENT_ATTR(L1-dcache-loads,		PM_LD_REF_L1);
-+CACHE_EVENT_ATTR(L1-dcache-prefetches,		PM_LD_PREFETCH_CACHE_LINE_MISS);
-+CACHE_EVENT_ATTR(L1-dcache-store-misses,	PM_ST_MISS_L1);
-+CACHE_EVENT_ATTR(L1-icache-load-misses,		PM_L1_ICACHE_MISS);
-+CACHE_EVENT_ATTR(L1-icache-loads,		PM_INST_FROM_L1);
-+CACHE_EVENT_ATTR(L1-icache-prefetches,		PM_IC_PREF_REQ);
-+CACHE_EVENT_ATTR(LLC-load-misses,		PM_DATA_FROM_L3MISS);
-+CACHE_EVENT_ATTR(LLC-loads,			PM_DATA_FROM_L3);
-+CACHE_EVENT_ATTR(LLC-prefetches,		PM_L3_PF_MISS_L3);
-+CACHE_EVENT_ATTR(LLC-store-misses,		PM_L2_ST_MISS);
-+CACHE_EVENT_ATTR(LLC-stores,			PM_L2_ST);
-+CACHE_EVENT_ATTR(branch-load-misses,		PM_BR_MPRED_CMPL);
-+CACHE_EVENT_ATTR(branch-loads,			PM_BR_CMPL);
-+CACHE_EVENT_ATTR(dTLB-load-misses,		PM_DTLB_MISS);
-+CACHE_EVENT_ATTR(iTLB-load-misses,		PM_ITLB_MISS);
-+
-+static struct attribute *power12_events_attr[] = {
-+	GENERIC_EVENT_PTR(PM_CYC),
-+	GENERIC_EVENT_PTR(PM_INST_CMPL),
-+	GENERIC_EVENT_PTR(PM_BR_FIN),
-+	GENERIC_EVENT_PTR(PM_MPRED_BR_FIN),
-+	GENERIC_EVENT_PTR(PM_LD_REF_L1),
-+	GENERIC_EVENT_PTR(PM_LD_DEMAND_MISS_L1_FIN),
-+	GENERIC_EVENT_PTR(MEM_LOADS),
-+	GENERIC_EVENT_PTR(MEM_STORES),
-+	CACHE_EVENT_PTR(PM_LD_MISS_L1),
-+	CACHE_EVENT_PTR(PM_LD_REF_L1),
-+	CACHE_EVENT_PTR(PM_LD_PREFETCH_CACHE_LINE_MISS),
-+	CACHE_EVENT_PTR(PM_ST_MISS_L1),
-+	CACHE_EVENT_PTR(PM_L1_ICACHE_MISS),
-+	CACHE_EVENT_PTR(PM_INST_FROM_L1),
-+	CACHE_EVENT_PTR(PM_IC_PREF_REQ),
-+	CACHE_EVENT_PTR(PM_DATA_FROM_L3MISS),
-+	CACHE_EVENT_PTR(PM_DATA_FROM_L3),
-+	CACHE_EVENT_PTR(PM_L3_PF_MISS_L3),
-+	CACHE_EVENT_PTR(PM_L2_ST_MISS),
-+	CACHE_EVENT_PTR(PM_L2_ST),
-+	CACHE_EVENT_PTR(PM_BR_MPRED_CMPL),
-+	CACHE_EVENT_PTR(PM_BR_CMPL),
-+	CACHE_EVENT_PTR(PM_DTLB_MISS),
-+	CACHE_EVENT_PTR(PM_ITLB_MISS),
-+	NULL
-+};
-+
-+static const struct attribute_group power12_pmu_events_group = {
-+	.name = "events",
-+	.attrs = power12_events_attr,
-+};
-+
-+PMU_FORMAT_ATTR(event,          "config:0-59");
-+PMU_FORMAT_ATTR(pmcxsel,        "config:0-7");
-+PMU_FORMAT_ATTR(mark,           "config:8");
-+PMU_FORMAT_ATTR(combine,        "config:10-11");
-+PMU_FORMAT_ATTR(unit,           "config:12-15");
-+PMU_FORMAT_ATTR(pmc,            "config:16-19");
-+PMU_FORMAT_ATTR(cache_sel,      "config:20-21");
-+PMU_FORMAT_ATTR(sdar_mode,      "config:22-23");
-+PMU_FORMAT_ATTR(sample_mode,    "config:24-28");
-+PMU_FORMAT_ATTR(thresh_sel,     "config:29-31");
-+PMU_FORMAT_ATTR(thresh_stop,    "config:32-35");
-+PMU_FORMAT_ATTR(thresh_start,   "config:36-39");
-+PMU_FORMAT_ATTR(l2l3_sel,       "config:40-44");
-+PMU_FORMAT_ATTR(src_sel,        "config:45-46");
-+PMU_FORMAT_ATTR(invert_bit,     "config:47");
-+PMU_FORMAT_ATTR(src_mask,       "config:48-53");
-+PMU_FORMAT_ATTR(src_match,      "config:54-59");
-+PMU_FORMAT_ATTR(radix_scope,	"config:9");
-+PMU_FORMAT_ATTR(thresh_cmp,     "config1:0-17");
-+
-+static struct attribute *power12_pmu_format_attr[] = {
-+	&format_attr_event.attr,
-+	&format_attr_pmcxsel.attr,
-+	&format_attr_mark.attr,
-+	&format_attr_combine.attr,
-+	&format_attr_unit.attr,
-+	&format_attr_pmc.attr,
-+	&format_attr_cache_sel.attr,
-+	&format_attr_sdar_mode.attr,
-+	&format_attr_sample_mode.attr,
-+	&format_attr_thresh_sel.attr,
-+	&format_attr_thresh_stop.attr,
-+	&format_attr_thresh_start.attr,
-+	&format_attr_l2l3_sel.attr,
-+	&format_attr_src_sel.attr,
-+	&format_attr_invert_bit.attr,
-+	&format_attr_src_mask.attr,
-+	&format_attr_src_match.attr,
-+	&format_attr_radix_scope.attr,
-+	&format_attr_thresh_cmp.attr,
-+	NULL,
-+};
-+
-+static const struct attribute_group power12_pmu_format_group = {
-+	.name = "format",
-+	.attrs = power12_pmu_format_attr,
-+};
-+
-+static const struct attribute_group *power12_pmu_attr_groups[] = {
-+	&power12_pmu_format_group,
-+	&power12_pmu_events_group,
-+	NULL,
-+};
-+
-+static int power12_generic_events[] = {
-+	[PERF_COUNT_HW_CPU_CYCLES] =			PM_CYC,
-+	[PERF_COUNT_HW_INSTRUCTIONS] =			PM_INST_CMPL,
-+	[PERF_COUNT_HW_BRANCH_INSTRUCTIONS] =		PM_BR_FIN,
-+	[PERF_COUNT_HW_BRANCH_MISSES] =			PM_MPRED_BR_FIN,
-+	[PERF_COUNT_HW_CACHE_REFERENCES] =		PM_LD_REF_L1,
-+	[PERF_COUNT_HW_CACHE_MISSES] =			PM_LD_DEMAND_MISS_L1_FIN,
-+};
-+
-+static u64 power12_bhrb_filter_map(u64 branch_sample_type)
-+{
-+	u64 pmu_bhrb_filter = 0;
-+
-+	/* BHRB and regular PMU events share the same privilege state
-+	 * filter configuration. BHRB is always recorded along with a
-+	 * regular PMU event. As the privilege state filter is handled
-+	 * in the basic PMC configuration of the accompanying regular
-+	 * PMU event, we ignore any separate BHRB specific request.
-+	 */
-+
-+	/* No branch filter requested */
-+	if (branch_sample_type & PERF_SAMPLE_BRANCH_ANY)
-+		return pmu_bhrb_filter;
-+
-+	/* Invalid branch filter options - HW does not support */
-+	if (branch_sample_type & PERF_SAMPLE_BRANCH_ANY_RETURN)
-+		return -1;
-+
-+	if (branch_sample_type & PERF_SAMPLE_BRANCH_IND_CALL) {
-+		pmu_bhrb_filter |= POWER12_MMCRA_IFM2;
-+		return pmu_bhrb_filter;
-+	}
-+
-+	if (branch_sample_type & PERF_SAMPLE_BRANCH_COND) {
-+		pmu_bhrb_filter |= POWER12_MMCRA_IFM3;
-+		return pmu_bhrb_filter;
-+	}
-+
-+	if (branch_sample_type & PERF_SAMPLE_BRANCH_CALL)
-+		return -1;
-+
-+	if (branch_sample_type & PERF_SAMPLE_BRANCH_ANY_CALL) {
-+		pmu_bhrb_filter |= POWER12_MMCRA_IFM1;
-+		return pmu_bhrb_filter;
-+	}
-+
-+	/* Every thing else is unsupported */
-+	return -1;
-+}
-+
-+static void power12_config_bhrb(u64 pmu_bhrb_filter)
-+{
-+	pmu_bhrb_filter &= POWER12_MMCRA_BHRB_MASK;
-+
-+	/* Enable BHRB filter in PMU */
-+	mtspr(SPRN_MMCRA, (mfspr(SPRN_MMCRA) | pmu_bhrb_filter));
-+}
-+
-+#define C(x)	PERF_COUNT_HW_CACHE_##x
-+
-+/*
-+ * Table of generalized cache-related events.
-+ * 0 means not supported, -1 means nonsensical, other values
-+ * are event codes.
-+ */
-+static u64 power12_cache_events[C(MAX)][C(OP_MAX)][C(RESULT_MAX)] = {
-+	[C(L1D)] = {
-+		[C(OP_READ)] = {
-+			[C(RESULT_ACCESS)] = PM_LD_REF_L1,
-+			[C(RESULT_MISS)] = PM_LD_MISS_L1,
-+		},
-+		[C(OP_WRITE)] = {
-+			[C(RESULT_ACCESS)] = 0,
-+			[C(RESULT_MISS)] = PM_ST_MISS_L1,
-+		},
-+		[C(OP_PREFETCH)] = {
-+			[C(RESULT_ACCESS)] = PM_LD_PREFETCH_CACHE_LINE_MISS,
-+			[C(RESULT_MISS)] = 0,
-+		},
-+	},
-+	[C(L1I)] = {
-+		[C(OP_READ)] = {
-+			[C(RESULT_ACCESS)] = PM_INST_FROM_L1,
-+			[C(RESULT_MISS)] = PM_L1_ICACHE_MISS,
-+		},
-+		[C(OP_WRITE)] = {
-+			[C(RESULT_ACCESS)] = PM_INST_FROM_L1MISS,
-+			[C(RESULT_MISS)] = -1,
-+		},
-+		[C(OP_PREFETCH)] = {
-+			[C(RESULT_ACCESS)] = PM_IC_PREF_REQ,
-+			[C(RESULT_MISS)] = 0,
-+		},
-+	},
-+	[C(LL)] = {
-+		[C(OP_READ)] = {
-+			[C(RESULT_ACCESS)] = PM_DATA_FROM_L3,
-+			[C(RESULT_MISS)] = PM_DATA_FROM_L3MISS,
-+		},
-+		[C(OP_WRITE)] = {
-+			[C(RESULT_ACCESS)] = PM_L2_ST,
-+			[C(RESULT_MISS)] = PM_L2_ST_MISS,
-+		},
-+		[C(OP_PREFETCH)] = {
-+			[C(RESULT_ACCESS)] = PM_L3_PF_MISS_L3,
-+			[C(RESULT_MISS)] = 0,
-+		},
-+	},
-+	 [C(DTLB)] = {
-+		[C(OP_READ)] = {
-+			[C(RESULT_ACCESS)] = 0,
-+			[C(RESULT_MISS)] = PM_DTLB_MISS,
-+		},
-+		[C(OP_WRITE)] = {
-+			[C(RESULT_ACCESS)] = -1,
-+			[C(RESULT_MISS)] = -1,
-+		},
-+		[C(OP_PREFETCH)] = {
-+			[C(RESULT_ACCESS)] = -1,
-+			[C(RESULT_MISS)] = -1,
-+		},
-+	},
-+	[C(ITLB)] = {
-+		[C(OP_READ)] = {
-+			[C(RESULT_ACCESS)] = 0,
-+			[C(RESULT_MISS)] = PM_ITLB_MISS,
-+		},
-+		[C(OP_WRITE)] = {
-+			[C(RESULT_ACCESS)] = -1,
-+			[C(RESULT_MISS)] = -1,
-+		},
-+		[C(OP_PREFETCH)] = {
-+			[C(RESULT_ACCESS)] = -1,
-+			[C(RESULT_MISS)] = -1,
-+		},
-+	},
-+	[C(BPU)] = {
-+		[C(OP_READ)] = {
-+			[C(RESULT_ACCESS)] = PM_BR_CMPL,
-+			[C(RESULT_MISS)] = PM_BR_MPRED_CMPL,
-+		},
-+		[C(OP_WRITE)] = {
-+			[C(RESULT_ACCESS)] = -1,
-+			[C(RESULT_MISS)] = -1,
-+		},
-+		[C(OP_PREFETCH)] = {
-+			[C(RESULT_ACCESS)] = -1,
-+			[C(RESULT_MISS)] = -1,
-+		},
-+	},
-+	[C(NODE)] = {
-+		[C(OP_READ)] = {
-+			[C(RESULT_ACCESS)] = -1,
-+			[C(RESULT_MISS)] = -1,
-+		},
-+		[C(OP_WRITE)] = {
-+			[C(RESULT_ACCESS)] = -1,
-+			[C(RESULT_MISS)] = -1,
-+		},
-+		[C(OP_PREFETCH)] = {
-+			[C(RESULT_ACCESS)] = -1,
-+			[C(RESULT_MISS)] = -1,
-+		},
-+	},
-+};
-+
-+#undef C
-+
-+/*
-+ * Set the MMCR0[CC56RUN] bit to enable counting for
-+ * PMC5 and PMC6 regardless of the state of CTRL[RUN],
-+ * so that we can use counters 5 and 6 as PM_INST_CMPL and
-+ * PM_CYC.
-+ */
-+static int power12_compute_mmcr(u64 event[], int n_ev,
-+				unsigned int hwc[], struct mmcr_regs *mmcr,
-+				struct perf_event *pevents[], u32 flags)
-+{
-+	int ret;
-+
-+	ret = isa207_compute_mmcr(event, n_ev, hwc, mmcr, pevents, flags);
-+	if (!ret)
-+		mmcr->mmcr0 |= MMCR0_C56RUN;
-+	return ret;
-+}
-+
-+static struct power_pmu power12_pmu = {
-+	.name			= "Power12",
-+	.n_counter		= MAX_PMU_COUNTERS,
-+	.add_fields		= ISA207_ADD_FIELDS,
-+	.test_adder		= ISA207_TEST_ADDER,
-+	.group_constraint_mask	= CNST_CACHE_PMC4_MASK,
-+	.group_constraint_val	= CNST_CACHE_PMC4_VAL,
-+	.compute_mmcr		= power12_compute_mmcr,
-+	.config_bhrb		= power12_config_bhrb,
-+	.bhrb_filter_map	= power12_bhrb_filter_map,
-+	.get_constraint		= isa207_get_constraint,
-+	.get_alternatives	= power12_get_alternatives,
-+	.get_mem_data_src	= isa207_get_mem_data_src,
-+	.get_mem_weight		= isa207_get_mem_weight,
-+	.disable_pmc		= isa207_disable_pmc,
-+	.flags			= PPMU_HAS_SIER | PPMU_ARCH_207S |
-+				  PPMU_ARCH_31 | PPMU_HAS_ATTR_CONFIG1 |
-+				  PPMU_P10,
-+	.n_generic		= ARRAY_SIZE(power12_generic_events),
-+	.generic_events		= power12_generic_events,
-+	.cache_events		= &power12_cache_events,
-+	.attr_groups		= power12_pmu_attr_groups,
-+	.bhrb_nr		= 32,
-+	.capabilities           = PERF_PMU_CAP_EXTENDED_REGS,
-+	.check_attr_config	= power12_check_attr_config,
-+};
-+
-+int __init init_power12_pmu(void)
-+{
-+	unsigned int pvr;
-+	int rc;
-+
-+	pvr = mfspr(SPRN_PVR);
-+	if (PVR_VER(pvr) != PVR_POWER12)
-+		return -ENODEV;
-+
-+	/* Set the PERF_REG_EXTENDED_MASK here */
-+	PERF_REG_EXTENDED_MASK = PERF_REG_PMU_MASK_31;
-+
-+	rc = register_power_pmu(&power12_pmu);
-+	if (rc)
-+		return rc;
-+
-+	/* Tell userspace that EBB is supported */
-+	cur_cpu_spec->cpu_user_features2 |= PPC_FEATURE2_EBB;
-+
-+	return 0;
-+}
--- 
-2.55.0
-
+Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
 
