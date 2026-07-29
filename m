@@ -1,70 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-25009-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25010-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5E481C54F51
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jul 2026 12:44:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 841BAC54F51
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jul 2026 12:44:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h9BqJ53dkz2yjp;
-	Wed, 29 Jul 2026 22:44:28 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785329068;
-	cv=none; b=CyFxIevkHjtxOrl6gaDJT86cXWcPa3WbzEWmYp6bdkGclcGLHFOTcs6cu0OvnfRj6w3pjaOvUlDIadc8Tz2Y74SLQllQu/mKMa2mnKW22y7YrpQeKZ9kbsK9xfjSyIg7F7Bi9uiXHEernjrrdCaIgSO/cJSNKMpi5c7V1xTs/yeVeQ3ok0D6SGENLydXYmC1CXNmaKei6Zk8jSie4DxRi2QVkrewQ4/I58bJWniE8jNiiV8y/SbPcjDJIUVDIEQw2tzAroSS9DNr8yst/+uYgM7Ko/5So8JXbLkL5yzc27mOumO2XeJcU7C7L/1E8a+Izvr6aSWkEM4l3mFBZc6sTw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h9BqL5JLdz2ytV;
+	Wed, 29 Jul 2026 22:44:30 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785329070;
+	cv=none; b=AoLblAPUha4dtl6wLiB6Wqvy31Yx1mWGXh1zGe+6vx1cxaLI7lLBUlUk55aRkF641gUyptAl1QgVW47HTcJ6KjYoTo4EBbB3hiupQ7Cu8PiYDibEwaCEsCi+qrtZp+AcRao65HoOXJaxUVv2LchQAKaUPt6IazKR6t6jN9mOOnJAKU7Eacd5MEcYW69AhFSRJ5Rd0Hy68OVM/8y0OKlzg6xND+oBF1c/i0nw0hkytTeF9p7YxHG0TJYG998p9RGXOgE8pIt/I0FXaWaom6aJcU8DU1dxQc/ufROu8sWU9aBKnaGVduFLit15+IXLBpNlecROwORR0AL1k/0uAmkQ8g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785329068; c=relaxed/relaxed;
-	bh=UUrP+qHkEvCx1RAW9jTvLpW68ue7FaDGyZhgWfcg0cA=;
+	t=1785329070; c=relaxed/relaxed;
+	bh=CwNBgyhGuh2UPePacIbYbdnR3+jGFbqitWxP85iob1E=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=iAam5qDxVzM9R66QZhEcmAdIfG3fvcp6mMMDPyJZl51ijtkwdhgQwWDQMgZahmvDMKe1Bgk81AjgrBHBEvl1jl61DpUonmu6bo4osp/Jhk8WtbqwOfoghGB3CUQV/GC2Jdg79s9O4yzBajDVp5a6PjVK2vVURw8w6cCpZdd3Jo+24n6X4yoX00MuGrYCMR13CFV3uyfgyWGK4RblkiHHH6k4b8+Nmvv1cGeVjyUs68NIQnhqNqHtWw7k8sEeH5kdiGGAJyCQNivCEtgirLGI9c6HX+jlyzLUrwO+3C4K0xIa5PpIjpkDUApbjDj46Wh3rHOFNUWR6ikEYpzxJECqeA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=BKCPsu6P; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 MIME-Version; b=hIQpywiXmuZw5OThdwLJBMCHYCq5Cx80G0hMlrCmaTIsEXMKDqqtQb8B+WlQhOKAk4wNyhKBEh70WPBtJK4fQZdW3RWJdJeYiZVYW7f7yXcCrJkhgoNR/Zdv18HbK1ReW0Lb45hr+TDcYtMMWyNuxc6a1MoM7HSfHSQ4haUwBg0BapoeeNpnCdivEPC0jAelkTvjQdlA4KWc1gQ9bqT4kVV4+IAYO0ebnAfSI8Y0UhM+7XqGKPBHRcxOOIAMhFmPVznZae4MSaPSpOHJ4Nk62kSjGMHNUERq2sg//qpOUzYjtBhbcbJxuhSCkiSKAis3+jMmt141kdDEMYoaPAvvXA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pvAUbq3j; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=BKCPsu6P;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pvAUbq3j;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h9BqH5xffz2yDr
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2026 22:44:27 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66TBHhCa3952798;
-	Wed, 29 Jul 2026 12:44:22 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h9BqL0Xr0z2yDr
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2026 22:44:29 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66TBHl5F4063650;
+	Wed, 29 Jul 2026 12:44:26 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=UUrP+qHkEvCx1RAW9
-	jTvLpW68ue7FaDGyZhgWfcg0cA=; b=BKCPsu6PLUgIXUhbu/JlfU3y7Ou9szv8P
-	C9LnWK60uaIMaMOM/rX66u5fWe+OiCj9YFf20A1QUaqPYCvr4dBz6NNr1IcVcqwj
-	5Tavzzi8kbm6fQv3Ri0wdWARlRPArOYzTmSmLPquZnu/U4Jww1TacJIuTtiyVyjl
-	oBtapwVX/xuewKJlJNTulKuol2RE/d0173ZKOGzPCqbXEOvEnBUkgFW0fN0bmLtS
-	Qy+YfC/0SqCwRCdp7BhMBqv3HFdbE7NC0ET0GFG41qOhJKrX9/YmTd7avAHHdfAK
-	o28sD8CnGGZspPMTVvLgdQxa2bXupi/Hkh/r6NEiH5Vct6L6VK8Cw==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fmuyj9w22-1
+	:mime-version:references:subject:to; s=pp1; bh=CwNBgyhGuh2UPePac
+	IbYbdnR3+jGFbqitWxP85iob1E=; b=pvAUbq3jjPNGmyiIj4maVOZ10eTWUMGpi
+	1Qzz8wC4jIsQ/sbcC9N2HMuWCh39bKP5i2a7zGMfdPMOYSbiSSaLTTGGIf21JYKI
+	tNDlaMYUDi7jOphkV2qV1/BBJwfJiT+2o5Y/yJCEiaERGFoEWQ9mWxA/Hg1Unfew
+	bA+fG5Xbspl8WZcfErIiY95jjzxkp0NCvz54wOGpv1RYUo4Cr40nF8r3PhK1AKDQ
+	0ICFfhjdlt+A13MTI6hv4U+0Rvv6fr/r5kGa4Vn0qxNq321snnGCLODpUjIJnaDl
+	ho0G+MYqqG0IGhVnHfdp+xtTFZq0SM1S/tdUaEE0N149EsEDK6Eiw==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fmv0xtq5f-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 29 Jul 2026 12:44:21 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66TCfKTF030084;
-	Wed, 29 Jul 2026 12:44:20 GMT
-Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fna5y6e7r-1
+	Wed, 29 Jul 2026 12:44:26 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66TCfFbv028627;
+	Wed, 29 Jul 2026 12:44:24 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4fn8yhembx-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 29 Jul 2026 12:44:20 +0000 (GMT)
+	Wed, 29 Jul 2026 12:44:24 +0000 (GMT)
 Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66TCiH3233161494
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66TCiLCc44499282
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 29 Jul 2026 12:44:17 GMT
+	Wed, 29 Jul 2026 12:44:21 GMT
 Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1960420043;
+	by IMSVA (Postfix) with ESMTP id DC30820043;
+	Wed, 29 Jul 2026 12:44:20 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 7C9FC20040;
 	Wed, 29 Jul 2026 12:44:17 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C45C620040;
-	Wed, 29 Jul 2026 12:44:13 +0000 (GMT)
 Received: from localhost.localdomain (unknown [9.39.22.136])
 	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 29 Jul 2026 12:44:13 +0000 (GMT)
+	Wed, 29 Jul 2026 12:44:17 +0000 (GMT)
 From: Athira Rajeev <atrajeev@linux.ibm.com>
 To: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
         maddy@linux.ibm.com, irogers@google.com, namhyung@kernel.org
@@ -72,9 +72,9 @@ Cc: linux-perf-users@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
         atrajeev@linux.ibm.com, hbathini@linux.vnet.ibm.com,
         tejas05@linux.ibm.com, tshah@linux.ibm.com, venkat88@linux.ibm.com,
         usha.r2@ibm.com
-Subject: [PATCH V4 3/6] tools/perf: Add arch hook to drain remaining data before event close
-Date: Wed, 29 Jul 2026 18:13:57 +0530
-Message-Id: <20260729124400.65009-4-atrajeev@linux.ibm.com>
+Subject: [PATCH V4 4/6] tools/perf: Add powerpc callback support for arch_perf_record__need_read
+Date: Wed, 29 Jul 2026 18:13:58 +0530
+Message-Id: <20260729124400.65009-5-atrajeev@linux.ibm.com>
 X-Mailer: git-send-email 2.39.5 (Apple Git-154)
 In-Reply-To: <20260729124400.65009-1-atrajeev@linux.ibm.com>
 References: <20260729124400.65009-1-atrajeev@linux.ibm.com>
@@ -94,242 +94,161 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzI5MDEwMiBTYWx0ZWRfXwoOBCtVV4MFH
- jx+CkklP6IbEZkyORSLjAaTqULTre5q0EPf5XI9uaE0+6U7f9rpqpJy/5mjyKUWI92KW8b7qsLR
- 5yhge/Uqc8niC/zKZmKn7dG2KljE7vQ=
-X-Proofpoint-GUID: GtkWh6S77OISrbQZya-aW49ZX_BF0--A
-X-Proofpoint-ORIG-GUID: X_1yub7MyVOQEw7JIjQgX-9dHAgLTw4S
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzI5MDEwMiBTYWx0ZWRfX6Syb0Et+2062
- npfleCn/eGxGhYfovdvmGO13FhKZWCv1JxJviATm49yA2dovKNtLUH5JHdGoopEJJ0A2zXWmlEh
- JEPVN9FHVYlhSics+kTPO4yH7dar81iaX1MHjde/XoLju80b8xHzkDvOBEjBPafA9dhI0gRfPUa
- GBQeUXFmtJ7LP34DA78YEIFHskk0+U3iJkdbKo1udHEguKnlrFZ97dlzf+PV347Ptg6V3RqWqUZ
- J4OaghAN/habubWnWZ5EvhE+b4Zi9Yy95GASq2+rS/F51Dk4Ty/mykI7DuOUJnpPqUvPtLukq5G
- fa5oO+m7vSf73/dfbpczc/klUomyIBW0seRVMAHnS7DIbFxe7fGS3iQTpeNvqv/Z7d3WTJCwOyJ
- pCfGCzKaTO2li3fD4ZlVF31Yu3ixi+vyZzgL2kNf9GXdJlHD+O64bkXXREDO7DAFx1dw3d2+J3l
- i0o6OgHWFC0g+WcA3iw==
-X-Authority-Analysis: v=2.4 cv=X5Vi7mTe c=1 sm=1 tr=0 ts=6a69f5a5 cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+X-Proofpoint-GUID: yKkqyDsanbV4YTcFOJzybeHed-lFTJ55
+X-Proofpoint-ORIG-GUID: db7ozRr7RlcFb8Flj9k2mopAl55_NhwN
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzI5MDEwMiBTYWx0ZWRfX80WQJEu3/XCA
+ uvPtzShNW4OW1OUEknLylfXRA+JP//DLehHcKDWUDYMxmI9qnXOic5GdcjKFUmMhydIloVoJTuF
+ WUyA8eS+QuOSc2ixQ00CgT7auU6ghXM=
+X-Authority-Analysis: v=2.4 cv=dYuwG3Xe c=1 sm=1 tr=0 ts=6a69f5aa cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
  a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VnNF1IyMAAAA:8 a=WLsJLc2lzLm1hSGsWXwA:9
+ a=U7nrCbtTmkRpXpFmAIza:22 a=VnNF1IyMAAAA:8 a=2CLxpyUa9fGFCfGWS_AA:9
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzI5MDEwMiBTYWx0ZWRfX64dRXdmyKEFc
+ Kk20503P05dEmamyWv3owLK0z2mv/78YukfezHI2Znq8uxPpxUE0H6S/YOtZeShKr/tDmDf5whq
+ nXHAipThv/FOF6zdS6A6K2vvEAHUo+rj6WqRc0Va/MIxTLFyugHNfJypymLP4nw9HRaWMgimf5L
+ edJF9eo6gBoNoxjayJ6F8KG7KSaZ8l0Ee9u/viG6PwQTscwZ5TAqeC5kG0HPiRRwpFyGGOArEKA
+ ZVWSbAJ5sB1+fPcH8dht0t79oL/tFPk2On4gEIjsIE67HRvyaAZtos1UR+9UFgFKawjscWpl3fo
+ oHUbxVKuHELHqLNbXRcYiBKTH1wD00suJOqBidLK2eVIQ6whnsjzzmAmjHLsF6bs1Fj42BeJonc
+ FJju9KjbrmlEiAr6WdA0zguNyT6ofPMEnsctjBrvhjAsLY51LbQmATpfjwfJwxM8JuuuCTrmaFd
+ a8R2Z+wZKzA8RbTakbQ==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-07-29_04,2026-07-28_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 impostorscore=0 lowpriorityscore=0 phishscore=0
- priorityscore=1501 malwarescore=0 spamscore=0 suspectscore=0 bulkscore=0
- adultscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
- definitions=main-2607290102
+ priorityscore=1501 impostorscore=0 clxscore=1015 phishscore=0 malwarescore=0
+ spamscore=0 lowpriorityscore=0 bulkscore=0 suspectscore=0 adultscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607290102
 
-While collecting samples using perf record, __cmd_record() disables the
-evlist once recording is complete. After that, event fds are no longer
-read and any remaining PMU-specific data cannot be drained.
+Implement the arch_perf_record__need_read() architecture-specific hook
+for powerpc in arch/powerpc/util/evsel.c.
 
-Add a weak arch_perf_record__need_read() hook so architecture code can
-indicate that more data remains to be collected before events are
-disabled and closed. When the hook reports pending data, perf record
-performs another read pass via record__final_data().
+The HTM kernel driver sets event->count to the number of records still
+staged in its internal buffers (total_size / record_size), and to 0
+once the stream is exhausted.  This hook reads that count for every open
+htm evsel via perf_evsel__read() and accumulates the values into
+total_pending_records.  A non-zero total means at least one HTM target
+still has records pending; the recording loop added in the previous
+patch will perform another mmap-read pass.
 
-A static volatile sig_atomic_t drain_interrupted flag is added.
-sig_handler() sets it when a second signal (SIGINT/SIGTERM) arrives
-while done is already set, allowing a second Ctrl+C during the drain
-loop to abort immediately.  Without this, a user who presses Ctrl+C
-twice while HTM data is being drained would have no way to interrupt
-a stalled drain loop.
+The drain uses a two-layer safety check: event->count detects records
+staged by the driver, and record__bytes_written() in the drain loop
+confirms data was actually moved into perf.data.  This combination
+handles the case where the driver count is briefly stale while hardware
+is still flushing.
 
-This allows architectures such as powerpc HTM to drain trace data and
-associated metadata before the event is closed.
+The implementation scans the evlist using evsel__pmu_name() to identify
+HTM events by their kernel-assigned PMU name rather than the
+user-visible event name, preventing false matches.  It iterates the fd/
+sample-id xyarray, and skips any evsel whose fd and sample-id arrays are
+mismatched to avoid reading stale state.  When the accumulated record
+count reaches zero the hook returns 0 and the recording loop proceeds to
+disable and close the events.
 
 Signed-off-by: Athira Rajeev <atrajeev@linux.ibm.com>
 ---
 Changes in V4:
-- Fix drain_interrupted to not trigger on SIGCHLD: change the condition
-  in sig_handler() from "if (done)" to "if (done && sig != SIGCHLD)".
-  V3 set drain_interrupted on a SIGCHLD that arrived while done was
-  already set, aborting the drain loop on normal child workload
-  completion even though no second Ctrl+C was pressed.
-- Drain all thread mmaps in record__final_data(): iterate over all
-  rec->nr_threads slots and temporarily switch the TLS 'thread' pointer
-  to each thread_data[t] before calling record__mmap_read_all(), then
-  reset it to thread_data[0] afterwards.  V3 called
-  record__mmap_read_all() once with whatever 'thread' pointed to,
-  leaving the mmaps of worker threads un-drained when --threads is in
-  use.  Adds local variable 'int t' for the loop counter.
-- Fix the post-loop fallback condition from "if (!disabled)" to
-  "if (target__none(&opts->target) || !disabled)" so that the final
-  drain is always executed for child workloads.  In the child-workload
-  path (target__none == true) the in-loop disable block is never
-  entered, so disabled stays false, but the old "!disabled" test
-  happened to be true there only by accident; making the intent
-  explicit also handles any future path where disabled could be set
-  early.  Remove the now-redundant evlist__disable() call that V3
-  placed inside the post-loop block, since the disable is handled by
-  the existing code below.
+- No changes from V3.
 
 Changes in V3:
-- Add static volatile sig_atomic_t drain_interrupted.  Set it in
-  sig_handler() when a second signal arrives while done is already set.
-  This lets a second Ctrl+C abort the drain loop immediately.  V2
-  tested done > 1 to detect a second signal, which is unreachable
-  because done is only ever set to 1.
-- Replace rec->bytes_written with record__bytes_written(rec)
-  (which includes rec->thread_bytes_written) so the no-progress
-  check accounts for data written by the AIO/thread path.
-- Add a retry counter (FINAL_DATA_MAX_RETRIES 20, 20 x 1 ms = 20 ms
-  maximum) instead of aborting on the first stall.  The no-progress
-  sleep of 1 ms is enough for the AUX ring buffer consumer (perf's
-  ~1 ms poll interval) to advance the tail pointer.
-- Move record__final_data() into the in-loop disable block
-  (before evlist__disable()) as well as into a post-loop if
-  (!disabled) block that covers both the early-break and
-  child-workload paths.  V2 only called it inside the loop
-  with a final_data_drained guard, missing the early-break
-  and child-workload cases.
-- Remove the now-unnecessary bool final_data_drained local variable.
+- Use evsel__pmu_name(evsel) instead of strstarts(evsel->name, "htm")
+to identify HTM events, matching by kernel-assigned PMU name rather
+than user-visible event name.
+- Remove the redundant two-pass loop (first pass to set found_htm,
+second to accumulate counts); a single pass with evsel__pmu_name()
+is sufficient. if no HTM event exists total_pending_records stays 0
+and the function returns 0.
+- Remove the dead !strcmp(evsel->name, "dummy:u") check;
+- evsel__pmu_name() will never return "htm" for a dummy:u software
+event.
+- Rename total_pending_bytes -> total_pending_records to match what
+the driver actually reports (event->count = total_size / record_size,
+a record count, not a byte count).
+- Add #include <string.h> for musl compatibility (strcmp() without
+it warns on some toolchains).
 
 Changes in V2:
--  V1's callback was responsible for driving the read loop
-  including evlist__enable cycling. Removed that logic
-- Use bytes written to check if session needs to be continued.
-- Patch is now 3/6 instead of 3/9.
+- Implements the renamed arch_perf_record__need_read() hook (V1
+  implemented arch_record__collect_final_data()).
+- Skips evsels whose fd and sample-id xyarrays are mismatched, avoiding
+  stale-state reads.  V1 had no such guard.
+- evlist__enable cycling is removed; that responsibility now belongs to
+  the drain loop in builtin-record.c added in patch 3.
+- File location changed to arch/powerpc/util/evsel.c (V1 used
+  arch/powerpc/util/powerpc-htm.c).
+- Patch is now 4/6 instead of 4/9.
 
- tools/perf/builtin-record.c | 77 +++++++++++++++++++++++++++++++++++++
- tools/perf/util/record.h    |  3 ++
- 2 files changed, 80 insertions(+)
+ tools/perf/arch/powerpc/util/evsel.c | 55 ++++++++++++++++++++++++++++
+ 1 file changed, 55 insertions(+)
 
-diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
-index f58d7e3c7879..4c3b96fc0ac0 100644
---- a/tools/perf/builtin-record.c
-+++ b/tools/perf/builtin-record.c
-@@ -192,6 +192,7 @@ struct record {
- };
+diff --git a/tools/perf/arch/powerpc/util/evsel.c b/tools/perf/arch/powerpc/util/evsel.c
+index 2f733cdc8dbb..3c7ccc955b0a 100644
+--- a/tools/perf/arch/powerpc/util/evsel.c
++++ b/tools/perf/arch/powerpc/util/evsel.c
+@@ -1,8 +1,63 @@
+ // SPDX-License-Identifier: GPL-2.0
+ #include <stdio.h>
++#include <string.h>
++#include <linux/string.h>
+ #include "util/evsel.h"
++#include "util/record.h"
++#include "util/evlist.h"
++#include "util/debug.h"
++#include <internal/xyarray.h>
  
- static volatile int done;
-+static volatile sig_atomic_t drain_interrupted;
- 
- static volatile int auxtrace_record__snapshot_started;
- static DEFINE_TRIGGER(auxtrace_snapshot_trigger);
-@@ -681,6 +682,8 @@ static void sig_handler(int sig)
- 	else
- 		signr = sig;
- 
-+	if (done && sig != SIGCHLD)
-+		drain_interrupted = 1;
- 	done = 1;
- #ifdef HAVE_EVENTFD_SUPPORT
- 	if (done_fd >= 0) {
-@@ -2437,6 +2440,68 @@ static unsigned long record__waking(struct record *rec)
- 	return waking;
+ void arch_evsel__set_sample_weight(struct evsel *evsel)
+ {
+ 	evsel__set_sample_bit(evsel, WEIGHT_STRUCT);
  }
- 
++
 +/*
-+ * Weak symbol - architecture can override to indicate if more
-+ * data needs to be collected before finishing output.
++ * Check if HTM events have more data to collect.
++ *
++ * This function reads the HTM event counts. When the kernel driver
++ * has more data available, it returns a non-zero count. When all
++ * data has been collected, it returns zero.
 + *
 + * Returns: 1 if more data exists, 0 if collection is complete
 + */
-+__weak int arch_perf_record__need_read(struct evlist *evlist __maybe_unused)
++int arch_perf_record__need_read(struct evlist *evlist)
 +{
-+	return 0;  /* Default: no arch-specific data to collect */
-+}
++	struct evsel *evsel;
++	u64 total_pending_records = 0;
++	int x, y;
 +
-+static void record__final_data(struct record *rec)
-+{
-+	u64 last_bytes_written = 0;
-+	int retries = 0;
-+	int t;
-+#define FINAL_DATA_MAX_RETRIES 20  /* 20 * 1 ms = 20 ms max wait */
++	/* there was an error during record__open */
++	if (!evlist)
++		return 0;
 +
-+	/*
-+	 * Collect any remaining architecture-specific data.
-+	 * The arch code checks if more data exists, and we do the actual
-+	 * reading here since we have access to record__mmap_read_all().
-+	 * This code performs the additional read pass while events are
-+	 * still live.  A second SIGINT/SIGTERM during drain sets
-+	 * drain_interrupted and aborts the loop immediately.
-+	 *
-+	 * When --threads is enabled, record__mmap_read_evlist() reads the
-+	 * maps belonging to the calling thread's TLS 'thread' pointer.
-+	 * Calling record__mmap_read_all() from the main thread only reads
-+	 * thread_data[0]'s maps.  Iterate over all thread slots and
-+	 * temporarily switch 'thread' to each one so that every worker's
-+	 * mmaps are drained, matching the pattern used in record__thread().
-+	 */
-+	while (arch_perf_record__need_read(rec->evlist)) {
-+		if (drain_interrupted)
-+			break;
++	/* Read HTM event counts to check if more data is available */
++	evlist__for_each_entry(evlist, evsel) {
++		struct xyarray *xy = evsel->core.sample_id;
 +
-+		last_bytes_written = record__bytes_written(rec);
++		if (strcmp(evsel__pmu_name(evsel), "htm"))
++			continue;
 +
-+		for (t = 0; t < rec->nr_threads; t++) {
-+			thread = &rec->thread_data[t];
-+			if (record__mmap_read_all(rec, true) < 0) {
-+				thread = &rec->thread_data[0];
-+				return;
-+			}
++		if (xy == NULL || evsel->core.fd == NULL)
++			continue;
++
++		if (xyarray__max_x(evsel->core.fd) != xyarray__max_x(xy) ||
++		    xyarray__max_y(evsel->core.fd) != xyarray__max_y(xy)) {
++			pr_debug("Unmatched FD vs sample ID array for HTM event\n");
++			continue;
 +		}
-+		thread = &rec->thread_data[0];
 +
-+		if (record__bytes_written(rec) == last_bytes_written) {
-+			if (++retries >= FINAL_DATA_MAX_RETRIES) {
-+				pr_warning("Final data drain made no forward progress after %d retries.\n",
-+					   FINAL_DATA_MAX_RETRIES);
-+				break;
++		for (x = 0; x < xyarray__max_x(xy); x++) {
++			for (y = 0; y < xyarray__max_y(xy); y++) {
++				struct perf_counts_values count = { .val = 0 };
++
++				if (perf_evsel__read(&evsel->core, x, y, &count) == 0)
++					total_pending_records += count.val;
 +			}
-+			usleep(1000); /* 1 ms: let AUX ring buffer consumer advance */
-+		} else {
-+			retries = 0;
-+			usleep(100);
 +		}
 +	}
++
++	/* Collection is complete only when ALL hardware queues have no pending records */
++	return (total_pending_records > 0) ? 1 : 0;
 +}
-+
- static int __cmd_record(struct record *rec, int argc, const char **argv)
- {
- 	int err;
-@@ -2864,11 +2929,23 @@ static int __cmd_record(struct record *rec, int argc, const char **argv)
- 		 */
- 		if (done && !disabled && !target__none(&opts->target)) {
- 			trigger_off(&auxtrace_snapshot_trigger);
-+			record__final_data(rec);
- 			evlist__disable(rec->evlist);
- 			disabled = true;
- 		}
- 	}
- 
-+	/*
-+	 * If the loop exited via the early break (ring buffer empty when done
-+	 * was set, so the in-loop disable block was never reached), or this is
-+	 * a child workload (target__none, so the in-loop block is never entered
-+	 * and disabled stays false), drain any remaining arch-specific data now.
-+	 * Events are still live in both cases: for child workloads they die with
-+	 * the process after this point; for non-child they are disabled below.
-+	 */
-+	if (target__none(&opts->target) || !disabled)
-+		record__final_data(rec);
-+
- 	trigger_off(&auxtrace_snapshot_trigger);
- 	trigger_off(&switch_output_trigger);
- 
-diff --git a/tools/perf/util/record.h b/tools/perf/util/record.h
-index 93627c9a7338..56de4f95a836 100644
---- a/tools/perf/util/record.h
-+++ b/tools/perf/util/record.h
-@@ -10,6 +10,7 @@
- #include "util/target.h"
- 
- struct option;
-+struct evlist;
- 
- struct record_opts {
- 	struct target target;
-@@ -95,4 +96,6 @@ static inline bool record_opts__no_switch_events(const struct record_opts *opts)
- 	return opts->record_switch_events_set && !opts->record_switch_events;
- }
- 
-+int arch_perf_record__need_read(struct evlist *evlist);
-+
- #endif // _PERF_RECORD_H
 -- 
 2.43.0
 
