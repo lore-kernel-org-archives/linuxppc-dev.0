@@ -1,98 +1,47 @@
-Return-Path: <linuxppc-dev+bounces-25013-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25014-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0CEDC54F51
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jul 2026 13:32:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 934EAC54F51
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jul 2026 13:49:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h9CtH0qrWz2xwP;
-	Wed, 29 Jul 2026 23:32:07 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785331927;
-	cv=none; b=R8N6dYJ+RqN22fOCVnbQA5PjBV1vllKEh/HtN34cBH4lKX7wUgu3VxiLFCQwDOX/5QOsa39nxgKdEv1lMk+x+xUT0VGjt3hQ5zLrgNaYmBskb1QcllP6e5mE+iaz0uRttgLsVGnL0jlAXtin/lHncNA1mHQbLXynURz6qToI9RSz3VjzBo4bQ/k3E8JO7nxiSyfWZUjrApNcm82IgN1Vbnb6GRMyBKnPLkK8tj/Nitzpieep1l8IVs66bE5VfrTYXt1szNSFJFdaoWKo2nPLfM02NfjsE25J5bAqC4eDpaUTkVenmYAQjwrrUHDAm4rkqv4rfSUzudcTOAEPHigh/g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h9DG54TFWz2xwP;
+	Wed, 29 Jul 2026 23:49:17 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=91.218.175.184
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785332957;
+	cv=none; b=Z2D8gIf3h0cGByxLi1l25b3rfPD2IQUKih9ALmEEflr+sziUsUoSwDBpp0oBimpUjiJaQZkJLavw2P808GLVuRC8Z7vsE7ZexgILC3pTGmz1g3ux3qHx0pPRWf3QHTKsD/CiJad3etA34bLRHiUiR15+HDITDGaba6A7hkY2C6a4sPtzwuUrdHQW0hZ01Wac3tgxEjuQ4qO4uzW9Y3j4OJVr099PPZUpAGxFeqNx0FS3hqeZd5j39I2clmXqwo+t4AbzUURM+ZDLTncNTeyJ2qsQkosgztxcW+T8lznaeY6beZHgbMylwyt2n7RqyDJHnuhUIR3ivFbZyErj6XYRXQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785331927; c=relaxed/relaxed;
-	bh=yyFIEb9z3mB2PIPDau5MQ7dpD90tXnalh+HmIBwM0Nk=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=fR1HjC1pviQ8LP1uDuV0vEGRo9wGVypNFKC1GBU9Ssf+1+pjRDIHux2P8GqGzVhdBwPqFLLLXnpbrLB4pgrQRAvebBtRTJk2CaEPwlJTwBLW60SRcXKd722oEpKWp1PStXsqWy2MMrxkAy9GolT//8iWxGhF8PxDM9NND0WqzAbymaIx5Qy0fdR01ysNTJQTfjezswPkhCS/mqIR1EH3y+TzRWQWbqARvLqLlRwZeyt1LyH3cz+2CKwhljZ01tgBfNFVTSA1rT2QEF/7qaNLVsU7Gf2dkcu2V4nS+gV92vCiGhazgtHpj664oCfUPC6ytQ5156hzmSw5M8avHF/YWg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QhSnNi23; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1785332957; c=relaxed/relaxed;
+	bh=ri/Un0MEVq2R5X4SwViYnsBFp4cF+iTbRU5sEtCszTs=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=jBHUgWxCXH2QSAZyO42zkEkPwu1O6TdKqchObtFyBuW45nlJrK721InmHGl6fx3OJI4AOTwNeraOoAC1uMN+++mrI1NYzamOB5LLygZssnEBrqiTueTvoGKaBhNPWtbeD1KrXDeBPaAKiCHjcjMf0EaO98emlpJCM5NBT6Xjm3CR/p+fEVe7kfjp/2lWQiZWaUx1xOCXHN0BtkhnaJF94pHKthy491RE0hqnRWQ1hOgMhreoGMlA25Eic7QgIelRVOvYGJSVcTDK454S2gRiLbTO8XZWbMwM2/Gdy9d7WPIYfZ3ymwg77NqSF781EzSq3+mHb4rJnt2qxi0XXofXOQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=lzZyWuW/; dkim-atps=neutral; spf=pass (client-ip=91.218.175.184; helo=out-184.mta0.migadu.com; envelope-from=vadim.fedorenko@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QhSnNi23;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=lzZyWuW/;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=91.218.175.184; helo=out-184.mta0.migadu.com; envelope-from=vadim.fedorenko@linux.dev; receiver=lists.ozlabs.org)
+X-Greylist: delayed 432 seconds by postgrey-1.37 at boromir; Wed, 29 Jul 2026 23:49:14 AEST
+Received: from out-184.mta0.migadu.com (out-184.mta0.migadu.com [91.218.175.184])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h9CtF6YsJz2xnp
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2026 23:32:05 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 7C97540460;
-	Wed, 29 Jul 2026 13:32:03 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 928501F000E9;
-	Wed, 29 Jul 2026 13:31:54 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785331923;
-	bh=yyFIEb9z3mB2PIPDau5MQ7dpD90tXnalh+HmIBwM0Nk=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date;
-	b=QhSnNi23aTMVPnBHd3PPmBrhLSc19heT9KYS0ZHTsC3ONVxgLBei98oe3pPj2dRHq
-	 2WVqe8B2JnPib4yRNsudUB/8/Wpekohz78IYCFU5vCylzyxT7VOsiWrQeBr3XHbovi
-	 xmfJUb/j8ai29LfxDihIR4MoVqA2XcfJc7OCImcuGqbA8/egFgOL13ap6IyeDuS7Sz
-	 cHquFS6CTfKI3TD0LHARonOrS9MT22QkmDkBaf9iUm+L/spe7XGNIguuQZ77w4EP/P
-	 HJf6wFNOEAw+GLcx5oYeEGYxOVt8roPGXi8bNGds3D9iCxAPb7rWaFsYysVWAqrXJL
-	 LkDjMjAvfO6oA==
-From: Mark Brown <broonie@kernel.org>
-To: Liam Girdwood <lgirdwood@gmail.com>, 
- =?utf-8?q?Uwe_Kleine-K=C3=B6nig_=28The_Capable_Hub=29?= <u.kleine-koenig@baylibre.com>
-Cc: Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, 
- Matthias Brugger <matthias.bgg@gmail.com>, 
- AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
- Charles Keepax <ckeepax@opensource.cirrus.com>, 
- Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, 
- linux-sound@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, 
- linux-renesas-soc@vger.kernel.org, 
- Vijendar Mukunda <Vijendar.Mukunda@amd.com>, 
- Venkata Prasad Potturu <venkataprasad.potturu@amd.com>, 
- Bard Liao <yung-chuan.liao@linux.intel.com>, 
- Syed Saba Kareem <Syed.SabaKareem@amd.com>, 
- Aaron Ma <aaron.ma@canonical.com>, Mark Pearson <mpearson-lenovo@squebb.ca>, 
- Hasun Park <hasunpark@gmail.com>, 
- Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>, 
- Kees Cook <kees@kernel.org>, Cezary Rojewski <cezary.rojewski@intel.com>, 
- Cristian Ciocaltea <cristian.ciocaltea@collabora.com>, 
- Mario Limonciello <mario.limonciello@amd.com>, 
- "Guilherme G. Piccoli" <gpiccoli@igalia.com>, 
- James Ogletree <jogletre@opensource.cirrus.com>, 
- Fred Treven <fred.treven@cirrus.com>, Ben Bright <ben.bright@cirrus.com>, 
- David Rhodes <david.rhodes@cirrus.com>, 
- Richard Fitzgerald <rf@opensource.cirrus.com>, 
- Peter Ujfalusi <peter.ujfalusi@linux.intel.com>, 
- Kai Vehmanen <kai.vehmanen@linux.intel.com>, 
- Pierre-Louis Bossart <pierre-louis.bossart@linux.dev>, 
- Maciej Strozek <mstrozek@opensource.cirrus.com>, 
- Mac Chiang <mac.chiang@intel.com>, 
- Ranjani Sridharan <ranjani.sridharan@linux.intel.com>, 
- patches@opensource.cirrus.com, Lars-Peter Clausen <lars@metafoo.de>, 
- =?utf-8?q?Nuno_S=C3=A1?= <nuno.sa@analog.com>, 
- Srinivas Kandagatla <srini@kernel.org>, 
- Shengjiu Wang <shengjiu.wang@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>, 
- Fabio Estevam <festevam@gmail.com>, Nicolin Chen <nicoleotsuka@gmail.com>, 
- Frank Li <Frank.Li@nxp.com>, Sascha Hauer <s.hauer@pengutronix.de>, 
- Pengutronix Kernel Team <kernel@pengutronix.de>, 
- Sylwester Nawrocki <s.nawrocki@samsung.com>, 
- =?utf-8?q?Amadeusz_S=C5=82awi=C5=84ski?= <amadeuszx.slawinski@linux.intel.com>, 
- linux-arm-msm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
- imx@lists.linux.dev
-In-Reply-To: <cover.1784528081.git.u.kleine-koenig@baylibre.com>
-References: <cover.1784528081.git.u.kleine-koenig@baylibre.com>
-Subject: Re: [PATCH v2 0/6] ASoC: Use named initializers for
- platform_device_id arrays
-Message-Id: <178519395804.552178.14635881416240705752.b4-ty@b4>
-Date: Tue, 28 Jul 2026 00:12:38 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h9DG21zlqz2xnp
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2026 23:49:13 +1000 (AEST)
+Message-ID: <59ecaa4e-f111-4dd4-914a-7704990ac58e@linux.dev>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1785332500;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=ri/Un0MEVq2R5X4SwViYnsBFp4cF+iTbRU5sEtCszTs=;
+	b=lzZyWuW/4KOletf2OQGRdK5gpRSxzpGcK7PXG6tHx6wV+i5jWAxhyIkDSdw5wYnC9al3YI
+	dAxDsynJHSa1alN2L8/flus0x/FSmMml1q26Bai3GR2vQz85cQm8DlV9ZahxWH/sxbFAbD
+	Jb3yyIOxY/QzPSPozyRoN0U27mlYuk8=
+Date: Wed, 29 Jul 2026 14:41:36 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -106,69 +55,111 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-Mailer: b4 0.16-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2070; i=broonie@kernel.org;
- h=from:subject:message-id; bh=U0oMIU8K8WmgeLPAyFV6bjpgnTi8C1w/LC1AdtgPXpw=;
- b=owEBbQGS/pANAwAKASTWi3JdVIfQAcsmYgBqagDJWXeDjd5kHwd16ukfCKKPN0qkrdOoGH0my
- SlAtyFDD2+JATMEAAEKAB0WIQSt5miqZ1cYtZ/in+ok1otyXVSH0AUCamoAyQAKCRAk1otyXVSH
- 0CfkB/9FMb5uul97pj4GpuHcasO2XkfONSN4R0UJo6cou6C2FFmI8xWge1nLM+AqKOSumscn/Vn
- Au2qfeSLhjcaKupnNJ75pHeM0y38rT7suCWzSLpXeQnFml/R5whX5H9mHp2V4htcPgRK1YFNak6
- wYmqDa9+JWv+I97lnNIDba0EcUOfHzKtw5fpjvstHtZISkKTTX7rMRnUdgwAV3YPUaVH49Y7G/8
- RKad+Se7bFLSn4vl1oXqboKS4pbWXZ8Vg1YSEOgTHEAAmX5tB49vzlkmGF83RwZrRldfTrzGkdS
- rGzce5naN625a9ZxpW5A+2jRZ+WX6wGhL19C6+xi8sgQLUGN
-X-Developer-Key: i=broonie@kernel.org; a=openpgp;
- fpr=3F2568AAC26998F9E813A1C5C3F436CA30F5D8EB
+Subject: Re: [PATCH net-next 6/7] net: dsa: netc: add PTP two-step
+ timestamping support
+To: wei.fang@oss.nxp.com, richardcochran@gmail.com, vladimir.oltean@nxp.com,
+ xiaoning.wang@nxp.com, andrew+netdev@lunn.ch, davem@davemloft.net,
+ edumazet@google.com, kuba@kernel.org, pabeni@redhat.com, andrew@lunn.ch,
+ olteanv@gmail.com
+Cc: wei.fang@nxp.com, chleroy@kernel.org, imx@lists.linux.dev,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+References: <20260728104548.3301214-1-wei.fang@oss.nxp.com>
+ <20260728104548.3301214-7-wei.fang@oss.nxp.com>
+Content-Language: en-US
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: Vadim Fedorenko <vadim.fedorenko@linux.dev>
+In-Reply-To: <20260728104548.3301214-7-wei.fang@oss.nxp.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Migadu-Flow: FLOW_OUT
 
-On Mon, 20 Jul 2026 08:23:44 +0200, Uwe Kleine-König (The Capable Hub) wrote:
-> ASoC: Use named initializers for platform_device_id arrays
+On 28/07/2026 11:45, wei.fang@oss.nxp.com wrote:
+> From: Wei Fang <wei.fang@nxp.com>
 > 
-> Hello,
+> Add two-step TX timestamping and RX timestamping for the NETC switch.
+> One-step TX timestamping is not supported yet.
 > 
-> the objective of this series is still to prepare making struct
-> platform_device_id::driver_data an anonymous union. See
-> https://lore.kernel.org/all/cover.1780048925.git.u.kleine-koenig@baylibre.com/
-> for the details about that.
+> For RX, install ingress port filter table (IPFT) rules that redirect PTP
+> frames to the CPU port. Support L2, L4 over IPv4 and L4 over IPv6, for
+> both event and general messages, selected via the hwtstamp rx_filter.
+> The hardware prepends a To_Host subtype 1 tag carrying the 64-bit ingress
+> timestamp. The tagger extracts it into the skb control buffer, and
+> netc_port_rxtstamp() copies it into skb_hwtstamps().
 > 
-> [...]
+> For two-step TX, clone the skb and allocate a 4-bit timestamp request ID,
+> then queue the clone on a per-port list. netc_xmit() emits a To_Port
+> subtype 2 tag carrying that ID. The hardware echoes the ID back in a
+> generated To_Host subtype 2 response frame together with the 64-bit
+> transmit timestamp. The tagger dispatches the ID and timestamp to the
+> switch driver through the twostep_tstamp_handler callback registered in
+> netc_tagger_data, which matches the queued clone and completes it via
+> skb_complete_tx_timestamp(), then frees the response skb. Non-PTP frames
+> keep using the To_Port subtype 0 tag on the xmit fast path.
+> 
+> The two-step response frame carries no payload; its total length is only
+> 26 bytes (12 bytes of DMAC and SMAC plus a 14-byte switch tag). By the
+> time netc_rcv() sees it, skb->data already points 2 bytes into the switch
+> tag, past the TPID shared with the Ethernet header, so skb->len is only
+> 12. Since the tag pointer is at (skb->data - 2), the pskb_may_pull() check
+> must use NETC_TAG_MAX_LEN - 2 rather than NETC_TAG_MAX_LEN. Otherwise
+> pskb_may_pull() drops the response frame and breaks PTP synchronization.
+> 
+> Add the To_Port subtype 2 and To_Host subtype 1/2 tag structures, extend
+> netc_xmit() to select the tag based on ptp_flag in the skb control buffer,
+> and add netc_connect()/netc_disconnect() to manage the per-switch
+> netc_tagger_data allocation. Grab the PTP timer's pci_dev in netc_setup()
+> so get_ts_info() can report its PHC index, and release it in the teardown
+> and error paths.
+> 
+> Signed-off-by: Wei Fang <wei.fang@nxp.com>
+> ---
+>   drivers/net/dsa/netc/Kconfig         |   1 +
+>   drivers/net/dsa/netc/Makefile        |   3 +-
+>   drivers/net/dsa/netc/netc_main.c     |  72 +++++
+>   drivers/net/dsa/netc/netc_platform.c |   1 +
+>   drivers/net/dsa/netc/netc_ptp.c      | 411 +++++++++++++++++++++++++++
+>   drivers/net/dsa/netc/netc_switch.h   |  35 +++
+>   include/linux/dsa/tag_netc.h         |  23 ++
+>   net/dsa/tag_netc.c                   | 120 +++++++-
+>   8 files changed, 658 insertions(+), 8 deletions(-)
+>   create mode 100644 drivers/net/dsa/netc/netc_ptp.c
 
-Applied to
+[...]
 
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-7.3
+> +int netc_get_ts_info(struct dsa_switch *ds, int port,
+> +		     struct kernel_ethtool_ts_info *info)
+> +{
+> +	struct netc_switch *priv = ds->priv;
+> +
+> +	info->so_timestamping = SOF_TIMESTAMPING_TX_SOFTWARE |
+> +				SOF_TIMESTAMPING_RX_SOFTWARE |
+> +				SOF_TIMESTAMPING_SOFTWARE;
 
-Thanks!
+SOF_TIMESTAMPING_RX_SOFTWARE and SOF_TIMESTAMPING_SOFTWARE are available 
+by default, no need to add them.
 
-[1/6] ASoC: codecs: mt6357: Drop unused assignment of platform_device_id driver data
-      https://git.kernel.org/broonie/sound/c/c7a6909de856
-[2/6] ASoC: renesas: fsi: Drop platform probing metadata
-      https://git.kernel.org/broonie/sound/c/0ca8f65516a9
-[3/6] ASoC: amd: acp: Use named initializers for platform_device_id arrays
-      https://git.kernel.org/broonie/sound/c/2b26d06fd3d8
-[4/6] ASoC: amd: acp: Unify code style for platform_device_id array
-      https://git.kernel.org/broonie/sound/c/4bed1074db1e
-[5/6] ASoC: Use named initializers for platform_device_id arrays
-      https://git.kernel.org/broonie/sound/c/232725a0e386
-[6/6] ASOC: Unify code style for platform_device_id arrays
-      https://git.kernel.org/broonie/sound/c/e4dc03df1f71
+the code doesn't have skb_tx_timestamp() calls, I wonder how is
+SOF_TIMESTAMPING_TX_SOFTWARE implemented?
 
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.
+> +
+> +	info->phc_index = netc_get_phc_index(priv);
+> +	if (info->phc_index < 0)
+> +		return 0;
+> +
+> +	info->so_timestamping |= SOF_TIMESTAMPING_TX_HARDWARE |
+> +				 SOF_TIMESTAMPING_RX_HARDWARE |
+> +				 SOF_TIMESTAMPING_RAW_HARDWARE;
+> +
+> +	info->tx_types = BIT(HWTSTAMP_TX_OFF) | BIT(HWTSTAMP_TX_ON);
+> +
+> +	info->rx_filters = BIT(HWTSTAMP_FILTER_NONE) |
+> +			   BIT(HWTSTAMP_FILTER_PTP_V2_EVENT) |
+> +			   BIT(HWTSTAMP_FILTER_PTP_V2_L2_EVENT) |
+> +			   BIT(HWTSTAMP_FILTER_PTP_V2_L4_EVENT);
+> +
+> +	return 0;
+> +}
 
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
-
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
-
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
-
-Thanks,
-Mark
 
 
