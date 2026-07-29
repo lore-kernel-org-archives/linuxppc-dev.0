@@ -1,78 +1,79 @@
-Return-Path: <linuxppc-dev+bounces-25001-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25002-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D88DBC54F51
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jul 2026 12:38:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9F049C54F51
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jul 2026 12:38:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h9BhG0TX4z2yqs;
-	Wed, 29 Jul 2026 22:38:22 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785328702;
-	cv=none; b=AXO1bollfqmUF5blQbOCwQmk+9GsZj6yPIGK69GcHj36PIZPUCNGIhkNSgm9A7q+nOxpcZ78hFalcvvh+kXeUq/tp/myYYh9XOhFOXTid06AtL2HjP8e5PlB9pGp5FcCy+4Rz48dzZtoHOTuTy9h3yUjgiqXxc5vnX3mBQWqcGSIhAFlTvZuxw1Cp3rIh9sEq7x21MLpq2J/xWgA42qIL/u9Cv6anLQUoUoUzpg3crNMx0YlG800d8OUdJUk6wM0LPayw9Qg03ys1UgLLj9Su4rmNSAbWfQbs8CpNlHgJpq7PoBge4SqyNSnbuLf2CzKHS+j9ZpypGRlOzbWvr2MXA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h9BhJ2Zk6z2yrW;
+	Wed, 29 Jul 2026 22:38:24 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785328704;
+	cv=none; b=jIyBRsxKN8fLD6mTA2jUpuTQbeutT/9FGFBkeUmTITLNWAcQp0nl4GNlOiZOBp/LXItfx0fGIOCiTrUPNaBG2SeEvEocOtdDvAZPb6c808Or2wkB6pQ+lS3ebPBNmtxNiOs92pHwTjBjcJ5U19YyUfGnASZe1hR22+f955AoC+CVuw9CSBpmcnU7UHdFStgt97qVWu+ap9g5nwBcpE5ldwDTyTjrapQiC2cMtPhwILMkj6+Ov17n852VvPLfy96H4+eEZo5vvYykCZwPMrNaxAtQAkKRMZsuuGmUKc28Uc5Eb4p8/jsCVXFvG9Bkp07BIZOijY/xPGmrpLTx5pjoGw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785328702; c=relaxed/relaxed;
-	bh=d19cftgp9K/1so6ookkGjBAMHf/pvDTWmC7RQblNtpE=;
+	t=1785328704; c=relaxed/relaxed;
+	bh=mvwNJkLOxcU8stzdw0I7HGUJ2J2k2en1jaE/dD1yXdU=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=WLLjPkFIHF6d+vBe+aFhm+Jb5J81D6yCeuQD3sZdu2+bBWFySnAo61J3zKkBoHwr7rkK2IVfOAMl0lYEdePwbt/zH2iYjWyAI7oM4HhDgTsqZ88LDM5zON/nHxHJ5mFa52gEF13WCubiTPEEq71NjjMoPH++WNWTEx6na0mNgU/mavnf6IF27vOaU9RZ8oZ5E2wrYnMKl94Nd28pATop9v3Fsr2XjD1/GVJsq1iDhMhi+RCJXO3PyvjLVyjANkux8xOEUg183eQwUeIG++Nd2KT0jmT6R525tv4RirAK6DdPzCR+0E14bJTPPS4riwmYweFdHRKc43/cIUX1K0Ss2w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=dAE67pku; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 MIME-Version:Content-Type; b=oscUdQpqga1jHMQL/7GNSgs5DvuK0jN1RTHllOREd7XhA3AimtgBXVEvpD1SI7iQ0mKu3mBvp+18H9gsuY8j8m8b9VlJ7eYPMTQHRJxmi7pDxPtSvJ2srXdMHh+y5JIcUuZpjIj3ZdDbJL9xBPe033ihw2MRJ8xY8yUFxpOFH4qXSXEa2WwW+QqTILe65WCT99ufq9czrwmA6hqVQPnigUsNKI4jLG9Lgo/vA3bmNcUNy0byNXykP3KW+4dn7LqTWaA+cKuopc+nR2qM0BrCaG0cqesADBzHpAhSVqPLCrWjvwEdfQqxQu1Rx5Fn/XIe1m1sDiXoZHIF8Gq7yqzjvw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nE/Tf0tD; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=dAE67pku;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nE/Tf0tD;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h9BhD6j7gz2yn2
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2026 22:38:20 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66TBI9Z63956507;
-	Wed, 29 Jul 2026 12:38:18 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h9BhH280Gz2yn2
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2026 22:38:22 +1000 (AEST)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66TBIBGI2165612;
+	Wed, 29 Jul 2026 12:38:21 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=d19cftgp9K/1so6oo
-	kkGjBAMHf/pvDTWmC7RQblNtpE=; b=dAE67pkufMmmF3t1Gi8daVsRbLRJfTx6W
-	EH+MfgRNy4rKf3Cas+soNJq1lQeloPO5jzH+tzAgHmmHP2oSLK//jlHqWZCzb/8H
-	XHTdV8OT7L1IDBWo5gSMJec4tHLl3PI1644tGWlNBLyEu3hG3zAjV+VbJoLxdFml
-	Izd4dHC9VyoLpwmRyTF3kJOm2hBMQM0LfHcxOR8hBL8jcYG2OG9vW6ca67tG615A
-	GPGuScBMuohjqgPYovmJ6BtUqra6Xu8/UKAoDXMdiHrp7JGr3+LDZBB5+vUs/j75
-	FKijPfc/NsVkppwurpj5NZIbsSsnZ5Igews1KLYO8U/MJwGoYFv7g==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fmv0nsuen-1
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=mvwNJk
+	LOxcU8stzdw0I7HGUJ2J2k2en1jaE/dD1yXdU=; b=nE/Tf0tDf7AHYdoA9eyUQW
+	ET5/hgY9yzqgiQPoHT/LkRRkU7D/DHcBcsadFuCN0OU7+0DQRZtYcZZsRexFTVvE
+	yjFDVic7plACReoWcnaJpkCf75mlaPhpFZEzWge0xTLhg+Mbvpaws8xLedzF7dVY
+	qFtIifxKt5ma2xU1SezTJmNlUdtZKKHZgxRA7AgvqCMBlMQec9HEW1BAYJ8Zwkub
+	hcpPnJV3yHqR5nao2JjyreTnxIwBpau2q5gTHjXzjlPOQJWDB2glEgbbqGmHkBwV
+	/IQs4DZt5yWl71iOJktTFfPv9it/Aa4wKsyBdsHlKq7CI/QZmPPEBHeqWvmD1ZmQ
+	==
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fmuycjk1j-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 29 Jul 2026 12:38:18 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66TCQIlo031858;
-	Wed, 29 Jul 2026 12:38:17 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4fn8fk6pw1-1
+	Wed, 29 Jul 2026 12:38:20 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66TCQHWJ015732;
+	Wed, 29 Jul 2026 12:38:20 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fn7fqev4e-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 29 Jul 2026 12:38:17 +0000 (GMT)
+	Wed, 29 Jul 2026 12:38:20 +0000 (GMT)
 Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66TCcBvl25952822
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66TCcEf425559502
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 29 Jul 2026 12:38:11 GMT
+	Wed, 29 Jul 2026 12:38:14 GMT
 Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A7C3820040;
-	Wed, 29 Jul 2026 12:38:11 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 7CF8220040;
+	Wed, 29 Jul 2026 12:38:14 +0000 (GMT)
 Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 6B7D020043;
-	Wed, 29 Jul 2026 12:38:09 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 1CA8A20043;
+	Wed, 29 Jul 2026 12:38:12 +0000 (GMT)
 Received: from localhost.localdomain (unknown [9.39.22.136])
 	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 29 Jul 2026 12:38:09 +0000 (GMT)
+	Wed, 29 Jul 2026 12:38:11 +0000 (GMT)
 From: Athira Rajeev <atrajeev@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com
 Cc: linux-perf-users@vger.kernel.org, atrajeev@linux.ibm.com,
         hbathini@linux.vnet.ibm.com, tejas05@linux.ibm.com,
         venkat88@linux.ibm.com, tshah@linux.ibm.com, usha.r2@ibm.com
-Subject: [PATCH V4 3/6] powerpc/perf: Add AUX buffer management to capture HTM trace data
-Date: Wed, 29 Jul 2026 18:07:49 +0530
-Message-Id: <20260729123752.63010-4-atrajeev@linux.ibm.com>
+Subject: [PATCH V4 4/6] powerpc/perf: Capture the HTM memory configuration as part of perf data
+Date: Wed, 29 Jul 2026 18:07:50 +0530
+Message-Id: <20260729123752.63010-5-atrajeev@linux.ibm.com>
 X-Mailer: git-send-email 2.39.5 (Apple Git-154)
 In-Reply-To: <20260729123752.63010-1-atrajeev@linux.ibm.com>
 References: <20260729123752.63010-1-atrajeev@linux.ibm.com>
@@ -89,483 +90,402 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzI5MDEwMiBTYWx0ZWRfX8IgEacpK03zV
- bNSOidieidOr5ZgAoCUAGbJru9ZsgHeShoCcDuDCOhEcSgg0Yt5Tcwq1B+GQGdVw2WNrr4XTDpE
- UqPOH5duCEElB/h8YJB7y80uzeQVBDE=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzI5MDEwMiBTYWx0ZWRfX/bmyUMbyId8V
- 1OkpuwNM6HGK6/tZQ49IsHkDoEPCWkfnwzMST7DJT0zjev+tl/zeyokoNIt05JQKrFugWxv7hen
- BZcmR00Z/U1znKDSpxkZCh34Q5+VovsP+FQ/Xr0aApDCAGDC6uA/15oUtfet3EWc/VYfdFFUO2m
- 9O4OQ85GML3WS3bhV+QJ6h5BdEYRNizdg8hojAeg4bNiALMktPC2erdoo8AKzuhx5dSu5YuupPW
- WZERfoyWSpOfCAnZaCPbVYmbUvqW/+Bmst36cndfb34MC0uYQGRKkOZW5rZf94SCiHVtHswCIjk
- TgzKXEXLnLvmNn5BzaKUkRaoEHE9FN7fYHLo32+AGFcZhhXGPnt5QnmK8m3UVIeYXbnyv0q4nQJ
- k6KEGYcCiRioC6aTgTjALttNYd00MpwRd0PD929OzPutzSmdOtxvuWDkwphRmP4+uhfBrEH+aV4
- ZrA9a/KPrdBQNHpGCvQ==
-X-Authority-Analysis: v=2.4 cv=b5WCJNGx c=1 sm=1 tr=0 ts=6a69f43a cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=V8glGbnc2Ofi9Qvn3v5h:22 a=VnNF1IyMAAAA:8 a=wbqx9YorgkV9QHrDWlcA:9
-X-Proofpoint-GUID: OH4Zaxp6F9oFaboL5AAmdo9tbgAGm0Te
-X-Proofpoint-ORIG-GUID: OH4Zaxp6F9oFaboL5AAmdo9tbgAGm0Te
+X-Proofpoint-ORIG-GUID: Sffc2o4-XzQ7X35GVl2rH0i54JVB2HJk
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzI5MDEwMiBTYWx0ZWRfX/Imce1OeAlOO
+ CwTH2XpXnqGYVDAhTsPMoZ0CWEXlBBKrVHWtx8uU/f3E7ZqlGTiOwC6yEs69x8XGQgHjyHedm5D
+ BA/CLRaQ1Zn4Idd98xS7p4nwPQtGk1hFrbbGSreXONzS1RQBTIUul2VEUadLnQQJPpheHmXoW8O
+ onC4lAb+x6C/h9+kmvy2cHgFDbnUTGR5LXo3+FEQRj5oPPXWA/Y8SjvazdbBwBcQoNQg+qrITYI
+ S4LO9RNyBSjQpfZS5qpyvtV8IxaKOQ02B4G7u9of75qZVVcF2T11MfCJmSxqlAabRdftQxrF1WY
+ h8uJ+61TZOb8NZ1pN1+Gcy1fTEWANB5cg8vBnWx3kE99H7c6WT3e88KmhH/CPFvYQKpt0I5DfEt
+ Hbb2606X9TNnjQP8R1NRumENfkJ64JFkmYGgdInjCBYA9cGuSneBpwXE92Xb4nSiKqA54kMgxpA
+ PYniBLCR+Z+ZkAL4g9A==
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzI5MDEwMiBTYWx0ZWRfX9bIsCSjRmmOU
+ T5pMiuJiy8m3MyMoLxrYw1uqMB1H7LksbqtK/GEkj2e/or0s5LcOPLkvqq/bhmnoo4PVpCSChlc
+ cX045JN76tQzNMiO6dWJsSJ1zFD/V4U=
+X-Authority-Analysis: v=2.4 cv=AZeB2XXG c=1 sm=1 tr=0 ts=6a69f43c cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+ a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=VnNF1IyMAAAA:8
+ a=8Q_xNA3RzAoMIHAl5xEA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: Sffc2o4-XzQ7X35GVl2rH0i54JVB2HJk
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-07-29_04,2026-07-28_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 spamscore=0 adultscore=0 malwarescore=0 impostorscore=0
- bulkscore=0 phishscore=0 suspectscore=0 clxscore=1015 lowpriorityscore=0
+ spamscore=0 priorityscore=1501 phishscore=0 adultscore=0 impostorscore=0
+ clxscore=1015 malwarescore=0 suspectscore=0 lowpriorityscore=0 bulkscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607290102
 
-Implement support for auxiliary (AUX) ring buffers in the HTM PMU driver.
-This enables high-volume trace data to be streamed directly into a perf
-AUX buffer for deferred post-processing by the perf tool.
+The H_HTM hypervisor call can also return the system memory
+configuration, which describes the physical to logical real address
+mapping for logical partitions.
 
-Introduce the PMU data structures htm_pmu_buf and htm_pmu_ctx, and
-implement the core lifecycle hooks:
+After dumping HTM trace data into the AUX buffer, capture the
+corresponding HTM system memory configuration records and emit them as
+raw perf sample data for userspace parsing.
 
-  htm_setup_aux():  Allocates per-CPU context and records the AUX buffer
-                    base, head, and size for the active trace window.
-  htm_free_aux():   Releases the PMU-private tracking allocations.
+Add AUX-private tracking for a hypervisor memory-configuration dump
+buffer and iterator state.  Once AUX trace dumping completes,
+htm_event_read() calls htm_collect_memory_config() which issues one
+H_HTM_OP_DUMP_SYSMEM_CONF hcall and emits the result as a single
+PERF_SAMPLE_RAW record, then returns immediately.  The perf drain loop
+calls htm_event_read() repeatedly until event->count reaches zero,
+giving userspace a chance to drain the ring buffer between every record.
+This mirrors the AUX trace path design and avoids the ring-buffer-overflow
+problem that a while(true) loop would create.
 
-htm_pmu_ctx embeds a struct perf_output_handle as a per-CPU variable,
-following the established upstream pattern.  Reentrancy is handled by
-perf_aux_output_begin() itself via rb->aux_nest: when a nested caller
-(e.g. from NMI context) detects that aux_nest is already non-zero, it
-falls through to the err path, which sets the *nested* handle->event to
-NULL and returns NULL to the nested caller.  The outer handle is never
-touched; its handle->event remains valid throughout the outer
-perf_aux_output_end() call.
+Trace payload continues to be written to the AUX buffer, while memory
+configuration records are emitted as raw perf samples. This keeps the
+AUX stream focused on trace data and allows the configuration records to
+be decoded separately in userspace.
 
-Physical contiguity requirement:
+The hypervisor fills as many 32-byte entries as fit within the buffer
+size passed to H_HTM_OP_DUMP_SYSMEM_CONF — it does not cap at a fixed
+entry count.  Observed maximum fill is 64480 bytes (2015 entries at
+32 bytes each plus a 32-byte header).  HTM_MEM_BUF_SIZE is therefore
+defined as the allocation size (65440 bytes) and HTM_MEM_MAX_ENTRIES is
+derived from it ((HTM_MEM_BUF_SIZE - 32) / 32 = 2043), not the other
+way around.  This ensures the hcall is always told the true buffer size
+and the WARN_ON_ONCE(to_copy > HTM_MEM_BUF_SIZE) guard is a genuine
+impossibility check rather than a post-overflow assertion.
 
-   The perf core AUX allocator (rb_alloc_aux) may return a page array with
-   physical fragmentation gaps.  H_HTM_OP_DUMP_DATA operates on raw
-   physical addresses and requires a strictly contiguous region; crossing
-   a gap would cause silent memory corruption.
+HTM_MEM_BUF_SIZE = 65440 is the largest multiple of 32 that satisfies
+both constraints: it exceeds the observed 64480-byte maximum fill by 960
+bytes of headroom, and the resulting perf record (65440 + 92 bytes of
+fixed overhead = 65532) stays below 65535, the __u16 limit of
+perf_event_header.size.  The 92-byte overhead is: 8 (perf_event_header)
++ 64 (header_size worst case: 8 u64 sample fields) + 16 (id_header_size
+worst case) + 4 (PERF_SAMPLE_RAW u32 size prefix).
 
-   To prevent this, opt into PERF_PMU_CAP_AUX_NO_SG | PERF_PMU_CAP_AUX_PREFER_LARGE
-   to request large, physically contiguous allocations, and perform a
-   page-by-page physical continuity scan in htm_event_read() before each
-   H_HTM_OP_DUMP_DATA call.  The scan verifies that
-   virt_to_phys(page[n]) + PAGE_SIZE == virt_to_phys(page[n+1]) and
-   breaks the loop on the first discontinuity, ensuring the dump to the
-   verified safe window.
+perf_fetch_caller_regs() is used to initialise the pt_regs argument
+passed to perf_event_overflow().  An uninitialised stack frame would
+leak kernel stack bytes to userspace if the event is opened with
+PERF_SAMPLE_REGS_INTR.  This follows the pattern used by tracepoints
+and BPF perf-event helpers for synthetic sample emission.
 
-htm_dump_sample_data() returns the record count directly (already
-divided by the per-format record size) so htm_event_read() uses the
-value without format knowledge:
-  - AUX trace path:   chunk_size / 128  (128-byte HTM records)
-  - Memory cfg path:  to_copy    /  32  (32-byte entries, patch 4)
+When perf_event_overflow() throttles the event (returns non-zero),
+overflow_handler has already run unconditionally (writing the sample to
+the ring buffer) before the non-zero return.  mem_start is therefore
+advanced so the same block is not emitted again, and -ENOSPC is returned
+so event->count is set to 1 and the drain loop keeps retrying to emit
+the next block once the event is unthrottled.
 
-htm_event_read() sets event->count as follows:
-  - ret > 0: record count written; used directly as event->count.
-  - ret == -ENOSPC (AUX ring buffer full): event->count = 1 so the
-    perf tool drain loop keeps retrying after the consumer drains the
-    buffer.
-  - all other non-success paths: event->count = 0 so the drain loop
-    stops cleanly.
-event->count does not represent an instruction or cycle count; actual
-trace records are decoded in userspace by the perf tool.
-
-HTM target identity and tracing state are kept in event->pmu_private
-(htm_target_id).  AUX-private state holds only buffer metadata and
-dump progress; htm_target_id.tracing_active remains the source for
-tracing state.
+Keep HTM tracing state in event->pmu_private via htm_target_id. AUX
+private state is used only for dump progress and staging buffers.
 
 Signed-off-by: Athira Rajeev <atrajeev@linux.ibm.com>
 ---
 Changes in V4:
-- htm_event_start(): on a genuine start (not PERF_EF_RELOAD), open a brief
-  perf_aux_output_begin()/perf_aux_output_end(0) transaction to reset
-  collect_htm_trace=1 and head=0 on the AUX buffer.  Without this,
-  collect_htm_trace cleared by a prior hard hcall error would permanently
-  prevent trace data from being written for all subsequent sessions.
-- htm_setup_aux(): reject snapshot (overwrite) mode by returning NULL when
-  snapshot is true.  In overwrite mode perf_aux_output_begin() leaves
-  handle->size as zero, which causes htm_dump_sample_data() to return ENOSPC
-  on every call and htm_event_read() to set event->count=1, creating an
-  infinite drain loop in userspace.  Returning NULL causes perf_event_open()
-  to return EINVAL to the caller.
-- Commit body: clarified the reentrancy description to make explicit that
-  on a nested perf_aux_output_begin() call (e.g. from NMI context), it is
-  the *nested* handle->event that is set to NULL in the err path, not the
-  outer handle.  The outer handle->event remains valid throughout the outer
-  perf_aux_output_end() call.
+- htm_collect_memory_config(): restructured from a while(true) loop to a
+  single-hcall-per-call design, mirroring the AUX trace path.  The old
+  loop had no way to break out when the ring buffer filled mid-loop:
+  perf_event_overflow() returns 0 for both "written" and "ring buffer
+  full / dropped", so iteration would continue, dropping every subsequent
+  record with no chance for userspace to drain the buffer.  With one hcall
+  per call, the drain loop (arch_perf_record__need_read) calls
+  htm_event_read() → htm_collect_memory_config() once per pass, userspace
+  drains the ring buffer between passes, and ring buffer pressure is
+  handled naturally.
+- htm_collect_memory_config(): on non-zero return from perf_event_overflow()
+  (event throttled), advance mem_start before returning -ENOSPC.
+  overflow_handler runs unconditionally inside __perf_event_overflow()
+  before the non-zero return, so the sample WAS written to the ring buffer.
+  The old code did not advance mem_start on throttle, causing the same
+  block to be emitted again on the next call — a duplicate sample bug.
+- htm_setup_aux() / htm_free_aux(): removed emit_buf.  emit_buf was a
+  second HTM_MEM_BUF_SIZE allocation used to keep raw.frag.data stable
+  across loop iterations (htm_mem_buf was overwritten by the next hcall).
+  With no loop, htm_mem_buf is not reused within a single call, so it
+  is stable throughout perf_event_overflow() and no memcpy or second
+  buffer is needed.
+- htm_setup_aux(): changed kmalloc_node to kzalloc_node for htm_mem_buf.
+  The buffer is passed to the hypervisor and subsequently read by the perf
+  core; kzalloc_node ensures uninitialized heap bytes are never exposed if
+  the hypervisor leaves reserved fields or padding untouched.
+- HTM_MEM_BUF_SIZE / PERF_SAMPLE_REGS_INTR: no change needed here.
+  PERF_SAMPLE_REGS_INTR is now rejected in htm_event_init() (patch 1),
+  so the 92-byte fixed overhead used in the HTM_MEM_BUF_SIZE calculation
+  is accurate for all sample types this driver accepts.
+- struct pt_regs initialisation: no change needed.  perf_fetch_caller_regs()
+  was already added in V3 (see "Changes in V3" below).  The reviewer was
+  looking at V2 code.
 
 Changes in V3:
-- Added a dedicated Physical contiguity requirement section and a full
-  per-condition htm_dump_sample_data() return values and event->count
-  table in the commit body, covering all five exit paths (success,
-  -ENOSPC, H_NOT_AVAILABLE, H_LONG_BUSY_*/hard error, stop-failed
-  before dump). V2 had a brief paragraph.
-- htm_dump_sample_data() return type changed from int to ssize_t; ret
-  locals in htm_dump_sample_data() and htm_event_read() likewise changed
-  to ssize_t. Prevents truncation of the upper 32 bits of chunk_size on
-  64-bit PowerPC.
-- Success path now returns (ssize_t)(chunk_size / 128) , the number
-  128-byte HTM trace records - rather than raw chunk_size bytes.
-  htm_event_read() uses the value directly (local64_set(&event->count,
-  ret)) without any further division, keeping it free of format
-  knowledge. The same contract is extended to the memory-config path
-  in patch 4 (to_copy / 32).
-- Removed the unused trace_records field from struct htm_pmu_buf and
-  its initialisation and increment sites. V2 carried the field as
-  dead code.
-- Added event->count does not represent an instruction or cycle count
-  sentence to both the commit body and the in-code comment
-  in htm_event_read().
+- Fixed HTM_MEM_BUF_SIZE defined as (32 + 2013 * 32 = 64448 bytes) while
+  the hypervisor actually fills up to 64480 bytes (2015 entries) when
+  given a sufficiently large buffer — overflowing the allocation by 32
+  bytes.  The hypervisor fills as many entries as fit within the given
+  buffer size; it does not cap at a fixed entry count.  Fixed by
+  redefining HTM_MEM_BUF_SIZE as 65440U (the largest multiple of 32
+  fitting in perf_event_header.size __u16 with 92 bytes of worst-case
+  header overhead: 65440 + 92 = 65532 < 65535) and deriving
+  HTM_MEM_MAX_ENTRIES from it ((HTM_MEM_BUF_SIZE - 32) / 32 = 2043).
+  The buffer now covers the observed maximum with 960 bytes headroom,
+  and the WARN_ON_ONCE guard is a genuine impossibility check.
+- Fixed htm_mem_buf allocated as PAGE_SIZE (4096 bytes on 4K-page
+  configs) while the hypervisor was told the buffer length is
+  HTM_MEM_BUF_SIZE.  Changed to kmalloc_node with HTM_MEM_BUF_SIZE.
+- Fixed uninitialized struct pt_regs regs passed to perf_event_overflow().
+  If the event is opened with PERF_SAMPLE_REGS_INTR the perf core reads
+  these bytes into the ring buffer, leaking kernel stack memory to
+  userspace.  Added perf_fetch_caller_regs(&regs) after the declaration
+  block, following the pattern in kernel/trace/trace_event_perf.c and
+  kernel/trace/bpf_trace.c.
+- Clarified the perf_event_overflow() throttle path: added a comment
+  distinguishing the throttle path (collect_htm_mem left set, -ENOSPC
+  returned) from the error/EOF paths that clear collect_htm_mem.
 
 Changes in V2:
-- Opted into PERF_PMU_CAP_AUX_NO_SG | PERF_PMU_CAP_AUX_PREFER_LARGE to
-  request physically contiguous allocations, which H_HTM_OP_DUMP_DATA
-  requires.  V1 had no contiguity requirement and could silently
-  corrupt memory if the allocator returned a fragmented page array.
-- Added a page-by-page physical-continuity scan in htm_event_read()
-  before every H_HTM_OP_DUMP_DATA call.  The scan verifies that
-  virt_to_phys(page[n]) + PAGE_SIZE == virt_to_phys(page[n+1]) and
-  stops at the first gap, bounding the dump to a verified safe window.
-- htm_dump_sample_data() now returns a record count (already divided
-  by the per-format record size) rather than raw bytes, so
-  htm_event_read() uses the value directly without format knowledge.
-  AUX trace path returns chunk_size / 128; the memory config path
-  added in patch 4 will return to_copy / 32.  Three-way semantics:
-  ret > 0 -> count = ret; ret == -ENOSPC -> count = 1; otherwise
-  count = 0.  The V1 arch_record__collect_final_data callback loop
-  is replaced by this mechanism.
-- Removed the unused trace_records field from htm_pmu_buf; htm_dump_
-  sample_data() now returns chunk_size on success so htm_event_read()
-  can derive the record count directly.
-- Introduced distinct htm_pmu_buf and htm_pmu_ctx structures; V1 used a
-  single struct htm_pmu_buf for both purposes.
+- Memory configuration records are now emitted as PERF_SAMPLE_RAW
+  samples directly by htm_event_read() after the AUX trace dump
+  completes, using H_HTM_OP_DUMP_SYSMEM_CONF.  V1 embedded the
+  configuration data inside the AUX buffer itself and used two
+  PERF_SAMPLE_RAW boundary markers (start/end) to delimit it.
+- The two-marker boundary scheme is removed.  There is no longer any
+  interleaving of memory configuration data inside the AUX stream;
+  the AUX buffer carries only bus-trace data.
+- Separate AUX-private fields for a hypervisor dump buffer and iterator
+  state are introduced to manage the SYSMEM_CONF drain.
+- Tracing state remains in event->pmu_private (htm_target_id); AUX
+  private state is used only for dump progress and staging buffers,
+  consistent with the restructuring in patches 1 and 3.
 
- arch/powerpc/perf/htm-perf.c | 290 ++++++++++++++++++++++++++++++++++-
- 1 file changed, 289 insertions(+), 1 deletion(-)
+ arch/powerpc/perf/htm-perf.c | 175 ++++++++++++++++++++++++++++++++++-
+ 1 file changed, 174 insertions(+), 1 deletion(-)
 
 diff --git a/arch/powerpc/perf/htm-perf.c b/arch/powerpc/perf/htm-perf.c
-index 0d1960e299e6..656f9b5aa38d 100644
+index 656f9b5aa38d..81e65b13d34d 100644
 --- a/arch/powerpc/perf/htm-perf.c
 +++ b/arch/powerpc/perf/htm-perf.c
-@@ -95,6 +95,22 @@ static inline void parse_htm_config(u64 config, struct htm_config *cfg)
- 	cfg->coreindexonchip = (config >> 20) & 0xff;
- }
+@@ -103,6 +103,9 @@ struct htm_pmu_buf {
+ 	u64	head;
+ 	u64     size;
+ 	int     collect_htm_trace;
++	void    *htm_mem_buf;	/* Staging area for H_HTM_OP_DUMP_SYSMEM_CONF hcall */
++	u64     mem_start;	/* Hypervisor iterator position for DUMP_SYSMEM_CONF */
++	int     collect_htm_mem;	/* State flag tracking whether memory logging is ongoing */
+ };
  
-+struct htm_pmu_buf {
-+	int     nr_pages;
-+	bool    snapshot;
-+	void    *base;
-+	void	**pages;
-+	u64	head;
-+	u64     size;
-+	int     collect_htm_trace;
-+};
-+
-+struct htm_pmu_ctx {
-+	struct perf_output_handle handle;
-+};
-+
-+static DEFINE_PER_CPU(struct htm_pmu_ctx, htm_pmu_ctx);
-+
- /*
-  * Check the return code for H_HTM hcall.
-  * Return 1 if either H_PARTIAL or H_SUCCESS is returned.
-@@ -296,6 +312,29 @@ static void htm_event_start(struct perf_event *event, int flags)
- 	if (ret > 0) {
- 		target->tracing_active = HTM_TRACING_ACTIVE;
- 		event->hw.state &= ~PERF_HES_STOPPED;
-+
-+		/*
-+		 * On a genuine start (not a context-switch RELOAD), re-arm the AUX
-+		 * buffer so that a subsequent htm_dump_sample_data() call can write
-+		 * data.  collect_htm_trace is cleared on any hard hcall error; without
-+		 * this reset, restarting the event via ioctl(ENABLE) after such an
-+		 * error would permanently drop all future trace data.
-+		 *
-+		 * Open a brief AUX transaction to obtain the buffer pointer, reset
-+		 * collect_htm_trace and head, then close with size=0 (no data
-+		 * committed).
-+		 */
-+		if (!(flags & PERF_EF_RELOAD)) {
-+			struct htm_pmu_ctx *htm_ctx = this_cpu_ptr(&htm_pmu_ctx);
-+			struct htm_pmu_buf *aux_buf;
-+
-+			aux_buf = perf_aux_output_begin(&htm_ctx->handle, event);
-+			if (aux_buf) {
-+				aux_buf->collect_htm_trace = 1;
-+				aux_buf->head = 0;
-+				perf_aux_output_end(&htm_ctx->handle, 0);
-+			}
-+		}
- 	}
- }
+ struct htm_pmu_ctx {
+@@ -182,6 +185,154 @@ static ssize_t htm_return_check(int rc)
+ #define HTM_TRACING_ACTIVE	1
+ #define HTM_TRACING_INACTIVE	0
  
-@@ -465,8 +504,254 @@ static void htm_event_del(struct perf_event *event, int flags)
- 	/* pmu_private freed by event->destroy = reset_htm_active */
- }
- 
-+static ssize_t htm_dump_sample_data(struct perf_event *event)
++/*
++ * HTM_MEM_BUF_SIZE is the allocation size for the hcall staging buffer.
++ * The hypervisor fills as many 32-byte entries as fit within the buffer
++ * size passed to H_HTM_OP_DUMP_SYSMEM_CONF — it does not cap at a fixed
++ * entry count.
++ *
++ * HTM_MEM_BUF_SIZE is chosen to satisfy two constraints:
++ *
++ *   1. The full perf record (perf_event_header + fixed sample fields +
++ *      PERF_SAMPLE_RAW u32 size prefix + to_copy) must fit in
++ *      perf_event_header.size which is __u16 (max 65535):
++ *        overhead = 8 (perf_event_header)
++ *                 + 64 (header_size, worst case: 8 u64 sample fields)
++ *                 + 16 (id_header_size, worst case)
++ *                 +  4 (PERF_SAMPLE_RAW u32 size prefix)
++ *                 = 92 bytes
++ *        to_copy <= 65535 - 92 = 65443
++ *        round down to multiple of 32: 65440
++ *
++ *   2. HTM_MEM_BUF_SIZE must be a multiple of 32 so a whole number of
++ *      32-byte entries fill it exactly.
++ *
++ * 65440 = 32 + 2043 * 32 is the largest multiple of 32 satisfying all
++ * constraints:
++ *   - total record: 65440 + 92 = 65532 < 65535 (3-byte u16 margin)
++ *
++ * HTM_MEM_MAX_ENTRIES is derived from HTM_MEM_BUF_SIZE — not the other
++ * way around — so the hcall is always given the true buffer size and
++ * the WARN_ON_ONCE(to_copy > HTM_MEM_BUF_SIZE) guard is a genuine
++ * impossibility check rather than a post-overflow assertion.
++ */
++#define HTM_MEM_BUF_SIZE	65440U
++#define HTM_MEM_MAX_ENTRIES	((HTM_MEM_BUF_SIZE - 32) / 32)	/* 2043 */
++
++/*
++ * htm_collect_memory_config - issue one H_HTM_OP_DUMP_SYSMEM_CONF hcall
++ * and emit the result as a single PERF_SAMPLE_RAW record.
++ *
++ * Mirrors the AUX trace path: one hcall per call, return immediately.
++ * htm_dump_sample_data() calls this once per htm_event_read() invocation;
++ * the perf drain loop calls htm_event_read() repeatedly until
++ * event->count reaches zero, giving userspace a chance to drain the ring
++ * buffer between every record.  This avoids the ring-buffer-overflow
++ * problem that a while(true) loop would create: if the ring buffer fills
++ * mid-loop there is no way to break out and let userspace drain it.
++ *
++ * Returns the number of 32-byte memory configuration entries emitted
++ * (to_copy / 32) on success, -ENOSPC if throttled (sample was written,
++ * event temporarily paused — advance mem_start, retry next block next
++ * call), 0 if the stream ended normally, or a negative error code on
++ * hard failure.  The caller uses the return value directly as
++ * event->count, consistent with the AUX trace path returning count..
++ */
++static ssize_t htm_collect_memory_config(struct perf_event *event,
++					 struct htm_pmu_buf *aux_buf)
 +{
-+	struct htm_pmu_ctx *htm_ctx = this_cpu_ptr(&htm_pmu_ctx);
-+	struct htm_target_id *target = event->pmu_private;
-+	struct htm_pmu_buf *aux_buf;
-+	struct htm_config cfg = target->cfg;
-+	u64 chunk_size, dump_offset, page_index, page_offset;
-+	u64 max_contiguous_bytes, expected_phys, scan_index, actual_phys;
-+	u64 hypervisor_target_phys;
-+	void *target_page_virt;
-+	ssize_t ret = 0;
-+	int retries = 0;
++	struct perf_sample_data data;
++	struct perf_raw_record raw;
++	struct pt_regs regs;
++	u8 *htm_mem_buf = aux_buf->htm_mem_buf;
++	__be64 *num_entries;
++	u64 next_start;
++	u64 to_copy;
 +	long rc;
-+
-+	/* Start AUX transaction session framework */
-+	aux_buf = perf_aux_output_begin(&htm_ctx->handle, event);
-+	if (!aux_buf)
-+		return 0;
-+
-+	if (!aux_buf->collect_htm_trace) {
-+		/*
-+		 * collect_htm_trace is cleared on hcall error and reset to 1
-+		 * in htm_event_start() when tracing restarts.  If it is still
-+		 * 0 here the event was disabled due to a prior hard error;
-+		 * end the AUX transaction and return 0 so the drain loop stops.
-+		 */
-+		perf_aux_output_end(&htm_ctx->handle, 0);
-+		return 0;
-+	}
-+
-+	if (target->tracing_active == HTM_TRACING_ACTIVE) {
-+		htm_event_stop(event, 0);
-+		if (target->tracing_active == HTM_TRACING_ACTIVE) {
-+			/*
-+			 * H_HTM_OP_STOP failed.
-+			 * Cannot dump data while the trace is still running.
-+			 * Return -EIO to signal a non-retriable hardware failure;
-+			 * htm_event_read() will set event->count=0 and the drain
-+			 * loop will stop cleanly.
-+			 */
-+			perf_aux_output_end(&htm_ctx->handle, 0);
-+			return -EIO;
-+		}
-+	}
-+
-+	/* Derive the exact target destination point directly out of active ring pointers */
-+	dump_offset = htm_ctx->handle.head & (aux_buf->size - 1);
-+	page_index = dump_offset >> PAGE_SHIFT;
-+	page_offset = dump_offset & (PAGE_SIZE - 1);
++	ssize_t ret;
++	int retries = 0;
 +
 +	/*
-+	 * Assess constraints regarding space remaining across the mapping
-+	 * context boundary
++	 * Initialise regs to the current caller context.  perf_event_overflow()
++	 * may sample register state into the ring buffer. Use
++	 * perf_fetch_caller_regs() to capture a safe, deterministic snapshot
++	 * of the current CPU state — the same pattern used by tracepoints and
++	 * BPF perf-event helpers for synthetic sample emission.
 +	 */
-+	chunk_size = htm_ctx->handle.size;
-+	chunk_size &= PAGE_MASK;
++	perf_fetch_caller_regs(&regs);
 +
-+	if (chunk_size > (aux_buf->size - dump_offset))
-+		chunk_size = aux_buf->size - dump_offset;
-+
-+	/*
-+	 * HTM driver uses these capabilities:
-+	 * PERF_PMU_CAP_AUX_NO_SG | PERF_PMU_CAP_AUX_PREFER_LARGE
-+	 * the core perf ring-buffer allocator (rb_alloc_aux) tries to allocate
-+	 * physically contiguous page block. If not available, it tries to allocate
-+	 * largest possible contiguous block.
-+	 *
-+	 * Example: If we ask perf for 1024 pages (64MB), the kernel executes a loop
-+	 * inside rb_alloc_aux() to fulfill that request using the buddy allocator. it
-+	 * always tries to grab the largest possible contiguous block of memory it can
-+	 * find first, then takes the next largest, and repeats until request is
-+	 * completely filled. Here while writing to aux buffer, to eliminate any
-+	 * virtual or physical boundary overruns, check for the page boundary.
-+	 *
-+	 * Dynamically scan forward page-by-page from our active page_index to
-+	 * calculate the absolute boundary limit of this current physically
-+	 * contiguous block chunk. Prevents hypervisor macro overruns across
-+	 * asymmetrical fragmentation gaps.
-+	 */
-+	max_contiguous_bytes = PAGE_SIZE - page_offset;
-+	scan_index = page_index + 1;
-+	expected_phys = (u64)virt_to_phys(aux_buf->pages[page_index]) + PAGE_SIZE;
-+
-+	while (scan_index < aux_buf->nr_pages && max_contiguous_bytes < chunk_size) {
-+		actual_phys = (u64)virt_to_phys(aux_buf->pages[scan_index]);
-+
-+		if (actual_phys != expected_phys)
-+			break; /* Intersected a fragmentation boundary block link! */
-+
-+		max_contiguous_bytes += PAGE_SIZE;
-+		expected_phys += PAGE_SIZE;
-+		scan_index++;
-+	}
-+
-+	/* Bound transfer length tightly within the validated contiguous window */
-+	if (chunk_size > max_contiguous_bytes)
-+		chunk_size = max_contiguous_bytes;
-+
-+	if (!chunk_size) {
-+		/*
-+		 * No space in the AUX ring buffer right now.  Leave
-+		 * collect_htm_trace set. Return -ENOSPC so htm_event_read()
-+		 * keeps event->count non-zero, signalling to the caller that
-+		 * collection is still ongoing and another pmu->read pass
-+		 * should be attempted once the consumer has drained the buffer.
-+		 */
-+		perf_aux_output_end(&htm_ctx->handle, 0);
-+		return -ENOSPC;
-+	}
-+
-+	/*
-+	 * Compute the precise base target address using
-+	 * localized page offset rules
-+	 */
-+	target_page_virt = aux_buf->pages[page_index];
-+	hypervisor_target_phys = (u64)virt_to_phys(target_page_virt) + page_offset;
-+
++	/* Issue one hcall with the current iterator position */
 +	do {
-+		/*
-+		 * Invoke H_HTM call with:
-+		 * - operation as htm dump (H_HTM_OP_DUMP_DATA)
-+		 * - last three values are address, size and offset
-+		 */
-+		rc = htm_hcall_wrapper(htmflags, cfg.nodeindex, cfg.nodalchipindex,
-+				cfg.coreindexonchip, cfg.htmtype, H_HTM_OP_DUMP_DATA,
-+				hypervisor_target_phys, chunk_size, aux_buf->head);
++		rc = htm_hcall_wrapper(htmflags, 0, 0, 0,
++				       0, H_HTM_OP_DUMP_SYSMEM_CONF,
++				       virt_to_phys(aux_buf->htm_mem_buf),
++				       HTM_MEM_BUF_SIZE, aux_buf->mem_start);
 +		ret = htm_return_check(rc);
 +	} while (ret == -EBUSY && ++retries < MAX_RETRIES);
 +
-+	if (ret > 0) {
-+		aux_buf->head += chunk_size;
-+		perf_aux_output_end(&htm_ctx->handle, chunk_size);
-+		/*
-+		 * Return the number of 128-byte HTM trace records written.
-+		 * Dividing here keeps htm_event_read() free of format
-+		 * knowledge: it can simply use the returned count directly,
-+		 * regardless of which data path (AUX trace or memory config)
-+		 * produced it.
-+		 */
-+		return (ssize_t)(chunk_size / 128);
++	/*
++	 * ret == 0 (H_NOT_AVAILABLE): normal end of stream.
++	 * ret < 0 (error): hard failure.
++	 * Both cases: clear collect_htm_mem so the next htm_event_read()
++	 * call does not re-enter, and return so event->count is set to 0.
++	 */
++	if (ret <= 0) {
++		aux_buf->collect_htm_mem = 0;
++		return ret;
 +	}
 +
 +	/*
-+	 * Hcall failed.  All non-success paths end collection for this
-+	 * buffer session.
++	 * Read next iterator value and payload size from the hcall response.
++	 * next_start == 0 means this is the last batch.
 +	 */
-+	aux_buf->collect_htm_trace = 0;
-+	perf_aux_output_end(&htm_ctx->handle, 0);
-+	return ret;
++	next_start = be64_to_cpu(*((__be64 *)(htm_mem_buf + 0x8)));
++	num_entries = (__be64 *)(htm_mem_buf + 0x10);
++	to_copy = 32 + (be64_to_cpu(*num_entries) * 32);
++
++	if (WARN_ON_ONCE(to_copy > HTM_MEM_BUF_SIZE)) {
++		aux_buf->collect_htm_mem = 0;
++		return -EIO;
++	}
++
++	/*
++	 * htm_mem_buf is stable for the duration of this single call —
++	 * no loop reuse, so raw.frag.data remains valid throughout
++	 * perf_event_overflow().  No memcpy to a separate emit_buf needed.
++	 */
++	perf_sample_data_init(&data, 0, event->hw.last_period);
++	memset(&raw, 0, sizeof(raw));
++	raw.frag.data = htm_mem_buf;
++	raw.frag.size = to_copy;
++	perf_sample_save_raw_data(&data, event, &raw);
++
++	if (perf_event_overflow(event, &data, &regs)) {
++		/*
++		 * Event throttled: overflow_handler ran unconditionally before
++		 * returning, so the sample WAS written to the ring buffer.
++		 * Advance mem_start so the same block is not emitted again.
++		 * Return -ENOSPC so htm_event_read() sets event->count=1,
++		 * keeping the drain loop alive to emit the next block once
++		 * the event is unthrottled.
++		 */
++		aux_buf->mem_start = next_start;
++		if (!next_start)
++			aux_buf->collect_htm_mem = 0;
++		return -ENOSPC;
++	}
++
++	/* Record emitted successfully: advance the iterator */
++	aux_buf->mem_start = next_start;
++	if (!next_start)
++		aux_buf->collect_htm_mem = 0;
++
++	/*
++	 * Return the number of 32-byte entries emitted.  Dividing here keeps
++	 * htm_event_read() free of format knowledge, consistent with the AUX
++	 * trace path returning chunk_size / 128.
++	 */
++	return (ssize_t)(to_copy / 32);
 +}
 +
- static void htm_event_read(struct perf_event *event)
+ static void reset_htm_active(struct perf_event *event)
  {
-+	ssize_t ret;
+ 	struct htm_target_id *target = event->pmu_private;
+@@ -523,7 +674,7 @@ static ssize_t htm_dump_sample_data(struct perf_event *event)
+ 	if (!aux_buf)
+ 		return 0;
+ 
+-	if (!aux_buf->collect_htm_trace) {
++	if (!aux_buf->collect_htm_trace && !aux_buf->collect_htm_mem) {
+ 		/*
+ 		 * collect_htm_trace is cleared on hcall error and reset to 1
+ 		 * in htm_event_start() when tracing restarts.  If it is still
+@@ -549,6 +700,11 @@ static ssize_t htm_dump_sample_data(struct perf_event *event)
+ 		}
+ 	}
+ 
++	if (!aux_buf->collect_htm_trace) {
++		ret = htm_collect_memory_config(event, aux_buf);
++		goto out;
++	}
 +
-+	ret = htm_dump_sample_data(event);
+ 	/* Derive the exact target destination point directly out of active ring pointers */
+ 	dump_offset = htm_ctx->handle.head & (aux_buf->size - 1);
+ 	page_index = dump_offset >> PAGE_SHIFT;
+@@ -651,6 +807,8 @@ static ssize_t htm_dump_sample_data(struct perf_event *event)
+ 	 * buffer session.
+ 	 */
+ 	aux_buf->collect_htm_trace = 0;
++	ret = htm_collect_memory_config(event, aux_buf);
++out:
+ 	perf_aux_output_end(&htm_ctx->handle, 0);
+ 	return ret;
+ }
+@@ -736,7 +894,21 @@ static void *htm_setup_aux(struct perf_event *event, void **pages,
+ 		return NULL;
+ 	}
+ 
 +	/*
-+	 * htm_dump_sample_data() returns the record count directly
-+	 * (already divided by the per-format record size):
-+	 *   AUX trace path:   chunk_size / 128  (128-byte HTM records)
-+	 *   Memory cfg path:  to_copy    /  32  (32-byte entries)
-+	 *
-+	 * ret > 0:        record count written; use directly as event->count.
-+	 * ret == -ENOSPC: AUX buffer full, hypervisor stream intact;
-+	 *                 count = 1 so the drain loop keeps retrying
-+	 *                 once the consumer has drained the buffer.
-+	 * ret <= 0:       EOF, stop failed, or hard error; count = 0
-+	 *                 so the drain loop stops cleanly.
-+	 *
-+	 * event->count does not represent an instruction or cycle count;
-+	 * actual trace records are decoded in userspace by the perf tool.
++	 * htm_mem_buf is the staging area passed directly to the
++	 * H_HTM_OP_DUMP_SYSMEM_CONF hcall.  The hypervisor is told the
++	 * buffer length is HTM_MEM_BUF_SIZE; allocate exactly
++	 * that amount.  See the HTM_MEM_BUF_SIZE comment for the derivation.
 +	 */
-+	if (ret > 0)
-+		local64_set(&event->count, ret);
-+	else if (ret == -ENOSPC)
-+		local64_set(&event->count, 1);
-+	else
-+		local64_set(&event->count, 0);
-+}
-+
-+/*
-+ * Set up pmu-private data structures for an AUX area
-+ * **pages contains the aux buffer allocated for this event
-+ * for the corresponding cpu. rb_alloc_aux uses "alloc_pages_node"
-+ * and returns pointer to each page address.
-+ * PMU capabilities: PERF_PMU_CAP_AUX_NO_SG | PERF_PMU_CAP_AUX_PREFER_LARGE
-+ * to try get closest possible physically contiguous page blocks.
-+ *
-+ * The aux private data structure ie, "struct htm_pmu_buf" mainly
-+ * saves
-+ * - buf->base: aux buffer base address
-+ * - buf->head: offset from base address where data will be written to.
-+ * - buf->size: Size of allocated memory
-+ */
-+static void *htm_setup_aux(struct perf_event *event, void **pages,
-+		int nr_pages, bool snapshot)
-+{
-+	int cpu = event->cpu;
-+	struct htm_pmu_buf *buf;
-+
-+	if (!nr_pages)
-+		return NULL;
-+
-+	/*
-+	 * Snapshot (overwrite) mode is not supported.  In overwrite mode
-+	 * perf_aux_output_begin() leaves handle->size = 0, which would
-+	 * cause htm_dump_sample_data() to return ENOSPC on every call,
-+	 * setting event->count = 1 and creating an infinite drain loop
-+	 * in userspace.  Reject it here so perf_event_open() returns
-+	 * EINVAL to the caller.
-+	 */
-+	if (snapshot)
-+		return NULL;
-+
-+	if (cpu == -1)
-+		cpu = raw_smp_processor_id();
-+
-+	buf = kzalloc_node(sizeof(*buf), GFP_KERNEL, cpu_to_node(cpu));
-+	if (!buf)
-+		return NULL;
-+
-+	buf->nr_pages = nr_pages;
-+	buf->snapshot = snapshot;
-+	buf->size = (u64)nr_pages << PAGE_SHIFT;
-+	buf->pages = pages;
-+
-+	buf->base = pages[0];
-+	if (!buf->base) {
++	buf->htm_mem_buf = kzalloc_node(HTM_MEM_BUF_SIZE, GFP_KERNEL, cpu_to_node(cpu));
++	if (!buf->htm_mem_buf) {
 +		kfree(buf);
 +		return NULL;
 +	}
 +
-+	buf->collect_htm_trace = 1;
-+	buf->head = 0;
-+	return buf;
-+}
-+
-+/*
-+ * free pmu-private AUX data structures
-+ */
-+static void htm_free_aux(void *aux)
-+{
-+	struct htm_pmu_buf *buf = aux;
-+
-+	if (!buf)
-+		return;
-+
-+	kfree(buf);
+ 	buf->collect_htm_trace = 1;
++	buf->collect_htm_mem = 1;
++	buf->mem_start = 0;
+ 	buf->head = 0;
+ 	return buf;
+ }
+@@ -751,6 +923,7 @@ static void htm_free_aux(void *aux)
+ 	if (!buf)
+ 		return;
+ 
++	kfree(buf->htm_mem_buf);
+ 	kfree(buf);
  }
  
- static struct pmu htm_pmu = {
-@@ -479,7 +764,10 @@ static struct pmu htm_pmu = {
- 	.read         = htm_event_read,
- 	.start        = htm_event_start,
- 	.stop         = htm_event_stop,
--	.capabilities = PERF_PMU_CAP_NO_EXCLUDE | PERF_PMU_CAP_EXCLUSIVE,
-+	.setup_aux    = htm_setup_aux,
-+	.free_aux     = htm_free_aux,
-+	.capabilities = PERF_PMU_CAP_NO_EXCLUDE | PERF_PMU_CAP_EXCLUSIVE
-+			| PERF_PMU_CAP_AUX_NO_SG | PERF_PMU_CAP_AUX_PREFER_LARGE,
- };
- 
- static int htm_init(void)
 -- 
 2.43.0
 
