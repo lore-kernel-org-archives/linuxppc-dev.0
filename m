@@ -1,56 +1,56 @@
-Return-Path: <linuxppc-dev+bounces-24964-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24965-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AD830C53200
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jul 2026 04:52:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ACFAAC53200
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jul 2026 04:53:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h90M729qjz2yk6;
-	Wed, 29 Jul 2026 14:52:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h90MB0QQHz2ypm;
+	Wed, 29 Jul 2026 14:52:54 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785300771;
-	cv=none; b=Jn4T9CDUgMP/Cvd8KpueTxgMRVxOoLf0ASq/QnG1iRDoMpWm+XEULP64FRRxEPsXlHccCFJOvrn3pXSckI+EYFv5/QxvdsmKCJMf7a+KMXHnlYS/SIkyXN5XIXX5ujEbygM/ldWigsxWI4t7Q/6n4cQbsksvCwjqAvp53ogB6l+4snHpHCkJBM78OdzQCdJUPOPvii45kktBsRG0ovBd5+Q2YSn0Az8e3rvWLukxtwiFNh8VNOanA7BQkjUz4rAKFgPVhVbFYZ1801zi7vOGa8gmRNra8knl5m+WAZRPnt4LdWmYgTNC1h0W3Z5loOw3i6bvA9qTAJmamIB1oVMz8Q==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785300773;
+	cv=none; b=R4wAqAII9k3ZemnmRolY5Ex3WC9d3wxDeWQF7sKGgleccrZI05l1lWxItwFwH0NmSWJArzGZdDPR2J8XFsjJTWZ+4ELC54PWAUF3aeAgmjAxWpznHdAkmeF+bEEVBxGiOYVMx41ldIgP7GoYkHcy5E9ubSGGAlDocmOLF/S5QaInr8eHIcpqIhWgxr8hugw4l6K9zkHzCvBv7WvHEYTEC5sZXa5itmFZVfeSWGNB4LjkLRU/Rx8z5LQY+AhTtqIp9ZX1j0u5QGUbt94cPGV/pWJ6dH09lmta0/Pp7KiT4LKkarjqBtLWFUgbPbBYR3fZKDrTXNQV9eTZW7+clwE2RQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785300771; c=relaxed/relaxed;
-	bh=hWEUPbQNOHxvMLtfG9dCHaZFUrghOPXRX4GMzNlJmvY=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=mdmcBlPiLO4PtV2zHARgwInE61rjLugHP4H1WZG+rUIICLgVUc9XIk6M3KFJv+U+cosDL0JDMbDsFPGiXCkLxHh92VmtNTNN48x32u/sCGA0+bTWgWnpNouIamKmRLUqxcgtHi8q1xaCdcOD9DYtBG1MJyw2tWr2z41PuAzRVVq7IvgeTq28685kXlWU+RRrD1Ocstfrgvz6IsPA7mwibMqslh/L6mMEXhM5o4Z1x0sB2KfLvrGW1H3c92Lf3F0Yg0romu3lHhYrbAjvFIE6Pgj8CaJP82w/0VPeBAf9m3WeA6G3Y0sOGb74zyGQuFoe3bWujovDuEaXzgU+Iaj4eg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=jjGaUAzT; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1785300773; c=relaxed/relaxed;
+	bh=Hs5nzRZgMEOGUyI2IsYJM4bUc6UtIAsg3AzDj+RfyR0=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=aK7OSbew1Kor3QXHWbuy5Yba2I44W9CJ6Z6xFoXHfnJdL11aroUbpv0h8JZzC+eZFi0IgdDeeoS9SM4mnRMtVK/UyvszwQUqa52wrOcUVREAIuNxzVTm8sj8aFAc4H5LSU3xPgvXmItXb1U/mrqaE99PROVSKJ6u27mixB8ElIadFbaRzpWN5M1xItufvWB2R8eiM0GfEhWPhAhp/E5l3/4mssYj4fDegUAHH4MHp2VwBoapU6bOK0c6NPu1BCAK4pHVagme+M6cOqBmseFpE+5U3LIT814fgrHl1jDQB0PNL7JeiWSs88pS4hXlxI6gPOSU+oDkxvIuEeqCIDZblA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=sUuiMVj0; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=jjGaUAzT;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=sUuiMVj0;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h90M61B4Rz2yDr
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2026 14:52:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h90M82wqzz2ynh
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2026 14:52:52 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 08D2343C89;
+	by sea.source.kernel.org (Postfix) with ESMTP id 286184512B;
 	Wed, 29 Jul 2026 04:52:47 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id CB20CC2BCB3;
+Received: by smtp.kernel.org (Postfix) with ESMTPS id E7E19C2BCFC;
 	Wed, 29 Jul 2026 04:52:46 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1785300766;
-	bh=RxdJGaG8GFXXVWdq8OfjftbgwE98nVk/da1gYGNjOHM=;
-	h=From:Subject:Date:To:Cc:Reply-To:From;
-	b=jjGaUAzT/tsAbtdxkCmKunX6dADFm3J2DFCqW0M4JlU12j5ip9ejMXXyQlNo6Iekw
-	 3FAKU0MJiwvJZ1TfP5j4bUUQl2Ap//eVh8/GAD8mTsZHu/McNPEYz6sn22iue//Frx
-	 zr6/kIJsGN59WHe3x+6mLsdWUiq8MLStLq5UkKK5o7QkV0KTkUOgJtT/S2RkB14Kjb
-	 I1nMtVQT+LK0Oah0+PEt9xmz4v7/vZbXSvEmRAjniJjGzwKQV+7dCObpX5RYmlZmHw
-	 4uuslExkRH7/+KQlsqUEGZ55I7G9n9I75FtIex2vsZZxLDB/yX9s2YXUmy3+pCvGnF
-	 adugLNmNNSw8g==
+	s=k20201202; t=1785300767;
+	bh=GXsfpuBjTP8KRmTpmgSgO41ETDhVR5I3O4GjePFOCS4=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=sUuiMVj0WFEsLwvanb5fQyGiJ+kk72IDMDfl2b8y0FL463crsP9DRi4MU3eMFfAli
+	 5W4epMPrQ5hATPueK9tFxahndIMD+Qs+E/9xu2tyjd6OLBdiQUViNtoRGvMdVGV14+
+	 L2PmYi4YMAffkIsMuVjj8/iaW5Xhi/UYiM0WO+cnU2hrc4NKRvUFTtKfhJ03CX2fVa
+	 /TB5wFfKLLhOMMVFqQd7a+5B22X55BcOrtX4ISOIuVbC7hyS/mQaOdBRBK0UWemyHL
+	 JtQmvmqiYGC1IeiPDd0oOqIK4AMHyPskYRLkjRCGs+MR4B/9EkI1eRTgsC4Y+OLW6z
+	 ftrFXZqXYy+6g==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A5579C54F51;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C8FACC53219;
 	Wed, 29 Jul 2026 04:52:46 +0000 (UTC)
 From: Manivannan Sadhasivam via B4 Relay <devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org>
-Subject: [PATCH v9 0/5] PCI: Add support for resetting the Root Ports in a
- platform specific way
-Date: Wed, 29 Jul 2026 10:22:26 +0530
-Message-Id: <20260729-pci-port-reset-v9-0-53570b92064d@oss.qualcomm.com>
+Date: Wed, 29 Jul 2026 10:22:28 +0530
+Subject: [PATCH v9 2/5] PCI/ERR: Add support for resetting the Root Ports
+ in a platform specific way
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -66,11 +66,9 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAAqHaWoC/33MQQ6CMBCF4auQri0ZCm2tK+9hXEA7SBOx2GKjI
- dzdQuJKcTPJP8n7JhLQWwzkkE3EY7TBulsKtcuI7urbBak1qQkDxkEWnA7a0sH5kXoMONLKKF4
- oLqFgJUmjwWNrnyt4OqfubBidf61+5Mt3k4qcAmWi5obJvWkqOLoQ8vujvmrX93k6ZBGj+K+Ip
- IhWaY2qQtk0G4r8KALKAr4UmRRlDIDWmvH6lzLP8xsJW1+4PwEAAA==
-X-Change-ID: 20250715-pci-port-reset-4d9519570123
+Message-Id: <20260729-pci-port-reset-v9-2-53570b92064d@oss.qualcomm.com>
+References: <20260729-pci-port-reset-v9-0-53570b92064d@oss.qualcomm.com>
+In-Reply-To: <20260729-pci-port-reset-v9-0-53570b92064d@oss.qualcomm.com>
 To: Bjorn Helgaas <bhelgaas@google.com>, 
  Mahesh J Salgaonkar <mahesh@linux.ibm.com>, 
  Oliver O'Halloran <oohall@gmail.com>, Will Deacon <will@kernel.org>, 
@@ -92,16 +90,16 @@ Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
  Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>, 
  Manivannan Sadhasivam <mani@kernel.org>
 X-Mailer: b4 0.15.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=5143;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3066;
  i=manivannan.sadhasivam@oss.qualcomm.com; h=from:subject:message-id;
- bh=RxdJGaG8GFXXVWdq8OfjftbgwE98nVk/da1gYGNjOHM=;
- b=owEBbQGS/pANAwAKAVWfEeb+kc71AcsmYgBqaYcbRHScUqhrvSL1gPNdjxKkFQUSQ6H8GOYBy
- Z7K9QlBJh+JATMEAAEKAB0WIQRnpUMqgUjL2KRYJ5dVnxHm/pHO9QUCammHGwAKCRBVnxHm/pHO
- 9fLuB/4llYSd0k/weqBqDRUKXH5ITPU4J1Nk5iQBsIqiy69jdfJC0n6jo1FUSkpDxsp38vQ+rfx
- PK4yq96lMHrbYsb9Efcm3gulzfCQ6MDFRyQU5rvPVihdKIbVdSCva/iu1NaE5ltidO2Eko6cHMg
- ujUjuQbdlpVUoZuCT3z2hsuO9VGJWlfwNcKY0kmEGcjfa/Hn2H6SyTeQb+jX1CK3FkY0ztQaQ1g
- CyeUUosmqUqz6dvXYXH9vEHMTCWhJp+iKGxu1ZesoyNXtKlMC4RHe8esmp0E+Zf7tX/O0EvoCLl
- GH1JLYqGto3siMdK8K3JuwiUvR4rXoFRbWcbhXd1VsDFfikg
+ bh=1Oy19557+yV3/9OLsUixcbfzFzWsM2UYeBRw29jVti8=;
+ b=owEBbQGS/pANAwAKAVWfEeb+kc71AcsmYgBqaYccd5GhRxgafeOVS/QPxoXKKMCDKbr6/Y8uN
+ 27gAISBB3yJATMEAAEKAB0WIQRnpUMqgUjL2KRYJ5dVnxHm/pHO9QUCammHHAAKCRBVnxHm/pHO
+ 9RI1B/47y1/xQOdgi41SJopTqMvwW3CUl1cVKVXn9Dsvs2ZZIikdDnfTrq9aGJuCTVzXpqdDnLz
+ eRZH2AYOjLg+OceKeoWTGOF131FgQ/Xnuj9tjF28EQhu4e3s0ZFSNV2Aq3qA1y4x0jKHCP9TRUQ
+ W8Ok6P0P5dCwuRVnnvuVK1ZGK7ny7fwmEyi7+VxKh0GyI/NlOzF8dhRlfk/K8mHdagYQjA+PmdT
+ 82WSlklvfMpUopl3ys3GNhrZzzXY4rRBquhdvNBpL1+FG/kIj92Mig0jyyhMZjIuvkPwoijnrGk
+ 2BygcS8joCV6HPClOuSToRF66ZPZ5B3I3MfpLjllCIXC7tcU
 X-Developer-Key: i=manivannan.sadhasivam@oss.qualcomm.com; a=openpgp;
  fpr=C668AEC3C3188E4C611465E7488550E901166008
 X-Endpoint-Received: by B4 Relay for
@@ -109,111 +107,86 @@ X-Endpoint-Received: by B4 Relay for
 X-Original-From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
 Reply-To: manivannan.sadhasivam@oss.qualcomm.com
 
-Hi,
+From: Manivannan Sadhasivam <mani@kernel.org>
 
-Currently, in the event of AER/DPC, PCI core will try to reset the slot (Root
-Port) and its subordinate devices by invoking bridge control reset and FLR. But
-in some cases like AER Fatal error, it might be necessary to reset the Root
-Ports using the PCI host bridge drivers in a platform specific way (as indicated
-by the TODO in the pcie_do_recovery() function in drivers/pci/pcie/err.c).
-Otherwise, the PCI link won't be recovered successfully.
+Some host bridge devices require resetting the Root Ports in a platform
+specific way to recover them from error conditions such as Fatal AER
+errors, Link Down etc... So introduce pci_host_bridge::reset_root_port()
+callback and call it from pcibios_reset_secondary_bus() if available. Also,
+save the Root Port config space before reset and restore it afterwards.
 
-So this series adds a new callback 'pci_host_bridge::reset_root_port' for the
-host bridge drivers to reset the Root Port when a fatal error happens.
+The 'reset_root_port' callback is responsible for resetting the given Root
+Port referenced by the 'pci_dev' pointer in a platform specific way and
+bring it back to the working state if possible. If any error occurs during
+the reset operation, relevant errno should be returned.
 
-Also, this series allows the host bridge drivers to handle PCI link down event
-by resetting the Root Ports and recovering the bus. This is accomplished by the
-help of the new 'pci_host_handle_link_down()' API. Host bridge drivers are
-expected to call this API (preferrably from a threaded IRQ handler) with
-relevant Root Port 'pci_dev' when a link down event is detected for the port.
-The API will reuse the pcie_do_recovery() function to recover the link if AER
-support is enabled, otherwise it will directly call the reset_root_port()
-callback of the host bridge driver (if exists).
-
-For reference, I've modified the pcie-qcom driver to call
-pci_host_handle_link_down() API with Root Port 'pci_dev' after receiving the
-LDn global_irq event and populated 'pci_host_bridge::reset_root_port()'
-callback to reset the Root Ports.
- 
-Testing
--------
-
-Tested on Qcom Lemans AU Ride platform with Host and EP SoCs connected over PCIe
-link. Simulated the LDn by disabling LTSSM_EN on the EP and I could verify that
-the link was getting recovered successfully.
-
-Changes in v9:
-- Rebased on top of v7.2-rc1
-- Added Fixes tag to Patch 1
-- Amended the commit message of Patch 3 to clarify that err_handlers are not
-  triggered for RPs
-- Fixed some misc issues in Patch 4 pointed by Sashiko
-
-Changes in v8:
-- Removed pci_save_state() for the Root Port during recovery as the PCI core 
-- Link to v7: https://lore.kernel.org/r/20260310-pci-port-reset-v7-0-9dd00ccc25ab@oss.qualcomm.com
-
-Changes in v7:
-- Dropped Rockchip Root port reset patch due to reported issues. But the series
-  works on other platforms as tested by others.
-- Added pci_{lock/unlock}_rescan_remove() to guard pci_bus_error_reset() as the
-  device could be removed in-between due to Native hotplug interrupt.
-- Rebased on top of v7.0-rc1
-- Link to v6: https://lore.kernel.org/r/20250715-pci-port-reset-v6-0-6f9cce94e7bb@oss.qualcomm.com
-
-Changes in v6:
-- Incorporated the patch: https://lore.kernel.org/all/20250524185304.26698-2-manivannan.sadhasivam@linaro.org/
-- Link to v5: https://lore.kernel.org/r/20250715-pci-port-reset-v5-0-26a5d278db40@oss.qualcomm.com
-
-Changes in v5:
-* Reworked the pci_host_handle_link_down() to accept Root Port instead of
-  resetting all Root Ports in the event of link down.
-* Renamed 'reset_slot' to 'reset_root_port' to avoid confusion as both terms
-  were used interchangibly and the series is intended to reset Root Port only.
-* Added the Rockchip driver change to this series.
-* Dropped the applied patches and review/tested tags due to rework.
-* Rebased on top of v6.16-rc1.
-
-Changes in v4:
-- Handled link down first in the irq handler
-- Updated ICC & OPP bandwidth after link up in reset_slot() callback
-- Link to v3: https://lore.kernel.org/r/20250417-pcie-reset-slot-v3-0-59a10811c962@linaro.org
-
-Changes in v3:
-- Made the pci-host-common driver as a common library for host controller
-  drivers
-- Moved the reset slot code to pci-host-common library
-- Link to v2: https://lore.kernel.org/r/20250416-pcie-reset-slot-v2-0-efe76b278c10@linaro.org
-
-Changes in v2:
-- Moved calling reset_slot() callback from pcie_do_recovery() to pcibios_reset_secondary_bus()
-- Link to v1: https://lore.kernel.org/r/20250404-pcie-reset-slot-v1-0-98952918bf90@linaro.org
-
+Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
 Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
+Tested-by: Brian Norris <briannorris@chromium.org>
+Tested-by: Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
+Tested-by: Richard Zhu <hongxing.zhu@nxp.com>
+Reviewed-by: Frank Li <Frank.Li@nxp.com>
 ---
-Manivannan Sadhasivam (5):
-      PCI: dwc: ep: Clear MSI iATU mapping in dw_pcie_ep_cleanup()
-      PCI/ERR: Add support for resetting the Root Ports in a platform specific way
-      PCI: host-common: Add link down handling for Root Ports
-      PCI: qcom: Add support for resetting the Root Port due to link down event
-      misc: pci_endpoint_test: Add AER error handlers
+ drivers/pci/pci.c      | 13 +++++++++++++
+ drivers/pci/pcie/err.c |  5 -----
+ include/linux/pci.h    |  1 +
+ 3 files changed, 14 insertions(+), 5 deletions(-)
 
- drivers/misc/pci_endpoint_test.c                |  23 ++++
- drivers/pci/controller/dwc/pcie-designware-ep.c |   5 +
- drivers/pci/controller/dwc/pcie-qcom.c          | 140 +++++++++++++++++++++++-
- drivers/pci/controller/pci-host-common.c        |  35 ++++++
- drivers/pci/controller/pci-host-common.h        |   1 +
- drivers/pci/pci.c                               |  14 +++
- drivers/pci/pcie/err.c                          |   6 +-
- include/linux/pci.h                             |   1 +
- 8 files changed, 219 insertions(+), 6 deletions(-)
----
-base-commit: dc59e4fea9d83f03bad6bddf3fa2e52491777482
-change-id: 20250715-pci-port-reset-4d9519570123
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index 77b17b13ee61..12e099489690 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -4841,6 +4841,19 @@ void pci_reset_secondary_bus(struct pci_dev *dev)
+ 
+ void __weak pcibios_reset_secondary_bus(struct pci_dev *dev)
+ {
++	struct pci_host_bridge *host = pci_find_host_bridge(dev->bus);
++	int ret;
++
++	if (pci_is_root_bus(dev->bus) && host->reset_root_port) {
++		ret = host->reset_root_port(host, dev);
++		if (ret)
++			pci_err(dev, "Failed to reset Root Port: %d\n", ret);
++		else
++			pci_restore_state(dev);
++
++		return;
++	}
++
+ 	pci_reset_secondary_bus(dev);
+ }
+ 
+diff --git a/drivers/pci/pcie/err.c b/drivers/pci/pcie/err.c
+index bebe4bc111d7..13b9d9eb714f 100644
+--- a/drivers/pci/pcie/err.c
++++ b/drivers/pci/pcie/err.c
+@@ -256,11 +256,6 @@ pci_ers_result_t pcie_do_recovery(struct pci_dev *dev,
+ 	}
+ 
+ 	if (status == PCI_ERS_RESULT_NEED_RESET) {
+-		/*
+-		 * TODO: Should call platform-specific
+-		 * functions to reset slot before calling
+-		 * drivers' slot_reset callbacks?
+-		 */
+ 		status = PCI_ERS_RESULT_RECOVERED;
+ 		pci_dbg(bridge, "broadcast slot_reset message\n");
+ 		pci_walk_bridge(bridge, report_slot_reset, &status);
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index ebb5b9d76360..be82cc0a3371 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -646,6 +646,7 @@ struct pci_host_bridge {
+ 	void (*release_fn)(struct pci_host_bridge *);
+ 	int (*enable_device)(struct pci_host_bridge *bridge, struct pci_dev *dev);
+ 	void (*disable_device)(struct pci_host_bridge *bridge, struct pci_dev *dev);
++	int (*reset_root_port)(struct pci_host_bridge *bridge, struct pci_dev *dev);
+ 	void		*release_data;
+ 	unsigned int	ignore_reset_delay:1;	/* For entire hierarchy */
+ 	unsigned int	no_ext_tags:1;		/* No Extended Tags */
 
-Best regards,
---  
-Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
+-- 
+2.51.0
 
 
 
