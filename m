@@ -1,73 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-24995-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24996-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 55110C54F51
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jul 2026 11:48:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BC04AC53200
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jul 2026 11:58:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h99Zx077Jz2xwP;
-	Wed, 29 Jul 2026 21:48:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h99pd2Vvtz2xwP;
+	Wed, 29 Jul 2026 21:58:49 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785325720;
-	cv=none; b=gh6dbRYLVNZ0d2AujTX+z6P9bNb76JTPIlkSV0OBV1VKLBoychrdODE2IqlhCSjZ2FTake5OKwGBuvn7kjp6KqECLYOLQ3RbNAfdtAJcdflXoS9/gRU6RsbtEN5yAfpymwrMx4txB7eFfTMv+7u7J4ix3XDN5v/xDu0Z9ABFBmBtt8Ox2yucU8gw20jN95ySIbUmiTdpSQz1BR9SkLHclyG24iZAytW6EJS43hOrK4kSFFIwYUlrCZCnWqqjtptsDZdm2el0uia6V2tBjExgqXFE+kR8iix22G83Tu91wYnAyxQlTo++hsjf6ygXWDoLpNJyey6eqmE+b9qL13Q6JQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785326329;
+	cv=none; b=inmxkHTYqsMLgMHNtX75GZxQhv6k78YyygkuNNHmL4LpuxzPuT942DYW7gi/9iWRsrs+O+Unkf59TwuSMUP4qk1eZYqzAlpu0u+h4/ZVXwPxNiHDlwAnZxN9V0C0UBJjwjqN+f5ew/9iiPO31fehAbpjAO0xm+rir9Ys44I9I4usEDaJHdLwH2oJGCq7Acydg5+TMzrgh2HiynweFCFdmgqTEYpMzbWU6K08IzyEKj6QO3cLT7bN4+Tx89Z6RAFX9yKELyeq52C96N5SWyhWH2x//ewZCC+BcORsZmrsfPY+6Fs5Cd45Qwo+N5FSGG1LzBRSeDRAPFFiDJxJZFbmsA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785325720; c=relaxed/relaxed;
-	bh=BD+u6GdikIdL6XErOKj6ye47ll9xqp2oEDXsijEa4lk=;
+	t=1785326329; c=relaxed/relaxed;
+	bh=IMLIJy5K+V1KFSJoFVS5kB5zbFlvRA0wTQQev5uwOYM=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=mNLGEvQTXuHqhM/03iELP6g7wufXp5HZ/MvagHbG6R7HgdUKM1NaQrF1l1x+nd+nECQx7geeW9vzQnybzRVZgCJwaD+Hit6aqr0LTT7mis154k8rvb6c52fR21bUQ0U5/QcoIyHaOQCqCIeFoZmtrV2lpnEAGjMGJCtJiz8vmUBUnkmxT34pCizAoe21csKDDgN+s6/zslIpO08GYIWszH14y1oz2vzcJrkg2zjurQD2eVrHXgCSCkVokjHso9wwHC5fwiETmmO8fR7QtH7nz+yV8faTdpYa7zyLTJsQ916kdrI0JsxKWGYp1JcmXFxwORpFyiogju2eGdVX0tmemg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bBJsfzH5; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 In-Reply-To:Content-Type; b=WX1S5MZD/hV/cUnq1pCz6a+vnf6F3y1TR4XCb0muH7odlVBSm1K0Hcn+fa3ZEJeoXN6jiP2YGEKn00+wGoOp/f11SU/9+jtwffgY/twyKfis0nAI9Q1cDlg8MZaW3/hYCzKBAoYfQnOCW2dYEK6QuReRc5GOCPShh8NdjPD/QQiB48LGNetct/4AAZ7ArRrQ1ZzsG4IABJ1Er8iVZOYcDgyQXg8e0k3jImj94k/aQanzrrdUWntTDWzxo4nzujg9fSU63/65tIy+gQ3mWvjAnsqvnX7WSbJEWFSLE8n2yzp4K2BPy/fg1ajwlRMbbxRuuxno2Qz22OIftn3yl4NxqQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=obE8Cn4l; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bBJsfzH5;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=obE8Cn4l;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h99Zv3ccWz2xnp
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2026 21:48:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h99pc1xllz2xnp
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2026 21:58:47 +1000 (AEST)
 Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66TBHjC53952900;
-	Wed, 29 Jul 2026 11:48:23 GMT
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66TBI56t3953689;
+	Wed, 29 Jul 2026 11:58:34 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=BD+u6G
-	dikIdL6XErOKj6ye47ll9xqp2oEDXsijEa4lk=; b=bBJsfzH5HwG5Ag0f608i3T
-	H7fXP1LwcHquxZGwJkHmlO00yjRF7bomOXm+W4aeP1UtXk42dqUx+uembHd6Si7X
-	4gAhMtWPw+fznha7bvVsx4wnbV7cWOuyJAlj4D3/zJMOTT9xmHVL0fxABskQb/SE
-	zXGLYMIIl50Md0M7PYZZgkp48sKx0VNOZjf9m9XWet5qZg6V7LxfVE4mb8L/fRUS
-	Gt2CORfqEy75pNcRaUbzY8IOGjvJmsixPGw7kLrBbpm1P5Mk949is9PAlFWE3IjR
-	LgAGO57N8ShrD3PwMw/o48hPaSCsXiR71jlbuqUF5ZqK1G5e3FT52m7f+SboGqWg
+	:message-id:mime-version:references:subject:to; s=pp1; bh=IMLIJy
+	5K+V1KFSJoFVS5kB5zbFlvRA0wTQQev5uwOYM=; b=obE8Cn4lQtm0TRPp1PPCCp
+	OVdkhqiP8tOz2EBjQp7u58YYrCT0O/RFUrQisuI20kCmT/yZYd3cIwghedHJOjNy
+	TVGYcMNd7SXbjgjP410Mdko++Q5SX6v4DoTeV85hEV3Gmfx+MgRGsLiVZgappiVw
+	tsFeCFLqDCRK9prsrXaBGPtPFM2ZBSXMHwbEb0sayn/AeoCIEEjq5DqPeQ2KoIp1
+	W1+FbvIyUwAEZTNYziptoxoOD5I/pKLWdPB7KCn2iwSNwI+GANApMxcLDFaK6mQT
+	Ivpesxs8WVyP4ZStsGSjl9RhIS/tX5wbWLV30ub2zjz9v4yb7gPtRvPvJS2DmGdg
 	==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fmuyj9ndp-1
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fmuyj9pca-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 29 Jul 2026 11:48:23 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66TBfIou022250;
-	Wed, 29 Jul 2026 11:48:22 GMT
+	Wed, 29 Jul 2026 11:58:33 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66TBuF85014077;
+	Wed, 29 Jul 2026 11:58:32 GMT
 Received: from smtprelay06.dal12v.mail.ibm.com ([172.16.1.8])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fna5y67tx-1
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fn9pgebjq-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 29 Jul 2026 11:48:22 +0000 (GMT)
+	Wed, 29 Jul 2026 11:58:32 +0000 (GMT)
 Received: from smtpav05.wdc07v.mail.ibm.com (smtpav05.wdc07v.mail.ibm.com [10.39.53.232])
-	by smtprelay06.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66TBmL5X29950524
+	by smtprelay06.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66TBwW5j31785566
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 29 Jul 2026 11:48:21 GMT
+	Wed, 29 Jul 2026 11:58:32 GMT
 Received: from smtpav05.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 784F95805F;
-	Wed, 29 Jul 2026 11:48:21 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 1A75358053;
+	Wed, 29 Jul 2026 11:58:32 +0000 (GMT)
 Received: from smtpav05.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 91B0558053;
-	Wed, 29 Jul 2026 11:48:17 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 34B1358043;
+	Wed, 29 Jul 2026 11:58:28 +0000 (GMT)
 Received: from [9.43.93.217] (unknown [9.43.93.217])
 	by smtpav05.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 29 Jul 2026 11:48:17 +0000 (GMT)
-Message-ID: <aa51485f-fea0-48e3-9b66-c18d39447a1c@linux.ibm.com>
-Date: Wed, 29 Jul 2026 17:18:15 +0530
+	Wed, 29 Jul 2026 11:58:27 +0000 (GMT)
+Message-ID: <9759b052-d95a-4835-b252-146ec114db0d@linux.ibm.com>
+Date: Wed, 29 Jul 2026 17:28:26 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,41 +82,40 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] powerpc/perf/hv-gpci: bound sysfs output with helpers
-To: Pengpeng Hou <pengpeng@iscas.ac.cn>,
-        Michael Ellerman
- <mpe@ellerman.id.au>,
-        Christophe Leroy <chleroy@kernel.org>
-Cc: Nicholas Piggin <npiggin@gmail.com>, Kees Cook <kees@kernel.org>,
+Subject: Re: [PATCH v2] powerpc: Move CONFIG_QE_GPIO to SoC
+To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin
+ <npiggin@gmail.com>, Qiang Zhao <qiang.zhao@nxp.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-        stable@vger.kernel.org
-References: <20260417074825.22967-1-pengpeng@iscas.ac.cn>
- <20260424070103.1-hv-gpci-v2-pengpeng@iscas.ac.cn>
+        linux-arm-kernel@lists.infradead.org, linux-usb@vger.kernel.org
+References: <9a7131d15a94e2017877e628f0e97f9aa2e0aae9.1785140877.git.chleroy@kernel.org>
 Content-Language: en-US
 From: Madhavan Srinivasan <maddy@linux.ibm.com>
-In-Reply-To: <20260424070103.1-hv-gpci-v2-pengpeng@iscas.ac.cn>
+In-Reply-To: <9a7131d15a94e2017877e628f0e97f9aa2e0aae9.1785140877.git.chleroy@kernel.org>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzI5MDA5NyBTYWx0ZWRfX1TMG6VWmJ47X
- XVupkb94rnqhvJyvTMPeQzbdaaOz3RRGgdS1LofmRHJB3bllvyq95EUyj4fd28XV4s3BcbMDa8z
- BOWV14+G5Iss6+7bWpDCY+mDuQZCT2o=
-X-Proofpoint-GUID: s1ibAG87dMVFeUSaQDvQX7BrXjbf_x5r
-X-Proofpoint-ORIG-GUID: R_5O5bLaMogExC6J127ghpaNxH5ogRf3
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzI5MDA5NyBTYWx0ZWRfX3aVCw+HUZRX+
- etSuHwwfBUoY7OPhA9KiTQmz09rE2x0LsO1f60R8j2dtyZJyOyUvGYnU2/bQ90p8CstsdwKnPlP
- BvoSs3CFWxDR264EQNdxDxd731ZETl52IvcYPhW1qVOIQ56ehRcCTh0I+EdCZDl1hgrp5T20n9S
- uqziH0sWAgn+r95FlVJhQxK5iNGUZ68vAUYVMkgve0YvphLiYua5US2c5WCuV3SbIcfmvWSJK0Q
- NgVx0gfmQDUA2v772FOumo5M5iP0VL2+bMBXXFh8pO2nCQOc2oz9x//hdHc+irfJfRM/Tc+J1OI
- FwwTJEzELSURNCOzBZlFO0uaiH4OQSgEZ0GMnzF0BVrPyzzjddaikj7q8oUsHCLHI4VZFfXBXCQ
- XOItN852wSRc052GSBaLkQZ7ZlzDC925lFjROwM/x89ZIi6vvx8/wv5XwZJ00JyAeTPn62k+jCU
- X6T50/b9UhUT1Y4kQpQ==
-X-Authority-Analysis: v=2.4 cv=X5Vi7mTe c=1 sm=1 tr=0 ts=6a69e887 cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzI5MDA5NyBTYWx0ZWRfX9Qv12SdRGKdV
+ O5qBuw0QJRqxOr846gYR7O0pkNDka9+aQ4yrR9w+L7dV2gzzmwb7B29A64hQp0Rfc5+58G3dKdB
+ rL7SdV51sCHUy23o5kblRGg6j8DQMIM=
+X-Proofpoint-GUID: 804KBYjedgKlQRFvQnsJPgulInbxiJP-
+X-Proofpoint-ORIG-GUID: _u5JEvL4JraQDTsUjubds0jTmKLLyyWZ
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzI5MDA5NyBTYWx0ZWRfXx5i973mDxkzk
+ dT5ySa4qiycRmNfyhAu1Baz+z5KZt77pq3/FHKrM2cXCVKa27Ww/a4XoLtshs2GwzwMV6KVexgY
+ HJpOhw8c5N4fPWVVsMUZI6iqNtdEtLiySnZLc90l6/ltuMtDdv80gmofcmOU/FzroLWl4hQQGGh
+ eDAonRXrU7ej9EhH4F9bIZZD4Fr2+wvMJ9WboiDnnFO7zOr9kGn+fnFmKAgL8x5IjOL8BtANTN5
+ yY35dkcLatzgSKmGV0RyDK3Mc/MyMinTjX8IFO+lvkrQoszntUTvQtTZ4uO844W3XeRTXVe7hhh
+ Q3DtzbSgi/J01gylhJM8xAV2m0eM0cwtdecmi359QMohtmKZCUKuF3tieTGtvMyjXlu4kZwpWsB
+ kI/UTXZ2i5Mm5AjfnW9ZNzT97SK0guC3YAgHa8VJc40hjld5A6s+9xbtShCUvaCiAfgQYfI/QfE
+ z1VJXtUv9fEPgB7MDkQ==
+X-Authority-Analysis: v=2.4 cv=X5Vi7mTe c=1 sm=1 tr=0 ts=6a69eaea cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
  a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=l68EZY392IGl-1xb1WsA:9
- a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VnNF1IyMAAAA:8
+ a=VwQbUJbxAAAA:8 a=IKTH_r9ZaJ-rAjPogqsA:9 a=QEXdDO2ut3YA:10
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-07-29_04,2026-07-28_02,2025-10-01_01
@@ -128,210 +127,82 @@ X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  definitions=main-2607290097
 
 
-On 4/23/26 9:02 PM, Pengpeng Hou wrote:
-> systeminfo_gpci_request() and
-> affinity_domain_via_partition_result_parse() hex-encode hypervisor data
-> into the single-page sysfs read buffer with sprintf(buf + *n, ...).
-> Both helpers only check PAGE_SIZE after the formatting loops have
-> already advanced past the end of the buffer.
+On 7/27/26 2:15 PM, Christophe Leroy (CS GROUP) wrote:
+> Commit 7aa1aa6ecec2 ("QE: Move QE from arch/powerpc to drivers/soc")
+> moved QE into drivers/soc including gpio.c but left CONFIG_QE_GPIO
+> in powerpc's Kconfig.
 >
-> Add small helpers around sysfs_emit_at() for hex-byte and newline
-> appends, and stop once the sysfs buffer is full. This keeps the repeated
-> bounds handling local instead of open-coding it at each append site.
+> Move it to SoC as well as it is the only place it is used:
 >
-> Fixes: 71f1c39647d8 ("powerpc/hv_gpci: Add sysfs file inside hv_gpci device to show processor bus topology information")
-> Fixes: a15e0d6a6929 ("powerpc/hv_gpci: Add sysfs file inside hv_gpci device to show affinity domain via partition information")
-> Signed-off-by: Pengpeng Hou <pengpeng@iscas.ac.cn>
-> ---
-> Changes since v1:
-> - refactor the repeated sysfs_emit_at() handling into helpers as suggested
->    by Christophe Leroy
+>    drivers/soc/fsl/qe/Makefile:obj-$(CONFIG_QE_GPIO)       += gpio.o qe_ports_ic.o
+>    include/soc/fsl/qe/qe.h:#ifdef CONFIG_QE_GPIO
+>    include/soc/fsl/qe/qe.h:#endif /* CONFIG_QE_GPIO */
 >
-> diff --git a/arch/powerpc/perf/hv-gpci.c b/arch/powerpc/perf/hv-gpci.c
-> index 5cac2cf3bd1e..2f543f0671ba 100644
-> --- a/arch/powerpc/perf/hv-gpci.c
-> +++ b/arch/powerpc/perf/hv-gpci.c
-> @@ -11,6 +11,7 @@
->   
->   #include <linux/init.h>
->   #include <linux/perf_event.h>
-> +#include <linux/sysfs.h>
->   #include <asm/firmware.h>
->   #include <asm/hvcall.h>
->   #include <asm/io.h>
-> @@ -129,11 +130,36 @@ static int sysinfo_counter_request[] = {
->   
->   static DEFINE_PER_CPU(char, hv_gpci_reqb[HGPCI_REQ_BUFFER_SIZE]) __aligned(sizeof(uint64_t));
->   
-> +static int hv_gpci_emit_hex_byte(char *buf, size_t *n, u8 byte)
-> +{
-> +	int len;
-> +
-> +	len = sysfs_emit_at(buf, *n, "%02x", byte);
-> +	if (len <= 0)
-> +		return -EFBIG;
-> +
-> +	*n += len;
-> +	return 0;
-> +}
-> +
-> +static int hv_gpci_emit_newline(char *buf, size_t *n)
-> +{
-> +	int len;
-> +
-> +	len = sysfs_emit_at(buf, *n, "\n");
-> +	if (len <= 0)
-> +		return -EFBIG;
-> +
-> +	*n += len;
-> +	return 0;
-> +}
-> +
->   static unsigned long systeminfo_gpci_request(u32 req, u32 starting_index,
->   			u16 secondary_index, char *buf,
->   			size_t *n, struct hv_gpci_request_buffer *arg)
->   {
->   	unsigned long ret;
-> +	int rc;
-Concern here is that function return unsignerd long but patch is 
-returning int,
-so could break the caller.  Better way could be change function prototype to
-return int and update all the caller.
+> There is also a dependency in USB subsystem for CONFIG_USB_FHCI_HCD:
+>
+>    drivers/usb/host/Kconfig:	depends on QE_GPIO && QUICC_ENGINE
+>
+> Because that USB driver selects CONFIG_FSL_GTM which is specific to
+> powerpc, it has to depend on CONFIG_PPC.
 
-Maddy
->   	size_t i, j;
+Acked-by: Madhavan Srinivasan <maddy@linux.ibm.com>
+
+
+>
+> Signed-off-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
+> ---
+> v2: Add a dependency on CONFIG_PPC for CONFIG_USB_FHCI_HCD
+> ---
+>   arch/powerpc/platforms/Kconfig | 8 --------
+>   drivers/soc/fsl/qe/Kconfig     | 8 ++++++++
+>   drivers/usb/host/Kconfig       | 1 +
+>   3 files changed, 9 insertions(+), 8 deletions(-)
+>
+> diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
+> index c4e61843d9d9..2f797ac6f1b3 100644
+> --- a/arch/powerpc/platforms/Kconfig
+> +++ b/arch/powerpc/platforms/Kconfig
+> @@ -228,14 +228,6 @@ config TAU_AVERAGE
 >   
->   	arg->params.counter_request = cpu_to_be32(req);
-> @@ -176,9 +202,14 @@ static unsigned long systeminfo_gpci_request(u32 req, u32 starting_index,
->   	for (i = 0; i < be16_to_cpu(arg->params.returned_values); i++) {
->   		j = i * be16_to_cpu(arg->params.cv_element_size);
+>   	  If in doubt, say N here.
 >   
-> -		for (; j < (i + 1) * be16_to_cpu(arg->params.cv_element_size); j++)
-> -			*n += sprintf(buf + *n,  "%02x", (u8)arg->bytes[j]);
-> -		*n += sprintf(buf + *n,  "\n");
-> +		for (; j < (i + 1) * be16_to_cpu(arg->params.cv_element_size); j++) {
-> +			rc = hv_gpci_emit_hex_byte(buf, n, (u8)arg->bytes[j]);
-> +			if (rc)
-> +				return rc;
-> +		}
-> +		rc = hv_gpci_emit_newline(buf, n);
-> +		if (rc)
-> +			return rc;
->   	}
->   
->   	if (*n >= PAGE_SIZE) {
-> @@ -461,10 +492,14 @@ static ssize_t affinity_domain_via_domain_show(struct device *dev, struct device
->   	return ret;
->   }
->   
-> -static void affinity_domain_via_partition_result_parse(int returned_values,
-> -			int element_size, char *buf, size_t *last_element,
-> -			size_t *n, struct hv_gpci_request_buffer *arg)
-> +static int affinity_domain_via_partition_result_parse(int returned_values,
-> +						      int element_size,
-> +						      char *buf,
-> +						      size_t *last_element,
-> +						      size_t *n,
-> +						      struct hv_gpci_request_buffer *arg)
->   {
-> +	int rc;
->   	size_t i = 0, j = 0;
->   	size_t k, l, m;
->   	uint16_t total_affinity_domain_ele, size_of_each_affinity_domain_ele;
-> @@ -483,27 +518,40 @@ static void affinity_domain_via_partition_result_parse(int returned_values,
->   	 */
->   	while (i < returned_values) {
->   		k = j;
-> -		for (; k < j + element_size; k++)
-> -			*n += sprintf(buf + *n,  "%02x", (u8)arg->bytes[k]);
-> -		*n += sprintf(buf + *n,  "\n");
-> +		for (; k < j + element_size; k++) {
-> +			rc = hv_gpci_emit_hex_byte(buf, n, (u8)arg->bytes[k]);
-> +			if (rc)
-> +				return rc;
-> +		}
-> +		rc = hv_gpci_emit_newline(buf, n);
-> +		if (rc)
-> +			return rc;
->   
->   		total_affinity_domain_ele = (u8)arg->bytes[k - 2] << 8 | (u8)arg->bytes[k - 3];
->   		size_of_each_affinity_domain_ele = (u8)arg->bytes[k] << 8 | (u8)arg->bytes[k - 1];
->   
->   		for (l = 0; l < total_affinity_domain_ele; l++) {
->   			for (m = 0; m < size_of_each_affinity_domain_ele; m++) {
-> -				*n += sprintf(buf + *n,  "%02x", (u8)arg->bytes[k]);
-> +				rc = hv_gpci_emit_hex_byte(buf, n, (u8)arg->bytes[k]);
-> +				if (rc)
-> +					return rc;
->   				k++;
->   			}
-> -			*n += sprintf(buf + *n,  "\n");
-> +			rc = hv_gpci_emit_newline(buf, n);
-> +			if (rc)
-> +				return rc;
->   		}
->   
-> -		*n += sprintf(buf + *n,  "\n");
-> +		rc = hv_gpci_emit_newline(buf, n);
-> +		if (rc)
-> +			return rc;
->   		i++;
->   		j = k;
->   	}
->   
->   	*last_element = k;
+> -config QE_GPIO
+> -	bool "QE GPIO support"
+> -	depends on QUICC_ENGINE
+> -	select GPIOLIB
+> -	help
+> -	  Say Y here if you're going to use hardware that connects to the
+> -	  QE GPIOs.
+> -
+>   config CPM2
+>   	bool "Enable support for the CPM2 (Communications Processor Module)"
+>   	depends on (FSL_SOC_BOOKE && PPC32) || PPC_82xx
+> diff --git a/drivers/soc/fsl/qe/Kconfig b/drivers/soc/fsl/qe/Kconfig
+> index eb03f42ab978..b35a8fd30ebf 100644
+> --- a/drivers/soc/fsl/qe/Kconfig
+> +++ b/drivers/soc/fsl/qe/Kconfig
+> @@ -67,3 +67,11 @@ config QE_USB
+>   	default y if USB_FSL_QE
+>   	help
+>   	  QE USB Controller support
 > +
-> +	return 0;
->   }
->   
->   static ssize_t affinity_domain_via_partition_show(struct device *dev, struct device_attribute *attr,
-> @@ -514,6 +562,7 @@ static ssize_t affinity_domain_via_partition_show(struct device *dev, struct dev
->   	size_t n = 0;
->   	size_t last_element = 0;
->   	u32 starting_index;
-> +	int element_size, rc, returned_values;
->   
->   	arg = (void *)get_cpu_var(hv_gpci_reqb);
->   	memset(arg, 0, HGPCI_REQ_BUFFER_SIZE);
-> @@ -546,10 +595,16 @@ static ssize_t affinity_domain_via_partition_show(struct device *dev, struct dev
->   	 * to buffer util we get all the information.
->   	 */
->   	while (ret == H_PARAMETER) {
-> -		affinity_domain_via_partition_result_parse(
-> -			be16_to_cpu(arg->params.returned_values) - 1,
-> -			be16_to_cpu(arg->params.cv_element_size), buf,
-> -			&last_element, &n, arg);
-> +		returned_values = be16_to_cpu(arg->params.returned_values);
-> +		element_size = be16_to_cpu(arg->params.cv_element_size);
-> +		rc = affinity_domain_via_partition_result_parse(returned_values - 1,
-> +								element_size, buf,
-> +								&last_element, &n,
-> +								arg);
-> +		if (rc) {
-> +			put_cpu_var(hv_gpci_reqb);
-> +			return rc;
-> +		}
->   
->   		if (n >= PAGE_SIZE) {
->   			put_cpu_var(hv_gpci_reqb);
-> @@ -578,10 +633,15 @@ static ssize_t affinity_domain_via_partition_show(struct device *dev, struct dev
->   	}
->   
->   parse_result:
-> -	affinity_domain_via_partition_result_parse(
-> -		be16_to_cpu(arg->params.returned_values),
-> -		be16_to_cpu(arg->params.cv_element_size),
-> -		buf, &last_element, &n, arg);
-> +	returned_values = be16_to_cpu(arg->params.returned_values);
-> +	element_size = be16_to_cpu(arg->params.cv_element_size);
-> +	rc = affinity_domain_via_partition_result_parse(returned_values,
-> +							element_size, buf,
-> +							&last_element, &n, arg);
-> +	if (rc) {
-> +		put_cpu_var(hv_gpci_reqb);
-> +		return rc;
-> +	}
->   
->   	put_cpu_var(hv_gpci_reqb);
->   	return n;
+> +config QE_GPIO
+> +	bool "QE GPIO support"
+> +	depends on QUICC_ENGINE
+> +	select GPIOLIB
+> +	help
+> +	  Say Y here if you're going to use hardware that connects to the
+> +	  QE GPIOs.
+> diff --git a/drivers/usb/host/Kconfig b/drivers/usb/host/Kconfig
+> index b3b1ec696bf5..10cff12a3f31 100644
+> --- a/drivers/usb/host/Kconfig
+> +++ b/drivers/usb/host/Kconfig
+> @@ -611,6 +611,7 @@ config USB_UHCI_ASPEED
+>   config USB_FHCI_HCD
+>   	tristate "Freescale QE USB Host Controller support"
+>   	depends on QE_GPIO && QUICC_ENGINE
+> +	depends on PPC
+>   	select FSL_GTM
+>   	select QE_USB
+>   	help
 
