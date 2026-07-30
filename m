@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-25064-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25065-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 432BAC531D0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jul 2026 05:49:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EFF12C531D0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jul 2026 05:51:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h9dYY5qSVz2yMn;
-	Thu, 30 Jul 2026 15:49:05 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785390545;
-	cv=none; b=Vy1lIYCfodktEtVtrvvE8bBJ8JYzGRkxOv2QqZvMkvXnUrxzoMEcYx0JElfD1kb35EotQd+7UacImFFG1511Jm/Kh6GIa4kZkgkAbdQB4lCvsoCPO83+L8Imrn7LT8lu/xR2x1IFs3iLLGHiDVrsZ7dEm1y6IFAhX0agk5AvLP209nTiCn4Aiu/NCZamplvkx9jEwyCsDYUfM1MFfe6rJRQIQLRdAMnlQNF9kgnOOqm3CJLzuGNTqU+ls4+ssGqYfO4133Dc99lEx6RHFROZZws/ASQUMN/QFCuyZ2WeOhyJfE+/iEbmEMaMji+CSRIMqLkUZKAt4vezjWxFji5SDA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h9dch4zKWz2ygJ;
+	Thu, 30 Jul 2026 15:51:48 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785390708;
+	cv=none; b=aKEQ+x2o50e0xNreIs/3jLRvBj6Yve9j+s8g+Q5txPDuVnD5xQc/OLghEVuF515jGkbo84ivePIytP9QGkNow3gBb6/sebBdq65hP2kh4k2IX3YvunR1oXEn7fDjJXjR8e65FFY+qRl51IKqA9HBDDi72wuleDqAKjvVnTrSLuLjUfwZJ97ik5XERDNGSOU0KMB8ZciuEONWC6f60scaGFInxyZa+Q0SglDN37vBMf0+2S5YgOOjdKbcX2c/jtmIT6ew210prmamYbufvM8oKyNWZHV3QDCYXGvp1eKUGUMEMXi2UZcwtvMMdc2oqWVIZoGna343vWLEWnX+Om6jKw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785390545; c=relaxed/relaxed;
-	bh=m6Whuwkaw0RMATD5xLRXxrJWIUNWAR2RTwUf7nBvDK0=;
+	t=1785390708; c=relaxed/relaxed;
+	bh=UjUSchQg0I+CuqUd4I911yWy9DuxGtFCha3UjK9DHFM=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=S2lImrgt5YZkVDMTwgXszZH4WMJUUoiWL6A3xdOdAwPyb1gC1D+c3jh25mpDEpCy9Zjjkp0d16x9HPb4ZWZIQWznt4JHXey/RIg1L1jUkrjxK74ZyzQQil0YXemDakE3a3iXhOATVG+OI3xBeNraQlPVAZ6EW30obcbPO6o83s7b4E/QZnIOFraG6kjmbWaSKIOoVnVyImqlfE6qAKRFcerDsLafZ6m71/9gm+orncxD9jAfWowHi3uQKySXPYW/M/G5E/1jmh7tpu7126KXJsQ1KSloHlvMOjphAQ3tJPyMgK2ygu79+m6PTPhbHH8vpLH4lkXwqlBYH+JtuQl9Rg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=R1jCs3Wk; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=ZNOsh+YO3NL0hxxjQh1M26JaY9lOiWxMCryFb69iUWiDrf8PkKAUR/zZ63UIMr+jAkYlzd4CdKyhYA5aJ0v6hGWZV+J/ErHBxSMuCj9ii6Tp1wleVZuOZlZDdLtjfYwTlziyzwG//wIOWKykMT7JMI4Tzwj5Y+A2lKEuvtTnLMiXQk2izhtT85W5AJTKY8XDTjRNKedQ7ms9EdwNdsQB61fe2zYQlULFJmTfw3gwxTpkHWpNpm3inXdAn7Vbyaeh5bCeSpAmChl7MF75W/Xq4xCgarql/HahwfQWoqOTWzpt+uIgvaGtgHKongt742SSDNJqGbKCnClb/OTw8HyrBw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YiHzUuQr; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=R1jCs3Wk;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YiHzUuQr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h9dYX6mCmz2yDs
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2026 15:49:04 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h9dch0cTJz2yMn
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2026 15:51:47 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 0E7EC600AA;
-	Thu, 30 Jul 2026 05:49:02 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4FAA71F000E9;
-	Thu, 30 Jul 2026 05:48:59 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id AD78E600AB;
+	Thu, 30 Jul 2026 05:51:45 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1C7161F000E9;
+	Thu, 30 Jul 2026 05:51:42 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785390541;
-	bh=m6Whuwkaw0RMATD5xLRXxrJWIUNWAR2RTwUf7nBvDK0=;
+	s=k20260515; t=1785390705;
+	bh=UjUSchQg0I+CuqUd4I911yWy9DuxGtFCha3UjK9DHFM=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=R1jCs3WkxZakz7d2DfJ2xUgxDINXMa99cqAADObqGxUlDCecDoeEKImz+v/VF5TQ7
-	 iUM3rZamNOPDQk83PlEvny/EH1zgX+p9KgL9cJpWOE2g1iXL0hMFtRLtYvCfCUIrd2
-	 NCSJW1NiDxQMq0JV2LIbAg3o72DMTxkyF2mUPfldaZJqMDUnGzx3tuFvNcc8FaO59x
-	 nYQg4AZJKgsGCFMwYNB+jC4rwUaTaVFj2s+8fSsSPorJ0ocSffk4178hshTo36TFS2
-	 +D4YVpJGu70IhPkZZgekucuUq4PRsOFkqOJeDJIvwCChLkuPwqAN7yGefxL3EE2e1F
-	 zUjV6D4ZVC3lQ==
-Message-ID: <880aae3c-a552-4d3f-8ed1-e3dc3911ee1a@kernel.org>
-Date: Thu, 30 Jul 2026 07:48:57 +0200
+	b=YiHzUuQrueagfhMNqF7i9zvPcMaQ/ylXYV7RTPxwlegqZl2/mAgOenL2iR6qPqJ9i
+	 cQmj3zdD27PeDddkzfww1LEJM2yx9Ygo1kMBuAE5jHNE1VKfmIPbd6cqrh22sOOlzr
+	 Hww0f9vNnw3RZ4qE0z0LfPFdwreiB9bEWr0pwJgGS65NnPUhoEyGC1/Ww4jwh283pC
+	 1XlXsl4+pigI967z0JGiuiyuJF33ysXDu2HFMgHFNOxsMqckUNviE9t+8CskGTVUUD
+	 2ewMQGHXeDu9P68/Fuxo325kbT2SN5YOe1w9HqdYzuG7oN3CJej4qcT0HL0cHja3P8
+	 P4rnbvn4+hUzg==
+Message-ID: <5c140099-4448-4091-979a-6f6fe7d92ce8@kernel.org>
+Date: Thu, 30 Jul 2026 07:51:40 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,81 +60,45 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 5/7] gpio: ppc44x: Convert GPIO to generic MMIO
-To: Rosen Penev <rosenp@gmail.com>, Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Bartosz Golaszewski <brgl@kernel.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Linus Walleij <linusw@kernel.org>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>, open list <linux-kernel@vger.kernel.org>,
- linux-gpio@vger.kernel.org
-References: <20260602050131.856789-1-rosenp@gmail.com>
- <20260602050131.856789-6-rosenp@gmail.com>
- <CAMRc=Me0rqs8nxrp95X-2Bjw059ahRxwKrg-NtmEt025w2m9bw@mail.gmail.com>
- <DIYGFNLIFBW7.21W9J6SUGYF72@gmail.com>
- <7ee42722-f7f9-40cc-a576-5f85e3955537@linux.ibm.com>
- <CAKxU2N8n4iHrr-+NxL6D9WZ4EgH_XVJ7yfPa4P6ZyFNJTir60w@mail.gmail.com>
+Subject: Re: [PATCH 0/2] powerpc/sstep: Fix compilation on 32-bit PowerPC
+To: Link Mauve <linkmauve@linkmauve.fr>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
+ techflashYT <officialTechflashYT@gmail.com>, Ash Logan <ash@heyquark.com>,
+ =?UTF-8?Q?Jonathan_Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>
+References: <20260729204958.755143-1-linkmauve@linkmauve.fr>
 Content-Language: fr-FR
 From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-In-Reply-To: <CAKxU2N8n4iHrr-+NxL6D9WZ4EgH_XVJ7yfPa4P6ZyFNJTir60w@mail.gmail.com>
+In-Reply-To: <20260729204958.755143-1-linkmauve@linkmauve.fr>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
 
 
-Le 29/07/2026 à 20:32, Rosen Penev a écrit :
-> On Wed, Jul 29, 2026 at 3:55 AM Madhavan Srinivasan <maddy@linux.ibm.com> wrote:
->>
->>
->> On 6/2/26 2:56 PM, Rosen Penev wrote:
->>> On Tue Jun 2, 2026 at 12:51 AM PDT, Bartosz Golaszewski wrote:
->>>> On Tue, 2 Jun 2026 07:01:29 +0200, Rosen Penev <rosenp@gmail.com> said:
->>>>> Use gpio_generic_chip_init() to set up the PPC44x GPIO chip
->>>>> instead of open-coding the basic get, set, locking and state handling.
->>>>>
->>>>> Keep the PPC44x-specific direction callbacks because they still need to
->>>>> program ODR and the OSR/TSR registers around the generic data and
->>>>> direction registers.
->>>>>
->>>>> Assisted-by: Codex:GPT-5.5
->>>>> Signed-off-by: Rosen Penev <rosenp@gmail.com>
->>>>> ---
->>>> ...
->>>>
->>>>> @@ -124,10 +102,11 @@ static int
->>>>>    ppc4xx_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
->>>>>    {
->>>>>      struct ppc4xx_gpio_chip *chip = gpiochip_get_data(gc);
->>>>> +   struct gpio_generic_chip *gen_gc = &chip->chip;
->>>>>      struct ppc4xx_gpio __iomem *regs = chip->regs;
->>>>>      unsigned long flags;
->>>>>
->>>>> -   spin_lock_irqsave(&chip->lock, flags);
->>>>> +   gpio_generic_chip_lock_irqsave(gen_gc, flags);
->>>> If you're already doing it, can you use lock guards too?
->>> Sure. btw, I avoided placing
->>
->> Do you have plan to address this comment in v2
-> Yeah I have it fixed locally.
+Le 29/07/2026 à 22:49, Link Mauve a écrit :
+> Two local variables were only set but never read on 32-bit PowerPC,
+> which causes an error during compilation.
 
-You should probably put patch 
-https://patchwork.ozlabs.org/project/linuxppc-dev/patch/20260517063754.21819-1-rosenp@gmail.com/ 
-as first patch in this series in order to enable applying the fix to 
-6.18 without applying the entire series and to avoid any future conflict.
-
-Christophe
-
+Are those errors new ? This series and the one from yesterday on ppc64, 
+I have the feeling that the code is not new. Has anything changed in the 
+building flags or does this pops up with recent versions of GCC ? If it 
+is the case it is worth saying it in the commit messages in order to 
+clarify the reason for the fix.
 
 > 
-> I'm not sure if this has to do through the PPC or GPIO tree.
->>
->> Maddy
->>>
->>> https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Flore.kernel.org%2Fall%2F20260517063754.21819-1-rosenp%40gmail.com%2F&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C2ac0ec525c7045cd969508deed9fc7e0%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639209467691381845%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=iqGebSy%2BbKMBFZz%2FZwZ9N2Jf8v63FkGPNhrdUf864fE%3D&reserved=0
->>>
->>> in the beginning of the series. My thinking is that's for older kernels.
->>> I believe either the generic API or devm_gpiochip_add_data fixes this.
->>>> Bart
->>>
+> This series first makes the 64-bit guards consistent by converting all
+> uses of CONFIG_PPC64 to use __powerpc64__ instead, and then guard the
+> two variables rc and suffix behind __powerpc64__ checks.
+> 
+> Link Mauve (2):
+>    powerpc/sstep: Consistently use one define to check arch bit width
+>    powerpc/sstep: Don’t define variables we won’t be using
+> 
+>   arch/powerpc/lib/sstep.c | 26 ++++++++++++++++----------
+>   1 file changed, 16 insertions(+), 10 deletions(-)
+> 
+> 
+> base-commit: 78bc8af4affb9a732504eb22eeac7d1e50883853
 
 
