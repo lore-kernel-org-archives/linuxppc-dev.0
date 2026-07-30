@@ -1,66 +1,96 @@
-Return-Path: <linuxppc-dev+bounces-25085-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25086-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9DDA2C54FD2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jul 2026 09:36:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F3CB8C54FDF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jul 2026 09:36:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h9kbh03dKz2yYd;
-	Thu, 30 Jul 2026 19:36:16 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.246.85.4
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785404175;
-	cv=none; b=AVZvg/05f9Yhzb/0nJ6sSurvAecGesxDbMEvJevNDiRn6J4NpdGnshEb/Xap1Lq0MLShtHjmofM8LZpIDZGaKkpRNIHypP1evR4DRBzV/tJcxdbpwAmC8IHn+03eB735TNv4Ft29fOVcP6YctGrnYGJnlKr3t2FtP4KkF6nu2tHEIViKdpQ6wl4IOfVZKn7VSkZ9eDh+ekx5/mikgfTUswRzcMNYDeO2hgeKWmEogFBtF4VPMYf50Qkp/E7QR4VVdxEnbsLZD335wMbWicvu03p6NG6Alx9owTRnWktwyNkGDoFBzSj3bV5qEL1aPOa7ie5CJNIfnBxUkgrc6jtKhg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h9kc83q07z2yYd;
+	Thu, 30 Jul 2026 19:36:40 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::433"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785404200;
+	cv=none; b=iJLohXE7D7SYZPW0TNF29hKtsbC/x0OpIZm+H5KPrTa0yxDrXD7Yo01z76v+lURdjGr0//099cYVtK/gBezhLXQjZ1N5f8VRxAuuK8DtbhFPe+qr3j46nlI2O++tP6EA4wAvA+Z+Ni766Z44qI3GAJkr8yWD9F8jNc+QMXZzQ+H/bsmsUxyfCu85ewr/8rB5z3YIIfcAl4Mt1lhEgdovE5TU+Kb4U/WyC5qOHqw4b9ZFLytlTXgGo4qbvhiYZRSe1ilJFHRl1ZcXhZpWIJab5cdv8tuiu9OQ1wseJsxN2AyWiKJP8PaWBOXnNLbuVoEBK55Ob6Uq2MpUiuIOQsbzaA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785404175; c=relaxed/relaxed;
-	bh=BtGBUghZ3NVIAEOKhEMfE4OWjyrtG5sqoDoPPz9NCKI=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=b0yX+eLGQ6Q1s/3Ump/9VssDO2wJ9kFd0rQQW4lR7r8gGw7hSXW0HPCW+dcqovkO3PjBIgvALBC746F/MluC9oCXZ/YeTX7f4//o8XKG+0zfSV4T7UvqXTLRG4gH5cWw8t0mqQL/WWkn3cHxAgw8HVZbqOdbjpMJkdgYlcDQvUv6qxFGJ5Dv5EUVnnOAgkPinnozm+vyOM7bWkpRkM7sgOKdZ4AWYoY47jkYGp+sRHNZkjwWwFBeofGzXc1XkpQAtgFvzRvNXelmvW7s/FV5Ck8aH90W0NSHIWvwlUajWgIJ9mR98W9Wgr0oo7iF2c3WNWimkgPNpM9p15e8/DlVgA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=lHRpTryO; dkim-atps=neutral; spf=pass (client-ip=185.246.85.4; helo=smtpout-03.galae.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
+	t=1785404200; c=relaxed/relaxed;
+	bh=JpATujKSDQr05JABAqg0NJi4p/t7GtODSZVncN5pOMo=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=XVbM6Hno7mEcW00CIYH4yFdiPVbhU9zI+b4UuK+NqDAfZlMOyYgsIU8O7Eix7Nix2+MKJH4e9bM9gdwdDKHnG3DttdCWLmLWp/rtfqG3UVAz07ensvdQWqZpFFtE8KgQs0TOZmAgDb4hVti9syzORFhcXAGLsVahAFHHK9ZAgfl9Q7SgdnhrudqDggqdaQSpc3MC8UbvJs/3P+vvpeqzgrYe8L92fgnvUddwddlW3SQgpLyyzLWvvkZ+VgLRKLzUAmVTE8eQYDBtM+iU6PyD+lZLhCzxbmkqcznOR7JAH13wp3Yve0d1+jpPgbu+/WBVQGV+NYECeSqbDXUlvuxRww==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ayxT2CY9; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::433; helo=mail-pf1-x433.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=lHRpTryO;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ayxT2CY9;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=185.246.85.4; helo=smtpout-03.galae.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 413 seconds by postgrey-1.37 at boromir; Thu, 30 Jul 2026 19:36:14 AEST
-Received: from smtpout-03.galae.net (smtpout-03.galae.net [185.246.85.4])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::433; helo=mail-pf1-x433.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x433.google.com (mail-pf1-x433.google.com [IPv6:2607:f8b0:4864:20::433])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h9kbf4w76z2yMn
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2026 19:36:13 +1000 (AEST)
-Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
-	by smtpout-03.galae.net (Postfix) with ESMTPS id 2C50B4E41001;
-	Thu, 30 Jul 2026 09:29:14 +0000 (UTC)
-Received: from mail.galae.net (mail.galae.net [212.83.136.155])
-	by smtpout-01.galae.net (Postfix) with ESMTPS id E530A602B8;
-	Thu, 30 Jul 2026 09:29:13 +0000 (UTC)
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 074B311C15912;
-	Thu, 30 Jul 2026 11:29:06 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
-	t=1785403749; h=from:subject:date:message-id:to:cc:mime-version:content-type:
-	 content-transfer-encoding:in-reply-to:references;
-	bh=BtGBUghZ3NVIAEOKhEMfE4OWjyrtG5sqoDoPPz9NCKI=;
-	b=lHRpTryOpV8JKVIpccrVl2dKXfsUls7y1AdqNdu+lbrNBdtrNAs6PeL/OlQ7OxIRNx/Dwq
-	hSoYbDY+ObMspxRJIPdg8y+9840xOr+OvewITwTLqWvJiKVwz/+Rz1NEwWP73Z4KURSzox
-	b96T/fWI9sr1mMgS3MSzmKgVti/5PCxnIx0VFJnocoufsgrdaz7JheIudlYyWGmAkwGPLQ
-	lAFLyag3CjNETsoxAIiqN3q4P9aW38M37y8u1eMIoEUu/IZ5vAc9dJek1a3w0ujpookQaW
-	PGFESeP4ZrCZLJ3/Q0kfpee/sk2QAcVYqbaTlIq9/TFvZRx5FyzfGFEC7H5qHA==
-Date: Thu, 30 Jul 2026 11:29:05 +0200
-From: Herve Codina <herve.codina@bootlin.com>
-To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org, Bartosz Golaszewski <brgl@kernel.org>, Paul
- Louvel <paul.louvel@bootlin.com>
-Subject: Re: [PATCH] soc: fsl: qe: properly scan GPIO nodes at startup
-Message-ID: <20260730112905.23a4b2f2@bootlin.com>
-In-Reply-To: <0e5628ae-886a-4a8e-8a35-6402737ad65a@kernel.org>
-References: <04dc047f8958a78a920f0a88ca3bd8bf70c56187.1785333986.git.chleroy@kernel.org>
-	<20260729172156.4371a8bc@bootlin.com>
-	<0e5628ae-886a-4a8e-8a35-6402737ad65a@kernel.org>
-Organization: Bootlin
-X-Mailer: Claws Mail 4.4.0 (GTK 3.24.52; x86_64-redhat-linux-gnu)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h9kc712JNz2yMn
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2026 19:36:38 +1000 (AEST)
+Received: by mail-pf1-x433.google.com with SMTP id d2e1a72fcca58-8487088510aso2005426b3a.0
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2026 02:36:38 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1785404196; x=1786008996; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=JpATujKSDQr05JABAqg0NJi4p/t7GtODSZVncN5pOMo=;
+        b=ayxT2CY9kTLS064N5zL7wbPPCj8XiKUab/awiMKoZ/EHwZAurdeW0bUYjyjb7otQoO
+         /pekV9JBtvZuA+fxlCdw4okzUK8C7Lll0c8TrVRwnPylQsaX3nwrjz44cCHqyS9wruTM
+         UlOPdKuEW2XKWjc1ez29NrzGUi8t/vDBv4KAsi5fBd12vGzb/khu9cXKmDLFtSvOSZpf
+         J9mi+V+sXt7DSRZtcAkOE2IrnBH9ZDmhaStBoe6AjV3/PJLpOC1HU6i9G8S+7kzkZQ47
+         nOOYKUyFt4QfPOme5qHhr36EhN35w01ZTuENTT6I2z1V+kAOz8DhQFwg2cAtWtCv0WbI
+         SO+g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1785404196; x=1786008996;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=JpATujKSDQr05JABAqg0NJi4p/t7GtODSZVncN5pOMo=;
+        b=p6n73uwg9A7iSSS/WEcrKfemwkdr+8wvs3c0RwomMObZni6KEzCRN0fUpWulqw2Xz3
+         AHHA3gMhF8TVzvd9uaXurUSnmT4EoA7skDXb71EOSY20wWEiHHh6TbPPXHEx2kllA8Jk
+         QWXxpkKpX83i/ae9e3wcXqYQA7GKNB/hU9w/1MnMX918UND9inje34NKVYFawrrq6YDm
+         SZnTMD68QyyDI7jRILopiS0/q8Uj5EkJzRqtdrRGBSojKXJR82lbDPJEi2N4uj+kk56Y
+         lx17bzMMLu9PR1tFf4QlvHw7lz6/DbInywPYY1n6pf5lkVgCOW8lXngsKLIoWZlTA/A7
+         Iwqg==
+X-Forwarded-Encrypted: i=1; AHgh+RqxMlV91FKqNQ9l2u81IHjv/yUGc8RLd7YdC/wakmmVrL/Q3VR40XOCzNF4X0epMEGa9JCOic56ncKkFhg=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzPoK4EiNopmW4pTN4m3ttBbapdC6GLrxc7fKxkz6EuP7W474wF
+	Qnue1iyibpDwfa8aIG89k+FTxVbITs7GAz8EZ1wW05j1jUXbd6cahbwc
+X-Gm-Gg: AR+sD12nU7eQ4mld7g6FAN3hdSp4eSIsvqvWK7RNi7wbfjA+2FRISzBJEvSgIqd4PTe
+	40ffR5qeVnTdfwpSTj1uH4wf3mWOK5dwwtf7odNVLjveziF2fyg1U5lHKurbj1p1mtmcfsDH6yZ
+	Hbdln6MvVh94dsjlhsMPwzwypNxCXOJQzcbkW6Ysd4Jv9FEc6N4zoseWDBvaOvCfo1pQzCpPDbz
+	EQSW7qhBnQJy03QP35kE5dSO9whoEFLa9Dp/a9ox46dY3+ohjVvdP6Qg0n83EER4tp+lnCaBCcr
+	GPAbOOD0K90XK3JQf7hmHFJKYQ45fOJhXCjvVwnKIiia8qvz1Sp/VuWQC/fHYFT0ujmftQvFyIe
+	IY28ZNAGc5Mzv9Hgt9CyMSRfut33C2xrBTNkz2Bq60SOgMMJt+kPyhDGBHnK+HfmGrWyhT0nXyq
+	d3Xbi9ggwQ6PIdwSUIxM6tE/bCQytSlz2IzGdKrrTDk9l/hgtd5nPCsYvY19DU4M3oemdKbQN3N
+	YIUAcjyt2WStCPqniDbLwpmhUx7BmZT90ZxhmbErEINfCYo/p8M7pg=
+X-Received: by 2002:a05:6a00:182a:b0:848:6c9c:4074 with SMTP id d2e1a72fcca58-84ebc1eab5cmr2094648b3a.1.1785404195711;
+        Thu, 30 Jul 2026 02:36:35 -0700 (PDT)
+Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([129.41.58.4])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-84ea03d0675sm2754047b3a.61.2026.07.30.02.36.25
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 30 Jul 2026 02:36:35 -0700 (PDT)
+Date: Thu, 30 Jul 2026 15:06:23 +0530
+From: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
+To: Jirka Hladky <jhladky@redhat.com>
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
+	chleroy@kernel.org, ryabinin.a.a@gmail.com, glider@google.com, andreyknvl@gmail.com, 
+	dvyukov@google.com, vincenzo.frascino@arm.com, oleg@redhat.com, kees@kernel.org, 
+	luto@amacapital.net, wad@chromium.org, mchauras@linux.ibm.com, sshegde@linux.ibm.com, 
+	thuth@redhat.com, ruanjinjie@huawei.com, akpm@linux-foundation.org, 
+	macro@orcam.me.uk, ldv@strace.io, charlie@rivosinc.com, deller@gmx.de, 
+	kevin.brodsky@arm.com, ritesh.list@gmail.com, yeoreum.yun@arm.com, 
+	agordeev@linux.ibm.com, segher@kernel.crashing.org, mark.rutland@arm.com, 
+	ryan.roberts@arm.com, pmladek@suse.com, feng.tang@linux.alibaba.com, 
+	peterz@infradead.org, kan.liang@linux.intel.com, linuxppc-dev@lists.ozlabs.org, 
+	linux-kernel@vger.kernel.org, kasan-dev@googlegroups.com
+Subject: Re: [PATCH v5 0/8] Generic IRQ entry/exit support for powerpc
+Message-ID: <amsapeQ2Kp6rwPpF@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+References: <20260427122742.210074-1-mkchauras@gmail.com>
+ <CAE4VaGACd2es4NPQyhbR9pMEoGiTVBSE7Lw7x9VOb1Qbpvc6nw@mail.gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -74,98 +104,60 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Last-TLS-Session-Version: TLSv1.3
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAE4VaGACd2es4NPQyhbR9pMEoGiTVBSE7Lw7x9VOb1Qbpvc6nw@mail.gmail.com>
 
-Hi Christophe,
-
-On Thu, 30 Jul 2026 10:11:29 +0200
-"Christophe Leroy (CS GROUP)" <chleroy@kernel.org> wrote:
-
-> Hi Hervé,
+On Mon, Jul 27, 2026 at 11:41:07AM +0200, Jirka Hladky wrote:
+> Hi Mukesh, Shrikanth, Madhavan,
 > 
-> Le 29/07/2026 à 17:21, Herve Codina a écrit :
-> > Hi Christophe,
-> > 
-> > On Wed, 29 Jul 2026 16:10:36 +0200
-> > "Christophe Leroy (CS GROUP)" <chleroy@kernel.org> wrote:
-> >   
-> >> Before commit 156460811def ("soc: fsl: qe: Change GPIO driver to a
-> >> proper platform driver") qe_add_gpiochips() was walking the device
-> >> tree to find all nodes with compatible "fsl,mpc8323-qe-pario-bank".
-> >>
-> >> After that commit the discovery is handled by the platform core,
-> >> therefore it is necessary to call of_platform_default_populate() on
-> >> the par_io node.
-> >>
-> >> Fixes: 156460811def ("soc: fsl: qe: Change GPIO driver to a proper platform driver")
-> >> Signed-off-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
-> >> ---
-> >>   drivers/soc/fsl/qe/qe_io.c | 15 +++++++++++++++
-> >>   1 file changed, 15 insertions(+)
-> >>
-> >> diff --git a/drivers/soc/fsl/qe/qe_io.c b/drivers/soc/fsl/qe/qe_io.c
-> >> index a5e2d0e5ab51..02ca556c8db0 100644
-> >> --- a/drivers/soc/fsl/qe/qe_io.c
-> >> +++ b/drivers/soc/fsl/qe/qe_io.c
-> >> @@ -15,6 +15,7 @@
-> >>   #include <linux/errno.h>
-> >>   #include <linux/module.h>
-> >>   #include <linux/ioport.h>
-> >> +#include <linux/of_platform.h>
-> >>   
-> >>   #include <asm/io.h>
-> >>   #include <soc/fsl/qe/qe.h>
-> >> @@ -184,3 +185,17 @@ int par_io_of_config(struct device_node *np)
-> >>   	return 0;
-> >>   }
-> >>   EXPORT_SYMBOL(par_io_of_config);
-> >> +
-> >> +static int __init par_io_populate(void)
-> >> +{
-> >> +	struct device_node *np = of_find_node_by_name(NULL, "par_io");
-> >> +
-> >> +	if (!np)
-> >> +		return 0;
-> >> +
-> >> +	of_platform_default_populate(np, NULL, NULL);
-> >> +	of_node_put(np);
-> >> +
-> >> +	return 0;
-> >> +}
-> >> +arch_initcall(par_io_populate);  
-> > 
-> > 
-> > The par_io node is a sub-node of the soc@xxx node.
-> > The soc@xxx node is simple-bus compatible. This child node should be
-> > populated.
-> > 
-> > Why do we need this additional of_platform_default_populate?
-> > 
-> > Also par_io node has a compatible. Maybe the related driver should call
-> > of_platform_populate() to populate children of par_io if needed. If this
-> > driver is missing, maybe it should be created.
-> > 
-> > Do I miss something?  
+> I'm seeing a ~19% throughput regression on ppc64le (POWER10) in
+> syscall-heavy workloads between kernel 7.1 and 7.2-rc4, which I've
+> narrowed down to the GENERIC_ENTRY enablement for powerpc (commit
+> bee25f97ad24 "powerpc: Enable GENERIC_ENTRY feature").
 > 
-> As discussed together off-line, at the time being the par_io driver is 
-> not a platform driver. par_io_init() is called from setup_arch() by some 
-> board setups.
+> The regression manifests specifically when SELinux is enabled. Regression
+> disappears with selinux=0. With SELinux disabled, 7.2 is actually
+> slightly *faster* than 7.1.
 > 
-> In order to fix the regression, I keep it minimal with an 
-> arch_initcall() function which is equivalent to what we had before 
-> changing this driver to a platform driver. It will also ease applying 
-> the fix to stable without too much churn.
+> Test: stress-ng --kill 1 -t 23 (single-thread kill() syscall loop)
+> Machine: IBM,9080-HEX POWER10, 8 vCPUs (1 core SMT-8), 64 GiB
 > 
-> It will still be possible to rework par_io driver in a follow-up patch 
-> and change it to a propoer platform driver.
+> Results (bogo-ops/sec, higher is better):
 > 
+> Kernel   Enforcing   Permissive   Disabled    SELinux tax
+> ------   ---------   ----------   --------    -----------
+> 7.1      69,107      70,248       93,566      -26.1%
+> 7.2-rc4  56,247      59,075       99,240      -43.3%
+> Delta    -18.6%      -15.9%       +6.1%
+> 
+> Key observations:
+> - SELinux permissive ~ enforcing on both kernels (overhead is in the
+>   code path, not policy evaluation)
+> - SELinux disabled: 7.2 is 6% faster than 7.1 -- the generic entry
+>   path itself is not slower for the base syscall
+> - The SELinux "tax" nearly doubles from 26% to 43% between 7.1->7.2
+> - No changes to security/selinux/avc.c between v7.1 and v7.2-rc4
+> 
+> The kill() hot path (sys_kill -> check_kill_permission -> security_task_kill
+> -> selinux_task_kill -> avc_has_perm -> avc_lookup) wraps every AVC lookup
+> in rcu_read_lock()/rcu_read_unlock(). On ppc64le with PREEMPT_RCU, each
+> pair requires lwsync/isync barriers. I suspect the generic entry path
+> changes something in how context tracking, tracing, or RCU interacts
+> with the syscall fast path that amplifies the per-call RCU cost.
+> 
+> Note: this is on top of a separate ~36% regression from 6.12->7.1 caused
+> by HAVE_PREEMPT_DYNAMIC_KEY enabling CONFIG_PREEMPT_RCU on ppc64le
+> (commit 6ad7751537e8), which I reported separately on the v4 thread.
+> 
+> Thank you
+> Jirka
+[...]
+Hey Jirka,
 
-Yes, indeed, this makes sense.
+Thanks for reporting this.
+I'll take a look.
 
-Thanks for the clarification.
-
-Best regards,
-Hervé
+Thanks,
+Mukesh
 
