@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-25078-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25079-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2A30CC54FDF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jul 2026 07:01:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2AED9C54FDF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jul 2026 08:11:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h9g8x2vb6z2xnp;
-	Thu, 30 Jul 2026 17:01:21 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785394881;
-	cv=none; b=NY1HQT80MzbcsnAfZAgEl7qK6BkXCDGIsqoJs83lJOXVEnq9IixT6cWRhblUWKovXlxVjyKO50koHtpINsFixaXxKGuv+E3EatvwlZGG60GxNKhEYQqTNaWUC57lWfyO6U3AvXnWJBTwkX7mp2BF30a+tnT5C+VbCq6IeoK76zqOqwdwNp7c/19uJyGmRtCnHJG8e5rRAn0pBq7u2w8ltSMg8dOzQ9DT946I0msppZEm7YgyLNgekah96JsMxWEfIOWtVT/pePbCo9E51+lmpkp9JO/fVQw3qwP5XarbEUnjzgoNVvSD/8wtDQ/kOhpJ67bJphihTXvcohRtRjL9hw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h9hk04DPkz2yYd;
+	Thu, 30 Jul 2026 18:11:36 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785399096;
+	cv=none; b=IL7uN4Dmi5UBduoBr9XOUMJTNDx9yMw0y3rcU/yCAM02ccQuzkye0aif/ukQiQ1SvieYbT9hb6mnHDZ1TF+UGyv6xfIe0mJ0741y+CjLoHoMk0VW+1Cbfpf+gFky5XTVDQXko5CQzTWYimYgxa76mdatM+nfOwY41NCuwcxJrJZ/06dDPQKJlXpGdJ2Pmgqgr/CPmnDfWdWZQ+Q27L7mdCy1TKqR7nsO2bpmfRZeD5o8nRZm+/NCbQfYmaphBGJvuR8uNGy7DM4FFpPaBTJYCXxzNltqCKR0ySQYdijDHitF1XUN/SSbyIVephtwDhd5jg+UYzq3h8bHwHnofavfZg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785394881; c=relaxed/relaxed;
-	bh=lJzDcSa/Jz3k1AoOMXf/kp3xH6eQcq1mA+xDjqL2CuI=;
+	t=1785399096; c=relaxed/relaxed;
+	bh=gN9j8IWdr/SYE/d3Avtp8AdFxeIwpiKz5SDihtLLAM0=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=RtjsQKKFtb4lB1VHgkr5PLufd99AEuN3ZaFRggyKW9DGs6cHp5UOrDgRxwWWAMxNPGxLyVm1O4VFv0UvUtoB0EH9ZNEWCahfaMb7Fsw24VKGzfOFoHsuVhJjkJnQ4w8R2oeQyhOUlP3m76+uN8TCIGWwrggksXndfWf3yyTbs3vY8jiha2hciWF2NzbsGBcnYHJanES95EASLQcLDron6emQ/SSGMQnJd6j1arIKjCqByOnELE1MmnOsDfvgBIpqZTrQGzpQHEYurXyNJZaDS/Br3CLOYw6Ku8CtMIIWBr+PdEIcO3apaBKk2Ythy6miSepZXtdNMPeEaU1so8s/ew==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=AfV7cRIl; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=Do+E6QgQCZ+ftoXAy979S0nynOwty4iwODR32vnUixFt6hKTcRgGs3UL/5qthi5qqGA6FfQTc4+VEEml4s4kKCq/qLvl0a4aJxv8zrvONr+e4OVM9hwPfsfUbKmkJQtzXbjzTZ0VFjJOMcpKTnLZdN4lLg79BFg6inJJcuQJ6krKTcMZSWZADzwxvRnVuUv+17DqAlfP5TMWTZQc4nW8seeRriP39EOlrgti5SXELBjFRQ8jtv33jw9BwJSE9iPWPOlwqqTpmmf2Mqpxqz9CYgM6+6xSF1tsY5/vgzDyrK7JNT5icG61gArYblgliYSpdUsMVDUdXE/hvcGAz4qJNQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BsYVOZ/6; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=AfV7cRIl;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BsYVOZ/6;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h9g8w1nmVz2xF8
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2026 17:01:20 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h9hjz5FzTz2xnp
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2026 18:11:35 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 894AF4353C;
-	Thu, 30 Jul 2026 07:01:15 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id F3A181F000E9;
-	Thu, 30 Jul 2026 07:01:12 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 2D8FC600B1;
+	Thu, 30 Jul 2026 08:11:33 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 31A401F000E9;
+	Thu, 30 Jul 2026 08:11:30 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785394875;
-	bh=lJzDcSa/Jz3k1AoOMXf/kp3xH6eQcq1mA+xDjqL2CuI=;
+	s=k20260515; t=1785399092;
+	bh=gN9j8IWdr/SYE/d3Avtp8AdFxeIwpiKz5SDihtLLAM0=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=AfV7cRIlGBEzJOmEgm5UqvFvgiVUFLFybVODk4nk6sqhhlGt903bj/OLsr9htBV4a
-	 kZRVSgp8wGvqvTh+a7dmmJ4KORfBwRf3qSN/LvbXENe6BE843E1EtmInMOKqoy+66Y
-	 6EP9KDc1TLGUZnCXNw5bJI9+NAD6bzqDXPLKmy3uPhDx0FVFRh9rcsZU70fektfRX1
-	 JoUdMf9iq2DiHhJw0ABaA/6mJcAHuo8Apml2s+9P6nHtraRMT4nkvVda+KuY+MxALk
-	 UpM2KNLOjxzmOX0uJLtzgT4R79qQk4HRXDsq7F7cv8dZUQU7cBwFBE27wjv432Ui1X
-	 3WfDT2OdCa6Bw==
-Message-ID: <3c39b0e5-8265-4d39-ab39-196ccf560a05@kernel.org>
-Date: Thu, 30 Jul 2026 09:01:10 +0200
+	b=BsYVOZ/67qQbI6QKDC+hPmUtZcXQuauzsBmkdDFYlqLb7vCKYOVxrZuTUgLuiabJK
+	 PKPTCkfe3h7I2qe40fki/Ag2Wwh8RBx5pq+WNJ8QhHkkJ4CNQCSaM3jg/Mx7EzSIcX
+	 pFCSzhVlZQPyFO/Mg+GacXkKyIiwCROinNKtS841uqoCiNCl36hPKrXse65hy6oicj
+	 p+fqu/8cBSjdyUWnohOLamtEJu4WOdh4Dg3/4ueWoU/Jo/yQFpiEBdU9olgtSshego
+	 5DtPfRC9F3i2qKOhJrv3U8BLZSNYzqV3jUu108ODWchElZa+bM6ret8EiTOeh3eZLO
+	 4MPiN/rgHHmyA==
+Message-ID: <0e5628ae-886a-4a8e-8a35-6402737ad65a@kernel.org>
+Date: Thu, 30 Jul 2026 10:11:29 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,50 +60,97 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 0/2] powerpc/sstep: Fix compilation on 32-bit PowerPC
-To: Link Mauve <linkmauve@linkmauve.fr>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
- techflashYT <officialTechflashYT@gmail.com>, Ash Logan <ash@heyquark.com>,
- =?UTF-8?Q?Jonathan_Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-References: <20260730065007.964703-1-linkmauve@linkmauve.fr>
+Subject: Re: [PATCH] soc: fsl: qe: properly scan GPIO nodes at startup
+To: Herve Codina <herve.codina@bootlin.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ linux-kernel@vger.kernel.org, Bartosz Golaszewski <brgl@kernel.org>,
+ Paul Louvel <paul.louvel@bootlin.com>
+References: <04dc047f8958a78a920f0a88ca3bd8bf70c56187.1785333986.git.chleroy@kernel.org>
+ <20260729172156.4371a8bc@bootlin.com>
 Content-Language: fr-FR
 From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-In-Reply-To: <20260730065007.964703-1-linkmauve@linkmauve.fr>
+In-Reply-To: <20260729172156.4371a8bc@bootlin.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
+Hi Hervé,
 
+Le 29/07/2026 à 17:21, Herve Codina a écrit :
+> Hi Christophe,
+> 
+> On Wed, 29 Jul 2026 16:10:36 +0200
+> "Christophe Leroy (CS GROUP)" <chleroy@kernel.org> wrote:
+> 
+>> Before commit 156460811def ("soc: fsl: qe: Change GPIO driver to a
+>> proper platform driver") qe_add_gpiochips() was walking the device
+>> tree to find all nodes with compatible "fsl,mpc8323-qe-pario-bank".
+>>
+>> After that commit the discovery is handled by the platform core,
+>> therefore it is necessary to call of_platform_default_populate() on
+>> the par_io node.
+>>
+>> Fixes: 156460811def ("soc: fsl: qe: Change GPIO driver to a proper platform driver")
+>> Signed-off-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
+>> ---
+>>   drivers/soc/fsl/qe/qe_io.c | 15 +++++++++++++++
+>>   1 file changed, 15 insertions(+)
+>>
+>> diff --git a/drivers/soc/fsl/qe/qe_io.c b/drivers/soc/fsl/qe/qe_io.c
+>> index a5e2d0e5ab51..02ca556c8db0 100644
+>> --- a/drivers/soc/fsl/qe/qe_io.c
+>> +++ b/drivers/soc/fsl/qe/qe_io.c
+>> @@ -15,6 +15,7 @@
+>>   #include <linux/errno.h>
+>>   #include <linux/module.h>
+>>   #include <linux/ioport.h>
+>> +#include <linux/of_platform.h>
+>>   
+>>   #include <asm/io.h>
+>>   #include <soc/fsl/qe/qe.h>
+>> @@ -184,3 +185,17 @@ int par_io_of_config(struct device_node *np)
+>>   	return 0;
+>>   }
+>>   EXPORT_SYMBOL(par_io_of_config);
+>> +
+>> +static int __init par_io_populate(void)
+>> +{
+>> +	struct device_node *np = of_find_node_by_name(NULL, "par_io");
+>> +
+>> +	if (!np)
+>> +		return 0;
+>> +
+>> +	of_platform_default_populate(np, NULL, NULL);
+>> +	of_node_put(np);
+>> +
+>> +	return 0;
+>> +}
+>> +arch_initcall(par_io_populate);
+> 
+> 
+> The par_io node is a sub-node of the soc@xxx node.
+> The soc@xxx node is simple-bus compatible. This child node should be
+> populated.
+> 
+> Why do we need this additional of_platform_default_populate?
+> 
+> Also par_io node has a compatible. Maybe the related driver should call
+> of_platform_populate() to populate children of par_io if needed. If this
+> driver is missing, maybe it should be created.
+> 
+> Do I miss something?
 
-Le 30/07/2026 à 08:50, Link Mauve a écrit :
-> Two local variables were only set but never read on 32-bit PowerPC,
-> which causes an error during compilation with W=1.
-> 
-> This series first makes the 64-bit guards consistent by converting all
-> uses of __powerpc64__ to use CONFIG_PPC64 instead, and then guard the
-> two variables rc and suffix behind CONFIG_PPC64 checks.
-> 
+As discussed together off-line, at the time being the par_io driver is 
+not a platform driver. par_io_init() is called from setup_arch() by some 
+board setups.
 
-For the two patches,
+In order to fix the regression, I keep it minimal with an 
+arch_initcall() function which is equivalent to what we had before 
+changing this driver to a platform driver. It will also ease applying 
+the fix to stable without too much churn.
 
-Reviewed-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
+It will still be possible to rework par_io driver in a follow-up patch 
+and change it to a propoer platform driver.
 
-> Link Mauve (2):
->    powerpc/sstep: Consistently use one define to check arch bit width
->    powerpc/sstep: Don’t define variables we won’t be using
-> 
->   arch/powerpc/lib/sstep.c | 111 ++++++++++++++++++++-------------------
->   1 file changed, 58 insertions(+), 53 deletions(-)
-> 
-> Changes since v1:
-> - Link to v1:
->    https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Flore.kernel.org%2Flinuxppc-dev%2Famrpdv0g__ELifId%40desktop%2FT%2F&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C69210bfbc364426c4ce108deee06d0f2%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639209910199709261%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=%2B%2BdoT%2FTkFxUUy63ED%2B5Kb5dfCSI8hQpjWGfpndI%2Fn0c%3D&reserved=0
-> - Switch from __powerpc64__ to CONFIG_PPC64, as it is the preferred
->    check.
-> - Document that the build error was only occurring with W=1.
-> - Declare both variables on the same line.
-> 
-> base-commit: 78bc8af4affb9a732504eb22eeac7d1e50883853
+Christophe
 
 
