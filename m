@@ -1,89 +1,75 @@
-Return-Path: <linuxppc-dev+bounces-25123-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25124-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8CB2EC55164
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jul 2026 15:08:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 40E13C55162
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jul 2026 15:40:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h9sz75jx8z2yCK;
-	Fri, 31 Jul 2026 01:08:35 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785424115;
-	cv=none; b=iJs6AgxmrHK/Ux2qqDnflg7ivmRJIwo7tvKl3/L+mvfLk3eV3b172c4NrrzO3n+UepKMB/4jBjgJBsK7xmGR6j8l042zX8LEL7M8sdviTddbzPRT9FYlX9bGuWiVd3HirPWaLrjmAnbh1yZFOL4bInQkdONZeUpAzwsWXX2d6zAJUgd/6E0gIhw23+JXYzwacri06EkvWvoqwA5tZ4nwK0p5BpMvSACoKM3hBB55TOQZUaAYfUZBepWPmnXTnfE4HV2iwfT4uZ6Cp+tcNHA3IammF7/HEAvLiTL4KkfUranpLEq0OwBjDdRK3hmccjz60uVZOW7UXZXiuWnMhtVHcw==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785424115; c=relaxed/relaxed;
-	bh=7ih9ctRJT2ry3Bf+jpWUJLBgYpIZVim4bnZlMJT/wak=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=UwBDYw1gRF2GO7AXrkTPFIGaBYipMt2H2e0f/5Cq5hsKnQsMOU0nClYN/tsF0aQC+JEYcLeggzl0Y6XVz9+57qnNbIC9KRS0Ul7t+UgGjXh+kHsvAagewWQVpaOUOWjzW6cEkrr905RNy1tWZK6D06glP0CtGEmCMMA/CIEF2KsTgrsoTkdeEHbVRwtCw5Ot15ET52D6kzJrivQhZwONXwJgOmQl+AoLOxE12xq/TfNKU8VPonr/6FzDiANHxUf1pKIrLnSwqmF/jTxqOTeUTzfzneOatIJogwLtmU42eQkWHYrUnfxtos16GUi5F6bVirviAz9zFlHdjA1Wb2H82Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=RGI8zzXS; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=RGI8zzXS; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=jhladky@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h9tgl3M6yz2yMy;
+	Fri, 31 Jul 2026 01:40:19 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c20a::7" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785426019;
+	cv=pass; b=cHykgMYVHE1fmDP+Pp0+PIQcNVHj9BuWnbAodR7Thn64HbJ++uoH0kic61ehiFrGPLx2SNp+kJN8n3ApF8oT4MoYsqlqYPeiSSQAgumCBCnteuNSrRclFKdu6I6UYKgvbA4NshhvJbxv+5VFzwOHonGzspOiKE3KQTcyewz1iH5ovbggNfGlcXfTAh3vgsqzyaRYEwp4l2uDCaTjubaFwPp1uSrvWH9cg0d1Jq8C2L0/J8iQnKlgEtUA8eICEOXCg59jGn+kPWzpIuSncLwjd6/c2CA/D+oDhHq/IlQRyP5+YOnJh273s5vIlBaGShFTI9JYa+cWU/6PZVGt4HDPJw==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1785426019; c=relaxed/relaxed;
+	bh=zg43jLV6qjLRLJR2Hk7Bbg/lS5gdMg884Hx6LCnktv8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=nTKsJ+/amO4ngKgS3BsigWTdFgKVI8RasSUkyCdssPXlGbHzGH4y5VuT6F+D5xlCKr/87RsUijEEwWeYwJxZINXX62LPu0d6r5b8VWIC5t1pGc/jww1PgTl9pDrYR+psxAsF1iK5bbzJlbrKkD8SIf0A/WRK7Jrkm+kJEe7rcKG1ksdhjmHFXFwXoMGp+4xiWBPCWi7oY7oGEMF858SYQsJqAnuQw5enCtfj00CKvRb810B7CGQZ0ok383CiEr+41QJENQApKX5C+r3XTyT73RLx4isXsSAqUYmCwZ5LUc3mNCB0l/Nuko4GXrwVhz3D6wQBj6bMVL4OdGrLZ5ZUmg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=dahXXi08; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c20a::7; helo=pa4pr04cu001.outbound.protection.outlook.com; envelope-from=ioana.ciornei@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=RGI8zzXS;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=RGI8zzXS;
+	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=dahXXi08;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=jhladky@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c20a::7; helo=pa4pr04cu001.outbound.protection.outlook.com; envelope-from=ioana.ciornei@nxp.com; receiver=lists.ozlabs.org)
+Received: from PA4PR04CU001.outbound.protection.outlook.com (mail-francecentralazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c20a::7])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h9sz61JjWz2xnp
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2026 01:08:32 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1785424109;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=7ih9ctRJT2ry3Bf+jpWUJLBgYpIZVim4bnZlMJT/wak=;
-	b=RGI8zzXSlIV+y/boCaY7b9jEMJxD7THxmjyR4iXTrHVrsq8YH3aLOfAZmyRMIdSwS9GxqQ
-	xKEw4Z0rcaWhBGAs1FynkUlGKbO2eDH4zQecNfIKqymxQTJb1lGK+mtqPHizxEOjr2vpSA
-	Q6tX/Rs/1ZvXAMX2uS/Ju+InMhHAIMw=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1785424109;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=7ih9ctRJT2ry3Bf+jpWUJLBgYpIZVim4bnZlMJT/wak=;
-	b=RGI8zzXSlIV+y/boCaY7b9jEMJxD7THxmjyR4iXTrHVrsq8YH3aLOfAZmyRMIdSwS9GxqQ
-	xKEw4Z0rcaWhBGAs1FynkUlGKbO2eDH4zQecNfIKqymxQTJb1lGK+mtqPHizxEOjr2vpSA
-	Q6tX/Rs/1ZvXAMX2uS/Ju+InMhHAIMw=
-Received: from mail-ua1-f69.google.com (mail-ua1-f69.google.com
- [209.85.222.69]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-673-pOXy55ugPAKHTDpDMGuodg-1; Thu, 30 Jul 2026 11:08:25 -0400
-X-MC-Unique: pOXy55ugPAKHTDpDMGuodg-1
-X-Mimecast-MFC-AGG-ID: pOXy55ugPAKHTDpDMGuodg_1785424105
-Received: by mail-ua1-f69.google.com with SMTP id a1e0cc1a2514c-977d6c69e06so222098241.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2026 08:08:25 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785424105; x=1786028905;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=7ih9ctRJT2ry3Bf+jpWUJLBgYpIZVim4bnZlMJT/wak=;
-        b=Ou8GCxheKw/3y4+gfJLa4rE4KCzbuEMuTEw23xzO4RpZZIUYzgepNJ0dQNKgKGJFNV
-         1UTdbGYPgVjFiCPykNDssNJU6g8fdS8ujKOnNTAxtzDHmiF4uzvExFeYwebYa0SeOPQ9
-         czkKfoDL3EKiC4Dehjes76/4faZRX7AUsEt0Mo59afTBfIgZyq+8V8JRpvYYiGhAujd5
-         DLG2VnDgztiDh/dIq4UD70axWpLvi7LS9NfCmb34W6aBcc/oXZz5eHF44ieAB2UlXzKx
-         sVGOgwHMed+kxNFYuv2mNa17aTNaiLEt8R230hGAeuKDHMJAe/8HC8lPnlTOsnD9CAWC
-         O+Fw==
-X-Forwarded-Encrypted: i=1; AHgh+RoOvr+VdCM7REXdhbgiRxMAcFfKtg7usoLgQk1LSIStS8l2qLWnnAI4xM8vupzicJnUkC3cm5tzu7cUS54=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yxel4U4OBNCtqw/+1vkmWs5avr7a5/xUh11FWsOXtpzRuwCoX45
-	MhDhiFidqgdFMRdnnR48sGGaR7a+IK2utrWUi3Ux0Q99HXKOI+QxuH92DJfq88b/lnpa1qfuCEj
-	nxJAoo05vYu6NnsPGFZSbw1Y1irRLDZKkEdKzwqvVmGSZriEqNLQOpxwTT4c+c0EY5y/YxDrfaY
-	zpY9o52S4IJHt28XOOxzfejCbOhWAK143wzg+idtcDww==
-X-Gm-Gg: AR+sD12n8f/9vIRZVkOGy0/5AD+spa7je4YZsHelbooHHzdyk702LPWkEy9YX9rDjGj
-	A3CYxMr6cNeXQ6KpSIhBvCdGf6bQIHavcz/hzU9REw4PJlfY5G6ZJLt7EBtlN/kOjxI1u18gcOs
-	1ZKuamcc1AM0Ufv/bpFqHn7jvyOWJGjkhCG37x6TuCSLYljpfHmRmCtrkE
-X-Received: by 2002:a05:6123:86:b0:5bd:ecad:8f80 with SMTP id 71dfb90a1353d-5c365ff478dmr1007915e0c.2.1785424105310;
-        Thu, 30 Jul 2026 08:08:25 -0700 (PDT)
-X-Received: by 2002:a05:6123:86:b0:5bd:ecad:8f80 with SMTP id
- 71dfb90a1353d-5c365ff478dmr1007900e0c.2.1785424104830; Thu, 30 Jul 2026
- 08:08:24 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h9tgj0LHBz2y8c
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2026 01:40:16 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=a5MoSRrUnSoDc9lcCoYyX344R3J0A6fdHjlynko0WadU73mk2B+bBJ+9j5bn2KIMelPIPYjlR1b7q7s8ioli12cCpATvcA5pEnD8N/UTLNJCKtVoxEyEJoWKR17t+RTaUlLSNJmZUvnMJq3dYO1nszsPZc6jR9g6QV1oGFqOKSrmKC4nNHx7oWhWWp7bjz+Lg9J3Lah5q4+YjK8clyWBdZMpyAgmvEjeBusC60VPzrBBqQiyh0A7vc8JZ+Lfu3+RlINECM5K9+w6fouJELo+jMYIOLpiAgrBHUtnP5c5e2O6NOeSBEGhKajl2BAIf+mViDl2bq4u4spVrcXn5vzf0g==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=zg43jLV6qjLRLJR2Hk7Bbg/lS5gdMg884Hx6LCnktv8=;
+ b=B1zDiuu6OudLAGNUT53caxVLjAewsNZRwz3i4zQzGksHg9A/GsvknSvLud6JC0YdGrszWDoyfgifiA3SYkluctpC5FhLxI4UZ3OEbcTIOIxz7f/R5Y4x3J1ieSM4GYf5oz+K5G2lc7KCHqsLi0J3U1N6ZMAgpx64ORbduIColMAyTiP9p0cu2BciJ2zmt27F546ERQsQxL8uAF9UuQ7cti9daOWkMRM7l9MHbVtq3jJThW7RZfvryU9TLdLI9begLa8QOfjUqIqWG9WMdMFYKYrbzRL7WzNDrxWmh9hd22Ne/5Pg490dq69VOB78j2edIZ9gtXdCoFCqg8q8nH/QWA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=zg43jLV6qjLRLJR2Hk7Bbg/lS5gdMg884Hx6LCnktv8=;
+ b=dahXXi08cYKEfdvyaN/paGb7np400gOfoGD/dOxJvdFDj/ZiGHOs59UrEntCsEcIga+w+i24TbupIqX34eifWO530K7BYcfM+wk7wuCLaiDzFgE4Dyb1Zd8VasQhviFXg+jHeBfJmvKwUajncpxogcnoqMw10YTmPfQTWucG416ZKsna5dh+dz83GSwruJaP/k2UyUhqVCfQpneg/7PQtz/6wQTj0uPHCvWW8fJjHKByFXwMIesIOEzsAs+C4h/LL8rGHokF2p8ivPUHn+NKgBWE5odPFyXdfmI6JE0gtRxbl6FASqHykq7634LONeev9VH7/myZ7/FUACTv2BAR9Q==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nxp.com;
+Received: from GVXPR04MB12290.eurprd04.prod.outlook.com
+ (2603:10a6:150:319::13) by AS5PR04MB9754.eurprd04.prod.outlook.com
+ (2603:10a6:20b:654::9) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.270.15; Thu, 30 Jul
+ 2026 15:39:50 +0000
+Received: from GVXPR04MB12290.eurprd04.prod.outlook.com
+ ([fe80::1739:3404:2175:33dd]) by GVXPR04MB12290.eurprd04.prod.outlook.com
+ ([fe80::1739:3404:2175:33dd%6]) with mapi id 15.21.0245.012; Thu, 30 Jul 2026
+ 15:39:50 +0000
+Date: Thu, 30 Jul 2026 18:39:46 +0300
+From: Ioana Ciornei <ioana.ciornei@nxp.com>
+To: vjardin@free.fr
+Cc: Laurentiu Tudor <laurentiu.tudor@nxp.com>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Bogdan Purcareata <bogdan.purcareata@nxp.com>, 
+	Stuart Yoder <stuyoder@gmail.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+	stable@vger.kernel.org
+Subject: Re: [PATCH] bus: fsl-mc: set dma_mask for the root DPRC device
+Message-ID: <smvzffc65xr23fyozcahv4ifj643hxd6rj6uu6pi6ikc2tfvqx@ik4vkhhjytxh>
+References: <20260724-for-upstream-fsl-mc-dprc-dma-mask-v1-1-6f08af883195@free.fr>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260724-for-upstream-fsl-mc-dprc-dma-mask-v1-1-6f08af883195@free.fr>
+X-ClientProxiedBy: AM8P189CA0002.EURP189.PROD.OUTLOOK.COM
+ (2603:10a6:20b:218::7) To GVXPR04MB12290.eurprd04.prod.outlook.com
+ (2603:10a6:150:319::13)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -97,63 +83,116 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <CAE4VaGBwMp3Ke1+Bt11-v6CCE0h=mPm8k_Cf8DazFSQNT9Mz8g@mail.gmail.com>
- <c0f51eda-21c4-4e9d-95e9-75b2740c3f43@linux.ibm.com> <500d8e8c-088c-4e6d-ab53-868ade6b0eda@paulmck-laptop>
- <CAE4VaGDGS8wkZj4SF5XVC3-1yDmvJxjUjThTPqVw3kxg56ssQA@mail.gmail.com>
- <e013e88a-6137-4de8-9dfd-925b707f2e01@linux.ibm.com> <CAE4VaGAJ9mT8-V=GRPYj8h0RXuNf6S5icrmqeOOFDnkpPMQjaw@mail.gmail.com>
- <a1e04751-eab5-465b-8238-c9f4cd40e472@linux.ibm.com> <CAE4VaGCaN6uBBGqbGAsxudSxMC0JdXYn2vpuDJZPFR3xxJgMYA@mail.gmail.com>
- <29a407ab-268e-4443-96dc-8f5f933cb63c@linux.ibm.com> <CAE4VaGDzVa3+MKUbwH4LFj_mHZ721fd=7cWEd+G5=eVNWLePsg@mail.gmail.com>
- <529b8d9f-54a0-4ec2-9886-83cd528e5e04@paulmck-laptop>
-In-Reply-To: <529b8d9f-54a0-4ec2-9886-83cd528e5e04@paulmck-laptop>
-From: Jirka Hladky <jhladky@redhat.com>
-Date: Thu, 30 Jul 2026 17:08:13 +0200
-X-Gm-Features: AUfX_mwVdF9WyWNQB_mTOlZHKPkYtuRJ3Nl52lkm0NMPqxAVYxOGrFUM8CBRP_c
-Message-ID: <CAE4VaGDJxcu_zgDyrSW=j9WzLEpNsQ9A9Rza-F5PLZq03kJYew@mail.gmail.com>
-Subject: Re: [PATCH v4 1/1] powerpc: enable dynamic preemption
-To: paulmck@kernel.org
-Cc: Shrikanth Hegde <sshegde@linux.ibm.com>, maddy@linux.ibm.com, 
-	linuxppc-dev@lists.ozlabs.org, christophe.leroy@csgroup.eu, 
-	mpe@ellerman.id.au, npiggin@gmail.com, bigeasy@linutronix.de, will@kernel.org, 
-	linux-kernel@vger.kernel.org
-X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: yAzN6ESCjyQhhjrYx2nw-fknMjwpWsQZ70e-OSWpjm0_1785424105
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: GVXPR04MB12290:EE_|AS5PR04MB9754:EE_
+X-MS-Office365-Filtering-Correlation-Id: ab489b97-6ec7-43c4-4424-08deee50cb01
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|366016|376014|23010399003|1800799024|19092799006|6133799003|56012099006|11063799006|10067099003|3023799007|22082099003|18002099003|41080700001|15866825006;
+X-Microsoft-Antispam-Message-Info:
+	jqaZD6m5JAAEK0ChpuQKSh1Nkejet639mh9ruCsVMqEYQRNYY7zLsVX4/svRfVgXWJP3rSJB93iRAjC8/9GY4fnCO3Om0w98H66QG863fsGkC3Ow63F2xkwgLgQF1Oa3Bm9pwrpiURnFLQFH4IXcpTJ0R+FzTtpaa2Iwb9VkU8PMpnmI9EYqjIEZICo4SQ5HgqDKydr49ZTnuvunjokU896dvT+F4vkYWQh4D3H4u2nHFv/VdtwdH/pAD/iHBZhpYOJsr7RjvGwoVNfV23wx7aSKWUzXscubU6h8tXmS7/t0iVzbdmdxq+wqluvWVDF4FIAEHxv1CQAJqR6cpy5AP2w1O4pdKDVsPqEOkFSOSHTSYDHoprVdgn817wp5fX5WBlitD0E3NEHxYdZkEb7AdEdTOBY43tPbOeHCmVX4Um0KxwB7yArwVdy2cHrfoqqkSEPMMLmn2AS3LYuM6jYCYcx0OX0JqR6cmFuYmcqVf/uIwj+IKC+Wil+uw5IoBID7RQQjB6+3gAS60icyTmd3tN5u/PmdBE5+Yd5t5j1+F1l2LtOhT5/8Hm+25JoSFbPUmLoLKNsgEQ/jW5TEDm3qCKaMIrihkoZDS1q+5+Sgg/DMXrMvYwCEdPCT+zNa5nVlY5yp3YebTN9JdkiL9sg6JxU5ievgKU+51Kon86EPrOAg6808gggNJZsvX750JX9UuIZGqhgBj3V3TyBe85qjy+E4otoUAs9I8m2YHmcSTFgSn4CSkC2EiUE/13iBPYU2
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GVXPR04MB12290.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(376014)(23010399003)(1800799024)(19092799006)(6133799003)(56012099006)(11063799006)(10067099003)(3023799007)(22082099003)(18002099003)(41080700001)(15866825006);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?zX6kFbFg0NRHH1o/mq0JbHf8po7CkXPDyZIPR/JXyKncVdNRUZdNCGTKgwpT?=
+ =?us-ascii?Q?o9C5pQMgvVEeUE3SVdcaRfKrQg99bW11CvqYUIndwUYtqWj9hGpgwI+MBGpf?=
+ =?us-ascii?Q?I11pMEKa3OYbAKUOjTl1xYB3S0MAwrGKawfwd/naENTfeI9+ngeB/PCtSfC6?=
+ =?us-ascii?Q?J1mqQsfRzMrH/rqo/OBIw4ttIz5YawBFdLq2nU/yqhds6GdkXiI9qmfwDTo4?=
+ =?us-ascii?Q?HJEzGSO2LAdZi4xVX0+MhuO4jB+cO8VDep9DvtiqnnQqzc9SZxS7GW8g4osD?=
+ =?us-ascii?Q?XBl8/dUTHdlWTNVkElDCNGn5c6IjgZx9/uj/8X+IY4hO7RfNGwHVV6ZPxuxs?=
+ =?us-ascii?Q?VnNeuwMIH2RdjCI9DxcO0WPWb/DyQDZyrEMaoZm8giK9ObPl5Ec0aZcCHL23?=
+ =?us-ascii?Q?ewibub6h41njdTrurxDCYCh9kPq0q/D4cRj6gegEV93dh5GBXVfeyOSQsYIw?=
+ =?us-ascii?Q?JZmw5foCoaw7KbFY9WLrBS5PGeunBJ2VMXCnexUEvtw5oTaz2GVrLDIZy9t4?=
+ =?us-ascii?Q?FM08Rbn5yN7q25UcZeU0M5vE7DzGI25Lzxd67ktAcvl3a5MNmVKva4JZW7Do?=
+ =?us-ascii?Q?UWxJg7ZyU3q+BfZ5Aebt2MlnJ7jw93+Kc3LW6tMKq+4BiN2FPZDYTkligCwT?=
+ =?us-ascii?Q?JXaeMk0rs8iqKlsRjp1IFPlRftcGX1LtwUWAEIJADaOWSHnN56p3ISllbLwx?=
+ =?us-ascii?Q?jIQ7Alc4QJS943XbulkMA9eO53BBrw5aEOiqkZpA8rtQ/tFukzz5k9+/00dt?=
+ =?us-ascii?Q?EW725M9ZqQGK7Sp1+DMqh1QuxMtQW7b7GODXq8U0fM7XsDbHNo0I8t/8zvqp?=
+ =?us-ascii?Q?gXzBRazIUvSAQLa/ye0tzT+uYY1cT0CwAwJ49ZR1/bpU+WuBw85xd9w1Bc+k?=
+ =?us-ascii?Q?knL6M1TbJof/1FhtPo1nilhUnQ8yfOHw/eAwxOGCJCPE+W1yZaqMLYR1jrbG?=
+ =?us-ascii?Q?JNDq+GgizJJF/3ylQu7W5eXu63S5kgrLN8bGNo6axI4ZA8Vd5QzjK+KGKpNB?=
+ =?us-ascii?Q?ZiKZhNJB7f/MBlipp1fHIChHeUJq4Ypc2Eo6Xu6ZR4Dv6KoCl7evK9SsrjFF?=
+ =?us-ascii?Q?nBjbIWwY+2TiROFWECxXwsFMHIIIv8SdzVBwsREpey2V6DsuvYskhYVLaTxx?=
+ =?us-ascii?Q?V9nt0zuS+Q3Bs8ePsugr22LbrmL+yf81MDdpBrir+1O0FmIlhlX+aaztWAUO?=
+ =?us-ascii?Q?Fbc95v/mV0K343uiwL5mkHqJndw85LScgJPOzlDM48GhqFmaGrfxU2j0AWRc?=
+ =?us-ascii?Q?zoOS1r9dE6r8uPWkXVYbXfILQ6qKMtlhmeK5LJtJaAj/fbc0jij5c2gmszrh?=
+ =?us-ascii?Q?sGhBxoiW3EqH0sRNfx8iSQbXXOIF/5sMRdoO4NlvcTg6PotzPeIW1ylbwekR?=
+ =?us-ascii?Q?m+W932wzdgVCG9wHk4+s7Xaj54wga21lJpinY7z6KhlVOoyjnnZp7EWGsPYa?=
+ =?us-ascii?Q?5BiqUSB1YwLpUue9JgRiI8ttQUdlUQxqLD4gq20ksPxKGu/F9Xkk/hYVZdgY?=
+ =?us-ascii?Q?xflyUqxBRh298DAx4f3JwheHd5apPUL98VMZzmVt84ax9DboPR/h4awaDH9q?=
+ =?us-ascii?Q?7uPMqdyZ/Y2Bb8qT61SkvlUcoT8PCnrUPD0X1n3ejayHupW5SjTSPaoYleT7?=
+ =?us-ascii?Q?kjJLM/oZ9wWDQYi8N8jkvxKvZLKzyucGtyzqGbrYHN64FDlICeUtJVSSJx3U?=
+ =?us-ascii?Q?b4Qf3v2Opduu4bEFkQurdqJgqB+IxH9BQEY5HbQZ4oazJ1mmNxsvvm050O96?=
+ =?us-ascii?Q?LILet4gPEg=3D=3D?=
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: ab489b97-6ec7-43c4-4424-08deee50cb01
+X-MS-Exchange-CrossTenant-AuthSource: GVXPR04MB12290.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 30 Jul 2026 15:39:50.4775
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 1YAQSfFal2L2rExmbO4ANl85lQk6qlelF50UUco/KBFK6i3HSVdh6YgrLN8c/UVpl6umcYZUGWbUU6YVh8fmaA==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS5PR04MB9754
 
-On Thu, Jul 30, 2026 at 4:53=E2=80=AFPM Paul E. McKenney <paulmck@kernel.or=
-g> wrote:
-> But is this really a fundamental RISC cost?  For example, does arm64
-> see the same performance issues?
+On Fri, Jul 24, 2026 at 12:56:33AM +0200, Vincent Jardin via B4 Relay wrote:
+> From: Vincent Jardin <vjardin@free.fr>
+> 
+> On Layerscape platforms, when SMMU is disabled,
+> fsl_mc_device_add() leads to the DPRC device with a NULL dma_mask.
+> 
+> It has been tested on LX2160A, no SMMU on the MC
+> domain: the root DPRC can probe cleanly and fsl_mc children
+> enumerate.
+> 
+> Fixes: a259ed1618d2 ("bus/fsl-mc: support dma configure for devices on fsl-mc bus")
 
-We tested arm64 (Ampere Altra Max) with the same controlled
-experiment -- two 6.18 kernels, both voluntary, differing only in
-PREEMPT_DYNAMIC:
+Is this fixing an actual bug introduced by the blamed commit or are we
+talking only about the warning message?
 
-Arch     PREEMPT_DYNAMIC   kill bogo-ops/sec   Delta
--------  ---------------   -----------------   -----
-ppc64le  off               108,836
-ppc64le  on                 68,197             -37.3%
-aarch64  off                 5,538
-aarch64  on                  5,082              -8.2%
+Commit 4d8bde883bfb ("OF: Don't set default coherent DMA mask") is the
+one that added the dev_warn.
 
-arm64 sees -8.2% vs ppc64le's -37.3%. So arm64 is affected but
-much less severely.
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Vincent Jardin <vjardin@free.fr>
+> ---
+> fsl_mc_device_add() already seeds a default dma_mask for non-DPRC
+> objects, but never for the DPRC devices themselves. When the MC I/O
+> domain is not behind an SMMU, the root DPRC reaches
+> fsl_mc_dma_configure() -> of_dma_configure_id() with a NULL dma_mask
+> and the probe warns "DMA mask not set".
+> This mirrors the existing
+> non-DPRC seeding into the DPRC branch.
+> 
+> Tested on LX2160A with no SMMU on the MC domain: the root DPRC probes
+> cleanly and its fsl_mc children enumerate.
+> ---
+>  drivers/bus/fsl-mc/fsl-mc-bus.c | 8 ++++++++
+>  1 file changed, 8 insertions(+)
+> 
+> diff --git a/drivers/bus/fsl-mc/fsl-mc-bus.c b/drivers/bus/fsl-mc/fsl-mc-bus.c
+> index 64d75eed0d34..585345ac0179 100644
+> --- a/drivers/bus/fsl-mc/fsl-mc-bus.c
+> +++ b/drivers/bus/fsl-mc/fsl-mc-bus.c
+> @@ -832,6 +832,14 @@ int fsl_mc_device_add(struct fsl_mc_obj_desc *obj_desc,
+>  		error = get_dprc_icid(mc_io2, obj_desc->id, &mc_dev->icid);
+>  		if (error < 0)
+>  			goto error_cleanup_dev;
+> +
+> +		/*
+> +		 * Seed dma_mask so platforms without an SMMU don't complain
+> +		 * with "DMA mask not set" in of_dma_configure_id().
+> +		 */
+> +		mc_dev->dma_mask = FSL_MC_DEFAULT_DMA_MASK;
+> +		mc_dev->dev.dma_mask = &mc_dev->dma_mask;
+> +		mc_dev->dev.coherent_dma_mask = mc_dev->dma_mask;
 
-> In particular, I can see why the preempt_count() operations need to be
-> interrupt-safe, but I don't see why you would need barriers.  And
-> doesn't powerpc still use software interrupt disabling?  If so, why
-> not use that to simply software-disable interrupts around the
-> preempt_count() operations?
->
-> What am I missing here?
+Since as you said this is an exact mirror for the non-DPRC case, can you
+move it to the common path before the if-else statement without
+duplicating it?
 
-That's a good question -- I don't know enough about the powerpc
-preempt_count implementation to answer this. Shrikanth, could you
-comment on whether removing the barriers or using software interrupt
-disabling around preempt_count is feasible?
-
-Thank you
-Jirka
-
+Ioana
 
