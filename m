@@ -1,89 +1,64 @@
-Return-Path: <linuxppc-dev+bounces-25094-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25095-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1A1B9C55162
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jul 2026 11:25:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C0DE1C55160
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jul 2026 11:54:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h9n1K3zrlz2yYd;
-	Thu, 30 Jul 2026 21:25:09 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785410709;
-	cv=none; b=Kvm65SolqmF0B3qIDziSBdcRlJRg77bxlPlwP457VLMFEVaIHNdgTF+ryTj5wRXjPC0UIoVrq67Vo9dTJ3+FEPODuFW1Y3O2U9I7YWNvbz1H6KWP0W9ZK8XcgN+HcURvnv4RXcDlMQDn7/zp65svfJgVuTZyHdSeB/Cjsrm9JeYr4p5noCS50Q1DyBLfNBJDOv1FDc8ZlxGsTsYVONzlRPCit6lXzQ2NPuH/ChQwbhfHajTke8mka4LCv6Z3QiPy+Pj26FUhqoQ8VRjgxSGCNFsXVw2Ouy9XO2j2SjtYVBnnid5BSxpspyRs2Ln3IWlQ9xf7JiCL6tSd61pwjlT6MQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h9nfq5MXxz2yYd;
+	Thu, 30 Jul 2026 21:54:11 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785412451;
+	cv=none; b=igiI8XVMBK6WTvSmXMCwmqrLOmjPslnxeQbwsIBq69ZQEDyCDquJCu6Tl23FShU8r4iXenIeXQ4ipxamyGWIhDkNf7Pu/IO9nQ4RlcYpYehwG4Y7UTTrH0p27l9GXcGqqLf7fPhUA6CO493FjcdSmUwh/AEFMiJVx/fHfI01Q23qb3VF3aHoZDgZrhfKy7Jzo8SHTAiv9hJv2/ivkILvynK/TLhaMubNSWAjy+vaqIh9Byi//7iyDW3grfuZTDoAyPDiXD5YMRGgzbd358/4LqnP8YWMvcnjqgB989bSyPj7DFw4Rz2Nt6ymulv55nt8sHKCQxwicRkCJ5XOOFPMvw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785410709; c=relaxed/relaxed;
-	bh=CzD6ujUwwh6aLrlrrvmIz/3MadpLBE20PTGj3wkxdZo=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Agey4fiPb6hH8+bPfdacc82yIq2XmMbbHTaGAtcp+Yem7cFZAeFrCZ8R1+KGuDpFAQ9wY3iB7XGjHM3aaZigb1Q4UpugbWrjxhcej9pks5i+FGTEcTdbUgEUFVsIT25XV+Z8YNXiWHrOCB8LKnv6aOZWInAFv2CNRNqR0HaFIFP5CO1cMmlAucDdHp9hqFZcnx32IZOCnRq0ktEpxJzxjre8V0MMRvWzo0Ca9PX0w4ykpuDxzi8aVbsZTFBPehH9+jJVy/wcTfSM7g5YfOCiL7f14TAV/6oGE2sI6idN5RYA/1nmVfk2XbiXZ1w+xuT1ma1FDvV0/Fp2Q86CJEs2vg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=fH+WV9ns; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=UxhEUB8y; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=jhladky@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+	t=1785412451; c=relaxed/relaxed;
+	bh=PWIEEQjaHeHJ5fxTgr0YOB4InTHJrKcidKplWWfbj8A=;
+	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=JvSqly+GKg/ZE0R3Ecb11UTpzQjLDzHXDFCS1Y8L8o+bbQ+NfVl5o4EE97bn636RADdDz6Sfr6BaL6Ii0nXhd9RFWsW6DE2vR6a5cLZvnf60M3lXRPn6FGH5iS+r2bDmi2WL/suHu3P0LVOHekS4junybGIRdgEd2hpCRx6x6Hx3bLYP5kDfEaobkXUnoZsnxIx/agikCSd1YsUUJFqX5wqfTeI4mWTlY/3cWhBuweo//zuzAvJwxVxxT84zWAQNS2qqvEOOoHR+JR8IquZpScOl9rEkNPMIb7Kz5gbqxjS8052q4nK0dg+AYFHNLNyQju3AGkWxU0qgwSh/N5g40w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=cbouM69Y; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=brgl@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=fH+WV9ns;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=UxhEUB8y;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=cbouM69Y;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=jhladky@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=brgl@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h9n1J188Lz2yDs
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2026 21:25:04 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1785410700;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=CzD6ujUwwh6aLrlrrvmIz/3MadpLBE20PTGj3wkxdZo=;
-	b=fH+WV9ns6WeKmhURe1ch+S6kdEivXjalZ8HwUaNKq/SHjRL2yqXLwgaDDmHXW5Qpj3XpiY
-	TPF89sru0S0CG2Pxa1gYUgRv4HwFxy/o7n0hmA2bBqQOJgCer4RXpvL/3PlBErCliA5Kta
-	mq+j1UOwXAoi4M9/IYzWDfFXi59l9uE=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1785410701;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=CzD6ujUwwh6aLrlrrvmIz/3MadpLBE20PTGj3wkxdZo=;
-	b=UxhEUB8yWsa86cTTuvbZhv94Wm2KXLNRv6jtyXHF2kRJOIsW8XjjzZbymjTy1qNMZMpZtk
-	uu4OGSzN8dIf9PjPzytNasGfInZsJMjbROsnIveLg1GUM4WFTkZyJOOGJbSxeskMELtaT1
-	Qku1RGbm8uBMGNp5fWB5pz9Ufk1KB0I=
-Received: from mail-vk1-f200.google.com (mail-vk1-f200.google.com
- [209.85.221.200]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-491-FZ4wOW1YPVG6Ol88mE6uXQ-1; Thu, 30 Jul 2026 07:24:59 -0400
-X-MC-Unique: FZ4wOW1YPVG6Ol88mE6uXQ-1
-X-Mimecast-MFC-AGG-ID: FZ4wOW1YPVG6Ol88mE6uXQ_1785410699
-Received: by mail-vk1-f200.google.com with SMTP id 71dfb90a1353d-5bbd3241499so1583589e0c.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2026 04:24:59 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785410699; x=1786015499;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=CzD6ujUwwh6aLrlrrvmIz/3MadpLBE20PTGj3wkxdZo=;
-        b=JITRMpxwVnETC9lTOde9hhL2cDvCpAgGdE+BMtdt8lXnNDRnn43OXYYMu5uJg6W6vO
-         /ARuxq1InA/pLlGun4XGxEdPxR4r8j1q/BR7JWj1ByPMDZEpcpde9vJ4xSpxO0J6B4PC
-         vM8igVNuYW6OplyWkZpHwG4EUqgDOH4EiQml/qxxiZPa8oLfAlwMiaISIYsO1BzkJLox
-         aF/Q9C26YsQdjISilRbqf48JzFIaBdIQS8MiVIgKG25qTE5aQlGqr1/6pOfqRl8wUYTE
-         /mhNqC4VgqQTQ2Wvd/GXbiVn6noiWNZddHx4zltgKMH2+RdOYJ0vAUv6KSGoWVL+zjwh
-         m/jg==
-X-Forwarded-Encrypted: i=1; AHgh+RriCiQ7uyyqsZhf4uqOv/4v8wr/GYdb8NyZK8S47quGqw+1Im8Apd8jtQUCIMFgSgjh/oqsUFFsSXpBpxU=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzqK5byk5SvXdtOoWmVN+ouF9He6WwoZyxe5oEv393c0JxLwEtr
-	xE1GI6EA/+zUC1Su6p7ZWQKrrtQtPYDPG9SY8PLTbcClcEYDpF2i1kkGeO+Fygbvb1hXPiVJ0Jb
-	5pq9cBmpB8RvLqFY1x94da7DlcswDPqKkdLoev8uWQG7t4x9jfcEJudTKmnr9LVQYcGTl0TH0VP
-	7gBtduIFF0qJ4wJeKQUO4Dcvf+HB5t5HBaLn6+okQFKg==
-X-Gm-Gg: AR+sD13wukstmfshljl+h6TaTutkrAJ+kYIvfJhNgYFZvWLQd+iZSqfnJCxgWEi5gdy
-	Vivv7QecQupKbHuuoRanXvHodGz5vWQPFtIaMEx9lJNmHCEhc1vazez1FtdT4CCIjdql8h1mdfI
-	H+7wXJ6jqULHNQ8Ba7Pm7wd7mEX45+15XofEqxOjQ6XXgOcfgIanDgQRxS
-X-Received: by 2002:a05:6122:378b:b0:5bd:fb78:5461 with SMTP id 71dfb90a1353d-5c365d7d405mr723867e0c.0.1785410698624;
-        Thu, 30 Jul 2026 04:24:58 -0700 (PDT)
-X-Received: by 2002:a05:6122:378b:b0:5bd:fb78:5461 with SMTP id
- 71dfb90a1353d-5c365d7d405mr723859e0c.0.1785410698195; Thu, 30 Jul 2026
- 04:24:58 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h9nfp4r9Cz2xnp
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2026 21:54:10 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id C0056600C8
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2026 11:54:07 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7755E1F00ACF
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2026 11:54:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1785412447;
+	bh=PWIEEQjaHeHJ5fxTgr0YOB4InTHJrKcidKplWWfbj8A=;
+	h=From:In-Reply-To:References:Date:Subject:To:Cc;
+	b=cbouM69YhwFY7cVqNT0XzrbRgTNiiIO9oCsC3AYShqoH7eLFVreZvRWImtxQ1uQGi
+	 UJqrHNEGxO6LRIRVVnWkk+fY2Ej7dOdlMFQuZunHjhkMP0ba5p3Jyr4Ub8chJtYoQi
+	 SbPZrgCfl1jDJmPFMinCryZXIWpr5pM3aIrpgfyDkMxtVCPn6mJEJhxrfZOyyAhMxt
+	 k0pC3ikW1cuW0DinPbGsdykwhYkPxYh5w6YG2OPdbxXMe2e93h8MDbGfftToYppNr/
+	 n5H0hBBnqk9oRdYxx/QqtVRfZQdI04Plu27MkrHZxsHe5DqGrRLvYJ8aNJaXR68m+B
+	 EadthDyHKAwYw==
+Received: by mail-lf1-f54.google.com with SMTP id 2adb3069b0e04-5aeba09900bso1259981e87.2
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2026 04:54:07 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RrRkbox4vObPYrgy1tkpg1jzUp7GquVvutH1zS35/l7OnfFEnyG8Ro9dlwXcs6Y5Ujrr2QGNGw0rB11UM8=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwfjK4gBdr432ghhJNIqqXKTzjLAPaAZjgz+R+CGWpkiZ6mPPvQ
+	CZtseCwhO/61zmYV2HqMVnV7bZ/rhCqCThq+NmeZXCBvL5wRA2RBb925Zp4kF5LgFvZcJ7eC0qv
+	fPOITrxz2+iVM83jlN2GJ4nj1MUeY6aIyxa5a0hhuBA==
+X-Received: by 2002:a05:6512:6690:20b0:5b0:197b:9811 with SMTP id
+ 2adb3069b0e04-5b2db373c5cmr282662e87.53.1785412446192; Thu, 30 Jul 2026
+ 04:54:06 -0700 (PDT)
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Thu, 30 Jul 2026 04:54:05 -0700
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Thu, 30 Jul 2026 04:54:05 -0700
+From: Bartosz Golaszewski <brgl@kernel.org>
+In-Reply-To: <30b3f278a10b46252783458c81dc438df176f86c.1785405882.git.chleroy@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -97,97 +72,27 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260427122742.210074-1-mkchauras@gmail.com> <CAE4VaGACd2es4NPQyhbR9pMEoGiTVBSE7Lw7x9VOb1Qbpvc6nw@mail.gmail.com>
- <amsapeQ2Kp6rwPpF@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-In-Reply-To: <amsapeQ2Kp6rwPpF@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-From: Jirka Hladky <jhladky@redhat.com>
-Date: Thu, 30 Jul 2026 13:24:46 +0200
-X-Gm-Features: AUfX_mwt-qWKfPCEIV9LLRivv2noKYkMyzP6nL-9XRVh8e89AjTuXNRPBqxQHdM
-Message-ID: <CAE4VaGB_EhbWq8_X6FLtOx2MqoP7JEkOKkKSjKB7N--tt-sCeA@mail.gmail.com>
-Subject: Re: [PATCH v5 0/8] Generic IRQ entry/exit support for powerpc
-To: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
-Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
-	chleroy@kernel.org, ryabinin.a.a@gmail.com, glider@google.com, 
-	andreyknvl@gmail.com, dvyukov@google.com, vincenzo.frascino@arm.com, 
-	oleg@redhat.com, kees@kernel.org, luto@amacapital.net, wad@chromium.org, 
-	mchauras@linux.ibm.com, sshegde@linux.ibm.com, thuth@redhat.com, 
-	ruanjinjie@huawei.com, akpm@linux-foundation.org, macro@orcam.me.uk, 
-	ldv@strace.io, charlie@rivosinc.com, deller@gmx.de, kevin.brodsky@arm.com, 
-	ritesh.list@gmail.com, yeoreum.yun@arm.com, agordeev@linux.ibm.com, 
-	segher@kernel.crashing.org, mark.rutland@arm.com, ryan.roberts@arm.com, 
-	pmladek@suse.com, feng.tang@linux.alibaba.com, peterz@infradead.org, 
-	kan.liang@linux.intel.com, linuxppc-dev@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org, kasan-dev@googlegroups.com
-X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: pycngU63iGvFrq2NyI00cv2SdRTL1M0pgn1dj0x2WDY_1785410699
-X-Mimecast-Originator: redhat.com
+References: <30b3f278a10b46252783458c81dc438df176f86c.1785405882.git.chleroy@kernel.org>
+Date: Thu, 30 Jul 2026 04:54:05 -0700
+X-Gmail-Original-Message-ID: <CAMRc=Mfmpq=Lb8yUqUAdvP29VzXO+FzF1m995Mwsh+dnnW6f6A@mail.gmail.com>
+X-Gm-Features: AUfX_mzScc3M9rGBw46jkrwGJk1nYV1wT2PFySG5uBLlIaqWgjEfkCdTsW4Lf0c
+Message-ID: <CAMRc=Mfmpq=Lb8yUqUAdvP29VzXO+FzF1m995Mwsh+dnnW6f6A@mail.gmail.com>
+Subject: Re: [PATCH] soc: fsl: qe: implement get_direction()
+To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: Linus Walleij <linusw@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>, linuxppc-dev@lists.ozlabs.org, 
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
+	linux-gpio@vger.kernel.org, 
+	RAGUENES Jean Noel <jean-noel.raguenes2@cs-soprasteria.com>, Qiang Zhao <qiang.zhao@nxp.com>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 
-On Thu, Jul 30, 2026 at 11:36=E2=80=AFAM Mukesh Kumar Chaurasiya
-<mkchauras@gmail.com> wrote:
+On Thu, 30 Jul 2026 12:09:40 +0200, "Christophe Leroy (CS GROUP)"
+<chleroy@kernel.org> said:
+> The lack of get_direction() callback in this driver causes GPIOLIB to
+> emit a warning. Implement it.
 >
-> On Mon, Jul 27, 2026 at 11:41:07AM +0200, Jirka Hladky wrote:
-> > Hi Mukesh, Shrikanth, Madhavan,
-> >
-> > I'm seeing a ~19% throughput regression on ppc64le (POWER10) in
-> > syscall-heavy workloads between kernel 7.1 and 7.2-rc4, which I've
-> > narrowed down to the GENERIC_ENTRY enablement for powerpc (commit
-> > bee25f97ad24 "powerpc: Enable GENERIC_ENTRY feature").
-> >
-> > The regression manifests specifically when SELinux is enabled. Regressi=
-on
-> > disappears with selinux=3D0. With SELinux disabled, 7.2 is actually
-> > slightly *faster* than 7.1.
-> >
-> > Test: stress-ng --kill 1 -t 23 (single-thread kill() syscall loop)
-> > Machine: IBM,9080-HEX POWER10, 8 vCPUs (1 core SMT-8), 64 GiB
-> >
-> > Results (bogo-ops/sec, higher is better):
-> >
-> > Kernel   Enforcing   Permissive   Disabled    SELinux tax
-> > ------   ---------   ----------   --------    -----------
-> > 7.1      69,107      70,248       93,566      -26.1%
-> > 7.2-rc4  56,247      59,075       99,240      -43.3%
-> > Delta    -18.6%      -15.9%       +6.1%
-> >
-> > Key observations:
-> > - SELinux permissive ~ enforcing on both kernels (overhead is in the
-> >   code path, not policy evaluation)
-> > - SELinux disabled: 7.2 is 6% faster than 7.1 -- the generic entry
-> >   path itself is not slower for the base syscall
-> > - The SELinux "tax" nearly doubles from 26% to 43% between 7.1->7.2
-> > - No changes to security/selinux/avc.c between v7.1 and v7.2-rc4
-> >
-> > The kill() hot path (sys_kill -> check_kill_permission -> security_task=
-_kill
-> > -> selinux_task_kill -> avc_has_perm -> avc_lookup) wraps every AVC loo=
-kup
-> > in rcu_read_lock()/rcu_read_unlock(). On ppc64le with PREEMPT_RCU, each
-> > pair requires lwsync/isync barriers. I suspect the generic entry path
-> > changes something in how context tracking, tracing, or RCU interacts
-> > with the syscall fast path that amplifies the per-call RCU cost.
-> >
-> > Note: this is on top of a separate ~36% regression from 6.12->7.1 cause=
-d
-> > by HAVE_PREEMPT_DYNAMIC_KEY enabling CONFIG_PREEMPT_RCU on ppc64le
-> > (commit 6ad7751537e8), which I reported separately on the v4 thread.
-> >
-> > Thank you
-> > Jirka
-> [...]
-> Hey Jirka,
->
-> Thanks for reporting this.
-> I'll take a look.
->
-> Thanks,
-> Mukesh
->
+> Fixes: e623c4303ed1 ("gpiolib: sanitize the return value of gpio_chip::get_direction()")
+> Signed-off-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
+> ---
 
-Thank you, Mukesh! I'm happy to run additional tests on the POWER10 machine
-if you have patches to try or specific experiments you'd like me to do.
-
-Jirka
-
+Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
 
