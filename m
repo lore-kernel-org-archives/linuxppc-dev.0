@@ -1,48 +1,48 @@
-Return-Path: <linuxppc-dev+bounces-25103-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25104-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E45F2C55160
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jul 2026 12:27:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0133C55160
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jul 2026 12:29:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h9pPM34MLz2yYd;
-	Thu, 30 Jul 2026 22:27:35 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785414455;
-	cv=none; b=JeTPpcPyW2WYP+GCzA4/rZJgXJ1Z8whKldinoLQeOzrP7QxjGUb1VWNry+kUMURd0hkZhB/giH5nLgggS3Ny+Wp605Iko2lFHS3PV4aRBYb1dgmaIcEhe+X6w1fFaokroHXWm9nLOwPkzq4I+rlf/CajlSQao/6mYro4YpUnZZo9n1ARpJJT+EoN52TDvu88GtgTZgZcGmwToIDC7HKJb9vv2ZTr21vWUB0DkpGAE5Rz+Xkpqi8KCR+Kc5qxfaPioRgg4hJ5KoLSY5auZ16jjb0Q+5z7fBeI6+4XF5BqZRWcc8J4I/0+uH4XaFhk5IXIBXcX5756yLkQTYAvdpPxWQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h9pRt0nWtz2yhb;
+	Thu, 30 Jul 2026 22:29:46 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785414586;
+	cv=none; b=GPkuGT+p6gFklaEaxw8mm+hVWvv5jdhWtHrtEtXgKwKsS9JQyrC4zIqoK+lVksIKBX8/GgUZUvG5pbqcEqbkKgB3nQAMAWBkF7XYFBoxKsD/AqsWmle89BmMJHPEz8DTVA4hnewUbNhINpcjTIrtXafWitoBJID5FObZAvKnX88neUKfaD9IKzh5GpKXMJjJOjSUTOe/2/60UVD9LteLm6R8/HP92gZx5VFq8pocrumv/Ugw6KTb+4R/DgW8VI+whkNXkhV3EfT2y4kA2sSVAD9lO8jJ2ymgv9zmRyP+QXW/HjvrDCWAe23xiu3uJ7Gcwy3e1aOw3prSMvbPJXcHtA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785414455; c=relaxed/relaxed;
-	bh=2a6dfSsGD/MmTbGKcRMsjqnnX+0xSYoSHnMVeczgVxc=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=RX6m2hFSSN+fw7BtWmAvrnNAD0QmDlwvjFSNqUpRHFBIAhFI9AVYgjf3+sxIGf8FL7SgIhF9CZimZ/MGx4lZCuATVKJQ3zBBWVVzcWXOovi3MSxbCbjCTFTk3/2YX1DVaBLaXOpPXBKoEO0FFg819dkZe2PwLD9aM78xRf3rlfE8VBpFDbrz2awjcqb5tCsJ9QTKv5G9WYwWVXKYvZBd3gAL0cMO4ye4EBx6EPjo4KJCyMlK0ZrowCVPP8W4F1cK+N/eDEsA6dRNuXbDKf3hmB3SSImNL7jTGqrlOB26n6Xjc7dLY2gt2zF17ASes8dCnX8roSib77wQdGALSMuG8Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=AG5RHG4X; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1785414586; c=relaxed/relaxed;
+	bh=yrGZUILR/Wznyx7GjKoYB3FNEjyAnbdcouYLB2K4DOM=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Z2C5q2+jDpT2KdreBZnQx6Ne0KAxEHGmVe1PX5vwVYg00e6e/2k3jGkGYWPrNMO0vH71KCOqWj5evsM7SNa2PlaxyM1VKb4vSbbX1W/HCRJ7wNlC84MAnCnvmVo7RmBEcIUMw49hmT8H5g5xgyFXS5YEDxi4odauLhUe4QdWFEz2A4Wcuovtt8t10uyihCeOFnPm672VVQYaSXnFxDZ/jlLLaFcZGw+qqbk41CFrceZJIuGdkDD6N86HmIfEb/PZ0ORpKw68Vy2GJRYYfUJtfUER2/D6jTHBcVsDrl6IeV9+V9c58IU2SPl/PWKBhqHgVMfeoClJVi1HkExOPH8xBA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=oZ6omnuY; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=AG5RHG4X;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=oZ6omnuY;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h9pPL5qLvz2xnp
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2026 22:27:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h9pRs0sfHz2yYd
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2026 22:29:45 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 75D2260120;
-	Thu, 30 Jul 2026 12:27:32 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 97AA71F00A3A;
-	Thu, 30 Jul 2026 12:27:30 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id DC135600B0;
+	Thu, 30 Jul 2026 12:29:42 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4DB331F000E9;
+	Thu, 30 Jul 2026 12:29:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785414452;
-	bh=2a6dfSsGD/MmTbGKcRMsjqnnX+0xSYoSHnMVeczgVxc=;
+	s=k20260515; t=1785414582;
+	bh=yrGZUILR/Wznyx7GjKoYB3FNEjyAnbdcouYLB2K4DOM=;
 	h=From:To:Cc:Subject:Date;
-	b=AG5RHG4XD3dI3+Pzm2tS0JeeffHjlVhHTKycm5LvTenFIz1gz4+Da4jhXD3ivB+Nm
-	 s9OkNBgMRI8kC7dmVNwPY7N6IztrqDaHLG2uxgkF61oEYzuSYCqTVgGEXI4k0d5Knc
-	 H83X1EzqkQn6n7X7LUFXvjIkfSLXyLRCVhNxnOXf9I7hON1zZO8AhtJnY5VN21hjZj
-	 NiYt5SGo6Z3PHQYzVzlmFF8qmtigPvHh9w7l/hIgFbr/4M87TmOkXIoE67Sc/kKQdl
-	 q4y+IzvsYkxi0l2IbMMXJa+mXTT+U8UJigg0TZCEw7qedveYondN6oUQIbDPcHUZ2W
-	 RjK6q/Ih4e3aQ==
+	b=oZ6omnuYaaPVJph/8aNubaZUbqRB9sNViXWI/peGzrmT42iBUgCOgMxZL+XD86Fmk
+	 wzxpMP+cnOXs40uO0p2/WXrnkXBmtfps6UkSHV19rZ/dUS4Lcx61qldgB7zZrgZnfA
+	 /SifWtwBKqLGvv6Cmdcqkz2Pmvoc+3s8eGF3abRIJiBbfUip9BG26KGLzWE5OH7Zgw
+	 IyhLp1ovVGOh/3goBNj4jcEFyr8Yw3oHyCt8vrZH4kJvyDI3e8Pf1oXpvXb+YqRxJa
+	 KXEWBxePvzWYp2TIcLeRerbEwBfcr8ek3B0HzHqW5d1UgYQ3lhGOP8Xc1KKutr7zCX
+	 jO74PgJVlpeEA==
 From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
 To: Christophe Leroy <chleroy@kernel.org>
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -50,10 +50,11 @@ Cc: linuxppc-dev@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org,
 	Bartosz Golaszewski <brgl@kernel.org>,
 	Herve Codina <herve.codina@bootlin.com>,
-	Paul Louvel <paul.louvel@bootlin.com>
-Subject: [PATCH] soc: fsl: qe: properly scan GPIO nodes at startup
-Date: Thu, 30 Jul 2026 14:27:22 +0200
-Message-ID: <04dc047f8958a78a920f0a88ca3bd8bf70c56187.1785333986.git.chleroy@kernel.org>
+	Paul Louvel <paul.louvel@bootlin.com>,
+	Krzysztof Kozlowski <krzk@kernel.org>
+Subject: [PATCH v2] soc: fsl: qe: properly scan GPIO nodes at startup
+Date: Thu, 30 Jul 2026 14:29:36 +0200
+Message-ID: <a1db12ef75bf881dd5fba893a37db0c8517eca1b.1785414349.git.chleroy@kernel.org>
 X-Mailer: git-send-email 2.54.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -68,10 +69,9 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1375; i=chleroy@kernel.org; h=from:subject:message-id; bh=NgJogTZ8D2TsSvzSmrE4tRc1/6SYj6BMw9ra0XiPBuo=; b=owGbwMvMwCV2d0KB2p7V54MZT6slMWRlO+s8WhX5UGzP0pRd70O3cVjna2rfmNCbL/jldnip7 MFtN40vdZSyMIhxMciKKbIc/8+9a0bXl9T8qbv0YeawMoEMYeDiFICJmE9jZHjAee76Sonl1fuk ucP/Rx/3lGF4K/FFwOTQ3/2qigax27YxMrxf1Z8Rsa0nXGa69JllhrUSYsdFFQwuB9v93ny9+ZJ ODB8A
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1513; i=chleroy@kernel.org; h=from:subject:message-id; bh=NMDDFmRLn2ji8YodQkBFhcITCr9QFapEu4TNHWLKe2M=; b=owGbwMvMwCV2d0KB2p7V54MZT6slMWRlO290uJFhuSzLIzP43g0DtulzRATNLjJ//efy733zP 7d/ldmXOkpZGMS4GGTFFFmO/+feNaPrS2r+1F36MHNYmUCGMHBxCsBEeH4x/Hf6tC403eRHoNN1 7oCdt25YMRbvOmup90WJ+ZLW/wJv0zKGvwISf+4yZG3+oGVhOM8gcv1DKd2DbaeTTBoLTzyfYfY 9nxkA
 X-Developer-Key: i=chleroy@kernel.org; a=openpgp; fpr=10FFE6F8B390DE17ACC2632368A92FEB01B8DD78
 Content-Transfer-Encoding: 8bit
-Message-ID: <20260730122722.5PUA-BhUHISym4PetYjSA8-JctSYeHFUleOit0U77lg@z>
 
 Before commit 156460811def ("soc: fsl: qe: Change GPIO driver to a
 proper platform driver") qe_add_gpiochips() was walking the device
@@ -84,11 +84,13 @@ the par_io node.
 Fixes: 156460811def ("soc: fsl: qe: Change GPIO driver to a proper platform driver")
 Signed-off-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
 ---
+v2: Use of_find_node_by_type() instead of of_find_node_by_name() as the "par_io" type is documented while the "par_io" name is not.
+---
  drivers/soc/fsl/qe/qe_io.c | 15 +++++++++++++++
  1 file changed, 15 insertions(+)
 
 diff --git a/drivers/soc/fsl/qe/qe_io.c b/drivers/soc/fsl/qe/qe_io.c
-index a5e2d0e5ab51..02ca556c8db0 100644
+index a5e2d0e5ab51..150913fce981 100644
 --- a/drivers/soc/fsl/qe/qe_io.c
 +++ b/drivers/soc/fsl/qe/qe_io.c
 @@ -15,6 +15,7 @@
@@ -106,7 +108,7 @@ index a5e2d0e5ab51..02ca556c8db0 100644
 +
 +static int __init par_io_populate(void)
 +{
-+	struct device_node *np = of_find_node_by_name(NULL, "par_io");
++	struct device_node *np = of_find_node_by_type(NULL, "par_io");
 +
 +	if (!np)
 +		return 0;
