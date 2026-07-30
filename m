@@ -1,72 +1,89 @@
-Return-Path: <linuxppc-dev+bounces-25122-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25123-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5B6DAC55164
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jul 2026 14:51:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8CB2EC55164
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jul 2026 15:08:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h9sbH4Y77z2yhb;
-	Fri, 31 Jul 2026 00:51:23 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785423083;
-	cv=none; b=OI3w+X3auleEjIvtHJ7BQgI2IXafXN4EY5l9Zkqv/H8Zs81IpAhqOjJSvBVrS3MMba5sWUiz/5GpizL2+z38HiDw8DT3p57+ticlnBu4koNaeA7+FKjfI07293y8qYIXt15W/VB5IouaSFJSZZKN51ybX0yH5HB8D3ZLeF1xQq/oasE2IQPyLd+zCEVGn5NRVuIuQaB+QggWXtl9lVvzGFccKmgDPr1EVnRIwQyv+vXIAkpP0+ZCJfFbNnnuo4mIbmQ1Ani4CReEOBHeir5QA0LvTgYeyY0UrazUitppdgYLjyTrvAbXB/URom3xc15QADx7v2wmfqY5AY7yxE38yA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h9sz75jx8z2yCK;
+	Fri, 31 Jul 2026 01:08:35 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785424115;
+	cv=none; b=iJs6AgxmrHK/Ux2qqDnflg7ivmRJIwo7tvKl3/L+mvfLk3eV3b172c4NrrzO3n+UepKMB/4jBjgJBsK7xmGR6j8l042zX8LEL7M8sdviTddbzPRT9FYlX9bGuWiVd3HirPWaLrjmAnbh1yZFOL4bInQkdONZeUpAzwsWXX2d6zAJUgd/6E0gIhw23+JXYzwacri06EkvWvoqwA5tZ4nwK0p5BpMvSACoKM3hBB55TOQZUaAYfUZBepWPmnXTnfE4HV2iwfT4uZ6Cp+tcNHA3IammF7/HEAvLiTL4KkfUranpLEq0OwBjDdRK3hmccjz60uVZOW7UXZXiuWnMhtVHcw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785423083; c=relaxed/relaxed;
-	bh=DVwG/1qnnTWdBy+aAKhElTBYiZFfFoArANzLHRXjAII=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=kNaFhyvk3cCVnQ8sVactZxR+Uyy3tJ9wfP4YdmbarssI5/N/EPzdpblqkjsukVf2R6IU2uasTrmLqTN3wUGKMTTuC7IvHw/AvqVDyx6RYNKkH7HozpmpF7t/kCwP3SYyjW76DFDbqnx+GFkDKIX7EowZJUQRbEALKnKKRYKddpiVxrXiKcTR8Xzf356Db2CiTQuCss0ffLQyRWG3+OTJT6AP83CoV7PEGoylwz77QdgzhNM/iMGs83AqlZ9Wkxq0xG05N2R8PXM4V+m58SytSqBaYUWSC2sFmynBOynFFdopqF8hyCNr+zZgnPfLJPMCdCjZD27MpMSW5/VZ0OZPMg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WwFhrNXj; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=srs0=scs2=fy=paulmck-thinkpad-p17-gen-1.home=paulmck@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1785424115; c=relaxed/relaxed;
+	bh=7ih9ctRJT2ry3Bf+jpWUJLBgYpIZVim4bnZlMJT/wak=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=UwBDYw1gRF2GO7AXrkTPFIGaBYipMt2H2e0f/5Cq5hsKnQsMOU0nClYN/tsF0aQC+JEYcLeggzl0Y6XVz9+57qnNbIC9KRS0Ul7t+UgGjXh+kHsvAagewWQVpaOUOWjzW6cEkrr905RNy1tWZK6D06glP0CtGEmCMMA/CIEF2KsTgrsoTkdeEHbVRwtCw5Ot15ET52D6kzJrivQhZwONXwJgOmQl+AoLOxE12xq/TfNKU8VPonr/6FzDiANHxUf1pKIrLnSwqmF/jTxqOTeUTzfzneOatIJogwLtmU42eQkWHYrUnfxtos16GUi5F6bVirviAz9zFlHdjA1Wb2H82Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=RGI8zzXS; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=RGI8zzXS; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=jhladky@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WwFhrNXj;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=RGI8zzXS;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=RGI8zzXS;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=srs0=scs2=fy=paulmck-thinkpad-p17-gen-1.home=paulmck@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=jhladky@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h9sbG44vWz2xd2
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2026 00:51:22 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id C0D6043CF6;
-	Thu, 30 Jul 2026 14:51:20 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A25261F00A3D;
-	Thu, 30 Jul 2026 14:51:20 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785423080;
-	bh=DVwG/1qnnTWdBy+aAKhElTBYiZFfFoArANzLHRXjAII=;
-	h=Date:From:To:Cc:Subject:Reply-To:References:In-Reply-To;
-	b=WwFhrNXjQ5HevYtkOEf1VfpbmPvFF/eVWEhDxy1MZJPJuvHwuubdT/ue+jjLONS05
-	 5mVpP7pvTiwm0lx+81zAExiQ4Wt4/E886xcXJUkz3JhvEGlmQ2XQrK+OgxHnt23kFF
-	 er3r7upxoWRp35YBYv21Qvy8412KKYqCkpWzULNjd86iH96AHXuKJGfFIBIRaf6UQ/
-	 E9CFZQG4f1DWuWu35cLd+oj8M1LUl5KRUZQZx1wnHE0MgpvzBoTHSeAdY8MppJUx/V
-	 CnY10x5rQHR700JG1wpP7xTVfc3c6sDJzium2eY7JQCg4YGUnkPii2OnE4oqoGwpMS
-	 7xm2sk7is0X0w==
-Received: by paulmck-ThinkPad-P17-Gen-1.home (Postfix, from userid 1000)
-	id 72EB6CE0B67; Thu, 30 Jul 2026 07:51:20 -0700 (PDT)
-Date: Thu, 30 Jul 2026 07:51:20 -0700
-From: "Paul E. McKenney" <paulmck@kernel.org>
-To: Shrikanth Hegde <sshegde@linux.ibm.com>
-Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Jirka Hladky <jhladky@redhat.com>, maddy@linux.ibm.com,
-	linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au,
-	npiggin@gmail.com, bigeasy@linutronix.de, will@kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v4 1/1] powerpc: enable dynamic preemption
-Message-ID: <9bfd0674-1bcc-472e-a177-8659f9b9e6a8@paulmck-laptop>
-Reply-To: paulmck@kernel.org
-References: <20250210184334.567383-2-sshegde@linux.ibm.com>
- <CAE4VaGBwMp3Ke1+Bt11-v6CCE0h=mPm8k_Cf8DazFSQNT9Mz8g@mail.gmail.com>
- <c0f51eda-21c4-4e9d-95e9-75b2740c3f43@linux.ibm.com>
- <500d8e8c-088c-4e6d-ab53-868ade6b0eda@paulmck-laptop>
- <CAE4VaGDGS8wkZj4SF5XVC3-1yDmvJxjUjThTPqVw3kxg56ssQA@mail.gmail.com>
- <e013e88a-6137-4de8-9dfd-925b707f2e01@linux.ibm.com>
- <f81777c3-e341-4ec5-8d61-b333d7170b3f@kernel.org>
- <82752e9b-ed94-4253-ac5f-83cd3c91d569@linux.ibm.com>
- <39449915-04f2-4259-a6d9-1a2c1fcf9a63@paulmck-laptop>
- <0152cea9-cce4-4b68-8684-d82fb1c22233@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h9sz61JjWz2xnp
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2026 01:08:32 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1785424109;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=7ih9ctRJT2ry3Bf+jpWUJLBgYpIZVim4bnZlMJT/wak=;
+	b=RGI8zzXSlIV+y/boCaY7b9jEMJxD7THxmjyR4iXTrHVrsq8YH3aLOfAZmyRMIdSwS9GxqQ
+	xKEw4Z0rcaWhBGAs1FynkUlGKbO2eDH4zQecNfIKqymxQTJb1lGK+mtqPHizxEOjr2vpSA
+	Q6tX/Rs/1ZvXAMX2uS/Ju+InMhHAIMw=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1785424109;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=7ih9ctRJT2ry3Bf+jpWUJLBgYpIZVim4bnZlMJT/wak=;
+	b=RGI8zzXSlIV+y/boCaY7b9jEMJxD7THxmjyR4iXTrHVrsq8YH3aLOfAZmyRMIdSwS9GxqQ
+	xKEw4Z0rcaWhBGAs1FynkUlGKbO2eDH4zQecNfIKqymxQTJb1lGK+mtqPHizxEOjr2vpSA
+	Q6tX/Rs/1ZvXAMX2uS/Ju+InMhHAIMw=
+Received: from mail-ua1-f69.google.com (mail-ua1-f69.google.com
+ [209.85.222.69]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-673-pOXy55ugPAKHTDpDMGuodg-1; Thu, 30 Jul 2026 11:08:25 -0400
+X-MC-Unique: pOXy55ugPAKHTDpDMGuodg-1
+X-Mimecast-MFC-AGG-ID: pOXy55ugPAKHTDpDMGuodg_1785424105
+Received: by mail-ua1-f69.google.com with SMTP id a1e0cc1a2514c-977d6c69e06so222098241.0
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2026 08:08:25 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1785424105; x=1786028905;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=7ih9ctRJT2ry3Bf+jpWUJLBgYpIZVim4bnZlMJT/wak=;
+        b=Ou8GCxheKw/3y4+gfJLa4rE4KCzbuEMuTEw23xzO4RpZZIUYzgepNJ0dQNKgKGJFNV
+         1UTdbGYPgVjFiCPykNDssNJU6g8fdS8ujKOnNTAxtzDHmiF4uzvExFeYwebYa0SeOPQ9
+         czkKfoDL3EKiC4Dehjes76/4faZRX7AUsEt0Mo59afTBfIgZyq+8V8JRpvYYiGhAujd5
+         DLG2VnDgztiDh/dIq4UD70axWpLvi7LS9NfCmb34W6aBcc/oXZz5eHF44ieAB2UlXzKx
+         sVGOgwHMed+kxNFYuv2mNa17aTNaiLEt8R230hGAeuKDHMJAe/8HC8lPnlTOsnD9CAWC
+         O+Fw==
+X-Forwarded-Encrypted: i=1; AHgh+RoOvr+VdCM7REXdhbgiRxMAcFfKtg7usoLgQk1LSIStS8l2qLWnnAI4xM8vupzicJnUkC3cm5tzu7cUS54=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yxel4U4OBNCtqw/+1vkmWs5avr7a5/xUh11FWsOXtpzRuwCoX45
+	MhDhiFidqgdFMRdnnR48sGGaR7a+IK2utrWUi3Ux0Q99HXKOI+QxuH92DJfq88b/lnpa1qfuCEj
+	nxJAoo05vYu6NnsPGFZSbw1Y1irRLDZKkEdKzwqvVmGSZriEqNLQOpxwTT4c+c0EY5y/YxDrfaY
+	zpY9o52S4IJHt28XOOxzfejCbOhWAK143wzg+idtcDww==
+X-Gm-Gg: AR+sD12n8f/9vIRZVkOGy0/5AD+spa7je4YZsHelbooHHzdyk702LPWkEy9YX9rDjGj
+	A3CYxMr6cNeXQ6KpSIhBvCdGf6bQIHavcz/hzU9REw4PJlfY5G6ZJLt7EBtlN/kOjxI1u18gcOs
+	1ZKuamcc1AM0Ufv/bpFqHn7jvyOWJGjkhCG37x6TuCSLYljpfHmRmCtrkE
+X-Received: by 2002:a05:6123:86:b0:5bd:ecad:8f80 with SMTP id 71dfb90a1353d-5c365ff478dmr1007915e0c.2.1785424105310;
+        Thu, 30 Jul 2026 08:08:25 -0700 (PDT)
+X-Received: by 2002:a05:6123:86:b0:5bd:ecad:8f80 with SMTP id
+ 71dfb90a1353d-5c365ff478dmr1007900e0c.2.1785424104830; Thu, 30 Jul 2026
+ 08:08:24 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,74 +97,63 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <0152cea9-cce4-4b68-8684-d82fb1c22233@linux.ibm.com>
+References: <CAE4VaGBwMp3Ke1+Bt11-v6CCE0h=mPm8k_Cf8DazFSQNT9Mz8g@mail.gmail.com>
+ <c0f51eda-21c4-4e9d-95e9-75b2740c3f43@linux.ibm.com> <500d8e8c-088c-4e6d-ab53-868ade6b0eda@paulmck-laptop>
+ <CAE4VaGDGS8wkZj4SF5XVC3-1yDmvJxjUjThTPqVw3kxg56ssQA@mail.gmail.com>
+ <e013e88a-6137-4de8-9dfd-925b707f2e01@linux.ibm.com> <CAE4VaGAJ9mT8-V=GRPYj8h0RXuNf6S5icrmqeOOFDnkpPMQjaw@mail.gmail.com>
+ <a1e04751-eab5-465b-8238-c9f4cd40e472@linux.ibm.com> <CAE4VaGCaN6uBBGqbGAsxudSxMC0JdXYn2vpuDJZPFR3xxJgMYA@mail.gmail.com>
+ <29a407ab-268e-4443-96dc-8f5f933cb63c@linux.ibm.com> <CAE4VaGDzVa3+MKUbwH4LFj_mHZ721fd=7cWEd+G5=eVNWLePsg@mail.gmail.com>
+ <529b8d9f-54a0-4ec2-9886-83cd528e5e04@paulmck-laptop>
+In-Reply-To: <529b8d9f-54a0-4ec2-9886-83cd528e5e04@paulmck-laptop>
+From: Jirka Hladky <jhladky@redhat.com>
+Date: Thu, 30 Jul 2026 17:08:13 +0200
+X-Gm-Features: AUfX_mwVdF9WyWNQB_mTOlZHKPkYtuRJ3Nl52lkm0NMPqxAVYxOGrFUM8CBRP_c
+Message-ID: <CAE4VaGDJxcu_zgDyrSW=j9WzLEpNsQ9A9Rza-F5PLZq03kJYew@mail.gmail.com>
+Subject: Re: [PATCH v4 1/1] powerpc: enable dynamic preemption
+To: paulmck@kernel.org
+Cc: Shrikanth Hegde <sshegde@linux.ibm.com>, maddy@linux.ibm.com, 
+	linuxppc-dev@lists.ozlabs.org, christophe.leroy@csgroup.eu, 
+	mpe@ellerman.id.au, npiggin@gmail.com, bigeasy@linutronix.de, will@kernel.org, 
+	linux-kernel@vger.kernel.org
+X-Mimecast-Spam-Score: 0
+X-Mimecast-MFC-PROC-ID: yAzN6ESCjyQhhjrYx2nw-fknMjwpWsQZ70e-OSWpjm0_1785424105
+X-Mimecast-Originator: redhat.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Thu, Jul 30, 2026 at 06:31:12PM +0530, Shrikanth Hegde wrote:
-> Hi Paul. Thanks for taking time looking into this.
-> 
-> > > In current upstream, lazy is a preemption mode with preempt_enable being a preemptible point,
-> > > 
-> > > 1. If PREEMPT_LAZY=y and PREEMPT_DYNAMIC=n, then PREEMPT_RCU=n. That seems wrong. It is supposed to
-> > >     do the preemption checks, since preempt_count is actual count with lazy preemption.
-> > 
-> > Sorry, but no, not wrong at all.  This is the way that it is supposed
-> > to be.  In this configuration, RCU readers explicitly disable preemption.
-> > This gets us minimal RCU overhead on architectures such as x86 and arm64
-> > that have prohibited CONFIG_PREEMPT_NONE and CONFIG_PREEMPT_VOLUNTARY.
-> 
-> This is after 7.0 only right? Before that one could choose even on x86 and arm64 IIUC.
-> After 7.0, even on powerpc, one cannot choose them anymore.
+On Thu, Jul 30, 2026 at 4:53=E2=80=AFPM Paul E. McKenney <paulmck@kernel.or=
+g> wrote:
+> But is this really a fundamental RISC cost?  For example, does arm64
+> see the same performance issues?
 
-Yes, until quite recently, you could select CONFIG_PREEMPT_NONE and
-CONFIG_PREEMPT_VOLUNTARY.  Now you can do so only for architectures that
-don't support preemption, if I recall correctly.
+We tested arm64 (Ampere Altra Max) with the same controlled
+experiment -- two 6.18 kernels, both voluntary, differing only in
+PREEMPT_DYNAMIC:
 
-> > Not zero overhead, but minimal overhead given the constraints imposed by
-> > CONFIG_PREEMPT_LAZY.  This also prevents preemption of RCU readers, which
-> > is extremely important on datacenter servers that have good and sufficient
-> > quantities of memory, but which are not well-endowed with memory.
-> > 
-> > > 2. PREEMPT_LAZY=y and PREEMPT_DYNAMIC=n and PREEMPT_LAZY=y and PREEMPT_DYNAMIC=y are supposed
-> > >     to be similar w.r.t to performance.
-> > 
-> > RCU never made that promise.  ;-)
-> > 
-> > With PREMPT_DYNAMIC=y, RCU has no choice but to be preemptible, at
-> > least unless and until someone decides to make RCU's preemptibility be
-> > changeable at runtime (which I do not recommend).  And we really do need
-> > non-preemptible RCU for server workloads.
-> 
-> most of the distros i see set PREMPT_DYNAMIC=y.
-> I checked in SLES, RHEL. (I could be wrong here)
+Arch     PREEMPT_DYNAMIC   kill bogo-ops/sec   Delta
+-------  ---------------   -----------------   -----
+ppc64le  off               108,836
+ppc64le  on                 68,197             -37.3%
+aarch64  off                 5,538
+aarch64  on                  5,082              -8.2%
 
-I believe that to be the case.  But there are those of us who build our
-own kernels and deploy them through large numbers of large datacenters.
+arm64 sees -8.2% vs ppc64le's -37.3%. So arm64 is affected but
+much less severely.
 
-> > So it is not just that RCU never made that promise, it is that RCU cannot
-> > reasonably make that promise.
-> > 
-> > >                                         Promise of PREEMPT_DYNAMIC was the ability to
-> > >     switch at runtime based on the user workload and his/her preference.
-> > >     But with  PREEMPT_LAZY=y and PREEMPT_DYNAMIC=y, there is additional cost due to PREEMPT_RCU.
-> > >     lazy being the middle ground w.r.t for decent performance, either PREEMPT_RCU should either kick in
-> > >     for both cases or bail out for both.
-> > 
-> > Absolutely not!!!  Please see above.
-> > 
-> > > Before 7.0
-> > > 3. the same concerns would be true to PREEMPT_VOLUNTARY and PREEMPT_NONE with PREEMPT_DYNAMIC=y.
-> > >     Those model never wanted a preemption, but PREEMPT_RCU could have forced a need_resched to be
-> > >     set. Which is also likely wrong. No?
-> > 
-> > You lost me on this one.  Please give me an explicit sequence of events
-> > that would cause things to go wrong in this case.
-> 
-> You are right. PREEMPT_RCU may set need_resched. But even then on none/voluntary
-> schedule will not be called since static keys it cannot.
+> In particular, I can see why the preempt_count() operations need to be
+> interrupt-safe, but I don't see why you would need barriers.  And
+> doesn't powerpc still use software interrupt disabling?  If so, why
+> not use that to simply software-disable interrupts around the
+> preempt_count() operations?
+>
+> What am I missing here?
 
-Whew!!!  ;-)
+That's a good question -- I don't know enough about the powerpc
+preempt_count implementation to answer this. Shrikanth, could you
+comment on whether removing the barriers or using software interrupt
+disabling around preempt_count is feasible?
 
-							Thanx, Paul
+Thank you
+Jirka
+
 
