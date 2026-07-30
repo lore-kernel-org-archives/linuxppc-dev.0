@@ -1,64 +1,71 @@
-Return-Path: <linuxppc-dev+bounces-25125-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25126-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 47706C55164
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jul 2026 15:50:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 11C6AC55162
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jul 2026 16:27:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h9tvX3yDXz2yMy;
-	Fri, 31 Jul 2026 01:50:32 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785426632;
-	cv=none; b=Thya5qybVp9sXHnl7sCyBXI5M64HG6kWHKMyCpQqfLDBHV3eL7vLmdAGhdB3bRRjLnXIxgbKyFFV0n99pD7XPn4fboW6X+sM+3e47BnURfbiAzI0TgyZFzApEwUfCXi8FYk9T4mIKs/l++r8LEa70a40XRpfG0mcYlzvRfx0YBQ5GhquGLpWwIZm5ndu3wR+g2kEBL8t1FH76pug4Wl9svB1toSo68zA6zmplR9Ax1lkyEj0RL8Uk96mWG0yEndaKx87W6CI2aKOKjzZBTfJdkgRXM4S2D5yXsAjoIB5fBLs6yYBe/rg5LUJ6fD+tCa9IMReJH/XiKlcSXnu61Iz1A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h9vjb50wHz2y8c;
+	Fri, 31 Jul 2026 02:26:59 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785428819;
+	cv=none; b=PMq7QuxEA25vLH781XZjILjEpbqR4ktItwURT0P8bZSRXzgYOP05a3WDysZahHjbnWkFl2LaufEf1/am3wCm0+696GqBcOW6poYUIdzQ/jp3GtJXXhmFmOjlxd3OtpPIQrPz91QwGvtnwsxn4rSl8vpOy+wArxbMFTxcBLZvRS7uRfE4zPOdyo336JpXw0tWJjD82L/1d9DQuLfzowM93nVODTbsh1EwXcKA1NuMjKqm4c6SeNm2jdko2Xl7kqzxOHUDOepxXgJjG4FaHr4X6OEb3dEG4QOcckTIJ1PYQfc9G9vVhuU7aFbMwHOAmYDBoorzaj1seUjoIdmyVWKJaA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785426632; c=relaxed/relaxed;
-	bh=lts3poYN0q+4SuUXzbt8GNf0Q6/wJatHUi0CoDkkUCg=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=UiVwGsSiwTJZLzYjd/4DTsSg7fJZRBp7kInawLwZzNBBRjHnpdiOJAe1GrxefqKtdcvncXEiUu7ZcmvRsTDlTkZaz/V1Adsj1TCDNh5J3a/bJ7BdGo0fMT5Be0mxzHyRqkNfnNo+yAJi4pJgVZlIv4jR/dm89h+FMwUReHLPvNXkorvYtOeafpQ/hCwVj0Z7RGYrtd4gdThoGyRGA/G9b04nlM2O8DVD62BQ4kBQRKS3EiDanOZNSqYns4gkxeX68smAHDwdvZbVf/OqYsVWt2we+O/ftD0kHCgvaFdyunvZWhEXLdqvHC52Lgv1QfmO0E9T49gf1mq50BV4hNtURw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=UqdKJ40k; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1785428819; c=relaxed/relaxed;
+	bh=sbfA2juAt/98XOG9rpncjItrUCEGNu2+yqfa8Dn6dmU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=FElTbqb5yy/nKdYPWxKO/cE2Eb5op6oSeTHVns98Z12Da4YXEaNVWZ7WNiYs/l5uoovkfZTA2ewtro/KGplVfuyW71LgEzOYpT38nuMUYJfoKD7rBimT7QYDbehEF4MGYCDxJOVHlfkbWVfwEPoJWPVSXnXSXZXJ46lFIXtkAwgCF7Xhs/krWWLE4N8YdbwJKtIa14PYIN1Ods9xBVscvIJC4HDlNCoeuPPKrLeLvqF484HglV16XixZrnKLVC0fFuXkOsJ4OmixcdSRBxvieq8XBP94rU17MaiOA4Kw2zbXiHquCDqGkNMr2jQKXMhJ8QAfOVAdfUlFuczcei3c+A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=o0rvhXgw; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=srs0=scs2=fy=paulmck-thinkpad-p17-gen-1.home=paulmck@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=UqdKJ40k;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=o0rvhXgw;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=srs0=scs2=fy=paulmck-thinkpad-p17-gen-1.home=paulmck@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h9tvW46Hnz2y8c
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2026 01:50:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h9vjZ6qLgz2xd2
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2026 02:26:58 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 3D0F4600C8;
-	Thu, 30 Jul 2026 15:50:28 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 210211F00A3A;
-	Thu, 30 Jul 2026 15:50:24 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 870E543B65;
+	Thu, 30 Jul 2026 16:26:56 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 67E4B1F000E9;
+	Thu, 30 Jul 2026 16:26:56 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785426628;
-	bh=lts3poYN0q+4SuUXzbt8GNf0Q6/wJatHUi0CoDkkUCg=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date;
-	b=UqdKJ40kGoFLU+mGv0Z4vmtvxFss4JQO3L74/9gonTut3Uw+U6jPN+13yqIMxTqmM
-	 zn+EsxSOrwtygALWZX3UsIubgVky8C2uuL0Km8KcGCK9Jha/DLAUFXyHOFSUejj5Fx
-	 u19C83HL+kDuTYDy++DahGOTOwmBBUdVedkNgqcSBh928eWEswzlBwuZan6+raNLyp
-	 jPUDZZv3S7xFT9xkzign3IZxpjX00ns6eFpedQh5Nu6loU2VDm+TcXc26hrAsH9Gcc
-	 MuUD6zZV5AUbzveii7iGxwssyO67NFwljo5dYVGfAvBXNHTOBekiYmt2kTtxANTCzZ
-	 yetTSc/wVpoGQ==
-From: Mark Brown <broonie@kernel.org>
-To: linux-sound@vger.kernel.org, Rosen Penev <rosenp@gmail.com>
-Cc: Shengjiu Wang <shengjiu.wang@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>, 
- Fabio Estevam <festevam@gmail.com>, Nicolin Chen <nicoleotsuka@gmail.com>, 
- Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>, 
- Takashi Iwai <tiwai@suse.com>, Nathan Chancellor <nathan@kernel.org>, 
- Nick Desaulniers <ndesaulniers@google.com>, 
- Bill Wendling <morbo@google.com>, Justin Stitt <justinstitt@google.com>, 
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
- llvm@lists.linux.dev
-In-Reply-To: <20260721225442.817787-1-rosenp@gmail.com>
-References: <20260721225442.817787-1-rosenp@gmail.com>
-Subject: Re: [PATCH] ASoC: fsl: dma: use platform helpers and devm cleanup
-Message-Id: <178541397313.81171.5927385255562929260.b4-ty@b4>
-Date: Thu, 30 Jul 2026 13:19:33 +0100
+	s=k20260515; t=1785428816;
+	bh=sbfA2juAt/98XOG9rpncjItrUCEGNu2+yqfa8Dn6dmU=;
+	h=Date:From:To:Cc:Subject:Reply-To:References:In-Reply-To;
+	b=o0rvhXgwtf8NU5bj8YBa9sxkeXHs1WhIhW7kBa2+VmQ4ZKqKkgdXJxkZXmJbJmYMP
+	 mXeU4FCZQvJD5m20oCuFHkj36bDsc8ixHdBigQmLki57titkKM+5sqrq/MrcrJCH1o
+	 9f+moa65WDjDgQtzAImUv6dpCvCb/LedQLUBAzARgVtPmdEL8bp8fy2oK4jrTMnNP+
+	 NeYpq1CaTmn3DGsRpMfh0W6si9qRc6I1APzWfQ/mPNhgWzMitsvIDQ8VMCO7T0mDPV
+	 vEkqmnbrtoh8jMnA5LHOLTMTdHBd15auYeeEDfPMYHRG5nXfqm4fkPurUKmgzYK8Or
+	 p+XnrqkTaHjOw==
+Received: by paulmck-ThinkPad-P17-Gen-1.home (Postfix, from userid 1000)
+	id 35913CE0B67; Thu, 30 Jul 2026 09:26:56 -0700 (PDT)
+Date: Thu, 30 Jul 2026 09:26:56 -0700
+From: "Paul E. McKenney" <paulmck@kernel.org>
+To: Jirka Hladky <jhladky@redhat.com>
+Cc: Shrikanth Hegde <sshegde@linux.ibm.com>, maddy@linux.ibm.com,
+	linuxppc-dev@lists.ozlabs.org, christophe.leroy@csgroup.eu,
+	mpe@ellerman.id.au, npiggin@gmail.com, bigeasy@linutronix.de,
+	will@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v4 1/1] powerpc: enable dynamic preemption
+Message-ID: <663e8e58-19ea-472f-8c24-13a8b417e441@paulmck-laptop>
+Reply-To: paulmck@kernel.org
+References: <500d8e8c-088c-4e6d-ab53-868ade6b0eda@paulmck-laptop>
+ <CAE4VaGDGS8wkZj4SF5XVC3-1yDmvJxjUjThTPqVw3kxg56ssQA@mail.gmail.com>
+ <e013e88a-6137-4de8-9dfd-925b707f2e01@linux.ibm.com>
+ <CAE4VaGAJ9mT8-V=GRPYj8h0RXuNf6S5icrmqeOOFDnkpPMQjaw@mail.gmail.com>
+ <a1e04751-eab5-465b-8238-c9f4cd40e472@linux.ibm.com>
+ <CAE4VaGCaN6uBBGqbGAsxudSxMC0JdXYn2vpuDJZPFR3xxJgMYA@mail.gmail.com>
+ <29a407ab-268e-4443-96dc-8f5f933cb63c@linux.ibm.com>
+ <CAE4VaGDzVa3+MKUbwH4LFj_mHZ721fd=7cWEd+G5=eVNWLePsg@mail.gmail.com>
+ <529b8d9f-54a0-4ec2-9886-83cd528e5e04@paulmck-laptop>
+ <CAE4VaGDJxcu_zgDyrSW=j9WzLEpNsQ9A9Rza-F5PLZq03kJYew@mail.gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -72,39 +79,50 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.16-dev
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAE4VaGDJxcu_zgDyrSW=j9WzLEpNsQ9A9Rza-F5PLZq03kJYew@mail.gmail.com>
 
-On Tue, 21 Jul 2026 15:54:42 -0700, Rosen Penev wrote:
-> ASoC: fsl: dma: use platform helpers and devm cleanup
+On Thu, Jul 30, 2026 at 05:08:13PM +0200, Jirka Hladky wrote:
+> On Thu, Jul 30, 2026 at 4:53 PM Paul E. McKenney <paulmck@kernel.org> wrote:
+> > But is this really a fundamental RISC cost?  For example, does arm64
+> > see the same performance issues?
+> 
+> We tested arm64 (Ampere Altra Max) with the same controlled
+> experiment -- two 6.18 kernels, both voluntary, differing only in
+> PREEMPT_DYNAMIC:
+> 
+> Arch     PREEMPT_DYNAMIC   kill bogo-ops/sec   Delta
+> -------  ---------------   -----------------   -----
+> ppc64le  off               108,836
+> ppc64le  on                 68,197             -37.3%
+> aarch64  off                 5,538
+> aarch64  on                  5,082              -8.2%
+> 
+> arm64 sees -8.2% vs ppc64le's -37.3%. So arm64 is affected but
+> much less severely.
 
-Applied to
+That is more like I would expect.  Yes, there is added overhead, but it
+should not be excessively expensive.  Though I suspect that arm64 could
+also do better.  Easy for me to say, I know!  ;-)
 
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-7.3
+							Thanx, Paul
 
-Thanks!
-
-[1/1] ASoC: fsl: dma: use platform helpers and devm cleanup
-      https://git.kernel.org/broonie/sound/c/522d7baa39e9
-
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.
-
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
-
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
-
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
-
-Thanks,
-Mark
-
+> > In particular, I can see why the preempt_count() operations need to be
+> > interrupt-safe, but I don't see why you would need barriers.  And
+> > doesn't powerpc still use software interrupt disabling?  If so, why
+> > not use that to simply software-disable interrupts around the
+> > preempt_count() operations?
+> >
+> > What am I missing here?
+> 
+> That's a good question -- I don't know enough about the powerpc
+> preempt_count implementation to answer this. Shrikanth, could you
+> comment on whether removing the barriers or using software interrupt
+> disabling around preempt_count is feasible?
+> 
+> Thank you
+> Jirka
+> 
 
