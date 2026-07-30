@@ -1,47 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-25109-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25110-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 378A0C55165
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jul 2026 13:02:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4D9C7C55165
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jul 2026 13:03:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h9q9z6cVsz2yDs;
-	Thu, 30 Jul 2026 23:02:47 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::b9"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785416567;
-	cv=none; b=lEPBd+6o/VagHl9HajlZ0uMRh/WkadDwhw3sl7ntAkDjGy76Jdf4S66eOaGUBL3sH2ZX+7DJZc42mivWlRQq90bQe4CyzQegrVFMlsT7x1sUM660a2p461KCE7jST/UzPiLVjQW2tea41gK0bSotvuDIScSF8oO+obaeV87sZ68+Z0FwLhOZNZAAaxr6Ens5Q4hR0UCT7fAk/6vIbNB6YECILhim/tXtanLJdnXOIMHCMNsA6S/F5xXKAmzO8DS/aVjY/G0u4xxTb6iPE4LtLywGN9cx2Gs3gH5g+rCHCSZ4SwUUHAZ6GJcuh7cCsZpPlqZSqJ/rusf1B4KozM2d+g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h9qBg71XBz2yYd;
+	Thu, 30 Jul 2026 23:03:23 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=95.215.58.180
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785416603;
+	cv=none; b=SHKEejdzTzj9J7KwVjpygCXPKIsXdOiXcFmmuBZNkNCnKAo8WhoJru4j9h3sx2ZIzXr/SGCVXyjsgBq4DUAbrhRjtENInwh8RE4KSPb5054NErHE8vN14mEpOvnDSti4aNr+IdV1sXCTqiXI1QiCxiLCHy0lqrfq/zilmpzA7+o2zNoXfsTCnvptMBiRYdVbkCzNLaEx7woaDI+VwqwuLb+LKQ6lkl4tBzq9079BzhKwCMspTDaKBtMcvS6OAWOfXjj0z8Wmq7VKTU7Cn7VEJkUc6kWFyp4cQxuhEbakrFVdqu/YtE8wsOrSecf5jPRRYGKnqQ+P0dtZlTgBwK/idA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785416567; c=relaxed/relaxed;
-	bh=zLMzAM2jhcBcjvUbjDVz8nPB2UWdb+PQz/+bnXZY5Sk=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=T8EwuWpSSao6OxGn1Y81upr7JNcbo62bjJtVKxKG1x9tsmb72569jAO4UEbIqyLtNkmD3MUvqMmhGrVoYa8FtD5oxVU4ubRvC1D87eNxfltNaAPKmnIgUZv8RS08gK+cOxFKgUECTaHZNrBc6wiTiQCrIljPWB3hHD2lzZYgqsUk18WoMqYdev2WnGAprF9IyHO04BLAZLTgKY/s1foBjApCz3Eqws4gu8R5T3D87LH6zuo2J2uVJdjRnoLA2QpkBx9hU6FfdtKPu03EkFpBTzgVyq908Vkdga97xHu7bCqrk1cbDC/Eo9MphN2zaSwYhlxtGyewBfPOIwNOK9N13Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=wBl8/CeK; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::b9; helo=out-185.mta0.migadu.com; envelope-from=vadim.fedorenko@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+	t=1785416603; c=relaxed/relaxed;
+	bh=dw9urfr1YSTyHqzxKfth9ryU6HxR+cmSffIEWqq5hyI=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=RTyopK/Ej7EEHeVSR1A5wZ0+7g3m/U76/NYXNUDpLKrS3VUYiSB3tyum+e2Iz6hD1T+mB/XoedkI8jxgmoOiqgZlw6w0RGgYYBMjhLIQg5ZFXlxsmrbiOvdBo2N9WlxprdTdNT+KjcbfFd4NxYrBB5XSQILvO8B976hIksBN0F2TiFW1OwkJTm7KSDlCTI0pWYtNSD+Ar67CXrT8tFhXJm1k4edmr5eMZ7bXrnkoV6C6DOBr0XXX8klTs9Lfl6jDiGodBaTLSjHi8u7VObuELASUHwouHb6zHTZU6NUaI02NAAmpA79w0UgQsRcyr4i7AzeDFXoKsURUX4jUe7yelA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=bzn++hGX; dkim-atps=neutral; spf=pass (client-ip=95.215.58.180; helo=out-180.mta1.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=wBl8/CeK;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=bzn++hGX;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::b9; helo=out-185.mta0.migadu.com; envelope-from=vadim.fedorenko@linux.dev; receiver=lists.ozlabs.org)
-X-Greylist: delayed 84035 seconds by postgrey-1.37 at boromir; Thu, 30 Jul 2026 23:02:45 AEST
-Received: from out-185.mta0.migadu.com (out-185.mta0.migadu.com [IPv6:2001:41d0:1004:224b::b9])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=95.215.58.180; helo=out-180.mta1.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org)
+Received: from out-180.mta1.migadu.com (out-180.mta1.migadu.com [95.215.58.180])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h9q9x1w64z2xnp
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2026 23:02:44 +1000 (AEST)
-Message-ID: <48631703-cbd9-45ba-b079-c4d94f4cf405@linux.dev>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h9qBg291pz2yDs
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2026 23:03:23 +1000 (AEST)
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1785416543;
+	t=1785416582;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=zLMzAM2jhcBcjvUbjDVz8nPB2UWdb+PQz/+bnXZY5Sk=;
-	b=wBl8/CeKE7+AeEZjGa6VWejw62/EHMA7eEQYOJ3nVvQ7kjaSGESyyQG4pdczMaWLVPNOEK
-	9xfo2BxYDy2gNs0som1K/KVC7F/IghOggkT8Ca0xYfBzDMDke2F+sXTlfEgHe7FUlq8DS1
-	RqCo+bpdLqximLeWFkxfXBw9iZoZVPI=
-Date: Thu, 30 Jul 2026 14:02:19 +0100
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=dw9urfr1YSTyHqzxKfth9ryU6HxR+cmSffIEWqq5hyI=;
+	b=bzn++hGXQ6Hf/7+mdXm1csZNZrvuBtP75eBbJWIXxR9iAt5xYddO1hLFPUBB3zdN4AKv6u
+	7DRrwnABlwj8g1felD5sSo73/ttlD4hzoCkhiSTBTzzXjUN9M40XlezrpnT/KkQbuwhNK6
+	wlfVM59gNUgd+ZHvyv0b8ETn+nOslhc=
+From: Thorsten Blum <thorsten.blum@linux.dev>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Kees Cook <kees@kernel.org>,
+	"Gustavo A. R. Silva" <gustavoars@kernel.org>,
+	Sourabh Jain <sourabhjain@linux.ibm.com>,
+	Aditya Gupta <adityag@linux.ibm.com>,
+	Hari Bathini <hbathini@linux.ibm.com>
+Cc: Thorsten Blum <thorsten.blum@linux.dev>,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	linux-hardening@vger.kernel.org
+Subject: [PATCH] powerpc/kexec: Annotate umem_info members with __counted_by_ptr
+Date: Thu, 30 Jul 2026 15:02:48 +0200
+Message-ID: <20260730130248.597249-2-thorsten.blum@linux.dev>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -55,86 +68,79 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Subject: Re: [PATCH net-next 6/7] net: dsa: netc: add PTP two-step
- timestamping support
-To: Wei Fang <wei.fang@nxp.com>, "Wei Fang (OSS)" <wei.fang@oss.nxp.com>,
- "richardcochran@gmail.com" <richardcochran@gmail.com>,
- Vladimir Oltean <vladimir.oltean@nxp.com>, Clark Wang
- <xiaoning.wang@nxp.com>, "andrew+netdev@lunn.ch" <andrew+netdev@lunn.ch>,
- "davem@davemloft.net" <davem@davemloft.net>,
- "edumazet@google.com" <edumazet@google.com>,
- "kuba@kernel.org" <kuba@kernel.org>, "pabeni@redhat.com"
- <pabeni@redhat.com>, "andrew@lunn.ch" <andrew@lunn.ch>,
- "olteanv@gmail.com" <olteanv@gmail.com>
-Cc: "chleroy@kernel.org" <chleroy@kernel.org>,
- "imx@lists.linux.dev" <imx@lists.linux.dev>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
-References: <20260728104548.3301214-1-wei.fang@oss.nxp.com>
- <20260728104548.3301214-7-wei.fang@oss.nxp.com>
- <59ecaa4e-f111-4dd4-914a-7704990ac58e@linux.dev>
- <GV2PR04MB11739A4EDB782AB83B60968D988C92@GV2PR04MB11739.eurprd04.prod.outlook.com>
-Content-Language: en-US
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-From: Vadim Fedorenko <vadim.fedorenko@linux.dev>
-In-Reply-To: <GV2PR04MB11739A4EDB782AB83B60968D988C92@GV2PR04MB11739.eurprd04.prod.outlook.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2355; i=thorsten.blum@linux.dev; h=from:subject; bh=MSpHvAE60fRFfd3RO2phyZRoGoJZJYyVPtinNvJ5nas=; b=owGbwMvMwCUWt7pQ4caZUj3G02pJDFnZ3hXn1/Z4a07NCL/aa1K1Q0nlT9N0s5tnN3H4RYrpz rPos5zcUcrCIMbFICumyPJg1o8ZvqU1lZtMInbCzGFlAhnCwMUpABNJqGRk+CcbdP6K8c7wZcqf /dJD0q1nKqReqn8pU+pWaLeo+hC3HiPD3O7ugzU38p1f53VzeXz/LSFwLGWD3EcOv+thjk++Jvp yAwA=
+X-Developer-Key: i=thorsten.blum@linux.dev; a=openpgp; fpr=1D60735E8AEF3BE473B69D84733678FD8DFEEAD4
+Content-Transfer-Encoding: 8bit
 X-Migadu-Flow: FLOW_OUT
 
-On 30/07/2026 02:31, Wei Fang wrote:
->>> +int netc_get_ts_info(struct dsa_switch *ds, int port,
->>> +		     struct kernel_ethtool_ts_info *info)
->>> +{
->>> +	struct netc_switch *priv = ds->priv;
->>> +
->>> +	info->so_timestamping = SOF_TIMESTAMPING_TX_SOFTWARE |
->>> +				SOF_TIMESTAMPING_RX_SOFTWARE |
->>> +				SOF_TIMESTAMPING_SOFTWARE;
->>
->> SOF_TIMESTAMPING_RX_SOFTWARE and SOF_TIMESTAMPING_SOFTWARE
->> are available
->> by default, no need to add them.
-> 
-> Yes, you are right, I will remove them.
-> 
->>
->> the code doesn't have skb_tx_timestamp() calls, I wonder how is
->> SOF_TIMESTAMPING_TX_SOFTWARE implemented?
-> 
-> The switch and the conduit port (ENETC) are integrated into the NETC IP,
-> so the switch can only connect to the ENETC MAC. And the ENETC driver
-> calls skb_tx_timestamp() unconditionally, so I thought
-> SOF_TIMESTAMPING_TX_SOFTWARE can be added. I checked the existing
-> DSA drivers and found no drivers set this flag, maybe I should remove this
-> flag as well. Thanks.
+Add __counted_by_ptr() to umem_info::buf and umem_info::ranges to
+improve access bounds checking via CONFIG_UBSAN_BOUNDS and
+CONFIG_FORTIFY_SOURCE.
 
-well, you have the hardware, you can actually check if enetc driver 
-provides it for you
+Set the count fields before assigning the corresponding pointers, return
+early on krealloc() failure, and use sizeof(*buf) when deriving
+max_entries from the allocation size.
 
-> 
->>
->>> +
->>> +	info->phc_index = netc_get_phc_index(priv);
->>> +	if (info->phc_index < 0)
->>> +		return 0;
->>> +
->>> +	info->so_timestamping |= SOF_TIMESTAMPING_TX_HARDWARE |
->>> +				 SOF_TIMESTAMPING_RX_HARDWARE |
->>> +				 SOF_TIMESTAMPING_RAW_HARDWARE;
->>> +
->>> +	info->tx_types = BIT(HWTSTAMP_TX_OFF) | BIT(HWTSTAMP_TX_ON);
->>> +
->>> +	info->rx_filters = BIT(HWTSTAMP_FILTER_NONE) |
->>> +			   BIT(HWTSTAMP_FILTER_PTP_V2_EVENT) |
->>> +			   BIT(HWTSTAMP_FILTER_PTP_V2_L2_EVENT) |
->>> +			   BIT(HWTSTAMP_FILTER_PTP_V2_L4_EVENT);
->>> +
->>> +	return 0;
->>> +}
->>
-> 
+Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
+---
+ arch/powerpc/kexec/file_load_64.c | 22 ++++++++++++----------
+ 1 file changed, 12 insertions(+), 10 deletions(-)
 
+diff --git a/arch/powerpc/kexec/file_load_64.c b/arch/powerpc/kexec/file_load_64.c
+index 8c72e12ea44e..6424b668f0e9 100644
+--- a/arch/powerpc/kexec/file_load_64.c
++++ b/arch/powerpc/kexec/file_load_64.c
+@@ -34,14 +34,15 @@
+ #include <asm/cputhreads.h>
+ 
+ struct umem_info {
+-	__be64 *buf;		/* data buffer for usable-memory property */
++	/* data buffer for usable-memory property */
++	__be64 *buf __counted_by_ptr(max_entries);
+ 	u32 size;		/* size allocated for the data buffer */
+ 	u32 max_entries;	/* maximum no. of entries */
+ 	u32 idx;		/* index of current entry */
+ 
+ 	/* usable memory ranges to look up */
+ 	unsigned int nr_ranges;
+-	const struct range *ranges;
++	const struct range *ranges __counted_by_ptr(nr_ranges);
+ };
+ 
+ const struct kexec_file_ops * const kexec_file_loaders[] = {
+@@ -83,11 +84,12 @@ static __be64 *check_realloc_usable_mem(struct umem_info *um_info, int cnt)
+ 
+ 	new_size = um_info->size + MEM_RANGE_CHUNK_SZ;
+ 	tbuf = krealloc(um_info->buf, new_size, GFP_KERNEL);
+-	if (tbuf) {
+-		um_info->buf = tbuf;
+-		um_info->size = new_size;
+-		um_info->max_entries = (um_info->size / sizeof(u64));
+-	}
++	if (!tbuf)
++		return NULL;
++
++	um_info->size = new_size;
++	um_info->max_entries = um_info->size / sizeof(*um_info->buf);
++	um_info->buf = tbuf;
+ 
+ 	return tbuf;
+ }
+@@ -288,13 +290,13 @@ static int update_usable_mem_fdt(void *fdt, struct crash_mem *usable_mem)
+ 		return -EINVAL;
+ 	}
+ 
+-	um_info.buf  = NULL;
+ 	um_info.size = 0;
+ 	um_info.max_entries = 0;
+-	um_info.idx  = 0;
++	um_info.buf = NULL;
++	um_info.idx = 0;
+ 	/* Memory ranges to look up */
+-	um_info.ranges = &(usable_mem->ranges[0]);
+ 	um_info.nr_ranges = usable_mem->nr_ranges;
++	um_info.ranges = usable_mem->ranges;
+ 
+ 	dn = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
+ 	if (dn) {
 
