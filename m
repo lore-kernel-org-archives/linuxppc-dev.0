@@ -1,100 +1,62 @@
-Return-Path: <linuxppc-dev+bounces-25138-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25139-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 16955C5516D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jul 2026 21:05:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6AB2DC5516D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jul 2026 21:31:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hB1vF3sdsz2yYd;
-	Fri, 31 Jul 2026 07:05:45 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c112::5" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785445545;
-	cv=pass; b=MwbpEo6G5rf/AM4R1wMS+Y/+eKsyzjNc+fPovgJRe1bAvbNU8tGPKCG38lOptF2c0s22BU5fvyxYMO57qAk9bjdXXUgBGtzKj33Dl9ycIif4GAVyKS8UbhNAKv4zfjvrNO2u4zBS1bmMawpIM7VqzgvYBcbge0Mzum13r4P9INTOHJ/5cCUMqmxk9s2l70siLXu5oZFGXiHnUdvOCEJ6PZRg3bGEM5Gi33PbY7r5ivCAMHW51yeZjyC2JZk2mP+Aa1xc8V2L0cH+ag0W3vVTErA7bpqftTW/sELRD2jUgA2dZ9lO5HfpBIPYQNbA0S8gD4v+og0eaHxzm/1+iav82A==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785445545; c=relaxed/relaxed;
-	bh=fP/tawnqcMvDolJUYihmY0R6sPFMX1yqtxwSlIbOMYk=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=S1yc8cvC4p0bLFg3kkAVCRmgWBU/zjm6+GNeMggTvTAVADCnMFO4EY6DQrxV9L5eWw/gf0MWVkzMlDdY5NjtSNBTnW790+VKBhqULpdirTJPLhUyOBs4+tS6jnTW4LbjbawWiS+HEjGdZdCnepiTj7oiIvxP7YGVSbSq2rzROquXjuUa1AMeV+dN+63RdkmaAeKsvvYgnqHW1Q81BxnIZKLVOC1OlUtz8g5TmtlkPPI0pxOVncL36mpL+8HebIk9u2fqEtjOVqgRNaaehUbeIhZS6gx5t5rH1DLt9ng2pS+kESP7awYJs3mspx+sIq0vwdt8rG3s7VaBTMzpLz/2Eg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=bJ01/SLX; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c112::5; helo=cy7pr03cu001.outbound.protection.outlook.com; envelope-from=jgg@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hB2SV4gB4z2yH4;
+	Fri, 31 Jul 2026 07:31:06 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=199.89.1.16
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785447066;
+	cv=none; b=ZiltG3eyTgNkHUpTcLbZBzB8/qV7Ca46T8dS2pjB1qvo9f0h1RGx1QfMBaIQfGqGde+giirJumiaPsqkN9kkpK+jB8gutPXYPLhn+Par8i0krcTfA+v0zpEPlaHh6rW7eDBf+QM74WmtxhY3mJMTGX0IksDu/2FEGhtdIPdH5CB89S708xPTe/aRJj+Yny4M9ypd2IYLfQV/zL7Bbs2slTxshErULDKMrjnrJjdQwBforuUKzl0GkWBkMG7iRT8qjfM7UHx+Mz/Emdjm6hSYlE/clte5Hy4opDGeu91gEJIKNDBSB1sxR2ToNVdjU++Vaf2uwAw2VeH70R/HvdsFnQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1785447066; c=relaxed/relaxed;
+	bh=E+Wy+ys8T2YGZYU3pJ2uSk73N2E6peVZ2dFlyj+MAlU=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=IfPy7hWTFPKPSxQ+P7ueq2yq/5uSsr9d/ggZOaaAlEJEsxM0w/HZqjEYiMiTNUxIRl5HuNQgfGWeADBEBZ2XXAjoICGHIay70l9JNv72M/yPuR7Aj5yN3Y7eublGgfTuLNqXL4oFMWfAP0rYtEAexbkE50wvT9xr3MHMtBhBG0YZukizy2LNHkbA5FmjGizmZ1PWsdROsqY0BvTkMl5iwb3ro7PV92hE8RGz4NGVaSRUiktP7ulfmYKyo7AYrmTTJK8440jWhrFQBMS9j4TUBb0Fr6pGmRthq2ONbCscwlRqeLuaP8za3XoDCUejQ6dq8DfPU6JeeMkJ4BiKnaecNg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=acm.org; dkim=pass (2048-bit key; unprotected) header.d=acm.org header.i=@acm.org header.a=rsa-sha256 header.s=mr01 header.b=y9cCSoGe; dkim-atps=neutral; spf=pass (client-ip=199.89.1.16; helo=013.lax.mailroute.net; envelope-from=bvanassche@acm.org; receiver=lists.ozlabs.org) smtp.mailfrom=acm.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=acm.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=bJ01/SLX;
+	dkim=pass (2048-bit key; unprotected) header.d=acm.org header.i=@acm.org header.a=rsa-sha256 header.s=mr01 header.b=y9cCSoGe;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:c112::5; helo=cy7pr03cu001.outbound.protection.outlook.com; envelope-from=jgg@nvidia.com; receiver=lists.ozlabs.org)
-Received: from CY7PR03CU001.outbound.protection.outlook.com (mail-westcentralusazlp170100005.outbound.protection.outlook.com [IPv6:2a01:111:f403:c112::5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=acm.org (client-ip=199.89.1.16; helo=013.lax.mailroute.net; envelope-from=bvanassche@acm.org; receiver=lists.ozlabs.org)
+X-Greylist: delayed 123 seconds by postgrey-1.37 at boromir; Fri, 31 Jul 2026 07:31:04 AEST
+Received: from 013.lax.mailroute.net (013.lax.mailroute.net [199.89.1.16])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hB1v93BjGz2yH4
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2026 07:05:40 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=c3oQ68r/UK4get82mM0qewRqa1cwFdIYh21c7TvP9RJVfpn2oIlEwxU1aG5tUY8wSqJUQiFhxY7Okka82TL9CuyqgVY6CyZsNh8P3whVMlyfHwwzu1zbcmgSDyJe9hHCcnTOYXQL6go367TFYXI4HUXM8tsFrcRJs/WLJDTrSYVWX+7wwNDOFlFMXo49zDK9QaKv149Qy7PBbllogulk3kiMzWd6fzEktDB7DoUHPJErDgnHgA6/mLbYigocQzEzHDgjWs6Sl59ADr55hWL6WpxmwXliUuvM6XTm4S2NUQPxud9OVw2H+gpMZIUANPRZVGWOSncTkUZhNiB4oX+LZA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=fP/tawnqcMvDolJUYihmY0R6sPFMX1yqtxwSlIbOMYk=;
- b=eSov1BY3R38ELJd54jXwt2S2VvqmQWsdtC4A1Y3KDmPBqYrgPpKCNlsvwJ0Kh/GLwOSQeVZ6CmodBmPRr776DApl+T2SztakHPNYNyKXaoyX+H1kZJ055R2RX/iPViRcLIzSK6LTZhwJq0qFtfA2Df09NZ/c1h74Tgcn5SSvQ5rfA0NhgUDHnIP4ZWchPn0g4NrMwX4CbMVHnuXhPcXw7xJHcXa9FTFrsVqHojZwFaDbxCb4tagWxJ0ECbajRLuR65t7/qBKooSlxcQpa1GDWp5gYTvAAepV/9usRd0K26jEaVzCYcEwKuj7eZ6YI01wQhgdPtgaOncTQJgIomL+ag==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=fP/tawnqcMvDolJUYihmY0R6sPFMX1yqtxwSlIbOMYk=;
- b=bJ01/SLX70pYDcmisUzjreWNai1ECOcg7yJTyqGFax8i0pDO+PXEvwVQagy58qRagberdI2pk1dI7oiKuGthBu+h1kAnjyiOIg2xpHxwDvtBZg5aCcDn3F/0pIO+nOqlcKwPy9XrNZ9S/csiAtiRleAk4AXEjoNmCviqgOlJIawH2dfj/kpFnDqZFh6tw5hgDJBW69M0i56b4543J4f0EhqBYF+JKvTEBZJCxo8zKJ8aSYuSFN4Fl9rbsEobp5/InKB0syEDg5Ctqn3zchYGHYTp4RqjtaI1lP1AXrk+ANPT+qcQmPyUfcRbyaFoMjAzW//NOqwNiASwWXhYVm06jA==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from CY1PR12MB9601.namprd12.prod.outlook.com (2603:10b6:930:107::16)
- by CYYPR12MB8962.namprd12.prod.outlook.com (2603:10b6:930:c4::13) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.270.15; Thu, 30 Jul
- 2026 21:05:16 +0000
-Received: from CY1PR12MB9601.namprd12.prod.outlook.com
- ([fe80::cd76:b497:475f:4de3]) by CY1PR12MB9601.namprd12.prod.outlook.com
- ([fe80::cd76:b497:475f:4de3%4]) with mapi id 15.21.0270.012; Thu, 30 Jul 2026
- 21:05:16 +0000
-Date: Thu, 30 Jul 2026 18:05:14 -0300
-From: Jason Gunthorpe <jgg@nvidia.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>
-Cc: Mostafa Saleh <smostafa@google.com>, iommu@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	linux-coco@lists.linux.dev, Robin Murphy <robin.murphy@arm.com>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
-	Steven Price <steven.price@arm.com>,
-	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Jiri Pirko <jiri@resnulli.us>, Petr Tesarik <ptesarik@suse.com>,
-	Alexey Kardashevskiy <aik@amd.com>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Xu Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
-	linux-s390@vger.kernel.org,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org,
-	Jiri Pirko <jiri@nvidia.com>, Michael Kelley <mhklinux@outlook.com>
-Subject: Re: [PATCH v8 15/23] dma-direct: pass attrs to dma_capable() for
- DMA_ATTR_CC_SHARED checks
-Message-ID: <amu8iiOBR5YspzfI@nvidia.com>
-References: <20260717180442.110954-1-aneesh.kumar@kernel.org>
- <20260717180442.110954-16-aneesh.kumar@kernel.org>
- <ami9CIGanuQX3lxb@google.com>
- <yq5a33x2go23.fsf@kernel.org>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <yq5a33x2go23.fsf@kernel.org>
-X-ClientProxiedBy: MW4P222CA0013.NAMP222.PROD.OUTLOOK.COM
- (2603:10b6:303:114::18) To CY1PR12MB9601.namprd12.prod.outlook.com
- (2603:10b6:930:107::16)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hB2SS6gGkz2xg8
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2026 07:31:04 +1000 (AEST)
+Received: from localhost (localhost [127.0.0.1])
+	by 013.lax.mailroute.net (Postfix) with ESMTP id 4hB2Q13np3zlfpPB;
+	Thu, 30 Jul 2026 21:28:57 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=acm.org; h=
+	content-transfer-encoding:content-type:content-type:in-reply-to
+	:from:from:content-language:references:subject:subject
+	:user-agent:mime-version:date:date:message-id:received:received;
+	 s=mr01; t=1785446930; x=1788038931; bh=E+Wy+ys8T2YGZYU3pJ2uSk73
+	N2E6peVZ2dFlyj+MAlU=; b=y9cCSoGegUOcUo0HM9riyEiyZkWXAVm+kWcewRsV
+	rb8wOB5M0jSAKO6dfDMf+RHp7h2XHHnwH9ONTXloihdbJLIqslNHVOU3l15Ai8wg
+	VuS9REf/sNlQAGfCTo7zR4JiyaTf+gd9k71CKTjlCEzMN6eIJJ7YC0MCIt37GPm+
+	jRrxtZxkFw+YIJTC/8Mm9rZYSIzzWdEyjlB44nhviGc5e4e0dpNhY4oTfZQhZ6yA
+	A0yiaLPX7U8Oaxxq0O+FnoW/lTmhPeRJASTD4O6YWeriIPxEKaFGXKNZEz221n6t
+	mfGli7WId9TGZ5P/MNh5Pdc2BQYn+MHDmyGoZuUOLxzsxg==
+X-Virus-Scanned: by MailRoute
+Received: from 013.lax.mailroute.net ([127.0.0.1])
+ by localhost (013.lax [127.0.0.1]) (mroute_mailscanner, port 10029) with LMTP
+ id 7SrJBq3XEcWs; Thu, 30 Jul 2026 21:28:50 +0000 (UTC)
+Received: from [100.119.48.131] (unknown [104.135.180.219])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: bvanassche@acm.org)
+	by 013.lax.mailroute.net (Postfix) with ESMTPSA id 4hB2Pr2951zlfvpx;
+	Thu, 30 Jul 2026 21:28:48 +0000 (UTC)
+Message-ID: <86ee4f27-7303-43c4-b772-b735b85c0229@acm.org>
+Date: Thu, 30 Jul 2026 14:28:47 -0700
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -108,92 +70,136 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: CY1PR12MB9601:EE_|CYYPR12MB8962:EE_
-X-MS-Office365-Filtering-Correlation-Id: 81eb01ee-6a22-4efa-7e32-08deee7e410d
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|376014|23010399003|7416014|1800799024|56012099006|4143699003|5023799004|11063799006|10067099003|22082099003|18002099003;
-X-Microsoft-Antispam-Message-Info:
-	bEie4YF39BMPCD+6svrPbTaL0BaSqYGoBP8SC80KeANY60rbIdEIn4TYM9KnIDG3y/y8i6P9WGOGzeC8aZgWmQ2jk0UVPqJzjkYomUXzBrSzihqrBmwHtyBmzOR+72esWxWAoyfCmw6vz5BUwganjpTTf3Tm5G4+dfBCdVDKPSoZ4g1H1uNZAWhIyR4T5t4YQRnOJYXzigylOTr1aRuYTn6E/pIPjyb74Uc7HLdAXW9ewRqTS+8tAdOKIJSKfATmFMNcZXy5hJIAIZ+2FWiDsVFH4AI6vlZQY9ky0kWlaUePjZih2+JriZzNedClHNLOQzaGXqa2d8iDbJTTuoSg3z2rL/PajG7xawIz1RFQwddyL1iPFHV/zF7CxPql32n0ct54X8zRJkQiCbHciMJ87EVwjz66wRIc+suPC0L7jldwP3MkHQs+oKsCTw7LOAktV5rmO2UQHAPn3ad7qbBWrDm0YZxbI+r9V60ayThK97EM0uYpS2ZxHLlwLRliJQkY3SYOMm00IFQctmZj/Jckf4BXMln8u8p4XpctiaOJ6Kp3SF7jeJ2VEq0CU9alNQ9rCM7UEfDbo63FyBDWxk2RmohlFmXS8zN0HAuKRMbmFwAUgiXiWJlV/93hSaNXwjhSeyzx10vy3IRP5guybYPVMu89YXHfDOKyB4uxsJ46sNE=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CY1PR12MB9601.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(376014)(23010399003)(7416014)(1800799024)(56012099006)(4143699003)(5023799004)(11063799006)(10067099003)(22082099003)(18002099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?bgcwd4SPDJiAMmLE5rq7qpg5+zS3l8ygwKzLXcb03srwU62dhbRWmvKv+cYz?=
- =?us-ascii?Q?nCM712X4wFSu6KCvXptVtKR3mVjwfYn6YWSo72P5Jowz+d1RlLZHP2ulo+lK?=
- =?us-ascii?Q?IVwPPJ1L/8blxas0Lh0XfVkF1pvKt0fXtc092PXw9UTDmUo4BO97hPmvEJaj?=
- =?us-ascii?Q?Wy92us4SFglw4kTgFkbBsAZUMl06MHhyXRMMMX5AQWtVvuyuxKPQahEWPby1?=
- =?us-ascii?Q?j7Lgyx5fIkBc28WjvgI+IWCBs+oIjXCLpKmZJjt6qjCBWfmc2ttvbTqofQFr?=
- =?us-ascii?Q?rGUfrRuCAR3WCRtHifGGxEnnDyfyXqf/EL1V10Gx+0aDA5qL23KHdchKtd9j?=
- =?us-ascii?Q?/30O3+QtttnUu3f827kCvNfyJsmuFZg2AbaO3NWyEEIEfFCvg7DAYe5rtOr+?=
- =?us-ascii?Q?GIeQ320yVrVJMy3GnQzUljqaiQEzi9yXwrYDqWPjluRR8ZTBuxCVpJcWY8M1?=
- =?us-ascii?Q?Lo8iZEOi6IbuO1ZjUNLdnYc19Vc1UFltOrDtq4NhRNBQ8o9s+6PvNwBaeEaW?=
- =?us-ascii?Q?AY5guiysCoA8oTMqrv1T3m+Gwb+guy1D9iYEoHTfsq2Be3K46kTq/0JZWMk8?=
- =?us-ascii?Q?BsXq4KfaPSqRTthHyonTbGPCOfoWrWkuDJmLf9aji/cO9P2ZmkxlNM0JK5JL?=
- =?us-ascii?Q?BByq2BobzK+eZaCRwiu+OXm+nISmKKIgaVQQBOZsTO0NozvrjB5o4ajoZSPk?=
- =?us-ascii?Q?cBOs8uQOlqQVKFssl3qwvNXzEvxZSYlmVRUh2H6E77/cC5qZruR/LG6vo+NP?=
- =?us-ascii?Q?jmv0z4aqspgM0XsRNqw2a448bbf+oqReUzzdLcseCyztEqM4UW+ixIVrs/sS?=
- =?us-ascii?Q?4q/qzcO0DHIE6+5TFkA9YN9kam7dx7bM7eouGDRuTanLga4umoR6RcjaG8EN?=
- =?us-ascii?Q?74dFJvi56pGNIUNASrw5Q5kiK3szFqDca6yNcAifT08oO7QWl9awGNp5GY6L?=
- =?us-ascii?Q?Kn7k+SNHnJFE6vPiG5gcvQQZTTilNlfmfWQOvt/ZOUGnT/bKnderBIPLxXrx?=
- =?us-ascii?Q?tTe8OnNvFNXN5UGmUrQUHX/nvdEzaKVflreg9RCQG/T4tiVFm3JmIS1OtmwX?=
- =?us-ascii?Q?iWb0hMT8eygyVdYWu/uJARJ6k33qPBjpHjexhHFvlAZiCxi7Qq+F+bEhjTRu?=
- =?us-ascii?Q?BB2ErkIUCtKkfvU01Agt4nW6jL/tbIAa0RJz/3olzSSBOdIQ1xZez9M1TfUw?=
- =?us-ascii?Q?KdUeH46NKc8l+kyA4GBPWY/yGlwEDTXRPxOz7FAfl37pzgxln4lp9N0Jx79D?=
- =?us-ascii?Q?UYA6tLCI9c6TIkQB7FrPAAhq+phSGfd+aXVjt1OWR+iEt3ZnpMSPNnylDLp5?=
- =?us-ascii?Q?xKuq9e0PDcsOjbk2zCpV2r28uxPyXyyxEoN74ZvAyGsaYPXaVvOYkQN+JVKN?=
- =?us-ascii?Q?pb0mp7VfAgJnOZ7e00U7h6FnhdkCm8kqegudB14tNjxrWI6bB2RNuz+ITaRk?=
- =?us-ascii?Q?CSJZ2xDXM/VbVvEsPNR1h91yxVqap3DB79nj6zPYYsZCwLwz2FXkuKwCsM0L?=
- =?us-ascii?Q?CdzKEpoOtKsB1WFdo4RZZJPZ8m7n0690sxp7VZEEXHFIJFx54HYE9XTP/Gl8?=
- =?us-ascii?Q?q4vxT6HmBnNexunKSFyFv8/hH5/pg8VfaREBLvfEGv13CD1+7p8AX8Sdz1ak?=
- =?us-ascii?Q?WfcxkQ8jAzvdL6JoTzMYl3WrxPURPk3xQSZllUggMN+gypCg0EDrafBWZHTQ?=
- =?us-ascii?Q?Q31i40V87qIlanqJDeK9S1tdoIgyxtmUbf096axJKLy/hOaX?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 81eb01ee-6a22-4efa-7e32-08deee7e410d
-X-MS-Exchange-CrossTenant-AuthSource: CY1PR12MB9601.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 30 Jul 2026 21:05:15.9773
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 0TgSSlFZ+GG5NyHGxa4z9KuvQ+BdXqxoFl130lSXeL4MBISZOAOdTE3DePxVAkOo
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: CYYPR12MB8962
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 25/33] ibmvfc: process NVMe/FC rports in work thread
+To: Nathan Chancellor <nathan@kernel.org>,
+ Tyrel Datwyler <tyreld@linux.ibm.com>
+Cc: james.bottomley@hansenpartnership.com, martin.petersen@oracle.com,
+ linux-scsi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, brking@linux.ibm.com, davemarq@linux.ibm.com
+References: <20260723000149.969416-1-tyreld@linux.ibm.com>
+ <20260723000149.969416-26-tyreld@linux.ibm.com>
+ <20260730065226.GA1879117@ax162>
+Content-Language: en-US
+From: Bart Van Assche <bvanassche@acm.org>
+In-Reply-To: <20260730065226.GA1879117@ax162>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Wed, Jul 29, 2026 at 02:39:08PM +0530, Aneesh Kumar K.V wrote:
-> Mostafa Saleh <smostafa@google.com> writes:
+On 7/29/26 11:52 PM, Nathan Chancellor wrote:
+> Hi Tyrel,
 > 
-> >>  static inline bool dma_capable(struct device *dev, dma_addr_t addr, size_t size,
-> >> -		bool is_ram)
-> >> +		bool is_ram, unsigned long attrs)
-> >>  {
-> >>  	dma_addr_t end = addr + size - 1;
-> >>  
-> >>  	if (addr == DMA_MAPPING_ERROR)
-> >>  		return false;
-> >> +	/*
-> >> +	 * The DMA address was derived from encrypted RAM, but this device
-> >> +	 * requires unencrypted DMA addresses. Treat it as not DMA-capable
-> >> +	 * so the caller can fall back to a suitable SWIOTLB pool.
-> >> +	 */
-> >> +	if (!(attrs & DMA_ATTR_CC_SHARED) && force_dma_unencrypted(dev))
-> >> +		return false;
-> >> +
-> >
-> > I guess it does not make sense to check the other way? I'd be worried if
-> > some a confidential device uses shared memory which might leak info.
-> >
+> On Wed, Jul 22, 2026 at 05:01:41PM -0700, Tyrel Datwyler wrote:
+>> diff --git a/drivers/scsi/ibmvscsi/ibmvfc-core.c b/drivers/scsi/ibmvscsi/ibmvfc-core.c
+>> index 81d9229bf388..ffb579816e84 100644
+>> --- a/drivers/scsi/ibmvscsi/ibmvfc-core.c
+>> +++ b/drivers/scsi/ibmvscsi/ibmvfc-core.c
+>> @@ -6073,6 +6119,30 @@ static void ibmvfc_do_work(struct ibmvfc_host *vhost)
+>>   			}
+>>   		}
+>>   
+>> +		list_for_each_entry(tgt, &vhost->nvme_scrqs.targets, queue) {
+>> +			if (tgt->action == IBMVFC_TGT_ACTION_DEL_RPORT) {
+>> +				tgt_dbg(tgt, "Deleteing NVMe rport\n");
+>> +				nvme_rport = tgt->nvme_remote_port;
+>> +				list_del(&tgt->queue);
+>> +				ibmvfc_set_tgt_action(tgt, IBMVFC_TGT_ACTION_DELETED_RPORT);
+>> +				spin_unlock_irqrestore(vhost->host->host_lock, flags);
+>> +				if (nvme_rport)
+>> +					ibmvfc_nvme_unregister_remoteport(tgt);
+>> +				timer_delete_sync(&tgt->timer);
+>> +				kref_put(&tgt->kref, ibmvfc_release_tgt);
+>> +				return;
+>> +			} else if (rport && tgt->action == IBMVFC_TGT_ACTION_DEL_AND_LOGOUT_RPORT) {
+>> +				tgt_dbg(tgt, "Deleting NVMe rport with outstanding I/O\n");
+>> +				nvme_rport = tgt->nvme_remote_port;
+>> +				ibmvfc_set_tgt_action(tgt, IBMVFC_TGT_ACTION_LOGOUT_DELETED_RPORT);
+>> +				tgt->init_retries = 0;
+>> +				spin_unlock_irqrestore(vhost->host->host_lock, flags);
+>> +				if (nvme_rport)
+>> +					ibmvfc_nvme_unregister_remoteport(tgt);
+>> +				return;
+>> +			}
+>> +		}
+>> +
+>>   		if (vhost->state == IBMVFC_INITIALIZING) {
+>>   			if (vhost->action == IBMVFC_HOST_ACTION_TGT_DEL_FAILED) {
+>>   				if (vhost->reinit) {
 > 
-> From the perspective of the dma_capable() check, this should be allowed;
-> that is, a trusted device is permitted to access shared memory.
+> There is a warning from clang after this change landed in -next as
+> commit 696d1cc2aaa2 ("scsi: ibmvfc: process NVMe/FC rports in work
+> thread"), breaking the build when -Werror is enabled:
+> 
+>    drivers/scsi/ibmvscsi/ibmvfc-core.c:6154:15: error: variable 'rport' is uninitialized when used here [-Werror,-Wuninitialized]
+>     6154 |                         } else if (rport && tgt->action == IBMVFC_TGT_ACTION_DEL_AND_LOGOUT_RPORT) {
+>          |                                    ^~~~~
+> 
+> Sashiko appears to point this out as well:
+> 
+>    https://lore.kernel.org/20260723005006.C7EE21F00A3A@smtp.kernel.org/
+> 
+> But I am not sure that its suggestion to use nvme_rport is correct given
+> the context of this code, hence just the report from my end.
 
-Right, we have use cases that require confidential devices to use
-shared memory we cannot block it at the DMA layer.
+I think that advice is wrong because nvme_rport has not yet been set if
+the "else" statement is reached. How about the change below?
 
-It would be a reasonable DMA debugging to block shared memory without
-the DMA ATTR CC SHARED.
+Thanks,
 
-Jason
+Bart.
+
+diff --git a/drivers/scsi/ibmvscsi/ibmvfc-core.c 
+b/drivers/scsi/ibmvscsi/ibmvfc-core.c
+index dfa231b6cc47..9e752978dad8 100644
+--- a/drivers/scsi/ibmvscsi/ibmvfc-core.c
++++ b/drivers/scsi/ibmvscsi/ibmvfc-core.c
+@@ -5984,8 +5984,6 @@ static void ibmvfc_do_work(struct ibmvfc_host *vhost)
+  {
+  	struct ibmvfc_target *tgt;
+  	unsigned long flags;
+-	struct fc_rport *rport;
+-	struct nvme_fc_remote_port *nvme_rport;
+  	LIST_HEAD(purge);
+  	int rc;
+
+@@ -6103,6 +6101,8 @@ static void ibmvfc_do_work(struct ibmvfc_host *vhost)
+
+  		list_for_each_entry(tgt, &vhost->scsi_scrqs.targets, queue) {
+  			if (tgt->action == IBMVFC_TGT_ACTION_DEL_RPORT) {
++				struct fc_rport *rport;
++
+  				tgt_dbg(tgt, "Deleting rport\n");
+  				rport = tgt->rport;
+  				tgt->rport = NULL;
+@@ -6115,6 +6115,8 @@ static void ibmvfc_do_work(struct ibmvfc_host *vhost)
+  				kref_put(&tgt->kref, ibmvfc_release_tgt);
+  				return;
+  			} else if (tgt->action == IBMVFC_TGT_ACTION_DEL_AND_LOGOUT_RPORT) {
++				struct fc_rport *rport;
++
+  				tgt_dbg(tgt, "Deleting rport with I/O outstanding\n");
+  				rport = tgt->rport;
+  				tgt->rport = NULL;
+@@ -6141,6 +6143,8 @@ static void ibmvfc_do_work(struct ibmvfc_host *vhost)
+
+  		list_for_each_entry(tgt, &vhost->nvme_scrqs.targets, queue) {
+  			if (tgt->action == IBMVFC_TGT_ACTION_DEL_RPORT) {
++				struct nvme_fc_remote_port *nvme_rport;
++
+  				tgt_dbg(tgt, "Deleteing NVMe rport\n");
+  				nvme_rport = tgt->nvme_remote_port;
+  				list_del(&tgt->queue);
+@@ -6151,7 +6155,9 @@ static void ibmvfc_do_work(struct ibmvfc_host *vhost)
+  				timer_delete_sync(&tgt->timer);
+  				kref_put(&tgt->kref, ibmvfc_release_tgt);
+  				return;
+-			} else if (rport && tgt->action == 
+IBMVFC_TGT_ACTION_DEL_AND_LOGOUT_RPORT) {
++			} else if (tgt->action == IBMVFC_TGT_ACTION_DEL_AND_LOGOUT_RPORT) {
++				struct nvme_fc_remote_port *nvme_rport;
++
+  				tgt_dbg(tgt, "Deleting NVMe rport with outstanding I/O\n");
+  				nvme_rport = tgt->nvme_remote_port;
+  				ibmvfc_set_tgt_action(tgt, IBMVFC_TGT_ACTION_LOGOUT_DELETED_RPORT);
+
 
