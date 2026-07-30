@@ -1,80 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-25071-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25072-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 389B6C54FDF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jul 2026 06:35:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 72737C54FDF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jul 2026 06:39:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h9fbF4pqRz2yDs;
-	Thu, 30 Jul 2026 16:35:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785393337;
-	cv=none; b=G3J8X4Hdhx2P4QXkycYozAks6GXnNXuUdlK0Qw9Gp+ptKDceASoxLeWeSU3vflHBGB/APjROf0HpqCao4m7C0hxI4DqKupRuLhjJRE7cvDT5poLLdsqKSRKBfoVzG9yntPRGKOm8cDjh2Ic+1VNeLYd6zbTmBMJuWsTuXkTHiKEjehTrx0SK9X0AkvIvxsxxErW9qK4fux+v55KyrkfH5nmS7V45R+x2xkiNqIQTeuokpBF4uJVkDtYGe13bAcEbrQiPaQPIODdYZYTsaoOjCjcIgp2PxC+6u+o8FfnR25VEVLP+QOUzgADpsmOZ21IXGCiYVtoPsltxDO7Q84FcLQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h9fgT1FXXz2yDs;
+	Thu, 30 Jul 2026 16:39:17 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=82.65.109.163
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785393557;
+	cv=none; b=U/oNYMgEmgeBouDPJtLrz5pgAjUuKNy24vh+C0Dw38hVtiUcWHdvGY0McieIUgHGSFDUzr5roiR6y8evkR1LdiYdR0nRl1ahO1h3whwLKSSkaLSePiGAzUxSUa4UPiyIChvORUKu9f5D2Vc4XiVDKzaDpxlOJSZTU3q3DN9v2wSQmPUq9L/NXxLYsxHHDmJ5JokQ00UzlpsbBN20P0gX9rdaLvh4hYgjn7P4ZqNjRaNXPyqrWkTpc+29kNGrr0XfcKnpQHLMVNsk5q6mWMIQdU3D82cZknODQg5Qf6cEdy2wAjbZSSAQruISC3vvZJffZ9NF+U2dQpaLGrMDZyymlw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785393337; c=relaxed/relaxed;
-	bh=5jQP6MIYnYcQYA3EUzYTZ444eL4w24GdY9PBQD7th6k=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=BTS0OJwkAxROyBW0Zybuo2pcV9jd6YEvCOhNna5g3EgFNcixbUBA+3qhTi1dFuHIS56lvrQBFLaemSileTHSsEwoJw6YfkgX5k6SjbhBUT+bN56lFJjv8UNmhC4kqeOvFmXBY1dBtr02/+44BOf/O31cViT4rWk/q1bGFFhQH5kQrRCFgEDUGWF+Qv5JkMu4NbRr7IK4Q0H9aaIOtVvGRgLgpTfnlQXZ/LSqRdXEJtoXyGhTrpnn5pXvspyXrWiWBqj0Kn9wfD6jtZvLYa3X33z24W902oUIn1YwOMfJ6M5+AvhSI5ra7zEaZB7b9Lmd4dqbyOmuBq0xfImuz7Ixmw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Urz6fYiE; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=praveen@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Urz6fYiE;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=praveen@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	t=1785393557; c=relaxed/relaxed;
+	bh=v8Ab0rqKkisiC1FuGdQjdY7HUVMn6t7PyOtF9gib960=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=gA8RY19OQGm7xI40F4luIcKo+EXJzABwek1FCYnAzT/0PvhIeVVOb/UQFDZpZjC/7AIZ3t7dlUsT8WDqM1BWZaguYyeYKpqUI5weCSxKP3dtSejGbbltUuTLz6sS3ftpCvcnxkyhys8Zp2DdR8FEevdt3qZ0TiAzc1Qf5sxZ4JLfdwHmP5u9PpVzQOwyUw2QyIz1idDfrKyErYbTmMJRAFMoIvoDLYjsqOXySi5hiycHUkAJxsOZzmc3pUJXZHO+dvseok1KY+Y6DMB+8z1bF+HxC9HdL+2i7GJ/n6Jx0SaZhqkiew7XSlIk1UhITq+m5lhy+7HmnNgiS3tCEbXo5Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linkmauve.fr; spf=pass (client-ip=82.65.109.163; helo=linkmauve.fr; envelope-from=linkmauve@linkmauve.fr; receiver=lists.ozlabs.org) smtp.mailfrom=linkmauve.fr
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linkmauve.fr
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linkmauve.fr (client-ip=82.65.109.163; helo=linkmauve.fr; envelope-from=linkmauve@linkmauve.fr; receiver=lists.ozlabs.org)
+Received: from linkmauve.fr (82-65-109-163.subs.proxad.net [82.65.109.163])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h9fbD58Qvz2xnp
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2026 16:35:36 +1000 (AEST)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66U3lq3T1901528
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2026 06:35:34 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=5jQP6MIYnYcQYA3EU
-	zYTZ444eL4w24GdY9PBQD7th6k=; b=Urz6fYiE4yAJ0kwJ+Z38U/dw72xPfVC7Y
-	BQPArUBtBRd5za1E2shtNmHcsOlBTPcmX5mQMSM8IrVChYl9H8z1ech2IzbGrBAg
-	p2TEFRsDNW0yLNNZgmOROlYmYL71u4VC7uJfsZGS2/ojkAvBN+19VXtQXjvVtWP/
-	bd8iDh9PgCO6ijMKnm5fywKwas+bQj4YQxPyfS7/EGE2fH6GSAs0BCaJZtEmEMLE
-	FdUoHi6hGyPXY+2tMma6b8Sbyd6UUhe7pSY9RKdx++BaeSZfTG+dPCpGWJBYdlZ7
-	KvnbK1MVaPAoHm0hNROuIZhDErll2+zDwBsVAcwYamNCS5Bs71LLA==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fmuw7pcbr-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2026 06:35:34 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66U6BHPP027334
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2026 06:35:33 GMT
-Received: from smtprelay07.dal12v.mail.ibm.com ([172.16.1.9])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4fn7uwa84s-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2026 06:35:33 +0000 (GMT)
-Received: from smtpav03.wdc07v.mail.ibm.com (smtpav03.wdc07v.mail.ibm.com [10.39.53.230])
-	by smtprelay07.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66U6ZWsC32244312
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 30 Jul 2026 06:35:32 GMT
-Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D78F85805C;
-	Thu, 30 Jul 2026 06:35:31 +0000 (GMT)
-Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id DC91258054;
-	Thu, 30 Jul 2026 06:35:29 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.43.66.49])
-	by smtpav03.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 30 Jul 2026 06:35:29 +0000 (GMT)
-From: Praveen K Pandey <praveen@linux.ibm.com>
-To: mahesh@linux.ibm.com
-Cc: linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com,
-        Praveen K Pandey <praveen@linux.ibm.com>
-Subject: Re: [PATCH 0/4] Base support for Power12
-Date: Thu, 30 Jul 2026 12:05:06 +0530
-Message-ID: <20260730063506.25823-1-praveen@linux.ibm.com>
-X-Mailer: git-send-email 2.50.1
-In-Reply-To: <20260729145405.3230272-1-mahesh@linux.ibm.com>
-References: <20260729145405.3230272-1-mahesh@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h9fgS3QQGz2xnp
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2026 16:39:16 +1000 (AEST)
+Received: by linkmauve.fr (Postfix, from userid 1000)
+	id 8C8D7709934A; Thu, 30 Jul 2026 08:39:13 +0200 (CEST)
+Date: Thu, 30 Jul 2026 08:39:13 +0200
+From: Link Mauve <linkmauve@linkmauve.fr>
+To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: Link Mauve <linkmauve@linkmauve.fr>, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	techflashYT <officialTechflashYT@gmail.com>,
+	Ash Logan <ash@heyquark.com>,
+	Jonathan =?iso-8859-1?Q?Neusch=E4fer?= <j.neuschaefer@gmx.net>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH 2/2] powerpc/sstep: =?utf-8?Q?D?=
+ =?utf-8?Q?on=E2=80=99t_define_variables_we_won=E2=80=99t?= be using
+Message-ID: <amrxka_ZBaclQtZL@desktop>
+References: <20260729204958.755143-1-linkmauve@linkmauve.fr>
+ <20260729204958.755143-3-linkmauve@linkmauve.fr>
+ <c48b748a-67d9-4fd4-b516-c54d2cf70704@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,37 +58,92 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: UP7rG7FjpEyrM-JRkgRi0wfDsM-4Yev8
-X-Proofpoint-ORIG-GUID: UP7rG7FjpEyrM-JRkgRi0wfDsM-4Yev8
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzMwMDA0MiBTYWx0ZWRfX9G0GTmyMZHL2
- q+xa1Z7utkBfVsqNprKGYzuHuQnmnsRf6WGlEg6BTEyc+iaQMosfZQknsFnkK85ZYxoMGXJSzXS
- 3RqpYGKozQt5b1o4KN+K7sBTLcwIZM0ocE2mCYyivY5mVI3dQjgaj2tsYmaDwEzpKiVyS/b4n+y
- 84rNtDKHGMxiB7/62UN/SKVslaQXbE3OMRur0FMEt6EHpKY76oUL7uTybN4v6A/TNR2l4lIOQle
- hS79RKmLJTppLTnbQl1Y4sA43tINeev4n2T+oSvH+Gph5WkJM3rtaOuMmDl9PfMGzuxQHUoagW9
- Y3PbYTksF87yjUwejvm8Q+g6SQhEYiy7pHk1XQVNVSzwNeFGY36DxVGdd2FWPKlaQCEnoTq7Xy8
- TfP9HfLWON6lXGb87hc7booDo8jm8gp3DvhaEHOc01em8FuqPqGB2eno8gGW4FyJW1Vsrq3apH6
- r7tiixKSfWRUtqCkuYw==
-X-Authority-Analysis: v=2.4 cv=SKFykuvH c=1 sm=1 tr=0 ts=6a6af0b6 cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=iQ6ETzBq9ecOQQE5vZCe:22 a=VnNF1IyMAAAA:8 a=j_nrsbsRuxRbdvPsdAQA:9
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzMwMDA0MiBTYWx0ZWRfX6/XuGK4FyhFF
- VBduEmj8hPEUZT0AMpnvPhNT9AewPRxPp2078tpEwMY63AW5GU9TTBfq7n+vG5r7TTx6vV6CiCf
- a/RB582j5gi0VM1C/pagGPSEp9uQ7mM=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-07-30_01,2026-07-29_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 malwarescore=0 clxscore=1011 adultscore=0
- lowpriorityscore=0 bulkscore=0 impostorscore=0 phishscore=0 spamscore=0
- suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
- definitions=main-2607300042
+In-Reply-To: <c48b748a-67d9-4fd4-b516-c54d2cf70704@kernel.org>
+Jabber-ID: linkmauve@linkmauve.fr
 
-Tested on Power9, Power10 and Power11. System boots well on all
-three platforms.
+On Thu, Jul 30, 2026 at 08:24:36AM +0200, Christophe Leroy (CS GROUP) wrote:
+> 
+> 
+> Le 29/07/2026 à 22:49, Link Mauve a écrit :
+> > It seems this function has only compiled without warnings on PPC64, not
+> > on PowerPC, so before this commit it would fail with:
+> > ```
+> > ../arch/powerpc/lib/sstep.c: In function 'analyse_instr':
+> > ../arch/powerpc/lib/sstep.c:1350:28: error: variable 'suffix' set but not used [-Werror=unused-but-set-variable]
+> >   1350 |         unsigned int word, suffix;
+> >        |                            ^~~~~~
+> > ../arch/powerpc/lib/sstep.c:1346:38: error: variable 'rc' set but not used [-Werror=unused-but-set-variable]
+> >   1346 |         unsigned int opcode, ra, rb, rc, rd, spr, u;
+> >        |                                      ^~
+> > cc1: all warnings being treated as errors
+> > ```
+> > 
+> 
+> I'm surprised we still have this issue. I remember seeing it reported
+> several times allthough I've not been able to spot when.
+> 
+> By the way on my side it happens only when I do a W=1 build.
 
-Tested-by: Praveen K Pandey <praveen@linux.ibm.com>
+Oh indeed, I was using W=1 all along, thanks for spotting that!
+
+> 
+> Same as previous patch, I'd prefer using CONFIG_PPC64 instead of
+> __powerpc64__
+
+Will do in v2.
+
+> 
+> > Signed-off-by: Link Mauve <linkmauve@linkmauve.fr>
+> > ---
+> >   arch/powerpc/lib/sstep.c | 10 ++++++++--
+> >   1 file changed, 8 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
+> > index 597a0d841fe8..c866e4337f94 100644
+> > --- a/arch/powerpc/lib/sstep.c
+> > +++ b/arch/powerpc/lib/sstep.c
+> > @@ -1342,16 +1342,20 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
+> >   {
+> >   #ifdef __powerpc64__
+> >   	unsigned int suffixopcode, prefixtype, prefix_r;
+> > +	unsigned int rc;
+> > +	unsigned int suffix;
+> 
+> A single line would be enough:
+
+Will do in v2.
+
+> 
+> 	unsigned int rc, suffix;
+> 
+> >   #endif
+> > -	unsigned int opcode, ra, rb, rc, rd, spr, u;
+> > +	unsigned int opcode, ra, rb, rd, spr, u;
+> >   	unsigned long int imm;
+> >   	unsigned long int val, val2;
+> >   	unsigned int mb, me, sh;
+> > -	unsigned int word, suffix;
+> > +	unsigned int word;
+> >   	long ival;
+> >   	word = ppc_inst_val(instr);
+> > +#ifdef __powerpc64__
+> >   	suffix = ppc_inst_suffix(instr);
+> > +#endif
+> >   	op->type = COMPUTE;
+> > @@ -1469,7 +1473,9 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
+> >   	rd = (word >> 21) & 0x1f;
+> >   	ra = (word >> 16) & 0x1f;
+> >   	rb = (word >> 11) & 0x1f;
+> > +#ifdef __powerpc64__
+> >   	rc = (word >> 6) & 0x1f;
+> > +#endif
+> >   	switch (opcode) {
+> >   #ifdef __powerpc64__
+> 
+
+-- 
+Link Mauve
 
