@@ -1,71 +1,63 @@
-Return-Path: <linuxppc-dev+bounces-25126-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25127-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 11C6AC55162
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jul 2026 16:27:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99F3BC55162
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jul 2026 16:44:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h9vjb50wHz2y8c;
-	Fri, 31 Jul 2026 02:26:59 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785428819;
-	cv=none; b=PMq7QuxEA25vLH781XZjILjEpbqR4ktItwURT0P8bZSRXzgYOP05a3WDysZahHjbnWkFl2LaufEf1/am3wCm0+696GqBcOW6poYUIdzQ/jp3GtJXXhmFmOjlxd3OtpPIQrPz91QwGvtnwsxn4rSl8vpOy+wArxbMFTxcBLZvRS7uRfE4zPOdyo336JpXw0tWJjD82L/1d9DQuLfzowM93nVODTbsh1EwXcKA1NuMjKqm4c6SeNm2jdko2Xl7kqzxOHUDOepxXgJjG4FaHr4X6OEb3dEG4QOcckTIJ1PYQfc9G9vVhuU7aFbMwHOAmYDBoorzaj1seUjoIdmyVWKJaA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h9w685SVkz2y8c;
+	Fri, 31 Jul 2026 02:44:48 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785429888;
+	cv=none; b=kvPdgiBnQF85cDhugl8DIIuiq/+Hcwxwxn/wW0vLXPYgiuSJ5mJ4seBLdZPHzZ8BY5I98V850czvHb26J4YnoeBONg1wjgye8EU0yXkuuO6w1G9xXUWA+IqsGjWuzIY3mqT7Ia0wsWcabjm6aKPaYK+fWwh1uIfxOhKJlB+1eLe3a3hZnG809LjR/e9j7FohJSFlAwgtiS4K+RON2E3CjFYGFwCFqrBmQdc3vJ+15TIRVqUMEnTdJtpcUuaf93550kNLcaI/xyDUJMdVLa3EuxbmJxdm+I6qMdRpQWtzfg9XOjPSPB4jI7nJJu/jopcbI9N8Ax8xhjzDMSorcwsSDA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785428819; c=relaxed/relaxed;
-	bh=sbfA2juAt/98XOG9rpncjItrUCEGNu2+yqfa8Dn6dmU=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=FElTbqb5yy/nKdYPWxKO/cE2Eb5op6oSeTHVns98Z12Da4YXEaNVWZ7WNiYs/l5uoovkfZTA2ewtro/KGplVfuyW71LgEzOYpT38nuMUYJfoKD7rBimT7QYDbehEF4MGYCDxJOVHlfkbWVfwEPoJWPVSXnXSXZXJ46lFIXtkAwgCF7Xhs/krWWLE4N8YdbwJKtIa14PYIN1Ods9xBVscvIJC4HDlNCoeuPPKrLeLvqF484HglV16XixZrnKLVC0fFuXkOsJ4OmixcdSRBxvieq8XBP94rU17MaiOA4Kw2zbXiHquCDqGkNMr2jQKXMhJ8QAfOVAdfUlFuczcei3c+A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=o0rvhXgw; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=srs0=scs2=fy=paulmck-thinkpad-p17-gen-1.home=paulmck@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=o0rvhXgw;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=srs0=scs2=fy=paulmck-thinkpad-p17-gen-1.home=paulmck@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+	t=1785429888; c=relaxed/relaxed;
+	bh=UBnrFFhJXHxkqZUiOlk8YO8RU5J3O80m+AewPDl6eTI=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=n6Ucp+JT72JsTe5cOwa8Ypwy8FLDhDYvgOP3o8k9Y9Few1f5bRZU8X/A3EaesMQ7NibnXkD1Rp0PMc9vL/gNuxF+DYj8tFNFQxJXurRvoBN3R4k6zAVyojUaxv3p8SbooX/K16OprX3nlCRdIUIxHgmdlSYVw7QC888SsPYUB6voJTJxH3weMoJhcNvMGw3XKsedE6TwuaihBO5/Ze2Pk+TU7FneQErskg7bau1TNpmdR97Z/vgIXlyHY2227H4DszULFllEVTwjpPChTlsYjBKd1UGihWZGe7CbtF2+DNa6X6/FRej+ejk9GzOdGJiqYDGIe+WJKQBxITqLAc064Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=fail (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=srs0=unvo=fy=oss.qualcomm.com=manivannan.sadhasivam@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=fail (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=srs0=unvo=fy=oss.qualcomm.com=manivannan.sadhasivam@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h9vjZ6qLgz2xd2
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2026 02:26:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h9w676L4Jz2xRs
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2026 02:44:47 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 870E543B65;
-	Thu, 30 Jul 2026 16:26:56 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 67E4B1F000E9;
-	Thu, 30 Jul 2026 16:26:56 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785428816;
-	bh=sbfA2juAt/98XOG9rpncjItrUCEGNu2+yqfa8Dn6dmU=;
-	h=Date:From:To:Cc:Subject:Reply-To:References:In-Reply-To;
-	b=o0rvhXgwtf8NU5bj8YBa9sxkeXHs1WhIhW7kBa2+VmQ4ZKqKkgdXJxkZXmJbJmYMP
-	 mXeU4FCZQvJD5m20oCuFHkj36bDsc8ixHdBigQmLki57titkKM+5sqrq/MrcrJCH1o
-	 9f+moa65WDjDgQtzAImUv6dpCvCb/LedQLUBAzARgVtPmdEL8bp8fy2oK4jrTMnNP+
-	 NeYpq1CaTmn3DGsRpMfh0W6si9qRc6I1APzWfQ/mPNhgWzMitsvIDQ8VMCO7T0mDPV
-	 vEkqmnbrtoh8jMnA5LHOLTMTdHBd15auYeeEDfPMYHRG5nXfqm4fkPurUKmgzYK8Or
-	 p+XnrqkTaHjOw==
-Received: by paulmck-ThinkPad-P17-Gen-1.home (Postfix, from userid 1000)
-	id 35913CE0B67; Thu, 30 Jul 2026 09:26:56 -0700 (PDT)
-Date: Thu, 30 Jul 2026 09:26:56 -0700
-From: "Paul E. McKenney" <paulmck@kernel.org>
-To: Jirka Hladky <jhladky@redhat.com>
-Cc: Shrikanth Hegde <sshegde@linux.ibm.com>, maddy@linux.ibm.com,
-	linuxppc-dev@lists.ozlabs.org, christophe.leroy@csgroup.eu,
-	mpe@ellerman.id.au, npiggin@gmail.com, bigeasy@linutronix.de,
-	will@kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v4 1/1] powerpc: enable dynamic preemption
-Message-ID: <663e8e58-19ea-472f-8c24-13a8b417e441@paulmck-laptop>
-Reply-To: paulmck@kernel.org
-References: <500d8e8c-088c-4e6d-ab53-868ade6b0eda@paulmck-laptop>
- <CAE4VaGDGS8wkZj4SF5XVC3-1yDmvJxjUjThTPqVw3kxg56ssQA@mail.gmail.com>
- <e013e88a-6137-4de8-9dfd-925b707f2e01@linux.ibm.com>
- <CAE4VaGAJ9mT8-V=GRPYj8h0RXuNf6S5icrmqeOOFDnkpPMQjaw@mail.gmail.com>
- <a1e04751-eab5-465b-8238-c9f4cd40e472@linux.ibm.com>
- <CAE4VaGCaN6uBBGqbGAsxudSxMC0JdXYn2vpuDJZPFR3xxJgMYA@mail.gmail.com>
- <29a407ab-268e-4443-96dc-8f5f933cb63c@linux.ibm.com>
- <CAE4VaGDzVa3+MKUbwH4LFj_mHZ721fd=7cWEd+G5=eVNWLePsg@mail.gmail.com>
- <529b8d9f-54a0-4ec2-9886-83cd528e5e04@paulmck-laptop>
- <CAE4VaGDJxcu_zgDyrSW=j9WzLEpNsQ9A9Rza-F5PLZq03kJYew@mail.gmail.com>
+	by tor.source.kernel.org (Postfix) with ESMTP id DEBEC600AD;
+	Thu, 30 Jul 2026 16:44:44 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 820931F000E9;
+	Thu, 30 Jul 2026 16:44:37 +0000 (UTC)
+From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
+To: Bjorn Helgaas <bhelgaas@google.com>, 
+ Mahesh J Salgaonkar <mahesh@linux.ibm.com>, 
+ Oliver O'Halloran <oohall@gmail.com>, Will Deacon <will@kernel.org>, 
+ Lorenzo Pieralisi <lpieralisi@kernel.org>, 
+ =?utf-8?q?Krzysztof_Wilczy=C5=84ski?= <kwilczynski@kernel.org>, 
+ Manivannan Sadhasivam <mani@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Heiko Stuebner <heiko@sntech.de>, Philipp Zabel <p.zabel@pengutronix.de>, 
+ Jingoo Han <jingoohan1@gmail.com>, Koichiro Den <den@valinux.co.jp>, 
+ Kishon Vijay Abraham I <kishon@kernel.org>, 
+ Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, 
+ linux-arm-msm@vger.kernel.org, linux-rockchip@lists.infradead.org, 
+ Niklas Cassel <cassel@kernel.org>, 
+ Wilfred Mallawa <wilfred.mallawa@wdc.com>, 
+ Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>, 
+ mani@kernel.org, Lukas Wunner <lukas@wunner.de>, 
+ Richard Zhu <hongxing.zhu@nxp.com>, Brian Norris <briannorris@chromium.org>, 
+ Wilson Ding <dingwei@marvell.com>, Frank Li <Frank.Li@nxp.com>, 
+ Manivannan Sadhasivam <mani@kernel.org>
+In-Reply-To: <20260729-pci-port-reset-v9-0-53570b92064d@oss.qualcomm.com>
+References: <20260729-pci-port-reset-v9-0-53570b92064d@oss.qualcomm.com>
+Subject: Re: [PATCH v9 0/5] PCI: Add support for resetting the Root Ports
+ in a platform specific way
+Message-Id: <178542987704.1025433.15649163299546579647.b4-ty@b4>
+Date: Thu, 30 Jul 2026 18:44:37 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -79,50 +71,37 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAE4VaGDJxcu_zgDyrSW=j9WzLEpNsQ9A9Rza-F5PLZq03kJYew@mail.gmail.com>
+X-Mailer: b4 0.15.2
 
-On Thu, Jul 30, 2026 at 05:08:13PM +0200, Jirka Hladky wrote:
-> On Thu, Jul 30, 2026 at 4:53 PM Paul E. McKenney <paulmck@kernel.org> wrote:
-> > But is this really a fundamental RISC cost?  For example, does arm64
-> > see the same performance issues?
-> 
-> We tested arm64 (Ampere Altra Max) with the same controlled
-> experiment -- two 6.18 kernels, both voluntary, differing only in
-> PREEMPT_DYNAMIC:
-> 
-> Arch     PREEMPT_DYNAMIC   kill bogo-ops/sec   Delta
-> -------  ---------------   -----------------   -----
-> ppc64le  off               108,836
-> ppc64le  on                 68,197             -37.3%
-> aarch64  off                 5,538
-> aarch64  on                  5,082              -8.2%
-> 
-> arm64 sees -8.2% vs ppc64le's -37.3%. So arm64 is affected but
-> much less severely.
 
-That is more like I would expect.  Yes, there is added overhead, but it
-should not be excessively expensive.  Though I suspect that arm64 could
-also do better.  Easy for me to say, I know!  ;-)
+On Wed, 29 Jul 2026 10:22:26 +0530, Manivannan Sadhasivam wrote:
+> Currently, in the event of AER/DPC, PCI core will try to reset the slot (Root
+> Port) and its subordinate devices by invoking bridge control reset and FLR. But
+> in some cases like AER Fatal error, it might be necessary to reset the Root
+> Ports using the PCI host bridge drivers in a platform specific way (as indicated
+> by the TODO in the pcie_do_recovery() function in drivers/pci/pcie/err.c).
+> Otherwise, the PCI link won't be recovered successfully.
+> 
+> [...]
 
-							Thanx, Paul
+Applied, thanks!
 
-> > In particular, I can see why the preempt_count() operations need to be
-> > interrupt-safe, but I don't see why you would need barriers.  And
-> > doesn't powerpc still use software interrupt disabling?  If so, why
-> > not use that to simply software-disable interrupts around the
-> > preempt_count() operations?
-> >
-> > What am I missing here?
-> 
-> That's a good question -- I don't know enough about the powerpc
-> preempt_count implementation to answer this. Shrikanth, could you
-> comment on whether removing the barriers or using software interrupt
-> disabling around preempt_count is feasible?
-> 
-> Thank you
-> Jirka
-> 
+[1/5] PCI: dwc: ep: Clear MSI iATU mapping in dw_pcie_ep_cleanup()
+      commit: 36637958726a4bbc630c0848eb3eb07cbfae89c2
+[2/5] PCI/ERR: Add support for resetting the Root Ports in a platform specific way
+      commit: e3e7dabe25e7be701c2a27a425ea71b17e238394
+[3/5] PCI: host-common: Add link down handling for Root Ports
+      commit: a36da2a2940a5c23a0a2e0c24966da637ca513fa
+[4/5] PCI: qcom: Add support for resetting the Root Port due to link down event
+      commit: 6b14d8bdba854e0031b4dbadf2d9cf5b98f95601
+[5/5] misc: pci_endpoint_test: Add AER error handlers
+      commit: 2e7d10af1cd05b26056a09032770db5c47bd54cd
+
+Best regards,
+-- 
+மணிவண்ணன் சதாசிவம்
+
+
 
