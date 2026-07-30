@@ -1,64 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-25095-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25096-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C0DE1C55160
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jul 2026 11:54:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 21EF5C55165
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jul 2026 12:01:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h9nfq5MXxz2yYd;
-	Thu, 30 Jul 2026 21:54:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h9npr3gfPz2yYd;
+	Thu, 30 Jul 2026 22:01:08 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785412451;
-	cv=none; b=igiI8XVMBK6WTvSmXMCwmqrLOmjPslnxeQbwsIBq69ZQEDyCDquJCu6Tl23FShU8r4iXenIeXQ4ipxamyGWIhDkNf7Pu/IO9nQ4RlcYpYehwG4Y7UTTrH0p27l9GXcGqqLf7fPhUA6CO493FjcdSmUwh/AEFMiJVx/fHfI01Q23qb3VF3aHoZDgZrhfKy7Jzo8SHTAiv9hJv2/ivkILvynK/TLhaMubNSWAjy+vaqIh9Byi//7iyDW3grfuZTDoAyPDiXD5YMRGgzbd358/4LqnP8YWMvcnjqgB989bSyPj7DFw4Rz2Nt6ymulv55nt8sHKCQxwicRkCJ5XOOFPMvw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785412868;
+	cv=none; b=GXiV22/ynFEimocMCYgqZFDHcpXIG27R9cLBvmoWl+T/6irJCp7t3Z4OWMgIJz1Nad8gFZ8ZFkqaEuFEVUYLQhmxkG9qihocrdRTURbp5PSEO2sJjn+eCUHrRTUCfEn0IHxVytUBV5I5Wi0eJGqzrXpStqtTRfgY+n4cfqeIhlWY0k6DTG7Ym7CO/X+f0T0mUq5I4JW5lh7m55g6QudoJH9DdMWEOSKAeKD083TipDYnGkKEJavQadP3hZT/c5eSpBcwHyjy+22nF96RkKsbshiJbo0C4XkpanTj0IdpSaDybvL6Dl2PZPrAzGr8DW/qZ3dPO/xfdkCfWVlm/ERhJw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785412451; c=relaxed/relaxed;
-	bh=PWIEEQjaHeHJ5fxTgr0YOB4InTHJrKcidKplWWfbj8A=;
-	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=JvSqly+GKg/ZE0R3Ecb11UTpzQjLDzHXDFCS1Y8L8o+bbQ+NfVl5o4EE97bn636RADdDz6Sfr6BaL6Ii0nXhd9RFWsW6DE2vR6a5cLZvnf60M3lXRPn6FGH5iS+r2bDmi2WL/suHu3P0LVOHekS4junybGIRdgEd2hpCRx6x6Hx3bLYP5kDfEaobkXUnoZsnxIx/agikCSd1YsUUJFqX5wqfTeI4mWTlY/3cWhBuweo//zuzAvJwxVxxT84zWAQNS2qqvEOOoHR+JR8IquZpScOl9rEkNPMIb7Kz5gbqxjS8052q4nK0dg+AYFHNLNyQju3AGkWxU0qgwSh/N5g40w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=cbouM69Y; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=brgl@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1785412868; c=relaxed/relaxed;
+	bh=DHf18rSlNZKDZKjkZzbb9NgJagDAkYivuavqTnujb3E=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=WmZy4PrDS6DZZKSIhFnnHjhXMMP7UGcBsd2a9Vo/a7Zh1W46ZsqrBsroCLsbbmkhGqwP1sFK0FbFAoQAbOqKmKjTZL9ZKKI1wFfMWdn4THsOEp/mdJTl5ZZoAxMtDhuvsvo0otWVSA8B+CMZrtFzpkAziT5FBgxaLWsmL64bTFvPcOC4TT6fUDuz4dYdwnjVR8w4Jpc5fpR1TGHW5lJ9WuSNRL/B0o/3NYfSbpeKXLW5fM3vruLnwuthRY5cSeZ/EoTHScyqb1BnTu44sYfbNNq2dAMY6HY8CblARRSMugUpss/9F6QN3kbz7luqv0j826dhxHGSA5t0Vs4Se2+pAA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=T9VtASuf; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=cbouM69Y;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=T9VtASuf;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=brgl@kernel.org; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
 Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h9nfp4r9Cz2xnp
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2026 21:54:10 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h9npq4c2Mz2xnp
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2026 22:01:07 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id C0056600C8
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2026 11:54:07 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7755E1F00ACF
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2026 11:54:07 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 871AC600B1;
+	Thu, 30 Jul 2026 12:01:05 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 10C6D1F00A3A;
+	Thu, 30 Jul 2026 12:01:02 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785412447;
-	bh=PWIEEQjaHeHJ5fxTgr0YOB4InTHJrKcidKplWWfbj8A=;
-	h=From:In-Reply-To:References:Date:Subject:To:Cc;
-	b=cbouM69YhwFY7cVqNT0XzrbRgTNiiIO9oCsC3AYShqoH7eLFVreZvRWImtxQ1uQGi
-	 UJqrHNEGxO6LRIRVVnWkk+fY2Ej7dOdlMFQuZunHjhkMP0ba5p3Jyr4Ub8chJtYoQi
-	 SbPZrgCfl1jDJmPFMinCryZXIWpr5pM3aIrpgfyDkMxtVCPn6mJEJhxrfZOyyAhMxt
-	 k0pC3ikW1cuW0DinPbGsdykwhYkPxYh5w6YG2OPdbxXMe2e93h8MDbGfftToYppNr/
-	 n5H0hBBnqk9oRdYxx/QqtVRfZQdI04Plu27MkrHZxsHe5DqGrRLvYJ8aNJaXR68m+B
-	 EadthDyHKAwYw==
-Received: by mail-lf1-f54.google.com with SMTP id 2adb3069b0e04-5aeba09900bso1259981e87.2
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2026 04:54:07 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+RrRkbox4vObPYrgy1tkpg1jzUp7GquVvutH1zS35/l7OnfFEnyG8Ro9dlwXcs6Y5Ujrr2QGNGw0rB11UM8=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwfjK4gBdr432ghhJNIqqXKTzjLAPaAZjgz+R+CGWpkiZ6mPPvQ
-	CZtseCwhO/61zmYV2HqMVnV7bZ/rhCqCThq+NmeZXCBvL5wRA2RBb925Zp4kF5LgFvZcJ7eC0qv
-	fPOITrxz2+iVM83jlN2GJ4nj1MUeY6aIyxa5a0hhuBA==
-X-Received: by 2002:a05:6512:6690:20b0:5b0:197b:9811 with SMTP id
- 2adb3069b0e04-5b2db373c5cmr282662e87.53.1785412446192; Thu, 30 Jul 2026
- 04:54:06 -0700 (PDT)
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Thu, 30 Jul 2026 04:54:05 -0700
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Thu, 30 Jul 2026 04:54:05 -0700
-From: Bartosz Golaszewski <brgl@kernel.org>
-In-Reply-To: <30b3f278a10b46252783458c81dc438df176f86c.1785405882.git.chleroy@kernel.org>
+	s=k20260515; t=1785412865;
+	bh=DHf18rSlNZKDZKjkZzbb9NgJagDAkYivuavqTnujb3E=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=T9VtASufsi6UhkYBym/rW+7GIcQGoutZ15mvneRHOETKxWcDl45W8Yhwy6V5bQR2G
+	 9RZoWt+/awfySOhU5icPHSUWu3HdhWH4YGGtLV58it9SnbVQwcyBt9Wdik+JIcE/S4
+	 njdXmNbigKVKE1oytHZlvxvGONIcf7ZtJZS/bKREHbubj9mbiHxfZf9E4Ey/sjq3AN
+	 3e24tBRr3ZuOrG3KzQ8RKE4kRjCjJ4KPb/kb0agLQ/6k7NTexEIDQeq6mpgOocANHm
+	 5bSh1uieJUfJIerYD0L0RMoHd+YybKhy7cRsfj0d0bRznpjaARbNVZPHBW82tgOhz+
+	 kKRh4qQcNM22Q==
+Message-ID: <223afb76-9f6f-48a1-a5c5-beb1a641916c@kernel.org>
+Date: Thu, 30 Jul 2026 14:01:00 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -72,27 +59,98 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <30b3f278a10b46252783458c81dc438df176f86c.1785405882.git.chleroy@kernel.org>
-Date: Thu, 30 Jul 2026 04:54:05 -0700
-X-Gmail-Original-Message-ID: <CAMRc=Mfmpq=Lb8yUqUAdvP29VzXO+FzF1m995Mwsh+dnnW6f6A@mail.gmail.com>
-X-Gm-Features: AUfX_mzScc3M9rGBw46jkrwGJk1nYV1wT2PFySG5uBLlIaqWgjEfkCdTsW4Lf0c
-Message-ID: <CAMRc=Mfmpq=Lb8yUqUAdvP29VzXO+FzF1m995Mwsh+dnnW6f6A@mail.gmail.com>
-Subject: Re: [PATCH] soc: fsl: qe: implement get_direction()
-To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: Linus Walleij <linusw@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>, linuxppc-dev@lists.ozlabs.org, 
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
-	linux-gpio@vger.kernel.org, 
-	RAGUENES Jean Noel <jean-noel.raguenes2@cs-soprasteria.com>, Qiang Zhao <qiang.zhao@nxp.com>
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] soc: fsl: qe: properly scan GPIO nodes at startup
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ linux-kernel@vger.kernel.org, Bartosz Golaszewski <brgl@kernel.org>,
+ Herve Codina <herve.codina@bootlin.com>,
+ Paul Louvel <paul.louvel@bootlin.com>
+References: <04dc047f8958a78a920f0a88ca3bd8bf70c56187.1785333986.git.chleroy@kernel.org>
+ <e1bd8dcf-9b8e-4bc7-8ba8-6c06222e1659@kernel.org>
+Content-Language: fr-FR
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+In-Reply-To: <e1bd8dcf-9b8e-4bc7-8ba8-6c06222e1659@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On Thu, 30 Jul 2026 12:09:40 +0200, "Christophe Leroy (CS GROUP)"
-<chleroy@kernel.org> said:
-> The lack of get_direction() callback in this driver causes GPIOLIB to
-> emit a warning. Implement it.
->
-> Fixes: e623c4303ed1 ("gpiolib: sanitize the return value of gpio_chip::get_direction()")
-> Signed-off-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
-> ---
 
-Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+
+Le 30/07/2026 à 13:14, Krzysztof Kozlowski a écrit :
+> On 29/07/2026 16:10, Christophe Leroy (CS GROUP) wrote:
+>> Before commit 156460811def ("soc: fsl: qe: Change GPIO driver to a
+>> proper platform driver") qe_add_gpiochips() was walking the device
+>> tree to find all nodes with compatible "fsl,mpc8323-qe-pario-bank".
+>>
+>> After that commit the discovery is handled by the platform core,
+>> therefore it is necessary to call of_platform_default_populate() on
+>> the par_io node.
+>>
+>> Fixes: 156460811def ("soc: fsl: qe: Change GPIO driver to a proper platform driver")
+>> Signed-off-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
+>> ---
+>>   drivers/soc/fsl/qe/qe_io.c | 15 +++++++++++++++
+>>   1 file changed, 15 insertions(+)
+>>
+>> diff --git a/drivers/soc/fsl/qe/qe_io.c b/drivers/soc/fsl/qe/qe_io.c
+>> index a5e2d0e5ab51..02ca556c8db0 100644
+>> --- a/drivers/soc/fsl/qe/qe_io.c
+>> +++ b/drivers/soc/fsl/qe/qe_io.c
+>> @@ -15,6 +15,7 @@
+>>   #include <linux/errno.h>
+>>   #include <linux/module.h>
+>>   #include <linux/ioport.h>
+>> +#include <linux/of_platform.h>
+>>   
+>>   #include <asm/io.h>
+>>   #include <soc/fsl/qe/qe.h>
+>> @@ -184,3 +185,17 @@ int par_io_of_config(struct device_node *np)
+>>   	return 0;
+>>   }
+>>   EXPORT_SYMBOL(par_io_of_config);
+>> +
+>> +static int __init par_io_populate(void)
+>> +{
+>> +	struct device_node *np = of_find_node_by_name(NULL, "par_io");
+> 
+> No, node name must not be ABI. Especially wrong node name.
+
+What's wrong with the node name ?
+
+Regardless, I messed it up, I wanted to use type but copy/pasted 
+of_find_node_by_name(NULL, "par_io") from quirk_mpc8360e_qe_enet10() in 
+arch/powerpc/platforms/83xx/km83xx.c instead.
+
+Is it OK to use of_find_node_by_type(NULL, "par_io") instead ?
+
+We have:
+
+$ git grep par_io arch/powerpc/boot/dts/
+arch/powerpc/boot/dts/fsl/mpc8568mds.dts:               par_io@e0100 {
+arch/powerpc/boot/dts/fsl/mpc8568si-post.dtsi:  par_io@e0100 {
+arch/powerpc/boot/dts/fsl/mpc8568si-post.dtsi:          device_type = 
+"par_io";
+arch/powerpc/boot/dts/fsl/mpc8569mds.dts:               par_io@e0100 {
+arch/powerpc/boot/dts/fsl/mpc8569si-post.dtsi:  par_io@e0100 {
+arch/powerpc/boot/dts/fsl/mpc8569si-post.dtsi:          device_type = 
+"par_io";
+arch/powerpc/boot/dts/fsl/p1021mds.dts:         par_io@e0100 {
+arch/powerpc/boot/dts/fsl/p1021mds.dts:                 device_type = 
+"par_io";
+arch/powerpc/boot/dts/fsl/p1025rdb.dtsi:        par_io@e0100 {
+arch/powerpc/boot/dts/fsl/p1025rdb.dtsi:                device_type = 
+"par_io";
+arch/powerpc/boot/dts/fsl/p1025twr.dtsi:        par_io@e0100 {
+arch/powerpc/boot/dts/fsl/p1025twr.dtsi:                device_type = 
+"par_io";
+arch/powerpc/boot/dts/kmeter1.dts:              par_io@1400 {
+arch/powerpc/boot/dts/kmeter1.dts:                      compatible = 
+"fsl,mpc8360-par_io";
+arch/powerpc/boot/dts/mpc832x_rdb.dts:          par_io@1400 {
+arch/powerpc/boot/dts/mpc832x_rdb.dts:                  device_type = 
+"par_io";
+
+Thanks
+Christophe
+
 
