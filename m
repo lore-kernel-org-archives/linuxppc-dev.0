@@ -1,91 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-25140-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25141-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A2033C55165
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jul 2026 22:31:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CA359C55165
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jul 2026 22:54:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hB3pb5ZSsz2xnp;
-	Fri, 31 Jul 2026 08:31:51 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::329"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785450711;
-	cv=none; b=CypT2fZz31O7i4OWedYiQdofCclVWWSYm8bcjjeTGanMksGgzO9aPLk8Pecdlxy4BYCxeKvvPrPPNw3QZsteFid3R0qKPu3MSlzfdbmpqC+Qi2K/WOtQXuStRUUyNCFk57WaIGjkX2Rgtpxt0N+Ejc3NbdLpbTgpiWI5XIMnpYZgYCiEGMOipZ6Lu3r8+8bzwbborPsYoBcpYFVDiei5w3az4ZCX2gsYTgwK8JHGjxH9K8eslP14NwyhFSpqFea5qpyC2K+atFpFoV5R+zYze47rEcR9eL0HkGK6PEpHfZtfg/YDExo0SuPZgqMv0fAkLT6JSmM3O1qbTeahvm8i/Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hB4KC5lzcz2xrL;
+	Fri, 31 Jul 2026 08:54:55 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785452095;
+	cv=none; b=exZmNIJvuMeZfFIaYR1iGNrThbIbSfwThL0rrMqUCERKAn1gOyjftxw5cRlf9s/QptuGQDIqoh160CnC4QPpxetBs20j7yhzEd+mpwElPCJsjDZerePN2PizxnIPsPtZU9/7+QFedkIXgquKKjTeyW4bf6SFxlcRsAB6sOnwRk5PmGhCNyxmWGGFJ311Ku+Z8EzePh2xYN8nzO/OVPznoyyO/ruPGUvnr/wFxcjS0Sew+07zOq4cKnm0GF/e+vY/DdC9NXgwiJrYpkajghPVpcUpqxPVVCvkB/+ddNW8qGpyphsGOQ1P/XlwUCu09ZDK1p063E2aAbqxg46wSus5Yg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785450711; c=relaxed/relaxed;
-	bh=PlKOnAY10vVaTbHY589tMDEBcYBV0lZutRarK9tzuxA=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=jS5cai9zMHohcXecuAWD5MkDd2DylrTb1R/KaXHmc3ROlia8ZGrojQATrwX92JAU5+oJg/W6gMnmLtpNqqva8OfeWq22Se8ADc1Zt7kTV4V47QVsoLtVztT1OB0fdomQvCIABi83SBnuMz6t7ae9UNLv5wzOeJDNdEjyXNgaLmRzvi5lBRPq6+gQXUxtRyeT+SCj8g354ajLykrRyMbSE8W5GAqcupScyZZb9OizXNlcHiepH2QZlPrfGvs50sUhoWB91nRFbIUppElTVbkzVdhLtFA4L5NyAC1M9z4W3BdxwbPvvGjEASI/x6/yt2v/gKdP4+TUQp3NNG1X5MbPLA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=c5jusWwC; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::329; helo=mail-wm1-x329.google.com; envelope-from=colin.i.king@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1785452095; c=relaxed/relaxed;
+	bh=zGnH5hX5bNR1M5EEd5b9XJmSA2y7Zxwj+Dstt66u1eQ=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=GTqq4c8Tjjk40/GarkyWSOUUmCS6mHgzbNWcupJAWxwZjwSCy4GNCi6c6DnTfIzmGiXrt1UYCGysLhBHsN2OLHAXT0LSvp1b7PVlMOH60R6MeaoTNMIFFYvPJJ07ieXVtzy57XiFyvJX4Zz0o4ax9J1HJ1tpDnX2TqtiNcIisr9z9P5DGzsrXZs7525ebqisZSc1G7NPf6doNhkCQ7Eh5hnIKFWlCFGI3Hrh12aW5JjRcQbaPA3NB8uFIRvmQyPbLmfywoOtzhj0neSpNVhsBjLcuvEfKktQAZUXXbhGhj09Lk23nX+IUnzdl0gfYPCTWEnQSQlkTFPhFzKUPeiE0Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=H2m+8LQb; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=c5jusWwC;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=H2m+8LQb;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::329; helo=mail-wm1-x329.google.com; envelope-from=colin.i.king@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x329.google.com (mail-wm1-x329.google.com [IPv6:2a00:1450:4864:20::329])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hB3pZ15BKz2xl5
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2026 08:31:48 +1000 (AEST)
-Received: by mail-wm1-x329.google.com with SMTP id 5b1f17b1804b1-4921eed3fa2so1882175e9.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2026 15:31:48 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1785450703; x=1786055503; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:mime-version:message-id:date
-         :subject:cc:to:from:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=PlKOnAY10vVaTbHY589tMDEBcYBV0lZutRarK9tzuxA=;
-        b=c5jusWwCaKs2PNajMwmkp47r/SK5OXVxANXR++AHYPApP0DB4INhpMwH0d7xOXFwln
-         47a4FrNxEshyC8twDv+ThHOnDYysbLj5Jlkxou76iHvL7wbkyDwHXvi984h/ujjqoKhA
-         xmCNt5YuuClNYqtLSDcrqkcqMVpn4TQYoMcxDBiZdNDhWhlbiMqhb1qhAJzaojwOh0nE
-         gTPjRWvlDcgNNqssPYnM2KWN5dHDAx+Wpsd26RX4tegOK9om1P1wMmwjveC4l/WqqVp+
-         ZQBlZLr6Xrnrdpx1tnN6PwrYfxgSAETsQFnm2qAmJ1178yGnG5QG+tKdvgbuyiTKYnWR
-         W+iA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785450703; x=1786055503;
-        h=content-transfer-encoding:content-type:mime-version:message-id:date
-         :subject:cc:to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=PlKOnAY10vVaTbHY589tMDEBcYBV0lZutRarK9tzuxA=;
-        b=oIfeLBjzrs/qrp4gJchr8q5lnHCnD+gEYqPVCFjYQA1l4zbHQNaxKZVkmDSrhX+r21
-         Ez91+vXoQ+PYpf3Ba9VqOVCTVsBopzxYgSmNRn6UO2GDcV5erTBiQcGPaOiIHuDXQDLz
-         Mo7F71sNVbggwdDYiyirvVyC+GLmERy0kmBDfBq+KKu3c2yx+L5//RXlVkuZ8Ts0cUAb
-         kPPfof/FlJf55uCypv6UGxcCXVRKrm48YSbAp086oPprxietzCRIlO0FGNBJFpWYnUIg
-         0zkMYbxckE5eYGFQ0d/4OAR/g2iWJmNaenlKEjuqVnY0BORQfLcIHyQEBRPrGww0EFia
-         FxLQ==
-X-Forwarded-Encrypted: i=1; AHgh+RowRdmf02JerW8S92d3HCDcqQKhb7dLwgBzOCLdoKgQJykoYnSbo9L70+LT5wndcG9+CAzuKAgvCU+WiZI=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yy9rCEwxedB0lWVKl5DuV/u5fOewBltInfJO+MDHDecvL5SbQpP
-	ojCvuz9aFDlzphNMtp3ldHSLjWPSKqA+VYzRkAAEPRbZOwRAnmDG84v/
-X-Gm-Gg: AR+sD12JnX1M2dmYW84svhrxbLKG4d9KGjjSeQQujrqBMvhRJJQ3Pnrw3cQvglMln5U
-	ReSnecHCzFgo+FSJPD57lsBAVMy55+3USDrqeygjxgXY2v26C9Fbws0fhdoMcfbVc0UPoVnfFvJ
-	ghtDus3cfdWx/b8J1PDRazBWqpOEME/Q604PDw648NBgXSHyuRmfw4AUr0QkIHcQvc3bizF04tX
-	Sa+4xwCi3XOMXBPBkYDiG99IOt5Nq83twNon7HWTqOFgC6nx8JaH/Wl6nnsnTnQ4yuLKecmElEY
-	hDi7Hz7l8c1D3fS+v15vVTQDKVZWaAa0CA1FhF6BNynbRGOF1pY9N7w9025OXMUd6xkTLsW90UE
-	LJbX8gZTUcWyN4M73P1246keho32DCZOcHFettpNsOclx1fxAva47pXgYZHq2Iox8wjAJ89Ch1s
-	5h6FOcVV6w6mAVWz4DekW5fuxxu+vAo7+QIgjWgUm7mX81XBBITgCj322ObIo=
-X-Received: by 2002:a05:600c:1f90:b0:497:fecd:5b00 with SMTP id 5b1f17b1804b1-49800e74e48mr58540825e9.9.1785450703407;
-        Thu, 30 Jul 2026 15:31:43 -0700 (PDT)
-Received: from localhost ([5.83.201.220])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49800f1a7f7sm110882175e9.5.2026.07.30.15.31.42
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 30 Jul 2026 15:31:42 -0700 (PDT)
-From: Colin Ian King <colin.i.king@gmail.com>
-To: Tyrel Datwyler <tyreld@linux.ibm.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <chleroy@kernel.org>,
-	"James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>,
-	"Martin K . Petersen" <martin.petersen@oracle.com>,
-	linux-scsi@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Cc: kernel-janitors@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH][next] scsi: ibmvfc: Fix spelling mistake "Deleteing" -> "Deleting"
-Date: Thu, 30 Jul 2026 23:29:51 +0100
-Message-ID: <20260730222951.352872-1-colin.i.king@gmail.com>
-X-Mailer: git-send-email 2.53.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hB4KC0M6bz2xlQ
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2026 08:54:54 +1000 (AEST)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66UJmVFw2081860;
+	Thu, 30 Jul 2026 22:54:42 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=zGnH5h
+	X5bNR1M5EEd5b9XJmSA2y7Zxwj+Dstt66u1eQ=; b=H2m+8LQbizzMC/fZeG2uhJ
+	md9yuc9hJKb9ng6c3OtyUQ3RPWASgN9xW+ihWkQSqXQcVL6PsfJA5rfcveSyQVWJ
+	FYUTyzCbdkYoPrNmvDNq5K0ifvWZxGmMp1jpljr7gLZQmmvDKgE/6uo/V98ilc4t
+	OjcjT+bjVzJUn8F/+OGp6qpbaXa6M2QzNPxssRvaak5bA5j7UjyXMi8MMOZpTpZF
+	GDILWKrEOBRZl81cRIpPdwIOGOswRrir/MUH9y+5ia/8Q5QWLu4vRV7Fm8t7GLqX
+	LiyPXfo6x02jfFskBqFBQNnnNS1ybujOchnTWmxzCtFUtpYQI5LKFVaj1SRWG3Jg
+	==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fmuyct6th-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 30 Jul 2026 22:54:41 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66UMfLjv006956;
+	Thu, 30 Jul 2026 22:54:40 GMT
+Received: from smtprelay05.wdc07v.mail.ibm.com ([172.16.1.72])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4fn8yhndfq-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 30 Jul 2026 22:54:40 +0000 (GMT)
+Received: from smtpav04.dal12v.mail.ibm.com (smtpav04.dal12v.mail.ibm.com [10.241.53.103])
+	by smtprelay05.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66UMsdo115729250
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 30 Jul 2026 22:54:40 GMT
+Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id CE2DA58056;
+	Thu, 30 Jul 2026 22:54:39 +0000 (GMT)
+Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id F1F1E58052;
+	Thu, 30 Jul 2026 22:54:38 +0000 (GMT)
+Received: from [9.61.73.28] (unknown [9.61.73.28])
+	by smtpav04.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Thu, 30 Jul 2026 22:54:38 +0000 (GMT)
+Message-ID: <75acb590-7bb3-479d-888a-b4e7d6a3aa41@linux.ibm.com>
+Date: Thu, 30 Jul 2026 15:54:34 -0700
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -99,30 +81,79 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH][next] scsi: ibmvfc: Fix spelling mistake "Deleteing" ->
+ "Deleting"
+To: Colin Ian King <colin.i.king@gmail.com>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        Christophe Leroy <chleroy@kernel.org>,
+        "James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>,
+        "Martin K . Petersen" <martin.petersen@oracle.com>,
+        linux-scsi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20260730222951.352872-1-colin.i.king@gmail.com>
+Content-Language: en-US
+From: Tyrel Datwyler <tyreld@linux.ibm.com>
+In-Reply-To: <20260730222951.352872-1-colin.i.king@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-ORIG-GUID: _Z3hVZbTYoG3su98RmwO8AYjURRlLnEO
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzMwMDE2MyBTYWx0ZWRfX8lvnKvqWULxG
+ ObE/NvLWGvCuCJiXhUmLJO4/P63B0V3xxVsOaeG2XEIi4TQGLsb5MysbGLijmUrXNgoPIctBj67
+ Y8tJ2bXwDKU590Xy9V7jpluFjhVqI58k9UvtD/HqkUFKnYGisTJe4MQYlU68l/U6C9ARa2pgt+2
+ si0HxpGc40z+pNdOEdhXB3HOORDsUiHBJ9L7dUtsz1nD2pHWOb2bf5t/uDyU1jEjIa2mUUIqJiX
+ GrqVqyaiISAuWwCjEB6U+kb1OfPV2TZ1DkjYMw2N3VbZ6UoVPbWjH6AZlqvqH1QSsaBoaiTKG3m
+ txL0hQMZajgUskzy9RbLUabpg/Ct4TXv+durS3EvyLyJLDs1MnP9ntTePb3tVh7JNg1Vk9AK6Zl
+ W6C9LvNwpxQpdXfkKwltzcLvh32sPNHWyASr0/70zhKsFQ6vDmCtJ3+dX/LnTrQ2Cdk9cci9qe+
+ 6cbLStkr1JbeJTUPMTA==
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzMwMDE2MyBTYWx0ZWRfXwWrQkI2fwfIJ
+ PGHr9cd9oJNMrazhCTmFMBdJIPOpw8/SmaT3K2g6xBc5sGtZauRkaeWeG9GKaeH8U4nzHbXxw8d
+ /f7Ufm/mxp/IaVr30BefGhnHdhocfXU=
+X-Authority-Analysis: v=2.4 cv=AZeB2XXG c=1 sm=1 tr=0 ts=6a6bd632 cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+ a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=pGLkceISAAAA:8
+ a=pdSM-NVmPh03PByMKzIA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: nci1EEkgEFiP9mTlgqezP6e0B16QFWAn
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-07-30_06,2026-07-30_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 priorityscore=1501 phishscore=0 adultscore=0 impostorscore=0
+ clxscore=1011 malwarescore=0 suspectscore=0 lowpriorityscore=0 bulkscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607300163
 
-There is a spelling mistake in a tgt_dbg message. Fix it.
+On 7/30/26 3:29 PM, Colin Ian King wrote:
+> There is a spelling mistake in a tgt_dbg message. Fix it.
 
-Signed-off-by: Colin Ian King <colin.i.king@gmail.com>
----
- drivers/scsi/ibmvscsi/ibmvfc-core.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+I'm going to have to resubmit the series that introduced this that is currently
+in staging. I'll fix it up on the resubmit.
 
-diff --git a/drivers/scsi/ibmvscsi/ibmvfc-core.c b/drivers/scsi/ibmvscsi/ibmvfc-core.c
-index dfa231b6cc47..93b9f699c2e5 100644
---- a/drivers/scsi/ibmvscsi/ibmvfc-core.c
-+++ b/drivers/scsi/ibmvscsi/ibmvfc-core.c
-@@ -6141,7 +6141,7 @@ static void ibmvfc_do_work(struct ibmvfc_host *vhost)
- 
- 		list_for_each_entry(tgt, &vhost->nvme_scrqs.targets, queue) {
- 			if (tgt->action == IBMVFC_TGT_ACTION_DEL_RPORT) {
--				tgt_dbg(tgt, "Deleteing NVMe rport\n");
-+				tgt_dbg(tgt, "Deleting NVMe rport\n");
- 				nvme_rport = tgt->nvme_remote_port;
- 				list_del(&tgt->queue);
- 				ibmvfc_set_tgt_action(tgt, IBMVFC_TGT_ACTION_DELETED_RPORT);
--- 
-2.53.0
+-Tyrel
+
+> 
+> Signed-off-by: Colin Ian King <colin.i.king@gmail.com>
+> ---
+>  drivers/scsi/ibmvscsi/ibmvfc-core.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/scsi/ibmvscsi/ibmvfc-core.c b/drivers/scsi/ibmvscsi/ibmvfc-core.c
+> index dfa231b6cc47..93b9f699c2e5 100644
+> --- a/drivers/scsi/ibmvscsi/ibmvfc-core.c
+> +++ b/drivers/scsi/ibmvscsi/ibmvfc-core.c
+> @@ -6141,7 +6141,7 @@ static void ibmvfc_do_work(struct ibmvfc_host *vhost)
+>  
+>  		list_for_each_entry(tgt, &vhost->nvme_scrqs.targets, queue) {
+>  			if (tgt->action == IBMVFC_TGT_ACTION_DEL_RPORT) {
+> -				tgt_dbg(tgt, "Deleteing NVMe rport\n");
+> +				tgt_dbg(tgt, "Deleting NVMe rport\n");
+>  				nvme_rport = tgt->nvme_remote_port;
+>  				list_del(&tgt->queue);
+>  				ibmvfc_set_tgt_action(tgt, IBMVFC_TGT_ACTION_DELETED_RPORT);
 
 
