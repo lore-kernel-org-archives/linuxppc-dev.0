@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-25165-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25166-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CAA8BC55167
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Jul 2026 07:09:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BA549C55167
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Jul 2026 07:11:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hBHJ22WtLz2yYq;
-	Fri, 31 Jul 2026 17:09:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hBHL91t8lz2ygh;
+	Fri, 31 Jul 2026 17:11:29 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785481778;
-	cv=none; b=djgu1D5yu9q5x5FWNmlQ7A4DJ8I4I1naFWRL/6rNpQMA6zqdSxMgKp4Xrp9z5+g67/ElA9zW6QYczHl2SVTMSQdy/0EmYndQUbYgxgB5UebLS1t4gfNEUlPHSrc3N7vOsdI2WP27sJfHqjdR3rtvQmjt/mdPq8WuFRt/vwnp4W/eSUFYS/UDJix/gO9Sxx7YwsOu/qhPBDXtqYQidGNpB7COlICZXgl/ENFMfJJs3iwjdOW07KnzLRMgcT2iEPpPp74jUNRJTUM0J3EoEs3sr71OhOx54SuBGxYcl8y4YjRB0lwplwsXBGDWnvNmUp15wRlBUvcCVzhySAhvJvZ+uw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785481889;
+	cv=none; b=bYsa5n0oxggli9FBVxlzThVR1cUi3SC/M2MCeYHtpLxU1fnJBGfoUbeUoVnx3un3pNRNsSIusI725NiKX/rDknA02oZ+KQaM3On3fLa3sT8IYx9uzwAPPRzHTdhp9m01t5SIRPvmkpt+BbYbTEG/YQNB0Ybr1VC3MEQX4h2JL8nYEI9pJPVv4aJbqSf2RuInsd6BgksT1RfLa7IrZJ71ERNPR6EaBJb8VIZZ8SPbe31sdYrMVvOEnQwdMWOaXgNx8QAF9iEzQSKei4y7hstIig/8+y+3RxZ+7xt1EtUtyFkwWgNpGmkmCMCOMXFrq8i6zQMn0bl3tBeDxEF3nhcFqA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785481778; c=relaxed/relaxed;
-	bh=rhw+Tc7eilLPGsXJEbmsKbbF/WcLk9AsnAtacOY+EQo=;
+	t=1785481889; c=relaxed/relaxed;
+	bh=CWMEFKxEBjtPexxljun5XVOIgKx0us+3UHa4wux2fjM=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=TjFDkbYjFEdbMjyRD+a6CYAswq0NuA4t+HxqPw9bSy5VnSXy5mDjdJG09mOtrQix2Mko8oDCp8Bs1nFCpt/Kkw5Lx0rAMcrwFAkMdhjLA5oGdAJzwC2uDjwJU+oto2h39NphBOaH1vUGcZHpmAcy4sMNxIRoHt87oAJbFtwCqG09WLxCgnLl7nInjs0SAYJadCOc3c+sm1M8L3OEF8hX+HZPHU8khB+7QnYVDGKNhocQQtMPVQCl/SrgvVOhgnzspwAchNIFxtD1pgK/LvBl5z5WGdVLU6WzcXdlOiX/RoXpztf8FTszZ1tyccazusMJkM0B9JLWVBfgKtqXKqw3NQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QHHBG5S6; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=IZpQCeLB/sbXNLjSVX4Uvi7IFWDFzP03IWHqn/RblJrIpABjEDfZtaKb9H+HQffNvAdRop9bEBqDSVUf4giMk5iMQ5XEniIBJ4sk0kO3t694g44l/CB0+4Y1Tsc2eKnaZIXy8aer0VnlZ2QanJmOAmxkNEduYu3A24CUmc5f+HIQU321/8W0T8O08S1kVw9KsitB0LYe6qJBjwmVF/M8gFvF0UsU4M15yiGJ0khyEQ66nvoTuwDvuCOsgX9LjvNPOZ2fcx2xZHaZwnBjBVWUF4J8bMPpElba8TUHvM4/lj380I8t1fwnPzo3bTz0rydFU07CBFP1qW2vVglsFJjPgA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CsMXRtJG; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QHHBG5S6;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CsMXRtJG;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hBHJ12l7lz2yY1
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2026 17:09:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hBHL76BBNz2yYq
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2026 17:11:27 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 0AC3A40AB7;
-	Fri, 31 Jul 2026 07:09:33 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E55D01F000E9;
-	Fri, 31 Jul 2026 07:09:30 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id A727543CC5;
+	Fri, 31 Jul 2026 07:11:25 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E071F1F000E9;
+	Fri, 31 Jul 2026 07:11:23 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785481772;
-	bh=rhw+Tc7eilLPGsXJEbmsKbbF/WcLk9AsnAtacOY+EQo=;
+	s=k20260515; t=1785481885;
+	bh=CWMEFKxEBjtPexxljun5XVOIgKx0us+3UHa4wux2fjM=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=QHHBG5S6rLHEYM7zRgqzwdR7pkmHK/54agx4Bx43Wj0kmy8cAZmDrxho4pGu13FdB
-	 cYVNqaUJ3B+FUCMS/dD880/EYiR9l1BxYOJcAFjeEgQbxQGYGhWSO4oMCgATxvWwfq
-	 hd+x3mjDgfL6SF2JK8quTLJseMTYbpVgKptcaFGZ84vBrF6Z5pEK/1xJKCSErB4WA1
-	 lZPiJEyT+lOB1ic5Sf/cTNL2KG8+X5wV0TQaQLDi9hZ6rYRCtSZl+axAe0Q8G+BWyF
-	 eY2N5sC4Ri8JeVpDe11DbU8miOidFSr93lOCcoNHNmZwLTKtK9aaOpxBTorwu2TxZA
-	 Ki7VPuj0Ic6EA==
-Message-ID: <1024f0e7-b9b5-4f5d-b0f5-5e7f08c51cbe@kernel.org>
-Date: Fri, 31 Jul 2026 09:09:29 +0200
+	b=CsMXRtJG4F+CvAtfiZlLOdBtJp3OuGJeYa1VxovTnRGzy9dbleCF+KaD1o70shxrq
+	 dJHfQ6JkZ4NX20MnYyC/5LAPSciNZUN1CRGAyCraAGn4UliJ1OZ5BG17ShGgI3TqaZ
+	 0TANC6PusKCFxZ9PJJvJS7eWC7FLp7IS+fQ+SDOhhBZLlzuJ0JWR7Vjhgo8ZKKhP9d
+	 n8thGYEu7sx9cUh+tMB2YVCYdXOGgFnq1q8hgGjrbe8kazVMLzq9RmZ678362B9Y2f
+	 ELyb9QGJ8w7BcLw/zT7N2FfwVV18b2Io/bQRrLIhw/FYJtVZiojEGr3B5JxUmCRFA0
+	 0/dlupQLbVgTQ==
+Message-ID: <ef09380b-feff-4891-83d7-19366681e8fb@kernel.org>
+Date: Fri, 31 Jul 2026 09:11:21 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,60 +60,45 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] powerpc/ps3: Use cpu_relax() in ps3_create_spu()
+Subject: Re: [PATCH] powerpc/powermac: Simplify bootx_scan_dt_build_struct()
 To: Thorsten Blum <thorsten.blum@linux.dev>,
- Geoff Levand <geoff@infradead.org>, Madhavan Srinivasan
- <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Nicholas Piggin <npiggin@gmail.com>
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-References: <20260720231153.116827-2-thorsten.blum@linux.dev>
+References: <20260720231453.117271-2-thorsten.blum@linux.dev>
 Content-Language: fr-FR
 From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-In-Reply-To: <20260720231153.116827-2-thorsten.blum@linux.dev>
+In-Reply-To: <20260720231453.117271-2-thorsten.blum@linux.dev>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
 
 
-Le 21/07/2026 à 01:11, Thorsten Blum a écrit :
-> Use cpu_relax() to wait for the execution status SPE_EX_STATE_EXECUTED.
-> Drop the comments while at it.
+Le 21/07/2026 à 01:14, Thorsten Blum a écrit :
+> Assign the empty string directly instead of NULL checking namep again.
 > 
 > Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
 
 Reviewed-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
 
 > ---
->   arch/powerpc/platforms/ps3/spu.c | 10 ++++------
->   1 file changed, 4 insertions(+), 6 deletions(-)
+>   arch/powerpc/platforms/powermac/bootx_init.c | 4 +---
+>   1 file changed, 1 insertion(+), 3 deletions(-)
 > 
-> diff --git a/arch/powerpc/platforms/ps3/spu.c b/arch/powerpc/platforms/ps3/spu.c
-> index e4e0b45e1b9d..8545c72385de 100644
-> --- a/arch/powerpc/platforms/ps3/spu.c
-> +++ b/arch/powerpc/platforms/ps3/spu.c
-> @@ -13,6 +13,7 @@
->   #include <linux/export.h>
->   #include <linux/io.h>
->   #include <linux/mm.h>
-> +#include <linux/processor.h>
+> diff --git a/arch/powerpc/platforms/powermac/bootx_init.c b/arch/powerpc/platforms/powermac/bootx_init.c
+> index 72eb99aba40f..abceae91dfde 100644
+> --- a/arch/powerpc/platforms/powermac/bootx_init.c
+> +++ b/arch/powerpc/platforms/powermac/bootx_init.c
+> @@ -284,9 +284,7 @@ static void __init bootx_scan_dt_build_struct(unsigned long base,
+>   	dt_push_token(OF_DT_BEGIN_NODE, mem_end);
 >   
->   #include <asm/spu.h>
->   #include <asm/spu_priv1.h>
-> @@ -363,12 +364,9 @@ static int __init ps3_create_spu(struct spu *spu, void *data)
->   	if (result)
->   		goto fail_enable;
+>   	/* get the node's full name */
+> -	namep = np->full_name ? (char *)(base + np->full_name) : NULL;
+> -	if (namep == NULL)
+> -		namep = "";
+> +	namep = np->full_name ? (char *)(base + np->full_name) : "";
+>   	l = strlen(namep);
 >   
-> -	/* Make sure the spu is in SPE_EX_STATE_EXECUTED. */
-> -
-> -	/* need something better here!!! */
-> -	while (in_be64(&spu_pdata(spu)->shadow->spe_execution_status)
-> -		!= SPE_EX_STATE_EXECUTED)
-> -		(void)0;
-> +	while (in_be64(&spu_pdata(spu)->shadow->spe_execution_status) !=
-> +	       SPE_EX_STATE_EXECUTED)
-> +		cpu_relax();
->   
->   	return result;
->   
+>   	DBG("* struct: %s\n", namep);
 
 
