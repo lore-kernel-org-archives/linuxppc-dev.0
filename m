@@ -1,63 +1,66 @@
-Return-Path: <linuxppc-dev+bounces-25188-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25189-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D59F2C55172
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Jul 2026 22:47:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AB951C5516F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Jul 2026 22:59:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hBh6P4xt2z2xlV;
-	Sat, 01 Aug 2026 08:47:41 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.246.84.56
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785538061;
-	cv=none; b=Jdp1tnCVynBZO23yQOureeJojCV0+RCLy+QtpWT5HQef4EpP3js4SiWRMI4G4R+bzouKUuyGlU2TT/fygBmdONDAboMaO53znVN0Je0+I2ex+3Wi2O1xVomTb2Lv0QKaENUf+PVq8LOV4W3PCdoRFKDVxAdK5zoxpF3AQzPwl0xyHkCuNo+JXaKriihD6AdLc6CMpDzTffBPeUAZuAQKY3RZLnp9Lf7p8B9CDVVH4YFUWjme2zPVJegHdsOvLjJbTJsShqRLKQWHjHDTXBWxD5Sq6tBzrsFt+q6sEypm9/HhtWpqpQJdIXddkgK9ZxHczfJqsfUWCLbIp2lq8Szz1g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hBhN70Ml0z2xlV;
+	Sat, 01 Aug 2026 08:59:35 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785538774;
+	cv=none; b=mGbUVsE4fmmRuKcxaNi2wGXm+Mrj9yUq7Luu2yb0FtPp2Hllh+S/Wtm0DCrjHw3xs9ebMdVeY1vvOYLBJtQgszUrRcJiVocdCzrcQNZU9Yeg+kzl8AqvJPkc4FpvOQz1pu7gGSq4lAlO0IojgBgVR0MH4d3O2RETKdq8AFOhci2Odus5wlJblvl1l4k81emrTfSil2uq9FSCsepKsxIAVAQ8sMeXJ5Qh/axmDSg59GZbVlTDBZW4WvK7v/u7LzvZp76npFko/fwhQAEK14adXH+oPnL9S5BRs5x3hFsTIPeLevU/HsLPVE7z2lT6VIJTyJ0PE86pJmnOB4bodaWI+Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785538061; c=relaxed/relaxed;
-	bh=EO8CFlkuOm9CFa5xTcXOHUlgLuaD/l88nHO6R3HiCps=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=h5Qk+J8m64bsdhid9e4omk4Blm7YwiYrWR6v7ZbbKAKdLbTo8FbSi+rYMh1r0l0dGOiPpSjt4s4HLP7zr4/7iePbuWteDKjkUBbEy8qw+DTdJodsFjtyJSlduQV5alxSmv1zNKW5psphy3zftOAkZvDcZ2tjbO9fTsYzAaAB2oRRZx6VJQc0Kjusl/5azbcf2aY+lMW4XLCsZRXJuhhfD0peHfhGTl/mBpDoR548XclgsQT0bmvCCsLL/AZ701vZGItJQ9zyg7jKpIYUelepJjvQCaBqRpXWPtO45uELeH0ESaaqhJU/4eV+c66BUu64xswYxyEyk7XgfGHkK7fxeQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=PexFx1TJ; dkim-atps=neutral; spf=pass (client-ip=185.246.84.56; helo=smtpout-02.galae.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
+	t=1785538774; c=relaxed/relaxed;
+	bh=MfyPXuzHFrgeP1BY9ER7yd6RDg+vnAlA5a1UueZqk9w=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=ewkLGO867l2HZWB7Izy+Ui6jlEjzLr+ua5YLFKCQdHd+bRxrg9TbJM8ho3h/3ZlwO8xWIG9TYEyJn8o+yxnzV55wcecZmUFh04pfY1lr051QHut9RqBOxN6YI+1nGmTp2yNZN6JeALW0a8uhSZovwyZwj0nrrPlhlO6uZBamjDxVST2ZmxQCky6EyM6+xbzwkyHllRenV1H849aFI2EU+aMTD+B7sLaCwOmHSu0E4YR5duRQMMIhEKS1aBv4Dgk5Y0gVXwys2jkiLv/HMfaFCj7b2j2hT1fHz14yeZemuGcHPpQni4hkmykEN5AkJSEzGnMGxTJT8GfjZEtJx++ccA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bS9G3Tec; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=PexFx1TJ;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bS9G3Tec;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=185.246.84.56; helo=smtpout-02.galae.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
-Received: from smtpout-02.galae.net (smtpout-02.galae.net [185.246.84.56])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hBh6N2fscz2xLq
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 01 Aug 2026 08:47:38 +1000 (AEST)
-Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
-	by smtpout-02.galae.net (Postfix) with ESMTPS id C24781A1376;
-	Fri, 31 Jul 2026 22:47:30 +0000 (UTC)
-Received: from mail.galae.net (mail.galae.net [212.83.136.155])
-	by smtpout-01.galae.net (Postfix) with ESMTPS id D082E6039A;
-	Fri, 31 Jul 2026 22:47:23 +0000 (UTC)
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 13D9F11C16E20;
-	Sat,  1 Aug 2026 00:47:17 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
-	t=1785538039; h=from:subject:date:message-id:to:cc:mime-version:content-type:
-	 content-transfer-encoding:in-reply-to:references;
-	bh=EO8CFlkuOm9CFa5xTcXOHUlgLuaD/l88nHO6R3HiCps=;
-	b=PexFx1TJHg8/pnR7hv6ujSMs80MZ4tEyoitcfQ3BjIvW8TXDrp88xGAXYYNCSMhQYHppTx
-	HdLBZIVU3XnXTJ/1baRwzNk1dpjYpxxCgMBmTa7bALDUpLzdGaPoZthLES2j8Gw6fq9K4d
-	eWxNGk43xYyCrhvBbanKeIbc8BL0IF7xgMaLwoxBzr+iLbCMLmSHtKyprcBa9dA6BL392G
-	FVtMhBuhSwiCvXfST0di7W8GfpsayaS5U9JSs/Js1bHh5bCWB6czVdFdBKOKSQjFbUo9/G
-	I0NDhPxzle8yjtoYwagWSALBSc4wGSuiKqPP5YfuDiwU8WpnWcTCzRAMa8e0Pw==
-Date: Sat, 1 Aug 2026 00:47:17 +0200
-From: Herve Codina <herve.codina@bootlin.com>
-To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org, Bartosz Golaszewski <brgl@kernel.org>, Paul
- Louvel <paul.louvel@bootlin.com>, Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH v2] soc: fsl: qe: properly scan GPIO nodes at startup
-Message-ID: <20260801004717.73c06683@bootlin.com>
-In-Reply-To: <a1db12ef75bf881dd5fba893a37db0c8517eca1b.1785414349.git.chleroy@kernel.org>
-References: <a1db12ef75bf881dd5fba893a37db0c8517eca1b.1785414349.git.chleroy@kernel.org>
-Organization: Bootlin
-X-Mailer: Claws Mail 4.4.0 (GTK 3.24.52; x86_64-redhat-linux-gnu)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hBhN55LFWz2xg8
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 01 Aug 2026 08:59:33 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 18280600DA;
+	Fri, 31 Jul 2026 22:59:31 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A72EA1F00AC4;
+	Fri, 31 Jul 2026 22:59:30 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1785538770;
+	bh=MfyPXuzHFrgeP1BY9ER7yd6RDg+vnAlA5a1UueZqk9w=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=bS9G3Tec/7Iy9FTjR8vc35fepxYxeZolPIHJV02pj2ppUGeoTRKcFKKGhRbqiSXew
+	 HsOvWKZBgUpMdQ/eyCcedegXjjYiRJwoWtzh61y7pDRek2U2DCufuxMLjYuCaDsRD/
+	 BPreSUDR6nrs8I/HbLH1ojemW4lQ3rlq1E/EpeW3aylLWZ/blntGAjantnwPuabuGd
+	 GnBywAxhFeSOEeLz0MQySmdvT6qj4wfTxvDMR3vjK7GAyVSDUjaVtaKu6j+txfsZTq
+	 EXoV9Rp/xNnSavV7kTsyHEVeIOUyVSX6W5j+3+zd5YL0q3iFt3WaFGvMJk/gFCOxNK
+	 sWLwJX8xX0c0w==
+Date: Fri, 31 Jul 2026 17:59:30 -0500
+From: Rob Herring <robh@kernel.org>
+To: shengjiu.wang@oss.nxp.com
+Cc: lgirdwood@gmail.com, broonie@kernel.org, krzk+dt@kernel.org,
+	conor+dt@kernel.org, Frank.Li@nxp.com, s.hauer@pengutronix.de,
+	kernel@pengutronix.de, festevam@gmail.com, shawnguo@kernel.org,
+	linux-sound@vger.kernel.org, devicetree@vger.kernel.org,
+	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org, shengjiu.wang@gmail.com,
+	Xiubo.Lee@gmail.com, nicoleotsuka@gmail.com, perex@perex.cz,
+	tiwai@suse.com, linuxppc-dev@lists.ozlabs.org,
+	Shengjiu Wang <shengjiu.wang@nxp.com>
+Subject: Re: [PATCH 1/4] dt-bindings: sound: fsl,imx-asrc: update port
+ binding to support multiple pairs
+Message-ID: <20260731225930.GA2098187-robh@kernel.org>
+References: <20260720095450.1618747-1-shengjiu.wang@oss.nxp.com>
+ <20260720095450.1618747-2-shengjiu.wang@oss.nxp.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -71,34 +74,97 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Last-TLS-Session-Version: TLSv1.3
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260720095450.1618747-2-shengjiu.wang@oss.nxp.com>
 
-Hi Christophe,
-
-On Thu, 30 Jul 2026 14:29:36 +0200
-"Christophe Leroy (CS GROUP)" <chleroy@kernel.org> wrote:
-
-> Before commit 156460811def ("soc: fsl: qe: Change GPIO driver to a
-> proper platform driver") qe_add_gpiochips() was walking the device
-> tree to find all nodes with compatible "fsl,mpc8323-qe-pario-bank".
+On Mon, Jul 20, 2026 at 05:54:47PM +0800, shengjiu.wang@oss.nxp.com wrote:
+> From: Shengjiu Wang <shengjiu.wang@nxp.com>
 > 
-> After that commit the discovery is handled by the platform core,
-> therefore it is necessary to call of_platform_default_populate() on
-> the par_io node.
+> The i.MX ASRC hardware supports up to three conversion pairs (A, B, C).
+> The existing binding exposed only a single generic audio-graph port,
+> which cannot represent the individual pair endpoints.
 > 
-> Fixes: 156460811def ("soc: fsl: qe: Change GPIO driver to a proper platform driver")
-> Signed-off-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
+> Add a ports container that enumerates three named sub-ports:
+>   port@0 -- pair A
+>   port@1 -- pair B
+>   port@2 -- pair C
+> 
+> Each sub-port references audio-graph-port.yaml as before.
+> 
+> For backwards compatibility, keep the old single port property but mark
+> it deprecated. A schema constraint (not: required: [port, ports]) ensures
+> that both forms cannot be used at the same time. Update the examples to
+> show both the new ports form and the deprecated port form.
+> 
+> No existing upstream DTS file for fsl,imx-asrc uses the previously
+> documented single 'port' node, so this change does not break any
+> in-tree device tree.
+> 
+> Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
 > ---
-> v2: Use of_find_node_by_type() instead of of_find_node_by_name() as the "par_io" type is documented while the "par_io" name is not.
-> ---
->  drivers/soc/fsl/qe/qe_io.c | 15 +++++++++++++++
->  1 file changed, 15 insertions(+)
+>  .../bindings/sound/fsl,imx-asrc.yaml          | 78 +++++++++++++++++++
+>  1 file changed, 78 insertions(+)
 > 
+> diff --git a/Documentation/devicetree/bindings/sound/fsl,imx-asrc.yaml b/Documentation/devicetree/bindings/sound/fsl,imx-asrc.yaml
+> index 608defc93c1e..18d252722aa8 100644
+> --- a/Documentation/devicetree/bindings/sound/fsl,imx-asrc.yaml
+> +++ b/Documentation/devicetree/bindings/sound/fsl,imx-asrc.yaml
+> @@ -78,9 +78,29 @@ properties:
+>    power-domains:
+>      maxItems: 1
+>  
+> +  ports:
+> +    $ref: /schemas/graph.yaml#/properties/ports
+> +    properties:
+> +      port@0:
+> +        $ref: audio-graph-port.yaml#
+> +        unevaluatedProperties: false
+> +        description: port for pair A
+> +
+> +      port@1:
+> +        $ref: audio-graph-port.yaml#
+> +        unevaluatedProperties: false
+> +        description: port for pair B
+> +
+> +      port@2:
+> +        $ref: audio-graph-port.yaml#
+> +        unevaluatedProperties: false
+> +        description: port for pair C
+> +
+>    port:
+>      $ref: audio-graph-port.yaml#
+>      unevaluatedProperties: false
+> +    deprecated: true
+> +    description: deprecated, use ports instead
+>  
+>    fsl,asrc-rate:
+>      $ref: /schemas/types.yaml#/definitions/uint32
+> @@ -125,6 +145,10 @@ required:
+>    - fsl,asrc-width
+>  
+>  allOf:
+> +  - not:
+> +      required:
+> +        - port
+> +        - ports
+>    - $ref: dai-common.yaml#
+>    - if:
+>        properties:
+> @@ -188,3 +212,57 @@ examples:
+>              };
+>         };
+>      };
+> +
+> +  - |
+> +    #include <dt-bindings/interrupt-controller/irq.h>
+> +    #include <dt-bindings/clock/imx6qdl-clock.h>
+> +    asrc1: asrc@2034000 {
 
-Reviewed-by: Herve Codina <herve.codina@bootlin.com>
+Drop unused label.
 
-Best regards,
-Hervé
+Presumably the existing example uses the deprecated 'port'. If so, just 
+modify it to use ports and drop the deprecated part.
+
+Rob
 
