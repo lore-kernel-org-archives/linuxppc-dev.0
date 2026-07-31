@@ -1,73 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-25145-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25146-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C6855C55167
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jul 2026 23:28:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 536FBC55167
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Jul 2026 00:47:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hB53M3PG2z2xlv;
-	Fri, 31 Jul 2026 09:27:59 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785454079;
-	cv=none; b=DTshGgPaJRAJI5NHmxYq21SPFWmnGiT5/izx4BFDEmcKb4DjYB82UGKAjOm02KnOgjBwdLWrlpgbnbO8QYs4ug8fsl0dn2tGMorofbTEBWGL077Re9fAvSqdecBMwJ7pQYPdQ+TEMuP0K7A9854HiUmGWVJqHU2/XeWspaUaZoFLgxcgGcBssG0cWK3nAdTkx7Fru0jrIfpzOu6odWiMgrbfjlTRz5gRcYqkct1xQk9O4UpXPJcxu3P3Pg7eHLwyb6g5pyXCUUBs5i4eoEckZ4uQcUy/0MLwm++3q7+O8tUTeJuIFF7waH/jHBuik+rvfrIPoo6vcn9lEReYwjQPwQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hB6qW4v7xz2xlQ;
+	Fri, 31 Jul 2026 10:47:51 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785458871;
+	cv=none; b=Ff6o85c6UOW2irat0UVaegmkYuLYRmkMxW7kHlrnGYc6c0jBl33/WQ8SkrMg8/zWkr9LfJrU33bfqPdDLXtQSgDNC74CBC0Ss/0H9RLs55BlRBRQR4DHYgFx7JkxFwLYgkvA82Kxyp2/iC5S32I8nohOXGIiZMidNAA0bPT6W5UT2zA789l+mrKT4C7LVLgAvPAHB14stiDz/F0r3U8sUvjFWkihjDT+Tq2MeKAgiFEspf30cy9ISpwmqbyY/USN4U5QhQ6bbDEuZkej3bJwanAjYFkQriwAkADKdTTQWUS8dRDhW4PpARHnYiAUT6Fs1wLnnqs6zZiZeJ7osTeBjA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785454079; c=relaxed/relaxed;
-	bh=OfkKlMMM8oJLbZihosEtrpQ1IaN+jIeRBx39f/HKrss=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Wi4PqIpL27/Crziv+b1oL8umkrPVh4jQOPfCMnAtl0l0sz5sbTPUhGx30ngRwnACFU7QRnzNihSw16GnA9c1VxnY3+NastKdA3z4RUbMlMu244HSCdg9OFOGWUMmHp5dUkxrhxbFNcno8sKdkSe9R24MhPxmxBjVDlXyuLObm2SSBjqD24JGMsk0mSB8NWDcjqh1lFoEihSljYpeLctx8SxdvjHCQRQVi3YpQW/i/w6DoU7Yuj+iHdG3VoF3x8fKcMIm8eTS1jsbXaz6g1agKh/ubRAe2bVWfdVzMiuKBQkmoLNJoL1IjicI6bc99rDCIxgZ+KL846GbdBUZxICiJQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cD2t23rG; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1785458871; c=relaxed/relaxed;
+	bh=cceipyx7ZETmL+wGyudLwxubSxgmMClxud2EHJXtR74=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=YuTk178V6NBdsRHZRqHJ00A9jifb+g2OkdH23S1tKL/Qf7sUqYLtECTBjeOhFxz/i11rqrKE5XNCH9iMqZmYwvw+wpLC2G7nsVmKGf52z93mQwR3b6ESwxMkcIUcXY5r7CX/KSqFyzumX21icNxL+yjYEn/wmeMYSHyISlNDh7xzw7ZP+PZChjLWzwbQwSGkg+tZ3IX8a5y1a4OYr5Vng+Qn4+Ulvdje/c9ER8eO01p2Ee1iZpVTpJzVzErXaQ8c8EMOswDsnX2QDbsyT+1WD0Ab1XjU/hMFq5Ev1yXR0TdLxreepQJSpkGJMFWL/zpEdsIbPc3s6NF+u0z0LVrtog==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=NiaDKlsX; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cD2t23rG;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=NiaDKlsX;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hB53L3B78z2xLq
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2026 09:27:57 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66UNHe6q117992;
-	Thu, 30 Jul 2026 23:27:49 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hB6qV29Pmz2xLq
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2026 10:47:49 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66UNK4XK223094;
+	Fri, 31 Jul 2026 00:47:37 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=OfkKlM
-	MM8oJLbZihosEtrpQ1IaN+jIeRBx39f/HKrss=; b=cD2t23rGukGSpV/AbTPRkB
-	2t8mllJcszxjYdvOs6litUDLbB5YFvDl7tM+BwxA1PPFh/d2uMeQKS8tJ+wiVV7j
-	gwQ6IsSq80YnyNmTfx0QKUJwqaiJXQ+H/YBmB6lyPIWyv7dYZU1vYkg1309gW+RA
-	jo/DZ5nbZqC9mm7avljeaxr3shUs7Uf8DEWLKFXuEAyTQPbaHhtzw3rvGIMNC5K7
-	EC16rPoYrobuirk9ocuEu4pWr+Ner03r5s7UfEqorAJcBKr1XTbBSXP6qRVxulbD
-	w2dz9O28rz9vMqerAq3THoap9zwZMNBrrkqtzvoaqFxEoh27cwkebbZDziE/vtTA
-	==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fmv0p1d7v-1
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=cceipyx7ZETmL+wGyudLwxubSxgmMClxud2EHJXtR
+	74=; b=NiaDKlsXvZuJRpUwUJGz9bSumnLiim72NCyVafFy/mPz2zDvz8EUH70iZ
+	FSP9US5wPdNis8aJLaVbxqoIc8fwCNpchMFgiubq5yV+EoGZZa42qnMZj3zjAS5Q
+	dVAsNDcu+oQZkG/45S/UAVg4wb7zDMQoA4AlXgUq4OamUFz6c9x15eJjNyvN6vrf
+	EllN8Bs4uy2Z19HV4YPIqTarVFXKGBmsjoBz0LfGTVvgGhDUiXrBDpbDJNuiDS6Y
+	Xu1RJJBqd91pxmalQXxtTNoytAYwtQ5z2GgGYZ8StA3Kd2ISCQNCDyscdQyDvoch
+	xG9IrohK55M1G40G+WhgmCzx0I+cQ==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fmv0y2mhr-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 30 Jul 2026 23:27:49 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66UNQWGp028175;
-	Thu, 30 Jul 2026 23:27:48 GMT
-Received: from smtprelay07.wdc07v.mail.ibm.com ([172.16.1.74])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4fn7uwdqx3-1
+	Fri, 31 Jul 2026 00:47:36 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66V0fOug031579;
+	Fri, 31 Jul 2026 00:47:36 GMT
+Received: from smtprelay01.wdc07v.mail.ibm.com ([172.16.1.68])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fn9pgnpcw-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 30 Jul 2026 23:27:48 +0000 (GMT)
-Received: from smtpav04.dal12v.mail.ibm.com (smtpav04.dal12v.mail.ibm.com [10.241.53.103])
-	by smtprelay07.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66UNRlMa10093210
+	Fri, 31 Jul 2026 00:47:36 +0000 (GMT)
+Received: from smtpav01.dal12v.mail.ibm.com (smtpav01.dal12v.mail.ibm.com [10.241.53.100])
+	by smtprelay01.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66V0lYYg3277602
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 30 Jul 2026 23:27:47 GMT
-Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 4CEE358056;
-	Thu, 30 Jul 2026 23:27:47 +0000 (GMT)
-Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 900A658052;
-	Thu, 30 Jul 2026 23:27:46 +0000 (GMT)
-Received: from [9.61.73.28] (unknown [9.61.73.28])
-	by smtpav04.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 30 Jul 2026 23:27:46 +0000 (GMT)
-Message-ID: <6ccbe8c5-beb6-483f-bfa4-c2d3819ad5f2@linux.ibm.com>
-Date: Thu, 30 Jul 2026 16:27:46 -0700
+	Fri, 31 Jul 2026 00:47:34 GMT
+Received: from smtpav01.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 38CC15805D;
+	Fri, 31 Jul 2026 00:47:34 +0000 (GMT)
+Received: from smtpav01.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 4ACBE58058;
+	Fri, 31 Jul 2026 00:47:33 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.61.44.71])
+	by smtpav01.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 31 Jul 2026 00:47:33 +0000 (GMT)
+From: Mingming Cao <mmc@linux.ibm.com>
+To: netdev@vger.kernel.org
+Cc: horms@kernel.org, bjking1@linux.ibm.com, haren@linux.ibm.com,
+        ricklind@linux.ibm.com, mmc@linux.ibm.com, kuba@kernel.org,
+        edumazet@google.com, pabeni@redhat.com, davem@davemloft.net,
+        linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com, mpe@ellerman.id.au,
+        simon.horman@corigine.com, shaik.abdulla1@ibm.com
+Subject: [PATCH net-next v4 00/14] ibmveth: Add multi-queue RX support
+Date: Thu, 30 Jul 2026 17:47:03 -0700
+Message-Id: <cover.1785457143.git.mmc@linux.ibm.com>
+X-Mailer: git-send-email 2.39.3 (Apple Git-146)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,123 +88,110 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 25/33] ibmvfc: process NVMe/FC rports in work thread
-To: Bart Van Assche <bvanassche@acm.org>,
-        Nathan Chancellor <nathan@kernel.org>
-Cc: james.bottomley@hansenpartnership.com, martin.petersen@oracle.com,
-        linux-scsi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        linux-kernel@vger.kernel.org, brking@linux.ibm.com,
-        davemarq@linux.ibm.com
-References: <20260723000149.969416-1-tyreld@linux.ibm.com>
- <20260723000149.969416-26-tyreld@linux.ibm.com>
- <20260730065226.GA1879117@ax162>
- <86ee4f27-7303-43c4-b772-b735b85c0229@acm.org>
-Content-Language: en-US
-From: Tyrel Datwyler <tyreld@linux.ibm.com>
-In-Reply-To: <86ee4f27-7303-43c4-b772-b735b85c0229@acm.org>
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzMwMDE2NiBTYWx0ZWRfX7XYndK/1j2v5
- 9KoYoyh1m/cbTFSdVR/aQ5U0qDDpQ4avuGfbQ3IC9Xn2XyCX2qWxlN92fq7WIhiC7iI0Od+dnNV
- GY1Dyxbhlrlqp02hw9+pMsgnAXKss6Y=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzMwMDE2NiBTYWx0ZWRfX3qQPWQJIDfbp
- sjxjGu7EHTPuBQ0raHoPKFZB4FkdjNiwmdZ557dP+EYN51qdNNyDyE4ziZcSSlKF9QZ2exI67jQ
- iYY+ckmm4wEFR4o2b5LW7WvPnu544QwKHAQC5B8DzKH6mkdtzgGze52aZhqnS3WUpgQV0FgHXLf
- xH4TMozMFJwZ7Ity/oB7jiITDJ+pha0fHS6YUjjPNlRXvzA62ckrvuE2KkO1ns13SxCGIPiGfOn
- +mQpQbtQwnpiYBcOyzqaWk0CINsEpqenSlWZDszGWkaKvjGNm/+XcMWhFVVXbjtxXR+U+BMIdzm
- SMTN/LdJwCRRkAf3jEXrML5uVqcbulNuHZoYystHZ0dRogwPw1XbF9w6OrLpFjubS6+FYYCgbsj
- dYaegR93gD9jFMrDAOtsiXuLzxQK9OmQDq0kTwGmcPsSCutmX+QXSOTqLC/5L18BdHpk9Qj8Pxc
- GQHut7/1vcPHPCNox3Q==
-X-Authority-Analysis: v=2.4 cv=b5WCJNGx c=1 sm=1 tr=0 ts=6a6bddf5 cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8
- a=reDaP5zPGsiZX54FuSEA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-GUID: iOzL0pz9vNx_bh2wxmciA65gtgzUf8it
-X-Proofpoint-ORIG-GUID: iOzL0pz9vNx_bh2wxmciA65gtgzUf8it
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-GUID: B86ouFPx9-oyuR1H3h9w5hciM22FQ0UY
+X-Proofpoint-ORIG-GUID: 006rnVtAuByHYr-6L-4_P4rFMKuoR901
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzMxMDAwMyBTYWx0ZWRfX19Odk60asf8e
+ xuN8GneLiQZGh9JePN2SA44R9L+ER87mm06Z8HQZHKDoETSmUsd0bwDuOJFnU4rTXwmNOorBR5l
+ mQ3wlvrH4xDJG55S9N2IYzrZ/vG1GTs=
+X-Authority-Analysis: v=2.4 cv=dYuwG3Xe c=1 sm=1 tr=0 ts=6a6bf0a9 cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=U7nrCbtTmkRpXpFmAIza:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
+ a=-zOltsE3303Mi9OEyQUA:9
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzMxMDAwMyBTYWx0ZWRfX6icomEOrbyyM
+ JQ0D9LCf4b1xoC7tdes/RQQ8HFbESVUOPp2RIofokCp4RA3cI/yyzK+/tgbud11gF7fNs/g4hAZ
+ uhJ4MfRD14jIqxKsEZBc7PfWundxJmxvw/wyjbFWuECWkRzPg5gyQ9I67BzKzmcxTCaF3ggHzLa
+ YcdRDkNGAUzl1rBZ8WuaxafSZigHafzQxMiJvXT3WhWVaQGT4X/hK1zWNP0PWBh45D6ZgNm9c+P
+ A5lFeodl4Nj8eBLBTJikx/p3I2lfPOaXosj/7VLsw2hQ6RK5eQ1Hx3hDZt3aWYvMBr2RkWlChcN
+ htYDdPe889xHQxbDiXnclspzJnT4Lu31cFxLHL1J5qo9Vnk0VmdAv6Bat+bFXC02SJJksXC8IM+
+ PAWWbR4LtVp4uQSZxAl3R52R9RoeDczPh+57s1yfzbm1LhtbDsBwZXSxAoDy2g6XwGlGyV1uJZa
+ 9YzfP/+1bZi2bWclUEw==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-07-30_07,2026-07-30_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 spamscore=0 adultscore=0 malwarescore=0 impostorscore=0
- bulkscore=0 phishscore=0 suspectscore=0 clxscore=1011 lowpriorityscore=0
+ priorityscore=1501 impostorscore=0 clxscore=1011 phishscore=0 malwarescore=0
+ spamscore=0 lowpriorityscore=0 bulkscore=0 suspectscore=0 adultscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607300166
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607310003
 
-On 7/30/26 2:28 PM, Bart Van Assche wrote:
-> On 7/29/26 11:52 PM, Nathan Chancellor wrote:
->> Hi Tyrel,
->>
->> On Wed, Jul 22, 2026 at 05:01:41PM -0700, Tyrel Datwyler wrote:
->>> diff --git a/drivers/scsi/ibmvscsi/ibmvfc-core.c b/drivers/scsi/ibmvscsi/
->>> ibmvfc-core.c
->>> index 81d9229bf388..ffb579816e84 100644
->>> --- a/drivers/scsi/ibmvscsi/ibmvfc-core.c
->>> +++ b/drivers/scsi/ibmvscsi/ibmvfc-core.c
->>> @@ -6073,6 +6119,30 @@ static void ibmvfc_do_work(struct ibmvfc_host *vhost)
->>>               }
->>>           }
->>>   +        list_for_each_entry(tgt, &vhost->nvme_scrqs.targets, queue) {
->>> +            if (tgt->action == IBMVFC_TGT_ACTION_DEL_RPORT) {
->>> +                tgt_dbg(tgt, "Deleteing NVMe rport\n");
->>> +                nvme_rport = tgt->nvme_remote_port;
->>> +                list_del(&tgt->queue);
->>> +                ibmvfc_set_tgt_action(tgt, IBMVFC_TGT_ACTION_DELETED_RPORT);
->>> +                spin_unlock_irqrestore(vhost->host->host_lock, flags);
->>> +                if (nvme_rport)
->>> +                    ibmvfc_nvme_unregister_remoteport(tgt);
->>> +                timer_delete_sync(&tgt->timer);
->>> +                kref_put(&tgt->kref, ibmvfc_release_tgt);
->>> +                return;
->>> +            } else if (rport && tgt->action ==
->>> IBMVFC_TGT_ACTION_DEL_AND_LOGOUT_RPORT) {
->>> +                tgt_dbg(tgt, "Deleting NVMe rport with outstanding I/O\n");
->>> +                nvme_rport = tgt->nvme_remote_port;
->>> +                ibmvfc_set_tgt_action(tgt,
->>> IBMVFC_TGT_ACTION_LOGOUT_DELETED_RPORT);
->>> +                tgt->init_retries = 0;
->>> +                spin_unlock_irqrestore(vhost->host->host_lock, flags);
->>> +                if (nvme_rport)
->>> +                    ibmvfc_nvme_unregister_remoteport(tgt);
->>> +                return;
->>> +            }
->>> +        }
->>> +
->>>           if (vhost->state == IBMVFC_INITIALIZING) {
->>>               if (vhost->action == IBMVFC_HOST_ACTION_TGT_DEL_FAILED) {
->>>                   if (vhost->reinit) {
->>
->> There is a warning from clang after this change landed in -next as
->> commit 696d1cc2aaa2 ("scsi: ibmvfc: process NVMe/FC rports in work
->> thread"), breaking the build when -Werror is enabled:
->>
->>    drivers/scsi/ibmvscsi/ibmvfc-core.c:6154:15: error: variable 'rport' is
->> uninitialized when used here [-Werror,-Wuninitialized]
->>     6154 |                         } else if (rport && tgt->action ==
->> IBMVFC_TGT_ACTION_DEL_AND_LOGOUT_RPORT) {
->>          |                                    ^~~~~
->>
->> Sashiko appears to point this out as well:
->>
->>    https://lore.kernel.org/20260723005006.C7EE21F00A3A@smtp.kernel.org/
->>
->> But I am not sure that its suggestion to use nvme_rport is correct given
->> the context of this code, hence just the report from my end.
-> 
-> I think that advice is wrong because nvme_rport has not yet been set if
-> the "else" statement is reached. How about the change below?
-> 
-> Thanks,
-> 
-> Bart.
-> 
-First off rport is an fc_port in this context not an nvme_rport (whoops), and
-second we don't need to check for its existence at all here as we will get it
-from the tgt in the else body and check it there. That check got copied out of
-the add target code where we check if a target we are adding has suddenly moved
-to being deleted.
+Hi,
 
--Tyrel
+Power11 PHYP adds Virtual Ethernet multi-queue (MQ) RX: multiple
+logical-LAN RX queues, per-queue buffer posting, and completion
+delivery. Guest Linux did not use that; ibmveth still registered one
+RX queue even when PHYP was MQ-capable.
+
+This series adds the ibmveth MQ client for net-next. When PHYP
+advertises IBMVETH_ILLAN_RX_MULTI_QUEUE_SUPPORT via H_ILLAN_ATTRIBUTES,
+probe enables MQ with a default RX count of min(num_online_cpus(), 8)
+(same cap as TX today); ethtool -L can raise RX up to 16. Packets are
+received on per-queue NAPI. Older firmware without the bit is unchanged.
+Queue selection remains firmware-defined (PHYP hash). Ethtool RSS hash
+get/set for that algorithm is deferred to a follow-up series so this
+one stays MQ datapath only.
+
+User-visible bits: ethtool -l/-L (channels), ethtool -S and
+ndo_get_stats64 (per-queue + aggregate), and a read-only debugfs
+buffer_pools dump (v3's multi-line sysfs dump moved to debugfs; the
+historical queue-0 poolN/ sysfs ABI is unchanged).
+
+Background:
+
+ibmveth today uses one logical LAN, one set of buffer pools, and one
+NAPI context. PHYP MQ mode gives each RX queue its own handle (post via
+H_ADD_LOGICAL_LAN_BUFFERS_QUEUE, subordinate register via
+H_REG_LOGICAL_LAN_QUEUE). Legacy firmware keeps the original hcall path.
+
+Series layout (14 patches):
+
+  1-2   Hypercall wrappers; MQ adapter layout (MAX_RX_QUEUES stays 1)
+  3-8   Refactor open/close into queue-aware helpers (still SQ runtime)
+  9     Enable MQ datapath at probe/open (subordinate register helpers
+        land here with first use; probe pool-kobj fail paths put
+        already-created pool kobjects)
+  10-11 Per-queue RX/TX stats; debugfs buffer_pools
+  12-13 Incremental RX resize; ethtool set_channels
+  14    Poll/close fixes after aggressive ethtool -L
+
+Patch 2 is layout-only. Statistics types land with first use
+(hcall_stats in 7, rx/tx qstats in 10). Patches 3-8 do not change
+runtime behaviour until patch 9. v3's separate big-bang open/close
+pipeline patch is gone; wiring is incremental across 3-8.
+
+Testing:
+
+ppc64le PowerVM LPAR, MQ-capable firmware:
+* ethtool -L cycling (16/1/8/11/1/3/16/8/1) with ping
+* ethtool -L under iperf3; link down/up during traffic
+* ifdown/ifup under iperf3 RX+TX (SQ and MQ)
+* Legacy firmware (no MQ bit): open/close/stress on helper path
+* allmodconfig W=1 clean at each patch (bisect-friendly restack)
+
+Changes in v4:
+
+Addresses Simon's v3 review and related fixes:
+* First-use helpers/includes (irqdomain.h with first dispose); no
+  unused statics; dropped orphan open/close pipeline patch
+* Open/close unwind (free LAN before RX pools); no double TX teardown
+* MQ open: replenish all queues before PHYP unmask; H_FUNCTION on
+  subordinate register is a hard open failure
+* Resize/set_channels hardenings; stats probe-lifetime + sum-on-read;
+  buffer_pools diagnostic on debugfs
+* Patch 9: put already-created pool kobjects on probe failure paths
+* Patch 14: correlator skip, skb tailroom check, napi_complete_done
+  shutdown return < budget
+
+Comments welcome.
+
+---
+Previous versions
+v3: https://lore.kernel.org/r/20260706193603.8039-1-mmc@linux.ibm.com
+v2: https://lore.kernel.org/r/20260701222327.61325-1-mmc@linux.ibm.com
+v1: https://lore.kernel.org/r/cover.1782758799.git.mmc@linux.ibm.com
+v3 review (Simon, from 05/15):
+  https://lore.kernel.org/r/20260714124327.GJ1364329@horms.kernel.org
 
