@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-25168-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25169-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 04C4EC54F54
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Jul 2026 07:15:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BF62FC54F54
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Jul 2026 07:17:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hBHQq3TNTz2yhv;
-	Fri, 31 Jul 2026 17:15:31 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785482131;
-	cv=none; b=XN9XkNwT0hHZhmDTvBLy/3hB+GrTCZYG+lg9ZDBZKhDeq/j1UZC3AT7cgpJNSSvWEA0zYes/ArhKiyUC/YQ6wftVluo0qKp8S6qXxctd84kcl+7a2V7TC7tGSHN7eGemZ8yv/T9vRsoqigWtVmIPLlXJvr/P5tloerCiFYTlSkVfE0Wsvl6pJ1vq7Natwy2Pw0wyptMaUc95PCJbMp1dVlcO/KA4En9zDCu9XfznCGMHxvqCYBo5cPTAzeLgU3It0YvoGxXTPBf/alRkwyiUwhUC6EY6o4Q50TWeFnc9SCO8YtBKKf615hKABIFMffEKhp70dyU+n0coCV+Qs43MIw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hBHSw3T4dz2yjR;
+	Fri, 31 Jul 2026 17:17:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785482240;
+	cv=none; b=YFhvWTF+2fXnYOwcKcT0cuh3MGwoBETBMgRAjxxle6os91dMv0ysCoRSz67Gt4Y5OD9DbPl8yuQuDq6iBZZ3ubPxRD1UNw/nFODsTiEgBQWT3+T4sKp1fsrGrlV/USZNG/FRxCMQCcMm/iM3tXb6Q8jipTNjk6gK8arignA0y8NRUbWs3ZNNFp9Viy7BwE0hDVu+qk2ABdCotPZ7dyK79gQse579GRJJ8qCScuZt9wuH8uHKp3b8L3abjsYXqdT4k523xUCwOOx+pPIk3ZJQajiK0ICe1rqV6iTYmFVKCmSLn4fevSyVQDZTc9xepuPLf6khUle8j9ebzWj1SaPGzA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785482131; c=relaxed/relaxed;
-	bh=d80TQvyaCoLgq/NUMpiAgG2jz5ehxRjgCkZbSmCurf0=;
+	t=1785482240; c=relaxed/relaxed;
+	bh=TvqLQZZy3YaPJ22gRjBlXpOVn/OsX3M3hujOjGskfPk=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=WbcEYxN9nhYlTFropK7X/yts+hC73nJjkvBnY77kaofR8v25CJ1XorRbyzpLn/e7NXqkRQ0MBSq7jBQSP8xGSLlljA2Dr6hzqvINjwB586FK5nDhkZzBinqmcelYphHHbH6EGtefOBQ1nCxAf1mowAkKWckd7UovPLFdZgrutVapz0PAT7DkBgc2JNR0pWZrBFl4YCQLV2N+YrgPdqbiqYqscxvswjq2pE2MmIx4FKT4mbnTxIMuwy+L3uD3hTYSU5oszh1CY9jI9VL7C2giyZeypU1tDML9EeiT4kiYQsz5fYkxB+7/6diU8PtqAEiQ/p8Zxwu51Tr+Ee2dduTVVQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=G4GE0n5B; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=JmrYYnAzpM2gzeEJhjghIrB9od+2fSNEMCS+VL5Gz2ayUAqCJJykHIUCAViSyQV7KEpYOnQHfdEAVOmNEkVCk0DlF/nEl9TqW171EMPJQsZoA7KcZvCg7NVuLef6qw9iEXDfo5d18B+SUQ3F0uFqiLnzgUlRlEwEYOf9OC7Z1LUoQr6KqdkF5UguPLkVE0Oqg++iDVnW3et3v7Gxe8oiQ9GRToa/vih1pkAdxV0puI200aYxFmDCX5Usf+Tshhd0pIs8kt5AymvWWQx6r8RfysLQtsNpxl07uMh6Bc8AOJQdvu2fS3YeO9UJHGUMaEzDjXZ/vKyAP7p23XnXp/rIVQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=KXqIImk+; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=G4GE0n5B;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=KXqIImk+;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hBHQp6GTmz2ygh
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2026 17:15:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hBHSv5rntz2yhv
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2026 17:17:19 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id BFBCB43D4D;
-	Fri, 31 Jul 2026 07:15:28 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B435E1F00A3A;
-	Fri, 31 Jul 2026 07:15:26 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 1C0686004E;
+	Fri, 31 Jul 2026 07:17:17 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3A04B1F000E9;
+	Fri, 31 Jul 2026 07:17:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785482128;
-	bh=d80TQvyaCoLgq/NUMpiAgG2jz5ehxRjgCkZbSmCurf0=;
+	s=k20260515; t=1785482236;
+	bh=TvqLQZZy3YaPJ22gRjBlXpOVn/OsX3M3hujOjGskfPk=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=G4GE0n5BFfrCSG2t+7cs/UdLcRtEdB3N0o6ATEq2Th+RQcP+GUYWFuJRKkedFOV5V
-	 onYFNzFtbEJwFSrFbJFXvS+YHH1P0WWYuZ5k+USzW7pWgfL6PNZYAfksDY7g+HBNuc
-	 tPaHY4ctMK+f9LTpFNiP4lVGiu43HYlTF7qjeRqh8YwAu2QzX5obWguyAR53jB8yb1
-	 3JYspdM6zCVGe28N1bQrRlzNgAw59jLJy7Gtt55LzgE/ZvcoiIzKpFZM3GaHAaa9a5
-	 Rb7/9joURIMqm9FOvUip+GQevyZMNPIZT9mQ0yIA6ZmVo4HTDE5Ljwo4R2zEk4z0c/
-	 jXgu7+befLq2Q==
-Message-ID: <e899743d-5111-445c-a120-e8dc22202d7d@kernel.org>
-Date: Fri, 31 Jul 2026 09:15:24 +0200
+	b=KXqIImk+7VbFZEszErleX4fwkYjxPcWHe7orzS7OVILlovuqjit/akRDASO7AhLpz
+	 OVqAlBUFh2FFZOe4nGA4YBRx1LZjirnhBFGI2Q4q34LlI4w0E4n/SnwGShNtR+ED/m
+	 NQGFn8T/Id/Ead8rpfQegTbx5ubAh1E8Xlnv9h0zEKsHbLUvpfqoawvYY43miqBG8I
+	 yfbOMH/tnwDwCexP0QB/ZlYKfvwb6hwdy0VwtcFLoqyRx1hxR3oIgkw52kNYGtQG+9
+	 2KB/RrShg+dS8oe9KBUIbTpDJxepTP4+3Y/xOXJo8Rg5U33f01G+sjJtSXfrdyhwW+
+	 yOBHXPO7dZesg==
+Message-ID: <e85f28fb-47e2-424d-a527-786d4626e7fa@kernel.org>
+Date: Fri, 31 Jul 2026 09:17:13 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,62 +60,70 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 2/2] powerpc/pseries: Avoid strlen() in
- do_{remove,update}_property()
+Subject: Re: [PATCH] powerpc/boot: Remove unused sprintf()
 To: Thorsten Blum <thorsten.blum@linux.dev>,
  Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Kees Cook <kees@kernel.org>
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-References: <20260721155346.121975-3-thorsten.blum@linux.dev>
- <20260721155346.121975-4-thorsten.blum@linux.dev>
+References: <20260724172200.208722-2-thorsten.blum@linux.dev>
 Content-Language: fr-FR
 From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-In-Reply-To: <20260721155346.121975-4-thorsten.blum@linux.dev>
+In-Reply-To: <20260724172200.208722-2-thorsten.blum@linux.dev>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
 
 
-Le 21/07/2026 à 17:53, Thorsten Blum a écrit :
-> Check only the first byte instead of scanning the entire string with
-> strlen().
+Le 24/07/2026 à 19:21, Thorsten Blum a écrit :
+> There have been no sprintf() callers in the boot wrapper since commit
+> e275e023aa69 ("powerpc/44x: Warp patches for the new NDFC driver").
+> 
+> Remove the function definition and declaration.
 > 
 > Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
 
 Reviewed-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
 
 > ---
->   arch/powerpc/platforms/pseries/reconfig.c | 4 ++--
->   1 file changed, 2 insertions(+), 2 deletions(-)
+>   arch/powerpc/boot/stdio.c | 11 -----------
+>   arch/powerpc/boot/stdio.h |  3 ---
+>   2 files changed, 14 deletions(-)
 > 
-> diff --git a/arch/powerpc/platforms/pseries/reconfig.c b/arch/powerpc/platforms/pseries/reconfig.c
-> index 7faebcffc9df..18e3f1a036e3 100644
-> --- a/arch/powerpc/platforms/pseries/reconfig.c
-> +++ b/arch/powerpc/platforms/pseries/reconfig.c
-> @@ -307,7 +307,7 @@ static int do_remove_property(char *buf, size_t bufsize)
->   	if (tmp)
->   		*tmp = '\0';
+> diff --git a/arch/powerpc/boot/stdio.c b/arch/powerpc/boot/stdio.c
+> index 31eece29f56d..b12aa2c0b8e7 100644
+> --- a/arch/powerpc/boot/stdio.c
+> +++ b/arch/powerpc/boot/stdio.c
+> @@ -326,17 +326,6 @@ int vsprintf(char *buf, const char *fmt, va_list args)
+>   	return str-buf;
+>   }
 >   
-> -	if (strlen(buf) == 0)
-> +	if (*buf == '\0')
-
-Can use !*buf instead.
-
->   		return -EINVAL;
+> -int sprintf(char * buf, const char *fmt, ...)
+> -{
+> -	va_list args;
+> -	int i;
+> -
+> -	va_start(args, fmt);
+> -	i=vsprintf(buf,fmt,args);
+> -	va_end(args);
+> -	return i;
+> -}
+> -
+>   static char sprint_buf[1024];
 >   
->   	return of_remove_property(np, of_find_property(np, buf, NULL));
-> @@ -330,7 +330,7 @@ static int do_update_property(char *buf, size_t bufsize)
->   	if (!next_prop)
->   		return -EINVAL;
+>   int
+> diff --git a/arch/powerpc/boot/stdio.h b/arch/powerpc/boot/stdio.h
+> index 884d5959a9ae..d5a7a0f54453 100644
+> --- a/arch/powerpc/boot/stdio.h
+> +++ b/arch/powerpc/boot/stdio.h
+> @@ -12,9 +12,6 @@ extern int printf(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
 >   
-> -	if (!strlen(name))
-> +	if (*name == '\0')
-
-Can use !*name instead.
-
->   		return -ENODEV;
+>   #define fprintf(fmt, args...)	printf(args)
 >   
->   	newprop = new_property(name, length, value, NULL);
+> -extern int sprintf(char *buf, const char *fmt, ...)
+> -	__attribute__((format(printf, 2, 3)));
+> -
+>   extern int vsprintf(char *buf, const char *fmt, va_list args);
+>   
+>   #endif				/* _PPC_BOOT_STDIO_H_ */
 
 
