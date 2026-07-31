@@ -1,89 +1,54 @@
-Return-Path: <linuxppc-dev+bounces-25170-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25171-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E0BD8C54F54
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Jul 2026 07:18:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6D054C54F54
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Jul 2026 07:34:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hBHV93592z2yhv;
-	Fri, 31 Jul 2026 17:18:25 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785482305;
-	cv=none; b=EQs45Yh3ad9KvgDyNouucpoxpzNgPhpFcTXlVZRLsJDCrUS9p8j89iAavDuSdPs08ZfT1t81EeZ5IJ+kGjgp8IWB7QpNYch764GM0InN9DRUqGiyCW/Zs00NWSUGqlElypFMUXB4qQHDyGimAsugphBW73ossBeblAFbcIRbPybPNCFKbtjkwbCeVrpT2Som+a81NwJE3Ghaye5x9DtfRqJ4vtCAqsh/12d4Mlabv4gp2n0/XjAZnrafl9keyiMT5Nx+pRlRu+oe2Jj+yBDRq8+ns976OJvEyCMvNK8w8j9Z58mwBDQe9uasVPeKhtZ4Uak/Hx9QWOj6WdckF679Rg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hBHrS6LVWz2yYq;
+	Fri, 31 Jul 2026 17:34:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=210.118.77.11
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785483256;
+	cv=none; b=dUS6ayXeT7j7o9oQldksIHaS7Oa2O8yOxbea6sg5QSbry72opqwSSD8kABtwKF+HfMqX0WGHRC0NLow3QANZTaobjdtzcUBuFdbiB9SOsx6lc0NYLo7gujWxw0luE3TRTt2IkCO6yF8za0JMAHwDBK+5M/Vu9pZ6fEb+51zhOdxbbFxlzUt5isUz8IxuaRUsv86fnoFDoGsy3KRkVDHN4WI/ASskAGTMsNk1gOsVpu3s9/W5p6m/Z/L+LqlJwhyxbifaDudUpCp8WH0vsCh96Fj9RFQFU1TwVeKUEE1ItE5JvHmJ9wNnpxzStcId8A+6vwAjmg9IPHI830E//zwxyg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785482305; c=relaxed/relaxed;
-	bh=7EO7IWtL8xlMWLECD7zNK5hmYyf4uWmZWcRBG4l9dwg=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=eUiIvD4wkrUb1QJB7pbWmlP9t0ATQYOd1No1cjvmnKnEgaGNW12GZzgyGQHgk+K4bifs4fVIrVR/kbC6A0KhiqEBxnMjjeOBgAEX4ov78855Ml9PTPRA1gTHAoIivo2fd7FUUhUgmpJBRP/WfqZ31YpnflTRJHD5Px2cLElHk+cK2yiKEZ3ZG70LzfeuYsBOjO7rhO/Wpal68qJHBddLopjrTHclh5CMTpfkU6CyPhJd33VqGZtPbUzc660XeZjcaPK7fQEgr3q9/xjfELV0qJ1Ynx5aa66GBHnK3URiCWLjjXcDrlkB4Lqh2pXLbLNEJoelUDfd5f3ndWuTysxZjQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ZsK9lqNl; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=XSyUMkqu; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=jhladky@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+	t=1785483256; c=relaxed/relaxed;
+	bh=N3Jgur6eGpI5uF6i9kwDYaTQ48SNIpZ5QYt0ueN9Z1A=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:From:In-Reply-To:
+	 Content-Type:References; b=ZS33oK52CH7W3K1P8wsQYJaIp/saOo6T6NpjmnvpEchIjLYf1tecW7vJcceqFJF1RwKxk31/PwF6SzJ/fktZnVan1AGYAs3ofMjBJZiaIn/vB4ZvRbb2XCjYxByRNPtOgiXuzG3wxNO4pyCEBQiXfGKFxpBlXbRVv5L6O7SjN73kHTf7/pJcXV7S5Rx5IVZmkcWaTVdiMgtj1Gjb+41DWi004sjlmry66B0gNzYtFoIrGqrkRdI3VyrG9CTCPVuxU5J+6kFWjiFexXSLbpD1aqUkygGhja0jtv9khYToVx/S5wX1tKZD89LpobkBFkauWRPr7C58SQyyMsp5Mt7tyA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=samsung.com; dkim=pass (1024-bit key; unprotected) header.d=samsung.com header.i=@samsung.com header.a=rsa-sha256 header.s=mail20170921 header.b=h2vFzdGP; dkim-atps=neutral; spf=pass (client-ip=210.118.77.11; helo=mailout1.w1.samsung.com; envelope-from=m.szyprowski@samsung.com; receiver=lists.ozlabs.org) smtp.mailfrom=samsung.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=samsung.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ZsK9lqNl;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=XSyUMkqu;
+	dkim=pass (1024-bit key; unprotected) header.d=samsung.com header.i=@samsung.com header.a=rsa-sha256 header.s=mail20170921 header.b=h2vFzdGP;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=jhladky@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=samsung.com (client-ip=210.118.77.11; helo=mailout1.w1.samsung.com; envelope-from=m.szyprowski@samsung.com; receiver=lists.ozlabs.org)
+Received: from mailout1.w1.samsung.com (mailout1.w1.samsung.com [210.118.77.11])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hBHV8141gz2yY1
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2026 17:18:22 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1785482297;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=7EO7IWtL8xlMWLECD7zNK5hmYyf4uWmZWcRBG4l9dwg=;
-	b=ZsK9lqNlu6BoQx4HxT2KA01Ss4H+kn15Pq6jTvraMLYwFp4bLFdPASpO6eRlgbf+qXylNm
-	W7wxezbBiuoi++zZGtdy2gwzONaKC2JRb3pLOMZ04pD3jJ7VqJ8YyR+BKkWh6wVzRvaC9P
-	T6I8+KUxsEo+vaV2aHspMWSvj9Mf0Nc=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1785482298;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=7EO7IWtL8xlMWLECD7zNK5hmYyf4uWmZWcRBG4l9dwg=;
-	b=XSyUMkqu3wQ1Zof5F8am61QsG/MVyIauphhMN3lEjzMjS4xsctDy83iPTpT3KhAiJuZ5/2
-	I9Auly9peTAopE9MFD7Kx21duAmKLVS+hrqB9xfhi5DNloRl1M6VLdnOYMMd6d9zwx35Y/
-	zRlzdm5g+pw+/zL9tQgldvCGh/ULopU=
-Received: from mail-vk1-f198.google.com (mail-vk1-f198.google.com
- [209.85.221.198]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-538-JEOpO0KjPRGaVYte39kpZg-1; Fri, 31 Jul 2026 03:18:15 -0400
-X-MC-Unique: JEOpO0KjPRGaVYte39kpZg-1
-X-Mimecast-MFC-AGG-ID: JEOpO0KjPRGaVYte39kpZg_1785482295
-Received: by mail-vk1-f198.google.com with SMTP id 71dfb90a1353d-5bfd2dcf7fdso196041e0c.1
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2026 00:18:15 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785482295; x=1786087095;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=7EO7IWtL8xlMWLECD7zNK5hmYyf4uWmZWcRBG4l9dwg=;
-        b=iQyTmR0PJnSvw/13FZClCyO+dz3omZUsmNeD+zks5bwBWninbZeRW0nx7+sePdoQmE
-         nA/S+nnPOay1Mz5ymYe6gU1CEAHMadxkRwCJLhx0rhTndxewPuBWeIjhMK2uHD1Knn7D
-         si9SPnVg4mSmg9ydaY1GBdWAIOwDgdBE0DE/HyvYM71ymfKj+7dfRTm11vbXWfQW81s+
-         LGxGZIwHWX9IijMt4QMYkpyiL4KjAJceBF9qemT5875bumb2StwiL0CCNJVUGaX+qyNL
-         2yFDqI1PgM3M9ozEmoAJlfCLSRzjXqzfGn3f1D44FgsaHqFHUpHlQrDntyxd2EThnQUa
-         K2Mg==
-X-Forwarded-Encrypted: i=1; AHgh+RrwUyFMdAyXWKMjmPrBVlVl/8LltVV5MMZHRzSqm2eSQWzWYTvzAc8Nv64K0yCcKELy1UrZHrbmAR9RSj8=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yy6hl8eHg2WhfDHZbxYXXdLoPFVNFwoxI5H0z0CU82rIRLrLwe+
-	JfWUlprDiCUMrni9bJTfSsAnyKK/NJ7KSQpE95Jn3wfeMAHomJvHWNuV/7jd/FEm2iFq6Wp2MXR
-	DpKoRpKi6gagFbsIaQjmchU3NDxIordootpoBOeN2RxW1gKC9W0aM/E37RS6bA4TnKTZfZOqVCs
-	/OYCdn57nErbUEYRw6XcOhmD+rxwiPBvCRHcFTHVQ7MQ==
-X-Gm-Gg: AR+sD10IJwR4/vgMLMwQ7ELdBy/DPlg/uOCD5kcFA/B+5iKfq8/bLPhYwXi+jwlkGFf
-	4Ubi5dDaS0eICMebCZk9aFd98yNbt1JENQfw/2ZiP0I8rH/o3I3WlQvoSfBhK4FJbGN6HvV+EyY
-	Yxw0gJJbZKSic1i3VvMEgkptlVpEUM2eVkhTEdhd98HH2+AF9Xhy+qBoKG
-X-Received: by 2002:a05:6122:660b:b0:5bd:86ac:a847 with SMTP id 71dfb90a1353d-5c37e2061acmr233557e0c.6.1785482294700;
-        Fri, 31 Jul 2026 00:18:14 -0700 (PDT)
-X-Received: by 2002:a05:6122:660b:b0:5bd:86ac:a847 with SMTP id
- 71dfb90a1353d-5c37e2061acmr233547e0c.6.1785482294237; Fri, 31 Jul 2026
- 00:18:14 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hBHrP6KHZz2xg8
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2026 17:34:11 +1000 (AEST)
+Received: from eucas1p1.samsung.com (unknown [182.198.249.206])
+	by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id 20260731073359euoutp01b326523e6f9dce2fa68dcdf5a4089e5b~HT4vhc6Cs1162311623euoutp01Z;
+	Fri, 31 Jul 2026 07:33:59 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com 20260731073359euoutp01b326523e6f9dce2fa68dcdf5a4089e5b~HT4vhc6Cs1162311623euoutp01Z
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+	s=mail20170921; t=1785483239;
+	bh=N3Jgur6eGpI5uF6i9kwDYaTQ48SNIpZ5QYt0ueN9Z1A=;
+	h=Date:Subject:To:Cc:From:In-Reply-To:References:From;
+	b=h2vFzdGPU5rK6aIg9RL7QWF075tsWv+IJpqYD+rwoehY/vNWBMRBWGrq2fWusmWGk
+	 J790EJlBOERW4eikBs6SJ0XQKF/mLNr0HDnXFmef70VwH7PnAlB0ueKl/8aXpOpDw3
+	 NAWoNOdVoKDxcVtSBMhZr5p81NEbyYPO8PB+QGI0=
+Received: from eusmtip1.samsung.com (unknown [203.254.199.221]) by
+	eucas1p2.samsung.com (KnoxPortal) with ESMTPA id
+	20260731073359eucas1p2ff8cd0f84dea171a8b4f0061154dc5ae~HT4vTnQXs1993519935eucas1p2y;
+	Fri, 31 Jul 2026 07:33:59 +0000 (GMT)
+Received: from [106.210.134.192] (unknown [106.210.134.192]) by
+	eusmtip1.samsung.com (KnoxPortal) with ESMTPA id
+	20260731073350eusmtip181b6e9861358d1e9a24ec292d0634e20~HT4nVsXtj0839208392eusmtip1O;
+	Fri, 31 Jul 2026 07:33:50 +0000 (GMT)
+Message-ID: <85be992d-9567-433e-ae2e-64ae5483964d@samsung.com>
+Date: Fri, 31 Jul 2026 09:33:47 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -97,71 +62,105 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <CAE4VaGBwMp3Ke1+Bt11-v6CCE0h=mPm8k_Cf8DazFSQNT9Mz8g@mail.gmail.com>
- <c0f51eda-21c4-4e9d-95e9-75b2740c3f43@linux.ibm.com> <500d8e8c-088c-4e6d-ab53-868ade6b0eda@paulmck-laptop>
- <CAE4VaGDGS8wkZj4SF5XVC3-1yDmvJxjUjThTPqVw3kxg56ssQA@mail.gmail.com>
- <e013e88a-6137-4de8-9dfd-925b707f2e01@linux.ibm.com> <CAE4VaGAJ9mT8-V=GRPYj8h0RXuNf6S5icrmqeOOFDnkpPMQjaw@mail.gmail.com>
- <a1e04751-eab5-465b-8238-c9f4cd40e472@linux.ibm.com> <CAE4VaGCaN6uBBGqbGAsxudSxMC0JdXYn2vpuDJZPFR3xxJgMYA@mail.gmail.com>
- <29a407ab-268e-4443-96dc-8f5f933cb63c@linux.ibm.com> <CAE4VaGDzVa3+MKUbwH4LFj_mHZ721fd=7cWEd+G5=eVNWLePsg@mail.gmail.com>
- <529b8d9f-54a0-4ec2-9886-83cd528e5e04@paulmck-laptop> <CAE4VaGDJxcu_zgDyrSW=j9WzLEpNsQ9A9Rza-F5PLZq03kJYew@mail.gmail.com>
- <57d9de4a-65aa-44cf-9024-de4e5bdd1971@linux.ibm.com> <972db4f1-406b-477b-895e-59ffc643e384@kernel.org>
-In-Reply-To: <972db4f1-406b-477b-895e-59ffc643e384@kernel.org>
-From: Jirka Hladky <jhladky@redhat.com>
-Date: Fri, 31 Jul 2026 09:18:02 +0200
-X-Gm-Features: AUfX_mzzfqdtb8bDStI4cE7iXbASDfojU9P9CI7RdohfIpT2TKyRXrB4Z8TQLPQ
-Message-ID: <CAE4VaGD0Ekz+5s26iTW=UV4PuBkUm9AzorBgAVGJBjttH7sMWQ@mail.gmail.com>
-Subject: Re: [PATCH v4 1/1] powerpc: enable dynamic preemption
-To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: Shrikanth Hegde <sshegde@linux.ibm.com>, paulmck@kernel.org, maddy@linux.ibm.com, 
-	linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, npiggin@gmail.com, 
-	bigeasy@linutronix.de, will@kernel.org, linux-kernel@vger.kernel.org
-X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: 4tDO_EuBmGrXqpoc5geJV2XhgUoMlkHS-vFbXsLW6WM_1785482295
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Betterbird (Windows)
+Subject: Re: [PATCH v8 00/23] dma-mapping: Track shared DMA state through
+ direct, pool and swiotlb paths
+To: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, iommu@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+	linux-coco@lists.linux.dev
+Cc: Robin Murphy <robin.murphy@arm.com>, Will Deacon <will@kernel.org>, Marc
+	Zyngier <maz@kernel.org>, Steven Price <steven.price@arm.com>, Suzuki K
+	Poulose <Suzuki.Poulose@arm.com>, Catalin Marinas <catalin.marinas@arm.com>,
+	Jiri Pirko <jiri@resnulli.us>, Jason Gunthorpe <jgg@ziepe.ca>, Mostafa Saleh
+	<smostafa@google.com>, Petr Tesarik <ptesarik@suse.com>, Alexey
+	Kardashevskiy <aik@amd.com>, Dan Williams <dan.j.williams@intel.com>, Xu
+	Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+	linux-s390@vger.kernel.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Alexander Gordeev
+	<agordeev@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>, Sven Schnelle
+	<svens@linux.ibm.com>, x86@kernel.org
+Content-Language: en-US
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+In-Reply-To: <yq5azezfeeax.fsf@kernel.org>
+Content-Transfer-Encoding: 7bit
+X-CMS-MailID: 20260731073359eucas1p2ff8cd0f84dea171a8b4f0061154dc5ae
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="utf-8"
+X-RootMTR: 20260725070930eucas1p16cbafb514de7a2e7531d0e4ae158acfb
+X-EPHeader: CA
+X-CMS-RootMailID: 20260725070930eucas1p16cbafb514de7a2e7531d0e4ae158acfb
+References: <20260717180442.110954-1-aneesh.kumar@kernel.org>
+	<CGME20260725070930eucas1p16cbafb514de7a2e7531d0e4ae158acfb@eucas1p1.samsung.com>
+	<yq5azezfeeax.fsf@kernel.org>
 
-On Fri, Jul 31, 2026 at 7:03=E2=80=AFAM Christophe Leroy (CS GROUP)
-<chleroy@kernel.org> wrote:
+On 25.07.2026 09:09, Aneesh Kumar K.V wrote:
+> "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org> writes:
+>> This series tracks confidential-computing shared DMA state through the
+>> dma-direct, dma-pool, and swiotlb paths so that encrypted and decrypted
+>> DMA buffers are handled consistently.
+>>
+>> Today, the direct DMA path mostly relies on force_dma_unencrypted() for
+>> shared/decrypted buffer handling. This series consolidates the
+>> force_dma_unencrypted() checks in the top-level functions and ensures
+>> that the remaining DMA interfaces use DMA attributes to make the correct
+>> decisions.
+>>
+>> The series separates mapping and allocation state:
+>> - DMA_ATTR_CC_SHARED describes the DMA address attribute requested for a
+>>   mapping. It tells the DMA mapping path that the DMA address must target
+>>   shared/decrypted memory.
+>> - __DMA_ATTR_ALLOC_CC_SHARED is an internal DMA-mapping attribute used only
+>>   by allocation paths after the DMA core decides that the backing pages
+>>   must be allocated as shared/decrypted memory.
+>>
+>> The series:
+>> - moves swiotlb-backed allocations out of __dma_direct_alloc_pages(),
+>> - uses __DMA_ATTR_ALLOC_CC_SHARED through the dma-direct alloc/free paths
+>> - teaches the atomic DMA pools to track encrypted versus decrypted
+>>   state
+>> - tracks swiotlb pool encryption state and enforces strict pool
+>>   selection
+>> - centralizes encrypted/decrypted pgprot handling in dma_pgprot() using
+>>   DMA attributes
+>> - passes DMA attributes down to dma_capable() so capability checks can
+>>   validate whether the selected DMA address encoding matches
+>>   DMA_ATTR_CC_SHARED
+>> - makes dma_direct_map_phys() choose the DMA address encoding from
+>>   DMA_ATTR_CC_SHARED and fall back to swiotlb when a shared DMA request
+>>   cannot use the direct mapping, which lets arm64 and x86 CCA guests stop
+>>   relying on SWIOTLB_FORCE for DMA mappings
+>> - use the selected swiotlb pool state to derive the returned DMA
+>>   address
+>> - reports CC_ATTR_GUEST_MEM_ENCRYPT for arm64 Realms, powerpc secure
+>>   guests, and s390 protected virtualization guests.
+>>
+>> Dependency:
+>> This series depends on the pKVM changes posted at:
+>> https://lore.kernel.org/all/20260603110522.3331819-1-smostafa@google.com
+>>
+>> Please merge this series only after the pKVM changes above are merged.
+>> Otherwise pKVM will be broken.
+>>
+> pKVM topic branch is now available 
 >
+> https://lore.kernel.org/all/178467286876.125042.12010461715645610054.b4-ty@kernel.org/
 >
->
-> Le 30/07/2026 =C3=A0 19:10, Shrikanth Hegde a =C3=A9crit :
-> > Hi Jirka, Paul,
-> >
-> >
-> > +cc will
-> >
-> > On 7/30/26 8:38 PM, Jirka Hladky wrote:
-> >> On Thu, Jul 30, 2026 at 4:53=E2=80=AFPM Paul E. McKenney <paulmck@kern=
-el.org>
-> >> wrote:
-> >>> But is this really a fundamental RISC cost?  For example, does arm64
-> >>> see the same performance issues?
-> >>
-> >> We tested arm64 (Ampere Altra Max) with the same controlled
-> >> experiment -- two 6.18 kernels, both voluntary, differing only in
-> >> PREEMPT_DYNAMIC:
-> >>
-> >> Arch     PREEMPT_DYNAMIC   kill bogo-ops/sec   Delta
-> >> -------  ---------------   -----------------   -----
-> >> ppc64le  off               108,836
-> >> ppc64le  on                 68,197             -37.3%
-> >> aarch64  off                 5,538
-> >> aarch64  on                  5,082              -8.2%
-> >>
-> >> arm64 sees -8.2% vs ppc64le's -37.3%. So arm64 is affected but
-> >> much less severely.
-> >
-> > Ouch!. But that's good to know.
->
-> Might be a stupid question, but what is your .config ?
-> Are you sure it doesn't contain CONFIG_DEBUG_PREEMPT ?
+> https://git.kernel.org/pub/scm/linux/kernel/git/arm64/linux.git for-next/coco
+I've just got back from my holiday's and I see that there is everything ready to give
+this patchset some tests in linux-next. I hope nothing will break.
 
-I have double-checked that and it's not set:
-# CONFIG_DEBUG_PREEMPT is not set
+I've applied this patchset to dma-mapping-for-next, on top of pKVM topic branch with
+patch "[PATCH v8 17/23] dma-direct: make dma_direct_map_phys() honor DMA_ATTR_CC_SHARED"
+rebased onto latest changes in arch/arm64/mm/init.c.
 
-Thanks
-Jirka
+The remaining items pointed in the review can be fixed incrementally.
+
+Best regards
+-- 
+Marek Szyprowski, PhD
+Samsung R&D Institute Poland
 
 
