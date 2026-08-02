@@ -1,55 +1,55 @@
-Return-Path: <linuxppc-dev+bounces-25201-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25202-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 52899C55162
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  2 Aug 2026 15:52:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B68FCC55171
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  2 Aug 2026 15:52:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hCknn457rz2yhP;
-	Mon, 03 Aug 2026 01:51:57 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785685917;
-	cv=none; b=K+JWar9u8Nmuj3OoXvAv+JCI7d0Ni330biF1RVaMsyyM/MDbbwnXPEtEPFIxv8eQhBxfu6aBeQnCTziPT7q/imJk7k6EDZLzpKfzXMaubY5s0cQontClI+XUEOuTSzpO4C2b7KV8b1FWX6mWxu1JZMzBWcIPE20ZDE4ZvP0RTRO81V2p+Soraa7rHAn8ARs4NPpA/JaCJyFdy7yx71c+4ytjIItFcd8MwfjZCyiVzvP3oy3v3LQRRvJfNJfa2qUWoNpHN1f4ItAA/cC3CRhtSG9AzrWCItDjB6ncRe7NaS4h+9eo3ysvgOqFgXDWI2rnthWgCURGJhrb6sjqBJFyJw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hCknr6ctfz308j;
+	Mon, 03 Aug 2026 01:52:00 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785685920;
+	cv=none; b=WAWjCZFDzJyWJLBxGwRZUWlvxfk69sPOEE+9K9Eg78wChM0w1IVUELyY4TxetDkUliGuB46DxtzRo97TFA5F/mjJSdIu6gRcbgbwrZtOEcRy3EzLdehd+n53peT5zCx1avqYiV/M9ptsBaUI8lUFZmKwZUnoOvzXelf9lAcQgsdvq4KB3OrnjlP5HNk857okjwYeISGA+ercQK4WArhC6Rfh8d+YbMD2sPpWsTNgX1aWpoZCLjoQDi3/bUzgH/gRrbl/ZJFnPUwRc13ZaSGJQ9an/Spbt2T8BDGLENRMBPmi2O8ZrfZTlYJP4nKwwh6syt/cZR2CkrVxdJabqWz2lg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785685917; c=relaxed/relaxed;
-	bh=mJ6PCkU62uNOpvKOmEM+4C1VAX571t9h0raCZw39WmA=;
+	t=1785685920; c=relaxed/relaxed;
+	bh=fUrVPUTMcAWz9q1iQxL59K06UR4h/lc0U1t1wkwfh/o=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=LCVRd0tn5RiuWekLCmmPFipx9cKRIUF/UCTVHouortmv0C7iaQb4VctewzLD2/0qZ/dErevW6qTZfHYqUANjzuiQglAz60qTbOuWq84GIhejiWwNm7r7n3ww9IEVz6olYSegZn268NHmSdEnS7P2YKH9HTa/3qaV0cprAwsT/tM2FqdQsYnNWOLH4iAW7urVGII2CsFEykmNKVwwW5hY+Qg1qk9LmePTxlX+DrmjoPtJxTsP5ILvdThy7CmDaSsmAVS/6+cxW8CvMm+pBXa04LIh5FaVhHDQKt7mhNMkz+D5HDjLJmrOhAgZTDozzjnh7vyS9lvJzhupKaoiRc/8fg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=I3FP+wgI; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+moonafterrain.outlook.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=TYH+62vn+AC4RKihrE2eH+UNu3o31OfEFwGM7j7ZYC7hVyh2c3/Hr3H1LP9XyaHQnt5KOIB36wOCeiuCfUnvDQqJpYOhGAlPBlB4KCdICrj8kGIxfC+84Xrajg7brvqzOurBqiGmZ+6Ez1dgRS4F/hPT+Crmx/Bzly55TdJlDxodq2Kkgug8iSO7taBqaaCqvyi2Y4a4jkhaAx2rf6V7egxOutj2vxEXIR+ZyXuItxVVnn6SxSxotzZKUEIgVk0gxDC66GnAN5pOdPbHIEtlO3ZbF0mUSrPBu0fA6vLcHzQnq2mD9kt5BdngTDJpO//hdOh2CYAS7eGJOM+v3P9m3Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=IGrZEyBu; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=devnull+moonafterrain.outlook.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=I3FP+wgI;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=IGrZEyBu;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+moonafterrain.outlook.com@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=devnull+moonafterrain.outlook.com@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hCknm28fZz2yh4
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Aug 2026 01:51:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hCknq3gb2z2ygp
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Aug 2026 01:51:59 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 07A164395D;
+	by sea.source.kernel.org (Postfix) with ESMTP id 1383743976;
 	Sun,  2 Aug 2026 15:51:54 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id D3279C2BCF7;
+Received: by smtp.kernel.org (Postfix) with ESMTPS id EA685C2BCFD;
 	Sun,  2 Aug 2026 15:51:53 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1785685913;
-	bh=kssaiTpuWaSTBvemdKDrGWLjRwD6PJPPxprkYN1MRtQ=;
+	s=k20201202; t=1785685914;
+	bh=96mlfMUaIDgRh0Y8+8e2rqme1oeFIIMr4fN0Dk5+hRE=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=I3FP+wgIF7O6kvY2cQLAWY1vQX/aS660tYVZ9XIsgRrHbNaoHvkQsit1ZLS7iw6L2
-	 3GaEY1kqklhoisrGHuuXPADe6GbmD8cXdhodUjbw2WTBAE5GZRWTkqzMBtHm7SZ2xP
-	 e580fnyKEQ6kLCM7lehSpBXd4kkJIRystME7R5EIYnDlw4MP/YOjHo7y2ty4cKTMYK
-	 9gehlOONxWKOq0MWgE6mCWAiUMWAW7dwtazXm6Krv3+c48kAuvMk+Rn24uw12fXymx
-	 UHjlij87sTa0Mg285RNE1swXzW3nOVMRAGP4VHPc6azd+0Ym6D3T7Gy19w37f1wh2k
-	 GRYf6/ye5H/LA==
+	b=IGrZEyBu5ZVT81FcE3gE99cThUtlb2qi+9YwS2LJuCLDZ3VPzmCWibGMGbrThwrm0
+	 1GFKPR1k9gKZ/CryGovWbMNs2tTbKANCsUHZ67qBtb+DvYNnROPvO3CSJQfnt+CiII
+	 wIyoggr5ZOEErgtDB1/JVqmmk4EVX8Hbom2lKb9tVCbz9ty5HuBSZhAio/yrkuCnEY
+	 LPBpgwhIrxnsgvo9Hocs83mIkii1l6gk1F41uWzivjpWTDVCJFNh5cyboNRnoYJgZa
+	 CHHJkpk0HtueQ6QzsrAtyQO4JVG2gvXuoCz8mGSSYPZamRS0indF/Wt7LVAz9/V1Za
+	 cV5F7A9Re4XaQ==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B3AB8C55162;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CDFA2C55180;
 	Sun,  2 Aug 2026 15:51:53 +0000 (UTC)
 From: Junrui Luo via B4 Relay <devnull+moonafterrain.outlook.com@kernel.org>
-Date: Sun, 02 Aug 2026 23:51:39 +0800
-Subject: [PATCH 1/6] powerpc/spufs: fix spu_context leak in coredump
+Date: Sun, 02 Aug 2026 23:51:41 +0800
+Subject: [PATCH 3/6] powerpc/spufs: bound NPC against local store size
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -65,7 +65,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260802-fixes-v1-1-7368423440f4@outlook.com>
+Message-Id: <20260802-fixes-v1-3-7368423440f4@outlook.com>
 References: <20260802-fixes-v1-0-7368423440f4@outlook.com>
 In-Reply-To: <20260802-fixes-v1-0-7368423440f4@outlook.com>
 To: Madhavan Srinivasan <maddy@linux.ibm.com>, 
@@ -77,13 +77,13 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  Junrui Luo <moonafterrain@outlook.com>, Yuhao Jiang <danisjiang@gmail.com>, 
  stable@vger.kernel.org
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1723;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1325;
  i=moonafterrain@outlook.com; h=from:subject:message-id;
- bh=4NyNHOiKkA4MH4J7oCGRtB6kCVTq8tsAtxRO2bfYk0g=;
- b=owJ4nJvAy8zAJVb4wiKgu++DA+NptSSGrPz0aQ/f7o50yDxiLOf7RMF8+oaGq+FhITvXLakqa
- 71w6LqkQXtHKQuDGBeDrJgiy/GCS98sfLfobvHZkgwzh5UJZAgDF6cATGTeEUaGj6cyeValXTCt
- FQgxjG+NvjRv1+qIe0sdvrpwhDsuOve0gZFh4tb5rZyLDGb4ub3v2xMi7n3OzdKlwUjA08iycoJ
- F23dOAPdZSaI=
+ bh=zn0rin21Vmi2aZsnEd8aIQAuyKtzsUFBfqpkfQqnfiw=;
+ b=owJ4nJvAy8zAJVb4wiKgu++DA+NptSSGrPz06QKOEseezU055Jt+YN7t0MAV9xRPVU8XrJ79l
+ bnPia2Ft66jlIVBjItBVkyR5XjBpW8Wvlt0t/hsSYaZw8oEMoSBi1MAJiJpxMjwJSQhxPQeT+qa
+ PmbB6w9T6zI+rX7FWf/mhWuTqt3DpYa/GBlmNs5n5JmYLSKaY2Iy48Gc5OVfS57f8ZVbUK/Pf/7
+ utBR2AOnlSKw=
 X-Developer-Key: i=moonafterrain@outlook.com; a=openpgp;
  fpr=C770D2F6384DB42DB44CB46371E838508B8EF040
 X-Endpoint-Received: by B4 Relay for moonafterrain@outlook.com/default with
@@ -93,54 +93,36 @@ Reply-To: moonafterrain@outlook.com
 
 From: Junrui Luo <moonafterrain@outlook.com>
 
-coredump_next_context() returns a spu_context with a reference taken by
-get_spu_context(), which the caller must drop.
-spufs_coredump_extra_notes_size() does so on all of its exits, but
-spufs_coredump_extra_notes_write() never calls put_spu_context(), so
-every context dumped through elf_coredump_extra_notes_write() leaks a
-reference, including on the success path.
+spu_process_callback() masks the low bits of the NPC register and uses
+the result as an offset into the SPU local store: `ls_pointer = in_be32(ls
++ npc)`. The following guard validates ls_pointer against LS_SIZE, but npc
+itself is never bounds-checked.
 
-Fix by dropping the reference on each of the three exits of the loop,
-mirroring ..._size().
+Fix by rejecting npc greater than LS_SIZE - sizeof(ls_pointer) before the
+read, mirroring the adjacent ls_pointer guard and returning the same
+-EFAULT.
 
-Fixes: 38b407be172d ("powerpc/spufs: Rework fcheck() usage")
+Fixes: 2dd14934c913 ("[PATCH] spufs: allow SPU code to do syscalls")
 Reported-by: Yuhao Jiang <danisjiang@gmail.com>
 Cc: stable@vger.kernel.org
 Signed-off-by: Junrui Luo <moonafterrain@outlook.com>
 ---
- arch/powerpc/platforms/cell/spufs/coredump.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ arch/powerpc/platforms/cell/spufs/run.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/powerpc/platforms/cell/spufs/coredump.c b/arch/powerpc/platforms/cell/spufs/coredump.c
-index 301ee7d8b7df..f5964c9ebb3e 100644
---- a/arch/powerpc/platforms/cell/spufs/coredump.c
-+++ b/arch/powerpc/platforms/cell/spufs/coredump.c
-@@ -162,13 +162,16 @@ int spufs_coredump_extra_notes_write(struct coredump_params *cprm)
- 	fd = 0;
- 	while ((ctx = coredump_next_context(&fd)) != NULL) {
- 		rc = spu_acquire_saved(ctx);
--		if (rc)
-+		if (rc) {
-+			put_spu_context(ctx);
- 			return rc;
-+		}
- 
- 		for (j = 0; spufs_coredump_read[j].name != NULL; j++) {
- 			rc = spufs_arch_write_note(ctx, j, cprm, fd);
- 			if (rc) {
- 				spu_release_saved(ctx);
-+				put_spu_context(ctx);
- 				return rc;
- 			}
- 		}
-@@ -177,6 +180,7 @@ int spufs_coredump_extra_notes_write(struct coredump_params *cprm)
- 
- 		/* start searching the next fd next time */
- 		fd++;
-+		put_spu_context(ctx);
- 	}
- 
- 	return 0;
+diff --git a/arch/powerpc/platforms/cell/spufs/run.c b/arch/powerpc/platforms/cell/spufs/run.c
+index ce52b87496d2..87497316d128 100644
+--- a/arch/powerpc/platforms/cell/spufs/run.c
++++ b/arch/powerpc/platforms/cell/spufs/run.c
+@@ -317,6 +317,8 @@ static int spu_process_callback(struct spu_context *ctx)
+ 	/* get syscall block from local store */
+ 	npc = ctx->ops->npc_read(ctx) & ~3;
+ 	ls = (void __iomem *)ctx->ops->get_ls(ctx);
++	if (npc > (LS_SIZE - sizeof(ls_pointer)))
++		return -EFAULT;
+ 	ls_pointer = in_be32(ls + npc);
+ 	if (ls_pointer > (LS_SIZE - sizeof(s)))
+ 		return -EFAULT;
 
 -- 
 2.51.2
