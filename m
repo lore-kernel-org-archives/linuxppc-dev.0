@@ -1,87 +1,133 @@
-Return-Path: <linuxppc-dev+bounces-25255-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25256-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6F7BDC55175
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Aug 2026 09:36:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6876AC55184
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Aug 2026 09:59:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hDBPt4DYGz3078;
-	Mon, 03 Aug 2026 19:36:18 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=103.168.172.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785749778;
-	cv=none; b=iaEECNJPpfFCANoNzWbpUZImTLFEKFzVTeq0iEl3lQq9Y3E22xX+vss2PppRqq1tdPeMOib5guoNwO38rAScOUYVgsKNEHTJEByawn/4p13fmswzXg9lxP9MiOTUzrrUxMbE2lf3W7DsiS6HVUvlprDjvDg6yLnFFPVoPuX/lA0EHzFs+ZWuZQiURg+O2eqjZvXlFxzsW7zczZyV0N3XMyxSVm7J0WJZYoWgJJFnom7Xxn9X57mnWxZ3h8HC2C/xDZVDTpr/X2Ed7p2Vqh0lTn4Wug5IFiapXjZSEKzSPewGpxQMOcqhV5aDTqBuLoT5VMQQofsN84P3y6W4DZAiTg==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785749778; c=relaxed/relaxed;
-	bh=xyGS6eaC7kXBJ7eBvZz3JFj30b3KwO7szLpnoko6X1E=;
-	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
-	 Subject:Content-Type; b=gOIrTbjmeIZNrkMZ4U2mL3gmNY3aUt2yYI/vDyp64fubgFpYAfgInmF7ME22jVwcxhoMIhxgjcty/VXtH0yqRHdAYrg6+sM6KEgOW8dzCgZRp1TjMeFqOV9vK8PWL/6tXRXyKz8dynNOPP1gsSTQGW6LOlr5bCc+B4KBlgHwAiMJTuUtht4PURYmJMuw7B1qoLKNPgC2zpOWBcL6fi2SJPEja4LCNrcEqfkOkW/1CSRdzEukNxymKe+03/Ts8l+JkHSX31HowvgpdqtFRr75YdaFnYGBpEveiNldij9fV2H0pgztk96llROaZaXy7VVueW1pnrXp35puknfVS+T8Ww==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de; dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=ipG/IxZG; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=Tj39+J+T; dkim-atps=neutral; spf=pass (client-ip=103.168.172.158; helo=fhigh-a7-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org) smtp.mailfrom=arndb.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hDBwt63s6z308X;
+	Mon, 03 Aug 2026 19:59:42 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:d40e::" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785751182;
+	cv=pass; b=WsokIuI15X/8ucD7WSBiV6SxkG5oyM2TtYAzE+5bXtAwTEVjfjdVIiG3nw3uTlv5/sMO+fgM6/wafiMLbXzQGS3wNXEKjrJlJVSwy843Hnat0KHoJrfDMXVpknV4AOKsaNmq3Eas+B31s8KiUVrftc8nXKeDV0Z7qAU/IHF3A5eUdD3R9nMw6e0YU/+L3xBuxmqLeNy2mvWPpTwuNEc0pntvzBxyqt6GYnofTvXS/eFHJijaTgKxJdb4zDHzXJ867IIOAl0/Hpw0OoA5y+klAlx4l6ynNYcNxRWM5nSsXJmWXCNViJFAHDJ99QsLu2PL6ej94656xVw+xGtdW27TmA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1785751182; c=relaxed/relaxed;
+	bh=5VVtcaR+K4fTZCq/g5VBt4yON14I2zoyDJVnhlwL2eA=;
+	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=RDeHvhJdhyW22GIWyHMNXo6ea40Q76oD5AcNrnnAqI5gH3wckqlBAl5/cIkd0IYLyfi1JLc88Yg7v5rn3raPILRbuwzpwmqFuiM0B73Nn0lQVA5GAIhgH5FTKo/Td60KRQiuVm3qpZ4OnB/I/71kYB71PAeumcPMmOtQtHkwsNuJS3R/HhxRgpTXm2Fkvy6bNHmlDfmimDjYQdIg5WQgww26v1KWi7TfO+n8u77swuC/s6IfwRko7naHZtVuJhhE/7gSjxjhY9xAOX98ZIRsC8eKwYI8RjY1VPqf55Rlff+LHVmRths2cNrE0l4qtq4+Qc7g53QWiYUjOhD2Oqzi0g==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=outlook.com; dkim=pass (2048-bit key; unprotected) header.d=outlook.com header.i=@outlook.com header.a=rsa-sha256 header.s=selector1 header.b=RBGwA4Fy; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:d40e::; helo=meupr01cu001.outbound.protection.outlook.com; envelope-from=moonafterrain@outlook.com; receiver=lists.ozlabs.org) smtp.mailfrom=outlook.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=outlook.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=ipG/IxZG;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=Tj39+J+T;
+	dkim=pass (2048-bit key; unprotected) header.d=outlook.com header.i=@outlook.com header.a=rsa-sha256 header.s=selector1 header.b=RBGwA4Fy;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=103.168.172.158; helo=fhigh-a7-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org)
-X-Greylist: delayed 526 seconds by postgrey-1.37 at boromir; Mon, 03 Aug 2026 19:36:17 AEST
-Received: from fhigh-a7-smtp.messagingengine.com (fhigh-a7-smtp.messagingengine.com [103.168.172.158])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=outlook.com (client-ip=2a01:111:f403:d40e::; helo=meupr01cu001.outbound.protection.outlook.com; envelope-from=moonafterrain@outlook.com; receiver=lists.ozlabs.org)
+Received: from MEUPR01CU001.outbound.protection.outlook.com (mail-australiasoutheastazolkn190100000.outbound.protection.outlook.com [IPv6:2a01:111:f403:d40e::])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hDBPs3ltNz2yQJ
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Aug 2026 19:36:17 +1000 (AEST)
-Received: from ams-compute-02.internal (ams-compute-02.internal [10.64.2.62])
-	by mailfhigh.phl.internal (Postfix) with ESMTP id 2522814000F2;
-	Mon,  3 Aug 2026 05:27:26 -0400 (EDT)
-Received: from ams-imap-03 ([10.64.2.23])
-  by ams-compute-02.internal (MEProxy); Mon, 03 Aug 2026 05:27:26 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
-	:cc:content-transfer-encoding:content-type:content-type:date
-	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to; s=fm2; t=1785749245;
-	 x=1785835645; bh=xyGS6eaC7kXBJ7eBvZz3JFj30b3KwO7szLpnoko6X1E=; b=
-	ipG/IxZGzA1K6cYOwfroq8HOVT5peksJCzMw89J0KRBCfagfQJw/e4F23teBsZar
-	f+jX8ZAGd6xR7qzkxWTwt2nQ048yDlJapa2sd2x1lm0oePvuS1fKeLHee5gt7GWY
-	mPY2umwbeg4/jp1g9MfBt3swRGdDPwniTj5PlyyLUpDiLuQ/KVF5XQ5l4P1orDKF
-	8jOhDIzDn0tgI/hxvDbmCojDs0ds41Kqg1L88WWVdZSXmGayv9zrhYmrfXrv3dcX
-	gY9H6TmBg1/kACssLY8zhmFk1yPUFbvlTd3+c5Xi6FfD320JU04LMWbQeu5W/2Nu
-	StPlCby4hStS4bwZpl69sQ==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding
-	:content-type:content-type:date:date:feedback-id:feedback-id
-	:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to:x-me-proxy
-	:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; t=1785749245; x=
-	1785835645; bh=xyGS6eaC7kXBJ7eBvZz3JFj30b3KwO7szLpnoko6X1E=; b=T
-	j39+J+TTYRLQ4dfM6eIVKwC82I5vMarfup3W8RbhzYYxbGyqM2ya/+r5b2WCp5pY
-	DIVflgD8y4xf5TRSIxP09dQdYwMPKu2QLsSQqlYwjq8awKpsJjKzC5OUISXY/cK8
-	r97i5l6cjXaCNhFz9NmBX8NgdzTmsP3ZmMfpTd8p2bF4WUVKpeSJRVYK4+MAPOs+
-	FEAqtUmZB4kyLQ3DKvk9nzs/UeEDKydoVmsHTekSc5B/nIEsxUq4DIw5N4TeED06
-	gSLrkpMX3bN8EMxKOK40uLZR/ecyGvCtk50rt3/J5Ji/ZMwgRJVqXVDaUWzOQhKe
-	WigDo7mBPugRhU4guNR/A==
-X-ME-Sender: <xms:915waoVvxgf0S05lO3woGPeh2HkoRco9-CItVwFmgDAC-FpcPU2z5Q>
-    <xme:915wanbN2ZdwK5eZi0gYzNuYLwOK-Oz5B6GlLYyFVjjnFgcd368kgKR8c2KfQ6KSM
-    NzwYV3ZC8_y9CiIlbBPnrVRtCltB2o-CJELlcLg7KZxuOIrCEZSPr5_>
-X-ME-Proxy-Cause: dmFkZTFytL8YYWcQgRGRPGCIQOj93z806GWJomaSPT2z/JMy6t7fpxoiG7HlzupzsQbzxG
-    hMF3vYLW5Vh1P7ZhQgABFqv9qa5Y5bcfuEoOKq1oUQZBtlcNjR7zJoK2EipZpYttJPKqUE
-    Fby4ZCTmwEYjBqxiiYHIY+PvfjBdKG+7dhdy+QHxPOsY2c+K340N87bv/ZYRL+d0lyk1NT
-    1j8M4LZs3VZRZFR62r6X3hOTkauvpo7rTg+Osv3KatRK0t43ltNUAIlFuhCoFCqnBt+yiH
-    wqe6Qc8zMZm8AjCnIrVdEv7kHrG4w8de6vP/UDilGvaxoB1PQ7QeNLHXJav21kTrBGL5BQ
-    fV3tiZAnKckZ2z/rb6jIHfCBC0oPg7pddB5zzXQ+oPXS4QcgncjYW7/8kXzim0JtZF8NIR
-    zBrFq6NMeeaLOZPqPwlRZ20qzmLw5SUAsD5PoJUcEhfTg57Iojc1KrXGZj/4Evdjf3gZ9w
-    +9UEoQemKNhHkqRlvHGSHSbgjDHqoF/xZp/o67d03v4HxyXqdpYaFX5QERhLIXQkl35oGm
-    dNEOa4htrxSqcGkxUCu6b69+vmtjz/VisOpaAJLfmh8TyCcTL2iXvBPxz73EDy97n70yuP
-    oyiVG3PyaNy07jvZSBkDNIOlHbv5H3s6PIwIzbpn92yPA3I3s5cB2ebYzU8w
-X-ME-Proxy: <xmx:-l5wajdj2cTW42oGE-PbG6ANUilm6uNdHpUZZLLURUX8SnKiTOcxrQ>
-    <xmx:-l5walATmAUD5mn0158sf2y5Pf18QbjmeGL77i8wtJ0eN_gFmpF7ew>
-    <xmx:-l5wan5SK_kHpmO9uRsglHHsUOdL59_m62hJArQUfzaiungWmfZgGQ>
-    <xmx:-l5waueQZYZe7em4661g1GVczExQEIdk_BcIRJfB77dEuW9-HZ7tuQ>
-    <xmx:_V5waqNcaOaEAWSxGo5o5HABo69QvqqSPKi-1G8Ks50H7A3U4D95bPB9>
-Feedback-ID: i56a14606:Fastmail
-Received: by mailuser.ams.internal (Postfix, from userid 501)
-	id 7F88E32A0062; Mon,  3 Aug 2026 05:27:19 -0400 (EDT)
-X-Mailer: MessagingEngine.com Webmail Interface
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hDBwt1G4Sz2yQJ
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Aug 2026 19:59:42 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=V6fd1LdmJsimjbzUttnEtWg7cx7bIgoJPpUTsi3qc3Xb876w3t04ltmQp+G4DhD4HM3XYA9KHghys4v6kcXkO5oAQFUdyFrc1FVJTPJar1mrYr/bztmOHdZTIMiYH5EaHpxZQNXmZBzfLlJ6z5fJ7dwlGGzhilOm2edHTuM+umuSZ7Y9Miz5kaOQ49CoLQRncC3ug518xWVRj5X1/3eF0FuwJ/R6aVHVeno6whFc6AFWcC0l/3m4TOkwXH5QBTJNP7s1Giq8NWOUqZC+4MQMrIHYNBEgPU9VKlaYdiDpsG5BB43PiRlNMUSAtKIRnSHKMyrr/NaJ2mBGkFrlHYUKLQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=5VVtcaR+K4fTZCq/g5VBt4yON14I2zoyDJVnhlwL2eA=;
+ b=WzZpYgREeeFyqiOL26MU/JhNG8sng7z7/cl3Ftgynl6G8FsaYzoouQusT15NiPvczmyDSFbpJIYne3V4hCutoqZdN3UH5pr+6PeRkA4r5qkwJKEX7We1FkXk2ZOZZt5cRKRxSabY3ievISY1VHDugtVPPMBXOdt7M9wUYZmipDvsZSc/xC8hkSaoJz67R+eZPjOdfriilGQue4qjYy7vOPP0Wnprg+6Ho0w6B2m4sNcsbdR4ZpVwIIXTnQF/NBniPnKsn9U3bdao41Pq9KqH0e5KaJSbn7WB55q3onDvT8qyjBbbc35aMEQudOGNuD4dqCsTiXo33QuaJlKX3gcJwg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
+ dkim=none; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=outlook.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=5VVtcaR+K4fTZCq/g5VBt4yON14I2zoyDJVnhlwL2eA=;
+ b=RBGwA4FyjcoF40csy4p6FtCcBtqlXRvrTkvKqpmb6jPQan4fMdfc72Cy08ZoA6VVKjk1w1ViFp/3yThzpBWUXk7K8dFfCR9EYHp3Hw2L/2/etkHDeggrKRE54fIx1NG7PFIotBBJKi0AaGlvgO3bXKEWbwhoIBpqVuGayuNXkrpVeU4FT/FgshPVKZM9TMKYSjpncW7qZHUxP1lV11KYKyr9Byw75Ljb7wl2oN8QGlSWtkueyjO5Tzz+g04wfgsTdibH+429+H2UI6QqGkDCNKuIp7Be2THQYliVQ+4gEMMQkPtiLcBSURX9xxmvMmgSnsQUCnBTu680XMHhifeTPQ==
+Received: from SYBPR01MB7881.ausprd01.prod.outlook.com (2603:10c6:10:1b0::5)
+ by SY7PR01MB11484.ausprd01.prod.outlook.com (2603:10c6:10:34c::6) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.270.17; Mon, 3 Aug
+ 2026 09:59:17 +0000
+Received: from SYBPR01MB7881.ausprd01.prod.outlook.com
+ ([fe80::7cd2:d6e8:3fa0:5f0c]) by SYBPR01MB7881.ausprd01.prod.outlook.com
+ ([fe80::7cd2:d6e8:3fa0:5f0c%3]) with mapi id 15.21.0270.016; Mon, 3 Aug 2026
+ 09:59:17 +0000
+From: Junrui Luo <moonafterrain@outlook.com>
+To: Arnd Bergmann <arnd@arndb.de>
+CC: Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman
+	<mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy
+	<chleroy@kernel.org>, Paul Mackerras <paulus@ozlabs.org>, Alexander Viro
+	<viro@zeniv.linux.org.uk>, "linuxppc-dev@lists.ozlabs.org"
+	<linuxppc-dev@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
+	<linux-kernel@vger.kernel.org>, Yuhao Jiang <danisjiang@gmail.com>,
+	"stable@vger.kernel.org" <stable@vger.kernel.org>
+Subject: Re: [PATCH 0/6] powerpc/spufs: assorted fixes
+Thread-Topic: [PATCH 0/6] powerpc/spufs: assorted fixes
+Thread-Index: AQHdIpbafWrFzrsOd0a44iIFf4B2oraMD8kAgAAH4IA=
+Date: Mon, 3 Aug 2026 09:59:17 +0000
+Message-ID: <9E49BF8D-34E4-449A-A24A-AACCF6215DAF@outlook.com>
+References: <20260802-fixes-v1-0-7368423440f4@outlook.com>
+ <a1c11e04-a3df-4beb-84c8-f0e0443bb828@app.fastmail.com>
+In-Reply-To: <a1c11e04-a3df-4beb-84c8-f0e0443bb828@app.fastmail.com>
+Accept-Language: en-US, zh-CN
+Content-Language: en-US
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+x-ms-exchange-messagesentrepresentingtype: 1
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: SYBPR01MB7881:EE_|SY7PR01MB11484:EE_
+x-ms-office365-filtering-correlation-id: 1d92a396-3ac2-4434-d88e-08def145e1c4
+x-microsoft-antispam:
+ BCL:0;ARA:14566002|12121999013|22091999003|39105399006|24021099003|15080799012|24121999003|31061999003|4140399003|8060799015|19110799012|8062599012|25010399006|40105399003|18071099003|2607281247196008|102099032|440099028|19061999003|3412199025;
+x-microsoft-antispam-message-info:
+ =?us-ascii?Q?ZNdWX9JsUe5Nadksj3MWIoaVQ4nDaZIobOyWDWpjdRql1zV4df/iUNOqg/1O?=
+ =?us-ascii?Q?GcatqicOEGzBz8BXXIm7CLCEqIJdtsGtu0B9a0XAc/SCzjTm0Np0bRzbB6h4?=
+ =?us-ascii?Q?Fg1r9ti5YBRbWqJfJwtJH42vEvO59oi5VHKhv126F8ZEJjcX3FIAv7FMhkTZ?=
+ =?us-ascii?Q?cN8kkv0jmm45AzsEmvbgzmup9gnORKSt2Jn3RsMZ3rr0LIRyZHYcsVY4yAOW?=
+ =?us-ascii?Q?G82MGzcqB9DMBL5jJIEZay/vV9EFID9abcC7Geun58Z/5nluYTdYyHd/Dy/m?=
+ =?us-ascii?Q?Uk1wZLgLolWw5VeqJUTi4+2Pg+ccfEYso1M+lCcUVZqR2PJWOF0NxWZTix6l?=
+ =?us-ascii?Q?LOJnN5MqD/Qpx0bnN16bBa2fflWQIJ7LjL7G2ogTup6u8CkhuHxcdOIwCnxQ?=
+ =?us-ascii?Q?EjQejE4d8FgvaAXVahKX8S4L8cdYdNkc4So+uzrCNcQ6M04LhynZiMoJQzNO?=
+ =?us-ascii?Q?CwnfIoPO8V+tTjk8RFpImdOKP1d6IP1LLf8T6jNNp9fIrawWtYKh6z3aiB4q?=
+ =?us-ascii?Q?UxpMLhwJCOqZ3jqovYWcyFIGzOlmrTMWvmYtbrzQHjQNyXKwjiL/+XnZ5dxO?=
+ =?us-ascii?Q?TSE8mdF7lSH82y3rPXdEj9H3C92a5gJcTWJxagnK4YuDqyJAAmv8+oEET762?=
+ =?us-ascii?Q?lRRnJa9L+gcHR3CZFUdYmu2sz9dL00MhzeFsmNB3m7aGacWDII4qEeBNoxo/?=
+ =?us-ascii?Q?5lx5mS2rjf8lGOABDstg8xu8eywB5WltX+OFd3/dfvP8xBUO/h/MCmDyMLkZ?=
+ =?us-ascii?Q?dEMqD1bmbgbLKGPNAhqzEOwYWJpOZXqAvB3PtVWvT54x+EAEDBc7iXnw8k1z?=
+ =?us-ascii?Q?U66gPLTM9HwvVR4ST9TfhcK1BPKcviFwa075mtE1ju9Xlztoc3hHOZMn28YB?=
+ =?us-ascii?Q?WC3ak6sNmrG2vFt7Hcff2JoVeeWn0KRbmxOa2e9OBJ488AfCLu6f9K5fkf8g?=
+ =?us-ascii?Q?lUx+Rfce4ufFQEe+DrZONK1n9kqEvoRLNRCG/e+VZs7kIZhh3HRMshXGbDGi?=
+ =?us-ascii?Q?+t0v/UvNCXT0fSOZl2kralwJbbwNV9z1XkpH2/Ae/A8WhwGmMjXz7nfV/fHM?=
+ =?us-ascii?Q?sBIhvC8GAvGSejjh+iG+CwdEJawlhA=3D=3D?=
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:
+ =?us-ascii?Q?0PhxrbdAs5ICCs8d0wYCR0o6k8Y2be99iBpW1CAVcWg4OJRElvnvcTyOKgr/?=
+ =?us-ascii?Q?tIcCSxJ8UB5Qz5ZuDLS/xq7VcL+fqaOH8A/ogWB4ruwf5/8AKVwpSl33aZi8?=
+ =?us-ascii?Q?M5IwuGTAPE31Iw25wzbSvVPt1AhnWegFnsw/L3M2Eq40f+jEutsSgpd+ai95?=
+ =?us-ascii?Q?AIgU3nc+t0mIMnh+UA0nEpl0siI2W4Y4dIjAcfXmXzyGloyrt4PSm0UJISQa?=
+ =?us-ascii?Q?ouZ4xmjuyR9mFXj6WpngLt7sIjA0Mk6YfOanPEzOmMFDDaYjUtbIcKP90QbO?=
+ =?us-ascii?Q?dmVWvyRFT7BebwasU/Q5ZYswM0nqEAlsagb6gVmmPmBhzXzSBYfbSqA+Rb3k?=
+ =?us-ascii?Q?kPHtgLoU0HIKKbC7mQUlzeNGeQy9yjdw3wqvkPQ4Io3i0evM8XVuRI7pTeIK?=
+ =?us-ascii?Q?HuXblNRfTKxICYViV9IHiPhCz5HKIup3EaFkl2e5G66IVzG1yNQgLlG5wlN3?=
+ =?us-ascii?Q?/nDXnia7dAXKqe72bB4+Bf6x1kHf2ot12U/vSL51dLAgZE7X30gOzn7XvnVH?=
+ =?us-ascii?Q?rWdAhrsieHTElgxKvh17vC2LJkNVkHb8C9Nn0CyIbihozimqtgIs1XGiqoFX?=
+ =?us-ascii?Q?McTfDjOBBZA9A2rrYbyDa7wSJsn8jIarell4/lzB2ZaiYv4468JOvaaqok9x?=
+ =?us-ascii?Q?ZKCYIiom1H2fHe/7xX/z2RLYQVTLSKgV9PIV03FDfwx8VxBlexrLuvkBNOro?=
+ =?us-ascii?Q?o5+5QhrhxdvdVzievbVvXsS2HgAIvPxoQTP2xWiYsuvYzY3pRgWOK4eyUllE?=
+ =?us-ascii?Q?1PKPJLjlsfc8ZZ82GLWCfRxGvOs1QHLPpV2/5hi3xGqxTL8dFslUDGtod2Nn?=
+ =?us-ascii?Q?GW+hIywoVOsGzivvP8blsjUGIpsUAj42cGASMt96VlCCy12liyrcTvxxfhWc?=
+ =?us-ascii?Q?cPnbmSC0GfrX6P50Cz7nzVlHOtaYI7Zo+DKXuCxklXdwNhf76BdR5DtEIjwg?=
+ =?us-ascii?Q?DXVyi3sA1yYO2A6b/HhkszAqaEgeOyKQIQPtACM5skH7RRvWuzQnek8CSh1o?=
+ =?us-ascii?Q?cCSAJoViIEhaywXfv4J0ScRuUcGOw+/DcJlQHLlGZj7d0xxjcUq7ukDLvz3W?=
+ =?us-ascii?Q?7E4N8drCWLzpXtnM2lnEQMM7tu9KZG2/MeutPgWTLIN2lQ1VLulg/7PVxGHL?=
+ =?us-ascii?Q?5ZC/OouQrWIzPn4S7UKNwF2iroDk3UbTk2dedR1sKIWeBKvsvEPL0oBFLeZS?=
+ =?us-ascii?Q?d+KZNFHPTIVCMgdeudKkLa9+rOMjas89jIRRvBJmY3kYRwofvOug2UPujCY2?=
+ =?us-ascii?Q?qK5Qi10lANbRj0yqF/Mw4Mi4MlOgQnoAWoOQgXee2s6NmUGP0JmDKS3zXGG/?=
+ =?us-ascii?Q?0iTg/jLM4a5LZD8Je36mpOo1MXIHxsHat2tLNSIBq1B/78l2G+YPyOHSpQn8?=
+ =?us-ascii?Q?UtmVD4awY+Odn3xgwMJr/uwOyuBq85yGPcic2J9slcelqVuErQ=3D=3D?=
+Content-Type: text/plain; charset="us-ascii"
+Content-ID: <8452DF422F792E498EE5A043ED656361@ausprd01.prod.outlook.com>
+Content-Transfer-Encoding: quoted-printable
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -95,54 +141,42 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-ThreadId: A6UEPfW3F-JV
-Date: Mon, 03 Aug 2026 11:26:59 +0200
-From: "Arnd Bergmann" <arnd@arndb.de>
-To: moonafterrain@outlook.com, "Madhavan Srinivasan" <maddy@linux.ibm.com>,
- "Michael Ellerman" <mpe@ellerman.id.au>,
- "Nicholas Piggin" <npiggin@gmail.com>,
- "Christophe Leroy" <chleroy@kernel.org>,
- "Paul Mackerras" <paulus@ozlabs.org>,
- "Alexander Viro" <viro@zeniv.linux.org.uk>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- "Yuhao Jiang" <danisjiang@gmail.com>
-Message-Id: <47d5a769-b247-4eac-9776-71d68cf33b5c@app.fastmail.com>
-In-Reply-To: <20260802-fixes-v1-6-7368423440f4@outlook.com>
-References: <20260802-fixes-v1-0-7368423440f4@outlook.com>
- <20260802-fixes-v1-6-7368423440f4@outlook.com>
-Subject: Re: [PATCH 6/6] powerpc/spufs: don't hold state_mutex during user access
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+X-OriginatorOrg: outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: SYBPR01MB7881.ausprd01.prod.outlook.com
+X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg: 00000000-0000-0000-0000-000000000000
+X-MS-Exchange-CrossTenant-Network-Message-Id: 1d92a396-3ac2-4434-d88e-08def145e1c4
+X-MS-Exchange-CrossTenant-originalarrivaltime: 03 Aug 2026 09:59:17.5431
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
+X-MS-Exchange-CrossTenant-rms-persistedconsumerorg: 00000000-0000-0000-0000-000000000000
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SY7PR01MB11484
 
-On Sun, Aug 2, 2026, at 17:51, Junrui Luo via B4 Relay wrote:
-> From: Junrui Luo <moonafterrain@outlook.com>
->
-> spufs_mbox_read(), spufs_ibox_read() and spufs_wbox_write() take the
-> context state_mutex with spu_acquire() and only drop it once their
-> transfer loop has finished, so every put_user()/get_user() in those
-> loops runs with the mutex held. The faulting address comes from
-> userspace, so the fault can be made to take arbitrarily long via
-> userfaultfd region or a FUSE-backed mapping.
->
-> Drop the mutex around the user accesses: acquire it per mailbox element,
-> just long enough for the ctx->ops mailbox operation, and release it
-> before touching the user buffer.
->
-> spufs_switch_log_read() has the same problem but its loop needs the lock
-> for more than just the copy.
->
-> Fixes: cdcc89bb1c6e ("[POWERPC] spufs: make mailbox functions handle 
-> multiple elements")
-> Reported-by: Yuhao Jiang <danisjiang@gmail.com>
-> Signed-off-by: Junrui Luo <moonafterrain@outlook.com>
+On Mon, Aug 03, 2026 at 11:28:46AM +0200, Arnd Bergmann wrote:
+> On Sun, Aug 2, 2026, at 17:51, Junrui Luo via B4 Relay wrote:
+> >
+> > Patches 1-5 are tagged for stable. 6/6 is deliberately not: it changes =
+the
+> > atomicity of multi-element mailbox transfers rather than just adding a
+> > check, so it seems better to let it soak in mainline first.
+> >
+> > Build-tested only. I have no Cell or PS3 hardware, so none of this has
+> > been exercised at runtime.
+>=20
+> These are all reasonable fixes as far as I can tell, but I'm missing
+> information about why you care about spufs. If you used some atomated
+> tooling, please add some reference to what you used.
+>=20
+>        Arnd
 
-I'm not sure if anything relies on the accesses to be atomic,
-but it does seem unlikely, given that you typically only
-have a single CPU thread interacting with an spu context.
+Hi Arnd,
 
-It clearly fixes a bug, so
+We're working on a paper on LLM-assisted vulnerability research. spufs
+was just picked at random as one of the modules to look at. The tooling
+is an agent we developed ourselves. Should we add an Assisted-by tag in
+v2?
 
-Reviewed-by: Arnd Bergmann <arnd@arndb.de>
-
-      Arnd
+Thanks,
+Junrui Luo=
 
