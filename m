@@ -1,68 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-25308-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25309-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5787CC55182
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Aug 2026 23:14:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7E970C55182
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Aug 2026 23:15:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hDXZQ32C8z307v;
-	Tue, 04 Aug 2026 09:14:54 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::448"
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hDXZh6kH9z307v;
+	Tue, 04 Aug 2026 09:15:08 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::645"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785793872;
-	cv=none; b=nE0lxyGhlYcJJDozG9UHUQSk0IBP1qoKfEtTjl/8xOK/cRIzaqK+iiAE11EKXRdn8L3//6lIU4UaK8yLsJ5Dj003mJcL8BSQDCtUCRzQ5HiPl7F5fwng7NJ8mxzcgcEedrl6hsdTOOr2ILeelbTHyGcDMrykmbGkYYp/x+yGsU+g5NS6fWGfFZjXnvntQYoM3O3TJnpI97Pihml/ndpSaib5ulmXmfeE6u2t2xy5ysUZgtZWTuDUnvObltAsTJm8ISW8khPoN6B2zsma/WeJxGXdt25R3wll/3DV3B6rJAsQu9y8t34nOsyDPrDdlqT6m8kBXTz/zlkOCF6731cYdQ==
+	cv=none; b=elg9uTOl8kKqLQKRJOm0kq4PXF3jyXIGxWh6fhR8nXICEMwAL1xvwETR1a3JAw8ldhnAGbXSOyNaibUVcCbppkHIXh1y4BKBB8VvcR1syXq8TThLY+xS/xG/5haCnmDoYYL41FFOcDqYt/NQIqU8vU5QKSORUVf/UbYdRA6Iip7F/jo0V89J94/yS2cCHL6+WHaRmAcSUR/6wPtUb+eIvpfZcGkJ1ehHIS2XBu6D15+F8j2O6d7XVWnWiZfyhEm6zu8LDKZJYAZNslsJjDK2Jo1fnUi5Gu+O7/hnZSWx38xH2Dhs0l9yOMXhVv/O0IFgXFxMBjyNjIrRsjE1CJOD/Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1785793872; c=relaxed/relaxed;
-	bh=V3RiD/GImmxOZZ69pO9kk8WyvHse/kOu0dWQ2OD9gW0=;
+	bh=LRBKJRqDdwyuffVZ6WAc5QHmw5xxQBAcOoh92VnWqbQ=;
 	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=V1YbzNQEWhqqbyxckTh31lsakMvdKd3RHKNzWo/6Da4beAEkJXwT7nDpfqCShRzpmCzT0q0Lv6oaTnaym7t66rUPEJunXbcvVX+KrQ9mpci+HyyU0MPBuWNjtYRPoeKd5Dm3BDla51UHoDxsTif++UiXs7uETm6FOwOnE9i8dK+TQ6IMPEdxUi/gJXdgGAGLYiuWERdqWIsh5gYns7j8f+CkASjaD6+JytI1R9VdgmgxxKlKclV/LurRel3nDGpYdtD8H2HA9Wtb6V54RCf7Z/LfSi6ljZYWCkPz/BUDjBCImcTneIAVvELfTe72hP3Dxou7h74jSm7q5JofwVdMcw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=nLYExH7P; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::448; helo=mail-pf1-x448.google.com; envelope-from=3sw1xag0kdiqzi1pwlxzq6ivsowwotm.kwutqv25xxk-lm3tq010.w7tij0.wzo@flex--rathodpriyank.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--rathodpriyank.bounces.google.com
+	 To:Cc:Content-Type; b=Ty11hHRRrI13uleAx3zf0O015WbRC2Bxh7yVcz2ZyWwmUx2Tb43OTBgRoVHU9rW/UARdyCbwLYquEYbaRPfRcrB745R2MJ8jb1Gt4E/E4RcZ5OBqPdbs9p/OPECAt8T0YP5YClyKIxkvcEHWjPTMvWK7Wg+EYUalpDxkWMa12u38Wrm6bNgUz3SE65Usf+7ot/Vg6sde+FyYp/1NzBsIlVgnlzYR44j7jEJZcwLqXYSYTAzOAxvPdkH/v6mq8Rv9z3KpYZzUE5mWuXutRU4J4gu+Er5uexlPsHdhYPZAt5D9qKESInMwCbnIh0Rl7qJ2HXg3vGF6LoEjOnGY2C5DVQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=GGLSoPgw; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::645; helo=mail-pl1-x645.google.com; envelope-from=3ta1xag0kdiu0j2qxmy0r7jwtpxxpun.lxvurw36yyl-mn4ur121.x8ujk1.x0p@flex--rathodpriyank.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--rathodpriyank.bounces.google.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=nLYExH7P;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=GGLSoPgw;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--rathodpriyank.bounces.google.com (client-ip=2607:f8b0:4864:20::448; helo=mail-pf1-x448.google.com; envelope-from=3sw1xag0kdiqzi1pwlxzq6ivsowwotm.kwutqv25xxk-lm3tq010.w7tij0.wzo@flex--rathodpriyank.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x448.google.com (mail-pf1-x448.google.com [IPv6:2607:f8b0:4864:20::448])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--rathodpriyank.bounces.google.com (client-ip=2607:f8b0:4864:20::645; helo=mail-pl1-x645.google.com; envelope-from=3ta1xag0kdiu0j2qxmy0r7jwtpxxpun.lxvurw36yyl-mn4ur121.x8ujk1.x0p@flex--rathodpriyank.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x645.google.com (mail-pl1-x645.google.com [IPv6:2607:f8b0:4864:20::645])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hDVjp6PkZz2yMn
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Aug 2026 07:51:10 +1000 (AEST)
-Received: by mail-pf1-x448.google.com with SMTP id d2e1a72fcca58-84f0d3ab2f4so1178250b3a.1
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Aug 2026 14:51:10 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hDVjq2K8vz2yQJ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Aug 2026 07:51:11 +1000 (AEST)
+Received: by mail-pl1-x645.google.com with SMTP id d9443c01a7336-2cc6dd43737so83355715ad.2
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Aug 2026 14:51:11 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1785793868; x=1786398668; darn=lists.ozlabs.org;
+        d=google.com; s=20251104; t=1785793869; x=1786398669; darn=lists.ozlabs.org;
         h=content-type:cc:to:from:subject:message-id:references:mime-version
          :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=V3RiD/GImmxOZZ69pO9kk8WyvHse/kOu0dWQ2OD9gW0=;
-        b=nLYExH7P/EKMDx2s0KxXNUqkoTKNkIv9L30cYthyBGbfTVu81r07yUSzoPHqN7p+an
-         vDsK6epZjbM3NAgdJZVCPMNJz53Ypd51Ph9ER5sgoIaTRxUgw2Kg+2js50UJ0HK8Zr4Z
-         8z9Ih0kwSv1dxMVSKw66g74YztaQC1S64J4/M+/NTqgo9A0vkZKG/Fr0ekFZsA2G1eX6
-         YDhL6JzWOwuAwSSp+QjI6WEiuLa2Fh4dc/a31TDxwouZS+rUq36/kqwTprIEYJJ+hB6N
-         2KcPh2oFKa9K+9XJCWFqK/r/tDgqirqoHvidqt1lrn3Q0kR9H2AtH+CzD7OQ4yLc3BHS
-         Anew==
+        bh=LRBKJRqDdwyuffVZ6WAc5QHmw5xxQBAcOoh92VnWqbQ=;
+        b=GGLSoPgwofe21lWy7dyT7xGMJ+rr0gjJov4iTj+ob7sygWdzLEx3ishJYgL97LGqXp
+         stK3u9hPFKU1GmwsgZAlyPv+oA1Qkc4GJ1sKAARW2ndQg7cR5Z9Xg/c4OHv4ddfj+kUH
+         wq1PVaK98XqpseeU7dUpppnGLDUaQUNB3x9CDffHcYLrPJjmgW/SwFR6S/Q1jQROWKGl
+         spiPpEb+4jQYb2gH8YC1aYnEZPGbYRdB8+3QKkXbuuR0iyK37EMW3kf8skXuW58+VOIV
+         fkY4Bg5JPfCv1srjKMRIMHx/tmj1FlbLdaaWeMkLPdzQd3bH8riz6PuB6s2Ro/nnjXS+
+         YRFQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785793868; x=1786398668;
+        d=1e100.net; s=20251104; t=1785793869; x=1786398669;
         h=content-type:cc:to:from:subject:message-id:references:mime-version
          :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=V3RiD/GImmxOZZ69pO9kk8WyvHse/kOu0dWQ2OD9gW0=;
-        b=SCGQenog0jxSLn6TB5yPmJ6eZW86ih8CLGgR5ts67C6Bcmt486QUCjil/Dkf1LdUXG
-         BboT/NEox/3hQzstoLHnDF3A0cDegutUgJ0mDAxkzYLPUYtC7J2Z9qwMfkcfYhxLiY6d
-         E++ZZmfsJ0SfXKuuctIgkHQDyb8BJwvxsyQpClvPD0wY94iyTwNHpka2zufaW6R0rQzI
-         sa0dSQgLwS9LrZ0HESd8VQM6f6waz+vV9AFRqEiAuo0GvNPesgTl6T8h9c9JOQvE/F35
-         Lx3ROY+7nQwQvpQ1aVt/cPfsSXhK56rzXQn6IQLpmfQ4IpAl0hc0OSVBcx1CaSfr3LvQ
-         Qg3w==
-X-Gm-Message-State: AOJu0Yy9H0IHkCEXCT6/paoaqWqNYcejNvYUV4KmiEcC9wgcfAOPmh4/
-	9ugrCD5YchDe2qMPW7hovk7UBgdVzPp8/5WBh64sWYjsID9I6CYK2nnJ94LAj/fNB43jIaOM9pr
-	qGHzz0Y4C1DEeVpsrWd46RmVA0iXr78pO+g==
-X-Received: from pfet15.prod.google.com ([2002:aa7:938f:0:b0:84b:62d1:9fe3])
+        bh=LRBKJRqDdwyuffVZ6WAc5QHmw5xxQBAcOoh92VnWqbQ=;
+        b=JiFVWngJ7rhp/mAFnglz614b7AY3S9nEtPhNGA3F4BnBX4zy0BHYfZsfLPymO7gvZD
+         TUNnaO/cWn7e2uto3My7x+o9WhbRIbmM4Ivw8bqv6zD819ln6Yy/DXix9Vq/6QWUCgbj
+         4HL7xa5XYwEr5Z76fhJbidsLbjNXgSwnKPNQYnBSRhcNhQMXyPuU0IykgyNpsxdMU+Jl
+         426kFYXXVphe2Qi1Xv6zNFWsAoJ7U6z4mv6lZtxf62lFHZJkJzKFPvxC2lsuf5Osh1Tu
+         STveIKPYCTcifF7aF0UMVlWO0AzTloCOOTsiewVDU8uuZ+/6HVG1256xyFmpWmL3ppPF
+         EbYg==
+X-Gm-Message-State: AOJu0YxkX/E7qQ1Nw0dn8v56vUSyjq7ludg5uSV9L7DsE2tesmwKLAJF
+	l7AsSfsS1ITSqrgKc2V5FEE8XO3Qpse6XNEl8knw2WTSUvnz3/dAPL/HqhLKkVt0gEP46fL4eTn
+	WCjhSYwCwY41p8NDV30KzxhNBFx+3jg4TEA==
+X-Received: from plxd6.prod.google.com ([2002:a17:902:ef06:b0:2cc:7709:b166])
  (user=rathodpriyank job=prod-delivery.src-stubby-dispatcher) by
- 2002:a05:6a00:4293:b0:848:2ae4:d2ba with SMTP id d2e1a72fcca58-84ee4864ed1mr9846295b3a.28.1785793867656;
- Mon, 03 Aug 2026 14:51:07 -0700 (PDT)
-Date: Mon, 03 Aug 2026 21:51:05 +0000
+ 2002:a17:903:390b:b0:2cf:bfbb:61e2 with SMTP id d9443c01a7336-2d0524723b8mr113426065ad.39.1785793868519;
+ Mon, 03 Aug 2026 14:51:08 -0700 (PDT)
+Date: Mon, 03 Aug 2026 21:51:06 +0000
 In-Reply-To: <20260803-b4-fix-aer-memleaks-v3-0-e87159611933@google.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -79,9 +79,9 @@ Precedence: list
 Mime-Version: 1.0
 References: <20260803-b4-fix-aer-memleaks-v3-0-e87159611933@google.com>
 X-Mailer: b4 0.14.3
-Message-ID: <20260803-b4-fix-aer-memleaks-v3-1-e87159611933@google.com>
-Subject: [PATCH v3 1/2] PCI/AER: Fix memory leak in aer_recover_queue() on
- kfifo buffer overflow
+Message-ID: <20260803-b4-fix-aer-memleaks-v3-2-e87159611933@google.com>
+Subject: [PATCH v3 2/2] PCI/AER: Fix memory leak in aer_recover_work_func()
+ when pci_dev is missing
 From: Priyank Rathod <rathodpriyank@google.com>
 To: Mahesh J Salgaonkar <mahesh@linux.ibm.com>, "Oliver O'Halloran" <oohall@gmail.com>, 
 	Bjorn Helgaas <bhelgaas@google.com>
@@ -90,41 +90,69 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
 Content-Type: text/plain; charset="utf-8"
 
 When ACPI APEI/GHES processes PCIe AER error records, it allocates memory
-for aer_capability_regs (aer_regs) from ghes_estatus_pool and passes it
-to aer_recover_queue() to be enqueued into aer_recover_ring.
+for aer_capability_regs (entry.regs) from ghes_estatus_pool and queues
+the entry into aer_recover_ring.
 
-If kfifo_in_spinlocked() fails due to a buffer overflow,
-aer_recover_queue() logged an error message but returned without freeing
-aer_regs. Because the entry was rejected and never inserted into the
-queue, aer_recover_work_func() could never dequeue or free it, leaking
-the allocated ghes_estatus_pool memory.
+In aer_recover_work_func(), items are popped from aer_recover_ring via
+kfifo_get(). If pci_get_domain_bus_and_slot() fails to find a matching
+pci_dev, the code previously executed 'continue', bypassing the call to
+ghes_estatus_pool_region_free(). As a result, the memory allocated for
+entry.regs from ghes_estatus_pool was leaked.
 
-Free aer_regs via ghes_estatus_pool_region_free() when
-kfifo_in_spinlocked() fails on buffer overflow.
+Refactor aer_recover_work_func() to ensure ghes_estatus_pool_region_free()
+is called unconditionally for every dequeued entry, releasing the pool
+memory even when pci_dev is missing.
 
 Signed-off-by: Priyank Rathod <rathodpriyank@google.com>
 ---
- drivers/pci/pcie/aer.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ drivers/pci/pcie/aer.c | 23 ++++++++++++-----------
+ 1 file changed, 12 insertions(+), 11 deletions(-)
 
 diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
-index c4fd9c0b2a54..967cde9dd519 100644
+index 967cde9dd519..9683cdef649b 100644
 --- a/drivers/pci/pcie/aer.c
 +++ b/drivers/pci/pcie/aer.c
-@@ -1274,9 +1274,12 @@ void aer_recover_queue(int domain, unsigned int bus, unsigned int devfn,
- 	if (kfifo_in_spinlocked(&aer_recover_ring, &entry, 1,
- 				 &aer_recover_ring_lock))
- 		schedule_work(&aer_recover_work);
--	else
-+	else {
- 		pr_err("buffer overflow in recovery for %04x:%02x:%02x.%x\n",
- 		       domain, bus, PCI_SLOT(devfn), PCI_FUNC(devfn));
-+		ghes_estatus_pool_region_free((unsigned long)aer_regs,
-+					    sizeof(struct aer_capability_regs));
-+	}
+@@ -1223,14 +1223,13 @@ static void aer_recover_work_func(struct work_struct *work)
+ 	while (kfifo_get(&aer_recover_ring, &entry)) {
+ 		pdev = pci_get_domain_bus_and_slot(entry.domain, entry.bus,
+ 						   entry.devfn);
+-		if (!pdev) {
++		if (!pdev)
+ 			pr_err_ratelimited("%04x:%02x:%02x.%x: no pci_dev found\n",
+ 					   entry.domain, entry.bus,
+ 					   PCI_SLOT(entry.devfn),
+ 					   PCI_FUNC(entry.devfn));
+-			continue;
+-		}
+-		pci_print_aer(pdev, entry.severity, entry.regs);
++		else
++			pci_print_aer(pdev, entry.severity, entry.regs);
+ 
+ 		/*
+ 		 * Memory for aer_capability_regs(entry.regs) is being
+@@ -1242,13 +1241,15 @@ static void aer_recover_work_func(struct work_struct *work)
+ 		ghes_estatus_pool_region_free((unsigned long)entry.regs,
+ 					    sizeof(struct aer_capability_regs));
+ 
+-		if (entry.severity == AER_NONFATAL)
+-			pcie_do_recovery(pdev, pci_channel_io_normal,
+-					 aer_root_reset);
+-		else if (entry.severity == AER_FATAL)
+-			pcie_do_recovery(pdev, pci_channel_io_frozen,
+-					 aer_root_reset);
+-		pci_dev_put(pdev);
++		if (pdev) {
++			if (entry.severity == AER_NONFATAL)
++				pcie_do_recovery(pdev, pci_channel_io_normal,
++						 aer_root_reset);
++			else if (entry.severity == AER_FATAL)
++				pcie_do_recovery(pdev, pci_channel_io_frozen,
++						 aer_root_reset);
++			pci_dev_put(pdev);
++		}
+ 	}
  }
- EXPORT_SYMBOL_GPL(aer_recover_queue);
- #endif
+ 
 
 -- 
 2.55.0.571.g244d577d93-goog
