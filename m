@@ -1,79 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-25313-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25314-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C504FC55182
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Aug 2026 23:40:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 15B5CC55184
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Aug 2026 23:40:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hDY8P6Y0Fz307v;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hDY8P6p3Sz3080;
 	Tue, 04 Aug 2026 09:40:53 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::b12f"
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::b135"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785800453;
-	cv=none; b=R6KsDRvWl9I+93Uk05BbcVzo0dWtU3ewfhaGxDHVGeR3Ruz3ZYYJXGUvCpb3A4Ja4rOPhjJ4gXftfG88wpbYnmez86c18U9EPJ3pepqv9BueqfHgUG87u1lWqJ3hMrCfxp7cwgp0UFh2+dELewykTiTLADkYTc0fc1Rnd44+uTe4BUuHRD0zgfUQyBzTiQDZ4zfqKyfoZaXqj2YhP9kMgmfLoA9mmLxIjMfZSUyMken7KRsb15kSID3y/Z9hr/zHIKrfxqV9i0QmsMnQsqPEbMlG3s5TF1HsKkvKXLaQDIL3pJIeM9yPs74b6srD40mNRPio56CExgIU4SsmQo/c/g==
+	cv=none; b=F1pkBeAMDvSKCd+9RwFAy4i1CVTiYoUoyNuEnNrDfttsmQ1Gj60yYkpWXjFp1nKDbFbZhkYGJvCvfYbc68NOLa0PUOYaQPVT8oombBlnFxVbBBj6+HWSDfzzQRdCQ0PR/lKucK2K46SKVaYij4MWcxE02xXrmd2W623IHa2VICELR9xPFGWkoFkLSwjI2dUAk6+JnQlmzE+LQibLJGsA0an50JyAXELbYH7WLSr0E1t8cVTUtByj0TkoRf3YZlwiIMqt1BjTLf+DyocYshsbxpzT8n6sdpj/Mk0A4ywauMlagM3F4tLXUxNmQMYWCvaKESAJ6C4diD4h1vNuFbe9qQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1785800453; c=relaxed/relaxed;
-	bh=U+7Ru6jZFSxz7ibFdQEbmpjCAkPd7K+3B96IxICOxK8=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=eGxJKoy15CSm6/b9DSJDbxsr79lTAqYd4oaqlXt/8r3EjTKgntWu8nebYGGsnnFmawq03riqH3ryOAh0Amubbl7+KAlpowqFFenCIc1yH1VJYobrnP4642onPL/K9Bc2TUIzJBMW/MSIqxjpxAQDMH9d9E1cEGRwoumKOrl1R+P3v8s5Et20MF3fkQrwduvIDfCmEuZPAEHFAw6TizrzuhFI008smUQREIVcvRF4UxArABbH8n5Imm1E1UX4dlyURuAUJpoTqiyeKw5YEVNXut5DF2OgOGUAQK1zDc7gcei6xG5TXVxcAswdmurRALLtJ4cAGVWx64njz7bLw5Ldrg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=EtjHvJlz; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::b12f; helo=mail-yx1-xb12f.google.com; envelope-from=mattst88@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	bh=iXt2lHl6V6DYOxKrsChpRVwvJNwCDOvF3knLtupIoSg=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=Q6L0J4lMcPaJoV4eCxwa9u6mLJK/gDHbUXvMBXvfxvc2JCOmGP1uJrv2Qj+jNPA+gi4og8RDSonhQXiWdEbb/ZGqZq1bV7xOqAyejpG4DSLH09y/hugqTqVLNiGlauR/EAC+o8e2hngSwIQfmtdnQ0Bo4g8cvSjg0Y5UIFm8MIePGqs9qyiCIYBe7qFh8SUsZda31xjxxFp86JQGCtWnaAw7d58FGO6E9NECBhzxf2/VHmZ+4PgFh2iTwUOyeCEdjJlm4k8+hK2IDD4OUju5l/vs/GIrlGOdYmj5ZK6X4zLRScVl6G6T4K2gztIUua1apVAhTtjNNOA6De5vmRQz6w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=cD3MEx9J; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::b135; helo=mail-yx1-xb135.google.com; envelope-from=mattst88@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=EtjHvJlz;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=cD3MEx9J;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::b12f; helo=mail-yx1-xb12f.google.com; envelope-from=mattst88@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-yx1-xb12f.google.com (mail-yx1-xb12f.google.com [IPv6:2607:f8b0:4864:20::b12f])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::b135; helo=mail-yx1-xb135.google.com; envelope-from=mattst88@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-yx1-xb135.google.com (mail-yx1-xb135.google.com [IPv6:2607:f8b0:4864:20::b135])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hDY8N01PVz2yWK
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Aug 2026 09:40:50 +1000 (AEST)
-Received: by mail-yx1-xb12f.google.com with SMTP id 956f58d0204a3-6688acd1a51so5760706d50.3
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Aug 2026 16:40:50 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hDY8N1SY1z306N
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Aug 2026 09:40:52 +1000 (AEST)
+Received: by mail-yx1-xb135.google.com with SMTP id 956f58d0204a3-6682259cae6so4003422d50.3
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Aug 2026 16:40:51 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1785800448; x=1786405248; darn=lists.ozlabs.org;
-        h=cc:to:content-transfer-encoding:content-type:mime-version
-         :message-id:date:subject:from:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=U+7Ru6jZFSxz7ibFdQEbmpjCAkPd7K+3B96IxICOxK8=;
-        b=EtjHvJlzMz17UMx3p2duWsNBOgJkUAcs4RLBhVVSptXFvGtTFytlZ81dLMJpof7QRj
-         sXQRa7S10rWwO/M4UZL29QVtTeDdkDZ49KnGHTGIRi7MaWo+Vwzl8JKha/OgX4AIA7bf
-         uEFXD3UI4oKJ5JFIHXIj7oEcbGQER5FuXBRCkUq/K+Gd1fYvlu5X7HE3wlnk/ZIpGHOe
-         HF+prRygmtZsASEfd+GsvXcCAq/jvrDBlokKcOX314SUL0JTQKcJOre4e9UPbWdtJzjL
-         1pZnvOD07nZc+Pi9vRGLJD0ahm8E6N1FFCdEoxuMpfew24d9EGQqfqjQrPtgiFS4Yf91
-         scNA==
+        d=gmail.com; s=20251104; t=1785800449; x=1786405249; darn=lists.ozlabs.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :content-type:mime-version:subject:date:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=iXt2lHl6V6DYOxKrsChpRVwvJNwCDOvF3knLtupIoSg=;
+        b=cD3MEx9JhwiExDeGzO1uv5eGA0P4CdpPlq+OHH5r2E2wsR1j4uVX3b31G2lOGg1O/B
+         XHIejt4Uwl3pr8FbkCgo+G+LXnP9YjJO6cc4Lq2+vcJVcEUErExBg1iyH7skrgH06MaG
+         6uNcqdO++UfEPKPPmiijN8bxAxw58/mz1oKyaWbZWokFEEeZZ60OuL6MtYruruVhpa5h
+         sagfq7jqUJRLYQbHpkYHW8iIJGvr6/2MRXGT5qY9myct6Hhd0T1BkR5X8EytWeCMi65c
+         NHLo7TsNsS3Uc9kiCvYWmXcxy3AL07fgLqoLcpJV4Z+Uj2Z77XeHiJDhG51jTy3w9639
+         Bu2w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785800448; x=1786405248;
-        h=cc:to:content-transfer-encoding:content-type:mime-version
-         :message-id:date:subject:from:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=U+7Ru6jZFSxz7ibFdQEbmpjCAkPd7K+3B96IxICOxK8=;
-        b=pGYLf5c9+gb7Z6PkAk7YIoaOr14FHIvB8x21jbB+Oh9pKVtUbwKz8kpH36/AO8nhuS
-         XWDG/g2qrnPPh2jwhk+ajhMakT+lfsXv6o5a9owfu/EuoEdf0MCPicIuPjB+ZsG9B8tg
-         Z36KU0ZZOkZeytCzvr53cnlFo+FwjK7sMSVllOmhAcmolfIMyMEQd0qYph11/fAW/o3X
-         +xUrlBp+e357qj399qdJCII/fPO0DyZHiVkoxo7wE3lNOESKIOPb3/sDYeHFIxk7hTpF
-         fEN2kLAo+ZrrNjHBNCbLgrMLnTT22mRiPhomdWSI3LqpDXVpi/E5krCJfjxnzRnk+EyT
-         yyvg==
-X-Forwarded-Encrypted: i=1; AHgh+RpTHdQgHhNM+/zs+d1+l4Pg5G/+THnxT6WLL/k0pKZyq8SspfraPAoNLo3+DMl2r/I+khn/G3gJFiG+Zaw=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yyz3RJ/S3CQGGnSuAFIP5kyDDUgqrsdt0w6bJX2gHAI9o+tIYrW
-	Mil+/ODFgHici6nfXmbZME6dO4NCLLUDFK4GDCPP6nsCEAR/xVyBkeIw
-X-Gm-Gg: AR+sD10KClL/rc4oJfx+woDcuSEW2F5zUiHOax0DAl1dnmE2KSnIAt8FI30lWgnorrF
-	0/U0ULRBnVorhpx0yN6g19zRMxFQyuJNNslUmoFKDBA410rMoplYzsgP3at3IN9A9ymLsFUbRdJ
-	8X39ESPerfr1gHpNi2BfRh2yxhmrdKB9K7vvxdlm+q21K57wpPUImxENT9MnpA2hwAcO4c6//X/
-	89hI/fGmw1eU6mlmX5nChF7Nq6hOquBegT33Lp8iWUdVb4JGvIb5wXZ6j1XYjjqbJzmy46PVZA4
-	1B58q4a5+08FSIIxVXGnyy/EMUu1pAPKqJq1iOWOGbZv61OM6FSCyNRA4CB0jXD32tdcDsRY+US
-	9Qudjm5mTTs9g3jkmOZxTMIT0Ss6JtxStn0eWLvhv4CtHYHSb23ZoU23Wx8IW2h/UDW01aZInG5
-	+Mf1d3lefVCe2VZPgsAeshm/uQvuRmfnGH1o3ppnSp/0xdISRlgm9GPIMGN6WF+bKIwqINFhw7
-X-Received: by 2002:a53:c745:0:b0:668:43a3:9db2 with SMTP id 956f58d0204a3-6694f17d897mr10635045d50.32.1785800447478;
-        Mon, 03 Aug 2026 16:40:47 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1785800449; x=1786405249;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :content-type:mime-version:subject:date:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=iXt2lHl6V6DYOxKrsChpRVwvJNwCDOvF3knLtupIoSg=;
+        b=fvifGUrCkJOrvA4v1AVLuPqHotCtbuaBqbNyYc2ELIz/NIWXuOHc4WmSJOqcVbuhWg
+         MpqTdqsnYdrB8w+EZfN0N3hjOGDJVth2e+JBmiLj/UDVXT7k7g6Ab4btYBvYDE1ZIjrq
+         BSfysp13NtNFZrvzC3V5UBggwSeREM7S7sIUMRMhNdvhy6Ox/G+DE9RGoN0iVeTzOurT
+         gy8R2WldUa1ZqfVvHEt6/VMFhcHLGwEkR5jfKvlj9mySilrp8uSuusOIY55glnPm1KML
+         2Nb/FXB/+lJ9ILS+bgxiyoiJfgNC4Mho0N8CmQeH8d88fUrMT8ELLfNZbsutLkPXh8Du
+         JLvg==
+X-Forwarded-Encrypted: i=1; AHgh+RqViwxyNN3WV/gAUneZJThvh9oB7AkZIlwVRpy4lNAUZ8QIg1QTGErNWIstgwQpXA5G4GMoT6+IQNBQHAU=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzOpOvFZlDZ7xSo34epcNid0Ua7KKDOqxvIHKCvg+sDnqqmeSBQ
+	bvT8eN5Bl3zRsyYl0eJXsMFbtWzf/pP6U0LPnGoAVswTcTNmpWgpemyM
+X-Gm-Gg: AR+sD11gxef3pjPU+N42T0Xal3g3/Zlxin4E5+xvYezuMC5/1cphzxgoFs7MmMe2/4S
+	IzfUc3nhxHg390G4gPD9ydTvpG6hBLpz5sLozFF4sbUav2y9VWHLdhEWXO1Xzy4Y6N3CW91ZFl1
+	Uk7XZyzZOIFSZwpOOrkjuFelTqCycobrj/D+8AJHJx/HvDYCfCyxSXEWAPUbuoS7OHNnNgqKecN
+	h9ApYeQv/ZynjyA5X+MoLuinnajWoeLagWZXV6rdWA6d5iU2f8f8bKInGI4EjLjiMAZJa2J6sqV
+	H7635ssrx1xbQeWvM2WDHAcac2Y6BQFACeuUnN+1xYaRy1CJlkaeSVCBEmAsdNpssWiCwbshYie
+	mC+bU8eDLlejiRt6v2Mqo34MKopKPpRMYdmajvUxoxIkELgOBp/DxSazeGYftHe7zGm5+3Qanqm
+	jABhv/8B07Dvt4Q5Gtbk96eT5P8S29DZG0px2Qu/5c9jMyklCCIqj2HHvTsmrpT2p4zH71+jA=
+X-Received: by 2002:a05:690e:480a:b0:668:8f89:762 with SMTP id 956f58d0204a3-6694efd03bamr9722268d50.1.1785800449430;
+        Mon, 03 Aug 2026 16:40:49 -0700 (PDT)
 Received: from localhost ([2600:1702:7a90:6f9f:8bc4:8aec:108d:7a04])
-        by smtp.gmail.com with ESMTPSA id 956f58d0204a3-66948b98babsm6681654d50.0.2026.08.03.16.40.45
+        by smtp.gmail.com with ESMTPSA id 956f58d0204a3-66948b98babsm6681712d50.0.2026.08.03.16.40.48
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 03 Aug 2026 16:40:45 -0700 (PDT)
+        Mon, 03 Aug 2026 16:40:48 -0700 (PDT)
 From: Matt Turner <mattst88@gmail.com>
-Subject: [PATCH 0/3] alpha: fix floating-point exception state handling
-Date: Mon, 03 Aug 2026 19:40:44 -0400
-Message-Id: <20260803-alpha-fp-exceptions-v1-0-c99d75608e60@gmail.com>
+Date: Mon, 03 Aug 2026 19:40:45 -0400
+Subject: [PATCH 1/3] alpha: fix ieee_swcr_to_fpcr setting FPCR_DNOD
+ unconditionally
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,10 +91,9 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/x2MQQqAIBAAvxJ7bsGKsvpKdBBbcyFMNEIQ/550H
- JiZDJECU4S1yRDo5ci3q9C1DWir3EnIR2XoRT+JWQyoLm8VGo+UNPmn6hFHLeWxkBilGqCWPpD
- h9F+3vZQP4EcgZ2UAAAA=
-X-Change-ID: 20260803-alpha-fp-exceptions-5c77d9e057a3
+Message-Id: <20260803-alpha-fp-exceptions-v1-1-c99d75608e60@gmail.com>
+References: <20260803-alpha-fp-exceptions-v1-0-c99d75608e60@gmail.com>
+In-Reply-To: <20260803-alpha-fp-exceptions-v1-0-c99d75608e60@gmail.com>
 To: Richard Henderson <richard.henderson@linaro.org>, 
  Matt Turner <mattst88@gmail.com>, Magnus Lindholm <linmag7@gmail.com>
 Cc: linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org, 
@@ -101,78 +102,79 @@ Cc: linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
  Andreas Larsson <andreas@gaisler.com>, stable@vger.kernel.org
 X-Mailer: b4 0.14.3
 
-Three fixes to floating-point exception handling on Alpha.  The first two
-are a pair and should be applied and backported together; each commit
-message explains why taking one alone is worse than taking neither.
+ieee_swcr_to_fpcr() converts the software IEEE trap-enable and status
+bits kept in thread_info.ieee_state into the hardware FPCR format.  It
+contained:
 
-The first fixes ieee_swcr_to_fpcr() setting FPCR_DNOD unconditionally,
-which disabled denormal operand traps for every process using the default
-FPU settings.  Instructions built with the software completion suffix
-never reached the kernel emulator, and the hardware silently substituted
-zero for denormal operands.  This affects anything built with -mieee,
-glibc included.
+	fp |= (~sw & IEEE_TRAP_ENABLE_DNO) << 41;
 
-The second stops hardware-fabricated exception bits from reaching user
-space.  On EV6 and later the hardware writes exception status into the
-FPCR before delivering a software completion trap, and those bits can be
-wrong for the instruction that trapped.  alpha_fp_emul() only wrote the
-FPCR back when soft-fp raised something, so whenever it found the
-instruction exact the fabricated bits stayed visible to fetestexcept().
-The exception summary register is now passed down so the handler can tell
-which exceptions the hardware attributed to the trapping instruction.
+FPCR_DNOD (bit 47) disables denormal operand traps: with it set the
+hardware handles a denormal operand itself, treating it as zero, instead
+of trapping for software completion.  The intent was to set DNOD when the
+user has not asked for SIGFPE on denormal operands, but
+IEEE_TRAP_ENABLE_DNO is clear by default, so ieee_swcr_to_fpcr(0) always
+set DNOD.
 
-The third makes the emulation determine tininess after rounding, as the
-hardware does.  soft-fp had no notion of the distinction and always
-determined it before rounding, so an operation that trapped for software
-completion could report an underflow the same operation would not report
-when it did not trap.  The two paths disagreed on the same machine, which
-IEEE 754 does not allow.  This adds _FP_TININESS_AFTER_ROUNDING to the
-shared soft-fp code, as glibc's copy already has, and sets it for Alpha
-only.  It defaults to zero, so powerpc, sh and sparc are unchanged.
+Instructions built with the software completion suffix therefore never
+trapped on a denormal operand.  The hardware silently substituted zero
+and produced wrong results, affecting every program compiled with -mieee
+and default FPU settings, glibc included.
 
-Measured with the glibc testsuite on an UP1500 (EV67), with
-CONFIG_MATHEMU=y.  Without that option alpha_fp_emul() is not built at
-all and roughly 830 math tests fail on their own, so it is a prerequisite
-for any of this being reachable.
+Set FPCR_DNOD only when IEEE_MAP_DMZ is requested, which is exactly the
+case where flushing denormal inputs to zero is what the user asked for.
+DNOD then encodes MAP_DMZ, which ieee_fpcr_to_swcr() already recovers
+from FPCR_DNZ, so drop its attempt to recover IEEE_TRAP_ENABLE_DNO from
+DNOD; the DNO trap enable lives solely in ieee_state.
 
-  glibc make check subdirs=math
+Both functions are in a uapi header, so the encoding change is visible to
+userspace, but nothing outside the kernel is known to depend on DNOD
+carrying the DNO trap enable, and the kernel is the only writer of the
+FPCR.
 
-  before                              831 failures
-  after patch 1                        48 failures
-  after patch 2                        28 failures
-  after patch 3 (and glibc fixes)       3 failures
+This must not be backported on its own.  Re-enabling denormal operand
+traps exposes a second bug, fixed in the following patch: those traps
+usually find an exact result, and for an exact result the emulator did
+not write the FPCR back, leaving hardware-fabricated exception bits
+visible to user space.  Taken alone this change would make spurious
+exception flags more common.
 
-The three that remain are a GCC bug: a long double to float cast on Alpha
-is lowered as quad to double to float, but C requires it to round once,
-and the intermediate can land on a float halfway point.  Two glibc fixes
-are being posted separately to libc-alpha.
+The bug predates the git history, so there is no commit to reference in a
+Fixes tag.
 
-stdlib/tst-tininess passes, which confirms the hardware determines
-tininess after rounding for the results it produces itself.
-
-The shared soft-fp change was compile tested on sparc32, sparc64 and
-ppc32 in addition to alpha.  Only Alpha was tested at runtime; elsewhere
-the new code is unreachable by default.
-
+Cc: stable@vger.kernel.org # 5.15+
+Signed-off-by: Matt Turner <mattst88@gmail.com>
 ---
-Matt Turner (3):
-      alpha: fix ieee_swcr_to_fpcr setting FPCR_DNOD unconditionally
-      alpha: don't leak hardware-fabricated FP exception bits to user space
-      alpha: determine tininess after rounding in the FP emulation
+ arch/alpha/include/uapi/asm/fpu.h | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
- arch/alpha/include/asm/sfp-machine.h |  4 ++
- arch/alpha/include/uapi/asm/fpu.h    |  8 +++-
- arch/alpha/kernel/traps.c            |  6 +--
- arch/alpha/math-emu/math.c           | 88 +++++++++++++++++++++++++++++++-----
- include/math-emu/op-common.h         | 23 +++++++++-
- include/math-emu/soft-fp.h           |  8 ++++
- 6 files changed, 119 insertions(+), 18 deletions(-)
----
-base-commit: 8cdeaa50eae8dad34885515f62559ee83e7e8dda
-change-id: 20260803-alpha-fp-exceptions-5c77d9e057a3
+diff --git a/arch/alpha/include/uapi/asm/fpu.h b/arch/alpha/include/uapi/asm/fpu.h
+index cea9eafa056f..d28dc36786e2 100644
+--- a/arch/alpha/include/uapi/asm/fpu.h
++++ b/arch/alpha/include/uapi/asm/fpu.h
+@@ -101,7 +101,12 @@ ieee_swcr_to_fpcr(unsigned long sw)
+ 		      | IEEE_TRAP_ENABLE_OVF)) << 48;
+ 	fp |= (~sw & (IEEE_TRAP_ENABLE_UNF | IEEE_TRAP_ENABLE_INE)) << 57;
+ 	fp |= (sw & IEEE_MAP_UMZ ? FPCR_UNDZ | FPCR_UNFD : 0);
+-	fp |= (~sw & IEEE_TRAP_ENABLE_DNO) << 41;
++	/*
++	 * Disable denormal operand traps only when denormal inputs are to be
++	 * flushed to zero.  Otherwise they must keep trapping, so that /S
++	 * instructions reach the kernel emulation handler.
++	 */
++	fp |= (sw & IEEE_MAP_DMZ ? FPCR_DNOD : 0);
+ 	return fp;
+ }
+ 
+@@ -116,7 +121,6 @@ ieee_fpcr_to_swcr(unsigned long fp)
+ 			     | IEEE_TRAP_ENABLE_OVF);
+ 	sw |= (~fp >> 57) & (IEEE_TRAP_ENABLE_UNF | IEEE_TRAP_ENABLE_INE);
+ 	sw |= (fp >> 47) & IEEE_MAP_UMZ;
+-	sw |= (~fp >> 41) & IEEE_TRAP_ENABLE_DNO;
+ 	return sw;
+ }
+ 
 
-Best regards,
 -- 
-Matt Turner <mattst88@gmail.com>
+2.54.0
 
 
