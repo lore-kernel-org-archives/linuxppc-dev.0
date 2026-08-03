@@ -1,69 +1,79 @@
-Return-Path: <linuxppc-dev+bounces-25312-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25313-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 031B8C55184
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Aug 2026 23:15:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C504FC55182
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Aug 2026 23:40:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hDXbS4NC7z307v;
-	Tue, 04 Aug 2026 09:15:48 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::446"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785794384;
-	cv=none; b=h/8DQhsFJx/xk95D2Xy9R5Hv5AhwjT1zWaP8rLKnqcRAcIpLFo53Zic/kOVDF+OnbV+e5HN6i7xkckPkvmeJnoITgDFM8mfpFteBJRaNaSzOAPLOTlmpHSMBaWPjJvHWrTeQlxfK8QlR05BNa3E53rsCMs6G/WWx3svSB27aebHnowMq7pSUqQeBf5EUZ+C0LWa2ugnhh8+hlpilE/cUHFkWpyg0CxVND6AB4gJ4U/9R+J63MJN5SUup+JKXWvNgBmLIafi06FzKjqv7rxN9MkO/Zxvk2RQ4Iw/5QMZwmFU3lOtUuS0hXHjYdjItypBCNVncblRrYR3fuhgTJ+ZUEA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hDY8P6Y0Fz307v;
+	Tue, 04 Aug 2026 09:40:53 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::b12f"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785800453;
+	cv=none; b=R6KsDRvWl9I+93Uk05BbcVzo0dWtU3ewfhaGxDHVGeR3Ruz3ZYYJXGUvCpb3A4Ja4rOPhjJ4gXftfG88wpbYnmez86c18U9EPJ3pepqv9BueqfHgUG87u1lWqJ3hMrCfxp7cwgp0UFh2+dELewykTiTLADkYTc0fc1Rnd44+uTe4BUuHRD0zgfUQyBzTiQDZ4zfqKyfoZaXqj2YhP9kMgmfLoA9mmLxIjMfZSUyMken7KRsb15kSID3y/Z9hr/zHIKrfxqV9i0QmsMnQsqPEbMlG3s5TF1HsKkvKXLaQDIL3pJIeM9yPs74b6srD40mNRPio56CExgIU4SsmQo/c/g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785794384; c=relaxed/relaxed;
-	bh=LRBKJRqDdwyuffVZ6WAc5QHmw5xxQBAcOoh92VnWqbQ=;
-	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=fsCTVNKvguKsklONlLQpge1yBpwamunM8sBWhi9Ek5RJGl6jzlbWuDZ6feIF7B39OlMCgeagM8+/ZgiDqf+wYQsT0nM/ee8aIhi3W9OjSkvQuVVROubf9VcLfRtDSHGPk3gty88GiXFPNwklXTCcA8CtjulNDzca7BRzDcYk+tXkxJllBgi01JH6yai1WR6rMX5PvYTSjTNwI6c/AITvUz+nkfwUqwebZ7ORjz5POmXW6hDmsvMz1wh6/WJ9b6FI/pQ5Sux3YOYCm68VJz33KuKOqZmUKq1bToZy/R7CxM5BK4H2GMg+7HAwMdRMUdcOZoIYh4hj8F8r7W8FzoWWRQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=RF5CSjIl; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::446; helo=mail-pf1-x446.google.com; envelope-from=3tq9xag0kdio5o7v2r35wco1yu22uzs.q20zw18b33q-rs9zw676.2dzop6.25u@flex--rathodpriyank.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--rathodpriyank.bounces.google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	t=1785800453; c=relaxed/relaxed;
+	bh=U+7Ru6jZFSxz7ibFdQEbmpjCAkPd7K+3B96IxICOxK8=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=eGxJKoy15CSm6/b9DSJDbxsr79lTAqYd4oaqlXt/8r3EjTKgntWu8nebYGGsnnFmawq03riqH3ryOAh0Amubbl7+KAlpowqFFenCIc1yH1VJYobrnP4642onPL/K9Bc2TUIzJBMW/MSIqxjpxAQDMH9d9E1cEGRwoumKOrl1R+P3v8s5Et20MF3fkQrwduvIDfCmEuZPAEHFAw6TizrzuhFI008smUQREIVcvRF4UxArABbH8n5Imm1E1UX4dlyURuAUJpoTqiyeKw5YEVNXut5DF2OgOGUAQK1zDc7gcei6xG5TXVxcAswdmurRALLtJ4cAGVWx64njz7bLw5Ldrg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=EtjHvJlz; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::b12f; helo=mail-yx1-xb12f.google.com; envelope-from=mattst88@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=RF5CSjIl;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=EtjHvJlz;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--rathodpriyank.bounces.google.com (client-ip=2607:f8b0:4864:20::446; helo=mail-pf1-x446.google.com; envelope-from=3tq9xag0kdio5o7v2r35wco1yu22uzs.q20zw18b33q-rs9zw676.2dzop6.25u@flex--rathodpriyank.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x446.google.com (mail-pf1-x446.google.com [IPv6:2607:f8b0:4864:20::446])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::b12f; helo=mail-yx1-xb12f.google.com; envelope-from=mattst88@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-yx1-xb12f.google.com (mail-yx1-xb12f.google.com [IPv6:2607:f8b0:4864:20::b12f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hDVvh04kvz2xyj
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Aug 2026 07:59:43 +1000 (AEST)
-Received: by mail-pf1-x446.google.com with SMTP id d2e1a72fcca58-848d21bbb55so7096792b3a.0
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Aug 2026 14:59:43 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hDY8N01PVz2yWK
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Aug 2026 09:40:50 +1000 (AEST)
+Received: by mail-yx1-xb12f.google.com with SMTP id 956f58d0204a3-6688acd1a51so5760706d50.3
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Aug 2026 16:40:50 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1785794381; x=1786399181; darn=lists.ozlabs.org;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=LRBKJRqDdwyuffVZ6WAc5QHmw5xxQBAcOoh92VnWqbQ=;
-        b=RF5CSjIl47qxurqxG6ObHLUzZApGhlPvyzEnEFJgj/S86dUS51f2624wroZay4mVyc
-         MXWcuILuicHTF9D5LjN9F/UHL8O9/J//50it8uZrkNwi8Yf9shj/2Xp62iJxqgFt305G
-         z9++1fhVeQ5cw2OTy3lqDsFRuUXJNy45NS2E9ZmQZ7u88o6vvUTIOH4kHrdS6gWT1oC2
-         A2fx7IaVU9ZahGPhSLrydIVgjrdl1f2OslY10ZXtD4MAOkOYVlZN+VRF+bQJPyQFiAn8
-         2z0W5ZEbRzkCyEFK8tLMIIGT1Ep9byisVsORrUCEMy5AWj9EUr733WoajQhp9UnQXwa5
-         RTfQ==
+        d=gmail.com; s=20251104; t=1785800448; x=1786405248; darn=lists.ozlabs.org;
+        h=cc:to:content-transfer-encoding:content-type:mime-version
+         :message-id:date:subject:from:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=U+7Ru6jZFSxz7ibFdQEbmpjCAkPd7K+3B96IxICOxK8=;
+        b=EtjHvJlzMz17UMx3p2duWsNBOgJkUAcs4RLBhVVSptXFvGtTFytlZ81dLMJpof7QRj
+         sXQRa7S10rWwO/M4UZL29QVtTeDdkDZ49KnGHTGIRi7MaWo+Vwzl8JKha/OgX4AIA7bf
+         uEFXD3UI4oKJ5JFIHXIj7oEcbGQER5FuXBRCkUq/K+Gd1fYvlu5X7HE3wlnk/ZIpGHOe
+         HF+prRygmtZsASEfd+GsvXcCAq/jvrDBlokKcOX314SUL0JTQKcJOre4e9UPbWdtJzjL
+         1pZnvOD07nZc+Pi9vRGLJD0ahm8E6N1FFCdEoxuMpfew24d9EGQqfqjQrPtgiFS4Yf91
+         scNA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785794381; x=1786399181;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=LRBKJRqDdwyuffVZ6WAc5QHmw5xxQBAcOoh92VnWqbQ=;
-        b=jxoV2oSRRJ2D72Su4bdBG+Vq4iclgqPVUnfwZuLTRyzqrEgB5w8s3DWS0F5BM/LL4C
-         TxgQHLYKYszzwsy44R0oFx0P1gpo9iYJd79592/nxwwobRTT9SnaE3DYt5LEbA4RQSbH
-         2IbgG+R1JK3YrIvtsex8oU89vJ7/qRgHcnpKP6Fq2Is86tWj58GGFdyKQFEOndV/i32o
-         x059LAtRklBmi+9+y5JTyDMc3Wz2vyZxB1HDhP7V7FGqeHDwR7x91DgaNH/feSPhk2le
-         Q5TzcL61418FA1BOrAZorkGP2ehIZVdlbZhNQkW0Zs9lR3GJpNMSmucRI9qHO5BuBc6X
-         OuLw==
-X-Gm-Message-State: AOJu0Yy2bHZ5+0m714Mbvjx78y4B1njAdcIOObpn1sFmyEd3QlIPXsfc
-	uq9miV86Vb5/5iNoU8wqQS3Ys3DnygtQOcllicuyg+/SHn9WAjhfq8fKdHxBzYbwawTZUQ5lxuP
-	6QKURti3zWBl5bzAKScc0WbwuDe5t79/Qaw==
-X-Received: from pfbkr8.prod.google.com ([2002:a05:6a00:4b48:b0:845:e386:e036])
- (user=rathodpriyank job=prod-delivery.src-stubby-dispatcher) by
- 2002:a05:6a00:f98:b0:845:e9e5:cdec with SMTP id d2e1a72fcca58-84ee4933b3emr10031695b3a.62.1785794381432;
- Mon, 03 Aug 2026 14:59:41 -0700 (PDT)
-Date: Mon, 03 Aug 2026 21:59:39 +0000
-In-Reply-To: <20260803-b4-fix-aer-memleaks-v2-0-fd199b0171fd@google.com>
+        d=1e100.net; s=20251104; t=1785800448; x=1786405248;
+        h=cc:to:content-transfer-encoding:content-type:mime-version
+         :message-id:date:subject:from:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=U+7Ru6jZFSxz7ibFdQEbmpjCAkPd7K+3B96IxICOxK8=;
+        b=pGYLf5c9+gb7Z6PkAk7YIoaOr14FHIvB8x21jbB+Oh9pKVtUbwKz8kpH36/AO8nhuS
+         XWDG/g2qrnPPh2jwhk+ajhMakT+lfsXv6o5a9owfu/EuoEdf0MCPicIuPjB+ZsG9B8tg
+         Z36KU0ZZOkZeytCzvr53cnlFo+FwjK7sMSVllOmhAcmolfIMyMEQd0qYph11/fAW/o3X
+         +xUrlBp+e357qj399qdJCII/fPO0DyZHiVkoxo7wE3lNOESKIOPb3/sDYeHFIxk7hTpF
+         fEN2kLAo+ZrrNjHBNCbLgrMLnTT22mRiPhomdWSI3LqpDXVpi/E5krCJfjxnzRnk+EyT
+         yyvg==
+X-Forwarded-Encrypted: i=1; AHgh+RpTHdQgHhNM+/zs+d1+l4Pg5G/+THnxT6WLL/k0pKZyq8SspfraPAoNLo3+DMl2r/I+khn/G3gJFiG+Zaw=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yyz3RJ/S3CQGGnSuAFIP5kyDDUgqrsdt0w6bJX2gHAI9o+tIYrW
+	Mil+/ODFgHici6nfXmbZME6dO4NCLLUDFK4GDCPP6nsCEAR/xVyBkeIw
+X-Gm-Gg: AR+sD10KClL/rc4oJfx+woDcuSEW2F5zUiHOax0DAl1dnmE2KSnIAt8FI30lWgnorrF
+	0/U0ULRBnVorhpx0yN6g19zRMxFQyuJNNslUmoFKDBA410rMoplYzsgP3at3IN9A9ymLsFUbRdJ
+	8X39ESPerfr1gHpNi2BfRh2yxhmrdKB9K7vvxdlm+q21K57wpPUImxENT9MnpA2hwAcO4c6//X/
+	89hI/fGmw1eU6mlmX5nChF7Nq6hOquBegT33Lp8iWUdVb4JGvIb5wXZ6j1XYjjqbJzmy46PVZA4
+	1B58q4a5+08FSIIxVXGnyy/EMUu1pAPKqJq1iOWOGbZv61OM6FSCyNRA4CB0jXD32tdcDsRY+US
+	9Qudjm5mTTs9g3jkmOZxTMIT0Ss6JtxStn0eWLvhv4CtHYHSb23ZoU23Wx8IW2h/UDW01aZInG5
+	+Mf1d3lefVCe2VZPgsAeshm/uQvuRmfnGH1o3ppnSp/0xdISRlgm9GPIMGN6WF+bKIwqINFhw7
+X-Received: by 2002:a53:c745:0:b0:668:43a3:9db2 with SMTP id 956f58d0204a3-6694f17d897mr10635045d50.32.1785800447478;
+        Mon, 03 Aug 2026 16:40:47 -0700 (PDT)
+Received: from localhost ([2600:1702:7a90:6f9f:8bc4:8aec:108d:7a04])
+        by smtp.gmail.com with ESMTPSA id 956f58d0204a3-66948b98babsm6681654d50.0.2026.08.03.16.40.45
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 03 Aug 2026 16:40:45 -0700 (PDT)
+From: Matt Turner <mattst88@gmail.com>
+Subject: [PATCH 0/3] alpha: fix floating-point exception state handling
+Date: Mon, 03 Aug 2026 19:40:44 -0400
+Message-Id: <20260803-alpha-fp-exceptions-v1-0-c99d75608e60@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -76,85 +86,93 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0
-References: <20260803-b4-fix-aer-memleaks-v2-0-fd199b0171fd@google.com>
-X-Mailer: b4 0.14.3
-Message-ID: <20260803-b4-fix-aer-memleaks-v2-2-fd199b0171fd@google.com>
-Subject: [PATCH v2 2/2] PCI/AER: Fix memory leak in aer_recover_work_func()
- when pci_dev is missing
-From: Priyank Rathod <rathodpriyank@google.com>
-To: Mahesh J Salgaonkar <mahesh@linux.ibm.com>, "Oliver O'Halloran" <oohall@gmail.com>, 
-	Bjorn Helgaas <bhelgaas@google.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, Priyank Rathod <rathodpriyank@google.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/x2MQQqAIBAAvxJ7bsGKsvpKdBBbcyFMNEIQ/550H
+ JiZDJECU4S1yRDo5ci3q9C1DWir3EnIR2XoRT+JWQyoLm8VGo+UNPmn6hFHLeWxkBilGqCWPpD
+ h9F+3vZQP4EcgZ2UAAAA=
+X-Change-ID: 20260803-alpha-fp-exceptions-5c77d9e057a3
+To: Richard Henderson <richard.henderson@linaro.org>, 
+ Matt Turner <mattst88@gmail.com>, Magnus Lindholm <linmag7@gmail.com>
+Cc: linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+ linux-sh@vger.kernel.org, "David S. Miller" <davem@davemloft.net>, 
+ Andreas Larsson <andreas@gaisler.com>, stable@vger.kernel.org
+X-Mailer: b4 0.14.3
 
-When ACPI APEI/GHES processes PCIe AER error records, it allocates memory
-for aer_capability_regs (entry.regs) from ghes_estatus_pool and queues
-the entry into aer_recover_ring.
+Three fixes to floating-point exception handling on Alpha.  The first two
+are a pair and should be applied and backported together; each commit
+message explains why taking one alone is worse than taking neither.
 
-In aer_recover_work_func(), items are popped from aer_recover_ring via
-kfifo_get(). If pci_get_domain_bus_and_slot() fails to find a matching
-pci_dev, the code previously executed 'continue', bypassing the call to
-ghes_estatus_pool_region_free(). As a result, the memory allocated for
-entry.regs from ghes_estatus_pool was leaked.
+The first fixes ieee_swcr_to_fpcr() setting FPCR_DNOD unconditionally,
+which disabled denormal operand traps for every process using the default
+FPU settings.  Instructions built with the software completion suffix
+never reached the kernel emulator, and the hardware silently substituted
+zero for denormal operands.  This affects anything built with -mieee,
+glibc included.
 
-Refactor aer_recover_work_func() to ensure ghes_estatus_pool_region_free()
-is called unconditionally for every dequeued entry, releasing the pool
-memory even when pci_dev is missing.
+The second stops hardware-fabricated exception bits from reaching user
+space.  On EV6 and later the hardware writes exception status into the
+FPCR before delivering a software completion trap, and those bits can be
+wrong for the instruction that trapped.  alpha_fp_emul() only wrote the
+FPCR back when soft-fp raised something, so whenever it found the
+instruction exact the fabricated bits stayed visible to fetestexcept().
+The exception summary register is now passed down so the handler can tell
+which exceptions the hardware attributed to the trapping instruction.
 
-Signed-off-by: Priyank Rathod <rathodpriyank@google.com>
+The third makes the emulation determine tininess after rounding, as the
+hardware does.  soft-fp had no notion of the distinction and always
+determined it before rounding, so an operation that trapped for software
+completion could report an underflow the same operation would not report
+when it did not trap.  The two paths disagreed on the same machine, which
+IEEE 754 does not allow.  This adds _FP_TININESS_AFTER_ROUNDING to the
+shared soft-fp code, as glibc's copy already has, and sets it for Alpha
+only.  It defaults to zero, so powerpc, sh and sparc are unchanged.
+
+Measured with the glibc testsuite on an UP1500 (EV67), with
+CONFIG_MATHEMU=y.  Without that option alpha_fp_emul() is not built at
+all and roughly 830 math tests fail on their own, so it is a prerequisite
+for any of this being reachable.
+
+  glibc make check subdirs=math
+
+  before                              831 failures
+  after patch 1                        48 failures
+  after patch 2                        28 failures
+  after patch 3 (and glibc fixes)       3 failures
+
+The three that remain are a GCC bug: a long double to float cast on Alpha
+is lowered as quad to double to float, but C requires it to round once,
+and the intermediate can land on a float halfway point.  Two glibc fixes
+are being posted separately to libc-alpha.
+
+stdlib/tst-tininess passes, which confirms the hardware determines
+tininess after rounding for the results it produces itself.
+
+The shared soft-fp change was compile tested on sparc32, sparc64 and
+ppc32 in addition to alpha.  Only Alpha was tested at runtime; elsewhere
+the new code is unreachable by default.
+
 ---
- drivers/pci/pcie/aer.c | 23 ++++++++++++-----------
- 1 file changed, 12 insertions(+), 11 deletions(-)
+Matt Turner (3):
+      alpha: fix ieee_swcr_to_fpcr setting FPCR_DNOD unconditionally
+      alpha: don't leak hardware-fabricated FP exception bits to user space
+      alpha: determine tininess after rounding in the FP emulation
 
-diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
-index 967cde9dd519..9683cdef649b 100644
---- a/drivers/pci/pcie/aer.c
-+++ b/drivers/pci/pcie/aer.c
-@@ -1223,14 +1223,13 @@ static void aer_recover_work_func(struct work_struct *work)
- 	while (kfifo_get(&aer_recover_ring, &entry)) {
- 		pdev = pci_get_domain_bus_and_slot(entry.domain, entry.bus,
- 						   entry.devfn);
--		if (!pdev) {
-+		if (!pdev)
- 			pr_err_ratelimited("%04x:%02x:%02x.%x: no pci_dev found\n",
- 					   entry.domain, entry.bus,
- 					   PCI_SLOT(entry.devfn),
- 					   PCI_FUNC(entry.devfn));
--			continue;
--		}
--		pci_print_aer(pdev, entry.severity, entry.regs);
-+		else
-+			pci_print_aer(pdev, entry.severity, entry.regs);
- 
- 		/*
- 		 * Memory for aer_capability_regs(entry.regs) is being
-@@ -1242,13 +1241,15 @@ static void aer_recover_work_func(struct work_struct *work)
- 		ghes_estatus_pool_region_free((unsigned long)entry.regs,
- 					    sizeof(struct aer_capability_regs));
- 
--		if (entry.severity == AER_NONFATAL)
--			pcie_do_recovery(pdev, pci_channel_io_normal,
--					 aer_root_reset);
--		else if (entry.severity == AER_FATAL)
--			pcie_do_recovery(pdev, pci_channel_io_frozen,
--					 aer_root_reset);
--		pci_dev_put(pdev);
-+		if (pdev) {
-+			if (entry.severity == AER_NONFATAL)
-+				pcie_do_recovery(pdev, pci_channel_io_normal,
-+						 aer_root_reset);
-+			else if (entry.severity == AER_FATAL)
-+				pcie_do_recovery(pdev, pci_channel_io_frozen,
-+						 aer_root_reset);
-+			pci_dev_put(pdev);
-+		}
- 	}
- }
- 
+ arch/alpha/include/asm/sfp-machine.h |  4 ++
+ arch/alpha/include/uapi/asm/fpu.h    |  8 +++-
+ arch/alpha/kernel/traps.c            |  6 +--
+ arch/alpha/math-emu/math.c           | 88 +++++++++++++++++++++++++++++++-----
+ include/math-emu/op-common.h         | 23 +++++++++-
+ include/math-emu/soft-fp.h           |  8 ++++
+ 6 files changed, 119 insertions(+), 18 deletions(-)
+---
+base-commit: 8cdeaa50eae8dad34885515f62559ee83e7e8dda
+change-id: 20260803-alpha-fp-exceptions-5c77d9e057a3
 
+Best regards,
 -- 
-2.55.0.571.g244d577d93-goog
+Matt Turner <mattst88@gmail.com>
 
 
