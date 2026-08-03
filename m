@@ -1,133 +1,86 @@
-Return-Path: <linuxppc-dev+bounces-25256-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25257-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6876AC55184
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Aug 2026 09:59:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 08A74C55184
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Aug 2026 10:18:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hDBwt63s6z308X;
-	Mon, 03 Aug 2026 19:59:42 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:d40e::" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785751182;
-	cv=pass; b=WsokIuI15X/8ucD7WSBiV6SxkG5oyM2TtYAzE+5bXtAwTEVjfjdVIiG3nw3uTlv5/sMO+fgM6/wafiMLbXzQGS3wNXEKjrJlJVSwy843Hnat0KHoJrfDMXVpknV4AOKsaNmq3Eas+B31s8KiUVrftc8nXKeDV0Z7qAU/IHF3A5eUdD3R9nMw6e0YU/+L3xBuxmqLeNy2mvWPpTwuNEc0pntvzBxyqt6GYnofTvXS/eFHJijaTgKxJdb4zDHzXJ867IIOAl0/Hpw0OoA5y+klAlx4l6ynNYcNxRWM5nSsXJmWXCNViJFAHDJ99QsLu2PL6ej94656xVw+xGtdW27TmA==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785751182; c=relaxed/relaxed;
-	bh=5VVtcaR+K4fTZCq/g5VBt4yON14I2zoyDJVnhlwL2eA=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=RDeHvhJdhyW22GIWyHMNXo6ea40Q76oD5AcNrnnAqI5gH3wckqlBAl5/cIkd0IYLyfi1JLc88Yg7v5rn3raPILRbuwzpwmqFuiM0B73Nn0lQVA5GAIhgH5FTKo/Td60KRQiuVm3qpZ4OnB/I/71kYB71PAeumcPMmOtQtHkwsNuJS3R/HhxRgpTXm2Fkvy6bNHmlDfmimDjYQdIg5WQgww26v1KWi7TfO+n8u77swuC/s6IfwRko7naHZtVuJhhE/7gSjxjhY9xAOX98ZIRsC8eKwYI8RjY1VPqf55Rlff+LHVmRths2cNrE0l4qtq4+Qc7g53QWiYUjOhD2Oqzi0g==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=outlook.com; dkim=pass (2048-bit key; unprotected) header.d=outlook.com header.i=@outlook.com header.a=rsa-sha256 header.s=selector1 header.b=RBGwA4Fy; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:d40e::; helo=meupr01cu001.outbound.protection.outlook.com; envelope-from=moonafterrain@outlook.com; receiver=lists.ozlabs.org) smtp.mailfrom=outlook.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=outlook.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hDCLv6TwRz2yhP;
+	Mon, 03 Aug 2026 20:18:47 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=103.168.172.147
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785752327;
+	cv=none; b=bvJJg/ytapN/oKOLBDNO5KmUe6W4i1Vt18poNC2OmD6LpmgXmeygUWm6VKNDO4NjlDwHO4XIEv6ZVS9Q5tichMN5COb4Ij5599c+YPmZmA87kADJt9To5xlzCIk/DPoOi4SoAurjg1n1Zm7LEPLT+TyVA1hRO/po4S/KX2T0qKT6KydM545sDkjPJcnOmTRaSsWgxWvx8j31JdaWDA+9EbH6ucHgYRIYkBXgtZHAKanYanrX5yXa2Bd5PCs1IkZIVzrBAb1UZpe5/cQQgnBnkXS/nG1SCoiWerLUu9id57p8z3dR5eIrwPJ8YnhIftdfBM/XsEFarspHUAC8qqZg4g==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1785752327; c=relaxed/relaxed;
+	bh=nJWAmiK/YDsLpcDRD19IyFBb+1QwODK59Xiam0oEnn4=;
+	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
+	 Subject:Content-Type; b=kQTpMPW30c4MAryPheAptYBZ/wXG5Qdao0nByhWbrZsWchRVXlhY+nEG2ZgAxb85y/NcQVJLk41vUZexIjdGKDSybTRooE+kjd6TkOdu3nkWCOQfwbnW2s4T7mqZNBUe0zhnhx5/sql15R/JrY2QU2Kr+JPYAKDoVuiKC4DtwYGjHSX4lIHLuXQkSzijPJ8yM16rh14bvwwdLDpmnCjvvXO2u5BWzY+e5wSwn2iDeiFKf6UeDxCwRvSdkoEmfqN3XZ3HhNCBsU8dwvr+BUfZE0/vk0tWk8ucs4sGpS2kMSnFD+mLq/++BLq2InjtmaJ0CoHC9mnP7MPXI6STYNQE5Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de; dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=FJJoVLbc; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=JMG/zUXc; dkim-atps=neutral; spf=pass (client-ip=103.168.172.147; helo=fout-a4-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org) smtp.mailfrom=arndb.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=outlook.com header.i=@outlook.com header.a=rsa-sha256 header.s=selector1 header.b=RBGwA4Fy;
+	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=FJJoVLbc;
+	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=JMG/zUXc;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=outlook.com (client-ip=2a01:111:f403:d40e::; helo=meupr01cu001.outbound.protection.outlook.com; envelope-from=moonafterrain@outlook.com; receiver=lists.ozlabs.org)
-Received: from MEUPR01CU001.outbound.protection.outlook.com (mail-australiasoutheastazolkn190100000.outbound.protection.outlook.com [IPv6:2a01:111:f403:d40e::])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=103.168.172.147; helo=fout-a4-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org)
+Received: from fout-a4-smtp.messagingengine.com (fout-a4-smtp.messagingengine.com [103.168.172.147])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hDBwt1G4Sz2yQJ
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Aug 2026 19:59:42 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=V6fd1LdmJsimjbzUttnEtWg7cx7bIgoJPpUTsi3qc3Xb876w3t04ltmQp+G4DhD4HM3XYA9KHghys4v6kcXkO5oAQFUdyFrc1FVJTPJar1mrYr/bztmOHdZTIMiYH5EaHpxZQNXmZBzfLlJ6z5fJ7dwlGGzhilOm2edHTuM+umuSZ7Y9Miz5kaOQ49CoLQRncC3ug518xWVRj5X1/3eF0FuwJ/R6aVHVeno6whFc6AFWcC0l/3m4TOkwXH5QBTJNP7s1Giq8NWOUqZC+4MQMrIHYNBEgPU9VKlaYdiDpsG5BB43PiRlNMUSAtKIRnSHKMyrr/NaJ2mBGkFrlHYUKLQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=5VVtcaR+K4fTZCq/g5VBt4yON14I2zoyDJVnhlwL2eA=;
- b=WzZpYgREeeFyqiOL26MU/JhNG8sng7z7/cl3Ftgynl6G8FsaYzoouQusT15NiPvczmyDSFbpJIYne3V4hCutoqZdN3UH5pr+6PeRkA4r5qkwJKEX7We1FkXk2ZOZZt5cRKRxSabY3ievISY1VHDugtVPPMBXOdt7M9wUYZmipDvsZSc/xC8hkSaoJz67R+eZPjOdfriilGQue4qjYy7vOPP0Wnprg+6Ho0w6B2m4sNcsbdR4ZpVwIIXTnQF/NBniPnKsn9U3bdao41Pq9KqH0e5KaJSbn7WB55q3onDvT8qyjBbbc35aMEQudOGNuD4dqCsTiXo33QuaJlKX3gcJwg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
- dkim=none; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=outlook.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=5VVtcaR+K4fTZCq/g5VBt4yON14I2zoyDJVnhlwL2eA=;
- b=RBGwA4FyjcoF40csy4p6FtCcBtqlXRvrTkvKqpmb6jPQan4fMdfc72Cy08ZoA6VVKjk1w1ViFp/3yThzpBWUXk7K8dFfCR9EYHp3Hw2L/2/etkHDeggrKRE54fIx1NG7PFIotBBJKi0AaGlvgO3bXKEWbwhoIBpqVuGayuNXkrpVeU4FT/FgshPVKZM9TMKYSjpncW7qZHUxP1lV11KYKyr9Byw75Ljb7wl2oN8QGlSWtkueyjO5Tzz+g04wfgsTdibH+429+H2UI6QqGkDCNKuIp7Be2THQYliVQ+4gEMMQkPtiLcBSURX9xxmvMmgSnsQUCnBTu680XMHhifeTPQ==
-Received: from SYBPR01MB7881.ausprd01.prod.outlook.com (2603:10c6:10:1b0::5)
- by SY7PR01MB11484.ausprd01.prod.outlook.com (2603:10c6:10:34c::6) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.270.17; Mon, 3 Aug
- 2026 09:59:17 +0000
-Received: from SYBPR01MB7881.ausprd01.prod.outlook.com
- ([fe80::7cd2:d6e8:3fa0:5f0c]) by SYBPR01MB7881.ausprd01.prod.outlook.com
- ([fe80::7cd2:d6e8:3fa0:5f0c%3]) with mapi id 15.21.0270.016; Mon, 3 Aug 2026
- 09:59:17 +0000
-From: Junrui Luo <moonafterrain@outlook.com>
-To: Arnd Bergmann <arnd@arndb.de>
-CC: Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman
-	<mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy
-	<chleroy@kernel.org>, Paul Mackerras <paulus@ozlabs.org>, Alexander Viro
-	<viro@zeniv.linux.org.uk>, "linuxppc-dev@lists.ozlabs.org"
-	<linuxppc-dev@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
-	<linux-kernel@vger.kernel.org>, Yuhao Jiang <danisjiang@gmail.com>,
-	"stable@vger.kernel.org" <stable@vger.kernel.org>
-Subject: Re: [PATCH 0/6] powerpc/spufs: assorted fixes
-Thread-Topic: [PATCH 0/6] powerpc/spufs: assorted fixes
-Thread-Index: AQHdIpbafWrFzrsOd0a44iIFf4B2oraMD8kAgAAH4IA=
-Date: Mon, 3 Aug 2026 09:59:17 +0000
-Message-ID: <9E49BF8D-34E4-449A-A24A-AACCF6215DAF@outlook.com>
-References: <20260802-fixes-v1-0-7368423440f4@outlook.com>
- <a1c11e04-a3df-4beb-84c8-f0e0443bb828@app.fastmail.com>
-In-Reply-To: <a1c11e04-a3df-4beb-84c8-f0e0443bb828@app.fastmail.com>
-Accept-Language: en-US, zh-CN
-Content-Language: en-US
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-x-ms-exchange-messagesentrepresentingtype: 1
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: SYBPR01MB7881:EE_|SY7PR01MB11484:EE_
-x-ms-office365-filtering-correlation-id: 1d92a396-3ac2-4434-d88e-08def145e1c4
-x-microsoft-antispam:
- BCL:0;ARA:14566002|12121999013|22091999003|39105399006|24021099003|15080799012|24121999003|31061999003|4140399003|8060799015|19110799012|8062599012|25010399006|40105399003|18071099003|2607281247196008|102099032|440099028|19061999003|3412199025;
-x-microsoft-antispam-message-info:
- =?us-ascii?Q?ZNdWX9JsUe5Nadksj3MWIoaVQ4nDaZIobOyWDWpjdRql1zV4df/iUNOqg/1O?=
- =?us-ascii?Q?GcatqicOEGzBz8BXXIm7CLCEqIJdtsGtu0B9a0XAc/SCzjTm0Np0bRzbB6h4?=
- =?us-ascii?Q?Fg1r9ti5YBRbWqJfJwtJH42vEvO59oi5VHKhv126F8ZEJjcX3FIAv7FMhkTZ?=
- =?us-ascii?Q?cN8kkv0jmm45AzsEmvbgzmup9gnORKSt2Jn3RsMZ3rr0LIRyZHYcsVY4yAOW?=
- =?us-ascii?Q?G82MGzcqB9DMBL5jJIEZay/vV9EFID9abcC7Geun58Z/5nluYTdYyHd/Dy/m?=
- =?us-ascii?Q?Uk1wZLgLolWw5VeqJUTi4+2Pg+ccfEYso1M+lCcUVZqR2PJWOF0NxWZTix6l?=
- =?us-ascii?Q?LOJnN5MqD/Qpx0bnN16bBa2fflWQIJ7LjL7G2ogTup6u8CkhuHxcdOIwCnxQ?=
- =?us-ascii?Q?EjQejE4d8FgvaAXVahKX8S4L8cdYdNkc4So+uzrCNcQ6M04LhynZiMoJQzNO?=
- =?us-ascii?Q?CwnfIoPO8V+tTjk8RFpImdOKP1d6IP1LLf8T6jNNp9fIrawWtYKh6z3aiB4q?=
- =?us-ascii?Q?UxpMLhwJCOqZ3jqovYWcyFIGzOlmrTMWvmYtbrzQHjQNyXKwjiL/+XnZ5dxO?=
- =?us-ascii?Q?TSE8mdF7lSH82y3rPXdEj9H3C92a5gJcTWJxagnK4YuDqyJAAmv8+oEET762?=
- =?us-ascii?Q?lRRnJa9L+gcHR3CZFUdYmu2sz9dL00MhzeFsmNB3m7aGacWDII4qEeBNoxo/?=
- =?us-ascii?Q?5lx5mS2rjf8lGOABDstg8xu8eywB5WltX+OFd3/dfvP8xBUO/h/MCmDyMLkZ?=
- =?us-ascii?Q?dEMqD1bmbgbLKGPNAhqzEOwYWJpOZXqAvB3PtVWvT54x+EAEDBc7iXnw8k1z?=
- =?us-ascii?Q?U66gPLTM9HwvVR4ST9TfhcK1BPKcviFwa075mtE1ju9Xlztoc3hHOZMn28YB?=
- =?us-ascii?Q?WC3ak6sNmrG2vFt7Hcff2JoVeeWn0KRbmxOa2e9OBJ488AfCLu6f9K5fkf8g?=
- =?us-ascii?Q?lUx+Rfce4ufFQEe+DrZONK1n9kqEvoRLNRCG/e+VZs7kIZhh3HRMshXGbDGi?=
- =?us-ascii?Q?+t0v/UvNCXT0fSOZl2kralwJbbwNV9z1XkpH2/Ae/A8WhwGmMjXz7nfV/fHM?=
- =?us-ascii?Q?sBIhvC8GAvGSejjh+iG+CwdEJawlhA=3D=3D?=
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?us-ascii?Q?0PhxrbdAs5ICCs8d0wYCR0o6k8Y2be99iBpW1CAVcWg4OJRElvnvcTyOKgr/?=
- =?us-ascii?Q?tIcCSxJ8UB5Qz5ZuDLS/xq7VcL+fqaOH8A/ogWB4ruwf5/8AKVwpSl33aZi8?=
- =?us-ascii?Q?M5IwuGTAPE31Iw25wzbSvVPt1AhnWegFnsw/L3M2Eq40f+jEutsSgpd+ai95?=
- =?us-ascii?Q?AIgU3nc+t0mIMnh+UA0nEpl0siI2W4Y4dIjAcfXmXzyGloyrt4PSm0UJISQa?=
- =?us-ascii?Q?ouZ4xmjuyR9mFXj6WpngLt7sIjA0Mk6YfOanPEzOmMFDDaYjUtbIcKP90QbO?=
- =?us-ascii?Q?dmVWvyRFT7BebwasU/Q5ZYswM0nqEAlsagb6gVmmPmBhzXzSBYfbSqA+Rb3k?=
- =?us-ascii?Q?kPHtgLoU0HIKKbC7mQUlzeNGeQy9yjdw3wqvkPQ4Io3i0evM8XVuRI7pTeIK?=
- =?us-ascii?Q?HuXblNRfTKxICYViV9IHiPhCz5HKIup3EaFkl2e5G66IVzG1yNQgLlG5wlN3?=
- =?us-ascii?Q?/nDXnia7dAXKqe72bB4+Bf6x1kHf2ot12U/vSL51dLAgZE7X30gOzn7XvnVH?=
- =?us-ascii?Q?rWdAhrsieHTElgxKvh17vC2LJkNVkHb8C9Nn0CyIbihozimqtgIs1XGiqoFX?=
- =?us-ascii?Q?McTfDjOBBZA9A2rrYbyDa7wSJsn8jIarell4/lzB2ZaiYv4468JOvaaqok9x?=
- =?us-ascii?Q?ZKCYIiom1H2fHe/7xX/z2RLYQVTLSKgV9PIV03FDfwx8VxBlexrLuvkBNOro?=
- =?us-ascii?Q?o5+5QhrhxdvdVzievbVvXsS2HgAIvPxoQTP2xWiYsuvYzY3pRgWOK4eyUllE?=
- =?us-ascii?Q?1PKPJLjlsfc8ZZ82GLWCfRxGvOs1QHLPpV2/5hi3xGqxTL8dFslUDGtod2Nn?=
- =?us-ascii?Q?GW+hIywoVOsGzivvP8blsjUGIpsUAj42cGASMt96VlCCy12liyrcTvxxfhWc?=
- =?us-ascii?Q?cPnbmSC0GfrX6P50Cz7nzVlHOtaYI7Zo+DKXuCxklXdwNhf76BdR5DtEIjwg?=
- =?us-ascii?Q?DXVyi3sA1yYO2A6b/HhkszAqaEgeOyKQIQPtACM5skH7RRvWuzQnek8CSh1o?=
- =?us-ascii?Q?cCSAJoViIEhaywXfv4J0ScRuUcGOw+/DcJlQHLlGZj7d0xxjcUq7ukDLvz3W?=
- =?us-ascii?Q?7E4N8drCWLzpXtnM2lnEQMM7tu9KZG2/MeutPgWTLIN2lQ1VLulg/7PVxGHL?=
- =?us-ascii?Q?5ZC/OouQrWIzPn4S7UKNwF2iroDk3UbTk2dedR1sKIWeBKvsvEPL0oBFLeZS?=
- =?us-ascii?Q?d+KZNFHPTIVCMgdeudKkLa9+rOMjas89jIRRvBJmY3kYRwofvOug2UPujCY2?=
- =?us-ascii?Q?qK5Qi10lANbRj0yqF/Mw4Mi4MlOgQnoAWoOQgXee2s6NmUGP0JmDKS3zXGG/?=
- =?us-ascii?Q?0iTg/jLM4a5LZD8Je36mpOo1MXIHxsHat2tLNSIBq1B/78l2G+YPyOHSpQn8?=
- =?us-ascii?Q?UtmVD4awY+Odn3xgwMJr/uwOyuBq85yGPcic2J9slcelqVuErQ=3D=3D?=
-Content-Type: text/plain; charset="us-ascii"
-Content-ID: <8452DF422F792E498EE5A043ED656361@ausprd01.prod.outlook.com>
-Content-Transfer-Encoding: quoted-printable
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hDCLr1lLgz2yQJ
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Aug 2026 20:18:42 +1000 (AEST)
+Received: from ams-compute-02.internal (ams-compute-02.internal [10.64.2.62])
+	by mailfout.phl.internal (Postfix) with ESMTP id 19EB7EC0123;
+	Mon,  3 Aug 2026 06:18:37 -0400 (EDT)
+Received: from ams-imap-03 ([10.64.2.23])
+  by ams-compute-02.internal (MEProxy); Mon, 03 Aug 2026 06:18:38 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+	:cc:content-transfer-encoding:content-type:content-type:date
+	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to; s=fm2; t=1785752316;
+	 x=1785838716; bh=nJWAmiK/YDsLpcDRD19IyFBb+1QwODK59Xiam0oEnn4=; b=
+	FJJoVLbc3ZmX5fpIePUqZeraQhsChe2tQkKJKpqTaB3balRKsl0fxra0VstKbvcX
+	tIss4Qqe8zdjM+vh7DPcPDaqFCcCpIszYxE/UCeCfpJTesTjKbThDx8gCaj3oFYG
+	CTWoT8kf8H6B9pDaxw2V0T/ST56EzpI6vqvU+PBqK2eSFZzUI8QXAIPu48t+XRRf
+	6r5yUK6T7C+bpMBMb3KSwjMT41eurT5o+wbeOwG0fbCh73hIxLsKugJHfs4TvCOf
+	tVsG1eHN/g2SoGF3nFa1A9hta6+oB1mpWimOg8tHHtuxVPcdrfP+q0X2bJb9ekHc
+	iMMKJELywUlZ85NniZ1kvw==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:content-type:date:date:feedback-id:feedback-id
+	:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to:x-me-proxy
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; t=1785752316; x=
+	1785838716; bh=nJWAmiK/YDsLpcDRD19IyFBb+1QwODK59Xiam0oEnn4=; b=J
+	MG/zUXcsKk2cgo7pYFZaQPjDtlQzxxKCNrztauvrJdZ00jw+pOUDgVQMNbSf+/uP
+	jOYvZsgXbs/1m/oDgcE282oweOHcRCdKLS6pHogTKc6f+mtiNZEcvB0jM4hH9+eF
+	O72x3t+pc9+wBUGIWzjP7qap/C/dI+FLV5phBUc1Mx3e0bNNIKmQdTNQNrtSDwYm
+	tfLUBOiET2tZw9wU8nPSnvjxisDsiqa91iWtJGu0Pb6MeAQgwwJvBbbyl9jdAV2b
+	M+ngsE64ewbs1GBa+2JomlAqaDnaHf6wwEK7Fd8ENpkZX4yJdoPyCLGILElR0SVQ
+	W0cWbwKznG7f5vod82Ndg==
+X-ME-Sender: <xms:9Wpwam19vjPHpjWuBwec6tDmAashtMB3DS4VY2qZahyOGEf_NJx5Sw>
+    <xme:9Wpwaj4p1i4WwDDy0EGNA1WYEEN9perFYPBRW1yGpo6-qdtjZnd4HP6lzRXSvHz2K
+    hencEOQ_hkwqm08xQq5OII1-zcuVWxfAIgGRplpEteyX44QXYl44hvP>
+X-ME-Proxy-Cause: dmFkZTEy4iNVFMTHvJ74Iz+PXArk4nRhmAi/Hp0/FiwaNzyHmcpp1vZqox0Qduh1Aw1rZx
+    mx5wM+EexPoc0vymZaaiG1M+/Qw7te6Eu3V9UMu801YgfVuiUsOr9jFFcerRK1QjRtrBUZ
+    WGs/2j+osW6O63m39fwq2j/LdnJ5MdBF7fY9ftcrV4rBHXNfIa9WlYQ86A6He5nmDi8BsL
+    1QSOGBog2fWZ+ZWaAM6w+M0eCNeEB1WGJUZRAO1XsUVhYnDjnPJOFkOpPAetduTjkaK4kj
+    u3ZiPSAcPOvW4T0yY1QGgeymVrRjJUEwRP/XmbWeIXPlB6Tbh0qlfJozdXa7L6yvdatBTo
+    e9Oywkh7tbKzDSRX3yf/Qufzgub+05DU3o7OacGkoSMv1efWWDHTvZ1NlwJA33vUQBpOwm
+    4c9gUCezKoR5OkaJoYIRyzwh9OMWFl1fNv1xBdK2CWWpXwLkpraacAHYHl76RUpyMRdNzf
+    tOT1k7POJXvKny6sS9R0DG0mGoag/23sHHaUz7QTb/ydBXiDsApCAtxzk/8/zej4ZHVlfW
+    KZLhC8ozJ4XQiHGWroMPvOP0PnN7nwrP0dAoyqaI5KCa5tCOWmmgJaTUWI3e0oy8+T2tzd
+    E5xj+c+oPN+VRG4RUn2Kb+zWriDLtr1m8R6Wz0wjp6Zw/dY2HQvjMVeDDv4g
+X-ME-Proxy: <xmx:-GpwasmI9vRR6VIlVdkp0ki_F2a0204oAEjv9xjZmNj8bdibj14hNg>
+    <xmx:-GpwaiVzlpjCbgba7UiyAait9jH3ufl8lLpWo6ecs0tGLV4rkU6LNA>
+    <xmx:-GpwaopPiPiwQFCPdeI788R5uuKkVzoxsDvBcc8kLgksOzU4XBNVng>
+    <xmx:-GpwarUlYla0FBqcd9_POc3vCw0ypgAEJExxPjbGjfMoqcB2kKqWdA>
+    <xmx:_GpwaoQUoQHGFoVnnHhYLp9XS_DG7jCMJETbU-y_kBfGx7V9YTYGNcNm>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.ams.internal (Postfix, from userid 501)
+	id E204F32A0061; Mon,  3 Aug 2026 06:18:29 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -141,42 +94,50 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-OriginatorOrg: outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: SYBPR01MB7881.ausprd01.prod.outlook.com
-X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg: 00000000-0000-0000-0000-000000000000
-X-MS-Exchange-CrossTenant-Network-Message-Id: 1d92a396-3ac2-4434-d88e-08def145e1c4
-X-MS-Exchange-CrossTenant-originalarrivaltime: 03 Aug 2026 09:59:17.5431
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
-X-MS-Exchange-CrossTenant-rms-persistedconsumerorg: 00000000-0000-0000-0000-000000000000
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SY7PR01MB11484
+X-ThreadId: A94vFq1Dmk6Z
+Date: Mon, 03 Aug 2026 12:18:09 +0200
+From: "Arnd Bergmann" <arnd@arndb.de>
+To: "Junrui Luo" <moonafterrain@outlook.com>
+Cc: "Madhavan Srinivasan" <maddy@linux.ibm.com>,
+ "Michael Ellerman" <mpe@ellerman.id.au>,
+ "Nicholas Piggin" <npiggin@gmail.com>,
+ "Christophe Leroy" <chleroy@kernel.org>,
+ "Paul Mackerras" <paulus@ozlabs.org>,
+ "Alexander Viro" <viro@zeniv.linux.org.uk>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "Yuhao Jiang" <danisjiang@gmail.com>,
+ "stable@vger.kernel.org" <stable@vger.kernel.org>
+Message-Id: <8391ed30-d739-49b2-ae8c-d31f01343841@app.fastmail.com>
+In-Reply-To: <9E49BF8D-34E4-449A-A24A-AACCF6215DAF@outlook.com>
+References: <20260802-fixes-v1-0-7368423440f4@outlook.com>
+ <a1c11e04-a3df-4beb-84c8-f0e0443bb828@app.fastmail.com>
+ <9E49BF8D-34E4-449A-A24A-AACCF6215DAF@outlook.com>
+Subject: Re: [PATCH 0/6] powerpc/spufs: assorted fixes
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-On Mon, Aug 03, 2026 at 11:28:46AM +0200, Arnd Bergmann wrote:
-> On Sun, Aug 2, 2026, at 17:51, Junrui Luo via B4 Relay wrote:
-> >
-> > Patches 1-5 are tagged for stable. 6/6 is deliberately not: it changes =
-the
-> > atomicity of multi-element mailbox transfers rather than just adding a
-> > check, so it seems better to let it soak in mainline first.
-> >
-> > Build-tested only. I have no Cell or PS3 hardware, so none of this has
-> > been exercised at runtime.
->=20
-> These are all reasonable fixes as far as I can tell, but I'm missing
-> information about why you care about spufs. If you used some atomated
-> tooling, please add some reference to what you used.
->=20
->        Arnd
+On Mon, Aug 3, 2026, at 11:59, Junrui Luo wrote:
+> On Mon, Aug 03, 2026 at 11:28:46AM +0200, Arnd Bergmann wrote:
+>> On Sun, Aug 2, 2026, at 17:51, Junrui Luo via B4 Relay wrote:
+>> >
+>> > Patches 1-5 are tagged for stable. 6/6 is deliberately not: it changes the
+>> > atomicity of multi-element mailbox transfers rather than just adding a
+>> > check, so it seems better to let it soak in mainline first.
+>> >
+>> > Build-tested only. I have no Cell or PS3 hardware, so none of this has
+>> > been exercised at runtime.
+>> 
+>> These are all reasonable fixes as far as I can tell, but I'm missing
+>> information about why you care about spufs. If you used some atomated
+>> tooling, please add some reference to what you used.
+>
+> We're working on a paper on LLM-assisted vulnerability research. spufs
+> was just picked at random as one of the modules to look at. The tooling
+> is an agent we developed ourselves. Should we add an Assisted-by tag in
+> v2?
 
-Hi Arnd,
+Yes, I think that would help.
 
-We're working on a paper on LLM-assisted vulnerability research. spufs
-was just picked at random as one of the modules to look at. The tooling
-is an agent we developed ourselves. Should we add an Assisted-by tag in
-v2?
-
-Thanks,
-Junrui Luo=
+      Arnd
 
