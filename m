@@ -1,64 +1,65 @@
-Return-Path: <linuxppc-dev+bounces-25262-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25261-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 102FCC55184
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 783C9C55182
 	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Aug 2026 13:05:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hDH3B2tt4z30FB;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hDH3B0kL9z30DY;
 	Mon, 03 Aug 2026 23:05:26 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785762326;
-	cv=none; b=WGq0SgUBK7050CqKQ9+Afezthn0wKIpL5x2udS7Z2RrAVLLdg+aowgSpjEoWmXTNr1kF6BHMEORpgsWjqYc1T5im5Fy7DOB+Q0mIHd8wiSWm/KhKQSPxXMUq9IgbxvPUNSVxFUpccou2yjT872G35DLdZubAcQuD0QBJKgnW8szZgCd2YqxImC1c1wAkmA11fTzO9uQOIy7B9tUnPjyYjpO1hWzoS4rQ+jkFYzw4HeQICOGCxe5nLpoHP8+lTtwU4+OQBtVMuVUnZVL5Om6xEeSXQRn1rA2shlOleBezC+fz4yBRczvc9cqdBiEGPZwOkuRkAwuf73iCTUxBwTVzfg==
+	cv=none; b=lTnPxFmD8z1/ADGlddFqB2jflZd+KpwhhlcG3YxAnbRXSZbOoaJVMh1ut1LOUueDwPmmOFde+72oE3h7TnwEGV+U0SN1B0y8nTFrTG7LCe0DxgMPL+P4iq1XWQoF6FcJwXPfsafi612z+3WUnQvLQO+6NJNCXQMDTi64CuxtAe1E0ngNg6ARVYM4LANh8dSUHDH3zeta2aF7Qj4A9aKrOcciKYAu3B0h5h6+TZQTbkC3sk35KJsxaP2K/Y8W2uHsluQfJvi6XUmIMCuD2GlvqgSjVz0R2PjEp6r8wbs5Xch7Kfz3qP5LzJqWMIxgN0V4o+jzJjRRep/I7o7apQUiQg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1785762326; c=relaxed/relaxed;
-	bh=7hDoNt/IcI8UVVVhiKmtR1oyxN5TwwRmY+NA64nR1NI=;
+	bh=BZP+7X3Uw5ZiqZ3CWxhIlqmxPiDSX9P3cuwNS1v6h28=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=j/SIra6UvYJGS5rPL2JWrB5xfGy+sxllGOgYAz6pIRi9JV8xsox/FBtsahaCKxCwHzdwGX8XU7g/kA5+e2t06VJqeLtB71mtIDpmqTgbhN7fcJ39hOo83tKWQliKMIu1vNpl4jQZyR4lPmbYbYIdGHlAxbGC7yieP3LCsaaIAx6XTM/9e82HC8z3tCXPDibJSiXvhgwt1/NazRHf0lPeiunVRPnN5U26hPyykWwIgorw+lEKJL8MbWuYSdD2vTQsDBXJOjqM4VzakOX8d2JNGXqIe563THzJmVjucTu+L0ZPFUWnx9BrLV4NVZv8q/J1I08Rg1l4qKEosrRvu1+UUg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=eI1wyjTy; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version:Content-Type; b=Wy0wwAb4ZKaKyXTRT7JogOXOJPXmufvXMTZTdCy7qhNTyLGd9eczvBilROIzkNxB8qaRbK2c8aCqEUJQgxES1/ppKwVGm0zjng8cVh4rV19ZTpWBEm5b2D3SW1qTSDEpBf5mnQmhQkxtHhb0nkV4Pl5hUUtD729XP8Nc7JtKkrFQKTLF8X88KZYdUXJMsIlUnTQG61GJBbFX1NjvWKMqd1R+4+6U6T/Jt/+fXPZ45HF/50gGI3HBhCvxS27HeHU9AdWpY9AlCqNIVsh0B5qFPrTUs/j6bYohnrnPl6NmC/TTTm24OTkWOx93N1OcWZl+aJblT+yEo5E4q6naAk/iIQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=M4GcgWSk; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=eI1wyjTy;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=M4GcgWSk;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hDH394z4Xz30DH
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Aug 2026 23:05:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hDH390Tgsz2xyj
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Aug 2026 23:05:24 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 6A4C840972;
-	Mon,  3 Aug 2026 13:05:23 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AC4751F00A3A;
+	by sea.source.kernel.org (Postfix) with ESMTP id 60AA841B42;
 	Mon,  3 Aug 2026 13:05:21 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 209181F000E9;
+	Mon,  3 Aug 2026 13:05:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785762323;
-	bh=7hDoNt/IcI8UVVVhiKmtR1oyxN5TwwRmY+NA64nR1NI=;
+	s=k20260515; t=1785762321;
+	bh=BZP+7X3Uw5ZiqZ3CWxhIlqmxPiDSX9P3cuwNS1v6h28=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=eI1wyjTyDaq+cllojo2voNxq3bu5QnmjEDXc4NG4TZQPFi0s0UANd85KOnW+maRRG
-	 e/2O0I3bo0jengfKVSlJRVi4dbABu9MU+VIsqMMfbMBLyijc6net4bkn9NT0y0nbSc
-	 uZG4dsQ/ls2zwl5y6CSM6gygxmxb1MMYVdOdYpqFWoGWVsQ+QA8s+p+vx9F4C1J1Bw
-	 ucUgNRmoHAVluJsf8+imsxxWx5VyXHTmqQMwvtpr7Z9L3dP8dj5Su9tS6uMaJGyS+G
-	 1Ut/7tndLob2Nd4QjLrXEzJaKNNPTOPGUmgH704MvX/NCePT+R7H/sJ2nB1lehEX7G
-	 1HiUDuN9Qcpsg==
+	b=M4GcgWSkF5genYsVaSXBZ3AMIxtPWql/hNVnqEDY+FEZTO2CTFXyYeWn/5eRWkpYV
+	 MEmHNqCGPLfZY3H6sPXh3wvhb3dcaghqWZNdH97WuoI+cxHXT1AEKVV/IsoKWU/lrF
+	 roJe6Jsgt2WY9Wji19Pp7dBQrR0mPbzWPvXSbRLAs6tFX/RfP4tuKWUSE7sltft8ZM
+	 5Nzc8WwOb1pXknvLGJtOvt36QC4YN0BvlIhDwLnWZyF9TNJcYp6lhHyDVugCxx6afE
+	 10hKu6BRks1nYkWsUxEoob59+0z5/fK4NfdmVf3nuweQc2oncWNX4m2pv5IyhsW7qc
+	 7vgIiHQnZ2tpg==
 From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org,
+To: RAGUENES Jean Noel <jean-noel.raguenes2@cs-soprasteria.com>,
+	Qiang Zhao <qiang.zhao@nxp.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: Linus Walleij <linusw@kernel.org>,
+	Bartosz Golaszewski <brgl@kernel.org>,
+	linuxppc-dev@lists.ozlabs.org,
 	linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
-	Bartosz Golaszewski <brgl@kernel.org>,
-	Herve Codina <herve.codina@bootlin.com>,
-	Paul Louvel <paul.louvel@bootlin.com>,
-	Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH v2] soc: fsl: qe: properly scan GPIO nodes at startup
-Date: Mon,  3 Aug 2026 15:05:02 +0200
-Message-ID: <178576221779.155079.3783262414291581671.b4-ty@kernel.org>
+	linux-gpio@vger.kernel.org
+Subject: Re: [PATCH] soc: fsl: qe: implement get_direction()
+Date: Mon,  3 Aug 2026 15:05:01 +0200
+Message-ID: <178576221776.155079.14811751064714928381.b4-ty@kernel.org>
 X-Mailer: git-send-email 2.54.0
-In-Reply-To: <a1db12ef75bf881dd5fba893a37db0c8517eca1b.1785414349.git.chleroy@kernel.org>
-References: <a1db12ef75bf881dd5fba893a37db0c8517eca1b.1785414349.git.chleroy@kernel.org>
+In-Reply-To: <30b3f278a10b46252783458c81dc438df176f86c.1785405882.git.chleroy@kernel.org>
+References: <30b3f278a10b46252783458c81dc438df176f86c.1785405882.git.chleroy@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -73,26 +74,21 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-X-Developer-Signature: v=1; a=openpgp-sha256; l=666; i=chleroy@kernel.org; h=from:subject:message-id; bh=C36mAtGFRBt/txt5qECqtJJPOORfncKwPxMA1G8HePA=; b=owGbwMvMwCV2d0KB2p7V54MZT6slMWQVTGJlkJj8ePrJ83c+ac112PQswufDnWz2u1+l9tbsD XHS3Z+R21HKwiDGxSArpshy/D/3rhldX1Lzp+7Sh5nDygQ2hItTACYytYuR4bytl/Fm//wjEywq eD4+v+YzI/J+2fZTM1+dK1/EOcsubT0jQ78cl3/8Qt9j/9fO9dDr/dRv+sto9w5b1rzl24WyxZf qcAMA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=383; i=chleroy@kernel.org; h=from:subject:message-id; bh=IrBaPxnph4YWN6xCAfs0TkjBzFIy+/PMRzuA4pYF9aw=; b=owGbwMvMwCV2d0KB2p7V54MZT6slMWQVTGLccCD81pRn7Av/J7fduq5Q1K0Rf5/D9R+LlpNF0 V+RW5x3O0pZGMS4GGTFFFmO/+feNaPrS2r+1F36MHNYmUCGMHBxCsBE/LIZGaYmGVlJi25uOTL/ Yf/204tnpr0sfeHmmrxGbVe/9cnEFXMZ/immvJ0i+EtmeuxL1vg4h6W8DzPdbsk+35PxoCx9o1B dFicA
 X-Developer-Key: i=chleroy@kernel.org; a=openpgp; fpr=10FFE6F8B390DE17ACC2632368A92FEB01B8DD78
 Content-Transfer-Encoding: 8bit
 
 
-On Thu, 30 Jul 2026 14:29:36 +0200, Christophe Leroy (CS GROUP) wrote:
-> Before commit 156460811def ("soc: fsl: qe: Change GPIO driver to a
-> proper platform driver") qe_add_gpiochips() was walking the device
-> tree to find all nodes with compatible "fsl,mpc8323-qe-pario-bank".
+On Thu, 30 Jul 2026 12:09:40 +0200, Christophe Leroy (CS GROUP) wrote:
+> The lack of get_direction() callback in this driver causes GPIOLIB to
+> emit a warning. Implement it.
 > 
-> After that commit the discovery is handled by the platform core,
-> therefore it is necessary to call of_platform_default_populate() on
-> the par_io node.
 > 
-> [...]
 
 Applied, thanks!
 
-[1/1] soc: fsl: qe: properly scan GPIO nodes at startup
-      commit: e2414b289c2b68afab361def612ca3791cd70d12
+[1/1] soc: fsl: qe: implement get_direction()
+      commit: e460ef309f44b39480209970f1dd462f051d6f30
 
 Best regards,
 -- 
