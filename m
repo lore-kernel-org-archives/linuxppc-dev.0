@@ -1,85 +1,85 @@
-Return-Path: <linuxppc-dev+bounces-25251-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25252-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3789EC55175
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Aug 2026 09:09:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C60FAC55184
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Aug 2026 09:14:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hD9qG1pDZz3078;
-	Mon, 03 Aug 2026 19:09:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hD9wp0TFSz308X;
+	Mon, 03 Aug 2026 19:14:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=103.168.172.157
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785748186;
-	cv=none; b=akh3RHmKeX9cKfRgi8Zo9Q0c66uhnUzCu+V7biKXA4QGO3z5zdSjVrWJScoZK3fj/HkkefDFx13roA8AFzxEANGXfmhfTK/ISa7i9aUO81jzvta1lANoeohD5TLdt3WIE/TKrISdXLpwswSfr0n81cQuGvLfeYNBO9Bruag8PIGfXMSwMkMUGiiWR+99WC7w23Un30RNW7bpa0/ZV832sBfdOj5O+lGNrSNav5UAQqL5v0NVB414wK2SFL93Y93l9o9dSIyguzkYyorRIr+It2eRv3r94kC7qu7MCgN3wlevklgi0VGRXcCxme5cnF5WytgdoD7x3Mx9AObLxhj09Q==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785748474;
+	cv=none; b=bHDP51/VOBOlQ9yniMOtxpeXRTchM7CYKV0KCr63ZVFSEjrc/AIkcgfkQLzmgOzwikVz3L17rW6YYZ6nHbXKslcGIyMU5M3BdAoivJ7BtH76l9dvjR6rtG6GeIY0El/how1Th+51Pf0fvLIJfRj8/RNY1dA/U1FWLKEzR67aLk1FkhYoxGsttVqMscMdqGpKkKCUdtrZjfq0wSH7B80lInVSt1Mjk5MDMyDy5ZC/TjdAZWEchRszipYrhkhsmrJxwv1DhM1hZMZhIerr3ZLcIsFEamhQvRxV5vgRi9hmQn7gTZMSHxjyjAIs9DQBe1yke00c8JIigbkosdlPOvYiwA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785748186; c=relaxed/relaxed;
-	bh=ROWwQWFfRqP3UQjuKRqW3Dif0oPwvL5nYK49KQT7MrE=;
+	t=1785748474; c=relaxed/relaxed;
+	bh=42FwwZaKUOqMneYEcznplotbPPKi+7qnPfiGOsEJRTU=;
 	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
-	 Subject:Content-Type; b=BuLW/lnglUyb5oJPquH9zxok68Ukcz5bgplosb4J+6hJL64P4UrcHuaQq/1j26q7hlRE23693tMDqRCPjT0LXZBlQSGI7picWW/C9a/Dw+EOT8JD2x/OoFYHBBgm1iW2oNeI0yZkUXFnU+7nO2HSeoITUbshhPgRnekb6SxeYuxjWVOiIKaB2ifGL2ykpNjkCco6L7TQm9reqg2XY8TDqc1BZxEASGh0P5TqpsTCvJ9T/MfYT3rFOg70Xm+lQbapcARRifEqX5RVlnRay5xXRRL5ZL1jGDu2ZFdNOb0EMViyc3eTUmGuYSspkFHOjeJUHGjL84VuqpN4yYYcvWsZDQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de; dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=ehd3x7MA; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=iRBkVE6g; dkim-atps=neutral; spf=pass (client-ip=103.168.172.157; helo=fhigh-a6-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org) smtp.mailfrom=arndb.de
+	 Subject:Content-Type; b=LFbup2kT/pKFuSi9513uh19iOIp/B9zrY1TomnsbjEpi8Ly5vT4Nw5LDBPTPwn1PTEUtdXMbD3FlJ5NKRLV8U7wsLfsJ8nL0+LuMAenJip/BXNZfJZd5KgpeW87Zjn8ityFUEDd2gTNOSOZLeWPbKMyHhACIfvY9hxAa9iAeC1iRS/ghjM4Pk8Tj+JRaoLCMrxd6Bq6z+Utj5pgBSGqyWoca9Ns3qePw4biZVGoliB5k1Goh4o/oPo6G/HVS9c1YYGnX5wkEfqeXbG+//ne4w+68sCFeRdkAbwW6ifZec26CPTSKfa21PQ2sPVUj7c16LZ3h4vYe6ixzvYwUj0Ptug==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de; dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=YH0qk0HT; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=Wbt7D3Td; dkim-atps=neutral; spf=pass (client-ip=103.168.172.157; helo=fhigh-a6-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org) smtp.mailfrom=arndb.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=ehd3x7MA;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=iRBkVE6g;
+	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=YH0qk0HT;
+	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=Wbt7D3Td;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=103.168.172.157; helo=fhigh-a6-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org)
 Received: from fhigh-a6-smtp.messagingengine.com (fhigh-a6-smtp.messagingengine.com [103.168.172.157])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hD9qF38wgz2yQJ
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Aug 2026 19:09:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hD9wm5JSBz2yQJ
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Aug 2026 19:14:32 +1000 (AEST)
 Received: from ams-compute-02.internal (ams-compute-02.internal [10.64.2.62])
-	by mailfhigh.phl.internal (Postfix) with ESMTP id 8F24A14000C2;
-	Mon,  3 Aug 2026 05:09:41 -0400 (EDT)
+	by mailfhigh.phl.internal (Postfix) with ESMTP id AD39214000EE;
+	Mon,  3 Aug 2026 05:14:29 -0400 (EDT)
 Received: from ams-imap-03 ([10.64.2.23])
-  by ams-compute-02.internal (MEProxy); Mon, 03 Aug 2026 05:09:42 -0400
+  by ams-compute-02.internal (MEProxy); Mon, 03 Aug 2026 05:14:30 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
 	:cc:content-transfer-encoding:content-type:content-type:date
 	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to; s=fm2; t=1785748181;
-	 x=1785834581; bh=ROWwQWFfRqP3UQjuKRqW3Dif0oPwvL5nYK49KQT7MrE=; b=
-	ehd3x7MAo4z0ZuMNrudSlC7fak5xAffSOUyAEMWw8jMp0nSxkUdC2rh/ePCGUcyQ
-	xn07wQpzHkbmOmh3lER/3KdFBlzQ6N2JgDFWwSal+rvLHsD74RfeSyPQEMevNQ1d
-	UXNHn9YzjE8me03sc39cvnMAINGcN4qTTnw3L4/cIPmk8IuEUjLVyfdmo/El3OiU
-	QBSLtmcDdZ2WClYV3PckZkewfDTMRb7UERQHmlhGd0LzsdKtVZHE16MMbMOjYyt5
-	dqRL0jU3XY/VUoYoOiyjmkQFST0CPY+M2vRaBjg2refKaQFeSdcGpw1G+2zW+GAJ
-	xpGTXcKT/+7hD0S31zf9UQ==
+	:references:reply-to:subject:subject:to:to; s=fm2; t=1785748469;
+	 x=1785834869; bh=42FwwZaKUOqMneYEcznplotbPPKi+7qnPfiGOsEJRTU=; b=
+	YH0qk0HTR0cy4SGIn/8fZV0xCuyX+ptl6M4RiLy5N6DlB3+i5/X6UFGBwUN7vfHx
+	lEREA6cE/Qow48BLCUk17Hbe+vb0XhnJqirLV34fQGoZC7Y1JAA085yX4P3Gt3l3
+	VPuxGEnBPRCWWGaA5vCkgOlgWgdv6fLm/PDidXy2sKeGAsA5qoeYMktCoWocih2E
+	FzQTDIfOfw8FNxFzS91oBliZlHnj7JqLGL4VZ0IC6YlY26I868QoZU3yOVGu19X6
+	R0gBRN57fIps1X34gO8lHiyOpZ4HLJsJO1dnLTpDhJ1rUZ1j/lfgkFWNntAO+MFB
+	V439V4VPunHrpZmH7RaDOQ==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
 	messagingengine.com; h=cc:cc:content-transfer-encoding
 	:content-type:content-type:date:date:feedback-id:feedback-id
 	:from:from:in-reply-to:in-reply-to:message-id:mime-version
 	:references:reply-to:subject:subject:to:to:x-me-proxy
-	:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; t=1785748181; x=
-	1785834581; bh=ROWwQWFfRqP3UQjuKRqW3Dif0oPwvL5nYK49KQT7MrE=; b=i
-	RBkVE6gTql0F0lZQlFR9Q6fehRxiAK9dDBOPSK7u9L09oLy78KwIkJUIQVvdHffd
-	EJ4AewrA19exTEz9QohDiAoOw4mDmR1MDH2mb3ufKfC2Ykd+iE4XDxjOIACt3H40
-	OesozbuP4WTDTkAxvHohsjPV8Yw1HfJddAozJZcfXJvHSaewqd04DRiTuu0C7j5g
-	Ocd8aQiOWEjJyuXzi+D5p1QWLoPwFoPlqVyhYVdl/j0jku4UG8PnH9OhbgyGVHW1
-	k6avb55/dOG7OYEoiHyffSuneHU9gRmPhh1/sL0cD//hl4VtrosF11gJl1WJ3RoF
-	hXIjewwH9e+Xk9bQz0G2Q==
-X-ME-Sender: <xms:zlpwagHHW8TpDsxD4ZdM_MOfSvDiwotN_TYATY3wOoA65Of-kPHqGA>
-    <xme:zlpwakJ1WT5ET_uvRf1bkzRgx_tYpCJ1mQyfSpa0i8qVxuDVUimdHjFryHWYnlbKs
-    CSeHCHsiSsRs4ZgcJwRG8FEpMEV_PUU-xOmHmHqbtMEOREiD2m1Wrx1>
-X-ME-Proxy-Cause: dmFkZTGEoBb97AL/SKgK0FdstT6EoWymHRufnb9mbxxW8IG8NdO7glMPqxR4yHoQFSM33G
-    8gcn4L2BISCqUtopUVwwjCPignrJRrMJrQOmKRmU7ovMRuIrXnVzMKXqfi/m3rAEI4LOuw
-    TyT6XQlWkqvDIaAe1givBclBybzdg29F3ddGQiHdSw9ewpDzGPT/4+tRICZmoqqIS/TIWF
-    dKKsodWG14FJplIWbNJt/6/9IA2b8jod08Ez7V7Q/XabFFN3b660uesSBRXtfrXuN3W5Se
-    vaFwDnRk3uyRIM8sC2g+9R8Uj8r5YwtLYk4GTVqD1+S7lqq0/PULBz+5rHS2zrKHzM2RuG
-    7AuRBuh9dhHUdXYROVL/0hXJoK3qbr5000a7yL5ld4JMIYMwFi9UcQgevm3FLrosbkdwan
-    s0lFp+AYylhI9VAnKiRoS/j0gwrMqnzFltpAWd1ubHdwZYE0D2ZHKKD6scF3DSXCm0vQ6H
-    E/oGe7JOuhQlEbJLdN+0gQ02R0sAru368VZADgE3oYm7lwCnzBrUeIl4RS5l6wRsCO2lxW
-    OhUEABUtT0gIt0aVGlBh4bixDmXHQPrFK6jhoMmpD88auS+QaTXRxCzGoTrwaMHTCO1Dk3
-    VXZyS7uaA85QCY80YeoQTuyGxLrLx1o/Q9kMwdzJid0891QDps4XeBuw7x+w
-X-ME-Proxy: <xmx:0Vpwasm96kHvmBQ2erPVppajueqtq25YEnn1_MZ9dDDeY2l7NnCzpw>
-    <xmx:0Vpwal5vq9MHmTRGxkHs9PskslKbuGtDxWa0vYe0-daY0o9BWBXx9w>
-    <xmx:0VpwavkqX2IFCm4qh3eKObpDa_j3AYr9S_myt4EDZ9sqJ805Fxfqbg>
-    <xmx:0VpwagXlmmhrHmfm1pkssbgfzBKK8_mnGzO_0vI7ILyP_igT5gpxUg>
-    <xmx:1Vpwajpo7m-nHJyFy0nCKRDFfvACEbS00sx1IBUTTb-z4sqKsDGJ7NhW>
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; t=1785748469; x=
+	1785834869; bh=42FwwZaKUOqMneYEcznplotbPPKi+7qnPfiGOsEJRTU=; b=W
+	bt7D3TdTgSI9gYayanuSa0inaCdLLbrdstOHdeeXU1I3JUem6HO7kMHNlqFHTCtB
+	P204oFDaHuqrO86sap9ejvDkcfhMzIYD7bP9oIIsJDhbu0/E58H7qMaUDyNw29uR
+	tCWxOc9DfiKS2bv1we7OUSRKDCLM5VYsD0c8/6NbxDF8YUaRpOyx+UT9lj4HHLQ4
+	REtoRqn0fqvivpeLPUEiDGQ+jx+oIpSO/QSyCHhWl4eE3jUvIBvrbVhMD8vMiaHT
+	8AGXBMwoXWPd9SsFTkjI0pyXDjEMbvpom9H6oe1Li7EuvnW50MB9CHAd5HfeYHUu
+	WotA4++cTp87OJfu3ydLA==
+X-ME-Sender: <xms:71twaiGw56yHzu3jlfSbzVgQXXrmvwrMrUeQjJjJfqFJQGQMmJ6_UA>
+    <xme:71twauJ33p5ruFDrJ2BMTDTMEj3B3EgUfj06EPlp5L0hPHcmJe5WT6TTpM1yhbK1i
+    ymawOLqCkw4j_b5Nh7pm93jDd0--exCyYYpMDmoNl_mVG45oXQaKX0>
+X-ME-Proxy-Cause: dmFkZTEXEEIJmt0IWo/xvzE6j162pjnbLuyCS/iwXM1for27p0OU202vUASDxfJRL0oal0
+    WXlIxEgQonfee0FZTqNys/zz5hrUWqTu/Hx11tdS9S0uhDy8KXXpnQaCdYl7G0rNmDpCJS
+    A/ShhWHKmoRVRBzgHLEhAtNvrrjzf7DTmoNc/FQJZ4tklttrCKPDOQoGT6JUO++W3jOk3T
+    HnIDsGPWE6XDt1yLEAPS92JKgLMUH2VqdSsv23/yQ0kv2uIYWN6rOdzaL+OD/I2iXlgFD1
+    knef6lFRkuDd5KnDZWJdZ6gmromHlGO+o21PRTKqOdA0O3vwAEBHLxmd3169TIQhmT5LbD
+    e4hJ28CiB0t6mposBBz7SYxkYwl/S9lGd1Sgh8C56aMMf+BTWctQ4sXpCU9QNwW/JY0qe/
+    g84PEa7/5CtViho11jHY7TbYXLU1hXiakAAqno/seOTzufzeKRkMmiywBs75Yr1i5ILkmH
+    ntmdIvVSPoGqJYlazDIdXGUeCIVCapvxK+HLQvu1OCdKK96tRx8yq001WiC+96DsCh92/i
+    ZEzBRRmH+p4q6GB7xKKcRa2OF5sjEqUAMqXN2o1eQSq8cnfbSwmSDizAtsDUf9smnvGoDn
+    nmmjvcyqrQ99U63C8VpccItiDuTKx0R4RLvSpB/sWKe/4yS+Nx1pSA/NMXpg
+X-ME-Proxy: <xmx:8ltwap3t4qfi_rwKfFWM9BDq92PzDuf5stKbaUc8U6qeYwiE2LLnKQ>
+    <xmx:8ltwamnZQ_VzslSf38jVND1UjgsLIFiPzrUnZN9GsTmT48Nlc5zq8Q>
+    <xmx:8ltwan7y7XZexcormtDJRUGybuj6jKvEIPauLgy7NbGmn0eO065TTQ>
+    <xmx:8ltwapm__0jtE4QFdqR03wp1lKVNN5hqRdqZwfGj_IAA4mUlnInW_w>
+    <xmx:9VtwahgJAt4UkKZF-GaAB3w3W9VhQuBVs6ojmUgHTmCR3RMalCNRYYrL>
 Feedback-ID: i56a14606:Fastmail
 Received: by mailuser.ams.internal (Postfix, from userid 501)
-	id 83E6032A0060; Mon,  3 Aug 2026 05:09:34 -0400 (EDT)
+	id 5530D32A0060; Mon,  3 Aug 2026 05:14:23 -0400 (EDT)
 X-Mailer: MessagingEngine.com Webmail Interface
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -94,8 +94,8 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-ThreadId: ANyXKwt9w6Ig
-Date: Mon, 03 Aug 2026 11:09:13 +0200
+X-ThreadId: AECrrmVH7FkB
+Date: Mon, 03 Aug 2026 11:14:03 +0200
 From: "Arnd Bergmann" <arnd@arndb.de>
 To: moonafterrain@outlook.com, "Madhavan Srinivasan" <maddy@linux.ibm.com>,
  "Michael Ellerman" <mpe@ellerman.id.au>,
@@ -105,40 +105,29 @@ To: moonafterrain@outlook.com, "Madhavan Srinivasan" <maddy@linux.ibm.com>,
  "Alexander Viro" <viro@zeniv.linux.org.uk>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  "Yuhao Jiang" <danisjiang@gmail.com>, stable@vger.kernel.org
-Message-Id: <a6c11272-044a-4f9a-9cde-68e1f12798c9@app.fastmail.com>
-In-Reply-To: <20260802-fixes-v1-2-7368423440f4@outlook.com>
+Message-Id: <073a9c41-4545-4bf6-aeb2-1dadf3c222df@app.fastmail.com>
+In-Reply-To: <20260802-fixes-v1-3-7368423440f4@outlook.com>
 References: <20260802-fixes-v1-0-7368423440f4@outlook.com>
- <20260802-fixes-v1-2-7368423440f4@outlook.com>
-Subject: Re: [PATCH 2/6] powerpc/spufs: don't leak kernel stack via spu_run
+ <20260802-fixes-v1-3-7368423440f4@outlook.com>
+Subject: Re: [PATCH 3/6] powerpc/spufs: bound NPC against local store size
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 
 On Sun, Aug 2, 2026, at 17:51, Junrui Luo via B4 Relay wrote:
+> From: Junrui Luo <moonafterrain@outlook.com>
 >
-> Initialize status to 0, which is what userspace would have observed had
-> the assignment been reached anyway: spufs_run_spu() resets
-> ctx->event_return to 0 on entry, and 0 is the "no events pending" value
-> for this word.
+> spu_process_callback() masks the low bits of the NPC register and uses
+> the result as an offset into the SPU local store: `ls_pointer = in_be32(ls
+> + npc)`. The following guard validates ls_pointer against LS_SIZE, but npc
+> itself is never bounds-checked.
 >
-> Fixes: 67207b9664a8 ("[PATCH] spufs: The SPU file system, base")
-> Reported-by: Yuhao Jiang <danisjiang@gmail.com>
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Junrui Luo <moonafterrain@outlook.com>
+> Fix by rejecting npc greater than LS_SIZE - sizeof(ls_pointer) before the
+> read, mirroring the adjacent ls_pointer guard and returning the same
+> -EFAULT.
 
-Reviewed-by: Arnd Bergmann <arnd@arndb.de>
+This one seems wrong: npc is a hardware register value that can't
+go out of range, unlike the ls_pointer value. I don't think there
+is any use for the check.
 
-> @@ -37,7 +37,7 @@ static long do_spu_run(struct file *filp,
->  {
->  	long ret;
->  	struct spufs_inode_info *i;
-> -	u32 npc, status;
-> +	u32 npc, status = 0;
-> 
->  	ret = -EFAULT;
->  	if (get_user(npc, unpc))
-
-I think I would prefer skipping the broken put_user() in case
-of an error, but your version also works.
-
-    Arnd
+     Arnd
 
