@@ -1,81 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-25226-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25227-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E430CC5516F
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Aug 2026 04:47:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 45AB9C5516F
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Aug 2026 04:52:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hD40b2T4Cz3090;
-	Mon, 03 Aug 2026 14:47:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hD45q24j9z309L;
+	Mon, 03 Aug 2026 14:51:59 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785732447;
-	cv=none; b=ALvxyQLZQA0gyRDOLwH3ANQf4GVVvHkJcfe6SsWuYS2+4Q1in+a2vWHyRzaAkeRJyuh+yCjawV5j1ikKPPouaKxCLRioOU13IyFUGJUa+kgRbBoUg7OCtd7Qqemy54qjb2Nxet/Qh6UYQgskRs2/GHNziY3TBqAAm99NFsN+KKIX414GAExHPa9zA4Zwq5RtS5wNHQdqfXPtNC/zhblPgdLj1uz8yqKAcKyZquprq+jeh7aGuEtkgpVLGohfvFTkfQWasLlLuGdVsNORMmJaQePhicn4XvR0tpzaGA2N5tWDcHkk+o6CtsZGzqd9yEK+ulj9jItX2agvMW35o2/YFw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785732719;
+	cv=none; b=FvzS8jdqPys/u1zxPsHMMI0kysL1EQKTywT+AFykbnSSS7QaeV0hDdI9vjiFgZVMb5phib3r60N2nJuilGOw46lhYKeHJdNpuU07IsYr/UkBVqPzNYrBhNB+bJpsEMEE6+Sg71EN90Gcilz+OYOeU3Hu7Q3NWyegwTmBqeANmGcmgpGkpVGI0DLoQjphRqzniLoDgBxec31fbZNjED+myuy4Zr9tdKRPIkfLIk5kz0XsgJzzpBXsDn/MxrcvfJALirdYN9PLajhcUyrfX3GBL6zQMeffJjgmvYcxE/HjY9Zr4tGHe8YQEkQXhJbYlqit/LSFjYRebttEExG5R6CpsA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785732447; c=relaxed/relaxed;
-	bh=WpjgLouLKAoRoR8IJIEOUWpBtpuVGVbbWy3OJPLHk0Y=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=XGbpB7s/xNIuNpIPA31P9hnRcOV9Afzj5RGNtUIq0P4nG5KfNMnuPdhHIpMlHRoD8saDM3bD4vihQwcGQTR45DFo7RISSRHyUm9UIqzzfhln0d0CgUfSDVwnebs93r435hI7+jq1GX9/pTQPcI9s7WNttAplk65J9hcBvlANXoQlXDgQ6j8Va2re9JY8PikMmjcO/Er+Vfug64wfMpnhLra0Vn+8TtKnjfedi3tq7WzrCFq/aL26axQinh7K/Dk9ugdD55ZsuIVfk0U2d4dK39gXKQTkzZWJAtRqXqOGga0/IbVvOwJVffc5X73zpWbMR+A5kvuuBRzsT1HjQsyh8Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=r/UuCTtY; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mahesh@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1785732719; c=relaxed/relaxed;
+	bh=lU6emKOG99JULYEeszWMaT6C/GIzIjuXR1dBdXGvjKM=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=juMLFtdnjsMWc204QcmjKbdowzjfCY1PtlrkQ5gqWf19at2H0/1W7TZh+JPB+yUyB7xWGqWYxiB9bFbLUNUt7EUZdozLTvlzPAiasaaFRUGI3MJvnLf5TIS0AkefhjuY+M4KkzkS4yOFKdDf7NRyYyA4XrQ/Z4xqDmOU1GBY4n92KvcCyIzOtbn/29UskRBYRnqV32VxpAau/0m8RVrSIZ9gcd2b/1Dn5jt0zMY1Q8yS4dhZO6I++bO6dp0ncp/uY8oEGsYuA3DFAAsHE2IKBGeRUmjlPioNZnBJTjuF7ln9dA+xPxSceXA4YJ0oO5p1BN88Z+y0FKgs4PPI8u4Z4Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cSpTFxRA; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=r/UuCTtY;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cSpTFxRA;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mahesh@linux.ibm.com; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hD40Z4Nwfz308Y
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Aug 2026 14:47:26 +1000 (AEST)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 672Lm5DI224106
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Aug 2026 04:47:24 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hD45p3sHlz3090
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Aug 2026 14:51:58 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 672LlbU9243645;
+	Mon, 3 Aug 2026 04:51:33 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:to; s=pp1; bh=WpjgLouLKAoRoR8IJIEOU
-	WpBtpuVGVbbWy3OJPLHk0Y=; b=r/UuCTtYxVHB+TJh4KIjazVaaOvoCW1ruEes2
-	jWxUZwgm9wG/AlbKLu4WqqzvXKUabceclb9FjDzUwcix8XxmsI/q4K2ekQIVeRoR
-	hkw/2CdhWSAk52UW5H52Tsn43OsqjC4Cp8U4v/I4ES7D103FFFI02EM02FkmmieI
-	Ar2y96hy5hE77DdTEtGGudab2misUU8k5vV3WIrIuWlYcsp5PxCqaGXA8Iuil3V0
-	V1pC9W0gFC92jDhdlyNBmY2WT2PcEhZls4dIvGSwlC2I58XJSaFuaO23ybimdcw7
-	W7RzOT39hvMaUs6ThKOFvHK/czWAq4UYWV2rSa0w2bsqVJGKg==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fs8a3pv8x-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Aug 2026 04:47:24 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6734fIJY025575
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Aug 2026 04:47:23 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fswtybgk6-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Aug 2026 04:47:23 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6734lJr746596582
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=lU6emK
+	OG99JULYEeszWMaT6C/GIzIjuXR1dBdXGvjKM=; b=cSpTFxRAhH0Sls7Y3Xf1g0
+	EsE19xX9mMD6fyt9xQFbKtS8FojhCVPyQLrycv4lECFiL/aEXydKWioFZHZN76gS
+	tgAtxKfjdt/rdEyafNJAkIZQdRJ2QbrK1m5ryNbW76yLUK4lWGTJWY4m9QTjRtWK
+	2s59fVpQ6HERNeSsQaPqM03mlcHzSchCBJC/quiQGlfmsR2pISP6c8aKeJRgSo9A
+	bFD+q0BFve7buiQycK150fWvL1r17tIkwvXUm7F6KQTPo+Uihog97s0RgclUSTwF
+	MG41YV7ZAgmpqYjYtXjLLqRMMCrXs5E1oV1lMkXjctMY/mwIOgARiiCOpwsRLVlQ
+	==
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fs8h4puuh-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 03 Aug 2026 04:51:32 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6734fKYS026367;
+	Mon, 3 Aug 2026 04:51:31 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fsu4qbwvy-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 03 Aug 2026 04:51:31 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6734pTlQ11272452
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 3 Aug 2026 04:47:19 GMT
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 473BB2004B;
-	Mon,  3 Aug 2026 04:47:19 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 69C5620049;
-	Mon,  3 Aug 2026 04:47:18 +0000 (GMT)
-Received: from linux.ibm.com (unknown [9.39.27.30])
-	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Mon,  3 Aug 2026 04:47:18 +0000 (GMT)
-Date: Mon, 3 Aug 2026 10:17:15 +0530
-From: Mahesh J Salgaonkar <mahesh@linux.ibm.com>
-To: Nikhil Kumar Singh <nikhilks@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 4/4] powerpc/perf: Add power12 Base Performance
- Monitoring support
-Message-ID: <anAdOKei-tOvF5cT@linux.ibm.com>
-Reply-To: mahesh@linux.ibm.com
-References: <20260729145405.3230272-1-mahesh@linux.ibm.com>
- <20260729145405.3230272-5-mahesh@linux.ibm.com>
- <0c7a7137-97ec-458d-bbd1-949b823cdc00@linux.ibm.com>
+	Mon, 3 Aug 2026 04:51:29 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 8986E2004B;
+	Mon,  3 Aug 2026 04:51:29 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 22E7020043;
+	Mon,  3 Aug 2026 04:51:27 +0000 (GMT)
+Received: from [9.124.211.72] (unknown [9.124.211.72])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Mon,  3 Aug 2026 04:51:26 +0000 (GMT)
+Message-ID: <3b524463-91de-4034-9478-7dbb5848262b@linux.ibm.com>
+Date: Mon, 3 Aug 2026 10:21:26 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,56 +81,101 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <0c7a7137-97ec-458d-bbd1-949b823cdc00@linux.ibm.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 1/1] powerpc: enable dynamic preemption
+To: paulmck@kernel.org
+Cc: Jirka Hladky <jhladky@redhat.com>,
+        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+        maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au,
+        npiggin@gmail.com, bigeasy@linutronix.de, will@kernel.org,
+        linux-kernel@vger.kernel.org
+References: <29a407ab-268e-4443-96dc-8f5f933cb63c@linux.ibm.com>
+ <CAE4VaGDzVa3+MKUbwH4LFj_mHZ721fd=7cWEd+G5=eVNWLePsg@mail.gmail.com>
+ <529b8d9f-54a0-4ec2-9886-83cd528e5e04@paulmck-laptop>
+ <CAE4VaGDJxcu_zgDyrSW=j9WzLEpNsQ9A9Rza-F5PLZq03kJYew@mail.gmail.com>
+ <57d9de4a-65aa-44cf-9024-de4e5bdd1971@linux.ibm.com>
+ <972db4f1-406b-477b-895e-59ffc643e384@kernel.org>
+ <CAE4VaGD0Ekz+5s26iTW=UV4PuBkUm9AzorBgAVGJBjttH7sMWQ@mail.gmail.com>
+ <4be922b5-7dc2-48c1-938c-de02245bc5e2@linux.ibm.com>
+ <CAE4VaGDQ0Ysdfhqc-eF9Oby-QkZxiL-TvS-WkJ_KKEVrRvTc7Q@mail.gmail.com>
+ <1eab63fc-b70d-41ef-b720-8ae77d8e56d8@linux.ibm.com>
+ <c85a1f0a-d702-4470-b2d5-c308805acebb@paulmck-laptop>
+Content-Language: en-US
+From: Shrikanth Hegde <sshegde@linux.ibm.com>
+In-Reply-To: <c85a1f0a-d702-4470-b2d5-c308805acebb@paulmck-laptop>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
-X-Authority-Analysis: v=2.4 cv=E6P9Y6dl c=1 sm=1 tr=0 ts=6a701d5c cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=kj9zAlcOel0A:10 a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=7wQ5LN9j1xiy9RActOsA:9
- a=CjuIK1q_8ugA:10
-X-Proofpoint-ORIG-GUID: YBbrL_hkSYehSmoim0b15-2EV0HxYrj1
-X-Proofpoint-GUID: YBbrL_hkSYehSmoim0b15-2EV0HxYrj1
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODAzMDAzNCBTYWx0ZWRfXxUpNItfHwkfA
- E/YcXYUjYjaB8ARzC2BbKb4u95fd5QnTUDyw69GafT9z1IR6d6J8UmmmiOMHg3q2xGVYt5p9kuP
- Ac5kYJpDOgY0Lmva36MPID6eYI4KprU=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODAzMDAzNCBTYWx0ZWRfXzuDB8hXAvQq5
- bZbxYkvGmXlue0WF/j0aB8vVN5td3LvR1upojmaFi/5gNU/Q0y16vKI1mP/L9UDP+sThnaIv6kK
- WSF2UOXSYIJsQSp2PfQo9rt/3hLIl12esVvemVbo8KmKc+vDzhNiSfzfTy0uNa37qJy/nc2bTHf
- Eqvn+JtjWuS9jKS9VwevU0n/Kux6eBRviVH0lYWEFtww0zp4u49rbFhVsXUZbjHWUzdPNRTRsbd
- BlAvOSxQ0KNFyj4w4uZbGOA8LtneFUzfdHbp2V10o9pVCRP9uo2cpaA1IbdzsFrYRtwq9AcUTs6
- DN3aCy8MJI57Sn3XFOEhrJVndSh3xpPXjK4VfN/Gex2xkeC8kjd83sqEW4OQsmWlJZAOxLz1pXE
- DKmbTSv7byKD7Rt86C9PRHN/C0pup2MoO2BC/fy+YjHDUArhpKv87i1B596LLwNOZk0Mowsar7x
- aBghxcEnzUJAg3Nojfg==
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODAzMDAzOSBTYWx0ZWRfX+3suSzZUhjLB
+ TgHcfi5famx6Ihv6m2/GaUv77IOCmr8GFuPk/GsrU3lvL4Qv+JSwmu4hwXaXyc72v7xJfy5f9U+
+ 5yCfoQX1umBeTRDAYTXquZ4qwq7fkxc=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODAzMDAzOSBTYWx0ZWRfX0MwBNQQc/cV8
+ do0esE+MhYwtFN3Ip9U03vQESih+rw/qADtQDORdXK6UF92Ul3/Rzf8BIbQ1Xr6z7FKDE9Ibw+E
+ 2e+J9bTFGh+NXCQUxAuZv2UDsOV2POwbrDlA7d9EaJaxt6PlL5vQn5fazq1YqPtsbM3ubKvEid6
+ Z33xn/6DcjW3tiA639A0laOX7YwqPH8+vIoRnaLIlvHfkyRmA4fr+ggb2CvzqC5OmkmD8W+kpX0
+ x2H+Ll5oqlmKhO8nB2qo0QJOO7WSm4xV/wP1XljAdNlkJI1ETr7mItqS+GA74s8IWxXC6A0M5nz
+ awREmltxqgJpbGc+mrQoS84AQN4nGfhywX8lluismwQHV117N7Mv8a9R2snN4jGimBWQfU32/m3
+ UMC+woeVNyT604jt6/euFpf8AP3CRA9JsmCtwA967U7zpyy4G0Ar5E3qPJo6dFGdmdEIquQZdNx
+ nfHH8pCe7NfU1DR8c9Q==
+X-Authority-Analysis: v=2.4 cv=SI1ykuvH c=1 sm=1 tr=0 ts=6a701e55 cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+ a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=px_DR1VyBJH5svcGKecA:9
+ a=QEXdDO2ut3YA:10
+X-Proofpoint-ORIG-GUID: 53ib-ODhAT5uWMKFuAar_-DXBhfJcX6M
+X-Proofpoint-GUID: 682vuke97HwPTVZmG_Tvj_qVAIfYnCim
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-08-02_06,2026-07-30_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 clxscore=1015 lowpriorityscore=0 priorityscore=1501
- suspectscore=0 adultscore=0 spamscore=0 malwarescore=0 impostorscore=0
- phishscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ clxscore=1015 bulkscore=0 suspectscore=0 impostorscore=0 spamscore=0
+ phishscore=0 priorityscore=1501 lowpriorityscore=0 adultscore=0
+ malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
  route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
- definitions=main-2608030034
+ definitions=main-2608030039
 
-On 2026-08-03 08:40:23 Mon, Nikhil Kumar Singh wrote:
-> 
-> 
-> On 29/07/26 20:24, Mahesh Salgaonkar wrote:
-> 
-> > +/* Instruction Demand sectors wriittent into IL1 */
-> > +EVENT(PM_INST_FROM_L1MISS,			0x03F00000001C040);
-> Hi Athira and Mahesh,
-> 
-> There is a typo here: "wriittent" should be "written".
 
-Will fix it. Thanks for catching it.
+Hi Paul,
 
+>> I tried moving to PACA plus splitting 64 bit into need_resched and preempt
+>> count. But it doesn;t move the needle. But it maybe worth pursuing,
+>> since it could help preemption modes. It needs more work and needs numbers
+>> across benchmark.
+>>
+>>> Thanks for trying. Paul questioned whether barriers are actually
+>>> needed for preempt_count, or whether software interrupt disabling
+>>> would suffice (his words: "I can see why the preempt_count()
+>>> operations need to be interrupt-safe, but I don't see why you would
+>>> need barriers"). Any thoughts on whether that's feasible for
+>>> powerpc?
+>>
+>> Barrier are likely not the concern as it is mostly nop.
+>> Also, soft disabling interrupts needs to arch specific hooks to setup
+>> before preempt_disable and replay interrupts after preempt_enable.
+>> I don't think it would benefit since interrupt disabling during this likely
+>> shouldn't happen. Maybe I don't understand how that could work.
 > 
-> Thanks
-> ~ Nikhil
+> For some reason, I remembered powerpc software-disabling interrupts,
+> but when I go look now, there is no such thing.  Maybe powerpc used to
+> but no longer does.  Or maybe I am just hallucinating.  ;-)
 > 
+> 							Thanx, Paul
 
--- 
-Mahesh J Salgaonkar
+It is there still,
+
+static inline unsigned long arch_local_irq_save(void)
+{
+         return irq_soft_mask_or_return(IRQS_DISABLED);
+}
+Sets the softmask bit, and any interrupt that arrives,
+gets added to a list and that will be replayed in arch_local_irq_restore.
+
+That will protect against the race of irq vs preempt count in
+__preempt_count_dec_and_test. In the PACA based PoC i have i tried to use it,
+but it doesn't make a difference, since this particular test accounts mainly
+preempt count overhead itself, which cannot be escaped in dynamic preemption.
+
+So, I think this is the tax we got to live with for dynamic preemption on RISC archs.
+But good thing is, its effect is limited to a very few microbenchmarks.
 
