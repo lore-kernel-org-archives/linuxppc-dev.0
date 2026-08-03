@@ -1,82 +1,83 @@
-Return-Path: <linuxppc-dev+bounces-25238-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25239-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 42F0BC55175
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Aug 2026 06:58:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 98106C55184
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Aug 2026 06:58:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hD6v51YvKz2yfD;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hD6v54tnbz3bx1;
 	Mon, 03 Aug 2026 16:57:53 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785740273;
-	cv=none; b=bV8L3VXKYJpo2E6ew8yZ0KbPfZJJB3F5sYhqW1ut3QtkG/60cR4dgUOoNJeXnbVvtNoGJkq1nwbEw8qrihz9vRFu+mDQDwocE5fvws8dHzlN2e0jLFpZj9R4R7Cbo0E4Vq0HLiVrWjvc+TWYpt0RfHcRsCZgjOtFZ2dio6yIqlXu2IryqB1Q36aci9nBheCh7dEPDN+H9sQr2XQt+jgJgPD2//AI9xHrK7d9713SPJm0OEPAKS7gqVo/1EyJ5wQOee7gl+tGzYk82IbNMtlK/O77M10QPzp1AMkeJEXq16lhYechURn70crMP59mZYp3ppnhyCVz2nvN5sLK9A1+2A==
+	cv=none; b=KPNPoMxd9g49Gs+OpX4n8xPMq/L2CC9QIpyWXJuu5xsQNigHKeyEZzQs0Gme+R3cX1YSkcJBJ7ReZnIAfoAatSF8V9ZOKYnXys17a1nzou3EwZu6IicmPpymqUgShlBEudHAl8s/Y6PtLEdhM1EnqBH7vur3GmVGj0p5vOiHxTyUVonlpAUhv3mB8LYFpkJLvP124y0uaj5T7D00CrmB8DdXwk9X8y/A3H1JsMOzwPG0WD1nXqIsSIdzyRIIKhDRrYnHAm1GXgN+W0pVilLshY+seZlp8G3QF/RMYIoJSiCZmwsus7EHJKFNe4ycnV0vin51/zeeLmfFZ2N13kTTNw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1785740273; c=relaxed/relaxed;
-	bh=JzbP0VUujxT/EMoGlzVNrARJmJlTWqqAFMVF+eZpDcQ=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=HmYDTvkJ3feFqc9R9GkDgNcd4hOsDIUVZB4REdOXdUsjlL6hdiEjsWGxt+XQDJinL9gwul/1QaDZukVkrwO4AV2z32gVNR9NyXdlz62GhSiQdpyksVvonuOBkoQxpElrv92TX1fZ+XGCxe8S7h4lPwifJ+cRXYB59rE+T/16Zqx8/56WUz2bwBP9vqWIKHQX2h2Thgdr2Atz+me2kE7dp1l6vRuTaYSlaPdCo6nDcR7zNiJSHUpihhH9T/geA/1dIzwin30KrjktS+1gLh+MhKXkRNlaEjCUHxcVqja3mg+bwOVAn1jZjpBusR7nsLeHTHKStBgjSNW4rDfkMOAgRQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=m5fR5HoQ; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	bh=Mv0W6p2V7FZL92vMQhN0Vq8a970TPN97OztVo62cAcU=;
+	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=CsOT+cuzVKSXZ4wuRtZcH4Agm3pZB+Bk4Ohgc9ezuYGWijk0eU8LDajX2yevPxVxpPpbdVdI70BWzCONbrdDuzRurQj9zP1CT3zPAfCp1bBjRJMjP1ia0Gqu9vfgYhuQ/INPjt9iGI8stJMcN5qp7W+cQ4VVJBaIcS2eoMJg/O7yMlBH/uNLyvz+oD4VbTfqNIqBjCAaM4uTCa///oCz0llQYaXrj5VhzPBtTlFBg7+/w0II7fc2Cky8BL4D/nOULeHPGV42drJQDU3NJsC2NT+3Wf9utcgK4fzLU1xA1Od/LBBgPsy7kgBGqwve4ednW8YRbujjRG/WSt0RaldBKw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ejYk5l2Y; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=m5fR5HoQ;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ejYk5l2Y;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hD6v44FgHz3brP
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hD6v46VCJz3brv
 	for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Aug 2026 16:57:52 +1000 (AEST)
 Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 672LmmFZ2566526;
-	Mon, 3 Aug 2026 06:57:41 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=JzbP0V
-	UujxT/EMoGlzVNrARJmJlTWqqAFMVF+eZpDcQ=; b=m5fR5HoQIvCpErYylvjYaC
-	33jYdjEQmseCQcRksjxGvt1nqXJhALN7wsa8Wlxk031vHlWAj5q4Lwo0Eo5HM+um
-	rR+PDGPA+1DFOnsrOeukYgVD70Lmo9ZAeN6M5Yv/u3jYg10Tcpo1oJBZiMUbEwbI
-	vDP+XdcjYlMxRQekOQWcQRHT/0vXYlhIhYdi+jD696Nie6+6Bqpw/omXuzToU24q
-	bIG0EPUlDQb80DnpN/r7crB5t4CouH61diCBBqeo4gE3mPEpPxxlmzfSXsFRpwdF
-	WSMvHGazIh80zcnQOBXBbQUX2T/gptMFtOCFOMErdSVMr0aYVjTYxHGphB0Jojrw
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 672LmpqF2566607;
+	Mon, 3 Aug 2026 06:57:36 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=
+	content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=Mv0W6p
+	2V7FZL92vMQhN0Vq8a970TPN97OztVo62cAcU=; b=ejYk5l2YVFQujEsSUCsMSU
+	eHacJovIC+19w8Gpv8VpIT3M1qH2rRp4yhXIkp8sE+xt6QLmKqx07kUi3rG3x222
+	yKvgY89z3X1mHsVGFCSNUtYChZNf4ynKWjO4S4wKkL+9dV5kItDnsQHghz7XnsuQ
+	ONMdvAwWRw0ROjHK2NrEENfMBcCFf8lf22luQxZZIwJradygleH2tXpeXIXtRywQ
+	mjDDySxF5Q2mWwkLa2PjSSDlJzN1uVudRSNgwlhjX0T3MXBZm3kO8do52E7yLmEs
+	hx0EyslrTTENjJO8z9LO188lasnFRj5YxOh7RLZRH0QgTBFg2lX3nDUQKUL03hDg
 	==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fs8fqf8n8-1
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fs8fqf8mv-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 03 Aug 2026 06:57:40 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6736uEk0018855;
-	Mon, 3 Aug 2026 06:57:40 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fsu4qc9k1-1
+	Mon, 03 Aug 2026 06:57:36 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6736uEFh018622;
+	Mon, 3 Aug 2026 06:57:35 GMT
+Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fswtybvuj-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 03 Aug 2026 06:57:40 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6736vcvS48955676
+	Mon, 03 Aug 2026 06:57:35 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6736vT7s25362850
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 3 Aug 2026 06:57:38 GMT
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3AF9820049;
-	Mon,  3 Aug 2026 06:57:38 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A843C2004B;
-	Mon,  3 Aug 2026 06:57:36 +0000 (GMT)
+	Mon, 3 Aug 2026 06:57:29 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 9B0D52004B;
+	Mon,  3 Aug 2026 06:57:29 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id A1AC620040;
+	Mon,  3 Aug 2026 06:57:26 +0000 (GMT)
 Received: from Linuxdev.j9d-in.ibm.com (unknown [9.123.86.85])
-	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon,  3 Aug 2026 06:57:36 +0000 (GMT)
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Mon,  3 Aug 2026 06:57:26 +0000 (GMT)
 From: Madhavan Srinivasan <maddy@linux.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        Thorsten Blum <thorsten.blum@linux.dev>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] powerpc/boot: Remove unused sprintf()
-Date: Mon,  3 Aug 2026 12:27:35 +0530
-Message-ID: <178574013465.29744.7029961908335227821.b4-ty@linux.ibm.com>
+To: mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org,
+        sourabhjain@linux.ibm.com, rppt@kernel.org, baoquan.he@linux.dev,
+        hbathini@linux.ibm.com, adityag@linux.ibm.com, ritesh.list@gmail.com,
+        bauerman@linux.ibm.com, linuxppc-dev@lists.ozlabs.org,
+        linux-kernel@vger.kernel.org, Jinjie Ruan <ruanjinjie@huawei.com>
+Subject: Re: [PATCH v2 0/3] powerpc/kexec_file: Fix some bugs
+Date: Mon,  3 Aug 2026 12:27:25 +0530
+Message-ID: <178574013469.29744.18290968780763736823.b4-ty@linux.ibm.com>
 X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20260724172200.208722-2-thorsten.blum@linux.dev>
-References: <20260724172200.208722-2-thorsten.blum@linux.dev>
+In-Reply-To: <20260729012948.2797865-1-ruanjinjie@huawei.com>
+References: <20260729012948.2797865-1-ruanjinjie@huawei.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -94,45 +95,51 @@ Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: 55_2fpg9_5MMux7DzNrkW42ulrUGS3XK
-X-Proofpoint-ORIG-GUID: AQycOIg6w40AmagJEX1n7VWyMRyZ9JPW
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODAzMDA1OCBTYWx0ZWRfX/IqdBfUTQ8Uq
- aG8lNEtYz5khSkWcV+UzAr0EQEOBQg50Il5w4kafkB0pqtNY6Ny/l4WL/pDWArLYKxMVB63MUSj
- PDlch4YTY6IpUO6LJ1SFSL0zJLN+nEM=
-X-Authority-Analysis: v=2.4 cv=K8cS2SWI c=1 sm=1 tr=0 ts=6a703be5 cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+X-Proofpoint-GUID: Jqmy3z3msL85Pg0d1XGE1mvgDQ6ergGJ
+X-Proofpoint-ORIG-GUID: KmTcQjmGu3H3vTj_tT86yXSbk7PggNy2
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODAzMDA1OCBTYWx0ZWRfX834835+uGElx
+ OlrxeGfRNgDR3rZdgvYF70Nhx2GLWupPxxcyAqPRYwt3fLEGbhnZoGtJvlKr4IzSyvDDeVPOpCW
+ Q3esHyVyVLZFAnAgznEbtrZd4ZqvWrE=
+X-Authority-Analysis: v=2.4 cv=K8cS2SWI c=1 sm=1 tr=0 ts=6a703be0 cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
  a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22
  a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=VwQbUJbxAAAA:8
- a=zz1L_PSh02bSXPVVYnIA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODAzMDA1OCBTYWx0ZWRfX75dSXHMnb8AZ
- UQ5HkF8sVrehjCVcgXbmuqmdlMcNje8HmxIuGYoN9TzN2vnxorr5khOLcK4j7CNUVPVkjZlyNPF
- s9Z6sUbemRIoDxirUyB9+mp8GgAIBvGqANo/7+QJn5I82NcAXJHn5iGYaIGsgBz0oqGB/A1PyoG
- cHGmt8xNJMgYicDBwL6otv5NljDu4YTw2XNbXw8/cKRPjt1Uxv0hoSWTDgxTYL4CKgwvcWgbezi
- +Ms8x3TkKszsKUmz5d16uEC+CT/zPrzTPwQOYe5EhFYDYAlSGaX36SHJlHuu8Mgf3ZIMUHx6Wfg
- CjGZAYgVlTJXmgXVMjXMaKNiZNyRx4TZxPcWXOT08Rcngntuayc29ecnJg1rxY4znlQck/Qudek
- fTpwfFLK+ogjZ6asM0rhVMF5LAAPth7fNdduX7Oa9OiCf0k1pVR0YMHJIXG6wclD1l9v/Wr4PFv
- 2QiHNvRbgc1gg60HHCQ==
+ a=i0EeH86SAAAA:8 a=x1j0oFxk27fp37OsSCIA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODAzMDA1OCBTYWx0ZWRfX6BzGSUm0p8F9
+ MFj73MWmjAkXnHk9WcasILz4dW2ErG6+rGJTNaoKLDExB9Bc/SH1jPahgb7Zt156toSL5we80Vz
+ nVsWHCh6B0oW2cPhwg/2n4asocF99lXng3KImODUMJ3yVqSpFV+6MAgz+JevsnyvZCexVs+Fnrx
+ oUzP/r/hijYQwR/5ulPXSLUbtSy26w+kyJzUHppcfo5Xs59VCkV76YFgYMvVdAmCh6vsXDNjJId
+ yZOQS491nQfFOkCmlv91iAmiKlfbjMOIT3SvlCXOke8dk+lRHp5H6GMtmmLd/tPG6QpV2mo42JX
+ 2wrRhVwSqNPJLXxEgXXFs33TG4FhPCXtIIPX5SXihefKpFsX/xZE2DgRjfYPmsKrTM5g+m6NQvP
+ 5Z3JNC6J43ADNiG2NdkAvZozO7V8inv7bpZnqQEiMevyxqNl0n7fknUXzvnZAfzvQxZkydkcp4y
+ E0FVkdFPGtDINtF6D1w==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-08-02_06,2026-07-30_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 spamscore=0 impostorscore=0 bulkscore=0 priorityscore=1501
+ clxscore=1011 spamscore=0 impostorscore=0 bulkscore=0 priorityscore=1501
  lowpriorityscore=0 malwarescore=0 phishscore=0 suspectscore=0 adultscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608030058
 
-On Fri, 24 Jul 2026 19:21:58 +0200, Thorsten Blum wrote:
-> There have been no sprintf() callers in the boot wrapper since commit
-> e275e023aa69 ("powerpc/44x: Warp patches for the new NDFC driver").
+On Wed, 29 Jul 2026 09:29:45 +0800, Jinjie Ruan wrote:
+> Fix some powerpc bugs pointed out by Sashiko AI:
+> - Memory leak
+> - Null-ptr-def
+> - Overlapping memory range truncation .
 > 
-> Remove the function definition and declaration.
+> Link: https://lore.kernel.org/all/20260601094805.2928614-1-ruanjinjie@huawei.com/
 > 
-> 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/boot: Remove unused sprintf()
-      https://git.kernel.org/powerpc/c/3b232a0cce4182851ee8f2788180c93e49d9ab96
+[1/3] powerpc/crash: Fix possible memory leak in update_crash_elfcorehdr()
+      https://git.kernel.org/powerpc/c/4cc4b586007fbbf8edba4f1d0849e9a06b0cf6c3
+[2/3] powerpc/kexec_file: Fix null-ptr-def in extra size calculation
+      https://git.kernel.org/powerpc/c/761eda315a6e1fda3e8e2185b28430771fb1ac29
+[3/3] powerpc/kexec_file: Prevent kexec range truncation
+      https://git.kernel.org/powerpc/c/fa40f9dbdd4af53e7445d9135b5b207eb8adf372
 
 cheers
 
