@@ -1,95 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-25267-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25268-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 756BDC55182
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Aug 2026 13:31:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A1A45C55184
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Aug 2026 13:59:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hDHcn3cR3z30F0;
-	Mon, 03 Aug 2026 23:31:05 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1031"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785763865;
-	cv=none; b=myPx/Yl55Wm55F8qyyuDKGxC58Y26aD1cxkrfwu9F/dpoi3ZY6lsOSZ17zhAYOAz+k9q0wja2BCyV2IOpzNC9LFI6OOA1FXlgMQKneaUs0zeF4splRwrcJNX4Q4VrrdLdolTOU1DxUyzLWSBaJHMaesaVbpnS4m5j878L3b3ak6O8TluiOAlAJLAIrA16EQrMAvtuJHPMO2sxSjxAXE2GSodXY0Cq12c+B89E59o+Xnj4YNy0mhgo96bD9tPhDGaUd4tRqida6f2SEShaUEoekwNghk/ndipfVhI3G2AlNBNbNP8K/g3ZwkSXWmCEaLpELtctypNb3IINeCu+wTvtg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hDJG0547jz30F0;
+	Mon, 03 Aug 2026 23:59:52 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785765592;
+	cv=none; b=l6hri4H1Wt2IlfpjTHC5/T4Tzl6nWhc83m1lrzp6XOUB5/BSI7tthpi7MsnjxLlZvyBVNd62/LmBe8VBOKn93AfRGrPfMWiusiLZUTqqDxRmC8YYi00+JJeJTm1ijvekFAG3Ij0jl08vFAczUVATVLxhoCcduPPCcwrOmBVdPJJXijtKhCUosQjlfnlpJR2pOgdggIYY6cbkBvg5NYgWC7F2bMCPvg4EKoGwfMTwj0X8twDhTSheT2/M4Gdhtk+2zlMaAHLLEZ0DHAXax6t54AkGlVFMGSz28iBB9crhMZgEqpdYJG69Lvp/IIAZ0nSOdD/7+eVUeXrP2HZHVPCPKA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785763865; c=relaxed/relaxed;
-	bh=NaH5rfBTvvJEbq+DmDZKDP4NbrrXRvHP/DgwMEdPwTA=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=b2qm9tkakhImXe/nmJJ9KAhiLgK4t1NjDyY11aErpeHcrqY9Zd1jL70UzmDiwIni5SldFbYYAn2ruUO/MWlw0cnprnUZEmAiYahfYwZGsve6Mw2iWNdhRuCDck0JsP4+iXyS2UagFb1E/JpiSHlvt12K5NpMcCB6TfW+lrJwJm3nPp2Yh1kemQtNoZYVTbYO2uA+/Phu6x5nvsiml/wZh0LfRo8GxPsDMsqiVse+EqwzZBI+PTjWbOiTnDMFF5yp5zMnmRQ6VSao91h8d8k9DlnofMxadRSZn+3ORGp2WOMAV40lZrQsCXLiL3B8xwQv5qiDnas0oqAGVZsQBmMtnA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Pf/ThEF3; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1031; helo=mail-pj1-x1031.google.com; envelope-from=mhun512@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1785765592; c=relaxed/relaxed;
+	bh=JgJjMGVQwXfN1+lfqi/7mzYbORC4vBXwntqjWOpjj5Y=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=gO1Ow6GUgFAF726gVHOZ5bWir/UcbLYgGrIFDgTwoFHmj55cU8kqwti5Eahx+GVBVS9jUhg5NVkb8GOudvT81Fv/WB2N2SU2rdONqEg5bU7ezH+ODCLhYOGAL4ctbJd3EEm73sCFgxnjkEcq1Q31jiUz3reVBclBY4J4q9InfFM5kEHbB1dii8/X0vEeMd4dIUk6uoiHB4n52G6LgyZN+DAK/n2FfvzGmkDG9JGM6a3x5SdWUHphG+1TJ+aFmHu3PDJke+VdEft3xnuemyUXM3LGse0C34yMm1/x7ny39ZcgLr/TAwMsyb1D541VAwRHkO6TUxlcfenUx2VNiALK0w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=VdJzXRQm; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Pf/ThEF3;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=VdJzXRQm;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1031; helo=mail-pj1-x1031.google.com; envelope-from=mhun512@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x1031.google.com (mail-pj1-x1031.google.com [IPv6:2607:f8b0:4864:20::1031])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hDHcm0M6Wz30DY
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Aug 2026 23:31:03 +1000 (AEST)
-Received: by mail-pj1-x1031.google.com with SMTP id 98e67ed59e1d1-38e42560ebcso2500537a91.1
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Aug 2026 06:31:03 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1785763861; x=1786368661; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=NaH5rfBTvvJEbq+DmDZKDP4NbrrXRvHP/DgwMEdPwTA=;
-        b=Pf/ThEF3gfcJtC8ideHkpndzo3OOEvYc22sFq+PgnyXNVkYSF7WEYyEWwn9bSgB0Ba
-         WIl9EKBBfhYNRQb7k2gnHranQOnEIJQ1xyiR7OCAGT2lOS4JOgqz8qx1Pfq+hioDDK9B
-         ZZlzWbZeKOQZMgoruivnqQ6fnbLrtYZvcWKdCCGrRSZ4aacgyrCMJSX6noeB2yGR2427
-         A4EP0rVJd8kMF2/NCjz1tESKyAYKebtvUWX0G1pHylm0pqKTiWDmuVMbtxn0TKVGFvQS
-         oqqo+qeLWsgXzi3nnvnMtFir7tEjKiFfcNVuZUPhODKUC1kBrABY0fjRRPRj+dw53jBc
-         0FLg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785763861; x=1786368661;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=NaH5rfBTvvJEbq+DmDZKDP4NbrrXRvHP/DgwMEdPwTA=;
-        b=SehmnqdafxnR6coVOeMpWh5qzFNtka7LJFcL29+zsUUnLkuHJScxgzaR2ymHFsy/dT
-         //B+lLfqcZf1s/DLbnPLJq220lhx1P7DZMbJYfr97e7JrM9O+VZeDHi6ElHAxgdYPmTk
-         id01YYs6S2OnkqwQwsafZIMQfvadfFX4n8fvMESqHukGxv/V/0d+jf6WLMSb+GEd0vRM
-         eyUREoBZ5whNfAAyCZmD+weHl4S0YmZTzGm98ZdTtkusVq7OWlj+b+MljgXvDJ2LTC7D
-         AA1c1+u62qGFpk8MnEMJwHP4UP/4OOkqI9kearUvNbaYojHdNai4VJtzhWAnFcbDDuX8
-         109Q==
-X-Forwarded-Encrypted: i=1; AHgh+RqsHMrl5veZzkepsgl4J+SRn4K2Tm0Utgb7yGVqk6hQ+kf76sYLq4TZQwW6eWgVy+KdZvRYiL3pjhyh6B0=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YycLDM8Ie9Zc0WnduU4X0KRAx1PjsbCuTwlcL6yKmrycmPumEce
-	s8CZBsEaFE9bUhj0frQH6fE3o+Vnkkg67MUfnd2B6d3UJo5QUYrFn/4=
-X-Gm-Gg: AR+sD12Pr8Ft59BSpo5CFtVa128fD9XzasgSJ3hXc/Nz/KzwCiFUNdtzYTcCbXEAKoi
-	H3CSsanpv1HnNbWgVIdMdN15i4xyobe6ZKn0OMi465b18PdMKOMi3zOF3G9kC56WbYxp6Xq8kb/
-	a0oqPzwDpArQh8c0pPw2JLUfSaoaiMaOagMtajuUacyYIIS14A+CdXE+hxFB7Dh63BdIFfwKhfx
-	FZxpFW2zM5xtbmYakpDbCN9KagCwM2sl4UxA+PG7CWMsVMxdh4Myx1h9dQV8JDgTXwyhuzVLz1b
-	HxCM1T47CX+3nThG19dq2L6Nu6id4+pvNbdWxk5vJhYWPmiVKmJHDM4nlTEy1l6JO9W36He2YCn
-	I01zqwoL2rWNukB67Q9sZ7lzDDE6hLsDmfgb+L9LgMKE/73z0lR885xtDM0tXsvprQzfZWHIuB4
-	mzmS9i9KzyoRSxjQXaOobniKWMXoaieFdto8rUmcCluVXciMbsWD/83RfHUF0JJqeZeczP0RHjB
-	4a9qWSDHy2bG3wtnXk3Y3ynf4ZJgEYalApy6zRm5VmNcgKeBqOGDiKKfTn4Hy87i7al4U/SU5Qu
-	MguV0lW/TCPqNG+yCcDTYNdzPSgEpZ7uDw==
-X-Received: by 2002:a17:90b:3947:b0:366:10f1:3d91 with SMTP id 98e67ed59e1d1-38fbc3f246fmr8665430a91.1.1785763860528;
-        Mon, 03 Aug 2026 06:31:00 -0700 (PDT)
-Received: from localhost.localdomain ([1.226.165.54])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-38fb259000bsm2531459a91.0.2026.08.03.06.30.56
-        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Mon, 03 Aug 2026 06:30:59 -0700 (PDT)
-From: Myeonghun Pak <mhun512@gmail.com>
-To: Zhao Qiang <qiang.zhao@nxp.com>
-Cc: Simon Horman <horms@kernel.org>,
-	Andrew Lunn <andrew+netdev@lunn.ch>,
-	"David S. Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@google.com>,
-	Jakub Kicinski <kuba@kernel.org>,
-	Paolo Abeni <pabeni@redhat.com>,
-	Krzysztof Halasa <khc@pm.waw.pl>,
-	netdev@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org,
-	Myeonghun Pak <mhun512@gmail.com>,
-	Ijae Kim <ae878000@gmail.com>
-Subject: [PATCH net v2] net: wan: fsl_ucc_hdlc: release HDLC device on remove
-Date: Mon,  3 Aug 2026 22:30:48 +0900
-Message-ID: <20260803133048.42650-1-mhun512@gmail.com>
-X-Mailer: git-send-email 2.50.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hDJFz4m6Tz2xdb
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Aug 2026 23:59:51 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 5A2EB60A78;
+	Mon,  3 Aug 2026 13:59:48 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6E4B91F000E9;
+	Mon,  3 Aug 2026 13:59:38 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1785765588;
+	bh=JgJjMGVQwXfN1+lfqi/7mzYbORC4vBXwntqjWOpjj5Y=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=VdJzXRQmCKCQ7JgyKiUD1/ILZ8ALjapAPRXEniDDnzS1EoQJOd2Rh4mnj01mS0kaC
+	 SkdwvAXDVmUbSsA21mXsGUsV6UFqBCfzHqr7sKaMJIwGAPUZ/EuQ/qXVQNy9gbWQou
+	 k9r4ZeSmv7XSpcXC6vcb89age58OUEyz0Y3jtZ3UkudyTNaZ5gI+4+nRjmeVka/o9q
+	 /dN7dYJ78mn13G49euOFXvjaEbz3SgPDfvCdEu2cZqtsnpAXKCLf+lhpTv+wU8hwAu
+	 5uCt9p7JGa3sPVxgYgc/nGl9g631hfgqX2Lq234uZ0mjzzpUHJEqevNTssxpWPfwhD
+	 A251zj+Snu4hw==
+Message-ID: <01f07ea2-8bdd-4450-8a49-548f8b646cfd@kernel.org>
+Date: Mon, 3 Aug 2026 15:59:35 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -103,72 +59,147 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 03/22] mm: introduce MMF_KERNEL flag and set it for
+ init_mm
+To: Kevin Brodsky <kevin.brodsky@arm.com>, linux-mm@kvack.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+ David Hildenbrand <david@kernel.org>, Lorenzo Stoakes <ljs@kernel.org>,
+ "Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>,
+ Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>,
+ Michal Hocko <mhocko@suse.com>, Pasha Tatashin <pasha.tatashin@soleen.com>,
+ Russell King <linux@armlinux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
+ Ryan Roberts <ryan.roberts@arm.com>, linux-arm-kernel@lists.infradead.org,
+ Huacai Chen <chenhuacai@kernel.org>, loongarch@lists.linux.dev,
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+ Helge Deller <deller@gmx.de>, linux-parisc@vger.kernel.org,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+ Albert Ou <aou@eecs.berkeley.edu>, linux-riscv@lists.infradead.org,
+ Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
+ Alexander Gordeev <agordeev@linux.ibm.com>,
+ Gerald Schaefer <gerald.schaefer@linux.ibm.com>, linux-s390@vger.kernel.org,
+ "David S. Miller" <davem@davemloft.net>,
+ Andreas Larsson <andreas@gaisler.com>, sparclinux@vger.kernel.org,
+ Richard Weinberger <richard@nod.at>,
+ Anton Ivanov <anton.ivanov@cambridgegreys.com>,
+ Johannes Berg <johannes@sipsolutions.net>, linux-um@lists.infradead.org,
+ Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, Andy Lutomirski <luto@kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>, Ning Sun <ning.sun@intel.com>,
+ x86@kernel.org, tboot-devel@lists.sourceforge.net,
+ Ard Biesheuvel <ardb@kernel.org>,
+ Ilias Apalodimas <ilias.apalodimas@linaro.org>, linux-efi@vger.kernel.org,
+ Vishal Moola <vishal.moola@gmail.com>, Alistair Popple <apopple@nvidia.com>,
+ "Matthew Wilcox (Oracle)" <willy@infradead.org>,
+ linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+References: <20260714-remove_pgtable_cdtor-v1-0-44be8a7685d7@arm.com>
+ <20260714-remove_pgtable_cdtor-v1-3-44be8a7685d7@arm.com>
+Content-Language: fr-FR
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+In-Reply-To: <20260714-remove_pgtable_cdtor-v1-3-44be8a7685d7@arm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
-ucc_hdlc_probe() registers an HDLC netdev whose private pointer refers to
-the separately allocated ucc_hdlc_private object. The remove path frees
-that private object without unregistering or freeing the netdev, leaving
-a registered device with a dangling private pointer.
 
-Unregister and free the HDLC device before releasing its private object.
-An active device must be closed before detach_hdlc_protocol(), because
-the detach path resets dev->flags and clears IFF_UP. Otherwise the later
-unregister_netdevice() skips ndo_stop, leaving NAPI, the UCC and its IRQ
-active while their backing resources are freed.
 
-Close the device inside unregister_hdlc_device() while RTNL is held and
-the HDLC protocol is still attached. This lets uhdlc_close() disable NAPI,
-stop the UCC and free the IRQ before the remove path releases the DMA and
-private resources.
+Le 14/07/2026 à 16:03, Kevin Brodsky a écrit :
+> mm code often needs to know whether some mm represents a kernel or
+> user address space. This is currently done by comparing the mm
+> pointer with &init_mm; besides not being particularly elegant, this
+> ignores the fact that other mm's (e.g. efi_mm) may also represent
+> parts of the kernel address space.
+> 
+> Introduce a new mm flag MMF_KERNEL and set it for init_mm.
+> Subsequent patches will use this flag to replace comparisons with
+> &init_mm. No functional change is introduced for now.
 
-Fixes: c19b6d246a35 ("drivers/net: support hdlc function for QE-UCC")
-Cc: stable@vger.kernel.org
-Co-developed-by: Ijae Kim <ae878000@gmail.com>
-Signed-off-by: Ijae Kim <ae878000@gmail.com>
-Signed-off-by: Myeonghun Pak <mhun512@gmail.com>
----
-Changes in v2:
-- Close an active HDLC device before detaching its protocol so ndo_stop
-  performs the NAPI, UCC and IRQ teardown noted by Simon Horman's review.
-- Link to v1: https://lore.kernel.org/netdev/20260728171545.49247-1-mhun512@gmail.com/
+Did you consider performance impact ? This test is usually done in quite 
+critical memory handling functions.
 
- drivers/net/wan/fsl_ucc_hdlc.c | 3 +++
- drivers/net/wan/hdlc.c         | 1 +
- 2 files changed, 4 insertions(+)
+init_mm is known at link time. Before your patch 08/22 there is just a 
+comparison of mm (r3) with a constant (loaded in r10):
 
-diff --git a/drivers/net/wan/fsl_ucc_hdlc.c b/drivers/net/wan/fsl_ucc_hdlc.c
-index 809f21fb93..4c843c94cf 100644
---- a/drivers/net/wan/fsl_ucc_hdlc.c
-+++ b/drivers/net/wan/fsl_ucc_hdlc.c
-@@ -1255,6 +1255,8 @@ static void ucc_hdlc_remove(struct platform_device *pdev)
- {
- 	struct ucc_hdlc_private *priv = dev_get_drvdata(&pdev->dev);
- 
-+	unregister_hdlc_device(priv->ndev);
-+
- 	uhdlc_memclean(priv);
- 
- 	if (priv->utdm && priv->utdm->si_regs) {
-@@ -1266,6 +1268,7 @@ static void ucc_hdlc_remove(struct platform_device *pdev)
- 		iounmap(priv->utdm->siram);
- 		priv->utdm->siram = NULL;
- 	}
-+	free_netdev(priv->ndev);
- 	kfree(priv);
- 
- 	dev_info(&pdev->dev, "UCC based hdlc module removed\n");
-diff --git a/drivers/net/wan/hdlc.c b/drivers/net/wan/hdlc.c
-index cbed10b1d8..a38f90d300 100644
---- a/drivers/net/wan/hdlc.c
-+++ b/drivers/net/wan/hdlc.c
-@@ -263,6 +263,7 @@ EXPORT_SYMBOL(alloc_hdlcdev);
- void unregister_hdlc_device(struct net_device *dev)
- {
- 	rtnl_lock();
-+	dev_close(dev);
- 	detach_hdlc_protocol(dev);
- 	unregister_netdevice(dev);
- 	rtnl_unlock();
--- 
-2.47.1
+c0014048 <assert_pte_locked>:
+c0014048:	3d 40 c1 09 	lis     r10,-16119
+c001404c:	39 4a 03 98 	addi    r10,r10,920
+c0014050:	7c 03 50 00 	cmpw    r3,r10
+c0014054:	4d 82 00 20 	beqlr
+...
+
+After patch 08/22 we have, it first checks that mm is not 0, then it 
+loads the word located at mm+528 then AND it with 0x1. This load might 
+be costly.
+
+c0014048 <assert_pte_locked>:
+c0014048:	2c 03 00 00 	cmpwi   r3,0
+c001404c:	7c 85 23 78 	mr      r5,r4
+c0014050:	41 82 00 10 	beq     c0014060 <assert_pte_locked+0x18>
+c0014054:	81 23 02 10 	lwz     r9,528(r3)
+c0014058:	71 29 00 01 	andi.   r9,r9,1
+c001405c:	4c 82 00 20 	bnelr
+...
+
+Christophe
+
+> 
+> Assisted-by: Codex:GPT-5.5
+> Signed-off-by: Kevin Brodsky <kevin.brodsky@arm.com>
+> ---
+>   include/linux/mm_types.h | 10 ++++++++++
+>   mm/init-mm.c             |  1 +
+>   2 files changed, 11 insertions(+)
+> 
+> diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
+> index a2e0dc5892ff..7838ea3aac00 100644
+> --- a/include/linux/mm_types.h
+> +++ b/include/linux/mm_types.h
+> @@ -1414,6 +1414,8 @@ struct mm_struct {
+>   	char flexible_array[] __aligned(__alignof__(unsigned long));
+>   };
+>   
+> +#define MM_FLAGS_INIT(flags)	{ .__mm_flags = { BITMAP_FROM_U64(flags) } }
+> +
+>   static inline bool mm_flags_test(int flag, const struct mm_struct *mm)
+>   {
+>   	return test_bit(flag, ACCESS_PRIVATE(&mm->flags, __mm_flags));
+> @@ -2001,6 +2003,9 @@ enum {
+>   #define MMF_TOPDOWN		31	/* mm searches top down by default */
+>   #define MMF_TOPDOWN_MASK	BIT(MMF_TOPDOWN)
+>   
+> +#define MMF_KERNEL		32	/* mm belongs to the kernel */
+> +#define MMF_KERNEL_MASK		BIT_ULL(MMF_KERNEL)
+> +
+>   #define MMF_INIT_LEGACY_MASK	(MMF_DUMP_FILTER_MASK |\
+>   				 MMF_DISABLE_THP_MASK | MMF_HAS_MDWE_MASK |\
+>   				 MMF_VM_MERGE_ANY_MASK | MMF_TOPDOWN_MASK)
+> @@ -2008,6 +2013,11 @@ enum {
+>   /* Legacy flags must fit within 32 bits. */
+>   static_assert((u64)MMF_INIT_LEGACY_MASK <= (u64)UINT_MAX);
+>   
+> +static inline bool mm_is_kernel(const struct mm_struct *mm)
+> +{
+> +	return mm && mm_flags_test(MMF_KERNEL, mm);
+> +}
+> +
+>   /*
+>    * Initialise legacy flags according to masks, propagating selected flags on
+>    * fork. Further flag manipulation can be performed by the caller.
+> diff --git a/mm/init-mm.c b/mm/init-mm.c
+> index 3e792aad7626..93773269bf87 100644
+> --- a/mm/init-mm.c
+> +++ b/mm/init-mm.c
+> @@ -34,6 +34,7 @@ struct mm_struct init_mm = {
+>   	.pgd		= swapper_pg_dir,
+>   	.mm_users	= ATOMIC_INIT(2),
+>   	.mm_count	= ATOMIC_INIT(1),
+> +	.flags		= MM_FLAGS_INIT(MMF_KERNEL_MASK),
+>   	.write_protect_seq = SEQCNT_ZERO(init_mm.write_protect_seq),
+>   	MMAP_LOCK_INITIALIZER(init_mm)
+>   	.page_table_lock =  __SPIN_LOCK_UNLOCKED(init_mm.page_table_lock),
+> 
+
 
