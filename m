@@ -1,136 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-25328-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25329-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AE9B2C55822
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2026 06:30:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6C491C55822
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2026 06:30:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hDkFQ03nMz2yMl;
-	Tue, 04 Aug 2026 16:30:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:d40e::" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785825049;
-	cv=pass; b=GEib4NBmQF/K8vcCuvuQ7meGkYE+CT6eWLnmV4EyO2pGhDjySLtN1zx7ZMdsJYrY2heIJInvA5VGz4443ysGlo5AxJV5OmXGRk0KzGDG1eL/Fv6esKyTInJP6W/mWxqdhDKEG4jimdM8+1PiZFFe8OK9UggRJFvIZ4NUjuwzz0fhewDcYnsDdHm9Fc0g0clRoNHf74eOReQ5oiDYK0h1zGiMgm2f4yvqv9qTe0zoDyJa+KYuzrYer18ORv55yo/3exyz7DZv5VcH3mrA1R/TVI+2wYvpKMDudJr8Up+gkxQEuwnh0/c86akgwkQRQL2aWtTQWsr0AjSYGJo1FI2mPw==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785825049; c=relaxed/relaxed;
-	bh=Oqv1Goa2AuEM2ktQASSjFeUVDFzi4LBiYShFsGNFQPo=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=FNu8rmg5Pokctm/xLVwu6CYdKjoPy3Rjk+jYBskfUVmbeAtNUuVu1VFF0fI0GVmlhRjQsTamh5xBMuCsIj8ucn6KB+cRkVWjBHkXiWCX4IduxaANlRwetUCmncTdoqW3nmyATyFwvsUZ7vO1c/GihZJ6MjxRlaMmC1KQzwlDmrpx/w1lSK3ZpdwFRHrSIxJJhf/HVRg0wTZZiJ/qZSVpPenQ9IbQaVVHsI+ZZlgrO3Fa4BEA5exnIgTq7iNLZeTZNfdYPgPwYE7LGhi+lpKRUYivlUO6CkbawvkedSPxiZdMSp15SdnZHhbGI/7Z1K0YV51oS14CAC3QC5L9qeuAGA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=outlook.com; dkim=pass (2048-bit key; unprotected) header.d=outlook.com header.i=@outlook.com header.a=rsa-sha256 header.s=selector1 header.b=aZUJsyOC; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:d40e::; helo=meupr01cu001.outbound.protection.outlook.com; envelope-from=moonafterrain@outlook.com; receiver=lists.ozlabs.org) smtp.mailfrom=outlook.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=outlook.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hDkFW1CZ6z30DH;
+	Tue, 04 Aug 2026 16:30:55 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785825055;
+	cv=none; b=NTjjjgM84dasYDaXMn93PLEeszqYpYBKWXyShwsrjN3qmLC4posjuM91PB+rpdRNuUvzIxhvMdWqT1TZmIcvl76mfOJ2ib79V4OBmWCfSPJ8TOuPWYhd6c5t8lWc/XFdo0bI003LEzPt3ynxZrFAahfk6/jlbfkKpmOji4njn9nIT4SyzTfnVvgJT+9PJyoZhmQIBxwsJfnqU/4j7oefm3OdOqMxjJQMBts+UU84TiX62EBHfVmIF5/iJ3OmRByB7i7xrMj6zYZlQJW189XC6vYaaY8VS0lRmsCiJFCxHll/RrFVlJNqXRwM6YPT5Rhodemam02pm1Z2bG7TRVivRg==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1785825055; c=relaxed/relaxed;
+	bh=JN2TV52gyjEYB575+y+sUs5qvJBpRg6AdDnzkTqLoFM=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=e60ai0SruwHGcHZknzZ8WpHJs5nAQfa8J89S6PQhQXKN1EeCI7X0B/gptwscSPUs3uAwpbAU8MxHMiq0ffrATr7LLIMzRllIIKM0Fk7an1SmRMCgrzVsLxtXdn8QBNvDRoyzM8Qug0bx652pRxireY+9O3xtbMOZKvjV3MsAKzl3HKQuFXjoev5urF20yWwwhETm+1undiSklP4p6mCw+Xsp3D3B0ItJRBfxmeG+dOwSyzbAl866htf4W9/1EnWx30KdFffnbF2uXQiBH+kvCzdjxDXabVgI4jmr+RJ3JRKArED4qyGfZ+X//MBOo02jK2et5fLYZ0TA/aB7sykf3A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=f/SSvgW7; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=nnmlinux@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=outlook.com header.i=@outlook.com header.a=rsa-sha256 header.s=selector1 header.b=aZUJsyOC;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=f/SSvgW7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=outlook.com (client-ip=2a01:111:f403:d40e::; helo=meupr01cu001.outbound.protection.outlook.com; envelope-from=moonafterrain@outlook.com; receiver=lists.ozlabs.org)
-Received: from MEUPR01CU001.outbound.protection.outlook.com (mail-australiasoutheastazolkn190100000.outbound.protection.outlook.com [IPv6:2a01:111:f403:d40e::])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=nnmlinux@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hDkFP1XFPz2xpn
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Aug 2026 16:30:49 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=PHiAwT8zSvE77iokkbvus8ciD7uaVz9wtVRb/98LnneCxKpB19RxdNGDmNlHSW58MoPebrV88R4wy6J0REmcrB9D8DTDDqslE5U2tHR4GbTWmRhPAkySD0KEEmqWW/7Mbzda06RYejW4YW2DP1QjfPLeRTpcwftOg3YobauPQQEa77EjZ93UmdcfCLNl+jhcl5Es3dtg/vLfCXcB+0MXLRXOpzFpCfN6JbmR+czuTg1kPn/A9sw9JI629tMdeXHQlRdpsjhzaBMXxeOMJAp/kbdiA5nAsLxqtICrxgqhOjuwQc683wjkbOle3h22WxIJgplXtLw9nptMoeQUuFFTXA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=Oqv1Goa2AuEM2ktQASSjFeUVDFzi4LBiYShFsGNFQPo=;
- b=laOh+xC+dsZIBTjU1xI3gqPNiqK0jslA4kAA0c3Xewuy4QU2DWmP982u2SUTxsuokfWQCGjvBiTtDpcSr2lDz+MpABlcz1Sxcmoweg97ewaKiDttw7p7yOsaFUbpEr6Q41krjH1zrkg2W6YaSB6viiDyuPy9TTgwDWi/sQ44OyQDJhr9dBggM3UGekRT7i95ALc0/skq4y9nP5lJdVs3ySxV+pK07F3oKIKajAKexcOGU1qL1OT+/JaWW+Otfa39A4TBkmT0Y6EDUx97x18WIEJA7r2NUD+UgEeXDk5aWhWhWHZyQLhm8VXKJLj7+AwPhB7NoUkXz445b+di/pZUmg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
- dkim=none; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=outlook.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=Oqv1Goa2AuEM2ktQASSjFeUVDFzi4LBiYShFsGNFQPo=;
- b=aZUJsyOCace8yAeOENs+W+m633xsRjJzkvvd8MGae3GoazncoXmJC7tZhP6WCScyDPQQhTKDsjU6A5ZyUcJXiSPNqwTAQMk7ebO/dbHXpU6pY7xd4vv4zO/+UAdO7W3OhXMurowIzzPyXcO2CDs1xUkEpZ1mMLJDQPowmPSMC9r0dIMVbcTDppEEY6s53gwgJTbUGPXalenNIM+1Mcc84L+uMRbM/NMeN7pBhNc8ZZN+wXYi0g0ufdaiM5QQWQIfZkz0FeYBzsp28GAR0FxU3d3nZWDxUSPvw8Jl69z+Ft1duLCC9KsrpwRERhsFjxsXT0217BZlX35y6njOLmQlDA==
-Received: from SYBPR01MB7881.ausprd01.prod.outlook.com (2603:10c6:10:1b0::5)
- by SY7PR01MB9306.ausprd01.prod.outlook.com (2603:10c6:10:23c::9) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.270.18; Tue, 4 Aug
- 2026 06:30:25 +0000
-Received: from SYBPR01MB7881.ausprd01.prod.outlook.com
- ([fe80::7cd2:d6e8:3fa0:5f0c]) by SYBPR01MB7881.ausprd01.prod.outlook.com
- ([fe80::7cd2:d6e8:3fa0:5f0c%3]) with mapi id 15.21.0270.017; Tue, 4 Aug 2026
- 06:30:24 +0000
-From: Junrui Luo <moonafterrain@outlook.com>
-To: Arnd Bergmann <arnd@arndb.de>
-CC: Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman
-	<mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy
-	<chleroy@kernel.org>, Paul Mackerras <paulus@ozlabs.org>, Alexander Viro
-	<viro@zeniv.linux.org.uk>, "linuxppc-dev@lists.ozlabs.org"
-	<linuxppc-dev@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
-	<linux-kernel@vger.kernel.org>, Yuhao Jiang <danisjiang@gmail.com>,
-	"stable@vger.kernel.org" <stable@vger.kernel.org>
-Subject: Re: [PATCH 3/6] powerpc/spufs: bound NPC against local store size
-Thread-Topic: [PATCH 3/6] powerpc/spufs: bound NPC against local store size
-Thread-Index: AQHdIpbczLtbGuoNv0iCXaCHyauSi7aMC6yAgAFkioA=
-Date: Tue, 4 Aug 2026 06:30:24 +0000
-Message-ID: <A64E7079-435A-4562-8AC9-530D37165CF5@outlook.com>
-References: <20260802-fixes-v1-0-7368423440f4@outlook.com>
- <20260802-fixes-v1-3-7368423440f4@outlook.com>
- <073a9c41-4545-4bf6-aeb2-1dadf3c222df@app.fastmail.com>
-In-Reply-To: <073a9c41-4545-4bf6-aeb2-1dadf3c222df@app.fastmail.com>
-Accept-Language: en-US, zh-CN
-Content-Language: en-US
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-x-ms-exchange-messagesentrepresentingtype: 1
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: SYBPR01MB7881:EE_|SY7PR01MB9306:EE_
-x-ms-office365-filtering-correlation-id: c278e68f-7cad-4ffe-3d53-08def1f1ddc1
-x-ms-exchange-slblob-mailprops:
- 9IecXKUgicApcBHgIkF1u3SRiU/lhwt0wE+C82ATxMiPsmpI1GaWg/KI+ul90EZdU6zl+hC+uErPfcdaqSYP+vq4vyecbhrxAD+ujsRLjwspV4SGfLUCZf5kb0mZ28D5DZPJqXLk66/PB8L1TffBmGgdlHApZOQVK/++uXzBFqrKwzOacmwxBTdz5nap5UjQakqaoA6ddAGbCVYMuTRXFAITbOGT0YRzPHzTaxEiZbWNBahIvUKdXoI2t0wjxM4+Hg+MnO+EB8C8U8kqLb9IsoHPh0gvPxIriOO/0Urs+lGOzc5trs5SD5JP+lbvTy+9iVKadVx84eloOeukmGtMmY/XNrmW47vw8n2p9DEBv1wPuQTxlPutxme+puqeJZDTTcCwBfBG68xUrpcyVzRVNvGU6JQ611S4RW6CkI7Q4UIRkGbfW7vRJX+5LUzVYH3xP4OJnd1ITuIwSWG4/jJU0seWMEUhHE4PWsbE7Ubr3bD4NanGQVOApmEGvPpfJFnX24z6UqxIIK6Qf9z69KYbF55wU9fC+w0I7kJIYjjue+wRTOP0Jv4+jLvf0VXEI4adwHwNINw1jdmZ8GCtJlRgK6Fo7/FzJw8ZeRPXGYnicBW+T+AV90Gv57wS2UvSlxDeGnBTc9PpJIST0rm8qdynl4QMtyML1BVT0EKtnb7RXCGcnOxe0GcpOl5a0uIRed1d52WLWxKjB7IH1aiCXr16dZrAIUgYPtPvBB0l8d0N6Crda/zPowZ35w==
-x-microsoft-antispam:
- BCL:0;ARA:14566002|24021099003|12121999013|31061999003|8062599012|8060799015|19110799012|15080799012|4140399003|22091999003|24121999003|25010399006|39105399006|22121099003|40105399003|2607281247196008|102099032|3412199025|440099028;
-x-microsoft-antispam-message-info:
- =?us-ascii?Q?Z4rdTfQoDFmlOwR++HJoIFNwLC8J0CqhwnU6tcKL4zRDxdseB3m8oIJrvrkj?=
- =?us-ascii?Q?oGwCNzqC3KtK63V49bmJCxNDaRcQC5hBzBrtFCvWc0ANA4h/9Y3ZgDHy31fs?=
- =?us-ascii?Q?nNGmeGpivjTRkPks8xQN/ilk2nq337kt+IYiG+kX4d2GfvIPy98ZxfJ1CNHe?=
- =?us-ascii?Q?szooeJdPqhAV3uvUJyZqW7EJi3Q6TvO8w0yhnYq7asjWgz2fxoArMsTJEQ8q?=
- =?us-ascii?Q?J+xIBYBTvNeB5MgRxFWIYiRY5zLPI73AEuSey/cNZIDuT6KPKgn6R9Wi0Nw4?=
- =?us-ascii?Q?TbkKa7DfW4Wg/93ixuXR1+XjDoED6V3laz3nzdyV8V5qehDbWhtV6dpz+ARz?=
- =?us-ascii?Q?hQxrpefK3F7ACgju/SeiXDs+ffReLajVjt8u5nI2uuX5rf4jMxym5DVUTS8c?=
- =?us-ascii?Q?09QVkTvjFgNaErzMwEEo9FxopmccVR5iefueSZKCaTDNJEK/V2h7rdQhQEUZ?=
- =?us-ascii?Q?C5CIcuVE8D3z8FytWvg0ekRbdK6Sg7hfEX+jUOcrmUGEA5zwq/NpEp3K6ipG?=
- =?us-ascii?Q?45cmAW9i8KU0R+XW+SY7ygQLOka6fietQZC5aAu1sl6jzWJ1aneeZX78X7tl?=
- =?us-ascii?Q?mMvukHBbgNl5CYGxenjwC9P5KlKpYQZwGi8RLl7Vesm9OmudJC5TRIKpqs0o?=
- =?us-ascii?Q?PQqdMvrgnrh3qZIMifRlbfHdB2vNvvWzg6QYUAqI4BRlXN2VQNVq7/00Blj2?=
- =?us-ascii?Q?SK9R7SOaKxgZAWrNnDOBhfuVeCRUHUWKTrZF7iBkrzBQR1JE99ZdIXT2Ywmr?=
- =?us-ascii?Q?scU3nEDwvLLpj42VsPzDIsPiXoo9HzmVqqpqQCXEEKclc28Ma90Qw2yO4ipq?=
- =?us-ascii?Q?GtJ8jRM96Qmcka1epgK6FpFacAEiZy5yTwh7DvD4PjlaWQMxbAo5q4jHb/YR?=
- =?us-ascii?Q?UeBnIiEFE9fRslPTYHEGlXVhMdS7fLAohQhLehA3EXv+hVytSFKEtBUayrSr?=
- =?us-ascii?Q?UAXqna3ZmJ3b/n+lIChx/6hKRkCk/xcoxLU7XibetCrEaozto3n6DEv49KNa?=
- =?us-ascii?Q?CrIMiv//6DBXXpX7BQnVoMm6OJCAFmDaRcAWQcH3llejR+0IP8F4GvV1ShSf?=
- =?us-ascii?Q?aeNLhToD?=
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?us-ascii?Q?psIhq6gQz78XiYJcqUUlJi6AMj+1E7y5dQO9ODQaR0GPdcpIwfS++pd6i0YO?=
- =?us-ascii?Q?Gckecr8D/ldsH4MSKcSXdfD5/5wvYlTA9+VYPScZM6OkXoDL0vhYncdAg2fn?=
- =?us-ascii?Q?45XlKXOlXDT1HnWg6eZ6sI/cXJXMbgDRtBJOekorKvJBrsVbGsUYehKumDbc?=
- =?us-ascii?Q?G19FFmAY6h13qQWE+tncOPZgEBRBLX5ZGnwh6JkLt3BsHwGXdFlvD1IgCLyq?=
- =?us-ascii?Q?n+/QBzd5jRsj7tlPzW0flIxSREjWWwUbywLjidprHdChnF6ifpF2CthFu2b0?=
- =?us-ascii?Q?DRbTXoZ4AFvYCKuwz5W4LSV8mCLWObYrmuLZ3LGYwabw5EDSlq6Ksi2zaJH5?=
- =?us-ascii?Q?tRpg0waW+nJB+UzH0D/g3snAAtuBcMpZAci9wjwtp4zmZ2c8FjZg2h93oh3M?=
- =?us-ascii?Q?sqVrtrm/q/CJIf7FMHb3WqKWP5becB6WHoC/tS4aWbfFZEum2e5tVh0xeWb6?=
- =?us-ascii?Q?dZ1ll8A5+uYO4BH58B0tlf8jtyH64lq/bOGGBfsgx3NONnUV/LLohF41l6NB?=
- =?us-ascii?Q?2OBhzAUOmXGFG1WFbmWI77IRGxa5XPM5gM4J+3p3mKdNNHtSeyvlJKkpGIkH?=
- =?us-ascii?Q?oh3yTH7j/JmkJyYeUHgqOmhidzfuZ+Vh1neEzP1oS+VaBC7aBC4PZk400ky1?=
- =?us-ascii?Q?30VhSdOqF2A0mgUHwiwRuGX7SXZjvLTxISsv6BSxVZ0CfxwKtbMhnuiRKoHV?=
- =?us-ascii?Q?eOk60zWAffGGPNrIqnTuPbd1Gu8rurrCWFfZzQYaBnELLZfv6/74BM7mYsI7?=
- =?us-ascii?Q?kl9S5QrCvtoP1f6GzIgynRqr6L/5BhDFB+0hZ2z7qHvXCJiBfgZ4VEg+IWWF?=
- =?us-ascii?Q?ceifyltNPNRnGp7LFShIHygK4xgy5QEiQyY7nZ5RiClUsK4YAcZXqJYmrg2t?=
- =?us-ascii?Q?TFYq5YH47cVGxzmZvrpwy9YU2xnezN3XFQ9E2Sf6bnGXR9yDJJ8EZKIzYeFR?=
- =?us-ascii?Q?g+NEO4vg9WEloSIDqYquLdSgD78hbGj6KtxbGp59lPzyUliM3wqn/vY68zYK?=
- =?us-ascii?Q?rzfTyf6QMXaS4+5JICXzcsHIqhxrw9Vx3j+K+3KFPLmdkvumhR/7upkFQPIg?=
- =?us-ascii?Q?4WpV83XN/dwjncogOYimejv116Kwq7GlphTyxD1ZXqMR+pt+LnpET7gmLV6E?=
- =?us-ascii?Q?nit8rS87gKxv6PZf4njURwz4NlapGVAIPTZZ4H38bsCrr5/TDl/2AMFWbYfB?=
- =?us-ascii?Q?BYudGSHW+2zUwc6X1LfBLd0h5w5nod2immnv5vnageH8FzzEOUwDaQnDXFjo?=
- =?us-ascii?Q?GIomhDHpE5jAjo24OuQhqywMCVQR3T0WTI5FDT4m51fOm7N4i5whWxjb1xuT?=
- =?us-ascii?Q?6ChzIef5thLlRUnGkEAYZjcAQFPkWaFQCVr+mrPl6HI/hE2cU+Ay7BpGN502?=
- =?us-ascii?Q?8ABBqvpJnWzqUNEtgDk4mi10TYcwwcUhg8xxCzeZSXDtUbdz6Q=3D=3D?=
-Content-Type: text/plain; charset="us-ascii"
-Content-ID: <82ABA394BD24D84CB5674ADC3DE32ECD@ausprd01.prod.outlook.com>
-Content-Transfer-Encoding: quoted-printable
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hDkFT73xlz2xpn
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Aug 2026 16:30:53 +1000 (AEST)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6741JEAt3574076;
+	Tue, 4 Aug 2026 06:30:42 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=JN2TV5
+	2gyjEYB575+y+sUs5qvJBpRg6AdDnzkTqLoFM=; b=f/SSvgW77AhKthEE5i49Kw
+	yhSILdb4DoqVd+V4i099akQ8DJKxAIk6kYNjSE/tT6zkqxiz8Ty8DzkEBUELjnrz
+	Bv/L80LSo1U3gro9d/b9ycl7TEwOQQN91G2l6vmPpp9jaay9w43nX25dVvW9NgP4
+	tokyTsABJhGVjr0WtaJuqD9+VCTBwz5BYcMLOJ1m/kCmm4bcSflcCpHXxcZJcoSJ
+	EtgAcPoQqZit4v+1pRq0if73AezJLMlifAH+FhZItCzO14wBPv91pO57FCZD9oma
+	GpDRJlBeseTcBqkmwjH+sCp0ODqJWycAc4+AS9e8dn0vkO4o8y2uWsw7NSnQzsRQ
+	==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fs67hmc39-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 04 Aug 2026 06:30:41 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6746QHpp023659;
+	Tue, 4 Aug 2026 06:30:40 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fswbg8j0r-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 04 Aug 2026 06:30:40 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6746UZha50528618
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 4 Aug 2026 06:30:35 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 80D8420043;
+	Tue,  4 Aug 2026 06:30:35 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 4B9A320040;
+	Tue,  4 Aug 2026 06:30:31 +0000 (GMT)
+Received: from [9.123.6.250] (unknown [9.123.6.250])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Tue,  4 Aug 2026 06:30:31 +0000 (GMT)
+Message-ID: <92f64054-0419-4a87-a69d-f920aff1bcfd@linux.ibm.com>
+Date: Tue, 4 Aug 2026 12:00:30 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -144,43 +81,114 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-OriginatorOrg: outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: SYBPR01MB7881.ausprd01.prod.outlook.com
-X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg: 00000000-0000-0000-0000-000000000000
-X-MS-Exchange-CrossTenant-Network-Message-Id: c278e68f-7cad-4ffe-3d53-08def1f1ddc1
-X-MS-Exchange-CrossTenant-originalarrivaltime: 04 Aug 2026 06:30:24.2542
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
-X-MS-Exchange-CrossTenant-rms-persistedconsumerorg: 00000000-0000-0000-0000-000000000000
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SY7PR01MB9306
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 4/5] powerpc/pseries: Implement RTAS error injection
+ via pseries_eeh_err_inject
+To: Sourabh Jain <sourabhjain@linux.ibm.com>, mahesh@linux.ibm.com,
+        maddy@linux.ibm.com, mpe@ellerman.id.au, christophe.leroy@csgroup.eu,
+        gregkh@linuxfoundation.org, oohall@gmail.com, npiggin@gmail.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+        tyreld@linux.ibm.com, vaibhav@linux.ibm.com, sbhat@linux.ibm.com,
+        ganeshgr@linux.ibm.com, haren@linux.ibm.com, thuth@redhat.com
+References: <20260527072433.94510-1-nnmlinux@linux.ibm.com>
+ <20260527072433.94510-5-nnmlinux@linux.ibm.com>
+ <5388c50b-e43b-4a3a-bd59-28568f5d84cb@linux.ibm.com>
+Content-Language: en-US
+From: Narayana Murty N <nnmlinux@linux.ibm.com>
+In-Reply-To: <5388c50b-e43b-4a3a-bd59-28568f5d84cb@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODA0MDA0OCBTYWx0ZWRfX3XXMgGKHaJlu
+ v6HE5J4x3AP5EIG6L0K5IQlVDAKowyZE9o9/ix0Tcgf2MrPSaVB6nZXEFTCsC9Gg1RGC1UPVwpO
+ x2OUzZwR4C3GesETHnSDX9WCtri62IE=
+X-Authority-Analysis: v=2.4 cv=I7VVgtgg c=1 sm=1 tr=0 ts=6a718712 cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=5LOzdb_oUaMgFwGie8EA:9
+ a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODA0MDA0OCBTYWx0ZWRfXyWETgVu424Qd
+ 5lMhfpgoHO+8ybekMNhHi4cQ4BJrsgd7coMqeDzDhTach0iRE1KOrtX1NqX+xOnzlt/1eAwhMv4
+ Ix/7ChnPiGxfM5DrJzQYmXncFJ2OpzjCexC6yKhJDbV+MWWuUueiaeqWsweVt8MXftAiUtc3dh7
+ /9KwUpV4ZRAcy6SAosexIqw8IXvac5HrJcYRtaKRisxOIxMQ/pTyGu3pwdzKA71mIE880F79nOC
+ VoHUviqZ/Gm6u626+I5+EMGTDkzHKVBa8PwhMdGjSzHkdKtvcsFI0ix4IzLy7Pwtfy4sAwi6jqu
+ iHTXhnPK0ZyvjJ7WjDLzEODvmouhfpPAbEblASViE6lvpkElrcK+3AyZMhvgdfTR1M8mDvnKjvo
+ ++zKjkGWasVB6lgzmbMIJi/ETXy/5Bsu0TtZxlFcAz7yT+iLnv6eUZH7mnvOiBVefQyqwsgTWgA
+ S1A+o2Rpfu8W53nJrQA==
+X-Proofpoint-ORIG-GUID: 3DAtJmyQudrXtcVdx74e9kk64dQiEGaf
+X-Proofpoint-GUID: pAVQhLS4TFkRJ6-C2w13ljjuQluFkLVE
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-08-04_01,2026-08-03_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 impostorscore=0 clxscore=1015 priorityscore=1501 suspectscore=0
+ malwarescore=0 adultscore=0 lowpriorityscore=0 phishscore=0 spamscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608040048
 
-On Mon, Aug 03, 2026 at 11:14:03AM +0200, Arnd Bergmann wrote:
-> On Sun, Aug 2, 2026, at 17:51, Junrui Luo via B4 Relay wrote:
-> > From: Junrui Luo <moonafterrain@outlook.com>
-> >
-> > spu_process_callback() masks the low bits of the NPC register and uses
-> > the result as an offset into the SPU local store: `ls_pointer =3D in_be=
-32(ls
-> > + npc)`. The following guard validates ls_pointer against LS_SIZE, but =
-npc
-> > itself is never bounds-checked.
-> >
-> > Fix by rejecting npc greater than LS_SIZE - sizeof(ls_pointer) before t=
-he
-> > read, mirroring the adjacent ls_pointer guard and returning the same
-> > -EFAULT.
->=20
-> This one seems wrong: npc is a hardware register value that can't
-> go out of range, unlike the ls_pointer value. I don't think there
-> is any use for the check.
->=20
->      Arnd
 
-Thanks for the review. I didn't establish that it can actually go
-out of range. Please drop this one.
+Hi Sourabh,
+
+Thanks for the review.
+
+
+On 07/06/26 7:05 PM, Sourabh Jain wrote:
+>>
+>
+> session_token 0 is considered valid here. Where as it was considered 
+> invalid in other
+> function above.
+Agreed. |rtas_open_errinjct_session()|is expected to return a positive 
+session token on
+success, while zero is not considered a valid token by 
+|rtas_close_errinjct_session()|.
+>
+>> +        return session_token;
+>> +
+>> +    /* get errinjct token */
+>> +    errinjct_token = rtas_function_token(RTAS_FN_IBM_ERRINJCT);
+>> +    if (errinjct_token == RTAS_UNKNOWN_SERVICE) {
+> How about checking this before getting the session token?
+Agreed. I will obtain and validate the |ibm,errinjct|RTAS token before
+opening the error-injection session. This avoids opening a session when 
+the injection service is unavailable.
+>
+>> +        pr_err("RTAS: ibm,errinjct not available\n");
+>> +        rc = -ENODEV;
+>> +        goto out_close;
+>> +    }
+>> +
+>> +    /* prepare shared buffer while holding lock */
+>> +    spin_lock(&rtas_errinjct_buf_lock);
+>> +    rc = prepare_errinjct_buffer(pe, type, func, addr, mask);
+>> +    if (rc) {
+>> +        spin_unlock(&rtas_errinjct_buf_lock);
+>> +        goto out_close;
+>> +    }
+>> +
+>> +    /* perform the errinjct RTAS call */
+>> +    rc = do_errinjct_call(errinjct_token, type, session_token);
+>> +    spin_unlock(&rtas_errinjct_buf_lock);
+>> +
+>> +out_close:
+>> +    /* always attempt close if we opened a session */
+>> +    rtas_close_errinjct_session(session_token);
+>> +    return rc;
+>>   }
+>>   +
+>
+> This new line seems unnecessary.
+
+Agreed. I will remove the extra blank line.
 
 Thanks,
-Junrui Luo=
+Narayana
+
+>
+>
+>>   static struct eeh_ops pseries_eeh_ops = {
+>>       .name            = "pseries",
+>>       .probe            = pseries_eeh_probe, 
+
 
