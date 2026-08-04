@@ -1,50 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-25357-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25358-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BF488C5518F
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2026 11:13:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E78C6C5518F
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2026 11:15:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hDrWj6qHLz2y1Y;
-	Tue, 04 Aug 2026 21:13:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785842017;
-	cv=none; b=jggbuENZ4nM2KKkoWKdM7D/LwwS2cZaCjgqOUrsY0uJccG0jsx4NOiisqV7oVORIexu5HUiuPT46CZd9Kqh39VgxLS1c4qUPN9+KHSy+FG/m+klSeFYDUmg+p4W9AD7kwixmY8S9ksQMeAbW/KJihM4V2bSr2ZLGM5tmSH5O5fy6aWqpWClssb3dO/v17qBzukOPkthvq6/Yp8vXmWpHb0LWkcwqybzFBpD86bcqFew5y0dw1CHRXeVhmal3Yq/DyiIcAWbhANSUXzoFQtUtY//Ol4o5IzSMkE8M65e7Qr3Ns6L4OfYKtr5W8fACl4skhZVOfqfVuLXfrJ6bnzFE6g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hDrYS6cX0z2y1Y;
+	Tue, 04 Aug 2026 21:15:08 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785842108;
+	cv=none; b=g8HVhcHRej7aN8jCvWEq/kJ/42fEzDkq1ztyHxoRHTWnVGYAsOTqFfc1hz+SlELAF5ay+KALrI26ZMENKX5gFeQwEEtYiw+wxazjzxYLLz8/x5kMO7uiVuIRjmDG6lq0kXIMUAVmIuPrPE8nFlTV04y3guk/zd6sWyDlj41gORYGknZ2/2OKxcWTrtzVMyPA6ZlYbM5293cJ/goLDzu/bw5WpNlhOpkwdfQseCf00hTy6ae5hpV4bK8/cNjk2PhWt0AVDgqIqQek9d06BErhO7ExeeAEBp86/5a0+3KWTmOA5PJazaYGi2L00tfvxATDjVkFwQ3WxdJ6pc1eUDTnjQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785842017; c=relaxed/relaxed;
-	bh=8cqD4Td6cmzUoT3kOqg3vmAusK+bPeDWcDnl9ayoHm0=;
+	t=1785842108; c=relaxed/relaxed;
+	bh=NlvQqMPX1ZBZq6vczB6DK1Q1sg9iUABmibDLc459ooE=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=boDTZH7ZobZzW5FS72Oh4619K3cXYkgF/7toIMCxJBOOe0wmG6bQ/sKzEiMJgOK2C0aN0nFYgVEUOqhfeI5GlbzWoQCJcEFmlzYFzWAsQrGZGb4uBn5o4170KUKo3Ec4CwB4b9hPIlq/i3rf8u+GHAmLFKq3/a8IUVSTnQ9UAA1J1b+3/MnnSUX4ft0boQXhNY53R5Y+Lpr7fBGG4S1n3NhQjU1On9AzcraYBwi1HnpCFrRSdPimcmMG3t9R9AoXsUdjRw9v4+EuKQhbHM0SiAX8hRA2oyYCdBuQI2EBSVGvUN0CcjS0yqq7gBhe1O0rRocwx4kh1JA21zRSz0gUEg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=V3bqKum+; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=omtRwcJXbbDl/iHS0IVAB99OA4EQ7PfNwZn9I+gfKZc0Iqx7qqDix9XnwZIpp1buy/NT0A6qZTmFvSMvPZ/h5FMuCHPaWaDIFjgot3HxbpE6seryww7AQdzPzx0XViHo9fPWJwtXB14bGf93CYjtlSm12h6ZBA3ajc5NVGporriK5m+rbbFuvYshZLKZ7NFzar6wmR1yNihhF4fbDUpo9WDuHy1msu5/VNMe/ZlIlpRN8w4QidsdUQb8ReX595ATj3xOT3/SqZNOdjlnwz5ykhchsYf6aCQAt1r6vBRQVAJSFY/n1Q2B3xuyToE8nX4pRIZObJEVrz8UQON0mY2FGA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ZnHoS2uq; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=V3bqKum+;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ZnHoS2uq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hDrWj2fTTz2xpn
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Aug 2026 21:13:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hDrYS2dCsz2xpn
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Aug 2026 21:15:08 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id B6C1D41FB5;
-	Tue,  4 Aug 2026 11:13:34 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1BE311F000E9;
-	Tue,  4 Aug 2026 11:13:27 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 25FFD60A59;
+	Tue,  4 Aug 2026 11:15:06 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 211D21F000E9;
+	Tue,  4 Aug 2026 11:14:58 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785842014;
-	bh=8cqD4Td6cmzUoT3kOqg3vmAusK+bPeDWcDnl9ayoHm0=;
+	s=k20260515; t=1785842105;
+	bh=NlvQqMPX1ZBZq6vczB6DK1Q1sg9iUABmibDLc459ooE=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=V3bqKum+zDMz1wDVK7/W7/Cpna1axIZ8waZJbfhnPeWsV+7SrDqLU8PWSJUbb+3he
-	 M4Ja/j3rIk+CPOSW1G/w+YnERDAPmXk+3AzaT1Sz5HuG9ZnCWZDSLd/bqdFHK5D06a
-	 TsufOI4BVEZ5xRT2DqCq4kvbr+jQRDVOYtzymVbxhGAK5wvEuNEJ5/0Nz5YX2pMOHT
-	 goPV5EbvfQBEpDb2ziiFBVoHsjypWl7xqNlDJ+SsYzL7n3M7DBvJP+LxEDAdh4CuOV
-	 XpjxHXJY+Wb/A1v3WDrBJxb6mVTS1u6Ems+3MMJol5M0Iioj3XhSxbtErG49jJSQwY
-	 wJA5izhsuzVzQ==
-Date: Tue, 4 Aug 2026 12:13:13 +0100
+	b=ZnHoS2uq+Wpn11Z4etXu+hxwCLOTiTcnmGh7C2+5V3PHkGFMDITE9z6uYgjCeYU/L
+	 fC2NEuRAvvmECwZZAk2YEwJi/IwoCe8YsK5WKKXZVKTQd4iez0HYq95u5/tbxm135G
+	 BW+tRjPZmgs+NDRQXQS+Z1PArA8qMZ3MY68n34Q2d8TV/awui74P0GXMnIVCuorty7
+	 wc+LZ/aDpCuNW+K8lOzK6vW28Jlb7Q6F04ycjuf6wruLgZ+JZ8nOR4jzNd1mJrn889
+	 QN98PED33opeHD+Qj9pfIsMlzShSZ8hTwHnXReg/xD7GXlIty0nulMgyNHSoKB2eaN
+	 uL1Z8zxWAFNqw==
+Date: Tue, 4 Aug 2026 12:14:43 +0100
 From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
 To: Pedro Falcato <pfalcato@suse.de>
 Cc: David Hildenbrand <david@kernel.org>, 
@@ -61,10 +61,10 @@ Cc: David Hildenbrand <david@kernel.org>,
 	Kevin Brodsky <kevin.brodsky@arm.com>, Muhammad Usama Anjum <usama.anjum@arm.com>, 
 	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-parisc@vger.kernel.org, 
 	linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH v2 3/6] mm/powerpc/8xx: constify ptep_get() argument
-Message-ID: <anHI4B-lMu6AJJfA@lucifer>
+Subject: Re: [PATCH v2 4/6] mm/s390: constify ptep_get() argument
+Message-ID: <anHJh7rPomeJgVHc@lucifer>
 References: <20260803164400.531199-1-pfalcato@suse.de>
- <20260803164400.531199-4-pfalcato@suse.de>
+ <20260803164400.531199-5-pfalcato@suse.de>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,37 +80,34 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260803164400.531199-4-pfalcato@suse.de>
+In-Reply-To: <20260803164400.531199-5-pfalcato@suse.de>
 
-On Mon, Aug 03, 2026 at 05:43:57PM +0100, Pedro Falcato wrote:
-> There is no need for write access to the PTE.
+On Mon, Aug 03, 2026 at 05:43:58PM +0100, Pedro Falcato wrote:
+> It's a simple READ_ONCE() dereference, therefore it can be const.
 >
 > Signed-off-by: Pedro Falcato <pfalcato@suse.de>
 
-With below addressed LGTM so:
+Even I can't be pedantic about this one... :) so:
 
 Reviewed-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 
 > ---
->  arch/powerpc/include/asm/nohash/32/pte-8xx.h | 2 +-
+>  arch/s390/include/asm/pgtable.h | 2 +-
 >  1 file changed, 1 insertion(+), 1 deletion(-)
 >
-> diff --git a/arch/powerpc/include/asm/nohash/32/pte-8xx.h b/arch/powerpc/include/asm/nohash/32/pte-8xx.h
-> index e2ea8ba9f8ca..f2bab31040c7 100644
-> --- a/arch/powerpc/include/asm/nohash/32/pte-8xx.h
-> +++ b/arch/powerpc/include/asm/nohash/32/pte-8xx.h
-> @@ -226,7 +226,7 @@ static inline pte_basic_t pte_update(struct mm_struct *mm, unsigned long addr, p
+> diff --git a/arch/s390/include/asm/pgtable.h b/arch/s390/include/asm/pgtable.h
+> index e882663a58e7..ec331ec92943 100644
+> --- a/arch/s390/include/asm/pgtable.h
+> +++ b/arch/s390/include/asm/pgtable.h
+> @@ -986,7 +986,7 @@ static inline void set_pte(pte_t *ptep, pte_t pte)
+>  }
 >
->  #ifdef CONFIG_PPC_16K_PAGES
 >  #define ptep_get ptep_get
 > -static inline pte_t ptep_get(pte_t *ptep)
 > +static inline pte_t ptep_get(const pte_t *ptep)
 >  {
->  	pte_basic_t val = READ_ONCE(ptep->pte);
->  	pte_t pte = {val, val, val, val};
-
-Worth making these const too (that {val, val, val, val} horrifies me btw :)?
-
+>  	return READ_ONCE(*ptep);
+>  }
 > --
 > 2.55.0
 >
