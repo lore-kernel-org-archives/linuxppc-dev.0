@@ -1,55 +1,71 @@
-Return-Path: <linuxppc-dev+bounces-25354-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25355-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6BEBFC55172
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2026 10:12:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 547B2C5518F
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2026 10:55:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hDq8j0mq2z2yMl;
-	Tue, 04 Aug 2026 20:12:05 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=82.65.109.163
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785838325;
-	cv=none; b=RjAPA8s3LLjuINszNIDwCUBvR8BdNeqIYfD8E+DmFxg1LjUxAC4yQyMsUYyk3i5iYE8WhzbU+xTj3pAVXvK3pRonGrEBV6xXIggw07O/XF4NfDtehicZ2GTN6zKH4H/kjDjzN0UHSifZ0/5Nn9l69317AZ0dzNHPUzJd6uXgXCbfIjUlf1fqY9cRrDhGgwdImCIg6WgAxKRLf0UxkV83hpGg9H3u8xvMES2QCd8p7lMp2LLRRE0/nAiDmaiJE+Hhet/wAYSV+Y9vW549Nj8HHnPI7DynRXaK9jHPWYzwy78FXlA2jMNIOVtaY/wVCo23ZGwgwFJn3CKTycLMNbH6sA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hDr6t4B4Xz2y1Y;
+	Tue, 04 Aug 2026 20:55:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785840934;
+	cv=none; b=Ns6wDwyy1fX8dHA618vbzW5dWysMEEplJQeKs4ZvgGtGqu1iRlBlF44yGVa191BEAB16ixVj7T7HQyuDbdUoptdSKGyOrhojEfU1gW8R4bV78qKscfdy6ofP7LtbLGmQ/mO5Joyg399H4C4GxhqCd18SoWfpgNtWUEP9KyCjd7lpp4966cTZ7VN72MEqNCOPJYOpgNX96Q+5uAvrQ7eAUNVJ2DO5C0mLqMZpFCnf7PtxQ0z5uMfc0J71hj1+EVCZfFmzSN+ym/8zKk94g2jx1g2ISyfWbwiype5J9pvzDCDQdgt4GfYO2k2WSmRQDvSG18xI1YlLT8vKOjIul6D49Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785838325; c=relaxed/relaxed;
-	bh=A3Kzb2YwA8WmNiPzWRWwUNJK2LGfZqmkI4tCffDR+M8=;
+	t=1785840934; c=relaxed/relaxed;
+	bh=qfx/JXhnkvzzI2BW5XElJmPYBoq4OvslsVX7Sylc9YM=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=FIxKNOggydYj29tGHoUg8rhq6l9qbV2/7U0PQgQh4WcdN/8T3hK5JLFkGY8Opnr7WGKhj7u50//uyxBD6KnDgRmNwia0ciWP6DaGWDU9pnFEYDDeL9KYCvPQIXQ8XZaUf8Y2g4ZvX8NyjDm4qQZWZfyz+eUzRN6Ag2p03YNNHZd9XfEXuPQqMdmpU8ETZhgsAyYtU01QBxfOMZ/iyTypbcAoyazc2AMgIPwrt8eEzjfDKvG/jasGd3gDRxskvdClFVGbocq2BlvcorxiuwBRWntbXR7ZqWOhlDYpyBxVTx+RD00knnFRq7uutcKc/Q7HapwK+14co4S1lukMLOF3nQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linkmauve.fr; spf=pass (client-ip=82.65.109.163; helo=linkmauve.fr; envelope-from=linkmauve@linkmauve.fr; receiver=lists.ozlabs.org) smtp.mailfrom=linkmauve.fr
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linkmauve.fr
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linkmauve.fr (client-ip=82.65.109.163; helo=linkmauve.fr; envelope-from=linkmauve@linkmauve.fr; receiver=lists.ozlabs.org)
-Received: from linkmauve.fr (linkmauve.fr [82.65.109.163])
+	 Content-Type:Content-Disposition:In-Reply-To; b=Lwd+UzJQbipAHP0+tylIJYvEdE6iMkGchp/KOvsHoHz5ONf+T7rw0iZKtQAZOHO/pmmfKadvfWSjcePN5EVM8ZjM3ZX48C9tr18EbawHG1iHyP8+DQd6LgUmqpo8y/uI5RJTfKUMuB3BX+r8m67Z+N6wAKU3WpzrVy4JuMpfD3WOFwk+N4IDp3vkfqXWkEulmK1MX3s92TzUpWh8UIUX7biOCLtpQwg3o0ZyPjv3CwHNun8oYaNGhHI9sNyZcDw/kyNaNUKpF+oMq3LThrmCo2nx+XBQAN5d18lMCv+DFI5Lp0hE6/8UpoaszPBvy1K5oQJTeQckyx4eWO9AGwxAcg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JINp8CLc; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JINp8CLc;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hDq8g5Qxyz2y1Y
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Aug 2026 20:12:02 +1000 (AEST)
-Received: by linkmauve.fr (Postfix, from userid 1000)
-	id 2B6E970A02F6; Tue, 04 Aug 2026 12:11:57 +0200 (CEST)
-Date: Tue, 4 Aug 2026 12:11:57 +0200
-From: Link Mauve <linkmauve@linkmauve.fr>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org,
-	peterz@infradead.org, jpoimboe@kernel.org, jbaron@akamai.com,
-	aliceryhl@google.com, rostedt@goodmis.org, ardb@kernel.org,
-	ojeda@kernel.org, boqun@kernel.org, gary@garyguo.net,
-	bjorn3_gh@protonmail.com, lossin@kernel.org, a.hindborg@kernel.org,
-	tmgross@umich.edu, dakr@kernel.org, daniel.almeida@collabora.com,
-	tamird@kernel.org, acourbot@nvidia.com, work@onurozkan.dev,
-	nathan@kernel.org, ndesaulniers@google.com, morbo@google.com,
-	justinstitt@google.com, fujita.tomonori@gmail.com,
-	joelagnelf@nvidia.com, gregkh@linuxfoundation.org,
-	prafulrai522@gmail.com, nsc@kernel.org, japo@linux.ibm.com,
-	lina+kernel@asahilina.net, j@jannau.net, airlied@gmail.com,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	rust-for-linux@vger.kernel.org, llvm@lists.linux.dev,
-	"Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
-Subject: Re: [PATCH V17 0/7] Rust Support for powerpc
-Message-ID: <anG67Q6Y59kDqh-c@desktop>
-References: <20260708082454.1254320-1-mkchauras@gmail.com>
- <178574013457.29744.6211258618175255546.b4-ty@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hDr6s5Hldz2xpn
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Aug 2026 20:55:33 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id BC88860A73;
+	Tue,  4 Aug 2026 10:55:30 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EBC461F000E9;
+	Tue,  4 Aug 2026 10:55:23 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1785840930;
+	bh=qfx/JXhnkvzzI2BW5XElJmPYBoq4OvslsVX7Sylc9YM=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=JINp8CLcKyGxFVg0zs6zGF0WxOazH9C1viX2Av5FCxJcGkdot23Bx+NtDyXE2TQp4
+	 Qi3bmokWHojVYhyMZBuqMwJRF4w1phDddQxizqP8c0Jxpp6ogEj3K6ZJIiJHoq3Iqg
+	 8WTMfs25k/XwDxxK2l5Tz1ZseFoNgQkMCEqyDcVsy1CrnowkyETwrRYt/1UDrQTR7E
+	 aMP8LAnwxDw8gEAOC+4rF+1auX4ZxRMi38y3pI5mu9flrrzWnmndtcNJtMDWDY+qUD
+	 YT9R+5C948AydcYSJCE1zNoM7+FRoJlwlThzAqipqnTV1Mo7tWIozL8clLVYHK8VUU
+	 8VuMRm0UMorNg==
+Date: Tue, 4 Aug 2026 11:55:09 +0100
+From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
+To: Pedro Falcato <pfalcato@suse.de>
+Cc: David Hildenbrand <david@kernel.org>, 
+	Andrew Morton <akpm@linux-foundation.org>, Catalin Marinas <catalin.marinas@arm.com>, 
+	Will Deacon <will@kernel.org>, "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, 
+	Helge Deller <deller@gmx.de>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	Michael Ellerman <mpe@ellerman.id.au>, "Liam R. Howlett" <liam@infradead.org>, 
+	Vlastimil Babka <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>, 
+	Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, 
+	"Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>, Zi Yan <ziy@nvidia.com>, 
+	Baolin Wang <baolin.wang@linux.alibaba.com>, Nico Pache <npache@redhat.com>, 
+	Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>, 
+	Lance Yang <lance.yang@linux.dev>, Usama Arif <usama.arif@linux.dev>, 
+	Kevin Brodsky <kevin.brodsky@arm.com>, Muhammad Usama Anjum <usama.anjum@arm.com>, 
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-parisc@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH v2 1/6] mm/arm64: constify pte_get*() and contpte get
+ logic
+Message-ID: <anG2V7KpvIHjNyVq@lucifer>
+References: <20260803164400.531199-1-pfalcato@suse.de>
+ <20260803164400.531199-2-pfalcato@suse.de>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -65,84 +81,149 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <178574013457.29744.6211258618175255546.b4-ty@linux.ibm.com>
-Jabber-ID: linkmauve@linkmauve.fr
+In-Reply-To: <20260803164400.531199-2-pfalcato@suse.de>
 
-Hi,
+On Mon, Aug 03, 2026 at 05:43:55PM +0100, Pedro Falcato wrote:
+> None of the contpte code needs write access to the PTEs.
 
-On Mon, Aug 03, 2026 at 12:27:13PM +0530, Madhavan Srinivasan wrote:
-> On Wed, 08 Jul 2026 13:54:47 +0530, Mukesh Kumar Chaurasiya (IBM) wrote:
-> > Enable experimental rust support for ppc64le and ppc32be. The patch for
-> > ppc32 has been provided by Link Mauve[1] and ppc64le support[2] has been
-> > merged over it. ppc32 needs some toolchain fixes mentioned in the patch
-> > `rust: Add PowerPC support` and the discussion for that is done here[1].
-> > 
-> > This has been tested on
-> > - powernv9 hardware
-> > - pseries P11 hardware
-> > - pseries(9, 10) qemu
-> > - powernv(9, 10) qemu
-> > - rustdoc on x86 and powerpc64le
-> > - rusttest on x86 and powerpc64le
-> > 
-> > [...]
-> 
-> Applied to powerpc/next.
-> 
-> [1/7] rust: Fix "multiple candidates for rmeta dependency core" error
->       https://git.kernel.org/powerpc/c/00cdfd072c709c608606461d7d44d4613119bfa9
-> [2/7] dma-resv: Fix undefined symbol when CONFIG_DMA_SHARED_BUFFER is disabled
->       https://git.kernel.org/powerpc/c/be809b60cbb61aab96179f44ac3670242ae72996
-> [3/7] powerpc/jump_label: adjust inline asm to be consistent
->       https://git.kernel.org/powerpc/c/13244c0a40139fe66c4c5c5655f4d732a6002957
-> [4/7] rust/powerpc: Set min rustc version for powerpc
->       https://git.kernel.org/powerpc/c/e299147cdc8e19c6421a6b7863dc82a35b09d967
-> [5/7] rust: Make __udivdi3() and __umoddi3() panic
->       https://git.kernel.org/powerpc/c/c93c194e4ee71a734986fd99a8b1ec9fbb7a9b8b
-> [6/7] rust: Add PowerPC support
->       https://git.kernel.org/powerpc/c/73b741adb264967093ef4eb59905618a7e0d0de0
-> [7/7] powerpc: Enable Rust for ppc64le
->       https://git.kernel.org/powerpc/c/bc87cbdb952e9223616b839d64bdb4723aa2ed1d
-> 
-> cheers
-> 
+This seems like a very broad statement? Is that actually true? I see a bunch of
+ptep's that aren't const-ified, so you should explain why those couldn't be
+converted.
 
-I just tested those again in linux-next, with the Wii support series on
-top, but now the kernel fails to build due to ARCH_WARN_ASM and
-ARCH_WARN_REACHABLE not being defined on PowerPC:
-```
-error: no rules expected `ARCH_WARN_ASM`
-   --> /home/linkmauve/dev/linux/wii/rust/kernel/generated_arch_warn_asm.rs:1:28
-    |
-  1 | ::kernel::concat_literals!(ARCH_WARN_ASM("{file}", "{line}", "{flags}", "{size}"))
-    |                            ^^^^^^^^^^^^^ no rules expected this token in macro call
-    |
-   ::: ../rust/kernel/lib.rs:279:1
-    |
-279 | macro_rules! concat_literals {
-    | ---------------------------- when calling this macro
-    |
-    = note: while trying to match sequence start
+Also you add a new contpte_align_down() macro, you should mention that it the
+commit message, explain why it was needed.
 
-error: no rules expected `ARCH_WARN_REACHABLE`
-   --> /home/linkmauve/dev/linux/wii/rust/kernel/generated_arch_reachable_asm.rs:1:28
-    |
-  1 | ::kernel::concat_literals!(ARCH_WARN_REACHABLE)
-    |                            ^^^^^^^^^^^^^^^^^^^ no rules expected this token in macro call
-    |
-   ::: ../rust/kernel/lib.rs:279:1
-    |
-279 | macro_rules! concat_literals {
-    | ---------------------------- when calling this macro
-    |
-    = note: while trying to match sequence start
+In general more needed here :) it'd be ok if it was a truly trivial change that
+was all obvious but you're changing some pte_t *'s and not others so it's
+clearly not.
 
-error: aborting due to 2 previous errors
-```
+>
+> Signed-off-by: Pedro Falcato <pfalcato@suse.de>
+> ---
+>  arch/arm64/include/asm/pgtable.h | 10 +++++-----
+>  arch/arm64/mm/contpte.c          | 11 ++++++++---
+>  2 files changed, 13 insertions(+), 8 deletions(-)
+>
+> diff --git a/arch/arm64/include/asm/pgtable.h b/arch/arm64/include/asm/pgtable.h
+> index a2681d755358..043bc0649cee 100644
+> --- a/arch/arm64/include/asm/pgtable.h
+> +++ b/arch/arm64/include/asm/pgtable.h
+> @@ -378,7 +378,7 @@ static inline void __set_pte(pte_t *ptep, pte_t pte)
+>  	__set_pte_complete(pte);
+>  }
+>
+> -static inline pte_t __ptep_get(pte_t *ptep)
+> +static inline pte_t __ptep_get(const pte_t *ptep)
+>  {
+>  	return READ_ONCE(*ptep);
+>  }
+> @@ -1652,8 +1652,8 @@ extern void __contpte_try_fold(struct mm_struct *mm, unsigned long addr,
+>  				pte_t *ptep, pte_t pte);
+>  extern void __contpte_try_unfold(struct mm_struct *mm, unsigned long addr,
+>  				pte_t *ptep, pte_t pte);
+> -extern pte_t contpte_ptep_get(pte_t *ptep, pte_t orig_pte);
+> -extern pte_t contpte_ptep_get_lockless(pte_t *orig_ptep);
+> +extern pte_t contpte_ptep_get(const pte_t *ptep, pte_t orig_pte);
+> +extern pte_t contpte_ptep_get_lockless(const pte_t *orig_ptep);
 
-This is in addition to the bindings::kvfree_call_rcu() call, but that
-one is already being handled in a different thread.
+This is (very) nitty but - not sure on the policy on extern's (Will/Catalin?) -
+but in mm we drop them when we touch the code since you don't need them these
+days :)
 
--- 
-Link Mauve
+>  extern void contpte_set_ptes(struct mm_struct *mm, unsigned long addr,
+>  				pte_t *ptep, pte_t pte, unsigned int nr);
+>  extern void contpte_clear_full_ptes(struct mm_struct *mm, unsigned long addr,
+> @@ -1732,7 +1732,7 @@ static inline unsigned int pte_batch_hint(pte_t *ptep, pte_t pte)
+>   */
+>
+>  #define ptep_get ptep_get
+> -static inline pte_t ptep_get(pte_t *ptep)
+> +static inline pte_t ptep_get(const pte_t *ptep)
+>  {
+>  	pte_t pte = __ptep_get(ptep);
+>
+> @@ -1743,7 +1743,7 @@ static inline pte_t ptep_get(pte_t *ptep)
+>  }
+>
+>  #define ptep_get_lockless ptep_get_lockless
+> -static inline pte_t ptep_get_lockless(pte_t *ptep)
+> +static inline pte_t ptep_get_lockless(const pte_t *ptep)
+>  {
+>  	pte_t pte = __ptep_get(ptep);
+>
+> diff --git a/arch/arm64/mm/contpte.c b/arch/arm64/mm/contpte.c
+> index 2de12656b4d8..3a5d6937fb51 100644
+> --- a/arch/arm64/mm/contpte.c
+> +++ b/arch/arm64/mm/contpte.c
+> @@ -26,6 +26,11 @@ static inline pte_t *contpte_align_down(pte_t *ptep)
+>  	return PTR_ALIGN_DOWN(ptep, sizeof(*ptep) * CONT_PTES);
+>  }
+>
+> +#define contpte_align_down(ptep)                                                       \
+> +	_Generic((ptep),                                                               \
+> +		 const pte_t *: (const pte_t *) contpte_align_down((pte_t *) (ptep)),  \
+> +		 pte_t *: contpte_align_down((pte_t *) ptep))
+
+I really hate these _Generic() helper things. So ugly. And it's a pretty horrid
+cast now :(
+
+Was it not possible to const-ify further to just be able to constify
+contpte_align_down itself?
+
+It also seems to contradict the claim that contpte doesn't need write-access to
+pte's since you're going to lengths to allow non-const pte_t * here.
+
+You should cover off why this was necessary in the commit message as above.
+
+Anyway PTR_ALIGN_DOWN() is already const-safe so couldn't you anyway just
+collapse this to:
+
+#define contpte_align_down(ptep) \
+	PTR_ALIGN_DOWN(ptep, sizeof(*(ptep)) * CONT_PTES)
+
+Then describe in the commit message why you need to handle both cases?
+
+> +
+>  static inline pte_t *contpte_align_addr_ptep(unsigned long *start,
+>  					     unsigned long *end, pte_t *ptep,
+>  					     unsigned int nr)
+> @@ -310,7 +315,7 @@ void __contpte_try_unfold(struct mm_struct *mm, unsigned long addr,
+>  }
+>  EXPORT_SYMBOL_GPL(__contpte_try_unfold);
+>
+> -pte_t contpte_ptep_get(pte_t *ptep, pte_t orig_pte)
+> +pte_t contpte_ptep_get(const pte_t *ptep, pte_t orig_pte)
+>  {
+>  	/*
+>  	 * Gather access/dirty bits, which may be populated in any of the ptes
+> @@ -367,7 +372,7 @@ static inline bool contpte_is_consistent(pte_t pte, unsigned long pfn,
+>  			pgprot_val(prot) == pgprot_val(orig_prot);
+>  }
+>
+> -pte_t contpte_ptep_get_lockless(pte_t *orig_ptep)
+> +pte_t contpte_ptep_get_lockless(const pte_t *orig_ptep)
+>  {
+>  	/*
+>  	 * The ptep_get_lockless() API requires us to read and return *orig_ptep
+> @@ -386,10 +391,10 @@ pte_t contpte_ptep_get_lockless(pte_t *orig_ptep)
+>  	 * because it is not part of a contpte range.
+>  	 */
+>
+> +	const pte_t *ptep;
+
+Nit but this is breaking the reverse xmas tree isn't it?
+
+>  	pgprot_t orig_prot;
+>  	unsigned long pfn;
+>  	pte_t orig_pte;
+> -	pte_t *ptep;
+>  	pte_t pte;
+>  	int i;
+>
+> --
+> 2.55.0
+>
+
+--
+Cheers, Lorenzo
 
