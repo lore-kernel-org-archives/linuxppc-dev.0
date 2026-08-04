@@ -1,73 +1,111 @@
-Return-Path: <linuxppc-dev+bounces-25390-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25391-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F273BC55ABF
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2026 18:31:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9A690C55822
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2026 19:23:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hF2FQ1Q2Bz2yH5;
-	Wed, 05 Aug 2026 04:31:54 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785868314;
-	cv=none; b=VLSgsZYQ1Nhy/KbgSDIFaJQWlcrB7PqyRdHShK3Uq0YDfr0gUdTXks5PhOlsedLI8c0kzGhEVeeLl/5UIRDHN1y/FrFflOAUHAXrHln81NolYduE78bHQy/MNIbeOcw66oFl3WJHwcFAS8DnLCJSn4MNtkB41tlScbiTIFrGWwnvAUgdfNYN7K1Mh99P37weTjFbiuAeMeXXsALVVFiYiHrcqtAz6lUYl2ic7rs21LZdYCC1MZBtt33fCee98afgzU+V2ZUY5TPqZPEv3XPtS972cMDeIqk2toIPZRcDz6T/jbrA7OAPkpVYjO50STSvQkm/IuMhpnEkEAwdpZ1XSQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hF3Nf3nGzz2yH5;
+	Wed, 05 Aug 2026 05:23:14 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.131
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785871394;
+	cv=none; b=AOJ3Eu0Patkc6im5LZalVwXwCEAXq0/oYDud9uHFiRM26vpDvXjajhG7Jxxhp2EZgvRp2XWpb/IAk6FRFA6yGWFEITS4LyyWOmbOPbU77w5j3+bLr7wy9EQqeJwMSEvuwDHX1l0phAhx28hmMUebr75GfiQvl9xH4HpZP/WhymSXB+xqccAsJ4vKAlfaJIpn308PQEDMfKs8AhRzXqhUKuCciQrJWCPBwUpdX8CgvnpueGcQKUSCYVz8yKYp5ZkuAI0cLRwDQSP2cjkeSQblvIsyYyKwxAkESEufMrWHU7tp/LMXJHzz3BZIaOZfkdXHLjCE+vZ+LD75IndjnuVCJw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785868314; c=relaxed/relaxed;
-	bh=/AWKT4TwWR/drIdla53c4HCq03ZpsWHFr/QNgTQooFE=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=XESsFeFU0ZUUk1yuUcFjLi9HUGdtrEYFuDq3e3/qdvYKtES2RnVXB0N1lV3WSb2BZCmNWQxU/ZadUKhufu8bZiGC8+KVHn1iOGNBlz5TNoSLr3tPhdoZPo8RKnh+vmbp3WtmND3y4T3dKV0PlQPZbPPkmeBbMGZt9+5vy+f0H9WdoTazlcBPl+4xdQAELX/RbvkU8D8fUZ5atGGOKEZslWOgsZ994VSV5sSCPuS6jH/AQ8qnC19pxNC0r4Gwm3Z5rIv7PtSE3I4fZuE2OFEPuGvs00I6Wawqa+kf32ZmCMfhXahyg5Ggo3Ba8Wi9nvxn4Gw98dZLpxOzJHYGMk2Taw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=hHHc+6Yt; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1785871394; c=relaxed/relaxed;
+	bh=BKD7xlXfwFoEwiwqHEV4Td7lXumlOXqIMagnoJLqgFA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=SRHL/+rqpYxp5C+1z5KpHAydJQjAXOXOIZIzVjh2Ig0vcEN0Nh9jbezYya1K+tjYxRyVhGQo0VoFAw6NcswODV18YnhBbIF2qt3n5YLvOlI3Kb8CDpXHA7TEY90FD6jPCGily22Zne7ymMbw3s9njV8TrHBLXN5hS3TnaScnAgU3nqtWMIvJUToMdXScwuqJa3tC4XciqpDarBTPHmRWfr0YmywWDMFzy3DyZeeXN4Iyf9NoBzyYwZkPR3/j0aRd2DkUS1Jm22Z/hBE/mbspyGKAg9n9vbmx7ZdpbtZAsA1xuKuKNiz9mtejB6wUXNgI+aR6/Emy5Se2G278NYPtKg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=G0aDHau6; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=pGC0mHI0; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=gvPlR+Hd; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=9l91suue; dkim-atps=neutral; spf=pass (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=pfalcato@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=hHHc+6Yt;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=G0aDHau6;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=pGC0mHI0;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=gvPlR+Hd;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=9l91suue;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=pfalcato@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hF2FP122Gz2y1Y
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Aug 2026 04:31:52 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 674Fm70t1193105;
-	Tue, 4 Aug 2026 18:31:41 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=/AWKT4
-	TwWR/drIdla53c4HCq03ZpsWHFr/QNgTQooFE=; b=hHHc+6YtUi/FQgH/wJbkAK
-	ANIFhadYGPBUkCHURwcxXRZXmO5YYvQ2JeXFcjUstyfhvAWVlkjr04HZnvfvfrA2
-	L0ReQrdYhW+Uo9CCYIGn0RH13uPsyScH5F/J9R9DHeqwa5q1NxvptV83XO129BPN
-	QG8JF5wmJnFdz+kFEz59FtwZZOrTArJsmQaR9H6KXfU6VXWT472t/PvMi2go0ZKe
-	VsjSFM57Dgd/Ks4UAZYxOudR19BDdTEycNS/UHqqXhJkp7wX5INix6N3y/GVWV6u
-	HxRWTI1EoNNmUMjaNmI0vddbTzgtT/qe0upBQuM2vRt8f0WW3ZzYxKBQfdbD32AQ
-	==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fs67hq7dy-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 04 Aug 2026 18:31:40 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 674IQK9X015802;
-	Tue, 4 Aug 2026 18:31:39 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4fsv4k389m-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 04 Aug 2026 18:31:39 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 674IVYEs32244138
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 4 Aug 2026 18:31:34 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 0BFD42004B;
-	Tue,  4 Aug 2026 18:31:34 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 063F320040;
-	Tue,  4 Aug 2026 18:31:29 +0000 (GMT)
-Received: from [9.39.27.173] (unknown [9.39.27.173])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue,  4 Aug 2026 18:31:28 +0000 (GMT)
-Message-ID: <09563f43-9514-4fc2-9e90-f9ad9f528bea@linux.ibm.com>
-Date: Wed, 5 Aug 2026 00:01:27 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hF3Nd4HwDz2xqM
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Aug 2026 05:23:13 +1000 (AEST)
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 33AE63E7F;
+	Tue,  4 Aug 2026 19:23:02 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1785871386; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=BKD7xlXfwFoEwiwqHEV4Td7lXumlOXqIMagnoJLqgFA=;
+	b=G0aDHau6+dIF0VH9t1gS8zo/PAE5MUYtI5NFSJa+igRMyfvazx08234PtrB5zhMSqvolUc
+	ZRlNH6FMUsNtxJXHp9b423eoHcwb3mWs+HOhqhgA88b0NnBuOftLs9/PFg4+xpFZ3z5suZ
+	3Vh14YFjPbLSry6q8o8XstVCgShvlKM=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1785871386;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=BKD7xlXfwFoEwiwqHEV4Td7lXumlOXqIMagnoJLqgFA=;
+	b=pGC0mHI08b9pOWsQTxcNzgcuiKSFwx/kGcb0oreTd5YmdjxJwS/tXPSu07A9mzE5Xx4M8S
+	UOfeAimDR6/I+FBA==
+Authentication-Results: smtp-out2.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=gvPlR+Hd;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=9l91suue
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1785871382; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=BKD7xlXfwFoEwiwqHEV4Td7lXumlOXqIMagnoJLqgFA=;
+	b=gvPlR+HddGLYBkCQFYlBjwm/5NDohTMacQIo4zdQY5wDSAMNKeIX6GQeE55WveZfb7EOlc
+	h9ckoqyZ4MS0TeimEz1GyDiXqUswKlvAOpzQpzZ5vCOqLMRuye6vK7qyKAfuzSnUaoBAn5
+	7kl2EZYltPAucG9K3qTn0uxRYtxiIaY=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1785871382;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=BKD7xlXfwFoEwiwqHEV4Td7lXumlOXqIMagnoJLqgFA=;
+	b=9l91suueSJ/aZk3c7geSquvAlMvZDmI4qlaZrtRMZmI3pJWfN07iE4Cw/pIS9pT1bNtGWT
+	cnVYkK+8J3MjuDCQ==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 2F36F779BB;
+	Tue,  4 Aug 2026 19:23:00 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id GVRHCBQ8cmofZQAAD6G6ig
+	(envelope-from <pfalcato@suse.de>); Tue, 04 Aug 2026 19:23:00 +0000
+Date: Tue, 4 Aug 2026 20:22:58 +0100
+From: Pedro Falcato <pfalcato@suse.de>
+To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
+Cc: David Hildenbrand <david@kernel.org>, 
+	Andrew Morton <akpm@linux-foundation.org>, Catalin Marinas <catalin.marinas@arm.com>, 
+	Will Deacon <will@kernel.org>, "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, 
+	Helge Deller <deller@gmx.de>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	Michael Ellerman <mpe@ellerman.id.au>, "Liam R. Howlett" <liam@infradead.org>, 
+	Vlastimil Babka <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>, 
+	Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, 
+	"Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>, Zi Yan <ziy@nvidia.com>, 
+	Baolin Wang <baolin.wang@linux.alibaba.com>, Nico Pache <npache@redhat.com>, 
+	Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>, 
+	Lance Yang <lance.yang@linux.dev>, Usama Arif <usama.arif@linux.dev>, 
+	Kevin Brodsky <kevin.brodsky@arm.com>, Muhammad Usama Anjum <usama.anjum@arm.com>, 
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-parisc@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH v2 6/6] mm: constify the pte_offset_map_ro_nolock()
+ return value
+Message-ID: <anI6BEyTJFzQY-N9@pedro-suse.lan>
+References: <20260803164400.531199-1-pfalcato@suse.de>
+ <20260803164400.531199-7-pfalcato@suse.de>
+ <anHJ48Glq8EdHatd@lucifer>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,129 +119,202 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 5/5] powerpc/powernv/eeh: Map VFIO EEH error injection
- to OPAL
-To: Narayana Murty N <nnmlinux@linux.ibm.com>, mahesh@linux.ibm.com,
-        maddy@linux.ibm.com, mpe@ellerman.id.au, christophe.leroy@csgroup.eu,
-        gregkh@linuxfoundation.org, oohall@gmail.com, npiggin@gmail.com
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-        tyreld@linux.ibm.com, vaibhav@linux.ibm.com, sbhat@linux.ibm.com,
-        ganeshgr@linux.ibm.com, haren@linux.ibm.com, thuth@redhat.com
-References: <20260721033815.5300-1-nnmlinux@linux.ibm.com>
- <20260721033815.5300-6-nnmlinux@linux.ibm.com>
-Content-Language: en-US
-From: Sourabh Jain <sourabhjain@linux.ibm.com>
-In-Reply-To: <20260721033815.5300-6-nnmlinux@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODA0MDE0OCBTYWx0ZWRfX4kVp/QtEkrLL
- tCnLHc+KqZHaGapgUOjq/U/19Rxs5M8HciBtBZCo8Q/5aAlNIdOjOgKUugsjOBB668B6hSfQI7z
- jr3UexWNgwG0r/a6SYA972Vwu5b2Des=
-X-Authority-Analysis: v=2.4 cv=I7VVgtgg c=1 sm=1 tr=0 ts=6a72300c cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VnNF1IyMAAAA:8
- a=XOFTBcSqSKUkeO_VsGwA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODA0MDE0OCBTYWx0ZWRfX7P3tfvacq8R1
- QxoSz3mB8N6t5BKHlckK4uklICbIVCMiCN5urwc9xb4Y/HuUcJLTm8SnZZBYV7Wi7ne0SOyJp+y
- b03D/Qw40419hFZzWnj32Q1AO8feN9fd2890LeUC2kK+OobUMKvXCRDeCcuqCi/mAY0cP45L/kd
- QVLQKpnE71LNNwRFq0VKFT6Aa05Q/CPkyogTtmcqLtA1Jj624gKJ8+nSOwpLsf4/WDZp5/6ODsL
- GXVzqqoJqHxMLK0UDmNFxwuzw3TgFY9GD8iJeQFnwvFAIURNeprwIgsGFYVXqTea6MEJAaF/V+z
- PXOqMp0ymDFdWWp7s43UmT0yFaKUPMmz9ymcanUQsZEXl1vDcuaLen1+pNiQ+lYfKVh/dCQ6bnW
- h6wXAmGUKKbCo/oe4XHiFbh3E67qrdPneu4tu8SNb7a4mwky5X/MQfrgecQ9L0vtAu7WRxlqVp1
- 81kN6DRvpODU8i7fHwQ==
-X-Proofpoint-ORIG-GUID: Dnkt_rFUycSuVSub2dRLazuLXL8hLsb4
-X-Proofpoint-GUID: I6XtiO3Z1uYtGdwrHCWJpfpjorHrLFbP
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-08-04_03,2026-08-04_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 impostorscore=0 clxscore=1015 priorityscore=1501 suspectscore=0
- malwarescore=0 adultscore=0 lowpriorityscore=0 phishscore=0 spamscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608040148
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <anHJ48Glq8EdHatd@lucifer>
+X-Spamd-Result: default: False [-3.01 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	SUSPICIOUS_RECIPS(1.50)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	ARC_NA(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[32];
+	MIME_TRACE(0.00)[0:+];
+	FREEMAIL_ENVRCPT(0.00)[gmx.de];
+	FREEMAIL_CC(0.00)[kernel.org,linux-foundation.org,arm.com,hansenpartnership.com,gmx.de,linux.ibm.com,ellerman.id.au,infradead.org,google.com,suse.com,suse.cz,nvidia.com,linux.alibaba.com,redhat.com,linux.dev,lists.infradead.org,vger.kernel.org,lists.ozlabs.org,kvack.org];
+	RCVD_TLS_ALL(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	TO_DN_SOME(0.00)[];
+	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
+	MISSING_XM_UA(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	DKIM_TRACE(0.00)[suse.de:+];
+	R_RATELIMIT(0.00)[to_ip_from(RL764437jfm1qe6abtk9nwyx8m)];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo,suse.de:email,suse.de:dkim]
+X-Rspamd-Queue-Id: 33AE63E7F
+X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
+X-Rspamd-Action: no action
 
+On Tue, Aug 04, 2026 at 12:22:19PM +0100, Lorenzo Stoakes (ARM) wrote:
+> On Mon, Aug 03, 2026 at 05:44:00PM +0100, Pedro Falcato wrote:
+> > Constify the pte_t * retval from pte_offset_map_ro_nolock(), for which it is
+> > already pledged that accesses must be read-only. With it, convert the three
+> > treewide users to use const pte_t *.
+> >
+> > khugepaged passes the result right down to fault code (do_swap_page()). This
+> > leads to a complicated set of conditions that, in order to be correct, must
+> > not install anything into *vmf->pte. This is not trivial to work around in
+> > fault code, and as such just trivially cast to non-const pte_t* in the
+> > meantime.
+> >
+> > The other users are far more trivial and the conversion is equally
+> > trivially simple.
+> 
+> Ah finally more words! :)
 
+:)
 
-As per the title this series is about RTAS-based error injection on pSeries.
+> 
+> >
+> > Signed-off-by: Pedro Falcato <pfalcato@suse.de>
+> 
+> With comment updated as below and nits addressed, LGTM so:
+> 
+> Reviewed-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+> 
+> > ---
+> >  arch/powerpc/mm/pgtable.c | 2 +-
+> >  include/linux/mm.h        | 4 ++--
+> >  include/linux/pgtable.h   | 2 +-
+> >  mm/filemap.c              | 2 +-
+> >  mm/khugepaged.c           | 2 +-
+> >  mm/pgtable-generic.c      | 4 ++--
+> >  6 files changed, 8 insertions(+), 8 deletions(-)
+> >
+> > diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
+> > index a9be337be3e4..e29db41b6043 100644
+> > --- a/arch/powerpc/mm/pgtable.c
+> > +++ b/arch/powerpc/mm/pgtable.c
+> > @@ -390,7 +390,7 @@ void assert_pte_locked(struct mm_struct *mm, unsigned long addr)
+> >  	p4d_t *p4d;
+> >  	pud_t *pud;
+> >  	pmd_t *pmd;
+> > -	pte_t *pte;
+> > +	const pte_t *pte;
+> >  	spinlock_t *ptl;
+> >
+> >  	if (mm == &init_mm)
+> > diff --git a/include/linux/mm.h b/include/linux/mm.h
+> > index 7fabe6c66b4b..acf5a5e31d34 100644
+> > --- a/include/linux/mm.h
+> > +++ b/include/linux/mm.h
+> > @@ -3885,8 +3885,8 @@ static inline pte_t *pte_offset_map(pmd_t *pmd, unsigned long addr)
+> >  pte_t *pte_offset_map_lock(struct mm_struct *mm, pmd_t *pmd,
+> >  			   unsigned long addr, spinlock_t **ptlp);
+> >
+> > -pte_t *pte_offset_map_ro_nolock(struct mm_struct *mm, pmd_t *pmd,
+> > -				unsigned long addr, spinlock_t **ptlp);
+> > +const pte_t *pte_offset_map_ro_nolock(struct mm_struct *mm, pmd_t *pmd,
+> > +				      unsigned long addr, spinlock_t **ptlp);
+> >  pte_t *pte_offset_map_rw_nolock(struct mm_struct *mm, pmd_t *pmd,
+> >  				unsigned long addr, pmd_t *pmdvalp,
+> >  				spinlock_t **ptlp);
+> > diff --git a/include/linux/pgtable.h b/include/linux/pgtable.h
+> > index dc418553e57a..dd51e722c535 100644
+> > --- a/include/linux/pgtable.h
+> > +++ b/include/linux/pgtable.h
+> > @@ -112,7 +112,7 @@ static inline pte_t *__pte_map(pmd_t *pmd, unsigned long address)
+> >  {
+> >  	return pte_offset_kernel(pmd, address);
+> >  }
+> > -static inline void pte_unmap(pte_t *pte)
+> > +static inline void pte_unmap(const pte_t *pte)
+> 
+> I was going to question this based on whether the contract holds for
+> CONFIG_HIGHPTE but actually:
+> 
+> #define pte_unmap(pte)	do {	\
+> 	kunmap_local((pte));	\
+> 	rcu_read_unlock();	\
+> } while (0)
+> 
+> #define kunmap_local(__addr)					\
+> do {								\
+> 	BUILD_BUG_ON(__same_type((__addr), struct page *));	\
+> 	__kunmap_local(__addr);					\
+> } while (0)
+> 
+> static inline void __kunmap_local(const void *vaddr) <-- const!
+> {
+> 	kunmap_local_indexed(vaddr);
+> }
+> 
+> So nice (CONFIG_HIGHPTE is going to go away at some point though, right? I
+> hope... :)
+> 
+> 
+> >  {
+> >  	rcu_read_unlock();
+> >  }
+> > diff --git a/mm/filemap.c b/mm/filemap.c
+> > index 6afec636881f..af5d3fcd1b05 100644
+> > --- a/mm/filemap.c
+> > +++ b/mm/filemap.c
+> > @@ -3490,7 +3490,7 @@ static vm_fault_t filemap_fault_recheck_pte_none(struct vm_fault *vmf)
+> >  {
+> >  	struct vm_area_struct *vma = vmf->vma;
+> >  	vm_fault_t ret = 0;
+> > -	pte_t *ptep;
+> > +	const pte_t *ptep;
+> >
+> >  	/*
+> >  	 * We might have COW'ed a pagecache folio and might now have an mlocked
+> > diff --git a/mm/khugepaged.c b/mm/khugepaged.c
+> > index b237f6e7662a..09efac93a8c6 100644
+> > --- a/mm/khugepaged.c
+> > +++ b/mm/khugepaged.c
+> > @@ -1170,7 +1170,7 @@ static enum scan_result __collapse_huge_page_swapin(struct mm_struct *mm,
+> >  			 * Here the ptl is only used to check pte_same() in
+> >  			 * do_swap_page(), so readonly version is enough.
+> >  			 */
+> > -			pte = pte_offset_map_ro_nolock(mm, pmd, addr, &ptl);
+> > +			pte = (pte_t *) pte_offset_map_ro_nolock(mm, pmd, addr, &ptl);
+> 
+> Hmm yeah this is nasty, but you explain why in the commit message. Could you
+> extend the comment to explain it?
 
-Then why do we have powernv/opal patch part of this series?
+Yep, I'll do it.
 
-- Sourabh Jain
+> 
+> >  			if (!pte) {
+> >  				mmap_read_unlock(mm);
+> >  				result = SCAN_NO_PTE_TABLE;
+> > diff --git a/mm/pgtable-generic.c b/mm/pgtable-generic.c
+> > index b91b1a98029c..2cfc6e608ef4 100644
+> > --- a/mm/pgtable-generic.c
+> > +++ b/mm/pgtable-generic.c
+> > @@ -308,8 +308,8 @@ pte_t *__pte_offset_map(pmd_t *pmd, unsigned long addr, pmd_t *pmdvalp)
+> >  	return NULL;
+> >  }
+> >
+> > -pte_t *pte_offset_map_ro_nolock(struct mm_struct *mm, pmd_t *pmd,
+> > -				unsigned long addr, spinlock_t **ptlp)
+> > +const pte_t *pte_offset_map_ro_nolock(struct mm_struct *mm, pmd_t *pmd,
+> 
+> Can pmd be const too?
 
+I was going to say "yes but then pmdp_get() also needs to be constfified" but
+actually no, it can't:
 
-On 21/07/26 09:08, Narayana Murty N wrote:
-> The EEH error-injection interface passes the generic userspace ABI
-> values EEH_ERR_TYPE_32 and EEH_ERR_TYPE_64 to the platform backend.
->
-> The PowerNV backend currently compares those generic values directly
-> with OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR and
-> OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR64. Although the corresponding values
-> are currently numerically identical, this implicitly couples the
-> generic EEH ABI to the OPAL firmware encoding.
->
-> Explicitly translate the generic EEH error types to their OPAL
-> equivalents in pnv_eeh_err_inject(). Keep the platform-specific
-> encoding within the PowerNV backend and reject unsupported generic
-> types with -EINVAL.
->
-> No userspace ABI values are changed.
->
-> Signed-off-by: Narayana Murty N <nnmlinux@linux.ibm.com>
-> ---
->   arch/powerpc/platforms/powernv/eeh-powernv.c | 36 +++++++++++++++++---
->   1 file changed, 32 insertions(+), 4 deletions(-)
->
-> diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-> index db3370d1673c..b0bcd014a133 100644
-> --- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-> +++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-> @@ -1169,11 +1169,39 @@ static int pnv_eeh_err_inject(struct eeh_pe *pe, int type, int func,
->   	struct pnv_phb *phb = hose->private_data;
->   	s64 rc;
->   
-> -	if (type != OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR &&
-> -	    type != OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR64) {
-> -		pr_warn("%s: Invalid error type %d\n",
-> +	/*
-> +	 * Map generic EEH error-type ABI values to OPAL-specific type codes.
-> +	 * EEH_ERR_TYPE_32 and EEH_ERR_TYPE_64 are the only types supported by
-> +	 * OPAL.  Additional generic types defined in the UAPI header are valid
-> +	 * for pSeries RTAS but unsupported here; return -EOPNOTSUPP for those.
-> +	 * Unknown or invalid values return -EINVAL.
-> +	 *
-> +	 * Note: currently OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR  == 0 ==
-> +	 * EEH_ERR_TYPE_32 and OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR64 == 1 ==
-> +	 * EEH_ERR_TYPE_64, but the explicit switch makes the coupling
-> +	 * visible and allows the values to diverge independently.
-> +	 */
-> +	switch (type) {
-> +	case EEH_ERR_TYPE_32:
-> +		type = OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR;
-> +		break;
-> +	case EEH_ERR_TYPE_64:
-> +		type = OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR64;
-> +		break;
-> +	case EEH_ERR_TYPE_RECOVERED_SPECIAL_EVENT:
-> +	case EEH_ERR_TYPE_CORRUPTED_PAGE:
-> +	case EEH_ERR_TYPE_CORRUPTED_DCACHE_START:
-> +	case EEH_ERR_TYPE_CORRUPTED_DCACHE_END:
-> +	case EEH_ERR_TYPE_CORRUPTED_ICACHE_START:
-> +	case EEH_ERR_TYPE_CORRUPTED_ICACHE_END:
-> +	case EEH_ERR_TYPE_CORRUPTED_TLB_START:
-> +	case EEH_ERR_TYPE_CORRUPTED_TLB_END:
-> +		pr_warn("%s: EEH error type %d not supported by OPAL\n",
->   			__func__, type);
-> -		return -ERANGE;
-> +		return -EOPNOTSUPP;
-> +	default:
-> +		pr_warn("%s: unsupported EEH error type %d\n", __func__, type);
-> +		return -EINVAL;
->   	}
->   
->   	if (func < OPAL_ERR_INJECT_FUNC_IOA_LD_MEM_ADDR ||
+pte_t *__pte_offset_map(pmd_t *pmd, unsigned long addr, pmd_t *pmdvalp) {
+        if (unlikely(pmd_bad(pmdval))) {
+                pmd_clear_bad(pmd);
+                goto nomap;
+        }
+}
 
+so PTE mapping actually needs to write to the pmdp if the pmd looks bad.
+Tricky stuff :)
+
+-- 
+Pedro
 
