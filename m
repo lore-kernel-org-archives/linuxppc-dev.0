@@ -1,89 +1,89 @@
-Return-Path: <linuxppc-dev+bounces-25326-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25327-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CECACC55822
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2026 06:12:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8ECE8C55822
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2026 06:20:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hDjrN2fnhz2y1Y;
-	Tue, 04 Aug 2026 16:12:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hDk1B0rtHz2y1Y;
+	Tue, 04 Aug 2026 16:20:14 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785823956;
-	cv=none; b=kEa2Sx4q3fXjxc7NZSJls0TZRBL+axAoluTyXQ2I9RKo/qn5PRSHgvjRe8EkQlCUV5KUkeaYx4YF7IieOThWoJ+7tqj4HBHex1wdjZ2Xa/10DgLyPp3vGM3WhHgst9o97wFT2FXa8U4tP8xa/Bz6QdpxAk5AdOrAp3HfAfuawwrISxYrP6/CPAF1vkBfibc28n49Ts5DIZtQCLwYv8K6hlini5r/84156x24twYphMjB/VgeMxKD44aPf+bKkMNIVrleCcY20eQWj9/LrdmIfujYk3durTpITSp7rLJ6gQvu02UcI5ZisSRD4qipcek7ShV1ai7ksP3Hn1LRU6tP8w==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785824414;
+	cv=none; b=Mu6rZ0ee+SVPE7OrcUp1w9hYHK6KkijM0SOu7Zzg3MoWgzAGUrSgGS2pkizAck2fo5nVq3dmWLJwXzCcaj1Npz3k4571RurJsw0HTXfaU4Tygql92MvKMAuREqs5ydInqV77URtmyuIB1O0a53Qj1zOEEM8ZtN3iqlBPrsdVVL1KwXKMNROO5O7lIbfeEjNuRhkrqfeekU5Is53qrHRnVRDPZXg4vPtbl/ktFVH0IGbcekliONlC5H6aPbHZgQGrfiwhw9FriEgLjCg+8/ek97sakTkSYhBfIdGTRZysYcwIX+mYZHFQEK6eOcrMmm7Yk2VcbyLEJXlPImK7LzrmSA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785823956; c=relaxed/relaxed;
-	bh=EOABR0oUFT5Jv9ehWs/AuyqzMjC7QL8ZBVy2Ua60f/I=;
+	t=1785824414; c=relaxed/relaxed;
+	bh=8gLd1RIHSC34QsMLHxM2Rpb/4a4o9gUGeTJ/pTrH+c8=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=csMTpmDGaKwNDB/q3bHTKMVHJEnRqTRPbLe642VZ/oJIo/CZGhptoiJpoSY1G+VZGk5D8PTUa8AGBUOeopG1Kp8Qj4IOz+OiDpBfPXG9Z378c5aIEtrV4l4j4/ce3U0ttcm9NYqQM4/Wy/rrfAzgCCvUVO92jzeTr982B/uKeaYNUanvnwN5q3CLNO4WLvC7ba6sXtppmzwW20DkqMIzS5806tlmE2cmdEIoKrzEhRypguqGkZOJFNE/QrCd5K3bzIieWPS4ggxaeosljjKmf6ALP+qqJZAhNaMI//FU/iPhqpvwjhWNag4MWmMSPt5bkOWSyESdhKj3/zdac6qGug==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=YGFNj7px; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=leRCMjnZANGc7jCZOFl3+TNrz64n/4ye2m6HWqp1yjUgaoyIh7cW1Gin7PV4irggbveO60YnoSgG6y44hHJyEuPCuBThxYX1KuAXRng4ERrMWWQ4SbkcZpZLGTInAEC/xqfUMPxL9P8TCBzxe4Fg/m4D8BzaqMP/mpvmE2wTwC1UufYQjBLTFf5UOozuAh4LnCybtlzDd2w6DQdY3HwjnU7HCt5Li7QBndDHLz7MMatazhS5TvciD/hBuIBgEOiXgnDsaC5eH1v0BBJPA85i7RZ4/Prk9o+58Aml81G8F/jtCxXxdcBJVB4VGPb3vYAqYdd7qcSPWRtORYAru12zYA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=HdI9/xLp; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=YGFNj7px;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=HdI9/xLp;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hDjrM4pBcz2xpn
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Aug 2026 16:12:35 +1000 (AEST)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6741HZ9u3631240
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Aug 2026 06:12:33 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hDk190snRz2xpn
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Aug 2026 16:20:12 +1000 (AEST)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6741HgDn1784177
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Aug 2026 06:20:11 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=EOABR0oUFT5Jv9ehWs/AuyqzMjC7QL
-	8ZBVy2Ua60f/I=; b=YGFNj7pxiZar8l4HalzRr9H5JhRVYwnGR99u3jAo/Fme3e
-	C2+Kf4TCP8W+YOiELx8oJcvSwWVZulP7+5AF9O2vsrAWQWY6iLTL/gkwiNeFcUhA
-	RDJ8BRw2beD/0p/R2qf8lWl+DCGJs2nFjYgCZpqlJ7TnubaNsHp+SAvjXwMc1aA6
-	FC8wYfI9P1E/ksSUcqP1gpOo9Zw/IMBVC+jnVqTeSZeJGM975VlMDJgNhuLsFbJL
-	ZgnpSpW3g56A8fBGyB2HWy8wisEbrB6STEXdNWJDqtfVpS6F8w1CBGuhuXiVz0ez
-	yO9ASROhvxfcOjrBGRDFy3lleFZx1083MN0RFn+g==
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fs8a3vdf7-1
+	:references:subject:to; s=pp1; bh=8gLd1RIHSC34QsMLHxM2Rpb/4a4o9g
+	UGeTJ/pTrH+c8=; b=HdI9/xLpisJGRUHTkgoxKRS05kH/a1+HkX9/InxSAq5dTW
+	rRJD6HwYrBrf04Wb0QWPcWj1wwNiruu8MnxJnhxqzoVCx8cSBFgS7j05dt+X7B3T
+	Q87DuVIwP85sfs3VeXaw24DZFpxuucD+UGCB6sQQpLFJOcueV0TMZg73i8d93J67
+	G7K3swbmUNt3W/29lrfWCPAkUhdVy+Qn9V9SlOF2JqlP9ByM93gMKILIxP0hi6/5
+	NtVjrJ42Uix+SSZUJ1p84W/T20GgAc2gtCnWGmj+MC+79S/G8g/Fu/jTXklFUG+z
+	OeqQeoN7e3SSFDTmwb/dtOau5muikEMcxIQb7Khg==
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fs8fqmcms-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 04 Aug 2026 06:12:32 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6746BKi8032377;
-	Tue, 4 Aug 2026 06:12:31 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4fsvmh8nbs-1
+	Tue, 04 Aug 2026 06:20:10 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6746BGea027258;
+	Tue, 4 Aug 2026 06:20:09 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4fsugw0tta-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 04 Aug 2026 06:12:31 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6746CR8D35258698
+	Tue, 04 Aug 2026 06:20:08 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6746K4LY26804810
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 4 Aug 2026 06:12:27 GMT
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A08EE2004B;
-	Tue,  4 Aug 2026 06:12:27 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 267E620043;
-	Tue,  4 Aug 2026 06:12:26 +0000 (GMT)
+	Tue, 4 Aug 2026 06:20:04 GMT
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id A866B2004B;
+	Tue,  4 Aug 2026 06:20:04 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2F27C20049;
+	Tue,  4 Aug 2026 06:20:03 +0000 (GMT)
 Received: from fedora (unknown [9.5.7.39])
-	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Tue,  4 Aug 2026 06:12:25 +0000 (GMT)
-Date: Tue, 4 Aug 2026 11:43:08 +0530
+	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Tue,  4 Aug 2026 06:20:02 +0000 (GMT)
+Date: Tue, 4 Aug 2026 11:50:45 +0530
 From: Amit Machhiwal <amachhiw@linux.ibm.com>
 To: Mahesh J Salgaonkar <mahesh@linux.ibm.com>
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
         "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Nicholas Piggin <npiggin@gmail.com>,
         Praveen K Pandey <praveen@linux.ibm.com>,
         Nikhil Kumar Singh <nikhilks@linux.ibm.com>
-Subject: Re: [PATCH v2 2/4] powerpc: Add Power12 raw mode
-Message-ID: <20260804114204.a3cfb76c-7f-amachhiw@linux.ibm.com>
+Subject: Re: [PATCH v2 3/4] powerpc: Add Power12 architected mode
+Message-ID: <20260804114608.61661ced-92-amachhiw@linux.ibm.com>
 Mail-Followup-To: Mahesh J Salgaonkar <mahesh@linux.ibm.com>, 
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Nicholas Piggin <npiggin@gmail.com>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, 
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, 
 	Praveen K Pandey <praveen@linux.ibm.com>, Nikhil Kumar Singh <nikhilks@linux.ibm.com>
 References: <20260803155724.3272052-1-mahesh@linux.ibm.com>
- <20260803155724.3272052-3-mahesh@linux.ibm.com>
- <20260804002831.e8e53baf-75-amachhiw@linux.ibm.com>
- <anF9MpdSSkwzdDmH@linux.ibm.com>
+ <20260803155724.3272052-4-mahesh@linux.ibm.com>
+ <20260804004514.39870804-35-amachhiw@linux.ibm.com>
+ <anF-LmYhztmpgs1s@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -99,43 +99,45 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <anF9MpdSSkwzdDmH@linux.ibm.com>
+In-Reply-To: <anF-LmYhztmpgs1s@linux.ibm.com>
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=E6P9Y6dl c=1 sm=1 tr=0 ts=6a7182d1 cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+X-Proofpoint-GUID: mHlizE9XQ7EkF6HehDuP-6nH0oG7eeri
+X-Proofpoint-ORIG-GUID: PSidsBiIZA5a4PUZLVOOuDzTe7pnWPmv
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODA0MDA0OCBTYWx0ZWRfXzN93dCk2Z/fT
+ 8HuR5/H2KnpgEGM5O8v24VW6zNgsbTey1vf+QlcbLH/r1Jo9eWiw7VIof9aObLVZeWOo14bRIVw
+ QET8Z/fdNzTTCtKROBVwX3rDs+3ts0Q=
+X-Authority-Analysis: v=2.4 cv=K8cS2SWI c=1 sm=1 tr=0 ts=6a71849a cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
  a=kj9zAlcOel0A:10 a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=VwQbUJbxAAAA:8
- a=pGLkceISAAAA:8 a=VnNF1IyMAAAA:8 a=9tuBssuDt47AZIqsfmkA:9 a=CjuIK1q_8ugA:10
-X-Proofpoint-ORIG-GUID: cAzZIDmyYr2aYrQDj9jGSnexDZta4lqQ
-X-Proofpoint-GUID: lePJWLZZHwOrq-p78NxaoUYk4E0--rHs
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODA0MDA0MyBTYWx0ZWRfX159YBdVamV99
- gY3S6XiQ7CfBNBZmmLloGBe7F0thjxLdqEP32fAcTFe3P8Ot89Zn7OJvYmgeMGXmZOIbXmKwZzO
- YWRURlNULEAOlrCsxDxcAPOtiboOZSI=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODA0MDA0MyBTYWx0ZWRfX5m33fuS4rp6b
- MfbY9Il/bgBBoBvQMZKSVa6DMtRFX8dN5zr3XhpoofNsREdLBC4/X2NBqEyHakzqEANklaIljwk
- +MdSn6KkOW20iF+UwkZmYAOuKlJ4mWY1eJhJQR2bnrbHrn0eo2Ue/r/lmpUJn97lXprRdPb5QKO
- y7R8IC81bmmKwnp4KOKpmYpPg8/JQKnRJvRcMxD2BGPihkCzKeQIEHmVHhppOwL1IlsPcBAxh/O
- qm+H7iZkWfHawn64wKuMAtMQ/USOl3wbPcq458S0TLNqcgm2KA+j4wH6M+7xlsof/BODL2mA3Ks
- Dr1FJtuEgePVfwbRsTzHJgDJy5uHtdcX8Fp+WQqK3fuXHXpC4DUew0TIyW1i0WnFpt8MdFDq4Nu
- G2Bk5B1hwnni6T3JIOiTpoh5PvnAvTvIujqinHfwZFoOD3CjuGahzsYUyfV+HeoV3YytxlDtbhs
- ZNV+xQa+fjW0X6RAElQ==
+ a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=pGLkceISAAAA:8
+ a=VnNF1IyMAAAA:8 a=CBI-5FZ-qGlV6aM45g0A:9 a=CjuIK1q_8ugA:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODA0MDA0OCBTYWx0ZWRfX++XIDGAsttVP
+ RiWb5xAzURQmNhI5HonNfObvfLdbYYD061QfF2Th+T6SYMHLroNDD7ULkz48UQX+SMz1qhGjY69
+ v/ksUSolGRNYly4RR9uqwIDbolrXFIwI6qUXVNOdg49l3stKRIDiikRICewvmrK5gsDcXHHCde5
+ OrrXQwKbY1GVnQCFCbvFQeMH8+ioxbgh/uhUj9BTrCz1fICvlGyqMK1MVIh+JI96O2npBUO27J/
+ iRL5ZoKJB++LQYVqVZtsWbaXj4l61OIhC+WSN8jCInHYyEbRPT2EXxYa/6vgDVf2gqiAZU2/flL
+ 5NCv+005yAHXkqJ2i4l5CbdkiPz3feohVvnd9x4GdSsETK6+OSnH2LLOw2cGp2wv9qMeL8KycuV
+ H35mLBUv1BmwdRaZHwbDbfZ+4QWlOKpmNoIfI8gkbbVHo8CVm8sj4XNbZcHtCoLF1rZgar/3H8p
+ Mq+YtKM4ldtWDJQ24pw==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-08-04_01,2026-08-03_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 clxscore=1015 lowpriorityscore=0 priorityscore=1501
- suspectscore=0 adultscore=0 spamscore=0 malwarescore=0 impostorscore=0
- phishscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
- definitions=main-2608040043
+ clxscore=1015 spamscore=0 impostorscore=0 bulkscore=0 priorityscore=1501
+ lowpriorityscore=0 malwarescore=0 phishscore=0 suspectscore=0 adultscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608040048
 
-On 2026/08/04 11:22 AM, Mahesh J Salgaonkar wrote:
-> On 2026-08-04 00:40:10 Tue, Amit Machhiwal wrote:
+On 2026/08/04 11:30 AM, Mahesh J Salgaonkar wrote:
+> On 2026-08-04 00:47:49 Tue, Amit Machhiwal wrote:
 > > On 2026/08/03 09:27 PM, Mahesh Salgaonkar wrote:
-> > > From: Nicholas Piggin <npiggin@gmail.com>
+> > > From: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
 > > > 
-> > > Add CPU table entries for raw mode.
+> > > PVR value of 0x0f000008 means we are arch v3.2 compliant (i.e.
+> > > Power12). This is used by phyp and kvm when booting as a pseries guest
+> > > to detect the presence of new Power12 features and to enable the
+> > > appropriate hwcap and facility bits.
 > > > 
 > > > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 > > > Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
@@ -143,101 +145,39 @@ On 2026/08/04 11:22 AM, Mahesh J Salgaonkar wrote:
 > > > Tested-by: Praveen K Pandey <praveen@linux.ibm.com>
 > > > Reviewed-by: Nikhil Kumar Singh <nikhilks@linux.ibm.com>
 > > > ---
-> > > Change in v2:
-> > > - Added Reviewed-by from Nikhil
-> > > ---
-> > >  arch/powerpc/include/asm/cpu_setup.h      |  2 ++
-> > >  arch/powerpc/include/asm/cputable.h       | 17 +++++++--
-> > >  arch/powerpc/include/asm/mmu.h            |  1 +
-> > >  arch/powerpc/include/asm/reg.h            |  5 ++-
-> > >  arch/powerpc/include/asm/synch.h          |  6 +++-
+> > >  arch/powerpc/include/asm/prom.h           |  1 +
 > > >  arch/powerpc/include/uapi/asm/cputable.h  |  1 +
-> > >  arch/powerpc/kernel/cpu_setup_power.c     | 43 +++++++++++++++++++++++
-> > >  arch/powerpc/kernel/cpu_specs_book3s_64.h | 22 ++++++++++++
-> > >  arch/powerpc/kernel/dt_cpu_ftrs.c         | 37 +++++++++++++++++++
-> > >  arch/powerpc/kernel/setup-common.c        |  1 +
-> > >  arch/powerpc/kvm/book3s_hv.c              |  9 +++--
-> > >  arch/powerpc/mm/book3s64/hash_native.c    | 22 ++++++++----
-> > >  arch/powerpc/mm/init_64.c                 |  4 ++-
-> > >  13 files changed, 157 insertions(+), 13 deletions(-)
+> > >  arch/powerpc/kernel/cpu_specs_book3s_64.h | 14 ++++++++++++++
+> > >  arch/powerpc/kernel/prom_init.c           | 12 ++++++++++--
+> > >  4 files changed, 26 insertions(+), 2 deletions(-)
 > > > 
-> > > diff --git a/arch/powerpc/include/asm/cpu_setup.h b/arch/powerpc/include/asm/cpu_setup.h
-> > > index 30e2fe3895024..26d2c0e2c99c6 100644
-> > > --- a/arch/powerpc/include/asm/cpu_setup.h
-> > > +++ b/arch/powerpc/include/asm/cpu_setup.h
-> > > @@ -9,10 +9,12 @@ void __setup_cpu_power7(unsigned long offset, struct cpu_spec *spec);
-> > >  void __setup_cpu_power8(unsigned long offset, struct cpu_spec *spec);
-> > >  void __setup_cpu_power9(unsigned long offset, struct cpu_spec *spec);
-> > >  void __setup_cpu_power10(unsigned long offset, struct cpu_spec *spec);
-> > > +void __setup_cpu_power12(unsigned long offset, struct cpu_spec *spec);
-> > >  void __restore_cpu_power7(void);
-> > >  void __restore_cpu_power8(void);
-> > >  void __restore_cpu_power9(void);
-> > >  void __restore_cpu_power10(void);
-> > > +void __restore_cpu_power12(void);
+> > > diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
+> > > index f4991d10d89ec..cd025c7225ee7 100644
+> > > --- a/arch/powerpc/include/asm/prom.h
+> > > +++ b/arch/powerpc/include/asm/prom.h
+> > > @@ -118,6 +118,7 @@ extern unsigned int boot_cpu_node_count;
 > > >  
-> > >  void __setup_cpu_e500v1(unsigned long offset, struct cpu_spec *spec);
-> > >  void __setup_cpu_e500v2(unsigned long offset, struct cpu_spec *spec);
-> > > diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
-> > > index ec16c12296da8..a3be81c47df3a 100644
-> > > --- a/arch/powerpc/include/asm/cputable.h
-> > > +++ b/arch/powerpc/include/asm/cputable.h
-> > > @@ -194,6 +194,7 @@ static inline void cpu_feature_keys_init(void) { }
-> > >  #define CPU_FTR_DAWR1			LONG_ASM_CONST(0x0008000000000000)
-> > >  #define CPU_FTR_DEXCR_NPHIE		LONG_ASM_CONST(0x0010000000000000)
-> > >  #define CPU_FTR_P11_PVR			LONG_ASM_CONST(0x0020000000000000)
-> > > +#define CPU_FTR_ARCH_32			LONG_ASM_CONST(0x0040000000000000)
-> > >  
-> > >  #ifndef __ASSEMBLER__
-> > >  
-> > > @@ -457,6 +458,18 @@ static inline void cpu_feature_keys_init(void) { }
-> > >  
-> > >  #define CPU_FTRS_POWER11	(CPU_FTRS_POWER10 | CPU_FTR_P11_PVR)
-> > >  
-> > > +#define CPU_FTRS_POWER12 (CPU_FTR_LWSYNC | \
-> > > +	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | CPU_FTR_ARCH_206 |\
-> > > +	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
-> > > +	    CPU_FTR_COHERENT_ICACHE | \
-> > > +	    CPU_FTR_PURR | CPU_FTR_SPURR | CPU_FTR_REAL_LE | \
-> > > +	    CPU_FTR_DSCR | \
-> > > +	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_POPCNTD | \
-> > > +	    CPU_FTR_CFAR | CPU_FTR_HVMODE | CPU_FTR_VMX_COPY | \
-> > > +	    CPU_FTR_DBELL | CPU_FTR_HAS_PPR | CPU_FTR_ARCH_207S | \
-> > > +	    CPU_FTR_ARCH_300 | CPU_FTR_ARCH_31 | CPU_FTR_ARCH_32 | \
-> > > +	    CPU_FTR_DAWR | CPU_FTR_DAWR1)
-> > > +
-> > >  #define CPU_FTRS_CELL	(CPU_FTR_LWSYNC | \
-> > >  	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
-> > >  	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
-> > > @@ -476,7 +489,7 @@ static inline void cpu_feature_keys_init(void) { }
-> > >  	    (CPU_FTRS_POWER7 | CPU_FTRS_POWER8E | CPU_FTRS_POWER8 | \
-> > >  	     CPU_FTR_ALTIVEC_COMP | CPU_FTR_VSX_COMP | CPU_FTRS_POWER9 | \
-> > >  	     CPU_FTRS_POWER9_DD2_1 | CPU_FTRS_POWER9_DD2_2 | \
-> > > -	     CPU_FTRS_POWER9_DD2_3 | CPU_FTRS_POWER10 | CPU_FTRS_POWER11)
-> > > +	     CPU_FTRS_POWER9_DD2_3 | CPU_FTRS_POWER10 | CPU_FTRS_POWER11 | CPU_FTRS_POWER12)
+> > >  #define OV1_PPC_3_00		0x80	/* set if we support PowerPC 3.00 */
+> > >  #define OV1_PPC_3_1			0x40	/* set if we support PowerPC 3.1 */
+> > > +#define OV1_PPC_3_2			0x20	/* set if we support PowerPC 3.2 */
 > > 
-> > Line exceeds 80 columns. Please wrap CPU_FTRS_POWER12 onto its own line.
-> > Same applies to the #else variant below.
+> > Minor: OV1_PPC_3_1 and OV1_PPC_3_2 use extra tabs relative to OV1_PPC_3_00.
+> > This is pre-existing style inconsistency in the file (not introduced by
+> > this patch) but new additions should match the surrounding code. Please
+> > consider aligning them.
 > 
-> Linux has long lifted the 80 column restriction and increased the
-> default limit to 100 chars.
-> 
-> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=bdc48fa11e46f867ea4d75fa59ee87a7f48be144
+> This is bit tricky. Prior to 3.0 the ISA versions were 2.05, 2.06, 2.07
+> and so on and pre-existing style did make sense. But it looks like from
+> 3.1 the style changed may be for a reason because it can not be written
+> as 3.10 which may create more confusiton. Hence, I plan to stick with
+> the new style which is introduced from 3.1.
 
-The commit log itself mentions:
-
-  staying withing 80 columns is certainly still _preferred_
-
-But I'll leave it upto you. Either way:
+If the extra tab is intentional to maintain visual alignment for the 3.x
+series names, then it make sense. Please feel free to add:
 
 Reviewed-by: Amit Machhiwal <amachhiw@linux.ibm.com>
 
 Thanks,
 Amit
 
-> 
-> Thanks,
-> -Mahesh.
-> 
-> 
 
