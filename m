@@ -1,55 +1,56 @@
-Return-Path: <linuxppc-dev+bounces-25343-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25344-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 337A6C55184
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2026 08:51:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 71953C55184
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2026 08:51:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hDnM728Jgz30B9;
-	Tue, 04 Aug 2026 18:50:59 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785833459;
-	cv=none; b=mlvKB1mlrbMLGd8Vjz1WrN5BnigF9zvsFmOzwVUyEJHi5ucN4EE3G6+phgUL69KdS14hCz/7ywS1J8ZSnVQBOFrj9TpTdM2sxiuymWaZsI5zScHJ/o61iXEPvbBINQ9NJLQR+sdC/dmUEj+4cJRWPGZfP4PAOvs3ruW023QbFZHhXuzQD7qIbglKXoqrmkGyvB53s0tbN2KL90cdgdiU2xW54Aubk+uP/HMTP2TEv5ZoxHg4icZvx5UajzIbBlq0lTpDAfPOzzn0drDs1X4znMNnWihI1VMHA074jMeWDv5akQdLBZFRHlla+U9gDSKLgEXXd1Qm2WMB+QsvqoROIg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hDnM91dVCz2yMl;
+	Tue, 04 Aug 2026 18:51:01 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785833461;
+	cv=none; b=GZhOyWcEmEeaDprce/YJE+h20+v4XFZ77aRSdtKwmmDVO6hj2SSp2LsB6XkJT/G9+qNYVOIw5KH2kAIK0e5Twf2NlOPAKslZiZ4UzHLCvYMfj4W0g9h6heI4sSKyf4PS/MUnR52V59C3WafjzPHeg7JtXmh1dsNC6JKzifvangTdal0LlJFbwAHp4886JrUNPohFHCu+9LXaxoSCnOkjEJT3lbgZpN3ocFcBqTKbeL7lQWgGQIkr64oJafsgIApXSAULqldrMzjbz0hs0xhj9RMygKLb1EyKmlxxL/1wh2gdfzVRxXc+bzT4pWS0ju/a7BrEvpWQk0Gggz3TmZ/NCw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785833459; c=relaxed/relaxed;
-	bh=gFs88Fk7Ct1KoWgD5rPNaCe50cEzJ/OH1uXQzwYWf1w=;
+	t=1785833461; c=relaxed/relaxed;
+	bh=wGv6yEfNov4UJDeC+LoWBSNb4qG+t5ZUPG1Jws0fRkw=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=gxNlcv2H20IYWVgvqnnYX85nmbr8BiD1WFq3bYicxUvdCTzvYyIVd+8pdrywmLH4pU+9WK2gedr0OpfYqrN25fzOnxTWxWLP14HNPeIsVn6HTatnATTnnSLGf17rqiuIA/VJpjHrhhoT5yTRNpD7uHoSr5xesb/NEKks4L3HRJhokRLfsnweb6iVgF26APDy2gW8PcBhE2zoXs6LqV4FF7KgrAz44cJVjw64vRv2I8y4BSU9CMs4A5/RlHLft4C3yD3kP13x+yuFD2mXxWSFDQgms6Ue3041K0q3ZrqY5qHYTitogGO5o4+JiGKC5sG5xoR+lGlYO+cJPusY7IieSw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eU4dTuRI; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=devnull+moonafterrain.outlook.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=LiDXwceP7el0xIwE0hKXyFdgxhb1+MNqh8CjZJ72ASnlIyQWQoR8aewyeQIsiggSsuWXxZ+3omI+XAjcdVj6oXNADa7d4S40/ajoCrJxkF71QsWGBHkgWegzQSlkyJ+eSg6cCykG0cEu39Jjt1EZDsa3+v3Z09z120bkfybWXefvw378CUde4kWg58z/p8H7g8woE0WYdHbTp+pyfv24SWFVbTQbFrxShzIpND8FXU5Ve20kdyTjQHWuaRiLtXs9mUmcu9aiEODtTg3g//HUgDwprMcbO8UdGLyTaVZ8deH7C4uEJPIgnyUhZsxNJvFtoQsrwchNptd0C3pc6do29Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=P19dTpF7; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=devnull+moonafterrain.outlook.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eU4dTuRI;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=P19dTpF7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=devnull+moonafterrain.outlook.com@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=devnull+moonafterrain.outlook.com@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hDnM5716tz2yMl
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Aug 2026 18:50:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hDnM80qLxz3bSw
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Aug 2026 18:50:59 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 2502D60A90;
+	by sea.source.kernel.org (Postfix) with ESMTP id 0E6D64406C;
 	Tue,  4 Aug 2026 08:50:55 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id B7D39C2BCFD;
+Received: by smtp.kernel.org (Postfix) with ESMTPS id E6633C4AF0B;
 	Tue,  4 Aug 2026 08:50:54 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1785833454;
-	bh=afJAMLbhFODoEcveLVFFRIw8h+QDoAijPxkIMhvX5Oc=;
+	bh=ZtasH00Gtaye4COuWzJy5xkppQxUaxhZHuqL8IELU2k=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=eU4dTuRIPB4xWAu9Ya4VG5C95yTBDgyq2cEThTJGEvoWzxaI8blP/rPPPZx1tsPXA
-	 qUx5LyIX4ZvGzGUMaN42zS9TmqJ5YVTYhLz8JyEhttnja7m6dNSZACKV5rFkb8Et+z
-	 5Ud1ioWuadi6TjLP+SuqYrEcK7fU/AOXS/MJDjdbo+PLtQjj+UZ7JTRkXfJ1H9GCq1
-	 U+wP9fVDVBYqcqfe206tWQiTcN8gzk/IJLMMfsQ2i9OHCcd/9AtYC+Pm5YfuEJ/XAx
-	 NGXxTFnjOwXudiphSsTNR0x09cvaiIMenlxh2anYjzxPpQ0uwUh1YCYoxwQeEA4jUT
-	 TCell6G3Nke9w==
+	b=P19dTpF7mG9EBb0xjFnTTHMB2aaC+L7oaIAlFAN18QkFPqaCLB6hQQwBIuF7MJOEm
+	 3Us7m/CEjeIUDLTTOSl7odszxI7wWiuJlLQLcZ9wEb9XEWgyKz9Crx+tXMxPHM7g4i
+	 CfHaENDIYJtjmG9C6SIt0k8vea+anxq460I1FjW4zof49JnMIoAM7bNfsHJFjO5fG9
+	 dIg75ZBzJl1pttY1aHxqy7h7GxNNMB9oqYJctO5idhaDGUItWvMxKeI7gJTHW6Q1PR
+	 jOQ6vgvyM7uPgTc/FZY8kagR+cAYXdyln3Z7BfecdEG3Qp6SWg2z9zaElJ7KJS8mol
+	 H9RR8TNc1SShA==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A55DEC55ABA;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D46AFC5518F;
 	Tue,  4 Aug 2026 08:50:54 +0000 (UTC)
 From: Junrui Luo via B4 Relay <devnull+moonafterrain.outlook.com@kernel.org>
-Date: Tue, 04 Aug 2026 16:50:40 +0800
-Subject: [PATCH v2 3/5] powerpc/spufs: check permissions in spufs_setattr()
+Date: Tue, 04 Aug 2026 16:50:42 +0800
+Subject: [PATCH v2 5/5] powerpc/spufs: don't hold state_mutex during user
+ access
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -65,7 +66,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260804-fixes-v2-3-5bfd827297f9@outlook.com>
+Message-Id: <20260804-fixes-v2-5-5bfd827297f9@outlook.com>
 References: <20260804-fixes-v2-0-5bfd827297f9@outlook.com>
 In-Reply-To: <20260804-fixes-v2-0-5bfd827297f9@outlook.com>
 To: Madhavan Srinivasan <maddy@linux.ibm.com>, 
@@ -74,16 +75,15 @@ To: Madhavan Srinivasan <maddy@linux.ibm.com>,
  Arnd Bergmann <arnd@arndb.de>, Paul Mackerras <paulus@ozlabs.org>, 
  Al Viro <viro@zeniv.linux.org.uk>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
- Yuhao Jiang <danisjiang@gmail.com>, stable@vger.kernel.org, 
- Junrui Luo <moonafterrain@outlook.com>
+ Yuhao Jiang <danisjiang@gmail.com>, Junrui Luo <moonafterrain@outlook.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1714;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=4105;
  i=moonafterrain@outlook.com; h=from:subject:message-id;
- bh=dffeiU9SuIG2crRu8M1hNRxZHn/iEzt/PMyihiDEjKQ=;
- b=owJ4nJvAy8zAJVb4wiKgu++DA+NptSSGrMLlbxTVjPNSXmaeOhL321xIPc/iZOt5vyTxgAsyW
- xgYFVrab3eUsjCIcTHIiimyHC+49M3Cd4vuFp8tyTBzWJlAhjBwcQrARJScGBkeBFrNO/D0QJBQ
- //p0rZh1Xe/62jdz7osUfpo4W4BxVdcmRob9zxY7Pl1XmXm4LKPmtcy9NE23/HCHklOHvq/d6bh
- B8z4fAOdOSp8=
+ bh=KVNqgEF0+C48K+PWMOxfS0uXgoSuZZMWuvz93e4utzw=;
+ b=owJ4nJvAy8zAJVb4wiKgu++DA+NptSSGrMLlb6bXFGww1mD9ovLjdb0VZ+ON3WvjZ53b3SEpX
+ W/vPO166beOUhYGMS4GWTFFluMFl75Z+G7R3eKzJRlmDisTyBAGLk4BmMipRkaGk8dilnY+3yn6
+ k3OurXqRd4RVwOqfksvaF2j82SdzU6CqlpFh7beF5s5RSafO/lj8pNOgNu+csZmB0eJv37WtD95
+ PO2PGBgB+bE2s
 X-Developer-Key: i=moonafterrain@outlook.com; a=openpgp;
  fpr=C770D2F6384DB42DB44CB46371E838508B8EF040
 X-Endpoint-Received: by B4 Relay for moonafterrain@outlook.com/default with
@@ -93,48 +93,164 @@ Reply-To: moonafterrain@outlook.com
 
 From: Junrui Luo <moonafterrain@outlook.com>
 
-spufs_setattr() applies the caller's attributes with setattr_copy() but
-never calls setattr_prepare(). notify_change() leaves that to the
-filesystem: it runs only may_setattr(), while inode_owner_or_capable()
-and the CAP_CHOWN test live inside setattr_prepare(). setattr_copy()
-performs no checking of its own.
+spufs_mbox_read(), spufs_ibox_read() and spufs_wbox_write() take the
+context state_mutex with spu_acquire() and only drop it once their
+transfer loop has finished, so every put_user()/get_user() in those
+loops runs with the mutex held. The faulting address comes from
+userspace, so the fault can be made to take arbitrarily long via
+userfaultfd region or a FUSE-backed mapping.
 
-The handler is installed for every regular spufs file, so mode and
-ownership of another user's context files can be changed without the
-usual authorization.
+Drop the mutex around the user accesses: acquire it per mailbox element,
+just long enough for the ctx->ops mailbox operation, and release it
+before touching the user buffer.
 
-Call setattr_prepare() before setattr_copy(). The existing ATTR_SIZE
-test stays ahead of it so that resizing a spufs file keeps returning
--EINVAL. &nop_mnt_idmap matches the adjacent setattr_copy() call.
+spufs_switch_log_read() has the same problem but its loop needs the lock
+for more than just the copy.
 
-Fixes: 67207b9664a8 ("[PATCH] spufs: The SPU file system, base")
+Fixes: cdcc89bb1c6e ("[POWERPC] spufs: make mailbox functions handle multiple elements")
 Reported-by: Yuhao Jiang <danisjiang@gmail.com>
 Assisted-by: Claude:claude-opus-5
-Cc: stable@vger.kernel.org
 Signed-off-by: Junrui Luo <moonafterrain@outlook.com>
 ---
- arch/powerpc/platforms/cell/spufs/inode.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ arch/powerpc/platforms/cell/spufs/file.c | 52 ++++++++++++++++++--------------
+ 1 file changed, 29 insertions(+), 23 deletions(-)
 
-diff --git a/arch/powerpc/platforms/cell/spufs/inode.c b/arch/powerpc/platforms/cell/spufs/inode.c
-index 2b54afb31529..c2b15c30f7c0 100644
---- a/arch/powerpc/platforms/cell/spufs/inode.c
-+++ b/arch/powerpc/platforms/cell/spufs/inode.c
-@@ -96,10 +96,14 @@ spufs_setattr(struct mnt_idmap *idmap, struct dentry *dentry,
- 	      struct iattr *attr)
- {
- 	struct inode *inode = d_inode(dentry);
-+	int ret;
- 
- 	if ((attr->ia_valid & ATTR_SIZE) &&
- 	    (attr->ia_size != inode->i_size))
+diff --git a/arch/powerpc/platforms/cell/spufs/file.c b/arch/powerpc/platforms/cell/spufs/file.c
+index de7494748fec..c8c3b6e8affb 100644
+--- a/arch/powerpc/platforms/cell/spufs/file.c
++++ b/arch/powerpc/platforms/cell/spufs/file.c
+@@ -602,13 +602,17 @@ static ssize_t spufs_mbox_read(struct file *file, char __user *buf,
+ 	if (len < 4)
  		return -EINVAL;
-+	ret = setattr_prepare(&nop_mnt_idmap, dentry, attr);
-+	if (ret)
-+		return ret;
- 	setattr_copy(&nop_mnt_idmap, inode, attr);
- 	mark_inode_dirty(inode);
- 	return 0;
+ 
+-	count = spu_acquire(ctx);
+-	if (count)
+-		return count;
+-
+ 	for (count = 0; (count + 4) <= len; count += 4, udata++) {
+ 		int ret;
++
++		ret = spu_acquire(ctx);
++		if (ret) {
++			if (!count)
++				count = ret;
++			break;
++		}
+ 		ret = ctx->ops->mbox_read(ctx, &mbox_data);
++		spu_release(ctx);
+ 		if (ret == 0)
+ 			break;
+ 
+@@ -624,7 +628,6 @@ static ssize_t spufs_mbox_read(struct file *file, char __user *buf,
+ 			break;
+ 		}
+ 	}
+-	spu_release(ctx);
+ 
+ 	if (!count)
+ 		count = -EAGAIN;
+@@ -705,29 +708,34 @@ static ssize_t spufs_ibox_read(struct file *file, char __user *buf,
+ 
+ 	count = spu_acquire(ctx);
+ 	if (count)
+-		goto out;
++		return count;
+ 
+ 	/* wait only for the first element */
+-	count = 0;
+ 	if (file->f_flags & O_NONBLOCK) {
+ 		if (!spu_ibox_read(ctx, &ibox_data)) {
+-			count = -EAGAIN;
+-			goto out_unlock;
++			spu_release(ctx);
++			return -EAGAIN;
+ 		}
+ 	} else {
+ 		count = spufs_wait(ctx->ibox_wq, spu_ibox_read(ctx, &ibox_data));
+ 		if (count)
+-			goto out;
++			return count;
+ 	}
++	spu_release(ctx);
+ 
+ 	/* if we can't write at all, return -EFAULT */
+ 	count = put_user(ibox_data, udata);
+ 	if (count)
+-		goto out_unlock;
++		return count;
+ 
+ 	for (count = 4, udata++; (count + 4) <= len; count += 4, udata++) {
+ 		int ret;
++
++		ret = spu_acquire(ctx);
++		if (ret)
++			break;
+ 		ret = ctx->ops->ibox_read(ctx, &ibox_data);
++		spu_release(ctx);
+ 		if (ret == 0)
+ 			break;
+ 		/*
+@@ -740,9 +748,6 @@ static ssize_t spufs_ibox_read(struct file *file, char __user *buf,
+ 			break;
+ 	}
+ 
+-out_unlock:
+-	spu_release(ctx);
+-out:
+ 	return count;
+ }
+ 
+@@ -839,40 +844,41 @@ static ssize_t spufs_wbox_write(struct file *file, const char __user *buf,
+ 
+ 	count = spu_acquire(ctx);
+ 	if (count)
+-		goto out;
++		return count;
+ 
+ 	/*
+ 	 * make sure we can at least write one element, by waiting
+ 	 * in case of !O_NONBLOCK
+ 	 */
+-	count = 0;
+ 	if (file->f_flags & O_NONBLOCK) {
+ 		if (!spu_wbox_write(ctx, wbox_data)) {
+-			count = -EAGAIN;
+-			goto out_unlock;
++			spu_release(ctx);
++			return -EAGAIN;
+ 		}
+ 	} else {
+ 		count = spufs_wait(ctx->wbox_wq, spu_wbox_write(ctx, wbox_data));
+ 		if (count)
+-			goto out;
++			return count;
+ 	}
+-
++	spu_release(ctx);
+ 
+ 	/* write as much as possible */
+ 	for (count = 4, udata++; (count + 4) <= len; count += 4, udata++) {
+ 		int ret;
++
+ 		ret = get_user(wbox_data, udata);
+ 		if (ret)
+ 			break;
+ 
++		ret = spu_acquire(ctx);
++		if (ret)
++			break;
+ 		ret = spu_wbox_write(ctx, wbox_data);
++		spu_release(ctx);
+ 		if (ret == 0)
+ 			break;
+ 	}
+ 
+-out_unlock:
+-	spu_release(ctx);
+-out:
+ 	return count;
+ }
+ 
 
 -- 
 2.51.2
