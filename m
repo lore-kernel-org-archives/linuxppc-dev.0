@@ -1,50 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-25368-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25369-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 55AD9C55184
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2026 12:43:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D6FE6C55184
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2026 12:44:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hDtWD0B4Nz2yLY;
-	Tue, 04 Aug 2026 22:43:20 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hDtXF1hxtz2yLY;
+	Tue, 04 Aug 2026 22:44:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785847399;
-	cv=none; b=eYmNfrRdkvcpIg2Q6NJeBkdMU3yXDYNGNUf1jpzfB9XHeaz8k/24rVs0SPAS0D3mOfbBgPjCQiacHCIU4OnR2DiaYCoo+5zOEWllO5aJDlqIi91QI0j2oLIBsDwxqFbhRaY8x+kdGr2lfjhhRTP6J+7SZCH8e7kqdAHIf/MaPlTFl22BunZgPxrh4jD2VQLi28Z55HWjuWVbQ42cmWuxbxFSFKToB9YCr2cuknBKT+XeDKFeCpOjByrOCr+oBXTNQekstUiox3OytkaPqpwnmtPh0fsvjCJrn5WAVckpuNx3Ri14aj0bdKEv4KPy+TWqu/5PmG645gtsmYTZ9mkEKw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785847453;
+	cv=none; b=iLIF+5Y9G2rmRxHI68cfAY2H+igGUPm7/IjqsLGdighROnEnn/2yKHejIuEoRQOndArS4WVGcxQmNmTvhGQJn6RKWWrgE5/OVZ3PdbmaER+l20cjWvvxJUAVNaUoq+YJnT2Mn/imFRpgbZvbo5OS68sfkeyiCOS7CdHIkLo1XNqyU8gd4/vQ9aQusPXSGfApCHgBO9X9bcHYWrvnsXTOonbCt81wCqGaWKUUjoja74st1joY0mTCk0V2OUnhWqQlEjbMaBSN0G3sZS15E8oT6r+Y+eTAhkPf7f4L1iOb2OW4V7LSfOFriIBih+BLrvnXX0FFs9mQ7csInmcYnnEXiA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785847399; c=relaxed/relaxed;
-	bh=84QprRHwhrz+Nkiqha49/PA9CxYa6FBg6w6noEz86g8=;
+	t=1785847453; c=relaxed/relaxed;
+	bh=GKB4l2IZdbP/Q0kXwbUuYXowkK37syxnhhgXnRPRqN4=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=eAZI4NDobGp4sd+XxNyYkYWh9mdC2ou6LgRHscAPoLh68goK+K57pI5t5INPEegCkLt6vh7IQ46vMUhgh2k56YTQ7cjwerkt3lAEgikY8AuXrJEBd+qjBGWa0LDq27FqIIF5OapI2TbXe02bFUpg9a9aVC2InQeHfjyBGwtD+HdnsDzuXtQsyn5/HrKWLUQj2vl907w6GEIam8kJKhV/XO9tWb1RQtBJPmGnhgevmYIcdxHpp2DOhKlv/CQiOmOs8CBP/gYFs60fifItReNx26LBTVUlxRHmErnDnFMg1e8i/E8/AzO6xQLV8IrH+jp2L8COihyuwfRJ5Xu9wTWANw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=UWOdWAkR; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=ozz+65Do+OLqy/3EGoTfDLAZ8VPdV30Oay1fnRpUKo3wnoq0a8NWWK6dnHttZ8I5bRnxma5k7dbEgrQWSpCy3AvX3CauRn0/SUP4ks8/xYkgZcLarDqqnoFEFJrGHuyv1kiOfrME9pLpRS1S6HY4lt5pGNGoVQhBKtJkDiPYCds+2EfoURmHLW5OFQuN1PWnnT1kb5enRG7bkTDESshz9S8Tb1iDOLy6m6VN7O4iB9iNhfp7Oc5Utizsynebdn4RShGtzjMe1FXLJlrjdyyzsITbNYJHiAlpTf2MCo2ykfDVyp1eB18Buug6uF/ymfZmlfnoMAZ51OyH9yRtNHKLMQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=T+v+kmdg; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=UWOdWAkR;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=T+v+kmdg;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hDtWB3wLGz2xyk
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Aug 2026 22:43:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hDtXC0w9bz2xyk
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Aug 2026 22:44:11 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id B2F5441B35;
-	Tue,  4 Aug 2026 12:43:13 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 97F3F1F000E9;
-	Tue,  4 Aug 2026 12:43:06 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id E3D9543A4A;
+	Tue,  4 Aug 2026 12:44:07 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 034D81F000E9;
+	Tue,  4 Aug 2026 12:44:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785847393;
-	bh=84QprRHwhrz+Nkiqha49/PA9CxYa6FBg6w6noEz86g8=;
+	s=k20260515; t=1785847447;
+	bh=GKB4l2IZdbP/Q0kXwbUuYXowkK37syxnhhgXnRPRqN4=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=UWOdWAkRkJHZkJxmRSHFZYlpGkORiS1kGH2fYisI2uada2AxRE+GeYyHciAVPQr30
-	 MNZd6q6kuVhstTX1GSsaMMzewptHToT1kUH0WuveZ7i5IRR9AZFh985L1e0HOxs32H
-	 wXbHaoX6vi/rrkSLGy0movwuGO/cWJNMbN6vwTmSwcxFllPwoOqPNM4CgVKNryMIWa
-	 OEW9DeHljNMC9Hvnie84zgLGzjIjuFDoip29CmY7iUbIDxnCzqtPygXPJBrUyyRV78
-	 YpoweashigOAa2jiQFa9l0ujqRtV9rDaln9png6xRNUr3jCjFaCfpjuh2tbsAOeuHv
-	 zbwT/VJNUydlA==
-Date: Tue, 4 Aug 2026 13:42:51 +0100
+	b=T+v+kmdgCi3T4UxR1mhAPlH3L3GeQtz+35K3qNK/vTqxJ2yOhaKoAVspBfOMxLtsn
+	 FIWPLNKujn5Olk6Z1+BnoEkDpCRSlRtCDxuydX1h9GeE6Eo2MOGwzDqGMneFaBwi/s
+	 k1oHBA1ZQ6LyPgdPLKQitX4rEDVnEILfBvI9RX+oJ2Ihm42LEJmI4EzjPJ+9HlvHfA
+	 kAMfGranFVW0VA+QEd5XUJV+yYuDvEayQq7xHv1OcCe6lMi7yMbcz8Nt00EWijb0Sc
+	 z41BRatoKPG4RoVOTuLaS2r3qLW8wT6a0YEEg0Aik0zKahizkE1Pp51jHOmksup38v
+	 HLAh1qHJ/KsIQ==
+Date: Tue, 4 Aug 2026 13:43:45 +0100
 From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
 To: Pedro Falcato <pfalcato@suse.de>
 Cc: David Hildenbrand <david@kernel.org>, 
@@ -60,15 +60,13 @@ Cc: David Hildenbrand <david@kernel.org>,
 	Lance Yang <lance.yang@linux.dev>, Usama Arif <usama.arif@linux.dev>, 
 	Kevin Brodsky <kevin.brodsky@arm.com>, Muhammad Usama Anjum <usama.anjum@arm.com>, 
 	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-parisc@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org, linux-fsdevel@vger.kernel.org, 
-	John David Anglin <dave.anglin@bell.net>
-Subject: Re: [PATCH v2 2/6] parisc: Drop own implementations for ptep_get()
- and ptep_test_and_clear_young()
-Message-ID: <anHd7ho3daZFZ-4r@lucifer>
+	linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH v2 3/6] mm/powerpc/8xx: constify ptep_get() argument
+Message-ID: <anHeZx6Gg7waNWjL@lucifer>
 References: <20260803164400.531199-1-pfalcato@suse.de>
- <20260803164400.531199-3-pfalcato@suse.de>
- <anHHyiHqYf3yLf2K@lucifer>
- <anHcJZYyz9Zrshdm@pedro-suse>
+ <20260803164400.531199-4-pfalcato@suse.de>
+ <anHI4B-lMu6AJJfA@lucifer>
+ <anHc4aUbwxWx9YJF@pedro-suse>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -84,49 +82,48 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <anHcJZYyz9Zrshdm@pedro-suse>
+In-Reply-To: <anHc4aUbwxWx9YJF@pedro-suse>
 
-On Tue, Aug 04, 2026 at 01:34:41PM +0100, Pedro Falcato wrote:
-> On Tue, Aug 04, 2026 at 12:11:08PM +0100, Lorenzo Stoakes (ARM) wrote:
-> > On Mon, Aug 03, 2026 at 05:43:56PM +0100, Pedro Falcato wrote:
-> > > From: Helge Deller <deller@gmx.de>
+On Tue, Aug 04, 2026 at 01:38:52PM +0100, Pedro Falcato wrote:
+> On Tue, Aug 04, 2026 at 12:13:13PM +0100, Lorenzo Stoakes (ARM) wrote:
+> > On Mon, Aug 03, 2026 at 05:43:57PM +0100, Pedro Falcato wrote:
+> > > There is no need for write access to the PTE.
 > > >
-> > > Switch to the generic implementations, which are identical.
-> >
-> > You sure do like succinct commit messages :)
->
-> I didn't even write this one! See the From: :))
-
-Lol well then feedback addressed to Helge ;)
-
->
-> >
-> > Maybe worth saying by dropping the __HAVE_ARCH_PTEP_TEST_AND_CLEAR_YOUNG and
-> > ptep_get defines you get the generic versions from include/pgtable.h which are
-> > functionally identical.
-> >
->
-> I can touch it up though, if you insist.
-
-Yeah, I'm being pedantic here it's not vital to have this change :) but be nice
-if you could, I'm sure Helge probably wouldn't mind too much? :)
-
->
-> > (Being pedantic, they're not quite strictly identical as the
-> > ptep_test_and_clear_young() generic function does some weird unnecessary
-> > indirection with a local variable and the single {} is dropped etc.)
-> >
-> > >
-> > > Suggested-by: Usama Arif <usama.arif@linux.dev>
-> > > Suggested-by: John David Anglin <dave.anglin@bell.net>
-> > > Signed-off-by: Helge Deller <deller@gmx.de>
 > > > Signed-off-by: Pedro Falcato <pfalcato@suse.de>
 > >
-> > Nits above notwithstanding, LGTM so:
+> > With below addressed LGTM so:
 > >
 > > Reviewed-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+> >
+> > > ---
+> > >  arch/powerpc/include/asm/nohash/32/pte-8xx.h | 2 +-
+> > >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > >
+> > > diff --git a/arch/powerpc/include/asm/nohash/32/pte-8xx.h b/arch/powerpc/include/asm/nohash/32/pte-8xx.h
+> > > index e2ea8ba9f8ca..f2bab31040c7 100644
+> > > --- a/arch/powerpc/include/asm/nohash/32/pte-8xx.h
+> > > +++ b/arch/powerpc/include/asm/nohash/32/pte-8xx.h
+> > > @@ -226,7 +226,7 @@ static inline pte_basic_t pte_update(struct mm_struct *mm, unsigned long addr, p
+> > >
+> > >  #ifdef CONFIG_PPC_16K_PAGES
+> > >  #define ptep_get ptep_get
+> > > -static inline pte_t ptep_get(pte_t *ptep)
+> > > +static inline pte_t ptep_get(const pte_t *ptep)
+> > >  {
+> > >  	pte_basic_t val = READ_ONCE(ptep->pte);
+> > >  	pte_t pte = {val, val, val, val};
+> >
+> > Worth making these const too (that {val, val, val, val} horrifies me btw :)?
 >
-> Thanks!
+> This is PPC code, so I don't know if they have any particular opinion here,
+> but I could definitely do this.
+>
+> (FWIW, it seems we're more aggressive in MM in doing this than other places
+> in the kernel?)
+
+I mean I can't see why there'd be any objection given you're already const-ing
+here :)
+
 >
 > --
 > Pedro
