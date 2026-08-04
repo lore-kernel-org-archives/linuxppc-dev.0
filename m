@@ -1,99 +1,55 @@
-Return-Path: <linuxppc-dev+bounces-25353-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25354-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A6306C55172
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2026 10:08:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6BEBFC55172
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2026 10:12:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hDq4h0z3pz2yMl;
-	Tue, 04 Aug 2026 20:08:36 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785838116;
-	cv=none; b=jzLUOTHQ1m24TbEd1PG25Fr92nC81tfJ7lcMOCNfD/S+OkN1wasbgrWw103hQCsO4QRMQuxH65lQqq+h2IScn2gTsPD4i8b88gANEeivIhxepRpLLffPUWcLd56wjmjsn3oo8+6ben96Gdfs3IG2Vqlni49PXhXNgNwsVMcIhsUTr9z1lhq4gQKwdPL8+pEldK/FZsQg35Sajv3oELxG6zH1c5Fs5acj2Xa2kDS5DU9RuRYZQLoUFlZlx//4oKM2ixqLBY9qQbOiioB/oA1eB+5WsjU9a9XjjTEKYyhojL7ytx32rmwC57UDkXXU3yKyph1IewOwVXkqCAQJyqTeWw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hDq8j0mq2z2yMl;
+	Tue, 04 Aug 2026 20:12:05 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=82.65.109.163
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785838325;
+	cv=none; b=RjAPA8s3LLjuINszNIDwCUBvR8BdNeqIYfD8E+DmFxg1LjUxAC4yQyMsUYyk3i5iYE8WhzbU+xTj3pAVXvK3pRonGrEBV6xXIggw07O/XF4NfDtehicZ2GTN6zKH4H/kjDjzN0UHSifZ0/5Nn9l69317AZ0dzNHPUzJd6uXgXCbfIjUlf1fqY9cRrDhGgwdImCIg6WgAxKRLf0UxkV83hpGg9H3u8xvMES2QCd8p7lMp2LLRRE0/nAiDmaiJE+Hhet/wAYSV+Y9vW549Nj8HHnPI7DynRXaK9jHPWYzwy78FXlA2jMNIOVtaY/wVCo23ZGwgwFJn3CKTycLMNbH6sA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785838116; c=relaxed/relaxed;
-	bh=Z8TdKGnZTYMqO75p+fQ6vrp2bZD+ts8wOgvcpdd/4Qo=;
+	t=1785838325; c=relaxed/relaxed;
+	bh=A3Kzb2YwA8WmNiPzWRWwUNJK2LGfZqmkI4tCffDR+M8=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=PY1Oz4aE85DD1fJazuugHN9KY1epBRtu+jFWNfOGx0vhs/q5Sr+NqMtLBG2ZhY0/29J16UttBl7zCguariLZXBKLwSGFbKMfX5KkyKH+J8bfoGDhFO48vIW91TE450XXFv0lxgMXbX+Z4Wrs37CETR1XNZeAlR9VD0BUO7sKqRXsDwlyqVS1wp8s5s5aPjGSHV8qdOsda2Gy2oTnvuYpc66xsBIv9ubSIIfLKmzyB3w2jtjl83nP2eSUBFazCKr/kWq689HVv2eXpY4T4k+JAKsVGWfgXB8B2NbnND8fYO5qcOWlskiO16m6eKHGPvoSJb7I3dX+0dE+3VO9qAiTQg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Buq/jCHb; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Buq/jCHb;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	 Content-Type:Content-Disposition:In-Reply-To; b=FIxKNOggydYj29tGHoUg8rhq6l9qbV2/7U0PQgQh4WcdN/8T3hK5JLFkGY8Opnr7WGKhj7u50//uyxBD6KnDgRmNwia0ciWP6DaGWDU9pnFEYDDeL9KYCvPQIXQ8XZaUf8Y2g4ZvX8NyjDm4qQZWZfyz+eUzRN6Ag2p03YNNHZd9XfEXuPQqMdmpU8ETZhgsAyYtU01QBxfOMZ/iyTypbcAoyazc2AMgIPwrt8eEzjfDKvG/jasGd3gDRxskvdClFVGbocq2BlvcorxiuwBRWntbXR7ZqWOhlDYpyBxVTx+RD00knnFRq7uutcKc/Q7HapwK+14co4S1lukMLOF3nQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linkmauve.fr; spf=pass (client-ip=82.65.109.163; helo=linkmauve.fr; envelope-from=linkmauve@linkmauve.fr; receiver=lists.ozlabs.org) smtp.mailfrom=linkmauve.fr
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linkmauve.fr
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linkmauve.fr (client-ip=82.65.109.163; helo=linkmauve.fr; envelope-from=linkmauve@linkmauve.fr; receiver=lists.ozlabs.org)
+Received: from linkmauve.fr (linkmauve.fr [82.65.109.163])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hDq4g0L66z2xpn
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Aug 2026 20:08:34 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6748HiQp236584;
-	Tue, 4 Aug 2026 10:08:22 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=Z8TdKGnZTYMqO75p+fQ6vrp2bZD+ts
-	8wOgvcpdd/4Qo=; b=Buq/jCHb/QGsSADwcRh0KPH1n6NArC/APNstlRCcTboAoL
-	VsnXT6QFrhWKFWjZAPMQ9lM1hIpAyF3gip4qzmSkbWBa+d50xBYBx6GTWfo7yvod
-	zPghTPFEienbqqYr7pz1V2tRx7hLUAIRxQdeDyi3TRqjQ3afbWJvTAQH9jIBXeFn
-	cKJphN8Asa6Nwc7pBXhlm97PV77d6F13r7wKcY/rEpG3cE4CD4GsoNexFT7n1IFZ
-	p6ZfAptb5EreIxtZRZGlm4xWok3dkm0Mvba4SSmE+cSIg7khq1O/TtsqcTwus9pF
-	05jYfFsAvmGB5LR8oSuKlNf9wtl6OD9PMnbNrJRg==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fs77g51fs-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 04 Aug 2026 10:08:21 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6749uKAO010137;
-	Tue, 4 Aug 2026 10:08:20 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fswbg986s-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 04 Aug 2026 10:08:20 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 674A8G2B31588786
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 4 Aug 2026 10:08:16 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 6ECB22004F;
-	Tue,  4 Aug 2026 10:08:16 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 76ED620063;
-	Tue,  4 Aug 2026 10:08:13 +0000 (GMT)
-Received: from fedora (unknown [9.5.7.39])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Tue,  4 Aug 2026 10:08:13 +0000 (GMT)
-Date: Tue, 4 Aug 2026 15:38:56 +0530
-From: Amit Machhiwal <amachhiw@linux.ibm.com>
-To: Gautam Menghani <gautam@linux.ibm.com>
-Cc: Amit Machhiwal <amachhiw@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Vaibhav Jain <vaibhav@linux.ibm.com>,
-        Anushree Mathur <anushree.mathur@linux.ibm.com>,
-        Paolo Bonzini <pbonzini@redhat.com>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        Jonathan Corbet <corbet@lwn.net>,
-        Shuah Khan <skhan@linuxfoundation.org>,
-        Ritesh Harjani <ritesh.list@gmail.com>, kvm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org
-Subject: Re: [PATCH v5 1/4] KVM: PPC: Introduce KVM_CAP_PPC_COMPAT_CAPS and
- wire up ioctl
-Message-ID: <20260804153728.0e6e98b0-7c-amachhiw@linux.ibm.com>
-Mail-Followup-To: Gautam Menghani <gautam@linux.ibm.com>, 
-	linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Vaibhav Jain <vaibhav@linux.ibm.com>, Anushree Mathur <anushree.mathur@linux.ibm.com>, 
-	Paolo Bonzini <pbonzini@redhat.com>, Nicholas Piggin <npiggin@gmail.com>, 
-	Michael Ellerman <mpe@ellerman.id.au>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
-	Jonathan Corbet <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>, 
-	Ritesh Harjani <ritesh.list@gmail.com>, kvm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-doc@vger.kernel.org
-References: <20260701051409.51820-1-amachhiw@linux.ibm.com>
- <20260701051409.51820-2-amachhiw@linux.ibm.com>
- <anGT5rS60ns59jY-@Unknown_32:98:3c:96:ca:91>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hDq8g5Qxyz2y1Y
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Aug 2026 20:12:02 +1000 (AEST)
+Received: by linkmauve.fr (Postfix, from userid 1000)
+	id 2B6E970A02F6; Tue, 04 Aug 2026 12:11:57 +0200 (CEST)
+Date: Tue, 4 Aug 2026 12:11:57 +0200
+From: Link Mauve <linkmauve@linkmauve.fr>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org,
+	peterz@infradead.org, jpoimboe@kernel.org, jbaron@akamai.com,
+	aliceryhl@google.com, rostedt@goodmis.org, ardb@kernel.org,
+	ojeda@kernel.org, boqun@kernel.org, gary@garyguo.net,
+	bjorn3_gh@protonmail.com, lossin@kernel.org, a.hindborg@kernel.org,
+	tmgross@umich.edu, dakr@kernel.org, daniel.almeida@collabora.com,
+	tamird@kernel.org, acourbot@nvidia.com, work@onurozkan.dev,
+	nathan@kernel.org, ndesaulniers@google.com, morbo@google.com,
+	justinstitt@google.com, fujita.tomonori@gmail.com,
+	joelagnelf@nvidia.com, gregkh@linuxfoundation.org,
+	prafulrai522@gmail.com, nsc@kernel.org, japo@linux.ibm.com,
+	lina+kernel@asahilina.net, j@jannau.net, airlied@gmail.com,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	rust-for-linux@vger.kernel.org, llvm@lists.linux.dev,
+	"Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
+Subject: Re: [PATCH V17 0/7] Rust Support for powerpc
+Message-ID: <anG67Q6Y59kDqh-c@desktop>
+References: <20260708082454.1254320-1-mkchauras@gmail.com>
+ <178574013457.29744.6211258618175255546.b4-ty@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -109,69 +65,84 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <anGT5rS60ns59jY-@Unknown_32:98:3c:96:ca:91>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODA0MDA3NyBTYWx0ZWRfXwRndxZ3ZRz/I
- K6eHC+s7Kl7YZ2ov0UNCrTPfVx35QdqdUaKaIiEyu4SnqhNi/V5P9rPaaL2YPna9wnmjSezE75f
- 6k7wVoAIt4vCk5KwXuhIcC0uTv5P7m5+oJC4lDwzbwGL/4rUqseEODAlLFppLwdBlFu/U2OukZc
- HgUF3N/jMn1DtsL7bblS4lvKn2pt2uJVlIWmkdsw42OD43LgwTEBsFG32Owe8D2idGgjkks4zN/
- W6j5/Sp3TkO9ibHItKfiKHdANWc+kw2zW9eW5q+zPwvqABU9O7gHxR0ct62T+7/Pw29pa0jxGxG
- rcq+eiDkbtyC/yDb+ekM/pcufIDllu+dEvPA48eRx4hBRF6Jicx0eqEm/yOUzaY8JbDpCPajAMV
- DNU6z8yw6vynCGcACMVkZZWiP419iy2loGvl+y2ebO/FetTjPjht30dGx3Nchqf9e+uuRorgFZF
- VSP8W4MOyAP6ak62a5w==
-X-Authority-Analysis: v=2.4 cv=WIFPmHsR c=1 sm=1 tr=0 ts=6a71ba15 cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=kj9zAlcOel0A:10 a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=59nB_xcw9bnwkcHRuAEA:9
- a=CjuIK1q_8ugA:10
-X-Proofpoint-GUID: eRu8PNi_dZMRKR78rn3p2020rGeZqJhS
-X-Proofpoint-ORIG-GUID: pG2Opiz0PKCe2Gbek78wqc5W_CAh3fEU
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODA0MDA3NyBTYWx0ZWRfX0HNrs549QlTS
- o6/27dahEtBj8LRO5GUgP1iFlVFanuByEv05Eb5KMhL6V+Zv84g+GAQmHQbn7asd5CHfCIwSybM
- TzJlT97Mu88OM6rpc/2cMzaLuixWrh8=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-08-04_02,2026-08-03_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 lowpriorityscore=0 priorityscore=1501 phishscore=0 malwarescore=0
- suspectscore=0 clxscore=1015 impostorscore=0 bulkscore=0 adultscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608040077
+In-Reply-To: <178574013457.29744.6211258618175255546.b4-ty@linux.ibm.com>
+Jabber-ID: linkmauve@linkmauve.fr
 
-On 2026/08/04 12:55 PM, Gautam Menghani wrote:
-> On Wed, Jul 01, 2026 at 10:44:06AM +0530, Amit Machhiwal wrote:
-> > Introduce a new capability and ioctl to expose CPU compatibility modes
-> > supported by the host processor for nested guests.
+Hi,
 
-<snip>
-
-> > diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
-> > index 419011097fa8..1cf9a959669e 100644
-> > --- a/include/uapi/linux/kvm.h
-> > +++ b/include/uapi/linux/kvm.h
-> > @@ -997,6 +997,7 @@ struct kvm_enable_cap {
-> >  #define KVM_CAP_S390_KEYOP 247
-> >  #define KVM_CAP_S390_VSIE_ESAMODE 248
-> >  #define KVM_CAP_S390_HPAGE_2G 249
-> > +#define KVM_CAP_PPC_COMPAT_CAPS 250
-> >  
-> >  struct kvm_irq_routing_irqchip {
-> >  	__u32 irqchip;
-> > @@ -1350,6 +1351,9 @@ struct kvm_s390_keyop {
-> >  #define KVM_GET_DEVICE_ATTR	  _IOW(KVMIO,  0xe2, struct kvm_device_attr)
-> >  #define KVM_HAS_DEVICE_ATTR	  _IOW(KVMIO,  0xe3, struct kvm_device_attr)
-> >  
-> > +/* Available with KVM_CAP_PPC_COMPAT_CAPS */
-> > +#define KVM_PPC_GET_COMPAT_CAPS	_IO(KVMIO,  0xe4)
+On Mon, Aug 03, 2026 at 12:27:13PM +0530, Madhavan Srinivasan wrote:
+> On Wed, 08 Jul 2026 13:54:47 +0530, Mukesh Kumar Chaurasiya (IBM) wrote:
+> > Enable experimental rust support for ppc64le and ppc32be. The patch for
+> > ppc32 has been provided by Link Mauve[1] and ppc64le support[2] has been
+> > merged over it. ppc32 needs some toolchain fixes mentioned in the patch
+> > `rust: Add PowerPC support` and the discussion for that is done here[1].
+> > 
+> > This has been tested on
+> > - powernv9 hardware
+> > - pseries P11 hardware
+> > - pseries(9, 10) qemu
+> > - powernv(9, 10) qemu
+> > - rustdoc on x86 and powerpc64le
+> > - rusttest on x86 and powerpc64le
+> > 
+> > [...]
 > 
-> Can you use another ioctl number for this? This group of ioctls is for
-> fds returned by "KVM_CREATE_DEVICE"
+> Applied to powerpc/next.
+> 
+> [1/7] rust: Fix "multiple candidates for rmeta dependency core" error
+>       https://git.kernel.org/powerpc/c/00cdfd072c709c608606461d7d44d4613119bfa9
+> [2/7] dma-resv: Fix undefined symbol when CONFIG_DMA_SHARED_BUFFER is disabled
+>       https://git.kernel.org/powerpc/c/be809b60cbb61aab96179f44ac3670242ae72996
+> [3/7] powerpc/jump_label: adjust inline asm to be consistent
+>       https://git.kernel.org/powerpc/c/13244c0a40139fe66c4c5c5655f4d732a6002957
+> [4/7] rust/powerpc: Set min rustc version for powerpc
+>       https://git.kernel.org/powerpc/c/e299147cdc8e19c6421a6b7863dc82a35b09d967
+> [5/7] rust: Make __udivdi3() and __umoddi3() panic
+>       https://git.kernel.org/powerpc/c/c93c194e4ee71a734986fd99a8b1ec9fbb7a9b8b
+> [6/7] rust: Add PowerPC support
+>       https://git.kernel.org/powerpc/c/73b741adb264967093ef4eb59905618a7e0d0de0
+> [7/7] powerpc: Enable Rust for ppc64le
+>       https://git.kernel.org/powerpc/c/bc87cbdb952e9223616b839d64bdb4723aa2ed1d
+> 
+> cheers
+> 
 
-Sure, that makes sense. I'll send a v6 with this change soon. Thanks for
-for the reviews and testing.
+I just tested those again in linux-next, with the Wii support series on
+top, but now the kernel fails to build due to ARCH_WARN_ASM and
+ARCH_WARN_REACHABLE not being defined on PowerPC:
+```
+error: no rules expected `ARCH_WARN_ASM`
+   --> /home/linkmauve/dev/linux/wii/rust/kernel/generated_arch_warn_asm.rs:1:28
+    |
+  1 | ::kernel::concat_literals!(ARCH_WARN_ASM("{file}", "{line}", "{flags}", "{size}"))
+    |                            ^^^^^^^^^^^^^ no rules expected this token in macro call
+    |
+   ::: ../rust/kernel/lib.rs:279:1
+    |
+279 | macro_rules! concat_literals {
+    | ---------------------------- when calling this macro
+    |
+    = note: while trying to match sequence start
 
-Thanks,
-Amit
+error: no rules expected `ARCH_WARN_REACHABLE`
+   --> /home/linkmauve/dev/linux/wii/rust/kernel/generated_arch_reachable_asm.rs:1:28
+    |
+  1 | ::kernel::concat_literals!(ARCH_WARN_REACHABLE)
+    |                            ^^^^^^^^^^^^^^^^^^^ no rules expected this token in macro call
+    |
+   ::: ../rust/kernel/lib.rs:279:1
+    |
+279 | macro_rules! concat_literals {
+    | ---------------------------- when calling this macro
+    |
+    = note: while trying to match sequence start
 
+error: aborting due to 2 previous errors
+```
+
+This is in addition to the bindings::kvfree_call_rcu() call, but that
+one is already being handled in a different thread.
+
+-- 
+Link Mauve
 
