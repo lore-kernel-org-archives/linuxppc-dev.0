@@ -1,73 +1,86 @@
-Return-Path: <linuxppc-dev+bounces-25383-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25384-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9CE76C55184
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2026 18:06:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C1D77C55184
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2026 18:07:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hF1gd3lVJz2yH5;
-	Wed, 05 Aug 2026 04:06:05 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785866765;
-	cv=none; b=WFml5rL6yOkQAPqb50nLFEQA/KEsea7I1o6pTNx/wqz/WAuJxPrD2YHdqG6CtcctjWbsgHIXr4QmusiHg53Hzcp5RobG818nwjovcqKWjZLC2uykZ2AtX5PEGVQyUZOoY/pUKQN8naUnZ5zJP1swO1o/2RIO7FpfhINnPfhLyL7kdWp//rthnEM2UNEu6zf7doxu7uk64Qay/P70V+gGbwQA2axChP8VyBvByhTDzltUiDJ/IvFcTxugJ4gESH+Um91q75U7qerEOIEm+jTelJM6H5j1jD6rDyEC54rfsncOInSeY8p6o2J09mbFN7dKwB0vC4v6kNy2+jbccArN3g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hF1jL01pHz2yLY;
+	Wed, 05 Aug 2026 04:07:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785866853;
+	cv=none; b=dpUnWKTLxsJ5s/7FeUNj1ha6xzYRmIz54RrX2SVyLnq2tQzL/kGFV3I3gIxvUclCdJ343mKPrCNOrh8ZAdUbJjvM9aABfD6nGw0k5XKqkkRT5feaQqJOgVBML6HzJa7i3UQbwRFA2Ii37WaFTsOVM5pfvtScPP2k4tK9kh4gk6tEm9JRmIMO19rdj71/cay16VxkfBjwG/J/2BmmtuN4wpW66BFTVxFKvfNuDb8SsILCdkSg2y+kiepjFKO3juxmw6BfI45Noqe2gNYuby31cUSJzn0GAX2ETZaCZyAK0bIUtFBdQGkzIm4h+NBeDMNOY9YV/sdrjUDtAvI6vkiP9w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785866765; c=relaxed/relaxed;
-	bh=j3sUgv3LD9Ix/94g2h8nuCKDeAXjVEjGYOse+rMuj9g=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=bFiOPdgJ/rJ+XfONZBGwFYlhKYmnp6FLGo5KbXObUKuiI8f9XTRrYD29dQ0H/Eq0UFGeN+fb6mEFZR73UBFF4NPdfMOa/zgjmw926BJBMCoZ5KmMnj1XjzcLiWzHM1GLPYMzMWsuDP9zBH+CI5f4Uyr6ZgjtgV8S5jeikU7a/XKFDffwTZVeo2jwK1l/0Exqqb7lwpQveYwzoAVw7uFUAKO+8Wsy75amVLf4XK1ic/+CxfhyYC0seHRew2YTAf1ICzvVYJljNBhuQkYJaVC1WwydxBQWhN9xhfostD0YumGLMT+pM9i1cxx58/D/eAA9yZJzmSwIgYOaLUeC5ycG9w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=fjLJMtG9; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1785866853; c=relaxed/relaxed;
+	bh=B1tdDoMdjI/edwrfeWJUOcTxU6qlA1BigMxQ/o05Awk=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=EgE/3mqv2/4e96GmU3ItZes11lAmdsFVlLiOgpY9O89znv7CbbeNtA4PcjIi3BmYd3Pp7IIDIZZmqF/eR78vTrQot9LqIkeOckGulXVf+dSgDxf06eoG2dpVRggW1zbU5bVGn7hWVayPvS93nK7RkOGeJ7295GkMOdHEr7dKZz6hpYBD1sGN3DRdPs1njrFtLslb4OSv9e2tpb/H+VAlLg0QVGrH29zHKjjepDt3NJNoBVJzQEY+cNo4jX4OqSgEJTry5oZLGMxCS/MfYkpq3mlUA3TXeUWWXC2SzfWCruavj0BnvIDAmdyC3Q3AS9iAdLJi/zcd05LQJwGahouCKw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=BArlU6Kj; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=fjLJMtG9;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=BArlU6Kj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hF1gc1YGtz2y1Y
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Aug 2026 04:06:03 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 674FledV1192114;
-	Tue, 4 Aug 2026 18:05:50 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hF1jK0xCvz2yH5
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Aug 2026 04:07:32 +1000 (AEST)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 674FlXg63598933;
+	Tue, 4 Aug 2026 18:07:21 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=j3sUgv
-	3LD9Ix/94g2h8nuCKDeAXjVEjGYOse+rMuj9g=; b=fjLJMtG9b+s6CUPqRocjyn
-	SiEtAP0xTyQL+ICOfHQohcjBPGdyF7MMciZFoyXsEPMauO2ihOyiQWY+dLP0ope2
-	3SP7C1afVe6t5H4UE28GP4T8mcWbrNW2jwTRvrJU/H70mxYcbB8miiuxeUeAyS7Z
-	ZbnCajZfoTpPgJMiK9zMRhdATvOHwOKjd4I/yZnmVmCfmIxeGvqiSIG8yWKCKgRl
-	DsfLik5za9CA2QUOIy6gJazu6IhoWXH1mSGYGs9KooPwiGx9thrGlJY6TkxLnakx
-	jePb5+Kt+P1jr5VcbfFluwvl8B4p60QHrHmNVwie97KURS/1c+kIJmKevdyePVCg
-	==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fs67hq3xf-1
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=B1tdDoMdjI/edwrfeWJUOcTxU6qlA1BigMxQ/o05A
+	wk=; b=BArlU6KjJ2xv7mLJAtyYPeh89LJDtrAfWHXHFV6m2K5XBhlSpLjW3jbKH
+	AZfowk/2xm2VrWmQgS1qvBDRvr+A/ETGp/I4UVVfF4wrZN2UhzOoCO7DWkaN9Gw9
+	CWySX1GjO6Udjqu7roO0aLW2Ibn6yR7XSdiySzAiSsFtNhQyz0ZKkcEPdIROhXzp
+	rBF8AmM7twLN7QfpiXIzOpss/BL5U9wMcrqGR7TJNvyQa4czwnU1QabasKsWd706
+	U7sgJw7lyj7o+p4pXOy669NCU81z78CPapGqv5eiTIdBflLU1X2GJ+9YUnCVJZPC
+	kaXticB0yPZIL9222Zsp38yclttbg==
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fs8fqq7q6-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 04 Aug 2026 18:05:49 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 674HuMmY010888;
-	Tue, 4 Aug 2026 18:05:49 GMT
+	Tue, 04 Aug 2026 18:07:21 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 674HuHrn019927;
+	Tue, 4 Aug 2026 18:07:19 GMT
 Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4fsv4k3514-1
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4fsugw385e-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 04 Aug 2026 18:05:49 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 674I5g8a7012714
+	Tue, 04 Aug 2026 18:07:19 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 674I7Fxr35389742
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 4 Aug 2026 18:05:42 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B78672004B;
-	Tue,  4 Aug 2026 18:05:42 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id CBC2C20040;
-	Tue,  4 Aug 2026 18:05:37 +0000 (GMT)
-Received: from [9.39.27.173] (unknown [9.39.27.173])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue,  4 Aug 2026 18:05:37 +0000 (GMT)
-Message-ID: <4a026176-969c-4aa7-8f59-6b46daa9166e@linux.ibm.com>
-Date: Tue, 4 Aug 2026 23:35:35 +0530
+	Tue, 4 Aug 2026 18:07:16 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 9CAF82004E;
+	Tue,  4 Aug 2026 18:07:15 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2C8772004B;
+	Tue,  4 Aug 2026 18:07:12 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.39.28.45])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Tue,  4 Aug 2026 18:07:11 +0000 (GMT)
+From: Amit Machhiwal <amachhiw@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Vaibhav Jain <vaibhav@linux.ibm.com>,
+        Amit Machhiwal <amachhiw@linux.ibm.com>,
+        Anushree Mathur <anushree.mathur@linux.ibm.com>,
+        Paolo Bonzini <pbonzini@redhat.com>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+        Jonathan Corbet <corbet@lwn.net>,
+        Shuah Khan <skhan@linuxfoundation.org>,
+        Ritesh Harjani <ritesh.list@gmail.com>, kvm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org
+Subject: [PATCH v6 0/4] KVM: PPC: Expose CPU compatibility modes for nested guests
+Date: Tue,  4 Aug 2026 23:37:01 +0530
+Message-ID: <20260804180705.59160-1-amachhiw@linux.ibm.com>
+X-Mailer: git-send-email 2.50.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,422 +94,231 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 3/5] powerpc/pseries/eeh: Add RTAS error validation
- helpers
-To: Narayana Murty N <nnmlinux@linux.ibm.com>, mahesh@linux.ibm.com,
-        maddy@linux.ibm.com, mpe@ellerman.id.au, christophe.leroy@csgroup.eu,
-        gregkh@linuxfoundation.org, oohall@gmail.com, npiggin@gmail.com
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-        tyreld@linux.ibm.com, vaibhav@linux.ibm.com, sbhat@linux.ibm.com,
-        ganeshgr@linux.ibm.com, haren@linux.ibm.com, thuth@redhat.com
-References: <20260721033815.5300-1-nnmlinux@linux.ibm.com>
- <20260721033815.5300-4-nnmlinux@linux.ibm.com>
-Content-Language: en-US
-From: Sourabh Jain <sourabhjain@linux.ibm.com>
-In-Reply-To: <20260721033815.5300-4-nnmlinux@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODA0MDE0NCBTYWx0ZWRfX+TQvM9rCgV2c
- iwQqSkkRj4wI9+qKVdX0F6deOg1qRCHGzWzS7jZVDXN+fuinUxKb9f7iWBg7HHYY8KP6Rp+UcUM
- TtavUfhL21v9LDYcGVwSV7hlGyFM3GA=
-X-Authority-Analysis: v=2.4 cv=I7VVgtgg c=1 sm=1 tr=0 ts=6a7229fe cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VwQbUJbxAAAA:8
- a=QyXUC8HyAAAA:8 a=VnNF1IyMAAAA:8 a=oco2q1pTq4vujUvGTukA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODA0MDE0NCBTYWx0ZWRfXxfAWhp2cnJxP
- lXN38CRkUeFkS0eqx1IrhgOpoaRTY5XXAgRnMeTabaewGB5r5trU3BddautyYpA2zVOXVL7nSYu
- ln4NBn5o4Az4Ap+9DfpwzlyFuZYcTD3lyH3lythbxtk3sUwd0RHu2S04L4OqOboNTaWZ3CNB/zT
- FZPUtchRqmj/xyd+w5UjFm9AnC1WVTdmsw4CsOS+lC6Ns5nnfBJQwDEqDTnDygHMqtTckSWhaBR
- wMmRpCcbvwGp75jtL1IZKxQQxng1hJHuKLXTijdfUR0dU9tiVjCL42XAy7yQ8nY1VELKajNdQuU
- /B7CUgsW+Buf9VPf5l3lK/qJ7k/kGIluB/7z4ng3hfBhECNNeWZOoJitxrbC6Gg8T/Oxg6lhaQn
- LHJBXJ+FY2uVdDX42VsAmVjMM3bcsvYvdQLCy7yRXU5NrZm5bn+T572Rhq8SGYoEJLVDn6yRacf
- lV5iuB+JK32SbL8d5MA==
-X-Proofpoint-ORIG-GUID: fMJJB28HP_IzxrNGFeG4ECq8zpV2C7EM
-X-Proofpoint-GUID: Vllixcim3xjPMeEJiOW6ehMoXJzT8aRu
+X-Proofpoint-GUID: 7bmwyHflP4NVJYmhpMFvsOVu04KzKXa1
+X-Proofpoint-ORIG-GUID: gVGxR_g8TGJF-BunpEBxxwzTu9w1Ppq3
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODA0MDE0NCBTYWx0ZWRfXyZJkPJ9XqJ2q
+ gEs8YRpGpQOmc80b/OE9SH/6mkYIaVl9wkkEf3Q7lX7ItWBhKEo0gJTNl/+rN9Vhbimf8PcBDpw
+ S0EQL/X7W5Nf5ujQF1yLmy4uw9RoW4Y=
+X-Authority-Analysis: v=2.4 cv=K8cS2SWI c=1 sm=1 tr=0 ts=6a722a59 cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
+ a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=uAbxVGIbfxUO_5tXvNgY:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
+ a=h7u5zJOLz3W6SXC_pSsA:9
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODA0MDE0NCBTYWx0ZWRfXx1d7AnOMSyVN
+ byM5fc32iWopzasc2gQB20mWLiwdHQOyiJXFfUJA5Qwm/v0ScvqxkC72DAgBJai94qMK6zJk0m7
+ PgNKyEkWwEXkPPzs8JwxVWtOHSGbD6kx44mt61wmyKeuE8ma/t4nK18m/09z9pkPN3eHd5mID/H
+ fLP8c/f762Wky4N91m+32kUJNZNPEr5iGRVdvrd8xv9dIalyQOK8YIQgJZ9JkmJ+GtD8FEtu+hD
+ Ylf0Xghj/SKmUV15uDI8BFNZf/RtwLUfYdJ9BcMjXw4KexKMBgnaLkHJBFjCMOkDgLn56/nyZ+b
+ y62NUwYy+e9tjG+UgKw1kmaUemobr6FWZMOVAdqv+rd9Dito9wIc7EpjZlxSorM0k6MrJvE6eMg
+ EXAL8+zEXPIagUHzkp9XNtao8aua4qGnD6TuLf7dFG7ROmZLpOAjGo09uXd4POFcCdCVYRI4Zbs
+ Emzuha/H6HOcItMn3RQ==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-08-04_03,2026-08-04_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 impostorscore=0 clxscore=1011 priorityscore=1501 suspectscore=0
- malwarescore=0 adultscore=0 lowpriorityscore=0 phishscore=0 spamscore=0
+ clxscore=1015 spamscore=0 impostorscore=0 bulkscore=0 priorityscore=1501
+ lowpriorityscore=0 malwarescore=0 phishscore=0 suspectscore=0 adultscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608040144
 
+On POWER systems, newer processor generations can operate in compatibility
+modes corresponding to earlier generations (e.g., a Power11 system running
+in Power10 compatibility mode). In such cases, the effective CPU level
+exposed to guests differs from the physical processor generation.
+
+This creates a problem for nested virtualization. When booting a nested KVM
+guest (L2) inside a host KVM guest (L1) running in a compatibility mode,
+userspace (e.g., QEMU) may derive the CPU model from the raw hardware PVR
+and attempt to configure the nested guest accordingly. However, the L1
+partition is constrained by the compatibility level negotiated with the
+hypervisor (L0), and requests exceeding that level are rejected, leading to
+guest boot failures such as:
+
+  KVM-NESTEDv2: couldn't set guest wide elements
+
+This series provides a mechanism for userspace to query the effective CPU
+compatibility modes supported by the host, so it can select an appropriate
+CPU model for nested guests.
+
+To achieve this, the series introduces a new KVM capability and ioctl
+(KVM_CAP_PPC_COMPAT_CAPS / KVM_PPC_GET_COMPAT_CAPS) that expose the
+compatibility modes supported by the host.
+
+Why a new UAPI?
+===============
+While cpu-version is available in /proc/device-tree/cpus/<cpu#>/cpu-version
+on both L1 booted on PowerNV and PowerVM LPARs, the UAPI approach is
+preferable for several reasons:
+
+1. pHYP (L0) capabilities: On PowerVM, we need to rely on capabilities
+   negotiated with pHYP in KVM, not just device tree properties. The
+   cpu-version property depicts the current compat mode but doesn't point
+   to what all compat modes are supported for the nested guest.
+
+2. procfs dependency: Not all systems run with procfs enabled (CONFIG_PROC_FS
+   is optional). Minimal configurations like buildroot might disable it, but
+   KVM ioctl works regardless since it accesses kernel data structures
+   directly.
+
+3. Kernel validation: The kernel validates and normalizes the compatibility
+   information, ensuring userspace gets validated, consistent data.
+
+4. Abstraction & stability: /proc/device-tree is an implementation detail.
+   The UAPI provides a stable interface that won't break if the underlying
+   mechanism changes.
+
+5. Semantic clarity: KVM_PPC_GET_COMPAT_CAPS clearly expresses what
+   compatibility modes can be used for KVM guests, vs. parsing device tree
+   which requires understanding the semantic meaning of cpu-version.
+
+The implementation supports both:
+
+  - KVM on PowerVM (nested API v2), where compatibility information is
+    served from the cached nested_capabilities value, originally obtained
+    via the H_GUEST_GET_CAPABILITIES hypercall at module init.
+  - KVM on PowerNV (nested API v1), where compatibility is derived from the
+    device tree ("cpu-version") representing the effective processor
+    compatibility level.
+
+This allows userspace (e.g., QEMU) to select a CPU model consistent with
+the host compatibility mode, avoiding mismatches and enabling successful
+nested guest boot.
+
+Note: This series is built on top of patch [1] which must be applied first.
+Patch [1] ensures arch_compat is validated against the host compatibility
+mode before this series adds the capability query mechanism.
+Commit e4de1b9cb3b5 ("powerpc/dt_cpu_ftrs: Set CPU_FTR_P11_PVR for Power11
+and later processors") which was also a prerequisite has been merged upstream.
+
+Changes in v6:
+  - Changed KVM_PPC_GET_COMPAT_CAPS ioctl number from 0xe4 to 0xb8 to
+    avoid placing it in the KVM_CREATE_DEVICE fd ioctl range (0xe0-0xe3);
+    relocated definition to sit alongside other PPC vm ioctls (patch 1)
+    - [Gautam]
+  - kvmppc_map_compat_capabilities(): changed parameter type from
+    'const __be32' to 'u32' to fix Sparse type annotation warning (patch 3)
+    - [Sashiko]
+  - kvmppc_get_compat_caps(): replaced of_get_property() + be32_to_cpup()
+    with of_property_read_u32() for implicit length validation and cleaner
+    endianness handling (patch 3) - [Sashiko]
+  - Documentation: corrected :Parameters: from (out) to (in/out) since
+    userspace must set size and flags before calling (patch 4) - [Sashiko]
+
+Patch summary:
+  [1/4] Introduce KVM_CAP_PPC_COMPAT_CAPS and wire up ioctl
+  [2/4] Implement capability retrieval for KVM on PowerVM (API v2)
+  [3/4] Add KVM on PowerNV support (API v1)
+  [4/4] Document the new ioctl
+
+Testing (with QEMU v4 patches and on top of patch [1]):
+
+KVM APIv1 Testing
+=================
+  On P10 PowerNV machine (L0)
+  ---------------------------
+    - P10 L1 KVM guest -> works
+      - P10 nested L2 KVM guest -> works
+      - P9 compat nested L2 KVM guest -> works
+    - P9 compat L1 KVM guest -> works
+      - P9 nested L2 KVM guest -> works
+
+  On Powernv11 TCG Guest (L0)
+  ---------------------------
+    - P11 PowerNV TCG L0 guest -> works
+    - P11 L1 KVM guest -> works
+      - P11 L2 KVM guest -> works
+    - P10 compat L1 KVM guest -> works
+      - P10 L2 KVM guest -> works
+    - P9  compat L1 KVM guest -> works
+      - P9 L2 KVM guest -> works
+
+KVM APIv2 Testing
+=================
+  On P11 PowerVM LPAR (L1)
+  ------------------------
+    - P11 L2 KVM guest -> works
+    - P10 compat L2 KVM guest -> works
+    - P9 compat L2 KVM guest fails to boot as expected
+    - Without QEMU patches but Linux patches
+      - P11 L2 KVM guest -> works
+      - P10 compat L2 KVM guest -> works
+      - P9 compat L2 KVM guest fails to boot as expected
+    - Without Linux patches but QEMU patches
+      - P11 L2 KVM guest -> works
+      - P10 compat L2 KVM guest -> works
+
+  On P11 LPAR in P10 compat (L1)
+  ------------------------------
+    - P10 (host compat) L2 KVM guest -> works
+    - Without QEMU patch but Linux patches
+      - P10 guest fails to boot as expected (error: kvm run failed Invalid argument)
+    - Without Linux patch but QEMU patches
+      - P10 guest fails to boot as expected (KVM: unknown exit, hardware reason ffffffffffffffea)
+
+  On P10 PowerVM LPAR (L1)
+  ------------------------
+    - P10 L2 KVM guest -> works
+    - P9 compat L2 KVM guest fails to boot as expected
+
+TCG pSeries Guest
+=================
+    - P11 (default) pSeries guest boots fine
+
+ABI Extensibility Testing (struct size 32, extra member)
+=========================================================
+    - Newer struct on QEMU, older kernel -> works (kernel returns -E2BIG,
+      QEMU retries with correct size)
+    - New struct on Linux kernel, older QEMU -> works (kernel zero-pads
+      trailing fields, QEMU gets correct data)
+
+With this series, nested guests boot successfully in configurations where
+they previously failed due to compatibility mismatches.
+
+Related QEMU series:
+====================
+A corresponding QEMU v5 series will be sent soon.
+
+Previous QEMU versions:
+v4: https://lore.kernel.org/all/20260701052341.62289-1-amachhiw@linux.ibm.com/
+v3: https://lore.kernel.org/all/20260616113915.25589-1-amachhiw@linux.ibm.com/
+v2: https://lore.kernel.org/all/20260502140021.69712-1-amachhiw@linux.ibm.com/
+v1: https://lore.kernel.org/all/20260430061333.37905-1-amachhiw@linux.ibm.com/
+
+Previous versions:
+==================
+v5: https://lore.kernel.org/linuxppc-dev/20260701051409.51820-1-amachhiw@linux.ibm.com/
+v4: https://lore.kernel.org/linuxppc-dev/20260616123314.82721-1-amachhiw@linux.ibm.com/
+v3: https://lore.kernel.org/linuxppc-dev/20260522152744.55251-1-amachhiw@linux.ibm.com/
+v2: https://lore.kernel.org/linuxppc-dev/20260513100755.83195-1-amachhiw@linux.ibm.com/
+v1: https://lore.kernel.org/linuxppc-dev/20260430054906.94431-1-amachhiw@linux.ibm.com/
+
+References:
+===========
+[1] https://lore.kernel.org/all/20260714175432.86388-1-amachhiw@linux.ibm.com/
+
+Amit Machhiwal (4):
+  KVM: PPC: Introduce KVM_CAP_PPC_COMPAT_CAPS and wire up ioctl
+  KVM: PPC: Book3S HV: Implement compat CPU capability retrieval for KVM
+    on PowerVM
+  KVM: PPC: Book3S HV: Add support for compat CPU capabilities for KVM
+    on PowerNV
+  KVM: PPC: Document KVM_PPC_GET_COMPAT_CAPS ioctl
+
+ Documentation/virt/kvm/api.rst      | 79 +++++++++++++++++++++++++++++
+ arch/powerpc/include/asm/kvm_ppc.h  |  1 +
+ arch/powerpc/include/uapi/asm/kvm.h | 18 +++++++
+ arch/powerpc/kvm/book3s_hv.c        | 56 ++++++++++++++++++++
+ arch/powerpc/kvm/powerpc.c          | 71 ++++++++++++++++++++++++++
+ include/uapi/linux/kvm.h            |  3 ++
+ 6 files changed, 228 insertions(+)
 
 
-On 21/07/26 09:08, Narayana Murty N wrote:
-> Add validation helpers
-
-Can you provide more details about what these validation helpers are for?
-
-> and buffer-preparation infrastructure used by
-> the RTAS-based EEH error injection implementation.
-
-Can you explain what this buffer is and what it is used for?
-
-
->
-> Changes relative to the original submission:
->   - pr_fmt unconditionally defined at the top of the file, not wrapped
->     in an #ifndef guard.
->   - RTAS error-type constants (RTAS_ERR_TYPE_*) are defined as file-local
->     macros in eeh_pseries.c, not in the UAPI header.  They are internal
->     PAPR firmware type codes, not generic EEH ABI values.
->   - validate_corrupted_page() drops the unused 'pe' parameter entirely
->     (no __maybe_unused).  The mask value is silently accepted since it
->     is not meaningful for this error type.
->   - validate_ioa_bus_error() is removed; callers invoke
->     validate_addr_mask_in_pe() directly.
->   - validate_err_type() and validate_special_event() and
->     validate_corrupted_page() are marked static inline.
->   - prepare_errinjct_buffer() takes an explicit 'void *buf' pointer
->     (kernel virtual address) instead of accessing rtas_errinjct_buf
->     directly, making it easier to test and keeping the global out of
->     the helper.
->   - kernel-doc added for prepare_errinjct_buffer() including a Locking:
->     line stating the caller must hold rtas_errinjct_mutex.
-
-Changelog shouldn't be part of commit message.
-
->
-> Reported-by: kernel test robot <lkp@intel.com>
-> Closes: https://lore.kernel.org/oe-kbuild-all/202512101130.EYUo0oZx-lkp@intel.com/
-> Signed-off-by: Narayana Murty N <nnmlinux@linux.ibm.com>
-> ---
->   arch/powerpc/include/uapi/asm/eeh.h          |  24 +-
->   arch/powerpc/platforms/pseries/eeh_pseries.c | 250 +++++++++++++++++++
->   2 files changed, 271 insertions(+), 3 deletions(-)
->
-> diff --git a/arch/powerpc/include/uapi/asm/eeh.h b/arch/powerpc/include/uapi/asm/eeh.h
-> index 3b5c47ff3fc4..2680b22f8917 100644
-> --- a/arch/powerpc/include/uapi/asm/eeh.h
-> +++ b/arch/powerpc/include/uapi/asm/eeh.h
-> @@ -15,9 +15,27 @@
->   #define EEH_PE_STATE_STOPPED_DMA	4	/* Stopped DMA only	*/
->   #define EEH_PE_STATE_UNAVAIL		5	/* Unavailable		*/
->   
-> -/* EEH error types and functions */
-> -#define EEH_ERR_TYPE_32			0       /* 32-bits error	*/
-> -#define EEH_ERR_TYPE_64			1       /* 64-bits error	*/
-> +/*
-> + * EEH error types.
-> + *
-> + * EEH_ERR_TYPE_32 and EEH_ERR_TYPE_64 are the original ABI values and must
-> + * not be renumbered.  The additional types below are generic identifiers for
-> + * error-injection types supported by pSeries RTAS.  Platform backends may
-> + * return -EOPNOTSUPP for valid generic types that are not supported by their
-> + * firmware.
-> + */
-> +#define EEH_ERR_TYPE_32				0       /* 32-bits error	*/
-> +#define EEH_ERR_TYPE_64				1       /* 64-bits error	*/
-> +#define EEH_ERR_TYPE_RECOVERED_SPECIAL_EVENT	0x03
-> +#define EEH_ERR_TYPE_CORRUPTED_PAGE		0x04
-> +#define EEH_ERR_TYPE_CORRUPTED_DCACHE_START	0x09
-> +#define EEH_ERR_TYPE_CORRUPTED_DCACHE_END	0x0a
-> +#define EEH_ERR_TYPE_CORRUPTED_ICACHE_START	0x0b
-> +#define EEH_ERR_TYPE_CORRUPTED_ICACHE_END	0x0c
-> +#define EEH_ERR_TYPE_CORRUPTED_TLB_START	0x0d
-> +#define EEH_ERR_TYPE_CORRUPTED_TLB_END		0x0e
-> +
-> +/* EEH error functions */
->   #define EEH_ERR_FUNC_MIN		0
->   #define EEH_ERR_FUNC_LD_MEM_ADDR	0	/* Memory load	*/
->   #define EEH_ERR_FUNC_LD_MEM_DATA	1
-> diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
-> index b12ef382fec7..25aad86c696d 100644
-> --- a/arch/powerpc/platforms/pseries/eeh_pseries.c
-> +++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
-> @@ -1,4 +1,5 @@
->   // SPDX-License-Identifier: GPL-2.0-or-later
-> +#define pr_fmt(fmt) "EEH: " fmt
->   /*
->    * The file intends to implement the platform dependent EEH operations on pseries.
->    * Actually, the pseries platform is built based on RTAS heavily. That means the
-> @@ -31,8 +32,27 @@
->   #include <asm/io.h>
->   #include <asm/machdep.h>
->   #include <asm/ppc-pci.h>
-> +#include <linux/mutex.h>
->   #include <asm/rtas.h>
->   
-> +/*
-> + * PAPR RTAS firmware error-injection type codes.
-> + *
-> + * These are internal firmware encodings used by ibm,errinjct.  They are
-> + * NOT generic EEH ABI values.  Only the types actually handled by
-> + * prepare_errinjct_buffer() are defined here.
-> + */
-> +#define RTAS_ERR_TYPE_RECOVERED_SPECIAL_EVENT	0x03
-> +#define RTAS_ERR_TYPE_CORRUPTED_PAGE		0x04
-> +#define RTAS_ERR_TYPE_IOA_BUS_ERROR		0x07
-> +#define RTAS_ERR_TYPE_CORRUPTED_DCACHE_START	0x09
-> +#define RTAS_ERR_TYPE_CORRUPTED_DCACHE_END	0x0a
-> +#define RTAS_ERR_TYPE_CORRUPTED_ICACHE_START	0x0b
-> +#define RTAS_ERR_TYPE_CORRUPTED_ICACHE_END	0x0c
-> +#define RTAS_ERR_TYPE_CORRUPTED_TLB_START	0x0d
-> +#define RTAS_ERR_TYPE_CORRUPTED_TLB_END		0x0e
-> +#define RTAS_ERR_TYPE_IOA_BUS_ERROR_64		0x0f
-> +
->   /* RTAS tokens */
->   static int ibm_set_eeh_option;
->   static int ibm_set_slot_reset;
-> @@ -786,6 +806,236 @@ static int pseries_notify_resume(struct eeh_dev *edev)
->   }
->   #endif
->   
-> +/**
-> + * validate_addr_mask_in_pe() - Validate that addr+mask fall within PE BARs
-> + * @pe:   EEH PE containing one or more PCI devices
-> + * @addr: Address to validate
-> + * @mask: Address mask to validate
-> + *
-> + * Checks that @addr is mapped into a BAR/MMIO region of any device
-> + * belonging to the PE.  If @mask is non-zero, ensures it is consistent
-> + * with @addr.
-> + *
-> + * Return: 0 if valid, RTAS_INVALID_PARAMETER on failure.
-
-Using RTAS error codes for kernel function may not be good idea.
-How about using -EINVAL?
-
-> + */
-> +static int validate_addr_mask_in_pe(struct eeh_pe *pe, unsigned long addr,
-> +				    unsigned long mask)
-> +{
-> +	struct eeh_dev *edev, *tmp;
-> +	struct pci_dev *pdev;
-> +	int bar;
-> +	resource_size_t bar_start, bar_len;
-> +	bool valid = false;
-> +
-> +	/* nothing to validate */
-> +	if (addr == 0 && mask == 0)
-> +		return 0;
-> +
-> +	eeh_pe_for_each_dev(pe, edev, tmp) {
-> +		pdev = eeh_dev_to_pci_dev(edev);
-> +		if (!pdev)
-> +			continue;
-> +
-> +		for (bar = 0; bar < PCI_NUM_RESOURCES; bar++) {
-> +			bar_start = pci_resource_start(pdev, bar);
-> +			bar_len   = pci_resource_len(pdev, bar);
-> +
-> +			if (!bar_len)
-> +				continue;
-> +
-> +			if (addr >= bar_start && addr < (bar_start + bar_len)) {
-> +				if ((addr & mask) != addr) {
-
-The check has nothing to do with device or the BAR.
-Then why this check is inside the loop?
-
-For my understanding can you please explain what this check is all about?
-
-> +					pr_err("Mask 0x%lx invalid for addr 0x%lx in BAR[%d] range 0x%llx-0x%llx\n",
-> +					       mask, addr, bar,
-> +					       (unsigned long long)bar_start,
-> +					       (unsigned long long)(bar_start + bar_len));
-> +					return RTAS_INVALID_PARAMETER;
-> +				}
-> +				pr_debug("addr=0x%lx mask=0x%lx validated in BAR[%d] of %s\n",
-> +					 addr, mask, bar, pci_name(pdev));
-> +				valid = true;
-
-Once valid is set, the loop keeps scanning all remaining BARs/devices
-instead of breaking. Is it intentional?
-
-> +			}
-> +		}
-> +	}
-> +
-> +	if (!valid) {
-> +		pr_err("addr=0x%lx not within any BAR of any device in PE\n",
-> +		       addr);
-> +		return RTAS_INVALID_PARAMETER;
-
--EINVAL would be a better options for these helpers.
-
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +/**
-> + * validate_special_event() - Validate parameters for special-event injection
-> + * @addr: Address parameter (must be zero for this type)
-> + * @mask: Mask parameter (must be zero for this type)
-> + *
-> + * Return: 0 if valid, RTAS_INVALID_PARAMETER otherwise.
-> + */
-> +static inline int validate_special_event(unsigned long addr, unsigned long mask)
-> +{
-> +	if (addr || mask) {
-> +		pr_err("special-event injection must not specify addr/mask\n");
-> +		return RTAS_INVALID_PARAMETER;
-> +	}
-> +	return 0;
-> +}
-> +
-> +/**
-> + * validate_corrupted_page() - Validate parameters for corrupted-page injection
-> + * @addr: Physical page address (required, must be non-zero)
-> + *
-> + * The mask value is not meaningful for this error type and is ignored.
-> + *
-> + * Return: 0 if valid, RTAS_INVALID_PARAMETER otherwise.
-> + */
-> +static inline int validate_corrupted_page(unsigned long addr)
-> +{
-> +	if (!addr) {
-> +		pr_err("corrupted-page injection requires non-zero addr\n");
-> +		return RTAS_INVALID_PARAMETER;
-> +	}
-> +	return 0;
-> +}
-> +
-> +/**
-> + * pseries_eeh_type_to_rtas() - Map a generic EEH error type to its RTAS encoding.
-> + * @type: Generic EEH error type (EEH_ERR_TYPE_*)
-> + *
-> + * Translates a userspace-visible generic EEH error type to the corresponding
-> + * PAPR RTAS firmware type code.  Every supported value appears as an explicit
-> + * case; coincidental equality between generic EEH and RTAS values is not relied
-> + * upon.
-> + *
-> + * Return: RTAS_ERR_TYPE_* value on success, -EINVAL for unsupported types.
-> + */
-> +static int pseries_eeh_type_to_rtas(int type)
-> +{
-> +	switch (type) {
-> +	case EEH_ERR_TYPE_32:
-> +		return RTAS_ERR_TYPE_IOA_BUS_ERROR;
-> +	case EEH_ERR_TYPE_64:
-> +		return RTAS_ERR_TYPE_IOA_BUS_ERROR_64;
-> +	case EEH_ERR_TYPE_RECOVERED_SPECIAL_EVENT:
-> +		return RTAS_ERR_TYPE_RECOVERED_SPECIAL_EVENT;
-> +	case EEH_ERR_TYPE_CORRUPTED_PAGE:
-> +		return RTAS_ERR_TYPE_CORRUPTED_PAGE;
-> +	case EEH_ERR_TYPE_CORRUPTED_DCACHE_START:
-> +		return RTAS_ERR_TYPE_CORRUPTED_DCACHE_START;
-> +	case EEH_ERR_TYPE_CORRUPTED_DCACHE_END:
-> +		return RTAS_ERR_TYPE_CORRUPTED_DCACHE_END;
-> +	case EEH_ERR_TYPE_CORRUPTED_ICACHE_START:
-> +		return RTAS_ERR_TYPE_CORRUPTED_ICACHE_START;
-> +	case EEH_ERR_TYPE_CORRUPTED_ICACHE_END:
-> +		return RTAS_ERR_TYPE_CORRUPTED_ICACHE_END;
-> +	case EEH_ERR_TYPE_CORRUPTED_TLB_START:
-> +		return RTAS_ERR_TYPE_CORRUPTED_TLB_START;
-> +	case EEH_ERR_TYPE_CORRUPTED_TLB_END:
-> +		return RTAS_ERR_TYPE_CORRUPTED_TLB_END;
-> +	default:
-> +		return -EINVAL;
-> +	}
-> +}
-> +
-> +/**
-> + * prepare_errinjct_buffer() - Build ibm,errinjct work buffer
-> + * @buf: RTAS error-injection work buffer (kernel virtual address)
-> + * @pe: EEH PE associated with the injection target
-> + * @rtas_type: PAPR firmware error-injection type after generic EEH-to-RTAS
-> + *             translation (RTAS_ERR_TYPE_*)
-> + * @func: Error function selector
-> + * @addr: Target address, if applicable
-> + * @mask: Address mask, if applicable
-> + *
-> + * Zeroes @buf and populates it according to the PAPR layout for @rtas_type.
-> + * Performs inline parameter validation for each error type.
-> + *
-> + * Locking: Caller must hold rtas_errinjct_mutex.
-> + *
-> + * Return: 0 on success, RTAS_INVALID_PARAMETER on invalid input.
-> + */
-> +static int prepare_errinjct_buffer(void *buf, struct eeh_pe *pe,
-> +				   int rtas_type, int func,
-> +				   unsigned long addr, unsigned long mask)
-> +{
-> +	__be64 *buf64 = (__be64 *)buf;
-> +	__be32 *buf32 = (__be32 *)buf;
-> +
-> +	memset(buf, 0, RTAS_ERRINJCT_BUF_SIZE);
-> +
-> +	switch (rtas_type) {
-> +	case RTAS_ERR_TYPE_RECOVERED_SPECIAL_EVENT:
-> +		/* func: 1 = non-persistent, 2 = persistent */
-> +		if (func < 1 || func > 2)
-> +			return RTAS_INVALID_PARAMETER;
-> +		if (validate_special_event(addr, mask))
-> +			return RTAS_INVALID_PARAMETER;
-> +		buf32[0] = cpu_to_be32(func);
-> +		break;
-> +
-> +	case RTAS_ERR_TYPE_CORRUPTED_PAGE:
-> +		if (validate_corrupted_page(addr))
-> +			return RTAS_INVALID_PARAMETER;
-> +		buf32[0] = cpu_to_be32(upper_32_bits(addr));
-> +		buf32[1] = cpu_to_be32(lower_32_bits(addr));
-> +		break;
-> +
-> +	case RTAS_ERR_TYPE_IOA_BUS_ERROR:
-> +		if (func < EEH_ERR_FUNC_LD_MEM_ADDR || func > EEH_ERR_FUNC_MAX)
-> +			return RTAS_INVALID_PARAMETER;
-> +		if (upper_32_bits(addr) || upper_32_bits(mask)) {
-> +			pr_err("32-bit IOA injection cannot encode addr=%#lx mask=%#lx\n",
-> +			       addr, mask);
-> +			return RTAS_INVALID_PARAMETER;
-> +		}
-> +		if (validate_addr_mask_in_pe(pe, addr, mask))
-> +			return RTAS_INVALID_PARAMETER;
-> +		buf32[0] = cpu_to_be32((u32)addr);
-> +		buf32[1] = cpu_to_be32((u32)mask);
-> +		buf32[2] = cpu_to_be32(pe->addr);
-> +		buf32[3] = cpu_to_be32(BUID_HI(pe->phb->buid));
-> +		buf32[4] = cpu_to_be32(BUID_LO(pe->phb->buid));
-> +		buf32[5] = cpu_to_be32(func);
-> +		break;
-> +
-> +	case RTAS_ERR_TYPE_IOA_BUS_ERROR_64:
-> +		if (func < EEH_ERR_FUNC_MIN || func > EEH_ERR_FUNC_MAX)
-> +			return RTAS_INVALID_PARAMETER;
-> +		if (validate_addr_mask_in_pe(pe, addr, mask))
-> +			return RTAS_INVALID_PARAMETER;
-> +		buf64[0] = cpu_to_be64(addr);
-> +		buf64[1] = cpu_to_be64(mask);
-> +		buf32[4] = cpu_to_be32(pe->addr);
-> +		buf32[5] = cpu_to_be32(BUID_HI(pe->phb->buid));
-> +		buf32[6] = cpu_to_be32(BUID_LO(pe->phb->buid));
-> +		buf32[7] = cpu_to_be32(func);
-> +		break;
-> +
-> +	case RTAS_ERR_TYPE_CORRUPTED_DCACHE_START:
-> +	case RTAS_ERR_TYPE_CORRUPTED_DCACHE_END:
-> +	case RTAS_ERR_TYPE_CORRUPTED_ICACHE_START:
-> +	case RTAS_ERR_TYPE_CORRUPTED_ICACHE_END:
-> +		buf32[0] = cpu_to_be32(lower_32_bits(addr));
-> +		buf32[1] = cpu_to_be32(lower_32_bits(mask));
-> +		break;
-> +
-> +	case RTAS_ERR_TYPE_CORRUPTED_TLB_START:
-> +	case RTAS_ERR_TYPE_CORRUPTED_TLB_END:
-> +		buf32[0] = cpu_to_be32(lower_32_bits(addr));
-> +		break;
-> +
-> +	default:
-> +		pr_err("unsupported RTAS error injection type 0x%x\n", rtas_type);
-> +		return RTAS_INVALID_PARAMETER;
-> +	}
-> +
-> +	pr_debug("errinjct buffer ready: rtas_type=0x%x func=%d addr=0x%lx mask=0x%lx\n",
-> +		 rtas_type, func, addr, mask);
-> +	return 0;
-> +}
-> +
->   /**
->    * pseries_eeh_err_inject - Inject specified error to the indicated PE
->    * @pe: the indicated PE
+base-commit: 848acc8ffe1b7cd5f1bf427b93069becfebc2c9d
+prerequisite-patch-id: 7755786f0e4f415e47065ff1972765008727fe10
+-- 
+2.50.1 (Apple Git-155)
 
 
