@@ -1,88 +1,94 @@
-Return-Path: <linuxppc-dev+bounces-25338-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25339-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A4E5BC55172
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2026 07:28:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 36639C5518F
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2026 08:29:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hDlXH230Tz2yYs;
-	Tue, 04 Aug 2026 17:28:47 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785828527;
-	cv=none; b=kp07MOw/67+8VhzPlVtgr3VPOhCKZxvuBYYdLGbhAw5N+qdkJ131eUjH91VGWBpvinCim/rdJqX0u7FTB00GvPu3iz0Nax7e5k56YDA0FUY+Qbn5bHz7JnAIgSKy8kex4RyaTtRwas7qndw6DTkLo1/u6dVdTfSzTAuK0PNBxsUfuEjggAecBRkGVvp67AzILIq4dbRuDplHybIjkobyYWCYtBvnTJIFxMKX7dXixI37mBlzkyiso1XPAb8VdVE/QHjiQ0bTjt3adzOPdNZOopwj/fEJbk82buzsrA5fsQL+FHAlrRwYdWQqNSaXQTyduVmD2Mbu9hBc/ongHpOlhA==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785828527; c=relaxed/relaxed;
-	bh=59QBGdszpD+ptvH3BvC3eYi/REMGyve3Ua1AnGhc/Nk=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=UIe/5nTH49Lt6TY9+qjBEAXQd4t+bqEG+VeqhjYK9Q9vjJypYZIZM+TlepwyAhXLD9LhqUzqaTVDnBXY8CgfqRGhCnHrVQR6UN+MEVXh/CzSlfYJu4QA82mILH18jh057CAKdTDRpGP7Fcmssu3vjDN9s0qH+kr3QkELObowfRVDgucj0j9Wxzd5cQBnVv8X5uEmVxGsga/fWzKIlREp4mUwCrCiWl00vIlhe9EU3unfIsYpj9ICNBmLFinkFRfHF5nUYiqFKYQWADpp+FPMQbMD+RL82yENScziGyzfAQk9CEs/ETMM1partpv6dsdWfL6yA2aeXQWsUYOZYYDknw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=e7/6dXCz; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hDmtT0HVTz2yMl;
+	Tue, 04 Aug 2026 18:29:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::42a" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785832176;
+	cv=pass; b=OGYwZmjM4zSesMweIDHcWanV7jYc7pssaB07thyy1wDVOelGo02QexftEyCO5+7ypO9A4kgcwl36T0J16T9hO8XGAxto2OU6addYeHKqx7vNfv8wv/cw9E0jSNZR5UE8iJd4ZbtxrmxzG8EPHut5tXIjM4hzsi2fru4wTe+FDdv5mdf3cX4s7ojHOpeQ+vQcNiHp5k4XMbb0SqNfJ45ojaVVXIo/qLEs16uDcGyIl8PRoRMZIhwwZquXzqq6l7CjTh0JOOux2QJyF3HA18tTF49U7b7YxRpDreKYwxWCQ9X9WiygVkOKUTtpm02S45NpdctPasHV3r8zHjx12RYl7g==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1785832176; c=relaxed/relaxed;
+	bh=KkuWY5Hua0QRTwIBGaEIrRJQVtnuHK0Pb4GBlrZuFaQ=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=mhKGtilCXPlHpra5J1+2oLCYXTneedaJ1M4hV2L0VjdXwwAgOncIJuAnarMcYrV/+CZyJ1W9FLlLsCI1F4VU3MqfaRozUh6rvzxEUHMRoL4dMD1UWqfNfADF7/X+Kjzx9W/4S0KC4YaFBZDmGLjF4uxlI0hsSI3PBbtwyAlCT896zbq6jtbSxakpoNsiGjwSrhCHiWTbp1ZIlkrKuEvLxCny/thmNEjGfC9Q3jMpiUIuyTfmBxuwuReQIH6jgMD4PEe2Kj5dqlBBCx4DYhmcs/+szmOHWvlpsWt+8qPZCODb7IbfWrRhowDxqU8NYmepY7RStSYkbA0l2O99S4G+8w==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=DoErG81D; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42a; helo=mail-pf1-x42a.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=e7/6dXCz;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=DoErG81D;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42a; helo=mail-pf1-x42a.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x42a.google.com (mail-pf1-x42a.google.com [IPv6:2607:f8b0:4864:20::42a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hDlXG0LPYz2yMl
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Aug 2026 17:28:45 +1000 (AEST)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6741HjfD3656328;
-	Tue, 4 Aug 2026 07:28:36 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=59QBGdszpD+ptvH3BvC3eYi/REMGyv
-	e3Ua1AnGhc/Nk=; b=e7/6dXCz8rShuh1euBRoO+SpC4UN6OQb+hnVH18hB2f6qp
-	E6qI/u/BEpUKaNVrQUNspfe32tqdNAaYjG8aj0vVWRbUiarLJAVRgU5b24MQPNIZ
-	ZQNkKgujfZGooJzWX39/gvVi/QqEawOhi18Cd5Q3j6l/kVWxQ4ZIp6LYT8UuGOkK
-	R7P0FCFNDjFVTaLK3PnEJmNSkhJyjuKhV3ly0Ho3UdIDMrWhKN7uSvNFgx2LrSo6
-	Vi2PW9S96gE9j5pFvVyDEBbSZervufviwm9s7OOcVKtpmveWvGfyA/3Oz4I4MxEz
-	TbffkUPG89iOzZi17c1YgudPiKTePXFzB0g8/y3Q==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fs8h4vpa6-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 04 Aug 2026 07:28:35 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6747QVoA000854;
-	Tue, 4 Aug 2026 07:28:35 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fswtygpt3-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 04 Aug 2026 07:28:34 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6747SVZq17629676
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 4 Aug 2026 07:28:31 GMT
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1ACAC2004B;
-	Tue,  4 Aug 2026 07:28:31 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C19DE20040;
-	Tue,  4 Aug 2026 07:28:27 +0000 (GMT)
-Received: from Unknown_32:98:3c:96:ca:91 (unknown [9.39.29.19])
-	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Tue,  4 Aug 2026 07:28:27 +0000 (GMT)
-Date: Tue, 4 Aug 2026 12:58:24 +0530
-From: Gautam Menghani <gautam@linux.ibm.com>
-To: Amit Machhiwal <amachhiw@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Vaibhav Jain <vaibhav@linux.ibm.com>,
-        Anushree Mathur <anushree.mathur@linux.ibm.com>,
-        Paolo Bonzini <pbonzini@redhat.com>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        Jonathan Corbet <corbet@lwn.net>,
-        Shuah Khan <skhan@linuxfoundation.org>,
-        Ritesh Harjani <ritesh.list@gmail.com>, kvm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org
-Subject: Re: [PATCH v5 0/4] KVM: PPC: Expose CPU compatibility modes for
- nested guests
-Message-ID: <anGUmKdw_-hWt9ez@Unknown_32:98:3c:96:ca:91>
-References: <20260701051409.51820-1-amachhiw@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hDmtR2Zs6z2y1Y
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Aug 2026 18:29:34 +1000 (AEST)
+Received: by mail-pf1-x42a.google.com with SMTP id d2e1a72fcca58-8485b358552so4458163b3a.2
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Aug 2026 01:29:34 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1785832172; cv=none;
+        d=google.com; s=arc-20260327;
+        b=EEVXhEPjWMZxxCS4cYBjmklL979Hv7p1tzI5WyRiCoT+oKfOsNlktCEtZ4RD0N8DPp
+         UZgq8akSxQCAlj/2t35MW+zbVBBO2d453NGEpreK9Tq7/jhY+uKOO/1lTbHVssfreBqH
+         LUbWJyqLNjUr6fgL3oNse1ai7X3U9iwrkP3+YAZ/tykWCPQJCz+R4EEVK/4ATYilghHT
+         6+4+hD6z7xn1POcIjSYZWxTwGVbEq8QJqDGpXU2wd4c9mWfK1ktey7GvcyT7wj3Wm6Ph
+         RP4gLzU4y/N3RePIq/9qYG7U+fWtE31AdrGJhvSFLz0vSgFi8cBqWDEes7JAdP1rY5gb
+         xiow==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=KkuWY5Hua0QRTwIBGaEIrRJQVtnuHK0Pb4GBlrZuFaQ=;
+        fh=qYty2zov8agttLmuM/h8YgvLpAhYc7psuAwzM89cHhA=;
+        b=d0mE83qeP4Bv7ocQAAilXXMPEyaAclabpVgElnAWHqqy0TxDeFFjLs8F/t4snFI2sH
+         rs23HHQIYNNHXHxYQ2gWUGCX0D2ygui/zRiIA7Ny+u7JNfXOCrFW0te3JSGi9v75yeQa
+         +TnN/0duI/StymmLq3Ze15lW2uceHEellpIGesnmdl9HHdY2IIcXoBdTc1d3+myaMkoK
+         AliAMs1R7UsOcGVtVhnS5a2B5uFLDIzJa2Dg+faE/BzXK16qgMrNJ6+ATRaKixR3Z0m9
+         jtkEWWKKhN3CLTb2UGkXuy+BcrmUjgKTf3pxjbdAk+iK91NIgOL/1UTHc/BNTschVG0E
+         /0jw==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1785832172; x=1786436972; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=KkuWY5Hua0QRTwIBGaEIrRJQVtnuHK0Pb4GBlrZuFaQ=;
+        b=DoErG81DQGd4ejZKr6FzuV/iba9RfaUyne8YD/Xn2is2rirADlyiflczKX54jTHY28
+         iVhtrMPW5xBifjXYS0wMFoYZv65OPgVBZ5ns/QYc0gI5usVmBbzOQzOKJv8eVkXF4/l8
+         W0QT8MNQYyv57UBPItv4W33uLbjTmaC6hrhM+QsNKg6qiGGEj8VZx6JU2g8PDlk12dQ3
+         0i6ab3l0VpnNoYcr63J42z+ezCGg1/wsE0Bq1IkP8ClElOYVZtNeQI/NcGMQe5MKBqPj
+         oas8Jhhc4HOVsrHI+bjQoHgqFCVKR6RSRXvFlFcIPSu+hPD6WEq9RxoZiKSJP7z8q4CV
+         /MuA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1785832172; x=1786436972;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=KkuWY5Hua0QRTwIBGaEIrRJQVtnuHK0Pb4GBlrZuFaQ=;
+        b=Ih/GLAjUF//z8MepS7YfebhefMDB/Vsjs1Gj85BuMh7GeP4hb0GU8hAzbHzs/K6rwL
+         qUVgjNiOcvQcSJ+BGO/bN+3h7re4QQeFvHQjrtS41y631/XpkSj+EkKLlZzPzwlElujs
+         KiE1z7sPQUZJKGcWmhquMySeMYwPgkaCxKG9KiwjeAGisK2fnTE8zGkmHLcaMvmyei1E
+         NPKe+K2qnde8CwRE9yJ/bTpD+S91VoXW6RikZtN6YhHKYCruG+Nia1j0uT1+m8ktm2Ni
+         zwoFsI3u88qsHEGKsx3Kq6O5UpnX/DFdtqClQ4mSFPBcuRuMsKNMaQP/CEjqSgq6VFV9
+         vJEQ==
+X-Forwarded-Encrypted: i=1; AHgh+RrrLbnQdwhAs3owJKHG+UDoSFh3lTaJuONMlWiSrny088EeBUmqgBBCIa63kXDvmWNeDFuCc2Vj7E60h2o=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyMQJXRQz0lldTXbVEcmhySMSt/OrDJVlILATezp4egIkCVMd7E
+	RUDTcA1K0Q4MP8g+mCANY5yR2eKDpuq4mtlE+3242o+Dd427apNAKlu2eqo5HFYkX2wZZp+/BFa
+	nb4/S2+FsNA0pDT7ujRnyGTRRvqwCBh8=
+X-Gm-Gg: AR+sD1222aB42Z3OA/+IWPKKcIaZTo0vgkkS3GvaHvwRS8i3+pKxw5J1J/QwSbdvg2U
+	pVKv6Xb090AaLpkg22pk1i7wm3+hNUv5a3a7PZqUMDQtANHBE1N8tC05VEQCGkma/UloVkZVoTH
+	xuJVe4igya+1E7dvsmE2taxd0TDLJdX7BQRL8PfLHEhxmTdoK4qCfe23oNa97D3mhTM3hCjcBYm
+	ata3Zskgs5eTBF/1hxF/1ZKChc15oGzZxowqx1Rvy3E3PWz9ln2NXMO70U5cymVClg3vkFO+oCF
+	mZvsTuPO0lfIOHoRiczr7R/NwE6ZoEaezAhViRj7kCoJM7rF/zXPbMU=
+X-Received: by 2002:a05:6a00:8d2:b0:845:e2da:91a3 with SMTP id
+ d2e1a72fcca58-84ee480ae81mr12824134b3a.30.1785832171759; Tue, 04 Aug 2026
+ 01:29:31 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -96,49 +102,122 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260701051409.51820-1-amachhiw@linux.ibm.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODA0MDA1NyBTYWx0ZWRfX0lByIJB1cDyy
- 03cjG7jfeXX9Nhhwu1MNOoVwIEUs/nEjozv5tu4YgUxK65k9jOByTydgzgswAIirFvuNrx1Rdpb
- bTRWbPpbxZoZF0VyUuFMPCN4MOJ9Y1Y=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODA0MDA1NyBTYWx0ZWRfX0tP4bY/3dR/5
- T20sWbWh+Nti+qojJbpTycygkRBJmzXqtP3v/kTTZJKTpj7Otn3j5Uzzvm0VafwUxqiBO0xmrop
- tL3Nna3LOhicIaxR3i4n7qjEXOCz8EMrM/UY+7a2vZbQr2lyNCyUMfX4LM/ifRW6eFGdDVEhskb
- yDwC4XIqEMJYhRypQ7ya7MOSRiDVUM7Mm780vQnBAidcOoh2HP59cRSztPvE6U4PR/SJU7l5eZZ
- Cst4p4Lja3EmXyjhoBJ9pQz81kikPxCblcbtEPvuzmoyq8mqmyaVVR7hTcqb4PZZV9dRVnDATkj
- 4f85yluVR0kRsktRB5zYYOKZMOhgSL7Wjol8PDqfx54DCemwOeWxNVsq1Z65eZpprxDYfqBDzE3
- ZxzRU+qhPTAHBU542xwM20iu44G2B4sA7XY+sDWZO0kAeTHIIbcpC/xZh4yMpgZb/HqxL9wcx0R
- PJ5nQUdg+qv0eEzKBww==
-X-Authority-Analysis: v=2.4 cv=SI1ykuvH c=1 sm=1 tr=0 ts=6a7194a4 cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=kj9zAlcOel0A:10 a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=VnNF1IyMAAAA:8
- a=_8gdUu-fOGR6YzzzubEA:9 a=CjuIK1q_8ugA:10
-X-Proofpoint-ORIG-GUID: blkI9nAo2OGj3UAR_USXM6KmN8uoBlcs
-X-Proofpoint-GUID: uXipwvrm6_K3wMwPh2T2rP2uz6tT5l2l
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-08-04_01,2026-08-03_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 bulkscore=0 suspectscore=0 impostorscore=0 spamscore=0
- phishscore=0 priorityscore=1501 lowpriorityscore=0 adultscore=0
- malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
- definitions=main-2608040057
+References: <20260720095450.1618747-1-shengjiu.wang@oss.nxp.com>
+ <20260720095450.1618747-2-shengjiu.wang@oss.nxp.com> <20260731225930.GA2098187-robh@kernel.org>
+In-Reply-To: <20260731225930.GA2098187-robh@kernel.org>
+From: Shengjiu Wang <shengjiu.wang@gmail.com>
+Date: Tue, 4 Aug 2026 16:29:19 +0800
+X-Gm-Features: AUfX_mwxExGCC8sRpN6-vbVB9v8CNcSex_SykavnhYOluP_E46GIp0w8aQWy9oQ
+Message-ID: <CAA+D8AO1D6GJ8xwuKf797rc41ymTZp2d=LD8GEQALHhdpToCUA@mail.gmail.com>
+Subject: Re: [PATCH 1/4] dt-bindings: sound: fsl,imx-asrc: update port binding
+ to support multiple pairs
+To: Rob Herring <robh@kernel.org>
+Cc: shengjiu.wang@oss.nxp.com, lgirdwood@gmail.com, broonie@kernel.org, 
+	krzk+dt@kernel.org, conor+dt@kernel.org, Frank.Li@nxp.com, 
+	s.hauer@pengutronix.de, kernel@pengutronix.de, festevam@gmail.com, 
+	shawnguo@kernel.org, linux-sound@vger.kernel.org, devicetree@vger.kernel.org, 
+	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
+	linux-kernel@vger.kernel.org, Xiubo.Lee@gmail.com, nicoleotsuka@gmail.com, 
+	perex@perex.cz, tiwai@suse.com, linuxppc-dev@lists.ozlabs.org, 
+	Shengjiu Wang <shengjiu.wang@nxp.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
+On Sat, Aug 1, 2026 at 6:59=E2=80=AFAM Rob Herring <robh@kernel.org> wrote:
+>
+> On Mon, Jul 20, 2026 at 05:54:47PM +0800, shengjiu.wang@oss.nxp.com wrote=
+:
+> > From: Shengjiu Wang <shengjiu.wang@nxp.com>
+> >
+> > The i.MX ASRC hardware supports up to three conversion pairs (A, B, C).
+> > The existing binding exposed only a single generic audio-graph port,
+> > which cannot represent the individual pair endpoints.
+> >
+> > Add a ports container that enumerates three named sub-ports:
+> >   port@0 -- pair A
+> >   port@1 -- pair B
+> >   port@2 -- pair C
+> >
+> > Each sub-port references audio-graph-port.yaml as before.
+> >
+> > For backwards compatibility, keep the old single port property but mark
+> > it deprecated. A schema constraint (not: required: [port, ports]) ensur=
+es
+> > that both forms cannot be used at the same time. Update the examples to
+> > show both the new ports form and the deprecated port form.
+> >
+> > No existing upstream DTS file for fsl,imx-asrc uses the previously
+> > documented single 'port' node, so this change does not break any
+> > in-tree device tree.
+> >
+> > Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+> > ---
+> >  .../bindings/sound/fsl,imx-asrc.yaml          | 78 +++++++++++++++++++
+> >  1 file changed, 78 insertions(+)
+> >
+> > diff --git a/Documentation/devicetree/bindings/sound/fsl,imx-asrc.yaml =
+b/Documentation/devicetree/bindings/sound/fsl,imx-asrc.yaml
+> > index 608defc93c1e..18d252722aa8 100644
+> > --- a/Documentation/devicetree/bindings/sound/fsl,imx-asrc.yaml
+> > +++ b/Documentation/devicetree/bindings/sound/fsl,imx-asrc.yaml
+> > @@ -78,9 +78,29 @@ properties:
+> >    power-domains:
+> >      maxItems: 1
+> >
+> > +  ports:
+> > +    $ref: /schemas/graph.yaml#/properties/ports
+> > +    properties:
+> > +      port@0:
+> > +        $ref: audio-graph-port.yaml#
+> > +        unevaluatedProperties: false
+> > +        description: port for pair A
+> > +
+> > +      port@1:
+> > +        $ref: audio-graph-port.yaml#
+> > +        unevaluatedProperties: false
+> > +        description: port for pair B
+> > +
+> > +      port@2:
+> > +        $ref: audio-graph-port.yaml#
+> > +        unevaluatedProperties: false
+> > +        description: port for pair C
+> > +
+> >    port:
+> >      $ref: audio-graph-port.yaml#
+> >      unevaluatedProperties: false
+> > +    deprecated: true
+> > +    description: deprecated, use ports instead
+> >
+> >    fsl,asrc-rate:
+> >      $ref: /schemas/types.yaml#/definitions/uint32
+> > @@ -125,6 +145,10 @@ required:
+> >    - fsl,asrc-width
+> >
+> >  allOf:
+> > +  - not:
+> > +      required:
+> > +        - port
+> > +        - ports
+> >    - $ref: dai-common.yaml#
+> >    - if:
+> >        properties:
+> > @@ -188,3 +212,57 @@ examples:
+> >              };
+> >         };
+> >      };
+> > +
+> > +  - |
+> > +    #include <dt-bindings/interrupt-controller/irq.h>
+> > +    #include <dt-bindings/clock/imx6qdl-clock.h>
+> > +    asrc1: asrc@2034000 {
+>
+> Drop unused label.
+>
+> Presumably the existing example uses the deprecated 'port'. If so, just
+> modify it to use ports and drop the deprecated part.
 
-I tested this series with different compat mode settings for KVM on LPAR
-and KVM on PowerNV.
+Ok, I will update it in v3.
 
-I've left a comment regarding the ioctl number selection. With that
-fixed, feel free to add:
-
-Tested-by: Gautam Menghani <gautam@linux.ibm.com>
-Reviewed-by: Gautam Menghani <gautam@linux.ibm.com>
-
-Thanks,
-Gautam
+best regards
+shengjiu Wang
 
