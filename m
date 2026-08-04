@@ -1,138 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-25371-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25372-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ECFBEC55822
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2026 12:45:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 523D1C55184
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2026 12:50:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hDtYg5vw9z2xyk;
-	Tue, 04 Aug 2026 22:45:27 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785847527;
-	cv=none; b=nr3d0TrrCq4ZRshTdhSPyOSEQJkflUl2B5I4NKEGvK+OfoIW5n9BPaEEPYdI7PkDNM85ScNEDqJ2m89D9+KvkAIfVb3A84wKerje9/6xZEDqZjy61A/XZVtx979G/1bI3H635i1Bar7xGKWw9y0hEBrncJAnc69X9AZ1827xOfU/rjXWsXFAY8c8zZ5uEH2+Gu3AtN5/nscDln5nhHlo5BWMFEftdkXJsAjiyOgiGlK7utrc4XnJpNtxyPPKm+mL6geJELDMeRLcHG8RcUUuYuJgL5fq7vkZgWgy9tQeDF4VeroFCzaci5PGwaiKBsZBbVwh79M/JZPXCdq2KJwLJw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hDtgZ65csz2yYs;
+	Tue, 04 Aug 2026 22:50:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785847834;
+	cv=none; b=aZUOtYdLxcc26izdulecSVw/8lHGvbgkHYblV6uNvUiRn0ukXsjALFwf2qYviV+Qzi8jEwTjvn2YCG+DXreA3c2EjSrSzs/6Sa7SczcOMD6eVgvxiL5x8bAW9+A0WsbbXnyXddFYjemMTPFlJXDiF+09mnC7jH5mfYPKc/3xj3L82l30nCY+4XbGMuhVhnryyXHQuWnTgyeoI1YkPh3H9smUWkN0z9oMoAQUtmtTFgUPk91zR4o3x7IkQw21K9oWGUc3OBhx5rCh8h2iSm7a8W3v3ijNg20NVgCSOpwIW1lm64aQgH432WyPwfd5xZGtjiYYjjvGvSj651G2+QmNAQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785847527; c=relaxed/relaxed;
-	bh=qkmSpOo+riS6SJ1m143AMJU3zjQ0dKkCNvZFgS3mnbw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=YtSx+EDfAI9QTdIpLJqJ5TbMAhE26Y4MIuCYsIli0Fab/jVaV5ikfDv9FfFFQy6U3ymR/KJSMehsU0hellLNWiiJPtlnca/FZ++glxWV3iLJCIut0CjUFTSxXNKY2ZsHhiFIqd04xUHyfNaVC//vGzs/El8l83UpqV3XHDosADp6hSNGUcYDc7amkpAL4gg3INShPOp4eZP40upnuNmpbA8HODE7NLjvjpy+pf/UrsP7oRHL7Qw0Z4XQpNWhaVksgBqZ1RmGL1H0t4JZD2F7gsQJo2iqRy43w0iLnZ8X4MXlDWzF+FBEjYDDlIO2hbls6FqzWkTK7K/r5d08vLfisA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mGnCbcgo; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=nsc@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1785847834; c=relaxed/relaxed;
+	bh=dwIlf/7Evmvt247IE4OinLG+J81ldxUzqSmjbn1lj4I=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=BUZg+RBFg7M6WdhaaIRcuM7BXRV5okMEBj9i1jgl7FwYRLAJcPzBeDG1LuezGraw1txD6X1FQOBoLcXYM0066Ni7HQ2Gvh9Ij61/bSpJ8F4ha3/6wzUVeQKc0ye4mPfAnE87NlEzkgFr3Q+uOX/yY+GdelTYTMDMOQlsME+UvREFmxT9jmw6C6qAP3rrhUI1cNsLxpgFyIGsgdkk4Ae+k9QKPh5THcVAYELzOBKL768ZsWz/tki4iUUy2cOFpdiRwQMxickE//M+AaLUIKpCPxTgmu1WYWEEPiOn1nQ7UeyJXAraLU1WW6M4wMVhc/ysC0/Y7O3gxi/zZ8QckkO/eQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YABf4fdg; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mGnCbcgo;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YABf4fdg;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=nsc@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4hDtYg1PtCz30F0
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Aug 2026 22:45:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hDtgY4M5kz2xyk
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Aug 2026 22:50:33 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with UTF8SMTP id 8166B418C2;
-	Tue,  4 Aug 2026 12:45:25 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with UTF8SMTPSA id D623F1F000E9;
-	Tue,  4 Aug 2026 12:45:24 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 4524360A77;
+	Tue,  4 Aug 2026 12:50:31 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AA74A1F000E9;
+	Tue,  4 Aug 2026 12:50:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785847525;
-	bh=qkmSpOo+riS6SJ1m143AMJU3zjQ0dKkCNvZFgS3mnbw=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=mGnCbcgo8OLWitR3Jf1DQYBgKD65OgaNwD/p/VabSj60DKqnY7s20Pc/EB0G8e+JM
-	 QvGs7VeZP3YETgtWRbbTH+76/r7KuA6vBBs0XMqQsQllEwHCJCysjb3tRSSIH26WC7
-	 K62ll27VSkCZhThcAm82F/il1iGHMwhSw2GcYyCiVXkC8mmFxJHnFBbRZ3T064Yf9+
-	 basQCIX22If9y01aJiQ9t1psXF8oyoCthioOj4q6MCAlljPTeT2XnPjMZ7KtK27QSs
-	 oKYDN4i4zLno/6/jzacdQyxdemIX0oo2LmfBivQBk4jUKxWzTBDWTNZojN9j1BF/wC
-	 BLwKQLmtXUafw==
-Date: Tue, 4 Aug 2026 14:44:35 +0200
-From: Nicolas Schier <nsc@kernel.org>
-To: Thomas =?iso-8859-1?Q?Wei=DFschuh?= <linux@weissschuh.net>
-Cc: Alexei Starovoitov <ast@kernel.org>,
-	Daniel Borkmann <daniel@iogearbox.net>,
-	Andrii Nakryiko <andrii@kernel.org>,
-	Eduard Zingerman <eddyz87@gmail.com>,
-	Kumar Kartikeya Dwivedi <memxor@gmail.com>,
-	Nathan Chancellor <nathan@kernel.org>,
-	Arnd Bergmann <arnd@arndb.de>, Luis Chamberlain <mcgrof@kernel.org>,
-	Petr Pavlu <petr.pavlu@suse.com>,
-	Sami Tolvanen <samitolvanen@google.com>,
-	Daniel Gomez <da.gomez@samsung.com>,
-	Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>,
-	"Serge E. Hallyn" <serge@hallyn.com>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Naveen N Rao <naveen@kernel.org>, Mimi Zohar <zohar@linux.ibm.com>,
-	Roberto Sassu <roberto.sassu@huawei.com>,
-	Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
-	Eric Snowberg <eric.snowberg@oracle.com>,
-	Daniel Gomez <da.gomez@kernel.org>,
-	Aaron Tomlin <atomlin@atomlin.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Nicolas Bouchinet <nicolas.bouchinet@oss.cyber.gouv.fr>,
-	Xiu Jianfeng <xiujianfeng@huawei.com>,
-	Martin KaFai Lau <martin.lau@linux.dev>, Song Liu <song@kernel.org>,
-	Yonghong Song <yonghong.song@linux.dev>,
-	Jiri Olsa <jolsa@kernel.org>, bpf@vger.kernel.org,
-	Fabian =?iso-8859-1?Q?Gr=FCnbichler?= <f.gruenbichler@proxmox.com>,
-	Arnout Engelen <arnout@bzzt.net>,
-	Mattia Rizzolo <mattia@mapreri.org>, kpcyrd <kpcyrd@archlinux.org>,
-	Christian Heusel <christian@heusel.eu>,
-	=?iso-8859-1?Q?C=E2ju?= Mihai-Drosi <mcaju95@gmail.com>,
-	Eric Biggers <ebiggers@kernel.org>,
-	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
-	linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-arch@vger.kernel.org, linux-modules@vger.kernel.org,
-	linux-security-module@vger.kernel.org, linux-doc@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-integrity@vger.kernel.org,
-	debian-kernel@lists.debian.org
-Subject: Re: [PATCH v5 14/14] kbuild: make CONFIG_MODULE_HASHES compatible
- with module stripping
-Message-ID: <anHeswYHqwvKk3XL@levanger>
-Mail-Followup-To: Thomas =?iso-8859-1?Q?Wei=DFschuh?= <linux@weissschuh.net>,
-	Alexei Starovoitov <ast@kernel.org>,
-	Daniel Borkmann <daniel@iogearbox.net>,
-	Andrii Nakryiko <andrii@kernel.org>,
-	Eduard Zingerman <eddyz87@gmail.com>,
-	Kumar Kartikeya Dwivedi <memxor@gmail.com>,
-	Nathan Chancellor <nathan@kernel.org>,
-	Arnd Bergmann <arnd@arndb.de>, Luis Chamberlain <mcgrof@kernel.org>,
-	Petr Pavlu <petr.pavlu@suse.com>,
-	Sami Tolvanen <samitolvanen@google.com>,
-	Daniel Gomez <da.gomez@samsung.com>,
-	Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>,
-	"Serge E. Hallyn" <serge@hallyn.com>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Naveen N Rao <naveen@kernel.org>, Mimi Zohar <zohar@linux.ibm.com>,
-	Roberto Sassu <roberto.sassu@huawei.com>,
-	Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
-	Eric Snowberg <eric.snowberg@oracle.com>,
-	Daniel Gomez <da.gomez@kernel.org>,
-	Aaron Tomlin <atomlin@atomlin.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Nicolas Bouchinet <nicolas.bouchinet@oss.cyber.gouv.fr>,
-	Xiu Jianfeng <xiujianfeng@huawei.com>,
-	Martin KaFai Lau <martin.lau@linux.dev>, Song Liu <song@kernel.org>,
-	Yonghong Song <yonghong.song@linux.dev>,
-	Jiri Olsa <jolsa@kernel.org>, bpf@vger.kernel.org,
-	Fabian =?iso-8859-1?Q?Gr=FCnbichler?= <f.gruenbichler@proxmox.com>,
-	Arnout Engelen <arnout@bzzt.net>,
-	Mattia Rizzolo <mattia@mapreri.org>, kpcyrd <kpcyrd@archlinux.org>,
-	Christian Heusel <christian@heusel.eu>,
-	=?iso-8859-1?Q?C=E2ju?= Mihai-Drosi <mcaju95@gmail.com>,
-	Eric Biggers <ebiggers@kernel.org>,
-	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
-	linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-arch@vger.kernel.org, linux-modules@vger.kernel.org,
-	linux-security-module@vger.kernel.org, linux-doc@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-integrity@vger.kernel.org,
-	debian-kernel@lists.debian.org
-References: <20260505-module-hashes-v5-0-e174a5a49fce@weissschuh.net>
- <20260505-module-hashes-v5-14-e174a5a49fce@weissschuh.net>
+	s=k20260515; t=1785847831;
+	bh=dwIlf/7Evmvt247IE4OinLG+J81ldxUzqSmjbn1lj4I=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=YABf4fdg/D3MZ/bWjeLut7tnE92glPPUblZGjARSmDu+SgTZpTVi3WlLm5HquAEGf
+	 J2bpoFXvno4uXAcJ7Qo2ETmUHwVx7QaU4Q6WWLBRWh0ptmCIMDZ7RFbr0vY3E7y26f
+	 HxBmGepETc20zSML41v9hWk4GYBDyII5UeitdQ7FJ1clvB48Hd99D6tRp7kXQbSc+/
+	 XRPUWDoOmZMUHaf+U1rl7d5ImlwquVOEdD/uQN4srP+6xLmPHZhNDl1rgq1RFigrZq
+	 Gs2boYFuSu/p89NeE3nlhVrLloKDlGkdWJOQ09Yz3skgBGv9l0vTzQ2rYw7eRih4tx
+	 ETPFvsGGDEVUQ==
+Message-ID: <dcdb8cab-c18c-4995-ad1d-2f2d4700e7c1@kernel.org>
+Date: Tue, 4 Aug 2026 14:50:19 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -146,36 +59,75 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 3/6] mm/powerpc/8xx: constify ptep_get() argument
+To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>, Pedro Falcato <pfalcato@suse.de>
+Cc: David Hildenbrand <david@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
+ "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+ Helge Deller <deller@gmx.de>, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, "Liam R. Howlett"
+ <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>,
+ Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>,
+ Michal Hocko <mhocko@suse.com>, "Matthew Wilcox (Oracle)"
+ <willy@infradead.org>, Jan Kara <jack@suse.cz>, Zi Yan <ziy@nvidia.com>,
+ Baolin Wang <baolin.wang@linux.alibaba.com>, Nico Pache <npache@redhat.com>,
+ Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>,
+ Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>,
+ Usama Arif <usama.arif@linux.dev>, Kevin Brodsky <kevin.brodsky@arm.com>,
+ Muhammad Usama Anjum <usama.anjum@arm.com>,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-mm@kvack.org, linux-fsdevel@vger.kernel.org
+References: <20260803164400.531199-1-pfalcato@suse.de>
+ <20260803164400.531199-4-pfalcato@suse.de> <anHI4B-lMu6AJJfA@lucifer>
+Content-Language: fr-FR
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+In-Reply-To: <anHI4B-lMu6AJJfA@lucifer>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260505-module-hashes-v5-14-e174a5a49fce@weissschuh.net>
 
-On Tue, May 05, 2026 at 11:05:18AM +0200, Thomas Weiﬂschuh wrote:
-> CONFIG_MODULE_HASHES needs to process the modules at build time in the
-> exact form they will be loaded at runtime. If the modules are stripped
-> afterwards they will not be loadable anymore.
-> 
-> Also evaluate INSTALL_MOD_STRIP at build time and build the hashes based
-> on modules stripped this way.
-> 
-> If users specify inconsistent values of INSTALL_MOD_STRIP between build
-> and installation time, an error is reported.
-> 
-> Signed-off-by: Thomas Weiﬂschuh <linux@weissschuh.net>
-> ---
->  .gitignore                | 1 +
->  kernel/module/Kconfig     | 5 +++++
->  scripts/Makefile.modfinal | 9 +++++++++
->  scripts/Makefile.modinst  | 4 ++--
->  scripts/Makefile.vmlinux  | 2 +-
->  5 files changed, 18 insertions(+), 3 deletions(-)
-> 
+Hi Lorenzo,
 
-For kbuild:
+Le 04/08/2026 √† 13:13, Lorenzo Stoakes (ARM) a √©crit¬†:
+> On Mon, Aug 03, 2026 at 05:43:57PM +0100, Pedro Falcato wrote:
+>> There is no need for write access to the PTE.
+>>
+>> Signed-off-by: Pedro Falcato <pfalcato@suse.de>
+> 
+> With below addressed LGTM so:
+> 
+> Reviewed-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+> 
+>> ---
+>>   arch/powerpc/include/asm/nohash/32/pte-8xx.h | 2 +-
+>>   1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/arch/powerpc/include/asm/nohash/32/pte-8xx.h b/arch/powerpc/include/asm/nohash/32/pte-8xx.h
+>> index e2ea8ba9f8ca..f2bab31040c7 100644
+>> --- a/arch/powerpc/include/asm/nohash/32/pte-8xx.h
+>> +++ b/arch/powerpc/include/asm/nohash/32/pte-8xx.h
+>> @@ -226,7 +226,7 @@ static inline pte_basic_t pte_update(struct mm_struct *mm, unsigned long addr, p
+>>
+>>   #ifdef CONFIG_PPC_16K_PAGES
+>>   #define ptep_get ptep_get
+>> -static inline pte_t ptep_get(pte_t *ptep)
+>> +static inline pte_t ptep_get(const pte_t *ptep)
+>>   {
+>>   	pte_basic_t val = READ_ONCE(ptep->pte);
+>>   	pte_t pte = {val, val, val, val};
+> 
+> Worth making these const too (that {val, val, val, val} horrifies me btw :)?
 
-Reviewed-by: Nicolas Schier <nsc@kernel.org>
+Any suggestion welcome.
 
--- 
-Nicolas
+powerpc 8xx page table is independant on page size. When you use 16k 
+pages, depending on the address you hit the page for the first time, the 
+HW assist page table walk will fetch one of four 4k cells in page table 
+that need to be identical as they all four define the same 16k page. Not 
+sure I'm clear.
+
+Christophe
+
 
