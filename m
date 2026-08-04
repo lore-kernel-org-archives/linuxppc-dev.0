@@ -1,90 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-25388-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25389-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DB2A3C55184
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2026 18:08:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C18BBC55184
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2026 18:26:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hF1kt1zRvz2yH5;
-	Wed, 05 Aug 2026 04:08:54 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785866934;
-	cv=none; b=YvsJa+3oSAsLUkXQ6iRrhSVvcJTbgqyyEegL/1rBSq0C3huGkTwN8m3Detn+qh/mToDEWB2aJa1f4pXyNKxgMRpAsCjDbNcXfetCyKOC2EaRecF+EeEGg7ZWlYTxN3ZUgE4lXs+NB+q342azvpyViDZoFMOGHreOxaZ91ICR+udTkf/LJwF/BlQQkL0RfiBN1SnflqeRfX4scE5nr8eX+4oujqsaBPUPhZ40Qkqqbwdv8tuUnX5tV4pLYO9X1wMKE6Y5CZA3MAlZxQdBiaGXvzYfhEdIULeHRHngQNId8wjTYxBg7ZaCCJl7XFXekiZi2joqpt6sj+RxIBDeFDT6Yw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hF27Y1nysz2yH5;
+	Wed, 05 Aug 2026 04:26:49 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785868009;
+	cv=none; b=UPqktHyuU1WOeFDcYLpUBs7W7XbWVJur+kAfhJ8EgunoGSVmhDg5h29VrK0ePQJC/PApO9/UNGShabBTLdG6qnWoJ9Rq+qAutFOTa5SBTx98KEOlQzAU1MXzB3kVM/CpnjA20i657wYtIoCj3FE41/JveEGiPv+nP+c/ZA0dZMQxvC9DLrT9pW2kDuEkMDCpFLOPyOWGiJvi2nVu8zQp2RX8r+U13oWf07vI/vJvlbKG4rAMU0AOQTrLdHX4pOp1pBqHO7yvkGYpRlihBiJ+Zh93js+xlT2dl2KoUSLiM6g6s6jZO13qf/vlIYzFEuseLFFP4D03Ko8yZFnlA9hjvA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785866934; c=relaxed/relaxed;
-	bh=XXOU/APSKwvaT9fmqxAHzQbFytmWg+/yBqpK22ElJAg=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=omkhF8kRdPjWzFCm6ZOgRMs8YmO/dcsvzJYeStYLlTwmg57wYVfQ2/i9yednEdeeEl6/5nv7VIz47/a9hVE/1Ni9XXpcyJHHVfmX1VrRcx/wTTDS6Sz/ek4vP8vd5td7HWpY1FBvLwVjYy3lQUXbPf8kE524DC9xb+TfEQPfQnvQ52TxEgv4+ALmwu4iEeNz/5xu1sf0tEID8d/G3IwIdnew8CwoTCx/V84PcOhMlGU7Z73SaOqAf8pq/OVQBZSH8goRtDMehRgs8Fq1J9dsq+mGxd58+nC18Eg4dy2LmSxQULpe1kVUB5efBQrhLX6H9YLZpn4+F8X4kHN5ZC39GQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=TweXF98m; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1785868009; c=relaxed/relaxed;
+	bh=2obzAuFga8FO0qmhRHd5hVY0Y7HR87//ztq9j3ehPUU=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=IhJebzJWt/wOddZtSP2tWY74cyPxXwgs6CEmbFDqwFEK14RV+TVkTbpvhy6pVjkZ2bJMi//VEJ/drpaj5w9ElLgits96v5az9O5sa8+krulolTaoi38vv+dEuC3K+hOB9PZEzfu/yI4OKjgpUReKmR2DRIjSp50PLOBvUnt3mK9M/yHxrBvfQUBw1dfe49XU+hal/p1j9SoPkPLct8h81w8XwvmeQiFloIcRSTtKHtFwUjfp1bqg+TnjsXE744KdXSOK8h+CbI/OR9wSiv/5DtM3FnbEKnHLUiHQRydYZF715jfZM86mQEaB4dmMpHGHJJE6MHk8cT/5kLFPN4MKyg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PI5l4AvZ; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=TweXF98m;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PI5l4AvZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hF1ks2tPmz2xy3
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Aug 2026 04:08:53 +1000 (AEST)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 674Fll3Y1340890;
-	Tue, 4 Aug 2026 18:07:36 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hF27X3pSXz2y1Y
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Aug 2026 04:26:48 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 674FlaZU1254293;
+	Tue, 4 Aug 2026 18:26:36 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=XXOU/APSKwvaT9fmq
-	xAHzQbFytmWg+/yBqpK22ElJAg=; b=TweXF98m+8i39WnA80gVETdaGErKZ1vK2
-	hU5LW6xr9ZNfICLOpmZdF8EI9zehfX93Sj2PqB5w+uFqiHjlNubp4ahMEy2MpGDY
-	vJ0GLan+btUiMr1i16oUH2ZrVpeqXsSGXjGpGl1Knq1B4kc4d2uT6MNt8k6/WwsS
-	YqHPfVzG9pEGOmHENWp76KDFCQoQ/NyiGdm3Lwnk/cFMhN7uPlpi7HDb7FC733bY
-	aCvp2HRYv6kv9sp+DdJCFgjNqZ15Tnp9UbZjO5u9aXMIv/ALNycmM7JRkHNcbvsH
-	gsn2lRLqg+KOnqCeX5PV9W3MqrHU6AZBBw8GnAxbcbRhe6l4STKsw==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fs8eupt61-1
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=2obzAu
+	Fga8FO0qmhRHd5hVY0Y7HR87//ztq9j3ehPUU=; b=PI5l4AvZsR35r27+75BDn1
+	AGxBujf1I5GFFaMxdw/lqGWmiijkhTjV9kQY4CMr4BbQYfmigfnFOfrazoFSnr4+
+	88HGhvLKM7rsjK+8/GgFY6qaewGdUclEYTXBr8RCyqRM5duOaftzpp0n1/j+3ygT
+	uakEryKffX6d/oJ/Si3xpolFO/z/6Yc+r8HrqYga8KNyecwLDHynH4r8VAMYH2sJ
+	E61h1i68YZ2Hu/B3/S41qxresfOh7aNACdqceeQDMfEvB0+vjFqfa0vuf0PFBLnj
+	XmRvYMhv1728OH7z3MFYG8YK1/aHL06Tozr26KCon4P7kr1N9zHHVeIOcE8p6qvw
+	==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fs8a3ycft-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 04 Aug 2026 18:07:35 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 674HuO0D019969;
-	Tue, 4 Aug 2026 18:07:34 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4fsugw386n-1
+	Tue, 04 Aug 2026 18:26:35 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 674IQNB4029951;
+	Tue, 4 Aug 2026 18:26:34 GMT
+Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4fsvmhb50d-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 04 Aug 2026 18:07:34 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 674I7Uii16384462
+	Tue, 04 Aug 2026 18:26:34 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 674IQS8u37880082
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 4 Aug 2026 18:07:30 GMT
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 8B5012004B;
-	Tue,  4 Aug 2026 18:07:30 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E823A20040;
-	Tue,  4 Aug 2026 18:07:26 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.39.28.45])
-	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue,  4 Aug 2026 18:07:26 +0000 (GMT)
-From: Amit Machhiwal <amachhiw@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Vaibhav Jain <vaibhav@linux.ibm.com>,
-        Amit Machhiwal <amachhiw@linux.ibm.com>,
-        Anushree Mathur <anushree.mathur@linux.ibm.com>,
-        Paolo Bonzini <pbonzini@redhat.com>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        Jonathan Corbet <corbet@lwn.net>,
-        Shuah Khan <skhan@linuxfoundation.org>,
-        Ritesh Harjani <ritesh.list@gmail.com>, kvm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org,
-        Gautam Menghani <gautam@linux.ibm.com>
-Subject: [PATCH v6 3/4] KVM: PPC: Book3S HV: Add support for compat CPU capabilities for KVM on PowerNV
-Date: Tue,  4 Aug 2026 23:37:04 +0530
-Message-ID: <20260804180705.59160-4-amachhiw@linux.ibm.com>
-X-Mailer: git-send-email 2.50.1
-In-Reply-To: <20260804180705.59160-1-amachhiw@linux.ibm.com>
-References: <20260804180705.59160-1-amachhiw@linux.ibm.com>
+	Tue, 4 Aug 2026 18:26:28 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 6BB7320043;
+	Tue,  4 Aug 2026 18:26:28 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 9269520040;
+	Tue,  4 Aug 2026 18:26:23 +0000 (GMT)
+Received: from [9.39.27.173] (unknown [9.39.27.173])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Tue,  4 Aug 2026 18:26:23 +0000 (GMT)
+Message-ID: <1f8f70a4-2e5c-4e41-a8f1-9a32f37286d0@linux.ibm.com>
+Date: Tue, 4 Aug 2026 23:56:22 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -98,149 +81,223 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 4/5] powerpc/pseries/eeh: Implement RTAS-based EEH
+ error injection
+To: Narayana Murty N <nnmlinux@linux.ibm.com>, mahesh@linux.ibm.com,
+        maddy@linux.ibm.com, mpe@ellerman.id.au, christophe.leroy@csgroup.eu,
+        gregkh@linuxfoundation.org, oohall@gmail.com, npiggin@gmail.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+        tyreld@linux.ibm.com, vaibhav@linux.ibm.com, sbhat@linux.ibm.com,
+        ganeshgr@linux.ibm.com, haren@linux.ibm.com, thuth@redhat.com
+References: <20260721033815.5300-1-nnmlinux@linux.ibm.com>
+ <20260721033815.5300-5-nnmlinux@linux.ibm.com>
+Content-Language: en-US
+From: Sourabh Jain <sourabhjain@linux.ibm.com>
+In-Reply-To: <20260721033815.5300-5-nnmlinux@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: 3xVSlQ6V3hf_ivBYkimkIRWbrfOKS5Gs
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODA0MDE0NCBTYWx0ZWRfX7qnw8QpC3FLi
- aa1phIRwyl9Crn5eI/GPXA/AnPLjD++9OaJ88hq3aJB/YS2Sl8VezgtPeomIBCtnuCkBYuTMIC8
- OrhBxS89AchAwo41CoMN97ibLDZgnvA=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODA0MDE0NCBTYWx0ZWRfX1XKEmNXSsDYt
- GDFnCyun6cNZxY6WjQQiap6alU/C3Q1tbjlyES8sJIe2Vrp7DvDGh3WudDdyTVHofilkhSj5joB
- 744xET11BKwWdXJdy1CmSlH6CjD6I8PkyguriK+CMe9vrUkW/lQ8kKyKSsv/KXd6uEmJRF/GqSN
- NwE09Ve8lV5az7LX8oB3iQeJ/wR6Yf4uRW5ySvqbct0bWFqqSEgpw++0s9zb3rywiZeDGMPhrMw
- 1rkNRvb/p13bvHil6O5HVVy/Q86sqRraljmGMRstBq0a2U0IgY9BwhDrMV6hExCb1dSHEiPRbtH
- nSIBseQYGdBl72JAg+NHoi4BZQ9a8iTimlHsiNG3UouXDJpLdXnC1ehn9/6rfQ0R3Aujd/37e2l
- zXK8jsJZ9Z+pumStJM31sJC3qnQxJQmZvcc7bxYcU2jWVk+VnWrq5AVPT8k/pZcT1RtwWIP3xR7
- ZKiQ192ev8a7bcJx/HQ==
-X-Proofpoint-GUID: Jg64hRtQaAf4DBMEhWbYH4ikScW9ZYMx
-X-Authority-Analysis: v=2.4 cv=KfzidwYD c=1 sm=1 tr=0 ts=6a722a67 cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=RzCfie-kr_QcCd8fBx8p:22 a=VnNF1IyMAAAA:8 a=DLIAxpZkpLpJS96MVYMA:9
+X-Authority-Analysis: v=2.4 cv=E6P9Y6dl c=1 sm=1 tr=0 ts=6a722edc cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+ a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=VwQbUJbxAAAA:8
+ a=VnNF1IyMAAAA:8 a=NhFz2HU8D7Y_24l5fhYA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-ORIG-GUID: cKrle13SJEDr_QnALBzFkp842kSz54qh
+X-Proofpoint-GUID: 0Mr6QFkjJ7jrG0GMbhGkNTgqn4hmZ6r1
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODA0MDE0OCBTYWx0ZWRfX4Eh/QPzJPW8x
+ XsZfZuF5TVKvwwJU9o/crBk5cXUzn7wPECAzoQC0EhCeDsFBvco6cSEAxTbgBVf1vh55rfdeLn1
+ lZba6DNWVBh6bOmKk2OoM2yfkHBSv6I=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODA0MDE0OCBTYWx0ZWRfX6jFLjZrUEHzg
+ 1mYNKgRIk1EDmSyXoFwRpU5FkGX1jjbiLd921Vy5c/oeFhw0mP9uUcgDU8JbQrCNfIl0U5osiH5
+ saWs8h7gn8EcQfqG9ZstPtS8Blm1qFY4ElU3/bm/Ro7+N+0EIo5oVGHXaahFHiTSQ+o+F7qOmPz
+ P/Ajctyvrc8d5CMODzbqH2eqdcQz3BJheD1xcuOtlbq2W1qMNneWD0Ip/gyMIBzyzVJRjLBs6OD
+ p4/keCqRTqmD6Ytvx/7lEN5UyeM1jfrLFtqx7euUmxjjwh3xiynUeacTNwNyyKsIj883Zhq2SUu
+ zp8IhhfJxmJYz58Ksb7hl+ywsaEJDouEelEfLYojTNpszB4sNWE/yXAp9zL90HiN6CCc0U88R3/
+ 68HMMaQQZ0xJyd8I1XMVrYACCHO/DMhrAmR3EXkSF9aBfheNC4dZRTGeAiuPNIEIZ4H2Qy2rzmF
+ rLMggNNHCjzGC0L14Dg==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-08-04_03,2026-08-04_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0 bulkscore=0 impostorscore=0 suspectscore=0 malwarescore=0
- adultscore=0 clxscore=1015 priorityscore=1501 phishscore=0 spamscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608040144
+ bulkscore=0 clxscore=1015 lowpriorityscore=0 priorityscore=1501
+ suspectscore=0 adultscore=0 spamscore=0 malwarescore=0 impostorscore=0
+ phishscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
+ definitions=main-2608040148
 
-Currently, when booting a compatibility-mode KVM guest (L1) on a PowerNV
-hypervisor (L0), the guest runs with the expected processor
-compatibility level. However, when booting a nested KVM guest (L2)
-inside the L1, QEMU derives the CPU model from the raw host PVR and
-attempts to run the nested guest at that level, instead of honoring the
-compatibility mode of the L1.
 
-Extend host CPU compatibility capability reporting to support nested
-virtualization on PowerNV systems (PAPR nested API v1).
 
-For nested API v2 (PowerVM), compatibility capabilities are served from
-the cached nested_capabilities value (populated at module init via
-kvmhv_nested_init() using the H_GUEST_GET_CAPABILITIES hcall). This
-information is not available on PowerNV systems.
+On 21/07/26 09:08, Narayana Murty N wrote:
+> Replace legacy MMIO error injection with full PAPR-compliant RTAS error
+> injection supporting 14+ error types via
+>    - ibm,open-errinjct
+>    - ibm,errinjct
+>    - ibm,close-errinjct.
+>
+> Key features:
+>    - Complete open-session-inject-close cycle management
+>    - Special handling for ibm,open-errinjct output format (token,status)
+>    - Comprehensive buffer preparation per PAPR layouts
+>    - All pr_* logging uses pr_fmt("EEH: ") prefix
+>
+> Tested with corresponding QEMU patches:
+> https://lore.kernel.org/all/20251029150618.186803-1-nnmlinux@linux.ibm.com/
+>
+> Signed-off-by: Narayana Murty N <nnmlinux@linux.ibm.com>
+> ---
+>   arch/powerpc/platforms/pseries/eeh_pseries.c | 121 +++++++++++++++----
+>   1 file changed, 95 insertions(+), 26 deletions(-)
+>
+> diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
+> index 25aad86c696d..d32a84009fdc 100644
+> --- a/arch/powerpc/platforms/pseries/eeh_pseries.c
+> +++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
+> @@ -1037,40 +1037,109 @@ static int prepare_errinjct_buffer(void *buf, struct eeh_pe *pe,
+>   }
+>   
+>   /**
+> - * pseries_eeh_err_inject - Inject specified error to the indicated PE
+> - * @pe: the indicated PE
+> - * @type: error type
+> - * @func: specific error type
+> - * @addr: address
+> - * @mask: address mask
+> - * The routine is called to inject specified error, which is
+> - * determined by @type and @func, to the indicated PE
+> + * pseries_eeh_err_inject - Inject specified error into the indicated PE
+> + * @pe:   the indicated PE
+> + * @type: generic EEH error type (EEH_ERR_TYPE_*)
+> + * @func: error function selector (EEH_ERR_FUNC_*)
+> + * @addr: target address, if applicable
+> + * @mask: address mask, if applicable
+> + *
+> + * Implements the EEH error-injection callback for pseries using the RTAS
+> + * ibm,open-errinjct / ibm,errinjct / ibm,close-errinjct firmware services.
+> + *
+> + * Generic EEH error types are translated to RTAS firmware type codes via
+> + * pseries_eeh_type_to_rtas() before the injection session is opened.
+> + * Unsupported generic types are rejected with -EINVAL before any RTAS call
+> + * is made.  Existing userspace is unaffected.
+> + *
+> + * Return: 0 on success, negative errno or RTAS error code on failure.
+>    */
+>   static int pseries_eeh_err_inject(struct eeh_pe *pe, int type, int func,
+>   				  unsigned long addr, unsigned long mask)
+>   {
+> -	struct	eeh_dev	*pdev;
+> -
+> -	/* Check on PCI error type */
+> -	if (type != EEH_ERR_TYPE_32 && type != EEH_ERR_TYPE_64)
+> -		return -EINVAL;
+> +	int open_token, errinjct_token, close_token;
+> +	int session_token = 0;
+> +	bool session_open = false;
+> +	void *buf;
+> +	u32 buf_phys;
+> +	int rc;
+> +	int rtas_type;
+>   
+> -	switch (func) {
+> -	case EEH_ERR_FUNC_LD_MEM_ADDR:
+> -	case EEH_ERR_FUNC_LD_MEM_DATA:
+> -	case EEH_ERR_FUNC_ST_MEM_ADDR:
+> -	case EEH_ERR_FUNC_ST_MEM_DATA:
+> -		/* injects a MMIO error for all pdev's belonging to PE */
+> -		pci_lock_rescan_remove();
+> -		list_for_each_entry(pdev, &pe->edevs, entry)
+> -			eeh_pe_inject_mmio_error(pdev->pdev);
+> -		pci_unlock_rescan_remove();
+> -		break;
+> -	default:
+> +	/* Guard: buffer must fit in 32 bits for RTAS */
+> +	if (WARN_ON_ONCE(upper_32_bits(rtas_errinjct_buf)))
+>   		return -ERANGE;
+> +
+> +	/* Map generic EEH ABI to RTAS-internal error type */
+> +	rtas_type = pseries_eeh_type_to_rtas(type);
+> +	if (rtas_type < 0) {
+> +		pr_err("unsupported EEH error type %#x\n", type);
+> +		return rtas_type;
 
-For nested API v1, derive the compatibility capabilities from the L1
-guest by reading the "cpu-version" property from the device tree, which
-reflects the effective (logical) processor compatibility level. Map this
-value to the corresponding compatibility capability bitmap using
-KVM-specific constants.
+How about -EINVAL instead?
 
-The mapping is cumulative: a system running at a given compatibility
-level is assumed to also support older generations down the supported
-chain. Note that unlike KVM on PowerVM (nested API v2), KVM on PowerNV
-currently does not strictly enforce older generation compatibility modes
-for nested guests - the reported capabilities reflect what the host CPU
-can present, not what the hypervisor independently validates.
+>   	}
+>   
+> -	return 0;
+> +	/* Verify all three RTAS tokens are available before touching firmware */
+> +	open_token    = rtas_function_token(RTAS_FN_IBM_OPEN_ERRINJCT);
+> +	errinjct_token = rtas_function_token(RTAS_FN_IBM_ERRINJCT);
+> +	close_token   = rtas_function_token(RTAS_FN_IBM_CLOSE_ERRINJCT);
+> +
+> +	if (open_token    == RTAS_UNKNOWN_SERVICE ||
+> +	    errinjct_token == RTAS_UNKNOWN_SERVICE ||
+> +	    close_token   == RTAS_UNKNOWN_SERVICE) {
+> +		pr_err("ibm,open/errinjct/close-errinjct not available\n");
+> +		return -ENODEV;
+> +	}
+> +
+> +	buf      = __va(rtas_errinjct_buf);
+> +	buf_phys = lower_32_bits(rtas_errinjct_buf);
+> +
+> +	mutex_lock(&rtas_errinjct_mutex);
+> +
+> +	/* Step 1: open injection session */
+> +	do {
+> +		rc = rtas_call(open_token, 0, 2, &session_token);
+> +	} while (rtas_busy_delay(rc));
+> +
+> +	if (rc) {
+> +		pr_err("ibm,open-errinjct failed: status=%d\n", rc);
+> +		goto out_unlock;
+> +	}
+> +	session_open = true;
+> +
+> +	/* Step 2: prepare the work buffer */
+> +	rc = prepare_errinjct_buffer(buf, pe, rtas_type, func, addr, mask);
+> +	if (rc) {
+> +		pr_err("failed to prepare errinjct buffer: rc=%d\n", rc);
+> +		goto out_close;
+> +	}
+> +
+> +	/* Step 3: inject the error */
+> +	do {
+> +		rc = rtas_call(errinjct_token, 3, 1, NULL,
+> +			       rtas_type, session_token, buf_phys);
+> +	} while (rtas_busy_delay(rc));
+> +
+> +	if (rc)
+> +		pr_err("ibm,errinjct failed: status=%d\n", rc);
+> +
+> +out_close:
+> +	/* Step 4: always close the session */
+> +	{
+> +		int close_rc;
 
-Introduce a helper kvmppc_map_compat_capabilities() to translate CPU
-version values into KVM_PPC_COMPAT_CAP bits using a fallthrough switch,
-and integrate it into kvmppc_get_compat_caps(). The implementation
-applies masking to ensure only supported processor modes are exposed.
+Why are having separate rc variable for close close token call?
 
-This allows userspace to query host CPU compatibility modes on both
-KVM on PowerVM and on PowerNV platforms via the KVM_PPC_GET_COMPAT_CAPS
-ioctl.
+> +
+> +		if (session_open) {
 
-Suggested-by: Vaibhav Jain <vaibhav@linux.ibm.com>
-Tested-by: Gautam Menghani <gautam@linux.ibm.com>
-Reviewed-by: Gautam Menghani <gautam@linux.ibm.com>
-Signed-off-by: Amit Machhiwal <amachhiw@linux.ibm.com>
----
-Changes in this version:
-  - kvmppc_map_compat_capabilities(): changed parameter type from
-    'const __be32' to 'u32' to fix Sparse type annotation warning
-  - kvmppc_get_compat_caps(): replaced of_get_property() + be32_to_cpup()
-    with of_property_read_u32() for implicit length validation and cleaner
-    endianness handling; dropped 'const __be32 *prop' variable
+is session_open variable really needed?
 
- arch/powerpc/kvm/book3s_hv.c | 36 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 36 insertions(+)
-
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 152cd08a5b38..4d0307f55e06 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -6523,20 +6523,56 @@ static bool kvmppc_hash_v3_possible(void)
- 	return true;
- }
- 
-+static int kvmppc_map_compat_capabilities(u32 cpu_version,
-+					  unsigned long *capabilities)
-+{
-+	switch (cpu_version) {
-+	case PVR_ARCH_31_P11:
-+		*capabilities |= KVM_PPC_COMPAT_CAP_POWER11;
-+		fallthrough;
-+	case PVR_ARCH_31:
-+		*capabilities |= KVM_PPC_COMPAT_CAP_POWER10;
-+		fallthrough;
-+	case PVR_ARCH_300:
-+		*capabilities |= KVM_PPC_COMPAT_CAP_POWER9;
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
- 
- static int kvmppc_get_compat_caps(struct kvm_ppc_compat_caps *host_caps)
- {
-+	struct device_node *np;
- 	unsigned long capabilities = 0;
- 	long rc = -EINVAL;
-+	u32 cpu_version = 0;
- 
- 	if (kvmhv_on_pseries()) {
- 		if (kvmhv_is_nestedv2()) {
- 			WARN_ON_ONCE(!nested_capabilities);
- 			capabilities = nested_capabilities;
- 			rc = 0;
-+		} else {
-+			for_each_node_by_type(np, "cpu") {
-+				if (!of_property_read_u32(np, "cpu-version",
-+							  &cpu_version)) {
-+					of_node_put(np);
-+					break;
-+				}
-+			}
-+			if (!cpu_version)
-+				return -EINVAL;
-+			rc = kvmppc_map_compat_capabilities(cpu_version,
-+							    &capabilities);
- 		}
- 	}
- 
-+	if (rc < 0)
-+		return rc;
-+
- 	host_caps->compat_capabilities = capabilities & KVM_PPC_COMPAT_BITMASK;
- 
- 	return rc;
--- 
-2.50.1 (Apple Git-155)
+> +			do {
+> +				close_rc = rtas_call(close_token, 1, 1, NULL,
+> +						     session_token);
+> +			} while (rtas_busy_delay(close_rc));
+> +
+> +			if (close_rc)
+> +				pr_warn("ibm,close-errinjct failed: status=%d\n",
+> +					close_rc);
+> +		}
+> +	}
+> +
+> +out_unlock:
+> +	mutex_unlock(&rtas_errinjct_mutex);
+> +	return rc;
+>   }
+>   
+>   static struct eeh_ops pseries_eeh_ops = {
 
 
