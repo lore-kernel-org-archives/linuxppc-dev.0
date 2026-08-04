@@ -1,52 +1,91 @@
-Return-Path: <linuxppc-dev+bounces-25366-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25367-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 01DE6C55184
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2026 12:36:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 867A0C55184
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2026 12:39:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hDtMT2S39z2yMl;
-	Tue, 04 Aug 2026 22:36:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785846997;
-	cv=none; b=ZJlxCyiwGA8DqOW8mRY7q/g7lULwJAas7lhwwwOh+Sa80dONvaDeGWB+oohfgn5kjuZ4V/APlrVuu+U+dhRKeS/BZmSBG2k2OrwvlpSFUJZJ8i9oRTvkYsdcRnKfMDaLlHF+vjIadsFv28XMOpjJLmIKKO74hV/e4lLNQpRNk9IKYksIAL8Ygf6VDPK3NGFffYWWwn8nzAP6XwRZwA4o1qArKuY+FhTu5hwYkxrP2pZbbxUhXAeVomUG8BZKNM8QO0zYBxuyUgtLqlXeizavUEJ8matkSopb0dnuaeReQWSwG/Iyo5CUEVKeSfr+nm6Y/ECagGNeZCupH67XM3n+YA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hDtQN097kz2yMl;
+	Tue, 04 Aug 2026 22:39:08 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a07:de40:b251:101:10:150:64:2"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785847147;
+	cv=none; b=i10HEUsQLMJhMvj3N0hKKVYHK2XbdXOVVNrjZ1P5dNqYvSN0f+aVovFu6NfyEwbNBzwpyqhc3HWsXLn3e0zvCPENY08J571l2AEmNb/kZHushCFwF3R4edkCNwkdvsa3Ne3UmyJJT6fyLwQddfwNm/yUFvEI/ypPXdKf4M2L+4pKakHBJDT3USunW1g2TGx32brE/IpIFn/iKadlYtjlRanAhBsNG32K8XMrUWm1Yy86QI864pAgc7wSlE4EceZbTHxbMHh07FGHVkdKMyLOQsp1r1iMJlHCnTdz31HHIHtrokPl2WWP8Caoy87VrRocenIBDuxCssuG8w/x74rdcw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785846997; c=relaxed/relaxed;
-	bh=D+aWhgjbLFPF3M3Lo6UG42o4nY0PiujohVeWyhVCd1k=;
+	t=1785847147; c=relaxed/relaxed;
+	bh=rnExphRxEzIlDNvgZ2NHF0WSmLvuvWvbQz3FoCApmhE=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=G3DetNFCUUHDXObl6dKTexWfZqRJ1I1NCltFpXndmDw5uDoWV2jzqyKmN7+gSWrEX9qB4g5k1DlF8J1AzIU1sw2ovEpJPd6PXnu1/yxY0JduLA/aq8nWWCR06e/88cp+goxtzi+TLLbHQvoeHQtX+NucuCC2WO5O8pBZ6Qfc6Pa4kiHNCZ3fd8X/UJgz6Y9QrpCEkrZcu58S5fBQk3cmNLw0UadCWBOuk6H7ePp+gSYywyTyQXF062ANvpXoV3czliLatrwARLk5Q3fXDGtuAL0ec7HL6HM6+2EmkBKLKDMMRxNBpFIQ6EW04zjzcV30JyM0nCO+Bw50bwB2fzBitQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ORP7X7FL; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=GmLfF3jnTSgWZIIDBpIJvMDDjpKZ3MQVORy1MWOoGADEk1Hl6uP60/0MlnmPGw6yEtm3r6Jbh4T9E9sPH6WLhceII4YXyDKR695Jzzr97jqE5gvilM5MDY9mvL5PPtc4awMJA4XD2YzKQdKHYe9yoPZNLOGt0n+BwSuLzwS8AJ1g3hX1IxR8DUcUmewNa3IoMOB5weJpMhyb4CZk7t2uZq+ymp2O4ILsdR7HN6gw3InTTWeCvmZi4MtudSEeervxlTtcD//A/49euaD5G6hbsaYtDLi8uMYCthfqk0TteaGjaRipujcfdiA68ho+HyTJkWe4e5Z8N77EwzWDEkwlGA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=wvohMkIs; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=FdK/Fa76; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=xKZL/gF7; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=XetrqBDd; dkim-atps=neutral; spf=pass (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=pfalcato@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ORP7X7FL;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=wvohMkIs;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=FdK/Fa76;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=xKZL/gF7;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=XetrqBDd;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=pfalcato@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2a07:de40:b251:101:10:150:64:2])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hDtMS1MtDz2xyk
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Aug 2026 22:36:36 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 8228A60A59;
-	Tue,  4 Aug 2026 12:36:33 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 63B571F000E9;
-	Tue,  4 Aug 2026 12:36:26 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785846993;
-	bh=D+aWhgjbLFPF3M3Lo6UG42o4nY0PiujohVeWyhVCd1k=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=ORP7X7FLuukUKyHZC2hu7ST64c4bBK8dth7FcFgWGlPF+MqYiPEqS/FRnFJTUzDxP
-	 VLZ9wlQWn/76khNTD8oRfJmFkWuHqaqxM+nH5Lv45e0Q+zWDr3DRu66yIzzLk8tJqc
-	 HDMar3TURxk8UX3VJJlGaVa5osL9+S2aplFUgueI2ab6X4nCF4/rZrBptrJDMuU7we
-	 Kg55c4T/MKl7KtaHDLaTXEeFMz4BKAQl9sWd2u3OExD6HAs/RcsKWeFJBmxaewyQs2
-	 TozwcPFUZsuD1bjCgbUCCZJJCs/ryLvBmeT7OvFTX3kBhZTlatnqji7kXywFzOFlfd
-	 e39YHKZmeqduw==
-Date: Tue, 4 Aug 2026 13:36:11 +0100
-From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-To: Pedro Falcato <pfalcato@suse.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hDtQL6xscz2xyk
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Aug 2026 22:39:06 +1000 (AEST)
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id A11CA3DFC;
+	Tue,  4 Aug 2026 12:38:55 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1785847139; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=rnExphRxEzIlDNvgZ2NHF0WSmLvuvWvbQz3FoCApmhE=;
+	b=wvohMkIsXd9yQZOEekufv+/wSEoE0QTrBjCrlfQYXnFoFALgKBzvEuxp3xXMEXb6j+zLGT
+	YKOH3SuD/auYha4F/6h/WYQKLo6gtbFJU8bM93k4q3o2IOGc4bl/ES61KRfnQ32p/Hf1cE
+	Tg3JYIbE8n1oLduDNwRJJwlG1V8GySk=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1785847139;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=rnExphRxEzIlDNvgZ2NHF0WSmLvuvWvbQz3FoCApmhE=;
+	b=FdK/Fa76S7Y0zeOrDlmk0JnV3bWdjkzcl8zDqN60TgNmCBiJdCcSBvDNKOzuZtQ4ftLHlf
+	dfJ02+I1SoIfkACg==
+Authentication-Results: smtp-out2.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b="xKZL/gF7";
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=XetrqBDd
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1785847135; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=rnExphRxEzIlDNvgZ2NHF0WSmLvuvWvbQz3FoCApmhE=;
+	b=xKZL/gF772XFr5IDL1R1+ZkyiJvy1ndS1SlYygAYzd4LpDZsZnWu4Cu+5txRQdWkDh6evs
+	TndXSrXQcouBd645DhWI12pePPM1Q83nU1lLHpmaCt2+IXigp1Eh0LIM1rNZTt4GiuIaso
+	oTJAU/8oBNr4dhpWpZwd3k8NQ+9rEjE=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1785847135;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=rnExphRxEzIlDNvgZ2NHF0WSmLvuvWvbQz3FoCApmhE=;
+	b=XetrqBDd+RmJqSJ5wEA+hJsLUFtVId7SVDz7ajG6/wu5rJhGfE5RSzqYcRApPVZG+qfYlH
+	O2K/mufrSfRt9YDQ==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id CFE3F779BB;
+	Tue,  4 Aug 2026 12:38:53 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id JWakL13dcWrDVQAAD6G6ig
+	(envelope-from <pfalcato@suse.de>); Tue, 04 Aug 2026 12:38:53 +0000
+Date: Tue, 4 Aug 2026 13:38:52 +0100
+From: Pedro Falcato <pfalcato@suse.de>
+To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
 Cc: David Hildenbrand <david@kernel.org>, 
 	Andrew Morton <akpm@linux-foundation.org>, Catalin Marinas <catalin.marinas@arm.com>, 
 	Will Deacon <will@kernel.org>, "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, 
@@ -61,13 +100,11 @@ Cc: David Hildenbrand <david@kernel.org>,
 	Kevin Brodsky <kevin.brodsky@arm.com>, Muhammad Usama Anjum <usama.anjum@arm.com>, 
 	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-parisc@vger.kernel.org, 
 	linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH v2 1/6] mm/arm64: constify pte_get*() and contpte get
- logic
-Message-ID: <anHb4hiTeSMoMKjB@lucifer>
+Subject: Re: [PATCH v2 3/6] mm/powerpc/8xx: constify ptep_get() argument
+Message-ID: <anHc4aUbwxWx9YJF@pedro-suse>
 References: <20260803164400.531199-1-pfalcato@suse.de>
- <20260803164400.531199-2-pfalcato@suse.de>
- <anG2V7KpvIHjNyVq@lucifer>
- <anHYoPMRt8hr1l8m@pedro-suse>
+ <20260803164400.531199-4-pfalcato@suse.de>
+ <anHI4B-lMu6AJJfA@lucifer>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -83,205 +120,76 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <anHYoPMRt8hr1l8m@pedro-suse>
+In-Reply-To: <anHI4B-lMu6AJJfA@lucifer>
+X-Spamd-Result: default: False [-2.51 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	SUSPICIOUS_RECIPS(1.50)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	MID_RHS_NOT_FQDN(0.50)[];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	URIBL_BLOCKED(0.00)[imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo,suse.de:email,suse.de:dkim];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	MIME_TRACE(0.00)[0:+];
+	ARC_NA(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[32];
+	FREEMAIL_ENVRCPT(0.00)[gmx.de];
+	RCVD_TLS_ALL(0.00)[];
+	TO_DN_SOME(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo,suse.de:email,suse.de:dkim];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	FREEMAIL_CC(0.00)[kernel.org,linux-foundation.org,arm.com,hansenpartnership.com,gmx.de,linux.ibm.com,ellerman.id.au,infradead.org,google.com,suse.com,suse.cz,nvidia.com,linux.alibaba.com,redhat.com,linux.dev,lists.infradead.org,vger.kernel.org,lists.ozlabs.org,kvack.org];
+	DWL_DNSWL_BLOCKED(0.00)[suse.de:dkim];
+	MISSING_XM_UA(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	DKIM_TRACE(0.00)[suse.de:+];
+	R_RATELIMIT(0.00)[to_ip_from(RL764437jfm1qe6abtk9nwyx8m)];
+	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from]
+X-Rspamd-Queue-Id: A11CA3DFC
+X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
+X-Rspamd-Action: no action
 
-On Tue, Aug 04, 2026 at 01:31:04PM +0100, Pedro Falcato wrote:
-> On Tue, Aug 04, 2026 at 11:55:09AM +0100, Lorenzo Stoakes (ARM) wrote:
-> > On Mon, Aug 03, 2026 at 05:43:55PM +0100, Pedro Falcato wrote:
-> > > None of the contpte code needs write access to the PTEs.
+On Tue, Aug 04, 2026 at 12:13:13PM +0100, Lorenzo Stoakes (ARM) wrote:
+> On Mon, Aug 03, 2026 at 05:43:57PM +0100, Pedro Falcato wrote:
+> > There is no need for write access to the PTE.
 > >
-> > This seems like a very broad statement? Is that actually true? I see a bunch of
-> > ptep's that aren't const-ified, so you should explain why those couldn't be
-> > converted.
->
-> ACK. FTR, I think it would've been far clearer with "None of the contpte get
-> code". There is of course contpte code that needs write access (e.g
-> contpte_clear_full_ptes).
-
-yeah that sounds better. Maybe just something like 'specify const for read-only
-users of pte *' or similar?
-
->
+> > Signed-off-by: Pedro Falcato <pfalcato@suse.de>
+> 
+> With below addressed LGTM so:
+> 
+> Reviewed-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+> 
+> > ---
+> >  arch/powerpc/include/asm/nohash/32/pte-8xx.h | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
 > >
-> > Also you add a new contpte_align_down() macro, you should mention that it the
-> > commit message, explain why it was needed.
+> > diff --git a/arch/powerpc/include/asm/nohash/32/pte-8xx.h b/arch/powerpc/include/asm/nohash/32/pte-8xx.h
+> > index e2ea8ba9f8ca..f2bab31040c7 100644
+> > --- a/arch/powerpc/include/asm/nohash/32/pte-8xx.h
+> > +++ b/arch/powerpc/include/asm/nohash/32/pte-8xx.h
+> > @@ -226,7 +226,7 @@ static inline pte_basic_t pte_update(struct mm_struct *mm, unsigned long addr, p
 > >
-> > In general more needed here :) it'd be ok if it was a truly trivial change that
-> > was all obvious but you're changing some pte_t *'s and not others so it's
-> > clearly not.
-> >
-> > >
-> > > Signed-off-by: Pedro Falcato <pfalcato@suse.de>
-> > > ---
-> > >  arch/arm64/include/asm/pgtable.h | 10 +++++-----
-> > >  arch/arm64/mm/contpte.c          | 11 ++++++++---
-> > >  2 files changed, 13 insertions(+), 8 deletions(-)
-> > >
-> > > diff --git a/arch/arm64/include/asm/pgtable.h b/arch/arm64/include/asm/pgtable.h
-> > > index a2681d755358..043bc0649cee 100644
-> > > --- a/arch/arm64/include/asm/pgtable.h
-> > > +++ b/arch/arm64/include/asm/pgtable.h
-> > > @@ -378,7 +378,7 @@ static inline void __set_pte(pte_t *ptep, pte_t pte)
-> > >  	__set_pte_complete(pte);
-> > >  }
-> > >
-> > > -static inline pte_t __ptep_get(pte_t *ptep)
-> > > +static inline pte_t __ptep_get(const pte_t *ptep)
-> > >  {
-> > >  	return READ_ONCE(*ptep);
-> > >  }
-> > > @@ -1652,8 +1652,8 @@ extern void __contpte_try_fold(struct mm_struct *mm, unsigned long addr,
-> > >  				pte_t *ptep, pte_t pte);
-> > >  extern void __contpte_try_unfold(struct mm_struct *mm, unsigned long addr,
-> > >  				pte_t *ptep, pte_t pte);
-> > > -extern pte_t contpte_ptep_get(pte_t *ptep, pte_t orig_pte);
-> > > -extern pte_t contpte_ptep_get_lockless(pte_t *orig_ptep);
-> > > +extern pte_t contpte_ptep_get(const pte_t *ptep, pte_t orig_pte);
-> > > +extern pte_t contpte_ptep_get_lockless(const pte_t *orig_ptep);
-> >
-> > This is (very) nitty but - not sure on the policy on extern's (Will/Catalin?) -
-> > but in mm we drop them when we touch the code since you don't need them these
-> > days :)
->
-> *nods*. For what it's worth, this is new code that never needed extern.
+> >  #ifdef CONFIG_PPC_16K_PAGES
+> >  #define ptep_get ptep_get
+> > -static inline pte_t ptep_get(pte_t *ptep)
+> > +static inline pte_t ptep_get(const pte_t *ptep)
+> >  {
+> >  	pte_basic_t val = READ_ONCE(ptep->pte);
+> >  	pte_t pte = {val, val, val, val};
+> 
+> Worth making these const too (that {val, val, val, val} horrifies me btw :)?
 
-Yup, this isn't a big deal anyway :)
+This is PPC code, so I don't know if they have any particular opinion here,
+but I could definitely do this.
 
->
-> >
-> > >  extern void contpte_set_ptes(struct mm_struct *mm, unsigned long addr,
-> > >  				pte_t *ptep, pte_t pte, unsigned int nr);
-> > >  extern void contpte_clear_full_ptes(struct mm_struct *mm, unsigned long addr,
-> > > @@ -1732,7 +1732,7 @@ static inline unsigned int pte_batch_hint(pte_t *ptep, pte_t pte)
-> > >   */
-> > >
-> > >  #define ptep_get ptep_get
-> > > -static inline pte_t ptep_get(pte_t *ptep)
-> > > +static inline pte_t ptep_get(const pte_t *ptep)
-> > >  {
-> > >  	pte_t pte = __ptep_get(ptep);
-> > >
-> > > @@ -1743,7 +1743,7 @@ static inline pte_t ptep_get(pte_t *ptep)
-> > >  }
-> > >
-> > >  #define ptep_get_lockless ptep_get_lockless
-> > > -static inline pte_t ptep_get_lockless(pte_t *ptep)
-> > > +static inline pte_t ptep_get_lockless(const pte_t *ptep)
-> > >  {
-> > >  	pte_t pte = __ptep_get(ptep);
-> > >
-> > > diff --git a/arch/arm64/mm/contpte.c b/arch/arm64/mm/contpte.c
-> > > index 2de12656b4d8..3a5d6937fb51 100644
-> > > --- a/arch/arm64/mm/contpte.c
-> > > +++ b/arch/arm64/mm/contpte.c
-> > > @@ -26,6 +26,11 @@ static inline pte_t *contpte_align_down(pte_t *ptep)
-> > >  	return PTR_ALIGN_DOWN(ptep, sizeof(*ptep) * CONT_PTES);
-> > >  }
-> > >
-> > > +#define contpte_align_down(ptep)                                                       \
-> > > +	_Generic((ptep),                                                               \
-> > > +		 const pte_t *: (const pte_t *) contpte_align_down((pte_t *) (ptep)),  \
-> > > +		 pte_t *: contpte_align_down((pte_t *) ptep))
-> >
-> > I really hate these _Generic() helper things. So ugly. And it's a pretty horrid
-> > cast now :(
->
-> Me too!
->
-> >
-> > Was it not possible to const-ify further to just be able to constify
-> > contpte_align_down itself?
-> >
->
-> You can't do that because some callers want a pte_t* out of align_down,
-> others want a const pte_t* out of align_down, depending on the param.
->
-> In A More Civilized Language(TM):
->
-> template <typename T>
-> T contpte_align_down(T ptr);
+(FWIW, it seems we're more aggressive in MM in doing this than other places
+in the kernel?)
 
-Now do it in rust ;)
-
->
-> :P
-
-Well as per below you can just avoid the whole issue with:
-
-#define contpte_align_down(ptep) \
- 	PTR_ALIGN_DOWN(ptep, sizeof(*(ptep)) * CONT_PTES)
-
-And avoid this mess? You're ultimately calling into a macro anyway.
-
-The generic thing Seems like a lot of hassle for an align-down, and then you're
-forcing a macro and nasty casts anyway so I don't really see the downside of
-just making it a macro in general?
-
->
-> > It also seems to contradict the claim that contpte doesn't need write-access to
-> > pte's since you're going to lengths to allow non-const pte_t * here.
->
-> Yep, I'll admit the commit message is confusing and crap. I'll flesh it out
-> here.
-
-Thanks!
-
->
-> >
-> > You should cover off why this was necessary in the commit message as above.
-> >
-> > Anyway PTR_ALIGN_DOWN() is already const-safe so couldn't you anyway just
-> > collapse this to:
-> >
-> > #define contpte_align_down(ptep) \
-> > 	PTR_ALIGN_DOWN(ptep, sizeof(*(ptep)) * CONT_PTES)
-> >
-> > Then describe in the commit message why you need to handle both cases?
-> >
-> > > +
-> > >  static inline pte_t *contpte_align_addr_ptep(unsigned long *start,
-> > >  					     unsigned long *end, pte_t *ptep,
-> > >  					     unsigned int nr)
-> > > @@ -310,7 +315,7 @@ void __contpte_try_unfold(struct mm_struct *mm, unsigned long addr,
-> > >  }
-> > >  EXPORT_SYMBOL_GPL(__contpte_try_unfold);
-> > >
-> > > -pte_t contpte_ptep_get(pte_t *ptep, pte_t orig_pte)
-> > > +pte_t contpte_ptep_get(const pte_t *ptep, pte_t orig_pte)
-> > >  {
-> > >  	/*
-> > >  	 * Gather access/dirty bits, which may be populated in any of the ptes
-> > > @@ -367,7 +372,7 @@ static inline bool contpte_is_consistent(pte_t pte, unsigned long pfn,
-> > >  			pgprot_val(prot) == pgprot_val(orig_prot);
-> > >  }
-> > >
-> > > -pte_t contpte_ptep_get_lockless(pte_t *orig_ptep)
-> > > +pte_t contpte_ptep_get_lockless(const pte_t *orig_ptep)
-> > >  {
-> > >  	/*
-> > >  	 * The ptep_get_lockless() API requires us to read and return *orig_ptep
-> > > @@ -386,10 +391,10 @@ pte_t contpte_ptep_get_lockless(pte_t *orig_ptep)
-> > >  	 * because it is not part of a contpte range.
-> > >  	 */
-> > >
-> > > +	const pte_t *ptep;
-> >
-> > Nit but this is breaking the reverse xmas tree isn't it?
->
-> Yep, seems like I mistakenly broke the coding style here and in the
-> contpte_align_down macro above (the \ is misaligned). I'll fix it up.
->
-> (I think Andrew isn't taking more material for next cycle, and while
-> this should have no functional effect, it is very late and you have
-> pushback, so probably no rush here...)
-
-Yeah I assumed this was for 7.4 :) I mean the series is fine for 7.3 too AFAIC
-(with feedback addressed obviously).
-
->
-> --
-> Pedro
-
---
-Cheers, Lorenzo
+-- 
+Pedro
 
