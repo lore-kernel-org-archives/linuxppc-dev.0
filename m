@@ -1,78 +1,84 @@
-Return-Path: <linuxppc-dev+bounces-25446-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25447-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3A794C55ABA
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2026 14:19:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 321DAC55ABA
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2026 16:55:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hFXbT3sRlz2yft;
-	Thu, 06 Aug 2026 00:19:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hFc3k292Nz2ygL;
+	Thu, 06 Aug 2026 02:55:30 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785934320;
-	cv=none; b=OAEgFx0bY2yyJkKY3isDu8w68RBSbrq+nfdyuC5bBqJRjn59aBbw55Y8gWSfwrxWKjLWn0ip4oBiHNHJ2Z8ScZIf0qKJR8l4fDsLrL1W1Z2sCv8wqKR6ZPU9M3oTZa+K/oM+YMeqSbx+jJHRdJHdw9jfZ+c5BPto7zjmiEO+glGpjjogNds+t09Btd7tWuRYs0MrKfw6ZOfq1pJ+5yrVC5ioAUs1GicdrP3B+xn1s0jrbPYqOAhQLCWUQYLfghCGYUYANk3/axG+oDZ197A66kQPpNSp/lbEkwiixcwPcvMcnEXjYimuXip11jwF6VxH9gr/NCM3Y0tw+g7DdUlNHQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785948930;
+	cv=none; b=eWYqTa/WXRU8p30ej1UwEw6gOxVirzTqrQb/IXDiTV/CjjuaURO0Fh1ENTsYtZp/uKPPBu7DAdvGssRK663wkFh6n9G6qD/jNEyXW/OSHTv2MaKklBF+o9sLVYZeQ5RHUTn1sqB7XvlaBCwCUiV83jqhbdZDgFnGuO0YUrRK8lt8duE7QQsXOzzMHVzg76zVV+7VO9CPg0Wmpy3akcz90yhqXU067cZHsqsnsAiNP2/KSVm3HPprFyEywB4nEVJijLwysHpAyBky12N/cStW65pZT5b792rLc46FBMXhhqAqVigMkXhagievgn4FoLHNXY4k7FBec5miN67e7i5+7g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785934320; c=relaxed/relaxed;
-	bh=dp6lqC/IaqHGcUthe9B0UG1lf67zbhuwq4levDRmhhA=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=A+C/KCWuzKshIc1u/DceexG5zaT9bdPS8WnUmrZ2Rnn8qGvgdX/ulfUxn/kY2xQNdMcA5zblXXnqp+chAGAduGhxge7Ir1zcdoFLE1VDYtrhThUqq5upkl9rcer5tEQ49kukKJCm7NxFLBCOuwHHBcCYw9NM4lPQrcQRveZT8dGYOaBO9qhzb7adKLsqetR9GqAvQ2Ik+KwaG+0MG7x97jh4URcsE6vCsaNG4DekmYmrivBOng1jQ0YRaPrBlK0GIXWj7cP4Hw1j+IRmRvEkBd3Qqoa0D8xC5PmQe2aX+06nUhb5aL45sgX5Vw1lYfQs5avmF3Jjm7LGJ92mRvusvA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=NmfHAEIV; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=avinash@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1785948930; c=relaxed/relaxed;
+	bh=/paASlYgCKWMyLSDOc0pQbQXYk5kkShdCoGGj0vuXPM=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=fXYfbXMN+yHnr0ASiFLDC2c7ThMhWAHqkQxEphmYdvWNhh4QLGEzoLz58wO/lHVJNvFuO4bERGYf1LaS9Uxsif9XRT0lAa9dQJ//lB/bG66jtzuh7vtblWcG2108E3R3rLu+6bZ55DuvXcTPDekuu2qeLYZXgXK5+HH0kj5Vn9Mw0FCwSQbfZpQmaVOxapgh0ObiRc2NMh9m6Tz6bXv0+8D9MVp9hNJjUKFLdsUPvr14M7DHwg3iL7RlsF7FOMSbzbtvC/XNjBXQ/briYAC5fKBvnoXGo0G7gdxk/95zB58MfzWECWqkbd6Q98Q68KFJBGNZo1TTxGTMuQUAeA57dg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=SATKCLOD; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=alifm@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=NmfHAEIV;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=SATKCLOD;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=avinash@linux.ibm.com; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=alifm@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hFVfl3BYmz2yMl
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Aug 2026 22:51:58 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 675CHcTC3725260;
-	Wed, 5 Aug 2026 12:51:42 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hFc3j3l2Gz2yLY
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Aug 2026 02:55:28 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 675Fn8aA4182910;
+	Wed, 5 Aug 2026 16:55:25 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=dp6lqC/IaqHGcUthe9B0UG1lf67zbhuwq4levDRmh
-	hA=; b=NmfHAEIVuB/JJLN64CmfnNqDXKputohxCeLzKHxn1fmzGDa7OZCFi+BGS
-	/c1eXPEgD7OUs4tZS9ZNsMLTAldyMxirnzCmtinhC4qqOEFqJqrIagESPHeeIUwa
-	8srKa6rRZbNNh/6YOvapIU3E3qpVjUzAtkqYId3D49cj+sRZrNTQqgZdq8PSIFx/
-	tNh1f0EagkiaYJfB3ZCTeeVEJb/V8YjwR0sVeY5+u50e9KNAe8iWCsZLF9VRFKKO
-	6ZSbLuX+LT45F3UGiFULbLcNcdYqLNgFzSlTgl381iIEdEavBtf2fWARVV/xe2SA
-	y/p+LmswrjqG9lH1aGG6YKCdoZdPg==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fs67htu6q-1
+	:content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=pp1; bh=/paASlYgCKWMyLSDO
+	c0pQbQXYk5kkShdCoGGj0vuXPM=; b=SATKCLODdcvriAnpXrOQAWVpn1VRa8gG1
+	phGvxAF2tjFWCdrzDHn4gWWkAfNS15HXWUys6oMVgv47qmw5pOB1E7mQPWzgeQ4K
+	NWXeOSHEGKR3RGXKYviW2IMDMz3sZVntNxb1qYijrAz0CrS5EdIiM/KxNXR64ve5
+	SPXg0biQTZkeBH8EuKpz0+Zawg0tt99Kz3ukswWvL+sfTEdzFyY4JW6eroqnCF8B
+	mx6ZYEk6fJxPhieNYAryfiG4mmVDP4iUpG7FFRVnrlpBrAYR4n567yYpDBgnILCm
+	qVx+SWIi7pUNfKA5xYzyKaAv6PR82NvgIm8jzLacztmguJs8CrMfQ==
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fs77gbq1c-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 05 Aug 2026 12:51:41 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 675CfIJ3017500;
-	Wed, 5 Aug 2026 12:51:40 GMT
-Received: from smtprelay03.wdc07v.mail.ibm.com ([172.16.1.70])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4fsv4k6jeq-1
+	Wed, 05 Aug 2026 16:55:24 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 675GfG2a023471;
+	Wed, 5 Aug 2026 16:55:23 GMT
+Received: from smtprelay06.dal12v.mail.ibm.com ([172.16.1.8])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4fsugw7hnm-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 05 Aug 2026 12:51:40 +0000 (GMT)
-Received: from smtpav04.wdc07v.mail.ibm.com (smtpav04.wdc07v.mail.ibm.com [10.39.53.231])
-	by smtprelay03.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 675Cp1TB60948978
+	Wed, 05 Aug 2026 16:55:23 +0000 (GMT)
+Received: from smtpav05.wdc07v.mail.ibm.com (smtpav05.wdc07v.mail.ibm.com [10.39.53.232])
+	by smtprelay06.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 675GtMds28443270
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 5 Aug 2026 12:51:01 GMT
-Received: from smtpav04.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 708FC58045;
-	Wed,  5 Aug 2026 12:51:38 +0000 (GMT)
-Received: from smtpav04.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id CE20258050;
-	Wed,  5 Aug 2026 12:51:34 +0000 (GMT)
-Received: from li-75d4d1cc-257f-11b2-a85c-f97fadd0f3fb.ibm.com.com (unknown [9.61.130.57])
-	by smtpav04.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Wed,  5 Aug 2026 12:51:34 +0000 (GMT)
-From: Avinash Roy <avinash@linux.ibm.com>
-To: maddy@linux.ibm.com, mpe@ellerman.id.au, bhelgaas@google.com
-Cc: npiggin@gmail.com, chleroy@kernel.org, sbhat@linux.ibm.com,
-        linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
-        linux-kernel@vger.kernel.org, Avinash Roy <avinash.roy1@linux.ibm.com>
-Subject: [PATCH] PCI: quirks: Add warm reset quirk for IBM Spyre accelerator
-Date: Wed,  5 Aug 2026 18:21:32 +0530
-Message-ID: <20260805125132.941270-1-avinash@linux.ibm.com>
-X-Mailer: git-send-email 2.55.0
+	Wed, 5 Aug 2026 16:55:22 GMT
+Received: from smtpav05.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 3D56058043;
+	Wed,  5 Aug 2026 16:55:22 +0000 (GMT)
+Received: from smtpav05.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id EB41958053;
+	Wed,  5 Aug 2026 16:55:20 +0000 (GMT)
+Received: from IBM-D32RQW3.ibm.com (unknown [9.61.241.193])
+	by smtpav05.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Wed,  5 Aug 2026 16:55:20 +0000 (GMT)
+From: Farhan Ali <alifm@linux.ibm.com>
+To: linux-s390@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pci@vger.kernel.org
+Cc: helgaas@kernel.org, alex@shazbot.org, alifm@linux.ibm.com,
+        schnelle@linux.ibm.com, mjrosato@linux.ibm.com,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Tyrel Datwyler <tyreld@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+        Bjorn Helgaas <bhelgaas@google.com>
+Subject: [PATCH v23 1/5] PCI: Introduce PCI_SLOT_PLACEHOLDER constant for slot_nr placeholder value
+Date: Wed,  5 Aug 2026 09:55:14 -0700
+Message-ID: <20260805165518.794-2-alifm@linux.ibm.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20260805165518.794-1-alifm@linux.ibm.com>
+References: <20260805165518.794-1-alifm@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,153 +95,145 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODA1MDEwMyBTYWx0ZWRfX7u4PNvW2fnsV
- PC3jmQRu7nQg86lZLMqZU5VvBqAYMdbS9HxTEeQYFzqSl39ETGddJqENIy2x9jhbjR017qbUkxx
- eJ7YHsL77SSlcTPexeHnXjDNBwpikDE=
-X-Authority-Analysis: v=2.4 cv=I7VVgtgg c=1 sm=1 tr=0 ts=6a7331dd cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODA1MDEzNyBTYWx0ZWRfX0C1OW3il8F1U
+ iimGAvtihsBd6wh/pMhH7yPtZpNQ5fi2sfccOJblgtmLv6eckbnjOdRvnfAz7MwV9VlTPOO3At5
+ ou7AwYx5B363ehmW5R6GUEkZ8TpBtoj2OaYzDC/nixWN6alEMgzyu1wLo6mHDSG29ULU3eI24TY
+ skb4KJ0hpmcgVIpc8WpPzJS6bQfnec8f6F1EZD2UNPi7jh/Vp7FrQMx5sc011T23jl60SiSwPav
+ CVGc1rhE1HQnCzW1UknLIiUmsyE5f34uP3a4DF9oE0/QizZMCgMJq8xnep4sG5VUYCIL5Gkrd0r
+ UoHrJWIeuh/S+lTbWZxuSpfbia266ZCWrbLfyHl5P8TNfYKuqCiWPS96yHX6Blu9/1q3Kw6VxVn
+ fNNp6I4+A/S3VIa8jGS5OUHIAKZA/LOxBKQjhC+L5Z0uIVoaYM3lrnQyIAmrEUrfvlaFCF9eNdo
+ e+DiEAoecOkOOiZIq5A==
+X-Authority-Analysis: v=2.4 cv=WIFPmHsR c=1 sm=1 tr=0 ts=6a736afc cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
  a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VnNF1IyMAAAA:8 a=mUP9U6Z0ULmw1JRC5QIA:9
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODA1MDEwMyBTYWx0ZWRfX5hh0+GgiASfI
- yHd6UdCsvA9gQiJKJLNdxzr06gLh7qVee8vAD5sia7pv2ZoDyqOK/C2/Q0GiW7VMvsVu2ZChbwc
- 9kGfX8v03JKuGKLhynKfYXLLUw2D+GPDmpVnAlOY8xEEj4kzbTIiwXWrzUsSFOiZRNhKQogvkCo
- hdB8NoPzcfWKtD4PgqDf+8SZSL6P331BZOZC9s+oNi9xLN/KimGhAto6hBIUZljkuHImUNpXXMF
- O9LnVwdeCVNIday9l9OTjSOxz1sN1hfespc0C7QUmXVYbDX8RnDq7qfH6ervCm45EtPhTaxT9WW
- xvYZOtahkJzLUNbEUrfI7qfsuVdGIJNESLrIoafbTGr4nYtf/Xr5AuZptf3M2bFcj7fU6QjRcHh
- 7WZ5GvxhfmSEWmhbsp64qIwo0vuCcFXk0aziTUYLS2QvSmybgg+3AvJor06OIwBcEWafyIZ6exv
- OgAybOiLZfrbBXsdt0Q==
-X-Proofpoint-ORIG-GUID: oWmMSvXGHFqldx1nCxPStb-X2Ko6V9_S
-X-Proofpoint-GUID: gUsY_FeI19815_0Ubm3UefDIC5Kx_zIa
+ a=V8glGbnc2Ofi9Qvn3v5h:22 a=VnNF1IyMAAAA:8 a=voM4FWlXAAAA:8 a=1XWaLZrsAAAA:8
+ a=t8iQWNR-jnTgK4UFVGYA:9 a=IC2XNlieTeVoXbcui8wp:22
+X-Proofpoint-GUID: 2N6UDDSNodACujrYcP2WQu8UbnarNusk
+X-Proofpoint-ORIG-GUID: 7Co9pH3paRsnpcDW5DfjTNqiWdjOuVgX
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODA1MDEzNyBTYWx0ZWRfX+jHqWNeQGxCq
+ JrcW1NfxhUMPnsVKQtOhvxqdk2RYSWZzhgoY+pNZrIE+boEOEIKFsjqWJWpG1IIyMx/rbTFZfzM
+ n/mtrkg5PsnFomhWDmAi8EoAoOJcLJc=
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-08-05_04,2026-08-04_02,2025-10-01_01
+ definitions=2026-08-05_05,2026-08-04_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 impostorscore=0 clxscore=1011 priorityscore=1501 suspectscore=0
- malwarescore=0 adultscore=0 lowpriorityscore=0 phishscore=0 spamscore=0
+ spamscore=0 lowpriorityscore=0 priorityscore=1501 phishscore=0 malwarescore=0
+ suspectscore=0 clxscore=1011 impostorscore=0 bulkscore=0 adultscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608050103
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608050137
 
-From: Shivaprasad G Bhat <sbhat@linux.ibm.com>
+Introduce a constant for placeholder value and update the kerneldoc for
+pci_create_slot() to reference PCI_SLOT_PLACEHOLDER instead of -1
+throughout. No functional change.
 
-The IBM Spyre accelerator (PCI ID 1014:06a7) requires a dedicated warm
-reset method for reliable EEH recovery on pSeries/ppc64 platforms.
-
-FLR alone is insufficient because it does not re-initialize the Spyre
-firmware state machine. On ppc64 with EEH enabled,
-pcibios_set_pcie_reset_state() is overridden in
-arch/powerpc/kernel/eeh.c to drive the platform-level PERST# signal via
-EEH PE operations, which is the correct mechanism for full device
-recovery after an EEH event.
-
-The reset function is placed in arch/powerpc/platforms/pseries/pci.c
-where the EEH infrastructure is already present, declared in
-pseries.h, and registered in the generic pci_dev_reset_methods[] table
-in drivers/pci/quirks.c under a CONFIG_PPC_PSERIES guard.
-
-This reset method is only registered when CONFIG_PPC_PSERIES is enabled, 
-so it is not available on other platforms.
-
-Reset sequence:
-  - Assert PERST# via pcie_warm_reset, hold 250 ms
-  - Deassert PERST# via pcie_deassert_reset
-  - Wait 250 ms for PCIe link retrain and device recovery
-
-Signed-off-by: Avinash Roy <avinash.roy1@linux.ibm.com>
-Signed-off-by: Shivaprasad G Bhat <sbhat@linux.ibm.com>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Tyrel Datwyler <tyreld@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Suggested-by: Bjorn Helgaas <bhelgaas@google.com>
+Signed-off-by: Farhan Ali <alifm@linux.ibm.com>
 ---
-diff --git a/arch/powerpc/platforms/pseries/pci.c b/arch/powerpc/platforms/pseries/pci.c
-index 84e4ffe957a8..7aa58d57208f 100644
---- a/arch/powerpc/platforms/pseries/pci.c
-+++ b/arch/powerpc/platforms/pseries/pci.c
-@@ -11,6 +11,7 @@
- #include <linux/kernel.h>
- #include <linux/pci.h>
- #include <linux/string.h>
-+#include <linux/delay.h>
+ drivers/pci/hotplug/pnv_php.c     |  2 +-
+ drivers/pci/hotplug/rpaphp_slot.c |  2 +-
+ drivers/pci/slot.c                | 21 +++++++++++----------
+ include/linux/pci.h               |  3 +++
+ 4 files changed, 16 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/pci/hotplug/pnv_php.c b/drivers/pci/hotplug/pnv_php.c
+index ff92a5c301b8..37299d59f906 100644
+--- a/drivers/pci/hotplug/pnv_php.c
++++ b/drivers/pci/hotplug/pnv_php.c
+@@ -808,7 +808,7 @@ static struct pnv_php_slot *pnv_php_alloc_slot(struct device_node *dn)
+ 	if (dn->child && PCI_DN(dn->child))
+ 		php_slot->slot_no = PCI_SLOT(PCI_DN(dn->child)->devfn);
+ 	else
+-		php_slot->slot_no = -1;   /* Placeholder slot */
++		php_slot->slot_no = PCI_SLOT_PLACEHOLDER;   /* Placeholder slot */
  
- #include <asm/eeh.h>
- #include <asm/pci-bridge.h>
-@@ -236,6 +237,41 @@ static void fixup_winbond_82c105(struct pci_dev* dev)
- DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_WINBOND, PCI_DEVICE_ID_WINBOND_82C105,
- 			 fixup_winbond_82c105);
+ 	kref_init(&php_slot->kref);
+ 	php_slot->state	                = PNV_PHP_STATE_INITIALIZED;
+diff --git a/drivers/pci/hotplug/rpaphp_slot.c b/drivers/pci/hotplug/rpaphp_slot.c
+index 67362e5b9971..92eabf5f61b9 100644
+--- a/drivers/pci/hotplug/rpaphp_slot.c
++++ b/drivers/pci/hotplug/rpaphp_slot.c
+@@ -84,7 +84,7 @@ int rpaphp_register_slot(struct slot *slot)
+ 	struct hotplug_slot *php_slot = &slot->hotplug_slot;
+ 	u32 my_index;
+ 	int retval;
+-	int slotno = -1;
++	int slotno = PCI_SLOT_PLACEHOLDER;
  
-+/*
-+ * Reset Spyre adapter using pci_set_pcie_reset_state()
-+ * This is specifically for PPC platforms where EEH (Enhanced Error Handling)
-+ * requires this reset method for proper device recovery.
-+ */
-+int reset_spyre(struct pci_dev *dev, bool probe)
-+{
-+	int ret;
-+
-+	if (probe)
-+		return 0;
-+
-+	/* Assert warm reset */
-+	ret = pci_set_pcie_reset_state(dev, pcie_warm_reset);
-+	if (ret) {
-+		pci_err(dev, "Failed to assert reset: %d\n", ret);
-+		return ret;
-+	}
-+
-+	/* Wait for reset to take effect */
-+	msleep(250);
-+
-+	/* Deassert reset */
-+	ret = pci_set_pcie_reset_state(dev, pcie_deassert_reset);
-+	if (ret) {
-+		pci_err(dev, "Failed to deassert reset: %d\n", ret);
-+		return ret;
-+	}
-+
-+	/* Wait for device to recover */
-+	msleep(250);
-+
-+	return 0;
-+}
-+
- static enum pci_bus_speed prop_to_pci_speed(u32 prop)
+ 	dbg("%s registering slot:path[%pOF] index[%x], name[%s] pdomain[%x] type[%d]\n",
+ 		__func__, slot->dn, slot->index, slot->name,
+diff --git a/drivers/pci/slot.c b/drivers/pci/slot.c
+index 6d5cd37bfb1e..42ff66461f74 100644
+--- a/drivers/pci/slot.c
++++ b/drivers/pci/slot.c
+@@ -37,7 +37,7 @@ static const struct sysfs_ops pci_slot_sysfs_ops = {
+ 
+ static ssize_t address_read_file(struct pci_slot *slot, char *buf)
  {
- 	switch (prop) {
-diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
-index 3968a6970fa8..79c194aeb3c6 100644
---- a/arch/powerpc/platforms/pseries/pseries.h
-+++ b/arch/powerpc/platforms/pseries/pseries.h
-@@ -92,6 +92,10 @@ extern struct pci_controller_ops pseries_pci_controller_ops;
- int pseries_msi_allocate_domains(struct pci_controller *phb);
- void pseries_msi_free_domains(struct pci_controller *phb);
+-	if (slot->number == 0xff)
++	if (slot->number == PCI_SLOT_PLACEHOLDER)
+ 		return sysfs_emit(buf, "%04x:%02x\n",
+ 				  pci_domain_nr(slot->bus),
+ 				  slot->bus->number);
+@@ -210,7 +210,7 @@ static struct pci_slot *get_slot(struct pci_bus *parent, int slot_nr)
+ /**
+  * pci_create_slot - create or increment refcount for physical PCI slot
+  * @parent: struct pci_bus of parent bridge
+- * @slot_nr: PCI_SLOT(pci_dev->devfn), -1 for placeholder, or
++ * @slot_nr: PCI_SLOT(pci_dev->devfn), PCI_SLOT_PLACEHOLDER for placeholder, or
+  *	PCI_SLOT_ALL_DEVICES
+  * @name: user visible string presented in /sys/bus/pci/slots/<name>
+  * @hotplug: set if caller is hotplug driver, NULL otherwise
+@@ -236,15 +236,16 @@ static struct pci_slot *get_slot(struct pci_bus *parent, int slot_nr)
+  * In most cases, @pci_bus, @slot_nr will be sufficient to uniquely identify
+  * a slot. There is one notable exception - pSeries (rpaphp), where the
+  * @slot_nr cannot be determined until a device is actually inserted into
+- * the slot. In this scenario, the caller may pass -1 for @slot_nr.
++ * the slot. In this scenario, the caller may pass PCI_SLOT_PLACEHOLDER for @slot_nr.
+  *
+  * The following semantics are imposed when the caller passes @slot_nr ==
+- * -1. First, we no longer check for an existing %struct pci_slot, as there
+- * may be many slots with @slot_nr of -1.  The other change in semantics is
+- * user-visible, which is the 'address' parameter presented in sysfs will
+- * consist solely of a dddd:bb tuple, where dddd is the PCI domain of the
+- * %struct pci_bus and bb is the bus number. In other words, the devfn of
+- * the 'placeholder' slot will not be displayed.
++ * PCI_SLOT_PLACEHOLDER. First, we no longer check for an existing %struct
++ * pci_slot, as there may be many slots with @slot_nr of
++ * PCI_SLOT_PLACEHOLDER. The other change in semantics is user-visible,
++ * which is the 'address' parameter presented in sysfs will consist solely
++ * of a dddd:bb tuple, where dddd is the PCI domain of the %struct pci_bus
++ * and bb is the bus number. In other words, the devfn of the 'placeholder'
++ * slot will not be displayed.
+  *
+  * Bus-wide slots:
+  * For PCIe hotplug, the physical slot encompasses the entire secondary
+@@ -267,7 +268,7 @@ struct pci_slot *pci_create_slot(struct pci_bus *parent, int slot_nr,
  
-+/* PCI device reset method for Spyre adapter */
-+struct pci_dev;
-+int reset_spyre(struct pci_dev *dev, bool probe);
-+
- extern int CMO_PrPSP;
- extern int CMO_SecPSP;
- extern unsigned long CMO_PageSize;
-diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-index b09f27f7846f..1b8ab5d9764b 100644
---- a/drivers/pci/quirks.c
-+++ b/drivers/pci/quirks.c
-@@ -4237,6 +4237,11 @@ static int reset_hinic_vf_dev(struct pci_dev *pdev, bool probe)
- 	return 0;
- }
+ 	mutex_lock(&pci_slot_mutex);
  
-+#ifdef CONFIG_PPC_PSERIES
-+/* Defined in arch/powerpc/platforms/pseries/pci.c */
-+int reset_spyre(struct pci_dev *dev, bool probe);
-+#endif
+-	if (slot_nr == -1)
++	if (slot_nr == PCI_SLOT_PLACEHOLDER)
+ 		goto placeholder;
+ 
+ 	/*
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 64b308b6e61c..b628787e9485 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -81,6 +81,9 @@
+  */
+ #define PCI_SLOT_ALL_DEVICES	0xfe
+ 
++/* Used to identify a slot as a placeholder */
++#define PCI_SLOT_PLACEHOLDER	0xff
 +
- static const struct pci_dev_reset_methods pci_dev_reset_methods[] = {
- 	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82599_SFP_VF,
- 		 reset_intel_82599_sfp_virtfn },
-@@ -4252,6 +4257,10 @@ static const struct pci_dev_reset_methods pci_dev_reset_methods[] = {
- 		reset_chelsio_generic_dev },
- 	{ PCI_VENDOR_ID_HUAWEI, PCI_DEVICE_ID_HINIC_VF,
- 		reset_hinic_vf_dev },
-+#ifdef CONFIG_PPC_PSERIES
-+	{ PCI_VENDOR_ID_IBM, 0x06a7,
-+		reset_spyre},
-+#endif
- 	{ 0 }
- };
+ /* pci_slot represents a physical slot */
+ struct pci_slot {
+ 	struct pci_bus		*bus;		/* Bus this slot is on */
+-- 
+2.43.0
+
 
