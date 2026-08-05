@@ -1,50 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-25414-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25415-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3C038C55174
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2026 07:08:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4A4FAC55174
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2026 07:19:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hFM1v2Bj7z2xqM;
-	Wed, 05 Aug 2026 17:08:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hFMGX2L0jz2xqM;
+	Wed, 05 Aug 2026 17:19:00 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785913683;
-	cv=none; b=H1KoYH8AusjuVikwG2txclQEmJPg852S+mgLLkOZneuOQZJ3EoFZ6xMUTyHakYh2ktRYc9xNYmcWxGR2nANdW9tmmtIq0At4c8RcEYbOSYBTEP5T6nw5K6+dNBNmUaGc24Je3fPcv7wzHy0PWc+5lF2I0zhWSQcOrIwAMEBDmgs94CO5K2joWBIZ+a4mIqK9z1i4lT+p3nmjKsaqKEkEHv7OqtaXmJAhXilr9Pxz4mZ6EiW5d6ZW6Q8/strScIV+FHcNUm2kXfbO2FWC7/c3VPog3NXP1C0e3j96tbMzhvQ+DXlew+JrBYSSy7z36x8Uya0M3Dg4avV+kvGujztA3g==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785914340;
+	cv=none; b=PIQgE27Pl6rUUr4oMSozKONGfKwudLExx0izXbfn65xLraKp0iK0NsgnUPbv3bhlKRWLACAjeMzWn7Zdo2Kd5ZxavqA7fVm5g5OpTiD5xAxS6Q1uSnX1b8YyuTZiso1ifcM3vGSsMyIChGHb/aigGV4QXw25+nJgQhKEslzgXIIRTrkxs9cMoQdUxCaZYqMRW7VXCVzNWPvq6BgKHHz2FaaoNwnBGNg8iuSmMOSKpz29Yt7wYNCKseNMNNBBCsjqvQdSIWkRVbr/Ys4RSdTYuMfoJtFqIw63Mximbn1fvDh4fXENWKbFbPwiVREKS5tzYzomr3wCgKAkWDeXGTgznQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785913683; c=relaxed/relaxed;
-	bh=UGMpfuT8snJ0tfEwGHyplWLK/i+F2oymMko+Mu78Kgc=;
-	h=Content-Type:MIME-Version:Message-Id:In-Reply-To:References:
-	 Subject:From:To:Cc:Date; b=el18G/a/j9F8hqF+cjvZDZRRHXlsujytpcvoB1D1HICXVHilvQMqtPJjJKKAu2HfyvKpkaoPpf4qj21rr+/VaurBXmO8umbGvh66D8KeO8MCUYKt+rsVK6k5bnqduNaywgl8OFPUe03+5Pl6u05CsbFe6vyoI7pzSPpMH9PxejN78R9dLc4dz0e46oUlWMTux0WkIj6wqU7BO2DgROn16RG2FAdgnQ+fJUV7wLwGFTR0FyUNLK/YGNsqGZQQ/f0KOSvp3/Vp3+87ryhGfPYd9YarYg9h0GAk5Iu7n1whC+zCGfl0HdM6rOQC+l4TR9LYDxKYMf+XxBDROhrzwxBEdg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=m8gTQU9Z; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=bot+bpf-ci@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1785914340; c=relaxed/relaxed;
+	bh=TnK3rjKoo7LU3h4OV5i5UA78cuzBLDxZB6l0oA0wA0I=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=BqwfazJu6I6U3yHPjpdlhdvZ+H34276SBu2yPif1y2lbLHDNAGVF49vHMQj9Li8VWfb5P6MY5KGja07JzJLYYSCqBxQA7jHpBvLIzn7G3ov1DC9jKz8OfYbRoRgae/U58HRcjjQ+kwYDSypkukpOsaUyVNkd7VRiGRPRTfpjOuOXY31xD8xfd2Wx1HqedbOtIgaFblQfcro6p9W8JDL98MbLYPRuX2P9+To+3/uJ6XaMo/NOdRZL/yxg+66vw/Rg+3ozW8ZJsp7CqzBkFeuRkSSkdpOHHbtJLsEffn7B+M6mqyErNC22IMmemOCTD0xf+BrIZIXoSz00aZ6MHZpdvA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nNNi2MK4; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=jirislaby@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=m8gTQU9Z;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nNNi2MK4;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=bot+bpf-ci@kernel.org; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=jirislaby@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hFM1t1LClz2xpn
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Aug 2026 17:08:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hFMGF6MSqz2xpn
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Aug 2026 17:18:45 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 651E04059A;
-	Wed,  5 Aug 2026 07:07:59 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6444D1F000E9;
-	Wed,  5 Aug 2026 07:07:58 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 3C7F4429E5;
+	Wed,  5 Aug 2026 07:17:26 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3E4341F000E9;
+	Wed,  5 Aug 2026 07:17:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785913679;
-	bh=UGMpfuT8snJ0tfEwGHyplWLK/i+F2oymMko+Mu78Kgc=;
-	h=In-Reply-To:References:Subject:From:To:Cc:Date;
-	b=m8gTQU9ZFMy92/rC16QxOHZfJw/kMrRJPhdx7cuc13a+8XkfbClmetnJiDjGw7kxo
-	 alS0UTHx7Zct0mAfLYRN21R8sg8rsHliQJK+cqUNYdNGvdLNSqdG4BpJNi0AhAYa3+
-	 uJJFTepTFDX1X6x0KlhKPBl/hXQ/SGkNAfL4euPAxrmTuerAXggUiBeuzn28O1J3Mg
-	 wS8yQfmuqqIzrJ10TNlckzEIqCHt4qCYRsE5yT7oBdqNs9H5U6/linqwet6BEyEsmR
-	 cByYnCYyCxjDPVrRhC906M1dHJ1/n07jkxltxBXLRcjgBpdiJbRxLKOZ14UT+0GoW5
-	 Z8Ih6G8q7+1Qg==
-Content-Type: multipart/mixed; boundary="===============7106082230189184574=="
+	s=k20260515; t=1785914246;
+	bh=TnK3rjKoo7LU3h4OV5i5UA78cuzBLDxZB6l0oA0wA0I=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=nNNi2MK4Aa1nG2gBt/R6V36b6nIW3gJLhKGvfEP/UXUf6tdDnxydCVP9AI3KHW1je
+	 2YlhhcFqwTmRs+DM4tb5QeF8MW6/DM6AkuSvKFiNc1R1Lbb3l65W+/NGPU3xx5SrhW
+	 3d3H+NMU6kY+6YgiWfnd9WUcdxpMYUsrhps4EMxLu/S3jlOjaWUmo227kIK0OuaOgF
+	 y7lLloe72XXUsNN1D8FgNPJ3baOUGzseLYPLaiiIA9vGuDUITsyUYdOPydzXAA5v6e
+	 My+e3y4yU8XV46m8Zkr+FUr6UdYmDSJp8l1nmiOxrAT636rzF9W2A2cCyGzXiiAQfl
+	 XcrQmFRVx/0wg==
+Message-ID: <92887761-aabb-4f1b-a207-3e6b15f749de@kernel.org>
+Date: Wed, 5 Aug 2026 09:17:20 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,85 +59,89 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Message-Id: <5ef8aa40184d48efe9c1fb0def756263a654c22e4908bc803d0d92426e07ef52@mail.kernel.org>
-In-Reply-To: <84353363810b8d63e7933391f5c6a2ea46f348e3.1785906979.git.skb99@linux.ibm.com>
-References: <84353363810b8d63e7933391f5c6a2ea46f348e3.1785906979.git.skb99@linux.ibm.com>
-Subject: Re: [PATCH v10 4/8] selftest/bpf: Enable verifier selftest for powerpc64
-From: bot+bpf-ci@kernel.org
-To: skb99@linux.ibm.com,bpf@vger.kernel.org,linuxppc-dev@lists.ozlabs.org
-Cc: hbathini@linux.ibm.com,maddy@linux.ibm.com,ast@kernel.org,andrii@kernel.org,daniel@iogearbox.net,shuah@kernel.org,linux-kselftest@vger.kernel.org,stable@vger.kernel.org,venkat88@linux.ibm.com,yeswanth@linux.ibm.com,skb99@linux.ibm.com,ast@kernel.org,andrii@kernel.org,daniel@iogearbox.net,martin.lau@kernel.org,eddyz87@gmail.com,yonghong.song@linux.dev,clm@meta.com,ihor.solodrai@linux.dev
-Date: Wed,  5 Aug 2026 07:07:58 +0000 (UTC)
-
---===============7106082230189184574==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] tty: remove the ipwireless driver
+To: Qingfang Deng <qingfang.deng@linux.dev>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Jakub Kicinski <kuba@kernel.org>, Andrew Lunn <andrew@lunn.ch>,
+ Ethan Nelson-Moore <enelsonmoore@gmail.com>,
+ Geert Uytterhoeven <geert@linux-m68k.org>, Eric Biggers
+ <ebiggers@kernel.org>, Mingyu Wang <25181214217@stu.xidian.edu.cn>,
+ "Maciej W. Rozycki" <macro@orcam.me.uk>, Kees Cook <kees@kernel.org>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-serial@vger.kernel.org
+Cc: David Sterba <dsterba@suse.cz>, Jiri Kosina <jikos@kernel.org>,
+ stable@vger.kernel.org
+References: <20260803091938.259944-1-qingfang.deng@linux.dev>
+Content-Language: en-US
+From: Jiri Slaby <jirislaby@kernel.org>
+Autocrypt: addr=jirislaby@kernel.org; keydata=
+ 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
+In-Reply-To: <20260803091938.259944-1-qingfang.deng@linux.dev>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
-> selftest/bpf: Enable verifier selftest for powerpc64
->
-> This patch enables arch specifier "__powerpc64" in verifier
-> selftest for ppc64. Power 32-bit would require separate
-> handling. Changes tested for 64-bit only.
+On 03. 08. 26, 11:19, Qingfang Deng wrote:
+> The last mentions of this driver on local Linux and telco support forums
+> date back to 2011. This does not prove that no users remain, but the
+> likelihood is too low to justify continuing to carry the driver in the
+> kernel.
+> 
+> The maintainer agreed that the driver should be removed and noted that it
+> is simple enough to build as an external module if a user resurfaces [1].
+> 
+> Remove the driver along with its Kconfig, defconfig, build and MAINTAINERS
+> entries.
 
-This isn't a bug, but would it read more precisely to name the new tag
-as __arch_powerpc64 (matching the macro added in bpf_misc.h) rather
-than "__powerpc64"?  The actual macro expands to __arch("POWERPC64"),
-and "__powerpc64__" is the compiler predefine used in test_loader.c,
-but there's no __powerpc64 tag itself.
+Acked-by: Jiri Slaby <jirislaby@kernel.org>
 
-Also, would phrasing it imperatively match the series style better?
-For example, "Add __arch_powerpc64 so verifier tests can gate on ppc64"
-instead of "This patch enables..."?
+<nostalgy>This was the first large tty driver I reviewed.</nostalgy>
 
-> diff --git a/tools/testing/selftests/bpf/progs/bpf_misc.h b/tools/testing/selftests/bpf/progs/bpf_misc.h
-> index 5eacf1b432521..c35359c97e44b 100644
-> --- a/tools/testing/selftests/bpf/progs/bpf_misc.h
-> +++ b/tools/testing/selftests/bpf/progs/bpf_misc.h
-> @@ -159,6 +159,7 @@
->  #define __arch_riscv64		__arch("RISCV64")
->  #define __arch_s390x		__arch("s390x")
->  #define __arch_loongarch	__arch("LOONGARCH")
-> +#define __arch_powerpc64	__arch("POWERPC64")
->  #define __caps_unpriv(caps)	__test_tag("test_caps_unpriv=" EXPAND_QUOTE(caps))
->  #define __load_if_JITed()	__test_tag("load_mode=jited")
->  #define __load_if_no_JITed()	__test_tag("load_mode=no_jited")
-> diff --git a/tools/testing/selftests/bpf/test_loader.c b/tools/testing/selftests/bpf/test_loader.c
-> index 07807757b518d..221393f2a8ef4 100644
-> --- a/tools/testing/selftests/bpf/test_loader.c
-> +++ b/tools/testing/selftests/bpf/test_loader.c
-> @@ -378,6 +378,7 @@ enum arch {
->  	ARCH_RISCV64	= 0x8,
->  	ARCH_S390X	= 0x10,
->  	ARCH_LOONGARCH	= 0x20,
-> +	ARCH_POWERPC64	= 0x40,
->  };
->
->  static int get_current_arch(void)
-> @@ -392,6 +393,8 @@ static int get_current_arch(void)
->  	return ARCH_S390X;
->  #elif defined(__loongarch__)
->  	return ARCH_LOONGARCH;
-> +#elif defined(__powerpc64__)
-> +	return ARCH_POWERPC64;
->  #endif
->  	return ARCH_UNKNOWN;
->  }
-> @@ -585,6 +588,8 @@ static int parse_test_spec(struct test_loader *tester,
->  				arch = ARCH_S390X;
->  			} else if (strcmp(val, "LOONGARCH") == 0) {
->  				arch = ARCH_LOONGARCH;
-> +			} else if (strcmp(val, "POWERPC64") == 0) {
-> +				arch = ARCH_POWERPC64;
->  			} else {
->  				PRINT_FAIL("bad arch spec: '%s'\n", val);
->  				err = -EINVAL;
-
-
-
----
-AI reviewed your patch. Please fix the bug or email reply why it's not a bug.
-See: https://github.com/kernel-patches/vmtest/blob/master/ci/claude/README.md
-
-CI run summary: https://github.com/kernel-patches/bpf/actions/runs/30981212698
---===============7106082230189184574==--
+thanks,
+-- 
+js
+suse labs
 
