@@ -1,51 +1,99 @@
-Return-Path: <linuxppc-dev+bounces-25435-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25436-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A2FB4C55174
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2026 12:07:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1A72FC55174
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2026 12:11:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hFTgG5JtHz2yMl;
-	Wed, 05 Aug 2026 22:07:22 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785931642;
-	cv=none; b=AODEMmju/YomQ+JPkG1Iu/zMbYvrThwuh7mFYgn1gpzNJtq93uGWX9w3Nuq9zvJZ7HT7hhcXaJ2o5QXilfO5z7wFvPEoKJZTUPKYGfNGYA+4e+uoLP9yJLYtqWw/4sD4s6WsJ+8ZqlInsoTULJv8iuu63bN1mxM1ciSQXR7uJWPb1ruYrOgOZ8Dsc/SoN7vkS2Zugn3UlYG6Xg2T8hiJGmWjC6p8iEk5re4KGyK6AwW5xYhpHWi/L01ItYvHZnF47ANJvBJDZBDSv5VRJt/gSvIYplyz6N9RpxucDkD5G/jNHf8oEF+tPEj6bBR4SzBT0ZjiNQfDHip/hCW/BeH9eA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hFTlW3jlWz2yMl;
+	Wed, 05 Aug 2026 22:11:03 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42e"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785931863;
+	cv=none; b=ODekReiCAwLnmVqxpGhJUF7II/1Fi6pQI1HfBzv6zoQRCjO/UjlOkyGp1y3vqfhYlYCmtPJSKG/bOrf9yGg2Nb5q36emJVraLD5m1ruwnVilaHk6WMgxW2NvBG0LIgNB+wR76qEXf4hcWzYEmq/flTpD/ncXqi+nkxEVJQYBCr0abfXKJEreIzZgnxYpB4afw1plERsSBYStJVVBKcw+fakfK1ue9e23bJzf+eNExEDJFDrPK0Kd4fuotRZMacDRirViKPwB6aSBzGEAh+Z4rZi3qysMKoSklYJe+jx+ajakkns5rqKk9ZHXlFijhs79ILN8loRtPBrZH/ZJD6EQ8A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785931642; c=relaxed/relaxed;
-	bh=aGl+2n0y8opMkIO+tIk0uV2YGP/4CHQ7NMUa3eVt6C8=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=U6EYpbKNzAfymDhvfBF7vXDwEG6+bXPjTZwlFu+YgWFObPvbMO17FI7h9N3DluMMRsS24pjMAHbpoTv00425lVFhW03VOAa5aIK63UpDbgfec9qF9c985CJVylVy6eNfMUihQgYkGTuzDEf4FrE0qXAc2N2taN+X/8D80aaDgeZA0fYzuGZYSO3JSFoy6qEcg7d5WsljU3Qt3SreueBbnO70DTfoSJ/zRR6/R9KMVxN6q+Ih+vqNzmsdll7gQBAvTcQf7o7WI4hgyAxsYbOchWLv2sWCB/5IJ6ozd1mR7egZ5+cX8spr5K/nieFja3ysfN6y3/QriNyR93Zz6dxMfQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=G08xuQ9v; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1785931863; c=relaxed/relaxed;
+	bh=RZ+Qj6t2nj2/2rI2iQ3ztizRdb4KUFylPQ/pRqcseoU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=CspQ0IavkdGMa0v/B7H+43j7MYAWH26nWn2dMka4Gc8dh9JLD2Q6HzZHh+tMARYXYgYoXKIF6fNpjYwd3iV6WGkv2/dDaVW5MZ1jcLXcIOLuIWcj4ZyXLr06FQSOnciUZW23oAVrgLmv1H/48oekE6otU9yPEXH464q4E8ZiwncGv/n6QPKSX1L3R9dss7Z0Gwtjgw+JoZMMwJnpqzii5lmujpUfq9dpLpTlDxawWwXFKfmeL93pIU6q9ebD13dp2+tcKW7bzS4FljI878UrFEjFOa1c7LbOB1c8eDvjEmr7x/CF0tq9rSrMrESMoZaDGwkAQqbEFgQ+AlUpsv+bGQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=rUeOfK0X; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42e; helo=mail-pf1-x42e.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=G08xuQ9v;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=rUeOfK0X;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42e; helo=mail-pf1-x42e.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x42e.google.com (mail-pf1-x42e.google.com [IPv6:2607:f8b0:4864:20::42e])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hFTgF684gz2yLY
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Aug 2026 22:07:21 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id BFC4760A9D;
-	Wed,  5 Aug 2026 12:07:18 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2A82F1F000E9;
-	Wed,  5 Aug 2026 12:07:02 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785931638;
-	bh=aGl+2n0y8opMkIO+tIk0uV2YGP/4CHQ7NMUa3eVt6C8=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=G08xuQ9vztT8MWAY4GWQjNu0SA3oW0WrAzxB+WUMH6xTvVM4MnCCvAzMX4Y2bXu9/
-	 wMQarK/Q0WzmH8cJs2dytIclXaHZiQrRUQW2XaJHZZyivkVl4Hy24GBiNCN796Df+y
-	 2CzrddHZ/z5jmR+FqtxzKW00oGiX2uY3jNIgcnVBHu+JGJoYG6tUcNsk5lKbqM/zi4
-	 nvu4A4Z/uwi6godbKpH5dHpUVRyOLRICUQPbrtp8FehB8uI3y++d5t0FWhLzy/JTGh
-	 PJ9ozl262SzjHQNrxDhcJRvOBQJo4aA/7EyfOJtrMCFELMOATMaHl0coqmtItf6c/P
-	 aGqVAA3RBHoPw==
-Message-ID: <33fc9d31-2866-4315-9510-0004deb93994@kernel.org>
-Date: Wed, 5 Aug 2026 14:07:01 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hFTlV1fGMz2yLY
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Aug 2026 22:11:01 +1000 (AEST)
+Received: by mail-pf1-x42e.google.com with SMTP id d2e1a72fcca58-8486672f03cso1087995b3a.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Aug 2026 05:11:01 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1785931859; x=1786536659; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=RZ+Qj6t2nj2/2rI2iQ3ztizRdb4KUFylPQ/pRqcseoU=;
+        b=rUeOfK0XROUHWBumDIlRB7DvawUhhrgwoPRs+5zNclLtB/oGEywZIHuUak1EfvGhvf
+         c+VtstJ4KGeHsQnW8qBYdsxWirLzEmX0jTgXWl4FaxqFJy2wNVb5VQ3dnSY962DaU73+
+         YONfYnbmZxN61kqF6cSRY1Gw1l36Jp4mz6YmxEGaxGaT4JCvTqvW7W4j15MpSJYO9Dtv
+         t8nzy181oDHHmRbbFRnxgI7tO7zDeKl+ylleN2+94wKHBMLc8jVV4Ij+Lyh1QdVIYfgt
+         ULq1vRWw7B0yoIWzZQ0ScBfcRIpj4IuYsYIdRhOJ9dM/6o/zkIYgMX0W0Bkdbf8MJsIt
+         Oacg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1785931859; x=1786536659;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=RZ+Qj6t2nj2/2rI2iQ3ztizRdb4KUFylPQ/pRqcseoU=;
+        b=BcEi2t4/k2MKnkiGkxCQxMfMVJFFyV+cgcX2hSdiIwiz/4++br2oVR4EWiSqE/BhWt
+         UeJdWPn7blHTk+ZWb7JVVFps1ANVgMEXTs58ZalK1/wbhRWbQZk/G2xsuSgCi/32+Qp4
+         yFoxQD/THNmYj5dU/KS/i0jYMx3bEiyd14lZvi2vxa8N+nms9FyRi5BUJJxGwUI48MIQ
+         MQc4F1XxBuhxf/KB5YwCSDeH9o4kKW5iCYhQQYNREjEZ+UIwB3PR8AK50pQR5JYZ+eiG
+         X6laKIa05Bxv9RFo4pbwnDK4cGa5oH9AA+vQjxz/6HdpBNG9D6+/0bONVRmNGInRypVK
+         cPsQ==
+X-Forwarded-Encrypted: i=1; AHgh+RqKCkPhx+hV/l8h1sChAV5dgEoMdOGWLkeXq8ljpTiMh48RozuAUD4oPT7wwvP0ueMsL/cdB9u+/Er4vZY=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yx1RE0M/YMTrumj9Gd+x5geb5gYIwK4D+3kNZsNQQ8eRiCQkAK7
+	WJPeMYNfPTVO16xvwgsGpYq3dqK2KsIpRZKvV9G49BSeYICos+z9c2Oj
+X-Gm-Gg: AR+sD12sNJL2/a909ABNNizQSqTl0HPoYI2jgSMuoTTyBE95Ypac1r8frZAMNzdGyDa
+	wK90yPfxu5HQYBrPMVUaUVW8soBujWb3kAkWDLA5DgO/ZS60v3F6unpNwCICufn57kHzaZmm2YY
+	Rwc7XVJnS3Wy1LLU3gjBJHQIpQ3zJp1LwhbDZl66DKbUBu/fXrWrvsX++pvGtlac17hUnQaKamb
+	3RmANyERy+tEwC0HBHNFwpF8XIMK4nVrQctPhM9Ey4Lsjzd0iWtKh2f8LCsZOA/tlrbKZthxOzP
+	fHevrehThnx4hr3wMoaB1q7LHWOua9dLcdStk3gXi0G476J/BiHuLkF8Bj/RATUAZiME+nvuTCP
+	7tnIXBDBWV7ez+POLMLrvH3RBozoLAPNG+2Pcf+e76NWgg4+jW0zdggKzVvoWz4wJQw4ihxf+2f
+	v4ZltGmh+HxkjD2ncH+EfTDDGb4XRX7zjvGmiYgYBseAFVtMnqHXuOjQYclZipeI7p+OPg6K32q
+	XNa2nv297Uwaf5EO4J19X3Q6bi5gZberbgk
+X-Received: by 2002:a05:6a00:c93:b0:84a:29a7:f650 with SMTP id d2e1a72fcca58-84f2de6ab12mr6280866b3a.0.1785931858748;
+        Wed, 05 Aug 2026 05:10:58 -0700 (PDT)
+Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([106.51.161.124])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-84f2e52f84esm732908b3a.57.2026.08.05.05.10.45
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 05 Aug 2026 05:10:58 -0700 (PDT)
+Date: Wed, 5 Aug 2026 17:40:42 +0530
+From: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
+To: Nathan Chancellor <nathan@kernel.org>
+Cc: Link Mauve <linkmauve@linkmauve.fr>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org, 
+	peterz@infradead.org, jpoimboe@kernel.org, jbaron@akamai.com, aliceryhl@google.com, 
+	rostedt@goodmis.org, ardb@kernel.org, ojeda@kernel.org, boqun@kernel.org, 
+	gary@garyguo.net, bjorn3_gh@protonmail.com, lossin@kernel.org, 
+	a.hindborg@kernel.org, tmgross@umich.edu, dakr@kernel.org, daniel.almeida@collabora.com, 
+	tamird@kernel.org, acourbot@nvidia.com, work@onurozkan.dev, ndesaulniers@google.com, 
+	morbo@google.com, justinstitt@google.com, fujita.tomonori@gmail.com, 
+	joelagnelf@nvidia.com, gregkh@linuxfoundation.org, prafulrai522@gmail.com, 
+	nsc@kernel.org, japo@linux.ibm.com, lina+kernel@asahilina.net, j@jannau.net, 
+	airlied@gmail.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+	rust-for-linux@vger.kernel.org, llvm@lists.linux.dev
+Subject: Re: [PATCH V17 0/7] Rust Support for powerpc
+Message-ID: <anMnoT0KLd5PRGmX@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+References: <20260708082454.1254320-1-mkchauras@gmail.com>
+ <178574013457.29744.6211258618175255546.b4-ty@linux.ibm.com>
+ <anG67Q6Y59kDqh-c@desktop>
+ <20260804202217.GA1109939@ax162>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,144 +107,114 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 03/22] mm: introduce MMF_KERNEL flag and set it for
- init_mm
-To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- Kevin Brodsky <kevin.brodsky@arm.com>, linux-mm@kvack.org
-Cc: Andrew Morton <akpm@linux-foundation.org>,
- Lorenzo Stoakes <ljs@kernel.org>, "Liam R. Howlett" <liam@infradead.org>,
- Vlastimil Babka <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>,
- Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>,
- Pasha Tatashin <pasha.tatashin@soleen.com>,
- Russell King <linux@armlinux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
- Ryan Roberts <ryan.roberts@arm.com>, linux-arm-kernel@lists.infradead.org,
- Huacai Chen <chenhuacai@kernel.org>, loongarch@lists.linux.dev,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
- Helge Deller <deller@gmx.de>, linux-parisc@vger.kernel.org,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
- Albert Ou <aou@eecs.berkeley.edu>, linux-riscv@lists.infradead.org,
- Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
- Alexander Gordeev <agordeev@linux.ibm.com>,
- Gerald Schaefer <gerald.schaefer@linux.ibm.com>, linux-s390@vger.kernel.org,
- "David S. Miller" <davem@davemloft.net>,
- Andreas Larsson <andreas@gaisler.com>, sparclinux@vger.kernel.org,
- Richard Weinberger <richard@nod.at>,
- Anton Ivanov <anton.ivanov@cambridgegreys.com>,
- Johannes Berg <johannes@sipsolutions.net>, linux-um@lists.infradead.org,
- Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
- Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>,
- "H. Peter Anvin" <hpa@zytor.com>, Andy Lutomirski <luto@kernel.org>,
- Peter Zijlstra <peterz@infradead.org>, Ning Sun <ning.sun@intel.com>,
- x86@kernel.org, tboot-devel@lists.sourceforge.net,
- Ard Biesheuvel <ardb@kernel.org>,
- Ilias Apalodimas <ilias.apalodimas@linaro.org>, linux-efi@vger.kernel.org,
- Vishal Moola <vishal.moola@gmail.com>, Alistair Popple <apopple@nvidia.com>,
- "Matthew Wilcox (Oracle)" <willy@infradead.org>,
- linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-References: <20260714-remove_pgtable_cdtor-v1-0-44be8a7685d7@arm.com>
- <20260714-remove_pgtable_cdtor-v1-3-44be8a7685d7@arm.com>
- <01f07ea2-8bdd-4450-8a49-548f8b646cfd@kernel.org>
-From: "David Hildenbrand (Arm)" <david@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=david@kernel.org; keydata=
- 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
- qIws/H2t
-In-Reply-To: <01f07ea2-8bdd-4450-8a49-548f8b646cfd@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260804202217.GA1109939@ax162>
 
-On 8/3/26 15:59, Christophe Leroy (CS GROUP) wrote:
+On Tue, Aug 04, 2026 at 01:22:17PM -0700, Nathan Chancellor wrote:
+> On Tue, Aug 04, 2026 at 12:11:57PM +0200, Link Mauve wrote:
+> > Hi,
+> > 
+> > On Mon, Aug 03, 2026 at 12:27:13PM +0530, Madhavan Srinivasan wrote:
+> > > On Wed, 08 Jul 2026 13:54:47 +0530, Mukesh Kumar Chaurasiya (IBM) wrote:
+> > > > Enable experimental rust support for ppc64le and ppc32be. The patch for
+> > > > ppc32 has been provided by Link Mauve[1] and ppc64le support[2] has been
+> > > > merged over it. ppc32 needs some toolchain fixes mentioned in the patch
+> > > > `rust: Add PowerPC support` and the discussion for that is done here[1].
+> > > > 
+> > > > This has been tested on
+> > > > - powernv9 hardware
+> > > > - pseries P11 hardware
+> > > > - pseries(9, 10) qemu
+> > > > - powernv(9, 10) qemu
+> > > > - rustdoc on x86 and powerpc64le
+> > > > - rusttest on x86 and powerpc64le
+> > > > 
+> > > > [...]
+> > > 
+> > > Applied to powerpc/next.
+> > > 
+> > > [1/7] rust: Fix "multiple candidates for rmeta dependency core" error
+> > >       https://git.kernel.org/powerpc/c/00cdfd072c709c608606461d7d44d4613119bfa9
+> > > [2/7] dma-resv: Fix undefined symbol when CONFIG_DMA_SHARED_BUFFER is disabled
+> > >       https://git.kernel.org/powerpc/c/be809b60cbb61aab96179f44ac3670242ae72996
+> > > [3/7] powerpc/jump_label: adjust inline asm to be consistent
+> > >       https://git.kernel.org/powerpc/c/13244c0a40139fe66c4c5c5655f4d732a6002957
+> > > [4/7] rust/powerpc: Set min rustc version for powerpc
+> > >       https://git.kernel.org/powerpc/c/e299147cdc8e19c6421a6b7863dc82a35b09d967
+> > > [5/7] rust: Make __udivdi3() and __umoddi3() panic
+> > >       https://git.kernel.org/powerpc/c/c93c194e4ee71a734986fd99a8b1ec9fbb7a9b8b
+> > > [6/7] rust: Add PowerPC support
+> > >       https://git.kernel.org/powerpc/c/73b741adb264967093ef4eb59905618a7e0d0de0
+> > > [7/7] powerpc: Enable Rust for ppc64le
+> > >       https://git.kernel.org/powerpc/c/bc87cbdb952e9223616b839d64bdb4723aa2ed1d
+> > > 
+> > > cheers
+> > > 
+> > 
+> > I just tested those again in linux-next, with the Wii support series on
+> > top, but now the kernel fails to build due to ARCH_WARN_ASM and
+> > ARCH_WARN_REACHABLE not being defined on PowerPC:
 > 
+> I also see the following warnings (in addition to that error):
 > 
-> Le 14/07/2026 à 16:03, Kevin Brodsky a écrit :
->> mm code often needs to know whether some mm represents a kernel or
->> user address space. This is currently done by comparing the mm
->> pointer with &init_mm; besides not being particularly elegant, this
->> ignores the fact that other mm's (e.g. efi_mm) may also represent
->> parts of the kernel address space.
->>
->> Introduce a new mm flag MMF_KERNEL and set it for init_mm.
->> Subsequent patches will use this flag to replace comparisons with
->> &init_mm. No functional change is introduced for now.
+>   warning: unknown and unstable feature specified for `-Ctarget-feature`: `mma`
+>     |
+>     = note: it is still passed through to the codegen backend, but use of this feature might be unsound and the behavior of this feature can change in the future
+>     = help: consider filing a feature request
 > 
-> Did you consider performance impact ? This test is usually done in quite
-> critical memory handling functions.
+>   warning: unstable feature specified for `-Ctarget-feature`: `vsx`
+>     |
+>     = note: this feature is not stably supported; its behavior can change in the future
 > 
-> init_mm is known at link time. Before your patch 08/22 there is just a
-> comparison of mm (r3) with a constant (loaded in r10):
+>   warning: unknown and unstable feature specified for `-Ctarget-feature`: `hard-float`
+>     |
+>     = note: it is still passed through to the codegen backend, but use of this feature might be unsound and the behavior of this feature can change in the future
+>     = help: consider filing a feature request
 > 
-> c0014048 <assert_pte_locked>:
-> c0014048:    3d 40 c1 09     lis     r10,-16119
-> c001404c:    39 4a 03 98     addi    r10,r10,920
-> c0014050:    7c 03 50 00     cmpw    r3,r10
-> c0014054:    4d 82 00 20     beqlr
-> ...
+>   warning: unstable feature specified for `-Ctarget-feature`: `altivec`
+>     |
+>     = note: this feature is not stably supported; its behavior can change in the future
 > 
-> After patch 08/22 we have, it first checks that mm is not 0, then it loads the
-> word located at mm+528 then AND it with 0x1. This load might be costly.
-> 
-> c0014048 <assert_pte_locked>:
-> c0014048:    2c 03 00 00     cmpwi   r3,0
-> c001404c:    7c 85 23 78     mr      r5,r4
-> c0014050:    41 82 00 10     beq     c0014060 <assert_pte_locked+0x18>
-> c0014054:    81 23 02 10     lwz     r9,528(r3)
-> c0014058:    71 29 00 01     andi.   r9,r9,1
-> c001405c:    4c 82 00 20     bnelr
+Hey Nathan,
 
-Is that a real problem, though?
+For these i'll raise issues.
+>   clang diag: arch/powerpc/include/uapi/asm/ioctl.h:5:9: warning: '_IOC_SIZEBITS' macro redefined [-Wmacro-redefined]
+>   clang diag: arch/powerpc/include/uapi/asm/ioctl.h:6:9: warning: '_IOC_DIRBITS' macro redefined [-Wmacro-redefined]
+>   clang diag: arch/powerpc/include/uapi/asm/ioctl.h:8:9: warning: '_IOC_NONE' macro redefined [-Wmacro-redefined]
+>   clang diag: arch/powerpc/include/uapi/asm/ioctl.h:10:9: warning: '_IOC_WRITE' macro redefined [-Wmacro-redefined]
+>   warning: 4 warnings emitted
+> 
+For these warnings below diff should fix it. I'll send out a patch soon.
 
-What we could do is to just keep the == &init_mm check internally on configs
-where we know that there is only a single such MM context.
+diff --git a/rust/uapi/uapi_helper.h b/rust/uapi/uapi_helper.h
+index 06d7d1a2e8da..acec2d2fede7 100644
+--- a/rust/uapi/uapi_helper.h
++++ b/rust/uapi/uapi_helper.h
+@@ -6,7 +6,7 @@
+  * Sorted alphabetically.
+  */
+ 
+-#include <uapi/asm-generic/ioctl.h>
++#include <uapi/linux/ioctl.h>
+ #include <uapi/drm/drm.h>
+ #include <uapi/drm/nova_drm.h>
+ #include <uapi/drm/panthor_drm.h>
 
-Just a thought.
+Regards,
+Mukesh
 
--- 
-Cheers,
-
-David
+> when building this series in next-20260804 with rustc 1.97.1. I am not
+> sure where the clang diagnostic warnings come from. I assume the target
+> feature warnings are expected but it would be good to get those
+> addressed sooner rather than later. I see '-hard-float' has an issue
+> open
+> 
+>   https://github.com/rust-lang/rust/issues/117347
+> 
+> but I don't think I see issues open for the other ones.
+> 
+> -- 
+> Cheers,
+> Nathan
 
