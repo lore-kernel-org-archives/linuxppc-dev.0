@@ -1,80 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-25443-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25444-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 32EDDC55ABA
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2026 12:42:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3652EC55174
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2026 12:57:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hFVRd5W4gz2y1Y;
-	Wed, 05 Aug 2026 22:42:21 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62e"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785916554;
-	cv=none; b=L0iBG9utykEDAWUOeJ6JZiSklx9C0HewWEgbOy/4PSxgC7dp2JOiirNVjMXPprUl3c75FtRPk3DTz2wuhOQoBSVGN8VcxtmgGiq89RUgKaZLTjjetx9g/3RduybD0re190azR5o3NENJHc/DLPLii5/V8zThbPHpzB3wzrKMk2LJ3JqDsbboTqsxhQSLN7bSZB453bTSY4DhQ55+IW87QGovjbHgps53qLn0Agj3wKk2z/dAsbA2+pvWq7NN5Cz4/unQwpRZHaLgXvqRZjZqQ4iZ3OHFJtAog7SxjLMEnCFWaukplpeCFUVeQYZUlMg38HkDl2EJh5baO0VqFkXyXQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hFVmh1XMVz2ySW;
+	Wed, 05 Aug 2026 22:57:08 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785934628;
+	cv=none; b=MdVc4zmyqPDmNk+a3jsHJZs+22vekmRN7YnAtQURyt0bPhFa84QllgsDLrVF35Z6HUkBTrC8eyG8FESFMBoiHDrTL8NSXwTTK3ZOr8RtP+FArtsCDvMxrtaEwUhdEoiF8UBpMeCLjwIqiP05AaCyQ44JLS7ciAHdYzNmEUpDobfbgPKqXg+jUuBYvENzZCGqbyxreFVih9GWyp6RzalmPcUiC1mBPrptDIOdRxk7I3DebQQgFINxxiap/tPSQRrL28x65RRCDLbWLKIAr9iPUYhwbOpWS2mVjEN+X5gkO/bbhsJw8vBLFjLuAHJyW4pAflAKoJ4L5EXTbbGNbVzXBA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785916554; c=relaxed/relaxed;
-	bh=buENsts9eXYr+cMpEnOHpWKy852zqVxsMr2A9kbxY60=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=YiN5viR6hHd/e2KxLJdKMRnHmPYZjnZEB4MljhiUpXrYFOlc7FrzBWbh/4VmFJV+FNF6KJYm0OL2a1VbQYORe9kDkiZkE4JHzF14g7y1XJoy62dZp0Zpp/xAy5IlJeAd0egFl+AuUu0C0FLBoUJ1CJ+etnXwkkMHBw7IP4fe7a0rEJ77//99Jk0h1LtGJB1YAf7QW4GYujffjm0kpBe2/xGirlv0QT2Xwt0vSTGDuKQYWOXbaxNJn8BcurSmT8PaCi/nJTH/TW922KxlAyxpfcQUDvbnT6z5XuhipHpUb1Zogzpvx+yUKokzTnuP0ItOzkxkJIJaLfMqZT400h0liQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=FH0CZJo/; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62e; helo=mail-pl1-x62e.google.com; envelope-from=zaq14760@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1785934628; c=relaxed/relaxed;
+	bh=YFATTYMHaqzZjbRgAS5gchqmnq4INnTFQL5meIkL3P0=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=odwr1y/QUvYoL4EK6diBw0ONUAKAdz69zoE8C2JgtJBTj1LvXu0kQXXtyMEhgfWqTcayq1zQhifdJlNa9lTNmQ5Qeq5uzVUuM7fwWLppCxTDoEuaxRhVcisz5aIJPcY/a0cjfXARjhbmoyhLtd1Lc0GDW8++oyPsemYKEpNNv4fTSNwOX5AnnrieBW3JlwefIlHDeEIf0tmkq+TmYkgJ1GtMH1T/dmlv3aDPdPO+jk+MMK2iIgl85ae8TeuauOUEtGrQwNi/mPjIODszX94v8gpo99KgG/pOHFWSCEQm+H3HLUIZI4O/hlCE91x8D/pQ4UjRdvJxj64lYHvOyroPIg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Anioibwu; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=FH0CZJo/;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Anioibwu;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62e; helo=mail-pl1-x62e.google.com; envelope-from=zaq14760@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x62e.google.com (mail-pl1-x62e.google.com [IPv6:2607:f8b0:4864:20::62e])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hFN551Wslz2xpn
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Aug 2026 17:55:52 +1000 (AEST)
-Received: by mail-pl1-x62e.google.com with SMTP id d9443c01a7336-2cf50c6f235so8795535ad.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Aug 2026 00:55:52 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1785916550; x=1786521350; darn=lists.ozlabs.org;
-        h=cc:to:message-id:content-transfer-encoding:content-type
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=buENsts9eXYr+cMpEnOHpWKy852zqVxsMr2A9kbxY60=;
-        b=FH0CZJo/ot5ap9Jj2fjJxQtsvlKuEaYQ4I2yE45KJmhjqFDVOm9eJpUYe6kCQI3Pxr
-         7rK1Wh+NQ/HmXGGYj5u4QjTjR/DU11Oo+dtk8wDs8Rj70BY6s0TT9PHPnbO58W8LEdxZ
-         hR5O4FEoKmXn4t4SkqqSIEFUpo2glRw86NGLzsYyg1v3V4tuakvg7B739F9tMAcnriZ8
-         ainuTkWYEijZ67kZIAQZ7xnTcQ7i93xNJ6w+gp2Ebenj4qYRYU1E62JGc061fYAhxNTM
-         hWKsU3cqPNLGa7zI0HbRV8g1oyqo35a5WjE9a3o2skLRod4Y9IUcVuxw1k1XbsLg7qT/
-         vW1w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785916550; x=1786521350;
-        h=cc:to:message-id:content-transfer-encoding:content-type
-         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=buENsts9eXYr+cMpEnOHpWKy852zqVxsMr2A9kbxY60=;
-        b=iT1VZUY5YKct3bJW2ItX1595B4YN0Cmrb/fiqjC2+sK7ojVKKT3jH/34ACoSSeUYv3
-         j4+EFdzXK6TSuiJIG+8vxctYZaD83a8C1RtPXWLNHvJ1TqBzSB7JH0clwbL4p3FjJFZb
-         jj3LWCD/QIlEEoGkulRSE7ujsc/z2gFrkiG0U0Atyv2n9R35R7oUuPKgLnbGU22qFGgr
-         wbqO8VPUriuAqe7GfkvNlUmCRwG+Lr0v0iQTNPF9oi50U3gPyv20RVsxaaxlTVQ9RV56
-         VCgc+0bdwBoKO2hIaaTCaGzPd0sFprwMWSjfGvexuu0I1/9I8C+NV1kbTEwVJypvfN6k
-         wikQ==
-X-Forwarded-Encrypted: i=1; AHgh+RrXowTKM636m6BnP3BxTErNN6yf1ugtzDA6zjX5GvCkyqBdmFe33PvzPk2b1kv14DEv6YI19cnDRNtPecY=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwAtdHhvSSjqq1Kw9uT+Tr7C7f45wCNhbmfUBEGTzGtQrX9mlzD
-	WvKdYREJyLUSH+TQv7DYwMY1fbZUeZQsfALUxwGXgnmCgHXr5KA567mS
-X-Gm-Gg: AR+sD10wuqwnZ0+NK4m0g77SWa9CH/HHXRt+HRNBSKTQiK/VkTk5q6O5O7bY/rkAJMO
-	43SxeQb9yZBSl7YP4/OATrT0PAgXmCh5uiQH/8AoK6PzhLq5+gs9PXYYj6TnubY20O8A4SRWTLz
-	h9wEQjvsmLqvpmOSLWP6gpiwU72IPaSxd4cuwMMSjxG+uR0I1SWVLzuwYv1xGd7lcjWHIeqeBJ7
-	PXDdxd9SKGdaa+Dw1Fy73MNA/ot4Jmjy3BA6zeNm4NSp2Pj5c3IDQnCQTU7o13W70HUxgp2BDf/
-	Z1QwXhNzhEn2lXKXGt2vtZEjIZdkVSeXPkd7qmlrYCm3d8tpjUQyPrNnLvUuC1XoR6rrQmeFgjg
-	auDINiIuHo614txcGifVpPAIaWYL3qQ9zI1M999RUvb36bEzA0A4VAgc42qifu446yEVSRieHax
-	bSvQksHoCspMrWEiFh8HWcFe7XRk8uI1bTKvvJGBkU+vdgWckQiQ5XpQmnAXJAEPIYwkvzGKd6H
-	1YouVt68fo94cBrbwSdK5qEg4POCNmP+97unVJTbMcDhdh5
-X-Received: by 2002:a17:903:2d1:b0:2cc:90aa:8787 with SMTP id d9443c01a7336-2d0ca7b54e0mr60337695ad.6.1785916549922;
-        Wed, 05 Aug 2026 00:55:49 -0700 (PDT)
-Received: from [127.0.1.1] (211-23-39-77.hinet-ip.hinet.net. [211.23.39.77])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2d0a9f8fc8csm15721095ad.15.2026.08.05.00.55.46
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 05 Aug 2026 00:55:49 -0700 (PDT)
-From: LiangCheng Wang <zaq14760@gmail.com>
-Date: Wed, 05 Aug 2026 15:55:43 +0800
-Subject: [PATCH] ASoC: fsl-asoc-card: defer probe when the CPU DAI device
- is not ready
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hFVmf0PHgz2yMl
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Aug 2026 22:57:05 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id E85E440D40;
+	Wed,  5 Aug 2026 12:57:00 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6A0801F00A3E;
+	Wed,  5 Aug 2026 12:56:44 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1785934620;
+	bh=YFATTYMHaqzZjbRgAS5gchqmnq4INnTFQL5meIkL3P0=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=AnioibwuiNfUKvIMwFOZlUoMKROErwHnkh/ugizWQDyoH61TxV7pFUA9xoaxIgTQH
+	 DP4ZeaY7v3qsA8C79AjEaeI+d6zCQ1eBRcQpaq2HP+FRYXzBNLFh06rcLdGrv9JqPL
+	 RPtTV3rRFhfUm96jQNCjztZOBfYvRq1OMyeart09EVOAlGMag8FIkfiN4wPld2eIHy
+	 lKGK+qYnKNQHu3iq5a3LQkzC4EBFGYt7SOYnzfVfqPoFNCr7gW3R90hEjrqMBF8Ii1
+	 mHI0a03Disds30l3BNjsuUtqYbmaAjak2BVCfBt+d6s6xRcEFviUKD36C+0veCn5p6
+	 2Yb4NGHxt7qcw==
+Message-ID: <d347de18-10ee-41e9-a672-b08f70bc88e4@kernel.org>
+Date: Wed, 5 Aug 2026 14:56:41 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,69 +59,177 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260805-fsl-asoc-defer-cpu-dai-v1-1-43f7f538e384@gmail.com>
-X-B4-Tracking: v=1; b=H4sIAH7scmoC/x3MSQqAMAxA0atI1gbqUKeriIvaphoQlQZFkN7d4
- vIt/n9BKDAJDNkLgW4WPvaEIs/ArmZfCNklQ6nKRnVKo5cNjRwWHXkKaM8LnWHsZ11T13rtVAU
- pPgN5fv7xOMX4AcLdSt1oAAAA
-X-Change-ID: 20260805-fsl-asoc-defer-cpu-dai-9b54e87f5d03
-To: Shengjiu Wang <shengjiu.wang@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>, 
- Fabio Estevam <festevam@gmail.com>, Nicolin Chen <nicoleotsuka@gmail.com>, 
- Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
- Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>
-Cc: Mark Brown <broonie@linaro.org>, linux-sound@vger.kernel.org, 
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
- Wig Cheng <onlywig@gmail.com>, LiangCheng Wang <zaq14760@gmail.com>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1785916546; l=1593;
- i=zaq14760@gmail.com; h=from:subject:message-id;
- bh=m1v76Ag+Fp0S33OQgA4ftyBRk7je3Dir+slUcySG738=;
- b=MsFHsJDqkEdPoHI6b3SB9AdaBRM1iziM7cEjo6ZAz/pZg6LSeBVgxuR9qdTF4W1PUTZX61fIg
- nLAnfBL/cC9B8OweVgjJiqWzLAO9HbmVJbj2KAUV1m8dM98x8K5/g64
-X-Developer-Key: i=zaq14760@gmail.com; a=ed25519;
- pk=5IaLhzvMqasgGPT47dsa8HEpfb0/Dv2BZC0TzSLj6E0=
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH V17 0/7] Rust Support for powerpc
+To: FUJITA Tomonori <tomo@flapping.org>, linkmauve@linkmauve.fr
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+ peterz@infradead.org, jpoimboe@kernel.org, jbaron@akamai.com,
+ aliceryhl@google.com, rostedt@goodmis.org, ardb@kernel.org,
+ ojeda@kernel.org, boqun@kernel.org, gary@garyguo.net,
+ bjorn3_gh@protonmail.com, lossin@kernel.org, a.hindborg@kernel.org,
+ tmgross@umich.edu, dakr@kernel.org, daniel.almeida@collabora.com,
+ tamird@kernel.org, acourbot@nvidia.com, work@onurozkan.dev,
+ nathan@kernel.org, ndesaulniers@google.com, morbo@google.com,
+ justinstitt@google.com, fujita.tomonori@gmail.com, joelagnelf@nvidia.com,
+ gregkh@linuxfoundation.org, prafulrai522@gmail.com, nsc@kernel.org,
+ japo@linux.ibm.com, lina+kernel@asahilina.net, j@jannau.net,
+ airlied@gmail.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, rust-for-linux@vger.kernel.org,
+ llvm@lists.linux.dev, mkchauras@gmail.com
+References: <20260708082454.1254320-1-mkchauras@gmail.com>
+ <178574013457.29744.6211258618175255546.b4-ty@linux.ibm.com>
+ <anG67Q6Y59kDqh-c@desktop>
+ <20260804.224035.269658578200153488.tomo@flapping.org>
+Content-Language: fr-FR
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+In-Reply-To: <20260804.224035.269658578200153488.tomo@flapping.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-fsl_asoc_card_probe() hard-fails with -EINVAL when the CPU DAI (SAI)
-platform device is not found. Like the codec, the CPU DAI may just be
-probed later than the machine driver; the order is not guaranteed and
-varies across kernel versions, so a permanent -EINVAL leaves the card
-unregistered with no analog playback or capture.
 
-Defer probe instead, mirroring commit e396dec46c56 ("ASoC:
-fsl-asoc-card: Defer probe when fail to find codec device").
 
-Tested on i.MX8MP with an ALC5672 on SAI3: the card that failed to
-register on v6.18 now comes up during boot.
+Le 04/08/2026 à 15:40, FUJITA Tomonori a écrit :
+> [Vous ne recevez pas souvent de courriers de tomo@flapping.org. D?couvrez pourquoi ceci est important ? https://aka.ms/LearnAboutSenderIdentification ]
+> 
+> On Tue, 4 Aug 2026 12:11:57 +0200
+> Link Mauve <linkmauve@linkmauve.fr> wrote:
+> 
+>> Hi,
+>>
+>> On Mon, Aug 03, 2026 at 12:27:13PM +0530, Madhavan Srinivasan wrote:
+>>> On Wed, 08 Jul 2026 13:54:47 +0530, Mukesh Kumar Chaurasiya (IBM) wrote:
+>>>> Enable experimental rust support for ppc64le and ppc32be. The patch for
+>>>> ppc32 has been provided by Link Mauve[1] and ppc64le support[2] has been
+>>>> merged over it. ppc32 needs some toolchain fixes mentioned in the patch
+>>>> `rust: Add PowerPC support` and the discussion for that is done here[1].
+>>>>
+>>>> This has been tested on
+>>>> - powernv9 hardware
+>>>> - pseries P11 hardware
+>>>> - pseries(9, 10) qemu
+>>>> - powernv(9, 10) qemu
+>>>> - rustdoc on x86 and powerpc64le
+>>>> - rusttest on x86 and powerpc64le
+>>>>
+>>>> [...]
+>>>
+>>> Applied to powerpc/next.
+>>>
+>>> [1/7] rust: Fix "multiple candidates for rmeta dependency core" error
+>>>        https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgit.kernel.org%2Fpowerpc%2Fc%2F00cdfd072c709c608606461d7d44d4613119bfa9&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C34e4deafcc1d41c1738a08def22e01b0%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639214476617198585%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=4qQe1qS37TGv6%2Bf9H56kWVqMYSAHsWiDx5oz8WHZ8%2Bg%3D&reserved=0
+>>> [2/7] dma-resv: Fix undefined symbol when CONFIG_DMA_SHARED_BUFFER is disabled
+>>>        https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgit.kernel.org%2Fpowerpc%2Fc%2Fbe809b60cbb61aab96179f44ac3670242ae72996&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C34e4deafcc1d41c1738a08def22e01b0%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639214476617235654%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=cw2l64D3ah%2FM3pxFmvMpUnNmcqcSvN3RFoDiYAIR76g%3D&reserved=0
+>>> [3/7] powerpc/jump_label: adjust inline asm to be consistent
+>>>        https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgit.kernel.org%2Fpowerpc%2Fc%2F13244c0a40139fe66c4c5c5655f4d732a6002957&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C34e4deafcc1d41c1738a08def22e01b0%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639214476617259593%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=xNvcH9k5RA5ktJupn90VdDuwx4YBvezuDcapqKlYfjs%3D&reserved=0
+>>> [4/7] rust/powerpc: Set min rustc version for powerpc
+>>>        https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgit.kernel.org%2Fpowerpc%2Fc%2Fe299147cdc8e19c6421a6b7863dc82a35b09d967&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C34e4deafcc1d41c1738a08def22e01b0%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639214476617280683%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=uNZA7AulROQGv%2B2l4M%2FqC5W4ncWktRoSRRp8eaF%2FcCY%3D&reserved=0
+>>> [5/7] rust: Make __udivdi3() and __umoddi3() panic
+>>>        https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgit.kernel.org%2Fpowerpc%2Fc%2Fc93c194e4ee71a734986fd99a8b1ec9fbb7a9b8b&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C34e4deafcc1d41c1738a08def22e01b0%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639214476617303292%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=znZPWXM7k5FpRlekIyUN1bHzmMyk1YESR56WsiwBuMA%3D&reserved=0
+>>> [6/7] rust: Add PowerPC support
+>>>        https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgit.kernel.org%2Fpowerpc%2Fc%2F73b741adb264967093ef4eb59905618a7e0d0de0&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C34e4deafcc1d41c1738a08def22e01b0%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639214476617326590%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=aFHGhd7RX%2Ft5%2BMjqt6pBmIKPKAKmFEQndKP1F%2F8HSxk%3D&reserved=0
+>>> [7/7] powerpc: Enable Rust for ppc64le
+>>>        https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgit.kernel.org%2Fpowerpc%2Fc%2Fbc87cbdb952e9223616b839d64bdb4723aa2ed1d&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C34e4deafcc1d41c1738a08def22e01b0%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639214476617346994%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=ITEFv9C1CSUVLqJNe5Y8sStUE3KoOVYVzSzbP0qis74%3D&reserved=0
+>>>
+>>> cheers
+>>>
+>>
+>> I just tested those again in linux-next, with the Wii support series on
+>> top, but now the kernel fails to build due to ARCH_WARN_ASM and
+>> ARCH_WARN_REACHABLE not being defined on PowerPC:
+>> ```
+>> error: no rules expected `ARCH_WARN_ASM`
+>>     --> /home/linkmauve/dev/linux/wii/rust/kernel/generated_arch_warn_asm.rs:1:28
+>>      |
+>>    1 | ::kernel::concat_literals!(ARCH_WARN_ASM("{file}", "{line}", "{flags}", "{size}"))
+>>      |                            ^^^^^^^^^^^^^ no rules expected this token in macro call
+>>      |
+>>     ::: ../rust/kernel/lib.rs:279:1
+>>      |
+>> 279 | macro_rules! concat_literals {
+>>      | ---------------------------- when calling this macro
+>>      |
+>>      = note: while trying to match sequence start
+>>
+>> error: no rules expected `ARCH_WARN_REACHABLE`
+>>     --> /home/linkmauve/dev/linux/wii/rust/kernel/generated_arch_reachable_asm.rs:1:28
+>>      |
+>>    1 | ::kernel::concat_literals!(ARCH_WARN_REACHABLE)
+>>      |                            ^^^^^^^^^^^^^^^^^^^ no rules expected this token in macro call
+>>      |
+>>     ::: ../rust/kernel/lib.rs:279:1
+>>      |
+>> 279 | macro_rules! concat_literals {
+>>      | ---------------------------- when calling this macro
+>>      |
+>>      = note: while trying to match sequence start
+>>
+>> error: aborting due to 2 previous errors
+>> ```
+>>
+>> This is in addition to the bindings::kvfree_call_rcu() call, but that
+>> one is already being handled in a different thread.
+> 
+> Looks like powerpc needs something like the followings:
+> 
+> diff --git a/arch/powerpc/include/asm/bug.h b/arch/powerpc/include/asm/bug.h
+> index 0db48977c70c..8aba39e0cf26 100644
+> --- a/arch/powerpc/include/asm/bug.h
+> +++ b/arch/powerpc/include/asm/bug.h
+> @@ -32,34 +32,38 @@
+>   #endif /* verbose */
+> 
+>   #else /* !__ASSEMBLER__ */
+> -/* _EMIT_BUG_ENTRY expects args %0,%1,%2,%3 to be FILE, LINE, flags and
+> -   sizeof(struct bug_entry), respectively */
+>   #ifdef CONFIG_DEBUG_BUGVERBOSE
+> -#define _EMIT_BUG_ENTRY                                \
+> +#define _EMIT_BUG_ENTRY(file, line, flags)     \
+>          ".section __bug_table,\"aw\"\n"         \
+>          "2:     .4byte 1b - .\n"                \
+> -       "       .4byte %0 - .\n"                \
+> -       "       .short %1, %2\n"                \
+> -       ".org 2b+%3\n"                          \
+> -       ".previous\n"
+> +       "       .4byte " file " - .\n"          \
+> +       "       .short " line ", " flags "\n"
+>   #else
+> -#define _EMIT_BUG_ENTRY                                \
+> +#define _EMIT_BUG_ENTRY(file, line, flags)     \
+>          ".section __bug_table,\"aw\"\n"         \
+>          "2:     .4byte 1b - .\n"                \
+> -       "       .short %2\n"                    \
+> -       ".org 2b+%3\n"                          \
+> -       ".previous\n"
+> +       "       .short " flags "\n"
+>   #endif
+> 
+>   #define BUG_ENTRY(cond_str, insn, flags, ...)          \
+>          __asm__ __volatile__(                           \
+>                  "1:     " insn "\n"                     \
+> -               _EMIT_BUG_ENTRY                         \
+> +               _EMIT_BUG_ENTRY("%0", "%1", "%2")       \
+> +               ".org 2b+%3\n"                          \
+> +               ".previous\n"                           \
+>                  : : "i" (WARN_CONDITION_STR(cond_str) __FILE__), "i" (__LINE__),        \
+>                    "i" (flags),                          \
+>                    "i" (sizeof(struct bug_entry)),       \
+>                    ##__VA_ARGS__)
+> 
+> +#define ARCH_WARN_ASM(file, line, flags, size)         \
+> +               "1:     twi 31, 0, 0\n"                 \
+> +               _EMIT_BUG_ENTRY(file, line, flags)      \
+> +               ".org 2b+" size "\n"                    \
+> +               ".previous\n"
 
-Fixes: 708b4351f08c ("ASoC: fsl: Add Freescale Generic ASoC Sound Card with ASRC support")
-Signed-off-by: LiangCheng Wang <zaq14760@gmail.com>
----
- sound/soc/fsl/fsl-asoc-card.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Will this build ? Isn't ARCH_WARN_ASM() for use in ASM .S files ? 
+_EMIT_BUG_ENTRY is defined in a !__ASSEMBLER__ ifdef.
 
-diff --git a/sound/soc/fsl/fsl-asoc-card.c b/sound/soc/fsl/fsl-asoc-card.c
-index 709543308fe9e9dc508a791b7125e5f467182cee..eff46666c8add604d0edbf9537ee2d275813c1b7 100644
---- a/sound/soc/fsl/fsl-asoc-card.c
-+++ b/sound/soc/fsl/fsl-asoc-card.c
-@@ -728,8 +728,8 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
- 
- 	cpu_pdev = of_find_device_by_node(cpu_np);
- 	if (!cpu_pdev) {
--		dev_err(&pdev->dev, "failed to find CPU DAI device\n");
--		ret = -EINVAL;
-+		ret = dev_err_probe(&pdev->dev, -EPROBE_DEFER,
-+				    "failed to find CPU DAI device\n");
- 		goto fail;
- 	}
- 
+powerpc already has EMIT_BUG_ENTRY macro for ASM for that. Why do you 
+need to modify _EMIT_BUG_ENTRY and BUG_ENTRY() which are for C only (in 
+a #ifdef !__ASSEMBLER__) ?
 
----
-base-commit: a13c140cc289c0b7b3770bce5b3ad42ab35074aa
-change-id: 20260805-fsl-asoc-defer-cpu-dai-9b54e87f5d03
+https://elixir.bootlin.com/linux/v7.2-rc5/source/arch/powerpc/include/asm/bug.h#L10
 
-Best regards,
--- 
-LiangCheng Wang <zaq14760@gmail.com>
+Christophe
 
 
