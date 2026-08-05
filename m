@@ -1,94 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-25413-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25414-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 16EF7C55174
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2026 06:58:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3C038C55174
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2026 07:08:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hFLpf2wvJz2xpn;
-	Wed, 05 Aug 2026 16:58:18 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::62a" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785913098;
-	cv=pass; b=D4JZ6f8puh4tO4CE6lKIF8PlKiZluzVefTAfIwrt5tUQU7RtQzlceDLCtYB3sg+//QIRua+vsMB4ORSa6DYT3o+Ygnq3kMntOQ/BlC5TnnJw3MYdmqQZf0Z7GvOWiXx4SEHFE5njgbRiwojm0SqwuudllfhOz7u/103UfxMiI3LXYkISzdaRkCvYAwUVrHJhhLwshd4zjhPFMlZfA2U8ab1jWNa1A6ppnv1UORSD39TQbAAQjbKcHYNpbHqkTYwjiOk7fkhoSgnAjQTS+7utyE8BTF/mwCKlcSgVaQWZDi9G7p/jhP075HrPoblUCvPNVcADNGLSAFlMqOJShxRrnw==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785913098; c=relaxed/relaxed;
-	bh=DS3y93XU+UV4dALPduKnv8HEZ3Qoa8U7PDzyKjP+lKM=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=mVzXPy/jLTNqBtkVLO99mSCX/AWEvNcKWV5xsdEHqpftNhAGcO+XM4rZGcmBgpx1Npye0KaU5uZnuYqGhn526DnEIi0SHSNI3isCH0zb02EgvDI9nvJ+G8gzwQwKT5hmmNFQzNMb2W7/9/zuVttXZxB1Hz9/Q5JiRKM1euiGul4GqwGaQGdZxOqzKMpvN8rf7i+2fzAYUatRL7xr33HrzSA+mUn0cQJwTwAQ+u7X/XGpvJu1aAV8dqLDteA8Hgiut3Zl/njw/lYYRr3bCHYCKlBGsFHhlEeKc4EwfkE0rzI4VYuXC7qv7xFVDsmFQI1bV5rVvFIlGwo3868aOXhdzQ==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=UdJ72+aX; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62a; helo=mail-pl1-x62a.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hFM1v2Bj7z2xqM;
+	Wed, 05 Aug 2026 17:08:03 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785913683;
+	cv=none; b=H1KoYH8AusjuVikwG2txclQEmJPg852S+mgLLkOZneuOQZJ3EoFZ6xMUTyHakYh2ktRYc9xNYmcWxGR2nANdW9tmmtIq0At4c8RcEYbOSYBTEP5T6nw5K6+dNBNmUaGc24Je3fPcv7wzHy0PWc+5lF2I0zhWSQcOrIwAMEBDmgs94CO5K2joWBIZ+a4mIqK9z1i4lT+p3nmjKsaqKEkEHv7OqtaXmJAhXilr9Pxz4mZ6EiW5d6ZW6Q8/strScIV+FHcNUm2kXfbO2FWC7/c3VPog3NXP1C0e3j96tbMzhvQ+DXlew+JrBYSSy7z36x8Uya0M3Dg4avV+kvGujztA3g==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1785913683; c=relaxed/relaxed;
+	bh=UGMpfuT8snJ0tfEwGHyplWLK/i+F2oymMko+Mu78Kgc=;
+	h=Content-Type:MIME-Version:Message-Id:In-Reply-To:References:
+	 Subject:From:To:Cc:Date; b=el18G/a/j9F8hqF+cjvZDZRRHXlsujytpcvoB1D1HICXVHilvQMqtPJjJKKAu2HfyvKpkaoPpf4qj21rr+/VaurBXmO8umbGvh66D8KeO8MCUYKt+rsVK6k5bnqduNaywgl8OFPUe03+5Pl6u05CsbFe6vyoI7pzSPpMH9PxejN78R9dLc4dz0e46oUlWMTux0WkIj6wqU7BO2DgROn16RG2FAdgnQ+fJUV7wLwGFTR0FyUNLK/YGNsqGZQQ/f0KOSvp3/Vp3+87ryhGfPYd9YarYg9h0GAk5Iu7n1whC+zCGfl0HdM6rOQC+l4TR9LYDxKYMf+XxBDROhrzwxBEdg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=m8gTQU9Z; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=bot+bpf-ci@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=UdJ72+aX;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=m8gTQU9Z;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62a; helo=mail-pl1-x62a.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x62a.google.com (mail-pl1-x62a.google.com [IPv6:2607:f8b0:4864:20::62a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=bot+bpf-ci@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hFLpd2RzFz2xl5
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Aug 2026 16:58:16 +1000 (AEST)
-Received: by mail-pl1-x62a.google.com with SMTP id d9443c01a7336-2caea3f742bso10173225ad.0
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Aug 2026 23:58:15 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1785913093; cv=none;
-        d=google.com; s=arc-20260327;
-        b=cD6oVZwxKL/3ruCIWda3s7dnhdQ9x/lS7M4O+e+7Gluh/Nfa1qjY8JgErBQ1HDFWgH
-         gTBF9MDJAEE6eK/CfcV/GnFYTt3C6jK2cN9CAl5xIQkhL+dQSvKxMqswbO0fAWXyZlNb
-         n5L9q6JPxUtWY9lw/azgEdkk+QHVrs1uIRLv9OfzlWSM+oIBo/w/V/+P+4kIx4JdrC6p
-         pyjilEFl+N74jxPFInzshNYemqoi6gOfHTC0Osp45vqgQgcNQuqH9eBFWvWkU14tltVG
-         DwxIEZYeoNaDEOw0W3upu9ePOvNzfO76SSg/NCRAVwWdl9EP0+ocfZ1UHtqQvupdK3Qx
-         dToA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=DS3y93XU+UV4dALPduKnv8HEZ3Qoa8U7PDzyKjP+lKM=;
-        fh=VWESqtiZjG/CNkOwZsxyEZj5siSayCZD6fJIgndA3TY=;
-        b=VQOIJ4wMtsxYNZNmXuR2Kb+dolkABcnmbaCpA3/+4qOlK2OODLVDlPQafTYlQwckHn
-         qMFfB8N6LkvI5my5RB95IqpiX6LoZgNNYIETsBplROJBrl0oQzN//7cf2UTYqFszfVgS
-         RlBBjMGtmfoRFPZh9HIpyZbtxkgUqbAAyoq1wauW64kcpsWj9IPRFcKYUmZS/CLTokRw
-         OVJLkLHnsraIegPVtG/9b/H5oLceCJpH2UKBWfRA5tNw1ym4nibTOdGcON0lTlsd3LLb
-         2wASyTUm0HCPCc46eIrxLhIktLec2VbDtgxh/XwhTpTY+zcBMSC00ZSztaFPFIkkXnjy
-         gGEg==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1785913093; x=1786517893; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=DS3y93XU+UV4dALPduKnv8HEZ3Qoa8U7PDzyKjP+lKM=;
-        b=UdJ72+aX5sMOhOn2X77bFdepZaliXrGA8tVrpKP1sjMPIaDwYL9gW45j1r/B1OhFTE
-         s40NwZFgjmaVAaHH4VH1S1k4Obj4O/K1sa5CYkE+MPgqJumh1gjU/33WykvA1bAV+jGw
-         ZQENYcQE0HZ2OBVLFZ+Oty2u/Kyxj7qcJpSSjl73FM60SA1dOx/POUjAKVbM8SaErSm2
-         POjTYPqksPECoDB3EJ+ar6syqEh0XfTjROmHGWAI4TGxcsGGSbkyCXIIu+em4IY/j++7
-         xG3iKVph+AD2JUPCiM8vHVtEeeH/ybks959TrVHs62F5xhIf6PQYpFovzGcrMtJi5D0C
-         jdPA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785913093; x=1786517893;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=DS3y93XU+UV4dALPduKnv8HEZ3Qoa8U7PDzyKjP+lKM=;
-        b=T4VfuBzdnXL2R2RNUuD4cxNq8Ky2cx+rtk4xJ4k9LdXfPX5V/uy06efBamZVC8KtsB
-         SZc66blb0suHsjvqERkOgtZPgtJjxjDCqyu6lN8XTmudoJEoXtO4iwLtCKKOJ/Cy68GI
-         6r9xzQkVBftFqjQ2dAo2GQkOG14FafZMIr/vF2jNFHo2jz4xuer47Hy4Urub35W9M9MH
-         5zMsXNCWCD6rdQAaVXAZJhz3ZAABc4dtYsX267qz2SJLbMmINuNbXC8YyqlgXXEtZvX3
-         ayummODwxQNSlwzJ7/mpd0GBNLPYkOF8pOzXOves4JpgihOv4DbopheVpG2K2Gx14Sta
-         /Mqw==
-X-Forwarded-Encrypted: i=1; AHgh+RpYjFD8r3w0xk5u78vmgoqRpGSQzopDhTkqL840Jt0j3nM/pxfMQ+qsBzbl51TL0bPtbRiNUdZgxaaRSPM=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Ywpjs0WBGujBbSsPnArcfve71OWgTpEl3b/Gfq5Vu1z88i0qo3V
-	n6xRj0LktqJLpmoHov/jMnNm0RnpOQVFSR3thM8nNl57areZBJ1dg98EMKDNOY1snsfnXlGJV/B
-	N4ThnZ+cPIlv66RaoUac3hWRLT07nPMI=
-X-Gm-Gg: AR+sD13Z37H6VZs8KoR+czOoii14Pmuv0l7qgAovGVpy1lr8PeYmabreS/Igpylv5N2
-	4uF0d6nboTGDNwhdgaYr4jAPK230RHfKtUmA3sy88yrYi0jX03whVGtqnYlfWKRQNz81SBzVgIu
-	ZPQVBk5o3l1LNYo2+rVv2L9L2Y8CFFRzbbA8HUe0cvyssJrR8pJAr3VTlvVvjN/xwl4TPue+n6g
-	RSFb3zImahogEcDRbHWP1oJLvRR0FUI/7Gso54/ZEmn2A2dA6+2cpb71QOJXrE3BK3raLZr6qkJ
-	j9U2h68hPwk2PcEqxCpa/ZRx1asv63Kebs3yOjV/iEH2
-X-Received: by 2002:a05:6a21:3a48:b0:3b4:61f:1fec with SMTP id
- adf61e73a8af0-3cb85df12ddmr5759243637.2.1785913093306; Tue, 04 Aug 2026
- 23:58:13 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hFM1t1LClz2xpn
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Aug 2026 17:08:02 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 651E04059A;
+	Wed,  5 Aug 2026 07:07:59 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6444D1F000E9;
+	Wed,  5 Aug 2026 07:07:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1785913679;
+	bh=UGMpfuT8snJ0tfEwGHyplWLK/i+F2oymMko+Mu78Kgc=;
+	h=In-Reply-To:References:Subject:From:To:Cc:Date;
+	b=m8gTQU9ZFMy92/rC16QxOHZfJw/kMrRJPhdx7cuc13a+8XkfbClmetnJiDjGw7kxo
+	 alS0UTHx7Zct0mAfLYRN21R8sg8rsHliQJK+cqUNYdNGvdLNSqdG4BpJNi0AhAYa3+
+	 uJJFTepTFDX1X6x0KlhKPBl/hXQ/SGkNAfL4euPAxrmTuerAXggUiBeuzn28O1J3Mg
+	 wS8yQfmuqqIzrJ10TNlckzEIqCHt4qCYRsE5yT7oBdqNs9H5U6/linqwet6BEyEsmR
+	 cByYnCYyCxjDPVrRhC906M1dHJ1/n07jkxltxBXLRcjgBpdiJbRxLKOZ14UT+0GoW5
+	 Z8Ih6G8q7+1Qg==
+Content-Type: multipart/mixed; boundary="===============7106082230189184574=="
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -102,154 +58,85 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260804100218.49587-1-shengjiu.wang@oss.nxp.com>
- <20260804100218.49587-2-shengjiu.wang@oss.nxp.com> <anH5i7y3JkB1moee@SMW015318>
-In-Reply-To: <anH5i7y3JkB1moee@SMW015318>
-From: Shengjiu Wang <shengjiu.wang@gmail.com>
-Date: Wed, 5 Aug 2026 14:57:59 +0800
-X-Gm-Features: AUfX_mxtqJzMX_WVEhniuKHoKxDYIHB5iQVu-6lJu_NKLxZB1goSegJJZEResBc
-Message-ID: <CAA+D8ANCoc5qOUvTQPRNkvrfqAY3n6x_fbfUveP8Sfv+SL1NVw@mail.gmail.com>
-Subject: Re: [PATCH v3 1/5] ASoC: dt-bindings: fsl,imx-asrc: update port
- binding to support multiple paths
-To: Frank Li <Frank.li@oss.nxp.com>
-Cc: shengjiu.wang@oss.nxp.com, lgirdwood@gmail.com, broonie@kernel.org, 
-	robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, Frank.Li@nxp.com, 
-	s.hauer@pengutronix.de, kernel@pengutronix.de, festevam@gmail.com, 
-	shawnguo@kernel.org, linux-sound@vger.kernel.org, devicetree@vger.kernel.org, 
-	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
-	linux-kernel@vger.kernel.org, Xiubo.Lee@gmail.com, nicoleotsuka@gmail.com, 
-	perex@perex.cz, tiwai@suse.com, linuxppc-dev@lists.ozlabs.org, 
-	Shengjiu Wang <shengjiu.wang@nxp.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Message-Id: <5ef8aa40184d48efe9c1fb0def756263a654c22e4908bc803d0d92426e07ef52@mail.kernel.org>
+In-Reply-To: <84353363810b8d63e7933391f5c6a2ea46f348e3.1785906979.git.skb99@linux.ibm.com>
+References: <84353363810b8d63e7933391f5c6a2ea46f348e3.1785906979.git.skb99@linux.ibm.com>
+Subject: Re: [PATCH v10 4/8] selftest/bpf: Enable verifier selftest for powerpc64
+From: bot+bpf-ci@kernel.org
+To: skb99@linux.ibm.com,bpf@vger.kernel.org,linuxppc-dev@lists.ozlabs.org
+Cc: hbathini@linux.ibm.com,maddy@linux.ibm.com,ast@kernel.org,andrii@kernel.org,daniel@iogearbox.net,shuah@kernel.org,linux-kselftest@vger.kernel.org,stable@vger.kernel.org,venkat88@linux.ibm.com,yeswanth@linux.ibm.com,skb99@linux.ibm.com,ast@kernel.org,andrii@kernel.org,daniel@iogearbox.net,martin.lau@kernel.org,eddyz87@gmail.com,yonghong.song@linux.dev,clm@meta.com,ihor.solodrai@linux.dev
+Date: Wed,  5 Aug 2026 07:07:58 +0000 (UTC)
 
-On Tue, Aug 4, 2026 at 10:39=E2=80=AFPM Frank Li <Frank.li@oss.nxp.com> wro=
-te:
->
-> On Tue, Aug 04, 2026 at 06:02:14PM +0800, shengjiu.wang@oss.nxp.com wrote=
-:
-> > From: Shengjiu Wang <shengjiu.wang@nxp.com>
-> >
-> > The i.MX ASRC hardware supports up to three conversion pairs (A, B, C).
-> > The existing binding exposed only a single generic audio-graph port,
-> > which cannot represent independent conversion paths when multiple pairs
-> > are in use simultaneously.
-> >
-> > Add a ports container that enumerates up to three sub-ports, each
-> > representing an independent conversion path:
-> >   port@0 -- conversion path 0
-> >   port@1 -- conversion path 1
-> >   port@2 -- conversion path 2
-> >
-> > Each sub-port references audio-graph-port.yaml as before. Hardware pair=
-s
-> > are allocated dynamically at stream open time; each active stream
-> > direction (playback or capture) on a port consumes one hardware pair.
-> >
-> > For backwards compatibility, keep the old single port property but mark
-> > it deprecated. A schema constraint (not: required: [port, ports]) ensur=
-es
-> > that both forms cannot be used at the same time. The binding example is
-> > updated to show the preferred ports form.
-> >
-> > No existing upstream DTS file for fsl,imx-asrc uses the previously
-> > documented single 'port' node, so this change does not break any
-> > in-tree device tree.
->
-> if no existing upstream DTS file use it, you can direct replace with port=
-s
+--===============7106082230189184574==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
 
-That is to avoid any downstream use of the 'port', so not directly replace =
-it.
-
-best regards
-Shengjiu Wang
-
+> selftest/bpf: Enable verifier selftest for powerpc64
 >
-> Frank
+> This patch enables arch specifier "__powerpc64" in verifier
+> selftest for ppc64. Power 32-bit would require separate
+> handling. Changes tested for 64-bit only.
+
+This isn't a bug, but would it read more precisely to name the new tag
+as __arch_powerpc64 (matching the macro added in bpf_misc.h) rather
+than "__powerpc64"?  The actual macro expands to __arch("POWERPC64"),
+and "__powerpc64__" is the compiler predefine used in test_loader.c,
+but there's no __powerpc64 tag itself.
+
+Also, would phrasing it imperatively match the series style better?
+For example, "Add __arch_powerpc64 so verifier tests can gate on ppc64"
+instead of "This patch enables..."?
+
+> diff --git a/tools/testing/selftests/bpf/progs/bpf_misc.h b/tools/testing/selftests/bpf/progs/bpf_misc.h
+> index 5eacf1b432521..c35359c97e44b 100644
+> --- a/tools/testing/selftests/bpf/progs/bpf_misc.h
+> +++ b/tools/testing/selftests/bpf/progs/bpf_misc.h
+> @@ -159,6 +159,7 @@
+>  #define __arch_riscv64		__arch("RISCV64")
+>  #define __arch_s390x		__arch("s390x")
+>  #define __arch_loongarch	__arch("LOONGARCH")
+> +#define __arch_powerpc64	__arch("POWERPC64")
+>  #define __caps_unpriv(caps)	__test_tag("test_caps_unpriv=" EXPAND_QUOTE(caps))
+>  #define __load_if_JITed()	__test_tag("load_mode=jited")
+>  #define __load_if_no_JITed()	__test_tag("load_mode=no_jited")
+> diff --git a/tools/testing/selftests/bpf/test_loader.c b/tools/testing/selftests/bpf/test_loader.c
+> index 07807757b518d..221393f2a8ef4 100644
+> --- a/tools/testing/selftests/bpf/test_loader.c
+> +++ b/tools/testing/selftests/bpf/test_loader.c
+> @@ -378,6 +378,7 @@ enum arch {
+>  	ARCH_RISCV64	= 0x8,
+>  	ARCH_S390X	= 0x10,
+>  	ARCH_LOONGARCH	= 0x20,
+> +	ARCH_POWERPC64	= 0x40,
+>  };
 >
-> >
-> > Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
-> > ---
-> >  .../bindings/sound/fsl,imx-asrc.yaml          | 45 ++++++++++++++++---
-> >  1 file changed, 40 insertions(+), 5 deletions(-)
-> >
-> > diff --git a/Documentation/devicetree/bindings/sound/fsl,imx-asrc.yaml =
-b/Documentation/devicetree/bindings/sound/fsl,imx-asrc.yaml
-> > index 608defc93c1e..67d2826eef3f 100644
-> > --- a/Documentation/devicetree/bindings/sound/fsl,imx-asrc.yaml
-> > +++ b/Documentation/devicetree/bindings/sound/fsl,imx-asrc.yaml
-> > @@ -78,9 +78,19 @@ properties:
-> >    power-domains:
-> >      maxItems: 1
-> >
-> > +  ports:
-> > +    $ref: /schemas/graph.yaml#/properties/ports
-> > +    patternProperties:
-> > +      "^port@[0-2]$":
-> > +        $ref: audio-graph-port.yaml#
-> > +        unevaluatedProperties: false
-> > +        description: port for an independent conversion path
-> > +
-> >    port:
-> >      $ref: audio-graph-port.yaml#
-> >      unevaluatedProperties: false
-> > +    deprecated: true
-> > +    description: deprecated, use ports instead
-> >
-> >    fsl,asrc-rate:
-> >      $ref: /schemas/types.yaml#/definitions/uint32
-> > @@ -125,6 +135,10 @@ required:
-> >    - fsl,asrc-width
-> >
-> >  allOf:
-> > +  - not:
-> > +      required:
-> > +        - port
-> > +        - ports
-> >    - $ref: dai-common.yaml#
-> >    - if:
-> >        properties:
-> > @@ -180,11 +194,32 @@ examples:
-> >          fsl,asrc-rate =3D <48000>;
-> >          fsl,asrc-width =3D <16>;
-> >
-> > -        port {
-> > -            playback-only;
-> > +        ports {
-> > +            #address-cells =3D <1>;
-> > +            #size-cells =3D <0>;
-> > +
-> > +            port@0 {
-> > +                reg =3D <0>;
-> > +                playback-only;
-> > +                endpoint {
-> > +                    remote-endpoint =3D <&fe00_ep>;
-> > +                };
-> > +            };
-> > +
-> > +            port@1 {
-> > +                reg =3D <1>;
-> > +                capture-only;
-> > +                endpoint {
-> > +                    remote-endpoint =3D <&fe01_ep>;
-> > +                };
-> > +            };
-> >
-> > -            asrc_endpoint: endpoint {
-> > -                remote-endpoint =3D <&fe00_ep>;
-> > +            port@2 {
-> > +                reg =3D <2>;
-> > +                capture-only;
-> > +                endpoint {
-> > +                    remote-endpoint =3D <&fe02_ep>;
-> > +                };
-> >              };
-> > -       };
-> > +        };
-> >      };
-> > --
-> > 2.34.1
-> >
-> >
+>  static int get_current_arch(void)
+> @@ -392,6 +393,8 @@ static int get_current_arch(void)
+>  	return ARCH_S390X;
+>  #elif defined(__loongarch__)
+>  	return ARCH_LOONGARCH;
+> +#elif defined(__powerpc64__)
+> +	return ARCH_POWERPC64;
+>  #endif
+>  	return ARCH_UNKNOWN;
+>  }
+> @@ -585,6 +588,8 @@ static int parse_test_spec(struct test_loader *tester,
+>  				arch = ARCH_S390X;
+>  			} else if (strcmp(val, "LOONGARCH") == 0) {
+>  				arch = ARCH_LOONGARCH;
+> +			} else if (strcmp(val, "POWERPC64") == 0) {
+> +				arch = ARCH_POWERPC64;
+>  			} else {
+>  				PRINT_FAIL("bad arch spec: '%s'\n", val);
+>  				err = -EINVAL;
+
+
+
+---
+AI reviewed your patch. Please fix the bug or email reply why it's not a bug.
+See: https://github.com/kernel-patches/vmtest/blob/master/ci/claude/README.md
+
+CI run summary: https://github.com/kernel-patches/bpf/actions/runs/30981212698
+--===============7106082230189184574==--
 
