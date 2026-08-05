@@ -1,64 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-25427-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25428-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 21E15C56201
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2026 10:43:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 61E3BC55ABA
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2026 11:09:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hFRny2JcDz2y1Y;
-	Wed, 05 Aug 2026 20:43:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785926582;
-	cv=none; b=oHfUcWOUNQ5Sig63XIH4eDaD+iYZu0cc81Ugn8uFIyzyTADabydS/nSicdS/WrD+jwsTYGYi3l51ggc0v8EQVsZ87A+hAmnEmUjXMgzFVG9G8jBM/WaaxGYG05uAz6jyINx+xL4ju3VTeN+8TSVmOw8EslQI+J79Jxqf4nvTz3/NJdlJRgABa5VpjXWSnhUWCysv6IklW9strRP5+k5aHJVuD5pKSsslSJzdBrqe3x6kObkkX4/sjqrtKkbtYem0oko+dyu5NXV+EN3ZTMy4Oe4Tm2hsTdWuU7Vy/+bCm21tnJXGJZpkxP2kX24A0DNr0JtjWOF9xf8cdC4AicIcVA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hFSNb2JX3z2y1Y;
+	Wed, 05 Aug 2026 21:09:35 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785928175;
+	cv=none; b=CR/Pl9pt9t69t3ecmCruIPqifqLxMngsbjNc+KVC/Hy8WXmmger14KTYCXSOYs3qwOLqKNq3rKynB6iyuMUWXphnoULeuMo3BHczO8Yr3xxclXG9vlop6BCkDVqctEMpm6OiraLB/s6uQgAvhaSp0HCzgJj5TWduyQSM7iSqE8+Y6heNdgM5fGe/RvTG8DZPmYWwmyBxtWL/UunJOeKXTAeJZPvK3VDcNGIeEC3U8LX0GLs2GF2TQ5SioD9DQOX6bNetQnRjO4z5MUyLf0MeMEq/2ISLmA7ZEF0FggC7JD20baosjgW72DeegVLqSylIJm0ZHgC/hOFfLuI2rxBeiw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785926582; c=relaxed/relaxed;
-	bh=Q4K8KezGj1uNtUBla4Um/QhzlQ9Qk/rg7DVPoMDL72Q=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=KFv3GtUPMl3aOVBOgFY0Nfbw2C/hMyB6S462MIlNEPnEGDTu4Em0ggVU4VYwXtRlGpvMY4xgmnwYIBbJS1fsuDWomTBtopaPakv9B0x7NT1B0f5V1sQaVyM0x2zjKTy1V34QuGoxknD/V53pBxHUbafF3Fijr8FWzCj2kFTlcnuwXLPS8s2rRvvCFcpeWQATJhUinzoGZF6Bih68/5/m+KwTLCaa36STdkfQwSMhDmwql01UKNWkR+4vu7yqJcHOd4iCQTOCFrvAxK45EVp5et5oo3IB3lDq23jrlSr2j0UIBI9Es7Yed8zmfxLcu1gdyn49HP9DALnM5E2tNv4t/w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=Ai1MPx4+; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=anshuman.khandual@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
+	t=1785928175; c=relaxed/relaxed;
+	bh=Qn1vz2hp1SWeyMHZMmjxND0R5biofDL7IVKus5yCsjw=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Z5RoiZrlXeigBcWnU9+Aka5dmm5V5aX1loaVkrhURpAa3MxUlB68FLIrQD94wkQSWVAeT3k72snewymotsKkC9Znh0oeMrDAhoYEmG9sDLkhdOMprREs3AlCU+6ewbd1fi39FXCgFybXbFLwxUP3bP/LkU5OthgDWxqKAFlmJwn77ii7gzDrqpv4jyNbCdxEFXv6jpDbr9qVxwoEVtSwpbLKW5DxeRPI2aGvON8TvVjK/u21PIJoTQiQWpdJtTL32RLUP8XPVmNFHhYcDvsOjfLhdKbtTXOZB7/iuuMilsDAFsWNeTePCBroP25PPkWRzgHVNCzHhncizq9tn3n/xg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=HwqaOnV7; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mahesh@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=Ai1MPx4+;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=HwqaOnV7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=anshuman.khandual@arm.com; receiver=lists.ozlabs.org)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hFRnv3D8Jz2xqM
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Aug 2026 20:42:57 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id DA2D2153B;
-	Wed,  5 Aug 2026 03:42:20 -0700 (PDT)
-Received: from localhost (a085714.arm.com [10.164.19.28])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 2E9F63F632;
-	Wed,  5 Aug 2026 03:42:24 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1785926544; bh=dLnCHFABrcZb/4lMb8OKip2XrApMrTNt9jLEKjSti1o=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=Ai1MPx4+Ir9VhFeH2HWxjevL9kszGJ6grspTTZUKC4wtSs46+DRMHe7SevW8UESlp
-	 nEm2r4W4I9DKOG0PZ90sfhgLuvCLZGB6e8v5MNNQqPMOIVLQnZJ/pyE+ZB356so1Ga
-	 R5xoG9ECl/ieCh3WindUP/tPTEQ7Blav4otAFLv8=
-Date: Wed, 5 Aug 2026 16:12:21 +0530
-From: Anshuman Khandual <anshuman.khandual@arm.com>
-To: Pedro Falcato <pfalcato@suse.de>
-Cc: David Hildenbrand <david@kernel.org>, 
-	Andrew Morton <akpm@linux-foundation.org>, Catalin Marinas <catalin.marinas@arm.com>, 
-	Will Deacon <will@kernel.org>, "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, 
-	Helge Deller <deller@gmx.de>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Michael Ellerman <mpe@ellerman.id.au>, Lorenzo Stoakes <ljs@kernel.org>, 
-	"Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, 
-	Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, 
-	Michal Hocko <mhocko@suse.com>, "Matthew Wilcox (Oracle)" <willy@infradead.org>, 
-	Jan Kara <jack@suse.cz>, Zi Yan <ziy@nvidia.com>, 
-	Baolin Wang <baolin.wang@linux.alibaba.com>, Nico Pache <npache@redhat.com>, 
-	Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>, 
-	Lance Yang <lance.yang@linux.dev>, Usama Arif <usama.arif@linux.dev>, 
-	Kevin Brodsky <kevin.brodsky@arm.com>, Muhammad Usama Anjum <usama.anjum@arm.com>, 
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-parisc@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH v2 0/6] mm: add basic PTE const type-safety
-Message-ID: <a5afofuxhzwkeb76jdheottyxt4mms3arg2iucunztczbmd3lf@wiqp7yccjzlt>
-References: <20260803164400.531199-1-pfalcato@suse.de>
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mahesh@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hFSNZ2lHFz2xqM
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Aug 2026 21:09:33 +1000 (AEST)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6758m30s1504211
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Aug 2026 11:09:32 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=Qn1vz2hp1SWeyMHZMmjxND0R5biofDL7IVKus5yCs
+	jw=; b=HwqaOnV71s93x1Axa4qKzbMMoKopzSaDOE+3uP5gbXaCkl6lOPoXi69T4
+	QI84ARYtRp2frZWsWxq24L7XdQX9W0jwWSyeoqp74KP+ZRQ61e2gdVAJYhzGFSv9
+	8bfouSYrIkCrrFM/80wA1IFuu+aQnnAK8wWU7tBReEj2YBFae1See0t3X80XDcBh
+	u6HwT67juh7iINxKUzARI4yUxkYmdbB9dC+LlwSMFmGD+eMImkLrqQKQnt9I4dhp
+	OgAdEVhHkDPxh+qt2sArzjK5d78d0F3e6ctaMAhTXTOHK1Vv/yVIO8sspAbk9Ymk
+	Z6nAHpPMwwz4sHnSRBgjOPA14D/qQ==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fs8fqtkd3-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Aug 2026 11:09:31 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 675AuHZm020186
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Aug 2026 11:09:31 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fswbge1fh-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Aug 2026 11:09:30 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 675B9Rku51642754
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 5 Aug 2026 11:09:27 GMT
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 166562004B;
+	Wed,  5 Aug 2026 11:09:27 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 1677D20040;
+	Wed,  5 Aug 2026 11:09:26 +0000 (GMT)
+Received: from jupiter.ibm.com (unknown [9.39.28.36])
+	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed,  5 Aug 2026 11:09:25 +0000 (GMT)
+From: Mahesh Salgaonkar <mahesh@linux.ibm.com>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+Subject: [PATCH v3 0/4] Base support for Power12
+Date: Wed,  5 Aug 2026 16:39:20 +0530
+Message-ID: <20260805110924.3853410-1-mahesh@linux.ibm.com>
+X-Mailer: git-send-email 2.55.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -72,103 +84,86 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260803164400.531199-1-pfalcato@suse.de>
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: valeeVMg3YOncV6KkjiMpAk1JOU-Qo42
+X-Proofpoint-ORIG-GUID: valeeVMg3YOncV6KkjiMpAk1JOU-Qo42
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODA1MDA4NiBTYWx0ZWRfX28U+eW43o4Re
+ JrgH3gqiXMheNoGWqci8f3tKmW4btzR/IZPR79PN/7LuK3YbtI1utViJdoUx7ZSgK4nQtn1Dwo3
+ HQMZP7UiE/Yy7Ey3S4uzSwXfsGwLnrQ=
+X-Authority-Analysis: v=2.4 cv=K8cS2SWI c=1 sm=1 tr=0 ts=6a7319eb cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=uAbxVGIbfxUO_5tXvNgY:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
+ a=3CkFMB8pvBsbaMSk_jkA:9
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODA1MDA4NiBTYWx0ZWRfX9NVVzaa/H90a
+ eEXoxIzJB63HlzDkluiskVdnL2g5Jb/4haQsL4cRAPY3lLqWhx+K6IZTIAPP0UT4vGHTJxuTFel
+ YY1rrbfoha5odfpm+21LP+iY0OQ+Xf1tgNnyDAc9Xs01hvH5LG0Qsd6KxM7lykUzwIQ1Nd64ziE
+ nR/57fa0x28bPPDP5ZF652tSglwCiMdcUpzuVobkoO/T3gpBh5ZxpVk/z93q7lKIEjbciTtCgy4
+ UiVwvrnm3w1yvXOLW7uYwa12eiheg3n4mS5oFuE/Zf2YO2B0sYj0rHbCXbKw06NEsMPybNSQW9y
+ 7NFYOKyGEGE4ZgKZeUtt5zBoMJ+rysr7arxYylktH63ljwmBaUeM9EVMC4tH0HUVzasoxiSgGcu
+ FOsPZk63E/r/tgFhcJinjwcaEsLCBGkfa25JEtqwXXEeDMSXyI70X+hn369lGSQNuXMU2T7Qp7h
+ Yf7a2ynThTD03XVKkSg==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-08-05_03,2026-08-04_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1015 spamscore=0 impostorscore=0 bulkscore=0 priorityscore=1501
+ lowpriorityscore=0 malwarescore=0 phishscore=0 suspectscore=0 adultscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608050086
 
-On Mon, Aug 03, 2026 at 05:43:54PM +0100, Pedro Falcato wrote:
-> Since forever, MM code has thrown pte_t * around with no concern for const
-> safety, or typesafety of any kind. This is confusing. Attempt to address it
-> by:
-> 1) Making sure pte_get*() helpers can cope with const pte_t * arguments
-> 2) Constifying the pte_offset_map_ro_nolock() return type, which by definition
-> already pledges that users will not write to it.
-> 
-> These two simple steps were already able to uncover code smell from
-> khugepaged + do_swap_page().
-> 
-> Separate steps could include introducing pte_offset_map_ro_lock() for more
-> widespread usage of this.
-> 
-> Benefits of this include less confusion and better type-safety. It could also
-> futurely aid in efforts such as [0] which may want semantic annotation of these
-> accesses.
-> 
-> Based on mm-unstable and compile-tested on a handful of architectures.
-> 
-> No functional changes intended.
+This series enables Power12 raw and architected mode with Performance
+Monitoring support.
 
-Even though the pte accesses should always be type-safe, this series does
-not really address the problem completely and instead changes things only
-for a small set of pte access sites. So just wondering how much beneficial
-this series really is ?
+Changes in v3
+- Rebase patch series on v7.2-rc6
+- Remove extra tab in #define to maintain visual alignment.
+- Remove unintentional whitespace change.
+- See v2 at https://lore.kernel.org/linuxppc-dev/20260803155724.3272052-1-mahesh@linux.ibm.com/
 
-> 
-> [CC list editorially trimmed for brevity reasons; apologies if you're not on it]
-> 
-> Link: https://lore.kernel.org/linux-mm/20260526-kpkeys-v8-0-eaaacdacc67c@arm.com/#t [0]
-> Cc: Catalin Marinas <catalin.marinas@arm.com>
-> Cc: Will Deacon <will@kernel.org>
-> Cc: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
-> Cc: Helge Deller <deller@gmx.de>
-> Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Lorenzo Stoakes <ljs@kernel.org>
-> Cc: "Liam R. Howlett" <liam@infradead.org>
-> Cc: Vlastimil Babka <vbabka@kernel.org>
-> Cc: Mike Rapoport <rppt@kernel.org>
-> Cc: Suren Baghdasaryan <surenb@google.com>
-> Cc: Michal Hocko <mhocko@suse.com>
-> Cc: "Matthew Wilcox (Oracle)" <willy@infradead.org>
-> Cc: Jan Kara <jack@suse.cz>
-> Cc: Zi Yan <ziy@nvidia.com>
-> Cc: Baolin Wang <baolin.wang@linux.alibaba.com>
-> Cc: Nico Pache <npache@redhat.com>
-> Cc: Ryan Roberts <ryan.roberts@arm.com>
-> Cc: Dev Jain <dev.jain@arm.com>
-> Cc: Barry Song <baohua@kernel.org>
-> Cc: Lance Yang <lance.yang@linux.dev>
-> Cc: Usama Arif <usama.arif@linux.dev>
-> Cc: Kevin Brodsky <kevin.brodsky@arm.com>
-> Cc: Muhammad Usama Anjum <usama.anjum@arm.com>
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: linux-kernel@vger.kernel.org
-> Cc: linux-parisc@vger.kernel.org
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: linux-mm@kvack.org
-> Cc: linux-fsdevel@vger.kernel.org
-> 
-> v2:
->  - Small fixups on the arm64 side
->  - Re-order patches in a way such that bisection is preserved
->  - Pick up Helge's patch dropping parisc ptep_get()
->  - Constify s390's ptep_get() as well
-> 
-> Helge Deller (1):
->   parisc: Drop own implementations for ptep_get() and
->     ptep_test_and_clear_young()
-> 
-> Pedro Falcato (5):
->   mm/arm64: constify pte_get*() and contpte get logic
->   mm/powerpc/8xx: constify ptep_get() argument
->   mm/s390: constify ptep_get() argument
->   mm: constify generic pte_get*()
->   mm: constify the pte_offset_map_ro_nolock() return value
-> 
->  arch/arm64/include/asm/pgtable.h             | 10 +++++-----
->  arch/arm64/mm/contpte.c                      | 11 ++++++++---
->  arch/parisc/include/asm/pgtable.h            | 20 --------------------
->  arch/powerpc/include/asm/nohash/32/pte-8xx.h |  2 +-
->  arch/powerpc/mm/pgtable.c                    |  2 +-
->  arch/s390/include/asm/pgtable.h              |  2 +-
->  include/linux/mm.h                           |  4 ++--
->  include/linux/pgtable.h                      |  8 ++++----
->  mm/filemap.c                                 |  2 +-
->  mm/khugepaged.c                              |  2 +-
->  mm/pgtable-generic.c                         |  4 ++--
->  11 files changed, 26 insertions(+), 41 deletions(-)
-> 
-> -- 
-> 2.55.0
-> 
+Chnages in v2:
+- Fix typo reported by Nikhil
+- Define a named macro CAS_MAX_PVR_ENTRIES
+- See v1 at https://lore.kernel.org/linuxppc-dev/20260729145405.3230272-1-mahesh@linux.ibm.com/
+
+Athira Rajeev (1):
+  powerpc/perf: Add power12 Base Performance Monitoring support
+
+Mahesh Salgaonkar (1):
+  powerpc/pseries: Limit PVR list to 16 entries for CAS negotiation
+
+Nicholas Piggin (1):
+  powerpc: Add Power12 raw mode
+
+Ritesh Harjani (IBM) (1):
+  powerpc: Add Power12 architected mode
+
+ arch/powerpc/include/asm/cpu_setup.h      |   2 +
+ arch/powerpc/include/asm/cputable.h       |  17 +-
+ arch/powerpc/include/asm/mmu.h            |   1 +
+ arch/powerpc/include/asm/prom.h           |   3 +-
+ arch/powerpc/include/asm/reg.h            |   5 +-
+ arch/powerpc/include/asm/synch.h          |   6 +-
+ arch/powerpc/include/uapi/asm/cputable.h  |   2 +
+ arch/powerpc/kernel/cpu_setup_power.c     |  43 ++
+ arch/powerpc/kernel/cpu_specs_book3s_64.h |  36 ++
+ arch/powerpc/kernel/dt_cpu_ftrs.c         |  37 ++
+ arch/powerpc/kernel/prom_init.c           |  46 ++-
+ arch/powerpc/kernel/setup-common.c        |   1 +
+ arch/powerpc/kvm/book3s_hv.c              |   9 +-
+ arch/powerpc/mm/book3s64/hash_native.c    |  22 +-
+ arch/powerpc/mm/init_64.c                 |   4 +-
+ arch/powerpc/perf/Makefile                |   2 +-
+ arch/powerpc/perf/core-book3s.c           |   2 +
+ arch/powerpc/perf/internal.h              |   1 +
+ arch/powerpc/perf/power12-events-list.h   |  78 ++++
+ arch/powerpc/perf/power12-pmu.c           | 466 ++++++++++++++++++++++
+ 20 files changed, 760 insertions(+), 23 deletions(-)
+ create mode 100644 arch/powerpc/perf/power12-events-list.h
+ create mode 100644 arch/powerpc/perf/power12-pmu.c
+
+-- 
+2.55.0
+
 
