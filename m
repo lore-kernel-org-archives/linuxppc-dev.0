@@ -1,60 +1,82 @@
-Return-Path: <linuxppc-dev+bounces-25449-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25450-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00ADDC55174
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2026 17:18:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 29D39C55ABA
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2026 19:04:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hFcZZ5k9Qz2ygW;
-	Thu, 06 Aug 2026 03:18:46 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785950326;
-	cv=none; b=Q457qR1IPdPwlYCcGEJshtjLJD4QgNKUI7FZilhR67a/DZqACnlSO2y1wXL+XunUOY9ksawUIlgIu2OUy6V8yS30mZ+INAJKmmaZLWzptM6nnlEnNMmx1AEy60l1c9CHc4ZTiQTfKA7yJ7nTeAL6daVKPpwvmHne9pnb5b0luNL66eYyE4k8w0YIxHU5HV8+O9lj3CHhdnJG1QMMmSERNYa7FAFkuh6UMa5gh5zgF3/yZ3PaBRtQWffSFWc/iGwqW9ofPtZVUyL0DapGJR5oTbb4Q9CHtlty6dFasfh1TMyoSISQrWWFtc7Fu3a1lpBHyhHXhLDqb1TDy7kll0gL3A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hFfwf49xWz2xqM;
+	Thu, 06 Aug 2026 05:04:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::531"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785956674;
+	cv=none; b=ZcluhL1MeANzYwt9+dkQpZ4D+D6OlkJh5vLHZ5mIAocjXMgDubw9NvYrEARNCiuKHePQgKOx3fF77l9fjKEUsfBuIkYP5IHK/G4jsPNnsYM2BiGJdn+58TIqu/oepitju4fPEbAkhblctaHHsMPYIFLZQ4EFsQI9xvni8yDhaqBnl3ILvl2b79R/iJKG7woWeGfuSxlp3mazh/ER7TCU8rJgh6Jb4Bu8rlGbJE8AcZmeei62rlwlBMbB1XwitSAfVm/UQkVTMPjgOJvIN6Dw/8wOx6H/EXITsEkn8pRwq5PvyQqUl8gS8U87VHmpGt8fABwYo+o7OrFHeQnjA7k+MQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785950326; c=relaxed/relaxed;
-	bh=cS+1OPt43LY9PVcLmNXnPTuZJ4WgQujUCM/knEjl0HU=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To; b=RTTbivriS0thxaVk+rQXA94AbQ4WQgrx+W+5aSOtFQ4EAStxmdXV32UzeDtS0QrDAGwb+5/lJiYvJu8CgRaWRJNNd5RNzeCwnC4ojXf5TJFSthJaiOn3PezXsFpWGm0+T5Mc+kbIeDwNbEim5UCmbwT4IiGm376w3qZUstt8NG7BWDt9NzLwFQkAcmwlQiM274D2WWNRBN6Z5A8UrVeQ27dP7c/DiXGkdzqc2DH9U0OEo4bhrTrfyWLxjwYTz+ffiiYSLvb1rXSxRTnEKXzX3R9hlEuFXfMPGq7LCbquI79tQXpcSfvIpMdTjJOeFEPWI7fZUAkpn3k4/s1tPzY26A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=N/HuuOGd; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1785956674; c=relaxed/relaxed;
+	bh=V5Nj3gKC4yEN6e3D1EtvSjC4Has3vClSVMr6RcOyF2w=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=mCho/kEOz0SXc1IsB7BQIiQ4j2BTzBRw7uo3opcsIHgM5gA5f4kkPjiRoV4IFIlRe9y5mYHKHRfxFmrreW/2c+S3KEpWeQnFVg1nYX6Xc4/tN2LCPDS5wgXYo5BZMw4E8RHKJMnl0Fd0yYsFQ0Mng/wFG3i4rVUZIXF5jzkXWX7e4hXbC45m6QwLzz+Qo7VSXmv3q2qCuM8ln+sjQMr1YSsxQddEROjrihGK82E2H9drOZZZvnT4wmXQVXuxhkf5Zn+QLs6JSdb4qyMNQVwFhs6+jewFYAAzIFH5JQhBs0GYQquwNrLuN/9K0NpTh+h8stLXLXmuJLh4VM4F5kpQmg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=BqRiFybo; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::531; helo=mail-pg1-x531.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=N/HuuOGd;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=BqRiFybo;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::531; helo=mail-pg1-x531.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x531.google.com (mail-pg1-x531.google.com [IPv6:2607:f8b0:4864:20::531])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hFcZY3J48z2xdb
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Aug 2026 03:18:45 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 25DA46011F;
-	Wed,  5 Aug 2026 17:18:42 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A10C71F000E9;
-	Wed,  5 Aug 2026 17:18:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785950321;
-	bh=cS+1OPt43LY9PVcLmNXnPTuZJ4WgQujUCM/knEjl0HU=;
-	h=Date:From:To:Cc:Subject:In-Reply-To;
-	b=N/HuuOGdJ4jfuVsLPVIvPkgZ2xNnrprRB7r/nUGJooGCbWrE139e6SSrx7FR0hjRI
-	 +TyBc/fziElSkTuwBIQAVqWtVWSFfwAcdYNOi3cJjZv8O6rbCo2qlNMk63qoF5/wk5
-	 kuZWcKDDZ932oqPNnVIJ+HdWY6q2GH3ORzcRGbgpxJc6OsqQTQgTp6+UQfiw0a8KpW
-	 fRMjh+lGP77i/eMjTki89xfFrULwI18IME78CpglYlx2twmiBE640OTeGkyE+XGHs7
-	 lu3yg5x/qAc7tkFFRUugrtpqqTt9jvM9chRi8C/NK+tbdlisXGkYjQrMrjYN9XQEGn
-	 ogQhEdgpLFOFQ==
-Date: Wed, 5 Aug 2026 12:18:40 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Avinash Roy <avinash@linux.ibm.com>
-Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, bhelgaas@google.com,
-	npiggin@gmail.com, chleroy@kernel.org, sbhat@linux.ibm.com,
-	linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Avinash Roy <avinash.roy1@linux.ibm.com>
-Subject: Re: [PATCH] PCI: quirks: Add warm reset quirk for IBM Spyre
- accelerator
-Message-ID: <20260805171840.GA2126423@bhelgaas>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hFfwd0Mxwz2xpn
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Aug 2026 05:04:31 +1000 (AEST)
+Received: by mail-pg1-x531.google.com with SMTP id 41be03b00d2f7-c998fd549a8so1069786a12.2
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Aug 2026 12:04:31 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1785956669; x=1786561469; darn=lists.ozlabs.org;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
+         :cc:subject:date:message-id:reply-to:content-type;
+        bh=V5Nj3gKC4yEN6e3D1EtvSjC4Has3vClSVMr6RcOyF2w=;
+        b=BqRiFyboc4yqt/2Rd7WaY/O9Xox5/X/dRPsR2WgYctCDioJWADSUDtDpFgz0pieA97
+         faUu0qaamQ6XIIGxL71G33WpfHDlmIGdfylRlx+K7oC7CYZomYwew3yzg+/DfSCaz2Ks
+         TrgjRa0RwMKMezcM0m0lb9bfVcOYsi9NMNXvzMBmKvnqtj6AEC4l6V5WIBVl+r4NO40p
+         3uiSq24DEb8efbrYYdYqw72WTqPOD5etmvWxtOXkAfyCuvZHSfgmHS+jFlI6d1zbsZcU
+         /TxKPhpkiGO7wtxqROXUx9zLiHKznvDcH2GqHVDKu351DJlw4+FkReqKgN1WV5JlE/WS
+         H7dg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1785956669; x=1786561469;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=V5Nj3gKC4yEN6e3D1EtvSjC4Has3vClSVMr6RcOyF2w=;
+        b=Gt4dUN4z9/NBtPlq1fuC6k5Jr0tCjLZpMa6aNAqnvLYVCvT24X0xIQqqstKEjEA+dx
+         sXlntSE3+KHKTJdyBMDI72MQI5nR8kDwmLbDfAfSkGi1r17pPCY2uaL7ac3nEudlZIG9
+         HF++igpS/m+GeUodvloH8dL1y47eJ9K9UQ881qvVEu1y+OzFk61cvYgOShsen9jqYJLr
+         f1fFfcm/v7B+FF0OALdoPGhLDMNtDd2fxUEAY3FW6+dVxyCOaASej7Te+kNVThaedWlU
+         eXZfDgUMLASRGXu2uUVW4Y4uaKRHuHW8qNBG21hMvz5pGoYtQH5e5tVZPC08mqxfSCw3
+         N+Lg==
+X-Forwarded-Encrypted: i=1; AHgh+RpNMtXcgov0QPOt6dWDv6eUn5V6M+AOi9QQvJPOyq2mHLhxQggRkKYcxAdQ+WL+4euBxfRKJPzXR8eMMeM=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yx78Y6r16Yo5h6TuoYtBiqtOm7QWbyYZ3xYp5EZ6jC7ZXBoHdom
+	aWxioCjQuJ2H2jMVTfMiyv0bWqrOFFlXWatyTKTI7+oIy43HW7Y2bA+E
+X-Gm-Gg: AR+sD13VmtUw4W7UrGFvaXu0B7+B/T7ih7TzjdD10KJCGRQW4wy6ECIEqwtyOhkEoDq
+	gO2Qa95QTVGgmqhy2/KrT568pz6bDgYO1DXZ820qaIK+rrPeOsdauAnOtu1vJfvBWxVYQpVtNvN
+	hcUGAycpmVDYnfytvGcKG44K38oKDpAhrhu3KwMJDXO9BXAFEbTClVoxgF8b97DVNjvdos1pxaZ
+	94EwlETHtUA66+TqVBf9fZqnKW4j0JL0iWvdUuwolJfoRM3NjmcRZq0G8lUTI0vrtp7Mgu8/CG9
+	Zf5J0fIa73wTonjcH/M7jmtU/g1JkGArySLBIYmxdcmD3p14m7AUO9cD3+QjinUig5VaLSeAchh
+	8OurRiVZWiFBQQRbhpVIIXkdAVv+xaz5HoRxgXTLrKInzauRXAOSYSyDNe1a3GwEev09QZdRLOK
+	hmgoaaop/nBfyLgF9KdXFAUDH3m3eP4tHePigY39UREy2wZyTJ93Is2srqpYM=
+X-Received: by 2002:a05:6a20:918e:b0:3c4:46ca:334b with SMTP id adf61e73a8af0-3cb85e2acc2mr8616548637.9.1785956669049;
+        Wed, 05 Aug 2026 12:04:29 -0700 (PDT)
+Received: from pve-server ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-315867a68fdsm31787485eec.25.2026.08.05.12.04.23
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 05 Aug 2026 12:04:28 -0700 (PDT)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Amit Machhiwal <amachhiw@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Vaibhav Jain <vaibhav@linux.ibm.com>, Amit Machhiwal <amachhiw@linux.ibm.com>, Anushree Mathur <anushree.mathur@linux.ibm.com>, Paolo Bonzini <pbonzini@redhat.com>, Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Jonathan Corbet <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>, kvm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org
+Subject: Re: [PATCH v6 0/4] KVM: PPC: Expose CPU compatibility modes for nested guests
+In-Reply-To: <20260804180705.59160-1-amachhiw@linux.ibm.com>
+Date: Thu, 06 Aug 2026 00:09:43 +0530
+Message-ID: <tsp8l8cw.ritesh.list@gmail.com>
+References: <20260804180705.59160-1-amachhiw@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -67,137 +89,53 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260805125132.941270-1-avinash@linux.ibm.com>
 
-On Wed, Aug 05, 2026 at 06:21:32PM +0530, Avinash Roy wrote:
-> From: Shivaprasad G Bhat <sbhat@linux.ibm.com>
-> 
-> The IBM Spyre accelerator (PCI ID 1014:06a7) requires a dedicated warm
-> reset method for reliable EEH recovery on pSeries/ppc64 platforms.
-> 
-> FLR alone is insufficient because it does not re-initialize the Spyre
-> firmware state machine. On ppc64 with EEH enabled,
-> pcibios_set_pcie_reset_state() is overridden in
-> arch/powerpc/kernel/eeh.c to drive the platform-level PERST# signal via
-> EEH PE operations, which is the correct mechanism for full device
-> recovery after an EEH event.
 
-This makes it sound like this mechanism is needed for EEH recovery for
-*all* devices, not just Spyre.  If that's the case it sounds like we
-need more than just a Spyre-specific quirk.
+Hi Amit,
 
-> The reset function is placed in arch/powerpc/platforms/pseries/pci.c
-> where the EEH infrastructure is already present, declared in
-> pseries.h, and registered in the generic pci_dev_reset_methods[] table
-> in drivers/pci/quirks.c under a CONFIG_PPC_PSERIES guard.
-> 
-> This reset method is only registered when CONFIG_PPC_PSERIES is enabled, 
-> so it is not available on other platforms.
-> 
-> Reset sequence:
->   - Assert PERST# via pcie_warm_reset, hold 250 ms
->   - Deassert PERST# via pcie_deassert_reset
->   - Wait 250 ms for PCIe link retrain and device recovery
-> 
-> Signed-off-by: Avinash Roy <avinash.roy1@linux.ibm.com>
-> Signed-off-by: Shivaprasad G Bhat <sbhat@linux.ibm.com>
-> ---
-> diff --git a/arch/powerpc/platforms/pseries/pci.c b/arch/powerpc/platforms/pseries/pci.c
-> index 84e4ffe957a8..7aa58d57208f 100644
-> --- a/arch/powerpc/platforms/pseries/pci.c
-> +++ b/arch/powerpc/platforms/pseries/pci.c
-> @@ -11,6 +11,7 @@
->  #include <linux/kernel.h>
->  #include <linux/pci.h>
->  #include <linux/string.h>
-> +#include <linux/delay.h>
->  
->  #include <asm/eeh.h>
->  #include <asm/pci-bridge.h>
-> @@ -236,6 +237,41 @@ static void fixup_winbond_82c105(struct pci_dev* dev)
->  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_WINBOND, PCI_DEVICE_ID_WINBOND_82C105,
->  			 fixup_winbond_82c105);
->  
-> +/*
-> + * Reset Spyre adapter using pci_set_pcie_reset_state()
-> + * This is specifically for PPC platforms where EEH (Enhanced Error Handling)
-> + * requires this reset method for proper device recovery.
-> + */
-> +int reset_spyre(struct pci_dev *dev, bool probe)
-> +{
-> +	int ret;
-> +
-> +	if (probe)
-> +		return 0;
-> +
-> +	/* Assert warm reset */
-> +	ret = pci_set_pcie_reset_state(dev, pcie_warm_reset);
-> +	if (ret) {
-> +		pci_err(dev, "Failed to assert reset: %d\n", ret);
-> +		return ret;
-> +	}
-> +
-> +	/* Wait for reset to take effect */
-> +	msleep(250);
-> +
-> +	/* Deassert reset */
-> +	ret = pci_set_pcie_reset_state(dev, pcie_deassert_reset);
-> +	if (ret) {
-> +		pci_err(dev, "Failed to deassert reset: %d\n", ret);
-> +		return ret;
-> +	}
-> +
-> +	/* Wait for device to recover */
-> +	msleep(250);
-> +
-> +	return 0;
-> +}
-> +
->  static enum pci_bus_speed prop_to_pci_speed(u32 prop)
->  {
->  	switch (prop) {
-> diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
-> index 3968a6970fa8..79c194aeb3c6 100644
-> --- a/arch/powerpc/platforms/pseries/pseries.h
-> +++ b/arch/powerpc/platforms/pseries/pseries.h
-> @@ -92,6 +92,10 @@ extern struct pci_controller_ops pseries_pci_controller_ops;
->  int pseries_msi_allocate_domains(struct pci_controller *phb);
->  void pseries_msi_free_domains(struct pci_controller *phb);
->  
-> +/* PCI device reset method for Spyre adapter */
-> +struct pci_dev;
-> +int reset_spyre(struct pci_dev *dev, bool probe);
-> +
->  extern int CMO_PrPSP;
->  extern int CMO_SecPSP;
->  extern unsigned long CMO_PageSize;
-> diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-> index b09f27f7846f..1b8ab5d9764b 100644
-> --- a/drivers/pci/quirks.c
-> +++ b/drivers/pci/quirks.c
-> @@ -4237,6 +4237,11 @@ static int reset_hinic_vf_dev(struct pci_dev *pdev, bool probe)
->  	return 0;
->  }
->  
-> +#ifdef CONFIG_PPC_PSERIES
-> +/* Defined in arch/powerpc/platforms/pseries/pci.c */
-> +int reset_spyre(struct pci_dev *dev, bool probe);
-> +#endif
-> +
->  static const struct pci_dev_reset_methods pci_dev_reset_methods[] = {
->  	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82599_SFP_VF,
->  		 reset_intel_82599_sfp_virtfn },
-> @@ -4252,6 +4257,10 @@ static const struct pci_dev_reset_methods pci_dev_reset_methods[] = {
->  		reset_chelsio_generic_dev },
->  	{ PCI_VENDOR_ID_HUAWEI, PCI_DEVICE_ID_HINIC_VF,
->  		reset_hinic_vf_dev },
-> +#ifdef CONFIG_PPC_PSERIES
-> +	{ PCI_VENDOR_ID_IBM, 0x06a7,
-> +		reset_spyre},
-> +#endif
->  	{ 0 }
->  };
+Amit Machhiwal <amachhiw@linux.ibm.com> writes:
+
+> On POWER systems, newer processor generations can operate in compatibility
+> modes corresponding to earlier generations (e.g., a Power11 system running
+> in Power10 compatibility mode). In such cases, the effective CPU level
+> exposed to guests differs from the physical processor generation.
+>
+> This creates a problem for nested virtualization. When booting a nested KVM
+> guest (L2) inside a host KVM guest (L1) running in a compatibility mode,
+> userspace (e.g., QEMU) may derive the CPU model from the raw hardware PVR
+> and attempt to configure the nested guest accordingly. However, the L1
+> partition is constrained by the compatibility level negotiated with the
+> hypervisor (L0), and requests exceeding that level are rejected, leading to
+> guest boot failures such as:
+>
+>   KVM-NESTEDv2: couldn't set guest wide elements
+>
+> This series provides a mechanism for userspace to query the effective CPU
+> compatibility modes supported by the host, so it can select an appropriate
+> CPU model for nested guests.
+>
+> To achieve this, the series introduces a new KVM capability and ioctl
+> (KVM_CAP_PPC_COMPAT_CAPS / KVM_PPC_GET_COMPAT_CAPS) that expose the
+> compatibility modes supported by the host.
+>
+
+Sorry, but I am somehow not convinced on whether we need all of this
+machinary just to get these 3 bits of information, which we are
+returning today.
+
+Since KVM_CHECK_EXTENSION can already return an int, so why can't we use
+KVM_CAP_PPC_COMPAT_CAPS itself and return the bitmap of supported compat
+modes to the user?
+Say if the cap is not supported, we can return 0, otherwise we can
+return the bitmap of supported compat modes. This will easily allow us
+to use 31-bits which as I see would be hardly a problem in the near
+future. In the future if it grows - we can always use KVM_CAP_PPC_COMPAT_CAPS2.
+
+This should reduce the code complexity both in the kernel and
+userspace and we don't even need a new ioctl then.
+
+Thoughts?
+
+-ritesh
+
 
