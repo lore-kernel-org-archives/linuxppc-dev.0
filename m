@@ -1,98 +1,104 @@
-Return-Path: <linuxppc-dev+bounces-25440-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25441-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A838FC55174
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2026 12:29:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 74C0CC55ABA
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2026 12:30:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hFV8t00Plz2y8c;
-	Wed, 05 Aug 2026 22:29:33 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::531"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785932973;
-	cv=none; b=b1gahVXY+teaZQltskXiG4Prv++Bxkl2nO18mlpjGxXj+cBdhTncNzZExp5RWSU2n0mLA/qL2QD1Criq18K++JxLKttEC8nWjLi1jfMSM4HHEl+g0UwLLxFmdeo0b6c3/XJ2xzvkEoUm5PNgjts+HN+CALR8BOtbDglNTZn/Xypo9xEyxQOuy5xvPMZPzd5Y+aoWsOf73IYHbkrSAoSTtfXRnVPmE8ZV73Trh6E5LnPKUgE1u30FiWXOcRKPYu8sOwitG5FEe2LNoR29KIWyjjF9O84HBtIbwOzJQVFnLmSCSC1SScd+L4vDOcg0eiJA3JavQYfDEBRkjzHpJ42ZdA==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785932973; c=relaxed/relaxed;
-	bh=lDfE3MImKDd5lzHD3TwQos1pByv1t0VuukoOAZQ7kIw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=fbNjFNWX1NzBF5GwVWQt76ZiUNgKnFb9lTt4rv5XO+zU+cQO579SlKCZeb0cvDhy4MfIXlJ0MLIRYU5Uzug5hShr5wcJxzZRX+9O6fEgH54KscgujyGq8BdObaFFeMLxYbFM5whb8WvqLuvAlIS+r17Msb0mAEkY43W+hA7g6hmXs35FS9YrOOT90Bpu/IeFz2zmU9YroUB19y1FFZyVkgy8LCTFMnMjR5oJN8kgL0ir81czCI3+ABd/pcP8LPIYjwZmw6ZZ8nAUHo2mMz8Z38+TX8ZSNxZ6twR8JlKrIuiD9IWgvxUAq3tTKOZ2CdPI2SQS99zoDxiNEZWNmnnP9A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Qle4eJBi; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::531; helo=mail-pg1-x531.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hFVBP0GBNz2ySW;
+	Wed, 05 Aug 2026 22:30:53 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c100::f" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785933052;
+	cv=pass; b=TFS8rfcPQjH5oeekiRLs4Gtvy7E/Rm9p093/5hSUMB6/zcZlKZhNziiQaZHln47ym87N6jDVVYsOJgKaPaBD1zsD6wsN3LgCoX7KTCaab2Zanc6vMgXJ+PlMeacsV7ujCld+rZz1SZcRuGVPKnwx8JBEt/G8gB+2ec5z0BM8SoT7LpndaMt8TjJIPV+00Wem+Cza3ByDpK754GF0+31yz5eVHaNaLuzfULNbgjNF9TI544iXLIqUUWUGI16n+5hpyZo3JVdndqulFL272vBJBL2PtIaR+Ltng0QVOhtU6M0a5eKHlD1FFfzSQ9gExd9ZaG/alcDHnjS+sPRW8vC1GQ==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1785933052; c=relaxed/relaxed;
+	bh=ox2xbRLxNvdqpJFmgdEJg4jzYCu9Zb10QHH/V8E5mn0=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=TGb9gxBGDRwOwc5W/WR+341BWvq4ibl9kUypiX/UU305xrsn55vqEWsP1XXwRpVpxf+GQlWGzp4v14twUzDWgOYfuN3MLwHOnlzhsclAPeOTJynTUsk/zZHA33U2dXiLY0XRSlqQNGnxMdKbh5QigwxfMyMZ9+IWZD8ycTwnZ034P114vPBYVeUE2RNfBLTddQ9X6mJZt7UFq2KsbsWg1fZyRW96iZ4G4IPcYvkBXJTOpJVm5itYmGyr8M1xRuhu+sfU10OF0VOA3NCek6pkCBnBcjebGpZTt6HmTbUpA3XgFOWt5ZLsQK+n6KJdP3H0t3cYizEJo5/mnCoOQH27kA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=MKDGdRlK; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c100::f; helo=bl2pr02cu003.outbound.protection.outlook.com; envelope-from=jgg@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Qle4eJBi;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=MKDGdRlK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::531; helo=mail-pg1-x531.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x531.google.com (mail-pg1-x531.google.com [IPv6:2607:f8b0:4864:20::531])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:c100::f; helo=bl2pr02cu003.outbound.protection.outlook.com; envelope-from=jgg@nvidia.com; receiver=lists.ozlabs.org)
+Received: from BL2PR02CU003.outbound.protection.outlook.com (mail-eastusazlp17011000f.outbound.protection.outlook.com [IPv6:2a01:111:f403:c100::f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hFV8r6nrwz2xqM
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Aug 2026 22:29:32 +1000 (AEST)
-Received: by mail-pg1-x531.google.com with SMTP id 41be03b00d2f7-cbb8b54fcf8so831561a12.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Aug 2026 05:29:32 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1785932971; x=1786537771; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=lDfE3MImKDd5lzHD3TwQos1pByv1t0VuukoOAZQ7kIw=;
-        b=Qle4eJBiP0aZpig+cCaaQv+Vl4az26lIl+BIVrbyWNxbx5RXkzCTNFm3kbZzr1MiSS
-         G6fVD+YipBf5eNaVsRLzHpOwiKq0m/jA1E8TE8cFXgFctv34njNdvhWPKlIyvHavQ5LT
-         d6WH8Oxn22Jc3lRJR0tQX+Il4xbWxxwx1Ep1TKVV81r1wuG8KZt/B4/O2xf++C/tPMNz
-         FMh8LdFqDTqy7bMfVXnMcij+4TYb4VONVvY0QdattpMbsDYwzl+kFqtYnKwdt6WR8OYi
-         YEsXyBaSen54GQtScnZDsWPw7mx7PiQwoX05HBT78TQ7IjSP8hJkcraMrrd8m1tHFnuK
-         rueg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785932971; x=1786537771;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=lDfE3MImKDd5lzHD3TwQos1pByv1t0VuukoOAZQ7kIw=;
-        b=d4OvKYgeTxYnRm/A8igV1jmY05Zxl9Q0kmUr+fowuier7zsZbOd0ijOhV+MPH30f/E
-         oDReV5AtK3Dfh0ZHHkd7Wvxu1upauDKoxRbOzc5Z1EnQ2S7wI3S57jFGMaDqIHkzO1u+
-         U9KEPQoPd+DL+r9g0iRX38AWkH2GcxevkNh28NO9IL2Hgn5u2PgvCrvjjYoXtbtugvgT
-         LFvBTL3kPbQ1bsBROCw0YNPpo87Y+Y2m+S4eSF7pqWN0JTr+htgiaPSkhCOgSJy9M0au
-         np8KinFsb15Uev2xrYdVrLG1AjlvLgVHS12LmKz+DdluRpNrXe7+zoW+yKKWVK+iJCsV
-         LI9w==
-X-Forwarded-Encrypted: i=1; AHgh+Rro6NpQr40kS1DJ9D0ctX1LvP5y5b/H61mWcSKVV6b9lwZvDUSY3d9GbDMZk9O11+UBKXiJDn0HgDa4NSw=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyqEN/s3krcl7TSBoo87wVleJUBy2/1ZbWomr/fNMGsLRhHY1iM
-	aToSec5zsVD7kKdaVwoEZMvrBUE0OXRtvp81cD8z6iNUpsMxXWJuh72n
-X-Gm-Gg: AR+sD10wYrxi/laG91xTYlv5kpB/Ta/aNd64MBa7/6x6wTrzZpvJ5RcTLs79YUEX5uy
-	YyJuhZnGzNzYK6PdvWq/mF7NL79rpfZEogU/hJCepXJW1qmBjrylrI7O+sdZqBgqlhJjJd4TLAD
-	h7EPd0WS6DwMaSYzxRn8d0MPPpuoj9wfnkGgyGlquHkmajZ19szSaQBSL8Ae4fc9zmnFqvkmtYX
-	wyQxPYKYTJnDBn1UIwxERHLgNQbfovuaaeD2Br4ThmYpjHpHCjGfUnulmWE3KbkL5njKhTnglV+
-	MrSOjQAr0L4nDaoyKwqSYyy1CnLwSq6CB3iKShngEovtLaeBGsT74equ7VVaWIPlcg1MrkgFFeZ
-	S9tJGJgeqQCKl/TIfOYQxEeUsZx5abB9XJ1VwX7jkY4Wojx0mO8KtjfpjRxxfLJulrhohf/sXCa
-	1mz7SSKC6ccKAYJ5Hfm6cs4NhaCqG4NFFges/o79XMlG+aDCrXADRbiXTjWPQ8oLTR3v1nIClqb
-	o1p0QxTiilSfn8A+Szn6KMu0zEuz7PYnQy2
-X-Received: by 2002:a05:6a20:cfa2:b0:3c4:397a:69b8 with SMTP id adf61e73a8af0-3cb85e6c93amr8849745637.21.1785932970620;
-        Wed, 05 Aug 2026 05:29:30 -0700 (PDT)
-Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([106.51.161.124])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-cbe707ea3ebsm1514279a12.8.2026.08.05.05.29.16
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 05 Aug 2026 05:29:30 -0700 (PDT)
-Date: Wed, 5 Aug 2026 17:59:14 +0530
-From: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
-To: FUJITA Tomonori <tomo@flapping.org>
-Cc: linkmauve@linkmauve.fr, maddy@linux.ibm.com, mpe@ellerman.id.au, 
-	npiggin@gmail.com, chleroy@kernel.org, peterz@infradead.org, jpoimboe@kernel.org, 
-	jbaron@akamai.com, aliceryhl@google.com, rostedt@goodmis.org, ardb@kernel.org, 
-	ojeda@kernel.org, boqun@kernel.org, gary@garyguo.net, bjorn3_gh@protonmail.com, 
-	lossin@kernel.org, a.hindborg@kernel.org, tmgross@umich.edu, dakr@kernel.org, 
-	daniel.almeida@collabora.com, tamird@kernel.org, acourbot@nvidia.com, work@onurozkan.dev, 
-	nathan@kernel.org, ndesaulniers@google.com, morbo@google.com, 
-	justinstitt@google.com, fujita.tomonori@gmail.com, joelagnelf@nvidia.com, 
-	gregkh@linuxfoundation.org, prafulrai522@gmail.com, nsc@kernel.org, japo@linux.ibm.com, 
-	lina+kernel@asahilina.net, j@jannau.net, airlied@gmail.com, linuxppc-dev@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org, rust-for-linux@vger.kernel.org, llvm@lists.linux.dev
-Subject: Re: [PATCH V17 0/7] Rust Support for powerpc
-Message-ID: <anMsbbRNiihKB-z7@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-References: <20260708082454.1254320-1-mkchauras@gmail.com>
- <178574013457.29744.6211258618175255546.b4-ty@linux.ibm.com>
- <anG67Q6Y59kDqh-c@desktop>
- <20260804.224035.269658578200153488.tomo@flapping.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hFVBM6GwXz2y8c
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Aug 2026 22:30:51 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=rHg7Pqy25T1EHcgljCMLNjJuRPyEm5Tm8xIwNQxi154dmvQaxxwQ5Sfk5Zr1bu+HYKYwn30v6FBIPFAAkSsohBd9qXxRaHAvXuyqtx0FuYmPa4wemPCRkMiuDAv4D86/ViFBDd94eZtEOpbSvAhMWFvPukWS9jGgvFXdgQUhd0/dsxzN94k1pfZeEa+x1iFAZliadFZaGTFhxfNaBZRSvX1v5v6HQGTPxA9h5YoLx/q3TV2/n0GU/MDYB0hsOWYKTaZs9VkoHoAY2Oq5BRHm4HQ1jV46GhoNcGtSdLgqNJLgp/bZm6Ve7PtRBJuhZyzzDjA2floBpGsApbNHKdIxyQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=ox2xbRLxNvdqpJFmgdEJg4jzYCu9Zb10QHH/V8E5mn0=;
+ b=J5cAUlCPGO7XGnJjd968I77MnrobAxioxdSRBUM5FQpspKNsY/6F5pwSbUFD5rFdgyHQb3+ytihLz2wLViZ7x2vRY3oMf23x667ReFqT2GL+6uYN39bVg/ZGxR2eUBHDnFswYEE0ctM4M45IXJVTtM/d4XFTc7JynvGy/UUwtFusAZhQKajz5FTuwvAK1SVxv0DbbMYwqhuMTXyWgNTcKZIfYlZhF1eLyWoTo3PzfumItM5XN424YDKpl46axijZo0Zn8beaVzEhOt/wGX5qk6o2FwGjMlhTp184TXde4VAAYIJeb+QUbqxlpRfVbaVLD4vD0lBzUeQIwTsn6tckgw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=ox2xbRLxNvdqpJFmgdEJg4jzYCu9Zb10QHH/V8E5mn0=;
+ b=MKDGdRlKhEgo7F2ULcO8dm44E0sNuHGjxPBIwyFLQU51nhvBCS7veG5Oa9Crj4LQJikt0LL1cTsw7dI/yJ1D+nnUuX0dfww+k4pznjZVeYtphfNfTCKan3kwMp2HXXZHPY9rgKauD2BHGoq1CBUbRT443eI1iJCAQHGh0erBq2fj6BxFyOHVghOyphLqgTVwbicP8ZMNW6vxUdgZIexCsT9XDv71/3SDrPZQ4KU1cUJleAvSEJg3CKz5BuynnJExBgY/o5tfWUsG1HhmeYisGrZUDGBXEwwmadQ94+nVV26w9rXznT7FiaayOsIWZdyqFSV6R8L6hnD78fexmViTbw==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from LV8PR12MB9620.namprd12.prod.outlook.com (2603:10b6:408:2a1::19)
+ by EAYPR12MB999132.namprd12.prod.outlook.com (2603:10b6:303:2c2::11) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.270.20; Wed, 5 Aug
+ 2026 12:30:25 +0000
+Received: from LV8PR12MB9620.namprd12.prod.outlook.com
+ ([fe80::299d:f5e0:3550:1528]) by LV8PR12MB9620.namprd12.prod.outlook.com
+ ([fe80::299d:f5e0:3550:1528%4]) with mapi id 15.21.0292.015; Wed, 5 Aug 2026
+ 12:30:25 +0000
+Date: Wed, 5 Aug 2026 09:30:23 -0300
+From: Jason Gunthorpe <jgg@nvidia.com>
+To: Mostafa Saleh <smostafa@google.com>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, iommu@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+	linux-coco@lists.linux.dev, Robin Murphy <robin.murphy@arm.com>,
+	Marek Szyprowski <m.szyprowski@samsung.com>,
+	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
+	Steven Price <steven.price@arm.com>,
+	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Jiri Pirko <jiri@resnulli.us>, Petr Tesarik <ptesarik@suse.com>,
+	Alexey Kardashevskiy <aik@amd.com>,
+	Dan Williams <dan.j.williams@intel.com>,
+	Xu Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+	linux-s390@vger.kernel.org,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org,
+	Michael Kelley <mhklinux@outlook.com>
+Subject: Re: [PATCH v8 12/23] dma: swiotlb: pass mapping attributes by
+ reference
+Message-ID: <20260805123023.GO27883@nvidia.com>
+References: <20260717180442.110954-1-aneesh.kumar@kernel.org>
+ <20260717180442.110954-13-aneesh.kumar@kernel.org>
+ <ami_mpd_1pF4Tmdu@google.com>
+ <yq5a5x1ygo7z.fsf@kernel.org>
+ <amnRB98ZZIysHuM3@google.com>
+ <yq5acxw6dl1d.fsf@kernel.org>
+ <20260804142032.GC27883@nvidia.com>
+ <anL9-OrDGqYQAWNV@google.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <anL9-OrDGqYQAWNV@google.com>
+X-ClientProxiedBy: YT4PR01CA0449.CANPRD01.PROD.OUTLOOK.COM
+ (2603:10b6:b01:10d::21) To LV8PR12MB9620.namprd12.prod.outlook.com
+ (2603:10b6:408:2a1::19)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -106,151 +112,130 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260804.224035.269658578200153488.tomo@flapping.org>
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: LV8PR12MB9620:EE_|EAYPR12MB999132:EE_
+X-MS-Office365-Filtering-Correlation-Id: 693df1b0-8bad-4c1b-433e-08def2ed530c
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|366016|1800799024|376014|7416014|23010399003|18002099003|22082099003|4143699003|11063799006|56012099006|6133799003|10067099003;
+X-Microsoft-Antispam-Message-Info:
+	wtpreoMMSbMNkvVIQRVqvnZb64uPO/ftJxH026TyI2TzinjsLqw7pGLDEkAypUGJMmAcdbM2IY90FmH6YKekynfqyKGced4hUOuk9RfrciCspsz4NQJFTPsrpRl5z8AE+5yP7EfQEaHeDyVbP+mAexfUnm5PpXvtZ/vYMp/Th7N5r3q88w81hqhFqqWLuWxkXirkQvjH8GAhF2BjYZvOfAkjTJvGvqCSBheB05I/rJwAmuXhNMGSkBqD3gq4sLcuq5Xx8WOeOs5fu4zM6HE5ciMtyWNJZHXeyehPBcbaSyjngsvB5CWNz3umZ0gkaEw85yIuFxzWr+Ez8+J2ReLWnHOVbzCtZ/U0snRYGtVQKTFVTCP9NIQN2aumWCfasdKIILrze0GTmHp/SzOEc0Y/o7oYPSpJAq2LjRsZqGwRKMGE6pPWbEhfRrktnXm+Kej8dAV5Dd/YnExy1kJB3mkBEd9UE1MUqYCIZxDxhZP5FRAMX02KCbiP4y/Os86P5SG3d5iUCLFcX1fNlj8a7Duq2Uo8e54Lv18GMX7lhsMFgC0SJVk9tA91SAQrucfnwnkeCBy4rrQM9+3cMMVN4jUFO33344zWFqI3oEQRFdMI0B5rtI1sFZMTJdxfncy/3yqov9rEQaTCL06DYaZ9fwTE862u/SLRfklyfilqlxzi2i8=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LV8PR12MB9620.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(376014)(7416014)(23010399003)(18002099003)(22082099003)(4143699003)(11063799006)(56012099006)(6133799003)(10067099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?IhdvWWGfiwCzol3+AUKdUWMHHE4HWALFFNYMRE+RmFsR/2v0ODtmAbuAIrmW?=
+ =?us-ascii?Q?++YuY5qxNSSGbhCE/uUqv1Zjre7UVbCER/qCW06WVTAImbxzFOP7BV0KHQju?=
+ =?us-ascii?Q?vBuuCfhcl9vk3TVlXgbCJikyf4g9V69eZfKjeyHVYKjZCQUP6/96b9u2FrXy?=
+ =?us-ascii?Q?EXkfC4LFf5h/97MPvBYj7HtXF/lW1Q72gmOXNPYUUYwmlNK9oLOBnS7uvtqg?=
+ =?us-ascii?Q?+9KvvEN5Ap8UTSJxNyrcCyGm39bMV9f+msR9ieDkLSkEwZirn70aGektH7ul?=
+ =?us-ascii?Q?Wir3QQsAufage7I47Xnxol6uEKRuCWyQo+2FxZlDl5rw2r35ZPHJzrhABDSV?=
+ =?us-ascii?Q?nQ2OCr0uTwo+hd/CCA4BfENcsgXUNGDKNwyQ7C3yl6AVihvvU9oomRTSES9X?=
+ =?us-ascii?Q?66CnYKuSc1TmuRXXaxtdf0f/mhsJh1NEeXxqP4MiLGub8FrdlDQaQsHiGo+O?=
+ =?us-ascii?Q?bhE21Pn2LEjbrTVyZhtQYWw/xUiQ27AwYXKFS6KLOi/xawx4KlV19LK6o09U?=
+ =?us-ascii?Q?0OigRMbjTxpbvEY6mHKRjOdc7fd1VW36PnM/JQ/4AobFA8EXl7IjJJ8oJmhV?=
+ =?us-ascii?Q?QL/SE2wISFBJucIPsPumh62swZWFbj1Fl8HpiqfcbKc22jCeXnz5rnSngtrY?=
+ =?us-ascii?Q?WoBioRTvqcEmBlOOsmPDMelFg3yqC+Hac9lKhr5B22c89P/v+2inJGhvUP5S?=
+ =?us-ascii?Q?TadWy/uYUATQIbDhMBEoMQjgqmCoFoJ1e8Qa0S2TorUtCaAOfxHdnzpCYVaz?=
+ =?us-ascii?Q?RZMm4pEJsbUuFwg1bUQs9cBjvAKqkvAwY18LtVIML/wLcCoxfog1FNJr1Xe7?=
+ =?us-ascii?Q?0JI1ywQNQRuAJV1IEVNgJPIQVSJuc1MUxS5qDkD9HV69GKczAk+g38sa+vHx?=
+ =?us-ascii?Q?7naYCd1KdDssmBcCL0e8DBr+kz9RgjbAu0hkP6JZFDht1PxbaZnshp2T1Ws2?=
+ =?us-ascii?Q?j/an/bIzYWCs+GSsxmf4saCwUi9Qwt8p5ctqftcc2iOzU/aZNffGSWdcTWop?=
+ =?us-ascii?Q?hHoCgzOarMuljYizaEyWVXAwzvBmaSwEJ5eLXxQWtjdDXDhqOyRSOiHP40+Z?=
+ =?us-ascii?Q?mAeIZzTGQiNsNHrnaZrtgaLMMAClk2eSvN8qtLC48WvM0x4bk+GT/ZXv5HOm?=
+ =?us-ascii?Q?Tww27yTLgyTCRHtucU4XbLgBxbeBTg3aKaF/Uf9nYBABBxbgSsCji7sMIcBR?=
+ =?us-ascii?Q?o4qUUXOIGSAxDKY+DMqaxfQgQl0eouNSDdO9e1ZZ/OZicVV4bph6Tf7hnZHA?=
+ =?us-ascii?Q?udQOE0V7OSTJEZRzRCfYATnyQCS9qkpkdk5QUs9F/EwcX35CHWxZfQ+l+tlQ?=
+ =?us-ascii?Q?0UZqvFtnxhnoZECLAfOBTeVsBry1Lj7JEU0528cPZ/kWNRlbzMhRA5N6cFwb?=
+ =?us-ascii?Q?91eIDW939hdE1zKt68NPqswU9YUPZ22jYJnFHhEwF/cBJmLMrCcRRlSAZ6PC?=
+ =?us-ascii?Q?LYmutjcySr/n1pfCMmLcm1UCc4MsRx+SBQprC0bweGx8CULgSFYOQfF2KkXV?=
+ =?us-ascii?Q?GgEcXTpWlUS5nX+VfBOVL/aKhyCJPJat0mgs8o4M/8RFCwZ92jeuLNiYIN/t?=
+ =?us-ascii?Q?obhA4NG10RZeFaZB1rDR7JO4ZV8nObjNY8u8u8QBZLN4xX/gy+IEY9VXuTpr?=
+ =?us-ascii?Q?6gyMbpy3WJ73qzF1SmH3e+HP/KeeY0iFDWjUEobitwCrGyJa5+3m+wtNrdKp?=
+ =?us-ascii?Q?PKWjgiFUGpIO8Gn1hniVAlB7vMjyz+JRtEViMNPoGPScTyYfWmA0iRXChWL2?=
+ =?us-ascii?Q?6a91FZ2B/A=3D=3D?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 693df1b0-8bad-4c1b-433e-08def2ed530c
+X-MS-Exchange-CrossTenant-AuthSource: LV8PR12MB9620.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 05 Aug 2026 12:30:24.9433
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: SnEE0VCiRX+7FvTKRW2hbsqeIdcBOCg9gwb9qK8aHHGB4wwY9TBKfnxLggJ3Y/Xl
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: EAYPR12MB999132
 
-On Tue, Aug 04, 2026 at 10:40:35PM +0900, FUJITA Tomonori wrote:
-> On Tue, 4 Aug 2026 12:11:57 +0200
-> Link Mauve <linkmauve@linkmauve.fr> wrote:
+On Wed, Aug 05, 2026 at 09:10:16AM +0000, Mostafa Saleh wrote:
+> On Tue, Aug 04, 2026 at 11:20:32AM -0300, Jason Gunthorpe wrote:
+> > On Wed, Jul 29, 2026 at 06:12:38PM +0530, Aneesh Kumar K.V wrote:
+> > > There is a possibility that we may support io_tlb_mem with cc_shared =
+> > > false in the future. As a result, only swiotlb_map() knows which type of
+> > > bounce buffer was used, making it the only place where the attributes
+> > > can be updated correctly.
+> > 
+> > Yeah, +1, the attribute should be changed at the same effective place
+> > the source memory is changed away from what the DMA API user
+> > provided. Only the thing providing the new memory (eg swiotlb) should
+> > know its properties.
 > 
-> > Hi,
-> > 
-> > On Mon, Aug 03, 2026 at 12:27:13PM +0530, Madhavan Srinivasan wrote:
-> >> On Wed, 08 Jul 2026 13:54:47 +0530, Mukesh Kumar Chaurasiya (IBM) wrote:
-> >> > Enable experimental rust support for ppc64le and ppc32be. The patch for
-> >> > ppc32 has been provided by Link Mauve[1] and ppc64le support[2] has been
-> >> > merged over it. ppc32 needs some toolchain fixes mentioned in the patch
-> >> > `rust: Add PowerPC support` and the discussion for that is done here[1].
-> >> > 
-> >> > This has been tested on
-> >> > - powernv9 hardware
-> >> > - pseries P11 hardware
-> >> > - pseries(9, 10) qemu
-> >> > - powernv(9, 10) qemu
-> >> > - rustdoc on x86 and powerpc64le
-> >> > - rusttest on x86 and powerpc64le
-> >> > 
-> >> > [...]
-> >> 
-> >> Applied to powerpc/next.
-> >> 
-> >> [1/7] rust: Fix "multiple candidates for rmeta dependency core" error
-> >>       https://git.kernel.org/powerpc/c/00cdfd072c709c608606461d7d44d4613119bfa9
-> >> [2/7] dma-resv: Fix undefined symbol when CONFIG_DMA_SHARED_BUFFER is disabled
-> >>       https://git.kernel.org/powerpc/c/be809b60cbb61aab96179f44ac3670242ae72996
-> >> [3/7] powerpc/jump_label: adjust inline asm to be consistent
-> >>       https://git.kernel.org/powerpc/c/13244c0a40139fe66c4c5c5655f4d732a6002957
-> >> [4/7] rust/powerpc: Set min rustc version for powerpc
-> >>       https://git.kernel.org/powerpc/c/e299147cdc8e19c6421a6b7863dc82a35b09d967
-> >> [5/7] rust: Make __udivdi3() and __umoddi3() panic
-> >>       https://git.kernel.org/powerpc/c/c93c194e4ee71a734986fd99a8b1ec9fbb7a9b8b
-> >> [6/7] rust: Add PowerPC support
-> >>       https://git.kernel.org/powerpc/c/73b741adb264967093ef4eb59905618a7e0d0de0
-> >> [7/7] powerpc: Enable Rust for ppc64le
-> >>       https://git.kernel.org/powerpc/c/bc87cbdb952e9223616b839d64bdb4723aa2ed1d
-> >> 
-> >> cheers
-> >> 
-> > 
-> > I just tested those again in linux-next, with the Wii support series on
-> > top, but now the kernel fails to build due to ARCH_WARN_ASM and
-> > ARCH_WARN_REACHABLE not being defined on PowerPC:
-> > ```
-> > error: no rules expected `ARCH_WARN_ASM`
-> >    --> /home/linkmauve/dev/linux/wii/rust/kernel/generated_arch_warn_asm.rs:1:28
-> >     |
-> >   1 | ::kernel::concat_literals!(ARCH_WARN_ASM("{file}", "{line}", "{flags}", "{size}"))
-> >     |                            ^^^^^^^^^^^^^ no rules expected this token in macro call
-> >     |
-> >    ::: ../rust/kernel/lib.rs:279:1
-> >     |
-> > 279 | macro_rules! concat_literals {
-> >     | ---------------------------- when calling this macro
-> >     |
-> >     = note: while trying to match sequence start
-> > 
-> > error: no rules expected `ARCH_WARN_REACHABLE`
-> >    --> /home/linkmauve/dev/linux/wii/rust/kernel/generated_arch_reachable_asm.rs:1:28
-> >     |
-> >   1 | ::kernel::concat_literals!(ARCH_WARN_REACHABLE)
-> >     |                            ^^^^^^^^^^^^^^^^^^^ no rules expected this token in macro call
-> >     |
-> >    ::: ../rust/kernel/lib.rs:279:1
-> >     |
-> > 279 | macro_rules! concat_literals {
-> >     | ---------------------------- when calling this macro
-> >     |
-> >     = note: while trying to match sequence start
-> > 
-> > error: aborting due to 2 previous errors
-> > ```
-> > 
-> > This is in addition to the bindings::kvfree_call_rcu() call, but that
-> > one is already being handled in a different thread.
+> I will keep the conversation here instead of 2 threads.
 > 
-> Looks like powerpc needs something like the followings:
-> 
-> diff --git a/arch/powerpc/include/asm/bug.h b/arch/powerpc/include/asm/bug.h
-> index 0db48977c70c..8aba39e0cf26 100644
-> --- a/arch/powerpc/include/asm/bug.h
-> +++ b/arch/powerpc/include/asm/bug.h
-> @@ -32,34 +32,38 @@
->  #endif /* verbose */
->  
->  #else /* !__ASSEMBLER__ */
-> -/* _EMIT_BUG_ENTRY expects args %0,%1,%2,%3 to be FILE, LINE, flags and
-> -   sizeof(struct bug_entry), respectively */
->  #ifdef CONFIG_DEBUG_BUGVERBOSE
-> -#define _EMIT_BUG_ENTRY				\
-> +#define _EMIT_BUG_ENTRY(file, line, flags)	\
->  	".section __bug_table,\"aw\"\n"		\
->  	"2:	.4byte 1b - .\n"		\
-> -	"	.4byte %0 - .\n"		\
-> -	"	.short %1, %2\n"		\
-> -	".org 2b+%3\n"				\
-> -	".previous\n"
-> +	"	.4byte " file " - .\n"		\
-> +	"	.short " line ", " flags "\n"
->  #else
-> -#define _EMIT_BUG_ENTRY				\
-> +#define _EMIT_BUG_ENTRY(file, line, flags)	\
->  	".section __bug_table,\"aw\"\n"		\
->  	"2:	.4byte 1b - .\n"		\
-> -	"	.short %2\n"			\
-> -	".org 2b+%3\n"				\
-> -	".previous\n"
-> +	"	.short " flags "\n"
->  #endif
->  
->  #define BUG_ENTRY(cond_str, insn, flags, ...)		\
->  	__asm__ __volatile__(				\
->  		"1:	" insn "\n"			\
-> -		_EMIT_BUG_ENTRY				\
-> +		_EMIT_BUG_ENTRY("%0", "%1", "%2")	\
-> +		".org 2b+%3\n"				\
-> +		".previous\n"				\
->  		: : "i" (WARN_CONDITION_STR(cond_str) __FILE__), "i" (__LINE__),	\
->  		  "i" (flags),				\
->  		  "i" (sizeof(struct bug_entry)),	\
->  		  ##__VA_ARGS__)
->  
-> +#define ARCH_WARN_ASM(file, line, flags, size)		\
-> +		"1:	twi 31, 0, 0\n"			\
-> +		_EMIT_BUG_ENTRY(file, line, flags)	\
-> +		".org 2b+" size "\n"			\
-> +		".previous\n"
-> +
-> +#define ARCH_WARN_REACHABLE
-> +
->  /*
->   * BUG_ON() and WARN_ON() do their best to cooperate with compile-time
->   * optimisations. However depending on the complexity of the condition
+> That seems like a big leap, I'd be worried about devices that operate
+> on confidential data that should not be shared/decrypted.
 
-Yeah, This makes sense.
+That seems like something very differnt.
 
-I'll work on this and send out a fix soon.
+> One example for this which exists in pKVM (this part is not
+> upstream yet) is non coherent devices that require bouncing but they
+> still want to keep the data private. In that case ideally they get
+> an encrypted SWIOTLB pool, but it's always better to fail than to use
+> a decrypted pool behind it's back.
 
-Thanks and Regards,
-Mukesh
+We don't have any API for a DMA API caller to signal 'must be
+confidential'. If we want to add one it would be a flag to check
+before changing the physical address in swiotlb.
+
+As defined today the DMA API expressly copies from private to shared
+memory, that is baked into it's design and not a bug.
+
+My expectation is all these cases have to be solved by setting up the
+swiotlb properly so it provides suitable bounce buffers. Yes, this
+means we will eventually need both private and shared swiotlb pools.
+
+> I have not been following the work on T=1/T=0 devices, but IIRC, they
+> required some complexity to handle their stage-2 as these modes will
+> be emulated differently (for CCA, RMM vs untrusted host).
+> I was thinking that it might be easier to represent those to the
+> guest kernel as 2 separate devices (bounded to different groups...)
+> where one is trusted and the other is not, and that way the DMA-API
+> can have strict rules about memory sharing.
+
+No way! That's would be a giant disaster for the driver model.
+
+Each struct device will have a flag that shows if it is in T=1 or T=0
+state. The flag can only change while a driver is not bound, and
+changing the flag will update the DMA API configuration.
+
+A T=1 device should have the same issue as you point out for pkvm, it
+really needs to have a private SWIOTLB pool.
+ 
+> Otherwise, SWIOTLB does not seem like the right place to me, as it
+> does not understand the context the device is operating in, and the
+> DMA-API should deduce that from the flags passed.
+
+It is exactly the right place because it is the one supplying the new
+memory. Context is irrelevant, the flag only describes what the new
+memory actually *IS*, and swiotlb knows 100% if the new memory is
+shared or private.
+
+For your issue it would be appropriate to add a debugging check that
+the new memory is not incompatible with the expected policy. eg a T=1
+device getting decrypted swiotlb memory is a bug in swiotlb setup that
+should be caught. But that's a debugging check, we expect the swiotlb
+to have selected the right kind of memory by construction. This isn't
+done yet since this series doesn't even yet support a T=1 device..
+
+Jason
 
