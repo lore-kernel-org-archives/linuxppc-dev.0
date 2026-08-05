@@ -1,50 +1,69 @@
-Return-Path: <linuxppc-dev+bounces-25417-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25418-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A0087C55182
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2026 07:37:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7A23AC55822
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2026 09:10:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hFMh30h3Vz2xqM;
-	Wed, 05 Aug 2026 17:37:39 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785915459;
-	cv=none; b=PWOwcQGabfbvi8VEKU1vwn63TydOsXkgM0SwZKW9V2icF7sBdJDOaXgZb80TSiZpnhlPAkOfQxSQDgiYA4xSluCNEwWDrvOJHga1FhZK3lqSMhQv99iCc2bQWGYaam959znKaPTYsNIgUYBVBj0Ok9yOESIh5FDqGGghck6TYh2q8imEjbjSFmoy8WubSdDU7GoWMHmDOm9xu/lEcUZFsWz9kjyg8pJjtn11DaXD7BcPt4uIMbbJSNPiuMc+nB4eliTqPyzRbjxhoXQ356a6yFuvLbm+kQauGkODIYK5WhUM27ZG7cxUZT+jqp9Duv5mlPKyNG+zMsLRTbscDu+EAA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hFPkj1x8fz2xqM;
+	Wed, 05 Aug 2026 19:10:05 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.221.173
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785921005;
+	cv=none; b=U1W/gXVdBuSee6Ge5h39PqQ43lWlRmu52jj3qyb5o3q+YOmXR1bfHatPEmPfV+B3U9bo7G2akUJQlO6/GhQzZDeNvzLbcpwCOsgIpKgvTcV5SGg1QYYa3NLI+8vWgbylFp8GY3Ev/ogwzfU/Eh4kixRYVGb4L9fYrk/03E3kqzCu4oJGmAFB/2nDRsZZSuuTasLvB6yCp5xi2ush/Ojq3tsvmqXRKnUo8jTQjVYVeNnYhpY7CA2S0WOuB7T1tl/xe+Cs7BvJGhNcQMl688PEkA2lODEG8U34bGMMO8rgDS3pXkt3kYWRsKTwMP/DEECYzq+Tt01I+Kvz63YoCQAYcw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785915459; c=relaxed/relaxed;
-	bh=QCYYzFAXd/HHDMG7wDvaDepVmzvK1kP9KPdvFyneu38=;
-	h=Content-Type:MIME-Version:Message-Id:In-Reply-To:References:
-	 Subject:From:To:Cc:Date; b=i8ByefG07F7w1h72uAGdNcMxnIMzJOX2+C61FO4hNy3zkCa3T8iY6bs0EerKEXSNciFGmHrbnglkuJmXToohpGdyurTBA/0nXCaRfSM9hsgVdGxb8SOWYhcS+3Xm+YYXrFU1y5rXfYu/kskmuOvh0DfCjbSrkqpNfWHSAlcL4+p5CDNLJtp+/dFka3LXyOlkszV5bppMDpn0NSRl7OYtbkZegzypMtXCa2FZsUlYA/pOSotrRySvDKqUC5xfEO+8jL/ZMCzF1A8iCv4QgxCUMEyLivMJQJpYTvjDng4d66qFJ+rIvJfRE7pg2DJLdcSKBlJ5lnO9KRyTrqIjYzMBiw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=B/SYKN/S; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=bot+bpf-ci@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=B/SYKN/S;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=bot+bpf-ci@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+	t=1785921005; c=relaxed/relaxed;
+	bh=IZMk7vIjYI1+jmCS+K1I7BsKa3PUvNRhA5nUB7+f29c=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=AOsCYBJe0Lg0Qem3kGtdRSuBfHcyREsSllaragFATSGqKGCNMtf+uFUThIQ03sHbmVpHTG8AjqvCQotln1I8EmsKVncOoEwgNsiN7m9F6PoCkgSohJG8iYlRMeJPohOhDM46iNd6wcC5ATTlJlcHchZFO+mVtMlRkV/bxG33rzCjIyrfwRuKQJRxr6FTUkciQjMqgRtUVk5eHl9NGW3dku9qSkUi1REIgytSLKi8XiiDfEdNUysJud8LD1jigGz3yM4yjxMllhcQu0SPCps/9RlWveu2rpsRMY73SI2By0QtIpz/kR3Bla2yvJumY8o2I9Qqhvcy70oDWDXQv6hngw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass (client-ip=209.85.221.173; helo=mail-vk1-f173.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.221.173; helo=mail-vk1-f173.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-vk1-f173.google.com (mail-vk1-f173.google.com [209.85.221.173])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hFMh16Slsz2xpn
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Aug 2026 17:37:37 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id A4519600AE;
-	Wed,  5 Aug 2026 07:37:34 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7EFC51F000E9;
-	Wed,  5 Aug 2026 07:37:33 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785915454;
-	bh=QCYYzFAXd/HHDMG7wDvaDepVmzvK1kP9KPdvFyneu38=;
-	h=In-Reply-To:References:Subject:From:To:Cc:Date;
-	b=B/SYKN/SgQpBsMcAEjIrmvurqUHxCtPn0WFU5yCxYq+lyFi/P4ProO4bE1A8AMCXB
-	 gw/WkRXxGtDep1gG2KBamKdCnzLtsfiJIy7LH9YwxRHDwuuFf+Dr6V0OqOKOCLQAQg
-	 BkFZFsBc1VbQjj8enzuLJLv4ccKmyMmw52rzqlU6bb12JhFKPHr1hhTFfViMolJ3Qh
-	 gEvj0Y4f6KnciC+AZ1QLysWA3etxEt6wze9jfKU1zYP7/dH7UpREnIz17UzVVkqhHD
-	 TnNwvkhCjDC1G2yKYgFE00RrjouDviw/irjwcTGVUjxpeNVptdr1+9bEvFymggffTD
-	 Lokky6UdfhPTg==
-Content-Type: multipart/mixed; boundary="===============6287462164471471335=="
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hFPkg3Zhzz2xpn
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Aug 2026 19:10:02 +1000 (AEST)
+Received: by mail-vk1-f173.google.com with SMTP id 71dfb90a1353d-5bfd4795097so187168e0c.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Aug 2026 02:10:02 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1785920999; x=1786525799;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=IZMk7vIjYI1+jmCS+K1I7BsKa3PUvNRhA5nUB7+f29c=;
+        b=SIMPONQiAJK//+9CWrxvOrSCrTllJrCcbv+/v7H44up/qgJJ8j6yrAqzL/40t6xCkn
+         aPR7yvutiq5jWEHTfQ4QiCxnkUflfe0y9dVqPSZRH0RZA59Fd2qMnUCb6WWDv8W0Nb3l
+         cSzmk9L9atNuviOM8oHz/nmZvYU6tCN+qeV15oNrn+M4WKQFsKLLchkyy99kdW3L2tEG
+         9d8kB/iCREpYt2AN2h9Nulvhm2ytZLi+rLwzdyyErN6AD6ubo5MDfYL5S0vC4Qxjw8l7
+         qjapebHuT7NZ+O4boeOkiv5e4FdCU4nFfiaVCDKzb1i+Hui6vmpnrU7R45fZ/83Y7TXw
+         NO8w==
+X-Forwarded-Encrypted: i=1; AHgh+RoUCA++XzBQFPvvkYfUwXj8H0TLFYj60ZxC6ogkUjOlRcxBvg3fR0aj9rQFKuNlhhYR2XcElYSU+YwHuDo=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwlLFXtv0yH2XsAAkFg6WSym0hc83StPyb+pQtyi4VgvT1xw6ON
+	439I61S+35qbPfbKcSgobGC8Lt5AV0/o26bLLtsS14YdLmM9lFmNOMpUtorpovPZ
+X-Gm-Gg: AR+sD10fA4efL7lKRFLunYUJBoruAypdZ97Pg86hqtx52h7aYEsHBV0X6S6G+SZVqDA
+	Dsm1lf3QiEnQXPThFudiRaO7c1ZSzlFxIdTvSwQrBNCYDCc3t/F3ea5RvW2Gq+ogZv/7AZQWS38
+	QYAk5Vrl4BU6UJoL1sufNz+K/BT2/j0MQYA1s7JjEt1wf6VRvT1g1dJWokNXNB3Q1LcZ4BLBtLf
+	o4Mn3gMchV/7yyL0AqznlKNZtz+A4pyCVZ99IaUL7a0/ElrQZEMIzNvdXEeEsa89KbaU3pS6ltc
+	J8vD2O81AoyHAkFhCTSP6S5NcmJmkUV/OrU/8nP3F1gYz7KnyI3xd6owbZoGJJIJqeKrqpNpwge
+	E7/mUpUmDddKofbTGA5WF415Qcz1isKdT39R7JsPBSy7LEg9Sx5RHhD3Ic2ikxF1sWZNoFTwo1W
+	oLq+Et9rFu5NTxVWJtBHDU+ll5a/5kbQ7bsGUyD5HxtqWgOLM2TekmmUTgq40a4meJ9PESuSqup
+	+9b2dVwj5auDRAenPwTczBJak0IoOSnb70fjB9x
+X-Received: by 2002:a05:6122:1828:b0:5bf:8955:a8ce with SMTP id 71dfb90a1353d-5c3d907e269mr556923e0c.1.1785920999031;
+        Wed, 05 Aug 2026 02:09:59 -0700 (PDT)
+Received: from mail-vk1-f172.google.com (mail-vk1-f172.google.com. [209.85.221.172])
+        by smtp.gmail.com with ESMTPSA id 71dfb90a1353d-5c3d05c594fsm1482537e0c.8.2026.08.05.02.09.58
+        for <linuxppc-dev@lists.ozlabs.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 05 Aug 2026 02:09:58 -0700 (PDT)
+Received: by mail-vk1-f172.google.com with SMTP id 71dfb90a1353d-5bfd4795097so187164e0c.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Aug 2026 02:09:58 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RplM7wyKo2ADBFBIvLkILmjiCWYrUN9CRoEZETLvOceYxnfZ2mctG6yMuib/Opy0jNLnZE7PhWcCBEGTrQ=@lists.ozlabs.org
+X-Received: by 2002:a05:6102:c09:b0:747:5bd0:a2b7 with SMTP id
+ ada2fe7eead31-760e6cda4b6mr1138887137.5.1785920997811; Wed, 05 Aug 2026
+ 02:09:57 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,163 +77,69 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Message-Id: <c5ba5b501929ae0da789f24d30b07fc3345822dcdab291694bb4a205f5ba96d4@mail.kernel.org>
-In-Reply-To: <8b7bde664004feb383741b8807a561dba601285c.1785906979.git.skb99@linux.ibm.com>
-References: <8b7bde664004feb383741b8807a561dba601285c.1785906979.git.skb99@linux.ibm.com>
-Subject: Re: [PATCH v10 3/8] selftest/bpf: Fixing powerpc JIT disassembly failure
-From: bot+bpf-ci@kernel.org
-To: skb99@linux.ibm.com,bpf@vger.kernel.org,linuxppc-dev@lists.ozlabs.org
-Cc: hbathini@linux.ibm.com,maddy@linux.ibm.com,ast@kernel.org,andrii@kernel.org,daniel@iogearbox.net,shuah@kernel.org,linux-kselftest@vger.kernel.org,stable@vger.kernel.org,venkat88@linux.ibm.com,yeswanth@linux.ibm.com,skb99@linux.ibm.com,ast@kernel.org,andrii@kernel.org,daniel@iogearbox.net,martin.lau@kernel.org,eddyz87@gmail.com,yonghong.song@linux.dev,clm@meta.com,ihor.solodrai@linux.dev
-Date: Wed,  5 Aug 2026 07:37:33 +0000 (UTC)
+References: <20260720231153.116827-2-thorsten.blum@linux.dev>
+In-Reply-To: <20260720231153.116827-2-thorsten.blum@linux.dev>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Wed, 5 Aug 2026 11:09:46 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdVBjAs_67YdD0mqoBO2yYM2UFZ0=AY4KHJBrz-MmF1txw@mail.gmail.com>
+X-Gm-Features: AUfX_mwR8I-sHnR-mob8V3g9S5-pRXulhxc800ceKrgnw7NlAwaqxkR-rqYji5I
+Message-ID: <CAMuHMdVBjAs_67YdD0mqoBO2yYM2UFZ0=AY4KHJBrz-MmF1txw@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/ps3: Use cpu_relax() in ps3_create_spu()
+To: Thorsten Blum <thorsten.blum@linux.dev>
+Cc: Geoff Levand <geoff@infradead.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, linuxppc-dev@lists.ozlabs.org, 
+	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
---===============6287462164471471335==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Hi Thorsten,
 
-> selftest/bpf: Fixing powerpc JIT disassembly failure
+On Tue, 21 Jul 2026 at 01:12, Thorsten Blum <thorsten.blum@linux.dev> wrote:
+> Use cpu_relax() to wait for the execution status SPE_EX_STATE_EXECUTED.
+> Drop the comments while at it.
 >
-> Ensure that the trampoline stubs JITed at the tail of the
-> epilogue do not expose the dummy trampoline address stored
-> in the last 8 bytes(64-bit) and last 4 bytes(32-bit)
-> to the disassembly flow. Prevent the disassembler from
-> ingesting this memory address, as it may occasionally decode
-> into a seemingly valid but incorrect instruction. Fix this
-> issue by truncating the last 8/4 bytes from JITed buffers
-> before supplying them for disassembly.
+> Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
+
+Thanks for your patch!
+
+> --- a/arch/powerpc/platforms/ps3/spu.c
+> +++ b/arch/powerpc/platforms/ps3/spu.c
+> @@ -13,6 +13,7 @@
+>  #include <linux/export.h>
+>  #include <linux/io.h>
+>  #include <linux/mm.h>
+> +#include <linux/processor.h>
 >
-> Fixes: b991fc520700 ("selftests/bpf: utility function to get program disassembly after jit")
-
-The Fixes: tag names b991fc520700 ("selftests/bpf: utility function to get
-program disassembly after jit", 2024-08-21), which is the commit that
-introduced get_jited_program_text() itself. That helper was not wrong when
-written: at that time no powerpc JIT emitted a raw data word inside a
-program, and the helper is documented (jit_disasm_helpers.c:13) as serving
-small assembly test programs.
-
-The undisassemblable trailing bytes come from d243b62b7bd3 ("powerpc64/bpf:
-Add support for bpf trampolines", 2024-10-31) - the same commit both
-sibling patches in this series cite - and only become observable once
-powerpc jited selftests are enabled, which happens later in this series in
-d3841599dc7ca ("selftest/bpf: Enable verifier selftest for powerpc64").
-
-More importantly, the fix as written is only correct on top of its
-immediate parent. Truncating the last trunc_len bytes assumes
-dummy_tramp_addr is the final thing in the JITed image. That layout is
-established by the immediate parent c6ba4edfe6e46 ("powerpc/bpf: Move out
-dummy_tramp_addr after Long branch stub"), which moved the data word from
-the top of the long branch stub to its bottom:
-
-arch/powerpc/net/bpf_jit_comp.c:bpf_jit_build_fentry_stubs() {
-    ...
-    long_branch_stub_idx = ctx->idx;
-    EMIT(PPC_RAW_MFLR(_R11));
-    ...
-    EMIT(PPC_RAW_BCTR());
-
-    if (image)
-            *((unsigned long *)&image[ctx->idx]) = (unsigned long)dummy_tramp;
-
-    ctx->idx += SZL / 4;
-}
-
-On any tree that has b991fc520700 but not c6ba4edfe6e46, dummy_tramp_addr
-sits before the seven long-branch instructions, so trimming the tail
-removes two real instructions (bctr and mtlr r11 on 64-bit) while leaving
-the data word in the middle of the disassembled range - the disassembly
-failure this patch targets is not fixed, and expected __jited() output is
-silently altered.
-
-A backport driven by the stated Fixes: tag alone would therefore land a
-change that does not work. Should the tag point at the commit that
-introduced the byte pattern (d243b62b7bd3), or should the dependency on
-c6ba4edfe6e46 be stated explicitly in the changelog?
-
-> diff --git a/tools/testing/selftests/bpf/jit_disasm_helpers.c b/tools/testing/selftests/bpf/jit_disasm_helpers.c
-> index 3558fe10e28cf..c4aa1d69d3bbf 100644
-> --- a/tools/testing/selftests/bpf/jit_disasm_helpers.c
-> +++ b/tools/testing/selftests/bpf/jit_disasm_helpers.c
-
-[ ... ]
-
-> @@ -225,9 +227,30 @@ int get_jited_program_text(int fd, char *text, size_t text_sz)
->  	if (!ASSERT_OK(err, "bpf_prog_get_info_by_fd #2"))
->  		goto out;
+>  #include <asm/spu.h>
+>  #include <asm/spu_priv1.h>
+> @@ -363,12 +364,9 @@ static int __init ps3_create_spu(struct spu *spu, void *data)
+>         if (result)
+>                 goto fail_enable;
 >
-> +	/*
-> +	 * last 8 bytes contains dummy_trampoline address in JIT
-> +	 * output on 64-bit and last 4 bytes on 32-bit powerpc,
-> +	 * which can't disassemble to a valid instruction.
-> +	 */
+> -       /* Make sure the spu is in SPE_EX_STATE_EXECUTED. */
+> -
+> -       /* need something better here!!! */
+> -       while (in_be64(&spu_pdata(spu)->shadow->spe_execution_status)
+> -               != SPE_EX_STATE_EXECUTED)
+> -               (void)0;
+> +       while (in_be64(&spu_pdata(spu)->shadow->spe_execution_status) !=
+> +              SPE_EX_STATE_EXECUTED)
+> +               cpu_relax();
 
-This isn't a bug, but the comment says the trailing bytes "can't
-disassemble to a valid instruction", while the changelog for the same
-change says the opposite - "it may occasionally decode into a seemingly
-valid but incorrect instruction" - which is the case that actually
-motivates unconditional truncation rather than tolerating a disasm
-failure.
+I think we still need something better here, like proper timeout
+handling using read_poll_timeout()?
 
-The comment also names the field "dummy_trampoline", whereas the arch code
-calls the symbol "dummy_tramp" and the field "dummy_tramp_addr"
-(arch/powerpc/net/bpf_jit_comp.c:118), so grepping from the comment does
-not lead to the code.
+>
+>         return result;
 
-Separately, the second added comment, "Disabled JIT have zero func_lens,
-hence underflow", is a sentence fragment that leaves the reader to infer
-that the ternary exists to avoid a __u32 wrap when func_lens[i] is 0.
+Gr{oetje,eeting}s,
 
-Could this comment use the "dummy_tramp_addr" name from the arch code and
-describe the failure the same way the changelog does, so the two do not
-read as contradictory?
+                        Geert
 
-> +	triple = LLVMGetDefaultTargetTriple();
-> +	if (triple) {
-> +		if (strstr(triple, "powerpc64") || strstr(triple, "ppc64"))
-> +			trunc_len = 8;
-> +		else if (strstr(triple, "powerpc") || strstr(triple, "ppc"))
-> +			trunc_len = 4;
-> +		LLVMDisposeMessage(triple);
-> +	}
-> +
->  	for (pc = 0, i = 0; i < jited_funcs; ++i) {
-> +
->  		fprintf(text_out, "func #%d:\n", i);
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-[ ... ]
-
-> +
->  		fprintf(text_out, "\n");
->  		pc += func_lens[i];
->  	}
-
-This isn't a bug, but two blank lines are added inside the loop body that
-are unrelated to the fix: one immediately after the "for (...) {" opening
-brace, and one between the disasm_one_func() call and the following
-fprintf(). Neither separates logical blocks - the loop body is six lines -
-and no other loop in this file opens with a blank line (compare the two
-"while (pc < len)" loops in disasm_one_func(), which start directly with
-their first statement).
-
-Are the two new blank lines inside this loop intentional, or could the
-hunk stay limited to the truncation change?
-
-> selftest/bpf: Fixing powerpc JIT disassembly failure
-
-This isn't a bug, but the subject uses the prefix "selftest/bpf:"
-(singular) where the tree's overwhelmingly dominant prefix for this
-directory is "selftests/bpf:" - 1272 commits versus 10 in recent history.
-The subject also uses the gerund "Fixing" rather than the imperative mood
-the submitting-patches guidance asks for ("Fix ..." / "Skip ...").
-
-Would "selftests/bpf: Skip trailing trampoline address bytes when
-disassembling" fit the usual prefix and imperative style for this
-directory better?
-
-
----
-AI reviewed your patch. Please fix the bug or email reply why it's not a bug.
-See: https://github.com/kernel-patches/vmtest/blob/master/ci/claude/README.md
-
-CI run summary: https://github.com/kernel-patches/bpf/actions/runs/30981212698
---===============6287462164471471335==--
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
 
