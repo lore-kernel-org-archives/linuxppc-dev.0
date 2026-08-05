@@ -1,77 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-25429-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25430-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BCEE4C55ABA
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2026 11:09:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 52FA6C55ABA
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2026 11:09:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hFSNc4Cdzz2ypY;
-	Wed, 05 Aug 2026 21:09:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hFSNh0zSyz30C6;
+	Wed, 05 Aug 2026 21:09:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785928176;
-	cv=none; b=c0KbeuiaWRhRx7NIY3AiNOEEjd90peqheQixVl3Y9Slaoh8Qg7WZUv4bBGOOtNRynS+wg8THVpeRmzVIKsuAN5cyzOaw8sD7cRcoRMmildyU+kpYyht0MRx5/0DyoN6DT9ZhMHQURxc+e8ecEJ+xkHaklm76RL/C+JnMje5GMKUCx9BLV9HmLXZ9jqHv0qQ5hLLha0RD8CN0Qc2K6f8q4Hk8U5YKLJLYT0klSnu5aAJp0xmdtPMGl7gFb2N8w/r+U80d1k0kTiyRZ570UqMa5bee4lFQaZLIhozcJmn2uPt0siOkUshU50iYqc3UIIDRlXVlRdQ7HRjeC33JdFxwAg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785928180;
+	cv=none; b=Pm5gFnBG9Q9j/25q5aGLNMv4ouIZrcQYoGSIckYA3macUI5JNOTCpd/VW7bWcmguKGCxyA+8dpZT+vBaRmgeZMhRk7bl/HKSLRhhsVf6HTBxpTHMU5+SrOGFPCZN4Bddh5Ax3KpcIVDDmunz9loYyQNohFZKQAQiXQWNfSlahDFdCqKH3buh4jbduzDXpl0hcjjFQnOiTMVQTRqbjTaGMzZriR5zMUW557NGyL/Cik3vcEmaYC13JgcFJPrqiKxUU6Nbzg1ubZlE6T3py8bQCNyOVMh1zKHo7HTqRJZn1j168hFnzwSEyJq2wqrGYP3n1+H8qtMhvwzvQGNTSiRqgA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785928176; c=relaxed/relaxed;
-	bh=DJI7wD3CmL6wAXlZ/5HMDqLE8HACUaDnXZLt/VaI2vI=;
+	t=1785928180; c=relaxed/relaxed;
+	bh=+MnpGYSOSXicqNEeSYr43HDo31pYKAcYA/03YxR1dt4=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=D896wioMo4VUXwIo+nkVuijMCkyGbZjpkb2a91gcIm0GA7qyGBD3WmVGwThsmXupF4NaPlT4f685LY5+QmH/FsScN2GIoRnNLiIolM0J+GdfbFe6kfiBgr58fn2ucDM6yKGrFJTGUGXreIUbkTQf8FpVAIFIn6yzBeThSuuB5/iKNGLSfjqIZSSLD4aKulvsznMYlCBr0QsarVSzU15V3cJfIulGbeHLlrMBlIG7atU1SywYol1aWFkslG6f5JJx61/GWiPNIroYTFK1VLIkLIm/n/XduhIEc35kV92mY1Eld5NIhcKMtY4sh1ZFas//J2AxS5gKGz/OUbbfQFlUng==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tOiZN7Jd; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mahesh@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 MIME-Version; b=HVmQ6nzcci+4HGnjeqJ3qIcrfdWC176kxVWxRojplfL3tKPSg0zz48pQjxfquL+tskyMGz08wAGh5S9F1Tq1hzQYKJLefR8WzIpHU7MyD5zR5KNqr3uXGwSCTjzxPaHk4wbAloRhur2pBU04VEZKA9ph+9k0PObLAIR9dfsZFGv731QohWdRRPF/VeIztRBN/KeBngaTjGSXpBww7rdLZWGAlG2bADGELZvNk7n8cpiQtubb01cbOAQmjDXcvChU4Xg1cHldRRSS0y5NWKtyJZUAK+7bdnGkgMuOvsV+UBj6XcCsHDJ/7MKWWepdC/t2rMFtk5q4VPeC1fVyRPMkVQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=O4xQi+4r; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mahesh@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tOiZN7Jd;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=O4xQi+4r;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mahesh@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hFSNb42n8z2yMl
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Aug 2026 21:09:35 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6758lmov1503319
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Aug 2026 11:09:33 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hFSNg0vcwz2yMl
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Aug 2026 21:09:38 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6758ldi73387329
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Aug 2026 11:09:37 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=DJI7wD3CmL6wAXlZ/
-	5HMDqLE8HACUaDnXZLt/VaI2vI=; b=tOiZN7JdEgLQwzeFiCDl/9lj6UAlydGDl
-	DDqLCF1TCxZnJXAycJOG4r9zLsrXa9N6ctMXIhtz2ytUe9AZMs8P+SohEXQ24sdA
-	+dGGt4y9tk9ZNR9NvipNvvy2Km1T9rIPDXoM2UZXCDAKqNXGu/DGX3dCXJYk1zuc
-	DFxuJh0Si/o6z2fUwndLRxMLHfo4T9QoB0mzrZzhqIFhtOk6Iz6/cv1d+U6fZsHN
-	MvzQF7vtNSvQWlIdh98rLqpS6MdcJ5HbONh5OHFSgAKsSTKQKbNIU5dF1StoPDQQ
-	0O90p3wR3b4OVao2oQRs5WRhknWgGtxCEwyTR+OZb0NwNMgOcJqlQ==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fs8fqtkd5-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Aug 2026 11:09:33 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 675AuFjF020925
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Aug 2026 11:09:32 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fsu4qpby8-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Aug 2026 11:09:32 +0000 (GMT)
+	:mime-version:references:subject:to; s=pp1; bh=+MnpGYSOSXicqNEeS
+	Yr43HDo31pYKAcYA/03YxR1dt4=; b=O4xQi+4rVZmrG4SvipHaWarp5dQ3YPaid
+	1HtypaOR01jEfsywcEferMqqSB9G8Bret+fxuPx2UxwfjkEYfGQiWZIUobhiCGU0
+	ejb8j9ibY4pLjqOlW86aTb3G4ixKU+eDvxavyACaNZBgTD3JjXj3ONsFknWUxH/h
+	KdVwkWvUbCXTXfa/ltN7W7JcyLxpb7bFsvBePqzdLmRTn8NqXw7HE5GYmNg8rimq
+	/HgAjSKrpSzTCzV1bLFlWwkjKoCMStwHhBcWMhKWg5OK7TzFvCLcV1SAlVmjUGf9
+	lNoO5/8dlCYQfkQ6ljCE339Gfqd+eeSbQZ8kFC6J6NFbp8gk5wuhw==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fs8h52p73-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 05 Aug 2026 11:09:36 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 675AfU7O006268;
+	Wed, 5 Aug 2026 11:09:35 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4fsv4k6786-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 05 Aug 2026 11:09:35 +0000 (GMT)
 Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 675B9S9f27394472
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 675B9VFG49414414
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 5 Aug 2026 11:09:28 GMT
+	Wed, 5 Aug 2026 11:09:31 GMT
 Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B070D20040;
-	Wed,  5 Aug 2026 11:09:28 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 80A592004E;
+	Wed,  5 Aug 2026 11:09:31 +0000 (GMT)
 Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 96E022005A;
-	Wed,  5 Aug 2026 11:09:27 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 3815E20040;
+	Wed,  5 Aug 2026 11:09:29 +0000 (GMT)
 Received: from jupiter.ibm.com (unknown [9.39.28.36])
 	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed,  5 Aug 2026 11:09:27 +0000 (GMT)
+	Wed,  5 Aug 2026 11:09:28 +0000 (GMT)
 From: Mahesh Salgaonkar <mahesh@linux.ibm.com>
 To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Praveen K Pandey <praveen@linux.ibm.com>
-Subject: [PATCH v3 1/4] powerpc/pseries: Limit PVR list to 16 entries for CAS negotiation
-Date: Wed,  5 Aug 2026 16:39:21 +0530
-Message-ID: <20260805110924.3853410-2-mahesh@linux.ibm.com>
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+        Praveen K Pandey <praveen@linux.ibm.com>,
+        Nikhil Kumar Singh <nikhilks@linux.ibm.com>,
+        Amit Machhiwal <amachhiw@linux.ibm.com>
+Subject: [PATCH v3 2/4] powerpc: Add Power12 raw mode
+Date: Wed,  5 Aug 2026 16:39:22 +0530
+Message-ID: <20260805110924.3853410-3-mahesh@linux.ibm.com>
 X-Mailer: git-send-email 2.55.0
 In-Reply-To: <20260805110924.3853410-1-mahesh@linux.ibm.com>
 References: <20260805110924.3853410-1-mahesh@linux.ibm.com>
@@ -90,137 +94,470 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: nIUYolAGibiduKikQG8XhynWC4wJ0gXR
-X-Proofpoint-ORIG-GUID: nIUYolAGibiduKikQG8XhynWC4wJ0gXR
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODA1MDA4NiBTYWx0ZWRfX4hewRaRrbpzb
- YzvclcKVf+y6PwJew5xWu+3O/v/z0lpM/3t8kTYMbyJjKEL7U8n3BY6r76tyYPPnz9zgRKROOq7
- hhp3WFG5bZ0vR2S7vgZQ1Sewd0B+WwU=
-X-Authority-Analysis: v=2.4 cv=K8cS2SWI c=1 sm=1 tr=0 ts=6a7319ed cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODA1MDA4NiBTYWx0ZWRfXyxfCkeXvmlL8
+ FZByZ+JsUk2u136/TYwU1CJjkNuXaD8hzqxCB/cqUAVz4OPy42o8hgzptCXT2lbTMxu5PB7JKOJ
+ JNB63+5L17HAs9ZdeYItAAWWF2ateV8=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODA1MDA4NiBTYWx0ZWRfXxmdlfOTRxxSf
+ TTRyVYMGHjrA9O4SFzpYsdm+J798p3ka6yySkngX1VgQSfuiLEBObb3MuadfJc7NhzdFaAyKbeX
+ AAmebfw8PKUmDN8tfPs1JUdRr+LQzu1h6roqs3oW/8e24Okr2t9vMO83EOa2lNGx+549QtnztR7
+ Lg6m18AbItKY7nkD+Vu7N6iFZUBmKm2I2EwVVe4qvB92/Msan3yAEIQdjlcSaSavCY7iyeOow94
+ xJuXBY2Hj359V91JAQ5Wo43Ibn9UvKvhDySt+71ZqNF9kt3TwXX03y3eANuwIatA7oij9JdCyMa
+ XKc6n+K3mSwqnHVGe5LDtod7zrRLAHKByRrhy5AxqzVcbt79nGslMGpTecihFYrXce5QKeoGQBC
+ scUBfNymkuVT/q9sbArxQtnJPaAm0enIsjQsMa1kp+BGdektp7Hk3NbN7IlMfd+VAIp9I/C4Fkd
+ yj+X/hr0+am9cRHcGsg==
+X-Authority-Analysis: v=2.4 cv=SI1ykuvH c=1 sm=1 tr=0 ts=6a7319f1 cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
  a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=uAbxVGIbfxUO_5tXvNgY:22 a=VnNF1IyMAAAA:8 a=Ae8wxykVshGZFWyNThcA:9
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODA1MDA4NiBTYWx0ZWRfXzEXsrksqb8iI
- 9DnQkRxd4bxYRXqYGLuNrrAy4gGXdOExjHcdIYuZM4cwepaEmKvHBntZ9LeDEPE332z2o0D2m+6
- H8Az7tKGHItkinqqsYPFPBbXkKd2Xo3751RzipXuca2wQCdmtzYrcnzhMPiY/YxyQSECFXRqkTG
- mMifzmE2Xt8Dn2Y8e7uD+nywmxqh5HRyJxc5IGB8PHKErP21oUFfreJZHnB4AY+JmQdEVExj/et
- 1OLD/L5vv6JNJxt6f4mwRyQA1Z5VjF5yuxT2Va+GMmHR4Nr3j8rkC3MfwOabPIdHv9xtAKHtzeQ
- iNZy077f47sWv2iNsdBY6j2yThi/tRu1Wcsq2C5zxuP0UdvRBluvN1K+YKlc038Mx67LgnVBpyt
- TLA0mlKvsy3DkBnUtHSQAMwX4B88lx4ThtkB82FuMkB6wAj/LTm9XxSGsmdoovDusyAzTOM1tIQ
- HU/gHxix9ZfLqmZ1R7A==
+ a=U7nrCbtTmkRpXpFmAIza:22 a=pGLkceISAAAA:8 a=VnNF1IyMAAAA:8
+ a=M-W3f8DC5bqc30M1Q3YA:9
+X-Proofpoint-ORIG-GUID: jCeguYdlol1aNkaFZbgFmCrLdcJNxNnV
+X-Proofpoint-GUID: 4yywhPvIYSqSzsFtzTFjqxsRPdmuBUOd
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-08-05_03,2026-08-04_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 spamscore=0 impostorscore=0 bulkscore=0 priorityscore=1501
- lowpriorityscore=0 malwarescore=0 phishscore=0 suspectscore=0 adultscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608050086
+ clxscore=1015 bulkscore=0 suspectscore=0 impostorscore=0 spamscore=0
+ phishscore=0 priorityscore=1501 lowpriorityscore=0 adultscore=0
+ malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
+ definitions=main-2608050086
 
-Current Power system firmware caps the PVR list array size at 16 entries
-during CAS (Client Architecture Support) negotiation. Passing more than
-capped size to older firmware could cause an undefined behaviour and
-breaks compatibility.
+From: Nicholas Piggin <npiggin@gmail.com>
 
-Future Power system firmware releases will lift this restriction and
-support greater than 16 array entries.
+Add CPU table entries for raw mode.
 
-Ensure that when running on Power11 or below hardware, the number
-of PVR entries passed during CAS negotiation does not exceed the
-firmware-imposed limit of 16.
-
-In prom_send_capabilities(), compute start_index to skip the oldest
-leading pvrs[] entries when running on Power11 or below hardware, so
-that the pointer passed to ibm,client-architecture-support points to
-ibm_architecture_vec.pvrs[start_index], presenting exactly 16 entries to
-firmware.
-
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 Signed-off-by: Mahesh Salgaonkar <mahesh@linux.ibm.com>
 Tested-by: Praveen K Pandey <praveen@linux.ibm.com>
+Reviewed-by: Nikhil Kumar Singh <nikhilks@linux.ibm.com>
+Reviewed-by: Amit Machhiwal <amachhiw@linux.ibm.com>
 ---
-Change in v3:
-- Remove unintentional whitespace change.
-
 Change in v2:
-- Define a named macro CAS_MAX_PVR_ENTRIES
+- Added Reviewed-by from Nikhil
 ---
- arch/powerpc/kernel/prom_init.c | 34 +++++++++++++++++++++++++++------
- 1 file changed, 28 insertions(+), 6 deletions(-)
+ arch/powerpc/include/asm/cpu_setup.h      |  2 ++
+ arch/powerpc/include/asm/cputable.h       | 17 +++++++--
+ arch/powerpc/include/asm/mmu.h            |  1 +
+ arch/powerpc/include/asm/reg.h            |  5 ++-
+ arch/powerpc/include/asm/synch.h          |  6 +++-
+ arch/powerpc/include/uapi/asm/cputable.h  |  1 +
+ arch/powerpc/kernel/cpu_setup_power.c     | 43 +++++++++++++++++++++++
+ arch/powerpc/kernel/cpu_specs_book3s_64.h | 22 ++++++++++++
+ arch/powerpc/kernel/dt_cpu_ftrs.c         | 37 +++++++++++++++++++
+ arch/powerpc/kernel/setup-common.c        |  1 +
+ arch/powerpc/kvm/book3s_hv.c              |  9 +++--
+ arch/powerpc/mm/book3s64/hash_native.c    | 22 ++++++++----
+ arch/powerpc/mm/init_64.c                 |  4 ++-
+ 13 files changed, 157 insertions(+), 13 deletions(-)
 
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index 53503937de0ee..055cb5f2d37f9 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -86,6 +86,12 @@
-  */
- #define ADDR(x)		(u32)(unsigned long)(x)
+diff --git a/arch/powerpc/include/asm/cpu_setup.h b/arch/powerpc/include/asm/cpu_setup.h
+index 30e2fe3895024..26d2c0e2c99c6 100644
+--- a/arch/powerpc/include/asm/cpu_setup.h
++++ b/arch/powerpc/include/asm/cpu_setup.h
+@@ -9,10 +9,12 @@ void __setup_cpu_power7(unsigned long offset, struct cpu_spec *spec);
+ void __setup_cpu_power8(unsigned long offset, struct cpu_spec *spec);
+ void __setup_cpu_power9(unsigned long offset, struct cpu_spec *spec);
+ void __setup_cpu_power10(unsigned long offset, struct cpu_spec *spec);
++void __setup_cpu_power12(unsigned long offset, struct cpu_spec *spec);
+ void __restore_cpu_power7(void);
+ void __restore_cpu_power8(void);
+ void __restore_cpu_power9(void);
+ void __restore_cpu_power10(void);
++void __restore_cpu_power12(void);
  
-+/*
-+ * Current Power system firmware caps the PVR list array size at 16 entries
-+ * during CAS (Client Architecture Support) negotiation.
-+ */
-+#define CAS_MAX_PVR_ENTRIES	16
+ void __setup_cpu_e500v1(unsigned long offset, struct cpu_spec *spec);
+ void __setup_cpu_e500v2(unsigned long offset, struct cpu_spec *spec);
+diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+index ec16c12296da8..a3be81c47df3a 100644
+--- a/arch/powerpc/include/asm/cputable.h
++++ b/arch/powerpc/include/asm/cputable.h
+@@ -194,6 +194,7 @@ static inline void cpu_feature_keys_init(void) { }
+ #define CPU_FTR_DAWR1			LONG_ASM_CONST(0x0008000000000000)
+ #define CPU_FTR_DEXCR_NPHIE		LONG_ASM_CONST(0x0010000000000000)
+ #define CPU_FTR_P11_PVR			LONG_ASM_CONST(0x0020000000000000)
++#define CPU_FTR_ARCH_32			LONG_ASM_CONST(0x0040000000000000)
+ 
+ #ifndef __ASSEMBLER__
+ 
+@@ -457,6 +458,18 @@ static inline void cpu_feature_keys_init(void) { }
+ 
+ #define CPU_FTRS_POWER11	(CPU_FTRS_POWER10 | CPU_FTR_P11_PVR)
+ 
++#define CPU_FTRS_POWER12 (CPU_FTR_LWSYNC | \
++	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | CPU_FTR_ARCH_206 |\
++	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
++	    CPU_FTR_COHERENT_ICACHE | \
++	    CPU_FTR_PURR | CPU_FTR_SPURR | CPU_FTR_REAL_LE | \
++	    CPU_FTR_DSCR | \
++	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_POPCNTD | \
++	    CPU_FTR_CFAR | CPU_FTR_HVMODE | CPU_FTR_VMX_COPY | \
++	    CPU_FTR_DBELL | CPU_FTR_HAS_PPR | CPU_FTR_ARCH_207S | \
++	    CPU_FTR_ARCH_300 | CPU_FTR_ARCH_31 | CPU_FTR_ARCH_32 | \
++	    CPU_FTR_DAWR | CPU_FTR_DAWR1)
 +
- #ifdef CONFIG_PPC64
- #define OF_WORKAROUNDS	0
+ #define CPU_FTRS_CELL	(CPU_FTR_LWSYNC | \
+ 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+ 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
+@@ -476,7 +489,7 @@ static inline void cpu_feature_keys_init(void) { }
+ 	    (CPU_FTRS_POWER7 | CPU_FTRS_POWER8E | CPU_FTRS_POWER8 | \
+ 	     CPU_FTR_ALTIVEC_COMP | CPU_FTR_VSX_COMP | CPU_FTRS_POWER9 | \
+ 	     CPU_FTRS_POWER9_DD2_1 | CPU_FTRS_POWER9_DD2_2 | \
+-	     CPU_FTRS_POWER9_DD2_3 | CPU_FTRS_POWER10 | CPU_FTRS_POWER11)
++	     CPU_FTRS_POWER9_DD2_3 | CPU_FTRS_POWER10 | CPU_FTRS_POWER11 | CPU_FTRS_POWER12)
  #else
-@@ -979,6 +985,10 @@ static const struct ibm_arch_vec ibm_architecture_vec_template __initconst = {
- 			.mask = cpu_to_be32(0xfffe0000), /* POWER5/POWER5+ */
- 			.val  = cpu_to_be32(0x003a0000),
- 		},
-+		{
-+			.mask = cpu_to_be32(0xffffffff), /* all 2.04-compliant and earlier */
-+			.val  = cpu_to_be32(0x0f000001),
-+		},
- 		{
- 			.mask = cpu_to_be32(0xffff0000), /* POWER6 */
- 			.val  = cpu_to_be32(0x003e0000),
-@@ -1032,13 +1042,9 @@ static const struct ibm_arch_vec ibm_architecture_vec_template __initconst = {
- 			.val  = cpu_to_be32(0x0f000003),
- 		},
- 		{
--			.mask = cpu_to_be32(0xffffffff), /* all 2.05-compliant */
-+			.mask = cpu_to_be32(0xfffffffd), /* all 2.05-compliant */
- 			.val  = cpu_to_be32(0x0f000002),
- 		},
--		{
--			.mask = cpu_to_be32(0xfffffffe), /* all 2.04-compliant and earlier */
--			.val  = cpu_to_be32(0x0f000001),
--		},
- 	},
+ #define CPU_FTRS_POSSIBLE	\
+ 	    (CPU_FTRS_PPC970 | CPU_FTRS_POWER5 | \
+@@ -484,7 +497,7 @@ static inline void cpu_feature_keys_init(void) { }
+ 	     CPU_FTRS_POWER8 | CPU_FTRS_CELL | CPU_FTRS_PA6T | \
+ 	     CPU_FTR_VSX_COMP | CPU_FTR_ALTIVEC_COMP | CPU_FTRS_POWER9 | \
+ 	     CPU_FTRS_POWER9_DD2_1 | CPU_FTRS_POWER9_DD2_2 | \
+-	     CPU_FTRS_POWER9_DD2_3 | CPU_FTRS_POWER10 | CPU_FTRS_POWER11)
++	     CPU_FTRS_POWER9_DD2_3 | CPU_FTRS_POWER10 | CPU_FTRS_POWER11 | CPU_FTRS_POWER12)
+ #endif /* CONFIG_CPU_LITTLE_ENDIAN */
+ #endif
+ #else
+diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
+index 5f9c5d436e171..4fd7f81a29304 100644
+--- a/arch/powerpc/include/asm/mmu.h
++++ b/arch/powerpc/include/asm/mmu.h
+@@ -133,6 +133,7 @@
+ #define MMU_FTRS_POWER9		MMU_FTRS_POWER6
+ #define MMU_FTRS_POWER10	MMU_FTRS_POWER6
+ #define MMU_FTRS_POWER11	MMU_FTRS_POWER6
++#define MMU_FTRS_POWER12	MMU_FTRS_POWER6
+ #define MMU_FTRS_CELL		MMU_FTRS_DEFAULT_HPTE_ARCH_V2 | \
+ 				MMU_FTR_CI_LARGE_PAGE
+ #define MMU_FTRS_PA6T		MMU_FTRS_DEFAULT_HPTE_ARCH_V2 | \
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index 3449dd2b577d4..4460b666c603e 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -492,11 +492,12 @@
+  * determine both the compatibility level which we want to emulate and the
+  * compatibility level which the host is capable of emulating.
+  */
++#define   PCR_ARCH_31   0x20		/* Architecture 3.1 */
+ #define   PCR_ARCH_300	0x10		/* Architecture 3.00 */
+ #define   PCR_ARCH_207	0x8		/* Architecture 2.07 */
+ #define   PCR_ARCH_206	0x4		/* Architecture 2.06 */
+ #define   PCR_ARCH_205	0x2		/* Architecture 2.05 */
+-#define   PCR_LOW_BITS	(PCR_ARCH_207 | PCR_ARCH_206 | PCR_ARCH_205 | PCR_ARCH_300)
++#define   PCR_LOW_BITS	(PCR_ARCH_207 | PCR_ARCH_206 | PCR_ARCH_205 | PCR_ARCH_300 | PCR_ARCH_31)
+ #define   PCR_MASK	~(PCR_HIGH_BITS | PCR_LOW_BITS)	/* PCR Reserved Bits */
+ #define	SPRN_HEIR	0x153	/* Hypervisor Emulated Instruction Register */
+ #define SPRN_TLBINDEXR	0x154	/* P7 TLB control register */
+@@ -1344,6 +1345,7 @@
+ #define PVR_POWER9	0x004E
+ #define PVR_POWER10	0x0080
+ #define PVR_POWER11	0x0082
++#define PVR_POWER12	0x0083
+ #define PVR_BE		0x0070
+ #define PVR_PA6T	0x0090
  
- 	.num_vectors = NUM_VECTORS(6),
-@@ -1403,6 +1409,22 @@ static void __init prom_send_capabilities(void)
- 	ihandle root;
- 	prom_arg_t ret;
- 	u32 cores;
-+	int start_index = 0;
-+
-+	/*
-+	 * Ensure that when running on Power11 or below hardware, the number
-+	 * of PVR entries passed during CAS negotiation does not exceed the
-+	 * firmware-imposed limit of 16.
+@@ -1356,6 +1358,7 @@
+ #define PVR_ARCH_300	0x0f000005
+ #define PVR_ARCH_31	0x0f000006
+ #define PVR_ARCH_31_P11	0x0f000007
++#define PVR_ARCH_32	0x0f000008
+ 
+ /* Macros for setting and retrieving special purpose registers */
+ #ifndef __ASSEMBLER__
+diff --git a/arch/powerpc/include/asm/synch.h b/arch/powerpc/include/asm/synch.h
+index 0d3ccb34adfb2..d0e9765dee287 100644
+--- a/arch/powerpc/include/asm/synch.h
++++ b/arch/powerpc/include/asm/synch.h
+@@ -37,8 +37,12 @@ static inline void ppc_after_tlbiel_barrier(void)
+ 	 * accelerators mapped will use tlbie (which does invalidate the copy)
+ 	 * to invalidate translations. It's not possible to limit POWER10 this
+ 	 * way due to local copy-paste.
 +	 *
-+	 * Compute the start_index to skip the oldest leading pvrs[] entries
-+	 * when running on Power11 or below hardware, so that the pointer
-+	 * passed to ibm,client-architecture-support points to
-+	 * ibm_architecture_vec.pvrs[start_index], presenting exactly 16
-+	 * entries to firmware.
-+	 */
-+	if ((ARRAY_SIZE(ibm_architecture_vec_template.pvrs) > CAS_MAX_PVR_ENTRIES) &&
-+	    (PVR_VER(mfspr(SPRN_PVR)) <= PVR_POWER11))
-+		start_index = ARRAY_SIZE(ibm_architecture_vec_template.pvrs) - CAS_MAX_PVR_ENTRIES;
++	 * POWER12 does not need it.
+ 	 */
+-	asm volatile(ASM_FTR_IFSET(PPC_CP_ABORT, "", %0) : : "i" (CPU_FTR_ARCH_31) : "memory");
++	asm volatile(ASM_FTR_IF(PPC_CP_ABORT, "", %0, %1) :
++		: "i" (CPU_FTR_ARCH_31|CPU_FTR_ARCH_32), "i" (CPU_FTR_ARCH_31)
++		: "memory");
+ }
+ #endif /* __ASSEMBLER__ */
  
- 	/* Check ibm,arch-vec-5-platform-support and fixup vec5 if required */
- 	prom_check_platform_support();
-@@ -1427,7 +1449,7 @@ static void __init prom_send_capabilities(void)
- 		if (call_prom_ret("call-method", 3, 2, &ret,
- 				  ADDR("ibm,client-architecture-support"),
- 				  root,
--				  ADDR(&ibm_architecture_vec)) == 0) {
-+				  ADDR(&ibm_architecture_vec.pvrs[start_index])) == 0) {
- 			/* the call exists... */
- 			if (ret)
- 				prom_printf("\nWARNING: ibm,client-architecture"
+diff --git a/arch/powerpc/include/uapi/asm/cputable.h b/arch/powerpc/include/uapi/asm/cputable.h
+index 731b97dc2d150..bc9bd225f5876 100644
+--- a/arch/powerpc/include/uapi/asm/cputable.h
++++ b/arch/powerpc/include/uapi/asm/cputable.h
+@@ -52,6 +52,7 @@
+ #define PPC_FEATURE2_HTM_NO_SUSPEND	0x00080000 /* TM w/out suspended state */
+ #define PPC_FEATURE2_ARCH_3_1		0x00040000 /* ISA 3.1 */
+ #define PPC_FEATURE2_MMA		0x00020000 /* Matrix Multiply Assist */
++#define PPC_FEATURE2_ARCH_3_2		0x00010000 /* ISA 3.2 */
+ 
+ /*
+  * IMPORTANT!
+diff --git a/arch/powerpc/kernel/cpu_setup_power.c b/arch/powerpc/kernel/cpu_setup_power.c
+index 98bd4e6c17705..5de704ac031d8 100644
+--- a/arch/powerpc/kernel/cpu_setup_power.c
++++ b/arch/powerpc/kernel/cpu_setup_power.c
+@@ -286,3 +286,46 @@ void __restore_cpu_power10(void)
+ 	init_HFSCR();
+ 	init_PMU_HV();
+ }
++
++void __setup_cpu_power12(unsigned long offset, struct cpu_spec *t)
++{
++	init_FSCR_power10();
++	init_PMU();
++	init_PMU_ISA31();
++
++	if (!init_hvmode_206(t))
++		return;
++
++	mtspr(SPRN_PSSCR, 0);
++	mtspr(SPRN_LPID, 0);
++	mtspr(SPRN_PID, 0);
++	mtspr(SPRN_AMOR, ~0);
++	mtspr(SPRN_PCR, PCR_MASK);
++	init_LPCR_ISA300((mfspr(SPRN_LPCR) | LPCR_PECEDH | LPCR_PECE_HVEE |\
++			 LPCR_HVICE | LPCR_HEIC) & ~(LPCR_UPRT | LPCR_HR), 0);
++	init_HFSCR();
++	init_PMU_HV();
++}
++
++void __restore_cpu_power12(void)
++{
++	u64 msr;
++
++	init_FSCR_power10();
++	init_PMU();
++	init_PMU_ISA31();
++
++	msr = mfmsr();
++	if (!(msr & MSR_HV))
++		return;
++
++	mtspr(SPRN_PSSCR, 0);
++	mtspr(SPRN_LPID, 0);
++	mtspr(SPRN_PID, 0);
++	mtspr(SPRN_AMOR, ~0);
++	mtspr(SPRN_PCR, PCR_MASK);
++	init_LPCR_ISA300((mfspr(SPRN_LPCR) | LPCR_PECEDH | LPCR_PECE_HVEE |\
++			 LPCR_HVICE | LPCR_HEIC) & ~(LPCR_UPRT | LPCR_HR), 0);
++	init_HFSCR();
++	init_PMU_HV();
++}
+diff --git a/arch/powerpc/kernel/cpu_specs_book3s_64.h b/arch/powerpc/kernel/cpu_specs_book3s_64.h
+index 98d4274a1b6bf..7619dd157646f 100644
+--- a/arch/powerpc/kernel/cpu_specs_book3s_64.h
++++ b/arch/powerpc/kernel/cpu_specs_book3s_64.h
+@@ -63,6 +63,11 @@
+ #define COMMON_USER_POWER11	COMMON_USER_POWER10
+ #define COMMON_USER2_POWER11	COMMON_USER2_POWER10
+ 
++#define COMMON_USER_POWER12	COMMON_USER_POWER10
++#define COMMON_USER2_POWER12	(COMMON_USER2_POWER10 | \
++				 PPC_FEATURE2_ARCH_3_2)
++
++
+ static struct cpu_spec cpu_specs[] __initdata = {
+ 	{	/* PPC970 */
+ 		.pvr_mask		= 0xffff0000,
+@@ -485,6 +490,23 @@ static struct cpu_spec cpu_specs[] __initdata = {
+ 		.machine_check_early	= __machine_check_early_realmode_p10,
+ 		.platform		= "power11",
+ 	},
++	{	/* Power12 */
++		.pvr_mask		= 0xffff0000,
++		.pvr_value		= 0x00830000,
++		.cpu_name		= "Power12 (raw)",
++		.cpu_features		= CPU_FTRS_POWER12,
++		.cpu_user_features	= COMMON_USER_POWER12,
++		.cpu_user_features2	= COMMON_USER2_POWER12,
++		.mmu_features		= MMU_FTRS_POWER12,
++		.icache_bsize		= 128,
++		.dcache_bsize		= 128,
++		.num_pmcs		= 6,
++		.pmc_type		= PPC_PMC_IBM,
++		.cpu_setup		= __setup_cpu_power12,
++		.cpu_restore		= __restore_cpu_power12,
++		.machine_check_early	= __machine_check_early_realmode_p10,
++		.platform		= "power12",
++	},
+ 	{	/* Cell Broadband Engine */
+ 		.pvr_mask		= 0xffff0000,
+ 		.pvr_value		= 0x00700000,
+diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
+index e5853daa6a486..b369e8cda12ee 100644
+--- a/arch/powerpc/kernel/dt_cpu_ftrs.c
++++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
+@@ -26,6 +26,7 @@
+ /* Device-tree visible constants follow */
+ #define ISA_V3_0B       3000
+ #define ISA_V3_1        3100
++#define ISA_V3_2        3200
+ 
+ #define USABLE_PR               (1U << 0)
+ #define USABLE_OS               (1U << 1)
+@@ -466,6 +467,35 @@ static int __init feat_enable_mce_power11(struct dt_cpu_feature *f)
+ 	return 1;
+ }
+ 
++static void init_pmu_power12(void)
++{
++	init_pmu_power10();
++}
++
++static int __init feat_enable_pmu_power12(struct dt_cpu_feature *f)
++{
++	hfscr_pmu_enable();
++
++	init_pmu_power12();
++	init_pmu_registers = init_pmu_power12;
++
++	cur_cpu_spec->cpu_features |= CPU_FTR_MMCRA;
++	cur_cpu_spec->cpu_user_features |= PPC_FEATURE_PSERIES_PERFMON_COMPAT;
++
++	cur_cpu_spec->num_pmcs          = 6;
++	cur_cpu_spec->pmc_type          = PPC_PMC_IBM;
++
++	return 1;
++}
++
++static int __init feat_enable_mce_power12(struct dt_cpu_feature *f)
++{
++	cur_cpu_spec->platform = "power12";
++	cur_cpu_spec->machine_check_early = __machine_check_early_realmode_p10;
++
++	return 1;
++}
++
+ static int __init feat_enable_tm(struct dt_cpu_feature *f)
+ {
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+@@ -657,9 +687,11 @@ static struct dt_cpu_feature_match __initdata
+ 	{"machine-check-power9", feat_enable_mce_power9, 0},
+ 	{"machine-check-power10", feat_enable_mce_power10, 0},
+ 	{"machine-check-power11", feat_enable_mce_power11, 0},
++	{"machine-check-power12", feat_enable_mce_power12, 0},
+ 	{"performance-monitor-power9", feat_enable_pmu_power9, 0},
+ 	{"performance-monitor-power10", feat_enable_pmu_power10, 0},
+ 	{"performance-monitor-power11", feat_enable_pmu_power10, 0},
++	{"performance-monitor-power12", feat_enable_pmu_power12, 0},
+ 	{"event-based-branch-v3", feat_enable, 0},
+ 	{"random-number-generator", feat_enable, 0},
+ 	{"system-call-vectored", feat_disable, 0},
+@@ -714,6 +746,11 @@ static void __init cpufeatures_setup_start(u32 isa)
+ 		if (PVR_VER(mfspr(SPRN_PVR)) >= PVR_POWER11)
+ 			cur_cpu_spec->cpu_features |= CPU_FTR_P11_PVR;
+ 	}
++
++	if (isa >= ISA_V3_2) {
++		cur_cpu_spec->cpu_features |= CPU_FTR_ARCH_32;
++		cur_cpu_spec->cpu_user_features2 |= PPC_FEATURE2_ARCH_3_2;
++	}
+ }
+ 
+ static bool __init cpufeatures_process_feature(struct dt_cpu_feature *f)
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index 67c545f61f0d7..4afaba19b5867 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -304,6 +304,7 @@ static int show_cpuinfo(struct seq_file *m, void *v)
+ 				break;
+ 			case 0x004e: /* POWER9 bits 12-15 give chip type */
+ 			case 0x0080: /* POWER10 bit 12 gives SMT8/4 */
++			case 0x0083: /* POWER12 bit 12 gives SMT8/4 */
+ 				maj = (pvr >> 8) & 0x0F;
+ 				min = pvr & 0xFF;
+ 				break;
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index 61dbeea317f3b..6ad4e3d0b5a08 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -388,7 +388,7 @@ static void kvmppc_set_pvr_hv(struct kvm_vcpu *vcpu, u32 pvr)
+ }
+ 
+ /* Dummy value used in computing PCR value below */
+-#define PCR_ARCH_31    (PCR_ARCH_300 << 1)
++#define PCR_ARCH_32	(PCR_ARCH_31 << 1)
+ 
+ static inline unsigned long map_pcr_to_cap(unsigned long pcr)
+ {
+@@ -417,7 +417,9 @@ static int kvmppc_set_arch_compat(struct kvm_vcpu *vcpu, u32 arch_compat)
+ 	struct kvmppc_vcore *vc = vcpu->arch.vcore;
+ 
+ 	/* We can (emulate) our own architecture version and anything older */
+-	if (cpu_has_feature(CPU_FTR_P11_PVR) || cpu_has_feature(CPU_FTR_ARCH_31))
++	if (cpu_has_feature(CPU_FTR_ARCH_32))
++		host_pcr_bit = PCR_ARCH_32;
++	else if (cpu_has_feature(CPU_FTR_P11_PVR) || cpu_has_feature(CPU_FTR_ARCH_31))
+ 		host_pcr_bit = PCR_ARCH_31;
+ 	else if (cpu_has_feature(CPU_FTR_ARCH_300))
+ 		host_pcr_bit = PCR_ARCH_300;
+@@ -449,6 +451,9 @@ static int kvmppc_set_arch_compat(struct kvm_vcpu *vcpu, u32 arch_compat)
+ 		case PVR_ARCH_31_P11:
+ 			guest_pcr_bit = PCR_ARCH_31;
+ 			break;
++		case PVR_ARCH_32:
++			guest_pcr_bit = PCR_ARCH_32;
++			break;
+ 		default:
+ 			return -EINVAL;
+ 		}
+diff --git a/arch/powerpc/mm/book3s64/hash_native.c b/arch/powerpc/mm/book3s64/hash_native.c
+index e9e2dd70c0605..ab2a80e59011c 100644
+--- a/arch/powerpc/mm/book3s64/hash_native.c
++++ b/arch/powerpc/mm/book3s64/hash_native.c
+@@ -184,9 +184,14 @@ static inline void __tlbiel(unsigned long vpn, int psize, int apsize, int ssize)
+ 		va |= ssize << 8;
+ 		sllp = get_sllp_encoding(apsize);
+ 		va |= sllp << 5;
+-		asm volatile(ASM_FTR_IFSET("tlbiel %0", PPC_TLBIEL_v205(%0, 0), %1)
+-			     : : "r" (va), "i" (CPU_FTR_ARCH_206)
+-			     : "memory");
++
++		if (cpu_has_feature(CPU_FTR_ARCH_32)) {
++			asm volatile(PPC_TLBIEL(%0, %1, 0, 0, 0) : : "r"(va), "r"(0) : "memory");
++		} else {
++			asm volatile(ASM_FTR_IFSET("tlbiel %0", PPC_TLBIEL_v205(%0, 0), %1)
++				     : : "r" (va), "i" (CPU_FTR_ARCH_206)
++				     : "memory");
++		}
+ 		break;
+ 	default:
+ 		/* We need 14 to 14 + i bits of va */
+@@ -203,9 +208,14 @@ static inline void __tlbiel(unsigned long vpn, int psize, int apsize, int ssize)
+ 		 */
+ 		va |= (vpn & 0xfe);
+ 		va |= 1; /* L */
+-		asm volatile(ASM_FTR_IFSET("tlbiel %0", PPC_TLBIEL_v205(%0, 1), %1)
+-			     : : "r" (va), "i" (CPU_FTR_ARCH_206)
+-			     : "memory");
++
++		if (cpu_has_feature(CPU_FTR_ARCH_32)) {
++			asm volatile(PPC_TLBIEL(%0, %1, 0, 0, 0) : : "r"(va), "r"(0) : "memory");
++		} else {
++			asm volatile(ASM_FTR_IFSET("tlbiel %0", PPC_TLBIEL_v205(%0, 1), %1)
++				     : : "r" (va), "i" (CPU_FTR_ARCH_206)
++				     : "memory");
++		}
+ 		break;
+ 	}
+ 	trace_tlbie(0, 1, va, 0, 0, 0, 0);
+diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
+index 64f0df5bb5cdc..0e777d7dc3326 100644
+--- a/arch/powerpc/mm/init_64.c
++++ b/arch/powerpc/mm/init_64.c
+@@ -628,7 +628,9 @@ void __init mmu_early_init_devtree(void)
+ 
+ 	of_scan_flat_dt(dt_scan_mmu_pid_width, NULL);
+ 	if (hvmode && !mmu_lpid_bits) {
+-		if (early_cpu_has_feature(CPU_FTR_ARCH_207S))
++		if (early_cpu_has_feature(CPU_FTR_ARCH_32))
++			mmu_lpid_bits = 16; /* POWER12 */
++		else if (early_cpu_has_feature(CPU_FTR_ARCH_207S))
+ 			mmu_lpid_bits = 12; /* POWER8-10 */
+ 		else
+ 			mmu_lpid_bits = 10; /* POWER7 */
 -- 
 2.55.0
 
