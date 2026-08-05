@@ -1,84 +1,87 @@
-Return-Path: <linuxppc-dev+bounces-25447-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25448-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 321DAC55ABA
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2026 16:55:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DC08BC55174
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2026 17:06:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hFc3k292Nz2ygL;
-	Thu, 06 Aug 2026 02:55:30 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785948930;
-	cv=none; b=eWYqTa/WXRU8p30ej1UwEw6gOxVirzTqrQb/IXDiTV/CjjuaURO0Fh1ENTsYtZp/uKPPBu7DAdvGssRK663wkFh6n9G6qD/jNEyXW/OSHTv2MaKklBF+o9sLVYZeQ5RHUTn1sqB7XvlaBCwCUiV83jqhbdZDgFnGuO0YUrRK8lt8duE7QQsXOzzMHVzg76zVV+7VO9CPg0Wmpy3akcz90yhqXU067cZHsqsnsAiNP2/KSVm3HPprFyEywB4nEVJijLwysHpAyBky12N/cStW65pZT5b792rLc46FBMXhhqAqVigMkXhagievgn4FoLHNXY4k7FBec5miN67e7i5+7g==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785948930; c=relaxed/relaxed;
-	bh=/paASlYgCKWMyLSDOc0pQbQXYk5kkShdCoGGj0vuXPM=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=fXYfbXMN+yHnr0ASiFLDC2c7ThMhWAHqkQxEphmYdvWNhh4QLGEzoLz58wO/lHVJNvFuO4bERGYf1LaS9Uxsif9XRT0lAa9dQJ//lB/bG66jtzuh7vtblWcG2108E3R3rLu+6bZ55DuvXcTPDekuu2qeLYZXgXK5+HH0kj5Vn9Mw0FCwSQbfZpQmaVOxapgh0ObiRc2NMh9m6Tz6bXv0+8D9MVp9hNJjUKFLdsUPvr14M7DHwg3iL7RlsF7FOMSbzbtvC/XNjBXQ/briYAC5fKBvnoXGo0G7gdxk/95zB58MfzWECWqkbd6Q98Q68KFJBGNZo1TTxGTMuQUAeA57dg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=SATKCLOD; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=alifm@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hFcJm02Rcz2ygL;
+	Thu, 06 Aug 2026 03:06:48 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c201::3" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785949607;
+	cv=pass; b=jRLdisdEsqJQmCZxCHO3CGbcNCEgToIjL9abW5RZ8R5qkPgca4EsWJeBz4o2fJkmPxaEB8qpY1X99lEVdUkaQs13r4wK711O1EVMLnlO9naGGuUlOOKUrP3AryCODNjm+V6l3RzGMmgXM0N9lkURL3/ls1c0PIfLm+hUM24dTLNgHYvaMFeSO7BakoVEIycTlYyj7i5i2wT6pqJoUp4XV6400+c9UDCQgoQb3yB3g8M8tA1OyRQd1slEe9UNAOmi+HwHd/LQdjkE9z+qlxHFcAq1k5xDD14Tg4hZXtjJnThQLWhr10rBWcWtF4MKfCqqzcQTL/SYW3zfB8UecqBEIw==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1785949607; c=relaxed/relaxed;
+	bh=ywyXEIwWxG+qAZwRuspdGRjEEFimti+ky1oQFF9/aW4=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=oDOCi5ERa/waHrqooM4/mgWKToe9Iqg7KIJimGgIvFopg6hhfDDhmhqmyF28Sn/Fh51+oEeHMmzFD3Z40mNpnZwI5wXWLM24ikwihCYJ07cUfl8OTFqdFrfhAteMy9chfInvKDrbaX7d1ehJr0CcHBE58q6siVDpFaIH0NFnoFhMiuhkEEnfqbhsw+/qPSdAH3QsGJTMGFGbrQo9SCe+X6J8WG+pKiKF8Z2dXpM8t8ikcKrzsSHG6+1+Ts0vMhgPAi3OZ/6z7dGqDhRsVDdOMbQ0UytUR8CXmNrHy7e9CG+2bZPtKM8A2PHSkFeSi6cNxBi2qDVCf+xRRo5yC2vSog==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=RdSseoVe; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c201::3; helo=as8pr04cu009.outbound.protection.outlook.com; envelope-from=frank.li@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
+Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=SATKCLOD;
+	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=RdSseoVe;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=alifm@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:c201::3; helo=as8pr04cu009.outbound.protection.outlook.com; envelope-from=frank.li@oss.nxp.com; receiver=lists.ozlabs.org)
+Received: from AS8PR04CU009.outbound.protection.outlook.com (mail-westeuropeazlp170110003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c201::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hFc3j3l2Gz2yLY
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Aug 2026 02:55:28 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 675Fn8aA4182910;
-	Wed, 5 Aug 2026 16:55:25 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=/paASlYgCKWMyLSDO
-	c0pQbQXYk5kkShdCoGGj0vuXPM=; b=SATKCLODdcvriAnpXrOQAWVpn1VRa8gG1
-	phGvxAF2tjFWCdrzDHn4gWWkAfNS15HXWUys6oMVgv47qmw5pOB1E7mQPWzgeQ4K
-	NWXeOSHEGKR3RGXKYviW2IMDMz3sZVntNxb1qYijrAz0CrS5EdIiM/KxNXR64ve5
-	SPXg0biQTZkeBH8EuKpz0+Zawg0tt99Kz3ukswWvL+sfTEdzFyY4JW6eroqnCF8B
-	mx6ZYEk6fJxPhieNYAryfiG4mmVDP4iUpG7FFRVnrlpBrAYR4n567yYpDBgnILCm
-	qVx+SWIi7pUNfKA5xYzyKaAv6PR82NvgIm8jzLacztmguJs8CrMfQ==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fs77gbq1c-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 05 Aug 2026 16:55:24 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 675GfG2a023471;
-	Wed, 5 Aug 2026 16:55:23 GMT
-Received: from smtprelay06.dal12v.mail.ibm.com ([172.16.1.8])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4fsugw7hnm-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 05 Aug 2026 16:55:23 +0000 (GMT)
-Received: from smtpav05.wdc07v.mail.ibm.com (smtpav05.wdc07v.mail.ibm.com [10.39.53.232])
-	by smtprelay06.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 675GtMds28443270
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 5 Aug 2026 16:55:22 GMT
-Received: from smtpav05.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3D56058043;
-	Wed,  5 Aug 2026 16:55:22 +0000 (GMT)
-Received: from smtpav05.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id EB41958053;
-	Wed,  5 Aug 2026 16:55:20 +0000 (GMT)
-Received: from IBM-D32RQW3.ibm.com (unknown [9.61.241.193])
-	by smtpav05.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Wed,  5 Aug 2026 16:55:20 +0000 (GMT)
-From: Farhan Ali <alifm@linux.ibm.com>
-To: linux-s390@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pci@vger.kernel.org
-Cc: helgaas@kernel.org, alex@shazbot.org, alifm@linux.ibm.com,
-        schnelle@linux.ibm.com, mjrosato@linux.ibm.com,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Tyrel Datwyler <tyreld@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
-        Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCH v23 1/5] PCI: Introduce PCI_SLOT_PLACEHOLDER constant for slot_nr placeholder value
-Date: Wed,  5 Aug 2026 09:55:14 -0700
-Message-ID: <20260805165518.794-2-alifm@linux.ibm.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260805165518.794-1-alifm@linux.ibm.com>
-References: <20260805165518.794-1-alifm@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hFcJk3kxqz2yLY
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Aug 2026 03:06:46 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=GldxGlMkEDM/6Xh/5dZxJAGgn4EKcwFbDQ/q5kbHWOAQ9YjFlNN5XMGqQblATszsFpfXOwKiOedS6BDmtYr7lRW5DufIyUB3ceKAENmUjxFP7a9wD5r8LxVZkZqV41wwa4lryK5C4H6eBbPUmtWHuxFErOO0+7eJMx9Js/bHtvRJYZH377hOz0s+vlIBZ9EPZ6UeiuGu135IJh50Cl4vrVDmCcEdcqK2+bf3Dg4NXgyeVj1+Zc37QeVjAIplbruL/GXHHd289cAbDY+nBilRFMtWuUvFuDPsK+QiDx9Vkj8nYW0PeTwvl522c65SF8gDMPkdj0PRFArH+TvGvdeTEw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=ywyXEIwWxG+qAZwRuspdGRjEEFimti+ky1oQFF9/aW4=;
+ b=B618j5kOxVuQK5wTOxy89iped5aUWytsxtRwtz5BTJRKrs0EBW8z0t7R+7pzaICz0yrQDhATDpVtbnZzD9zMHHNEVMWAaP3Kyr2PodrzmCcO1nnn/rIQrxWM5Aqt7XBZRmGY/VTSoM04N/H/OEU4xE5Hlq2rkdwxb4viuiADRbIp3ULFzphMZ+Rc37ZOkt+XNSfnVoAMjWlA2oJULR1/qdY+pkN9vclw78o7TCF8Sl/ohzGqYD2DQg6fjr4O9iwPgBODsDAkyHjLx2NtP18FmPG3lnie4AQfc+ulybVtqW/u5zOQNWD6+Eu4df4NI+RtMiK+W7S0rp9DDzRG/kychw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
+ dkim=pass header.d=oss.nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
+ s=selector1-NXP1-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=ywyXEIwWxG+qAZwRuspdGRjEEFimti+ky1oQFF9/aW4=;
+ b=RdSseoVekO3CNA6vBXDt1u0EPDwjUEgt/LgzMCZkn+C4H2vPvWzg2VTQO9BvSQka8P/Zuqgmii0COGBRR3U8hzStjIqizD9zf1mTMHnTBHEgw0GXj2pKI9fMtLM+vFXwl/MYsS8ZINzD5OK7a4BtQ/cfsCosmvD3kNKlptEhSDNizeX4HWw6TPvGfPBNWaQTl4j7o9AMjeR0KuZZo5mP7QCiLOrbGDgWUsYNopY5HcRZhBfDrj+3adEPv2rrFfVe1dPRtqS2XULouEYDli1z5M2hjPjwn+ABv4jPG1Zv+VoxLbkbhg9Anu85P5+KuPF0LsEaUVqC4mrNTAydoIQUqg==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=oss.nxp.com;
+Received: from GV2PR04MB11799.eurprd04.prod.outlook.com (2603:10a6:150:2cf::9)
+ by PA1PR04MB10442.eurprd04.prod.outlook.com (2603:10a6:102:44a::22) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.292.19; Wed, 5 Aug
+ 2026 17:06:21 +0000
+Received: from GV2PR04MB11799.eurprd04.prod.outlook.com
+ ([fe80::2146:83a2:5329:b7c]) by GV2PR04MB11799.eurprd04.prod.outlook.com
+ ([fe80::2146:83a2:5329:b7c%7]) with mapi id 15.21.0292.018; Wed, 5 Aug 2026
+ 17:06:21 +0000
+Date: Wed, 5 Aug 2026 12:06:10 -0500
+From: Frank Li <Frank.li@oss.nxp.com>
+To: Shengjiu Wang <shengjiu.wang@gmail.com>
+Cc: shengjiu.wang@oss.nxp.com, lgirdwood@gmail.com, broonie@kernel.org,
+	robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
+	Frank.Li@nxp.com, s.hauer@pengutronix.de, kernel@pengutronix.de,
+	festevam@gmail.com, shawnguo@kernel.org,
+	linux-sound@vger.kernel.org, devicetree@vger.kernel.org,
+	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org, Xiubo.Lee@gmail.com,
+	nicoleotsuka@gmail.com, perex@perex.cz, tiwai@suse.com,
+	linuxppc-dev@lists.ozlabs.org,
+	Shengjiu Wang <shengjiu.wang@nxp.com>
+Subject: Re: [PATCH v3 1/5] ASoC: dt-bindings: fsl,imx-asrc: update port
+ binding to support multiple paths
+Message-ID: <anNtgkZYhoWsSRr6@SMW015318>
+References: <20260804100218.49587-1-shengjiu.wang@oss.nxp.com>
+ <20260804100218.49587-2-shengjiu.wang@oss.nxp.com>
+ <anH5i7y3JkB1moee@SMW015318>
+ <CAA+D8ANCoc5qOUvTQPRNkvrfqAY3n6x_fbfUveP8Sfv+SL1NVw@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAA+D8ANCoc5qOUvTQPRNkvrfqAY3n6x_fbfUveP8Sfv+SL1NVw@mail.gmail.com>
+X-ClientProxiedBy: PH7PR17CA0015.namprd17.prod.outlook.com
+ (2603:10b6:510:324::26) To GV2PR04MB11799.eurprd04.prod.outlook.com
+ (2603:10a6:150:2cf::9)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -92,148 +95,197 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODA1MDEzNyBTYWx0ZWRfX0C1OW3il8F1U
- iimGAvtihsBd6wh/pMhH7yPtZpNQ5fi2sfccOJblgtmLv6eckbnjOdRvnfAz7MwV9VlTPOO3At5
- ou7AwYx5B363ehmW5R6GUEkZ8TpBtoj2OaYzDC/nixWN6alEMgzyu1wLo6mHDSG29ULU3eI24TY
- skb4KJ0hpmcgVIpc8WpPzJS6bQfnec8f6F1EZD2UNPi7jh/Vp7FrQMx5sc011T23jl60SiSwPav
- CVGc1rhE1HQnCzW1UknLIiUmsyE5f34uP3a4DF9oE0/QizZMCgMJq8xnep4sG5VUYCIL5Gkrd0r
- UoHrJWIeuh/S+lTbWZxuSpfbia266ZCWrbLfyHl5P8TNfYKuqCiWPS96yHX6Blu9/1q3Kw6VxVn
- fNNp6I4+A/S3VIa8jGS5OUHIAKZA/LOxBKQjhC+L5Z0uIVoaYM3lrnQyIAmrEUrfvlaFCF9eNdo
- e+DiEAoecOkOOiZIq5A==
-X-Authority-Analysis: v=2.4 cv=WIFPmHsR c=1 sm=1 tr=0 ts=6a736afc cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=V8glGbnc2Ofi9Qvn3v5h:22 a=VnNF1IyMAAAA:8 a=voM4FWlXAAAA:8 a=1XWaLZrsAAAA:8
- a=t8iQWNR-jnTgK4UFVGYA:9 a=IC2XNlieTeVoXbcui8wp:22
-X-Proofpoint-GUID: 2N6UDDSNodACujrYcP2WQu8UbnarNusk
-X-Proofpoint-ORIG-GUID: 7Co9pH3paRsnpcDW5DfjTNqiWdjOuVgX
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODA1MDEzNyBTYWx0ZWRfX+jHqWNeQGxCq
- JrcW1NfxhUMPnsVKQtOhvxqdk2RYSWZzhgoY+pNZrIE+boEOEIKFsjqWJWpG1IIyMx/rbTFZfzM
- n/mtrkg5PsnFomhWDmAi8EoAoOJcLJc=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-08-05_05,2026-08-04_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 lowpriorityscore=0 priorityscore=1501 phishscore=0 malwarescore=0
- suspectscore=0 clxscore=1011 impostorscore=0 bulkscore=0 adultscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608050137
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: GV2PR04MB11799:EE_|PA1PR04MB10442:EE_
+X-MS-Office365-Filtering-Correlation-Id: f4e3eaf5-a267-4bb6-224e-08def313df63
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|1800799024|366016|7416014|19092799006|376014|23010399003|22082099003|18002099003|4143699003|56012099006|11063799006|3023799007|6133799003|10067099003;
+X-Microsoft-Antispam-Message-Info:
+	WQeKr76JRykxd6Qqf+SvZur07Oo7DBtYrgczBd/WJBrZBVQEJG8LllW16LJdsPNEQe3/Oin/Z97Jct6TWwcl+f9sGkdWvCUS1ImHBdZ4cS9zD9//qynUC/wK3WFHzYCuHZsfPD/ns5aOW54k8euzB4yvFYG+pD+5jgloPPgF1DvMdob2oRd4wolX8xXpV9ebk+nJfyPOHn5QR8p0kr23dJzOdN+vyo6pVBOIg7l1It6dxba+wjs4BJDzyaVjyYeG8jUrZRamevtcSN5lpx9mztcP78jUltUlHPAO2IAU9JYHdMOhiqM95jVPeahgcH/TFp64OHsEM7ffSB0j4UwI3NyXGaUarFhNFHpiEZYt2FH4dsiydz2Cx1NoOelT5YZxe6w6dFhK/zhQiLfLncC0BsynIjtPf2tibmwUKI8FQLid5anijQz8MNR2OsZMVlqx/0BsV36hFmraLlosujxeiZ95ITe+ccZ760L5Mv+KRK7+jah6edOD2XK9/Qy7/44SyVIXtIvt5CWa51X+Ymv3Qsi8M4/bdqMFZzoM6QecE4SxG5THc7N9vdMNpVfHaTvJ2YrOFsmy6H4rIZXP4ecqinbcwhRKch6uqNSZVufUBH+X3/s4bKzD6mQYqPSJjSNGcXnOq54JQrdX7uFNaF5cneAoXmVH64+OoM7riraXS24=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GV2PR04MB11799.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(7416014)(19092799006)(376014)(23010399003)(22082099003)(18002099003)(4143699003)(56012099006)(11063799006)(3023799007)(6133799003)(10067099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?L0JDcHZ5S1gvbnBQS2t0aXJkaTQrRzAxS2sxT2hTOUQ3OWRINzZpSTZ4Wno0?=
+ =?utf-8?B?SlNoSnhkQ0xtZ0tUQmZwMTN0ZkVzYkVkUTRWQmVTNTV6L3BOYzV5djRVaW5r?=
+ =?utf-8?B?b0tQajdnRHlOczBsejJrc0Z0NERDUmpjNXNHU3ltUzlFSjJQOXFaMEY3dFRo?=
+ =?utf-8?B?S2hCNmhQdHprdDYwcXRHa2tDR1M4VURxTTFJVmZCMjlUZWEzU3k3MWJVSzZL?=
+ =?utf-8?B?M2xtODRXdkc2VndGdHRUSjg2WVZkYUhMMkRNcCs0bFVXb05ZUWR6M2hRQnls?=
+ =?utf-8?B?cnRiRk93N2lzTkNkWHhpc1ZUOXFxZWMrblJBWUZaK3lvRVMxZXJTRnZqNGlR?=
+ =?utf-8?B?ZWQ0bWNqbDBqWTkyY1EwWGVjY0hsVEpHRnd5NHh3dVc3VGd3N3NIOFZhTHJp?=
+ =?utf-8?B?b1VIUHk1VmEvTExONkZkODNiem41WHMzUHFaN05JY0dsbEZkaFduOGk3L2JD?=
+ =?utf-8?B?TmlpQTNwZCtYU0N4SGVIODJLRnVOMFVqNVRKYU5Xc0ZZSTVjYTk4aTJJZDU5?=
+ =?utf-8?B?UkpPSUxySkt5MUNvRWJidStJYWEreTBKczZjeUNBNTdZSGtNQ0R5YXhkUUk0?=
+ =?utf-8?B?Nmsvdm5XK2twNFJkRktscnNoQXpDdFJNTEpVMkc0VlFnT1ZvRDI4ZE4xeUNG?=
+ =?utf-8?B?RDVXb2F4LzQxcjBCMExIZEpDUWIyQ1J4TmtxTSt0VDRCZkIrR3lJUS9WYkJV?=
+ =?utf-8?B?SURyanBGU1VlVVl2RjNldE41UTZUYUZlTjVvZjJqZjQ4VXM4RG1LZjVQRXI2?=
+ =?utf-8?B?c2Q0citoMkNZZ2FBNEVaN1RYZkQ4YlMxSkF5RTNMSTU3WjQ3blZZRHRYa1ZX?=
+ =?utf-8?B?dzJtRTkzMnpMU3F2SmR1ZmZLYjZiWXpLV1ptV0Q1eEdJY1Z3TTFwQUN4RmpS?=
+ =?utf-8?B?d2lUT3lPK2VndTZMLzZPM1ZQMVFDbmQyUW05c0E3RitvL2ZaMVVCQWp0ZVEx?=
+ =?utf-8?B?ZXVDcGtObVNyWkVNSGJuK0J4MkJUcWJNeG1LODQvWlhsOGZUZkxDTHFQS2da?=
+ =?utf-8?B?UlF4LzhNTk90QVp1UE9ZRXBGRDJoUXl5ZHFpSENqNzVMUVJrUG5sVVUxNFEx?=
+ =?utf-8?B?WllaU2VKcTJES01SWkVmamh1eDBUbG04TDNFM20rQTdsK2trUUhseHI4Y3dk?=
+ =?utf-8?B?elNHU2UwOGwySVVpd21vMHVJK0JlRG81RmNOdHRxSkFhUDNsT1B3Y0NSY0lH?=
+ =?utf-8?B?VEUvN2hYajJENVBZcytGdWtZTXVGY0VycEFvanJyTGJBbFNGcWlqVk9Hdnp6?=
+ =?utf-8?B?VDgrR1ovdWNlbFN2T1pXTGNQRWN2Y09ZTmNiLzU4c1FwMTlFUk90V0EvSGdX?=
+ =?utf-8?B?SG1LZDV2L0Rqa0k4bzNxckxQaS9QV1d4eDkrYmc3L0Jub2p1SHNCOWM1c1Fw?=
+ =?utf-8?B?OGMvL1BDZFlxajFOZWhFZXVqbE5zdlFndi83VzhWKzRvWFNwTldZclFZOEVR?=
+ =?utf-8?B?NU5FS2RwVDRjbWlhbE1VUmxFQlJhYWJoQVJ1TDV3WTB0WWhYVHF2QmltemFL?=
+ =?utf-8?B?WmkvTUZBMmFaeFBFQXAvUTllRWd3czQ4NTlyNC80UVRQQWhwUjJIZHl6Z0tw?=
+ =?utf-8?B?bXplbUVKTnNnSGxOT1NOZis0QXRRRWxkTEtKS2YzUUNRVzQrQmpsMHQ3ZUkv?=
+ =?utf-8?B?SXd3UWppU0VDSFpMSXpaRlRnYXlTcFhxQVI3NDVtc28wNGFQL3h1RmtEREZo?=
+ =?utf-8?B?VUVvTUN2Wkt6S3F2N3o1V1NXaXUzYkk5ZlJ6OEU4a3Q4RERvN25FQnU1dWNn?=
+ =?utf-8?B?V25rKzBWdVQ2V3p6cjJzS1FCeXl5VzduenZKZjNReExEUExHUnEwb1N2a0g1?=
+ =?utf-8?B?Qm9vdTZSQWtMWXUyRGdCcVV3Z2plMi84VU5zZVNGa1htc3pNL1FHNkpCWW5W?=
+ =?utf-8?B?dDFmeVJyVGtZWHpJTmxuajVKbjJOQ1RuWUtBMzU0QUh0aURrZ1o3ejBOWE1I?=
+ =?utf-8?B?YlBqeU9iRUh3OFpSRzZkaSs2UFF6SmVucjFGK0pKcy94QUVITm50ZGdTUVdM?=
+ =?utf-8?B?dk5LTzVHaTZHRDdUais2V0JJVjJIUThGeTcxa2ljNDNVVnFMQjc0RkFITUlP?=
+ =?utf-8?B?QkpLSFVZaGszMXZzTnRHOHdUMVkzRnJuQ0Z1ZGNxZFpOUUY4cG4yM3RiZ1N1?=
+ =?utf-8?B?WlREQkJUYWFqWG5aQzgvbFpKL1hRQ2Y1U2RnQmxGWVgzMUg4K0JaY2NuQWxL?=
+ =?utf-8?B?RldiSlp3d2hnUHBtUnlDL2tUOUZTNXhxSGJUZEtaL0plaUY5dCtXOGF3SCt0?=
+ =?utf-8?B?NVphNU0xMHhkRGZ6S1Q2bHBlWk9NUDdyV0pFZlpUQ2tQVEhSTFpzZGd5cEpG?=
+ =?utf-8?B?NFB4UGxMeGpSNFZGK20yZGcyNUduWDVwVytwd0dvbmhJMSs5U29WRzdpdGJz?=
+ =?utf-8?Q?uAUxjaOVqV/tcPcYo4s+Iki8WVY+k4MwWyyi1?=
+X-OriginatorOrg: oss.nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: f4e3eaf5-a267-4bb6-224e-08def313df63
+X-MS-Exchange-CrossTenant-AuthSource: GV2PR04MB11799.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 05 Aug 2026 17:06:21.4378
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: HfT7TMcoRYsiEvRx4Qazn5JfwCpxVU3t3QDN0aZIssOeVyLRTGuj1ksyZ9oZtHr24hpQRMfRG87J/t5oYCjoGYzB574SesahY3Q4PqvqBwAuNfWdQ+iNvEIvtarNW+IM
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PA1PR04MB10442
 
-Introduce a constant for placeholder value and update the kerneldoc for
-pci_create_slot() to reference PCI_SLOT_PLACEHOLDER instead of -1
-throughout. No functional change.
+On Wed, Aug 05, 2026 at 02:57:59PM +0800, Shengjiu Wang wrote:
+> On Tue, Aug 4, 2026 at 10:39 PM Frank Li <Frank.li@oss.nxp.com> wrote:
+> >
+> > On Tue, Aug 04, 2026 at 06:02:14PM +0800, shengjiu.wang@oss.nxp.com wrote:
+> > > From: Shengjiu Wang <shengjiu.wang@nxp.com>
+> > >
+> > > The i.MX ASRC hardware supports up to three conversion pairs (A, B, C).
+> > > The existing binding exposed only a single generic audio-graph port,
+> > > which cannot represent independent conversion paths when multiple pairs
+> > > are in use simultaneously.
+> > >
+> > > Add a ports container that enumerates up to three sub-ports, each
+> > > representing an independent conversion path:
+> > >   port@0 -- conversion path 0
+> > >   port@1 -- conversion path 1
+> > >   port@2 -- conversion path 2
+> > >
+> > > Each sub-port references audio-graph-port.yaml as before. Hardware pairs
+> > > are allocated dynamically at stream open time; each active stream
+> > > direction (playback or capture) on a port consumes one hardware pair.
+> > >
+> > > For backwards compatibility, keep the old single port property but mark
+> > > it deprecated. A schema constraint (not: required: [port, ports]) ensures
+> > > that both forms cannot be used at the same time. The binding example is
+> > > updated to show the preferred ports form.
+> > >
+> > > No existing upstream DTS file for fsl,imx-asrc uses the previously
+> > > documented single 'port' node, so this change does not break any
+> > > in-tree device tree.
+> >
+> > if no existing upstream DTS file use it, you can direct replace with ports
+>
+> That is to avoid any downstream use of the 'port', so not directly replace it.
 
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Tyrel Datwyler <tyreld@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Suggested-by: Bjorn Helgaas <bhelgaas@google.com>
-Signed-off-by: Farhan Ali <alifm@linux.ibm.com>
----
- drivers/pci/hotplug/pnv_php.c     |  2 +-
- drivers/pci/hotplug/rpaphp_slot.c |  2 +-
- drivers/pci/slot.c                | 21 +++++++++++----------
- include/linux/pci.h               |  3 +++
- 4 files changed, 16 insertions(+), 12 deletions(-)
+Does downstream strictly run DTB_CHECK ?
 
-diff --git a/drivers/pci/hotplug/pnv_php.c b/drivers/pci/hotplug/pnv_php.c
-index ff92a5c301b8..37299d59f906 100644
---- a/drivers/pci/hotplug/pnv_php.c
-+++ b/drivers/pci/hotplug/pnv_php.c
-@@ -808,7 +808,7 @@ static struct pnv_php_slot *pnv_php_alloc_slot(struct device_node *dn)
- 	if (dn->child && PCI_DN(dn->child))
- 		php_slot->slot_no = PCI_SLOT(PCI_DN(dn->child)->devfn);
- 	else
--		php_slot->slot_no = -1;   /* Placeholder slot */
-+		php_slot->slot_no = PCI_SLOT_PLACEHOLDER;   /* Placeholder slot */
- 
- 	kref_init(&php_slot->kref);
- 	php_slot->state	                = PNV_PHP_STATE_INITIALIZED;
-diff --git a/drivers/pci/hotplug/rpaphp_slot.c b/drivers/pci/hotplug/rpaphp_slot.c
-index 67362e5b9971..92eabf5f61b9 100644
---- a/drivers/pci/hotplug/rpaphp_slot.c
-+++ b/drivers/pci/hotplug/rpaphp_slot.c
-@@ -84,7 +84,7 @@ int rpaphp_register_slot(struct slot *slot)
- 	struct hotplug_slot *php_slot = &slot->hotplug_slot;
- 	u32 my_index;
- 	int retval;
--	int slotno = -1;
-+	int slotno = PCI_SLOT_PLACEHOLDER;
- 
- 	dbg("%s registering slot:path[%pOF] index[%x], name[%s] pdomain[%x] type[%d]\n",
- 		__func__, slot->dn, slot->index, slot->name,
-diff --git a/drivers/pci/slot.c b/drivers/pci/slot.c
-index 6d5cd37bfb1e..42ff66461f74 100644
---- a/drivers/pci/slot.c
-+++ b/drivers/pci/slot.c
-@@ -37,7 +37,7 @@ static const struct sysfs_ops pci_slot_sysfs_ops = {
- 
- static ssize_t address_read_file(struct pci_slot *slot, char *buf)
- {
--	if (slot->number == 0xff)
-+	if (slot->number == PCI_SLOT_PLACEHOLDER)
- 		return sysfs_emit(buf, "%04x:%02x\n",
- 				  pci_domain_nr(slot->bus),
- 				  slot->bus->number);
-@@ -210,7 +210,7 @@ static struct pci_slot *get_slot(struct pci_bus *parent, int slot_nr)
- /**
-  * pci_create_slot - create or increment refcount for physical PCI slot
-  * @parent: struct pci_bus of parent bridge
-- * @slot_nr: PCI_SLOT(pci_dev->devfn), -1 for placeholder, or
-+ * @slot_nr: PCI_SLOT(pci_dev->devfn), PCI_SLOT_PLACEHOLDER for placeholder, or
-  *	PCI_SLOT_ALL_DEVICES
-  * @name: user visible string presented in /sys/bus/pci/slots/<name>
-  * @hotplug: set if caller is hotplug driver, NULL otherwise
-@@ -236,15 +236,16 @@ static struct pci_slot *get_slot(struct pci_bus *parent, int slot_nr)
-  * In most cases, @pci_bus, @slot_nr will be sufficient to uniquely identify
-  * a slot. There is one notable exception - pSeries (rpaphp), where the
-  * @slot_nr cannot be determined until a device is actually inserted into
-- * the slot. In this scenario, the caller may pass -1 for @slot_nr.
-+ * the slot. In this scenario, the caller may pass PCI_SLOT_PLACEHOLDER for @slot_nr.
-  *
-  * The following semantics are imposed when the caller passes @slot_nr ==
-- * -1. First, we no longer check for an existing %struct pci_slot, as there
-- * may be many slots with @slot_nr of -1.  The other change in semantics is
-- * user-visible, which is the 'address' parameter presented in sysfs will
-- * consist solely of a dddd:bb tuple, where dddd is the PCI domain of the
-- * %struct pci_bus and bb is the bus number. In other words, the devfn of
-- * the 'placeholder' slot will not be displayed.
-+ * PCI_SLOT_PLACEHOLDER. First, we no longer check for an existing %struct
-+ * pci_slot, as there may be many slots with @slot_nr of
-+ * PCI_SLOT_PLACEHOLDER. The other change in semantics is user-visible,
-+ * which is the 'address' parameter presented in sysfs will consist solely
-+ * of a dddd:bb tuple, where dddd is the PCI domain of the %struct pci_bus
-+ * and bb is the bus number. In other words, the devfn of the 'placeholder'
-+ * slot will not be displayed.
-  *
-  * Bus-wide slots:
-  * For PCIe hotplug, the physical slot encompasses the entire secondary
-@@ -267,7 +268,7 @@ struct pci_slot *pci_create_slot(struct pci_bus *parent, int slot_nr,
- 
- 	mutex_lock(&pci_slot_mutex);
- 
--	if (slot_nr == -1)
-+	if (slot_nr == PCI_SLOT_PLACEHOLDER)
- 		goto placeholder;
- 
- 	/*
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 64b308b6e61c..b628787e9485 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -81,6 +81,9 @@
-  */
- #define PCI_SLOT_ALL_DEVICES	0xfe
- 
-+/* Used to identify a slot as a placeholder */
-+#define PCI_SLOT_PLACEHOLDER	0xff
-+
- /* pci_slot represents a physical slot */
- struct pci_slot {
- 	struct pci_bus		*bus;		/* Bus this slot is on */
--- 
-2.43.0
+Frank
 
+>
+> best regards
+> Shengjiu Wang
+>
+> >
+> > Frank
+> >
+> > >
+> > > Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+> > > ---
+> > >  .../bindings/sound/fsl,imx-asrc.yaml          | 45 ++++++++++++++++---
+> > >  1 file changed, 40 insertions(+), 5 deletions(-)
+> > >
+> > > diff --git a/Documentation/devicetree/bindings/sound/fsl,imx-asrc.yaml b/Documentation/devicetree/bindings/sound/fsl,imx-asrc.yaml
+> > > index 608defc93c1e..67d2826eef3f 100644
+> > > --- a/Documentation/devicetree/bindings/sound/fsl,imx-asrc.yaml
+> > > +++ b/Documentation/devicetree/bindings/sound/fsl,imx-asrc.yaml
+> > > @@ -78,9 +78,19 @@ properties:
+> > >    power-domains:
+> > >      maxItems: 1
+> > >
+> > > +  ports:
+> > > +    $ref: /schemas/graph.yaml#/properties/ports
+> > > +    patternProperties:
+> > > +      "^port@[0-2]$":
+> > > +        $ref: audio-graph-port.yaml#
+> > > +        unevaluatedProperties: false
+> > > +        description: port for an independent conversion path
+> > > +
+> > >    port:
+> > >      $ref: audio-graph-port.yaml#
+> > >      unevaluatedProperties: false
+> > > +    deprecated: true
+> > > +    description: deprecated, use ports instead
+> > >
+> > >    fsl,asrc-rate:
+> > >      $ref: /schemas/types.yaml#/definitions/uint32
+> > > @@ -125,6 +135,10 @@ required:
+> > >    - fsl,asrc-width
+> > >
+> > >  allOf:
+> > > +  - not:
+> > > +      required:
+> > > +        - port
+> > > +        - ports
+> > >    - $ref: dai-common.yaml#
+> > >    - if:
+> > >        properties:
+> > > @@ -180,11 +194,32 @@ examples:
+> > >          fsl,asrc-rate = <48000>;
+> > >          fsl,asrc-width = <16>;
+> > >
+> > > -        port {
+> > > -            playback-only;
+> > > +        ports {
+> > > +            #address-cells = <1>;
+> > > +            #size-cells = <0>;
+> > > +
+> > > +            port@0 {
+> > > +                reg = <0>;
+> > > +                playback-only;
+> > > +                endpoint {
+> > > +                    remote-endpoint = <&fe00_ep>;
+> > > +                };
+> > > +            };
+> > > +
+> > > +            port@1 {
+> > > +                reg = <1>;
+> > > +                capture-only;
+> > > +                endpoint {
+> > > +                    remote-endpoint = <&fe01_ep>;
+> > > +                };
+> > > +            };
+> > >
+> > > -            asrc_endpoint: endpoint {
+> > > -                remote-endpoint = <&fe00_ep>;
+> > > +            port@2 {
+> > > +                reg = <2>;
+> > > +                capture-only;
+> > > +                endpoint {
+> > > +                    remote-endpoint = <&fe02_ep>;
+> > > +                };
+> > >              };
+> > > -       };
+> > > +        };
+> > >      };
+> > > --
+> > > 2.34.1
+> > >
+> > >
 
