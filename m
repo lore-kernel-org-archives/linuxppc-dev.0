@@ -1,86 +1,95 @@
-Return-Path: <linuxppc-dev+bounces-25422-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25423-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5B337C55822
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2026 09:33:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8C443C55822
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2026 09:34:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hFQFK5cDpz2y8c;
-	Wed, 05 Aug 2026 19:33:09 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785922389;
-	cv=none; b=cbxHhr9fJoY4Hsn+clTCS0YwbspD2gZWp9ocHS4y+zSeiae8XFJXYoI/Nb5C5zLwqxSkyRVjxtA7aWZz7Uyal30ib2ACTNbEh2KmHj9rRmtCiBAnUQcKk0O7ZbBJQZSY9c62x+DhWlpR4MpY9dd2MYxG+r0H9VI7b8DTq7FVAHG2OW74eQ0Gfk4oh0Twbs1HQCdd73JCxDkBz6ckwjHPtTAg3ViUm2BrGnxrH5Fghb+Ic2usQmFkTKIDYsY3Ae9xa6tPEduWxeDfJcoaW0FYPwWpJZ/40JtQdMjpvkcwTc0+oKb7ph15tD6fnl3XXMfb+4XpNDd9F0PTAXlJyZzShQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785922389; c=relaxed/relaxed;
-	bh=NV957z+JyAVwRsyNbsmTMGiAcOqFCl3FYRC6WkwZKI8=;
-	h=Date:From:To:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ZTvYfuWJu5Pz7eBoFsFUXdeI4nbALP5WYCAK2K6Ks3LCA58LMl3syJxmKbbL4JfUJmEqvTinZg3OD+48UZKhcP7q/587x7/BGcjMsQkPEaKe0V0lHchxrbKJKtbyZ3Ecm/kdv9wtxDg72f+QXpWZRa+xoNgstIh/Gc1ZLrnxiBRmIXMm0cMdDSaKGOrkvMVJxX1nlGXUq7sCcuS0ylO314DRk0noY6qRGm9ilScv4XIwVGmF5Q2ExSut5ZwQgLkrQgoelRWuy9n6Fs3J+6h8aWfveEEwtJLOGUm7QeFueonK2gkMsTbthR1NlwFdUSovZ1Ag1V/BNFcXuFNjjNNMGA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=IkHuWZnn; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mahesh@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hFQGX1ryzz2y8c;
+	Wed, 05 Aug 2026 19:34:12 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::532" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785922452;
+	cv=pass; b=EuCBbUXrka4/M//2ljuRuM8kYh3HVmkYAFeGcuAEvNHjHJiqsqChpal4d/nLnTjNAaJGybiIeSxsTXB5VTbujl5QxOyz7WU5AnoqwdlznknMC6HMpuWjuPLUq1ev8VCHNx7n0aTp/7q1jIAHpQPlIdcQB7yxKyJrv7Ibxswx0gPLpeHUk5HXm6/+861zxQtuC32TIWIRMhpQEQ4Q9q7r/eyvBXCOdigYbU7Gx87yCCkugqrGNYX5QHojWrm74fsdkE3uDZ/3oF/ARla3NKmgkBNpFOdDPejScSLbMyLIlDjNlSUhlew6lSBFDKLPcZ7+T2u3OR2MDrhqy8KP4RvAXQ==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1785922452; c=relaxed/relaxed;
+	bh=UaGNs+E1Ex6iz5T9/0x/HPxcs/WYGeua7JSZh/+RxWI=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=k1707ctAvIsvldyMYCMnfTqZ64PW5HX5W6Pp67WKQHaizrut5Yq3in4lL4tSb22CSL83YmguBrg1ASLGMbnuNnw6kVMOiuj9c79BzDvrs3WAqXCqrisUGJmMuio+tnVxwcR4Hk3xGnBHFQBUt5JflLnajeGNQapwGUtLoyJpZyYB8dRmdrO+VG4uuZrKXQCUDtJgvd2ldk6mCJOjsCWIKa+4OkSEh7a0OJE9Xu2kwynw6MlICjpqbf/XWhkxjx77KvljjrkAnoNX1Mn3miynPcz20zJW/nUOjOV1bTwaR6JQzeTSx6VIyXPoi6mULDS5rDIaqt4ocZviJZmnh8anhg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=qMO1MQPh; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::532; helo=mail-ed1-x532.google.com; envelope-from=linmag7@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=IkHuWZnn;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=qMO1MQPh;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mahesh@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::532; helo=mail-ed1-x532.google.com; envelope-from=linmag7@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-ed1-x532.google.com (mail-ed1-x532.google.com [IPv6:2a00:1450:4864:20::532])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hFQFJ43j4z2xqM
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Aug 2026 19:33:07 +1000 (AEST)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6758m9fg3355846
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Aug 2026 09:33:05 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=
-	content-type:date:from:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:to; s=pp1; bh=NV957z+JyAVwRsyNbsmTM
-	GiAcOqFCl3FYRC6WkwZKI8=; b=IkHuWZnniZkzMVlo+L7z6p6iH2yF4lwSfmAbg
-	ryCQblauT5BT+SBFvwxiKXQWHC4EnF8hMjPnqgXC30tJKxwl2x1GtZLCBj6+3ZW6
-	/BtvdDNyj2dh3ybk6pdbBKL756R5YqoSO3B6Frr8MHiN/BylIp2Bal66Y6qcjoO/
-	FuCFaSjM0kB3QbdF33FkxCjx2OfhY7n7WjtNS9QwOTwtBrlmKaVphVvSsGvzFoS1
-	Sx71izJ/z+tjaaADh/iZiIZ4mrFkehRXpoxh9L7pPHkVCMaDMetzFJeEk7t/VnpW
-	fTPjGx0PvNHv2BHpGf1XdDgRCz+LVAuNPTCWORr9m/RtDu4Mg==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fs8a42bj0-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 05 Aug 2026 09:33:05 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6759QN2M029625;
-	Wed, 5 Aug 2026 09:33:04 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4fsugw61rj-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 05 Aug 2026 09:33:03 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6759Wx4g30408970
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 5 Aug 2026 09:32:59 GMT
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D07482004B;
-	Wed,  5 Aug 2026 09:32:59 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 06EBC20040;
-	Wed,  5 Aug 2026 09:32:57 +0000 (GMT)
-Received: from linux.ibm.com (unknown [9.39.28.36])
-	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Wed,  5 Aug 2026 09:32:56 +0000 (GMT)
-Date: Wed, 5 Aug 2026 15:02:52 +0530
-From: Mahesh J Salgaonkar <mahesh@linux.ibm.com>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Praveen K Pandey <praveen@linux.ibm.com>,
-        Nikhil Kumar Singh <nikhilks@linux.ibm.com>
-Subject: Re: [PATCH v2 3/4] powerpc: Add Power12 architected mode
-Message-ID: <anMDDzxNs8nMuFmJ@linux.ibm.com>
-Reply-To: mahesh@linux.ibm.com
-References: <20260803155724.3272052-1-mahesh@linux.ibm.com>
- <20260803155724.3272052-4-mahesh@linux.ibm.com>
- <20260804004514.39870804-35-amachhiw@linux.ibm.com>
- <anF-LmYhztmpgs1s@linux.ibm.com>
- <20260804114608.61661ced-92-amachhiw@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hFQGW2Vdnz2xqM
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Aug 2026 19:34:11 +1000 (AEST)
+Received: by mail-ed1-x532.google.com with SMTP id 4fb4d7f45d1cf-69c5fda04a8so1169135a12.1
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Aug 2026 02:34:11 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1785922448; cv=none;
+        d=google.com; s=arc-20260327;
+        b=WK8BLxx8/52Rhtiq2MGupwb7JpZ17b4mzUxagk0ux7tasX47RgjMDaSEpUNTvvwzkD
+         aWs9Wpg/yDHTGSx8OGefHQuEnfaeFGavfZJ5W4msXWritBaFT8lUgp94xj6rfkGTTkis
+         5R9js3PZp8wiy8IyGRjXqRLvRInTea9DPEfq4xr4iQRkfnf5sQY2ONKfQxaOHl47/fJn
+         31A+fnTtrZ+fVRwlpVk732GwwGQeDTe1nFc4Cp7XcVGJqu2KHS0PwWuLTUYFVM+rkaIZ
+         ngps3m1RSfX5ftmkeiRQp0oMDTxUx9vOTbtDQ3QfkPIWxykSwtoaEVHyXlqeY9wwz5oD
+         l+Og==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=UaGNs+E1Ex6iz5T9/0x/HPxcs/WYGeua7JSZh/+RxWI=;
+        fh=rLGsZ+LuLrjrJcVBLbKz3SOjBKDQL1Iag+/coaDe3ws=;
+        b=I94SBDuYDIw6+el0j8nH3u3Q6b9FuyC8sn1G9HU3htFjCGJnZz9RHlAVnidSvcILEr
+         zaNdZydpyvk9pwrv5EctlPWNJ/ly3udeJub4Bo0najBviLckv55RIJrNGzETr75Gmieh
+         koy4N+PZLTRaZ0EILLZVdU4f6wqnCazaYaW9Cau3+7xsMPosSEhAjk8EP2LRv7ktr1t9
+         sRwA/tqngI59oHVgDHJiie4uNqXlSOZgxNXgwySPMwSny2eonF0IOP4LRk07ZvBsFJ6m
+         ogmq2Cim8qNCLG2YcrHKcZpnMQBu7zru4ORMye6CnHRCFO3eQNUHgvK4w8vMHxYWrk7G
+         RG5A==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1785922448; x=1786527248; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=UaGNs+E1Ex6iz5T9/0x/HPxcs/WYGeua7JSZh/+RxWI=;
+        b=qMO1MQPhwu7aAwJ6JnhHE2NRLE0rThlluywMoLHbKGT9OHIOiBjbqKYI1Qj9LiICtq
+         KWq3RxIsH63yuwJiAjp2N7cqvV9MxEGRtzs75+xkP1BrVgKg9Lbg0bpgylbIiuhkPe3F
+         k/xP54KiGgDvSYgQx/L59dLEwBoJmR2QHSQm0XmJpEwniSuRaEDqbUD0ggotxRc0lzT4
+         T2/OF+Tea/Ihmz7/lsdNCSR3FKMROD3SaiQFA5RZCVMerlSTx33uRkCmjJo+UOl786+c
+         JFKffIS2Xr/lrCHKtr06Hv0jDlLNZFDBjwNhyLCC65Gkg3greBrayAR18OeiCcnFN8ar
+         cYkg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1785922448; x=1786527248;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=UaGNs+E1Ex6iz5T9/0x/HPxcs/WYGeua7JSZh/+RxWI=;
+        b=I3L9PQupl5nodU/yYcY3X5ENKwRHlysQTKosdaoHEF4DKiYHJ5VddXMZcCiBoK9ph8
+         Zo4euTTC12txE95aJo8j2Cj7YGGxf9OoGHfnfemAwllVL0UGadDIF3bDzR6+qasizvbM
+         J3XMaJeYDUVMzmU+W+RsEvlEZcZmGMgBNA1OWBotQCyrIKfppPJU9zL9O6p65QoAgGVP
+         ZD3gzVO2GLbfhl787nVYEjkJ7ZuGOFod9u/xERhgQgacIPtkOF0gpyTJB+uDdxTnUGag
+         PWNEGns0iHy0ZArQhmP1wPR7OTC2BE6R90Bsvrq7MhG/RrMCMaFlKMlvrbKkxbTMw4Yw
+         Tc7A==
+X-Forwarded-Encrypted: i=1; AHgh+RoapNEOSAWztW0eIQf3oymC/3c5Obn1xgtD2BadVkoLyqOe1jAu2dcf6AMdQh4UmZXGe2qArNBogmmJai4=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxdWA8iCdOzpVKffsqMZxXQp3EvOXVX9UuiuczjBYjDgUbeMGPL
+	eSZ168oUz2b4x8ao2EnK1Qt0e8KAVkS1vTsm/mG2n1WeffpSPRUa6Ri9NFkNL1fEDjOED+IiO/8
+	vkx2nHtJDxtb3sbOrGP+sbieEEu2poro=
+X-Gm-Gg: AR+sD10sby6jJpsmwYpTuTk2ccpHrxc6H9oYWApZkq6eCQPq38Ljdv2wRp6R8Kak+/4
+	O5kzs5Eu86jd3ETRchc/pqOs0X+LRAS7LN9QQujU2c/tL3WdfblhyTrdaOrc6kC6zILM1Ycopne
+	I2TA82pImsO99iQ4dlx8ZlMBgj0XOqQGNfB8eKIQ2PfT6iPkxDIKMdh1ezVJjRImUGo6do9beNF
+	WrxIQIUONS2NpxN+FHC+UQWrkfa4yLnAc5rLVkAJrC4f1sKLPvN6g/CJ7CIZphTFr1NX/5leH/z
+	6/a3cf7InGR1ClJe4NbiD51pOTLENWO/22iCGbjw0vlNTuQMt7wRkuN6limVTlb9guvTKIDy8W1
+	3heJXdquv5fuc9k5VnOZi8LxQdI7iXzk=
+X-Received: by 2002:a05:6402:1f08:b0:6a1:b0b:ba6 with SMTP id
+ 4fb4d7f45d1cf-6a14f13e482mr2509895a12.15.1785922446933; Wed, 05 Aug 2026
+ 02:34:06 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -94,100 +103,92 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260804114608.61661ced-92-amachhiw@linux.ibm.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=E6P9Y6dl c=1 sm=1 tr=0 ts=6a730351 cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=kj9zAlcOel0A:10 a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=pGLkceISAAAA:8
- a=VnNF1IyMAAAA:8 a=mWFba-A-fpZ79PAM_QEA:9 a=CjuIK1q_8ugA:10
-X-Proofpoint-ORIG-GUID: KZSXOS9A0if815vqKYzBaHjzQ5WPq4Yi
-X-Proofpoint-GUID: SJE-CaaN2MAWcejPJsdsN1K_jI6Q_ang
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODA1MDA3MyBTYWx0ZWRfX2XGyPT5BHNL+
- CJwtGzrXGy4+gfFoeAbKivqjSWulbFYMT47bPfzFobueoHVEv0HC72uabkSa0S+7W0KsCWDbK4O
- WLfN0tccXyq7b/32ghQoNcB8DC5fHjM=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODA1MDA3MyBTYWx0ZWRfX829sJ0CQ509F
- dM08TBzmaWcpavgY8Kr6FWSomIRdiQKzE9B7F12j7ed7EsXsQxDxgGphPQf6JP/+4kd+1VoBNPw
- P3PvqSZQncF7S2kDKJe5Bgy9mHmEWaZl7z8hdVguHQNwjAf/hQyxK+4wrYTHY0sSVez4gjajNEU
- cjik00cDaxHehmU5e6IYBBjYs1QMWN0VNXNz8c9qYZCEJShxzNS+dtANUXDmnBCSoS7GACTQxwW
- CPsEb2bqT+2/stIr8AX+Udjp8RavBmp+8+blwePF3O+4BdIRGDhHYydfzWDYyWjatDVvqzCT6W9
- dz7yDaZDk+TubqOZX/+OvwOwTnmnUrOlYQ1Fy8nMXAu+doqiukcyIcJszvPGcNte9YeKyK9AdgM
- cKeRzl24wZUuOmb8Z/vSDtaGcEEcTpVWFY3sNMkx05NjW9xuUfRTHStIUdAzu0jCYC9CgVLh8S1
- bCMcknAzIE9yKNcvLoQ==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-08-05_03,2026-08-04_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 clxscore=1015 lowpriorityscore=0 priorityscore=1501
- suspectscore=0 adultscore=0 spamscore=0 malwarescore=0 impostorscore=0
- phishscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
- definitions=main-2608050073
+References: <20260803-alpha-fp-exceptions-v1-0-c99d75608e60@gmail.com> <20260803-alpha-fp-exceptions-v1-2-c99d75608e60@gmail.com>
+In-Reply-To: <20260803-alpha-fp-exceptions-v1-2-c99d75608e60@gmail.com>
+From: Magnus Lindholm <linmag7@gmail.com>
+Date: Wed, 5 Aug 2026 11:33:54 +0200
+X-Gm-Features: AUfX_mwnXqPqc_k9xGwWzJEiKBh4lXhngC_jeS43aqM9K90q-yJsxGFkXMu1yFY
+Message-ID: <CA+=Fv5Tgq7X6Tqt2s6OuoWUQirzYwwyrmwQR_tDXpHRrczK22A@mail.gmail.com>
+Subject: Re: [PATCH 2/3] alpha: don't leak hardware-fabricated FP exception
+ bits to user space
+To: Matt Turner <mattst88@gmail.com>
+Cc: Richard Henderson <richard.henderson@linaro.org>, linux-alpha@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org, 
+	"David S. Miller" <davem@davemloft.net>, Andreas Larsson <andreas@gaisler.com>, stable@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 2026-08-04 11:50:45 Tue, Amit Machhiwal wrote:
-> On 2026/08/04 11:30 AM, Mahesh J Salgaonkar wrote:
-> > On 2026-08-04 00:47:49 Tue, Amit Machhiwal wrote:
-> > > On 2026/08/03 09:27 PM, Mahesh Salgaonkar wrote:
-> > > > From: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-> > > > 
-> > > > PVR value of 0x0f000008 means we are arch v3.2 compliant (i.e.
-> > > > Power12). This is used by phyp and kvm when booting as a pseries guest
-> > > > to detect the presence of new Power12 features and to enable the
-> > > > appropriate hwcap and facility bits.
-> > > > 
-> > > > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> > > > Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-> > > > Signed-off-by: Mahesh Salgaonkar <mahesh@linux.ibm.com>
-> > > > Tested-by: Praveen K Pandey <praveen@linux.ibm.com>
-> > > > Reviewed-by: Nikhil Kumar Singh <nikhilks@linux.ibm.com>
-> > > > ---
-> > > >  arch/powerpc/include/asm/prom.h           |  1 +
-> > > >  arch/powerpc/include/uapi/asm/cputable.h  |  1 +
-> > > >  arch/powerpc/kernel/cpu_specs_book3s_64.h | 14 ++++++++++++++
-> > > >  arch/powerpc/kernel/prom_init.c           | 12 ++++++++++--
-> > > >  4 files changed, 26 insertions(+), 2 deletions(-)
-> > > > 
-> > > > diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
-> > > > index f4991d10d89ec..cd025c7225ee7 100644
-> > > > --- a/arch/powerpc/include/asm/prom.h
-> > > > +++ b/arch/powerpc/include/asm/prom.h
-> > > > @@ -118,6 +118,7 @@ extern unsigned int boot_cpu_node_count;
-> > > >  
-> > > >  #define OV1_PPC_3_00		0x80	/* set if we support PowerPC 3.00 */
-> > > >  #define OV1_PPC_3_1			0x40	/* set if we support PowerPC 3.1 */
-> > > > +#define OV1_PPC_3_2			0x20	/* set if we support PowerPC 3.2 */
-> > > 
-> > > Minor: OV1_PPC_3_1 and OV1_PPC_3_2 use extra tabs relative to OV1_PPC_3_00.
-> > > This is pre-existing style inconsistency in the file (not introduced by
-> > > this patch) but new additions should match the surrounding code. Please
-> > > consider aligning them.
-> > 
-> > This is bit tricky. Prior to 3.0 the ISA versions were 2.05, 2.06, 2.07
-> > and so on and pre-existing style did make sense. But it looks like from
-> > 3.1 the style changed may be for a reason because it can not be written
-> > as 3.10 which may create more confusiton. Hence, I plan to stick with
-> > the new style which is introduced from 3.1.
-> 
-> If the extra tab is intentional to maintain visual alignment for the 3.x
-> series names, then it make sense. Please feel free to add:
+On Tue, Aug 4, 2026 at 1:40=E2=80=AFAM Matt Turner <mattst88@gmail.com> wro=
+te:
+>
+> On EV6 and later the hardware records exception status bits in the FPCR
+> before delivering a software completion trap, and those bits can be wrong
+> for the instruction that trapped.  Converting a double that is exactly
+> representable as a subnormal float sets FPCR_UNF even though the result
+> is exact, and an underflow trap additionally sets FPCR_INE even when the
+> emulated operation turns out to be exact.
+>
+> alpha_fp_emul() only wrote the FPCR when soft-fp raised an exception, so
+> whenever it determined that the instruction was exact the fabricated bits
+> stayed in the FPCR and were reported to user space by fetestexcept().
+>
+> Pass the exception summary register down from do_entArith() so the
+> handler can tell which exceptions the hardware attributed to the trapping
+> instruction, and always write the FPCR.  Clear the exceptions that the
+> trap reported but that soft-fp did not raise.  EXC_SUM reports only the
+> underflow or overflow when the hardware also set INE, so treat INE as a
+> candidate in that case, and treat a trap with no reported exception as a
+> denormal operand trap, for which the hardware can fabricate INE and UNF
+> as well.  Bits that software has already confirmed in ieee_state belong
+> to this or an earlier instruction and are never cleared.
+>
+> The imprecise path passes no summary.  There the trap was taken somewhere
+> in the trap shadow, so EXC_SUM is not attribution for the instruction
+> being re-executed -- and only EV6, which traps precisely and so never
+> takes that path, has fabricated bits to clear.  For the same reason the
+> clearing is guarded by implver(), matching swcr_update_status().
+>
+> On an UP1500 (EV68) this takes the glibc math testsuite from 831 failures
+> to 28, the remainder being unrelated to exception status.
+>
+> This belongs with the preceding fix to ieee_swcr_to_fpcr(), and should
+> not be backported without it -- nor it without this.  That fix stops
+> FPCR_DNOD being set unconditionally, so denormal operand traps start
+> firing again.  Those traps very often find an exact result, which is
+> precisely the case where the old code left the FPCR unwritten and the
+> fabricated bits visible.  Applied alone it would make spurious exception
+> flags more common, not less.
+>
+> One case cannot be resolved here: an inexact instruction without the
+> software completion suffix never traps, so its INE reaches the FPCR
+> without being recorded anywhere else.  Such a bit is indistinguishable
+> from an INE the hardware fabricated for a trapping instruction, and is
+> lost if an underflow or overflow trap with an exact result follows it.
+> The FPCR is the only record of those instructions and it carries no
+> attribution.
+>
+> The bug predates the git history, so there is no commit to reference in a
+> Fixes tag.
+>
+> Cc: stable@vger.kernel.org # 5.15+
+> Signed-off-by: Matt Turner <mattst88@gmail.com>
+> ---
+>  arch/alpha/kernel/traps.c  |  6 ++--
+>  arch/alpha/math-emu/math.c | 88 ++++++++++++++++++++++++++++++++++++++++=
+------
+>  2 files changed, 80 insertions(+), 14 deletions(-)
+>
+Hi,
 
-Ouch I missed that. thanks for the catch. Fixing it in v3
+Passing EXC_SUM to the precise emulation path and always writing the
+corrected FPCR state back looks correct to me.
 
-> 
-> Reviewed-by: Amit Machhiwal <amachhiw@linux.ibm.com>
+I tested the complete series with CONFIG_MATHEMU=3Dy on the same machine
+and using the same glibc build. The kernel boots normally, and the
+glibc math testsuite improves from 48 to 28 failing test programs, with
+no new failing tests. Tested on Alphaserver ES40.
 
-Thanks for your review.
--Mahesh.
-
-> 
-> Thanks,
-> Amit
-> 
-> 
-
--- 
-Mahesh J Salgaonkar
+Reviewed-by: Magnus Lindholm linmag7@gmail.com
+Tested-by: Magnus Lindholm linmag7@gmail.com
 
