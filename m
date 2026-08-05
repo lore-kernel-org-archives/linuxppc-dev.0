@@ -1,104 +1,71 @@
-Return-Path: <linuxppc-dev+bounces-25441-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25442-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 74C0CC55ABA
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2026 12:30:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 22E44C55ABF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2026 12:40:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hFVBP0GBNz2ySW;
-	Wed, 05 Aug 2026 22:30:53 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c100::f" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785933052;
-	cv=pass; b=TFS8rfcPQjH5oeekiRLs4Gtvy7E/Rm9p093/5hSUMB6/zcZlKZhNziiQaZHln47ym87N6jDVVYsOJgKaPaBD1zsD6wsN3LgCoX7KTCaab2Zanc6vMgXJ+PlMeacsV7ujCld+rZz1SZcRuGVPKnwx8JBEt/G8gB+2ec5z0BM8SoT7LpndaMt8TjJIPV+00Wem+Cza3ByDpK754GF0+31yz5eVHaNaLuzfULNbgjNF9TI544iXLIqUUWUGI16n+5hpyZo3JVdndqulFL272vBJBL2PtIaR+Ltng0QVOhtU6M0a5eKHlD1FFfzSQ9gExd9ZaG/alcDHnjS+sPRW8vC1GQ==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785933052; c=relaxed/relaxed;
-	bh=ox2xbRLxNvdqpJFmgdEJg4jzYCu9Zb10QHH/V8E5mn0=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=TGb9gxBGDRwOwc5W/WR+341BWvq4ibl9kUypiX/UU305xrsn55vqEWsP1XXwRpVpxf+GQlWGzp4v14twUzDWgOYfuN3MLwHOnlzhsclAPeOTJynTUsk/zZHA33U2dXiLY0XRSlqQNGnxMdKbh5QigwxfMyMZ9+IWZD8ycTwnZ034P114vPBYVeUE2RNfBLTddQ9X6mJZt7UFq2KsbsWg1fZyRW96iZ4G4IPcYvkBXJTOpJVm5itYmGyr8M1xRuhu+sfU10OF0VOA3NCek6pkCBnBcjebGpZTt6HmTbUpA3XgFOWt5ZLsQK+n6KJdP3H0t3cYizEJo5/mnCoOQH27kA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=MKDGdRlK; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c100::f; helo=bl2pr02cu003.outbound.protection.outlook.com; envelope-from=jgg@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=MKDGdRlK;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:c100::f; helo=bl2pr02cu003.outbound.protection.outlook.com; envelope-from=jgg@nvidia.com; receiver=lists.ozlabs.org)
-Received: from BL2PR02CU003.outbound.protection.outlook.com (mail-eastusazlp17011000f.outbound.protection.outlook.com [IPv6:2a01:111:f403:c100::f])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hFVP53QYBz2y1Y;
+	Wed, 05 Aug 2026 22:40:09 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.131
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785933609;
+	cv=none; b=Pckv/mM2QjlpytSpIGQa7eVkYYZW1QnkBWGI1JcDbiMQWDpuwMFNRPs4kyY/k/cxOI+A196MLZJ1nBy7IJtKpQB2bE991g3R4b1F30xBt02U/SXZbU67pcsDd5fqm9FJrLkcZxpMAzHeBLti9Cx7ILMI9OB5R74LHVh9XDAUoafNMUvnR+7NBbxpZEEvIFRcR41zMnEnXOap0PVrA/IGeisyDMHVQKWX2MsWadCy30aLt0KgDsB4Lbrd7R2tPumtBts2nWWZORD5vOate1ONp24BduZrpLFfpBnAGmyH8LWt8+AnYCPg8enuslJDq7RPmKq2g4IcGm2Nc3OKuOKvPg==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1785933609; c=relaxed/relaxed;
+	bh=BFHIi52G0DLGh2jlHFvMQOsriC8Uz3afVC7wSChQQrE=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=MFqEVhINo6wePMqoQOg+05lcP9TD7xjw7p6J0m0YEEwezhq3jFfHhSvirl7g1b3BlNfw9JB2cG1HSXnZaGztbfFG67mPwYQrwmCk9aD6VYhkpOkGvSPJ5Ceo0W8iSxSFlEe4SzhePl0KzIBga4GjXeXkujs4FSfN+3c982WYwvDCjs0O9DDK4OXbNU7rXMbvGCeZVJvCuFiWDJs54Jf5q8nLZ9/AgrNXn4ddcQc/izkYYOJpKfMjtkyqCWlrd0Hf3kHjxBKqJFRaTQBjfZ3auLsFDTuHx8a0xi2SVFym1PCk9OPf8wMVmMxHfjdUFQZS2v5Uzfx4ICpyr3Fgdb2OXA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=pfalcato@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=pfalcato@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hFVBM6GwXz2y8c
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Aug 2026 22:30:51 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=rHg7Pqy25T1EHcgljCMLNjJuRPyEm5Tm8xIwNQxi154dmvQaxxwQ5Sfk5Zr1bu+HYKYwn30v6FBIPFAAkSsohBd9qXxRaHAvXuyqtx0FuYmPa4wemPCRkMiuDAv4D86/ViFBDd94eZtEOpbSvAhMWFvPukWS9jGgvFXdgQUhd0/dsxzN94k1pfZeEa+x1iFAZliadFZaGTFhxfNaBZRSvX1v5v6HQGTPxA9h5YoLx/q3TV2/n0GU/MDYB0hsOWYKTaZs9VkoHoAY2Oq5BRHm4HQ1jV46GhoNcGtSdLgqNJLgp/bZm6Ve7PtRBJuhZyzzDjA2floBpGsApbNHKdIxyQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=ox2xbRLxNvdqpJFmgdEJg4jzYCu9Zb10QHH/V8E5mn0=;
- b=J5cAUlCPGO7XGnJjd968I77MnrobAxioxdSRBUM5FQpspKNsY/6F5pwSbUFD5rFdgyHQb3+ytihLz2wLViZ7x2vRY3oMf23x667ReFqT2GL+6uYN39bVg/ZGxR2eUBHDnFswYEE0ctM4M45IXJVTtM/d4XFTc7JynvGy/UUwtFusAZhQKajz5FTuwvAK1SVxv0DbbMYwqhuMTXyWgNTcKZIfYlZhF1eLyWoTo3PzfumItM5XN424YDKpl46axijZo0Zn8beaVzEhOt/wGX5qk6o2FwGjMlhTp184TXde4VAAYIJeb+QUbqxlpRfVbaVLD4vD0lBzUeQIwTsn6tckgw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=ox2xbRLxNvdqpJFmgdEJg4jzYCu9Zb10QHH/V8E5mn0=;
- b=MKDGdRlKhEgo7F2ULcO8dm44E0sNuHGjxPBIwyFLQU51nhvBCS7veG5Oa9Crj4LQJikt0LL1cTsw7dI/yJ1D+nnUuX0dfww+k4pznjZVeYtphfNfTCKan3kwMp2HXXZHPY9rgKauD2BHGoq1CBUbRT443eI1iJCAQHGh0erBq2fj6BxFyOHVghOyphLqgTVwbicP8ZMNW6vxUdgZIexCsT9XDv71/3SDrPZQ4KU1cUJleAvSEJg3CKz5BuynnJExBgY/o5tfWUsG1HhmeYisGrZUDGBXEwwmadQ94+nVV26w9rXznT7FiaayOsIWZdyqFSV6R8L6hnD78fexmViTbw==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from LV8PR12MB9620.namprd12.prod.outlook.com (2603:10b6:408:2a1::19)
- by EAYPR12MB999132.namprd12.prod.outlook.com (2603:10b6:303:2c2::11) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.270.20; Wed, 5 Aug
- 2026 12:30:25 +0000
-Received: from LV8PR12MB9620.namprd12.prod.outlook.com
- ([fe80::299d:f5e0:3550:1528]) by LV8PR12MB9620.namprd12.prod.outlook.com
- ([fe80::299d:f5e0:3550:1528%4]) with mapi id 15.21.0292.015; Wed, 5 Aug 2026
- 12:30:25 +0000
-Date: Wed, 5 Aug 2026 09:30:23 -0300
-From: Jason Gunthorpe <jgg@nvidia.com>
-To: Mostafa Saleh <smostafa@google.com>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, iommu@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	linux-coco@lists.linux.dev, Robin Murphy <robin.murphy@arm.com>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
-	Steven Price <steven.price@arm.com>,
-	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Jiri Pirko <jiri@resnulli.us>, Petr Tesarik <ptesarik@suse.com>,
-	Alexey Kardashevskiy <aik@amd.com>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Xu Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
-	linux-s390@vger.kernel.org,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org,
-	Michael Kelley <mhklinux@outlook.com>
-Subject: Re: [PATCH v8 12/23] dma: swiotlb: pass mapping attributes by
- reference
-Message-ID: <20260805123023.GO27883@nvidia.com>
-References: <20260717180442.110954-1-aneesh.kumar@kernel.org>
- <20260717180442.110954-13-aneesh.kumar@kernel.org>
- <ami_mpd_1pF4Tmdu@google.com>
- <yq5a5x1ygo7z.fsf@kernel.org>
- <amnRB98ZZIysHuM3@google.com>
- <yq5acxw6dl1d.fsf@kernel.org>
- <20260804142032.GC27883@nvidia.com>
- <anL9-OrDGqYQAWNV@google.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <anL9-OrDGqYQAWNV@google.com>
-X-ClientProxiedBy: YT4PR01CA0449.CANPRD01.PROD.OUTLOOK.COM
- (2603:10b6:b01:10d::21) To LV8PR12MB9620.namprd12.prod.outlook.com
- (2603:10b6:408:2a1::19)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hFVP45KyQz2xqM
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Aug 2026 22:40:08 +1000 (AEST)
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id C7D8F3E26;
+	Wed,  5 Aug 2026 12:40:05 +0000 (UTC)
+Authentication-Results: smtp-out2.suse.de;
+	none
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id CBBE8779C3;
+	Wed,  5 Aug 2026 12:40:03 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id 5Z90LiMvc2owfAAAD6G6ig
+	(envelope-from <pfalcato@suse.de>); Wed, 05 Aug 2026 12:40:03 +0000
+Date: Wed, 5 Aug 2026 13:40:02 +0100
+From: Pedro Falcato <pfalcato@suse.de>
+To: Anshuman Khandual <anshuman.khandual@arm.com>
+Cc: David Hildenbrand <david@kernel.org>, 
+	Andrew Morton <akpm@linux-foundation.org>, Catalin Marinas <catalin.marinas@arm.com>, 
+	Will Deacon <will@kernel.org>, "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, 
+	Helge Deller <deller@gmx.de>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	Michael Ellerman <mpe@ellerman.id.au>, Lorenzo Stoakes <ljs@kernel.org>, 
+	"Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, 
+	Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, 
+	Michal Hocko <mhocko@suse.com>, "Matthew Wilcox (Oracle)" <willy@infradead.org>, 
+	Jan Kara <jack@suse.cz>, Zi Yan <ziy@nvidia.com>, 
+	Baolin Wang <baolin.wang@linux.alibaba.com>, Nico Pache <npache@redhat.com>, 
+	Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>, 
+	Lance Yang <lance.yang@linux.dev>, Usama Arif <usama.arif@linux.dev>, 
+	Kevin Brodsky <kevin.brodsky@arm.com>, Muhammad Usama Anjum <usama.anjum@arm.com>, 
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-parisc@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH v2 0/6] mm: add basic PTE const type-safety
+Message-ID: <anMrnsN1xf_Psn3w@pedro-suse.lan>
+References: <20260803164400.531199-1-pfalcato@suse.de>
+ <a5afofuxhzwkeb76jdheottyxt4mms3arg2iucunztczbmd3lf@wiqp7yccjzlt>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -112,130 +79,59 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: LV8PR12MB9620:EE_|EAYPR12MB999132:EE_
-X-MS-Office365-Filtering-Correlation-Id: 693df1b0-8bad-4c1b-433e-08def2ed530c
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|1800799024|376014|7416014|23010399003|18002099003|22082099003|4143699003|11063799006|56012099006|6133799003|10067099003;
-X-Microsoft-Antispam-Message-Info:
-	wtpreoMMSbMNkvVIQRVqvnZb64uPO/ftJxH026TyI2TzinjsLqw7pGLDEkAypUGJMmAcdbM2IY90FmH6YKekynfqyKGced4hUOuk9RfrciCspsz4NQJFTPsrpRl5z8AE+5yP7EfQEaHeDyVbP+mAexfUnm5PpXvtZ/vYMp/Th7N5r3q88w81hqhFqqWLuWxkXirkQvjH8GAhF2BjYZvOfAkjTJvGvqCSBheB05I/rJwAmuXhNMGSkBqD3gq4sLcuq5Xx8WOeOs5fu4zM6HE5ciMtyWNJZHXeyehPBcbaSyjngsvB5CWNz3umZ0gkaEw85yIuFxzWr+Ez8+J2ReLWnHOVbzCtZ/U0snRYGtVQKTFVTCP9NIQN2aumWCfasdKIILrze0GTmHp/SzOEc0Y/o7oYPSpJAq2LjRsZqGwRKMGE6pPWbEhfRrktnXm+Kej8dAV5Dd/YnExy1kJB3mkBEd9UE1MUqYCIZxDxhZP5FRAMX02KCbiP4y/Os86P5SG3d5iUCLFcX1fNlj8a7Duq2Uo8e54Lv18GMX7lhsMFgC0SJVk9tA91SAQrucfnwnkeCBy4rrQM9+3cMMVN4jUFO33344zWFqI3oEQRFdMI0B5rtI1sFZMTJdxfncy/3yqov9rEQaTCL06DYaZ9fwTE862u/SLRfklyfilqlxzi2i8=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LV8PR12MB9620.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(376014)(7416014)(23010399003)(18002099003)(22082099003)(4143699003)(11063799006)(56012099006)(6133799003)(10067099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?IhdvWWGfiwCzol3+AUKdUWMHHE4HWALFFNYMRE+RmFsR/2v0ODtmAbuAIrmW?=
- =?us-ascii?Q?++YuY5qxNSSGbhCE/uUqv1Zjre7UVbCER/qCW06WVTAImbxzFOP7BV0KHQju?=
- =?us-ascii?Q?vBuuCfhcl9vk3TVlXgbCJikyf4g9V69eZfKjeyHVYKjZCQUP6/96b9u2FrXy?=
- =?us-ascii?Q?EXkfC4LFf5h/97MPvBYj7HtXF/lW1Q72gmOXNPYUUYwmlNK9oLOBnS7uvtqg?=
- =?us-ascii?Q?+9KvvEN5Ap8UTSJxNyrcCyGm39bMV9f+msR9ieDkLSkEwZirn70aGektH7ul?=
- =?us-ascii?Q?Wir3QQsAufage7I47Xnxol6uEKRuCWyQo+2FxZlDl5rw2r35ZPHJzrhABDSV?=
- =?us-ascii?Q?nQ2OCr0uTwo+hd/CCA4BfENcsgXUNGDKNwyQ7C3yl6AVihvvU9oomRTSES9X?=
- =?us-ascii?Q?66CnYKuSc1TmuRXXaxtdf0f/mhsJh1NEeXxqP4MiLGub8FrdlDQaQsHiGo+O?=
- =?us-ascii?Q?bhE21Pn2LEjbrTVyZhtQYWw/xUiQ27AwYXKFS6KLOi/xawx4KlV19LK6o09U?=
- =?us-ascii?Q?0OigRMbjTxpbvEY6mHKRjOdc7fd1VW36PnM/JQ/4AobFA8EXl7IjJJ8oJmhV?=
- =?us-ascii?Q?QL/SE2wISFBJucIPsPumh62swZWFbj1Fl8HpiqfcbKc22jCeXnz5rnSngtrY?=
- =?us-ascii?Q?WoBioRTvqcEmBlOOsmPDMelFg3yqC+Hac9lKhr5B22c89P/v+2inJGhvUP5S?=
- =?us-ascii?Q?TadWy/uYUATQIbDhMBEoMQjgqmCoFoJ1e8Qa0S2TorUtCaAOfxHdnzpCYVaz?=
- =?us-ascii?Q?RZMm4pEJsbUuFwg1bUQs9cBjvAKqkvAwY18LtVIML/wLcCoxfog1FNJr1Xe7?=
- =?us-ascii?Q?0JI1ywQNQRuAJV1IEVNgJPIQVSJuc1MUxS5qDkD9HV69GKczAk+g38sa+vHx?=
- =?us-ascii?Q?7naYCd1KdDssmBcCL0e8DBr+kz9RgjbAu0hkP6JZFDht1PxbaZnshp2T1Ws2?=
- =?us-ascii?Q?j/an/bIzYWCs+GSsxmf4saCwUi9Qwt8p5ctqftcc2iOzU/aZNffGSWdcTWop?=
- =?us-ascii?Q?hHoCgzOarMuljYizaEyWVXAwzvBmaSwEJ5eLXxQWtjdDXDhqOyRSOiHP40+Z?=
- =?us-ascii?Q?mAeIZzTGQiNsNHrnaZrtgaLMMAClk2eSvN8qtLC48WvM0x4bk+GT/ZXv5HOm?=
- =?us-ascii?Q?Tww27yTLgyTCRHtucU4XbLgBxbeBTg3aKaF/Uf9nYBABBxbgSsCji7sMIcBR?=
- =?us-ascii?Q?o4qUUXOIGSAxDKY+DMqaxfQgQl0eouNSDdO9e1ZZ/OZicVV4bph6Tf7hnZHA?=
- =?us-ascii?Q?udQOE0V7OSTJEZRzRCfYATnyQCS9qkpkdk5QUs9F/EwcX35CHWxZfQ+l+tlQ?=
- =?us-ascii?Q?0UZqvFtnxhnoZECLAfOBTeVsBry1Lj7JEU0528cPZ/kWNRlbzMhRA5N6cFwb?=
- =?us-ascii?Q?91eIDW939hdE1zKt68NPqswU9YUPZ22jYJnFHhEwF/cBJmLMrCcRRlSAZ6PC?=
- =?us-ascii?Q?LYmutjcySr/n1pfCMmLcm1UCc4MsRx+SBQprC0bweGx8CULgSFYOQfF2KkXV?=
- =?us-ascii?Q?GgEcXTpWlUS5nX+VfBOVL/aKhyCJPJat0mgs8o4M/8RFCwZ92jeuLNiYIN/t?=
- =?us-ascii?Q?obhA4NG10RZeFaZB1rDR7JO4ZV8nObjNY8u8u8QBZLN4xX/gy+IEY9VXuTpr?=
- =?us-ascii?Q?6gyMbpy3WJ73qzF1SmH3e+HP/KeeY0iFDWjUEobitwCrGyJa5+3m+wtNrdKp?=
- =?us-ascii?Q?PKWjgiFUGpIO8Gn1hniVAlB7vMjyz+JRtEViMNPoGPScTyYfWmA0iRXChWL2?=
- =?us-ascii?Q?6a91FZ2B/A=3D=3D?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 693df1b0-8bad-4c1b-433e-08def2ed530c
-X-MS-Exchange-CrossTenant-AuthSource: LV8PR12MB9620.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 05 Aug 2026 12:30:24.9433
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: SnEE0VCiRX+7FvTKRW2hbsqeIdcBOCg9gwb9qK8aHHGB4wwY9TBKfnxLggJ3Y/Xl
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: EAYPR12MB999132
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a5afofuxhzwkeb76jdheottyxt4mms3arg2iucunztczbmd3lf@wiqp7yccjzlt>
+X-Rspamd-Pre-Result: action=no action;
+	module=replies;
+	Message is reply to one we originated
+X-Spamd-Result: default: False [-4.00 / 50.00];
+	REPLY(-4.00)[]
+X-Rspamd-Queue-Id: C7D8F3E26
+X-Rspamd-Pre-Result: action=no action;
+	module=replies;
+	Message is reply to one we originated
+X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
+X-Rspamd-Action: no action
 
-On Wed, Aug 05, 2026 at 09:10:16AM +0000, Mostafa Saleh wrote:
-> On Tue, Aug 04, 2026 at 11:20:32AM -0300, Jason Gunthorpe wrote:
-> > On Wed, Jul 29, 2026 at 06:12:38PM +0530, Aneesh Kumar K.V wrote:
-> > > There is a possibility that we may support io_tlb_mem with cc_shared =
-> > > false in the future. As a result, only swiotlb_map() knows which type of
-> > > bounce buffer was used, making it the only place where the attributes
-> > > can be updated correctly.
+On Wed, Aug 05, 2026 at 04:12:21PM +0530, Anshuman Khandual wrote:
+> On Mon, Aug 03, 2026 at 05:43:54PM +0100, Pedro Falcato wrote:
+> > Since forever, MM code has thrown pte_t * around with no concern for const
+> > safety, or typesafety of any kind. This is confusing. Attempt to address it
+> > by:
+> > 1) Making sure pte_get*() helpers can cope with const pte_t * arguments
+> > 2) Constifying the pte_offset_map_ro_nolock() return type, which by definition
+> > already pledges that users will not write to it.
 > > 
-> > Yeah, +1, the attribute should be changed at the same effective place
-> > the source memory is changed away from what the DMA API user
-> > provided. Only the thing providing the new memory (eg swiotlb) should
-> > know its properties.
+> > These two simple steps were already able to uncover code smell from
+> > khugepaged + do_swap_page().
+> > 
+> > Separate steps could include introducing pte_offset_map_ro_lock() for more
+> > widespread usage of this.
+> > 
+> > Benefits of this include less confusion and better type-safety. It could also
+> > futurely aid in efforts such as [0] which may want semantic annotation of these
+> > accesses.
+> > 
+> > Based on mm-unstable and compile-tested on a handful of architectures.
+> > 
+> > No functional changes intended.
 > 
-> I will keep the conversation here instead of 2 threads.
-> 
-> That seems like a big leap, I'd be worried about devices that operate
-> on confidential data that should not be shared/decrypted.
+> Even though the pte accesses should always be type-safe, this series does
+> not really address the problem completely and instead changes things only
+> for a small set of pte access sites. So just wondering how much beneficial
+> this series really is ?
 
-That seems like something very differnt.
+This series is meant to be a small step in the right direction (while
+feeling out what the community thinks, which seems to be receptive). The
+obvious next steps would be to introduce some sort of
 
-> One example for this which exists in pKVM (this part is not
-> upstream yet) is non coherent devices that require bouncing but they
-> still want to keep the data private. In that case ideally they get
-> an encrypted SWIOTLB pool, but it's always better to fail than to use
-> a decrypted pool behind it's back.
+const pte_t *pte_offset_map_ro_lock(struct mm_struct *mm, pmd_t *pmd,
+			   unsigned long addr, spinlock_t **ptlp);
 
-We don't have any API for a DMA API caller to signal 'must be
-confidential'. If we want to add one it would be a flag to check
-before changing the physical address in swiotlb.
+and use it in more places. That will obviously involve a bit of churn.
 
-As defined today the DMA API expressly copies from private to shared
-memory, that is baked into it's design and not a bug.
 
-My expectation is all these cases have to be solved by setting up the
-swiotlb properly so it provides suitable bounce buffers. Yes, this
-means we will eventually need both private and shared swiotlb pools.
-
-> I have not been following the work on T=1/T=0 devices, but IIRC, they
-> required some complexity to handle their stage-2 as these modes will
-> be emulated differently (for CCA, RMM vs untrusted host).
-> I was thinking that it might be easier to represent those to the
-> guest kernel as 2 separate devices (bounded to different groups...)
-> where one is trusted and the other is not, and that way the DMA-API
-> can have strict rules about memory sharing.
-
-No way! That's would be a giant disaster for the driver model.
-
-Each struct device will have a flag that shows if it is in T=1 or T=0
-state. The flag can only change while a driver is not bound, and
-changing the flag will update the DMA API configuration.
-
-A T=1 device should have the same issue as you point out for pkvm, it
-really needs to have a private SWIOTLB pool.
- 
-> Otherwise, SWIOTLB does not seem like the right place to me, as it
-> does not understand the context the device is operating in, and the
-> DMA-API should deduce that from the flags passed.
-
-It is exactly the right place because it is the one supplying the new
-memory. Context is irrelevant, the flag only describes what the new
-memory actually *IS*, and swiotlb knows 100% if the new memory is
-shared or private.
-
-For your issue it would be appropriate to add a debugging check that
-the new memory is not incompatible with the expected policy. eg a T=1
-device getting decrypted swiotlb memory is a bug in swiotlb setup that
-should be caught. But that's a debugging check, we expect the swiotlb
-to have selected the right kind of memory by construction. This isn't
-done yet since this series doesn't even yet support a T=1 device..
-
-Jason
+-- 
+Pedro
 
