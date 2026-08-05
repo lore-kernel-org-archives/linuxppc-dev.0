@@ -1,70 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-25452-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25453-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6336FC55ABF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2026 22:44:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BFFCCC561E6
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2026 22:44:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hFlpL5S0kz306N;
-	Thu, 06 Aug 2026 08:44:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hFlpN4PXbz30C9;
+	Thu, 06 Aug 2026 08:44:28 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785969866;
-	cv=none; b=E7LePEFk2/1u+Ew7T41DW0weAJqYYyItY2EBz0lgk6H2DFjrq7zmg7NZQUG4Vb/rvI+7NIuVA98CHm7uxvPr185JqPzy4yV4r3hb55i7d2aHe8YAJ2LCVuA/r+qkscMHQEIQBoZirx1YfKyeFtkMCVSfVaKgGyQnBgGScIBBGZe3Xl3XMeGIPPoVvR8dl0Dthih+CK7P1qCBK6Ertexv9x1sKNAT9usGKTE6nY61GLLwW5OTV/N/wy6apK1lfYe9xNjhUgSOYW8P2sp+s4+LdwerQ+2N8ruQBgDEKvO2TNymbT5cKDPL/aFJESPcQotjsJX8ezTBrMvoNYuZDsuiEQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785969868;
+	cv=none; b=njVL0Omebyer3TZO20mYsiAC4qcobpwODz5DOWoDzSUGCO9HOxMcLs8kiwyj2OTqjmcKLmmldwo70Ac+j3kix7ivtJjjt4WJq6rYc0teGe7caIajt52v+VcbEcFBUBuHOE+nxu5AqXURk14TuwCgCzH5TIno1PHZMxicUzBxNKUarrMdMELXthP/sLuqtqm22R2VYnqQcT0MRHenP73y77WJkA0p+tvxwoYNyU2SYkmguor9w8ViMXWE9dfYpDzV+kluYWjgko8cKPPYFvljimMK+R6VqGHh7zJEjBYwMui+Rod5c9H4HIJfsBNdfjBleald4U5UZkUciS5ZGnABQg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785969866; c=relaxed/relaxed;
-	bh=+wio647H132F5XatWI6sMsuTPjtVfx2YGqwmAgmUcwE=;
+	t=1785969868; c=relaxed/relaxed;
+	bh=e0U++xU8OMRRsKneGGCuvRdyWeURGDnucMMJBuYnCiA=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=AETPnhq/xXFCa2NCz8a+Xp+gg6CsVmBK27uysE6mLxlICmsr42ODckkhmAmA/ycyKJiF+H/igxw+99WmBijBogpgh88gdd8fo80A6aJFKamjISHOQi7PKBZOFn42Rohc9HYFLX5PXW5lodz7+FzeoPeKF5VTZHMVvR4Q5NTVLM58sebLAU+gymQG9//hT9MYDTWvoYjJdoubNslGeN1Qos+PHXdWzh1bTScWPent8H2+Ui23qHrORvXWDG5MCBlb4ylQ3bCUO0o2KytPql1eZcyOQ64ZBCrpYbUtv0urFOrbjnj3LZGPhXemGSrzPcmIIK7y9x+4+loOYZIuHqwJMA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=e4aVBlyl; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 MIME-Version; b=E8YNmFef6mFx/gHofRql5HovhTHygkihVa4XtagV7Q5wB8Dl7o5C3rvhAQ1nHEXteALyLeiahPB/18TlpyN1wCmBQb28J0C+yekCeJByVwlRlgaz0bSoP4q/vDbzueT/nCcdokTYmyWXRcowBXdglbwZSPXog8zoj9LbwPpxGAFqfSIAgrqg0ijW3EEukT2QpJ+j2rAgDTgaINPVREPgjY/DHxTcVCVR7475Ohth/9o6jlELIw/u2c5sui4nGnSF7B4y2LPwL0PzrXxbM+BYAYRWsr0yD4UYCJCd+j9Muih5/mOTGGcdBHqcNwvGF5NmZTqGCorht6atlYY4uJS8IA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rThYQQk5; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=e4aVBlyl;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rThYQQk5;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hFlpK72Mxz2xl5
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Aug 2026 08:44:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hFlpM6dvvz2xl5
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Aug 2026 08:44:27 +1000 (AEST)
 Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 675Hlhkf394792;
-	Wed, 5 Aug 2026 22:44:19 GMT
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 675Hlhkg394792;
+	Wed, 5 Aug 2026 22:44:23 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=+wio647H132F5XatW
-	I6sMsuTPjtVfx2YGqwmAgmUcwE=; b=e4aVBlylGh68T3MVV4K4UqMXnvxMF6jH9
-	J+nlsYwO9VAxjgtSBiibmMUlWSCovZYxsa1B1NyzeGrI1fBUK+yBB3I0w2dr4ALE
-	ODEtGBP5GZqJIJYVBYpZNShsFNkiZxQ6bgy8Xp8ZvmNtGDIdy8pgUD5qcBez2EEx
-	FZMxyRTOd4jn3omZdKcA+qQtmy0Dg78Djk1S4/e/wueWZE40g6fn4fbgI66p065B
-	4Yx9LGZ64WePv1WBPuB0yqUTyvBox+Q19/EvAKWTAT1Xol0T8cv9bDGYa0MtkLc3
-	vNxRVf99VS0tgsGQq747/dupOsFQhhs2zwuQlykWyWfzBnOcMiEBA==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fs8euvtcy-1
+	:mime-version:references:subject:to; s=pp1; bh=e0U++xU8OMRRsKneG
+	GCuvRdyWeURGDnucMMJBuYnCiA=; b=rThYQQk5dhMeZLcasuMWzyhIdHs1Wi8BP
+	b6elwQa+f2QZNOiua2y28Mz7JRr/jQTlnnqkmYyLFHYgbsLxZ7EdO9J+1e/ft0mj
+	k4GFKBzEeta4X3JJUYsoCLVbdmkbpaOA5EoeWjkXmfh85M7DGXF0hhfFpfQcvibQ
+	TbYc5F+2YoJ2XYL7A+1aKVo8xrp7REhl/DT1MMeqGCEtBduLsvwmSBdDq+ctFnEq
+	/EbAqccDyzO0SBMmnCXKWWXfWwSRzfS4NNisvDBQAKDdkYAMI87c+szC0fFJxMmP
+	xDQQsLJlfKSHhDTZ4kKjaVNaSxM+j3etYF9i/PjrDg5QiCv1ByxCg==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fs8euvtd5-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 05 Aug 2026 22:44:19 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 675MfFO2016546;
-	Wed, 5 Aug 2026 22:44:18 GMT
-Received: from smtprelay07.dal12v.mail.ibm.com ([172.16.1.9])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fsu4qrs0w-1
+	Wed, 05 Aug 2026 22:44:22 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 675MfHtj022256;
+	Wed, 5 Aug 2026 22:44:22 GMT
+Received: from smtprelay04.wdc07v.mail.ibm.com ([172.16.1.71])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4fsv4k8neq-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 05 Aug 2026 22:44:18 +0000 (GMT)
+	Wed, 05 Aug 2026 22:44:22 +0000 (GMT)
 Received: from smtpav03.wdc07v.mail.ibm.com (smtpav03.wdc07v.mail.ibm.com [10.39.53.230])
-	by smtprelay07.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 675MiGfg22807188
+	by smtprelay04.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 675MiKKe65601842
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 5 Aug 2026 22:44:16 GMT
+	Wed, 5 Aug 2026 22:44:20 GMT
 Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 8C6B85805C;
-	Wed,  5 Aug 2026 22:44:16 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 0A54A58066;
+	Wed,  5 Aug 2026 22:44:20 +0000 (GMT)
 Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 59D6F58054;
-	Wed,  5 Aug 2026 22:44:14 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id DEC205805A;
+	Wed,  5 Aug 2026 22:44:17 +0000 (GMT)
 Received: from localhost.localdomain (unknown [9.67.135.24])
 	by smtpav03.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Wed,  5 Aug 2026 22:44:14 +0000 (GMT)
+	Wed,  5 Aug 2026 22:44:17 +0000 (GMT)
 From: Mingming Cao <mmc@linux.ibm.com>
 To: netdev@vger.kernel.org
 Cc: davem@davemloft.net, kuba@kernel.org, edumazet@google.com,
@@ -72,9 +72,9 @@ Cc: davem@davemloft.net, kuba@kernel.org, edumazet@google.com,
         ricklind@linux.ibm.com, nnac123@linux.ibm.com, davemarq@linux.ibm.com,
         vaishnavi@linux.ibm.com, bjking1@linux.ibm.com,
         linuxppc-dev@lists.ozlabs.org, mmc@linux.ibm.com
-Subject: [PATCH net-next v1 1/6] ibmvnic: cap rx pool entries against the real buffer size
-Date: Wed,  5 Aug 2026 15:43:56 -0700
-Message-Id: <20260805224401.58791-2-mmc@linux.ibm.com>
+Subject: [PATCH net-next v1 2/6] ibmvnic: honour the requested mtu instead of reverting to a fallback
+Date: Wed,  5 Aug 2026 15:43:57 -0700
+Message-Id: <20260805224401.58791-3-mmc@linux.ibm.com>
 X-Mailer: git-send-email 2.39.3 (Apple Git-146)
 In-Reply-To: <20260805224401.58791-1-mmc@linux.ibm.com>
 References: <20260805224401.58791-1-mmc@linux.ibm.com>
@@ -94,156 +94,138 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: dkF4Cv3iaM0m3-CZijUQfdX0Q_1nJ9o1
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODA1MDE4MyBTYWx0ZWRfXwk5cpNs9zc1K
- 9ddojyzDcQ0XOfdWBr7JG7LEpzDa6DvC+yJPGyRUvqi0O4t+VjnF1CyvwsB0U8MMK+maIulJWcD
- M2xZgOjL1D4RXFG5fuln8uyickqZa2o=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODA1MDE4MyBTYWx0ZWRfX8XcAL1wlZRT7
- 73KhFBZadnJihiL29dJQAV95rjEBnPX49Rji0jDcrl35oVEZEaD1xg1X5HsNJB/u0ot/pP0JdRg
- eSNTT7OFycXHP+vEbb8u/tTPohUTGi5HCFEjR+1+bnwMiQUbR2ErBtc8b3918apSki0f3Xqctdl
- KtBQ4kpWnoIwO1Wsz4Bcu8bdavpIaW4DdKjnxN0J5z0Cfi8rcAytxC7GX7lmPSl6wFB/+I8WkSl
- XHAHVEWfKgE5sEtPh43NCmsGDMXDDBQHarmLMVH2uwGUneNH41wRTzS7j8BgVM4EKVOtbq8R0w0
- 1FpefaMRPWWcxLmfXyVmX0OuaQfXQJ76jQ0JpL5tt1v6KUCQxE1Lft8PbxeIiJ5pAaPLdHX0RoB
- AUWBlPGz7iUw0Ji+2nhbjpNYRDS2RSTJeCmaqrKlZBb+9dYM3a2hF6QZR3Ngx5tUJcAheIwg3Vi
- U2uVUZo0+K9RyyW8MaA==
-X-Proofpoint-GUID: XAumqa-L1D29YRxcACM2fosKIxzpiS6c
-X-Authority-Analysis: v=2.4 cv=KfzidwYD c=1 sm=1 tr=0 ts=6a73bcc3 cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+X-Proofpoint-ORIG-GUID: cnsixlzSSpXXbLxSq6Ebt29HLokxM2IM
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODA1MDE4MyBTYWx0ZWRfXyeQTj7PiLROa
+ h72MCmcoJg7fN0QWuQPajK/QPHUOJ8w7aGE9B25iRGgEa8/Kk9o2iCEICH7BvqBe1RborwCGYk+
+ 9YTyg/ICrQ+tEUHoQkTel5Vd01g9Oa0=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODA1MDE4MyBTYWx0ZWRfX9XqXQ2uc5e0R
+ yQrXwpiIhTxRhEilkzaOQxXw6NJm+ILzh6QtJyazVqQT9rimA4r1RNkuAQOxpHQ4+xpHfPMFh0o
+ icNyxpsLbDq5IVFbipZcfIc970kSMMCovc8RRNokBRCVvyVwxs0+Q+fLG1f8NGcwGknU/JRpYWg
+ DS1rGbNZaBUYodwNg4gTSZgFu9o+PiEBh7lXRPp2iiFDkksJq3QleH/WIgNd0A3sbTVMyNKWhO/
+ papR3yWaOHeojiq/4jNfHM6F+JUnHkOg/y+QrsmUM4VdbqPCxqoRaB/yX8QJ6X/xQQ7bYj0bPNh
+ FnUf8HYMVHBTCoo7uZ8XyZ0k4/I8RZdtzpBcJU37QBQg6oTvQjlfKaJKABgx/hjt3HCPb4kBokl
+ 6S0tyIS8Xs6RCrxSodtVnTCEiEV8W45AX8sCW2UBd34KZDHfMC/VL2exLmhaRBKSci6qR0s76ZP
+ fkxVg5YR6MfNnymowyg==
+X-Proofpoint-GUID: g_1y57XMDFVni2afvfOIEhf9j1_9u92G
+X-Authority-Analysis: v=2.4 cv=KfzidwYD c=1 sm=1 tr=0 ts=6a73bcc7 cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
  a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=RzCfie-kr_QcCd8fBx8p:22 a=VnNF1IyMAAAA:8 a=RX7lkqzSWFBi5ArnvYEA:9
+ a=RzCfie-kr_QcCd8fBx8p:22 a=VnNF1IyMAAAA:8 a=jl8DONJFTl3ZpNuRYKwA:9
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-08-05_05,2026-08-05_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  lowpriorityscore=0 bulkscore=0 impostorscore=0 suspectscore=0 malwarescore=0
- adultscore=0 clxscore=1011 priorityscore=1501 phishscore=0 spamscore=0
+ adultscore=0 clxscore=1015 priorityscore=1501 phishscore=0 spamscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608050183
 
-Changing the mtu from 1500 to a value in the 2000..8000 range can fail
-pool allocation and leave the interface down:
+No mtu other than 1500 or 9000 can be set on an ibmvnic interface. Any
+other value is accepted by ip(8) but silently reverts:
 
-  ibmvnic 30000008: Couldn't alloc long term buffer
-  __alloc_pages: ... order:N, mode:0x...
+  # ip link set mtu 1414 env8
+  ibmvnic 30000008: req=1428, rsp=1514 in mtu queue, retrying.
+  mtu of 1428 is not supported. Reverting.
+  ibmvnic 30000008: req=1514, rsp=1514 in mtu queue, retrying.
+  mtu of 1514 is not supported. Reverting.
+  # ip link show env8 | grep -o 'mtu [0-9]*'
+  mtu 1500
 
-(9000 happens to succeed, which is how the middle of the range stood out.)
+The backing device runs at one of a small set of fixed sizes, so the
+vnicserver answers every REQ_MTU between the advertised minimum and
+maximum with PARTIALSUCCESS and the size it settled on: 1514 for
+anything up to 1514, 9014 for anything above that. It is reporting what
+the backing device carries. Requests outside the advertised range never
+get here, since dev_set_mtu() rejects them against netdev->min_mtu and
+netdev->max_mtu.
 
-That is the non-bucket case this series exists to allow: the guest mtu is
-not one of the sizes the backing buffers were sized for. Until the next
-patch, req_mtu was always forced back to a size the device carries, so
-the pool guard happened to measure the right buffer. Once arbitrary
-in-range mtus are honoured, that luck goes away.
+The driver read that as a rejection. It reverted req_mtu to
+fallback.mtu and re-ran the exchange, which is why the log above shows
+the revert twice: the fallback is in range as well, so it partially
+succeeds too and the mtu settles on whatever the fallback was.
 
-send_request_cap() limits how many entries a pool may hold so the whole
-pool fits in one long term buffer set:
+Treat a PARTIALSUCCESS that covers the request as the confirmation it
+is, and keep the requested value.
 
-  max_entries = IBMVNIC_LTB_SET_SIZE /
-                (adapter->req_mtu + IBMVNIC_BUFFER_HLEN);
+The response can also come back below the request. The advertised
+maximum is the protocol ceiling rather than a promise about the current
+backing configuration, so a device that is not set up for the larger
+size answers with the smaller one it does carry. That does not cover
+the request and must not be published, so it keeps the existing retry,
+which now also stores the response value rather than reverting to a
+fallback. It therefore converges on a size the device can carry instead
+of re-requesting the same number. Other capabilities are unchanged.
 
-The rx buffers are not sized from req_mtu. init_rx_pools() sizes them
-from cur_rx_buf_sz, which comes from the login response and describes
-the backing device. When the VIOS has the device at jumbo (cur_rx_buf_sz
-around 9014) but the guest mtu is still smaller, the guard measures a
-buffer much smaller than the one really allocated. The entry count
-passes through untouched and the pool asks for several times the space
-the guard assumed - enough that dma_alloc_coherent() / __alloc_pages()
-refuses the request on kernels whose per-pool LTB budget is a single
-allocation rather than a large set.
+Later patches in this series make the resets that follow a real mtu
+change safe (and, on net-next, skip them when the buffers already fit).
 
-With a backing size of 9014 the buffers are ALIGN(9014, L1_CACHE_BYTES)
-= 9088 bytes, while an mtu of 2000 leaves the guard working from 2514.
-The overshoot only shrinks as req_mtu approaches the backing size, so
-the largest mtus are the safe ones and everything below drifts.
-
-Cap the count against the size the buffers are really allocated at.
-reuse_rx_pools() has to compare against the same number or it would
-see a difference on every reset and reallocate pools that are already
-the right shape. clean_rx_pools() must walk rx_pool->size for the same
-reason, or a clamped pool would be cleaned past its end.
-
-Comes ahead of the next patch, which is what lets req_mtu sit below
-the backing size. Keep the two together when backporting.
-
-Fixes: c26eba03e407 ("ibmvnic: Update reset infrastructure to support tunable parameters")
+Fixes: e79138034068 ("ibmvnic: Revert to previous mtu when unsupported value requested")
 Reviewed-by: Dave Marquardt <davemarq@linux.ibm.com>
 Tested-by: Vaishnavi Bhat <vaishnavi@linux.ibm.com>
 Signed-off-by: Mingming Cao <mmc@linux.ibm.com>
 ---
- drivers/net/ethernet/ibm/ibmvnic.c | 26 +++++++++++++++++++++-----
- 1 file changed, 21 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/ibm/ibmvnic.c | 34 ++++++++++++++++++------------
+ 1 file changed, 20 insertions(+), 14 deletions(-)
 
 diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
-index 5a510eed335e..86e643ee6b3b 100644
+index 86e643ee6b3b..f5f9c0d5b4e6 100644
 --- a/drivers/net/ethernet/ibm/ibmvnic.c
 +++ b/drivers/net/ethernet/ibm/ibmvnic.c
-@@ -1021,6 +1021,24 @@ static void release_rx_pools(struct ibmvnic_adapter *adapter)
- 	adapter->prev_rx_pool_size = 0;
- }
- 
-+/**
-+ * rx_pool_entries() - Number of buffers one rx pool may hold
-+ * @adapter: ibmvnic adapter
-+ *
-+ * send_request_cap() budgets the entry count with req_mtu, but the
-+ * buffers are sized from cur_rx_buf_sz. Cap against that size here.
-+ */
-+static u64 rx_pool_entries(struct ibmvnic_adapter *adapter)
-+{
-+	u64 buff_size = ALIGN(adapter->cur_rx_buf_sz, L1_CACHE_BYTES);
-+
-+	if (!buff_size)
-+		return adapter->req_rx_add_entries_per_subcrq;
-+
-+	return min_t(u64, adapter->req_rx_add_entries_per_subcrq,
-+		     IBMVNIC_LTB_SET_SIZE / buff_size);
-+}
-+
- /**
-  * reuse_rx_pools() - Check if the existing rx pools can be reused.
-  * @adapter: ibmvnic adapter
-@@ -1048,7 +1066,7 @@ static bool reuse_rx_pools(struct ibmvnic_adapter *adapter)
- 	new_num_pools = adapter->req_rx_queues;
- 
- 	old_pool_size = adapter->prev_rx_pool_size;
--	new_pool_size = adapter->req_rx_add_entries_per_subcrq;
-+	new_pool_size = rx_pool_entries(adapter);
- 
- 	old_buff_size = adapter->prev_rx_buf_sz;
- 	new_buff_size = adapter->cur_rx_buf_sz;
-@@ -1082,7 +1100,7 @@ static int init_rx_pools(struct net_device *netdev)
- 	u64 buff_size;
- 	int i, j, rc;
- 
--	pool_size = adapter->req_rx_add_entries_per_subcrq;
-+	pool_size = rx_pool_entries(adapter);
- 	num_pools = adapter->req_rx_queues;
- 	buff_size = adapter->cur_rx_buf_sz;
- 
-@@ -2000,7 +2018,6 @@ static void clean_rx_pools(struct ibmvnic_adapter *adapter)
+@@ -5502,12 +5502,17 @@ static void handle_request_cap_rsp(union ibmvnic_crq *crq,
  {
- 	struct ibmvnic_rx_pool *rx_pool;
- 	struct ibmvnic_rx_buff *rx_buff;
--	u64 rx_entries;
- 	int rx_scrqs;
- 	int i, j;
+ 	struct device *dev = &adapter->vdev->dev;
+ 	u64 *req_value;
++	u64 rsp_value;
+ 	char *name;
++	u16 cap;
  
-@@ -2008,7 +2025,6 @@ static void clean_rx_pools(struct ibmvnic_adapter *adapter)
+ 	atomic_dec(&adapter->running_cap_crqs);
+ 	netdev_dbg(adapter->netdev, "Outstanding request-caps: %d\n",
+ 		   atomic_read(&adapter->running_cap_crqs));
+-	switch (be16_to_cpu(crq->request_capability_rsp.capability)) {
++
++	cap = be16_to_cpu(crq->request_capability_rsp.capability);
++
++	switch (cap) {
+ 	case REQ_TX_QUEUES:
+ 		req_value = &adapter->req_tx_queues;
+ 		name = "tx";
+@@ -5546,21 +5551,22 @@ static void handle_request_cap_rsp(union ibmvnic_crq *crq,
+ 	case SUCCESS:
+ 		break;
+ 	case PARTIALSUCCESS:
+-		dev_info(dev, "req=%lld, rsp=%ld in %s queue, retrying.\n",
+-			 *req_value,
+-			 (long)be64_to_cpu(crq->request_capability_rsp.number),
+-			 name);
+-
+-		if (be16_to_cpu(crq->request_capability_rsp.capability) ==
+-		    REQ_MTU) {
+-			pr_err("mtu of %llu is not supported. Reverting.\n",
+-			       *req_value);
+-			*req_value = adapter->fallback.mtu;
+-		} else {
+-			*req_value =
+-				be64_to_cpu(crq->request_capability_rsp.number);
++		rsp_value = be64_to_cpu(crq->request_capability_rsp.number);
++
++		/* Covering PARTIALSUCCESS: keep the request. Otherwise
++		 * retry with rsp_value.
++		 */
++		if (cap == REQ_MTU && rsp_value >= *req_value) {
++			netdev_dbg(adapter->netdev,
++				   "backing mtu %llu covers requested %llu\n",
++				   rsp_value, *req_value);
++			break;
+ 		}
+ 
++		dev_info(dev, "req=%lld, rsp=%lld in %s queue, retrying.\n",
++			 *req_value, rsp_value, name);
++		*req_value = rsp_value;
++
+ 		send_request_cap(adapter, 1);
  		return;
- 
- 	rx_scrqs = adapter->num_active_rx_pools;
--	rx_entries = adapter->req_rx_add_entries_per_subcrq;
- 
- 	/* Free any remaining skbs in the rx buffer pools */
- 	for (i = 0; i < rx_scrqs; i++) {
-@@ -2017,7 +2033,7 @@ static void clean_rx_pools(struct ibmvnic_adapter *adapter)
- 			continue;
- 
- 		netdev_dbg(adapter->netdev, "Cleaning rx_pool[%d]\n", i);
--		for (j = 0; j < rx_entries; j++) {
-+		for (j = 0; j < rx_pool->size; j++) {
- 			rx_buff = &rx_pool->rx_buff[j];
- 			if (rx_buff && rx_buff->skb) {
- 				dev_kfree_skb_any(rx_buff->skb);
+ 	default:
 -- 
 2.50.1 (Apple Git-155)
 
