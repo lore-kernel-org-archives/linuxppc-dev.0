@@ -1,89 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-25494-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25495-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 459BDC5AC80
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2026 16:40:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B499FC56208
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2026 16:50:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hGChB4Rk7z308X;
-	Fri, 07 Aug 2026 02:40:42 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c200::1" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786034442;
-	cv=pass; b=OnCd215NnxCuph+jOanmHX8o6YPNwJewgjWsrMLcNJ3eYc/wGzdFL/cYCBhsY78H5n+r11iQ+wEmXkN5h56lvOissRAEMLiEOKtFNmM8B1bETCk3j9sTKPuRD7swrS3NT/xTX4hyf2sp/QZvFSBB3gSsAyH4/70KUeFj3AQ3vaKEdFn0L+Pqvc5+jOd4p9fXcqhKRyUn97wGOVWHA3v7hvepEdRL8QAukljhDPav4xzd7YBAqLO2epG6d4VDewl8s0eC25rNe71PWLnKqzagmfCvY5JyzNq06NTKu+Wjp8Unvo64uIIEPPWL3f4vSfqJqr2lpW/+2zrFcqnYEnDaCA==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786034442; c=relaxed/relaxed;
-	bh=hPiRNVZIox1wV4o670edvUM7O5g9WqmqCCUw4mEWoTs=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=UvhAtQbqJsh/YU07ccNpPpehKVTzdv2N8TgGp0PtgxJSYFc5bwDJWA24mNYm/1m57Cjbn2mlopDr+Bn8YV+HTlZdMlgW58Vgf3ygBQH0BR93DqTJmMPREG3WI2sQO6DWVQ/Sj8eVKeg6uNiFBXn0PcB0PY+ebIbEDwivl1ajc2OeUjnSBFeh9Vkb9dcHaxlGcUe/LNpPIPtGMCC27iUvZzcIIUwR401iZW9Sa/6pOYyfCXi+JATW1YRkroE2iTp6E1jnzKvhvxAUy0KSnxOIi0L5iuXrP1t492PQs0/auQQH9AYblBu4+cesURl+cQTREjZqWWTh5YD3vh8gOOfMtg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=tDvj1Ffs; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c200::1; helo=db3pr0202cu003.outbound.protection.outlook.com; envelope-from=frank.li@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hGCvQ1MYDz308X;
+	Fri, 07 Aug 2026 02:50:26 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786035026;
+	cv=none; b=GrAy0LquJLsGlK6roUR5Ciu4Ry1JMbV2zo5aJAeo7CmbhURrKmS/KiSoslSUb1JJ7G8EHfRUi3QONqYfsO60ermBO4RyYCG86O3YZU3xsg/OFfM5ImxgvtxZ+N182ID/u2tW1ZCf2ta65KcF40PMiLfPJa/Xbth1LKehuqyQvJQuI4sa2gNr/FyfdjoqMTKT+yd+OMZC7l+oe4uHNu2vMRHFWxaXYcz0f7O9hSh0UjvSKzJlIAketYivoClyFFg/TQRL+IZThCsNqD4ss6TnicE1FH603/igO2bST2SuzXvmkHvDHzXg7LsVOx1gLcEj+7sAdQbIRb6G3CZUlQnA1A==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1786035026; c=relaxed/relaxed;
+	bh=dI/JUWOXVfmk03QoibAP+70rE2yFJwykSpSDH95V5/w=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=XJ1yf0jR18b+CmKyhC5+AVNvyPf2swD5D7hItSZsSKx+bNuF8cQ0SBvI2FI4wmc97v02c+ZFOP8iPXMULcHCbgSi77vTfWrlWvUJTzczX3xS3Wfx7leb/bNlHaVUowP/M9idQ4bKe14ZRwcrngBdG5RI9QW4xCQTxVQVTkj2zwRtyPW0HUnA1nyH1daiBp1SJRYCQdBdcrqgREvrq+uBiExVOBgDrAMqZ8L4c95NEDdE99zrSgabGWuCtIVbodTPQJ4p44S9AjENiF2M+lnNMoB5FpBRy8pnIz9NmzHnLdz93rQ92D2E2+Q2ZVPFLeHKqZzRtKifRDALXxYzNw45Aw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PWgW/xsI; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sbhat@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=tDvj1Ffs;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PWgW/xsI;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:c200::1; helo=db3pr0202cu003.outbound.protection.outlook.com; envelope-from=frank.li@oss.nxp.com; receiver=lists.ozlabs.org)
-Received: from DB3PR0202CU003.outbound.protection.outlook.com (mail-northeuropeazlp170100001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c200::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sbhat@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hGCh91R0Vz3080
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Aug 2026 02:40:40 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=BnWZCk3GBySXfeTONQcUtn5qssx/one4QTtE1Yy+z/DlJXmAVJiBxsWTQ0CGJp/rig91owzJgT9vCphSdDkqNoSGIPQYk9DZ+rFFxDVky+7FAbCZzwZomYK0cHi8oSRid5+UfcJAidPX8CkCgoh2Xo25RvOpFzcCD4g0+COzb7YoibJtcnaga4BRwN+41XxpJfr8bywqZigFxp9OMLVhUMyojVLzM5cqGwOA0B/umNHJ42NC+QhqNeFlGCMuQN8nLCOQjYqZNXzqR1Zq6P7wC4nMpxVpIdlj2+rUjmbZwQ1jlzXxHdtCO4nbwip5qhaMP6IRGuHlNXzCAz8NGVZjjg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=hPiRNVZIox1wV4o670edvUM7O5g9WqmqCCUw4mEWoTs=;
- b=W6uAqb4xtXuZdKD0mwzXK/EnJGGbUeXd5G+keQWweYZk4CkpiALiawZABhQZfH6jZJO/uqvBAd95GGm0b5hIHg8QaQVlFje/AL9XiXZ5um460dxEtyD412+Ey9ufyeST9yfgHV7T4j+Eo9uVuqVKm5ktV5VrLvF5CnkMCPdp3VL7TeX7O86+uQ/qLN9H9WpOMn6diybt8bfuspYTQ26VEv/yCSGPTxpfrEcPyrTwL4Zz4A5bEdrwnAzec9mgJfJU0BJAks6wNDkH0X40F/q308L04ipG7SRfURqserZTiN/EKt/w71Y5BP14ibcRyUaXOls+jE4zigTSFaVfclQ+XQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
- dkim=pass header.d=oss.nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
- s=selector1-NXP1-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=hPiRNVZIox1wV4o670edvUM7O5g9WqmqCCUw4mEWoTs=;
- b=tDvj1FfsIl36L8tAy2+NTDTYBHQQrgvKSFbTMomAAe0B0b0FZTBbujjZEHxB4u5Y+2+Vkuy0tCj2qx91nWq+oye8pO3HKMl9ocaefURdMMZBR8f7XOo2/uqC8rj20dg8DUoHn79t2FJssHmB//SP9Ar/wCWthSri149XfHevfLHJoQoHfbrKQ4QDuruJach5DfZ5KeaKoqiRJG1jwGVhEnPXvZeOhHMO6KUbWkP5U2aU226k/eDpawl8yNsD84Qgqk+CjjHprKf/n5dUR8iaUleqXjmYQcvk8vxjthRyP+i39d1vISUu2vB72bj+4tB4la6LfvCy2uSANSLKlMNzSQ==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=oss.nxp.com;
-Received: from GV2PR04MB11799.eurprd04.prod.outlook.com (2603:10a6:150:2cf::9)
- by DUZPR04MB10062.eurprd04.prod.outlook.com (2603:10a6:10:4e2::13) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.292.20; Thu, 6 Aug
- 2026 16:40:16 +0000
-Received: from GV2PR04MB11799.eurprd04.prod.outlook.com
- ([fe80::2146:83a2:5329:b7c]) by GV2PR04MB11799.eurprd04.prod.outlook.com
- ([fe80::2146:83a2:5329:b7c%7]) with mapi id 15.21.0292.018; Thu, 6 Aug 2026
- 16:40:16 +0000
-Date: Thu, 6 Aug 2026 11:40:07 -0500
-From: Frank Li <Frank.li@oss.nxp.com>
-To: Shengjiu Wang <shengjiu.wang@gmail.com>
-Cc: shengjiu.wang@oss.nxp.com, lgirdwood@gmail.com, broonie@kernel.org,
-	robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
-	Frank.Li@nxp.com, s.hauer@pengutronix.de, kernel@pengutronix.de,
-	festevam@gmail.com, shawnguo@kernel.org,
-	linux-sound@vger.kernel.org, devicetree@vger.kernel.org,
-	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org, Xiubo.Lee@gmail.com,
-	nicoleotsuka@gmail.com, perex@perex.cz, tiwai@suse.com,
-	linuxppc-dev@lists.ozlabs.org,
-	Shengjiu Wang <shengjiu.wang@nxp.com>
-Subject: Re: [PATCH v3 1/5] ASoC: dt-bindings: fsl,imx-asrc: update port
- binding to support multiple paths
-Message-ID: <anS454bPBMuKW0Ga@SMW015318>
-References: <20260804100218.49587-1-shengjiu.wang@oss.nxp.com>
- <20260804100218.49587-2-shengjiu.wang@oss.nxp.com>
- <anH5i7y3JkB1moee@SMW015318>
- <CAA+D8ANCoc5qOUvTQPRNkvrfqAY3n6x_fbfUveP8Sfv+SL1NVw@mail.gmail.com>
- <anNtgkZYhoWsSRr6@SMW015318>
- <CAA+D8APMT2eSgrc37n_YZ4PsDZ-_8h4gHsyhADGGYDpTob_g+Q@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAA+D8APMT2eSgrc37n_YZ4PsDZ-_8h4gHsyhADGGYDpTob_g+Q@mail.gmail.com>
-X-ClientProxiedBy: SA1P222CA0049.NAMP222.PROD.OUTLOOK.COM
- (2603:10b6:806:2d0::26) To GV2PR04MB11799.eurprd04.prod.outlook.com
- (2603:10a6:150:2cf::9)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hGCvP1q3Cz3080
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Aug 2026 02:50:25 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 676EnA1b2939527;
+	Thu, 6 Aug 2026 16:50:16 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=dI/JUW
+	OXVfmk03QoibAP+70rE2yFJwykSpSDH95V5/w=; b=PWgW/xsI4pebgAH/BV1kz8
+	PrYpd0TU18Kia8wtq8jNczblGnJT/lUvsuDMqLGrIaUzrXtht7DadTOtm4lj/qni
+	m0P8s1ENRkiLbGPy/n9Z8COsJwxLX2UopugiFKvIKg6TPEWepo0IXQ669a7grjwB
+	cp4t90+FIFaG9AWMHBmV4UpXr93ak5TjfjsH3BqSKb+78bV45ydLtW28McSyON2o
+	dHCKK5TvclBcyZ+FCsCShJFdSahmvkmqB0RF0Aufvki2M31Jra3lJpp/e1EaqUrG
+	znpkB6gk97y7VWWEZlJDHtNGlSHjvbhLOki+2cau6+h9f6OzjuzRGpOQ9MMwxd3w
+	==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fs8a49cn5-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 06 Aug 2026 16:50:15 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 676GfRJL018806;
+	Thu, 6 Aug 2026 16:50:14 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fswtyutnm-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 06 Aug 2026 16:50:14 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 676Go8OS30933476
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 6 Aug 2026 16:50:08 GMT
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C1C3120043;
+	Thu,  6 Aug 2026 16:50:08 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 11FB120040;
+	Thu,  6 Aug 2026 16:50:04 +0000 (GMT)
+Received: from [9.67.65.218] (unknown [9.67.65.218])
+	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Thu,  6 Aug 2026 16:50:03 +0000 (GMT)
+Message-ID: <72ce5fa7-d12b-40e5-a4a2-f2de414088d1@linux.ibm.com>
+Date: Thu, 6 Aug 2026 22:20:02 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -97,127 +81,96 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: GV2PR04MB11799:EE_|DUZPR04MB10062:EE_
-X-MS-Office365-Filtering-Correlation-Id: e7b27a62-c42f-47e0-6e1c-08def3d96527
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|376014|7416014|366016|1800799024|23010399003|19092799006|11063799006|56012099006|10067099003|6133799003|3023799007|18002099003|22082099003|4143699003;
-X-Microsoft-Antispam-Message-Info:
-	cw5aupP/9pSLJKdMfsBZ1YXWV9EoSOmgeHPvdtA1pB5do7FPyGpWnHp+F3p3G49/itGXFc76C9Z6/fs/d9/RrGgIb+5SMsjs5azY+EBmivrqzmlWCKKGUd6+ZVNUnWkekUnjIxUp4oUzQjJjMo8asGQxhjSIHoYgM3wBvuCHZLUAu9tGdPDYiEp283lLJzuJKDJbzDdILY+uA8wk8quOcqvKfvYEPl96gSUv3FoJoBSRIss+lJnXk6QrsSL2aG3oJ0sUs6VPC8k9tok+cMW69I/bodZtlS3yS8Ji3Lm8GNesgSTK+yg8gUxGVqPpZZ3nzB69txvxQHO8AvvqkLihAgkucl30h6M1rFo9pLoT5eyRURshKxMkwW5QRK5Gu/u29zrJLcCQ3vXwwiCc3tdAL8ExTKg0wXZtilJy6sXeQEYHifvuk6OXtOelRwm/T0ZKqq7s8ONtdllBS4pqHM9Dwl+UYt7hu7Ekm/2iKEYQinan5so3tb2iv5iXsabr1SvIo9RdWDIJAXsuR4qDj0yJHu8qqg+k3TWPKtc72aKZDhKNYaGZlooznZ6lluSwm9mXnQ1uhMfl9DYKMuWgXh/+kCyt2wb6KKQ57HtSoEEG7UNEqMc4ohfcddWwxbrcOK60j7bigmrDdmIRnmKAGNPEZvyzEsscrjN5MvSr6SwMQnI=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GV2PR04MB11799.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(366016)(1800799024)(23010399003)(19092799006)(11063799006)(56012099006)(10067099003)(6133799003)(3023799007)(18002099003)(22082099003)(4143699003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?cW11Q2kvWGgydjcvY0pDZ29xUStYMXNwbWxkZitWN3AwV0oxYm84czhrZWU5?=
- =?utf-8?B?c09mb01HU1FObm1HdldNMDc5SlFFYWVGZzd5emg2REVGbytzbWUvVkNVWTRJ?=
- =?utf-8?B?WVd1T3hYQW9tUWlCU2NLb0h4ekFjY0lVQ1NJY09YMUR4M0R3MW9KeWZoTTRL?=
- =?utf-8?B?Zzl4SllOZ3VBMVJweE5uOWFoK0x3Q1p3RmRoUktocUdXdGg3RllMVnJsaWZi?=
- =?utf-8?B?N2JFeXMzbmh5WmNKVHpJMUN0NG1WQS91Mjd3N29RMTh0eHFXYUdoYVo0TDlS?=
- =?utf-8?B?Qnk5aTEwZHNMM2YxbVIvV0VZUEQzVHU5QzF2Wk1SbTVNMG5QYndhZGNzeStx?=
- =?utf-8?B?NVBMbUFMZzBxNi9kQ3REWWkyNFRDQi91WkR5dndaMXlCM05jOVhkTXd5bmlx?=
- =?utf-8?B?ZWFManJEc0RnV0xhVkRVdE0xOUJKYWtBL1IrYkxHN01nZkVyaERpcWRJUU92?=
- =?utf-8?B?ZGJYcHZlVmIrVFUwWE9wQ2JIeENXTFprU2hYaHpyWUN3T0VIdmtvMjY2YWxW?=
- =?utf-8?B?dlNScGxoNnEzSDMwVCtJZTFLWk9uTXF0YzBqbklvT3hLUWpMeXllVzJsTnRz?=
- =?utf-8?B?Tjhibm5ESzlZTWZSRnJxRWpqbURnR1I0VXNNd001cWlwTXJNTE1nSDRKenh6?=
- =?utf-8?B?THhRdXZrQmtDdEFwQ2owaEFSL2NQeTVwS1ZjU0ZYRHJGNGF3ampKOG9IYS9j?=
- =?utf-8?B?U2JFbWpnTzNjZ3pFMUdvdEVLYjR2bDhPai9UWEpraWQyNFVFR3kwSEw1NzA1?=
- =?utf-8?B?MXBHcmNQbTUwNjdRVjdHMUZNbXNpSUhKc2paQ2FvOXlxc1NDZnBoSTNLMHdn?=
- =?utf-8?B?MkVEVm16TDVYdFpmWGNYUE1wN1ZYN1VhV0pqdWdGWkRYVkp5czVDZmUwcmdE?=
- =?utf-8?B?KzVZYzZQR0RFOFYrZkJIMkpRbE5wLzlvQlpJTWhBc3hSK092cnpTQmNGQ0pD?=
- =?utf-8?B?N2N1cUtTUTVqZ1FZUzc3c29tNVdQU2dnNmpyT3dGRlVpcGJ1S25sM3Q4d2xw?=
- =?utf-8?B?UFFRTTJvcGo5K1ZGRUlkemFIaUtHREVKUXAvTHRSdG5yV1lWZzY2TGJSVE1z?=
- =?utf-8?B?RXJFOHBBa3pRR1hzT1U4dUhjNWt5Umx4bFo4M1QyZmtHL3Z3N3hUREdSUWdy?=
- =?utf-8?B?M0IveU0rUHNCWUo3WEVrQXJuTDVaa0kzTXRmWlVDbG40ZkNyL1doQk5mQzR2?=
- =?utf-8?B?LzRWWjNLVEN2WlM2Z0tTeVJ4bjg1SDBSQ0VDdTNjckRKOXJSQzkwd0w1Z0Nk?=
- =?utf-8?B?YmhXeUJZZnl2Rk1JbGV4VEtRa2FXM0EvdDJBUU52bmlFSStKcmJGRXIybEEy?=
- =?utf-8?B?aWtZOUN2cFNxWGowaitMeFRKdE1ETmczTWVCSkhjMmJoVzFQZzF1M1d4QTFV?=
- =?utf-8?B?eXRqcDVSb01BdURUU2t3cHBZMlcvcnlZZE9KSXpXTmdsemRkbjVrdi9zMUlH?=
- =?utf-8?B?L043YWdnaEw1T0Q0WEx6b2wzdEhmTFV5UXdBSUZPVzFGRG0xcVlpWjl4MkZO?=
- =?utf-8?B?aFdkWUthUUU5cEhJbC9ZdmtqVVpqeW1hSGI5aUZsS1k3NkdjNXh1S0swODlL?=
- =?utf-8?B?VGxkNHpyUjYzYlprdmExVWw1MDQ4RHR6bk8xbzBoZUdpa2VsQjdRT2JCQk05?=
- =?utf-8?B?MXgrUHhMWURvZzdGVS9hWmh1SUw0ZzJjbkZJMEkyU0J1WjZGVi9XZEZJb3I3?=
- =?utf-8?B?QS8zQ1J6Qm4wb1gzaEVRRncvekVjRy9Hb3FBTUtFK2FTQ3kvZkhjOEpiSlRa?=
- =?utf-8?B?UldHOTA1SmJPR3Nsc3RzKzlMNWZlWDlNY2hQZGF5NEVJY0tUVi80c1k3WG52?=
- =?utf-8?B?TytVa1hSRXA2SlRyREtsZHJnY3dDYXk2SUtVRktvRmpFMmtaQ3p2QS8yUldY?=
- =?utf-8?B?L3U5WkppRjlWT2FIYXJlSDA3d1V4ZVY2OE1mNFhLT1hyaWR3eXh6S0lVbitt?=
- =?utf-8?B?K2JUQUVyUm5seXRJTy9iMjZVYmxSSHFJYy9ldWtUTDM3UE9sSTRualFSZzE1?=
- =?utf-8?B?cHMrL2cxYVBpMGFuVWI1RWppaGduOXdmdDRUbDJkcmZkY2IyY1kzRFBEdTY4?=
- =?utf-8?B?SXRpbFdwOE1nMjBXdUdZSnNFRm5UNGRzUlErMjdyaStEN21oWkM4WW8rK0xP?=
- =?utf-8?B?eXExdVlNVTN4U2dNeG1ONWZmYWh5cmJlck9aUmVhcmx1NEZiNjRzTjdFb1N6?=
- =?utf-8?B?RnJPU3RqMmIyOGJBWGhqUXhhUS92MXErRHdvdjVpS2t4T04wWG1NRS9OVHB5?=
- =?utf-8?B?cER5OWlzYzZsTGdwOSt0eTVMdEhFenU2eGllNEhGVkFzMS8rWDk5TisvbHVV?=
- =?utf-8?B?dGNxZFV0K1BpdGRmdGtNRG5TQVBCd1I3ZEUzaGdyL2hTNkh2dzc1NXNSS2VZ?=
- =?utf-8?Q?I0Ka4zXltNcaScFEpjaPrPiUHpfqKbETctMlx?=
-X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: e7b27a62-c42f-47e0-6e1c-08def3d96527
-X-MS-Exchange-CrossTenant-AuthSource: GV2PR04MB11799.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 06 Aug 2026 16:40:16.7456
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: totXe/33wWMFWu/gTa/NQIHOgw7BHnAHLqlqv04dEFGKLRxt3ykkOC4QkVa9D+uGbULF1eKyuSWUadTvRpd5giyicY01WZ+H4FI+HEm1IQjabKbEMm8YmOUT2dn7ZPzD
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DUZPR04MB10062
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] PCI: quirks: Add warm reset quirk for IBM Spyre
+ accelerator
+To: Bjorn Helgaas <helgaas@kernel.org>, Avinash Roy <avinash@linux.ibm.com>
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, bhelgaas@google.com,
+        npiggin@gmail.com, chleroy@kernel.org, linuxppc-dev@lists.ozlabs.org,
+        linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Avinash Roy <avinash.roy1@linux.ibm.com>
+References: <20260805171840.GA2126423@bhelgaas>
+Content-Language: en-US
+From: Shivaprasad G Bhat <sbhat@linux.ibm.com>
+In-Reply-To: <20260805171840.GA2126423@bhelgaas>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=E6P9Y6dl c=1 sm=1 tr=0 ts=6a74bb47 cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=VnNF1IyMAAAA:8
+ a=lNBmhb5rY3KJr28suEEA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-ORIG-GUID: A9CrAhuigwKofBxmnfCcLJ4S9jqP9RFJ
+X-Proofpoint-GUID: LvFnR9t07Rol95n-wE_uOh-qTWiH2Xy5
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODA2MDEzMSBTYWx0ZWRfX0srVlo17IyM8
+ GCHvlg1eoQf97TwPNmj+IylyERYu1FuQTYWGmHs50pmU+6n2tg6c0oSLjGXSbrhEoHYhQWc8VOv
+ UdNoe+xstgmTo7URo3sFwRlW3YQecTw=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODA2MDEzMSBTYWx0ZWRfX30k6tIyX9/0Y
+ hVu7CVXerDNsdRZJrSmUneKKfa3juUzkXerZqx+WirCXg/F2vfcpx/mY1HSK3ova3muZyDR+S+F
+ Hq53TLO/FazxXFQ1hKKGINeRxJjurSA0g4u6B4gKjT1k1+nlTOfqFz86ySi0yrrXU6YMieGduQo
+ x25UeGLgZEHHkyAN2JELunV5ridXnuO7zLv2jC+w4PAC4xiQ1mZ8RWf500JGH0wpo9oepIb+itM
+ q4jeQxrN5bKhwDMo1uibRRPtQv7MxJ79gUWPpT159LewXCX9mOBanP/NSt9wRq2ORzrZklPlBs/
+ /j6m+PYBpXFS7sXl9Hdci90tFoZbshL0efZPKuygf+odI70Aj/9HPk0ymazRuXVcKTCPJpF9JLG
+ ChLELbKXInS8PqDr2ydbS3F0C+i6oxT6A7/2NsoDXQw/4ANKvXqh2OZzUDwcnsPlWCo6Yjh+iAj
+ CXRbGxkcql8Y62t3I6w==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-08-06_01,2026-08-05_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 clxscore=1011 lowpriorityscore=0 priorityscore=1501
+ suspectscore=0 adultscore=0 spamscore=0 malwarescore=0 impostorscore=0
+ phishscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
+ definitions=main-2608060131
 
-On Thu, Aug 06, 2026 at 01:27:51PM +0800, Shengjiu Wang wrote:
-> On Thu, Aug 6, 2026 at 1:06 AM Frank Li <Frank.li@oss.nxp.com> wrote:
-> >
-> > On Wed, Aug 05, 2026 at 02:57:59PM +0800, Shengjiu Wang wrote:
-> > > On Tue, Aug 4, 2026 at 10:39 PM Frank Li <Frank.li@oss.nxp.com> wrote:
-> > > >
-> > > > On Tue, Aug 04, 2026 at 06:02:14PM +0800, shengjiu.wang@oss.nxp.com wrote:
-> > > > > From: Shengjiu Wang <shengjiu.wang@nxp.com>
-> > > > >
-> > > > > The i.MX ASRC hardware supports up to three conversion pairs (A, B, C).
-> > > > > The existing binding exposed only a single generic audio-graph port,
-> > > > > which cannot represent independent conversion paths when multiple pairs
-> > > > > are in use simultaneously.
-> > > > >
-> > > > > Add a ports container that enumerates up to three sub-ports, each
-> > > > > representing an independent conversion path:
-> > > > >   port@0 -- conversion path 0
-> > > > >   port@1 -- conversion path 1
-> > > > >   port@2 -- conversion path 2
-> > > > >
-> > > > > Each sub-port references audio-graph-port.yaml as before. Hardware pairs
-> > > > > are allocated dynamically at stream open time; each active stream
-> > > > > direction (playback or capture) on a port consumes one hardware pair.
-> > > > >
-> > > > > For backwards compatibility, keep the old single port property but mark
-> > > > > it deprecated. A schema constraint (not: required: [port, ports]) ensures
-> > > > > that both forms cannot be used at the same time. The binding example is
-> > > > > updated to show the preferred ports form.
-> > > > >
-> > > > > No existing upstream DTS file for fsl,imx-asrc uses the previously
-> > > > > documented single 'port' node, so this change does not break any
-> > > > > in-tree device tree.
-> > > >
-> > > > if no existing upstream DTS file use it, you can direct replace with ports
-> > >
-> > > That is to avoid any downstream use of the 'port', so not directly replace it.
-> >
-> > Does downstream strictly run DTB_CHECK ?
->
-> I don't know if anyone downstream uses the 'port' or not.  so keep it
-> in this file but
-> mark it is as deprecated to avoid any impact of this change (add 'ports')
+Hi Bjorn,
 
-Prevent new DTS use "port". If upstream have used it already, we have to
-keep it as deprecated. But no upstream dts use it yet, simple remove it
-can successfully prevent a new dts use "port".
+Thanks for taking a look.
 
-Other downstream tree is not well reviewed. We needn't consider that,
-especially in bind doc, which define ABI, not make "real" function broken.
+On 8/5/26 10:48 PM, Bjorn Helgaas wrote:
+> On Wed, Aug 05, 2026 at 06:21:32PM +0530, Avinash Roy wrote:
+>> From: Shivaprasad G Bhat <sbhat@linux.ibm.com>
+>>
+>> The IBM Spyre accelerator (PCI ID 1014:06a7) requires a dedicated warm
+>> reset method for reliable EEH recovery on pSeries/ppc64 platforms.
+>>
+>> FLR alone is insufficient because it does not re-initialize the Spyre
+>> firmware state machine. On ppc64 with EEH enabled,
+>> pcibios_set_pcie_reset_state() is overridden in
+>> arch/powerpc/kernel/eeh.c to drive the platform-level PERST# signal via
+>> EEH PE operations, which is the correct mechanism for full device
+>> recovery after an EEH event.
+> 
+> This makes it sound like this mechanism is needed for EEH recovery for
+> *all* devices, not just Spyre.  If that's the case it sounds like we
+> need more than just a Spyre-specific quirk.
 
-If you want to delete driver code support, it needs consider more about
-back compatiblity.
+Now I re-read it, The second statement needs to be re-worded. It does 
+sound like its true for all devices. Quirk is only for the Spyre card.
 
-Frank
+Will post a v2 fixing the same.
 
->
-> Best regards
-> Shengjiu Wang
+Thanks and Regards,
+Shivaprasad
+
+> 
+>> The reset function is placed in arch/powerpc/platforms/pseries/pci.c
+>> where the EEH infrastructure is already present, declared in
+>> pseries.h, and registered in the generic pci_dev_reset_methods[] table
+>> in drivers/pci/quirks.c under a CONFIG_PPC_PSERIES guard.
+>>
+>> This reset method is only registered when CONFIG_PPC_PSERIES is enabled,
+>> so it is not available on other platforms.
+>>
+>> Reset sequence:
+>>    - Assert PERST# via pcie_warm_reset, hold 250 ms
+>>    - Deassert PERST# via pcie_deassert_reset
+>>    - Wait 250 ms for PCIe link retrain and device recovery
+>>
+>> Signed-off-by: Avinash Roy <avinash.roy1@linux.ibm.com>
+>> Signed-off-by: Shivaprasad G Bhat <sbhat@linux.ibm.com>
+>> ---
+</snip>
 
