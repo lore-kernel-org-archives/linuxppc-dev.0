@@ -1,82 +1,94 @@
-Return-Path: <linuxppc-dev+bounces-25475-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25476-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 44E44C55ABF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2026 05:12:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3AA5EC55838
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2026 05:28:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hFwPZ74Vzz306N;
-	Thu, 06 Aug 2026 15:12:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785993122;
-	cv=none; b=Chs0Ew2agewCShBJZOFUQdRmo7kpJUIF33HfZkdQBfYm2f8T/OJ1AmcPYAus8FdxohdqK9FYcLVsuv5WYfUuDpVnfhq3mDxUIcxreUTa5BBaFs9xDhE3i7D1+1iAZLz+dLbx1nvPzccw1MCvRbImlAw/XB+BjvJeIYNRaH4thU8MtNH98z+7rrxg09JQrj7vfA5YymW77W4gUptG6fjp4wkhw1VICpt9jRsxbQVmyjQNlKZU0qdB7eaSXwgLubb9Z2cHzpImwngEZBi6S7AIbMkJAZEv67e1STmPrHWEsfpUic5AaJaBk3eAKrq5q+599u8ratn4A7mejFpb3okbDw==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785993122; c=relaxed/relaxed;
-	bh=e9W5HlI1tn/93FQ+C5XVKL4rfDCwLzLonyMzA+AVbrM=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=jabY3twXC6gFel9FbwaphmlbmOknFefuH+acZSlbbncfewD3705fcfL54K5aZiDWllU5ejvZnz7mDqSymUTJLD3qgLvWzOosNnhG5PcJ6NcY2az9Fx/QhzgwpfBAunQAWnOGvtrboa+US7+vvQDShWuqwxHifVAaj9BzKZKbfJd6E/F8qJTWa3Zonee95eM6Ju+ddSo1PemeKiwloix0KTyomZYjPtEYDYZEQKhdbKop9vOULJ8TbimSjtGib5ixeCXI2qOBoscMP61pVlnIGRHq2N3RISdWhAuKUHTKRzI+NMYzi9rlJayl65p087kobTCUMai6VznY+PjFkiC41Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=a6e5oyh2; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hFwmD1Shrz3054;
+	Thu, 06 Aug 2026 15:28:12 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::62f" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785994092;
+	cv=pass; b=PtuE1ctD/9Alg5JfsFgLv3g7r0LDfxETN7+ELP//9iA533wb7yth6BvqZKzWghUIoYGGki2NjAkv93YRgecsIPALxmKCXd82f0KS7duv4gbSdtc2hWFgGISP3Uib+cfBBxTxP1AaM6GGaksdi2fC2PwqCKM+UXJ5D5St/VVn41flzu0sO/2T0ujL9J2GBYeH+BgiuBPWjFM44f0omMlUH8nsJ4OJ97JU/NMSn+P2lCaSMD/W+YVkwYdw6ICWoahw6AvkuaQkuYqfNnAraPa4d9hp2nsltuEojezXyopuP7w/hsQDM0kHub6QPiwS+NBgDrM4LUt/W6Jciwi/ilrffw==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1785994092; c=relaxed/relaxed;
+	bh=5/chxC2eDdGa6xrgCohNp7hs/WOpE04paX2N4M4f+KM=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=nzOeDxO/n/83eaRIlzUeJbj11mcmUS/uD2GS+hcIph1akCDM8Swrpo9TCp2PfXNj61KLiCMicXsm922R1O+iBM9XxXY5IQiofMTqUYloO0qvJCpkS6RJ50dG0pKdEsQOagC9ccxS8VHSyboaZCWbdmmOAeuNiw/4IZFzQ1O9A+uR3waml9dXnnL3u+9K2uJlExcBwkQYR79XKf6GykUuQ9/05GzRaM/bnQvEHqNQHXNC0D4t2QJWHMX6MlPMQ42OtNm5v8YMkdYeS/GFDZ45UKKKldHJpj1QSu3d7CqzeDv3sKJOXaNpE2USmt++q7AbE/+fTTW2XzHFI3FdyR6tRQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=dYbzBkjg; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62f; helo=mail-pl1-x62f.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=a6e5oyh2;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=dYbzBkjg;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62f; helo=mail-pl1-x62f.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x62f.google.com (mail-pl1-x62f.google.com [IPv6:2607:f8b0:4864:20::62f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hFwPZ0yjxz3054
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Aug 2026 15:12:01 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 675Nm3DE994338;
-	Thu, 6 Aug 2026 04:16:35 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=e9W5Hl
-	I1tn/93FQ+C5XVKL4rfDCwLzLonyMzA+AVbrM=; b=a6e5oyh28pmDH1YK5Xe9SD
-	k+9OXcI1/7YGD4FINTB5u8DtPNnhvEO+E9j9FTiZpyV0+RFjK3FlKrcYS2NynBf/
-	sMYTtyi31VXQwGiOUyCtGFOrOk6tlNBfZPLw3u5tC4/R7F0Ad6FRkLD4c++S0oLB
-	uZR1c8uPH0NqyU9rgIdL0JQDOEgWUinRe6LETN6QQcV9q+GxS9QS1aFOZMi1zPvs
-	bQCpcYGizWzdwaDWXcMjzeoieUVwtISmcJCPVzx6pQoRN0kj6/XO4YP3k2IJBszA
-	q6Qy2MqL26tIYgLOhvXuv2UmW+5V8BAwrhXIenO9NUQdhvaE6mlwZBozaDabcIlw
-	==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fs67hx13b-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 06 Aug 2026 04:16:35 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6764BIsW014624;
-	Thu, 6 Aug 2026 04:16:34 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fswtysc52-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 06 Aug 2026 04:16:34 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6764GUHA31195490
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 6 Aug 2026 04:16:30 GMT
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 8FF5C20049;
-	Thu,  6 Aug 2026 04:16:30 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 53CE820040;
-	Thu,  6 Aug 2026 04:16:28 +0000 (GMT)
-Received: from Linuxdev.j9d-in.ibm.com (unknown [9.123.86.85])
-	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Thu,  6 Aug 2026 04:16:28 +0000 (GMT)
-From: Madhavan Srinivasan <maddy@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, mkchauras@gmail.com,
-        Nikhil Kumar Singh <nikhilks@linux.ibm.com>
-Cc: linux-kernel@vger.kernel.org, mpe@ellerman.id.au, npiggin@gmail.com,
-        chleroy@kernel.org, adityag@linux.ibm.com, mahesh@linux.ibm.com
-Subject: Re: [PATCH v2] powerpc/64s: Clarify copy_and_flush() cache sync loop comment
-Date: Thu,  6 Aug 2026 09:46:27 +0530
-Message-ID: <178598971879.942627.13294708865954950446.b4-ty@linux.ibm.com>
-X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20260706082708.43918-1-nikhilks@linux.ibm.com>
-References: <20260701182756.273019-1-nikhilks@linux.ibm.com> <20260706082708.43918-1-nikhilks@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hFwmB14HSz304x
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Aug 2026 15:28:08 +1000 (AEST)
+Received: by mail-pl1-x62f.google.com with SMTP id d9443c01a7336-2ce98cb8165so7151435ad.1
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Aug 2026 22:28:08 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1785994086; cv=none;
+        d=google.com; s=arc-20260327;
+        b=LM4bNzMItQPn53Li9EmsUtqaccoUByYdqa9l1nJIR43Gti9dOMOZ4Zc6hyWi96eRxH
+         1TfPYJxLLkG2ZDqDMK8RLO/nMUykSGoGwxXOIvqEHV6WNnNlzZ8Iy6PgtcjPsmic/lVs
+         aFEkXVETbkmLYYcCqvvWN3G/hdfa6u3f6q6WJ40SgnPFUD0km1Q/Kxdtcvb/8NxBPTVb
+         S/dZxwUDz4U2iyQJTQ/J6jPn4IApNL9jDfbD2GhKUrDqkIprM6iZMA7TbMkPirZndSAG
+         wNw7L1ed8oQw2cxh4zmUsYxvl0dDcwpoHW4/Ng2dc/k7MdY7Ry+hEsUV3k366LiMn1L2
+         u5Wg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=5/chxC2eDdGa6xrgCohNp7hs/WOpE04paX2N4M4f+KM=;
+        fh=KRDldNBfIvulZYyLfFrQeZMAaT6WX36NU0OjPXi/wgU=;
+        b=IiknqWTEdBf1zokGl74pydIv7IkDbfZ2UsKeSgV4jjDqXjIcczivyS4Qkar5i/2DMf
+         DvHPYAuDmi+xjrtMeYav5U9IZb+Rn3RwGARMUrjs7HF+UP7a2ysD8n0bbMdYE0kxUg8J
+         1nOKgGUIun1QFSxCCmnD3UU/t51VbejHBMsxi5CrKGyl+B+xGQGnAHMX0ItH0wuGQy9A
+         NA/241bX2gipX1G+haUXdMkbZ0xxq0s8KwmtBb+EUg5weqbsN+c0uhhbP8UodOl2lMam
+         zO8SrUvV9CL6kb04+3VKRHjLzJCt0a+/sDRaa/hk3ekjM6gh7tXgehVJwT6XkUu7w3og
+         mXWw==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1785994086; x=1786598886; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=5/chxC2eDdGa6xrgCohNp7hs/WOpE04paX2N4M4f+KM=;
+        b=dYbzBkjghlGyqYrsyIca3bI1BDTEAEjWgyjKkIP7yachldiShvjfSTaZWd9Xz14gla
+         uCCIywi7cwW/cD7eLXhwlQRSPg1ONngQqM+CWLjEd2Y0KIadO9bOELCK/kdpsTrWciu9
+         USF33wAbZe7Ip+O+j3wfGcrVbGTr3LwYNaVP6TDfC65a3W2Y9/lBJp2Krk5OQF5sY5xy
+         L7UOVNq/SeMQmqYFcxxXkRXFcdNkSNSEAaiKpVP8DoAhzXnjVyTOEsEv0lRXDVsHfJg2
+         GVw3TlBflxH6iiQONwz9QftjzUE7eW8dbMXpc7jbngoGEZYJr2OM8T6TPEo+6VeNlBJ7
+         L0qQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1785994086; x=1786598886;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=5/chxC2eDdGa6xrgCohNp7hs/WOpE04paX2N4M4f+KM=;
+        b=nZ23R8Tu7LujF4XGGu8DPZAvuYnYOQZylFAj/c3ysM2LxfK5BaYOacr7ZQ+wd2K+6n
+         AkRLB5uYYJHVe+qt3aEwIagq3JEfc0eJRpmg0BH5REULCeenINJ7sP4pYpMDiMsObQ3P
+         hz0Eek0c7ZewFz4v5MduvITe/xfUY6qJ8OA4uTMIz4FCpd2hebdCDvs+hO3gAYiBw5lX
+         pFX1E1RkMSDN1Ixa1PZerIsHTNnH4vfVXNYb60BQhSzvUCSivtnfaNAMiwgqAj4ILQTw
+         S5+sCNJlsw/d/xRoiavJOc6NAfXAUDFBLeamCxSa5vuktgsXC9DkVLh9iwkLBdMnxY46
+         AWmg==
+X-Forwarded-Encrypted: i=1; AHgh+Rq/DJym+IMJD0li5A2exOjUf9LYsEIgaMeKFyQSjl/LzVl9bC0OYRJXEBr+eqOLzkQji76AmDjaCOz1B6g=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyQFpRNHtMp1pKXMLgcnMje5RQJfdy/exqXlZ0BsuR0oWbWb8aw
+	kITT7dDdHazsLNVyx4ekgv1BioCQjk1ZuPONEkOeuvMi84ovCLbRBIqRNO63/s+U4np/37aoY0N
+	Sv4FYxlSfouRkgu3a2e0w4LQe7n8sF+c=
+X-Gm-Gg: AR+sD11I9oCMz4ybI0SS/TKF3/KndrwW56fnmUpcdTRORCK0U+AjhG0mqdcci2FmEN3
+	dUuV3RERSk1jOgU0yHawE1lfCNlhRijqIB8chi2lSlsXav439U5ZSBeVvqz3p9DcrCrrzdtHpch
+	iWMt9QXvYffV9uSdpN/UBy4zQriZRW3DF1e9nfzIkcPcaTiAj4QtOX66xVtLF4Pg+2SOqYZPNS0
+	1aof8Mdqa4AaZZAb7VtLgIADZ6K+jFn9cfMhZhu+5c6NiWTfN7ZVsByMVJuZENTHUhwpz3F29K3
+	8mHJa23vdB6cSUgQare/mO/r1fYYHowBvSYYMj98720+
+X-Received: by 2002:a17:903:228b:b0:2ca:eff:ff58 with SMTP id
+ d9443c01a7336-2d0f710991amr9793645ad.15.1785994085793; Wed, 05 Aug 2026
+ 22:28:05 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,53 +102,83 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODA2MDAyNSBTYWx0ZWRfX8bt86qXxeSt8
- pHtVZbciZpQip8o8ayzPxJo1iWcJpAhi+R7I4tSo+abxxLzCdkOObKYwBzkxkd2FWtqTh3Crplz
- ixpxtZwyUCC6axa0P/Pk98A9Sj3l1F8=
-X-Authority-Analysis: v=2.4 cv=I7VVgtgg c=1 sm=1 tr=0 ts=6a740aa3 cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VwQbUJbxAAAA:8
- a=hrc2wqqJEVIXeOxj9-YA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODA2MDAyNSBTYWx0ZWRfX8TjNasVF4/nS
- Bkt1qgOH77dv8zC1eaUso2FigQB0eFdUmawFlzwy2Zq9TtBcVhP3K/nN2pNyc5a2x7KcNfyHGjU
- rbdQlPMSup2+DDHZ8ZdVqmuHVy+0HkXNce80h8U6ehQR1w+GLaGUBrnI5F6aeYYpwtokPmB0DvL
- oqP15iNL5RZxdWlc46rBYY8ijrKsHLveL+RmajQZ8t5aGOkU6oUgB9coEpqxY6aOFAbJlyVSR+p
- w1S6H7v2ggmrAPdnA1JU/4KFWKP9ZWjByb2lpHK2rtQANWuSRPtTvjzshshRk74uqhmgXDPYluQ
- Er/MHoja9c6N5k24RERIpe13wJHihqXgGZpRU4S2KVVaANW0nhSUD1XAs35NEP4D6rpN7Ivb0EI
- hhoHmWZx5652CMZJcnXKH8b4Jnrf5mRVHef7wiGwEiAodIV5k+yfi71oYBj+33xnm+PC+GpriRA
- M+n/WyFqmBMU4m6WjaA==
-X-Proofpoint-ORIG-GUID: mMXAFueohu88xwEW8uYqs_jNvmaP3XwI
-X-Proofpoint-GUID: vavl4_K0Wx4EKoDJL1BZZTZf4buBGkl9
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-08-05_06,2026-08-05_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 impostorscore=0 clxscore=1015 priorityscore=1501 suspectscore=0
- malwarescore=0 adultscore=0 lowpriorityscore=0 phishscore=0 spamscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608060025
+References: <20260804100218.49587-1-shengjiu.wang@oss.nxp.com>
+ <20260804100218.49587-2-shengjiu.wang@oss.nxp.com> <anH5i7y3JkB1moee@SMW015318>
+ <CAA+D8ANCoc5qOUvTQPRNkvrfqAY3n6x_fbfUveP8Sfv+SL1NVw@mail.gmail.com> <anNtgkZYhoWsSRr6@SMW015318>
+In-Reply-To: <anNtgkZYhoWsSRr6@SMW015318>
+From: Shengjiu Wang <shengjiu.wang@gmail.com>
+Date: Thu, 6 Aug 2026 13:27:51 +0800
+X-Gm-Features: AUfX_myhLzhOuWWyjCG9X66ATeLQftPHIJVdiIW_bTxwa_fBiVstKxt6vFHm5B8
+Message-ID: <CAA+D8APMT2eSgrc37n_YZ4PsDZ-_8h4gHsyhADGGYDpTob_g+Q@mail.gmail.com>
+Subject: Re: [PATCH v3 1/5] ASoC: dt-bindings: fsl,imx-asrc: update port
+ binding to support multiple paths
+To: Frank Li <Frank.li@oss.nxp.com>
+Cc: shengjiu.wang@oss.nxp.com, lgirdwood@gmail.com, broonie@kernel.org, 
+	robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, Frank.Li@nxp.com, 
+	s.hauer@pengutronix.de, kernel@pengutronix.de, festevam@gmail.com, 
+	shawnguo@kernel.org, linux-sound@vger.kernel.org, devicetree@vger.kernel.org, 
+	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
+	linux-kernel@vger.kernel.org, Xiubo.Lee@gmail.com, nicoleotsuka@gmail.com, 
+	perex@perex.cz, tiwai@suse.com, linuxppc-dev@lists.ozlabs.org, 
+	Shengjiu Wang <shengjiu.wang@nxp.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Mon, 06 Jul 2026 13:57:08 +0530, Nikhil Kumar Singh wrote:
-> The value loaded into r0 in copy_and_flush() represents the number of
-> 8-byte words processed between cache synchronization operations.
-> 
-> The existing comment refers to cache line size, which can make it appear
-> that the value is a cache line size in bytes rather than a loop count.
-> Clarify the comment to explain that the loop processes 8 words (64 bytes)
-> per cache synchronization iteration, and that increasing the value would
-> skip cache maintenance for intermediate cache lines.
-> 
-> [...]
+On Thu, Aug 6, 2026 at 1:06=E2=80=AFAM Frank Li <Frank.li@oss.nxp.com> wrot=
+e:
+>
+> On Wed, Aug 05, 2026 at 02:57:59PM +0800, Shengjiu Wang wrote:
+> > On Tue, Aug 4, 2026 at 10:39=E2=80=AFPM Frank Li <Frank.li@oss.nxp.com>=
+ wrote:
+> > >
+> > > On Tue, Aug 04, 2026 at 06:02:14PM +0800, shengjiu.wang@oss.nxp.com w=
+rote:
+> > > > From: Shengjiu Wang <shengjiu.wang@nxp.com>
+> > > >
+> > > > The i.MX ASRC hardware supports up to three conversion pairs (A, B,=
+ C).
+> > > > The existing binding exposed only a single generic audio-graph port=
+,
+> > > > which cannot represent independent conversion paths when multiple p=
+airs
+> > > > are in use simultaneously.
+> > > >
+> > > > Add a ports container that enumerates up to three sub-ports, each
+> > > > representing an independent conversion path:
+> > > >   port@0 -- conversion path 0
+> > > >   port@1 -- conversion path 1
+> > > >   port@2 -- conversion path 2
+> > > >
+> > > > Each sub-port references audio-graph-port.yaml as before. Hardware =
+pairs
+> > > > are allocated dynamically at stream open time; each active stream
+> > > > direction (playback or capture) on a port consumes one hardware pai=
+r.
+> > > >
+> > > > For backwards compatibility, keep the old single port property but =
+mark
+> > > > it deprecated. A schema constraint (not: required: [port, ports]) e=
+nsures
+> > > > that both forms cannot be used at the same time. The binding exampl=
+e is
+> > > > updated to show the preferred ports form.
+> > > >
+> > > > No existing upstream DTS file for fsl,imx-asrc uses the previously
+> > > > documented single 'port' node, so this change does not break any
+> > > > in-tree device tree.
+> > >
+> > > if no existing upstream DTS file use it, you can direct replace with =
+ports
+> >
+> > That is to avoid any downstream use of the 'port', so not directly repl=
+ace it.
+>
+> Does downstream strictly run DTB_CHECK ?
 
-Applied to powerpc/next.
+I don't know if anyone downstream uses the 'port' or not.  so keep it
+in this file but
+mark it is as deprecated to avoid any impact of this change (add 'ports')
 
-[1/1] powerpc/64s: Clarify copy_and_flush() cache sync loop comment
-      https://git.kernel.org/powerpc/c/76ea1257924f64521f708db91c99014ce7249bbf
-
-cheers
+Best regards
+Shengjiu Wang
 
