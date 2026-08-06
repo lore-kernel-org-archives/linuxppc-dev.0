@@ -1,73 +1,97 @@
-Return-Path: <linuxppc-dev+bounces-25477-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25478-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 46109C55ABF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2026 05:28:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 864EEC55838
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2026 05:32:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hFwmk5S2qz2yh4;
-	Thu, 06 Aug 2026 15:28:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hFwsS71xcz304x;
+	Thu, 06 Aug 2026 15:32:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785994118;
-	cv=none; b=GKQi477pdMypB7H3s9SGi7hYKQaNLWPW16qjGbrtW5ABLjFkYca8MgGZ+T6oT1uwmd3y6oe/tCVKSEzDf5iG5cPNdN0ZYOQsDMFKj+e5wtvpmH0aQm37OgjbW+wRao2n3ubxbmL9h9Msb4b6H0AA9n1NAgzQIkPeH0oBptD5HCAmUXEtfJ7QAuLYNCMCJm20le5bYkhr4lsj+dGL6GuMFHw+Yn9qndHkvzZmFRIYWuFp+PE9TUmtdMczpRaHlhA7E7AeshJ46A3saWAY91i2x/HXgSr/V1ermdbHpGvGEo8dw1ZySkMQpI3Gnd94YUFQuyM8Kw1jhxvZ6vTNo/K3PA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785994364;
+	cv=none; b=bUeEQhwcyKlJSWDJwiKPuPD/sYHjq1Zu3gLVKZOvVKX1tJmWUevvtY7qSIFemmRDgD5hoiRLrnJ2RHR3RqqFlbss90JPRvpJuwaL1fxBdJrW/4uf5X6CJ0UV2Ks2Dyw8rPF0xBa3f7jrzsp0YBxa4Z+/9z9V0k+bN1wggYRLJH5dubOnfhFj7gxzv7FCJJnO1FFr5crL4oUxMpEbRkyNTvtRO0CWWP8JMofIhAZ2TYniwJSFGpK4terkEzl8dXI5lNhU4MWUWvd7IImCZ0Ng10NMVg4jNZm1YWlODwbtXNEWwvjY9wOJSYQ3qV1X+TNTojOm170yvOeSokQSFxMMSg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785994118; c=relaxed/relaxed;
-	bh=ZGY3C4YMNFITS4/neg/qQRae7zDhrY4NYXElDGhkDiU=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=mNaSGYBuu/v35N+f0cJ7+nkK8bmVpBEDPVSGvZZXpLeK6vjzpcZkNQGL4/NOaMiO7aydxyULoqwBgnb7lcv4Q8X9KLVX0aAGGGYOYLeiq8LF9Tj7ovx/Be7kCV8OBcOrc+hYchNcZFYjO1qhLDDn8EfI/y4Nxall9BvPELK/r1r3abAatCd2gPpVlov5uGCW32tgbSGQamRVcWSX3yoZkIYhnATV8zPSoMedrTILhRtMa7ZtJuC0ztS5ZATipS5WnfBk+sac6m4/5NKRUDZec/xNyNiayikg3lflzWJBwq125NW8E3SUvKWDmE8pUABD5lNov4dtzEkoENcgzm00Fw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=YOdQATMK; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1785994364; c=relaxed/relaxed;
+	bh=5N50+m2zoR8QgMtQJOG5cgx3HnsvWgqZ/qJQqqpOCcQ=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=HBLHJg/FEc0HJFvhlw10iWvJZBIaMvVgh0IyyWa3haG56YcxWa6wQQV75oe7uDmCInzKMf0A60LHTXCaMfSC+8HAqS23u9uHaKUK2N5QMlqKLMdis5jH4rDCMPZA1AbYfzZuYGAfW6vpf+fhbzi67ngVSFgqD2AYHP6UU6Qv7oW2nlhzUFpHNLP0/IhJDKyuQMnraRoD00ukX2DZSkPOERUSklHHgVvLjcLf+9Sxn1aI9pdMs+vjoMhe0TuRoMuQ+BsDuVQ4lC2kq3PnepYx3N8M66i/do/7mUtHKVP0eg7aYAz75fbuhCDNkynFL7qj+lNe/wM8zpnBQyU67AeLIw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=UceCzOuO; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=YOdQATMK;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=UceCzOuO;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hFwmk1JgSz3054
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Aug 2026 15:28:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hFwsS0FP3z2yh4
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Aug 2026 15:32:43 +1000 (AEST)
 Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 675Nn2LC1068575;
-	Thu, 6 Aug 2026 05:28:34 GMT
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 675NlmYv1066244;
+	Thu, 6 Aug 2026 05:32:34 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=ZGY3C4
-	YMNFITS4/neg/qQRae7zDhrY4NYXElDGhkDiU=; b=YOdQATMKsKksJsrIs5fdVR
-	bp1BGtrktdijAsKswngg54LcwXzHnZw7EuP8yL6YK7Zqqdl/3zJ+Hqx6sfsUvF2d
-	69Nu8djMU654NBpSb/b/ghoCcEa8nJvFKcgaDaxiwnuK50mnYEnXgg3wxx/c7lGt
-	16+RPjAeGcRRvuxH0mymBbbttsE0qRfkUi5VFkH/lkfZCycNTGACMQMby+pph827
-	19olL3qH52MP6jQhTl7NG4FPiSTHM7r3cA6NbcW0XWu2DWX0TsLRf03MWfdDIH0c
-	XFFxxOxTD+0ZihM4cirA+X+vjaLwacbDqnPwU0/tmpzMmRnuZOWr+Iy+F08G5cLg
+	:message-id:mime-version:references:subject:to; s=pp1; bh=5N50+m
+	2zoR8QgMtQJOG5cgx3HnsvWgqZ/qJQqqpOCcQ=; b=UceCzOuOikzEia2zKThPuF
+	RIijKjycECVMsK4wz0aTOifpYcQX0y7FP7RLYqJtfVNRlvK+W54qnjecmDuQRG97
+	Td6xrhkIZEp8UtfLJBIswjgqvMP+PSQrWY6SU37sPYvcbWHqFwTGrtSRQl1PEXDG
+	f6EpyzJWDZWMhdz2XBiwYDRHOuYh2SKq9cNvwXQWQxBXwX5eleVf+8UjItlaH94g
+	agqzpyuMHkzurAKcdLZiDu4gyxrYJHn/RS9n5+cmQB0yNp4Ep2HsbKgKx6iVuKeu
+	2mWsozWDpLQ6wJu1/W/14G1XGPszYvmJUjDlfomcKfI42JZpYw8OUDkLTFaqziow
 	==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fs8a46gys-1
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fs8a46hfv-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 06 Aug 2026 05:28:34 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6765QKmN024383;
-	Thu, 6 Aug 2026 05:28:33 GMT
-Received: from smtprelay06.wdc07v.mail.ibm.com ([172.16.1.73])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fswbghkxb-1
+	Thu, 06 Aug 2026 05:32:33 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6765QRCF019794;
+	Thu, 6 Aug 2026 05:32:32 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4fsvmhhr1c-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 06 Aug 2026 05:28:33 +0000 (GMT)
-Received: from smtpav01.dal12v.mail.ibm.com (smtpav01.dal12v.mail.ibm.com [10.241.53.100])
-	by smtprelay06.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6765SUgP52822424
+	Thu, 06 Aug 2026 05:32:32 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6765WSDN34669016
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 6 Aug 2026 05:28:31 GMT
-Received: from smtpav01.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9319D58068;
-	Thu,  6 Aug 2026 05:28:30 +0000 (GMT)
-Received: from smtpav01.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 2222D5805D;
-	Thu,  6 Aug 2026 05:28:29 +0000 (GMT)
-Received: from [9.67.83.170] (unknown [9.67.83.170])
-	by smtpav01.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Thu,  6 Aug 2026 05:28:28 +0000 (GMT)
-Message-ID: <22d2d33d-9118-4ccc-b5d0-0d41c2021eff@linux.ibm.com>
-Date: Wed, 5 Aug 2026 22:28:28 -0700
+	Thu, 6 Aug 2026 05:32:28 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 4460C20043;
+	Thu,  6 Aug 2026 05:32:28 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 754DE20040;
+	Thu,  6 Aug 2026 05:32:25 +0000 (GMT)
+Received: from fedora (unknown [9.5.7.39])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Thu,  6 Aug 2026 05:32:25 +0000 (GMT)
+Date: Thu, 6 Aug 2026 11:03:13 +0530
+From: Amit Machhiwal <amachhiw@linux.ibm.com>
+To: Ritesh Harjani <ritesh.list@gmail.com>
+Cc: Amit Machhiwal <amachhiw@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Vaibhav Jain <vaibhav@linux.ibm.com>,
+        Anushree Mathur <anushree.mathur@linux.ibm.com>,
+        Paolo Bonzini <pbonzini@redhat.com>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+        Jonathan Corbet <corbet@lwn.net>,
+        Shuah Khan <skhan@linuxfoundation.org>, kvm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org
+Subject: Re: [PATCH v6 0/4] KVM: PPC: Expose CPU compatibility modes for
+ nested guests
+Message-ID: <20260806104222.7e435b28-8d-amachhiw@linux.ibm.com>
+Mail-Followup-To: Ritesh Harjani <ritesh.list@gmail.com>, 
+	linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	Vaibhav Jain <vaibhav@linux.ibm.com>, Anushree Mathur <anushree.mathur@linux.ibm.com>, 
+	Paolo Bonzini <pbonzini@redhat.com>, Nicholas Piggin <npiggin@gmail.com>, 
+	Michael Ellerman <mpe@ellerman.id.au>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
+	Jonathan Corbet <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>, kvm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org
+References: <20260804180705.59160-1-amachhiw@linux.ibm.com>
+ <tsp8l8cw.ritesh.list@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,42 +105,30 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH net-next v1 0/6] ibmvnic: honour flexible in-range MTU
- values
-To: Jakub Kicinski <kuba@kernel.org>
-Cc: netdev@vger.kernel.org, davem@davemloft.net, edumazet@google.com,
-        pabeni@redhat.com, andrew+netdev@lunn.ch, haren@linux.ibm.com,
-        ricklind@linux.ibm.com, nnac123@linux.ibm.com, davemarq@linux.ibm.com,
-        vaishnavi@linux.ibm.com, bjking1@linux.ibm.com,
-        linuxppc-dev@lists.ozlabs.org
-References: <20260805224401.58791-1-mmc@linux.ibm.com>
- <20260805193832.645bdb30@kernel.org>
-Content-Language: en-US
-From: mingming cao <mmc@linux.ibm.com>
-In-Reply-To: <20260805193832.645bdb30@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <tsp8l8cw.ritesh.list@gmail.com>
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=E6P9Y6dl c=1 sm=1 tr=0 ts=6a741b82 cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+X-Authority-Analysis: v=2.4 cv=E6P9Y6dl c=1 sm=1 tr=0 ts=6a741c71 cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
  a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=VwQbUJbxAAAA:8
- a=7dpCjRRtK3qBi1irl1gA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-ORIG-GUID: 3FwmCuCqgCwBk1BaamNstPr3DnM7Llwv
-X-Proofpoint-GUID: Q0H02W6Q0fjIgEAiOFKUhMoBG5rawV4r
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODA2MDAzOCBTYWx0ZWRfX4sHbJURhXWM7
- JxemAeNzx0UT/qtdmvOG6ATIVJfFvF5wdu+rkvEuq/St4V3Kqk9Vu8qGDLEqBaygRyxpBzYKKgk
- s8X+rphZkWzJtNc4rkjLUjmpdreVFWA=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODA2MDAzOCBTYWx0ZWRfX9py2RWP4A5IF
- vCmrzyolw6y4+3h0hHq1a6jrc3p/4+S3p6M1KWAiH/0X/uB+GXM5BP2Iqyx6C5uCgmG6A0lkAYs
- 3Kdl41YrQRdPtOQPXBL23wbGNQoMMCRnDG4Gu6N+lYEOLtzkjBVKlFb+WB4dlS0jTZjrW27DcBP
- ZeFEjFmYM2jR1azjAO4Wtyfd4WDyWPqNWcqdOfxkP3gj5Zq2WJTDr4rS4O2YmQ2F0N/LMCCipwd
- UuvpdXDvGSS/IpysKwfhwf4CJ5BjtBLB/zjJQiZzualRmL//N7HbGWwxX1bMPW/VDI8tAXna+LR
- Hd/yzj9VldPtyPEohdYKpJvjqWzd2/VeNMVBX8BTiLQM7htzaKyxG5ORsHXdwBQUNAf/0bPC+n1
- rYaNR9UUUPmK97En82lOKhJ9u0RKkbBQSrBha2FOmR3O8PxLf8c9fuwo9EA41IX+cqL37jQav/B
- WBYdiOGJQWGHQRbzIjw==
+ a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=VnNF1IyMAAAA:8
+ a=OftZMxRC31MPY7VeiR4A:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-ORIG-GUID: MyyNFwdmT0f70Rm3IuUqkBLKBF-dUUra
+X-Proofpoint-GUID: V9VhITl5Ho-nq0FPK_2YHD01ieiGFWbc
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODA2MDAzOCBTYWx0ZWRfX0YQHMt1bIBoh
+ 7cr9Mw6GGpFzDfzaF9FWn13Y6OybGzq3MoOHMnQjMnpkCmQ7zExmrjuA+ic4+iOVJFR0PwBHnxi
+ 7nr3W2Ndvy/gvk/WeFkf3CpkZXeOh/c=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODA2MDAzOCBTYWx0ZWRfX6pQzU9SilWre
+ ymh6JSiv75Y5qMSfpS5k4+vjtjJAQ7/M5w47CoU8UvTpusnvjznoIq9OTfHaPoslUquk5CCl78D
+ iCNlM820dnxgLpjuBEwdCSIYX0gWCQDM0BdrR+5qHIWHOYMhbgMscaVcvQQUs3vrvwh+lqhvA9C
+ EeRV/A7C8lWeZGhlWQpR00AXB5KQgI0Nq7yK2RpZDduR8FCG6Ez3gxpfYwy0pNg32X+wfmymGlc
+ EIM6L45pxXFHhuNi4w0GpbKWhKuBkq1tO3r6Sg5XaBs7Ok3VHjHSIkSQE+N99NBUm7FlE/Oe+uY
+ 861m//ValZ2qd+9EiTHyA7XoKj5UwH4G5q2aQjAz5S+Q8VSjCgOffj996cxfHrb+TLKWrVK6aHX
+ YSSn222wkND45yrVZWiUgVcYXrG6j6aT/WzXG+bS9fkQdyHDOl6IwAJT2/PeKnadQ+uZwNPa4sP
+ Q1GYwJdyPJtt4u6sTWw==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-08-05_06,2026-08-05_01,2025-10-01_01
@@ -127,39 +139,85 @@ X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
  definitions=main-2608060038
 
+Hi Ritesh,
 
-On 8/5/26 7:38 PM, Jakub Kicinski wrote:
-> On Wed,  5 Aug 2026 15:43:55 -0700 Mingming Cao wrote:
->> Subject: [PATCH net-next v1 0/6] ibmvnic: honour flexible in-range MTU values
-> Warning: drivers/net/ethernet/ibm/ibmvnic.c:1031 No description found for return value of 'rx_pool_entries'
->
->
-> please DO NOT repost this until your previous series is reviewed and
-> merged. Please read:
-> https://www.kernel.org/doc/html/latest/process/maintainer-netdev.html
-> There aren't supposed to be more than 15 outstanding patches form one
-> person or company to one tree. We are flooded with AI-assisted code
-> so reviews are slow. Your place in review queue depends on your
-> credibility with the community so please help review other patches
-> or just wait your turn.
-Hi Jakub,
+Thanks for taking a look. Please find my response inline.
 
-Thanks for the feedback.
+On 2026/08/06 12:09 AM, Ritesh Harjani wrote:
+> 
+> Hi Amit,
+> 
+> Amit Machhiwal <amachhiw@linux.ibm.com> writes:
+> 
+> > On POWER systems, newer processor generations can operate in compatibility
+> > modes corresponding to earlier generations (e.g., a Power11 system running
+> > in Power10 compatibility mode). In such cases, the effective CPU level
+> > exposed to guests differs from the physical processor generation.
+> >
+> > This creates a problem for nested virtualization. When booting a nested KVM
+> > guest (L2) inside a host KVM guest (L1) running in a compatibility mode,
+> > userspace (e.g., QEMU) may derive the CPU model from the raw hardware PVR
+> > and attempt to configure the nested guest accordingly. However, the L1
+> > partition is constrained by the compatibility level negotiated with the
+> > hypervisor (L0), and requests exceeding that level are rejected, leading to
+> > guest boot failures such as:
+> >
+> >   KVM-NESTEDv2: couldn't set guest wide elements
+> >
+> > This series provides a mechanism for userspace to query the effective CPU
+> > compatibility modes supported by the host, so it can select an appropriate
+> > CPU model for nested guests.
+> >
+> > To achieve this, the series introduces a new KVM capability and ioctl
+> > (KVM_CAP_PPC_COMPAT_CAPS / KVM_PPC_GET_COMPAT_CAPS) that expose the
+> > compatibility modes supported by the host.
+> >
+> 
+> Sorry, but I am somehow not convinced on whether we need all of this
+> machinary just to get these 3 bits of information, which we are
+> returning today.
+> 
+> Since KVM_CHECK_EXTENSION can already return an int, so why can't we use
+> KVM_CAP_PPC_COMPAT_CAPS itself and return the bitmap of supported compat
+> modes to the user?
+> Say if the cap is not supported, we can return 0, otherwise we can
+> return the bitmap of supported compat modes. This will easily allow us
+> to use 31-bits which as I see would be hardly a problem in the near
+> future. In the future if it grows - we can always use KVM_CAP_PPC_COMPAT_CAPS2.
+> 
+> This should reduce the code complexity both in the kernel and
+> userspace and we don't even need a new ioctl then.
 
+Thanks for the suggestion. I considered this approach but would like to
+go with a dedicated ioctl for the following reasons:
 
-Sorry for violating the outstanding patch limit. I wasn't aware of that 
-rule, so thanks for pointing me to it.
-I understand the review queue is already quite busy. I'll wait for the 
-ibmveth MQ support series (v4, 14 patches) to progress through review 
-before reposting this one.
-In the meantime, I'm working through Sakashi's review comments on the 
-ibmveth VQ v4 series.
+1. Intended semantics: The KVM API documentation states:
 
-For the ibmvnic MTU support series, I'll hold off on posting a v2 for 
-now and will address the kernel-doc warning in the next revision.
+   ..kvm defines extension identifiers and a facility to query
+   whether a particular extension identifier is available.  If it is, a
+   set of ioctls is available for application use.
 
-Thanks again for the guidance.
-Mingming
+   [...]
 
+   KVM defines many constants of the form KVM_CAP_*, each corresponding
+   to a set of functionality provided by one or more ioctls. Availability
+   of these capabilities can be checked with KVM_CHECK_EXTENSION.
 
+   The intended role of KVM_CAP_* is to signal ioctl availability, not
+   to serve as a data retrieval mechanism itself.
+
+   You may take a look at KVM_CAP_PPC_GET_CPU_CHAR for instance.
+
+2. Return type constraint: KVM_CHECK_EXTENSION returns a signed 32-bit int. The
+   capability bits are defined as (1ULL << 62), (1ULL << 61), and (1ULL << 60) —
+   64-bit values that cannot fit in a 32-bit return. Renumbering them to small
+   integers would be a UAPI change and would lose alignment with the
+   H_GUEST_CAP_* values from the hypervisor ABI.
+
+3. Extensibility: The struct-based approach with the size field provides clean
+   forward and backward ABI versioning via copy_struct_from/to_user(), without
+   needing a KVM_CAP_PPC_COMPAT_CAPS2 in the future.
+
+Thanks,
+Amit
 
