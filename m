@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-25519-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25520-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 165AEC5AC67
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2026 18:37:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7AE59C5AC67
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2026 18:37:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hGGGd1V1Lz3c47;
-	Fri, 07 Aug 2026 04:37:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hGGGf4yHlz3byP;
+	Fri, 07 Aug 2026 04:37:14 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786041433;
-	cv=none; b=K4P/Mxhh4BZwAKfakqqKqBDTQS8mTdctb/0O8muC2vilJG/4YjbTHSsUTZgEl7Ll0aT7o5h72/XoV0+SXAiLIfhlaogIzpYwp9m5suE8GVe9JOyCZ9AgQVuiqVAiNX/n4t/gBRwrxtfubJkLrio87Unz44HaEqwYN+YLz70E8qqKXhEZXXlEns0DOlC71vejuYLuNuk8TuFhvvxy1y1E4QMau8GQB4ePxvAeIOdfj/40AgFSUP93lolV/COsRK6mNhFWhWiDJhYxC7lvl+OrspPA33kNP5Lt8ON7RfoV8kVEkfY3BRf4Y7Be5BQ2ccL3HjAOgBGtmqprBxFXo6hT8w==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786041434;
+	cv=none; b=ObdTUszoApxNuD3BsRYzTghVDLpYRuSXIOuoQ6wv04SzBA2++IDlo+4qtr+jF67KokYLCEWJVlHX/iN/1I5z90fQ5qp4p6cMAeNKhGMk+GKTOI8Bi7qh0vTSx+nW260HNy93wkzqJKTB98Ixj0tpmRzHlaPSuThpuBaJyWO5nZMvUUGEXhnQqrh2fRIvLN5xhmtXdberrSw/VvH9+6CpoD0pFMfnWfGn2dzj4q3ic2SB+CqQJWF8I4pkJ+cBxHRB+Q6uAGfuw80wKATTB4g5Yj1SJzf3ire/PHycXytExHdV7n8N8/mbwJ+LVwQcsdlcEr11bWBGtBi16osXgpYCYQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786041433; c=relaxed/relaxed;
-	bh=zaR4JHv1bKV9s+VwwvyqGdtrYMsfXB8/Yfp9wInQJQI=;
+	t=1786041434; c=relaxed/relaxed;
+	bh=9QPqJh8kGjhOClC1zTxEmzWflg6EdWMchjCKguX0I4Y=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=A3PitKDkklQnrt5W4WxKuOlhgAYS4f7D2AFS8YIOC2+dZHqAHv7N5K09yh6SVXM+l7dFQFQ/n588Vyi6s2D80luxSNYIAUzwpo4FjK0BNSUprsCz/zwaHGFC42FTQy5UCLz6Ra4cXBscLCz/FgF8h3sWZB8ffxdf4kB47FWBc4CBDR8Xa9NkNXlb8p7HGzEuAG+MGDlwO7kUYUpEORQZZ1N+spJNnLXkSqNLRCbOv6LwbxyQqYbHswJWd29sA2V33GGs3stQ5/zkgJO3Z0FVNNQCvL4eI2iuak3+p27RsKezGQIJsgt1kkpcEVlERhKKnB+BI6wRlZr7rcFQO/oHsQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=eXO25lmb; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=k7NKI5J96KEkKDoZfgkfvzNWatE0y3D2Je3Gx1JGNvNoc5JIm5CmTEeEv2/ulv/U278pENFKAxb7SMo+yUnyqfvfEw9HZU6KbeZ8oVGiyFHqdqsJXwQO+6/Nlh/N/JwQ2C/DOSQPcYuGmimfTZX4tv07FFcA3Tds+c95DxBhCp5uf31j9PoSxCY+3YwBLh3AZ7kgi3JGKHQBj6ou686kBdHJYyx3BiChzYoH3jEcrUt++YRn3eyHRgD+zx/c6PVXw1o7JZ2e05PiQ1vTWlkfMfLyXpFG9j+ihwDk31DpVl78QPHauIdWKYTHabqkxJ3jCJjRgxKQDvxr9UpAG4/LRA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=NPo0hjVu; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=eXO25lmb;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=NPo0hjVu;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hGGGY4Z2sz3c0n
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Aug 2026 04:37:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hGGGW49S4z3bx5
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Aug 2026 04:37:07 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 5F21544017;
-	Thu,  6 Aug 2026 18:37:07 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B05F21F00A3A;
-	Thu,  6 Aug 2026 18:37:06 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 125C642E9E;
+	Thu,  6 Aug 2026 18:37:05 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 550D01F00A3E;
+	Thu,  6 Aug 2026 18:37:04 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1786041427;
-	bh=zaR4JHv1bKV9s+VwwvyqGdtrYMsfXB8/Yfp9wInQJQI=;
+	s=k20260515; t=1786041425;
+	bh=9QPqJh8kGjhOClC1zTxEmzWflg6EdWMchjCKguX0I4Y=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=eXO25lmbdoAki1jcLv2aVL3OKyqrCdaIRf4eKARJyAsWO4TUJKOeRO+OnHWklr3hs
-	 2VFZn2l9ZbtIhyqyOh2g/XQnfrbX9HA11GhTWNTZB6/WpXTojFfkYHNrgC+kd/3vTP
-	 sgBacKC1DFGWLYXXANIF9JqDhye4pnJgN6lBpmrj3s9bh7TyM9JXhbRs5TUYHwnsO+
-	 b7zt4TUIUMVEaQ6VgZ9WKOF9GrVyrL2iHxXDrQuR7EnvkdobM4aiIMlrXe2/ZHmnph
-	 Y1IRsLP9n8AFaXwrUHAYHLa2TNNKAK0N6g2pdYEcASQsc1ZnAW9dPTIdI678GrMR02
-	 AgRavjYlD3iNA==
+	b=NPo0hjVuUC9Upsic12nrwRxVwaYtysdtGyNlIEax7qtcOKW52+Fdkll6HTDxzEpfP
+	 hEQJtyr618aRZMgDecOKxLjqv0IUTE+vRMJ+10CCSEuudkoKA5/CnDDyAMR8uQlnn0
+	 gZPE5HkM7nMqw9hrHUKkyua8Ix5q7xBy1gDepiKB60i41e1hi/QY9Wf6FtSelgkgoj
+	 bbJmxkHR7yEtKrfvl0cTw6S4NRR53ZARFIkMGW9Xrd9PTlABXrF76qDWsUcyNJWWaI
+	 hEj9L3dOjfXqQa/CZLdC+mEz+OqoSX/Lo6fUmOZ6u9YAGgFGftt4YCwmw+WCM/GVQG
+	 EJokYbUlh3PkQ==
 From: Jakub Kicinski <kuba@kernel.org>
 To: mmc@linux.ibm.com
 Cc: Jakub Kicinski <kuba@kernel.org>,
@@ -61,12 +61,12 @@ Cc: Jakub Kicinski <kuba@kernel.org>,
 	simon.horman@corigine.com,
 	shaik.abdulla1@ibm.com,
 	davemarq@linux.ibm.com
-Subject: Re: [PATCH net-next v4 07/14] ibmveth: Add RX queue register/deregister helpers for MQ
-Date: Thu,  6 Aug 2026 11:37:06 -0700
-Message-ID: <20260806183706.3175447-1-kuba@kernel.org>
+Subject: Re: [PATCH net-next v4 05/14] ibmveth: Refactor RX interrupt control for MQ RX queues
+Date: Thu,  6 Aug 2026 11:37:03 -0700
+Message-ID: <20260806183703.3175289-1-kuba@kernel.org>
 X-Mailer: git-send-email 2.55.0
-In-Reply-To: <e415d7657c48f0848763b9781c7af3d8d3abc276.1785457143.git.mmc@linux.ibm.com>
-References: <e415d7657c48f0848763b9781c7af3d8d3abc276.1785457143.git.mmc@linux.ibm.com>
+In-Reply-To: <3375291b81496032d02dc769c962a2fa323fb20b.1785457143.git.mmc@linux.ibm.com>
+References: <3375291b81496032d02dc769c962a2fa323fb20b.1785457143.git.mmc@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -85,251 +85,514 @@ Content-Transfer-Encoding: 8bit
 This is an AI-generated review of your patch. The human sending this
 email has considered the AI review valid, or at least plausible.
 ---
-ibmveth: Add RX queue register/deregister helpers for MQ
+ibmveth: Refactor RX interrupt control for MQ RX queues
 
-This patch factors the queue-0 control-plane work out of
-ibmveth_open()/ibmveth_close() into ibmveth_register_rx_queues() and
-ibmveth_free_all_queues(), teaches ibmveth_register_logical_lan() to use
-h_register_logical_lan_with_handle() once multi_queue is set, and adds
-adapter->hcall_stats. Runtime behaviour stays single-queue.
+This patch introduces queue-indexed RX interrupt helpers (toggle/enable/
+disable, setup/cleanup, schedule) and wires them into open(), close(),
+poll(), the IRQ handler and the process-context RX kick paths. request_irq()
+now passes &adapter->napi[i] as the cookie so the handler can derive the
+queue index, and napi_enable()/napi_disable() move into the new setup and
+cleanup helpers. Runtime behaviour stays single-queue.
 
-A few questions about the new open/close teardown pipeline below.
+A few questions below.
 
 > diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
-> index 131c1a61d9e7e..9d1242dbcb19d 100644
+> index 7a2ed49cad4f1..664169c4d27a4 100644
 > --- a/drivers/net/ethernet/ibm/ibmveth.c
 > +++ b/drivers/net/ethernet/ibm/ibmveth.c
 
 [ ... ]
 
-> @@ -1182,14 +1201,89 @@ static int ibmveth_register_logical_lan(struct ibmveth_adapter *adapter,
->  	return rc;
+> @@ -329,6 +331,203 @@ ibmveth_cleanup_rx_resources(struct ibmveth_adapter *adapter)
+>  	}
 >  }
 >  
 > +/**
-> + * ibmveth_free_all_queues - Free all RX queues at once
+> + * ibmveth_toggle_irq - Common helper to enable/disable queue interrupts
+> + * @adapter: ibmveth adapter structure
+> + * @queue_index: Index of the queue (0 for primary, 1+ for subordinate)
+> + * @enable: true to enable, false to disable
+> + *
+> + * For queue 0 (primary), uses h_vio_signal() as it's registered via
+> + * h_register_logical_lan(). For subordinate queues (1+), uses H_VIOCTL
+> + * with H_ENABLE/DISABLE_VIO_INTERRUPT for per-queue interrupt control.
+> + *
+> + * Return: 0 on success, error code otherwise
+> + */
+> +static int
+> +ibmveth_toggle_irq(struct ibmveth_adapter *adapter, int queue_index,
+> +		   bool enable)
+> +{
+> +	unsigned long rc;
+> +	unsigned long irq = adapter->queue_irq[queue_index];
+> +	const char *action = enable ? "enable" : "disable";
+> +
+> +	if (queue_index == 0) {
+> +		/* Primary queue: use h_vio_signal() */
+> +		rc = h_vio_signal(adapter->vdev->unit_address,
+> +				  enable ? VIO_IRQ_ENABLE : VIO_IRQ_DISABLE);
+> +	} else {
+> +		/* Subordinate queues: use H_VIOCTL with hardware IRQ */
+> +		struct irq_data *irq_data = irq_get_irq_data(irq);
+> +		irq_hw_number_t hwirq;
+> +		u64 vioctl_cmd = enable ? H_ENABLE_VIO_INTERRUPT :
+> +			H_DISABLE_VIO_INTERRUPT;
+> +
+> +		if (!irq_data) {
+> +			netdev_err(adapter->netdev,
+> +				   "Failed to get IRQ data for queue %d (virq=%lu)\n",
+> +				   queue_index, irq);
+> +			return -EINVAL;
+> +		}
+> +
+> +		hwirq = irqd_to_hwirq(irq_data);
+> +		rc = plpar_hcall_norets(H_VIOCTL,
+> +					adapter->vdev->unit_address,
+> +					vioctl_cmd,
+> +					hwirq, 0, 0);
+> +
+> +		if (rc == H_PARAMETER) {
+> +			/* H_PARAMETER is non-fatal when IRQ is already in
+> +			 * the requested state.
+> +			 */
+> +			netdev_warn_once(adapter->netdev,
+> +					 "H_VIOCTL %s IRQ returned H_PARAMETER for queue %d (hwirq=%lu)\n",
+> +					 action, queue_index, hwirq);
+> +			return 0;
+> +		}
+
+[Severity: Medium]
+Is folding H_PARAMETER into success correct for both directions here?
+
+hvcall.h documents H_PARAMETER as "Parameter invalid, out-of-range or
+conflicting", and ibmveth_toggle_irq() cannot distinguish "already in the
+requested state" from a bad hwirq, wrong unit address, or a queue that is no
+longer registered.
+
+In the enable direction the swallowed status bypasses the recovery in
+ibmveth_poll():
+
+	lpar_rc = ibmveth_enable_irq(adapter, 0);
+	if (WARN_ON(lpar_rc != H_SUCCESS)) {
+		schedule_work(&adapter->work);
+		goto out;
+	}
+
+so NAPI can complete with the queue still masked at the hypervisor and
+nothing left to reschedule it, i.e. that queue stops receiving, with a
+single warn_once as the only trace.
+
+In the disable direction, ibmveth_schedule_rx_queue() goes on to
+__napi_schedule() and ibmveth_cleanup_rx_interrupts() goes on to
+synchronize_irq()/free_irq() while believing delivery is masked.
+
+For comparison, ibmvnic treats any non-zero rc from the same hypercalls as
+an error in both directions, in disable_scrq_irq() and enable_scrq_irq().
+
+The branch is dead in this commit (num_rx_queues is 1), but it becomes live
+once the MQ patches land, where setup, resize and poll all depend on this
+return value. Would restricting the folding to the disable direction, plus a
+rate-limited per-queue message instead of netdev_warn_once(), be closer to
+the intent?
+
+> +	}
+> +
+> +	if (rc)
+> +		netdev_err(adapter->netdev,
+> +			   "Failed to %s IRQ for queue %d, rc=%ld\n",
+> +			   action, queue_index, rc);
+> +	return rc;
+> +}
+
+[Severity: Medium]
+Does this mix two error domains in one int return?
+
+rc holds an unsigned long hypervisor status from h_vio_signal() or
+plpar_hcall_norets() (H_BUSY 1, H_HARDWARE -1, H_FUNCTION -2, H_PARAMETER
+-4), truncated to int on return, while the irq_get_irq_data() failure path
+returns -EINVAL.
+
+The callers then disagree about what they got. ibmveth_schedule_rx_queue()
+and ibmveth_poll() do:
+
+	unsigned long lpar_rc;
+	lpar_rc = ibmveth_disable_irq(adapter, qindex);
+	WARN_ON(lpar_rc != H_SUCCESS);
+
+while ibmveth_setup_rx_interrupts()/ibmveth_open() treat the same value as
+an errno. One printk formats it with %ld, the other site logs it with %d.
+
+By the end of the series this reaches userspace: the scale-up loop in
+ibmveth_resize_rx_queues_incremental() does
+
+	rc = ibmveth_enable_irq(adapter, i);
+	if (rc) { ... goto cleanup_new_queues; }
+
+and cleanup_new_queues ends with return rc, which flows through
+ibmveth_resize_rx_channels() -> ibmveth_set_channels() to ethtool. H_PARAMETER
+(-4) then surfaces as -EINTR, and H_BUSY (1) or H_CLOSED (2) as a positive
+return that ethtool reads as success even though the queue count was rolled
+back.
+
+Since this commit establishes the helper API for the whole series, would it
+make sense to settle the convention now, either normalizing to errno or
+keeping the raw hcall status with a matching type, name, kernel-doc and
+format specifier?
+
+[ ... ]
+
+> +/**
+> + * ibmveth_setup_rx_interrupts - Register IRQs and enable NAPI
 > + * @adapter: ibmveth adapter structure
 > + *
-> + * Uses H_FREE_LOGICAL_LAN to free all queues in one hypercall.
-> + * Used during interface close and registration error cleanup.
+> + * Registers interrupt handlers for all RX queues and enables NAPI polling.
+> + * On error, cleans up any successfully registered IRQs before returning.
 > + *
-> + * Clears queue handles only; queue_irq[] is released by
-> + * ibmveth_cleanup_rx_interrupts().
+> + * Return: 0 on success, negative error code on failure
 > + */
-> +static void ibmveth_free_all_queues(struct ibmveth_adapter *adapter)
+> +static int
+> +ibmveth_setup_rx_interrupts(struct ibmveth_adapter *adapter)
 > +{
-> +	unsigned long lpar_rc;
-> +	int i;
+> +	struct net_device *netdev = adapter->netdev;
+> +	int i, rc;
 > +
-> +	netdev_dbg(adapter->netdev, "freeing all RX queues at once\n");
+> +	for (i = 0; i < adapter->num_rx_queues; i++) {
+> +		if (!adapter->queue_irq[i]) {
+> +			netdev_err(netdev, "queue %d has invalid IRQ (0)\n", i);
+> +			rc = -EINVAL;
+> +			goto err_free_irqs;
+> +		}
 > +
-> +	do {
-> +		lpar_rc = h_free_logical_lan(adapter->vdev->unit_address);
-> +		adapter->hcall_stats.free_lan++;
-> +	} while (H_IS_LONG_BUSY(lpar_rc) || (lpar_rc == H_BUSY));
-> +
-> +	if (lpar_rc != H_SUCCESS) {
-> +		netdev_err(adapter->netdev,
-> +			   "h_free_logical_lan failed: %ld\n", lpar_rc);
+> +		rc = request_irq(adapter->queue_irq[i], ibmveth_interrupt,
+> +				 0, netdev->name, &adapter->napi[i]);
+> +		if (rc) {
+> +			netdev_err(netdev,
+> +				   "request_irq() failed for irq 0x%x queue %d: %d\n",
+> +				   adapter->queue_irq[i], i, rc);
+> +			goto err_free_irqs;
+> +		}
 > +	}
 > +
 > +	for (i = 0; i < adapter->num_rx_queues; i++)
-> +		adapter->queue_handle[i] = 0;
-> +}
+> +		napi_enable(&adapter->napi[i]);
 
-[Severity: Low]
-Where is the firmware contract for this documented?  The helper issues one
-adapter-level h_free_logical_lan() and then clears queue_handle[] for all
-num_rx_queues entries, which assumes that the single hcall also
-deregisters the subordinate queues that later patches register with
-H_REG_LOGICAL_LAN_QUEUE.
+[Severity: Medium]
+Can an interrupt arrive in the window between these two loops?
 
-The header already provides a per-queue wrapper that this path never uses:
+request_irq() unmasks the virq via irq_startup(), and the LAN is already
+registered with the hypervisor by the time ibmveth_setup_rx_interrupts()
+runs, yet NAPI is only enabled in the second loop. Previously
+napi_enable(&adapter->napi[0]) was the first statement of ibmveth_open(), so
+this window did not exist.
 
-  static inline long h_free_logical_lan_queue(unsigned long unit_address,
-					      unsigned long queue_handle)
+If an interrupt (including one latched at the controller while the line was
+shut down by the previous close's free_irq()) is delivered inside the
+window, ibmveth_interrupt() -> ibmveth_schedule_rx_queue() finds
+napi_schedule_prep() failing:
 
-The assumption cannot be exercised at this commit because multi_queue is
-still 0, and the helper is unchanged at the end of the series, so nothing
-in the series validates it.  The changelog justifies the new ordering with
-"PHYP cannot retain a registered LAN while its DMA-backed RX pools are
-released"; if H_FREE_LOGICAL_LAN does not release subordinate queue
-registrations, then ibmveth_free_buffer_pools() and
-ibmveth_cleanup_rx_resources() would unmap memory PHYP still owns.
-
-Could the PAPR reference for the subordinate-queue semantics be stated in
-the kerneldoc or the changelog before the MQ enablement patch relies on it?
-
-[ ... ]
-
-> @@ -1252,10 +1332,9 @@ static int ibmveth_open(struct net_device *netdev)
->  
->  out_cleanup_rx_interrupts:
->  	ibmveth_cleanup_rx_interrupts(adapter);
-> -out_unregister_lan:
-> -	do {
-> -		lpar_rc = h_free_logical_lan(adapter->vdev->unit_address);
-> -	} while (H_IS_LONG_BUSY(lpar_rc) || (lpar_rc == H_BUSY));
-> +out_unregister_queues:
-> +	ibmveth_free_all_queues(adapter);
-> +out_free_buffer_pools:
->  	ibmveth_free_buffer_pools(adapter);
->  out_free_queue_mem:
->  	ibmveth_cleanup_rx_resources(adapter);
-
-[Severity: High]
-This isn't a bug introduced by this patch, but should the unwind here leave
-state that a later ibmveth_close() can walk again?
-
-ibmveth_set_csum_offload(), ibmveth_set_tso() and ibmveth_change_mtu() call
-ibmveth_close()/ibmveth_open() directly instead of dev_close()/dev_open(),
-so when the re-open fails the error is only returned as an errno while
-IFF_UP and netif_running() stay set:
-
-	if (restart)
-		rc2 = ibmveth_open(dev);
-
-	return rc1 ? rc1 : rc2;
-
-After that failed open, every RX resource is freed (buffer_list_addr[] is
-NULLed by ibmveth_cleanup_rx_resources()), NAPI is left disabled, and
-queue_irq[0] is deliberately kept populated.  The next ndo_stop, for
-example retrying the same ethtool command or an "ip link set dev X down",
-re-enters ibmveth_close() -> ibmveth_cleanup_rx_interrupts(), which does:
-
-	for (i = 0; i < adapter->num_rx_queues; i++)
-		napi_disable(&adapter->napi[i]);
-
-	for (i = 0; i < adapter->num_rx_queues; i++) {
-		if (adapter->queue_irq[i])
-			free_irq(adapter->queue_irq[i], &adapter->napi[i]);
+	if (napi_schedule_prep(napi)) {
+		lpar_rc = ibmveth_disable_irq(adapter, qindex);
+		WARN_ON(lpar_rc != H_SUCCESS);
+		__napi_schedule(napi);
 	}
 
-Can the second napi_disable() ever return?  napi_disable_locked() leaves
-NAPIF_STATE_SCHED|NAPIF_STATE_NPSVC set, and the second call waits in
-usleep_range() for bits that no poll will clear, with rtnl held by the
-ndo_stop caller.  The free_irq() that follows also refers to an IRQ that is
-no longer requested.
+so nothing is scheduled and nothing is masked, while the handler still
+returns IRQ_HANDLED. For a level-asserted hypervisor source that repeats
+until napi_enable() runs.
 
-If it did get past those, ibmveth_update_rx_no_buffer() would dereference
-the now-NULL buffer_list_addr[0]:
+This is also the inverse of the invariant the later scale-up path in this
+series states, "publish -> replenish -> napi_enable -> enable_irq ... so
+ibmveth_interrupt() cannot run on an unpublished, empty, or NAPI-disabled
+queue". Would enabling a queue's NAPI before installing its handler restore
+that ordering?
 
-	__be64 *p = adapter->buffer_list_addr[0] + 4096 - 8;
+> +
+> +	return 0;
+> +
+> +err_free_irqs:
+> +	while (--i >= 0)
+> +		free_irq(adapter->queue_irq[i], &adapter->napi[i]);
+> +	return rc;
+> +}
+> +
+> +/**
+> + * ibmveth_cleanup_rx_interrupts - Mask PHYP, disable NAPI, free IRQs
+> + * @adapter: ibmveth adapter structure
+> + *
+> + * Tears down RX interrupt delivery for all queues. Mask PHYP before
+> + * napi_disable so ibmveth_interrupt cannot return IRQ_HANDLED without
+> + * masking (same storm window as scale-down). Safe for close and for
+> + * open failure after setup_rx_interrupts() already unmasked PHYP.
+> + */
 
-and ibmveth_free_all_queues() would issue H_FREE_LOGICAL_LAN for a LAN that
-is not registered.
+[Severity: Low]
+Do these comments describe what the commit actually does?
 
-The baseline close() already had an unconditional napi_disable(), so the
-hang predates this patch, but this patch centralizes and extends the
-unconditional teardown (now also free_all_queues() plus the NULL-able
-buffer_list_addr[0] read) without an "already torn down" guard, and the
-same structure survives to the end of the series.  Would a state check at
-the top of ibmveth_close(), or switching those callers to
-dev_close()/dev_open(), be preferable?
+"Safe for close and for open failure after setup_rx_interrupts() already
+unmasked PHYP" - ibmveth_setup_rx_interrupts() only does request_irq() and
+napi_enable(), and the changelog agrees ("setup does not yet unmask PHYP").
+No ibmveth_open() failure path calls this helper either; setup rolls back
+through its own err_free_irqs label and open goes to
+out_free_buffer_pools/out_free_tx_ltb/out.
 
-> @@ -1268,7 +1347,6 @@ static int ibmveth_open(struct net_device *netdev)
->  static int ibmveth_close(struct net_device *netdev)
->  {
->  	struct ibmveth_adapter *adapter = netdev_priv(netdev);
-> -	long lpar_rc;
+"Mask PHYP before napi_disable so ibmveth_interrupt cannot return
+IRQ_HANDLED without masking" - see the question on the mask/napi_disable
+ordering below; an in-flight ibmveth_poll() can undo the mask.
+
+"Dispose IRQ mappings for subordinate queues (1-15)" sits above a loop that
+starts at 1, but ibmveth.h defines IBMVETH_MAX_RX_QUEUES as 1U and
+num_rx_queues is set to IBMVETH_DEFAULT_RX_QUEUES, so the loop cannot
+iterate in this commit.
+
+And ibmveth_toggle_irq()'s "Return: 0 on success, error code otherwise"
+conflicts with returning raw H_* codes that callers compare against
+H_SUCCESS.
+
+The first and third become accurate later in the series; the second and
+fourth remain as they are. Could the comments be trimmed to what this
+commit provides?
+
+> +static void
+> +ibmveth_cleanup_rx_interrupts(struct ibmveth_adapter *adapter)
+> +{
+> +	int i;
+> +
+> +	for (i = 0; i < adapter->num_rx_queues; i++) {
+> +		if (adapter->queue_irq[i]) {
+> +			ibmveth_disable_irq(adapter, i);
+> +			synchronize_irq(adapter->queue_irq[i]);
+> +		}
+> +	}
+
+[Severity: Medium]
+Can a running poll undo this mask before free_irq()?
+
+synchronize_irq() waits for the hardirq handler only, not for an
+ibmveth_poll() already running in softirq context, and that poll
+unconditionally re-arms delivery on its completion path:
+
+	lpar_rc = ibmveth_enable_irq(adapter, 0);
+
+Sequence with RX traffic flowing during "ip link set ethN down":
+
+CPU0 ibmveth_close() -> ibmveth_cleanup_rx_interrupts()
+	ibmveth_disable_irq(adapter, 0);	/* PHYP masked */
+	synchronize_irq(queue_irq[0]);		/* no hardirq running */
+	napi_disable(&adapter->napi[0]);	/* blocks on the poll */
+
+CPU1 softirq ibmveth_poll()
+	lpar_rc = ibmveth_enable_irq(adapter, 0);	/* PHYP unmasked */
+	napi_complete_done(...)
+
+CPU0 then resumes and calls free_irq() with the source unmasked, and nothing
+re-checks or re-masks after napi_disable(). If an interrupt lands in that
+window, ibmveth_interrupt() -> ibmveth_schedule_rx_queue() takes the
+napi_schedule_prep() failure path, so no mask is applied while the handler
+still returns IRQ_HANDLED - the storm window the new kernel-doc says this
+ordering avoids. The window is bounded by the following free_irq(), but the
+teardown no longer reliably ends with the source masked.
+
+Should ibmveth_poll() avoid re-enabling while teardown is in progress, or
+should cleanup re-mask after napi_disable()?
+
+> +
+> +	for (i = 0; i < adapter->num_rx_queues; i++)
+> +		napi_disable(&adapter->napi[i]);
+> +
+> +	for (i = 0; i < adapter->num_rx_queues; i++) {
+> +		if (adapter->queue_irq[i])
+> +			free_irq(adapter->queue_irq[i], &adapter->napi[i]);
+> +	}
+
+[Severity: High]
+This isn't a bug introduced by this patch, but the refactor makes the
+unbalanced teardown harder to see and hands the same invariant to the rest
+of the series, so it seems worth raising here.
+
+napi_disable() runs unconditionally for every queue, and free_irq() is gated
+only on queue_irq[i]. After a failed ibmveth_open() that leaves the
+interface administratively up, NAPI was never enabled and no handler was
+installed, yet both run on the next ndo_stop.
+
+napi_disable_locked() does:
+
+	while (val & (NAPIF_STATE_SCHED | NAPIF_STATE_NPSVC))
+		usleep_range(20, 200);
+
+and sets SCHED|NPSVC when it completes, so a second napi_disable() with no
+intervening napi_enable() loops forever, under rtnl_lock() plus the netdev
+lock. free_irq() on a never-requested IRQ additionally warns with "Trying to
+free already-free IRQ".
+
+Trigger in this tree: veth_pool_store() calls ibmveth_close() and then
+ibmveth_open() directly; if open fails (-ENOMEM from
+ibmveth_alloc_rx_queues(), -ENONET from ibmveth_register_logical_lan(), or
+request_irq() failure inside ibmveth_setup_rx_interrupts()) it restores the
+pool values and returns the error with the netdev still up. The same
+close()/open() pattern exists in ibmveth_set_csum_offload() and
+ibmveth_set_tso(). A later "ip link set dev ethN down" then reaches
+ibmveth_cleanup_rx_interrupts() and hangs.
+
+In the baseline, open() did napi_enable() at entry and napi_disable() at
+out:, and close() called free_irq(netdev->irq, netdev) unconditionally, so
+the same hang existed. What changes here is that queue_irq[0] is published
+in open() before request_irq() can succeed and is deliberately never
+cleared, so the new "if (adapter->queue_irq[i])" guard means "we have a virq
+number", not "a handler is installed". Could the helper track whether
+napi_enable()/request_irq() actually ran for each queue?
+
+> +
+> +	/* Dispose IRQ mappings for subordinate queues (1-15).
+> +	 * Queue 0 uses netdev->irq from device tree, not irq_create_mapping().
+> +	 */
+> +	for (i = 1; i < adapter->num_rx_queues; i++) {
+> +		if (adapter->queue_irq[i]) {
+> +			irq_dispose_mapping(adapter->queue_irq[i]);
+> +			adapter->queue_irq[i] = 0;
+> +		}
+> +	}
+> +
+> +	/* Queue 0 uses netdev->irq; leave queue_irq[0] for next open. */
+> +}
+> +
+> +/**
+> + * ibmveth_schedule_rx_queue - Mask PHYP IRQ and schedule NAPI for one RX queue
+> + * @adapter: ibmveth adapter structure
+> + * @qindex: RX queue index
+> + *
+> + * Shared by the IRQ handler and process-context kick paths (open, resume,
+> + * pool sysfs, netpoll). Keep ibmveth_interrupt() as the IRQ-only wrapper.
+> + */
+> +static void ibmveth_schedule_rx_queue(struct ibmveth_adapter *adapter,
+> +				      int qindex)
+> +{
+> +	struct napi_struct *napi = &adapter->napi[qindex];
+> +	unsigned long lpar_rc;
+> +
+> +	if (WARN_ON(qindex < 0 || qindex >= adapter->num_rx_queues))
+> +		return;
+> +
+> +	if (napi_schedule_prep(napi)) {
+> +		lpar_rc = ibmveth_disable_irq(adapter, qindex);
+> +		WARN_ON(lpar_rc != H_SUCCESS);
+> +		__napi_schedule(napi);
+> +	}
+> +}
+> +
+>  /* setup the initial settings for a buffer pool */
+>  static void ibmveth_init_buffer_pool(struct ibmveth_buff_pool *pool,
+>  				     u32 pool_index, u32 pool_size,
+
+> @@ -947,8 +1146,6 @@ static int ibmveth_open(struct net_device *netdev)
+>  
+>  	netdev_dbg(netdev, "open starting\n");
+>  
+> -	napi_enable(&adapter->napi[0]);
+> -
+>  	for (i = 0; i < IBMVETH_NUM_BUFF_POOLS; i++)
+>  		rxq_entries += adapter->rx_buff_pool[0][i].size;
+>  
+> @@ -972,7 +1169,8 @@ static int ibmveth_open(struct net_device *netdev)
+>  					adapter->rx_queue[0].queue_len;
+>  	rxq_desc.fields.address = adapter->rx_queue[0].queue_dma;
+>  
+> -	h_vio_signal(adapter->vdev->unit_address, VIO_IRQ_DISABLE);
+> +	adapter->queue_irq[0] = netdev->irq;
+> +	ibmveth_disable_irq(adapter, 0);
+
+Related to the teardown question above: queue_irq[0] is published here,
+before h_register_logical_lan(), the buffer pool allocation and
+request_irq(), and it is never cleared on any failure path.
+
+>  
+>  	lpar_rc = ibmveth_register_logical_lan(adapter, rxq_desc, mac_address);
+>  
+> @@ -993,21 +1191,16 @@ static int ibmveth_open(struct net_device *netdev)
+>  	if (rc)
+>  		goto out_free_tx_ltb;
+>  
+> -	netdev_dbg(netdev, "registering irq 0x%x\n", netdev->irq);
+> -	rc = request_irq(netdev->irq, ibmveth_interrupt, 0, netdev->name,
+> -			 netdev);
+> -	if (rc != 0) {
+> -		netdev_err(netdev, "unable to request irq 0x%x, rc %d\n",
+> -			   netdev->irq, rc);
+> +	rc = ibmveth_setup_rx_interrupts(adapter);
+> +	if (rc) {
+>  		do {
+>  			lpar_rc = h_free_logical_lan(adapter->vdev->unit_address);
+>  		} while (H_IS_LONG_BUSY(lpar_rc) || (lpar_rc == H_BUSY));
+> -
+>  		goto out_free_buffer_pools;
+>  	}
+>  
+>  	netdev_dbg(netdev, "initial replenish cycle\n");
+> -	ibmveth_interrupt(netdev->irq, netdev);
+> +	ibmveth_schedule_rx_queue(adapter, 0);
+>  
+>  	netif_tx_start_all_queues(netdev);
+>  
+> @@ -1024,7 +1217,6 @@ static int ibmveth_open(struct net_device *netdev)
+>  out_free_filter_list:
+>  	ibmveth_free_filter_list(adapter);
+>  out:
+> -	napi_disable(&adapter->napi[0]);
+>  	return rc;
+>  }
+>  
+> @@ -1036,11 +1228,10 @@ static int ibmveth_close(struct net_device *netdev)
 >  
 >  	netdev_dbg(netdev, "close starting\n");
 >  
-> @@ -1277,18 +1355,8 @@ static int ibmveth_close(struct net_device *netdev)
->  	/* PHYP mask + napi_disable + free_irq live in cleanup_rx_interrupts */
->  	ibmveth_free_tx_resources(adapter);
->  	ibmveth_cleanup_rx_interrupts(adapter);
-
-[Severity: Medium]
-Does the PHYP mask taken by ibmveth_cleanup_rx_interrupts() actually stay
-in effect until free_irq()?
-
-The helper masks queue 0 and calls synchronize_irq() before napi_disable():
-
-	ibmveth_disable_irq(adapter, i);
-	synchronize_irq(adapter->queue_irq[i]);
-	...
-	for (i = 0; i < adapter->num_rx_queues; i++)
-		napi_disable(&adapter->napi[i]);
-
-But a poll that is already in flight unmasks it again on completion, with
-no coordination against teardown:
-
-ibmveth_poll()
-	if (!napi_complete_done(napi, frames_processed))
-		goto out;
-
-	/* We think we are done - reenable interrupts, ... */
-	lpar_rc = ibmveth_enable_irq(adapter, 0);
-
-So napi_disable() can return with the source unmasked.  In the window
-before free_irq(), an RX interrupt is then delivered and
-ibmveth_interrupt() -> ibmveth_schedule_rx_queue() sees napi_schedule_prep()
-fail and returns IRQ_HANDLED without masking, since masking only happens on
-the napi_schedule_prep() success branch.  Can a VIO source with pending RX
-re-assert repeatedly until free_irq() shuts the line down, and can
-ibmveth_free_all_queues() then issue H_FREE_LOGICAL_LAN while the source is
-still unmasked?
-
-The kerneldoc in cleanup_rx_interrupts() states "Mask PHYP before
-napi_disable so ibmveth_interrupt cannot return IRQ_HANDLED without
-masking", which does not seem to hold when the poll itself is the entity
-that unmasks.  The pre-series code did napi_disable() first, then
-h_vio_signal(VIO_IRQ_DISABLE), then free_irq(); this patch propagates the
-new ordering into the open-failure unwind as well and places
-ibmveth_free_all_queues() behind it, and ibmveth_poll() still unmasks
-unconditionally at the end of the series.
-
+> -	napi_disable(&adapter->napi[0]);
 > -
-> -	do {
-> -		lpar_rc = h_free_logical_lan(adapter->vdev->unit_address);
-> -	} while (H_IS_LONG_BUSY(lpar_rc) || (lpar_rc == H_BUSY));
+>  	netif_tx_stop_all_queues(netdev);
+>  
+> -	h_vio_signal(adapter->vdev->unit_address, VIO_IRQ_DISABLE);
+> +	/* PHYP mask + napi_disable + free_irq live in cleanup_rx_interrupts */
+> +	ibmveth_cleanup_rx_interrupts(adapter);
+>  
+>  	do {
+>  		lpar_rc = h_free_logical_lan(adapter->vdev->unit_address);
+> @@ -1051,8 +1242,6 @@ static int ibmveth_close(struct net_device *netdev)
+>  			   "continuing with close\n", lpar_rc);
+>  	}
+>  
+> -	free_irq(netdev->irq, netdev);
 > -
-> -	if (lpar_rc != H_SUCCESS) {
-> -		netdev_err(netdev, "h_free_logical_lan failed with %lx, "
-> -			   "continuing with close\n", lpar_rc);
-> -	}
-> -
+
+Also part of the teardown question: free_irq() now happens inside
+ibmveth_cleanup_rx_interrupts(), i.e. before h_free_logical_lan(), where the
+baseline order was napi_disable -> tx stop -> h_vio_signal(DISABLE) ->
+h_free_logical_lan -> free_irq. The changelog mentions the mask/napi_disable
+reordering but not this one. Was the free_irq/h_free_logical_lan inversion
+intended?
+
 >  	ibmveth_update_rx_no_buffer(adapter);
-> -
-> +	ibmveth_free_all_queues(adapter);
-
-[Severity: Low]
-Was moving ibmveth_update_rx_no_buffer() ahead of the H_FREE_LOGICAL_LAN
-intentional?
-
-Previously the counter was read after h_free_logical_lan() returned, so the
-hypervisor was no longer writing it.  ibmveth_update_rx_no_buffer() reads
-the last 8 bytes of the DMA-mapped buffer_list page that PHYP updates:
-
-	__be64 *p = adapter->buffer_list_addr[0] + 4096 - 8;
-
-	adapter->rx_no_buffer = be64_to_cpup(p);
-
-At the new call site the LAN is still registered, so frames can still be
-dropped and counted after the snapshot, and those drops are lost from the
-rx_no_buffer value reported by ethtool -S.
-
-The 7-step close pipeline in the changelog does not mention
-ibmveth_update_rx_no_buffer() at all:
-
-  ibmveth_close():
-
-    1. netif_tx_stop_all_queues()
-    2. ibmveth_free_tx_resources()
-    3. ibmveth_cleanup_rx_interrupts() - mask PHYP, napi_disable, free_irq
-    4. ibmveth_free_all_queues()       - H_FREE_LOGICAL_LAN
-    5. ibmveth_free_buffer_pools()
-    6. ibmveth_cleanup_rx_resources()
-    7. ibmveth_free_filter_list()
-
-Could the step list be updated to include it and to say where it belongs
-relative to H_FREE_LOGICAL_LAN?  The ordering is unchanged through the end
-of the series.
-
+>  
 >  	ibmveth_free_buffer_pools(adapter);
->  	ibmveth_cleanup_rx_resources(adapter);
->  	ibmveth_free_filter_list(adapter);
+> @@ -1798,15 +1987,14 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
+>  	/* We think we are done - reenable interrupts,
+>  	 * then check once more to make sure we are done.
+>  	 */
+> -	lpar_rc = h_vio_signal(adapter->vdev->unit_address, VIO_IRQ_ENABLE);
+> +	lpar_rc = ibmveth_enable_irq(adapter, 0);
+>  	if (WARN_ON(lpar_rc != H_SUCCESS)) {
+>  		schedule_work(&adapter->work);
+>  		goto out;
+>  	}
+>  
+>  	if (ibmveth_rxq_pending_buffer(adapter) && napi_schedule(napi)) {
+> -		lpar_rc = h_vio_signal(adapter->vdev->unit_address,
+> -				       VIO_IRQ_DISABLE);
+> +		lpar_rc = ibmveth_disable_irq(adapter, 0);
+>  		goto restart_poll;
+>  	}
+>  
 
 [ ... ]
+
+Cross-instance finding from sashiko-gemini (e3f4ca1fbf9d3f3114fde9e903e88e76f2f763bdede83ba454f20f9e157db105):
+[Severity: Medium]
+Incomplete Refactoring / Future Out-of-Bounds Access in ibmveth_poll
 
