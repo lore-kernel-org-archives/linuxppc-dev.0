@@ -1,82 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-25460-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25461-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0E1EC55174
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2026 01:20:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CE5B3C55174
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2026 02:06:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hFqGY5vjDz2yh4;
-	Thu, 06 Aug 2026 11:20:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::52e"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785979237;
-	cv=none; b=EVKBIJ1HaNAyzzJzDCLPn2KPRYJO9l8BYF+YJNrDttb9SYaSs1nQVKy+LYzEL5tAV1N5G3U2oxj5+xZTKWNI3uLBfAeBjxt/qoaS0JOImbWCs7gL92/2ZeOiYN3F005KJBkNCuiY+h0Vr3VWm3C6wSrtK0/7SYxUAjZqyefFZhmd4Pvk+EtsRsekg0MmytJKrHoD1f/KJV+ICF0sP/xkemVWzrgpaWeMgrjC6iEnNc86jhqWC+wqaV4WMphKYat1OpJBeeL6bubQ+dTb/oMEFvdc8mfzuPme2rhyQE7UEe3lLYxppB8RcBYWsMY0yb2ffMPa/hvI0O8vZ2otC6/feQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hFrHl0jTrz2yMn;
+	Thu, 06 Aug 2026 12:06:43 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785982003;
+	cv=none; b=CfMSHbe1UExmoOi7ZrCgwAlVFWAohKiFDIXSjIbCfg1WtqHwWzNMLh+IqtblW0+jh2dwDbO48yrTGPkuaGSHBn9zwLF0G045xhCdVOFfePgPDYfUkiB4IZIdmN+AjES4HqVmFzoPhr4DXS1A9mxTDUKBr+lyHGDCTkMUUI5NK0GOEa/++ptOWIzD/YCo+VMF4eOXHi+VQwQK2uEgSgnUO0do57c9mZGQd0TXTQJ/m7YJ06S14RIqosskCREr+5Vk2FGJmrSbI0r4yrWQ38Yryv2BQct/Uici5fHebwBKbILmi5eRBgK4l6t5Oce+/JCu7tS746icyNWi0493mKO7ZA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785979237; c=relaxed/relaxed;
-	bh=pDhWKQAQpmDQGSN1gums3GOjJY3v7WMpe631+1JRx+k=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=Inp0gRHO68oaSi9X/i2e5eBJqodhjmeQ7nN3wy+oNJ/E1z+GvuZHZhqhFWzLgrn1gdwb42PkXdJUqaIj254paOEz4GnfdiNagVuXm3r3zjI0j1z++Y0wv5LjmEHho3m70xmcrwlz22qm0dC79n18W8hux8mx3ZakkKVLCfBj+0j7Obu8z22ty+Sm/ahYhlm5mTaGiZGXeaki8CO5Dhpwt3a2BMz2vke2zjbBnsDZFF+Q7rAo++Dcqd6LTv73E+BIviFVDG2iYbmQwhaii6G7NwhCZzw/d/hvRCHmPcwYVJkAVVnzI75tT0SQWTCDfDeWRBjYOluCCFLho8LK5dauxg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Grcgrbqm; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::52e; helo=mail-pg1-x52e.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1785982003; c=relaxed/relaxed;
+	bh=yE9my2hCRl/Fk0L+bvY28h5Zsxtyr/3Bp4AJEGkl/oI=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=DsV3zdn2Om2FNjd0pjntGtBzBhPufB+kZU2M+Yq3ZMe0jl0Gv8VLXfqo7+4fd/ek5xOvOFT8HGdD+OiDI3Vemk5kNJPEaxv9FbhC7BwYbol3Ta4Iokx6Sdgt9LJo+2HtxPojXuVlJLr/YayND87v6YUW4TC8WFIUtwiiQOK88KK3hYHVsyWySkOavP18QpdaMnOOEn/LRgRH3tsZxqZU3TEYt/ntqPoPxisWL598Lmd+HxhbrcAmD7fK7QWXYHDLvzdBV7dkKKgdIQaddn/ROhiUsCFTjORvpzRfFdhiBkecXN9QHr/biNCQVbblede+ObFWvQiqEtyz2WLc65HMDQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Ao8pnfBB; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Grcgrbqm;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Ao8pnfBB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::52e; helo=mail-pg1-x52e.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x52e.google.com (mail-pg1-x52e.google.com [IPv6:2607:f8b0:4864:20::52e])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hFqGX68Ylz2yMn
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Aug 2026 11:20:36 +1000 (AEST)
-Received: by mail-pg1-x52e.google.com with SMTP id 41be03b00d2f7-c9aea40d799so943726a12.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Aug 2026 18:20:36 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1785979234; x=1786584034; darn=lists.ozlabs.org;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=pDhWKQAQpmDQGSN1gums3GOjJY3v7WMpe631+1JRx+k=;
-        b=GrcgrbqmFN9Si15PWmHSlMx1jzCNGWCn36uU2bI3JKMt6IVNs0wyybDEL0tcBPIy2+
-         2OFYV3l/366eqsEIGz4b8b9uQAU6yFz5WcDEs/haMjih+kSRLsOezIxq1nYOuDiFcVBc
-         PPEXF5qQvvxtNeq72G0NWfLTWJp9oSv4QhC+qSQhJIZrA22fcbwE+1xRjKGQkpf8nXAH
-         GOH3MQUgnG4LazrNrSex7EQzd9f3zLaHxH9fGf5iMUMnQa8QgMgeliDN4dRU+a26DgrN
-         9+q4evoXntjHEeFFQP+WB9utfPVlLUXanAgNtlZnx0jVmLtHNELwK3weQVbVpnvHQm8u
-         0Clg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785979234; x=1786584034;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=pDhWKQAQpmDQGSN1gums3GOjJY3v7WMpe631+1JRx+k=;
-        b=QVxdfFz5F/ryi8kqUNDGqKNs4URK4MJ8dB2qTkOpiQMseUSuMBkxWYpTs92v5vPj08
-         zqEdzqDM2Q+ij9ePMpfxjOcaTk9IGiiOc9bZLuMwqLWCouqApn/VC7d6dvGUySe3mRvr
-         14GPnq4oZQZaSh/bTC4DMr9Gi3DwLH8DkzfbC0leXCKjuaiRPaEdTDricCp+r5VKAgNd
-         c2zpYjSmzxR95ly1L8BDnwBI8f0CeKnXmqI07wnXjqZ12AUvBxHo5shGk/xNMDoro1OJ
-         m0XiHBatU3uO2h4DpI6YLOQfq6IBr5ydhfAcFh18L/Kc1NZBH0KYOrsy4dixa2TWllIZ
-         xpPg==
-X-Forwarded-Encrypted: i=1; AHgh+RounkVmwtfOyVPJW6rXIO+kFv97xWsEG3W74m6kbyZkphWKk4IS4+Ft2YMEmpQwfLL9cG038Ro47+TJJRE=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwmZkxWniKMQ32MekD4ZTpsjLLkoFGv0VhYQ1rnM9SSYlTlecF3
-	3jGg2cQDNE0J4MrTDGNxW9VdxiXSXah5B6l4nMEmfNGOx2VYYbzSQs/5
-X-Gm-Gg: AR+sD12n0qZLUi4Q3YOFmlR0Tk1f+7b+XXGgiHc+AMaPWhkv8ii2nyZUxuYhGa/MHbr
-	RVc01wRTc2gO0B8vd+X85I7mEaC3Z9iVNb7zpP4pVjwttwW6u1Z6rOdgwaJ54V8x6T4ECQnppJR
-	5Kc0D9S59KHoqYFCTdC01CvjIcBhIIlcgb0QQNN+VbEssuU5uJ9Tt+4n6z4pKfDSVd7iIexu1cE
-	gYJvqyLQXU+pOnwx44eO8935i8aEC5IYUKnu9oTdwOho7wTgQTu85PnC0BZy1p7QNcl7atux7Jt
-	qW7rNfMrBnY420DoP+3jT5g3BrK5Pg0t+0SEtHjxbc1W59T4Wx6yAJZF19E2JCOCRrIrFaPLUDn
-	5pi6nTfTmaX/F2a3fEo5KI7A2oEqX7EaMyl+Mook/me22fRiDrmI5LI9uy+T6QCSS2uWyoOpGZ3
-	iXJ5xP2vq5pt65pEg00cHNs546cK+SdVAsKm+vCXIoZrv0vzpxa1DhJ10vO14=
-X-Received: by 2002:a05:6a20:4307:b0:3bf:7e2a:e874 with SMTP id adf61e73a8af0-3cb85dee55emr11951526637.1.1785979233570;
-        Wed, 05 Aug 2026 18:20:33 -0700 (PDT)
-Received: from pve-server ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-31586162e80sm23448029eec.0.2026.08.05.18.20.29
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 05 Aug 2026 18:20:32 -0700 (PDT)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: Thorsten Blum <thorsten.blum@linux.dev>, Madhavan Srinivasan <maddy@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: Thorsten Blum <thorsten.blum@linux.dev>, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] KVM: PPC: Use min() in kvm_vm_ioctl_check_extension()
-In-Reply-To: <20260804112011.59416-4-thorsten.blum@linux.dev>
-Date: Thu, 06 Aug 2026 06:50:11 +0530
-Message-ID: <qzkckptg.ritesh.list@gmail.com>
-References: <20260804112011.59416-3-thorsten.blum@linux.dev> <20260804112011.59416-4-thorsten.blum@linux.dev>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hFrHj5snlz2yMl
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Aug 2026 12:06:41 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 9716560A63;
+	Thu,  6 Aug 2026 02:06:37 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DCBDE1F000E9;
+	Thu,  6 Aug 2026 02:06:36 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1785981997;
+	bh=yE9my2hCRl/Fk0L+bvY28h5Zsxtyr/3Bp4AJEGkl/oI=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=Ao8pnfBBeTvO/JdOu3S7CRyX7bKKcgSK0FuvEvYHcEHsHoJKB7V/jfZwHYThVe6zh
+	 mEyQIbt0sGO8fK7iaC6oBO1ZW18qYAeanjANc4+cjl6qai9oBZoiLj2m+0+1+7qYyf
+	 z5x5bactR5AayqEjE0vEsEcMi+oU1HhpWThQexZ/06lv4E018V85d40IksbnRWyH48
+	 t6/KGJfu9TPd+1+LvbSbG25VQ8uab0zIG9nGW6emLuZP2RMsYwAQvs4bqIrDmt7+Np
+	 +ARonfwFMfW6BIV43xqd/2qc2pljtBTQrC1NRzyemygI0ykgm36QxbsDWqT6iRFxi7
+	 tph9TTyhBq09w==
+From: Jakub Kicinski <kuba@kernel.org>
+To: mhun512@gmail.com
+Cc: Jakub Kicinski <kuba@kernel.org>,
+	qiang.zhao@nxp.com,
+	horms@kernel.org,
+	andrew+netdev@lunn.ch,
+	davem@davemloft.net,
+	edumazet@google.com,
+	pabeni@redhat.com,
+	khc@pm.waw.pl,
+	netdev@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org,
+	ae878000@gmail.com
+Subject: Re: [PATCH net v2] net: wan: fsl_ucc_hdlc: release HDLC device on remove
+Date: Wed,  5 Aug 2026 19:05:42 -0700
+Message-ID: <20260806020541.2011936-2-kuba@kernel.org>
+X-Mailer: git-send-email 2.55.0
+In-Reply-To: <20260803133048.42650-1-mhun512@gmail.com>
+References: <20260803133048.42650-1-mhun512@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,14 +77,179 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 
-Thorsten Blum <thorsten.blum@linux.dev> writes:
+Could you make a patch series which fixes all the bugs reported
+here which look real?
+---
+This is an AI-generated review of your patch. The human sending this
+email has considered the AI review valid, or at least plausible.
+---
+net: wan: fsl_ucc_hdlc: release HDLC device on remove
 
-> Replace min_t() with the simpler min() macro since the values are
-> unsigned and compatible.
->
-> Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
+The patch makes ucc_hdlc_remove() unregister and free the HDLC netdev
+before freeing the ucc_hdlc_private object, and adds dev_close() to the
+generic unregister_hdlc_device() helper so ndo_stop runs while the HDLC
+protocol is still attached.
 
-Looks good to me. Feel free to add:
-Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+Link to v1: https://lore.kernel.org/netdev/20260728171545.49247-1-mhun512@gmail.com/
+
+> diff --git a/drivers/net/wan/fsl_ucc_hdlc.c b/drivers/net/wan/fsl_ucc_hdlc.c
+> index 809f21fb93f56..4c843c94cf436 100644
+> --- a/drivers/net/wan/fsl_ucc_hdlc.c
+> +++ b/drivers/net/wan/fsl_ucc_hdlc.c
+> @@ -1255,6 +1255,8 @@ static void ucc_hdlc_remove(struct platform_device *pdev)
+>  {
+>  	struct ucc_hdlc_private *priv = dev_get_drvdata(&pdev->dev);
+>  
+> +	unregister_hdlc_device(priv->ndev);
+> +
+>  	uhdlc_memclean(priv);
+
+[ ... ]
+
+> diff --git a/drivers/net/wan/hdlc.c b/drivers/net/wan/hdlc.c
+> index cbed10b1d862e..a38f90d3006ed 100644
+> --- a/drivers/net/wan/hdlc.c
+> +++ b/drivers/net/wan/hdlc.c
+> @@ -263,6 +263,7 @@ EXPORT_SYMBOL(alloc_hdlcdev);
+>  void unregister_hdlc_device(struct net_device *dev)
+>  {
+>  	rtnl_lock();
+> +	dev_close(dev);
+>  	detach_hdlc_protocol(dev);
+>  	unregister_netdevice(dev);
+>  	rtnl_unlock();
+
+[Severity: Medium]
+Should this hunk be a separate patch?  The subject is scoped to
+fsl_ucc_hdlc and the Fixes tag points at c19b6d246a35, but
+unregister_hdlc_device() is exported generic HDLC code with eight other
+callers: c101_cleanup(), n2_destroy_card(), pc300too_remove_one(),
+pci200syn_remove_one(), wanxl_pci_remove_one(), hss_remove_one(),
+qmc_hdlc_remove() and farsync's fst_add_one()/fst_remove_one().
+
+For all of those, detach_hdlc_protocol() -> hdlc_setup_dev() previously
+cleared IFF_UP:
+
+drivers/net/wan/hdlc.c:hdlc_setup_dev() {
+	...
+	dev->flags		 = IFF_POINTOPOINT | IFF_NOARP;
+	...
+}
+
+so netif_close_many() dropped the device and ndo_stop never ran.  After
+this change every one of those drivers runs its close routine during
+unregister.  Were the other users audited?  The changelog does not say,
+and with Cc: stable plus a driver-only Fixes tag the core behaviour
+change lands in stable as if it were an fsl_ucc_hdlc-only fix.
+
+One call site that looks worth a sentence in the changelog is the
+farsync error unwind:
+
+drivers/net/wan/farsync.c:fst_add_one() {
+	...
+rx_dma_fail:
+	fst_disable_intr(card);
+	for (i = 0 ; i < card->nports ; i++)
+		unregister_hdlc_device(card->ports[i].dev);
+	...
+}
+
+Here fst_close() can now run after fst_disable_intr() and after the rx
+DMA buffer has been freed.  Was that considered?
+
+[Severity: High]
+This isn't a bug introduced by this patch, but the function this hunk
+newly drives can dereference a NULL protocol pointer.  uhdlc_open()
+calls uhdlc_close() precisely when hdlc_open() failed:
+
+drivers/net/wan/fsl_ucc_hdlc.c:uhdlc_open() {
+	...
+		rc = hdlc_open(dev);
+		if (rc)
+			uhdlc_close(dev);
+	...
+}
+
+For a freshly probed device the only failure hdlc_open() can return is
+the no-protocol case, since ucc_hdlc_probe() only calls
+register_hdlc_device() and never attaches a protocol:
+
+drivers/net/wan/hdlc.c:hdlc_open() {
+	...
+	if (!hdlc->proto)
+		return -ENOSYS;	/* no protocol attached */
+	...
+}
+
+uhdlc_close() then calls hdlc_close() unconditionally, and hdlc_close()
+has no NULL check.  hdlc->carrier is initialised to 1 in hdlc_setup(),
+so hdlc_proto_stop() reads hdlc->proto->stop, and the tail of
+hdlc_close() dereferences hdlc->proto again:
+
+drivers/net/wan/hdlc.c:hdlc_close() {
+	...
+	if (hdlc->carrier)
+		hdlc_proto_stop(dev);
+	...
+	if (hdlc->proto->close)
+		hdlc->proto->close(dev);
+}
+
+Can "ip link set hdlc0 up" before any IF_PROTO_ ioctl oops here?  Peer
+drivers such as c101_open() and fst_open() call hdlc_open() first and
+just propagate the error without entering their close routine.  Since
+this patch makes hdlc_close() reachable from the unregister path too,
+would it make sense to fix this at the same time, either by calling
+hdlc_open() before the hardware is enabled or by making hdlc_close()
+tolerate a NULL proto?
+
+[Severity: High]
+This is a pre-existing issue, but the new dev_close() gives it a second
+trigger, and this one runs with rtnl_mutex held.  uhdlc_suspend()
+disables NAPI and can then return an error without re-enabling it:
+
+drivers/net/wan/fsl_ucc_hdlc.c:uhdlc_suspend() {
+	...
+	napi_disable(&priv->napi);
+	...
+	priv->ucc_pram_bak = kmalloc_obj(*priv->ucc_pram_bak);
+	if (!priv->ucc_pram_bak)
+		return -ENOMEM;
+	...
+}
+
+The PM core does not call resume for a device whose suspend failed, so
+the device stays running with NAPI disabled.  uhdlc_close() then calls
+napi_disable() again:
+
+drivers/net/wan/fsl_ucc_hdlc.c:uhdlc_close() {
+	...
+	napi_disable(&priv->napi);
+	...
+}
+
+and the wait in napi_disable_locked() has no timeout or alternative exit
+condition:
+
+net/core/dev.c:napi_disable_locked() {
+	...
+		while (val & (NAPIF_STATE_SCHED | NAPIF_STATE_NPSVC)) {
+			usleep_range(20, 200);
+			val = READ_ONCE(n->state);
+		}
+	...
+}
+
+Those bits are only cleared by napi_enable(), which never runs on that
+path.  With this patch the call chain becomes ucc_hdlc_remove() ->
+unregister_hdlc_device() -> rtnl_lock(); dev_close() -> netif_close() ->
+uhdlc_close(), so can an unbind or module removal after a failed suspend
+spin forever while holding rtnl_mutex?  Would fixing uhdlc_suspend() to
+call napi_enable() before returning -ENOMEM be preferable to leaving
+this reachable from the unbind path?
+-- 
+pw-bot: cr
 
