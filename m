@@ -1,83 +1,94 @@
-Return-Path: <linuxppc-dev+bounces-25457-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25458-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C8935C55174
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2026 22:45:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 42510C55ABF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2026 00:18:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hFlpg2WPBz2yFP;
-	Thu, 06 Aug 2026 08:44:43 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785969883;
-	cv=none; b=GSVEz6TPRtonMzaKqTKhux14E6RziS2aSH+gm0pxXmFcrrqaw3/KqC3k50dC1lwffkNqXYLObiNc6pZDQr62ZslMkUwFqnDPRFntH5v6LcqqXrtT6X/3CyN/kfQgJgkVE4VsBQS7i0QZZihFi1D1H/7IXQcO8ZiSBlgt7zmd0q+7xr07N6IOcL+79y4G11dmdyEVUpOpYvVMqDjrTQQqJEePQGqtoU0O1u58eYiTf5f8S8sNriK0wj9eFdrGSPRzXadEJ3n4R5VlBJBjhz4iI+klgK/Yc0PVobUDEm74NU+OGAhto6LgnhpNn4m7NcMaGuqMb/1c842WMesBBfQjiw==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785969883; c=relaxed/relaxed;
-	bh=Fjg6ka5Dn7iDM5BCZStyd3kQGt6PDnZGoGcX+SA5/5A=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=OFOExB+8Zwlh5cAZMqYP9M3xqrIwbKQw2T6nhiPIPeoVSHUVi5Fr8vg9md34wkkTHKwwadXiqwZp1s+excGnK1jzFmFn2YVO4Me67KaQh2H1EfILci+AJ/3yge8D1hshMuFO3oeuF7dvwB9Wsw22ezoofcN4hbqEfgXztM61bqebtkOnNjAkdatCY/EZ+XA9ifdWLK71IL9KuvjPhgJQzSBPvqj/U8nuUlktAmbCyOj32hs0QlqobjNDLpgcsiBZnunOLaaL0X3hwMXjNUEo3tcJgTqHJZobe9woTXpOxpVKwa+t1ISNpFmyM09I+czVXU2AEfq1YJ2aC/GQxoLtNw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=AiyVtyfB; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hFntm511Pz2yh4;
+	Thu, 06 Aug 2026 10:18:24 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::829" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785975504;
+	cv=pass; b=lcYOXGCadPXbdHjHot9UPJnIBGXpnmurCXtYGgiyziJ6EtzMeJQ3+XtKG4mRQgGli7Dz18aImef3q+zPvcYTzDKuZFwtd6rZrKM9XeCt6cKyjZzJ7r95KJkJsVIBi4ETnyXFvy+Zl9WuezNbfd00Z/dyXo9XHrR/2pgvInk3jKHhLz5vs2xIwcBYfGjPZZ5rJ23HmGiXUQg84bLsi1dv+wjsptIP0QJKeP3WwrQOiFVUwteRbw6SLaN/UTTeDT04Wpf4Yg4BN33Yqx8cI1h0x+uzwbNUC9h7ZCIPFDg+OY7G/eFnzl578mJZRtmGyqI7SPMQEYAbA4GR2w8Dbk3TAw==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1785975504; c=relaxed/relaxed;
+	bh=axTHnxyWcvJ5jT/xJHKSS3NucnkSVrenGHjva7q9+Ss=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=KuMT8TKedx9RMtkQo9DmES7v5hiPp2BeHrB02CTKjnPs5xOsiuPk1QBhIQCfIySdptsk3+g6XT8zQB3YTJ39cEOYKE0iFreEy7Y7n+Q7IVLVBKpwnEXvCBrnzfd9AX5EHcwfVkZ5jA2pAsfGFxm8qLpgEs4ErfQlljsnttKqwRy+bRTgapKx8iGnffK+6dl9UNQIkqj9jbKC0xlSnPNp1M9eH4rs3t4otFQksr2W3zWrMIJEG+W3WYw36fq8V29aZ7xGnvty25YYJk5MRFVJpjJWAsudUEUMCuEDTypfVEjit7C2LdGZtEItB1L7HuB+IYXSVe9n+6GoUtqKcVNLaQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=WwYoayho; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::829; helo=mail-qt1-x829.google.com; envelope-from=irogers@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=AiyVtyfB;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=WwYoayho;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::829; helo=mail-qt1-x829.google.com; envelope-from=irogers@google.com; receiver=lists.ozlabs.org)
+Received: from mail-qt1-x829.google.com (mail-qt1-x829.google.com [IPv6:2607:f8b0:4864:20::829])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hFlpf3qSWz2xwN
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Aug 2026 08:44:42 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 675Hm8ff244693;
-	Wed, 5 Aug 2026 22:44:37 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=Fjg6ka5Dn7iDM5BCZ
-	Styd3kQGt6PDnZGoGcX+SA5/5A=; b=AiyVtyfBoqT9n0lZOnGpE6BU5DIXjlJQq
-	GYdtKzXgvzdlmLi8vqWFwfR5Oj5wV3bNvZ0BVeksEbifmnju7k5tCG1KcLuW9SPA
-	AhKGUTtJG45dev+QA87XEireIPvcTeHM9y3sYnD5PdiIjgehi/iyS1dgAz9IZm9w
-	2ZoUWGzYlz+JaHEnR38lLp3/DjKY7fFmD3wZQV7nREQHe7vprIFzohlkHv9+WP/U
-	1OaRb9SPJXvkzsEk5omdqNArTfYKVLw8acJfgUqIhT1RGD0sK5zwj+iAj9HG/zZs
-	aNhgLClyq2DHDeJ1vnjVqcIRNK3VFRlC1EEGScgyv1Bgy8m9BwpFg==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fs67hw4bu-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 05 Aug 2026 22:44:36 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 675MfFPd016549;
-	Wed, 5 Aug 2026 22:44:35 GMT
-Received: from smtprelay04.wdc07v.mail.ibm.com ([172.16.1.71])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fsu4qrs27-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 05 Aug 2026 22:44:35 +0000 (GMT)
-Received: from smtpav03.wdc07v.mail.ibm.com (smtpav03.wdc07v.mail.ibm.com [10.39.53.230])
-	by smtprelay04.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 675MiXeY36962844
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 5 Aug 2026 22:44:33 GMT
-Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 69EA15805A;
-	Wed,  5 Aug 2026 22:44:33 +0000 (GMT)
-Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 454B25805C;
-	Wed,  5 Aug 2026 22:44:31 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.67.135.24])
-	by smtpav03.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Wed,  5 Aug 2026 22:44:31 +0000 (GMT)
-From: Mingming Cao <mmc@linux.ibm.com>
-To: netdev@vger.kernel.org
-Cc: davem@davemloft.net, kuba@kernel.org, edumazet@google.com,
-        pabeni@redhat.com, andrew+netdev@lunn.ch, haren@linux.ibm.com,
-        ricklind@linux.ibm.com, nnac123@linux.ibm.com, davemarq@linux.ibm.com,
-        vaishnavi@linux.ibm.com, bjking1@linux.ibm.com,
-        linuxppc-dev@lists.ozlabs.org, mmc@linux.ibm.com
-Subject: [PATCH net-next v1 6/6] ibmvnic: change the mtu without a reset where the buffers allow it
-Date: Wed,  5 Aug 2026 15:44:01 -0700
-Message-Id: <20260805224401.58791-7-mmc@linux.ibm.com>
-X-Mailer: git-send-email 2.39.3 (Apple Git-146)
-In-Reply-To: <20260805224401.58791-1-mmc@linux.ibm.com>
-References: <20260805224401.58791-1-mmc@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hFntl0rgTz2ygL
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Aug 2026 10:18:22 +1000 (AEST)
+Received: by mail-qt1-x829.google.com with SMTP id d75a77b69052e-51c01c79467so121621cf.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Aug 2026 17:18:22 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1785975499; cv=none;
+        d=google.com; s=arc-20260327;
+        b=f7q2oA02Lc2ToZCAuWSOsoGK19a+L8Hvso6iXIZl809Ixl7Xq7PsotDWHpUbbVz45l
+         0RjT+sqNqS9k31nVwfTp+q3r8gPnUPtb05xcZNryDyo4STbS45UD73ai6Xgf8sQROhJT
+         dfkmn4ZubXTMGdn/jMvYnTCulshhYYAd0TMXmafaSF15ArKDgEnpUHxFLFTDKPJkniVZ
+         wfRFxzMc1ifxRscmcqtfvHHZQ1ianaKDCucfRr9jfRQd4O6rbEhXGkrlibJ25gXAts/d
+         Un4+hsLCyf2ABwEodvxl4x1Krn+dftDLvWNo2+d4mSuUeSJyr89i9cCZgz7LPb9kJ81W
+         T3og==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=axTHnxyWcvJ5jT/xJHKSS3NucnkSVrenGHjva7q9+Ss=;
+        fh=2i8U/CgLLC6bTFdWkibfmxxUeATIJ38+M1IDhSX2uaM=;
+        b=Cnq/va+60Ur7tawEI5RCdKj/R1u6FmcGU1UT3zGp8EdrM8O4xIydKSJjmC+KPLqbQZ
+         U8dNXsCr94V1/T5eQYxBvyEOojEkw/Sunx9DH7qgCnlftCHo7xt+yQ+dzqqIpxaPhMP5
+         QwOkaoAEoPAkAg0NpSZ8g/SkyhfXofxYfD78JJZ3ISgz7HTTiBrVACYEkUkffP2E1WDa
+         XHfVIfBOwypof5iFD/OJvjT1rqb/VgbSyDgmeVnUDYji4Q6aL0b7ha343xrC3yB0run7
+         DtXRjjq+Y1aYkvJVpflNsVoeg8Eq0ktMS2lFpRWnC110CWVgip772Y893TN6WNGqPvEj
+         Gibw==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20251104; t=1785975499; x=1786580299; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=axTHnxyWcvJ5jT/xJHKSS3NucnkSVrenGHjva7q9+Ss=;
+        b=WwYoayho09pTvvoKwMXil4yqry3SMtgQ2hJ9SnNiwrH0t0Jmn7FA8PSDXi6uNN0X9M
+         fKF4IS6xn3Za/kbZVKW4eksc1tb8N+QnRk8pR9etSCmdRAbJqc38lpNtyfoXu2CfmPmc
+         1R81m001EYhlVsdjtAJqnHl7sWgbNb10+NDjcv9qlOkSYbcXI53Bb7C68emPv84HCNmA
+         O+9+A9lXIwpj0XGLXvIRA/BTv8wntdAW3O2HP7pMjc7oSPVd9fD9DlSpvlL1xHLtTk66
+         Arp30y5W2cixfafTqn36PxjB+dlNOVJznkvD/kirFr0VVjZftirEkat93pxLtZC1WNib
+         nEtw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1785975499; x=1786580299;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=axTHnxyWcvJ5jT/xJHKSS3NucnkSVrenGHjva7q9+Ss=;
+        b=W2/o9vUV0PXZg+0HFEhGP6K3lzyDnfEBOI3KDztgmQfiVf7j/3N9BLFor0bdoMj5iS
+         LM4jiLQyX38QG0oUW78InrB2UfGLwn1CD8mFaD7igXElq8kcbtedjMEmL0wo8XAn79b6
+         1eJLjGgw//f0p4ihcxarw2pAYGCj9VQ6kO8rK8tlsoQZUeh0D2neXD0SjrxXMD3JI/9m
+         UbwgEkGQ29YoyYHwwa5NaUpREWJTmGtlprl1kdt6KxJnMby7MxKVQ5u72DTaCImXsRzb
+         I5QPMohLNY/VWQOl0mY88c9gYMB3czTqJntolv0Fanag7VS2IXszvMF7VDLPAUGJs/Pb
+         9yyg==
+X-Forwarded-Encrypted: i=1; AHgh+RpOm76JtzcXdgftZO8Msah1sZZz54sH7nJCsD3ls2WwE8kg5MqhJviPNUYpMVWNiRV1rkV0Pw5MsotJ36s=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwMTaWNuBauwX64EUGQ3C3n7k/rKZPKKgzfgNQWgXtwsMAnfJWz
+	MWNR4DDMG5UOYUkARMV+tAznk0F+JrlyzORzdb+zL9nFCuMNcxvfNhvdhGUCoEGSNjsNh8Fo7a4
+	4nSZxCRJEYYfkxTG+hin9V+mTs9KWiVxt1eBzlbap
+X-Gm-Gg: AR+sD13LYK/IKy8Cu6stXKMnszed+/Ir4EH66SWSFx2k+Mfc0JRoXaIPLGxKXmzsngF
+	DFHLzhAfxrvHF9skGf5dSGkLFms67nvuOyvoWM43yFnPDkdNA1x2R9gXq8DVtGzJNDLO9wbNgEe
+	IqcPbERAkkDbko93aICWbsIQaX3k/B2OcmWOmJi4Yalsp6jlC1RufyA+O6hrZO0HMKQyQOeQBPp
+	HZmDWAJPN3co0Wown8ZeemywmpLxBo3s9mpS+iRIlExQwCHr8MAl7h+oqRFjKXM9StR9spF/JFO
+	zUWQqii5Wld+qGV0J9BBV7gm2EyAVwCREtLTdrrudtErMw==
+X-Received: by 2002:a05:622a:8e0a:b0:50d:edb1:6bd1 with SMTP id
+ d75a77b69052e-52cfea481f8mr3636741cf.13.1785975498641; Wed, 05 Aug 2026
+ 17:18:18 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,150 +102,301 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODA1MDE4MyBTYWx0ZWRfX7mMc1mlr5isK
- fASDXgsgBrwKZZ9WLIkhlGcSz1DmEV9quOuo+O/xgePYXmMHm8mTCIs0yrDgHkhUIEag7cErZm0
- bDIZM1rPbJWDMAVtKG5HoiO0eeQH/5g=
-X-Authority-Analysis: v=2.4 cv=I7VVgtgg c=1 sm=1 tr=0 ts=6a73bcd5 cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
- a=pSfWoSSszF9U6n5C:21 a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VnNF1IyMAAAA:8
- a=XP5BPIdsy2US-nDsdGsA:9
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODA1MDE4MyBTYWx0ZWRfX2M0XksK0Jatp
- FMT67SKQmd1l25aqBd0RLrDGGNG5Fpf4KbdfrA3hoqWdoXWoTAzNucEKFB91EJ/QfDsCFEAm8To
- VnYxXcX03sJzBj5pzSvBH6RRb3oNKjqEvsXw+2Imu9JGv0w6cXW3IiYCxkE3SNcaWh5eUd7DwhN
- QHsnChO2D4qX3Fqy3ZjZv2u5ww/Y2s1o3ZVLeWHVoy7AG3jDJBB/v0qG2indiJbnQ7DGcMbsWbD
- 5HaOMyL5o9ysxfjBr05fXTEKW2cwotKs2vmvsD0HqXN+zG3Bhg1z4iUtMdSCZKHcePhNsiGILDn
- eEhf36Yow/cZd9Svik48f5OBlBeUYcInu37pO9v83YGyGQ68ohwgsRNt51OdyiG592Ra6j7F+Y8
- 9K7DgAfTw8IOTsYXoBpZr6XbyFqLD/gkTm56ILd4SVswFoBaM9i6OCEADQMJV8JR+kXFCVYnXZZ
- 8N+gnbKwLoJwTnqT5ug==
-X-Proofpoint-ORIG-GUID: 11DNsMJtVFK7BModD4gl1_WXMtJegd76
-X-Proofpoint-GUID: Z9HRyOmZn2-r_mfp08E29yNEMLJa3V8u
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-08-05_05,2026-08-05_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 impostorscore=0 clxscore=1015 priorityscore=1501 suspectscore=0
- malwarescore=0 adultscore=0 lowpriorityscore=0 phishscore=0 spamscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608050183
+References: <20260803145958.299956-1-tshah@linux.ibm.com>
+In-Reply-To: <20260803145958.299956-1-tshah@linux.ibm.com>
+From: Ian Rogers <irogers@google.com>
+Date: Wed, 5 Aug 2026 17:18:07 -0700
+X-Gm-Features: AUfX_mzHfg8OKrzcsskwyhFyBYUk1q6_wR-eNVoFaNypmKRKxw2qqIz2Omn6K9U
+Message-ID: <CAP-5=fUN86_sd6_etczdWvjF4hZDOfUo-G30eoPRHKDOAD8tkQ@mail.gmail.com>
+Subject: Re: [RFC PATCH v3 0/5] Add perf.data tracepoint events to trace.dat conversion
+To: Tanushree Shah <tshah@linux.ibm.com>
+Cc: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com, 
+	vmolnaro@redhat.com, mpetlan@redhat.com, tmricht@linux.ibm.com, 
+	maddy@linux.ibm.com, namhyung@kernel.org, linux-perf-users@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, atrajeev@linux.ibm.com, hbathini@linux.ibm.com, 
+	Tejas.Manhas1@ibm.com, Tanushree.Shah@ibm.com, rostedt@goodmis.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-With the earlier patches in this series, in-range mtus are honoured
-instead of snapped to 1500 or 9000. Every such change still cycles the
-adapter through wait_for_reset(), which tears down the CRQ, logs in
-again and rebuilds every queue. The link goes down for around two
-seconds each time, even when the change needs nothing from the VIOS.
+On Mon, Aug 3, 2026 at 8:00=E2=80=AFAM Tanushree Shah <tshah@linux.ibm.com>=
+ wrote:
+>
+> This RFC patch series introduces support for converting perf.data files
+> containing tracepoint events into trace.dat format, enabling seamless
+> visualization and analysis using KernelShark.
+>
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> Background and Motivation
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>
+> Currently, perf and trace-cmd operate as separate tracing ecosystems with
+> incompatible data formats. Users who collect tracepoint data with
+> 'perf record' cannot easily visualize it in KernelShark's graphical
+> timeline view or leverage trace-cmd's analysis capabilities.
+>
+> This creates workflow friction when users need to:
+>
+> - Visualize perf tracepoint data in KernelShark's interactive graphical
+>   timeline
+> - Share trace data between perf and trace-cmd workflows and toolchains
+> - Perform architecture-independent conversion and analysis of traces
+>
+> This conversion bridge eliminates these barriers by enabling seamless
+> data exchange between perf and trace-cmd ecosystems, allowing users to
+> choose the best tool for each analysis phase.
+>
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> Implementation Overview
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>
+> The series implements the trace.dat file format specification (version 7)
+> within perf's data conversion framework.
+>
+> **Patch 1/5: Core trace.dat Export Infrastructure**
+> Introduces util/trace-dat.c and util/trace-dat.h implementing:
+> - Per-CPU raw event buffer management (init, collect, free)
+> - Ftrace ring buffer page construction
+> - trace.dat section writers (strings, options, flyrecord sections)
+>
+> **Patch 2/5: Metadata Integration**
+> Extends util/trace-event-read.c to write trace.dat metadata during
+> perf.data
+> parsing:
+> - Initial format header (magic, version, endian, page size, compression)
+> - Section 16: HEADER INFO (header_page + header_event)
+> - Section 17: FTRACE EVENT FORMATS
+> - Section 18: EVENT FORMATS (per system/event format files)
+> - Section 19: KALLSYMS
+> - Section 21: CMDLINES
+> - Section 15: STRINGS (written last after all sections)
+>
+> **Patch 3/5: Conversion Backend**
+> Implements util/data-convert-trace.c with trace_convert__perf2dat()
+> function:
+> - Processes PERF_TYPE_TRACEPOINT samples via process_sample_event()
+> - Collects raw event data per-CPU using trace_dat__collect_cpu_event()
+> - Writes OPTIONS sections (CPUCOUNT, TRACECLOCK, metadata offsets)
+> - Writes FLYRECORD section with per-CPU ring buffer pages
+>
+> **Patch 4/5: User Interface**
+> Extends tools/perf/builtin-data.c with --to-trace-dat option:
+> - Adds command-line option for trace.dat output
+> - Mutually exclusive with --to-ctf and --to-json
+> - Calls trace_convert__perf2dat() to perform conversion
+>
+> **Patch 5/5: Shell Test**
+> Adds a shell test (tools/perf/tests/shell/) covering normal tracepoint
+> recordings, pipe mode and mixed tracepoint/non-tracepoint recording
+> conversions and --force flag behaviour.
+>
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> Current Implementation Details
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>
+> **trace.dat Format Version:**
+> The implementation currently targets trace.dat format version 7, which
+> is the stable version supported by current trace-cmd releases (v3.x).
+> This version is hardcoded to ensure compatibility with existing
+> trace-cmd and KernelShark installations. Future enhancements could add
+> version negotiation or support for newer format versions as they become
+> standardized.
+>
+> **Compression Strategy:**
+> Compression is explicitly disabled (set to NONE) in the generated
+> trace.dat files.
+> This design choice:
+> - Simplifies the initial implementation and testing
+> - Ensures maximum compatibility across trace-cmd versions
+> - Avoids external compression library dependencies
+>
+> Future work could add support for various compression algorithms (zlib,
+> zstd, lz4) with runtime selection via command-line options, significantly
+> reducing file sizes for large traces.
+>
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> Usage Example
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>
+> ```bash
+> *Record tracepoint events with perf*
+> perf record -e sched:sched_switch -e sched:sched_wakeup -a sleep 10
+>
+> *Convert to trace.dat format*
+> perf data convert --to-trace-dat=3Doutput.dat
+>
+> *Verify trace.dat structure*
+> trace-cmd dump --summary output.dat
+>
+> *Analyze with trace-cmd*
+> trace-cmd report output.dat
+>
+> *Visualize in KernelShark*
+> kernelshark output.dat
+> ```
+>
+> **Conversion Output:**
+> ```
+> [ perf data convert: Converted 'perf.data' into trace.dat format
+> 'output.dat' ]
+> [ perf data convert: Converted 2684 events ]
+> ```
+> **trace-cmd dump --summary Output:**
+> ```
+>  Tracing meta data in file output.dat:
+>         [Initial format]
+>                 7       [Version]
+>                 0       [Little endian]
+>                 8       [Bytes in a long]
+>                 65536   [Page size, bytes]
+>                 none    [Compression algorithm]
+>                         [Compression version]
+>         [buffer "", "local" clock, 65536 page size, 16 cpus, 1048576 byte=
+s
+>     flyrecord data]
+>         [10 options]
+>         [Saved command lines, 0 bytes]
+>         [Kallsyms, 0 bytes]
+>         [Ftrace format, 0 events]
+>         [Header page, 206 bytes]
+>         [Header event, 205 bytes]
+>         [Events format, 1 systems]
+>         [9 sections]
+> ```
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> Testing and Verification
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>
+> The series has been extensively tested with:
+> - Various tracepoint events (sched, irq, syscalls, block I/O)
+> - Mixed recordings containing both tracepoint and non-tracepoint events
+>   only tracepoints converted)
+> - Verification with trace-cmd report and KernelShark visualization
+> - Memory leak testing with Valgrind (0 bytes leaked).
+> - Cross-architecture testing: v1 tested x86_64 and ppc64le. v2 adds
+>   s390 (big-endian) perf.data converted on both ppc64le
+>   (little-endian) and x86_64 (little-endian) hosts, in addition to
+>   same-arch x86_64 (LE->LE) and ppc64le (BE->BE) conversion.
+> - Pipe mode support has been tested end-to-end. (in v2)
+>
+> All generated trace.dat files successfully open in:
+> - trace-cmd report (v3.1+)
+> - KernelShark (v2.0+)
+>
+>
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> Next Steps
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>
+> We would highly appreciate reviews, comments, and feedback on:
+> - The overall architectural approach and integration points
+> - Compatibility considerations with trace-cmd ecosystem
+> - Performance characteristics for large-scale traces
+> - Additional use cases or workflow scenarios
+> - Future enhancement priorities
+>
+> ---
+> Changes in v3
+>
+> - Rebase on latest perf-tools-next and resolve merge conflicts.
+> - Drop evsel parameter from process_sample_event() following upstream
+>   commit "perf tool: Remove evsel from tool APIs that pass the sample".
+>
+> Changes in v2
+>
+> Addressing the Sashiko AI review findings on v1:
+>
+> Cross-arch correctness:
+>   - Introduce to_file_u16/u32/u64 helpers (wrapping tep_read_number())
+>     to write all multi-byte fields in the recorded machine's byte order;
+>     apply throughout metadata sections and flyrecord page/record headers
+>     (ts, commit, TIME_EXTEND, large-event data_len).
+>   - Fix flyrecord record header bit layout for big-endian files.
+>     The record header word bit layout differs by file endianness,
+>     matching kbuffer-parse.c type_len4host()/ts4host():
+>       LE: type_len in bits [4:0],   time_delta in bits [31:5]
+>       BE: type_len in bits [31:27], time_delta in bits [26:0]
+>
+> Pipe mode:
+>   - Add process_attr(), process_feature(), and process_tracing_data()
+>     callbacks required for pipe mode operation.
+>   - Defer CPU buffer initialisation until the first tracepoint sample,
+>     after process_feature()/process_tracing_data() have populated the
+>     session header. This ensures the recorded machine's CPU count is
+>     used rather than the host's - critical for cross-platform analysis.
+>
+> Format compliance:
+>   - Implement TIME_EXTEND records for timestamp deltas >27 bits to
+>     prevent silent truncation and maintain chronological ordering.
+>   - Fix large event encoding (>=3D29 words): use type_len=3D0 with a
+>     separate 32-bit length word, avoiding collision with reserved types
+>     (PADDING=3D29, TIME_EXTEND=3D30, TIME_STAMP=3D31).
+>   - Add bounds check rejecting records larger than a page payload before
+>     batching, preventing heap overflow in trace_dat__write_page().
+>   - Fix flyrecord section_size to exclude the 16-byte section header,
+>     matching trace.dat specification and trace-cmd behaviour.
+>
+> CLI behavior:
+>   - Fix --force flag: open with O_CREAT|O_EXCL when force is not set,
+>     failing with -EEXIST instead of silently overwriting existing files.
+>
+> Memory safety:
+>   - Fix realloc overwrite of cpu_events->events and page_records on
+>     failure: use temporary pointers, only commit on success.
+>   - Fix use-after-free/double-free in sequential page_records realloc
+>     failure: replace with malloc+memcpy+free pattern.
+>   - Fix section_size computed from before section header position.
+>   - Add NULL checks for get_tracing_file(), calloc() padding, and
+>     trace_dat_options_offset assignment on write failure.
+>   - Use goto out_free on record allocation failure to avoid leaking
+>     accumulated page_records entries.
+>   - Replace direct read() with do_read() in read_proc_kallsyms() to
+>     handle short reads correctly.
+>   - On fwrite failure, set trace_dat_write_failed and continue parsing
+>     so that perf.data processing completes normally.
+>
+> Testing (new in v2):
+>   - Add shell test covering conversion, trace-cmd dump validation,
+>     sched_switch event verification, and --force flag behaviour.
+>
+> Documentation (new in v2):
+>   - Add documentation for 'perf data convert --to-trace-dat', covering
+>     usage and supported options.
+>
+> v1: https://lore.kernel.org/linux-perf-users/20260608125951.90425-2-tshah=
+@linux.ibm.com/
 
-Most of them do not. The backing device runs at one of a small set of
-fixed sizes and the vnicserver reports that size when it answers
-REQ_MTU, so any mtu within it is already carried end to end. Record it
-as adapter->backing_mtu (set when the covering PARTIALSUCCESS path from
-the honour-mtu patch accepts a request) and skip the reset when the new
-mtu is within it and the tx buffers are large enough as they are, which
-covers every decrease and the increases that stay inside the current
-buffer size.
+Still looks great, and it's getting better as you address the nits
+Sashiko is raising. I look forward to testing.
 
-Both conditions are needed. Buffer sizes are rounded up to a cache
-line, so buffers alone would also admit an mtu somewhat past what the
-backing device carries: with a 1514 backing mtu, everything up to 1532
-aligns to the same 1536-byte buffer. Those frames would leave the
-partition and be dropped by a backing device still configured for the
-smaller size.
+Thanks,
+Ian
 
-An increase past backing_mtu still resets, since it has to be put to
-the vnicserver rather than assumed. Whatever comes back becomes the new
-backing_mtu, so if the device does move up, later changes within the
-larger size settle without a reset, and if it does not, the mtu is
-renegotiated down to what the device carries and the fast path keeps
-measuring against the truth.
-
-Buffers are left at their existing size on a decrease rather than
-shrunk. reuse_tx_pools() compares prev_mtu against req_mtu, so the next
-reset for any reason reallocates them.
-
-Reviewed-by: Dave Marquardt <davemarq@linux.ibm.com>
-Tested-by: Vaishnavi Bhat <vaishnavi@linux.ibm.com>
-Signed-off-by: Mingming Cao <mmc@linux.ibm.com>
----
- drivers/net/ethernet/ibm/ibmvnic.c | 35 +++++++++++++++++++++++++++---
- drivers/net/ethernet/ibm/ibmvnic.h |  1 +
- 2 files changed, 33 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
-index 88d0c231a74f..1d18a0e13cad 100644
---- a/drivers/net/ethernet/ibm/ibmvnic.c
-+++ b/drivers/net/ethernet/ibm/ibmvnic.c
-@@ -3705,8 +3705,34 @@ out:
- static int ibmvnic_change_mtu(struct net_device *netdev, int new_mtu)
- {
- 	struct ibmvnic_adapter *adapter = netdev_priv(netdev);
-+	u64 new_mtu_with_hdr = new_mtu + ETH_HLEN;
-+	u64 old_buff_size, new_buff_size;
-+
-+	if (adapter->req_mtu == new_mtu_with_hdr)
-+		return 0;
-+
-+	old_buff_size = ALIGN(adapter->prev_mtu + VLAN_HLEN, L1_CACHE_BYTES);
-+	new_buff_size = ALIGN(new_mtu_with_hdr + VLAN_HLEN, L1_CACHE_BYTES);
-+
-+	/* Skip the reset when backing_mtu and the current buffers already
-+	 * cover the new mtu. Keep desired.mtu in sync with req_mtu.
-+	 */
-+	if (new_mtu_with_hdr <= adapter->backing_mtu &&
-+	    new_buff_size <= old_buff_size) {
-+		netdev_dbg(netdev, "mtu %u->%d without reset\n",
-+			   netdev->mtu, new_mtu);
-+
-+		WRITE_ONCE(netdev->mtu, new_mtu);
-+		adapter->req_mtu = new_mtu_with_hdr;
-+		adapter->desired.mtu = new_mtu_with_hdr;
-+
-+		return 0;
-+	}
-+
-+	netdev_dbg(netdev, "mtu %u->%d needs larger buffers, resetting\n",
-+		   netdev->mtu, new_mtu);
- 
--	adapter->desired.mtu = new_mtu + ETH_HLEN;
-+	adapter->desired.mtu = new_mtu_with_hdr;
- 
- 	return wait_for_reset(adapter);
- }
-@@ -5558,14 +5584,17 @@ static void handle_request_cap_rsp(union ibmvnic_crq *crq,
- 
- 	switch (crq->request_capability_rsp.rc.code) {
- 	case SUCCESS:
-+		if (cap == REQ_MTU)
-+			adapter->backing_mtu = *req_value;
- 		break;
- 	case PARTIALSUCCESS:
- 		rsp_value = be64_to_cpu(crq->request_capability_rsp.number);
- 
--		/* Covering PARTIALSUCCESS: keep the request. Otherwise
--		 * retry with rsp_value.
-+		/* Covering PARTIALSUCCESS: keep the request and record
-+		 * backing_mtu. Otherwise retry with rsp_value.
- 		 */
- 		if (cap == REQ_MTU && rsp_value >= *req_value) {
-+			adapter->backing_mtu = rsp_value;
- 			netdev_dbg(adapter->netdev,
- 				   "backing mtu %llu covers requested %llu\n",
- 				   rsp_value, *req_value);
-diff --git a/drivers/net/ethernet/ibm/ibmvnic.h b/drivers/net/ethernet/ibm/ibmvnic.h
-index 4cfedae5d89d..80e1b2f6ede5 100644
---- a/drivers/net/ethernet/ibm/ibmvnic.h
-+++ b/drivers/net/ethernet/ibm/ibmvnic.h
-@@ -1020,6 +1020,7 @@ struct ibmvnic_adapter {
- 	u64 max_mtu;
- 	u64 req_mtu;
- 	u64 prev_mtu;
-+	u64 backing_mtu; /* mtu the backing device currently carries */
- 	u64 max_multicast_filters;
- 	u64 vlan_header_insertion;
- 	u64 rx_vlan_header_insertion;
--- 
-2.50.1 (Apple Git-155)
-
+> Tanushree Shah (5):
+>   perf/trace-dat: Add trace.dat export infrastructure
+>   perf/trace-event: Write trace.dat metadata sections during parsing
+>   perf data-convert: Add perf.data to trace.dat conversion backend
+>   perf data: Add --to-trace-dat option for converting perf.data
+>     tracepoint events into trace.dat format
+>   perf test: Add test validating trace.dat generated by 'perf data
+>     convert --to-trace-dat'
+>
+>  tools/perf/Documentation/perf-data.txt        |   7 +
+>  tools/perf/builtin-data.c                     |  43 +
+>  ...rf_data_converter_tracepoints_trace_dat.sh | 169 ++++
+>  tools/perf/util/Build                         |   2 +
+>  tools/perf/util/data-convert-trace.c          | 241 +++++
+>  tools/perf/util/data-convert.h                |   4 +
+>  tools/perf/util/trace-dat.c                   | 876 ++++++++++++++++++
+>  tools/perf/util/trace-dat.h                   | 113 +++
+>  tools/perf/util/trace-event-read.c            | 307 +++++-
+>  9 files changed, 1755 insertions(+), 7 deletions(-)
+>  create mode 100755 tools/perf/tests/shell/test_perf_data_converter_trace=
+points_trace_dat.sh
+>  create mode 100644 tools/perf/util/data-convert-trace.c
+>  create mode 100644 tools/perf/util/trace-dat.c
+>  create mode 100644 tools/perf/util/trace-dat.h
+>
+> --
+> 2.47.1
+>
 
