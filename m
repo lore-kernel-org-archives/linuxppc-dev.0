@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-25517-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25518-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2D77CC56205
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2026 18:37:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 552F6C5AC67
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2026 18:37:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hGGGY5VmYz3brM;
-	Fri, 07 Aug 2026 04:37:09 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786041429;
-	cv=none; b=J0fvEtm2/zdj1xpUS45cO1VJZ10EgUw7at0aQgwpl26IAcbDbVCPy10e/er/ZPyQ13xURJTSEdoQk6ulIEduJLNpUjQFTnlzSojTPLh0iRNJAmYihPBOayC+R5xNO5yRCKm7Z0piNU1DwZOpG/LcYklEVplenSIHScHg/mu1MR3UPK9UzWcpX68hHy01+occN3JF0cWoEhVcnDeIiqmuhHervGc6ZCgHxT00NDrOhPv+vJiNwu+V+oOV2OKYAUkGT+KXySjeUv05pN8ybv2/r3KW3MFdinSCvntIZ7l6gjsIgQlEv2ujCUeHUuScyCOTXHW+3ocfH9alVU4+aGEAng==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hGGGc41Mwz3bx0;
+	Fri, 07 Aug 2026 04:37:12 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786041432;
+	cv=none; b=GhgGC5Bk+5NTfguDTjIhTT98pe3ZipyuNzH1b6M7tUFqCKNWB3ZSICpHWS8zjJMQKUDSo1GMFXb7Vf+hLaMC+g43AmYhL8SoScRdBP5tzVqZ7mYUG82HoeupUcXJBVqAZYmN/UdpX3j0GSOS97Wh1qVKw/C4SvnWSsEhI6UplS36eqXj3Ws36murqMGPn7oQ3J+j50mVeTyih/8BiS+Qssfexo9H2tJ6WQzHMMiSkB3x6y3UmpNe8hwpSKt5t4Nchf5l6djbI4z1/kfJKqqCgt1u/a9AiIIo/HamI4vlzuSKDG+KEYs2K5BkM4zCRxJBDY9psBj9D5uIG+rRngtJhA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786041429; c=relaxed/relaxed;
-	bh=Kw0bAgHUZzpkjFP8Xw4GTrzIO4gOGMMUN0JzOov3mas=;
+	t=1786041432; c=relaxed/relaxed;
+	bh=95cN4lzTAczWJkREkqD6+UVv867WIgYTfpkjFcU67nU=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Rho4zgW3sVvuiEmKWpaUmDW2a3rTXnN5JMxXtzbSYNrJzKNtZVX7IS6kkujHqQcbKFORtzttqi3+t+7H4wt8frM/Ji6fUffdzgA4ixYBl5inzf6EYh9YgEXvMGlmp57tf7DKixxivdMQOO6Pff3UsSBC2QgwI4FZETy+BPtJJw1JPLpjKqsAS4qed6LMvCdi3dB2R3YDqcJer9HwwuopRD1YdCnLiSyK9xlKRRYoLNtRNFL+N9f+CEbbLn/sz3LK1n0/ks9HsBrhXzt03FVLVDAvPwo9nazu0hyFjoaZLn0tq2l3Nr9SK8WcYP1cAErYVtsrzgyqfwOrdMj6QFPBPA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TQGcO8bu; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=EgIH/Yt40u8yuYROcYqG4r4nkEbxTSv0B15DxWsaQCSAdeVEsl4Sf+pMzUU92dF0Voqh2L8B7Q2yPGRR1DweAzOwHAHM+IcbYk6vapk7XpdyFS8jERvtZAB557eDbl69stJHG4cyL1UAXGSpIp81aJUr9YmWQyY3sCrLrpjE1v2MLoaQIyr/9z1QNCKuNlG2X0aAlnd/wn7lnPU30erqy7uU8IM/rj8hJj5ucTdNxdXOAHvJQNRPx04wLL5NDq4HQXU9o7CPsCIWPJz6ofFCZYcsw4uB5YaJbosE/n2srNMIvWlFOa9j7eKiOXK3zL6x+igWpasXwyl+L2O4Es7ZVw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EpJifcHP; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TQGcO8bu;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EpJifcHP;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hGGGW11BQz3bx0
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Aug 2026 04:37:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hGGGX5fwNz3byP
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Aug 2026 04:37:08 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 34E214390F;
-	Thu,  6 Aug 2026 18:37:01 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 98E991F00A3A;
-	Thu,  6 Aug 2026 18:37:00 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 5EA33600AF;
+	Thu,  6 Aug 2026 18:37:06 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 92C431F00A3F;
+	Thu,  6 Aug 2026 18:37:05 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1786041421;
-	bh=Kw0bAgHUZzpkjFP8Xw4GTrzIO4gOGMMUN0JzOov3mas=;
+	s=k20260515; t=1786041426;
+	bh=95cN4lzTAczWJkREkqD6+UVv867WIgYTfpkjFcU67nU=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=TQGcO8buNiiU7P9QXyP0XZKtJ4m6pEXJWFTVLkxziKjhmLrM11ZDDYrV8bK6ZTRap
-	 i5BBCbu1ehL1CEwsIOelSa6kpMLfBEhrB3xnAVpAURAov/im7Iv0fjv4YV4HtHBU+x
-	 wPD6fzo04ZKW5FzvNtXhDSPaqsg9Ytt9s7BO1QDDO8/g3sA+yV6WLRSPXGWYHnNSLr
-	 S9uFfqUdmuOca5/JvpfAooX+Qrj0nNXjwxu+hnKot/fT6+uBZ+yvR0yyUurlbEwOE4
-	 3i3YUtv8sX3fKoZ0ncZDHA0qVcR/vFgG0PKI/EwYMFat7r/5tChKwx6LefwzA3cQo0
-	 T+1HJm6PCG/Hg==
+	b=EpJifcHPXkvekr9Va2mGjT22r9seMbAPoE0p8MdlFYwCXQE9vkuLSiU2nu199w7o3
+	 fu3u63dvRfSHzdOGmyJYfzeM+0Ls4lhJuy2jIDQRzDgqlgSQRifO/2vzf+5e4Wuz3+
+	 MOynoyfmUGTEaPX0i/vmfASfcVxxjKnMuvmikEZEXv5xWD6sa7H7T8v2GSqknBni8z
+	 PcJCmWDaxPlIEX62gR6F7gOZJb2dF+Oc558RWrrGE7EC5kyH1MU7CaX9ftGQqvEOXR
+	 ah/tKCRormQsOlE/Ur0HEbd/ojOJVecX3quYAeopGyt62tiPE2J811HOxSENsk6LvC
+	 zgNX6pCuMuurQ==
 From: Jakub Kicinski <kuba@kernel.org>
 To: mmc@linux.ibm.com
 Cc: Jakub Kicinski <kuba@kernel.org>,
@@ -61,12 +61,12 @@ Cc: Jakub Kicinski <kuba@kernel.org>,
 	simon.horman@corigine.com,
 	shaik.abdulla1@ibm.com,
 	davemarq@linux.ibm.com
-Subject: Re: [PATCH net-next v4 02/14] ibmveth: Prepare MQ RX adapter data structures
-Date: Thu,  6 Aug 2026 11:36:59 -0700
-Message-ID: <20260806183659.3175041-1-kuba@kernel.org>
+Subject: Re: [PATCH net-next v4 06/14] ibmveth: Refactor TX resource allocation in open/close paths
+Date: Thu,  6 Aug 2026 11:37:05 -0700
+Message-ID: <20260806183705.3175367-1-kuba@kernel.org>
 X-Mailer: git-send-email 2.55.0
-In-Reply-To: <5aceac43fd2da5d06bee7aba36e2983e1a7bc007.1785457143.git.mmc@linux.ibm.com>
-References: <5aceac43fd2da5d06bee7aba36e2983e1a7bc007.1785457143.git.mmc@linux.ibm.com>
+In-Reply-To: <f6e2721c3c664f789a72594d64c7b586ef1ce108.1785457143.git.mmc@linux.ibm.com>
+References: <f6e2721c3c664f789a72594d64c7b586ef1ce108.1785457143.git.mmc@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -85,152 +85,239 @@ Content-Transfer-Encoding: 8bit
 This is an AI-generated review of your patch. The human sending this
 email has considered the AI review valid, or at least plausible.
 ---
-ibmveth: Prepare MQ RX adapter data structures
+ibmveth: Refactor TX resource allocation in open/close paths
 
-This converts the single-instance RX state in struct ibmveth_adapter
-(napi, rx_queue, buffer_list_addr/dma, rx_buff_pool) into queue-indexed
-arrays sized by the new IBMVETH_MAX_RX_QUEUES, adds multi_queue and
-num_rx_queues, and mechanically rewrites all existing references to
-index 0.  IBMVETH_MAX_RX_QUEUES stays at 1 in this patch.
+This moves the per-queue TX long term buffer alloc/free loops out of
+ibmveth_open() and ibmveth_close() into ibmveth_alloc_tx_resources() and
+ibmveth_free_tx_resources(), relocates the TX allocation to the end of
+open(), and reworks the open() error unwind labels.
 
-A couple of observations below, neither of which changes runtime
-behaviour today.
+A few questions on the changelog and on the new ordering below.
+
+[Severity: Medium]
+The changelog says:
+
+    That also retires a mid-open TX leak where the old index-based
+    while (--i) free could skip successfully allocated LTBs.
+
+Is that leak real?  In the parent commit the TX loop re-initializes the
+shared index before allocating anything:
+
+	rc = -ENOMEM;
+	for (i = 0; i < netdev->real_num_tx_queues; i++) {
+		if (ibmveth_allocate_tx_ltb(adapter, i))
+			goto out_free_tx_ltb;
+	}
+
+and nothing between that loop and the later gotos (mac_address/rxq_desc
+setup, ibmveth_register_logical_lan(), ibmveth_alloc_buffer_pools(),
+ibmveth_setup_rx_interrupts()) reassigns i.  On every path that reaches
+out_free_tx_ltb, i is either the failing index or real_num_tx_queues, so
+while (--i >= 0) frees exactly what was allocated.  Paths taken before the
+TX loop jump to out_free_filter_list, which is below the TX label.
+
+The new helper also uses the same index-based unwind that the changelog
+calls broken:
+
+err_free_ltbs:
+	while (--i >= 0)
+		ibmveth_free_tx_ltb(adapter, i);
+
+Could this paragraph be dropped or reworded to describe the actual
+motivation (removing the dependence on a shared loop index and matching
+the RX helpers)?  As written it reads like a leak fix that a stable
+maintainer might want to backport, and there is no Fixes: tag.
 
 > diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
-> index 73e051d26b9d8..8e758362cb263 100644
+> index 664169c4d27a4..131c1a61d9e7e 100644
 > --- a/drivers/net/ethernet/ibm/ibmveth.c
 > +++ b/drivers/net/ethernet/ibm/ibmveth.c
+> @@ -1077,8 +1077,14 @@ static int ibmveth_rxq_harvest_buffer(struct ibmveth_adapter *adapter,
+>  
+>  static void ibmveth_free_tx_ltb(struct ibmveth_adapter *adapter, int idx)
+>  {
+> -	dma_unmap_single(&adapter->vdev->dev, adapter->tx_ltb_dma[idx],
+> -			 adapter->tx_ltb_size, DMA_TO_DEVICE);
+> +	if (!adapter->tx_ltb_ptr[idx])
+> +		return;
+> +
+> +	if (adapter->tx_ltb_dma[idx]) {
+> +		dma_unmap_single(&adapter->vdev->dev, adapter->tx_ltb_dma[idx],
+> +				 adapter->tx_ltb_size, DMA_TO_DEVICE);
+> +		adapter->tx_ltb_dma[idx] = 0;
+> +	}
+
+[Severity: Low]
+Is the inner test on tx_ltb_dma[idx] wanted here?  It treats DMA address 0
+as a "not mapped" sentinel, and the only architecturally valid check for a
+bad handle is dma_mapping_error() at map time.  If a mapping ever
+legitimately returned IOVA 0, the TCE entry would leak while kfree() below
+still released the buffer.
+
+On pseries this cannot happen today, since
+arch/powerpc/kernel/iommu.c:iommu_table_reserve_pages() reserves entry 0:
+
+	if (tbl->it_offset == 0)
+		set_bit(0, tbl->it_map);
+
+The test also looks redundant: ibmveth_allocate_tx_ltb() already kfree()s
+the buffer and clears tx_ltb_ptr[idx] on dma_mapping_error(), so
+tx_ltb_ptr[idx] != NULL already implies a valid mapping and the new early
+return covers the stated "safe on an unallocated slot" goal.  Would
+dropping the zero test and relying on the pointer check be simpler?
+
+>  	kfree(adapter->tx_ltb_ptr[idx]);
+>  	adapter->tx_ltb_ptr[idx] = NULL;
+>  }
 
 [ ... ]
 
-> @@ -482,42 +486,44 @@ static int ibmveth_remove_buffer_from_pool(struct ibmveth_adapter *adapter,
->  	mb();
+> @@ -1184,35 +1226,38 @@ static int ibmveth_open(struct net_device *netdev)
+>  				     rxq_desc.desc,
+>  				     mac_address);
+>  		rc = -ENONET;
+> -		goto out_free_tx_ltb;
+> +		goto out_free_queue_mem;
+>  	}
 >  
-> -	atomic_dec(&(adapter->rx_buff_pool[pool].available));
-> +	atomic_dec(&adapter->rx_buff_pool[0][pool].available);
+>  	rc = ibmveth_alloc_buffer_pools(adapter);
+>  	if (rc)
+> -		goto out_free_tx_ltb;
+> +		goto out_unregister_lan;
+
+[Severity: Low]
+This changes hypervisor-visible behaviour on an RX error path, which the
+changelog does not mention while stating "there is no MQ RX behaviour
+change here".
+
+In the parent commit an ibmveth_alloc_buffer_pools() failure went to
+out_free_tx_ltb and then to ibmveth_cleanup_rx_resources(), leaving the
+logical LAN registered with PHYP while the RX ring was freed and the
+buffer list unmapped.  With the new label the h_free_logical_lan() loop
+runs first, which is the safer order.
+
+Is this an intentional fix folded into a TX-only refactor?  If so, could
+it be split out with its own changelog text (the next patch in the series
+reorders open() so this path disappears entirely, so the fix becomes hard
+to find later).
+
+>  
+>  	rc = ibmveth_setup_rx_interrupts(adapter);
+> -	if (rc) {
+> -		do {
+> -			lpar_rc = h_free_logical_lan(adapter->vdev->unit_address);
+> -		} while (H_IS_LONG_BUSY(lpar_rc) || (lpar_rc == H_BUSY));
+> -		goto out_free_buffer_pools;
+> -	}
+> +	if (rc)
+> +		goto out_unregister_lan;
+>  
+>  	netdev_dbg(netdev, "initial replenish cycle\n");
+>  	ibmveth_schedule_rx_queue(adapter, 0);
+>  
+> +	rc = ibmveth_alloc_tx_resources(adapter);
+> +	if (rc)
+> +		goto out_cleanup_rx_interrupts;
+> +
+>  	netif_tx_start_all_queues(netdev);
+
+[ ... ]
+
+> @@ -1224,13 +1269,13 @@ static int ibmveth_close(struct net_device *netdev)
+>  {
+>  	struct ibmveth_adapter *adapter = netdev_priv(netdev);
+>  	long lpar_rc;
+> -	int i;
+>  
+>  	netdev_dbg(netdev, "close starting\n");
+>  
+>  	netif_tx_stop_all_queues(netdev);
+>  
+>  	/* PHYP mask + napi_disable + free_irq live in cleanup_rx_interrupts */
+> +	ibmveth_free_tx_resources(adapter);
+>  	ibmveth_cleanup_rx_interrupts(adapter);
+
+[Severity: High]
+Can a transmit already in flight write into the TX LTB after it has been
+unmapped and freed here?
+
+netif_tx_stop_all_queues() only sets __QUEUE_STATE_DRV_XOFF.  It does not
+take __netif_tx_lock and does not wait for an ndo_start_xmit that is
+already running on another CPU (netif_tx_disable() would).  ibmveth_close()
+is also called directly, bypassing dev_close() -> dev_deactivate_many()
+and its synchronize_net() / some_qdisc_is_busy() wait, from:
+
+	ibmveth_set_csum_offload()
+	ibmveth_set_tso()
+	ibmveth_change_mtu()
+	veth_pool_store()
+
+all of which do:
+
+	if (netif_running(dev)) {
+		restart = 1;
+		ibmveth_close(dev);
+	}
+
+So a transmitter that already passed netif_xmit_stopped() can be inside
+ibmveth_start_xmit(), which copies into the LTB with no NULL check and no
+lock:
+
+	memcpy(adapter->tx_ltb_ptr[queue_num], skb->data, skb_headlen(skb));
+	...
+		memcpy(adapter->tx_ltb_ptr[queue_num] + total_bytes,
+		       skb_frag_address_safe(frag), skb_frag_size(frag));
+	...
+	desc.fields.address = adapter->tx_ltb_dma[queue_num];
+
+while ibmveth_free_tx_ltb() concurrently does:
+
+	dma_unmap_single(...);
+	adapter->tx_ltb_dma[idx] = 0;
+	kfree(adapter->tx_ltb_ptr[idx]);
+	adapter->tx_ltb_ptr[idx] = NULL;
+
+That looks like either a write of up to tx_ltb_size bytes into freed heap
+memory, or a NULL dereference on the cleared pointer.
+
+A second question on the same move: the DMA unmap now happens before the
+h_free_logical_lan() loop below, so a racing ibmveth_send() can hand PHYP
+a descriptor whose address is 0 or an already unmapped TCE while the
+logical LAN is still registered.  Previously the TX LTBs were freed at the
+very end of close(), after h_free_logical_lan(), free_irq()/napi_disable()
+and the buffer pool teardown, which incidentally left a large gap between
+the XOFF and the free.  Was the inversion intended?
+
+Would keeping ibmveth_free_tx_resources() after the h_free_logical_lan()
+loop, switching to netif_tx_disable(), and/or adding an
+
+	if (unlikely(!adapter->tx_ltb_ptr[queue_num]))
+
+bail-out in ibmveth_start_xmit() be preferable?  The last one would also
+cover the mirror window that the new open() ordering creates, where the
+LAN is registered and RX interrupts/NAPI are live while tx_ltb_ptr[] is
+still NULL during the sleeping GFP_KERNEL allocation in
+ibmveth_alloc_tx_resources():
+
+	ibmveth_schedule_rx_queue(adapter, 0);
+
+	rc = ibmveth_alloc_tx_resources(adapter);
+
+[Severity: Low]
+The comment about PHYP mask, napi_disable and free_irq now sits above
+ibmveth_free_tx_resources() instead of above the
+ibmveth_cleanup_rx_interrupts() call it describes, so it reads as
+documentation of the TX free.  Could it move below the TX free?
+
+>  
+>  	do {
+
+[ ... ]
+
+> -	for (i = 0; i < netdev->real_num_tx_queues; i++)
+> -		ibmveth_free_tx_ltb(adapter, i);
+> -
+>  	netdev_dbg(netdev, "close complete\n");
 >  
 >  	return 0;
->  }
->  
->  /* get the current buffer on the rx queue */
-> -static inline struct sk_buff *ibmveth_rxq_get_buffer(struct ibmveth_adapter *adapter)
-> +static inline struct sk_buff *
-> +ibmveth_rxq_get_buffer(struct ibmveth_adapter *adapter)
-
-[Severity: Low]
-This isn't a bug, but the patch carries a few edits that are not part of
-the stated mechanical index-0 conversion:
-
-  - dropping the redundant parentheses in the atomic_dec() call in
-    ibmveth_remove_buffer_from_pool()
-  - reflowing the ibmveth_rxq_get_buffer() prototype
-  - rewriting the kernel-doc of ibmveth_get_desired_dma() from
-    "Return value:" to "Return:"
-  - inserting a blank line in struct ibmveth_adapter after
-    rx_large_packets
-
-The commit message says:
-
-    This patch keeps behavior unchanged by mechanically switching existing
-    references to index 0
-
-Could these cosmetic edits move to a separate cleanup patch, or be
-mentioned in the changelog?  As it stands each hunk has to first be
-classified as conversion or cleanup before the "behavior unchanged" claim
-can be confirmed.
-
-[ ... ]
-
-> @@ -1693,8 +1704,7 @@ static void ibmveth_poll_controller(struct net_device *dev)
->   *
->   * @vdev: struct vio_dev for the device whose desired IO mem is to be returned
->   *
-> - * Return value:
-> - *	Number of bytes of IO data the driver will need to perform well.
-> + * Return: Number of bytes of IO data the driver will need to perform well.
->   */
->  static unsigned long ibmveth_get_desired_dma(struct vio_dev *vdev)
->  {
-
-[ ... ]
-
-> @@ -1898,10 +1912,10 @@ static int ibmveth_probe(struct vio_dev *dev, const struct vio_device_id *id)
->  		memcpy(pool_count, pool_count_cmo, sizeof(pool_count));
->  
->  	for (i = 0; i < IBMVETH_NUM_BUFF_POOLS; i++) {
-> -		struct kobject *kobj = &adapter->rx_buff_pool[i].kobj;
-> +		struct kobject *kobj = &adapter->rx_buff_pool[0][i].kobj;
->  		int error;
->  
-> -		ibmveth_init_buffer_pool(&adapter->rx_buff_pool[i], i,
-> +		ibmveth_init_buffer_pool(&adapter->rx_buff_pool[0][i], i,
->  					 pool_count[i], pool_size[i],
->  					 pool_active[i]);
->  		error = kobject_init_and_add(kobj, &ktype_veth_pool,
-
-[ ... ]
-
-> diff --git a/drivers/net/ethernet/ibm/ibmveth.h b/drivers/net/ethernet/ibm/ibmveth.h
-> index c88dbeb7cd967..8eaa3942fc40b 100644
-> --- a/drivers/net/ethernet/ibm/ibmveth.h
-> +++ b/drivers/net/ethernet/ibm/ibmveth.h
-
-[ ... ]
-
-> @@ -294,18 +296,23 @@ struct ibmveth_rx_q {
-> -	struct ibmveth_buff_pool rx_buff_pool[IBMVETH_NUM_BUFF_POOLS];
-> -	struct ibmveth_rx_q rx_queue;
-> +	struct ibmveth_buff_pool
-> +		rx_buff_pool[IBMVETH_MAX_RX_QUEUES][IBMVETH_NUM_BUFF_POOLS];
-> +	struct ibmveth_rx_q rx_queue[IBMVETH_MAX_RX_QUEUES];
-
-[Severity: Low]
-Is replicating the whole struct ibmveth_buff_pool per queue the layout you
-want here?
-
-struct ibmveth_buff_pool embeds a struct kobject, which is the per-pool
-sysfs tuning object.  Only row 0's kobjects are ever initialized and
-registered, in ibmveth_probe():
-
-	for (i = 0; i < IBMVETH_NUM_BUFF_POOLS; i++) {
-		struct kobject *kobj = &adapter->rx_buff_pool[0][i].kobj;
-		...
-		error = kobject_init_and_add(kobj, &ktype_veth_pool,
-					     &dev->dev.kobj, "pool%d", i);
-
-and only row 0's are dropped, in ibmveth_remove():
-
-	for (i = 0; i < IBMVETH_NUM_BUFF_POOLS; i++)
-		kobject_put(&adapter->rx_buff_pool[0][i].kobj);
-
-So every row above 0 carries a kobject that is never initialized and never
-used.
-
-Later in the series IBMVETH_MAX_RX_QUEUES is raised to 16U, at which point
-the netdev private area unconditionally holds 16 x 5 pool structs
-regardless of num_rx_queues, of which 75 embedded kobjects are dead
-weight.
-
-The follow-on code also shows that only part of the struct is really
-per-queue: ibmveth_alloc_single_rx_queue() copies size, index, buff_size,
-threshold and active from row 0 into each new row, so the pool
-configuration is shared while free_map/dma_addr/skbuff/producer_index/
-consumer_index/available are the genuinely per-queue state.
-
-Would it be cleaner to split the struct into one shared, sysfs-visible
-configuration object plus a small per-queue state array, given this patch
-is the one that fixes the layout for the rest of the series?
-
-Is it also intentional that the per-pool sysfs tuning interface now
-implicitly means "queue 0 configures all queues"?  If so, could that be
-stated in the changelog?
-
-> @@ -325,6 +332,7 @@ struct ibmveth_adapter {
->  	u64 tx_send_failed;
->  	u64 tx_large_packets;
->  	u64 rx_large_packets;
-> +
->  	/* Ethtool settings */
->  	u8 duplex;
->  	u32 speed;
 
