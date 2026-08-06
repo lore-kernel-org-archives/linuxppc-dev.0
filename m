@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-25523-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25524-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2E84EC5AC67
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2026 18:38:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E2D58C56205
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2026 18:38:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hGGGm4Kmvz3c98;
-	Fri, 07 Aug 2026 04:37:20 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786041440;
-	cv=none; b=bn88ULBTVr6kELdczwxtxZDDKE0mQ662Pvm8Yqo9C9GkURu5A6QwqrSTWhQLEBK6H9phNGYYE+PIXWM2lmyk7bPGE0PdVg0RW5iv/9Jei9L0nXj8aMcqOv4cB2nX8COSMjQ3TXSFbuXmOkPUoSPqouHTBaWX4EMXN5rofhRO9mvhgUsqH9X9r00B0QAIfd6H2Q1iHKM9mVhf3RZpFyBnM/jNoE1IKbA+W7ym+JvWH1uASjaRfzlLlEnR/l3iVBIOC/CMLO/kHHKg6LDvT/J4rfGVq6DW8XwFP9op+WVUFJ6cLV81rcDq35i80fYoJWFkjdkiUzD3/Ag5xJ+BrSiJMA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hGGGn28Tlz3c9j;
+	Fri, 07 Aug 2026 04:37:21 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786041441;
+	cv=none; b=fcBBcLOdgIJlVt9rQHzQhYnkHXaBXRKfw0UpJH7uqW9GCXksJIX6gUSWoEpxEFE+siqQc+UmsVjIClsU6i9gWZINCaaP9D/v7myt/VHsTM/zBPjVCNAWg5lPdEWj45H2U55i0dPt2CYq3KCHS1gq4gDfbdQlnGTW+1HJG+K9R7kZZiNaMExF0aM/bX9JghXh5DQ664BngYAGA/VQw96H8/o8ryw5DvbcRcTfAUHFhUae58wedH312ya42y7VslqzuXgaKyZuXvECanMnxSqlNbnRkt4yLnUGs3tHqI2cSj88JFVK8XTwrsjFkM2m4Haf7IojYedpMEiRkyKqJq9XMg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786041440; c=relaxed/relaxed;
-	bh=6sG5OE0dlvjF0m+mWFCFsWLJZmSAfA4w0ThpfmTuFyA=;
+	t=1786041441; c=relaxed/relaxed;
+	bh=tl8zOLlVUrD6nGviVR6NMBqgbtmvRldCVft+ATVU0ac=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=An5z876O/pv91pOkaEAJopEZhuVrJ9+VOGf38JSebUgldRoRBwoVnQ/ua4e3sddREj/r1Fkx4vCw/rU+Qzl9qevqS8Kd2xrGsVgpiE7MF1K+4n6VzzU1O9e7A3eyytVxDOI1KH3um3YknxyA3nNrn2iwtqa0qAAGMwWvTclzfjXJd47KfJTLLa1WGEmQKh5Praarl46fyfyWPqH7+xSh4pND8ij6JvlnjY179yfcYxT7lfVfqAPO6uwmRddgmffC80GVtwkWahD8S047bjuS9iCEyTIHhZLRH3YP762USJq9pYBcTSlXsJhfTBYGL7jErt5vnUpMDb+90+1Uf7jDvA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DXIb63WV; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=cF/XMS/jwzun4oTp5gXtEy6tP9/W3sVii8NSj0ZN/3dJCgDo87kxhUj3bwE1RBjkZbYtz3xP9ysNUfnDkuR6hNJS+zNzGLhe/vUNbcsjobHXzHdsW+1/ucugJ2OHADKcUzuMMtpKFVWd2dh7Evjzxmvc0UFjAAr2AE5Eghi1zADq/ZU2DpG2VZ5umm5huWNLwa8sIkfTyBDHFoCqpseUk6bA613AcSbenQVqp8U7J29uNYQQItRHfCKfLEtj9JwgTPCqX2b5wq0sWLEa6xsiUuLFDu4OSa28MbcS+gNyyLr56EBCiwfiAWPYuZZ6LzZ/4v6yyst8Wz7U2UPDrJF9OQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LEsQ+QVr; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DXIb63WV;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LEsQ+QVr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hGGGd3WyWz3c4P
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Aug 2026 04:37:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hGGGb64skz3c3g
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Aug 2026 04:37:11 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id F27BF60103;
-	Thu,  6 Aug 2026 18:37:10 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2FA721F000E9;
-	Thu,  6 Aug 2026 18:37:10 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id AD4AD44029;
+	Thu,  6 Aug 2026 18:37:09 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 125A71F00AC4;
+	Thu,  6 Aug 2026 18:37:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1786041430;
-	bh=6sG5OE0dlvjF0m+mWFCFsWLJZmSAfA4w0ThpfmTuFyA=;
+	s=k20260515; t=1786041429;
+	bh=tl8zOLlVUrD6nGviVR6NMBqgbtmvRldCVft+ATVU0ac=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=DXIb63WVgt8lSHqy7benQUdBKHGs29ESR++2WY47JcNSPe6TLmKpuv/6cyPKxsMtx
-	 GWhldSBUYuUIHPb126rooDkbs6IlsYwSQpJfTNpmrFBUf/sF/X1HAA9L0kOfl5Go1Y
-	 ase/x8NT+I6FfcQ6GYu/XY0ij/0bywXOmOgL/Pw//TzC8bpho2XCCjFcayfFnw0nrk
-	 ry+m4gdRykIoYVG40zvbC8hzoS0KDIlQRXFH5Yg1a+BHY0LF9ocFBKnuERAbQRC55g
-	 8MWcUEbcV/d6pYJhY75k0O8WVsWcJTmp4+SJfh/g/kYqE8lxqruYjLYBW6a9gyAu3D
-	 8RJrQtaKrrSOw==
+	b=LEsQ+QVr3g8Y5XB8iEOLuV000oLXaPcz6re86fdOD/eZp2TjIQvj+i0fNfdZwh7Ge
+	 FMLmKLEsJUr5pRpkq+A68dVHd3fmdIIyyIr6WP5ZenkDacLWJjrV5F5EtImGfxRfYz
+	 I/db8piGCt+mTQpV2lDfDdQ8AW9kF4wZFPSYqUN8KniwfPOfuY8znZPvMGLHIY44SJ
+	 cN9VMCkuiPAj2J3NIM05PdsCMmrpVLzQDgjjQh+S2tQ9Lq8/Ldofg4rxBez/zzFiOO
+	 XrvBHqeqEvLowGqm8TBdvqOWLfnvagoMu6JRRMEl7IrN2GFtx9p4FsNE+WkyGzneMk
+	 rs1kOt1Q0QbDA==
 From: Jakub Kicinski <kuba@kernel.org>
 To: mmc@linux.ibm.com
 Cc: Jakub Kicinski <kuba@kernel.org>,
@@ -61,12 +61,12 @@ Cc: Jakub Kicinski <kuba@kernel.org>,
 	simon.horman@corigine.com,
 	shaik.abdulla1@ibm.com,
 	davemarq@linux.ibm.com
-Subject: Re: [PATCH net-next v4 10/14] ibmveth: Add per-queue RX and TX statistics collection
-Date: Thu,  6 Aug 2026 11:37:09 -0700
-Message-ID: <20260806183709.3175682-1-kuba@kernel.org>
+Subject: Re: [PATCH net-next v4 09/14] ibmveth: Enable multi-queue RX receive path
+Date: Thu,  6 Aug 2026 11:37:08 -0700
+Message-ID: <20260806183708.3175604-1-kuba@kernel.org>
 X-Mailer: git-send-email 2.55.0
-In-Reply-To: <69368babf33c52163881c33d3929ab17b61d0629.1785457143.git.mmc@linux.ibm.com>
-References: <69368babf33c52163881c33d3929ab17b61d0629.1785457143.git.mmc@linux.ibm.com>
+In-Reply-To: <f49057799577b7c3c1444910b56a6662a610a20a.1785457143.git.mmc@linux.ibm.com>
+References: <f49057799577b7c3c1444910b56a6662a610a20a.1785457143.git.mmc@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -85,550 +85,589 @@ Content-Transfer-Encoding: 8bit
 This is an AI-generated review of your patch. The human sending this
 email has considered the AI review valid, or at least plausible.
 ---
-ibmveth: Add per-queue RX and TX statistics collection
+ibmveth: Enable multi-queue RX receive path
 
-This patch adds per-queue RX and TX counter arrays that live for the
-adapter lifetime, exports them through ethtool -S, and adds an
-ndo_get_stats64 implementation that sums them. It also changes what
-ibmveth_get_channels() reports for max_rx and rx_count.
-
-A few questions below.
+This patch turns on the multi-queue RX path: probe latches multi_queue and
+num_rx_queues from the H_ILLAN_ATTRIBUTES MQ bit, subordinate queues are
+registered with H_REG_LOGICAL_LAN_QUEUE, and open replenishes every queue
+before setup_rx_interrupts() unmasks PHYP. A few questions below on the
+new ordering, the CMO entitlement accounting and the probe unwind.
 
 > diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
-> index 4ad7ced3c6083..dbb47a42b4cb5 100644
+> index cb93659fc0576..4ad7ced3c6083 100644
 > --- a/drivers/net/ethernet/ibm/ibmveth.c
 > +++ b/drivers/net/ethernet/ibm/ibmveth.c
 
 [ ... ]
 
-> @@ -921,6 +975,8 @@ static void ibmveth_update_rx_no_buffer(struct ibmveth_adapter *adapter)
->  		__be64 *p = adapter->buffer_list_addr[i] + 4096 - 8;
->  		u64 drops = be64_to_cpup(p);
+> @@ -97,7 +97,17 @@ static struct ibmveth_stat ibmveth_stats[] = {
+>  	{ "fw_enabled_ipv6_csum", IBMVETH_STAT_OFF(fw_ipv6_csum_support) },
+>  	{ "tx_large_packets", IBMVETH_STAT_OFF(tx_large_packets) },
+>  	{ "rx_large_packets", IBMVETH_STAT_OFF(rx_large_packets) },
+> -	{ "fw_enabled_large_send", IBMVETH_STAT_OFF(fw_large_send_support) }
+> +	{ "fw_enabled_large_send", IBMVETH_STAT_OFF(fw_large_send_support) },
+> +	{ "hcall_reg_lan_queue", IBMVETH_STAT_OFF(hcall_stats.reg_lan_queue) },
+> +	{ "hcall_reg_lan", IBMVETH_STAT_OFF(hcall_stats.reg_lan) },
+> +	{ "hcall_add_bufs_queue",
+> +	  IBMVETH_STAT_OFF(hcall_stats.add_bufs_queue) },
+> +	{ "hcall_add_bufs", IBMVETH_STAT_OFF(hcall_stats.add_bufs) },
+> +	{ "hcall_add_buf", IBMVETH_STAT_OFF(hcall_stats.add_buf) },
+> +	{ "hcall_free_lan_queue",
+> +	  IBMVETH_STAT_OFF(hcall_stats.free_lan_queue) },
+> +	{ "hcall_free_lan", IBMVETH_STAT_OFF(hcall_stats.free_lan) },
+> +	{ "hcall_send_lan", IBMVETH_STAT_OFF(hcall_stats.send_lan) },
+>  };
+
+[Severity: Low]
+Should hcall_send_lan be exported through ethtool -S?  It is incremented
+once per successfully transmitted packet on the ibmveth_send() success
+path:
+
+drivers/net/ethernet/ibm/ibmveth.c:ibmveth_send() {
+	...
+	adapter->hcall_stats.send_lan++;
+	return 0;
+}
+
+That makes it the same value as the standard rtnl_link_stats64 tx_packets
+counter reported by ndo_get_stats64 / ip -s link, and
+Documentation/networking/statistics.rst asks that counters with a standard
+uAPI not be duplicated as driver-private ethtool -S strings.  These
+strings become uAPI once merged.
+
+The commit message subject is "Enable multi-queue RX receive path" and
+does not mention that eight new statistics strings are being added.  Could
+the stats additions be split out or at least described?
+
+> @@ -429,12 +439,64 @@ ibmveth_enable_irq(struct ibmveth_adapter *adapter, int queue_index)
+>  	return ibmveth_toggle_irq(adapter, queue_index, true);
+>  }
 >  
-> +		if (adapter->rx_qstats)
-> +			adapter->rx_qstats[i].no_buffer_drops = drops;
->  		adapter->rx_no_buffer += drops;
->  	}
+> +/**
+> + * ibmveth_dispose_subordinate_irq_mapping - Drop one subordinate virq mapping
+> + * @adapter: ibmveth adapter structure
+> + * @queue_idx: RX queue index (1..N)
+> + *
+> + * Subordinate queues get mappings from irq_create_mapping() during PHYP
+> + * registration. Queue 0 uses netdev->irq from device tree and is left alone.
+> + *
+> + * Bound against IBMVETH_MAX_RX_QUEUES, not num_rx_queues: scale-down and
+> + * scale-up fail paths dispose queues that are no longer in the published
+> + * live set but still own a virq in queue_irq[]. The bulk helper still
+> + * iterates only 1..num_rx_queues-1 for close/open-fail cleanup.
+
+[Severity: Low]
+This isn't a bug, but do the "scale-down and scale-up fail paths" exist at
+this commit?  ibmveth_resize_rx_queues_incremental() and
+ibmveth_setup_single_rx_interrupt() arrive in a later patch, and the only
+caller here is the bulk helper bounded by num_rx_queues.
+
+The same applies to the comment added above ibmveth_get_strings() in this
+patch:
+
+	/*
+	 * Sum per-queue counters for rare ethtool reads. Do not write adapter
+	 * globals on the hot path (ibmvnic-style); with qstats allocated for the
+	 * adapter lifetime, these sums remain meaningful across ifdown/up.
+	 */
+
+ibmveth_get_strings() only memcpy()s string tables here, and no
+rx_qstats/tx_qstats members exist in struct ibmveth_adapter until the
+following patch.  Could both comments move to the patches that add the
+code they describe, so the intermediate commits read correctly?
+
+> +	for (i = 0; i < num; i++)
+> +		napi_enable(&adapter->napi[i]);
+> +
+> +	if (adapter->multi_queue && num > 1) {
+> +		for (i = 0; i < num; i++) {
+> +			rc = ibmveth_enable_irq(adapter, i);
+> +			if (rc) {
+> +				netdev_err(netdev,
+> +					   "Failed to enable IRQ for queue %d, rc=%d\n",
+> +					   i, rc);
+> +				while (--i >= 0)
+> +					ibmveth_disable_irq(adapter, i);
+> +				rc = -EIO;
+> +				goto err_disable_napi;
+> +			}
+> +		}
+> +	}
+> +
+>  	return 0;
+>  
+> +err_disable_napi:
+> +	/* PHYP unmask was rolled back above; disable NAPI before free_irq */
+> +	for (i = 0; i < num; i++)
+> +		napi_disable(&adapter->napi[i]);
+> +	for (i = 0; i < num; i++) {
+> +		if (adapter->queue_irq[i])
+> +			free_irq(adapter->queue_irq[i], &adapter->napi[i]);
+> +	}
+> +	goto err_dispose_mappings;
+
+[Severity: Low]
+Can the rollback loop above be undone by an in-flight poll?  Queues 0..i-1
+were already unmasked, so a poll may be running when
+ibmveth_enable_irq() fails for queue i:
+
+ibmveth_poll() {
+	...
+	if (!napi_complete_done(napi, frames_processed))
+		goto out;
+	...
+	lpar_rc = ibmveth_enable_irq(adapter, queue_index);
+}
+
+There is no synchronize_irq() between the while (--i >= 0)
+ibmveth_disable_irq() loop and napi_disable(), so a poll that completes
+after the mask re-enables PHYP delivery.  napi_disable() waits for the
+poll but does not undo that re-enable, and the following free_irq() plus
+ibmveth_dispose_subordinate_irq_mappings() then leave the hypervisor
+source enabled for a hwirq whose Linux mapping is gone.
+
+The scale-down path added later does disable_irq() followed by
+synchronize_irq() for exactly this reason.  Should this path do the same?
+
+[ ... ]
+
+> @@ -834,9 +914,15 @@ static void ibmveth_replenish_buffer_pool(struct ibmveth_adapter *adapter,
+>   */
+>  static void ibmveth_update_rx_no_buffer(struct ibmveth_adapter *adapter)
+>  {
+> -	__be64 *p = adapter->buffer_list_addr[0] + 4096 - 8;
+> +	int i;
+>  
+> -	adapter->rx_no_buffer = be64_to_cpup(p);
+> +	adapter->rx_no_buffer = 0;
+> +	for (i = 0; i < adapter->num_rx_queues; i++) {
+> +		__be64 *p = adapter->buffer_list_addr[i] + 4096 - 8;
+> +		u64 drops = be64_to_cpup(p);
+> +
+> +		adapter->rx_no_buffer += drops;
+> +	}
 >  }
 
-[Severity: Medium]
+[Severity: High]
+Is this cross-queue aggregation safe against the RX queue resize path?
+The only lock held here is the caller's own per-queue lock:
 
-Can concurrent polls on different queues corrupt these counters?
-
-ibmveth_update_rx_no_buffer() writes rx_qstats[i] for every queue, but
-its caller ibmveth_replenish_task(adapter, queue_index) holds only that
-one queue's lock:
-
+ibmveth_replenish_task(adapter, queue_index) {
 	spin_lock_irqsave(&rxq->replenish_lock, flags);
 	...
 	ibmveth_update_rx_no_buffer(adapter);
 	spin_unlock_irqrestore(&rxq->replenish_lock, flags);
+}
 
-So two NAPI polls on different queues run the same all-queue loop under
-disjoint locks (replenish_lock[0] vs replenish_lock[1]):
+That lock does not cover other queues' buffer_list_addr[] entries, nor
+num_rx_queues.  The ethtool -L scale-down path added later in the series
+publishes the new count and then frees the pages:
 
-CPU A: reads queue 1 hypervisor value 100
-CPU B: reads queue 1 hypervisor value 105, stores 105
-CPU A: stores 100
+	adapter->num_rx_queues = new_count;
 
-Does that make rxN_no_buffer_drops move backwards as seen by ethtool?
-The adapter->rx_no_buffer = 0 / += drops sequence around it is also an
-unsynchronized read-modify-write visible to a concurrent ethtool reader.
+	for (i = new_count; i < old_count; i++) {
+		...
+		ibmveth_free_single_rx_queue(adapter, i);   /* free_page() + NULL */
+	}
 
-This also seems to work against the ____cacheline_aligned_in_smp
-annotation added to struct ibmveth_rx_queue_stats, since every replenish
-cycle now dirties every queue's stats cache line from a foreign CPU.
+If a surviving queue's poll already loaded the older, larger
+num_rx_queues, can this loop dereference NULL + 4096 - 8, or read a page
+that was just freed, from softirq context?  A READ_ONCE() of the count
+plus a NULL check, or serializing the aggregation against the resize
+path, would make this explicit.
 
-Would passing queue_index into the helper and touching only
-rx_qstats[queue_index] and buffer_list_addr[queue_index] work, deriving
-the adapter-level rx_no_buffer by summing on read the way the patch
-already does for rx_large_packets and rx_invalid_buffer?
+Separately, two concurrent polls on different queues both execute
+adapter->rx_no_buffer = 0 followed by += drops on the same field.  Can
+that lose increments and expose a transient 0 through
+rx_no_buffer / ethtool -S?
 
-Related: at the end of the series the RX scale-down path in
-ibmveth_resize_rx_queues_incremental() lowers adapter->num_rx_queues and
-then frees a queue's buffer_list page while polls on surviving queues keep
-running. Can a poll that already loaded the old bound dereference
-buffer_list_addr[i] for a freed page here?
-
-[Severity: Medium]
-
-Should no_buffer_drops be accumulated rather than assigned?
-
-The value PHYP writes into the last 8 bytes of the buffer-list page is an
-absolute count for the life of that page, and the page is re-obtained with
-get_zeroed_page(GFP_KERNEL) by ibmveth_alloc_rx_queues() on every
-ibmveth_open() and released by ibmveth_cleanup_rx_resources() on every
-ibmveth_close(), including the close/open pairs done by the reset work,
-ibmveth_set_csum_offload() and ibmveth_set_tso().
-
-Since rx_qstats[i].no_buffer_drops is assigned with "= drops", does
-rxN_no_buffer_drops (and the recomputed adapter->rx_no_buffer) jump
-backwards after an ifdown/ifup, a driver reset, or an ethtool -K tso
-change?
-
-That appears to contradict the comment this patch adds above the sum
-helpers:
-
-	 * globals on the hot path (ibmvnic-style); with qstats allocated for the
-	 * adapter lifetime, these sums remain meaningful across ifdown/up.
-
-> @@ -1972,22 +2028,131 @@ static int ibmveth_set_features(struct net_device *dev,
->   * globals on the hot path (ibmvnic-style); with qstats allocated for the
->   * adapter lifetime, these sums remain meaningful across ifdown/up.
->   */
-> +static u64 ibmveth_sum_rx_invalid_buffers(struct ibmveth_adapter *adapter)
-> +{
-> +	u64 total = 0;
-> +	int i;
-> +
-> +	if (!adapter->rx_qstats)
-> +		return adapter->rx_invalid_buffer;
-> +
-> +	for (i = 0; i < adapter->num_rx_queues; i++)
-> +		total += adapter->rx_qstats[i].invalid_buffers;
-> +
-> +	return total;
-> +}
-
-[ ... ]
-
-> +static u64 ibmveth_sum_tx_send_failed(struct ibmveth_adapter *adapter)
-> +{
-> +	struct net_device *netdev = adapter->netdev;
-> +	u64 total = 0;
-> +	int i;
-> +
-> +	if (!adapter->tx_qstats)
-> +		return adapter->tx_send_failed;
-> +
-> +	for (i = 0; i < netdev->real_num_tx_queues; i++)
-> +		total += adapter->tx_qstats[i].send_failures;
-> +
-> +	return total;
-> +}
-
-[Severity: Medium]
-
-Do these sums go backwards when the queue count is reduced?
-
-The qstats arrays persist for the adapter lifetime, but the sums are
-bounded by the currently configured queue count. ibmveth_set_channels()
-lowers netdev->real_num_tx_queues:
-
-	rc = netif_set_real_num_tx_queues(netdev, goal);
-
-Nothing folds or clears the counters of the queues that disappear, so
-after "ethtool -L ethX tx N" with a smaller N, do the adapter-level
-ethtool strings tx_large_packets and tx_send_failed, plus the
-rtnl_link_stats64 tx_packets/tx_bytes/tx_dropped summed in
-ibmveth_get_stats64(), all drop by the traffic accounted to the removed
-queues, and then jump forward again when the count is raised?
-
-Since this patch removes the hot-path netdev->stats accounting,
-ibmveth_get_stats64() is now the only source for the rtnl counters, so a
-decrease is directly user visible; tools computing deltas (ip -s link,
-ifstat) will read it as a counter wrap. The same applies on the RX side
-with adapter->num_rx_queues once the incremental RX resize commit later in
-this series changes it at runtime.
-
-> +static u64 ibmveth_ethtool_adapter_stat(struct ibmveth_adapter *adapter,
-> +					int index)
-> +{
-> +	unsigned long offset = ibmveth_stats[index].offset;
-> +
-> +	if (offset == IBMVETH_STAT_OFF(rx_invalid_buffer))
-> +		return ibmveth_sum_rx_invalid_buffers(adapter);
-> +	if (offset == IBMVETH_STAT_OFF(rx_large_packets))
-> +		return ibmveth_sum_rx_large_packets(adapter);
-> +	if (offset == IBMVETH_STAT_OFF(tx_large_packets))
-> +		return ibmveth_sum_tx_large_packets(adapter);
-> +	if (offset == IBMVETH_STAT_OFF(tx_send_failed))
-> +		return ibmveth_sum_tx_send_failed(adapter);
-> +
-> +	return IBMVETH_GET_STAT(adapter, offset);
-> +}
-> +
->  static void ibmveth_get_strings(struct net_device *dev, u32 stringset, u8 *data)
->  {
-> +	struct ibmveth_adapter *adapter = netdev_priv(dev);
-> +	u8 *p = data;
+> @@ -847,8 +933,12 @@ static void ibmveth_replenish_task(struct ibmveth_adapter *adapter,
+>  	unsigned long flags;
 >  	int i;
 >  
->  	if (stringset != ETH_SS_STATS)
+> -	if (queue_index >= adapter->num_rx_queues)
+> +	if (queue_index >= adapter->num_rx_queues) {
+> +		netdev_dbg(adapter->netdev,
+> +			   "Skipping replenish for freed queue %d (num_queues=%d)\n",
+> +			   queue_index, adapter->num_rx_queues);
 >  		return;
+> +	}
 >  
-> -	for (i = 0; i < ARRAY_SIZE(ibmveth_stats); i++, data += ETH_GSTRING_LEN)
-> -		memcpy(data, ibmveth_stats[i].name, ETH_GSTRING_LEN);
-> +	for (i = 0; i < ARRAY_SIZE(ibmveth_stats); i++) {
-> +		memcpy(p, ibmveth_stats[i].name, ETH_GSTRING_LEN);
-> +		p += ETH_GSTRING_LEN;
-> +	}
-> +
-> +	for (i = 0; i < adapter->num_rx_queues; i++) {
-> +		ethtool_sprintf(&p, "rx%d_packets", i);
-> +		ethtool_sprintf(&p, "rx%d_bytes", i);
-> +		ethtool_sprintf(&p, "rx%d_interrupts", i);
-> +		ethtool_sprintf(&p, "rx%d_polls", i);
-> +		ethtool_sprintf(&p, "rx%d_large_packets", i);
-> +		ethtool_sprintf(&p, "rx%d_invalid_buffers", i);
-> +		ethtool_sprintf(&p, "rx%d_no_buffer_drops", i);
-> +	}
-> +
-> +	for (i = 0; i < dev->real_num_tx_queues; i++) {
-> +		ethtool_sprintf(&p, "tx%d_packets", i);
-> +		ethtool_sprintf(&p, "tx%d_bytes", i);
-> +		ethtool_sprintf(&p, "tx%d_large_packets", i);
-> +		ethtool_sprintf(&p, "tx%d_dropped_packets", i);
-> +		ethtool_sprintf(&p, "tx%d_send_failures", i);
-> +		ethtool_sprintf(&p, "tx%d_checksum_offload", i);
-> +	}
-
-[Severity: Medium]
-
-Should the per-queue packet and byte counters use the standard per-queue
-statistics interface instead of driver-private ethtool strings?
-
-rx%d_packets, rx%d_bytes, tx%d_packets and tx%d_bytes map one to one onto
-struct netdev_queue_stats_rx and struct netdev_queue_stats_tx, which are
-exported through netlink via struct netdev_stat_ops. No netdev_stat_ops
-is added here, so generic tooling (ynl) cannot consume these values, and
-Documentation/networking/statistics.rst asks that counters with a standard
-uAPI not be duplicated in ethtool -S.
-
-Also, the new ibmveth_get_stats64() populates only rx/tx packets, bytes
-and tx_dropped:
-
-	stats->tx_errors = dev->stats.tx_errors;
-
-After this patch, is there any remaining writer of dev->stats in this
-driver? The only match in the file is this read, so tx_errors appears to
-be permanently 0. The loss counters this patch does collect
-(no_buffer_drops from the hypervisor, invalid_buffers) are not mapped
-into rx_dropped / rx_missed_errors / rx_errors either, so ip -s link
-reports zero RX drops while ethtool -S shows a non-zero rx_no_buffer.
-
-> +
-> +	for (i = 0; i < IBMVETH_NUM_BUFF_POOLS; i++) {
-> +		ethtool_sprintf(&p, "pool%d_size", i);
-> +		ethtool_sprintf(&p, "pool%d_active", i);
-> +		ethtool_sprintf(&p, "pool%d_available", i);
-> +	}
->  }
->  
->  static int ibmveth_get_sset_count(struct net_device *dev, int sset)
->  {
-> +	struct ibmveth_adapter *adapter = netdev_priv(dev);
-> +
->  	switch (sset) {
->  	case ETH_SS_STATS:
-> -		return ARRAY_SIZE(ibmveth_stats);
-> +		return ARRAY_SIZE(ibmveth_stats) +
-> +		       adapter->num_rx_queues * IBMVETH_NUM_RX_QSTATS +
-> +		       dev->real_num_tx_queues * IBMVETH_NUM_TX_QSTATS +
-> +		       IBMVETH_NUM_BUFF_POOLS * 3;
->  	default:
->  		return -EOPNOTSUPP;
->  	}
-
-[ ... ]
-
-> @@ -1996,21 +2161,59 @@ static int ibmveth_get_sset_count(struct net_device *dev, int sset)
->  static void ibmveth_get_ethtool_stats(struct net_device *dev,
->  				      struct ethtool_stats *stats, u64 *data)
->  {
-> -	int i;
->  	struct ibmveth_adapter *adapter = netdev_priv(dev);
-> +	int i, j;
->  
->  	for (i = 0; i < ARRAY_SIZE(ibmveth_stats); i++)
-> -		data[i] = IBMVETH_GET_STAT(adapter, ibmveth_stats[i].offset);
-> +		data[i] = ibmveth_ethtool_adapter_stat(adapter, i);
-> +
-> +	for (j = 0; j < adapter->num_rx_queues; j++) {
-> +		if (adapter->rx_qstats) {
-> +			data[i++] = adapter->rx_qstats[j].packets;
-> +			data[i++] = adapter->rx_qstats[j].bytes;
-> +			data[i++] = adapter->rx_qstats[j].interrupts;
-> +			data[i++] = adapter->rx_qstats[j].polls;
-> +			data[i++] = adapter->rx_qstats[j].large_packets;
-> +			data[i++] = adapter->rx_qstats[j].invalid_buffers;
-> +			data[i++] = adapter->rx_qstats[j].no_buffer_drops;
-> +		} else {
-> +			i += IBMVETH_NUM_RX_QSTATS;
-> +		}
-> +	}
+>  	adapter->replenish_task_cycles++;
 
 [Severity: Low]
+With several RX queues now polling concurrently, do the adapter-wide plain
+u64 counters need serialization?  replenish_task_cycles is incremented
+before the per-queue lock is taken, and replenish_no_mem,
+replenish_add_buff_success/failure and the new hcall_stats fields are
+touched under different per-queue locks, so the lockset intersection for
+these adapter-global fields is empty.  hcall_stats.send_lan is also
+incremented from ibmveth_start_xmit() on up to 16 TX queues in parallel.
+The visible effect is lost increments in the ethtool -S values.
 
-Can adapter->rx_qstats or adapter->tx_qstats ever be NULL here?
+[ ... ]
 
-The allocations happen in ibmveth_probe() before register_netdev(), and a
-failure aborts probe with ibmveth_probe_cleanup() + return -ENOMEM.
-ibmveth_remove() frees them only after unregister_netdev(). So on a
-registered netdev the NULL case seems unreachable, which would make these
-else arms, the else arms in ibmveth_poll(), and the
-"if (!adapter->*_qstats) return adapter-><legacy>;" early returns in the
-four sum helpers dead code.
-
-The two styles also disagree: ibmveth_is_packet_unsupported() guards with
-"if (adapter->tx_qstats)" while ibmveth_start_xmit() dereferences
-adapter->tx_qstats[queue_num] unconditionally at six new sites on the same
-call chain. Which of the two is intended?
-
-A side effect is that adapter->rx_invalid_buffer, rx_large_packets,
-tx_large_packets and tx_send_failed are never incremented again while
-still being listed in ibmveth_stats[].
-
-Separately, ibmveth_ethtool_adapter_stat() dispatches by comparing
-ibmveth_stats[index].offset against IBMVETH_STAT_OFF() values. Would
-adding or reordering a field in struct ibmveth_adapter silently redirect a
-statistic to the wrong source here?
-
-> +
-> +	for (j = 0; j < dev->real_num_tx_queues; j++) {
-> +		if (adapter->tx_qstats) {
-> +			data[i++] = adapter->tx_qstats[j].packets;
-> +			data[i++] = adapter->tx_qstats[j].bytes;
-> +			data[i++] = adapter->tx_qstats[j].large_packets;
-> +			data[i++] = adapter->tx_qstats[j].dropped_packets;
-> +			data[i++] = adapter->tx_qstats[j].send_failures;
-> +			data[i++] = adapter->tx_qstats[j].checksum_offload;
-> +		} else {
-> +			i += IBMVETH_NUM_TX_QSTATS;
-> +		}
-> +	}
-> +
-> +	for (j = 0; j < IBMVETH_NUM_BUFF_POOLS; j++) {
-> +		data[i++] = adapter->rx_buff_pool[0][j].size;
-> +		data[i++] = adapter->rx_buff_pool[0][j].active;
-> +		data[i++] = atomic_read(&adapter->rx_buff_pool[0][j].available);
-> +	}
->  }
-
-[Severity: Medium]
-
-Should the pool%d_* strings be queue-indexed?
-
-The driver now keeps an independent pool set per RX queue
-(rx_buff_pool[queue][pool], populated for all q < adapter->num_rx_queues
-by ibmveth_alloc_buffer_pools() and updated per queue by
-ibmveth_replenish_task()), but these three entries read only
-rx_buff_pool[0][j] under queue-agnostic names, so the state of queues
-1..N-1 is not visible. Is that intended for someone debugging drops on a
-non-zero queue?
-
-Also, size and active are configuration values already exposed through the
-per-pool sysfs kobjects rather than statistics, and this new permanent
-ethtool string set is not mentioned in the commit message.
-
->  static void ibmveth_get_channels(struct net_device *netdev,
->  				 struct ethtool_channels *channels)
->  {
-> +	struct ibmveth_adapter *adapter = netdev_priv(netdev);
-> +
->  	channels->max_tx = ibmveth_real_max_tx_queues();
->  	channels->tx_count = netdev->real_num_tx_queues;
->  
-> -	channels->max_rx = netdev->real_num_rx_queues;
-> -	channels->rx_count = netdev->real_num_rx_queues;
-> +	if (adapter->multi_queue)
-> +		channels->max_rx = IBMVETH_MAX_RX_QUEUES;
-> +	else
-> +		channels->max_rx = 1;
-> +	channels->rx_count = adapter->num_rx_queues;
->  }
+> @@ -1284,6 +1374,137 @@ static int ibmveth_register_logical_lan(struct ibmveth_adapter *adapter,
+> +	lpar_rc = h_reg_logical_lan_queue(adapter->vdev->unit_address,
+> +					  adapter->buffer_list_dma[queue_index],
+> +					  rxq_desc.desc, &handle, &hwirq);
+> +	adapter->hcall_stats.reg_lan_queue++;
 
 [Severity: Low]
+Should this hcall retry on a busy return?  Every other long-running hcall
+in the driver loops:
 
-This isn't a bug, but would this ABI-visible get_channels() reporting
-change be easier to review as its own patch? It is independent of the
-statistics work, and if it is a fix it would want its own Fixes: tag.
+	do {
+		lpar_rc = h_free_logical_lan(adapter->vdev->unit_address);
+	} while (H_IS_LONG_BUSY(lpar_rc) || (lpar_rc == H_BUSY));
 
-There is also a mismatch it introduces: the new RX loops in
-ibmveth_get_strings() / ibmveth_get_sset_count() / ibmveth_get_stats64()
-use adapter->num_rx_queues while the TX loops use
-dev->real_num_tx_queues. netdev->real_num_rx_queues is only synced to
-adapter->num_rx_queues in ibmveth_open(), so on a never-opened interface
-ethtool -l reports a count the stack does not have yet.
+including h_free_logical_lan_queue() in the IRQ-mapping failure path a few
+lines below this call, and h_send_logical_lan() in ibmveth_send().  As
+written, a transient H_BUSY / H_LONG_BUSY_ORDER_* here becomes -EIO from
+ibmveth_register_single_rx_queue() and a failed ifup.
 
-[ ... ]
+> +	/*
+> +	 * H_FUNCTION means firmware rejected this subordinate register
+> +	 * (MQ unsupported). That is a hard open failure: do not clear
+> +	 * multi_queue or claim single-queue fallback. Keep a specific
+> +	 * log, then the generic failure lines below (no early return).
+> +	 */
+> +	if (lpar_rc == H_FUNCTION)
+> +		netdev_err(adapter->netdev,
+> +			   "h_reg_logical_lan_queue H_FUNCTION for queue %d (firmware MQ unsupported)\n",
+> +			   queue_index);
 
-> @@ -2150,6 +2355,7 @@ static netdev_tx_t ibmveth_start_xmit(struct sk_buff *skb,
->  	    skb_checksum_help(skb)) {
->  
->  		netdev_err(netdev, "tx: failed to checksum packet\n");
-> +		adapter->tx_qstats[queue_num].dropped_packets++;
->  		goto out;
->  	}
+[Severity: High]
+Can the adapter recover if firmware stops honouring the MQ register after
+probe?  multi_queue and num_rx_queues are latched once in ibmveth_probe()
+from the H_ILLAN_ATTRIBUTES bit and are never re-read or reduced, so a
+H_FUNCTION here fails ibmveth_open() and every subsequent open the same
+way.
 
-[ ... ]
+The reset work item only closes and reopens, it never re-reads the
+attributes:
 
-> @@ -2211,7 +2423,11 @@ static netdev_tx_t ibmveth_start_xmit(struct sk_buff *skb,
->  	dma_wmb();
->  
->  	if (ibmveth_send(adapter, desc.desc, mss)) {
-> +		adapter->tx_qstats[queue_num].send_failures++;
-> +		adapter->tx_qstats[queue_num].dropped_packets++;
->  	} else {
-> +		adapter->tx_qstats[queue_num].packets++;
-> +		adapter->tx_qstats[queue_num].bytes += skb->len;
->  	}
+ibmveth_reset() {
+	rtnl_lock();
+	dev_close(adapter->netdev);
+	dev_open(adapter->netdev, NULL);
+	rtnl_unlock();
+}
 
-[Severity: Medium]
+ethtool -L ethX rx 1 while down does not restore RX either: multi_queue
+stays 1, so rx_buffers_per_hcall remains IBMVETH_MAX_RX_QUEUE and
+ibmveth_add_logical_lan_buffers() keeps calling
+h_add_logical_lan_buffers_queue(), whose H_FUNCTION path has no fallback
+when multi_queue is set.
 
-These empty if/else bodies in the pre-image show that the previous commit
-in the series ("ibmveth: Enable multi-queue RX receive path") deleted the
-hot-path netdev->stats accounting, and the replacement only arrives here.
-ibmveth_poll() likewise increments no packet or byte counter at that
-commit, and no ndo_get_stats64 exists yet.
+The driver already assumes PHYP capabilities can disappear across LPM:
 
-Does that leave the tree at the parent commit reporting zero
-rx_packets/rx_bytes/tx_packets/tx_bytes/tx_dropped through ip -s link,
-where the pre-series baseline reported them? Would squashing the removal
-into this patch, or deferring the removal until this replacement lands,
-keep every commit in the series bisectable for counter-related issues?
+	/*
+	 * Live Partition Migration may drop multi-
+	 * buffer support. Fall back to single-buffer
+	 * on the next replenish; ...
+	 */
 
-[ ... ]
+Would clearing multi_queue and falling back to one queue on H_FUNCTION be
+preferable to leaving the interface permanently unable to open?
 
-> @@ -2698,6 +2933,40 @@ static netdev_features_t ibmveth_features_check(struct sk_buff *skb,
->  	return vlan_features_check(skb, features);
->  }
->  
-
-[ ... ]
-
->  static void ibmveth_put_pool_kobjs(struct ibmveth_adapter *adapter,
-> -				   int pools_ready)
-> +				  int pools_ready)
->  {
->  	int i;
-
-[Severity: Low]
-
-This isn't a bug, but this whitespace-only reflow breaks the previously
-correct open-parenthesis alignment of the second parameter (checkpatch:
-"Alignment should match open parenthesis") in a function this patch does
-not otherwise change. Could it be dropped?
-
-> @@ -2724,6 +2994,19 @@ static void ibmveth_put_pool_kobjs(struct ibmveth_adapter *adapter,
->  		kobject_put(&adapter->rx_buff_pool[0][i].kobj);
->  }
->  
-> +static void ibmveth_probe_cleanup(struct ibmveth_adapter *adapter,
-> +				  int pools_ready)
+> +static int
+> +ibmveth_register_single_rx_queue(struct ibmveth_adapter *adapter,
+> +				 int queue_idx, u64 mac_address)
 > +{
 > +	struct net_device *netdev = adapter->netdev;
+> +	union ibmveth_buf_desc rxq_desc;
+> +	long lpar_rc;
 > +
-> +	cancel_work_sync(&adapter->work);
-> +	ibmveth_put_pool_kobjs(adapter, pools_ready);
+> +	(void)mac_address;
+
+[Severity: Low]
+This isn't a bug, but is the mac_address parameter worth keeping?
+H_REG_LOGICAL_LAN_QUEUE has no MAC operand and
+ibmveth_register_logical_lan_queue() has no MAC parameter, so callers
+compute ether_addr_to_u64(netdev->dev_addr) only to feed a parameter that
+is voided here.  The (void)x; suppression cast is also not needed under
+the kernel's warning set.
+
+[ ... ]
+
+> @@ -1356,9 +1579,31 @@ ibmveth_register_rx_queues(struct ibmveth_adapter *adapter, u64 mac_address)
+> +	for (i = 1; i < adapter->num_rx_queues; i++) {
+> +		rc = ibmveth_register_single_rx_queue(adapter, i, mac_address);
+> +		if (rc)
+> +			goto err_unregister;
+> +	}
 > +
-> +	ibmveth_free_tx_qstats(adapter);
-> +	ibmveth_free_rx_qstats(adapter);
-> +	free_netdev(netdev);
+>  	netdev_dbg(netdev,
+> -		   "registered 1 RX queue with hypervisor (single-queue mode)\n");
+> +		   "registered %d RX queues with hypervisor (multi-queue mode)\n",
+> +		   adapter->num_rx_queues);
+> +
+>  	return 0;
+> +
+> +err_unregister:
+> +	ibmveth_dispose_subordinate_irq_mappings(adapter);
+> +	ibmveth_free_all_queues(adapter);
+> +	return rc;
+>  }
+
+> @@ -1396,12 +1641,29 @@ static int ibmveth_open(struct net_device *netdev)
+> +	/*
+> +	 * MQ: post buffers before setup_rx_interrupts() unmasks PHYP
+> +	 * (avoids drops if traffic arrives during open; PHYP allows
+> +	 * either order). Single-queue keeps the classic kick: setup
+> +	 * (no unmask) then schedule_rx_queue() so the first poll
+> +	 * replenishes and enables.
+> +	 */
+> +	if (adapter->multi_queue && adapter->num_rx_queues > 1) {
+> +		for (i = 0; i < adapter->num_rx_queues; i++) {
+> +			netdev_dbg(netdev,
+> +				   "initial replenish cycle for queue %d\n", i);
+> +			ibmveth_replenish_task(adapter, i);
+> +		}
+> +	}
+> +
+>  	rc = ibmveth_setup_rx_interrupts(adapter);
+
+[Severity: Medium]
+Is PHYP delivery for subordinate queues guaranteed to be masked in this
+window?  Queue 0 is explicitly masked before registration:
+
+ibmveth_register_rx_queues() {
+	adapter->queue_irq[0] = netdev->irq;
+	rc = ibmveth_disable_irq(adapter, 0);
+	...
+}
+
+but queues 1..N get no equivalent H_VIOCTL/H_DISABLE_VIO_INTERRUPT after
+H_REG_LOGICAL_LAN_QUEUE plus irq_create_mapping().  Buffers are now
+posted for every queue here, before any handler exists, and
+ibmveth_setup_rx_interrupts() was also reordered so request_irq() for all
+queues completes before any napi_enable():
+
+	for (i = 0; i < num; i++) {
+		...
+		rc = request_irq(adapter->queue_irq[i], ibmveth_interrupt, ...);
+	}
+
+	for (i = 0; i < num; i++)
+		napi_enable(&adapter->napi[i]);
+
+If an interrupt arrives in that window, ibmveth_schedule_rx_queue() finds
+NAPI still disabled:
+
+	if (napi_schedule_prep(napi)) {
+		lpar_rc = ibmveth_disable_irq(adapter, qindex);
+		WARN_ON(lpar_rc != H_SUCCESS);
+		__napi_schedule(napi);
+	}
+
+so the handler returns IRQ_HANDLED without masking the hypervisor source
+and without scheduling a poll.  That is the same storm window described in
+ibmveth_cleanup_rx_interrupts() ("Mask PHYP before napi_disable so
+ibmveth_interrupt cannot return IRQ_HANDLED without masking").  The
+err_free_irqs path has the same gap: it frees handlers and disposes
+subordinate mappings without masking already-registered subordinate
+queues.
+
+The later scale-up path uses register -> request_irq -> publish ->
+replenish -> napi_enable -> enable_irq and documents why.  Would enabling
+NAPI before request_irq (as the baseline did), or explicitly masking each
+subordinate queue right after registration, close this window?
+
+[ ... ]
+
+> @@ -2373,18 +2632,25 @@ static unsigned long ibmveth_get_desired_dma(struct vio_dev *vdev)
+>  	/* add size of mapped tx buffers */
+>  	ret += IOMMU_PAGE_ALIGN(IBMVETH_MAX_TX_BUF_SIZE, tbl);
+>  
+> -	for (i = 0; i < IBMVETH_NUM_BUFF_POOLS; i++) {
+> -		/* add the size of the active receive buffers */
+> -		if (adapter->rx_buff_pool[0][i].active)
+> -			ret +=
+> -			    adapter->rx_buff_pool[0][i].size *
+> -			    IOMMU_PAGE_ALIGN(adapter->rx_buff_pool[0][i].
+> -					     buff_size, tbl);
+> -		rxqentries += adapter->rx_buff_pool[0][i].size;
+> -	}
+> -	/* add the size of the receive queue entries */
+> -	ret += IOMMU_PAGE_ALIGN(
+> -		rxqentries * sizeof(struct ibmveth_rx_q_entry), tbl);
+> +	for (q = 0; q < adapter->num_rx_queues; q++) {
+> +		int rxqentries = 1;
+
+[Severity: Medium]
+Does the buffer-list term still need scaling here?  The unchanged line
+above this loop counts it once:
+
+	ret = IBMVETH_BUFF_LIST_SIZE + IBMVETH_FILT_LIST_SIZE;
+
+while multi-queue allocates and dma_map_single()s a distinct 4096-byte
+buffer-list page per queue, which ibmveth_cleanup_rx_resources() unmaps
+per index.  That leaves the desired value short by (num_rx_queues - 1)
+buffer-list pages.
+
+Also, is anything updating the CMO entitlement for the new default queue
+count?  The VIO core samples it before the driver's probe runs:
+
+arch/powerpc/platforms/pseries/vio.c:vio_cmo_bus_probe() {
+	viodev->cmo.desired =
+		IOMMU_PAGE_ALIGN(viodrv->get_desired_dma(viodev), tbl);
+}
+
+with dev_get_drvdata() still NULL, so the single-queue sized
+IBMVETH_IO_ENTITLEMENT_DEFAULT is used for an adapter that will open with
+up to 8 RX queues, and neither ibmveth_probe() nor ibmveth_open() calls
+vio_cmo_set_dev_desired().  On a CMO partition, can this make
+dma_map_single()/dma_alloc_coherent() fail during open on adapters that
+worked in single-queue mode?
+
+> +
+> +		for (i = 0; i < IBMVETH_NUM_BUFF_POOLS; i++) {
+> +			/* add the size of the active receive buffers */
+> +			struct ibmveth_buff_pool *bpool =
+> +				&adapter->rx_buff_pool[q][i];
+
+[Severity: Medium]
+Is rx_buff_pool[q][i] populated for q >= 1 when this runs?  Pool metadata
+for queues 1..N is only filled in by ibmveth_alloc_buffer_pools(), which
+runs from ndo_open; ibmveth_probe() initializes only rx_buff_pool[0][i],
+and the private area is zeroed, so before the first open these entries
+have size = active = buff_size = 0.
+
+ibmveth_change_mtu() pushes the result straight into firmware accounting:
+
+	vio_cmo_set_dev_desired(viodev, ibmveth_get_desired_dma(viodev));
+
+Can an MTU change while the interface is down therefore lower the
+entitlement to roughly the single-queue value, right before an open that
+allocates buffers for up to 8 queues?
+
+> @@ -2449,9 +2715,18 @@ static const struct net_device_ops ibmveth_netdev_ops = {
+>  #endif
+>  };
+>  
+> +static void ibmveth_put_pool_kobjs(struct ibmveth_adapter *adapter,
+> +				   int pools_ready)
+> +{
+> +	int i;
+> +
+> +	for (i = 0; i < pools_ready; i++)
+> +		kobject_put(&adapter->rx_buff_pool[0][i].kobj);
 > +}
 > +
 
-[Severity: High]
-
-This isn't a problem introduced by this patch, since the old open-coded
-error paths had the same omission, but the new helper is now the single
-place four probe failure paths funnel through, so it looks like the
-natural spot to fix it.
-
-ibmveth_probe() stores the netdev in the VIO drvdata right after
-alloc_etherdev_mqs():
-
-	dev_set_drvdata(&dev->dev, netdev);
-
-ibmveth_probe_cleanup() ends with free_netdev(netdev) but never clears it,
-and ibmveth_remove() (the only caller of dev_set_drvdata(&dev->dev, NULL))
-does not run when probe fails. So after any probe failure the vio_dev
-keeps a pointer to freed memory.
-
-On FW_FEATURE_CMO systems the stale pointer is consumed on the next bind
-attempt, before the driver probe re-initializes it:
-
-vio_bus_probe()
-  vio_cmo_bus_probe()
-    viodev->cmo.desired = IOMMU_PAGE_ALIGN(viodrv->get_desired_dma(viodev), tbl);
-      ibmveth_get_desired_dma()
-
-ibmveth_get_desired_dma() only checks for NULL:
-
-	netdev = dev_get_drvdata(&vdev->dev);
-	if (netdev == NULL)
-		return ...;
-
-and then dereferences netdev->mtu and adapter->num_rx_queues, using the
-latter as the loop bound over adapter->rx_buff_pool[q][i]. Since that
-bound is read from freed memory, can this read past the end of the freed
-allocation as well? Would adding dev_set_drvdata(&dev->dev, NULL) to
-ibmveth_probe_cleanup() close this?
-
->  static int ibmveth_probe(struct vio_dev *dev, const struct vio_device_id *id)
->  {
->  	int rc, i, mac_len, pools_ready = 0;
-> @@ -2779,6 +3062,11 @@ static int ibmveth_probe(struct vio_dev *dev, const struct vio_device_id *id)
->  		netif_napi_add_weight(netdev, &adapter->napi[i],
->  				      ibmveth_poll, 16);
->  
-> +	if (ibmveth_alloc_rx_qstats(adapter) ||
-> +	    ibmveth_alloc_tx_qstats(adapter)) {
-> +		ibmveth_probe_cleanup(adapter, 0);
-> +		return -ENOMEM;
-> +	}
->  
->  	netdev->irq = dev->irq;
->  	netdev->netdev_ops = &ibmveth_netdev_ops;
-
 [ ... ]
 
-> @@ -2913,6 +3198,9 @@ static void ibmveth_remove(struct vio_dev *dev)
+> @@ -2531,16 +2810,27 @@ static int ibmveth_probe(struct vio_dev *dev, const struct vio_device_id *id)
+>  		netdev->features |= NETIF_F_FRAGLIST;
+>  	}
 >  
->  	unregister_netdev(netdev);
+> -	/* Initialize queue count - always 1 for now */
+> -	adapter->multi_queue = 0;
+> -	adapter->num_rx_queues = IBMVETH_DEFAULT_RX_QUEUES;
+> +	if (ret == H_SUCCESS &&
+> +	    (ret_attr & IBMVETH_ILLAN_RX_MULTI_QUEUE_SUPPORT)) {
+> +		adapter->multi_queue = 1;
+> +		adapter->num_rx_queues = min(num_online_cpus(),
+> +					     IBMVETH_DEFAULT_QUEUES);
+> +		netdev_dbg(netdev, "RX multi queue mode enabled: %d queues\n",
+> +			   adapter->num_rx_queues);
+> +	} else {
+> +		adapter->multi_queue = 0;
+> +		adapter->num_rx_queues = IBMVETH_DEFAULT_RX_QUEUES;
+> +	}
+
+[Severity: Medium]
+Now that num_rx_queues can be greater than one here, does
+ibmveth_resume() need updating too?  It still kicks queue 0 only:
+
+ibmveth_resume() {
+	...
+	ibmveth_schedule_rx_queue(adapter, 0);
+	return 0;
+}
+
+The kick exists because the poll routine is what replenishes buffers and
+re-arms the PHYP interrupt via napi_complete_done() ->
+ibmveth_enable_irq().  After a suspend/resume or partition migration,
+queues 1..N-1 would then have no buffers posted and no interrupt
+re-armed until an ifdown/ifup.
+
+> @@ -2558,15 +2848,24 @@ static int ibmveth_probe(struct vio_dev *dev, const struct vio_device_id *id)
 >  
-> +	ibmveth_free_tx_qstats(adapter);
-> +	ibmveth_free_rx_qstats(adapter);
+>  	for (i = 0; i < IBMVETH_NUM_BUFF_POOLS; i++) {
+>  		struct kobject *kobj = &adapter->rx_buff_pool[0][i].kobj;
+> -		int error;
+>  
+>  		ibmveth_init_buffer_pool(&adapter->rx_buff_pool[0][i], i,
+>  					 pool_count[i], pool_size[i],
+>  					 pool_active[i]);
+> -		error = kobject_init_and_add(kobj, &ktype_veth_pool,
+> -					     &dev->dev.kobj, "pool%d", i);
+> -		if (!error)
+> -			kobject_uevent(kobj, KOBJ_ADD);
+> +		rc = kobject_init_and_add(kobj, &ktype_veth_pool,
+> +					  &dev->dev.kobj, "pool%d", i);
+> +		if (rc) {
+> +			dev_err(&dev->dev,
+> +				"failed to create pool%d kobject: %d\n", i, rc);
+> +			/* init_and_add takes a ref even on failure */
+> +			kobject_put(kobj);
+> +			ibmveth_put_pool_kobjs(adapter, pools_ready);
+> +			free_netdev(netdev);
+> +			return rc;
+> +		}
 > +
->  	free_netdev(netdev);
->  	dev_set_drvdata(&dev->dev, NULL);
->  }
+> +		pools_ready++;
+> +		kobject_uevent(kobj, KOBJ_ADD);
+>  	}
 
-[Severity: High]
+[Severity: Medium]
+Is it safe to free_netdev() immediately after ibmveth_put_pool_kobjs()?
+The kobjects are embedded in netdev_priv(netdev), and ktype_veth_pool has
+no release callback:
 
-This is a pre-existing issue, since the cancel_work_sync() placement in
-ibmveth_remove() predates this patch, but the patch adds two new frees
-into exactly that window.
+static struct kobj_type ktype_veth_pool = {
+	.release        = NULL,
+	...
+};
 
-ibmveth_remove() calls cancel_work_sync(&adapter->work) at the top,
-before unregister_netdev(), so the device is still open when the cancel
-returns and softirq context can re-arm the work:
+With CONFIG_DEBUG_KOBJECT_RELEASE=y the final put defers cleanup using a
+work item stored inside the kobject itself:
 
-ibmveth_poll()                     /* on ibmveth_enable_irq() failure */
-  schedule_work(&adapter->work);
+lib/kobject.c:kobject_release() {
+#ifdef CONFIG_DEBUG_KOBJECT_RELEASE
+	unsigned long delay = HZ + HZ * get_random_u32_below(4);
+	...
+	INIT_DELAYED_WORK(&kobj->release, kobject_delayed_cleanup);
+	schedule_delayed_work(&kobj->release, delay);
+#else
+	kobject_cleanup(kobj);
+#endif
+}
 
-ibmveth_replenish_buffer_pool()    /* on an invalid free_map index */
-  schedule_work(&adapter->work);
+free_netdev() then releases that memory with no window, so
+kobject_delayed_cleanup() would read kobj->state_in_sysfs, kobj->parent
+and kobj->name from freed storage.  The same shape applies to the two
+other new put_pool_kobjs() call sites below.
 
-Timeline:
+> @@ -2574,6 +2873,7 @@ static int ibmveth_probe(struct vio_dev *dev, const struct vio_device_id *id)
+>  	if (rc) {
+>  		netdev_dbg(netdev, "failed to set number of tx queues rc=%d\n",
+>  			   rc);
+> +		ibmveth_put_pool_kobjs(adapter, pools_ready);
+>  		free_netdev(netdev);
+>  		return rc;
+>  	}
+> @@ -2590,6 +2890,7 @@ static int ibmveth_probe(struct vio_dev *dev, const struct vio_device_id *id)
+>  
+>  	if (rc) {
+>  		netdev_dbg(netdev, "failed to register netdev rc=%d\n", rc);
+> +		ibmveth_put_pool_kobjs(adapter, pools_ready);
+>  		free_netdev(netdev);
+>  		return rc;
+>  	}
 
-CPU A: cancel_work_sync() returns, queue empty
-CPU B: ibmveth_poll() -> schedule_work(&adapter->work)
-CPU A: unregister_netdev()
-CPU A: ibmveth_free_tx_qstats() / ibmveth_free_rx_qstats()
-CPU A: free_netdev(netdev)
-CPU B: ibmveth_reset() runs container_of(w, struct ibmveth_adapter, work)
-
-Can the worker then dereference the freed adapter and netdev in
-rtnl_lock(); dev_close(adapter->netdev); dev_open(...)?
-
-If it reaches dev_open() -> netif_tx_start_all_queues(), TX restarts with
-tx_qstats == NULL, and the unguarded adapter->tx_qstats[queue_num]
-dereferences added to ibmveth_start_xmit() by this patch would then be a
-NULL dereference. The new "if (adapter->rx_qstats)" hot-path guards do not
-help, since the adapter holding the pointer is itself inside the freed
-netdev.
-
-Would moving the cancel (or disable_work_sync()) to after
-unregister_netdev() address this?
+[ ... ]
 
