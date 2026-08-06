@@ -1,73 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-25510-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25511-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 64066C5AC80
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2026 17:27:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0FF1BC5AC7C
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2026 17:27:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hGDjx0p0dz30B0;
-	Fri, 07 Aug 2026 03:27:17 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786037237;
-	cv=none; b=iI36R5q8pp5aLFGXDkWBHC6hAie/aiQbUeh7862pS2oj+doCLIBi/fH+ISV3hkvs+HZF5UtfO6xcHcW80t8BI9eHEEbfscNH3+XPjraO1VNQ32+NABhoKUzKJyiWBYOu2jXPS1vAs0W3V45zjQVvOWTCyUAotlUoWbVnGI7HDZBQhfkAGAue/OBK5OHoZ6EzfloeEZP83VroAgbGXLZaqlOCltQJVqlKqBvJQWCOi3wglqN+NCWBy2WRpLmazOoL+IGlgtPDqvazZLuyS0Mekp+IzwALTaDUWm2AOI+XXOt6euUWqr9HKB5GhNimDoXa2/wbnTr+1/hv33Lz4yf5Mg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hGDkf43Sfz30C0;
+	Fri, 07 Aug 2026 03:27:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786037274;
+	cv=none; b=GF/h65bV7/u8jeZrD4BNAyJ0RBYZDOG95r7Ag45Udz/hqEbIZ3JlSEz/tFk5vvQcqJvdeuhVoCOezMu49qwW/IRArNmOWQTqp67g0x8wqPJmISqllc/K9PUK9LCzHJWh7na22zBCtEGHJbWZRWWqDGmcupo2OHHv03NtInAGPhlML4H7AZlmaRS6dHrrDKh4CZsG64s6wAzJOxDpUf6dmSfpk24Ubroqc+A6rqBA+ErRlwiTiSwD3Qd16U9Anc1/gSF8RRYOIfPWKa2+xii0YUH1XibJ4JLlP735gyvbUbA4j/WfbPNzQ+sgIK5xcfCZmdFQkjEX8nSTGQjnU8OC0A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786037237; c=relaxed/relaxed;
-	bh=F3Cj1ub40TYuvUCiAC770gYejsumY0schkq8OLkcuS4=;
+	t=1786037274; c=relaxed/relaxed;
+	bh=tlKXwmhFIi6vjCxMPL1AbbqV2Px3o+udTGkDDYwkgQw=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=QZ1m0+9Am2PNAhTIk1dpeAKPdzu/QxctomC0bwC+r1mlh4vFwShUABOJGQS89zntR64ov6ummsUFv5UOth5mwDez40o41nLiXhxhL1U5z1w6r4mMD2LzmGGss8Aaf/EJ7H22vpxkn0udZm3ZdXUCmo6TPpPkuCChTzYtrgAJ9zDqBcRpgEl34uk5MN7Qr8oc33qrcukmlLrIiX8AtNFkPsYBJ1ao8Jit+0XZ541zHlhPsOXJe9Tt3PkHCVjN0Yg/zM8NJrouQ5KZec5nktuMEXnBO9bO7wUdIEccDIgrjhwAdh49eqd76rNify1UAVc2614X5PhE2BjUkM6pUBO2gw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=BOTKU1MO; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 In-Reply-To:Content-Type; b=If8a88Q7pTy11XNC3JMSvP6EeY06knHMlpvOY3DSANpHwAGzUUn6zGZoBmDVhzI91XJrgXq7y6zBY++X/3clmE9QEKSUY8wqRV6SAA8aWa2VXQ4/5OD2VKSDLA+z+HPFC0aA/AopBJuScVY8FcSmAeAo1IjSMGYp3wdNc9xb1OEfOQVGZevQD5N/ZhTKYtSQ0us4RdGhQFrU+0qu2TUDDPRdiZTyQPS4hQEQIeCx71jmMoGxXMOGLhj/PemS1+fJ/Bj/nBgeXrc86W0r81ZoR20BxJQkf69N0NVXdNoTiPmuq2xqcWVx89FoIpbzNNS8SBS8Vzx/WzqQucHb0ATUnQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=HSFk9EBQ; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=BOTKU1MO;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=HSFk9EBQ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hGDjw1jsrz309w
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Aug 2026 03:27:16 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 676HIaGr3193721;
-	Thu, 6 Aug 2026 17:26:58 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hGDkd6CKyz30B0
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Aug 2026 03:27:53 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 676HHv5j3290775;
+	Thu, 6 Aug 2026 17:27:36 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=F3Cj1u
-	b40TYuvUCiAC770gYejsumY0schkq8OLkcuS4=; b=BOTKU1MOrq0kFiwHKJ45Ce
-	CN4bEvzI4LYp9ftzUrlYMHn7r/a2C9D+GByO25j+h2d5FdKMX3xFRZzzFO9NGCJM
-	8CSJ8QKfpLxji2HZxQrhliBuExi9BGcJjsdRtq3jEnBwWPpQoHrd1eicO5h1fyqX
-	gdanCdG6WPe/v9XWOdyh4Jf7FNY5dPcwTwW7HsG9nspXN4+8BpGYvZqAWYmaYQM7
-	ciWLmaCDIA6BYDg1dMQhYqLreF1TG9Ba357Yk2W57fCOvPlPWYfPOyJ/u8xsNgHG
-	L0scgXkv4QbukEjebpMbBkMF8fQ1YLnh///ltX7ADRrJTLRkOXbFSAr3XyPpcG+A
+	:message-id:mime-version:references:subject:to; s=pp1; bh=tlKXwm
+	hFIi6vjCxMPL1AbbqV2Px3o+udTGkDDYwkgQw=; b=HSFk9EBQ3PgeS5zbObw1ud
+	/axaP7vUTV5oh/gXpdXclaALlCS9rv4gG3yK4mid7wtXOqlhUGQYaY2hTNC97lwc
+	H37mqvtcmqJJvUcw+6P8F9C2vPVDm+YyYdTpjfZr36Lh0QnXttytyqc1N+1kGGWP
+	OVaFTqvT6eO6Ni25g3/ZfZbJtwNY3+4RidtuGezoshrl/+YlGnljKdJb3GDVl4FA
+	DJRfU5TLzmmq8vadkTrE2E/+qqp9OJrwMVmvOeOIrqqSLR24xYHYAbhUPilouPQZ
+	0HmtrMlG7AcaVEYKRyy5gcdbrD8gDDAR1GX+NEiZWm4o5KGyd2fIXN0dFp9bDCvQ
 	==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fs77gh1wg-1
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fs8h59krh-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 06 Aug 2026 17:26:57 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 676HQflr013801;
-	Thu, 6 Aug 2026 17:26:57 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4fsugwc9m1-1
+	Thu, 06 Aug 2026 17:27:35 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 676HQjT6002635;
+	Thu, 6 Aug 2026 17:27:34 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fswbgm02m-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 06 Aug 2026 17:26:56 +0000 (GMT)
+	Thu, 06 Aug 2026 17:27:34 +0000 (GMT)
 Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 676HQqXa46989750
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 676HRUV033292722
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 6 Aug 2026 17:26:52 GMT
+	Thu, 6 Aug 2026 17:27:30 GMT
 Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B1E1F2004E;
-	Thu,  6 Aug 2026 17:26:52 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id BCDFF20043;
+	Thu,  6 Aug 2026 17:27:30 +0000 (GMT)
 Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A6B972004D;
-	Thu,  6 Aug 2026 17:26:49 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 381EF2004B;
+	Thu,  6 Aug 2026 17:27:27 +0000 (GMT)
 Received: from [9.124.215.184] (unknown [9.124.215.184])
 	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Thu,  6 Aug 2026 17:26:49 +0000 (GMT)
-Message-ID: <a4d54bca-2fea-4dbd-b5dc-e9229499da47@linux.ibm.com>
-Date: Thu, 6 Aug 2026 22:56:48 +0530
+	Thu,  6 Aug 2026 17:27:26 +0000 (GMT)
+Message-ID: <23512326-2cee-43fb-97de-d1b8628d4d6d@linux.ibm.com>
+Date: Thu, 6 Aug 2026 22:57:25 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,8 +82,8 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v10 7/8] powerpc/bpf: fix buffer overflow in JIT for large
- BPF programs
+Subject: Re: [PATCH v10 8/8] powerpc64/bpf: fix percpu private stack leak on
+ JIT failure
 To: Saket Kumar Bhaskar <skb99@linux.ibm.com>, bpf@vger.kernel.org,
         linuxppc-dev@lists.ozlabs.org
 Cc: maddy@linux.ibm.com, ast@kernel.org, andrii@kernel.org,
@@ -91,199 +91,89 @@ Cc: maddy@linux.ibm.com, ast@kernel.org, andrii@kernel.org,
         linux-kselftest@vger.kernel.org, stable@vger.kernel.org,
         venkat88@linux.ibm.com, yeswanth@linux.ibm.com
 References: <cover.1785906979.git.skb99@linux.ibm.com>
- <45cfcf00a9ca1ec0a06c516fabc73e284d529dc1.1785906979.git.skb99@linux.ibm.com>
+ <cf132f76a7af898af9f9690952067e213430c43f.1785906979.git.skb99@linux.ibm.com>
 Content-Language: en-US
 From: Hari Bathini <hbathini@linux.ibm.com>
-In-Reply-To: <45cfcf00a9ca1ec0a06c516fabc73e284d529dc1.1785906979.git.skb99@linux.ibm.com>
+In-Reply-To: <cf132f76a7af898af9f9690952067e213430c43f.1785906979.git.skb99@linux.ibm.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODA2MDEzNSBTYWx0ZWRfX1R9hNT3LHv39
- BkUr4pfrnSwYsXmsv1+nyGwEf1ttBAWyT0H7WMrqKxJyzBw6R18Upn0Wctt3ahbjQ0QZXexCUF3
- 5hH4vIWLCMvsmEDEuq95UrMgz5QuZ6hVLxNEH7P2+9fLydV7UxQwC7skeO1MO9+IxmIQgG+Qa/l
- a2yQDU/oFIqp1sXWMzqoEp+N3ZXffshsRKHu5kN62Zh7WT9tTG0pu7JHeDgRk8uVEXUCAOow5qY
- Waf93400uo5rZ7RsnN5WZDCivXzLMdRFlNk0GbLDXCV0+M9chgJfS/+H8G+lYzZqdUWdQJ8BM4S
- sAkNQsyiMv6vkJbIBcU3mvJBz7fenb5bXx3G1TtYuCteqKt0IlAeeFdJfFzkIJPWm2g1LwRTGsU
- Bp3ne4VkxYbabqUVdNsLG9uFeXYv+GJODWiznwoIyg07+dZad5y7XnTSeEiEPOB9OHPU08i1eDk
- tcmR7h3BXtpAwWLv9kg==
-X-Authority-Analysis: v=2.4 cv=WIFPmHsR c=1 sm=1 tr=0 ts=6a74c3e1 cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODA2MDEzNSBTYWx0ZWRfX+hQwbQ4df4Wo
+ W9hRuKjJ6E0g7LZDBCTO8+5vudGLhiDGjS0tfTSCTxuhmNIJ0ULqhea/td2CVcM/jB79y61+Kjg
+ 8fedJxFcjNEoQWHvp3PqUONn04HK8TA=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODA2MDEzNSBTYWx0ZWRfXyDRDPBH+wpdD
+ BpW3kfwBhPdbwOdqsnBy5nBDeGDCp6r0170OS8XKKbCakKsMUe+O4SoTCX7TLCtn6XHpAkbHk4H
+ DthBZZPifxuA/tWUACx2G4Hvd1LA6frFDxh7P8DdQvMVo2jssPAH7lQ7ac02HZvDG51RS9MN+/Q
+ UkT8XCoFbfiIqM+OMf3TiW1V7bn21K25v0ZtAwvn39+95ywO1mRaxpwB0H0l+yAy2mX+Ox3uALD
+ XuhYbiljrg0LnJtnwyom7x5Iv8FduBuMiWhm97X4kHOX3cHMFUaOCGPxlsRMiLyw9GRbY0os/e2
+ r0plmfSThCVAPVZkCqdz3JKMtvMrIPaDfO0QyAXfX3H3Ry9VOSvKL0oa4+5X8SyXDTPNxi3sSRr
+ 7LHe5RvaP2ao63d8ZPAIwuLRLM09dxjg1ewsA9zIUvqtz7TiOVoxQfePHH163PX9WsWIlYS8UHR
+ FO5aX4riJVW83tipAKw==
+X-Authority-Analysis: v=2.4 cv=SI1ykuvH c=1 sm=1 tr=0 ts=6a74c407 cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
  a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8
- a=VnNF1IyMAAAA:8 a=et7YBkXB-uCz4WkyIggA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-GUID: BJGwYY2nMybkF2WnJyrWEMxIGbIVg3sE
-X-Proofpoint-ORIG-GUID: BJGwYY2nMybkF2WnJyrWEMxIGbIVg3sE
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODA2MDEzNSBTYWx0ZWRfX2FSvDajHP3XZ
- 5Z9dlljLQAIX+/ph7mb+NVLeViB0ryAdaZ1Vgxm6+Y03nmXYjbPnmnXFYTpau0GfA+4Mm3Xs9Fr
- 0j6pDtLUF5GyvrdyymGoLzdLfgKD8zQ=
+ a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=VwQbUJbxAAAA:8
+ a=VnNF1IyMAAAA:8 a=SG3J2fsUutJ-UIamL3IA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-ORIG-GUID: u0ktx7i_Q8MS4AeZMgzBthGCqPzeri1u
+X-Proofpoint-GUID: u0ktx7i_Q8MS4AeZMgzBthGCqPzeri1u
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-08-06_01,2026-08-06_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 lowpriorityscore=0 priorityscore=1501 phishscore=0 malwarescore=0
- suspectscore=0 clxscore=1015 impostorscore=0 bulkscore=0 adultscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608060135
+ clxscore=1015 bulkscore=0 suspectscore=0 impostorscore=0 spamscore=0
+ phishscore=0 priorityscore=1501 lowpriorityscore=0 adultscore=0
+ malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
+ definitions=main-2608060135
 
 
 
 On 05/08/26 11:37 am, Saket Kumar Bhaskar wrote:
 > From: Abhishek Dubey <adubey@linux.ibm.com>
 > 
-> During size calculation in pass-0, exit_addr is 0 since addrs[fp->len]
-> is not yet populated. bpf_jit_emit_exit_insn() treats a zero exit_addr
-> as in-range and skips bpf_jit_build_epilogue(), so the alternate inline
-> epilogue instructions are not counted in alloclen.
+> The existing conditional statement in bpf_int_jit_compile() frees the
+> percpu private stack at out_addrs only when the image buffer was never
+> allocated.
 > 
-> In later passes, if the real exit_addr falls outside the 32MB branch
-> range, the full inline epilogue is emitted into the already-allocated
-> buffer, writing past its end and corrupting adjacent memory.
+> If bpf_jit_build_body() fails during a code-generation pass, the
+> image buffer has already been allocated, so !image is false and the
+> percpu stack is not freed.
 > 
-> Fix by ensuring exit_addr is non-zero before treating it as in-range,
-> so pass-0 always falls through to bpf_jit_build_epilogue() and
-> conservatively accounts for all epilogue instructions in alloclen.
-> Also range check alt_exit_addr directly in the else-if condition.
+> Because JIT compilation failed, fp->jited remains at 0. The subsequent
+> bpf_jit_free() path only frees priv_stack_ptr when fp->jited is set, so
+> freeing is skipped here too, leaking the percpu allocation.
 > 
-> Since exit_addr handling now falls through to the epilogue, two
-> related issues in bpf_int_jit_compile() must also be addressed:
-> 
-> 1. Reset cgctx.alt_exit_addr before the second size-calculation pass.
->     Without this, a stale alt_exit_addr from the first pass causes the
->     second pass to emit a single jump instead of the full epilogue,
->     undercounting alloclen and reintroducing the overflow.
-> 
-> 2. Recompute addrs[fp->len] at the end of each code-generation pass.
->     The larger pass-0 body can shrink in later passes as out-of-range
->     exits settle into in-range jumps; a stale addrs[fp->len] would
->     leave exit branches targeting past the real (shrunken) epilogue.
-> 
-> Because shrinkage in a later pass can move the epilogue offset, the
-> fixed two-pass loop is no longer sufficient: an exit that was out of
-> range in an earlier pass may fall in range once the epilogue offset
-> shrinks, shrinking the body further and overwriting the start of the
-> epilogue. Convert the code-generation loop to iterate until the
-> program size converges, bounded by CODEGEN_MAX_PASSES, and fail the
-> JIT if it does not converge.
+> Fix implements freeing the private stack whenever fp->jited was not set,
+> i.e. compilation did not succeed, instead of keying off !image. !fp->jited
+> already covers the !image case, since image is only NULL on early-failure
+> paths where fp->jited is likewise 0.
 > 
 > Reported-by: sashiko-bot@kernel.org
-> Closes: https://lore.kernel.org/bpf/20260529015855.364704-2-adubey@linux.ibm.com/T/#mfcb23909d977b949727cca4f59ee56a13fd69b92
-> Fixes: d243b62b7bd3 ("powerpc64/bpf: Add support for bpf trampolines")
+> Closes: https://lore.kernel.org/bpf/20260616135426.A06B71F000E9@smtp.kernel.org
+> Fixes: 156d985123b6 ("powerpc64/bpf: Implement JIT support for private stack")
 > Cc: stable@vger.kernel.org
-> Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
+
+Acked-by: Hari Bathini <hbathini@linux.ibm.com>
+
 > Signed-off-by: Abhishek Dubey <adubey@linux.ibm.com>
 > Signed-off-by: Saket Kumar Bhaskar <skb99@linux.ibm.com>
-> Link: https://lore.kernel.org/bpf/20260529015855.364704-2-adubey@linux.ibm.com/T/#mfcb23909d977b949727cca4f59ee56a13fd69b92
 > Tested-by: Yeswanth Krishna Tellakula <yeswanth@linux.ibm.com>
 > ---
->   arch/powerpc/net/bpf_jit.h      |  7 +++++++
->   arch/powerpc/net/bpf_jit_comp.c | 34 +++++++++++++++++++++++++--------
->   2 files changed, 33 insertions(+), 8 deletions(-)
+>   arch/powerpc/net/bpf_jit_comp.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> diff --git a/arch/powerpc/net/bpf_jit.h b/arch/powerpc/net/bpf_jit.h
-> index af510da12d8e..4da8bde92e1e 100644
-> --- a/arch/powerpc/net/bpf_jit.h
-> +++ b/arch/powerpc/net/bpf_jit.h
-> @@ -14,6 +14,13 @@
->   #include <asm/ppc-opcode.h>
->   #include <linux/build_bug.h>
->   
-> +/*
-> + * We need at least 2 passes for proper code generation, and may need
-> + * additional passes if code size changes between passes.
-> + */
-> +#define CODEGEN_MIN_PASSES    2
-> +#define CODEGEN_MAX_PASSES    3
-> +
->   #ifdef CONFIG_PPC64_ELF_ABI_V1
->   #define FUNCTION_DESCR_SIZE	24
->   #else
 > diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
-> index 8be5ded13a4a..3c20bb13cfd7 100644
+> index 3c20bb13cfd7..825999f8717b 100644
 > --- a/arch/powerpc/net/bpf_jit_comp.c
 > +++ b/arch/powerpc/net/bpf_jit_comp.c
-> @@ -128,11 +128,10 @@ void bpf_jit_build_fentry_stubs(u32 *image, u32 *fimage, struct codegen_context
->   int bpf_jit_emit_exit_insn(u32 *image, u32 *fimage, struct codegen_context *ctx,
->   							int tmp_reg, long exit_addr)
->   {
-> -	if (!exit_addr || is_offset_in_branch_range(exit_addr - (ctx->idx * 4))) {
-> +	if (exit_addr && is_offset_in_branch_range(exit_addr - (long)(ctx->idx * 4))) {
->   		PPC_JMP(exit_addr);
-> -	} else if (ctx->alt_exit_addr) {
-> -		if (WARN_ON(!is_offset_in_branch_range((long)ctx->alt_exit_addr - (ctx->idx * 4))))
-> -			return -1;
-> +	} else if (ctx->alt_exit_addr && is_offset_in_branch_range(
-> +			(long)(ctx->alt_exit_addr) - (long)(ctx->idx * 4))) {
->   		PPC_JMP(ctx->alt_exit_addr);
->   	} else {
->   		ctx->alt_exit_addr = ctx->idx * 4;
-> @@ -303,6 +302,7 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_verifier_env *env, struct bpf_pr
->   	 */
->   	if (cgctx.seen & SEEN_TAILCALL || !is_offset_in_branch_range((long)cgctx.idx * 4)) {
->   		cgctx.idx = 0;
-> +		cgctx.alt_exit_addr = 0;
->   		if (bpf_jit_build_body(fp, NULL, NULL, &cgctx, addrs, 0, false))
->   			goto out_err;
->   	}
-> @@ -335,10 +335,13 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_verifier_env *env, struct bpf_pr
->   	code_base = (u32 *)(image + FUNCTION_DESCR_SIZE);
->   	fcode_base = (u32 *)(fimage + FUNCTION_DESCR_SIZE);
+> @@ -404,7 +404,7 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_verifier_env *env, struct bpf_pr
+>   				(void *)fimage + FUNCTION_DESCR_SIZE);
 >   
-> -	/* Code generation passes 1-2 */
-> -	for (pass = 1; pass < 3; pass++) {
-> +	/* Code generation passes 1-2+, loop until program size converges. */
-> +	for (pass = 1; pass <= CODEGEN_MAX_PASSES; pass++) {
-> +		u32 prev_proglen = proglen;
-> +
->   		/* Now build the prologue, body code & epilogue for real. */
->   		cgctx.idx = 0;
-> +		cgctx.exentry_idx = 0;
->   		cgctx.alt_exit_addr = 0;
->   		bpf_jit_build_prologue(code_base, &cgctx);
->   		if (bpf_jit_build_body(fp, code_base, fcode_base, &cgctx, addrs, pass,
-> @@ -347,11 +350,26 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_verifier_env *env, struct bpf_pr
->   			bpf_jit_binary_pack_free(fhdr, hdr);
->   			goto out_err;
+>   out_addrs:
+> -		if (!image && priv_stack_ptr) {
+> +		if (!fp->jited && priv_stack_ptr) {
+>   			fp->aux->priv_stack_ptr = NULL;
+>   			free_percpu(priv_stack_ptr);
 >   		}
-> +		addrs[fp->len] = cgctx.idx * 4;
->   		bpf_jit_build_epilogue(code_base, fcode_base, &cgctx);
->   
-> +		proglen = cgctx.idx * 4;
-> +
->   		if (bpf_jit_enable > 1)
->   			pr_info("Pass %d: shrink = %d, seen = 0x%x\n", pass,
-> -				proglen - (cgctx.idx * 4), cgctx.seen);
-> +				prev_proglen - proglen, cgctx.seen);
-> +
-> +		/* Check if program size has converged, but ensure minimum passes */
-> +		if (pass >= CODEGEN_MIN_PASSES && proglen == prev_proglen)
-> +			break;
-> +
-> +		if (pass == CODEGEN_MAX_PASSES && proglen != prev_proglen) {
-> +			pr_err("BPF JIT: Program did not converge after %d passes\n",
-> +								CODEGEN_MAX_PASSES);
-> +			bpf_arch_text_copy(&fhdr->size, &hdr->size, sizeof(hdr->size));
-> +			bpf_jit_binary_pack_free(fhdr, hdr);
-> +			goto out_err;
-> +		}
->   	}
->   
->   	if (bpf_jit_enable > 1)
-> @@ -428,7 +446,7 @@ int bpf_add_extable_entry(struct bpf_prog *fp, u32 *image, u32 *fimage, int pass
->   	u32 *fixup;
->   
 
->   	/* Populate extable entries only in the last pass */
-> -	if (pass != 2)
-> +	if (pass >= CODEGEN_MIN_PASSES)
-
-This is wrong. Has to be:
-
-     if (pass < CODEGEN_MIN_PASSES)
-
-
->   		return 0;
->   
->   	if (!fp->aux->extable ||
-
-- Hari
 
