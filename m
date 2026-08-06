@@ -1,91 +1,58 @@
-Return-Path: <linuxppc-dev+bounces-25533-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25534-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C4B19C56208
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2026 21:51:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 78327C5AC67
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2026 22:16:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hGLb13gtkz3brN;
-	Fri, 07 Aug 2026 07:51:41 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.9
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786053101;
-	cv=none; b=MUAp0LPgAAXGCj2mDUG8fkNhqRGR9GH64hHgNUFYxYeecDxg7S9DP6PL/xR31jmIGpj2paT/vTqxd7oiTBI1NSUF5mXyMZXZp7NjtVWW+ETQH5OwbDvDkJYLbJ4DUjqipguZmXrBGrzciC2ijJ++TNABFHYFUr0jUjYsenL91bqLp1HOMZcd39cxfvRHUhUJJ2sj68OHT2tzlHjNOcDIs2ix5FfkzMibI3ll7Bt8NKgPuQMjyxoO3LuSjui7663aPwv/Mqf5dZN+HkENd5dvu4FOfMx2cZguG732VBRDM6dhRTmQqnHMQnmkIppGAKegt3mVaWs7E0qk4oGC9utlSA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hGM765SfNz2xyk;
+	Fri, 07 Aug 2026 08:16:02 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786054562;
+	cv=none; b=fmOD7PStOGAJOD6qj2oICDoxgPQXIGr76AucBymiXnY/9qI2C1zbr1qgVH7AwXZzP6ooCdzl4M8NcQ/HO56oIsvDLEGxDK54YTFypDt1J2je4d8fR1sVbYQnoKNd8GFPcryvEifBSCQ1XL92LWk+HuiIiJAgrLqQQPgUgtYXIHC1Hdvroa9bv9oo8EGQvvvASgnPcB73nM6LQizIoGtY7S3fIx5q/AGb6f1lmEoPZTqQQZEtu0DKxGy1sqZ2NpJxcxyUUlGI7W4ODYJuFDMGc4ya1tQfglgBJsglHE1IDbOLHes1cphwB1afqDCgIhbGJ8Agj+WYdh7gKRXre/W47A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786053101; c=relaxed/relaxed;
-	bh=fdNYUN2NKYN/Z1c6wkVpv11hDVgUadb9eUS5kEIFV7Q=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=n94qteXxZALQWF97hkFzkjUC42I0s4NBFI3MBvB69Eni4v1A2VU5XrG71sFUtZdnkzVA6Lv1ebXE0MIYS9zAKXJq2TGbYH8Efm+5NmSuiUEU3VjPZ3PLsTLMRdsn1rs+aGqqbGV8KopOfmePnU8HXf8Mkba4/QC7ak7GuqUsiX9HAjxeUdhbikln6JNZbKRkQ6gP13B1bSniK37EbcVgBcdgjdsZZodnSnRZXVGIFCZLHmqxbDesAUArINlqjY6x5KO4XAHxNvO2VQMfMkq/qFtBCKM5zUiR/UyjTyMGBQ1xKlI2CwphQ31t19GdkoFINzXfleUnZKWjXIKgaSGCjA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=SsACYIZ5; dkim-atps=neutral; spf=pass (client-ip=198.175.65.9; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	t=1786054562; c=relaxed/relaxed;
+	bh=FAMvGx/Nhy6G1Njdh4xzs4u1ahqLsDIzrreIJAT0dro=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=SzCjmUmLVQS1pAW6PLcPD31ZTQtX2jbkERU50+cg4Xo59BvPH9q6uPUKm/okqczscH1TZ4oZcq0zAc5RqtuUrKEs1xeAi3P7UUrE3ci8DJ13gO0iC6X8OYaofXYmptBN9+mmSSN06Q0ntbG/yeRoPsNbb3BwuRnjjlXkqvDAGHHDMHeB5r/8DPiI5EUPv389w+6PiXRu5A+C15iMSkPDbZCawlhxheeCQhmrTo2c+vnbw+cfuCzk8XsMP7P+rydki8h3TADzM80sgPzI8V1wI8WBewmt1SJI/DqUL61cMu6wwp1RIeBFKYelfG5+vVW62bl4UxZ7hJXaMov/zJ9FqA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=GeHWSf1v; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=linusw@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=SsACYIZ5;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=GeHWSf1v;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.9; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=linusw@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hGLZy2n5Fz3br2
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Aug 2026 07:51:35 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1786053099; x=1817589099;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=7YXZzO7rHKj6qKOZ2jDkYVaRVikc1Wt8k9LrXwdPOkI=;
-  b=SsACYIZ58FlbZYBPKon0xlLk42dQ1hxobIE4rk6JNxiaUop8oUbkzC0j
-   waEPFaG9bEhDa7mdCmgi4KNLQJGRlfniPn/yLNLVsG8eQ7wHrvoiCgCfp
-   QOylu1LQlCoAgb6k8QtkPPi8oWLClkgOpvd3i6W/zdGh+rNgia4HHJww9
-   1a5XnPjbYFI/k3Kw9skwf6icdkG3fouWOhIvAjJGOnZbAqUteddtBCJH1
-   Ondnyk7lrcry7V2yffFCMpDzE37dLYJOCvpLuXgHHZRyP1fPCKJsoEFQI
-   ivKurol72vesfhn/QVpJjGc/TEuCKEUOyh+nJMWk2ib3sWHBBqfXbhVE5
-   g==;
-X-CSE-ConnectionGUID: 3TrUhf6kTcuk7GjLVqDtRQ==
-X-CSE-MsgGUID: 3ILnIEksTaajYU6i9sL/eA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11867"; a="109453870"
-X-IronPort-AV: E=Sophos;i="6.25,209,1779174000"; 
-   d="scan'208";a="109453870"
-Received: from fmviesa002.fm.intel.com ([10.60.135.142])
-  by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Aug 2026 14:51:32 -0700
-X-CSE-ConnectionGUID: AB8YyTXOSCSKko1pPJhpvA==
-X-CSE-MsgGUID: gfPYtjsYTwuf1P+pMEQQWA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,209,1779174000"; 
-   d="scan'208";a="285586569"
-Received: from lkp-server01.sh.intel.com (HELO 6eda058d650d) ([10.239.97.150])
-  by fmviesa002.fm.intel.com with ESMTP; 06 Aug 2026 14:51:25 -0700
-Received: from kbuild by 6eda058d650d with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1ws5zl-00000000GKf-1GLg;
-	Thu, 06 Aug 2026 21:51:21 +0000
-Date: Fri, 7 Aug 2026 05:50:26 +0800
-From: kernel test robot <lkp@intel.com>
-To: Markus Elfring <Markus.Elfring@web.de>, acpica-devel@lists.linux.dev,
-	bpf@vger.kernel.org, coresight@lists.linaro.org,
-	kvm@vger.kernel.org, linux-acpi@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org,
-	linux-kselftest@vger.kernel.org, linux-mm@kvack.org,
-	linux-perf-users@vger.kernel.org, linux-pm@vger.kernel.org,
-	linux-trace-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	mptcp@lists.linux.dev, netdev@vger.kernel.org,
-	platform-driver-x86@vger.kernel.org, virtualization@lists.linux.dev,
-	Adrian Hunter <adrian.hunter@intel.com>,
-	Alex Mastro <amastro@fb.com>, Alex Williamson <alex@shazbot.org>,
-	Alexander Shishkin <alexander.shishkin@linux.intel.com>,
-	Alexei Starovoitov <ast@kernel.org>,
-	Andi Kleen <ak@linux.intel.com>,
-	Andrew Lunn <andrew+netdev@lunn.ch>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Andrii Nakryiko <andrii@kernel.org>,
-	Ankur Arora <ankur.a.arora@oracle.com>,
-	Arnaldo Carvalho de Melo <acme@kernel.org>,
-	Bartosz Golaszewski <brgl@kernel.org>
-Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
-	Linux Memory Management List <linux-mm@kvack.org>
-Subject: Re: [PATCH] tools: Use fputc() calls in some functions
-Message-ID: <202608070547.MRKfa3bH-lkp@intel.com>
-References: <48f2d61f-d468-49b7-881e-f00777db073f@web.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hGM755V1tz2xqM
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Aug 2026 08:16:01 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id AD980600B0
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2026 22:15:58 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 679951F000E9
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2026 22:15:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1786054558;
+	bh=FAMvGx/Nhy6G1Njdh4xzs4u1ahqLsDIzrreIJAT0dro=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=GeHWSf1vK0xP5n0S8ZIBeWf0LS+oc757SLXAXWVcXXpKzrbfZQZvai7CL/uWGaZ2b
+	 mBV0xfYBGcgP6lFuEXMHu1N1bc6xO+br26UKrRea8Rzax6Dmenpo1ZTXl6pdxnuVAI
+	 DGO5ZXI3kmXkffn4ruOxj8gK+bFu/JsRruC+cZhxV6OwXUDq6dqiFzbJog7/Tp6zvh
+	 CgJipaVj+IdAx57az33LrIH8wm4O652zy5RQzdjTuW4g0qzI55FQQse/PWReGt/Jg/
+	 4i6p5vG0bSgIYQPbCkmXduXCBVY8mj7F8DdiwE+Y2RJEQWjmqN4oN530GhD5zWgyJD
+	 V950dhD5tvvcA==
+Received: by mail-lj1-f169.google.com with SMTP id 38308e7fff4ca-39dbe684115so11998941fa.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Aug 2026 15:15:58 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RrE0Q40zPw+iQby1ikruFktDPYXFrJoJ71hehq4UM/UFgGsDJrhxOLwyVX4V7wAgHTqZHP2kYKiuzboHro=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Ywkk1CUUPRR5yF9+xrO0Pj877D5XunnJbWj3IG2Hv9IuPdy/Xhx
+	6z0EOrJ2trJNm4OSX0AwYhh1N09VB9YpbTVmtlNWnxR856VryczKBQqP4KELJIGUelrREIASb+E
+	VyMjTN6WRBIw7ar3KwefXtq7qYa0Njx8=
+X-Received: by 2002:a2e:b8c9:0:b0:39f:a24b:bb25 with SMTP id
+ 38308e7fff4ca-39fd141cecamr10149251fa.4.1786054557256; Thu, 06 Aug 2026
+ 15:15:57 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -99,79 +66,33 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48f2d61f-d468-49b7-881e-f00777db073f@web.de>
+References: <20260803223539.86303-1-rosenp@gmail.com>
+In-Reply-To: <20260803223539.86303-1-rosenp@gmail.com>
+From: Linus Walleij <linusw@kernel.org>
+Date: Fri, 7 Aug 2026 00:15:44 +0200
+X-Gmail-Original-Message-ID: <CAD++jLmKBR=nHQ5O5URC9qmgA25X9=xYWQAx-dyRyUGMG+hKmg@mail.gmail.com>
+X-Gm-Features: AUfX_mx3a3U071bMWwj3yWtcfq77UPIZnA-RY7yvDANb6g6jyCQUBXMBouxKQLg
+Message-ID: <CAD++jLmKBR=nHQ5O5URC9qmgA25X9=xYWQAx-dyRyUGMG+hKmg@mail.gmail.com>
+Subject: Re: [PATCHv2 0/8] gpio: move ppc4xx driver to drivers/gpio and modernize
+To: Rosen Penev <rosenp@gmail.com>
+Cc: linux-gpio@vger.kernel.org, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>, 
+	"open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)" <linuxppc-dev@lists.ozlabs.org>, open list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Hi Markus,
+On Tue, Aug 4, 2026 at 12:35=E2=80=AFAM Rosen Penev <rosenp@gmail.com> wrot=
+e:
 
-kernel test robot noticed the following build errors:
+> This series moves the ppc4xx GPIO driver from arch/powerpc to
+> drivers/gpio, converts it to be a proper platform driver using
+> generic MMIO helpers, drops architecture-specific accessors, and
+> prepares it for module build and COMPILE_TEST.
 
-[auto build test ERROR on perf-tools-next/perf-tools-next]
-[also build test ERROR on tip/perf/core perf-tools/perf-tools linus/master v7.2-rc6 next-20260806]
-[cannot apply to acme/perf/core]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+Excellent patches!
+Reviewed-by: Linus Walleij <linusw@kernel.org>
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Markus-Elfring/tools-Use-fputc-calls-in-some-functions/20260806-165154
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/perf/perf-tools-next.git perf-tools-next
-patch link:    https://lore.kernel.org/r/48f2d61f-d468-49b7-881e-f00777db073f%40web.de
-patch subject: [PATCH] tools: Use fputc() calls in some functions
-config: x86_64-kexec (https://download.01.org/0day-ci/archive/20260807/202608070547.MRKfa3bH-lkp@intel.com/config)
-compiler: clang version 22.1.3 (https://github.com/llvm/llvm-project e9846648fd6183ee6d8cbdb4502213fcf902a211)
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260807/202608070547.MRKfa3bH-lkp@intel.com/reproduce)
-
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202608070547.MRKfa3bH-lkp@intel.com/
-
-All errors (new ones prefixed by >>):
-
->> builtin-check.c:300:8: error: incompatible pointer to integer conversion passing 'FILE *' (aka 'struct _IO_FILE *') to parameter of type 'int' [-Wint-conversion]
-     300 |         fputc(stderr, '\n');
-         |               ^~~~~~
-   /usr/include/stdio.h:155:16: note: expanded from macro 'stderr'
-     155 | #define stderr stderr
-         |                ^~~~~~
-   /usr/include/stdio.h:611:23: note: passing argument to parameter '__c' here
-     611 | extern int fputc (int __c, FILE *__stream) __nonnull ((2));
-         |                       ^
->> builtin-check.c:300:16: error: incompatible integer to pointer conversion passing 'int' to parameter of type 'FILE *' (aka 'struct _IO_FILE *') [-Wint-conversion]
-     300 |         fputc(stderr, '\n');
-         |                       ^~~~
-   /usr/include/stdio.h:611:34: note: passing argument to parameter '__stream' here
-     611 | extern int fputc (int __c, FILE *__stream) __nonnull ((2));
-         |                                  ^
-   2 errors generated.
->> disas.c:540:9: error: incompatible pointer to integer conversion passing 'FILE *' (aka 'struct _IO_FILE *') to parameter of type 'int' [-Wint-conversion]
-     540 |                 fputc(stream, '\n');
-         |                       ^~~~~~
-   /usr/include/stdio.h:611:23: note: passing argument to parameter '__c' here
-     611 | extern int fputc (int __c, FILE *__stream) __nonnull ((2));
-         |                       ^
->> disas.c:540:17: error: incompatible integer to pointer conversion passing 'int' to parameter of type 'FILE *' (aka 'struct _IO_FILE *') [-Wint-conversion]
-     540 |                 fputc(stream, '\n');
-         |                               ^~~~
-   /usr/include/stdio.h:611:34: note: passing argument to parameter '__stream' here
-     611 | extern int fputc (int __c, FILE *__stream) __nonnull ((2));
-         |                                  ^
-   make[5]: *** [tools/build/Makefile.build:96: tools/objtool/builtin-check.o] Error 1
-   2 errors generated.
-   make[5]: *** [tools/build/Makefile.build:95: tools/objtool/disas.o] Error 1
-   make[5]: Target '__build' not remade because of errors.
-   make[4]: *** [Makefile:123: tools/objtool/objtool-in.o] Error 2
-   make[4]: Target 'all' not remade because of errors.
-   make[3]: *** [Makefile:74: objtool] Error 2
-   make[2]: *** [Makefile:1587: tools/objtool] Error 2
-   make[2]: Target 'prepare' not remade because of errors.
-   make[1]: *** [Makefile:248: __sub-make] Error 2
-   make[1]: Target 'prepare' not remade because of errors.
-   make: *** [Makefile:248: __sub-make] Error 2
-   make: Target 'prepare' not remade because of errors.
-
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+Yours,
+Linus Walleij
 
