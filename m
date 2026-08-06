@@ -1,63 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-25492-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25493-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1B41CC56205
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2026 16:17:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 14C05C56208
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2026 16:30:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hGC9h3sssz308X;
-	Fri, 07 Aug 2026 02:17:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hGCSd2DFwz308X;
+	Fri, 07 Aug 2026 02:30:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786033064;
-	cv=none; b=GOjer/ecBZJGMW4r/TnnVK+A9zMOmgIUuNTu9HZc4AgyEYJ41nW3SZgaEJsXWxaaBQyEK6L0C1h7UY0KdRVdqFIoU9jKNpFpmm2053rlAqkB5vkucGFQgT5ZWtEhegR9iyukBBNyu5u15LVZOYXUoF7UzD0LzTjKGHyI01VjskZr+kDvT23PvZT2dXA4scLjU4RCKAZvF0uC3Fq/u9tTKt7ClEtlhsMu8UWpAGuCR17mEoPkNuC/HpY/mEViAAx+jp1kV07XXs3fY372pF/0RgtUhhCCNljsKB6HvEBdf7fwEX13xlfS6RyBl09jE5gaO7xouLu6h3MChJzpUpLbzg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786033841;
+	cv=none; b=PwfguTq82fbGVRLXuPaD25RshwYGb52+p70M2nIxCBk7H4vXMTTfVTiFJFnFx+3RbZ68cF1T2UMa4MhmK/K4cprhmlwxcaLqtCYYrH7OMYn8SARLqJD33BZpc1KrYRjEn6Z0IHXWA3K0OjwskY9TE6epnsS0msApBEeuOnjg7zEt4b7NTQjVhlBWlQMn3xGDiYzQydVwf5YzeW9L3TLjIZ4rBkNiUQIn85Xt3wTaCH4S9LBswKpvqKaun9zW06ITvBAWd+yG/8UUz1OZNiOyzBVgtJOSSkPEYeCS0Esc4oBWj0WeOZC+izQKnqpFWJzXqYMLpYfu7ezD0eK26E5lVA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786033064; c=relaxed/relaxed;
-	bh=hnBlfXJsXaIiSYhJCF745YIsLdwuhGEKGIc9NgDa0/U=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=bynDyh/qD2EBSkLNEPRMNNnvtlZ/a52BJkWgvo5m+OW3dHcLO8XQ/esiUEivM6pxTHaQ59ux0U/lWWFXn0fTV7rYHlVIlo5aubDX5aXLBXRBMRYFwqLY9N84/U371xmH1aNBd+AWLtDjP5FMoUbusbcjLcSxDGGsAJj5Xnkai4qNQ+4cmhrt1f8CLjeOav67BkZlHDQpjS5nLNKjQFMw/QUwHp9Wab0nZprtoCgBxsf6bPituZcjK6BT1a259lay5pY8EaEasqOsxb/Ca7XWvZ9mx4aagsxNpDya8xb4gNpXOZqph7MIcLAjpaof/rBlJY6rUghdh5d3uKMtzVNe6A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=KLPb0sfi; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=namhyung@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1786033841; c=relaxed/relaxed;
+	bh=5N643OcZ6TKjcgSUXv0mk+FEk5LRIN0olw3gyMmc8Ow=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=CNtfZcNoJQy3prXRzgcxHesh/REhPSY4qyK2j9Fklg39FpAQ/ObKdm1BaAvCP2RPm8a+EVl6ByRW73yVwVk1nc8YdtgQbzyYogKZ224Guk3mxFfwVZk3IXOzbVYddNz3sb5jYuGglBRruowPgtzr1nS+cjTVI7zuBL09HWPtgQDgPAlC2oA4uKkvtEqRfCc0DyMZViVvQbYTtR0g8UgTJHv+kyeMRCJEPsHUdB9XMwS6A8ZS8NhgsDHr9don5TxKWiHANJSlwsKaEQ+9cNOUfPVos6oPYyg69dbt2b1QZ1buNspejmww9rcCgXUuAYEehchm4Q5BDlmo8BcXXj12WA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nQk45cNz; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=dlemoal@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=KLPb0sfi;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nQk45cNz;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=namhyung@kernel.org; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=dlemoal@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hGC9g6h6Sz3080
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Aug 2026 02:17:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hGCSc46cgz3080
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Aug 2026 02:30:40 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 81AA14053D;
-	Thu,  6 Aug 2026 16:17:41 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 09C0C1F00AC4;
-	Thu,  6 Aug 2026 16:17:41 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 57DE4419CD;
+	Thu,  6 Aug 2026 16:30:38 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E651C1F000E9;
+	Thu,  6 Aug 2026 16:30:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1786033061;
-	bh=hnBlfXJsXaIiSYhJCF745YIsLdwuhGEKGIc9NgDa0/U=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date;
-	b=KLPb0sfixqc567iKbJnqdy7pW/Ov5eDqPyLz+OcDPQBbvxLSp6l/h/vyqX0HcM5Ag
-	 ga4gETeKZ0dOT7oL2X553ufujIbgnlSGgmzepBDt75VTewmL7h4dxaAyVGFj4g49LX
-	 o9HSQE5IVaYrt3tq/E+4caPJBLsQ5Yy/XAZZpRwyZSIgBWRNjCCA8vfICGY/CypmZN
-	 y7IeHdYfb7bp9OXcpghtqTcldacXorKTzALeFXosoFXi0xFglLVi0+o4e2JUVwzrsh
-	 0FBA0j3ag6N1M0IA66xVPpoQVNH0KK1LB+11j7CArEnhSQ+k8wU9h5FnHkHUlTMzSN
-	 J+qw4taiXJ7Dg==
-From: Namhyung Kim <namhyung@kernel.org>
-To: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com, 
- vmolnaro@redhat.com, mpetlan@redhat.com, tmricht@linux.ibm.com, 
- maddy@linux.ibm.com, irogers@google.com, 
- Tanushree Shah <tshah@linux.ibm.com>
-Cc: linux-perf-users@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
- atrajeev@linux.ibm.com, hbathini@linux.ibm.com, Tejas.Manhas1@ibm.com, 
- Tanushree.Shah@ibm.com
-In-Reply-To: <20260725184953.234759-1-tshah@linux.ibm.com>
-References: <20260725184953.234759-1-tshah@linux.ibm.com>
-Subject: Re: [PATCH v4 0/5] perf trace-event: Fix overflow, loop and
- cleanup bugs
-Message-Id: <178603306100.1984988.9265776445175930441.b4-ty@kernel.org>
-Date: Thu, 06 Aug 2026 09:17:41 -0700
+	s=k20260515; t=1786033838;
+	bh=5N643OcZ6TKjcgSUXv0mk+FEk5LRIN0olw3gyMmc8Ow=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=nQk45cNzbKYZ+bNorwbh3f0Q7tR7Z3+HV5CIQ3MQDGfI4LAP2RUlFD9jGgIkkBFLS
+	 syPZ+NKhtOd/jVqIjQQJ1rOeMRrF/vSeOrIll1V3sPCoxuVLnx4NNbJGd4dFy63Tth
+	 oUx2iStVPA1S/NEyxFaI1HviKL8aEqLkiA1depBAp9Oly8jFut1bHTFcKKtcCkCqLX
+	 LtK8ElpNlzi0pJDm87Uuwi4ioI61DjdflBnBZJJtP+/VTp9hjw8aDu5DPUdmaaHxKX
+	 o6TGURv5D+v37GYyRvMMEMkuB1BHsjJZ2aTblxb4O7NtJL5q2whlGBt3cE8FbckVLf
+	 dHcFy1qHNUdYw==
+Message-ID: <9bd395e3-5df4-4e13-886f-b1afeeb5d4a2@kernel.org>
+Date: Thu, 6 Aug 2026 09:30:34 -0700
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -71,36 +59,47 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2] scsi: core: Drop Scsi_Host.default_lock
+To: John Garry <john.g.garry@oracle.com>,
+ James.Bottomley@HansenPartnership.com, martin.petersen@oracle.com
+Cc: linux-scsi@vger.kernel.org, bvanassche@acm.org,
+ linux-s390@vger.kernel.org, linux-ide@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-usb@vger.kernel.org, John Garry <john.garry@linux.dev>
+References: <20260806113958.3127942-1-john.g.garry@oracle.com>
+From: Damien Le Moal <dlemoal@kernel.org>
+Content-Language: en-US
+Organization: Western Digital Research
+In-Reply-To: <20260806113958.3127942-1-john.g.garry@oracle.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.15-dev-c04d2
 
-On Sun, 26 Jul 2026 00:19:48 +0530, Tanushree Shah wrote:
-> This series fixes five security issues in trace-event-read.c and
-> trace-event.c:
-> 1. Stack buffer overflow in read_string() when a string exceeds
->    BUFSIZ, due to a missing bounds check.
-> 2. Integer truncation when passing 64-bit sizes into do_read() and
->    skip(), which use 'int' parameters, causing uninitialized memory
->    to be dumped and parsers to read out of bounds.
-> 3. Double free / use-after-free in trace_event__cleanup(): it frees
->    t->pevent but never clears the pointer, so calling it twice on
->    the same trace_event touches already-freed memory. Also fixes a
->    related leak in trace_event__init(), which overwrites
->    t->pevent/t->plugin_list without releasing any existing handle
->    if called more than once on the same struct.
-> 4. Heap buffer overflow in read_ftrace_printk() and
->    read_saved_cmdline(): size + 1 can overflow to 0 in malloc(),
->    allocating a tiny buffer while a huge read is still attempted
->    into it.
-> 5. Infinite loop in skip(): it does not check do_read()'s return
->    value, so a crafted size can spin the loop indefinitely.
+On 2026/08/06 4:39, John Garry wrote:
+> From: John Garry <john.garry@linux.dev>
 > 
-> [...]
-Applied to perf-tools-next, thanks!
+> Back in the 2.6.xx days, it was possible to for low-level drivers to set
 
-Best regards,
-Namhyung
+s/to for/for
 
+> the shost lock pointer. That is why there is a default lock and a pointer
+> to the shost lock.
+> 
+> However, support for this has long been removed, so drop
+> Scsi_Host.default_lock and make Scsi_Host.host_lock as the actual lock.
+> 
+> Getting the address of embedded host_lock structure just requires adding
+> a fixed offset value to the shost pointer. However, getting the value of
+> the host_lock pointer requires loading from a fixed offset to the shost
+> pointer. The latter should be very slightly slower, which is relevant as
+> this lock is used a lot throughout the core code and drivers.
+> 
+> Signed-off-by: John Garry <john.g.garry@oracle.com>
+For the ata bits,
 
+Acked-by: Damien Le Moal <dlemoal@kernel.org>
+
+-- 
+Damien Le Moal
+Western Digital Research
 
