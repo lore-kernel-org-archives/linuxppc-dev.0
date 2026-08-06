@@ -1,97 +1,110 @@
-Return-Path: <linuxppc-dev+bounces-25478-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25479-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 864EEC55838
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2026 05:32:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C7BFCC55838
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2026 08:01:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hFwsS71xcz304x;
-	Thu, 06 Aug 2026 15:32:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785994364;
-	cv=none; b=bUeEQhwcyKlJSWDJwiKPuPD/sYHjq1Zu3gLVKZOvVKX1tJmWUevvtY7qSIFemmRDgD5hoiRLrnJ2RHR3RqqFlbss90JPRvpJuwaL1fxBdJrW/4uf5X6CJ0UV2Ks2Dyw8rPF0xBa3f7jrzsp0YBxa4Z+/9z9V0k+bN1wggYRLJH5dubOnfhFj7gxzv7FCJJnO1FFr5crL4oUxMpEbRkyNTvtRO0CWWP8JMofIhAZ2TYniwJSFGpK4terkEzl8dXI5lNhU4MWUWvd7IImCZ0Ng10NMVg4jNZm1YWlODwbtXNEWwvjY9wOJSYQ3qV1X+TNTojOm170yvOeSokQSFxMMSg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hG08p5RBnz304x;
+	Thu, 06 Aug 2026 18:01:14 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=103.168.172.142
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786003274;
+	cv=none; b=JTTyxAChtlOZzfRpl/9xSzGz/JLuHZr6yA1XpSgKy8J1wY2basBObZzojlmeAlxZEQSJGsKzujOPYkTE6XoGtLmJbLUtp5Gmnn4oUUnvTnfEOoy1IZn1TxdRMe1fJGNntZ/r5esnB3n37BazGoy0uGfgZNzNXFRhgs2krUYlDSNOKZOPF7beaJThHkJ5wIdZ/s/V2R6twEHYIo7h4Yjp+GiDm7X/OcMRA1H+E7vgyBO5yO2RawI2xIPYXU8rSFqaYwSvmov9MPYQo8wGAzuneCpXAFdjs+uTwgow/s3jorEQ+aw40gDbs5K4exEgm3ferdR9chMenF8pmNAOAyUjIA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785994364; c=relaxed/relaxed;
-	bh=5N50+m2zoR8QgMtQJOG5cgx3HnsvWgqZ/qJQqqpOCcQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=HBLHJg/FEc0HJFvhlw10iWvJZBIaMvVgh0IyyWa3haG56YcxWa6wQQV75oe7uDmCInzKMf0A60LHTXCaMfSC+8HAqS23u9uHaKUK2N5QMlqKLMdis5jH4rDCMPZA1AbYfzZuYGAfW6vpf+fhbzi67ngVSFgqD2AYHP6UU6Qv7oW2nlhzUFpHNLP0/IhJDKyuQMnraRoD00ukX2DZSkPOERUSklHHgVvLjcLf+9Sxn1aI9pdMs+vjoMhe0TuRoMuQ+BsDuVQ4lC2kq3PnepYx3N8M66i/do/7mUtHKVP0eg7aYAz75fbuhCDNkynFL7qj+lNe/wM8zpnBQyU67AeLIw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=UceCzOuO; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1786003274; c=relaxed/relaxed;
+	bh=LD9ImqlIwH6oeN7pmBkN0TXKzq62mCPW1c400six0EM=;
+	h=Date:Message-Id:To:Cc:Subject:From:In-Reply-To:References:
+	 Mime-Version:Content-Type; b=SRqMBiRoGV1jNE4VjEiTEdLfWp6xW/1IeQUkoYPRVFoUm/RdPyCOxPL74iAGlhZSCl+f4sQNlrzjzDijZg9d9sMQSkqEjQoVhI3ryJTh6MddVCaDt7a0O1t7QfgRhF3VrGuibsimaq6FUWwTrBbwYA1rPE89eU1X26Y1lTAat8k72332N3lp97y84PDeKdS5gimEj5aPqg+yEpL+mOPHSGNB0Ch/wiYYqW/bNt8SKwz44udm32IEdZDhCzRElYiSP1qIEnH/YYN6KKgu3tm73XNK5/l1KONZt/Da1uvu0GRnkd47rWa4447p8uoZsU6/1tUhACNzNEUTvqyOmQZeQQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=flapping.org; dkim=pass (2048-bit key; unprotected) header.d=flapping.org header.i=@flapping.org header.a=rsa-sha256 header.s=fm1 header.b=egPJEGkj; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=ZWijIyTZ; dkim-atps=neutral; spf=pass (client-ip=103.168.172.142; helo=flow-a7-smtp.messagingengine.com; envelope-from=tomo@flapping.org; receiver=lists.ozlabs.org) smtp.mailfrom=flapping.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=flapping.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=UceCzOuO;
+	dkim=pass (2048-bit key; unprotected) header.d=flapping.org header.i=@flapping.org header.a=rsa-sha256 header.s=fm1 header.b=egPJEGkj;
+	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=ZWijIyTZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flapping.org (client-ip=103.168.172.142; helo=flow-a7-smtp.messagingengine.com; envelope-from=tomo@flapping.org; receiver=lists.ozlabs.org)
+X-Greylist: delayed 448 seconds by postgrey-1.37 at boromir; Thu, 06 Aug 2026 18:01:11 AEST
+Received: from flow-a7-smtp.messagingengine.com (flow-a7-smtp.messagingengine.com [103.168.172.142])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hFwsS0FP3z2yh4
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Aug 2026 15:32:43 +1000 (AEST)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 675NlmYv1066244;
-	Thu, 6 Aug 2026 05:32:34 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=5N50+m
-	2zoR8QgMtQJOG5cgx3HnsvWgqZ/qJQqqpOCcQ=; b=UceCzOuOikzEia2zKThPuF
-	RIijKjycECVMsK4wz0aTOifpYcQX0y7FP7RLYqJtfVNRlvK+W54qnjecmDuQRG97
-	Td6xrhkIZEp8UtfLJBIswjgqvMP+PSQrWY6SU37sPYvcbWHqFwTGrtSRQl1PEXDG
-	f6EpyzJWDZWMhdz2XBiwYDRHOuYh2SKq9cNvwXQWQxBXwX5eleVf+8UjItlaH94g
-	agqzpyuMHkzurAKcdLZiDu4gyxrYJHn/RS9n5+cmQB0yNp4Ep2HsbKgKx6iVuKeu
-	2mWsozWDpLQ6wJu1/W/14G1XGPszYvmJUjDlfomcKfI42JZpYw8OUDkLTFaqziow
-	==
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fs8a46hfv-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 06 Aug 2026 05:32:33 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6765QRCF019794;
-	Thu, 6 Aug 2026 05:32:32 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4fsvmhhr1c-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 06 Aug 2026 05:32:32 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6765WSDN34669016
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 6 Aug 2026 05:32:28 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 4460C20043;
-	Thu,  6 Aug 2026 05:32:28 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 754DE20040;
-	Thu,  6 Aug 2026 05:32:25 +0000 (GMT)
-Received: from fedora (unknown [9.5.7.39])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Thu,  6 Aug 2026 05:32:25 +0000 (GMT)
-Date: Thu, 6 Aug 2026 11:03:13 +0530
-From: Amit Machhiwal <amachhiw@linux.ibm.com>
-To: Ritesh Harjani <ritesh.list@gmail.com>
-Cc: Amit Machhiwal <amachhiw@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Vaibhav Jain <vaibhav@linux.ibm.com>,
-        Anushree Mathur <anushree.mathur@linux.ibm.com>,
-        Paolo Bonzini <pbonzini@redhat.com>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        Jonathan Corbet <corbet@lwn.net>,
-        Shuah Khan <skhan@linuxfoundation.org>, kvm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org
-Subject: Re: [PATCH v6 0/4] KVM: PPC: Expose CPU compatibility modes for
- nested guests
-Message-ID: <20260806104222.7e435b28-8d-amachhiw@linux.ibm.com>
-Mail-Followup-To: Ritesh Harjani <ritesh.list@gmail.com>, 
-	linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Vaibhav Jain <vaibhav@linux.ibm.com>, Anushree Mathur <anushree.mathur@linux.ibm.com>, 
-	Paolo Bonzini <pbonzini@redhat.com>, Nicholas Piggin <npiggin@gmail.com>, 
-	Michael Ellerman <mpe@ellerman.id.au>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
-	Jonathan Corbet <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>, kvm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org
-References: <20260804180705.59160-1-amachhiw@linux.ibm.com>
- <tsp8l8cw.ritesh.list@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hG08l4yyXz2ygL
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Aug 2026 18:01:11 +1000 (AEST)
+Received: from phl-compute-01.internal (phl-compute-01.internal [10.202.2.41])
+	by mailflow.phl.internal (Postfix) with ESMTP id 63DA6138020C;
+	Thu,  6 Aug 2026 03:53:38 -0400 (EDT)
+Received: from phl-frontend-04 ([10.202.2.163])
+  by phl-compute-01.internal (MEProxy); Thu, 06 Aug 2026 03:53:38 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=flapping.org; h=
+	cc:cc:content-transfer-encoding:content-type:content-type:date
+	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to; s=fm1; t=1786002818;
+	 x=1786006418; bh=LD9ImqlIwH6oeN7pmBkN0TXKzq62mCPW1c400six0EM=; b=
+	egPJEGkjiHQFhksFyQs6njKum2R6mjsKp77i7wKapRMZytD/ZMCUf6skygPzuCOP
+	+islbK1gtxlkCIKS1mZg/6zOJ/zebc+DTvbH46mCB5YJouplVK503uRqq7W15I/o
+	3TgO48JjjlnSaL0YcH3UoKNGRkmzLcgsbYDPbBjfmF3WeJIw/rw80wvazrsz+/xt
+	391na+sZX7WxAZbeMVMhRnRvtrYYlaS0D7OwFckvyIv9wUAoENYDq5bCm9u8zkN5
+	yFhvIWjhHXh0imufYp/Ou/xYEKENAl9Y2L4lnioa9/u74xxtsvMocdSw6yBs84aB
+	h9ZpKmCJYt68sgE6nXGuhA==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:content-type:date:date:feedback-id:feedback-id
+	:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to:x-me-proxy
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; t=1786002818; x=
+	1786006418; bh=LD9ImqlIwH6oeN7pmBkN0TXKzq62mCPW1c400six0EM=; b=Z
+	WijIyTZVqCgYF8yEJsG9No+5i1j/eLJ4jHZnEiVZUztXSOYRW2kpLiPpXctlzrvd
+	QjG9lS1udZ0s4VwyJATEGHIBpwQ4mKEokFZi1POoTAmESpd/wCo3QvyLOmOXu30G
+	S3VwfLAy42HT4otDBGdCh3X1sNbrdsmjC8diS/7Un0/yOcAVQQF6xGzp4hyUcy0P
+	MO+gPOU/YN+Q5kYAo2yzwJTHhUvW23qiduRIL0hBmulv6qMpYAuGFqou/OLY5csf
+	4+14uuM71HYvnsDayhIGyhIFkrAoyAcKOQgNVtWRtU4SfkjReU238fTBr+9pZLRu
+	zbzv0mRvDGOKV/lPWHp8w==
+X-ME-Sender: <xms:gD10atsuyjsKUGFggi9pHLdlrO9l2L-0Xw54vpyijCZgrUKv_iHXFw>
+    <xme:gD10ariDFCROd4tfT0-1IOZLsUSGolX0CkJcm4k8MdJ76gYxKX9HonMn-mV0YgGXg
+    aqRBIW0S4wsA85c4J55d0lyti7662mELieircjuYxos5GagAo8_PPwb>
+X-ME-Received: <xmr:gD10atyq2bOYKHFLYZ0HNTKNtS7Y7QbfYmuS7F1kTqEkJfQclF0Pk7FT0CZqjxbJ42w0JQOjPZH-qAfd-uQ3H2iU>
+X-ME-Proxy-Cause: dmFkZTFbzfkfUcr/Inba17tKt3JJ3fMrX1N2IUQX31//l4d7tbGDIvsDLekSwrzIspHZhe
+    o+VTNd8j7u+Iie4/vsjYzHSLs0OWqSktFzQQhv8+NgGQIag2veIThRlj6+GB4jPUZxbvRv
+    7OcvW9OzYxQuUr1i11mPCdpCcP7JRmOC0AJubMcCqZzfBmd1SK+vQp2JnmKLkWhMihSU6c
+    fuDLRKKIqB0TdhjglBxB6X+eg2BrSYejmwu+bPOgNY8XxzIAOT7HNAjxMRX3DU+DWoXY+3
+    iqGQXmHWNriOrJNH10CsO0qMQAf0vVKqv3pavtuHNTRXYCSn7ZXnVkmSYj7XLAxVtRClJ5
+    uMxrtDYXoXwt9dN3I6Zq2DXu0tisA4QU9oyBVOhL/MGaUvPN7ENRu1ubiEqgWezdnSFkGd
+    R+WSh6dUTjILfP/1fC8AHH9gAYn1ifQx8fttklkGOY9PvdOInMy9A2QWtcBTVoKuq4ZJ87
+    jGRPUzoTJn3s/Z85CJAyst7sBa7zZyubtPJDRIXnzVy4moi33ZTVd73Yow/k2k93qDJoPn
+    ujLeIUX8ykSirlln1YstkTapUdKLSL+ZlQz92GTjCPH3yT2ke++BySC86l/RQ8xt9yHtpq
+    HuQ5KAsbuce3wRDzwJuS1P1E6hwRg/AlR2acSfHVRXzCEhfs1zUl4PXcH5Jg
+X-ME-Proxy: <xmx:gD10ah4JLuOZHllR0vjlTCUtzn-Mc5_uuX65vuzFNNPm_EyBpFehJg>
+    <xmx:gD10avdsAz76rOQyAp-33iSXydJPZZ1b0Zgq1DMJi_-_OwSSQaVdcA>
+    <xmx:gD10appd7HS1t5mf-1wS6rEoYY6l6WqnOPKEdonqQWVh2-JLyYqbiA>
+    <xmx:gD10aj1L7da9tdvfPV6TtI5ekFlRIJ2Z_J0Ytzk0_II-t1ZwjfeLag>
+    <xmx:gT10agEzz7xbZ8Ik0es4bQ2PmLSZWo8Vxh-Sz_rMo4P0HwUZ3ojOOAA8>
+Feedback-ID: i51fe4b43:Fastmail
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Thu,
+ 6 Aug 2026 03:53:28 -0400 (EDT)
+Date: Thu, 06 Aug 2026 16:53:26 +0900 (JST)
+Message-Id: <20260806.165326.1361973663671179487.tomo@flapping.org>
+To: chleroy@kernel.org
+Cc: tomo@flapping.org, linkmauve@linkmauve.fr, maddy@linux.ibm.com,
+ mpe@ellerman.id.au, npiggin@gmail.com, peterz@infradead.org,
+ jpoimboe@kernel.org, jbaron@akamai.com, aliceryhl@google.com,
+ rostedt@goodmis.org, ardb@kernel.org, ojeda@kernel.org, boqun@kernel.org,
+ gary@garyguo.net, bjorn3_gh@protonmail.com, lossin@kernel.org,
+ a.hindborg@kernel.org, tmgross@umich.edu, dakr@kernel.org,
+ daniel.almeida@collabora.com, tamird@kernel.org, acourbot@nvidia.com,
+ work@onurozkan.dev, nathan@kernel.org, ndesaulniers@google.com,
+ morbo@google.com, justinstitt@google.com, fujita.tomonori@gmail.com,
+ joelagnelf@nvidia.com, gregkh@linuxfoundation.org, prafulrai522@gmail.com,
+ nsc@kernel.org, japo@linux.ibm.com, lina+kernel@asahilina.net,
+ j@jannau.net, airlied@gmail.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, rust-for-linux@vger.kernel.org,
+ llvm@lists.linux.dev, mkchauras@gmail.com
+Subject: Re: [PATCH V17 0/7] Rust Support for powerpc
+From: FUJITA Tomonori <tomo@flapping.org>
+In-Reply-To: <d347de18-10ee-41e9-a672-b08f70bc88e4@kernel.org>
+References: <anG67Q6Y59kDqh-c@desktop>
+	<20260804.224035.269658578200153488.tomo@flapping.org>
+	<d347de18-10ee-41e9-a672-b08f70bc88e4@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -104,120 +117,222 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <tsp8l8cw.ritesh.list@gmail.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=E6P9Y6dl c=1 sm=1 tr=0 ts=6a741c71 cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
- a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=VnNF1IyMAAAA:8
- a=OftZMxRC31MPY7VeiR4A:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-ORIG-GUID: MyyNFwdmT0f70Rm3IuUqkBLKBF-dUUra
-X-Proofpoint-GUID: V9VhITl5Ho-nq0FPK_2YHD01ieiGFWbc
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODA2MDAzOCBTYWx0ZWRfX0YQHMt1bIBoh
- 7cr9Mw6GGpFzDfzaF9FWn13Y6OybGzq3MoOHMnQjMnpkCmQ7zExmrjuA+ic4+iOVJFR0PwBHnxi
- 7nr3W2Ndvy/gvk/WeFkf3CpkZXeOh/c=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODA2MDAzOCBTYWx0ZWRfX6pQzU9SilWre
- ymh6JSiv75Y5qMSfpS5k4+vjtjJAQ7/M5w47CoU8UvTpusnvjznoIq9OTfHaPoslUquk5CCl78D
- iCNlM820dnxgLpjuBEwdCSIYX0gWCQDM0BdrR+5qHIWHOYMhbgMscaVcvQQUs3vrvwh+lqhvA9C
- EeRV/A7C8lWeZGhlWQpR00AXB5KQgI0Nq7yK2RpZDduR8FCG6Ez3gxpfYwy0pNg32X+wfmymGlc
- EIM6L45pxXFHhuNi4w0GpbKWhKuBkq1tO3r6Sg5XaBs7Ok3VHjHSIkSQE+N99NBUm7FlE/Oe+uY
- 861m//ValZ2qd+9EiTHyA7XoKj5UwH4G5q2aQjAz5S+Q8VSjCgOffj996cxfHrb+TLKWrVK6aHX
- YSSn222wkND45yrVZWiUgVcYXrG6j6aT/WzXG+bS9fkQdyHDOl6IwAJT2/PeKnadQ+uZwNPa4sP
- Q1GYwJdyPJtt4u6sTWw==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-08-05_06,2026-08-05_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 clxscore=1015 lowpriorityscore=0 priorityscore=1501
- suspectscore=0 adultscore=0 spamscore=0 malwarescore=0 impostorscore=0
- phishscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
- definitions=main-2608060038
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Hi Ritesh,
+On Wed, 5 Aug 2026 14:56:41 +0200
+"Christophe Leroy (CS GROUP)" <chleroy@kernel.org> wrote:
 
-Thanks for taking a look. Please find my response inline.
+> =
 
-On 2026/08/06 12:09 AM, Ritesh Harjani wrote:
-> 
-> Hi Amit,
-> 
-> Amit Machhiwal <amachhiw@linux.ibm.com> writes:
-> 
-> > On POWER systems, newer processor generations can operate in compatibility
-> > modes corresponding to earlier generations (e.g., a Power11 system running
-> > in Power10 compatibility mode). In such cases, the effective CPU level
-> > exposed to guests differs from the physical processor generation.
-> >
-> > This creates a problem for nested virtualization. When booting a nested KVM
-> > guest (L2) inside a host KVM guest (L1) running in a compatibility mode,
-> > userspace (e.g., QEMU) may derive the CPU model from the raw hardware PVR
-> > and attempt to configure the nested guest accordingly. However, the L1
-> > partition is constrained by the compatibility level negotiated with the
-> > hypervisor (L0), and requests exceeding that level are rejected, leading to
-> > guest boot failures such as:
-> >
-> >   KVM-NESTEDv2: couldn't set guest wide elements
-> >
-> > This series provides a mechanism for userspace to query the effective CPU
-> > compatibility modes supported by the host, so it can select an appropriate
-> > CPU model for nested guests.
-> >
-> > To achieve this, the series introduces a new KVM capability and ioctl
-> > (KVM_CAP_PPC_COMPAT_CAPS / KVM_PPC_GET_COMPAT_CAPS) that expose the
-> > compatibility modes supported by the host.
-> >
-> 
-> Sorry, but I am somehow not convinced on whether we need all of this
-> machinary just to get these 3 bits of information, which we are
-> returning today.
-> 
-> Since KVM_CHECK_EXTENSION can already return an int, so why can't we use
-> KVM_CAP_PPC_COMPAT_CAPS itself and return the bitmap of supported compat
-> modes to the user?
-> Say if the cap is not supported, we can return 0, otherwise we can
-> return the bitmap of supported compat modes. This will easily allow us
-> to use 31-bits which as I see would be hardly a problem in the near
-> future. In the future if it grows - we can always use KVM_CAP_PPC_COMPAT_CAPS2.
-> 
-> This should reduce the code complexity both in the kernel and
-> userspace and we don't even need a new ioctl then.
+> =
 
-Thanks for the suggestion. I considered this approach but would like to
-go with a dedicated ioctl for the following reasons:
+> Le 04/08/2026 =E0 15:40, FUJITA Tomonori a =E9crit=A0:
+>> [Vous ne recevez pas souvent de courriers de
+>> tomo@flapping.org. D?couvrez pourquoi ceci est important ?
+>> https://aka.ms/LearnAboutSenderIdentification ]
+>> On Tue, 4 Aug 2026 12:11:57 +0200
+>> Link Mauve <linkmauve@linkmauve.fr> wrote:
+>> =
 
-1. Intended semantics: The KVM API documentation states:
+>>> Hi,
+>>>
+>>> On Mon, Aug 03, 2026 at 12:27:13PM +0530, Madhavan Srinivasan wrote=
+:
+>>>> On Wed, 08 Jul 2026 13:54:47 +0530, Mukesh Kumar Chaurasiya (IBM)
+>>>> wrote:
+>>>>> Enable experimental rust support for ppc64le and ppc32be. The pat=
+ch
+>>>>> for
+>>>>> ppc32 has been provided by Link Mauve[1] and ppc64le support[2] h=
+as
+>>>>> been
+>>>>> merged over it. ppc32 needs some toolchain fixes mentioned in the=
 
-   ..kvm defines extension identifiers and a facility to query
-   whether a particular extension identifier is available.  If it is, a
-   set of ioctls is available for application use.
+>>>>> patch
+>>>>> `rust: Add PowerPC support` and the discussion for that is done
+>>>>> here[1].
+>>>>>
+>>>>> This has been tested on
+>>>>> - powernv9 hardware
+>>>>> - pseries P11 hardware
+>>>>> - pseries(9, 10) qemu
+>>>>> - powernv(9, 10) qemu
+>>>>> - rustdoc on x86 and powerpc64le
+>>>>> - rusttest on x86 and powerpc64le
+>>>>>
+>>>>> [...]
+>>>>
+>>>> Applied to powerpc/next.
+>>>>
+>>>> [1/7] rust: Fix "multiple candidates for rmeta dependency core" er=
+ror
+>>>>        https://eur01.safelinks.protection.outlook.com/?url=3Dhttps=
+%3A%2F%2Fgit.kernel.org%2Fpowerpc%2Fc%2F00cdfd072c709c608606461d7d44d46=
+13119bfa9&data=3D05%7C02%7Cchristophe.leroy%40csgroup.eu%7C34e4deafcc1d=
+41c1738a08def22e01b0%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C63921=
+4476617198585%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwL=
+jAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7=
+C&sdata=3D4qQe1qS37TGv6%2Bf9H56kWVqMYSAHsWiDx5oz8WHZ8%2Bg%3D&reserved=3D=
+0
+>>>> [2/7] dma-resv: Fix undefined symbol when CONFIG_DMA_SHARED_BUFFER=
+ is
+>>>> disabled
+>>>>        https://eur01.safelinks.protection.outlook.com/?url=3Dhttps=
+%3A%2F%2Fgit.kernel.org%2Fpowerpc%2Fc%2Fbe809b60cbb61aab96179f44ac36702=
+42ae72996&data=3D05%7C02%7Cchristophe.leroy%40csgroup.eu%7C34e4deafcc1d=
+41c1738a08def22e01b0%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C63921=
+4476617235654%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwL=
+jAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7=
+C&sdata=3Dcw2l64D3ah%2FM3pxFmvMpUnNmcqcSvN3RFoDiYAIR76g%3D&reserved=3D0=
 
-   [...]
+>>>> [3/7] powerpc/jump_label: adjust inline asm to be consistent
+>>>>        https://eur01.safelinks.protection.outlook.com/?url=3Dhttps=
+%3A%2F%2Fgit.kernel.org%2Fpowerpc%2Fc%2F13244c0a40139fe66c4c5c5655f4d73=
+2a6002957&data=3D05%7C02%7Cchristophe.leroy%40csgroup.eu%7C34e4deafcc1d=
+41c1738a08def22e01b0%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C63921=
+4476617259593%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwL=
+jAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7=
+C&sdata=3DxNvcH9k5RA5ktJupn90VdDuwx4YBvezuDcapqKlYfjs%3D&reserved=3D0
+>>>> [4/7] rust/powerpc: Set min rustc version for powerpc
+>>>>        https://eur01.safelinks.protection.outlook.com/?url=3Dhttps=
+%3A%2F%2Fgit.kernel.org%2Fpowerpc%2Fc%2Fe299147cdc8e19c6421a6b7863dc82a=
+35b09d967&data=3D05%7C02%7Cchristophe.leroy%40csgroup.eu%7C34e4deafcc1d=
+41c1738a08def22e01b0%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C63921=
+4476617280683%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwL=
+jAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7=
+C&sdata=3DuNZA7AulROQGv%2B2l4M%2FqC5W4ncWktRoSRRp8eaF%2FcCY%3D&reserved=
+=3D0
+>>>> [5/7] rust: Make __udivdi3() and __umoddi3() panic
+>>>>        https://eur01.safelinks.protection.outlook.com/?url=3Dhttps=
+%3A%2F%2Fgit.kernel.org%2Fpowerpc%2Fc%2Fc93c194e4ee71a734986fd99a8b1ec9=
+fbb7a9b8b&data=3D05%7C02%7Cchristophe.leroy%40csgroup.eu%7C34e4deafcc1d=
+41c1738a08def22e01b0%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C63921=
+4476617303292%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwL=
+jAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7=
+C&sdata=3DznZPWXM7k5FpRlekIyUN1bHzmMyk1YESR56WsiwBuMA%3D&reserved=3D0
+>>>> [6/7] rust: Add PowerPC support
+>>>>        https://eur01.safelinks.protection.outlook.com/?url=3Dhttps=
+%3A%2F%2Fgit.kernel.org%2Fpowerpc%2Fc%2F73b741adb264967093ef4eb59905618=
+a7e0d0de0&data=3D05%7C02%7Cchristophe.leroy%40csgroup.eu%7C34e4deafcc1d=
+41c1738a08def22e01b0%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C63921=
+4476617326590%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwL=
+jAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7=
+C&sdata=3DaFHGhd7RX%2Ft5%2BMjqt6pBmIKPKAKmFEQndKP1F%2F8HSxk%3D&reserved=
+=3D0
+>>>> [7/7] powerpc: Enable Rust for ppc64le
+>>>>        https://eur01.safelinks.protection.outlook.com/?url=3Dhttps=
+%3A%2F%2Fgit.kernel.org%2Fpowerpc%2Fc%2Fbc87cbdb952e9223616b839d64bdb47=
+23aa2ed1d&data=3D05%7C02%7Cchristophe.leroy%40csgroup.eu%7C34e4deafcc1d=
+41c1738a08def22e01b0%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C63921=
+4476617346994%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwL=
+jAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7=
+C&sdata=3DITEFv9C1CSUVLqJNe5Y8sStUE3KoOVYVzSzbP0qis74%3D&reserved=3D0
+>>>>
+>>>> cheers
+>>>>
+>>>
+>>> I just tested those again in linux-next, with the Wii support serie=
+s
+>>> on
+>>> top, but now the kernel fails to build due to ARCH_WARN_ASM and
+>>> ARCH_WARN_REACHABLE not being defined on PowerPC:
+>>> ```
+>>> error: no rules expected `ARCH_WARN_ASM`
+>>>     --> /home/linkmauve/dev/linux/wii/rust/kernel/generated_arch_wa=
+rn_asm.rs:1:28
+>>>      |
+>>>    1 | ::kernel::concat_literals!(ARCH_WARN_ASM("{file}", "{line}",=
 
-   KVM defines many constants of the form KVM_CAP_*, each corresponding
-   to a set of functionality provided by one or more ioctls. Availability
-   of these capabilities can be checked with KVM_CHECK_EXTENSION.
+>>>    "{flags}", "{size}"))
+>>>      |                            ^^^^^^^^^^^^^ no rules expected t=
+his token in macro call
+>>>      |
+>>>     ::: ../rust/kernel/lib.rs:279:1
+>>>      |
+>>> 279 | macro_rules! concat_literals {
+>>>      | ---------------------------- when calling this macro
+>>>      |
+>>>      =3D note: while trying to match sequence start
+>>>
+>>> error: no rules expected `ARCH_WARN_REACHABLE`
+>>>     --> /home/linkmauve/dev/linux/wii/rust/kernel/generated_arch_re=
+achable_asm.rs:1:28
+>>>      |
+>>>    1 | ::kernel::concat_literals!(ARCH_WARN_REACHABLE)
+>>>      |                            ^^^^^^^^^^^^^^^^^^^ no rules expe=
+cted this token in macro call
+>>>      |
+>>>     ::: ../rust/kernel/lib.rs:279:1
+>>>      |
+>>> 279 | macro_rules! concat_literals {
+>>>      | ---------------------------- when calling this macro
+>>>      |
+>>>      =3D note: while trying to match sequence start
+>>>
+>>> error: aborting due to 2 previous errors
+>>> ```
+>>>
+>>> This is in addition to the bindings::kvfree_call_rcu() call, but th=
+at
+>>> one is already being handled in a different thread.
+>> Looks like powerpc needs something like the followings:
+>> diff --git a/arch/powerpc/include/asm/bug.h
+>> b/arch/powerpc/include/asm/bug.h
+>> index 0db48977c70c..8aba39e0cf26 100644
+>> --- a/arch/powerpc/include/asm/bug.h
+>> +++ b/arch/powerpc/include/asm/bug.h
+>> @@ -32,34 +32,38 @@
+>>   #endif /* verbose */
+>>   #else /* !__ASSEMBLER__ */
+>> -/* _EMIT_BUG_ENTRY expects args %0,%1,%2,%3 to be FILE, LINE, flags=
 
-   The intended role of KVM_CAP_* is to signal ioctl availability, not
-   to serve as a data retrieval mechanism itself.
+>> -and
+>> -   sizeof(struct bug_entry), respectively */
+>>   #ifdef CONFIG_DEBUG_BUGVERBOSE
+>> -#define _EMIT_BUG_ENTRY                                \
+>> +#define _EMIT_BUG_ENTRY(file, line, flags)     \
+>>          ".section __bug_table,\"aw\"\n"         \
+>>          "2:     .4byte 1b - .\n"                \
+>> -       "       .4byte %0 - .\n"                \
+>> -       "       .short %1, %2\n"                \
+>> -       ".org 2b+%3\n"                          \
+>> -       ".previous\n"
+>> +       "       .4byte " file " - .\n"          \
+>> +       "       .short " line ", " flags "\n"
+>>   #else
+>> -#define _EMIT_BUG_ENTRY                                \
+>> +#define _EMIT_BUG_ENTRY(file, line, flags)     \
+>>          ".section __bug_table,\"aw\"\n"         \
+>>          "2:     .4byte 1b - .\n"                \
+>> -       "       .short %2\n"                    \
+>> -       ".org 2b+%3\n"                          \
+>> -       ".previous\n"
+>> +       "       .short " flags "\n"
+>>   #endif
+>>   #define BUG_ENTRY(cond_str, insn, flags, ...)          \
+>>          __asm__ __volatile__(                           \
+>>                  "1:     " insn "\n"                     \
+>> -               _EMIT_BUG_ENTRY                         \
+>> +               _EMIT_BUG_ENTRY("%0", "%1", "%2")       \
+>> +               ".org 2b+%3\n"                          \
+>> +               ".previous\n"                           \
+>>                  : : "i" (WARN_CONDITION_STR(cond_str) __FILE__), "i=
+" (__LINE__), \
+>>                    "i" (flags),                          \
+>>                    "i" (sizeof(struct bug_entry)),       \
+>>                    ##__VA_ARGS__)
+>> +#define ARCH_WARN_ASM(file, line, flags, size)         \
+>> +               "1:     twi 31, 0, 0\n"                 \
+>> +               _EMIT_BUG_ENTRY(file, line, flags)      \
+>> +               ".org 2b+" size "\n"                    \
+>> +               ".previous\n"
+> =
 
-   You may take a look at KVM_CAP_PPC_GET_CPU_CHAR for instance.
+> Will this build ? Isn't ARCH_WARN_ASM() for use in ASM .S files ?
 
-2. Return type constraint: KVM_CHECK_EXTENSION returns a signed 32-bit int. The
-   capability bits are defined as (1ULL << 62), (1ULL << 61), and (1ULL << 60) —
-   64-bit values that cannot fit in a 32-bit return. Renumbering them to small
-   integers would be a UAPI change and would lose alignment with the
-   H_GUEST_CAP_* values from the hypervisor ABI.
+No. It's used by Rust code; the C preprocessor uses ARCH_WARN_ASM() to
+generate the code for Rust inline assembly.
 
-3. Extensibility: The struct-based approach with the size field provides clean
-   forward and backward ABI versioning via copy_struct_from/to_user(), without
-   needing a KVM_CAP_PPC_COMPAT_CAPS2 in the future.
-
-Thanks,
-Amit
 
