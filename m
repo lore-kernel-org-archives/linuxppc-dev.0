@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-25514-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25515-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4A256C56205
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2026 18:37:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0F296C56205
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2026 18:37:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hGGGS1RB9z2yd7;
-	Fri, 07 Aug 2026 04:37:04 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hGGGV4jXhz3bwf;
+	Fri, 07 Aug 2026 04:37:06 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786041424;
-	cv=none; b=W0j9vaog8Rs7EJDfESDdWODAwQk7bEUWtgiwlmOEgboQgit2NP+XI5PQPsFt6jzHMxU+sVwOkfq4QGPzLnrCr7LqJz009Ayti/ETcmGhIEqPmz1UIbugaeUzqr1VAoOsxuRumxpJAMBHa7PdmFyblORB3bjFhAlPLPyeCGl3wrqQrSHIaipSxm81vG1ym57Ow1Kb1nzMfqWDBVxrCY842oN/0hBfoBqyf17a6NFJMNBH1WgrYIRnSEGoJQzqJfKfzkAyVEV22HnOnEAjNQ27JQ7zZoO3Ax9nFOEdMHzRf6/kkQkVAhZ2b5VD/jqRrP+uR+PWMqUbr9CnB9BbKilxSw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786041426;
+	cv=none; b=VVguLHWQBiR/dCUQ+iX/rMuyVmrATr99UNLm6yhoo6bGyV9c9Mb9Vz7GnJVKu5tuxcQy/6Fp07J1yG22G7c3m3AlYb/Wfc1/Hc88qAv46FqlSQ6sIh3/YZLWK58zsF6iaZrF/nCtnN6oj4YrcdUtWtV8f5/vie1EZssgppgv1gr+WCTfJKXAZ4NnOoTBNtMbmiHqyWmX+S/tbp4lU97VZM8ghdDbTKs23l+Qlmy3eJuVtQo7xDx6DIdhJKYtvowrgMIdQCFbs1oWZq2nYctOKtSCdmUKJtbFvh9TpUWLfVjJ2RoLn9sPNHVmApY+s8NmoD1JPZc7ugnHQw9l3B9RxQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786041424; c=relaxed/relaxed;
-	bh=sL881gPdJx6xM4Jsh+VbyFliie3hWpb8MUCaNrE+uYA=;
+	t=1786041426; c=relaxed/relaxed;
+	bh=5D+kt9Ji/YpIEH/DJsU9gAW+siSqFCe9WpV0JXtz8gM=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=TNgd1853yHa7pG0eLLdKKEqusxMv1zPywoNVDd1if277G6EYy4cwuglaMGafVhCRuRLHdwP8T3nCvybpvMVjbd8pbrfg+cJgp9QaxfxHbWVIzc+wbsFK0Vv+Ts+tNDdJLcV8O91L3mc0EUaxeJrxYE8P6g9kpfx0HLmyykMXR4ExhfoLnaFjdtkRrDkSOANy5AC8QNERBvlPNv8K92LkiSQCoC9tyyQt8me9XvqlVPH044avDsQ0MG327ShlTb0QT0OnB7audqczc66Y0zER/1U85scYnHa9/1BGAOUrh7Sh24e77XJ1o1mASZJFAv0KbF+phXtVt/8DaLho98MMag==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=cfsPO31k; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=Pvloz0XdrBquuuYFyTubXM6VUL9zUEHDil0e4NZgmrzOMx+xXBottAy6nLoX0GausR6/2RhmtuSW4tWGOKMViGqW3Dv3JXIoPnOGRBQlDZiv40TouE/qTTyxq4kPFKLBaOlvKrFKkD5k/ekl4Pt4e3/krBbGHcNznjUe+yBh724P8KScfUe4B1xnBL7yqgMwpPQUtqu1jkdRZQtwO5YR5AG1P8xs8o4zz23bO/8B2rnEXKMXnBTKtNr8gK0SDNkrekMrwC0wybyHwoIM1WlVfVZF3+cnuQbuVpdusJ79mRIPuhljzewy1xuTSZVaubPRDwxierDzrA6UGbBrdjS3bw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=IxWirj8v; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=cfsPO31k;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=IxWirj8v;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org)
 Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hGGGR0vqZz2xjN
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Aug 2026 04:37:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hGGGT07cmz3brM
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Aug 2026 04:37:04 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 1105A601D9;
-	Thu,  6 Aug 2026 18:37:00 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 385651F000E9;
-	Thu,  6 Aug 2026 18:36:59 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id A73F16004E;
+	Thu,  6 Aug 2026 18:37:02 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DF4911F00A3D;
+	Thu,  6 Aug 2026 18:37:01 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1786041419;
-	bh=sL881gPdJx6xM4Jsh+VbyFliie3hWpb8MUCaNrE+uYA=;
+	s=k20260515; t=1786041422;
+	bh=5D+kt9Ji/YpIEH/DJsU9gAW+siSqFCe9WpV0JXtz8gM=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=cfsPO31k61DsJweKdPhhxMqlaEXRqE+kAYR+6gUovaMBF4e6JNXzuIIG/EztW/9CO
-	 gqar1hRM4MwYl6vSArul19Llspq8KZsstFtaWw8ojOuX9/Bs4anLVUj1IyxLYoT0Wz
-	 fbAzmzhPRnK84ZA2+pfi1ithX9fUQ5tMOOmQuFQQLZYt7aZ/MFqaxDL7A+jCUaA6pZ
-	 bpPSVqwuVfbPEWcgTeZuwIg+vc1vhVtIhfsgJz7IkvJsm8z8jX8vDVmcIZn/5pq1Qw
-	 +bdsJdaaLxDTNaQmuiMGaZerdBKnEv/dY7sJpFVszEZ35eEEk5b66aCgK1RnJctcf8
-	 izsEm0RsruwXg==
+	b=IxWirj8veGuW3/yidWhisUR53I3S5aTzCtKSXD2gxWlfFRMPb29SX78U6uoaZu3w3
+	 zIVThS5O2AIsa9Bk3F/JKwfkB8H6EARnstKRjLDlgkpZSgun05dJuC4urHMwXY/loq
+	 KlM5mhNgm8UBdUecCVQY9CQEGaib+hDLYV+j7uCy86ejL6GJgjBm+5TJcRcGK5VkQL
+	 CX2R+XrASGuKwVxdNLQTJ4qYC12FhrspB/TcpxtBkIEDYnACylYC7IrQrHtp0TLDZt
+	 EDB/nyPR3es/7WkPyrnxgath9VgiIZ96cCEawq800oz7FmQUSSyxwdXA5f7+uTy7B1
+	 qX91gTep5cB6A==
 From: Jakub Kicinski <kuba@kernel.org>
 To: mmc@linux.ibm.com
 Cc: Jakub Kicinski <kuba@kernel.org>,
@@ -61,12 +61,12 @@ Cc: Jakub Kicinski <kuba@kernel.org>,
 	simon.horman@corigine.com,
 	shaik.abdulla1@ibm.com,
 	davemarq@linux.ibm.com
-Subject: Re: [PATCH net-next v4 01/14] ibmveth: Add MQ RX hypercall wrappers and call definitions
-Date: Thu,  6 Aug 2026 11:36:14 -0700
-Message-ID: <20260806183614.3171785-1-kuba@kernel.org>
+Subject: Re: [PATCH net-next v4 03/14] ibmveth: Refactor RX resource allocation for MQ RX bring-up
+Date: Thu,  6 Aug 2026 11:37:01 -0700
+Message-ID: <20260806183701.3175123-1-kuba@kernel.org>
 X-Mailer: git-send-email 2.55.0
-In-Reply-To: <1bb2ecd260f27171c534b9beda377b75ea1790ae.1785457143.git.mmc@linux.ibm.com>
-References: <1bb2ecd260f27171c534b9beda377b75ea1790ae.1785457143.git.mmc@linux.ibm.com>
+In-Reply-To: <984697bdc91a3c37f5f24750d7f24fc2d97031fa.1785457143.git.mmc@linux.ibm.com>
+References: <984697bdc91a3c37f5f24750d7f24fc2d97031fa.1785457143.git.mmc@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -85,163 +85,174 @@ Content-Transfer-Encoding: 8bit
 This is an AI-generated review of your patch. The human sending this
 email has considered the AI review valid, or at least plausible.
 ---
-ibmveth: Add MQ RX hypercall wrappers and call definitions
+ibmveth: Refactor RX resource allocation for MQ RX bring-up
 
-This adds three new PHYP call IDs for multi-queue receive support and four
-static inline hcall wrapper helpers in ibmveth.h, bumping MAX_HCALL_OPCODE
-to the highest new opcode. No callers are added by this patch.
+This moves the filter list and per-queue RX ring allocation out of
+ibmveth_open() into four new helpers, and wires them into both the
+open error unwind and ibmveth_close().  Runtime behaviour is meant to
+stay single-queue since num_rx_queues is still 1.
 
-A couple of questions below about the new wrappers and about the hvcall.h
-hunk.
-
-> diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
-> index dff90a7d7f70b..d79baf2e38273 100644
-> --- a/arch/powerpc/include/asm/hvcall.h
-> +++ b/arch/powerpc/include/asm/hvcall.h
-> @@ -362,7 +362,10 @@
->  #define H_GUEST_DELETE		0x488
->  #define H_PKS_WRAP_OBJECT	0x490
->  #define H_PKS_UNWRAP_OBJECT	0x494
-> -#define MAX_HCALL_OPCODE	H_PKS_UNWRAP_OBJECT
-> +#define H_REG_LOGICAL_LAN_QUEUE 0x49C
-> +#define H_ADD_LOGICAL_LAN_BUFFERS_QUEUE 0x4A0
-> +#define H_FREE_LOGICAL_LAN_QUEUE 0x4A8
-> +#define MAX_HCALL_OPCODE	H_FREE_LOGICAL_LAN_QUEUE
-
-[Severity: Low]
-Could the changelog cite the PAPR/PHYP document and revision that assigns
-0x49C, 0x4A0 and 0x4A8?  These become architecture-wide constants shared
-with the KVM hcall emulation, so it would help to have the provenance
-recorded in the commit.
-
-There are also holes left at 0x498 and at 0x4A4 (the latter from dropping
-H_FREE_LOGICAL_LAN_BUFFER_QUEUE in v4).  Are those numbers reserved by the
-architecture for something else, or are they simply unused?
-
-Separately, MAX_HCALL_OPCODE is not driver-local.  It sizes
-kvm_arch.enabled_hcalls:
-
-  arch/powerpc/include/asm/kvm_host.h:
-      DECLARE_BITMAP(enabled_hcalls, MAX_HCALL_OPCODE/4 + 1);
-
-and it bounds the userspace-visible opcode range accepted by
-KVM_CAP_PPC_ENABLE_HCALL:
-
-  arch/powerpc/kvm/powerpc.c:kvm_vm_ioctl_enable_cap() {
-      ...
-      if (hcall > MAX_HCALL_OPCODE || (hcall & 3) ||
-          cap->args[1] > 1)
-      ...
-  }
-
-It also sizes the per-CPU hcall statistics array in
-arch/powerpc/platforms/pseries/hvCall_inst.c and gates
-kvmppc_pseries_do_hcall() and kvmppc_h_pr().  As far as I can tell the bump
-is behaviourally inert for these new opcodes, since kvm_vm_ioctl_enable_cap()
-still rejects them via kvmppc_book3s_hcall_implemented(), and the KVM
-dispatch path ends up returning RESUME_HOST either way.  Would it be worth
-mentioning the cross-subsystem effect in the changelog so the powerpc/KVM
-side has something to ack against?
-
->  
->  /* Scope args for H_SCM_UNBIND_ALL */
->  #define H_UNBIND_SCOPE_ALL (0x1)
-> diff --git a/drivers/net/ethernet/ibm/ibmveth.h b/drivers/net/ethernet/ibm/ibmveth.h
-> index d87713668ed30..c88dbeb7cd967 100644
-> --- a/drivers/net/ethernet/ibm/ibmveth.h
-> +++ b/drivers/net/ethernet/ibm/ibmveth.h
-> @@ -66,6 +66,143 @@ static inline long h_add_logical_lan_buffers(unsigned long unit_address,
->  			    desc5, desc6, desc7, desc8);
+> diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
+> index 8e758362cb263..1007dd95cde02 100644
+> --- a/drivers/net/ethernet/ibm/ibmveth.c
+> +++ b/drivers/net/ethernet/ibm/ibmveth.c
+> @@ -151,6 +151,184 @@ static unsigned int ibmveth_real_max_tx_queues(void)
+>  	return min(n_cpu, IBMVETH_MAX_QUEUES);
 >  }
 >  
 > +/**
-> + * h_reg_logical_lan_queue - Register a subordinate receive queue
-
-[Severity: Low]
-This isn't a bug, but the naming here diverges from the existing wrappers in
-this file, which all spell it out as h_register_logical_lan() and
-h_free_logical_lan().  Would h_register_logical_lan_queue() read more
-consistently?
-
-[ ... ]
-
-> +static inline long h_reg_logical_lan_queue(unsigned long unit_address,
-> +					   unsigned long buffer_list,
-> +					   unsigned long rec_queue,
-> +					   unsigned long *queue_handle,
-> +					   unsigned long *irq)
-                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-[Severity: Low]
-This helper returns the queue handle as unsigned long *, which matches
-retbuf's element type and matches the other output parameters in this header
-(h_send_logical_lan()'s corellator_out, h_illan_attributes()'s
-ret_attributes).
-
-But h_register_logical_lan_with_handle() below declares the same conceptual
-value, the PHYP queue handle read out of retbuf[0], as u64 *.  Can these two
-be made to agree?  As it stands, callers have to pick a different storage
-type depending on which of the two helpers they call, even though both are
-returning the same thing.
-
-The commit message says the new wrappers have "argument ordering and return
-semantics matching the existing ibmveth hcall wrappers", which holds for
-this one but not for the u64 * variant.
-
-[ ... ]
-
-> +static inline long h_free_logical_lan_queue(unsigned long unit_address,
-> +					    unsigned long queue_handle)
+> + * ibmveth_alloc_filter_list - Allocate and map filter list
+> + * @adapter: ibmveth adapter structure
+> + *
+> + * Return: 0 on success, negative error code on failure
+> + */
+> +static int
+> +ibmveth_alloc_filter_list(struct ibmveth_adapter *adapter)
 > +{
-> +	unsigned long retbuf[PLPAR_HCALL9_BUFSIZE];
+> +	struct device *dev = &adapter->vdev->dev;
+> +	struct net_device *netdev = adapter->netdev;
 > +
-> +	return plpar_hcall9(H_FREE_LOGICAL_LAN_QUEUE,
-> +			    retbuf, unit_address, queue_handle);
+> +	adapter->filter_list_addr = (void *)get_zeroed_page(GFP_KERNEL);
+> +	if (!adapter->filter_list_addr) {
+> +		netdev_err(netdev, "unable to allocate filter pages\n");
+> +		return -ENOMEM;
+> +	}
+> +
+> +	adapter->filter_list_dma = dma_map_single(dev,
+> +						  adapter->filter_list_addr,
+> +						  4096, DMA_BIDIRECTIONAL);
+> +	if (dma_mapping_error(dev, adapter->filter_list_dma)) {
+> +		netdev_err(netdev, "unable to map filter list pages\n");
+> +		free_page((unsigned long)adapter->filter_list_addr);
+> +		adapter->filter_list_addr = NULL;
+> +		return -ENOMEM;
+> +	}
+
+[Severity: Medium]
+
+Should this error path also clear adapter->filter_list_dma?  On failure
+dma_map_single() has stored DMA_MAPPING_ERROR, which is ~(dma_addr_t)0 and
+therefore non-zero, and only filter_list_addr is reset here.
+
+The sibling helper added in the same patch does zero the cookie in the
+same situation:
+
+	if (dma_mapping_error(dev, adapter->buffer_list_dma[i])) {
+		...
+		adapter->buffer_list_dma[i] = 0;
+		goto err_cleanup;
+	}
+
+so the two new helpers appear to disagree on the convention.
+
+> +
+> +	netdev_dbg(netdev, "filter list @ 0x%p (DMA: 0x%llx)\n",
+> +		   adapter->filter_list_addr,
+> +		   (unsigned long long)adapter->filter_list_dma);
+> +
+> +	return 0;
 > +}
+> +
+> +/**
+> + * ibmveth_free_filter_list - Free filter list resources
+> + * @adapter: ibmveth adapter structure
+> + */
+> +static void
+> +ibmveth_free_filter_list(struct ibmveth_adapter *adapter)
+> +{
+> +	struct device *dev = &adapter->vdev->dev;
+> +
+> +	if (adapter->filter_list_dma) {
+> +		dma_unmap_single(dev, adapter->filter_list_dma, 4096,
+> +				 DMA_BIDIRECTIONAL);
+> +		adapter->filter_list_dma = 0;
+> +	}
 
-[Severity: Low]
-The kerneldoc above documents no output data for this hcall, and retbuf is
-never read.  Why not use plpar_hcall_norets() here, the way the existing
-counterpart in this file does?
+[Severity: Medium]
 
-  #define h_free_logical_lan(ua) \
-    plpar_hcall_norets(H_FREE_LOGICAL_LAN, ua)
+Can this unmap the DMA_MAPPING_ERROR sentinel?  ibmveth_free_filter_list()
+treats any non-zero filter_list_dma as a live mapping, and the mapping-error
+branch of ibmveth_alloc_filter_list() leaves the sentinel behind.
 
-That would drop the dead nine-entry stack buffer.
+The state looks reachable without dev_close().  ibmveth_set_csum_offload(),
+ibmveth_set_tso(), ibmveth_change_mtu() and veth_pool_store() all call
+ibmveth_close() and then ibmveth_open() directly while netif_running() is
+still true:
+
+	if (netif_running(dev)) {
+		restart = 1;
+		ibmveth_close(dev);
+	}
+	...
+	if (restart)
+		rc2 = ibmveth_open(dev);
+
+If that re-open fails at the dma_mapping_error() check in
+ibmveth_alloc_filter_list(), open() returns through the out: label without
+calling ibmveth_free_filter_list(), so the adapter is left with
+filter_list_addr == NULL and filter_list_dma == DMA_MAPPING_ERROR while the
+netdev is still marked running.  A later "ip link set dev ethX down" then
+reaches ndo_stop == ibmveth_close() -> ibmveth_free_filter_list() and unmaps
+that invalid address.
+
+On pseries the dma_iommu path catches this in iommu_free_check(), which emits
+a ratelimited "iommu_free: invalid entry" message and a WARN_ON(1) (a panic
+with panic_on_warn set), so no TCE state is changed, but the backtrace is
+still user triggerable with CAP_NET_ADMIN plus a mapping failure.
+
+Setting adapter->filter_list_dma = 0 in that error branch, matching
+ibmveth_alloc_rx_queues(), would make the guard here reliable.
+
+This is still present unchanged at the end of the series (a3781f4ae789), so
+a later patch does not appear to address it.
+
+> +
+> +	if (adapter->filter_list_addr) {
+> +		free_page((unsigned long)adapter->filter_list_addr);
+> +		adapter->filter_list_addr = NULL;
+> +	}
+> +}
+> +
 
 [ ... ]
 
-> +static inline long
-> +h_register_logical_lan_with_handle(unsigned long unit_address,
-> +				   unsigned long buffer_list,
-> +				   unsigned long rec_queue,
-> +				   unsigned long filter_list,
-> +				   unsigned long mac_address,
-> +				   u64 *queue_handle)
-                                    ^^^^^^^^^^^^^^^^^^
-
-[Severity: Low]
-This is the u64 * side of the inconsistency noted above.  Both types are
-64-bit on ppc64, which is the only configuration that builds ibmveth, and
-the callers added later in the series do compile against both prototypes, so
-this looks like a readability issue rather than a functional one.  Could both
-helpers use unsigned long * for the handle?
-
-> +{
-> +	unsigned long retbuf[PLPAR_HCALL9_BUFSIZE];
-> +	long rc;
+> +		adapter->buffer_list_dma[i] =
+> +			dma_map_single(dev, adapter->buffer_list_addr[i],
+> +				       4096, DMA_BIDIRECTIONAL);
+> +		if (dma_mapping_error(dev, adapter->buffer_list_dma[i])) {
+> +			netdev_err(netdev,
+> +				   "unable to map buffer list for queue %d\n",
+> +				   i);
+> +			adapter->buffer_list_dma[i] = 0;
+> +			goto err_cleanup;
+> +		}
 > +
-> +	rc = plpar_hcall9(H_REGISTER_LOGICAL_LAN, retbuf,
-> +			  unit_address, buffer_list, rec_queue,
-> +			  filter_list, mac_address);
-> +
-> +	if (rc == H_SUCCESS && queue_handle)
-> +		*queue_handle = retbuf[0];
-> +
-> +	return rc;
-> +}
 
-Thanks.
--- 
-pw-bot: cr
+[ ... ]
+
+> @@ -627,74 +805,34 @@ static int ibmveth_open(struct net_device *netdev)
+>  
+> -	rc = -ENOMEM;
+> -	adapter->buffer_list_addr[0] = (void *)get_zeroed_page(GFP_KERNEL);
+> -	if (!adapter->buffer_list_addr[0]) {
+> -		netdev_err(netdev, "unable to allocate list pages\n");
+> +	rc = ibmveth_alloc_filter_list(adapter);
+> +	if (rc)
+>  		goto out;
+> -	}
+
+[ ... ]
+
+> @@ -753,26 +889,12 @@ static int ibmveth_open(struct net_device *netdev)
+> +	ibmveth_cleanup_rx_resources(adapter);
+>  out_free_filter_list:
+> -	free_page((unsigned long)adapter->filter_list_addr);
+> -out_free_buffer_list:
+> -	free_page((unsigned long)adapter->buffer_list_addr[0]);
+> +	ibmveth_free_filter_list(adapter);
+>  out:
+>  	napi_disable(&adapter->napi[0]);
+>  	return rc;
+
+[ ... ]
 
