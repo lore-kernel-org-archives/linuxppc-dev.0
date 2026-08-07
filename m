@@ -1,67 +1,61 @@
-Return-Path: <linuxppc-dev+bounces-25638-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25639-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3CA0FC5AC67
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Aug 2026 05:34:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D054FC55174
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Aug 2026 13:53:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hH8q14LnQz2xd2;
-	Sat, 08 Aug 2026 15:34:53 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=23.155.224.40
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786167293;
-	cv=none; b=ijJgaJz2BP+8HgBHgDNZJRMOy8/TP+CD7GJUvxv8DD7pNr55McJEkc7tecgO/CR/9FnNlwwLeA+0WOvpK5dB2fFE7wIQnEtwvS/fXOoc3LQiU/z0MWpQAAcqncv0n0dOwIRVp2d3iFAndqGwzIk1hPC18Umvd4ZYfMR1n8EBOrv2gJZiJ5ddSkRMxZWuEynExkJFvuZSuYFuCPUmYvWuC9URgJlvleXRllMY2JyL3kTen/8yixDVp/Ts4zDa2KWglRpbSFbCQZCIIrhrnuZCBUJdo5GFi3xvIcLoqqrBRUJUBGzsa1k/fs9/bBsz62LFnjLj7Zci8ivq8OTJrvsarA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hHMtY0Xptz2y1F;
+	Sat, 08 Aug 2026 23:53:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786197220;
+	cv=none; b=CihChOLzocPRULBk5Gt8leOoN7qG2Tu2yNjCJFaN4NeAsx3kjUTHk7Wk3/59uiVeKkVqDIW7lVGgOuRIF5cMCMWrX6ClVZlSS+iTyn3Fcsv6/YmwS1mc6Iqx7ABONRJ2vz4ukjycMNjlDGql1d3BrEHkFipCGcYrDcGk0ZGdvNyua9AP+xZAzN2cO7m045WWLAGoz7FJpvUYyLN0z6nDATZpbAyhCsS1XtkpKbi74e1QpqIlsPF0geQknpDGCHiemd4aCN7/oCrtD0nQH9QcnatrulmuTIFt3I7WxpoZhaIHC4C6qE7Kutgd/B6XADUYpPi7AxHpIV+x2kl6AvAbkQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786167293; c=relaxed/relaxed;
-	bh=ePb+1uER1o8S/phXCI+oFAneLanYIRRt9Azm9hq5/IM=;
-	h=Date:From:To:Cc:Message-ID:In-Reply-To:References:Subject:
-	 MIME-Version:Content-Type; b=YUzjGrlRLzdudwVOfhfoXYhJAY1DQQOEOVFds6j7w9TTqUunCxgJ2CKgCMHqRAl7Fcjz6/BgmTLEZo7hdjnmhBaqpFNFJyEpMo3aAIdFNzh4S09yfUq8PBw0FC6NwbByEv5Mc0Y8DAUbnMyWmbIQ1oD/vfCQWnNMoZb0SPxmAIC9S4q3lJum5QuhIdP5QoM+pwHw186EPq6VHFeWZ/eH4bYZEBZUASGa97RO5kDgFqra8Eh3BLdRPDln+qe6kpBff/TF/l9MFlIsQnIn/p3hh2zyWn1bUTdNQ166kox8/Q7BCVx8NgIhDGd33V49Xlvgojwh8zbB28AJI3zywhl+iQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=raptorengineering.com; dkim=pass (1024-bit key; secure) header.d=raptorengineering.com header.i=@raptorengineering.com header.a=rsa-sha256 header.s=B8E824E6-0BE2-11E6-931D-288C65937AAD header.b=Jr98evV/; dkim-atps=neutral; spf=pass (client-ip=23.155.224.40; helo=raptorengineering.com; envelope-from=tpearson@raptorengineering.com; receiver=lists.ozlabs.org) smtp.mailfrom=raptorengineering.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=raptorengineering.com
+	t=1786197220; c=relaxed/relaxed;
+	bh=UGmYbDNp/zsEE4ZhhIguDoZqxe8hCpFF6XwrjiVGQt8=;
+	h=From:To:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=jDjm+Yumhg/x39n0RqvmjgR5ISe5xpRjKywaDewpdsURFawCsuVKABxewCmaxwXDFrJKCRz34nza91JQU9nzKijUcCX4xhex/t/Ji5OR02gRb8BMZ4el9Shhw7BGot97yUEOCM0yvcZsj4b55notqAcLrfFIMaxvzTwgHF1oVpzQzkBh7wXECCyClFv2ov+YHfIhcbW693HKI9mSgPFmDz/wHX8j1WMVWNMxFnLI5jcnW0w4Hc1EZZ7HxQNGFzS6NySKnGq/Mneitkjr92/PxRxf+XC+UmVEI7JDFsdgq4dXnPxE1P+6Gp3npWp8fd3W7wqr7GZi4IbK7vVDNJ2OpA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ojQ6x4nB; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; secure) header.d=raptorengineering.com header.i=@raptorengineering.com header.a=rsa-sha256 header.s=B8E824E6-0BE2-11E6-931D-288C65937AAD header.b=Jr98evV/;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ojQ6x4nB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=raptorengineering.com (client-ip=23.155.224.40; helo=raptorengineering.com; envelope-from=tpearson@raptorengineering.com; receiver=lists.ozlabs.org)
-Received: from raptorengineering.com (mail.raptorengineering.com [23.155.224.40])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hH8q04zkmz2xLf
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 08 Aug 2026 15:34:52 +1000 (AEST)
-Received: from localhost (localhost [127.0.0.1])
-	by mail.rptsys.com (Postfix) with ESMTP id 77A047790E32;
-	Sat,  8 Aug 2026 00:34:50 -0500 (CDT)
-Received: from mail.rptsys.com ([127.0.0.1])
-	by localhost (vali.starlink.edu [127.0.0.1]) (amavisd-new, port 10032)
-	with ESMTP id RWaLKJ7cLKBk; Sat,  8 Aug 2026 00:34:49 -0500 (CDT)
-Received: from localhost (localhost [127.0.0.1])
-	by mail.rptsys.com (Postfix) with ESMTP id 752917790E4B;
-	Sat,  8 Aug 2026 00:34:49 -0500 (CDT)
-DKIM-Filter: OpenDKIM Filter v2.10.3 mail.rptsys.com 752917790E4B
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=raptorengineering.com; s=B8E824E6-0BE2-11E6-931D-288C65937AAD;
-	t=1786167289; bh=ePb+1uER1o8S/phXCI+oFAneLanYIRRt9Azm9hq5/IM=;
-	h=Date:From:To:Message-ID:MIME-Version;
-	b=Jr98evV/IMYy/9TNFOvrJ/JdCQCG43uXWoPeMph5A02OiNCfcY9R60vgtNVkaoWTi
-	 XGYM2aBadCL26L8HcV/1O+LKyTQ14Va7Cr1qVjMLS0/gIYjOOXQxhbuFqN1b8lh9c1
-	 IhfcGbu+VAjdJGk2lsuT3fxYd0ybNbUK0m8aMsVo=
-X-Virus-Scanned: amavisd-new at rptsys.com
-Received: from mail.rptsys.com ([127.0.0.1])
-	by localhost (vali.starlink.edu [127.0.0.1]) (amavisd-new, port 10026)
-	with ESMTP id iAYXqNoAj2k5; Sat,  8 Aug 2026 00:34:49 -0500 (CDT)
-Received: from vali.starlink.edu (localhost [127.0.0.1])
-	by mail.rptsys.com (Postfix) with ESMTP id 3EE057790BB2;
-	Sat,  8 Aug 2026 00:34:49 -0500 (CDT)
-Date: Sat, 8 Aug 2026 00:34:44 -0500 (CDT)
-From: Timothy Pearson <tpearson@raptorengineering.com>
-To: Ritesh Harjani <ritesh.list@gmail.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, 
-	Shivaprasad G Bhat <sbhat@linux.ibm.com>, 
-	Gaurav Batra <gbatra@linux.ibm.com>
-Message-ID: <31839892.1773.1786167284864.JavaMail.zimbra@raptorengineeringinc.com>
-In-Reply-To: <wlu1jj0b.ritesh.list@gmail.com>
-References: <334689093.41938.1785796754275.JavaMail.zimbra@raptorengineeringinc.com> <o6fflsxx.ritesh.list@gmail.com> <980372793.1709.1786165222084.JavaMail.zimbra@raptorengineeringinc.com> <wlu1jj0b.ritesh.list@gmail.com>
-Subject: Re: [BUG] VFIO on POWER9 / QEMU fails to allocate 32-bit DMA
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hHMtV3cW7z2xLf
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 08 Aug 2026 23:53:38 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 055FF43D6C;
+	Sat,  8 Aug 2026 13:53:32 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8A3131F000E9;
+	Sat,  8 Aug 2026 13:53:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1786197211;
+	bh=UGmYbDNp/zsEE4ZhhIguDoZqxe8hCpFF6XwrjiVGQt8=;
+	h=From:To:In-Reply-To:References:Subject:Date;
+	b=ojQ6x4nBvODQCZ1gaWaQiBMD1fTOAkOrsl94xUkCAUh2ZyY3fy3MUHHgmEEtynC3X
+	 YV/Y7Dwht1mmbnW2DUel0ijNFK/PlqZajPFpOS/xBXrQRxiCy9QFqPAS4lJPCueq2H
+	 pM4ccd7zp6f/9wDq7SJJMqCWA9zNjwEaW3yl1NMI80ym+2o+4kuAZ+Jsuh27Vy5nxV
+	 PsS6h0L/n86ks8nb0RBhEQBfvTscRfp9gYDPuMG/YKED9stlUQuJKl3z0VMrHj2/Uh
+	 KcEiYXGYH38rADq4/mqeSEzFZvSAgL/i5MRR7vfJRc+/LF4awFIhtn5DQJrzTwds3l
+	 vW/DUyQvlo2zw==
+From: Mark Brown <broonie@kernel.org>
+To: shengjiu.wang@gmail.com, Xiubo.Lee@gmail.com, festevam@gmail.com, 
+ nicoleotsuka@gmail.com, lgirdwood@gmail.com, perex@perex.cz, tiwai@suse.com, 
+ linux-sound@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+ linux-kernel@vger.kernel.org, Frank.Li@nxp.com, phucduc.bui@gmail.com, 
+ shengjiu.wang@oss.nxp.com
+In-Reply-To: <20260807072202.380021-1-shengjiu.wang@oss.nxp.com>
+References: <20260807072202.380021-1-shengjiu.wang@oss.nxp.com>
+Subject: Re: [PATCH] ASoC: fsl_easrc: fix missing return on success in
+ runtime_resume
+Message-Id: <178613935118.577435.5668372548866263587.b4-ty@b4>
+Date: Fri, 07 Aug 2026 22:49:11 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -75,95 +69,50 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Mailer: Zimbra 8.5.0_GA_3042 (ZimbraWebClient - GC151 (Linux)/8.5.0_GA_3042)
-Thread-Topic: VFIO on POWER9 / QEMU fails to allocate 32-bit DMA
-Thread-Index: Rrjjg/+NomVUWGJYvmbLmtuL/FomRw==
+X-Mailer: b4 0.17-dev
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1159; i=broonie@kernel.org;
+ h=from:subject:message-id; bh=hkH0fQEvz1q8rnasSa045IDqrDKIN2Ms2FS9+zn9Z9c=;
+ b=owEBbQGS/pANAwAKASTWi3JdVIfQAcsmYgBqdzTY9SXlZ86x/M+sSlip/vnMIhc9hIK+i36ny
+ AMJXHA9y5eJATMEAAEKAB0WIQSt5miqZ1cYtZ/in+ok1otyXVSH0AUCanc02AAKCRAk1otyXVSH
+ 0MdxB/9Uzxm5RjA4jAnAsl2aRVwRlUhYUMT7t/YtuCrkutYV84pHoQRnwMXd/A1Xx4f19tY+5m+
+ 5E8F7Z5GD159IIZBwcYFJUBgyhPky91OminEMCSHxU7qIED1X2EBH/W6ZasXkqKIU4V+YPPEDQ6
+ Jby0YuWQU4cIwh4rLPl7qLEvKqOkqI45J/kPBYPLZle8iRzhx+E73I0f9I/fdOLuVNZuFGOY21T
+ R+3j2gEzqAr9VYEVB+0GCAo1YHB0Ou/ZSNSes3h/UCDTHjeXBNxXcNIudNhJIRGTnH45ISWav5v
+ 9P07AGgyIRKl5q5jvyEUoauFi3XO6a5P2Ay9406+i48JK3jT
+X-Developer-Key: i=broonie@kernel.org; a=openpgp;
+ fpr=3F2568AAC26998F9E813A1C5C3F436CA30F5D8EB
 
+On Fri, 07 Aug 2026 15:22:02 +0800, shengjiu.wang@oss.nxp.com wrote:
+> ASoC: fsl_easrc: fix missing return on success in runtime_resume
 
+Applied to
 
------ Original Message -----
-> From: "Ritesh Harjani" <ritesh.list@gmail.com>
-> To: "Timothy Pearson" <tpearson@raptorengineering.com>
-> Cc: "linuxppc-dev" <linuxppc-dev@lists.ozlabs.org>, "Shivaprasad G Bhat" <sbhat@linux.ibm.com>, "Gaurav Batra"
-> <gbatra@linux.ibm.com>
-> Sent: Saturday, August 8, 2026 12:09:24 AM
-> Subject: Re: [BUG] VFIO on POWER9 / QEMU fails to allocate 32-bit DMA
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-7.3
 
-> Timothy Pearson <tpearson@raptorengineering.com> writes:
-> 
->> ----- Original Message -----
->>> From: "Ritesh Harjani" <ritesh.list@gmail.com>
->>> To: "Timothy Pearson" <tpearson@raptorengineering.com>, "linuxppc-dev"
->>> <linuxppc-dev@lists.ozlabs.org>
->>> Cc: "Shivaprasad G Bhat" <sbhat@linux.ibm.com>, "Gaurav Batra"
->>> <gbatra@linux.ibm.com>
->>> Sent: Thursday, August 6, 2026 12:27:22 AM
->>> Subject: Re: [BUG] VFIO on POWER9 / QEMU fails to allocate 32-bit DMA
->>
->>> Hi Timothy,
->>> 
->>> Timothy Pearson <tpearson@raptorengineering.com> writes:
->>> 
->>>> On Linux 6.18, and potentially earlier Linux versions, attempting to pass
->>>> through any PCI device via VFIO that requires 32-bit DMA results in the
->>>> following error in the guest VM:
->>> 
->>> Can you confirm if you see the same issue on upstream kernel also or is
->>> it only till v6.18 kernel?
->>
->> I'll need to check, but I don't see why it would be limited to 6.18.  This used
->> to work, but it's fairly obvious IBM hasn't been testing or fixing any of the
->> VFIO or nested virtualization code for years now, especially on PowerNV.
->>
->>>>
->>>> [   11.705413] cx23885 0000:00:02.0: Warning: IOMMU offset too big for device
->>>> mask
->>>> [   11.709245] cx23885 0000:00:02.0: mask: 0xffffffff, table offset:
->>>> 0x800000000000000
->>>>
->>>> The same devices work correctly on the host kernel.  It appears that somehow
->>>> 32-bit DMA is not available within a pSeries guest on a PowerNV host.
->>> 
->>> By any chance did you do kexec in the guest kernel? Is this issue only
->>> hitting with kexec or even with normal boot up of guest kernel is also
->>> showing up the same issue?
->>
->> Yes, we kexec().  This works on every other architecture, not sure why kexec()
->> would break it?
->>
->> In any case, from where I sit at this point it's IBM's responsibility as the
->> silicon vendor to ensure basic functionality works -- I don't see these issues
->> on amd64 or arm64, and frankly on this end we're tired of the constant lack of
->> QA from IBM causing every single kernel upgrade to be a game of Russian
->> Roulette.  IBM should be able to spin up a test machine easily enough to
->> reproduce, this isn't complex -- any card that needs 32-bit DMA is affected
->> including inexpensive ASmedia USB 3 controllers.  Pass it through to QEMU via
->> VFIO and watch it fail, it happens every time.
->>
-> 
-> I was trying to help by asking for basic help from you. If you report a
-> problem upstream than we do expect such basic help e.g. is it only seen
-> with kexec, logs etc, so that we can all save some time here.
+Thanks!
 
-No worries, appreciated.  This is only one of several major problems with Linux on PowerNV that we have run into after recent upgrades, and the primary focus at the moment is on restoring broken functionality.  In many cases, that means moving to different hardware, so gathering logs afterward can be difficult / impossible.
+[1/1] ASoC: fsl_easrc: fix missing return on success in runtime_resume
+      https://git.kernel.org/broonie/sound/c/82b6d37621b0
 
->>> Could you please share the dmesg logs for both guest and host kernel?
->>> That might give some more data about this issue.
->>
->> I don't have access to the setup at this point since it was already replaced
->> with something else to restore functionality.
-> 
-> I think this patch [1] might have fixed the issue that you reported and
-> hence wanted to check if you only see the issue with kexec or also with
-> reboots? And if you could have given it a try.
-> 
-> [1]: https://lore.kernel.org/all/20260803224029.60538-1-gbatra@linux.ibm.com/
-> 
-> But anyways - I have already asked others on that thread (who are expert
-> of this area) to confirm if this patch could also fix the error you
-> reported with 32-bit DMA devices.
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.
 
-Thank you for the link.  When / if we want to test a migration of that hardware back to VFIO on PowerNV I will ensure that patch is applied before testing.
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
+
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
+
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
+
+Thanks,
+Mark
+
 
