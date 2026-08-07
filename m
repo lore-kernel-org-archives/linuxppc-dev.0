@@ -1,119 +1,86 @@
-Return-Path: <linuxppc-dev+bounces-25619-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25620-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 501C7C2A09B
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Aug 2026 18:20:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7FD71C2A09B
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Aug 2026 19:23:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hGsrm5Y34z3c88;
-	Sat, 08 Aug 2026 04:20:24 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::72e"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786126824;
-	cv=none; b=eIjGjxH+3h3uHvw3YJbfS/j+2BpZNw/wZ7doN/Oh768aMDaqxgu/tZcSZItVoU9gGui8qr2QRAPABODDiLbBleqTs61vZk1LdDM97KF78xNCoR2rU+w7ApKeRmwPX1Doo7s2s1KUGjb2nBNlnA9QkkKjTYngMZSRdUagrbSwFA0sBu27SDZWQ1NS06pH+Hp7aeusmuYqmnQhcN+za+R17lw8YVvWjynmdrSXp3xxo6iPiOqWy6QQAo1vYbDzQ6E+Yd7Tet3kN9jR81BSMJ0h9zuBEElGR62TW+RwS9K4ezKRW/MVLwn82/1GbXTUQR9CdtNYcGD9CvNT2dwyy37h0g==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786126824; c=relaxed/relaxed;
-	bh=uQJoR9F+JTLHFeALKkUq+Q0MNEImv4dProP3GHVEWS0=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=K4bybheW6ITx/LfgDn2hWV8YJQMnpz8wx/kE6ShpwBBYYtRwAIzhFsXAtl2Qx2JbTeAt2HYxvTmB5xX/5LYP8ruFbv/v6w9YDHSViNU8G7QKWGUuDOyFkzN3NFB3NOOs6K7HFtFcgOYdgDat5MQNiVEgOJ9aerLEbqOAQEdh61nhwdl7p5o/OyCed3TwIdJX8c3EYmg6lLnQRUE13IvOjHRvyNZuo+0vNRcc4H9t69rH12wwzPefMhwZZ1OCg/XfHuN2V8qvSkSCfTj+lCTUb7UE38Cbtk4cZ5wnZ6wIB5iAPJXc//zvi1D7oJ7ghZPq4vyUUVUVfvLLiSvwOI2WRQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca; dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=RaLkAVlC; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::72e; helo=mail-qk1-x72e.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org) smtp.mailfrom=ziepe.ca
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hGvF506jhz3c7M;
+	Sat, 08 Aug 2026 05:23:05 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=81.169.146.220 arc.chain=strato.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786130584;
+	cv=pass; b=DgioXfN+fwiroMyYf/C3h9Uf3uJVyyNQyQkNsQkSFLkwmtkr7W4dlZOPk/rmpi0GowbPdtYDCYknJWItP3KwJq/v2f2tn+9ntO44+MFcz4jS2duHQSMgvHeAslOjEv19y0ez0DIPMJx0/GvFt+buVPFsJ0avHZlhJ07V2zQtJ5BGDCe/2IAdiNUHqQ47jXBZ/WfmY7eoMdS268UPV92G42AxwfrLq9HB+4XLrlYArGMWGaBSEVhXKoQVSXJUOmOjn5K54oHcjMzq9k/49APmJdAKDePXlTzry3JXMqAf1pMs4MJtx0Svl9v8x81Fg2zHbylDnDRwaAon5clV696/QQ==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1786130584; c=relaxed/relaxed;
+	bh=PWRJovKFanbCN+BIuAmGj3LrZAetvoHJ84yMPG9CTXU=;
+	h=Content-Type:From:Mime-Version:Subject:Date:Message-Id:References:
+	 Cc:In-Reply-To:To; b=cd8+0MrXpbsXOqQcpPx8E8ZJxGs0j07tbogDpnYWh1GcYzH6qT/hvfEGHb3q0EkEO94PusYAiysBSLTyppUne+FHA4DKw1tSPnIQSRIDX3+pPpbJ4ou2ltYtONxWaMdmIACgWdxGDM461q7P2kCo9B+Ze+QP0AGuQ7a2YWZL13IqvP1BOlwBOV6Wp0/lyYXowT1t/OcpH4GwQDPNZtb6GJOQUS7PxzCE4iuMQcDQuy6wplhexuscOltxV5OpGzesu1Z99nIf95u0J+WrsbKA9dhRVuco5xeTBU+LwGmA18ZcbL1dSnoqE5mfqA6fH+UQ25acwJmvbEdJxyWg5SDprw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xenosoft.de; dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=VmI/M1Ry; dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=P0IE/VSp; dkim-atps=neutral; spf=pass (client-ip=81.169.146.220; helo=mo4-p00-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org) smtp.helo=mo4-p00-ob.smtp.rzone.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xenosoft.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=RaLkAVlC;
+	dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=VmI/M1Ry;
+	dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=P0IE/VSp;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ziepe.ca (client-ip=2607:f8b0:4864:20::72e; helo=mail-qk1-x72e.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org)
-Received: from mail-qk1-x72e.google.com (mail-qk1-x72e.google.com [IPv6:2607:f8b0:4864:20::72e])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=mo4-p00-ob.smtp.rzone.de (client-ip=81.169.146.220; helo=mo4-p00-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org)
+Received: from mo4-p00-ob.smtp.rzone.de (mo4-p00-ob.smtp.rzone.de [81.169.146.220])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hGsrk53MZz3c58
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 08 Aug 2026 04:20:21 +1000 (AEST)
-Received: by mail-qk1-x72e.google.com with SMTP id af79cd13be357-92e533aacf2so207604185a.2
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Aug 2026 11:20:21 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ziepe.ca; s=google; t=1786126819; x=1786731619; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=uQJoR9F+JTLHFeALKkUq+Q0MNEImv4dProP3GHVEWS0=;
-        b=RaLkAVlC9xDnAzN+aKbz8ZoZiBH57M0SCX7UimRtaL6tCCaCx+gjXKpLMULRm2sM7n
-         KTTOSWoFtyLQYDiaCL199/uBYYgkPwAj9mlnizpZ4CuWlHIe2nE3lCLvcqo3sNqaqMCU
-         zU59sNkGYYT3RCHGXOu6ex8nGqXNBBplWgJN0Kj4+ALfWCKgS+LvGw2P8sCKMes5Ud4Y
-         WtIgaa/kzrcN9iV8U5wtNzTD0ossaz1wrXpy7YIwoWTvrdwb021U9/jOYmOYO523tn3r
-         1C4Ap089mU0WGJFs9RwCXxbRpnTVeXrhMSKrIwFgttykCzl1m1p7Lkdw8OwX6m8UQy24
-         mbww==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786126819; x=1786731619;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=uQJoR9F+JTLHFeALKkUq+Q0MNEImv4dProP3GHVEWS0=;
-        b=jeyOspcs3ZR1c3w8SynJ3aWZWdHDalWkVkY9+L5RxTWfka5dA+ytkY2Nz0oyW2jclP
-         SrwMQ4p5UucZ5XWV131pD900IQ+3R8kFQsrcVwbSLGVgxCDpkYX+vfHr8UwPl0fOl4nv
-         GkWc5fbRlQ2dsh7+S9YXoscC30RCb4chYeeQMmQ3iGrcw8QV2CilB90ZXKoqtnd7NUUs
-         VL1FsHjuwTbFmQqQeG0bQrqWNeLJMNdmLqA0pHl1Wls7tXkK/kYAQO93l++PE8yTJsjv
-         gvlTOY/tQK3boTcDYMU9ASTeMAbCNOtpHN/iNbD0/e8somKTdUM8fSOsO443PHkHplp2
-         sxQg==
-X-Forwarded-Encrypted: i=1; AHgh+RoKDIPBZH0IYl1ZH0SrEv3gcU+7G+KlRFQpT0lBE6YC5u+5nHRx128cEyIgOjZvGcPEeovwFe+vtQ2HmpM=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwopTDpD20zH6/9rgeSr8SzVxOPuUG2LDi6eGwhUJMItQ9+Bya2
-	O0YxQ/fnA9b00+cL2fZGmZqJCkplwh/46Q0Fm7PYRjnylKTD3a2Z1Yny55KekeyLKlQ=
-X-Gm-Gg: AR+sD11VLiXchHNp9Z9fBNoVDUprml4XT+eQlmJB7o7qdgOiedv9pr/DS7T1f1ajVCm
-	UMlROCkKTyp3+9VG6jobWeVwb6uHKLSfOVooyre4gM2N8SJonqOKW7zYpBtd/I/1YopKxJvJbYs
-	/0I/Q7FHR+gQd7YjfnagmNYe1c8aHjnJWAJ67v+P0j+ln15csCQtDlChWfCUnQLghRAxdIwJuKG
-	ssdnjIyFwsQdvLlwF0DFTLdNeWYc6Kk8F7Zmnrl+GxQF4A9AXWQK4l3rpMDUvi5YwFmibWAhOu7
-	WQA9dFmQWoAMglXIT0NfXvgKCTZ2nH6fv1ynVmnx24sZ0fbp4ays4HbckE7mJ8mAn/fbAnSwqXK
-	j+f34oO3EVBQhY0AzoqMPd5irpe2iuwDOp6PYkXIwqSPn9sX6C4e5neA0z+P71BN6L7H2pUVBOP
-	nF9G1KQrYqloHUvBoQTo5yh8ZsxB565afcBeJ5kJjsBAIZ3La+45cxhkwywufQ
-X-Received: by 2002:a05:620a:628e:b0:930:a38d:4030 with SMTP id af79cd13be357-93671eae149mr628522585a.29.1786126818655;
-        Fri, 07 Aug 2026 11:20:18 -0700 (PDT)
-Received: from ziepe.ca ([142.166.156.215])
-        by smtp.gmail.com with ESMTPSA id af79cd13be357-9366e02d54esm204051085a.6.2026.08.07.11.20.18
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 07 Aug 2026 11:20:18 -0700 (PDT)
-Received: from jgg by wakko with local (Exim 4.97)
-	(envelope-from <jgg@ziepe.ca>)
-	id 1wsPB3-00000001Bmx-1xNi;
-	Fri, 07 Aug 2026 15:20:17 -0300
-Date: Fri, 7 Aug 2026 15:20:17 -0300
-From: Jason Gunthorpe <jgg@ziepe.ca>
-To: Mostafa Saleh <smostafa@google.com>
-Cc: Will Deacon <will@kernel.org>,
-	"Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, iommu@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	linux-coco@lists.linux.dev, Robin Murphy <robin.murphy@arm.com>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Marc Zyngier <maz@kernel.org>, Steven Price <steven.price@arm.com>,
-	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Jiri Pirko <jiri@resnulli.us>, Petr Tesarik <ptesarik@suse.com>,
-	Alexey Kardashevskiy <aik@amd.com>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Xu Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
-	linux-s390@vger.kernel.org,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <chleroy@kernel.org>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org
-Subject: Re: [PATCH] arm64: swiotlb: Keep the default size for protected
- guests
-Message-ID: <20260807182017.GH200537@ziepe.ca>
-References: <20260717180442.110954-18-aneesh.kumar@kernel.org>
- <20260807092612.2202005-1-aneesh.kumar@kernel.org>
- <anXIZSh9lq99VG9X@willie-the-truck>
- <yq5acxvu2ict.fsf@kernel.org>
- <anXbJ2O4DWgPxCeg@willie-the-truck>
- <20260807135810.GA200537@ziepe.ca>
- <anX7F7dnKOtAOIIe@google.com>
- <20260807164734.GE200537@ziepe.ca>
- <anYgXSR4VAi3TpOj@google.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hGvDx3vKRz3c75
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 08 Aug 2026 05:22:54 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; t=1786130555; cv=none;
+    d=strato.com; s=strato-dkim-0002;
+    b=JMsS9NMlk79Z87ImiP4cG2QqpBipPWnsO+HxfhCN0q6+7gfw2FKw/9LiWPbH8THXO+
+    CkbHut9m91/+k2ogfdpnWNzG9de1AeiWP/2eu0+BeXKtULqdfP/4bwocWgNc18mfYABo
+    3kPqcFZu3cvBrKdN2BqqYNY4tlZubIrW6JXiUBO1bcDE2yMeIGuhFx3kgqUHZCOv3Hky
+    bGZy+gAu24Kds1wmQFxAYdNu9R9QKv5c4SmYfPi3UXqdNbtIN81zzTIBqvdggrrpPStO
+    4CFTKPBYfUsRxX4yuOUmIgUQ0RHhH2rFmB2FFcIMWSVIOuej84BV3P7Gisxu+jctbUI5
+    EYKw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1786130555;
+    s=strato-dkim-0002; d=strato.com;
+    h=To:In-Reply-To:Cc:References:Message-Id:Date:Subject:From:Cc:Date:
+    From:Subject:Sender;
+    bh=PWRJovKFanbCN+BIuAmGj3LrZAetvoHJ84yMPG9CTXU=;
+    b=GrtYe1BPC60TPJTAHsJY1xqlITjznwemX/qj6Wvu+8U+crws0dapKpwL5QoIviswbW
+    v2w/5QgYUkYozlf+adNOv5NkuC+8Ergn6yDIe1Rmg5BTHaRNjLpcH7w9MRoCmSMxZZ2f
+    eTLC1l5ZShIvlG8hC8evmciyPlgSvhjAce2rf8xdQ/dcFcZM5TAZjkhAR9RrjPPhxMZ9
+    c+867LR5aU3RcmQGBI2kn2g2yN3dm1eP5cqfgC60PdJ/79TOZs5xWmbPNerMmz/fZpJp
+    syLVm5fuHLJLRxuNOq/PPn3y1H1HOhC6Vcnd9rGLi37ui8Cg4f6TL46uiuL7v48AeCzH
+    v0zg==
+ARC-Authentication-Results: i=1; strato.com;
+    arc=none;
+    dkim=none
+X-RZG-CLASS-ID: mo00
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1786130555;
+    s=strato-dkim-0002; d=xenosoft.de;
+    h=To:In-Reply-To:Cc:References:Message-Id:Date:Subject:From:Cc:Date:
+    From:Subject:Sender;
+    bh=PWRJovKFanbCN+BIuAmGj3LrZAetvoHJ84yMPG9CTXU=;
+    b=VmI/M1Ry81vZodYRjZX+cx/Zde+30y8wsGrJiBKEgpI73q1G4mIOWoRxyvwnmdNWdL
+    c12RK4bgaN+TSTZNz++CBoNL3Jpb/rnFMq/sZfJLHI3rBHASEPVqh50/4LMj4g99kSTN
+    ybEubmB2GiVdWaF7jeVgiS2jav+MvfqsbnWYdlDoNdEIsFz5P0y48m5qU8JzyPMa5keS
+    fDnIRI1engsjpy/joTRxZCu7aPnXT8qDM/oTrkxyq0VllgYt8IvTII+fMvWva3DyMBJ0
+    8i8GwuwC4AFfklLcvJkpYZzt+WnQ2VJqa1Bd3xNjFEWhZTrqiY9Fb55DjjAfaHeHotKi
+    Qz5Q==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1786130555;
+    s=strato-dkim-0003; d=xenosoft.de;
+    h=To:In-Reply-To:Cc:References:Message-Id:Date:Subject:From:Cc:Date:
+    From:Subject:Sender;
+    bh=PWRJovKFanbCN+BIuAmGj3LrZAetvoHJ84yMPG9CTXU=;
+    b=P0IE/VSpV+qntI9jsNSwzX2c4IoEqR4lqeNzjNd157LSs3mohZhw0mGcCWp1OjI5QB
+    11u0KQaYJqfMzaohc7BQ==
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGN0rBVhd9dFr6KxrfO5Oh7V7X5nns3PECnTgF2nPNQ0B2f/CSNb7ke2GFZLjuTg="
+Received: from smtpclient.apple
+    by smtp.strato.de (RZmta 55.5.6 AUTH)
+    with ESMTPSA id eed0ee277JMYODf
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
+	(Client did not present a certificate);
+    Fri, 7 Aug 2026 21:22:34 +0200 (CEST)
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -126,24 +93,38 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <anYgXSR4VAi3TpOj@google.com>
+Mime-Version: 1.0 (1.0)
+Subject: Re: [linuxppc-dev] Patch notification: 1 patch updated
+Date: Fri, 7 Aug 2026 21:22:24 +0200
+Message-Id: <EB51A7BA-7199-4921-BC04-3BB922B1DE92@xenosoft.de>
+References: <35d19b6e-5d0f-4725-89ab-2f9aaf153f1d@kernel.org>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Trevor Dickinson <rtd2@xtra.co.nz>, hypexed@yahoo.com.au
+In-Reply-To: <35d19b6e-5d0f-4725-89ab-2f9aaf153f1d@kernel.org>
+To: Christophe Leroy <chleroy@kernel.org>
+X-Mailer: iPhone Mail (23F84)
 
-On Fri, Aug 07, 2026 at 06:13:49PM +0000, Mostafa Saleh wrote:
+Hi Christophe,
 
-> But the whole thing is best effort anyway, the kernel picks
-> IO_TLB_DEFAULT_SIZE which does not depend on the system topology or
-> how many devices or how much DMA they do.
-> SWIOTLB memory is wasted if unused so we should be careful around
-> that as it would be the other way around and users would have to
-> decrease it manually.
+On 07 August 2026 at 03:52 pm, Christophe Leroy (CS GROUP) <chleroy@kernel.o=
+rg> wrote:
 
-Yeah, it is why the arch code shouldn't really be sizing it directly,
-it should be done in common code and, yes, we are probably going to
-have to do something alot smarter to have the common code better
-auto-tune this for the CC case..
+> =EF=BB=BFHi Christian,
 
-Jason
+> Not sure what you mean, in patchwork we have:
+
+> https://patchwork.ozlabs.org/project/linuxppc-dev/patch/20260801043458.125=
+00-1-chzigotzky@xenosoft.de/
+
+I see.
+
+
+> So I marked following ones as been superseded by it
+
+Great!
+
+Thank you for your help,
+
+Christian=
+
 
