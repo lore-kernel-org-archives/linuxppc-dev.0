@@ -1,58 +1,82 @@
-Return-Path: <linuxppc-dev+bounces-25534-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25535-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 78327C5AC67
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2026 22:16:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D306FC5AC67
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Aug 2026 02:38:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hGM765SfNz2xyk;
-	Fri, 07 Aug 2026 08:16:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786054562;
-	cv=none; b=fmOD7PStOGAJOD6qj2oICDoxgPQXIGr76AucBymiXnY/9qI2C1zbr1qgVH7AwXZzP6ooCdzl4M8NcQ/HO56oIsvDLEGxDK54YTFypDt1J2je4d8fR1sVbYQnoKNd8GFPcryvEifBSCQ1XL92LWk+HuiIiJAgrLqQQPgUgtYXIHC1Hdvroa9bv9oo8EGQvvvASgnPcB73nM6LQizIoGtY7S3fIx5q/AGb6f1lmEoPZTqQQZEtu0DKxGy1sqZ2NpJxcxyUUlGI7W4ODYJuFDMGc4ya1tQfglgBJsglHE1IDbOLHes1cphwB1afqDCgIhbGJ8Agj+WYdh7gKRXre/W47A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hGSxn5J0Jz30FB;
+	Fri, 07 Aug 2026 12:38:21 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::434"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786070301;
+	cv=none; b=N8QNu6jCWylo3nFcuxN9hwjXQ5cMZ2xjgU+9m3B0IEQ4gF9bhX7fHjW7fhOcImAAonx9nHgQgA3F4RVLGDGjfErJNYXGWr0lbUEH3u57acrNBB049YOZmFkWSPc05IJWv3j/fUn7VuYQK3229m1t47xuKAhZW3JDKJQuTY8Lrk1IveIxugRBN87RKxK+z9DrUyN4ig6H0btfxI69mj3X8wIMnsA3pBCmi3iV2V95o7/FS9LUfeqrKuPw3a/yJAdw0xTb6NrROWyxBTaRb4DzLJhclHZAMJMKGh1OhiyONvhfAjsisM7vTcGMQpB4UXGLBmIGR7F4+5viHQVVlQWCOA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786054562; c=relaxed/relaxed;
-	bh=FAMvGx/Nhy6G1Njdh4xzs4u1ahqLsDIzrreIJAT0dro=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=SzCjmUmLVQS1pAW6PLcPD31ZTQtX2jbkERU50+cg4Xo59BvPH9q6uPUKm/okqczscH1TZ4oZcq0zAc5RqtuUrKEs1xeAi3P7UUrE3ci8DJ13gO0iC6X8OYaofXYmptBN9+mmSSN06Q0ntbG/yeRoPsNbb3BwuRnjjlXkqvDAGHHDMHeB5r/8DPiI5EUPv389w+6PiXRu5A+C15iMSkPDbZCawlhxheeCQhmrTo2c+vnbw+cfuCzk8XsMP7P+rydki8h3TADzM80sgPzI8V1wI8WBewmt1SJI/DqUL61cMu6wwp1RIeBFKYelfG5+vVW62bl4UxZ7hJXaMov/zJ9FqA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=GeHWSf1v; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=linusw@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1786070301; c=relaxed/relaxed;
+	bh=oJdLdIw3eLo0oaT0dX3TZQQLMEjdBPNutZDZxls1Ksc=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=Tu7Y+Rlo/2uV3awMWWYo/b0pa97QUBpko9f1/eGdM935YNhXVevZFFjJqIVZrok2VgxFd1VruSn7T7kFKvUbRmCi1Fwd2SBjwutO21VD8BcKCNtnIZbMoySxzCG+2xu0sVULS21Vs5wp6MfAmUMnZpDxtGoO3lGvTfaZKdKJp2yM4D6PsTnrjRL+NfAKZhdFztEVERpvsdiJpPOJGWpQt7OpKBm/qlQN7TZOWHHHKneCLkA2D074vdh7aRlRmT3RoC1xjp62aYH8f0xkd/wFWUz4DbrsAVj3GoSxeQqEOibctD8U1Ri4NancUAy/jIXlKVIZ1pS7xTRuMHG+ZLO76g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Stozg/e7; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::434; helo=mail-pf1-x434.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=GeHWSf1v;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Stozg/e7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=linusw@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::434; helo=mail-pf1-x434.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x434.google.com (mail-pf1-x434.google.com [IPv6:2607:f8b0:4864:20::434])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hGM755V1tz2xqM
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Aug 2026 08:16:01 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id AD980600B0
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2026 22:15:58 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 679951F000E9
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2026 22:15:58 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1786054558;
-	bh=FAMvGx/Nhy6G1Njdh4xzs4u1ahqLsDIzrreIJAT0dro=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=GeHWSf1vK0xP5n0S8ZIBeWf0LS+oc757SLXAXWVcXXpKzrbfZQZvai7CL/uWGaZ2b
-	 mBV0xfYBGcgP6lFuEXMHu1N1bc6xO+br26UKrRea8Rzax6Dmenpo1ZTXl6pdxnuVAI
-	 DGO5ZXI3kmXkffn4ruOxj8gK+bFu/JsRruC+cZhxV6OwXUDq6dqiFzbJog7/Tp6zvh
-	 CgJipaVj+IdAx57az33LrIH8wm4O652zy5RQzdjTuW4g0qzI55FQQse/PWReGt/Jg/
-	 4i6p5vG0bSgIYQPbCkmXduXCBVY8mj7F8DdiwE+Y2RJEQWjmqN4oN530GhD5zWgyJD
-	 V950dhD5tvvcA==
-Received: by mail-lj1-f169.google.com with SMTP id 38308e7fff4ca-39dbe684115so11998941fa.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Aug 2026 15:15:58 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+RrE0Q40zPw+iQby1ikruFktDPYXFrJoJ71hehq4UM/UFgGsDJrhxOLwyVX4V7wAgHTqZHP2kYKiuzboHro=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Ywkk1CUUPRR5yF9+xrO0Pj877D5XunnJbWj3IG2Hv9IuPdy/Xhx
-	6z0EOrJ2trJNm4OSX0AwYhh1N09VB9YpbTVmtlNWnxR856VryczKBQqP4KELJIGUelrREIASb+E
-	VyMjTN6WRBIw7ar3KwefXtq7qYa0Njx8=
-X-Received: by 2002:a2e:b8c9:0:b0:39f:a24b:bb25 with SMTP id
- 38308e7fff4ca-39fd141cecamr10149251fa.4.1786054557256; Thu, 06 Aug 2026
- 15:15:57 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hGSxl4k5lz306N
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Aug 2026 12:38:18 +1000 (AEST)
+Received: by mail-pf1-x434.google.com with SMTP id d2e1a72fcca58-84eb992a881so2636626b3a.2
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Aug 2026 19:38:18 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1786070296; x=1786675096; darn=lists.ozlabs.org;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
+         :cc:subject:date:message-id:reply-to:content-type;
+        bh=oJdLdIw3eLo0oaT0dX3TZQQLMEjdBPNutZDZxls1Ksc=;
+        b=Stozg/e7cDVRmkNZcJa++9+DTiuwgsqBt+cToQWUJK4tfnZO1ySvnE0FBM5jseYNAk
+         Measbe5gsmX/GHoUyEmSr7AYSpr0FdhocHOs1Pgajr44DV9+yuN/UIrc7FbRGMfI8H0S
+         UZVEztahz5DODIX6W/SORjEu9jibtkRkCIXfArn594opDyAzc3RTfkJahYJGIQ0EZCPw
+         DjNnC3qLsBWeG6eWT1uxMjCatoTOFFoKt7Bmd4Jnlj7sBp8RCNmIRi85W3GJAG7dIUUD
+         P71x9r0m7LOv762dZTKK7ca9kUx0MOC4u8SbZJCBLu/KSGeQB2lIK492e2jXDf+gI6eA
+         4G1w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1786070296; x=1786675096;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=oJdLdIw3eLo0oaT0dX3TZQQLMEjdBPNutZDZxls1Ksc=;
+        b=FSw3j+IAaluhcWDv+6H7FMM3HcbrF4muFF4Zd809ZBsjFU9jBjCAcoVWYFV6AM5f0K
+         uENAXsoJf4JoNvB6OYTrEmQp4nw0TMzhcQawilbcDCxGuIHyCWsSHqpTRr9GktdEc7Ym
+         4FyhpIcPVFjhozogxiYmRkJemdRFcF+++s7fpWXNaGrbKDV5LZgro6uJWQZUIiyab97U
+         mhkvrS/w9Lwk+KmsgSManNbnFfY3knku8KCRzDupScvQAgkdqIC6dRw7d9dA60orO3z0
+         6b2nqbpNOg93ExLHWGZPsjShROif+w2YrXGey1/mbgbavMNoGN9KxjZSNY/Ee5DjBVev
+         hBYg==
+X-Forwarded-Encrypted: i=1; AHgh+Rrq3L/lBRizSIwwIJQ0+jjRTzc19Q4b8Sxjy+oBzNo3KyBKHkYGjNBG3S5l67vMlkX/PctCfmdBEZDLnoM=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yysh374sQ+iSfPVo3RMyTagWUyAl5wsW5R2ibtShRh2bUxeOdAT
+	Gl18qQDerysit6VkpbFc7p+6DAZUN+qq0+2jlKdzR9kz1WbHFmTx5OuF
+X-Gm-Gg: AR+sD11crrTUZsC5uN85AtNmf369ZvhBP/vCZi2/pPlsnHkGed3QeHM/b0GPPilLrXQ
+	mTZLcaBfanKV1gV/LMEJm/z/Xaex3DLMsN3KDr9RZST9xzBOeKt8YW7xqg4w6ebHHOKqRjomwh/
+	I5ODYvT31OtmJDLAQyxl8XQtmN552Li9wqjaGCI4L3rA/bO0KenHNFw8wuwApvOfMeOJnYyXOFZ
+	AKb8QBwA6r6DVfXHDWG7vQZ0rMGN3qMZgfwE+2/PHJBPKrvguV1PFhFB70/481/bqMN1AoCq/X3
+	9cBaQ33xHzi3pSmJjG5zgWsucUmpGatF49Nz8TY9kGrsvZlQbfTGUFnNdwc/IlAwTrZYWVNFI92
+	UlzhZOjV8Ev/XBNPBo1bJJxWzUep00WzJbUDNjo9Yat5+e5I2hACUKEAZlNRL5Xy0pQ+kaWtexE
+	vKd6xse1E2dgxff9dq2h0J+FlAOU7FPouG0Wj9UcRz3QZcy/XnqcZL+SgwYzI=
+X-Received: by 2002:a05:6a21:6089:b0:3c4:2fe1:fa36 with SMTP id adf61e73a8af0-3cbadd74818mr8045427637.36.1786070295864;
+        Thu, 06 Aug 2026 19:38:15 -0700 (PDT)
+Received: from pve-server ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-315beb87d3bsm1585726eec.14.2026.08.06.19.38.11
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 06 Aug 2026 19:38:14 -0700 (PDT)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Gaurav Batra <gbatra@linux.ibm.com>, maddy@linux.ibm.com
+Cc: ltc-dev@lists.linux.ibm.com, sbhat@linux.ibm.com, vaibhav@linux.ibm.com, harshpb@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, donettom@linux.ibm.com, Gaurav Batra <gbatra@linux.ibm.com>, stable@vger.kernel.org
+Subject: Re: [PATCH v5] powerpc/pseries/iommu: Add TCEs for 16GB pages when RAM is pre-mapped
+In-Reply-To: <20260806205027.86428-1-gbatra@linux.ibm.com>
+Date: Fri, 07 Aug 2026 08:05:50 +0530
+Message-ID: <ldailks9.ritesh.list@gmail.com>
+References: <20260806205027.86428-1-gbatra@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -65,34 +89,59 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-References: <20260803223539.86303-1-rosenp@gmail.com>
-In-Reply-To: <20260803223539.86303-1-rosenp@gmail.com>
-From: Linus Walleij <linusw@kernel.org>
-Date: Fri, 7 Aug 2026 00:15:44 +0200
-X-Gmail-Original-Message-ID: <CAD++jLmKBR=nHQ5O5URC9qmgA25X9=xYWQAx-dyRyUGMG+hKmg@mail.gmail.com>
-X-Gm-Features: AUfX_mx3a3U071bMWwj3yWtcfq77UPIZnA-RY7yvDANb6g6jyCQUBXMBouxKQLg
-Message-ID: <CAD++jLmKBR=nHQ5O5URC9qmgA25X9=xYWQAx-dyRyUGMG+hKmg@mail.gmail.com>
-Subject: Re: [PATCHv2 0/8] gpio: move ppc4xx driver to drivers/gpio and modernize
-To: Rosen Penev <rosenp@gmail.com>
-Cc: linux-gpio@vger.kernel.org, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>, 
-	"open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)" <linuxppc-dev@lists.ozlabs.org>, open list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 
-On Tue, Aug 4, 2026 at 12:35=E2=80=AFAM Rosen Penev <rosenp@gmail.com> wrot=
-e:
+Gaurav Batra <gbatra@linux.ibm.com> writes:
 
-> This series moves the ppc4xx GPIO driver from arch/powerpc to
-> drivers/gpio, converts it to be a proper platform driver using
-> generic MMIO helpers, drops architecture-specific accessors, and
-> prepares it for module build and COMPILE_TEST.
+> In powerPC, if Dynamic DMA Window is big enough, RAM is pre-mapped. To
+> determine the size of RAM, a PAPR+ property "ibm,lrdr-capacity" is used.
+> This OF property dictates what is the max size of RAM an LPAR can have,
+> including DR added memory.
+>
+> In PowerPC, 16GB pages can be allocated at machine level and then
+> assigned to LPARs. These 16GB pages are added to LPAR memory at the time
+> of boot. The address range for these 16GB pages is above MAX RAM an LPAR
+> can have (ibm,lrdr-capacity). In the current implementation, these 16GB
+> pages are being excluded from pre-mapped TCEs. A driver can have DMA
+> buffers allocated from 16GB pages. This results in platform to raise an
+> EEH when DMA is attempted on buffers in 16GB memory range.
+>
+> commit 6aa989ab2bd0 ("powerpc/pseries/iommu: memory notifier incorrectly
+> adds TCEs for pmemory")
+>
+> Prior to the above patch, memblock_end_of_DRAM() was being used to
+> determine the MAX memory of an LPAR. This included 16GB pages as well.
+> The issue with using memblock_end_of_DRAM() is that when pmemory is
+> converted to RAM via daxctl command, the DDW engine will incorrectly try
+> to add TCEs for pmemory as well.
+>
+> Below is the address distribution of RAM, 16GB pages and pmemory for an
+> LPAR with max memory of 256GB, memory allocated 64GB, 2 16GB pages and
+> assigned pmemory of 8GB.
+>
+> RANGE                                 SIZE  STATE REMOVABLE     BLOCK
+> 0x0000000000000000-0x0000000fffffffff  64G online       yes     0-255
+> 0x0000004000000000-0x00000047ffffffff  32G online       yes 1024-1151
+>
+> cat /sys/bus/nd/devices/region0/resource
+> 0x40100000000
+> cat /sys/bus/nd/devices/region0/size
+> 8589934592
+>
+> The approach to fix this problem is to revert back the code changes
+> introduced by the above patch and to stash away the MAX memory of an
+> LPAR, including 16GB pages, at the LPAR boot time. This value is then
+> used whenever TCEs are needed to be pre-mapped - enable_DDW() or,
+> iommu_mem_notifier()
+>
+> Fixes: 6aa989ab2bd0 ("powerpc/pseries/iommu: memory notifier incorrectly adds TCEs for pmemory")
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Gaurav Batra <gbatra@linux.ibm.com>
 
-Excellent patches!
-Reviewed-by: Linus Walleij <linusw@kernel.org>
+Thanks for addressing the review comments.
+BTW - we should really cleanup enable_ddw() function. It has so many
+corner cases and has started to become confusing. But as for this patch
+it looks good to me. So, please feel free to add:
 
-Yours,
-Linus Walleij
+Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+
 
