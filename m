@@ -1,107 +1,86 @@
-Return-Path: <linuxppc-dev+bounces-25609-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25610-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CAC1FC5AC7A
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Aug 2026 17:01:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0B728C2A09B
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Aug 2026 17:25:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hGr5x5Llyz3c7K;
-	Sat, 08 Aug 2026 03:01:41 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c10d::3" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786122101;
-	cv=pass; b=TsoKOUWai3Ch9vvkSkXrSMnveSqm3dIuC4Q4yvMoBTAlpbZe5o+9/tUxLbdJ8tcjWefZ1KxMOHCuUG4zBo2JIHcNFezaUfsWKpMo8uis9d/oYKSL9ApfRor6rQZV3mU26wsfB+1jYvLRAjoz9Hkx7mqMfzafFTFMFwmzGTi75tfbsQAs1UrkN7wN9UpXN+t8AtA5kBQiDbQjowUYAtzwgQMl8f6cudlgtN3P/I6OdDzYlADfWCF7Q79cKEeFHQm95OJq2Z2fAhdJCf33hoSt0GC71AAR0CSIVfzgL1y9knvNVHA4bXd+s/RDDlYNgiOusBUb4lxpvuyibTnRoTv5yA==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786122101; c=relaxed/relaxed;
-	bh=ZKVLhd1nZ5h4b188dd5r7DRqSKQCAYkPGXkJXHWpxNw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=kBy00cFM353aKkxrHn8lHznG64zvhoxiT3TwWQn3Usn92lTaDhSRO7b4HMPyeRwP3uG2QrLbYy44rzQMzbMuk8Hp+h73asxTCbrEMqG9VyYljDbU4prZNcCpv5bp4eV+ZY4GmbR9v56yaJdGOBa3tVmxSoOfbHx3/i2jEqp1f9aXsZicyLad6DdFnh8YGH5mZfAe6G6azwT9mdbrSVYLpjhQP+QO18Orgm7GM+bvPcIYU5YmmWFNEFW01tZEwbtwI3NVAt7T2FIC4w8xSIzK65Do8ZRzgoORFi0A148e6UJYROGJ8NNmRDiZvUUMaKzSIqAjPSUe15MizFop5a+BPQ==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=n3KS3WFY; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c10d::3; helo=sn4pr0501cu005.outbound.protection.outlook.com; envelope-from=jgg@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hGrcx4t8gz3c7H;
+	Sat, 08 Aug 2026 03:25:05 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786123505;
+	cv=none; b=DYcsy+JLAZPyu5SZCz5GMxckShLOHzw0TJV6O1Ei+VfMMKW/itFZXueIvflRElll0xDm7Y9SQhpuj4HylqLjrfMsDxmVoE4+11qkAqKZxj/wtvgyAhp3p/LnvuiPETr1W1O/qxxJn1Phlvh2sk8hMSFD7p0XFXR9h9RHMjBKC+Fo00tMfOaFB5Eb7Rm86Jt2AcWCIBUfoDlPNYPQ7LK/rZa/XiEkFFB9FFnj/MXzItydrCRFGtHoZycaVK9BRm08jaYp/gnLC5Q1/ds79NzvwJTJEtoQmWIL6vuPDqgpFkl7SqKqDHgJQnWWx/xo/EtHie24mC9NXGcsUgPWqjAkjg==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1786123505; c=relaxed/relaxed;
+	bh=6zXcROzwnPwPNTPbSGxkyl3EGFh9uFhqtCcqOGeviVc=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=lNDxLgvQD297Snx3Ilk6dl/Ke5Sol2eBNkcTYwVnZMD83HYmgHN+V/e68skrU3Vatc73xrLHyICC6r4Zs/iXOfwwt6fNx/8l3MJ14XDOpuYEeoFJ7ToJotBkzoCSZEG1HpHpdy7lMPf7Wh888pu4bDZHFAYdbJev6uP5JWisVo4Fogyjm89opwQXQmM0C7MDdX568PyxovGXBGazKQjJB/WVOi7y5mMv52sVCCYDsRtbeHKzfNHlU/NlbyHBq9j3uFDXDWYedK1l6+9uWHqOBofx4Ng2Do4+M2CYrni0vUPi9S2ccReWBGeEh7709Y1WC7KHgGD5c7b+F5eJ9rda1w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PMox8cLq; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=n3KS3WFY;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PMox8cLq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:c10d::3; helo=sn4pr0501cu005.outbound.protection.outlook.com; envelope-from=jgg@nvidia.com; receiver=lists.ozlabs.org)
-Received: from SN4PR0501CU005.outbound.protection.outlook.com (mail-southcentralusazlp170110003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c10d::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hGr5w4NpTz3c78
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 08 Aug 2026 03:01:40 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=VUumVAv/8f0bCx4HBs8PKdQj1WnFBkjLUZfU3Rv5jHwSmUHhBLcjViMhd49uGBjQLbBM+Je1j8snAdC/GYDqH2DK2KzCeFbcpBe83pK4ZrnwUOQvUUqljl460w1NaVF062PKRVqTCi//PHVJPYBVm9TBMGXe8F1tK5DjLC7//lzkWhX1ip+s4Gq5h+330Vre4qn5ZBBQAYON0tKC9iD9buRSxouknOL/yQi0QJAKvO8Tnfese4ns1JhSm5fwCApPdtwKol6OxNNqC/OX+5VWf2mxtNtGX1kobu5B8JvSb+P9V4VqadzWDk8FRiAPGkNxAH0kKzlRYx+4VM1SB5KcbA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=ZKVLhd1nZ5h4b188dd5r7DRqSKQCAYkPGXkJXHWpxNw=;
- b=cgsLXWalWVYCBj71HcluYgAFV5o8exMPgznZdcTXBZSwaMA0zv5MdpY9BxIPYsMusj5XPEyehSgtpSH3+7vOYMlvSQvT3MGkSUFQKrKyzQS5MdLDMh4MNQKK+wfW5AFBuaSV2j9zmiA7GhUh7v8rCGs3Gt2A2P1K/PJTZF6WKUW4ZbOeoIrxsResoZqEm6Xp9VX5lPEeM6q0HQ4UEemwFGVNLPBfaR92oO/TN+fioiRdTk0if8ceAQS8DDVIbDCcJ3FUjko6tGi6bkpmOwrTYTjVzkKqzULLOVi/Tnlobu6AL0wP9VD56moHxuojIbvh1um+GsTRiMIX6Pder/WykQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=ZKVLhd1nZ5h4b188dd5r7DRqSKQCAYkPGXkJXHWpxNw=;
- b=n3KS3WFY4Pd+aS3n2h3p6gAmSZD0swLSMs1vBJcYHevSfHBIL6kot9eAAEKn4euM/ps/m9/8vMC86n449ZkzoJyisjDxBJ5mZIpZ7KL/Scw6jBWvRoh/iJZqleI/S+TkTnp6g03f9mytP+kJc8KWfDoBLSWytLfLb+m2cc9Dqe8LA0i3YQ4xxu8YGKg8a85WRcR6Up5zwBsOS/cArvUBzPet+IRm0/Q8aHBxUnVIh4KhhX9aCSH4llKsS8hkU96Q/gEGYXLyVu22qK0DOxjV6pfnLq+5J2FPP3TkAd+tkz1A3nAZCXEEG3ZcDGfPs6kmyDWf5JYAn5GfgAY7x/gEMg==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from LV8PR12MB9620.namprd12.prod.outlook.com (2603:10b6:408:2a1::19)
- by SJ2PR12MB8944.namprd12.prod.outlook.com (2603:10b6:a03:53e::5) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.270.17; Fri, 7 Aug
- 2026 17:01:06 +0000
-Received: from LV8PR12MB9620.namprd12.prod.outlook.com
- ([fe80::299d:f5e0:3550:1528]) by LV8PR12MB9620.namprd12.prod.outlook.com
- ([fe80::299d:f5e0:3550:1528%4]) with mapi id 15.21.0292.022; Fri, 7 Aug 2026
- 17:01:06 +0000
-Date: Fri, 7 Aug 2026 14:01:04 -0300
-From: Jason Gunthorpe <jgg@nvidia.com>
-To: Robin Murphy <robin.murphy@arm.com>
-Cc: Mostafa Saleh <smostafa@google.com>,
-	"Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, iommu@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	linux-coco@lists.linux.dev,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
-	Steven Price <steven.price@arm.com>,
-	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Jiri Pirko <jiri@resnulli.us>, Petr Tesarik <ptesarik@suse.com>,
-	Alexey Kardashevskiy <aik@amd.com>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Xu Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
-	linux-s390@vger.kernel.org,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org,
-	Michael Kelley <mhklinux@outlook.com>
-Subject: Re: [PATCH v8 12/23] dma: swiotlb: pass mapping attributes by
- reference
-Message-ID: <20260807170104.GB158689@nvidia.com>
-References: <ami_mpd_1pF4Tmdu@google.com>
- <yq5a5x1ygo7z.fsf@kernel.org>
- <amnRB98ZZIysHuM3@google.com>
- <yq5acxw6dl1d.fsf@kernel.org>
- <20260804142032.GC27883@nvidia.com>
- <anL9-OrDGqYQAWNV@google.com>
- <20260805123023.GO27883@nvidia.com>
- <0ce2249d-3a64-4889-b455-0e8fddcc7282@arm.com>
- <20260807115500.GA158689@nvidia.com>
- <aefab683-598c-4cca-b5a0-c9081ccf9e1c@arm.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <aefab683-598c-4cca-b5a0-c9081ccf9e1c@arm.com>
-X-ClientProxiedBy: BN9PR03CA0308.namprd03.prod.outlook.com
- (2603:10b6:408:112::13) To LV8PR12MB9620.namprd12.prod.outlook.com
- (2603:10b6:408:2a1::19)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hGrcw65nVz3c6f
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 08 Aug 2026 03:25:04 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 677GlWoi2000828;
+	Fri, 7 Aug 2026 17:24:47 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=6zXcROzwnPwPNTPbSGxkyl3EGFh9uFhqtCcqOGevi
+	Vc=; b=PMox8cLqAPVJwVRiBATYaZYQWXOdqyfNXCTmKmcI8tEnRb6oZlmqb/3uf
+	NDsWqYF43eN4eGnZSM7zWwzUMGm5stHPhh03xqOZfXOHS5s5KFAFuD9lXELoK6wJ
+	7FB8emE7nuF2MuoXvJnREHRyhfwRDMVmHobhcI9xHiRQLwD7OhAH7CAP/rX60zvY
+	E/nX6kuN/eBJGPPHidFpa9yswXkniyA8aNsD1TyeZKA1f35ADSGKjQ1J3gfV3rky
+	EnbWrNZnECUvLXe8c4QOuyAURkXRweDe7C0UBxKWddNnayGPZKgo9L86QovshKPv
+	RKArwbJQEJJzK0LKVDH8j+BLS5sZg==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fvy0453a6-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 07 Aug 2026 17:24:47 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 677HBIYM013485;
+	Fri, 7 Aug 2026 17:24:46 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fswu00e3x-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 07 Aug 2026 17:24:46 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 677HOgVN38469968
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 7 Aug 2026 17:24:42 GMT
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 375F620043;
+	Fri,  7 Aug 2026 17:24:42 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 9B5A720040;
+	Fri,  7 Aug 2026 17:24:38 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.124.216.72])
+	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri,  7 Aug 2026 17:24:38 +0000 (GMT)
+From: Amit Machhiwal <amachhiw@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Vaibhav Jain <vaibhav@linux.ibm.com>,
+        Amit Machhiwal <amachhiw@linux.ibm.com>,
+        Anushree Mathur <anushree.mathur@linux.ibm.com>,
+        Paolo Bonzini <pbonzini@redhat.com>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+        Jonathan Corbet <corbet@lwn.net>,
+        Shuah Khan <skhan@linuxfoundation.org>,
+        Ritesh Harjani <ritesh.list@gmail.com>, kvm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org
+Subject: [PATCH v8 0/4] KVM: PPC: Expose CPU compatibility modes for nested guests
+Date: Fri,  7 Aug 2026 22:54:29 +0530
+Message-ID: <20260807172433.82045-1-amachhiw@linux.ibm.com>
+X-Mailer: git-send-email 2.50.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -115,136 +94,235 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: LV8PR12MB9620:EE_|SJ2PR12MB8944:EE_
-X-MS-Office365-Filtering-Correlation-Id: 3197774e-aa91-4af5-08dd-08def4a5782e
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|1800799024|23010399003|376014|7416014|18002099003|11063799006|4143699003|22082099003|6133799003|10067099003|56012099006;
-X-Microsoft-Antispam-Message-Info:
-	TmTctxJNrEvbadwM6ehviUBJp/fprcKz4yw2emMklxX0Ap7wVavsomoXwkIDxa7GeDSMgmPVY38T3c50nG5hb7dl1LomTvlapYwoXzlFkgIyRnzpRdQY7A67NEsZ/qafoybQZE1xUru9ZFzUNUAUj/AX7m1C2mdvrPa1o+7vqpf2ce/7LQCMTaRG40rL1JojObwOWhyI+9qwXo1ITS9RjcU7khWHT8/zMOzM1ZnuIdbr6U2zVc3wNOPGqKy8EgoJS0EvuLOGC1M9xmjygHiZ7DFO6raCgGVmSC97n5F7IfRImWUaOFRoiU9TlRkGiTZ+gtzswoBKnI1aX6rwAZ5efv4WHA5AAEI+QzNjs+5rw/xhhp/+r6IlDrXAxLoYGRReGSS2UN2PcqzBYu498Hih2+TG6crt51Uj59CVNjX+iaX0jEJF/qKQ34GetUuMHhqfnkZ66XckpZ5meJSyl7fgVcJltipHf7DeEEiuPuSpgFCjn9w9Xx+LPcl5+/7ym18KXbydndhIMmrJS8N+PThjViWSJzRbNOJU5H2firAXUNal6HzUGYe/EvQle1BwOaJLYqYy2QLhqSH8ptQ4TzgA1c+y+P9+ares7UGD7bUEZjW6+arT44zkxPfrlL80v/0U9Qr85yRF3WE9ff9+xnQqMEUpG/OtXBITO53z609KBIc=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LV8PR12MB9620.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(23010399003)(376014)(7416014)(18002099003)(11063799006)(4143699003)(22082099003)(6133799003)(10067099003)(56012099006);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?fxVGUP1tf9Xo8j0QmRgguvkRJ8zU6l6TNIdQLIkIvii0vssXiWiIOWN8AVUd?=
- =?us-ascii?Q?zg8f/QqMcuNCiwdfmGOAWNX5FHzuuqYZ66oNGkzsbSLxNbRLERucAkfzOVcA?=
- =?us-ascii?Q?gwuc1I9okwGW50MtsWeCyrjIkbGpqrdXJ8eLzmDKWs0KMdyxWaWCLEixQk8Q?=
- =?us-ascii?Q?tLINT3rSZpGze3h5BxExlJ6jr2sdsCKeLPeAgXG2CmSgiJQM2m5TunMloQVM?=
- =?us-ascii?Q?UhfYl4tDW3b7YZhC6pYZMV5I5Z4Wze4yOenDZD9mWUvk6k0ChyJPaBd+XChO?=
- =?us-ascii?Q?07ztJM1DM5TeP36ZCYwaxIeHmF6DMQOkHDATJZhhyWkEMVFk8str7qKv4PjF?=
- =?us-ascii?Q?i2LB+Wfxwb26VtR+7k9hIr5wkHtRFAeuJCobIwaxMwbgrOfJBGeSgn3YaLP4?=
- =?us-ascii?Q?HHkdrBBEfzgxL4JTBIKY87ql4U7gh/A0IZf3r1MPJAc2yph45y9tMDydixnt?=
- =?us-ascii?Q?u1a7mc9kLiSwtkrYY1Lg+CMNVDJkQkVTEUFGdMbkVGi2ttFiJUJCZ4fjvWhe?=
- =?us-ascii?Q?kAklRsLEu+HD68Wzg3T3oN647/q0Z/ptW+IWprXR+rKMb2Ue05zepHFw/sVG?=
- =?us-ascii?Q?9a+gAmmZDgE50yJ1a9colMi5KJH3SFNPfAJwu4cdznTg+QzVAFGxwsuYGgkn?=
- =?us-ascii?Q?G2gG2rTZRTQib0K5cI3IaPb7rAHlGxp6WhkQVdov0SIb/e2eu+FSPg/rozJR?=
- =?us-ascii?Q?toq0350DAdEX15v2JkRfo38g0yYRq9G//tJo9+ivoRMm7RxDMCGK5AqNtzGz?=
- =?us-ascii?Q?ZaLyLuKqWGqAmXNnPpSUhLe0ZxMmF1rtcTz5VmpxOw0hkNdpsq880nW6ZURl?=
- =?us-ascii?Q?xL+KL8NO7oiiv78DAkgtr8bi45Oy9RZcEgl+3uVrzRMklB3XNjwbw0DDIUUw?=
- =?us-ascii?Q?ac4bTUbnqbLhDMaTGVinFqHXidSQJx8C4hwBfLU+SDY1PRVOaWi3jpLUoUdw?=
- =?us-ascii?Q?QXJVKXdAZ8/5s6F5nQMI7o9JKl53J22AxCZmZXgfRKNzIScaMTQdZn44wmLY?=
- =?us-ascii?Q?kPEAjqtY1dVVctnd6Iu/fnG/WXRTwcwncBOChCvh/3PC8cKrGyuOCsS+fQw+?=
- =?us-ascii?Q?sxu36v101WcCn240A9zf1i53edVjw1QDzcnsvovVczTNy573GdhTxjnpZt83?=
- =?us-ascii?Q?CIoYb/nO1GQXStJjLZFZ3WQ6wOUnoCRJQw+Kg1Lxe0gvDMd8tLucLP5VMDCU?=
- =?us-ascii?Q?lejeRYbAl+opHg/fd8VylK9y7gzdM8NJNnkJVQDBLetwbVU7GQTMY8BvbkJ/?=
- =?us-ascii?Q?fGenVHbCer/vsCAtfTs3beY6tIhxz0oWnyrMzgV7uk9W0lufSYqXhabpGQLl?=
- =?us-ascii?Q?yLfpdf4r0fXhiprx4dvUxRnupyhZIviEA3xorAvwuTLbHxbjIUat6HmCmrlv?=
- =?us-ascii?Q?Bas/IxgCLIQ95u7qvQ+zaydSB1OWGAgW9tUxKMdJYXWp+6MmpQTX/EzejFqf?=
- =?us-ascii?Q?Q/2HsUpw3dqgUPAC01wO6lL3woRFTN59nBVqmeG3MRao9sJIyJLxlH+2SD2p?=
- =?us-ascii?Q?W0JqKaC3jlutcE1Yp/vVzoMqNAoVmia1s7u6k+TVyacamJHFOAqlhO+agu0p?=
- =?us-ascii?Q?vgOp/mbJpAAA34Rvu7edVK2Xz3+a9ul2TtOrJ41+eA97+hUhhyLeq/avuB6X?=
- =?us-ascii?Q?FDtkfa9jwKFQRgv9VQHgeoWr/GmZRdVdhbVY6ZcCWnNHXE9vGtUWtClj05ie?=
- =?us-ascii?Q?23w5/XZtDC8YsRd53/qoFnCYZ8BqK9jK0wZCbOMsVxAs1kMXOJn8lW4pShrH?=
- =?us-ascii?Q?IKBuE4+22A=3D=3D?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 3197774e-aa91-4af5-08dd-08def4a5782e
-X-MS-Exchange-CrossTenant-AuthSource: LV8PR12MB9620.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 07 Aug 2026 17:01:06.0674
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: jyBUpASbiSJd5Hs5s+e0CZXGjcECJ2aiyh6J6cRnwCWS1TVyi95Yr3eB2zAypUxS
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ2PR12MB8944
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODA3MDEzNSBTYWx0ZWRfX1jDcFaET/iGx
+ GD26NqgO0S/My8eWJ+e/Lo00PUjQXyO85afStQVxat/FzYIY7UtmL993ZLXo+uYeDHzh9qFW+tL
+ AzexsK5MtyZffSn6l0i7xzuDppJlz3Y2nrdunvV6bYeNrbNjv2oMKrJWa2rIhbQxl1lfE0rXSxZ
+ 3b299FpiZSdx+9uZYGqkrFC8P4VH9V71WH8bI48Zg+D5v1aC8MFXh96P0jiSMNjwiLFh0PCU79S
+ I+eHUZZZ7YoGLca3vtYIIqy56iEz/83imAFHQ8Shx8XRCHzw5pFLbajgHUZlkRnaL2mSxt//JbK
+ 1wHOR92yzwUZNqoPxAkbksSTDpJckldgGc1ZDxLIptBH8mpkN/QBlFMQL6duCKsx2TfGGMzfevn
+ D3CA2axrF1Adz7iZMrhd6tp5BaResQtAcMkJDXPO7U4ap0pYmrdT8mcy6oX6CxDDeboRiwMdjLY
+ JjBlZS5bYMVSGVdq3cg==
+X-Proofpoint-ORIG-GUID: 75o5t-FBHQuXH7CaBpL_lBEwvwmXAORk
+X-Proofpoint-GUID: jRMFwv4TaiYrO9vTtrGRBdEi3Fx3mliT
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODA3MDEzNSBTYWx0ZWRfX3XkNQ1j/4xFA
+ TugffiAPdQa3mwRWJ0+ubIR4ytaC90r90r2ejSYFomsSb3B7pAU/lFjqfYeU+BYFlbE1A5BRURt
+ M3LyK33Mh4JbdG6Z5PLHGgcnTEpSSPY=
+X-Authority-Analysis: v=2.4 cv=WLpPmHsR c=1 sm=1 tr=0 ts=6a7614df cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=iQ6ETzBq9ecOQQE5vZCe:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
+ a=h7u5zJOLz3W6SXC_pSsA:9
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-08-07_03,2026-08-07_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 lowpriorityscore=0 adultscore=0 malwarescore=0 clxscore=1015
+ impostorscore=0 priorityscore=1501 phishscore=0 suspectscore=0 spamscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608070135
 
-On Fri, Aug 07, 2026 at 04:54:35PM +0100, Robin Murphy wrote:
+On POWER systems, newer processor generations can operate in compatibility
+modes corresponding to earlier generations (e.g., a Power11 system running
+in Power10 compatibility mode). In such cases, the effective CPU level
+exposed to guests differs from the physical processor generation.
 
-> > We will need to teach GIC to understand if/when the device uses a T=0
-> > translation for MSI and then use a shared physical address for the ITS
-> > IOVA instead of getting an IOVA translation from the iommu. The
-> > hypervisor will setup the S2 for the T=0 SMMU translation to be
-> > identity with all shared memory and the ITS page will be shared
-> > memory.
-> 
-> IIRC, for MSI or unlocked MSI-X it should look and work pretty much exactly
-> like regular VFIO, as everything can be mediated by the VMM and host kernel.
+This creates a problem for nested virtualization. When booting a nested KVM
+guest (L2) inside a host KVM guest (L1) running in a compatibility mode,
+userspace (e.g., QEMU) may derive the CPU model from the raw hardware PVR
+and attempt to configure the nested guest accordingly. However, the L1
+partition is constrained by the compatibility level negotiated with the
+hypervisor (L0), and requests exceeding that level are rejected, leading to
+guest boot failures such as:
 
-Right
+  KVM-NESTEDv2: couldn't set guest wide elements
 
-> > Presumably in future we will have HW to handle a T=1 ITS page access
-> > and some way to negotiate with devices if they should use a T=1 path
-> > for MSI or not.
-> 
-> Locked MSI-X would be a pain right now as we cannot intercept the Realm
-> programming the MSI-X cap with a doorbell address and EventID value decided
-> by the ITS driver in the Realm guest, so we'd somehow have to sniff those
-> values out of the VMM's vITS emulation then try to configure an equivalent
-> NS LPI to match, or have a hook in the ITS driver that knows when it's in a
-> Realm and do some RSI handshake to proxy-allocate NS MSI vectors on the host
-> and pass the real values back into the Realm.
+This series provides a mechanism for userspace to query the effective CPU
+compatibility modes supported by the host, so it can select an appropriate
+CPU model for nested guests.
 
-Yes, we'd need to move to a model where the guest programs MSI
-directly and we learn the configuration required to emulate through
-the vGIC, not through MSI trapping. This broadly is the "righter" way
-to do interrupt routing but it will be hard to get there, if ever.
+To achieve this, the series introduces a new KVM capability and ioctl
+(KVM_CAP_PPC_COMPAT_CAPS / KVM_PPC_GET_COMPAT_CAPS) that expose the
+compatibility modes supported by the host.
 
-> I'm still hoping we (both CCA and possibly Linux in general) can get away
-> with just refusing to support Locked MSI-X without GICv5, as once we have
-> proper Realm MSIs with direct injection then all the problems go away (or at
-> least become much smaller RMM problems that remain invisible to the host -
-> the one "big" problem being that the RMM has to begrudgingly implement an
-> entire GIC driver since it now has its own whole GIC to look after).
+Why a new UAPI?
+===============
+While cpu-version is available in /proc/device-tree/cpus/<cpu#>/cpu-version
+on both L1 booted on PowerNV and PowerVM LPARs, the UAPI approach is
+preferable for several reasons:
 
-Yeah, I'm fine with this, if GICv5 can allow direct MSI-X programming
-then great.
+1. pHYP (L0) capabilities: On PowerVM, we need to rely on capabilities
+   negotiated with pHYP in KVM, not just device tree properties. The
+   cpu-version property depicts the current compat mode but doesn't point
+   to what all compat modes are supported for the nested guest.
 
-Devices are going to need some way to negotiate if MSI-X is locked, and
-if MSI is T=1 or not, I don't know if PCI has something for that
-already..
+2. procfs dependency: Not all systems run with procfs enabled (CONFIG_PROC_FS
+   is optional). Minimal configurations like buildroot might disable it, but
+   KVM ioctl works regardless since it accesses kernel data structures
+   directly.
 
-> > There won't be a vSMMU attached to the T=0 instance at all, it is just
-> > wired to be bypass.
-> 
-> If that's all anyone will ever want then it does allow some degree of
-> hackery like mirroring the whole of Realm S2 in an equivalent NS IOMMUFD
-> domain, then forcing IOMMU_DOMAIN_IDENTITY for unaccepted devices within the
-> guest. However I was under the impression that folks want to make meaningful
-> use of devices while still in their untrusted pre-acceptance state (but
-> maybe still switch them later), so it seems almost inevitable that
-> eventually someone says "actually, we would like S1 vSMMU for untrusted
-> scatter-gather as well..."
+3. Kernel validation: The kernel validates and normalizes the compatibility
+   information, ensuring userspace gets validated, consistent data.
 
-So far almost all VMs today don't use vIOMMU at all, the ones that do
-are using it for things like PASID (or interrupt remapping on x86),
-not for translation. The cases where a vIOMMU is deliberately needed
-for translation seem to be mostly around SVA and PASID which isn't
-going to meaningfully work out of the box on a T=0 device.
+4. Abstraction & stability: /proc/device-tree is an implementation detail.
+   The UAPI provides a stable interface that won't break if the underlying
+   mechanism changes.
 
-My prediction is this is fine. 
+5. Semantic clarity: KVM_PPC_GET_COMPAT_CAPS clearly expresses what
+   compatibility modes can be used for KVM guests, vs. parsing device tree
+   which requires understanding the semantic meaning of cpu-version.
 
-At least it is sufficiently hard to make two parallel vSMMU's
-controlling the same PCI device, and to make the ITS routing also
-somehow work right, that it isn't worth doing at this point when there
-is so much other more basic stuff to get done.
+The implementation supports both:
 
-I imagine the ACPI might someday gain a description of the T=0 vSMMU
-in a way that is invisible to todays Linux and a future Linux could
-understand how to juggle the two iommu drivers for the same struct
-device, somehow.
+  - KVM on PowerVM (nested API v2), where compatibility information is
+    served from the cached nested_capabilities value, originally obtained
+    via the H_GUEST_GET_CAPABILITIES hypercall at module init.
+  - KVM on PowerNV (nested API v1), where compatibility is derived from the
+    device tree ("cpu-version") representing the effective processor
+    compatibility level.
 
-Regards,
-Jason
+This allows userspace (e.g., QEMU) to select a CPU model consistent with
+the host compatibility mode, avoiding mismatches and enabling successful
+nested guest boot.
+
+Note: This series is built on top of patch [1] which must be applied first.
+Patch [1] ensures arch_compat is validated against the host compatibility
+mode before this series adds the capability query mechanism.
+Commit e4de1b9cb3b5 ("powerpc/dt_cpu_ftrs: Set CPU_FTR_P11_PVR for Power11
+and later processors") which was also a prerequisite has been merged upstream.
+
+Changes in v8:
+ - Add PAGE_SIZE guard after get_user() to bound the check_zeroed_user()
+   scan in the usize > ksize path [Ritesh]
+ - Drop the manual usize > sizeof(host_caps) pre-check; delegate the
+   usize > ksize path entirely to copy_struct_from_user(), which succeeds
+   when trailing bytes are zero (valid forward-compat) and returns -E2BIG
+   only when they are non-zero. Handle -E2BIG by writing back ksize with
+   proper -EFAULT escalation if put_user() fails. [Ritesh]
+ - Fix host_caps.size writeback on success path: use
+   min_t(u64, usize, sizeof(host_caps)) instead of sizeof(host_caps) to
+   avoid reporting a larger size than the kernel actually populated when
+   new userspace passes a larger struct with zero trailing bytes. [Ritesh]
+ - Update documentation to reflect the corrected three-case versioning
+   contract and the revised E2BIG semantics. [Ritesh]
+
+Patch summary:
+  [1/4] Introduce KVM_CAP_PPC_COMPAT_CAPS and wire up ioctl
+  [2/4] Implement capability retrieval for KVM on PowerVM (API v2)
+  [3/4] Add KVM on PowerNV support (API v1)
+  [4/4] Document the new ioctl
+
+Testing (with QEMU v5 patches and on top of patch [1]):
+
+KVM APIv1 Testing
+=================
+  On P10 PowerNV machine (L0)
+  ---------------------------
+    - P10 L1 KVM guest -> works
+      - P10 nested L2 KVM guest -> works
+      - P9 compat nested L2 KVM guest -> works
+    - P9 compat L1 KVM guest -> works
+      - P9 nested L2 KVM guest -> works
+
+  On Powernv11 TCG Guest (L0)
+  ---------------------------
+    - P11 PowerNV TCG L0 guest -> works
+    - P11 L1 KVM guest -> works
+      - P11 L2 KVM guest -> works
+    - P10 compat L1 KVM guest -> works
+      - P10 L2 KVM guest -> works
+    - P9  compat L1 KVM guest -> works
+      - P9 L2 KVM guest -> works
+
+KVM APIv2 Testing
+=================
+  On P11 PowerVM LPAR (L1)
+  ------------------------
+    - P11 L2 KVM guest -> works
+    - P10 compat L2 KVM guest -> works
+    - P9 compat L2 KVM guest fails to boot as expected
+    - Without QEMU patches but Linux patches
+      - P11 L2 KVM guest -> works
+      - P10 compat L2 KVM guest -> works
+      - P9 compat L2 KVM guest fails to boot as expected
+    - Without Linux patches but QEMU patches
+      - P11 L2 KVM guest -> works
+      - P10 compat L2 KVM guest -> works
+
+  On P11 LPAR in P10 compat (L1)
+  ------------------------------
+    - P10 (host compat) L2 KVM guest -> works
+    - Without QEMU patch but Linux patches
+      - P10 guest fails to boot as expected (error: kvm run failed Invalid argument)
+    - Without Linux patch but QEMU patches
+      - P10 guest fails to boot as expected (KVM: unknown exit, hardware reason ffffffffffffffea)
+
+  On P10 PowerVM LPAR (L1)
+  ------------------------
+    - P10 L2 KVM guest -> works
+    - P9 compat L2 KVM guest fails to boot as expected
+
+TCG pSeries Guest
+=================
+    - P11 (default) pSeries guest boots fine
+
+ABI Extensibility Testing (struct size 32, extra member)
+=========================================================
+    - Newer struct on QEMU, older kernel -> works (kernel returns -E2BIG,
+      QEMU retries with correct size)
+    - New struct on Linux kernel, older QEMU -> works (kernel zero-pads
+      trailing fields, QEMU gets correct data)
+
+With this series, nested guests boot successfully in configurations where
+they previously failed due to compatibility mismatches.
+
+Related QEMU series:
+====================
+QEMU v5 series:
+https://lore.kernel.org/all/20260804182914.83091-1-amachhiw@linux.ibm.com/
+
+Previous QEMU versions:
+v4: https://lore.kernel.org/all/20260701052341.62289-1-amachhiw@linux.ibm.com/
+v3: https://lore.kernel.org/all/20260616113915.25589-1-amachhiw@linux.ibm.com/
+v2: https://lore.kernel.org/all/20260502140021.69712-1-amachhiw@linux.ibm.com/
+v1: https://lore.kernel.org/all/20260430061333.37905-1-amachhiw@linux.ibm.com/
+
+Previous versions:
+==================
+v7: https://lore.kernel.org/linuxppc-dev/20260806170645.11892-1-amachhiw@linux.ibm.com/
+v6: https://lore.kernel.org/linuxppc-dev/20260804180705.59160-1-amachhiw@linux.ibm.com/
+v5: https://lore.kernel.org/linuxppc-dev/20260701051409.51820-1-amachhiw@linux.ibm.com/
+v4: https://lore.kernel.org/linuxppc-dev/20260616123314.82721-1-amachhiw@linux.ibm.com/
+v3: https://lore.kernel.org/linuxppc-dev/20260522152744.55251-1-amachhiw@linux.ibm.com/
+v2: https://lore.kernel.org/linuxppc-dev/20260513100755.83195-1-amachhiw@linux.ibm.com/
+v1: https://lore.kernel.org/linuxppc-dev/20260430054906.94431-1-amachhiw@linux.ibm.com/
+
+References:
+===========
+[1] https://lore.kernel.org/all/20260714175432.86388-1-amachhiw@linux.ibm.com/
+
+Amit Machhiwal (4):
+  KVM: PPC: Introduce KVM_CAP_PPC_COMPAT_CAPS and wire up ioctl
+  KVM: PPC: Book3S HV: Implement compat CPU capability retrieval for KVM
+    on PowerVM
+  KVM: PPC: Book3S HV: Add support for compat CPU capabilities for KVM
+    on PowerNV
+  KVM: PPC: Document KVM_PPC_GET_COMPAT_CAPS ioctl
+
+ Documentation/virt/kvm/api.rst      | 89 +++++++++++++++++++++++++++++
+ arch/powerpc/include/asm/kvm_ppc.h  |  1 +
+ arch/powerpc/include/uapi/asm/kvm.h | 18 ++++++
+ arch/powerpc/kvm/book3s_hv.c        | 56 ++++++++++++++++++
+ arch/powerpc/kvm/powerpc.c          | 78 +++++++++++++++++++++++++
+ include/uapi/linux/kvm.h            |  3 +
+ 6 files changed, 245 insertions(+)
+
+
+base-commit: f9a2394a23482bfd330911e9c8295b71724feacd
+prerequisite-patch-id: 7755786f0e4f415e47065ff1972765008727fe10
+-- 
+2.50.1 (Apple Git-155)
+
 
