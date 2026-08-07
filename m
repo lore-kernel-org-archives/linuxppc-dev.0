@@ -1,45 +1,106 @@
-Return-Path: <linuxppc-dev+bounces-25606-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25607-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4ADBAC5AC82
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Aug 2026 15:55:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B723DC2A09B
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Aug 2026 16:12:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hGpdb3Lfyz3c78;
-	Sat, 08 Aug 2026 01:55:31 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786118131;
-	cv=none; b=lpYQHsOiOO03WAlvRUcryVBcZYVgjOtxm6HchOToUC8jWpMibDzRA6cF+MZkLtJxm4R7BFqw8PfQLXQ8BQ32pbndUW1bs36Py0H8bJfpHub3GoGRs389DAMzGvb11Qs/Dh6H6ScxIXB8K047DbaVmWMVUzeoJZSzd1a5YV3rCMEo4AudZPr2GRZ1CMkwMEJ9G30BDJeegBSsyG4jA3vnM0LKAZAtgzajcl3n+D2UrnuQVgmAgK2gj6sLwtY1DvSKrsmKhljjpvHYfSWN6ed/I45VFv+stzbBMsde8C2BlC8egre3T/9cbNC/4nReUl5BZxpNscYf9n+zyuhgi2OQWg==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786118131; c=relaxed/relaxed;
-	bh=LfASJtXsHlsEIaWbTnsyUHwYdgtUNjwkKHTI5rut7mQ=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=UPVT441dWJ+1zHCw+NkUG80o+mkm0/LYKe5zNpKryku9pFxqHldeA2vq3Ea0VEnPpKhmdJ5Nndsd/T0H25O2SvIMUZ9z7v4JKSTzRfM4HSWS81/mnwXgEn17ECLNFb21FcnlqtSiPBdXqi75AMzaL3P8k20/YLkjBkAF7T5hr3/RGSqdK5DnvAh6Jl6cB6xcP08+58nziF5k+HZir4NLOpp05Dct2UFf0vS4TrKaCDY6B1xyBMb0GJuPA0l5RvGYYrJ4SxfgydDZh4WS54n+nEwIgRdDctDxSO+l5LX374VI9sUuKiwfcWNWAwYHmsN9k+E2G2hgNAz9BxhHxf5zBw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=aovgNPAE; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=robin.murphy@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hGq1b0hJtz3c78;
+	Sat, 08 Aug 2026 02:12:51 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=205.220.177.32 arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786119171;
+	cv=pass; b=AreCjNqSQJcP8uHYBHsVfhBQcFKelZiRmbIaBXh5xzheNAckLt49UyQDjqgmrLZb07FAn8Nxw5znLcvL+EQQ64zV2wHUuqGapls8OkVJEX1CfX7E6HN6N+A+ZGe3zRcsjTL/wGjM4RdROzBzsdP/cGJUwyzpfFsUvV9jjsHzs+kldX49Zi61aaUMijy7PSJNpA11Kk6C/9TgBVU7/dfXRvrfTSKKKZEbjuc7JiNOj0v8xcQRvUPQj0ZRbJXH3ioCHzrLDLqNSHOlWUQUfeJaWh6NtXFR60b+U3MUI6pei6EM9014MPq2KnvjSJGcM06OpHAxtR9ZWD0cf1YgF3lbUw==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1786119171; c=relaxed/relaxed;
+	bh=M+MiDrZa8s+ZbgIfirN2WO1XXIHF773z/mNeT0EV0yk=;
+	h=To:Cc:Subject:From:In-Reply-To:Message-ID:References:Date:
+	 Content-Type:MIME-Version; b=kw+JOvW404qAzv/52m6hvDa4nwp5OdkU6FrIa/491zqMFmVSB6fS0wscxlGJkbETiha2ft81j68/KgLRG9bVeWsbFkDa02b8lBoaP7CGake1keaRgHnJ7QL7oKQCEkLDRZugZEct7fkuCz2XJ8brSJ3idb6HaV6KgR2uUEQ89ylVC1DpdkZQcNJZCRKKRpH+S5W5XFiyMqqbIa5+yks4UrBkQ7xDQWZBk9TOn9jAfZtqMSeI8Pw8EUKnr9r+uT1PaCenhVuTS6I8jnYwiI8mNAgzcvaP6Z10KvceUUunepS98BGQhyogHzg5X7RZqJNKIdKiCdEnNA26C7MfNsr5oA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; dkim=pass (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2025-04-25 header.b=DNoepyT8; dkim=pass (1024-bit key; unprotected) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.a=rsa-sha256 header.s=selector2-oracle-onmicrosoft-com header.b=d73mrkaM; dkim-atps=neutral; spf=pass (client-ip=205.220.177.32; helo=mx0b-00069f02.pphosted.com; envelope-from=martin.petersen@oracle.com; receiver=lists.ozlabs.org) smtp.mailfrom=oracle.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oracle.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=aovgNPAE;
+	dkim=pass (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2025-04-25 header.b=DNoepyT8;
+	dkim=pass (1024-bit key; unprotected) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.a=rsa-sha256 header.s=selector2-oracle-onmicrosoft-com header.b=d73mrkaM;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=robin.murphy@arm.com; receiver=lists.ozlabs.org)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hGpdW5Zf0z3c75
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 08 Aug 2026 01:55:25 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 5189D143D;
-	Fri,  7 Aug 2026 08:54:48 -0700 (PDT)
-Received: from [10.2.212.23] (e121345-lin.cambridge.arm.com [10.2.212.23])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 851543F86F;
-	Fri,  7 Aug 2026 08:54:37 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1786118092; bh=klIMPnyANgSy/ng+RmKkjZQ0cx3W8zQnkFuBKihU8PQ=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=aovgNPAEtin1OO4HfiSzNaKg/BVf6JUy74t18iDUy9r/nmoJtLq7DTDOD7C2UX7fE
-	 aRAZKiTxIeaOZ/Le+sX7trawhvKYh0vOKjTrWwlv097egb3/nDxp/jBRVs9nakZwXc
-	 cMRXRSiXxnHci10no0Aj/Kwn3nz4J8m6mIQ8wBJw=
-Message-ID: <aefab683-598c-4cca-b5a0-c9081ccf9e1c@arm.com>
-Date: Fri, 7 Aug 2026 16:54:35 +0100
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oracle.com (client-ip=205.220.177.32; helo=mx0b-00069f02.pphosted.com; envelope-from=martin.petersen@oracle.com; receiver=lists.ozlabs.org)
+Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hGq1Y31WDz3c5M
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 08 Aug 2026 02:12:28 +1000 (AEST)
+Received: from pps.filterd (m0246632.ppops.net [127.0.0.1])
+	by mx0b-00069f02.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 677D0cDq1040026;
+	Fri, 7 Aug 2026 14:45:11 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=cc
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=corp-2025-04-25; bh=M+MiDrZa8s+ZbgIfir
+	N2WO1XXIHF773z/mNeT0EV0yk=; b=DNoepyT8oNR4rMeSFJtBBf4j4I+AXK2ZZy
+	Q7jlrgOGzqxPkEMiFcb8Olie7WJ/WHp9BJAQmi6xmxs2LnZW+rNDXPbe+hW6qL/o
+	Fg6mcO0Jt3FQ8GjRZfBlmURWvJeDdSH8Ddz6Q55lmBPwzUFEItGoZ8B9cO5bOdE4
+	pN/qJzHb0k7LmLCd/qdYXTcTw3cKMwCdw1fdTyf+kfq1KR0gBZMxxxZGgTcHMRja
+	ikwr0Da9xbrc+ZjWW0FFJD3Zpq9eboQA1mG4zOeCoURMQ/U0uL0YzGDWEEgA+0jC
+	hitS9GzlNAdhAdJSyl+cGkohnbg/fljnZuG1RuN6FPrhfkJau5CA==
+Received: from iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta01.appoci.oracle.com [130.35.100.223])
+	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 4fs8e57xmh-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 07 Aug 2026 14:45:11 +0000 (GMT)
+Received: from pps.filterd (iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
+	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (8.18.1.7/8.18.1.7) with ESMTP id 677EUlJf028727;
+	Fri, 7 Aug 2026 14:45:10 GMT
+Received: from ph0pr06cu001.outbound.protection.outlook.com (mail-westus3azon11011066.outbound.protection.outlook.com [40.107.208.66])
+	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 4fs78xu2h8-2
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+	Fri, 07 Aug 2026 14:45:10 +0000 (GMT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=bmOkfNCl20OmuYgda2qpG/J+l5ez+U4/Cq8ce4+U9jh3ZXH17ZnwCOD8i1YnCbBFJS6zKQnxk2dLCHxT+zJm5Ah5IEbki3iw8hnFmtUzNjr09O4XIGX2511bJ37pegtBCBi9J/HTpLPWb4AQxzrQfEk3ffXYQlZeEEz82zF1whBUv9a7kREk6jGk5iPyyP+Fg3BS73V5juI4puPn544dcVqV8q1EobnpL9wCDldDDgqVFAJD/LErc9zEy0E6CF8dHIP8azlS4PBhsaYD3sDm2E1POfNJ5EHeY4qOdfFiTQHvfmHZu+ITUX9AecO9KeBfv7IpHQ/y05C7ULjVK2V8WQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=M+MiDrZa8s+ZbgIfirN2WO1XXIHF773z/mNeT0EV0yk=;
+ b=cx7OUKG09XYXOetqqAIt8+DYmkhEWbWEd4mQ4pbVrJAcBBBEH+z844H9mYSjiL0o4z/9/filtE6WkCbNlzT6xWSXGQOPJwk0RyNO69FdiI/4REZ/WuLmkHx3NoJyp08bUwH5P2euHLP+atWE6XMrjSslF2+l40Kx9QbQ2HXFNk+VASo9EpbO//HDQs7j2SVdM7kYx9zPJVirI9eY5ZinVNXI57vjVLDkSKnnZmdQJzwoMKiXDWLXwwYin9nKrIOwq3Br/rvio8MAlteYVttI5oUSbJ/eGceiMf2xWB6bmXg39yNYi80FwEWnrlCNECLPxAfTvV0Lqe9GhLTYpUg5FA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
+ dkim=pass header.d=oracle.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=M+MiDrZa8s+ZbgIfirN2WO1XXIHF773z/mNeT0EV0yk=;
+ b=d73mrkaMlRGD6mCqCmjmDnutgRS6aZ2MLJk0om9ClQD52+KAHMg8+nwjg5hkgnwBQ2tw4uLWrVSyxtDUAhe16tgZBQTKiITmk7JF8w7TL+Js5v0TtvJN7lPzfoTRra+9A4+sn+XirzmSYHqcubqO6miOF21bdQVSTiHjCEPQmQg=
+Received: from CH0PR10MB5338.namprd10.prod.outlook.com (2603:10b6:610:cb::8)
+ by CO6PR10MB5537.namprd10.prod.outlook.com (2603:10b6:303:134::20) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.292.15; Fri, 7 Aug
+ 2026 14:45:06 +0000
+Received: from CH0PR10MB5338.namprd10.prod.outlook.com
+ ([fe80::e525:dd71:b002:6ad5]) by CH0PR10MB5338.namprd10.prod.outlook.com
+ ([fe80::e525:dd71:b002:6ad5%6]) with mapi id 15.21.0292.019; Fri, 7 Aug 2026
+ 14:45:06 +0000
+To: Shivaprasad G Bhat <sbhat@linux.ibm.com>
+Cc: "Martin K. Petersen" <martin.petersen@oracle.com>, njavali@marvell.com,
+        James.Bottomley@HansenPartnership.com,
+        Madhavan Srinivasan
+ <maddy@linux.ibm.com>,
+        Harsh Prateek Bora <harshpb@linux.ibm.com>,
+        linux-kernel@vger.kernel.org,
+        linuxppc-dev
+ <linuxppc-dev@lists.ozlabs.org>,
+        linux-scsi@vger.kernel.org
+Subject: Re: [PATCH] [SCSI] qla2xxx: Handle the INTx not connected while
+ passing through
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+In-Reply-To: <04e92492-8129-4b47-b103-d8954da8ce74@linux.ibm.com> (Shivaprasad
+	G. Bhat's message of "Fri, 7 Aug 2026 13:53:01 +0530")
+Message-ID: <yq1a4qy3sc1.fsf@ca-mkp.ca.oracle.com>
+References: <177885270578.1573.14283751510936407585.stgit@linux.ibm.com>
+	<178508193511.4027291.4543280548195278135.b4-ty@oracle.com>
+	<04e92492-8129-4b47-b103-d8954da8ce74@linux.ibm.com>
+Date: Fri, 07 Aug 2026 10:45:05 -0400
+Content-Type: text/plain
+X-ClientProxiedBy: YT2PR01CA0011.CANPRD01.PROD.OUTLOOK.COM
+ (2603:10b6:b01:38::16) To CH0PR10MB5338.namprd10.prod.outlook.com
+ (2603:10b6:610:cb::8)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -53,141 +114,104 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v8 12/23] dma: swiotlb: pass mapping attributes by
- reference
-To: Jason Gunthorpe <jgg@nvidia.com>
-Cc: Mostafa Saleh <smostafa@google.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, iommu@lists.linux.dev,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- linux-coco@lists.linux.dev, Marek Szyprowski <m.szyprowski@samsung.com>,
- Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
- Steven Price <steven.price@arm.com>,
- Suzuki K Poulose <Suzuki.Poulose@arm.com>,
- Catalin Marinas <catalin.marinas@arm.com>, Jiri Pirko <jiri@resnulli.us>,
- Petr Tesarik <ptesarik@suse.com>, Alexey Kardashevskiy <aik@amd.com>,
- Dan Williams <dan.j.williams@intel.com>, Xu Yilun
- <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- Alexander Gordeev <agordeev@linux.ibm.com>,
- Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
- Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
- Christian Borntraeger <borntraeger@linux.ibm.com>,
- Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org,
- Michael Kelley <mhklinux@outlook.com>
-References: <20260717180442.110954-1-aneesh.kumar@kernel.org>
- <20260717180442.110954-13-aneesh.kumar@kernel.org>
- <ami_mpd_1pF4Tmdu@google.com> <yq5a5x1ygo7z.fsf@kernel.org>
- <amnRB98ZZIysHuM3@google.com> <yq5acxw6dl1d.fsf@kernel.org>
- <20260804142032.GC27883@nvidia.com> <anL9-OrDGqYQAWNV@google.com>
- <20260805123023.GO27883@nvidia.com>
- <0ce2249d-3a64-4889-b455-0e8fddcc7282@arm.com>
- <20260807115500.GA158689@nvidia.com>
-From: Robin Murphy <robin.murphy@arm.com>
-Content-Language: en-GB
-In-Reply-To: <20260807115500.GA158689@nvidia.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: CH0PR10MB5338:EE_|CO6PR10MB5537:EE_
+X-MS-Office365-Filtering-Correlation-Id: 3e722bbd-dde9-45b9-45a1-08def49278ff
+X-LD-Processed: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b,ExtAddr
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+ BCL:0;ARA:13230040|1800799024|366016|376014|23010399003|56012099006|4143699003|10067099003|18002099003|22082099003;
+X-Microsoft-Antispam-Message-Info:
+ dhRIrBdEIlg3tumZp1aECHTqkW/Yy9zSVrl6j6H1qKV5FifIVBP6lBBKrFDUN/HlOl8IeMxXtY8N29WG6d4DxJY4KXw4YmUdj5WVksA5dBo2Sj5iK135k4Kq3ledr3aCRCSt6JyziCyynZbYOkvEt8pK7kGHZr1wStWr3N/LQHH0zJniKAh6jn909f8TY/iOHC04eC6u/jdgWnLNWZPL6Ss/w1gQIrUdu/4ULKHvMrSzXk8HYI/CDGTPpCWNG5/rDe6BSpyfq1d5pwkT6VVIcJJF8saioZEDG66RrPwEonCfDJs508QKCbaokdu0Z0PEZ7/L51Z0TMQGGEYwR0Gxcj+qxzfdHfWOpvPAm5du82vQ8ARI+D/MIbuLqQBDEylepeKDcUDvV7Vj6tp1vrU0c5rmFZWGQ25Dgv8Cu8wYvo3qNw/j+iuFToPX1uvc9/NXb4uthYsicQ9N3ccn7y+hpRDzs8+926OrPAwyq8zV0GcTM3g3chOgRTXPbs8hyNOIRCfvzZkECr9afCV/sQASeSVn6ju0QifXnpZ27QHugEb4CRbr93L0Wzf20h7BPPCZHE4n1XpQkS5kr3/zTwljSVYXabfIzk5pNhwJIdAU/9tCYKH6dP2oA3o3jtidwOndUy12IDKAgrjOKe1nJDVUhmIz/0ASwhhilN+uHN76xv4=
+X-Forefront-Antispam-Report:
+ CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CH0PR10MB5338.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(376014)(23010399003)(56012099006)(4143699003)(10067099003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+ =?us-ascii?Q?hetWrsVYMojUy9PwykZXPp86vCOVlhqxVx+CYjC7gryWnKDHSKYLrHaZGvCd?=
+ =?us-ascii?Q?D4pTX1S6yNCrPdVeNurBZtFjVOqtTorS/cnWO71A1ht6kZ1f5SKZYck2lWQ+?=
+ =?us-ascii?Q?vrLHjjVKumO7tW3MMxN7h5k4fL9oHnMSVIfBMlo+Tf/hZ/zvX4/OSakdgUA9?=
+ =?us-ascii?Q?AImdFqV3KEdbBdg0uOcHDg1rB5lTTAftZrbVjKeNaq1jo3L1M3hpT3OASGKf?=
+ =?us-ascii?Q?Xw8EhD0OEsvmITzn20xcPeILCOfJaTtPcCzjaG43fCUOYPOlMC9mpjDoTZlv?=
+ =?us-ascii?Q?+hQv5jmbRgH8yhMrXeKeEOLFzXkm8kkNARNVlzgAHZd8j8BBzO08hNCPc0rj?=
+ =?us-ascii?Q?XloVPw4Bo98wrTQuau1Gn+K38+/k46N9G92vzx9bwlUVN1gflKvYNxgoc+1y?=
+ =?us-ascii?Q?vPkDjtsq2uOFdkWHYpsDADhST+7YjvjnZxBGqd8J0B1dXImbyKe6Z+8LBnjR?=
+ =?us-ascii?Q?ECzzLmW8r3dXC+Xin01Jj/SE8kGA9Da1Xwz21B+jTydeC+EaBPThtM/x9ZVe?=
+ =?us-ascii?Q?ipTosB9fq+HO+gdRX3zX8d1YOdLLnsDEvVlwMtrX/BvCDkRYpD92JPGDXr+j?=
+ =?us-ascii?Q?1PzExKcC3iKZp8eqvxvodpmeVboXAWwqKA9GgQSeYBhquGm8fvJqSAfpBMOu?=
+ =?us-ascii?Q?LjnJQPwaUKADGGsFIdMr2ZOdDpbMtKO/650ApjKxAafqDA48McY0OAkKS0NH?=
+ =?us-ascii?Q?YTeOZgI/+npOqWgBwpbTmOUB+ftQop7a2Qpnbo5kubi9xNqKtQZjccuL5KyF?=
+ =?us-ascii?Q?1sSxTMXafW9ZsHMm2ifp7gKQ8A8GSVjjpmzpmzDhcsWa+ZpYG+f2GvhSDbTc?=
+ =?us-ascii?Q?Qq6M0iYQ5qs6B9BBVD4H0wcWDdyOcdoBreY4wVxDlvXZ7EiB6SrT0kmVBzu2?=
+ =?us-ascii?Q?lFreuofjLbnaqyFrTLiauFVzuGECa0Fm5eDnzPQqdoocS3zO2BGhpE4p7sKp?=
+ =?us-ascii?Q?0XP3uZlk2sa5/vo6tj6JAeUVsGs/cUQwRXRid2CAQyboOZuw6tGyhCfE6k4y?=
+ =?us-ascii?Q?Aove+VjscxnwMi++vVlOScIilWUWGEiBNlE+Cd2bHVxE/PGhmSb+1jhN1NSb?=
+ =?us-ascii?Q?rQTy0yvxI/bdV8dyyvTFIF1jzEHlCaYBsbFb3hqN06jGSJdoYD0sTzLo0tZv?=
+ =?us-ascii?Q?W1/wUQQNTl6FKFm1DndLUCs4FrNSa7DsyplcpAaXdKnWKBwJr4OA0ttMrtHC?=
+ =?us-ascii?Q?Gtq1axePDuWZefFliySwkH5GTrp/PMBNwnMsd19Cc5byUxBed0awbNV36pgB?=
+ =?us-ascii?Q?tEFY22+yINdv/QAakQOTlR70reEnTK8xCQB7NtYpf2km4qsODo4izEoBExs7?=
+ =?us-ascii?Q?32ez3/8CTuY5dLADLCsUsQCMs8cwTVfYOgkwDpDalowHOU9O6x8SOOumDZjQ?=
+ =?us-ascii?Q?NKIOjLs0DeVCmTcVAmJCFXFdbKyVfQX64saaBNUmS1zGLbKDW4HegTiWJxm5?=
+ =?us-ascii?Q?zfajlxzyvYQ80Z1c1vv/nAwdu5199/Yak/IOe8A/7Inkk4LDhwrBdTyYs1Hp?=
+ =?us-ascii?Q?gCfJYczA9yRck4MWj0NdLQ+52pTsIE/tm4DMJ6DU/KMUFL3rTzKL+XvggHGe?=
+ =?us-ascii?Q?ee+lbEU5+zTAc/FDMvbe2lp8SrQo6AU5ceIqHqPWlGza0cpB2X0FDBQRRs2w?=
+ =?us-ascii?Q?MHIHITPTpJfqv4wfTfsD8hcVIyqKEFxT1C4hOi5ZmIecKN6Ty5F17MseULTR?=
+ =?us-ascii?Q?QcfXa4bb4xkietFoU3aWQ370idI4ZjUxKxXdt7/KfkaKGF4MLWif4IIZsNDw?=
+ =?us-ascii?Q?k6qEmQKbdsxF5XE5+4ruTGSqmBWHIPs=3D?=
+X-Exchange-RoutingPolicyChecked:
+	lCJxAYYGs6lZpD9NlgZkA6dC1iAmj/TtObw/b4YlSUZnkgSEMCcINNnKvIrC/pWNS8EQeXWi95QisQTSL1dms2vjJm87+8VNVcrA5/KVd/Ob2umbZ7KRfOi/+P3Fy6BVo7sf3/ybwVc/e0nRahn5evknED/bjuIkH7PiBqQYHIbej5j0mLUXivurTVgzM6xADQMFejes8SgXfL5xCZoAtxGejKakHdaR6Xll+ZyOMjJre9RtDXG1VPpfVoKhj8A0zukqI37saBeSmatcIsb/MqTMjc+ceJXn/H8M36SBfhFwAFcgVwyu0RGOxVEz0kRs8vhU2QxlAXVAM2JJ53tZcg==
+X-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-ExternalHop-MessageData-0:
+	ScaGBU86rxb8+4hqxYu0batnRKaAAKGJoFK62U6CW7E+A3lgdcttmBC8pXXYqZNimAZ53pL1Tyx2xd/KrCFaDMpUv+iLBXNbM1Ywn8oHOgU0jUgEcOK54T0cUwRhl8I2X7gnLVhEvA4PKNoQyPj7/A6PAeMPPyxsRh35IEcPoFQTW815SnbJBouwplgOshvV/+VF2Lt33F2yrd4CH2nfcLDzpmucGduSpqXIcbyvHN6Asa8kTVGRenrjMr//dL71qPTG06jogWPyjjQm64fVpSo0BFzjtJnGmKOzcMrDSoDNLIomNkcY2pvn1fGiUqEiBkZzif23sURaXXi1tbDMfGNsYHJyOg0iyMQc6r/tZ/0sfHdnNG3h87SjQt8QLdIpcA6xt/F5v3JI/mkYOLf4hmEBTM3rXLYB/r+/ek/jaBXxC5EchBDKyEw8GaxXrGdC4Z4swG7skMpA8bh0/YD/X9q0DrIIEKaUTVoiPaqS9ixB0n49eXneq/Mf2oeUMmjP8YNZTHGlo9+sw6jYTFop4Ug2QkaOAm3O0ryEHU7+rQs7O8klLiVGIayyPvvB5cxAMo+Hmd1f+/tluKmot+uv8AL4w8PNKdJmH6LtQy9gghQ=
+X-OriginatorOrg: oracle.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 3e722bbd-dde9-45b9-45a1-08def49278ff
+X-MS-Exchange-CrossTenant-AuthSource: CH0PR10MB5338.namprd10.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 07 Aug 2026 14:45:06.7025
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: rAGhBQpei77PEd7UvHw65JJblb2f9JtXp3eIRlPnugLCqJ/nRfih4r8WTM8BtNJ7psV1Wj3FgiNQV0bHdCyHyeEBxxsJIizjix8D39AmDRI=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CO6PR10MB5537
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-08-07_02,2026-08-06_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 mlxscore=0
+ mlxlogscore=694 bulkscore=0 lowpriorityscore=0 phishscore=0 adultscore=0
+ malwarescore=0 suspectscore=0 spamscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.19.0-2606160000 definitions=main-2608070114
+X-Proofpoint-ORIG-GUID: ri8_cSJdV3Yyeb8nM82n8Dcb8TzrUi0b
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODA3MDExNSBTYWx0ZWRfX4ac2xhpjU5z0
+ pLydav4glJiDXobdVJZHfP1oXjqH5iwQWVoNy4Op6whmkOGrGLN9xuumwN2eXjLabRXwhVLhsnU
+ 1mehFNp1D6xutMC2LVJQdv+h21bdNAcaUAcxple+D8sIlVbdrXlw
+X-Proofpoint-GUID: ri8_cSJdV3Yyeb8nM82n8Dcb8TzrUi0b
+X-Authority-Analysis: v=2.4 cv=M/t97Sws c=1 sm=1 tr=0 ts=6a75ef77 b=1 cx=c_pps
+ a=zPCbziy225d3KhSqZt3L1A==:117 a=zPCbziy225d3KhSqZt3L1A==:17
+ a=6eWqkTHjU83fiwn7nKZWdM+Sl24=:19 a=z/mQ4Ysz8XfWz/Q5cLBRGdckG28=:19
+ a=lCpzRmAYbLLaTzLvsPZ7Mbvzbb8=:19 a=xqWC_Br6kY4A:10 a=Sv0fKeRqtYgA:10
+ a=GoEa3M9JfhUA:10 a=VkNPw1HP01LnGYTKEx00:22 a=jiCTI4zE5U7BLdzWsZGv:22
+ a=3I1J8UUJPc9JN9BFgKH3:22 a=yRR22SEesD3UTZaaJNAA:9 a=5yU3S35YU4bGjq-dph-N:22
+ a=Bho9c0fBagfJEIQBS7DQ:22 cc=ntf awl=host:12100
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODA3MDExNSBTYWx0ZWRfX+8Bc/mS0+7yP
+ UEzoezpPjhOm14TKMhFnaIvMqUqbZDgIHKRHkHRHM/XWXM6Tnl99ogMkRjh/gqfbQeFa5gghRYR
+ h9kxAAYa61TrJPcS5l6T56pzlQogxpTa7fXSszSYchTSpXA7tBvGevBfNiX0KPWjBXuuCU1u826
+ KUSuoitCrUz/LqcmPAO/WBRz2LUAlDQeynlKLQgFU87YKhVG7ZBqvUcsvYpTx8w7OZLOnWRO7Nb
+ PSsRX4OjSATk0eSp6XNLjTyOv7vU86vorqHWxhTT235l+2Pe1rxkPnUAk+mwVFIA7D1bHgsOsJ7
+ 77XCeeTO9a+jjYLRjRSbg8yCjmc4lrV3TNqbbVPNG9uwcupdtTfmPcT97k6rJf9+QsZ3v6npnEi
+ yrjmtJ3xUawG9oja8viJeFZ9J0u4juyQ5sLegcnlcjIy5PzmAJFtOrqYTdtO4cSfy18pAxxfFl3
+ zihHWkUP/PoH4QJ2qAozv0kFU24i7MAfo2G4imrY=
 
-On 07/08/2026 12:55 pm, Jason Gunthorpe wrote:
-> On Fri, Aug 07, 2026 at 12:03:14PM +0100, Robin Murphy wrote:
->>> Each struct device will have a flag that shows if it is in T=1 or T=0
->>> state. The flag can only change while a driver is not bound, and
->>> changing the flag will update the DMA API configuration.
->>
->> I see we no longer seem to have the concern of devices in TDISP RUN state
->> being able to send T=0 transactions other than MSI writes,
-> 
-> Right it was too complex and nobody needed it, so Linux will not
-> support T=0 through the DMA API on an T=1 device, and devices should
-> be designed to only send T=1 to the greatest degree possible.
-> 
-> If someone foolishly makes a device that works otherwise they will
-> have to take the difficult SW tasks of making it work.
-> 
->> where GICv3 means the host is already going to have to be in on the
->> game to some degree there anyway.
-> 
-> As I understand it:
-> 
-> We will need to teach GIC to understand if/when the device uses a T=0
-> translation for MSI and then use a shared physical address for the ITS
-> IOVA instead of getting an IOVA translation from the iommu. The
-> hypervisor will setup the S2 for the T=0 SMMU translation to be
-> identity with all shared memory and the ITS page will be shared
-> memory.
 
-IIRC, for MSI or unlocked MSI-X it should look and work pretty much 
-exactly like regular VFIO, as everything can be mediated by the VMM and 
-host kernel.
+Shivaprasad,
 
-> Presumably in future we will have HW to handle a T=1 ITS page access
-> and some way to negotiate with devices if they should use a T=1 path
-> for MSI or not.
+> Thanks for pulling the patch. Would it possible to get this fix into
+> 7.2 stream as well?
 
-Locked MSI-X would be a pain right now as we cannot intercept the Realm 
-programming the MSI-X cap with a doorbell address and EventID value 
-decided by the ITS driver in the Realm guest, so we'd somehow have to 
-sniff those values out of the VMM's vITS emulation then try to configure 
-an equivalent NS LPI to match, or have a hook in the ITS driver that 
-knows when it's in a Realm and do some RSI handshake to proxy-allocate 
-NS MSI vectors on the host and pass the real values back into the Realm.
+Due to conflicting with the large qla2xxx update this cycle, I deemed it
+best to leave it in 7.3. But you can post a stable backport request once
+Linus has merged the SCSI tree.
 
-I'm still hoping we (both CCA and possibly Linux in general) can get 
-away with just refusing to support Locked MSI-X without GICv5, as once 
-we have proper Realm MSIs with direct injection then all the problems go 
-away (or at least become much smaller RMM problems that remain invisible 
-to the host - the one "big" problem being that the RMM has to 
-begrudgingly implement an entire GIC driver since it now has its own 
-whole GIC to look after).
-
-> There won't be a vSMMU attached to the T=0 instance at all, it is just
-> wired to be bypass.
-
-If that's all anyone will ever want then it does allow some degree of 
-hackery like mirroring the whole of Realm S2 in an equivalent NS IOMMUFD 
-domain, then forcing IOMMU_DOMAIN_IDENTITY for unaccepted devices within 
-the guest. However I was under the impression that folks want to make 
-meaningful use of devices while still in their untrusted pre-acceptance 
-state (but maybe still switch them later), so it seems almost inevitable 
-that eventually someone says "actually, we would like S1 vSMMU for 
-untrusted scatter-gather as well..."
-
->> support in firmware bindings nor the IOMMU API itself to be able to describe
->> a single device being associated with both the RMM's vSMMU for the T=1
->> (Realm) VA space, and the NS VMM's vSMMU for the T=0 VA space, even
->> if we
-> 
-> Right!
-> 
->> did only have to care about using strictly one or the other at any given
->> time based on device state. Having distinct struct devices is indeed clunky,
->> but does at least reduce the problem to a currently-manageable one of the
->> client driver having to wrangle them as a pair.
-> 
-> So hard! A meaningful goal here is to have existing drivers largely
-> work unchanged in a CC world, so the device starts doing T=1 for
-> almost everything and the existing driver just works.
-
-Agreed, and I think with this series we should be pretty close now, at 
-least for coherent devices with 64-bit DMA masks. And from the thread 
-over at [1], it sounds like Hyper-V's VMbus is ready to go as 
-potentially our first user independent of any other PCI/TSM dependencies.
-
-Cheers,
-Robin.
-
-[1] https://lore.kernel.org/all/20260803033520.12930-1-tiala@microsoft.com/
-
-> 
->> (And FWIW when we do get there, I'd be inclined to make the default SWIOTLB
->> the "private" one, so all the sharing/decryption stuff can be neatly
->> partitioned off into the CoCo etc. special cases...)
-> 
-> Yeah
->   
-> Jason
-
+-- 
+Martin K. Petersen
 
