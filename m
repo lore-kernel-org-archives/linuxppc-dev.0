@@ -1,82 +1,107 @@
-Return-Path: <linuxppc-dev+bounces-25565-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25566-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5B1DCC5AC7A
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Aug 2026 11:47:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 646BCC5AC7C
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Aug 2026 11:55:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hGj7T6SVBz3c2l;
-	Fri, 07 Aug 2026 21:47:33 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786103253;
-	cv=none; b=NP0Czqi9JikF/bXTFa4wTXXnkR2VkJIqW5SGq7oQZqooUckncAm5F0k+e6Rjox4xwedfxcC7RybWXHgWwae49fQOCw2WZRs+ArygOevpw3G9J6I6PDg+tR5FL8yr4Njjk1pPu4b1InWJ62oMnC/7w5kUurC+sqJPb6UG/hTUhF5r1P5SuqeAkWZOYPFERZAO1FhJMj/KaIBiGbXBl8M7pU1ZTSK/nCG24gsdLCZLG1LSojlTjSC9BFGRTVRzeeQmPFLVAYr4GjHrKOyARiPfe8zA5FpKDlHMdW2oFVSQcO8GxptKOHxtFDyvQSi3xNlqnvUGKJti2DwEa4bSz6Ck2w==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786103253; c=relaxed/relaxed;
-	bh=h+ukd/SkPDc4T9uabC+jG/Unvhu3goFgt8a64UfAh9E=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=envqp0hFIBfWPpLVDd+fpC90waTS/yjaEMwPj9RblAUV37Sl5Yzo1AKu1qMeS191ARgfnaN33o5BkExRivXBD0efdS6UGTrq7fiQoxcDyedah120vVUXZYjIIHv1GdeWJX2SC9QiU5BV2fVSrBsBk5EN0jteCG9XFCFHQ4EiA+QenrThs+682EZIN/her0CDK6tk5/o2YzDJEi+AbGHeyei1rOS7XKcZDO2iH5ZcY+cz44K46+N7f8c2nZ1WVCreNFJCHeFHiPWvbudfIIDC8HJ9s36Z4X0shCFCapBBmKSF2AmN1eHSz630Xk7PsGTY5HmVbdIyVEF+bDvTjmlwNQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=eQbTHGpC; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=skb99@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hGjJm0CKfz3c3v;
+	Fri, 07 Aug 2026 21:55:36 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c111::5" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786103735;
+	cv=pass; b=dxSvlFqzLCZJ7C+tYCLnOMTqZs62iFlJnEhaLgDG16tpHvAw+VA84LVIR/ChPDcEjk23LIy6fNWbRWpvCd/gcKwAxl2WxS3g9TJwKgtoSD3rps2DkXAZclVePHwWxtoMAgNoWKipVtL1SHZreAhML+pA96qRWYnNqITpXVI63KBp64nfuzV85/VtCnjcW0vcZP/xHjbL2lNqZpGqvyGZ453jufNZJL8Yisqr2LeSRCEOa1zTaze07yU6v9P5WQDpLgf020YTCI73atCqaWwiZ1vpqb+VxOMumWdn357dYsn8lZ5VvK1TOuIbwmkCI07ZXYVkMGpjD4Mx4HWwlHMmpA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1786103735; c=relaxed/relaxed;
+	bh=WBmiU527J7THNfS6lpBzEB9bAjO2Wf5lzjTwg6I5bfI=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=YJh63kkRZR8uWVmU4q1xqS60BdU+C4EjVk4f/EnG0eIrQn4gDFHM6WdfggMab7p9vEOsIZ+EXLGN4TnqA10c1vCocpavy+Gr+DSgPvUL59Dd5YYclZ1Qy4uY6ASswJXh9wO+0bNXPhW8eSNBzWb+Bm33HxsomsbGIErRWJSvS6n/AzLsNHkJ9zrTIU+zZDkUX1w+CAX3u19ec3FHgkg0yFfPA+1L2BFh1P42V2UlevhAqMdd2CmHlvMqRL6vF+qiSeXniFhKFAd1Ah4N7cugAlaz/jXNMzTdZdypfqTHzjg5urY1zMgVIYsoFbU5YXhgtJiXsgm/gP+SYwoM8X1xOg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=qg/8qO+X; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c111::5; helo=dm1pr04cu001.outbound.protection.outlook.com; envelope-from=jgg@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=eQbTHGpC;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=qg/8qO+X;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=skb99@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:c111::5; helo=dm1pr04cu001.outbound.protection.outlook.com; envelope-from=jgg@nvidia.com; receiver=lists.ozlabs.org)
+Received: from DM1PR04CU001.outbound.protection.outlook.com (mail-centralusazlp170100005.outbound.protection.outlook.com [IPv6:2a01:111:f403:c111::5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hGj7T083xz3c2h
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Aug 2026 21:47:32 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6770IM1C2277771;
-	Fri, 7 Aug 2026 11:47:15 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=h+ukd/SkPDc4T9uabC+jG/Unvhu3go
-	Fgt8a64UfAh9E=; b=eQbTHGpCyNJrFgj10uc5TnxZszMCZRxjAymoTFRomakcJw
-	D0XchxTtqMBJGvj1o3aCZcuBesE0eoHeR1+/laPAM3ruoifO4xYiMzmXiH2WdAQW
-	UdgVPuDJ87KtKiKL835DniQ5i/3xF3McTrZg3AtXZyuTsAdcG+rxuMxw9+pMq+Ge
-	nXU9VmCKoAMkdzwBl98xUUYrQWvnBQaVHKOmw6tfCTmvG3nXbxIdVMPhIxfuv0UE
-	tSLof9/fUD0xShEZ1p3EYyb3i9FclmVKYfcvb4+0qiWVVOR+4L1Dgf41oCCtKH4P
-	/zkGcrmnm1MXUKQ1TI9vgXmqJR8igw1oAJ7X3SAg==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fvy01knpj-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 07 Aug 2026 11:47:15 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 677BflW4018886;
-	Fri, 7 Aug 2026 11:47:14 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4fsugwfm2g-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 07 Aug 2026 11:47:14 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 677Bl9EY36110756
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 7 Aug 2026 11:47:09 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id ADEAF20043;
-	Fri,  7 Aug 2026 11:47:09 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id F152A20040;
-	Fri,  7 Aug 2026 11:47:05 +0000 (GMT)
-Received: from linux.ibm.com (unknown [9.39.23.224])
-	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Fri,  7 Aug 2026 11:47:05 +0000 (GMT)
-Date: Fri, 7 Aug 2026 17:17:03 +0530
-From: Saket Kumar Bhaskar <skb99@linux.ibm.com>
-To: Hari Bathini <hbathini@linux.ibm.com>
-Cc: bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com,
-        ast@kernel.org, andrii@kernel.org, daniel@iogearbox.net,
-        shuah@kernel.org, linux-kselftest@vger.kernel.org,
-        stable@vger.kernel.org, venkat88@linux.ibm.com, yeswanth@linux.ibm.com
-Subject: Re: [PATCH v10 0/8] powerpc/bpf: address missing verifier selftest
- coverage
-Message-ID: <anXFt7w7NG0lzX22@linux.ibm.com>
-References: <cover.1785871099.git.skb99@linux.ibm.com>
- <7ffaff94-b1b1-4420-8c19-c88bf49139a6@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hGjJj4Vshz3c3g
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Aug 2026 21:55:33 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=xP+DfLo53U1h6y3er8JKdZEG5ni8I+dnFpgGSWIFJZI5jQP8rOpURpgw7YA+1rMYcO1zvhPgYGuG/P9GrsjJaQ9ZojUdacbLsC6oGI/8XzBdYZm15boV5fsnCBTzkZB0euPL4JqAtFq7fyMZPlJfsEDRMEOhhqWNG1L+vD+1fkXGFLESmIZ4lBKVYy2Z/VXYdjDWO9Szl80drKWhlIgMK89ZDMBBJYTmDx50/oArfd9cAhojzx6UHnqmTjDd6IA2BihOADN3JCN6+RnPdZv2AeWq5wTp/KxuhdfEgbh5F1+S4QZgHzLCCLc/Mx2SL9csoCDZHVGJ6X8wBQhWYiiznw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=WBmiU527J7THNfS6lpBzEB9bAjO2Wf5lzjTwg6I5bfI=;
+ b=WHkulhLJi99DeZwkHpkTpek/hFJ7IXDS1OvG4/CLsG8lsGJwyIZVkes+tdgLqDIwGQwGG5sXz3tFsE74iltPJslvjds7z4JRFuKyqXgPgAh8UTX8jSDBX4lUWgOySN7qMGHRM5+0ALuOi3KbH0SAHu+8BNBRNgM/LU8bpeIu/gv38HBL0e68VT3mU8b3GdrQmFDJIxrnlSM4KYkGIXFyi/9eW3JAwDlsBagg+mG1Lv9tACNCO8Ey4DfH8xxK1I7s7kIw8mIBXjXkjXIUVceiWQ+gVzVnFcaOY7WMV6kd4pnCWA1lvU9CuM6/xOpmXYioHhbY/I8Hc6Il9p4sdARdUg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=WBmiU527J7THNfS6lpBzEB9bAjO2Wf5lzjTwg6I5bfI=;
+ b=qg/8qO+XdV0UXEAAxQH8MduZgFgS0SmXnxoAE1MVZ+/K3KFCQrGcce9DEmg0icpJ6RGYpABfH4GE4T+cgitHxS43l5lwN/CpQuFNEUHhQsN5EnWlbhPB+hkevzn4aWO2FwmvUIUXfXaIbFRxwogxhafSbvOjduCVUACO1nES0cQ+Odn7LsItFoLnPZZVnG1CBcTV0KqCxgJG0KXamP+opJHgeHCY571Wl44+l4mnzLC/JQBB4vdUB94mSaC0Pc3l3CDRiW4tTFs9GE4QzOufkw8vDmzdiUQwGv6R2mCkM5GRqm7aK7FUsvOWblr6xtT0kUQ7lUYlgqioVYlUI1t6Gw==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from LV8PR12MB9620.namprd12.prod.outlook.com (2603:10b6:408:2a1::19)
+ by IA1PR12MB7565.namprd12.prod.outlook.com (2603:10b6:208:42f::17) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.292.23; Fri, 7 Aug
+ 2026 11:55:02 +0000
+Received: from LV8PR12MB9620.namprd12.prod.outlook.com
+ ([fe80::299d:f5e0:3550:1528]) by LV8PR12MB9620.namprd12.prod.outlook.com
+ ([fe80::299d:f5e0:3550:1528%4]) with mapi id 15.21.0292.022; Fri, 7 Aug 2026
+ 11:55:02 +0000
+Date: Fri, 7 Aug 2026 08:55:00 -0300
+From: Jason Gunthorpe <jgg@nvidia.com>
+To: Robin Murphy <robin.murphy@arm.com>
+Cc: Mostafa Saleh <smostafa@google.com>,
+	"Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, iommu@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+	linux-coco@lists.linux.dev,
+	Marek Szyprowski <m.szyprowski@samsung.com>,
+	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
+	Steven Price <steven.price@arm.com>,
+	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Jiri Pirko <jiri@resnulli.us>, Petr Tesarik <ptesarik@suse.com>,
+	Alexey Kardashevskiy <aik@amd.com>,
+	Dan Williams <dan.j.williams@intel.com>,
+	Xu Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+	linux-s390@vger.kernel.org,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org,
+	Michael Kelley <mhklinux@outlook.com>
+Subject: Re: [PATCH v8 12/23] dma: swiotlb: pass mapping attributes by
+ reference
+Message-ID: <20260807115500.GA158689@nvidia.com>
+References: <20260717180442.110954-1-aneesh.kumar@kernel.org>
+ <20260717180442.110954-13-aneesh.kumar@kernel.org>
+ <ami_mpd_1pF4Tmdu@google.com>
+ <yq5a5x1ygo7z.fsf@kernel.org>
+ <amnRB98ZZIysHuM3@google.com>
+ <yq5acxw6dl1d.fsf@kernel.org>
+ <20260804142032.GC27883@nvidia.com>
+ <anL9-OrDGqYQAWNV@google.com>
+ <20260805123023.GO27883@nvidia.com>
+ <0ce2249d-3a64-4889-b455-0e8fddcc7282@arm.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <0ce2249d-3a64-4889-b455-0e8fddcc7282@arm.com>
+X-ClientProxiedBy: YT4PR01CA0335.CANPRD01.PROD.OUTLOOK.COM
+ (2603:10b6:b01:10a::26) To LV8PR12MB9620.namprd12.prod.outlook.com
+ (2603:10b6:408:2a1::19)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,247 +115,116 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <7ffaff94-b1b1-4420-8c19-c88bf49139a6@linux.ibm.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: -Wyl3wYOdcE0B_KlwODW2MxtQvCPmvwT
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODA3MDA4NyBTYWx0ZWRfX43CbWbym0RRc
- COreO8vhJdGJhIvpyVjDVqEcPzEqsJ3J4HNcFESN1ZipE02UDU1xEIugd+rfK0L7bJv3W7PMNSs
- W7fqF55ctBlkrAEDfQRVluc24xqxF7s=
-X-Proofpoint-ORIG-GUID: -Wyl3wYOdcE0B_KlwODW2MxtQvCPmvwT
-X-Authority-Analysis: v=2.4 cv=afNRWxot c=1 sm=1 tr=0 ts=6a75c5c3 cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=kj9zAlcOel0A:10 a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=VwQbUJbxAAAA:8
- a=VnNF1IyMAAAA:8 a=z2HySi5senPPToodcdcA:9 a=CjuIK1q_8ugA:10
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODA3MDA4NyBTYWx0ZWRfX6aTBucDAmdDW
- Rfq22ISpiVY0m+BadQz31UUpxVhv5om8jkLMtUyBa5r8QPKnCIDI0qP5JctOO2ReJZz0INi56k8
- xV0GYkIeW7wTjRTc/EjcV9f7/yA948D7pvlzplQDKJNsDbLq+IinlLjr9qYcNXL6kvZd2CVPHuu
- 3HCtwLxf1CNL290v0m/OjjY/p6MvIeTtcmdUO/9Wg63s+xC+3ShFLWr0gtMEFwuSdXGpLCdHfSD
- 54HrcVw/LHcRsf2GtJOS/UzEBZMWf11eKaK8O/F5xPUSXh/00w8bS405xW+okSBnr51gfL7Bxy9
- ycpFjucA8tCt9uXq2YkyH+jd5kQ2dtg668B9KuhXHl4e2Mhz5SpmBi/hQLfvyqUnBER58mdVfkR
- jkeDxg8XRYJd2XfzLJTcK1fULUVIt0i8t48k9MeOCZyBfCnPed52CZghB1OYoS7jjE04XttqrU0
- 3SJUGTDH3Yg42Y54W6g==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-08-07_01,2026-08-06_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 spamscore=0 phishscore=0 impostorscore=0 adultscore=0
- suspectscore=0 bulkscore=0 clxscore=1015 priorityscore=1501
- lowpriorityscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
- definitions=main-2608070087
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: LV8PR12MB9620:EE_|IA1PR12MB7565:EE_
+X-MS-Office365-Filtering-Correlation-Id: e9af5cdc-52dc-411a-1f4e-08def47ab67e
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|366016|1800799024|7416014|376014|23010399003|22082099003|18002099003|4143699003|11063799006|56012099006|6133799003|10067099003;
+X-Microsoft-Antispam-Message-Info:
+	xbQd0L89H8XoXqKeFtE202UqZkFIyHYYR/0xKbAnhxMeTnvg0mjcVXgZij6WgsZijYVriqiH8xNkMpQt/OvhizoNNJTepZGUdvjoRVSOmzipPje6FN3tZYN3pZ7Y2rRcVDly963VaOqNh+Ttk5RRWaNzI7ODJgdMD68512ZJ+FFKMM1rEVXy0eoMVAfeoHf3t7alnOkjQpCPWMUYqCbK/R5F6cekuyZ7bHBXlcJOfbOZVf7zMp21qjkJ1EnBK4eJNZVNPmSitV3D3w4F7vFimIKy1ppusw5AebgCkqxX7Or0c+bfsetLXC/mDB+O0F8Rwqi95btJh76QjOmuoHO9jfxg8dcoJ9dSVJQeiJNwobp3sXB7XTWwiEtm9q+4qsalT4Xpmhe0bEnp5r825WtWiYtHpeNJsHkYnJ73lZU9+Lsk9uRi2cRUwdRjN2+4+XF4KoW0qeOLJJj7PRXmKXl/1Sl4e+eTCTegPkVdSs8aeXstaG9GvbAhwcNhD10MzBWrjjcAm7VdgerFME19luf439ql38CB859PmYy1dkLx97mPEGWz6G6mSU3IKIuwoqWalrzpQ7Myh3IV/O/+aBDe6Zj67PfX725rnOwbUZqmRNotPgUYvqoqNH3KN6Jm+2KHXgnFV8KP7axXOaWO17wS1FLZJKCC5KpyCOhm9isW1ho=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LV8PR12MB9620.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(7416014)(376014)(23010399003)(22082099003)(18002099003)(4143699003)(11063799006)(56012099006)(6133799003)(10067099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?bO3ZZXnubLz/+SmN2/usIWMBUKD3XznyuYs2CYG2oRzWK7iFSQjVOI6TjRU8?=
+ =?us-ascii?Q?uSKoAZ+jhhOhH9f1pkPDznOYES30lNBlR99laEKARSwSVNaOIQ6ARwBc5e1p?=
+ =?us-ascii?Q?xOX1rLDTO7/IEL+M7YfDt8IZI5Co0/T/zP8hzkGATViXGw7xhpHje9CcaG+u?=
+ =?us-ascii?Q?+wLAzCRX3dw+NZn9QyUJ+zeA4dGldRBEhErb+69GcnoWkykBZnoVt/1+V/bb?=
+ =?us-ascii?Q?BqXi5d7njFE07pH0uUxSmxiB+gtMhEa/ppwYDiEBLa1yZlnw1ah4CFIUtVKG?=
+ =?us-ascii?Q?OzTemz9ZmQWxG9KIoG2Xf7WDyZqIP4PazG7RPZwDDjlAEAfuD0INtBRKphXB?=
+ =?us-ascii?Q?duzF0RMxxnHcbu/zYIHePz8MfMrlvDxW/s5JDNZQGW5OQOg+wX1nC1UaVoOg?=
+ =?us-ascii?Q?wGd+5wa6dZ3ZhJ06K24gddX2InBGFT4sws5YOJ/5AMLTDJ6YRp6O4sVA6SRN?=
+ =?us-ascii?Q?L3CX74JVIOJ56Jn4LLVdRPRO71XTfQM1dL5CsayNcYlllALjSXh4WyN4xrPG?=
+ =?us-ascii?Q?x+/eOdrwB7FDJLqwzVY1JGUiY2LF60rijclgZqQUBKNhqB+Lwf/wVknt6SE0?=
+ =?us-ascii?Q?ddki3nPT72ojdrqjUA+vI7BBQQr0HLYHyADwT/LfVtWhzPeyUeDc7r/k8cNi?=
+ =?us-ascii?Q?0XwzRb6WMlzN6LP+N1YhnAZoRG71oeHdP053WF03RnmtGhf6DecncL13CGMK?=
+ =?us-ascii?Q?MzGs+auagCV9KC8SE7yqjFkqSFuQpakEYIAVRcscja3gKeG9nUJ8kLIxC2iB?=
+ =?us-ascii?Q?QjS1TnlVV56hUzMs83Ziyg2V3IcLDmbE42mTp6uzEuuBHxiC+aELNm7GYFFi?=
+ =?us-ascii?Q?kIhrQt0aEJ0OanUt/VYrBW3K5MmPifAefbmv9yTrc9GMSmeAdujSKrXfNA46?=
+ =?us-ascii?Q?uDEGnJ4IY5pP7O0KOM/u/RCdcL9wwDxklfcyhTsnHnCaOUef3TBJuJ/tM9d7?=
+ =?us-ascii?Q?y10zqn8KGZNFdgeSkesEyIy5NVDR3vWf3M7JpYhtPDiGUPYysT0+kt4s1n3a?=
+ =?us-ascii?Q?7scIdjYNnY/hbbkdHLDScj4/tI/PEpaSnRujfQDINl9ftuCl/xzu0Gj/oqj9?=
+ =?us-ascii?Q?sFpPvt71/1mUTeKZOQU0J/TgeUYYIeR0wBk7Fx8nL/3T7oJ3bggqepX8e7yq?=
+ =?us-ascii?Q?gy8rjTKeEvmUVWUotvMkcbblwPPoHP8KTkMWJcqqRO74BETGCuJAxkuoOc6U?=
+ =?us-ascii?Q?RkNk8A/GbHONygtFdtCY6d5PPW67cjlvFTehPdvE8YoDXcSEA+GdVVkT7SJ6?=
+ =?us-ascii?Q?Q+jfklICxuoFQlOGzxnre9pUhksRWVlaY4iYxpetc5XDn4vscIOIb5QTvjq8?=
+ =?us-ascii?Q?kyJy9J2TQ8/olqpj7cWrIIm5omwSuHyJsfBJzMe9/XmB3ePvbcB36B0uc3sF?=
+ =?us-ascii?Q?y8MJBT8DK6MoTJY7O1fBFcoY1eq7K2RScM3DboOg6l73yWv87JYp4UsdKGC1?=
+ =?us-ascii?Q?Lk11i+vfovj4rhAcH8a9FJJm/y9Xrn6GVb5fLFO4q1Gy1aSxdYBg08D6LOGp?=
+ =?us-ascii?Q?/pA5oOdilsYMhPCaoVvjlLJAaMRd/6W5Bb/NKP9D7Zry/gN2tGJwlnEggrmS?=
+ =?us-ascii?Q?TzVEw+G9fsk6mzvGYB7S146Ub4/ZUm7cIE9odrTkFVLtlJa7C3k/2AGIlEzz?=
+ =?us-ascii?Q?qK4i9LetVZP72gGWe+Kul1mUDgoM2UgIM56lVssQAxeNAIwmL6P9ZXnPziVg?=
+ =?us-ascii?Q?mnzFoN2qdrmnEVvI4o7RZGJ+cpbhZpUPR9uftzjTy4Ah2PYz+MMynXtA/Aor?=
+ =?us-ascii?Q?N5dfo4vESA=3D=3D?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: e9af5cdc-52dc-411a-1f4e-08def47ab67e
+X-MS-Exchange-CrossTenant-AuthSource: LV8PR12MB9620.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 07 Aug 2026 11:55:02.0055
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 0pRUIC2X8wbPDDTrnFBiTffTloIMZCjnZXiBsiyrZAsZOHGa/K8NG/UhNVjtwzrc
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA1PR12MB7565
 
-On Thu, Aug 06, 2026 at 11:04:04PM +0530, Hari Bathini wrote:
+On Fri, Aug 07, 2026 at 12:03:14PM +0100, Robin Murphy wrote:
+> > Each struct device will have a flag that shows if it is in T=1 or T=0
+> > state. The flag can only change while a driver is not bound, and
+> > changing the flag will update the DMA API configuration.
 > 
-> 
-> On 05/08/26 11:36 am, Saket Kumar Bhaskar wrote:
-> > From: Abhishek Dubey <adubey@linux.ibm.com>
-> > 
-> > The verifier selftest validates JITed instructions by matching expected
-> > disassembly output. The first two patches fix issues in powerpc instruction
-> > disassembly that were causing test flow failures. The fix is common for
-> > 64-bit & 32-bit powerpc. Add support for the powerpc-specific "__powerpc64"
-> > architecture tag in the third patch, enabling proper test filtering in
-> > verifier test files. Introduce verifier testcases for tailcalls on powerpc64.
-> > 
-> > The first patch in series is fix patch, correcting memory alignment with
-> > 8-byte boundary for long branch address field. The subsequent patches
-> > enables verifier selftests on powerpc. The fifth patch in the series fixes
-> > incorrect comparator usage for comparing tailcall info with tailcall
-> > threshold. The last two patches fix JIT buffer overflow for large BPF progs
-> > and private stack memory leak (identified by bot during reviews).
-> > 
-> > Issue Details:
-> > --------------
-> > 
-> >      The Long branch stub in the trampoline implementation[1] provides
-> >      flexibility to handles short as well as long branch distance to
-> >      actual trampoline. Whereas, the 8 bytes long dummy_tramp_addr field
-> >      sitting before long branch stub leads to failure when enabling
-> >      verifier based seltest for ppc64.
-> >      The verifier selftests require disassembing the final jited image
-> >      to get native instructions. Later the disassembled instruction
-> >      sequence is matched against sequence of instructions provided in
-> >      test-file under __jited() wrapper. The final jited image contains
-> >      Out-of-line stub and Long branch stub as part of epilogue jitting
-> >      for a bpf program. The 8 bytes space for dummy_tramp is sandwiched
-> >      between both above mentioned stubs. These 8 bytes contain memory
-> >      address of dummy trampoline during trampoline invocation which don't
-> >      correspond to any powerpc instructions. So, disassembly fails
-> >      resulting in failure of verifier selftests.
-> >      The following code snippet shows the problem with current arrangement
-> >      made for dummy_tramp_addr.
-> >      /* Out-of-line stub */
-> >      mflr    r0
-> >      [b|bl]  tramp
-> >      mtlr    r0 //only with OOL
-> >      b       bpf_func + 4
-> >      /* Long branch stub */
-> >      .long   <dummy_tramp_addr>  <---Invalid bytes sequence, disassembly fails
-> >      mflr    r11
-> >      bcl     20,31,$+4
-> >      mflr    r12
-> >      ld      r12, -8-SZL(r12)
-> >      mtctr   r12
-> >      mtlr    r11 //retain ftrace ABI
-> >      bctr
-> > 
-> >      Consider test program binary of size 112 bytes:
-> >      0:  00000060 10004de8 00002039 f8ff21f9 81ff21f8 7000e1fb 3000e13b
-> >      28: 3000e13b 2a006038 f8ff7ff8 00000039 7000e1eb 80002138 7843037d
-> >      56: 2000804e a602087c 00000060 a603087c bcffff4b c0341d00 000000c0
-> >      84: a602687d 05009f42 a602887d f0ff8ce9 a603897d a603687d 2004804e
-> > 
-> >      Disassembly output of above binary for ppc64le:
-> >      pc:0     left:112    00 00 00 60  :  nop
-> >      pc:4     left:108    10 00 4d e8  :  ld 2, 16(13)
-> >      pc:8     left:104    00 00 20 39  :  li 9, 0
-> >      pc:12    left:100    f8 ff 21 f9  :  std 9, -8(1)
-> >      pc:16    left:96     81 ff 21 f8  :  stdu 1, -128(1)
-> >      pc:20    left:92     70 00 e1 fb  :  std 31, 112(1)
-> >      pc:24    left:88     30 00 e1 3b  :  addi 31, 1, 48
-> >      pc:28    left:84     30 00 e1 3b  :  addi 31, 1, 48
-> >      pc:32    left:80     2a 00 60 38  :  li 3, 42
-> >      pc:36    left:76     f8 ff 7f f8  :  std 3, -8(31)
-> >      pc:40    left:72     00 00 00 39  :  li 8, 0
-> >      pc:44    left:68     70 00 e1 eb  :  ld 31, 112(1)
-> >      pc:48    left:64     80 00 21 38  :  addi 1, 1, 128
-> >      pc:52    left:60     78 43 03 7d  :  mr    3, 8
-> >      pc:56    left:56     20 00 80 4e  :  blr
-> >      pc:60    left:52     a6 02 08 7c  :  mflr 0
-> >      pc:64    left:48     00 00 00 60  :  nop
-> >      pc:68    left:44     a6 03 08 7c  :  mtlr 0
-> >      pc:72    left:40     bc ff ff 4b  :  b .-68
-> >      pc:76    left:36     c0 34 1d 00  :
-> >      ...
-> > 
-> >      Failure log:
-> >      Can't disasm instruction at offset 76: c0 34 1d 00 00 00 00 c0 a6 02 68 7d 05 00 9f 42
-> >      --------------------------------------
-> > 
-> >      Observation:
-> >      Can't disasm instruction at offset 76 as this address has
-> >      ".long <dummy_tramp_addr>" (0xc0341d00000000c0)
-> >      But valid instructions follow at offset 84 onwards.
-> > 
-> >      Move the long branch address space to the bottom of the long
-> >      branch stub. This allows uninterrupted disassembly until the
-> >      last 8 bytes. Exclude these last bytes from the overall
-> >      program length to prevent failure in assembly generation.
-> > 
-> >      Following is disassembler output for same test program with moved down
-> >      dummy_tramp_addr field:
-> >      .....
-> >      .....
-> >      pc:68    left:44     a6 03 08 7c  :  mtlr 0
-> >      pc:72    left:40     bc ff ff 4b  :  b .-68
-> >      pc:76    left:36     a6 02 68 7d  :  mflr 11
-> >      pc:80    left:32     05 00 9f 42  :  bcl 20, 31, .+4
-> >      pc:84    left:28     a6 02 88 7d  :  mflr 12
-> >      pc:88    left:24     14 00 8c e9  :  ld 12, 20(12)
-> >      pc:92    left:20     a6 03 89 7d  :  mtctr 12
-> >      pc:96    left:16     a6 03 68 7d  :  mtlr 11
-> >      pc:100   left:12     20 04 80 4e  :  bctr
-> >      pc:104   left:8      c0 34 1d 00  :
-> > 
-> >      Failure log:
-> >      Can't disasm instruction at offset 104: c0 34 1d 00 00 00 00 c0
-> >      ---------------------------------------
-> >      Disassembly logic can truncate at 104, ignoring last 8 bytes.
-> > 
-> >      Update the dummy_tramp_addr field offset calculation from the end
-> >      of the program to reflect its new location, for bpf_arch_text_poke()
-> >      to update the actual trampoline's address in this field.
-> > 
-> >      [1] https://lore.kernel.org/all/20241030070850.1361304-18-hbathini@linux.ibm.com
-> > 
-> > v9->v10:
-> >    Modified expected JIT instruction in selftest for
-> >    CONFIG_PPC_KERNEL_PCREL incase of PPC_LI64 instruction.
-> >    Fix for stale entries in exception table
-> >    Update ARCH_POWERPC64 enum value to 0x40 to resolve rebase
-> >    conflict with ARCH_LOONGARCH (0x20).
-> > 
-> > v8->v9:
-> >    Dynamic pass handling until code keeps shrinking
-> >    Fix private stack memory leak
-> > 
-> > v7->v8:
-> >    Fixed bot identified issues of alt_exit_addr and BPF_EXIT
-> >    Fixed 32-bit ppc function signature mismatch
-> > 
-> > v6->v7:
-> >    Fixed JIT buffer overflow in case of large BPF progs
-> >    Addressed remaining bot comments
-> > 
-> > v5->v6:
-> >    Changed alignment NOP emittion dependency on fimage layout
-> >    Adjust tail truncate length for 32-bit ppc
-> >    Addressed few minor bot comments
-> > 
-> > v4->v5:
-> >    Handled alignment NOP emit logic and corresponding stub offsets
-> >    Handled image buffer overflow problem in last pass
-> >    Above changes took care of other bot reviews
-> >    Included LLVMDisposeMessage() for graceful freeing
-> >    Adjusted parameters in bpf_jit_build_fentry_stubs for ppc32
-> >    Adjusted expected JIT inst. in tailcall test for
-> > CONFIG_PPC_KERNEL_PCREL config
-> >    Added fix patch at last for inaccurate use of cmplwi inst.
-> > 
-> > v3->v4:
-> >    Changed logic for emitting alignment NOP
-> > 
-> > v2->v3:
-> >    Removed fixed NOP from bottom of long branch stub
-> >    Rebased on top of bpf-next
-> > 
-> > v1->v2:
-> >    Added fix-patch to correct memory alignment in-place
-> >    Moved the optional alignmnet NOP before OOL stub
-> > 
-> > [v1]: https://lore.kernel.org/bpf/20260225013627.22098-1-adubey@linux.ibm.com
-> > [v2]: https://lore.kernel.org/bpf/20260403004011.44417-1-adubey@linux.ibm.com
-> > [v3]: https://lore.kernel.org/bpf/20260411221413.44304-1-adubey@linux.ibm.com
-> > [v4]: https://lore.kernel.org/bpf/20260517214043.12975-1-adubey@linux.ibm.com
-> > [v5]: https://lore.kernel.org/bpf/20260519233812.18787-1-adubey@linux.ibm.com
-> > [v6]: https://lore.kernel.org/bpf/20260529015855.364704-1-adubey@linux.ibm.com
-> > [v7]: https://lore.kernel.org/bpf/20260611153826.31187-1-adubey@linux.ibm.com
-> > [v8]: https://lore.kernel.org/bpf/20260616164741.32252-1-adubey@linux.ibm.com
-> > [v9]: https://lore.kernel.org/bpf/20260623231411.6216-1-adubey@linux.ibm.com/
-> > 
-> > Abhishek Dubey (8):
-> >    powerpc/bpf: fix alignment of long branch trampoline addres to t
-> >    powerpc/bpf: Move out dummy_tramp_addr after Long branch stub
-> >    selftest/bpf: Fixing powerpc JIT disassembly failure
-> >    selftest/bpf: Enable verifier selftest for powerpc64
-> >    powerpc64/bpf: fix compare instruction emitted for tailcall
-> >    selftest/bpf: Add tailcall verifier selftest for powerpc64
-> >    powerpc/bpf: fix buffer overflow in JIT for large BPF programs
-> >    powerpc64/bpf: fix percpu private stack leak on JIT failure
-> > 
-> >   arch/powerpc/net/bpf_jit.h                    |  20 +++-
-> >   arch/powerpc/net/bpf_jit_comp.c               | 102 +++++++++++++-----
-> >   arch/powerpc/net/bpf_jit_comp32.c             |   7 +-
-> >   arch/powerpc/net/bpf_jit_comp64.c             |  15 +--
-> >   .../selftests/bpf/jit_disasm_helpers.c        |  25 ++++-
-> >   tools/testing/selftests/bpf/progs/bpf_misc.h  |   1 +
-> >   .../bpf/progs/verifier_tailcall_jit.c         |  74 +++++++++++++
-> >   tools/testing/selftests/bpf/test_loader.c     |   5 +
-> >   8 files changed, 209 insertions(+), 40 deletions(-)
-> > 
-> 
-> Alexei, Maddy,
-> 
-> Given this has changes in common code too, should this go via bpf tree?
-> If yes, @Saket can you post the next revision with bpf tag to make
-> it explicit...
-> 
-> - Hari
-I have sent the v11 for this series
-https://lore.kernel.org/all/27ec08c30f6c37b3f25ba735f9cd7f81ff9e98d5.1786099877.git.skb99@linux.ibm.com/
+> I see we no longer seem to have the concern of devices in TDISP RUN state
+> being able to send T=0 transactions other than MSI writes,
 
-- Saket
+Right it was too complex and nobody needed it, so Linux will not
+support T=0 through the DMA API on an T=1 device, and devices should
+be designed to only send T=1 to the greatest degree possible.
+
+If someone foolishly makes a device that works otherwise they will
+have to take the difficult SW tasks of making it work.
+
+> where GICv3 means the host is already going to have to be in on the
+> game to some degree there anyway.
+
+As I understand it:
+
+We will need to teach GIC to understand if/when the device uses a T=0
+translation for MSI and then use a shared physical address for the ITS
+IOVA instead of getting an IOVA translation from the iommu. The
+hypervisor will setup the S2 for the T=0 SMMU translation to be
+identity with all shared memory and the ITS page will be shared
+memory.
+
+Presumably in future we will have HW to handle a T=1 ITS page access
+and some way to negotiate with devices if they should use a T=1 path
+for MSI or not.
+
+There won't be a vSMMU attached to the T=0 instance at all, it is just
+wired to be bypass.
+
+> support in firmware bindings nor the IOMMU API itself to be able to describe
+> a single device being associated with both the RMM's vSMMU for the T=1
+> (Realm) VA space, and the NS VMM's vSMMU for the T=0 VA space, even
+> if we
+
+Right!
+
+> did only have to care about using strictly one or the other at any given
+> time based on device state. Having distinct struct devices is indeed clunky,
+> but does at least reduce the problem to a currently-manageable one of the
+> client driver having to wrangle them as a pair. 
+
+So hard! A meaningful goal here is to have existing drivers largely
+work unchanged in a CC world, so the device starts doing T=1 for
+almost everything and the existing driver just works.
+
+> (And FWIW when we do get there, I'd be inclined to make the default SWIOTLB
+> the "private" one, so all the sharing/decryption stuff can be neatly
+> partitioned off into the CoCo etc. special cases...)
+
+Yeah
+ 
+Jason
 
