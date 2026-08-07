@@ -1,73 +1,62 @@
-Return-Path: <linuxppc-dev+bounces-25566-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25567-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 646BCC5AC7C
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Aug 2026 11:55:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 61EC1C5AC7C
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Aug 2026 11:58:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hGjJm0CKfz3c3v;
-	Fri, 07 Aug 2026 21:55:36 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c111::5" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786103735;
-	cv=pass; b=dxSvlFqzLCZJ7C+tYCLnOMTqZs62iFlJnEhaLgDG16tpHvAw+VA84LVIR/ChPDcEjk23LIy6fNWbRWpvCd/gcKwAxl2WxS3g9TJwKgtoSD3rps2DkXAZclVePHwWxtoMAgNoWKipVtL1SHZreAhML+pA96qRWYnNqITpXVI63KBp64nfuzV85/VtCnjcW0vcZP/xHjbL2lNqZpGqvyGZ453jufNZJL8Yisqr2LeSRCEOa1zTaze07yU6v9P5WQDpLgf020YTCI73atCqaWwiZ1vpqb+VxOMumWdn357dYsn8lZ5VvK1TOuIbwmkCI07ZXYVkMGpjD4Mx4HWwlHMmpA==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786103735; c=relaxed/relaxed;
-	bh=WBmiU527J7THNfS6lpBzEB9bAjO2Wf5lzjTwg6I5bfI=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=YJh63kkRZR8uWVmU4q1xqS60BdU+C4EjVk4f/EnG0eIrQn4gDFHM6WdfggMab7p9vEOsIZ+EXLGN4TnqA10c1vCocpavy+Gr+DSgPvUL59Dd5YYclZ1Qy4uY6ASswJXh9wO+0bNXPhW8eSNBzWb+Bm33HxsomsbGIErRWJSvS6n/AzLsNHkJ9zrTIU+zZDkUX1w+CAX3u19ec3FHgkg0yFfPA+1L2BFh1P42V2UlevhAqMdd2CmHlvMqRL6vF+qiSeXniFhKFAd1Ah4N7cugAlaz/jXNMzTdZdypfqTHzjg5urY1zMgVIYsoFbU5YXhgtJiXsgm/gP+SYwoM8X1xOg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=qg/8qO+X; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c111::5; helo=dm1pr04cu001.outbound.protection.outlook.com; envelope-from=jgg@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hGjNK6pFdz3c3w;
+	Fri, 07 Aug 2026 21:58:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786103921;
+	cv=none; b=Fz+Fw7VqDPiqJFeF0OTHO/Jvu4C2wVpKEJls+Xwkd3O/ssoskywP2vYIqFTfhXMTSat9d4epkX1vjR8g4pNpvK+HeZxgjXt2i40ygS/LSmwJoxx7sVFSUeEVbRQg81Vf/HpFzBr94OztpnafhWYo5JLw9LLDmS8M7wdqEsdF2EvUo+iDpkN9pzQdszUsVlUrNymALOTZEU3mhJUeloXaLNv6z0L3/J+v1b+Isr6mR0LUrBSlG1hpCmvx6TXZ3zWaCZtUxFcbHKshB/k1OLzr2rhice7WhVBiXRP6tYE8HJvhx6Ac61ooGJCtpWR3t39DTMl/Wc1Ka/ANH3XU338QyQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1786103921; c=relaxed/relaxed;
+	bh=Xd3UFDIz5wYvevp0q0lFRxsbOOvF3TFwe4o0b4um2rs=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=OqAtgZ7AmvNLPyPvKKfjXRMC50FShEITgRY4BsG+hLX+d0wQfjPJgWqOT6K4UaV07RwJL9+7LrdSoFGheyNH5S+nRCAL2SPhjtDP6aITIVWTDd7FI9EUm1avV4LPUxwzydT0qBcTQkeCP87BjjjpN905DygEFjE0IBBi3skj78APfzgPqMstIuEQUaE6ZeT0oFX0PPZ6WJQP7YWUyTUVkt1BLYRBmCPuOf8o+HdyuvLtiQF6/BkH4LdxJQ3A8nFn39KA/UuFLpNQ55aA99X3VP+XJVlTVX5c5LrLgGVSzQj8I1xRs8gvae6Vj/e7SYvnTd+0lgxKHtzsp22phYxkLw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Nb5CNrdE; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=will@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=qg/8qO+X;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Nb5CNrdE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:c111::5; helo=dm1pr04cu001.outbound.protection.outlook.com; envelope-from=jgg@nvidia.com; receiver=lists.ozlabs.org)
-Received: from DM1PR04CU001.outbound.protection.outlook.com (mail-centralusazlp170100005.outbound.protection.outlook.com [IPv6:2a01:111:f403:c111::5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=will@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hGjJj4Vshz3c3g
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Aug 2026 21:55:33 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=xP+DfLo53U1h6y3er8JKdZEG5ni8I+dnFpgGSWIFJZI5jQP8rOpURpgw7YA+1rMYcO1zvhPgYGuG/P9GrsjJaQ9ZojUdacbLsC6oGI/8XzBdYZm15boV5fsnCBTzkZB0euPL4JqAtFq7fyMZPlJfsEDRMEOhhqWNG1L+vD+1fkXGFLESmIZ4lBKVYy2Z/VXYdjDWO9Szl80drKWhlIgMK89ZDMBBJYTmDx50/oArfd9cAhojzx6UHnqmTjDd6IA2BihOADN3JCN6+RnPdZv2AeWq5wTp/KxuhdfEgbh5F1+S4QZgHzLCCLc/Mx2SL9csoCDZHVGJ6X8wBQhWYiiznw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=WBmiU527J7THNfS6lpBzEB9bAjO2Wf5lzjTwg6I5bfI=;
- b=WHkulhLJi99DeZwkHpkTpek/hFJ7IXDS1OvG4/CLsG8lsGJwyIZVkes+tdgLqDIwGQwGG5sXz3tFsE74iltPJslvjds7z4JRFuKyqXgPgAh8UTX8jSDBX4lUWgOySN7qMGHRM5+0ALuOi3KbH0SAHu+8BNBRNgM/LU8bpeIu/gv38HBL0e68VT3mU8b3GdrQmFDJIxrnlSM4KYkGIXFyi/9eW3JAwDlsBagg+mG1Lv9tACNCO8Ey4DfH8xxK1I7s7kIw8mIBXjXkjXIUVceiWQ+gVzVnFcaOY7WMV6kd4pnCWA1lvU9CuM6/xOpmXYioHhbY/I8Hc6Il9p4sdARdUg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=WBmiU527J7THNfS6lpBzEB9bAjO2Wf5lzjTwg6I5bfI=;
- b=qg/8qO+XdV0UXEAAxQH8MduZgFgS0SmXnxoAE1MVZ+/K3KFCQrGcce9DEmg0icpJ6RGYpABfH4GE4T+cgitHxS43l5lwN/CpQuFNEUHhQsN5EnWlbhPB+hkevzn4aWO2FwmvUIUXfXaIbFRxwogxhafSbvOjduCVUACO1nES0cQ+Odn7LsItFoLnPZZVnG1CBcTV0KqCxgJG0KXamP+opJHgeHCY571Wl44+l4mnzLC/JQBB4vdUB94mSaC0Pc3l3CDRiW4tTFs9GE4QzOufkw8vDmzdiUQwGv6R2mCkM5GRqm7aK7FUsvOWblr6xtT0kUQ7lUYlgqioVYlUI1t6Gw==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from LV8PR12MB9620.namprd12.prod.outlook.com (2603:10b6:408:2a1::19)
- by IA1PR12MB7565.namprd12.prod.outlook.com (2603:10b6:208:42f::17) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.292.23; Fri, 7 Aug
- 2026 11:55:02 +0000
-Received: from LV8PR12MB9620.namprd12.prod.outlook.com
- ([fe80::299d:f5e0:3550:1528]) by LV8PR12MB9620.namprd12.prod.outlook.com
- ([fe80::299d:f5e0:3550:1528%4]) with mapi id 15.21.0292.022; Fri, 7 Aug 2026
- 11:55:02 +0000
-Date: Fri, 7 Aug 2026 08:55:00 -0300
-From: Jason Gunthorpe <jgg@nvidia.com>
-To: Robin Murphy <robin.murphy@arm.com>
-Cc: Mostafa Saleh <smostafa@google.com>,
-	"Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, iommu@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	linux-coco@lists.linux.dev,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hGjNK0ZpJz3c3v
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Aug 2026 21:58:40 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 9545243394;
+	Fri,  7 Aug 2026 11:58:38 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F2F7A1F00A3A;
+	Fri,  7 Aug 2026 11:58:32 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1786103918;
+	bh=Xd3UFDIz5wYvevp0q0lFRxsbOOvF3TFwe4o0b4um2rs=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=Nb5CNrdE/4Z45mCov87EsHo7R+c/XppeMgdWkypZiJi0hG1F3qOgd2tMn8awJqvaS
+	 lbdSFBuX+8DZW+BUgsVb72bpNXzoeTOxLUMO7EfDoa8A1uqNuAgZxEIKcOk6xWqCjz
+	 inB/PGpqH/asRSsq2GTJ8yf/60nRgNhE7C1XyCY51qwFthllbwSfudh5hb9iKzACj7
+	 QziTT7OLJ6iY0pmcLYRNlH75OV6VN8M2L9EGh7RPznyr9g/ejgHCUX6HO7rcff8qyK
+	 jVXAQEnK36ohiepgjg3IyQBDlNwN1AqiRdGYIzb5ul1D0/BFPUE3uuAab7MCjuibx8
+	 FtaKWGZWWR0DA==
+Date: Fri, 7 Aug 2026 12:58:29 +0100
+From: Will Deacon <will@kernel.org>
+To: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>
+Cc: iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev,
+	Robin Murphy <robin.murphy@arm.com>,
 	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
-	Steven Price <steven.price@arm.com>,
+	Marc Zyngier <maz@kernel.org>, Steven Price <steven.price@arm.com>,
 	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
 	Catalin Marinas <catalin.marinas@arm.com>,
-	Jiri Pirko <jiri@resnulli.us>, Petr Tesarik <ptesarik@suse.com>,
+	Jiri Pirko <jiri@resnulli.us>, Jason Gunthorpe <jgg@ziepe.ca>,
+	Mostafa Saleh <smostafa@google.com>,
+	Petr Tesarik <ptesarik@suse.com>,
 	Alexey Kardashevskiy <aik@amd.com>,
 	Dan Williams <dan.j.williams@intel.com>,
 	Xu Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
@@ -75,33 +64,18 @@ Cc: Mostafa Saleh <smostafa@google.com>,
 	Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Michael Ellerman <mpe@ellerman.id.au>,
 	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Christophe Leroy <chleroy@kernel.org>,
 	Alexander Gordeev <agordeev@linux.ibm.com>,
 	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
 	Heiko Carstens <hca@linux.ibm.com>,
 	Vasily Gorbik <gor@linux.ibm.com>,
 	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org,
-	Michael Kelley <mhklinux@outlook.com>
-Subject: Re: [PATCH v8 12/23] dma: swiotlb: pass mapping attributes by
- reference
-Message-ID: <20260807115500.GA158689@nvidia.com>
-References: <20260717180442.110954-1-aneesh.kumar@kernel.org>
- <20260717180442.110954-13-aneesh.kumar@kernel.org>
- <ami_mpd_1pF4Tmdu@google.com>
- <yq5a5x1ygo7z.fsf@kernel.org>
- <amnRB98ZZIysHuM3@google.com>
- <yq5acxw6dl1d.fsf@kernel.org>
- <20260804142032.GC27883@nvidia.com>
- <anL9-OrDGqYQAWNV@google.com>
- <20260805123023.GO27883@nvidia.com>
- <0ce2249d-3a64-4889-b455-0e8fddcc7282@arm.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <0ce2249d-3a64-4889-b455-0e8fddcc7282@arm.com>
-X-ClientProxiedBy: YT4PR01CA0335.CANPRD01.PROD.OUTLOOK.COM
- (2603:10b6:b01:10a::26) To LV8PR12MB9620.namprd12.prod.outlook.com
- (2603:10b6:408:2a1::19)
+	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org
+Subject: Re: [PATCH] arm64: swiotlb: Keep the default size for protected
+ guests
+Message-ID: <anXIZSh9lq99VG9X@willie-the-truck>
+References: <20260717180442.110954-18-aneesh.kumar@kernel.org>
+ <20260807092612.2202005-1-aneesh.kumar@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -115,116 +89,38 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: LV8PR12MB9620:EE_|IA1PR12MB7565:EE_
-X-MS-Office365-Filtering-Correlation-Id: e9af5cdc-52dc-411a-1f4e-08def47ab67e
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|1800799024|7416014|376014|23010399003|22082099003|18002099003|4143699003|11063799006|56012099006|6133799003|10067099003;
-X-Microsoft-Antispam-Message-Info:
-	xbQd0L89H8XoXqKeFtE202UqZkFIyHYYR/0xKbAnhxMeTnvg0mjcVXgZij6WgsZijYVriqiH8xNkMpQt/OvhizoNNJTepZGUdvjoRVSOmzipPje6FN3tZYN3pZ7Y2rRcVDly963VaOqNh+Ttk5RRWaNzI7ODJgdMD68512ZJ+FFKMM1rEVXy0eoMVAfeoHf3t7alnOkjQpCPWMUYqCbK/R5F6cekuyZ7bHBXlcJOfbOZVf7zMp21qjkJ1EnBK4eJNZVNPmSitV3D3w4F7vFimIKy1ppusw5AebgCkqxX7Or0c+bfsetLXC/mDB+O0F8Rwqi95btJh76QjOmuoHO9jfxg8dcoJ9dSVJQeiJNwobp3sXB7XTWwiEtm9q+4qsalT4Xpmhe0bEnp5r825WtWiYtHpeNJsHkYnJ73lZU9+Lsk9uRi2cRUwdRjN2+4+XF4KoW0qeOLJJj7PRXmKXl/1Sl4e+eTCTegPkVdSs8aeXstaG9GvbAhwcNhD10MzBWrjjcAm7VdgerFME19luf439ql38CB859PmYy1dkLx97mPEGWz6G6mSU3IKIuwoqWalrzpQ7Myh3IV/O/+aBDe6Zj67PfX725rnOwbUZqmRNotPgUYvqoqNH3KN6Jm+2KHXgnFV8KP7axXOaWO17wS1FLZJKCC5KpyCOhm9isW1ho=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LV8PR12MB9620.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(7416014)(376014)(23010399003)(22082099003)(18002099003)(4143699003)(11063799006)(56012099006)(6133799003)(10067099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?bO3ZZXnubLz/+SmN2/usIWMBUKD3XznyuYs2CYG2oRzWK7iFSQjVOI6TjRU8?=
- =?us-ascii?Q?uSKoAZ+jhhOhH9f1pkPDznOYES30lNBlR99laEKARSwSVNaOIQ6ARwBc5e1p?=
- =?us-ascii?Q?xOX1rLDTO7/IEL+M7YfDt8IZI5Co0/T/zP8hzkGATViXGw7xhpHje9CcaG+u?=
- =?us-ascii?Q?+wLAzCRX3dw+NZn9QyUJ+zeA4dGldRBEhErb+69GcnoWkykBZnoVt/1+V/bb?=
- =?us-ascii?Q?BqXi5d7njFE07pH0uUxSmxiB+gtMhEa/ppwYDiEBLa1yZlnw1ah4CFIUtVKG?=
- =?us-ascii?Q?OzTemz9ZmQWxG9KIoG2Xf7WDyZqIP4PazG7RPZwDDjlAEAfuD0INtBRKphXB?=
- =?us-ascii?Q?duzF0RMxxnHcbu/zYIHePz8MfMrlvDxW/s5JDNZQGW5OQOg+wX1nC1UaVoOg?=
- =?us-ascii?Q?wGd+5wa6dZ3ZhJ06K24gddX2InBGFT4sws5YOJ/5AMLTDJ6YRp6O4sVA6SRN?=
- =?us-ascii?Q?L3CX74JVIOJ56Jn4LLVdRPRO71XTfQM1dL5CsayNcYlllALjSXh4WyN4xrPG?=
- =?us-ascii?Q?x+/eOdrwB7FDJLqwzVY1JGUiY2LF60rijclgZqQUBKNhqB+Lwf/wVknt6SE0?=
- =?us-ascii?Q?ddki3nPT72ojdrqjUA+vI7BBQQr0HLYHyADwT/LfVtWhzPeyUeDc7r/k8cNi?=
- =?us-ascii?Q?0XwzRb6WMlzN6LP+N1YhnAZoRG71oeHdP053WF03RnmtGhf6DecncL13CGMK?=
- =?us-ascii?Q?MzGs+auagCV9KC8SE7yqjFkqSFuQpakEYIAVRcscja3gKeG9nUJ8kLIxC2iB?=
- =?us-ascii?Q?QjS1TnlVV56hUzMs83Ziyg2V3IcLDmbE42mTp6uzEuuBHxiC+aELNm7GYFFi?=
- =?us-ascii?Q?kIhrQt0aEJ0OanUt/VYrBW3K5MmPifAefbmv9yTrc9GMSmeAdujSKrXfNA46?=
- =?us-ascii?Q?uDEGnJ4IY5pP7O0KOM/u/RCdcL9wwDxklfcyhTsnHnCaOUef3TBJuJ/tM9d7?=
- =?us-ascii?Q?y10zqn8KGZNFdgeSkesEyIy5NVDR3vWf3M7JpYhtPDiGUPYysT0+kt4s1n3a?=
- =?us-ascii?Q?7scIdjYNnY/hbbkdHLDScj4/tI/PEpaSnRujfQDINl9ftuCl/xzu0Gj/oqj9?=
- =?us-ascii?Q?sFpPvt71/1mUTeKZOQU0J/TgeUYYIeR0wBk7Fx8nL/3T7oJ3bggqepX8e7yq?=
- =?us-ascii?Q?gy8rjTKeEvmUVWUotvMkcbblwPPoHP8KTkMWJcqqRO74BETGCuJAxkuoOc6U?=
- =?us-ascii?Q?RkNk8A/GbHONygtFdtCY6d5PPW67cjlvFTehPdvE8YoDXcSEA+GdVVkT7SJ6?=
- =?us-ascii?Q?Q+jfklICxuoFQlOGzxnre9pUhksRWVlaY4iYxpetc5XDn4vscIOIb5QTvjq8?=
- =?us-ascii?Q?kyJy9J2TQ8/olqpj7cWrIIm5omwSuHyJsfBJzMe9/XmB3ePvbcB36B0uc3sF?=
- =?us-ascii?Q?y8MJBT8DK6MoTJY7O1fBFcoY1eq7K2RScM3DboOg6l73yWv87JYp4UsdKGC1?=
- =?us-ascii?Q?Lk11i+vfovj4rhAcH8a9FJJm/y9Xrn6GVb5fLFO4q1Gy1aSxdYBg08D6LOGp?=
- =?us-ascii?Q?/pA5oOdilsYMhPCaoVvjlLJAaMRd/6W5Bb/NKP9D7Zry/gN2tGJwlnEggrmS?=
- =?us-ascii?Q?TzVEw+G9fsk6mzvGYB7S146Ub4/ZUm7cIE9odrTkFVLtlJa7C3k/2AGIlEzz?=
- =?us-ascii?Q?qK4i9LetVZP72gGWe+Kul1mUDgoM2UgIM56lVssQAxeNAIwmL6P9ZXnPziVg?=
- =?us-ascii?Q?mnzFoN2qdrmnEVvI4o7RZGJ+cpbhZpUPR9uftzjTy4Ah2PYz+MMynXtA/Aor?=
- =?us-ascii?Q?N5dfo4vESA=3D=3D?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: e9af5cdc-52dc-411a-1f4e-08def47ab67e
-X-MS-Exchange-CrossTenant-AuthSource: LV8PR12MB9620.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 07 Aug 2026 11:55:02.0055
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 0pRUIC2X8wbPDDTrnFBiTffTloIMZCjnZXiBsiyrZAsZOHGa/K8NG/UhNVjtwzrc
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA1PR12MB7565
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260807092612.2202005-1-aneesh.kumar@kernel.org>
 
-On Fri, Aug 07, 2026 at 12:03:14PM +0100, Robin Murphy wrote:
-> > Each struct device will have a flag that shows if it is in T=1 or T=0
-> > state. The flag can only change while a driver is not bound, and
-> > changing the flag will update the DMA API configuration.
+On Fri, Aug 07, 2026 at 02:56:12PM +0530, Aneesh Kumar K.V (Arm) wrote:
+> Realm guests and protected KVM guests may require swiotlb for device DMA
+> even when all system RAM is addressable by the DMA zones.
 > 
-> I see we no longer seem to have the concern of devices in TDISP RUN state
-> being able to send T=0 transactions other than MSI writes,
+> Do not reduce the SWIOTLB buffer to the kmalloc-bouncing size for these
+> guests, as the reduced number of slots can be exhausted during CCA guest
+> operation.
+> 
+> Fixes: 30c5e45ee2c5 ("dma-direct: make dma_direct_map_phys() honor DMA_ATTR_CC_SHARED")
+> Signed-off-by: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>
+> ---
+>  arch/arm64/mm/init.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/arm64/mm/init.c b/arch/arm64/mm/init.c
+> index e308a7cabd12..24caaf10e755 100644
+> --- a/arch/arm64/mm/init.c
+> +++ b/arch/arm64/mm/init.c
+> @@ -339,7 +339,8 @@ void __init arch_mm_preinit(void)
+>  {
+>  	unsigned int flags = SWIOTLB_VERBOSE;
+>  
+> -	if (max_pfn <= PFN_DOWN(arm64_dma_phys_limit)) {
+> +	if (!cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT) &&
+> +	    max_pfn <= PFN_DOWN(arm64_dma_phys_limit)) {
 
-Right it was too complex and nobody needed it, so Linux will not
-support T=0 through the DMA API on an T=1 device, and devices should
-be designed to only send T=1 to the greatest degree possible.
+Protected guests under pKVM rely on restricted DMA, so won't this just
+waste memory for them?
 
-If someone foolishly makes a device that works otherwise they will
-have to take the difficult SW tasks of making it work.
-
-> where GICv3 means the host is already going to have to be in on the
-> game to some degree there anyway.
-
-As I understand it:
-
-We will need to teach GIC to understand if/when the device uses a T=0
-translation for MSI and then use a shared physical address for the ITS
-IOVA instead of getting an IOVA translation from the iommu. The
-hypervisor will setup the S2 for the T=0 SMMU translation to be
-identity with all shared memory and the ITS page will be shared
-memory.
-
-Presumably in future we will have HW to handle a T=1 ITS page access
-and some way to negotiate with devices if they should use a T=1 path
-for MSI or not.
-
-There won't be a vSMMU attached to the T=0 instance at all, it is just
-wired to be bypass.
-
-> support in firmware bindings nor the IOMMU API itself to be able to describe
-> a single device being associated with both the RMM's vSMMU for the T=1
-> (Realm) VA space, and the NS VMM's vSMMU for the T=0 VA space, even
-> if we
-
-Right!
-
-> did only have to care about using strictly one or the other at any given
-> time based on device state. Having distinct struct devices is indeed clunky,
-> but does at least reduce the problem to a currently-manageable one of the
-> client driver having to wrangle them as a pair. 
-
-So hard! A meaningful goal here is to have existing drivers largely
-work unchanged in a CC world, so the device starts doing T=1 for
-almost everything and the existing driver just works.
-
-> (And FWIW when we do get there, I'd be inclined to make the default SWIOTLB
-> the "private" one, so all the sharing/decryption stuff can be neatly
-> partitioned off into the CoCo etc. special cases...)
-
-Yeah
- 
-Jason
+Will
 
