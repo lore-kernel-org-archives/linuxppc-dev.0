@@ -1,73 +1,83 @@
-Return-Path: <linuxppc-dev+bounces-25582-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25583-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 11D07C5AC7A
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Aug 2026 13:14:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DE993C2A09B
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Aug 2026 13:18:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hGl3G3sRBz3c4Y;
-	Fri, 07 Aug 2026 23:14:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786108442;
-	cv=none; b=gQI8GYCyevxG4OyuxSgf+tdEGWKExsTs9iYgilQVXTFycVNef/y69V6OK1V0mQ+jv/RdC2hVB5kdwRufNCcXqixvs+Q/wL9oLIYY7wfBun0Gm28imCCoNTyvKQvcZ56l9EoaW0jULLt1Ofll4ynXV4HULPpQO6XYJQCexwK2wcvZXILRTbnht3eCpUzsTkYZPUDUb7b98tVBddVAz7juvvTDxkYNwQ0HtPTPw09aXvitPlwDEkue/NlA/NNQMcVaFB9Oy8Yqoht6kF+xzGfRyre1eKDgLprZjO2tLQKU+Lyg3zefLstmHUzmjKWbrEPWiQn89/nWDIP3PWz/tyTzPQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hGl8h408Lz3c4l;
+	Fri, 07 Aug 2026 23:18:44 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786108724;
+	cv=none; b=LlFZuv1qCa254JeCuWgiKMuJmkE3gmH6NcvbazzMxodruAzw5kO2+t+HlG8pi4UHnX3KtgXV7fXnHIT2lZ9Jygtd0aBE1aC1qxebxJtK7Eka0TwbH/6+6j69pnv914qkKNGfQbFVXqXd0V1/mLTsqyWrVruu8xAkWtC8Q/UmZmpXdNoUrewft8O1SqoSG4uXrD4tFn1y3d11cSLIRH2gRvqNJcXjxUzJK1eV+jJ8C1d1XFeU+a/oploZumbBZK93Xil2Cs4RwW9UIOUHr4PJ+IV5n4F2f59GjdKojsZdbG9BVP3s9R4M2i95JuMI32UWGHu978SYJJSda6RQpcB2dw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786108442; c=relaxed/relaxed;
-	bh=4h0HLSywBT0/cUZpjZdhGIKtIqmioJWjQuuourWt8r4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Icz/pwXKfX1kf7y7KI7RcNtF8GUigpLjHS+1SHOgOHCQldtkzjn/FES9cG09BRx44pFApo5wvLoXLlBAaEwuCEwNz/8WNCipa/nr0kWHcc41Z/FJAEpteg/6HYukl4Hs1RtbAp21j662RZeJE+5STPllfn13wkm2pnF52hnib3wAsQLXPpl1nWhyDEsCRvE1BzZ7o35JNGAU/89Rsns4yYH4XahhqJ51LZjrlMnovXQgqUrnSNf2Ik3SpjRIIo9TPv/VdFD6Sgo06EacWs7w3Izf3yQjV9vC9znjj39RLvkvGG88rhR68HehdRPnV8waBwJ4V6zElJZlTtPJpqkruA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=fphs+Cvp; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=gbatra@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1786108724; c=relaxed/relaxed;
+	bh=wsfDDPcsG5MUSLOHvWCFv40tfsXBmUj7P+V3Bqk82YU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=mxxpegJ8MVf8aeSPnH8TBaFpWWEbE8q3s3j4WIaqL3AILMK6rJJs1eMdDFYAvCGMvQRGaqUcyMJDr/jO2m4fPbiOl8Fv5hkiahIG26NRwTzwh/69mJ/DpUE+/kGtVkQi2GP98rBFSAXadwe5fXqEVjmr647qejOdkDdTzbZVxp7uyPb4uge5kp1Ela3GKahn5xNtsG4/1wfrrJ+gmzoMNUWAYXRa0NRxZTjgbg+P0ATRCNVjozdr0xpXSfzjBWyMP/WSNkbsLhHW0x8UW95DsNlKHLtyw0In7hgsJN0AXqqLj0v7rKxmDTT+063hp/ou4sG2oSV2A0q02larD9K2MA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=cCNbiOkj; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=will@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=fphs+Cvp;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=cCNbiOkj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=gbatra@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=will@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hGl3F4yr0z3c2P
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Aug 2026 23:14:01 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 677Clqp81412160;
-	Fri, 7 Aug 2026 13:13:58 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=4h0HLS
-	ywBT0/cUZpjZdhGIKtIqmioJWjQuuourWt8r4=; b=fphs+CvpyT59dGU2OJ8fcC
-	4idrmIh8/QMUD31uN9QzfQW+Z3sYDq8T4WXAJuUTDnQ1Qf6Vhpap5sQLlFBNfIB5
-	ry+lnddrw8Mj9QAcI/z7dJFNTn68aTuzYS5p+xg+jM8kdy5Bp8iYW5d2fns094wV
-	+yUtPkarvzbaz93g2pZb1xX0CyxcEMj5UOcVnci5PuPlO+K9/XdAX1RQ7vSWxS38
-	mlFWjLbEAYhJoKrK1TgWezGPPKqVJN0jlvg8dlVqsFEtzkVpBzUQQPtu6k/X62Ua
-	LCVunr5mwGI66CP2fvhAXYSFZfcEnwVD0mnczQYe4kw7p13PWlV5iXaeCravVqjw
-	==
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fvy02bwm9-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 07 Aug 2026 13:13:58 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 677DBUMd005710;
-	Fri, 7 Aug 2026 13:13:57 GMT
-Received: from smtprelay03.wdc07v.mail.ibm.com ([172.16.1.70])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4fsvmhqqtx-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 07 Aug 2026 13:13:57 +0000 (GMT)
-Received: from smtpav03.wdc07v.mail.ibm.com (smtpav03.wdc07v.mail.ibm.com [10.39.53.230])
-	by smtprelay03.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 677DDHNA27853544
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 7 Aug 2026 13:13:17 GMT
-Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 6ED7858054;
-	Fri,  7 Aug 2026 13:13:55 +0000 (GMT)
-Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 549E15805C;
-	Fri,  7 Aug 2026 13:13:54 +0000 (GMT)
-Received: from [9.67.5.100] (unknown [9.67.5.100])
-	by smtpav03.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Fri,  7 Aug 2026 13:13:54 +0000 (GMT)
-Message-ID: <691c164c-9118-4209-ab7f-c9d7482a65ec@linux.ibm.com>
-Date: Fri, 7 Aug 2026 08:13:53 -0500
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hGl8g5DCRz3c53
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Aug 2026 23:18:43 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 2F2336013A;
+	Fri,  7 Aug 2026 13:18:41 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 338611F000E9;
+	Fri,  7 Aug 2026 13:18:35 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1786108720;
+	bh=wsfDDPcsG5MUSLOHvWCFv40tfsXBmUj7P+V3Bqk82YU=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=cCNbiOkjKWAUqmhRd4f35UKCjy7UEhkqpWWFeU9w7Kfiy5DgWT3dZw1OQFG8VAzwR
+	 XZNBYUU8FhCvDz09mx7t85bJh2lGZS5wWKXfdEHcjdTmqrCKuvbXD4PHj259GvbZZY
+	 At6gmah61p+afUyBaMnPfpe+im9eRwJlcM1uOVFcvRENntNyyd8OspaulZRPI21O0+
+	 RQ+DtFZQKiusnOPhpgTJWrPlMW7ENlDI/iDnaojBH384ZJnryZxsxnSTIXfU3vj3ks
+	 R4W0nC24in4QB64L5eYdsvT8dTMBFtjRhb+mL0yI6d/AOEHHOKCqEgpBrbJoOp2NCH
+	 LWSkcbZumcQJg==
+Date: Fri, 7 Aug 2026 14:18:31 +0100
+From: Will Deacon <will@kernel.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>
+Cc: iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev,
+	Robin Murphy <robin.murphy@arm.com>,
+	Marek Szyprowski <m.szyprowski@samsung.com>,
+	Marc Zyngier <maz@kernel.org>, Steven Price <steven.price@arm.com>,
+	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Jiri Pirko <jiri@resnulli.us>, Jason Gunthorpe <jgg@ziepe.ca>,
+	Mostafa Saleh <smostafa@google.com>,
+	Petr Tesarik <ptesarik@suse.com>,
+	Alexey Kardashevskiy <aik@amd.com>,
+	Dan Williams <dan.j.williams@intel.com>,
+	Xu Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+	linux-s390@vger.kernel.org,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <chleroy@kernel.org>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org
+Subject: Re: [PATCH] arm64: swiotlb: Keep the default size for protected
+ guests
+Message-ID: <anXbJ2O4DWgPxCeg@willie-the-truck>
+References: <20260717180442.110954-18-aneesh.kumar@kernel.org>
+ <20260807092612.2202005-1-aneesh.kumar@kernel.org>
+ <anXIZSh9lq99VG9X@willie-the-truck>
+ <yq5acxvu2ict.fsf@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,106 +91,94 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5] powerpc/pseries/iommu: Add TCEs for 16GB pages when
- RAM is pre-mapped
-To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, maddy@linux.ibm.com
-Cc: ltc-dev@lists.linux.ibm.com, sbhat@linux.ibm.com, vaibhav@linux.ibm.com,
-        harshpb@linux.ibm.com, linuxppc-dev@lists.ozlabs.org,
-        donettom@linux.ibm.com, stable@vger.kernel.org
-References: <20260806205027.86428-1-gbatra@linux.ibm.com>
- <ldailks9.ritesh.list@gmail.com>
-Content-Language: en-US
-From: Gaurav Batra <gbatra@linux.ibm.com>
-In-Reply-To: <ldailks9.ritesh.list@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=G6ws1dk5 c=1 sm=1 tr=0 ts=6a75da16 cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
- a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VnNF1IyMAAAA:8
- a=VwQbUJbxAAAA:8 a=pGLkceISAAAA:8 a=u_fQUr-NCcxOklD4s3sA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODA3MDEwMCBTYWx0ZWRfXy154Z+mALQKw
- XRgqqCk13Ke3M5//b+1BqVZcPsebzH+KFOmfaxNZXwQwLgLgCdD+h4XU8krlZB5XDTH8vkMcUFA
- PeF3Cjxei1fwMeIWbhbCwF5ugKOKxEAlTpmX0sw2EH1yeIfCmG8ZhG/RGjUVnhF6NXOzljk/ykO
- bGZ36clg5bvNLsF/ix4iCAa1f+vLB5asqtRQBijkcJ9W2PXkk6fYgTYJlAugXqyxDsZ0FUFlzmN
- iKsNXZam/p+FZu07RT7ONno1vHFmy3q7ZQN0v59mSsfT9yOBIeyzfmKM87BxzEki4B0SqNO4s9F
- ZluxiQgRGLfaHU7eA0z3Thm0C/Lticdz+WiBMgv9bEfl0av4+z8hFbydv0QnJziiOU+5iG6eJMW
- vtMWHFeT4Ynt2+BMtT466fAwEv302WqtPK0bVXMuVezJRFCjamc8r3mYWB93DYXtemuUxqTHTvC
- 4Sh84Dst4cdygMzWS+Q==
-X-Proofpoint-ORIG-GUID: dA2WKdBqKZfYoOue8dTz5bXGss_IhqHm
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODA3MDEwMCBTYWx0ZWRfXyLcUS2+CNbAv
- NEApy5zeyeon6tr5sJsFDC/KH0kWcv3pfcDs+P9fBA8voPdAQAOZoqq+qm8FBmevmz1GkTouaos
- nBMhYzriPnvMCXqH1Bol448dcJHsUzA=
-X-Proofpoint-GUID: tshLprXFfQ2ni3mZDYySEXEJ6viZXH4o
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-08-07_02,2026-08-06_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 spamscore=0 lowpriorityscore=0 suspectscore=0 malwarescore=0
- phishscore=0 priorityscore=1501 adultscore=0 bulkscore=0 clxscore=1015
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608070100
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <yq5acxvu2ict.fsf@kernel.org>
 
+On Fri, Aug 07, 2026 at 06:33:14PM +0530, Aneesh Kumar K.V wrote:
+> Will Deacon <will@kernel.org> writes:
+> 
+> > On Fri, Aug 07, 2026 at 02:56:12PM +0530, Aneesh Kumar K.V (Arm) wrote:
+> >> Realm guests and protected KVM guests may require swiotlb for device DMA
+> >> even when all system RAM is addressable by the DMA zones.
+> >> 
+> >> Do not reduce the SWIOTLB buffer to the kmalloc-bouncing size for these
+> >> guests, as the reduced number of slots can be exhausted during CCA guest
+> >> operation.
+> >> 
+> >> Fixes: 30c5e45ee2c5 ("dma-direct: make dma_direct_map_phys() honor DMA_ATTR_CC_SHARED")
+> >> Signed-off-by: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>
+> >> ---
+> >>  arch/arm64/mm/init.c | 3 ++-
+> >>  1 file changed, 2 insertions(+), 1 deletion(-)
+> >> 
+> >> diff --git a/arch/arm64/mm/init.c b/arch/arm64/mm/init.c
+> >> index e308a7cabd12..24caaf10e755 100644
+> >> --- a/arch/arm64/mm/init.c
+> >> +++ b/arch/arm64/mm/init.c
+> >> @@ -339,7 +339,8 @@ void __init arch_mm_preinit(void)
+> >>  {
+> >>  	unsigned int flags = SWIOTLB_VERBOSE;
+> >>  
+> >> -	if (max_pfn <= PFN_DOWN(arm64_dma_phys_limit)) {
+> >> +	if (!cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT) &&
+> >> +	    max_pfn <= PFN_DOWN(arm64_dma_phys_limit)) {
+> >
+> > Protected guests under pKVM rely on restricted DMA, so won't this just
+> > waste memory for them?
+> >
+> 
+> commit 30c5e45ee2c5 ("dma-direct: make dma_direct_map_phys() honor DMA_ATTR_CC_SHARED"),
+> which this patch fixes, has
+> 
+> --- a/arch/arm64/mm/init.c
+> +++ b/arch/arm64/mm/init.c
+> @@ -339,9 +339,7 @@ void __init arch_mm_preinit(void)
+>  {
+>         unsigned int flags = SWIOTLB_VERBOSE;
+>  
+> -       if (is_realm_world() || is_protected_kvm_guest()) {
+> -               flags |= SWIOTLB_FORCE;
+> -       } else if (max_pfn <= PFN_DOWN(arm64_dma_phys_limit)) {
+> +       if (max_pfn <= PFN_DOWN(arm64_dma_phys_limit)) {
+>                 /*
+>                  * If no bouncing needed for ZONE_DMA, reduce the swiotlb
+>                  * buffer for kmalloc() bouncing to 1MB per 1GB of RAM.
+> 
+> The is_protected_kvm_guest() part was added by the 
+> commit e62decaf98e7 ("arm64/coco: Add pKVM as a CC platform")
+> 
+> @@ -337,7 +339,7 @@ void __init arch_mm_preinit(void)
+>  {
+>         unsigned int flags = SWIOTLB_VERBOSE;
+>  
+> -       if (is_realm_world()) {
+> +       if (is_realm_world() || is_protected_kvm_guest()) {
+>                 flags |= SWIOTLB_FORCE;
+>         } else if (max_pfn <= PFN_DOWN(arm64_dma_phys_limit)) {
+>                 /*
+> @@ -412,6 +414,17 @@ void dump_mem_limit(void)
+>         }
+>  }
+> 
+> I was under the impression that there is a possibility of using swiotlb
+> instead of restricted-dma-pool with pKVM.
 
+Yes, that patch enables swiotlb as a possibility for protected guests
+but with your patch we avoid shrinking the swiotlb buffer even when
+restricted dma pools are being used and that's a waste of memory.
 
-On 8/6/26 9:35 PM, Ritesh Harjani (IBM) wrote:
-> Gaurav Batra <gbatra@linux.ibm.com> writes:
->
->> In powerPC, if Dynamic DMA Window is big enough, RAM is pre-mapped. To
->> determine the size of RAM, a PAPR+ property "ibm,lrdr-capacity" is used.
->> This OF property dictates what is the max size of RAM an LPAR can have,
->> including DR added memory.
->>
->> In PowerPC, 16GB pages can be allocated at machine level and then
->> assigned to LPARs. These 16GB pages are added to LPAR memory at the time
->> of boot. The address range for these 16GB pages is above MAX RAM an LPAR
->> can have (ibm,lrdr-capacity). In the current implementation, these 16GB
->> pages are being excluded from pre-mapped TCEs. A driver can have DMA
->> buffers allocated from 16GB pages. This results in platform to raise an
->> EEH when DMA is attempted on buffers in 16GB memory range.
->>
->> commit 6aa989ab2bd0 ("powerpc/pseries/iommu: memory notifier incorrectly
->> adds TCEs for pmemory")
->>
->> Prior to the above patch, memblock_end_of_DRAM() was being used to
->> determine the MAX memory of an LPAR. This included 16GB pages as well.
->> The issue with using memblock_end_of_DRAM() is that when pmemory is
->> converted to RAM via daxctl command, the DDW engine will incorrectly try
->> to add TCEs for pmemory as well.
->>
->> Below is the address distribution of RAM, 16GB pages and pmemory for an
->> LPAR with max memory of 256GB, memory allocated 64GB, 2 16GB pages and
->> assigned pmemory of 8GB.
->>
->> RANGE                                 SIZE  STATE REMOVABLE     BLOCK
->> 0x0000000000000000-0x0000000fffffffff  64G online       yes     0-255
->> 0x0000004000000000-0x00000047ffffffff  32G online       yes 1024-1151
->>
->> cat /sys/bus/nd/devices/region0/resource
->> 0x40100000000
->> cat /sys/bus/nd/devices/region0/size
->> 8589934592
->>
->> The approach to fix this problem is to revert back the code changes
->> introduced by the above patch and to stash away the MAX memory of an
->> LPAR, including 16GB pages, at the LPAR boot time. This value is then
->> used whenever TCEs are needed to be pre-mapped - enable_DDW() or,
->> iommu_mem_notifier()
->>
->> Fixes: 6aa989ab2bd0 ("powerpc/pseries/iommu: memory notifier incorrectly adds TCEs for pmemory")
->> Cc: stable@vger.kernel.org
->> Signed-off-by: Gaurav Batra <gbatra@linux.ibm.com>
-> Thanks for addressing the review comments.
-> BTW - we should really cleanup enable_ddw() function. It has so many
-> corner cases and has started to become confusing. But as for this patch
-> it looks good to me. So, please feel free to add:
->
-> Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-yes, I have a list of few items that I would like to address. I will 
-work on it
->
+> If that is not the case, then we could change:
+> 
+> !cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT) &&
+> 
+> to
+> 
+> !is_realm_world() &&
 
+Perhaps, or you could just pass the swiotlb= option if the defaults don't
+work for you. Can you give more details about the slots exhaustion you're
+seeing under CCA?
+
+Will
 
