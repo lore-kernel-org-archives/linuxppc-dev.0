@@ -1,82 +1,85 @@
-Return-Path: <linuxppc-dev+bounces-25579-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25580-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DACA4C5AC7C
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Aug 2026 13:02:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 12C06C2A09B
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Aug 2026 13:03:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hGknS2wGxz3c4f;
-	Fri, 07 Aug 2026 23:02:04 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786107724;
-	cv=none; b=NyJFDp9cCGjzfYv9qFg/TCcfivQ//of4TXz+s8oHn/uXWbtWTvhJLX2GpugPbcD+bnT6186BCE4D4Q8Q5V5jHcorCktV89VQz3WBbMIN5UABSTJ+0u3THLXhYHE6O73yEQZkEDge1S2WgXo3sGj8foLeXJAEHwDDyq/4wbkuyx+tdaMLLygwbcWxw10+YJGZYii8JpIQSOq7K0VkvFUKILJa/yF039N6zspULmPIKCNpglou4Y9HH4N2PAqpmnLIUkBREs5Lz/eV5ZzLWAnOMcoC2OcqEFPHEYeZ4ebHFGks6Bey2IiAp+X5C0AaDh+HoGLfltQ0OVYCuy6E548LCA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hGkq648xPz3c4f;
+	Fri, 07 Aug 2026 23:03:30 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786107810;
+	cv=none; b=kFQti7NLNm28Frb47t1Lcrl+rFdqwQAkwesEKLNP3e4PoFRLewQdNcGqbsyAwOqaAU6ArXUQsyWaSglR3UPAl8Zz2dRcoCUjTkl0gbJAiupfF3c/gyu8yFE7SHpt/fuav9YNPHvQ456VTrLycpxhEjfNFlTyhIPFGct6GA/kJGTyf0Ajxrxin7blCJwxtujKklV7RbrVMOFefv9h+/9EMWpTNkqDnGZJ57EoouTUdXmPSueEx4FIlRNMNEcBRuC5dVkbnKOgHFEMUu6VJCRN1f+wWebvAF4n/INYOHKul6kVz3OATkn9nLWuIOpH5BJJHaHvKhB19C/AjcdTGa2+SA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786107724; c=relaxed/relaxed;
-	bh=uKoaHjLhphLy+WQ1217Z6OSaogdoPojKH8VZzODaxGg=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=KPuAAiCXfxYBlqVxv6XmBsmVTK06/GknGG8JwH/z4cxxsnn+wPB86GrVBCFWkkgaU7He28iBgrzZqX/L3dT/O9bFJ6NMIuxRJKv/dyLfJl6xSVnuM+1XcQpC9STigv3igWg0EX9ka2KxZH5xKRjOmXKdoqPQHYfrOB/tdS0I7sKdRjpbiqXvliLLvWOff8UK01Rc829Ru3X2awFcfrmWg6mYJd1pbjil/ej5dEO644BZsIlOmXw+YTTCoak3IpAFA2ZVbaZOWSYdLAMHcu1sDQbF9/pIC6NOE+ZIOQHhPuscXRllC6eaj70Tv298ZDn2ZwfjWgAS3/qtVy928qoE6A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rivIIHh/; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=skb99@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1786107810; c=relaxed/relaxed;
+	bh=9QqKKM/ejR76i/TkpRfggSdbNj1yOKb4P01vNyYkRUs=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=FGW7NN6RVcT/uct86Jl32O2CJ/+phnqSUadWmqP2HZXt6RZ8+rtcCsFdegowiTQF0BWA3cnfWroMM4MUTSaZhIYtt3fCotBRIsAivq8nG+Dg42+tTuRao9JsbhkV9gkJKqpdfQw12qQjTflKEMrY4LiBMtt4Deu5jAbbbF8QaRSLuuyfo2qhsp5RLP55H+2uEnTeTsh8+ZtkYdv97qLuIxEhBHR7uStjmvLZFb5woxm1OAu58HGsmiSwYXelMtAHKLfkEOHdy8mjz5TC5L8LibC78P0YsX5grrQBWKcClLQKl1NT1vEgo2io8wzyj99M2jithfwuWzzWhgtAxlNCHw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jZgVfkuo; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rivIIHh/;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jZgVfkuo;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=skb99@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hGknR3D59z3c2P
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Aug 2026 23:02:03 +1000 (AEST)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6770HbNe4161185;
-	Fri, 7 Aug 2026 11:43:27 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=uKoaHjLhphLy+WQ12
-	17Z6OSaogdoPojKH8VZzODaxGg=; b=rivIIHh/0CSx9Ua0vgXZLNpo3KuUdFsqy
-	n8OGUaFA0Y13DWNbKtDyXfumix2Ch7b59vghq0X2ZNSaX3ML61aacElXIWv7yoFr
-	8w6OlB3iR8umOXThfBrCwhYr1Uc+NrJQ170XACG9vvJJePqnv+2sR9UZfNpUmkjy
-	fFzAAYC6+mR3cUVfZnGNO6uqtfht/GRvmXWpQ9xHTfKaSloCEjmSBOQ2yNfRkeM9
-	LQCp0uo1tTdWiSZ/+C3/EwscEr+n5GlPh0udDlrtp8ufHbvS/K1Aj0yX92AJvVJD
-	v3gLvCcGR9uzb5qti20LB9mqvJ3JHF+jkMawjqtkB+ILHKpEq8xXA==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fvxyyunm5-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 07 Aug 2026 11:43:27 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 677BfGYv004614;
-	Fri, 7 Aug 2026 11:43:26 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fsu4qym9d-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 07 Aug 2026 11:43:26 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 677BhMe233030572
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 7 Aug 2026 11:43:22 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 73B052004D;
-	Fri,  7 Aug 2026 11:43:22 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 2E44B20040;
-	Fri,  7 Aug 2026 11:43:19 +0000 (GMT)
-Received: from li-1cb9f04c-2ae1-11b2-a85c-a8a0a83790a8.ibm.com.com (unknown [9.39.23.224])
-	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Fri,  7 Aug 2026 11:43:18 +0000 (GMT)
-From: Saket Kumar Bhaskar <skb99@linux.ibm.com>
-To: bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: hbathini@linux.ibm.com, maddy@linux.ibm.com, ast@kernel.org,
-        andrii@kernel.org, daniel@iogearbox.net, shuah@kernel.org,
-        linux-kselftest@vger.kernel.org, stable@vger.kernel.org,
-        venkat88@linux.ibm.com, yeswanth@linux.ibm.com, skb99@linux.ibm.com
-Subject: [PATCH  v11 8/8] powerpc64/bpf: fix percpu private stack leak on JIT failure
-Date: Fri,  7 Aug 2026 17:12:43 +0530
-Message-ID: <6bbf4249e47dc14ac65d72c304bf9335cf10b206.1786099877.git.skb99@linux.ibm.com>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <cover.1786099877.git.skb99@linux.ibm.com>
-References: <cover.1786099877.git.skb99@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hGkq55sM1z3c2P
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Aug 2026 23:03:29 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 73C49437C3;
+	Fri,  7 Aug 2026 13:03:27 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AE9CF1F000E9;
+	Fri,  7 Aug 2026 13:03:17 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1786107807;
+	bh=9QqKKM/ejR76i/TkpRfggSdbNj1yOKb4P01vNyYkRUs=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date;
+	b=jZgVfkuoWf2/siK+rKc90sJnAQt9IS3OPxAuRh6EIc5QTd91l788Rnt8tZqkY0eX1
+	 4V1fwC8Xke07dOEvJH4kYYZt+gvugXiKXdGz5s3Jt1/2YTv8XFf+3pPwa5TgRIy87h
+	 tOTUigHIwOO/5rABTOwSnFvBDxhesq9IwfDUw/PwoaE1G3A47ELaIB7XeCacIsSDyy
+	 PyFbqxUIFxAGM/63Xlcz8epDPjAFNlriiXizH5Y2/GDhHud+FPUDHlQJ3ZIrkb6HGm
+	 sOiy7Vzx6vgAVgxctx2iJ5Rbh6hpYJoJ/vzRtPUfqSEI2nVg/CcZrAxJwm0CjWUY4i
+	 tcfKhcQgz+Ztw==
+X-Mailer: emacs 30.2 (via feedmail 11-beta-1 I)
+From: Aneesh Kumar K.V <aneesh.kumar@kernel.org>
+To: Will Deacon <will@kernel.org>
+Cc: iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev,
+	Robin Murphy <robin.murphy@arm.com>,
+	Marek Szyprowski <m.szyprowski@samsung.com>,
+	Marc Zyngier <maz@kernel.org>,
+	Steven Price <steven.price@arm.com>,
+	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Jiri Pirko <jiri@resnulli.us>,
+	Jason Gunthorpe <jgg@ziepe.ca>,
+	Mostafa Saleh <smostafa@google.com>,
+	Petr Tesarik <ptesarik@suse.com>,
+	Alexey Kardashevskiy <aik@amd.com>,
+	Dan Williams <dan.j.williams@intel.com>,
+	Xu Yilun <yilun.xu@linux.intel.com>,
+	linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <chleroy@kernel.org>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org
+Subject: Re: [PATCH] arm64: swiotlb: Keep the default size for protected guests
+In-Reply-To: <anXIZSh9lq99VG9X@willie-the-truck>
+References: <20260717180442.110954-18-aneesh.kumar@kernel.org>
+ <20260807092612.2202005-1-aneesh.kumar@kernel.org>
+ <anXIZSh9lq99VG9X@willie-the-truck>
+Date: Fri, 07 Aug 2026 18:33:14 +0530
+Message-ID: <yq5acxvu2ict.fsf@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,81 +93,82 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Authority-Analysis: v=2.4 cv=SYrHsPRu c=1 sm=1 tr=0 ts=6a75c4df cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
- a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=U7nrCbtTmkRpXpFmAIza:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
- a=SJ-jtujo7bo76xSWeacA:9
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODA3MDA4NyBTYWx0ZWRfXyLqPFweh2V2I
- /NhO/2dD60al0nZZrCzO+wkrR8WhSfhrV33hxCDsC4CYJu/zPDvGeYQO7lbhVd9meqD95ptSS0a
- bFpcC3A9mTqXiSftwiK7gx/6J1Ga/rU=
-X-Proofpoint-ORIG-GUID: DFefQo9uBAVa8kqhBFxRTVyHy6tmSu44
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODA3MDA4NyBTYWx0ZWRfX4EjVSVUoxZAP
- eZS0zXz81NkYfj+krmCeCBBV64S/FO3jvOS/9VxUuA7IgPwDup5iyOC4Yesrk6+cm+iKko94ZqH
- njzWM7z7VByLO62GsT8T1KLU6d2sb7x8EozEByIhg006M1z77Dv231MxQbfxDCkNTYGf8/hmB9d
- ZMHrg46HqxFOFFTvlTXAdjtcYMO3c/tzQu81Cg2TFQ833tpW5h3HnzsuDf95iZ7/0o2H+Qqor+F
- 9b7O8JXfmauuXfVSdD9nh3lv5ANsQv0QyrnnUzCmBgroSUhkXzKfkdb4mqunrI3EXntmCE/XaXe
- nfnaoT6TIOQSm06vRM8rdWI5cuomvoPCHvBr4vl4dv3VaVHir/8z1QP7ZT8VBqFttDNRNNJzQPz
- aDfGXHzHE7dgQy5rMknmvu+ELhk3XePTZixRhepdUge1Dge7VhwZqYLvXYskkpUK32cNMoTjV6i
- 2j7wH0Zs5Q0EiIZV66g==
-X-Proofpoint-GUID: DFefQo9uBAVa8kqhBFxRTVyHy6tmSu44
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-08-07_01,2026-08-06_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 malwarescore=0 priorityscore=1501 lowpriorityscore=0
- suspectscore=0 bulkscore=0 impostorscore=0 phishscore=0 spamscore=0
- adultscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
- definitions=main-2608070087
+Content-Type: text/plain
 
-From: Abhishek Dubey <adubey@linux.ibm.com>
+Will Deacon <will@kernel.org> writes:
 
-The existing conditional statement in bpf_int_jit_compile() frees the
-percpu private stack at out_addrs only when the image buffer was never
-allocated.
+> On Fri, Aug 07, 2026 at 02:56:12PM +0530, Aneesh Kumar K.V (Arm) wrote:
+>> Realm guests and protected KVM guests may require swiotlb for device DMA
+>> even when all system RAM is addressable by the DMA zones.
+>> 
+>> Do not reduce the SWIOTLB buffer to the kmalloc-bouncing size for these
+>> guests, as the reduced number of slots can be exhausted during CCA guest
+>> operation.
+>> 
+>> Fixes: 30c5e45ee2c5 ("dma-direct: make dma_direct_map_phys() honor DMA_ATTR_CC_SHARED")
+>> Signed-off-by: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>
+>> ---
+>>  arch/arm64/mm/init.c | 3 ++-
+>>  1 file changed, 2 insertions(+), 1 deletion(-)
+>> 
+>> diff --git a/arch/arm64/mm/init.c b/arch/arm64/mm/init.c
+>> index e308a7cabd12..24caaf10e755 100644
+>> --- a/arch/arm64/mm/init.c
+>> +++ b/arch/arm64/mm/init.c
+>> @@ -339,7 +339,8 @@ void __init arch_mm_preinit(void)
+>>  {
+>>  	unsigned int flags = SWIOTLB_VERBOSE;
+>>  
+>> -	if (max_pfn <= PFN_DOWN(arm64_dma_phys_limit)) {
+>> +	if (!cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT) &&
+>> +	    max_pfn <= PFN_DOWN(arm64_dma_phys_limit)) {
+>
+> Protected guests under pKVM rely on restricted DMA, so won't this just
+> waste memory for them?
+>
 
-If bpf_jit_build_body() fails during a code-generation pass, the
-image buffer has already been allocated, so !image is false and the
-percpu stack is not freed.
+commit 30c5e45ee2c5 ("dma-direct: make dma_direct_map_phys() honor DMA_ATTR_CC_SHARED"),
+which this patch fixes, has
 
-Because JIT compilation failed, fp->jited remains at 0. The subsequent
-bpf_jit_free() path only frees priv_stack_ptr when fp->jited is set, so
-freeing is skipped here too, leaking the percpu allocation.
-
-Fix implements freeing the private stack whenever fp->jited was not set,
-i.e. compilation did not succeed, instead of keying off !image. !fp->jited
-already covers the !image case, since image is only NULL on early-failure
-paths where fp->jited is likewise 0.
-
-Reported-by: sashiko-bot@kernel.org
-Closes: https://lore.kernel.org/bpf/20260616135426.A06B71F000E9@smtp.kernel.org
-Fixes: 156d985123b6 ("powerpc64/bpf: Implement JIT support for private stack")
-Cc: stable@vger.kernel.org
-Signed-off-by: Abhishek Dubey <adubey@linux.ibm.com>
-Signed-off-by: Saket Kumar Bhaskar <skb99@linux.ibm.com>
-Tested-by: Yeswanth Krishna Tellakula <yeswanth@linux.ibm.com>
-Acked-by: Hari Bathini <hbathini@linux.ibm.com>
----
- arch/powerpc/net/bpf_jit_comp.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
-index 2cc1124ed530..395f1458db2e 100644
---- a/arch/powerpc/net/bpf_jit_comp.c
-+++ b/arch/powerpc/net/bpf_jit_comp.c
-@@ -404,7 +404,7 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_verifier_env *env, struct bpf_pr
- 				(void *)fimage + FUNCTION_DESCR_SIZE);
+--- a/arch/arm64/mm/init.c
++++ b/arch/arm64/mm/init.c
+@@ -339,9 +339,7 @@ void __init arch_mm_preinit(void)
+ {
+        unsigned int flags = SWIOTLB_VERBOSE;
  
- out_addrs:
--		if (!image && priv_stack_ptr) {
-+		if (!fp->jited && priv_stack_ptr) {
- 			fp->aux->priv_stack_ptr = NULL;
- 			free_percpu(priv_stack_ptr);
- 		}
--- 
-2.54.0
+-       if (is_realm_world() || is_protected_kvm_guest()) {
+-               flags |= SWIOTLB_FORCE;
+-       } else if (max_pfn <= PFN_DOWN(arm64_dma_phys_limit)) {
++       if (max_pfn <= PFN_DOWN(arm64_dma_phys_limit)) {
+                /*
+                 * If no bouncing needed for ZONE_DMA, reduce the swiotlb
+                 * buffer for kmalloc() bouncing to 1MB per 1GB of RAM.
 
+The is_protected_kvm_guest() part was added by the 
+commit e62decaf98e7 ("arm64/coco: Add pKVM as a CC platform")
+
+@@ -337,7 +339,7 @@ void __init arch_mm_preinit(void)
+ {
+        unsigned int flags = SWIOTLB_VERBOSE;
+ 
+-       if (is_realm_world()) {
++       if (is_realm_world() || is_protected_kvm_guest()) {
+                flags |= SWIOTLB_FORCE;
+        } else if (max_pfn <= PFN_DOWN(arm64_dma_phys_limit)) {
+                /*
+@@ -412,6 +414,17 @@ void dump_mem_limit(void)
+        }
+ }
+
+I was under the impression that there is a possibility of using swiotlb
+instead of restricted-dma-pool with pKVM. If that is not the case, then
+we could change:
+
+!cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT) &&
+
+to
+
+!is_realm_world() &&
+
+-aneesh
 
