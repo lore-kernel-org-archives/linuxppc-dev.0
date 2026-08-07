@@ -1,105 +1,86 @@
-Return-Path: <linuxppc-dev+bounces-25548-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25549-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 09905C5AC7C
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Aug 2026 09:05:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4715AC5AC7A
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Aug 2026 09:21:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hGdWy4Hcmz3c2K;
-	Fri, 07 Aug 2026 19:05:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=205.220.165.32 arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786093502;
-	cv=pass; b=Sz6abVjqQXLo7BXSGSorG8bvCM4e3F6kikNYUjOMONZWZqBQcOvS8yYTirqqWm7t8WUm695ZdSbfiWZb3Dg1zvPubjbOlmvKiT8/J3E0yw51VQ3VpEbtUgcRvcePjvEYSsPiMt1tKIl1vimW4xTg2+5PmdfFjSJgXMsZFkU0Prh/tIZI26S1t+cx5DKMXmVjphhvz4qaDScv3t+x0UFnwOzrZUMPz5EaQ1UlpwgFZi345/6s5rOF1rxWrZQ/s8E4vPsh2EoxWHjiHi1918HxsN4Tbxhn5465RjwpeWxjv7dA8z94SeFbe4oWpsS4E2UAuzPNaCTZYx1dKEQDPis5tQ==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786093502; c=relaxed/relaxed;
-	bh=ufWawAJxpk9jejyFjCyOLTYdCBlWYFxWjrc++63l+UM=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=ZbHYFuQ05v7zn8c8/v4+RIYez2qplING9Q+h4FFL+NQxKfZOTYcez2ciZIj8egDsqUBknDxv5lFhkkd1QPAg2I++pZnNIg6FTbTBdGP/+S2YVPW5Vq2YzTmMAvjRcom0fIieMvN3c2Bdm6a27ySL8EqIHgMEUw7xfjJrkwc8fiRolGcexJwhFadQDsQQKGhBX3NfNcww4x6lfzCSVG23vOraY+gt8FC9Qbrh3x5TmwUUD0esCTvH19voqU7S9fRjY1KmttTSTdBR9nViDNqWXdiHBU3U3aabbvt4e0PWbL1TPcX91nvXMHjYyOKh0FsyEvER0ZaH38TtPqgPX4Fqng==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; dkim=pass (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2025-04-25 header.b=IeoEfaB1; dkim=pass (1024-bit key; unprotected) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.a=rsa-sha256 header.s=selector2-oracle-onmicrosoft-com header.b=zRQ88ibF; dkim-atps=neutral; spf=pass (client-ip=205.220.165.32; helo=mx0a-00069f02.pphosted.com; envelope-from=john.g.garry@oracle.com; receiver=lists.ozlabs.org) smtp.mailfrom=oracle.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oracle.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hGdvK5VDdz3c2K;
+	Fri, 07 Aug 2026 19:21:49 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786094509;
+	cv=none; b=DBjWkobrNiUdjskaM7F5qS07FP1FQP5FhNmqvAUN6W2vQfgDJNsl1e1TvrK/EFLC6N/c8yD39VVjVQn/t5dWTapJb+9K92pQxFNtj5E03W7EssY9RtoFQ0urPYc/Ibn8mTJ8BXAnHNPyIfk/Y3vz/l5qIlj+ls7NxtyQLEvUdiY8PwH5DX4YPbqWmHX9EAQKMuV55E69y7ZPdo5AogEZFJhzoi8aBAO+cZJzNZm7ku6gaTUoLbVmBzySMemojZnt5gkCmvybAWKpNt9rPAZra3NPdTDmy8IgHkoYJs+UzQq7HzmYKJv5nBcrPHxx0WTyv1hdsypuHPXQ1lFxWtzDFg==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1786094509; c=relaxed/relaxed;
+	bh=Pneo29ys3hGXogLk2+e1LzC80FrdOftuA2dSFmi144s=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=mYsdEGERN7U6VgSioVMBf2362ojCCNL+RwBSx27ytsy1gug79J7ja0gtgTC7+IA77hU4lHIrv74gmwJhLtpP4AZifvrM21i4/OPMi4M6uh2HGAOqjOK8SIZfVdiAbol5mhxv2PBYupU8sIDj5aFDEap0bGA4xxDkG0WQ9j/H+afQbgwAK7VH96TMA2Zcg3pyEq78dbsACS4bVUTxAbGncv6sczKiXO1onD5H6Uh70IA5nJzh3m1RYZD4M8yvsOhaZrRfqBGnBHCO1kPWbdcVlboUomw6w77zgEK4dj/6JwtVSwNtBrV+GDurjc2lY7q9r406zPbuGDkFB3AqgrH2pw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XMQCJ/Gj; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2025-04-25 header.b=IeoEfaB1;
-	dkim=pass (1024-bit key; unprotected) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.a=rsa-sha256 header.s=selector2-oracle-onmicrosoft-com header.b=zRQ88ibF;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XMQCJ/Gj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oracle.com (client-ip=205.220.165.32; helo=mx0a-00069f02.pphosted.com; envelope-from=john.g.garry@oracle.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 2772 seconds by postgrey-1.37 at boromir; Fri, 07 Aug 2026 19:05:00 AEST
-Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hGdWw6jZWz3c1D
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Aug 2026 19:04:59 +1000 (AEST)
-Received: from pps.filterd (m0246627.ppops.net [127.0.0.1])
-	by mx0b-00069f02.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6777L15b3081893;
-	Fri, 7 Aug 2026 08:18:35 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=
-	corp-2025-04-25; bh=ufWawAJxpk9jejyFjCyOLTYdCBlWYFxWjrc++63l+UM=; b=
-	IeoEfaB1qp96pq+yUTFRMGYVLxwPFurSlJxT7hKLd5AAueA367IZ0yppYf9miBCy
-	E6ttQh9EtGcId8m4eqJc4A9AT38pgEt64mdzeGuVwUDIz080k21vULdFTLUvUr64
-	v6D53wpo/i3Z/4dsP65u+Wyzoo1lyRGNWFcRyNGNSZpE45MGzkvQ6zUCydym0Bhw
-	WNnkMir4okdiKIeroxfuM4LnZnte44hGMJKR05b6z7e7K5P8KfQuodpcbcZuNExm
-	vCG95fIuBJo/LY2GLJmF0NzRURNIEEeBmHD2XkktWBq3+tCf2cFuFbPxmboBGA0L
-	Y6fHqZnQvBwbEB5eNSA2Lg==
-Received: from phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com (phxpaimrmta01.appoci.oracle.com [138.1.114.2])
-	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 4fs7cyfjub-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 07 Aug 2026 08:18:35 +0000 (GMT)
-Received: from pps.filterd (phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com [127.0.0.1])
-	by phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com (8.18.1.7/8.18.1.7) with ESMTP id 6778AEg2020248;
-	Fri, 7 Aug 2026 08:18:34 GMT
-Received: from cy3pr05cu001.outbound.protection.outlook.com (mail-westcentralusazon11013056.outbound.protection.outlook.com [40.93.201.56])
-	by phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com (PPS) with ESMTPS id 4ftq45as35-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
-	Fri, 07 Aug 2026 08:18:34 +0000 (GMT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=i/mqzDthCnMZSWtAnzGVFYv1TNwar5aZnPDr3OafQ9usXAJroziRZAGssE5ypzOFSHXyyOFkUjLsYkm/aOYlIT8hXPpo8x7xqz6tj+ynB4OfaaFTCcnBSuarlFxu0jlPp0WP6mKwORwWO0c4O2BtuzEjhOW6FepHjJATDtORL6rybabcyrJgKg/hieBwf8x9HH9Pk4N09PMDPHjAPv0IT0aE4In0uu0BJf2iRcqJ6B838I32BRjuKK/UvCCxk2Zq4ftH5VAG2aEUfGabROe43R7/871DuSUp8egQSR+9Haj+vU/r6RMjS23SS0SwCWT3epZSToNkyZAg77Qt23N/uw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=ufWawAJxpk9jejyFjCyOLTYdCBlWYFxWjrc++63l+UM=;
- b=M8+aqH34XA6WQEP9WCwmvExb0zHM9s52g4vxQDow7Rdu8PC6ryjWDRjK0AYar2Fi1YSEaTA/+slMhGWpELd6r5SWoXTbA0+kjCh0dwSJL+nzkrXDDxNU5miORaAoFxkt39kfULVe51c8emyIoLn3RzKTWPh5iQAnTusw5yqKSl6x/e2PferbQM3M71PlDnv41L6kmxdbG/BLG75wUvFn1giMi6uXXEhNtH1G6o9+V8xqd6lpQ3ufaVUI2ccbU4WXAIOB/lwHDAHvwFWlHw/Vr+L9W5ofAAiuL2iPwO2db6t6BtkJALi4fIVxr3gkM/fvVIHCaHxcJhSJXFTedm3f0Q==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
- dkim=pass header.d=oracle.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=ufWawAJxpk9jejyFjCyOLTYdCBlWYFxWjrc++63l+UM=;
- b=zRQ88ibF8YKUg9axhdjb1LEZRNf6lOpO3A9aLxVWfs4/sAFblLvXFSH5O69B4xn5GMe+9IIpnbQHhPuSZeflPhYaBVvcPnKrQx/nA+VffiCYHxaP7xs4B2tIpgLtzdcP9qwtK0NSL274APPWX/Lbnb17fkkBmw1I6+bUFdz2yVQ=
-Received: from DM4PR10MB6229.namprd10.prod.outlook.com (2603:10b6:8:8c::12) by
- CHAPR10MB997723.namprd10.prod.outlook.com (2603:10b6:610:2f6::14) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.292.21; Fri, 7 Aug
- 2026 08:18:29 +0000
-Received: from DM4PR10MB6229.namprd10.prod.outlook.com
- ([fe80::867:63e7:13fa:fa7d]) by DM4PR10MB6229.namprd10.prod.outlook.com
- ([fe80::867:63e7:13fa:fa7d%6]) with mapi id 15.21.0292.022; Fri, 7 Aug 2026
- 08:18:29 +0000
-Message-ID: <a5ea45d9-2a94-4b3c-8f31-d6bb22dc6eee@oracle.com>
-Date: Fri, 7 Aug 2026 09:18:24 +0100
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] scsi: core: Drop Scsi_Host.default_lock
-To: Bart Van Assche <bvanassche@acm.org>,
-        James.Bottomley@HansenPartnership.com, martin.petersen@oracle.com
-Cc: linux-scsi@vger.kernel.org, linux-s390@vger.kernel.org,
-        linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, linux-usb@vger.kernel.org,
-        John Garry <john.garry@linux.dev>
-References: <20260806113958.3127942-1-john.g.garry@oracle.com>
- <9d9092bc-6bf0-4afb-9d1a-5ee16c9c501e@acm.org>
-Content-Language: en-US
-From: John Garry <john.g.garry@oracle.com>
-Organization: Oracle Corporation
-In-Reply-To: <9d9092bc-6bf0-4afb-9d1a-5ee16c9c501e@acm.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: LO4P265CA0284.GBRP265.PROD.OUTLOOK.COM
- (2603:10a6:600:38f::9) To PH7PR10MB6228.namprd10.prod.outlook.com
- (2603:10b6:510:213::11)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hGdvJ6S1Dz3c1D
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Aug 2026 19:21:48 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 7010641180;
+	Fri,  7 Aug 2026 09:21:46 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7BAC51F000E9;
+	Fri,  7 Aug 2026 09:21:38 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1786094506;
+	bh=Pneo29ys3hGXogLk2+e1LzC80FrdOftuA2dSFmi144s=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date;
+	b=XMQCJ/Gj7Iu0ebVkhN13wsJt7AMBs/hyKYZHipvHCieM6Evyh/O2tF++XsVqENx/W
+	 O4WpssKXAy1yB++mPLwn98gKLPnv8EJJ/xWJsxJdcHW3lvVwqg0WL0zQ3gkXU+TSmf
+	 //VtTLKCKI8L/CclOy9PRdlovmOFa+u7XuDa26ivvRmK9rJgKLrvrxtkUPdmv+dDNU
+	 LtPQ7TYk2UHyko3C2QTCSIU/KvPbS03jl7EOyg7RbatVxdODw0IY3BaCmRDRK3wPX2
+	 Y5kMliqWeBs0luT8yI7Y4mRC+oPOczxGCmhB0P9lrQf7CzQN4ZpwcwEEKQH0dUWYGx
+	 z/ew0497IG91Q==
+X-Mailer: emacs 30.2 (via feedmail 11-beta-1 I)
+From: Aneesh Kumar K.V <aneesh.kumar@kernel.org>
+To: Marek Szyprowski <m.szyprowski@samsung.com>, iommu@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev
+Cc: Robin Murphy <robin.murphy@arm.com>,
+	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
+	Steven Price <steven.price@arm.com>,
+	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Jiri Pirko <jiri@resnulli.us>,
+	Jason Gunthorpe <jgg@ziepe.ca>,
+	Mostafa Saleh <smostafa@google.com>,
+	Petr Tesarik <ptesarik@suse.com>,
+	Alexey Kardashevskiy <aik@amd.com>,
+	Dan Williams <dan.j.williams@intel.com>,
+	Xu Yilun <yilun.xu@linux.intel.com>,
+	linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org
+Subject: Re: [PATCH v8 00/23] dma-mapping: Track shared DMA state through
+ direct, pool and swiotlb paths
+In-Reply-To: <85be992d-9567-433e-ae2e-64ae5483964d@samsung.com>
+References: <20260717180442.110954-1-aneesh.kumar@kernel.org>
+ <CGME20260725070930eucas1p16cbafb514de7a2e7531d0e4ae158acfb@eucas1p1.samsung.com>
+ <yq5azezfeeax.fsf@kernel.org>
+ <85be992d-9567-433e-ae2e-64ae5483964d@samsung.com>
+Date: Fri, 07 Aug 2026 14:51:35 +0530
+Message-ID: <yq5afr0q2sm8.fsf@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -113,139 +94,106 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DM4PR10MB6229:EE_|CHAPR10MB997723:EE_
-X-MS-Office365-Filtering-Correlation-Id: 9a9caf4a-0c32-4c40-a986-08def45c75a6
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|1800799024|23010399003|376014|4143699003|56012099006|10067099003|22082099003|18002099003;
-X-Microsoft-Antispam-Message-Info:
-	24zl+vKkRPt+hLk+8cAoaTouVn75lS68ugXKZtnulWC2PWmMNwAJMXeD+v5pX12CoWD+EqjTKZuewVZ9ZLdldYm/XLbC5AgYamptOXe8nD0CKeSMGJQIyYFzWh34GBw4XRpkRlb9Y//Z5wmfAPOUWF3Q3/4o+e9X3v1lzxn6tbVIhfqbvHbBacL6QrCbtY+w/hwN7LK4PCnXFcnbj5brCDdl51tbbJf0jC1oIxGcGQuj95IJWdhBLuENCD2M8Tov5smXmkcrjTMCw4lS2qCtC4orhM7BJnzzUEWsZwXi7QbMKYqV7SQuoycsZwOfr0KhHSfrQT0BmhAX8W84qNJq2Pmz8NkIVVEkuhhI8Zn+bQj1S+EaIVeq7y40B9rWdNXbFg5D0JnaTvcgs9Jbjcp0zbo/lHcbGt2JXSFNCIrZs3guDEBlyD5ak3qR/CksvIyDtQT68HKCXu7dzjWhb5Id0FgN3vKPL4MkwU++2Vd6pQPka7mh+cT0umbh5xJbBfApaTtxggbEhLvAwwNJ2oKxLJd8fIwNv851wW9vOFo6vyeZ2IB23k5V6tsPtqDmPCp3ThfpRlIsIDcmSim3B4nAnL/CwOCtBYDRDAf3QC5o8ZS5wNX4hvEvI7kWDRizYJ+gGv8nKDST1cxGT3yQzFDRe37O67eCgeVlPgusZ7F+edk=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DM4PR10MB6229.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(23010399003)(376014)(4143699003)(56012099006)(10067099003)(22082099003)(18002099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?ZStkWXMzY2tGZ2ROalZodkRnbDRPMDRrbEdTakFUcUlvZVNrVGg5NFF2TmF3?=
- =?utf-8?B?UjQ0bk1jdVNpVjBhV1ZCV0FRV1grWU12ZUZYQWMwcll5cy9ERzByZjVjRjZj?=
- =?utf-8?B?NXFuS09Ga3F6aW1SRWkzdlhzYks1Y0hBMVVYUHJqNzhmNVZzVmpzWEwyUHg3?=
- =?utf-8?B?NzJ3OE9SaW9PSnVrVFVsVEpGVGpuZHpCWXN3dTFaVGc0VHZJRTlGUE5UUEtt?=
- =?utf-8?B?S3NCc28vR2owby9ieWZRckJXU3lNa2o3Ui8ySEZlRERWUXZYb0dIUjNOV09F?=
- =?utf-8?B?U1IxN0FaWTl6bjVmZkszVGZveUREQ25yVnJsQ3pVQ0I2SGlxWkMyYWdZaFBr?=
- =?utf-8?B?YTFxNGdidUdKaUVFYlBTdU5VWjZPVWREUGxiUmNhTDN6dkN4NEc4Qm5RbFU5?=
- =?utf-8?B?c3JIUjlFSnJnMCsxTVNoNmhORC9na0dTeGN0Mzl0N1RpNWY2OXFMTTU5NnJv?=
- =?utf-8?B?aFhGakszd21Lckh0QUlPSnhzRG03cU5mSzVvUGQ0b2diVlV6OUwvY2tGeTVr?=
- =?utf-8?B?KzB0cnNTbHprREVVUFp1VWdocndaVUhJMUVSZVBCOUo2OTRGeWozR3ZXTHFM?=
- =?utf-8?B?ZmQ4RXZCRSswbGFPVG9GZlpsdDM3NklUOFNJQ2FZRjNrQ1ZkbGc2UVZVWWRV?=
- =?utf-8?B?M1ZJMUJic3ZTeFVXZFh1VjVnNnBJNElPelVmakFFRnpjVFJsdStXZ09PQ0RU?=
- =?utf-8?B?NWh3Z3oyTkFMODJmL1gwMFBiOHVYTFJ5bnNuamlxd29TZk84c2pCYklBbEJ4?=
- =?utf-8?B?VWRwc1FSYVRvWGw5cERrOTZxU2I1WUthU2Z6eXhyNGRTVTEzWHVDOUJkUGRp?=
- =?utf-8?B?YThsRmtKRjFqN1VQK1dFbkdFUXEzNEg0M2pRNlJvTmhlYi9GTVI2R2lTdHk0?=
- =?utf-8?B?ODJhVXFNYmpaNWFpT0dpT0dkYUVzN1VFR0doRzlRWG44SXlOSnpMVGVTYWtz?=
- =?utf-8?B?UGlzTUF5dG1mMTJZREplSUpUYkE5ZnR0ckNHZHlIOGRtcGdsUVlkTnUrM2Zk?=
- =?utf-8?B?YVF6dk9IcWszYWl3UVdpelU3QTFsQllOTXVLaEdLMjBwZDhFWDNIRGRDb2di?=
- =?utf-8?B?bE9WVlFONW9WRkRKcGhZUExVSWtiN3pOQ2lxZXpid20zVmZFWDY5SEswWmNG?=
- =?utf-8?B?VTA4ZU9rRUdITmJyRGdTd3dJblFMRkNET3hPeG83QzNtS1ZqUGFSaElyZ2o4?=
- =?utf-8?B?QUVXMmh5MW96MC9GNzQvaW04WjRjaGJaR2FabU1sSHlpeSs3cm8rc0l2RW5m?=
- =?utf-8?B?V3RvMVBuRXNBRTA5Y3dYSkF0Nk5sUFVtTms3MzV6VmorMzBXWDdtNnp6T015?=
- =?utf-8?B?bkVaOWdVYS9FQmdNNjNxRXdpSkZyTlBRTmtvblc4R0ZXbEdjWFFQc3FsdXhO?=
- =?utf-8?B?WG4weXZ3dW9jMlgzZG1sNFA1UkQwaTQyZThWK096aThiYlRvc21zMEF1SWpO?=
- =?utf-8?B?cWpmZXBWQmpleFRVelpSQTZFR1B3SCtQcVFIb091ZXVPMnNQOUxqT3dBZG9o?=
- =?utf-8?B?RmNLaTJwNEUrVTczNVdFL0xzVFByLzVHZTA4WEhQU0xxVXlBK1JiaFdlYThC?=
- =?utf-8?B?dGFOR3VzMUNWTS9lRzhQeWZyZXZhOHlQSHBLM0lMZjRtMVZvSCt3TkpHZnh3?=
- =?utf-8?B?SGpBNEJTbkozczRJOXdPVnVJRGpnZnNJeTFlY1ZnVGI3d0ZXRFlIN0dSOWxP?=
- =?utf-8?B?QVc1eHNXaFBWL25QSWo5NDJ2WEc4SjFZbFlLZ3FMQTRSdDBIVEh4TlpzOGUx?=
- =?utf-8?B?SWduVHUwVUhDWGxkeGFJU1lyZmJOTFNTd1VmdFVYZlhQV1JqNmZhVlk1dXlu?=
- =?utf-8?B?OGxiQWR5dXZVOXB3NUJ6YXcwbU1mamJUUlUxdmhsV3dLSGtwUkNRVld3MHhv?=
- =?utf-8?B?c1hPYzkxVkRhYU0wRHNpNEN2QTBlRWp1U1BhRGxEdy9SZDFhSW1oSGdEQmNk?=
- =?utf-8?B?Mk00K3V4REZsenptOWJ3S0VTT0k5S1JMenByb0JwWFNDeGlVNGp4cUVWb2RS?=
- =?utf-8?B?MWsrWDVEZmUvRkFEbWgwQ2VGQ3MvV0xyQmswS1RRQytXaHpxdWQvUHNIeDB4?=
- =?utf-8?B?QXZmOC9XMWNMTm9wYldUQjY4aWFza1ZYTEM2VEV1TjdjNDR4dUo0bXVDRThD?=
- =?utf-8?B?Y1pwdThER1k0T3BQYnAxRW50YlM2QURKUVF3Mi8zbWk0Ui9UVXp2TmE2bVNa?=
- =?utf-8?B?dlBHdUZ5SmVTMkd1NWVlelBiRURlL3UxajNqOFEvQVorS09JYW1FQzNLbGds?=
- =?utf-8?B?b1JPQTBMWXVaMHhWYzRBUUJkdXRjZThNMkx4eTNpMm5DNTVQWWR4c2hsSVAw?=
- =?utf-8?B?ZHg0YU1CbkI0cEVFZHB4Uy9lT0hQdlNhRUFxcW13WE5pTWllSGVtQT09?=
-X-Exchange-RoutingPolicyChecked:
-	oKhSUP3t8VOHXd4TeHMynOakJ91VERAZrEuu1tFLI8u1zpqSgjvaGuIAT6hIdv1oUu18uTuFXXv2Dzm4UprYWRKxTD3J0+bdgxO9Tn+MjrbnYuuFETd+A64diean5Pz4lvWCyAoSz+7saneCUPNHAsd8bQKA/GGEmdp1MyN/lYWy5HtsrxajRTKK4tQYuETXcvSWoWm7HQsSC5z5mCaZ4kRF0MxLlvyYSGzwXPQbmaRdx4jw/QvXYQblQKJZkKm3MZ1v/icu65yDkmnwE5u5OdePbCPUXXgS+QHf0lhJAX3YxhDHhXMxW4p+VFQ16pzYvlmResobhUoIOWumziGq4g==
-X-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-ExternalHop-MessageData-0:
-	+x+2YsE0m/n7cz0pMvo0RBfr4LVR0j0mluaIsyyJWngw66SH/XoAIlWnnGHH23WVMQEeeLkhgVX01mH6zlXu+xwxzgZBLLy4f9Dc4ch8J/mDpSEzsD7Hq7Yix2gLMo2pkIf8jf2SuTl2KjX135v4LkCgHzzomJhTlNysmsQ7A8MjMsESRLrmgTK1gX5T5B8BokRfrBEBTpfH3J/MUjBCzaiI3HfHwWXJK02YObYiLddTRsC40f+e8MJ1M5DzByiHI79nS9iKpCJlKF0rd2woLj0JG1eja3vZxLKtGB2zvBTUQffGGQEaA5uUzvKjqQdCWB60Cka6Qrk7QmnizebrNQnYaIY73aaqNuhQyVZ1MpMJF9iehofpjtRiSoOl5kvdc0+OkYkirKiwKs9TqwpJ9kzeT31+MwuKCjQvfhIVX8S5wmk1SNh+YESztdFeUuSHmKDbybOrrNLfE5Hm8zzk0oseOHU8qSAHS8wClRmj4eiWbLLb5hY1gn6F6ZuY8/yZ2t9dSS4SCDchGyX05KWMjTFqFcLP3EEcHY1hTj35LNObXECjrJOtHXBylHzTziBHsRSCGncLCgJMMUJfO33yVHcvE32K+NT6lJ+ADNT6td4=
-X-OriginatorOrg: oracle.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 9a9caf4a-0c32-4c40-a986-08def45c75a6
-X-MS-Exchange-CrossTenant-AuthSource: PH7PR10MB6228.namprd10.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 07 Aug 2026 08:18:29.5858
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: D3mi4U5DCaU4Wuj4dj4fOpm8uozYUqEELw7Odj1u4PIZ/3/zyI0LvZdF+1YD6UsPzJJGLhtYqg9sb+p76BWOOA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: CHAPR10MB997723
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-08-07_01,2026-08-06_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 spamscore=0
- mlxscore=0 lowpriorityscore=0 suspectscore=0 phishscore=0 malwarescore=0
- bulkscore=0 mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.19.0-2606160000 definitions=main-2608070060
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODA3MDA2MSBTYWx0ZWRfX23lHXg9P2Ub8
- C84P2XjA8as8+c9E94J8kKSPbP7rSe260Y4ZviNUcHtT0xd0R/zXzZxsBHRwgYAuseQHO2MAl0q
- Lp4y9oKzR/eJHvczFoJpk5mwg2SSbp1bOxLbgjeWKpytFvfiu7OM
-X-Proofpoint-ORIG-GUID: Ht8UUj9AvQxDEcNJiW7EuE8LsUAHI2-I
-X-Proofpoint-GUID: Ht8UUj9AvQxDEcNJiW7EuE8LsUAHI2-I
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODA3MDA2MSBTYWx0ZWRfX7U9zAbfcyv/A
- 7BLeogJO+fHSPa2NPCwxyXY/iUBYfbGXM1wnRZ+SDb5owXdKISu7sRMchyDVLiaDDRRhgKsAKN8
- qbdtohDvvzKnJTTQ8KG8+iar2B/x+AfZaoCIz5ZxDw9mudzAOVEpppKXsyoh/u8Q823ckMd7mOd
- 979+IsomOcNmIG2c+N4r62nz+dz2Px5anbJ8eCQlnCEsHBhPp+7RuRP1FYB2skXgfhnPk38wgdc
- ZUYeYgvDhYNXrgR7JsYVhLacVJYV2XT5jtszN/M/UFlWdsO+0haEO/ymXnbk7Z9qKnDYgK5PWIM
- Gt/Am3bSaPkhAe8w06AMlCkknp4GHafbntSnbBRgLxpeR+EISyy2293heycsz4nKhJNAcLmoItl
- V9cGKjjQ1lrP49TUdWKLKp9kuLy1gjEOlpvIK1yLAbg4qhgNA9Pez9WNBVbt7KR0C7XhOTNpX1y
- cNExk0frsOELuo8jFBQ==
-X-Authority-Analysis: v=2.4 cv=TsPWQjXh c=1 sm=1 tr=0 ts=6a7594db cx=c_pps
- a=XiAAW1AwiKB2Y8Wsi+sD2Q==:117 a=XiAAW1AwiKB2Y8Wsi+sD2Q==:17
- a=6eWqkTHjU83fiwn7nKZWdM+Sl24=:19 a=z/mQ4Ysz8XfWz/Q5cLBRGdckG28=:19
- a=lCpzRmAYbLLaTzLvsPZ7Mbvzbb8=:19 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
- a=Sv0fKeRqtYgA:10 a=GoEa3M9JfhUA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=jiCTI4zE5U7BLdzWsZGv:22 a=RD47p0oAkeU5bO7t-o6f:22 a=N54-gffFAAAA:8
- a=UpLBKnZkSEUIMPGQdmkA:9 a=QEXdDO2ut3YA:10
+Content-Type: text/plain
 
+Marek Szyprowski <m.szyprowski@samsung.com> writes:
 
-> 
-> On 8/6/26 4:39 AM, John Garry wrote:
->    > Getting the address of embedded host_lock structure just requires adding
->    > a fixed offset value to the shost pointer. However, getting the value of
->    > the host_lock pointer requires loading from a fixed offset to the shost
->    > pointer. The latter should be very slightly slower, which is relevant as
->    > this lock is used a lot throughout the core code and drivers.
-> 
-> Hmm ... SCSI drivers for which performance matters shouldn't use the
-> SCSI host lock in their hot path.
+> On 25.07.2026 09:09, Aneesh Kumar K.V wrote:
+>> "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org> writes:
+>>> This series tracks confidential-computing shared DMA state through the
+>>> dma-direct, dma-pool, and swiotlb paths so that encrypted and decrypted
+>>> DMA buffers are handled consistently.
+>>>
+>>> Today, the direct DMA path mostly relies on force_dma_unencrypted() for
+>>> shared/decrypted buffer handling. This series consolidates the
+>>> force_dma_unencrypted() checks in the top-level functions and ensures
+>>> that the remaining DMA interfaces use DMA attributes to make the correct
+>>> decisions.
+>>>
+>>> The series separates mapping and allocation state:
+>>> - DMA_ATTR_CC_SHARED describes the DMA address attribute requested for a
+>>>   mapping. It tells the DMA mapping path that the DMA address must target
+>>>   shared/decrypted memory.
+>>> - __DMA_ATTR_ALLOC_CC_SHARED is an internal DMA-mapping attribute used only
+>>>   by allocation paths after the DMA core decides that the backing pages
+>>>   must be allocated as shared/decrypted memory.
+>>>
+>>> The series:
+>>> - moves swiotlb-backed allocations out of __dma_direct_alloc_pages(),
+>>> - uses __DMA_ATTR_ALLOC_CC_SHARED through the dma-direct alloc/free paths
+>>> - teaches the atomic DMA pools to track encrypted versus decrypted
+>>>   state
+>>> - tracks swiotlb pool encryption state and enforces strict pool
+>>>   selection
+>>> - centralizes encrypted/decrypted pgprot handling in dma_pgprot() using
+>>>   DMA attributes
+>>> - passes DMA attributes down to dma_capable() so capability checks can
+>>>   validate whether the selected DMA address encoding matches
+>>>   DMA_ATTR_CC_SHARED
+>>> - makes dma_direct_map_phys() choose the DMA address encoding from
+>>>   DMA_ATTR_CC_SHARED and fall back to swiotlb when a shared DMA request
+>>>   cannot use the direct mapping, which lets arm64 and x86 CCA guests stop
+>>>   relying on SWIOTLB_FORCE for DMA mappings
+>>> - use the selected swiotlb pool state to derive the returned DMA
+>>>   address
+>>> - reports CC_ATTR_GUEST_MEM_ENCRYPT for arm64 Realms, powerpc secure
+>>>   guests, and s390 protected virtualization guests.
+>>>
+>>> Dependency:
+>>> This series depends on the pKVM changes posted at:
+>>> https://lore.kernel.org/all/20260603110522.3331819-1-smostafa@google.com
+>>>
+>>> Please merge this series only after the pKVM changes above are merged.
+>>> Otherwise pKVM will be broken.
+>>>
+>> pKVM topic branch is now available 
+>>
+>> https://lore.kernel.org/all/178467286876.125042.12010461715645610054.b4-ty@kernel.org/
+>>
+>> https://git.kernel.org/pub/scm/linux/kernel/git/arm64/linux.git for-next/coco
+> I've just got back from my holiday's and I see that there is everything ready to give
+> this patchset some tests in linux-next. I hope nothing will break.
+>
+> I've applied this patchset to dma-mapping-for-next, on top of pKVM topic branch with
+> patch "[PATCH v8 17/23] dma-direct: make dma_direct_map_phys() honor DMA_ATTR_CC_SHARED"
+> rebased onto latest changes in arch/arm64/mm/init.c.
+>
 
-Any driver which uses DEF_SCSI_QCMD uses this lock in the fastpath. 
-However I don't think that many are high performance HBAs. Maybe 
-usb/storage/ or pmcraid could be consider higher performing.
+That might need a fix.
 
-Then there is stuff like xen-scsifront.c which uses this lock in the cmd 
-done handler. It's used a lot in lpfc and also in code which looks to be 
-fastpath...but that drivers is very complex.
+From 5a9af89e74e9e2671ed0a572af129ebfa6fd4640 Mon Sep 17 00:00:00 2001
+From: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>
+Date: Fri, 7 Aug 2026 13:14:51 +0530
+Subject: [PATCH] arm64: swiotlb: Keep the default size for protected guests
 
-> 
->    > @Bart, Can you kindly build test this? s390 and sh were causing some
-> build
->    > issues for me. Thanks
-> 
-> This patch passes my build tests, but an update for the references to
-> default_lock in the Documentation/ directory is missing.
+Realm guests and protected KVM guests may require swiotlb for device DMA
+even when all system RAM is addressable by the DMA zones.
 
-I'll fix it
+Do not reduce the SWIOTLB buffer to the kmalloc-bouncing size for these
+guests, as the reduced number of slots can be exhausted during CCA guest
+operation.
 
-> 
-> Otherwise this patch looks good to me. So with or without the
-> Documentation/ update, feel free to add:
-> 
-> Reviewed-by: Bart Van Assche <bvanassche@acm.org>
-> 
+Fixes: 30c5e45ee2c5 ("dma-direct: make dma_direct_map_phys() honor DMA_ATTR_CC_SHARED")
+Signed-off-by: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>
+---
+ arch/arm64/mm/init.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-thanks
+diff --git a/arch/arm64/mm/init.c b/arch/arm64/mm/init.c
+index e308a7cabd12..24caaf10e755 100644
+--- a/arch/arm64/mm/init.c
++++ b/arch/arm64/mm/init.c
+@@ -339,7 +339,8 @@ void __init arch_mm_preinit(void)
+ {
+ 	unsigned int flags = SWIOTLB_VERBOSE;
+ 
+-	if (max_pfn <= PFN_DOWN(arm64_dma_phys_limit)) {
++	if (!cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT) &&
++	    max_pfn <= PFN_DOWN(arm64_dma_phys_limit)) {
+ 		/*
+ 		 * If no bouncing needed for ZONE_DMA, reduce the swiotlb
+ 		 * buffer for kmalloc() bouncing to 1MB per 1GB of RAM.
+-- 
+2.43.0
 
 
