@@ -1,82 +1,82 @@
-Return-Path: <linuxppc-dev+bounces-25535-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25536-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D306FC5AC67
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Aug 2026 02:38:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 318ADC5AC7A
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Aug 2026 02:46:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hGSxn5J0Jz30FB;
-	Fri, 07 Aug 2026 12:38:21 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::434"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786070301;
-	cv=none; b=N8QNu6jCWylo3nFcuxN9hwjXQ5cMZ2xjgU+9m3B0IEQ4gF9bhX7fHjW7fhOcImAAonx9nHgQgA3F4RVLGDGjfErJNYXGWr0lbUEH3u57acrNBB049YOZmFkWSPc05IJWv3j/fUn7VuYQK3229m1t47xuKAhZW3JDKJQuTY8Lrk1IveIxugRBN87RKxK+z9DrUyN4ig6H0btfxI69mj3X8wIMnsA3pBCmi3iV2V95o7/FS9LUfeqrKuPw3a/yJAdw0xTb6NrROWyxBTaRb4DzLJhclHZAMJMKGh1OhiyONvhfAjsisM7vTcGMQpB4UXGLBmIGR7F4+5viHQVVlQWCOA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hGT6p2XQzz30FB;
+	Fri, 07 Aug 2026 12:46:10 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62f"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786070770;
+	cv=none; b=NfpGS8IRcfSXJ02Fa7oJWh+a5DTC5LnguEbIgujcykSKz3PVWusKPNkby+FuwKdqe5ztxM3PIJsRH9EzGgIuu1A5CQ6oYNlzvJwC+lq5BHEx0lxXPeqX1uurISUhzo/+kOS6hgPal90CioXu0rKC98NqK/BLQRZFQkScIQ/1pUk62bx73uit1/Ld+NSpN/dhwJAkPs0Dvc2Eot1/hjQxZubUzNPLJRAbeHEqvOHx9g9TjYw6HhE6HMZyEzPvHGCXOScuSFHzM0Ixsh5wli8+bsstVWkVJid/66CwFHmJwPCfEmmA/wi04CREglPe3d6svXou/WJxeiw8bBLNVjnsrg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786070301; c=relaxed/relaxed;
-	bh=oJdLdIw3eLo0oaT0dX3TZQQLMEjdBPNutZDZxls1Ksc=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=Tu7Y+Rlo/2uV3awMWWYo/b0pa97QUBpko9f1/eGdM935YNhXVevZFFjJqIVZrok2VgxFd1VruSn7T7kFKvUbRmCi1Fwd2SBjwutO21VD8BcKCNtnIZbMoySxzCG+2xu0sVULS21Vs5wp6MfAmUMnZpDxtGoO3lGvTfaZKdKJp2yM4D6PsTnrjRL+NfAKZhdFztEVERpvsdiJpPOJGWpQt7OpKBm/qlQN7TZOWHHHKneCLkA2D074vdh7aRlRmT3RoC1xjp62aYH8f0xkd/wFWUz4DbrsAVj3GoSxeQqEOibctD8U1Ri4NancUAy/jIXlKVIZ1pS7xTRuMHG+ZLO76g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Stozg/e7; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::434; helo=mail-pf1-x434.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1786070770; c=relaxed/relaxed;
+	bh=cGAigAv9qTLUUJepoIiK8+xQUGcQy/mbHbtZRpAl3rg=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=bbShch4WljaXLWXsoZij2GbANKuNIEKqCbu56RUe26q2ZLXSnz8GwHyxz++5uK5dF6RG72iiZg04jJP3fZraq5dQ5hVu13hGA7jWTMtIrFVUxeTqmTE6yk/yhpNfcWrc9D9H/NrWXG7TQiCMBXqzmAUh4n5YYsBODO0uBOu9voSrlKwFj3PQUG3WsZ3E67LDwkMmH6YN86U8GaHZoQ/4GDT5bLwthMD0n4s5QT0uOB5WgZcXD/LN4BFkfUi6LFhTLsk/K0yAwDuxx8v/TxtJ/y7LzbwIqJQmeD6YjexW+Di3DXzLlu5plwfgGuAAvckNbSMRDqLaLZpCZJnyh+vDkw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=J7xtgTfN; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62f; helo=mail-pl1-x62f.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Stozg/e7;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=J7xtgTfN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::434; helo=mail-pf1-x434.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x434.google.com (mail-pf1-x434.google.com [IPv6:2607:f8b0:4864:20::434])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62f; helo=mail-pl1-x62f.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x62f.google.com (mail-pl1-x62f.google.com [IPv6:2607:f8b0:4864:20::62f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hGSxl4k5lz306N
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Aug 2026 12:38:18 +1000 (AEST)
-Received: by mail-pf1-x434.google.com with SMTP id d2e1a72fcca58-84eb992a881so2636626b3a.2
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Aug 2026 19:38:18 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hGT6n3bs9z306N
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Aug 2026 12:46:08 +1000 (AEST)
+Received: by mail-pl1-x62f.google.com with SMTP id d9443c01a7336-2d032846c95so36575765ad.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Aug 2026 19:46:08 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1786070296; x=1786675096; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1786070766; x=1786675566; darn=lists.ozlabs.org;
         h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
          :cc:subject:date:message-id:reply-to:content-type;
-        bh=oJdLdIw3eLo0oaT0dX3TZQQLMEjdBPNutZDZxls1Ksc=;
-        b=Stozg/e7cDVRmkNZcJa++9+DTiuwgsqBt+cToQWUJK4tfnZO1ySvnE0FBM5jseYNAk
-         Measbe5gsmX/GHoUyEmSr7AYSpr0FdhocHOs1Pgajr44DV9+yuN/UIrc7FbRGMfI8H0S
-         UZVEztahz5DODIX6W/SORjEu9jibtkRkCIXfArn594opDyAzc3RTfkJahYJGIQ0EZCPw
-         DjNnC3qLsBWeG6eWT1uxMjCatoTOFFoKt7Bmd4Jnlj7sBp8RCNmIRi85W3GJAG7dIUUD
-         P71x9r0m7LOv762dZTKK7ca9kUx0MOC4u8SbZJCBLu/KSGeQB2lIK492e2jXDf+gI6eA
-         4G1w==
+        bh=cGAigAv9qTLUUJepoIiK8+xQUGcQy/mbHbtZRpAl3rg=;
+        b=J7xtgTfNvl8/SkSVWTIHMd+DgEgmyJe9hOo/JBlCWQF5W2OvvGvJQdE4XBo2h4IAY+
+         fEWQhq+R8kpgYu6hHHDGoWT3VIqyc3K6mDCwL5YtqqNGZ+u13zyrxMgip+zlx3Am9Cqe
+         KXHKUwzanhtpdcTuOgvzkluaEWLu0iQQ3MhpH//fK8c8jmUzwETZYgM/Pm0+QGracGST
+         8qyDzzM58ZIH9Xis6W8bjb2KDkN1YPFL/lsrjwXal+oHaOGLuoqD9tbTNFk6iV504SP0
+         CzMnRJYiBU313jlJgF3nbgroLYY8dzcu/NtNr8mENntGxhUWDvjPIW+IIeMU+AuXL/2s
+         ujlg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786070296; x=1786675096;
+        d=1e100.net; s=20251104; t=1786070766; x=1786675566;
         h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=oJdLdIw3eLo0oaT0dX3TZQQLMEjdBPNutZDZxls1Ksc=;
-        b=FSw3j+IAaluhcWDv+6H7FMM3HcbrF4muFF4Zd809ZBsjFU9jBjCAcoVWYFV6AM5f0K
-         uENAXsoJf4JoNvB6OYTrEmQp4nw0TMzhcQawilbcDCxGuIHyCWsSHqpTRr9GktdEc7Ym
-         4FyhpIcPVFjhozogxiYmRkJemdRFcF+++s7fpWXNaGrbKDV5LZgro6uJWQZUIiyab97U
-         mhkvrS/w9Lwk+KmsgSManNbnFfY3knku8KCRzDupScvQAgkdqIC6dRw7d9dA60orO3z0
-         6b2nqbpNOg93ExLHWGZPsjShROif+w2YrXGey1/mbgbavMNoGN9KxjZSNY/Ee5DjBVev
-         hBYg==
-X-Forwarded-Encrypted: i=1; AHgh+Rrq3L/lBRizSIwwIJQ0+jjRTzc19Q4b8Sxjy+oBzNo3KyBKHkYGjNBG3S5l67vMlkX/PctCfmdBEZDLnoM=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yysh374sQ+iSfPVo3RMyTagWUyAl5wsW5R2ibtShRh2bUxeOdAT
-	Gl18qQDerysit6VkpbFc7p+6DAZUN+qq0+2jlKdzR9kz1WbHFmTx5OuF
-X-Gm-Gg: AR+sD11crrTUZsC5uN85AtNmf369ZvhBP/vCZi2/pPlsnHkGed3QeHM/b0GPPilLrXQ
-	mTZLcaBfanKV1gV/LMEJm/z/Xaex3DLMsN3KDr9RZST9xzBOeKt8YW7xqg4w6ebHHOKqRjomwh/
-	I5ODYvT31OtmJDLAQyxl8XQtmN552Li9wqjaGCI4L3rA/bO0KenHNFw8wuwApvOfMeOJnYyXOFZ
-	AKb8QBwA6r6DVfXHDWG7vQZ0rMGN3qMZgfwE+2/PHJBPKrvguV1PFhFB70/481/bqMN1AoCq/X3
-	9cBaQ33xHzi3pSmJjG5zgWsucUmpGatF49Nz8TY9kGrsvZlQbfTGUFnNdwc/IlAwTrZYWVNFI92
-	UlzhZOjV8Ev/XBNPBo1bJJxWzUep00WzJbUDNjo9Yat5+e5I2hACUKEAZlNRL5Xy0pQ+kaWtexE
-	vKd6xse1E2dgxff9dq2h0J+FlAOU7FPouG0Wj9UcRz3QZcy/XnqcZL+SgwYzI=
-X-Received: by 2002:a05:6a21:6089:b0:3c4:2fe1:fa36 with SMTP id adf61e73a8af0-3cbadd74818mr8045427637.36.1786070295864;
-        Thu, 06 Aug 2026 19:38:15 -0700 (PDT)
+        bh=cGAigAv9qTLUUJepoIiK8+xQUGcQy/mbHbtZRpAl3rg=;
+        b=eJjuMHj1gFOzORXsYNkatfCl1ucxIRiiBSJF2o3lIVgaiZccVGbu8r4JdUaMcGOQ43
+         d1bd+f1LEviN9MLp6ZLWhZhZwE3/rg+F+QQAVMgkBywJytwGg/0EDm8wrjUiSrDW0Cxr
+         3Ljeewh/vIH6KfDh5hhk06G7C5quyLIWITccqUOe6DnPL7we4FxbAzEUi/wOnFUwlrNj
+         aWo65sDZlHzCYpyKqwqeILhPz62KmpgRfpNVeyS4pfr1yB0wIXPBiw3G9OUcusBYz/gI
+         FjTR/q3uwouymjo//Q9p4YNEEUHbR5CDZWgqOzj2HPcOUI4uMA9gXX2NUIdN0gngvHS/
+         qsLg==
+X-Forwarded-Encrypted: i=1; AHgh+RrE1A0o+/194YDYeBAq08l/Ve84M+1EeKZQBPnWeyL5YtVuddS52KFbpeatNeU7j20HxZ/9ZPtJHIKBnao=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxAzJa1mAKe7qZrVkfQv1//XSdh5QRCVlemfRHoiE1LBHosrvH2
+	rZI1j03jbJgWBvcdK2Y5bs18sp94cTkJhDMCuKY4gnHAz4DXpbxe0En82Wix/A==
+X-Gm-Gg: AR+sD12afM+hNWAqAha1usQl7No6N4/+V6s5vcN2thTdHiqwl+Z8QPQjw90uX15Q/Sq
+	btjyRVHskOLjxzh545ygftV9Z90mU6CDDylehQa/1DspL899LF0penlN9J9ZpfpK7MGiBTmFvnl
+	MTcjr2sC/4RIlQwqI1p86OyKZgHYxcTRXZxWJWBHPjfpEhp8GehFn/AOS8ybQEalB38DW1fw1V/
+	5HVfry97dhxwPE1yCxC75QINiTWejTxkJxSLTSJSSBk1DD1CqHqIN2Cmxt2MeKzPLDdstyl1um3
+	EQG1hG8Vl1UKWbsBr+IXD3LcoXYGxbffpMbHKhdYxoTaAzrL3DI5cvgCInih21Q69pHjf7wbPlf
+	pCyJafD6mG5etwaA6APJ6Nw3N4yBqCCiVtiOFRrLXvaGCiJkMdACCqgbnQGdSTXhW+YLLmZ2pdg
+	NDSdqorNLbLoKaWkmx182rsKfOv30BeFYoOhGL8ZbFvlyOFFKIM+ZSPRpZJGLs
+X-Received: by 2002:a17:902:c952:b0:2ca:619f:9733 with SMTP id d9443c01a7336-2d0ca9620bfmr211897085ad.17.1786070766256;
+        Thu, 06 Aug 2026 19:46:06 -0700 (PDT)
 Received: from pve-server ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-315beb87d3bsm1585726eec.14.2026.08.06.19.38.11
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-315bebde2e6sm1462086eec.21.2026.08.06.19.46.02
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 06 Aug 2026 19:38:14 -0700 (PDT)
+        Thu, 06 Aug 2026 19:46:05 -0700 (PDT)
 From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 To: Gaurav Batra <gbatra@linux.ibm.com>, maddy@linux.ibm.com
-Cc: ltc-dev@lists.linux.ibm.com, sbhat@linux.ibm.com, vaibhav@linux.ibm.com, harshpb@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, donettom@linux.ibm.com, Gaurav Batra <gbatra@linux.ibm.com>, stable@vger.kernel.org
-Subject: Re: [PATCH v5] powerpc/pseries/iommu: Add TCEs for 16GB pages when RAM is pre-mapped
-In-Reply-To: <20260806205027.86428-1-gbatra@linux.ibm.com>
-Date: Fri, 07 Aug 2026 08:05:50 +0530
-Message-ID: <ldailks9.ritesh.list@gmail.com>
-References: <20260806205027.86428-1-gbatra@linux.ibm.com>
+Cc: sbhat@linux.ibm.com, vaibhav@linux.ibm.com, harshpb@linux.ibm.com, npiggin@gmail.com, Gaurav Batra <gbatra@linux.ibm.com>, stable@vger.kernel.org, linuxppc-dev@lists.ozlabs.org 
+Subject: Re: [PATCH v2] powerpc/pseries/iommu: switch to Default DMA window during kdump
+In-Reply-To: <20260803224029.60538-1-gbatra@linux.ibm.com>
+Date: Fri, 07 Aug 2026 08:08:32 +0530
+Message-ID: <jyq2lknr.ritesh.list@gmail.com>
+References: <20260803224029.60538-1-gbatra@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -92,56 +92,80 @@ Precedence: list
 
 Gaurav Batra <gbatra@linux.ibm.com> writes:
 
-> In powerPC, if Dynamic DMA Window is big enough, RAM is pre-mapped. To
-> determine the size of RAM, a PAPR+ property "ibm,lrdr-capacity" is used.
-> This OF property dictates what is the max size of RAM an LPAR can have,
-> including DR added memory.
+> In PowerPC (pseries) a non-virtualized adapter will have 2 DMA windows -
+> 2GB default and a larger Dynamic DMA Window (DDW). DDW is large enough to
+> map total RAM to a device.
 >
-> In PowerPC, 16GB pages can be allocated at machine level and then
-> assigned to LPARs. These 16GB pages are added to LPAR memory at the time
-> of boot. The address range for these 16GB pages is above MAX RAM an LPAR
-> can have (ibm,lrdr-capacity). In the current implementation, these 16GB
-> pages are being excluded from pre-mapped TCEs. A driver can have DMA
-> buffers allocated from 16GB pages. This results in platform to raise an
-> EEH when DMA is attempted on buffers in 16GB memory range.
+> During normal functioning of OS, since RAM is pre-mapped, 2GB default
+> window is not used. The only scenario it might get used is when buffers in
+> pmemory are mapped to the device for DMA.
 >
-> commit 6aa989ab2bd0 ("powerpc/pseries/iommu: memory notifier incorrectly
-> adds TCEs for pmemory")
+> As of today, during kdump, during early device discovery, pci_dma_find()
+> finds that the device has 2 DMA windows. It selects to use DDW. This is a
+> kdump path and DMA window is needed for IO to the device.
 >
-> Prior to the above patch, memblock_end_of_DRAM() was being used to
-> determine the MAX memory of an LPAR. This included 16GB pages as well.
-> The issue with using memblock_end_of_DRAM() is that when pmemory is
-> converted to RAM via daxctl command, the DDW engine will incorrectly try
-> to add TCEs for pmemory as well.
+> Although commit 09a3c1e46142 ("powerpc/pseries/iommu: IOMMU table is not
+> initialized for kdump over SR-IOV") fixed an issue during kdump with SR-IOV
+> case, but this also made the kdump prefer DDW over the default DMA window
+> when both are present (dedicated adapter case). Since the DDW is fully
+> mapped by the previous kernel, iommu_table_clear() can free only
+> KDUMP_MIN_TCE_ENTRIES (2048) TCEs for use by kdump kernel.
 >
-> Below is the address distribution of RAM, 16GB pages and pmemory for an
-> LPAR with max memory of 256GB, memory allocated 64GB, 2 16GB pages and
-> assigned pmemory of 8GB.
+> This is not enough when the dump device is NVMe over Fibre Channel.
+> Because nvme-fc driver DMA-maps the cmds and resp IUs of every
+> pre-allocated request and each such mapping consumes roughly:
 >
-> RANGE                                 SIZE  STATE REMOVABLE     BLOCK
-> 0x0000000000000000-0x0000000fffffffff  64G online       yes     0-255
-> 0x0000004000000000-0x00000047ffffffff  32G online       yes 1024-1151
+>     32 (IO queues, one per cpus = nr_cpus) *
+>     64 (queue_depth, blk-mq kdump limit) *
+>     2 (cmd+resp) = 4096
 >
-> cat /sys/bus/nd/devices/region0/resource
-> 0x40100000000
-> cat /sys/bus/nd/devices/region0/size
-> 8589934592
+> This is already double of what we have without counting admin queues and
+> lpfc driver's own allocations / mapping requirement. Hence this results
+> into iommu_alloc failures like -
 >
-> The approach to fix this problem is to revert back the code changes
-> introduced by the above patch and to stash away the MAX memory of an
-> LPAR, including 16GB pages, at the LPAR boot time. This value is then
-> used whenever TCEs are needed to be pre-mapped - enable_DDW() or,
-> iommu_mem_notifier()
+> lpfc 0153:70:00.0: iommu_alloc failed,
+> tbl 0000000034ebcf5e vaddr 00000000d814df0b npages 1
+> lpfc 0153:70:00.0: FCP Op failed - cmdiu dma mapping failed.
+> lpfc 0153:70:00.0: iommu_alloc failed,
+> tbl 0000000034ebcf5e vaddr 000000009779e4d2 npages 1
+> lpfc 0153:70:00.0: FCP Op failed - cmdiu dma mapping failed.
 >
-> Fixes: 6aa989ab2bd0 ("powerpc/pseries/iommu: memory notifier incorrectly adds TCEs for pmemory")
+> iommu_map_phys+0x1c4/0x1f0 (unreliable)
+> dma_iommu_map_phys+0x54/0xa0
+> dma_map_phys+0x3f8/0x590
+> __nvme_fc_init_request+0x110/0x300 [nvme_fc]
+> nvme_fc_init_request+0x60/0xb8 [nvme_fc]
+> blk_mq_alloc_map_and_rqs+0x388/0x510
+> blk_mq_alloc_tag_set+0x2a4/0x5f0
+> nvme_alloc_io_tag_set+0xe0/0x1e0 [nvme_core]
+> nvme_fc_connect_ctrl_work+0x85c/0xdac [nvme_fc]
+> process_one_work+0x1e4/0x5a0
+> worker_thread+0x1ec/0x3e0
+>
+> Increasing the number of free TCE entries in iommu_table_clear() will
+> increase the probability of hitting EEH since there could still be some
+> active IOs from the previous life of the kernel.
+>
+> Hence this patch partially reverts the previous fixes commit and
+> switches the kdump's default back to 2GB default DMA window instead of
+> DDW window. This window will mostly be empty. Or, could be slightly used
+> if buffers in pmemory were mapped for IO.
+
+BTW w/o this fix the only TCE window that kdump & kexec uses is DDW
+which won't work for 32-bit capable DMA devices correct? So I think this
+should also fix the kexec & kdump case where we have a 32-bit DMA device
+- which otherwise will fail to function after kexec with the following
+error:
+
+"Warning: IOMMU offset too big for device mask"
+"mask: 0xffffffff, table offset: 0x800000000000000"
+
+Thoughts?
+
+>
+> Fixes: 09a3c1e46142 ("powerpc/pseries/iommu: IOMMU table is not initialized for kdump over SR-IOV")
 > Cc: stable@vger.kernel.org
 > Signed-off-by: Gaurav Batra <gbatra@linux.ibm.com>
-
-Thanks for addressing the review comments.
-BTW - we should really cleanup enable_ddw() function. It has so many
-corner cases and has started to become confusing. But as for this patch
-it looks good to me. So, please feel free to add:
-
-Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+> Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 
 
