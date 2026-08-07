@@ -1,114 +1,78 @@
-Return-Path: <linuxppc-dev+bounces-25587-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25588-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EE334C5ACAB
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Aug 2026 13:58:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 76634C2A09B
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Aug 2026 14:38:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hGm2K2rQ8z3c58;
-	Fri, 07 Aug 2026 23:58:17 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::72a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786111097;
-	cv=none; b=CIC5ITSEOQ2tAmcrh2z94aAfgt6/kjvZLf7yB4DKcohAVFQioZLWnV26KWyHJXrzN2QEi/4I20xDEJFoqbpaY0YYBCsPnLfQ4JI4CjiL/pAYToarex7Iz7ThfeavLMvAxNpVRe8vIS7zK4emv0gipsty3ywywOwy6zt5/5q59RKdmdMVpgP1WDtS5vYpRqy1m+oTuoGlLDIbFc7XxP+37cWmzzK9YA0VLUjiE82Z6/D+Psa5II8VKkzVMiL2bBqkKrICVzDSF6iPId3bYCCOz3p8KGOedyY0nFLoohU6KGWMftU4Ix5qkAF6/M5ZGujv2+iOJz4PTlIVp/Zu4ZfMXQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hGmwD5NVgz3c4l;
+	Sat, 08 Aug 2026 00:38:04 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786113484;
+	cv=none; b=N9//2hYbdFuQ2vi981YzcLyRiNEe1Sgqax9J92/olXsrpUQ2qyd6cr1IELGTSalpvuiKHY7hz92W3D2S3TsFVTt2uxapZnCB0aUV1Vi3Xipk1qGn+sNIgNixR8rGgUrZGnqoncoxnJ7FWW4+r0m8JTjyz8tE5IAh3caMLv8JFmoEEf/U1zzEtuj0RmAzKRTaXW4Jf3swSjtwUWW0R4p5Qa2fmoy04nFMOpCpiGmVlAz+BNNnZUdx/iWa8EsBSpl3fMTwt1jrkxKpMj0RcgZyugyYtq/IsjstYhVjS3MXeL0BHoHoNjVwU+v9vid4gxYQJBhvZSi2OXGA4ykbH78oeg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786111097; c=relaxed/relaxed;
-	bh=i2ro1loNwbkACqpDIeM0PdgrbNZfsWDTHY6fPjx3IQg=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=StZrbF3KHZFaxjykwugeFFkrrQF4Ms0IwTO4zkDgKGDkwmZeMVF7d2W+L6pjhek3TOzgfg1E2sZtFl0jv12PltK7BBqQEge/XytfljDOiEe7BB+EBhL1ugSd1zy8Scf8BK0hax/xtLOkLSeMA/6wybyY+jZ0bIV2GcdS7eJKJoobXS2K92hr0F5cxxnw8uiHypXqSMncg1/NKswxkaIK6xDvzBA8BE6OFd4CP83BR7IP6hvk8HoGigohHgr8j86kXq5R2AB0yWzhJ3b37QxITzd+RkW4ayVPbwTSWR4NdUp/LAip2J7ihccNgmIivKdwM9sgGU9YDDg+xFA3clMvNw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca; dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=gmJKhVlR; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::72a; helo=mail-qk1-x72a.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org) smtp.mailfrom=ziepe.ca
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca
+	t=1786113484; c=relaxed/relaxed;
+	bh=wJ/W/Fi1b/6h4ADYkcco/0/E7e58RC8K+goVg5EQT5s=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version:Content-Type; b=TUz7n966l0qtIWtwNmfkwUmyp0JgnXqRwgYdNBiR5vA1bshJR9jLLX+M2rI7EncMohb5VxumAYMvRJd+kSuTm1gQDc3BurSfiRXPl47mCWNJ5qbHZQ81U3mPuYNiIVKJ9K48MBHNXIV3TmCV+hBP9ieKTJ46xfRTV0H0mAjlyJeOHFo4kXLNKVdA22O12W8p6lxNNlZ5TZoam9wZbyy/qTPFKBfqziwRUHzlq+AEbTpOgquuPzExKJZTPATXzQpffsUxs4vs6Z6sKo+JF/ThkWkqyk5mCx3Ph36trFqSUIkqepdsZquZS2Y8gmwltgSis5OiKV6/E1VP1OgPUXqsvg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=mTi6sujP; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=gmJKhVlR;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=mTi6sujP;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ziepe.ca (client-ip=2607:f8b0:4864:20::72a; helo=mail-qk1-x72a.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org)
-Received: from mail-qk1-x72a.google.com (mail-qk1-x72a.google.com [IPv6:2607:f8b0:4864:20::72a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hGm2H6LLCz3c4l
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Aug 2026 23:58:15 +1000 (AEST)
-Received: by mail-qk1-x72a.google.com with SMTP id af79cd13be357-92e54f8c051so180853285a.3
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Aug 2026 06:58:15 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ziepe.ca; s=google; t=1786111092; x=1786715892; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=i2ro1loNwbkACqpDIeM0PdgrbNZfsWDTHY6fPjx3IQg=;
-        b=gmJKhVlRhZz/yI8Yxoq+Q8Gv5ih7T1Gbx7eEy0q7TaCuPG2IqFPoBDm0njaxsVGdTe
-         u6ViakXj6o6Qsaz5LqGBFsdl0p8H9hflKspYiP+5MXepxHstQHtFeoV/zSa0NZdpITih
-         rNSGaxKpr8Vy14FadlgJZ6jSurX2ckGxafgNGvQKo9q1wAb3OX6qKuoOngIPW063qB35
-         rqtb98ufkwpdx4zoa+v13HhD5dudPX+ZcCX0wpmcGHCAZ5DzWWGRlt63eplg3bq25bCs
-         QsjENglmZhhEsqpRUVosIx2pp8kwfKj6AysenmZVVkM/DwgrBiuBw7FsCHuUI7Lge7Rz
-         XzJw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786111092; x=1786715892;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=i2ro1loNwbkACqpDIeM0PdgrbNZfsWDTHY6fPjx3IQg=;
-        b=E5eh0V8y8sysaJQpmmR1K24d42PGwNzon5+hvcodbebPlInGmN1Gpo6ZIPgsyMAkHK
-         bvvrQgd6cZn6hgXtLEFH8HNYbzgJs7BC7DSSPLOOv7ontLpO0r17pbsklpnwfpWSqc6k
-         ECjRuc3DssMW0YfZh/1rW9W1K35ah+KzYkaGyLzsNQj4owq1bAhGzvPDq3BTv7BaUvUJ
-         HS66mbVeE3Td7oO4p/ruNRefSeHcYI4UDlWJGMW3Qe5scLp4prtVX0ypUlZMZJmJkzOu
-         QoOC2HJV1XqFarKhflV4CUo8Kw34ZxaZ9Z4E+RuofQDsiVdMks7yRY3OK7z9CLG5odbm
-         0VxA==
-X-Forwarded-Encrypted: i=1; AHgh+Rpw7alKk3WFJwg64zLSMQUdQ8mrOKqFqV5ofmbc9YesqbqVXDRrH9faQcMZbo5N9z59f2HmUy4NPP7BOmM=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxrYX4khpqNiOsb1pmblm1uJfogeJz3QN+kGxWMykkVQKW0Ilnh
-	zB+aXWN3jTdFna5gAV/+nQ9Xo8Y5z+1sAyMOjulk5d7sqPiHEHIz6VSOljIYlZuZKD0=
-X-Gm-Gg: AR+sD120M97ByfUXjFS1nvZ1x0yjmpV880Z4Eey6EJJy6NFCw3d0QiWp4P+lwyHA6+R
-	7ijs4Oj5DSMSx5nPeXt7xkl3WGcPpEGoWdMOwr94gKM7c5umlBmAqRouQk8Y4ujigY625K2s9+c
-	dwXz02ez2k6tZZv7YJVcfjCIENi92GzmbKXqla6o023I8/yJa5NxEaZtjM2uAML3gguBPhhajmd
-	K62+qWlHqqCfdMtAy1dmNfBrvGPkfX9Au6FLI2UJXH8Dp+mjbrDtq3IUfnCtksdyIp688LTMRDK
-	yT+hT2lsWI8IEPYN1CpkyJ4yOqmftHjv/TAExL2TBfzvPUjJDDA+gmroKLSOhDbN1u3fVeUqKvp
-	8jeIsQErF1Pnlhshv6myPQZ8D7Sl+ooRzmUEQJy+a3b6OsZsKvjf02ljDL/HSE413Wi+mqupqfc
-	4vxQQeuWP8uRWy7cGsQHfAAMyuxANz/XM2tMbifA==
-X-Received: by 2002:a05:620a:2725:b0:916:14f5:8866 with SMTP id af79cd13be357-936490191c4mr2577886985a.16.1786111092001;
-        Fri, 07 Aug 2026 06:58:12 -0700 (PDT)
-Received: from ziepe.ca ([142.166.156.215])
-        by smtp.gmail.com with ESMTPSA id af79cd13be357-9366e2971d0sm152121785a.43.2026.08.07.06.58.11
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 07 Aug 2026 06:58:11 -0700 (PDT)
-Received: from jgg by wakko with local (Exim 4.97)
-	(envelope-from <jgg@ziepe.ca>)
-	id 1wsL5O-000000012Hc-2aob;
-	Fri, 07 Aug 2026 10:58:10 -0300
-Date: Fri, 7 Aug 2026 10:58:10 -0300
-From: Jason Gunthorpe <jgg@ziepe.ca>
-To: Will Deacon <will@kernel.org>, Mostafa Saleh <smostafa@google.com>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, iommu@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	linux-coco@lists.linux.dev, Robin Murphy <robin.murphy@arm.com>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Marc Zyngier <maz@kernel.org>, Steven Price <steven.price@arm.com>,
-	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Jiri Pirko <jiri@resnulli.us>, Petr Tesarik <ptesarik@suse.com>,
-	Alexey Kardashevskiy <aik@amd.com>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Xu Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
-	linux-s390@vger.kernel.org,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <chleroy@kernel.org>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org
-Subject: Re: [PATCH] arm64: swiotlb: Keep the default size for protected
- guests
-Message-ID: <20260807135810.GA200537@ziepe.ca>
-References: <20260717180442.110954-18-aneesh.kumar@kernel.org>
- <20260807092612.2202005-1-aneesh.kumar@kernel.org>
- <anXIZSh9lq99VG9X@willie-the-truck>
- <yq5acxvu2ict.fsf@kernel.org>
- <anXbJ2O4DWgPxCeg@willie-the-truck>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hGmwB2Y7mz3c4D
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 08 Aug 2026 00:38:01 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 677ClbQM1485050;
+	Fri, 7 Aug 2026 14:37:59 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=pp1; bh=wJ/W/Fi1b/6h4ADYkcco/0/E7e58
+	RC8K+goVg5EQT5s=; b=mTi6sujPRoyMbfEfQByezRB0K8AI5pVGSjAryh/D8ZXl
+	WG8iUeUEjgV85R9Ma+VuoOqvG0tXXod2TpH/kDH2bRWRVOTO+/ruP6yVkLhDcLOz
+	qDFhUwjt0a3XJlD5DIgIPlPoJ5WbF0fUnOXh27B4Sga2nxZXdTan2G7XwuSZBzA9
+	Twl9aLp77gDxEBFNyojGa2v/bph57pFNbIN7R0YKcYxQCN4rmCjtY27qt38CzxWs
+	N6XDo4+60ZTYbAz1s4A8JrqeWjVwAJ/1n80j1ldTRt82Kv4UEqNrw8hOpOsfko+S
+	1WNZ/RpIWZfVSFi7FEO1XGR1QjRqZZ75yKnoGb+4uw==
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fvy044bp6-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 07 Aug 2026 14:37:59 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 677EQKnQ003677;
+	Fri, 7 Aug 2026 14:37:58 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fsu4r05w3-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 07 Aug 2026 14:37:58 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 677Ebrkr47841670
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 7 Aug 2026 14:37:53 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 1CF1820043;
+	Fri,  7 Aug 2026 14:37:53 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C5C7A20040;
+	Fri,  7 Aug 2026 14:37:50 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.39.25.17])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri,  7 Aug 2026 14:37:50 +0000 (GMT)
+From: Athira Rajeev <atrajeev@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com
+Cc: linux-perf-users@vger.kernel.org, atrajeev@linux.ibm.com,
+        hbathini@linux.vnet.ibm.com, tejas05@linux.ibm.com,
+        venkat88@linux.ibm.com, tshah@linux.ibm.com, usha.r2@ibm.com
+Subject: [PATCH V5 0/6] powerpc/perf: Add HTM PMU driver and perf AUX support
+Date: Fri,  7 Aug 2026 20:07:28 +0530
+Message-Id: <20260807143734.1224-1-atrajeev@linux.ibm.com>
+X-Mailer: git-send-email 2.39.5 (Apple Git-154)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -122,41 +86,156 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <anXbJ2O4DWgPxCeg@willie-the-truck>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODA3MDExMiBTYWx0ZWRfX4MJ32JQrns8/
+ BmsHUsgh7WA85IG05FXXsuXje5QZejuS+dlIAWpIb3f0YToLE4rxKlJDGh3EF79WRtlNlLivUU6
+ VInL3LsL0Ufe9UiuzaNY6pbUcBTEAnSSZ0/DJXSeJr5vpaCugA3vX2BYbOPSMmDPAJ6XEvI83+X
+ /D1MVtkSwlw6mZrVVUt+KUaNjAlF+bdPhEdBXDu5CvE0sSi5QOrZnzt3QmGYnaMBXdh+/pmYY9y
+ UJ4QU1g2zTJM9zXLIP710B5SmlgQiSSWB+H/TA0yCpMShI2qixGOICmQmXN7+UAiyQ4Yzjb/3Ov
+ 74vu2vHTgA22bZI5yc0LzVfukKkrN3x1TV/Gq97tJenbxXmZQNR6n8I674zPbSJO1k1F/5zAfc0
+ yMKZ0L3GIanGIUEd8CuD27Qp1uAxEwjkbis7rJgyJzpsEAP+BKQjl1oZpqcEf6Pu1TuRAULM/0/
+ 8XHd+82Z5Ml9XPfCLIQ==
+X-Proofpoint-ORIG-GUID: 3-i9myEIUdNLOkixxB8aUptZBeSJh4TZ
+X-Proofpoint-GUID: 3-i9myEIUdNLOkixxB8aUptZBeSJh4TZ
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODA3MDExMiBTYWx0ZWRfX6HELR9eLDLGu
+ wbDm9yOR88A8xs0Sc79PQxoORbBqK0Nv2O5tryfsJkQ8oBPVHIqWjsz5a/6U64/lqUivGYWDfQI
+ KwQq0DtXm/hSMNAJjMALzcuS8kb7fck=
+X-Authority-Analysis: v=2.4 cv=WLpPmHsR c=1 sm=1 tr=0 ts=6a75edc7 cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+ a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=zQHK5bSOx5GkbYARfgoA:9
+ a=QEXdDO2ut3YA:10
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-08-07_02,2026-08-06_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 lowpriorityscore=0 adultscore=0 malwarescore=0 clxscore=1015
+ impostorscore=0 priorityscore=1501 phishscore=0 suspectscore=0 spamscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608070112
 
-On Fri, Aug 07, 2026 at 02:18:31PM +0100, Will Deacon wrote:
+Overview:
+The Hardware Trace Macro (HTM) on POWER systems provides hardware-level
+bus-trace data for a specific node/chip/core target within a logical
+partition.  It is accessed via the H_HTM hypervisor call and traces
+continuously at node, chip, or core scope independent of task scheduling.
 
-> > I was under the impression that there is a possibility of using swiotlb
-> > instead of restricted-dma-pool with pKVM.
-> 
-> Yes, that patch enables swiotlb as a possibility for protected guests
-> but with your patch we avoid shrinking the swiotlb buffer even when
-> restricted dma pools are being used and that's a waste of memory.
+This series adds a new "htm" PMU driver under arch/powerpc/perf/ that
+exposes HTM trace collection via the standard perf interface using the
+perf AUX buffer infrastructure, together with ABI and RST documentation.
 
-I also thought we switched pkvm to use CC-like swiotlb as part of the
-alignment in this rework? Mostafa ?
+Patch overview:
+Patch 1 introduces the core HTM PMU driver (htm-perf.c).  The event
+configuration encodes the trace target as a 28-bit value in
+perf_event_attr.config:
 
-> > If that is not the case, then we could change:
-> > 
-> > !cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT) &&
-> > 
-> > to
-> > 
-> > !is_realm_world() &&
-> 
-> Perhaps, or you could just pass the swiotlb= option if the defaults don't
-> work for you. Can you give more details about the slots exhaustion you're
-> seeing under CCA?
+  bits  0-3:  htm_type         (HTM_CORE=2, HTM_NEST=1, HTM_LLAT=3)
+  bits  4-11: nodeindex
+  bits 12-19: nodalchipindex
+  bits 20-27: coreindexonchip
 
-We see badness with swiotlb too, it basically doesn't work out of the
-box if you have to use it 100% for real devices. It easily runs out
-of memory.
+The PMU lifecycle maps to H_HTM_OP_CONFIGURE/DECONFIGURE at add/del time
+and H_HTM_OP_START/STOP at start/stop time.  Context-switch callbacks
+(PERF_EF_RELOAD / PERF_EF_UPDATE) are intentionally ignored because HTM
+traces the hardware scope, not individual tasks.  Tracing state is kept
+in event->pmu_private (HTM_TRACING_ACTIVE / HTM_TRACING_INACTIVE) as the
+authoritative source, with event->hw.state kept in sync as a hint for the
+perf core.
 
-Auto tuning to higher levels makes sense to me, but I'd rather the
-core code handled adjusting its size to the estimated need, not arch
-code.
+Patch 2 adds duplicate-reservation protection.  When 'perf record -a' is
+used, perf opens system-wide events on all CPUs in parallel.  Without
+driver-side tracking, concurrent opens for the same HTM target (node,
+chip, core, type) can race and issue duplicate H_HTM_OP_CONFIGURE flows.
+A global reserved-targets list is added; htm_event_init() rejects any
+open that matches an already-reserved tuple, while different targets can
+still be opened simultaneously on different CPUs.
 
-Jason
+Patch 3 adds AUX ring-buffer support so that high-volume trace data can
+be streamed into a perf AUX buffer.  The driver opts into
+PERF_PMU_CAP_AUX_NO_SG | PERF_PMU_CAP_AUX_PREFER_LARGE to request
+physically contiguous allocations, which H_HTM_OP_DUMP_DATA requires.
+A page-by-page physical-continuity scan is performed before each dump to
+detect and bound any fragmentation gaps, preventing silent memory
+corruption.  event->count is set to the number of 128-byte HTM trace
+records written on a successful dump, 1 when the AUX buffer is
+temporarily full but the hypervisor stream is intact, and 0 when the
+stream is exhausted or a hard error occurs; the perf tool uses this as
+a drain signal to decide whether another read pass is needed before
+closing the event.
+
+Patch 4 adds system memory configuration capture.  After writing trace
+data to the AUX buffer, htm_event_read() calls H_HTM_OP_DUMP_SYSMEM_CONF
+and emits the returned physical-to-logical address mapping records as
+PERF_SAMPLE_RAW data.  Keeping trace data in the AUX stream and memory
+configuration in raw samples allows each to be decoded independently in
+userspace.
+
+Patch 5 adds ABI documentation for the sysfs entries under
+/sys/bus/event_source/devices/htm/, covering the format attribute
+(config bit layout) and the events attribute group.
+
+Patch 6 extends Documentation/arch/powerpc/htm.rst with a new section
+on the perf interface: event syntax, required options, the two output
+files (htm.bin.nX.pX.cX.tX and translation.nX.pX.cX.tX), and how to pass
+them to htmdecode for trace decoding.
+
+Usage example:
+Collect HTM trace data from two simultaneous chip targets:
+
+  # perf record -m,256                                          \
+      -e htm/nodalchipindex=2,nodeindex=0,htm_type=1,cpu=8/    \
+      -e htm/nodalchipindex=1,nodeindex=0,htm_type=1,cpu=9/    \
+      -a -- sleep 10
+
+  # perf report
+
+Output files written by perf report:
+
+  htm.bin.n0.p2.c0.t1       raw HTM bus-trace, chip 2
+  htm.bin.n0.p1.c0.t1       raw HTM bus-trace, chip 1
+  translation.n0.p2.c0.t1   memory config records, chip 2
+  translation.n0.p1.c0.t1   memory config records, chip 1
+
+The htm.bin.* files can then be decoded with htmdecoder to produce
+trace output.
+
+Testing:
+Tested on POWER11 with two simultaneous HTM targets.  Both htm.bin.*
+and translation.* files are produced correctly.
+
+  # perf record -C 9 -m,256 \
+      -e htm/nodalchipindex=2,nodeindex=0,htm_type=1/ -a sleep 3
+  [ perf record: Woken up 1 times to write data ]
+  [ perf record: Captured and wrote 256.277 MB perf.data ]
+
+
+  # perf record -m,512 \
+  -e htm/htm_type=3,nodalchipindex=1,nodeindex=0,coreindexonchip=6,cpu=8/ \
+  -e htm/htm_nest,nodalchipindex=1,nodeindex=0,cpu=16/ -a sleep 1
+  [ perf record: Woken up 1 times to write data ]
+  [ perf record: Captured and wrote 514.095 MB perf.data ]
+
+Athira Rajeev (6):
+  powerpc/perf: Add HTM PMU driver to expose Hardware Trace Macro data
+  powerpc/perf: Reject duplicate HTM target reservations
+  powerpc/perf: Add AUX buffer management to capture HTM trace data
+  powerpc/perf: Capture the HTM memory configuration as part of perf
+    data
+  docs: ABI: sysfs-bus-event_source-devices-htm: Document sysfs event
+    format entries for htm pmu
+  powerpc/perf/htm: Add documentation for Hardware Trace Macro PMU
+
+ .../sysfs-bus-event_source-devices-htm        |   36 +
+ Documentation/arch/powerpc/htm.rst            |  158 ++-
+ arch/powerpc/perf/Makefile                    |    2 +-
+ arch/powerpc/perf/htm-perf.c                  | 1122 +++++++++++++++++
+ 4 files changed, 1314 insertions(+), 4 deletions(-)
+ create mode 100644 Documentation/ABI/testing/sysfs-bus-event_source-devices-htm
+ create mode 100644 arch/powerpc/perf/htm-perf.c
+
+-- 
+2.53.0
+
 
