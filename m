@@ -1,81 +1,71 @@
-Return-Path: <linuxppc-dev+bounces-25636-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25637-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B62FC55174
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Aug 2026 05:27:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F1A18C55174
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Aug 2026 05:28:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hH8f44Gdqz2xd2;
-	Sat, 08 Aug 2026 15:27:08 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1032"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786166828;
-	cv=none; b=PU4IbPqgScn+VFRvZaHUo7vzawvz5yLIAFBJKRulwJiMO4h8y5aJOb95iQpj+1SOnTBrzFI34FPeP7AaYPX9h+yBxgqG0/d7hD1+Z/Uwv5T3mZIu54UqXlJvGl+br11yhfK6X1sEYqifJkheZBc5f+vABqr0LVGRJy+OktjyFDR8MjmCbYGCNDpvYGMj5+lNNJ6ezEcqc4qvWsQQtFX6PHmvURDLoxz/JWiZeQiZjQ3Cr7ASi79RxsjBSgMS9D59+0ixOupXE5UEne9FzmDCJALW2PTjbD7kFbSd8ChXaVNYu34gkkPKpuJ7NSv6L4EqGXP/D0LYqPMXlE6xVtwlTg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hH8gs2FF2z2xd2;
+	Sat, 08 Aug 2026 15:28:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786166921;
+	cv=none; b=L9H1xbBJbew49Ese6YFrhn47TvcpVL6HdbHtXGOlrKLhunOH62aYn5Y3pzPaMNfD/JWXeOXZABdZZ3kNxtuzOwE+Bz/ul+P8TD8KiahBODg1+98BY96tVvgVHIwSsUrcdXISBKu1GAe0jtRAhxLh/r0OwNkR50ZwKVmGkytNF6iC7nSD6EoDSoJhB1J/Zdb3osvzcHuM2Aj+hRIWGdsTC8JUzDvjNzqPhM9jtHV925cmds+XR6JA/ZSooVF0GfVIFTISs/lHw0FrVnsbIv+6mXbdzge/ytJrXStQhN2FxmfzK3BRrAe94Nf/CroK7A0u4Oq9R/+F05k9RAaE9FLMDQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786166828; c=relaxed/relaxed;
-	bh=Ot261G4LpTjM91viBCbOoO5lpndaR46o1VaOefSI5t8=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=EhH9Rm2MpN/gc7KypwX3aILUmEKBiEGvWn8m0x8xz3oAghkr0rup0PR8KzAd/OaY/AClhlNAODxIXE1L9x6iPCNIp2ZRWVjx9Qq0UlsIxdxZN4VLCXJWowYO7bLJi65EoaGJo/Xpi4p+vuggorh+qBh6lfNscNXsMWY2lRNplisLnY1Vw+0TmYTKsRb11/40LEIcV89NKaJWMqb+BJlbm5LeKazJcUTIepduVVkk0MNrToh3QK6/9ac+bPE9HzFZrQVhYQNw5V4duXUkCm8FQzIFHvIrdGB3HKHF+/XYcps8Ny+Sw+3IH8uIj3pW5Ls3nQid3F3XFjcK6msuMwvoFw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=TnJX0Edy; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1032; helo=mail-pj1-x1032.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1786166921; c=relaxed/relaxed;
+	bh=ZrY9712h20Q1QlsEboS5JoGDrpQrLgJdzOWRSGLLgI4=;
+	h=Message-ID:Date:MIME-Version:To:Cc:From:Subject:Content-Type; b=D68ZnOIoaWvYVVc00yRPSN4W1pJwOqDr6yGuNCN+ov59g9NqnDGFgDrYW4wOfcDbfrsOpKsi+dODqa3dRUZ8xWNXFuXDQtarHzO9KmWBqULGakEic2j1LKI9ytdrvLpjbIvzGeXycWRoWqSEw/lVuGeoAqOwjeyTgVQ9H6W9dK7auBQ4HfBcyH14TSMSrtpRQ/iXtV4hw6FT/NpTzktnjDMZtaLEIgpIspqt5NKLYUDDCKDPw1UwXnU+1KRSxgstP3TKCUUTTQaUsX25ryaoGU3oXHwGzSDIpEfjPC/Ub0V0Q7UBW0WAOWVLGr/p+4Bv8AGDt0EbSvR1L15WD2yqkw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DrRXwIKd; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=TnJX0Edy;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DrRXwIKd;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1032; helo=mail-pj1-x1032.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x1032.google.com (mail-pj1-x1032.google.com [IPv6:2607:f8b0:4864:20::1032])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hH8f25fy4z2xLf
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 08 Aug 2026 15:27:05 +1000 (AEST)
-Received: by mail-pj1-x1032.google.com with SMTP id 98e67ed59e1d1-38e347638adso236140a91.0
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Aug 2026 22:27:05 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1786166818; x=1786771618; darn=lists.ozlabs.org;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=Ot261G4LpTjM91viBCbOoO5lpndaR46o1VaOefSI5t8=;
-        b=TnJX0EdyxWDJ6fQvsE8Ok9XErwQMYEF6HgUaXKjRKU62KxPgHFmjfmnj2XrtSnOwyd
-         W8bqB/Fqj5gfQ9QvzsJjpKXWipo9nt6G/t1rFL5j/UHpR2N3FzIQE1i/Oa0TXkQPwNaE
-         i34cSEIFUPTAdpZv98/wvCVuVeG//G/dvBMAnfl40rjMeRw15YbzQ4b85DE9eb4hkQCt
-         jPoFaGxt6hHxEMjx2v2LpejXVc7V6KXgCxbhvlqnBOkf6kX+aPQmIgiDr+FAKEkBDOgx
-         A7WRpbY05kjEU2eahz8xkotGIhdzPbAvv2hx4k5BFwKOAncUITRrIzlKlP/OgIPG3ywf
-         JxcA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786166818; x=1786771618;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=Ot261G4LpTjM91viBCbOoO5lpndaR46o1VaOefSI5t8=;
-        b=PJRhNgzhaq4LPmBniEl0V3oHlNilZ/4yXBps98qSzOIjoNTdrmeGTyS6ZwL/VKK6R6
-         D+VRnwP5u70VtWWwdoxPOAfQ48W4UxQiOvHL9YMNKms3HUOXVs5LiiUViO5Fi8sbraa4
-         NRTIInFYE/N9czrMsAQ6fnj5mIUMe58phM+zpINCNoBy5SZ2yqVcdFvBQVso0QEiqxGT
-         piHJR+PDPBdTEWdC1fbOEPVa5bLDb+aXAQIFhSmqDqAQw27qBe2kIDMHMvFh1qaSEhtY
-         RJSeDE/mgg8Q/TQSjQQmHt62Kz6X+6YZa3fYNQLCcXl2SMUgMS+euefhfs0xhFfj5jp6
-         J7kw==
-X-Gm-Message-State: AOJu0YwMl0/AuBgp7TWP+/J12nhuL7DBuBFwax6iSmkKBuccfPlyHpBQ
-	wjtXC0Sh/gz3orfta1n2w9xwWjy1hMu1gjcpCmFssfXyvdRWUtVBXLCE
-X-Gm-Gg: AR+sD10Ow3qYkVfisUV21yS/6Q8UA3nCAZmUeUleHV7vVnpaCt0zniwHVwhjHEpm9Df
-	tK/I2i78Ia0D0eVP5pttbHNPXL03OyALJbGAf//52aWv0Ewkhqil5xlvq7WC+OYGviG0L2ZqOfU
-	56buE1iJQqV4eWWj7/KSbUoYwEAAMTt5zyhOl4wd+aGAkuaeAg5jMxcYhyzHwo3g3XOLubv4/F+
-	+cPIpNZ47e0AwdYzIimMfkNs/ZZEKVHu3Tp4G39UQjPHU81oNBuJsCslHfbz+XTbzYIZLC0jcQe
-	4IMq6RcN3zZBz9Zf6LpQLKZ6htXvaLhFNmO09ii2CN/j6n4Ug31/eQZ6tmDkdj71/mXwiccTRlz
-	3qi+A2G02OtN377yJlVf/tk8P31Vzk1SagRFCLzd5G451Ia46s1oYWi1tm8pBI090rSvQf5ySnC
-	ty0vUiHAMNpPp3pXLSTWgTzD1R+JZWCh5+yyDZuDqkgYasxSinJQsTLwADu/oM1ZlW2UckMw==
-X-Received: by 2002:a17:90b:4a0f:b0:38e:9045:bac0 with SMTP id 98e67ed59e1d1-392823340e5mr5196878a91.5.1786166818121;
-        Fri, 07 Aug 2026 22:26:58 -0700 (PDT)
-Received: from pve-server ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-315be8d60f4sm14797092eec.13.2026.08.07.22.26.54
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 07 Aug 2026 22:26:56 -0700 (PDT)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: Timothy Pearson <tpearson@raptorengineering.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Shivaprasad G Bhat <sbhat@linux.ibm.com>, Gaurav Batra <gbatra@linux.ibm.com>
-Subject: Re: [BUG] VFIO on POWER9 / QEMU fails to allocate 32-bit DMA
-In-Reply-To: <980372793.1709.1786165222084.JavaMail.zimbra@raptorengineeringinc.com>
-Date: Sat, 08 Aug 2026 10:39:24 +0530
-Message-ID: <wlu1jj0b.ritesh.list@gmail.com>
-References: <334689093.41938.1785796754275.JavaMail.zimbra@raptorengineeringinc.com> <o6fflsxx.ritesh.list@gmail.com> <980372793.1709.1786165222084.JavaMail.zimbra@raptorengineeringinc.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hH8gr3cKpz2xLf
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 08 Aug 2026 15:28:40 +1000 (AEST)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 678489Jc3326201;
+	Sat, 8 Aug 2026 05:28:28 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=pp1; bh=ZrY9712h20Q1QlsEboS5JoGDrpQr
+	LgJdzOWRSGLLgI4=; b=DrRXwIKdhiWcWeCup7Cwj89Y+dqDEPITT9CvkeGaUkk/
+	ulrtz96cHTOLdope1llYCFegYGuYOxcsprdYgex04h2Mr2akU+4aRaVS51YtWlDB
+	JQZC9U57byHs4VlZ+iHXwwwO2ChfqRxpNP8ac3KZ5kgiBd0B89iSVu7QWq5lXJdw
+	Jb7kyAfWlligmrdz1MJ2HzdTQAi6Vjg/wDcp/C8a7sVcqaJqlGzXfrALJE8C80sK
+	+n7HjidOEwM3iBgbnyQmEO0mtDe3bEMqGDwFyRnVrl44roHig+LAXSlQQJMTqmTL
+	pKGoqD7R8d2vhQv32n9eR3qv834MIX+d4yT+C0a2fg==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fwvp2g7ex-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sat, 08 Aug 2026 05:28:27 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6785C0no001449;
+	Sat, 8 Aug 2026 05:28:27 GMT
+Received: from smtprelay05.dal12v.mail.ibm.com ([172.16.1.7])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4fsv4kjnku-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sat, 08 Aug 2026 05:28:27 +0000 (GMT)
+Received: from smtpav04.wdc07v.mail.ibm.com (smtpav04.wdc07v.mail.ibm.com [10.39.53.231])
+	by smtprelay05.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6785SP5924445566
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Sat, 8 Aug 2026 05:28:26 GMT
+Received: from smtpav04.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 9E9D65805F;
+	Sat,  8 Aug 2026 05:28:25 +0000 (GMT)
+Received: from smtpav04.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 966C45805E;
+	Sat,  8 Aug 2026 05:28:22 +0000 (GMT)
+Received: from [9.43.41.45] (unknown [9.43.41.45])
+	by smtpav04.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Sat,  8 Aug 2026 05:28:22 +0000 (GMT)
+Message-ID: <be9b4950-898f-4f17-825e-415b30e0d892@linux.ibm.com>
+Date: Sat, 8 Aug 2026 10:58:20 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,66 +78,98 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Content-Language: en-US
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: christophe.leroy@csgroup.eu, gcwilson@linux.ibm.com, haren@linux.ibm.com,
+        linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, nayna@linux.ibm.com
+From: Madhavan Srinivasan <maddy@linux.ibm.com>
+Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-7.2-4 tag
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Authority-Analysis: v=2.4 cv=AMtp2X5w c=1 sm=1 tr=0 ts=6a76be7b cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+ a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VwQbUJbxAAAA:8
+ a=qrUzY55morn6TlZF8AkA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: 0wo_vgUFEDjQ0vp_cbYfXwdb3xysAXrd
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODA4MDAzNyBTYWx0ZWRfX1aOXZL+D3vdX
+ VuauDgDT6tdLM7MOWO/suhP5dUsibThpFAnZbevsCO6b02d4wk3Jm3BAHSumlews4FOwk9uydqj
+ C8Lt5PR4eBIF41pWFRy8LTmXKbdxR5PTu+FkSfMLypte0Aff0SJzahPdA1MIfLJkDN0c5AWTLZQ
+ MJxUUiSPpr5w7SpHfXtQqD0VLFaELDzXK9OxBmv93v6XAMaEWGeu1jW2EksvC75TOLws+8xDyvD
+ GB6flNa+FoWDGIv0yn1ET2UnggA3OpzzIHUrmCPVzvAnyeweHS8zD0JLoGKZ8CdweE9ek28uZc3
+ bAnpnt+ThljsTRv5p9j/V44T59ougi3HJbzCefIZ+eoExhlZWKQs8RtM5Po4fFlfRVLM2G8OV05
+ rJ5uHOrubxBhWdt4ixuyVOnhnRrwFZGt6unSqIFR+K20YefShFE6GrGa22a79cIZneOvdMr+rvP
+ UbpQ7tDxg46dV8hn2jg==
+X-Proofpoint-ORIG-GUID: 0wo_vgUFEDjQ0vp_cbYfXwdb3xysAXrd
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODA4MDAzNyBTYWx0ZWRfX7T0qj0Wtv34x
+ OM4QNSxHyPqvHd+oUnj/oFyuOYO+4En2ZGwH2ypuVhQaTmMerhwKnajGGYjXKhtH1SV++2hRUTu
+ qO6TKH0rANrGjzXMHa+uI7PEMk7nHdQ=
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-08-08_02,2026-08-07_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 adultscore=0 lowpriorityscore=0 clxscore=1015
+ priorityscore=1501 impostorscore=0 phishscore=0 spamscore=0 bulkscore=0
+ malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
+ definitions=main-2608080037
 
-Timothy Pearson <tpearson@raptorengineering.com> writes:
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
 
-> ----- Original Message -----
->> From: "Ritesh Harjani" <ritesh.list@gmail.com>
->> To: "Timothy Pearson" <tpearson@raptorengineering.com>, "linuxppc-dev" <linuxppc-dev@lists.ozlabs.org>
->> Cc: "Shivaprasad G Bhat" <sbhat@linux.ibm.com>, "Gaurav Batra" <gbatra@linux.ibm.com>
->> Sent: Thursday, August 6, 2026 12:27:22 AM
->> Subject: Re: [BUG] VFIO on POWER9 / QEMU fails to allocate 32-bit DMA
->
->> Hi Timothy,
->> 
->> Timothy Pearson <tpearson@raptorengineering.com> writes:
->> 
->>> On Linux 6.18, and potentially earlier Linux versions, attempting to pass
->>> through any PCI device via VFIO that requires 32-bit DMA results in the
->>> following error in the guest VM:
->> 
->> Can you confirm if you see the same issue on upstream kernel also or is
->> it only till v6.18 kernel?
->
-> I'll need to check, but I don't see why it would be limited to 6.18.  This used to work, but it's fairly obvious IBM hasn't been testing or fixing any of the VFIO or nested virtualization code for years now, especially on PowerNV.
->
->>>
->>> [   11.705413] cx23885 0000:00:02.0: Warning: IOMMU offset too big for device
->>> mask
->>> [   11.709245] cx23885 0000:00:02.0: mask: 0xffffffff, table offset:
->>> 0x800000000000000
->>>
->>> The same devices work correctly on the host kernel.  It appears that somehow
->>> 32-bit DMA is not available within a pSeries guest on a PowerNV host.
->> 
->> By any chance did you do kexec in the guest kernel? Is this issue only
->> hitting with kexec or even with normal boot up of guest kernel is also
->> showing up the same issue?
->
-> Yes, we kexec().  This works on every other architecture, not sure why kexec() would break it?
->
-> In any case, from where I sit at this point it's IBM's responsibility as the silicon vendor to ensure basic functionality works -- I don't see these issues on amd64 or arm64, and frankly on this end we're tired of the constant lack of QA from IBM causing every single kernel upgrade to be a game of Russian Roulette.  IBM should be able to spin up a test machine easily enough to reproduce, this isn't complex -- any card that needs 32-bit DMA is affected including inexpensive ASmedia USB 3 controllers.  Pass it through to QEMU via VFIO and watch it fail, it happens every time.
->
+Hi Linus,
 
-I was trying to help by asking for basic help from you. If you report a
-problem upstream than we do expect such basic help e.g. is it only seen
-with kexec, logs etc, so that we can all save some time here.
+Please pull some more powerpc fixes for 7.2:
 
->> Could you please share the dmesg logs for both guest and host kernel?
->> That might give some more data about this issue.
->
-> I don't have access to the setup at this point since it was already replaced with something else to restore functionality.
+The following changes since commit 5732bd17feb9ddf843591c4d038eb6de1f8daf4c:
 
-I think this patch [1] might have fixed the issue that you reported and
-hence wanted to check if you only see the issue with kexec or also with
-reboots? And if you could have given it a try.
+   MAINTAINERS: Demote myself to reviewer (2026-07-29 17:53:21 +0530)
 
-[1]: https://lore.kernel.org/all/20260803224029.60538-1-gbatra@linux.ibm.com/
+are available in the git repository at:
 
-But anyways - I have already asked others on that thread (who are expert
-of this area) to confirm if this patch could also fix the error you
-reported with 32-bit DMA devices.
+https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git 
+tags/powerpc-7.2-4
 
--ritesh
+for you to fetch changes up to fb442a6673ff1046bf67754957d95880fdb394b5:
 
+   powerpc/pseries: lparcfg - fix kbuf[] underflow (2026-08-08 10:34:28 
++0530)
+
+- ------------------------------------------------------------------
+powerpc fixes for 7.2 #4
+
+  - Couple of fixes for mem leak and underflow case
+
+Thanks to: George Wilson, R Nageswara Sastry
+
+- ------------------------------------------------------------------
+George Wilson (3):
+       powerpc/pseries: papr-phy-attest - validate cmd.length, plug mem leak
+       powerpc/pseries: pci - logic bug
+       powerpc/pseries: lparcfg - fix kbuf[] underflow
+
+
+  arch/powerpc/platforms/pseries/lparcfg.c         |  2 +-
+  arch/powerpc/platforms/pseries/papr-phy-attest.c | 12 +++++++++++-
+  arch/powerpc/platforms/pseries/pci.c             |  2 +-
+  3 files changed, 13 insertions(+), 3 deletions(-)
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEEqX2DNAOgU8sBX3pRpnEsdPSHZJQFAmp2vdUACgkQpnEsdPSH
+ZJSZKQ//YXI9RiYMhfHTyJyd1vSEIuGzZoRMrb3SPw61cbwS4lOdjnpEGSDAHi95
+HcNh68gZNavxCG1xnyLayKcXuctSUm5AATbOmSQ6SoxvH9xzBPxVe/N+jXh+TJBQ
+TBl+h4OtOPq36NjSzQytb2MSdq+nctBoP+ryGZA6aLB9uDtUbXREB6Vyp9CRCAUa
+cQp4b63foop2N1oYwAjBoAzS5/Bl7nnMoPEAOsNKWErz+o2wZFLrGGGUKaybytH/
+wh4rtqsphC+NjFtynZYtJ/DwMkdzchawUpaNbBsW6B+zUbKmhYJ02OYcPsKfSKVA
+aLpQ07KJv+e9+KHnHiim7xSd5ST3tWwFR9yAEeXuuKw75vInjY09GKmrONVU7iQH
+Z7ToaHW5PtEl5qUcb1l+DsymRF3iip8+mFPeAka5+sgLtGE2Ix+hNpv8QIDeTKx8
+cI7S+6p1aEEMhscmEmCnWGmqAqzYJp7ZwXog3OXAdFGPNiAcbjwW7khvK6i3UFUV
+0ZbvmYyZWDJ0dVfXyvTe7k5d8CVELpGswC3a+UL4RD5CFEFjJQw/hYN6muDfiAgm
+R8yoP6IXZC2P3lA+/WcZ4ZiaZ1BDorl0+BYi2hH6b7hlUHskv93S+QHibSBfp2jO
+sQw+rAIsdf03Ntay1ZpRq6/iAW/JOF5v5Nw/PFNz1HB6Pfo9kcs=
+=mG9t
+-----END PGP SIGNATURE-----
 
