@@ -1,88 +1,140 @@
-Return-Path: <linuxppc-dev+bounces-25632-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25633-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7D931C5AC82
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Aug 2026 03:19:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A6041C5AC80
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Aug 2026 03:27:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hH5pY0BMsz303F;
-	Sat, 08 Aug 2026 13:19:17 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c201::3" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786159156;
-	cv=pass; b=CcI31XUfXMKAP3Ddtkigc67o33dGX3SgoN2vvRBkBpDDG8trD3ZNglLp90jZaN7MfuvR8RqkrjuMpjsy9pTVjezsRL0t76uTSKP9EYPicLBvmP6qERcohbO/5JOb1oxpaxUekw4XIlyn80XkqlXLDLEN6nIG2QP3/jcz+CqEqVZ6PKwFgZ1AwSPfWXiC8XQwZOP0IZu/uwpH7EILQqGwsxB0dEglSj7eVEQJJsK/6VmS0Z5uQ5VNqMZiQOkQVwcnt8wt+P20h0f/6ZS3cnWYGPrA11UMpLQovkCUy6D6FAb8ViUlbkG4Yib4s4EkpgCWi3VLZSkLYp+Wnn+YSY1kAw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hH5zb2MQfz2yjx;
+	Sat, 08 Aug 2026 13:27:07 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c200::3" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786159627;
+	cv=pass; b=V/X6p4uaovxFmxWTUjljLaDdqaWCCT7d/x2Zh20T0MxXhSS04iW/NZzhc0domefZFz3dKnqTqk+Pn9taodDSXyTRYoht7eZlHxf6L9ocP9erZEiJGdXsVli1g+XuMfrQePgF8o3SD7o8uiAb9ExnzNQ0dJxgUEhiT0/gKkxiSSMduT+K8Rb8fq/1hcqArs0kBUhAFaKvpKevTCmwdeOLhL0TsSsJyZP5CP6aXbCVOD+PTN++hHq2zJnMYf0pyg/WGOJxVaIsQOj/9t50NnR95PF3AKHENErCEHQxlo6tA0Oh93uqKa/Fd/Hdl8vC88EXTPAQEn/G1JLdNhTb8oGssg==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786159156; c=relaxed/relaxed;
-	bh=drl76DskGKMqnwdzjFSesblvpA8GHEV5bCjEYjrWQVQ=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=nhERGjj1A9nv+mT9aTz2A6DVzJqGIISuQqEUhXdlJSslsWOwUcsYcyNsh19xa1cePXJzQF3SXMKhwMqXuEAa8Y80unq88LR/AVhoChzfpFAwgkKEFtOIH68gweiTywOLfzy4sCVQu3HaoCmxRYlC7p8UsLZYQoJa2jyr9gfpZpj7jzrwWumxgkJITWzZou1JjVCWpxIm44kH+QduAbC1T4X1XCS95ZhvcRwjcm5YQ41QXAtWP6yihQ62iEK+H5QjJPBtUCUsmdOvrEyAG5VlFYNrlxmOJH9Z8QgcQqbZLh5p4WTVo71lp3SFFP6B8qRU+46DizyRTHNRy2ftuQqCQg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=aFppd3cQ; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c201::3; helo=as8pr04cu009.outbound.protection.outlook.com; envelope-from=wei.fang@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
+	t=1786159627; c=relaxed/relaxed;
+	bh=q7cm0uxiV1KbYZJv4/+r7TCYRaHBQQKD1g2gWRairmA=;
+	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=GC4E2R3lJ53Zx4nmEMjtquTq0ptiT8qvbbP5SUm343hz+bVB2Drt+skbmXz/JqOiHUabNBilpUgFEU6MceCkReuUNmXBNvCB0UAH+P9SwPXTxOWMB5Fd+08oPPwk9nPOMsZ/FpNeRI1fdoHLwRImTaEhnDc6h2FFNEGCjBY68pNrZrYeHNBIoAqHvksJHALF0gfrztYJtZ059TUY0TyoKZQzPtvWr6PmxkZ9n2I7LX+pzegDR6ZBCH9WvDy1SJwsxg7zCcuZnkYEVRyMb650/LStp0+FGQpf+T7PjpjoUDX46wpKiSBMcdb/RcvADkRd0woGMmNXr7mnF1prEJN8Vw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=TjjcNXWG; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c200::3; helo=du2pr03cu002.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=aFppd3cQ;
+	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=TjjcNXWG;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:c201::3; helo=as8pr04cu009.outbound.protection.outlook.com; envelope-from=wei.fang@oss.nxp.com; receiver=lists.ozlabs.org)
-Received: from AS8PR04CU009.outbound.protection.outlook.com (mail-westeuropeazlp170110003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c201::3])
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c200::3; helo=du2pr03cu002.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org)
+Received: from DU2PR03CU002.outbound.protection.outlook.com (mail-northeuropeazlp170110003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c200::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hH5pW16wXz300B
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 08 Aug 2026 13:19:15 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hH5zX5kWnz2xd2
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 08 Aug 2026 13:27:04 +1000 (AEST)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=Qnz+gF4AVyINe5HdDbZ8dbhP8x2TjuDGEMfuN+MYExZGHrjyWhprPM4ZuzjY9KwoLzTgKmRdGTEW5aGfgEqrl+9v0KqXZTTpbjaXGehr4gW78+XqLUQvoaZIe7OaXubGU4AJc7TAZLIXjeBjUPodF7zppC9IKGVbDhjA/Lefqi9YS8b8ydy8jXXkK1oUjtO+zp8CTlCo6smdliNKF6wPHUWPP7XlqVtSKRP77h8dpztvAxA9vyDP2hn02+3JXekZsrZ6CtEVrQ5t2VJCWebtZUPFygYp3IlpN5kHp+WRMyKrOmYP9MP2QBtpiYI82k9X1ETTlNieIpvhq9t2eYg07g==
+ b=pgjlQATU6d03TS3yVmBP/KPnDP+Ax9SmoRwdPOb2z6JPRw1BlcsFfS0gEH6WoG1gYncLvGnq36YsH4JlBbf2twVjiE1e2uEnDzlwFgq6Y2n0ZxHevTile+Jx12Xa0vBAuALYVSjVEOsZGqrK2TUZG7/imdfxXCVqbS179PkpyvjQIX3nLmG0tURht09+vQDK/tf9ueC17iC6UQiIKkY4EK5M/zggSO2XBRuGL/Joqrqn/0ZSSwSmwFXfKQDb4iAMT/LCdBHFxbAiaY9P5Kma4brTmTR0aD7AMKpPt8px2Z8SsTtUCtU9mloZ3PdSYgP4yDA43fqx+FUhpsgQjMZgLg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=drl76DskGKMqnwdzjFSesblvpA8GHEV5bCjEYjrWQVQ=;
- b=NIJhw0h6xxCsQOIqDcIK2AsJNXhiBM3kxrH1iz7ix6IPT/IMV4MZUqR22tvnIdspm7w6fHh/iFnR6wx7albgPNgENtlUaN8lQYl8LHh1+0eisrOsugc75A4I3yhWvMMpSszFUr6+27omyRbywX4gZtjh/lFj0G+ZJ5b9/wo2sxQ3OQcQdsN9NfrfzNVRiV59Uf8udM8NAbV5g5h+RoD08JKCMfTYdSnmgAojQmC7DXTf1+Cqf7TVBX4yW0sIGzAKv5XKEYHXVS1/dtjnTwK57IRif7UZ1otFpnhGFJ2qH3/M02fz5lxWQ2dEmKQoKQ6aw76a7S8L0GBuRBPxMB+WmQ==
+ bh=q7cm0uxiV1KbYZJv4/+r7TCYRaHBQQKD1g2gWRairmA=;
+ b=B9I800WULgYKDLRFebR42kfDNoUQIIEc0Z1why9C3pAhTNf70bCMaoo23dI3Zf269EDVz8kBrjXuXz5ByKIEeyQTr7iODx4N/iSOIL7tawn81f0Ess/RflUoKWAp6vCjdUlECUOQVWisTTFDWuH374IX5NYsh19fx0v1YHytF1LqZJdc34L0qGx0tEfWbOpuwx/3WASmEOnAAQwHSuVRAXFqakIYxaBnc1iacMLO5u4/+VxS+VcnoaGSTMQUlTYBvpAH6N6zqhUSClq9OmO5GUrK2Kou5IWYpsdyLSvK9ZtM+hwdLDaExyLWAJ4U7m5eONcjyQ6MFvtT158sfQyFUA==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
- dkim=pass header.d=oss.nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
- s=selector1-NXP1-onmicrosoft-com;
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=drl76DskGKMqnwdzjFSesblvpA8GHEV5bCjEYjrWQVQ=;
- b=aFppd3cQu5B8HR/8E6OkjiwnbgFJiHW02BkGVXFVWeZVxNlUt/H4/A6WFLn6zvnzbbWCdMu1RsxKAx8Wtkm97pExJx5ViptAarUtcgL+D0VlKr4daK3H9++Uu7FZ+lvpWJDkuwviMcswxAnyLDh2wdIPW5NTGxlQaLmHq2kBNa/1eCYlbMb6t4ADNmRuv1cKqsVYkADMVw5plXJKgPFKB7aduqNWgRhnE657o6y8t2MmY1Q5/oYmAFi6xiW5+94mIEFnJeHGwGDydHMo+HczZODI3U4lGKCTo1bzPm8fpK0K6qErpLsKz6qm5zTaBznjj+aI+11eMNW81S/kyHsDgw==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=oss.nxp.com;
-Received: from VE1PR04MB7216.eurprd04.prod.outlook.com (2603:10a6:800:1b0::22)
- by DU2PR04MB8936.eurprd04.prod.outlook.com (2603:10a6:10:2e3::7) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.292.24; Sat, 8 Aug
- 2026 03:18:55 +0000
-Received: from VE1PR04MB7216.eurprd04.prod.outlook.com
- ([fe80::a9a5:cf83:dbe8:1f74]) by VE1PR04MB7216.eurprd04.prod.outlook.com
- ([fe80::a9a5:cf83:dbe8:1f74%3]) with mapi id 15.21.0292.022; Sat, 8 Aug 2026
- 03:18:55 +0000
-From: wei.fang@oss.nxp.com
-To: xiaoning.wang@nxp.com,
-	andrew@lunn.ch,
-	olteanv@gmail.com,
-	andrew+netdev@lunn.ch,
-	davem@davemloft.net,
-	edumazet@google.com,
-	kuba@kernel.org,
-	pabeni@redhat.com,
-	horms@kernel.org,
-	richardcochran@gmail.com
-Cc: wei.fang@nxp.com,
-	imx@lists.linux.dev,
-	netdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org
-Subject: [PATCH v2 net-next 7/7] net: dsa: netc: add PTP one-step timestamping support
-Date: Sat,  8 Aug 2026 11:21:46 +0800
-Message-Id: <20260808032146.2335723-9-wei.fang@oss.nxp.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20260808032146.2335723-1-wei.fang@oss.nxp.com>
+ bh=q7cm0uxiV1KbYZJv4/+r7TCYRaHBQQKD1g2gWRairmA=;
+ b=TjjcNXWGUxm2EsGEJQmbe1EFvy8x5eXOoy2OW55IA745e3HxoGrNrzbK/o7ewIjDTfoLGPtMNziu81SG6rWp/5+j/fM3Yx3J0PJBYEZh16HFiwcxwJxvgXUKCLc3E1r8y7H8R+rKF8mvShdY7/6pdyvdsoXe8f9m7JSiZ5WiUs2NjKv08ql+HFKSoFaeBteXPJm5qfUrr0zAGLavVNFLuuProGfAwnT3XahL32JYVIZNhazblNKChsfw71s7LarqNHfXu3iALzcQ4kX00Om5dvIa/Pc9DAr/A2NIHio2Iki6mytA7OTrk/N+Tg/L6wyz2MT/gCH2DxEBMplfCWwAvQ==
+Received: from AMBPR04MB11742.eurprd04.prod.outlook.com
+ (2603:10a6:20b:6f6::16) by MRWPR04MB12356.eurprd04.prod.outlook.com
+ (2603:10a6:501:87::5) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.292.23; Sat, 8 Aug
+ 2026 03:26:38 +0000
+Received: from AMBPR04MB11742.eurprd04.prod.outlook.com
+ ([fe80::6e39:a864:eeff:1c7d]) by AMBPR04MB11742.eurprd04.prod.outlook.com
+ ([fe80::6e39:a864:eeff:1c7d%5]) with mapi id 15.21.0292.019; Sat, 8 Aug 2026
+ 03:26:38 +0000
+From: Wei Fang <wei.fang@nxp.com>
+To: "Wei Fang (OSS)" <wei.fang@oss.nxp.com>, Clark Wang
+	<xiaoning.wang@nxp.com>, "andrew@lunn.ch" <andrew@lunn.ch>,
+	"olteanv@gmail.com" <olteanv@gmail.com>, "andrew+netdev@lunn.ch"
+	<andrew+netdev@lunn.ch>, "davem@davemloft.net" <davem@davemloft.net>,
+	"edumazet@google.com" <edumazet@google.com>, "kuba@kernel.org"
+	<kuba@kernel.org>, "pabeni@redhat.com" <pabeni@redhat.com>,
+	"horms@kernel.org" <horms@kernel.org>, "richardcochran@gmail.com"
+	<richardcochran@gmail.com>
+CC: "imx@lists.linux.dev" <imx@lists.linux.dev>, "netdev@vger.kernel.org"
+	<netdev@vger.kernel.org>, "linux-kernel@vger.kernel.org"
+	<linux-kernel@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
+	<linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org"
+	<linux-arm-kernel@lists.infradead.org>
+Subject: RE: [PATCH] net: dsa: netc: add PTP one-step timestamping support
+Thread-Topic: [PATCH] net: dsa: netc: add PTP one-step timestamping support
+Thread-Index: AQHdJuSOkA3d9+zFaU6wv3uApZB0I7aTfGVg
+Date: Sat, 8 Aug 2026 03:26:38 +0000
+Message-ID:
+ <AMBPR04MB1174296F4414278D74DDF493788D02@AMBPR04MB11742.eurprd04.prod.outlook.com>
 References: <20260808032146.2335723-1-wei.fang@oss.nxp.com>
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: SI2PR02CA0007.apcprd02.prod.outlook.com
- (2603:1096:4:194::23) To VE1PR04MB7216.eurprd04.prod.outlook.com
- (2603:10a6:800:1b0::22)
+ <20260808032146.2335723-2-wei.fang@oss.nxp.com>
+In-Reply-To: <20260808032146.2335723-2-wei.fang@oss.nxp.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nxp.com;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: AMBPR04MB11742:EE_|MRWPR04MB12356:EE_
+x-ms-office365-filtering-correlation-id: 30ac7464-224f-4ba6-09ad-08def4fcdb92
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam:
+ BCL:0;ARA:13230040|19092799006|366016|1800799024|23010399003|376014|7416014|56012099006|5023799004|11063799006|10067099003|6133799003|4143699003|3023799007|18002099003|22082099003|38070700021|921020;
+x-microsoft-antispam-message-info:
+ 9jpu18JF6nWCe+RiP8WVJbdVA83CJreya4YoKY/XYgjW+YKdX3P28inVQbXXJRGuzh5Pkg8L72cXIQwa1AnHYPvb2fRkQDMMqEEOroXjR7yrHedV92iD4SdL6cdeff54Fy8PT776dgUEre3Rc/tg3r1qcq4DVwJ7ge0mvgZo/quHEW52UhYw4tz5J2srXq1Oydz4uBEc4hq/1m7iFFbUm9FgpoMz75pQ9xyu9jjDZnBvpFI/1V/fFsyUrfPlnlY36QYcPg8b8vLOrWf+zukOhNADy3sl9tRj+qIfFz5mZOrAkOs2/Xu/0PeZVVxKxviHJ2BYxHgp5jpkbPezA8FFPVcmo46lfdlb4qtTcBr2/1EtqHXUcKagKllWG2E1AFDEaberAJXx61YUZzzGZBUUr0tEfk9LAffuh8kwJ5WLZl8hDrNnFHnvCj6mL2YHg6fqDQvADLPNIoc3B5h80W0+LhjkiqQ+0K0bfzinwBZvM5N3WOXLKmDl+U5tYJJD+f3a1nOEIgyfOvmmcVY5QDC5bXSn/6BW4/SqJZUHRihoRBciS0ey34h4kfl3cPfieNgAPqq7XRTmj5HJ0UB/tKIrNPiBXG/HILkPNcVYq9gEEiJlhbrMA1ads1af0l3VlV7baMUczsgxprDLAsT1CsDwZTxIibgo9oQXPaikJa9U/eBslcOtTMmu0D0ZI9JLzpgslkerTlBAR3n92Jy7xCr6W2Yz/PJmU24FEveY4eh/0JSYSiBY/98wKIIyGYLX+32Q
+x-forefront-antispam-report:
+ CIP:255.255.255.255;CTRY:;LANG:zh-cn;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AMBPR04MB11742.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(19092799006)(366016)(1800799024)(23010399003)(376014)(7416014)(56012099006)(5023799004)(11063799006)(10067099003)(6133799003)(4143699003)(3023799007)(18002099003)(22082099003)(38070700021)(921020);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:
+ =?gb2312?B?YU1KcUpNNCtjbzI3akt0MkFhRHNOY3JOUm9oMEFzNkhkcGw4UkhJMVdCQ0lU?=
+ =?gb2312?B?aWxZd0tPZzBKVi82S2hlNmN6amJYeDVpYnBka1NnQVhUdW1WTU12eUx6NTVs?=
+ =?gb2312?B?Znp2NEs1Qk1HQnZ0NktZREJBdDN6Y09va2NPZ1BieWE5eVRVaW14Nm5DU2xV?=
+ =?gb2312?B?YllZK1UxMUtFd3RjKzZ6M1F3Wk52ZTE3NEU5K3ppRXRvNk9SR05odnZLM1Bx?=
+ =?gb2312?B?S3JzTjNIdjJVMUFXNVB1ZTZBVmZWQVZtOFRDb1ZCMHVXdzJjQmhXNWZyTFAv?=
+ =?gb2312?B?bUw1eUVHK0ZMWmZZU2NURlJTM003bGkrTjRWcFBBL2RYS3JkNk5qS1RzcEk2?=
+ =?gb2312?B?WldhR2dtL1hmYmFQdlpRdi9wZmJFT0l6cWsya2JUV29iRWIxMDQrVTgrR29t?=
+ =?gb2312?B?VmJ6RGdOZVJVekIrdzdrR0dTYkhleFA1SFA0U2lKTndzckkxb0hNejNzYncv?=
+ =?gb2312?B?WnNSRjRldXVjam5LcDhKNlRrdGV2MlNLU2E1OE5UQnlMaVphZGV1QTBrcmpy?=
+ =?gb2312?B?bWJpb24zdjJvNjZrZkh0U2JZdFgzeDFvaW1PQ1ZtZExhMm5wRkIzRE1rbys2?=
+ =?gb2312?B?QzRYdUF3elkvUUlhc0d1S3REMTBpOXdzT0VhMHVhVjNDdzNKc1k1MDZiZHg1?=
+ =?gb2312?B?QjJGOGd6LzU0MHJYVnlRZXFTUGxRRlNpeWFKKzZkZjFRR2dpZklvS2JXcER6?=
+ =?gb2312?B?L3ZscFZKTmxzMHlWSE1MN3dpUTgzZGhFZEdHZi9HZUU3ZHlWcjV4SmRJdmZo?=
+ =?gb2312?B?SWVRdzB5VXYzU1ZxdllCRGE5Wk5iNXlpMno4RXQwQkI3dDhXaVVOYVFEUVVL?=
+ =?gb2312?B?QmtoeldUWGtjSTRVNmdHWGUxWCsrdWl0cmFSaEZYUC9VbWNldVVTR3dGdGJK?=
+ =?gb2312?B?NEFhSVhzZkhkNHAvbkxjNXdadXVOanhLUkZHMnJLVmVwc0Z3ZTJuQ3lpb25Q?=
+ =?gb2312?B?SDhUVDFwdjBFVUtPS0ZmZEd0NkVqa3J4T09UcDhGQzE3MDYyWXRIOWFueUNx?=
+ =?gb2312?B?ays0SEtYelpjQTNuNFVQQldhQ0EreXhsWDV2TGxkd0RtdSt0RjVXYnZOL3kw?=
+ =?gb2312?B?UElCRjRHYUdaOVlKbGxGc0xPNFNwMDhRYWJPRHBWMXFKZm1Sb1lWYU1SZXcz?=
+ =?gb2312?B?dE1CNlBpUmdGN0NualNWS2xvUnMzaXVVa053WTdxSS85VjdzalJRcWd3MExE?=
+ =?gb2312?B?NnhBWERPVk8rZmc5SDRONjYyVGx4MWwxc0I0bHowYllQcWFTazhQNTU5Mnpa?=
+ =?gb2312?B?S1dycXdWWFNic2lIVk9INDUyMzN1ejBZRTVSRU00emlrSG1aSlpzcmh4WVFq?=
+ =?gb2312?B?ak1QL3ArTHc3cWJ4TEYza1dML1c1MHJuR3JaWHdNZVpmWGxIMXV6V2swMUJo?=
+ =?gb2312?B?V0Erd3NlMDZEekJ5WHg5V2FBaTBPOWNzS3dvNVo2cVdhcFNKNDgwSi9WeitZ?=
+ =?gb2312?B?SFMrcnIrbUh3NlFjQXdUbGx3dXBJb3NubjRuUnJXaG9QOU85Y1NkbGF3V1FG?=
+ =?gb2312?B?SmVkaFJ1aEk3ZlZLTmh2Sm1yWlNLVHJaMVkxK3g5OWNvMC8xTlZRKzJvWlM3?=
+ =?gb2312?B?djlQQk5RMnhUVVgvc1JXYk8rOERVLzBhdmlCaGVIMVRDVzNwb0k2eFlsTHZM?=
+ =?gb2312?B?UkpWZU1mbjhuYlM1N2YxU0xQdXFxTlRsOFRCb3JQVUdIME5HK1UyekZMSzlo?=
+ =?gb2312?B?cno4SVo2a0Q5UzhoRFYycjJIMTFWcUJXZW1BT3VrUWNzWWI4L01wQ0pPYnFX?=
+ =?gb2312?B?YTJ1S3V3Q2J3WVdHSnk3TzZ5akZBenh2bU5rcnZDY2tPdFdOVnhzS2JzWVBQ?=
+ =?gb2312?B?V0o2aU96RC96YTZFK3ZiWkR6VVI5RTEwVnVuTkR2M3VxYzZicFRUdmNjaitV?=
+ =?gb2312?B?NUt0UWlJZDRuMHo2ZytsemFEQWVYUDZBdDZqaUNuSjZtTGNUazh3MDFEMHdr?=
+ =?gb2312?B?M0EwV2hjQWhKSnFCYloraURSYnVtRkdQcTFKcy8wMmxRM2dzOEIzVHVSeW9L?=
+ =?gb2312?B?SFQvb3RaWDBJOXUxWGVzK0lodzRuMk85SkVWbnAyOG9Hb0pjYUREQU9GL0Vj?=
+ =?gb2312?B?aGhQZ0FOd25Lb0QramVMUFNqeHd2VC9SazdZTWFNb2ZJZEJaOTNnWm5aRlFC?=
+ =?gb2312?B?TVJrUDJ6OWY2dDkxWndGN0tLaENPY3dQR3d2bHFSUXp4a05OR01KMzI0TUxT?=
+ =?gb2312?B?YUYvamFSZ011RUNzd2pyanR6SWhTS0NKdklpZGR6VnN2RXliSEQ2TVIrciti?=
+ =?gb2312?B?U0ova1V3dm5DVS9LOFhXN2UrQ210cDNKaFNib2hYeHNIblFzZWpHdXpyb0ZX?=
+ =?gb2312?Q?2hMnqk3T9Skix9TSX1?=
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -96,1042 +148,669 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: VE1PR04MB7216:EE_|DU2PR04MB8936:EE_
-X-MS-Office365-Filtering-Correlation-Id: a4fffd87-5bd8-471f-c35d-08def4fbc745
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|376014|1800799024|7416014|23010399003|366016|19092799006|18002099003|22082099003|5023799004|56012099006|11063799006|3023799007|6133799003|10067099003|921020;
-X-Microsoft-Antispam-Message-Info:
-	ZvgFMDRcwuRajYmI811c61cv5DYnOdVV8QLlmEBmLZp0CAMzez0OC5e6mwNNIDFTvkogKLnhsCpbVhGoBfDRu9t04haTQN7bMkB0GTudPrepU76PE21TqMOlLY1JJNERfIqGjrxsVtNKvhsK1q20ppEf1A9lMf3+zTFjvjCC+dc0AkVE9DuOBZaXnqvKCt9g+7SWKMLVAvyVIQHyjo2tOtnoIzlGQhC31NSj2iUx4LHGNc+T9d2XGxtQ4f+R6WdHfjWBtxjOQ26n3mhcB833u0bPvPSde7QYr4ZXuS0VJwxAhHaJjH9EgMKZUil/23e6Fq/T7kaxK54bjf2I8Vlyc71wsDDYa+hJlLg0Ff+Z1sl5Yj1bS631DcnM5+AXfrYvm2QxPihWgbJdGFOo3f/jtuXYaNyKkEtna51HV9yyW2bYlAY/FkS80AsCJsvdkekvnX4SIc3LTEdCYnLuBkmN+5OztPACaywMrrLBopnQWOG6XWKBWFcknQp6ydhqcg2kiDD3pqG7WJVPYrg2fEyFjulBiC5oECDZFS+hZuI3AtvL4BsC13mIOVqs/E0hgK6ocz8kqRF9CzxTurIQgU++1620yIeCSb2jkz02sSOW09Iy4Fu5cmvEqeI1xP0e5es/qKpZpGscOJeilLcDJ36xvRP/8snvlyRO2Tdh+HiQlI+UKC/Nu36NhLEShA+pnMOVM1m+WGR4DcgMgyejbqa1Ow==
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VE1PR04MB7216.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(1800799024)(7416014)(23010399003)(366016)(19092799006)(18002099003)(22082099003)(5023799004)(56012099006)(11063799006)(3023799007)(6133799003)(10067099003)(921020);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?mJHjd2hLwX7KxcUhTANls9TZUM4OfExObki+au8Zh//i8yMp46AjEqXEPRY7?=
- =?us-ascii?Q?KxN3qjfvK+i+g8kJzGdmeysILm5geUP7lku7L+LbnlaYPCWx+x331bOJmXK0?=
- =?us-ascii?Q?n1VK+nR70AcmKPZ3VLIvYU6ZPhIYM7JkCuct0f+bD1wkToctw0/8clolmwgy?=
- =?us-ascii?Q?WmyjVBXBrLBPVMyD0BE8e7L2VYf8x6a9w9cbcx+yXxGcRLJFBQWi9mUGKgvS?=
- =?us-ascii?Q?4RvZcc5WQADW3n5NOGyXk/S0jTC+tsv0yzuHLyuLJuEYUexrhf7axShFMkCM?=
- =?us-ascii?Q?btWgehAnAL+bXWcIM7g5tO6yke2625vsNeJIWepvu4deDlSFyTiGW0ZNtjST?=
- =?us-ascii?Q?yHqeR5JAb6CTB9y8EpotUcZBZz9+iAcYt+6WzH25Qb4MGAcmskQyTlzzQ0qk?=
- =?us-ascii?Q?tq0Rox7/zqwq3F90P50D+24ygiSsRTfgRUBmumUYP5t3ZyM1bM9+2uJ4B4g9?=
- =?us-ascii?Q?AsS+BxRlj6S3FQqXidiLLVIhPMlByGWOh5fZHcxdUAIA4xXA1R9sR8GQdJpq?=
- =?us-ascii?Q?o6Vv40EGXXBIv9DayOpMitj9zPU4HCV1OiVZi6AM8cMKcDnXDjl3IEmcbu4H?=
- =?us-ascii?Q?FtwieTOXrTfIIGcV9vhzuHLCUE5h9JRWJogoMtJEnY3wHgFe8+auLJoAkAIZ?=
- =?us-ascii?Q?8oXy3HoxETn+HOKgJmJQqaOF6Dlm8x2JXiEuXj2ldOp4ijbcMGKFGxEiQRoJ?=
- =?us-ascii?Q?YjvscA1mMBYndF9lydLbvELGTVkXXr2OM3auOANMaTPNpZbqN47tyz9fjBFG?=
- =?us-ascii?Q?TzlaAmXAU6zFo6wamnvQUwtXz6HO8jxPR8NFWxeQW90eJRyXF2HMYc9JJlio?=
- =?us-ascii?Q?HFIs3GQf92IQzQv+o+CPtxEfs8s/9R7WbCI+CML3c/ZKozm9LvVj6KwoAxfs?=
- =?us-ascii?Q?YkLGvknKbYJD7V2gQ/MsgypX2dfs3wIR2yrhlU025yxegRiKhs8kARejdZQu?=
- =?us-ascii?Q?M918W31rimjSOLXi7FK2mq9m6GJTaI3aIlNAiy7LiP9rplIk6TQuPK/yRrXn?=
- =?us-ascii?Q?7lAa84LoheKsWxzhamsa+WBDaNum2UPLH4HHi6FOi2wqY0ROytaPwXQXOCg2?=
- =?us-ascii?Q?b0ldXIaLxVfjfS3fCmtAhAkBlgpEeutMdOGSnRgGG+/PJJUmYbMwKkIfFCKj?=
- =?us-ascii?Q?hp9pVMJ2awArdwB/8f7KiwcF7FiGE6FF27sdhYdaMThteWpKJvOq5x9temPo?=
- =?us-ascii?Q?1JZD6wPkpC46hsusZXYKcswbFrfw6AbZsgAsn4edoWaE3DR7d3w96iV41hqS?=
- =?us-ascii?Q?CBX9b1EeM+DtEf1ubBscOQRjoCuZEJfdptlbwseh+a66pzQ5+vTxHDGq2lr7?=
- =?us-ascii?Q?KUFHDHdn5BF4uY8YM93R/zg71p3mmd5BnpMrNBxMInHcyoEP0yDVXXtrpNfT?=
- =?us-ascii?Q?5C+9iEJu3EQrNwia7YclFwUtFoMXVMloEBkfaqN6a/qEFn0risUWZ+fNZQml?=
- =?us-ascii?Q?cARaLE6Qkx0PU0jNGR6/UBmj5L8Bte6Y2OiFQl/WnOmciitvPq2LguPL4bZ9?=
- =?us-ascii?Q?lL1fWgLZdmkK3Esq+mE6hqfh1GLW8FCKbtjS/qTWVsrUEm/5LOb8vXJIBHf2?=
- =?us-ascii?Q?ySLhknlHbvTjlaizn8fALkJCRdo1tMhuz6oD6647Lta2LuRCm86XSyAOjZr9?=
- =?us-ascii?Q?UlE731Y/znsahvsraT2SneAyIkr1u7VWU2TsY+cDmT/dJUIDTfpPADxNpn1Y?=
- =?us-ascii?Q?OB7Zt1PI6c4Ho6VMBpxlgUbTjAt3vHP7BVAevYuLoEwdtt3l437BcMUHKgvo?=
- =?us-ascii?Q?Ph1Zt0+rn88EgrhvRGnu8K4Sb3AiGOJZmj9LQXEjLtpQdz7e9rW7?=
-X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: a4fffd87-5bd8-471f-c35d-08def4fbc745
-X-MS-Exchange-CrossTenant-AuthSource: VE1PR04MB7216.eurprd04.prod.outlook.com
+X-OriginatorOrg: nxp.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 08 Aug 2026 03:18:55.3067
+X-MS-Exchange-CrossTenant-AuthSource: AMBPR04MB11742.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 30ac7464-224f-4ba6-09ad-08def4fcdb92
+X-MS-Exchange-CrossTenant-originalarrivaltime: 08 Aug 2026 03:26:38.5653
  (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 3u1OSQENn+4ORKU2BT2XF0BhBIvBJf4OYIEEMa81a+Wfg69KjeViANl9Txor5eAqvcvlQbAxeScQV3KCIl5I4LxGTdEZf0xpdz7SRjxD0pMiItqfz1IbXoa0hkhZdAnN
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DU2PR04MB8936
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: PVMngqFZa7mtzhvCemo+xDLh19OW2QbC9PzN3cbwL6qjlh+zFgEzDOjV2ReM36VGcKoe12ZiLD1LLplHoJGMvg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MRWPR04MB12356
 
-From: Wei Fang <wei.fang@nxp.com>
-
-The NETC switch supports one-step TX timestamping for PTP Sync frames.
-The MAC captures the SFD transmit time, adds the residence time to the
-correction field at the offset given by PM_SINGLE_STEP[OFFSET], and
-writes the result back before the frame leaves the wire. The software
-timestamp (low 30 bits of the PTP Timer value) is carried in the
-To_Port SubType 1 tag.
-
-PM_SINGLE_STEP is a per-port register that can describe only one
-in-flight frame at a time, and programming it requires reading the
-current PTP time, which may sleep. Both constraints rule out handling
-one-step Sync on the xmit path.
-
-Instead, defer transmission to a per-port process-context work. The
-xmit path classifies the frame in netc_port_txtstamp(): a genuine
-one-step Sync (twoStepFlag cleared) has its PTP header offsets cached
-in the skb control block; frames that cannot be handled as one-step
-fall back to the two-step path or are sent as normal frames.
-netc_xmit() hands the classified frame to the switch driver via the
-onestep_sync_enqueue tagger callback, which queues it and kicks the
-work if no frame is currently in flight.
-
-The work dequeues one frame at a time, reads a fresh PTP time,
-programs PM_SINGLE_STEP, updates the originTimestamp field, and
-transmits the frame directly to the conduit via the onestep_sync_xmit
-tagger callback, bypassing dsa_user_xmit() to avoid double-counting
-TX stats. Only one frame is in flight at a time: the frame carries a
-TX-completion destructor that reschedules the work when the conduit
-frees the skb, keeping PM_SINGLE_STEP always matched to the frame
-being transmitted.
-
-The one-step context is reference-counted and its lifetime is decoupled
-from the devm-allocated netc_port. In-flight skbs hold a reference via
-their destructor, so the context outlives port disable until the conduit
-frees the last in-flight skb. Port disable clears @active and purges the
-queue under work_lock; a work that runs afterwards observes @active
-cleared and returns without touching the freed port resources.
-
-Assisted-by: Wchat:claude-opus-4-8
-Signed-off-by: Wei Fang <wei.fang@nxp.com>
----
- drivers/net/dsa/netc/netc_main.c      |  61 +++-
- drivers/net/dsa/netc/netc_ptp.c       | 418 +++++++++++++++++++++++++-
- drivers/net/dsa/netc/netc_switch.h    |  48 +++
- drivers/net/dsa/netc/netc_switch_hw.h |   5 +
- include/linux/dsa/tag_netc.h          |  22 ++
- net/dsa/tag_netc.c                    |  70 ++++-
- 6 files changed, 615 insertions(+), 9 deletions(-)
-
-diff --git a/drivers/net/dsa/netc/netc_main.c b/drivers/net/dsa/netc/netc_main.c
-index 4e139ffc2f76..55664045ba19 100644
---- a/drivers/net/dsa/netc/netc_main.c
-+++ b/drivers/net/dsa/netc/netc_main.c
-@@ -74,6 +74,7 @@ static int netc_connect_tag_protocol(struct dsa_switch *ds,
- 		return -EPROTONOSUPPORT;
- 
- 	tagger_data = ds->tagger_data;
-+	tagger_data->onestep_sync_enqueue = netc_port_onestep_sync_enqueue;
- 	tagger_data->twostep_tstamp_handler = netc_port_twostep_tstamp_handler;
- 
- 	return 0;
-@@ -94,7 +95,7 @@ static void netc_port_rmw(struct netc_port *np, u32 reg,
- 	netc_port_wr(np, reg, new);
- }
- 
--static void netc_mac_port_wr(struct netc_port *np, u32 reg, u32 val)
-+void netc_mac_port_wr(struct netc_port *np, u32 reg, u32 val)
- {
- 	if (is_netc_pseudo_port(np))
- 		return;
-@@ -252,6 +253,21 @@ static void netc_get_switch_capabilities(struct netc_switch *priv)
- 	priv->num_bp = FIELD_GET(BPCAPR_NUM_BP, val);
- }
- 
-+static void netc_free_user_ports(struct netc_switch *priv)
-+{
-+	struct dsa_switch *ds = priv->ds;
-+	struct dsa_port *dp;
-+
-+	dsa_switch_for_each_user_port(dp, ds) {
-+		struct netc_port *np = NETC_PORT(ds, dp->index);
-+
-+		if (np->onestep) {
-+			netc_onestep_put(np->onestep);
-+			np->onestep = NULL;
-+		}
-+	}
-+}
-+
- static int netc_init_all_ports(struct netc_switch *priv)
- {
- 	struct device *dev = priv->dev;
-@@ -292,13 +308,13 @@ static int netc_init_all_ports(struct netc_switch *priv)
- 
- 		err = netc_port_get_info_from_dt(np, dp->dn, dev);
- 		if (err)
--			return err;
-+			goto free_user_ports;
- 
- 		if (dsa_port_is_user(dp)) {
- 			err = netc_port_create_mdio_bus(np, dp->dn);
- 			if (err) {
- 				dev_err(dev, "Failed to create MDIO bus\n");
--				return err;
-+				goto free_user_ports;
- 			}
- 
- 			/* The ipft_hf_eid is initialized to an invalid entry
-@@ -314,11 +330,16 @@ static int netc_init_all_ports(struct netc_switch *priv)
- 			 */
- 			err = netc_port_ptp_init(np);
- 			if (err)
--				return err;
-+				goto free_user_ports;
- 		}
- 	}
- 
- 	return 0;
-+
-+free_user_ports:
-+	netc_free_user_ports(priv);
-+
-+	return err;
- }
- 
- static void netc_init_ntmp_tbl_versions(struct netc_switch *priv)
-@@ -941,7 +962,7 @@ static int netc_setup(struct dsa_switch *ds)
- 
- 	err = netc_init_ntmp_user(priv);
- 	if (err)
--		goto put_ptp_timer;
-+		goto free_user_ports;
- 
- 	INIT_HLIST_HEAD(&priv->fdb_list);
- 	mutex_init(&priv->fdbt_lock);
-@@ -980,6 +1001,8 @@ static int netc_setup(struct dsa_switch *ds)
- 	mutex_destroy(&priv->fdbt_lock);
- 	mutex_destroy(&priv->vft_lock);
- 	netc_free_ntmp_user(priv);
-+free_user_ports:
-+	netc_free_user_ports(priv);
- put_ptp_timer:
- 	pci_dev_put(priv->tmr_dev);
- 
-@@ -1005,6 +1028,19 @@ static void netc_free_ports_resources(struct netc_switch *priv)
- 			continue;
- 
- 		netc_port_purge_txtstamp_queue(np);
-+
-+		/* dsa_tree_teardown() calls dsa_tree_teardown_ports() before
-+		 * dsa_tree_teardown_switches(), so netc_port_disable() is
-+		 * executed before netc_teardown() and purges onestep->queue,
-+		 * so here we only need to drop the port's owner reference.
-+		 * In-flight one-step skbs still hold references via the
-+		 * destructor; the context (and its work) is freed only after
-+		 * the conduit frees the last in-flight skb. By then np may
-+		 * be gone, but the work no longer dereferences np because
-+		 * onestep->active has been cleared.
-+		 */
-+		netc_onestep_put(np->onestep);
-+		np->onestep = NULL;
- 	}
- }
- 
-@@ -1559,6 +1595,7 @@ static int netc_port_enable(struct dsa_switch *ds, int port,
- 			    struct phy_device *phy)
- {
- 	struct netc_port *np = NETC_PORT(ds, port);
-+	struct netc_onestep *onestep = np->onestep;
- 	int err;
- 
- 	if (np->enable)
-@@ -1571,6 +1608,12 @@ static int netc_port_enable(struct dsa_switch *ds, int port,
- 		return err;
- 	}
- 
-+	if (onestep) {
-+		mutex_lock(&onestep->work_lock);
-+		onestep->active = true;
-+		mutex_unlock(&onestep->work_lock);
-+	}
-+
- 	np->enable = true;
- 
- 	return 0;
-@@ -1579,6 +1622,7 @@ static int netc_port_enable(struct dsa_switch *ds, int port,
- static void netc_port_disable(struct dsa_switch *ds, int port)
- {
- 	struct netc_port *np = NETC_PORT(ds, port);
-+	struct netc_onestep *onestep = np->onestep;
- 
- 	/* When .port_disable() is called, .port_enable() may not have been
- 	 * called. In this case, both the prepare_count and enable_count of
-@@ -1588,6 +1632,13 @@ static void netc_port_disable(struct dsa_switch *ds, int port)
- 	if (!np->enable)
- 		return;
- 
-+	if (onestep) {
-+		mutex_lock(&onestep->work_lock);
-+		onestep->active = false;
-+		netc_port_purge_onestep_queue(onestep, true);
-+		mutex_unlock(&onestep->work_lock);
-+	}
-+
- 	clk_disable_unprepare(np->ref_clk);
- 	np->enable = false;
- }
-diff --git a/drivers/net/dsa/netc/netc_ptp.c b/drivers/net/dsa/netc/netc_ptp.c
-index 1384a6f31d1c..d0423b3c8c33 100644
---- a/drivers/net/dsa/netc/netc_ptp.c
-+++ b/drivers/net/dsa/netc/netc_ptp.c
-@@ -4,13 +4,270 @@
-  * Copyright 2025-2026 NXP
-  */
- 
-+#include <linux/kref.h>
- #include <linux/ptp_classify.h>
- #include <linux/ptp_clock_kernel.h>
-+#include <linux/slab.h>
- 
- #include "netc_switch.h"
- 
- #define NETC_NUM_TS_REQ_ID		16
- #define NETC_TXTSTAMP_TIMEOUT		(5 * HZ)
-+#define NETC_MAX_STEP_OFFSET		0x1ff
-+
-+static void netc_port_set_onestep_control(struct netc_port *np,
-+					  bool csum_update, int offset)
-+{
-+	u32 val;
-+
-+	val = PM_SINGLE_STEP_EN | FIELD_PREP(PM_SINGLE_STEP_OFFSET, offset);
-+	if (csum_update)
-+		val |= PM_SINGLE_STEP_CH;
-+	netc_mac_port_wr(np, NETC_PM_SINGLE_STEP(0), val);
-+}
-+
-+static void netc_onestep_destroy_work(struct work_struct *work)
-+{
-+	struct netc_onestep *onestep = container_of(work, struct netc_onestep,
-+						    destroy_work);
-+
-+	/* refcnt reaching zero does not by itself mean onestep->work has
-+	 * stopped: the last in-flight skb destructor calls schedule_work(&work)
-+	 * *before* the netc_onestep_put() that drops the final reference, so at
-+	 * the moment refcnt hits zero onestep->work may still be pending or
-+	 * running on another CPU. destroy_work and work are distinct work_structs
-+	 * and can run concurrently, so cancel_work_sync() is required to drain
-+	 * onestep->work before mutex_destroy()/kfree() below, otherwise a
-+	 * still-running work would touch freed memory. No new schedule_work(&work)
-+	 * can occur after this point because no references remain, so this
-+	 * cancel is final.
-+	 */
-+	cancel_work_sync(&onestep->work);
-+	mutex_destroy(&onestep->work_lock);
-+	kfree(onestep);
-+}
-+
-+static void netc_onestep_release(struct kref *ref)
-+{
-+	struct netc_onestep *onestep = container_of(ref, struct netc_onestep,
-+						    refcnt);
-+
-+	/* This may be called from the skb destructor in softirq context
-+	 * (napi_consume_skb()), where cancel_work_sync() must not be used.
-+	 * Defer the final teardown to process context.
-+	 */
-+	schedule_work(&onestep->destroy_work);
-+}
-+
-+static void netc_onestep_get(struct netc_onestep *onestep)
-+{
-+	kref_get(&onestep->refcnt);
-+}
-+
-+void netc_onestep_put(struct netc_onestep *onestep)
-+{
-+	kref_put(&onestep->refcnt, netc_onestep_release);
-+}
-+
-+static void netc_onestep_skb_destructor(struct sk_buff *skb)
-+{
-+	struct netc_onestep *onestep = skb_shinfo(skb)->destructor_arg;
-+
-+	/* skb has been transmitted by hardware. Schedule work to send the next
-+	 * queued one-step Sync packet, then release this skb's reference on the
-+	 * context. If the port has already been torn down and this is the last
-+	 * reference, the context is freed via netc_onestep_release().
-+	 */
-+	schedule_work(&onestep->work);
-+	netc_onestep_put(onestep);
-+}
-+
-+static void netc_port_program_onestep(struct netc_port *np,
-+				      struct netc_onestep *onestep,
-+				      struct sk_buff *skb,
-+				      u64 tstamp)
-+{
-+	u16 correction_offset = NETC_SKB_CB(skb)->correction_offset;
-+	u16 tstamp_offset = NETC_SKB_CB(skb)->timestamp_offset;
-+	u8 *hdr = skb_mac_header(skb);
-+	bool csum_update = false;
-+	__be32 new_sec_l, new_ns;
-+	__be16 new_sec_h;
-+	u64 sec;
-+	u32 ns;
-+
-+	NETC_SKB_CB(skb)->tstamp = tstamp;
-+	NETC_SKB_CB(skb)->ptp_flag = NETC_PTP_FLAG_ONESTEP;
-+
-+	/* Update originTimestamp field of Sync packet
-+	 * - 48 bits seconds field
-+	 * - 32 bits nanoseconds field
-+	 */
-+	sec = div_u64_rem(tstamp, NSEC_PER_SEC, &ns);
-+	new_sec_h = htons((sec >> 32) & 0xffff);
-+	new_sec_l = htonl(sec & 0xffffffff);
-+	new_ns = htonl(ns);
-+
-+	if (NETC_SKB_CB(skb)->is_udp) {
-+		__be32 old_sec_l, old_ns;
-+		struct udphdr *uh;
-+		__be16 old_sec_h;
-+
-+		if (skb->ip_summed == CHECKSUM_PARTIAL) {
-+			csum_update = true;
-+			goto update_timestamp;
-+		}
-+
-+		if (unlikely(!skb_transport_header_was_set(skb)))
-+			uh = (struct udphdr *)(hdr + tstamp_offset -
-+					       sizeof(struct ptp_header) -
-+					       sizeof(struct udphdr));
-+		else
-+			uh = udp_hdr(skb);
-+
-+		/* For IPv4, a UDP checksum of zero on the wire means "no
-+		 * checksum". For IPv6, its UDP checksum is mandatory and
-+		 * never zero.
-+		 */
-+		if (!uh->check)
-+			goto update_timestamp;
-+
-+		old_sec_h = __get_unaligned_t(__be16, hdr + tstamp_offset);
-+		old_sec_l = __get_unaligned_t(__be32, hdr + tstamp_offset + 2);
-+		old_ns = __get_unaligned_t(__be32, hdr + tstamp_offset + 6);
-+		inet_proto_csum_replace2(&uh->check, skb, old_sec_h,
-+					 new_sec_h, false);
-+		inet_proto_csum_replace4(&uh->check, skb, old_sec_l,
-+					 new_sec_l, false);
-+		inet_proto_csum_replace4(&uh->check, skb, old_ns,
-+					 new_ns, false);
-+		csum_update = true;
-+	}
-+
-+update_timestamp:
-+	__put_unaligned_t(__be16, new_sec_h, hdr + tstamp_offset);
-+	__put_unaligned_t(__be32, new_sec_l, hdr + tstamp_offset + 2);
-+	__put_unaligned_t(__be32, new_ns, hdr + tstamp_offset + 6);
-+
-+	netc_port_set_onestep_control(np, csum_update, correction_offset);
-+
-+	/* Orphan the skb to release the socket send buffer quota immediately.
-+	 * This is safe because sock_wfree() does not access skb->data or any
-+	 * frame content. After skb_orphan(), we install our own destructor so
-+	 * that when the conduit driver frees the skb after TX completion, we
-+	 * get notified to send the next queued Sync packet.
-+	 */
-+	skb_orphan(skb);
-+	netc_onestep_get(onestep); /* in-flight reference */
-+	skb_shinfo(skb)->destructor_arg = onestep;
-+	skb->destructor = netc_onestep_skb_destructor;
-+}
-+
-+static u64 netc_get_phc_time(struct netc_switch *priv)
-+{
-+	if (unlikely(!priv->tmr_dev))
-+		return 0;
-+
-+	return netc_timer_get_current_time(priv->tmr_dev);
-+}
-+
-+void netc_port_onestep_work(struct work_struct *work)
-+{
-+	struct netc_onestep *onestep = container_of(work, struct netc_onestep,
-+						    work);
-+	struct netc_tagger_data *tagger_data;
-+	struct netc_switch *priv;
-+	struct netc_port *np;
-+	struct sk_buff *skb;
-+	u64 tstamp;
-+
-+	/* Serialize the whole hardware access against port disable. work_lock
-+	 * is a mutex (this runs in process context and netc_get_phc_time() may
-+	 * sleep). If the port has been disabled, bail out immediately; np and
-+	 * priv are only dereferenced after the @active check passes, so they
-+	 * are always valid here.
-+	 */
-+	mutex_lock(&onestep->work_lock);
-+	if (unlikely(!onestep->active)) {
-+		netc_port_purge_onestep_queue(onestep, true);
-+		goto unlock_work;
-+	}
-+
-+	/* Send only one queued Sync per run. The shared SINGLE_STEP register
-+	 * must match the frame currently being transmitted, so the next frame
-+	 * is programmed only after this one completes TX, when its skb
-+	 * destructor reschedules this work. Dequeue under onestep->queue_lock,
-+	 * and if the queue has drained, release the in-flight slot so a later
-+	 * frame from the xmit path kicks the work again.
-+	 */
-+	spin_lock_bh(&onestep->queue_lock);
-+	skb = __skb_dequeue(&onestep->queue);
-+	if (!skb) {
-+		onestep->in_flight = false;
-+		spin_unlock_bh(&onestep->queue_lock);
-+		goto unlock_work;
-+	}
-+	spin_unlock_bh(&onestep->queue_lock);
-+
-+	np = onestep->np;
-+	priv = np->switch_priv;
-+	tstamp = netc_get_phc_time(priv);
-+	if (unlikely(!tstamp)) {
-+		/* The PTP timer is not available, so there is no correct
-+		 * timestamp to program. Drop this frame and re-kick to process
-+		 * the remaining queued frames.
-+		 *
-+		 * netc_port_program_onestep() has not run for this skb yet, so
-+		 * netc_onestep_skb_destructor() is not installed on it. Freeing
-+		 * it therefore does not reschedule the work, so the work must be
-+		 * rescheduled explicitly to keep draining the queue.
-+		 */
-+		dev_dbg_ratelimited(priv->dev,
-+				    "Port %d PTP timer unavailable, drop Sync\n",
-+				    np->dp->index);
-+		kfree_skb(skb);
-+		schedule_work(&onestep->work);
-+		goto unlock_work;
-+	}
-+
-+	/* Reuse the offsets cached at enqueue time; only the timestamp is
-+	 * read fresh so it reflects the actual TX moment.
-+	 */
-+	netc_port_program_onestep(np, onestep, skb, tstamp);
-+
-+	/* Tag and hand the frame directly to the conduit via the tagger,
-+	 * bypassing dsa_user_xmit() so the TX stats are not counted twice.
-+	 * And there is no need to check if tagger_data is NULL, because
-+	 * dsa_tree_teardown_ports() executes before
-+	 * dsa_switch_teardown_tag_protocol(), so tagger_data cannot be
-+	 * NULL when onestep->active is set.
-+	 */
-+	tagger_data = priv->ds->tagger_data;
-+	tagger_data->onestep_sync_xmit(skb, np->dp->user);
-+
-+unlock_work:
-+	mutex_unlock(&onestep->work_lock);
-+}
-+
-+static int netc_port_onestep_alloc(struct netc_port *np)
-+{
-+	struct netc_onestep *onestep;
-+
-+	onestep = kzalloc_obj(*onestep);
-+	if (!onestep)
-+		return -ENOMEM;
-+
-+	kref_init(&onestep->refcnt); /* port (owner) reference */
-+	np->onestep = onestep;
-+	onestep->np = np;
-+	mutex_init(&onestep->work_lock);
-+	spin_lock_init(&onestep->queue_lock);
-+	__skb_queue_head_init(&onestep->queue);
-+	INIT_WORK(&onestep->work, netc_port_onestep_work);
-+	INIT_WORK(&onestep->destroy_work, netc_onestep_destroy_work);
-+
-+	return 0;
-+}
- 
- int netc_port_ptp_init(struct netc_port *np)
- {
-@@ -21,7 +278,7 @@ int netc_port_ptp_init(struct netc_port *np)
- 	spin_lock_init(&np->tstamp_lock);
- 	__skb_queue_head_init(&np->skb_txtstamp_queue);
- 
--	return 0;
-+	return netc_port_onestep_alloc(np);
- }
- 
- static int netc_get_phc_index(struct netc_switch *priv)
-@@ -45,7 +302,8 @@ int netc_get_ts_info(struct dsa_switch *ds, int port,
- 				 SOF_TIMESTAMPING_RX_HARDWARE |
- 				 SOF_TIMESTAMPING_RAW_HARDWARE;
- 
--	info->tx_types = BIT(HWTSTAMP_TX_OFF) | BIT(HWTSTAMP_TX_ON);
-+	info->tx_types = BIT(HWTSTAMP_TX_OFF) | BIT(HWTSTAMP_TX_ON) |
-+			 BIT(HWTSTAMP_TX_ONESTEP_SYNC);
- 
- 	info->rx_filters = BIT(HWTSTAMP_FILTER_NONE) |
- 			   BIT(HWTSTAMP_FILTER_PTP_V2_EVENT) |
-@@ -262,6 +520,22 @@ void netc_port_purge_txtstamp_queue(struct netc_port *np)
- 	__skb_queue_purge(&free_list);
- }
- 
-+void netc_port_purge_onestep_queue(struct netc_onestep *onestep,
-+				   bool clear_flight)
-+{
-+	struct sk_buff_head free_list;
-+
-+	__skb_queue_head_init(&free_list);
-+
-+	spin_lock_bh(&onestep->queue_lock);
-+	skb_queue_splice_init(&onestep->queue, &free_list);
-+	if (clear_flight)
-+		onestep->in_flight = false;
-+	spin_unlock_bh(&onestep->queue_lock);
-+
-+	__skb_queue_purge(&free_list);
-+}
-+
- int netc_port_hwtstamp_set(struct dsa_switch *ds, int port,
- 			   struct kernel_hwtstamp_config *config,
- 			   struct netlink_ext_ack *extack)
-@@ -278,6 +552,7 @@ int netc_port_hwtstamp_set(struct dsa_switch *ds, int port,
- 	switch (config->tx_type) {
- 	case HWTSTAMP_TX_ON:
- 	case HWTSTAMP_TX_OFF:
-+	case HWTSTAMP_TX_ONESTEP_SYNC:
- 		break;
- 	default:
- 		return -ERANGE;
-@@ -316,6 +591,9 @@ int netc_port_hwtstamp_set(struct dsa_switch *ds, int port,
- 	if (config->tx_type == HWTSTAMP_TX_OFF)
- 		netc_port_purge_txtstamp_queue(np);
- 
-+	if (config->tx_type != HWTSTAMP_TX_ONESTEP_SYNC)
-+		netc_port_purge_onestep_queue(np->onestep, false);
-+
- 	config->rx_filter = rx_filter;
- 
- 	return 0;
-@@ -439,9 +717,100 @@ bool netc_port_rxtstamp(struct dsa_switch *ds, int port, struct sk_buff *skb,
- 	return false;
- }
- 
-+static void netc_port_prepare_onestep_sync(struct netc_port *np,
-+					   struct sk_buff *skb,
-+					   u32 ptp_class, bool *twostep)
-+{
-+	struct netc_switch *priv = np->switch_priv;
-+	u16 correction_offset, tstamp_offset;
-+	struct ptp_header *ptp_hdr;
-+	u8 msg_type, twostep_flag;
-+	bool is_udp = false;
-+	u32 pkt_type;
-+	u8 *pkt_hdr;
-+
-+	if (unlikely(skb_linearize(skb))) {
-+		NETC_SKB_CB(skb)->ptp_flag = NETC_PTP_FLAG_DROP;
-+		return;
-+	}
-+
-+	ptp_hdr = ptp_parse_header(skb, ptp_class);
-+	if (unlikely(!ptp_hdr)) {
-+		NETC_SKB_CB(skb)->ptp_flag = NETC_PTP_FLAG_DROP;
-+		dev_dbg_ratelimited(priv->dev,
-+				    "Port %d failed to parse Sync header\n",
-+				    np->dp->index);
-+		return;
-+	}
-+
-+	msg_type = ptp_get_msgtype(ptp_hdr, ptp_class);
-+	twostep_flag = ptp_hdr->flag_field[0] & 0x2;
-+
-+	pkt_hdr = skb_mac_header(skb);
-+	correction_offset = (u8 *)&ptp_hdr->correction - pkt_hdr;
-+	tstamp_offset = (u8 *)ptp_hdr + sizeof(*ptp_hdr) - pkt_hdr;
-+
-+	/* Ensure that the entire originTimestamp field is present in the
-+	 * linear buffer of the skb and the correction_offset must be within
-+	 * the hardware capability.
-+	 */
-+	if (unlikely(tstamp_offset + 10 > skb_headlen(skb) ||
-+		     correction_offset > NETC_MAX_STEP_OFFSET)) {
-+		NETC_SKB_CB(skb)->ptp_flag = NETC_PTP_FLAG_DROP;
-+		dev_dbg_ratelimited(priv->dev,
-+				    "Port %d PTP offset check error\n",
-+				    np->dp->index);
-+		return;
-+	}
-+
-+	/* Only a Sync frame with the twoStepFlag cleared can use one-step
-+	 * timestamping. A frame that requests two-step (or is not a Sync)
-+	 * carries different on-wire fields, so this is a real classification;
-+	 * report it through *twostep so the caller falls back to the two-step
-+	 * path.
-+	 */
-+	if (msg_type != PTP_MSGTYPE_SYNC || twostep_flag != 0) {
-+		*twostep = true;
-+		return;
-+	}
-+
-+	/* This is a genuine one-step Sync frame. skb_shinfo()->destructor_arg
-+	 * is later used to pass the np->onestep pointer to
-+	 * netc_onestep_skb_destructor() for TX completion notification.
-+	 * MSG_ZEROCOPY also uses destructor_arg (via skb_zcopy_init()) to
-+	 * track user-space page references. Overwriting it in that case would
-+	 * leak the ubuf_info reference and prevent user pages from being
-+	 * released. PTP applications do not use MSG_ZEROCOPY, but guard
-+	 * against it defensively.
-+	 */
-+	if (skb_zcopy(skb)) {
-+		NETC_SKB_CB(skb)->ptp_flag = NETC_PTP_FLAG_DROP;
-+		dev_dbg_ratelimited(priv->dev,
-+				    "Port %d one-step Sync not supported on zerocopy skb\n",
-+				    np->dp->index);
-+		return;
-+	}
-+
-+	pkt_type = ptp_class & PTP_CLASS_PMASK;
-+	if (pkt_type == PTP_CLASS_IPV4 || pkt_type == PTP_CLASS_IPV6)
-+		is_udp = true;
-+
-+	/* Cache the parsing results so the tagger xmit path and the deferred
-+	 * work do not need to re-parse the PTP header, and so that
-+	 * netc_port_program_onestep() can derive these parameters from the
-+	 * skb.
-+	 */
-+	NETC_SKB_CB(skb)->correction_offset = correction_offset;
-+	NETC_SKB_CB(skb)->timestamp_offset = tstamp_offset;
-+	NETC_SKB_CB(skb)->is_udp = is_udp;
-+	NETC_SKB_CB(skb)->ptp_flag = NETC_PTP_FLAG_ONESTEP;
-+}
-+
- void netc_port_txtstamp(struct dsa_switch *ds, int port, struct sk_buff *skb)
- {
- 	struct netc_port *np = NETC_PORT(ds, port);
-+	int tx_type = READ_ONCE(np->ptp_tx_type);
-+	bool twostep = false;
- 	u32 ptp_class;
- 
- 	NETC_SKB_CB(skb)->ptp_flag = 0;
-@@ -449,6 +818,49 @@ void netc_port_txtstamp(struct dsa_switch *ds, int port, struct sk_buff *skb)
- 	if (ptp_class == PTP_CLASS_NONE)
- 		return;
- 
--	if (READ_ONCE(np->ptp_tx_type) == HWTSTAMP_TX_ON)
-+	if (tx_type == HWTSTAMP_TX_ONESTEP_SYNC)
-+		netc_port_prepare_onestep_sync(np, skb, ptp_class, &twostep);
-+
-+	if (tx_type == HWTSTAMP_TX_ON || twostep)
- 		netc_port_txtstamp_twostep(np, skb);
- }
-+
-+void netc_port_onestep_sync_enqueue(struct dsa_switch *ds, int port,
-+				    struct sk_buff *skb)
-+{
-+	struct netc_port *np = NETC_PORT(ds, port);
-+	struct netc_onestep *onestep = np->onestep;
-+	bool kick = false;
-+
-+	/* This runs in the xmit path (softirq / BH-disabled), so it must not
-+	 * sleep: only queue the frame here and let netc_port_onestep_work()
-+	 * program the SINGLE_STEP register and transmit it from process
-+	 * context. The shared SINGLE_STEP register can describe only one frame
-+	 * at a time, so at most one one-step Sync may be in flight. Track that
-+	 * with @in_flight under onestep->queue_lock.
-+	 *
-+	 * Enqueue the frame and, only if no frame is currently in flight, claim
-+	 * the in-flight slot and kick the work. When a frame is already in
-+	 * flight, just queue: its skb destructor will kick the work to send the
-+	 * next one once it completes TX, so the frames are transmitted strictly
-+	 * one at a time in order.
-+	 *
-+	 * PTP Sync frames are periodic, low-rate control-plane frames and only
-+	 * reach this TX path when the local socket requested hardware TX
-+	 * timestamping on a one-step port, so the queue cannot be flooded and
-+	 * needs no depth cap.
-+	 */
-+	spin_lock_bh(&onestep->queue_lock);
-+	__skb_queue_tail(&onestep->queue, skb);
-+	if (!onestep->in_flight) {
-+		onestep->in_flight = true;
-+		kick = true;
-+	}
-+	spin_unlock_bh(&onestep->queue_lock);
-+
-+	/* Ownership is transferred to the queue; netc_xmit() stops processing
-+	 * this skb. The work will program and transmit it.
-+	 */
-+	if (kick)
-+		schedule_work(&onestep->work);
-+}
-diff --git a/drivers/net/dsa/netc/netc_switch.h b/drivers/net/dsa/netc/netc_switch.h
-index 86fd15889733..98d4842441df 100644
---- a/drivers/net/dsa/netc/netc_switch.h
-+++ b/drivers/net/dsa/netc/netc_switch.h
-@@ -9,6 +9,7 @@
- #include <linux/dsa/tag_netc.h>
- #include <linux/fsl/netc_global.h>
- #include <linux/fsl/ntmp.h>
-+#include <linux/mutex.h>
- #include <linux/of_device.h>
- #include <linux/of_net.h>
- #include <linux/pci.h>
-@@ -87,6 +88,44 @@ enum netc_host_reason {
- 	NETC_HR_PTP_TRAP   = 9,
- };
- 
-+/* One-step Sync serialization context.
-+ *
-+ * Its lifetime is decoupled from the devm-allocated netc_port. An in-flight
-+ * one-step Sync skb keeps a reference on this context via its skb destructor,
-+ * so the context outlives the port teardown until the conduit frees the last
-+ * in-flight skb after TX completion. Once the port is disabled, @active is
-+ * cleared and the work stops touching any devm memory (netc_port/netc_switch)
-+ * or the unregistered user netdev or the tagger_data.
-+ */
-+struct netc_onestep {
-+	struct netc_port *np;
-+	struct kref refcnt;
-+	/* Process-context lock: serializes the deferred TX work against port
-+	 * teardown, so the work never touches the devm-allocated netc_port /
-+	 * netc_switch or the unregistered user netdev after teardown. Held
-+	 * across netc_get_phc_time(), which may sleep, hence a mutex.
-+	 */
-+	struct mutex work_lock;
-+	/* Serialize access to in_flight and queue */
-+	spinlock_t queue_lock;
-+	bool active;	/* set when port is enabled, under @work_lock */
-+	/* In-flight slot: true while one one-step Sync frame is programmed
-+	 * into the shared SINGLE_STEP register and being transmitted. Only one
-+	 * frame may be in flight at a time, so the next queued frame is sent
-+	 * only after the current one completes TX (its skb destructor kicks
-+	 * the work). Accessed under queue_lock, from both the softirq xmit
-+	 * path and the process-context work.
-+	 */
-+	bool in_flight;
-+	/* Pending one-step Sync frames. Enqueued from the softirq xmit path and
-+	 * dequeued by the process-context work; the list is serialized by
-+	 * queue_lock together with @in_flight.
-+	 */
-+	struct sk_buff_head queue;
-+	struct work_struct work;	/* drains @queue */
-+	struct work_struct destroy_work; /* frees the context in process ctx */
-+};
-+
- struct netc_port {
- 	void __iomem *iobase;
- 	struct netc_switch *switch_priv;
-@@ -106,6 +145,8 @@ struct netc_port {
- 	spinlock_t tstamp_lock;
- 	/* skb queue for two-step timestamp frames */
- 	struct sk_buff_head skb_txtstamp_queue;
-+	/* one-step Sync serialization context (ref-counted, kzalloc'd) */
-+	struct netc_onestep *onestep;
- 	int ptp_tx_type;
- 	int ptp_rx_filter;
- 	u32 ptp_ipft_eid[NETC_PTP_MAX];
-@@ -212,6 +253,7 @@ static inline void netc_del_vlan_entry(struct netc_vlan_entry *entry)
- }
- 
- int netc_switch_platform_probe(struct netc_switch *priv);
-+void netc_mac_port_wr(struct netc_port *np, u32 reg, u32 val);
- 
- /* ethtool APIs */
- void netc_port_get_pause_stats(struct dsa_switch *ds, int port,
-@@ -243,5 +285,11 @@ void netc_port_twostep_tstamp_handler(struct dsa_switch *ds, int port,
- bool netc_port_rxtstamp(struct dsa_switch *ds, int port, struct sk_buff *skb,
- 			unsigned int type);
- void netc_port_txtstamp(struct dsa_switch *ds, int port, struct sk_buff *skb);
-+void netc_onestep_put(struct netc_onestep *onestep);
-+void netc_port_purge_onestep_queue(struct netc_onestep *onestep,
-+				   bool clear_flight);
-+void netc_port_onestep_work(struct work_struct *work);
-+void netc_port_onestep_sync_enqueue(struct dsa_switch *ds, int port,
-+				    struct sk_buff *skb);
- 
- #endif
-diff --git a/drivers/net/dsa/netc/netc_switch_hw.h b/drivers/net/dsa/netc/netc_switch_hw.h
-index 1404ae41c7bc..37d1dd7ec2c7 100644
---- a/drivers/net/dsa/netc/netc_switch_hw.h
-+++ b/drivers/net/dsa/netc/netc_switch_hw.h
-@@ -203,6 +203,11 @@ enum netc_stg_stage {
- #define   SSP_10M			1
- #define   SSP_1G			2
- 
-+#define NETC_PM_SINGLE_STEP(a)		(0x10c0 + (a) * 0x400)
-+#define  PM_SINGLE_STEP_CH		BIT(6)
-+#define  PM_SINGLE_STEP_OFFSET		GENMASK(15, 7)
-+#define  PM_SINGLE_STEP_EN		BIT(31)
-+
- /* Port MAC 0/1 Receive Ethernet Octets Counter */
- #define NETC_PM_REOCT(a)		(0x1100 + (a) * 0x400)
- 
-diff --git a/include/linux/dsa/tag_netc.h b/include/linux/dsa/tag_netc.h
-index da200e3ba8ad..5ac5e2e72dff 100644
---- a/include/linux/dsa/tag_netc.h
-+++ b/include/linux/dsa/tag_netc.h
-@@ -10,13 +10,23 @@
- #include <net/dsa.h>
- 
- #define NETC_TAG_MAX_LEN			14
-+#define NETC_PTP_FLAG_ONESTEP			BIT(0)
- #define NETC_PTP_FLAG_TWOSTEP			BIT(1)
-+#define NETC_PTP_FLAG_DROP			BIT(2)
- 
- struct netc_skb_cb {
- 	unsigned long ptp_tx_time;
- 	u64 tstamp;
- 	u8 ptp_flag;
- 	u8 ts_req_id;
-+	/* One-step Sync parsing results, computed in netc_port_txtstamp()
-+	 * and reused in the tagger xmit path and the deferred work, to avoid
-+	 * re-parsing the PTP header. Valid only while
-+	 * ptp_flag == NETC_PTP_FLAG_ONESTEP.
-+	 */
-+	u16 correction_offset;
-+	u16 timestamp_offset;
-+	bool is_udp;
- };
- 
- #define NETC_SKB_CB(skb)	((struct netc_skb_cb *)((skb)->cb))
-@@ -26,10 +36,22 @@ struct netc_skb_cb {
-  * @twostep_tstamp_handler: Called by the tagger when a two-step transmit
-  *	timestamp response is received, to deliver the timestamp to the
-  *	switch driver.
-+ * @onestep_sync_enqueue: Called from the tagger xmit path for a one-step Sync
-+ *	frame. The switch driver takes ownership of the skb and queues it for
-+ *	deferred transmission from process context, where the shared
-+ *	PM_SINGLE_STEP register can be programmed and the PTP timer read
-+ *	(which may sleep). The tagger must not touch the skb after this call
-+ *	and returns NULL to dsa_user_xmit().
-+ * @onestep_sync_xmit: Called by the switch driver to transmit a deferred
-+ *	one-step Sync frame directly to the conduit, bypassing dsa_user_xmit().
-  */
- struct netc_tagger_data {
- 	void (*twostep_tstamp_handler)(struct dsa_switch *ds, int port,
- 				       u8 ts_req_id, u64 ts);
-+	void (*onestep_sync_enqueue)(struct dsa_switch *ds, int port,
-+				     struct sk_buff *skb);
-+	netdev_tx_t (*onestep_sync_xmit)(struct sk_buff *skb,
-+					 struct net_device *ndev);
- };
- 
- #endif
-diff --git a/net/dsa/tag_netc.c b/net/dsa/tag_netc.c
-index 9f9a61d8133b..91548fb7ed1b 100644
---- a/net/dsa/tag_netc.c
-+++ b/net/dsa/tag_netc.c
-@@ -16,6 +16,8 @@
- #define NETC_TAG_TO_PORT		1
- /* SubType0: No request to perform timestamping */
- #define NETC_TAG_TP_SUBTYPE0		0
-+/* SubType1: Request to perform one-step timestamping */
-+#define NETC_TAG_TP_SUBTYPE1		1
- /* SubType2: Request to perform two-step timestamping */
- #define NETC_TAG_TP_SUBTYPE2		2
- 
-@@ -31,6 +33,7 @@
- /* NETC switch tag lengths */
- #define NETC_TAG_FORWARD_LEN		6
- #define NETC_TAG_TP_SUBTYPE0_LEN	6
-+#define NETC_TAG_TP_SUBTYPE1_LEN	10
- #define NETC_TAG_TP_SUBTYPE2_LEN	6
- #define NETC_TAG_TH_SUBTYPE0_LEN	6
- #define NETC_TAG_TH_SUBTYPE1_LEN	14
-@@ -44,6 +47,7 @@
- #define NETC_TAG_SWITCH			GENMASK(2, 0)
- #define NETC_TAG_PORT			GENMASK(7, 3)
- #define NETC_TAG_TS_REQ_ID		GENMASK(3, 0)
-+#define NETC_TAG_TIMESTAMP		GENMASK(29, 0)
- 
- struct netc_tag_cmn {
- 	__be16 tpid;
-@@ -52,6 +56,12 @@ struct netc_tag_cmn {
- 	u8 switch_port;
- } __packed;
- 
-+struct netc_tag_tp_subtype1 {
-+	struct netc_tag_cmn cmn;
-+	u8 resv;
-+	__be32 timestamp;
-+} __packed;
-+
- struct netc_tag_tp_subtype2 {
- 	struct netc_tag_cmn cmn;
- 	u8 ts_req_id;
-@@ -118,6 +128,17 @@ static void netc_fill_tp_tag_subtype0(struct sk_buff *skb,
- 				NETC_TAG_TP_SUBTYPE0_LEN);
- }
- 
-+static void netc_fill_tp_tag_subtype1(struct sk_buff *skb,
-+				      struct net_device *ndev)
-+{
-+	u32 ts = FIELD_PREP(NETC_TAG_TIMESTAMP, NETC_SKB_CB(skb)->tstamp);
-+	struct netc_tag_tp_subtype1 *tag;
-+
-+	tag = netc_fill_common_tp_tag(skb, ndev, NETC_TAG_TP_SUBTYPE1,
-+				      NETC_TAG_TP_SUBTYPE1_LEN);
-+	tag->timestamp = htonl(ts);
-+}
-+
- static void netc_fill_tp_tag_subtype2(struct sk_buff *skb,
- 				      struct net_device *ndev)
- {
-@@ -129,6 +150,42 @@ static void netc_fill_tp_tag_subtype2(struct sk_buff *skb,
- 	tag->ts_req_id = FIELD_PREP(NETC_TAG_TS_REQ_ID, ts_req_id);
- }
- 
-+static netdev_tx_t netc_onestep_sync_xmit(struct sk_buff *skb,
-+					  struct net_device *dev)
-+{
-+	/* This deferred one-step Sync frame already went through
-+	 * dsa_user_xmit()'s skb_ensure_writable_head_tail() and eth_skb_pad()
-+	 * before it was queued in netc_xmit(), and nothing has cloned it or
-+	 * shrunk its head/tail room since. So the head/tail room is still
-+	 * guaranteed and the skb is still writable; only the tag needs to be
-+	 * pushed before handing it directly to the conduit, bypassing
-+	 * dsa_user_xmit() so that dev_sw_netstats_tx_add() is not invoked a
-+	 * second time for the same frame.
-+	 */
-+	netc_fill_tp_tag_subtype1(skb, dev);
-+
-+	return dsa_enqueue_skb(skb, dev);
-+}
-+
-+static void netc_onestep_sync_enqueue(struct sk_buff *skb,
-+				      struct net_device *ndev)
-+{
-+	struct dsa_port *dp = dsa_user_to_port(ndev);
-+	struct netc_tagger_data *tagger_data;
-+
-+	tagger_data = dp->ds->tagger_data;
-+	if (unlikely(!tagger_data->onestep_sync_enqueue)) {
-+		kfree_skb(skb);
-+		return;
-+	}
-+
-+	/* Hand the one-step Sync to the switch driver, which takes ownership
-+	 * and queues it for deferred transmission from its work. The tagger
-+	 * must not touch the skb after this point.
-+	 */
-+	tagger_data->onestep_sync_enqueue(dp->ds, dp->index, skb);
-+}
-+
- static struct sk_buff *netc_xmit(struct sk_buff *skb,
- 				 struct net_device *ndev)
- {
-@@ -138,9 +195,19 @@ static struct sk_buff *netc_xmit(struct sk_buff *skb,
- 	if (likely(!ptp_flag)) {
- 		netc_fill_tp_tag_subtype0(skb, ndev);
- 		return skb;
-+	}
-+
-+	if (ptp_flag == NETC_PTP_FLAG_ONESTEP) {
-+		/* The switch driver takes ownership of the one-step Sync and
-+		 * queues it for deferred TX; the deferred work tags it subtype 1
-+		 * and transmits it directly to the conduit. Return NULL so
-+		 * dsa_user_xmit() stops processing this skb.
-+		 */
-+		netc_onestep_sync_enqueue(skb, ndev);
-+		return NULL;
- 	} else if (ptp_flag == NETC_PTP_FLAG_TWOSTEP) {
- 		netc_fill_tp_tag_subtype2(skb, ndev);
--	} else {
-+	} else { /* NETC_PTP_FLAG_DROP */
- 		kfree_skb(skb);
- 		return NULL;
- 	}
-@@ -317,6 +384,7 @@ static int netc_connect(struct dsa_switch *ds)
- 	if (!tagger_data)
- 		return -ENOMEM;
- 
-+	tagger_data->onestep_sync_xmit = netc_onestep_sync_xmit;
- 	ds->tagger_data = tagger_data;
- 
- 	return 0;
--- 
-2.34.1
-
+SGkgYWxsLA0KDQpJIGFjY2lkZW50YWxseSBpbmNsdWRlZCB0aGlzIHBhdGNoIGluIHRoZSBzZXJp
+ZXMgoaogaXQgd2FzIGxlZnQgb3ZlciBpbg0KbXkgbG9jYWwgYnJhbmNoIGFuZCBzaG91bGQgbm90
+IGhhdmUgYmVlbiBzZW50LiBQbGVhc2UgZGlzcmVnYXJkIGl0Lg0KDQpTb3JyeSBmb3IgdGhlIG5v
+aXNlLg0KDQpCZXN0IFJlZ2FyZHMsDQpXZWkgRmFuZw0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2Fn
+ZS0tLS0tDQo+IEZyb206IFdlaSBGYW5nIChPU1MpIDx3ZWkuZmFuZ0Bvc3MubnhwLmNvbT4NCj4g
+U2VudDogMjAyNsTqONTCOMjVIDExOjIyDQo+IFRvOiBDbGFyayBXYW5nIDx4aWFvbmluZy53YW5n
+QG54cC5jb20+OyBhbmRyZXdAbHVubi5jaDsNCj4gb2x0ZWFudkBnbWFpbC5jb207IGFuZHJldytu
+ZXRkZXZAbHVubi5jaDsgZGF2ZW1AZGF2ZW1sb2Z0Lm5ldDsNCj4gZWR1bWF6ZXRAZ29vZ2xlLmNv
+bTsga3ViYUBrZXJuZWwub3JnOyBwYWJlbmlAcmVkaGF0LmNvbTsNCj4gaG9ybXNAa2VybmVsLm9y
+ZzsgcmljaGFyZGNvY2hyYW5AZ21haWwuY29tDQo+IENjOiBXZWkgRmFuZyA8d2VpLmZhbmdAbnhw
+LmNvbT47IGlteEBsaXN0cy5saW51eC5kZXY7DQo+IG5ldGRldkB2Z2VyLmtlcm5lbC5vcmc7IGxp
+bnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7DQo+IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMu
+b3JnOyBsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcNCj4gU3ViamVjdDogW1BB
+VENIXSBuZXQ6IGRzYTogbmV0YzogYWRkIFBUUCBvbmUtc3RlcCB0aW1lc3RhbXBpbmcgc3VwcG9y
+dA0KPiANCj4gRnJvbTogV2VpIEZhbmcgPHdlaS5mYW5nQG54cC5jb20+DQo+IA0KPiBUaGUgTkVU
+QyBzd2l0Y2ggc3VwcG9ydHMgb25lLXN0ZXAgVFggdGltZXN0YW1waW5nIGZvciBQVFAgU3luYyBm
+cmFtZXMuDQo+IFRoZSBNQUMgY2FwdHVyZXMgdGhlIFNGRCB0cmFuc21pdCB0aW1lLCBhZGRzIHRo
+ZSByZXNpZGVuY2UgdGltZSB0byB0aGUNCj4gY29ycmVjdGlvbiBmaWVsZCBhdCB0aGUgb2Zmc2V0
+IGdpdmVuIGJ5IFBNX1NJTkdMRV9TVEVQW09GRlNFVF0sIGFuZA0KPiB3cml0ZXMgdGhlIHJlc3Vs
+dCBiYWNrIGJlZm9yZSB0aGUgZnJhbWUgbGVhdmVzIHRoZSB3aXJlLiBUaGUgc29mdHdhcmUNCj4g
+dGltZXN0YW1wIChsb3cgMzAgYml0cyBvZiB0aGUgUFRQIFRpbWVyIHZhbHVlKSBpcyBjYXJyaWVk
+IGluIHRoZQ0KPiBUb19Qb3J0IFN1YlR5cGUgMSB0YWcuDQo+IA0KPiBQTV9TSU5HTEVfU1RFUCBp
+cyBhIHBlci1wb3J0IHJlZ2lzdGVyIHRoYXQgY2FuIGRlc2NyaWJlIG9ubHkgb25lDQo+IGluLWZs
+aWdodCBmcmFtZSBhdCBhIHRpbWUsIGFuZCBwcm9ncmFtbWluZyBpdCByZXF1aXJlcyByZWFkaW5n
+IHRoZQ0KPiBjdXJyZW50IFBUUCB0aW1lLCB3aGljaCBtYXkgc2xlZXAuIEJvdGggY29uc3RyYWlu
+dHMgcnVsZSBvdXQgaGFuZGxpbmcNCj4gb25lLXN0ZXAgU3luYyBvbiB0aGUgeG1pdCBwYXRoLg0K
+PiANCj4gSW5zdGVhZCwgZGVmZXIgdHJhbnNtaXNzaW9uIHRvIGEgcGVyLXBvcnQgcHJvY2Vzcy1j
+b250ZXh0IHdvcmsuIFRoZQ0KPiB4bWl0IHBhdGggY2xhc3NpZmllcyB0aGUgZnJhbWUgaW4gbmV0
+Y19wb3J0X3R4dHN0YW1wKCk6IGEgZ2VudWluZQ0KPiBvbmUtc3RlcCBTeW5jICh0d29TdGVwRmxh
+ZyBjbGVhcmVkKSBoYXMgaXRzIFBUUCBoZWFkZXIgb2Zmc2V0cyBjYWNoZWQNCj4gaW4gdGhlIHNr
+YiBjb250cm9sIGJsb2NrOyBmcmFtZXMgdGhhdCBjYW5ub3QgYmUgaGFuZGxlZCBhcyBvbmUtc3Rl
+cA0KPiBmYWxsIGJhY2sgdG8gdGhlIHR3by1zdGVwIHBhdGggb3IgYXJlIHNlbnQgYXMgbm9ybWFs
+IGZyYW1lcy4NCj4gbmV0Y194bWl0KCkgaGFuZHMgdGhlIGNsYXNzaWZpZWQgZnJhbWUgdG8gdGhl
+IHN3aXRjaCBkcml2ZXIgdmlhIHRoZQ0KPiBvbmVzdGVwX3N5bmNfZW5xdWV1ZSB0YWdnZXIgY2Fs
+bGJhY2ssIHdoaWNoIHF1ZXVlcyBpdCBhbmQga2lja3MgdGhlDQo+IHdvcmsgaWYgbm8gZnJhbWUg
+aXMgY3VycmVudGx5IGluIGZsaWdodC4NCj4gDQo+IFRoZSB3b3JrIGRlcXVldWVzIG9uZSBmcmFt
+ZSBhdCBhIHRpbWUsIHJlYWRzIGEgZnJlc2ggUFRQIHRpbWUsDQo+IHByb2dyYW1zIFBNX1NJTkdM
+RV9TVEVQLCB1cGRhdGVzIHRoZSBvcmlnaW5UaW1lc3RhbXAgZmllbGQsIGFuZA0KPiB0cmFuc21p
+dHMgdGhlIGZyYW1lIGRpcmVjdGx5IHRvIHRoZSBjb25kdWl0IHZpYSB0aGUgb25lc3RlcF9zeW5j
+X3htaXQNCj4gdGFnZ2VyIGNhbGxiYWNrLCBieXBhc3NpbmcgZHNhX3VzZXJfeG1pdCgpIHRvIGF2
+b2lkIGRvdWJsZS1jb3VudGluZw0KPiBUWCBzdGF0cy4gT25seSBvbmUgZnJhbWUgaXMgaW4gZmxp
+Z2h0IGF0IGEgdGltZTogdGhlIGZyYW1lIGNhcnJpZXMgYQ0KPiBUWC1jb21wbGV0aW9uIGRlc3Ry
+dWN0b3IgdGhhdCByZXNjaGVkdWxlcyB0aGUgd29yayB3aGVuIHRoZSBjb25kdWl0DQo+IGZyZWVz
+IHRoZSBza2IsIGtlZXBpbmcgUE1fU0lOR0xFX1NURVAgYWx3YXlzIG1hdGNoZWQgdG8gdGhlIGZy
+YW1lDQo+IGJlaW5nIHRyYW5zbWl0dGVkLg0KPiANCj4gVGhlIG9uZS1zdGVwIGNvbnRleHQgaXMg
+cmVmZXJlbmNlLWNvdW50ZWQgYW5kIGl0cyBsaWZldGltZSBpcyBkZWNvdXBsZWQNCj4gZnJvbSB0
+aGUgZGV2bS1hbGxvY2F0ZWQgbmV0Y19wb3J0LiBJbi1mbGlnaHQgc2ticyBob2xkIGEgcmVmZXJl
+bmNlIHZpYQ0KPiB0aGVpciBkZXN0cnVjdG9yLCBzbyB0aGUgY29udGV4dCBvdXRsaXZlcyBwb3J0
+IGRpc2FibGUgdW50aWwgdGhlIGNvbmR1aXQNCj4gZnJlZXMgdGhlIGxhc3QgaW4tZmxpZ2h0IHNr
+Yi4gUG9ydCBkaXNhYmxlIGNsZWFycyBAYWN0aXZlIGFuZCBwdXJnZXMgdGhlDQo+IHF1ZXVlIHVu
+ZGVyIHdvcmtfbG9jazsgYSB3b3JrIHRoYXQgcnVucyBhZnRlcndhcmRzIG9ic2VydmVzIEBhY3Rp
+dmUNCj4gY2xlYXJlZCBhbmQgcmV0dXJucyB3aXRob3V0IHRvdWNoaW5nIHRoZSBmcmVlZCBwb3J0
+IHJlc291cmNlcy4NCj4gDQo+IEFzc2lzdGVkLWJ5OiBXY2hhdDpjbGF1ZGUtb3B1cy00LTgNCj4g
+U2lnbmVkLW9mZi1ieTogV2VpIEZhbmcgPHdlaS5mYW5nQG54cC5jb20+DQo+IC0tLQ0KPiAgZHJp
+dmVycy9uZXQvZHNhL25ldGMvbmV0Y19tYWluLmMgICAgICB8ICA2MSArKystDQo+ICBkcml2ZXJz
+L25ldC9kc2EvbmV0Yy9uZXRjX3B0cC5jICAgICAgIHwgNDEwDQo+ICsrKysrKysrKysrKysrKysr
+KysrKysrKystDQo+ICBkcml2ZXJzL25ldC9kc2EvbmV0Yy9uZXRjX3N3aXRjaC5oICAgIHwgIDQ4
+ICsrKw0KPiAgZHJpdmVycy9uZXQvZHNhL25ldGMvbmV0Y19zd2l0Y2hfaHcuaCB8ICAgNSArDQo+
+ICBpbmNsdWRlL2xpbnV4L2RzYS90YWdfbmV0Yy5oICAgICAgICAgIHwgIDIxICsrDQo+ICBuZXQv
+ZHNhL3RhZ19uZXRjLmMgICAgICAgICAgICAgICAgICAgIHwgIDY4ICsrKysrDQo+ICA2IGZpbGVz
+IGNoYW5nZWQsIDYwNSBpbnNlcnRpb25zKCspLCA4IGRlbGV0aW9ucygtKQ0KPiANCj4gZGlmZiAt
+LWdpdCBhL2RyaXZlcnMvbmV0L2RzYS9uZXRjL25ldGNfbWFpbi5jDQo+IGIvZHJpdmVycy9uZXQv
+ZHNhL25ldGMvbmV0Y19tYWluLmMNCj4gaW5kZXggNGUxMzlmZmMyZjc2Li45NjdmMjBhOTRkOTkg
+MTAwNjQ0DQo+IC0tLSBhL2RyaXZlcnMvbmV0L2RzYS9uZXRjL25ldGNfbWFpbi5jDQo+ICsrKyBi
+L2RyaXZlcnMvbmV0L2RzYS9uZXRjL25ldGNfbWFpbi5jDQo+IEBAIC03NCw2ICs3NCw3IEBAIHN0
+YXRpYyBpbnQgbmV0Y19jb25uZWN0X3RhZ19wcm90b2NvbChzdHJ1Y3QgZHNhX3N3aXRjaA0KPiAq
+ZHMsDQo+ICAJCXJldHVybiAtRVBST1RPTk9TVVBQT1JUOw0KPiANCj4gIAl0YWdnZXJfZGF0YSA9
+IGRzLT50YWdnZXJfZGF0YTsNCj4gKwl0YWdnZXJfZGF0YS0+b25lc3RlcF9zeW5jX2VucXVldWUg
+PQ0KPiBuZXRjX3BvcnRfb25lc3RlcF9zeW5jX2VucXVldWU7DQo+ICAJdGFnZ2VyX2RhdGEtPnR3
+b3N0ZXBfdHN0YW1wX2hhbmRsZXIgPQ0KPiBuZXRjX3BvcnRfdHdvc3RlcF90c3RhbXBfaGFuZGxl
+cjsNCj4gDQo+ICAJcmV0dXJuIDA7DQo+IEBAIC05NCw3ICs5NSw3IEBAIHN0YXRpYyB2b2lkIG5l
+dGNfcG9ydF9ybXcoc3RydWN0IG5ldGNfcG9ydCAqbnAsIHUzMiByZWcsDQo+ICAJbmV0Y19wb3J0
+X3dyKG5wLCByZWcsIG5ldyk7DQo+ICB9DQo+IA0KPiAtc3RhdGljIHZvaWQgbmV0Y19tYWNfcG9y
+dF93cihzdHJ1Y3QgbmV0Y19wb3J0ICpucCwgdTMyIHJlZywgdTMyIHZhbCkNCj4gK3ZvaWQgbmV0
+Y19tYWNfcG9ydF93cihzdHJ1Y3QgbmV0Y19wb3J0ICpucCwgdTMyIHJlZywgdTMyIHZhbCkNCj4g
+IHsNCj4gIAlpZiAoaXNfbmV0Y19wc2V1ZG9fcG9ydChucCkpDQo+ICAJCXJldHVybjsNCj4gQEAg
+LTI1Miw2ICsyNTMsMjEgQEAgc3RhdGljIHZvaWQgbmV0Y19nZXRfc3dpdGNoX2NhcGFiaWxpdGll
+cyhzdHJ1Y3QNCj4gbmV0Y19zd2l0Y2ggKnByaXYpDQo+ICAJcHJpdi0+bnVtX2JwID0gRklFTERf
+R0VUKEJQQ0FQUl9OVU1fQlAsIHZhbCk7DQo+ICB9DQo+IA0KPiArc3RhdGljIHZvaWQgbmV0Y19m
+cmVlX3VzZXJfcG9ydHMoc3RydWN0IG5ldGNfc3dpdGNoICpwcml2KQ0KPiArew0KPiArCXN0cnVj
+dCBkc2Ffc3dpdGNoICpkcyA9IHByaXYtPmRzOw0KPiArCXN0cnVjdCBkc2FfcG9ydCAqZHA7DQo+
+ICsNCj4gKwlkc2Ffc3dpdGNoX2Zvcl9lYWNoX3VzZXJfcG9ydChkcCwgZHMpIHsNCj4gKwkJc3Ry
+dWN0IG5ldGNfcG9ydCAqbnAgPSBORVRDX1BPUlQoZHMsIGRwLT5pbmRleCk7DQo+ICsNCj4gKwkJ
+aWYgKCFucC0+b25lc3RlcCkgew0KPiArCQkJbmV0Y19vbmVzdGVwX3B1dChucC0+b25lc3RlcCk7
+DQo+ICsJCQlucC0+b25lc3RlcCA9IE5VTEw7DQo+ICsJCX0NCj4gKwl9DQo+ICt9DQo+ICsNCj4g
+IHN0YXRpYyBpbnQgbmV0Y19pbml0X2FsbF9wb3J0cyhzdHJ1Y3QgbmV0Y19zd2l0Y2ggKnByaXYp
+DQo+ICB7DQo+ICAJc3RydWN0IGRldmljZSAqZGV2ID0gcHJpdi0+ZGV2Ow0KPiBAQCAtMjkyLDEz
+ICszMDgsMTMgQEAgc3RhdGljIGludCBuZXRjX2luaXRfYWxsX3BvcnRzKHN0cnVjdCBuZXRjX3N3
+aXRjaA0KPiAqcHJpdikNCj4gDQo+ICAJCWVyciA9IG5ldGNfcG9ydF9nZXRfaW5mb19mcm9tX2R0
+KG5wLCBkcC0+ZG4sIGRldik7DQo+ICAJCWlmIChlcnIpDQo+IC0JCQlyZXR1cm4gZXJyOw0KPiAr
+CQkJZ290byBmcmVlX3VzZXJfcG9ydHM7DQo+IA0KPiAgCQlpZiAoZHNhX3BvcnRfaXNfdXNlcihk
+cCkpIHsNCj4gIAkJCWVyciA9IG5ldGNfcG9ydF9jcmVhdGVfbWRpb19idXMobnAsIGRwLT5kbik7
+DQo+ICAJCQlpZiAoZXJyKSB7DQo+ICAJCQkJZGV2X2VycihkZXYsICJGYWlsZWQgdG8gY3JlYXRl
+IE1ESU8gYnVzXG4iKTsNCj4gLQkJCQlyZXR1cm4gZXJyOw0KPiArCQkJCWdvdG8gZnJlZV91c2Vy
+X3BvcnRzOw0KPiAgCQkJfQ0KPiANCj4gIAkJCS8qIFRoZSBpcGZ0X2hmX2VpZCBpcyBpbml0aWFs
+aXplZCB0byBhbiBpbnZhbGlkIGVudHJ5DQo+IEBAIC0zMTQsMTEgKzMzMCwxNiBAQCBzdGF0aWMg
+aW50IG5ldGNfaW5pdF9hbGxfcG9ydHMoc3RydWN0IG5ldGNfc3dpdGNoDQo+ICpwcml2KQ0KPiAg
+CQkJICovDQo+ICAJCQllcnIgPSBuZXRjX3BvcnRfcHRwX2luaXQobnApOw0KPiAgCQkJaWYgKGVy
+cikNCj4gLQkJCQlyZXR1cm4gZXJyOw0KPiArCQkJCWdvdG8gZnJlZV91c2VyX3BvcnRzOw0KPiAg
+CQl9DQo+ICAJfQ0KPiANCj4gIAlyZXR1cm4gMDsNCj4gKw0KPiArZnJlZV91c2VyX3BvcnRzOg0K
+PiArCW5ldGNfZnJlZV91c2VyX3BvcnRzKHByaXYpOw0KPiArDQo+ICsJcmV0dXJuIGVycjsNCj4g
+IH0NCj4gDQo+ICBzdGF0aWMgdm9pZCBuZXRjX2luaXRfbnRtcF90YmxfdmVyc2lvbnMoc3RydWN0
+IG5ldGNfc3dpdGNoICpwcml2KQ0KPiBAQCAtOTQxLDcgKzk2Miw3IEBAIHN0YXRpYyBpbnQgbmV0
+Y19zZXR1cChzdHJ1Y3QgZHNhX3N3aXRjaCAqZHMpDQo+IA0KPiAgCWVyciA9IG5ldGNfaW5pdF9u
+dG1wX3VzZXIocHJpdik7DQo+ICAJaWYgKGVycikNCj4gLQkJZ290byBwdXRfcHRwX3RpbWVyOw0K
+PiArCQlnb3RvIGZyZWVfdXNlcl9wb3J0czsNCj4gDQo+ICAJSU5JVF9ITElTVF9IRUFEKCZwcml2
+LT5mZGJfbGlzdCk7DQo+ICAJbXV0ZXhfaW5pdCgmcHJpdi0+ZmRidF9sb2NrKTsNCj4gQEAgLTk4
+MCw2ICsxMDAxLDggQEAgc3RhdGljIGludCBuZXRjX3NldHVwKHN0cnVjdCBkc2Ffc3dpdGNoICpk
+cykNCj4gIAltdXRleF9kZXN0cm95KCZwcml2LT5mZGJ0X2xvY2spOw0KPiAgCW11dGV4X2Rlc3Ry
+b3koJnByaXYtPnZmdF9sb2NrKTsNCj4gIAluZXRjX2ZyZWVfbnRtcF91c2VyKHByaXYpOw0KPiAr
+ZnJlZV91c2VyX3BvcnRzOg0KPiArCW5ldGNfZnJlZV91c2VyX3BvcnRzKHByaXYpOw0KPiAgcHV0
+X3B0cF90aW1lcjoNCj4gIAlwY2lfZGV2X3B1dChwcml2LT50bXJfZGV2KTsNCj4gDQo+IEBAIC0x
+MDA1LDYgKzEwMjgsMTkgQEAgc3RhdGljIHZvaWQgbmV0Y19mcmVlX3BvcnRzX3Jlc291cmNlcyhz
+dHJ1Y3QNCj4gbmV0Y19zd2l0Y2ggKnByaXYpDQo+ICAJCQljb250aW51ZTsNCj4gDQo+ICAJCW5l
+dGNfcG9ydF9wdXJnZV90eHRzdGFtcF9xdWV1ZShucCk7DQo+ICsNCj4gKwkJLyogZHNhX3RyZWVf
+dGVhcmRvd24oKSBjYWxscyBkc2FfdHJlZV90ZWFyZG93bl9wb3J0cygpIGJlZm9yZQ0KPiArCQkg
+KiBkc2FfdHJlZV90ZWFyZG93bl9zd2l0Y2hlcygpLCBzbyBuZXRjX3BvcnRfZGlzYWJsZSgpIGlz
+DQo+ICsJCSAqIGV4ZWN1dGVkIGJlZm9yZSBuZXRjX3RlYXJkb3duKCkgYW5kIHB1cmdlcyBvbmVz
+dGVwLT5xdWV1ZSwNCj4gKwkJICogc28gaGVyZSB3ZSBvbmx5IG5lZWQgdG8gZHJvcCB0aGUgcG9y
+dCdzIG93bmVyIHJlZmVyZW5jZS4NCj4gKwkJICogSW4tZmxpZ2h0IG9uZS1zdGVwIHNrYnMgc3Rp
+bGwgaG9sZCByZWZlcmVuY2VzIHZpYSB0aGUNCj4gKwkJICogZGVzdHJ1Y3RvcjsgdGhlIGNvbnRl
+eHQgKGFuZCBpdHMgd29yaykgaXMgZnJlZWQgb25seSBhZnRlcg0KPiArCQkgKiB0aGUgY29uZHVp
+dCBmcmVlcyB0aGUgbGFzdCBpbi1mbGlnaHQgc2tiLiBCeSB0aGVuIG5wIG1heQ0KPiArCQkgKiBi
+ZSBnb25lLCBidXQgdGhlIHdvcmsgbm8gbG9uZ2VyIGRlcmVmZXJlbmNlcyBucCBiZWNhdXNlDQo+
+ICsJCSAqIG9uZXN0ZXAtPmFjdGl2ZSBoYXMgYmVlbiBjbGVhcmVkLg0KPiArCQkgKi8NCj4gKwkJ
+bmV0Y19vbmVzdGVwX3B1dChucC0+b25lc3RlcCk7DQo+ICsJCW5wLT5vbmVzdGVwID0gTlVMTDsN
+Cj4gIAl9DQo+ICB9DQo+IA0KPiBAQCAtMTU1OSw2ICsxNTk1LDcgQEAgc3RhdGljIGludCBuZXRj
+X3BvcnRfZW5hYmxlKHN0cnVjdCBkc2Ffc3dpdGNoICpkcywNCj4gaW50IHBvcnQsDQo+ICAJCQkg
+ICAgc3RydWN0IHBoeV9kZXZpY2UgKnBoeSkNCj4gIHsNCj4gIAlzdHJ1Y3QgbmV0Y19wb3J0ICpu
+cCA9IE5FVENfUE9SVChkcywgcG9ydCk7DQo+ICsJc3RydWN0IG5ldGNfb25lc3RlcCAqb25lc3Rl
+cCA9IG5wLT5vbmVzdGVwOw0KPiAgCWludCBlcnI7DQo+IA0KPiAgCWlmIChucC0+ZW5hYmxlKQ0K
+PiBAQCAtMTU3MSw2ICsxNjA4LDEyIEBAIHN0YXRpYyBpbnQgbmV0Y19wb3J0X2VuYWJsZShzdHJ1
+Y3QgZHNhX3N3aXRjaCAqZHMsDQo+IGludCBwb3J0LA0KPiAgCQlyZXR1cm4gZXJyOw0KPiAgCX0N
+Cj4gDQo+ICsJaWYgKG9uZXN0ZXApIHsNCj4gKwkJbXV0ZXhfbG9jaygmb25lc3RlcC0+d29ya19s
+b2NrKTsNCj4gKwkJb25lc3RlcC0+YWN0aXZlID0gdHJ1ZTsNCj4gKwkJbXV0ZXhfdW5sb2NrKCZv
+bmVzdGVwLT53b3JrX2xvY2spOw0KPiArCX0NCj4gKw0KPiAgCW5wLT5lbmFibGUgPSB0cnVlOw0K
+PiANCj4gIAlyZXR1cm4gMDsNCj4gQEAgLTE1NzksNiArMTYyMiw3IEBAIHN0YXRpYyBpbnQgbmV0
+Y19wb3J0X2VuYWJsZShzdHJ1Y3QgZHNhX3N3aXRjaCAqZHMsDQo+IGludCBwb3J0LA0KPiAgc3Rh
+dGljIHZvaWQgbmV0Y19wb3J0X2Rpc2FibGUoc3RydWN0IGRzYV9zd2l0Y2ggKmRzLCBpbnQgcG9y
+dCkNCj4gIHsNCj4gIAlzdHJ1Y3QgbmV0Y19wb3J0ICpucCA9IE5FVENfUE9SVChkcywgcG9ydCk7
+DQo+ICsJc3RydWN0IG5ldGNfb25lc3RlcCAqb25lc3RlcCA9IG5wLT5vbmVzdGVwOw0KPiANCj4g
+IAkvKiBXaGVuIC5wb3J0X2Rpc2FibGUoKSBpcyBjYWxsZWQsIC5wb3J0X2VuYWJsZSgpIG1heSBu
+b3QgaGF2ZSBiZWVuDQo+ICAJICogY2FsbGVkLiBJbiB0aGlzIGNhc2UsIGJvdGggdGhlIHByZXBh
+cmVfY291bnQgYW5kIGVuYWJsZV9jb3VudCBvZg0KPiBAQCAtMTU4OCw2ICsxNjMyLDEzIEBAIHN0
+YXRpYyB2b2lkIG5ldGNfcG9ydF9kaXNhYmxlKHN0cnVjdCBkc2Ffc3dpdGNoDQo+ICpkcywgaW50
+IHBvcnQpDQo+ICAJaWYgKCFucC0+ZW5hYmxlKQ0KPiAgCQlyZXR1cm47DQo+IA0KPiArCWlmIChv
+bmVzdGVwKSB7DQo+ICsJCW11dGV4X2xvY2soJm9uZXN0ZXAtPndvcmtfbG9jayk7DQo+ICsJCW9u
+ZXN0ZXAtPmFjdGl2ZSA9IGZhbHNlOw0KPiArCQluZXRjX3BvcnRfcHVyZ2Vfb25lc3RlcF9xdWV1
+ZShvbmVzdGVwLCB0cnVlKTsNCj4gKwkJbXV0ZXhfdW5sb2NrKCZvbmVzdGVwLT53b3JrX2xvY2sp
+Ow0KPiArCX0NCj4gKw0KPiAgCWNsa19kaXNhYmxlX3VucHJlcGFyZShucC0+cmVmX2Nsayk7DQo+
+ICAJbnAtPmVuYWJsZSA9IGZhbHNlOw0KPiAgfQ0KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9uZXQv
+ZHNhL25ldGMvbmV0Y19wdHAuYyBiL2RyaXZlcnMvbmV0L2RzYS9uZXRjL25ldGNfcHRwLmMNCj4g
+aW5kZXggMTM4NGE2ZjMxZDFjLi44ODFiMDdiNjE2Y2EgMTAwNjQ0DQo+IC0tLSBhL2RyaXZlcnMv
+bmV0L2RzYS9uZXRjL25ldGNfcHRwLmMNCj4gKysrIGIvZHJpdmVycy9uZXQvZHNhL25ldGMvbmV0
+Y19wdHAuYw0KPiBAQCAtNCwxNCArNCwyNzAgQEANCj4gICAqIENvcHlyaWdodCAyMDI1LTIwMjYg
+TlhQDQo+ICAgKi8NCj4gDQo+ICsjaW5jbHVkZSA8bGludXgva3JlZi5oPg0KPiAgI2luY2x1ZGUg
+PGxpbnV4L3B0cF9jbGFzc2lmeS5oPg0KPiAgI2luY2x1ZGUgPGxpbnV4L3B0cF9jbG9ja19rZXJu
+ZWwuaD4NCj4gKyNpbmNsdWRlIDxsaW51eC9zbGFiLmg+DQo+IA0KPiAgI2luY2x1ZGUgIm5ldGNf
+c3dpdGNoLmgiDQo+IA0KPiAgI2RlZmluZSBORVRDX05VTV9UU19SRVFfSUQJCTE2DQo+ICAjZGVm
+aW5lIE5FVENfVFhUU1RBTVBfVElNRU9VVAkJKDUgKiBIWikNCj4gDQo+ICtzdGF0aWMgdm9pZCBu
+ZXRjX3BvcnRfc2V0X29uZXN0ZXBfY29udHJvbChzdHJ1Y3QgbmV0Y19wb3J0ICpucCwNCj4gKwkJ
+CQkJICBib29sIGNzdW1fdXBkYXRlLCBpbnQgb2Zmc2V0KQ0KPiArew0KPiArCXUzMiB2YWw7DQo+
+ICsNCj4gKwl2YWwgPSBQTV9TSU5HTEVfU1RFUF9FTiB8IEZJRUxEX1BSRVAoUE1fU0lOR0xFX1NU
+RVBfT0ZGU0VULA0KPiBvZmZzZXQpOw0KPiArCWlmIChjc3VtX3VwZGF0ZSkNCj4gKwkJdmFsIHw9
+IFBNX1NJTkdMRV9TVEVQX0NIOw0KPiArCW5ldGNfbWFjX3BvcnRfd3IobnAsIE5FVENfUE1fU0lO
+R0xFX1NURVAoMCksIHZhbCk7DQo+ICt9DQo+ICsNCj4gK3N0YXRpYyB2b2lkIG5ldGNfb25lc3Rl
+cF9kZXN0cm95X3dvcmsoc3RydWN0IHdvcmtfc3RydWN0ICp3b3JrKQ0KPiArew0KPiArCXN0cnVj
+dCBuZXRjX29uZXN0ZXAgKm9uZXN0ZXAgPSBjb250YWluZXJfb2Yod29yaywgc3RydWN0IG5ldGNf
+b25lc3RlcCwNCj4gKwkJCQkJCSAgICBkZXN0cm95X3dvcmspOw0KPiArDQo+ICsJLyogcmVmY250
+IHJlYWNoaW5nIHplcm8gZG9lcyBub3QgYnkgaXRzZWxmIG1lYW4gb25lc3RlcC0+d29yayBoYXMN
+Cj4gKwkgKiBzdG9wcGVkOiB0aGUgbGFzdCBpbi1mbGlnaHQgc2tiIGRlc3RydWN0b3IgY2FsbHMg
+c2NoZWR1bGVfd29yaygmd29yaykNCj4gKwkgKiAqYmVmb3JlKiB0aGUgbmV0Y19vbmVzdGVwX3B1
+dCgpIHRoYXQgZHJvcHMgdGhlIGZpbmFsIHJlZmVyZW5jZSwgc28gYXQNCj4gKwkgKiB0aGUgbW9t
+ZW50IHJlZmNudCBoaXRzIHplcm8gb25lc3RlcC0+d29yayBtYXkgc3RpbGwgYmUgcGVuZGluZyBv
+cg0KPiArCSAqIHJ1bm5pbmcgb24gYW5vdGhlciBDUFUuIGRlc3Ryb3lfd29yayBhbmQgd29yayBh
+cmUgZGlzdGluY3QNCj4gd29ya19zdHJ1Y3RzDQo+ICsJICogYW5kIGNhbiBydW4gY29uY3VycmVu
+dGx5LCBzbyBjYW5jZWxfd29ya19zeW5jKCkgaXMgcmVxdWlyZWQgdG8gZHJhaW4NCj4gKwkgKiBv
+bmVzdGVwLT53b3JrIGJlZm9yZSBtdXRleF9kZXN0cm95KCkva2ZyZWUoKSBiZWxvdywgb3RoZXJ3
+aXNlIGENCj4gKwkgKiBzdGlsbC1ydW5uaW5nIHdvcmsgd291bGQgdG91Y2ggZnJlZWQgbWVtb3J5
+LiBObyBuZXcNCj4gc2NoZWR1bGVfd29yaygmd29yaykNCj4gKwkgKiBjYW4gb2NjdXIgYWZ0ZXIg
+dGhpcyBwb2ludCBiZWNhdXNlIG5vIHJlZmVyZW5jZXMgcmVtYWluLCBzbyB0aGlzDQo+ICsJICog
+Y2FuY2VsIGlzIGZpbmFsLg0KPiArCSAqLw0KPiArCWNhbmNlbF93b3JrX3N5bmMoJm9uZXN0ZXAt
+PndvcmspOw0KPiArCW11dGV4X2Rlc3Ryb3koJm9uZXN0ZXAtPndvcmtfbG9jayk7DQo+ICsJa2Zy
+ZWUob25lc3RlcCk7DQo+ICt9DQo+ICsNCj4gK3N0YXRpYyB2b2lkIG5ldGNfb25lc3RlcF9yZWxl
+YXNlKHN0cnVjdCBrcmVmICpyZWYpDQo+ICt7DQo+ICsJc3RydWN0IG5ldGNfb25lc3RlcCAqb25l
+c3RlcCA9IGNvbnRhaW5lcl9vZihyZWYsIHN0cnVjdCBuZXRjX29uZXN0ZXAsDQo+ICsJCQkJCQkg
+ICAgcmVmY250KTsNCj4gKw0KPiArCS8qIFRoaXMgbWF5IGJlIGNhbGxlZCBmcm9tIHRoZSBza2Ig
+ZGVzdHJ1Y3RvciBpbiBzb2Z0aXJxIGNvbnRleHQNCj4gKwkgKiAobmFwaV9jb25zdW1lX3NrYigp
+KSwgd2hlcmUgY2FuY2VsX3dvcmtfc3luYygpIG11c3Qgbm90IGJlIHVzZWQuDQo+ICsJICogRGVm
+ZXIgdGhlIGZpbmFsIHRlYXJkb3duIHRvIHByb2Nlc3MgY29udGV4dC4NCj4gKwkgKi8NCj4gKwlz
+Y2hlZHVsZV93b3JrKCZvbmVzdGVwLT5kZXN0cm95X3dvcmspOw0KPiArfQ0KPiArDQo+ICtzdGF0
+aWMgdm9pZCBuZXRjX29uZXN0ZXBfZ2V0KHN0cnVjdCBuZXRjX29uZXN0ZXAgKm9uZXN0ZXApDQo+
+ICt7DQo+ICsJa3JlZl9nZXQoJm9uZXN0ZXAtPnJlZmNudCk7DQo+ICt9DQo+ICsNCj4gK3ZvaWQg
+bmV0Y19vbmVzdGVwX3B1dChzdHJ1Y3QgbmV0Y19vbmVzdGVwICpvbmVzdGVwKQ0KPiArew0KPiAr
+CWtyZWZfcHV0KCZvbmVzdGVwLT5yZWZjbnQsIG5ldGNfb25lc3RlcF9yZWxlYXNlKTsNCj4gK30N
+Cj4gKw0KPiArc3RhdGljIHZvaWQgbmV0Y19vbmVzdGVwX3NrYl9kZXN0cnVjdG9yKHN0cnVjdCBz
+a19idWZmICpza2IpDQo+ICt7DQo+ICsJc3RydWN0IG5ldGNfb25lc3RlcCAqb25lc3RlcCA9IHNr
+Yl9zaGluZm8oc2tiKS0+ZGVzdHJ1Y3Rvcl9hcmc7DQo+ICsNCj4gKwkvKiBza2IgaGFzIGJlZW4g
+dHJhbnNtaXR0ZWQgYnkgaGFyZHdhcmUuIFNjaGVkdWxlIHdvcmsgdG8gc2VuZCB0aGUgbmV4dA0K
+PiArCSAqIHF1ZXVlZCBvbmUtc3RlcCBTeW5jIHBhY2tldCwgdGhlbiByZWxlYXNlIHRoaXMgc2ti
+J3MgcmVmZXJlbmNlIG9uIHRoZQ0KPiArCSAqIGNvbnRleHQuIElmIHRoZSBwb3J0IGhhcyBhbHJl
+YWR5IGJlZW4gdG9ybiBkb3duIGFuZCB0aGlzIGlzIHRoZSBsYXN0DQo+ICsJICogcmVmZXJlbmNl
+LCB0aGUgY29udGV4dCBpcyBmcmVlZCB2aWEgbmV0Y19vbmVzdGVwX3JlbGVhc2UoKS4NCj4gKwkg
+Ki8NCj4gKwlzY2hlZHVsZV93b3JrKCZvbmVzdGVwLT53b3JrKTsNCj4gKwluZXRjX29uZXN0ZXBf
+cHV0KG9uZXN0ZXApOw0KPiArfQ0KPiArDQo+ICtzdGF0aWMgdm9pZCBuZXRjX3BvcnRfcHJvZ3Jh
+bV9vbmVzdGVwKHN0cnVjdCBuZXRjX3BvcnQgKm5wLA0KPiArCQkJCSAgICAgIHN0cnVjdCBuZXRj
+X29uZXN0ZXAgKm9uZXN0ZXAsDQo+ICsJCQkJICAgICAgc3RydWN0IHNrX2J1ZmYgKnNrYiwNCj4g
+KwkJCQkgICAgICB1NjQgdHN0YW1wKQ0KPiArew0KPiArCXUxNiBjb3JyZWN0aW9uX29mZnNldCA9
+IE5FVENfU0tCX0NCKHNrYiktPmNvcnJlY3Rpb25fb2Zmc2V0Ow0KPiArCXUxNiB0c3RhbXBfb2Zm
+c2V0ID0gTkVUQ19TS0JfQ0Ioc2tiKS0+dGltZXN0YW1wX29mZnNldDsNCj4gKwl1OCAqaGRyID0g
+c2tiX21hY19oZWFkZXIoc2tiKTsNCj4gKwlib29sIGNzdW1fdXBkYXRlID0gZmFsc2U7DQo+ICsJ
+X19iZTMyIG5ld19zZWNfbCwgbmV3X25zOw0KPiArCV9fYmUxNiBuZXdfc2VjX2g7DQo+ICsJdTY0
+IHNlYzsNCj4gKwl1MzIgbnM7DQo+ICsNCj4gKwlORVRDX1NLQl9DQihza2IpLT50c3RhbXAgPSB0
+c3RhbXA7DQo+ICsJTkVUQ19TS0JfQ0Ioc2tiKS0+cHRwX2ZsYWcgPSBORVRDX1BUUF9GTEFHX09O
+RVNURVA7DQo+ICsNCj4gKwkvKiBVcGRhdGUgb3JpZ2luVGltZXN0YW1wIGZpZWxkIG9mIFN5bmMg
+cGFja2V0DQo+ICsJICogLSA0OCBiaXRzIHNlY29uZHMgZmllbGQNCj4gKwkgKiAtIDMyIGJpdHMg
+bmFub3NlY29uZHMgZmllbGQNCj4gKwkgKi8NCj4gKwlzZWMgPSBkaXZfdTY0X3JlbSh0c3RhbXAs
+IE5TRUNfUEVSX1NFQywgJm5zKTsNCj4gKwluZXdfc2VjX2ggPSBodG9ucygoc2VjID4+IDMyKSAm
+IDB4ZmZmZik7DQo+ICsJbmV3X3NlY19sID0gaHRvbmwoc2VjICYgMHhmZmZmZmZmZik7DQo+ICsJ
+bmV3X25zID0gaHRvbmwobnMpOw0KPiArDQo+ICsJaWYgKE5FVENfU0tCX0NCKHNrYiktPmlzX3Vk
+cCkgew0KPiArCQlfX2JlMzIgb2xkX3NlY19sLCBvbGRfbnM7DQo+ICsJCXN0cnVjdCB1ZHBoZHIg
+KnVoOw0KPiArCQlfX2JlMTYgb2xkX3NlY19oOw0KPiArDQo+ICsJCWlmIChza2ItPmlwX3N1bW1l
+ZCA9PSBDSEVDS1NVTV9QQVJUSUFMKSB7DQo+ICsJCQljc3VtX3VwZGF0ZSA9IHRydWU7DQo+ICsJ
+CQlnb3RvIHVwZGF0ZV90aW1lc3RhbXA7DQo+ICsJCX0NCj4gKw0KPiArCQlpZiAodW5saWtlbHko
+IXNrYl90cmFuc3BvcnRfaGVhZGVyX3dhc19zZXQoc2tiKSkpDQo+ICsJCQl1aCA9IChzdHJ1Y3Qg
+dWRwaGRyICopKGhkciArIHRzdGFtcF9vZmZzZXQgLQ0KPiArCQkJCQkgICAgICAgc2l6ZW9mKHN0
+cnVjdCBwdHBfaGVhZGVyKSAtDQo+ICsJCQkJCSAgICAgICBzaXplb2Yoc3RydWN0IHVkcGhkcikp
+Ow0KPiArCQllbHNlDQo+ICsJCQl1aCA9IHVkcF9oZHIoc2tiKTsNCj4gKw0KPiArCQkvKiBGb3Ig
+SVB2NCwgYSBVRFAgY2hlY2tzdW0gb2YgemVybyBvbiB0aGUgd2lyZSBtZWFucyAibm8NCj4gKwkJ
+ICogY2hlY2tzdW0iLiBGb3IgSVB2NiwgaXRzIFVEUCBjaGVja3N1bSBpcyBtYW5kYXRvcnkgYW5k
+DQo+ICsJCSAqIG5ldmVyIHplcm8uDQo+ICsJCSAqLw0KPiArCQlpZiAoIXVoLT5jaGVjaykNCj4g
+KwkJCWdvdG8gdXBkYXRlX3RpbWVzdGFtcDsNCj4gKw0KPiArCQlvbGRfc2VjX2ggPSBfX2dldF91
+bmFsaWduZWRfdChfX2JlMTYsIGhkciArIHRzdGFtcF9vZmZzZXQpOw0KPiArCQlvbGRfc2VjX2wg
+PSBfX2dldF91bmFsaWduZWRfdChfX2JlMzIsIGhkciArIHRzdGFtcF9vZmZzZXQgKyAyKTsNCj4g
+KwkJb2xkX25zID0gX19nZXRfdW5hbGlnbmVkX3QoX19iZTMyLCBoZHIgKyB0c3RhbXBfb2Zmc2V0
+ICsgNik7DQo+ICsJCWluZXRfcHJvdG9fY3N1bV9yZXBsYWNlMigmdWgtPmNoZWNrLCBza2IsIG9s
+ZF9zZWNfaCwNCj4gKwkJCQkJIG5ld19zZWNfaCwgZmFsc2UpOw0KPiArCQlpbmV0X3Byb3RvX2Nz
+dW1fcmVwbGFjZTQoJnVoLT5jaGVjaywgc2tiLCBvbGRfc2VjX2wsDQo+ICsJCQkJCSBuZXdfc2Vj
+X2wsIGZhbHNlKTsNCj4gKwkJaW5ldF9wcm90b19jc3VtX3JlcGxhY2U0KCZ1aC0+Y2hlY2ssIHNr
+Yiwgb2xkX25zLA0KPiArCQkJCQkgbmV3X25zLCBmYWxzZSk7DQo+ICsJCWNzdW1fdXBkYXRlID0g
+dHJ1ZTsNCj4gKwl9DQo+ICsNCj4gK3VwZGF0ZV90aW1lc3RhbXA6DQo+ICsJX19wdXRfdW5hbGln
+bmVkX3QoX19iZTE2LCBuZXdfc2VjX2gsIGhkciArIHRzdGFtcF9vZmZzZXQpOw0KPiArCV9fcHV0
+X3VuYWxpZ25lZF90KF9fYmUzMiwgbmV3X3NlY19sLCBoZHIgKyB0c3RhbXBfb2Zmc2V0ICsgMik7
+DQo+ICsJX19wdXRfdW5hbGlnbmVkX3QoX19iZTMyLCBuZXdfbnMsIGhkciArIHRzdGFtcF9vZmZz
+ZXQgKyA2KTsNCj4gKw0KPiArCW5ldGNfcG9ydF9zZXRfb25lc3RlcF9jb250cm9sKG5wLCBjc3Vt
+X3VwZGF0ZSwgY29ycmVjdGlvbl9vZmZzZXQpOw0KPiArDQo+ICsJLyogT3JwaGFuIHRoZSBza2Ig
+dG8gcmVsZWFzZSB0aGUgc29ja2V0IHNlbmQgYnVmZmVyIHF1b3RhIGltbWVkaWF0ZWx5Lg0KPiAr
+CSAqIFRoaXMgaXMgc2FmZSBiZWNhdXNlIHNvY2tfd2ZyZWUoKSBkb2VzIG5vdCBhY2Nlc3Mgc2ti
+LT5kYXRhIG9yIGFueQ0KPiArCSAqIGZyYW1lIGNvbnRlbnQuIEFmdGVyIHNrYl9vcnBoYW4oKSwg
+d2UgaW5zdGFsbCBvdXIgb3duIGRlc3RydWN0b3Igc28NCj4gKwkgKiB0aGF0IHdoZW4gdGhlIGNv
+bmR1aXQgZHJpdmVyIGZyZWVzIHRoZSBza2IgYWZ0ZXIgVFggY29tcGxldGlvbiwgd2UNCj4gKwkg
+KiBnZXQgbm90aWZpZWQgdG8gc2VuZCB0aGUgbmV4dCBxdWV1ZWQgU3luYyBwYWNrZXQuDQo+ICsJ
+ICovDQo+ICsJc2tiX29ycGhhbihza2IpOw0KPiArCW5ldGNfb25lc3RlcF9nZXQob25lc3RlcCk7
+IC8qIGluLWZsaWdodCByZWZlcmVuY2UgKi8NCj4gKwlza2Jfc2hpbmZvKHNrYiktPmRlc3RydWN0
+b3JfYXJnID0gb25lc3RlcDsNCj4gKwlza2ItPmRlc3RydWN0b3IgPSBuZXRjX29uZXN0ZXBfc2ti
+X2Rlc3RydWN0b3I7DQo+ICt9DQo+ICsNCj4gK3N0YXRpYyB1NjQgbmV0Y19nZXRfcGhjX3RpbWUo
+c3RydWN0IG5ldGNfc3dpdGNoICpwcml2KQ0KPiArew0KPiArCWlmICh1bmxpa2VseSghcHJpdi0+
+dG1yX2RldikpDQo+ICsJCXJldHVybiAwOw0KPiArDQo+ICsJcmV0dXJuIG5ldGNfdGltZXJfZ2V0
+X2N1cnJlbnRfdGltZShwcml2LT50bXJfZGV2KTsNCj4gK30NCj4gKw0KPiArdm9pZCBuZXRjX3Bv
+cnRfb25lc3RlcF93b3JrKHN0cnVjdCB3b3JrX3N0cnVjdCAqd29yaykNCj4gK3sNCj4gKwlzdHJ1
+Y3QgbmV0Y19vbmVzdGVwICpvbmVzdGVwID0gY29udGFpbmVyX29mKHdvcmssIHN0cnVjdCBuZXRj
+X29uZXN0ZXAsDQo+ICsJCQkJCQkgICAgd29yayk7DQo+ICsJc3RydWN0IG5ldGNfdGFnZ2VyX2Rh
+dGEgKnRhZ2dlcl9kYXRhOw0KPiArCXN0cnVjdCBuZXRjX3N3aXRjaCAqcHJpdjsNCj4gKwlzdHJ1
+Y3QgbmV0Y19wb3J0ICpucDsNCj4gKwlzdHJ1Y3Qgc2tfYnVmZiAqc2tiOw0KPiArCXU2NCB0c3Rh
+bXA7DQo+ICsNCj4gKwkvKiBTZXJpYWxpemUgdGhlIHdob2xlIGhhcmR3YXJlIGFjY2VzcyBhZ2Fp
+bnN0IHBvcnQgZGlzYWJsZS4gd29ya19sb2NrDQo+ICsJICogaXMgYSBtdXRleCAodGhpcyBydW5z
+IGluIHByb2Nlc3MgY29udGV4dCBhbmQgbmV0Y19nZXRfcGhjX3RpbWUoKSBtYXkNCj4gKwkgKiBz
+bGVlcCkuIElmIHRoZSBwb3J0IGhhcyBiZWVuIGRpc2FibGVkLCBiYWlsIG91dCBpbW1lZGlhdGVs
+eTsgbnAgYW5kDQo+ICsJICogcHJpdiBhcmUgb25seSBkZXJlZmVyZW5jZWQgYWZ0ZXIgdGhlIEBh
+Y3RpdmUgY2hlY2sgcGFzc2VzLCBzbyB0aGV5DQo+ICsJICogYXJlIGFsd2F5cyB2YWxpZCBoZXJl
+Lg0KPiArCSAqLw0KPiArCW11dGV4X2xvY2soJm9uZXN0ZXAtPndvcmtfbG9jayk7DQo+ICsJaWYg
+KHVubGlrZWx5KCFvbmVzdGVwLT5hY3RpdmUpKSB7DQo+ICsJCW5ldGNfcG9ydF9wdXJnZV9vbmVz
+dGVwX3F1ZXVlKG9uZXN0ZXAsIHRydWUpOw0KPiArCQlnb3RvIHVubG9ja193b3JrOw0KPiArCX0N
+Cj4gKw0KPiArCS8qIFNlbmQgb25seSBvbmUgcXVldWVkIFN5bmMgcGVyIHJ1bi4gVGhlIHNoYXJl
+ZCBTSU5HTEVfU1RFUCByZWdpc3Rlcg0KPiArCSAqIG11c3QgbWF0Y2ggdGhlIGZyYW1lIGN1cnJl
+bnRseSBiZWluZyB0cmFuc21pdHRlZCwgc28gdGhlIG5leHQgZnJhbWUNCj4gKwkgKiBpcyBwcm9n
+cmFtbWVkIG9ubHkgYWZ0ZXIgdGhpcyBvbmUgY29tcGxldGVzIFRYLCB3aGVuIGl0cyBza2INCj4g
+KwkgKiBkZXN0cnVjdG9yIHJlc2NoZWR1bGVzIHRoaXMgd29yay4gRGVxdWV1ZSB1bmRlcg0KPiBv
+bmVzdGVwLT5xdWV1ZV9sb2NrLA0KPiArCSAqIGFuZCBpZiB0aGUgcXVldWUgaGFzIGRyYWluZWQs
+IHJlbGVhc2UgdGhlIGluLWZsaWdodCBzbG90IHNvIGEgbGF0ZXINCj4gKwkgKiBmcmFtZSBmcm9t
+IHRoZSB4bWl0IHBhdGgga2lja3MgdGhlIHdvcmsgYWdhaW4uDQo+ICsJICovDQo+ICsJc3Bpbl9s
+b2NrX2JoKCZvbmVzdGVwLT5xdWV1ZV9sb2NrKTsNCj4gKwlza2IgPSBfX3NrYl9kZXF1ZXVlKCZv
+bmVzdGVwLT5xdWV1ZSk7DQo+ICsJaWYgKCFza2IpIHsNCj4gKwkJb25lc3RlcC0+aW5fZmxpZ2h0
+ID0gZmFsc2U7DQo+ICsJCXNwaW5fdW5sb2NrX2JoKCZvbmVzdGVwLT5xdWV1ZV9sb2NrKTsNCj4g
+KwkJZ290byB1bmxvY2tfd29yazsNCj4gKwl9DQo+ICsJc3Bpbl91bmxvY2tfYmgoJm9uZXN0ZXAt
+PnF1ZXVlX2xvY2spOw0KPiArDQo+ICsJbnAgPSBvbmVzdGVwLT5ucDsNCj4gKwlwcml2ID0gbnAt
+PnN3aXRjaF9wcml2Ow0KPiArCXRzdGFtcCA9IG5ldGNfZ2V0X3BoY190aW1lKHByaXYpOw0KPiAr
+CWlmICh1bmxpa2VseSghdHN0YW1wKSkgew0KPiArCQkvKiBUaGUgUFRQIHRpbWVyIGlzIG5vdCBh
+dmFpbGFibGUsIHNvIHRoZXJlIGlzIG5vIGNvcnJlY3QNCj4gKwkJICogdGltZXN0YW1wIHRvIHBy
+b2dyYW0uIERyb3AgdGhpcyBmcmFtZSBhbmQgcmUta2ljayB0byBwcm9jZXNzDQo+ICsJCSAqIHRo
+ZSByZW1haW5pbmcgcXVldWVkIGZyYW1lcy4NCj4gKwkJICoNCj4gKwkJICogbmV0Y19wb3J0X3By
+b2dyYW1fb25lc3RlcCgpIGhhcyBub3QgcnVuIGZvciB0aGlzIHNrYiB5ZXQsIHNvDQo+ICsJCSAq
+IG5ldGNfb25lc3RlcF9za2JfZGVzdHJ1Y3RvcigpIGlzIG5vdCBpbnN0YWxsZWQgb24gaXQuIEZy
+ZWVpbmcNCj4gKwkJICogaXQgdGhlcmVmb3JlIGRvZXMgbm90IHJlc2NoZWR1bGUgdGhlIHdvcmss
+IHNvIHRoZSB3b3JrIG11c3QgYmUNCj4gKwkJICogcmVzY2hlZHVsZWQgZXhwbGljaXRseSB0byBr
+ZWVwIGRyYWluaW5nIHRoZSBxdWV1ZS4NCj4gKwkJICovDQo+ICsJCWRldl9kYmdfcmF0ZWxpbWl0
+ZWQocHJpdi0+ZGV2LA0KPiArCQkJCSAgICAiUG9ydCAlZCBQVFAgdGltZXIgdW5hdmFpbGFibGUs
+IGRyb3AgU3luY1xuIiwNCj4gKwkJCQkgICAgbnAtPmRwLT5pbmRleCk7DQo+ICsJCWtmcmVlX3Nr
+Yihza2IpOw0KPiArCQlzY2hlZHVsZV93b3JrKCZvbmVzdGVwLT53b3JrKTsNCj4gKwkJZ290byB1
+bmxvY2tfd29yazsNCj4gKwl9DQo+ICsNCj4gKwkvKiBSZXVzZSB0aGUgb2Zmc2V0cyBjYWNoZWQg
+YXQgZW5xdWV1ZSB0aW1lOyBvbmx5IHRoZSB0aW1lc3RhbXAgaXMNCj4gKwkgKiByZWFkIGZyZXNo
+IHNvIGl0IHJlZmxlY3RzIHRoZSBhY3R1YWwgVFggbW9tZW50Lg0KPiArCSAqLw0KPiArCW5ldGNf
+cG9ydF9wcm9ncmFtX29uZXN0ZXAobnAsIG9uZXN0ZXAsIHNrYiwgdHN0YW1wKTsNCj4gKw0KPiAr
+CS8qIFRhZyBhbmQgaGFuZCB0aGUgZnJhbWUgZGlyZWN0bHkgdG8gdGhlIGNvbmR1aXQgdmlhIHRo
+ZSB0YWdnZXIsDQo+ICsJICogYnlwYXNzaW5nIGRzYV91c2VyX3htaXQoKSBzbyB0aGUgVFggc3Rh
+dHMgYXJlIG5vdCBjb3VudGVkIHR3aWNlLg0KPiArCSAqIEFuZCB0aGVyZSBpcyBubyBuZWVkIHRv
+IGNoZWNrIGlmIHRhZ2dlcl9kYXRhIGlzIE5VTEwsIGJlY2F1c2UNCj4gKwkgKiBkc2FfdHJlZV90
+ZWFyZG93bl9wb3J0cygpIGV4ZWN1dGVzIGJlZm9yZQ0KPiArCSAqIGRzYV9zd2l0Y2hfdGVhcmRv
+d25fdGFnX3Byb3RvY29sKCksIHNvIHRhZ2dlcl9kYXRhIGNhbm5vdCBiZQ0KPiArCSAqIE5VTEwg
+d2hlbiBvbmVzdGVwLT5hY3RpdmUgaXMgc2V0Lg0KPiArCSAqLw0KPiArCXRhZ2dlcl9kYXRhID0g
+cHJpdi0+ZHMtPnRhZ2dlcl9kYXRhOw0KPiArCXRhZ2dlcl9kYXRhLT5vbmVzdGVwX3N5bmNfeG1p
+dChza2IsIG5wLT5kcC0+dXNlcik7DQo+ICsNCj4gK3VubG9ja193b3JrOg0KPiArCW11dGV4X3Vu
+bG9jaygmb25lc3RlcC0+d29ya19sb2NrKTsNCj4gK30NCj4gKw0KPiArc3RhdGljIGludCBuZXRj
+X3BvcnRfb25lc3RlcF9hbGxvYyhzdHJ1Y3QgbmV0Y19wb3J0ICpucCkNCj4gK3sNCj4gKwlzdHJ1
+Y3QgbmV0Y19vbmVzdGVwICpvbmVzdGVwOw0KPiArDQo+ICsJb25lc3RlcCA9IGt6YWxsb2Nfb2Jq
+KCpvbmVzdGVwKTsNCj4gKwlpZiAoIW9uZXN0ZXApDQo+ICsJCXJldHVybiAtRU5PTUVNOw0KPiAr
+DQo+ICsJa3JlZl9pbml0KCZvbmVzdGVwLT5yZWZjbnQpOyAvKiBwb3J0IChvd25lcikgcmVmZXJl
+bmNlICovDQo+ICsJbnAtPm9uZXN0ZXAgPSBvbmVzdGVwOw0KPiArCW9uZXN0ZXAtPm5wID0gbnA7
+DQo+ICsJbXV0ZXhfaW5pdCgmb25lc3RlcC0+d29ya19sb2NrKTsNCj4gKwlzcGluX2xvY2tfaW5p
+dCgmb25lc3RlcC0+cXVldWVfbG9jayk7DQo+ICsJX19za2JfcXVldWVfaGVhZF9pbml0KCZvbmVz
+dGVwLT5xdWV1ZSk7DQo+ICsJSU5JVF9XT1JLKCZvbmVzdGVwLT53b3JrLCBuZXRjX3BvcnRfb25l
+c3RlcF93b3JrKTsNCj4gKwlJTklUX1dPUksoJm9uZXN0ZXAtPmRlc3Ryb3lfd29yaywgbmV0Y19v
+bmVzdGVwX2Rlc3Ryb3lfd29yayk7DQo+ICsNCj4gKwlyZXR1cm4gMDsNCj4gK30NCj4gKw0KPiAg
+aW50IG5ldGNfcG9ydF9wdHBfaW5pdChzdHJ1Y3QgbmV0Y19wb3J0ICpucCkNCj4gIHsNCj4gIAkv
+KiBJbml0aWFsaXplIHRvIGludmFsaWQgZW50cnkgSURzICovDQo+IEBAIC0yMSw3ICsyNzcsNyBA
+QCBpbnQgbmV0Y19wb3J0X3B0cF9pbml0KHN0cnVjdCBuZXRjX3BvcnQgKm5wKQ0KPiAgCXNwaW5f
+bG9ja19pbml0KCZucC0+dHN0YW1wX2xvY2spOw0KPiAgCV9fc2tiX3F1ZXVlX2hlYWRfaW5pdCgm
+bnAtPnNrYl90eHRzdGFtcF9xdWV1ZSk7DQo+IA0KPiAtCXJldHVybiAwOw0KPiArCXJldHVybiBu
+ZXRjX3BvcnRfb25lc3RlcF9hbGxvYyhucCk7DQo+ICB9DQo+IA0KPiAgc3RhdGljIGludCBuZXRj
+X2dldF9waGNfaW5kZXgoc3RydWN0IG5ldGNfc3dpdGNoICpwcml2KQ0KPiBAQCAtNDUsNyArMzAx
+LDggQEAgaW50IG5ldGNfZ2V0X3RzX2luZm8oc3RydWN0IGRzYV9zd2l0Y2ggKmRzLCBpbnQgcG9y
+dCwNCj4gIAkJCQkgU09GX1RJTUVTVEFNUElOR19SWF9IQVJEV0FSRSB8DQo+ICAJCQkJIFNPRl9U
+SU1FU1RBTVBJTkdfUkFXX0hBUkRXQVJFOw0KPiANCj4gLQlpbmZvLT50eF90eXBlcyA9IEJJVChI
+V1RTVEFNUF9UWF9PRkYpIHwgQklUKEhXVFNUQU1QX1RYX09OKTsNCj4gKwlpbmZvLT50eF90eXBl
+cyA9IEJJVChIV1RTVEFNUF9UWF9PRkYpIHwgQklUKEhXVFNUQU1QX1RYX09OKSB8DQo+ICsJCQkg
+QklUKEhXVFNUQU1QX1RYX09ORVNURVBfU1lOQyk7DQo+IA0KPiAgCWluZm8tPnJ4X2ZpbHRlcnMg
+PSBCSVQoSFdUU1RBTVBfRklMVEVSX05PTkUpIHwNCj4gIAkJCSAgIEJJVChIV1RTVEFNUF9GSUxU
+RVJfUFRQX1YyX0VWRU5UKSB8DQo+IEBAIC0yNjIsNiArNTE5LDIyIEBAIHZvaWQgbmV0Y19wb3J0
+X3B1cmdlX3R4dHN0YW1wX3F1ZXVlKHN0cnVjdA0KPiBuZXRjX3BvcnQgKm5wKQ0KPiAgCV9fc2ti
+X3F1ZXVlX3B1cmdlKCZmcmVlX2xpc3QpOw0KPiAgfQ0KPiANCj4gK3ZvaWQgbmV0Y19wb3J0X3B1
+cmdlX29uZXN0ZXBfcXVldWUoc3RydWN0IG5ldGNfb25lc3RlcCAqb25lc3RlcCwNCj4gKwkJCQkg
+ICBib29sIGNsZWFyX2ZsaWdodCkNCj4gK3sNCj4gKwlzdHJ1Y3Qgc2tfYnVmZl9oZWFkIGZyZWVf
+bGlzdDsNCj4gKw0KPiArCV9fc2tiX3F1ZXVlX2hlYWRfaW5pdCgmZnJlZV9saXN0KTsNCj4gKw0K
+PiArCXNwaW5fbG9ja19iaCgmb25lc3RlcC0+cXVldWVfbG9jayk7DQo+ICsJc2tiX3F1ZXVlX3Nw
+bGljZV9pbml0KCZvbmVzdGVwLT5xdWV1ZSwgJmZyZWVfbGlzdCk7DQo+ICsJaWYgKGNsZWFyX2Zs
+aWdodCkNCj4gKwkJb25lc3RlcC0+aW5fZmxpZ2h0ID0gZmFsc2U7DQo+ICsJc3Bpbl91bmxvY2tf
+YmgoJm9uZXN0ZXAtPnF1ZXVlX2xvY2spOw0KPiArDQo+ICsJX19za2JfcXVldWVfcHVyZ2UoJmZy
+ZWVfbGlzdCk7DQo+ICt9DQo+ICsNCj4gIGludCBuZXRjX3BvcnRfaHd0c3RhbXBfc2V0KHN0cnVj
+dCBkc2Ffc3dpdGNoICpkcywgaW50IHBvcnQsDQo+ICAJCQkgICBzdHJ1Y3Qga2VybmVsX2h3dHN0
+YW1wX2NvbmZpZyAqY29uZmlnLA0KPiAgCQkJICAgc3RydWN0IG5ldGxpbmtfZXh0X2FjayAqZXh0
+YWNrKQ0KPiBAQCAtMjc4LDYgKzU1MSw3IEBAIGludCBuZXRjX3BvcnRfaHd0c3RhbXBfc2V0KHN0
+cnVjdCBkc2Ffc3dpdGNoICpkcywgaW50DQo+IHBvcnQsDQo+ICAJc3dpdGNoIChjb25maWctPnR4
+X3R5cGUpIHsNCj4gIAljYXNlIEhXVFNUQU1QX1RYX09OOg0KPiAgCWNhc2UgSFdUU1RBTVBfVFhf
+T0ZGOg0KPiArCWNhc2UgSFdUU1RBTVBfVFhfT05FU1RFUF9TWU5DOg0KPiAgCQlicmVhazsNCj4g
+IAlkZWZhdWx0Og0KPiAgCQlyZXR1cm4gLUVSQU5HRTsNCj4gQEAgLTMxNiw2ICs1OTAsOSBAQCBp
+bnQgbmV0Y19wb3J0X2h3dHN0YW1wX3NldChzdHJ1Y3QgZHNhX3N3aXRjaCAqZHMsIGludA0KPiBw
+b3J0LA0KPiAgCWlmIChjb25maWctPnR4X3R5cGUgPT0gSFdUU1RBTVBfVFhfT0ZGKQ0KPiAgCQlu
+ZXRjX3BvcnRfcHVyZ2VfdHh0c3RhbXBfcXVldWUobnApOw0KPiANCj4gKwlpZiAoY29uZmlnLT50
+eF90eXBlICE9IEhXVFNUQU1QX1RYX09ORVNURVBfU1lOQykNCj4gKwkJbmV0Y19wb3J0X3B1cmdl
+X29uZXN0ZXBfcXVldWUobnAtPm9uZXN0ZXAsIGZhbHNlKTsNCj4gKw0KPiAgCWNvbmZpZy0+cnhf
+ZmlsdGVyID0gcnhfZmlsdGVyOw0KPiANCj4gIAlyZXR1cm4gMDsNCj4gQEAgLTQzOSw5ICs3MTYs
+OTMgQEAgYm9vbCBuZXRjX3BvcnRfcnh0c3RhbXAoc3RydWN0IGRzYV9zd2l0Y2ggKmRzLCBpbnQN
+Cj4gcG9ydCwgc3RydWN0IHNrX2J1ZmYgKnNrYiwNCj4gIAlyZXR1cm4gZmFsc2U7DQo+ICB9DQo+
+IA0KPiArc3RhdGljIHZvaWQgbmV0Y19wb3J0X3ByZXBhcmVfb25lc3RlcF9zeW5jKHN0cnVjdCBu
+ZXRjX3BvcnQgKm5wLA0KPiArCQkJCQkgICBzdHJ1Y3Qgc2tfYnVmZiAqc2tiLA0KPiArCQkJCQkg
+ICB1MzIgcHRwX2NsYXNzLCBib29sICp0d29zdGVwKQ0KPiArew0KPiArCXN0cnVjdCBuZXRjX3N3
+aXRjaCAqcHJpdiA9IG5wLT5zd2l0Y2hfcHJpdjsNCj4gKwl1MTYgY29ycmVjdGlvbl9vZmZzZXQs
+IHRzdGFtcF9vZmZzZXQ7DQo+ICsJc3RydWN0IHB0cF9oZWFkZXIgKnB0cF9oZHI7DQo+ICsJdTgg
+bXNnX3R5cGUsIHR3b3N0ZXBfZmxhZzsNCj4gKwlib29sIGlzX3VkcCA9IGZhbHNlOw0KPiArCXUz
+MiBwa3RfdHlwZTsNCj4gKwl1OCAqcGt0X2hkcjsNCj4gKw0KPiArCWlmICh1bmxpa2VseShza2Jf
+bGluZWFyaXplKHNrYikpKQ0KPiArCQlyZXR1cm47DQo+ICsNCj4gKwlwdHBfaGRyID0gcHRwX3Bh
+cnNlX2hlYWRlcihza2IsIHB0cF9jbGFzcyk7DQo+ICsJaWYgKHVubGlrZWx5KCFwdHBfaGRyKSkg
+ew0KPiArCQlkZXZfZGJnX3JhdGVsaW1pdGVkKHByaXYtPmRldiwNCj4gKwkJCQkgICAgIlBvcnQg
+JWQgZmFpbGVkIHRvIHBhcnNlIFN5bmMgaGVhZGVyXG4iLA0KPiArCQkJCSAgICBucC0+ZHAtPmlu
+ZGV4KTsNCj4gKwkJcmV0dXJuOw0KPiArCX0NCj4gKw0KPiArCW1zZ190eXBlID0gcHRwX2dldF9t
+c2d0eXBlKHB0cF9oZHIsIHB0cF9jbGFzcyk7DQo+ICsJdHdvc3RlcF9mbGFnID0gcHRwX2hkci0+
+ZmxhZ19maWVsZFswXSAmIDB4MjsNCj4gKw0KPiArCXBrdF9oZHIgPSBza2JfbWFjX2hlYWRlcihz
+a2IpOw0KPiArCWNvcnJlY3Rpb25fb2Zmc2V0ID0gKHU4ICopJnB0cF9oZHItPmNvcnJlY3Rpb24g
+LSBwa3RfaGRyOw0KPiArCXRzdGFtcF9vZmZzZXQgPSAodTggKilwdHBfaGRyICsgc2l6ZW9mKCpw
+dHBfaGRyKSAtIHBrdF9oZHI7DQo+ICsNCj4gKwkvKiBFbnN1cmUgdGhhdCB0aGUgZW50aXJlIG9y
+aWdpblRpbWVzdGFtcCBmaWVsZCBpcyBwcmVzZW50IGluIHRoZQ0KPiArCSAqIGxpbmVhciBidWZm
+ZXIgb2YgdGhlIHNrYi4NCj4gKwkgKi8NCj4gKwlpZiAodW5saWtlbHkodHN0YW1wX29mZnNldCAr
+IDEwID4gc2tiX2hlYWRsZW4oc2tiKSkpIHsNCj4gKwkJZGV2X2RiZ19yYXRlbGltaXRlZChwcml2
+LT5kZXYsDQo+ICsJCQkJICAgICJQb3J0ICVkIFN5bmMgaGVhZGVyIG5vdCBpbiBsaW5lYXIgYXJl
+YVxuIiwNCj4gKwkJCQkgICAgbnAtPmRwLT5pbmRleCk7DQo+ICsJCXJldHVybjsNCj4gKwl9DQo+
+ICsNCj4gKwkvKiBPbmx5IGEgU3luYyBmcmFtZSB3aXRoIHRoZSB0d29TdGVwRmxhZyBjbGVhcmVk
+IGNhbiB1c2Ugb25lLXN0ZXANCj4gKwkgKiB0aW1lc3RhbXBpbmcuIEEgZnJhbWUgdGhhdCByZXF1
+ZXN0cyB0d28tc3RlcCAob3IgaXMgbm90IGEgU3luYykNCj4gKwkgKiBjYXJyaWVzIGRpZmZlcmVu
+dCBvbi13aXJlIGZpZWxkcywgc28gdGhpcyBpcyBhIHJlYWwgY2xhc3NpZmljYXRpb247DQo+ICsJ
+ICogcmVwb3J0IGl0IHRocm91Z2ggKnR3b3N0ZXAgc28gdGhlIGNhbGxlciBmYWxscyBiYWNrIHRv
+IHRoZSB0d28tc3RlcA0KPiArCSAqIHBhdGguDQo+ICsJICovDQo+ICsJaWYgKG1zZ190eXBlICE9
+IFBUUF9NU0dUWVBFX1NZTkMgfHwgdHdvc3RlcF9mbGFnICE9IDApIHsNCj4gKwkJKnR3b3N0ZXAg
+PSB0cnVlOw0KPiArCQlyZXR1cm47DQo+ICsJfQ0KPiArDQo+ICsJLyogVGhpcyBpcyBhIGdlbnVp
+bmUgb25lLXN0ZXAgU3luYyBmcmFtZS4gc2tiX3NoaW5mbygpLT5kZXN0cnVjdG9yX2FyZw0KPiAr
+CSAqIGlzIGxhdGVyIHVzZWQgdG8gcGFzcyB0aGUgbnAtPm9uZXN0ZXAgcG9pbnRlciB0bw0KPiAr
+CSAqIG5ldGNfb25lc3RlcF9za2JfZGVzdHJ1Y3RvcigpIGZvciBUWCBjb21wbGV0aW9uIG5vdGlm
+aWNhdGlvbi4NCj4gKwkgKiBNU0dfWkVST0NPUFkgYWxzbyB1c2VzIGRlc3RydWN0b3JfYXJnICh2
+aWEgc2tiX3pjb3B5X2luaXQoKSkgdG8NCj4gKwkgKiB0cmFjayB1c2VyLXNwYWNlIHBhZ2UgcmVm
+ZXJlbmNlcy4gT3ZlcndyaXRpbmcgaXQgaW4gdGhhdCBjYXNlIHdvdWxkDQo+ICsJICogbGVhayB0
+aGUgdWJ1Zl9pbmZvIHJlZmVyZW5jZSBhbmQgcHJldmVudCB1c2VyIHBhZ2VzIGZyb20gYmVpbmcN
+Cj4gKwkgKiByZWxlYXNlZC4gUFRQIGFwcGxpY2F0aW9ucyBkbyBub3QgdXNlIE1TR19aRVJPQ09Q
+WSwgYnV0IGd1YXJkDQo+ICsJICogYWdhaW5zdCBpdCBkZWZlbnNpdmVseS4NCj4gKwkgKi8NCj4g
+KwlpZiAoc2tiX3pjb3B5KHNrYikpIHsNCj4gKwkJZGV2X2RiZ19yYXRlbGltaXRlZChwcml2LT5k
+ZXYsDQo+ICsJCQkJICAgICJQb3J0ICVkIG9uZS1zdGVwIFN5bmMgbm90IHN1cHBvcnRlZCBvbiB6
+ZXJvY29weQ0KPiBza2JcbiIsDQo+ICsJCQkJICAgIG5wLT5kcC0+aW5kZXgpOw0KPiArCQlyZXR1
+cm47DQo+ICsJfQ0KPiArDQo+ICsJcGt0X3R5cGUgPSBwdHBfY2xhc3MgJiBQVFBfQ0xBU1NfUE1B
+U0s7DQo+ICsJaWYgKHBrdF90eXBlID09IFBUUF9DTEFTU19JUFY0IHx8IHBrdF90eXBlID09IFBU
+UF9DTEFTU19JUFY2KQ0KPiArCQlpc191ZHAgPSB0cnVlOw0KPiArDQo+ICsJLyogQ2FjaGUgdGhl
+IHBhcnNpbmcgcmVzdWx0cyBzbyB0aGUgdGFnZ2VyIHhtaXQgcGF0aCBhbmQgdGhlIGRlZmVycmVk
+DQo+ICsJICogd29yayBkbyBub3QgbmVlZCB0byByZS1wYXJzZSB0aGUgUFRQIGhlYWRlciwgYW5k
+IHNvIHRoYXQNCj4gKwkgKiBuZXRjX3BvcnRfcHJvZ3JhbV9vbmVzdGVwKCkgY2FuIGRlcml2ZSB0
+aGVzZSBwYXJhbWV0ZXJzIGZyb20gdGhlDQo+ICsJICogc2tiLg0KPiArCSAqLw0KPiArCU5FVENf
+U0tCX0NCKHNrYiktPmNvcnJlY3Rpb25fb2Zmc2V0ID0gY29ycmVjdGlvbl9vZmZzZXQ7DQo+ICsJ
+TkVUQ19TS0JfQ0Ioc2tiKS0+dGltZXN0YW1wX29mZnNldCA9IHRzdGFtcF9vZmZzZXQ7DQo+ICsJ
+TkVUQ19TS0JfQ0Ioc2tiKS0+aXNfdWRwID0gaXNfdWRwOw0KPiArCU5FVENfU0tCX0NCKHNrYikt
+PnB0cF9mbGFnID0gTkVUQ19QVFBfRkxBR19PTkVTVEVQOw0KPiArfQ0KPiArDQo+ICB2b2lkIG5l
+dGNfcG9ydF90eHRzdGFtcChzdHJ1Y3QgZHNhX3N3aXRjaCAqZHMsIGludCBwb3J0LCBzdHJ1Y3Qg
+c2tfYnVmZiAqc2tiKQ0KPiAgew0KPiAgCXN0cnVjdCBuZXRjX3BvcnQgKm5wID0gTkVUQ19QT1JU
+KGRzLCBwb3J0KTsNCj4gKwlpbnQgdHhfdHlwZSA9IFJFQURfT05DRShucC0+cHRwX3R4X3R5cGUp
+Ow0KPiArCWJvb2wgdHdvc3RlcCA9IGZhbHNlOw0KPiAgCXUzMiBwdHBfY2xhc3M7DQo+IA0KPiAg
+CU5FVENfU0tCX0NCKHNrYiktPnB0cF9mbGFnID0gMDsNCj4gQEAgLTQ0OSw2ICs4MTAsNDkgQEAg
+dm9pZCBuZXRjX3BvcnRfdHh0c3RhbXAoc3RydWN0IGRzYV9zd2l0Y2ggKmRzLCBpbnQNCj4gcG9y
+dCwgc3RydWN0IHNrX2J1ZmYgKnNrYikNCj4gIAlpZiAocHRwX2NsYXNzID09IFBUUF9DTEFTU19O
+T05FKQ0KPiAgCQlyZXR1cm47DQo+IA0KPiAtCWlmIChSRUFEX09OQ0UobnAtPnB0cF90eF90eXBl
+KSA9PSBIV1RTVEFNUF9UWF9PTikNCj4gKwlpZiAodHhfdHlwZSA9PSBIV1RTVEFNUF9UWF9PTkVT
+VEVQX1NZTkMpDQo+ICsJCW5ldGNfcG9ydF9wcmVwYXJlX29uZXN0ZXBfc3luYyhucCwgc2tiLCBw
+dHBfY2xhc3MsICZ0d29zdGVwKTsNCj4gKw0KPiArCWlmICh0eF90eXBlID09IEhXVFNUQU1QX1RY
+X09OIHx8IHR3b3N0ZXApDQo+ICAJCW5ldGNfcG9ydF90eHRzdGFtcF90d29zdGVwKG5wLCBza2Ip
+Ow0KPiAgfQ0KPiArDQo+ICt2b2lkIG5ldGNfcG9ydF9vbmVzdGVwX3N5bmNfZW5xdWV1ZShzdHJ1
+Y3QgZHNhX3N3aXRjaCAqZHMsIGludCBwb3J0LA0KPiArCQkJCSAgICBzdHJ1Y3Qgc2tfYnVmZiAq
+c2tiKQ0KPiArew0KPiArCXN0cnVjdCBuZXRjX3BvcnQgKm5wID0gTkVUQ19QT1JUKGRzLCBwb3J0
+KTsNCj4gKwlzdHJ1Y3QgbmV0Y19vbmVzdGVwICpvbmVzdGVwID0gbnAtPm9uZXN0ZXA7DQo+ICsJ
+Ym9vbCBraWNrID0gZmFsc2U7DQo+ICsNCj4gKwkvKiBUaGlzIHJ1bnMgaW4gdGhlIHhtaXQgcGF0
+aCAoc29mdGlycSAvIEJILWRpc2FibGVkKSwgc28gaXQgbXVzdCBub3QNCj4gKwkgKiBzbGVlcDog
+b25seSBxdWV1ZSB0aGUgZnJhbWUgaGVyZSBhbmQgbGV0IG5ldGNfcG9ydF9vbmVzdGVwX3dvcmso
+KQ0KPiArCSAqIHByb2dyYW0gdGhlIFNJTkdMRV9TVEVQIHJlZ2lzdGVyIGFuZCB0cmFuc21pdCBp
+dCBmcm9tIHByb2Nlc3MNCj4gKwkgKiBjb250ZXh0LiBUaGUgc2hhcmVkIFNJTkdMRV9TVEVQIHJl
+Z2lzdGVyIGNhbiBkZXNjcmliZSBvbmx5IG9uZSBmcmFtZQ0KPiArCSAqIGF0IGEgdGltZSwgc28g
+YXQgbW9zdCBvbmUgb25lLXN0ZXAgU3luYyBtYXkgYmUgaW4gZmxpZ2h0LiBUcmFjayB0aGF0DQo+
+ICsJICogd2l0aCBAaW5fZmxpZ2h0IHVuZGVyIG9uZXN0ZXAtPnF1ZXVlX2xvY2suDQo+ICsJICoN
+Cj4gKwkgKiBFbnF1ZXVlIHRoZSBmcmFtZSBhbmQsIG9ubHkgaWYgbm8gZnJhbWUgaXMgY3VycmVu
+dGx5IGluIGZsaWdodCwgY2xhaW0NCj4gKwkgKiB0aGUgaW4tZmxpZ2h0IHNsb3QgYW5kIGtpY2sg
+dGhlIHdvcmsuIFdoZW4gYSBmcmFtZSBpcyBhbHJlYWR5IGluDQo+ICsJICogZmxpZ2h0LCBqdXN0
+IHF1ZXVlOiBpdHMgc2tiIGRlc3RydWN0b3Igd2lsbCBraWNrIHRoZSB3b3JrIHRvIHNlbmQgdGhl
+DQo+ICsJICogbmV4dCBvbmUgb25jZSBpdCBjb21wbGV0ZXMgVFgsIHNvIHRoZSBmcmFtZXMgYXJl
+IHRyYW5zbWl0dGVkIHN0cmljdGx5DQo+ICsJICogb25lIGF0IGEgdGltZSBpbiBvcmRlci4NCj4g
+KwkgKg0KPiArCSAqIFBUUCBTeW5jIGZyYW1lcyBhcmUgcGVyaW9kaWMsIGxvdy1yYXRlIGNvbnRy
+b2wtcGxhbmUgZnJhbWVzIGFuZCBvbmx5DQo+ICsJICogcmVhY2ggdGhpcyBUWCBwYXRoIHdoZW4g
+dGhlIGxvY2FsIHNvY2tldCByZXF1ZXN0ZWQgaGFyZHdhcmUgVFgNCj4gKwkgKiB0aW1lc3RhbXBp
+bmcgb24gYSBvbmUtc3RlcCBwb3J0LCBzbyB0aGUgcXVldWUgY2Fubm90IGJlIGZsb29kZWQgYW5k
+DQo+ICsJICogbmVlZHMgbm8gZGVwdGggY2FwLg0KPiArCSAqLw0KPiArCXNwaW5fbG9ja19iaCgm
+b25lc3RlcC0+cXVldWVfbG9jayk7DQo+ICsJX19za2JfcXVldWVfdGFpbCgmb25lc3RlcC0+cXVl
+dWUsIHNrYik7DQo+ICsJaWYgKCFvbmVzdGVwLT5pbl9mbGlnaHQpIHsNCj4gKwkJb25lc3RlcC0+
+aW5fZmxpZ2h0ID0gdHJ1ZTsNCj4gKwkJa2ljayA9IHRydWU7DQo+ICsJfQ0KPiArCXNwaW5fdW5s
+b2NrX2JoKCZvbmVzdGVwLT5xdWV1ZV9sb2NrKTsNCj4gKw0KPiArCS8qIE93bmVyc2hpcCBpcyB0
+cmFuc2ZlcnJlZCB0byB0aGUgcXVldWU7IG5ldGNfeG1pdCgpIHN0b3BzIHByb2Nlc3NpbmcNCj4g
+KwkgKiB0aGlzIHNrYi4gVGhlIHdvcmsgd2lsbCBwcm9ncmFtIGFuZCB0cmFuc21pdCBpdC4NCj4g
+KwkgKi8NCj4gKwlpZiAoa2ljaykNCj4gKwkJc2NoZWR1bGVfd29yaygmb25lc3RlcC0+d29yayk7
+DQo+ICt9DQo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL25ldC9kc2EvbmV0Yy9uZXRjX3N3aXRjaC5o
+DQo+IGIvZHJpdmVycy9uZXQvZHNhL25ldGMvbmV0Y19zd2l0Y2guaA0KPiBpbmRleCA4NmZkMTU4
+ODk3MzMuLjk4ZDQ4NDI0NDFkZiAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy9uZXQvZHNhL25ldGMv
+bmV0Y19zd2l0Y2guaA0KPiArKysgYi9kcml2ZXJzL25ldC9kc2EvbmV0Yy9uZXRjX3N3aXRjaC5o
+DQo+IEBAIC05LDYgKzksNyBAQA0KPiAgI2luY2x1ZGUgPGxpbnV4L2RzYS90YWdfbmV0Yy5oPg0K
+PiAgI2luY2x1ZGUgPGxpbnV4L2ZzbC9uZXRjX2dsb2JhbC5oPg0KPiAgI2luY2x1ZGUgPGxpbnV4
+L2ZzbC9udG1wLmg+DQo+ICsjaW5jbHVkZSA8bGludXgvbXV0ZXguaD4NCj4gICNpbmNsdWRlIDxs
+aW51eC9vZl9kZXZpY2UuaD4NCj4gICNpbmNsdWRlIDxsaW51eC9vZl9uZXQuaD4NCj4gICNpbmNs
+dWRlIDxsaW51eC9wY2kuaD4NCj4gQEAgLTg3LDYgKzg4LDQ0IEBAIGVudW0gbmV0Y19ob3N0X3Jl
+YXNvbiB7DQo+ICAJTkVUQ19IUl9QVFBfVFJBUCAgID0gOSwNCj4gIH07DQo+IA0KPiArLyogT25l
+LXN0ZXAgU3luYyBzZXJpYWxpemF0aW9uIGNvbnRleHQuDQo+ICsgKg0KPiArICogSXRzIGxpZmV0
+aW1lIGlzIGRlY291cGxlZCBmcm9tIHRoZSBkZXZtLWFsbG9jYXRlZCBuZXRjX3BvcnQuIEFuIGlu
+LWZsaWdodA0KPiArICogb25lLXN0ZXAgU3luYyBza2Iga2VlcHMgYSByZWZlcmVuY2Ugb24gdGhp
+cyBjb250ZXh0IHZpYSBpdHMgc2tiIGRlc3RydWN0b3IsDQo+ICsgKiBzbyB0aGUgY29udGV4dCBv
+dXRsaXZlcyB0aGUgcG9ydCB0ZWFyZG93biB1bnRpbCB0aGUgY29uZHVpdCBmcmVlcyB0aGUgbGFz
+dA0KPiArICogaW4tZmxpZ2h0IHNrYiBhZnRlciBUWCBjb21wbGV0aW9uLiBPbmNlIHRoZSBwb3J0
+IGlzIGRpc2FibGVkLCBAYWN0aXZlIGlzDQo+ICsgKiBjbGVhcmVkIGFuZCB0aGUgd29yayBzdG9w
+cyB0b3VjaGluZyBhbnkgZGV2bSBtZW1vcnkNCj4gKG5ldGNfcG9ydC9uZXRjX3N3aXRjaCkNCj4g
+KyAqIG9yIHRoZSB1bnJlZ2lzdGVyZWQgdXNlciBuZXRkZXYgb3IgdGhlIHRhZ2dlcl9kYXRhLg0K
+PiArICovDQo+ICtzdHJ1Y3QgbmV0Y19vbmVzdGVwIHsNCj4gKwlzdHJ1Y3QgbmV0Y19wb3J0ICpu
+cDsNCj4gKwlzdHJ1Y3Qga3JlZiByZWZjbnQ7DQo+ICsJLyogUHJvY2Vzcy1jb250ZXh0IGxvY2s6
+IHNlcmlhbGl6ZXMgdGhlIGRlZmVycmVkIFRYIHdvcmsgYWdhaW5zdCBwb3J0DQo+ICsJICogdGVh
+cmRvd24sIHNvIHRoZSB3b3JrIG5ldmVyIHRvdWNoZXMgdGhlIGRldm0tYWxsb2NhdGVkIG5ldGNf
+cG9ydCAvDQo+ICsJICogbmV0Y19zd2l0Y2ggb3IgdGhlIHVucmVnaXN0ZXJlZCB1c2VyIG5ldGRl
+diBhZnRlciB0ZWFyZG93bi4gSGVsZA0KPiArCSAqIGFjcm9zcyBuZXRjX2dldF9waGNfdGltZSgp
+LCB3aGljaCBtYXkgc2xlZXAsIGhlbmNlIGEgbXV0ZXguDQo+ICsJICovDQo+ICsJc3RydWN0IG11
+dGV4IHdvcmtfbG9jazsNCj4gKwkvKiBTZXJpYWxpemUgYWNjZXNzIHRvIGluX2ZsaWdodCBhbmQg
+cXVldWUgKi8NCj4gKwlzcGlubG9ja190IHF1ZXVlX2xvY2s7DQo+ICsJYm9vbCBhY3RpdmU7CS8q
+IHNldCB3aGVuIHBvcnQgaXMgZW5hYmxlZCwgdW5kZXIgQHdvcmtfbG9jayAqLw0KPiArCS8qIElu
+LWZsaWdodCBzbG90OiB0cnVlIHdoaWxlIG9uZSBvbmUtc3RlcCBTeW5jIGZyYW1lIGlzIHByb2dy
+YW1tZWQNCj4gKwkgKiBpbnRvIHRoZSBzaGFyZWQgU0lOR0xFX1NURVAgcmVnaXN0ZXIgYW5kIGJl
+aW5nIHRyYW5zbWl0dGVkLiBPbmx5IG9uZQ0KPiArCSAqIGZyYW1lIG1heSBiZSBpbiBmbGlnaHQg
+YXQgYSB0aW1lLCBzbyB0aGUgbmV4dCBxdWV1ZWQgZnJhbWUgaXMgc2VudA0KPiArCSAqIG9ubHkg
+YWZ0ZXIgdGhlIGN1cnJlbnQgb25lIGNvbXBsZXRlcyBUWCAoaXRzIHNrYiBkZXN0cnVjdG9yIGtp
+Y2tzDQo+ICsJICogdGhlIHdvcmspLiBBY2Nlc3NlZCB1bmRlciBxdWV1ZV9sb2NrLCBmcm9tIGJv
+dGggdGhlIHNvZnRpcnEgeG1pdA0KPiArCSAqIHBhdGggYW5kIHRoZSBwcm9jZXNzLWNvbnRleHQg
+d29yay4NCj4gKwkgKi8NCj4gKwlib29sIGluX2ZsaWdodDsNCj4gKwkvKiBQZW5kaW5nIG9uZS1z
+dGVwIFN5bmMgZnJhbWVzLiBFbnF1ZXVlZCBmcm9tIHRoZSBzb2Z0aXJxIHhtaXQgcGF0aA0KPiBh
+bmQNCj4gKwkgKiBkZXF1ZXVlZCBieSB0aGUgcHJvY2Vzcy1jb250ZXh0IHdvcms7IHRoZSBsaXN0
+IGlzIHNlcmlhbGl6ZWQgYnkNCj4gKwkgKiBxdWV1ZV9sb2NrIHRvZ2V0aGVyIHdpdGggQGluX2Zs
+aWdodC4NCj4gKwkgKi8NCj4gKwlzdHJ1Y3Qgc2tfYnVmZl9oZWFkIHF1ZXVlOw0KPiArCXN0cnVj
+dCB3b3JrX3N0cnVjdCB3b3JrOwkvKiBkcmFpbnMgQHF1ZXVlICovDQo+ICsJc3RydWN0IHdvcmtf
+c3RydWN0IGRlc3Ryb3lfd29yazsgLyogZnJlZXMgdGhlIGNvbnRleHQgaW4gcHJvY2VzcyBjdHgg
+Ki8NCj4gK307DQo+ICsNCj4gIHN0cnVjdCBuZXRjX3BvcnQgew0KPiAgCXZvaWQgX19pb21lbSAq
+aW9iYXNlOw0KPiAgCXN0cnVjdCBuZXRjX3N3aXRjaCAqc3dpdGNoX3ByaXY7DQo+IEBAIC0xMDYs
+NiArMTQ1LDggQEAgc3RydWN0IG5ldGNfcG9ydCB7DQo+ICAJc3BpbmxvY2tfdCB0c3RhbXBfbG9j
+azsNCj4gIAkvKiBza2IgcXVldWUgZm9yIHR3by1zdGVwIHRpbWVzdGFtcCBmcmFtZXMgKi8NCj4g
+IAlzdHJ1Y3Qgc2tfYnVmZl9oZWFkIHNrYl90eHRzdGFtcF9xdWV1ZTsNCj4gKwkvKiBvbmUtc3Rl
+cCBTeW5jIHNlcmlhbGl6YXRpb24gY29udGV4dCAocmVmLWNvdW50ZWQsIGt6YWxsb2MnZCkgKi8N
+Cj4gKwlzdHJ1Y3QgbmV0Y19vbmVzdGVwICpvbmVzdGVwOw0KPiAgCWludCBwdHBfdHhfdHlwZTsN
+Cj4gIAlpbnQgcHRwX3J4X2ZpbHRlcjsNCj4gIAl1MzIgcHRwX2lwZnRfZWlkW05FVENfUFRQX01B
+WF07DQo+IEBAIC0yMTIsNiArMjUzLDcgQEAgc3RhdGljIGlubGluZSB2b2lkIG5ldGNfZGVsX3Zs
+YW5fZW50cnkoc3RydWN0DQo+IG5ldGNfdmxhbl9lbnRyeSAqZW50cnkpDQo+ICB9DQo+IA0KPiAg
+aW50IG5ldGNfc3dpdGNoX3BsYXRmb3JtX3Byb2JlKHN0cnVjdCBuZXRjX3N3aXRjaCAqcHJpdik7
+DQo+ICt2b2lkIG5ldGNfbWFjX3BvcnRfd3Ioc3RydWN0IG5ldGNfcG9ydCAqbnAsIHUzMiByZWcs
+IHUzMiB2YWwpOw0KPiANCj4gIC8qIGV0aHRvb2wgQVBJcyAqLw0KPiAgdm9pZCBuZXRjX3BvcnRf
+Z2V0X3BhdXNlX3N0YXRzKHN0cnVjdCBkc2Ffc3dpdGNoICpkcywgaW50IHBvcnQsDQo+IEBAIC0y
+NDMsNSArMjg1LDExIEBAIHZvaWQgbmV0Y19wb3J0X3R3b3N0ZXBfdHN0YW1wX2hhbmRsZXIoc3Ry
+dWN0DQo+IGRzYV9zd2l0Y2ggKmRzLCBpbnQgcG9ydCwNCj4gIGJvb2wgbmV0Y19wb3J0X3J4dHN0
+YW1wKHN0cnVjdCBkc2Ffc3dpdGNoICpkcywgaW50IHBvcnQsIHN0cnVjdCBza19idWZmICpza2Is
+DQo+ICAJCQl1bnNpZ25lZCBpbnQgdHlwZSk7DQo+ICB2b2lkIG5ldGNfcG9ydF90eHRzdGFtcChz
+dHJ1Y3QgZHNhX3N3aXRjaCAqZHMsIGludCBwb3J0LCBzdHJ1Y3Qgc2tfYnVmZiAqc2tiKTsNCj4g
+K3ZvaWQgbmV0Y19vbmVzdGVwX3B1dChzdHJ1Y3QgbmV0Y19vbmVzdGVwICpvbmVzdGVwKTsNCj4g
+K3ZvaWQgbmV0Y19wb3J0X3B1cmdlX29uZXN0ZXBfcXVldWUoc3RydWN0IG5ldGNfb25lc3RlcCAq
+b25lc3RlcCwNCj4gKwkJCQkgICBib29sIGNsZWFyX2ZsaWdodCk7DQo+ICt2b2lkIG5ldGNfcG9y
+dF9vbmVzdGVwX3dvcmsoc3RydWN0IHdvcmtfc3RydWN0ICp3b3JrKTsNCj4gK3ZvaWQgbmV0Y19w
+b3J0X29uZXN0ZXBfc3luY19lbnF1ZXVlKHN0cnVjdCBkc2Ffc3dpdGNoICpkcywgaW50IHBvcnQs
+DQo+ICsJCQkJICAgIHN0cnVjdCBza19idWZmICpza2IpOw0KPiANCj4gICNlbmRpZg0KPiBkaWZm
+IC0tZ2l0IGEvZHJpdmVycy9uZXQvZHNhL25ldGMvbmV0Y19zd2l0Y2hfaHcuaA0KPiBiL2RyaXZl
+cnMvbmV0L2RzYS9uZXRjL25ldGNfc3dpdGNoX2h3LmgNCj4gaW5kZXggMTQwNGFlNDFjN2JjLi4z
+N2QxZGQ3ZWMyYzcgMTAwNjQ0DQo+IC0tLSBhL2RyaXZlcnMvbmV0L2RzYS9uZXRjL25ldGNfc3dp
+dGNoX2h3LmgNCj4gKysrIGIvZHJpdmVycy9uZXQvZHNhL25ldGMvbmV0Y19zd2l0Y2hfaHcuaA0K
+PiBAQCAtMjAzLDYgKzIwMywxMSBAQCBlbnVtIG5ldGNfc3RnX3N0YWdlIHsNCj4gICNkZWZpbmUg
+ICBTU1BfMTBNCQkJMQ0KPiAgI2RlZmluZSAgIFNTUF8xRwkJCTINCj4gDQo+ICsjZGVmaW5lIE5F
+VENfUE1fU0lOR0xFX1NURVAoYSkJCSgweDEwYzAgKyAoYSkgKiAweDQwMCkNCj4gKyNkZWZpbmUg
+IFBNX1NJTkdMRV9TVEVQX0NICQlCSVQoNikNCj4gKyNkZWZpbmUgIFBNX1NJTkdMRV9TVEVQX09G
+RlNFVAkJR0VOTUFTSygxNSwgNykNCj4gKyNkZWZpbmUgIFBNX1NJTkdMRV9TVEVQX0VOCQlCSVQo
+MzEpDQo+ICsNCj4gIC8qIFBvcnQgTUFDIDAvMSBSZWNlaXZlIEV0aGVybmV0IE9jdGV0cyBDb3Vu
+dGVyICovDQo+ICAjZGVmaW5lIE5FVENfUE1fUkVPQ1QoYSkJCSgweDExMDAgKyAoYSkgKiAweDQw
+MCkNCj4gDQo+IGRpZmYgLS1naXQgYS9pbmNsdWRlL2xpbnV4L2RzYS90YWdfbmV0Yy5oIGIvaW5j
+bHVkZS9saW51eC9kc2EvdGFnX25ldGMuaA0KPiBpbmRleCBkYTIwMGUzYmE4YWQuLjhhZWI4NjVj
+ZWNhYiAxMDA2NDQNCj4gLS0tIGEvaW5jbHVkZS9saW51eC9kc2EvdGFnX25ldGMuaA0KPiArKysg
+Yi9pbmNsdWRlL2xpbnV4L2RzYS90YWdfbmV0Yy5oDQo+IEBAIC0xMCw2ICsxMCw3IEBADQo+ICAj
+aW5jbHVkZSA8bmV0L2RzYS5oPg0KPiANCj4gICNkZWZpbmUgTkVUQ19UQUdfTUFYX0xFTgkJCTE0
+DQo+ICsjZGVmaW5lIE5FVENfUFRQX0ZMQUdfT05FU1RFUAkJCUJJVCgwKQ0KPiAgI2RlZmluZSBO
+RVRDX1BUUF9GTEFHX1RXT1NURVAJCQlCSVQoMSkNCj4gDQo+ICBzdHJ1Y3QgbmV0Y19za2JfY2Ig
+ew0KPiBAQCAtMTcsNiArMTgsMTQgQEAgc3RydWN0IG5ldGNfc2tiX2NiIHsNCj4gIAl1NjQgdHN0
+YW1wOw0KPiAgCXU4IHB0cF9mbGFnOw0KPiAgCXU4IHRzX3JlcV9pZDsNCj4gKwkvKiBPbmUtc3Rl
+cCBTeW5jIHBhcnNpbmcgcmVzdWx0cywgY29tcHV0ZWQgaW4gbmV0Y19wb3J0X3R4dHN0YW1wKCkN
+Cj4gKwkgKiBhbmQgcmV1c2VkIGluIHRoZSB0YWdnZXIgeG1pdCBwYXRoIGFuZCB0aGUgZGVmZXJy
+ZWQgd29yaywgdG8gYXZvaWQNCj4gKwkgKiByZS1wYXJzaW5nIHRoZSBQVFAgaGVhZGVyLiBWYWxp
+ZCBvbmx5IHdoaWxlDQo+ICsJICogcHRwX2ZsYWcgPT0gTkVUQ19QVFBfRkxBR19PTkVTVEVQLg0K
+PiArCSAqLw0KPiArCXUxNiBjb3JyZWN0aW9uX29mZnNldDsNCj4gKwl1MTYgdGltZXN0YW1wX29m
+ZnNldDsNCj4gKwlib29sIGlzX3VkcDsNCj4gIH07DQo+IA0KPiAgI2RlZmluZSBORVRDX1NLQl9D
+Qihza2IpCSgoc3RydWN0IG5ldGNfc2tiX2NiICopKChza2IpLT5jYikpDQo+IEBAIC0yNiwxMCAr
+MzUsMjIgQEAgc3RydWN0IG5ldGNfc2tiX2NiIHsNCj4gICAqIEB0d29zdGVwX3RzdGFtcF9oYW5k
+bGVyOiBDYWxsZWQgYnkgdGhlIHRhZ2dlciB3aGVuIGEgdHdvLXN0ZXAgdHJhbnNtaXQNCj4gICAq
+CXRpbWVzdGFtcCByZXNwb25zZSBpcyByZWNlaXZlZCwgdG8gZGVsaXZlciB0aGUgdGltZXN0YW1w
+IHRvIHRoZQ0KPiAgICoJc3dpdGNoIGRyaXZlci4NCj4gKyAqIEBvbmVzdGVwX3N5bmNfZW5xdWV1
+ZTogQ2FsbGVkIGZyb20gdGhlIHRhZ2dlciB4bWl0IHBhdGggZm9yIGEgb25lLXN0ZXANCj4gU3lu
+Yw0KPiArICoJZnJhbWUuIFRoZSBzd2l0Y2ggZHJpdmVyIHRha2VzIG93bmVyc2hpcCBvZiB0aGUg
+c2tiIGFuZCBxdWV1ZXMgaXQgZm9yDQo+ICsgKglkZWZlcnJlZCB0cmFuc21pc3Npb24gZnJvbSBw
+cm9jZXNzIGNvbnRleHQsIHdoZXJlIHRoZSBzaGFyZWQNCj4gKyAqCVBNX1NJTkdMRV9TVEVQIHJl
+Z2lzdGVyIGNhbiBiZSBwcm9ncmFtbWVkIGFuZCB0aGUgUFRQIHRpbWVyIHJlYWQNCj4gKyAqCSh3
+aGljaCBtYXkgc2xlZXApLiBUaGUgdGFnZ2VyIG11c3Qgbm90IHRvdWNoIHRoZSBza2IgYWZ0ZXIg
+dGhpcyBjYWxsDQo+ICsgKglhbmQgcmV0dXJucyBOVUxMIHRvIGRzYV91c2VyX3htaXQoKS4NCj4g
+KyAqIEBvbmVzdGVwX3N5bmNfeG1pdDogQ2FsbGVkIGJ5IHRoZSBzd2l0Y2ggZHJpdmVyIHRvIHRy
+YW5zbWl0IGEgZGVmZXJyZWQNCj4gKyAqCW9uZS1zdGVwIFN5bmMgZnJhbWUgZGlyZWN0bHkgdG8g
+dGhlIGNvbmR1aXQsIGJ5cGFzc2luZyBkc2FfdXNlcl94bWl0KCkuDQo+ICAgKi8NCj4gIHN0cnVj
+dCBuZXRjX3RhZ2dlcl9kYXRhIHsNCj4gIAl2b2lkICgqdHdvc3RlcF90c3RhbXBfaGFuZGxlciko
+c3RydWN0IGRzYV9zd2l0Y2ggKmRzLCBpbnQgcG9ydCwNCj4gIAkJCQkgICAgICAgdTggdHNfcmVx
+X2lkLCB1NjQgdHMpOw0KPiArCXZvaWQgKCpvbmVzdGVwX3N5bmNfZW5xdWV1ZSkoc3RydWN0IGRz
+YV9zd2l0Y2ggKmRzLCBpbnQgcG9ydCwNCj4gKwkJCQkgICAgIHN0cnVjdCBza19idWZmICpza2Ip
+Ow0KPiArCW5ldGRldl90eF90ICgqb25lc3RlcF9zeW5jX3htaXQpKHN0cnVjdCBza19idWZmICpz
+a2IsDQo+ICsJCQkJCSBzdHJ1Y3QgbmV0X2RldmljZSAqbmRldik7DQo+ICB9Ow0KPiANCj4gICNl
+bmRpZg0KPiBkaWZmIC0tZ2l0IGEvbmV0L2RzYS90YWdfbmV0Yy5jIGIvbmV0L2RzYS90YWdfbmV0
+Yy5jDQo+IGluZGV4IDlmOWE2MWQ4MTMzYi4uMGMzNmFlYWFkZTZhIDEwMDY0NA0KPiAtLS0gYS9u
+ZXQvZHNhL3RhZ19uZXRjLmMNCj4gKysrIGIvbmV0L2RzYS90YWdfbmV0Yy5jDQo+IEBAIC0xNiw2
+ICsxNiw4IEBADQo+ICAjZGVmaW5lIE5FVENfVEFHX1RPX1BPUlQJCTENCj4gIC8qIFN1YlR5cGUw
+OiBObyByZXF1ZXN0IHRvIHBlcmZvcm0gdGltZXN0YW1waW5nICovDQo+ICAjZGVmaW5lIE5FVENf
+VEFHX1RQX1NVQlRZUEUwCQkwDQo+ICsvKiBTdWJUeXBlMTogUmVxdWVzdCB0byBwZXJmb3JtIG9u
+ZS1zdGVwIHRpbWVzdGFtcGluZyAqLw0KPiArI2RlZmluZSBORVRDX1RBR19UUF9TVUJUWVBFMQkJ
+MQ0KPiAgLyogU3ViVHlwZTI6IFJlcXVlc3QgdG8gcGVyZm9ybSB0d28tc3RlcCB0aW1lc3RhbXBp
+bmcgKi8NCj4gICNkZWZpbmUgTkVUQ19UQUdfVFBfU1VCVFlQRTIJCTINCj4gDQo+IEBAIC0zMSw2
+ICszMyw3IEBADQo+ICAvKiBORVRDIHN3aXRjaCB0YWcgbGVuZ3RocyAqLw0KPiAgI2RlZmluZSBO
+RVRDX1RBR19GT1JXQVJEX0xFTgkJNg0KPiAgI2RlZmluZSBORVRDX1RBR19UUF9TVUJUWVBFMF9M
+RU4JNg0KPiArI2RlZmluZSBORVRDX1RBR19UUF9TVUJUWVBFMV9MRU4JMTANCj4gICNkZWZpbmUg
+TkVUQ19UQUdfVFBfU1VCVFlQRTJfTEVOCTYNCj4gICNkZWZpbmUgTkVUQ19UQUdfVEhfU1VCVFlQ
+RTBfTEVOCTYNCj4gICNkZWZpbmUgTkVUQ19UQUdfVEhfU1VCVFlQRTFfTEVOCTE0DQo+IEBAIC00
+NCw2ICs0Nyw3IEBADQo+ICAjZGVmaW5lIE5FVENfVEFHX1NXSVRDSAkJCUdFTk1BU0soMiwgMCkN
+Cj4gICNkZWZpbmUgTkVUQ19UQUdfUE9SVAkJCUdFTk1BU0soNywgMykNCj4gICNkZWZpbmUgTkVU
+Q19UQUdfVFNfUkVRX0lECQlHRU5NQVNLKDMsIDApDQo+ICsjZGVmaW5lIE5FVENfVEFHX1RJTUVT
+VEFNUAkJR0VOTUFTSygyOSwgMCkNCj4gDQo+ICBzdHJ1Y3QgbmV0Y190YWdfY21uIHsNCj4gIAlf
+X2JlMTYgdHBpZDsNCj4gQEAgLTUyLDYgKzU2LDEyIEBAIHN0cnVjdCBuZXRjX3RhZ19jbW4gew0K
+PiAgCXU4IHN3aXRjaF9wb3J0Ow0KPiAgfSBfX3BhY2tlZDsNCj4gDQo+ICtzdHJ1Y3QgbmV0Y190
+YWdfdHBfc3VidHlwZTEgew0KPiArCXN0cnVjdCBuZXRjX3RhZ19jbW4gY21uOw0KPiArCXU4IHJl
+c3Y7DQo+ICsJX19iZTMyIHRpbWVzdGFtcDsNCj4gK30gX19wYWNrZWQ7DQo+ICsNCj4gIHN0cnVj
+dCBuZXRjX3RhZ190cF9zdWJ0eXBlMiB7DQo+ICAJc3RydWN0IG5ldGNfdGFnX2NtbiBjbW47DQo+
+ICAJdTggdHNfcmVxX2lkOw0KPiBAQCAtMTE4LDYgKzEyOCwxNyBAQCBzdGF0aWMgdm9pZCBuZXRj
+X2ZpbGxfdHBfdGFnX3N1YnR5cGUwKHN0cnVjdCBza19idWZmDQo+ICpza2IsDQo+ICAJCQkJTkVU
+Q19UQUdfVFBfU1VCVFlQRTBfTEVOKTsNCj4gIH0NCj4gDQo+ICtzdGF0aWMgdm9pZCBuZXRjX2Zp
+bGxfdHBfdGFnX3N1YnR5cGUxKHN0cnVjdCBza19idWZmICpza2IsDQo+ICsJCQkJICAgICAgc3Ry
+dWN0IG5ldF9kZXZpY2UgKm5kZXYpDQo+ICt7DQo+ICsJdTMyIHRzID0gRklFTERfUFJFUChORVRD
+X1RBR19USU1FU1RBTVAsDQo+IE5FVENfU0tCX0NCKHNrYiktPnRzdGFtcCk7DQo+ICsJc3RydWN0
+IG5ldGNfdGFnX3RwX3N1YnR5cGUxICp0YWc7DQo+ICsNCj4gKwl0YWcgPSBuZXRjX2ZpbGxfY29t
+bW9uX3RwX3RhZyhza2IsIG5kZXYsIE5FVENfVEFHX1RQX1NVQlRZUEUxLA0KPiArCQkJCSAgICAg
+IE5FVENfVEFHX1RQX1NVQlRZUEUxX0xFTik7DQo+ICsJdGFnLT50aW1lc3RhbXAgPSBodG9ubCh0
+cyk7DQo+ICt9DQo+ICsNCj4gIHN0YXRpYyB2b2lkIG5ldGNfZmlsbF90cF90YWdfc3VidHlwZTIo
+c3RydWN0IHNrX2J1ZmYgKnNrYiwNCj4gIAkJCQkgICAgICBzdHJ1Y3QgbmV0X2RldmljZSAqbmRl
+dikNCj4gIHsNCj4gQEAgLTEyOSw2ICsxNTAsNDIgQEAgc3RhdGljIHZvaWQgbmV0Y19maWxsX3Rw
+X3RhZ19zdWJ0eXBlMihzdHJ1Y3Qgc2tfYnVmZg0KPiAqc2tiLA0KPiAgCXRhZy0+dHNfcmVxX2lk
+ID0gRklFTERfUFJFUChORVRDX1RBR19UU19SRVFfSUQsIHRzX3JlcV9pZCk7DQo+ICB9DQo+IA0K
+PiArc3RhdGljIG5ldGRldl90eF90IG5ldGNfb25lc3RlcF9zeW5jX3htaXQoc3RydWN0IHNrX2J1
+ZmYgKnNrYiwNCj4gKwkJCQkJICBzdHJ1Y3QgbmV0X2RldmljZSAqZGV2KQ0KPiArew0KPiArCS8q
+IFRoaXMgZGVmZXJyZWQgb25lLXN0ZXAgU3luYyBmcmFtZSBhbHJlYWR5IHdlbnQgdGhyb3VnaA0K
+PiArCSAqIGRzYV91c2VyX3htaXQoKSdzIHNrYl9lbnN1cmVfd3JpdGFibGVfaGVhZF90YWlsKCkg
+YW5kIGV0aF9za2JfcGFkKCkNCj4gKwkgKiBiZWZvcmUgaXQgd2FzIHF1ZXVlZCBpbiBuZXRjX3ht
+aXQoKSwgYW5kIG5vdGhpbmcgaGFzIGNsb25lZCBpdCBvcg0KPiArCSAqIHNocnVuayBpdHMgaGVh
+ZC90YWlsIHJvb20gc2luY2UuIFNvIHRoZSBoZWFkL3RhaWwgcm9vbSBpcyBzdGlsbA0KPiArCSAq
+IGd1YXJhbnRlZWQgYW5kIHRoZSBza2IgaXMgc3RpbGwgd3JpdGFibGU7IG9ubHkgdGhlIHRhZyBu
+ZWVkcyB0byBiZQ0KPiArCSAqIHB1c2hlZCBiZWZvcmUgaGFuZGluZyBpdCBkaXJlY3RseSB0byB0
+aGUgY29uZHVpdCwgYnlwYXNzaW5nDQo+ICsJICogZHNhX3VzZXJfeG1pdCgpIHNvIHRoYXQgZGV2
+X3N3X25ldHN0YXRzX3R4X2FkZCgpIGlzIG5vdCBpbnZva2VkIGENCj4gKwkgKiBzZWNvbmQgdGlt
+ZSBmb3IgdGhlIHNhbWUgZnJhbWUuDQo+ICsJICovDQo+ICsJbmV0Y19maWxsX3RwX3RhZ19zdWJ0
+eXBlMShza2IsIGRldik7DQo+ICsNCj4gKwlyZXR1cm4gZHNhX2VucXVldWVfc2tiKHNrYiwgZGV2
+KTsNCj4gK30NCj4gKw0KPiArc3RhdGljIHZvaWQgbmV0Y19vbmVzdGVwX3N5bmNfZW5xdWV1ZShz
+dHJ1Y3Qgc2tfYnVmZiAqc2tiLA0KPiArCQkJCSAgICAgIHN0cnVjdCBuZXRfZGV2aWNlICpuZGV2
+KQ0KPiArew0KPiArCXN0cnVjdCBkc2FfcG9ydCAqZHAgPSBkc2FfdXNlcl90b19wb3J0KG5kZXYp
+Ow0KPiArCXN0cnVjdCBuZXRjX3RhZ2dlcl9kYXRhICp0YWdnZXJfZGF0YTsNCj4gKw0KPiArCXRh
+Z2dlcl9kYXRhID0gZHAtPmRzLT50YWdnZXJfZGF0YTsNCj4gKwlpZiAodW5saWtlbHkoIXRhZ2dl
+cl9kYXRhLT5vbmVzdGVwX3N5bmNfZW5xdWV1ZSkpIHsNCj4gKwkJa2ZyZWVfc2tiKHNrYik7DQo+
+ICsJCXJldHVybjsNCj4gKwl9DQo+ICsNCj4gKwkvKiBIYW5kIHRoZSBvbmUtc3RlcCBTeW5jIHRv
+IHRoZSBzd2l0Y2ggZHJpdmVyLCB3aGljaCB0YWtlcyBvd25lcnNoaXANCj4gKwkgKiBhbmQgcXVl
+dWVzIGl0IGZvciBkZWZlcnJlZCB0cmFuc21pc3Npb24gZnJvbSBpdHMgd29yay4gVGhlIHRhZ2dl
+cg0KPiArCSAqIG11c3Qgbm90IHRvdWNoIHRoZSBza2IgYWZ0ZXIgdGhpcyBwb2ludC4NCj4gKwkg
+Ki8NCj4gKwl0YWdnZXJfZGF0YS0+b25lc3RlcF9zeW5jX2VucXVldWUoZHAtPmRzLCBkcC0+aW5k
+ZXgsIHNrYik7DQo+ICt9DQo+ICsNCj4gIHN0YXRpYyBzdHJ1Y3Qgc2tfYnVmZiAqbmV0Y194bWl0
+KHN0cnVjdCBza19idWZmICpza2IsDQo+ICAJCQkJIHN0cnVjdCBuZXRfZGV2aWNlICpuZGV2KQ0K
+PiAgew0KPiBAQCAtMTM4LDYgKzE5NSwxNiBAQCBzdGF0aWMgc3RydWN0IHNrX2J1ZmYgKm5ldGNf
+eG1pdChzdHJ1Y3Qgc2tfYnVmZiAqc2tiLA0KPiAgCWlmIChsaWtlbHkoIXB0cF9mbGFnKSkgew0K
+PiAgCQluZXRjX2ZpbGxfdHBfdGFnX3N1YnR5cGUwKHNrYiwgbmRldik7DQo+ICAJCXJldHVybiBz
+a2I7DQo+ICsJfQ0KPiArDQo+ICsJaWYgKHB0cF9mbGFnID09IE5FVENfUFRQX0ZMQUdfT05FU1RF
+UCkgew0KPiArCQkvKiBUaGUgc3dpdGNoIGRyaXZlciB0YWtlcyBvd25lcnNoaXAgb2YgdGhlIG9u
+ZS1zdGVwIFN5bmMgYW5kDQo+ICsJCSAqIHF1ZXVlcyBpdCBmb3IgZGVmZXJyZWQgVFg7IHRoZSBk
+ZWZlcnJlZCB3b3JrIHRhZ3MgaXQgc3VidHlwZSAxDQo+ICsJCSAqIGFuZCB0cmFuc21pdHMgaXQg
+ZGlyZWN0bHkgdG8gdGhlIGNvbmR1aXQuIFJldHVybiBOVUxMIHNvDQo+ICsJCSAqIGRzYV91c2Vy
+X3htaXQoKSBzdG9wcyBwcm9jZXNzaW5nIHRoaXMgc2tiLg0KPiArCQkgKi8NCj4gKwkJbmV0Y19v
+bmVzdGVwX3N5bmNfZW5xdWV1ZShza2IsIG5kZXYpOw0KPiArCQlyZXR1cm4gTlVMTDsNCj4gIAl9
+IGVsc2UgaWYgKHB0cF9mbGFnID09IE5FVENfUFRQX0ZMQUdfVFdPU1RFUCkgew0KPiAgCQluZXRj
+X2ZpbGxfdHBfdGFnX3N1YnR5cGUyKHNrYiwgbmRldik7DQo+ICAJfSBlbHNlIHsNCj4gQEAgLTMx
+Nyw2ICszODQsNyBAQCBzdGF0aWMgaW50IG5ldGNfY29ubmVjdChzdHJ1Y3QgZHNhX3N3aXRjaCAq
+ZHMpDQo+ICAJaWYgKCF0YWdnZXJfZGF0YSkNCj4gIAkJcmV0dXJuIC1FTk9NRU07DQo+IA0KPiAr
+CXRhZ2dlcl9kYXRhLT5vbmVzdGVwX3N5bmNfeG1pdCA9IG5ldGNfb25lc3RlcF9zeW5jX3htaXQ7
+DQo+ICAJZHMtPnRhZ2dlcl9kYXRhID0gdGFnZ2VyX2RhdGE7DQo+IA0KPiAgCXJldHVybiAwOw0K
+PiAtLQ0KPiAyLjM0LjENCg0K
 
