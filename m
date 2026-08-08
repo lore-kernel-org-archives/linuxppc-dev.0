@@ -1,60 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-25631-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25632-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 703C6C5AC82
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Aug 2026 03:19:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7D931C5AC82
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Aug 2026 03:19:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hH5pV5Zs7z2yjs;
-	Sat, 08 Aug 2026 13:19:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hH5pY0BMsz303F;
+	Sat, 08 Aug 2026 13:19:17 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c201::3" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786159154;
-	cv=pass; b=RCaL3EQ0uN+lebQ/QsvPGCJYzB7P5WBgnK0pi39GOFFJfZvgr+GC7SyXNZQjkqx9gysFcEA4BWhrIjneKhdQuRLC5ZbFVMRF1MrdnWOUv37xBCVM61B7+OuqZCCaHzmcliL89g61DEnPg/DP+K687s7ILhvCgz7rYFhuV/zEJYSk28SLoaxGvcJlLo9dgnucDgjMownMA5tEmgDYPJI5aqADRD8eGnoWLpfx7noAShD1ML5A7GN6KRw5Crk2GChTfrpjlBpKVG3CT+XK8mdPsNapF7q4hfZCeYV4Pk8sqkTpCGYZYKDAiW440XKNaU4XHe/QxFpMgvFOLL1UMgQmaA==
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786159156;
+	cv=pass; b=CcI31XUfXMKAP3Ddtkigc67o33dGX3SgoN2vvRBkBpDDG8trD3ZNglLp90jZaN7MfuvR8RqkrjuMpjsy9pTVjezsRL0t76uTSKP9EYPicLBvmP6qERcohbO/5JOb1oxpaxUekw4XIlyn80XkqlXLDLEN6nIG2QP3/jcz+CqEqVZ6PKwFgZ1AwSPfWXiC8XQwZOP0IZu/uwpH7EILQqGwsxB0dEglSj7eVEQJJsK/6VmS0Z5uQ5VNqMZiQOkQVwcnt8wt+P20h0f/6ZS3cnWYGPrA11UMpLQovkCUy6D6FAb8ViUlbkG4Yib4s4EkpgCWi3VLZSkLYp+Wnn+YSY1kAw==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786159154; c=relaxed/relaxed;
-	bh=TvmvOpHsiy9EylPvqsnozNhXaHRLcyV2oboiny2lIzg=;
+	t=1786159156; c=relaxed/relaxed;
+	bh=drl76DskGKMqnwdzjFSesblvpA8GHEV5bCjEYjrWQVQ=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=DI0eUjxjPvpogUkdl6JVe+HOoBpZBXxtwNjamYErpi+iPN+E0ag9UdDY5j4E8tkonO6vDZh3NbwZM4/YAOsrr2imS7WV1Nba7Gx7/RilvcB/JNoLnxHl7NaypNWgHCFi7e+RqDEuT08fo2lvDwyifaSOuCtbne96t2WTpKownZAgPqkKOVtbdZFoDtF0h0EOsMxmwJOrpBp+5xn2/4xRutyHL+Z9td2OFCAMFBidBozkpowQmCK7JKAZlA5htLeJSJyYYX/w3pt5rcMB06T+rgU8vNMZbaJZ9Z8EpJBmzBjxpjNTKub+RSM3XQrSdJUN2H9uALIpnaq/JtnwkzhPDg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=haItoKOC; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c201::3; helo=as8pr04cu009.outbound.protection.outlook.com; envelope-from=wei.fang@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
+	 Content-Type:MIME-Version; b=nhERGjj1A9nv+mT9aTz2A6DVzJqGIISuQqEUhXdlJSslsWOwUcsYcyNsh19xa1cePXJzQF3SXMKhwMqXuEAa8Y80unq88LR/AVhoChzfpFAwgkKEFtOIH68gweiTywOLfzy4sCVQu3HaoCmxRYlC7p8UsLZYQoJa2jyr9gfpZpj7jzrwWumxgkJITWzZou1JjVCWpxIm44kH+QduAbC1T4X1XCS95ZhvcRwjcm5YQ41QXAtWP6yihQ62iEK+H5QjJPBtUCUsmdOvrEyAG5VlFYNrlxmOJH9Z8QgcQqbZLh5p4WTVo71lp3SFFP6B8qRU+46DizyRTHNRy2ftuQqCQg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=aFppd3cQ; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c201::3; helo=as8pr04cu009.outbound.protection.outlook.com; envelope-from=wei.fang@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
 Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=haItoKOC;
+	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=aFppd3cQ;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:c201::3; helo=as8pr04cu009.outbound.protection.outlook.com; envelope-from=wei.fang@oss.nxp.com; receiver=lists.ozlabs.org)
 Received: from AS8PR04CU009.outbound.protection.outlook.com (mail-westeuropeazlp170110003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c201::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hH5pS2LJTz2yys
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 08 Aug 2026 13:19:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hH5pW16wXz300B
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 08 Aug 2026 13:19:15 +1000 (AEST)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=lHfjac8eMtu9dBCFhBBeZbvYhai2uBanIPTx7lp7rJaGtX6q9UBNN9d23IWHCGV23qPuqkAfGq0ltUsb65WXhbIq0mV5lCpfTpTUiAITVp+eGMNXgMS5VPQ01saOgJ3XdOkcI9IUeTobMXl8YkxEgNUD1WZnbSJPp3eX9NYxV9GohZ0Y9Vq3wqPJiwgkK79DPDKJO/PFNlSKMcL89g7BdMLAd18ebPXx/lUD7dc/e3d+AaQczIGh8nCIYCl8IfoIFr7drzthR/CWhQa+dWpmJKrt/ScjtpIMZMkffjy/RV/jSOh5JLVr+yfWAbmH0ptw6UmP5Js6klnYc3rYOcqyjA==
+ b=Qnz+gF4AVyINe5HdDbZ8dbhP8x2TjuDGEMfuN+MYExZGHrjyWhprPM4ZuzjY9KwoLzTgKmRdGTEW5aGfgEqrl+9v0KqXZTTpbjaXGehr4gW78+XqLUQvoaZIe7OaXubGU4AJc7TAZLIXjeBjUPodF7zppC9IKGVbDhjA/Lefqi9YS8b8ydy8jXXkK1oUjtO+zp8CTlCo6smdliNKF6wPHUWPP7XlqVtSKRP77h8dpztvAxA9vyDP2hn02+3JXekZsrZ6CtEVrQ5t2VJCWebtZUPFygYp3IlpN5kHp+WRMyKrOmYP9MP2QBtpiYI82k9X1ETTlNieIpvhq9t2eYg07g==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=TvmvOpHsiy9EylPvqsnozNhXaHRLcyV2oboiny2lIzg=;
- b=B2AuCuJjo6hnZNvzrhM8Mklk4LX+raqwd3uEXl8cudjZ/OmTxyOdudLYYVfW0y2PA6aYJvJOOemyGIqkTetmS1lb2fiOhV7Iu3Kq/lISgMh5gmU04AwbEKh8kwZBdzqJdNMUaneAD7bs6tLjafE53/9t14AwQ6RdWGzaQfGYHRc4ow+gaQLnvIm3oWTQKaFoxd4H1D9nTBpjh/YOlp1HvmSP6GpSH621j8MMeFbtSVIUSy5hsuiGT3sHeI4QXsF7qG1d33VgLLs0HFz33puAltdYLu8HCUvjzEkACaX/MiUTRQ/fhuMzlOkBrE4HdkZxKHc9lcxHGH1z1/GCy51V2g==
+ bh=drl76DskGKMqnwdzjFSesblvpA8GHEV5bCjEYjrWQVQ=;
+ b=NIJhw0h6xxCsQOIqDcIK2AsJNXhiBM3kxrH1iz7ix6IPT/IMV4MZUqR22tvnIdspm7w6fHh/iFnR6wx7albgPNgENtlUaN8lQYl8LHh1+0eisrOsugc75A4I3yhWvMMpSszFUr6+27omyRbywX4gZtjh/lFj0G+ZJ5b9/wo2sxQ3OQcQdsN9NfrfzNVRiV59Uf8udM8NAbV5g5h+RoD08JKCMfTYdSnmgAojQmC7DXTf1+Cqf7TVBX4yW0sIGzAKv5XKEYHXVS1/dtjnTwK57IRif7UZ1otFpnhGFJ2qH3/M02fz5lxWQ2dEmKQoKQ6aw76a7S8L0GBuRBPxMB+WmQ==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
  dkim=pass header.d=oss.nxp.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
  s=selector1-NXP1-onmicrosoft-com;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=TvmvOpHsiy9EylPvqsnozNhXaHRLcyV2oboiny2lIzg=;
- b=haItoKOCUTa+xvXjgFcJWast9tsbuR7B2T8kkOabcMSN7DHjsg3DfTh4O+SpSyoyN8cunxVdJ+dcUs2b0Idq4ntuUdiBgbqccKTcx/pnA7loVareCAX6YsjBWx5ixSwnvHh/gjyCeqwGFZqw+7r+n4w460GbdCw4Mn2FvoZd4isLbXTVDQc7Yj23NS5H/A8dpa3MWx6XZr/wg7VSnTEAIu8y2NOdwLgc0aLz4yUcbC9LIrGAe13Uf8lmDsmMz/NFfa6uVXG+inZwILf/OSjNDyPMh37DgMBhCxXCj2Z/a5g8WVHrveubXHwtKEI83HxR5WfCJ902dT7P8YTuwAiE5Q==
+ bh=drl76DskGKMqnwdzjFSesblvpA8GHEV5bCjEYjrWQVQ=;
+ b=aFppd3cQu5B8HR/8E6OkjiwnbgFJiHW02BkGVXFVWeZVxNlUt/H4/A6WFLn6zvnzbbWCdMu1RsxKAx8Wtkm97pExJx5ViptAarUtcgL+D0VlKr4daK3H9++Uu7FZ+lvpWJDkuwviMcswxAnyLDh2wdIPW5NTGxlQaLmHq2kBNa/1eCYlbMb6t4ADNmRuv1cKqsVYkADMVw5plXJKgPFKB7aduqNWgRhnE657o6y8t2MmY1Q5/oYmAFi6xiW5+94mIEFnJeHGwGDydHMo+HczZODI3U4lGKCTo1bzPm8fpK0K6qErpLsKz6qm5zTaBznjj+aI+11eMNW81S/kyHsDgw==
 Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=oss.nxp.com;
 Received: from VE1PR04MB7216.eurprd04.prod.outlook.com (2603:10a6:800:1b0::22)
  by DU2PR04MB8936.eurprd04.prod.outlook.com (2603:10a6:10:2e3::7) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.292.24; Sat, 8 Aug
- 2026 03:18:49 +0000
+ 2026 03:18:55 +0000
 Received: from VE1PR04MB7216.eurprd04.prod.outlook.com
  ([fe80::a9a5:cf83:dbe8:1f74]) by VE1PR04MB7216.eurprd04.prod.outlook.com
  ([fe80::a9a5:cf83:dbe8:1f74%3]) with mapi id 15.21.0292.022; Sat, 8 Aug 2026
- 03:18:49 +0000
+ 03:18:55 +0000
 From: wei.fang@oss.nxp.com
 To: xiaoning.wang@nxp.com,
 	andrew@lunn.ch,
@@ -72,16 +72,17 @@ Cc: wei.fang@nxp.com,
 	linux-kernel@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-arm-kernel@lists.infradead.org
-Subject: [PATCH v2 net-next 6/7] net: dsa: netc: add PTP two-step timestamping support
-Date: Sat,  8 Aug 2026 11:21:45 +0800
-Message-Id: <20260808032146.2335723-8-wei.fang@oss.nxp.com>
+Subject: [PATCH v2 net-next 7/7] net: dsa: netc: add PTP one-step timestamping support
+Date: Sat,  8 Aug 2026 11:21:46 +0800
+Message-Id: <20260808032146.2335723-9-wei.fang@oss.nxp.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20260808032146.2335723-1-wei.fang@oss.nxp.com>
 References: <20260808032146.2335723-1-wei.fang@oss.nxp.com>
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
-X-ClientProxiedBy: SG2P153CA0003.APCP153.PROD.OUTLOOK.COM (2603:1096::13) To
- VE1PR04MB7216.eurprd04.prod.outlook.com (2603:10a6:800:1b0::22)
+X-ClientProxiedBy: SI2PR02CA0007.apcprd02.prod.outlook.com
+ (2603:1096:4:194::23) To VE1PR04MB7216.eurprd04.prod.outlook.com
+ (2603:10a6:800:1b0::22)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -97,1108 +98,1039 @@ Precedence: list
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
 X-MS-TrafficTypeDiagnostic: VE1PR04MB7216:EE_|DU2PR04MB8936:EE_
-X-MS-Office365-Filtering-Correlation-Id: cbd7a92f-18cf-4818-b266-08def4fbc3a5
+X-MS-Office365-Filtering-Correlation-Id: a4fffd87-5bd8-471f-c35d-08def4fbc745
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|376014|1800799024|7416014|23010399003|366016|19092799006|18002099003|22082099003|56012099006|11063799006|3023799007|6133799003|10067099003|921020;
+	BCL:0;ARA:13230040|376014|1800799024|7416014|23010399003|366016|19092799006|18002099003|22082099003|5023799004|56012099006|11063799006|3023799007|6133799003|10067099003|921020;
 X-Microsoft-Antispam-Message-Info:
-	baTeAyq0tEg3Ly1kBD/FDVG0yqFT+OsNOmavxyPxadlJxQwuTBNIlWkMvcgas/jFpO23U+U3YGZJH69SAdo89fse8w1GIIxlNypi8jvygBF0hAarVxSdVjGeHeWwXpFPOQsYqEafIwyWe+OAdqW9bll+UMpmMQjPLOmlOR8WrmR7HSdNvg+hI8t4hwp7srxD5+WYKOFdj4CZ+ddVNkUOkNqD8h0pUTbyk6FE1G6PUYFI5aETK6AqMLIYOETmdTtPfjmwMX3qwfxYEq3a4vw5Sm7p5MwTkWSGv8qqLvWbDGzbdIG/vuBeRjjyxhTsf5Qs0BHZhsa8vze5t+Hiqnw8/fRm+Vss42KEW5YcCjdbMp5vH9R3cHFBl/Cytw90bqmctwUFx6wIVt7i/GbR4hO1RfxEJ7re2E8cw50Kq+voZ6Msm5d/hPgPBskKuzPvdLuDntnThiImMfy2VTyYlV5nlj3kZ8IK0vjvy15jqdoC3gM/Hv3JeoLjcvLeyKOuxD0T5UhWXS1a+XBLWZOJsRPUaREk+Ch3pTqypb3FCyDD1lAJlSNBS05i0OwSNCOYIMsqk3UF5qzoXJMtU6UGrhNMy8JkvHNPe/QHSJYi2UkttlzV5kl5nTu5RUDvKT6erYHibzhAsVGP4P8VnaI1UIlesYgO+JfjeJ/EVQ2T1rSVkwgBcqPnS1ejLTYo2014XRIt4zQA6LkpmM/xLNl9H2pwOA==
+	ZvgFMDRcwuRajYmI811c61cv5DYnOdVV8QLlmEBmLZp0CAMzez0OC5e6mwNNIDFTvkogKLnhsCpbVhGoBfDRu9t04haTQN7bMkB0GTudPrepU76PE21TqMOlLY1JJNERfIqGjrxsVtNKvhsK1q20ppEf1A9lMf3+zTFjvjCC+dc0AkVE9DuOBZaXnqvKCt9g+7SWKMLVAvyVIQHyjo2tOtnoIzlGQhC31NSj2iUx4LHGNc+T9d2XGxtQ4f+R6WdHfjWBtxjOQ26n3mhcB833u0bPvPSde7QYr4ZXuS0VJwxAhHaJjH9EgMKZUil/23e6Fq/T7kaxK54bjf2I8Vlyc71wsDDYa+hJlLg0Ff+Z1sl5Yj1bS631DcnM5+AXfrYvm2QxPihWgbJdGFOo3f/jtuXYaNyKkEtna51HV9yyW2bYlAY/FkS80AsCJsvdkekvnX4SIc3LTEdCYnLuBkmN+5OztPACaywMrrLBopnQWOG6XWKBWFcknQp6ydhqcg2kiDD3pqG7WJVPYrg2fEyFjulBiC5oECDZFS+hZuI3AtvL4BsC13mIOVqs/E0hgK6ocz8kqRF9CzxTurIQgU++1620yIeCSb2jkz02sSOW09Iy4Fu5cmvEqeI1xP0e5es/qKpZpGscOJeilLcDJ36xvRP/8snvlyRO2Tdh+HiQlI+UKC/Nu36NhLEShA+pnMOVM1m+WGR4DcgMgyejbqa1Ow==
 X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VE1PR04MB7216.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(1800799024)(7416014)(23010399003)(366016)(19092799006)(18002099003)(22082099003)(56012099006)(11063799006)(3023799007)(6133799003)(10067099003)(921020);DIR:OUT;SFP:1101;
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VE1PR04MB7216.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(1800799024)(7416014)(23010399003)(366016)(19092799006)(18002099003)(22082099003)(5023799004)(56012099006)(11063799006)(3023799007)(6133799003)(10067099003)(921020);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?XuU0Kbe/VyBPo6fsoW4UFas0CK/jJ4wJ3RVJ3NGJrGTk+KJy+kVcj7rhAQN2?=
- =?us-ascii?Q?3xkLjWglhFhEnwmf+/xeZJEQOdDyJq9Q5pRg7WyjAwsXjmw4K1Mg9o1Xxcs0?=
- =?us-ascii?Q?JRTkTo0aXcri6jmBPt7ruM6yhQo4jHTLBNlvkIMPialiy1W3v/hpKZMEocFX?=
- =?us-ascii?Q?5TDR8wOSnyi6Gf5pu5+w6qH8V+jxGDgebVnrWMpInMbdfZBg804GKevS/5sf?=
- =?us-ascii?Q?1flNOCdQRJUS+BPq+PpsZArtUTu0XAkF73Ooo6HttYOvVdW56o3SDoQ/8BLj?=
- =?us-ascii?Q?eOiB2kyBj25fesWmBYzWWL7gzjW3RVasEboXya7bFKBy3+VaZuUse69vxB4W?=
- =?us-ascii?Q?o6S4SmcMw00fCJ6Mx0n303MqpEJxX/zcUYRC5nOqOzS1zx74p/xzdL2//uME?=
- =?us-ascii?Q?3Mq2ZdCtamdVi1LUx5n+oVT2yshcLOe//PtQRbnVbeYMAixa0Ibr04yhZ7Yx?=
- =?us-ascii?Q?LXxhe72OdOYocUOtAkKLtVDZ51Tly6d95yhwtESR57erZXDMWhD03BlWyPNn?=
- =?us-ascii?Q?CWOrApH7/4vXNhTNvYRbuo74+p0cS0BkJZ/NVLW33qzwHbKuF95MyMQ37f7n?=
- =?us-ascii?Q?530OLbOhJz06sLhs8qrQFyuRGukBzC1fT/gPmBumByQ1V19n7D9BJWd0Ln49?=
- =?us-ascii?Q?4chwRO3bIUSGu2sMq8wERYh6smLYR3u+3pz+1ZhcZkgn08dbZyJMYSDtYmzl?=
- =?us-ascii?Q?RDDfpQZfB8gW4T3Fn6Pp+hqX4mO77umvKWYXTlNdrHh88rIzZUFZdcvL39h2?=
- =?us-ascii?Q?+H/RIvA/9fGzKL7UJcCrQsH9duKz/lYV2wao7k5AhbpnZkaXN3b1qkk/4WnQ?=
- =?us-ascii?Q?+CWmC1GqZEWpp5AAmyKWuTPVO7sLDIHQWOhHJTJdFXniX8C2ebxDUPiFYhRb?=
- =?us-ascii?Q?O8QbRdwd/PVY6SEbZqisT7dHz2k2DMGmbsa8m0kGtua+TDlCoMYQDHv/9R6H?=
- =?us-ascii?Q?ZNeEX3ujir5qNsAJFqmDB+pORmYVXFN19z66mT7yl38HfyFx5fDJh6GltGGp?=
- =?us-ascii?Q?ezCZCYIklKdqgvdrU19SD9msUFd0d5I94ttUTxHJ3xXB61WqtFCwWtFTjVl/?=
- =?us-ascii?Q?gMm9qH2euzbHySG275spmE0giNshL6I1kl2qnEiuWAbm9CfFBYZERuHlM46h?=
- =?us-ascii?Q?TyoO65IJa1hHS2McDe8eIuR7A0oziJskM3fthlANPHScSraNnLrd0ZRZ+IrX?=
- =?us-ascii?Q?Tfqmw3CVxOdI2135MzHUUFJPEt7RpxVj/59ImejFYGXjl3aROrCVgpq8h0Ev?=
- =?us-ascii?Q?tgVWpeGVoR74Y5gyiUW8yw1rwC9/eb0XO0fj8N/J+Q80iNzoNTszWOIp9VmE?=
- =?us-ascii?Q?T/Wmu02/dF5lCiJV8Mren2YP7Y2GjwuRvPpWC/r2oWcjhk546h8r8ycTRCUr?=
- =?us-ascii?Q?+b0LPE+CADQyILn2gQ9efM1lHx6vhWyKkOENVUhLgCMm9sRURmzYgB8EDOnd?=
- =?us-ascii?Q?pSmmMNiNuWE9oB03nBPmqKoTC67fXn0m1dWvmV9gxfG9VbgQ1ogmQwXOGwHd?=
- =?us-ascii?Q?E38RK/unxGUtFtaYMSGlbS325jMOirpS3E+Zez2UxGywv+J/nlKmp0gI8KAp?=
- =?us-ascii?Q?BPK50GNgOd9OSLzJmbx1IioMAhpYXq1GuawtkGYzl8louaGfnEU3gi1Iv9mv?=
- =?us-ascii?Q?sAEFgvcLij8cWtkJzGTMjfgnVz5jqBh7SvfnekgK24IgivL6MnOtjKwWIlMA?=
- =?us-ascii?Q?91NCW9IaBSXapFDwmKQewXBGfDUqWlrJr8NBqy1OB63lHeLXFzvfzr/krcnF?=
- =?us-ascii?Q?ygGa2bL/DOH8oT4LF99rmJi6sNjM4AH8tkco6ebpzho9e99S5uS/?=
+	=?us-ascii?Q?mJHjd2hLwX7KxcUhTANls9TZUM4OfExObki+au8Zh//i8yMp46AjEqXEPRY7?=
+ =?us-ascii?Q?KxN3qjfvK+i+g8kJzGdmeysILm5geUP7lku7L+LbnlaYPCWx+x331bOJmXK0?=
+ =?us-ascii?Q?n1VK+nR70AcmKPZ3VLIvYU6ZPhIYM7JkCuct0f+bD1wkToctw0/8clolmwgy?=
+ =?us-ascii?Q?WmyjVBXBrLBPVMyD0BE8e7L2VYf8x6a9w9cbcx+yXxGcRLJFBQWi9mUGKgvS?=
+ =?us-ascii?Q?4RvZcc5WQADW3n5NOGyXk/S0jTC+tsv0yzuHLyuLJuEYUexrhf7axShFMkCM?=
+ =?us-ascii?Q?btWgehAnAL+bXWcIM7g5tO6yke2625vsNeJIWepvu4deDlSFyTiGW0ZNtjST?=
+ =?us-ascii?Q?yHqeR5JAb6CTB9y8EpotUcZBZz9+iAcYt+6WzH25Qb4MGAcmskQyTlzzQ0qk?=
+ =?us-ascii?Q?tq0Rox7/zqwq3F90P50D+24ygiSsRTfgRUBmumUYP5t3ZyM1bM9+2uJ4B4g9?=
+ =?us-ascii?Q?AsS+BxRlj6S3FQqXidiLLVIhPMlByGWOh5fZHcxdUAIA4xXA1R9sR8GQdJpq?=
+ =?us-ascii?Q?o6Vv40EGXXBIv9DayOpMitj9zPU4HCV1OiVZi6AM8cMKcDnXDjl3IEmcbu4H?=
+ =?us-ascii?Q?FtwieTOXrTfIIGcV9vhzuHLCUE5h9JRWJogoMtJEnY3wHgFe8+auLJoAkAIZ?=
+ =?us-ascii?Q?8oXy3HoxETn+HOKgJmJQqaOF6Dlm8x2JXiEuXj2ldOp4ijbcMGKFGxEiQRoJ?=
+ =?us-ascii?Q?YjvscA1mMBYndF9lydLbvELGTVkXXr2OM3auOANMaTPNpZbqN47tyz9fjBFG?=
+ =?us-ascii?Q?TzlaAmXAU6zFo6wamnvQUwtXz6HO8jxPR8NFWxeQW90eJRyXF2HMYc9JJlio?=
+ =?us-ascii?Q?HFIs3GQf92IQzQv+o+CPtxEfs8s/9R7WbCI+CML3c/ZKozm9LvVj6KwoAxfs?=
+ =?us-ascii?Q?YkLGvknKbYJD7V2gQ/MsgypX2dfs3wIR2yrhlU025yxegRiKhs8kARejdZQu?=
+ =?us-ascii?Q?M918W31rimjSOLXi7FK2mq9m6GJTaI3aIlNAiy7LiP9rplIk6TQuPK/yRrXn?=
+ =?us-ascii?Q?7lAa84LoheKsWxzhamsa+WBDaNum2UPLH4HHi6FOi2wqY0ROytaPwXQXOCg2?=
+ =?us-ascii?Q?b0ldXIaLxVfjfS3fCmtAhAkBlgpEeutMdOGSnRgGG+/PJJUmYbMwKkIfFCKj?=
+ =?us-ascii?Q?hp9pVMJ2awArdwB/8f7KiwcF7FiGE6FF27sdhYdaMThteWpKJvOq5x9temPo?=
+ =?us-ascii?Q?1JZD6wPkpC46hsusZXYKcswbFrfw6AbZsgAsn4edoWaE3DR7d3w96iV41hqS?=
+ =?us-ascii?Q?CBX9b1EeM+DtEf1ubBscOQRjoCuZEJfdptlbwseh+a66pzQ5+vTxHDGq2lr7?=
+ =?us-ascii?Q?KUFHDHdn5BF4uY8YM93R/zg71p3mmd5BnpMrNBxMInHcyoEP0yDVXXtrpNfT?=
+ =?us-ascii?Q?5C+9iEJu3EQrNwia7YclFwUtFoMXVMloEBkfaqN6a/qEFn0risUWZ+fNZQml?=
+ =?us-ascii?Q?cARaLE6Qkx0PU0jNGR6/UBmj5L8Bte6Y2OiFQl/WnOmciitvPq2LguPL4bZ9?=
+ =?us-ascii?Q?lL1fWgLZdmkK3Esq+mE6hqfh1GLW8FCKbtjS/qTWVsrUEm/5LOb8vXJIBHf2?=
+ =?us-ascii?Q?ySLhknlHbvTjlaizn8fALkJCRdo1tMhuz6oD6647Lta2LuRCm86XSyAOjZr9?=
+ =?us-ascii?Q?UlE731Y/znsahvsraT2SneAyIkr1u7VWU2TsY+cDmT/dJUIDTfpPADxNpn1Y?=
+ =?us-ascii?Q?OB7Zt1PI6c4Ho6VMBpxlgUbTjAt3vHP7BVAevYuLoEwdtt3l437BcMUHKgvo?=
+ =?us-ascii?Q?Ph1Zt0+rn88EgrhvRGnu8K4Sb3AiGOJZmj9LQXEjLtpQdz7e9rW7?=
 X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: cbd7a92f-18cf-4818-b266-08def4fbc3a5
+X-MS-Exchange-CrossTenant-Network-Message-Id: a4fffd87-5bd8-471f-c35d-08def4fbc745
 X-MS-Exchange-CrossTenant-AuthSource: VE1PR04MB7216.eurprd04.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 08 Aug 2026 03:18:49.2437
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 08 Aug 2026 03:18:55.3067
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: J5OoNB89E+CsaOk/DJz9SYzed1OhHwNk+VDBrNWMbgkrMPZRtxT2DmbGMyExZ1ti+7uEQ+7gQLVrefD6lSTPJ8K9XnI5R5PtZ85x4zFHem1NiFi1rRGUoA/J/DAUaa7a
+X-MS-Exchange-CrossTenant-UserPrincipalName: 3u1OSQENn+4ORKU2BT2XF0BhBIvBJf4OYIEEMa81a+Wfg69KjeViANl9Txor5eAqvcvlQbAxeScQV3KCIl5I4LxGTdEZf0xpdz7SRjxD0pMiItqfz1IbXoa0hkhZdAnN
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: DU2PR04MB8936
 
 From: Wei Fang <wei.fang@nxp.com>
 
-Add two-step TX timestamping and RX timestamping for the NETC switch.
+The NETC switch supports one-step TX timestamping for PTP Sync frames.
+The MAC captures the SFD transmit time, adds the residence time to the
+correction field at the offset given by PM_SINGLE_STEP[OFFSET], and
+writes the result back before the frame leaves the wire. The software
+timestamp (low 30 bits of the PTP Timer value) is carried in the
+To_Port SubType 1 tag.
 
-For RX, install ingress port filter table (IPFT) rules that redirect PTP
-frames to the CPU port. Support L2, L4 over IPv4 and L4 over IPv6, for
-both event and general messages, selected through the hwtstamp rx_filter.
-The hardware prepends a To_Host subtype 1 tag carrying the 64-bit ingress
-timestamp. The tagger extracts it into the skb control buffer, and
-netc_port_rxtstamp() copies it into skb_hwtstamps().
+PM_SINGLE_STEP is a per-port register that can describe only one
+in-flight frame at a time, and programming it requires reading the
+current PTP time, which may sleep. Both constraints rule out handling
+one-step Sync on the xmit path.
 
-For two-step TX, clone the skb and allocate a 4-bit timestamp request ID,
-then queue the clone on a per-port list. netc_xmit() emits a To_Port
-subtype 2 tag carrying that ID. The hardware echoes the ID back in a
-generated To_Host subtype 2 response frame together with the 64-bit
-transmit timestamp. The tagger dispatches the ID and timestamp to the
-switch driver through the twostep_tstamp_handler callback registered in
-netc_tagger_data, which matches the queued clone and completes it via
-skb_complete_tx_timestamp(), then frees the response skb. Non-PTP frames
-keep using the To_Port subtype 0 tag on the xmit fast path.
+Instead, defer transmission to a per-port process-context work. The
+xmit path classifies the frame in netc_port_txtstamp(): a genuine
+one-step Sync (twoStepFlag cleared) has its PTP header offsets cached
+in the skb control block; frames that cannot be handled as one-step
+fall back to the two-step path or are sent as normal frames.
+netc_xmit() hands the classified frame to the switch driver via the
+onestep_sync_enqueue tagger callback, which queues it and kicks the
+work if no frame is currently in flight.
 
-Reclaim the request ID when the matching response arrives or when the
-request times out after 5 seconds. This timeout is orders of magnitude
-larger than the hardware's normal response latency, so a still missing
-response after the window means the frame never reached the hardware, the
-frames should have been dropped by software. In that case the hardware
-will never echo that ID, so reusing the reclaimed ID for a later request
-cannot cause a stale response to be matched against the wrong clone. A
-response arriving later than 5 seconds only happens under a hardware
-fault, where the timestamp is already meaningless for PTP synchronization
-and no amount of ID bookkeeping would recover a usable value. Store the
-allocated ID in the control block of the transmit skb as well as in its
-queued clone. The transmit path reads the ID from the transmit skb when
-building the To_Port subtype 2 tag; the response handler reads it from
-the clone to match the queued entry, which is completed and freed only
-by the handler or the timeout path.
+The work dequeues one frame at a time, reads a fresh PTP time,
+programs PM_SINGLE_STEP, updates the originTimestamp field, and
+transmits the frame directly to the conduit via the onestep_sync_xmit
+tagger callback, bypassing dsa_user_xmit() to avoid double-counting
+TX stats. Only one frame is in flight at a time: the frame carries a
+TX-completion destructor that reschedules the work when the conduit
+frees the skb, keeping PM_SINGLE_STEP always matched to the frame
+being transmitted.
 
-The two-step response frame carries no payload; its total length is only
-26 bytes (12 bytes of DMAC and SMAC plus a 14-byte switch tag).
-eth_type_trans() pulls ETH_HLEN bytes, advancing skb->data past the
-DMAC, SMAC, and the TPID that opens the switch tag, leaving skb->len
-at 12. Since the tag pointer is at (skb->data - 2), the pskb_may_pull()
-check must use (NETC_TAG_MAX_LEN - 2) rather than NETC_TAG_MAX_LEN.
-Otherwise pskb_may_pull() drops the response frame and breaks PTP
-synchronization.
+The one-step context is reference-counted and its lifetime is decoupled
+from the devm-allocated netc_port. In-flight skbs hold a reference via
+their destructor, so the context outlives port disable until the conduit
+frees the last in-flight skb. Port disable clears @active and purges the
+queue under work_lock; a work that runs afterwards observes @active
+cleared and returns without touching the freed port resources.
 
-Add the To_Port subtype 2 and To_Host subtype 1/2 tag structures, extend
-netc_xmit() to select the tag based on ptp_flag in the skb control buffer,
-and add netc_connect()/netc_disconnect() to manage the per-switch
-netc_tagger_data allocation. Grab the PTP timer's pci_dev in netc_setup()
-so get_ts_info() can report its PHC index, and release it in the teardown
-and error paths.
-
+Assisted-by: Wchat:claude-opus-4-8
 Signed-off-by: Wei Fang <wei.fang@nxp.com>
 ---
- drivers/net/dsa/netc/Kconfig         |   1 +
- drivers/net/dsa/netc/Makefile        |   3 +-
- drivers/net/dsa/netc/netc_main.c     |  70 ++++-
- drivers/net/dsa/netc/netc_platform.c |   1 +
- drivers/net/dsa/netc/netc_ptp.c      | 454 +++++++++++++++++++++++++++
- drivers/net/dsa/netc/netc_switch.h   |  41 +++
- include/linux/dsa/tag_netc.h         |  21 ++
- net/dsa/tag_netc.c                   | 146 ++++++++-
- 8 files changed, 727 insertions(+), 10 deletions(-)
- create mode 100644 drivers/net/dsa/netc/netc_ptp.c
+ drivers/net/dsa/netc/netc_main.c      |  61 +++-
+ drivers/net/dsa/netc/netc_ptp.c       | 418 +++++++++++++++++++++++++-
+ drivers/net/dsa/netc/netc_switch.h    |  48 +++
+ drivers/net/dsa/netc/netc_switch_hw.h |   5 +
+ include/linux/dsa/tag_netc.h          |  22 ++
+ net/dsa/tag_netc.c                    |  70 ++++-
+ 6 files changed, 615 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/net/dsa/netc/Kconfig b/drivers/net/dsa/netc/Kconfig
-index 793f7691a24f..8770b65d0f62 100644
---- a/drivers/net/dsa/netc/Kconfig
-+++ b/drivers/net/dsa/netc/Kconfig
-@@ -4,6 +4,7 @@ config NET_DSA_NETC_SWITCH
- 	depends on ARM64 || COMPILE_TEST
- 	depends on NET_DSA && PCI
- 	depends on NET_VENDOR_FREESCALE
-+	depends on PTP_1588_CLOCK_OPTIONAL
- 	select NET_DSA_TAG_NETC
- 	select FSL_ENETC_MDIO
- 	select NXP_NTMP
-diff --git a/drivers/net/dsa/netc/Makefile b/drivers/net/dsa/netc/Makefile
-index f40b13c702e0..572b833ad80f 100644
---- a/drivers/net/dsa/netc/Makefile
-+++ b/drivers/net/dsa/netc/Makefile
-@@ -1,3 +1,4 @@
- # SPDX-License-Identifier: GPL-2.0-only
- obj-$(CONFIG_NET_DSA_NETC_SWITCH) += nxp-netc-switch.o
--nxp-netc-switch-objs := netc_main.o netc_platform.o netc_ethtool.o
-+nxp-netc-switch-objs := netc_main.o netc_platform.o netc_ethtool.o \
-+			netc_ptp.o
 diff --git a/drivers/net/dsa/netc/netc_main.c b/drivers/net/dsa/netc/netc_main.c
-index 9cb9e618661e..4e139ffc2f76 100644
+index 4e139ffc2f76..55664045ba19 100644
 --- a/drivers/net/dsa/netc/netc_main.c
 +++ b/drivers/net/dsa/netc/netc_main.c
-@@ -65,6 +65,20 @@ netc_get_tag_protocol(struct dsa_switch *ds, int port,
- 	return DSA_TAG_PROTO_NETC;
+@@ -74,6 +74,7 @@ static int netc_connect_tag_protocol(struct dsa_switch *ds,
+ 		return -EPROTONOSUPPORT;
+ 
+ 	tagger_data = ds->tagger_data;
++	tagger_data->onestep_sync_enqueue = netc_port_onestep_sync_enqueue;
+ 	tagger_data->twostep_tstamp_handler = netc_port_twostep_tstamp_handler;
+ 
+ 	return 0;
+@@ -94,7 +95,7 @@ static void netc_port_rmw(struct netc_port *np, u32 reg,
+ 	netc_port_wr(np, reg, new);
  }
  
-+static int netc_connect_tag_protocol(struct dsa_switch *ds,
-+				     enum dsa_tag_protocol proto)
+-static void netc_mac_port_wr(struct netc_port *np, u32 reg, u32 val)
++void netc_mac_port_wr(struct netc_port *np, u32 reg, u32 val)
+ {
+ 	if (is_netc_pseudo_port(np))
+ 		return;
+@@ -252,6 +253,21 @@ static void netc_get_switch_capabilities(struct netc_switch *priv)
+ 	priv->num_bp = FIELD_GET(BPCAPR_NUM_BP, val);
+ }
+ 
++static void netc_free_user_ports(struct netc_switch *priv)
 +{
-+	struct netc_tagger_data *tagger_data;
++	struct dsa_switch *ds = priv->ds;
++	struct dsa_port *dp;
 +
-+	if (proto != DSA_TAG_PROTO_NETC)
-+		return -EPROTONOSUPPORT;
++	dsa_switch_for_each_user_port(dp, ds) {
++		struct netc_port *np = NETC_PORT(ds, dp->index);
 +
-+	tagger_data = ds->tagger_data;
-+	tagger_data->twostep_tstamp_handler = netc_port_twostep_tstamp_handler;
-+
-+	return 0;
++		if (np->onestep) {
++			netc_onestep_put(np->onestep);
++			np->onestep = NULL;
++		}
++	}
 +}
 +
- static void netc_port_rmw(struct netc_port *np, u32 reg,
- 			  u32 mask, u32 val)
+ static int netc_init_all_ports(struct netc_switch *priv)
  {
-@@ -292,6 +306,15 @@ static int netc_init_all_ports(struct netc_switch *priv)
- 			 * been created.
+ 	struct device *dev = priv->dev;
+@@ -292,13 +308,13 @@ static int netc_init_all_ports(struct netc_switch *priv)
+ 
+ 		err = netc_port_get_info_from_dt(np, dp->dn, dev);
+ 		if (err)
+-			return err;
++			goto free_user_ports;
+ 
+ 		if (dsa_port_is_user(dp)) {
+ 			err = netc_port_create_mdio_bus(np, dp->dn);
+ 			if (err) {
+ 				dev_err(dev, "Failed to create MDIO bus\n");
+-				return err;
++				goto free_user_ports;
+ 			}
+ 
+ 			/* The ipft_hf_eid is initialized to an invalid entry
+@@ -314,11 +330,16 @@ static int netc_init_all_ports(struct netc_switch *priv)
  			 */
- 			np->ipft_hf_eid = NTMP_NULL_ENTRY_ID;
-+
-+			/* Only the user port needs to support PTP feature, so
-+			 * PTP-related resources, such as skb_txtstamp_queue,
-+			 * tstamp_lock, etc., are initialized only for the user
-+			 * port.
-+			 */
-+			err = netc_port_ptp_init(np);
-+			if (err)
-+				return err;
+ 			err = netc_port_ptp_init(np);
+ 			if (err)
+-				return err;
++				goto free_user_ports;
  		}
  	}
  
-@@ -881,6 +904,15 @@ static int netc_switch_bpt_default_config(struct netc_switch *priv)
  	return 0;
++
++free_user_ports:
++	netc_free_user_ports(priv);
++
++	return err;
  }
  
-+static struct pci_dev *netc_get_ptp_timer(struct netc_switch *priv)
-+{
-+	struct pci_bus *bus = priv->pdev->bus;
-+	u32 devfn = priv->info->tmr_devfn;
-+
-+	return pci_get_domain_bus_and_slot(pci_domain_nr(bus),
-+					   bus->number, devfn);
-+}
-+
- static int netc_setup(struct dsa_switch *ds)
- {
- 	struct netc_switch *priv = ds->priv;
-@@ -893,13 +925,23 @@ static int netc_setup(struct dsa_switch *ds)
- 
- 	netc_get_switch_capabilities(priv);
- 
-+	/* The PTP timer sits on the same PCI bus as the switch. PCI creates
-+	 * every function's pci_dev during bus enumeration, before any driver
-+	 * probes, so we can grab the timer's pci_dev here even if the timer
-+	 * driver has not probed yet.
-+	 */
-+	priv->tmr_dev = netc_get_ptp_timer(priv);
-+	if (!priv->tmr_dev)
-+		dev_info(priv->dev,
-+			 "PTP timer PCI device not found\n");
-+
- 	err = netc_init_all_ports(priv);
- 	if (err)
--		return err;
-+		goto put_ptp_timer;
+ static void netc_init_ntmp_tbl_versions(struct netc_switch *priv)
+@@ -941,7 +962,7 @@ static int netc_setup(struct dsa_switch *ds)
  
  	err = netc_init_ntmp_user(priv);
  	if (err)
--		return err;
-+		goto put_ptp_timer;
+-		goto put_ptp_timer;
++		goto free_user_ports;
  
  	INIT_HLIST_HEAD(&priv->fdb_list);
  	mutex_init(&priv->fdbt_lock);
-@@ -938,6 +980,8 @@ static int netc_setup(struct dsa_switch *ds)
+@@ -980,6 +1001,8 @@ static int netc_setup(struct dsa_switch *ds)
  	mutex_destroy(&priv->fdbt_lock);
  	mutex_destroy(&priv->vft_lock);
  	netc_free_ntmp_user(priv);
-+put_ptp_timer:
-+	pci_dev_put(priv->tmr_dev);
++free_user_ports:
++	netc_free_user_ports(priv);
+ put_ptp_timer:
+ 	pci_dev_put(priv->tmr_dev);
  
- 	return err;
- }
-@@ -950,6 +994,20 @@ static void netc_destroy_all_lists(struct netc_switch *priv)
- 	mutex_destroy(&priv->vft_lock);
+@@ -1005,6 +1028,19 @@ static void netc_free_ports_resources(struct netc_switch *priv)
+ 			continue;
+ 
+ 		netc_port_purge_txtstamp_queue(np);
++
++		/* dsa_tree_teardown() calls dsa_tree_teardown_ports() before
++		 * dsa_tree_teardown_switches(), so netc_port_disable() is
++		 * executed before netc_teardown() and purges onestep->queue,
++		 * so here we only need to drop the port's owner reference.
++		 * In-flight one-step skbs still hold references via the
++		 * destructor; the context (and its work) is freed only after
++		 * the conduit frees the last in-flight skb. By then np may
++		 * be gone, but the work no longer dereferences np because
++		 * onestep->active has been cleared.
++		 */
++		netc_onestep_put(np->onestep);
++		np->onestep = NULL;
+ 	}
  }
  
-+static void netc_free_ports_resources(struct netc_switch *priv)
-+{
-+	struct dsa_port *dp;
-+
-+	dsa_switch_for_each_available_port(dp, priv->ds) {
-+		struct netc_port *np = priv->ports[dp->index];
-+
-+		if (!dsa_port_is_user(dp))
-+			continue;
-+
-+		netc_port_purge_txtstamp_queue(np);
-+	}
-+}
-+
- static void netc_teardown(struct dsa_switch *ds)
+@@ -1559,6 +1595,7 @@ static int netc_port_enable(struct dsa_switch *ds, int port,
+ 			    struct phy_device *phy)
  {
- 	struct netc_switch *priv = ds->priv;
-@@ -957,6 +1015,8 @@ static void netc_teardown(struct dsa_switch *ds)
- 	disable_delayed_work_sync(&priv->fdbt_ageing_work);
- 	netc_destroy_all_lists(priv);
- 	netc_free_ntmp_user(priv);
-+	netc_free_ports_resources(priv);
-+	pci_dev_put(priv->tmr_dev);
+ 	struct netc_port *np = NETC_PORT(ds, port);
++	struct netc_onestep *onestep = np->onestep;
+ 	int err;
+ 
+ 	if (np->enable)
+@@ -1571,6 +1608,12 @@ static int netc_port_enable(struct dsa_switch *ds, int port,
+ 		return err;
+ 	}
+ 
++	if (onestep) {
++		mutex_lock(&onestep->work_lock);
++		onestep->active = true;
++		mutex_unlock(&onestep->work_lock);
++	}
++
+ 	np->enable = true;
+ 
+ 	return 0;
+@@ -1579,6 +1622,7 @@ static int netc_port_enable(struct dsa_switch *ds, int port,
+ static void netc_port_disable(struct dsa_switch *ds, int port)
+ {
+ 	struct netc_port *np = NETC_PORT(ds, port);
++	struct netc_onestep *onestep = np->onestep;
+ 
+ 	/* When .port_disable() is called, .port_enable() may not have been
+ 	 * called. In this case, both the prepare_count and enable_count of
+@@ -1588,6 +1632,13 @@ static void netc_port_disable(struct dsa_switch *ds, int port)
+ 	if (!np->enable)
+ 		return;
+ 
++	if (onestep) {
++		mutex_lock(&onestep->work_lock);
++		onestep->active = false;
++		netc_port_purge_onestep_queue(onestep, true);
++		mutex_unlock(&onestep->work_lock);
++	}
++
+ 	clk_disable_unprepare(np->ref_clk);
+ 	np->enable = false;
  }
- 
- static bool netc_port_is_emdio_consumer(struct device_node *node)
-@@ -2388,6 +2448,7 @@ static const struct phylink_mac_ops netc_phylink_mac_ops = {
- 
- static const struct dsa_switch_ops netc_switch_ops = {
- 	.get_tag_protocol		= netc_get_tag_protocol,
-+	.connect_tag_protocol		= netc_connect_tag_protocol,
- 	.setup				= netc_setup,
- 	.teardown			= netc_teardown,
- 	.phylink_get_caps		= netc_phylink_get_caps,
-@@ -2416,6 +2477,11 @@ static const struct dsa_switch_ops netc_switch_ops = {
- 	.get_sset_count			= netc_port_get_sset_count,
- 	.get_strings			= netc_port_get_strings,
- 	.get_ethtool_stats		= netc_port_get_ethtool_stats,
-+	.get_ts_info			= netc_get_ts_info,
-+	.port_hwtstamp_set		= netc_port_hwtstamp_set,
-+	.port_hwtstamp_get		= netc_port_hwtstamp_get,
-+	.port_rxtstamp			= netc_port_rxtstamp,
-+	.port_txtstamp			= netc_port_txtstamp,
- };
- 
- static int netc_switch_probe(struct pci_dev *pdev,
-diff --git a/drivers/net/dsa/netc/netc_platform.c b/drivers/net/dsa/netc/netc_platform.c
-index 34aeb6fceb3c..4fd0ce6770c3 100644
---- a/drivers/net/dsa/netc/netc_platform.c
-+++ b/drivers/net/dsa/netc/netc_platform.c
-@@ -50,6 +50,7 @@ static void imx94_switch_phylink_get_caps(int port,
- 
- static const struct netc_switch_info imx94_info = {
- 	.num_ports = 4,
-+	.tmr_devfn = PCI_DEVFN(0, 1),
- 	.phylink_get_caps = imx94_switch_phylink_get_caps,
- };
- 
 diff --git a/drivers/net/dsa/netc/netc_ptp.c b/drivers/net/dsa/netc/netc_ptp.c
-new file mode 100644
-index 000000000000..1384a6f31d1c
---- /dev/null
+index 1384a6f31d1c..d0423b3c8c33 100644
+--- a/drivers/net/dsa/netc/netc_ptp.c
 +++ b/drivers/net/dsa/netc/netc_ptp.c
-@@ -0,0 +1,454 @@
-+// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
-+/*
-+ * NXP NETC switch driver
-+ * Copyright 2025-2026 NXP
-+ */
+@@ -4,13 +4,270 @@
+  * Copyright 2025-2026 NXP
+  */
+ 
++#include <linux/kref.h>
+ #include <linux/ptp_classify.h>
+ #include <linux/ptp_clock_kernel.h>
++#include <linux/slab.h>
+ 
+ #include "netc_switch.h"
+ 
+ #define NETC_NUM_TS_REQ_ID		16
+ #define NETC_TXTSTAMP_TIMEOUT		(5 * HZ)
++#define NETC_MAX_STEP_OFFSET		0x1ff
 +
-+#include <linux/ptp_classify.h>
-+#include <linux/ptp_clock_kernel.h>
-+
-+#include "netc_switch.h"
-+
-+#define NETC_NUM_TS_REQ_ID		16
-+#define NETC_TXTSTAMP_TIMEOUT		(5 * HZ)
-+
-+int netc_port_ptp_init(struct netc_port *np)
++static void netc_port_set_onestep_control(struct netc_port *np,
++					  bool csum_update, int offset)
 +{
-+	/* Initialize to invalid entry IDs */
-+	for (int i = 0; i < NETC_PTP_MAX; i++)
-+		np->ptp_ipft_eid[i] = NTMP_NULL_ENTRY_ID;
++	u32 val;
 +
-+	spin_lock_init(&np->tstamp_lock);
-+	__skb_queue_head_init(&np->skb_txtstamp_queue);
-+
-+	return 0;
++	val = PM_SINGLE_STEP_EN | FIELD_PREP(PM_SINGLE_STEP_OFFSET, offset);
++	if (csum_update)
++		val |= PM_SINGLE_STEP_CH;
++	netc_mac_port_wr(np, NETC_PM_SINGLE_STEP(0), val);
 +}
 +
-+static int netc_get_phc_index(struct netc_switch *priv)
++static void netc_onestep_destroy_work(struct work_struct *work)
 +{
-+	if (!priv->tmr_dev)
-+		return -1;
++	struct netc_onestep *onestep = container_of(work, struct netc_onestep,
++						    destroy_work);
 +
-+	return ptp_clock_index_by_dev(&priv->tmr_dev->dev);
++	/* refcnt reaching zero does not by itself mean onestep->work has
++	 * stopped: the last in-flight skb destructor calls schedule_work(&work)
++	 * *before* the netc_onestep_put() that drops the final reference, so at
++	 * the moment refcnt hits zero onestep->work may still be pending or
++	 * running on another CPU. destroy_work and work are distinct work_structs
++	 * and can run concurrently, so cancel_work_sync() is required to drain
++	 * onestep->work before mutex_destroy()/kfree() below, otherwise a
++	 * still-running work would touch freed memory. No new schedule_work(&work)
++	 * can occur after this point because no references remain, so this
++	 * cancel is final.
++	 */
++	cancel_work_sync(&onestep->work);
++	mutex_destroy(&onestep->work_lock);
++	kfree(onestep);
 +}
 +
-+int netc_get_ts_info(struct dsa_switch *ds, int port,
-+		     struct kernel_ethtool_ts_info *info)
++static void netc_onestep_release(struct kref *ref)
 +{
-+	struct netc_switch *priv = ds->priv;
++	struct netc_onestep *onestep = container_of(ref, struct netc_onestep,
++						    refcnt);
 +
-+	info->phc_index = netc_get_phc_index(priv);
-+	if (info->phc_index < 0)
++	/* This may be called from the skb destructor in softirq context
++	 * (napi_consume_skb()), where cancel_work_sync() must not be used.
++	 * Defer the final teardown to process context.
++	 */
++	schedule_work(&onestep->destroy_work);
++}
++
++static void netc_onestep_get(struct netc_onestep *onestep)
++{
++	kref_get(&onestep->refcnt);
++}
++
++void netc_onestep_put(struct netc_onestep *onestep)
++{
++	kref_put(&onestep->refcnt, netc_onestep_release);
++}
++
++static void netc_onestep_skb_destructor(struct sk_buff *skb)
++{
++	struct netc_onestep *onestep = skb_shinfo(skb)->destructor_arg;
++
++	/* skb has been transmitted by hardware. Schedule work to send the next
++	 * queued one-step Sync packet, then release this skb's reference on the
++	 * context. If the port has already been torn down and this is the last
++	 * reference, the context is freed via netc_onestep_release().
++	 */
++	schedule_work(&onestep->work);
++	netc_onestep_put(onestep);
++}
++
++static void netc_port_program_onestep(struct netc_port *np,
++				      struct netc_onestep *onestep,
++				      struct sk_buff *skb,
++				      u64 tstamp)
++{
++	u16 correction_offset = NETC_SKB_CB(skb)->correction_offset;
++	u16 tstamp_offset = NETC_SKB_CB(skb)->timestamp_offset;
++	u8 *hdr = skb_mac_header(skb);
++	bool csum_update = false;
++	__be32 new_sec_l, new_ns;
++	__be16 new_sec_h;
++	u64 sec;
++	u32 ns;
++
++	NETC_SKB_CB(skb)->tstamp = tstamp;
++	NETC_SKB_CB(skb)->ptp_flag = NETC_PTP_FLAG_ONESTEP;
++
++	/* Update originTimestamp field of Sync packet
++	 * - 48 bits seconds field
++	 * - 32 bits nanoseconds field
++	 */
++	sec = div_u64_rem(tstamp, NSEC_PER_SEC, &ns);
++	new_sec_h = htons((sec >> 32) & 0xffff);
++	new_sec_l = htonl(sec & 0xffffffff);
++	new_ns = htonl(ns);
++
++	if (NETC_SKB_CB(skb)->is_udp) {
++		__be32 old_sec_l, old_ns;
++		struct udphdr *uh;
++		__be16 old_sec_h;
++
++		if (skb->ip_summed == CHECKSUM_PARTIAL) {
++			csum_update = true;
++			goto update_timestamp;
++		}
++
++		if (unlikely(!skb_transport_header_was_set(skb)))
++			uh = (struct udphdr *)(hdr + tstamp_offset -
++					       sizeof(struct ptp_header) -
++					       sizeof(struct udphdr));
++		else
++			uh = udp_hdr(skb);
++
++		/* For IPv4, a UDP checksum of zero on the wire means "no
++		 * checksum". For IPv6, its UDP checksum is mandatory and
++		 * never zero.
++		 */
++		if (!uh->check)
++			goto update_timestamp;
++
++		old_sec_h = __get_unaligned_t(__be16, hdr + tstamp_offset);
++		old_sec_l = __get_unaligned_t(__be32, hdr + tstamp_offset + 2);
++		old_ns = __get_unaligned_t(__be32, hdr + tstamp_offset + 6);
++		inet_proto_csum_replace2(&uh->check, skb, old_sec_h,
++					 new_sec_h, false);
++		inet_proto_csum_replace4(&uh->check, skb, old_sec_l,
++					 new_sec_l, false);
++		inet_proto_csum_replace4(&uh->check, skb, old_ns,
++					 new_ns, false);
++		csum_update = true;
++	}
++
++update_timestamp:
++	__put_unaligned_t(__be16, new_sec_h, hdr + tstamp_offset);
++	__put_unaligned_t(__be32, new_sec_l, hdr + tstamp_offset + 2);
++	__put_unaligned_t(__be32, new_ns, hdr + tstamp_offset + 6);
++
++	netc_port_set_onestep_control(np, csum_update, correction_offset);
++
++	/* Orphan the skb to release the socket send buffer quota immediately.
++	 * This is safe because sock_wfree() does not access skb->data or any
++	 * frame content. After skb_orphan(), we install our own destructor so
++	 * that when the conduit driver frees the skb after TX completion, we
++	 * get notified to send the next queued Sync packet.
++	 */
++	skb_orphan(skb);
++	netc_onestep_get(onestep); /* in-flight reference */
++	skb_shinfo(skb)->destructor_arg = onestep;
++	skb->destructor = netc_onestep_skb_destructor;
++}
++
++static u64 netc_get_phc_time(struct netc_switch *priv)
++{
++	if (unlikely(!priv->tmr_dev))
 +		return 0;
 +
-+	info->so_timestamping |= SOF_TIMESTAMPING_TX_HARDWARE |
-+				 SOF_TIMESTAMPING_RX_HARDWARE |
-+				 SOF_TIMESTAMPING_RAW_HARDWARE;
-+
-+	info->tx_types = BIT(HWTSTAMP_TX_OFF) | BIT(HWTSTAMP_TX_ON);
-+
-+	info->rx_filters = BIT(HWTSTAMP_FILTER_NONE) |
-+			   BIT(HWTSTAMP_FILTER_PTP_V2_EVENT) |
-+			   BIT(HWTSTAMP_FILTER_PTP_V2_L2_EVENT) |
-+			   BIT(HWTSTAMP_FILTER_PTP_V2_L4_EVENT);
-+
-+	return 0;
++	return netc_timer_get_current_time(priv->tmr_dev);
 +}
 +
-+static void netc_port_del_ptp_filter(struct netc_port *np)
++void netc_port_onestep_work(struct work_struct *work)
 +{
-+	struct netc_switch *priv = np->switch_priv;
-+	u32 entry_id;
-+	int i;
++	struct netc_onestep *onestep = container_of(work, struct netc_onestep,
++						    work);
++	struct netc_tagger_data *tagger_data;
++	struct netc_switch *priv;
++	struct netc_port *np;
++	struct sk_buff *skb;
++	u64 tstamp;
 +
-+	for (i = 0; i < NETC_PTP_MAX; i++) {
-+		entry_id = np->ptp_ipft_eid[i];
-+		if (entry_id != NTMP_NULL_ENTRY_ID) {
-+			/* There is no need to check the return value of
-+			 * ntmp_ipft_delete_entry(); in general, deleted
-+			 * existing entries will be successful.
-+			 */
-+			ntmp_ipft_delete_entry(&priv->ntmp, entry_id);
-+			np->ptp_ipft_eid[i] = NTMP_NULL_ENTRY_ID;
-+		}
++	/* Serialize the whole hardware access against port disable. work_lock
++	 * is a mutex (this runs in process context and netc_get_phc_time() may
++	 * sleep). If the port has been disabled, bail out immediately; np and
++	 * priv are only dereferenced after the @active check passes, so they
++	 * are always valid here.
++	 */
++	mutex_lock(&onestep->work_lock);
++	if (unlikely(!onestep->active)) {
++		netc_port_purge_onestep_queue(onestep, true);
++		goto unlock_work;
 +	}
-+}
 +
-+static int netc_build_ptp_ipft_keye(struct ipft_keye_data *keye, int port,
-+				    enum netc_ptp_type type)
-+{
-+	u16 src_port, frm_attr_flags;
++	/* Send only one queued Sync per run. The shared SINGLE_STEP register
++	 * must match the frame currently being transmitted, so the next frame
++	 * is programmed only after this one completes TX, when its skb
++	 * destructor reschedules this work. Dequeue under onestep->queue_lock,
++	 * and if the queue has drained, release the in-flight slot so a later
++	 * frame from the xmit path kicks the work again.
++	 */
++	spin_lock_bh(&onestep->queue_lock);
++	skb = __skb_dequeue(&onestep->queue);
++	if (!skb) {
++		onestep->in_flight = false;
++		spin_unlock_bh(&onestep->queue_lock);
++		goto unlock_work;
++	}
++	spin_unlock_bh(&onestep->queue_lock);
 +
-+	keye->precedence = cpu_to_le16(NETC_IPFT_PTP_PRECEDENCE);
-+	src_port = FIELD_PREP(IPFT_SRC_PORT, port);
-+	src_port |= IPFT_SRC_PORT_MASK;
-+	keye->src_port = cpu_to_le16(src_port);
-+
-+	switch (type) {
-+	case NETC_PTP_L2:
-+		keye->ethertype = htons(ETH_P_1588);
-+		keye->ethertype_mask = htons(0xffff);
-+		break;
-+	case NETC_PTP_L4_IPV4_EVENT:
-+	case NETC_PTP_L4_IPV4_GENERAL:
-+	case NETC_PTP_L4_IPV6_EVENT:
-+	case NETC_PTP_L4_IPV6_GENERAL:
-+		frm_attr_flags = IPFT_FAF_IP_HDR | FIELD_PREP(IPFT_FAF_L4_CODE,
-+				 IPFT_FAF_UDP_HDR);
-+		if (type == NETC_PTP_L4_IPV6_EVENT ||
-+		    type == NETC_PTP_L4_IPV6_GENERAL)
-+			frm_attr_flags |= IPFT_FAF_IP_VER6;
-+
-+		keye->frm_attr_flags = cpu_to_le16(frm_attr_flags);
-+
-+		/* Set IP version bit in flags_mask to match IPv4 or IPv6
-+		 * packets
++	np = onestep->np;
++	priv = np->switch_priv;
++	tstamp = netc_get_phc_time(priv);
++	if (unlikely(!tstamp)) {
++		/* The PTP timer is not available, so there is no correct
++		 * timestamp to program. Drop this frame and re-kick to process
++		 * the remaining queued frames.
++		 *
++		 * netc_port_program_onestep() has not run for this skb yet, so
++		 * netc_onestep_skb_destructor() is not installed on it. Freeing
++		 * it therefore does not reschedule the work, so the work must be
++		 * rescheduled explicitly to keep draining the queue.
 +		 */
-+		frm_attr_flags |= IPFT_FAF_IP_VER6;
-+		keye->frm_attr_flags_mask = cpu_to_le16(frm_attr_flags);
-+		keye->ip_protocol = IPPROTO_UDP;
-+		keye->ip_protocol_mask = 0xff;
-+
-+		if (type == NETC_PTP_L4_IPV4_EVENT ||
-+		    type == NETC_PTP_L4_IPV6_EVENT)
-+			keye->l4_dst_port = htons(PTP_EV_PORT);
-+		else
-+			keye->l4_dst_port = htons(PTP_GEN_PORT);
-+
-+		keye->l4_dst_port_mask = htons(0xffff);
-+		break;
-+	default:
-+		return -ERANGE;
++		dev_dbg_ratelimited(priv->dev,
++				    "Port %d PTP timer unavailable, drop Sync\n",
++				    np->dp->index);
++		kfree_skb(skb);
++		schedule_work(&onestep->work);
++		goto unlock_work;
 +	}
 +
-+	return 0;
++	/* Reuse the offsets cached at enqueue time; only the timestamp is
++	 * read fresh so it reflects the actual TX moment.
++	 */
++	netc_port_program_onestep(np, onestep, skb, tstamp);
++
++	/* Tag and hand the frame directly to the conduit via the tagger,
++	 * bypassing dsa_user_xmit() so the TX stats are not counted twice.
++	 * And there is no need to check if tagger_data is NULL, because
++	 * dsa_tree_teardown_ports() executes before
++	 * dsa_switch_teardown_tag_protocol(), so tagger_data cannot be
++	 * NULL when onestep->active is set.
++	 */
++	tagger_data = priv->ds->tagger_data;
++	tagger_data->onestep_sync_xmit(skb, np->dp->user);
++
++unlock_work:
++	mutex_unlock(&onestep->work_lock);
 +}
 +
-+static int netc_port_add_ipft_ptp_entry(struct netc_port *np,
-+					enum netc_ptp_type type)
++static int netc_port_onestep_alloc(struct netc_port *np)
 +{
-+	struct netc_switch *priv = np->switch_priv;
-+	struct ipft_entry_data *entry;
-+	struct ipft_keye_data *keye;
-+	u32 cfg;
-+	int err;
++	struct netc_onestep *onestep;
 +
-+	entry = kzalloc_obj(*entry);
-+	if (!entry)
++	onestep = kzalloc_obj(*onestep);
++	if (!onestep)
 +		return -ENOMEM;
 +
-+	keye = &entry->keye;
-+	err = netc_build_ptp_ipft_keye(keye, np->dp->index, type);
-+	if (err)
-+		goto free_entry;
-+
-+	cfg = FIELD_PREP(IPFT_FLTFA, IPFT_FLTFA_REDIRECT);
-+	cfg |= FIELD_PREP(IPFT_HR, NETC_HR_PTP_TRAP);
-+	cfg |= IPFT_TIMECAPE | IPFT_RRT;
-+	entry->cfge.cfg = cpu_to_le32(cfg);
-+
-+	err = ntmp_ipft_add_entry(&priv->ntmp, entry);
-+	if (err)
-+		goto free_entry;
-+
-+	np->ptp_ipft_eid[type] = entry->entry_id;
-+
-+free_entry:
-+	kfree(entry);
-+
-+	return err;
-+}
-+
-+static int netc_port_add_l2_ptp_filter(struct netc_port *np)
-+{
-+	return netc_port_add_ipft_ptp_entry(np, NETC_PTP_L2);
-+}
-+
-+static int netc_port_add_l4_ptp_filter(struct netc_port *np)
-+{
-+	int err;
-+
-+	err = netc_port_add_ipft_ptp_entry(np, NETC_PTP_L4_IPV4_EVENT);
-+	if (err)
-+		return err;
-+
-+	err = netc_port_add_ipft_ptp_entry(np, NETC_PTP_L4_IPV4_GENERAL);
-+	if (err)
-+		goto del_ptp_filter;
-+
-+	err = netc_port_add_ipft_ptp_entry(np, NETC_PTP_L4_IPV6_EVENT);
-+	if (err)
-+		goto del_ptp_filter;
-+
-+	err = netc_port_add_ipft_ptp_entry(np, NETC_PTP_L4_IPV6_GENERAL);
-+	if (err)
-+		goto del_ptp_filter;
-+
-+	return 0;
-+
-+del_ptp_filter:
-+	netc_port_del_ptp_filter(np);
-+
-+	return err;
-+}
-+
-+static int netc_port_add_l2_l4_ptp_filter(struct netc_port *np)
-+{
-+	int err;
-+
-+	err = netc_port_add_l2_ptp_filter(np);
-+	if (err)
-+		return err;
-+
-+	err = netc_port_add_l4_ptp_filter(np);
-+	if (err)
-+		goto del_ptp_filter;
-+
-+	return 0;
-+
-+del_ptp_filter:
-+	netc_port_del_ptp_filter(np);
-+
-+	return err;
-+}
-+
-+static int netc_port_set_ptp_filter(struct netc_port *np, int rx_filter)
-+{
-+	int err = 0;
-+
-+	if (np->ptp_rx_filter == rx_filter)
-+		return 0;
-+
-+	if (np->ptp_rx_filter != HWTSTAMP_FILTER_NONE ||
-+	    rx_filter == HWTSTAMP_FILTER_NONE) {
-+		netc_port_del_ptp_filter(np);
-+		np->ptp_rx_filter = HWTSTAMP_FILTER_NONE;
-+	}
-+
-+	switch (rx_filter) {
-+	case HWTSTAMP_FILTER_NONE:
-+		break;
-+	case HWTSTAMP_FILTER_PTP_V2_L2_EVENT:
-+		err = netc_port_add_l2_ptp_filter(np);
-+		break;
-+	case HWTSTAMP_FILTER_PTP_V2_L4_EVENT:
-+		err = netc_port_add_l4_ptp_filter(np);
-+		break;
-+	case HWTSTAMP_FILTER_PTP_V2_EVENT:
-+		err = netc_port_add_l2_l4_ptp_filter(np);
-+		break;
-+	default:
-+		err = -ERANGE;
-+	}
-+
-+	if (err)
-+		return err;
-+
-+	np->ptp_rx_filter = rx_filter;
++	kref_init(&onestep->refcnt); /* port (owner) reference */
++	np->onestep = onestep;
++	onestep->np = np;
++	mutex_init(&onestep->work_lock);
++	spin_lock_init(&onestep->queue_lock);
++	__skb_queue_head_init(&onestep->queue);
++	INIT_WORK(&onestep->work, netc_port_onestep_work);
++	INIT_WORK(&onestep->destroy_work, netc_onestep_destroy_work);
 +
 +	return 0;
 +}
-+
-+void netc_port_purge_txtstamp_queue(struct netc_port *np)
+ 
+ int netc_port_ptp_init(struct netc_port *np)
+ {
+@@ -21,7 +278,7 @@ int netc_port_ptp_init(struct netc_port *np)
+ 	spin_lock_init(&np->tstamp_lock);
+ 	__skb_queue_head_init(&np->skb_txtstamp_queue);
+ 
+-	return 0;
++	return netc_port_onestep_alloc(np);
+ }
+ 
+ static int netc_get_phc_index(struct netc_switch *priv)
+@@ -45,7 +302,8 @@ int netc_get_ts_info(struct dsa_switch *ds, int port,
+ 				 SOF_TIMESTAMPING_RX_HARDWARE |
+ 				 SOF_TIMESTAMPING_RAW_HARDWARE;
+ 
+-	info->tx_types = BIT(HWTSTAMP_TX_OFF) | BIT(HWTSTAMP_TX_ON);
++	info->tx_types = BIT(HWTSTAMP_TX_OFF) | BIT(HWTSTAMP_TX_ON) |
++			 BIT(HWTSTAMP_TX_ONESTEP_SYNC);
+ 
+ 	info->rx_filters = BIT(HWTSTAMP_FILTER_NONE) |
+ 			   BIT(HWTSTAMP_FILTER_PTP_V2_EVENT) |
+@@ -262,6 +520,22 @@ void netc_port_purge_txtstamp_queue(struct netc_port *np)
+ 	__skb_queue_purge(&free_list);
+ }
+ 
++void netc_port_purge_onestep_queue(struct netc_onestep *onestep,
++				   bool clear_flight)
 +{
 +	struct sk_buff_head free_list;
 +
 +	__skb_queue_head_init(&free_list);
 +
-+	spin_lock_bh(&np->tstamp_lock);
-+	skb_queue_splice_init(&np->skb_txtstamp_queue, &free_list);
-+	spin_unlock_bh(&np->tstamp_lock);
++	spin_lock_bh(&onestep->queue_lock);
++	skb_queue_splice_init(&onestep->queue, &free_list);
++	if (clear_flight)
++		onestep->in_flight = false;
++	spin_unlock_bh(&onestep->queue_lock);
 +
 +	__skb_queue_purge(&free_list);
 +}
 +
-+int netc_port_hwtstamp_set(struct dsa_switch *ds, int port,
-+			   struct kernel_hwtstamp_config *config,
-+			   struct netlink_ext_ack *extack)
+ int netc_port_hwtstamp_set(struct dsa_switch *ds, int port,
+ 			   struct kernel_hwtstamp_config *config,
+ 			   struct netlink_ext_ack *extack)
+@@ -278,6 +552,7 @@ int netc_port_hwtstamp_set(struct dsa_switch *ds, int port,
+ 	switch (config->tx_type) {
+ 	case HWTSTAMP_TX_ON:
+ 	case HWTSTAMP_TX_OFF:
++	case HWTSTAMP_TX_ONESTEP_SYNC:
+ 		break;
+ 	default:
+ 		return -ERANGE;
+@@ -316,6 +591,9 @@ int netc_port_hwtstamp_set(struct dsa_switch *ds, int port,
+ 	if (config->tx_type == HWTSTAMP_TX_OFF)
+ 		netc_port_purge_txtstamp_queue(np);
+ 
++	if (config->tx_type != HWTSTAMP_TX_ONESTEP_SYNC)
++		netc_port_purge_onestep_queue(np->onestep, false);
++
+ 	config->rx_filter = rx_filter;
+ 
+ 	return 0;
+@@ -439,9 +717,100 @@ bool netc_port_rxtstamp(struct dsa_switch *ds, int port, struct sk_buff *skb,
+ 	return false;
+ }
+ 
++static void netc_port_prepare_onestep_sync(struct netc_port *np,
++					   struct sk_buff *skb,
++					   u32 ptp_class, bool *twostep)
 +{
-+	struct netc_port *np = NETC_PORT(ds, port);
-+	struct netc_switch *priv = ds->priv;
-+	int rx_filter, err;
-+
-+	if ((config->tx_type != HWTSTAMP_TX_OFF ||
-+	     config->rx_filter != HWTSTAMP_FILTER_NONE) &&
-+	    !priv->tmr_dev)
-+		return -EOPNOTSUPP;
-+
-+	switch (config->tx_type) {
-+	case HWTSTAMP_TX_ON:
-+	case HWTSTAMP_TX_OFF:
-+		break;
-+	default:
-+		return -ERANGE;
-+	}
-+
-+	switch (config->rx_filter) {
-+	case HWTSTAMP_FILTER_NONE:
-+		rx_filter = HWTSTAMP_FILTER_NONE;
-+		break;
-+	case HWTSTAMP_FILTER_PTP_V2_L4_EVENT:
-+	case HWTSTAMP_FILTER_PTP_V2_L4_SYNC:
-+	case HWTSTAMP_FILTER_PTP_V2_L4_DELAY_REQ:
-+		rx_filter = HWTSTAMP_FILTER_PTP_V2_L4_EVENT;
-+		break;
-+	case HWTSTAMP_FILTER_PTP_V2_L2_EVENT:
-+	case HWTSTAMP_FILTER_PTP_V2_L2_SYNC:
-+	case HWTSTAMP_FILTER_PTP_V2_L2_DELAY_REQ:
-+		rx_filter = HWTSTAMP_FILTER_PTP_V2_L2_EVENT;
-+		break;
-+	case HWTSTAMP_FILTER_PTP_V2_EVENT:
-+	case HWTSTAMP_FILTER_PTP_V2_SYNC:
-+	case HWTSTAMP_FILTER_PTP_V2_DELAY_REQ:
-+		rx_filter = HWTSTAMP_FILTER_PTP_V2_EVENT;
-+		break;
-+	default:
-+		return -ERANGE;
-+	}
-+
-+	err = netc_port_set_ptp_filter(np, rx_filter);
-+	if (err) {
-+		NL_SET_ERR_MSG_MOD(extack, "Failed to set PTP filter");
-+		return err;
-+	}
-+
-+	WRITE_ONCE(np->ptp_tx_type, config->tx_type);
-+	if (config->tx_type == HWTSTAMP_TX_OFF)
-+		netc_port_purge_txtstamp_queue(np);
-+
-+	config->rx_filter = rx_filter;
-+
-+	return 0;
-+}
-+
-+int netc_port_hwtstamp_get(struct dsa_switch *ds, int port,
-+			   struct kernel_hwtstamp_config *config)
-+{
-+	struct netc_port *np = NETC_PORT(ds, port);
-+
-+	config->tx_type = READ_ONCE(np->ptp_tx_type);
-+	config->rx_filter = np->ptp_rx_filter;
-+
-+	return 0;
-+}
-+
-+static void netc_port_txtstamp_twostep(struct netc_port *np,
-+				       struct sk_buff *nskb)
-+{
-+	DECLARE_BITMAP(ts_req_id_bitmap, NETC_NUM_TS_REQ_ID);
-+	struct sk_buff *clone = skb_clone_sk(nskb);
 +	struct netc_switch *priv = np->switch_priv;
-+	struct sk_buff_head free_list;
-+	struct sk_buff *skb, *skb_tmp;
-+	unsigned long ts_req_id;
-+	int err = 0;
++	u16 correction_offset, tstamp_offset;
++	struct ptp_header *ptp_hdr;
++	u8 msg_type, twostep_flag;
++	bool is_udp = false;
++	u32 pkt_type;
++	u8 *pkt_hdr;
 +
-+	if (unlikely(!clone))
++	if (unlikely(skb_linearize(skb))) {
++		NETC_SKB_CB(skb)->ptp_flag = NETC_PTP_FLAG_DROP;
 +		return;
-+
-+	bitmap_zero(ts_req_id_bitmap, NETC_NUM_TS_REQ_ID);
-+	__skb_queue_head_init(&free_list);
-+	spin_lock_bh(&np->tstamp_lock);
-+
-+	skb_queue_walk_safe(&np->skb_txtstamp_queue, skb, skb_tmp) {
-+		if (time_before(NETC_SKB_CB(skb)->ptp_tx_time +
-+				NETC_TXTSTAMP_TIMEOUT, jiffies)) {
-+			dev_dbg_ratelimited(priv->dev,
-+					    "Port %d ts_req_id %u which seems lost\n",
-+					    np->dp->index, NETC_SKB_CB(skb)->ts_req_id);
-+
-+			__skb_unlink(skb, &np->skb_txtstamp_queue);
-+			__skb_queue_tail(&free_list, skb);
-+		} else {
-+			__set_bit(NETC_SKB_CB(skb)->ts_req_id, ts_req_id_bitmap);
-+		}
 +	}
 +
-+	ts_req_id = find_first_zero_bit(ts_req_id_bitmap, NETC_NUM_TS_REQ_ID);
-+	if (ts_req_id == NETC_NUM_TS_REQ_ID) {
++	ptp_hdr = ptp_parse_header(skb, ptp_class);
++	if (unlikely(!ptp_hdr)) {
++		NETC_SKB_CB(skb)->ptp_flag = NETC_PTP_FLAG_DROP;
 +		dev_dbg_ratelimited(priv->dev,
-+				    "Port %d has no available ts_req_id\n",
++				    "Port %d failed to parse Sync header\n",
 +				    np->dp->index);
-+		err = -EBUSY;
-+		goto unlock_tstamp;
++		return;
 +	}
 +
-+	NETC_SKB_CB(nskb)->ptp_flag = NETC_PTP_FLAG_TWOSTEP;
-+	NETC_SKB_CB(nskb)->ts_req_id = ts_req_id;
-+	NETC_SKB_CB(clone)->ts_req_id = ts_req_id;
-+	NETC_SKB_CB(clone)->ptp_tx_time = jiffies;
-+	skb_shinfo(clone)->tx_flags |= SKBTX_IN_PROGRESS;
-+	__skb_queue_tail(&np->skb_txtstamp_queue, clone);
++	msg_type = ptp_get_msgtype(ptp_hdr, ptp_class);
++	twostep_flag = ptp_hdr->flag_field[0] & 0x2;
 +
-+unlock_tstamp:
-+	spin_unlock_bh(&np->tstamp_lock);
++	pkt_hdr = skb_mac_header(skb);
++	correction_offset = (u8 *)&ptp_hdr->correction - pkt_hdr;
++	tstamp_offset = (u8 *)ptp_hdr + sizeof(*ptp_hdr) - pkt_hdr;
 +
-+	if (err)
-+		kfree_skb(clone);
-+
-+	/* Free timed-out SKBs outside the spinlock to avoid calling
-+	 * kfree_skb() with a destructor (sock_efree) under a spinlock.
++	/* Ensure that the entire originTimestamp field is present in the
++	 * linear buffer of the skb and the correction_offset must be within
++	 * the hardware capability.
 +	 */
-+	__skb_queue_purge(&free_list);
-+}
-+
-+void netc_port_twostep_tstamp_handler(struct dsa_switch *ds, int port,
-+				      u8 ts_req_id, u64 ts)
-+{
-+	struct sk_buff *skb, *skb_tmp, *skb_match = NULL;
-+	struct netc_port *np = NETC_PORT(ds, port);
-+	struct skb_shared_hwtstamps hwtstamps;
-+	struct netc_switch *priv = ds->priv;
-+
-+	spin_lock_bh(&np->tstamp_lock);
-+	skb_queue_walk_safe(&np->skb_txtstamp_queue, skb, skb_tmp) {
-+		if (NETC_SKB_CB(skb)->ts_req_id != ts_req_id)
-+			continue;
-+
-+		__skb_unlink(skb, &np->skb_txtstamp_queue);
-+		skb_match = skb;
-+		break;
-+	}
-+	spin_unlock_bh(&np->tstamp_lock);
-+
-+	if (!skb_match) {
++	if (unlikely(tstamp_offset + 10 > skb_headlen(skb) ||
++		     correction_offset > NETC_MAX_STEP_OFFSET)) {
++		NETC_SKB_CB(skb)->ptp_flag = NETC_PTP_FLAG_DROP;
 +		dev_dbg_ratelimited(priv->dev,
-+				    "Port %d ts_req_id %u which seems lost\n",
-+				    port, ts_req_id);
++				    "Port %d PTP offset check error\n",
++				    np->dp->index);
 +		return;
 +	}
 +
-+	hwtstamps.hwtstamp = ns_to_ktime(ts);
-+	skb_complete_tx_timestamp(skb_match, &hwtstamps);
-+}
-+
-+bool netc_port_rxtstamp(struct dsa_switch *ds, int port, struct sk_buff *skb,
-+			unsigned int type)
-+{
-+	struct skb_shared_hwtstamps *hwtstamps = skb_hwtstamps(skb);
-+	u64 ts = NETC_SKB_CB(skb)->tstamp;
-+
-+	/* ts == 0 indicates the hardware did not capture the RX timestamp
-+	 * of the frame.
++	/* Only a Sync frame with the twoStepFlag cleared can use one-step
++	 * timestamping. A frame that requests two-step (or is not a Sync)
++	 * carries different on-wire fields, so this is a real classification;
++	 * report it through *twostep so the caller falls back to the two-step
++	 * path.
 +	 */
-+	if (!ts)
-+		return false;
++	if (msg_type != PTP_MSGTYPE_SYNC || twostep_flag != 0) {
++		*twostep = true;
++		return;
++	}
 +
-+	hwtstamps->hwtstamp = ns_to_ktime(ts);
++	/* This is a genuine one-step Sync frame. skb_shinfo()->destructor_arg
++	 * is later used to pass the np->onestep pointer to
++	 * netc_onestep_skb_destructor() for TX completion notification.
++	 * MSG_ZEROCOPY also uses destructor_arg (via skb_zcopy_init()) to
++	 * track user-space page references. Overwriting it in that case would
++	 * leak the ubuf_info reference and prevent user pages from being
++	 * released. PTP applications do not use MSG_ZEROCOPY, but guard
++	 * against it defensively.
++	 */
++	if (skb_zcopy(skb)) {
++		NETC_SKB_CB(skb)->ptp_flag = NETC_PTP_FLAG_DROP;
++		dev_dbg_ratelimited(priv->dev,
++				    "Port %d one-step Sync not supported on zerocopy skb\n",
++				    np->dp->index);
++		return;
++	}
 +
-+	return false;
++	pkt_type = ptp_class & PTP_CLASS_PMASK;
++	if (pkt_type == PTP_CLASS_IPV4 || pkt_type == PTP_CLASS_IPV6)
++		is_udp = true;
++
++	/* Cache the parsing results so the tagger xmit path and the deferred
++	 * work do not need to re-parse the PTP header, and so that
++	 * netc_port_program_onestep() can derive these parameters from the
++	 * skb.
++	 */
++	NETC_SKB_CB(skb)->correction_offset = correction_offset;
++	NETC_SKB_CB(skb)->timestamp_offset = tstamp_offset;
++	NETC_SKB_CB(skb)->is_udp = is_udp;
++	NETC_SKB_CB(skb)->ptp_flag = NETC_PTP_FLAG_ONESTEP;
 +}
 +
-+void netc_port_txtstamp(struct dsa_switch *ds, int port, struct sk_buff *skb)
+ void netc_port_txtstamp(struct dsa_switch *ds, int port, struct sk_buff *skb)
+ {
+ 	struct netc_port *np = NETC_PORT(ds, port);
++	int tx_type = READ_ONCE(np->ptp_tx_type);
++	bool twostep = false;
+ 	u32 ptp_class;
+ 
+ 	NETC_SKB_CB(skb)->ptp_flag = 0;
+@@ -449,6 +818,49 @@ void netc_port_txtstamp(struct dsa_switch *ds, int port, struct sk_buff *skb)
+ 	if (ptp_class == PTP_CLASS_NONE)
+ 		return;
+ 
+-	if (READ_ONCE(np->ptp_tx_type) == HWTSTAMP_TX_ON)
++	if (tx_type == HWTSTAMP_TX_ONESTEP_SYNC)
++		netc_port_prepare_onestep_sync(np, skb, ptp_class, &twostep);
++
++	if (tx_type == HWTSTAMP_TX_ON || twostep)
+ 		netc_port_txtstamp_twostep(np, skb);
+ }
++
++void netc_port_onestep_sync_enqueue(struct dsa_switch *ds, int port,
++				    struct sk_buff *skb)
 +{
 +	struct netc_port *np = NETC_PORT(ds, port);
-+	u32 ptp_class;
++	struct netc_onestep *onestep = np->onestep;
++	bool kick = false;
 +
-+	NETC_SKB_CB(skb)->ptp_flag = 0;
-+	ptp_class = ptp_classify_raw(skb);
-+	if (ptp_class == PTP_CLASS_NONE)
-+		return;
++	/* This runs in the xmit path (softirq / BH-disabled), so it must not
++	 * sleep: only queue the frame here and let netc_port_onestep_work()
++	 * program the SINGLE_STEP register and transmit it from process
++	 * context. The shared SINGLE_STEP register can describe only one frame
++	 * at a time, so at most one one-step Sync may be in flight. Track that
++	 * with @in_flight under onestep->queue_lock.
++	 *
++	 * Enqueue the frame and, only if no frame is currently in flight, claim
++	 * the in-flight slot and kick the work. When a frame is already in
++	 * flight, just queue: its skb destructor will kick the work to send the
++	 * next one once it completes TX, so the frames are transmitted strictly
++	 * one at a time in order.
++	 *
++	 * PTP Sync frames are periodic, low-rate control-plane frames and only
++	 * reach this TX path when the local socket requested hardware TX
++	 * timestamping on a one-step port, so the queue cannot be flooded and
++	 * needs no depth cap.
++	 */
++	spin_lock_bh(&onestep->queue_lock);
++	__skb_queue_tail(&onestep->queue, skb);
++	if (!onestep->in_flight) {
++		onestep->in_flight = true;
++		kick = true;
++	}
++	spin_unlock_bh(&onestep->queue_lock);
 +
-+	if (READ_ONCE(np->ptp_tx_type) == HWTSTAMP_TX_ON)
-+		netc_port_txtstamp_twostep(np, skb);
++	/* Ownership is transferred to the queue; netc_xmit() stops processing
++	 * this skb. The work will program and transmit it.
++	 */
++	if (kick)
++		schedule_work(&onestep->work);
 +}
 diff --git a/drivers/net/dsa/netc/netc_switch.h b/drivers/net/dsa/netc/netc_switch.h
-index fd36ec2d0e90..86fd15889733 100644
+index 86fd15889733..98d4842441df 100644
 --- a/drivers/net/dsa/netc/netc_switch.h
 +++ b/drivers/net/dsa/netc/netc_switch.h
-@@ -53,10 +53,16 @@
- #define NETC_FDBT_AGEING_DELAY		(3 * HZ)
- #define NETC_FDBT_AGEING_THRESH		100
+@@ -9,6 +9,7 @@
+ #include <linux/dsa/tag_netc.h>
+ #include <linux/fsl/netc_global.h>
+ #include <linux/fsl/ntmp.h>
++#include <linux/mutex.h>
+ #include <linux/of_device.h>
+ #include <linux/of_net.h>
+ #include <linux/pci.h>
+@@ -87,6 +88,44 @@ enum netc_host_reason {
+ 	NETC_HR_PTP_TRAP   = 9,
+ };
  
-+/* PTP frames have a higher priority, so a higher priority is defined to
-+ * prioritize matching.
++/* One-step Sync serialization context.
++ *
++ * Its lifetime is decoupled from the devm-allocated netc_port. An in-flight
++ * one-step Sync skb keeps a reference on this context via its skb destructor,
++ * so the context outlives the port teardown until the conduit frees the last
++ * in-flight skb after TX completion. Once the port is disabled, @active is
++ * cleared and the work stops touching any devm memory (netc_port/netc_switch)
++ * or the unregistered user netdev or the tagger_data.
 + */
-+#define NETC_IPFT_PTP_PRECEDENCE	0xf000
-+
- struct netc_switch;
- 
- struct netc_switch_info {
- 	u32 num_ports;
-+	u32 tmr_devfn;
- 	void (*phylink_get_caps)(int port, struct phylink_config *config);
- };
- 
-@@ -66,9 +72,19 @@ struct netc_port_caps {
- 	u32 pseudo_link:1;
- };
- 
-+enum netc_ptp_type {
-+	NETC_PTP_L2,
-+	NETC_PTP_L4_IPV4_EVENT,
-+	NETC_PTP_L4_IPV4_GENERAL,
-+	NETC_PTP_L4_IPV6_EVENT,
-+	NETC_PTP_L4_IPV6_GENERAL,
-+	NETC_PTP_MAX,
++struct netc_onestep {
++	struct netc_port *np;
++	struct kref refcnt;
++	/* Process-context lock: serializes the deferred TX work against port
++	 * teardown, so the work never touches the devm-allocated netc_port /
++	 * netc_switch or the unregistered user netdev after teardown. Held
++	 * across netc_get_phc_time(), which may sleep, hence a mutex.
++	 */
++	struct mutex work_lock;
++	/* Serialize access to in_flight and queue */
++	spinlock_t queue_lock;
++	bool active;	/* set when port is enabled, under @work_lock */
++	/* In-flight slot: true while one one-step Sync frame is programmed
++	 * into the shared SINGLE_STEP register and being transmitted. Only one
++	 * frame may be in flight at a time, so the next queued frame is sent
++	 * only after the current one completes TX (its skb destructor kicks
++	 * the work). Accessed under queue_lock, from both the softirq xmit
++	 * path and the process-context work.
++	 */
++	bool in_flight;
++	/* Pending one-step Sync frames. Enqueued from the softirq xmit path and
++	 * dequeued by the process-context work; the list is serialized by
++	 * queue_lock together with @in_flight.
++	 */
++	struct sk_buff_head queue;
++	struct work_struct work;	/* drains @queue */
++	struct work_struct destroy_work; /* frees the context in process ctx */
 +};
 +
- enum netc_host_reason {
- 	/* Software defined host reasons */
- 	NETC_HR_HOST_FLOOD = 8,
-+	NETC_HR_PTP_TRAP   = 9,
- };
- 
  struct netc_port {
-@@ -85,6 +101,14 @@ struct netc_port {
- 	u16 mc:1;
- 	u16 pvid;
- 	u32 ipft_hf_eid;
-+
-+	/* Serialize access to skb_txtstamp_queue and ts_req_id */
-+	spinlock_t tstamp_lock;
-+	/* skb queue for two-step timestamp frames */
-+	struct sk_buff_head skb_txtstamp_queue;
-+	int ptp_tx_type;
-+	int ptp_rx_filter;
-+	u32 ptp_ipft_eid[NETC_PTP_MAX];
- };
+ 	void __iomem *iobase;
+ 	struct netc_switch *switch_priv;
+@@ -106,6 +145,8 @@ struct netc_port {
+ 	spinlock_t tstamp_lock;
+ 	/* skb queue for two-step timestamp frames */
+ 	struct sk_buff_head skb_txtstamp_queue;
++	/* one-step Sync serialization context (ref-counted, kzalloc'd) */
++	struct netc_onestep *onestep;
+ 	int ptp_tx_type;
+ 	int ptp_rx_filter;
+ 	u32 ptp_ipft_eid[NETC_PTP_MAX];
+@@ -212,6 +253,7 @@ static inline void netc_del_vlan_entry(struct netc_vlan_entry *entry)
+ }
  
- struct netc_switch_regs {
-@@ -139,6 +163,7 @@ struct netc_switch {
- 	u32 num_bp;
+ int netc_switch_platform_probe(struct netc_switch *priv);
++void netc_mac_port_wr(struct netc_port *np, u32 reg, u32 val);
  
- 	struct bpt_cfge_data *bpt_list;
-+	struct pci_dev *tmr_dev; /* The PTP Timer PCI device */
- };
+ /* ethtool APIs */
+ void netc_port_get_pause_stats(struct dsa_switch *ds, int port,
+@@ -243,5 +285,11 @@ void netc_port_twostep_tstamp_handler(struct dsa_switch *ds, int port,
+ bool netc_port_rxtstamp(struct dsa_switch *ds, int port, struct sk_buff *skb,
+ 			unsigned int type);
+ void netc_port_txtstamp(struct dsa_switch *ds, int port, struct sk_buff *skb);
++void netc_onestep_put(struct netc_onestep *onestep);
++void netc_port_purge_onestep_queue(struct netc_onestep *onestep,
++				   bool clear_flight);
++void netc_port_onestep_work(struct work_struct *work);
++void netc_port_onestep_sync_enqueue(struct dsa_switch *ds, int port,
++				    struct sk_buff *skb);
  
- #define NETC_PRIV(ds)			((struct netc_switch *)((ds)->priv))
-@@ -203,4 +228,20 @@ void netc_port_get_strings(struct dsa_switch *ds, int port,
- 			   u32 sset, u8 *data);
- void netc_port_get_ethtool_stats(struct dsa_switch *ds, int port, u64 *data);
- 
-+/* PTP APIs */
-+int netc_port_ptp_init(struct netc_port *np);
-+int netc_get_ts_info(struct dsa_switch *ds, int port,
-+		     struct kernel_ethtool_ts_info *info);
-+void netc_port_purge_txtstamp_queue(struct netc_port *np);
-+int netc_port_hwtstamp_set(struct dsa_switch *ds, int port,
-+			   struct kernel_hwtstamp_config *config,
-+			   struct netlink_ext_ack *extack);
-+int netc_port_hwtstamp_get(struct dsa_switch *ds, int port,
-+			   struct kernel_hwtstamp_config *config);
-+void netc_port_twostep_tstamp_handler(struct dsa_switch *ds, int port,
-+				      u8 ts_req_id, u64 ts);
-+bool netc_port_rxtstamp(struct dsa_switch *ds, int port, struct sk_buff *skb,
-+			unsigned int type);
-+void netc_port_txtstamp(struct dsa_switch *ds, int port, struct sk_buff *skb);
-+
  #endif
+diff --git a/drivers/net/dsa/netc/netc_switch_hw.h b/drivers/net/dsa/netc/netc_switch_hw.h
+index 1404ae41c7bc..37d1dd7ec2c7 100644
+--- a/drivers/net/dsa/netc/netc_switch_hw.h
++++ b/drivers/net/dsa/netc/netc_switch_hw.h
+@@ -203,6 +203,11 @@ enum netc_stg_stage {
+ #define   SSP_10M			1
+ #define   SSP_1G			2
+ 
++#define NETC_PM_SINGLE_STEP(a)		(0x10c0 + (a) * 0x400)
++#define  PM_SINGLE_STEP_CH		BIT(6)
++#define  PM_SINGLE_STEP_OFFSET		GENMASK(15, 7)
++#define  PM_SINGLE_STEP_EN		BIT(31)
++
+ /* Port MAC 0/1 Receive Ethernet Octets Counter */
+ #define NETC_PM_REOCT(a)		(0x1100 + (a) * 0x400)
+ 
 diff --git a/include/linux/dsa/tag_netc.h b/include/linux/dsa/tag_netc.h
-index fe964722e5b0..da200e3ba8ad 100644
+index da200e3ba8ad..5ac5e2e72dff 100644
 --- a/include/linux/dsa/tag_netc.h
 +++ b/include/linux/dsa/tag_netc.h
-@@ -10,5 +10,26 @@
+@@ -10,13 +10,23 @@
  #include <net/dsa.h>
  
  #define NETC_TAG_MAX_LEN			14
-+#define NETC_PTP_FLAG_TWOSTEP			BIT(1)
-+
-+struct netc_skb_cb {
-+	unsigned long ptp_tx_time;
-+	u64 tstamp;
-+	u8 ptp_flag;
-+	u8 ts_req_id;
-+};
-+
-+#define NETC_SKB_CB(skb)	((struct netc_skb_cb *)((skb)->cb))
-+
-+/**
-+ * struct netc_tagger_data - NETC tagger/switch-driver shared operations
-+ * @twostep_tstamp_handler: Called by the tagger when a two-step transmit
-+ *	timestamp response is received, to deliver the timestamp to the
-+ *	switch driver.
-+ */
-+struct netc_tagger_data {
-+	void (*twostep_tstamp_handler)(struct dsa_switch *ds, int port,
-+				       u8 ts_req_id, u64 ts);
-+};
++#define NETC_PTP_FLAG_ONESTEP			BIT(0)
+ #define NETC_PTP_FLAG_TWOSTEP			BIT(1)
++#define NETC_PTP_FLAG_DROP			BIT(2)
+ 
+ struct netc_skb_cb {
+ 	unsigned long ptp_tx_time;
+ 	u64 tstamp;
+ 	u8 ptp_flag;
+ 	u8 ts_req_id;
++	/* One-step Sync parsing results, computed in netc_port_txtstamp()
++	 * and reused in the tagger xmit path and the deferred work, to avoid
++	 * re-parsing the PTP header. Valid only while
++	 * ptp_flag == NETC_PTP_FLAG_ONESTEP.
++	 */
++	u16 correction_offset;
++	u16 timestamp_offset;
++	bool is_udp;
+ };
+ 
+ #define NETC_SKB_CB(skb)	((struct netc_skb_cb *)((skb)->cb))
+@@ -26,10 +36,22 @@ struct netc_skb_cb {
+  * @twostep_tstamp_handler: Called by the tagger when a two-step transmit
+  *	timestamp response is received, to deliver the timestamp to the
+  *	switch driver.
++ * @onestep_sync_enqueue: Called from the tagger xmit path for a one-step Sync
++ *	frame. The switch driver takes ownership of the skb and queues it for
++ *	deferred transmission from process context, where the shared
++ *	PM_SINGLE_STEP register can be programmed and the PTP timer read
++ *	(which may sleep). The tagger must not touch the skb after this call
++ *	and returns NULL to dsa_user_xmit().
++ * @onestep_sync_xmit: Called by the switch driver to transmit a deferred
++ *	one-step Sync frame directly to the conduit, bypassing dsa_user_xmit().
+  */
+ struct netc_tagger_data {
+ 	void (*twostep_tstamp_handler)(struct dsa_switch *ds, int port,
+ 				       u8 ts_req_id, u64 ts);
++	void (*onestep_sync_enqueue)(struct dsa_switch *ds, int port,
++				     struct sk_buff *skb);
++	netdev_tx_t (*onestep_sync_xmit)(struct sk_buff *skb,
++					 struct net_device *ndev);
+ };
  
  #endif
 diff --git a/net/dsa/tag_netc.c b/net/dsa/tag_netc.c
-index df72a61796ad..9f9a61d8133b 100644
+index 9f9a61d8133b..91548fb7ed1b 100644
 --- a/net/dsa/tag_netc.c
 +++ b/net/dsa/tag_netc.c
 @@ -16,6 +16,8 @@
  #define NETC_TAG_TO_PORT		1
  /* SubType0: No request to perform timestamping */
  #define NETC_TAG_TP_SUBTYPE0		0
-+/* SubType2: Request to perform two-step timestamping */
-+#define NETC_TAG_TP_SUBTYPE2		2
++/* SubType1: Request to perform one-step timestamping */
++#define NETC_TAG_TP_SUBTYPE1		1
+ /* SubType2: Request to perform two-step timestamping */
+ #define NETC_TAG_TP_SUBTYPE2		2
  
- /* To_Host NXP switch tag */
- #define NETC_TAG_TO_HOST		2
-@@ -29,6 +31,7 @@
+@@ -31,6 +33,7 @@
  /* NETC switch tag lengths */
  #define NETC_TAG_FORWARD_LEN		6
  #define NETC_TAG_TP_SUBTYPE0_LEN	6
-+#define NETC_TAG_TP_SUBTYPE2_LEN	6
++#define NETC_TAG_TP_SUBTYPE1_LEN	10
+ #define NETC_TAG_TP_SUBTYPE2_LEN	6
  #define NETC_TAG_TH_SUBTYPE0_LEN	6
  #define NETC_TAG_TH_SUBTYPE1_LEN	14
- #define NETC_TAG_TH_SUBTYPE2_LEN	14
-@@ -40,6 +43,7 @@
- #define NETC_TAG_IPV			GENMASK(4, 2)
+@@ -44,6 +47,7 @@
  #define NETC_TAG_SWITCH			GENMASK(2, 0)
  #define NETC_TAG_PORT			GENMASK(7, 3)
-+#define NETC_TAG_TS_REQ_ID		GENMASK(3, 0)
+ #define NETC_TAG_TS_REQ_ID		GENMASK(3, 0)
++#define NETC_TAG_TIMESTAMP		GENMASK(29, 0)
  
  struct netc_tag_cmn {
  	__be16 tpid;
-@@ -48,6 +52,23 @@ struct netc_tag_cmn {
+@@ -52,6 +56,12 @@ struct netc_tag_cmn {
  	u8 switch_port;
  } __packed;
  
-+struct netc_tag_tp_subtype2 {
++struct netc_tag_tp_subtype1 {
 +	struct netc_tag_cmn cmn;
-+	u8 ts_req_id;
++	u8 resv;
++	__be32 timestamp;
 +} __packed;
 +
-+struct netc_tag_th_subtype1 {
-+	struct netc_tag_cmn cmn;
-+	u8 host_reason;
-+	__be64 timestamp;
-+} __packed;
-+
-+struct netc_tag_th_subtype2 {
-+	struct netc_tag_cmn cmn;
-+	u8 hr_tsreq_id;
-+	__be64 timestamp;
-+} __packed;
-+
- static void netc_fill_common_tag(struct netc_tag_cmn *tag, u8 type,
- 				 u8 subtype, u8 sw_id, u8 port, u8 ipv)
- {
-@@ -97,15 +118,69 @@ static void netc_fill_tp_tag_subtype0(struct sk_buff *skb,
+ struct netc_tag_tp_subtype2 {
+ 	struct netc_tag_cmn cmn;
+ 	u8 ts_req_id;
+@@ -118,6 +128,17 @@ static void netc_fill_tp_tag_subtype0(struct sk_buff *skb,
  				NETC_TAG_TP_SUBTYPE0_LEN);
  }
  
--/* Currently only support To_Port tag, subtype 0 */
-+static void netc_fill_tp_tag_subtype2(struct sk_buff *skb,
++static void netc_fill_tp_tag_subtype1(struct sk_buff *skb,
 +				      struct net_device *ndev)
 +{
-+	u8 ts_req_id = NETC_SKB_CB(skb)->ts_req_id;
-+	struct netc_tag_tp_subtype2 *tag;
++	u32 ts = FIELD_PREP(NETC_TAG_TIMESTAMP, NETC_SKB_CB(skb)->tstamp);
++	struct netc_tag_tp_subtype1 *tag;
 +
-+	tag = netc_fill_common_tp_tag(skb, ndev, NETC_TAG_TP_SUBTYPE2,
-+				      NETC_TAG_TP_SUBTYPE2_LEN);
-+	tag->ts_req_id = FIELD_PREP(NETC_TAG_TS_REQ_ID, ts_req_id);
++	tag = netc_fill_common_tp_tag(skb, ndev, NETC_TAG_TP_SUBTYPE1,
++				      NETC_TAG_TP_SUBTYPE1_LEN);
++	tag->timestamp = htonl(ts);
++}
++
+ static void netc_fill_tp_tag_subtype2(struct sk_buff *skb,
+ 				      struct net_device *ndev)
+ {
+@@ -129,6 +150,42 @@ static void netc_fill_tp_tag_subtype2(struct sk_buff *skb,
+ 	tag->ts_req_id = FIELD_PREP(NETC_TAG_TS_REQ_ID, ts_req_id);
+ }
+ 
++static netdev_tx_t netc_onestep_sync_xmit(struct sk_buff *skb,
++					  struct net_device *dev)
++{
++	/* This deferred one-step Sync frame already went through
++	 * dsa_user_xmit()'s skb_ensure_writable_head_tail() and eth_skb_pad()
++	 * before it was queued in netc_xmit(), and nothing has cloned it or
++	 * shrunk its head/tail room since. So the head/tail room is still
++	 * guaranteed and the skb is still writable; only the tag needs to be
++	 * pushed before handing it directly to the conduit, bypassing
++	 * dsa_user_xmit() so that dev_sw_netstats_tx_add() is not invoked a
++	 * second time for the same frame.
++	 */
++	netc_fill_tp_tag_subtype1(skb, dev);
++
++	return dsa_enqueue_skb(skb, dev);
++}
++
++static void netc_onestep_sync_enqueue(struct sk_buff *skb,
++				      struct net_device *ndev)
++{
++	struct dsa_port *dp = dsa_user_to_port(ndev);
++	struct netc_tagger_data *tagger_data;
++
++	tagger_data = dp->ds->tagger_data;
++	if (unlikely(!tagger_data->onestep_sync_enqueue)) {
++		kfree_skb(skb);
++		return;
++	}
++
++	/* Hand the one-step Sync to the switch driver, which takes ownership
++	 * and queues it for deferred transmission from its work. The tagger
++	 * must not touch the skb after this point.
++	 */
++	tagger_data->onestep_sync_enqueue(dp->ds, dp->index, skb);
 +}
 +
  static struct sk_buff *netc_xmit(struct sk_buff *skb,
  				 struct net_device *ndev)
  {
--	netc_fill_tp_tag_subtype0(skb, ndev);
-+	u8 ptp_flag = NETC_SKB_CB(skb)->ptp_flag;
-+
-+	/* Fast path: the overwhelming majority of frames are not PTP frames */
-+	if (likely(!ptp_flag)) {
-+		netc_fill_tp_tag_subtype0(skb, ndev);
-+		return skb;
-+	} else if (ptp_flag == NETC_PTP_FLAG_TWOSTEP) {
-+		netc_fill_tp_tag_subtype2(skb, ndev);
-+	} else {
-+		kfree_skb(skb);
-+		return NULL;
+@@ -138,9 +195,19 @@ static struct sk_buff *netc_xmit(struct sk_buff *skb,
+ 	if (likely(!ptp_flag)) {
+ 		netc_fill_tp_tag_subtype0(skb, ndev);
+ 		return skb;
 +	}
- 
- 	return skb;
- }
- 
-+static int netc_rx_tstamp_process(struct netc_tag_th_subtype1 *tag,
-+				  struct sk_buff *skb)
-+{
-+	u64 ts = get_unaligned_be64(&tag->timestamp);
 +
-+	/* To_Host Subtype 1 tag is 14 bytes, ensure it and the EtherType
-+	 * behind it are fully present in the linear area before netc_rcv()
-+	 * calls dsa_strip_etype_header() to strip the tag.
-+	 */
-+	if (unlikely(!pskb_may_pull(skb, NETC_TAG_TH_SUBTYPE1_LEN)))
-+		return -ENOBUFS;
-+
-+	NETC_SKB_CB(skb)->tstamp = ts;
-+
-+	return 0;
-+}
-+
-+static void netc_twostep_tstamp_process(struct netc_tag_th_subtype2 *tag,
-+					struct sk_buff *skb)
-+{
-+	u8 ts_req_id = FIELD_GET(NETC_TAG_TS_REQ_ID, tag->hr_tsreq_id);
-+	struct dsa_port *dp = dsa_user_to_port(skb->dev);
-+	u64 ts = get_unaligned_be64(&tag->timestamp);
-+	struct netc_tagger_data *tagger_data;
-+	struct dsa_switch *ds = dp->ds;
-+
-+	tagger_data = ds->tagger_data;
-+	if (unlikely(!tagger_data->twostep_tstamp_handler))
-+		return;
-+
-+	tagger_data->twostep_tstamp_handler(ds, dp->index, ts_req_id, ts);
-+}
-+
- static int netc_get_rx_tag_len(int type, int subtype)
- {
- 	/* Only NETC_TAG_TO_HOST and NETC_TAG_FORWARD are expected in RX,
-@@ -129,11 +204,22 @@ static struct sk_buff *netc_rcv(struct sk_buff *skb,
- 	struct netc_tag_cmn *tag_cmn;
- 	int tag_len, sw_id, port;
- 	int type, subtype;
-+	void *tag;
- 
--	if (unlikely(!pskb_may_pull(skb, NETC_TAG_MAX_LEN)))
-+	/* eth_type_trans() pulled ETH_HLEN bytes, so skb->data sits 2 bytes
-+	 * past the start of the switch tag (past the TPID) and skb->len is
-+	 * ETH_HLEN bytes shorter than the original frame length. The longest
-+	 * switch tag is NETC_TAG_MAX_LEN (14) bytes, but since 2 of those
-+	 * bytes are already behind skb->data, only NETC_TAG_MAX_LEN - 2 bytes
-+	 * need to be in the linear buffer. For the To_Host subtype 2 response
-+	 * frame, whose total length is only 26 bytes with no payload after the
-+	 * tag, this check is the only guard against a too-short frame.
-+	 */
-+	if (unlikely(!pskb_may_pull(skb, NETC_TAG_MAX_LEN - 2)))
- 		goto err_free_skb;
- 
--	tag_cmn = dsa_etype_header_pos_rx(skb);
-+	tag = dsa_etype_header_pos_rx(skb);
-+	tag_cmn = tag;
- 	if (ntohs(tag_cmn->tpid) != ETH_P_NXP_NETC) {
- 		dev_warn_ratelimited(&ndev->dev, "Unknown TPID 0x%04x\n",
- 				     ntohs(tag_cmn->tpid));
-@@ -156,17 +242,40 @@ static struct sk_buff *netc_rcv(struct sk_buff *skb,
- 	if (!skb->dev)
- 		goto err_free_skb;
- 
-+	/* skb->cb may be used to store hardware RX timestamp, so it must
-+	 * be cleared before processing to avoid data pollution from the
-+	 * previous layer.
-+	 */
-+	NETC_SKB_CB(skb)->tstamp = 0;
-+
- 	type = FIELD_GET(NETC_TAG_TYPE, tag_cmn->type);
- 	subtype = FIELD_GET(NETC_TAG_SUBTYPE, tag_cmn->type);
- 	if (type == NETC_TAG_FORWARD) {
- 		dsa_default_offload_fwd_mark(skb);
- 	} else if (type == NETC_TAG_TO_HOST) {
--		/* Currently only subtype0 supported */
--		if (subtype != NETC_TAG_TH_SUBTYPE0)
-+		switch (subtype) {
-+		case NETC_TAG_TH_SUBTYPE0:
-+			break;
-+		case NETC_TAG_TH_SUBTYPE1:
-+			if (netc_rx_tstamp_process(tag, skb))
-+				goto err_free_skb;
-+			break;
-+		case NETC_TAG_TH_SUBTYPE2:
-+			/* This skb is a hardware-generated response to a
-+			 * two-step transmit timestamp request. The tag
-+			 * driver must free the skb after processing.
-+			 */
-+			netc_twostep_tstamp_process(tag, skb);
-+			goto err_free_skb;
-+		default:
-+			dev_warn_ratelimited(&ndev->dev,
-+					     "Unsupported To_Host subtype: %d\n",
-+					     subtype);
- 			goto err_free_skb;
-+		}
- 	} else {
- 		dev_warn_ratelimited(&ndev->dev,
--				     "Unexpected  tag type %d\n", type);
-+				     "Unexpected tag type %d\n", type);
- 		goto err_free_skb;
++	if (ptp_flag == NETC_PTP_FLAG_ONESTEP) {
++		/* The switch driver takes ownership of the one-step Sync and
++		 * queues it for deferred TX; the deferred work tags it subtype 1
++		 * and transmits it directly to the conduit. Return NULL so
++		 * dsa_user_xmit() stops processing this skb.
++		 */
++		netc_onestep_sync_enqueue(skb, ndev);
++		return NULL;
+ 	} else if (ptp_flag == NETC_PTP_FLAG_TWOSTEP) {
+ 		netc_fill_tp_tag_subtype2(skb, ndev);
+-	} else {
++	} else { /* NETC_PTP_FLAG_DROP */
+ 		kfree_skb(skb);
+ 		return NULL;
  	}
+@@ -317,6 +384,7 @@ static int netc_connect(struct dsa_switch *ds)
+ 	if (!tagger_data)
+ 		return -ENOMEM;
  
-@@ -200,6 +309,27 @@ static void netc_flow_dissect(const struct sk_buff *skb, __be16 *proto,
- 	*proto = ((__be16 *)skb->data)[(tag_len / 2) - 1];
- }
++	tagger_data->onestep_sync_xmit = netc_onestep_sync_xmit;
+ 	ds->tagger_data = tagger_data;
  
-+static int netc_connect(struct dsa_switch *ds)
-+{
-+	struct netc_tagger_data *tagger_data;
-+
-+	tagger_data = kzalloc_obj(*tagger_data);
-+	if (!tagger_data)
-+		return -ENOMEM;
-+
-+	ds->tagger_data = tagger_data;
-+
-+	return 0;
-+}
-+
-+static void netc_disconnect(struct dsa_switch *ds)
-+{
-+	struct netc_tagger_data *tagger_data = ds->tagger_data;
-+
-+	kfree(tagger_data);
-+	ds->tagger_data = NULL;
-+}
-+
- static const struct dsa_device_ops netc_netdev_ops = {
- 	.name			= NETC_NAME,
- 	.proto			= DSA_TAG_PROTO_NETC,
-@@ -207,6 +337,8 @@ static const struct dsa_device_ops netc_netdev_ops = {
- 	.rcv			= netc_rcv,
- 	.needed_headroom	= NETC_TAG_MAX_LEN,
- 	.flow_dissect		= netc_flow_dissect,
-+	.connect		= netc_connect,
-+	.disconnect		= netc_disconnect,
- };
- 
- MODULE_DESCRIPTION("DSA tag driver for NXP NETC switch family");
+ 	return 0;
 -- 
 2.34.1
 
