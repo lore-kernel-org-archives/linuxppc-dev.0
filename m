@@ -1,86 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-25690-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25691-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BEA51C5B567
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Aug 2026 19:08:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A5EBAC5B567
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Aug 2026 19:20:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hJkmr724qz2yvM;
-	Tue, 11 Aug 2026 05:08:28 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c202::7" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786388908;
-	cv=pass; b=Dwlqeen92Ivl67Hnztr6tnaHq6fQqge0r7XP3rvNVmIWD2Jx75FegZlG6LE88xct0EqKo19oxQTEx9l0w1Yc0kqkNtjEF2NxVLdsAYVn9uzByi1AGSbmCWeKy9QtOL+PGmWyFYpJI1qrFGMKpST+cohOBbyeJogkkRsH+5HwigXNRL0p1q5bdcAvD7ZNzLow3AdqYKn2fPPTYej1UmwuxzW4+Pt2FJNqAvAgKRpg8U/1MKiXp//APRE3k57ctpodBAddDxZcJl238TECR0vGb+0jAm51joZh3/E5GAs3sVeqOyJN3+LK8/PeU4xiH7M7gKRu2JQNJkGAWh4y659Erg==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786388908; c=relaxed/relaxed;
-	bh=goZhmv+K3J6ketFp2viecP1qDi21FVgaJkpYf1GR+r4=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=MGpng9yPgSE30xoUIq5bbAbrcsuRLgWpAXTMOqTLzEWrs17ZzV2K/xCnVhjA5F3EDCBT6FR5O+h7CBnlKa9u20KXGIdLdvmL4klX4YLcN7NjSU8gj6dowuIuvhdhZcmBKY8hV4r1V6bMQS5D0XiOWw4xpwt/v1dAaAb1Pxllil2HRVoQy5dWQPjtW88IVxnRZQFGYkE1i1EyLxd1Bad5mZhHBpwPZrtSy28aJ0rOPEgQ7A2yZPSk+D0F+ahDtH8DFi4+9yVq3cDdbQWvQKtGDy557MUdoholPemWkocRkjje8+l7aVVyKwp/oHoIhbRgjWP1PllJ4t0QfdZoSdqj9w==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=Ybc1VYQw; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c202::7; helo=gvxpr05cu001.outbound.protection.outlook.com; envelope-from=frank.li@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hJl2D70mgz2yvX;
+	Tue, 11 Aug 2026 05:20:04 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786389604;
+	cv=none; b=O3Q9++i1xEB762f3xxc7U5OjMbkU3jMGdt7iuvF4ZsGEds9NElsBRkZVryR0Mi+MARxMXA3TE3n/9HztmBc9lhza2CPFc1eJ4cxBwvlrjumvhddwByLghqSTBPqpfNYOlAwEzFk0jUlmQqGyOuunu/Er4D9QNWHvJEUKoGg8AscJvHC5pNg9BB7ZUaRrx95EBi27NXZAn1Tk2jjo4s0swkD0Ai0vq86NxZX0Cx2P/1fuGpiuHTgQRcHJYhnyU7xm9Lq3tIdtP0ubs6rQ/iaQO88iqiqkZ4j9PfShDWb3PhHVuXaxuAY71mp2NsQqTDWc3LvHDZPqMC8bGKg6AVVRIw==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1786389604; c=relaxed/relaxed;
+	bh=8Cb+8dMmwIox3uMtlSo4onwiFYTYDMBpjuIWuoL+n5M=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=M4mh9Zg8gtI7AIb70B3rAPMq8N1O4HwqyTAGXVAK5D0QwOlOvR6dJuCiDUqsFe6eSRmkJmH7i6gqVvcCT7jjPDEP7NfuprBEuRDyO0wGPaK+B774+Ip7Ssn2S3lX9P+oUaCRugfRwjUul+Vpoq2ntjZUjLfKfMuwNEijXQSG+tddpyjAezhWkuutJ+W63OHIyajmcW84EjVYCkTTVSETuWMurb9FQ4lNCpF547DcYem0zuuCGSaEbvgKniBtzA9wCPQe+AUWsYYzGh6rVS7nzRup+0OnKTn2hZ8Xexjvbl+T+TyCh6jkUpA1yV0ieo4FpJedFWg5rgSrQPV+5gm9Ew==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Y3sRTvlc; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=Ybc1VYQw;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Y3sRTvlc;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:c202::7; helo=gvxpr05cu001.outbound.protection.outlook.com; envelope-from=frank.li@oss.nxp.com; receiver=lists.ozlabs.org)
-Received: from GVXPR05CU001.outbound.protection.outlook.com (mail-swedencentralazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c202::7])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hJkmq2kQxz2yvG
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2026 05:08:26 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=T9EOZs98DaKEyNU7hsix9GZrDAvgDjjppFhvy2DQphOwSLvtLIzltxK+CADuNts871fMN06YmIk5b+/iRF1vF12SM79RjQcw12As6nw9y9kCqnrnGniVeBH3HgKa2LoGLd5Avoo1pCosjSpj6K1OpwlPuFIN74yuFO2DndOniWaKRjfOOOZlP+mGmTwDupuoQc7v3yWdsrk5hArn8I6kr+kYf+RKm7P4amw3cTZ6dlY39NkYppN9F+Fd5Hx6+0pwQrSGHjyrSuhHnZE4jfmNDDogkFkVAzHl9hsCFhkIYSpCTpNoEZqAq3Pi+pISnqCvbJcmkaVLTQqfyZ/Il2EdNw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=goZhmv+K3J6ketFp2viecP1qDi21FVgaJkpYf1GR+r4=;
- b=Oy+pEwp11orqTKuFt1tKa8eKOYQYbBaCg/ObqYF7qeeGZMYo2r4NwScVEoKnwagoVBDUjFTpInDKzh1yvlKXKTnsT6JGiuHA29+YC1EsYKgSNdwOv6EJWMCZ+sjdjLl54ynkkiF7Hhv0V/pyAOt8w6jQgKzeWVKYdHEJbZHpyBJG6tlPIFFfbkOK9tCQ+gFo+Pg5ywRoSM5nyX1Z9twC/hvwHphlGM6beOetCctqDOAv+HAU10C3yCKR92N6AAJ989KkM4HT2bksZnunDZi63D3bgXP06EWQDeIvey9Bp/FZCkJfc81bc8upHYVj+rqE+y8+0btwsXJ3znxZEod8Ew==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
- dkim=pass header.d=oss.nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
- s=selector1-NXP1-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=goZhmv+K3J6ketFp2viecP1qDi21FVgaJkpYf1GR+r4=;
- b=Ybc1VYQwx7J2VNxmrIrv88bb5M3FpqTjS3xbPdkNawOP54SCdEWt5Vp82T1ym+w0riqyOxAnBwFjhdnNgHDeU6AdeIRqMVa0fXzzr0qNgnHhjwRyWinxi+K2LmZm1H6EJTxJ8RHKIXr7tQudvLZ+UoNYNNsxhuzAUYxoOUVSRRP8bITuQ1EU+BVjhDqsTVUYPTupxIcXaIAR8sfRLV27abeVtTvaGhbxv/XtE3+ydGWVBG3M/umkQ76fOiJfF13p/vybvnTBggMvG9NBZ65NxK1JkG88bB46GQEzpwqUNnDdChYhH9gJspKhvS55KZ6F1XKgIlA6Q7jjiF3d4Nwhpw==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=oss.nxp.com;
-Received: from GV2PR04MB11799.eurprd04.prod.outlook.com (2603:10a6:150:2cf::9)
- by AS4PR04MB9508.eurprd04.prod.outlook.com (2603:10a6:20b:4cb::22) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.292.25; Mon, 10 Aug
- 2026 19:08:01 +0000
-Received: from GV2PR04MB11799.eurprd04.prod.outlook.com
- ([fe80::2146:83a2:5329:b7c]) by GV2PR04MB11799.eurprd04.prod.outlook.com
- ([fe80::2146:83a2:5329:b7c%7]) with mapi id 15.21.0292.024; Mon, 10 Aug 2026
- 19:08:00 +0000
-Date: Mon, 10 Aug 2026 14:07:47 -0500
-From: Frank Li <Frank.li@oss.nxp.com>
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: shengjiu.wang@oss.nxp.com, lgirdwood@gmail.com, broonie@kernel.org,
-	robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
-	Frank.Li@nxp.com, s.hauer@pengutronix.de, kernel@pengutronix.de,
-	festevam@gmail.com, shawnguo@kernel.org,
-	linux-sound@vger.kernel.org, devicetree@vger.kernel.org,
-	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org, shengjiu.wang@gmail.com,
-	Xiubo.Lee@gmail.com, nicoleotsuka@gmail.com, perex@perex.cz,
-	tiwai@suse.com, linuxppc-dev@lists.ozlabs.org,
-	Shengjiu Wang <shengjiu.wang@nxp.com>
-Subject: Re: [PATCH v3 1/5] ASoC: dt-bindings: fsl,imx-asrc: update port
- binding to support multiple paths
-Message-ID: <anohg7YCylTQ47pk@SMW015318>
-References: <20260804100218.49587-1-shengjiu.wang@oss.nxp.com>
- <20260804100218.49587-2-shengjiu.wang@oss.nxp.com>
- <anH5i7y3JkB1moee@SMW015318>
- <20260810-magic-olive-gecko-5e8a36@quoll>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260810-magic-olive-gecko-5e8a36@quoll>
-X-ClientProxiedBy: PH0PR07CA0013.namprd07.prod.outlook.com
- (2603:10b6:510:5::18) To GV2PR04MB11799.eurprd04.prod.outlook.com
- (2603:10a6:150:2cf::9)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hJl2C5vqCz2yvG
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2026 05:20:03 +1000 (AEST)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67AJ2Bcx613741;
+	Mon, 10 Aug 2026 19:19:53 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=8Cb+8d
+	MmwIox3uMtlSo4onwiFYTYDMBpjuIWuoL+n5M=; b=Y3sRTvlccxz1akT3VmhO9c
+	FQX2EUf13huqt2YCGqg05QvxyPP0xaTHV/XE+6iy2ccg9T8xbaeivPSrmuY8wyMj
+	c4z2sW4mhqjedhvQTDH0aXHseYX+t6FiIt6VE6Sz9Y0ITbJ6lfxndF2H4KVWnzVD
+	ce7Rp6I51lwGGvbYF+VYgekKRinozjQHKmcyZC7gmGGhBiBGUZ28GR9bWovwILqo
+	E3rc4lEGiQe4mVZ4r2XotIZ7YFfTTNSxKqjfxaDXXnxcysIdC5djDUQm5uam6ftk
+	EMFrA6qSLM4K9QWYZJNioS0hM3Yi776r7A7I1rWUpoagq3WC+qyXz2mIrdV0GCDA
+	==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fwvjysqd0-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 10 Aug 2026 19:19:52 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 67AJBrVd018110;
+	Mon, 10 Aug 2026 19:19:51 GMT
+Received: from smtprelay06.wdc07v.mail.ibm.com ([172.16.1.73])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fxh0g5ypy-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 10 Aug 2026 19:19:51 +0000 (GMT)
+Received: from smtpav01.wdc07v.mail.ibm.com (smtpav01.wdc07v.mail.ibm.com [10.39.53.228])
+	by smtprelay06.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 67AJJo4G49152372
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 10 Aug 2026 19:19:50 GMT
+Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 25A805804B;
+	Mon, 10 Aug 2026 19:19:50 +0000 (GMT)
+Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id F27A058055;
+	Mon, 10 Aug 2026 19:19:47 +0000 (GMT)
+Received: from [9.67.152.96] (unknown [9.67.152.96])
+	by smtpav01.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 10 Aug 2026 19:19:47 +0000 (GMT)
+Message-ID: <3da6179f-c09a-4651-914e-c0b89bb0c466@linux.ibm.com>
+Date: Mon, 10 Aug 2026 12:19:47 -0700
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -94,100 +81,228 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: GV2PR04MB11799:EE_|AS4PR04MB9508:EE_
-X-MS-Office365-Filtering-Correlation-Id: fb190196-97f0-4ef5-a520-08def712b23d
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|23010399003|366016|7416014|376014|1800799024|19092799006|22082099003|18002099003|4143699003|10067099003|56012099006|11063799006|6133799003|3023799007;
-X-Microsoft-Antispam-Message-Info:
-	6pSWrkKlcGpuPShYiZX64cJ8TCcyplS/heQxaMA6FSFNzbGC1sN7ywtGCtn0Yp2pp00Y3vmR8VvnIk3BV/lwXxDT6CmX5P/NcG11bGroSmt5VMCCfpMcA6eFBuQ4gufzcquMb7vjeV20sIjlZgYTtQRVEtMmhhalDr900l4qjdo3Whz8i7s0gGLEmB48iLhP5yX/SqMLhCJgIoXokbnVKgELT1Is8e/BHCab6HhUZcxgehcE38WM+jq/mZGQRy5Tmd6pJTrAzNs88AQiBrzC2x0FWWw12XUKxhdIdQ5CVU3HwHtD9birMWUqfUcpwIlqZar67JT+nso55dDkuFzvqPZ481dP7GY/1dycA4NzK1DGxqza+XgCTIogMmnPEqbLseDL0TmiCkdsltEriMcBzposDwJP0812kXMQk2xHl5/jGoMJib0w9h5YKw5KxVWmKLU3nLVgPWxXdEo2G4VNSB3UQJsqzFWrhLMHZ4zAe0HsOFnL0d8LiJ37PwR17Oxt+E9/BXAo7s4MhfUcOw62/yNolotN1dVF9Ikm9oA2F0eww7MDOMVEK+JAfco72+53dXmBCxL/mauDrDQXJAVEH6FdbgIx79UZFut8mDBw3C9mMGH5fWBnlG1LBsw/nJD44qpdhEAPcTpzSExn5kLVyfWRiclW4j9fmfpkH/OaEZw=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GV2PR04MB11799.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(366016)(7416014)(376014)(1800799024)(19092799006)(22082099003)(18002099003)(4143699003)(10067099003)(56012099006)(11063799006)(6133799003)(3023799007);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?7vi3Nqi4+hg4Ahxln46TXMAvfiT3OqwsRiI/601n7qITqKFb6iAz3meCOdt0?=
- =?us-ascii?Q?8Kv60zynLd3sNlvStvXGU81oRsBTaEdIXS9wMQURDcLJjQfswrKfnOtQM+RL?=
- =?us-ascii?Q?PzF28kXffe5LH7XMyTeVwaejn4zKWgYy14hdHeK6pe8WXMQ7RFHy61/MMkzK?=
- =?us-ascii?Q?gvS5i1JO8UAl5/KgV3hhqtO/dvxURNZjuC/PC2JMuNAjA6zWJencn1fp+5rz?=
- =?us-ascii?Q?znImpefqMB8p3xPsE5KLmKUWRsPMyVWurqBTt7MKyi1dUl5uS1YdO9LJz1h/?=
- =?us-ascii?Q?vr+1E26N0azzutIJV5V5t9fAy9l36u2cdjbybjzevjTo34bmjDdemJsAvITt?=
- =?us-ascii?Q?Z6pMwEOgqJcF8sMoXsqRmU0rxRE6CegRnVAbtdFD0T/pxfP3lesZrqV5GKw7?=
- =?us-ascii?Q?FnHTfcD8/ZXQAZRh8FLmhc+ypEV//KXQ8cWGr0sFG2MtoTiQ+/XMWh4ZhSPO?=
- =?us-ascii?Q?6DzdsbcI9MGi6px/k1Hgk0jssPWPbN2rSDAnvh5kPoYAbNoz8tkt027JVfKw?=
- =?us-ascii?Q?SpddKXe/JBkrFv9JlMZ9TERkgnytAXkVzkOWM/vlpw/EhRzydr/yAA24H5AT?=
- =?us-ascii?Q?eL0DrTd/EiPal1c9/hM4lhF2QbKMAx30wVOYw7vbW2FfpPG6USDX41vTvjZg?=
- =?us-ascii?Q?JHATHw5agzUx1Xo2eFqrrYa/CEYIiUrmKeI56x94Tt/eDNR/SYmUcay9EtMy?=
- =?us-ascii?Q?EbDC5wNxSuK2nQwEsJgfN/6dn3FiajW3iz9+YTYSt1rJTP2TppTopu5a0QMm?=
- =?us-ascii?Q?qau04tNrULneZFndsCwaA/V2cuSZVgmcl6J3SDd+1sUnKXa6Lp1rBkqFtmzm?=
- =?us-ascii?Q?qATkryYn9qRrxrfzPKWirqyDU+t5CYBljX4hAOtQ28yb2+iYz7An05pFpRpS?=
- =?us-ascii?Q?P1Sapz04j7zv/bL8zME6iieIh6iG2jAlNzMVwDCAgDNQ5p6QVyx4hsR+v5Zz?=
- =?us-ascii?Q?ud42z6WpyWvqQvLaNmAlIBgYRNFX5dvFeg7Vuzh8vXJrlPLBfuljSfUKtxxS?=
- =?us-ascii?Q?C6odCfTu11W5sXfKmNGpgcOEhWxSY4VLEOA1gZQkBfcl649PLJg86L61fCX9?=
- =?us-ascii?Q?ejgGEO8iASvms7AkQ8BZaKZHFE018nAj5LWtCvsqLfPcfrmSbPKRvY7pSMoc?=
- =?us-ascii?Q?+gp6U34Zipw7tiRHITp2vnniOK6aW13BidpV78XcfpIxtfYVbp4fWtvvrP1M?=
- =?us-ascii?Q?CAFVrvF7xz1XFkWqvLyqNdWAGT/dSbAf32VRgkULf6GT3bOdHTWamsdMl8nX?=
- =?us-ascii?Q?zKhYjxABLQYg74FPSIkrIusHStvtkk7+HkkDUmrFmDs1PbEqRlMPeb6SQUOl?=
- =?us-ascii?Q?bY7400K3VZzGIeyAi4nOxNtekZBsJZ9eeL3d7YsXvT2u0KFAwsExkWBzt93L?=
- =?us-ascii?Q?Haghi+tPSAlzowS7jADlavmD+YAHoZDyxMey4omRvHzYe+fb3AWeetH7l6HM?=
- =?us-ascii?Q?xM0ECTBjy8QxxoXh22t53n285tz46Cc1hBBke5FhrCDcCVjoMWwp8dE3LUeX?=
- =?us-ascii?Q?BLFMlOENE4pJ4AXusNMjRdiAoWtCxBdaL1ezqW0vVXtdI002AHILhvPa8UTy?=
- =?us-ascii?Q?NpZHGNrWCSjOHxCnGpdSCSx/OKULFZTqhLUybE2+9gqSiFMD6RT6FUX9RGJu?=
- =?us-ascii?Q?ZYwozg0DkxuCaXqg+j673AyMoSENUvmzvGeBvW7MQ3hfOGW9QFqE1YXj1ooT?=
- =?us-ascii?Q?FsK/pjBn2FTXvQ6djpqqv6QmTekv/XWxH0MKfro3WkMT3CBs5uGvBPhWsyFS?=
- =?us-ascii?Q?oZQTaE8Oa1Dp2BTIyAIBo14P4Vm57wBvVi6pN7LZXgWlETSnfTd+?=
-X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: fb190196-97f0-4ef5-a520-08def712b23d
-X-MS-Exchange-CrossTenant-AuthSource: GV2PR04MB11799.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 10 Aug 2026 19:08:00.8383
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: fsGhF9wXmt4Ec8iOSYaqOj9P9yYSlXTb09K/7SdTfEwwg5y8e/Aq/Yzq9Bz7W6/bMrBOHLpLUeHLDf8Z7e6xX/JJzFWGST+vaOQyMPn5k+kuycjYG6Q6CVbLS3vhYOVF
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS4PR04MB9508
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH net-next v4 01/14] ibmveth: Add MQ RX hypercall wrappers
+ and call definitions
+To: Jakub Kicinski <kuba@kernel.org>
+Cc: netdev@vger.kernel.org, horms@kernel.org, bjking1@linux.ibm.com,
+        haren@linux.ibm.com, ricklind@linux.ibm.com, edumazet@google.com,
+        pabeni@redhat.com, davem@davemloft.net, linuxppc-dev@lists.ozlabs.org,
+        maddy@linux.ibm.com, mpe@ellerman.id.au, simon.horman@corigine.com,
+        shaik.abdulla1@ibm.com, davemarq@linux.ibm.com
+References: <1bb2ecd260f27171c534b9beda377b75ea1790ae.1785457143.git.mmc@linux.ibm.com>
+ <20260806183614.3171785-1-kuba@kernel.org>
+Content-Language: en-US
+From: mingming cao <mmc@linux.ibm.com>
+In-Reply-To: <20260806183614.3171785-1-kuba@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODEwMDE2MiBTYWx0ZWRfXxmjY768grXbX
+ DDkiGUJduFZ9EGK5yUbpDuVYLrwjuNnVnMiPh26iw46L++LBMcbQM6fdZtMNZlS8g4ZPSbKD34q
+ B53w6dGp4Mlvd8Sz/wiS7rF+x+QHXWASxM2qiMhW5Ow3uy7ALCuKGs6WRfZBjyG7R2cRWG9q7em
+ 2XIaFLYeDI3sYv4HZaz4tZDoa6tAjMTwKcsXYKPguOlq5agvYuUCNq0bTfLHOKervBmzkY1Jrj8
+ MH7t0UBhghoF3uKiZ2ENkptLHglysa+aSduayeAhSAOSJ2joLK9AM0vEM33dUgJo+XqiOUYd2E1
+ ZcAqVmiZT+tk1Ffm2uOPGgVxe2LLEzFnGDSqU/K47A3VeKDpXhOoDRJb1mJ7zJYOng0/HfohDN1
+ TuEWD7fq2jYEwNHZEzqi8FDPhWV8o/Rv+XZ6ukDvc+mXH2VbgsM/X/zFLSICKaJLF422PFiNuCc
+ 0rbbMt6eh04uQ5Wk9Ag==
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODEwMDE2MiBTYWx0ZWRfXxrba2Y6IH0Ae
+ EJUJeuGHN6AjRRv1AR8pnph9qUEVn0qpwL7415Dzuh4ScDODJSUULIZhxlyV7ZtBl1S0I5T0YGw
+ GocnAwKpemL7E1B0XF2oPJNp593kzQo=
+X-Authority-Analysis: v=2.4 cv=RqD16imK c=1 sm=1 tr=0 ts=6a7a2459 cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=SNiIGSxTkIxgdVmd4FEA:9
+ a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: 6-vsZyGf-mzeE0F80rDcmh1hDhUimmmf
+X-Proofpoint-ORIG-GUID: DFwYmzozXtDr6ATHJA2gz-X4yoZFXgLK
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-08-10_05,2026-08-10_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 priorityscore=1501 suspectscore=0 lowpriorityscore=0
+ clxscore=1015 adultscore=0 bulkscore=0 malwarescore=0 impostorscore=0
+ spamscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
+ adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
+ definitions=main-2608100162
 
-On Mon, Aug 10, 2026 at 09:12:20AM +0200, Krzysztof Kozlowski wrote:
-> On Tue, Aug 04, 2026 at 09:39:07AM -0500, Frank Li wrote:
-> > On Tue, Aug 04, 2026 at 06:02:14PM +0800, shengjiu.wang@oss.nxp.com wrote:
-> > > From: Shengjiu Wang <shengjiu.wang@nxp.com>
-> > >
-> > > The i.MX ASRC hardware supports up to three conversion pairs (A, B, C).
-> > > The existing binding exposed only a single generic audio-graph port,
-> > > which cannot represent independent conversion paths when multiple pairs
-> > > are in use simultaneously.
-> > >
-> > > Add a ports container that enumerates up to three sub-ports, each
-> > > representing an independent conversion path:
-> > >   port@0 -- conversion path 0
-> > >   port@1 -- conversion path 1
-> > >   port@2 -- conversion path 2
-> > >
-> > > Each sub-port references audio-graph-port.yaml as before. Hardware pairs
-> > > are allocated dynamically at stream open time; each active stream
-> > > direction (playback or capture) on a port consumes one hardware pair.
-> > >
-> > > For backwards compatibility, keep the old single port property but mark
-> > > it deprecated. A schema constraint (not: required: [port, ports]) ensures
-> > > that both forms cannot be used at the same time. The binding example is
-> > > updated to show the preferred ports form.
-> > >
-> > > No existing upstream DTS file for fsl,imx-asrc uses the previously
-> > > documented single 'port' node, so this change does not break any
-> > > in-tree device tree.
-> >
-> > if no existing upstream DTS file use it, you can direct replace with ports
+Hi Jakub,
+
+Thanks for the review, and I appreciate the detailed review across the 
+whole series.
+
+More broadly, I agree with the overall direction of your review. For v5
+I plan to fold the follow-up fixes back into the patches where they
+belong and make the changelogs clearer, so the series reads more cleanly
+end to end.
+
+On 8/6/26 11:36 AM, Jakub Kicinski wrote:
+> This is an AI-generated review of your patch. The human sending this
+> email has considered the AI review valid, or at least plausible.
+> ---
+> ibmveth: Add MQ RX hypercall wrappers and call definitions
 >
-> And what about all other users of this binding?
+> This adds three new PHYP call IDs for multi-queue receive support and four
+> static inline hcall wrapper helpers in ibmveth.h, bumping MAX_HCALL_OPCODE
+> to the highest new opcode. No callers are added by this patch.
+>
+> A couple of questions below about the new wrappers and about the hvcall.h
+> hunk.
+>> diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
+>> index dff90a7d7f70b..d79baf2e38273 100644
+>> --- a/arch/powerpc/include/asm/hvcall.h
+>> +++ b/arch/powerpc/include/asm/hvcall.h
+>> @@ -362,7 +362,10 @@
+>>   #define H_GUEST_DELETE		0x488
+>>   #define H_PKS_WRAP_OBJECT	0x490
+>>   #define H_PKS_UNWRAP_OBJECT	0x494
+>> -#define MAX_HCALL_OPCODE	H_PKS_UNWRAP_OBJECT
+>> +#define H_REG_LOGICAL_LAN_QUEUE 0x49C
+>> +#define H_ADD_LOGICAL_LAN_BUFFERS_QUEUE 0x4A0
+>> +#define H_FREE_LOGICAL_LAN_QUEUE 0x4A8
+>> +#define MAX_HCALL_OPCODE	H_FREE_LOGICAL_LAN_QUEUE
+> [Severity: Low]
+> Could the changelog cite the PAPR/PHYP document and revision that assigns
+> 0x49C, 0x4A0 and 0x4A8?  These become architecture-wide constants shared
+> with the KVM hcall emulation, so it would help to have the provenance
+> recorded in the commit.
+Agreed. The first PAPR revision that contains the MQ hcalls is
+PAPR 11.20.00, and in v5 I will cite that revision explicitly in the
+patch-1 changelog.
+> There are also holes left at 0x498 and at 0x4A4 (the latter from dropping
+> H_FREE_LOGICAL_LAN_BUFFER_QUEUE in v4).  Are those numbers reserved by the
+> architecture for something else, or are they simply unused?
 
-Kernel is that only known user. Uboot don't use this part.
-
-Frank
+For the gaps, `0x4A4` remains reserved for
+`H_FREE_LOGICAL_LAN_BUFFER_QUEUE`, and `0x498` is reserved. This series
+does not need `H_FREE_LOGICAL_LAN_BUFFER_QUEUE` for the normal queue
+teardown path, so I am not adding it here.
 
 >
-> Best regards,
-> Krzysztof
+> Separately, MAX_HCALL_OPCODE is not driver-local.  It sizes
+> kvm_arch.enabled_hcalls:
 >
+>    arch/powerpc/include/asm/kvm_host.h:
+>        DECLARE_BITMAP(enabled_hcalls, MAX_HCALL_OPCODE/4 + 1);
+>
+> and it bounds the userspace-visible opcode range accepted by
+> KVM_CAP_PPC_ENABLE_HCALL:
+>
+>    arch/powerpc/kvm/powerpc.c:kvm_vm_ioctl_enable_cap() {
+>        ...
+>        if (hcall > MAX_HCALL_OPCODE || (hcall & 3) ||
+>            cap->args[1] > 1)
+>        ...
+>    }
+>
+> It also sizes the per-CPU hcall statistics array in
+> arch/powerpc/platforms/pseries/hvCall_inst.c and gates
+> kvmppc_pseries_do_hcall() and kvmppc_h_pr().  As far as I can tell the bump
+> is behaviourally inert for these new opcodes, since kvm_vm_ioctl_enable_cap()
+> still rejects them via kvmppc_book3s_hcall_implemented(), and the KVM
+> dispatch path ends up returning RESUME_HOST either way.  Would it be worth
+> mentioning the cross-subsystem effect in the changelog so the powerpc/KVM
+> side has something to ack against?
+Sure, for `MAX_HCALL_OPCODE`, I agree that the bump has a 
+cross-subsystem effect
+because it sizes KVM's enabled-hcall bitmap and bounds
+`KVM_CAP_PPC_ENABLE_HCALL`. In v5 I will call that out explicitly in the
+patch-1 changelog rather than leaving it implicit.
+
+>>   
+>>   /* Scope args for H_SCM_UNBIND_ALL */
+>>   #define H_UNBIND_SCOPE_ALL (0x1)
+>> diff --git a/drivers/net/ethernet/ibm/ibmveth.h b/drivers/net/ethernet/ibm/ibmveth.h
+>> index d87713668ed30..c88dbeb7cd967 100644
+>> --- a/drivers/net/ethernet/ibm/ibmveth.h
+>> +++ b/drivers/net/ethernet/ibm/ibmveth.h
+>> @@ -66,6 +66,143 @@ static inline long h_add_logical_lan_buffers(unsigned long unit_address,
+>>   			    desc5, desc6, desc7, desc8);
+>>   }
+>>   
+>> +/**
+>> + * h_reg_logical_lan_queue - Register a subordinate receive queue
+> [Severity: Low]
+> This isn't a bug, but the naming here diverges from the existing wrappers in
+> this file, which all spell it out as h_register_logical_lan() and
+> h_free_logical_lan().  Would h_register_logical_lan_queue() read more
+> consistently?
+>
+> [ ... ]
+Agreed. In v5 I will rename it to `h_register_logical_lan_queue()` so it
+matches the existing wrapper naming.
+
+>> +static inline long h_reg_logical_lan_queue(unsigned long unit_address,
+>> +					   unsigned long buffer_list,
+>> +					   unsigned long rec_queue,
+>> +					   unsigned long *queue_handle,
+>> +					   unsigned long *irq)
+>                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+>
+> [Severity: Low]
+> This helper returns the queue handle as unsigned long *, which matches
+> retbuf's element type and matches the other output parameters in this header
+> (h_send_logical_lan()'s corellator_out, h_illan_attributes()'s
+> ret_attributes).
+>
+> But h_register_logical_lan_with_handle() below declares the same conceptual
+> value, the PHYP queue handle read out of retbuf[0], as u64 *.  Can these two
+> be made to agree?  As it stands, callers have to pick a different storage
+> type depending on which of the two helpers they call, even though both are
+> returning the same thing.
+>
+> The commit message says the new wrappers have "argument ordering and return
+> semantics matching the existing ibmveth hcall wrappers", which holds for
+> this one but not for the u64 * variant.
+>
+> [ ... ]
+Agreed. In v5 both `h_register_logical_lan_queue()` and
+`h_register_logical_lan_with_handle()` will use `unsigned long
+*queue_handle`, matching the sibling wrappers and avoiding different
+caller-side storage depending on which helper is used.
+
+>> +static inline long h_free_logical_lan_queue(unsigned long unit_address,
+>> +					    unsigned long queue_handle)
+>> +{
+>> +	unsigned long retbuf[PLPAR_HCALL9_BUFSIZE];
+>> +
+>> +	return plpar_hcall9(H_FREE_LOGICAL_LAN_QUEUE,
+>> +			    retbuf, unit_address, queue_handle);
+>> +}
+> [Severity: Low]
+> The kerneldoc above documents no output data for this hcall, and retbuf is
+> never read.  Why not use plpar_hcall_norets() here, the way the existing
+> counterpart in this file does?
+>
+>    #define h_free_logical_lan(ua) \
+>      plpar_hcall_norets(H_FREE_LOGICAL_LAN, ua)
+>
+> That would drop the dead nine-entry stack buffer.
+>
+> [ ... ]
+Agreed. In v5 I will switch `h_free_logical_lan_queue()` to
+`plpar_hcall_norets()` and drop the unused return buffer.
+
+>> +static inline long
+>> +h_register_logical_lan_with_handle(unsigned long unit_address,
+>> +				   unsigned long buffer_list,
+>> +				   unsigned long rec_queue,
+>> +				   unsigned long filter_list,
+>> +				   unsigned long mac_address,
+>> +				   u64 *queue_handle)
+>                                      ^^^^^^^^^^^^^^^^^^
+>
+> [Severity: Low]
+> This is the u64 * side of the inconsistency noted above.  Both types are
+> 64-bit on ppc64, which is the only configuration that builds ibmveth, and
+> the callers added later in the series do compile against both prototypes, so
+> this looks like a readability issue rather than a functional one.  Could both
+> helpers use unsigned long * for the handle?
+
+|In v5 both helpers will use unsigned long *queue_handle.|
+
+Thanks again for the detailed review,
+Mingming
+
 
