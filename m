@@ -1,68 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-25697-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25698-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 942ACC5AD55
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Aug 2026 22:37:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 07BBFC5AD55
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Aug 2026 22:37:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hJqPt6RmLz2ynf;
-	Tue, 11 Aug 2026 08:37:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hJqQX5CG9z2yqL;
+	Tue, 11 Aug 2026 08:37:56 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::547"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786379698;
-	cv=none; b=ZnK80pPx5GtvkOU+9NzQVacwpYJvPo2LgUPjtg0Y9siaeUgOzuekKVvyIXzscK1ioRR4r3K9CojYQub9eftXWMxBv07vZnkb+8S55xe3eZWi3xtrGsLshjzbIzXnTy8dCqYmV5xNy6cmDDngb0MxeQPh4+5BAbYvIkePuQ34WHnF9bietP4Wlc8e5AviMVeYEmTIXoiSEiljjt6/z1ErIEOWR3DVfLVvmQ7h3wgfHSE4qVYoj9OO3wicBDqT0+A3r18IZUtn6xE4jpw59Z+0iPUi3chIVJIndOUswJxNyEBHtF3nK9AedP4A+7FcK3/FYaumHyEAhpJV9hsELvt1ZQ==
+	cv=none; b=aQun8dTSlXVMRQXsBCAJJgLUSJyd4bYlSpSma3lRzz8y0eqGKY31Oau+d1NJdBnitIIYpmm9nscIbdHAFlJ2SWupI+9XRCNareWvmnoZ0T477A7EBXCPNo9/UogFO6y2ow5I1VrN6fOEyb8jsyT/7SjzT3rSC1E8xCCP4NvelFPD3LtVnHbMtMrkFRwID8J8fgZMjNqXPVAGzJ2tetibATGFMd9scjAy/BvaOoZ6JfY9AEtwFk7YifirSxkEzdU5JtZzBrEMkRIVplH92tI8V2nfdoxhbCh+WbjyNyiKxUcmXW1vTgYhNhl6zbO/aDtvWyHe0ALCPZYMhYADbhDZ7A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1786379698; c=relaxed/relaxed;
-	bh=M1E8OcPKQa3EfyTN7DtxgAyhHDdwMTH4+JtgNWA55MM=;
+	bh=2W9GjrX12XMdTPANAxHOJwxcvmu8lBZVUg7itISKfu8=;
 	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=osTdGNS4ScZw+3VfL0GDxdznezM9rcWA41A785j5WblJ3vCrHO2OOJ3s2I4lqzVXvz3gbWPQuZZj9UZNTWJv8Qk+91RV5m8jBQQBfNF0ABHxe94+zIqQ+kVUGmiDFPPGianVUB9gMXCRiN5jmVc8jCJdLN058N7pf7Lq03WLY8LpFRcDfMM9DyLAFXugaQqXJnPEHD1H2rFlVG9wPSYPL0nvTVY/3kZ7WDKbDKCmEIq5gCOULLswYQDR4sk58URN1mD3TG42l0Cv6X8n2Fp4S/1AzTu+uuTcTch3jB6xW2gwk2iT1R6aT9PFs0ZrifozERdu4ehmhRHizLyU2iCV/g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=daujc7O1; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::547; helo=mail-ed1-x547.google.com; envelope-from=3q_15agkkdogdkbexckreqyyqvo.mywvsxehzzm-nofvscdc.yjvklc.ybq@flex--tarunsahu.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--tarunsahu.bounces.google.com
+	 To:Cc:Content-Type; b=f4wMjO8iQDOUT/HC3mPWN/ut3l/fyM5Lx+ehgis1aPnststTzvLl0xfQ/pH5BV6//PoRz2PfAguaQIgMjgb6k2VJWg5wKG0czw/OhFf3l4gYbsxKu445X3ipcUU26qSPVmzPJr9HI6fBbTST06aUIuiOyexo34SQCvWS95iXcdbvzWA0YoLM3fpSOHztNHlsui4T+ol0CjMdUhUgm9fF38rqdOrHJKLryq0GIlGyWYF2htK6kxmGXGD09Wm/F/9mLzPWR/8RE0vkknJHqfbABpHNh6i4P+/i078fIv6kSrVqixujpPZ7OmhAXBqOAjm0fMh0qE/uo/QzL2yOv9PUVg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=C4AdQ3R7; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::547; helo=mail-ed1-x547.google.com; envelope-from=3rp15agkkdokelcfydlsfrzzrwp.nzxwtyfiaan-opgwtded.zkwlmd.zcr@flex--tarunsahu.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--tarunsahu.bounces.google.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=daujc7O1;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=C4AdQ3R7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--tarunsahu.bounces.google.com (client-ip=2a00:1450:4864:20::547; helo=mail-ed1-x547.google.com; envelope-from=3q_15agkkdogdkbexckreqyyqvo.mywvsxehzzm-nofvscdc.yjvklc.ybq@flex--tarunsahu.bounces.google.com; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--tarunsahu.bounces.google.com (client-ip=2a00:1450:4864:20::547; helo=mail-ed1-x547.google.com; envelope-from=3rp15agkkdokelcfydlsfrzzrwp.nzxwtyfiaan-opgwtded.zkwlmd.zcr@flex--tarunsahu.bounces.google.com; receiver=lists.ozlabs.org)
 Received: from mail-ed1-x547.google.com (mail-ed1-x547.google.com [IPv6:2a00:1450:4864:20::547])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hJgMh6T1Wz2yxN
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hJgMh6C2sz2yxG
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2026 02:34:56 +1000 (AEST)
-Received: by mail-ed1-x547.google.com with SMTP id 4fb4d7f45d1cf-6a14f110515so1988492a12.0
+Received: by mail-ed1-x547.google.com with SMTP id 4fb4d7f45d1cf-69cd6606b19so1740383a12.1
         for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2026 09:34:56 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1786379692; x=1786984492; darn=lists.ozlabs.org;
+        d=google.com; s=20251104; t=1786379693; x=1786984493; darn=lists.ozlabs.org;
         h=content-type:cc:to:from:subject:message-id:references:mime-version
          :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=M1E8OcPKQa3EfyTN7DtxgAyhHDdwMTH4+JtgNWA55MM=;
-        b=daujc7O1nwJ3ogH1ovCQ4J7NlyGLTFuhKawZ6K9THtlguooz3wmR/F3z5w2Sz1nwXp
-         rGiQQ6bP5N81Unvmvud45lROBjhnnxGJlNHk6cLSl2AA1B9mPX3yU0aKAnPJN0lNCPeO
-         Gjg95adPVxZGPgv1nIxguVh/bzzy4/Ndz9DMh3gSz3JwrdjnGM8NN4nnXZUng04lVCO5
-         7RtTziAZ1g6XyzuQeOzPLqRjip38rg/W8nvwBY9zKqbztESCHGN67twYdjvRSDkjEw8S
-         C5D8cDnx/EaYXgj8xCU2zOpv7IyIvMmU8FkkSp41gx4l0pM+8Nb6sKez9pTnXjEb2tRb
-         IT6Q==
+        bh=2W9GjrX12XMdTPANAxHOJwxcvmu8lBZVUg7itISKfu8=;
+        b=C4AdQ3R7kNi8req6b4Qw5aPb1iqrlKYtW6UR/MyOVR8oEkZouXaQWu1WvDKteOfEL7
+         Z/RIfsXnhmKTvzb8wWpdnmVJ0frSs0+QEf5hoDyWbxD9kDkqh7KXGADk76tXwzKYjNYh
+         KcgeW+N9C/Nt46HEsxJYE+MNl76EJGPoUsMdBMfqzwulXvPlbv/WTH9NK9QjPgyJ+GNK
+         JbpH5PhKaOjnGWTqSzeDnjLdsTcmkxYq1I9/S/Miq5w1sFwqYo1iQT5k8yo1DBOuO1h/
+         NY6LaDnDqKeJqcKHdV4rl1JM3RCg0bZMpYAaHNHcUx/5qdLq6C3sCow8RFajC041M7tc
+         GIgw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786379692; x=1786984492;
+        d=1e100.net; s=20251104; t=1786379693; x=1786984493;
         h=content-type:cc:to:from:subject:message-id:references:mime-version
          :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=M1E8OcPKQa3EfyTN7DtxgAyhHDdwMTH4+JtgNWA55MM=;
-        b=DVy7h6gZx3TW6fJlqdo6lH/j4Z5xzXehcosdpYWbyGd5M6jz+c7FiWTK9AtgL6vrPS
-         kyMT4CYJmIXdurZcmkuG7Vffe/67/zu2FLhQvuoJfih/euDPJ9AXSS0QN7uwGSQyvjSR
-         c9Au4l1kjHF9qcOtb7Y1JN0sEIIJvFuvakAFeEW6TlXNtciay2mGYma/cYrj26rCKy7X
-         beejS06xG/MrmVziJQgRQsq0BhdbFLaqPywOT8TjS+iZdALzgjjNFr/Mfel22RhZwi1m
-         MN2YAwiyqowaqUxpWeCFUKF4to3MlQfegMX3ON/KqU+Jy4MXDFZt2aO6wkHc9HSEGayz
-         iqbg==
-X-Gm-Message-State: AOJu0YxN0/L7XDP8uMhkfmIiNBVY6NeHvUYu8Gx2TsLE/ZMDNgfO2Cb5
-	WW/+wbMXiFRinQRDKUozMEEj+E98RLEeRBa3chvtKJpEmmg6bNgTd8SnQHmyr/kZbsmpyVIX7Ji
-	ABOaFS/RCtuJx8vTMag==
-X-Received: from edzh5.prod.google.com ([2002:a05:6402:945:b0:6a1:c0a:e022])
+        bh=2W9GjrX12XMdTPANAxHOJwxcvmu8lBZVUg7itISKfu8=;
+        b=QhQoBbKGYd5lwOJ6bL2/vY9HQehZCqjY7fMWuKbM4XHhjgN2oldL3EFINjeCXvE8d7
+         Y5kwcCQbURkk2pSUgbCrHoBdueATam7WBbOycIWGdlDO/mJ3FDhjLGr7pA1yqGvu14dA
+         IJoeTbx4MU0nMvna5dI38cJy20A5OpEgT0sVkWWT4R5Q+Kc6CRQfJLI+fctKO3XUQfO5
+         D39sLulqU2F9ZbAe/ZldSycC+WKfvGFO4JzXB+lbe+wED2AQ/mwIX1ncjArphVHyXOAZ
+         FPzG3IAiem43e9nOXKMBHXukawvuezwd8B7p1WZmqqijDRZZfzVVZO4nt13FqfPZv5qP
+         0cfQ==
+X-Gm-Message-State: AOJu0YzHt4TpR6WkCxnGfvopjHSbE5u4wWL+2IfdofJL/6v0v6ZBMeoR
+	1/MHCC4bFFFtnzHGMEdwVljqxWSOLl6cSsEvyPb27HjKlX5Rn1L3CoadaYPLl2rp+3WPKHJoBlA
+	E/+g4hPJm6lOxsqp8BQ==
+X-Received: from edbay18.prod.google.com ([2002:a05:6402:2032:b0:6a0:a508:c896])
  (user=tarunsahu job=prod-delivery.src-stubby-dispatcher) by
- 2002:a05:6402:2110:b0:698:6620:d988 with SMTP id 4fb4d7f45d1cf-6a355e1332amr1811578a12.15.1786379691640;
- Mon, 10 Aug 2026 09:34:51 -0700 (PDT)
-Date: Mon, 10 Aug 2026 16:28:11 +0000
+ 2002:a05:6402:454b:b0:6a1:c908:1701 with SMTP id 4fb4d7f45d1cf-6a355e2d32amr1548538a12.13.1786379692937;
+ Mon, 10 Aug 2026 09:34:52 -0700 (PDT)
+Date: Mon, 10 Aug 2026 16:28:12 +0000
 In-Reply-To: <20260810162814.1398016-1-tarunsahu@google.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -79,8 +79,8 @@ Precedence: list
 Mime-Version: 1.0
 References: <20260810162814.1398016-1-tarunsahu@google.com>
 X-Mailer: git-send-email 2.55.0.679.g6767b8d81c-goog
-Message-ID: <20260810162814.1398016-2-tarunsahu@google.com>
-Subject: [PATCH 1/4] ARM: locomo: use put_device() on device_register() failure
+Message-ID: <20260810162814.1398016-3-tarunsahu@google.com>
+Subject: [PATCH 2/4] firmware/edd: use kobject_put() on edd_device_register() failure
 From: Tarun Sahu <tarunsahu@google.com>
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Geoff Levand <geoff@infradead.org>, 
 	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Nicholas Piggin <npiggin@gmail.com>, 
@@ -93,51 +93,32 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
 	linux-edac@vger.kernel.org, Tarun Sahu <tarunsahu@google.com>
 Content-Type: text/plain; charset="UTF-8"
 
-When device_register() fails, calling kfree(dev) directly bypasses the
-device_release() callback (locomo_dev_release) and leaks internal driver
-core structures allocated during device initialization.
+When edd_device_register() fails after initializing the kobject with
+kobject_init_and_add(), calling kfree(edev) directly bypasses the
+kobject release callback (edd_release) and leaks the allocated kobject
+resources.
 
-Fix this by replacing direct kfree(dev) with put_device(&dev->dev) when
-device_register() returns an error, ensuring proper refcount decrement
-and cleanup via locomo_dev_release().
+Fix this by replacing direct kfree(edev) with kobject_put(&edev->kobj) on
+registration failure.
 
 Signed-off-by: Tarun Sahu <tarunsahu@google.com>
 ---
- arch/arm/common/locomo.c | 13 ++++++-------
- 1 file changed, 6 insertions(+), 7 deletions(-)
+ drivers/firmware/edd.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/arm/common/locomo.c b/arch/arm/common/locomo.c
-index 55e360452828..0f6689d343b0 100644
---- a/arch/arm/common/locomo.c
-+++ b/arch/arm/common/locomo.c
-@@ -223,10 +223,8 @@ locomo_init_one_child(struct locomo *lchip, struct locomo_dev_info *info)
- 	int ret;
+diff --git a/drivers/firmware/edd.c b/drivers/firmware/edd.c
+index f980c5b56858..763e7b16d517 100644
+--- a/drivers/firmware/edd.c
++++ b/drivers/firmware/edd.c
+@@ -748,7 +748,7 @@ edd_init(void)
  
- 	dev = kzalloc_obj(struct locomo_dev);
--	if (!dev) {
--		ret = -ENOMEM;
--		goto out;
--	}
-+	if (!dev)
-+		return -ENOMEM;
- 
- 	/*
- 	 * If the parent device has a DMA mask associated with it,
-@@ -255,10 +253,11 @@ locomo_init_one_child(struct locomo *lchip, struct locomo_dev_info *info)
- 
- 	ret = device_register(&dev->dev);
- 	if (ret) {
-- out:
--		kfree(dev);
-+		put_device(&dev->dev);
-+		return ret;
- 	}
--	return ret;
-+
-+	return 0;
- }
- 
- #ifdef CONFIG_PM
+ 		rc = edd_device_register(edev, i);
+ 		if (rc) {
+-			kfree(edev);
++			kobject_put(&edev->kobj);
+ 			goto out;
+ 		}
+ 		edd_devices[i] = edev;
 -- 
 2.55.0.679.g6767b8d81c-goog
 
