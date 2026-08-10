@@ -1,49 +1,54 @@
-Return-Path: <linuxppc-dev+bounces-25659-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25660-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 75ADAC5AD4E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Aug 2026 08:10:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9D62FC5AC82
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Aug 2026 09:13:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hJSB24cV2z3048;
-	Mon, 10 Aug 2026 18:10:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786349450;
-	cv=none; b=XP4IATvUIi2W9NfMSp351we7/WjowR+HSrXnlSKUz5BNpUMFMEkAbd30ixFxHr4DlXZoLlFAhENcoqtdbgMK6Z8/VLUonGK31t2UobSuXFRSFl/0kE3D3W66k9+DM0c0186VrsXFKiGS2Z5S7glSaOH5VUTqIZEoakIXpJanR6ewhT5xno/XAhy2U2dMlyfIZD6NnDNgih1wxQXNMd+yodoSYE1cy8ZcBD2CDUN1PNXsMKBuZ5J0h8bZlSUB463Hdv58k5uulZQTQ6V3ESA8M/ywVdH3om4hJyn9c3l/uOAvFzuXWwL9uQKx92GTPzqND6cnGr8Tg7iM3zy05fJfUA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hJTZl5Hl7z3048;
+	Mon, 10 Aug 2026 19:13:51 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=210.118.77.12
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786353231;
+	cv=none; b=Q2x/FNO2rR9KNgxDWkrt9iw+84N//R0STaul0Hmv3JuOrmZ6OA8RGT7R2rtuJ2y8OUABiRl6zqFLhMYHT1PhlGv+8XtP38ywbi5olSO2fDbMoV4/30X+rK67snIIZoBSSl5A90f2dqiqCOMZZ/vkpM5y+e2xbcoeAMwJsCqlssljexzB8ZNucPH/v8PReXnL1g9md+8FoIlvA3kMU21zJKb93HvIEiA1xXh3jHOUYjvSs0HvgpjabStYyXO5BeEbaFZXo469hgVCfBSEZ7Yhdmrknw4SJWBR/LdTRfNoS7juaLefUEF5oRVqr80euz5aEEiopRfcsh383Q8Q0wEaDg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786349450; c=relaxed/relaxed;
-	bh=D8GAAPcPNkvGTDlj9lP0xZu0c4aQ0+uGJs8xBq+n/kM=;
-	h=Mime-Version:Content-Type:Date:Message-Id:Subject:Cc:From:To:
-	 References:In-Reply-To; b=aoe7mWveQmLCw/yUARebCM+jAH+9CiigxN1WQRxKb93bxEn95O1cMJwXl59Mx4WgI7v3czAVtn4ZHGgnM55ihZt3EGjn9q6tKNRWy2JJ+UKhKWqO2S15ghN8rHef4MLeYf+gQF/1b9yj9IxXZS1e4ZXzZ37REkk+H8efGeCvHSCm+EnCjFfMCkLKolN9WAf0UanRp/F1BFghEgClJoTF55mCmJ08xmGIu9bX/CC8y/orxbwv3MHrUjXYUIR1Wn+Sv2ZqOINPAfqXgTkvy3jCSU71oZMvJZaTUm99sGgDbjVJC3x+rMSrsVKe1/DlhTD5bPq86TM3SdBo7RNU2J7f0A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Ol0m4cZ0; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=mwalle@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1786353231; c=relaxed/relaxed;
+	bh=9F2+hqEi/pOkUD0Sk5/5UFMk/Jt0LKrILlP4x/Pr3As=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:From:In-Reply-To:
+	 Content-Type:References; b=KSmegPXIkCG0Y9soJDwMaYzZs3DDTzc10r0uO1JLcdPsHqRLBjDb4JKCHLp1qKxXowHsXd0SDyPn5iiTIQIdUzBlfaoxxfwO4KC06HhVOYMVokCVi8F0CvM+rxXmmUZoJAyMpTBHXNFiHVCFRK9YmQm4hzLjtCj+f5ml9WhYu2WOD3/eUxmkNZz736078XkGnA/p0QzSr3f2fyTy9Y0qQizjQYfFiwHYam1fG2StZRsE7boKkoCoSHH0mRoDRzqF3pRg3d/9BGinj1iDcdikgaA4F4NDD79ao0tVd1Rtc7IGvpGymoHqt/+h8eB+fUm9F7vUMg1KIMWo8uWlV4DcAw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=samsung.com; dkim=pass (1024-bit key; unprotected) header.d=samsung.com header.i=@samsung.com header.a=rsa-sha256 header.s=mail20170921 header.b=lxfWDNt4; dkim-atps=neutral; spf=pass (client-ip=210.118.77.12; helo=mailout2.w1.samsung.com; envelope-from=m.szyprowski@samsung.com; receiver=lists.ozlabs.org) smtp.mailfrom=samsung.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=samsung.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Ol0m4cZ0;
+	dkim=pass (1024-bit key; unprotected) header.d=samsung.com header.i=@samsung.com header.a=rsa-sha256 header.s=mail20170921 header.b=lxfWDNt4;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=mwalle@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=samsung.com (client-ip=210.118.77.12; helo=mailout2.w1.samsung.com; envelope-from=m.szyprowski@samsung.com; receiver=lists.ozlabs.org)
+Received: from mailout2.w1.samsung.com (mailout2.w1.samsung.com [210.118.77.12])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4hJSB129PBz2ysb
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2026 18:10:49 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with UTF8SMTP id 61303409B6;
-	Mon, 10 Aug 2026 08:10:47 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with UTF8SMTPSA id BDBF41F000E9;
-	Mon, 10 Aug 2026 08:10:46 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1786349447;
-	bh=D8GAAPcPNkvGTDlj9lP0xZu0c4aQ0+uGJs8xBq+n/kM=;
-	h=Date:Subject:Cc:From:To:References:In-Reply-To;
-	b=Ol0m4cZ0Ql+pds/46gHDTbjsqiX90sOnocAxtDPny1NKrwNoE52jE/jJOpngRzVsC
-	 YSSXcxLgXbE0XDIrqhI4cB2iywfNuJvD0GBzwpZXTG1XSQ8FDg9jony1cfIFCO25n9
-	 5tbbwDoiuF5EyiyumRDnSznWZijY3qYvBQKpGHYR+iuLqmjbHdaHUrYLLTRKjgeU0u
-	 ratLSBNsbERH7HLY9N9F5LqA6dsZA0aLdF/spscMMk5EM3mhWDCfkZu3U0JasP3vve
-	 6jxuaQdP866Q6gSCvFFk7uEwx4X8sI5XJyera4SYOfZf81MJimLLQqfJVjjTeqDPMP
-	 9udRKX+sIWR6g==
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hJTZg59Wvz300V
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2026 19:13:46 +1000 (AEST)
+Received: from eucas1p1.samsung.com (unknown [182.198.249.206])
+	by mailout2.w1.samsung.com (KnoxPortal) with ESMTP id 20260810091334euoutp02b90f2f488c302ac4039b7efbd8aebb04~KZsi7HVtz1748917489euoutp02C;
+	Mon, 10 Aug 2026 09:13:34 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w1.samsung.com 20260810091334euoutp02b90f2f488c302ac4039b7efbd8aebb04~KZsi7HVtz1748917489euoutp02C
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+	s=mail20170921; t=1786353214;
+	bh=9F2+hqEi/pOkUD0Sk5/5UFMk/Jt0LKrILlP4x/Pr3As=;
+	h=Date:Subject:To:Cc:From:In-Reply-To:References:From;
+	b=lxfWDNt4pgEBF2hGBprplDfS9ZiG8PU4QIWr1XTy3IRJQST0jDMlcjb6C2xQflNho
+	 aen+A3Jx31spZzgUNGO+k3HbMv/jTGuHy0D1yuJ14RYPvP7BOanhJPtyIa25CHs0U6
+	 5w3PfE1mfJVMAAg5BOlPbbbLVO96I2Sq0ySYnDFw=
+Received: from eusmtip2.samsung.com (unknown [203.254.199.222]) by
+	eucas1p1.samsung.com (KnoxPortal) with ESMTPA id
+	20260810091334eucas1p1e0ed221ce5794cf7bd02a4bed868a380~KZsiumB1n1295212952eucas1p1G;
+	Mon, 10 Aug 2026 09:13:34 +0000 (GMT)
+Received: from [106.120.50.46] (unknown [106.120.50.46]) by
+	eusmtip2.samsung.com (KnoxPortal) with ESMTPA id
+	20260810091332eusmtip28966b93d0c29582d58567c792b4bd9ba~KZshKoKkG2582625826eusmtip2O;
+	Mon, 10 Aug 2026 09:13:32 +0000 (GMT)
+Message-ID: <7d22482f-d5fd-4cf4-9d32-6a54e02f2fbb@samsung.com>
+Date: Mon, 10 Aug 2026 11:13:32 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -56,107 +61,70 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0
-Content-Type: multipart/signed;
- boundary=44ada78920db0c5cdf4033a7b68fc9cd12279b08ce4d58d6c9e466420964;
- micalg=pgp-sha384; protocol="application/pgp-signature"
-Date: Mon, 10 Aug 2026 10:10:43 +0200
-Message-Id: <DKL4118H7S5U.1FN3E4DBY4GHF@kernel.org>
-Subject: Re: [PATCH RESEND] powerpc/configs: enable CONFIG_RAS to fix EDAC
- support
-Cc: "Madhavan Srinivasan" <maddy@linux.ibm.com>, "Michael Ellerman"
- <mpe@ellerman.id.au>, "Nicholas Piggin" <npiggin@gmail.com>, "Christophe
- Leroy" <chleroy@kernel.org>, "Tony Luck" <tony.luck@intel.com>,
- <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>, "Janusz
- Krzysztofik" <jmkrzyszt@gmail.com>, "Takashi Iwai" <tiwai@suse.de>, "David
- Heidelberg" <david@ixit.cz>, <linux-edac@vger.kernel.org>
-From: "Michael Walle" <mwalle@kernel.org>
-To: "Borislav Petkov" <bp@alien8.de>
-X-Mailer: aerc 0.20.0
-References: <20260730105546.3658570-1-mwalle@kernel.org>
- <20260730185620.GDamueVIGV-8iIzozX@fat_crate.local>
- <DKC6Z5YGBF2O.TAJAN566BN0L@kernel.org>
- <20260731022855.GNamwIZw7Fz4Yhk__S@fat_crate.local>
-In-Reply-To: <20260731022855.GNamwIZw7Fz4Yhk__S@fat_crate.local>
+MIME-Version: 1.0
+User-Agent: Betterbird (Windows)
+Subject: Re: [PATCH] arm64: swiotlb: Keep the default size for protected
+ guests
+To: Jason Gunthorpe <jgg@ziepe.ca>, Mostafa Saleh <smostafa@google.com>
+Cc: Will Deacon <will@kernel.org>, "Aneesh Kumar K.V"
+	<aneesh.kumar@kernel.org>, iommu@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+	linux-coco@lists.linux.dev, Robin Murphy <robin.murphy@arm.com>, Marc
+	Zyngier <maz@kernel.org>, Steven Price <steven.price@arm.com>, Suzuki K
+	Poulose <Suzuki.Poulose@arm.com>, Catalin Marinas <catalin.marinas@arm.com>,
+	Jiri Pirko <jiri@resnulli.us>, Petr Tesarik <ptesarik@suse.com>, Alexey
+	Kardashevskiy <aik@amd.com>, Dan Williams <dan.j.williams@intel.com>, Xu
+	Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+	linux-s390@vger.kernel.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <chleroy@kernel.org>, Alexander Gordeev
+	<agordeev@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>, Sven Schnelle
+	<svens@linux.ibm.com>, x86@kernel.org
+Content-Language: en-US
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+In-Reply-To: <20260807182017.GH200537@ziepe.ca>
+Content-Transfer-Encoding: 7bit
+X-CMS-MailID: 20260810091334eucas1p1e0ed221ce5794cf7bd02a4bed868a380
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="utf-8"
+X-RootMTR: 20260807182023eucas1p1f653436207b2b00338e99ea1d8f847df
+X-EPHeader: CA
+X-CMS-RootMailID: 20260807182023eucas1p1f653436207b2b00338e99ea1d8f847df
+References: <20260717180442.110954-18-aneesh.kumar@kernel.org>
+	<20260807092612.2202005-1-aneesh.kumar@kernel.org>
+	<anXIZSh9lq99VG9X@willie-the-truck> <yq5acxvu2ict.fsf@kernel.org>
+	<anXbJ2O4DWgPxCeg@willie-the-truck> <20260807135810.GA200537@ziepe.ca>
+	<anX7F7dnKOtAOIIe@google.com> <20260807164734.GE200537@ziepe.ca>
+	<anYgXSR4VAi3TpOj@google.com>
+	<CGME20260807182023eucas1p1f653436207b2b00338e99ea1d8f847df@eucas1p1.samsung.com>
+	<20260807182017.GH200537@ziepe.ca>
 
---44ada78920db0c5cdf4033a7b68fc9cd12279b08ce4d58d6c9e466420964
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
+On 07.08.2026 20:20, Jason Gunthorpe wrote:
+> On Fri, Aug 07, 2026 at 06:13:49PM +0000, Mostafa Saleh wrote:
+>> But the whole thing is best effort anyway, the kernel picks
+>> IO_TLB_DEFAULT_SIZE which does not depend on the system topology or
+>> how many devices or how much DMA they do.
+>> SWIOTLB memory is wasted if unused so we should be careful around
+>> that as it would be the other way around and users would have to
+>> decrease it manually.
+> Yeah, it is why the arch code shouldn't really be sizing it directly,
+> it should be done in common code and, yes, we are probably going to
+> have to do something alot smarter to have the common code better
+> auto-tune this for the CC case..
 
-On Fri Jul 31, 2026 at 4:28 AM CEST, Borislav Petkov wrote:
-> On Thu, Jul 30, 2026 at 10:35:20PM +0200, Michael Walle wrote:
->> I don't get what you are trying to say. CONFIG_EDAC_MPC85XX is
->> enabled in the that config already.
->
-> You mean, *because* CONFIG_EDAC_MPC85XX is =3Dy, then RAS=3Dy? I guess th=
-at is
-> true for this particular config.
+What about the $subject patch? I assume that it is still needed to
 
-No. CONFIG_RAS is not set although CONFIG_EDAC_MPC85XX is set.
-Because CONFIG_RAS was *automatically* selected before the mentioned
-commit.
+restore the behavior that was altered by the "[PATCH v8 00/23]
 
->> It's just that the mentioned commit broke it because it removed the "sel=
-ect
->> RAS", while EDAC depends on it.
->
-> No, that commit dropped a select statement which is good in its own right=
-.
+dma-mapping: Track shared DMA state through direct, pool and swiotlb
 
-And while doing that it will break (at least) the corenet32_smp_defconfig,
-because it removes the "select RAS" (which was on the EDAC_MM_EDAC symbol).
+paths?" patchset?
 
-How would that work without adding CONFIG_RAS=3Dy to the defconfigs
-where EDAC (or rather EDAC_MM_EDAC) is enabled?
+Best regards
+-- 
+Marek Szyprowski, PhD
+Samsung R&D Institute Poland
 
-Here's a quick test:
-
-git checkout e3c4ff6d8c94
-
-# remove "default y" from PCIEAER, because that is also selecting
-# RAS. But it was removed in 8c8ff55b4da7 ("PCI/AER: Don't select
-# CONFIG_PCIEAER by default").
-sed -i "/default y/d" drivers/pci/pcie/aer/Kconfig
-
-ARCH=3Dpowerpc make corenet32_smp_defconfig
-grep CONFIG_EDAC .config # no CONFIG_EDAC, nor CONFIG_EDAC_MPC85XX
-
-git revert e3c4ff6d8c94
-grep CONFIG_EDAC .config
-
-You see, before that commit, the driver was actually enabled, and
-after that commit it is not.
-
-I'm really not sure what I still have to show you that you agree,
-that it's a regression.
-
->> Still, it's already enabled in that config and it somewhat recently
->> got IMX9 support,
->
-> Who got IMX9 support?
-
-Disregard that, I was confused, it's in the fsl_ddr_edac.c (which is
-shared between EDAC_LAYERSCAPE and EDAC_MPC85XX).
-
-..
-
-> I can pick up well tested patches tho.
-
-Good to hear.
-
--michael
-
---44ada78920db0c5cdf4033a7b68fc9cd12279b08ce4d58d6c9e466420964
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iKgEABMJADAWIQTIVZIcOo5wfU/AngkSJzzuPgIf+AUCanmHgxIcbXdhbGxlQGtl
-cm5lbC5vcmcACgkQEic87j4CH/gzcQGAsR41P3plwjqhvP+m1h+za6dU6QPVszbW
-GDsyisbCK/xjoSONtEjUStgqsSwvGmwCAX4+j++E6ePSZB2BpGbvqUoa1vUcIUwL
-UauC8jzpaOBEDvUoDOtL8YzxVrNA2RNEHtQ=
-=Hlr+
------END PGP SIGNATURE-----
-
---44ada78920db0c5cdf4033a7b68fc9cd12279b08ce4d58d6c9e466420964--
 
