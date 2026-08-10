@@ -1,49 +1,45 @@
-Return-Path: <linuxppc-dev+bounces-25675-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25676-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5F30BC5AD55
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Aug 2026 14:03:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 05E5EC5AE49
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Aug 2026 14:08:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hJc0s6Q5Kz2yxG;
-	Tue, 11 Aug 2026 00:03:25 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786370605;
-	cv=none; b=IScLTqNzCr3eARbC9iu6A97DVXrfISR3qkbcuoKsuuufIrVOhX1yQ8i32fsj+KBhjRdXxCNOns7gIfDa9/ZyFYqFDfzflNhYdgnAWXU6AwjeA1+qMKxYl48lze/51JpIRLgaZVUt9AylYez70VgCrIH7BtvWEeRIVceVfXlwXM0PU3CSVCHnvNbaki3swT+ZMDGD3Jf0X5Cqm6uQpcJoYon9nZhRSPrTvTAkFwIL0EiTG8TZY4lhKfY7W9JH9PBg8T2dCXJer8Tx3mBoaVasuTXc752siZ0kSgE7BTHwfjyxK9l5Qn1GHoiBL5ZIf8XCnjodxjHH0eF7LFpM7B9b5w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hJc6j1vYFz300M;
+	Tue, 11 Aug 2026 00:08:29 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786370909;
+	cv=none; b=iOK7RJncN/s/k+7vKlDAk97baA+ysnj6wp7bmei31CjuGyTCB08i4002uFU5J3kRkeVvslOVkupbCDtfuCERlY6v2kGOFWzVLRYfSrVDpD75jCbvWAGZyOK2hzgnfvnBouFzHrmWf+XUhJpKHXrZ9GtEQ/6XIq/Ou9gWyFDERptrOIjpthXpO8q/Ge5GcjAP1HIM30n/teynT0mKJjweoS1gdLfimhNZXqcXDYWTrX7PN+SLh/G51Hd+hU9LqxT2hGYnIPaGIPhFNO0z/2SGGthIJZ5LQ4oqXaoBQ2fd8rl3WpGAjCslF3EZnfi6Ppr+CDyAkUt9kqNyglL5B2535g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786370605; c=relaxed/relaxed;
-	bh=PLTFNlxmfZnluw3lrmK2dvWW7y/hPCNzql0E1f/F1NE=;
-	h=Mime-Version:Content-Type:Date:Message-Id:Subject:Cc:From:To:
-	 References:In-Reply-To; b=RBbW7pxfoszfE0SQmJpyT78Um7NV5xi2x0ZR4CUT1evhwCj17duMop5tpToiF5bIn9do+v5+6Hb6UmurqfRMa65hw4DmNq9jJwYMssXZI9JNMv1MJlqASWh/nIw/brCXq7tPpuvFrlwFpDgLBVKcsVCc9By1RAzhJDnaY6gJjq3d1pm6pVchULCjnpegNxSfTENJmEmGiX64XZ9DvPZ6uoYWuxjUKANX5Vj85/h59mV1qo2sZPYYyfmzOhDVKI1dPYbgYcJ18DcENvkWEnhkVTwxlSgquv9cc94j3E7RV+Kgt1GCSQ9ec/JyJV+kD45DRQDcxc7d8XbeUTJ4rPXIGg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=M9+I7wnn; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=mwalle@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1786370909; c=relaxed/relaxed;
+	bh=l/l2H3T3xXRxtAlEmVxkMBjt3GQq1sSw4qqDUaZjjxc=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=ekmHI8j6CSpHMIPkkA9yYN/IpVa38Hcbl+26D43Hb0R+tumyHPQyG5L2NUc5jOKhchr4iZ6yk49IaU/Eqg/cnjhY+EA7/BIE1ppHLDXBdW3eodt3TiamckuH9ZUaEQBGGih7sMQ/xiyKvmQa+LZkDP6uAmBXbhkaszCICjZdRum+IgXSdgftuLr+aB9ryUVdZgQKyldqzqlxizpyQKww3g5ayP/OYbwRj91rx2SSCETykQg2PACSFlwEqhOPS4jDA4JXq4CI/NKw2u5nOTfVCDhTqWKiLCr9HCCMxCtykzw6jNPhlxHyg9wrYHxUH4+1e5QUrdab3Lrv0ZI0s4RRuQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=VDMFqS+F; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=M9+I7wnn;
+	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=VDMFqS+F;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=mwalle@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4hJc0s1rwPz2ysb
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2026 00:03:24 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with UTF8SMTP id AFDFB60052;
-	Mon, 10 Aug 2026 14:03:21 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with UTF8SMTPSA id D52AB1F000E9;
-	Mon, 10 Aug 2026 14:03:20 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1786370601;
-	bh=PLTFNlxmfZnluw3lrmK2dvWW7y/hPCNzql0E1f/F1NE=;
-	h=Date:Subject:Cc:From:To:References:In-Reply-To;
-	b=M9+I7wnnd4k8hb2GZAJuUbY7tptqoXDHY35E1ZgHFN4SkhLunaUg4OsVfH3O6xMfH
-	 Do8YoR78L3XvXFAzgUINNKE1+dVJsSBb37wskK7jAI+wC0FjI3RIUnVIHx2Sq33CiR
-	 eG2PztbDcVoVZOFOEPgt97zBNDWVM44SdOdMPqFXOppNvErRLTKgY6tABMlRQyCass
-	 KlaVBZi+nRCVKlUiE/HqEeM+JP7Jn/uHktzG2OD8q3AB9TXNmEc6lYqXQfnFybctz9
-	 JjjYTjBwm2sdmHdxC1n4NUCVp8KgaWUAgimbDeicCtM5HglesO0aXPQ8iWxqL9CXe1
-	 erkliNcthRl0A==
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hJc6f6P78z2yxN
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2026 00:08:25 +1000 (AEST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 737BD14BF;
+	Mon, 10 Aug 2026 07:07:50 -0700 (PDT)
+Received: from [10.57.5.211] (unknown [10.57.5.211])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id A0B0D3F86F;
+	Mon, 10 Aug 2026 07:07:44 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1786370874; bh=l/l2H3T3xXRxtAlEmVxkMBjt3GQq1sSw4qqDUaZjjxc=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=VDMFqS+FI7dztumWUIj0YSzO03RhoFJUBQIQzYUdFvqVl9cEv8Iw/mDKNo7PN1C6X
+	 1VHMihPE5KmCMT17k5n8XBwRp9N9Pbg9cGBMMV/3LzWSgApFGs1tQxNrK6u2zmk9z2
+	 n2fKbvDMQjaTvkmApv2yhkGVWehw0StqDsKzTy6c=
+Message-ID: <efd52893-bf66-40cc-a53d-980b89cee448@arm.com>
+Date: Mon, 10 Aug 2026 16:07:41 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -56,67 +52,102 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0
-Content-Type: multipart/signed;
- boundary=286f580f11416b2d2a5c68b49ff507d9abfc06251ea1c6c09a03767a470c;
- micalg=pgp-sha384; protocol="application/pgp-signature"
-Date: Mon, 10 Aug 2026 16:03:17 +0200
-Message-Id: <DKLBIZ7ZBP1K.20VHSP02I6BW2@kernel.org>
-Subject: Re: [PATCH RESEND] powerpc/configs: enable CONFIG_RAS to fix EDAC
- support
-Cc: "Madhavan Srinivasan" <maddy@linux.ibm.com>, "Michael Ellerman"
- <mpe@ellerman.id.au>, "Nicholas Piggin" <npiggin@gmail.com>, "Christophe
- Leroy" <chleroy@kernel.org>, "Tony Luck" <tony.luck@intel.com>,
- <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>, "Janusz
- Krzysztofik" <jmkrzyszt@gmail.com>, "Takashi Iwai" <tiwai@suse.de>, "David
- Heidelberg" <david@ixit.cz>, <linux-edac@vger.kernel.org>
-From: "Michael Walle" <mwalle@kernel.org>
-To: "Borislav Petkov" <bp@alien8.de>
-X-Mailer: aerc 0.20.0
-References: <20260730105546.3658570-1-mwalle@kernel.org>
- <20260730185620.GDamueVIGV-8iIzozX@fat_crate.local>
- <DKC6Z5YGBF2O.TAJAN566BN0L@kernel.org>
- <20260731022855.GNamwIZw7Fz4Yhk__S@fat_crate.local>
- <DKL4118H7S5U.1FN3E4DBY4GHF@kernel.org>
- <20260810135020.GBannXHLXtUlqJjzqS@fat_crate.local>
-In-Reply-To: <20260810135020.GBannXHLXtUlqJjzqS@fat_crate.local>
-
---286f580f11416b2d2a5c68b49ff507d9abfc06251ea1c6c09a03767a470c
-Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 03/22] mm: introduce MMF_KERNEL flag and set it for
+ init_mm
+To: "David Hildenbrand (Arm)" <david@kernel.org>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, linux-mm@kvack.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+ Lorenzo Stoakes <ljs@kernel.org>, "Liam R. Howlett" <liam@infradead.org>,
+ Vlastimil Babka <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>,
+ Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>,
+ Pasha Tatashin <pasha.tatashin@soleen.com>,
+ Russell King <linux@armlinux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
+ Ryan Roberts <ryan.roberts@arm.com>, linux-arm-kernel@lists.infradead.org,
+ Huacai Chen <chenhuacai@kernel.org>, loongarch@lists.linux.dev,
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+ Helge Deller <deller@gmx.de>, linux-parisc@vger.kernel.org,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+ Albert Ou <aou@eecs.berkeley.edu>, linux-riscv@lists.infradead.org,
+ Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
+ Alexander Gordeev <agordeev@linux.ibm.com>,
+ Gerald Schaefer <gerald.schaefer@linux.ibm.com>, linux-s390@vger.kernel.org,
+ "David S. Miller" <davem@davemloft.net>,
+ Andreas Larsson <andreas@gaisler.com>, sparclinux@vger.kernel.org,
+ Richard Weinberger <richard@nod.at>,
+ Anton Ivanov <anton.ivanov@cambridgegreys.com>,
+ Johannes Berg <johannes@sipsolutions.net>, linux-um@lists.infradead.org,
+ Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, Andy Lutomirski <luto@kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>, Ning Sun <ning.sun@intel.com>,
+ x86@kernel.org, tboot-devel@lists.sourceforge.net,
+ Ard Biesheuvel <ardb@kernel.org>,
+ Ilias Apalodimas <ilias.apalodimas@linaro.org>, linux-efi@vger.kernel.org,
+ Vishal Moola <vishal.moola@gmail.com>, Alistair Popple <apopple@nvidia.com>,
+ "Matthew Wilcox (Oracle)" <willy@infradead.org>,
+ linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+References: <20260714-remove_pgtable_cdtor-v1-0-44be8a7685d7@arm.com>
+ <20260714-remove_pgtable_cdtor-v1-3-44be8a7685d7@arm.com>
+ <01f07ea2-8bdd-4450-8a49-548f8b646cfd@kernel.org>
+ <33fc9d31-2866-4315-9510-0004deb93994@kernel.org>
+From: Kevin Brodsky <kevin.brodsky@arm.com>
+Content-Language: en-GB
+In-Reply-To: <33fc9d31-2866-4315-9510-0004deb93994@kernel.org>
 Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-On Mon Aug 10, 2026 at 3:50 PM CEST, Borislav Petkov wrote:
->> And while doing that it will break (at least) the corenet32_smp_defconfi=
-g,
->> because it removes the "select RAS" (which was on the EDAC_MM_EDAC symbo=
-l).
->
-> And things like that are fixed by adjusting the config. Basically your pa=
-tch.
->
-> So whoever picks it up, can add:
->
-> Acked-by: Borislav Petkov (AMD) <bp@alien8.de>
+On 05/08/2026 14:07, David Hildenbrand (Arm) wrote:
+> On 8/3/26 15:59, Christophe Leroy (CS GROUP) wrote:
+>> Le 14/07/2026 à 16:03, Kevin Brodsky a écrit :
+>>> mm code often needs to know whether some mm represents a kernel or
+>>> user address space. This is currently done by comparing the mm
+>>> pointer with &init_mm; besides not being particularly elegant, this
+>>> ignores the fact that other mm's (e.g. efi_mm) may also represent
+>>> parts of the kernel address space.
+>>>
+>>> Introduce a new mm flag MMF_KERNEL and set it for init_mm.
+>>> Subsequent patches will use this flag to replace comparisons with
+>>> &init_mm. No functional change is introduced for now.
+>> Did you consider performance impact ? This test is usually done in quite
+>> critical memory handling functions.
+>>
+>> init_mm is known at link time. Before your patch 08/22 there is just a
+>> comparison of mm (r3) with a constant (loaded in r10):
+>>
+>> c0014048 <assert_pte_locked>:
+>> c0014048:    3d 40 c1 09     lis     r10,-16119
+>> c001404c:    39 4a 03 98     addi    r10,r10,920
+>> c0014050:    7c 03 50 00     cmpw    r3,r10
+>> c0014054:    4d 82 00 20     beqlr
+>> ...
+>>
+>> After patch 08/22 we have, it first checks that mm is not 0, then it loads the
+>> word located at mm+528 then AND it with 0x1. This load might be costly.
+>>
+>> c0014048 <assert_pte_locked>:
+>> c0014048:    2c 03 00 00     cmpwi   r3,0
+>> c001404c:    7c 85 23 78     mr      r5,r4
+>> c0014050:    41 82 00 10     beq     c0014060 <assert_pte_locked+0x18>
+>> c0014054:    81 23 02 10     lwz     r9,528(r3)
+>> c0014058:    71 29 00 01     andi.   r9,r9,1
+>> c001405c:    4c 82 00 20     bnelr
+> Is that a real problem, though?
 
-Thanks! Christophe already pointed out [1] that it should go via the
-same tree as the commit it fixed, i.e. the EDAC tree.
+I doubt it, this is a load from a fixed address and therefore highly
+cacheable/predictable. At worst we're keeping an extra cache line
+allocated, but I'd expect init_mm to be already in the cache most of the
+time.
 
--michael
+> What we could do is to just keep the == &init_mm check internally on configs
+> where we know that there is only a single such MM context.
 
-[1] https://lore.kernel.org/all/1500e19d-9bd3-4050-8568-31b546f0b22e@kernel=
-.org/
+Sure, if this provides a clear performance benefit on powerpc or other
+architectures/configs that don't have an efi_mm we could do that.
 
---286f580f11416b2d2a5c68b49ff507d9abfc06251ea1c6c09a03767a470c
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iKgEABMJADAWIQTIVZIcOo5wfU/AngkSJzzuPgIf+AUCannaJRIcbXdhbGxlQGtl
-cm5lbC5vcmcACgkQEic87j4CH/gNlwGAhtavgVGyN1VN9r110B1+4Uyn1aZkJ4AF
-EdDhMHp6PzUVyOqLmecwEN47l1jbetgHAYDHONeXALMdJkWx0TV7ubizRmS/jmmA
-aK/pJO6JnC5xYRuR4BOHVyilzBNBx+CKuQ0=
-=G7pb
------END PGP SIGNATURE-----
-
---286f580f11416b2d2a5c68b49ff507d9abfc06251ea1c6c09a03767a470c--
+- Kevin
 
