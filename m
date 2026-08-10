@@ -1,60 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-25663-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25664-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 50998C5AD4E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Aug 2026 09:39:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5E6E2C5AD4E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Aug 2026 09:39:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hJV7z4snYz30F9;
-	Mon, 10 Aug 2026 19:39:11 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c200::5" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786354751;
-	cv=pass; b=FigL4IgroL6h5pxosyszSnweyEGvWx6L/JVLBTLNmvFHWbCswbW0NtOR0I2N7sz8eBQFxKzzUXqOcYW5P+smENrKHKpAC//NhoBk1i4qWLbPX7O8dPSMGlKC5wZ8FIs3hAGvfUOM9KShFr5Fo1FMPA3u8JGfvHrM1taNnfS/wDhMdLj09o5nUXWG6A2uC0asvfoB/2xaxu//t3Y8z9YrUmJTpXHi+3N2+EVX+5OQGTumD1tHSXcdxX6PEcvTydaBUru6ziJ3O62F2dDtTzE+q4spEGDoJE4ZWz23/bf0GD5KKwPg96YbG0WDUobsjOguXP84fYfpaTtyh4RWNA/iyQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hJV876f2hz30B7;
+	Mon, 10 Aug 2026 19:39:19 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c20a::7" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786354759;
+	cv=pass; b=fofIVoVK3FtvT7Rc8jIMh9faxp5n4BSkqdcWAhM95y9O+gO7BQcPcZrKCM3Dw5LL5Wj28AeT8BX70X9TI0ssovVxjyofpWR/LToijOOeyBSZ88u7lccQEaOJNnjuaP9i/bhqu2FF0e3zNJ/5mnZU0MxCLzOIvvSVLjBKtkY2/1XfcD+pogloIx8zxTrnXbbtUocwTELtxR3NZ5Vnx53sOxrJRld2ppqmmzc/jrmlpjYFU5uGtrEMamP/ecPEMtX4FMaBUlnxodT1Lvie+WjqRLHA83gjbTnLC5MQsvq599gSpWMGQTSeGWC3+9N4vZSpyaVsW9ADSISbdRZgvJt9yg==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786354751; c=relaxed/relaxed;
-	bh=doc/0BLfF6vJdaNQ41N5hl1TQqnDlBRU286ct6hr7Po=;
+	t=1786354759; c=relaxed/relaxed;
+	bh=DyiwU6m7TBUz+XV6Ct+ExYh21+Dow4TW2YHodOfeUGQ=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=cfH6zieVM09zLT1BvIw/RO9O8X9bc/W5BqBuMN9xjOlefRMD4pZiUsfGMfJKnevehSMzBsCqNbX7eg9ocul4SkxCM5BJwTZl67zter1g03yUYbZcQAC5TAocsU9/a/s9kNjE0QsZXVkihcg1CntDucvjwd9b55wVM/kXz3dkMPX9UHcPAeM49RurGctglapIzSkPvID3llXzqcN+/shFq+TD0GdxhWRMzTrCDqk5J+Kd+3lDSwIcO8LOLeeMQoHry5dZKkEFsqsABQnvZ4FGK5FVsMLyquM74BkYrXcuEQbRTyix7krXtqLPFZ52yCB6nKtj/E1hNQ/bRmPa5oWRGw==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=oFALUMhi; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c200::5; helo=duzpr83cu001.outbound.protection.outlook.com; envelope-from=chancel.liu@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
+	 Content-Type:MIME-Version; b=F5RhCdGUM+0tE8x01QKLSYxbYEtpA1Yqg/YmqvwriU6vC8uPsnHoW6G61QKzaMx4YoNcPBCFRwbL/LDwVgN8uc3h+yOqjZa9mBCyOiDK+bh9PKMGzRkuy792DsC5+SfkPDl/ERmmKBpRXgT1WqVhjA29KjAWim5E6yuh/mtBbP8zhV9uCrPKnfUHcTQi5UnFIeCBphPt1/qI7x2FyTNcYasGDzvXOcqBbUUqqrIyCUmckB+j/kJwX3hDDfkFcgfecUj6DkrFTY/mwZd5Ca6jagAKAeWo/ioJUHw+3w9h/ZP7PRMk77nNRUMddZ3jDsbJnd6YPB617DIvZLDQ13HrbA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=Ew8a8OBc; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c20a::7; helo=pa4pr04cu001.outbound.protection.outlook.com; envelope-from=chancel.liu@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
 Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=oFALUMhi;
+	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=Ew8a8OBc;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:c200::5; helo=duzpr83cu001.outbound.protection.outlook.com; envelope-from=chancel.liu@oss.nxp.com; receiver=lists.ozlabs.org)
-Received: from DUZPR83CU001.outbound.protection.outlook.com (mail-northeuropeazlp170120005.outbound.protection.outlook.com [IPv6:2a01:111:f403:c200::5])
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:c20a::7; helo=pa4pr04cu001.outbound.protection.outlook.com; envelope-from=chancel.liu@oss.nxp.com; receiver=lists.ozlabs.org)
+Received: from PA4PR04CU001.outbound.protection.outlook.com (mail-francecentralazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c20a::7])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hJV7y65JVz30Bt
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2026 19:39:10 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hJV863mq0z30T0
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2026 19:39:18 +1000 (AEST)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=mN+r42bHU4fjXMtheMAdgnKTVNhJ1BrrDKT8czJwYl+iqi7fQaa1P7AEFQSe5llbfo/w7b09et7fU3OeadeE/yWPhuu3HsCr9VapSzJNoCLsZRLxcFY0Eqbw38w4rkWRMWjpvO0stbptzTabIQWjmxjrAHeRKmg5LGvPLVRIA5xOAB56Y6EmvcfAw6P0oi9vjUOtE7gj8pAY2XFH5uxCoTsoMyPzOkeVG6lNGhr6GWgwKfSfFvV6ovckAkSvZBL1sMjr2GoU9x4W2+jjdOgafGyEsGpaksqHscWxsfONU0QbxJomV984x3hj+VXD+YrZWyJoXa6c1KC8NYZPq3W8DQ==
+ b=SxXsW6K6C9vwLhzJebu6T2jTaRJz77bHeJ6lgHILkL5RH6zd4B5gx6fWIkbOO3WGWzwM7us5HGzl4CbPCRytLrh7HJWoVGhJqwlOnYAU5p2OsKjHKA5U1xo/3jvNWfAnuUwB2KAWaNZS9YFW70J903msHPRMGvNQRQc0CeJCWJFIxlFO4qjq5heetpJx4Xd1Wk0k3TP+wI2NuJ5qpURzmmWcNJT/J3QIYb/lKV1Ec2YMcyz2OG7DaqBaHMt7rtrR/bsiD+PQ+3+EOhezNvlfMvozNI6OM163cDDqHVfbf2/zI6/6C7l8Dk/yxGPrfBxCXV2ssG7r2DNyFZAcjF3nWQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=doc/0BLfF6vJdaNQ41N5hl1TQqnDlBRU286ct6hr7Po=;
- b=mOJGfOI6wCh2uDBSpkICPHX5nZKtBJxGJvxqfPJvyAWpe40kzD/uU3hRqKvsh2QoR5Xh9s3CsBMQcsi0YyoYsQ9gw8JjxErhQi+U9msuRu7lciU8hr7cOJmMpDZA9r7oZlZIutxvrboEpabL4t7t5VjtBgI06OouQhQz5R9nqXt6Wm970Tq0ue9LpNwGfr5urKRn0EizHi3IH3sgB552Sk1ibFITvdgV3svNV3ZdD3kf8EtV5SBTAAOfbKyQClM1ITk/78XfAZoxNJ/lYA1L23aHsHTMHiLUnwONRtKpXLFyG6dTUHZqgyEqwYleaBKKdsHyZUqoJ7jN7zOxMoMk2A==
+ bh=DyiwU6m7TBUz+XV6Ct+ExYh21+Dow4TW2YHodOfeUGQ=;
+ b=d1T7v4okzsVDw/xxHXp1mVnSKzpG4XI5Q9Gqf+bdZyUjp9cnC7K8bcybevOf9+xCzkS/jnMgm5l0D24btkXa5v8XXH8aNSpPC2ZZv6s/h5hBCh2EwSbXuepKLZgtMJB6eG8prbcMg/yZeWcnUAHnblhGe8aG6QT7/SKkwiuWttGRZXKeeSC72CIPbXaGYTtE4ZLpvYSybrIs3ReMyhwWkfj8Ii42pkTB02er6/6jBQOXX2zACjhM1zjSHBiDPVPwU5CwGHTCMEPD6yu2VuAlynFXQKg4aROaSzwfyS22gkGmuVimWc2z8yA5ST9D68Bjby6LpM0hBNRmSSf4UHppxA==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
  dkim=pass header.d=oss.nxp.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
  s=selector1-NXP1-onmicrosoft-com;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=doc/0BLfF6vJdaNQ41N5hl1TQqnDlBRU286ct6hr7Po=;
- b=oFALUMhi9diS4gMyuE7V4Br3f/zpdPEQFyktZH81S8D3YLEayvLYhMuHEajD2ezpIQzJeF+f+s2iJ7O9gqY4EY5Oudwd7gux47G9u2ZCMktSMkBsLqG/wxVXAk+YMvC3naW5nM5ECpFR9msNGZtt88RdHXRCiNRuMcyILy85sUua9hfdngkT5UY/GU/TmE+RFMKglvid17KZts6tyePrT9I3CccsQgSoKDgW86fmxmmT/uAUr9XaTfqVn0s8zImzb6w01V+b/txDSgKIghaZ7U9AwbfXzkfuiIzd8elKIV3U4nW0qymqeZccZFQD0A/JV+PFIDK7nfmHOm6Z5gmZOw==
+ bh=DyiwU6m7TBUz+XV6Ct+ExYh21+Dow4TW2YHodOfeUGQ=;
+ b=Ew8a8OBc9EDPmwnUJEVB2Lu55vNwFU0sHQfHq/8pYrERs2A9CTx+s9Jw//XSD9JH1aki6ZvIgk2pkq1ilhXXsu631EefhfedrfiMnb1ddmXsXyKfmznLxlYAsCDlTnEZ0dU6JqK4+UuZglbnDKAtjxjZInRFwJplsbaKQpwEbFiOhQcNmOI+8MPg9fnMBD2ZvOqLbW4a4UuBdoLx1XHchMkPUXV8pf9Ov9n2HahJpKt7CWKoSC9osxYatK9I4tQiiPczTVDtC4OY1E3BXSdfUsY9rEwRHwn//v6tYIdR6/R6RnBDVmaFfoFp51j/SMvoeCeTpXJKw/TqQVm9BfopKg==
 Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=oss.nxp.com;
 Received: from GVXPR04MB10021.eurprd04.prod.outlook.com
- (2603:10a6:150:112::20) by DU7PR04MB11162.eurprd04.prod.outlook.com
- (2603:10a6:10:5b3::5) with Microsoft SMTP Server (version=TLS1_2,
+ (2603:10a6:150:112::20) by AS8PR04MB7557.eurprd04.prod.outlook.com
+ (2603:10a6:20b:294::5) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.292.25; Mon, 10 Aug
- 2026 09:38:49 +0000
+ 2026 09:38:55 +0000
 Received: from GVXPR04MB10021.eurprd04.prod.outlook.com
  ([fe80::d247:853:3e16:1994]) by GVXPR04MB10021.eurprd04.prod.outlook.com
  ([fe80::d247:853:3e16:1994%5]) with mapi id 15.21.0292.024; Mon, 10 Aug 2026
- 09:38:49 +0000
+ 09:38:55 +0000
 From: Chancel Liu <chancel.liu@oss.nxp.com>
 To: shengjiu.wang@gmail.com,
 	Xiubo.Lee@gmail.com,
@@ -68,14 +68,14 @@ Cc: hui.wang@canonical.com,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-sound@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH 1/3] ASoC: fsl-asoc-card: Drop mclk management for nau8822
-Date: Mon, 10 Aug 2026 18:35:29 +0900
-Message-ID: <20260810093834.1511749-2-chancel.liu@oss.nxp.com>
+Subject: [PATCH 2/3] ASoC: fsl-asoc-card: Move static compatible data to platform data
+Date: Mon, 10 Aug 2026 18:35:30 +0900
+Message-ID: <20260810093834.1511749-3-chancel.liu@oss.nxp.com>
 X-Mailer: git-send-email 2.50.1
 In-Reply-To: <20260810093834.1511749-1-chancel.liu@oss.nxp.com>
 References: <20260810093834.1511749-1-chancel.liu@oss.nxp.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
 X-ClientProxiedBy: SL2P216CA0103.KORP216.PROD.OUTLOOK.COM
  (2603:1096:101:3::18) To GVXPR04MB10021.eurprd04.prod.outlook.com
  (2603:10a6:150:112::20)
@@ -93,126 +93,590 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: GVXPR04MB10021:EE_|DU7PR04MB11162:EE_
-X-MS-Office365-Filtering-Correlation-Id: e08cbe4d-e526-4505-23dc-08def6c32e6f
+X-MS-TrafficTypeDiagnostic: GVXPR04MB10021:EE_|AS8PR04MB7557:EE_
+X-MS-Office365-Filtering-Correlation-Id: 940dc6a5-ce77-4e90-bbb7-08def6c331ba
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|19092799006|23010399003|376014|7416014|1800799024|366016|6133799003|10067099003|56012099006|11063799006|22082099003|18002099003|3023799007;
+	BCL:0;ARA:13230040|376014|366016|7416014|1800799024|23010399003|19092799006|6133799003|11063799006|56012099006|10067099003|3023799007|18002099003|22082099003;
 X-Microsoft-Antispam-Message-Info:
-	YXxyBwsTMlYPP5G1nM+fDGuTzU+olPxnyLZ4H3bdciOC+JmyW0Z5wjMSla7n8EwHcDa+7iV/0PtHyOh4RVUd6l2MMFy40XNaGvg0wIVLW+ok+4sI2lXm2Sfv45WiTRZin4oTTpqZCFYAzS7fW+I13lmmJ6pS1kBArQ++/RI/m+lRrITD0Xlr9oyQSach++3BuCtNz3UYy7mtCyWKftARdYsiaT8DiJXxoCC9nw+UerWw5/eTheFCnbyOZhbEvlThIthiiTg8tAZFZ6Nm+TGZgR0UnpJ9rpH9PtppUwB5/S1Q55s6zN0Wy0ft8GQqqKgPuJUjRoyRS6HMQHuWjk2LffnEU3HC6jSSffwUicSSlY68A6jYllKsn7af6HkpKVvDRe3JKYL7alK2rhJoWPdkJjqKjVeV3H1AoGWFjIaLejLVJ6pHqost6J2sn5Bu1MbxL9D6NZCl4IFaHeuEgIFmBGW7bDGY1lH/55x/MFWHPAN5yeUdTb/o7RG4zvLD1EKhE0JBnKeUTdzf++Jc41cnA8MkettzsJBj0Hri+hWx/9jCWL4I6nV5lVYwLdQyNVDU33hpxSuHNPkFbV9tqOmwLP/tdrNXZSgZSpHFkC1zy2gj+Hxmhq7IStpiQri/+XKcQknXG01s44TxsBsvM3NJDiIJ8JW8u5Kav7lsAVoHgp0=
+	cNZ88WB8+UUbO2tl9gArftJt6GTC0odacd26+JMIAatKAAxjCg26F3u+sxzs1gIaB6YXSOacQgWR+wzC7W9awX/kyAzJfJYWtwpX3iq23/X6zbpugvvdck7urjNYr3cc4mDZJdEJnI/e47WGrZGx5H9pWWRr7KKwyR6Jef/Qm7D3hEmgyHHtYEx5O2hJywoDiXAA96qX4PD6es2pD7VYHwp9KeKXZt3Et81ZlDHwC5tksp/Dr3msUgZp4Q8W+efJ7S0mGHyKzwZ4XaB7PcSJmAvsTyYk3jGRnA0VBiIQt+qOrDHIjiQVtZ3CHf8YjCtsrNF92w4BSSPQdQjV0WJuEwGofPt6r6knKMDsSSK900Sv0LWNqt5Tpuqn6K20KmLhDxbFyDfXABGCxY7qIHnZQGQCRQwrVtpMLa+KGJ1ylybiFyDwhBJdus1+EwLCP7TY64OTBgwnk7Z7iyNND69/RpZv7F9io7DJt5vUsBw8SWYwIRtsxi4Bh1ZZMNdpQR9qUBt7mmnjJFErZpHiaN4HojgzI7iHfn4WxW+AE838dlL1lwKX5lcFYE9fbuDHrDX6PaPuUNUb2MFhoakFhQRldGKt+oK5CjUzKjBTa7kE4B44ldxpzUFA5AUePcnUOM+8Aeh7V2/GHafMIAT/RGibS38LHz513weJnbWIJornW38=
 X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GVXPR04MB10021.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(19092799006)(23010399003)(376014)(7416014)(1800799024)(366016)(6133799003)(10067099003)(56012099006)(11063799006)(22082099003)(18002099003)(3023799007);DIR:OUT;SFP:1101;
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GVXPR04MB10021.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(366016)(7416014)(1800799024)(23010399003)(19092799006)(6133799003)(11063799006)(56012099006)(10067099003)(3023799007)(18002099003)(22082099003);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?rAUa1UZCQEql1ZcJDm0ZUZHDqgfq7WFQTfvFkH9FmWcuqKGQtzPFDahedjof?=
- =?us-ascii?Q?xypz51BjdRpUEkgdiQiutdppDWqRAzJwErpi/tPQkp8daduqDDjQ5pup/lEJ?=
- =?us-ascii?Q?M4DxsZr2Ur8/YtGOhd4NwVpbBgRCArDNptIoBBcpFQTaNvfiDdtYl0ElH1ez?=
- =?us-ascii?Q?24xmLSuxhqzPgl41B6Oy4FeJyXw4GMcM5yqVutX/Zy6ujG3Qnqj9ncg4epOY?=
- =?us-ascii?Q?1enbefUzRxfX8WZZWTWFEam+hcPnGGwgiwkbUsd6q7ujhEsztWqjzLu+EpD6?=
- =?us-ascii?Q?1+Wl0JX43gNDUw1JQYtGTkx0iY3j3jjP5Eup8SNonQNCZOEALr5HlHOWOEM1?=
- =?us-ascii?Q?2j6Sx3mgCnFhLVx7zCvshMwTfxNl7QgRuHdtGpQMbhx8BGmxiwSpmyIfe+vd?=
- =?us-ascii?Q?EcmdrcmGj2MRWAKF4A03Kax6z3eDT+HJrpuzne+baricxWEKTHZvXFYlVR+G?=
- =?us-ascii?Q?+Q1Wfzr3EMPW6qLrP6aodUydgUoa3swzGqi/fUJxPFupWZlI8Bl5Tp8FmQ6I?=
- =?us-ascii?Q?I+g3AAcp4/jqpiIO8yUTIh9HewpP/EtULZEJK3lzv9gLWw7trq0zEAunTXq1?=
- =?us-ascii?Q?QzRPAPM0alMJQi1za3U72Qdwh0ClHF6JuR5R1FA19jlkJ+HyDr4qHwkpxAS6?=
- =?us-ascii?Q?aWKAatbDfd/NIQH5e3dyfCc6/GzeWgTHgfl3VncE+LcG49VUA8Dz/JJk//1M?=
- =?us-ascii?Q?juLfQXU+AmA9D8iKpTLlQ63y7QW27bG0u4808ujkdYFkfzbnTmMmPZ+VzUN/?=
- =?us-ascii?Q?E+KP8/iM0ibYee1oIvgd72Eq5ZgHA/W0S8WMAUQxDY5fLBaLXBmMPGf2W+kb?=
- =?us-ascii?Q?VhSyf/FCSJEiGq+cLimWt5p7IUMO/rYvDXZxB0UPOHGNBsTIZcTZVsSM81G0?=
- =?us-ascii?Q?9qDr3gCQk/zIZcqwkcsvBhDOMb7BDDeY0Os2ONUCK+vKorvlJOREhU5Nc2U/?=
- =?us-ascii?Q?yeNMMKEZncMRLvMsRQZCYpZkemkpDNWfXg8UADCsIowbrR6asezJ0oE51xwR?=
- =?us-ascii?Q?zy6jauYZObvKggHjicH+xceXshjmAtOr9aiN53z0xmPBbenCNfahj8Q18FMB?=
- =?us-ascii?Q?5ztN0DUWVqe0D+A0x+MkjrhdtrBaZYH1ktOF7Rk1UYDowC5tl7ooWLuwLuse?=
- =?us-ascii?Q?lVv0H/dxdp+ZnJu1p4IfM8JxUOQTElDvG2gTLecstFR8q36mfyn6jes5dAlL?=
- =?us-ascii?Q?9Xyt/+BsSMjpxq9VubhIj6SZhjKSQ8hvhyqYIiu+wOi7seZ0yQX8nWBvhXE4?=
- =?us-ascii?Q?uoiRnFivjp9Hdkmxge2V1J/zGHougD1FqHIIRsK9je0EOpej+ZQb9ChFyy7E?=
- =?us-ascii?Q?4PjwxBGfa62ctTkE3NQOAWHE6mq95C2YMoRI2XKX8+RD/L0Ke4w0nZZmYuJY?=
- =?us-ascii?Q?LbZb4a78J8ayOf6mJ/HsRRbbUrjiUxm0WgY/VhoGKAk3PeZvMshak3dMTFQo?=
- =?us-ascii?Q?VERuYbkGp84/m+hRD8weYuFIvfMg6XxsGSqB9XY0c7N8c1DWUoXHjkGNmaJE?=
- =?us-ascii?Q?0fWiCaRh+s2OeoNpU0CJTUHuGPRQBOMkcTeRWW0e99yFLjNXpPjx7lCB8p2F?=
- =?us-ascii?Q?zVokDSQueE2g6UQmKe2mwdyLdE5nqoWnIED8zWjHTWWZSbgRoFHjO2yGivLv?=
- =?us-ascii?Q?nWcdWtWr2aUYHSM48xrc0052H4xpcuWFPNOQZYo5riWCw5QVjUzWJH81mPqA?=
- =?us-ascii?Q?CacuI9xWZ/4B6a3pw2ea3MeH0P6YNV7px/e3qYJgdDVoJSeu3rpQi1np/YS2?=
- =?us-ascii?Q?ABE3cpWk0PNt3r+Z4qWYoNPCdn3DHVHoof8qNgCfCYyty6HPfQPx?=
+	=?utf-8?B?Z2Jqd0lqdWZQOFpoTDErUEZhSDJJKzQwcS9ZSjNYK0lzWlpPZlkwWmZJL1Fp?=
+ =?utf-8?B?MmluNWlCWHhjeHByTXBHWEFORmNaUDlHMThieWlIUlFHbFhaSFY3OGRnTUNw?=
+ =?utf-8?B?TnNMblJQNVNnaFNxRmNkeVBJclVwSHNlQkpGTENOM1AzakZpaXpkQ1ZrT3gz?=
+ =?utf-8?B?U3d2MGNpNldDT0N6ZlJZYlJzMUR0Zld0ZHZGdWx1bjV3UkliRllWY2M1Y0tY?=
+ =?utf-8?B?bW5EQ0RZOEFyUkNQZTJVY1JkTEFPaFV2dkNWT1d6S1pJbHA3K3VGQ1NYZXBY?=
+ =?utf-8?B?Q2NFYVNSKzVWWmtNS3U5UmdsempadkwrSWhqMWZRNWh3aHNONlVWclcrRmEv?=
+ =?utf-8?B?S0NuWkNpcUlCUG4wVGx0a0FPaURuUXZjOGhZQkV3V2tQTktNR0NQOU1XbG5B?=
+ =?utf-8?B?NnZBdEJQRVJIR1FWeldSOXpGY3dVVXN3dzJCdk1DNmtWRmRqVHlUaDV1eCtI?=
+ =?utf-8?B?YVIySGYyMDd5K1ErcUNJZE1Jakg0eUNCbDFvdzNUL2cvRllubVBwOGpOMHFo?=
+ =?utf-8?B?QXg2MEcrV0FuVUtCTFcyQ2RUY1c1aXlKakJrbnV0aEFEZ2NUbEVjT3JBcnRs?=
+ =?utf-8?B?bldLSnpKd1hEOGtoSHp0MEZsV1BvMS8yT0psUGhtampzeUYyU1MwTFFHUnRW?=
+ =?utf-8?B?S2lySUhkc1l2dzlXUEgxWENmUWxwOHdCdWRwVEY2WXFUUFdwWXFsbHo1bEFa?=
+ =?utf-8?B?b2tCWHVsYzVxYVFVQ0NzajJHODhObkVnVE04OHlRT01zb3NLYTVHTFhWRXJU?=
+ =?utf-8?B?NGpDdWE1Uk9LZFlVUHo1bzdkL2V1SG8zNFI5aEhreFpKOHBhTy9JaVJKNjkv?=
+ =?utf-8?B?U3AvM0JoUFNybHNneG1nZ2RlYXQvNC9Ddjc0Tk8zdGhDSzlJb2g0Zko1cGE0?=
+ =?utf-8?B?QVNCL1hNTEh5V2krSUgwVXZlMGpsa2REdTBjb1lQTkpsRjlHSlQ1cXY5aEI2?=
+ =?utf-8?B?ZFV1UjI2dnIwRG4zRTNIc1hvUzVBRlRMN1NsMm5PZ2hSQmZBdjAvUVEwb2VO?=
+ =?utf-8?B?MVh6VXZPWUQ5UHRYWXR3bDcrK0dKM3J1UmVyZXhSTGlLMDJLSDN6Z2o1Zmk5?=
+ =?utf-8?B?aXJHL0ZKUDhNRkNUUU96amlmRW9VSk93bG0wMGpEb25ET1IvRmxxdWp1SVBt?=
+ =?utf-8?B?OHJ3QzN3TjhZSGllWXdPY01BNEc5Z2pUTGE3K2pldkFTaGluV3IrSW02R0lH?=
+ =?utf-8?B?cjNDY0I1RzhYZTQvdkp3N3ZIOW40V1JRUzVVM2Q2ejdKYzVobXorZzd4TUpx?=
+ =?utf-8?B?aGJvMHVFZEtkL2RMTDhKUzJveE5icWtSZndqT1kyV2tGaTN1WUtrSU1McS9w?=
+ =?utf-8?B?bXhWTllOZ2s0TnJPMDE5V0owaWowY3dWM2pWM0Z1NWcrVEtLTmc1d1lxMDlO?=
+ =?utf-8?B?clJBbjRjbmFReTl4WVFxUmtjL2pKc243ODFpWVJFNU1Gemp0L2E1Qk9XekNr?=
+ =?utf-8?B?WG4vVjVuekRzSHFoUDk2VjhDQUZreWhrbzRQMmFCWGxQajlobi9mZzMvNHRa?=
+ =?utf-8?B?UytzWmJUYSs1Y2UzQUdhSm45c2tVODdIVHRXa2JqVE9sM3RqS0JvOWVxWVdn?=
+ =?utf-8?B?VXpZRndic1VaaGNUc1NpakR1RytlL3Bkb1VkRGFqZXJTOEJVOGp3UUI4bXda?=
+ =?utf-8?B?RmpHVDdaRTQ2LzM3RHlRTnFldGlESnRUT0hrZ0ZXWU01M3Q2S2c2UUp3Um81?=
+ =?utf-8?B?MktmS0tWWGNmSjBXNHpvOHN6Y3Bpdnl6VnVsVUV1aVBSR3U5Rkx3ZUdQaDhw?=
+ =?utf-8?B?cVBrQVd1d0FFQkhCUDExSk0zRTJQcWxjNzR6cE50ay8ra3V6SXRuTWlVekVP?=
+ =?utf-8?B?QmlvYVhXbDJUajF4Yk1UZG1rTldlblExbXZ5MmdLS28vbXFrRzVZeHdvYVRB?=
+ =?utf-8?B?RmdXTzRwRVUxT1FGc2ZBU3lvblpyNWsvVUlrZ1RVMTUwaTg4WGx3TWxFTzNR?=
+ =?utf-8?B?TUdKMytGYThoL05DZkliT2swZlVpbU1VaDVpSnM5UHZiRzlOS29nSEY0SWRW?=
+ =?utf-8?B?eFdHR2crd0lBQUlFOHRIcS9GNEVsa3ZPdXExeFVxdG9jaC9NOEtLV2F6Ti81?=
+ =?utf-8?B?YnROUkFITGZBOTlLcGlOWWJnZTE5dDVrWXQ0OHhJN3h6THFJMGFRcHRKOHZR?=
+ =?utf-8?B?QncxcDc5TC9sVGVOWVdhNnpWQ2hSdWlsc3dGN3oxUXRFT3o4OTlUWFV0Wi9P?=
+ =?utf-8?B?bXk4dFp5N2U3dGtsRFljNGo4YTVUNlpmdEdXdDZuVEg2bCt6d2dUSTBrQUN2?=
+ =?utf-8?B?d1RVbUI1REdEbVZTYSs0eFptUkxMVnU3TUlUWm5DbHpFMDdzMy85N202eCtR?=
+ =?utf-8?B?VFJGNUo1SlA5N2pyd2JHQllxNjI3Y3puMTNiT0t0Qm0rM0dqT0Q4amQ1UUdI?=
+ =?utf-8?Q?QB/aozirqxCYAWMzKC9q8QQN3mJYiE1rzO/Oa?=
 X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: e08cbe4d-e526-4505-23dc-08def6c32e6f
+X-MS-Exchange-CrossTenant-Network-Message-Id: 940dc6a5-ce77-4e90-bbb7-08def6c331ba
 X-MS-Exchange-CrossTenant-AuthSource: GVXPR04MB10021.eurprd04.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 10 Aug 2026 09:38:49.4662
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 10 Aug 2026 09:38:54.9919
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 4g7dTzAaFTd3fcZd9ilngg6AkUwRwPp2jjUDiHUbNF6583VtR/Rwb5oqbh7gp+pp+910aabnE3YgaDLWGQQLqVwmss3oZV0153YXZJ1mQ36Q5zRfJ2z1hnkBtyQ7SiRk
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DU7PR04MB11162
+X-MS-Exchange-CrossTenant-UserPrincipalName: QgWsyXBMCfUK1bG/r5hvu2hZECB0Q0vZgSUIOaQMwAshUuI8YVNZF9ZQzxRtdtOpHPMGsxuGzL4MhU1qodYZ7OXuhIMWc9MxMbTLfhJkKvREVD22xEFnYzsR2ICW6FQm
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS8PR04MB7557
 
 From: Chancel Liu <chancel.liu@nxp.com>
 
-commit 93f12a7568269 ("ASoC: nau8822: add MCLK support") added MCLK
-handling directly in the nau8822 codec driver. The machine driver no
-longer needs to acquire and enable the codec MCLK on its behalf.
+Replace the large if/else chain of of_device_is_compatible() calls in
+probe() with a table-driven approach.  Each compatible string now has
+a corresponding static const struct fsl_asoc_card_pdata descriptor
+stored in the of_device_id .data field.
 
-Remove MCLK management in this machine driver that was introduced by
-commit 1075df4bdeb32 ("ASoC: fsl-asoc-card: add nau8822 support"). This
-avoids a potential double-enable and removes clock resource management
-from the machine driver where it does not belong.
+probe() calls of_device_get_match_data() once and reads all
+per-compatible configuration from the returned pointer:
+  - DAI format
+  - CPU SYSCLK direction and ratio overrides
+  - TDM slot width
+  - Codec DAI name, MCLK id, FLL/PLL ids, PLL S24 ratio
+  - playback_only / capture_only direction restrictions
+  - Default DAPM route table
+  - Excluded PCM format mask (for SAI + WM8960/WM8962)
+  - Optional probe_init callback (SPDIF multi-codec discovery)
+  - Optional codec_init callback (codec-specific post-probe logic)
 
-Additionally, the sound card may be unbound and rebound multiple times
-during its lifetime. Managing a codec clock resource in the machine
-driver would require careful cleanup in the card remove path to avoid
-reference count leaks. Leaving clock management to the codec driver,
-which has the same lifetime as the codec device, is the correct
-ownership model.
-
-The nau8822 compatible entry, DAI name, and PLL/FLL clock ID
-configuration are kept unchanged.
+This patch is a pure refactoring, no functional change is intended.
 
 Assisted-by: VeroCoder:claude-sonnet-4-6
 Signed-off-by: Chancel Liu <chancel.liu@nxp.com>
 ---
- sound/soc/fsl/fsl-asoc-card.c | 7 -------
- 1 file changed, 7 deletions(-)
+ sound/soc/fsl/fsl-asoc-card.c | 423 +++++++++++++++++++++++-----------
+ 1 file changed, 287 insertions(+), 136 deletions(-)
 
 diff --git a/sound/soc/fsl/fsl-asoc-card.c b/sound/soc/fsl/fsl-asoc-card.c
-index 709543308fe9..4c245aaf2847 100644
+index 4c245aaf2847..10e432c916b8 100644
 --- a/sound/soc/fsl/fsl-asoc-card.c
 +++ b/sound/soc/fsl/fsl-asoc-card.c
-@@ -69,7 +69,6 @@ static const struct snd_pcm_hw_constraint_list cs42888_channel_constraints = {
+@@ -107,12 +107,58 @@ struct cpu_priv {
+ 	u32 slot_num;
+ };
  
++struct fsl_asoc_card_priv;
++
++/*
++ * struct fsl_asoc_card_pdata - per-compatible static card description
++ * @sysclk_dir: initial CPU SYSCLK direction override (0 = leave default IN)
++ * @sysclk_ratio: SYSCLK ratio on sample rate (0 = not used)
++ * @slot_width: TDM slot width (0 = not TDM)
++ * @codec_dai_name: name of the codec DAI
++ * @codec_mclk_id: MCLK id passed to set_sysclk() for the codec
++ * @codec_fll_id: FLL id; only valid when has_pll is true
++ * @codec_pll_id: PLL id; only valid when has_pll is true
++ * @codec_pll_ratio_s24: PLL output ratio for S24_LE
++ * @has_pll: codec uses PLL/FLL; codec_fll_id and codec_pll_id are valid
++ * @dai_fmt: DAI format flags
++ * @playback_only: restrict card to playback direction
++ * @capture_only: restrict card to capture direction
++ * @dapm_routes: DAPM route table override
++ * @num_dapm_routes: number of entries in dapm_routes
++ * @exclude_format: PCM format bitmask excluded (for SAI + WM8960/WM8962)
++ * @codec_init: codec-specific init run after mclk_freq is populated
++ * @probe_init: optional DT-driven init run at end of probe() (e.g. SPDIF codec discovery)
++ */
++struct fsl_asoc_card_pdata {
++	u32 sysclk_dir[2];
++	u32 sysclk_ratio[2];
++	u32 slot_width;
++	const char *codec_dai_name;
++	u32 codec_mclk_id;
++	int codec_fll_id;
++	int codec_pll_id;
++	int codec_pll_ratio_s24;
++	bool has_pll;
++	bool playback_only;
++	bool capture_only;
++	u32 dai_fmt;
++	const struct snd_soc_dapm_route *dapm_routes;
++	int num_dapm_routes;
++	u64 exclude_format;
++	int (*codec_init)(struct fsl_asoc_card_priv *priv);
++	int (*probe_init)(struct device_node *codec_np[],
++			  struct device_node *cpu_np,
++			  const char *codec_dai_name[],
++			  struct fsl_asoc_card_priv *priv);
++};
++
  /**
-  * struct codec_priv - CODEC private data
-- * @mclk: Main clock of the CODEC
-  * @mclk_freq: Clock rate of MCLK
-  * @free_freq: Clock rate of MCLK for hw_free()
-  * @mclk_id: MCLK (or main clock) id for set_sysclk()
-@@ -80,7 +79,6 @@ static const struct snd_pcm_hw_constraint_list cs42888_channel_constraints = {
-  *                 to stay within PLL frequency limits
-  */
- struct codec_priv {
--	struct clk *mclk;
- 	unsigned long mclk_freq;
- 	unsigned long free_freq;
- 	u32 mclk_id;
-@@ -680,9 +678,6 @@ static int fsl_asoc_card_late_probe(struct snd_soc_card *card)
- 			dev_err(dev, "failed to set sysclk in %s\n", __func__);
- 			return ret;
+  * struct fsl_asoc_card_priv - Freescale Generic ASOC card private data
+  * @dai_link: DAI link structure including normal one and DPCM link
+  * @hp_jack: Headphone Jack structure
+  * @mic_jack: Microphone Jack structure
+  * @pdev: platform device pointer
++ * @pdata: pointer to the per-compatible card platform data
+  * @codec_priv: CODEC private data
+  * @cpu_priv: CPU private data
+  * @card: ASoC card structure
+@@ -133,6 +179,7 @@ struct fsl_asoc_card_priv {
+ 	struct simple_util_jack hp_jack;
+ 	struct simple_util_jack mic_jack;
+ 	struct platform_device *pdev;
++	const struct fsl_asoc_card_pdata *pdata;
+ 	struct codec_priv codec_priv[2];
+ 	struct cpu_priv cpu_priv;
+ 	struct snd_soc_card card;
+@@ -607,6 +654,186 @@ static int fsl_asoc_card_spdif_init(struct device_node *codec_np[],
+ 	return 0;
+ }
+ 
++static int fsl_asoc_card_cs42888_codec_init(struct fsl_asoc_card_priv *priv)
++{
++	unsigned long mclk_freq = priv->codec_priv[0].mclk_freq;
++
++	priv->cpu_priv.sysclk_freq[TX] = mclk_freq;
++	priv->cpu_priv.sysclk_freq[RX] = mclk_freq;
++
++	priv->constraint_channels = &cs42888_channel_constraints;
++	if (mclk_freq % 12288000 == 0)
++		priv->constraint_rates = &cs42888_rate_48k_constraints;
++	else if (mclk_freq % 11289600 == 0)
++		priv->constraint_rates = &cs42888_rate_44k_constraints;
++	else
++		dev_warn(&priv->pdev->dev,
++			 "Unknown MCLK frequency %lu, no rate constraints\n",
++			 mclk_freq);
++
++	return 0;
++}
++
++static int fsl_asoc_card_wm8958_codec_init(struct fsl_asoc_card_priv *priv)
++{
++	priv->codec_priv[0].free_freq = priv->codec_priv[0].mclk_freq;
++	return 0;
++}
++
++static const struct fsl_asoc_card_pdata fsl_asoc_cs42888_pdata = {
++	.codec_dai_name      = "cs42888",
++	.dai_fmt             = DAI_FMT_BASE | SND_SOC_DAIFMT_CBC_CFC,
++	.sysclk_dir          = { SND_SOC_CLOCK_OUT, SND_SOC_CLOCK_OUT },
++	.slot_width          = 32,
++	.dapm_routes         = audio_map,
++	.num_dapm_routes     = ARRAY_SIZE(audio_map),
++	.codec_init          = fsl_asoc_card_cs42888_codec_init,
++};
++
++static const struct fsl_asoc_card_pdata fsl_asoc_cs427x_pdata = {
++	.codec_dai_name  = "cs4271-hifi",
++	.dai_fmt         = DAI_FMT_BASE | SND_SOC_DAIFMT_CBP_CFP,
++	.codec_mclk_id   = CS427x_SYSCLK_MCLK,
++	.dapm_routes     = audio_map,
++	.num_dapm_routes = ARRAY_SIZE(audio_map),
++};
++
++static const struct fsl_asoc_card_pdata fsl_asoc_sgtl5000_pdata = {
++	.codec_dai_name  = "sgtl5000",
++	.dai_fmt         = DAI_FMT_BASE | SND_SOC_DAIFMT_CBP_CFP,
++	.codec_mclk_id   = SGTL5000_SYSCLK,
++	.dapm_routes     = audio_map,
++	.num_dapm_routes = ARRAY_SIZE(audio_map),
++};
++
++static const struct fsl_asoc_card_pdata fsl_asoc_tlv320aic32x4_pdata = {
++	.codec_dai_name  = "tlv320aic32x4-hifi",
++	.dai_fmt         = DAI_FMT_BASE | SND_SOC_DAIFMT_CBP_CFP,
++	.dapm_routes     = audio_map,
++	.num_dapm_routes = ARRAY_SIZE(audio_map),
++};
++
++static const struct fsl_asoc_card_pdata fsl_asoc_tlv320aic31xx_pdata = {
++	.codec_dai_name  = "tlv320dac31xx-hifi",
++	.dai_fmt         = DAI_FMT_BASE | SND_SOC_DAIFMT_CBC_CFC,
++	.sysclk_dir      = { SND_SOC_CLOCK_OUT, SND_SOC_CLOCK_OUT },
++	.playback_only   = true,
++	.dapm_routes     = audio_map_tx,
++	.num_dapm_routes = ARRAY_SIZE(audio_map_tx),
++};
++
++static const struct fsl_asoc_card_pdata fsl_asoc_wm8962_pdata = {
++	.codec_dai_name      = "wm8962",
++	.dai_fmt             = DAI_FMT_BASE | SND_SOC_DAIFMT_CBP_CFP,
++	.codec_mclk_id       = WM8962_SYSCLK_MCLK,
++	.has_pll             = true,
++	.codec_fll_id        = WM8962_SYSCLK_FLL,
++	.codec_pll_id        = WM8962_FLL,
++	/*
++	 * WM8962 has same BCLK generation limitations as WM8960.
++	 * See WM8960 section for detailed explanation.
++	 */
++	.exclude_format      = SNDRV_PCM_FMTBIT_S20_3LE,
++	.dapm_routes         = audio_map,
++	.num_dapm_routes     = ARRAY_SIZE(audio_map),
++};
++
++static const struct fsl_asoc_card_pdata fsl_asoc_wm8960_pdata = {
++	.codec_dai_name      = "wm8960-hifi",
++	.dai_fmt             = DAI_FMT_BASE | SND_SOC_DAIFMT_CBP_CFP,
++	.has_pll             = true,
++	.codec_fll_id        = WM8960_SYSCLK_AUTO,
++	.codec_pll_id        = WM8960_SYSCLK_AUTO,
++	/*
++	 * WM8960 in master mode cannot generate exact 1.92 MHz BCLK
++	 * required for S20_3LE (48kHz x 2ch x 20bit). Closest available
++	 * is 2.048 MHz (SYSCLK/6), which causes right channel corruption.
++	 *
++	 * In SAI master mode, SAI derive BCLK from MCLK using integer
++	 * dividers only. S20_3LE requires non-integer divider ratios
++	 * with standard MCLK frequencies. For example, 48kHz stereo
++	 * needs 1.920 MHz BCLK, which requires a divider of 6.4 from
++	 * 12.288 MHz MCLK (not an integer).
++	 */
++	.exclude_format      = SNDRV_PCM_FMTBIT_S20_3LE,
++	.dapm_routes         = audio_map,
++	.num_dapm_routes     = ARRAY_SIZE(audio_map),
++};
++
++static const struct fsl_asoc_card_pdata fsl_asoc_ac97_pdata = {
++	.codec_dai_name  = "ac97-hifi",
++	.dai_fmt         = SND_SOC_DAIFMT_AC97,
++	.dapm_routes     = audio_map_ac97,
++	.num_dapm_routes = ARRAY_SIZE(audio_map_ac97),
++};
++
++static const struct fsl_asoc_card_pdata fsl_asoc_mqs_pdata = {
++	.codec_dai_name  = "fsl-mqs-dai",
++	.dai_fmt         = SND_SOC_DAIFMT_LEFT_J | SND_SOC_DAIFMT_CBC_CFC |
++			   SND_SOC_DAIFMT_NB_NF,
++	.playback_only   = true,
++	.dapm_routes     = audio_map_tx,
++	.num_dapm_routes = ARRAY_SIZE(audio_map_tx),
++};
++
++static const struct fsl_asoc_card_pdata fsl_asoc_wm8524_pdata = {
++	.codec_dai_name  = "wm8524-hifi",
++	.dai_fmt         = DAI_FMT_BASE | SND_SOC_DAIFMT_CBC_CFC,
++	/* RX=0, TX=1: set TX (index 1) to CLOCK_OUT, RX stays at default IN */
++	.sysclk_dir      = { 0, SND_SOC_CLOCK_OUT },
++	.sysclk_ratio    = { 0, 256 },
++	.slot_width      = 32,
++	.playback_only   = true,
++	.dapm_routes     = audio_map_tx,
++	.num_dapm_routes = ARRAY_SIZE(audio_map_tx),
++};
++
++static const struct fsl_asoc_card_pdata fsl_asoc_si476x_pdata = {
++	.codec_dai_name  = "si476x-codec",
++	.dai_fmt         = DAI_FMT_BASE | SND_SOC_DAIFMT_CBC_CFC,
++	.dapm_routes     = audio_map_rx,
++	.num_dapm_routes = ARRAY_SIZE(audio_map_rx),
++};
++
++static const struct fsl_asoc_card_pdata fsl_asoc_wm8958_pdata = {
++	.codec_dai_name  = "wm8994-aif1",
++	.dai_fmt         = DAI_FMT_BASE | SND_SOC_DAIFMT_CBP_CFP,
++	.codec_mclk_id   = WM8994_FLL_SRC_MCLK1,
++	.has_pll         = true,
++	.codec_fll_id    = WM8994_SYSCLK_FLL1,
++	.codec_pll_id    = WM8994_FLL1,
++	.codec_init      = fsl_asoc_card_wm8958_codec_init,
++};
++
++static const struct fsl_asoc_card_pdata fsl_asoc_nau8822_pdata = {
++	.codec_dai_name  = "nau8822-hifi",
++	.dai_fmt         = DAI_FMT_BASE | SND_SOC_DAIFMT_CBP_CFP,
++	.codec_mclk_id   = NAU8822_CLK_MCLK,
++	.has_pll         = true,
++	.codec_fll_id    = NAU8822_CLK_PLL,
++	.codec_pll_id    = NAU8822_CLK_PLL,
++	.dapm_routes     = audio_map,
++	.num_dapm_routes = ARRAY_SIZE(audio_map),
++};
++
++static const struct fsl_asoc_card_pdata fsl_asoc_wm8904_pdata = {
++	.codec_dai_name      = "wm8904-hifi",
++	.dai_fmt             = DAI_FMT_BASE | SND_SOC_DAIFMT_CBP_CFP,
++	.codec_mclk_id       = WM8904_FLL_MCLK,
++	.has_pll             = true,
++	.codec_fll_id        = WM8904_CLK_FLL,
++	.codec_pll_id        = WM8904_FLL_MCLK,
++	.codec_pll_ratio_s24 = 192,
++	.dapm_routes         = audio_map,
++	.num_dapm_routes     = ARRAY_SIZE(audio_map),
++};
++
++static const struct fsl_asoc_card_pdata fsl_asoc_spdif_pdata = {
++	.codec_dai_name = "spdif",
++	.dai_fmt        = DAI_FMT_BASE,
++	.probe_init     = fsl_asoc_card_spdif_init,
++};
++
+ static int hp_jack_event(struct notifier_block *nb, unsigned long event,
+ 			 void *data)
+ {
+@@ -694,6 +921,7 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
+ 	struct device_node *frameprovider = NULL;
+ 	struct platform_device *cpu_pdev;
+ 	struct fsl_asoc_card_priv *priv;
++	const struct fsl_asoc_card_pdata *pdata;
+ 	struct device *codec_dev[2] = { NULL, NULL };
+ 	struct snd_soc_dai_link_component *dlc;
+ 	const char *codec_dai_name[2];
+@@ -709,6 +937,11 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
+ 
+ 	priv->pdev = pdev;
+ 
++	pdata = of_device_get_match_data(&pdev->dev);
++	if (!pdata)
++		return -EINVAL;
++	priv->pdata = pdata;
++
+ 	cpu_np = of_parse_phandle(np, "audio-cpu", 0);
+ 	/* Give a chance to old DT bindings */
+ 	if (!cpu_np)
+@@ -767,6 +1000,12 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
  		}
--
--		if (!IS_ERR_OR_NULL(codec_priv->mclk))
--			clk_prepare_enable(codec_priv->mclk);
  	}
  
- 	return 0;
-@@ -933,8 +928,6 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
- 		priv->codec_priv[0].fll_id = NAU8822_CLK_PLL;
- 		priv->codec_priv[0].pll_id = NAU8822_CLK_PLL;
- 		priv->dai_fmt |= SND_SOC_DAIFMT_CBP_CFP;
--		if (codec_dev[0])
--			priv->codec_priv[0].mclk = devm_clk_get(codec_dev[0], NULL);
- 	} else if (of_device_is_compatible(np, "fsl,imx-audio-wm8904")) {
- 		codec_dai_name[0] = "wm8904-hifi";
- 		priv->codec_priv[0].mclk_id = WM8904_FLL_MCLK;
++	if (pdata->codec_init) {
++		ret = pdata->codec_init(priv);
++		if (ret)
++			goto asrc_fail;
++	}
++
+ 	/* Default sample rate and format, will be updated in hw_params() */
+ 	priv->sample_rate = 44100;
+ 	priv->sample_format = SNDRV_PCM_FORMAT_S16_LE;
+@@ -818,131 +1057,43 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	/* Diversify the card configurations */
+-	if (of_device_is_compatible(np, "fsl,imx-audio-cs42888")) {
+-		codec_dai_name[0] = "cs42888";
+-		priv->cpu_priv.sysclk_freq[TX] = priv->codec_priv[0].mclk_freq;
+-		priv->cpu_priv.sysclk_freq[RX] = priv->codec_priv[0].mclk_freq;
+-		priv->cpu_priv.sysclk_dir[TX] = SND_SOC_CLOCK_OUT;
+-		priv->cpu_priv.sysclk_dir[RX] = SND_SOC_CLOCK_OUT;
+-		priv->cpu_priv.slot_width = 32;
+-		priv->dai_fmt |= SND_SOC_DAIFMT_CBC_CFC;
+-		priv->constraint_channels = &cs42888_channel_constraints;
+-		if (priv->codec_priv[0].mclk_freq % 12288000 == 0)
+-			priv->constraint_rates  = &cs42888_rate_48k_constraints;
+-		else if (priv->codec_priv[0].mclk_freq % 11289600 == 0)
+-			priv->constraint_rates = &cs42888_rate_44k_constraints;
+-		else
+-			dev_warn(&pdev->dev, "Unknown MCLK frequency %lu, no rate constraints\n",
+-				 priv->codec_priv[0].mclk_freq);
+-	} else if (of_device_is_compatible(np, "fsl,imx-audio-cs427x")) {
+-		codec_dai_name[0] = "cs4271-hifi";
+-		priv->codec_priv[0].mclk_id = CS427x_SYSCLK_MCLK;
+-		priv->dai_fmt |= SND_SOC_DAIFMT_CBP_CFP;
+-	} else if (of_device_is_compatible(np, "fsl,imx-audio-sgtl5000")) {
+-		codec_dai_name[0] = "sgtl5000";
+-		priv->codec_priv[0].mclk_id = SGTL5000_SYSCLK;
+-		priv->dai_fmt |= SND_SOC_DAIFMT_CBP_CFP;
+-	} else if (of_device_is_compatible(np, "fsl,imx-audio-tlv320aic32x4")) {
+-		codec_dai_name[0] = "tlv320aic32x4-hifi";
+-		priv->dai_fmt |= SND_SOC_DAIFMT_CBP_CFP;
+-	} else if (of_device_is_compatible(np, "fsl,imx-audio-tlv320aic31xx")) {
+-		codec_dai_name[0] = "tlv320dac31xx-hifi";
+-		priv->dai_fmt |= SND_SOC_DAIFMT_CBC_CFC;
+-		priv->dai_link[1].playback_only = 1;
+-		priv->dai_link[2].playback_only = 1;
+-		priv->cpu_priv.sysclk_dir[TX] = SND_SOC_CLOCK_OUT;
+-		priv->cpu_priv.sysclk_dir[RX] = SND_SOC_CLOCK_OUT;
+-		priv->card.dapm_routes = audio_map_tx;
+-		priv->card.num_dapm_routes = ARRAY_SIZE(audio_map_tx);
+-	} else if (of_device_is_compatible(np, "fsl,imx-audio-wm8962")) {
+-		codec_dai_name[0] = "wm8962";
+-		priv->codec_priv[0].mclk_id = WM8962_SYSCLK_MCLK;
+-		priv->codec_priv[0].fll_id = WM8962_SYSCLK_FLL;
+-		priv->codec_priv[0].pll_id = WM8962_FLL;
+-		priv->dai_fmt |= SND_SOC_DAIFMT_CBP_CFP;
+-		/*
+-		 * WM8962 has same BCLK generation limitations as WM8960.
+-		 * See WM8960 section for detailed explanation.
+-		 */
+-		if (of_node_name_eq(cpu_np, "sai"))
+-			priv->exclude_format = SNDRV_PCM_FMTBIT_S20_3LE;
+-	} else if (of_device_is_compatible(np, "fsl,imx-audio-wm8960")) {
+-		codec_dai_name[0] = "wm8960-hifi";
+-		priv->codec_priv[0].fll_id = WM8960_SYSCLK_AUTO;
+-		priv->codec_priv[0].pll_id = WM8960_SYSCLK_AUTO;
+-		priv->dai_fmt |= SND_SOC_DAIFMT_CBP_CFP;
+-		/*
+-		 * WM8960 in master mode cannot generate exact 1.92 MHz BCLK
+-		 * required for S20_3LE (48kHz × 2ch × 20bit). Closest available
+-		 * is 2.048 MHz (SYSCLK/6), which causes right channel corruption.
+-		 *
+-		 * In SAI master mode, SAI derive BCLK from MCLK using integer
+-		 * dividers only. S20_3LE requires non-integer divider ratios
+-		 * with standard MCLK frequencies. For example, 48kHz stereo
+-		 * needs 1.920 MHz BCLK, which requires a divider of 6.4 from
+-		 * 12.288 MHz MCLK (not an integer).
+-		 */
+-		if (of_node_name_eq(cpu_np, "sai"))
+-			priv->exclude_format = SNDRV_PCM_FMTBIT_S20_3LE;
+-	} else if (of_device_is_compatible(np, "fsl,imx-audio-ac97")) {
+-		codec_dai_name[0] = "ac97-hifi";
+-		priv->dai_fmt = SND_SOC_DAIFMT_AC97;
+-		priv->card.dapm_routes = audio_map_ac97;
+-		priv->card.num_dapm_routes = ARRAY_SIZE(audio_map_ac97);
+-	} else if (of_device_is_compatible(np, "fsl,imx-audio-mqs")) {
+-		codec_dai_name[0] = "fsl-mqs-dai";
+-		priv->dai_fmt = SND_SOC_DAIFMT_LEFT_J |
+-				SND_SOC_DAIFMT_CBC_CFC |
+-				SND_SOC_DAIFMT_NB_NF;
+-		priv->dai_link[1].playback_only = 1;
+-		priv->dai_link[2].playback_only = 1;
+-		priv->card.dapm_routes = audio_map_tx;
+-		priv->card.num_dapm_routes = ARRAY_SIZE(audio_map_tx);
+-	} else if (of_device_is_compatible(np, "fsl,imx-audio-wm8524")) {
+-		codec_dai_name[0] = "wm8524-hifi";
+-		priv->dai_fmt |= SND_SOC_DAIFMT_CBC_CFC;
++	priv->cpu_priv.sysclk_dir[TX] = pdata->sysclk_dir[TX];
++	priv->cpu_priv.sysclk_dir[RX] = pdata->sysclk_dir[RX];
++	priv->cpu_priv.sysclk_ratio[TX] = pdata->sysclk_ratio[TX];
++	priv->cpu_priv.sysclk_ratio[RX] = pdata->sysclk_ratio[RX];
++	priv->cpu_priv.slot_width = pdata->slot_width;
++
++	codec_dai_name[0] = pdata->codec_dai_name;
++	priv->codec_priv[0].mclk_id = pdata->codec_mclk_id;
++	if (pdata->has_pll) {
++		priv->codec_priv[0].fll_id = pdata->codec_fll_id;
++		priv->codec_priv[0].pll_id = pdata->codec_pll_id;
++	}
++	if (pdata->codec_pll_ratio_s24)
++		priv->codec_priv[0].pll_ratio_s24 = pdata->codec_pll_ratio_s24;
++
++	if (pdata->playback_only) {
+ 		priv->dai_link[1].playback_only = 1;
+ 		priv->dai_link[2].playback_only = 1;
+-		priv->cpu_priv.slot_width = 32;
+-		priv->card.dapm_routes = audio_map_tx;
+-		priv->card.num_dapm_routes = ARRAY_SIZE(audio_map_tx);
+-		priv->cpu_priv.sysclk_dir[TX] = SND_SOC_CLOCK_OUT;
+-		priv->cpu_priv.sysclk_ratio[TX] = 256;
+-	} else if (of_device_is_compatible(np, "fsl,imx-audio-si476x")) {
+-		codec_dai_name[0] = "si476x-codec";
+-		priv->dai_fmt |= SND_SOC_DAIFMT_CBC_CFC;
+-		priv->card.dapm_routes = audio_map_rx;
+-		priv->card.num_dapm_routes = ARRAY_SIZE(audio_map_rx);
+-	} else if (of_device_is_compatible(np, "fsl,imx-audio-wm8958")) {
+-		codec_dai_name[0] = "wm8994-aif1";
+-		priv->dai_fmt |= SND_SOC_DAIFMT_CBP_CFP;
+-		priv->codec_priv[0].mclk_id = WM8994_FLL_SRC_MCLK1;
+-		priv->codec_priv[0].fll_id = WM8994_SYSCLK_FLL1;
+-		priv->codec_priv[0].pll_id = WM8994_FLL1;
+-		priv->codec_priv[0].free_freq = priv->codec_priv[0].mclk_freq;
+-		priv->card.dapm_routes = NULL;
+-		priv->card.num_dapm_routes = 0;
+-	} else if (of_device_is_compatible(np, "fsl,imx-audio-nau8822")) {
+-		codec_dai_name[0] = "nau8822-hifi";
+-		priv->codec_priv[0].mclk_id = NAU8822_CLK_MCLK;
+-		priv->codec_priv[0].fll_id = NAU8822_CLK_PLL;
+-		priv->codec_priv[0].pll_id = NAU8822_CLK_PLL;
+-		priv->dai_fmt |= SND_SOC_DAIFMT_CBP_CFP;
+-	} else if (of_device_is_compatible(np, "fsl,imx-audio-wm8904")) {
+-		codec_dai_name[0] = "wm8904-hifi";
+-		priv->codec_priv[0].mclk_id = WM8904_FLL_MCLK;
+-		priv->codec_priv[0].fll_id = WM8904_CLK_FLL;
+-		priv->codec_priv[0].pll_id = WM8904_FLL_MCLK;
+-		priv->codec_priv[0].pll_ratio_s24 = 192;
+-		priv->dai_fmt |= SND_SOC_DAIFMT_CBP_CFP;
+-	} else if (of_device_is_compatible(np, "fsl,imx-audio-spdif")) {
+-		ret = fsl_asoc_card_spdif_init(codec_np, cpu_np, codec_dai_name, priv);
++	}
++	if (pdata->capture_only) {
++		priv->dai_link[1].capture_only = 1;
++		priv->dai_link[2].capture_only = 1;
++	}
++
++	priv->dai_fmt = pdata->dai_fmt;
++
++	priv->card.dapm_routes = pdata->dapm_routes;
++	priv->card.num_dapm_routes = pdata->num_dapm_routes;
++
++	if (pdata->exclude_format && of_node_name_eq(cpu_np, "sai"))
++		priv->exclude_format = pdata->exclude_format;
++
++	if (pdata->probe_init) {
++		ret = pdata->probe_init(codec_np, cpu_np,
++					codec_dai_name, priv);
+ 		if (ret)
+ 			goto asrc_fail;
+-	} else {
+-		dev_err(&pdev->dev, "unknown Device Tree compatible\n");
+-		ret = -EINVAL;
+-		goto asrc_fail;
+ 	}
+ 
+ 	/*
+@@ -1179,21 +1330,21 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
+ }
+ 
+ static const struct of_device_id fsl_asoc_card_dt_ids[] = {
+-	{ .compatible = "fsl,imx-audio-ac97", },
+-	{ .compatible = "fsl,imx-audio-cs42888", },
+-	{ .compatible = "fsl,imx-audio-cs427x", },
+-	{ .compatible = "fsl,imx-audio-tlv320aic32x4", },
+-	{ .compatible = "fsl,imx-audio-tlv320aic31xx", },
+-	{ .compatible = "fsl,imx-audio-sgtl5000", },
+-	{ .compatible = "fsl,imx-audio-wm8962", },
+-	{ .compatible = "fsl,imx-audio-wm8960", },
+-	{ .compatible = "fsl,imx-audio-mqs", },
+-	{ .compatible = "fsl,imx-audio-wm8524", },
+-	{ .compatible = "fsl,imx-audio-si476x", },
+-	{ .compatible = "fsl,imx-audio-wm8958", },
+-	{ .compatible = "fsl,imx-audio-nau8822", },
+-	{ .compatible = "fsl,imx-audio-wm8904", },
+-	{ .compatible = "fsl,imx-audio-spdif", },
++	{ .compatible = "fsl,imx-audio-ac97",           .data = &fsl_asoc_ac97_pdata },
++	{ .compatible = "fsl,imx-audio-cs42888",        .data = &fsl_asoc_cs42888_pdata },
++	{ .compatible = "fsl,imx-audio-cs427x",         .data = &fsl_asoc_cs427x_pdata },
++	{ .compatible = "fsl,imx-audio-tlv320aic32x4",  .data = &fsl_asoc_tlv320aic32x4_pdata },
++	{ .compatible = "fsl,imx-audio-tlv320aic31xx",  .data = &fsl_asoc_tlv320aic31xx_pdata },
++	{ .compatible = "fsl,imx-audio-sgtl5000",       .data = &fsl_asoc_sgtl5000_pdata },
++	{ .compatible = "fsl,imx-audio-wm8962",         .data = &fsl_asoc_wm8962_pdata },
++	{ .compatible = "fsl,imx-audio-wm8960",         .data = &fsl_asoc_wm8960_pdata },
++	{ .compatible = "fsl,imx-audio-mqs",            .data = &fsl_asoc_mqs_pdata },
++	{ .compatible = "fsl,imx-audio-wm8524",         .data = &fsl_asoc_wm8524_pdata },
++	{ .compatible = "fsl,imx-audio-si476x",         .data = &fsl_asoc_si476x_pdata },
++	{ .compatible = "fsl,imx-audio-wm8958",         .data = &fsl_asoc_wm8958_pdata },
++	{ .compatible = "fsl,imx-audio-nau8822",        .data = &fsl_asoc_nau8822_pdata },
++	{ .compatible = "fsl,imx-audio-wm8904",         .data = &fsl_asoc_wm8904_pdata },
++	{ .compatible = "fsl,imx-audio-spdif",          .data = &fsl_asoc_spdif_pdata },
+ 	{}
+ };
+ MODULE_DEVICE_TABLE(of, fsl_asoc_card_dt_ids);
 -- 
 2.50.1
 
