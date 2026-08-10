@@ -1,45 +1,89 @@
-Return-Path: <linuxppc-dev+bounces-25679-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25680-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 88F05C5AE49
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Aug 2026 14:18:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 817E6C5AE49
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Aug 2026 14:33:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hJcLb6SW3z2yxG;
-	Tue, 11 Aug 2026 00:18:47 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786371527;
-	cv=none; b=nCIp1SgnU5+3OYeOveyXcOpTJ4YnP5joyxXRW3rKjyb2o+P9Ei2W3S2nvJ6Fnes66Cx+5uJvNbiDO3KLGbNmWxELZMZ5Kp/ZFtB3NcmcdM3bqVvc5tDvFzjzzcntKqjoCmTU1AK34pfhDjL2cFoH+mOj9jbkdRubPYq8/KnqaDorwP+RdERyyJOtIPo1qpHhVWo75/moPlZmcecST1Is/buHHgafiRMPJQdk4qAp6NF331iKzOF6Y5nOmhkbE6Kob4U6iqRZf22rQ18TCRkkvptzmqI7ERmMAqatOPAqVlUmHsc902IJi16cbKjoDEHKJ++2pcvp8xX/xTxYjhwLwA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hJcgV6z3Fz2ytv;
+	Tue, 11 Aug 2026 00:33:26 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786372406;
+	cv=none; b=iDeDAhJUWVinqX7ZnYQ2WBZnpf1xE9VPyw/uqg0XTHsEONBoDeO2lap3dGJDpHZhCpZ3YBXqxs4vWWpRErop+QzeXNYLgLQX3k7qLA5uG9Ftkjt0eK4VN7qhf+fztYBnzjrAX34vRII4XqBlY7Cr8NBZ0dp75oZ27gngzlo9Nd5tdKIPlmYlccRV5yAcj+5uaBSnvEJD4KjqxK80mJuogyZd68YaYSdYgHHlAw8CpImmIsJfjiKlhxKvmnKmV2TNMLuJf936cdxAJu4JmIq+Rde3BgG4SCj1O4VJcjGqfBcP7lcx8LKo9ZQW1U+30sJjPdpaJ3dXrnlhG+IoKfCRrA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786371527; c=relaxed/relaxed;
-	bh=1L09Bu90sWOED7EHcOWRMcKzybTdUrOAe8Ob7jEJ4Bg=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=jhHCOCoIoSXt0sK42nTJaiUG30/pUOhbJCtYRNK+MoSZaRbyAltUvc1JgTLMBPK19m4yLFRO+hJJA76ycw4XCsTSmK4u9egi22ApmTEnQwCWoQXb8VCH/5LFpV6lR0OCxoAWqR9IaLnY5JKBSOEEBBElr6YQ8vCniGsS1xmOdUA0zpMGjZuiKQ5GabO5VLnHIOP24YtxT3EvBXZ+++FJoZ14384hdbhrEHhNVgzCC2m89zQU1stSEEmA7oFrlIeW5jdlRd+7OB7qpFSPOAtVelboy8gAuhcj4rpzJcTyDcJGvwi7pI2hOtKyIgHzzeprwaBUIbn1Y9UDqBJiE9QflQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=NoEqCvjs; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=robin.murphy@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
+	t=1786372406; c=relaxed/relaxed;
+	bh=7nq4F6eVa+igOyPizq1W0mha35WNgJ79/K+NijHuU08=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=eh1bD/sR216k6cnB4pjPQuxHUxQ3KOYslbMCBMo4IK38eLvZbFaFlHozgKy4wsEMXpb4iNfZind22gAIgiNIOkOEBJ0tBLsCXjvWFwVp7L4GoXu3c5QAgVZ5D0DJ+XOPVreIcbuKLqi76EUYkcOlUdygzdw+m0+xHRnhDUSX8bW3Yqp/tnRNJ41hC7EautTCXKyl5ypW6NUYrTlOI4xDFoZNgMPmqvHNHBIfKx/KjpT1hqhMDSkkQda/MP73zztpSOiDmul/DosJp6jaKu4e39Kp8YVfxqbUmjYhDnjPxAebjNDo2CyEcX+xrd79eE+NebrbQ8p7w18SUCGF2r4NUg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FSEg5P7W; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=NoEqCvjs;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FSEg5P7W;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=robin.murphy@arm.com; receiver=lists.ozlabs.org)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hJcLX4Strz2ysb
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2026 00:18:42 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 740071516;
-	Mon, 10 Aug 2026 07:18:05 -0700 (PDT)
-Received: from [10.2.212.23] (e121345-lin.cambridge.arm.com [10.2.212.23])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 266163F86F;
-	Mon, 10 Aug 2026 07:18:05 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1786371489; bh=9IZsYULiK1AGwxTWlN7Ujyjc0tW5fdqucDUHcjUe8vM=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=NoEqCvjse7Mrq4aOnrWgAYUVbUD+P6fgX9iChFnY1gjZ5NOopP7tM++y+YQsIJOQe
-	 zL208fDHqvlgnN0I7fyFFWMxgH9JNWDKqLLnsKcgPuSc/GPjAtockiGu16g+N2xXhi
-	 ITkmeOFAd3RzdKnSwAvP8g7QlEZ16KLsURRsNdsg=
-Message-ID: <21813ccf-96e5-4a7e-a3b3-aaaec7e0d23c@arm.com>
-Date: Mon, 10 Aug 2026 15:18:03 +0100
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hJcgT6FkWz2ysb
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2026 00:33:25 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 6AA7943D10;
+	Mon, 10 Aug 2026 14:33:23 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 694EF1F000E9;
+	Mon, 10 Aug 2026 14:33:13 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1786372403;
+	bh=7nq4F6eVa+igOyPizq1W0mha35WNgJ79/K+NijHuU08=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date;
+	b=FSEg5P7W76NmVIq/uL3ZJ2JQ93MR3s+H6sZ8oMjTjqoQtXHtpU2o8sZMVTuz5+8hg
+	 s/icfW+TbRoP+BIL+Loawx2mDkc39Fga6I40bNBiXUw3nB8b264pGFeY2r4EsV+SQ/
+	 Q48Vqv2S8+JWnnwUTV2LAOB1KEzUy1OtCTc2kDiWMYMhfgicWh6aJLxgocxnjXteXp
+	 Uh7ToRG+nxYY1VwUX4I2D+iq7cDjxmG7Qmo1ULPbcjMYqklUgFlWSNeJqJLZLC9zWi
+	 jGnT9IpWporSvmykehgrhxxupjX8d/mSoeZuCdmoSHpGyNGZ6YcvG7+JV12NxM75p3
+	 1qv9ezVXXbK8w==
+X-Mailer: emacs 30.2 (via feedmail 11-beta-1 I)
+From: Aneesh Kumar K.V <aneesh.kumar@kernel.org>
+To: Jason Gunthorpe <jgg@ziepe.ca>, Will Deacon <will@kernel.org>
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>,
+	Mostafa Saleh <smostafa@google.com>, iommu@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev,
+	Robin Murphy <robin.murphy@arm.com>,
+	Marc Zyngier <maz@kernel.org>,
+	Steven Price <steven.price@arm.com>,
+	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Jiri Pirko <jiri@resnulli.us>,
+	Petr Tesarik <ptesarik@suse.com>,
+	Alexey Kardashevskiy <aik@amd.com>,
+	Dan Williams <dan.j.williams@intel.com>,
+	Xu Yilun <yilun.xu@linux.intel.com>,
+	linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <chleroy@kernel.org>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org
+Subject: Re: [PATCH] arm64: swiotlb: Keep the default size for protected guests
+In-Reply-To: <20260810130818.GN200537@ziepe.ca>
+References: <anX7F7dnKOtAOIIe@google.com> <20260807164734.GE200537@ziepe.ca>
+ <anYgXSR4VAi3TpOj@google.com>
+ <CGME20260807182023eucas1p1f653436207b2b00338e99ea1d8f847df@eucas1p1.samsung.com>
+ <20260807182017.GH200537@ziepe.ca>
+ <7d22482f-d5fd-4cf4-9d32-6a54e02f2fbb@samsung.com>
+ <yq5av79iiard.fsf@kernel.org> <anml6lLRERm1Iv-_@willie-the-truck>
+ <28442500-1d53-4776-bae5-459c3ffc1cc6@samsung.com>
+ <anm6K2umtx4iKnyZ@willie-the-truck> <20260810130818.GN200537@ziepe.ca>
+Date: Mon, 10 Aug 2026 20:03:09 +0530
+Message-ID: <yq5amruuhwpm.fsf@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -53,137 +97,71 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v8 12/23] dma: swiotlb: pass mapping attributes by
- reference
-To: Jason Gunthorpe <jgg@nvidia.com>
-Cc: Mostafa Saleh <smostafa@google.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, iommu@lists.linux.dev,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- linux-coco@lists.linux.dev, Marek Szyprowski <m.szyprowski@samsung.com>,
- Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
- Steven Price <steven.price@arm.com>,
- Suzuki K Poulose <Suzuki.Poulose@arm.com>,
- Catalin Marinas <catalin.marinas@arm.com>, Jiri Pirko <jiri@resnulli.us>,
- Petr Tesarik <ptesarik@suse.com>, Alexey Kardashevskiy <aik@amd.com>,
- Dan Williams <dan.j.williams@intel.com>, Xu Yilun
- <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- Alexander Gordeev <agordeev@linux.ibm.com>,
- Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
- Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
- Christian Borntraeger <borntraeger@linux.ibm.com>,
- Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org,
- Michael Kelley <mhklinux@outlook.com>
-References: <ami_mpd_1pF4Tmdu@google.com> <yq5a5x1ygo7z.fsf@kernel.org>
- <amnRB98ZZIysHuM3@google.com> <yq5acxw6dl1d.fsf@kernel.org>
- <20260804142032.GC27883@nvidia.com> <anL9-OrDGqYQAWNV@google.com>
- <20260805123023.GO27883@nvidia.com>
- <0ce2249d-3a64-4889-b455-0e8fddcc7282@arm.com>
- <20260807115500.GA158689@nvidia.com>
- <aefab683-598c-4cca-b5a0-c9081ccf9e1c@arm.com>
- <20260807170104.GB158689@nvidia.com>
-From: Robin Murphy <robin.murphy@arm.com>
-Content-Language: en-GB
-In-Reply-To: <20260807170104.GB158689@nvidia.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-On 07/08/2026 6:01 pm, Jason Gunthorpe wrote:
-> On Fri, Aug 07, 2026 at 04:54:35PM +0100, Robin Murphy wrote:
-> 
->>> We will need to teach GIC to understand if/when the device uses a T=0
->>> translation for MSI and then use a shared physical address for the ITS
->>> IOVA instead of getting an IOVA translation from the iommu. The
->>> hypervisor will setup the S2 for the T=0 SMMU translation to be
->>> identity with all shared memory and the ITS page will be shared
->>> memory.
->>
->> IIRC, for MSI or unlocked MSI-X it should look and work pretty much exactly
->> like regular VFIO, as everything can be mediated by the VMM and host kernel.
-> 
-> Right
-> 
->>> Presumably in future we will have HW to handle a T=1 ITS page access
->>> and some way to negotiate with devices if they should use a T=1 path
->>> for MSI or not.
->>
->> Locked MSI-X would be a pain right now as we cannot intercept the Realm
->> programming the MSI-X cap with a doorbell address and EventID value decided
->> by the ITS driver in the Realm guest, so we'd somehow have to sniff those
->> values out of the VMM's vITS emulation then try to configure an equivalent
->> NS LPI to match, or have a hook in the ITS driver that knows when it's in a
->> Realm and do some RSI handshake to proxy-allocate NS MSI vectors on the host
->> and pass the real values back into the Realm.
-> 
-> Yes, we'd need to move to a model where the guest programs MSI
-> directly and we learn the configuration required to emulate through
-> the vGIC, not through MSI trapping. This broadly is the "righter" way
-> to do interrupt routing but it will be hard to get there, if ever.
-> 
->> I'm still hoping we (both CCA and possibly Linux in general) can get away
->> with just refusing to support Locked MSI-X without GICv5, as once we have
->> proper Realm MSIs with direct injection then all the problems go away (or at
->> least become much smaller RMM problems that remain invisible to the host -
->> the one "big" problem being that the RMM has to begrudgingly implement an
->> entire GIC driver since it now has its own whole GIC to look after).
-> 
-> Yeah, I'm fine with this, if GICv5 can allow direct MSI-X programming
-> then great.
-> 
-> Devices are going to need some way to negotiate if MSI-X is locked, and
-> if MSI is T=1 or not, I don't know if PCI has something for that
-> already..
-> 
->>> There won't be a vSMMU attached to the T=0 instance at all, it is just
->>> wired to be bypass.
->>
->> If that's all anyone will ever want then it does allow some degree of
->> hackery like mirroring the whole of Realm S2 in an equivalent NS IOMMUFD
->> domain, then forcing IOMMU_DOMAIN_IDENTITY for unaccepted devices within the
->> guest. However I was under the impression that folks want to make meaningful
->> use of devices while still in their untrusted pre-acceptance state (but
->> maybe still switch them later), so it seems almost inevitable that
->> eventually someone says "actually, we would like S1 vSMMU for untrusted
->> scatter-gather as well..."
-> 
-> So far almost all VMs today don't use vIOMMU at all, the ones that do
-> are using it for things like PASID (or interrupt remapping on x86),
-> not for translation. The cases where a vIOMMU is deliberately needed
-> for translation seem to be mostly around SVA and PASID which isn't
-> going to meaningfully work out of the box on a T=0 device.
-> 
-> My prediction is this is fine.
-> 
-> At least it is sufficiently hard to make two parallel vSMMU's
-> controlling the same PCI device, and to make the ITS routing also
-> somehow work right, that it isn't worth doing at this point when there
-> is so much other more basic stuff to get done.
+Jason Gunthorpe <jgg@ziepe.ca> writes:
 
-Cool. So in fact that puts us in an interesting position for now where 
-non-CoCo "untrusted" (i.e. external) devices should have IOMMU 
-translation forced on by default, while CoCo "unaccepted" devices (i.e. 
-those which do have a mechanism to transition into a T=1 or equivalent 
-state) should *not* try to use an associated IOMMU, on the assumption 
-that it may only work for T=1 traffic. All the more reason to sort these 
-abstractions out so we can make the right distinctions clearly :)
+> On Mon, Aug 10, 2026 at 12:46:51PM +0100, Will Deacon wrote:
+>> On Mon, Aug 10, 2026 at 01:37:11PM +0200, Marek Szyprowski wrote:
+>> > On 10.08.2026 12:20, Will Deacon wrote:
+>> > > On Mon, Aug 10, 2026 at 02:59:42PM +0530, Aneesh Kumar K.V wrote:
+>> > >> Marek Szyprowski <m.szyprowski@samsung.com> writes:
+>> > >>
+>> > >>> On 07.08.2026 20:20, Jason Gunthorpe wrote:
+>> > >>>> On Fri, Aug 07, 2026 at 06:13:49PM +0000, Mostafa Saleh wrote:
+>> > >>>>> But the whole thing is best effort anyway, the kernel picks
+>> > >>>>> IO_TLB_DEFAULT_SIZE which does not depend on the system topology=
+ or
+>> > >>>>> how many devices or how much DMA they do.
+>> > >>>>> SWIOTLB memory is wasted if unused so we should be careful around
+>> > >>>>> that as it would be the other way around and users would have to
+>> > >>>>> decrease it manually.
+>> > >>>> Yeah, it is why the arch code shouldn't really be sizing it direc=
+tly,
+>> > >>>> it should be done in common code and, yes, we are probably going =
+to
+>> > >>>> have to do something alot smarter to have the common code better
+>> > >>>> auto-tune this for the CC case..
+>> > >>> What about the $subject patch? I assume that it is still needed to
+>> > >>>
+>> > >>> restore the behavior that was altered by the "[PATCH v8 00/23]
+>> > >>>
+>> > >>> dma-mapping: Track shared DMA state through direct, pool and swiot=
+lb
+>> > >>>
+>> > >>> paths?" patchset?
+>> > >>>
+>> > >> I would request that we pick this patch to fix the regression descr=
+ibed
+>> > >> in https://lore.kernel.org/all/yq5azeyxyfol.fsf@kernel.org/.
+>> > > I really don't think we need it. CCA hardware isn't exactly widespre=
+ad
+>> > > and the KVM host side patches don't appear close to being merged.
+>> >=20
+>> > Does this mean that the branch for-next/coco [1]=C2=A0won't go to v7.3=
+-rc1?
+>
+> Let's not make progress on guest support contingent on KVM CCA host
+> side patches please. I expect the CSPs will have VM instance types
+> available based on CCA within quarters, and Linux as a Guest should
+> work in those environments regardless of what KVM is doing. I don't
+> really expect full KVM support for years, frankly, the patchset is
+> massive. Even Intel and AMD don't have full KVM support yet.
+>
+> People already have CCA capable HW, are already testing this stuff and
+> the closer upstream can get to being workable as a guest without a
+> mountain of OOT patches the better.
+>
+> I agree the thing is not ideal, but it was merged to ARM like this a
+> long time ago, this patch is just fixing a small oopsie (was it a
+> merge conflict?) to put it back. I don't the objection.
+>
 
-(And while untrusted vIOMMUs for purely-untrusted devices in CoCo 
-environments would be pretty straightforward as well, I guess we might 
-need some sort of acceptance status for trusted vIOMMU devices 
-themselves? Hmm...)
+It was not a merge conflict issue. The change was introduced by an
+incorrect rebase I did when updating the patch series on top of the pKVM
+changes.
 
-Cheers,
-Robin.
 
-> I imagine the ACPI might someday gain a description of the T=0 vSMMU
-> in a way that is invisible to todays Linux and a future Linux could
-> understand how to juggle the two iommu drivers for the same struct
-> device, somehow.
-> 
-> Regards,
-> Jason
-
+-aneesh
 
