@@ -1,73 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-25694-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25695-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37872C5AD55
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Aug 2026 21:12:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3DA60C5AD55
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Aug 2026 22:07:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hJnWZ3Q8Qz2ykf;
-	Tue, 11 Aug 2026 07:12:10 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786396330;
-	cv=none; b=TRm+N4yzjD6d47V89digwJ02wg9ylMrLK0PWBx88pVq6Od98j4ciGoA7uYzDhiDNfyl8znEZrh16TDsnJRqZkGmbUnFAtSCferlfltjVB82a7hlKNYRgLfmbOGWT/lUkCQxBYtKPgTJzW4HIkqxPw7e+rPUK6lWeba5On9Gdp4H2e1KggxnrUxLEA0D6iUtPDi3GxRMqf1VqdQg4nPZfZ3tadDexgLd6WCb5w34raqrVgLchjTdvyMHlksPk4GeOkH8fc1DvrvX+wLiG2omin3gH5bLANWcvInLLRCxmla1i+WIqmNLz4kMfFXHA8kf/tuEy52YR0lqc+89/1fSxBw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hJplY6t0yz2xyl;
+	Tue, 11 Aug 2026 08:07:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786399657;
+	cv=none; b=ejlXAHGjmI9ynq4bVNbcr0yYAA8ugYyYtUsYkC8rvJ0ogmDWRKR1I5/Ko0xI4CCbfbOChW23uH7CYlH4DGrrMCvl1WmgF/P9mTGqKFKM0/T7+KDbJdcoeGTc2T5+pGxHz9lQiJ2EJZVcWyDFnQVxNh8w+rYAhuaB3VmrImsNur+zAQulPdPyD0+VcMNkC3qRmtOtybI3FuFpRSLnBe4DlAKwlRQ6ICZj0XA/kk/5Vyn533frFkhjzUGu742ha4joR38+EgucQ4xIm9OYgWSJMv3Epb0nYjKthvGsl78VunjjA6Og0G1AJqH/wX+eMN8bJ4ycGPg9RXVwJJI59oM07A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786396330; c=relaxed/relaxed;
-	bh=l8hcVbk5Gm9Jj015QPefcGbEzAg75gxxHIpny+Tgm+A=;
+	t=1786399657; c=relaxed/relaxed;
+	bh=HCGg9dQtBK1J4v8B+rNxzijmT3fe6DKkLNg/7X0AHio=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=cGaes4uW0gVPKNawpbVR3zTLwPruo2rXWkd0xOdVRgQMWQ0DCYqJ4PseQNaRIlN6Osa/xmXXkoyqs/tzfB8yA76EbhlY/MAGE0TM8wI/lSliMt9L9+Gdbqq4Kr+OJZnlwXwi6d7dGjZXBk1dyzPnhVYExZPzX4uBSWtdOZ5b0wYHrlknDn5O2ngUxEYGcDFgg/UVrSMN/YktZYGLlSMqmJuFNjSFisZN4/VBBBocooEgnzPl8cLNDVWrx57cXgEsDc4NBwuogBqPGpsCLcdCB2DWiSfd7Rr0XdJNQ6BvPFGBVyHHvp8LVE6D1T+/SuhqsuvK0ABShPz+EcfD4G3tNg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Td5NEsLD; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 In-Reply-To:Content-Type; b=Q6dTcg4xJ0HWfCs/1WpIxq0GlPOdkFoIh7PGAvC4IUItCkr2AiTAN+Z+OA0H770W1hZe30u2u6jdRPiv/nOXaimDV6wuOb9dNPZKB06Qwwl7X8K3Pi2AoKhiA8kXA0miuliuJFGQ6cUICImCUQmb0FscqdQJqdOJvFqQc/2H4v6vSzhMQXuh7Z3B/5CIesqHE2gexatqkseoGknbKngxrfoVpxs90MoCm7RjfPuG8QhnW9UMox0pmTaL29SpcsU692L8gTMOUVnozFm/nNCPqGQjyJmeeOAsLMgW0634PqzM5Uqpn0I5ARZPkizFxeZcMmGTTS3BaI2ZhHyC86K58w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=MPZZ7xdw; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Td5NEsLD;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=MPZZ7xdw;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hJnWY44fdz2yjs
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2026 07:12:09 +1000 (AEST)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67AK1mAX2555573;
-	Mon, 10 Aug 2026 21:11:58 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hJplX3683z2xnQ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2026 08:07:35 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67AK1i4x1504689;
+	Mon, 10 Aug 2026 22:07:20 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=l8hcVb
-	k5Gm9Jj015QPefcGbEzAg75gxxHIpny+Tgm+A=; b=Td5NEsLD3+IfnJWewTfauQ
-	8MzlCwS99YtbRB1BoqyUHLOiHugmGrq+fdBBBEwWDyCvDyP0YwCHnW+Fvxg0buAY
-	frrSUrBZMH7XxxaIpPs8CNfRj4k8EWRxULs6PMbrZhur/sDF9OALHoUXjfbu+jhq
-	YQZjNT76dfHX6/fXxiwF014j4IYPOa+labIog3xTd5n3fZWu9tj2U4hRJmP+xn+Y
-	POUMo+QP/aH+39lzdgxu2oRlDTL9GphofRsfoyH1B5iZZ+koWycPPAOpsceZ7sn8
-	rx2FRZLn9gm1pGRbQeAoooU52lSW1qn32sc6Ex/8GcSitRjtLa1wPlk6yVAZ5gkA
+	:message-id:mime-version:references:subject:to; s=pp1; bh=HCGg9d
+	QtBK1J4v8B+rNxzijmT3fe6DKkLNg/7X0AHio=; b=MPZZ7xdwjgdo2fBr/VPiKI
+	V7djdEl/oGaO+rZEte3zpvdbx76RPvHkdd0q0XBr5/r7U15h1lqWaHOtKQSRGEXw
+	vMxIdasPwLHhds+pLJVO7TOChIl0ZIdhjspkopuDIcUiPTrFwW8Co46szxFyGl7T
+	ceETDLqykzzANRT/ACVdPK9Cx3ABUg1YldAFOCejkpBBMnQRQWPzZFhB99cO55Ye
+	QjSoKy6lwS7jH/EII0tMp17+LYvTrONszJ9hFBpALVd8n3+dSzo8/skkG9BmT/LP
+	BxTR0YdYn76DMpJso1qgglQd19mpsq5ipMI/DqU3bUNzas7JAnl73sKrkDdLTbww
 	==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fwvq9a3kv-1
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fyb23k5f0-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 10 Aug 2026 21:11:57 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 67ALBLsQ021843;
-	Mon, 10 Aug 2026 21:11:56 GMT
-Received: from smtprelay04.wdc07v.mail.ibm.com ([172.16.1.71])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fxespxksq-1
+	Mon, 10 Aug 2026 22:07:20 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 67ALuHNR032187;
+	Mon, 10 Aug 2026 22:07:19 GMT
+Received: from smtprelay05.wdc07v.mail.ibm.com ([172.16.1.72])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4fxf5vxqj3-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 10 Aug 2026 21:11:56 +0000 (GMT)
-Received: from smtpav03.dal12v.mail.ibm.com (smtpav03.dal12v.mail.ibm.com [10.241.53.102])
-	by smtprelay04.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 67ALBsuC53936484
+	Mon, 10 Aug 2026 22:07:19 +0000 (GMT)
+Received: from smtpav01.wdc07v.mail.ibm.com (smtpav01.wdc07v.mail.ibm.com [10.39.53.228])
+	by smtprelay05.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 67AM7ITY56230250
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 10 Aug 2026 21:11:55 GMT
-Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A8FC558064;
-	Mon, 10 Aug 2026 21:11:54 +0000 (GMT)
-Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D385A5803F;
-	Mon, 10 Aug 2026 21:11:52 +0000 (GMT)
+	Mon, 10 Aug 2026 22:07:18 GMT
+Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 349A358063;
+	Mon, 10 Aug 2026 22:07:18 +0000 (GMT)
+Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id DEB615804B;
+	Mon, 10 Aug 2026 22:07:15 +0000 (GMT)
 Received: from [9.67.152.96] (unknown [9.67.152.96])
-	by smtpav03.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 10 Aug 2026 21:11:52 +0000 (GMT)
-Message-ID: <9ed6bafa-04b1-4462-91b7-035c17c158ff@linux.ibm.com>
-Date: Mon, 10 Aug 2026 14:11:52 -0700
+	by smtpav01.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 10 Aug 2026 22:07:15 +0000 (GMT)
+Message-ID: <9ab40b36-8c2f-4207-b2a9-6bc280811781@linux.ibm.com>
+Date: Mon, 10 Aug 2026 15:07:15 -0700
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,427 +82,590 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH net-next v4 04/14] ibmveth: Refactor buffer pool
- management for per-queue MQ RX
+Subject: Re: [PATCH net-next v4 05/14] ibmveth: Refactor RX interrupt control
+ for MQ RX queues
 To: Jakub Kicinski <kuba@kernel.org>
 Cc: netdev@vger.kernel.org, horms@kernel.org, bjking1@linux.ibm.com,
         haren@linux.ibm.com, ricklind@linux.ibm.com, edumazet@google.com,
         pabeni@redhat.com, davem@davemloft.net, linuxppc-dev@lists.ozlabs.org,
         maddy@linux.ibm.com, mpe@ellerman.id.au, simon.horman@corigine.com,
         shaik.abdulla1@ibm.com, davemarq@linux.ibm.com
-References: <e22471625e6a04bee87f099f467d575bcfd0c2c6.1785457143.git.mmc@linux.ibm.com>
- <20260806183702.3175208-1-kuba@kernel.org>
+References: <3375291b81496032d02dc769c962a2fa323fb20b.1785457143.git.mmc@linux.ibm.com>
+ <20260806183703.3175289-1-kuba@kernel.org>
 Content-Language: en-US
 From: mingming cao <mmc@linux.ibm.com>
-In-Reply-To: <20260806183702.3175208-1-kuba@kernel.org>
+In-Reply-To: <20260806183703.3175289-1-kuba@kernel.org>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: uvuyZSKGZEdob86CehjXwviSKwx-LS-G
-X-Authority-Analysis: v=2.4 cv=PbDPQChd c=1 sm=1 tr=0 ts=6a7a3e9d cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+X-Authority-Analysis: v=2.4 cv=XqfK/1F9 c=1 sm=1 tr=0 ts=6a7a4b98 cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
  a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=A_GA2y18t1HRMksttx4A:9
- a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODEwMDE3OCBTYWx0ZWRfX78oVn4Z0zRwf
- 39g6wtcGnHdqqAhTP1iHrfiWz0+e4LSdnNBLuWRCIDkZlYoV+Okr118xfOA18e7hL5ZdjwS8liY
- K7PNZpZ5PHYZeyttqQxiE0ibegRbdy2lso8yUXrpelGqhs1lRNAHaAM2yRDMmyulwAgLyeeN+3G
- 68QaTCFshXmW2shr4dvQRhMuQd/Z46UshVcRKaFpaW8Mg14+ua9KNPnHtIFXtCeFU0bQjh5EpRU
- cPmTZbVquyx6uB0S9ZlWnyC20qh+jN8yMH4ItQK8JFzwPI/PPkqWJQJU3FVZ5mwYWmSEKirUw4k
- hW/g2Cy37PpstrCeJmoKOmKsvQLyjH3hBsoC/YLtF7N4/jBpw6sc/VxJeq1mChRzMguT21r9z+r
- gNyPRQkwPNQI02fPprGa1PPoTnxVwzXo83ILdOUL36GMR0bzSqVwphVofLs7lopiR0BQD+zFXiD
- NtC3IBT+djP/lLZP9Fw==
-X-Proofpoint-ORIG-GUID: 6Q3xwxTgMG-YTWeTJ7bdABI9SfpBBW5Z
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODEwMDE3OCBTYWx0ZWRfX64yDcnMBCVUW
- SGeA3LkskVRyJb1MWilQm/hJrt8+EgBGbs4oBt2AzAmFs5+iR8a4iNWaV2sCzgBQKYws9ERdW4N
- 1f3Wid6Q3v3WoGO/gEBbi/IQv0NObL8=
+ a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=GFl9camyTlaIMoP0ujMA:9
+ a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODEwMDE4NyBTYWx0ZWRfX8AFA6WqVVR4N
+ DJB9Vq7l1+4GWncgQ1nXatiW4zC/tuaTDSFJPUIN6nqTO9KjwWSiBcPwN3WXgLKfKiPC8sqmmCr
+ hYVj5xjjo1FvngJpGID5jB9JEURDZJ6/0k8Feacuapuj169+2Ka+qBxBFfvLI+jMuaGSwzTlO+6
+ 5pBLu98kJ3TAX5LcoeW/ZfAB0Tg5V+xy5OsT8ln+uyX2Nk0+Ma0jvNR/bpeOH1TTernxxMZTaBi
+ yL1RnPRDoLSvtO7u15lKcIeMOCVNf1cfDcN1BHDrWeZNGrpNgZuKEK/+lpJq+LWRNrntcYMVPRn
+ ZTbOxcUTGi+XK+icQy5B26GrLZu1DwDGfWtlPaxW5tduuTb1v8ojF3C3IBLa8w+Akxjsn/BR/F1
+ srghT+7zuZDE8HL+rLiC6T7BatIc5NIxglcwLqcXhl85y4aE0oh3D8TTuEBLjAnQx7zmVDWSNeB
+ ALL9KdZVhuhgSteiyKQ==
+X-Proofpoint-ORIG-GUID: 9mAsuVNvRP-lTY6VU8TKG0s7TxI0g_Yv
+X-Proofpoint-GUID: 4MoXPHthi6jUqR64mMIhQY3sRKp6jxsy
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODEwMDE4NyBTYWx0ZWRfX+CTLXv3QWm7B
+ dzpmP7uLcTz+CoJsHQMtITvEU4d0MVNfp+X4QAv7GUEgIwQafKjw3oXSvEvUNbJmeaBLUrfZKQ8
+ +vehdMGAhuBx5OoBsmR2dXZC5oYCiCk=
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-08-10_05,2026-08-10_03,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 bulkscore=0 impostorscore=0 malwarescore=0 adultscore=0
- clxscore=1015 priorityscore=1501 suspectscore=0 phishscore=0
- lowpriorityscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
- definitions=main-2608100178
+ lowpriorityscore=0 spamscore=0 adultscore=0 malwarescore=0 clxscore=1015
+ suspectscore=0 priorityscore=1501 impostorscore=0 phishscore=0 bulkscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608100187
 
 
 On 8/6/26 11:37 AM, Jakub Kicinski wrote:
-> his is an AI-generated review of your patch. The human sending this
+> This is an AI-generated review of your patch. The human sending this
 > email has considered the AI review valid, or at least plausible.
 > ---
-> ibmveth: Refactor buffer pool management for per-queue MQ RX
+> ibmveth: Refactor RX interrupt control for MQ RX queues
 >
-> This reworks the five RX buffer pools into per-queue arrays
-> (rx_buff_pool[queue][pool]) with new alloc/free helpers, wires those
-> helpers into ibmveth_open()/ibmveth_close(), and clones pool geometry from
-> queue 0 to queues 1..N.  It also flips the default active flag of the
-> 64 KiB pool to 0.
+> This patch introduces queue-indexed RX interrupt helpers (toggle/enable/
+> disable, setup/cleanup, schedule) and wires them into open(), close(),
+> poll(), the IRQ handler and the process-context RX kick paths. request_irq()
+> now passes &adapter->napi[i] as the cookie so the handler can derive the
+> queue index, and napi_enable()/napi_disable() move into the new setup and
+> cleanup helpers. Runtime behaviour stays single-queue.
 >
 > A few questions below.
 Hi Jakub,
 
-Thanks for the careful read.
+Thanks for the review.
 >> diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
->> index 1007dd95cde02..7a2ed49cad4f1 100644
+>> index 7a2ed49cad4f1..664169c4d27a4 100644
 >> --- a/drivers/net/ethernet/ibm/ibmveth.c
 >> +++ b/drivers/net/ethernet/ibm/ibmveth.c
->> @@ -625,6 +625,145 @@ static void ibmveth_free_buffer_pool(struct ibmveth_adapter *adapter,
+> [ ... ]
+>
+>> @@ -329,6 +331,203 @@ ibmveth_cleanup_rx_resources(struct ibmveth_adapter *adapter)
 >>   	}
 >>   }
 >>   
 >> +/**
->> + * ibmveth_alloc_queue_buffer_pools - Allocate buffer pools for a single queue
+>> + * ibmveth_toggle_irq - Common helper to enable/disable queue interrupts
 >> + * @adapter: ibmveth adapter structure
->> + * @queue: queue index
+>> + * @queue_index: Index of the queue (0 for primary, 1+ for subordinate)
+>> + * @enable: true to enable, false to disable
 >> + *
->> + * Allocates all active buffer pools for the specified queue.
->> + * Pool metadata must be initialized before calling this function.
+>> + * For queue 0 (primary), uses h_vio_signal() as it's registered via
+>> + * h_register_logical_lan(). For subordinate queues (1+), uses H_VIOCTL
+>> + * with H_ENABLE/DISABLE_VIO_INTERRUPT for per-queue interrupt control.
+>> + *
+>> + * Return: 0 on success, error code otherwise
+>> + */
+>> +static int
+>> +ibmveth_toggle_irq(struct ibmveth_adapter *adapter, int queue_index,
+>> +		   bool enable)
+>> +{
+>> +	unsigned long rc;
+>> +	unsigned long irq = adapter->queue_irq[queue_index];
+>> +	const char *action = enable ? "enable" : "disable";
+>> +
+>> +	if (queue_index == 0) {
+>> +		/* Primary queue: use h_vio_signal() */
+>> +		rc = h_vio_signal(adapter->vdev->unit_address,
+>> +				  enable ? VIO_IRQ_ENABLE : VIO_IRQ_DISABLE);
+>> +	} else {
+>> +		/* Subordinate queues: use H_VIOCTL with hardware IRQ */
+>> +		struct irq_data *irq_data = irq_get_irq_data(irq);
+>> +		irq_hw_number_t hwirq;
+>> +		u64 vioctl_cmd = enable ? H_ENABLE_VIO_INTERRUPT :
+>> +			H_DISABLE_VIO_INTERRUPT;
+>> +
+>> +		if (!irq_data) {
+>> +			netdev_err(adapter->netdev,
+>> +				   "Failed to get IRQ data for queue %d (virq=%lu)\n",
+>> +				   queue_index, irq);
+>> +			return -EINVAL;
+>> +		}
+>> +
+>> +		hwirq = irqd_to_hwirq(irq_data);
+>> +		rc = plpar_hcall_norets(H_VIOCTL,
+>> +					adapter->vdev->unit_address,
+>> +					vioctl_cmd,
+>> +					hwirq, 0, 0);
+>> +
+>> +		if (rc == H_PARAMETER) {
+>> +			/* H_PARAMETER is non-fatal when IRQ is already in
+>> +			 * the requested state.
+>> +			 */
+>> +			netdev_warn_once(adapter->netdev,
+>> +					 "H_VIOCTL %s IRQ returned H_PARAMETER for queue %d (hwirq=%lu)\n",
+>> +					 action, queue_index, hwirq);
+>> +			return 0;
+>> +		}
+> [Severity: Medium]
+> Is folding H_PARAMETER into success correct for both directions here?
+>
+> hvcall.h documents H_PARAMETER as "Parameter invalid, out-of-range or
+> conflicting", and ibmveth_toggle_irq() cannot distinguish "already in the
+> requested state" from a bad hwirq, wrong unit address, or a queue that is no
+> longer registered.
+>
+> In the enable direction the swallowed status bypasses the recovery in
+> ibmveth_poll():
+>
+> 	lpar_rc = ibmveth_enable_irq(adapter, 0);
+> 	if (WARN_ON(lpar_rc != H_SUCCESS)) {
+> 		schedule_work(&adapter->work);
+> 		goto out;
+> 	}
+>
+> so NAPI can complete with the queue still masked at the hypervisor and
+> nothing left to reschedule it, i.e. that queue stops receiving, with a
+> single warn_once as the only trace.
+>
+> In the disable direction, ibmveth_schedule_rx_queue() goes on to
+> __napi_schedule() and ibmveth_cleanup_rx_interrupts() goes on to
+> synchronize_irq()/free_irq() while believing delivery is masked.
+>
+> For comparison, ibmvnic treats any non-zero rc from the same hypercalls as
+> an error in both directions, in disable_scrq_irq() and enable_scrq_irq().
+>
+> The branch is dead in this commit (num_rx_queues is 1), but it becomes live
+> once the MQ patches land, where setup, resize and poll all depend on this
+> return value. Would restricting the folding to the disable direction, plus a
+> rate-limited per-queue message instead of netdev_warn_once(), be closer to
+> the intent?
+Agreed. Treating `H_PARAMETER` as success on the enable side is wrong.
+For the disable side, I do not want to assume it is harmless without
+firmer justification, so if any special handling remains there I will
+make it explicit and better diagnosed rather than silently folding it
+away.
+>> +	}
+>> +
+>> +	if (rc)
+>> +		netdev_err(adapter->netdev,
+>> +			   "Failed to %s IRQ for queue %d, rc=%ld\n",
+>> +			   action, queue_index, rc);
+>> +	return rc;
+>> +}
+> [Severity: Medium]
+> Does this mix two error domains in one int return?
+>
+> rc holds an unsigned long hypervisor status from h_vio_signal() or
+> plpar_hcall_norets() (H_BUSY 1, H_HARDWARE -1, H_FUNCTION -2, H_PARAMETER
+> -4), truncated to int on return, while the irq_get_irq_data() failure path
+> returns -EINVAL.
+>
+> The callers then disagree about what they got. ibmveth_schedule_rx_queue()
+> and ibmveth_poll() do:
+>
+> 	unsigned long lpar_rc;
+> 	lpar_rc = ibmveth_disable_irq(adapter, qindex);
+> 	WARN_ON(lpar_rc != H_SUCCESS);
+>
+> while ibmveth_setup_rx_interrupts()/ibmveth_open() treat the same value as
+> an errno. One printk formats it with %ld, the other site logs it with %d.
+>
+> By the end of the series this reaches userspace: the scale-up loop in
+> ibmveth_resize_rx_queues_incremental() does
+>
+> 	rc = ibmveth_enable_irq(adapter, i);
+> 	if (rc) { ... goto cleanup_new_queues; }
+>
+> and cleanup_new_queues ends with return rc, which flows through
+> ibmveth_resize_rx_channels() -> ibmveth_set_channels() to ethtool. H_PARAMETER
+> (-4) then surfaces as -EINTR, and H_BUSY (1) or H_CLOSED (2) as a positive
+> return that ethtool reads as success even though the queue count was rolled
+> back.
+>
+> Since this commit establishes the helper API for the whole series, would it
+> make sense to settle the convention now, either normalizing to errno or
+> keeping the raw hcall status with a matching type, name, kernel-doc and
+> format specifier?
+>
+> [ ... ]
+Agreed. These helpers should return one error domain only. In v5 I will
+keep the IRQ helper contract errno-based so later resize /
+ethtool-facing paths do not have to interpret mixed H_*/errno returns.
+
+>> +/**
+>> + * ibmveth_setup_rx_interrupts - Register IRQs and enable NAPI
+>> + * @adapter: ibmveth adapter structure
+>> + *
+>> + * Registers interrupt handlers for all RX queues and enables NAPI polling.
+>> + * On error, cleans up any successfully registered IRQs before returning.
 >> + *
 >> + * Return: 0 on success, negative error code on failure
 >> + */
->> +static int ibmveth_alloc_queue_buffer_pools(struct ibmveth_adapter *adapter,
->> +					    int queue)
+>> +static int
+>> +ibmveth_setup_rx_interrupts(struct ibmveth_adapter *adapter)
 >> +{
 >> +	struct net_device *netdev = adapter->netdev;
->> +	int i;
+>> +	int i, rc;
 >> +
->> +	for (i = 0; i < IBMVETH_NUM_BUFF_POOLS; i++) {
->> +		struct ibmveth_buff_pool *bpool =
->> +			&adapter->rx_buff_pool[queue][i];
+>> +	for (i = 0; i < adapter->num_rx_queues; i++) {
+>> +		if (!adapter->queue_irq[i]) {
+>> +			netdev_err(netdev, "queue %d has invalid IRQ (0)\n", i);
+>> +			rc = -EINVAL;
+>> +			goto err_free_irqs;
+>> +		}
 >> +
->> +		if (!bpool->active)
->> +			continue;
->> +
->> +		if (ibmveth_alloc_buffer_pool(bpool)) {
+>> +		rc = request_irq(adapter->queue_irq[i], ibmveth_interrupt,
+>> +				 0, netdev->name, &adapter->napi[i]);
+>> +		if (rc) {
 >> +			netdev_err(netdev,
->> +				   "pool %d/%d alloc failed (size=%u count=%u)\n",
->> +				   i, queue,
->> +				   bpool->buff_size,
->> +				   bpool->size);
->> +			bpool->active = 0;
->> +
->> +			/* Free pools allocated so far for this queue */
->> +			while (--i >= 0) {
->> +				struct ibmveth_buff_pool *fpool =
->> +					&adapter->rx_buff_pool[queue][i];
->> +
->> +				if (fpool->active)
->> +					ibmveth_free_buffer_pool(adapter,
->> +								 fpool);
->> +			}
-> [Severity: Low]
->
-> Is the free predicate here meant to differ from the one used by the sibling
-> helper added in the same patch?
->
-> This unwind path keys off fpool->active, while
-> ibmveth_free_queue_buffer_pools() deliberately frees by allocation
-> presence:
->
-> 	if (pool->free_map || pool->dma_addr || pool->skbuff)
-> 		ibmveth_free_buffer_pool(adapter, pool);
->
-> and the changelog states "free paths release by real allocations
-> (free_map/dma_addr/skbuff), not only pool->active".
->
-> So on the queue that fails, a pool holding allocations with active == 0 is
-> never released, which is exactly the case the allocation-based predicate
-> was added for.  Since a failing ndo_open means ibmveth_close() is never
-> called, would those free_map/dma_addr/skbuff arrays be leaked?
->
-> ibmveth_free_buffer_pool() already NULLs all three pointers and is
-> idempotent, so could the unwind just call ibmveth_free_queue_buffer_pools()
-> on the same queue (or use the same predicate)?  The same helper is reused
-> by the incremental resize path later in the series, where pools can hold
-> memory while active is clear.
-Agreed. That unwind is wrong because allocation state and `active` can
-diverge on the failure path.  I will make the failure unwind match
-`ibmveth_free_queue_buffer_pools()` by freeing on allocation presence
-rather than `active`, so partially allocated pools are not skipped just
-because `active` was cleared early.
->> +			return -ENOMEM;
+>> +				   "request_irq() failed for irq 0x%x queue %d: %d\n",
+>> +				   adapter->queue_irq[i], i, rc);
+>> +			goto err_free_irqs;
 >> +		}
 >> +	}
 >> +
+>> +	for (i = 0; i < adapter->num_rx_queues; i++)
+>> +		napi_enable(&adapter->napi[i]);
+> [Severity: Medium]
+> Can an interrupt arrive in the window between these two loops?
+>
+> request_irq() unmasks the virq via irq_startup(), and the LAN is already
+> registered with the hypervisor by the time ibmveth_setup_rx_interrupts()
+> runs, yet NAPI is only enabled in the second loop. Previously
+> napi_enable(&adapter->napi[0]) was the first statement of ibmveth_open(), so
+> this window did not exist.
+>
+> If an interrupt (including one latched at the controller while the line was
+> shut down by the previous close's free_irq()) is delivered inside the
+> window, ibmveth_interrupt() -> ibmveth_schedule_rx_queue() finds
+> napi_schedule_prep() failing:
+>
+> 	if (napi_schedule_prep(napi)) {
+> 		lpar_rc = ibmveth_disable_irq(adapter, qindex);
+> 		WARN_ON(lpar_rc != H_SUCCESS);
+> 		__napi_schedule(napi);
+> 	}
+>
+> so nothing is scheduled and nothing is masked, while the handler still
+> returns IRQ_HANDLED. For a level-asserted hypervisor source that repeats
+> until napi_enable() runs.
+>
+> This is also the inverse of the invariant the later scale-up path in this
+> series states, "publish -> replenish -> napi_enable -> enable_irq ... so
+> ibmveth_interrupt() cannot run on an unpublished, empty, or NAPI-disabled
+> queue". Would enabling a queue's NAPI before installing its handler restore
+> that ordering?
+I agree the ordering needs to be coherent. Open and scale-up are not
+identical cases, and the ordering here came from keeping the tested open
+path with PHYP delivery still masked until `ibmveth_enable_irq()`. I
+will clarify that invariant in the changelog and make sure the
+open-path comments do not overstate it.
+
+>> +
 >> +	return 0;
+>> +
+>> +err_free_irqs:
+>> +	while (--i >= 0)
+>> +		free_irq(adapter->queue_irq[i], &adapter->napi[i]);
+>> +	return rc;
 >> +}
 >> +
 >> +/**
->> + * ibmveth_free_queue_buffer_pools - Free buffer pools for a single queue
+>> + * ibmveth_cleanup_rx_interrupts - Mask PHYP, disable NAPI, free IRQs
 >> + * @adapter: ibmveth adapter structure
->> + * @queue: queue index
 >> + *
->> + * Frees all active buffer pools for the specified queue.
->         ^^^^^^^^^^^^^^^^^^^^^^^^^^
->
-> [Severity: Low]
->
-> The kernel-doc summary says "all active buffer pools", but the body
-> intentionally ignores the active flag and frees on allocation presence, and
-> the in-body comment says the opposite of the summary.  Could the summary be
-> reworded to say pools that have allocations?  Later MQ patches reuse this
-> helper and depend on that distinction.
-Agreed. I will update the kerneldoc to match the actual
-allocation-presence free rule.
+>> + * Tears down RX interrupt delivery for all queues. Mask PHYP before
+>> + * napi_disable so ibmveth_interrupt cannot return IRQ_HANDLED without
+>> + * masking (same storm window as scale-down). Safe for close and for
+>> + * open failure after setup_rx_interrupts() already unmasked PHYP.
 >> + */
->> +static void ibmveth_free_queue_buffer_pools(struct ibmveth_adapter *adapter,
->> +					    int queue)
+> [Severity: Low]
+> Do these comments describe what the commit actually does?
+>
+> "Safe for close and for open failure after setup_rx_interrupts() already
+> unmasked PHYP" - ibmveth_setup_rx_interrupts() only does request_irq() and
+> napi_enable(), and the changelog agrees ("setup does not yet unmask PHYP").
+> No ibmveth_open() failure path calls this helper either; setup rolls back
+> through its own err_free_irqs label and open goes to
+> out_free_buffer_pools/out_free_tx_ltb/out.
+>
+> "Mask PHYP before napi_disable so ibmveth_interrupt cannot return
+> IRQ_HANDLED without masking" - see the question on the mask/napi_disable
+> ordering below; an in-flight ibmveth_poll() can undo the mask.
+>
+> "Dispose IRQ mappings for subordinate queues (1-15)" sits above a loop that
+> starts at 1, but ibmveth.h defines IBMVETH_MAX_RX_QUEUES as 1U and
+> num_rx_queues is set to IBMVETH_DEFAULT_RX_QUEUES, so the loop cannot
+> iterate in this commit.
+>
+> And ibmveth_toggle_irq()'s "Return: 0 on success, error code otherwise"
+> conflicts with returning raw H_* codes that callers compare against
+> H_SUCCESS.
+>
+> The first and third become accurate later in the series; the second and
+> fourth remain as they are. Could the comments be trimmed to what this
+> commit provides?
+Agreed. I will trim the kerneldoc/comments so they match the actual
+behavior in this patch rather than describing stronger later-series
+guarantees.
+>> +static void
+>> +ibmveth_cleanup_rx_interrupts(struct ibmveth_adapter *adapter)
 >> +{
 >> +	int i;
 >> +
->> +	for (i = 0; i < IBMVETH_NUM_BUFF_POOLS; i++) {
->> +		struct ibmveth_buff_pool *pool =
->> +			&adapter->rx_buff_pool[queue][i];
->> +
->> +		/* Free pool if it has allocated memory, regardless of
->> +		 * active flag. Pools may have memory allocated but not
->> +		 * marked active during queue scale-up, so we must check
->> +		 * for actual allocations.
->> +		 */
->> +		if (pool->free_map || pool->dma_addr || pool->skbuff)
->> +			ibmveth_free_buffer_pool(adapter, pool);
+>> +	for (i = 0; i < adapter->num_rx_queues; i++) {
+>> +		if (adapter->queue_irq[i]) {
+>> +			ibmveth_disable_irq(adapter, i);
+>> +			synchronize_irq(adapter->queue_irq[i]);
+>> +		}
 >> +	}
+> [Severity: Medium]
+> Can a running poll undo this mask before free_irq()?
+>
+> synchronize_irq() waits for the hardirq handler only, not for an
+> ibmveth_poll() already running in softirq context, and that poll
+> unconditionally re-arms delivery on its completion path:
+>
+> 	lpar_rc = ibmveth_enable_irq(adapter, 0);
+>
+> Sequence with RX traffic flowing during "ip link set ethN down":
+>
+> CPU0 ibmveth_close() -> ibmveth_cleanup_rx_interrupts()
+> 	ibmveth_disable_irq(adapter, 0);	/* PHYP masked */
+> 	synchronize_irq(queue_irq[0]);		/* no hardirq running */
+> 	napi_disable(&adapter->napi[0]);	/* blocks on the poll */
+>
+> CPU1 softirq ibmveth_poll()
+> 	lpar_rc = ibmveth_enable_irq(adapter, 0);	/* PHYP unmasked */
+> 	napi_complete_done(...)
+>
+> CPU0 then resumes and calls free_irq() with the source unmasked, and nothing
+> re-checks or re-masks after napi_disable(). If an interrupt lands in that
+> window, ibmveth_interrupt() -> ibmveth_schedule_rx_queue() takes the
+> napi_schedule_prep() failure path, so no mask is applied while the handler
+> still returns IRQ_HANDLED - the storm window the new kernel-doc says this
+> ordering avoids. The window is bounded by the following free_irq(), but the
+> teardown no longer reliably ends with the source masked.
+>
+> Should ibmveth_poll() avoid re-enabling while teardown is in progress, or
+> should cleanup re-mask after napi_disable()?
+Agreed. That teardown race is real. Later shutdown/quiesce fixes stop
+poll from re-enabling delivery while teardown is in progress, and I
+will fold that behavior back into the owning path rather than leaving it
+as a tail fixup.
+>> +
+>> +	for (i = 0; i < adapter->num_rx_queues; i++)
+>> +		napi_disable(&adapter->napi[i]);
+>> +
+>> +	for (i = 0; i < adapter->num_rx_queues; i++) {
+>> +		if (adapter->queue_irq[i])
+>> +			free_irq(adapter->queue_irq[i], &adapter->napi[i]);
+>> +	}
+> [Severity: High]
+> This isn't a bug introduced by this patch, but the refactor makes the
+> unbalanced teardown harder to see and hands the same invariant to the rest
+> of the series, so it seems worth raising here.
+>
+> napi_disable() runs unconditionally for every queue, and free_irq() is gated
+> only on queue_irq[i]. After a failed ibmveth_open() that leaves the
+> interface administratively up, NAPI was never enabled and no handler was
+> installed, yet both run on the next ndo_stop.
+>
+> napi_disable_locked() does:
+>
+> 	while (val & (NAPIF_STATE_SCHED | NAPIF_STATE_NPSVC))
+> 		usleep_range(20, 200);
+>
+> and sets SCHED|NPSVC when it completes, so a second napi_disable() with no
+> intervening napi_enable() loops forever, under rtnl_lock() plus the netdev
+> lock. free_irq() on a never-requested IRQ additionally warns with "Trying to
+> free already-free IRQ".
+>
+> Trigger in this tree: veth_pool_store() calls ibmveth_close() and then
+> ibmveth_open() directly; if open fails (-ENOMEM from
+> ibmveth_alloc_rx_queues(), -ENONET from ibmveth_register_logical_lan(), or
+> request_irq() failure inside ibmveth_setup_rx_interrupts()) it restores the
+> pool values and returns the error with the netdev still up. The same
+> close()/open() pattern exists in ibmveth_set_csum_offload() and
+> ibmveth_set_tso(). A later "ip link set dev ethN down" then reaches
+> ibmveth_cleanup_rx_interrupts() and hangs.
+>
+> In the baseline, open() did napi_enable() at entry and napi_disable() at
+> out:, and close() called free_irq(netdev->irq, netdev) unconditionally, so
+> the same hang existed. What changes here is that queue_irq[0] is published
+> in open() before request_irq() can succeed and is deliberately never
+> cleared, so the new "if (adapter->queue_irq[i])" guard means "we have a virq
+> number", not "a handler is installed". Could the helper track whether
+> napi_enable()/request_irq() actually ran for each queue?
+Agreed. This one is high priority. The close/cleanup path needs explicit
+state tracking so a second teardown after close()+failed-open does not
+walk partially initialized state as if it were live. In v5 I will keep
+the `opened` / `rx_irq_setup` state tracking so cleanup is idempotent
+and resize/open paths key off real setup state rather than bare
+`IFF_UP`.
+>> +
+>> +	/* Dispose IRQ mappings for subordinate queues (1-15).
+>> +	 * Queue 0 uses netdev->irq from device tree, not irq_create_mapping().
+>> +	 */
+>> +	for (i = 1; i < adapter->num_rx_queues; i++) {
+>> +		if (adapter->queue_irq[i]) {
+>> +			irq_dispose_mapping(adapter->queue_irq[i]);
+>> +			adapter->queue_irq[i] = 0;
+>> +		}
+>> +	}
+>> +
+>> +	/* Queue 0 uses netdev->irq; leave queue_irq[0] for next open. */
 >> +}
 >> +
-> [ ... ]
->
->> +static int
->> +ibmveth_alloc_buffer_pools(struct ibmveth_adapter *adapter)
+>> +/**
+>> + * ibmveth_schedule_rx_queue - Mask PHYP IRQ and schedule NAPI for one RX queue
+>> + * @adapter: ibmveth adapter structure
+>> + * @qindex: RX queue index
+>> + *
+>> + * Shared by the IRQ handler and process-context kick paths (open, resume,
+>> + * pool sysfs, netpoll). Keep ibmveth_interrupt() as the IRQ-only wrapper.
+>> + */
+>> +static void ibmveth_schedule_rx_queue(struct ibmveth_adapter *adapter,
+>> +				      int qindex)
 >> +{
->> +	struct net_device *netdev = adapter->netdev;
->> +	int i, q, rc;
+>> +	struct napi_struct *napi = &adapter->napi[qindex];
+>> +	unsigned long lpar_rc;
 >> +
->> +	/* Initialize pool metadata for queues 1-15 from queue 0 settings */
->                                              ^^^^^^^^^^
->
-> [Severity: Low]
->
-> IBMVETH_MAX_RX_QUEUES is 1U at this commit, so queues 1-15 do not exist yet
-> and this loop body cannot run.  Should the comment say "queues 1..N" until
-> the bound is raised later in the series?
-Agreed. I will make that comment generic rather than hard-coding a queue
-range.
->> +	for (q = 1; q < adapter->num_rx_queues; q++) {
->> +		for (i = 0; i < IBMVETH_NUM_BUFF_POOLS; i++) {
->> +			struct ibmveth_buff_pool *src =
->> +				&adapter->rx_buff_pool[0][i];
->> +			struct ibmveth_buff_pool *dst =
->> +				&adapter->rx_buff_pool[q][i];
+>> +	if (WARN_ON(qindex < 0 || qindex >= adapter->num_rx_queues))
+>> +		return;
 >> +
->> +			dst->size = src->size;
->> +			dst->index = src->index;
->> +			dst->buff_size = src->buff_size;
->> +			dst->threshold = src->threshold;
->> +			dst->active = src->active;
->> +		}
+>> +	if (napi_schedule_prep(napi)) {
+>> +		lpar_rc = ibmveth_disable_irq(adapter, qindex);
+>> +		WARN_ON(lpar_rc != H_SUCCESS);
+>> +		__napi_schedule(napi);
 >> +	}
-> [Severity: Low]
->
-> This turns the per-pool sysfs knobs into a per-queue template.  Is that
-> intended to stay undocumented?
->
-> Only queue 0 gets sysfs objects, in ibmveth_probe():
->
-> 	struct kobject *kobj = &adapter->rx_buff_pool[0][i].kobj;
-> 	...
-> 	error = kobject_init_and_add(kobj, &ktype_veth_pool, &dev->dev.kobj,
-> 				     "pool%d", i);
->
-> and veth_pool_show()/veth_pool_store() read and write that single instance.
-> After this change the queue-0 values are cloned above and each queue
-> allocates its own copy, so writing num = 4096 to one pool multiplies the
-> real allocation by adapter->num_rx_queues while sysfs still reports the
-> single-queue value.
->
-> The multiplier is 1 everywhere in this series (IBMVETH_DEFAULT_RX_QUEUES is
-> 1), so nothing changes today.  Should these knobs stay adapter-wide (counts
-> divided across queues), gain per-queue nodes, or should the multiplier be
-> documented?
-For this series, queue 0's pool sysfs nodes remain the shared
-configuration/template interface: they define the pool geometry copied
-into each RX queue rather than queue-0-only state. Later in the series I
-add debugfs visibility for per-queue runtime information, but not
-separate per-queue pool sysfs controls. I will make that split explicit
-in the patch and cover letter so the multiplier effect is documented
-rather than implicit.
->> +
->> +	/* Allocate actual buffers for all queues */
->> +	for (q = 0; q < adapter->num_rx_queues; q++) {
->> +		rc = ibmveth_alloc_queue_buffer_pools(adapter, q);
->> +		if (rc) {
->> +			/* Free pools for all previous queues */
->> +			while (--q >= 0)
->> +				ibmveth_free_queue_buffer_pools(adapter, q);
->> +			return rc;
->> +		}
->> +	}
->> +
->> +	netdev_dbg(netdev, "allocated buffer pools for %d queue(s)\n",
->> +		   adapter->num_rx_queues);
->> +	return 0;
 >> +}
 >> +
-> [ ... ]
->
->> @@ -927,14 +1055,10 @@ static int ibmveth_close(struct net_device *netdev)
+>>   /* setup the initial settings for a buffer pool */
+>>   static void ibmveth_init_buffer_pool(struct ibmveth_buff_pool *pool,
+>>   				     u32 pool_index, u32 pool_size,
+>> @@ -947,8 +1146,6 @@ static int ibmveth_open(struct net_device *netdev)
 >>   
+>>   	netdev_dbg(netdev, "open starting\n");
+>>   
+>> -	napi_enable(&adapter->napi[0]);
+>> -
+>>   	for (i = 0; i < IBMVETH_NUM_BUFF_POOLS; i++)
+>>   		rxq_entries += adapter->rx_buff_pool[0][i].size;
+>>   
+>> @@ -972,7 +1169,8 @@ static int ibmveth_open(struct net_device *netdev)
+>>   					adapter->rx_queue[0].queue_len;
+>>   	rxq_desc.fields.address = adapter->rx_queue[0].queue_dma;
+>>   
+>> -	h_vio_signal(adapter->vdev->unit_address, VIO_IRQ_DISABLE);
+>> +	adapter->queue_irq[0] = netdev->irq;
+>> +	ibmveth_disable_irq(adapter, 0);
+> Related to the teardown question above: queue_irq[0] is published here,
+> before h_register_logical_lan(), the buffer pool allocation and
+> request_irq(), and it is never cleared on any failure path.
+>
+>>   
+>>   	lpar_rc = ibmveth_register_logical_lan(adapter, rxq_desc, mac_address);
+>>   
+>> @@ -993,21 +1191,16 @@ static int ibmveth_open(struct net_device *netdev)
+>>   	if (rc)
+>>   		goto out_free_tx_ltb;
+>>   
+>> -	netdev_dbg(netdev, "registering irq 0x%x\n", netdev->irq);
+>> -	rc = request_irq(netdev->irq, ibmveth_interrupt, 0, netdev->name,
+>> -			 netdev);
+>> -	if (rc != 0) {
+>> -		netdev_err(netdev, "unable to request irq 0x%x, rc %d\n",
+>> -			   netdev->irq, rc);
+>> +	rc = ibmveth_setup_rx_interrupts(adapter);
+>> +	if (rc) {
+>>   		do {
+>>   			lpar_rc = h_free_logical_lan(adapter->vdev->unit_address);
+>>   		} while (H_IS_LONG_BUSY(lpar_rc) || (lpar_rc == H_BUSY));
+>> -
+>>   		goto out_free_buffer_pools;
+>>   	}
+>>   
+>>   	netdev_dbg(netdev, "initial replenish cycle\n");
+>> -	ibmveth_interrupt(netdev->irq, netdev);
+>> +	ibmveth_schedule_rx_queue(adapter, 0);
+>>   
+>>   	netif_tx_start_all_queues(netdev);
+>>   
+>> @@ -1024,7 +1217,6 @@ static int ibmveth_open(struct net_device *netdev)
+>>   out_free_filter_list:
+>>   	ibmveth_free_filter_list(adapter);
+>>   out:
+>> -	napi_disable(&adapter->napi[0]);
+>>   	return rc;
+>>   }
+>>   
+>> @@ -1036,11 +1228,10 @@ static int ibmveth_close(struct net_device *netdev)
+>>   
+>>   	netdev_dbg(netdev, "close starting\n");
+>>   
+>> -	napi_disable(&adapter->napi[0]);
+>> -
+>>   	netif_tx_stop_all_queues(netdev);
+>>   
+>> -	h_vio_signal(adapter->vdev->unit_address, VIO_IRQ_DISABLE);
+>> +	/* PHYP mask + napi_disable + free_irq live in cleanup_rx_interrupts */
+>> +	ibmveth_cleanup_rx_interrupts(adapter);
+>>   
+>>   	do {
+>>   		lpar_rc = h_free_logical_lan(adapter->vdev->unit_address);
+>> @@ -1051,8 +1242,6 @@ static int ibmveth_close(struct net_device *netdev)
+>>   			   "continuing with close\n", lpar_rc);
+>>   	}
+>>   
+>> -	free_irq(netdev->irq, netdev);
+>> -
+> Also part of the teardown question: free_irq() now happens inside
+> ibmveth_cleanup_rx_interrupts(), i.e. before h_free_logical_lan(), where the
+> baseline order was napi_disable -> tx stop -> h_vio_signal(DISABLE) ->
+> h_free_logical_lan -> free_irq. The changelog mentions the mask/napi_disable
+> reordering but not this one. Was the free_irq/h_free_logical_lan inversion
+> intended?
+That ordering is intentional. Once PHYP delivery is masked, the Linux
+handler is no longer needed for `h_free_logical_lan()`, and freeing the
+IRQ first avoids leaving a handler around while the LAN handles are
+being torn down. The separate `queue_irq[0]` point is the lifecycle
+issue above: it can mean "have a virq number" before `request_irq()`
+succeeds, which is why cleanup needs `rx_irq_setup` / `opened` rather
+than `queue_irq[]` alone. I will call that ordering out in the
+changelog.
 >>   	ibmveth_update_rx_no_buffer(adapter);
 >>   
->> +	ibmveth_free_buffer_pools(adapter);
->>   	ibmveth_cleanup_rx_resources(adapter);
->>   	ibmveth_free_filter_list(adapter);
+>>   	ibmveth_free_buffer_pools(adapter);
+>> @@ -1798,15 +1987,14 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
+>>   	/* We think we are done - reenable interrupts,
+>>   	 * then check once more to make sure we are done.
+>>   	 */
+>> -	lpar_rc = h_vio_signal(adapter->vdev->unit_address, VIO_IRQ_ENABLE);
+>> +	lpar_rc = ibmveth_enable_irq(adapter, 0);
+>>   	if (WARN_ON(lpar_rc != H_SUCCESS)) {
+>>   		schedule_work(&adapter->work);
+>>   		goto out;
+>>   	}
 >>   
->> -	for (i = 0; i < IBMVETH_NUM_BUFF_POOLS; i++)
->> -		if (adapter->rx_buff_pool[0][i].active)
->> -			ibmveth_free_buffer_pool(adapter,
->> -						 &adapter->rx_buff_pool[0][i]);
->> -
-> [Severity: Low]
->
-> The teardown order changed here, which the changelog does not mention (it
-> only says the helpers are wired into open()/close()).
->
-> Baseline:
->
-> 	ibmveth_update_rx_no_buffer()
-> 	ibmveth_cleanup_rx_resources()
-> 	ibmveth_free_filter_list()
-> 	free active pools
->
-> New:
->
-> 	ibmveth_update_rx_no_buffer()
-> 	ibmveth_free_buffer_pools()
-> 	ibmveth_cleanup_rx_resources()
-> 	ibmveth_free_filter_list()
->
-> h_free_logical_lan(), napi_disable() and free_irq() have all run by this
-> point, so neither PHYP nor NAPI still references the pool buffers or the RX
-> queue, and the swap looks safe.  Could the reorder be called out in the
-> changelog, since a future per-queue drain may need the RX completion queue
-> still present while pools are released?
-Agreed. The reorder looks safe in the current shutdown path, since LAN
-teardown, NAPI shutdown, and IRQ teardown have already happened by then,
-but it is still a real teardown-sequencing change. I will call that out
-in the changelog, especially since later per-queue drain/free ordering
-may care whether the RX completion queue is still present when pools are
-released.
->>   	for (i = 0; i < netdev->real_num_tx_queues; i++)
->>   		ibmveth_free_tx_ltb(adapter, i);
+>>   	if (ibmveth_rxq_pending_buffer(adapter) && napi_schedule(napi)) {
+>> -		lpar_rc = h_vio_signal(adapter->vdev->unit_address,
+>> -				       VIO_IRQ_DISABLE);
+>> +		lpar_rc = ibmveth_disable_irq(adapter, 0);
+>>   		goto restart_poll;
+>>   	}
 >>   
->> diff --git a/drivers/net/ethernet/ibm/ibmveth.h b/drivers/net/ethernet/ibm/ibmveth.h
->> index 8eaa3942fc40b..abcd4054c67e2 100644
->> --- a/drivers/net/ethernet/ibm/ibmveth.h
->> +++ b/drivers/net/ethernet/ibm/ibmveth.h
->> @@ -265,7 +265,7 @@ static inline long h_illan_attributes(unsigned long unit_address,
->>   static int pool_size[] = { 512, 1024 * 2, 1024 * 16, 1024 * 32, 1024 * 64 };
->>   static int pool_count[] = { 256, 512, 256, 256, 256 };
->>   static int pool_count_cmo[] = { 256, 512, 256, 256, 64 };
->> -static int pool_active[] = { 1, 1, 0, 0, 1};
->> +static int pool_active[] = { 1, 1, 0, 0, 0};
->                                            ^^^
+> [ ... ]
 >
-> [Severity: High]
->
-> Does this drop large-receive support for existing single-queue users?
->
-> Pools 2 (16 KiB) and 3 (32 KiB) are already inactive by default, so with
-> the 64 KiB pool off the largest buffer ever posted at MTU 1500 becomes
-> 2048 bytes.  ibmveth_probe() seeds each pool from this array:
->
-> 	ibmveth_init_buffer_pool(&adapter->rx_buff_pool[0][i], i,
-> 				 pool_count[i], pool_size[i], pool_active[i]);
->
-> and the new helper skips inactive pools, so nothing larger is handed to
-> PHYP:
->
-> 	if (!bpool->active)
-> 		continue;
->
-> ibmveth_poll() does receive hypervisor-aggregated frames longer than the
-> MTU:
->
-> 	if ((length > netdev->mtu + ETH_HLEN) || lrg_pkt ||
-> 	    iph_check == 0xffff) {
-> 		ibmveth_rx_mss_helper(skb, mss, lrg_pkt);
-> 		adapter->rx_large_packets++;
-> 	}
->
-> Those arrive as single non-scatter buffers, and TSO/large-send is enabled
-> by default in ibmveth_probe() when firmware reports
-> IBMVETH_ILLAN_LRG_SND_SUPPORT.  With no buffer larger than 2 KiB posted,
-> are such frames simply dropped by PHYP and counted in the no-buffer counter
-> read by ibmveth_update_rx_no_buffer()?
-Agreed. With the default RX queue count still at 1, disabling the 64
-KiB pool here changes the historical single-queue default rather than
-only reducing future MQ memory use. That makes any large-receive
-dependency on the 64 KiB pool a regression risk for existing
-single-queue users, not just an MQ tuning choice.
+> Cross-instance finding from sashiko-gemini (e3f4ca1fbf9d3f3114fde9e903e88e76f2f763bdede83ba454f20f9e157db105):
+> [Severity: Medium]
+> Incomplete Refactoring / Future Out-of-Bounds Access in ibmveth_poll
+Agreed that the poll-side MQ wiring needed follow-up hardening, but I do
+not want to overclaim that as fully owned by patch 5. The queue-index /
+completion cleanup belongs with the later poll-path work, so I would
+treat that as a follow-on fix rather than claim it is resolved here.
 
->
-> The changelog says:
->
->      "MTU changes activate it when required; leaving it enabled would pin
->      about 16 MiB per RX queue in MQ mode."
->
-> Is the first half accurate?  ibmveth_change_mtu() activates pools only up
-> to the first pool whose buff_size covers the new MTU:
->
-> 	for (i = 0; i < IBMVETH_NUM_BUFF_POOLS; i++) {
-> 		adapter->rx_buff_pool[0][i].active = 1;
-> 		if (new_mtu_oh <= adapter->rx_buff_pool[0][i].buff_size) {
-> 			...
-> 			return 0;
-> 		}
-> 	}
->
-> At MTU 1500 that stops at the 2 KiB pool, so the 64 KiB pool is never
-> re-enabled; ibmveth_set_tso() does not touch pool->active either.  Recovery
-> then requires a manual write to pool4/active in sysfs.
-You are right that the changelog claim about MTU changes re-enabling it
-was not accurate for the MTU 1500 case: `ibmveth_change_mtu()` stops
-once the first pool covers the MTU, so pool 4 does not come back
-automatically there.
->
-> The second half describes MQ, but IBMVETH_DEFAULT_RX_QUEUES is 1 both at
-> this commit and at the end of the series (a3781f4ae789 still has
-> pool_active[] = { 1, 1, 0, 0, 0}), so the only configurations affected are
-> today's single-queue ones.  Would it be better to keep the default at 1 and
-> scale the 64 KiB count (or deactivate it) when RX queues are actually
-> scaled up?
-Yes. If MQ memory pressure still needs separate handling, that should be
-done only when RX queues are actually scaled up, not by changing the
-single-queue default.
->
-> Note also that commit cd7c7ec3687986 ("ibmveth: change rx buffer default
-> allocation for CMO") enabled this pool on purpose and added
-> pool_count_cmo[] = { 256, 512, 256, 256, 64 } specifically to reduce the
-> 64 KiB count under CMO, which suggests the default was deliberate.
->
-> As a side effect, ibmveth_get_desired_dma() sums only active pools:
->
-> 	if (adapter->rx_buff_pool[0][i].active)
-> 		ret += adapter->rx_buff_pool[0][i].size *
-> 		       IOMMU_PAGE_ALIGN(adapter->rx_buff_pool[0][i].buff_size,
-> 					tbl);
->
-> so does the CMO entitlement the driver requests shrink silently as well?
-Yes. Because desired DMA is summed only over active pools, disabling the
-
-64 KiB pool here also shrinks the requested CMO footprint....
-
-and the earlier CMO change also suggests the 64 KiB default was
-
-intentional rather than incidental.
-
-In v5 I will restore the default pool activation so the 64 KiB pool
-remains enabled in the normal single-queue baseline.
-
-Thanks again for the careful review,
+Thanks again for the detailed review,
 Mingming
-
->>   
->>   #define IBM_VETH_INVALID_MAP ((u16)0xffff)
 
