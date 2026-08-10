@@ -1,59 +1,108 @@
-Return-Path: <linuxppc-dev+bounces-25682-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25683-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5008DC5AE49
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Aug 2026 14:59:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ECF5BC5AD55
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Aug 2026 15:09:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hJdFl5J3Xz2yxG;
-	Tue, 11 Aug 2026 00:59:39 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::b1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786373979;
-	cv=none; b=IBJTj/fWe8GbdYc7EXB8XwomRQ7hIDKe2NzM3jbGo7XqeHou7+UXJL5e4DvvppVoIc/xNq0T+gdwXwL2WFxn42Dj6KtKatGVhJuxPMoyB9pN7fXPtUS4+4TW7ZhnP2xg47POj6hE+G0037Q3j/ukVwr7ZvfUcL2noXqV33dRA43qEhMSlm5I+NOPZjscC5xz4hUFFqPDqqYFr1kcFUMXr0+5jAPjl2BQvT9Mqc4G7Ac/3ObVO6eI+zcfPGsuWuFIC1ye8vJsl7BeCUXeSN8cr4bfkhYkLc5xQ2FXmpC1E2pN+5byIB+f8qyxDA4jVfjlPW6BFCIQmrwM1lMlLkwRiw==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786373979; c=relaxed/relaxed;
-	bh=QBSVQCIcPTFPONPO0r2svBU7MgEW/L0OhswnDVKP3Vw=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=bRAgXBOiZ5NinrDglNjL4/cP7hgIiFcLrcSD/LxnLq3cnuUyCiAZReR3qtrSJJJyUfP2j8RuDC56ukxnHQIh+gn2YpxyKdAISH8Qj0gkmX23gKnN6QoghG8uvqyIpUT5m1oH8omf7/2JOcutrr9XyXFVvtxs9Qq9DI0tB6qtPd35LbVi0hdTcPmPu56V5Y4I/K32ABTwjFAsz5qJ+Tfy9IDg+bmBvVrdiSQDcMRO+cVzGwMFN95TT6AUc90El/65pmnxSJrj8lTbsKXrDM5ESur+Y38EEmESHsfhWMSBqI2Iku6l4mwuvd3Jp88Gkl7hr6/sIdiLcnw0QPwp/bKtrQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=If0MMZ6d; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::b1; helo=out-177.mta0.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hJdSd1ykRz2yxG;
+	Tue, 11 Aug 2026 01:09:05 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c007::2" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786374545;
+	cv=pass; b=A9Bv5VSYveQtjtzI7Nr568AZPRUZgvfXUlbwjLmcFr8jnO+SCxseF+8gZ8k4r7Tf8JZzCtK/24Az4uhYYW1pCtZhttSBznqzUfUtjy3aa6edpr7Ebap0srjk4+kFqZLVqE/cc1BlgBDPuW9af8/V/vnHDlNYHAhn+d8gM5FDjn8yNSVZSvx3DYBw2NL5GTZZWxsK26TaKW+JjOmSwTfoGoDbTxcUxLZYlqcewYYvsTBDcUSTvFlcAtC61vPhTHefojajjEBHYRR4da/PKYeJ2How5aVshOSOpX4XYgyrXCfF3S3Kh9rz/ZQyt1RwakoOQJhSt+tUgW0Nxf7NnRugaA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1786374545; c=relaxed/relaxed;
+	bh=uTMkqBJQt9s46QcMVTug+4LBbYOBeafH6lRM81xpMnI=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=JNLaJuAben5nXPbUkCTSbgyu7k6uu9GGfpchPSHzi3oJGqxRztJP1uA4d6JCPEDpIWVLAiiuSFAM1kbjjvuoj7dUJ+3J4/U9QqvC0nD1Q9CNFq1BAelZKBXEn2+cstcD73rWcnJWTLWHejSQEXrEINPM7koA6QhMsPScsIdDQng1160pbLBV3TFD8PhUTTs1uTzaUIueSDpzIqR1fwuFiTLq4sXJ0RQkl2Z4Ux0P3/FyzSCjmHCeaKM6txrM/GNjLeDpw4jmXiupY3DkTkHAsjZne+PWHYn9KCLwxa4nWbBNnWI4nDeqYQipCV3fcYHRbJa3/dDrvL9ybfil1GbGOQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=UYuO1NSt; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c007::2; helo=mw6pr02cu001.outbound.protection.outlook.com; envelope-from=jgg@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=If0MMZ6d;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=UYuO1NSt;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::b1; helo=out-177.mta0.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org)
-Received: from out-177.mta0.migadu.com (out-177.mta0.migadu.com [IPv6:2001:41d0:1004:224b::b1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:c007::2; helo=mw6pr02cu001.outbound.protection.outlook.com; envelope-from=jgg@nvidia.com; receiver=lists.ozlabs.org)
+Received: from MW6PR02CU001.outbound.protection.outlook.com (mail-westus2azlp170120002.outbound.protection.outlook.com [IPv6:2a01:111:f403:c007::2])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hJdFg3vVCz2ytv
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2026 00:59:33 +1000 (AEST)
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1786373951;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=QBSVQCIcPTFPONPO0r2svBU7MgEW/L0OhswnDVKP3Vw=;
-	b=If0MMZ6d/FLOZM1OKhoy3Z5P/YMKFOHxDwWoUxRVcBSGEHa/8kSJgCOFKisu3CcxXN2LNx
-	dUeuUpjfwgOe4F9Ms0VKJbNUJpVe52/65pV7toGO/AW+jqSl6VN4vkBKEdr4WkK7l0h1Yq
-	d4YswN74XBtS6+q87oR+fyKh1hAejVc=
-From: Thorsten Blum <thorsten.blum@linux.dev>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hJdSZ5tBRz2ytv
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2026 01:09:01 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=AfI3wjvlQUinxUOQE9tqyCv3m0YWl5KC008NguLNEYcwl6RL8s+LPsmr25n6PdANHd7m8SvwHAFMLbKpPi7FvUoqcBcr/TU+FsbHkicwTijQFagFv1NsJBP6PYkvLo5YcR3AkcYSM7CeSXZYPDIA3xh/RiJG21fSRKZ4Ab6MJDMG7k69x4rRYQH/Oi7aACyF+u8qYJTRH7p50rl7g/4Mh88oI3vGwC0RR+A0q7lM4S8XbmZzwBR0Fle6KafqCYGvXiPIF3ozVX+S8mWWFyfHErItR5rW4OXSOtra3JxbAua+u9/uP2WMJWk3ed9dGymlEzCIo6oRieRewqQot96PJQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=uTMkqBJQt9s46QcMVTug+4LBbYOBeafH6lRM81xpMnI=;
+ b=BJwbjvOcVaVjwegHI5ZaQ2q9DnVfBKPRHwRWdzvuDv4I6mIlwctTxHCLDWIfXnWhmE/r32tDsGKIDgn2zqaFh3tNhCGSKB/Uq29tDksTwss9xdjLdefIqH5FH8tkVMNoYpc5OelU51P0itv3MO3p73dW1bqf1ykpEVbV+/LZopzOKRrFOI23oocDnMMbsAXcdVigrchf8mVBA4bQg6tyBqLxpBYtquCRzpfwqvzoIKW1kiSOtNIcuENOMJl0XnS1Yy3e/gfuhoGUb/OEiDf5KUoV0bLxFW986xweTCpX591hGyJ5wtNcKwa4IOMBgSU4lwJGbaLa6zolot5ie7AbMw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=uTMkqBJQt9s46QcMVTug+4LBbYOBeafH6lRM81xpMnI=;
+ b=UYuO1NStcjXud8hOvCqBoJJIt6EhVl5A/eKycas6Cue2i+4ie6u2PB8OzztwCMeAoepzVrlu4eF2PyRC3hD+P7KCnrqDHuRy+oineIzr3DBi8TBFNAapIJYgvn2nFY8MP8LQGUPuy3G6Y2UA9vnEqgKL1fczd/JEib9fAbOc/iWllFvAsRTa6KDRdkY5j383LB1HAlGzJVhghv6i3hFB3rQmF0GKidmcCetZF6PqlZSOd5+rROR5jue3cv4RdrRqYTQNqvBckK6k5207CqvTrJfv5c02qk8LCuc652IeuBJ9jjH1YXHZe2i+IeNHHAvQMBDOs8wScH3QIM+1h5yQ8g==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from LV8PR12MB9620.namprd12.prod.outlook.com (2603:10b6:408:2a1::19)
+ by IA0PR12MB8350.namprd12.prod.outlook.com (2603:10b6:208:40d::14) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.292.25; Mon, 10 Aug
+ 2026 15:08:34 +0000
+Received: from LV8PR12MB9620.namprd12.prod.outlook.com
+ ([fe80::299d:f5e0:3550:1528]) by LV8PR12MB9620.namprd12.prod.outlook.com
+ ([fe80::299d:f5e0:3550:1528%4]) with mapi id 15.21.0292.024; Mon, 10 Aug 2026
+ 15:08:34 +0000
+Date: Mon, 10 Aug 2026 12:08:32 -0300
+From: Jason Gunthorpe <jgg@nvidia.com>
+To: Robin Murphy <robin.murphy@arm.com>, Ankit Agrawal <ankita@nvidia.com>,
+	Jiri Pirko <jiri@nvidia.com>, Leon Romanovsky <leon@kernel.org>
+Cc: Mostafa Saleh <smostafa@google.com>,
+	"Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, iommu@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+	linux-coco@lists.linux.dev,
+	Marek Szyprowski <m.szyprowski@samsung.com>,
+	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
+	Steven Price <steven.price@arm.com>,
+	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Jiri Pirko <jiri@resnulli.us>, Petr Tesarik <ptesarik@suse.com>,
+	Alexey Kardashevskiy <aik@amd.com>,
+	Dan Williams <dan.j.williams@intel.com>,
+	Xu Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+	linux-s390@vger.kernel.org,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Michael Ellerman <mpe@ellerman.id.au>,
 	Nicholas Piggin <npiggin@gmail.com>,
 	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Sourabh Jain <sourabhjain@linux.ibm.com>,
-	Hari Bathini <hbathini@linux.ibm.com>,
-	Aditya Gupta <adityag@linux.ibm.com>,
-	Jinjie Ruan <ruanjinjie@huawei.com>,
-	Andrew Morton <akpm@linux-foundation.org>
-Cc: Thorsten Blum <thorsten.blum@linux.dev>,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc/kexec_file: Use inclusive range checks for excluded memory
-Date: Mon, 10 Aug 2026 16:58:27 +0200
-Message-ID: <20260810145827.157972-3-thorsten.blum@linux.dev>
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org,
+	Michael Kelley <mhklinux@outlook.com>
+Subject: Re: [PATCH v8 12/23] dma: swiotlb: pass mapping attributes by
+ reference
+Message-ID: <20260810150832.GB291736@nvidia.com>
+References: <amnRB98ZZIysHuM3@google.com>
+ <yq5acxw6dl1d.fsf@kernel.org>
+ <20260804142032.GC27883@nvidia.com>
+ <anL9-OrDGqYQAWNV@google.com>
+ <20260805123023.GO27883@nvidia.com>
+ <0ce2249d-3a64-4889-b455-0e8fddcc7282@arm.com>
+ <20260807115500.GA158689@nvidia.com>
+ <aefab683-598c-4cca-b5a0-c9081ccf9e1c@arm.com>
+ <20260807170104.GB158689@nvidia.com>
+ <21813ccf-96e5-4a7e-a3b3-aaaec7e0d23c@arm.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <21813ccf-96e5-4a7e-a3b3-aaaec7e0d23c@arm.com>
+X-ClientProxiedBy: BN9P220CA0022.NAMP220.PROD.OUTLOOK.COM
+ (2603:10b6:408:13e::27) To LV8PR12MB9620.namprd12.prod.outlook.com
+ (2603:10b6:408:2a1::19)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -67,38 +116,147 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1236; i=thorsten.blum@linux.dev; h=from:subject; bh=RxeXQNEjeIoAq+PW4Rv9liZkIgOa04vUqgNKQcRM6eo=; b=owGbwMvMwCUWt7pQ4caZUj3G02pJDFmVz4W3s9jGqfmaRZxifKS3Zl3WrndLklbsjljscCegU 1OcY2ZdRykLgxgXg6yYIsuDWT9m+JbWVG4yidgJM4eVCWQIAxenAExkCyfD/4glT2r3uBy2WX9g v1bq07/uazZsqz/49ClrrXzaisWGO78yMrQyHu3PYebwKoxY0u/0WCrSfAkX/8TeE+6Vaw44puc s5QEA
-X-Developer-Key: i=thorsten.blum@linux.dev; a=openpgp; fpr=1D60735E8AEF3BE473B69D84733678FD8DFEEAD4
-Content-Transfer-Encoding: 8bit
-X-Migadu-Flow: FLOW_OUT
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: LV8PR12MB9620:EE_|IA0PR12MB8350:EE_
+X-MS-Office365-Filtering-Correlation-Id: 7b3c3074-2f7d-4508-1307-08def6f13f4c
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|366016|23010399003|1800799024|376014|7416014|6133799003|56012099006|11063799006|5023799004|10067099003|4143699003|22082099003|18002099003;
+X-Microsoft-Antispam-Message-Info:
+	5NWOmwa5QDOPJPrYa6vESgXutAFxpZRya7cEKG1lPk0hflaERSlnk7fSMhR+UERDchL1bu/Bd3AtrzJUUcWskJ0h6nwW6AzUD2kwog84NbUeTybj26Tl39azRW6fnAwFIIopPbEEAjGEFmQq1jG8/viWhIHospqVSeDcNCo8kFgbFUAlgkNF2arQs5rQEjVT/Xbrx7HbITjN5qFrlEi/99XyAc05lnL+NFO2SfJINBHpK/jsDkfX6Dl0oCXjM3NYWFCzV1WfP+oTKBdG5oIxPSyXp7J65CWtfuGM5JBTP2MONqY7eIM+DeNIIBgP+orvN/Vwbv+G2CwLsnzdJmtI8GA57hiB0ymwbM1rKNws3yxviklrhbV43rZ2qkinP4gjvc7Nnj0mIn09P+VC5Tn8mkP+OmMbSjfdljZXZT0M1E0UPVRP1fkCNDwDXbgNpYPoppXjDD7F9ELAF7BAFopyRjbViJg7XWZfzkI04zUIsnaEiySkMSq9aX0HjEbQ73Ijz3JPGMPYTaaQ5Ig5LMRNMpcotkkwwHPvkOxNziOAZW+CvklzxwHRPA7xAhYRPRpRAA3S9ouIHNtTWoyrOho1Je4DmmvtYSPgNyPuZAAj0M/xM1YnCFfeCXjMvpR0w9QX24bgiTvvsRpsB1BLCB0/UNwMoiCMF53OhporU/5+E3U=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LV8PR12MB9620.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(23010399003)(1800799024)(376014)(7416014)(6133799003)(56012099006)(11063799006)(5023799004)(10067099003)(4143699003)(22082099003)(18002099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?9VFo97/UYiJYpqCbzj9rqTc0NiIxjvY5KdVegHINZg9MEOD2aulwaP9MXvJg?=
+ =?us-ascii?Q?URWeBCXGJR+qFlB3zNX6NuHEJQ34nZ+z9ZfAhABWutRjXGpZlT02AcKMmrVo?=
+ =?us-ascii?Q?86FDeIzhQxw0JGCJ/fVPjEKeXbmFEaS90J9AzS470df5/8ya+/Qc/5mVXuGO?=
+ =?us-ascii?Q?fZXdfzBFzySbhu07nEOgS6nks9PrWSULRqxo9BU3LxZEiS1tM/bg77XgsMyI?=
+ =?us-ascii?Q?R1XPxCD0zw8/HsyRaOXtT84GP0JKCm9sMPju54WNGHbElZEfIaJBcyfW6LHP?=
+ =?us-ascii?Q?dat2xCyRYBIjPaHRL8RT2fwq0fCJX7elTavZj9fSoxGp5IdpqlFethESHYF7?=
+ =?us-ascii?Q?TqKqeAxvKC0MJbPeTIAQ+elFJLXZWyBsCz76/B/9FkuMVRoL3tMUx+TfKuhI?=
+ =?us-ascii?Q?5JFNU9LQ/frWNzTuzO6lgSjLYwxxkCZ47s0dk0otDSrsPsZPDzJWvlbwL7L5?=
+ =?us-ascii?Q?tKuaG3PR/3D+fSD0KnjzIOWOyt+6hranGdiHNDnpDSpak4ybofD+3DP6b7RR?=
+ =?us-ascii?Q?yDgrRSHCAelChC0llLU5xKWzYbAUtXUoELfiHraH2Vwr94rdzsRzS2DRkAmt?=
+ =?us-ascii?Q?EuKoT3antS6LWcSN1wV0gBriQWjQ3deKgFTCtdpzk1ciWvp/Y2TmWY1ubsJT?=
+ =?us-ascii?Q?bARz+98SRwNAd7Tfpfu3Mgb5+s6I2e15OsEvaPLwkFCrO3vcUc/p+U9OwuYG?=
+ =?us-ascii?Q?jWUSsfU5rpzExwDLm04RGN/xtWxLVxNfeHc0nQ+MxgqOdJ0aTeidBM6lxyGC?=
+ =?us-ascii?Q?Xz6kqK6j/0inCkqJtjjsKdd6d7mttf98eD6weP91OWc+gZqRXuJNnmsEkx2q?=
+ =?us-ascii?Q?zOs+L3FE+Zovi3OfCdEbsjoWrF1qy2EXKJEIuI7JE+rs+Sva9gFmCWV6R9Wa?=
+ =?us-ascii?Q?isxmmY059ELL7Y6QEBQnyPGkS4u07p0S44zY5KuTAXayhwJ9V/eYSvVIJg41?=
+ =?us-ascii?Q?62y2jUrosXoDrkO0FU/BWofN3c2nr2LgSOT/F3V9Ve6ZHZhHtfIiIChbzafv?=
+ =?us-ascii?Q?S8tW6D1Yjd0vGR73TN/JLvK4eLzgzBEi+KpQto4GzbVi8/AGBMWmlE9n/z+c?=
+ =?us-ascii?Q?xLEuIeYozZgDb9pdc/LIHrjat8NKx4//kGyy1QJyYou0LfsnvUrfrSxZitlp?=
+ =?us-ascii?Q?KHTgpM3g9A0rpmntSsLHkqx0HyzghS7j5A60nOQxKJJdKdkkBzR4VqitVCPK?=
+ =?us-ascii?Q?AV7YQJmQtGdiRtsEx0MMzmDPaqChEPx30x2M099zSdIsC5XJJJUZKLvXw7ZC?=
+ =?us-ascii?Q?O4r98mYfaVofngrLe7LKXgCmqnFvdsvn2TJVhV0PUEl9wRRpxst3PLk2Dyxu?=
+ =?us-ascii?Q?lM+CcdC0uJ9LI7Uvd/Be5QWxgofOvgnoVH8/oIj9stRVDn65KbiDaaGCjiZB?=
+ =?us-ascii?Q?cuwFGd2yKDZv3DcDWCRTYEirNSFvZJuZKPQJwv7tEE1cWQw+gqzbwtHx/MDR?=
+ =?us-ascii?Q?jV7DZMgrjWmDeY67LiDzeynR8xZve0ZxJpzv6UakyrUoT51ffgV2XYsU99g3?=
+ =?us-ascii?Q?OeaVk3+2SmEyWckkLmQKYo06cc9nid2Rj2+xBMhsTL/GXE9VP637fy2KBGBA?=
+ =?us-ascii?Q?DR3ekuY0x/wBbwmWphPu/34qukpeP312klC2xEkQbbN49TSxFq3rL04Y7FVW?=
+ =?us-ascii?Q?aP42+rdC77cQvd8WWu1jR3moavFShb22rExa+B91N4ep/anb0SLfFwAt+mhm?=
+ =?us-ascii?Q?+MM8hcUDzLLveGRxdF82HSg9oHPtoOtueGQKzVZsDEhYS6Ia?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 7b3c3074-2f7d-4508-1307-08def6f13f4c
+X-MS-Exchange-CrossTenant-AuthSource: LV8PR12MB9620.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 10 Aug 2026 15:08:34.5640
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: uplBCrKUARnmSvgLConuNQ66qy7fkGGmqFR5LglvCiJ9j7Jl1r59Ee5MrbX5lqq6
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA0PR12MB8350
 
-arch_check_excluded_range() checks if a kexec segment overlaps an
-excluded memory range.
+On Mon, Aug 10, 2026 at 03:18:03PM +0100, Robin Murphy wrote:
 
-Both ranges use inclusive end addresses, but the overlap check uses
-exclusive comparisons. This skips ranges with start == ->ranges[i].end
-or end == ->ranges[i].start. Use inclusive comparisons instead.
+> Cool. So in fact that puts us in an interesting position for now where
+> non-CoCo "untrusted" (i.e. external) devices should have IOMMU translation
+> forced on by default, while CoCo "unaccepted" devices (i.e. those which do
+> have a mechanism to transition into a T=1 or equivalent state) should *not*
+> try to use an associated IOMMU, on the assumption that it may only work for
+> T=1 traffic. All the more reason to sort these abstractions out so we can
+> make the right distinctions clearly :)
 
-Fixes: 6e5250eaa665 ("powerpc/crash: use generic APIs to locate memory hole for kdump")
-Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
----
-Sashiko found this issue when reviewing another patch:
-https://sashiko.dev/#/patchset/20260809162403.18142-2-thorsten.blum%40linux.dev
----
- arch/powerpc/kexec/file_load_64.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+I think the guest flow works out fairly logically:
 
-diff --git a/arch/powerpc/kexec/file_load_64.c b/arch/powerpc/kexec/file_load_64.c
-index 40b74cc4ed3e..32e2b7412a9f 100644
---- a/arch/powerpc/kexec/file_load_64.c
-+++ b/arch/powerpc/kexec/file_load_64.c
-@@ -58,7 +58,7 @@ int arch_check_excluded_range(struct kimage *image, unsigned long start,
- 
- 	emem = image->arch.exclude_ranges;
- 	for (i = 0; i < emem->nr_ranges; i++)
--		if (start < emem->ranges[i].end && end > emem->ranges[i].start)
-+		if (start <= emem->ranges[i].end && end >= emem->ranges[i].start)
- 			return 1;
- 
- 	return 0;
+1) At boot the IOMMU core always setups blocking translation. No more
+   auto-attaching paging or identity domains at probe time [optional,
+   but default on for CC guest]
+   * This means devices that can have their DMA disabled do
+   * Additionally T=1 capable devices have their T=1 DMA blocked by
+     the CC platform itself. eg RMM is to leave the T=1 STE set to
+     blocking at VM boot until commanded otherwise.
+
+   Aside from CC this also goes hand in hand with DRTM support in the
+   kernel where we do want to carry over the DMA access block from the
+   secure launch until the system, ideally via userspace policy, has
+   approved the device.
+
+2) Before probing a driver we synchronize the TDISP state, IOMMU
+   and configure the DMA API:
+    a. If no iommu, then DMA API is in physical
+    b. If both device and IOMMU same-T then DMA API follows IOMMU configuration:
+         - DMA API is physical if IOMMU configuration is identity
+         - DMA API is dma-iomu if paging
+         - IOMMU sets the proper domain for the DMA API, removes the
+           blocking
+    c. If device and iommu have different T state then assume no iommu
+       and DMA API is physical
+2b) For T=1 capable devices this is the moment we tell the CC platform
+    to permit DMA
+
+3) The DMA API configuration follows per-device flags:
+    - Using IOMMU: Use dma-iommu not physical
+    - Using T=0/1: Replaces 'force dma unencrypted'. Ie T=0 uses
+      swiotlb to get CC shared memory.
+    - adversarial: Replaces pdev->trusted/etc. Causes IOMMU and
+      SWIOTLB to bounce buffer partial pages.
+      Causes iommu to prefer paging not identity.
+
+4) After removing a driver we restore the IOMMU back to blocking. The
+   CC platform is told to block DMA again, if it can.
+
+If we ever do decide to support dual iommu then #2 would be the point
+we swap the iommu control between the T=0/1 iommu.
+
+> (And while untrusted vIOMMUs for purely-untrusted devices in CoCo
+> environments would be pretty straightforward as well, I guess we might need
+> some sort of acceptance status for trusted vIOMMU devices themselves?
+> Hmm...)
+
+That should fall into the overall plan for device acceptance. We want
+the kernel to have a small policy of devices it would accept prior to
+the initrd. Untrusted versions of iommu (and others) should not auto
+probe.
+
+The initrd can then decide if it wants to probe the untrusted
+iommu. Probably it does not right now since we haven't done any
+security analysis on the SMMUv3 being operated by a hostile
+hypervisor. ARM should be OK here, a modular SMMUv3 will achieve this
+trivially. x86 will have a harder time.
+
+Userspace will run its acceptance flow and figure out what drivers to
+bind. Along the way userspace will record what it is accepting in a
+measurement log.
+
+So, lots of little steps along the path. I imagine various series
+something like:
+
+- Basic version of #1 and #2 to generally defer opening DMA till
+  probe
+- TSM APIs to support setting T=1 and doing the evidence suff
+- T=1 flag for devices supported by IOMMU and DMA API, replacing force
+  dma unencrypted
+- Userspace driven policy control over device binding
+- General trust level concept, including an "adversarial" trust level
+  which will trigger various auto configuration and mitigations
+- tsm_mr improvmements
+- adversarial T=1 devices, eg SWIOTLB still bounce buffers but has to
+  support a private pool
+
+Regards,
+Jason
 
