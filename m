@@ -1,73 +1,63 @@
-Return-Path: <linuxppc-dev+bounces-25750-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25751-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00678C5AC67
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Aug 2026 19:00:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CC7F1C5CFC1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Aug 2026 22:20:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hKLXm04zcz2yrW;
-	Wed, 12 Aug 2026 05:00:08 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786474807;
-	cv=none; b=ZSEoVe+oNnISNkQ3aWPuVIcUApqQ81B+nBMFBWH8OlorKI9JHH/q4vdl1v4ZxV6hrPI51uPQYSaoergQ+j5m9sF06cqINxIhX9MFh/3pZahH9TTI6Rc5AGsgN0NjFxWYQticqDdJ+X8FdeDizZ2Xr5uhaW3qagxbd/NpR4m3I+6DXDZ1RbNMvbyQb+04uuhlC23ZTqNdA1dA3IeoaTe1eYPYrHakc2jCEW9GQuD0ntSXENS74Yh6rpsBcaL9uV+iMQ38T2iuC66mMmJWrYwvJAmWF0NkMZajdxsCOJY9CBrpMVLx7gY7aVghk45w3QDzzZLXR6uUe5zna0lSkrzlAA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hKQzs09kcz2y1Y;
+	Wed, 12 Aug 2026 08:20:25 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786486824;
+	cv=none; b=enWyUhrFTgIuQ8KtbZW/7jzbEpFVujF0NYoEEVqTd6ydMv9MwhHIB+6GPO77bZ4LOSP3cB+79OjJZYWmIhGa4cxSQxL1PImzGfDLTm7nNhfQCxLguxE2JLDg0f8bXQ/6fR6Y4yI3dSiGkzg5b2tWy32c3WYAME24Q9iAvjXMU1kw5U64N59Spju9A0LyIZqUqv/KEv5IiBZT6n0o2T7uERoMHr6LVyXtqUZqh0o0izbeOvt6X5m4MhhClG3z27eextdA4/ycVHmc5qIzExtlqO59Uzyt19UP6eQOG7ZqY66TsMrZ5OzcWhduoHxNwPqKqnhcJCmWca171KapoCPUeg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786474807; c=relaxed/relaxed;
-	bh=zJ2yODuh5xrwNkjsG1VnInG53R87f0B3Y9vJ18mGLY0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=dMWQ/qs2bNtAF7zWmfTAOU23py8OlNe2Ct8vrZJQXboVSbLSE1ZuZB0MyhpneYHE/Ugrqz5QW92eCcETTdYeQ43HULdtqN+rXJhk93BcNcmW2mSwQheWYWdx3w+xnEyc4XZxdRkIBbsiu8yAyPm1GSSHkV2U2gaG5iQhxpm8sNxNCOsg3U1JqPxYOrGlpE01k5wTsGldRzX4d/tUgoh/8gW5cTran4VG5sT4+1Ww9OiUFzoE6kstWv5YGG4hvSkP8y17iHBldRf1onXT13u8cW+8BErYIViX46CqshduGoyF989cDN2UsPEDAGpDnbygcghQl/XvNRyHrdowGl4Vrg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=H0gWDBVW; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1786486824; c=relaxed/relaxed;
+	bh=bgruTceOhBSt6ExD5rb9r1mmzE/uAzzfIg/kARi5H4E=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=W4qhRAKLN/s76NNPFDd/jxRqchW1pnA5xOdnPaM6Jy6q1bPaOdsjeEvCUel2pLhU4/ngZJkOqPZj/39wajKyPAmscJIJz+ZxJBrM5pl3MxQcWuWbkorwsvuXng1weNnQTnvO/7D2XTG201xgLQukH3l1jjSUSa78AUwvWlUbu0mA9TT8FxV93IZDY4V9SXotUDcbeyIqkyOmaVdEDUYCNd4aDZQwIF7jYYrVzDAW15U+3OutMZ84J4QYPEyqkkfwoqLCjD5xAPP6qDYf/prz2RO+VKVsPTsr8tZg8g04faKLZzkXv14F1leeyg4kVIBg8eSfkm3g8EQtc2hS9zmBjg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=aVwq5eBm; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=H0gWDBVW;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=aVwq5eBm;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hKLXl0Zksz2yn2
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2026 05:00:06 +1000 (AEST)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67BGWFZB965413;
-	Tue, 11 Aug 2026 18:59:53 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=zJ2yOD
-	uh5xrwNkjsG1VnInG53R87f0B3Y9vJ18mGLY0=; b=H0gWDBVWvGImLWpD/0DDyE
-	/bVONb+JaCgekpl6b7E5L5gCJkpJSl+/8lmpGyP7NdTwi9ETdq/MYb4rXL07P9rR
-	AqA9tPAY4mk+xBDPyY6qdTxtSg/bImBXKuiN5RVpenYBaUTXqfQcb72GnE2UJcC8
-	5Q2EGUeLsANYBr0nus1mHgffuWWrECAA8piwnDsmL89gpayw51vAz4tmsedvVKiP
-	rXSJyB0ntdMc6Ejjv4Ecj9aRnxWZ0AEJl4qJDepmlJrsqdVMYv+EviYo6tpTPoOe
-	KP8KNvTrXRMJHepazPmKhgsekbFbzlku7IHpb32tCtD2Ltb4g64SMCvIOKDs62cA
-	==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fwvnw5wtq-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 11 Aug 2026 18:59:53 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 67BIuHS5017827;
-	Tue, 11 Aug 2026 18:59:52 GMT
-Received: from smtprelay04.wdc07v.mail.ibm.com ([172.16.1.71])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fxhfy2523-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 11 Aug 2026 18:59:52 +0000 (GMT)
-Received: from smtpav01.dal12v.mail.ibm.com (smtpav01.dal12v.mail.ibm.com [10.241.53.100])
-	by smtprelay04.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 67BIxolm60752204
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 11 Aug 2026 18:59:50 GMT
-Received: from smtpav01.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 0102D58057;
-	Tue, 11 Aug 2026 18:59:50 +0000 (GMT)
-Received: from smtpav01.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 4DB9858058;
-	Tue, 11 Aug 2026 18:59:48 +0000 (GMT)
-Received: from [9.67.110.153] (unknown [9.67.110.153])
-	by smtpav01.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 11 Aug 2026 18:59:48 +0000 (GMT)
-Message-ID: <23fd0f9d-b13a-4454-ad29-e6c4488b79b0@linux.ibm.com>
-Date: Tue, 11 Aug 2026 11:59:47 -0700
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hKQzq54Gkz2xwN
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2026 08:20:23 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id EF5BF43A7C;
+	Tue, 11 Aug 2026 22:20:19 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8349F1F000E9;
+	Tue, 11 Aug 2026 22:20:17 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1786486819;
+	bh=bgruTceOhBSt6ExD5rb9r1mmzE/uAzzfIg/kARi5H4E=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date;
+	b=aVwq5eBmgS0q8i3fcVBkoeIffemayJOditKOlU0eF2SYaQ89Z3bwxDTk/L6Du+nus
+	 xmHN5WASIu0Iy+qW+7ElSveYK53Brr8Vy5lpuLTz/PH7s4a42diUXbxBwT3NhsnRym
+	 QYJaB7C2p1NpLovshNr1t6wMa46LfN6hbuPZIDRO7z6PnNwNKFCWJJYoFpPjwp0d5s
+	 qdl2Uui3ap2/aSQqju9SEZlQLS6LZR1xcq0gkakwgTDPKpQYtjCfQASn21GxC9loTZ
+	 DbWBVNOP2G6w9ezAZpKJ7kD8KKBnu0IqlLZLaXqUHxn4KR8el4oRBlbGd02A07306c
+	 jCH45/WWlTzVg==
+From: Mark Brown <broonie@kernel.org>
+To: Shengjiu Wang <shengjiu.wang@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>, 
+ Fabio Estevam <festevam@gmail.com>, Nicolin Chen <nicoleotsuka@gmail.com>, 
+ Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>, 
+ Takashi Iwai <tiwai@suse.com>, LiangCheng Wang <zaq14760@gmail.com>
+Cc: Mark Brown <broonie@linaro.org>, linux-sound@vger.kernel.org, 
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+ Wig Cheng <onlywig@gmail.com>
+In-Reply-To: <20260805-fsl-asoc-defer-cpu-dai-v1-1-43f7f538e384@gmail.com>
+References: <20260805-fsl-asoc-defer-cpu-dai-v1-1-43f7f538e384@gmail.com>
+Subject: Re: [PATCH] ASoC: fsl-asoc-card: defer probe when the CPU DAI
+ device is not ready
+Message-Id: <178648253837.119683.3220582369920670222.b4-ty@b4>
+Date: Tue, 11 Aug 2026 22:08:58 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,97 +71,50 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH net-next v4 14/14] ibmveth: Fix MQ RX poll and shutdown
- hangs after queue resize
-To: Jakub Kicinski <kuba@kernel.org>
-Cc: netdev@vger.kernel.org, horms@kernel.org, bjking1@linux.ibm.com,
-        haren@linux.ibm.com, ricklind@linux.ibm.com, edumazet@google.com,
-        pabeni@redhat.com, davem@davemloft.net, linuxppc-dev@lists.ozlabs.org,
-        maddy@linux.ibm.com, mpe@ellerman.id.au, simon.horman@corigine.com,
-        shaik.abdulla1@ibm.com, Dave Marquardt <davemarq@linux.ibm.com>
-References: <cover.1785457143.git.mmc@linux.ibm.com>
- <6c687fce21930e4ded39610717ac05862b67e7aa.1785457143.git.mmc@linux.ibm.com>
- <20260806114928.3f4adfa9@kernel.org>
-Content-Language: en-US
-From: mingming cao <mmc@linux.ibm.com>
-In-Reply-To: <20260806114928.3f4adfa9@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=RsP16imK c=1 sm=1 tr=0 ts=6a7b7129 cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=-0MhZtYOHlZKH6frF0wA:9
- a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-GUID: NIYYau8TTnz3hEuyRNiwpXg6OeF97yUd
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODExMDE1NSBTYWx0ZWRfX9F1k/0UGw4vA
- RbzHf1JIcT/nf88QWC1W017LnhcyZDRprd02s8S1WHmqw73BSMluQUe7XhrC0IEi8SL16tHrOFr
- YTy9a3eZxKLxaMKAozP6dG1MAbRp57Ow0AEEvoaQIJy20uwi278qCaIaoQfLb/5H/1GQCZ2OaWK
- uU04gBuwVHcDL+ftdqeFjBqV9lBz3BQf1izwRWyRLpNqTkq/Qwz9+4eJqLhaxFgMSV+I2WMDFqB
- sYNe8v+qvLnCrGj7BY1C+PrKOyyCprn9h/9nLTTzbtOsxVzA/I4cJYejhKzBT01bdj/jMg3l7EV
- 7VhgUWZjFTJBKrWWeKw5qfU5hot/ENzO6gN09J1pNN/U6PA8gdjHi3sdVaI99WPDyRNYShzx+XE
- eoffPHFI4xKxH/GPlQRRd87gKNLYMwoj+wfWOAaGklUmZsyoBLJjOCFox8Y7ZjbsHTkLkO9MLbl
- DOj3XUDqW6x7kiT53Jw==
-X-Proofpoint-ORIG-GUID: 7_4BVz5zDQhHVEuNxDpic6IojvJfkOL9
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODExMDE1NSBTYWx0ZWRfXygjEICSa5qXf
- fI1V7UzYm3lQ428wOvbKymiPQ1eWDgchFWB/92dJjIvQPXKE8FBgU6CqJlxwOLEfos1Geykho0P
- a4j6x1lmEz5q/3CQ05u4/2Ra9ObAw1M=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-08-11_04,2026-08-10_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 impostorscore=0 suspectscore=0 clxscore=1015 malwarescore=0
- phishscore=0 adultscore=0 lowpriorityscore=0 priorityscore=1501 bulkscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608110155
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.17-dev
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1159; i=broonie@kernel.org;
+ h=from:subject:message-id; bh=rGzMYl8k8YFPBqs1xAPBOcPcRdC/awV46Xpycd9gg3o=;
+ b=owEBbQGS/pANAwAKASTWi3JdVIfQAcsmYgBqe6AgT9j0MeDOeEtLSitTY9e2bQsFrJYbuEaKE
+ vEPNuskkFWJATMEAAEKAB0WIQSt5miqZ1cYtZ/in+ok1otyXVSH0AUCanugIAAKCRAk1otyXVSH
+ 0PUuB/9IwWDS7rJYhTs0Xg/SnYB1CFKANuW6Du7FdO4P/RMiV/8qMf8nFnk2tfwJAEXBZhVqFEa
+ ZdOZ9l2E8DN/9s/FbiJLcvrbA9l0ptxpmVKof7aUPFFBqfbX+FXfu68HzaAezloLfhWi+V32cPm
+ eEZKxhNMZ0CGfrnD/ld2o4O+/xVFC61FXJZrkkIYk28ITpJF8gxeROA3DuEprnopWDULdImvatN
+ 6+3v/R0WL0x1eG8hwkqCLODhWelE9pO3IXw5cMnQQDpOADCtBVjN7ho//cz1NlkTGfrQ1+C0Ouf
+ sEuKGKmPbh4zTy1dfnEloQDfqggqGSElzcG5Yw0ryvEnj8SH
+X-Developer-Key: i=broonie@kernel.org; a=openpgp;
+ fpr=3F2568AAC26998F9E813A1C5C3F436CA30F5D8EB
 
+On Wed, 05 Aug 2026 15:55:43 +0800, LiangCheng Wang wrote:
+> ASoC: fsl-asoc-card: defer probe when the CPU DAI device is not ready
 
-On 8/6/26 11:49 AM, Jakub Kicinski wrote:
-> On Thu, 30 Jul 2026 17:47:17 -0700 Mingming Cao wrote:
->> After aggressive ethtool -L cycling, PHYP can leave a VALID RX descriptor
->> with a correlator that no longer matches the per-queue buffer pools. Poll
->> treated this as fatal: ibmveth_rxq_get_buffer() WARNed and returned NULL
->> without advancing the ring, then restart_poll retried the same slot
->> forever.
->>
->> Advance past bad correlators instead of spinning: validate correlators
->> without WARN_ON, skip invalid slots in poll (count as invalid_buffers),
->> and advance the RX ring when remove_buffer_from_pool cannot map the
->> correlator. Rate-limit the bad correlator message.
->>
->> Complete NAPI when the interface is down or napi_disable is pending so
->> close/quiesce can finish. Do not restart_poll in that window. Close
->> keeps hypervisor IRQ disable before napi_disable (via
->> cleanup_rx_interrupts() / related cleanup helpers).
->>
->> Also validate descriptor length against skb tailroom before skb_put(),
->> and after napi_complete_done() on the budget-exhausted shutdown path
->> return a value less than budget so NAPI does not immediately reschedule.
-> This patch looks very odd, like there's a bug somewhere and instead of
-> fixing it we're making the rx path more resilient. BTW minor coding
-> note - you're adding a bunch of heavily indented code to an already
-> long function. Please consider factoring things out. Similar comment
-> can be applied to other patches.
-Agreed. The main fix here should be in the earlier resize/teardown path,
-not in a trailing resilience patch.
+Applied to
 
-I’ll fold that back into the owning resize work: drain before
-deregister/unmap/free, publish the surviving queue range before freeing
-queue resources, and use the same teardown path on the scale-up
-enable_irq failure path. The poll-side skip logic should stay only as
-belt-and-braces after the teardown fix, not as the primary answer.
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-7.3
 
-I’ll also move the new poll branches into small helpers so
-ibmveth_poll() stays a thin loop, but keep those helpers with the
-patches that introduce the logic rather than as a standalone trailer
-refactor.
+Thanks!
 
-I think the same cleanup principle applies to a few of the other
-patches as well, so I’ll fold helper extraction into the owning changes
-there too.
+[1/1] ASoC: fsl-asoc-card: defer probe when the CPU DAI device is not ready
+      https://git.kernel.org/broonie/sound/c/0286324da660
+
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.
+
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
+
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
+
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
 
 Thanks,
-Mingming
+Mark
+
 
