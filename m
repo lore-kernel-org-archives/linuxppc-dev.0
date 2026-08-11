@@ -1,91 +1,91 @@
-Return-Path: <linuxppc-dev+bounces-25726-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25727-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3D885C5B569
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Aug 2026 06:02:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4E5F9C5AD7B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Aug 2026 06:07:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hK1HY5GXkz2yvG;
-	Tue, 11 Aug 2026 16:02:33 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::634"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786428153;
-	cv=none; b=mgrEgv9tafuWH+jopCm+TFqVBQVAuTE0PgBrk7Ihmb8jWUPvRZlpSjVtUatEW+yRac/ryHoIPmGZHB2wSYBan5et1Y5m/iPHrbNjHiP7Rifsr5KtqnklbJ55EyWK+NhMpWFWF4SnnBZXtVDIhJQB10TOwx6PwQT97wbb4gJNaZr2hOJpxNdA0sAe98YXk6UsMmDqGLTOoWUUwKCIRTNYt9njoRkHhls5RGY0/m8I+3r8DnwJgbX/fiGdo4QrPcJ5h05HBSuvsjjs0FU6RNJEZz1jmy+cJxYTzxFMW+RswN+yWksxe6F3UfYkzDvCOoPTI+LiODrABvXZH3LBmu/VYw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hK1Pm5sH7z301Y;
+	Tue, 11 Aug 2026 16:07:56 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::532"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786428476;
+	cv=none; b=YUeWF6cEjo98d7PpIM56dTeww98X6A/MA19YvWlIC9JoADLj6bPbfNrWwBDDaRgyGOtWKj41crqgqnvGli0+SEQvfWARokM15SGeOob9jkvI0PbgPt/RkxF/3efiXFnPj63aq7aYIfHOwvJBIwrK0/iih4/PUcA81octaI5pfICjliHDhByPyWCcuYPhDgHgWe56EM0QeszRD64H3U76v6cPQ7dDAlQMaGSUFPErgl+xa6vVT/+lWXyVYk6zEVKCHfsN+Qx8FliqyeZGjz4VrXpgs1xNy46Iw/W88v9bMbitvqmSeY/WE6MyZ6O/B9DjxmknRY11xyX8nZ6HTaEobg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786428153; c=relaxed/relaxed;
-	bh=QP2FITneW1MbuiIpQp9V/CZwD5bV9NSMMXRy0JGj/pI=;
+	t=1786428476; c=relaxed/relaxed;
+	bh=QtQ4biCxOsHicthc8BowONWL5REoDHpt0IYnLbdJh+4=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=dWaRRk6n/SkczoZh0TrNSMA09eBjZsP3Djqki3LSgHG+Ewta8lrutAXq8N2e+YJnLLvcx+5wuyIyVB8aLQAAGFLu4LuWELpt5LtdzpeJrS8AnYqu7+v+e4OJDMMMxQTP6dhFdLUQFsJhq5ZgenV26v3KTBPfouW55aIfUvSemYLX1WUqQdYTitot3Mp+kyHC4k5xCJ8eYkdNwfqx2WCeqCN8sraZH6HorQX+fWy8m18X424EJT0mzXkxExcfqT/U02VHUDpVAoqD4oZDSwH1cTzPL26zkQ0sInN5aL9H1g2r2B11FwBMg35ijXs+UQLJBxqxY7mBoeko5fvVmSWD4g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Qw+uT5Ki; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::634; helo=mail-pl1-x634.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=BMz9Y3+IXr25lt7tWtX9XEo1K5fzyM1G9cjFNshJv/5wrAT4PWKv+VR6yKD42CqhaclczU082aGelmtmE84CTO53g7RiikYrgkEyxnGZABjxFjexbm+sS9N6VfSF1V/wJu5CVsuu2EcB1CTPCVRxRAIBK/AZqRjL5P7lUPhnVHI349sk0NNTgPitWKatarPkCADpX8gwDUkafbx+Iga4pPi/eq/fdE5/EaU5xJQdMmWJhJmDJViIvwdGoUgDK2Ls29M7TQluPF+wHZP5b55AZ7HN9g3Gs9AX4+FaIuzKrTchmkzTDDeKxw96qHYMGLhqwZx/LI0Sm6nGFQI0LBYutA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=c44+tE1p; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::532; helo=mail-pg1-x532.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Qw+uT5Ki;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=c44+tE1p;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::634; helo=mail-pl1-x634.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x634.google.com (mail-pl1-x634.google.com [IPv6:2607:f8b0:4864:20::634])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::532; helo=mail-pg1-x532.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x532.google.com (mail-pg1-x532.google.com [IPv6:2607:f8b0:4864:20::532])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hK1HX2d7Hz2ynH
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2026 16:02:31 +1000 (AEST)
-Received: by mail-pl1-x634.google.com with SMTP id d9443c01a7336-2cc891373e0so32466815ad.2
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2026 23:02:31 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hK1Pl5XL9z2yvG
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2026 16:07:54 +1000 (AEST)
+Received: by mail-pg1-x532.google.com with SMTP id 41be03b00d2f7-c966b9ee9cbso1712150a12.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2026 23:07:54 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1786428148; x=1787032948; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1786428472; x=1787033272; darn=lists.ozlabs.org;
         h=in-reply-to:content-disposition:content-type:mime-version
          :references:message-id:subject:cc:to:from:date:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=QP2FITneW1MbuiIpQp9V/CZwD5bV9NSMMXRy0JGj/pI=;
-        b=Qw+uT5KivgoFOAcY/7bAK/+Gv7cQ86zeZDUHX7m8nvhg3bBo0pr643lBjsCJrb294r
-         nEjhw5zAxJl9ylTFn1M223lBagUnXsc4yyfz7akgIOzxXobFoa2pTclKvGt4zv0xKnan
-         rc7I6UQcCXCGcYTRbUy9cfeRoR5tX4bYALLdsq99Tt5nUzCvrJ9CF+M6ZgUdzcPZLP+4
-         JItD5g2/JakU7Z8gyFKmPdwZJFbeiqnF+z+cpGTdWR2P1bROFvsXEQlhe7C3LiHq6/nW
-         1IwIhujozuKtW/V/ZYbyq6gDDXk46/oW3ngjcSHSOS/V1LHBzAymn2HAkjpIBAoa6swW
-         eyhw==
+        bh=QtQ4biCxOsHicthc8BowONWL5REoDHpt0IYnLbdJh+4=;
+        b=c44+tE1pWryIU8aGGPgIUsvN+r6QJt0Kw6ckvbtV6cShCfvoN6OUU2v+rE2nXYDH01
+         xsj0DFXo/Sz+PNJI00nHwtMvUfTp81kZUPT4N3fz8a0UrFmx6qjLdv2y2K5Dn/3Dzjt4
+         jCi75sJqwd53hDKOWbnLHbSSF5UPwYi7Q1OPkdvNOk3KaIaL487yES7QLgFuwgJ499LR
+         wPzDLxdBolAPkRbFqSwss3rcCO1uGWwD45OrVCw2s6tcttrORp0OBNljADda/8smvb5+
+         uK0kLR7IHe+/vleyviGIlg1mcHFD6tvRnTyD2KDJpfsIiZG1/FEBx0s5hXSoV8+Wr0YU
+         26MA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786428148; x=1787032948;
+        d=1e100.net; s=20251104; t=1786428472; x=1787033272;
         h=in-reply-to:content-disposition:content-type:mime-version
          :references:message-id:subject:cc:to:from:date:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=QP2FITneW1MbuiIpQp9V/CZwD5bV9NSMMXRy0JGj/pI=;
-        b=CV7stfsXXE6RD/MLcD0t7DNwPZzyMfgamt/bq7Fx3mVv8mLAsV7edWtLtdhpkTZd1G
-         IBrlQQJLV5wzNPLjjzlF9ShRzdLq0QWvQPvpDBT+ANrrzvFDAGkBBI5NWjKmkviYue3F
-         ep5OOmCjU7zEUeQRCopgMbRJK3vP+cy5//w+iLC5bte2dkr2tdxPMQXqOUDszi3FmiVZ
-         1q0IKL4w6x/Aye5inqrstc1QzzSV2k+QnFmtmouVM+CqM+nzk2H9iFGSR/z/ivIwu2EE
-         Ekrp9bR21K+xVieWRR5v/1eDLPhwg0aNFRQ6gx+qDwqzmVlorKDL3ZPoHi0uVHleAqdA
-         /E7Q==
-X-Forwarded-Encrypted: i=1; AHgh+RoHpFvJCTT80hJCWu55pdbMS5k2GSP7K0TA9/OcW6GS4AkMZS3Q+wNAPVI8PMZPYQ9y1O+ZTIWnkZXkf24=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yz20t6J22QztMfjXFP+RFkgJFSdASei8NYCqMeAEpOUARDsN05S
-	40CIFSTF+sATcM3Zr/4zyew+h2jUwAtmTJXfdfJVZ+Tc9dIYxhVefhnE
-X-Gm-Gg: AR+sD12EuqnnHplR+ViQqtrqLsPayrX+uhcDsIxHuw0Dhcfc2MgOA8KfeCSdoT7neMw
-	thRsn34S0kOGxZTJ5JJDiCvQG6fb0O/HhA1mQu7DBm6x2RlQS1zUlhadlbBuCiz5RsD2FuIhuwD
-	Y3YiMEA5XFEgmOHic4vBx5QukvqdjWVjFUjj/ZB0tuHYjt61q08DnY935AhhkXNrr8DleU0uIu0
-	vvzc6ixt326+usqjbSR8XGlooPq6X/BGCxvensmqIw3D6ghOxan/EC8d04xXI02oqMtacleIWrB
-	2iK1qcmMJWc16yqJ8Rk2yLZRDx091LBEx3Cm4ZEESYXFJ7bBGXqHUlWk4zKFHFWSLk1Ft33Yfwd
-	GsGSH6yHRzXGigHssCeOf2kjH/r3WKBl3RXYTeTkjqeBkMmcLdy+3JUssRLpvDVqt8qJKQAkrA2
-	1UMifkSR6rLPFOtjsuM23j55w2g/uOgFg5wEYIWU0mhCuSxf0TXTV3dKcoiKlNbd0ii5KaxQpq8
-	6KBooYM0tkLSpZPyoNPblapK+i4+6b/Ra4RmDnER1PG
-X-Received: by 2002:a17:902:ccd2:b0:2ca:e3f:6a4a with SMTP id d9443c01a7336-2d317976466mr12832425ad.21.1786428148480;
-        Mon, 10 Aug 2026 23:02:28 -0700 (PDT)
+        bh=QtQ4biCxOsHicthc8BowONWL5REoDHpt0IYnLbdJh+4=;
+        b=pmKsWnNAL5qHCOfRQdcMPefbKIeQmFhDjjEO35HgJWi+C6vZwnTrFD/TQ8SN7Vt1+W
+         Y+d4WG+yNCY2pmGIa6cVGLUlHQu9bqZp28TQ3GdiWWCV+HhLsmVCrb5dTtJklSEBJ46X
+         KQ8CR1X5apVnIcgev0iiACF4e1KN2L+J8/DF/110eBzDFoN6J/qHIT0Z8BZBglEyR2U7
+         9K/7XLOY2nqMKoGJ/2sqcVszSdmnhmknm9ZIbVhlQE7blhwWYe0qoOXIdJsi0DZGgMnu
+         PbN0nT7IGC3HAz4ZPnii78OvNfrc0pJZygEabsufIG/OjUHp8N699oKXRCqnsAxhtZZX
+         LNQg==
+X-Forwarded-Encrypted: i=1; AHgh+Ro8PgNcxdgK+S53tgv1FsrN4K8wuB7pqX+LMXHNR1ns/kiQyIMm9dFItz6khyYYwIUp0Xss/ezBFPgWotE=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzhYclv+kpnaWCbjz0pI8rZRBiT3tlP59aEfxpoCIPWm0rIv3Il
+	qx4sA6cjaCMJgHbb7LRUFUYOXssmGL0ctFAOdnVsuIKBwAFXL2KFCpN4b5v//g==
+X-Gm-Gg: AR+sD12bwggqfWS6BGAr+aNmEjew3s9dxai/SbEALTdvIwFpl7BZETkhR3Kq1YBEI13
+	wyYZM7GLlU8h6SDaFmr4Pa/H16ampp3ZsgpRHwEvSBvSOAw7sYbyPi2WJVGa4toScddPX0Oy0eQ
+	N08Ir9PsWBoCGtGOJkcOgyVUSal7hPg0X9aJJev6z1o3xPjlcjtp+ZQG6cdalG5pddX0SJnmpu3
+	jWpgKUOgzKyPKopRUrlS8gdf4+euh4bT1zC/yqMPExvh4wnI+C0HX+8Pf5FPr+pZklQ9onOTtZh
+	IYYgtaem4qhOYE6twpNJ0OktMtbBbVo0wf6j4A3RtjDU91cCMkAKbblrM3hiPQBtav32TrhLEhK
+	8reQre5hqkT3PjcFhBMEbv0IQxdHwlEHwv4bt/Npl2pVzWWCpxyBultujTx18FGCX+yG/Qw4874
+	C7i/i0Luaw9ALGUw5DSWFErTw5yW+JR+4YIcqT97AxifwDgtPVqHMUnMvfxccCZjh2kbJ7RmCi4
+	Tpzn5BbydR9E9zWev7O6lwl00wq2qG3
+X-Received: by 2002:a05:6a00:8d96:b0:848:46a0:3d74 with SMTP id d2e1a72fcca58-84fa86ab16cmr899076b3a.9.1786428472590;
+        Mon, 10 Aug 2026 23:07:52 -0700 (PDT)
 Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([129.41.58.4])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2d315f458casm1998455ad.33.2026.08.10.23.02.24
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-84fa91db595sm126742b3a.27.2026.08.10.23.07.48
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 10 Aug 2026 23:02:28 -0700 (PDT)
-Date: Tue, 11 Aug 2026 11:32:21 +0530
+        Mon, 10 Aug 2026 23:07:52 -0700 (PDT)
+Date: Tue, 11 Aug 2026 11:37:45 +0530
 From: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
 To: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
 Cc: Shrikanth Hegde <sshegde@linux.ibm.com>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, 
-	Peter Zijlstra <peterz@infradead.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, 
-	LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [BUG] powerpc/pseries: WARN in __replay_soft_interrupts() during
- SMP bringup on Power11 (7.2.0-rc5)
-Message-ID: <anq6gMOWzTLVGWen@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-References: <6f9bfb0f-b14c-468e-bb9f-c157d120d0dc@linux.ibm.com>
- <e9a6d82c-8ce1-45a5-a5cf-e4476f97cecf@linux.ibm.com>
- <4505448b-59af-433c-93c8-05b13da1a6a0@linux.ibm.com>
+	LKML <linux-kernel@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
+	Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [REGRESSION] Power9 pseries boot hang in v7.2-rc6, narrowed to
+ PowerPC GENERIC_ENTRY conversion window
+Message-ID: <anq72IebDSu-wWbb@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+References: <96dae110-f79b-4e54-8a9b-514369019b5d@linux.ibm.com>
+ <e27eeaf4-c2c9-4ef7-9e1c-0a5fb45755d0@linux.ibm.com>
+ <6d1b5f38-f4e4-46ca-88b4-7c18dd6c6280@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -101,36 +101,33 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4505448b-59af-433c-93c8-05b13da1a6a0@linux.ibm.com>
+In-Reply-To: <6d1b5f38-f4e4-46ca-88b4-7c18dd6c6280@linux.ibm.com>
 
-On Mon, Aug 10, 2026 at 09:04:34PM +0530, Venkat Rao Bagalkote wrote:
+On Mon, Aug 10, 2026 at 05:19:27PM +0530, Venkat Rao Bagalkote wrote:
 > Hi Shrikanth,
 > 
 > 
-> On 04/08/26 12:06 pm, Shrikanth Hegde wrote:
-> > hi venkat,
+> On 04/08/26 8:23 pm, Shrikanth Hegde wrote:
+> > Hi Venkat.
 > > 
-> > On 8/4/26 11:39 AM, Venkat Rao Bagalkote wrote:
-> > > Greetings!!
+> > On 8/4/26 2:04 PM, Venkat Rao Bagalkote wrote:
+> > > Hi,
 > > > 
+> > > I'm seeing a boot regression on a Power9 pseries LPAR. The system
+> > > hangs very early during boot after:
 > > > 
-> > > I'm seeing a reproducible warning during early boot on a Power11
-> > > pSeries LPAR with Linux 7.2.0-rc5.
+> > > Quiescing Open Firmware ...
+> > > Booting Linux via __start() ...
 > > > 
-> > > The kernel starts booting normally and reaches SMP initialization,
-> > > but then begins emitting continuous warnings from
-> > > __replay_soft_interrupts().The warnings continue indefinitely and
-> > > the system never completes boot.
-> > > 
-[...]
-
-Hey,
-
-Seems like this is because of some code movement. I need to look deeper
-into it. I'll take a look.
-
-Thanks for reporting.
+> > 
+> > That is strange. not sure where to look at without any logs.
+> > Is it a specific config that fails or this specific LPAR that fails?
+> > 
+Is this a specific lpar or all power9 pseries are exhibiting same
+behaviour?
 
 Regards,
 Mukesh
+[...]
+
 
