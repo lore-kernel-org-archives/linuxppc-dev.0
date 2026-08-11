@@ -1,51 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-25721-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25722-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 85CAEC5B56A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Aug 2026 04:59:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CE50AC5AD55
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Aug 2026 05:06:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hJztM0bqWz2yvG;
-	Tue, 11 Aug 2026 14:59:07 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786424347;
-	cv=none; b=YtsUtEmcMiL6BYXA9V2fVXUQd/6AnuA2cf9t43fpd0VeMaOKJhGgCzyDCCjGcsR6IJ/vKbHRP7u3rIvJc3BEJYx4v0mnlq3Aog/TyCjEf/VpmSqe1UCJnmmWErH3Q1fdjhUQKrg96eRztFdJYE9Aen22/pUUa+LFEQ1ecdI/vO9trN5ldeKdIWdgks5sxLIh4kjlcnbn9mO/oQRSoVt6IGmx0Z1RvuOgJ7Itg1ORTgfSSH6Cb+65r5CJK7kLYHr2PupBc+NMCLuRyh5NLJjxrXauSdnjrVx4dVccqQm69f7OSjzkCHAgOfNCBkJzLDX/TSF5DdndQujftRJcTiAV+w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hK02v3y7Nz2yvG;
+	Tue, 11 Aug 2026 15:06:31 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786424791;
+	cv=none; b=Amv34psZ+qpzNbapuL8PPRk6f7+khcAcJIvzr6Wp1xPp8QyG9eXI21QxYQDn0rPBJ/UpQ+9b3JD4ELG/s08Gy/bw4xWZj6PXkhLUwCbiproxrsbS87FICqGQ5ekqTfO332kI0oWX3K54UMy58XqK/I/eztZc3+W10Oa84QTAUhrMcgfCkC1SFEqD9ufd3w+AFTIThs0ugh6A8o4iBrvFINHVNhrz11xecrZB1GSa+EFNUjSK7QRjaWSFm8lQ1VtYfmPUccCOVpFY07eVcnvD062R1px/tcE7XylM/6H6obEQ9GjS16KRMENs89wZFdADD96+/a/UDgMBmd49hxSUNQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786424347; c=relaxed/relaxed;
-	bh=VpmP0/V/f3nYUUeEX4OZFCdq3p8rw9FlptRhR3LAYSI=;
+	t=1786424791; c=relaxed/relaxed;
+	bh=tVdL+T+Rx671Fk4E730Yac6q/Gy3INApbHTkStTnbyE=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=R9nMirB8bAU5oqpa28wGA3jMSGECmWq0XNEZZ4dWddSOXeSQk01s7p6QHMe80MUqfd2fMae50jUVRQYklpj51x8Q5mLIyW0ULm3cJcWKsXlsj2DPJNf2c/kQq85A/F19KCK0tPGOzw7MBj77btiA3zhjt4BVJBAB+E3atgKPV3d64L6jJtBLHNKOm/yjt+icPsUe1niS3Tbh0ouqZ5vh4GGr71xOGr7LXfR+aGuc2riPsW1S2oF4Kh5IR5geBHoea5xPdffHEwSB67chLhn3mxN+tC+lGN6YAyFsAv7FgexIuxx4f9EYkHXXo3ilCJsGA5G4SKXfPD7QJ3aAhBHf4g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Gx25TPM0; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	 In-Reply-To:Content-Type; b=SLz19JkHxZu9l38muUlQq/OXtvXBVO0/CTyJVWLQKgtaobVyYg0agvktYATd/npi2FTbTaVvJjOI0rHNUdOJXUHaVGNjTSeiADddY8pGR6PisiTTjINePf+b3cKOulCuGWuQ3uVpB42F5Iw9MD1R1+aAVaUD9J9mpqftkfMNrKkgJ24XiXYvQbVmDRcveVpEKSZg7EInHDc1gk4rIG3LsJ4FnC3OBCXBHSFL/wYzBnVXVQpSfiMqRT3CSefR0sMaf6hU0nw/DEJKvf673VURIp717AQHqREsuMBY1ISBuZpNRe2VGAtP6q7VWeKS3AFF6NLS1B7/JT9A2aviCSG82g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=F7Yf2fPz; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Gx25TPM0;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=F7Yf2fPz;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hJztL2wH7z2yrL
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2026 14:59:06 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id B2CFD4185F;
-	Tue, 11 Aug 2026 04:59:03 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A56CC1F000E9;
-	Tue, 11 Aug 2026 04:59:01 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1786424343;
-	bh=VpmP0/V/f3nYUUeEX4OZFCdq3p8rw9FlptRhR3LAYSI=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=Gx25TPM0IQQuJ6Jt9Y43E/IQ6dVfolSgn1TdiB0fleynDN7oPw4YRKYboFKtHg0NQ
-	 EEX2jrLsp9v7+TlvUug+fBMqZzhfA83Cq+U5WQmeChknJ8ifPDPeSHFC2vPHKut2UZ
-	 Oi5FQmgTR3oHER0N/FVFX/uzLCzJWNlEVEBk5HWg04NUwj8iVsiv0pPd/GKgED8J+J
-	 fAzQaSFMzQfJRQGSIjIIR5aKOVyEbltgSQ0S6UrTEvqyMalGkxVwPmGllSBpk3iu5u
-	 WHMes8RO1gPlhZ941IvwOV5zoYeCQFQZyhmvNwqornTBtjS24uPtHpDWfPaJ93zjRF
-	 bXnBuiQdQYHNA==
-Message-ID: <eff5c192-ed33-44e8-8834-fa5b4803f39b@kernel.org>
-Date: Tue, 11 Aug 2026 06:58:57 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hK02t5jC1z2yrL
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2026 15:06:30 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67AN1Wtr2964896;
+	Tue, 11 Aug 2026 05:06:10 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=tVdL+T
+	+Rx671Fk4E730Yac6q/Gy3INApbHTkStTnbyE=; b=F7Yf2fPznSY2neWcL/eo5I
+	3oBkAbhwyQISgyfpXWkCdFKDYdmnP7XvO4o/T9OP3d/8Xxq9uiJZAlcpaGVE2ADv
+	ba8uRXMOrW+vDZgzx/BMxupePzMkgb7oA18Cl4jLH6lrYxB5d410yxSZAsxrtGcI
+	yC8aR3SHRRj0r59czm9sCrXShuICfAU9A/u2/8gOwx6mii1wk9tksAT+IUUIMuSO
+	GAEE8o60Z+8rOxtlehS8UgOV3ggUIJqjo2SRICg2RsDEfuNHL3uMEvUx6D9hxzUH
+	2EW5IN1jB5JWHz7+baDdbcwA96RfubYVtKx5c+O1K/+rGFI1U9PMIaEz+cp9lOrw
+	==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fwvm9ke2h-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 11 Aug 2026 05:06:10 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 67B4uFwB013517;
+	Tue, 11 Aug 2026 05:06:09 GMT
+Received: from smtprelay03.dal12v.mail.ibm.com ([172.16.1.5])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fxhfxydp5-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 11 Aug 2026 05:06:09 +0000 (GMT)
+Received: from smtpav04.wdc07v.mail.ibm.com (smtpav04.wdc07v.mail.ibm.com [10.39.53.231])
+	by smtprelay03.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 67B568QX29688444
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 11 Aug 2026 05:06:08 GMT
+Received: from smtpav04.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 8A2F758056;
+	Tue, 11 Aug 2026 05:06:08 +0000 (GMT)
+Received: from smtpav04.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 76EE458052;
+	Tue, 11 Aug 2026 05:06:03 +0000 (GMT)
+Received: from [9.43.82.57] (unknown [9.43.82.57])
+	by smtpav04.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 11 Aug 2026 05:06:03 +0000 (GMT)
+Message-ID: <6f7bf628-c26b-4c5d-8f5a-5908b1348365@linux.ibm.com>
+Date: Tue, 11 Aug 2026 10:36:01 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,66 +82,70 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [BUG] powerpc: userspace processes crash in ld64.so.2 when
- running recent linux-next kernels
-To: Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Ritesh Harjani <riteshh@linux.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, ajd@linux.ibm.com
-Cc: LKML <linux-kernel@vger.kernel.org>,
- Christian Brauner <brauner@kernel.org>,
- "linux-mm@kvack.org" <linux-mm@kvack.org>
-References: <75419f88-eab9-444b-bf97-28a9765819ad@linux.ibm.com>
- <627c5c2f-a0b3-4fba-811f-7b4ed4c74dbb@linux.ibm.com>
-Content-Language: fr-FR
-From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-In-Reply-To: <627c5c2f-a0b3-4fba-811f-7b4ed4c74dbb@linux.ibm.com>
+Subject: Re: [PATCH RESEND] powerpc/configs: enable CONFIG_RAS to fix EDAC
+ support
+To: Borislav Petkov <bp@alien8.de>, Michael Walle <mwalle@kernel.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin
+ <npiggin@gmail.com>,
+        Christophe Leroy <chleroy@kernel.org>, Tony Luck <tony.luck@intel.com>,
+        linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+        Janusz Krzysztofik <jmkrzyszt@gmail.com>, Takashi Iwai <tiwai@suse.de>,
+        David Heidelberg <david@ixit.cz>, linux-edac@vger.kernel.org
+References: <20260730105546.3658570-1-mwalle@kernel.org>
+ <20260730185620.GDamueVIGV-8iIzozX@fat_crate.local>
+ <DKC6Z5YGBF2O.TAJAN566BN0L@kernel.org>
+ <20260731022855.GNamwIZw7Fz4Yhk__S@fat_crate.local>
+ <DKL4118H7S5U.1FN3E4DBY4GHF@kernel.org>
+ <20260810135020.GBannXHLXtUlqJjzqS@fat_crate.local>
+ <DKLBIZ7ZBP1K.20VHSP02I6BW2@kernel.org>
+ <20260810170149.GCanoD_ZhL61i4rHsl@fat_crate.local>
+Content-Language: en-US
+From: Madhavan Srinivasan <maddy@linux.ibm.com>
+In-Reply-To: <20260810170149.GCanoD_ZhL61i4rHsl@fat_crate.local>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODExMDA0MCBTYWx0ZWRfXwdjaO3L+cjp+
+ ssjEh9WJrMANO6LKza2y/JdnHQI2xsTlZ5PYEZQy5Zn7uKd0VCmaBaywIN3/8a7xQOut/RTViLU
+ oJkViD089y4Njxu4y6zD3CGbK0hBwj6Q5ia+nvPKdOwsGqnlckmuSXfx6+UmchxQ/JdiTuXLRJR
+ 5Vw9aFG+KBSz7xtmLPJd0YhShiE9ytFs4DzlGUZVzSXtUpTBzHjzY9DDyu3OQMRa6YxkK5FoKl/
+ FIPijBCamN8+iyRWbdIcGSrCTATKEzCap8710octLtlU73SP7RQUSMo2xx9ps6W2+JjaIFgfh/U
+ iLKZ1Lu+5nG4KvO+cuLSunQWn50Tp2+yOwd5TVjYQsjchDZDPbrMJLBq8PdIZPYQgzfkOaqV3ko
+ g9JdiXP4PKs66G1dprlbyQc+r55IBGRKYtWLheYaenhjd1gyJz/vtW8FQclPLj4rAd2nFtMbnhw
+ hhQAh/oadwl6Muf82Fg==
+X-Proofpoint-ORIG-GUID: Z3pZRFUagyGKK9RbeglaQh7apUqSCsH7
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODExMDA0MCBTYWx0ZWRfX4flE190Oxgyk
+ xLmZhPi8ptRMY/DP48Dz2Qf5anUfoX7eTA/HrvAuA3vFxK6dkR7DaG8h1JZUrTf+p10YMqXZI6R
+ kKODCX6IrD66eW3e+LtwLLjrFrE31Kk=
+X-Authority-Analysis: v=2.4 cv=IfK3n2qa c=1 sm=1 tr=0 ts=6a7aadc2 cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=VnNF1IyMAAAA:8
+ a=EWrn2hZPb0KCTzPtCBYA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: Tg5-vBBnBR12INX6I13ynMvn98czZJ_o
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-08-10_06,2026-08-10_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 priorityscore=1501 impostorscore=0 bulkscore=0 clxscore=1015
+ lowpriorityscore=0 adultscore=0 malwarescore=0 spamscore=0 suspectscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608110040
 
 
-
-Le 11/08/2026 à 06:23, Venkat Rao Bagalkote a écrit :
-> 
-> As part of debugging and suggested by Maddy, I reverted the following 
-> commit:
-> 
->    263e5159e00a ("powerpc: Fix exit_flags field placement in pt_regs for 
-> ptrace")
-> 
-> and rebuilt/booted linux-next with only that change reverted.
-> 
-> After booting the reverted kernel, I rebuilt the latest upstream kernel
-> using the same userspace and toolchain. The build completed
-> successfully and I did not observe any of the ld64.so.2 userspace
-> segfaults that were previously seen during kernel compilation.
-> 
-> Kernel used for testing:
-> 
->    7.2.0-rc5-next-20260731-00001-g79d9c1ce90a9
-> 
-> Top of tree:
-> 
->    commit 79d9c1ce90a9873422ca4d6d0124a1d1c10a098c
->    Revert "powerpc: Fix exit_flags field placement in pt_regs for ptrace"
-> 
-> The upstream kernel build completed successfully:
-> 
->    INSTALL /lib/modules/7.2.0-rc7/kernel/net/openvswitch/vport-gre.ko
->    DEPMOD  /lib/modules/7.2.0-rc7
->    INSTALL /boot
-> 
-> Based on this testing, reverting commit 263e5159e00a appears to
-> eliminate the random userspace crashes observed during kernel builds,
-> suggesting that the issue may be related to that change.
-
-But commit 263e5159e00a fixes commit d7a6797e0bc1 ("powerpc: add 
-exit_flags field in pt_regs"), by reverting commit 263e5159e00a you 
-re-introduce other bugs.
-
-It's a bit difficult to see what commit 263e5159e00a is doing exactly, 
-most of it is a revert of commit d7a6797e0bc1 but it does something 
-instead. Need to see what remains with both commits applied.
-
-Christophe
+On 8/10/26 10:31 PM, Borislav Petkov wrote:
+> On Mon, Aug 10, 2026 at 04:03:17PM +0200, Michael Walle wrote:
+>> Thanks! Christophe already pointed out [1] that it should go via the
+>> same tree as the commit it fixed, i.e. the EDAC tree.
+> ./scripts/get_maintainer.pl -f arch/powerpc/configs/85xx-hw.config
+> Madhavan Srinivasan <maddy@linux.ibm.com> (maintainer:LINUX FOR POWERPC (32-BIT AND 64-BIT))
+>
+> and he said on that thread he'd pick it up.
+>
+> But I can take it too if PPC people agree on who takes it.
+I have added this to my next-test and I will take it via ppc tree.
+Maddy
+>
 
