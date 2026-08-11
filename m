@@ -1,69 +1,61 @@
-Return-Path: <linuxppc-dev+bounces-25737-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25738-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D8227C5CFC1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Aug 2026 10:40:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 09229C5CFCF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Aug 2026 10:55:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hK7Rg3BKsz2yyJ;
-	Tue, 11 Aug 2026 20:39:59 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::546"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786444799;
-	cv=none; b=VUsJ6Qzif5dbYmNZd7YVy4hQqYgca0BB5Gzm53dNqzmrx9e3KNx9u0CSS1zIdTTX17iAuitCMAIJU1cV0cOCDlYOPBKLfYENkeMUVLmzU2aOEJLSFwGSbtCe80Dj79HbeR6voatpKM96LOYIE9vuPdySihpTBkdmGk/7FCTHKSVegd4E4/PahB3EWCVXTbh5c6bRb1+C89FTiiMsYd0Mi2bfmhdivkuXqsEN5zwLg8Pu7oU+YOQhwnhfExFmImp03OTWpS4OQMBY8PLgYO8R8MfW6YIIUH1shOWQXATxjJiw2jMGB0SClR0fJSi8NHpKggkiFa/qathnrOgX8ii39g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hK7p11g1jz2yyJ;
+	Tue, 11 Aug 2026 20:55:53 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=95.215.58.184
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786445753;
+	cv=none; b=BKeUfBaFVCw5TzJ/zv+QwUimYUKjTwu0RwghEE2JFGeQnuyW/KyC0NXkNMk4/XOK96bpQEkd572nf7z1azVnaCsl1e45cQiDhN4OUPspHK0y3WWQwaCV+UayoPFCRRBTr3VwQymQcecQqgNRLoOavwYJ/CrQvjYvo1Rn4YW8xCGqbMQUc9ILxQ/p+wNe1bdpGqTnEhCzHP5Js6MwbcyA00O0kWdEKMmLFAdSH8cKWE1Hu3o/aydAcKzvRRPU/YR7A196tYMO7lRNXbv+6imHayXMeTzViPgv0K1UmVeUumeC3VTn1cfv0kNp9wnyYsWbq/RI6qJBM10OfvWBdCx78A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786444799; c=relaxed/relaxed;
-	bh=VGMemQkEC5pRlM4gYZJhKb5X+L3Mgf2+8jXep9XZ59M=;
-	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=TjV/Bg2bN8wpxA9M7oWLr4+v+F1n/zTJh9TEkWU122WbGWrkUJjigrd6rlMs9Vhf85/VDZpLopbHmS6VKuKHoSfW+Dvk7EW1WpzIaJVNgcoQP5DEpkicFDXhAAZxYPFqY5werTmSmO7adJWAmPG0jS1UO3oJKht2mMQS0FlFRM/5eXd4B9dB3lFSiyamZFgPjKGlWrfLyzy95YUNV8jtBC/WnQC9OSqv9EXBj7vi7unzTSuBULO2Dpg0wAM6g85D2dqbETClu3rKKi3ypLy+0dZSVgf7DHmeJTVDDZfzrtcCVVfno0oRsDm55nAuE9bMNLWBQvbxvPWUCiF+aziiow==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=oGPgY5/p; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::546; helo=mail-ed1-x546.google.com; envelope-from=38_t6agkkddihofibgoviuccuzs.qcazwbilddq-rsjzwghg.cnzopg.cfu@flex--tarunsahu.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--tarunsahu.bounces.google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	t=1786445753; c=relaxed/relaxed;
+	bh=La4waMT4rs7aXnTV66yZwYLc3c+bIPKvhMi8gMs4mD8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=jw7/IFlsVSMKz6l5w95/dyP2P7JL2kG5Eb2fXhQISvihyJmVMnvudZjfZcV24pcXjN2eiATv8Kg4zIK9VSu3oTCJFDwn4AWnVlgPjY1EFuCZl5Q9o8zdtxNwUyN6XOR17rx4oed8Z8wmn2qxHD7MvGmdkJpq/EKovQkNe2J+s/nJk5cm6KKdPxdM4zJI+d+CdI5/xXtwlcn0m4zhRaze+kyNktIUhCjsSv54V0IBGidRQomUGBzIIP8nVizMiqf/WVYX4gsi0IL2ze9ucwGXhVHR0hyjMh+e/kucmpp+rbCbfBTaydrziD0hC34O5FSj6gjmNNkNQizreVyovrO+ng==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=B1a0pCwG; dkim-atps=neutral; spf=pass (client-ip=95.215.58.184; helo=out-184.mta1.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=oGPgY5/p;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=B1a0pCwG;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--tarunsahu.bounces.google.com (client-ip=2a00:1450:4864:20::546; helo=mail-ed1-x546.google.com; envelope-from=38_t6agkkddihofibgoviuccuzs.qcazwbilddq-rsjzwghg.cnzopg.cfu@flex--tarunsahu.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-ed1-x546.google.com (mail-ed1-x546.google.com [IPv6:2a00:1450:4864:20::546])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=95.215.58.184; helo=out-184.mta1.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org)
+Received: from out-184.mta1.migadu.com (out-184.mta1.migadu.com [95.215.58.184])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hK7Rd2lNbz2yvM
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2026 20:39:56 +1000 (AEST)
-Received: by mail-ed1-x546.google.com with SMTP id 4fb4d7f45d1cf-698557ec1e9so2022425a12.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2026 03:39:56 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1786444788; x=1787049588; darn=lists.ozlabs.org;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=VGMemQkEC5pRlM4gYZJhKb5X+L3Mgf2+8jXep9XZ59M=;
-        b=oGPgY5/pc60lRYpGZZi60xjmd7f46JX+ZIN6BYZGzWUPf5MVE7rDeSYzfPSz9zkFw/
-         sBxJoEnpkTxgUixCyhiUaoAqt88fykfUiGm4NJOtEo/INe/rkqZ0FSfkast9lkA1zN9L
-         CtJE2/C1rFz/Vkoc6Kn2YhJKpXiD/y9yNDcNRIAHfQ5gw09yM/+FYms31ZltpjJZ1S9Q
-         1ANL1Io6wcOMxOaDDJfyvjOVzD2dy85chJw+21IVa3bSnxy3FQVPR/IuNwMdgyx/oHu7
-         3QBOrvUsW/bKsWJOm/qe8bC/gnyvmGpudYGFPWAVl8PRyyW5X5vLD5It25G9Ywcg8NKt
-         xYBg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786444788; x=1787049588;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=VGMemQkEC5pRlM4gYZJhKb5X+L3Mgf2+8jXep9XZ59M=;
-        b=MTypCf9WXTlshA4wrrQI3RojF6zPjIIA3vMUvFXWEEPW1r+6CadIbVwzyej9eshz1B
-         ffx+TnOMzqABhituhiep+ykyZPdao9H+Znbyzafsz2Cd5CSWuwc4sZX/xsGmvMbuy6/y
-         /DawXjwDwFKHGFnEyk8tm0a7NKirs8VVfjjrfozYTsO476VvzUTkaJmyzRAifTzV1NjE
-         M0P/9r//LOtAi3kqzWIET7mQclzN5xbJ4dK+AjRoRzTTMeQEKy8D/W3Va69D6JHTPVBh
-         vlyZcW1bGI/mo5kep/Ph5bEAGxCE5JXgtfFSVci06BL6isOReqZgnHndrX+Vr2SHsjuD
-         fTAw==
-X-Gm-Message-State: AOJu0YwpfW3KUD9xQf1v4aQu1EtS4eDdiKTwn6Y3Xn+3UAhj77y2LVHp
-	MHTsPhGRqfpxemoNp+K9WNulrDErvfRe5BESlXxczhjw13BWI8WjgxHoTK6MWTLUq8+K2EVMmCd
-	rr/VwgJzddCppSw0VBA==
-X-Received: from edbdm24.prod.google.com ([2002:a05:6402:22d8:b0:6a3:6510:8ace])
- (user=tarunsahu job=prod-delivery.src-stubby-dispatcher) by
- 2002:a05:6402:2417:b0:6a1:ffc4:e4b9 with SMTP id 4fb4d7f45d1cf-6a3644aeb16mr1321144a12.9.1786444787939;
- Tue, 11 Aug 2026 03:39:47 -0700 (PDT)
-Date: Tue, 11 Aug 2026 10:39:47 +0000
-In-Reply-To: <9e189214-1274-491b-97dc-1b943c6c5cea@amd.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hK7nw2jcsz2yvM
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2026 20:55:47 +1000 (AEST)
+Date: Tue, 11 Aug 2026 12:55:15 +0200
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1786445722;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=La4waMT4rs7aXnTV66yZwYLc3c+bIPKvhMi8gMs4mD8=;
+	b=B1a0pCwGMiObe8FUyVrFx3+csoClXuKOjOWE3GC90OUdZiZIp6DmyhBfUdR4rmNxclN9nG
+	GJe9hUtMII6cBeZF9W0soUALxhFXOqBheu8BN6rvc0uI9vAZvqU6EKFSrkw3U2HkwljDIK
+	a762D6zdoDrpP8JR1bOQLgpYCtY3TWQ=
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: Thorsten Blum <thorsten.blum@linux.dev>
+To: Sourabh Jain <sourabhjain@linux.ibm.com>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Hari Bathini <hbathini@linux.ibm.com>,
+	Aditya Gupta <adityag@linux.ibm.com>,
+	Jinjie Ruan <ruanjinjie@huawei.com>,
+	Thiago Jung Bauermann <bauerman@linux.ibm.com>,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] powerpc/kexec_file: Use inclusive range checks in
+ add_usable_mem()
+Message-ID: <anr_k9jzc2QYjsJz@linux.dev>
+References: <20260809162403.18142-2-thorsten.blum@linux.dev>
+ <ee531113-5a56-4e6e-bc16-95941aa5bbfd@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -76,77 +68,47 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0
-References: <20260810162814.1398016-1-tarunsahu@google.com>
- <20260810162814.1398016-4-tarunsahu@google.com> <9e189214-1274-491b-97dc-1b943c6c5cea@amd.com>
-Message-ID: <9huzbjb9hrf0.fsf@tarunix.c.googlers.com>
-Subject: Re: [PATCH 3/4] EDAC/versalnet: use put_device() on device_register() failure
-From: tarunsahu@google.com
-To: "Pandey, Radhey Shyam" <radheys@amd.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	Geoff Levand <geoff@infradead.org>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
-	Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, dmatlack@google.com, 
-	Borislav Petkov <bp@alien8.de>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Shubhrajyoti Datta <shubhrajyoti.datta@amd.com>, djeffery@redhat.com, 
-	Tony Luck <tony.luck@intel.com>, skhawaja@google.com, 
-	Russell King <linux@armlinux.org.uk>, stuart.w.hayes@gmail.com
-Cc: linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, 
-	linux-kernel@vger.kernel.org, driver-core@lists.linux.dev, 
-	linux-edac@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ee531113-5a56-4e6e-bc16-95941aa5bbfd@linux.ibm.com>
+X-Migadu-Flow: FLOW_OUT
 
-"Pandey, Radhey Shyam" <radheys@amd.com> writes:
+On Tue, Aug 11, 2026 at 11:51:46AM +0530, Sourabh Jain wrote:
+> On 09/08/26 21:54, Thorsten Blum wrote:
+> > add_usable_mem() adds usable memory ranges for the kdump kernel.
+> > 
+> > The ranges are inclusive, but the partial overlap check uses exclusive
+> > comparisons. This skips ranges with base == loc_end or end == loc_base.
+> > Use inclusive comparisons instead.
+> > 
+> > Fixes: 7c64e21a1c5a ("powerpc/kexec_file: Restrict memory usage of kdump kernel")
+> > Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
+> > ---
+> >   arch/powerpc/kexec/file_load_64.c | 2 +-
+> >   1 file changed, 1 insertion(+), 1 deletion(-)
+> > 
+> > diff --git a/arch/powerpc/kexec/file_load_64.c b/arch/powerpc/kexec/file_load_64.c
+> > index 8c72e12ea44e..f9e872693ca7 100644
+> > --- a/arch/powerpc/kexec/file_load_64.c
+> > +++ b/arch/powerpc/kexec/file_load_64.c
+> > @@ -113,7 +113,7 @@ static int add_usable_mem(struct umem_info *um_info, u64 base, u64 end)
+> >   		loc_end = um_info->ranges[i].end;
+> >   		if (loc_base >= base && loc_end <= end)
+> >   			add = true;
+> > -		else if (base < loc_end && end > loc_base) {
+> > +		else if (base <= loc_end && end >= loc_base) {
+> 
+> This is interesting. The updated condition basically handles exactly a
+> one-byte overlap on either side of the usable memory ranges. In practice,
+> it is very unlikely that we would have such usable memory and LMB ranges.
+> 
+> Thorsten, have you encountered any problem that led you to propose this fix?
 
-> On 8/10/2026 9:58 PM, Tarun Sahu wrote:
->> When device_register() fails, calling kfree(dev) directly bypasses the
->> device_release() callback (versal_edac_release) and leaks the allocated
->> driver core structures.
->> 
->> Fix this by calling put_device(dev) when device_register() returns an
->> error, ensuring proper refcount decrement and release cleanup.
->> 
->> Signed-off-by: Tarun Sahu <tarunsahu@google.com>
->
-> Thanks for the patch. FYI, this issue is already being addressed in an
-> ongoing series.
-> https://lore.kernel.org/all/20260724171945.2812749-5-shubhrajyoti.datta@amd.com/
->
+Found by inspection only and I agree that this is unlikely in practice,
+which is why I didn't cc stable. Same for the other patch [1].
 
-That is good. Should it go as saperate patch or it fits very well with
-the above series. I will drop it incase of later. WDYT?
+Thanks for the review.
 
-~Tarun
-
-> -Radhey
->
->> ---
->>   drivers/edac/versalnet_edac.c | 6 ++++--
->>   1 file changed, 4 insertions(+), 2 deletions(-)
->> 
->> diff --git a/drivers/edac/versalnet_edac.c b/drivers/edac/versalnet_edac.c
->> index 97ec05d68bbb..2912b3658915 100644
->> --- a/drivers/edac/versalnet_edac.c
->> +++ b/drivers/edac/versalnet_edac.c
->> @@ -829,8 +829,10 @@ static int init_one_mc(struct mc_priv *priv, struct platform_device *pdev, int i
->>   	dev->release = versal_edac_release;
->>   
->>   	rc = device_register(dev);
->> -	if (rc)
->> +	if (rc) {
->> +		put_device(dev);
->>   		goto err_mc_free;
->> +	}
->>   
->>   	mci->pdev = dev;
->>   	mc_init(mci, dev);
->> @@ -852,9 +854,9 @@ static int init_one_mc(struct mc_priv *priv, struct platform_device *pdev, int i
->>   	device_unregister(mci->pdev);
->>   err_mc_free:
->>   	edac_mc_free(mci);
->> +	return rc;
->>   err_dev_free:
->>   	kfree(dev);
->> -
->>   	return rc;
->>   }
->>   
+[1] https://lore.kernel.org/r/20260810145827.157972-3-thorsten.blum@linux.dev/
 
