@@ -1,43 +1,43 @@
-Return-Path: <linuxppc-dev+bounces-25712-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25713-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ACF35C5AD7B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Aug 2026 04:22:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B4F28C5AC67
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Aug 2026 04:22:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hJz3c6VLwz30CB;
-	Tue, 11 Aug 2026 14:22:04 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hJz3h1fXpz30N8;
+	Tue, 11 Aug 2026 14:22:08 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786422124;
-	cv=none; b=S6re3zU1fFQANTnMgwK5BxwvJFNl8o026HiSrGjkHbbVDaFN5VwQiR4SbkNCRBdc7VjPaRrzZBaEzqpO9sIai8jJT6ledL8nzECKpkmGFWKx7JPG1YkQrJN6EPZeLgY6KtoeXFX4yQJwI8fMRwZplvzA4CcfZ8P1nr9YHg4LKs+Pf3n/ftB9uCbZhb9M9wx4UdbJFtFufE9TidrX0TpuXGfU10EeLJwufEGN3UEA83PrWkK5Hux89O8y/DmDNxPUtZDrxiIBxVugj11YMi70oIs5aQek8vLyjRnSRV7Kf+hBHbGr83Jv5rrBzdKjfFtwUmukbpdfc6L945fTb38DmA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786422128;
+	cv=none; b=Avm2N11yWMC/BAJhHqNk4m+e8SEk3/n13hrAHHv43mT+9zmAHvtVuP8WUuRqmrI0wI1q6ESMmcn4H4o+cocU/pyKqwjwrL4ELZMkw6iRqZpXR69IowBFal1sel19HTIRvroBfIoQHmhZmtomukht0JmvWPm1hbbVOOl9g/aqqXZnAEvSK/v4jROioDH7ohyS1W7PVmEqe9LcDt/f58+nOEM7pQlf5lXEVj84QXPpTsazL1tUCncFi7rSxdEl9scGVLaWp3E9W0XN97t3rx79cFMCygOATr6P3ilaXHZ9t9X4hltyfO7lh0GqJ5/BZIb2/vzv/vsB0jovCqXARt+GSg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786422124; c=relaxed/relaxed;
-	bh=lqYTyuJigdGC6n50Tg7PHrR5p4btDFU9kp/x8tq4MZE=;
+	t=1786422128; c=relaxed/relaxed;
+	bh=EI5j2f3e0rorVshjGDKXnzZx89bDqNn4XV41gU2IJnw=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=P72mPAiMJhbGpmhehPLVq8EPIP8+qGny4kNQgQrYVc3vm+twjlTGVsYEKMqjp6OonyKg7XZQ7rNzXK/oDzXwmilXYpHAFSBW40wph830kXUmrcBnVCDIaUqq1am8UnnHi3ThObNryj/AA+2CU5KGLleEh07+b3wDrtb5XLXCUH3fDUlCdqgRfHU+dK3G6wcF3nRap1O0j3qjZlio/NTrCF7gohkl8rikFplPXzA1OG/akmdurjn7fM749TC1R5Y0kfKNbuX/zHvCm/Vhrjt77bOzsUlxXkrOL6K2iIK3bGLAXyGzml7rERY7pUCPvATL0Ur9faxxOv0JwlKYqy/OeQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=rHvZEaZB; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=anshuman.khandual@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
+	 MIME-Version; b=m+/S6yt2oF/ErlxRV5GGHFBG6grqAqioS2OvF4AyqEpPDHeZ7N9RVPT244/UpZUIU5omggJ0pFO8Ywmx8EeftYtYrkYIo0x0K+XFAYAsHuzC6xUbHfZtsrR9WPILOInRjmgqMJu3zOBYxqQoE18A4JiirlkepIA9s0HoPQYM4LyDrnoAd5aMmonGE7jS7kP3W3jyI91SoO/O1J4k+uf3VTai0zEexcAExCJy+vjiYoM5r2Ln3VZXRlco8rNCx1PrPouKTwF2JToGWqWi7pYV8sKbFhF+ipIPPxYyzAlYaT7knrRAImeELENfzpyPb1SoOSC5KiLG7E3IXyDVZqfTbQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=eWCiC7xg; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=anshuman.khandual@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=rHvZEaZB;
+	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=eWCiC7xg;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=anshuman.khandual@arm.com; receiver=lists.ozlabs.org)
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hJz3c0m8tz304r
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2026 14:22:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hJz3g2SXZz304r
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2026 14:22:07 +1000 (AEST)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 68B031684;
-	Mon, 10 Aug 2026 21:21:28 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 05D0F1688;
+	Mon, 10 Aug 2026 21:21:32 -0700 (PDT)
 Received: from localhost (a085714.arm.com [10.164.19.28])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 9E5FB3F673;
-	Mon, 10 Aug 2026 21:21:31 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 3BCE93F673;
+	Mon, 10 Aug 2026 21:21:35 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1786422092; bh=BqsfSrzSwruH65sXJBGnXmlXFGRnhcX2ugUIjxcj/Fc=;
+	t=1786422095; bh=pfMAQ/GDECbmwo/qWefWNRsbphdRQF7xgYQeIgh1v4s=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=rHvZEaZBVcSMFwn2Onro3gwOPS804AfXvPTDUi0l9z4MNgF38FHJ0V4gLq9fsXUSL
-	 WfVE47DkPbbJE3P5/E+A+2R4PCyV3fLZiJAJK2b95urh3keCsYz/2cZq+G8o/mmaVN
-	 /7RC88lRZ6+0rSSPRsdZY5lZqPbYLSHvlWv2aby0=
+	b=eWCiC7xg6Urch6e/NkyTz2nx1jVxQ2+lXNNVl32VkpGHIvNOZKoKK7OwvEvBfhSEE
+	 wJbBJKEACAKzuY3XWRWmEiavQBuGK0AQKUazXEqU1d31lkT1Spev7terS8Toxwdnjv
+	 EicAFdP1tvM9H1F3vee9RdSt/Ezcn1ReEpkjAW58=
 From: Anshuman Khandual <anshuman.khandual@arm.com>
 To: linux-mm@kvack.org,
 	akpm@linux-foundation.org,
@@ -68,9 +68,9 @@ Cc: Anshuman Khandual <anshuman.khandual@arm.com>,
 	linux-um@lists.infradead.org,
 	linux-arch@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [RFC V2 2/6] parisc/mm: Directly use generic [pmd|pgd]_clear_bad()
-Date: Tue, 11 Aug 2026 09:51:15 +0530
-Message-ID: <20260811042119.3652929-3-anshuman.khandual@arm.com>
+Subject: [RFC V2 3/6] sh/mm: Stop using pte_ERROR()
+Date: Tue, 11 Aug 2026 09:51:16 +0530
+Message-ID: <20260811042119.3652929-4-anshuman.khandual@arm.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260811042119.3652929-1-anshuman.khandual@arm.com>
 References: <20260811042119.3652929-1-anshuman.khandual@arm.com>
@@ -89,44 +89,69 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Drop [pmd|pgd]_ERROR() followed by [pmd|pgd]_clear() instances. But instead
-directly use semantically equivalent generic helpers [pmd|pgd]_clear_bad()
-in unmap_uncached_[pte|pmd]() which helps in dropping their corresponding
-[pmd|pgd]_ERROR() macros across the tree.
+Directly use pr_err() in set_pte_phys() and drop pte_ERROR() which helps in
+eventually dropping pte_ERROR() macro across the tree. In this new printing
+__FILE__ and __LINE__ has been dropped because they are always the same and
+don't really add any value.
 
-Cc: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
-Cc: Helge Deller <deller@gmx.de>
-Cc: linux-parisc@vger.kernel.org
+Cc: Yoshinori Sato <ysato@users.sourceforge.jp>
+Cc: Rich Felker <dalias@libc.org>
+Cc: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
+Cc: linux-sh@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
 ---
- arch/parisc/kernel/pci-dma.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ arch/sh/include/asm/pgtable_32.h |  5 -----
+ arch/sh/mm/init.c                | 11 ++++++++++-
+ 2 files changed, 10 insertions(+), 6 deletions(-)
 
-diff --git a/arch/parisc/kernel/pci-dma.c b/arch/parisc/kernel/pci-dma.c
-index bf9f192c826e..84e7309a8266 100644
---- a/arch/parisc/kernel/pci-dma.c
-+++ b/arch/parisc/kernel/pci-dma.c
-@@ -160,8 +160,7 @@ static inline void unmap_uncached_pte(pmd_t * pmd, unsigned long vaddr,
- 	if (pmd_none(*pmd))
- 		return;
- 	if (pmd_bad(*pmd)) {
--		pmd_ERROR(*pmd);
--		pmd_clear(pmd);
-+		pmd_clear_bad(pmd);
+diff --git a/arch/sh/include/asm/pgtable_32.h b/arch/sh/include/asm/pgtable_32.h
+index 5f51af18997b..c8eb9a7a4c4c 100644
+--- a/arch/sh/include/asm/pgtable_32.h
++++ b/arch/sh/include/asm/pgtable_32.h
+@@ -401,14 +401,9 @@ static inline unsigned long pmd_page_vaddr(pmd_t pmd)
+ #define pmd_page(pmd)		(virt_to_page(pmd_val(pmd)))
+ 
+ #ifdef CONFIG_X2TLB
+-#define pte_ERROR(e) \
+-	printk("%s:%d: bad pte %p(%08lx%08lx).\n", __FILE__, __LINE__, \
+-	       &(e), (e).pte_high, (e).pte_low)
+ #define pgd_ERROR(e) \
+ 	printk("%s:%d: bad pgd %016llx.\n", __FILE__, __LINE__, pgd_val(e))
+ #else
+-#define pte_ERROR(e) \
+-	printk("%s:%d: bad pte %08lx.\n", __FILE__, __LINE__, pte_val(e))
+ #define pgd_ERROR(e) \
+ 	printk("%s:%d: bad pgd %08lx.\n", __FILE__, __LINE__, pgd_val(e))
+ #endif
+diff --git a/arch/sh/mm/init.c b/arch/sh/mm/init.c
+index 110308bdef01..b3c7fd84ceb4 100644
+--- a/arch/sh/mm/init.c
++++ b/arch/sh/mm/init.c
+@@ -78,13 +78,22 @@ static pte_t *__get_pte_phys(unsigned long addr)
+ 	return pte_offset_kernel(pmd, addr);
+ }
+ 
++static void print_bad_pte(pte_t pte)
++{
++#ifdef CONFIG_X2TLB
++	printk("bad pte %p(%08lx%08lx).\n", &pte, pte.pte_high, pte.pte_low);
++#else
++	printk("bad pte %08lx.\n", pte_val(pte));
++#endif
++}
++
+ static void set_pte_phys(unsigned long addr, unsigned long phys, pgprot_t prot)
+ {
+ 	pte_t *pte;
+ 
+ 	pte = __get_pte_phys(addr);
+ 	if (!pte_none(*pte)) {
+-		pte_ERROR(*pte);
++		print_bad_pte(*pte);
  		return;
  	}
- 	pte = pte_offset_kernel(pmd, vaddr);
-@@ -196,8 +195,7 @@ static inline void unmap_uncached_pmd(pgd_t * dir, unsigned long vaddr,
- 	if (pgd_none(*dir))
- 		return;
- 	if (pgd_bad(*dir)) {
--		pgd_ERROR(*dir);
--		pgd_clear(dir);
-+		pgd_clear_bad(dir);
- 		return;
- 	}
- 	pmd = pmd_offset(pud_offset(p4d_offset(dir, vaddr), vaddr), vaddr);
+ 
 -- 
 2.43.0
 
