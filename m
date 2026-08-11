@@ -1,51 +1,91 @@
-Return-Path: <linuxppc-dev+bounces-25725-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25726-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 17531C5AD7B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Aug 2026 05:45:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3D885C5B569
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Aug 2026 06:02:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hK0vL3RHhz2yvG;
-	Tue, 11 Aug 2026 15:45:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786427102;
-	cv=none; b=AnSyLR/QgesT6rtGB+AWP/9k3IGHqj8gdMs35H5P9dk4N8ubJeOMeVNWs1Vsl+Qm0HKilnes9n2W8fPzKO08tTnLWFyrwko2SSozxFHJanl5llpXzGtFz90UayKlyBxT6PK8SCjPeOlY0RO3Tf67JbIQ4TYUphDZVtFM6cE3N2at/O/VXR+JKxKI7OH0useCTuSbNv7iMdQFBK1s3jURllnuHjS4DocjpGiJDPXAL/QoQdvneWYm5q7b2LVY5vIfX4AzN0fWC13uXCvWOPvcVGs9xkVRxWsxeMSeMHr30MUQgx/CE/P761lz3+TTF0x3ixmtbfeAa4rKvhL9oKC1rg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hK1HY5GXkz2yvG;
+	Tue, 11 Aug 2026 16:02:33 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::634"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786428153;
+	cv=none; b=mgrEgv9tafuWH+jopCm+TFqVBQVAuTE0PgBrk7Ihmb8jWUPvRZlpSjVtUatEW+yRac/ryHoIPmGZHB2wSYBan5et1Y5m/iPHrbNjHiP7Rifsr5KtqnklbJ55EyWK+NhMpWFWF4SnnBZXtVDIhJQB10TOwx6PwQT97wbb4gJNaZr2hOJpxNdA0sAe98YXk6UsMmDqGLTOoWUUwKCIRTNYt9njoRkHhls5RGY0/m8I+3r8DnwJgbX/fiGdo4QrPcJ5h05HBSuvsjjs0FU6RNJEZz1jmy+cJxYTzxFMW+RswN+yWksxe6F3UfYkzDvCOoPTI+LiODrABvXZH3LBmu/VYw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786427102; c=relaxed/relaxed;
-	bh=GcCRuQu47XbS/YabNwNF7zEFiZjwtTPut+beTDpS0dc=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=DarWYja9AR8GIqQ4JZHCRrSQshDzrRZKh65lUDLYdcUjcLcKqUniJ+J5f/1SJ5rkDisvs1ge6YdVzhtc/vhkSQjjEQds71OJOl9+S8cn6xdfvuGFuO5FnZMCoRZe1tw5Qvmmc3DbliObWNWUH4khleDs3WieR9cqBMAeAHKrZosvbRMSjxCJeZs8JG4BTk5A9K4qg5qDsEeqWfYUVnsUCKNdfyGWeCDqf1jO3p6uqJCeNYpazyP9GNdf/Wdf2l3f+5geL/XOaaK65uCYkb8KH3XS93/apl9uxX5jUhHmuBcekRbM4g8r7rSLePlonrWoFmCXV7Bzi4w4BT62LTnb4g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ezmmLbMW; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1786428153; c=relaxed/relaxed;
+	bh=QP2FITneW1MbuiIpQp9V/CZwD5bV9NSMMXRy0JGj/pI=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=dWaRRk6n/SkczoZh0TrNSMA09eBjZsP3Djqki3LSgHG+Ewta8lrutAXq8N2e+YJnLLvcx+5wuyIyVB8aLQAAGFLu4LuWELpt5LtdzpeJrS8AnYqu7+v+e4OJDMMMxQTP6dhFdLUQFsJhq5ZgenV26v3KTBPfouW55aIfUvSemYLX1WUqQdYTitot3Mp+kyHC4k5xCJ8eYkdNwfqx2WCeqCN8sraZH6HorQX+fWy8m18X424EJT0mzXkxExcfqT/U02VHUDpVAoqD4oZDSwH1cTzPL26zkQ0sInN5aL9H1g2r2B11FwBMg35ijXs+UQLJBxqxY7mBoeko5fvVmSWD4g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Qw+uT5Ki; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::634; helo=mail-pl1-x634.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ezmmLbMW;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Qw+uT5Ki;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::634; helo=mail-pl1-x634.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x634.google.com (mail-pl1-x634.google.com [IPv6:2607:f8b0:4864:20::634])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hK0vK2tBpz2ynH
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2026 15:45:01 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 43A0A41793;
-	Tue, 11 Aug 2026 05:44:59 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0C2CE1F000E9;
-	Tue, 11 Aug 2026 05:44:50 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1786427099;
-	bh=GcCRuQu47XbS/YabNwNF7zEFiZjwtTPut+beTDpS0dc=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=ezmmLbMWtbTQ10MqU7kjAysMd36nQLrQhc1zGs7TwsT6ee9sTrc5hzZF36tqemNxP
-	 f8Cjha/6JeZViNIRVricIFAP7WI+CtYHe7Ei1J9agThhTb52YcRx1/ZVMh+fGScG+J
-	 beE7eNA8SzUqSHxBeFZ+qkKM9+6vwaY0DGAIGuTiTYINeMlhbA9w2OnHyafrvrSY8k
-	 Cwbcv/yrvnjC+Q091v6uhJSR0SGsWfrU+mkaJfskaHrb9AF+iwIMxkLrhzkrAz5P5m
-	 rPfwUi+PNSJLUo4ja5bMlRdh55XgS0jupQ8ihj+HU0t+bb8iLV1fQPLKYVhZ/gMls4
-	 xktpa0syUJjWA==
-Message-ID: <dc40dcae-3017-4e61-8c6d-7e6127e4ee77@kernel.org>
-Date: Tue, 11 Aug 2026 07:44:48 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hK1HX2d7Hz2ynH
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2026 16:02:31 +1000 (AEST)
+Received: by mail-pl1-x634.google.com with SMTP id d9443c01a7336-2cc891373e0so32466815ad.2
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2026 23:02:31 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1786428148; x=1787032948; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=QP2FITneW1MbuiIpQp9V/CZwD5bV9NSMMXRy0JGj/pI=;
+        b=Qw+uT5KivgoFOAcY/7bAK/+Gv7cQ86zeZDUHX7m8nvhg3bBo0pr643lBjsCJrb294r
+         nEjhw5zAxJl9ylTFn1M223lBagUnXsc4yyfz7akgIOzxXobFoa2pTclKvGt4zv0xKnan
+         rc7I6UQcCXCGcYTRbUy9cfeRoR5tX4bYALLdsq99Tt5nUzCvrJ9CF+M6ZgUdzcPZLP+4
+         JItD5g2/JakU7Z8gyFKmPdwZJFbeiqnF+z+cpGTdWR2P1bROFvsXEQlhe7C3LiHq6/nW
+         1IwIhujozuKtW/V/ZYbyq6gDDXk46/oW3ngjcSHSOS/V1LHBzAymn2HAkjpIBAoa6swW
+         eyhw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1786428148; x=1787032948;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=QP2FITneW1MbuiIpQp9V/CZwD5bV9NSMMXRy0JGj/pI=;
+        b=CV7stfsXXE6RD/MLcD0t7DNwPZzyMfgamt/bq7Fx3mVv8mLAsV7edWtLtdhpkTZd1G
+         IBrlQQJLV5wzNPLjjzlF9ShRzdLq0QWvQPvpDBT+ANrrzvFDAGkBBI5NWjKmkviYue3F
+         ep5OOmCjU7zEUeQRCopgMbRJK3vP+cy5//w+iLC5bte2dkr2tdxPMQXqOUDszi3FmiVZ
+         1q0IKL4w6x/Aye5inqrstc1QzzSV2k+QnFmtmouVM+CqM+nzk2H9iFGSR/z/ivIwu2EE
+         Ekrp9bR21K+xVieWRR5v/1eDLPhwg0aNFRQ6gx+qDwqzmVlorKDL3ZPoHi0uVHleAqdA
+         /E7Q==
+X-Forwarded-Encrypted: i=1; AHgh+RoHpFvJCTT80hJCWu55pdbMS5k2GSP7K0TA9/OcW6GS4AkMZS3Q+wNAPVI8PMZPYQ9y1O+ZTIWnkZXkf24=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yz20t6J22QztMfjXFP+RFkgJFSdASei8NYCqMeAEpOUARDsN05S
+	40CIFSTF+sATcM3Zr/4zyew+h2jUwAtmTJXfdfJVZ+Tc9dIYxhVefhnE
+X-Gm-Gg: AR+sD12EuqnnHplR+ViQqtrqLsPayrX+uhcDsIxHuw0Dhcfc2MgOA8KfeCSdoT7neMw
+	thRsn34S0kOGxZTJ5JJDiCvQG6fb0O/HhA1mQu7DBm6x2RlQS1zUlhadlbBuCiz5RsD2FuIhuwD
+	Y3YiMEA5XFEgmOHic4vBx5QukvqdjWVjFUjj/ZB0tuHYjt61q08DnY935AhhkXNrr8DleU0uIu0
+	vvzc6ixt326+usqjbSR8XGlooPq6X/BGCxvensmqIw3D6ghOxan/EC8d04xXI02oqMtacleIWrB
+	2iK1qcmMJWc16yqJ8Rk2yLZRDx091LBEx3Cm4ZEESYXFJ7bBGXqHUlWk4zKFHFWSLk1Ft33Yfwd
+	GsGSH6yHRzXGigHssCeOf2kjH/r3WKBl3RXYTeTkjqeBkMmcLdy+3JUssRLpvDVqt8qJKQAkrA2
+	1UMifkSR6rLPFOtjsuM23j55w2g/uOgFg5wEYIWU0mhCuSxf0TXTV3dKcoiKlNbd0ii5KaxQpq8
+	6KBooYM0tkLSpZPyoNPblapK+i4+6b/Ra4RmDnER1PG
+X-Received: by 2002:a17:902:ccd2:b0:2ca:e3f:6a4a with SMTP id d9443c01a7336-2d317976466mr12832425ad.21.1786428148480;
+        Mon, 10 Aug 2026 23:02:28 -0700 (PDT)
+Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([129.41.58.4])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2d315f458casm1998455ad.33.2026.08.10.23.02.24
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 10 Aug 2026 23:02:28 -0700 (PDT)
+Date: Tue, 11 Aug 2026 11:32:21 +0530
+From: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
+To: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+Cc: Shrikanth Hegde <sshegde@linux.ibm.com>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, 
+	Peter Zijlstra <peterz@infradead.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, 
+	LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [BUG] powerpc/pseries: WARN in __replay_soft_interrupts() during
+ SMP bringup on Power11 (7.2.0-rc5)
+Message-ID: <anq6gMOWzTLVGWen@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+References: <6f9bfb0f-b14c-468e-bb9f-c157d120d0dc@linux.ibm.com>
+ <e9a6d82c-8ce1-45a5-a5cf-e4476f97cecf@linux.ibm.com>
+ <4505448b-59af-433c-93c8-05b13da1a6a0@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,133 +99,38 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 1/5] ASoC: dt-bindings: fsl,imx-asrc: update port
- binding to support multiple paths
-To: Shengjiu Wang <shengjiu.wang@gmail.com>
-Cc: shengjiu.wang@oss.nxp.com, lgirdwood@gmail.com, broonie@kernel.org,
- robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, Frank.Li@nxp.com,
- s.hauer@pengutronix.de, kernel@pengutronix.de, festevam@gmail.com,
- shawnguo@kernel.org, linux-sound@vger.kernel.org,
- devicetree@vger.kernel.org, imx@lists.linux.dev,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- Xiubo.Lee@gmail.com, nicoleotsuka@gmail.com, perex@perex.cz, tiwai@suse.com,
- linuxppc-dev@lists.ozlabs.org, Shengjiu Wang <shengjiu.wang@nxp.com>
-References: <20260804100218.49587-1-shengjiu.wang@oss.nxp.com>
- <20260804100218.49587-2-shengjiu.wang@oss.nxp.com>
- <20260810-normal-cuscus-of-argument-4b230b@quoll>
- <CAA+D8AM9s7EX-G246Hf2=DOx5q2qXWg_MjUCaoJ8RggOjp+5cQ@mail.gmail.com>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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
-In-Reply-To: <CAA+D8AM9s7EX-G246Hf2=DOx5q2qXWg_MjUCaoJ8RggOjp+5cQ@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4505448b-59af-433c-93c8-05b13da1a6a0@linux.ibm.com>
 
-On 11/08/2026 04:28, Shengjiu Wang wrote:
-> On Mon, Aug 10, 2026 at 3:14 PM Krzysztof Kozlowski <krzk@kernel.org> wrote:
->>
->> On Tue, Aug 04, 2026 at 06:02:14PM +0800, shengjiu.wang@oss.nxp.com wrote:
->>> From: Shengjiu Wang <shengjiu.wang@nxp.com>
->>>
->>> The i.MX ASRC hardware supports up to three conversion pairs (A, B, C).
->>
->> Which SoC? Did you read this binding you are changing?
+On Mon, Aug 10, 2026 at 09:04:34PM +0530, Venkat Rao Bagalkote wrote:
+> Hi Shrikanth,
 > 
-> The i.MX35 ASRC (the original) already supports three conversion pairs
-> (A, B, C).
-> All subsequent SoCs that reuse this IP -- including i.MX53, i.MX8QM, i.MX8QXP,
-> i.MX952, share the same three-pair hardware. This binding covers all of them.
 > 
->>
->>> The existing binding exposed only a single generic audio-graph port,
->>> which cannot represent independent conversion paths when multiple pairs
->>> are in use simultaneously.
->>>
->>> Add a ports container that enumerates up to three sub-ports, each
->>> representing an independent conversion path:
->>>   port@0 -- conversion path 0
->>>   port@1 -- conversion path 1
->>>   port@2 -- conversion path 2
->>>
->>> Each sub-port references audio-graph-port.yaml as before. Hardware pairs
->>> are allocated dynamically at stream open time; each active stream
->>> direction (playback or capture) on a port consumes one hardware pair.
->>>
->>> For backwards compatibility, keep the old single port property but mark
->>
->> Why? Did the old hardware change that it has more ports/paths?
-> 
-> The hardware has always supported three pairs; the original binding simply
-> did not expose them all. This patch corrects the binding to match what the
-> hardware has always been capable of.
-> 
->>
->>> it deprecated. A schema constraint (not: required: [port, ports]) ensures
->>> that both forms cannot be used at the same time. The binding example is
->>> updated to show the preferred ports form.
->>>
->>> No existing upstream DTS file for fsl,imx-asrc uses the previously
->>> documented single 'port' node, so this change does not break any
->>> in-tree device tree.
->>
->> Does it break other users of this binding?
-> 
-> No. The existing single 'port' property is kept and marked deprecated
-> so that any out-of-tree device tree still works without modification.
-> The new 'ports' form is additive only.
-> 
->>
->> Why mentioning upstream in the first place? Either this change breaks
->> ABI or not, explain that.
-> 
-> The deprecated 'port' property is retained, so this change is fully backwards
-> compatible and does not break ABI.
+> On 04/08/26 12:06 pm, Shrikanth Hegde wrote:
+> > hi venkat,
+> > 
+> > On 8/4/26 11:39 AM, Venkat Rao Bagalkote wrote:
+> > > Greetings!!
+> > > 
+> > > 
+> > > I'm seeing a reproducible warning during early boot on a Power11
+> > > pSeries LPAR with Linux 7.2.0-rc5.
+> > > 
+> > > The kernel starts booting normally and reaches SMP initialization,
+> > > but then begins emitting continuous warnings from
+> > > __replay_soft_interrupts().The warnings continue indefinitely and
+> > > the system never completes boot.
+> > > 
+[...]
 
-So why? Drop redundant parts.
+Hey,
 
-Best regards,
-Krzysztof
+Seems like this is because of some code movement. I need to look deeper
+into it. I'll take a look.
+
+Thanks for reporting.
+
+Regards,
+Mukesh
 
