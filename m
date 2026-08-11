@@ -1,73 +1,94 @@
-Return-Path: <linuxppc-dev+bounces-25730-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25731-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9356FC5B569
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Aug 2026 07:06:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3DCDDC5AC67
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Aug 2026 07:33:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hK2jJ5w7Pz2yvG;
-	Tue, 11 Aug 2026 17:06:28 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786431988;
-	cv=none; b=ELFq1nLhWr2fODajq31TD8+yaI+jKPDXHSlZzZfMxjniPYQKXE6zV0LjUAdE5tUnePCFAdYiljwVilvMul8/+Jlq5IXOVxzS3cxUk62yTcbom7MJOdQIhXTKhIZ76J0ZVKwt939IT202NbPRgitsU94oNVjPm49Ko3y4exAupOBjohciYaAvIYku372B6G9SlQ2YyMTdI7EG6+B8wUyZbTNov8nyToxmAKyfbmb68YdYzdBiy61rjhFqNy795PxXHZTaE46436ItXCa+rxBoqTwoTbJ+J3tQEWZlZyo0Rsum7WPik7MqmuSDxDNwG05tWgIjYgvqh+gENYadBG2Yyw==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786431988; c=relaxed/relaxed;
-	bh=tug1GRH9aW37dU+R0CaXrLLMIIAYu9AyDGwIbwZrY7I=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=GL732I8m3d8KTiVD5D99mW4cGm/hzYh1sqkXBHPdeZ1O+1UyVk70b1St03NA3JoUow5AWqPQ83ypczQ5dBsJLIvrCgX+4ooxEEH98rQmg6I2OzHBUkyf3g5WfO0tPvwS/8Kr4yF+0m0v/oypY98BVQvXkXKrm2FhXTJFewKiK+rqhS5cGyHHo+YtOdIBw5BhPrCW1aibCVijr2brLrv1zRdT/8CSVDsMYA/MFqg7DuOdIMUJ5lundCe+4nK9Nly10S3pswasPfGISUsH+Q1IBjdioFnA02xgmFxMyAIUyp0N23Sm2BSBMpCowFdXVFTj0tqj3mhVOo2cgaIh1N1L6A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=QSVBtNXr; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hK3JV4M2gz2yvG;
+	Tue, 11 Aug 2026 17:33:30 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::62a" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786433610;
+	cv=pass; b=QXJjQBdVn0ZUr7dOkpJ3BQmE61nn3MDlogKjVFIMDbD6KXyYNJmyjuyZJsi6Pmczh0AkZxL4mKnz1Z+95epWScY/kXFBVQbsoFkcuzHd+uJyD+vz6Q0CSEH4VgVTEoucmlKS00nGkQ6j7mw2tMSuQsgC5u8jmDhy3aM+bbYH+Qb8xTAD3lK5iOsyNNBpUbnbc+YD8pm2psWsVjv/4VSCOxVKziqNnM26rzjRBm48b7eTDAZ1pFhO+Rnujgz5xTzhlvnOAVZh4pcWo8ihZSYVhYBcsG+3up6VLCb5oMLvFuG125yy5jYbJvU+vsIvN4GXYGMHAwI4TxWtR154IFR/FA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1786433610; c=relaxed/relaxed;
+	bh=xF99ad/0DOf4sVlgM38a6novcYoEr4EV6MAbjOWZJGk=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=HSxLjeLirs8agF+KoaOLYcYcy2kekoUXWuJGMEk3uJIjDDUYQNk/ook6JvTcSZ2yaqD27g2AQnMENTjzu33vU/JlPNStnARQyW5UKKkr+vSQJEbuQ/cprL4rKB1wloZjMkKJoa7gEMk0xZDwOFHQ23qsrv/G/q5WsKHVmUboKUi7UM8fJTiSZxKFcwbLPgtBwUZj4yMqJQ6gMqzMiaDXMSmIHvhc6sp9dEp9ytokM7fPufwM4REKv6e3B16ZGAwc4Dd4DtrZd/ZzN73YJ6AjHW0rbGrciBjCQFadB/fhqhqdzFJtzDn7MvVeqmFTiAaKzXnvlA++fBwARdT3JGTpIw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=m+PV49Oo; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62a; helo=mail-pl1-x62a.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=QSVBtNXr;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=m+PV49Oo;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62a; helo=mail-pl1-x62a.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x62a.google.com (mail-pl1-x62a.google.com [IPv6:2607:f8b0:4864:20::62a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hK2jH0R2Xz2yrL
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2026 17:06:25 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67AN1cr62878860;
-	Tue, 11 Aug 2026 07:06:00 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=tug1GR
-	H9aW37dU+R0CaXrLLMIIAYu9AyDGwIbwZrY7I=; b=QSVBtNXr5+3NtXvbkwBw3N
-	iz75/7OspnR89sGXi1r9qgrliJ05WzFd5WkvqUnKfNzajVBYMeFQjntGReG4bJJg
-	oZrAHXAV4qJONyX41mVnBdHVl9xQhi8RrGqxSoS1U46YN2zykwl9NcNXkeisG4dQ
-	IqCHDmzQnWz4QkDdNaGJaNcpIZcZYrVVYjNZxpG5tirmPgLyY1erBnk3HxeoM2gx
-	W+WFPCa8+uCS7F4fJxgUOr4GkwdU7uH2Z1dNx0o/Agp5ZvzhTiU4QWacr1zvz831
-	D7dMdG8pV7NXpJERC8FYEO1KTxRLmz/3WMFBIZPhMmSqTuhTjdaPYxgejmX7EITw
-	==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fwvp2u59c-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 11 Aug 2026 07:05:59 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 67B6uEb8022681;
-	Tue, 11 Aug 2026 07:05:59 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fxhfxyr6b-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 11 Aug 2026 07:05:58 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 67B75toE36045188
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 11 Aug 2026 07:05:55 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 53F6A20040;
-	Tue, 11 Aug 2026 07:05:55 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9ECB820043;
-	Tue, 11 Aug 2026 07:05:51 +0000 (GMT)
-Received: from [9.123.14.142] (unknown [9.123.14.142])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 11 Aug 2026 07:05:51 +0000 (GMT)
-Message-ID: <f383ab65-3d65-4053-8340-b28082f751d8@linux.ibm.com>
-Date: Tue, 11 Aug 2026 12:35:50 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hK3JS4bYRz2yrL
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2026 17:33:27 +1000 (AEST)
+Received: by mail-pl1-x62a.google.com with SMTP id d9443c01a7336-2cc73e322dbso30793345ad.1
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2026 00:33:27 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1786433605; cv=none;
+        d=google.com; s=arc-20260327;
+        b=VEM9/BuDUuugr+xLdUCjN9LODuslxbOxzHlBPKcAqvS1nPmAtsX8dzHSfQjIHVVtP1
+         G0WaGN27fFil3gBF+UCf4v4k48xsCaC2+CWBotlh/pun+Yn+uH8wE/rfEAo17oqfqw2o
+         +4EpTkMSz4+VihcQpwF6jrIsux2oj23g/xxpIwUVWPC2xhksyu+x1FnBCsjKJo1fffzC
+         A5aTqGvRbciIrr2Zj/9mcNtUFvZqLjQpwXlg5+2TtQxj8annj0tgZ9iFWya3ja946a0K
+         kqtX9lKFPZKAjq60AMeF8ZPE7QFl0jLDo5YFPEbupImDpvNN3PMUz7GdLypZ83w3hitD
+         anIA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=xF99ad/0DOf4sVlgM38a6novcYoEr4EV6MAbjOWZJGk=;
+        fh=c7PxW2KazoXFsmzaUsazkJt+pzpWrV89924PAdqZ51s=;
+        b=SiL6bA4yPi25HK2A1WLQctcYY+ZF2A7Ia+WoLN9MkOD5TIYHIr2WIqbYUvEoDhxIDi
+         G8PwT1qFiPiedSq0VajMYOmH769jWmu9wgwWBXtaJ1MWUTY+B9yMbkV6o2AUGzSkK9NM
+         isEjcXowaO+kHb2NsR0J14J3KvCM3y2dn8hSk4F7im5wqt0xU5fYS9poxLWezkrh6h6n
+         VfR/QqHHHRGkRLhPkKzlt8nntyeU3EzCdWpst8/ccqe44JN+4u2w5qQzAae1AU8p0isv
+         et5gdzxx6Oh8C9uKuREF6i0oC1cunGT9bD/hVsFCK/s4KfYBp74pi4TpE298XZJSSHkX
+         OvgQ==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1786433605; x=1787038405; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=xF99ad/0DOf4sVlgM38a6novcYoEr4EV6MAbjOWZJGk=;
+        b=m+PV49OobhlmLBozpqLJHkLRblZ42yDmg8QAId6a/vJFkt59bCXQTuFkqFMBIDNs9I
+         P+qhHrOq4AaEDKimrfbqlSrY40oJMexR6u/AazH+j6Ncm5t2qmMDMvR42MF6GBPfXKxU
+         zz3nawqoZUKmenoUR2ycnFk/n4nsFv1NlgxaZegBMXqji7Sq5S6MNcVsUfWI36LklRVv
+         Juyxhs4/pfh65E52FoAi+BvJnee56RMSpyIk2lwgwKaAsozkdrqw9lMI7cM2bTdCoxny
+         SQxFYXvBEANiJ2k4xdGzCtQ9UQiE/SQwj/v1u6/3A7f3fE8BiY5U14e/vA2eMdOuAg5e
+         oXJQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1786433605; x=1787038405;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=xF99ad/0DOf4sVlgM38a6novcYoEr4EV6MAbjOWZJGk=;
+        b=QYKu8r8PlFz+H41EBI6oa/p+eHWfjQo02/OD64HpsaEM8PhVN79H6YlmGSxCXEzb86
+         sG0mtDJscphzUz/Pv1EGoxrYGH5jH//Grvyas3wPDtp0y35erBPrQUvqw1hFqf9UQmiv
+         Q6cxkmObBycO/WecJyZzvsGgXsWZMM7m2INQ07lVblZCsJkrN+9p+dt/6JqZgVHoIQK1
+         OAGbjAcWcOhkjFZJqKIo+3rfA7qbwsAD/JWTjDVQdo89VFUctFDgStneMdX9ln91v62X
+         icibCXVGbu5XQncfQkGXz2NcOt1KQnFkwHzxVDQfgNJXGHDxzSWbKZoNf73fDNVSiBa3
+         JzOg==
+X-Forwarded-Encrypted: i=1; AHgh+RrjCYiheob8fikMxA6+NxpmtqkkRaFEPzZMjvwRuAVnD3WtxSOOuGIOWgqzBnpn8BHzjHqxZQvlVPZw9CI=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yx3R0IIzQRx9Q2tSHGhd+a4s3xBnv60KVoFKl+DwyY426asKEc9
+	xobu89715tMLHMpcr4dDiOwgMbioxQIozJiZRJqp6LyBFmnjRpE+s0j2FjFLUJoujQIR9bXpWST
+	FLI+j6Llh9YOcGxO60j8tV8jFplNthX8=
+X-Gm-Gg: AR+sD10j9S9BAzG62vHr+5Gm239arGuJngDQ0rCh6ZwWCnW0TkL/9puNgnVNSjoFgxG
+	ACwUF7RWyW3qP5JCcdsiPC6n58gkbeHO5zbuJEYjV42Qt6K1nTfcV54Zpy89LwHQqGUn2u9LgGi
+	KuCoNpv6njpDNrhiRKRg2ZsLJjxjH/CMPvZ0xeYhwonkzNk3DV9oioP3ubg1gl6yijtcT1uh+NH
+	aqoIR4fNnUwInf+0YXudE6KdzXs4s3tAAAHNIs08siPRjepAL4jyTiWmSGZV/Dz7+vhj6hccJ/v
+	JQrVMdhi69W2OPfqjRsOdKYExAS76NDpmaqetqFcij9A
+X-Received: by 2002:a17:902:d4cf:b0:2ca:d975:5bbd with SMTP id
+ d9443c01a7336-2d3179365d0mr16451405ad.20.1786433604824; Tue, 11 Aug 2026
+ 00:33:24 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,97 +102,116 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] powerpc/kexec_file: Use inclusive range checks for
- excluded memory
-To: Thorsten Blum <thorsten.blum@linux.dev>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        Hari Bathini <hbathini@linux.ibm.com>,
-        Aditya Gupta <adityag@linux.ibm.com>,
-        Jinjie Ruan <ruanjinjie@huawei.com>,
-        Andrew Morton <akpm@linux-foundation.org>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-References: <20260810145827.157972-3-thorsten.blum@linux.dev>
-Content-Language: en-US
-From: Sourabh Jain <sourabhjain@linux.ibm.com>
-In-Reply-To: <20260810145827.157972-3-thorsten.blum@linux.dev>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=AMtp2X5w c=1 sm=1 tr=0 ts=6a7ac9d8 cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=c92rfblmAAAA:8
- a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8 a=nbPvJ5SdgmQPYtCXlAsA:9 a=QEXdDO2ut3YA:10
- a=GvGzcOZaWPEFPQC_NcjD:22
-X-Proofpoint-GUID: vaQxq8X2pSi4GGQSI5Y1AECtjvtAx9UD
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODExMDA1NyBTYWx0ZWRfX1jqkow1i3dQC
- kOFd+HbbdjXzLI0keM5oyIMWqWOXjxG/5Dc75IdRgTkYrOyy1EA9DdZy0PPhfOZkMGu6pkhzVkx
- HWqfwC14NfuO95TqHp//Dueu0svxCDw3zLiIKO3q4MKGbYw7pOl02Ty8RHosX0+4fD0podOT/sy
- rBw4so4ixVFofyecRNXi9cnZDq8Ct2a47beEltF+NIRsUalp/hQXNKrucP7izbO9d0CTwwaSfzs
- dt/AlxB62zHU4lARBJYQLzFuWjNMHaFOXA/AWe1Q8hotnJWBJhy4s8ldUV/NwxQ71tj+tgX6Jbn
- KlGTPMzjxiAhSDKezYj4cWODjlC7YhGv3M7ilS9l0BUUb30yskWVGNdrNZCT3Frys9u/Ek9yajc
- fKJAKbArmXT2oQLHOReVo0z3vrdO09ZBc8c8j3LcuIOjPF9fcwMYAvb+SY+58VSJEyIWwxBZBOn
- azcSqSUWMwYbwSgEwtA==
-X-Proofpoint-ORIG-GUID: eggWLUutUGyj67VcShAvdRclPQKAuhbJ
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODExMDA1NyBTYWx0ZWRfXw4nH2mVnrpP4
- X6FitTA/QgrFKli8h4Vvy/8I3rKcbub5F+SNg31d4iMvjSNl31rEm4Xp5ggUwWJVU6MycrF7w8O
- mhwRB49ymyv5CDq7bo2KDadWZkwPlTY=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-08-10_06,2026-08-10_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 adultscore=0 lowpriorityscore=0 clxscore=1015
- priorityscore=1501 impostorscore=0 phishscore=0 spamscore=0 bulkscore=0
- malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
- definitions=main-2608110057
+References: <20260804100218.49587-1-shengjiu.wang@oss.nxp.com>
+ <20260804100218.49587-2-shengjiu.wang@oss.nxp.com> <20260810-normal-cuscus-of-argument-4b230b@quoll>
+ <CAA+D8AM9s7EX-G246Hf2=DOx5q2qXWg_MjUCaoJ8RggOjp+5cQ@mail.gmail.com> <dc40dcae-3017-4e61-8c6d-7e6127e4ee77@kernel.org>
+In-Reply-To: <dc40dcae-3017-4e61-8c6d-7e6127e4ee77@kernel.org>
+From: Shengjiu Wang <shengjiu.wang@gmail.com>
+Date: Tue, 11 Aug 2026 15:33:03 +0800
+X-Gm-Features: AUfX_mz8xzcQdpAVFUpNZF46ew2dm49dWd2moRqPqyVHFf2Y0Ny2enqss2gXdZU
+Message-ID: <CAA+D8AOQ_y7BdR4h+X6qxFygPU6h1iFV0cYXHN4KB370yM2Bkw@mail.gmail.com>
+Subject: Re: [PATCH v3 1/5] ASoC: dt-bindings: fsl,imx-asrc: update port
+ binding to support multiple paths
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: shengjiu.wang@oss.nxp.com, lgirdwood@gmail.com, broonie@kernel.org, 
+	robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, Frank.Li@nxp.com, 
+	s.hauer@pengutronix.de, kernel@pengutronix.de, festevam@gmail.com, 
+	shawnguo@kernel.org, linux-sound@vger.kernel.org, devicetree@vger.kernel.org, 
+	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
+	linux-kernel@vger.kernel.org, Xiubo.Lee@gmail.com, nicoleotsuka@gmail.com, 
+	perex@perex.cz, tiwai@suse.com, linuxppc-dev@lists.ozlabs.org, 
+	Shengjiu Wang <shengjiu.wang@nxp.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-
-
-On 10/08/26 20:28, Thorsten Blum wrote:
-> arch_check_excluded_range() checks if a kexec segment overlaps an
-> excluded memory range.
+On Tue, Aug 11, 2026 at 1:44=E2=80=AFPM Krzysztof Kozlowski <krzk@kernel.or=
+g> wrote:
 >
-> Both ranges use inclusive end addresses, but the overlap check uses
-> exclusive comparisons. This skips ranges with start == ->ranges[i].end
-> or end == ->ranges[i].start. Use inclusive comparisons instead.
+> On 11/08/2026 04:28, Shengjiu Wang wrote:
+> > On Mon, Aug 10, 2026 at 3:14=E2=80=AFPM Krzysztof Kozlowski <krzk@kerne=
+l.org> wrote:
+> >>
+> >> On Tue, Aug 04, 2026 at 06:02:14PM +0800, shengjiu.wang@oss.nxp.com wr=
+ote:
+> >>> From: Shengjiu Wang <shengjiu.wang@nxp.com>
+> >>>
+> >>> The i.MX ASRC hardware supports up to three conversion pairs (A, B, C=
+).
+> >>
+> >> Which SoC? Did you read this binding you are changing?
+> >
+> > The i.MX35 ASRC (the original) already supports three conversion pairs
+> > (A, B, C).
+> > All subsequent SoCs that reuse this IP -- including i.MX53, i.MX8QM, i.=
+MX8QXP,
+> > i.MX952, share the same three-pair hardware. This binding covers all of=
+ them.
+> >
+> >>
+> >>> The existing binding exposed only a single generic audio-graph port,
+> >>> which cannot represent independent conversion paths when multiple pai=
+rs
+> >>> are in use simultaneously.
+> >>>
+> >>> Add a ports container that enumerates up to three sub-ports, each
+> >>> representing an independent conversion path:
+> >>>   port@0 -- conversion path 0
+> >>>   port@1 -- conversion path 1
+> >>>   port@2 -- conversion path 2
+> >>>
+> >>> Each sub-port references audio-graph-port.yaml as before. Hardware pa=
+irs
+> >>> are allocated dynamically at stream open time; each active stream
+> >>> direction (playback or capture) on a port consumes one hardware pair.
+> >>>
+> >>> For backwards compatibility, keep the old single port property but ma=
+rk
+> >>
+> >> Why? Did the old hardware change that it has more ports/paths?
+> >
+> > The hardware has always supported three pairs; the original binding sim=
+ply
+> > did not expose them all. This patch corrects the binding to match what =
+the
+> > hardware has always been capable of.
+> >
+> >>
+> >>> it deprecated. A schema constraint (not: required: [port, ports]) ens=
+ures
+> >>> that both forms cannot be used at the same time. The binding example =
+is
+> >>> updated to show the preferred ports form.
+> >>>
+> >>> No existing upstream DTS file for fsl,imx-asrc uses the previously
+> >>> documented single 'port' node, so this change does not break any
+> >>> in-tree device tree.
+> >>
+> >> Does it break other users of this binding?
+> >
+> > No. The existing single 'port' property is kept and marked deprecated
+> > so that any out-of-tree device tree still works without modification.
+> > The new 'ports' form is additive only.
+> >
+> >>
+> >> Why mentioning upstream in the first place? Either this change breaks
+> >> ABI or not, explain that.
+> >
+> > The deprecated 'port' property is retained, so this change is fully bac=
+kwards
+> > compatible and does not break ABI.
 >
-> Fixes: 6e5250eaa665 ("powerpc/crash: use generic APIs to locate memory hole for kdump")
-> Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
-> ---
-> Sashiko found this issue when reviewing another patch:
-> https://sashiko.dev/#/patchset/20260809162403.18142-2-thorsten.blum%40linux.dev
-> ---
->   arch/powerpc/kexec/file_load_64.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
+> So why? Drop redundant parts.
+
+Ok, I will remove the sentence below in the commit message.
+
+    No existing upstream DTS file for fsl,imx-asrc uses the previously
+    documented single 'port' node, so this change does not break any
+    in-tree device tree.
+
+best regards
+Shengjiu Wang
+
 >
-> diff --git a/arch/powerpc/kexec/file_load_64.c b/arch/powerpc/kexec/file_load_64.c
-> index 40b74cc4ed3e..32e2b7412a9f 100644
-> --- a/arch/powerpc/kexec/file_load_64.c
-> +++ b/arch/powerpc/kexec/file_load_64.c
-> @@ -58,7 +58,7 @@ int arch_check_excluded_range(struct kimage *image, unsigned long start,
->   
->   	emem = image->arch.exclude_ranges;
->   	for (i = 0; i < emem->nr_ranges; i++)
-> -		if (start < emem->ranges[i].end && end > emem->ranges[i].start)
-> +		if (start <= emem->ranges[i].end && end >= emem->ranges[i].start)
-
-Like [1] this also extends the condition to check for a 1-byte overlap.
-It is unlikely to occur in practice, but I don't see any harm in doing so.
-Hence the changes looks good to me. Feel free to add.
-
-Reviewed-by: Sourabh Jain <sourabhjain@linux.ibm.com>
-
-[1] 
-https://lore.kernel.org/all/ee531113-5a56-4e6e-bc16-95941aa5bbfd@linux.ibm.com/
-
->   			return 1;
->   
->   	return 0;
-
+> Best regards,
+> Krzysztof
 
