@@ -1,121 +1,94 @@
-Return-Path: <linuxppc-dev+bounces-25733-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25734-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F0C37C5CFC1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Aug 2026 08:10:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6CAA8C5CFC1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Aug 2026 08:17:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hK4790SqXz301Y;
-	Tue, 11 Aug 2026 18:10:29 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::333"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786435829;
-	cv=none; b=m7geMCuI1hR3r60yRP1VtOWzSpc6MhGCixg1SChiSQRMj3Yzt5Nc4BvOT8FnQ88CbGMtF23idiA7VlgfyUzU7dqjVAq304Z32tGdAskwQuvjgBgCrGJoa1qrrg78qML5EcxJfVUHgtH4CmMSUwVyMGzTbqogm6ZxEODLoi1fCtR6NN6dntJrG/YLs8J4xHebJ3ebg0xYEk0smjzIEhmByNPmloG1JuZoNBlp+3dMyea6ZcBGITniAIMNwTWOM3ypctun+p6t6NqZXCDL0R6pNuaHHZmIhObcj5TGdZ2biSi5w+vLvFjTzfeMCISHWiuOhGqR9pbuKh4PuObTnS+lHg==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786435829; c=relaxed/relaxed;
-	bh=kRDEH2ssIQhIkVPOR6PkKFR0aBPP8ALbaUyGO3LvVVE=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=JWsmMEcEntZby05f7nl/sulaMdRJOmSMjmjzs35Gz0eXZuLrcsaAp7wZ0grCUpbmugkpkceZm4smco1qycAnJ2Hyj0fGHEGi30cJRFcAu5PDk+MymWtV04j+f3vJy6I7e5l/G1HPuUt0eTmTlprcq2dOAd12VS3Nma0g494aSF/5J8HqBfTh7GmrwCHNClNMFnfwF5h671DjAdSDfe1FkWSHjgv/LKR/3xauWezDGmGmujByrTBqf2gqMkXo+lXjqsdBjWk5Kq6ZSNi6n/arDnNG+4OMFNB6xs4V2V5W2e1WL322fqIaBxwMNQ6EUBFmDY/LB5gksWWwrJ7oJr/uSA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=L3wrAB3c; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::333; helo=mail-wm1-x333.google.com; envelope-from=david.laight.linux@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hK4HD0NjDz2yvG;
+	Tue, 11 Aug 2026 18:17:28 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::62d" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786436247;
+	cv=pass; b=W317SAI2frOdjEmlRCbyNRcatThMn2oh79+LP1vfobx165G1K2Ais9jdlOlElhvW04vGG2TSe/ZYFcOWPL+8NrEt6r0NiOdrt2EsaBtwPpQPOnwc77bFn2Tt0iQI8LR2Dsqvn95oklL+ZJpAdB82PsITcE+QkVGxRwx/ouIAfFSmnvu2BBG7JHHwWmksZ1PvdekmcVOWNeRmyLhR3gJmnx85ngaX7QsxND4osH/Zz8lFjzmJN2wqfqOdCYWHPl4x7tawHsXxORJl4V9der+QphsihoWR1mYJPDIBKMKR7cMEgJpYLg5aEnkGoSEPqPMJP+M1wtHJj26Xy6glr7U/Ug==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1786436247; c=relaxed/relaxed;
+	bh=/N6NxxZa1/RwsdJJL1XOaQxBTanGcXh5CEXk/SH/G4M=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=iBrhcF4SsE5raKUjy/x1v0i+K3xNh5MdztT2BuSgrljs5llWltjqtz4qr+pjiQaS1s4jhwtvT/K+lhHFXamJ0HOYdnGuOGskqGuqPm4ikYcXOZ1LhURq/D8FsaRyNXolyafLXu5kraXN24IvzVFdFxY3lJ6vLnd+/NlBL4EJrF9Qp45g8FPwGd4ERBet8gBMNhwIUtOqO/I2Ap/8QIvpVLl301B+YATSGwwt+BZaGXOHtj9mvwB4zduqmkVCcxbg5FXu6hH2Upx9I6pX027XT5OiP+f4qXq3Uilc72QoHKv15c+8Hm4Jeu20EEJkpe5mQINGe+Lx0wn4EGmCCYAH3g==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=P/epZspb; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62d; helo=mail-pl1-x62d.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=L3wrAB3c;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=P/epZspb;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::333; helo=mail-wm1-x333.google.com; envelope-from=david.laight.linux@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x333.google.com (mail-wm1-x333.google.com [IPv6:2a00:1450:4864:20::333])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62d; helo=mail-pl1-x62d.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x62d.google.com (mail-pl1-x62d.google.com [IPv6:2607:f8b0:4864:20::62d])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hK47765tcz2yvG
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2026 18:10:27 +1000 (AEST)
-Received: by mail-wm1-x333.google.com with SMTP id 5b1f17b1804b1-498028b3d5eso31419735e9.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2026 01:10:27 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hK4HC15XDz2ynH
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2026 18:17:26 +1000 (AEST)
+Received: by mail-pl1-x62d.google.com with SMTP id d9443c01a7336-2cf452def93so6214155ad.1
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2026 01:17:26 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1786436244; cv=none;
+        d=google.com; s=arc-20260327;
+        b=pFo3tF3qsIY/djz4lWItgRh3xYaX5gf67+shFNFsCap/mtdSDh29VFIAL2xTSN2wPS
+         bFzG81T0s/qx+5BULym5ZXAXF+OMkBbKR9/mpTJp8SSxKaiO+8voO8vpxH81U1B+tqe+
+         Crw2aR7MA1uDx3M/wFbNQ91vpENw5gaPNxrAxG/Pz8k93O2CwVWWpaGMDbNNDEayemGg
+         sjSrYn/+BCJEmdD2cMTgR2E/UqxivAyBTnTscOojXmxqJTxFBBZKjw2vkqkIWYoI+Y/E
+         PH1v010tQSWIHFkPZS2qwWchuhu/7HjJab2g+kCvk5/RyfPUeGEduuVKH0FSJpkU3AMv
+         vN1A==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=/N6NxxZa1/RwsdJJL1XOaQxBTanGcXh5CEXk/SH/G4M=;
+        fh=LjoPnClf8IV6C9Wu2FSVv22hHYi1Db100xxxl6HrSzI=;
+        b=n/P5r+Eq7f5FHX7XXhKH12sGLn8Yjop3L+r27uqIWp8cP3++C/KtokvsoyK1IznaUI
+         X6mk54rwdRJFNauyGPkd7ixsb9c7sv9HB43kJOYGHq4See9owMzO0jv5Jza2SfzVUgbr
+         uEt5yaefCTzr93Ef3S6sQN7V9VoE9dY3o1/SES88oxzL8Ux0JHsQKf8yPHts6EXEXFoM
+         2iFJrxR51hJd6Xdgl5WSPqQtlsZnGiMhMeBZO1W/mCjaO1DiTOYazWI7DThdrd9k7ID2
+         uzdzEabw/9hcnOTP5armccjdnQMfOPdskMgJcTFgY0lvFOWha6g/Mv7lviGZ3twfyFHZ
+         LQaQ==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1786435819; x=1787040619; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:subject:cc:to:from:date:from:to:cc:subject
+        d=gmail.com; s=20251104; t=1786436244; x=1787041044; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=kRDEH2ssIQhIkVPOR6PkKFR0aBPP8ALbaUyGO3LvVVE=;
-        b=L3wrAB3cXnln+V9IthJBTJTHkH8rZa4OwFacvPeBNQO8E4jAITDH5N7X2LrLGalHUb
-         4cvB5MGaAK3Rur6mq2SO8ApGf/HjmHbRey36xPHdtkyJa5bA4ISnptjTBzMQHa79q44j
-         ffNrpw4MC8+r0GgfeatX+lZ24+rRU3d8tFpV3Tnjf4/5JFl1Nr47qB2CeNdgqnQrK7Sw
-         tbLa8zaREGjTgGWCvdMrCwRJJ+FR3fE7VPrglwpFap/+Dz5qu0OSp4EFYyITDivGMJi8
-         zvXTM3K+D1D6PSNv5rUDxB6SJD15Sn68yB20M1Z78qAE1IWjiXDDqdVuVdFAmFFCFWCD
-         vy4Q==
+        bh=/N6NxxZa1/RwsdJJL1XOaQxBTanGcXh5CEXk/SH/G4M=;
+        b=P/epZspb0BfH410Dgc23SgLPgI/QnZQUC72yrX50CKs4gT3xqim7EZ+n4GuCdd5Svl
+         tQjbq/WeWx9fCzU6RATkhZo/AS1nOA/Qi6mgTSOU7ZRWEcluo/0oAsivYSAYyrZxbqQ1
+         2Wk3IE0Xat82EfHlpIKwozogJk2GXYIERGlBQ/eCwvfWpcF531XGBedOvDTRh1C81Uk2
+         XAzYIZG/7vrtcH7RhyB/irimV67P411ZVsbTad1IuyJWueHSMgi4CuZQh8H3Bk9CTwrO
+         Rp0TtNzNr1Rc+sFUrn7Gi6x1OJlu5qV1i8DNmEgxycpmyZZxTbij4fPh43CCm4klC8sP
+         DX5w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786435819; x=1787040619;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:subject:cc:to:from:date:x-gm-gg
+        d=1e100.net; s=20251104; t=1786436244; x=1787041044;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=kRDEH2ssIQhIkVPOR6PkKFR0aBPP8ALbaUyGO3LvVVE=;
-        b=fPTp6CAY35lR0lbSCdWDppxckiGL6Hj1Aujie35jurR+h5dI2/LYCCtzbIhgJvkB8+
-         Wbmj0ASWWCA5dHtqdlDGcbmB4thoea/dlO8quWSStPiWq3LRi0ebn05zb2b0TwjyFRFh
-         +gtGYrRJoJhkpUwL6p+OoN2BmQD75GhrpG5TDG8cRvxnTmJCGYnSHgnWHiRpkkouyQHl
-         MAG83ORpHb26j/oxsp7P8/AbwY4xSe/iMxPxObybQ//5oN9kZVXseayqODwu25x9Vrxv
-         lmmofCyWAf4SDSTLAMX0kNwy2ZEhQJnd7UbMnx3foQ5rUzphVf5K5SgYOlTqBkwkAggq
-         VWdQ==
-X-Forwarded-Encrypted: i=1; AHgh+RrL5eMcHUFyD6d0N/WHhXgHxexIqfwAQaDruOZvIxn/nmuv/cYKKOKajePQTJuDothR1RyVFsLpNQsly8Q=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwhpixdQCnezSWdZcwVP3yv7rs66evurGpwh28yNQF2Jo0gfOko
-	KwnAds6cIAFwVBC5XGIaRukbOkYAaHuLshWRspid3ZRrtEQRiwLL5Q02
-X-Gm-Gg: AR+sD13wxk3Ua11E/IHZihUOA/v3X135njn2tGie6Q6uemod7z1nmR1mFhFXwY1CZsJ
-	uo6OlZOEf2keQSxK+UZQ/Wwi/CTUbO+EtrwFtyJvFIZKTVxwsXcJRcUKL+dZ8ZWXf8Om92/v7Pj
-	X4fBEAAVkFMkCjO1ev9+djVZwd/M18em7Rn13Ppgf/llXE6HMwPUDxWCSWMicznclvV6bABD/4e
-	CqewQRu41gLijp/9GC1J97biTUSetUsXw8OU+JOrycqIGLnNyt680gge8rHOGyMRFBMa9g9BHr+
-	oRnM3x4Ox3W5zE3w9iyIIjs0w/BQuPfSG3+4hvX/kxrjQiQi/z/XS+pIvSDVnN02N5JPTuL/aE1
-	QqAEpWnceuqqzH1/JhQf/cZnHkkuamCg+AtGzUsfSYab5fUv/gIVI/0u3rxvoM+H01Ophm4/J6I
-	raVPwGrn0W0K7/P0gZBbZr6RP9PyxxEfa0sNBaNY1igldmXUrAOHbMEfdOuuZWDAR/T37VOPkVJ
-	tzlptFmElPZSsc3sxtsbemXiQpqy4L5ZbY=
-X-Received: by 2002:a05:600c:821b:b0:499:6a92:fff1 with SMTP id 5b1f17b1804b1-4997847e9b5mr25827975e9.18.1786435818734;
-        Tue, 11 Aug 2026 01:10:18 -0700 (PDT)
-Received: from pumpkin (82-69-66-36.dsl.in-addr.zen.co.uk. [82.69.66.36])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4814a5ac6e6sm2454288f8f.6.2026.08.11.01.10.17
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 11 Aug 2026 01:10:18 -0700 (PDT)
-Date: Tue, 11 Aug 2026 09:10:16 +0100
-From: David Laight <david.laight.linux@gmail.com>
-To: "David Hildenbrand (Arm)" <david@kernel.org>
-Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Kevin Brodsky
- <kevin.brodsky@arm.com>, linux-mm@kvack.org, Andrew Morton
- <akpm@linux-foundation.org>, Lorenzo Stoakes <ljs@kernel.org>, "Liam R.
- Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, Mike
- Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, Michal
- Hocko <mhocko@suse.com>, Pasha Tatashin <pasha.tatashin@soleen.com>,
- Russell King <linux@armlinux.org.uk>, Catalin Marinas
- <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, Ryan Roberts
- <ryan.roberts@arm.com>, linux-arm-kernel@lists.infradead.org, Huacai Chen
- <chenhuacai@kernel.org>, loongarch@lists.linux.dev, "James E.J. Bottomley"
- <James.Bottomley@HansenPartnership.com>, Helge Deller <deller@gmx.de>,
- linux-parisc@vger.kernel.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org, Paul
- Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou
- <aou@eecs.berkeley.edu>, linux-riscv@lists.infradead.org, Heiko Carstens
- <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, Alexander Gordeev
- <agordeev@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
- linux-s390@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
- Andreas Larsson <andreas@gaisler.com>, sparclinux@vger.kernel.org, Richard
- Weinberger <richard@nod.at>, Anton Ivanov
- <anton.ivanov@cambridgegreys.com>, Johannes Berg
- <johannes@sipsolutions.net>, linux-um@lists.infradead.org, Thomas Gleixner
- <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov
- <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, "H. Peter Anvin"
- <hpa@zytor.com>, Andy Lutomirski <luto@kernel.org>, Peter Zijlstra
- <peterz@infradead.org>, Ning Sun <ning.sun@intel.com>, x86@kernel.org,
- tboot-devel@lists.sourceforge.net, Ard Biesheuvel <ardb@kernel.org>, Ilias
- Apalodimas <ilias.apalodimas@linaro.org>, linux-efi@vger.kernel.org, Vishal
- Moola <vishal.moola@gmail.com>, Alistair Popple <apopple@nvidia.com>,
- "Matthew Wilcox (Oracle)" <willy@infradead.org>,
- linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-Subject: Re: [PATCH 03/22] mm: introduce MMF_KERNEL flag and set it for
- init_mm
-Message-ID: <20260811091016.5ca67143@pumpkin>
-In-Reply-To: <33fc9d31-2866-4315-9510-0004deb93994@kernel.org>
-References: <20260714-remove_pgtable_cdtor-v1-0-44be8a7685d7@arm.com>
-	<20260714-remove_pgtable_cdtor-v1-3-44be8a7685d7@arm.com>
-	<01f07ea2-8bdd-4450-8a49-548f8b646cfd@kernel.org>
-	<33fc9d31-2866-4315-9510-0004deb93994@kernel.org>
-X-Mailer: Claws Mail 4.1.1 (GTK 3.24.38; arm-unknown-linux-gnueabihf)
+        bh=/N6NxxZa1/RwsdJJL1XOaQxBTanGcXh5CEXk/SH/G4M=;
+        b=XV2mLCTY4FMvMKo742Xt1ZoRuHV37jmZDk09UsHrkQBIAtmJx/eBXZJruiTgzO5Tbv
+         wM9JivoBl9Eow5dICiWCir9c8VCTkl9PBbMllTO1Q5yQga8qRh47Z97Ckf0Ah5UDmPYD
+         7cuwAZu+cfyLHtcpYSlTjsiN24ZKHXTcfJb/naJYk42LSO7dcatCkn9Jy/Rs20mOccwb
+         zXwIOoXGtMkBbtE+EEwkOp0jhL0wVmx0QOPNRVp48Z8bi4cSlnDoCfY5OCJhXCxkMekW
+         +uu/UM5xU6XBXEMfOY/gosoC591xld4qCwAoS5iAPegxCJfsh3HwuCvIBk57MVwDNPRk
+         rTHg==
+X-Forwarded-Encrypted: i=1; AHgh+Rqef4gC4u0O5u5984GOgasGzI4TJaJHGRMpTVg8or1eatZRUtIUq4eumZOVoeHJQilR0FiqCwSWyf3JfE0=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzurPZiJSLd3MOlp24W9pSxhATOmcLCzLE0dMi31Dv5z99wdATR
+	tWbyiy8ygAxGs/7RcyQbcYqlOa7eGkReIzfJYsERimawUo4PB0usqfv5Qw53N7CGIs0wdRaGGVn
+	K+GSGki+z35/GDzndL6qTsK/QRbtlSXM=
+X-Gm-Gg: AR+sD12H6J0k+EfDU8bJujjT0MhBPGriEoHb0R3dB9l2ewwTD+K29xnTNd+gzoRfv5S
+	GqpO3o7nEmi5ycLhur+flMg7qxG9X9aBSADn0VLoH3xPefD1+z6bei1GYKQBOgozPDcWV1RRxiE
+	bJVjpjWDqbWFJXDepb0+dHSDSMKrwIXgXbWfjZdeyzr9EzfGYK/ySQPoUKgSqGax5Idqk+VG5ND
+	N6cCqc3gGHmRUD7pYpFu57jYYvAziCasGWBl0OYAUK2WZkYzfQktwW2RXUYmmmvLPv1f5R1aXh2
+	MeRxFD6T4X+Xj5NNioJGCKiZfUKLrUsRSq+eZnBO3cDvqM5PQFfnmPI=
+X-Received: by 2002:a17:902:ffcf:b0:2cf:7ea3:7cf1 with SMTP id
+ d9443c01a7336-2d31877be01mr17789185ad.5.1786436244086; Tue, 11 Aug 2026
+ 01:17:24 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -129,79 +102,61 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+References: <20260804100218.49587-1-shengjiu.wang@oss.nxp.com>
+ <20260804100218.49587-2-shengjiu.wang@oss.nxp.com> <20260810-normal-cuscus-of-argument-4b230b@quoll>
+ <CAA+D8AM9s7EX-G246Hf2=DOx5q2qXWg_MjUCaoJ8RggOjp+5cQ@mail.gmail.com>
+ <dc40dcae-3017-4e61-8c6d-7e6127e4ee77@kernel.org> <CAA+D8AOQ_y7BdR4h+X6qxFygPU6h1iFV0cYXHN4KB370yM2Bkw@mail.gmail.com>
+ <3219a2e7-d11b-478e-ad2e-5f1ec2bbdf27@kernel.org>
+In-Reply-To: <3219a2e7-d11b-478e-ad2e-5f1ec2bbdf27@kernel.org>
+From: Shengjiu Wang <shengjiu.wang@gmail.com>
+Date: Tue, 11 Aug 2026 16:17:02 +0800
+X-Gm-Features: AUfX_mx1LX0wZY0j5iDajd7W5oe3f6Rmcs5OiNPXvXt3EbMHLfrVtGbE60ayIAU
+Message-ID: <CAA+D8AO1q-n2S3X2d1ZZ_yXxNrHPjCPvrJrPZmTMOYZM9uEGeQ@mail.gmail.com>
+Subject: Re: [PATCH v3 1/5] ASoC: dt-bindings: fsl,imx-asrc: update port
+ binding to support multiple paths
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: shengjiu.wang@oss.nxp.com, lgirdwood@gmail.com, broonie@kernel.org, 
+	robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, Frank.Li@nxp.com, 
+	s.hauer@pengutronix.de, kernel@pengutronix.de, festevam@gmail.com, 
+	shawnguo@kernel.org, linux-sound@vger.kernel.org, devicetree@vger.kernel.org, 
+	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
+	linux-kernel@vger.kernel.org, Xiubo.Lee@gmail.com, nicoleotsuka@gmail.com, 
+	perex@perex.cz, tiwai@suse.com, linuxppc-dev@lists.ozlabs.org, 
+	Shengjiu Wang <shengjiu.wang@nxp.com>
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, 5 Aug 2026 14:07:01 +0200
-"David Hildenbrand (Arm)" <david@kernel.org> wrote:
-
-> On 8/3/26 15:59, Christophe Leroy (CS GROUP) wrote:
-> >=20
-> >=20
-> > Le 14/07/2026 =C3=A0 16:03, Kevin Brodsky a =C3=A9crit=C2=A0: =20
-> >> mm code often needs to know whether some mm represents a kernel or
-> >> user address space. This is currently done by comparing the mm
-> >> pointer with &init_mm; besides not being particularly elegant, this
-> >> ignores the fact that other mm's (e.g. efi_mm) may also represent
-> >> parts of the kernel address space.
+On Tue, Aug 11, 2026 at 3:36=E2=80=AFPM Krzysztof Kozlowski <krzk@kernel.or=
+g> wrote:
+>
+> On 11/08/2026 09:33, Shengjiu Wang wrote:
+> >>>>
+> >>>> Why mentioning upstream in the first place? Either this change break=
+s
+> >>>> ABI or not, explain that.
+> >>>
+> >>> The deprecated 'port' property is retained, so this change is fully b=
+ackwards
+> >>> compatible and does not break ABI.
 > >>
-> >> Introduce a new mm flag MMF_KERNEL and set it for init_mm.
-> >> Subsequent patches will use this flag to replace comparisons with
-> >> &init_mm. No functional change is introduced for now. =20
-> >=20
-> > Did you consider performance impact ? This test is usually done in quite
-> > critical memory handling functions.
-> >=20
-> > init_mm is known at link time. Before your patch 08/22 there is just a
-> > comparison of mm (r3) with a constant (loaded in r10):
-> >=20
-> > c0014048 <assert_pte_locked>:
-> > c0014048:=C2=A0=C2=A0=C2=A0 3d 40 c1 09=C2=A0=C2=A0=C2=A0=C2=A0 lis=C2=
-=A0=C2=A0=C2=A0=C2=A0 r10,-16119
-> > c001404c:=C2=A0=C2=A0=C2=A0 39 4a 03 98=C2=A0=C2=A0=C2=A0=C2=A0 addi=C2=
-=A0=C2=A0=C2=A0 r10,r10,920
-> > c0014050:=C2=A0=C2=A0=C2=A0 7c 03 50 00=C2=A0=C2=A0=C2=A0=C2=A0 cmpw=C2=
-=A0=C2=A0=C2=A0 r3,r10
-> > c0014054:=C2=A0=C2=A0=C2=A0 4d 82 00 20=C2=A0=C2=A0=C2=A0=C2=A0 beqlr
-> > ...
-> >=20
-> > After patch 08/22 we have, it first checks that mm is not 0, then it lo=
-ads the
-> > word located at mm+528 then AND it with 0x1. This load might be costly.
-> >=20
-> > c0014048 <assert_pte_locked>:
-> > c0014048:=C2=A0=C2=A0=C2=A0 2c 03 00 00=C2=A0=C2=A0=C2=A0=C2=A0 cmpwi=
-=C2=A0=C2=A0 r3,0
-> > c001404c:=C2=A0=C2=A0=C2=A0 7c 85 23 78=C2=A0=C2=A0=C2=A0=C2=A0 mr=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0 r5,r4
-> > c0014050:=C2=A0=C2=A0=C2=A0 41 82 00 10=C2=A0=C2=A0=C2=A0=C2=A0 beq=C2=
-=A0=C2=A0=C2=A0=C2=A0 c0014060 <assert_pte_locked+0x18>
-> > c0014054:=C2=A0=C2=A0=C2=A0 81 23 02 10=C2=A0=C2=A0=C2=A0=C2=A0 lwz=C2=
-=A0=C2=A0=C2=A0=C2=A0 r9,528(r3)
-> > c0014058:=C2=A0=C2=A0=C2=A0 71 29 00 01=C2=A0=C2=A0=C2=A0=C2=A0 andi.=
-=C2=A0=C2=A0 r9,r9,1
-> > c001405c:=C2=A0=C2=A0=C2=A0 4c 82 00 20=C2=A0=C2=A0=C2=A0=C2=A0 bnelr =
-=20
->=20
-> Is that a real problem, though?
+> >> So why? Drop redundant parts.
+> >
+> > Ok, I will remove the sentence below in the commit message.
+> >
+> >     No existing upstream DTS file for fsl,imx-asrc uses the previously
+> >     documented single 'port' node, so this change does not break any
+> >     in-tree device tree.
+> >
+>
+> Honestly, it's redundant, because you are not dropping it. So even if
+> DTS was using the port, what would change?
+>
 
-The cost of the read is likely to matter most if the branch gets mispredict=
-ed.
-I'd also guess the mm isn't usually NULL - so that branch needs to statical=
-ly
-predicted correctly as well.
-I'd also not assume that the mm is in the cache (unless the surrounding code
-has already accessed it), the L1 data caches are small.
+Understood. Even if a DTS was using 'port', nothing would change since
+'port' is retained.  I will drop the sentence in v4.
 
-	David
+Thanks.
 
-
->=20
-> What we could do is to just keep the =3D=3D &init_mm check internally on =
-configs
-> where we know that there is only a single such MM context.
->=20
-> Just a thought.
->=20
-
+Best regards
+Shengjiu Wang
 
