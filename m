@@ -1,92 +1,120 @@
-Return-Path: <linuxppc-dev+bounces-25740-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25741-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E9BB4C5AC67
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Aug 2026 12:46:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 65152C5CFCF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Aug 2026 13:25:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hKBG55jZrz2yyJ;
-	Tue, 11 Aug 2026 22:46:53 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62c"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786452413;
-	cv=none; b=JBg1vvZhPnUOeyGPCN/NUgmEakUA0R7t5uEsNLAE+IZJKNU64hZGpPJc1bUGt/p38tmKM1I3+2qbojEPrDwtN+QPXzRvrCYH6Csw4GmXF5lsALb4wkWFeuP4Hv8l/nmf5IZjMvtLsgNno4zq8NL2lGb3Vg9TMacUliTPZkZzbCA1c/Gg7sy6lzOj8Zpq4zKcSxvpnmTYT2IoxFZZ+y9JnismRa16F+3PHrLxHfm/uTv4CYhG2CaMCPivImHspyqNaxeFhRcnvGP/dwM574r4FMX8uFTYumVAfc2YwB7IgPOR/t7MrSkHzh/VOCGI1tKXpdSV5kxQwwGJA4mvJdH5PQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hKC6M5Dr4z2yyJ;
+	Tue, 11 Aug 2026 23:25:15 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::333"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786454715;
+	cv=none; b=lDF6tYoziudo5/gHJgPZ1A3EsK31NhWqVDp/y5uFP6fybIxdMTtUWL7qfdnyZa1c8hYiOxfz7g1CNVllQY3/gsDf2WV/3HqJSbS4zxkdAwOp0+Yb7hKFgUyZ/5Pj3zi0g2/X8OGfu7q1x+A61Qo4LoWtRLyoH7iBxRWrMCUsql0380mo34nQR43qCX015Rdd8D/3UhIIa/AZ9H8h3XSuhlMgaoEscdX0QPZRXIqIXZc5KJzq9MATmhSYFajMZVat9YsoXcTsBduBwKgEdgyM/Wrx9NAlrsBJrLjcbB6JiZn638HXsS3luHyz9ShTMkn6ZjJ4Ej9uCkbzslXA2GHm9Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786452413; c=relaxed/relaxed;
-	bh=XPyCbULBvegiKQxqrgTXiGq19exYTrYxLlFRH0sdiJY=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=JRg6kCUjGWp9YExL/4sjtm9hLa5t4bmIK5N8VeYGN3AvjSKbZSJnYkLruu5+CIOQ5v4XZULclFDH98PwEEEN5AWBbvYis8rgllLLKEXjgy1K7Tf/LzKoSeozT+l7J/MUGXY6Faj8I9ZvihrbRoqsiwr53nz9/tt8vl6uqbB55fBK0FUiAyl0cYcIwoNkUsASK2JLvZFDPI6TU7IaxPyDFHrbe5Rn+wt94Ll6iNVxUbaz1MctabuxIU43O9w7/rhKhzHK8NSSYx/LqncWjVQkQJ6Oa/qyUzVM79epvZQ4Yjcdlsgb/t7i4rjYlGB3tHwjWax1rb79FByLvyfLVOAHVg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ANjAH1Vi; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62c; helo=mail-pl1-x62c.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1786454715; c=relaxed/relaxed;
+	bh=HfUDfNxB65XZqovwWVBLkrKpJgUq3OtZ1XoJNMhjK1c=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=LiguYevpBNUhAD1/0BeT9Xs97prz7fYLkllZXkJpWJwj0KEj+HvKlC+FTdpSVsCx+/PbGL0PhBRBQy+sM0CANw3h7bJvYTu4n0Nl6SvHoTE8bDDdLeYeBjFxNZX49ALj3JMJ31miu1ThPkGaVx165BUWMH9vp4TZ+FneEjOTOkY7Lk8jWRDn0mm9pqI0rvvNKhsyt+drHZb02OPZyd+MqwZrdcqzGhgqUOmH5E6uy620tab3pg23ifeiEeRS+nnYGgZLJ0sq95iJkRDc6u7EpvKNcvrqT9Zm+nXemxnOT+cIewnQKOHAXTVS9GDbYtoZrq502eq9dxGDA9OPSX9yDQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=CVte+Xc+; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::333; helo=mail-wm1-x333.google.com; envelope-from=david.laight.linux@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ANjAH1Vi;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=CVte+Xc+;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62c; helo=mail-pl1-x62c.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x62c.google.com (mail-pl1-x62c.google.com [IPv6:2607:f8b0:4864:20::62c])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::333; helo=mail-wm1-x333.google.com; envelope-from=david.laight.linux@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-wm1-x333.google.com (mail-wm1-x333.google.com [IPv6:2a00:1450:4864:20::333])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hKBG40pGcz2yvM
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2026 22:46:51 +1000 (AEST)
-Received: by mail-pl1-x62c.google.com with SMTP id d9443c01a7336-2d01663d816so26235585ad.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2026 05:46:51 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hKC6L32Cbz2yrC
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2026 23:25:13 +1000 (AEST)
+Received: by mail-wm1-x333.google.com with SMTP id 5b1f17b1804b1-4954f5e8020so16047545e9.2
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2026 06:25:13 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1786452403; x=1787057203; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+        d=gmail.com; s=20251104; t=1786454710; x=1787059510; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :in-reply-to:message-id:subject:cc:to:from:date:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=XPyCbULBvegiKQxqrgTXiGq19exYTrYxLlFRH0sdiJY=;
-        b=ANjAH1ViX8+fWNjsIy994m2+wp8O24or/yudw+vUaZooiXzMRsxdQtwNubGx7G4wSP
-         diq/JQ2qhhtCu07vsn1PG7/nYrdewo1fBQFZlFdGU0VbCfM2GJdI9TNR46FnjPzVwmV6
-         10E6YJBJMHgV3ykwIkJRUTcOWGkpf4x5qIdXioVrVRUHdcagDEvcHLzFyv+6YtNNp4MZ
-         j0v4ThE/HuPnHVpXeUUAbgakhejVGVqAMmhJse05+ipVWIevyD6s9RAuiIEDu2qq9bOa
-         N2Wp4IPnrlY1NTh5dEa083FvC7LD+L4MeQSmAB112O6yqlpdKe5d0m2n+V9xq0lzhG4s
-         Jdrg==
+        bh=HfUDfNxB65XZqovwWVBLkrKpJgUq3OtZ1XoJNMhjK1c=;
+        b=CVte+Xc+uF4TgBw5WaNBgs6eMoR5qw+9n5nPTjoELY2V/TlfTrmS4EaMysZZnBLXtz
+         dSAzItXdjfuzm3VVQf44A0WaxNWW2wzk8WMVFn9cIHPY7+mbbxgudPc/I2lm6ThehAx/
+         TtuSvZB/q5NKeh1M4Q00hThjDyWm1ZRfqFv8vCOJQZMAxKIDZgAZCStkXN4K2VRDHiUK
+         T9S3oEydsNkPx3Une07oSdeT+GNekCfB+RmuqGhLreYHubGAfAfHMTZFTesqXiwmjDFw
+         P/Oy4P5W2clRE8U6acMFie/LqXPUcz0+dFBqfThgjVRrmQZFrkN4y+2t0MW69QfIkxM5
+         575w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786452403; x=1787057203;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
+        d=1e100.net; s=20251104; t=1786454710; x=1787059510;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :in-reply-to:message-id:subject:cc:to:from:date:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=XPyCbULBvegiKQxqrgTXiGq19exYTrYxLlFRH0sdiJY=;
-        b=Nqn/PLv/iIawQzTZyEEsIxcNGupfV401QxIY3T40qdAppIngQ9VEpwY1kg5SQT/Qh1
-         CTxPI6Dmw2E3p8y6hVjehG831Slna18TkNNZrQaqdVDIwW+Jnj0e9duEnUpioHbc6iiR
-         To7tHnuJNbADuFeIxcR8w36hHIUPCG7A91NBpSVNWN8DyLSqai120TPkmGlx1secXCbu
-         2EIU+1vG7WCOU7N5SQW/c2VnQhfauMDhuv57afc6tvcCg7tGX/oPITsuqcLti/TJNMTI
-         X9lBEKouX5v/pGqu0ALUhUpBWyt6t2FlRtSzIqk4HHaLwjPA8U7RQMNBr/1BFNpfFb5Q
-         p/3g==
-X-Forwarded-Encrypted: i=1; AHgh+RpT4gxzizBm2xv1SqdZkbqGOA3u5rdqhSzFEfDaAOHtmUM+c0oxST5AMfkG8FM+GxaM99N/z86bMqkwXxQ=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyzC9lw68XPm6mJyJ7lU7NsNBuHH2IHZIINVtb9GZUGUf5CgENQ
-	DVXLa86I9f5YQckcWkdz++m50Vzv/jz9HuFuuRjNBYaGVTfah8ZyMcQ8
-X-Gm-Gg: AR+sD10XEBnc0rNULiiLkgvHqomE7HB7Mk6F5WluBIFRGLcgj426qvuz4TgMReKUASU
-	oJ7nBktCfZscrtzDFFR2sM0rSbXzIHuVSPrdKafG5JGT+dmiw6c1JV+BBli6z9YIcQSChgBkuq3
-	TIdQHFRQbbD7ckUrh9huvQXOHy8CKiLK5RWj/Zk0rfAebhm8uooARs8TLFCp/pLfK+DMxLJaEFI
-	TnkpE6C3LEqr3+mtYoZ1gXELAAD8hXK7v/dEwae7ONK4VfRprg6Ujb31EY48/ae9IK1FbzmpLIC
-	xjqpkiOGa+XImxTZF61j9mxKG/dvy/wuNFg8nYQOjLxT2fP/n61099wgOCDCDa7k3i6IjCLhWD+
-	XfGC+YCLZW0nsvA4vze8RRyeYH5GpfximSwsWYF32mOE73yaxdkzLyBUs26EFD6L7zitRVkxf5h
-	Y1A1yOGjL47yetV/4YmZ/y4U6Ef7uV1ReDGCzJ2kYGiA6jbhzoFYQEeESF8svCqqEEmjSUJi7v7
-	KXr60rZIoNJ4wBIedaHtubOi6G6//sWJ+NR
-X-Received: by 2002:a17:903:2a8d:b0:2cf:9347:f445 with SMTP id d9443c01a7336-2d3177cb87fmr41144825ad.10.1786452403187;
-        Tue, 11 Aug 2026 05:46:43 -0700 (PDT)
-Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([106.51.165.140])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2d315d829c4sm7520985ad.0.2026.08.11.05.46.40
+        bh=HfUDfNxB65XZqovwWVBLkrKpJgUq3OtZ1XoJNMhjK1c=;
+        b=o8wMwE8AKIwA9N8piVaOdWyKEDmRf+fj9z5fgW6C+w58XddLzFmgoBVz1FocEVCB3Y
+         SkXUq+AIaKG7tP/dznaTwlkZCjDr6nfpJsZK1zbDzptOCKSyGMVYuZRX8IasvCxPcltR
+         SAqZKQ0rg2XPzFJgmc8qp2n6VVfOrc9gpEoAKQX3b6sChPMSXu1oOCYj4NO4J9sddy+y
+         KDIrs7SgrX5TiUflPs0mcKS+bVPOOx3r8fbmX/C9eOW1rdTGf5Fy2vhNgg7PCSlCGwFj
+         gXZA40KqAbptfvgkGfMgBeBq02sU/KxBWtTpRVCNlr1lxF/fz9R4IjSUDzkdUXAjhLEg
+         RuNw==
+X-Forwarded-Encrypted: i=1; AHgh+Rrtze3FgL+D0F8nd8HBWpPJXeOLCsaUhbgvmmP2WFM2fVyHsIab3qvZNROmFd9kLA1u8zxD50kSqUJDO7A=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yx8UkntjwdnH4MWu9Pb8NIpOj0y2K82CLv70IaABBfNwxCg6vZY
+	1Vva7zq1DAhvtreoopL8dkC/s3Ci/qET2HlDK/ycZCSTNIQOC8pZNy7z
+X-Gm-Gg: AR+sD13tisNYxyutP6ESzy+I8T7hmvsxM2BktQAtCmwQGLK2/QUV2mzj19ZxRdwInPi
+	cuVNVUzloqJgBThle/tCBzc85tYnKx+EjxwzPIiqhrwWIrM+uzzIRxY0w8LM9QEkqqAkB3j9C0B
+	V7TYxeIJPZorsKDnTMMiiypyJD/WHQ0pdHI4+PZjOF5oxvyUr2GxrPT2BLvC2r9J3fx8fvFnNM2
+	ri6sTJPqty6DkBMkJHdev61nVYoWyWzMeSGSyOzekSgihHEgNAuqHje0XCYxyvbSas3uqyItIjQ
+	/om3WBwZcUJm8Cka3hKZU1iceWOsL3qL9iC1VlRXCQg01Q2bJactHKLOcalfg5pk8by/FPcnDGB
+	Q0QOqxU8EYKy0Qmn8CDYcPJhT/eSoju8tlU/hS+5CQw12qTRwnK6PSjeop5pFVRoosmDKw8g7H1
+	Yhpojm7zCyqpjwvc1NmYUwrPYvhbhl09RW8Q7hVtx1NQ9M2CasaZGXY5NXIvszCZXj/PlVZ9fXB
+	s/sjq0ZN8FHYzQ7VyXHmteJrVZS9k5uTwRU
+X-Received: by 2002:a05:600c:4513:b0:495:3e08:ad19 with SMTP id 5b1f17b1804b1-49978468c2bmr48261215e9.9.1786454709883;
+        Tue, 11 Aug 2026 06:25:09 -0700 (PDT)
+Received: from pumpkin (82-69-66-36.dsl.in-addr.zen.co.uk. [82.69.66.36])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49977df9489sm83541285e9.1.2026.08.11.06.25.08
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 11 Aug 2026 05:46:42 -0700 (PDT)
-Date: Tue, 11 Aug 2026 18:16:37 +0530
-From: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
-To: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Cc: Shrikanth Hegde <sshegde@linux.ibm.com>, 
-	LKML <linux-kernel@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
-	Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [REGRESSION] Power9 pseries boot hang in v7.2-rc6, narrowed to
- PowerPC GENERIC_ENTRY conversion window
-Message-ID: <ansZjSJMWMV8DDF-@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-References: <96dae110-f79b-4e54-8a9b-514369019b5d@linux.ibm.com>
- <e27eeaf4-c2c9-4ef7-9e1c-0a5fb45755d0@linux.ibm.com>
- <6d1b5f38-f4e4-46ca-88b4-7c18dd6c6280@linux.ibm.com>
- <anq72IebDSu-wWbb@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+        Tue, 11 Aug 2026 06:25:09 -0700 (PDT)
+Date: Tue, 11 Aug 2026 14:25:07 +0100
+From: David Laight <david.laight.linux@gmail.com>
+To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: Kevin Brodsky <kevin.brodsky@arm.com>, linux-mm@kvack.org, Andrew Morton
+ <akpm@linux-foundation.org>, David Hildenbrand <david@kernel.org>, Lorenzo
+ Stoakes <ljs@kernel.org>, "Liam R. Howlett" <liam@infradead.org>, Vlastimil
+ Babka <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>, Suren
+ Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, Pasha
+ Tatashin <pasha.tatashin@soleen.com>, Russell King <linux@armlinux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
+ Ryan Roberts <ryan.roberts@arm.com>, linux-arm-kernel@lists.infradead.org,
+ Huacai Chen <chenhuacai@kernel.org>, loongarch@lists.linux.dev, "James E.J.
+ Bottomley" <James.Bottomley@HansenPartnership.com>, Helge Deller
+ <deller@gmx.de>, linux-parisc@vger.kernel.org, Madhavan Srinivasan
+ <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org, Paul Walmsley <pjw@kernel.org>, Palmer
+ Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
+ linux-riscv@lists.infradead.org, Heiko Carstens <hca@linux.ibm.com>, Vasily
+ Gorbik <gor@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>,
+ Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+ linux-s390@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
+ Andreas Larsson <andreas@gaisler.com>, sparclinux@vger.kernel.org, Richard
+ Weinberger <richard@nod.at>, Anton Ivanov
+ <anton.ivanov@cambridgegreys.com>, Johannes Berg
+ <johannes@sipsolutions.net>, linux-um@lists.infradead.org, Thomas Gleixner
+ <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov
+ <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, "H. Peter Anvin"
+ <hpa@zytor.com>, Andy Lutomirski <luto@kernel.org>, Peter Zijlstra
+ <peterz@infradead.org>, Ning Sun <ning.sun@intel.com>, x86@kernel.org,
+ tboot-devel@lists.sourceforge.net, Ard Biesheuvel <ardb@kernel.org>, Ilias
+ Apalodimas <ilias.apalodimas@linaro.org>, linux-efi@vger.kernel.org, Vishal
+ Moola <vishal.moola@gmail.com>, Alistair Popple <apopple@nvidia.com>,
+ "Matthew Wilcox (Oracle)" <willy@infradead.org>,
+ linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+Subject: Re: [PATCH 03/22] mm: introduce MMF_KERNEL flag and set it for
+ init_mm
+Message-ID: <20260811142507.4c6c760f@pumpkin>
+In-Reply-To: <01f07ea2-8bdd-4450-8a49-548f8b646cfd@kernel.org>
+References: <20260714-remove_pgtable_cdtor-v1-0-44be8a7685d7@arm.com>
+	<20260714-remove_pgtable_cdtor-v1-3-44be8a7685d7@arm.com>
+	<01f07ea2-8bdd-4450-8a49-548f8b646cfd@kernel.org>
+X-Mailer: Claws Mail 4.1.1 (GTK 3.24.38; arm-unknown-linux-gnueabihf)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -100,55 +128,58 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <anq72IebDSu-wWbb@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-On Tue, Aug 11, 2026 at 11:37:45AM +0530, Mukesh Kumar Chaurasiya wrote:
-> On Mon, Aug 10, 2026 at 05:19:27PM +0530, Venkat Rao Bagalkote wrote:
-> > Hi Shrikanth,
-> > 
-> > 
-> > On 04/08/26 8:23 pm, Shrikanth Hegde wrote:
-> > > Hi Venkat.
-> > > 
-> > > On 8/4/26 2:04 PM, Venkat Rao Bagalkote wrote:
-> > > > Hi,
-> > > > 
-> > > > I'm seeing a boot regression on a Power9 pseries LPAR. The system
-> > > > hangs very early during boot after:
-> > > > 
-> > > > Quiescing Open Firmware ...
-> > > > Booting Linux via __start() ...
-> > > > 
-> > > 
-> > > That is strange. not sure where to look at without any logs.
-> > > Is it a specific config that fails or this specific LPAR that fails?
-> > > 
-> Is this a specific lpar or all power9 pseries are exhibiting same
-> behaviour?
-> 
-> Regards,
-> Mukesh
-> [...]
-> 
+On Mon, 3 Aug 2026 15:59:35 +0200
+"Christophe Leroy (CS GROUP)" <chleroy@kernel.org> wrote:
 
-Hey Venkat,
+> Le 14/07/2026 =C3=A0 16:03, Kevin Brodsky a =C3=A9crit=C2=A0:
+> > mm code often needs to know whether some mm represents a kernel or
+> > user address space. This is currently done by comparing the mm
+> > pointer with &init_mm; besides not being particularly elegant, this
+> > ignores the fact that other mm's (e.g. efi_mm) may also represent
+> > parts of the kernel address space.
+> >=20
+> > Introduce a new mm flag MMF_KERNEL and set it for init_mm.
+> > Subsequent patches will use this flag to replace comparisons with
+> > &init_mm. No functional change is introduced for now. =20
+>=20
+> Did you consider performance impact ? This test is usually done in quite=
+=20
+> critical memory handling functions.
+>=20
+> init_mm is known at link time. Before your patch 08/22 there is just a=20
+> comparison of mm (r3) with a constant (loaded in r10):
+>=20
+> c0014048 <assert_pte_locked>:
+> c0014048:	3d 40 c1 09 	lis     r10,-16119
+> c001404c:	39 4a 03 98 	addi    r10,r10,920
+> c0014050:	7c 03 50 00 	cmpw    r3,r10
+> c0014054:	4d 82 00 20 	beqlr
+> ...
+>=20
+> After patch 08/22 we have, it first checks that mm is not 0, then it=20
+> loads the word located at mm+528 then AND it with 0x1. This load might=20
+> be costly.
+>=20
+> c0014048 <assert_pte_locked>:
+> c0014048:	2c 03 00 00 	cmpwi   r3,0
+> c001404c:	7c 85 23 78 	mr      r5,r4
+> c0014050:	41 82 00 10 	beq     c0014060 <assert_pte_locked+0x18>
+> c0014054:	81 23 02 10 	lwz     r9,528(r3)
+> c0014058:	71 29 00 01 	andi.   r9,r9,1
+> c001405c:	4c 82 00 20 	bnelr
+> ...
 
-Can you try the below fix?
+Thought...
+Could the check be replaced by one that checks for kernel static data?
+That would require that other mm that represent part of the kernel
+address space be static (and probably not in modules).
+ISTR there is an address range check that can be used - and might be
+cheaper than the explicit test for init_mm on many 64bit archs.
 
-diff --git a/arch/powerpc/include/asm/entry-common.h b/arch/powerpc/include/asm/entry-common.h
-index c5adb5006361..de64389b0815 100644
---- a/arch/powerpc/include/asm/entry-common.h
-+++ b/arch/powerpc/include/asm/entry-common.h
-@@ -270,7 +270,7 @@ static inline void arch_interrupt_exit_prepare(struct pt_regs *regs)
- 	}
- 
- 	/* irqentry_exit expects to be called with interrupts disabled */
--	local_irq_disable();
-+	hard_irq_disable();
- }
- 
- static inline void arch_interrupt_async_enter_prepare(struct pt_regs *regs)
+	David
+
 
 
