@@ -1,94 +1,62 @@
-Return-Path: <linuxppc-dev+bounces-25734-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25735-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6CAA8C5CFC1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Aug 2026 08:17:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 917F6C5B574
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Aug 2026 08:35:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hK4HD0NjDz2yvG;
-	Tue, 11 Aug 2026 18:17:28 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::62d" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786436247;
-	cv=pass; b=W317SAI2frOdjEmlRCbyNRcatThMn2oh79+LP1vfobx165G1K2Ais9jdlOlElhvW04vGG2TSe/ZYFcOWPL+8NrEt6r0NiOdrt2EsaBtwPpQPOnwc77bFn2Tt0iQI8LR2Dsqvn95oklL+ZJpAdB82PsITcE+QkVGxRwx/ouIAfFSmnvu2BBG7JHHwWmksZ1PvdekmcVOWNeRmyLhR3gJmnx85ngaX7QsxND4osH/Zz8lFjzmJN2wqfqOdCYWHPl4x7tawHsXxORJl4V9der+QphsihoWR1mYJPDIBKMKR7cMEgJpYLg5aEnkGoSEPqPMJP+M1wtHJj26Xy6glr7U/Ug==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786436247; c=relaxed/relaxed;
-	bh=/N6NxxZa1/RwsdJJL1XOaQxBTanGcXh5CEXk/SH/G4M=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=iBrhcF4SsE5raKUjy/x1v0i+K3xNh5MdztT2BuSgrljs5llWltjqtz4qr+pjiQaS1s4jhwtvT/K+lhHFXamJ0HOYdnGuOGskqGuqPm4ikYcXOZ1LhURq/D8FsaRyNXolyafLXu5kraXN24IvzVFdFxY3lJ6vLnd+/NlBL4EJrF9Qp45g8FPwGd4ERBet8gBMNhwIUtOqO/I2Ap/8QIvpVLl301B+YATSGwwt+BZaGXOHtj9mvwB4zduqmkVCcxbg5FXu6hH2Upx9I6pX027XT5OiP+f4qXq3Uilc72QoHKv15c+8Hm4Jeu20EEJkpe5mQINGe+Lx0wn4EGmCCYAH3g==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=P/epZspb; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62d; helo=mail-pl1-x62d.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hK4gk416Wz2yvG;
+	Tue, 11 Aug 2026 18:35:14 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786437314;
+	cv=none; b=P9+KcNAa59OxQh4a58pN0w/F5JVareZOfektXHUsMygBFfbidUZiV7woUVkj4vgo2uNfNyRli1fz797yPwThNr08tsdkbkUgSIxNcIUVLeeDFUptjLy47pLETQVI9JZjNm9QtAtEBbb3cJhK7lzyF34Kj2B41ElzynZfZZCf2VvnAt5wgBUe6EQotVN0kTAmvYFnBmstBBrVef8v3z4Kpr/UoPLV0X9t3Hoc8/evFe6nrZ7E5FGDU8OAQIA5ghsqNqHvL7BU135dwYzIm8SbcC+PeZIKvoNFE0UcVG/THYeevW7tnW4wsEsSUcxnUMqaLznTP3eIXS4uG6aDZmOKXw==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1786437314; c=relaxed/relaxed;
+	bh=FpB3+FkrG1uWOg00/UfBQNwp9iXrIA9AhO2Rb76OdaI=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=egRUxQG+wCH7hrQfuZFOU6qoPMdnVU4XbOU0ztwOl7l//CUOJT1bQaLZ2Mya3nORraHwV7fSuLxnJTlkipfHtTMQSepLOt003LxLUisdalYJi9H6C+3pVLO3+4WvbDGBtUDBkckU2nNOXo97GXMnOVb942JEdMP42N+wRxq0j+5wRESbyqN20n7IXjIggRIprHQf8hTBZ9XZzVIOJNfWfpoex5oV4K0pmPxY5Zf6vzPvwgpf4zDlDFe34FSnV/q5kogkUrE/bceijqRkqZBFB7DRFnjDK5YMvge1HdK1Q6OXqaXBuSonbDrnEf2o+nmOabYbCXPdZoaF4jbHXawgbQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=ILvmNn+1; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=anshuman.khandual@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=P/epZspb;
+	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=ILvmNn+1;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62d; helo=mail-pl1-x62d.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x62d.google.com (mail-pl1-x62d.google.com [IPv6:2607:f8b0:4864:20::62d])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hK4HC15XDz2ynH
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2026 18:17:26 +1000 (AEST)
-Received: by mail-pl1-x62d.google.com with SMTP id d9443c01a7336-2cf452def93so6214155ad.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2026 01:17:26 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1786436244; cv=none;
-        d=google.com; s=arc-20260327;
-        b=pFo3tF3qsIY/djz4lWItgRh3xYaX5gf67+shFNFsCap/mtdSDh29VFIAL2xTSN2wPS
-         bFzG81T0s/qx+5BULym5ZXAXF+OMkBbKR9/mpTJp8SSxKaiO+8voO8vpxH81U1B+tqe+
-         Crw2aR7MA1uDx3M/wFbNQ91vpENw5gaPNxrAxG/Pz8k93O2CwVWWpaGMDbNNDEayemGg
-         sjSrYn/+BCJEmdD2cMTgR2E/UqxivAyBTnTscOojXmxqJTxFBBZKjw2vkqkIWYoI+Y/E
-         PH1v010tQSWIHFkPZS2qwWchuhu/7HjJab2g+kCvk5/RyfPUeGEduuVKH0FSJpkU3AMv
-         vN1A==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=/N6NxxZa1/RwsdJJL1XOaQxBTanGcXh5CEXk/SH/G4M=;
-        fh=LjoPnClf8IV6C9Wu2FSVv22hHYi1Db100xxxl6HrSzI=;
-        b=n/P5r+Eq7f5FHX7XXhKH12sGLn8Yjop3L+r27uqIWp8cP3++C/KtokvsoyK1IznaUI
-         X6mk54rwdRJFNauyGPkd7ixsb9c7sv9HB43kJOYGHq4See9owMzO0jv5Jza2SfzVUgbr
-         uEt5yaefCTzr93Ef3S6sQN7V9VoE9dY3o1/SES88oxzL8Ux0JHsQKf8yPHts6EXEXFoM
-         2iFJrxR51hJd6Xdgl5WSPqQtlsZnGiMhMeBZO1W/mCjaO1DiTOYazWI7DThdrd9k7ID2
-         uzdzEabw/9hcnOTP5armccjdnQMfOPdskMgJcTFgY0lvFOWha6g/Mv7lviGZ3twfyFHZ
-         LQaQ==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1786436244; x=1787041044; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=/N6NxxZa1/RwsdJJL1XOaQxBTanGcXh5CEXk/SH/G4M=;
-        b=P/epZspb0BfH410Dgc23SgLPgI/QnZQUC72yrX50CKs4gT3xqim7EZ+n4GuCdd5Svl
-         tQjbq/WeWx9fCzU6RATkhZo/AS1nOA/Qi6mgTSOU7ZRWEcluo/0oAsivYSAYyrZxbqQ1
-         2Wk3IE0Xat82EfHlpIKwozogJk2GXYIERGlBQ/eCwvfWpcF531XGBedOvDTRh1C81Uk2
-         XAzYIZG/7vrtcH7RhyB/irimV67P411ZVsbTad1IuyJWueHSMgi4CuZQh8H3Bk9CTwrO
-         Rp0TtNzNr1Rc+sFUrn7Gi6x1OJlu5qV1i8DNmEgxycpmyZZxTbij4fPh43CCm4klC8sP
-         DX5w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786436244; x=1787041044;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=/N6NxxZa1/RwsdJJL1XOaQxBTanGcXh5CEXk/SH/G4M=;
-        b=XV2mLCTY4FMvMKo742Xt1ZoRuHV37jmZDk09UsHrkQBIAtmJx/eBXZJruiTgzO5Tbv
-         wM9JivoBl9Eow5dICiWCir9c8VCTkl9PBbMllTO1Q5yQga8qRh47Z97Ckf0Ah5UDmPYD
-         7cuwAZu+cfyLHtcpYSlTjsiN24ZKHXTcfJb/naJYk42LSO7dcatCkn9Jy/Rs20mOccwb
-         zXwIOoXGtMkBbtE+EEwkOp0jhL0wVmx0QOPNRVp48Z8bi4cSlnDoCfY5OCJhXCxkMekW
-         +uu/UM5xU6XBXEMfOY/gosoC591xld4qCwAoS5iAPegxCJfsh3HwuCvIBk57MVwDNPRk
-         rTHg==
-X-Forwarded-Encrypted: i=1; AHgh+Rqef4gC4u0O5u5984GOgasGzI4TJaJHGRMpTVg8or1eatZRUtIUq4eumZOVoeHJQilR0FiqCwSWyf3JfE0=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzurPZiJSLd3MOlp24W9pSxhATOmcLCzLE0dMi31Dv5z99wdATR
-	tWbyiy8ygAxGs/7RcyQbcYqlOa7eGkReIzfJYsERimawUo4PB0usqfv5Qw53N7CGIs0wdRaGGVn
-	K+GSGki+z35/GDzndL6qTsK/QRbtlSXM=
-X-Gm-Gg: AR+sD12H6J0k+EfDU8bJujjT0MhBPGriEoHb0R3dB9l2ewwTD+K29xnTNd+gzoRfv5S
-	GqpO3o7nEmi5ycLhur+flMg7qxG9X9aBSADn0VLoH3xPefD1+z6bei1GYKQBOgozPDcWV1RRxiE
-	bJVjpjWDqbWFJXDepb0+dHSDSMKrwIXgXbWfjZdeyzr9EzfGYK/ySQPoUKgSqGax5Idqk+VG5ND
-	N6cCqc3gGHmRUD7pYpFu57jYYvAziCasGWBl0OYAUK2WZkYzfQktwW2RXUYmmmvLPv1f5R1aXh2
-	MeRxFD6T4X+Xj5NNioJGCKiZfUKLrUsRSq+eZnBO3cDvqM5PQFfnmPI=
-X-Received: by 2002:a17:902:ffcf:b0:2cf:7ea3:7cf1 with SMTP id
- d9443c01a7336-2d31877be01mr17789185ad.5.1786436244086; Tue, 11 Aug 2026
- 01:17:24 -0700 (PDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=anshuman.khandual@arm.com; receiver=lists.ozlabs.org)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hK4gf6t5Qz2ynH
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2026 18:35:08 +1000 (AEST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id B295E1516;
+	Tue, 11 Aug 2026 01:34:31 -0700 (PDT)
+Received: from localhost (a085714.arm.com [10.164.19.28])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id EA58F3F673;
+	Tue, 11 Aug 2026 01:34:34 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1786437275; bh=ZT08f1GiOgKpD31g66zZnUhmuNu7zNORWfMHkMNA+MM=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=ILvmNn+1uP0GCjTeWxHAARq3POjelk/zkkggHRqr669N5vBlnXQv9Yg8uShAHAWPV
+	 r+uFJpIr4Ahch5mMzxC2ouczYWRZPMGrkwVkFNIVMPn+HCacIXd33isOumG+cExtcS
+	 egAiyy/T4cf+1AQQkz3B427/hIS4SjOBaBYGwt8M=
+Date: Tue, 11 Aug 2026 14:04:32 +0530
+From: Anshuman Khandual <anshuman.khandual@arm.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: linux-mm@kvack.org, akpm@linux-foundation.org, david@kernel.org, 
+	Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, 
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, 
+	Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, 
+	WANG Xuerui <kernel@xen0n.name>, linux-alpha@vger.kernel.org, linux-snps-arc@lists.infradead.org, 
+	linux-arm-kernel@lists.infradead.org, linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org, 
+	loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org, 
+	linux-openrisc@vger.kernel.org, linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, 
+	sparclinux@vger.kernel.org, linux-um@lists.infradead.org, linux-arch@vger.kernel.org, 
+	linux-kernel@vger.kernel.org
+Subject: Re: [RFC V2 6/6] mm: Drop pxd_ERROR()
+Message-ID: <ijjadks7zjpwqlw4nbcawr3tva2r4y6gn3weuc73vbec46petn@ovlf52m2kugw>
+References: <20260811042119.3652929-1-anshuman.khandual@arm.com>
+ <20260811042119.3652929-7-anshuman.khandual@arm.com>
+ <CAMuHMdXfpkpYzZWGVb0fQrdn3uYHU3pyCkyAX9o2ux_Jj=2ByA@mail.gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -102,61 +70,52 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260804100218.49587-1-shengjiu.wang@oss.nxp.com>
- <20260804100218.49587-2-shengjiu.wang@oss.nxp.com> <20260810-normal-cuscus-of-argument-4b230b@quoll>
- <CAA+D8AM9s7EX-G246Hf2=DOx5q2qXWg_MjUCaoJ8RggOjp+5cQ@mail.gmail.com>
- <dc40dcae-3017-4e61-8c6d-7e6127e4ee77@kernel.org> <CAA+D8AOQ_y7BdR4h+X6qxFygPU6h1iFV0cYXHN4KB370yM2Bkw@mail.gmail.com>
- <3219a2e7-d11b-478e-ad2e-5f1ec2bbdf27@kernel.org>
-In-Reply-To: <3219a2e7-d11b-478e-ad2e-5f1ec2bbdf27@kernel.org>
-From: Shengjiu Wang <shengjiu.wang@gmail.com>
-Date: Tue, 11 Aug 2026 16:17:02 +0800
-X-Gm-Features: AUfX_mx1LX0wZY0j5iDajd7W5oe3f6Rmcs5OiNPXvXt3EbMHLfrVtGbE60ayIAU
-Message-ID: <CAA+D8AO1q-n2S3X2d1ZZ_yXxNrHPjCPvrJrPZmTMOYZM9uEGeQ@mail.gmail.com>
-Subject: Re: [PATCH v3 1/5] ASoC: dt-bindings: fsl,imx-asrc: update port
- binding to support multiple paths
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: shengjiu.wang@oss.nxp.com, lgirdwood@gmail.com, broonie@kernel.org, 
-	robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, Frank.Li@nxp.com, 
-	s.hauer@pengutronix.de, kernel@pengutronix.de, festevam@gmail.com, 
-	shawnguo@kernel.org, linux-sound@vger.kernel.org, devicetree@vger.kernel.org, 
-	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
-	linux-kernel@vger.kernel.org, Xiubo.Lee@gmail.com, nicoleotsuka@gmail.com, 
-	perex@perex.cz, tiwai@suse.com, linuxppc-dev@lists.ozlabs.org, 
-	Shengjiu Wang <shengjiu.wang@nxp.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAMuHMdXfpkpYzZWGVb0fQrdn3uYHU3pyCkyAX9o2ux_Jj=2ByA@mail.gmail.com>
 
-On Tue, Aug 11, 2026 at 3:36=E2=80=AFPM Krzysztof Kozlowski <krzk@kernel.or=
-g> wrote:
->
-> On 11/08/2026 09:33, Shengjiu Wang wrote:
-> >>>>
-> >>>> Why mentioning upstream in the first place? Either this change break=
-s
-> >>>> ABI or not, explain that.
-> >>>
-> >>> The deprecated 'port' property is retained, so this change is fully b=
-ackwards
-> >>> compatible and does not break ABI.
-> >>
-> >> So why? Drop redundant parts.
+On Tue, Aug 11, 2026 at 08:49:43AM +0200, Geert Uytterhoeven wrote:
+> Hi Anshuman,
+> 
+> Thanks for your patch!
+> 
+> On Tue, 11 Aug 2026 at 06:22, Anshuman Khandual
+> <anshuman.khandual@arm.com> wrote:
+> > pxd_ERROR() has been used in generic mm just to print the page table entry
+> > in pxd_clear_bad() before clearing those out with pxd_clear() later. These
+> > pxd_ERROR() macros have been provided by all platforms which basically did
+> > the same thing.
 > >
-> > Ok, I will remove the sentence below in the commit message.
-> >
-> >     No existing upstream DTS file for fsl,imx-asrc uses the previously
-> >     documented single 'port' node, so this change does not break any
-> >     in-tree device tree.
-> >
->
-> Honestly, it's redundant, because you are not dropping it. So even if
-> DTS was using the port, what would change?
->
+> > Make pxd_clear_bad() use recently added ptval_to_str() instead for printing
+> > page table entries thus completely dropping dependency on platform provided
+> > pxd_ERROR() macros which can then be dropped off. First move all required
+> > helpers in core MM into a header file which could then be used else where.
+> 
+> Oh, the "x" in "pxd" is a wildcard?
+> Except that is not, as it does not match "pte" ;-)
 
-Understood. Even if a DTS was using 'port', nothing would change since
-'port' is retained.  I will drop the sentence in v4.
+Unfortunately that's the odd one but "pxd" was the closest possible :)
 
-Thanks.
+> 
+> > Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
+> 
+> >  arch/m68k/include/asm/mcf_pgtable.h           |  6 ---
+> >  arch/m68k/include/asm/motorola_pgtable.h      |  8 ----
+> >  arch/m68k/include/asm/sun3_pgtable.h          |  7 ----
+> 
+> Acked-by: Geert Uytterhoeven <geert@linux-m68k.org> # m68k
 
-Best regards
-Shengjiu Wang
+Thanks !
+
+> 
+> Gr{oetje,eeting}s,
+> 
+>                         Geert
+> 
+> -- 
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> 
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like that.
+>                                 -- Linus Torvalds
 
