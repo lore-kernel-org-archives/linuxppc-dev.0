@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-25768-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25769-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B640C5CFDB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2026 11:28:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EF605C5CFEE
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2026 11:28:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hKmSn6WMjz3bpP;
-	Wed, 12 Aug 2026 21:28:09 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786534089;
-	cv=none; b=kMVoPKpHzGeVGPPk8dZzHAxrn+Xh8osGsMdghqgeGMihuBSjAULeTjK3ilFvtadT05KppRxx/SrW4G9FxNLjsjI7nbyZJxVxvAfLkNKIpFDlAqymDd4PYbJNEwiXFJGVpYJpq2vW8n3gfbjLnAT8iCKWkKvuSHkP+1ZVz3PDsUPspt3xdyORRYzXhs0+5RP5R8GVP8OfhcfDWgjGXrlDdFg2dCcPWoi06+6j88V8iW7j4X560GcZcAUkFQJdO2AKwSL5tQw3cBPcKR7i7oDobbDZ8878u/HvgJIYEeP1+05pgorvNCk3hDgexpz3luXQSSyRUncX1P5gBNhybFwbKA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hKmTH3YFXz3br7;
+	Wed, 12 Aug 2026 21:28:35 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786534115;
+	cv=none; b=RGp1eG20EkJ3RgmUl8b0tllGOXwvJe8YEuw47GXfGf5kqcVhQ3rfxIUjKZXUUixd0wBg1tSPFx+9fw5WF83b2Kz+DGVp5/IetHkFCeSjM2eD+MdFbeNsAmLjsjsuNNsCvXjNglA7RsKWTk1FH5BNkCFU1ICYjGFt27y3ZrusqR1N1SB/ewIUHDVuvGRNkHUh6uJAfK0qjK1DQlps+vBuCOWikf0jtWFlS0wq2oAIrWCbU61BsBsTJB6JrfEKdLC2voaVynjwodsFUBSAkCOQdnkkzTZDMpIS+rpMtuWJABskoypGt9QK0JoFDYkMyeSbUGhZt9KvILyD3tCPXoDwGA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786534089; c=relaxed/relaxed;
-	bh=hN9mu9+V031acX0Mqhgz0E8VuHMeV/rI+t3IxqOP4Jw=;
-	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
-	 In-Reply-To:Content-Type; b=NhgiSZrm/tVM+5EzNnCqgkYx9aQs5JcRB2VJkMyNQOk0uuvJHJrzfYw/YIIKhXMUw2pqU7/vGD8dyLulH7iX0hJgWh/SZRPlbJK2SzJ0qYyIwpIF4qHq+SB2Yz/4j9p5vM1Oy5fGtEv2Qb9Pbjj1i8bPJLmUyUVvAG3r9uEQlekfzh+6GpwqVVrnBCqXLM3yNLJfHXTTO7Vq/qwr8zrgpwktw7iyUlM7ErerK1puPE4avnbUJQ49DnuKaIXTOlEkruu5fVh9MkCPnuFnII8NUbbuMvDakPkhvaqCRd+RDOPrRdjwcumQNhlCyfnVM8ZJSexbYAoGLDKPSRMtL0wPew==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Q2KHEiY0; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1786534115; c=relaxed/relaxed;
+	bh=EG+9d2areJevimTNoL+CVRXPlsVq0h4r/7sK+coGE+g=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=eEYfl9w5Ei8BWKLLd9xTEghgn2ahDZpQ7sHOCvDbPGRANMG11JhBNlu+nCyL7jCkkd6UfgMBYAKXOUtpKdJVOIb9G1szhFgMQXsRuLmtgBc5dIWc0xnJLVghiHJVX3fHy8OhaNTLonNgiVSlwYx+sr/DRBHcXyow20x9/5c6NVZqu/sy9QgbMuPu8iwzMHoRr5z9/OoxBnkxaOnt/pVihqM+bwrO1N0kpm0EkYShc6vmYhjyjc5h+iZs7ACz9Hyqt/Vjblka+BCqw2Yb9mTG1DXPOUAwJGwrV1+dtielvMGT3zDMqMirVn4KEtAE9enYFCT6um12sB0w5DpjW150Qg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=R770ZzSz; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Q2KHEiY0;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=R770ZzSz;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hKmSm29xHz2yvB
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2026 21:28:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hKmTG4GjLz3bpP
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2026 21:28:34 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 9E641429F4;
-	Wed, 12 Aug 2026 11:28:02 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C454E1F000E9;
-	Wed, 12 Aug 2026 11:27:55 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 1DFBD600E2;
+	Wed, 12 Aug 2026 11:28:32 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 022BA1F000E9;
+	Wed, 12 Aug 2026 11:28:24 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1786534082;
-	bh=hN9mu9+V031acX0Mqhgz0E8VuHMeV/rI+t3IxqOP4Jw=;
-	h=Date:Subject:From:To:Cc:References:In-Reply-To;
-	b=Q2KHEiY0kJPCcIYq9uuwvfgaJdiV/X0/c44OKVc/4dSWy0qA2VWIcaZbl6Dz/uIqZ
-	 pDkZyaDysF54dnmgnvC+SrOIVOvTBQ02r8B+6lYweA0Eiqjdrt5y8V/KSLMoOJAmW3
-	 uX7KmbdDFJCRaA7qBMCiZpJtWF47js7B31WPas44jYLBsJ7UnN3BVaVynp1SsnzJjn
-	 ZbUSBYOphl83NNs9qk2xX44sCnMn+bLiFfzfcdTlIhS92ltmn8kw7657TWH1+dg426
-	 tod0X1enWIiHrwBrweIR8q/4pZYJuLhojA1auUJ36AHreTWN0YTls2t3pobUYYNk5Q
-	 JnqGgZqKKIeyA==
-Message-ID: <9a66d741-536e-44ac-b02f-395b5fc8ab6d@kernel.org>
-Date: Wed, 12 Aug 2026 13:27:54 +0200
+	s=k20260515; t=1786534111;
+	bh=EG+9d2areJevimTNoL+CVRXPlsVq0h4r/7sK+coGE+g=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=R770ZzSzgdG86/NXMage81wzUFeS0CV8TJN+FTy3GqkZs91oKKb+UMP3HprpsS0ll
+	 0Wg7pTbwr86EN5F6uluXTEl+Pj1fSitU/XvpIx9ciPNyYlETh2LqI/+D2gDsppo6OD
+	 yB0zB3DtxgJOAm/4vvR0MKlV6fDYEwT1SPtfC+hetiB9t/IGN6ZuTReZewi6NTenyE
+	 vAMBpBqNVWCwPI0e2bxOG/EloArZkrD68ZAi1ERAwEkV3Qg0+K0lrcjS0HdYC6p9yB
+	 G+Ls0Si3VJrq7ZaFnE4H1CBwSfg75sQl53X9g+96xUtYtDwT8TDmYw2qMhkU3o2aBj
+	 CXwwy98HEtYrQ==
+Message-ID: <28c24991-590f-4980-a92e-26c89288cae7@kernel.org>
+Date: Wed, 12 Aug 2026 13:28:23 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,8 +60,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC V2 1/6] loongarch/mm: Stop using pte_ERROR()
-From: "David Hildenbrand (Arm)" <david@kernel.org>
+Subject: Re: [RFC V2 3/6] sh/mm: Stop using pte_ERROR()
 To: Anshuman Khandual <anshuman.khandual@arm.com>, linux-mm@kvack.org,
  akpm@linux-foundation.org
 Cc: Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker
@@ -79,8 +78,8 @@ Cc: Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker
  linux-um@lists.infradead.org, linux-arch@vger.kernel.org,
  linux-kernel@vger.kernel.org
 References: <20260811042119.3652929-1-anshuman.khandual@arm.com>
- <20260811042119.3652929-2-anshuman.khandual@arm.com>
- <e0ada89f-26b2-4e82-8273-8ea7b391c147@kernel.org>
+ <20260811042119.3652929-4-anshuman.khandual@arm.com>
+From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
  xsFNBFXLn5EBEAC+zYvAFJxCBY9Tr1xZgcESmxVNI/0ffzE/ZQOiHJl6mGkmA1R7/uUpiCjJ
@@ -126,64 +125,79 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <e0ada89f-26b2-4e82-8273-8ea7b391c147@kernel.org>
+In-Reply-To: <20260811042119.3652929-4-anshuman.khandual@arm.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 8/12/26 13:19, David Hildenbrand (Arm) wrote:
-> On 8/11/26 06:21, Anshuman Khandual wrote:
->> Directly use pr_err() in __set_fixmap() and drop pte_ERROR() which helps in
->> eventually dropping pte_ERROR() macro across the tree. In this new printing
->> __FILE__ and __LINE__ has been dropped because they are always the same and
->> don't really add any value.
->>
->> Cc: Huacai Chen <chenhuacai@kernel.org>
->> Cc: WANG Xuerui <kernel@xen0n.name>
->> Cc: loongarch@lists.linux.dev
->> Cc: linux-kernel@vger.kernel.org
->> Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
->> ---
->>  arch/loongarch/include/asm/pgtable.h | 2 --
->>  arch/loongarch/mm/init.c             | 2 +-
->>  2 files changed, 1 insertion(+), 3 deletions(-)
->>
->> diff --git a/arch/loongarch/include/asm/pgtable.h b/arch/loongarch/include/asm/pgtable.h
->> index 223528c04d73..a32a8fff70c1 100644
->> --- a/arch/loongarch/include/asm/pgtable.h
->> +++ b/arch/loongarch/include/asm/pgtable.h
->> @@ -128,8 +128,6 @@ struct vm_area_struct;
->>  #define ptep_get(ptep) READ_ONCE(*(ptep))
->>  #define pmdp_get(pmdp) READ_ONCE(*(pmdp))
->>  
->> -#define pte_ERROR(e) \
->> -	pr_err("%s:%d: bad pte %016lx.\n", __FILE__, __LINE__, pte_val(e))
->>  #ifndef __PAGETABLE_PMD_FOLDED
->>  #define pmd_ERROR(e) \
->>  	pr_err("%s:%d: bad pmd %016lx.\n", __FILE__, __LINE__, pmd_val(e))
->> diff --git a/arch/loongarch/mm/init.c b/arch/loongarch/mm/init.c
->> index 3407030f3e7a..be9b127daef2 100644
->> --- a/arch/loongarch/mm/init.c
->> +++ b/arch/loongarch/mm/init.c
->> @@ -203,7 +203,7 @@ void __init __set_fixmap(enum fixed_addresses idx,
->>  
->>  	ptep = populate_kernel_pte(addr);
->>  	if (!pte_none(ptep_get(ptep))) {
->> -		pte_ERROR(*ptep);
->> +		pr_err("bad pte %016lx\n", pte_val(*ptep));
->>  		return;
->>  	}
->>  
+On 8/11/26 06:21, Anshuman Khandual wrote:
+> Directly use pr_err() in set_pte_phys() and drop pte_ERROR() which helps in
+> eventually dropping pte_ERROR() macro across the tree. In this new printing
+> __FILE__ and __LINE__ has been dropped because they are always the same and
+> don't really add any value.
 > 
-> Ah, I missed that we want to print actual values, I somehow thought that we
-> would be printing pte_none() ...
+> Cc: Yoshinori Sato <ysato@users.sourceforge.jp>
+> Cc: Rich Felker <dalias@libc.org>
+> Cc: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
+> Cc: linux-sh@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org
+> Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
+> ---
+>  arch/sh/include/asm/pgtable_32.h |  5 -----
+>  arch/sh/mm/init.c                | 11 ++++++++++-
+>  2 files changed, 10 insertions(+), 6 deletions(-)
 > 
-> Maybe we should just be more verbose while at it?
-> 
-> pr_err("unexpected set PTE at %ul in __set_fixmap: %016lx\n",
->        addr, pte_val(*ptep));
-> 
+> diff --git a/arch/sh/include/asm/pgtable_32.h b/arch/sh/include/asm/pgtable_32.h
+> index 5f51af18997b..c8eb9a7a4c4c 100644
+> --- a/arch/sh/include/asm/pgtable_32.h
+> +++ b/arch/sh/include/asm/pgtable_32.h
+> @@ -401,14 +401,9 @@ static inline unsigned long pmd_page_vaddr(pmd_t pmd)
+>  #define pmd_page(pmd)		(virt_to_page(pmd_val(pmd)))
+>  
+>  #ifdef CONFIG_X2TLB
+> -#define pte_ERROR(e) \
+> -	printk("%s:%d: bad pte %p(%08lx%08lx).\n", __FILE__, __LINE__, \
+> -	       &(e), (e).pte_high, (e).pte_low)
+>  #define pgd_ERROR(e) \
+>  	printk("%s:%d: bad pgd %016llx.\n", __FILE__, __LINE__, pgd_val(e))
+>  #else
+> -#define pte_ERROR(e) \
+> -	printk("%s:%d: bad pte %08lx.\n", __FILE__, __LINE__, pte_val(e))
+>  #define pgd_ERROR(e) \
+>  	printk("%s:%d: bad pgd %08lx.\n", __FILE__, __LINE__, pgd_val(e))
+>  #endif
+> diff --git a/arch/sh/mm/init.c b/arch/sh/mm/init.c
+> index 110308bdef01..b3c7fd84ceb4 100644
+> --- a/arch/sh/mm/init.c
+> +++ b/arch/sh/mm/init.c
+> @@ -78,13 +78,22 @@ static pte_t *__get_pte_phys(unsigned long addr)
+>  	return pte_offset_kernel(pmd, addr);
+>  }
+>  
+> +static void print_bad_pte(pte_t pte)
+> +{
+> +#ifdef CONFIG_X2TLB
+> +	printk("bad pte %p(%08lx%08lx).\n", &pte, pte.pte_high, pte.pte_low);
+> +#else
+> +	printk("bad pte %08lx.\n", pte_val(pte));
+> +#endif
 
-On second thought, why not simply use ptval_to_str() here as well?
+I'd avoid that helper if possible, so we don't encourage new users.
+
+Shouldn't we just switch to pr_err() right away?
+
+> +}
+> +
+>  static void set_pte_phys(unsigned long addr, unsigned long phys, pgprot_t prot)
+>  {
+>  	pte_t *pte;
+>  
+>  	pte = __get_pte_phys(addr);
+>  	if (!pte_none(*pte)) {
+> -		pte_ERROR(*pte);
+> +		print_bad_pte(*pte);
+
+Maybe similar to my reply to patch #1, actually print something more useful than
+just "bad pte" ? And possibly also just use ptval_to_str().
 
 -- 
 Cheers,
