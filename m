@@ -1,55 +1,92 @@
-Return-Path: <linuxppc-dev+bounces-25781-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25782-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 689D5C5B572
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2026 17:26:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A6308C5B56A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2026 17:43:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hKwQM2tRwz302l;
-	Thu, 13 Aug 2026 03:26:35 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786555595;
-	cv=none; b=U5kBXHzBtMhYt9TlvrYi2oS+kU8Sl8mfwM+qZRe6gbikwUbdX+fBSuBdd6FFSEyasNQE3LfAwyRemHGiAiOjn7Z39mlUx7ig/Zi2AxLwiS/Mb5YqX00SV7fCo51lwZvRs2p4R+WFG2cSmIPLu2vph3bHg/ICTn/QyMTBdpIZLjF7H3Qg2J99pvY+eCG6ru86W06Vt385U2FpPHyJ7yBcdRjmygsDfX8XukA+r5yqS//UD26pwWdfgM3uKvGp7N2mXvgW37Xcd0dIdGkm9SYW48xNDgovCht+386Y2oNjulMO+GnjQY3imm4bjPuJfaDZIScQsaOsFDBMNSHyZrHeIQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hKwnQ6G8Sz302l;
+	Thu, 13 Aug 2026 03:43:06 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::82f"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786556586;
+	cv=none; b=mCnq49nJxChc4+e41fXhJ9Ainzu8mFdDZezzuP9QAa8lkLbBV0aEuEXcFmp+oGZ+rYriSUKZwFeKMWC9LVaHzJTdn5iVt/6csZqsDJhJxzHnxBnZw3xyLh3fFAnjf+kFfxs0GJNEE4a+IwFrNY52Qo784UVkIG03R3xyCbrn7ZcXuYF4Ltme5ZjAJyE2j0GBpTjq7ICjdWnC8N9g5Um7s7QW2Vd1kVeo7lbIk3pnfPbBNC4C8BPf4NJSG8VH+8yqDnYspu9fNKgch8N6koZhCrQO0llLIJ7+A1k/LCroqS1z7Ge/t8XjhsylKlUkiU5jlX6328t1Sn5fYu6CgksKfg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786555595; c=relaxed/relaxed;
-	bh=sgtKXHzGDDQyHWV9xugerf2/7MZfWzmH0C1BOKc6FKY=;
+	t=1786556586; c=relaxed/relaxed;
+	bh=RRy7TSLv7XgtK7yVOoP/4PPtFt0r1aZ67kTGnhbzw7Y=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=dxd/uzRjEwPVj1jl5GKAgebR5emQ8LKGafuE1TYns+02Qcy4X5jHggMvlnWCmHr9WsIqKlYuCC3Y0j9kAHxFAFLc6bq44AK8T123zMmcM3MJNUUIXhCG9/7kc3CkF3vKO+9lfGz43ndMn3yt23ZprDzcE/CuBuzMedaqFBkltsrdqvPsXWBqYHWOXT4Asgy4CGDMjYP1CZdspCgUVSjMOwPVoO+wa9Re4fRpsyLo28k2Xw9s44ZFgMbTrSvtF6JHOFER8Uzx4r4cXR4mipQ8uK5RI3Yjsp6NXaG/6lRcupyOB9NKke0kS5HomR7ks2nQuofoUKBIHLDMomSevvIQlA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=B7MvlTwC; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=catalin.marinas@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=FnybkHky/HUe+1cRon0NzxYfJJ78jSkDNo1a8hpxay6DT+40CYHnrzM6McGoB+yLuhgTxzs1tiTW5410rWRDLXWx+49Hk19uPi9Ym16GouH4ukfMw4x2AOLFL4SO2wzqxgXl4I1nXV7atYPmXpi2yrLGwV1Bi5o0j584tBlgDbQ6YmQfE8NE/9TIeo9uNzAjzNuqJ14j5iIKVA4VQoJ11gvp/U/y0/IZyaGtF7S53Ijr7P060YReaAtz+St6OFMLv4XqkEYpZ1urNv1amyv666KfothRXdgt5K5D/dreXBhPaoyOBORVA1od9TWbP+42bhCjTffZccGFoLJEfOF23g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca; dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=blT+udg9; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::82f; helo=mail-qt1-x82f.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org) smtp.mailfrom=ziepe.ca
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=B7MvlTwC;
+	dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=blT+udg9;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=catalin.marinas@arm.com; receiver=lists.ozlabs.org)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hKwQJ1cFZz2yvB
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2026 03:26:29 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 027DA1596;
-	Wed, 12 Aug 2026 10:25:53 -0700 (PDT)
-Received: from arm.com (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id B91943F66F;
-	Wed, 12 Aug 2026 10:25:52 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1786555556; bh=H8Ctj6oiAsOEpGNBs0wlRNq4MV8mA+m6BBgfdUbyouk=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=B7MvlTwCYIwI4GDClgPFTpjUn0sPusFPcML8t810t+/14DjgB7H6MHkilb/6UiE7z
-	 ygNoSqQ5anoFHIng2RTl38bEgQufRq6aCROSFR8PsvTOYN+DONSLOZ4RNcz/oEDVl8
-	 rDzolVsJ4vasql17ywsCsdZsl95wvqEHSbsasHfo=
-Date: Wed, 12 Aug 2026 18:25:49 +0100
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>
-Cc: iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev,
-	Robin Murphy <robin.murphy@arm.com>,
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ziepe.ca (client-ip=2607:f8b0:4864:20::82f; helo=mail-qt1-x82f.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org)
+Received: from mail-qt1-x82f.google.com (mail-qt1-x82f.google.com [IPv6:2607:f8b0:4864:20::82f])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hKwnN3bMjz2yvB
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2026 03:43:03 +1000 (AEST)
+Received: by mail-qt1-x82f.google.com with SMTP id d75a77b69052e-51c16ac21acso8369981cf.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2026 10:43:03 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ziepe.ca; s=google; t=1786556580; x=1787161380; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=RRy7TSLv7XgtK7yVOoP/4PPtFt0r1aZ67kTGnhbzw7Y=;
+        b=blT+udg9dtGB0udEqeNa9/G9yqDdy5awHZjD5vwHrrosHTyn10QR9FnnU1DrVkb4eU
+         wCeelpkdjLGrc04XUQ1f7keIhNOu+6ASElKChu2LmhiXGDB8yTbWzHduZ4PaOpwNceLL
+         yPlFfal6f/dFV/vlRYQCM/1kf2cclVj9mAv1xaDhkqr879jjZjDp4uMoVzub/mQf2H5Q
+         scNBh8TJItBE1ZnOeuyU3b4MSHWpoZ6XoYD1r4Foehb70ZWi8M9Qb37zhrzT3Vq4cPyJ
+         QN3z3Qt4e0b6vbtoi6u2N0MLcAivMYQQ2fIPEW5/9PuoItPrYObaLjBD6RCc60de2XOg
+         l+Qg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1786556580; x=1787161380;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=RRy7TSLv7XgtK7yVOoP/4PPtFt0r1aZ67kTGnhbzw7Y=;
+        b=j538Aax25JmFbAzGDPrGb9QcsorcKp0YmlwD/IyUPO/CYywuQgn11pGRvEC2NbxrqG
+         TZ3guhWNeBd7S0nOjsqOwc2p0FCW2YJnPWjrCjvHWeLklznWgB9042bER1+EpJABZdXO
+         Ti4/VqYlmQVb3m459EuO1FQil0vePrWW1hNBc7WjXst8xMo1+sIPR/EJ2TjnQKWlXDEJ
+         p17NeCDAWiGBnYy7f91XAvWQHHDppVsruURCjyHQdBeey/XWqXXY+iUGyt/A2rQCHI5P
+         isuRN+nXiy1LdQFecb2ZF9U5BC/Wqw0rHwDCVUUx18MjKsmKDxNzsB9HQYZtZcVtBTT7
+         2Gpw==
+X-Forwarded-Encrypted: i=1; AHgh+Rp9/rAycc/p206WqldHI95gbCr0UxDRn3+P/XYya7tQ4cCZsnEbZQX/xER25OgXBK0Sl4hUKOx+j0urAzA=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwqLGV/4O80fbB1el1H37+3yx74yGUFXro72wuFLcL95yPW6tRX
+	wjKxDW5ojpbNV0+ikOkw7JqX+2ze+J8FeNE335foBwSkM17I6ZtOn+55uTzRunwxBE8=
+X-Gm-Gg: AR+sD109h3nGxrQvubOrphZy5S2WL0RYb3hgQS9T7j6jMMTnl05PDliJKlsmrpWgDD+
+	a9JOzHPcjIdf26BPCV/uQMeVHqzdTewCxCIg7kL2EmTpGlGOwaHnvn1xkkUEs5A34Pbd0wvyYOR
+	7sqCDqBP5EbRZ3Mf4/l9PYb7NfKMZuaW1WuAoMrW7VYbzuRL0pvN3ue26QjUjwPj2uqNMsKvukp
+	ALNCebitG5jCHzY88Qspx6NynXM4xBhb7jBedRniJiXL8icGD4mwakbYMzgQ0wBRmybU/UFussF
+	WmxsKAf+pZ77Sg/bepOVJvfUAKsy5HHpMGyTfWmXcCupksUsRj/3JYIHQsJaGZ67VgTpZKPv2k4
+	12tomZXndGsma4J46vjty1jZGggHy1uOufd/zVI3LsALPmLPWJxa4CjktZR+zAExXkzDFh/qWpS
+	X6RBv1ePW/JccXhqfzUFzy2eCpdwbJx3LU7oEQvQ==
+X-Received: by 2002:a05:622a:145:b0:528:38b1:b54c with SMTP id d75a77b69052e-52d646a004amr57067221cf.2.1786556579927;
+        Wed, 12 Aug 2026 10:42:59 -0700 (PDT)
+Received: from ziepe.ca ([142.166.156.215])
+        by smtp.gmail.com with ESMTPSA id d75a77b69052e-52d61d91199sm22262711cf.14.2026.08.12.10.42.59
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 12 Aug 2026 10:42:59 -0700 (PDT)
+Received: from jgg by wakko with local (Exim 4.97)
+	(envelope-from <jgg@ziepe.ca>)
+	id 1wuCyg-00000003IL0-2V6p;
+	Wed, 12 Aug 2026 14:42:58 -0300
+Date: Wed, 12 Aug 2026 14:42:58 -0300
+From: Jason Gunthorpe <jgg@ziepe.ca>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, iommu@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+	linux-coco@lists.linux.dev, Robin Murphy <robin.murphy@arm.com>,
 	Marek Szyprowski <m.szyprowski@samsung.com>,
 	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
 	Steven Price <steven.price@arm.com>,
 	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
-	Jiri Pirko <jiri@resnulli.us>, Jason Gunthorpe <jgg@ziepe.ca>,
-	Mostafa Saleh <smostafa@google.com>,
+	Jiri Pirko <jiri@resnulli.us>, Mostafa Saleh <smostafa@google.com>,
 	Petr Tesarik <ptesarik@suse.com>,
 	Alexey Kardashevskiy <aik@amd.com>,
 	Xu Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
@@ -66,10 +103,11 @@ Cc: iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
 	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org
 Subject: Re: [RFC PATCH] dma: swiotlb: Size shared default pools for memory
  encryption
-Message-ID: <anysnQFVTO_RAYxp@arm.com>
+Message-ID: <20260812174258.GF662699@ziepe.ca>
 References: <20260811134056.756015-1-aneesh.kumar@kernel.org>
  <anxEc8EHmJQywVI5@arm.com>
  <yq5ajypvioks.fsf@kernel.org>
+ <anysnQFVTO_RAYxp@arm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -85,70 +123,20 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <yq5ajypvioks.fsf@kernel.org>
+In-Reply-To: <anysnQFVTO_RAYxp@arm.com>
 
-On Wed, Aug 12, 2026 at 04:38:03PM +0530, Aneesh Kumar K.V wrote:
-> Catalin Marinas <catalin.marinas@arm.com> writes:
-> > On Tue, Aug 11, 2026 at 07:10:56PM +0530, Aneesh Kumar K.V (Arm) wrote:
-> >> Systems with memory encryption use swiotlb to provide shared or
-> >> unencrypted buffers for device DMA. Confidential guests may route all
-> >> DMA through these buffers, while SME hosts use them for devices that
-> >> cannot address encrypted memory. The default swiotlb pool can therefore
-> >> be exhausted under I/O-intensive workloads.
-> >> 
-> >> Let architectures mark the default swiotlb pool as shared before
-> >> swiotlb_init().
-> >
-> > I thought we wanted even this decision to be moved out of the arch code.
+On Wed, Aug 12, 2026 at 06:25:49PM +0100, Catalin Marinas wrote:
+> > > BTW, why does arm64 report CC_ATTR_MEM_ENCRYPT instead of the GUEST
+> > > option in realms?
 > 
-> Architectures may want to use an unencrypted swiotlb pool for different
-> reasons, one of them being CC_ATTR_GUEST_MEM_ENCRYPT. x86 hosts also
-> require unencrypted pool to support SME. We can cover both cases using
-> CC_ATTR_MEM_ENCRYPT.
+> It's still not clear to me why we went for CC_ATTR_MEM_ENCRYPT instead
+> of CC_ATTR_GUEST_MEM_ENCRYPT.
 
-Yes but in one case it did not do resizing. With your proposal, it now
-does swiotlb resizing even for SME.
+Yeah, this tune should be only for CC guests that have the
+shared/private issue.
 
-> However, pKVM does not want an unencrypted SWIOTLB
-> pool. So I was thinking it would be much cleaner to let the architecture
-> code drive that decision.
+The AMD SME issue with the address width on bare metal is an entirely
+different problem that would need a different kind of tuning.
 
-Let's not single out pKVM but rather the reason it does not want one -
-it relies heavily on restricted mem. If you started a pKVM guest
-without rmem in DT, I assume it will need swiotlb to function properly.
-It's not a great heuristic (devices may not use rmem) but it preserves
-the current behaviour and can be overridden on the command line.
-
-> > BTW, why does arm64 report CC_ATTR_MEM_ENCRYPT instead of the GUEST
-> > option in realms?
-
-It's still not clear to me why we went for CC_ATTR_MEM_ENCRYPT instead
-of CC_ATTR_GUEST_MEM_ENCRYPT.
-
-> For the same reason I mentioned above, architectures may have different
-> reasons for setting cc_shared = true. IMHO, it is cleaner to let the
-> architecture code make that decision before swiotlb_init().
-
-The arch code already reports cc_platform_has(), can we not rely on
-this in the core code instead of specific is_realm_world() and a new
-SWIOTLB_INIT_CC_SHARED flag or function call?
-
-We have three different decisions that shouldn't be driven by a single
-flag from the arch code:
-
-1. allocate default pool
-2. make default pool shared
-3. resize default pool
-
-(1) is traditionally driven by arch code and that's fine. For (2), the
-core code has the information via CC_ATTR_*. For (3), we can enlarge it
-based on CC_ATTR_GUEST_MEM_ENCRYPT in combination with rmem (but not
-CC_ATTR_MEM_ENCRYPT to keep the current x86 behaviour).
-
-I think we should also move the reduction based on
-CONFIG_DMA_BOUNCE_UNALIGNED_KMALLOC into the core code. Riscv copied the
-same heuristic as arm64, so there's precedent for sharing.
-
--- 
-Catalin
+Jason
 
