@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-25765-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25766-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9C557C5CFEB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2026 11:16:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 96B46C5DF60
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2026 11:19:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hKmCC13Lbz3brB;
-	Wed, 12 Aug 2026 21:16:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hKmGy6tmtz303K;
+	Wed, 12 Aug 2026 21:19:38 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786533383;
-	cv=none; b=H+XAkV+396aRViK6RlstfDqg0nKNR5WTjNAF04J/DDgSkuz6oQpJEJg7/oN8qQoIAcvpnzgaUWYWdTmH56tixlB2TFM3i9iQZ4phuQgSnVrgoQ4o1Ss+GxkS+H4EiEXzk9xt1VJoNmwyayEBMLbpajNLDoTBpV4/r7NOzbmWxpr0oiigCVZMidk/WCjhO9wAcwt23n0/aRMCHcyrL0klq2OeG0M4qTYJdpYDHajlhqSBAHWk6XXOC1a5g8eMzr0fxageD2DvMCHLTh3nSNQOkKUaVmWnPDuZ9gvu32BVLgfssRofVOKWI6HPt0JitXrf3a2r7LtcXRSEsZWMyua2zg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786533578;
+	cv=none; b=WaIJTJ+E/1ikrBJZbDjElUNZGP3c8WDAfWALTMaNsG4AvoLxp5IszLsJnaV9GYT65h/XtyFjyMWDUzmCmFh21x+XsUnmRihdTBbDIOivQb5BjK/l6a5/C47YlBBmc7eyI6PTfr51QD+G28uUzFDDZj1nzaspUPEPs7PiS8puCnweE59nD8TbGyd3Jb8T6+cMA37q4PleLmq55Klfewfv/J/TVrFNmxfMtL6AnbxAwkFsD978tpPLejbZY30Hw+xohvImLoLMTLhEwTODeSQY+eA5VFtlbv5p//o2Ek9MGzyLn8J8aP1cWuXWO0DslZGHy4hpTkRsQez5r1tJay+Ynw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786533383; c=relaxed/relaxed;
-	bh=YkQoXb0oPuJag9CbgccsDCcg6lD66fmA+f0vn+2nKnc=;
+	t=1786533578; c=relaxed/relaxed;
+	bh=l/Wc313GCSl3I+9bKCPbE8GI5lwCsPHIrZHzJG1vSW0=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=BnHkRjE7LpHYvOo0ZxDGdORS+2/N96SiqSj24PZw7QAirFaMgN0/Cq1WwSi2NlL1zBlqiAQodfZud8kiNzAKZdVwrNbnBjn4upcu77u4XlN4G4ZiLv7ywx9oETLsfpsjBco61sDaGBRHQehAfkjYZw/7LmmqG4GBmZ36JZXR+8gKe2nfYVnOR9Juvq6ehnj3BtAkST4cSyPLolVtE7Guz5IP841KHRbBQ7vib/VFP0af6/mdnCrSh2mY9W6+yod1DeaeK0Qysol0lII0zoSdTFPA19Aw+s3zluNsZL+vhBN6z4I8zilVF+vOiK7XVdJTTJfvYRvlZk2zHbfPgYvQKA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QpYnab0n; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=jULTm6mFO8gtSbGgH9FgpFmWyHJSiuwARVDOQ85LOOOsJHTeB1l1mNo0l6DlWpWgOb2kr5S/kyi8N5Y3oNBMWGI3Z684XkXSxpcoftPqf8e16IlKq5vTF36jnx7ZfNWV+WC+UI9TBNJkcIupMj2HU05quJnjBheW+Ff9vyXZldaIYo2oLlTyKAr1HfTg8A2mdejPV70Ca/TdXvI02TvSa9nl3OcqwRwx00CMYfKBe48AhD5UTfrFdBOYVQzS6djeRywVYuAKUL5kTuiOu1GYdTUn1P0W0b59t+H8rqHvOiXfevcNURnbKR7wCfGnlLcHx/aepHnpj+2tqgt2S739Zw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lEqlYMMD; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QpYnab0n;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lEqlYMMD;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hKmCB1BFMz3br7
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2026 21:16:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hKmGx6Pcqz2yvB
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2026 21:19:37 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id B4B1540A54;
-	Wed, 12 Aug 2026 11:16:18 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 67D991F000E9;
-	Wed, 12 Aug 2026 11:16:12 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 041DB436E1;
+	Wed, 12 Aug 2026 11:19:34 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 79C931F000E9;
+	Wed, 12 Aug 2026 11:19:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1786533378;
-	bh=YkQoXb0oPuJag9CbgccsDCcg6lD66fmA+f0vn+2nKnc=;
+	s=k20260515; t=1786533573;
+	bh=l/Wc313GCSl3I+9bKCPbE8GI5lwCsPHIrZHzJG1vSW0=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=QpYnab0nUAcCJt+cGKDODAg3Qx17qgpheF1kaPKjsEoNN2gGuC0MuGrznO70IIyhN
-	 q50JvXDgyoCv5Jx5qqIDGxWfc6HKUhKU1cTL6H08Bu0/sTb+uVVkxHOr9rNxyxfXN+
-	 uTOwGwCn+zeXNrwSywo8TfLqLOj8YKABP/oehAVFpqhoXslPkdGl4cJu2E5FlZnHvd
-	 OHboyKwgV46xqG0UclX10xA1e/iuxKmzt5h+ORt+lsnPp3+vkZZha97q3G8FyC0e7Y
-	 cjS1vMXaxJ+pGqTfML7xuwxCWKh+43tBp3fxPKAcuInhN6x79dSPFwsyX+48ySeYf2
-	 SVT6YpwBVn8/Q==
-Message-ID: <ac5a912b-fc98-4b77-b453-2f9bd8f9e6db@kernel.org>
-Date: Wed, 12 Aug 2026 13:16:10 +0200
+	b=lEqlYMMDgeTWx8AQyeZDeNvVbDlKRIB4pQGJ6n2Dxbb98LpTz0OaCHQKEnqr3cLQO
+	 F8jABLEmGoA1eFi4yVM0INwhQZjWwbUYh7kTVOrw13k2eL3i2sW9WF2p60zuAyPddP
+	 niXXnwlds6idzM5cDHLT0T+ggPH9mu6eUdpb0cX2zrdJxENvwR165k34SkTa7s6aoc
+	 LFxIZtHzHee3VQz88+b0DgeVjRYMNM3AX4QyDpXnOJXq7kpjD9FuUCvETmfwaJFFh5
+	 2++70MQ443NWiphSX+NfcfZdMz1tERFm69ZeBbb67w/gKKmzYzzoK0vYS8YytEqOHW
+	 l6wOnqNizwyeQ==
+Message-ID: <e0ada89f-26b2-4e82-8273-8ea7b391c147@kernel.org>
+Date: Wed, 12 Aug 2026 13:19:25 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,8 +60,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC V2 2/6] parisc/mm: Directly use generic
- [pmd|pgd]_clear_bad()
+Subject: Re: [RFC V2 1/6] loongarch/mm: Stop using pte_ERROR()
 To: Anshuman Khandual <anshuman.khandual@arm.com>, linux-mm@kvack.org,
  akpm@linux-foundation.org
 Cc: Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker
@@ -79,7 +78,7 @@ Cc: Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker
  linux-um@lists.infradead.org, linux-arch@vger.kernel.org,
  linux-kernel@vger.kernel.org
 References: <20260811042119.3652929-1-anshuman.khandual@arm.com>
- <20260811042119.3652929-3-anshuman.khandual@arm.com>
+ <20260811042119.3652929-2-anshuman.khandual@arm.com>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -126,24 +125,60 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <20260811042119.3652929-3-anshuman.khandual@arm.com>
+In-Reply-To: <20260811042119.3652929-2-anshuman.khandual@arm.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 8/11/26 06:21, Anshuman Khandual wrote:
-> Drop [pmd|pgd]_ERROR() followed by [pmd|pgd]_clear() instances. But instead
-> directly use semantically equivalent generic helpers [pmd|pgd]_clear_bad()
-> in unmap_uncached_[pte|pmd]() which helps in dropping their corresponding
-> [pmd|pgd]_ERROR() macros across the tree.
+> Directly use pr_err() in __set_fixmap() and drop pte_ERROR() which helps in
+> eventually dropping pte_ERROR() macro across the tree. In this new printing
+> __FILE__ and __LINE__ has been dropped because they are always the same and
+> don't really add any value.
 > 
-> Cc: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
-> Cc: Helge Deller <deller@gmx.de>
-> Cc: linux-parisc@vger.kernel.org
+> Cc: Huacai Chen <chenhuacai@kernel.org>
+> Cc: WANG Xuerui <kernel@xen0n.name>
+> Cc: loongarch@lists.linux.dev
 > Cc: linux-kernel@vger.kernel.org
 > Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
 > ---
+>  arch/loongarch/include/asm/pgtable.h | 2 --
+>  arch/loongarch/mm/init.c             | 2 +-
+>  2 files changed, 1 insertion(+), 3 deletions(-)
+> 
+> diff --git a/arch/loongarch/include/asm/pgtable.h b/arch/loongarch/include/asm/pgtable.h
+> index 223528c04d73..a32a8fff70c1 100644
+> --- a/arch/loongarch/include/asm/pgtable.h
+> +++ b/arch/loongarch/include/asm/pgtable.h
+> @@ -128,8 +128,6 @@ struct vm_area_struct;
+>  #define ptep_get(ptep) READ_ONCE(*(ptep))
+>  #define pmdp_get(pmdp) READ_ONCE(*(pmdp))
+>  
+> -#define pte_ERROR(e) \
+> -	pr_err("%s:%d: bad pte %016lx.\n", __FILE__, __LINE__, pte_val(e))
+>  #ifndef __PAGETABLE_PMD_FOLDED
+>  #define pmd_ERROR(e) \
+>  	pr_err("%s:%d: bad pmd %016lx.\n", __FILE__, __LINE__, pmd_val(e))
+> diff --git a/arch/loongarch/mm/init.c b/arch/loongarch/mm/init.c
+> index 3407030f3e7a..be9b127daef2 100644
+> --- a/arch/loongarch/mm/init.c
+> +++ b/arch/loongarch/mm/init.c
+> @@ -203,7 +203,7 @@ void __init __set_fixmap(enum fixed_addresses idx,
+>  
+>  	ptep = populate_kernel_pte(addr);
+>  	if (!pte_none(ptep_get(ptep))) {
+> -		pte_ERROR(*ptep);
+> +		pr_err("bad pte %016lx\n", pte_val(*ptep));
+>  		return;
+>  	}
+>  
 
-Reviewed-by: David Hildenbrand (Arm) <david@kernel.org>
+Ah, I missed that we want to print actual values, I somehow thought that we
+would be printing pte_none() ...
+
+Maybe we should just be more verbose while at it?
+
+pr_err("unexpected set PTE at %ul in __set_fixmap: %016lx\n",
+       addr, pte_val(*ptep));
 
 -- 
 Cheers,
