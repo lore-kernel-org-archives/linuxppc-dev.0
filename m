@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-25767-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25768-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D6418C5CFEE
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2026 11:21:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B640C5CFDB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2026 11:28:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hKmKJ0g7Jz3bpP;
-	Wed, 12 Aug 2026 21:21:40 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786533700;
-	cv=none; b=NNgcOFcdfV08K6rBWAcyw8LqwGgS6KMENkf+3P3mZ2UAWKu1SxSwT+6Hw1c6OPliQr3th8CrCKJzo/cwk9mjJ+t7wloBoM5UWKPFvjQux1SYl5rDLSL8u+bb0Dn6Mcb0kzakTySR6hTnVEGXNGVRP4JAHyQvNbfu+EATqjr77zoRTVcIsv5XofC1U4YabrN4mbO02vPso6sideDnjexeNfaGdulZ0IoO/va64cxAXcVmARSwzmQlco/qEUEmmIonMBOA1ECJJBBx74kOxp9QqrrwkIVLnYTd1lo7zJJYvgUwOA8pSE8/Rtl7Pf2dUtZJjzkDlYoseF4coix8A6k/zw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hKmSn6WMjz3bpP;
+	Wed, 12 Aug 2026 21:28:09 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786534089;
+	cv=none; b=kMVoPKpHzGeVGPPk8dZzHAxrn+Xh8osGsMdghqgeGMihuBSjAULeTjK3ilFvtadT05KppRxx/SrW4G9FxNLjsjI7nbyZJxVxvAfLkNKIpFDlAqymDd4PYbJNEwiXFJGVpYJpq2vW8n3gfbjLnAT8iCKWkKvuSHkP+1ZVz3PDsUPspt3xdyORRYzXhs0+5RP5R8GVP8OfhcfDWgjGXrlDdFg2dCcPWoi06+6j88V8iW7j4X560GcZcAUkFQJdO2AKwSL5tQw3cBPcKR7i7oDobbDZ8878u/HvgJIYEeP1+05pgorvNCk3hDgexpz3luXQSSyRUncX1P5gBNhybFwbKA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786533700; c=relaxed/relaxed;
-	bh=+TveDZHhaOZxOI6aHVBWLYlU17AabpcT5JTtlV96+eA=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=arH/wmfCra4tyzu34FXDWOhTaYZKTUuZQPSWHSaYSy7QwXGx6iF+eIgvgBP7lhlWMHkcLisdBEidua5GQq7t0fwtoiw9ZOYX+v7bZPkd2A/U/wR15XejA1ebFcYahPOHyz+FiBjAqKZRocS/hflF15yMSnZLOFQz/4siIUYyyicAUCEzF11yRbFGDK+Z1F0Q8hE2S5roz6od2wAQNZ+K43dhI1WVrzLko6rvgGYixlFxm+rfTURryobRujMkQXJsVroTakuVtSELC8U4DGRooGYRc4+4MFFuUEhtTDOnc6kGGHecuiDWobMh86+2lyewDax6pqJNo5lRzVcj2M+p8w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BmXhqXpH; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1786534089; c=relaxed/relaxed;
+	bh=hN9mu9+V031acX0Mqhgz0E8VuHMeV/rI+t3IxqOP4Jw=;
+	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
+	 In-Reply-To:Content-Type; b=NhgiSZrm/tVM+5EzNnCqgkYx9aQs5JcRB2VJkMyNQOk0uuvJHJrzfYw/YIIKhXMUw2pqU7/vGD8dyLulH7iX0hJgWh/SZRPlbJK2SzJ0qYyIwpIF4qHq+SB2Yz/4j9p5vM1Oy5fGtEv2Qb9Pbjj1i8bPJLmUyUVvAG3r9uEQlekfzh+6GpwqVVrnBCqXLM3yNLJfHXTTO7Vq/qwr8zrgpwktw7iyUlM7ErerK1puPE4avnbUJQ49DnuKaIXTOlEkruu5fVh9MkCPnuFnII8NUbbuMvDakPkhvaqCRd+RDOPrRdjwcumQNhlCyfnVM8ZJSexbYAoGLDKPSRMtL0wPew==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Q2KHEiY0; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BmXhqXpH;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Q2KHEiY0;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hKmKH1Kpnz303K
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2026 21:21:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hKmSm29xHz2yvB
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2026 21:28:08 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id A2E4E600E2;
-	Wed, 12 Aug 2026 11:21:36 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 40D901F000E9;
-	Wed, 12 Aug 2026 11:21:30 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 9E641429F4;
+	Wed, 12 Aug 2026 11:28:02 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C454E1F000E9;
+	Wed, 12 Aug 2026 11:27:55 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1786533696;
-	bh=+TveDZHhaOZxOI6aHVBWLYlU17AabpcT5JTtlV96+eA=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=BmXhqXpH52I2iHHZnRDP6XIleIkxYUTARJtDZTfgN3ma29eqOPVpovsyhj8t0O5tm
-	 eskDXlbDcyfaWVlhD27C21PFw4XwN18QhZN7khcNfE8MEjYA43gycEqOEYgt1Ciu3g
-	 5xGg5iozvCuX6IHRI+TfhTpZ4Cg4BReUlUZhENEqeTN7Jw/GwUinLa0UEsBjUHBdoE
-	 CfvBxbe9NOkQ/YfJoq1NnMsw79f0fDyRytMhym/hkYvQT3AFi59a7w9AEL4FKhh2sv
-	 n952ZvqgZiWGfwjDPVnHtQDOg8lvSVBcbyhNcfKb/MSsXPp4eOmk+Aj6UAJip9v/GY
-	 oYYIElK2eTBFA==
-Message-ID: <94b52871-9cfc-42d6-b30f-545b722e71a0@kernel.org>
-Date: Wed, 12 Aug 2026 13:21:28 +0200
+	s=k20260515; t=1786534082;
+	bh=hN9mu9+V031acX0Mqhgz0E8VuHMeV/rI+t3IxqOP4Jw=;
+	h=Date:Subject:From:To:Cc:References:In-Reply-To;
+	b=Q2KHEiY0kJPCcIYq9uuwvfgaJdiV/X0/c44OKVc/4dSWy0qA2VWIcaZbl6Dz/uIqZ
+	 pDkZyaDysF54dnmgnvC+SrOIVOvTBQ02r8B+6lYweA0Eiqjdrt5y8V/KSLMoOJAmW3
+	 uX7KmbdDFJCRaA7qBMCiZpJtWF47js7B31WPas44jYLBsJ7UnN3BVaVynp1SsnzJjn
+	 ZbUSBYOphl83NNs9qk2xX44sCnMn+bLiFfzfcdTlIhS92ltmn8kw7657TWH1+dg426
+	 tod0X1enWIiHrwBrweIR8q/4pZYJuLhojA1auUJ36AHreTWN0YTls2t3pobUYYNk5Q
+	 JnqGgZqKKIeyA==
+Message-ID: <9a66d741-536e-44ac-b02f-395b5fc8ab6d@kernel.org>
+Date: Wed, 12 Aug 2026 13:27:54 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,7 +60,8 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC V2 4/6] sh/mm: Stop using [p4d|pud|pmd]_ERROR()
+Subject: Re: [RFC V2 1/6] loongarch/mm: Stop using pte_ERROR()
+From: "David Hildenbrand (Arm)" <david@kernel.org>
 To: Anshuman Khandual <anshuman.khandual@arm.com>, linux-mm@kvack.org,
  akpm@linux-foundation.org
 Cc: Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker
@@ -78,8 +79,8 @@ Cc: Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker
  linux-um@lists.infradead.org, linux-arch@vger.kernel.org,
  linux-kernel@vger.kernel.org
 References: <20260811042119.3652929-1-anshuman.khandual@arm.com>
- <20260811042119.3652929-5-anshuman.khandual@arm.com>
-From: "David Hildenbrand (Arm)" <david@kernel.org>
+ <20260811042119.3652929-2-anshuman.khandual@arm.com>
+ <e0ada89f-26b2-4e82-8273-8ea7b391c147@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
  xsFNBFXLn5EBEAC+zYvAFJxCBY9Tr1xZgcESmxVNI/0ffzE/ZQOiHJl6mGkmA1R7/uUpiCjJ
@@ -125,58 +126,64 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <20260811042119.3652929-5-anshuman.khandual@arm.com>
+In-Reply-To: <e0ada89f-26b2-4e82-8273-8ea7b391c147@kernel.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 8/11/26 06:21, Anshuman Khandual wrote:
-> Stop using [p4d|pud|pmd]_ERROR() in __get_pte_phys() as the pgtable entries
-> are known to be NULL and hence could not really be accessed.
+On 8/12/26 13:19, David Hildenbrand (Arm) wrote:
+> On 8/11/26 06:21, Anshuman Khandual wrote:
+>> Directly use pr_err() in __set_fixmap() and drop pte_ERROR() which helps in
+>> eventually dropping pte_ERROR() macro across the tree. In this new printing
+>> __FILE__ and __LINE__ has been dropped because they are always the same and
+>> don't really add any value.
+>>
+>> Cc: Huacai Chen <chenhuacai@kernel.org>
+>> Cc: WANG Xuerui <kernel@xen0n.name>
+>> Cc: loongarch@lists.linux.dev
+>> Cc: linux-kernel@vger.kernel.org
+>> Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
+>> ---
+>>  arch/loongarch/include/asm/pgtable.h | 2 --
+>>  arch/loongarch/mm/init.c             | 2 +-
+>>  2 files changed, 1 insertion(+), 3 deletions(-)
+>>
+>> diff --git a/arch/loongarch/include/asm/pgtable.h b/arch/loongarch/include/asm/pgtable.h
+>> index 223528c04d73..a32a8fff70c1 100644
+>> --- a/arch/loongarch/include/asm/pgtable.h
+>> +++ b/arch/loongarch/include/asm/pgtable.h
+>> @@ -128,8 +128,6 @@ struct vm_area_struct;
+>>  #define ptep_get(ptep) READ_ONCE(*(ptep))
+>>  #define pmdp_get(pmdp) READ_ONCE(*(pmdp))
+>>  
+>> -#define pte_ERROR(e) \
+>> -	pr_err("%s:%d: bad pte %016lx.\n", __FILE__, __LINE__, pte_val(e))
+>>  #ifndef __PAGETABLE_PMD_FOLDED
+>>  #define pmd_ERROR(e) \
+>>  	pr_err("%s:%d: bad pmd %016lx.\n", __FILE__, __LINE__, pmd_val(e))
+>> diff --git a/arch/loongarch/mm/init.c b/arch/loongarch/mm/init.c
+>> index 3407030f3e7a..be9b127daef2 100644
+>> --- a/arch/loongarch/mm/init.c
+>> +++ b/arch/loongarch/mm/init.c
+>> @@ -203,7 +203,7 @@ void __init __set_fixmap(enum fixed_addresses idx,
+>>  
+>>  	ptep = populate_kernel_pte(addr);
+>>  	if (!pte_none(ptep_get(ptep))) {
+>> -		pte_ERROR(*ptep);
+>> +		pr_err("bad pte %016lx\n", pte_val(*ptep));
+>>  		return;
+>>  	}
+>>  
 > 
-> Cc: Yoshinori Sato <ysato@users.sourceforge.jp>
-> Cc: Rich Felker <dalias@libc.org>
-> Cc: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
-> Cc: linux-sh@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
-> ---
->  arch/sh/mm/init.c | 12 +++---------
->  1 file changed, 3 insertions(+), 9 deletions(-)
+> Ah, I missed that we want to print actual values, I somehow thought that we
+> would be printing pte_none() ...
 > 
-> diff --git a/arch/sh/mm/init.c b/arch/sh/mm/init.c
-> index b3c7fd84ceb4..0bb8555568a4 100644
-> --- a/arch/sh/mm/init.c
-> +++ b/arch/sh/mm/init.c
-> @@ -58,22 +58,16 @@ static pte_t *__get_pte_phys(unsigned long addr)
->  	}
->  
->  	p4d = p4d_alloc(NULL, pgd, addr);
-> -	if (unlikely(!p4d)) {
-> -		p4d_ERROR(*p4d);
-> +	if (unlikely(!p4d))
->  		return NULL;
-> -	}
->  
->  	pud = pud_alloc(NULL, p4d, addr);
-> -	if (unlikely(!pud)) {
-> -		pud_ERROR(*pud);
-> +	if (unlikely(!pud))
->  		return NULL;
-> -	}
->  
->  	pmd = pmd_alloc(NULL, pud, addr);
-> -	if (unlikely(!pmd)) {
-> -		pmd_ERROR(*pmd);
-> +	if (unlikely(!pmd))
->  		return NULL;
-> -	}
->  
->  	return pte_offset_kernel(pmd, addr);
->  }
+> Maybe we should just be more verbose while at it?
+> 
+> pr_err("unexpected set PTE at %ul in __set_fixmap: %016lx\n",
+>        addr, pte_val(*ptep));
+> 
 
-Do we want to print an error like "allocating p4d table failed"?
-
-Reviewed-by: David Hildenbrand (Arm) <david@kernel.org>
+On second thought, why not simply use ptval_to_str() here as well?
 
 -- 
 Cheers,
