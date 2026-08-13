@@ -1,70 +1,148 @@
-Return-Path: <linuxppc-dev+bounces-25827-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25828-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 120A1C5B572
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Aug 2026 13:19:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 86F19C5B572
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Aug 2026 16:51:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hLQtl2bZbz2ySS;
-	Thu, 13 Aug 2026 23:19:27 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.18
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786627167;
-	cv=none; b=d0hZ893YRcRh2SsTOr4OE+elNRkaKRHfuSrqNV2elJ6zHmefoJcrviv9rp01Xhh2vUTcYJZ4bb5PXVcXaiSYnDRilQhIj0adTe3FmibzKBZ4Pti6o0A7jDcS4z4oQ6ktXZEdREZ7CKMJeCjv0wyBWOm2cWkE7dd4deyOD6e38DjoHGjzMiECtYEZRrF9VS/TIhsoaO1Wb4Fi+2KXLP4lC3kSAhr9hOElwBJAruAosYVZnULDzrUAD/XOoe7RWde+2KTBkEOKgsBmZKieC7xVA+SmN0VSWYMr/G5IM+7zRuq4p/R8gbLiLHgaqLP4GDFEfjj7LVoYNYWZ6LitRYrmRA==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786627167; c=relaxed/relaxed;
-	bh=bdPD/0tPKN11n1kPlF/rNWXA8VHBI7otuuMQxUYsltw=;
-	h=Date:From:To:Cc:Subject:Message-ID; b=C7xfHG1cBZ1KHarr2ThsKZxylT7QNYjYwyPRgM21rFRGXPay0vZd78Po81hUW94z8RAhgxltXPOTOa1/z+Ut1M91RqXRvYbV3mmt0MoHyUjFM6eEFDO0LdAujUroyvl9GYDMCWNcc/oGPUiCaiaXLHwie0HOEb/qNskMV/uqXzej1uVkXjJyMYIYdp/GQHLgdLzNvM0fOhWS0AKWnT1SD8IFQuD2VcHYIshIIjFuGnKsh2ZdktKpsa0DHhSQ4B8jT7H1mNtq1hgyXODT3eqEPQp/8lIGrwTKGFWrUVGgh6aSsp9j1YBbbOSNl2btu4WStCtNJeT3c92wMlWCAdb2VA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Wd6+bHOq; dkim-atps=neutral; spf=pass (client-ip=192.198.163.18; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hLWZp3JC1z2yKD;
+	Fri, 14 Aug 2026 02:50:58 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:d101::" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786639858;
+	cv=pass; b=JnvVwB1KphsNG7N+ehedi1xf6/pB9410xDpTkcrjJSyXblqKvtr0au+ZMKiqpksYPKyOVUmc4jyHnM+RzG0A/M5vluIoKb8iRRRsXlkZEs7nMgp5LeLAmavNQ2zUZ8ftA28Kw6PvZi99EdG0wMlq0sci0J5nZO7eITJ4EG9OonVJ6kqnj5inZDq+5nBinglc5Ff71ZnMEh4QH3sHHjPCHWlIl5AWznVZ6U0yLTAr4kyujNhF4m6c+YsCk+qOdP0BXd5Grr90oU/RxrNJfi95desbqBrfMDbS6zMTbir+wP5Wg/Dc2H+9WGAjEJPyZvG0aW+U+FnWVtc890nGIGHfAA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1786639858; c=relaxed/relaxed;
+	bh=zs4P8vDNTUNtmD/TEiy4Yz1UhbnETWDibx19uQq+C8Q=;
+	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=MAHvVNUpvubft+nhZMShQQKAtn6m+AhlZwCOoaFkWZAWNv941W3ulY35blOYYGBkuxaNUQ8G6CuYXsu/U/z7wsaejiLTfgCBcn+eTjeuyo17hjykAL4ydwZiZCH3kKju+rLoFli3BmsQPTNJTW27uelYU7gDFfvQvmGVWsTdVvTOyHfJJoRI5o/7xN6cxcbMFBmuibGHzGcFIVrkFoyKFCyYY8Rz3Cj+oJ5VC3uRO5Ta+zZNy8segGs0PchiuRKgBKiOIDCetQ0Fcy2VHKb6zDb2RYb1vZrFVeAGqzeo5QT7X3ooVDRJ2XgE9j8rAAK0ONS44/Q5zWH4vmXDapmKgQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=outlook.com; dkim=pass (2048-bit key; unprotected) header.d=outlook.com header.i=@outlook.com header.a=rsa-sha256 header.s=selector1 header.b=c/jvbjQH; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:d101::; helo=bn8pr05cu002.outbound.protection.outlook.com; envelope-from=mhklinux@outlook.com; receiver=lists.ozlabs.org) smtp.mailfrom=outlook.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=outlook.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Wd6+bHOq;
+	dkim=pass (2048-bit key; unprotected) header.d=outlook.com header.i=@outlook.com header.a=rsa-sha256 header.s=selector1 header.b=c/jvbjQH;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.18; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=outlook.com (client-ip=2a01:111:f403:d101::; helo=bn8pr05cu002.outbound.protection.outlook.com; envelope-from=mhklinux@outlook.com; receiver=lists.ozlabs.org)
+Received: from BN8PR05CU002.outbound.protection.outlook.com (mail-eastus2azolkn190110000.outbound.protection.outlook.com [IPv6:2a01:111:f403:d101::])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hLQth38nhz2y1Y
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2026 23:19:22 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1786627164; x=1818163164;
-  h=date:from:to:cc:subject:message-id;
-  bh=bsheluaLBQyoNCAimo9vRW8KtWcsDourQ9msndwb7JA=;
-  b=Wd6+bHOqEDnQB+FBjaQIARIpmwbb50cZLe73Tbns4Q1XBixaxEyCkM9j
-   ykbW/IL1l2x25ZWOhXUBDSUeaZA2efKYeLoPbcJH9zMHWeJjj3mIKPUGu
-   Bsl32m+2xlOsolEcnSqQPwmY3jy1E0P2cZKsMUOJcMbsw4QQhjokpNUxl
-   a5yBEZT609imnJUTg7zZBVt4sDgWAOkxpt6bU2u3DJ25igl6wGEukUMji
-   7TNE8Fnuj5BiM4tONllQwZKZlShKs6PFdUgR2n8tAcvxF499AzIveu/BM
-   OKeTIuuC5IkHMMUoKTGLUmTWit64f4QHZOUwJZ/C6CXVMSFDf3j1EK5mz
-   w==;
-X-CSE-ConnectionGUID: gR6KpTo4TLiF7lTJlQpKzg==
-X-CSE-MsgGUID: 5qHDlJbBQqChJA9BbWNm9A==
-X-IronPort-AV: E=McAfee;i="6800,10657,11873"; a="86319214"
-X-IronPort-AV: E=Sophos;i="6.25,221,1779174000"; 
-   d="scan'208";a="86319214"
-Received: from fmviesa006.fm.intel.com ([10.60.135.146])
-  by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Aug 2026 06:19:19 -0700
-X-CSE-ConnectionGUID: eqffi34HSGeI3vPGfiqm6g==
-X-CSE-MsgGUID: gVhlul87QZ+/uxF6qEymZw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,221,1779174000"; 
-   d="scan'208";a="259695019"
-Received: from lkp-server01.sh.intel.com (HELO 6eda058d650d) ([10.239.97.150])
-  by fmviesa006.fm.intel.com with ESMTP; 13 Aug 2026 06:19:18 -0700
-Received: from kbuild by 6eda058d650d with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1wuVL1-00000000U9c-46fk;
-	Thu, 13 Aug 2026 13:19:15 +0000
-Date: Thu, 13 Aug 2026 21:18:16 +0800
-From: kernel test robot <lkp@intel.com>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [powerpc:merge] BUILD SUCCESS
- 68e557e9b406f070b7a48ab770fae1f546804c74
-Message-ID: <202608132102.r1Idcs0i-lkp@intel.com>
-User-Agent: s-nail v14.9.25
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hLWZn4Nl5z2yD8
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2026 02:50:57 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=JFnshT+OWTDHuVL+7Lt1qAsWwL4pNdEz6ONIL11jDuJ4PUWkzkR8citmdDceTeouBZp81DPDcdUOzAsx/6zm2J/zWsu3b81W/+26HudPUwWHm9Qo5/QwkAqOv+UR9Ew/q6wxpSTYpHlaQIdxKHaN6pYkJTqy0Iv3IbxV7jQeu+9zg+oQUod8jGQbOAK+WY8yEGHMZ5ebBr764TW6KPhJKk4XiD5dqdvLd0fR02fijRCzaZAEOR6vL65X4Dq2+Wb/XVbSpk/00A5SCGSKEfEfLwBcQY/dpHvtmJ8WrJTKmrXWTGDdwP+fN5RHGrHO96Voq8heqZAJxFKSIHIE3XX30w==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=zs4P8vDNTUNtmD/TEiy4Yz1UhbnETWDibx19uQq+C8Q=;
+ b=f6eXM4o2Q2d63kgImN7cU64aCDUzXWxmiGoPv9pieHhlCnqQMPoXYlWzi+Qd82H0UFlJltZP/SyEprHxJJ1JxX9K9Sf+cO6Tc1CAl1FWMhDv+m0fjHRNYH6VkpKV3PKUDaQ3rAOXcb22GfCOPYNVKvsPyBoD3Y1gVateRgiSYakp0vNqY0YKz4jpZCh2QEJKfvX5SBzu0XWTCltH77ywFtJMKFVXx2nCwTAIvdqZc8TUjYjqZb7xnttuXFz6h0uRHHX6isigbVDomU9zMJvLjXItQtqisXuExVYOI5pMNKH4mpdvqmsN+Tfu0pAiv5I4RDZs43737ciTL/NRVevwTw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
+ dkim=none; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=outlook.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=zs4P8vDNTUNtmD/TEiy4Yz1UhbnETWDibx19uQq+C8Q=;
+ b=c/jvbjQHJO2A44eSk3XIpOYBMNwHCSHQS7xLEd2Ux7QuMBWhnmRW2aDCrEnXTlGIQcTfBevmAhBALQn/ooIWnevGk5H7BVJkmpS7fna11bpBYEVS2tJ97Y9AXa5eGTjLiflN4S6s4jFtSkvZaGy8mK+VTJnEKZIzIXuNNYH4gXNQbTWqsSbHrrgA+Ti/yo+ZZlDKiH225xToS9DSDOClwURZw6RU6GMScPLyezqNDY9uUCMyttgOYFFhFNaQIZJqWfps/YFe9q8v2LQ8apyj4yzXs4FIVHS83c4eUDnsE0BQ5U+mnUc6p8kqTY3Sw3Hq1j8ItMKHcw7WsBGb5Inkhw==
+Received: from SN6PR02MB4157.namprd02.prod.outlook.com (2603:10b6:805:33::23)
+ by BL3PR02MB8083.namprd02.prod.outlook.com (2603:10b6:208:35c::7) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.315.12; Thu, 13 Aug
+ 2026 16:50:29 +0000
+Received: from SN6PR02MB4157.namprd02.prod.outlook.com
+ ([fe80::900:1ccf:2b1e:52b6]) by SN6PR02MB4157.namprd02.prod.outlook.com
+ ([fe80::900:1ccf:2b1e:52b6%3]) with mapi id 15.21.0315.011; Thu, 13 Aug 2026
+ 16:50:28 +0000
+From: Michael Kelley <mhklinux@outlook.com>
+To: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>,
+	"iommu@lists.linux.dev" <iommu@lists.linux.dev>,
+	"linux-arm-kernel@lists.infradead.org"
+	<linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org"
+	<linux-kernel@vger.kernel.org>, "linux-coco@lists.linux.dev"
+	<linux-coco@lists.linux.dev>
+CC: Robin Murphy <robin.murphy@arm.com>, Marek Szyprowski
+	<m.szyprowski@samsung.com>, Will Deacon <will@kernel.org>, Marc Zyngier
+	<maz@kernel.org>, Steven Price <steven.price@arm.com>, Suzuki K Poulose
+	<Suzuki.Poulose@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Jiri
+ Pirko <jiri@resnulli.us>, Jason Gunthorpe <jgg@ziepe.ca>, Mostafa Saleh
+	<smostafa@google.com>, Petr Tesarik <ptesarik@suse.com>, Alexey Kardashevskiy
+	<aik@amd.com>, Xu Yilun <yilun.xu@linux.intel.com>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+	"linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>, Madhavan
+ Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <chleroy@kernel.org>,
+	Alexander Gordeev <agordeev@linux.ibm.com>, Gerald Schaefer
+	<gerald.schaefer@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, Vasily
+ Gorbik <gor@linux.ibm.com>, Christian Borntraeger
+	<borntraeger@linux.ibm.com>, Sven Schnelle <svens@linux.ibm.com>,
+	"x86@kernel.org" <x86@kernel.org>
+Subject: RE: [RFC PATCH v2 2/2] dma: swiotlb: Initialize and size shared
+ default pools for memory encryption
+Thread-Topic: [RFC PATCH v2 2/2] dma: swiotlb: Initialize and size shared
+ default pools for memory encryption
+Thread-Index: AQFMX0hXOwboEy4POyg7moK7+petGgFejaX5t7LIybA=
+Date: Thu, 13 Aug 2026 16:50:27 +0000
+Message-ID:
+ <SN6PR02MB4157842A03CBC29155F1673CD4DB2@SN6PR02MB4157.namprd02.prod.outlook.com>
+References: <20260813102521.1367737-1-aneesh.kumar@kernel.org>
+ <20260813102521.1367737-3-aneesh.kumar@kernel.org>
+In-Reply-To: <20260813102521.1367737-3-aneesh.kumar@kernel.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: SN6PR02MB4157:EE_|BL3PR02MB8083:EE_
+x-ms-office365-filtering-correlation-id: 7f757abe-79f3-45e5-dc78-08def95afaad
+x-microsoft-antispam:
+ BCL:0;ARA:14566002|51005399006|15080799012|8062599012|25010399006|19110799012|31061999003|8060799015|37011999003|13091999003|55001999006|41001999006|24021099003|40105399003|2607281247196008|102099032|3412199025|440099028;
+x-microsoft-antispam-message-info:
+ =?us-ascii?Q?M9yz9AbZ1LjrXNG7vYtSAUfu26nMVj31n5apLy+t5HdgM569/5zw9EAFuYQY?=
+ =?us-ascii?Q?cyNuxtgiYce0XnofhhGFaUXrnZ6js5WyA4YddINc8kvelN3gzK7eyi4gKXI3?=
+ =?us-ascii?Q?XPoNvoXrNLyhi0GQeFlL/ooYeH/K1ju1poJK3EtcU+fwGTu/+O4CwAAWzc0g?=
+ =?us-ascii?Q?sOOxEaXBBxv7kgEnmwClv6J6kF8LEdgTbWmsQRrmpzjpFipyqQdKF9l1Lwar?=
+ =?us-ascii?Q?REJQur9vWq1gVEzJAS7p7nqitKNV56DpHxnaGVgCL//lhr7uF+ypbp8zjDRf?=
+ =?us-ascii?Q?+JaI26gxvOxTcyJAx+pi00nOI3RqUUONz01ZdWruVdiB9y7Yp88Ifn5NKPbz?=
+ =?us-ascii?Q?4OWTJXFFTnykMwXjileAOwRuKf8v2MaOQXkzRl5Ac68t14ktULNMDrobMcDT?=
+ =?us-ascii?Q?oxoBYThcIpAbc8PIYFYeh1oiH8uWROEP6me0n1G1weBg4+6JsGN6/8npslYx?=
+ =?us-ascii?Q?nGGBpuQIsuVyUKQR138Q5/HzawY64NIL8xgYrs3dDvov+ckrCBYQU7uoSnPA?=
+ =?us-ascii?Q?xPqacCooKkIxhVpbGuP472yJNlbWv9Pj/KwbWGy8kx3EdF+sk7qaKBmQIGCY?=
+ =?us-ascii?Q?8+cRV89KPYCMFAGdOW4Z3avz5k31MX2z/vpW6pHs3E/98e41O1OJR+z8bHBe?=
+ =?us-ascii?Q?SsmterNrqAATaZXaL5H5b8tSrvSujpp2t6IBYmwOipsiXDV9AGsg0fBQnOVD?=
+ =?us-ascii?Q?QstyD6K20rk0kzUH3IuSMiwpeScB7okR7mWivQ3Nbdsa3g3ylkqVuSlHfgHR?=
+ =?us-ascii?Q?IugSh6i7MCptOTQts9Fnhg0e+r+gNq9pn7TCKQCSpv3QjrGkaJ3kvhowOvZp?=
+ =?us-ascii?Q?W4eocdtUhedCGrEA+y8DVG31SjzOX2Rx3VMmilwNDw6L2q0LxkBZ+tfcJ4ga?=
+ =?us-ascii?Q?0yE+KdqtkKto/ARZg2kUU0oARipg46N2XeCvLVHqYClru/5D8WQeHLgCvtpM?=
+ =?us-ascii?Q?UUCpsQTeFFcLF5tqeolS3MYr0CCmKAqzDSldMs8SohpvJHPZ8grKI+3PDBfd?=
+ =?us-ascii?Q?11ma2uBLCHBh88NChnqlcmtPu9eU9Kv5dpi1E185sIqjzJL7JduWXzkq4Cld?=
+ =?us-ascii?Q?QmG9OmKV?=
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:
+ =?us-ascii?Q?Zwmv4irhY8F9+Hef9zuGDPRDdG+eAS+0TVNayNN35AJ65zPpOCaBa38H9us6?=
+ =?us-ascii?Q?S121//mU52byhPON1i53KzNnX6uixPY7ImYfFuxY6URjjzPlwL+RQK+Vu547?=
+ =?us-ascii?Q?XGjz5cR8xQlzYxc3Yb7hV3JkmMrX1WyW5i5WMU84TxMi+WiMde8AKBjDInc5?=
+ =?us-ascii?Q?rLM1tYDE+KxLGQHSsJ22XfDSjjjzpFEdfTZbj4lbYXkypWRK4B946NKq/dCi?=
+ =?us-ascii?Q?4Zx6znQGnmZoXdA9YwYqiwclc8InopBFRN5lGgYaK4UWRwfI3XTfS2lzqKai?=
+ =?us-ascii?Q?Bob7M3rKTIgz1MIKnPME+mOBFsmOnGQW0gxxvfe9DWIn4tmMkSmuvzURqj/Z?=
+ =?us-ascii?Q?arqulKQoBmFXHdYWQF2wQ6QINo+i0AVkGByKje5ZrJC68O6uOoJMJx0iYKsm?=
+ =?us-ascii?Q?623x3RV8AQWJJ0aYd3HfX4LOix31j7auzD9JmYxSvXU/ZXuxs4PF7ktePdIc?=
+ =?us-ascii?Q?zhU8BO11RBxrZ12nD4ezXbnLQPtiuA4IHsrIATRq3JiMgS24/y0H7YyrHytd?=
+ =?us-ascii?Q?wYMSUgPRLkNDqlVqtdi32FLWm6iulb28tQJcJSXheNmuYqyswSxxTJhsRxQE?=
+ =?us-ascii?Q?UzfFuzGl1szAdqxkxngM47cVYrqh3wT5F274KGF/xmR4Pl8fxVkDqS/OlTPq?=
+ =?us-ascii?Q?omap8HQRjAjhrkzSEZ2S2T88y7RQ7PzA+8XHKZDmIjPJJr+0RcOpUQaUJToA?=
+ =?us-ascii?Q?zxzoWexEnXMjVaJ8rjQhgUYJQT8j++qt8ybbRwATh5FFBuE3VeivApnbV25G?=
+ =?us-ascii?Q?3a7+v3ZSj2Nh2cmfDtNje8t9/e9EHZ2TWgw4movz8uAMpiHPp9Q3qwUCl4Fm?=
+ =?us-ascii?Q?5xQhCQEZ9AoIM2TTgUesx28EpXHCzyWZ0zMN4PJB5mYZ4ETYfnQUcZRv/KEm?=
+ =?us-ascii?Q?OSTLvyXqSzeeS6EicYK7/oZO/2qRev7lPlReXVfU5wzt7gpUsq3YddDJfyT3?=
+ =?us-ascii?Q?AaagkYf37AumcplytqI662o50rIZUv79jkBfRFpKX2/4tMaiOd8TYnoJ+SMx?=
+ =?us-ascii?Q?nSgfhOVX8xOjuvOlYI1VrVnw91MGwa/kH9wci6GL6uhUROMEj5D9QnkaFNq2?=
+ =?us-ascii?Q?thec3dHIPEUA4uDUKQTxtLSFAkXJlN/06zJROZD0BC/cr1821vIWyyaKly4S?=
+ =?us-ascii?Q?/RDaFzibRIjnvfmkuwOPNpahr7f9rC54xJZmF4yVwTPXKVLLJZr2JIWYM58v?=
+ =?us-ascii?Q?1FRkwThatNoepB50OrFj/ZmUpHCIBlxOQEFVMSbREEHs2+ZUQcKov8lAlbwY?=
+ =?us-ascii?Q?kaNR+yG/sxN9uSkcIR4oovrdJyfJIrA5lg5j0Q80WanI6Y8fIOmHG+yY4+ds?=
+ =?us-ascii?Q?5GLqpxDLinOZu3FBuLi1E1oicf0jZCwtHkULZ9sqIBTy07mlPGA0IlIHzrR+?=
+ =?us-ascii?Q?p4lwesY=3D?=
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -77,132 +155,125 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
+MIME-Version: 1.0
+X-OriginatorOrg: outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: SN6PR02MB4157.namprd02.prod.outlook.com
+X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg: 00000000-0000-0000-0000-000000000000
+X-MS-Exchange-CrossTenant-Network-Message-Id: 7f757abe-79f3-45e5-dc78-08def95afaad
+X-MS-Exchange-CrossTenant-originalarrivaltime: 13 Aug 2026 16:50:28.0197
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
+X-MS-Exchange-CrossTenant-rms-persistedconsumerorg: 00000000-0000-0000-0000-000000000000
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BL3PR02MB8083
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git merge
-branch HEAD: 68e557e9b406f070b7a48ab770fae1f546804c74  Automatic merge of 'next' into merge (2026-08-12 11:29)
+From: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org> Sent: Thursday, Augu=
+st 13, 2026 3:25 AM
+>=20
+> Systems with memory encryption require shared or unencrypted buffers for
+> device DMA. Confidential guests may route all DMA through SWIOTLB, making
+> the default pool too small for I/O-intensive workloads. Host memory
+> encryption also requires a shared default pool when bouncing is needed,
+> but does not require the guest sizing policy.
+>=20
+> Move the existing x86 sizing policy into the SWIOTLB core. Detect memory
+> encryption before allocating the default pool so that it is initialized
+> and marked shared even without DMA addressing limitations. Increase the
+> pool size to 6% of guest memory, clamped between the default size and
+> 1 GiB, only for confidential guests.
+>=20
+> The core can determine the confidential-computing requirement directly,
+> so remove SWIOTLB_INIT_CC_SHARED and its architecture uses. Keep the
+> pseries secure-guest setup before swiotlb_init() so that the pool is
+> allocated with SWIOTLB_ANY and is not released later.
+>=20
+> A restricted DMA pool already supplies shared bounce buffers for its
+> devices. Record its presence during reserved-memory initialization and
+> avoid initializing or marking the default pool as shared solely because
+> memory encryption is enabled.
+>=20
+> Signed-off-by: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>
+> ---
+>  arch/arm64/mm/init.c      |  6 +---
+>  arch/powerpc/mm/mem.c     |  2 +-
+>  arch/s390/mm/init.c       |  2 +-
+>  arch/x86/mm/mem_encrypt.c | 28 ---------------
+>  include/linux/swiotlb.h   |  2 --
+>  kernel/dma/swiotlb.c      | 72 +++++++++++++++++++++++++++++----------
+>  6 files changed, 57 insertions(+), 55 deletions(-)
+>=20
 
-elapsed time: 1556m
+[snip]
 
-configs tested: 111
-configs skipped: 7
+>=20
+> +static void __init swiotlb_adjust_cc_attributes(void)
+> +{
+> +	unsigned long size;
+> +	phys_addr_t total_mem =3D memblock_phys_mem_size();
+> +
+> +	/* Do not resize for host memory encryption. */
+> +	if (!cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT))
+> +		return;
+> +
+> +	/*
+> +	 * For SEV and TDX and CCA, all DMA has to occur via
+> +	 * shared/unencrypted pages. Kernel uses SWIOTLB to make this
+> +	 * happen without changing device drivers. However, depending on
+> +	 * the workload being run, the default 64MB of SWIOTLB may not be
+> +	 * enough and SWIOTLB may run out of buffers for DMA, resulting in
+> +	 * I/O errors and/or performance degradation especially with high
+> +	 * I/O workloads.
+> +	 *
+> +	 * Adjust the default size of SWIOTLB using a percentage of guest
+> +	 * memory for SWIOTLB buffers. Also, as the SWIOTLB bounce buffer
+> +	 * memory is allocated from low memory, ensure that the adjusted
+> +	 * size is within the limits of low available memory.
+> +	 *
+> +	 * The percentage of guest memory used here for SWIOTLB buffers is
+> +	 * more of an approximation of the static adjustment which 64MB for
+> +	 * <1G, and ~128M to 256M for 1G-to-4G, i.e., the 6%
+> +	 */
+> +	size =3D total_mem * 6 / 100;
+> +	size =3D clamp_val(size, IO_TLB_DEFAULT_SIZE, SZ_1G);
+> +	swiotlb_adjust_size(size);
+> +
+> +	if (!IS_ENABLED(CONFIG_SWIOTLB_DYNAMIC))
+> +		pr_info("Consider enabling CONFIG_SWIOTLB_DYNAMIC for memory-encrypted=
+ systems\n");
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+I'm not keen on this recommendation. The implementation of
+SWIOTLB_DYNAMIC has two limitations that make it problematic for
+large CoCo VMs. First, when swiotlb is unable to find sufficient space
+in the default pool allocated at boot time, SWIOTLB_DYNAMC creates a
+"transient" swiotlb pool that is allocated from the DMA atomic pool to
+satisfy the immediate request. Growing the overall swiotlb is kicked off
+asynchronously in the background. dma_unmap() frees the transient
+pool and the memory is returned to the DMA atomic pool, but a spike
+in swiotlb allocations in a big system still has substantial potential to
+exhaust the DMA atomic pool. Then you get the same mapping failure
+you'd get without SWIOTLB_DYNAMIC. The fundamental problem has
+only been moved around.
 
-tested configs:
-alpha                            allnoconfig    gcc-16.1.0
-alpha                           allyesconfig    gcc-16.1.0
-alpha                              defconfig    gcc-16.1.0
-arc                             allmodconfig    gcc-16.1.0
-arc                             allyesconfig    gcc-16.1.0
-arc                  randconfig-001-20260813    gcc-13.4.0
-arc                  randconfig-002-20260813    gcc-13.4.0
-arm                       keystone_defconfig    gcc-16.1.0
-arm                  randconfig-001-20260813    gcc-13.4.0
-arm                  randconfig-002-20260813    gcc-13.4.0
-arm                  randconfig-003-20260813    gcc-13.4.0
-arm                  randconfig-004-20260813    gcc-13.4.0
-arm64                randconfig-001-20260813    gcc-16.1.0
-arm64                randconfig-002-20260813    gcc-16.1.0
-arm64                randconfig-003-20260813    gcc-16.1.0
-arm64                randconfig-004-20260813    gcc-16.1.0
-csky                            allmodconfig    gcc-16.1.0
-csky                 randconfig-001-20260813    gcc-16.1.0
-csky                 randconfig-002-20260813    gcc-16.1.0
-hexagon                       randconfig-001    gcc-11.5.0
-hexagon              randconfig-001-20260813    gcc-11.5.0
-hexagon              randconfig-002-20260813    gcc-11.5.0
-i386                            allmodconfig    gcc-14
-i386                buildonly-randconfig-001    gcc-14
-i386       buildonly-randconfig-001-20260812    clang-22
-i386       buildonly-randconfig-001-20260813    gcc-14
-i386       buildonly-randconfig-002-20260812    gcc-14
-i386       buildonly-randconfig-002-20260813    gcc-14
-i386       buildonly-randconfig-003-20260812    clang-22
-i386       buildonly-randconfig-003-20260813    gcc-14
-i386       buildonly-randconfig-004-20260812    clang-22
-i386       buildonly-randconfig-004-20260813    gcc-14
-i386       buildonly-randconfig-005-20260812    gcc-14
-i386       buildonly-randconfig-005-20260813    gcc-14
-i386       buildonly-randconfig-006-20260812    clang-22
-i386       buildonly-randconfig-006-20260813    gcc-14
-i386                 randconfig-001-20260813    clang-22
-i386                 randconfig-002-20260813    clang-22
-i386                 randconfig-003-20260813    clang-22
-i386                 randconfig-004-20260813    clang-22
-i386                 randconfig-005-20260813    clang-22
-i386                 randconfig-006-20260813    clang-22
-i386                 randconfig-007-20260813    clang-22
-i386                 randconfig-011-20260813    clang-22
-i386                 randconfig-012-20260813    clang-22
-i386                 randconfig-013-20260813    clang-22
-i386                 randconfig-014-20260813    clang-22
-i386                 randconfig-015-20260813    clang-22
-i386                 randconfig-016-20260813    clang-22
-i386                 randconfig-017-20260813    clang-22
-loongarch                          defconfig    clang-24
-loongarch            randconfig-001-20260813    gcc-11.5.0
-loongarch            randconfig-002-20260813    gcc-11.5.0
-nios2                           allmodconfig    gcc-11.5.0
-nios2                            allnoconfig    gcc-11.5.0
-nios2                randconfig-001-20260813    gcc-11.5.0
-nios2                randconfig-002-20260813    gcc-11.5.0
-parisc                          allmodconfig    gcc-16.1.0
-parisc                          allyesconfig    gcc-16.1.0
-parisc                             defconfig    gcc-16.1.0
-parisc               randconfig-001-20260813    gcc-10.5.0
-parisc               randconfig-002-20260813    gcc-10.5.0
-powerpc                   adder875_defconfig    gcc-16.1.0
-powerpc              randconfig-001-20260813    gcc-10.5.0
-powerpc              randconfig-002-20260813    gcc-10.5.0
-powerpc                        wii_defconfig    gcc-16.1.0
-powerpc64            randconfig-001-20260813    gcc-10.5.0
-powerpc64            randconfig-002-20260813    gcc-10.5.0
-riscv                         randconfig-001    gcc-10.5.0
-riscv                randconfig-001-20260813    gcc-10.5.0
-riscv                randconfig-002-20260813    gcc-10.5.0
-s390                 randconfig-001-20260813    gcc-10.5.0
-s390                 randconfig-002-20260813    gcc-10.5.0
-sh                                 defconfig    gcc-16.1.0
-sh                   randconfig-001-20260813    gcc-10.5.0
-sh                   randconfig-002-20260813    gcc-10.5.0
-sparc                randconfig-001-20260813    clang-20
-sparc                randconfig-002-20260813    clang-20
-sparc64              randconfig-001-20260813    clang-20
-sparc64              randconfig-002-20260813    clang-20
-um                   randconfig-001-20260813    clang-20
-um                   randconfig-002-20260813    clang-20
-x86_64              buildonly-randconfig-001    gcc-14
-x86_64     buildonly-randconfig-001-20260813    gcc-14
-x86_64     buildonly-randconfig-002-20260813    gcc-14
-x86_64     buildonly-randconfig-003-20260813    gcc-14
-x86_64     buildonly-randconfig-004-20260813    gcc-14
-x86_64     buildonly-randconfig-005-20260813    gcc-14
-x86_64     buildonly-randconfig-006-20260813    gcc-14
-x86_64                                 kexec    clang-22
-x86_64               randconfig-001-20260813    gcc-13
-x86_64               randconfig-002-20260813    gcc-13
-x86_64               randconfig-003-20260813    gcc-13
-x86_64               randconfig-004-20260813    gcc-13
-x86_64               randconfig-005-20260813    gcc-13
-x86_64               randconfig-006-20260813    gcc-13
-x86_64               randconfig-011-20260813    gcc-14
-x86_64               randconfig-012-20260813    gcc-14
-x86_64               randconfig-013-20260813    gcc-14
-x86_64               randconfig-014-20260813    gcc-14
-x86_64               randconfig-015-20260813    gcc-14
-x86_64               randconfig-016-20260813    gcc-14
-x86_64               randconfig-071-20260813    gcc-14
-x86_64               randconfig-072-20260813    gcc-14
-x86_64               randconfig-073-20260813    gcc-14
-x86_64               randconfig-074-20260813    gcc-14
-x86_64               randconfig-075-20260813    gcc-14
-x86_64               randconfig-076-20260813    gcc-14
-x86_64                          rhel-9.4-bpf    gcc-14
-xtensa               randconfig-001-20260813    clang-20
-xtensa               randconfig-002-20260813    clang-20
+Second, growing the swiotlb in the background adds a new pool, which
+requires allocating contiguous physical memory. That's at most a
+MAX_PAGE_ORDER allocation, so 4 MiB. The new pool is divided into
+"areas" of minimum size 256 KiB so swiotlb allocations can proceed
+in parallel under a per-area spin lock. 16 areas isn't too bad, but might
+still have more contention than the original default pool, which, for
+example, would have 64 areas on a 64 vCPU VM. But if memory is
+fragmented, and you can only get 512 KiB, you'll have only 2 areas,
+and substantially more contention. Contention for the swiotlb
+spin lock at high vCPU counts has been shown to be a substantial
+problem, which is why areas were introduced. But SWIOTLB_DYNAMIC
+often can't preserve the parallelism in the dynamically added pools
+because of the contiguous memory allocation limitations.
 
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+Net, in smaller CoCo VMs, there's some marginal value in
+SWIOTLB_DYNAMIC, but that value diminishes as the VM gets
+larger and more swiotlb parallelism is needed. And in either case,
+there's still the potential of exhausting the DMA atomic pool due
+to a spike in demand, in which case you haven't solved anything.
+
+Michael
 
