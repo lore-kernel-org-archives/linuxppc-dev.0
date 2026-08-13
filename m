@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-25804-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25805-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7ED98C5CFEB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Aug 2026 07:18:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4A081C5CFEB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Aug 2026 07:18:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hLGtM3GF5z2yNj;
-	Thu, 13 Aug 2026 17:18:35 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786605515;
-	cv=none; b=jeGd9mHIdnWd3SVzuu17ZN7FW2Usb72u2wy3bHtg5mpQnTk/GWbBabJxQWFXNfSuJcAHRUcOVMo7xXbUCvZ62B6k1omrNpubptIpGJM6H6fc56IFlmeSzeTc8/FB4EW/2IPMpt8l1JHOmsrp944M9NVNjQWordIlHOrCZul1MusbI3kUlZnr/OVtU9ythW4OvIkMMP1U0l9AqDo+Ub2Cb4boPaZ2PffWSero/42VagX2wrP56xiQ8Fl13hik4+waOdtq6fSk8FKIVSm0kLTDPwTLP/Ro0quW2uVs9Ch6pSvyEbroj1/dHWxYfSzZu7BfWgXxaIZSgTw4pM0+DgGU4Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hLGtl5k2Vz2yNj;
+	Thu, 13 Aug 2026 17:18:55 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786605535;
+	cv=none; b=cvYe3ISGn0MEXQpPrrH3IC1WqytgAw+gcqDuxIhgjMYN32VvR2/dOw5f/zDoJR5raH1thfbYXGtSVf1u0wlM/9mFnhjDU0t6CWUcZ4JAUW3PxFfSTT4zoXPnTSOurROYtt3mfIbs+f1A2dnGZWXYZ+GvOKv5ze0ge0XTUZA/414qP0sWEgZA5Bz1ntT/KlYzonTJQp9D4kwdch1JdjZeinofvbjg7kdhizlikK/CnTmzKL6vL/j98M4eEE1uWla5oR6RU8ZtR6otz4Be4vY3h6Zil2+mv8nqlGCw3GpNqwxW8zCK9StyrAsdaZojAjP8Ak0grmCywQvnbU1AHl8zhA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786605515; c=relaxed/relaxed;
-	bh=+4Nk4hpoXdyCDEpgTJCUYHz6STV5yXnczBbKNxqEd8Y=;
+	t=1786605535; c=relaxed/relaxed;
+	bh=FRu9n4mjHkdLoh1auc0+F0uq9mi4uQgSH6ITAa/iuvU=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=EWrtUT2QcM99RVL+bXUToy7ZfxIm4FHf3ahvtU3bRzg8X/J5EVDIGv+tsNhi2A5J7VfMcBHdFBGDt3tDXU1QHtRNNOsF9lZ31oWKRSW3H3RRCT6MDmzUCZjIv9nG0R341sCTYdoIrkoeHBvhkGayJ0ye6OGvBj2XXQmd96Fshunbiyq1ftkIOi+jqlv0FQIezYDZvVFbdRCTSnwyB342eP79+5h1TW3H5NK6PtMk0C/pVfMg6PxTser9lHOpP1OpwMghBPeEC5bKc1xwp3w1vque2/sKwsiWXWXJnh27cB5Pkv++u7S+mmza+BwKUj6FWE6FhKJiSZbOBnde2OVUXg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=KgSkwoV4; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=QnSPJehgHiEHYqX0M+1FdTylYCsYJHcCUjtY5jwp3b884epU01lVuhb7TXhBp8IEkEUszB5BhkIkUVMQY53pQ3+FtlWbb0gdFhjI/qnk3osVwJ9k89xPQN4LZpPehhwNAKjwnMJIDQ3YTdHAd0In8q71Ep/YTc2JPB6RTT9e+9HEWqcs8h3PrvERJna+m/xvcRj11SmTYZuCScQrLI9SZCZn1BFZ1LuNjQbzMLXAvJLcG7P+nFA9VomkHjABDu5MODbJZO8O1iO3muyagtqyQeNVu8LjOt9dmTsXRrDmhI5Ux5vqKf9wcZBXuK0ttKiffu0tHGrpzuZHKjfRbUI2Tg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LQoW8GUU; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=KgSkwoV4;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LQoW8GUU;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hLGtL0hVFz2y0B
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2026 17:18:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hLGtk6Y5Dz2y0B
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2026 17:18:54 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id A2D4D4028A;
-	Thu, 13 Aug 2026 07:18:30 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1F73D1F000E9;
-	Thu, 13 Aug 2026 07:18:23 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 6A282600AD;
+	Thu, 13 Aug 2026 07:18:52 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AF6D91F00A3D;
+	Thu, 13 Aug 2026 07:18:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1786605510;
-	bh=+4Nk4hpoXdyCDEpgTJCUYHz6STV5yXnczBbKNxqEd8Y=;
+	s=k20260515; t=1786605532;
+	bh=FRu9n4mjHkdLoh1auc0+F0uq9mi4uQgSH6ITAa/iuvU=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=KgSkwoV4K9o4VV6DTaBaMzd+EAKo55SPDBufVOr4jtdF8WGVJY9qVnPnAbI3I1B6j
-	 az8C/XSSDoXlk0EnunE7ZJ3R+6xP4/fSUta8T06VGRr3L26bEyCyEgUeHEmKkJvqJY
-	 QCn79g40aTQGCvCX4G87yiNCG8qTX/j27xasTOQDI3+ltHDG/v7cKPSGXGJ3zoNGhV
-	 2ifXr49y6ir3V6cAgvVl2jn8gM7jiebI63mAiexihe0CvGpwlzwxaRgcb8I+biJir5
-	 0d8v2Pn2zDhY20qsum4OrGqCQozh6WLpH9QUdJrmSftjGLHT2NAkoCBRW1fV21zxfN
-	 HX/j0k9hiLyeg==
-Message-ID: <f7bab5a5-76c9-4856-b314-49f19f54e229@kernel.org>
-Date: Thu, 13 Aug 2026 09:18:22 +0200
+	b=LQoW8GUUyQqsjsyMSCymikLCl0K/PpYaTCtOqE8smOcqa2DMyAwkHJlcjWeM1J3S+
+	 p7F7YTHDWjjGCL63HV5xpWRhAdsFHo0ku3RZp+dd7ECs9spcYVoBm+vyaaylpUF+PD
+	 H22qTcfvj4D5oNy89mJR0hbJjegsfONgrwhHmtzF+bBi+aGhDM9oGd0P2xzEDI2kou
+	 1E0HF2+DNVjJvv6cBBocYB1eb2SJm99VpExDuZUltvNNZREs8uFacDqc0tyd8Vhkzr
+	 RtyNl40a3quN8bMMpCL9V3232v/KWwZovejB57bX78GVNpy/nQciclUW97AqYJJX/W
+	 0jrUTV5cHJu/Q==
+Message-ID: <fc404670-7194-4ae9-8646-b543869738f3@kernel.org>
+Date: Thu, 13 Aug 2026 09:18:43 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,7 +60,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC V2 3/6] sh/mm: Stop using pte_ERROR()
+Subject: Re: [RFC V2 6/6] mm: Drop pxd_ERROR()
 To: Anshuman Khandual <anshuman.khandual@arm.com>
 Cc: linux-mm@kvack.org, akpm@linux-foundation.org,
  Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
@@ -78,9 +78,9 @@ Cc: linux-mm@kvack.org, akpm@linux-foundation.org,
  linux-um@lists.infradead.org, linux-arch@vger.kernel.org,
  linux-kernel@vger.kernel.org
 References: <20260811042119.3652929-1-anshuman.khandual@arm.com>
- <20260811042119.3652929-4-anshuman.khandual@arm.com>
- <28c24991-590f-4980-a92e-26c89288cae7@kernel.org>
- <azo46amarknescr2uotz77khpt6zakwex7sb52krsvakrzfdlq@qu2t3ahd4m5t>
+ <20260811042119.3652929-7-anshuman.khandual@arm.com>
+ <1fb9ed88-67d0-4ac1-878d-0dc8e1135d19@kernel.org>
+ <2ys7apbnfuj3ugfoqgbptgej3jjcyfpmdgbv6qbxupmwg6mefc@h5p33ua2nzlu>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -127,30 +127,37 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <azo46amarknescr2uotz77khpt6zakwex7sb52krsvakrzfdlq@qu2t3ahd4m5t>
+In-Reply-To: <2ys7apbnfuj3ugfoqgbptgej3jjcyfpmdgbv6qbxupmwg6mefc@h5p33ua2nzlu>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-
->>> +}
->>> +
->>>  static void set_pte_phys(unsigned long addr, unsigned long phys, pgprot_t prot)
->>>  {
->>>  	pte_t *pte;
->>>  
->>>  	pte = __get_pte_phys(addr);
->>>  	if (!pte_none(*pte)) {
->>> -		pte_ERROR(*pte);
->>> +		print_bad_pte(*pte);
+On 8/13/26 08:03, Anshuman Khandual wrote:
+> On Wed, Aug 12, 2026 at 01:33:14PM +0200, David Hildenbrand (Arm) wrote:
+>> On 8/11/26 06:21, Anshuman Khandual wrote:
+>>> pxd_ERROR() has been used in generic mm just to print the page table entry
+>>> in pxd_clear_bad() before clearing those out with pxd_clear() later. These
+>>> pxd_ERROR() macros have been provided by all platforms which basically did
+>>> the same thing.
+>>>
+>>> Make pxd_clear_bad() use recently added ptval_to_str() instead for printing
+>>> page table entries thus completely dropping dependency on platform provided
+>>> pxd_ERROR() macros which can then be dropped off. First move all required
+>>> helpers in core MM into a header file which could then be used else where.
+>>>
 >>
->> Maybe similar to my reply to patch #1, actually print something more useful than
->> just "bad pte" ? And possibly also just use ptval_to_str().
+>> It might make sense to split this patch further up to ease review:
+>>
+>> Patch 1) provide ptval_to_str() a header.
+>>
+>> Patch 2) Stop using pxd_ERROR() and friends in common code, converting to
+>> pteval_to_str()
+>>
+>> Patch 3) Remove now unused pxd_ERROR() and friends from arch code.
 > 
-> Probably #ifdef could be dropped here as ptval_to_str() should be able to
-> handle pte with two unsiged long elements in there i.e pte_high, pte_low
-> along with standard single unsiged long pte_low format.
+> Sure but the intiial platform changes which now use ptval_to_str() as well
+> will probably come after the Patch (2) but before the Patch (3).
 
-Yes, that should just work and clean this up!
+Exactly :)
 
 -- 
 Cheers,
