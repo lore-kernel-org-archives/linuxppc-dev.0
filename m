@@ -1,51 +1,62 @@
-Return-Path: <linuxppc-dev+bounces-25785-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25786-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EDA3DC5AC67
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Aug 2026 04:56:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 287B4C5B572
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Aug 2026 05:31:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hLCkS1rrDz2yXj;
-	Thu, 13 Aug 2026 14:56:32 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786596992;
-	cv=none; b=gyA9gNCl6ibuCXpQKwOoivHHlQS8xpg/EjwjITUG4RvYu2zqvuGA7ixVlZxd7vFIQldq/IfHItO8z5R6FRjMAaci2z6+CcF7EnsXdDxzoL0B7tuFzAS2S40hVLjU14epZjbmPerRPkrX/N9Es9eKMN/skfCSB6clHq5Sw5mAzF4Z+gY7koopvK1qOTxe5MPLhXuFT0/fZ/4j77gOaKzooTrHQpS1xJ/dq24P78pfLgwEqGLkGfWgSuPlsqyMYSIPuxqHY5qC1+ItI+oqU0UC/Sb6L37sWsOJ/SaYOEQHeNVpkPjw3UGFGA5DkBhLidZWduf2AVzS5jRX2dFDdht31g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hLDVp6rB3z2yXj;
+	Thu, 13 Aug 2026 15:31:30 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786599090;
+	cv=none; b=kbZ/atPbLqUpllkY30LB+5EXcq/a5A8mlBmvrwFHh3AaU+m+vnr073P+n9nAo+/4qSY4YirvVjT2I5R2Mg8t4Obq4Q54LcHtg9klGycE1Hl3o5s2QeBfMKOUVhA/z/qnVP3LsTh0biZtTbFK6KUPtZxtK99YXYuGQ8RMLJB4tJc3LY6FfrrbpsJdHfGCrLanvc2d3HiiDSot3KT6jKNoaCiR8tptKM7wWo815cugCEezfyj9ksJrxgPnRNy7NFlw5W3ZxDg1WO/DIlH1t5h6gwqb8T7kmfYG5YLz9IZWsyBJFk/E6LjIq+BoOzEVqxbNgTP9pw4KX8tnyHlWN1IVEQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786596992; c=relaxed/relaxed;
-	bh=oGTZ2lxO6SWnrcJg/cD07+Rv5kqoQMTTilWNtoVTqpo=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=lm7SOHzrnV9L9YqL55K6gI2Uzkf4YSkQvKtauqgPbfMpLMtZEuD8mYblVLEm1aWU0XUsVPUFV+Ayr2f7El7PzGYzBP0nhQSAcqh03XwJRgBhbEtBf5i8bqjnhYeYky2sUypMm/X1wJOYGYa8GOce0Iox5cbw1YWpWfyA8ngBe5Fj1qNYFYk62kT5gf1QCNnFFc+81B2RUb7ZyBKGiEd9X7MRXAj1CaZFPrejr0Kg/gd1H23EVtrezW2CSa6ycbztBQVviOiSemi3InrbS1qgaqb1EUysiyn2pOVGQWg0/EUD+nmzYe3kUYyP2Qt/YVD63CjQoRRWl4JUe1HHDbfpwQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kfGPSSgC; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1786599090; c=relaxed/relaxed;
+	bh=TRXTmCRot5QcI6faSmaQsj0x028gIwbwjB/VBK+GoXU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=h+NyV3SIXkwjmcitfOcDU9M6/xFv2Y2x16bWP2IkNu6iEIqOhb9faUwnxesNxjDBaLBoLdtID3SLdBLtWQ/Hp4b5tS0QDDe//D7LBa5AfTBvp1pjb36sv9oq0nZLaFlbfUbq51VK+eDzkkkBnDxgwAc/kFzNuAatx5L+Y2CQWxyTZYQyUt2/L/G5lEPCKh15ryZUjoAwswYXtzIaJo8ym+ZncGP91uaTFGWDERHeuJKDs81WpA/dD2oDtMd5+Z0RJtjKk5iqvNNRJwqYnSCjhEI+esqEHCANTTicKSi/1SGnJ/5yqpiX/nlgaJA/5EDAxMBxt+vqpoiysRi9PlRqqA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=SrKE60uI; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=anshuman.khandual@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kfGPSSgC;
+	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=SrKE60uI;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hLCkR03Wwz2yKD
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2026 14:56:30 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id AFEDB600AF;
-	Thu, 13 Aug 2026 04:56:27 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C78EA1F000E9;
-	Thu, 13 Aug 2026 04:56:24 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1786596987;
-	bh=oGTZ2lxO6SWnrcJg/cD07+Rv5kqoQMTTilWNtoVTqpo=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=kfGPSSgCQ190k/T7wCVbovGG/5MvL3mHscqlAwOcCT7tKWPOTaDF3DEUopRzoBS2M
-	 26VdL9s2TKz9dcDd/muDZS65Qwxs30ZujuT7uU2smyBKIdQ0dNvzXnsFJS68RWF4DP
-	 xyeJ6O3LFURYjxClQYbMwPdbCOjozJd+PZgNMoAyaKUEcHI64ULZ8j32T8UuMZ9Hs4
-	 7IMTQPpSHi9yM7wyhhRWR/W0hXdZ+IAKqrTihwatjMctNCYzmQEkNjSa22c88m8eEz
-	 EevZi1YTLDi1cZ4cU36c1psc0ZQWjoxX53Lty5EvPIsyckH48YuB1G1wgtRP3wca+x
-	 EEmZYOIn2Nj2Q==
-Message-ID: <0798e7f0-47fb-4cd1-9963-5b22f6564e03@kernel.org>
-Date: Thu, 13 Aug 2026 06:56:20 +0200
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=anshuman.khandual@arm.com; receiver=lists.ozlabs.org)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hLDVn463rz2yKD
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2026 15:31:28 +1000 (AEST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 1A97B14BF;
+	Wed, 12 Aug 2026 22:30:53 -0700 (PDT)
+Received: from localhost (a085714.arm.com [10.164.19.28])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 4B16D3F673;
+	Wed, 12 Aug 2026 22:30:56 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1786599057; bh=X+NKUVlHUgJ3ufurYsAc3c38TCMI9lTEYh/79PTkQxo=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=SrKE60uIrBnbijwn35bVkTCswfmosJsNxYIwRXmIDvDEYsUPL/XRaOQw4NTWq9+R8
+	 HTXCeA7afpFyAnPj1s0kOuibIeMGDLyy/hm/UQgt+OEqxfzPqBuw/BgmcxyZJ97m4P
+	 B3v5HjN56UBmNRhdGR3eqCOkRfuHaef7VMgKMqK0=
+Date: Thu, 13 Aug 2026 11:00:53 +0530
+From: Anshuman Khandual <anshuman.khandual@arm.com>
+To: "David Hildenbrand (Arm)" <david@kernel.org>
+Cc: linux-mm@kvack.org, akpm@linux-foundation.org, 
+	Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, 
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, 
+	Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, 
+	WANG Xuerui <kernel@xen0n.name>, linux-alpha@vger.kernel.org, linux-snps-arc@lists.infradead.org, 
+	linux-arm-kernel@lists.infradead.org, linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org, 
+	loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org, 
+	linux-openrisc@vger.kernel.org, linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, 
+	sparclinux@vger.kernel.org, linux-um@lists.infradead.org, linux-arch@vger.kernel.org, 
+	linux-kernel@vger.kernel.org
+Subject: Re: [RFC V2 3/6] sh/mm: Stop using pte_ERROR()
+Message-ID: <azo46amarknescr2uotz77khpt6zakwex7sb52krsvakrzfdlq@qu2t3ahd4m5t>
+References: <20260811042119.3652929-1-anshuman.khandual@arm.com>
+ <20260811042119.3652929-4-anshuman.khandual@arm.com>
+ <28c24991-590f-4980-a92e-26c89288cae7@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,83 +70,139 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] powerpc/pseries/pci: Fix misleading VF limit error
- message
-To: Jiangshan Yi <yijiangshan@kylinos.cn>, maddy@linux.ibm.com
-Cc: mpe@ellerman.id.au, npiggin@gmail.com, nayna@linux.ibm.com,
- gcwilson@linux.ibm.com, kees@kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, 13667453960@163.com
-References: <20260813035323.245229-1-yijiangshan@kylinos.cn>
-Content-Language: fr-FR
-From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-In-Reply-To: <20260813035323.245229-1-yijiangshan@kylinos.cn>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <28c24991-590f-4980-a92e-26c89288cae7@kernel.org>
 
-
-
-Le 13/08/2026 à 05:53, Jiangshan Yi a écrit :
-> [Vous ne recevez pas souvent de courriers de yijiangshan@kylinos.cn. Découvrez pourquoi ceci est important à https://aka.ms/LearnAboutSenderIdentification ]
+On Wed, Aug 12, 2026 at 01:28:23PM +0200, David Hildenbrand (Arm) wrote:
+> On 8/11/26 06:21, Anshuman Khandual wrote:
+> > Directly use pr_err() in set_pte_phys() and drop pte_ERROR() which helps in
+> > eventually dropping pte_ERROR() macro across the tree. In this new printing
+> > __FILE__ and __LINE__ has been dropped because they are always the same and
+> > don't really add any value.
+> > 
+> > Cc: Yoshinori Sato <ysato@users.sourceforge.jp>
+> > Cc: Rich Felker <dalias@libc.org>
+> > Cc: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
+> > Cc: linux-sh@vger.kernel.org
+> > Cc: linux-kernel@vger.kernel.org
+> > Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
+> > ---
+> >  arch/sh/include/asm/pgtable_32.h |  5 -----
+> >  arch/sh/mm/init.c                | 11 ++++++++++-
+> >  2 files changed, 10 insertions(+), 6 deletions(-)
+> > 
+> > diff --git a/arch/sh/include/asm/pgtable_32.h b/arch/sh/include/asm/pgtable_32.h
+> > index 5f51af18997b..c8eb9a7a4c4c 100644
+> > --- a/arch/sh/include/asm/pgtable_32.h
+> > +++ b/arch/sh/include/asm/pgtable_32.h
+> > @@ -401,14 +401,9 @@ static inline unsigned long pmd_page_vaddr(pmd_t pmd)
+> >  #define pmd_page(pmd)		(virt_to_page(pmd_val(pmd)))
+> >  
+> >  #ifdef CONFIG_X2TLB
+> > -#define pte_ERROR(e) \
+> > -	printk("%s:%d: bad pte %p(%08lx%08lx).\n", __FILE__, __LINE__, \
+> > -	       &(e), (e).pte_high, (e).pte_low)
+> >  #define pgd_ERROR(e) \
+> >  	printk("%s:%d: bad pgd %016llx.\n", __FILE__, __LINE__, pgd_val(e))
+> >  #else
+> > -#define pte_ERROR(e) \
+> > -	printk("%s:%d: bad pte %08lx.\n", __FILE__, __LINE__, pte_val(e))
+> >  #define pgd_ERROR(e) \
+> >  	printk("%s:%d: bad pgd %08lx.\n", __FILE__, __LINE__, pgd_val(e))
+> >  #endif
+> > diff --git a/arch/sh/mm/init.c b/arch/sh/mm/init.c
+> > index 110308bdef01..b3c7fd84ceb4 100644
+> > --- a/arch/sh/mm/init.c
+> > +++ b/arch/sh/mm/init.c
+> > @@ -78,13 +78,22 @@ static pte_t *__get_pte_phys(unsigned long addr)
+> >  	return pte_offset_kernel(pmd, addr);
+> >  }
+> >  
+> > +static void print_bad_pte(pte_t pte)
+> > +{
+> > +#ifdef CONFIG_X2TLB
+> > +	printk("bad pte %p(%08lx%08lx).\n", &pte, pte.pte_high, pte.pte_low);
+> > +#else
+> > +	printk("bad pte %08lx.\n", pte_val(pte));
+> > +#endif
 > 
-> When the number of requested VFs exceeds MAX_VFS_FOR_MAP_PE, the
-> message prints that limit but labels it "Configurable VFs". Print
-> each limit with its own message so both are reported when both are
-> exceeded.
+> I'd avoid that helper if possible, so we don't encourage new users.
 > 
-> Signed-off-by: Jiangshan Yi <yijiangshan@kylinos.cn>
-> ---
->   arch/powerpc/platforms/pseries/pci.c | 10 ++++++----
->   1 file changed, 6 insertions(+), 4 deletions(-)
+> Shouldn't we just switch to pr_err() right away?
+
+Yes we could move from printk() to pr_err(). The above helper
+just prevented an ugly #ifdef block inside if(!pte_none(*pte))
+conditional block, nothing more. Will just drop it then.
+
 > 
-> diff --git a/arch/powerpc/platforms/pseries/pci.c b/arch/powerpc/platforms/pseries/pci.c
-> index d11a64a086c1..1e1903bf3f1d 100644
-> --- a/arch/powerpc/platforms/pseries/pci.c
-> +++ b/arch/powerpc/platforms/pseries/pci.c
-> @@ -133,10 +133,12 @@ static int pseries_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
->          /* First integer stores max config */
->          max_config_vfs = of_read_number(&max_vfs[0], 1);
->          if (max_config_vfs < num_vfs || num_vfs > MAX_VFS_FOR_MAP_PE) {
-> -               dev_err(&pdev->dev,
-> -                       "Num VFs %x > %x Configurable VFs\n",
-> -                       num_vfs, (num_vfs > MAX_VFS_FOR_MAP_PE) ?
-> -                       MAX_VFS_FOR_MAP_PE : max_config_vfs);
-> +               if (max_config_vfs < num_vfs)
-> +                       dev_err(&pdev->dev, "Num VFs %x > %x Configurable VFs\n",
-> +                               num_vfs, max_config_vfs);
-> +               if (num_vfs > MAX_VFS_FOR_MAP_PE)
-> +                       dev_err(&pdev->dev, "Num VFs %x > %x PE mapping limit\n",
-> +                               num_vfs, MAX_VFS_FOR_MAP_PE);
->                  return -EINVAL;
->          }
+> > +}
+> > +
+> >  static void set_pte_phys(unsigned long addr, unsigned long phys, pgprot_t prot)
+> >  {
+> >  	pte_t *pte;
+> >  
+> >  	pte = __get_pte_phys(addr);
+> >  	if (!pte_none(*pte)) {
+> > -		pte_ERROR(*pte);
+> > +		print_bad_pte(*pte);
+> 
+> Maybe similar to my reply to patch #1, actually print something more useful than
+> just "bad pte" ? And possibly also just use ptval_to_str().
 
-What about the following instead, to avoid the double 'if' ?
+Probably #ifdef could be dropped here as ptval_to_str() should be able to
+handle pte with two unsiged long elements in there i.e pte_high, pte_low
+along with standard single unsiged long pte_low format.
 
-diff --git a/arch/powerpc/platforms/pseries/pci.c 
-b/arch/powerpc/platforms/pseries/pci.c
-index d11a64a086c1..6fc13f4a79a3 100644
---- a/arch/powerpc/platforms/pseries/pci.c
-+++ b/arch/powerpc/platforms/pseries/pci.c
-@@ -132,11 +132,14 @@ static int pseries_pci_sriov_enable(struct pci_dev 
-*pdev, u16 num_vfs)
+#ifdef CONFIG_X2TLB
+typedef struct { unsigned long pte_low, pte_high; } pte_t;
+#define pte_val(x) \
+        ((x).pte_low | ((unsigned long long)(x).pte_high << 32))
+#define __pte(x) \
+        ({ pte_t __pte = {(x), ((unsigned long long)(x)) >> 32}; __pte; })
+#else
+typedef struct { unsigned long pte_low; } pte_t;
+#define pte_val(x)      ((x).pte_low)
+#define __pte(x)        ((pte_t) { (x) } )
+#endif
 
-  	/* First integer stores max config */
-  	max_config_vfs = of_read_number(&max_vfs[0], 1);
--	if (max_config_vfs < num_vfs || num_vfs > MAX_VFS_FOR_MAP_PE) {
--		dev_err(&pdev->dev,
--			"Num VFs %x > %x Configurable VFs\n",
--			num_vfs, (num_vfs > MAX_VFS_FOR_MAP_PE) ?
--			MAX_VFS_FOR_MAP_PE : max_config_vfs);
-+	if (max_config_vfs < num_vfs) {
-+		dev_err(&pdev->dev, "Num VFs %x > %x Configurable VFs\n",
-+			num_vfs, max_config_vfs);
-+		return -EINVAL;
-+	}
-+	if (num_vfs > MAX_VFS_FOR_MAP_PE) {
-+		dev_err(&pdev->dev, "Num VFs %x > %x PE mapping limit\n",
-+			num_vfs, MAX_VFS_FOR_MAP_PE);
-  		return -EINVAL;
-  	}
+static void set_pte_phys(unsigned long addr, unsigned long phys, pgprot_t prot)
+{
+        pte_t *pte;
 
+        pte = __get_pte_phys(addr);
+        if (!pte_none(*pte)) {
+                char str[PTVAL_STR_MAX];
 
+                ptval_to_str(str, pte_val(*pte));
+                pr_err("unexpected set PTE at %lx in set_pte_phys: bad pte %p(%s).\n",
+                        addr, pte, str);
+                return;
+        }
+
+        set_pte(pte, pfn_pte(phys >> PAGE_SHIFT, prot));
+        local_flush_tlb_one(get_asid(), addr);
+
+        if (pgprot_val(prot) & _PAGE_WIRED)
+                tlb_wire_entry(NULL, addr, *pte);
+}
+
+But if this does not work revert back printing both pte formats separately
+like before.
+
+#ifdef CONFIG_X2TLB
+               pr_err("unexpected set PTE at %lx in set_pte_phys: bad pte %p(%08lx%08lx).\n",
+                       addr, pte, pte->pte_high, pte->pte_low);
+#else
+               char str[PTVAL_STR_MAX];
+
+               ptval_to_str(str, pte_val(*pte));
+               pr_err("unexpected set PTE at %lx in set_pte_phys: bad pte %s.\n", addr, str);
+#endif
+
+> 
+> -- 
+> Cheers,
+> 
+> David
 
