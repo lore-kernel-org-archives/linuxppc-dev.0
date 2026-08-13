@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-25796-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25797-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0A542C5B572
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Aug 2026 06:42:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 02230C5B572
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Aug 2026 06:43:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hLG5C3gYnz2ySS;
-	Thu, 13 Aug 2026 16:42:55 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786603375;
-	cv=none; b=D8Q3bqYxKIut1Zo1/QcgtTnEQAdn0Ju54FGIGQ5338y+zIF/KK99UtxCqI+cG4p1cV4+jbMY6rZ05Ln1ujEo/xUrBbvxziJmfjtEHOKath3tPhipuX5VSOei0qDKOVGp3Sl58OWtRznxLPAhd7HbKhTEcPhNIAzpKfRPm+mhgj2VUhmI6WzB2T3Tod3/wjlJo0HuaUomKQqmAOU1LLhQE/j+0rFWP1E10O3KBBy6p8dAzksurtzJIBJlXXQz//dWKLVie8afAq2N65A/mQwM2zAYUteCHLTYnEdsECihcRY5c4PQQQGckEoOG+O8yh9JVHioZF6bNG3PF0yFUoLdPA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hLG6F2d5Wz2ySS;
+	Thu, 13 Aug 2026 16:43:49 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786603429;
+	cv=none; b=fu4ZZtotIUFroFpXTDAqEGOkhV2nydoHOIF6mxyESPpNM03AfV77uWKMIQJAKPBFOtLQyMrqCnFAsbHclFw9VvY3oQRacqFNv/hRuFi44xtNrl43PcSTkYX/t+x8XP4sS3Z233Dzp9zgYEllVDoTuSsyJ58NSiJMICpIMkO5fkkZ6k7Xmzcwk0UPCDSUWUIuwWtSxDXYJnWQN689xIVzuNpD8jUnh4ZGTtCmMIaibHOp7TKPiJJDdoRmouOUGSaRCQIop/mS66YBVkYA30OV3mEPWJeeqSALN/L/gDeq5NxzHaTbmpIwWBAnrNU9106Hjnvoxogd6S64sOd/0wQO/A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786603375; c=relaxed/relaxed;
-	bh=uaSzHWaOFN72EaZfiE1M78+a2f7rwDazuDou8bxYOf4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=ZDxMY7oVu+f8JbwFlwG9B3ATDDw/vYTL5MV6Rpb0SPDDoCWxwjjWXlCJZESe0aZ5hjj5rJGEBA0mTfjTOIOCqWRqzsk7f7Tve41iRqD87FD4dmwfIioXpWBfhong6dFT/F/NcND9Ck4i0eNjHyNV9ehpSRGy34y4IXm6sAceVgpbOsgOF4vhVT0J3HrOxiiFQPQC8qD1K9VAFsbEtAZ7L1RXjIuKc6pxeM6/ErKN4FWRxy7Z2N3AnbinvgB2O65uhDcQku0XZ7pfkJ2bqPtIAcusLwPXbNJZliilVKpQXDwS0DyNs9Kn6GCTSs4YBLF1x1ekvWjN7cK+1Ajqv3wZVQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Fm7XyDHp; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1786603429; c=relaxed/relaxed;
+	bh=XFgKbxGCajP3coDmnIYjkiHQjHBbDuCyITOEdlOzPWE=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=ICihzTStVi9wIuBNkWFOjQ6eyyDgVdGBTwaDINBtHuPYgBgNmUykteTQjsSI0CoA2VklHROkDdTsNsX2mAn+0nESnwvbvPGtQyZQVwg6A36y/nVgtOaKQtCZ46538MYxGRqdyZ2S/wc0SUHclyDN0fNf68Ov6Z85pK7/DogO4OLz2QQ1MGFKAg3UocuZwa4Pjg0V6snKTXn823FKRj0MnscKCx0j1HW0mcAEXuJOMJK4u5yVjkfNk00BYnUyOdh6OHPpYJL7heHmhvcCtLncqS/vFFkrvSybzuzEaY6ij4Q8E7Q8IhXbsQrZjiYj8Ds9CIOgEIEr9rJmIqdc0ggriw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TeMnT1w1; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Fm7XyDHp;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TeMnT1w1;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hLG5B3QJVz2y0B
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2026 16:42:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hLG6D4xVjz2y0B
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2026 16:43:48 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 3FAEE41B3D;
-	Thu, 13 Aug 2026 06:42:49 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C78651F00A3E;
-	Thu, 13 Aug 2026 06:42:46 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 2E2DC600AD;
+	Thu, 13 Aug 2026 06:43:46 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 253F81F00A3A;
+	Thu, 13 Aug 2026 06:43:42 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1786603369;
-	bh=uaSzHWaOFN72EaZfiE1M78+a2f7rwDazuDou8bxYOf4=;
-	h=Date:Subject:To:References:From:In-Reply-To;
-	b=Fm7XyDHp2m+zUWtDRROYbmG87+u4zgdweTEKGAH1K85yvgRQMyMxo4QaVfF9mkFQZ
-	 MDN7QS83XSckq7+cVR/1DHoYDH7BEg68+ikFk5FGHg+cczKscJAZ9oycWhhInYY1Y+
-	 CDd+Mj1mJCdjTT4e8fD9djNKcbyCnOYDmuHbNYeyDhEtBNGhzLyq4WDfVB6P1jXPn1
-	 X1QssyhHKZ6A4HNp7LSd3PO7BsOKo+zOYlSpzF3M9mNBI7+2beh3wCeAB3Yoz4cr5t
-	 IjPBckTWA+SQNsWHWdQLJf2vaDgX51c4ej60yixuM+dDDEAohBufvhGt7g/oMUBKxf
-	 r6/PmsDudV/fw==
-Message-ID: <4e0d3ccc-04b2-41a7-b498-a7f55c18d596@kernel.org>
-Date: Thu, 13 Aug 2026 08:42:42 +0200
+	s=k20260515; t=1786603425;
+	bh=XFgKbxGCajP3coDmnIYjkiHQjHBbDuCyITOEdlOzPWE=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=TeMnT1w1ZOfCKqhC28oZV/K31yfax4HzC23rO12QjLHxAgapoZX/0bdkgVXoDeNrs
+	 V+mnJ8AXxwP5Pqyza+qmSXlWpv1o8ZStUFq2BNpD8Q8TTE5bJabWc6GQi4ta9Sqn7a
+	 JeaHFvymVHFDCQDsTW2tnn7C523ebHSi9BANynD45Ljh1HN3zxyt9kxnexDuXMMGvg
+	 50CKQORLSEg1qxp8UK19UflEWJpax63AnKqf0kurzZ78XTMeJK7Xr7P9gSzrAJ8fHx
+	 xZlRJAnny8uinUMmfxq+lzia1EaoZYrR8gBVAlu/LOszrxry2pe5cLYujLbXCvjznC
+	 Ku4Y5vWEU0mDw==
+Message-ID: <94e0d202-ad52-475c-89c6-69f7b77e0ccf@kernel.org>
+Date: Thu, 13 Aug 2026 08:43:39 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,106 +60,63 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] powerpc/entry: Use hard_irq_disable() in
- arch_interrupt_exit_prepare()
-To: Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
- "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>, maddy@linux.ibm.com,
- mpe@ellerman.id.au, npiggin@gmail.com, sshegde@linux.ibm.com,
- mchauras@linux.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-References: <20260812152035.1661781-1-mkchauras@gmail.com>
- <4882a3cc-30f4-477e-8126-0c244b4a5072@linux.ibm.com>
+Subject: Re: [PATCH v2] powerpc/pseries/pci: Fix misleading VF limit error
+ message
+To: Jiangshan Yi <yijiangshan@kylinos.cn>, maddy@linux.ibm.com
+Cc: mpe@ellerman.id.au, npiggin@gmail.com, nayna@linux.ibm.com,
+ gcwilson@linux.ibm.com, kees@kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, 13667453960@163.com
+References: <20260813063731.399598-1-yijiangshan@kylinos.cn>
 Content-Language: fr-FR
 From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-In-Reply-To: <4882a3cc-30f4-477e-8126-0c244b4a5072@linux.ibm.com>
+In-Reply-To: <20260813063731.399598-1-yijiangshan@kylinos.cn>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
 
 
-Le 13/08/2026 à 08:36, Venkat Rao Bagalkote a écrit :
+Le 13/08/2026 à 08:37, Jiangshan Yi a écrit :
+> When the number of requested VFs exceeds MAX_VFS_FOR_MAP_PE, the
+> message prints that limit but labels it "Configurable VFs". Report
+> the configurable VF limit and the PE mapping limit with separate
+> error messages.
 > 
-> On 12/08/26 8:50 pm, Mukesh Kumar Chaurasiya (IBM) wrote:
->> commit 334f3f6d7a16 ("powerpc/entry: Disable interrupts before 
->> irqentry_exit")
->> fixed a BUG in preempt_schedule_irq() by calling local_irq_disable()
->> unconditionally in arch_interrupt_exit_prepare() before irqentry_exit().
->> The fix is correct in intent but uses the wrong primitive for PPC64.
->>
->> On PPC64, local_irq_disable() only sets the soft-mask
->> (irq_soft_mask = IRQS_DISABLED). It does not set PACA_IRQ_HARD_DIS in
->> irq_happened and does not clear MSR[EE].
->>
->> This causes a continuous WARN_ON boot hang on Power11 pSeries LPARs
->> using the dedicated-cede cpuidle path. When the CPU wakes from H_CEDE,
->> interrupt_exit_kernel_prepare() calls replay_soft_interrupts(), which
->> dispatches pending async handlers (timer_interrupt, do_IRQ) using the
->> DEFINE_INTERRUPT_HANDLER_ASYNC macro. That macro calls
->> arch_interrupt_async_exit_prepare() -> arch_interrupt_exit_prepare()
->> before irqentry_exit(). With local_irq_disable(), PACA_IRQ_HARD_DIS
->> is not set, but next_interrupt() unconditionally asserts it:
->>
->>    WARN_ON(!(local_paca->irq_happened & PACA_IRQ_HARD_DIS));
->>
->> This fires on every replayed interrupt, looping indefinitely and
->> preventing boot completion.
->>
->> Fix this by replacing local_irq_disable() with hard_irq_disable().
->> On PPC64, hard_irq_disable() sets irq_soft_mask to IRQS_ALL_DISABLED,
->> sets PACA_IRQ_HARD_DIS in irq_happened, and clears MSR[EE] — satisfying
->> all of:
->>
->>    - lockdep_assert_irqs_disabled() in irqentry_exit_to_kernel_mode()
->>    - next_interrupt()'s WARN_ON(!(irq_happened & PACA_IRQ_HARD_DIS))
->>    - preempt_schedule_irq()'s BUG_ON(!irqs_disabled())
->>
->> On PPC32/non-64, hard_irq_disable() is equivalent to local_irq_disable(),
->> so there is no regression on those platforms.
->>
->> Fixes: 334f3f6d7a16 ("powerpc/entry: Disable interrupts before 
->> irqentry_exit")
->> Reported-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
->> Closes: https://eur01.safelinks.protection.outlook.com/? 
->> url=https%3A%2F%2Flore.kernel.org%2Fall%2F6f9bfb0f-b14c-468e-bb9f- 
->> c157d120d0dc%40linux.ibm.com%2F&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7Cf780f6a2abcf425c875808def90533e4%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639221997929524168%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=kOer%2B610LkQs0ZKBn%2FutIB6j1bMoFasK4DmX4AEWOXA%3D&reserved=0
->> Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
->> ---
-> 
-> 
-> Tested this, and it fixes the reported issue.
-> 
-> Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+> Suggested-by: Christophe Leroy <chleroy@kernel.org>
+> Signed-off-by: Jiangshan Yi <yijiangshan@kylinos.cn>
 
-Didn't you say yesterday [1] that the change doesn't fix the issue ? Did 
-I miss something ?
+reviewed-by: Christophe Leroy <chleroy@kernel.org>
 
-[1] 
-https://lore.kernel.org/all/2f7e6c34-7258-4b20-a38e-cedebccb835f@linux.ibm.com/
-
-
+> ---
+> v2:
+> - rework as suggested by Christophe Leroy: split the two limit checks
+>    into separate blocks, each with its own dev_err and error return
 > 
+>   arch/powerpc/platforms/pseries/pci.c | 13 ++++++++-----
+>   1 file changed, 8 insertions(+), 5 deletions(-)
 > 
-> Regards,
-> 
-> Venkat.
-> 
-> 
->>   arch/powerpc/include/asm/entry-common.h | 2 +-
->>   1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> diff --git a/arch/powerpc/include/asm/entry-common.h b/arch/powerpc/ 
->> include/asm/entry-common.h
->> index c5adb5006361..de64389b0815 100644
->> --- a/arch/powerpc/include/asm/entry-common.h
->> +++ b/arch/powerpc/include/asm/entry-common.h
->> @@ -270,7 +270,7 @@ static inline void 
->> arch_interrupt_exit_prepare(struct pt_regs *regs)
->>       }
->>       /* irqentry_exit expects to be called with interrupts disabled */
->> -    local_irq_disable();
->> +    hard_irq_disable();
->>   }
->>   static inline void arch_interrupt_async_enter_prepare(struct pt_regs 
->> *regs)
+> diff --git a/arch/powerpc/platforms/pseries/pci.c b/arch/powerpc/platforms/pseries/pci.c
+> index d11a64a086c1..6fc13f4a79a3 100644
+> --- a/arch/powerpc/platforms/pseries/pci.c
+> +++ b/arch/powerpc/platforms/pseries/pci.c
+> @@ -132,11 +132,14 @@ static int pseries_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
+>   
+>   	/* First integer stores max config */
+>   	max_config_vfs = of_read_number(&max_vfs[0], 1);
+> -	if (max_config_vfs < num_vfs || num_vfs > MAX_VFS_FOR_MAP_PE) {
+> -		dev_err(&pdev->dev,
+> -			"Num VFs %x > %x Configurable VFs\n",
+> -			num_vfs, (num_vfs > MAX_VFS_FOR_MAP_PE) ?
+> -			MAX_VFS_FOR_MAP_PE : max_config_vfs);
+> +	if (max_config_vfs < num_vfs) {
+> +		dev_err(&pdev->dev, "Num VFs %x > %x Configurable VFs\n",
+> +			num_vfs, max_config_vfs);
+> +		return -EINVAL;
+> +	}
+> +	if (num_vfs > MAX_VFS_FOR_MAP_PE) {
+> +		dev_err(&pdev->dev, "Num VFs %x > %x PE mapping limit\n",
+> +			num_vfs, MAX_VFS_FOR_MAP_PE);
+>   		return -EINVAL;
+>   	}
+>   
 
 
