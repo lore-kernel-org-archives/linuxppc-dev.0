@@ -1,62 +1,63 @@
-Return-Path: <linuxppc-dev+bounces-25789-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25790-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CD7EAC5AC67
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Aug 2026 06:04:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 76887C5CFEB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Aug 2026 06:06:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hLFDJ68BZz2y1Y;
-	Thu, 13 Aug 2026 16:04:00 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786601040;
-	cv=none; b=St+zUlWpCa12Ufe6sBjU+SWj+2FbFDGqC8E1AVciwGTfWoidl0wOnYYCRgqFCv0rbFMVeU/SZhQuhpDQjdpV5vIxwRrTR2r0XrsUx1DTBnNFfNo6tuix1dkVyHuZXROztaH+xlg3U106ReR91w8wqn/NJTq4scbKktoNMSBDgdUML8xkKdYQbZA6vfRXqtHwgLiIohWk1vCOeOuGPGOJHBmX83M5D/p1oVfpKi3L9hUSp/BsxUEC/7KVxJWVdDE6LL632nxIB2ByPYdMRM+5qkyBHPJ5iEeMW95/kOAfCR+Lol1JORBcGpp+Wrj2VfjKp2oDTsmyFvSecV4fddCZ5w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hLFHT5msZz2ybQ;
+	Thu, 13 Aug 2026 16:06:45 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786601205;
+	cv=none; b=aqprj+94/kj17oc4fkOGf1k2UhNlpIB55RB53pgPSVC2Wuw2Yj6eXWWwTJXX2xFRLskMArhynqQcVzdGwrovpRHn1NvZTOcC96QIPvjclRe6wdA6pNYj7CGptQISLctpGu9SxHFq8LRylDQHg3tae7S7XPCOqoVlkRAi3ZgCwBu7ilb+HUyOQX6t/PNnzWXA+EqdTEa+gb15YHfBH16LA3DD9dXqi+RdRxRbPSc56ADbSwbJxOSTcXG42uFXTdjBId+6CiYhwi4GlHybl1e9oSXsRPq6Tx+5412n4jgh/rzGYGO6tO16r19aCVNfZlsuxp7mBh3Uef28iAUt5B/A0w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786601040; c=relaxed/relaxed;
-	bh=Ns4GoDNqcj/9AON25YCP9GahdV/I2v0GEJ5Utg1AonY=;
+	t=1786601205; c=relaxed/relaxed;
+	bh=2bRU4db2xtFcGOhDIJOKkQ4ShBGU9e2BMEUZzod3loM=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=TqBXEfJZLKvvpiItnwk6jUOVdP9Bujq3hpSf/ZbS4E7knQD8EWybrjMDIPF4YwHRhm354iMPxWUbVstHhYcSI4G8/as3F+3UCJk6P4mv0hA9P57KnwlAVKufMG9PTrSYefmtlA2WzWAQUWllnBzmp6/+GswWwG/E6GM1L23XyO8KplyiUKmG1sAlT1wUkSqnCvAjyns0gjv5MENXMwOIT+FQ6D3P95OqWnPnFAE7zT3u/k0qahN71L1NIUDdVEAkBSguW+OK4P/HRJNjmKUJ0EnvMh6lHu4xslmffh+IuX+kLM+wtKHmbRwvN9sjns1jJjzSBwp762pEdnT4Gh6JUA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=FCmrH71a; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=anshuman.khandual@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=Bq4LBHFWhdhdLVo85K421B1XMlO7em6ABqvOu13OQGMFSquZMLjT+pwRivx2TaTIZCw/L01JqiG1m568/Tt1VczRLITPpo3wlt2IJxpoGtXieUxGcWwXDvm+mlJ/IEngVAOEdbO1baCtqIEo7NW4AUJSDvTYc2GBPwIpnRFMHDmgWhp6ghrP/i5hMLhLBVsMXvD5+CPdDiE+HQiTRMJ6e5VJlGuiLwSu1JtmCH18aa0nwVjU+WKS/Gw4/sUCz+QrhzsO5z0PcjxYNbCa+q2q9/mToBt1buGu23rRB66/Ww9xAmcH3EbE7yPQj2paoiTnDpAkhbl+5NH8LBgkn+/iPQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WepnVrP8; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=mani@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=FCmrH71a;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WepnVrP8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=anshuman.khandual@arm.com; receiver=lists.ozlabs.org)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hLFDH3JKhz2y0B
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2026 16:03:58 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 27767153B;
-	Wed, 12 Aug 2026 23:03:23 -0700 (PDT)
-Received: from localhost (a085714.arm.com [10.164.19.28])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 5B05F3F632;
-	Wed, 12 Aug 2026 23:03:26 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1786601007; bh=urvzQP14xjouAFJaMxm1KkmF2FK+YkPxtlg+0tmM3dk=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=FCmrH71a8GibDaT/4TzLpR5i+19TJkV8Y7yUEveP9J/tnpZ41lNWsq0jvpmBepdWh
-	 3M9emmtusN3STsiD2oIUPfk8jrriw7cyAgWrBFzUsYOHmzUnSzzBNBDES9ShVkwlc0
-	 +Kv5zwJCzOVfLHIcWwsl8hCWFk4UC3OStKBDaUuE=
-Date: Thu, 13 Aug 2026 11:33:23 +0530
-From: Anshuman Khandual <anshuman.khandual@arm.com>
-To: "David Hildenbrand (Arm)" <david@kernel.org>
-Cc: linux-mm@kvack.org, akpm@linux-foundation.org, 
-	Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, 
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, 
-	Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, 
-	WANG Xuerui <kernel@xen0n.name>, linux-alpha@vger.kernel.org, linux-snps-arc@lists.infradead.org, 
-	linux-arm-kernel@lists.infradead.org, linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org, 
-	loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org, 
-	linux-openrisc@vger.kernel.org, linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, 
-	sparclinux@vger.kernel.org, linux-um@lists.infradead.org, linux-arch@vger.kernel.org, 
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=mani@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hLFHR4K48z2yXj
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2026 16:06:43 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 2042F41649;
+	Thu, 13 Aug 2026 06:06:41 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2E2EA1F000E9;
+	Thu, 13 Aug 2026 06:06:35 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1786601201;
+	bh=2bRU4db2xtFcGOhDIJOKkQ4ShBGU9e2BMEUZzod3loM=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=WepnVrP8FwDHztG5a+pL5+vdR+Cg8T4y90PcZBh/rlnZNWLRLfnDWWRxVJvS0+crZ
+	 lh7fpDVlbqh/6qvpmhacKyRBEAArsqvbDDRNZsTZ84+InSYC+LQE/2ApqTgrggsNhH
+	 YhxB5J0+AVZSQsk4LoO4+RjU9GDi4VJ7LjJUaYY3sLwr0c5vz/7/bRPur4asCQDR1r
+	 cNVYLKjWL4z4LWF+Z0JghcCDVi9WN26c7VGLvxJXgFSrnHhF5fGl1dbGiWnRcm8sU1
+	 SI1/W2qha+159VhpFETiKxPs27GXkyYyN7ajSyXNSy7VOA36iIT+UpNy1PI2kQZa1m
+	 WhxFEX5ERcXyQ==
+Date: Thu, 13 Aug 2026 08:06:31 +0200
+From: Manivannan Sadhasivam <mani@kernel.org>
+To: Hans Zhang <18255117159@163.com>
+Cc: bhelgaas@google.com, lpieralisi@kernel.org, kwilczynski@kernel.org, 
+	jingoohan1@gmail.com, imx@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, 
+	linux-amlogic@lists.infradead.org, linux-rockchip@lists.infradead.org, 
+	linux-arm-msm@vger.kernel.org, sophgo@lists.linux.dev, linux-riscv@lists.infradead.org, 
+	spacemit@lists.linux.dev, linux-tegra@vger.kernel.org, linux-pci@vger.kernel.org, 
 	linux-kernel@vger.kernel.org
-Subject: Re: [RFC V2 6/6] mm: Drop pxd_ERROR()
-Message-ID: <2ys7apbnfuj3ugfoqgbptgej3jjcyfpmdgbv6qbxupmwg6mefc@h5p33ua2nzlu>
-References: <20260811042119.3652929-1-anshuman.khandual@arm.com>
- <20260811042119.3652929-7-anshuman.khandual@arm.com>
- <1fb9ed88-67d0-4ac1-878d-0dc8e1135d19@kernel.org>
+Subject: Re: [PATCH v3 02/16] PCI: dwc: Use cached PCIe capability offset in
+ core
+Message-ID: <ps2qzgcb5lixkoqz2xbofdurkgmsiojg7e5ueqfdhyissqvzf2@tuderrjgzg6b>
+References: <20260720150619.24733-1-18255117159@163.com>
+ <20260720150619.24733-3-18255117159@163.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -70,74 +71,50 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <1fb9ed88-67d0-4ac1-878d-0dc8e1135d19@kernel.org>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20260720150619.24733-3-18255117159@163.com>
 
-On Wed, Aug 12, 2026 at 01:33:14PM +0200, David Hildenbrand (Arm) wrote:
-> On 8/11/26 06:21, Anshuman Khandual wrote:
-> > pxd_ERROR() has been used in generic mm just to print the page table entry
-> > in pxd_clear_bad() before clearing those out with pxd_clear() later. These
-> > pxd_ERROR() macros have been provided by all platforms which basically did
-> > the same thing.
-> > 
-> > Make pxd_clear_bad() use recently added ptval_to_str() instead for printing
-> > page table entries thus completely dropping dependency on platform provided
-> > pxd_ERROR() macros which can then be dropped off. First move all required
-> > helpers in core MM into a header file which could then be used else where.
-> > 
+On Mon, Jul 20, 2026 at 11:06:05PM +0800, Hans Zhang wrote:
+> Modify the DWC core functions to use the cached pcie_cap offset instead
+> of calling dw_pcie_find_capability() each time.
 > 
-> It might make sense to split this patch further up to ease review:
+> In the DWC core, dw_pcie_find_capability() is called at several locations:
+> - dw_pcie_ep_init_non_sticky_registers()
+> - dw_pcie_wait_for_link()
+> - dw_pcie_link_set_max_speed()
+> - dw_pcie_link_get_max_link_width()
+> - dw_pcie_link_set_max_link_width()
 > 
-> Patch 1) provide ptval_to_str() a header.
-> 
-> Patch 2) Stop using pxd_ERROR() and friends in common code, converting to
-> pteval_to_str()
-> 
-> Patch 3) Remove now unused pxd_ERROR() and friends from arch code.
+> The cached offset is initialized after hardware is ready:
+> - In host mode: dw_pcie_host_init() calls pp->ops->host_init() (enables
+>   clocks/resets), then dw_pcie_get_pcie_cap() caches the offset.
+> - In endpoint mode: the core no longer caches automatically. Instead,
+>   drivers must call dw_pcie_get_pcie_cap() after hardware is enabled
+>   (e.g., after PERST# deassert).
 
-Sure but the intiial platform changes which now use ptval_to_str() as well
-will probably come after the Patch (2) but before the Patch (3).
+But you didn't modify all DWC EP drivers to call dw_pcie_get_pcie_cap(). This
+can lead to pcie_cap being 0.
 
+> dw_pcie_ep_init_non_sticky_registers()
+>   is called after that point, so it can safely use pci->pcie_cap.
 > 
-> ...
-> > +static inline void
-> > +ptval_bytes_to_hex_str(char *buf, size_t buf_size, const void *entry, size_t entry_size)
-> > +{
-> > +	if (WARN_ON_ONCE(buf_size < entry_size * 2 + 1)) {
-> > +		snprintf(buf, buf_size, "overflow");
-> > +		return;
-> > +	}
-> > +
-> > +	switch (entry_size) {
-> > +	case sizeof(u32):
-> > +		snprintf(buf, buf_size, "%08x", *(const u32 *)entry);
-> > +		break;
-> > +	case sizeof(u64):
-> > +		snprintf(buf, buf_size, "%016llx", *(const u64 *)entry);
-> > +		break;
-> > +#if defined(__SIZEOF_INT128__)
-> > +	case sizeof(u128):
-> > +		snprintf(buf, buf_size, "%016llx%016llx",
-> > +			 (unsigned long long)(*(const u128 *)entry >> 64),
-> > +			 (unsigned long long)*(const u128 *)entry);
-> > +		break;
-> > +#endif
-> > +	default:
-> > +		snprintf(buf, buf_size, "unsupported");
-> > +		break;
-> > +	}
-> > +}
-> 
-> Why not leave ptval_bytes_to_hex_str() in the C file for less churn for now?
+> dw_pcie_ep_init_non_sticky_registers() now assumes pci->pcie_cap is
+> valid. if not, it prints a warning and skips the operation.
 
-Agreed - will change.
+Where is this warning printed?
 
-> 
-> -- 
-> Cheers,
-> 
-> David
+These are already pointed out by Sashiko. You should go really go through all of
+them (not the pre-existing issues) and comment whether the issues are valid or
+false positive. For a series touching many controller drivers, this is necessary
+to avoid introducing regressions.
 
-Thanks for the review.
+I'm not going to merge this series until you fix the real issues Sashiko
+reported or mark them as false positive if not valid.
+
+- Mani
+
+-- 
+மணிவண்ணன் சதாசிவம்
 
