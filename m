@@ -1,63 +1,72 @@
-Return-Path: <linuxppc-dev+bounces-25790-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25791-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 76887C5CFEB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Aug 2026 06:06:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D48F5C5B572
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Aug 2026 06:11:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hLFHT5msZz2ybQ;
-	Thu, 13 Aug 2026 16:06:45 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786601205;
-	cv=none; b=aqprj+94/kj17oc4fkOGf1k2UhNlpIB55RB53pgPSVC2Wuw2Yj6eXWWwTJXX2xFRLskMArhynqQcVzdGwrovpRHn1NvZTOcC96QIPvjclRe6wdA6pNYj7CGptQISLctpGu9SxHFq8LRylDQHg3tae7S7XPCOqoVlkRAi3ZgCwBu7ilb+HUyOQX6t/PNnzWXA+EqdTEa+gb15YHfBH16LA3DD9dXqi+RdRxRbPSc56ADbSwbJxOSTcXG42uFXTdjBId+6CiYhwi4GlHybl1e9oSXsRPq6Tx+5412n4jgh/rzGYGO6tO16r19aCVNfZlsuxp7mBh3Uef28iAUt5B/A0w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hLFP40GN1z2y1Y;
+	Thu, 13 Aug 2026 16:11:36 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786601495;
+	cv=none; b=PimZWA5ookZl3gvI+fw1fLUNEGpFBxJLH+oYeRBB3aEdlOFe0ML+hRmqDuEps6DQgCFIAJtdP4hze9Yl/DSN/WvjkJ8tprsDzFq2ToIsu9tGLPuapRcALmRPvhGYmNdgbmyWhbtncR96OrMHggBAh9DdZNab9uFpRgcHGK0DvkqHolvEhWbX+NauGMC1Ged4rwmmVvK3A4Yk+k7XEM4s5owoh6qN4znYpYxq/AKNrd/KZpm/GYfLD6UHQIngCmveY4pk0dkZ+sTU3Is0kKk8u/riB4SCt/O5NLZ7PlvLFp+sphN6ctMZMAieguEM3d3KjRnmYAImXetjoFACm2Y3lg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786601205; c=relaxed/relaxed;
-	bh=2bRU4db2xtFcGOhDIJOKkQ4ShBGU9e2BMEUZzod3loM=;
+	t=1786601495; c=relaxed/relaxed;
+	bh=DiMpXMq2kKaP+/B/szyplC/vH/8xNTofLUmS8swihFA=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Bq4LBHFWhdhdLVo85K421B1XMlO7em6ABqvOu13OQGMFSquZMLjT+pwRivx2TaTIZCw/L01JqiG1m568/Tt1VczRLITPpo3wlt2IJxpoGtXieUxGcWwXDvm+mlJ/IEngVAOEdbO1baCtqIEo7NW4AUJSDvTYc2GBPwIpnRFMHDmgWhp6ghrP/i5hMLhLBVsMXvD5+CPdDiE+HQiTRMJ6e5VJlGuiLwSu1JtmCH18aa0nwVjU+WKS/Gw4/sUCz+QrhzsO5z0PcjxYNbCa+q2q9/mToBt1buGu23rRB66/Ww9xAmcH3EbE7yPQj2paoiTnDpAkhbl+5NH8LBgkn+/iPQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WepnVrP8; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=mani@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=cKAzxbD6MBpHDHx8e83ylZP4q0RYo6BoIG2kbwE9LMsepiQhsoP19VIPkzEWIFMhPGH43VhjDnGpdNm27at5ShCjZfW0Wem5NjNNoYLzroD/d0mMxgo6A1BQvJnLVSiz1ApTNaQJkYqAj0AzB/f2o6yhKGA20p6EyesFQsJnGsMJoR7Huu1kLlRjb7nmCJ/03tJ6+n/YOmO3XwlqiYl4fuFr2efHBF/Kdo9IKgOCl8xBX36pNsoj/fV7V2L12UEBTXy9uw0kJ9Z1xfR4jHFZ2iaQs2te726yYzlKsZlkUrAGHXwZeCogL7rkgedFH2Sxf7BcoTwMo9YRKRnhYEFz0A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=VyWc0Tmo; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=mani@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WepnVrP8;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=VyWc0Tmo;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=mani@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=mani@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hLFHR4K48z2yXj
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2026 16:06:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hLFP31RF9z2y0B
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2026 16:11:35 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 2042F41649;
-	Thu, 13 Aug 2026 06:06:41 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2E2EA1F000E9;
-	Thu, 13 Aug 2026 06:06:35 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id D30CF40E0B;
+	Thu, 13 Aug 2026 06:11:32 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 18E7E1F000E9;
+	Thu, 13 Aug 2026 06:11:23 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1786601201;
-	bh=2bRU4db2xtFcGOhDIJOKkQ4ShBGU9e2BMEUZzod3loM=;
+	s=k20260515; t=1786601492;
+	bh=DiMpXMq2kKaP+/B/szyplC/vH/8xNTofLUmS8swihFA=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=WepnVrP8FwDHztG5a+pL5+vdR+Cg8T4y90PcZBh/rlnZNWLRLfnDWWRxVJvS0+crZ
-	 lh7fpDVlbqh/6qvpmhacKyRBEAArsqvbDDRNZsTZ84+InSYC+LQE/2ApqTgrggsNhH
-	 YhxB5J0+AVZSQsk4LoO4+RjU9GDi4VJ7LjJUaYY3sLwr0c5vz/7/bRPur4asCQDR1r
-	 cNVYLKjWL4z4LWF+Z0JghcCDVi9WN26c7VGLvxJXgFSrnHhF5fGl1dbGiWnRcm8sU1
-	 SI1/W2qha+159VhpFETiKxPs27GXkyYyN7ajSyXNSy7VOA36iIT+UpNy1PI2kQZa1m
-	 WhxFEX5ERcXyQ==
-Date: Thu, 13 Aug 2026 08:06:31 +0200
+	b=VyWc0Tmo9Wv+fxLqcqJfoaVGgyIFTg8mA9I2WCIdrV1QhOhk/pHP7vS7rvv1ltU6I
+	 VosNxR+wFEEK9LvsGX49PU51B+sEQ4fbwP6kf8MrSBccfoIYW2noKBrq8KDv1C/0nm
+	 LAAwNqC5ItPAwGRtaOovKD88dwL0TNKWPeM5UuZP46QVB5pwvsoJHFVYKL4nKa35um
+	 TOPlt8xTz0pZ4//OsCUp50dskPk24OJ72Fy4lRbUd+Cz3GxM1hY5LxUaEyZTGrpj9A
+	 88VqnFOkXHpvQJfCCjACPAdQkYAi3sqUEkaTrZocWqwNP3lICrVOPt3YSi7/DFSzXb
+	 Vyys3XXQQL7Sw==
+Date: Thu, 13 Aug 2026 08:11:20 +0200
 From: Manivannan Sadhasivam <mani@kernel.org>
-To: Hans Zhang <18255117159@163.com>
-Cc: bhelgaas@google.com, lpieralisi@kernel.org, kwilczynski@kernel.org, 
-	jingoohan1@gmail.com, imx@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, 
-	linux-amlogic@lists.infradead.org, linux-rockchip@lists.infradead.org, 
-	linux-arm-msm@vger.kernel.org, sophgo@lists.linux.dev, linux-riscv@lists.infradead.org, 
-	spacemit@lists.linux.dev, linux-tegra@vger.kernel.org, linux-pci@vger.kernel.org, 
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3 02/16] PCI: dwc: Use cached PCIe capability offset in
- core
-Message-ID: <ps2qzgcb5lixkoqz2xbofdurkgmsiojg7e5ueqfdhyissqvzf2@tuderrjgzg6b>
-References: <20260720150619.24733-1-18255117159@163.com>
- <20260720150619.24733-3-18255117159@163.com>
+To: 
+	Uwe =?utf-8?Q?Kleine-K=C3=B6nig_=28The_Capable_Hub=29?= <u.kleine-koenig@baylibre.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Scott Branden <scott.branden@broadcom.com>, 
+	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, =?utf-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>, 
+	Keng-Yu Lin <keng-yu.lin@hpe.com>, "Vaibhaav Ram T.L" <vaibhaavram.tl@microchip.com>, 
+	Kumaravel Thiagarajan <kumaravel.thiagarajan@microchip.com>, Alexander Usyskin <alexander.usyskin@intel.com>, 
+	Vamsi Attunuru <vattunuru@marvell.com>, Alexander Graf <graf@amazon.com>, 
+	The AWS Nitro Enclaves Team <aws-nitro-enclaves-devel@amazon.com>, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, 
+	Andrew Donnellan <andrew+kernel@donnellan.id.au>, Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kwilczynski@kernel.org>, 
+	Kishon Vijay Abraham I <kishon@kernel.org>, Frank Li <Frank.Li@kernel.org>, 
+	Jiri Slaby <jirislaby@kernel.org>, Andrea della Porta <andrea.porta@suse.com>, 
+	Bryan Tan <bryan-bt.tan@broadcom.com>, Vishnu Dasa <vishnu.dasa@broadcom.com>, 
+	Naveen Krishna Chatradhi <naveenkrishna.chatradhi@amd.com>, Akshay Gupta <Akshay.Gupta@amd.com>, Kees Cook <kees@kernel.org>, 
+	linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	linux-pci@vger.kernel.org
+Subject: Re: [PATCH v2 12/12] misc: Unify code style for various *_device_id
+ arrays
+Message-ID: <oydzthptc2dbmpj3t3oubi47xsacf6ulqv42vcjzhk3sojvyxd@j52tf7obevx7>
+References: <cover.1784299069.git.u.kleine-koenig@baylibre.com>
+ <583653bc7b9ae19707bc28be69a20e66b8c3720a.1784299069.git.u.kleine-koenig@baylibre.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -74,44 +83,54 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260720150619.24733-3-18255117159@163.com>
+In-Reply-To: <583653bc7b9ae19707bc28be69a20e66b8c3720a.1784299069.git.u.kleine-koenig@baylibre.com>
 
-On Mon, Jul 20, 2026 at 11:06:05PM +0800, Hans Zhang wrote:
-> Modify the DWC core functions to use the cached pcie_cap offset instead
-> of calling dw_pcie_find_capability() each time.
-> 
-> In the DWC core, dw_pcie_find_capability() is called at several locations:
-> - dw_pcie_ep_init_non_sticky_registers()
-> - dw_pcie_wait_for_link()
-> - dw_pcie_link_set_max_speed()
-> - dw_pcie_link_get_max_link_width()
-> - dw_pcie_link_set_max_link_width()
-> 
-> The cached offset is initialized after hardware is ready:
-> - In host mode: dw_pcie_host_init() calls pp->ops->host_init() (enables
->   clocks/resets), then dw_pcie_get_pcie_cap() caches the offset.
-> - In endpoint mode: the core no longer caches automatically. Instead,
->   drivers must call dw_pcie_get_pcie_cap() after hardware is enabled
->   (e.g., after PERST# deassert).
+On Fri, Jul 17, 2026 at 04:50:58PM +0200, Uwe Kleine-König (The Capable Hub) wrote:
 
-But you didn't modify all DWC EP drivers to call dw_pcie_get_pcie_cap(). This
-can lead to pcie_cap being 0.
+[...]
 
-> dw_pcie_ep_init_non_sticky_registers()
->   is called after that point, so it can safely use pci->pcie_cap.
-> 
-> dw_pcie_ep_init_non_sticky_registers() now assumes pci->pcie_cap is
-> valid. if not, it prints a warning and skips the operation.
+> diff --git a/drivers/misc/pci_endpoint_test.c b/drivers/misc/pci_endpoint_test.c
+> index 3635741c3e7a..a10fce77e0b4 100644
+> --- a/drivers/misc/pci_endpoint_test.c
+> +++ b/drivers/misc/pci_endpoint_test.c
+> @@ -1416,18 +1416,18 @@ static const struct pci_device_id pci_endpoint_test_tbl[] = {
+>  	{ PCI_DEVICE(PCI_VENDOR_ID_FREESCALE, 0x81c0),
+>  	  .driver_data = (kernel_ulong_t)&default_data,
+>  	},
+> -	{ PCI_DEVICE(PCI_VENDOR_ID_FREESCALE, PCI_DEVICE_ID_IMX8),},
+> +	{ PCI_DEVICE(PCI_VENDOR_ID_FREESCALE, PCI_DEVICE_ID_IMX8) },
+>  	{ PCI_DEVICE(PCI_VENDOR_ID_FREESCALE, PCI_DEVICE_ID_LS1088A),
+>  	  .driver_data = (kernel_ulong_t)&default_data,
+>  	},
+>  	{ PCI_DEVICE_DATA(SYNOPSYS, EDDA, NULL) },
+>  	{ PCI_DEVICE(PCI_VENDOR_ID_TI, PCI_DEVICE_ID_TI_AM654),
+> -	  .driver_data = (kernel_ulong_t)&am654_data
+> +	  .driver_data = (kernel_ulong_t)&am654_data,
+>  	},
+> -	{ PCI_DEVICE(PCI_VENDOR_ID_RENESAS, PCI_DEVICE_ID_RENESAS_R8A774A1),},
+> -	{ PCI_DEVICE(PCI_VENDOR_ID_RENESAS, PCI_DEVICE_ID_RENESAS_R8A774B1),},
+> -	{ PCI_DEVICE(PCI_VENDOR_ID_RENESAS, PCI_DEVICE_ID_RENESAS_R8A774C0),},
+> -	{ PCI_DEVICE(PCI_VENDOR_ID_RENESAS, PCI_DEVICE_ID_RENESAS_R8A774E1),},
+> +	{ PCI_DEVICE(PCI_VENDOR_ID_RENESAS, PCI_DEVICE_ID_RENESAS_R8A774A1) },
+> +	{ PCI_DEVICE(PCI_VENDOR_ID_RENESAS, PCI_DEVICE_ID_RENESAS_R8A774B1) },
+> +	{ PCI_DEVICE(PCI_VENDOR_ID_RENESAS, PCI_DEVICE_ID_RENESAS_R8A774C0) },
+> +	{ PCI_DEVICE(PCI_VENDOR_ID_RENESAS, PCI_DEVICE_ID_RENESAS_R8A774E1) },
+>  	{ PCI_DEVICE(PCI_VENDOR_ID_RENESAS, PCI_DEVICE_ID_RENESAS_R8A779F0),
+>  	  .driver_data = (kernel_ulong_t)&default_data,
+>  	},
+> @@ -1446,8 +1446,8 @@ static const struct pci_device_id pci_endpoint_test_tbl[] = {
+>  	{ PCI_DEVICE(PCI_VENDOR_ID_ROCKCHIP, PCI_DEVICE_ID_ROCKCHIP_RK3588),
+>  	  .driver_data = (kernel_ulong_t)&rk3588_data,
+>  	},
+> -	{ PCI_DEVICE(PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_TEGRA194_EP),},
+> -	{ PCI_DEVICE(PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_TEGRA234_EP),},
+> +	{ PCI_DEVICE(PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_TEGRA194_EP) },
+> +	{ PCI_DEVICE(PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_TEGRA234_EP) },
+>  	{ }
+>  };
+>  MODULE_DEVICE_TABLE(pci, pci_endpoint_test_tbl);
 
-Where is this warning printed?
-
-These are already pointed out by Sashiko. You should go really go through all of
-them (not the pre-existing issues) and comment whether the issues are valid or
-false positive. For a series touching many controller drivers, this is necessary
-to avoid introducing regressions.
-
-I'm not going to merge this series until you fix the real issues Sashiko
-reported or mark them as false positive if not valid.
+Acked-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
 
 - Mani
 
