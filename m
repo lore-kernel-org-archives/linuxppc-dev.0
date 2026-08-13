@@ -1,69 +1,69 @@
-Return-Path: <linuxppc-dev+bounces-25821-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25822-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3B547C5CFDB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Aug 2026 09:54:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 22106C5CFDB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Aug 2026 09:54:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hLLLH3xspz2ynH;
-	Thu, 13 Aug 2026 19:54:31 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::548"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786614871;
-	cv=none; b=ORLjdUzA8pVStD65f3v7hmdwleBL2W8yO8jJNFdNWJJ+LD94lYexh08uMniMyDT4k8/MuaFlDcav3UeVtdQK644XYgaYj1U0Q+Ybcac0eCOdAbOBA9QCCnKEYWcgWFJOGH4lW5vCMNwrtt7duUynIezA0QfsvUh4sN5Tg+8VNW1frqetK+54oj6IBzDZUGHpkz85B2keO5n/5XEyV5+pOdmA4FQsjkUsefgtc0hu31EDU3PwHnn49jegzWMX0wRtG9WgAVWcKLzkYar1EJEG5iP/qgSaubiYhcmk1HuNcFQpZkQ3/iVby3Q0rcC9JO/0gT7c6ZlzRRZnbYqSgN5z8g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hLLLK0dFcz302l;
+	Thu, 13 Aug 2026 19:54:33 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::645"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786614873;
+	cv=none; b=Y7085rHrQf+r1dw4rCg2014r551yHyUEyn/Ybe1HEzOwv7zmdtikTFRRtdbvYZ0krZ0lv+KeJELsvjb42JcXftNnjtfis4O4AvKBpzPLsxFz6D9Eb0og/bwlsiQCD1teChKxe01TYOejqNfEb2AtbStOoMc4kslr05Bwomp2WXV4s2RU2HwptqmNPT/Cpy9fF4spvovzJWInFzT7kGslqc04TeF/2iNqn2udWNdY/RldkBOxLRdBX/8vnfw8UulODqAfrv9SNJ3o1v1sGe0AMlOB571kW77oCJotBqYIrg5BsPvDg45A3Ug8vP674wFoSvHGgw2dzoXNiF1xIKFp0g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786614871; c=relaxed/relaxed;
-	bh=c+Ghwm16zCb3XluSdXC+OMNEFWBin0x6u6wWkTNkW+w=;
+	t=1786614873; c=relaxed/relaxed;
+	bh=fT6jyW0ebkoIBHvxF4dzhS8i8Cr8YB5wD7+pzVH5V5U=;
 	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=PJi7726CWTCBQCr5ijKRJ3ha9ttlAhzpjSliTQ5uW0m6L7PWLcnI0sXTLIzZh/1Qhy8wZsTL3utNLtvBCnNcZlSKAoWXG6vd5p1kQI8ywq5N7gtdWTWlxu2MmD7SWehHvF5zKluZY/t/KYydDKHL4rJ4URClY7w3VbAUO0X7oVdAiyzUNqrnRqX0ePz0FgaiFVqysjrOM1I3+ofZjI9um6fgZ5FABiEXi02OAtWKkPYDHEqtqmLK9XUm0RY3UvS8A5gKehHCvqYL7l1VJQFGZfkFPkJAYp8PpjEhy9L7vJighElgDDjSyKKws1wXgiUrd+RmYP9kMLmI4yLL65ItTQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=OjC2qptm; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::548; helo=mail-ed1-x548.google.com; envelope-from=3upr9agkkdmsar8b49rybx55x2v.t532z4be66t-uvc2z9a9.5g2rs9.58x@flex--tarunsahu.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--tarunsahu.bounces.google.com
+	 To:Cc:Content-Type; b=VoNGzpNBbuZqB8ljs809/0/RpPb91f0RO0wVnttetpu8893/yk5Sj8PngNaSaFogAPuRp2VQXQOgx/uh+ZRFBYMSbLzO05MYiDZjzEg5BuOrZd7JCdyMZdkSlydORhR5gxsrpayaNyEdIx1wxbVCLNQ19/UpF07Qd6XDMl7nyYg+bZCuauQmm0bDMOcd7b0EhwZEnH9TJx2Hm5ov5Tg3gm2w6ik+2IqSs2pmyhG7a8rMKGqaDVnTXxQQQlfJxdMolaWX31MEyJLt9iISkFUHNKWHJEivkqYdJCTOYBGRl0LEopQ+X44PbTzsyKd2gmx7hbhaxaFbp68FFBrXF5nMhQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=NFe097dN; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::645; helo=mail-ej1-x645.google.com; envelope-from=3u5r9agkkdmwbs9c5aszcy66y3w.u64305cf77u-vwd30aba.6h3sta.69y@flex--tarunsahu.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--tarunsahu.bounces.google.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=OjC2qptm;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=NFe097dN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--tarunsahu.bounces.google.com (client-ip=2a00:1450:4864:20::548; helo=mail-ed1-x548.google.com; envelope-from=3upr9agkkdmsar8b49rybx55x2v.t532z4be66t-uvc2z9a9.5g2rs9.58x@flex--tarunsahu.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-ed1-x548.google.com (mail-ed1-x548.google.com [IPv6:2a00:1450:4864:20::548])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--tarunsahu.bounces.google.com (client-ip=2a00:1450:4864:20::645; helo=mail-ej1-x645.google.com; envelope-from=3u5r9agkkdmwbs9c5aszcy66y3w.u64305cf77u-vwd30aba.6h3sta.69y@flex--tarunsahu.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-ej1-x645.google.com (mail-ej1-x645.google.com [IPv6:2a00:1450:4864:20::645])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hLLLG2j1cz2yfN
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2026 19:54:30 +1000 (AEST)
-Received: by mail-ed1-x548.google.com with SMTP id 4fb4d7f45d1cf-6983e9c028dso1396179a12.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2026 02:54:29 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hLLLH4pzBz2yqd
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2026 19:54:31 +1000 (AEST)
+Received: by mail-ej1-x645.google.com with SMTP id a640c23a62f3a-c15deb3377eso118852166b.3
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2026 02:54:31 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1786614867; x=1787219667; darn=lists.ozlabs.org;
+        d=google.com; s=20251104; t=1786614868; x=1787219668; darn=lists.ozlabs.org;
         h=content-type:cc:to:from:subject:message-id:references:mime-version
          :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=c+Ghwm16zCb3XluSdXC+OMNEFWBin0x6u6wWkTNkW+w=;
-        b=OjC2qptmqsrsT1AP2OaEqBYJ9pOy3HrGnqxG3QcODsRQvTJsOSvEKvpbZJw25dHCBY
-         rjTlRubS2Xkl+BZV9Sjdbs7mONtmGAoPMJDhTV8FygYzuFC+jRZk/yx0EGdg1QMHH0Jl
-         6GiRUWp4h+vC/rp2DYiAbEkpNIIQCVVuZr2yKEh1udtkTtOF+S+w/qtfKKi7VoFqQ+CY
-         zczSs6hUOKuSY3+MMwF1OegZ6p4Suq3+jmByUeSzjDgQs5GY/fNPfkY9k4X/R7uf/S4e
-         XhVJiYyudVSautoNwOrM7/Dc5GRGycGDfwyZYBpe8nqNPwqTh8ytPWrY6RnK2lAAk6B9
-         Q1ZQ==
+        bh=fT6jyW0ebkoIBHvxF4dzhS8i8Cr8YB5wD7+pzVH5V5U=;
+        b=NFe097dNvy8SP83cowlE+zQdoLxx7upRcyZOgyvq3/RIZun8mUHIjRp1tYcmJ8Mebp
+         HvjYMS/Gj26TFYFC7CgbHWyCRZTTd9KhtS8twso21WGEktRBD1aWu3h5WYxgm3NpTMeD
+         axPhMcv2uXosTOvyN2yEH+SsFfGKGOE7P2KWwCu1IQ07g8fnv5d5NDnH8HHksVbz3uYz
+         Vg6TvwDY1QBVA69BwClDWq9R5lpD/hRoKvNJD+QyD2NSHnt1Tq8cGkwnKQ6tIIqPYlj/
+         edd7KvCMoBnpdEEpbrl8yp6XTTPVxNFmaIVw1Wm4neTV8VhrCAaV3G0ofnu0b5ELvSMX
+         2gfw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786614867; x=1787219667;
+        d=1e100.net; s=20251104; t=1786614868; x=1787219668;
         h=content-type:cc:to:from:subject:message-id:references:mime-version
          :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=c+Ghwm16zCb3XluSdXC+OMNEFWBin0x6u6wWkTNkW+w=;
-        b=DmuiMxQwJGDJ4kiTDUiDBIj4m/qRhhZc3dB+waLbPigfQW2f4+xeFtBAvMTOBBSu57
-         kmvuDMsrKvGDPKdxOK5RmgNajXRE8Tbdr/3NoDODGa6qSqv2WP0zcfA9SA0zyiKxpChB
-         VvNP1kLRfX2kpaq1N0uwr99YUwec4lZEqPfmA3R6KyuiUPBKVlOptjJ2fKwK61lFX2lq
-         2t/pjcy4NhZk1Cy9sF824j7Y4zRwCZBfEG8gbM+mmboGTiz/ZXOmcYQXNvN0MXtbCB/G
-         /+9RtMezKUjOeGRgDUm56VuFgbPbumbfYQGgfT9/TVV0yiPa5GVcKFeOl01RGfD4l+1p
-         gUzw==
-X-Forwarded-Encrypted: i=1; AHgh+Rrea5xgn+AH7MFb9c7pdcrNyMdcicUKhJr2frthPgprdA3h8PYYo9VYso3wNtC/1mv1XcMhTd9VpmNWSto=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzJhusHXG0w7JEd8DMyd2Ki0wQs0fJr/DVFYyy0r/1NVXNV95AI
-	GglO5IOTzKrbzZNJ/BqJzHVYA9/JheHXPxJ82HuN68uTWq3VpDGcRefIXy5zTMqeGgjo5HP8dlN
-	cPRZ42Sa/DxE2lX3QFQ==
-X-Received: from edqz25.prod.google.com ([2002:aa7:d419:0:b0:6a0:51ba:9873])
+        bh=fT6jyW0ebkoIBHvxF4dzhS8i8Cr8YB5wD7+pzVH5V5U=;
+        b=tBSoE1RP/xPcZMoLm/6Xxufe12G2lu3dwVuf70JTQ5BF6+aRVvqwgaR4HjVweg3iQv
+         Eg5UFyAiHgSXnGqhWrSqaJPFBd4Jxe9xtCPvZ4lkjqOvNB1f/ZO4rO/msirk21QOz+BJ
+         OkZn89fvd4fKnMr5w0Qc+wXV7BoSlCviOICMrnqTWdktfPoSAEIIGYneuNwazefKtP6D
+         XGVfJfUVPYzBkGVF06TtJdKjo/1gKtAdTWrdxDrQ5npxUAci4Ymb1JUdFHjL/xjKDBdu
+         sXSmlTUxylGmvA1A04QnbKgf/CGLkvIcb9pW0czBnTo+WnCudJeXkodExmgrTg5rXqWa
+         zK2Q==
+X-Forwarded-Encrypted: i=1; AHgh+RqjYx4xLRO9RG1u+H/EWFIRDa9ZPOexrQ5ylUCehTyr2AIQR35ScJ0+O0+HGIEsW8c/thDz9h4dvcFuN74=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxKsnddA8R1Jbnme6LJkJwPuxRvgzyxH/AjuwfHZbnDfQs2t8BU
+	IUetKceDepsvvXoDOhjNV9nAztgnnkSJxEkz0Uu62omk2/z+N3d2PKulvNIizmt5VYXa6qxKm50
+	KpjyaJFDoJq/yEwnNWg==
+X-Received: from ejbdx22.prod.google.com ([2002:a17:906:a856:b0:c21:1508:2a])
  (user=tarunsahu job=prod-delivery.src-stubby-dispatcher) by
- 2002:a05:6402:1948:b0:6a0:a4be:6ed0 with SMTP id 4fb4d7f45d1cf-6a380618f4emr2015007a12.17.1786614866346;
- Thu, 13 Aug 2026 02:54:26 -0700 (PDT)
-Date: Thu, 13 Aug 2026 09:54:20 +0000
+ 2002:a17:907:a689:b0:c20:31d1:a899 with SMTP id a640c23a62f3a-c2108f37134mr206587566b.4.1786614867700;
+ Thu, 13 Aug 2026 02:54:27 -0700 (PDT)
+Date: Thu, 13 Aug 2026 09:54:21 +0000
 In-Reply-To: <20260813095421.1700945-1-tarunsahu@google.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -80,9 +80,9 @@ Precedence: list
 Mime-Version: 1.0
 References: <20260813095421.1700945-1-tarunsahu@google.com>
 X-Mailer: git-send-email 2.55.0.699.gb54405d56f-goog
-Message-ID: <20260813095421.1700945-3-tarunsahu@google.com>
-Subject: [PATCH v2 2/3] firmware/edd: use kobject_put() on edd_device_register()
- failure
+Message-ID: <20260813095421.1700945-4-tarunsahu@google.com>
+Subject: [PATCH v2 3/3] powerpc/ps3: use put_device() on device_register()
+ failure in ps3_system_bus_device_register
 From: Tarun Sahu <tarunsahu@google.com>
 To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
 	Russell King <linux@armlinux.org.uk>, Geoff Levand <geoff@infradead.org>, 
@@ -94,32 +94,256 @@ Cc: linux-arm-kernel@lists.infradead.org, dmatlack@google.com,
 	linuxppc-dev@lists.ozlabs.org, Tarun Sahu <tarunsahu@google.com>
 Content-Type: text/plain; charset="UTF-8"
 
-When edd_device_register() fails after initializing the kobject with
-kobject_init_and_add(), calling kfree(edev) directly bypasses the
-kobject release callback (edd_release) and leaks the allocated kobject
-resources.
-
-Fix this by replacing direct kfree(edev) with kobject_put(&edev->kobj) on
-registration failure.
+When device_register() fails, calling put_device() ensures that the
+device reference count drops to 0, which invokes the release callback
+ps3_system_bus_release_device() to cleanly free the device and its
+associated driver core resources.
 
 Signed-off-by: Tarun Sahu <tarunsahu@google.com>
 ---
- drivers/firmware/edd.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/platforms/ps3/device-init.c | 83 ++++++++++++++----------
+ arch/powerpc/platforms/ps3/system-bus.c  |  2 +
+ 2 files changed, 52 insertions(+), 33 deletions(-)
 
-diff --git a/drivers/firmware/edd.c b/drivers/firmware/edd.c
-index f980c5b56858..763e7b16d517 100644
---- a/drivers/firmware/edd.c
-+++ b/drivers/firmware/edd.c
-@@ -748,7 +748,7 @@ edd_init(void)
+diff --git a/arch/powerpc/platforms/ps3/device-init.c b/arch/powerpc/platforms/ps3/device-init.c
+index 9109c218a060..8d0c77db1764 100644
+--- a/arch/powerpc/platforms/ps3/device-init.c
++++ b/arch/powerpc/platforms/ps3/device-init.c
+@@ -90,14 +90,12 @@ static int __init ps3_register_lpm_devices(void)
+ 	if (result) {
+ 		pr_debug("%s:%d ps3_system_bus_device_register failed\n",
+ 			__func__, __LINE__);
+-		goto fail_register;
++		return result;
+ 	}
  
- 		rc = edd_device_register(edev, i);
- 		if (rc) {
--			kfree(edev);
-+			kobject_put(&edev->kobj);
- 			goto out;
- 		}
- 		edd_devices[i] = edev;
+ 	pr_debug(" <- %s:%d\n", __func__, __LINE__);
+ 	return 0;
+ 
+-
+-fail_register:
+ fail_rights:
+ fail_read_repo:
+ 	kfree(dev);
+@@ -121,6 +119,12 @@ static int __init ps3_setup_gelic_device(
+ 		struct ps3_dma_region d_region;
+ 	} *p;
+ 
++	/*
++	 * ps3_system_bus_release_device() calls kfree(&p->dev).
++	 * dev must be at offset 0 so kfree() frees outer p.
++	 */
++	BUILD_BUG_ON(offsetof(struct layout, dev) != 0);
++
+ 	pr_debug(" -> %s:%d\n", __func__, __LINE__);
+ 
+ 	BUG_ON(repo->bus_type != PS3_BUS_TYPE_SB);
+@@ -164,13 +168,12 @@ static int __init ps3_setup_gelic_device(
+ 	if (result) {
+ 		pr_debug("%s:%d ps3_system_bus_device_register failed\n",
+ 			__func__, __LINE__);
+-		goto fail_device_register;
++		return result;
+ 	}
+ 
+ 	pr_debug(" <- %s:%d\n", __func__, __LINE__);
+ 	return result;
+ 
+-fail_device_register:
+ fail_dma_init:
+ fail_find_interrupt:
+ 	kfree(p);
+@@ -192,6 +195,12 @@ static int __init ps3_setup_uhc_device(
+ 	u64 bus_addr;
+ 	u64 len;
+ 
++	/*
++	 * ps3_system_bus_release_device() calls kfree(&p->dev).
++	 * dev must be at offset 0 so kfree() frees outer p.
++	 */
++	BUILD_BUG_ON(offsetof(struct layout, dev) != 0);
++
+ 	pr_debug(" -> %s:%d\n", __func__, __LINE__);
+ 
+ 	BUG_ON(repo->bus_type != PS3_BUS_TYPE_SB);
+@@ -252,13 +261,12 @@ static int __init ps3_setup_uhc_device(
+ 	if (result) {
+ 		pr_debug("%s:%d ps3_system_bus_device_register failed\n",
+ 			__func__, __LINE__);
+-		goto fail_device_register;
++		return result;
+ 	}
+ 
+ 	pr_debug(" <- %s:%d\n", __func__, __LINE__);
+ 	return result;
+ 
+-fail_device_register:
+ fail_mmio_init:
+ fail_dma_init:
+ fail_find_reg:
+@@ -291,6 +299,12 @@ static int __init ps3_setup_vuart_device(enum ps3_match_id match_id,
+ 		struct ps3_system_bus_device dev;
+ 	} *p;
+ 
++	/*
++	 * ps3_system_bus_release_device() calls kfree(&p->dev).
++	 * dev must be at offset 0 so kfree() frees outer p.
++	 */
++	BUILD_BUG_ON(offsetof(struct layout, dev) != 0);
++
+ 	pr_debug(" -> %s:%d: match_id %u, port %u\n", __func__, __LINE__,
+ 		match_id, port_number);
+ 
+@@ -308,15 +322,10 @@ static int __init ps3_setup_vuart_device(enum ps3_match_id match_id,
+ 	if (result) {
+ 		pr_debug("%s:%d ps3_system_bus_device_register failed\n",
+ 			__func__, __LINE__);
+-		goto fail_device_register;
++		return result;
+ 	}
+ 	pr_debug(" <- %s:%d\n", __func__, __LINE__);
+ 	return 0;
+-
+-fail_device_register:
+-	kfree(p);
+-	pr_debug(" <- %s:%d fail\n", __func__, __LINE__);
+-	return result;
+ }
+ 
+ static int ps3_setup_storage_dev(const struct ps3_repository_device *repo,
+@@ -327,6 +336,12 @@ static int ps3_setup_storage_dev(const struct ps3_repository_device *repo,
+ 	u64 port, blk_size, num_blocks;
+ 	unsigned int num_regions, i;
+ 
++	/*
++	 * ps3_system_bus_release_device() calls kfree(&p->sbd).
++	 * sbd must be at offset 0 so kfree() frees outer p.
++	 */
++	BUILD_BUG_ON(offsetof(struct ps3_storage_device, sbd) != 0);
++
+ 	pr_debug(" -> %s:%u: match_id %u\n", __func__, __LINE__, match_id);
+ 
+ 	result = ps3_repository_read_stor_dev_info(repo->bus_index,
+@@ -395,13 +410,12 @@ static int ps3_setup_storage_dev(const struct ps3_repository_device *repo,
+ 	if (result) {
+ 		pr_debug("%s:%u ps3_system_bus_device_register failed\n",
+ 			 __func__, __LINE__);
+-		goto fail_device_register;
++		return result;
+ 	}
+ 
+ 	pr_debug(" <- %s:%u\n", __func__, __LINE__);
+ 	return 0;
+ 
+-fail_device_register:
+ fail_read_region:
+ fail_find_interrupt:
+ 	kfree(p);
+@@ -445,6 +459,12 @@ static int __init ps3_register_sound_devices(void)
+ 		struct ps3_mmio_region m_region;
+ 	} *p;
+ 
++	/*
++	 * ps3_system_bus_release_device() calls kfree(&p->dev).
++	 * dev must be at offset 0 so kfree() frees outer p.
++	 */
++	BUILD_BUG_ON(offsetof(struct layout, dev) != 0);
++
+ 	pr_debug(" -> %s:%d\n", __func__, __LINE__);
+ 
+ 	p = kzalloc_obj(*p);
+@@ -461,15 +481,10 @@ static int __init ps3_register_sound_devices(void)
+ 	if (result) {
+ 		pr_debug("%s:%d ps3_system_bus_device_register failed\n",
+ 			__func__, __LINE__);
+-		goto fail_device_register;
++		return result;
+ 	}
+ 	pr_debug(" <- %s:%d\n", __func__, __LINE__);
+ 	return 0;
+-
+-fail_device_register:
+-	kfree(p);
+-	pr_debug(" <- %s:%d failed\n", __func__, __LINE__);
+-	return result;
+ }
+ 
+ static int __init ps3_register_graphics_devices(void)
+@@ -479,6 +494,12 @@ static int __init ps3_register_graphics_devices(void)
+ 		struct ps3_system_bus_device dev;
+ 	} *p;
+ 
++	/*
++	 * ps3_system_bus_release_device() calls kfree(&p->dev).
++	 * dev must be at offset 0 so kfree() frees outer p.
++	 */
++	BUILD_BUG_ON(offsetof(struct layout, dev) != 0);
++
+ 	pr_debug(" -> %s:%d\n", __func__, __LINE__);
+ 
+ 	p = kzalloc_obj(struct layout);
+@@ -495,16 +516,11 @@ static int __init ps3_register_graphics_devices(void)
+ 	if (result) {
+ 		pr_debug("%s:%d ps3_system_bus_device_register failed\n",
+ 			__func__, __LINE__);
+-		goto fail_device_register;
++		return result;
+ 	}
+ 
+ 	pr_debug(" <- %s:%d\n", __func__, __LINE__);
+ 	return 0;
+-
+-fail_device_register:
+-	kfree(p);
+-	pr_debug(" <- %s:%d failed\n", __func__, __LINE__);
+-	return result;
+ }
+ 
+ static int __init ps3_register_ramdisk_device(void)
+@@ -514,6 +530,12 @@ static int __init ps3_register_ramdisk_device(void)
+ 		struct ps3_system_bus_device dev;
+ 	} *p;
+ 
++	/*
++	 * ps3_system_bus_release_device() calls kfree(&p->dev).
++	 * dev must be at offset 0 so kfree() frees outer p.
++	 */
++	BUILD_BUG_ON(offsetof(struct layout, dev) != 0);
++
+ 	pr_debug(" -> %s:%d\n", __func__, __LINE__);
+ 
+ 	p = kzalloc_obj(struct layout);
+@@ -530,16 +552,11 @@ static int __init ps3_register_ramdisk_device(void)
+ 	if (result) {
+ 		pr_debug("%s:%d ps3_system_bus_device_register failed\n",
+ 			__func__, __LINE__);
+-		goto fail_device_register;
++		return result;
+ 	}
+ 
+ 	pr_debug(" <- %s:%d\n", __func__, __LINE__);
+ 	return 0;
+-
+-fail_device_register:
+-	kfree(p);
+-	pr_debug(" <- %s:%d failed\n", __func__, __LINE__);
+-	return result;
+ }
+ 
+ /**
+diff --git a/arch/powerpc/platforms/ps3/system-bus.c b/arch/powerpc/platforms/ps3/system-bus.c
+index 0537a678a32f..0918c74d3e19 100644
+--- a/arch/powerpc/platforms/ps3/system-bus.c
++++ b/arch/powerpc/platforms/ps3/system-bus.c
+@@ -774,6 +774,8 @@ int ps3_system_bus_device_register(struct ps3_system_bus_device *dev)
+ 	pr_debug("%s:%d add %s\n", __func__, __LINE__, dev_name(&dev->core));
+ 
+ 	result = device_register(&dev->core);
++	if (result)
++		put_device(&dev->core);
+ 	return result;
+ }
+ 
 -- 
 2.55.0.699.gb54405d56f-goog
 
