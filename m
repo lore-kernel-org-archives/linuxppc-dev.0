@@ -1,70 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-25809-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25810-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4695CC5AC67
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Aug 2026 08:11:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00F11C5AC67
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Aug 2026 08:17:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hLJ3Z2NxHz2ySS;
-	Thu, 13 Aug 2026 18:11:38 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=124.126.103.232
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786608698;
-	cv=none; b=D6uBBurbJl9Xwl/LEG93CLUgXRMT+s2wD99dybiuXslICdpfthP2F1QuAdk3UWJB0M8x6koxDtE+HMJnwmjEzdOFYvVmxB3VeAkj201GLdsoAhhqE6cDlZ6KT5RJ/zwmfyxPygy2oOTp1OPTFXbKb33kb3ap7D7UDPBvih+3jVN5vV2XFyC3mL2V7oE2SOCCs5s2HRUeIVXh9fvPrLUXKXZ3q1WN39wJ2W/fn3khdhOdhZFzgtUz5/QLIR7xZRCf+qlA2QC0fzAmQU/EQZHOpNrKdh6RBpvdCtzR8R3Tguvn5lZ6ulRzzLiU10ayNsrYHgDAUJdGYTXdzk7CYpSIvg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hLJB13gPdz2yNj;
+	Thu, 13 Aug 2026 18:17:13 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786609033;
+	cv=none; b=CDVYFrBQNKHV7L8sPH4KJfMAgD5ic4kjI6VDsfP3iGIDW+raQ+9d0iZ8sS/AsR2PnlwaU5aG+QIxoPlYQy9d+br1gn7DOgiSyhdhqK1U7/BfLzjltmXr9422t7YqQ+VzkJsOSDC48baVVlbnJJSY6glSddOA6aKI8hipSIKibAatJNlcujBrpAAApszyqhZfq3Ltu3glB6Za1Zh6qfJ8PyvqiYCDFOuTw1T3hxdU2awLl5pCh4Hd8UW0wBz0vc0h26qURQXFSuOfuZzqNb72UKZ/zF8LbiSMOTVfGfO1MvCOi4stPRi8sF0iOQ/5kA3XZuE663b1dPzSZ21KGcKswg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786608698; c=relaxed/relaxed;
-	bh=8K0vPm3AoC1BX4YMxlqQWsh2SOfiMgjxdRhKvfgK9Y8=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=X2uJP8rcKlPilRszavcoUhuDtjm4CYdIo4NxworvyK3Xx8cI+14kqcYT/BWLoPARW937FM82S4DVC4PC/AeMnxaqlHrbWOTMwgCpRg2ZQEIk/YiUna4gTGCmtAD/vDx5N0/vvCvzVYrmGXeLpNW0K1t/PBXZp2jvNqCvHAp5yUjRdW2Xnf6XLif6ph+uGjMxKlYCAIPhp4n+l9IFQn7OOtWSjSxtle+2/WbalQiGvNRNaOKrjIxiVqB+On9lSBd314qXpoWCTJrJB31WVfrs56K0zherT6HtjnMJihpJODMFvWG1twDtl7ombjlDolGUXMHTvTtBCI+gAsxO1qFFNQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass (client-ip=124.126.103.232; helo=mailgw.kylinos.cn; envelope-from=yijiangshan@kylinos.cn; receiver=lists.ozlabs.org) smtp.mailfrom=kylinos.cn
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kylinos.cn (client-ip=124.126.103.232; helo=mailgw.kylinos.cn; envelope-from=yijiangshan@kylinos.cn; receiver=lists.ozlabs.org)
-Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
+	t=1786609033; c=relaxed/relaxed;
+	bh=OBCEUWqwGxw/pU1xAkmBvx00nyMvNlJlQThBjZtx7/c=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=F1oISrGjP3yN6GiK0IB/pYA/17T0WPlNzFczX9nrq84+FVNeNy0k3i9F+XtsMfp7qN4nIdJNoXOKd8LsVNL9EWvcC4N9t8SSmXqPjxSx2tjlXgJEkIVgtir3tfADYJDXF/WRDqBgdXym2GL1dM7TF6aIm++aDlkqDGj44zdcP6pWTjxAdeXImunOx8tPQcfSzJ649J8EGijbrJLKxZIO5fC6SaL2NPCvEptg5Drr5ha7hS34rhaSKRhSC1rcMdej1lW6nVtp7968i8XNAQQvpJYyvls9HSihQ/QlLn0XvHrWQdCmuVFkMPb9TYf4pKzfsTnyqr5UwpcN0JIvlT6jXQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hOsXmEDQ; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hOsXmEDQ;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hLJ3V4NhRz2yNj
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2026 18:11:32 +1000 (AEST)
-X-UUID: 6cd5abf896ee11f1aa26b74ffac11d73-20260813
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.3.12,REQID:39354584-532e-4e7a-86e8-18d543b610ba,IP:0,U
-	RL:5,TC:0,Content:-5,EDM:25,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTIO
-	N:release,TS:25
-X-CID-META: VersionHash:e7bac3a,CLOUDID:e03f14b9a3e5196c8f329a50f697268d,BulkI
-	D:nil,BulkQuantity:0,Recheck:0,SF:102|850|865|898,TC:nil,Content:0|15|50,E
-	DM:5,IP:nil,URL:93|82|11|1,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,O
-	SI:0,OSA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
-X-CID-BVR: 2,SSN|SDN
-X-CID-BAS: 2,SSN|SDN,0,_
-X-CID-FACTOR: TF_CID_SPAM_SNR,TF_CID_SPAM_ULN
-X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
-X-UUID: 6cd5abf896ee11f1aa26b74ffac11d73-20260813
-X-User: yijiangshan@kylinos.cn
-Received: from localhost.localdomain [(10.44.16.150)] by mailgw.kylinos.cn
-	(envelope-from <yijiangshan@kylinos.cn>)
-	(Generic MTA with TLSv1.3 TLS_AES_256_GCM_SHA384 256/256)
-	with ESMTP id 237327502; Thu, 13 Aug 2026 16:10:19 +0800
-From: Jiangshan Yi <yijiangshan@kylinos.cn>
-To: maddy@linux.ibm.com
-Cc: mpe@ellerman.id.au,
-	npiggin@gmail.com,
-	chleroy@kernel.org,
-	nayna@linux.ibm.com,
-	gcwilson@linux.ibm.com,
-	kees@kernel.org,
-	ruscur@russell.cc,
-	jjalvare@linux.vnet.ibm.com,
-	bryantly@linux.vnet.ibm.com,
-	linuxppc-dev@lists.ozlabs.org,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hLJB03FJwz2yfp
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2026 18:17:12 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 60B23600AD;
+	Thu, 13 Aug 2026 08:17:09 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0569E1F000E9;
+	Thu, 13 Aug 2026 08:17:06 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1786609029;
+	bh=OBCEUWqwGxw/pU1xAkmBvx00nyMvNlJlQThBjZtx7/c=;
+	h=From:To:Cc:Subject:Date;
+	b=hOsXmEDQeXsxkBgDCazffc87Oi+RAGpdxNPkxAbJ5J88njdP3zLs0G+ohSUCHH1ak
+	 iZtVevb7a0+NRAHk84V8KFdRZoqHdULNIqbYJCpi5gY1piDmJCxja8m3VEgXCz843q
+	 BTZnonzeR4OJ5DNVfrkdt47hwSl0pmqicrU12FQyxdCBx0NP/0XLgoAWd7Gtf9Zl6v
+	 PbfcCA9M4Fct9UMqDmEsmZNG92iWfYIwhmO924j4hei4TzVmJzdiBzCiahbWSBCl2C
+	 oYVKurEUIUseJJmUk/TikLA40YDwHN/7MHVfEqAuJ/IlelETC1J43GDzkwQMh8WUpT
+	 /i9vroy3bfRgQ==
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
 	linux-kernel@vger.kernel.org,
-	13667453960@163.com,
-	Jiangshan Yi <yijiangshan@kylinos.cn>,
-	stable@vger.kernel.org,
-	sashiko-bot@kernel.org
-Subject: [PATCH] powerpc/pseries/pci: Prevent double free of VF PE map
-Date: Thu, 13 Aug 2026 16:10:13 +0800
-Message-Id: <20260813081013.549622-1-yijiangshan@kylinos.cn>
-X-Mailer: git-send-email 2.25.1
+	linuxppc-dev@lists.ozlabs.org,
+	kernel test robot <lkp@intel.com>
+Subject: [PATCH] powerpc: Silence sparse warnings caused by type casting in (cmp)xchg
+Date: Thu, 13 Aug 2026 10:16:46 +0200
+Message-ID: <289a7ffac9cb5b6d26a57fdc26605bf725285302.1786608980.git.chleroy@kernel.org>
+X-Mailer: git-send-email 2.54.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -78,45 +68,80 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2850; i=chleroy@kernel.org; h=from:subject:message-id; bh=4mvMrpIZAkAXcVPWdMLSSPRhuOvefDeo4UeeoCigqWM=; b=owGbwMvMwCV2d0KB2p7V54MZT6slMWTV1hZeDi8Q1L/ufP95imiNYN2l9Q98bzzm3av03tO18 VaR/LPAjlIWBjEuBlkxRZbj/7l3zej6kpo/dZc+zBxWJpAhDFycAjCRM1sYGW6dWnDg2kfH9yZR XodCF+bwpnt9VT6uMV1ij8Cx+jRJphyG//5edavr1Wd84vS12h5yrudDkp/k40tOHX9CbJyjNp0 I5AcA
+X-Developer-Key: i=chleroy@kernel.org; a=openpgp; fpr=10FFE6F8B390DE17ACC2632368A92FEB01B8DD78
 Content-Transfer-Encoding: 8bit
 
-On failure of pcibios_sriov_enable(), drivers/pci/iov.c calls
-pcibios_sriov_disable() unconditionally. pseries frees
-pdn->pe_num_map without NULLing it, both on the error path of
-pseries_pci_sriov_enable() and in pseries_pcibios_sriov_disable(),
-so the dangling pointer is freed again when the core cleans up.
-Set pdn->pe_num_map to NULL after kfree() in both places.
+Powerpc arch_cmpxchg() wrapper macros cast arguments to
+'unsigned long' before calling the functions implementing the
+operation. Some type annotations (e.g. __bitwise) generate
+sparse warnings like:
 
-Fixes: 9a7f6b438664 ("powerpc/pseries/pci: Associate PEs to VFs in configure SR-IOV")
-Cc: stable@vger.kernel.org
-Reported-by: sashiko-bot@kernel.org
-Link: https://sashiko.dev/#/patchset/20260813035323.245229-1-yijiangshan%40kylinos.cn
-Signed-off-by: Jiangshan Yi <yijiangshan@kylinos.cn>
+  block/blk-crypto-fallback.c:164:17: warning: cast from restricted blk_status_t
+  block/blk-crypto-fallback.c:164:17: warning: cast to restricted blk_status_t
+
+Force casting in the macros to avoid the warnings:
+
+Reported-by: kernel test robot <lkp@intel.com>
+Closes: https://lore.kernel.org/oe-kbuild-all/202606012339.rZAl6Xq8-lkp@intel.com/
+Signed-off-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
 ---
- arch/powerpc/platforms/pseries/pci.c | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/powerpc/include/asm/cmpxchg.h | 22 ++++++++++++----------
+ 1 file changed, 12 insertions(+), 10 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/pci.c b/arch/powerpc/platforms/pseries/pci.c
-index 6fc13f4a79a3..13d0baea5786 100644
---- a/arch/powerpc/platforms/pseries/pci.c
-+++ b/arch/powerpc/platforms/pseries/pci.c
-@@ -154,6 +154,7 @@ static int pseries_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
- 	if (rc) {
- 		dev_err(&pdev->dev, "Failure to enable sriov: %x\n", rc);
- 		kfree(pdn->pe_num_map);
-+		pdn->pe_num_map = NULL;
- 	} else {
- 		pci_vf_drivers_autoprobe(pdev, false);
- 	}
-@@ -175,6 +176,7 @@ static int pseries_pcibios_sriov_disable(struct pci_dev *pdev)
- 	pdn = pci_get_pdn(pdev);
- 	/* Releasing pe_num_map */
- 	kfree(pdn->pe_num_map);
-+	pdn->pe_num_map = NULL;
- 	/* Release PCI data */
- 	remove_sriov_vf_pdns(pdev);
- 	pci_vf_drivers_autoprobe(pdev, true);
+diff --git a/arch/powerpc/include/asm/cmpxchg.h b/arch/powerpc/include/asm/cmpxchg.h
+index dbb50c06f0bf..7264e33ef877 100644
+--- a/arch/powerpc/include/asm/cmpxchg.h
++++ b/arch/powerpc/include/asm/cmpxchg.h
+@@ -700,8 +700,9 @@ __cmpxchg_acquire(void *ptr, unsigned long old, unsigned long new,
+   ({									 \
+      __typeof__(*(ptr)) _o_ = (o);					 \
+      __typeof__(*(ptr)) _n_ = (n);					 \
+-     (__typeof__(*(ptr))) __cmpxchg((ptr), (unsigned long)_o_,		 \
+-				    (unsigned long)_n_, sizeof(*(ptr))); \
++     (__force __typeof__(*(ptr)))					 \
++	__cmpxchg((ptr), (__force unsigned long)_o_,			 \
++		  (__force unsigned long)_n_, sizeof(*(ptr)));		 \
+   })
+ 
+ 
+@@ -709,26 +710,27 @@ __cmpxchg_acquire(void *ptr, unsigned long old, unsigned long new,
+   ({									 \
+      __typeof__(*(ptr)) _o_ = (o);					 \
+      __typeof__(*(ptr)) _n_ = (n);					 \
+-     (__typeof__(*(ptr))) __cmpxchg_local((ptr), (unsigned long)_o_,	 \
+-				    (unsigned long)_n_, sizeof(*(ptr))); \
++     (__force __typeof__(*(ptr)))					 \
++	__cmpxchg_local((ptr), (__force unsigned long)_o_,		 \
++			(__force unsigned long)_n_, sizeof(*(ptr)));	 \
+   })
+ 
+ #define arch_cmpxchg_relaxed(ptr, o, n)					\
+ ({									\
+ 	__typeof__(*(ptr)) _o_ = (o);					\
+ 	__typeof__(*(ptr)) _n_ = (n);					\
+-	(__typeof__(*(ptr))) __cmpxchg_relaxed((ptr),			\
+-			(unsigned long)_o_, (unsigned long)_n_,		\
+-			sizeof(*(ptr)));				\
++	(__force __typeof__(*(ptr)))					\
++	  __cmpxchg_relaxed((ptr), (__force unsigned long)_o_,		\
++			    (__force unsigned long)_n_, sizeof(*(ptr)));\
+ })
+ 
+ #define arch_cmpxchg_acquire(ptr, o, n)					\
+ ({									\
+ 	__typeof__(*(ptr)) _o_ = (o);					\
+ 	__typeof__(*(ptr)) _n_ = (n);					\
+-	(__typeof__(*(ptr))) __cmpxchg_acquire((ptr),			\
+-			(unsigned long)_o_, (unsigned long)_n_,		\
+-			sizeof(*(ptr)));				\
++	(__force __typeof__(*(ptr)))					\
++	  __cmpxchg_acquire((ptr), (__force unsigned long)_o_,		\
++			    (__force unsigned long)_n_, sizeof(*(ptr)));\
+ })
+ #ifdef CONFIG_PPC64
+ #define arch_cmpxchg64(ptr, o, n)					\
 -- 
-2.25.1
+2.54.0
 
 
