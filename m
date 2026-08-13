@@ -1,60 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-25810-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25811-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00F11C5AC67
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Aug 2026 08:17:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 32363C5CFDB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Aug 2026 08:20:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hLJB13gPdz2yNj;
-	Thu, 13 Aug 2026 18:17:13 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786609033;
-	cv=none; b=CDVYFrBQNKHV7L8sPH4KJfMAgD5ic4kjI6VDsfP3iGIDW+raQ+9d0iZ8sS/AsR2PnlwaU5aG+QIxoPlYQy9d+br1gn7DOgiSyhdhqK1U7/BfLzjltmXr9422t7YqQ+VzkJsOSDC48baVVlbnJJSY6glSddOA6aKI8hipSIKibAatJNlcujBrpAAApszyqhZfq3Ltu3glB6Za1Zh6qfJ8PyvqiYCDFOuTw1T3hxdU2awLl5pCh4Hd8UW0wBz0vc0h26qURQXFSuOfuZzqNb72UKZ/zF8LbiSMOTVfGfO1MvCOi4stPRi8sF0iOQ/5kA3XZuE663b1dPzSZ21KGcKswg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hLJFv2wz5z2yVd;
+	Thu, 13 Aug 2026 18:20:35 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786609235;
+	cv=none; b=IUHkiJUzGygOwOgqXn4/C1iikIhkj3oLw8tka7pocWUyeJuXo2Bt8pFMBpi+03xqulaYVycIwQ1MVHc5nUpLk8XK3hbzSDsTeqyaSLG0clmkUhJzJAIGDNykQOVmjFMmRnsmzLtorjC+0wb1ZGOYHPmF5NLWaM7mQIxBwWpnYIeIecFww+wtFkqmH9jvz4XLZjlzx6pnyS39BFKgtcU5dWV0iJrB9LxIhXeC48XYGNl/gf6uJiqL1Ole9h9QYN/jj5GK0SC7jns/5YGG1Dj4RrENOfNppPsa5ExwTmaLsvjkfxENR/Y+oHBYtIjybEOGM1Qxjg5EPQZkoRw+3eGQxg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786609033; c=relaxed/relaxed;
-	bh=OBCEUWqwGxw/pU1xAkmBvx00nyMvNlJlQThBjZtx7/c=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=F1oISrGjP3yN6GiK0IB/pYA/17T0WPlNzFczX9nrq84+FVNeNy0k3i9F+XtsMfp7qN4nIdJNoXOKd8LsVNL9EWvcC4N9t8SSmXqPjxSx2tjlXgJEkIVgtir3tfADYJDXF/WRDqBgdXym2GL1dM7TF6aIm++aDlkqDGj44zdcP6pWTjxAdeXImunOx8tPQcfSzJ649J8EGijbrJLKxZIO5fC6SaL2NPCvEptg5Drr5ha7hS34rhaSKRhSC1rcMdej1lW6nVtp7968i8XNAQQvpJYyvls9HSihQ/QlLn0XvHrWQdCmuVFkMPb9TYf4pKzfsTnyqr5UwpcN0JIvlT6jXQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hOsXmEDQ; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1786609235; c=relaxed/relaxed;
+	bh=BpLKv+HLKMXgHbkxllR3SmVTl3IvJW2Gw7BMJgcyPFA=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=DcG1fT8Xa7chwqr8Nl0u3OP/KItFImFxVZ9ImIJNJ9zUBQ5/nNvZUKwPwdkrV3eFWBatQ7CmqdqArwZqMUVd1FWrOuP6hYLw4stur/Jcw8jKBy7YKR8qUOpPTVZ4A7AXG+c18Uuq5yFgBV/L2+f4Mf+K1DT5FSD4wRQDpkdDRh26hJDpP4ojdF3xxpcr3y38JQP+UEBg7rDSekq3N+RX+Wi9WkuIKK9YHh/ptsHndPj/xKhMOji5v7fq5Oo9nI4PpAC3uX3VOzcD+aM+A1V1daVgs07VOdXqabNBdmMY+YCTjzwbp5u0C5wWqk/B6njkL5jPyYaDq/p9hT94PepBGQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Sr0GrUAE; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hOsXmEDQ;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Sr0GrUAE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hLJB03FJwz2yfp
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2026 18:17:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hLJFp2yTsz2ySS
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2026 18:20:30 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 60B23600AD;
-	Thu, 13 Aug 2026 08:17:09 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0569E1F000E9;
-	Thu, 13 Aug 2026 08:17:06 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id B5BC1416ED;
+	Thu, 13 Aug 2026 08:20:23 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 298EC1F000E9;
+	Thu, 13 Aug 2026 08:20:20 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1786609029;
-	bh=OBCEUWqwGxw/pU1xAkmBvx00nyMvNlJlQThBjZtx7/c=;
-	h=From:To:Cc:Subject:Date;
-	b=hOsXmEDQeXsxkBgDCazffc87Oi+RAGpdxNPkxAbJ5J88njdP3zLs0G+ohSUCHH1ak
-	 iZtVevb7a0+NRAHk84V8KFdRZoqHdULNIqbYJCpi5gY1piDmJCxja8m3VEgXCz843q
-	 BTZnonzeR4OJ5DNVfrkdt47hwSl0pmqicrU12FQyxdCBx0NP/0XLgoAWd7Gtf9Zl6v
-	 PbfcCA9M4Fct9UMqDmEsmZNG92iWfYIwhmO924j4hei4TzVmJzdiBzCiahbWSBCl2C
-	 oYVKurEUIUseJJmUk/TikLA40YDwHN/7MHVfEqAuJ/IlelETC1J43GDzkwQMh8WUpT
-	 /i9vroy3bfRgQ==
-From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-To: Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	kernel test robot <lkp@intel.com>
-Subject: [PATCH] powerpc: Silence sparse warnings caused by type casting in (cmp)xchg
-Date: Thu, 13 Aug 2026 10:16:46 +0200
-Message-ID: <289a7ffac9cb5b6d26a57fdc26605bf725285302.1786608980.git.chleroy@kernel.org>
-X-Mailer: git-send-email 2.54.0
+	s=k20260515; t=1786609223;
+	bh=BpLKv+HLKMXgHbkxllR3SmVTl3IvJW2Gw7BMJgcyPFA=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=Sr0GrUAEEZbftQUK6bqsx4JCEi6/OxZSbCKAnwmp0ulLlakrFBFF9Im+T1eSpbBPH
+	 KOg5jRqMtEkPMKjV2W6LmMKa/OIEw/G58GQ+N5VxENQJWNF0uGv5DDlxYCf+sSekPo
+	 Itn3mkvrqOB/lbkgkAZQmcgKHsTNHN+4IDXOxGey8aEUrSKjY7L+Bw+pniCufBLMsB
+	 KJQhq2ZRrNbRrveVG+qe1L/fxu5n5vf77Lh1wvVRqfPpnioneAc6JjJbxVtLfNS5Zg
+	 nPSG7/RN2K30ABo9Rkc5BXiKSshs/vfaSox3R6ObCZsXS/7fipmN4yi02xC8TY+0j0
+	 V0DpwwZlSz/rg==
+Message-ID: <450c036c-71fe-4192-a678-995389b845df@kernel.org>
+Date: Thu, 13 Aug 2026 10:20:17 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -68,80 +59,81 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2850; i=chleroy@kernel.org; h=from:subject:message-id; bh=4mvMrpIZAkAXcVPWdMLSSPRhuOvefDeo4UeeoCigqWM=; b=owGbwMvMwCV2d0KB2p7V54MZT6slMWTV1hZeDi8Q1L/ufP95imiNYN2l9Q98bzzm3av03tO18 VaR/LPAjlIWBjEuBlkxRZbj/7l3zej6kpo/dZc+zBxWJpAhDFycAjCRM1sYGW6dWnDg2kfH9yZR XodCF+bwpnt9VT6uMV1ij8Cx+jRJphyG//5edavr1Wd84vS12h5yrudDkp/k40tOHX9CbJyjNp0 I5AcA
-X-Developer-Key: i=chleroy@kernel.org; a=openpgp; fpr=10FFE6F8B390DE17ACC2632368A92FEB01B8DD78
+User-Agent: Mozilla Thunderbird
+Subject: Re: [axboe:for-7.0/block 19/138] block/blk-crypto-fallback.c:154:17:
+ sparse: sparse: cast from restricted blk_status_t
+To: Christoph Hellwig <hch@lst.de>, kernel test robot <lkp@intel.com>
+Cc: oe-kbuild-all@lists.linux.dev, Jens Axboe <axboe@kernel.dk>,
+ Eric Biggers <ebiggers@kernel.org>, Madhavan Srinivasan
+ <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+References: <202606012339.rZAl6Xq8-lkp@intel.com>
+ <20260601152933.GA6444@lst.de>
+Content-Language: fr-FR
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+In-Reply-To: <20260601152933.GA6444@lst.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
-Powerpc arch_cmpxchg() wrapper macros cast arguments to
-'unsigned long' before calling the functions implementing the
-operation. Some type annotations (e.g. __bitwise) generate
-sparse warnings like:
+Hi,
 
-  block/blk-crypto-fallback.c:164:17: warning: cast from restricted blk_status_t
-  block/blk-crypto-fallback.c:164:17: warning: cast to restricted blk_status_t
+Le 01/06/2026 à 17:29, Christoph Hellwig a écrit :
+> I think powerpc really need to pick the tricks from other architectures
+> to make cmpxchg work on __bitwise fields.
 
-Force casting in the macros to avoid the warnings:
+Thanks,
 
-Reported-by: kernel test robot <lkp@intel.com>
-Closes: https://lore.kernel.org/oe-kbuild-all/202606012339.rZAl6Xq8-lkp@intel.com/
-Signed-off-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
----
- arch/powerpc/include/asm/cmpxchg.h | 22 ++++++++++++----------
- 1 file changed, 12 insertions(+), 10 deletions(-)
+Should be fixed by 
+https://lore.kernel.org/all/289a7ffac9cb5b6d26a57fdc26605bf725285302.1786608980.git.chleroy@kernel.org/
 
-diff --git a/arch/powerpc/include/asm/cmpxchg.h b/arch/powerpc/include/asm/cmpxchg.h
-index dbb50c06f0bf..7264e33ef877 100644
---- a/arch/powerpc/include/asm/cmpxchg.h
-+++ b/arch/powerpc/include/asm/cmpxchg.h
-@@ -700,8 +700,9 @@ __cmpxchg_acquire(void *ptr, unsigned long old, unsigned long new,
-   ({									 \
-      __typeof__(*(ptr)) _o_ = (o);					 \
-      __typeof__(*(ptr)) _n_ = (n);					 \
--     (__typeof__(*(ptr))) __cmpxchg((ptr), (unsigned long)_o_,		 \
--				    (unsigned long)_n_, sizeof(*(ptr))); \
-+     (__force __typeof__(*(ptr)))					 \
-+	__cmpxchg((ptr), (__force unsigned long)_o_,			 \
-+		  (__force unsigned long)_n_, sizeof(*(ptr)));		 \
-   })
- 
- 
-@@ -709,26 +710,27 @@ __cmpxchg_acquire(void *ptr, unsigned long old, unsigned long new,
-   ({									 \
-      __typeof__(*(ptr)) _o_ = (o);					 \
-      __typeof__(*(ptr)) _n_ = (n);					 \
--     (__typeof__(*(ptr))) __cmpxchg_local((ptr), (unsigned long)_o_,	 \
--				    (unsigned long)_n_, sizeof(*(ptr))); \
-+     (__force __typeof__(*(ptr)))					 \
-+	__cmpxchg_local((ptr), (__force unsigned long)_o_,		 \
-+			(__force unsigned long)_n_, sizeof(*(ptr)));	 \
-   })
- 
- #define arch_cmpxchg_relaxed(ptr, o, n)					\
- ({									\
- 	__typeof__(*(ptr)) _o_ = (o);					\
- 	__typeof__(*(ptr)) _n_ = (n);					\
--	(__typeof__(*(ptr))) __cmpxchg_relaxed((ptr),			\
--			(unsigned long)_o_, (unsigned long)_n_,		\
--			sizeof(*(ptr)));				\
-+	(__force __typeof__(*(ptr)))					\
-+	  __cmpxchg_relaxed((ptr), (__force unsigned long)_o_,		\
-+			    (__force unsigned long)_n_, sizeof(*(ptr)));\
- })
- 
- #define arch_cmpxchg_acquire(ptr, o, n)					\
- ({									\
- 	__typeof__(*(ptr)) _o_ = (o);					\
- 	__typeof__(*(ptr)) _n_ = (n);					\
--	(__typeof__(*(ptr))) __cmpxchg_acquire((ptr),			\
--			(unsigned long)_o_, (unsigned long)_n_,		\
--			sizeof(*(ptr)));				\
-+	(__force __typeof__(*(ptr)))					\
-+	  __cmpxchg_acquire((ptr), (__force unsigned long)_o_,		\
-+			    (__force unsigned long)_n_, sizeof(*(ptr)));\
- })
- #ifdef CONFIG_PPC64
- #define arch_cmpxchg64(ptr, o, n)					\
--- 
-2.54.0
+Based on commit 212dd8477653 ("arm64: Silence sparse warnings caused by 
+the type casting in (cmp)xchg")
+
+Christophe
+
+> 
+> On Mon, Jun 01, 2026 at 11:26:16PM +0800, kernel test robot wrote:
+>> tree:   https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgit.kernel.org%2Fpub%2Fscm%2Flinux%2Fkernel%2Fgit%2Faxboe%2Flinux.git&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7Cb09ed76c517f4ac2a96a08debff29913%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639159245835365955%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=SCrQIL52YejLyMbT487%2Fu4y7bDdqD3W0NISJGASlqnI%3D&reserved=0 for-7.0/block
+>> head:   72f4d6fca699a1e35b39c5e5dacac2926d254135
+>> commit: b37fbce460ad60b0c4449c1c7566cf24f3016713 [19/138] blk-crypto: optimize bio splitting in blk_crypto_fallback_encrypt_bio
+>> config: powerpc64-randconfig-r111-20260601 (https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fdownload.01.org%2F0day-ci%2Farchive%2F20260601%2F202606012339.rZAl6Xq8-lkp%40intel.com%2Fconfig&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7Cb09ed76c517f4ac2a96a08debff29913%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639159245835742509%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=mcTjhCA7fN2FQAsYEiRRY3xTOyBg%2BNJxAwMqeSERPG4%3D&reserved=0)
+>> compiler: powerpc64-linux-gcc (GCC) 8.5.0
+>> sparse: v0.6.5-rc1
+>> reproduce (this is a W=1 build): (https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fdownload.01.org%2F0day-ci%2Farchive%2F20260601%2F202606012339.rZAl6Xq8-lkp%40intel.com%2Freproduce&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7Cb09ed76c517f4ac2a96a08debff29913%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639159245835767299%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=3IobnZTPyXIEKog3PvyDf%2Bti4W%2F4jFM8O5QZG%2FVn%2Bkw%3D&reserved=0)
+>>
+>> If you fix the issue in a separate patch/commit (i.e. not just a new version of
+>> the same patch/commit), kindly add following tags
+>> | Reported-by: kernel test robot <lkp@intel.com>
+>> | Closes: https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Flore.kernel.org%2Foe-kbuild-all%2F202606012339.rZAl6Xq8-lkp%40intel.com%2F&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7Cb09ed76c517f4ac2a96a08debff29913%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639159245835785008%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=dkHYbj0M7dRIfeyg8uLlJgQlMYbYi91eHIOx5FZOpJ0%3D&reserved=0
+>>
+>> sparse warnings: (new ones prefixed by >>)
+>>>> block/blk-crypto-fallback.c:154:17: sparse: sparse: cast from restricted blk_status_t
+>>>> block/blk-crypto-fallback.c:154:17: sparse: sparse: cast from restricted blk_status_t
+>>     block/blk-crypto-fallback.c:154:17: sparse: sparse: cast to restricted blk_status_t
+>>
+>> vim +154 block/blk-crypto-fallback.c
+>>
+>>     143	
+>>     144	static void blk_crypto_fallback_encrypt_endio(struct bio *enc_bio)
+>>     145	{
+>>     146		struct bio *src_bio = enc_bio->bi_private;
+>>     147		int i;
+>>     148	
+>>     149		for (i = 0; i < enc_bio->bi_vcnt; i++)
+>>     150			mempool_free(enc_bio->bi_io_vec[i].bv_page,
+>>     151				     blk_crypto_bounce_page_pool);
+>>     152	
+>>     153		if (enc_bio->bi_status)
+>>   > 154			cmpxchg(&src_bio->bi_status, 0, enc_bio->bi_status);
+>>     155	
+>>     156		bio_put(enc_bio);
+>>     157		bio_endio(src_bio);
+>>     158	}
+>>     159	
+>>
+>> --
+>> 0-DAY CI Kernel Test Service
+>> https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgithub.com%2Fintel%2Flkp-tests%2Fwiki&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7Cb09ed76c517f4ac2a96a08debff29913%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639159245835802872%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=4Iyio2M%2Fz52Q9ilcjHSE%2Fmy98xR53NJQm%2FzwwXDH1qo%3D&reserved=0
+> ---end quoted text---
 
 
