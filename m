@@ -1,84 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-25829-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25830-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7B9C3C5CFCF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Aug 2026 16:52:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 40205C5CFDB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Aug 2026 18:41:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hLWcz0PC4z2yfR;
-	Fri, 14 Aug 2026 02:52:51 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c200::3" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786639970;
-	cv=pass; b=hjkNdqALJ26Y24r58wAf0M8/LWSRW+rjzqV9ZyiGWSWOUQYsi4ctxor/CvZPRVv4SH0vG3SN9Mbc4c/MOo3hgpumY6kr8FE1j31jbPXOURqt+uICUTeq+NpF8KmC/CliSHqPNgMZqDCwP50shTYjsmg7Qd2660Fe/8jBzPtfUcPWYkfHNQTmHxJW8NBgQBjvXIJTuoHckhQWjiO12nZO6GSGRvn3Wlt2Av/ma++jT2tneyYIXEtL882ABmyKs2Ec+ckrEC1E0rsi7WlYzQvjvfR1bUY82lSq/YQ5UaKXRHX0x6LZTpWXc3Fk94gXbTQmzyfVX9EIeS/zt/zriMiUIA==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786639970; c=relaxed/relaxed;
-	bh=0ITP6GKQxW6bbG8FtbmtnHFu87zPQthUaNPlr47Ojjc=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=e6Gp/+TCMt/4OW0aOebutl/QQ/pUtiLcBojYTn53kIwu/cVrbmBRthWsc9GdWcfKhwQNXvy4mSM9rw52HHG4MYYr7CkEBz74y1jhxtgWOTNhESDDtvAelN6bdsOZFUrL9jwKiHpJquZ41TdU8sEwSHcgdIMo7DOurBbNvJStMrTvoJgsje5RDsGntK3bukHXu0G1QCJty2awSwlyr+UOv0uXiUjqaNj8FcraBLxBki6i8y/5BPiORuooBWF9CJoEJzwLBUo1lHOl1nxa0MizTJvL0Zx4Ft8bgtCeTdreWS7EU/gNqDzYS5npG9ZdRGXSXHXjTeK7snXhV73ywfvv9Q==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=KE7hGyLV; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c200::3; helo=du2pr03cu002.outbound.protection.outlook.com; envelope-from=frank.li@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hLZ221vYmz2yf0;
+	Fri, 14 Aug 2026 04:41:14 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786646474;
+	cv=none; b=lxdeWLS2QFXI2ssNi9wI1SG2NrS/xtaXEAZhO9Q8l5nSYyN2vXwUBB9LRGer3V11Hsi1TLvhp8LxE2cJ+ZUqHR/bWvYeH9BLx1bKNuhJceW1n29T8HMFJ0uh/gLQZbFWtltKyRfLYekurBhIZ6hauvZOmXri5XxrGgUZnQNTYFSL0JwzQyhMR79FoQLPlcy/2VT9LcBx4llHHe9rED88UDH2jSyVyHWj7dCICB5tavtrQxInWcnP22UMmQJSkuwwCqoldxk0pchH0RSz7ma5/1V3fMSdgd8A92d/AGYvi4VPiy+EbiuVCoglWmlUs+DLMcZMEO2SG/egtQZQPGzM0g==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1786646474; c=relaxed/relaxed;
+	bh=UOyfNQtEIMOf3FPpUb2NV1Iy+qUg33zY+KwTr0rHqiQ=;
+	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
+	 Message-Id:References:To; b=cwUsh79KA5rXdKIbYFOlLlzpjkMCh3WdEwv5+lwhNUUBJcBr65rkCTJV/T5JMLPSF7H5x4j/pEyvkV/ZxTAwMl+/QTZEhckyB7LrRn5OGUrmcsy3TjUnJQD/LCrrzzdKhPs1U7J8rnxOCoXkgygGIwHx9RrJd5xrPoGdxB2whmoHAI/LZJ58ub5kccgY78Uphue3sFr2Buiy8wvKTqSXzrqt/4mztrNzz9rb0nwjN3rs8tY2XDnb42VVK1N4sCBwTLrISutWiyIbFuFmbP045D3fgJ2Z4WIEOfFYl+jnpU+AH5wShWmRp3zCKhoTkxbkYx156bQvlspnNcVZBjYL2w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PnKIlUck; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=KE7hGyLV;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PnKIlUck;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:c200::3; helo=du2pr03cu002.outbound.protection.outlook.com; envelope-from=frank.li@oss.nxp.com; receiver=lists.ozlabs.org)
-Received: from DU2PR03CU002.outbound.protection.outlook.com (mail-northeuropeazlp170110003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c200::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hLWcx38Jbz2yKD
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2026 02:52:49 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=BHOpDcmKSs5AjR1/0oPfVaZZHy63yrK/Pd4UFf4IoTXU7DgG03zJr6WizKsqZfj33RIhEwSQ6uGlh9wsrfLNi9wW679r+aMxayVuC+1I3OkVPHJdxE1IJ+wv3JjxZ3+pErOIKpAJZBT+Zwi3S9MDbN07v0TFm0x4lr6cxYbvecAac0zvI35EGJO6VMVMWwXQra8jM2aj7yaG02PAsK/x+uo1knAkyvY7n+3pH6kvNKp+07cfsQnidC8T9W7WcouDmiTUPzItLENPVV7beAP2rPrrvFMgMovokiX1V5pl8TnhNsJIQqFxyMrW6eyefhidHE++QhOThRnWMwxza9z2dg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=0ITP6GKQxW6bbG8FtbmtnHFu87zPQthUaNPlr47Ojjc=;
- b=Oc7XEmiPv7Ec5vVTjUAKvO4G6CeIe6m2tZO/PF55f7lFtff4n9uKyymAYoCcjmfRuFbEND3wxjXLVI6ld/0ALVyGGIeOj4ulNy28RytdYOvlk5z/xkAnI1SynOC26fEw8m6YYeH8nkl9L7ot4HW8kew2obGIaiEGcqjzITwlx4Ka1iEgmNLJlaL/zIyuhUKKBE+Mt+wRVqCanNOHTTipZz002K2LSNqRPlWPPAoq8z3tR+KDiYW21EcOLlombUH7kafSXKBDr7Ivrsn8FZDwu/9C7msWJoHTQdz4aYtyBDsp2BDa91MskMHqUSdNSnG6asDHTvl4gu2Y154yyb8NcQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
- dkim=pass header.d=oss.nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
- s=selector1-NXP1-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=0ITP6GKQxW6bbG8FtbmtnHFu87zPQthUaNPlr47Ojjc=;
- b=KE7hGyLVTrruKPKMVEtmQ4IyWt5nJOZ+gxPZO4Ru+L1WROj19RNlyqcLbbbxF2v0AjVtravGxkkvQmTfrPp6mJ1raHqtbXsvQF+/UCcsROn1DuNu3hqlONjhrmTsug7D3rz539BPtrAiwCFTUQCmDtIP/GDSgXCq8nuEJDYc2mc09pwTIAD1eBaprB/fZ4lOxrTZz1uNjQyQROybtC+ZhQH+4nyFd/esO0SbbZ6zO9mk3nPc5m3cmdD0IGDunnxm8qMjHV4fgebz6aY5FSbX6u+P/gnS5eeAPFOf1uBiqdfTtOugM6e47e2ohQ8VTpLxs0KGudcJjOJytjliWFZ3wQ==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=oss.nxp.com;
-Received: from DU4PR04MB11791.eurprd04.prod.outlook.com (2603:10a6:10:623::11)
- by VI0PR04MB792713.eurprd04.prod.outlook.com (2603:10a6:800:365::6) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.315.14; Thu, 13 Aug
- 2026 16:52:24 +0000
-Received: from DU4PR04MB11791.eurprd04.prod.outlook.com
- ([fe80::11ca:6b74:3234:d7de]) by DU4PR04MB11791.eurprd04.prod.outlook.com
- ([fe80::11ca:6b74:3234:d7de%5]) with mapi id 15.21.0315.014; Thu, 13 Aug 2026
- 16:52:24 +0000
-Date: Thu, 13 Aug 2026 11:52:17 -0500
-From: Frank Li <Frank.li@oss.nxp.com>
-To: shengjiu.wang@oss.nxp.com
-Cc: lgirdwood@gmail.com, broonie@kernel.org, robh@kernel.org,
-	krzk+dt@kernel.org, conor+dt@kernel.org, Frank.Li@nxp.com,
-	s.hauer@pengutronix.de, kernel@pengutronix.de, festevam@gmail.com,
-	shawnguo@kernel.org, linux-sound@vger.kernel.org,
-	devicetree@vger.kernel.org, imx@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	shengjiu.wang@gmail.com, Xiubo.Lee@gmail.com,
-	nicoleotsuka@gmail.com, perex@perex.cz, tiwai@suse.com,
-	linuxppc-dev@lists.ozlabs.org,
-	Shengjiu Wang <shengjiu.wang@nxp.com>
-Subject: Re: [PATCH v4 3/5] ASoC: fsl_asrc/fsl_easrc: move DMA params into
- pair/context struct
-Message-ID: <an32QUTIbtVn1G-I@SMW015318>
-References: <20260813070020.719810-1-shengjiu.wang@oss.nxp.com>
- <20260813070020.719810-4-shengjiu.wang@oss.nxp.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260813070020.719810-4-shengjiu.wang@oss.nxp.com>
-X-ClientProxiedBy: SN6PR2101CA0007.namprd21.prod.outlook.com
- (2603:10b6:805:106::17) To DU4PR04MB11791.eurprd04.prod.outlook.com
- (2603:10a6:10:623::11)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hLZ206q5Rz2yRZ
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2026 04:41:12 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67DFXK7C1630953;
+	Thu, 13 Aug 2026 18:41:05 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=UOyfNQ
+	tEIMOf3FPpUb2NV1Iy+qUg33zY+KwTr0rHqiQ=; b=PnKIlUckzAGHeBRyhuyokn
+	RA5WzNpVWXBdVJypYSCMhosz9IJuvkIidSUg9w1AX64XiJp79px7LK3dVXAlZtQ7
+	kUkCQlZRahxGHZZz+5aM+WCice5maAlmUEaweUMUBbnt5/TIAvtf6gpRe9YCCaRM
+	ZxC3ju/Mz2eL7/gHNOCM1xm29oTppQnipnbU72vKmb9Hb+DKQHGK6s7eW4Kn789a
+	x5zbuQeZEzGjZVVEXmlgRoTqQYdAxcQnToqiFbxp1Vet4mA5Xcv+iCpShbumkfd/
+	H2Jsxitkfj56aC11rB5ZlhP8UmzSlLe0jSsOVYbU6HG1SGnjcwa+1UACLvy1bvJA
+	==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fyb241rdg-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 13 Aug 2026 18:41:04 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 67DIQMGN014424;
+	Thu, 13 Aug 2026 18:41:04 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4fxg9hc5jk-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 13 Aug 2026 18:41:03 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 67DIexdb14156188
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 13 Aug 2026 18:40:59 GMT
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 4D00420040;
+	Thu, 13 Aug 2026 18:40:59 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 80F5E20043;
+	Thu, 13 Aug 2026 18:40:56 +0000 (GMT)
+Received: from smtpclient.apple (unknown [9.124.209.240])
+	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Thu, 13 Aug 2026 18:40:56 +0000 (GMT)
+Content-Type: text/plain;
+	charset=utf-8
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,199 +80,353 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DU4PR04MB11791:EE_|VI0PR04MB792713:EE_
-X-MS-Office365-Filtering-Correlation-Id: 4de6bd55-c99a-448b-dd7d-08def95b3fd8
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|23010399003|7416014|19092799006|376014|1800799024|366016|6133799003|10067099003|4143699003|11063799006|22082099003|18002099003|56012099006|3023799007;
-X-Microsoft-Antispam-Message-Info:
-	gh0gKmc4EIVDywIF//jcN+79g3zaTYvPIPujFZSSJT0GnfNs8CYXc+5BXN4PbwA5WaTfsw/g19pnDntG6JZviVO40TgpYdfbGXF8c25j47B1ut+VVNdJyF4IBpU1Bb88Y9rxVxMJvtwXm3bCM7ZZGmrm53lrxmT5bEF/tCp2jxAI62q3YOCGN20GFE3dfBp1jL+Xdy08GcL31AP+axwO9eR86EW7dIZDYoC88+6zGTNn7uWeG5uKdu8RXkLQsoL8orCg/fMgVKH0tc7vg3hYOaVypRYGtXUnM8eKT8fC0ZjeQsMdYQ8susTwntnkI0+gvEWVgOTcje7T07UGGeFCkXjYOae+RZUn0nOWoitWayeai3I2X+T0DGrlXz8TcpO6tf9F8HIv/50gpdxynpPtxFHGhfteWESwwyVNxx8vHKwYmUmE0wKYrbPTOst5Qcm6c4DaQ7Iuz+s4TUUhO7o7IqwmqBBk2tYVzcjSSutcfI2LA5eVL9Dynu3CqKl5i+1VRy6WyPCDqy2HfOKMy8/RPteeN5PWjePP1csDnOZyp4X9zLe5eOUqZxc3Sq01068VdB9JmAelsGK8AfYt8Bat7njDF+qrO5dxtndooevHArgBp+IhYyJ2PhXq7wyT2JnSBrShtYj3oyn9QxgciZkOzwysm/xSxqMOvJyOxp+46Ok=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DU4PR04MB11791.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(7416014)(19092799006)(376014)(1800799024)(366016)(6133799003)(10067099003)(4143699003)(11063799006)(22082099003)(18002099003)(56012099006)(3023799007);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?cI79Eqgv8XkjLOYguBNTpJD1UZN6GbpW4SViPSrXyinvmrkR8o+YrCGcXdNw?=
- =?us-ascii?Q?WCMgXJu4uQKYWkq792tAI9KhJl82VnHZBischqMWGWiu+j4c0fT1sgS2vs1c?=
- =?us-ascii?Q?sKmNCTCyZwhBYvxg7qImPM+05C15J2QSrVVqukf6QW1t9vhEfw5yJqcgd/7k?=
- =?us-ascii?Q?zRFcWZg/T0qjATSIJiSlEeOrbyzGnN4ZupmAxOHx0wYD9qMNtgXClweJUg/t?=
- =?us-ascii?Q?OwKs6aCXAKFEoXpGSf/tXCE7TKytA0vdzSeLZA+3lk2uQAelGn0BxmDw7btf?=
- =?us-ascii?Q?ZoczvnFRpwp3sr2S7EAltEI5jbKuN5OxcabQRpQgZleUmLGz3qQr7DPyWE1d?=
- =?us-ascii?Q?XpAgpcj3NOYRcU6JanJjn+tJE0hZWQ/48DUDV0LKpGbt0JvYD/UD0DiLhBWZ?=
- =?us-ascii?Q?dPPzyTZiaQ/txw5EfaJM8UOwYsZH9VJG9j4gdqYOoR6Xn+z+I4Xr5mcaUfCo?=
- =?us-ascii?Q?nRx6p7OBWOd2Nq0rcVbYF1Ta73l8jiftIMo5qgE7ClLX9rqcrMS/rKImdO6E?=
- =?us-ascii?Q?lKJ2JU8huMUVtBQj2qW0HR1/1pp3/weEDH1nSBEdSHN4xlVzvmMiz9Fr7o6B?=
- =?us-ascii?Q?LYTjweDN1+QWdlPGHvX8pXbaNHik4LrGB9Iv5xsTZ5NDrOIgPyCopv8jggSy?=
- =?us-ascii?Q?sbV5cUjKe/6z5g8MboMc9w4BWSk4l3i1XSAcoFtIbu+hP9rZppYE1dQKSKP6?=
- =?us-ascii?Q?zxbXBpJ6TB5+kHrdZE9hhJKA6qYfqAKvLslqRyOeNbDRe3o9z+90bJoE5T7p?=
- =?us-ascii?Q?NnTelgL6yKkWh3ZWT3HBQSZsEHYHy7Fxx7kwDVTA+r6diHq3QXDwBnjrupLw?=
- =?us-ascii?Q?QJhIz+W3hfE6TnA/8yPxEbQga5gZZtmA/M8EoOs+k86RH0leUpY3wn5i35jl?=
- =?us-ascii?Q?CakgNi+9MRxajUkb3FM4TRAwjC8+KbawMOTzif0yETHRgSeoC2lZXQ4PXcKA?=
- =?us-ascii?Q?/iDz5VZIHnqPmdCLSwlH8xZCDhjLuIlb50NcljsDYRCaII1Ca8dX/e3lsRoA?=
- =?us-ascii?Q?St1Rd6jXqez46pVtXJXTc4pM8vH2SZ8ZKLz18WRPX8xg5UMC0Q1brkKBlwQ8?=
- =?us-ascii?Q?JxeXlYa2l1qQi9oYi05DysPjRrPliav7wj/oJp0690appzs4o+oegx8G0ccP?=
- =?us-ascii?Q?hRd9z24GkgZ7nQmCTQvOLY7eH6XYMLHQMNAX5/gSI+u0LtuLujQ9OUl/3I3i?=
- =?us-ascii?Q?oVWH74BgAWV7n0bN1wCP0AugG5yHO2bnfPzWNDsYf0MZ94Kjj0HsZm9/hPYq?=
- =?us-ascii?Q?ogibggxAsgnj/En5UbHKqkplcuQvKInkl75PlZ4qnZ4T3YnbnRN7UFVzq6U1?=
- =?us-ascii?Q?ZH2kF8XY72JXkgjergk+RSDJWOjdACXiC3BU/0oIYRFzjH6PaHvlvtCd7ztT?=
- =?us-ascii?Q?anoDTpfvjAD2LuQmECYHI7fTuevGFkOEavy6voEvX+m1DeVGI9+kum7Rj8An?=
- =?us-ascii?Q?cD90OC53G1kW1rYxfX3IGd6KkS4vOSGdCfBaDHYnCvINC3Bc/1hKfg/g5aGK?=
- =?us-ascii?Q?ScMo4J8fl0/q4/rltJVkuiwjr0py+uxHSgxEMCO720aclu1m8IiMtdJK/kne?=
- =?us-ascii?Q?TmA1J5JDT+gbzPPBIjvS8VbZWZDu0am8QAkTU9dSSoLou5QuDlpX+oYGb5Vj?=
- =?us-ascii?Q?og5t3LCknhFpmVbEkMBWwBG98BpmyTqsEP0I6G3KbgkqY30gLyiP+6+eNKCW?=
- =?us-ascii?Q?GSr2d/E1GDHXmfU+dzjeAPTn79N6pMh8xHqpboXh/RHfsnND8h0PJa/r2fs8?=
- =?us-ascii?Q?YO/svOqtX2P26+eaOA8o6+QkgGsL5IIbWJU+A7jAZ9/uLFuxIHaY?=
-X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 4de6bd55-c99a-448b-dd7d-08def95b3fd8
-X-MS-Exchange-CrossTenant-AuthSource: DU4PR04MB11791.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 Aug 2026 16:52:24.4790
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: LeDkrsGyPbVehbr4vPuaPaCIIK/tcejvEdDeUVMCiX8c+FEMYLd5N0miWt2vwxMRkjehmaWd3T/mA3zCS2KLeaeJBiTPsUlNNNucn9s3yTMtU7b3OxKcF4cERIU2O5wE
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI0PR04MB792713
+Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3864.300.41.1.7\))
+Subject: Re: [PATCH V5 4/6] tools/perf: Add powerpc callback support for
+ arch_perf_record__need_read
+From: Athira Rajeev <atrajeev@linux.ibm.com>
+In-Reply-To: <ecbfbe14-5202-4efe-b829-1eb2590cceaf@intel.com>
+Date: Fri, 14 Aug 2026 00:10:44 +0530
+Cc: acme@kernel.org, jolsa@kernel.org, maddy@linux.ibm.com, irogers@google.com,
+        namhyung@kernel.org, linux-perf-users@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org, hbathini@linux.vnet.ibm.com,
+        tejas05@linux.ibm.com, tshah@linux.ibm.com, venkat88@linux.ibm.com,
+        usha.r2@ibm.com
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <04E662EC-0CC0-47C1-91B9-A96BA93496A7@linux.ibm.com>
+References: <20260807144135.2607-1-atrajeev@linux.ibm.com>
+ <20260807144135.2607-5-atrajeev@linux.ibm.com>
+ <a6424439-d42e-4f62-92ee-525c7f2d4277@intel.com>
+ <00D2E602-E43D-4D23-9304-133263424B3B@linux.ibm.com>
+ <ecbfbe14-5202-4efe-b829-1eb2590cceaf@intel.com>
+To: Adrian Hunter <adrian.hunter@intel.com>
+X-Mailer: Apple Mail (2.3864.300.41.1.7)
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=XqfK/1F9 c=1 sm=1 tr=0 ts=6a7e0fc1 cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+ a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8
+ a=VnNF1IyMAAAA:8 a=QyXUC8HyAAAA:8 a=YqXEhictXvq-jaN3TSsA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODEzMDEzNCBTYWx0ZWRfXxp2PltBwTypM
+ 5DpAjPSPbjU3KKWniuu7789f8k1bfb3/dzYiQ1vJUHok7Ro/5saJTnbgqujbqvpA7qsSzPhzvjw
+ I3OwSWQU/lyegb21+kWkOcu7eGJF+WF8zWebEE54Hv5ytG0jRusVptgxa9ChioO7JQaw39OcJQI
+ 3yJ2feodY/ShfR4Lz+D9zXCGpRCjOFUH6jrgNoS3s8XGAv7Vd0Wf4bYl6oQTmNYOHKL0SZUIefz
+ XQIM0NvfiIdzG29ndTtWSRyVJWydj4lLRJSPu+Yq/yCaboF9rvyw7mnK+iejeeRqQ7F2DSMPrTV
+ nZOx70CVJmoTZlq7oCyaOVfg4iS3C69R2B11QPg0QIEpmJlW6ArMD517I7ukDfLpLjydSNgG91e
+ v17gzf70vXeoEnzqU11vBNj36blNV17v6Dik0ff6KF/y3sVZnmXva1XtYJpBLRfYd0U5b3QkQL6
+ 7J0ckOdJefTXiu04h0Q==
+X-Proofpoint-ORIG-GUID: eksx-qXFT87AT60x2F9Gi-tRo6lp_x64
+X-Proofpoint-GUID: wGcWRztVTVfsf79tVCcPOl_j_j-dHSQK
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODEzMDEzNCBTYWx0ZWRfX7MXF6FtndAEf
+ cOm3A0LhNEMrSkrJzqORYlOB/IFxL1oaiIlcrvXeAEZJIbc9AsrE4Q0wJoGc2NkzGvjzBtg6r6P
+ 2LrrhPZvDM+AfKz9jZOR2130sOi/OUs=
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-08-13_05,2026-08-12_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ lowpriorityscore=0 spamscore=0 adultscore=0 malwarescore=0 clxscore=1015
+ suspectscore=0 priorityscore=1501 impostorscore=0 phishscore=0 bulkscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608130134
 
-On Thu, Aug 13, 2026 at 03:00:18PM +0800, shengjiu.wang@oss.nxp.com wrote:
-> From: Shengjiu Wang <shengjiu.wang@nxp.com>
->
-> The shared dma_params_tx/rx fields in struct fsl_asrc were a single
-> instance written by every concurrent fsl_asrc_dma_hw_params() call.
-> With multiple DAIs registered (one per pair/context), parallel stream
-> open+hw_params races would corrupt addr and maxburst for all active
-> streams.
->
-> Fix by moving dma_params into struct fsl_asrc_pair so each pair owns
-> its own copy. Initialise them in fsl_asrc_dma_startup() where
-> the pair is allocated, which makes the per-DAI probe callbacks in
-> fsl_asrc.c and fsl_easrc.c redundant; remove those as well.
->
-> Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
-> ---
 
-Reviewed-by: Frank Li <Frank.Li@nxp.com>
 
->  sound/soc/fsl/fsl_asrc.c        | 11 -----------
->  sound/soc/fsl/fsl_asrc_common.h |  7 +++----
->  sound/soc/fsl/fsl_asrc_dma.c    | 14 ++++++++++++++
->  sound/soc/fsl/fsl_easrc.c       | 11 -----------
->  4 files changed, 17 insertions(+), 26 deletions(-)
->
-> diff --git a/sound/soc/fsl/fsl_asrc.c b/sound/soc/fsl/fsl_asrc.c
-> index df4817ae91b1..2755ee57c6a1 100644
-> --- a/sound/soc/fsl/fsl_asrc.c
-> +++ b/sound/soc/fsl/fsl_asrc.c
-> @@ -781,18 +781,7 @@ static int fsl_asrc_dai_trigger(struct snd_pcm_substream *substream, int cmd,
->  	return 0;
->  }
->
-> -static int fsl_asrc_dai_probe(struct snd_soc_dai *dai)
-> -{
-> -	struct fsl_asrc *asrc = snd_soc_dai_get_drvdata(dai);
-> -
-> -	snd_soc_dai_init_dma_data(dai, &asrc->dma_params_tx,
-> -				  &asrc->dma_params_rx);
-> -
-> -	return 0;
-> -}
-> -
->  static const struct snd_soc_dai_ops fsl_asrc_dai_ops = {
-> -	.probe		= fsl_asrc_dai_probe,
->  	.startup	= fsl_asrc_dai_startup,
->  	.hw_params	= fsl_asrc_dai_hw_params,
->  	.hw_free	= fsl_asrc_dai_hw_free,
-> diff --git a/sound/soc/fsl/fsl_asrc_common.h b/sound/soc/fsl/fsl_asrc_common.h
-> index c8a1a2b5915d..4e6b00cb5d63 100644
-> --- a/sound/soc/fsl/fsl_asrc_common.h
-> +++ b/sound/soc/fsl/fsl_asrc_common.h
-> @@ -53,6 +53,7 @@ struct fsl_asrc_m2m_cap {
->   * @dma_data: private dma data
->   * @pos: hardware pointer position
->   * @req_dma_chan: flag to release dev_to_dev chan
-> + * @dma_params: DMA parameters for transmit/receive channel
->   * @private: pair private area
->   * @complete: dma task complete
->   * @sample_format: format of m2m
-> @@ -76,6 +77,8 @@ struct fsl_asrc_pair {
->  	unsigned int pos;
->  	bool req_dma_chan;
->
-> +	struct snd_dmaengine_dai_dma_data dma_params;
-> +
->  	void *private;
->
->  	/* used for m2m */
-> @@ -92,8 +95,6 @@ struct fsl_asrc_pair {
->  /**
->   * fsl_asrc: ASRC common data
->   *
-> - * @dma_params_rx: DMA parameters for receive channel
-> - * @dma_params_tx: DMA parameters for transmit channel
->   * @pdev: platform device pointer
->   * @regmap: regmap handler
->   * @paddr: physical address to the base address of registers
-> @@ -128,8 +129,6 @@ struct fsl_asrc_pair {
->   * @private: private data structure
->   */
->  struct fsl_asrc {
-> -	struct snd_dmaengine_dai_dma_data dma_params_rx;
-> -	struct snd_dmaengine_dai_dma_data dma_params_tx;
->  	struct platform_device *pdev;
->  	struct regmap *regmap;
->  	unsigned long paddr;
-> diff --git a/sound/soc/fsl/fsl_asrc_dma.c b/sound/soc/fsl/fsl_asrc_dma.c
-> index 2f662bdf14d0..15f2dccc3584 100644
-> --- a/sound/soc/fsl/fsl_asrc_dma.c
-> +++ b/sound/soc/fsl/fsl_asrc_dma.c
-> @@ -392,6 +392,20 @@ static int fsl_asrc_dma_startup(struct snd_soc_component *component,
->
->  	runtime->private_data = pair;
->
-> +	/*
-> +	 * Point the cpu DAI dma_data at the per-pair params so that
-> +	 * concurrent hw_params calls on different pairs each write to
-> +	 * their own struct and do not race on addr/maxburst.  Use the
-> +	 * per-direction setters so that a concurrent open of the other
-> +	 * direction on the same DAI does not NULL out its pointer.
-> +	 */
-> +	if (tx)
-> +		snd_soc_dai_dma_data_set_playback(snd_soc_rtd_to_cpu(rtd, 0),
-> +						  &pair->dma_params);
-> +	else
-> +		snd_soc_dai_dma_data_set_capture(snd_soc_rtd_to_cpu(rtd, 0),
-> +						 &pair->dma_params);
-> +
->  	/* Request a dummy pair, which will be released later.
->  	 * Request pair function needs channel num as input, for this
->  	 * dummy pair, we just request "1" channel temporarily.
-> diff --git a/sound/soc/fsl/fsl_easrc.c b/sound/soc/fsl/fsl_easrc.c
-> index 77c5009cc01f..d23ee482924b 100644
-> --- a/sound/soc/fsl/fsl_easrc.c
-> +++ b/sound/soc/fsl/fsl_easrc.c
-> @@ -1582,18 +1582,7 @@ static int fsl_easrc_hw_free(struct snd_pcm_substream *substream,
->  	return 0;
->  }
->
-> -static int fsl_easrc_dai_probe(struct snd_soc_dai *cpu_dai)
-> -{
-> -	struct fsl_asrc *easrc = dev_get_drvdata(cpu_dai->dev);
-> -
-> -	snd_soc_dai_init_dma_data(cpu_dai,
-> -				  &easrc->dma_params_tx,
-> -				  &easrc->dma_params_rx);
-> -	return 0;
-> -}
-> -
->  static const struct snd_soc_dai_ops fsl_easrc_dai_ops = {
-> -	.probe		= fsl_easrc_dai_probe,
->  	.startup	= fsl_easrc_startup,
->  	.trigger	= fsl_easrc_trigger,
->  	.hw_params	= fsl_easrc_hw_params,
-> --
-> 2.34.1
->
->
+> On 13 Aug 2026, at 1:17=E2=80=AFPM, Adrian Hunter =
+<adrian.hunter@intel.com> wrote:
+>=20
+> On 13/08/2026 10:36, Athira Rajeev wrote:
+>>=20
+>>=20
+>>> On 13 Aug 2026, at 11:52=E2=80=AFAM, Adrian Hunter =
+<adrian.hunter@intel.com> wrote:
+>>>=20
+>>> On 07/08/2026 17:41, Athira Rajeev wrote:
+>>>> Implement the arch_perf_record__need_read() architecture-specific =
+hook
+>>>> for powerpc in arch/powerpc/util/evsel.c.
+>>>>=20
+>>>> The HTM kernel driver sets event->count to the number of records =
+still
+>>>> staged in its internal buffers (total_size / record_size), and to 0
+>>>> once the stream is exhausted.  This hook reads that count for every =
+open
+>>>> htm evsel via perf_evsel__read() and accumulates the values into
+>>>> total_pending_records.  A non-zero total means at least one HTM =
+target
+>>>> still has records pending; the recording loop added in the previous
+>>>> patch will perform another mmap-read pass.
+>>>>=20
+>>>> The drain uses a two-layer safety check: event->count detects =
+records
+>>>> staged by the driver, and record__bytes_written() in the drain loop
+>>>> confirms data was actually moved into perf.data.  This combination
+>>>> handles the case where the driver count is briefly stale while =
+hardware
+>>>> is still flushing.
+>>>>=20
+>>>> The implementation scans the evlist using evsel__pmu_name() to =
+identify
+>>>> HTM events by their kernel-assigned PMU name rather than the
+>>>> user-visible event name, preventing false matches.  It iterates the =
+fd/
+>>>> sample-id xyarray, and skips any evsel whose fd and sample-id =
+arrays are
+>>>> mismatched to avoid reading stale state.  When the accumulated =
+record
+>>>> count reaches zero the hook returns 0 and the recording loop =
+proceeds to
+>>>> disable and close the events.
+>>>=20
+>>> This looks like the proposed driver:
+>>>=20
+>>> =
+https://lore.kernel.org/all/20260701083806.79358-1-atrajeev@linux.ibm.com/=
+
+>>=20
+>> Hi Adrian,
+>> Thank you for the review.
+>>=20
+>> Could you please help clarify which specific aspect of the driver =
+breaks the perf ABI? Is it the sysfs format ABI where encoding raw =
+hardware topology identifiers (nodeindex, nodalchipindex, =
+coreindexonchip) are used as perf_event_attr.config bit fields?
+>> I am trying to confirm so that I get your feedback correctly for =
+reworking on changes.
+>=20
+> This "draining" and "read" usage looked unusual, so I asked AI:
+>=20
+>  I have just applied the patches for powerpc htm kernel driver - they =
+are now the last 5 patches committed. Examine the design in
+>  comparison to how other PMU drivers are implemented. Does it violate =
+the kernel API for PMUs?=20
+>=20
+> It said yes.
+
+Hi Adrian,
+Thanks for taking the time to check this.
+
+I agree with the assessment. The core problems I understand are:
+- pmu->read() issues hcalls that stop the hardware trace and dump the =
+data, so any read() call ends up
+silently draining and stopping the trace =E2=80=94 which isn't what =
+read() is for.
+- event->count is being used to signal "more data pending" which breaks =
+the expected semantics.
+
+I'm going to rework this rather than continue posting on top of it.
+Here is my rework plan for your review:
+
+Kernel side: workqueue-based approach:
+-  pmu->read() becomes a no-op. No hcalls, no side effects.
+-  pmu->stop() issues hypervisor call to freeze the hardware buffer, =
+then schedules a
+     work_struct (htm_drain_work_fn()) that runs in process context and =
+drains the frozen buffer
+     chunk by chunk into the AUX ring via perf_aux_output_end(), backing =
+off on -ENOSPC to let
+     userspace consume between chunks. event->count is no longer used as =
+a flow-control signal.
+
+Tools side:
+-  arch_perf_record__need_read() hook and record__final_aux_data() are =
+dropped entirely =E2=80=94 no changes to builtin-record.c.
+-  =E2=80=9Cread_finish" callback is implemented in the HTM =
+auxtrace_record:
+      During normal recording (evsel->disabled =3D=3D false) it returns =
+immediately.=20
+      At session teardown, evlist__disable() sets evsel->disabled =3D =
+true before the=20
+      final record__mmap_read_all() call.=20
+      The read_finish callback detects this and polls aux_head (via =
+perf_mmap__read_head())
+      in a loop, yielding delay between polls, until the AUX head stops =
+advancing =E2=80=94 signalling the
+      workqueue drain is complete.=20
+     This gives the kernel workqueue time to finish copying chunks =
+before evlist__close() frees the mmaps.
+     The wait has a bounded maximum, so a stalled drain can't hang perf =
+record indefinitely.
+- snapshot_finish returns -EINVAL since HTM does not support snapshot =
+mode.
+
+HTM has no interrupt and trace data is consumed after pmu stop .  Hence =
+making this read_finish callback for
+auxtrace_record to consume data.
+
+With this, data collection is moved of from .read() entirely and uses =
+work queue based approach.
+Can you please review , Does this approach look acceptable before I send =
+the updated series?
+
+Thanks,
+Athira
+
+
+>=20
+>>=20
+>> Thanks,
+>> Athira
+>>=20
+>>>=20
+>>> breaks the perf ABI.
+>>>=20
+>>> I am not going to review any more tools patches for now.
+>>>=20
+>>>>=20
+>>>> Signed-off-by: Athira Rajeev <atrajeev@linux.ibm.com>
+>>>> ---
+>>>> Changes in V5:
+>>>> - When an HTM evsel is a group sibling (evsel->core.leader !=3D
+>>>> &evsel->core), read through its group leader's struct perf_evsel
+>>>> instead of the sibling directly.  perf_evsel__read_size() uses
+>>>> evsel->nr_members to compute the read buffer size; nr_members is 0
+>>>> for siblings, so size=3D0 is passed to readn(), which returns <=3D0 =
+and
+>>>> leaves count.val=3D0, causing the drain loop to terminate =
+prematurely.
+>>>> Reading through the leader avoids the zero-size buffer and =
+correctly
+>>>> accumulates the leader's pending count.  HTM events are always
+>>>> standalone or per-target leaders in practice; the leader redirect
+>>>> handles any grouped configuration without losing counts.
+>>>>=20
+>>>> Changes in V4:
+>>>> - No changes from V3.
+>>>>=20
+>>>> Changes in V3:
+>>>> - Use evsel__pmu_name(evsel) instead of strstarts(evsel->name, =
+"htm")
+>>>> to identify HTM events, matching by kernel-assigned PMU name rather
+>>>> than user-visible event name.
+>>>> - Remove the redundant two-pass loop (first pass to set found_htm,
+>>>> second to accumulate counts); a single pass with evsel__pmu_name()
+>>>> is sufficient. if no HTM event exists total_pending_records stays 0
+>>>> and the function returns 0.
+>>>> - Remove the dead !strcmp(evsel->name, "dummy:u") check;
+>>>> - evsel__pmu_name() will never return "htm" for a dummy:u software
+>>>> event.
+>>>> - Rename total_pending_bytes -> total_pending_records to match what
+>>>> the driver actually reports (event->count =3D total_size / =
+record_size,
+>>>> a record count, not a byte count).
+>>>> - Add #include <string.h> for musl compatibility (strcmp() without
+>>>> it warns on some toolchains).
+>>>>=20
+>>>> Changes in V2:
+>>>> - Implements the renamed arch_perf_record__need_read() hook (V1
+>>>> implemented arch_record__collect_final_data()).
+>>>> - Skips evsels whose fd and sample-id xyarrays are mismatched, =
+avoiding
+>>>> stale-state reads.  V1 had no such guard.
+>>>> - evlist__enable cycling is removed; that responsibility now =
+belongs to
+>>>> the drain loop in builtin-record.c added in patch 3.
+>>>> - File location changed to arch/powerpc/util/evsel.c (V1 used
+>>>> arch/powerpc/util/powerpc-htm.c).
+>>>> - Patch is now 4/6 instead of 4/9.
+>>>>=20
+>>>> tools/perf/arch/powerpc/util/evsel.c | 77 =
+++++++++++++++++++++++++++++
+>>>> 1 file changed, 77 insertions(+)
+>>>>=20
+>>>> diff --git a/tools/perf/arch/powerpc/util/evsel.c =
+b/tools/perf/arch/powerpc/util/evsel.c
+>>>> index 2f733cdc8dbb..2b7851c70677 100644
+>>>> --- a/tools/perf/arch/powerpc/util/evsel.c
+>>>> +++ b/tools/perf/arch/powerpc/util/evsel.c
+>>>> @@ -1,8 +1,85 @@
+>>>> // SPDX-License-Identifier: GPL-2.0
+>>>> #include <stdio.h>
+>>>> +#include <string.h>
+>>>> +#include <unistd.h>
+>>>> +#include <linux/string.h>
+>>>> #include "util/evsel.h"
+>>>> +#include "util/record.h"
+>>>> +#include "util/evlist.h"
+>>>> +#include "util/debug.h"
+>>>> +#include <internal/xyarray.h>
+>>>> +#include <internal/lib.h>
+>>>>=20
+>>>> void arch_evsel__set_sample_weight(struct evsel *evsel)
+>>>> {
+>>>> evsel__set_sample_bit(evsel, WEIGHT_STRUCT);
+>>>> }
+>>>> +
+>>>> +/*
+>>>> + * powerpc implementation of arch_perf_record__need_read().
+>>>> + *
+>>>> + * Reads event->count for every open HTM evsel by issuing a direct
+>>>> + * read() on the event fd with a plain u64 buffer, bypassing the
+>>>> + * PERF_FORMAT_GROUP path in perf_evsel__read().  When an HTM =
+evsel is
+>>>> + * a group sibling, evsel__config() sets PERF_FORMAT_GROUP on its =
+attr;
+>>>> + * perf_evsel__read() would then call perf_evsel__read_group() =
+which
+>>>> + * sizes the buffer by evsel->nr_members (0 for siblings), causing =
+the
+>>>> + * kernel to return -ENOSPC.  Reading the fd directly with =
+sizeof(u64)
+>>>> + * retrieves the HTM driver's plain pending-record count =
+regardless of
+>>>> + * group membership.
+>>>> + *
+>>>> + * Returns: 1 if more data exists, 0 if collection is complete
+>>>> + */
+>>>> +int arch_perf_record__need_read(struct evlist *evlist)
+>>>> +{
+>>>> + struct evsel *evsel;
+>>>> + u64 total_pending_records =3D 0;
+>>>> + int x, y;
+>>>> +
+>>>> + /* there was an error during record__open */
+>>>> + if (!evlist)
+>>>> + return 0;
+>>>> +
+>>>> + /* Read HTM event counts to check if more data is available */
+>>>> + evlist__for_each_entry(evlist, evsel) {
+>>>> + struct perf_evsel *rd_evsel;
+>>>> + struct xyarray *xy;
+>>>> +
+>>>> + if (strcmp(evsel__pmu_name(evsel), "htm"))
+>>>> + continue;
+>>>> +
+>>>> + /*
+>>>> + * For group siblings nr_members =3D=3D 0, which makes
+>>>> + * perf_evsel__read_size() return 0 and readn() fail.
+>>>> + * Read through the leader instead; perf_evsel__read_group()
+>>>> + * extracts the leader's own count from the group buffer.
+>>>> + */
+>>>> + if (evsel->core.leader !=3D &evsel->core)
+>>>> + rd_evsel =3D evsel->core.leader;
+>>>> + else
+>>>> + rd_evsel =3D &evsel->core;
+>>>> +
+>>>> + xy =3D rd_evsel->sample_id;
+>>>> +
+>>>> + if (xy =3D=3D NULL || rd_evsel->fd =3D=3D NULL)
+>>>> + continue;
+>>>> +
+>>>> + if (xyarray__max_x(rd_evsel->fd) !=3D xyarray__max_x(xy) ||
+>>>> +    xyarray__max_y(rd_evsel->fd) !=3D xyarray__max_y(xy)) {
+>>>> + pr_debug("Unmatched FD vs sample ID array for HTM event\n");
+>>>> + continue;
+>>>> + }
+>>>> +
+>>>> + for (x =3D 0; x < xyarray__max_x(xy); x++) {
+>>>> + for (y =3D 0; y < xyarray__max_y(xy); y++) {
+>>>> + struct perf_counts_values count =3D { .val =3D 0 };
+>>>> +
+>>>> + if (perf_evsel__read(rd_evsel, x, y, &count) =3D=3D 0)
+>>>> + total_pending_records +=3D count.val;
+>>>> + }
+>>>> + }
+>>>> + }
+>>>> +
+>>>> + /* Collection is complete only when ALL hardware queues have no =
+pending records */
+>>>> + return (total_pending_records > 0) ? 1 : 0;
+>>>> +}
+
+
 
