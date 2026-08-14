@@ -1,73 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-25832-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25834-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A264EC5DF66
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Aug 2026 02:30:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5C10BC5CFC1
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Aug 2026 05:37:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hLmS14DrTz2yD8;
-	Fri, 14 Aug 2026 12:30:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hLrZp27dZz2yQH;
+	Fri, 14 Aug 2026 15:37:06 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786674657;
-	cv=none; b=bhMFig2ivzjp4sdG23N6qJo6ulhOfovyNLXBoyM1iTtq9PSM2pdSu4aHmdSSYhU/LdWzm9XNpD2jrmxhXnQVuAnZwFxab3jz8qtrQhjYojLWm0ZeBu+hIxIgpenIh4BgnnhJDswbHJzQ80siTFJ9ACEd+cNRojvm5HsCEyjonOalNm0TthlIK2p6tQfSmj3BpEYOdxFOC4hLdi4pQiQJ3iqrCJI5q4Ob92zUf8BOuuEeMCwvv5or/JX9neG6T1CUsI5DceXcRHHFfseAquXEUZw1kOBKJt5WPtmdAz6nQnWZa6huOuerlJxH/Z1mihTlU1i+pV40yA8j1RqeQLJXMQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786685826;
+	cv=none; b=KC1x/HNa/sG0iGYv2/4w0x3eYZmrUgEe/xuWetmr5ReBbzVChBDp7NcHSEUPI4L9Q8g1IIthfZsBFXtvmVD2XrjuVrPcvy2qU4+ilGpQhc9GBsCfRJlxH/Qe8/XGEu6kjVN0zXGT4bZd1nXREZ+mWgNPEODRDax+fFdGA3kAFhjmLAmf+j85HDeIBrTvucgkiKVuGllgyaeS7w31mOkH5nx7bKRPkUPJmy0Sh/sgssWsHn6YxO88MtU7X+vGCtsD+WFJ/isrxxhi1do1GzKJF53s0hlpr75t2wCc98tl4VXatK6+/1IGcxqXovc3rfrbQstzKJ/5srKeCQXfxtSvJw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786674657; c=relaxed/relaxed;
-	bh=dIgSLregNr2fYwEjLwaPm1ysOKaZ+mvb7rcmx/nVi70=;
+	t=1786685826; c=relaxed/relaxed;
+	bh=2QHLr2QTuqLaRUhENSaHDsWR8jg+Jry/spbxygJsMHI=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=hRLrIekZ9rPE+v7rRN2pT38uzZ5MstPEANiSxu9NXx1PMsbxpFrf/cmG9xTGbHaPdANvGooZ1AwG+iSgnuQdvy8fVn1xtN3PYYfkNqZvQGZvAIHbDu7UrDp1sHgv2Mn1Lo/bGyMRKlB32wWG9Ee7oayzm71li8Au0yQUmgWd7zB4dJ2/5vAof0sn1m8gNCuWogauDR0vfmK0AAeEJq5P1K54IHpDYaKyaTkWqkrEQcVuX6VjZ1HGOGxFBz2y6QfqX5JJXgCwJoouZkwo4NWOSk0CSqacNCD7TIQ4zPFVYAxtyNOV/we4YmjdjyqT7VGBaJKBLvPNhiKVoOF9AG5pIA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=sxJAcQvx; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 In-Reply-To:Content-Type; b=AZPpu+CNE/XJsDmt1sdytZVIFcITGugKmlwi8R4sFfqUAkYsMc4QbaRaVK8NHMVUZOr4lrEbO+rmOfx8yY75RU1LmaMSGiK90/5I2pQx3WCBBWI70F4x8ihtBvIx4N98zSMpauzlFjhdai1IhO42dUlqtsvaiU7ECsvjSM72bE9nkRyTSEioRPe82wsNzpIIpUrZtOjQkgnMv/qVy1KQDvHhCoQIBlaSu+3IAogxGeD4NNyIRHpdZbAMX7Zi1Ftd9EhN6Y1GkrXbgLtyjU0F8GVr3npr7cbYgzljBA/6iiid5bTb+EBGUQK6tCWK+BV9/aoRt8OkT9QNcqo4erAWYQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=LJxc+rTw; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=sxJAcQvx;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=LJxc+rTw;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hLmS02Wqjz2xnW
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2026 12:30:55 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67E1W2cT3892807;
-	Fri, 14 Aug 2026 02:30:23 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hLrZn2gC8z2xrL
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2026 15:37:05 +1000 (AEST)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67E4Vown182958;
+	Fri, 14 Aug 2026 05:36:53 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=dIgSLr
-	egNr2fYwEjLwaPm1ysOKaZ+mvb7rcmx/nVi70=; b=sxJAcQvx6kCe10SGRNPQba
-	nqsdd/HDBvKRw9q6sVtofPSBSgsAbc0dr8Jl9CmTBm8xxFX8G8wqm7kejqQR8vjH
-	foQQtx+LW1wCXEeiTRYDr/8t0mulKn7t9L+IY1DJ32KJdzQkIPHVA3pJLWp2GJEv
-	sw6NCmD25SfYY4bAy1EP7oU5f80e3aaWOhu/BcZn+UdPhZLr/GDclQTxOG1KkrG7
-	EhUslukKy9E/kmsvUi7d3FnWOcW8dQ6HZNSvL6nH2paHXDIUAEuL5g3SI4WklOiS
-	BYjeNzaNGYP8DYuBfQd7ZnYGMM8tGEcszPGGrhBvbxUQilv/zQaH1swGm3JP666w
+	:message-id:mime-version:references:subject:to; s=pp1; bh=2QHLr2
+	QTuqLaRUhENSaHDsWR8jg+Jry/spbxygJsMHI=; b=LJxc+rTwYM3uvi0hYsdf+n
+	vk+5vS93DwLbOw6kGuafLsspF/VtAbfSdw8rhrFv+YzYfwVnrtXd5pGPu8IcrktN
+	S2efc6pjdvVd/qrLU7zVOWBJZjkNAyGfokwBPWnqb+wP7ML04ZFZHllriJTiBgQQ
+	egzCugrHShzKVT22dfkp/pRPAM4lvZD+BzsMgLqKlHg04zq1KIaxu4aIzr3uRX1B
+	5ebPvcBUhKrzCHd726ZH+9/SuLpcqpvltftIPrVUT9D2Y4kSD5qcpyOMwpUIECxq
+	loM+hOxKSE3ep3dJ6cuGPGqpz10WS3j+wtIke6lsdvDqTQhcVKwsSd+/yF440P7A
 	==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fwvp39qee-1
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fwvnwj7qj-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 14 Aug 2026 02:30:23 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 67E2QGCP018288;
-	Fri, 14 Aug 2026 02:30:22 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4fxfsk5gyj-1
+	Fri, 14 Aug 2026 05:36:52 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 67E5QO32022956;
+	Fri, 14 Aug 2026 05:36:51 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fxesqe6ge-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 14 Aug 2026 02:30:22 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 67E2UK2W30409460
+	Fri, 14 Aug 2026 05:36:51 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 67E5allB40632794
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 14 Aug 2026 02:30:20 GMT
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 244E12004B;
-	Fri, 14 Aug 2026 02:30:20 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 6E2B620040;
-	Fri, 14 Aug 2026 02:30:14 +0000 (GMT)
-Received: from [9.39.17.52] (unknown [9.39.17.52])
-	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 14 Aug 2026 02:30:14 +0000 (GMT)
-Message-ID: <5b6fd32e-037a-42b4-b9e9-bb0503561781@linux.ibm.com>
-Date: Fri, 14 Aug 2026 08:00:12 +0530
+	Fri, 14 Aug 2026 05:36:47 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 8800320043;
+	Fri, 14 Aug 2026 05:36:47 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id F157F20040;
+	Fri, 14 Aug 2026 05:36:44 +0000 (GMT)
+Received: from [9.124.210.249] (unknown [9.124.210.249])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 14 Aug 2026 05:36:44 +0000 (GMT)
+Message-ID: <e49d543e-80b2-4c8c-968d-0c8b68717cbb@linux.ibm.com>
+Date: Fri, 14 Aug 2026 11:06:43 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,317 +82,117 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 3/3] powerpc/ps3: use put_device() on device_register()
- failure in ps3_system_bus_device_register
-To: Tarun Sahu <tarunsahu@google.com>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Russell King <linux@armlinux.org.uk>,
-        Geoff Levand <geoff@infradead.org>,
-        Michael Ellerman <mpe@ellerman.id.au>, djeffery@redhat.com,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-arm-kernel@lists.infradead.org, dmatlack@google.com,
-        Pasha Tatashin <pasha.tatashin@soleen.com>, souravsgl@google.com,
-        skhawaja@google.com, linux-kernel@vger.kernel.org,
-        driver-core@lists.linux.dev, linuxppc-dev@lists.ozlabs.org
-References: <20260813095421.1700945-1-tarunsahu@google.com>
- <20260813095421.1700945-4-tarunsahu@google.com>
+Subject: Re: [PATCH] powerpc/entry: Use hard_irq_disable() in
+ arch_interrupt_exit_prepare()
+To: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>, maddy@linux.ibm.com,
+        mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org,
+        mchauras@linux.ibm.com, linuxppc-dev@lists.ozlabs.org,
+        linux-kernel@vger.kernel.org
+Cc: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+References: <20260812152035.1661781-1-mkchauras@gmail.com>
 Content-Language: en-US
-From: Sourabh Jain <sourabhjain@linux.ibm.com>
-In-Reply-To: <20260813095421.1700945-4-tarunsahu@google.com>
+From: Shrikanth Hegde <sshegde@linux.ibm.com>
+In-Reply-To: <20260812152035.1661781-1-mkchauras@gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=AMtp2X5w c=1 sm=1 tr=0 ts=6a7e7dbf cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+X-Authority-Analysis: v=2.4 cv=RsP16imK c=1 sm=1 tr=0 ts=6a7ea974 cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
  a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VnNF1IyMAAAA:8
- a=1XWaLZrsAAAA:8 a=n3Y_rXsrvEagZGvLPyQA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-GUID: z2GAf6TahFsdZej1SvZngaYtlb-Fq6Ap
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODE0MDAxNSBTYWx0ZWRfX3S4+lINbmaWN
- JULXBrqFKQI3VokWQXKOMi7Njj3iDtiZl8Fxfq84Q2M2Q2BIksq3EMWr6OpqHfNhRpJ8sXwrVd9
- VKrCd07RthHMo7M6lTRivUtgfHR4xKI7VILXQ43p73mjJq1Z9Z14IOWDEskJwlEJkQJNPxKjxsl
- AU2J69Ktwi1R1JZYD34WNnrJ4n5EqlEqCqoQP9KHnvXcLTOFGDJDWPfJyRK34bMWk4fJ1KACHfp
- hTo9IU4Ck9gDmjkR7WPIzf5KXfT4V5zKQPkxFvI07ovxtEtz+m3o2fa8RDHc3c5/mSuV1yvA+Ne
- lx93VTNNiO+qkD9JZC+K56NIJW0yoZQ7qM2V4kFd9SYDw7VCc6bz9qSrEtX3//N6fZ9U7yJvex7
- Hm8baxg7/VQ/lAM7HtPaAyr5BkJGiGajw0qmSvUYHJCLdW0QmUuY83wRqh9b87FCu1XjT3xJ0NE
- ilAjundE8PGT2uUOS8g==
-X-Proofpoint-ORIG-GUID: AT5Rq_PBXSS0X67XNK0UT2Fpaszq8ck5
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODE0MDAxNSBTYWx0ZWRfXyXi9L/ayC78u
- HWC799RPx6HfZxhenXGMamJ6YQVPnaWY95Fq7q5bqH4WSJRbC7B8abqQz/sEONYSQBx9A1hDVUz
- Ktd1b7BmJZ3onRlB9mXI4d/yTCogJI4=
+ a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=VwQbUJbxAAAA:8
+ a=VnNF1IyMAAAA:8 a=pGLkceISAAAA:8 a=oSVCPka-oEw81mTqY8MA:9 a=3ZKOabzyN94A:10
+ a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: 6w2G6yLy3j83nUg8ggj-hon-knJdHvLh
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODE0MDA0MSBTYWx0ZWRfX6PkOiszOvXAE
+ Sa4hYBnfOvLK6o1tMPvAQGX1hco/eiivRcgifJ4ACdIyKw/vPIr+aVe+uV2cSiB9eHJtxcq5ROF
+ S8DFCaG6ODJ9SVjR0N2Z7WQV+5Jyw7koZlPWrSmPU32Z1Ba/PHVQ4Y3ehVpLuGIKdohON1D3XxE
+ bk8YrelVbC/rG3sJ72bFZnIAZuF9kSek9cDtDNlO4xLpg0jrqIT1ifuJuSaHn8ypL4+b/M5ZXnV
+ szSmH1CAndhLLgkLtwr8fYl8781bINorBpKldpc8jViluqz3ZXfHvWJJhJKdOsHz1BpPcV2Oeji
+ +xtuW8ssRImrTh6xLyo/z1+AhlN2/KdcYEfvqNqKVlg47LSqUnxdTLXhpiAJS1QSKWtfnkwlPhA
+ 8mD4e3hPjI2dJtmPWG+tij5HX37cgVJhoBaqXoKThdHzP1/3ORLBtKdHuTIrULUEg/Q66khdutP
+ fFczFUvLB0eXAht/SXg==
+X-Proofpoint-ORIG-GUID: vuaINAksynpcryJfh1go3zVn3Plhaj9Q
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODE0MDA0MSBTYWx0ZWRfXwfk8ztlaEj1t
+ 2IpI1gtuIzW6xq7Sig47HNNaFlQ1EKxlvJoVhYx8/XA5DtTuxDxOnXyXidiPwCNXoWOVFy7nIOf
+ aAQo7VUkLPAX0OaSBN9tm9kYA6WVkjM=
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-08-14_01,2026-08-12_01,2025-10-01_01
+ definitions=2026-08-14_02,2026-08-12_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 adultscore=0 lowpriorityscore=0 clxscore=1011
- priorityscore=1501 impostorscore=0 phishscore=0 spamscore=0 bulkscore=0
- malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
- definitions=main-2608140015
+ spamscore=0 impostorscore=0 suspectscore=0 clxscore=1015 malwarescore=0
+ phishscore=0 adultscore=0 lowpriorityscore=0 priorityscore=1501 bulkscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608140041
 
 
 
-On 13/08/26 15:24, Tarun Sahu wrote:
-> When device_register() fails, calling put_device() ensures that the
-> device reference count drops to 0, which invokes the release callback
-> ps3_system_bus_release_device() to cleanly free the device and its
-> associated driver core resources.
+On 8/12/26 8:50 PM, Mukesh Kumar Chaurasiya (IBM) wrote:
+> commit 334f3f6d7a16 ("powerpc/entry: Disable interrupts before irqentry_exit")
+> fixed a BUG in preempt_schedule_irq() by calling local_irq_disable()
+> unconditionally in arch_interrupt_exit_prepare() before irqentry_exit().
+> The fix is correct in intent but uses the wrong primitive for PPC64.
+> 
+> On PPC64, local_irq_disable() only sets the soft-mask
+> (irq_soft_mask = IRQS_DISABLED). It does not set PACA_IRQ_HARD_DIS in
+> irq_happened and does not clear MSR[EE].
+> 
+> This causes a continuous WARN_ON boot hang on Power11 pSeries LPARs
+> using the dedicated-cede cpuidle path. When the CPU wakes from H_CEDE,
+> interrupt_exit_kernel_prepare() calls replay_soft_interrupts(), which
+> dispatches pending async handlers (timer_interrupt, do_IRQ) using the
+> DEFINE_INTERRUPT_HANDLER_ASYNC macro. That macro calls
+> arch_interrupt_async_exit_prepare() -> arch_interrupt_exit_prepare()
+> before irqentry_exit(). With local_irq_disable(), PACA_IRQ_HARD_DIS
+> is not set, but next_interrupt() unconditionally asserts it:
+> 
+>    WARN_ON(!(local_paca->irq_happened & PACA_IRQ_HARD_DIS));
+> 
+> This fires on every replayed interrupt, looping indefinitely and
+> preventing boot completion.
+> 
+> Fix this by replacing local_irq_disable() with hard_irq_disable().
+> On PPC64, hard_irq_disable() sets irq_soft_mask to IRQS_ALL_DISABLED,
+> sets PACA_IRQ_HARD_DIS in irq_happened, and clears MSR[EE] — satisfying
+> all of:
+> 
+>    - lockdep_assert_irqs_disabled() in irqentry_exit_to_kernel_mode()
+>    - next_interrupt()'s WARN_ON(!(irq_happened & PACA_IRQ_HARD_DIS))
+>    - preempt_schedule_irq()'s BUG_ON(!irqs_disabled())
+> 
+> On PPC32/non-64, hard_irq_disable() is equivalent to local_irq_disable(),
+> so there is no regression on those platforms.
+> 
 
-Yes, since the PS3 device has a release function, put_device() should be
-used instead of manually freeing the memory, as described in 
-device_register().
+This is good explanation, but what i not understanding is,
 
-Changes look good to me. Feel free to add:
-Reviewed-by: Sourabh Jain <sourabhjain@linux.ibm.com>
+why pattern of setting PACA_IRQ_HARD_DIS changed?
+Previous code at interrupt_exit_kernel_prepare which did local_irq_disable too.
 
->
-> Signed-off-by: Tarun Sahu <tarunsahu@google.com>
+Please check where was PACA_IRQ_HARD_DIS set without GENERIC_ENTRY which was preventing
+this from happening?
+
+
+> Fixes: 334f3f6d7a16 ("powerpc/entry: Disable interrupts before irqentry_exit")
+> Reported-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+> Closes: https://lore.kernel.org/all/6f9bfb0f-b14c-468e-bb9f-c157d120d0dc@linux.ibm.com/
+> Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
 > ---
->   arch/powerpc/platforms/ps3/device-init.c | 83 ++++++++++++++----------
->   arch/powerpc/platforms/ps3/system-bus.c  |  2 +
->   2 files changed, 52 insertions(+), 33 deletions(-)
->
-> diff --git a/arch/powerpc/platforms/ps3/device-init.c b/arch/powerpc/platforms/ps3/device-init.c
-> index 9109c218a060..8d0c77db1764 100644
-> --- a/arch/powerpc/platforms/ps3/device-init.c
-> +++ b/arch/powerpc/platforms/ps3/device-init.c
-> @@ -90,14 +90,12 @@ static int __init ps3_register_lpm_devices(void)
->   	if (result) {
->   		pr_debug("%s:%d ps3_system_bus_device_register failed\n",
->   			__func__, __LINE__);
-> -		goto fail_register;
-> +		return result;
+>   arch/powerpc/include/asm/entry-common.h | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/include/asm/entry-common.h b/arch/powerpc/include/asm/entry-common.h
+> index c5adb5006361..de64389b0815 100644
+> --- a/arch/powerpc/include/asm/entry-common.h
+> +++ b/arch/powerpc/include/asm/entry-common.h
+> @@ -270,7 +270,7 @@ static inline void arch_interrupt_exit_prepare(struct pt_regs *regs)
 >   	}
 >   
->   	pr_debug(" <- %s:%d\n", __func__, __LINE__);
->   	return 0;
->   
-> -
-> -fail_register:
->   fail_rights:
->   fail_read_repo:
->   	kfree(dev);
-> @@ -121,6 +119,12 @@ static int __init ps3_setup_gelic_device(
->   		struct ps3_dma_region d_region;
->   	} *p;
->   
-> +	/*
-> +	 * ps3_system_bus_release_device() calls kfree(&p->dev).
-> +	 * dev must be at offset 0 so kfree() frees outer p.
-> +	 */
-> +	BUILD_BUG_ON(offsetof(struct layout, dev) != 0);
-> +
->   	pr_debug(" -> %s:%d\n", __func__, __LINE__);
->   
->   	BUG_ON(repo->bus_type != PS3_BUS_TYPE_SB);
-> @@ -164,13 +168,12 @@ static int __init ps3_setup_gelic_device(
->   	if (result) {
->   		pr_debug("%s:%d ps3_system_bus_device_register failed\n",
->   			__func__, __LINE__);
-> -		goto fail_device_register;
-> +		return result;
->   	}
->   
->   	pr_debug(" <- %s:%d\n", __func__, __LINE__);
->   	return result;
->   
-> -fail_device_register:
->   fail_dma_init:
->   fail_find_interrupt:
->   	kfree(p);
-> @@ -192,6 +195,12 @@ static int __init ps3_setup_uhc_device(
->   	u64 bus_addr;
->   	u64 len;
->   
-> +	/*
-> +	 * ps3_system_bus_release_device() calls kfree(&p->dev).
-> +	 * dev must be at offset 0 so kfree() frees outer p.
-> +	 */
-> +	BUILD_BUG_ON(offsetof(struct layout, dev) != 0);
-> +
->   	pr_debug(" -> %s:%d\n", __func__, __LINE__);
->   
->   	BUG_ON(repo->bus_type != PS3_BUS_TYPE_SB);
-> @@ -252,13 +261,12 @@ static int __init ps3_setup_uhc_device(
->   	if (result) {
->   		pr_debug("%s:%d ps3_system_bus_device_register failed\n",
->   			__func__, __LINE__);
-> -		goto fail_device_register;
-> +		return result;
->   	}
->   
->   	pr_debug(" <- %s:%d\n", __func__, __LINE__);
->   	return result;
->   
-> -fail_device_register:
->   fail_mmio_init:
->   fail_dma_init:
->   fail_find_reg:
-> @@ -291,6 +299,12 @@ static int __init ps3_setup_vuart_device(enum ps3_match_id match_id,
->   		struct ps3_system_bus_device dev;
->   	} *p;
->   
-> +	/*
-> +	 * ps3_system_bus_release_device() calls kfree(&p->dev).
-> +	 * dev must be at offset 0 so kfree() frees outer p.
-> +	 */
-> +	BUILD_BUG_ON(offsetof(struct layout, dev) != 0);
-> +
->   	pr_debug(" -> %s:%d: match_id %u, port %u\n", __func__, __LINE__,
->   		match_id, port_number);
->   
-> @@ -308,15 +322,10 @@ static int __init ps3_setup_vuart_device(enum ps3_match_id match_id,
->   	if (result) {
->   		pr_debug("%s:%d ps3_system_bus_device_register failed\n",
->   			__func__, __LINE__);
-> -		goto fail_device_register;
-> +		return result;
->   	}
->   	pr_debug(" <- %s:%d\n", __func__, __LINE__);
->   	return 0;
-> -
-> -fail_device_register:
-> -	kfree(p);
-> -	pr_debug(" <- %s:%d fail\n", __func__, __LINE__);
-> -	return result;
+>   	/* irqentry_exit expects to be called with interrupts disabled */
+> -	local_irq_disable();
+> +	hard_irq_disable();
 >   }
 >   
->   static int ps3_setup_storage_dev(const struct ps3_repository_device *repo,
-> @@ -327,6 +336,12 @@ static int ps3_setup_storage_dev(const struct ps3_repository_device *repo,
->   	u64 port, blk_size, num_blocks;
->   	unsigned int num_regions, i;
->   
-> +	/*
-> +	 * ps3_system_bus_release_device() calls kfree(&p->sbd).
-> +	 * sbd must be at offset 0 so kfree() frees outer p.
-> +	 */
-> +	BUILD_BUG_ON(offsetof(struct ps3_storage_device, sbd) != 0);
-> +
->   	pr_debug(" -> %s:%u: match_id %u\n", __func__, __LINE__, match_id);
->   
->   	result = ps3_repository_read_stor_dev_info(repo->bus_index,
-> @@ -395,13 +410,12 @@ static int ps3_setup_storage_dev(const struct ps3_repository_device *repo,
->   	if (result) {
->   		pr_debug("%s:%u ps3_system_bus_device_register failed\n",
->   			 __func__, __LINE__);
-> -		goto fail_device_register;
-> +		return result;
->   	}
->   
->   	pr_debug(" <- %s:%u\n", __func__, __LINE__);
->   	return 0;
->   
-> -fail_device_register:
->   fail_read_region:
->   fail_find_interrupt:
->   	kfree(p);
-> @@ -445,6 +459,12 @@ static int __init ps3_register_sound_devices(void)
->   		struct ps3_mmio_region m_region;
->   	} *p;
->   
-> +	/*
-> +	 * ps3_system_bus_release_device() calls kfree(&p->dev).
-> +	 * dev must be at offset 0 so kfree() frees outer p.
-> +	 */
-> +	BUILD_BUG_ON(offsetof(struct layout, dev) != 0);
-> +
->   	pr_debug(" -> %s:%d\n", __func__, __LINE__);
->   
->   	p = kzalloc_obj(*p);
-> @@ -461,15 +481,10 @@ static int __init ps3_register_sound_devices(void)
->   	if (result) {
->   		pr_debug("%s:%d ps3_system_bus_device_register failed\n",
->   			__func__, __LINE__);
-> -		goto fail_device_register;
-> +		return result;
->   	}
->   	pr_debug(" <- %s:%d\n", __func__, __LINE__);
->   	return 0;
-> -
-> -fail_device_register:
-> -	kfree(p);
-> -	pr_debug(" <- %s:%d failed\n", __func__, __LINE__);
-> -	return result;
->   }
->   
->   static int __init ps3_register_graphics_devices(void)
-> @@ -479,6 +494,12 @@ static int __init ps3_register_graphics_devices(void)
->   		struct ps3_system_bus_device dev;
->   	} *p;
->   
-> +	/*
-> +	 * ps3_system_bus_release_device() calls kfree(&p->dev).
-> +	 * dev must be at offset 0 so kfree() frees outer p.
-> +	 */
-> +	BUILD_BUG_ON(offsetof(struct layout, dev) != 0);
-> +
->   	pr_debug(" -> %s:%d\n", __func__, __LINE__);
->   
->   	p = kzalloc_obj(struct layout);
-> @@ -495,16 +516,11 @@ static int __init ps3_register_graphics_devices(void)
->   	if (result) {
->   		pr_debug("%s:%d ps3_system_bus_device_register failed\n",
->   			__func__, __LINE__);
-> -		goto fail_device_register;
-> +		return result;
->   	}
->   
->   	pr_debug(" <- %s:%d\n", __func__, __LINE__);
->   	return 0;
-> -
-> -fail_device_register:
-> -	kfree(p);
-> -	pr_debug(" <- %s:%d failed\n", __func__, __LINE__);
-> -	return result;
->   }
->   
->   static int __init ps3_register_ramdisk_device(void)
-> @@ -514,6 +530,12 @@ static int __init ps3_register_ramdisk_device(void)
->   		struct ps3_system_bus_device dev;
->   	} *p;
->   
-> +	/*
-> +	 * ps3_system_bus_release_device() calls kfree(&p->dev).
-> +	 * dev must be at offset 0 so kfree() frees outer p.
-> +	 */
-> +	BUILD_BUG_ON(offsetof(struct layout, dev) != 0);
-> +
->   	pr_debug(" -> %s:%d\n", __func__, __LINE__);
->   
->   	p = kzalloc_obj(struct layout);
-> @@ -530,16 +552,11 @@ static int __init ps3_register_ramdisk_device(void)
->   	if (result) {
->   		pr_debug("%s:%d ps3_system_bus_device_register failed\n",
->   			__func__, __LINE__);
-> -		goto fail_device_register;
-> +		return result;
->   	}
->   
->   	pr_debug(" <- %s:%d\n", __func__, __LINE__);
->   	return 0;
-> -
-> -fail_device_register:
-> -	kfree(p);
-> -	pr_debug(" <- %s:%d failed\n", __func__, __LINE__);
-> -	return result;
->   }
->   
->   /**
-> diff --git a/arch/powerpc/platforms/ps3/system-bus.c b/arch/powerpc/platforms/ps3/system-bus.c
-> index 0537a678a32f..0918c74d3e19 100644
-> --- a/arch/powerpc/platforms/ps3/system-bus.c
-> +++ b/arch/powerpc/platforms/ps3/system-bus.c
-> @@ -774,6 +774,8 @@ int ps3_system_bus_device_register(struct ps3_system_bus_device *dev)
->   	pr_debug("%s:%d add %s\n", __func__, __LINE__, dev_name(&dev->core));
->   
->   	result = device_register(&dev->core);
-> +	if (result)
-> +		put_device(&dev->core);
->   	return result;
->   }
->   
+>   static inline void arch_interrupt_async_enter_prepare(struct pt_regs *regs)
 
 
