@@ -1,80 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-25867-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25868-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D3509C5CFCF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Aug 2026 15:31:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 27FDCC5CFCF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Aug 2026 15:31:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hM5md1nyzz2ykT;
-	Sat, 15 Aug 2026 01:31:29 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::633"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786720445;
-	cv=none; b=N+GvB0Du02FqYub+n1REhbP/2XrBLi/1MXf4RPeftWXGqj2SAc66NkVPW36c95Y6AgE9FMaVu5CpTrsWzPS+uSPpNsSqHVThwJqUBhHTMjV9RW+AeK6vTSy9g6EqjD3VELIlyjYYUIKAnY+V5G6evpr6s6a3UzPtOEhuxieJgxBeXg322jaAZAU+NqmJ1D2LsVJzQejt+CvPdn1x3Tsmh6/eqmi5e3SCLGHh9kKkWz5uK/9SUBUbBDo93vHtPqLjcNwqLpitUZV4fh15U+y7nH6afoOp+AUlg4k5Vz+dgYQnrN8SPe9jr6lZA18rHp6P+34M46jSD27FceFteLrMWw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hM5n660sZz2ykT;
+	Sat, 15 Aug 2026 01:31:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::636"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786720446;
+	cv=none; b=Dcgt6HGBtu3GveehEJo+UV6qRmndGOTWLESXSno3jhqpMWjT7l5flCsAN2gzUVcpV/kKZ9PXV4+kQlXvHEAumVuLvyWDJLZtbXOkhD88ZTgZcRUNcDITnwNjRhLBfZE6niLzOpJZk+3VUUg4+LJaYsS9cDor/A8w1VLMb8VVYCNpIL8qc/oYuNXwe+ZFOOHJW/x531tcCKJHvjLTRNTLTdJ3JpxdLYvWQW6KOqrGNDf2hd1wyYV40lAGizAmmr5qH95sVHtvgXoNe3CovOzV8pThqi6ko6ObMfBZ46QxsFp6u74+ouoIKWePAMf5hpBrq5S3oZw5ndXpgr/j55AwyQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786720445; c=relaxed/relaxed;
-	bh=fPqMpU+LLRNYiSjrqLFHm/GfoNDBW1/b99+GMQWZD/8=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=N+abKl0Hgg5S/ai3HiGWHHlnBOxS1eF/RyypPigCJUik2IlbobzjkzGeM4z2cSPDXikSiqp/yxP/Ol+jIi/K8aupVrM3+zOUR4fGXQ08M1qohXG3JpkKsora/llwA3kRldGV711wRTvZ9L/6jgRNaDPPtdNDQpq8/wIWv/EnoKLqd9XTtHBQQ1IuU+LfxtySDAvMOPxn/NY91Z2s7EO0njiMHQN+P/ONdcCBB3gdsHBiZ23wkPl2RrliFXXSU7zuAU7rtSNZpPY8WDT20rTruPoQpANOrrAKp3h3kMBfjiKKBsw22MXidqej7ILT+QMQT72RKrTMygsxrUgZWYYDSg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=g1VtuSga; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::633; helo=mail-pl1-x633.google.com; envelope-from=whi4ed0g@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1786720446; c=relaxed/relaxed;
+	bh=2AwaiBewPNb0w3Qz67JVI0ysWpkdHoufX6g1rsCJvXo=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=iwpN9i7cfTNBLOwt4YiNBSogwlOQMZDbQpRHVfuYpZM13KRK0fPfDxIq6jToHvMyAYuQHRO7SAJye8OcRF5txxJ/MfbplM63ZZHs6FCauu9Kt34B1dbLiQ8jQiZNciHUUDzVlScHDjY0ijOBVVR5OhGZjovQVK5Ge/K4EhS2TPNq0OAkosWyS9IqLhN5ozEWFWA8ZeUAaDPIQX3mc8ho6J+AG4lVReAx3AJYYjCNrrZWcfngxB8xSRUG6vgYV4tZj++QIYHqnpIbZ/0j61TmYWaAlFgOQL+232Zlk/1GqUFdKgI6cE3AAwJOfoxq1oXsffozvlsr1pG211zYXzI1Mg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ZAN94n7r; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::636; helo=mail-pl1-x636.google.com; envelope-from=whi4ed0g@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=g1VtuSga;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ZAN94n7r;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::633; helo=mail-pl1-x633.google.com; envelope-from=whi4ed0g@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x633.google.com (mail-pl1-x633.google.com [IPv6:2607:f8b0:4864:20::633])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::636; helo=mail-pl1-x636.google.com; envelope-from=whi4ed0g@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x636.google.com (mail-pl1-x636.google.com [IPv6:2607:f8b0:4864:20::636])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hM5NW4LRTz2yRP
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Aug 2026 01:14:02 +1000 (AEST)
-Received: by mail-pl1-x633.google.com with SMTP id d9443c01a7336-2cab973140bso18574965ad.3
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2026 08:14:02 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hM5NY3Wy8z2yRP
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Aug 2026 01:14:05 +1000 (AEST)
+Received: by mail-pl1-x636.google.com with SMTP id d9443c01a7336-2cc73e322dbso17861715ad.1
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2026 08:14:05 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1786720438; x=1787325238; darn=lists.ozlabs.org;
-        h=cc:to:content-transfer-encoding:content-type:mime-version
-         :message-id:date:subject:from:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=fPqMpU+LLRNYiSjrqLFHm/GfoNDBW1/b99+GMQWZD/8=;
-        b=g1VtuSgaP4YoEtS3C0l89sisu6M2wUJ0qQSVUpsxuXMRpeom/pUgSwjwph8uxFjmnt
-         8v4t7Bn2T5gc9FjZGU7jU18mVhXwhUWk454hdDr01c7l4WPff01yH/pXvcrHL77mSL3e
-         GzI/VTiWPb0x+teJUGJPZYNRonhv0gt/pep+1kAlOE2J9fhRq2b61rJQUgPrLqxyL0Ye
-         c5GQX7K+t9Z34ntvVSTM1H84YnpwmhWynpyLer1OwkiRO1lNgk0UTNDqvnYcMPF7Ro90
-         hhGtPO72x40eLZQWMzlKsV68KPrSwpnOqSXSfmDls98JP50C4nlIpygMyCg3WENqVhE1
-         MjRA==
+        d=gmail.com; s=20251104; t=1786720443; x=1787325243; darn=lists.ozlabs.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :content-type:mime-version:subject:date:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=2AwaiBewPNb0w3Qz67JVI0ysWpkdHoufX6g1rsCJvXo=;
+        b=ZAN94n7rY+Q4hG+7hGNvH+3EokjMq47FtOw8h0obTeswQhyzTa6XQmZ+sVDSvbu9df
+         GX0iKit4sAVlWbhpIVnQLtCzPfZpsytqofScAtojA3jV62hKgv4v743I+XyPPm/khxZ5
+         /5ALY6d2Mu0GehXcdiOpb9p/iBaCIDorJfcahNLFOAuOojqqDH0AfqcE7DD6md6rFoQs
+         8dc0b0aEXecQOqmbwPN8RO36n5O0k65uqhEOniF37FmkvrPiYKT4d6EIB6GcOWSSlffg
+         3ApUkMCuSJuM71I9upFDVvUywGheZn8nmkvlF5wyPFKWeYGoXgDSj1QEuqAmS9CHBy4n
+         IO2g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786720438; x=1787325238;
-        h=cc:to:content-transfer-encoding:content-type:mime-version
-         :message-id:date:subject:from:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=fPqMpU+LLRNYiSjrqLFHm/GfoNDBW1/b99+GMQWZD/8=;
-        b=VT50ApeHIwpA2lX01JFrT3da3u0a/GexVa6vvDiY+eTIjsQb6WoQ4l5bcoga6EtC/G
-         /OVt55j3xQ2HAw3ORpGS2eDIyj+p+UGzQkBTR3XysMWFhkQ4MMqxPCBm0duloXxFN9Nv
-         u4QFiPjNOeObnpZTf2+pKLHVBZgk+fajAypOKsgqILaPs7VDyROq4PI0XF8IXYc+HKAF
-         FhbyTIxSXqjqP/GFEfbLK/S21fUK4yv7vSdrX7AX+44pllX7qOAEhjj0H2+P6bW1R3YP
-         IDEskGLqK4u1xxiASQ96tkOD9ODtTMbwqrGMgjvnUiO967jMShZXt1i1hKnPVC1ARm3I
-         Y3kQ==
-X-Gm-Message-State: AOJu0Yy4EzbZbXwJc961ltxZ9dAhkCx4405o8BIaNh1FK/jvRvdPNAXx
-	Djh8qgZkb8MDCj1RdfO1eKu8SX/GwDr9j9lwiD0aqe6rgVSvqaLwmXaJ
-X-Gm-Gg: AR+sD12UpasnG+ZnIuRB7kxcRsBS1F57vMAKDg42vG4cIYhgWPB+aMl1rEBcjz/Vg1U
-	xNv4qpQnstKMgmxT8IorlPtSfgBwORtuIEupdk3LAiuFszhl0T2vIBk1aKlFQWs8GRTvYjqbd89
-	Io769mDIhuh6x8+XpeppDVM02z3kDFKNZKZRQWcI/BNOZHWoctPNCuk/Inuvgtmcb4tcXq12yuL
-	y7iDYj+EDeN8BUV0erGJioYCkTmvn+a/J6yLp8+0sme35kEvonRV3gTBtiRn1Va1syaSy25Tgt+
-	aJQOt0rmX57RliMmC90swVpVM7pxEtIPvIa46ERBHorYk/ltP694vRJ46kaCBJl/t3mkBN+sI/G
-	p7rWbi/d1JCHlE/NsQPYUhieq11a1aQqm/BLJsCyxPyN5Uv4mJDC/2rtGfsiXer938tbR2Hsc+v
-	DWskUhApDmK8q0aEkHCMHCFEheGCH3OYbvBoPc81eT0jH8QUGDCS0+4DA3dmKCsa738RlaK0Wrm
-	4hMWRSi1g==
-X-Received: by 2002:a17:902:ec82:b0:2ca:e19c:97b with SMTP id d9443c01a7336-2d3b082b573mr83408195ad.5.1786720438215;
-        Fri, 14 Aug 2026 08:13:58 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1786720443; x=1787325243;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :content-type:mime-version:subject:date:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=2AwaiBewPNb0w3Qz67JVI0ysWpkdHoufX6g1rsCJvXo=;
+        b=UuajYlfL3/ZfOtzYFSizynHkK3xNN5WD4OVbc3XTWakyISzIJUFZJIihJsdKw6IAaZ
+         VQ/HPWo4/fbt5JnOo6yXFVQwwwg8FPdfbp5nCafsFDVIKriX+Fp2wi4GkwUAGW985u0V
+         nQkHeB6l7hnbbfFU0fqAzbBtGnr0xHonBjkc/fv/n0h8UHxePRLQnj2PkkFwNSZ9rZxe
+         mEcUZmuzOhGVjx8nfLOchUm5noP2K12fdCJjQTUO6uPzJgLiohCi2f1B57q5ZdM1VYgL
+         O62y80h+WvCcI/yalj6gL47bOrKm9+AolCzTAkUcwkZdGoCb8BNhJKamXh/9SknypbgF
+         U34w==
+X-Gm-Message-State: AOJu0Yy8SyXcYzKIIcJVkL7l02TgpvMHnqFyhd4uwxz9RRqqk2nZHF9p
+	RxyQFvXkrFqZOmWlBJCHBTuddtexG9gqargjOHxoxpI9uI9ipd8ATqir5Jep0g==
+X-Gm-Gg: AR+sD10ZaKmN3tBtQdB5KNZe32Ow15lzvPjrRQ08qRe1oTFiSSnsNQFDGQ5eI/3cbmF
+	7wd6Qkf+KnuGPxfqe9wNo5UPCFNNZFnkY+0hC4Z9dSa2J5f1zcFBttG+QAxwnEL4CZzJSHbYCas
+	ATBOt3+gF3cE48SUQzWxDAAiSjvv6MXxuroAoryyBu/n3+E4jNvZkAzsWEltvtIVI6jRU2uduVJ
+	Vmad481hbo1DAhR7EZ5ct1YmjHg+vP2iAHHQ38DZmmTTL+D1ISwrJhdG/ixxomQboiRJXG1l+4f
+	bxD2G90gz1wHmwRU1XU47Ap0VPlqxxr6CnVifAqYbbsnhZyPzHuGVXzfb5KuoYZ833r0T77Qk7N
+	axZnttw5lZkoGX7NF5K8/E80Rzse+UXmUJ9dy8FuwFnGG+v79PxhmAjsQkCaABRUSlJGd0Fd00k
+	R5UYWBBAAiXWdVd7yC2jjwRvOrJUrq92hftnjf2Ou9uu7AHxuuXXMTTHNeuO4=
+X-Received: by 2002:a17:902:fc4e:b0:2d5:2f49:b3de with SMTP id d9443c01a7336-2d52f49c24bmr37915325ad.0.1786720442919;
+        Fri, 14 Aug 2026 08:14:02 -0700 (PDT)
 Received: from LAPTOP-N3B6U5LC.localdomain ([117.147.100.52])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2d3aec22f98sm11006395ad.84.2026.08.14.08.13.53
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2d3aec22f98sm11006395ad.84.2026.08.14.08.13.58
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 14 Aug 2026 08:13:57 -0700 (PDT)
+        Fri, 14 Aug 2026 08:14:02 -0700 (PDT)
 From: Zhenhao Wan <whi4ed0g@gmail.com>
-Subject: [PATCH 0/3] powerpc/spufs: fix a refcount, a type confusion and a
- coredump underflow
-Date: Fri, 14 Aug 2026 23:13:38 +0800
-Message-Id: <20260814-spufs-groupa-v1-0-f38f7549ce20@gmail.com>
+Date: Fri, 14 Aug 2026 23:13:39 +0800
+Subject: [PATCH 1/3] powerpc/spufs: fix gang->alive double-decrement on
+ context creation
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,10 +90,9 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAKMwf2oC/yXMQQqAIBBA0avErBNMQqOrRAur0aZFiZMRRHfPa
- vkW/1/AGAkZ2uKCiAcxbWtGVRYwznb1KGjKBiWVlk1VCw7JsfBxS8EKrWrt0JgJjYWchIiOzm/
- X9b85DQuO+/uA+34Au9ZGo3AAAAA=
-X-Change-ID: 20260814-spufs-groupa-6246fe77de7a
+Message-Id: <20260814-spufs-groupa-v1-1-f38f7549ce20@gmail.com>
+References: <20260814-spufs-groupa-v1-0-f38f7549ce20@gmail.com>
+In-Reply-To: <20260814-spufs-groupa-v1-0-f38f7549ce20@gmail.com>
 To: Madhavan Srinivasan <maddy@linux.ibm.com>, 
  Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
  "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
@@ -103,55 +102,61 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  Junrui Luo <moonafterrain@outlook.com>, Zhenhao Wan <whi4ed0g@gmail.com>, 
  Yuhao Jiang <danisjiang@gmail.com>, stable@vger.kernel.org
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1786720431; l=1879;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1786720431; l=1857;
  i=whi4ed0g@gmail.com; h=from:subject:message-id;
- bh=oQmhcafvryzQTr8aJS6N1tB2XEUUgWL4lgJR/IbHbFo=;
- b=zfG8nyBi7T3ub7M+Svd8MbP/SpBX15kVeB/MKzmI2tsFv1Jn0a9Tkd6kQRapj0IRc+71kQWlG
- 6ygYYi4+LN7C+D4Ol8M6zTy8bCMWhvKFP+a6kxzyBqvBfNBHYdc+/pE
+ bh=qpflxoDz4Q2LAuHcccN97A6fnIkF2G+PGjFWuzstZS0=;
+ b=jOy/AYDd7EIMyxpncNLcvaCapZRp5eD3TFKXnXkKchB1tiySy2Lxb7xaouIDUj8swq8VvCdOl
+ r2oHCGZedZqDRTjy8MjdP7EmQbMu6SA+ilnKvxfC4Uj5p9bBZZTcp9Z
 X-Developer-Key: i=whi4ed0g@gmail.com; a=ed25519;
  pk=zRTKlstE0LmilshGwJsFYEVjiT6RiXMBXK8Og6VmuVQ=
 
-Three independent bugs in the Cell/PS3 spufs driver's file and coredump
-paths, found by code inspection. The patches are self-contained and have no
-ordering dependency.
+spufs_create_context() takes a reference on the gang with gang->alive++
+and is meant to hold it until the context directory is closed, at which
+point spufs_dir_close() -> unuse_gang() drops it again.
 
-1/3  spufs_create_context() drops the gang->alive reference on the success
-     path -- the epilogue tests a value that is a file descriptor on success
-     -- so the gang directory can be torn down while contexts still
-     reference it.
+The error epilogue instead reads:
 
-2/3  On 4K-page configs the cntl mmap fault handler dereferences
-     file->private_data as a struct spu_context, but simple_attr_open() has
-     replaced it with its own object -- a type confusion. Fetch the context
-     from the inode instead.
+	ret = spufs_context_open(&path);
+	...
+	if (ret && gang)
+		gang->alive--; // can't reach 0
 
-3/3  The signal1/signal2/ibox_info coredump notes declare a 4-byte
-     descriptor while their dump callbacks emit an 8-byte u64, driving
-     dump_skip_to() backwards (size_t underflow) and truncating the core
-     dump. Declare the sizes to match what is emitted.
+spufs_context_open() returns a non-negative file descriptor on success,
+which is non-zero whenever the caller already holds an open fd. The
+condition therefore fires on the success path too, dropping the
+reference immediately; unuse_gang() then decrements it a second time at
+close. The unbalanced double decrement can drive gang->alive to zero
+prematurely, while contexts still reference the gang, triggering
+simple_recursive_removal() of the gang directory too early.
 
-SPU FILE SYSTEM and CELL BROADBAND ENGINE are marked Orphan in MAINTAINERS,
-so this is addressed to the powerpc maintainers and linuxppc-dev. A
-concurrent spufs fix series from Junrui Luo is in flight; these patches
-touch different sites and do not overlap it. Found by inspection; not build-
-or runtime-tested here.
+Test the sign of the return value instead, so the reference is only
+released on actual failure -- matching the idiom already used by
+spufs_create_gang(), which calls unuse_gang() only on ret < 0.
 
+Fixes: c134deabf478 ("spufs: fix gang directory lifetimes")
+Reported-by: Yuhao Jiang <danisjiang@gmail.com>
+Assisted-by: Claude:claude-opus-5
+Cc: stable@vger.kernel.org
 Signed-off-by: Zhenhao Wan <whi4ed0g@gmail.com>
 ---
-Zhenhao Wan (3):
-      powerpc/spufs: fix gang->alive double-decrement on context creation
-      powerpc/spufs: fix type confusion in cntl mmap fault handler
-      powerpc/spufs: fix backwards coredump skip from undersized notes
-
- arch/powerpc/platforms/cell/spufs/file.c  | 8 ++++----
  arch/powerpc/platforms/cell/spufs/inode.c | 2 +-
- 2 files changed, 5 insertions(+), 5 deletions(-)
----
-base-commit: db2ddb87143519e20a95aa36c60b36107b736a58
-change-id: 20260814-spufs-groupa-6246fe77de7a
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Best regards,
---  
-Zhenhao Wan <whi4ed0g@gmail.com>
+diff --git a/arch/powerpc/platforms/cell/spufs/inode.c b/arch/powerpc/platforms/cell/spufs/inode.c
+index 2b54afb31529..23619fbe0bd9 100644
+--- a/arch/powerpc/platforms/cell/spufs/inode.c
++++ b/arch/powerpc/platforms/cell/spufs/inode.c
+@@ -436,7 +436,7 @@ spufs_create_context(struct inode *inode, struct dentry *dentry,
+ out_aff_unlock:
+ 	if (affinity)
+ 		mutex_unlock(&gang->aff_mutex);
+-	if (ret && gang)
++	if (ret < 0 && gang)
+ 		gang->alive--; // can't reach 0
+ 	return ret;
+ }
+
+-- 
+2.34.1
 
 
