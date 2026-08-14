@@ -1,70 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-25879-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25880-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F1F92C5CFC1
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Aug 2026 21:01:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0981DC5CFCF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Aug 2026 22:06:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hMF524SjKz302T;
-	Sat, 15 Aug 2026 07:01:10 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::646"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786741270;
-	cv=none; b=gBjiPPnVmkEPdFDnd4Shz76HHb9NtzvqVXFmMyax9tR0e3LTs5aXx6Vw4ugE8bHpcryNg6bXLavTtPxWO3PIOuX3HojArPxABnCOZo4BWkb9m9xGUzI0tRgQ3mXJ6rxqqvQ6Z3PQJRzOrLJl593ZqSotPQaRrfsBW11LvJ2bn7XXeVcQEzV/VZDdqukDhKiAhNYvffo20Qdi5z71XhfOUghNnEDv2qkDG+w538vPundkQcWDq6/0+sTcoWCwwU2KwPxO9Z0VxDziU+JKKjS6lTKDuRn+dDxZz6+Ej9IaIsR45RXh7rrYJM+o0QPcioUFdTAhfOvidJ8ibpg6b8p1Gw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hMGXy1fTZz2y7Y;
+	Sat, 15 Aug 2026 08:06:58 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786745218;
+	cv=none; b=D64V1gXkPFlzpjcW30ZSG6+bS9kA9hlbup+1sgHGu9P6zYJdeJC2+kxZB0STTt4JS65BThce+nlWkKhnd/1efBFAwd5B+IrpjZ/+ayUwNVcKqKzs5Oike8hOh5FugPgLUI+pZ0oI/qIKT0Sx6vExck6CVfdmTbrZlVJarfWpFZ3xL62tPpc6AqcDr4X0C+/O0tGIgr1Z3FPMUYuG7HXJb7J/cr2/hMbwPo5i4hpIcTcFTFI2sMXRz1fDSzbvG/RIif0rLteG5bp3/eOxqsOzsDz170pTmR10xwg6GMgQz2Bp+6xccaOBCI317dZ8PebmWRwwZiZjUM6u0pzxu2P1Rg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786741270; c=relaxed/relaxed;
-	bh=DYuMpnr3KSC7nQvSYxrDe2V0WmDtuzggqBjS2om2eUA=;
-	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=U4Vwi4olwfjvAXecYx46vixoYy9pRUSj3IXjZZcO220txhhNDr0O87+gcXPhMVfxmFJBIxIUzguBdmA34iIL9qWiKnVkTdtMSDjx8Wj4yI41SemoPwWhEIQXjnoC7eFaGS49RIpZ/rYevAMYY/UluVXQPOeGK6qb22BfYtmCl8kj4ND4B+lj+6KwhPWQfgc5+mCkQmtCH4sjUEyKY7smPyRAfHxQWQ6NccWYR7Dex9AUJ+Zss5Ew7mhcCXYWcbulC7F3k47ZS/WkYO4U2DO/ZUht3dbzS+XAC0KCj8PbniAVnMwfceIiSBEggH11X0JLbd0nFoZsz2DC4B2Rem+5uQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=GMZv4BeX; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::646; helo=mail-ej1-x646.google.com; envelope-from=3dij_agkkdgkahybuzhobnvvnsl.jvtspubewwj-klcspzaz.vgshiz.vyn@flex--tarunsahu.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--tarunsahu.bounces.google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	t=1786745218; c=relaxed/relaxed;
+	bh=43EJgsZqDVbV2DjeQ/GksSldFhIpCXxnr2u8QDpaJTE=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To; b=gKsW2EmgUpZ/5e/2DzKvgSJp3y+1KUII7cY7JeYqAGavoxmx+vlNGoMOzi627SuYTfbbWqAZXjtWMSM5jTjQ1NLUYG0mgig/4LqQYW0+5unqd3ZdlJkU3cAi1Gt3X/ogQfJtCJMfmnwDRHNdmCB5Uyh1TV5PC2DGgYpdS0m5zk2TPUByXpt0hnErvrQJyTO8sW1mZWyH2S71QM333rvf95JUW0zVBOwbILMBnZNuL0cJJabEkmau8h3mrGkEPF/dAw9j6tjSqVx7VfCPD+5KWcMqeBRkM06nDhlX4EEYTcCgibn0rC4PgqIXNXRIyvT0FPwfqqLssua/4ZkolgkzIA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ksZSNSI4; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=GMZv4BeX;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ksZSNSI4;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--tarunsahu.bounces.google.com (client-ip=2a00:1450:4864:20::646; helo=mail-ej1-x646.google.com; envelope-from=3dij_agkkdgkahybuzhobnvvnsl.jvtspubewwj-klcspzaz.vgshiz.vyn@flex--tarunsahu.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-ej1-x646.google.com (mail-ej1-x646.google.com [IPv6:2a00:1450:4864:20::646])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hMF513H5Nz2yrf
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Aug 2026 07:01:09 +1000 (AEST)
-Received: by mail-ej1-x646.google.com with SMTP id a640c23a62f3a-c1c232fa136so138294366b.0
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2026 14:01:08 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1786741261; x=1787346061; darn=lists.ozlabs.org;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=DYuMpnr3KSC7nQvSYxrDe2V0WmDtuzggqBjS2om2eUA=;
-        b=GMZv4BeXvKxeOd5ZemcViQEFh0MDIjCzcLox04Dw8p2wMgrsNApaM/AYpbShmr3xMQ
-         Uh1LbPXFqhNiznjBVqwD7RVo71BlzucEjf6+i28MmdnCE1MRUYDe+mdLPx1/xx4l5Fta
-         Mf9E6NNLPVLp6bfKCbe4Q7l1DsfYS++VklGJ2hjVUX8xAnR5dbhV/euz9wpQ3BXjMB2I
-         h7+0XFenUELa++fb4/OKryLuwpuBs8nCzEdAlAk5oxmPW9FOt4+SKDTqxsgfmXSaRdEb
-         iGgjBgPfxkBdC5oMmk4Yw15i0o6ElBcNPaluPKn2eS+RPe57z8Pe8TQMtKcNU4HL9DUS
-         3BHg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786741261; x=1787346061;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=DYuMpnr3KSC7nQvSYxrDe2V0WmDtuzggqBjS2om2eUA=;
-        b=eco3eA4SXQtwZW1I3SKVZOiIc83l1/5X+Xld7mgwu93CLdaUO4Dfl6lxq9QJHlQdtP
-         e6nL9mQYijZY6QqHhce9P0mMDT6vhv8nA0+6MqpnQBfU2dj00Ikg4Nu+KXcb+IPQg3lr
-         NC5VUqKj3yupRjk1/x0qPeAV7x0CRjB0VKKmnBxTDnOtFrue5Hxmqqu3sSbKtOyTP8n/
-         Ny062rq7BzBCcf8D7cnK02I7BC3T+5wy679B62WVf/uF1/IqggFbZwsF7uAyR4PW90B+
-         8Nk73kVG+Tzb1anJ6P4adCuvPvu4lNXfN3A1prFZ0ch3flFTipv6X13Ims961SDKJhhC
-         egfQ==
-X-Forwarded-Encrypted: i=1; AHgh+Rp3KEtp095DVLjN0Va3vp5Di/3o/aPyU5ci3UY0YqOBWzehwe0fnvlMk26035rvjDFzol0N6mg3zMczlmI=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyT/yeZfIIbRN38rUS/B1qUYTgnlaG4nFf0auWOvbRmxflkYc5k
-	DT5nrJ+OkImMj4e2+4oVUCp2X8xBTZxWruou7q3gkbpWCPGeXOzg2P0RIkWcSaTu/56lGC0m4YJ
-	wMBgg7eiQ3gCrKgq3CQ==
-X-Received: from edgd22-n1.prod.google.com ([2002:a05:6402:a516:10b0:6a0:d334:54e7])
- (user=tarunsahu job=prod-delivery.src-stubby-dispatcher) by
- 2002:a17:907:e15b:20b0:c21:3c4e:cb9d with SMTP id a640c23a62f3a-c213c4ecd42mr205334666b.14.1786741260571;
- Fri, 14 Aug 2026 14:01:00 -0700 (PDT)
-Date: Fri, 14 Aug 2026 21:00:55 +0000
-In-Reply-To: <20260814210057.4102768-1-tarunsahu@google.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hMGXx26Frz2xyl
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Aug 2026 08:06:57 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 07C3D60008;
+	Fri, 14 Aug 2026 22:06:54 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 84C631F000E9;
+	Fri, 14 Aug 2026 22:06:53 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1786745213;
+	bh=43EJgsZqDVbV2DjeQ/GksSldFhIpCXxnr2u8QDpaJTE=;
+	h=Date:From:To:Cc:Subject:In-Reply-To;
+	b=ksZSNSI4qVp+ZNRnuKGiTDmtvihG+f7HWyfWu2U1CiOA3t/q5PKYI7YJ9NbEq6uRV
+	 D1jYBvEV7wqvdR04OkcmBhnYokh+Wu5TslKBH23vlbNwABCAvnmcEfzo0uklmfykB+
+	 PSs7TYmstpmM9IplQYRPBEPgX6hwdygvzrMd6QJd99Rgdk96OrMPyzNMEsjcsHp5j4
+	 sQZ+o6W51tNRUvvePQpHrg68dzF/4BE0AczHorskc3vcR7bobDUz9yVyUAyA7WjVPb
+	 vF8xyU5ge7/TjD7iu9+JC30YEs+cG++044TwKr54O1NJUZ88ghk7jY/fR1y44NNbMB
+	 ugxObgm8V7PJA==
+Date: Fri, 14 Aug 2026 17:06:52 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Tarun Sahu <tarunsahu@google.com>
+Cc: dmatlack@google.com, Nicholas Piggin <npiggin@gmail.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	sourabhjain@linux.ibm.com,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Pasha Tatashin <pasha.tatashin@soleen.com>,
+	Russell King <linux@armlinux.org.uk>, radheys@amd.com,
+	skhawaja@google.com, djeffery@redhat.com,
+	Geoff Levand <geoff@infradead.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	linux-arm-kernel@lists.infradead.org, souravsgl@google.com,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	driver-core@lists.linux.dev
+Subject: Re: [PATCH v3 2/3] firmware/edd: use kobject_put() on
+ edd_device_register() failure
+Message-ID: <20260814220652.GA101268@bhelgaas>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -77,69 +75,65 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0
-References: <20260814210057.4102768-1-tarunsahu@google.com>
-X-Mailer: git-send-email 2.55.0.691.gc56d675ccc-goog
-Message-ID: <20260814210057.4102768-2-tarunsahu@google.com>
-Subject: [PATCH v3 1/3] ARM: locomo: use put_device() on device_register() failure
-From: Tarun Sahu <tarunsahu@google.com>
-To: helgaas@kernel.org, dmatlack@google.com, 
-	Nicholas Piggin <npiggin@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	sourabhjain@linux.ibm.com, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
-	Pasha Tatashin <pasha.tatashin@soleen.com>, Russell King <linux@armlinux.org.uk>, radheys@amd.com, 
-	skhawaja@google.com, djeffery@redhat.com, Geoff Levand <geoff@infradead.org>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: linux-arm-kernel@lists.infradead.org, souravsgl@google.com, 
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
-	driver-core@lists.linux.dev, Tarun Sahu <tarunsahu@google.com>
-Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260814210057.4102768-3-tarunsahu@google.com>
 
-As per device_register() function kernel documentation says "even
-when device_register return error always use put_device() instead
-of kfree()"
+On Fri, Aug 14, 2026 at 09:00:56PM +0000, Tarun Sahu wrote:
+> As per koject_init_and_add() function kernel document, even if this
+> function returns error kobject_put must be used instead of kfree.
 
-Fix such instance in locomo driver by replacing direct kfree(dev)
-with put_device(&dev->dev) when device_register() returns an error.
+Thanks for adding this specific pointer.  I wouldn't repost just for
+these nits, and wait at least a few days before reposting for any
+reason.  But if you do repost:
 
-Signed-off-by: Tarun Sahu <tarunsahu@google.com>
-Reviewed-by: Sourabh Jain <sourabhjain@linux.ibm.com>
----
- arch/arm/common/locomo.c | 13 ++++++-------
- 1 file changed, 6 insertions(+), 7 deletions(-)
+s/koject_init_and_add/kobject_init_and_add/
 
-diff --git a/arch/arm/common/locomo.c b/arch/arm/common/locomo.c
-index 55e360452828..0f6689d343b0 100644
---- a/arch/arm/common/locomo.c
-+++ b/arch/arm/common/locomo.c
-@@ -223,10 +223,8 @@ locomo_init_one_child(struct locomo *lchip, struct locomo_dev_info *info)
- 	int ret;
- 
- 	dev = kzalloc_obj(struct locomo_dev);
--	if (!dev) {
--		ret = -ENOMEM;
--		goto out;
--	}
-+	if (!dev)
-+		return -ENOMEM;
- 
- 	/*
- 	 * If the parent device has a DMA mask associated with it,
-@@ -255,10 +253,11 @@ locomo_init_one_child(struct locomo *lchip, struct locomo_dev_info *info)
- 
- 	ret = device_register(&dev->dev);
- 	if (ret) {
-- out:
--		kfree(dev);
-+		put_device(&dev->dev);
-+		return ret;
- 	}
--	return ret;
-+
-+	return 0;
- }
- 
- #ifdef CONFIG_PM
--- 
-2.55.0.691.gc56d675ccc-goog
+Might also add "()" after function names consistently (kobject_put and
+kfree above, edd_release below).  Also applies to the other patches.
 
+The current subject lines basically restate the C code; you might
+consider more of a focus on the problem.  I ran this through gemini
+and I think it did a decent job:
+
+  firmware: edd: Fix kobject reference leak on registration failure
+
+  Per kobject_init_and_add() kernel-doc, calling kfree() directly on
+  error bypasses reference counting and skips the kobject's release
+  callback, leaking the reference.
+
+  Use kobject_put() instead of kfree() on registration failure to fix
+  this.
+
+> When edd_device_register() fails after initializing the kobject with
+> kobject_init_and_add(), calling kfree(edev) directly bypasses the
+> kobject release callback (edd_release) and leaks the allocated kobject
+> resources.
+> 
+> Fix this by replacing direct kfree(edev) with kobject_put(&edev->kobj) on
+> registration failure.
+> 
+> Signed-off-by: Tarun Sahu <tarunsahu@google.com>
+> Reviewed-by: Sourabh Jain <sourabhjain@linux.ibm.com>
+> ---
+>  drivers/firmware/edd.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/firmware/edd.c b/drivers/firmware/edd.c
+> index f980c5b56858..763e7b16d517 100644
+> --- a/drivers/firmware/edd.c
+> +++ b/drivers/firmware/edd.c
+> @@ -748,7 +748,7 @@ edd_init(void)
+>  
+>  		rc = edd_device_register(edev, i);
+>  		if (rc) {
+> -			kfree(edev);
+> +			kobject_put(&edev->kobj);
+>  			goto out;
+>  		}
+>  		edd_devices[i] = edev;
+> -- 
+> 2.55.0.691.gc56d675ccc-goog
+> 
 
