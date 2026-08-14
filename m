@@ -1,84 +1,62 @@
-Return-Path: <linuxppc-dev+bounces-25854-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25855-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CC5E1C5CFC1
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Aug 2026 08:00:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 093E9C5CFC1
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Aug 2026 08:02:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hLvlj0kFzz2y8f;
-	Fri, 14 Aug 2026 18:00:01 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786694401;
-	cv=none; b=dwVkCFd2Xrf1XepvPqbVDsFxKZqvAW/Yw3f0dl0FjMsWy25rqM81zI1vbD+WBvY7LOUF0R14ZIWkUqRiD59CZrBn9rsE4SSzppZN/KLX8SGmmRh855Sik3kfaP5+bjKP9YQjd/UGiEihAlTmAuwa1KXeHuY/m88Kpjja2Mxu0cJqbzV3jzi3mxgXbZOh7wER6FBEFSbry8gjwIQ3yNdijCjxVwlLkHhENLFxOGy2OS2bqwt8VGdhwyqVhZe0TdISai2nwPP0QpLyWrMVptMv45jqZu92Ki2wlxq7KLoPMkwBDoeZJ7aOfQai21+4NNVp5feUYeMXcOd4Gm6w/dUSKQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hLvq01PRDz2y8f;
+	Fri, 14 Aug 2026 18:02:52 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1236::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786694572;
+	cv=none; b=TAs4x/yWkNqYpc5H79yPYAgoijBkfh4zxZTpnAvEiLtUEW8VMS72TOBKFd0whPPgvrtKNWy05X6XXOr/KOc/JgrK1XXE00unXqp5pKXNUr4LrtX/3IHQiQDV+ZFttCq+LIejxBKxGzesyw2Yq+sQ115buWw8atiEvbnr4z3v7anr2gY8xJ91XoAaYiCmyYSdlNuJ/4gZSIpOUYVoBQBLMmVOt6zyfYPmZkDIvTjLAyi03JbBwHti7/FdxRWPny4LE1nDkybHjZFKWQJg2A2uSc0wQ5bOeVBGumtbwZhQ0+H0BRXxXEh9AFVvmax+rXiHiQTCdiHguoK7PBtYWkSdAg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786694401; c=relaxed/relaxed;
-	bh=PbVAUNGx9/XtU8ujmggUMLnWn0arc3l3krHyL1I6sxY=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=OXYM5zcNkorEHeX67uyF2zqjdVS2ilP/zrc/gTEQnnrPOPazjRmbnSHy7J0EpmvJn+wo5tofYMHuOU9oT9/OCk32TwetO3jjLd7ThxKMY3pkO35iGfkEObAWWFDQPaDR4xpFpXbwZ2iUu4v4OUYfgFOYeI/wudvNnJexZBDY7zoWB4wLyPVV4ffv3Q5im/Sq3F9ql6ck1IuiVN7wok/dpcKjH2baJkVpAe1njxi1oLM/ih3R8fuQ2DlsCrnLO2FZDN4GzYQFB2z0k4HVEx2a1+HE5f+JDWHi6g3P86AXB1T29jVPDsnL6h1igWY79gwQLj/IXaZ1Zk704dp3sPrzwA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=mjCAuhHc; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1786694572; c=relaxed/relaxed;
+	bh=0tVBbLMJtW6Uaqu6RbCb6mjH7K+ZVNbF2k9bYETFXHY=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:Content-Type:
+	 MIME-Version; b=Qg1YCb3s15XSf1hduyvlrKoe9xtqINkgvDKgonYTJOxBvfdl1DcI6c8axjpge0Mm0xcjbQrTg9rHpVfUyiCsQ0A1F5Tjv3tVBjjOh1B7/74vDxEWZE1eQyxYaEE8+JEBh/2Eb7apt7eKz1/+DXR1BTYRcKG/4lme/S7zafDY2KVBbO0hvKVlH+B+IKVNYhyPmfdMJuAg0plBQVaOi2nfJ1nrqI6H9EFa/vUoH9Iu1g+9dclG5dE6g71EANDfgIhyYO/OxVQiMK3VcqxHS8WE/HqnMylnJLlRCTmpHTMZYISYDFON9nbdaNHDBI8D1xnxnlWrZJSzmLjlGnw3PDR8gg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=TMikUDJg; dkim-atps=neutral; spf=none (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=batv+04c67277bee7a825e0be+8391+infradead.org+dwmw2@casper.srs.infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=casper.srs.infradead.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=mjCAuhHc;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=TMikUDJg;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=batv+04c67277bee7a825e0be+8391+infradead.org+dwmw2@casper.srs.infradead.org; receiver=lists.ozlabs.org)
+Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hLvlh1MJfz2y8G
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2026 17:59:59 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67E4WN9w059711;
-	Fri, 14 Aug 2026 07:38:26 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=PbVAUNGx9/XtU8ujm
-	ggUMLnWn0arc3l3krHyL1I6sxY=; b=mjCAuhHctJ4ID4+1Xr9TWaUIcSu/onDi2
-	sgbcQa2yN6qLxmtxQJppNyjjWzejXhiBLLqlSQE2kz9zuLpST0RkhpOtX0a8Olbo
-	mrJ74H6ApltLq69ofIMf99DEwz2vgwu85PzaxbFZhaSSrkIg9W3g6sx9y2mS/IC4
-	IODbEoqPD7kLFbF8XrnYhbbytaIEeFmgyjxSFUWMzfW5ogebu7fIU4ZwSdOgS3jj
-	NAFSWy0equgc1qaL4BhvBi+1FnzdDsWNoyjlsTdQ7xOQ87liW1e08ZT1omOkBH3K
-	wPUKgM7m8MTIoMlHPnqW0MPT3G88Huda8kUpa9rphXOYIxmfu5JFA==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fwvp3amq9-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 14 Aug 2026 07:38:25 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 67E7QK1J017907;
-	Fri, 14 Aug 2026 07:38:24 GMT
-Received: from smtprelay02.wdc07v.mail.ibm.com ([172.16.1.69])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4fxf5wegca-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 14 Aug 2026 07:38:24 +0000 (GMT)
-Received: from smtpav01.dal12v.mail.ibm.com (smtpav01.dal12v.mail.ibm.com [10.241.53.100])
-	by smtprelay02.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 67E7cKrM18547288
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 14 Aug 2026 07:38:21 GMT
-Received: from smtpav01.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id CF5CD58057;
-	Fri, 14 Aug 2026 07:38:20 +0000 (GMT)
-Received: from smtpav01.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C907B58062;
-	Fri, 14 Aug 2026 07:38:18 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.67.89.186])
-	by smtpav01.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 14 Aug 2026 07:38:18 +0000 (GMT)
-From: Mingming Cao <mmc@linux.ibm.com>
-To: netdev@vger.kernel.org
-Cc: davem@davemloft.net, kuba@kernel.org, edumazet@google.com,
-        pabeni@redhat.com, andrew+netdev@lunn.ch, nnac123@linux.ibm.com,
-        maddy@linux.ibm.com, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
-        haren@linux.ibm.com, ricklind@linux.ibm.com, davemarq@linux.ibm.com,
-        bjking1@linux.ibm.com, shaik.abdulla1@ibm.com,
-        Mingming Cao <mmc@linux.ibm.com>
-Subject: [PATCH net-next v5 12/15] ibmveth: Report MQ-aware RX counts in ethtool get_channels
-Date: Fri, 14 Aug 2026 00:36:39 -0700
-Message-Id: <20260814073642.24630-13-mmc@linux.ibm.com>
-X-Mailer: git-send-email 2.39.3 (Apple Git-146)
-In-Reply-To: <20260814073642.24630-1-mmc@linux.ibm.com>
-References: <20260814073642.24630-1-mmc@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hLvpr6mFzz2y8G
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2026 18:02:42 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=casper.20170209; h=MIME-Version:Content-Type:In-Reply-To:
+	Date:Cc:To:From:Subject:Message-ID:Sender:Reply-To:Content-Transfer-Encoding:
+	Content-ID:Content-Description:References;
+	bh=0tVBbLMJtW6Uaqu6RbCb6mjH7K+ZVNbF2k9bYETFXHY=; b=TMikUDJg1VciwjK96rRcMcH+c0
+	kvI4rxTrbK1GpRCQcOi2rQz/BcCkhq+uVj6IkCtM7TxQFneIUcT4GeZlMbbh9EJGNLhbFAq5twtSm
+	zb182Mbp9o0dbVDsMP2vHyoSfLwr3kRkDHgtBrdqufL1GInn9eKQ+OWXaSCzVgJ1m/IEcj8Lxlo4K
+	qmkP3SSw5kV3Sqev70DE6oQeKxlLqWMsSW0AWoQGtSfCCYyoVUdBiPzF6XhuVyBENCX2n14EUKe2o
+	VVOGtd/897kHtlVVgd3DYv0l0BqkehCE4E0AAAgGeVdToWn1cQ7ASh8gY0rZrNS5SlgQ9XFYLDR/w
+	M8hYpG3A==;
+Received: from [2001:8b0:10b:5:84af:4c52:575c:6551] (helo=u09cd745991455d.ant.amazon.com)
+	by casper.infradead.org with esmtpsa (Exim 4.99.1 #2 (Red Hat Linux))
+	id 1wums2-00000004rGI-1AD8;
+	Fri, 14 Aug 2026 08:02:30 +0000
+Message-ID: <10f70f164410f44cc4e1e8150f7384b9f9a59664.camel@infradead.org>
+Subject: Re: [PATCH 3/5] KVM: Add a common kvm_run flag to communicate an
+ exit needs completion
+From: David Woodhouse <dwmw2@infradead.org>
+To: seanjc@google.com
+Cc: maz@kernel.org, pbonzini@redhat.com, oliver.upton@linux.dev, 
+	mpe@ellerman.id.au, kvm@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, 	kvmarm@lists.linux.dev,
+ linuxppc-dev@lists.ozlabs.org, 	linux-kernel@vger.kernel.org
+Date: Fri, 14 Aug 2026 09:02:21 +0100
+In-Reply-To: <Z4WN3_wUZ1H_e7ou@google.com>
+Content-Type: multipart/signed; micalg="sha-256"; protocol="application/pkcs7-signature";
+	boundary="=-WdrK32jdwwPqIhMUNxHP"
+User-Agent: Evolution 3.60.3-0ubuntu1~ppa9~24.04 
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -92,87 +70,153 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=AMtp2X5w c=1 sm=1 tr=0 ts=6a7ec5f1 cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VnNF1IyMAAAA:8 a=PA20WcGQiNPz0IH_SaMA:9
-X-Proofpoint-GUID: OFY_pIYdNsnMHERuVagvMTdclJeUo0W5
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODE0MDA1OCBTYWx0ZWRfX4M+9+NbxmhbL
- N2a4zIwmYqkGt+Czu0KwV3u/qkGKaICmcHH0xMDqM37auC807ZigNf3+1J8j9I1duI+6ulM0/kV
- a8uDLTQRmKJ6lSRM1N3a0b4efseQOf/iMvy39ETN6RQ6e0m6NTyxIGu2w1TGm5I76fR8QbaJ62k
- +T7H7MYFpdusxjp73J0WX36gywAYWIxruarj6qjrSPcAKhu2OLi7wCNHAbNgNXXqdNMpmZ/ECdr
- AGuRh0rqd+xxOJny9VK28/s5Vwr68MrkaUBQxxSB7miX62Hvx33i9W02lCSbBr87Y4PHEKZ9nQ4
- xFT2Be91i6/jILff/WV1YeZKawki3WQv3TTN5CIJRzSucWi8IZJl4xuPPUVsTt+HmlDUNuIJm2k
- lpRc5NwNS1dQBe4kqqu2WCjIWN952vlv9yGaVczONL8VC07EROT7MuImC1gbBJLbKJscaztlMER
- 8tmzlAcHgoVafGznW8A==
-X-Proofpoint-ORIG-GUID: keTKK_sb57NeJGs1ev2ZJFw4dfENrEur
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODE0MDA1OCBTYWx0ZWRfXxpy/nK/C46SL
- nhbSoeZZDvTRdfbpHerqwqGeOR93yhwB/RJsPrqteaPZ0B4zEfagjHy00u20nwkIAZbrOcn+t0Y
- xTkWJekYyVaekL7c1ODEDe+S6nz3ZEw=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-08-14_02,2026-08-12_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 adultscore=0 lowpriorityscore=0 clxscore=1015
- priorityscore=1501 impostorscore=0 phishscore=0 spamscore=0 bulkscore=0
- malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
- definitions=main-2608140058
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org. See http://www.infradead.org/rpr.html
 
-Report MQ-aware channel limits and counts from get_channels():
 
-  - max_rx is IBMVETH_MAX_RX_QUEUES when MQ firmware is enabled, else 1
-  - rx_count tracks the driver's published num_rx_queues
+--=-WdrK32jdwwPqIhMUNxHP
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Previously get_channels() mirrored netdev->real_num_rx_queues for both
-fields, which under-reports max_rx on MQ firmware and can disagree with
-the driver's private RX count before the next open.
+On Mon, 2025-01-13 at 14:04 -0800, Sean Christopherson wrote:
+> I do agree that the VMM is likely going to run into problems sooner or la=
+ter if
+> the developers/maintainers don't fundamentally understand the need to red=
+o KVM_RUN,
+> but I also think there's significant value in reducing the chances for si=
+mple
+> human error to result in broken VMs.
 
-Keep this out of the stats patch: channel reporting is ethtool -l ABI,
-independent of per-queue counters, so it can be reviewed and blamed on
-its own.
+I agree that it makes sense for the kernel to expose this flag, and
+keep it in sync with the exit reasons that need it as they accumulate
+over time, rather than having to keep the VMM in sync.
 
-Signed-off-by: Mingming Cao <mmc@linux.ibm.com>
-Reviewed-by: Dave Marquardt <davemarq@linux.ibm.com>
-Tested-by: Shaik Abdulla <shaik.abdulla1@ibm.com>
----
+Coincidentally, I did an audit of a VMM only a few weeks ago, adding a
+userspace flag for 'exit_response_pending' and making sure it does one
+last run of the vCPU with an immediate exit requested, before pausing
+for migration. I added that flag for exactly the same KVM_EXIT_xxx
+reasons, matching the kernel... for now.
 
-Changes in v5:
-- get_channels rx_count via get_num_rx_queues() (READ_ONCE consistency)
-- New peel: get_channels from v4 stats -> tip P12 (14->15)
-- get_channels: max_rx = MAX_RX_QUEUES when MQ else 1; rx_count =
-  get_num_rx_queues() (was mirroring real_num_rx_queues for both)
+(I just said in a separate thread that you missed KVM_EXIT_XEN, but on
+closer inspection I was wrong because kvm_xen_hypercall() sets the
+arch.complete_userspace_io flag so it's fine; I just didn't see the
+Xen-specific setup in my first look.)
 
- drivers/net/ethernet/ibm/ibmveth.c | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
-index 3202b657c9b8..5d4ca4b3d3d0 100644
---- a/drivers/net/ethernet/ibm/ibmveth.c
-+++ b/drivers/net/ethernet/ibm/ibmveth.c
-@@ -2522,11 +2522,16 @@ static void ibmveth_get_ethtool_stats(struct net_device *dev,
- static void ibmveth_get_channels(struct net_device *netdev,
- 				 struct ethtool_channels *channels)
- {
-+	struct ibmveth_adapter *adapter = netdev_priv(netdev);
-+
- 	channels->max_tx = ibmveth_real_max_tx_queues();
- 	channels->tx_count = netdev->real_num_tx_queues;
- 
--	channels->max_rx = netdev->real_num_rx_queues;
--	channels->rx_count = netdev->real_num_rx_queues;
-+	if (adapter->multi_queue)
-+		channels->max_rx = IBMVETH_MAX_RX_QUEUES;
-+	else
-+		channels->max_rx = 1;
-+	channels->rx_count = ibmveth_get_num_rx_queues(adapter);
- }
- 
- static int ibmveth_set_channels(struct net_device *netdev,
--- 
-2.50.1 (Apple Git-155)
+--=-WdrK32jdwwPqIhMUNxHP
+Content-Type: application/pkcs7-signature; name="smime.p7s"
+Content-Disposition: attachment; filename="smime.p7s"
+Content-Transfer-Encoding: base64
 
+MIAGCSqGSIb3DQEHAqCAMIACAQExDzANBglghkgBZQMEAgEFADCABgkqhkiG9w0BBwEAAKCCE8Ew
+ggWvMIIEl6ADAgECAhANkOKMSmGXhF5eMl0rsRhvMA0GCSqGSIb3DQEBDAUAMGUxCzAJBgNVBAYT
+AlVTMRUwEwYDVQQKEwxEaWdpQ2VydCBJbmMxGTAXBgNVBAsTEHd3dy5kaWdpY2VydC5jb20xJDAi
+BgNVBAMTG0RpZ2lDZXJ0IEFzc3VyZWQgSUQgUm9vdCBHMjAeFw0yNDAzMTMwMDAwMDBaFw0zNDAz
+MTIyMzU5NTlaMGIxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjE6MDgGA1UE
+AxMxRGlnaUNlcnQgQXNzdXJlZCBHMiBTTUlNRSBSU0E0MDk2IFNIQTM4NCAyMDI0IENBMTCCAiIw
+DQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBAOfSIeC0vv1xPQ+dgSxbIIrkaru6skAWJYaGFzmv
+q4Kq+2wU2jxhcWlJg/JeP5jEkq/LM3pn5aaLao79j+XRmS7J1ZpJKUODJVoM4s9MQJhTMvo4qS5Z
+S64g6QR7Obkz3I1Lr3aWeSBmDDEyzue+NKtuWZ1Cxy3RdXo/w5HgRc3l2AercOM3Gt1XonTzEtTb
+Z/Hwc0Sn9Gz8RmGRK6Ka4hVDl8q/2l110KaV233Kh5etP0csXS8MIMdVRfRu3sc5hp13DG7lCKzK
+72a2GEpI8Wpl26G6I1/LMzz/98T+FqjTqxsdquk7Cj7m2vKGLW1BorpQH7WFGPdJQXJe1hfbfiZA
+CcVdCtl4nAacFacmsiArZBfX7AQGL7isvHUwwYFEtcApyGW4p2Lt+t8nvU0CANA6BHOpOz1xOP8W
+mAESbUriIjyuTUf3fJ9oDNCurVqhASMJCDaWI3lYX/QAoiAzt6akqbbZxo2ujW7mGGqc0KxqE2cs
+h2T79v7pC8aUtHBfwNrTR19GnZVxE0eQ7ViIQhR6mpSaUQFA9sG+cmD2G8TnCgYsLa0q8De6F61a
+CBevQGHNzrbZ3JAMneveYg/Jy1XxQHDRcvrMfWKe0jjcWbdKYlaGVPm5V1ILwYz7Yv5ewo3NUrxI
+GJiywe9qPhuJSDZs7VehTuI0FxGIsgKzVjgbAgMBAAGjggFcMIIBWDASBgNVHRMBAf8ECDAGAQH/
+AgEAMB0GA1UdDgQWBBT3m6JO05fF9DQPQw6Bhc6RkzKv+TAfBgNVHSMEGDAWgBTOw0q5mVXyuNtg
+v6l+vVa1lzan1jAOBgNVHQ8BAf8EBAMCAYYwHQYDVR0lBBYwFAYIKwYBBQUHAwQGCCsGAQUFBwMC
+MHkGCCsGAQUFBwEBBG0wazAkBggrBgEFBQcwAYYYaHR0cDovL29jc3AuZGlnaWNlcnQuY29tMEMG
+CCsGAQUFBzAChjdodHRwOi8vY2FjZXJ0cy5kaWdpY2VydC5jb20vRGlnaUNlcnRBc3N1cmVkSURS
+b290RzIuY3J0MEUGA1UdHwQ+MDwwOqA4oDaGNGh0dHA6Ly9jcmwzLmRpZ2ljZXJ0LmNvbS9EaWdp
+Q2VydEFzc3VyZWRJRFJvb3RHMi5jcmwwEQYDVR0gBAowCDAGBgRVHSAAMA0GCSqGSIb3DQEBDAUA
+A4IBAQA+b8Uw53sDspdZgukU+qzLyyHkcjlxGGhHlP+zrmDLKm1wEFvCRS2pili3Hy67i8N4N5NU
+vw5Rg6kv3lxb9S9Rktxk43k+tvm68pl7OxQE55ZjVY87P0lUPGwEqOOwLLyH02ZQcsfq5p5LrOH9
+0JvmvZ1yy73HS+VpDAqOlytE0NSvTIRqFFkKQGQwfjvtql9YflujuNNvJztjBaHKYZsnNSg+J38o
+jYq4TP3pSg3UdVH0PncVjPQyqxC9xef5Xae92Kbkzol3x7Nel3A1bwAkalrDMspvTHvey6LfiBks
+FIqviTnoy7fgjaRAJgHS+RXx/cmuRd3rUAclSVVrYu8RMIIHAzCCBOugAwIBAgIQAzUotrsybJHx
+HTjKOIVdIDANBgkqhkiG9w0BAQsFADBiMQswCQYDVQQGEwJVUzEXMBUGA1UEChMORGlnaUNlcnQs
+IEluYy4xOjA4BgNVBAMTMURpZ2lDZXJ0IEFzc3VyZWQgRzIgU01JTUUgUlNBNDA5NiBTSEEzODQg
+MjAyNCBDQTEwHhcNMjYwNzE4MDAwMDAwWhcNMjgwMTA0MjM1OTU5WjAeMRwwGgYDVQQDDBNkd213
+MkBpbmZyYWRlYWQub3JnMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA2pYux73kdbYX
+sWF8f1u6DJP91qcqaZetsyfPkZk0B+MmXmAEv0kVes5n15V2mbDThOnpoPFly0UugQO9JYqLfrtD
+tKD5yL58fgrDB9Dw+LQikgrHafl6YSCds5AvUu/8hw2J6noKrcOLJpKlKn9Fl/4IB9Q3JIdLx5aa
+EtTqMalIPqHFOlgrJ7s+aua8xbB8YQ9ahqYBXWRJNv3P/2b1DYtdrz1oqZPE3CcB8Pc6Gf2a1Tcm
+6TAgtEx7Cf1BFcrsrMz7TWHmGQITieNb2r9UYWSc2Gp+GtYFNJCgT0JJXKUBIauPMKBLteYrL8Fo
+ff/uY44dC/mDWjdCP/5x0qelPQjlBvWdHL5zvBTOj06rJ0m3HNI/hnIcDh0Qu2j9reb9rLVcdym6
+bWmBM4uDEB8Zv9Ph0KTBFSy1IosyakuD1j1Os30EzjGfbi0EUXIvnOcYbTBAbM5UAzrxEHMhBvoX
+Pvnx+OyvjJmc9tWxTX6AcSz+m40esbT17URBeZS18afgieiikm5TynlUYP1LciR3hSgGVzvGXnKO
+02VDFR5itGWdRKZ2W5wIShNfWfhSa0D0K5UdIDt5Qc7sjzwK1Yb1sY5Tu0uA5mhIS82q1ov83uxB
+sFkriNnhGv/M1NCDVLBiOMsHu73qUM+yKmgKLwF9Hfn9WI25glbAMI4S5r3hYzcCAwEAAaOCAfcw
+ggHzMB8GA1UdIwQYMBaAFPebok7Tl8X0NA9DDoGFzpGTMq/5MB0GA1UdDgQWBBRcYhqbcGzn1jrT
+JOZaB8O7qllDpzAwBgNVHREEKTAngRNkd213MkBpbmZyYWRlYWQub3JngRBkYXZpZEB3b29kaG91
+LnNlMBQGA1UdIAQNMAswCQYHZ4EMAQUBAjAOBgNVHQ8BAf8EBAMCBeAwHQYDVR0lBBYwFAYIKwYB
+BQUHAwIGCCsGAQUFBwMEMIGpBgNVHR8EgaEwgZ4wTaBLoEmGR2h0dHA6Ly9jcmwzLmRpZ2ljZXJ0
+LmNvbS9EaWdpQ2VydEFzc3VyZWRHMlNNSU1FUlNBNDA5NlNIQTM4NDIwMjRDQTEuY3JsME2gS6BJ
+hkdodHRwOi8vY3JsNC5kaWdpY2VydC5jb20vRGlnaUNlcnRBc3N1cmVkRzJTTUlNRVJTQTQwOTZT
+SEEzODQyMDI0Q0ExLmNybDCBjQYIKwYBBQUHAQEEgYAwfjAkBggrBgEFBQcwAYYYaHR0cDovL29j
+c3AuZGlnaWNlcnQuY29tMFYGCCsGAQUFBzAChkpodHRwOi8vY2FjZXJ0cy5kaWdpY2VydC5jb20v
+RGlnaUNlcnRBc3N1cmVkRzJTTUlNRVJTQTQwOTZTSEEzODQyMDI0Q0ExLmNydDANBgkqhkiG9w0B
+AQsFAAOCAgEAocabrh1cPd5s3vY5rnlBVQSTc7zs2ZWs67dAIltR+05WELrYClVzzUhMs/LOJPlr
+EUo45UDDomXq38DxFepaPd9+iNLjXfn33EX/IG44j04lU/oF/Rg9VeQILkYLbCZ/x9wOjNHZc4SN
+ydY7Dhvf/sT5aBz88u7D5+azZJ7Qf1U57wYseCH1Mt0nDrtr5y19IJ8D9xJJ33RFL6vfpHZBBAQ8
++3RqkKNxLoV2aFvQhxdhjNLDqTv3LjUIdicwPraN7JkxEu7CV2Lka7eRqJgkWL7SK0YmBjGpRafs
++icP/ON5RCCKTTb6VlX8eTG2sJJfsFhvJNCCt6xexbWzWtIrfP7NvPBvwBB737AyEGBZkS5aNizT
+McURJGTv9UKvBh1LF/+tNhYtLvPCN7oecGzhCHht9jcwSkygTo3Y6YlK3QgOu+ncmiBbfeuwlLZ1
+LxbYvG6hgNqXv7u6YyADbYajAQJXJ2OQen39pm3Q/AQSyLYG+B8lDglWsM8tYXPlEdrYJcksGK6F
+nqIX6Bumn43rBooLJdiZp4WmfWdL2pxe+LxRDjprmqu1WprixDxULSTOKJZoqTlugs6y3Bc+if+s
+gHnBBtz9WQ6MtPHkh7zONDAFIKcBmv8OqPQCx0F3Wv3OEybwMpXx0OsKgK8wLldaX1pXcMuyDgTL
+Sqs0AV0OHUgwggcDMIIE66ADAgECAhADNSi2uzJskfEdOMo4hV0gMA0GCSqGSIb3DQEBCwUAMGIx
+CzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjE6MDgGA1UEAxMxRGlnaUNlcnQg
+QXNzdXJlZCBHMiBTTUlNRSBSU0E0MDk2IFNIQTM4NCAyMDI0IENBMTAeFw0yNjA3MTgwMDAwMDBa
+Fw0yODAxMDQyMzU5NTlaMB4xHDAaBgNVBAMME2R3bXcyQGluZnJhZGVhZC5vcmcwggIiMA0GCSqG
+SIb3DQEBAQUAA4ICDwAwggIKAoICAQDali7HveR1thexYXx/W7oMk/3Wpyppl62zJ8+RmTQH4yZe
+YAS/SRV6zmfXlXaZsNOE6emg8WXLRS6BA70liot+u0O0oPnIvnx+CsMH0PD4tCKSCsdp+XphIJ2z
+kC9S7/yHDYnqegqtw4smkqUqf0WX/ggH1Dckh0vHlpoS1OoxqUg+ocU6WCsnuz5q5rzFsHxhD1qG
+pgFdZEk2/c//ZvUNi12vPWipk8TcJwHw9zoZ/ZrVNybpMCC0THsJ/UEVyuyszPtNYeYZAhOJ41va
+v1RhZJzYan4a1gU0kKBPQklcpQEhq48woEu15isvwWh9/+5jjh0L+YNaN0I//nHSp6U9COUG9Z0c
+vnO8FM6PTqsnSbcc0j+GchwOHRC7aP2t5v2stVx3KbptaYEzi4MQHxm/0+HQpMEVLLUiizJqS4PW
+PU6zfQTOMZ9uLQRRci+c5xhtMEBszlQDOvEQcyEG+hc++fH47K+MmZz21bFNfoBxLP6bjR6xtPXt
+REF5lLXxp+CJ6KKSblPKeVRg/UtyJHeFKAZXO8Zeco7TZUMVHmK0ZZ1EpnZbnAhKE19Z+FJrQPQr
+lR0gO3lBzuyPPArVhvWxjlO7S4DmaEhLzarWi/ze7EGwWSuI2eEa/8zU0INUsGI4ywe7vepQz7Iq
+aAovAX0d+f1YjbmCVsAwjhLmveFjNwIDAQABo4IB9zCCAfMwHwYDVR0jBBgwFoAU95uiTtOXxfQ0
+D0MOgYXOkZMyr/kwHQYDVR0OBBYEFFxiGptwbOfWOtMk5loHw7uqWUOnMDAGA1UdEQQpMCeBE2R3
+bXcyQGluZnJhZGVhZC5vcmeBEGRhdmlkQHdvb2Rob3Uuc2UwFAYDVR0gBA0wCzAJBgdngQwBBQEC
+MA4GA1UdDwEB/wQEAwIF4DAdBgNVHSUEFjAUBggrBgEFBQcDAgYIKwYBBQUHAwQwgakGA1UdHwSB
+oTCBnjBNoEugSYZHaHR0cDovL2NybDMuZGlnaWNlcnQuY29tL0RpZ2lDZXJ0QXNzdXJlZEcyU01J
+TUVSU0E0MDk2U0hBMzg0MjAyNENBMS5jcmwwTaBLoEmGR2h0dHA6Ly9jcmw0LmRpZ2ljZXJ0LmNv
+bS9EaWdpQ2VydEFzc3VyZWRHMlNNSU1FUlNBNDA5NlNIQTM4NDIwMjRDQTEuY3JsMIGNBggrBgEF
+BQcBAQSBgDB+MCQGCCsGAQUFBzABhhhodHRwOi8vb2NzcC5kaWdpY2VydC5jb20wVgYIKwYBBQUH
+MAKGSmh0dHA6Ly9jYWNlcnRzLmRpZ2ljZXJ0LmNvbS9EaWdpQ2VydEFzc3VyZWRHMlNNSU1FUlNB
+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
+IC04+jAspsCPIRRaVk/tcgkAAAAAAAA=
+
+
+--=-WdrK32jdwwPqIhMUNxHP--
 
