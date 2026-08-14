@@ -1,69 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-25840-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25841-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B3294C5CFC1
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Aug 2026 07:38:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CB5C8C5B572
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Aug 2026 07:38:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hLvGM5M7Yz2y8f;
-	Fri, 14 Aug 2026 17:38:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hLvGP4cPwz2y81;
+	Fri, 14 Aug 2026 17:38:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786693083;
-	cv=none; b=ImMkZogRHnKPkJxXrVbmdWYvekP61/oSIFTUbwrxEKLMfSFReT95cLmHlgsXyfLZFAOiYDYeUpmWUOqinAvrGcDmDOciyLI+sq2CBVEY2/drPrAl1wrCBxvw5l7Yf7JCtaKwgd0HrOTdQGOvn54ZziFoCcSgWXkTqztlKMDlHIKppxAv1+E9e7lfUw2nqhdL2q5x+ngbnYiRuN1Z/G3zOkoOnNp1jGOjT8runmub3tL90m6sJiUwtexszk7OgSKqcb/sEK+r8ijAHmI7vl/4DsTzs+cQqnmegw6Pb4vXu4lzU6PR/vDV8Kz+xyQbt2+MK7sqQRDNZ2MuVulpmD75eg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786693085;
+	cv=none; b=CQrxtwIh/Dqp9BWSXBobtJE7/M78wniHKUSSUYm8MxTY4StNlG9QmQF/Uw+zpXdrebeCaaHNzfZ9vo9zzNrpWZDIwvnu7uQoopXxInLp7GtBb3cBLpq49VbwY72c1304YDf4aLQjaaysirLwLXj+oHxR+GGIAqWusL/f7WtqQJUh4/xJ9sAxLnHrNHrSwK54oykVbNFohTkLPHeS+jNUejMmRej0pe+QHZJoNGCzs9/G1JPPYwBIFSr5cVZken3PM8iG4WOdRIQVkvOcq4OhhI3KCU9hA8FgjJl9t22Z5rEi/6V3JJdA5Oeg5gaekmx30JnMpSNe5m3/MuB7m2D3OA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786693083; c=relaxed/relaxed;
-	bh=KPTcvlaWLvP505fhsgZjJGz61eMPcL1PSLSCbEjT9yY=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=Bf/PTy47qtgaBOgQS1SJDRW7mvINY+zDqHkh1yrr6Ef2nWzDmAclIUKMbYRgnPsOHn65rcn9Zw2G3xmXs5TU7H8EAaVbLVMUHjVZJO02Zvx0hb1NK4/RJTz8i2i74lCI96tuo4U5kmkEooIaFzQZnj5c/aGjP+2fCp1yk5H+CWy+WntyiZ1TxVUWNYo8ObV3tGrzpL63/Ekqiduap2QIMeGgkadQVXzWVhvzJKpn+hsA+3Tm+mCqR6wPLI4S4D9CTNS+mfLjCMBf7IcdFORfBTp5awhj6402td/4G6ZZKNke0nZIMY2dsvZ4sCcjjQA9JnHmCub/dqBE2CNzrYK5zw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=USNEe2xk; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1786693085; c=relaxed/relaxed;
+	bh=gtFkXqgUil61fRzhVgOPUi9X1kfKnozm3YmxDW+FiwQ=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=j/ddnI41noi9n5IiKg1QdTkBUXNGGcH7NuwAGWG5ON2k0Zv0rLATo4lUcCbkuVg1tjWsrNzhv1loGCx/G8n1J4bqGGNQSpY6DmItvVKq6xxrFSHkWoVvGrHHwDDpNPHxYxkUdvUq3VmmpYGH++yiSiO+/ll/qHMfQHeYrsKDyzisbe3yj7DrY1ruU08QpDRoeQc2ZogbrsYiEiv/tv1FFTcVJ9zVeTdMM3yuS5yTFU6Map0Z4SWZx7XB9qX2xFdHNQYd20o4rUMOpAmJQVv3QQDLUIYMtU9Mg9L1sG9A4f1bv2hRW/2Mvh1soZZb+Lhi87mFv6Xw5w151VI+7ko0mA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=NwLXGcSR; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=USNEe2xk;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=NwLXGcSR;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hLvGK6Mbsz2y81
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2026 17:38:00 +1000 (AEST)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67E4Vo6u182958;
-	Fri, 14 Aug 2026 07:37:43 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hLvGN1nvRz2yqd
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2026 17:38:03 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67E4Wi4X3238680;
+	Fri, 14 Aug 2026 07:37:47 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=KPTcvlaWLvP505fhsgZjJGz61eMPcL1PSLSCbEjT9
-	yY=; b=USNEe2xkVFHxAJ+GV/04XiPFE+wYUfka+bPrctMKIHptIpU/L2UI+5nuX
-	lN2d/4ogjPVWDM4fOlp3NujFWlAlpHEvgb0ftdq0yJrb6gTOdMdQxpkB9yDUUEJv
-	6gYjRDz7bXMNeCSgE1b4cbcn6GLl2gp41c7FW0WggPzfUwn85hJVhlwV2znfFHn9
-	/etEbyT+GLREbHHid3pkqSA33Cr1pY3Tyb2YK4bf0Azfvx8h24kt0uxaqo7AhW4b
-	7jm3CvMcm0YWwsew/iSP8EPXSZrTKgIjMUzumADT7rvsovJGf2qCb2WKDhqD5UyK
-	MYifbNWSab0MHwxb9U+pdoomv94IA==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fwvnwjmem-1
+	:content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=pp1; bh=gtFkXqgUil61fRzhV
+	gOPUi9X1kfKnozm3YmxDW+FiwQ=; b=NwLXGcSRJ7N0VC9E+lq3dwI91FpQTydKK
+	WfrOMQpbBvfzjLnpMfoV6Khjcsq+3aTHIa51WWSdsq+XYAviroglx241PUIstZ7A
+	Rck0flQw7JaO14XvEcaZ2cC3OV9BCahRJudoTmflsCNrBhZvBcGfqJWXudOIGZOh
+	+YE6kZqMzsZxrLIRkqQ3+4nMu7PV6uvVlWm85fbvDC0hX0mPJTtAKNmmBa7kjamr
+	7UxTq3ehHdHRg9HyiJDJ1ovTbenAL1LyLlh0Al805x9+L6Lw76unCwDX0Y1o9ezS
+	JDbHCuRlVu+fmIbCj7nv5nlLsQ4JNHOfm+VBcIRoxi4nSzVGUP2Ug==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fyb244021-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 14 Aug 2026 07:37:42 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 67E7QJRJ013784;
-	Fri, 14 Aug 2026 07:37:41 GMT
-Received: from smtprelay07.wdc07v.mail.ibm.com ([172.16.1.74])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4g1rpv94vm-1
+	Fri, 14 Aug 2026 07:37:46 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 67E7QP5d016998;
+	Fri, 14 Aug 2026 07:37:45 GMT
+Received: from smtprelay03.wdc07v.mail.ibm.com ([172.16.1.70])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4fxh0gp9du-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 14 Aug 2026 07:37:41 +0000 (GMT)
+	Fri, 14 Aug 2026 07:37:45 +0000 (GMT)
 Received: from smtpav01.dal12v.mail.ibm.com (smtpav01.dal12v.mail.ibm.com [10.241.53.100])
-	by smtprelay07.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 67E7bb2o5374702
+	by smtprelay03.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 67E7b3qM27853318
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 14 Aug 2026 07:37:37 GMT
+	Fri, 14 Aug 2026 07:37:04 GMT
 Received: from smtpav01.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 53F7658057;
-	Fri, 14 Aug 2026 07:37:37 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 3859358061;
+	Fri, 14 Aug 2026 07:37:42 +0000 (GMT)
 Received: from smtpav01.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 48D0458058;
-	Fri, 14 Aug 2026 07:37:35 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 2F10458057;
+	Fri, 14 Aug 2026 07:37:40 +0000 (GMT)
 Received: from localhost.localdomain (unknown [9.67.89.186])
 	by smtpav01.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 14 Aug 2026 07:37:35 +0000 (GMT)
+	Fri, 14 Aug 2026 07:37:40 +0000 (GMT)
 From: Mingming Cao <mmc@linux.ibm.com>
 To: netdev@vger.kernel.org
 Cc: davem@davemloft.net, kuba@kernel.org, edumazet@google.com,
@@ -72,10 +73,12 @@ Cc: davem@davemloft.net, kuba@kernel.org, edumazet@google.com,
         haren@linux.ibm.com, ricklind@linux.ibm.com, davemarq@linux.ibm.com,
         bjking1@linux.ibm.com, shaik.abdulla1@ibm.com,
         Mingming Cao <mmc@linux.ibm.com>
-Subject: [PATCH net-next v5 00/15] ibmveth: Add multi-queue RX support
-Date: Fri, 14 Aug 2026 00:36:27 -0700
-Message-Id: <20260814073642.24630-1-mmc@linux.ibm.com>
+Subject: [PATCH net-next v5 01/15] ibmveth: Add MQ RX hypercall wrappers and call definitions
+Date: Fri, 14 Aug 2026 00:36:28 -0700
+Message-Id: <20260814073642.24630-2-mmc@linux.ibm.com>
 X-Mailer: git-send-email 2.39.3 (Apple Git-146)
+In-Reply-To: <20260814073642.24630-1-mmc@linux.ibm.com>
+References: <20260814073642.24630-1-mmc@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -92,183 +95,261 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=RsP16imK c=1 sm=1 tr=0 ts=6a7ec5c7 cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+X-Authority-Analysis: v=2.4 cv=XqfK/1F9 c=1 sm=1 tr=0 ts=6a7ec5cb cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
  a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=RzCfie-kr_QcCd8fBx8p:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
- a=Kah-MRFPZU9cj4q-DmkA:9
-X-Proofpoint-GUID: JVHUhWlKlOOv5Bjm_qT0duPVlku1n35H
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODE0MDA1OCBTYWx0ZWRfX3sWC6MQbAD8p
- gfYtDOh8lW481wKNmLBmoQs7XQh6NDEa7Xk38JJuzjCvQojb5CEQtCYLzBZIaGoyG+KqzRRtHQD
- KDMSys6ZwV4Aiet+3jF3JJ9VxKvkUkvIlm+gEgaJrxFdR5xOzes1TDmI28Qg64OoGu7ZACvVOTr
- K8AX0J8NpO0D2usq7utHwIjHsBT3o0ynPzON7Z8YQi0bqxQYV5IJHKlDbFHi/w1HEJpqtKoK/P2
- ANOHP5LRGAsdYfCnAadi5jdlNAdQkf22V6xxSg6qGG1GGZkvLKUMhrSz26r6sAUbmHgkNSsyHZt
- yjqHOklbzJg9WhGAYILZ9ZPOg048KzG8ccxj9b0FZuwzQ9b/YkpP/CcMe4A0piEBOTVxv7yXNpN
- MrKylZxOJmEb7JyCa8+v1dB4AU4KQCkkTxs8mT8zwNM54gpNAstu1mkGz+WxzAUGh3XnVTYSXUJ
- GdFUjesoTBTTHwMemKg==
-X-Proofpoint-ORIG-GUID: s9F6iwW6Bx8mqDg2muxiYjecjGmV4ciR
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODE0MDA1OCBTYWx0ZWRfX5/XfQB90jJKe
- qusj9MGLlUKgF3kqsOtUJsMJzm/TVnsKm/vDubn9/DINY4ezLuFkJq+GFqKu9Azap/lA2rgx6q6
- tm/mmHCzFcA6F8kFg3nsa8vlSmFfyGI=
+ a=V8glGbnc2Ofi9Qvn3v5h:22 a=VnNF1IyMAAAA:8 a=tlvLCL_K2IF-bX31sEYA:9
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODE0MDA1OCBTYWx0ZWRfX1/9KlKTw5NMO
+ vgRbhJ8CWb6kp/Eh4FJwE2oe77cV8DeP/CP7Wr5o2GXIhW4ZSdYCNXzHchVj3GudUlxfr/tV9AY
+ pTt/K4s4PwxbKjXhwcsLstOp8cDxN7Ttj/JO+SIixP+ijfRyoTKnFiWDMGRQE0kATDM6vVWHi4e
+ 1Cd5tOkGFndUXqKOrNl9RXxmA5MMkjAzzjlwXq8SBb2wHMwjFr7ab34/S30NtiqIQaO3WhABsEL
+ 7X/DVEFT11FMYc59hOIO4exx7EU55aInL6KNb5cFPK+SyNG1D938E5M363RD+xQGGPYRGuwe0eM
+ BnLArLENtz+3j3Wl3mgG55tPihplXOYGogVUROrA5wFXIy1xue/OsDTpjcMoFBrvqn46JR/tbOx
+ N5Kamkd/d7jarIKSnf0WG7fabRhQ+hNYq01MVWf8IDbSjpW+Q1WLlPHASsvabh/ViSJ9bpxNdBj
+ r7Q3bRCy04uWLTnpjVQ==
+X-Proofpoint-ORIG-GUID: X9qDpMnvurdYANjJOZnNKIa5cm5tvSs9
+X-Proofpoint-GUID: sdx34ihqMeWvZdPJa9nmvwKw13BJJf-o
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODE0MDA1OCBTYWx0ZWRfX/a4IHFrSEUxM
+ JaaDKAvgbBdNnk7uUVIFMgHz+slXbJgSNTcUOJbHr2xJX06ylDq/yKr9pmc9p7G05O7DH86v/YS
+ zB14SEcqslR46LRBBO/JnkhvHzE34EI=
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-08-14_02,2026-08-12_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 impostorscore=0 suspectscore=0 clxscore=1015 malwarescore=0
- phishscore=0 adultscore=0 lowpriorityscore=0 priorityscore=1501 bulkscore=0
+ lowpriorityscore=0 spamscore=0 adultscore=0 malwarescore=0 clxscore=1015
+ suspectscore=0 priorityscore=1501 impostorscore=0 phishscore=0 bulkscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608140058
 
-Hi,
+Single-queue ibmveth only needs h_register_logical_lan() plus legacy
+buffer add/free calls. MQ RX uses per-queue handles, so the driver must
+also be able to register/deregister subordinate queues and post
+buffers against a specific queue handle.
 
-Power11 PHYP adds Virtual Ethernet multi-queue (MQ) RX: multiple
-logical-LAN RX queues, per-queue buffer posting, and completion
-delivery. Guest Linux did not use that; ibmveth still registered one
-RX queue even when PHYP was MQ-capable.
+Add the PHYP call IDs for:
 
-This series adds the ibmveth MQ client for net-next. When PHYP
-advertises IBMVETH_ILLAN_RX_MULTI_QUEUE_SUPPORT via H_ILLAN_ATTRIBUTES,
-probe enables MQ with a default RX count of min(num_online_cpus(), 8)
-(same cap as TX today); ethtool -L can raise RX up to 16. Packets are
-received on per-queue NAPI. Older firmware without the bit is unchanged.
-Queue selection remains firmware-defined (PHYP hash). Ethtool RSS hash
-get/set for that algorithm is deferred to a follow-up series so this
-one stays MQ datapath only.
+  H_REG_LOGICAL_LAN_QUEUE (0x49C)
+  H_ADD_LOGICAL_LAN_BUFFERS_QUEUE (0x4A0)
+  H_FREE_LOGICAL_LAN_QUEUE (0x4A8)
 
-User-visible bits: ethtool -l/-L (channels), ethtool -S and
-ndo_get_stats64 (per-queue + aggregate), and a read-only debugfs
-buffer_pools dump (v3's multi-line sysfs dump moved to debugfs; the
-historical queue-0 poolN/ sysfs ABI is unchanged).
+as defined in PAPR 11.20.00. The gaps at 0x498 (reserved) and 0x4A4
+(reserved for H_FREE_LOGICAL_LAN_BUFFER_QUEUE) are intentional; this
+series tears queues down with H_FREE_LOGICAL_LAN_QUEUE and does not add
+the buffer-queue free hcall.
 
-Background:
+Raising MAX_HCALL_OPCODE for these IDs also widens KVM's
+kvm_arch.enabled_hcalls bitmap and the range accepted by
+KVM_CAP_PPC_ENABLE_HCALL.
 
-ibmveth today uses one logical LAN, one set of buffer pools, and one
-NAPI context. PHYP MQ mode gives each RX queue its own handle (post via
-H_ADD_LOGICAL_LAN_BUFFERS_QUEUE, subordinate register via
-H_REG_LOGICAL_LAN_QUEUE); traffic can land on any active queue. The
-driver needs per-queue pools, IRQs, and NAPI to match. Legacy firmware
-keeps the original hcall path.
+Add ibmveth.h wrapper helpers (h_register_logical_lan_queue(),
+h_add_logical_lan_buffers_queue(), h_free_logical_lan_queue()) with
+argument ordering and return semantics matching the existing ibmveth
+hcall wrappers. h_free_logical_lan_queue() uses plpar_hcall_norets()
+like h_free_logical_lan(). Also add h_register_logical_lan_with_handle()
+so queue 0 can capture the PHYP queue handle in MQ mode; both handle
+out-params use unsigned long *.
 
-Series layout (15 patches):
+This patch is intentionally plumbing only: no runtime behavior change
+yet. Legacy firmware keeps H_REGISTER_LOGICAL_LAN and the existing
+buffer hcalls. The new wrappers are used only when a later commit sets
+multi_queue from H_ILLAN_ATTRIBUTES.
 
-  1-2   Hypercall wrappers; MQ adapter layout (MAX_RX_QUEUES stays 1)
-  3-9   Queue-aware helpers (still SQ runtime): RX, per-queue pools,
-        IRQ, TX, PHYP, buffer submit (open/close 3-8); poll harden (9)
-  10    Enable MQ datapath at probe/open (subordinate register helpers
-        land here with first use)
-  11-13 Per-queue RX/TX stats; get_channels MQ counts; debugfs buffer_pools
-  14-15 Incremental RX resize (+ resize_rx_channels); wire ethtool
-        set_channels
-
-- Helper patches (3-8) reshape ibmveth_open()/close() into
-  queue-aware helpers. Patch 9 hardens the SQ poll path with the same
-  queue-index helpers; it does not change open/close. Runtime
-  behaviour is unchanged through 3-9: num_rx_queues stays 1 and
-  multi_queue is false until patch 10.
-- Patch 10 is the switch: probe sets multi_queue from firmware, raises
-  num_rx_queues, registers subordinates, and replenishes every active
-  queue.
-- Statistics types land with first use (hcall_stats in 7, rx/tx qstats
-  in 11).
-
-Testing:
-
-ppc64le PowerVM LPAR, MQ-capable firmware:
-* ethtool -L cycling (16/1/8/11/1/3/16/8/1) with ping - no hangs
-* ethtool -L under iperf3; link down/up during traffic
-* ifdown/ifup under iperf3 RX+TX (MQ and ethtool -L rx 1)
-* Legacy firmware (no MQ bit): open/close/stress on helper path
-* Bisect-friendly restack; W=1 clean at tip
+Signed-off-by: Mingming Cao <mmc@linux.ibm.com>
+Reviewed-by: Dave Marquardt <davemarq@linux.ibm.com>
+Tested-by: Shaik Abdulla <shaik.abdulla1@ibm.com>
+---
 
 Changes in v5:
-
-* Restack mailed v4 (14 patches) to v5 (15):
-
-    v4 1-8  helpers                -> v5 1-8
-    (new)   SQ poll harden         -> v5 9   (before MQ enable)
-    v4 9    MQ enable              -> v5 10
-    v4 10   stats                  -> v5 11
-    (new)   get_channels           -> v5 12  (peeled from stats)
-    v4 11   debugfs                -> v5 13
-    v4 12   resize                 -> v5 14
-    v4 13   set_channels           -> v5 15
-    v4 14   trailing poll/shutdown -> folded into v5 5/9/10/14
-            (mailed "P14" was that trailer, not v5 14)
-* Teardown-first resize after aggressive ethtool -L; thin defensive
-  poll skip remains; no correlator generation field this series
-* opened / rx_irq_setup; set_channels keys on opened (not IFF_UP)
-* filter_list_dma=0 on map error; restore default-active 64 KiB pool;
-  unwind pools by allocation presence; probe_cleanup clears vio
-  drvdata; remove: unregister then cancel_work
-* TX quiesce before freeing bounce buffers; guard start_xmit if LTB gone
-* MQ H_FUNCTION recovery (reset + SQ fallback); no printk under
-  replenish_lock; lock harvest with replenish; resume kicks all queues
-* Per-queue update_rx_no_buffer; publish-before-free on resize;
-  CMO refresh; IRQ helpers return errno
-* Harvest abort (no fake GRO / UAF); poll refuses PHYP re-arm on close;
-  wrap-safe skb_put; atomic set_channels; monotonic stats across shrink
-* Keep mask -> sync -> napi_disable on teardown; open stays
-  request_irq -> napi_enable while PHYP masked; scale-up/recovery keep
-  napi_enable before enable_irq
-* Pool geometry kept on free; restart_rx_queue after open/scale-down;
-  remask after napi_disable; schedule_rx_queue masks only when
-  napi_schedule_prep succeeds (STOP + poll no-rearm for storms)
+- Cite PAPR 11.20.00 for MQ hcall IDs 0x49C / 0x4A0 / 0x4A8 (v4 named
+  the opcodes only)
+- Call out reserved gaps at 0x498 and 0x4A4 (0x4A4 =
+  H_FREE_LOGICAL_LAN_BUFFER_QUEUE); decision: do not add that hcall -
+  queue teardown uses H_FREE_LOGICAL_LAN_QUEUE
+- Note MAX_HCALL_OPCODE raise also widens KVM enabled_hcalls /
+  KVM_CAP_PPC_ENABLE_HCALL accepted range (cross-subsystem)
+- Rename h_reg_logical_lan_queue() -> h_register_logical_lan_queue() to
+  match h_register_logical_lan() / h_free_logical_lan()
+- Unify queue_handle out-params as unsigned long * on both
+  h_register_logical_lan_queue() and h_register_logical_lan_with_handle()
+  (v4 used u64 * on with_handle)
+- h_free_logical_lan_queue() uses plpar_hcall_norets() like
+  h_free_logical_lan() (v4 used plpar_hcall9 with unused retbuf)
 
 Changes in v4:
+- Document @queue_handle and @irq in h_reg_logical_lan_queue() kdoc.
+- Wrap h_register_logical_lan_with_handle() prototype for readability /
+  checkpatch.
+- Drop unused H_FREE_LOGICAL_LAN_BUFFER_QUEUE wrapper/opcode (no caller;
+  buffer return is local harvest + queue free).
 
-Addresses Simon's v3 review and related fixes:
-* First-use helpers/includes (irqdomain.h with first dispose); no
-  unused statics; dropped orphan open/close pipeline patch
-* Open/close unwind (free LAN before RX pools); no double TX teardown
-* MQ open: replenish all queues before PHYP unmask; H_FUNCTION on
-  subordinate register is a hard open failure
-* Resize/set_channels hardenings; stats probe-lifetime + sum-on-read;
-  buffer_pools diagnostic on debugfs
-* Patch 9: put already-created pool kobjects on probe failure paths
-* Patch 14: correlator skip, skb tailroom check, napi_complete_done
-  shutdown return < budget
-* Bisect-friendly restack (helpers with first use)
+ arch/powerpc/include/asm/hvcall.h  |   6 +-
+ drivers/net/ethernet/ibm/ibmveth.h | 136 +++++++++++++++++++++++++++++
+ 2 files changed, 141 insertions(+), 1 deletion(-)
 
-Changes in v3:
-
-* Dropped RFC; addressed style / DMA feedback from earlier revisions
-* Early MQ enablement iterations (see lore links below)
-
-Comments welcome.
-
----
-Previous versions
-v4: https://lore.kernel.org/r/cover.1785457143.git.mmc@linux.ibm.com
-v3: https://lore.kernel.org/r/20260706193603.8039-1-mmc@linux.ibm.com
-v2: https://lore.kernel.org/r/20260701222327.61325-1-mmc@linux.ibm.com
-v1: https://lore.kernel.org/r/cover.1782758799.git.mmc@linux.ibm.com
-v4 review (Jakub Kicinski):
-  https://lore.kernel.org/r/20260806183614.3171785-1-kuba@kernel.org
-v3 review (Simon Horman):
-  https://lore.kernel.org/r/20260714124327.GJ1364329@horms.kernel.org
-
-Mingming Cao (15):
-  ibmveth: Add MQ RX hypercall wrappers and call definitions
-  ibmveth: Prepare MQ RX adapter data structures
-  ibmveth: Refactor RX resource allocation for MQ RX bring-up
-  ibmveth: Refactor buffer pool management for per-queue MQ RX
-  ibmveth: Refactor RX interrupt control for MQ RX queues
-  ibmveth: Refactor TX resource allocation in open/close paths
-  ibmveth: Add RX queue register helpers for MQ
-  ibmveth: Add queue-aware RX buffer submit helper for MQ
-  ibmveth: Harden RX poll path with helpers
-  ibmveth: Enable multi-queue RX receive path
-  ibmveth: Add per-queue RX and TX statistics collection
-  ibmveth: Report MQ-aware RX counts in ethtool get_channels
-  ibmveth: Expose per-queue buffer pool details via debugfs
-  ibmveth: Implement incremental MQ RX queue resize
-  ibmveth: Wire ethtool set_channels to MQ RX queue resize
-
- arch/powerpc/include/asm/hvcall.h  |    6 +-
- drivers/net/ethernet/ibm/ibmveth.c | 3950 ++++++++++++++++++++++------
- drivers/net/ethernet/ibm/ibmveth.h |  218 +-
- 3 files changed, 3432 insertions(+), 742 deletions(-)
-
+diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
+index dff90a7d7f70..cb0ea53491e6 100644
+--- a/arch/powerpc/include/asm/hvcall.h
++++ b/arch/powerpc/include/asm/hvcall.h
+@@ -362,7 +362,11 @@
+ #define H_GUEST_DELETE		0x488
+ #define H_PKS_WRAP_OBJECT	0x490
+ #define H_PKS_UNWRAP_OBJECT	0x494
+-#define MAX_HCALL_OPCODE	H_PKS_UNWRAP_OBJECT
++/* 0x498 reserved; 0x4A4 = H_FREE_LOGICAL_LAN_BUFFER_QUEUE (unused here) */
++#define H_REG_LOGICAL_LAN_QUEUE 0x49C
++#define H_ADD_LOGICAL_LAN_BUFFERS_QUEUE 0x4A0
++#define H_FREE_LOGICAL_LAN_QUEUE 0x4A8
++#define MAX_HCALL_OPCODE	H_FREE_LOGICAL_LAN_QUEUE
+ 
+ /* Scope args for H_SCM_UNBIND_ALL */
+ #define H_UNBIND_SCOPE_ALL (0x1)
+diff --git a/drivers/net/ethernet/ibm/ibmveth.h b/drivers/net/ethernet/ibm/ibmveth.h
+index d87713668ed3..c0ef03cad9b9 100644
+--- a/drivers/net/ethernet/ibm/ibmveth.h
++++ b/drivers/net/ethernet/ibm/ibmveth.h
+@@ -66,6 +66,142 @@ static inline long h_add_logical_lan_buffers(unsigned long unit_address,
+ 			    desc5, desc6, desc7, desc8);
+ }
+ 
++/**
++ * h_register_logical_lan_queue - Register a subordinate receive queue
++ * @unit_address: Device unit address
++ * @buffer_list: DMA address of 4KB page for tracking registered buffers
++ * @rec_queue: Buffer descriptor of receive queue
++ * @queue_handle: Output queue handle on success (may be NULL)
++ * @irq: Output hypervisor IRQ number on success (may be NULL)
++ *
++ * Registers a subordinate receive queue with the hypervisor.
++ *
++ * Return:
++ *   H_SUCCESS (0) on success
++ *   H_PARAMETER if parameters are invalid
++ *
++ * On success, hypervisor returns:
++ *   R3: H_SUCCESS
++ *   R4: Queue handle
++ *   R5: IRQ number for this queue
++ */
++static inline long
++h_register_logical_lan_queue(unsigned long unit_address,
++			     unsigned long buffer_list,
++			     unsigned long rec_queue,
++			     unsigned long *queue_handle,
++			     unsigned long *irq)
++{
++	unsigned long retbuf[PLPAR_HCALL9_BUFSIZE];
++	long rc;
++
++	rc = plpar_hcall9(H_REG_LOGICAL_LAN_QUEUE,
++			  retbuf, unit_address,
++			  buffer_list, rec_queue);
++
++	if (rc == H_SUCCESS) {
++		if (queue_handle)
++			*queue_handle = retbuf[0];
++		if (irq)
++			*irq = retbuf[1];
++	}
++
++	return rc;
++}
++
++/**
++ * h_add_logical_lan_buffers_queue - Add buffers to subordinate queue
++ * @unit_address: Device unit address
++ * @queue_handle: Queue handle from h_register_logical_lan_queue()
++ * @buffersznum: Buffer size (upper 32 bits) | count (lower 32 bits)
++ * @ioba12: Buffer addresses 1 and 2 packed ((addr1 << 32) | addr2)
++ * @ioba34: Buffer addresses 3 and 4 packed
++ * @ioba56: Buffer addresses 5 and 6 packed
++ * @ioba78: Buffer addresses 7 and 8 packed
++ * @ioba910: Buffer addresses 9 and 10 packed
++ * @ioba1112: Buffer addresses 11 and 12 packed
++ *
++ * Return:
++ *   H_SUCCESS - All buffers added successfully
++ *   H_PARAMETER - Invalid parameters
++ *   H_HARDWARE - Hardware error
++ */
++static inline long h_add_logical_lan_buffers_queue(unsigned long unit_address,
++						   unsigned long queue_handle,
++						   unsigned long buffersznum,
++						   unsigned long ioba12,
++						   unsigned long ioba34,
++						   unsigned long ioba56,
++						   unsigned long ioba78,
++						   unsigned long ioba910,
++						   unsigned long ioba1112)
++{
++	unsigned long retbuf[PLPAR_HCALL9_BUFSIZE];
++
++	return plpar_hcall9(H_ADD_LOGICAL_LAN_BUFFERS_QUEUE,
++			    retbuf, unit_address,
++			    queue_handle, buffersznum,
++			    ioba12, ioba34, ioba56,
++			    ioba78, ioba910, ioba1112);
++}
++
++/**
++ * h_free_logical_lan_queue - Deregister subordinate receive queue
++ * @unit_address: Device unit address
++ * @queue_handle: Queue handle from h_register_logical_lan_queue()
++ *
++ * Deregisters and frees all structures associated with the subordinate queue.
++ *
++ * Return:
++ *   H_SUCCESS - Queue freed successfully
++ *   H_PARAMETER - Invalid parameters
++ *   H_HARDWARE - Hardware error
++ *   H_STATE - VIOA not in valid state
++ *   H_BUSY / H_LONG_BUSY_* - Resource busy, retry
++ */
++static inline long h_free_logical_lan_queue(unsigned long unit_address,
++					    unsigned long queue_handle)
++{
++	return plpar_hcall_norets(H_FREE_LOGICAL_LAN_QUEUE,
++				  unit_address, queue_handle);
++}
++
++/**
++ * h_register_logical_lan_with_handle - Register primary queue and get handle
++ * @unit_address: Device unit address
++ * @buffer_list: DMA address of buffer list
++ * @rec_queue: Buffer descriptor of receive queue
++ * @filter_list: DMA address of filter list
++ * @mac_address: MAC address
++ * @queue_handle: Output parameter for queue handle (may be NULL)
++ *
++ * Registers the primary receive queue (queue 0) with the hypervisor and
++ * returns the queue handle. This is needed in multi-queue mode to use
++ * h_add_logical_lan_buffers_queue() for all queues including queue 0.
++ *
++ * Return: H_SUCCESS (0) on success, error code otherwise
++ */
++static inline long
++h_register_logical_lan_with_handle(unsigned long unit_address,
++				   unsigned long buffer_list,
++				   unsigned long rec_queue,
++				   unsigned long filter_list,
++				   unsigned long mac_address,
++				   unsigned long *queue_handle)
++{
++	unsigned long retbuf[PLPAR_HCALL9_BUFSIZE];
++	long rc;
++
++	rc = plpar_hcall9(H_REGISTER_LOGICAL_LAN, retbuf,
++			  unit_address, buffer_list, rec_queue,
++			  filter_list, mac_address);
++
++	if (rc == H_SUCCESS && queue_handle)
++		*queue_handle = retbuf[0];
++
++	return rc;
++}
++
+ /* FW allows us to send 6 descriptors but we only use one so mark
+  * the other 5 as unused (0)
+  */
 -- 
 2.50.1 (Apple Git-155)
 
