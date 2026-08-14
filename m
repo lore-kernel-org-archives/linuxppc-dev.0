@@ -1,81 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-25831-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25832-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B9BA8C5CFDB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Aug 2026 18:49:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A264EC5DF66
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Aug 2026 02:30:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hLZCy0QRLz2yf0;
-	Fri, 14 Aug 2026 04:49:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c20a::7" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786646989;
-	cv=pass; b=m9U/s7njI/IIsLAhHtCJPr/kywJSS/Y7mrt3AhF6K8BAxGBLyoo1xHQopXUDqVW0g+5VBrc8TTZCy+gzWOUGe131QYmUxadmg8uWlO/isp+IE0Bk9NBZl0w4828CQS9rlBiW0MawNY9if1kJaw3SgHRckg9tgsivqqALfrcwtUBZx4U88PxfzlEQmJBGh+8tZlqEoYnz27BNsx+IP2fIhUTbrWvaVlc5Jv8jvjd1m6d52/L+9RZ0jzD6z4EY5pJRHUAMNiVH+nMOMz98hrHD0ZQttIIne/iWU18af0KaUUKz2eLcdZv0FQlBzaXNWxfh9C/HebXZukQZF/9EjW+QnQ==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786646989; c=relaxed/relaxed;
-	bh=RJoXzZLaV9CrWqVMRDQ7ngwc3lK41lX6j2Op+4khpZY=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=asxpZiyS40qhHour7Ofw12TnjvCob0WUE4af4SkZH8LknULtOP0Qn8fp+o5I4tAxh27HAwk847vZTIywTvNIpBNbo2UuVtSOtfH7Jrv+eSaF2h+RtWB9zrbHifwLDZB/1JvxCr/6E3D1+y+DRHkkiiLG0XBHmO1z4io35yUKfSFaXj/tTnpmygu5PlahucseYWWqwAxdy86vqwmQaVoy4lfee2PFOlHvUeeHaofC/A6AD1IZ+ug7DphkyAW56pYSCBIsXO8XvQMqR+wjQg3B5eVxyoeZAObdyHGcHkiJ0wvgiL4uhygV2Orx8zYjn77TNi20/pB+m3qy+qcK/Al9ag==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=WZ7XnN64; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c20a::7; helo=pa4pr04cu001.outbound.protection.outlook.com; envelope-from=frank.li@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hLmS14DrTz2yD8;
+	Fri, 14 Aug 2026 12:30:57 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786674657;
+	cv=none; b=bhMFig2ivzjp4sdG23N6qJo6ulhOfovyNLXBoyM1iTtq9PSM2pdSu4aHmdSSYhU/LdWzm9XNpD2jrmxhXnQVuAnZwFxab3jz8qtrQhjYojLWm0ZeBu+hIxIgpenIh4BgnnhJDswbHJzQ80siTFJ9ACEd+cNRojvm5HsCEyjonOalNm0TthlIK2p6tQfSmj3BpEYOdxFOC4hLdi4pQiQJ3iqrCJI5q4Ob92zUf8BOuuEeMCwvv5or/JX9neG6T1CUsI5DceXcRHHFfseAquXEUZw1kOBKJt5WPtmdAz6nQnWZa6huOuerlJxH/Z1mihTlU1i+pV40yA8j1RqeQLJXMQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1786674657; c=relaxed/relaxed;
+	bh=dIgSLregNr2fYwEjLwaPm1ysOKaZ+mvb7rcmx/nVi70=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=hRLrIekZ9rPE+v7rRN2pT38uzZ5MstPEANiSxu9NXx1PMsbxpFrf/cmG9xTGbHaPdANvGooZ1AwG+iSgnuQdvy8fVn1xtN3PYYfkNqZvQGZvAIHbDu7UrDp1sHgv2Mn1Lo/bGyMRKlB32wWG9Ee7oayzm71li8Au0yQUmgWd7zB4dJ2/5vAof0sn1m8gNCuWogauDR0vfmK0AAeEJq5P1K54IHpDYaKyaTkWqkrEQcVuX6VjZ1HGOGxFBz2y6QfqX5JJXgCwJoouZkwo4NWOSk0CSqacNCD7TIQ4zPFVYAxtyNOV/we4YmjdjyqT7VGBaJKBLvPNhiKVoOF9AG5pIA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=sxJAcQvx; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=WZ7XnN64;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=sxJAcQvx;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:c20a::7; helo=pa4pr04cu001.outbound.protection.outlook.com; envelope-from=frank.li@oss.nxp.com; receiver=lists.ozlabs.org)
-Received: from PA4PR04CU001.outbound.protection.outlook.com (mail-francecentralazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c20a::7])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hLZCx0lHMz2yRZ
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2026 04:49:48 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=gLJ0A65DXq/5P6NrA2jFyC+9SyRMOprNid9JfHJXGjh+qoM+4llT+RVk9j4kME4ki3cUpCD/XwD+QX6SSRB3yPIkufuvmXZM0ZYtXL3Xnj7P0zElu5yFMz0TTRwzsebEA1+yyMIGCZkNnz4JACd8ixikSc59Gm16qsToK0/XgeVIhhBdPq4MAyzvwvA/ovBHTjH3Kj7k9Ghy9rWwZXSmcFn8E25K0UJMWJfg5pEKWd6mQ4c1k1pJUtnmE92BGVaJFIPd0KcdeIo9tVqNEEsllluH4JQyhNEppGOKlM4R8o3KQRMfcnyjlW2EeADBXueu2YaI5uTPNti1HluEC8kAKg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=RJoXzZLaV9CrWqVMRDQ7ngwc3lK41lX6j2Op+4khpZY=;
- b=fs/NFYvw0qSzx8hIopeYKGNXzGCAiFRb9EaKU/ozLrLMX7NYpmU/K2Synrxv+eewA+fw0nbSgsbBeufIHRz+2mLH/3n3IDEgbUAXOCxPF0H2RpuOOnE0Mf00BEi30DRyIEeIZiW7eTgP1i2I+smAujyU+CxiJFb+QmNDSITd/VBRXO6Ylx3LF5o67zo/lg2AxHtyb3q4Rbo3j774qg11p92Ka65mV3cYlqpeL6c+KsABsGnTTaZ/XPcKz/vSorcbTljVo9/EVMHg5MOBrAJJDueh6DUlXt9wB4ZZEOghNPtAWod5FN3n2orywTwNkzWo9Q/agFKFWa+FdOVLuGzERg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
- dkim=pass header.d=oss.nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
- s=selector1-NXP1-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=RJoXzZLaV9CrWqVMRDQ7ngwc3lK41lX6j2Op+4khpZY=;
- b=WZ7XnN647b/6QPYLJVQxEYx+syzOkffBeUBB6dz2oQbKTri0GjCdEb3vn1ZwK3arm6QrSY0WORIfPHo/1DaFCgokhjm4sQ1dKBJqCTGld3tRE2eD9F6+8dyP44nzhzlhgQosXwQKUzcBcS35NQZo7/r2eWv5CRrY4EiKZxVqJuXRWbFLBux6kJMPIjj8hk3jvdB/DgL85/yW0iCKpR+w6SQddFDrMQljyXoCJ83gzK4lH5CTLjKt89+deOy9j6snKsS5hHq767wCQcQ56FIMvKfnRToe8UMvh8YEY7JBfnkBxV5uphFQaHCYu7F/Po0ks5zH2AKS22cl2EUUxyb03A==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=oss.nxp.com;
-Received: from GV2PR04MB11799.eurprd04.prod.outlook.com (2603:10a6:150:2cf::9)
- by AS5PR04MB10060.eurprd04.prod.outlook.com (2603:10a6:20b:676::13) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.315.15; Thu, 13 Aug
- 2026 18:49:24 +0000
-Received: from GV2PR04MB11799.eurprd04.prod.outlook.com
- ([fe80::2146:83a2:5329:b7c]) by GV2PR04MB11799.eurprd04.prod.outlook.com
- ([fe80::2146:83a2:5329:b7c%7]) with mapi id 15.21.0315.014; Thu, 13 Aug 2026
- 18:49:24 +0000
-Date: Thu, 13 Aug 2026 13:49:16 -0500
-From: Frank Li <Frank.li@oss.nxp.com>
-To: Hans Zhang <18255117159@163.com>
-Cc: bhelgaas@google.com, lpieralisi@kernel.org, kwilczynski@kernel.org,
-	mani@kernel.org, jingoohan1@gmail.com, imx@lists.linux.dev,
-	linuxppc-dev@lists.ozlabs.org, linux-amlogic@lists.infradead.org,
-	linux-rockchip@lists.infradead.org, linux-arm-msm@vger.kernel.org,
-	sophgo@lists.linux.dev, linux-riscv@lists.infradead.org,
-	spacemit@lists.linux.dev, linux-tegra@vger.kernel.org,
-	linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3 04/16] PCI: dwc: layerscape-ep: Use cached PCIe
- capability offset
-Message-ID: <an4RrIcV2Q6NtQ1X@SMW015318>
-References: <20260720150619.24733-1-18255117159@163.com>
- <20260720150619.24733-5-18255117159@163.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260720150619.24733-5-18255117159@163.com>
-X-ClientProxiedBy: SA9PR13CA0174.namprd13.prod.outlook.com
- (2603:10b6:806:28::29) To GV2PR04MB11799.eurprd04.prod.outlook.com
- (2603:10a6:150:2cf::9)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hLmS02Wqjz2xnW
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2026 12:30:55 +1000 (AEST)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67E1W2cT3892807;
+	Fri, 14 Aug 2026 02:30:23 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=dIgSLr
+	egNr2fYwEjLwaPm1ysOKaZ+mvb7rcmx/nVi70=; b=sxJAcQvx6kCe10SGRNPQba
+	nqsdd/HDBvKRw9q6sVtofPSBSgsAbc0dr8Jl9CmTBm8xxFX8G8wqm7kejqQR8vjH
+	foQQtx+LW1wCXEeiTRYDr/8t0mulKn7t9L+IY1DJ32KJdzQkIPHVA3pJLWp2GJEv
+	sw6NCmD25SfYY4bAy1EP7oU5f80e3aaWOhu/BcZn+UdPhZLr/GDclQTxOG1KkrG7
+	EhUslukKy9E/kmsvUi7d3FnWOcW8dQ6HZNSvL6nH2paHXDIUAEuL5g3SI4WklOiS
+	BYjeNzaNGYP8DYuBfQd7ZnYGMM8tGEcszPGGrhBvbxUQilv/zQaH1swGm3JP666w
+	==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4fwvp39qee-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 14 Aug 2026 02:30:23 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 67E2QGCP018288;
+	Fri, 14 Aug 2026 02:30:22 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4fxfsk5gyj-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 14 Aug 2026 02:30:22 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 67E2UK2W30409460
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 14 Aug 2026 02:30:20 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 244E12004B;
+	Fri, 14 Aug 2026 02:30:20 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 6E2B620040;
+	Fri, 14 Aug 2026 02:30:14 +0000 (GMT)
+Received: from [9.39.17.52] (unknown [9.39.17.52])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 14 Aug 2026 02:30:14 +0000 (GMT)
+Message-ID: <5b6fd32e-037a-42b4-b9e9-bb0503561781@linux.ibm.com>
+Date: Fri, 14 Aug 2026 08:00:12 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,132 +81,318 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: GV2PR04MB11799:EE_|AS5PR04MB10060:EE_
-X-MS-Office365-Filtering-Correlation-Id: 9ca7d326-1ca7-4cff-d591-08def96b97bf
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|376014|7416014|1800799024|366016|23010399003|19092799006|6133799003|56012099006|10067099003|11063799006|4143699003|22082099003|18002099003;
-X-Microsoft-Antispam-Message-Info:
-	wcJvH7zpJFzrE1i9zqbBU1P9ATnBOB39jgkZ+Mr48gdLyySS2SJLyRG08czl17pOfAmA7OhGo7ydbjCbXfAoQcdceJyD7NfAMqon9BJxpKtsovALGpaFvedDyGu18QhIz0DR7fR6z/MCJ8bKxAF55zoFb9qBfigdq6+Zkm/wfcW8Pd+LZVDRCj8H9JjhpK/IV9KjzKRdfwuygcf09u8DbVfsaOScdZDpdTXnOWoFl7Ort5knb0AiZEA/OyZeCi0g3Z56+2UmxvhzEHLDxkehNPi+2+zoj2q2dRIHZL47FZ7wqDhgYgE24jZZq9kV+cMU7wYenJ5Bncr+RNlbKfinGRUk70IX7at6zA3qcehEw0Wl9/vTycDuMzhg7J8Wz7F3yle8JF5VFHRw+foVmhtmt6hFTD7MlBrkbda1X5mKfpdij7B/6EDzfkNH7tyJV2dr3JqxGIEZJU4WXQVn2FVj54VZv8c3thiLh4+mMQS/aGyNAHAxpycroT48e/fUNzzZ32B+Drj/BMV6kBqu49ViRCvAHQm3whetErPvOZloXbZiwTTdwYyxARtNA/uIb4cEObYa+wfNVdIlLkVsof6lrnraXxtJ8oC6jKM0K4jddJ2Nc4WCvEeXRmmXJoaIWqsw/WoLFWX2JKcyoEOXBe/5fHUr90cDigyhER3NOrriTvk=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GV2PR04MB11799.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(1800799024)(366016)(23010399003)(19092799006)(6133799003)(56012099006)(10067099003)(11063799006)(4143699003)(22082099003)(18002099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?7S4KOFeu+bq1Jsj4N5leCG2q6tO9QWExUi0FsFauCSp47qD4ysbWzNbnD5Al?=
- =?us-ascii?Q?Iw0Aq5DX2tB4yOh6aRWbbzojrBAHGTO/gXpMF9lZzkpgssMgwGQfJS/HmCgN?=
- =?us-ascii?Q?KDbHrFPvDVh8ctAtOF8Fho+ATaPrWRIRnycx0FnDtZwaKkm7acjdai+wYmRo?=
- =?us-ascii?Q?41I7+xw6l7gFDNTGaiZjmgGUVCIG9Y18NknjkcO0q7iKI1+/hsuni7KvbMW8?=
- =?us-ascii?Q?If/E465RcuSDlir5Lu8ZNa9oT8OSRuV+PUxUlIQ5kz1SMNmjDcDPU5wwm+uK?=
- =?us-ascii?Q?B29xKf/QnwasvL3IZfZhfqIQc2hfJkLS2phRmUyupK7RuXnmqQPP/IAXVlvB?=
- =?us-ascii?Q?83ifPQScCAk9Ftvl1O4/U32DKrlmsjpwVTl/vjguOouXbwcqxUq/gakc4xTf?=
- =?us-ascii?Q?gwDlV1NgI3YzZEkzjJJpQeSQcjUTV8cxHosO16yL+RMFgen3sS4HpAqitQOd?=
- =?us-ascii?Q?h9efQ+Ti7Kz/aJ5J+WvHmlvQvx1nrHqfdIb/8PgKh2pai9c2ylEwHF3+nOJI?=
- =?us-ascii?Q?xI/meyt9dAmwCyEVQ/9JTyYCxMomhCKCSa6eGuDeE/Dj64/d2azQnV4nAC3u?=
- =?us-ascii?Q?50A39Sn7MuuenwFa+ZjLj56Rzs36kDhb9RrD6IPSCFpundSvE0KI8PNwr3Ov?=
- =?us-ascii?Q?ipkaDVtyL8xeJda4Fq6xLuWiKtJ0A68WTu3A3HhK9G7lzE6Zl+gWjJPG2t2+?=
- =?us-ascii?Q?TG+i81LSdh7NisGWHQtriSC1M445e2fP5QDPdPs7YvFhV0a+qXDCbRMOZWvW?=
- =?us-ascii?Q?WtS3szbRveenCh2kChSChz4HEQM36qdjaMLfpZlZjX4i0vOqYHQicKfvfluc?=
- =?us-ascii?Q?fMwalbVbPZloKPwnE6PyetYIjYk58tXPQwNwBewaaFhcuOvlAPs5bJU4GV5b?=
- =?us-ascii?Q?EOC9omX1W4KyGVsZOqVIbaKeLSQMZk/OgbWGsnAZMUzGl6iQAGCY9FJ8CcNK?=
- =?us-ascii?Q?KpR6+0zTWNgpd3bcbVaiVqoiEaqENV/BSFr2Fs00fYI96c970utVDDz0v1bR?=
- =?us-ascii?Q?e7O4F1sFrBY/XI3aoCLn6+i9UUXeJRHVdnSShELDtkxm0MBGLEtyJIKhsVBY?=
- =?us-ascii?Q?25zKXSVWbC1ZZqsQN4WOTtHYMAByJpD1EhkqtL5kxQqrHuBf1+es38U0wB6K?=
- =?us-ascii?Q?/+KdHcZfcR3EFkamXOjqbOy7hP/nV5++hqWtNreXBr8lXogvDvIgfY3ZlxxX?=
- =?us-ascii?Q?ni2gul0jTB6Uoa0rSBMCjnSfkupxXRPJyVH5mmPAZ4OoVr0MGatmvHwSqwX1?=
- =?us-ascii?Q?Z4PASfk/0avQPCDBwtk7OMQMyDZD4puqkTWcn7Dz8dlIWLpX50SjqDkBxjN+?=
- =?us-ascii?Q?Wnr5Qo/726p9B+8HR+2NjK3ss4aVHK+mPhb8NFmtP9QYnWrKblphPA6+HN7m?=
- =?us-ascii?Q?EEdcwvmEXrxSnfBk2DjPXpFJKKktG9cL4GGdbUkup7j9HaPwLLeXn6WqUKN7?=
- =?us-ascii?Q?omKcrmoAjaaQpnajalYz0bBztGxoK1BAXssan+55NLRvxp3zNXhSVVgMVFh1?=
- =?us-ascii?Q?fgY/DRgw0i8Ug+rqUYyjE6/7gSMrf+HTpQyF9XtY8SkJoq1DwEBPfcbq1XAS?=
- =?us-ascii?Q?MRkFpmcpfOui4QIykejWUwnQ2+2TsBMrXkzlFmkxHmPHXVMXB5CmSSk2RnsU?=
- =?us-ascii?Q?rBRIK9j8dIJYhroGPEifiz6CpiijiyAYSIvNfClVbsNCsTCgW117oqb4H7js?=
- =?us-ascii?Q?8QkERrzJ7AdLQNc4lZ1oQjwjStPcsF0LYPExCyj+BH6xIA9inD0ov5L96FS6?=
- =?us-ascii?Q?9pcK30ldnmFQjwyIia42eGv+Nql5G3hsiZ4iEBBNZAxk7p312Urs?=
-X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 9ca7d326-1ca7-4cff-d591-08def96b97bf
-X-MS-Exchange-CrossTenant-AuthSource: GV2PR04MB11799.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 Aug 2026 18:49:23.9809
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: u9Dv8/Lv1MQBrrKRUB3oxVsDeFhkGqNyt0J2YNDwcPjbhzccbl5p8PwwNhxPXF0gmhcVP+HJpqvcCEkVB6cEsmUhWD1smqXV06myv5Z3AkOY34rfrDH+C2cRWryOsdaI
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS5PR04MB10060
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 3/3] powerpc/ps3: use put_device() on device_register()
+ failure in ps3_system_bus_device_register
+To: Tarun Sahu <tarunsahu@google.com>,
+        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Russell King <linux@armlinux.org.uk>,
+        Geoff Levand <geoff@infradead.org>,
+        Michael Ellerman <mpe@ellerman.id.au>, djeffery@redhat.com,
+        Nicholas Piggin <npiggin@gmail.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-arm-kernel@lists.infradead.org, dmatlack@google.com,
+        Pasha Tatashin <pasha.tatashin@soleen.com>, souravsgl@google.com,
+        skhawaja@google.com, linux-kernel@vger.kernel.org,
+        driver-core@lists.linux.dev, linuxppc-dev@lists.ozlabs.org
+References: <20260813095421.1700945-1-tarunsahu@google.com>
+ <20260813095421.1700945-4-tarunsahu@google.com>
+Content-Language: en-US
+From: Sourabh Jain <sourabhjain@linux.ibm.com>
+In-Reply-To: <20260813095421.1700945-4-tarunsahu@google.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=AMtp2X5w c=1 sm=1 tr=0 ts=6a7e7dbf cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+ a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VnNF1IyMAAAA:8
+ a=1XWaLZrsAAAA:8 a=n3Y_rXsrvEagZGvLPyQA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: z2GAf6TahFsdZej1SvZngaYtlb-Fq6Ap
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODE0MDAxNSBTYWx0ZWRfX3S4+lINbmaWN
+ JULXBrqFKQI3VokWQXKOMi7Njj3iDtiZl8Fxfq84Q2M2Q2BIksq3EMWr6OpqHfNhRpJ8sXwrVd9
+ VKrCd07RthHMo7M6lTRivUtgfHR4xKI7VILXQ43p73mjJq1Z9Z14IOWDEskJwlEJkQJNPxKjxsl
+ AU2J69Ktwi1R1JZYD34WNnrJ4n5EqlEqCqoQP9KHnvXcLTOFGDJDWPfJyRK34bMWk4fJ1KACHfp
+ hTo9IU4Ck9gDmjkR7WPIzf5KXfT4V5zKQPkxFvI07ovxtEtz+m3o2fa8RDHc3c5/mSuV1yvA+Ne
+ lx93VTNNiO+qkD9JZC+K56NIJW0yoZQ7qM2V4kFd9SYDw7VCc6bz9qSrEtX3//N6fZ9U7yJvex7
+ Hm8baxg7/VQ/lAM7HtPaAyr5BkJGiGajw0qmSvUYHJCLdW0QmUuY83wRqh9b87FCu1XjT3xJ0NE
+ ilAjundE8PGT2uUOS8g==
+X-Proofpoint-ORIG-GUID: AT5Rq_PBXSS0X67XNK0UT2Fpaszq8ck5
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODE0MDAxNSBTYWx0ZWRfXyXi9L/ayC78u
+ HWC799RPx6HfZxhenXGMamJ6YQVPnaWY95Fq7q5bqH4WSJRbC7B8abqQz/sEONYSQBx9A1hDVUz
+ Ktd1b7BmJZ3onRlB9mXI4d/yTCogJI4=
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-08-14_01,2026-08-12_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 adultscore=0 lowpriorityscore=0 clxscore=1011
+ priorityscore=1501 impostorscore=0 phishscore=0 spamscore=0 bulkscore=0
+ malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
+ definitions=main-2608140015
 
-On Mon, Jul 20, 2026 at 11:06:07PM +0800, Hans Zhang wrote:
-> [You don't often get email from 18255117159@163.com. Learn why this is important at https://aka.ms/LearnAboutSenderIdentification ]
+
+
+On 13/08/26 15:24, Tarun Sahu wrote:
+> When device_register() fails, calling put_device() ensures that the
+> device reference count drops to 0, which invokes the release callback
+> ps3_system_bus_release_device() to cleanly free the device and its
+> associated driver core resources.
+
+Yes, since the PS3 device has a release function, put_device() should be
+used instead of manually freeing the memory, as described in 
+device_register().
+
+Changes look good to me. Feel free to add:
+Reviewed-by: Sourabh Jain <sourabhjain@linux.ibm.com>
+
 >
-> Replace these with dw_pcie_get_pcie_cap(). The hardware is already enabled
-> by the driver before ls_pcie_ep_probe() and before the interrupt handler
-> runs. dw_pcie_get_pcie_cap() will cache the offset on first call, and
-> subsequent calls (including inside dw_pcie_ep_init) will use the cached
-> value without re-searching.
->
-> Signed-off-by: Hans Zhang <18255117159@163.com>
+> Signed-off-by: Tarun Sahu <tarunsahu@google.com>
 > ---
-
-Reviewed-by: Frank Li <Frank.Li@nxp.com>
-
-> In pci-layerscape-ep, dw_pcie_find_capability() is called in:
+>   arch/powerpc/platforms/ps3/device-init.c | 83 ++++++++++++++----------
+>   arch/powerpc/platforms/ps3/system-bus.c  |  2 +
+>   2 files changed, 52 insertions(+), 33 deletions(-)
 >
->   ls_pcie_ep_probe()
->     -> offset = dw_pcie_find_capability()
->     -> pcie->lnkcap = dw_pcie_readl_dbi(offset + PCI_EXP_LNKCAP)
->     -> dw_pcie_ep_init()
->     -> ls_pcie_ep_interrupt_init()
->         -> devm_request_irq(..., ls_pcie_ep_event_handler)
->           -> ls_pcie_ep_event_handler()
->             -> dw_pcie_find_capability()
-> ---
->  drivers/pci/controller/dwc/pci-layerscape-ep.c | 9 +++------
->  1 file changed, 3 insertions(+), 6 deletions(-)
->
-> diff --git a/drivers/pci/controller/dwc/pci-layerscape-ep.c b/drivers/pci/controller/dwc/pci-layerscape-ep.c
-> index 8936975ff104..b2d0b51df3c5 100644
-> --- a/drivers/pci/controller/dwc/pci-layerscape-ep.c
-> +++ b/drivers/pci/controller/dwc/pci-layerscape-ep.c
-> @@ -74,7 +74,6 @@ static irqreturn_t ls_pcie_ep_event_handler(int irq, void *dev_id)
->         struct ls_pcie_ep *pcie = dev_id;
->         struct dw_pcie *pci = pcie->pci;
->         u32 val, cfg;
-> -       u8 offset;
->
->         val = ls_pcie_pf_lut_readl(pcie, PEX_PF0_PME_MES_DR);
->         ls_pcie_pf_lut_writel(pcie, PEX_PF0_PME_MES_DR, val);
-> @@ -83,9 +82,6 @@ static irqreturn_t ls_pcie_ep_event_handler(int irq, void *dev_id)
->                 return IRQ_NONE;
->
->         if (val & PEX_PF0_PME_MES_DR_LUD) {
+> diff --git a/arch/powerpc/platforms/ps3/device-init.c b/arch/powerpc/platforms/ps3/device-init.c
+> index 9109c218a060..8d0c77db1764 100644
+> --- a/arch/powerpc/platforms/ps3/device-init.c
+> +++ b/arch/powerpc/platforms/ps3/device-init.c
+> @@ -90,14 +90,12 @@ static int __init ps3_register_lpm_devices(void)
+>   	if (result) {
+>   		pr_debug("%s:%d ps3_system_bus_device_register failed\n",
+>   			__func__, __LINE__);
+> -		goto fail_register;
+> +		return result;
+>   	}
+>   
+>   	pr_debug(" <- %s:%d\n", __func__, __LINE__);
+>   	return 0;
+>   
 > -
-> -               offset = dw_pcie_find_capability(pci, PCI_CAP_ID_EXP);
+> -fail_register:
+>   fail_rights:
+>   fail_read_repo:
+>   	kfree(dev);
+> @@ -121,6 +119,12 @@ static int __init ps3_setup_gelic_device(
+>   		struct ps3_dma_region d_region;
+>   	} *p;
+>   
+> +	/*
+> +	 * ps3_system_bus_release_device() calls kfree(&p->dev).
+> +	 * dev must be at offset 0 so kfree() frees outer p.
+> +	 */
+> +	BUILD_BUG_ON(offsetof(struct layout, dev) != 0);
+> +
+>   	pr_debug(" -> %s:%d\n", __func__, __LINE__);
+>   
+>   	BUG_ON(repo->bus_type != PS3_BUS_TYPE_SB);
+> @@ -164,13 +168,12 @@ static int __init ps3_setup_gelic_device(
+>   	if (result) {
+>   		pr_debug("%s:%d ps3_system_bus_device_register failed\n",
+>   			__func__, __LINE__);
+> -		goto fail_device_register;
+> +		return result;
+>   	}
+>   
+>   	pr_debug(" <- %s:%d\n", __func__, __LINE__);
+>   	return result;
+>   
+> -fail_device_register:
+>   fail_dma_init:
+>   fail_find_interrupt:
+>   	kfree(p);
+> @@ -192,6 +195,12 @@ static int __init ps3_setup_uhc_device(
+>   	u64 bus_addr;
+>   	u64 len;
+>   
+> +	/*
+> +	 * ps3_system_bus_release_device() calls kfree(&p->dev).
+> +	 * dev must be at offset 0 so kfree() frees outer p.
+> +	 */
+> +	BUILD_BUG_ON(offsetof(struct layout, dev) != 0);
+> +
+>   	pr_debug(" -> %s:%d\n", __func__, __LINE__);
+>   
+>   	BUG_ON(repo->bus_type != PS3_BUS_TYPE_SB);
+> @@ -252,13 +261,12 @@ static int __init ps3_setup_uhc_device(
+>   	if (result) {
+>   		pr_debug("%s:%d ps3_system_bus_device_register failed\n",
+>   			__func__, __LINE__);
+> -		goto fail_device_register;
+> +		return result;
+>   	}
+>   
+>   	pr_debug(" <- %s:%d\n", __func__, __LINE__);
+>   	return result;
+>   
+> -fail_device_register:
+>   fail_mmio_init:
+>   fail_dma_init:
+>   fail_find_reg:
+> @@ -291,6 +299,12 @@ static int __init ps3_setup_vuart_device(enum ps3_match_id match_id,
+>   		struct ps3_system_bus_device dev;
+>   	} *p;
+>   
+> +	/*
+> +	 * ps3_system_bus_release_device() calls kfree(&p->dev).
+> +	 * dev must be at offset 0 so kfree() frees outer p.
+> +	 */
+> +	BUILD_BUG_ON(offsetof(struct layout, dev) != 0);
+> +
+>   	pr_debug(" -> %s:%d: match_id %u, port %u\n", __func__, __LINE__,
+>   		match_id, port_number);
+>   
+> @@ -308,15 +322,10 @@ static int __init ps3_setup_vuart_device(enum ps3_match_id match_id,
+>   	if (result) {
+>   		pr_debug("%s:%d ps3_system_bus_device_register failed\n",
+>   			__func__, __LINE__);
+> -		goto fail_device_register;
+> +		return result;
+>   	}
+>   	pr_debug(" <- %s:%d\n", __func__, __LINE__);
+>   	return 0;
 > -
->                 /*
->                  * The values of the Maximum Link Width and Supported Link
->                  * Speed from the Link Capabilities Register will be lost
-> @@ -93,7 +89,8 @@ static irqreturn_t ls_pcie_ep_event_handler(int irq, void *dev_id)
->                  * that configured by the Reset Configuration Word (RCW).
->                  */
->                 dw_pcie_dbi_ro_wr_en(pci);
-> -               dw_pcie_writel_dbi(pci, offset + PCI_EXP_LNKCAP, pcie->lnkcap);
-> +               dw_pcie_writel_dbi(pci, pci->pcie_cap + PCI_EXP_LNKCAP,
-> +                                  pcie->lnkcap);
->                 dw_pcie_dbi_ro_wr_dis(pci);
->
->                 cfg = ls_pcie_pf_lut_readl(pcie, PEX_PF0_CONFIG);
-> @@ -266,7 +263,7 @@ static int __init ls_pcie_ep_probe(struct platform_device *pdev)
->
->         platform_set_drvdata(pdev, pcie);
->
-> -       offset = dw_pcie_find_capability(pci, PCI_CAP_ID_EXP);
-> +       offset = dw_pcie_get_pcie_cap(pci);
->         pcie->lnkcap = dw_pcie_readl_dbi(pci, offset + PCI_EXP_LNKCAP);
->
->         ret = dw_pcie_ep_init(&pci->ep);
-> --
-> 2.34.1
->
->
+> -fail_device_register:
+> -	kfree(p);
+> -	pr_debug(" <- %s:%d fail\n", __func__, __LINE__);
+> -	return result;
+>   }
+>   
+>   static int ps3_setup_storage_dev(const struct ps3_repository_device *repo,
+> @@ -327,6 +336,12 @@ static int ps3_setup_storage_dev(const struct ps3_repository_device *repo,
+>   	u64 port, blk_size, num_blocks;
+>   	unsigned int num_regions, i;
+>   
+> +	/*
+> +	 * ps3_system_bus_release_device() calls kfree(&p->sbd).
+> +	 * sbd must be at offset 0 so kfree() frees outer p.
+> +	 */
+> +	BUILD_BUG_ON(offsetof(struct ps3_storage_device, sbd) != 0);
+> +
+>   	pr_debug(" -> %s:%u: match_id %u\n", __func__, __LINE__, match_id);
+>   
+>   	result = ps3_repository_read_stor_dev_info(repo->bus_index,
+> @@ -395,13 +410,12 @@ static int ps3_setup_storage_dev(const struct ps3_repository_device *repo,
+>   	if (result) {
+>   		pr_debug("%s:%u ps3_system_bus_device_register failed\n",
+>   			 __func__, __LINE__);
+> -		goto fail_device_register;
+> +		return result;
+>   	}
+>   
+>   	pr_debug(" <- %s:%u\n", __func__, __LINE__);
+>   	return 0;
+>   
+> -fail_device_register:
+>   fail_read_region:
+>   fail_find_interrupt:
+>   	kfree(p);
+> @@ -445,6 +459,12 @@ static int __init ps3_register_sound_devices(void)
+>   		struct ps3_mmio_region m_region;
+>   	} *p;
+>   
+> +	/*
+> +	 * ps3_system_bus_release_device() calls kfree(&p->dev).
+> +	 * dev must be at offset 0 so kfree() frees outer p.
+> +	 */
+> +	BUILD_BUG_ON(offsetof(struct layout, dev) != 0);
+> +
+>   	pr_debug(" -> %s:%d\n", __func__, __LINE__);
+>   
+>   	p = kzalloc_obj(*p);
+> @@ -461,15 +481,10 @@ static int __init ps3_register_sound_devices(void)
+>   	if (result) {
+>   		pr_debug("%s:%d ps3_system_bus_device_register failed\n",
+>   			__func__, __LINE__);
+> -		goto fail_device_register;
+> +		return result;
+>   	}
+>   	pr_debug(" <- %s:%d\n", __func__, __LINE__);
+>   	return 0;
+> -
+> -fail_device_register:
+> -	kfree(p);
+> -	pr_debug(" <- %s:%d failed\n", __func__, __LINE__);
+> -	return result;
+>   }
+>   
+>   static int __init ps3_register_graphics_devices(void)
+> @@ -479,6 +494,12 @@ static int __init ps3_register_graphics_devices(void)
+>   		struct ps3_system_bus_device dev;
+>   	} *p;
+>   
+> +	/*
+> +	 * ps3_system_bus_release_device() calls kfree(&p->dev).
+> +	 * dev must be at offset 0 so kfree() frees outer p.
+> +	 */
+> +	BUILD_BUG_ON(offsetof(struct layout, dev) != 0);
+> +
+>   	pr_debug(" -> %s:%d\n", __func__, __LINE__);
+>   
+>   	p = kzalloc_obj(struct layout);
+> @@ -495,16 +516,11 @@ static int __init ps3_register_graphics_devices(void)
+>   	if (result) {
+>   		pr_debug("%s:%d ps3_system_bus_device_register failed\n",
+>   			__func__, __LINE__);
+> -		goto fail_device_register;
+> +		return result;
+>   	}
+>   
+>   	pr_debug(" <- %s:%d\n", __func__, __LINE__);
+>   	return 0;
+> -
+> -fail_device_register:
+> -	kfree(p);
+> -	pr_debug(" <- %s:%d failed\n", __func__, __LINE__);
+> -	return result;
+>   }
+>   
+>   static int __init ps3_register_ramdisk_device(void)
+> @@ -514,6 +530,12 @@ static int __init ps3_register_ramdisk_device(void)
+>   		struct ps3_system_bus_device dev;
+>   	} *p;
+>   
+> +	/*
+> +	 * ps3_system_bus_release_device() calls kfree(&p->dev).
+> +	 * dev must be at offset 0 so kfree() frees outer p.
+> +	 */
+> +	BUILD_BUG_ON(offsetof(struct layout, dev) != 0);
+> +
+>   	pr_debug(" -> %s:%d\n", __func__, __LINE__);
+>   
+>   	p = kzalloc_obj(struct layout);
+> @@ -530,16 +552,11 @@ static int __init ps3_register_ramdisk_device(void)
+>   	if (result) {
+>   		pr_debug("%s:%d ps3_system_bus_device_register failed\n",
+>   			__func__, __LINE__);
+> -		goto fail_device_register;
+> +		return result;
+>   	}
+>   
+>   	pr_debug(" <- %s:%d\n", __func__, __LINE__);
+>   	return 0;
+> -
+> -fail_device_register:
+> -	kfree(p);
+> -	pr_debug(" <- %s:%d failed\n", __func__, __LINE__);
+> -	return result;
+>   }
+>   
+>   /**
+> diff --git a/arch/powerpc/platforms/ps3/system-bus.c b/arch/powerpc/platforms/ps3/system-bus.c
+> index 0537a678a32f..0918c74d3e19 100644
+> --- a/arch/powerpc/platforms/ps3/system-bus.c
+> +++ b/arch/powerpc/platforms/ps3/system-bus.c
+> @@ -774,6 +774,8 @@ int ps3_system_bus_device_register(struct ps3_system_bus_device *dev)
+>   	pr_debug("%s:%d add %s\n", __func__, __LINE__, dev_name(&dev->core));
+>   
+>   	result = device_register(&dev->core);
+> +	if (result)
+> +		put_device(&dev->core);
+>   	return result;
+>   }
+>   
+
 
