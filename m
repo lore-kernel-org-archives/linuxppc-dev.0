@@ -1,79 +1,74 @@
-Return-Path: <linuxppc-dev+bounces-25871-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25872-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 379A0C5CFDB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Aug 2026 15:42:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A99D0C5CFC1
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Aug 2026 16:16:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hM61m430Nz2yRP;
-	Sat, 15 Aug 2026 01:42:52 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.13
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786722172;
-	cv=none; b=PS8s4tA6C4rOqevDEKak/W3kJ5EeC+BSOOBBIcBDTchTksEij5MJTX1wtnzz7bPcAMJV4DQDZP81jRkWj7Gtyk/gHNXyXaoWHpKC1g2HRyp5C5fsDuCTNUtJBKmpaLIeER3juiXgXmHCm0C9TuP+VIFO2PXZKsT+alWts4MK6FpyH5SaUytZL1IkONDjygkyEphjdiWGy6meT2o0ObFzNYthJxY2Z1E9tos+1kyPgFAGZcnamiYSw6FGeFC8IEBTFhA/uH2lefWbc+BY/dc+tiWlxwNqp5RmpU4/e1cTaSmLJzxIHC/Z8oLqdhyG7S804p8QKjktpc7XnlI4DkVrFw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hM6mB45Dtz2y8G;
+	Sat, 15 Aug 2026 02:16:10 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786724170;
+	cv=none; b=l9kT4yEqCIH04hHFHdNduaRc/YcwPxfkOsg0QjrLFmyis3h7/PtBz2FknlztSkJBNOLSWBLrXpAdzXM6Dp1g9j2gwfM0+VUtzk1Hod4G3/se+kacQQAtb0RBSJKNZDV9m94c2/clDMXD4ZPYFLy3xBK/QntEh0ZUxbeDM+liR+T71LvTPLtZ/Nphrvz+ibsOPpeQGcPY1mBGdJ1DzATjZc2eQrgDbA0JSg4YM4JJJcfsG2yWkVRFit3VjWeaNISL8jJl8lj6WcGm8D6Pe3iMEOCNkNAq9ivB4ytPTqFKDs/IUKLwlR7KyEkOOUuDlqxo9JJ96r6I0Q8wXU+TQJ7KPQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786722172; c=relaxed/relaxed;
-	bh=HrCq79AU+KgQBc3hczsRFI1XL6XhXT4TgvuRbwKh7uI=;
+	t=1786724170; c=relaxed/relaxed;
+	bh=ANRY6z832Ro79eJkIpumMqXKf2RRmUpXrfx0OSabUaQ=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=doNNfsngDBDWbIxTp1+YqbK8xfLKyIfTx/AMfESDAJOxaO9YXYXo3ER4P0Gx+RZV0TzJ974FMOAnoMFATVJBVFmV+UO3/DyBgoir9wRgPWRZYgl5E4DFO25QD1d87YvHyG5CS52O+FWgpcMJOskv2WpMWwd0V46/r+CA2nzv6Mo4rmyWgl56cmvQhhXWN8PTQohcO5hrURR3mIbnxxYzNq2ZFO4QtZ/5tXMJ/DpYmCmZaL9mpJ7Q5hOivFWYr95rfPL8ZSc5vubBb1UvjgVDLrZ1jV5RVYHaVdx/6dN/5ncsZYAkmaNnA7p11R6b4DAN3LVEe56DxtgpS+hNI4bJDA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=TwPSHGZP; dkim-atps=neutral; spf=pass (client-ip=192.198.163.13; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=Ft8pqsHgDr7EXBGQaZjdxd0TvBQri1V1a1FCoPm1HoKrGX+e+1EKNg2kDiLNJff/IyQpita4PUm/0WGs5ltcQevtXkVoDaSkpQKk2vvgQgbrciWJDZwqouiDEII6mbnojFRksK7nChIYz16XvUSVrYM2FyiVtEBBLiuzyfGRAuxp137thSf+b7/SkVrRmcyFF8a6uetBrTT9HiU4htAjxNGpm9xPFqHvto/Uv+Fy9WMCJE5AD2EQJfuz/0PiNkGijHxAIwUJFmbguZYwNGF/lmeH/QweDfapWRkn39M9VRLQGZ5isEHKhDcOyva6Lm1zMFHtavlVOz5sR2Z3nHZ8Zg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=cbfJLndh; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=catalin.marinas@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=TwPSHGZP;
+	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=cbfJLndh;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.13; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.13])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hM61h3mRmz2y8G
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Aug 2026 01:42:46 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1786722169; x=1818258169;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=fxbnJdrTRr0um+4aluXhGRJ2r0C9VsyrarcgZbWR7PM=;
-  b=TwPSHGZPFU6g4Eje9XOeF/k9PEowToBg0Hv5LztJtjMbpPLCAQE2ToQE
-   9FI/xvjOVMS0aQStTeDYYuiPXfzve42tOjn33wODdrcSzwXtWMy4Aajz1
-   fEyY9khTAkzCdoLcLQoEcZ2+eYjrDJtUdyoRCTppT1cfRSFgg3+ihIIC+
-   qd0htdAuxMsM4ivSq78lA3oxjuD7eCFHXr3xaiXiPqyetp+j6m1wGS2F9
-   4TRs9b4JnpGOBYXudRyfrt47wn+Vw3pWC69jin7rRzvcFl5ygLo0ihwgK
-   w/6E4pPjlISQvIPtaxpcBN9Yzj0b5DxjKJZZBcHfa48S2AwHKR0QiYpJU
-   g==;
-X-CSE-ConnectionGUID: i+hJ3dfHTTuztdmcRIhuVg==
-X-CSE-MsgGUID: Wlqzv/3gREekWSjujB6xrw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11875"; a="89820548"
-X-IronPort-AV: E=Sophos;i="6.25,222,1779174000"; 
-   d="scan'208";a="89820548"
-Received: from fmviesa010.fm.intel.com ([10.60.135.150])
-  by fmvoesa107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Aug 2026 08:42:42 -0700
-X-CSE-ConnectionGUID: IGYQR30JQT2Ruf8uvJmfew==
-X-CSE-MsgGUID: uof/TsuUTduvQU8tZcs3HQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,222,1779174000"; 
-   d="scan'208";a="260468820"
-Received: from lkp-server01.sh.intel.com (HELO 6eda058d650d) ([10.239.97.150])
-  by fmviesa010.fm.intel.com with ESMTP; 14 Aug 2026 08:42:40 -0700
-Received: from kbuild by 6eda058d650d with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1wuu3J-00000000ZQY-2zpm;
-	Fri, 14 Aug 2026 15:42:37 +0000
-Date: Fri, 14 Aug 2026 23:42:18 +0800
-From: kernel test robot <lkp@intel.com>
-To: Christian Zigotzky <chzigotzky@xenosoft.de>,
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=catalin.marinas@arm.com; receiver=lists.ozlabs.org)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hM6m06W2Kz2yv9
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Aug 2026 02:15:58 +1000 (AEST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 435B01596;
+	Fri, 14 Aug 2026 09:15:21 -0700 (PDT)
+Received: from arm.com (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 0879C3F632;
+	Fri, 14 Aug 2026 09:15:20 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1786724125; bh=CDXQA+EPdlI0BbPlq/PGU1VNQn7L/CNo5Id1Sf3ism8=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=cbfJLndhxTyrWoqa7N0FvMI7C5ellZPkmqibKvH/xugi4DkwGUR8MXxECibikKhHA
+	 r2peZGXac4kfP7Iq+wBnj49hJv4z1WzdVYAlmECjmYuTAyTPTllk67UYCjRBKitdio
+	 +Xjl6D4uqfp94Fg6zciUVaBL+LX0gfOk2Ey1b8pE=
+Date: Fri, 14 Aug 2026 17:15:18 +0100
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>
+Cc: iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev,
+	Robin Murphy <robin.murphy@arm.com>,
+	Marek Szyprowski <m.szyprowski@samsung.com>,
+	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
+	Steven Price <steven.price@arm.com>,
+	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
+	Jiri Pirko <jiri@resnulli.us>, Jason Gunthorpe <jgg@ziepe.ca>,
+	Mostafa Saleh <smostafa@google.com>,
+	Petr Tesarik <ptesarik@suse.com>,
+	Alexey Kardashevskiy <aik@amd.com>,
+	Xu Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+	linux-s390@vger.kernel.org,
 	Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Michael Ellerman <mpe@ellerman.id.au>,
 	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Krzysztof Kozlowski <krzk@kernel.org>,
-	"(open list:LINUX FOR POWERPC \\(32-BIT AND 64-BIT\\))" <linuxppc-dev@lists.ozlabs.org>,
-	linux-kernel@vger.kernel.org
-Cc: oe-kbuild-all@lists.linux.dev
-Subject: Re: [PATCH] Connecting the SB600's i8259 controller rather in
- pasemi's pci.c than in pasemi's setup.c.
-Message-ID: <202608142355.4AeDorvg-lkp@intel.com>
-References: <20260701125941.906-2-chzigotzky@xenosoft.de>
+	Christophe Leroy <chleroy@kernel.org>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org
+Subject: Re: [RFC PATCH v2 1/2] dma: swiotlb: Centralize default pool
+ initialization and sizing
+Message-ID: <an8_FvcdI01XmVXs@arm.com>
+References: <20260813102521.1367737-1-aneesh.kumar@kernel.org>
+ <20260813102521.1367737-2-aneesh.kumar@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,68 +84,108 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260701125941.906-2-chzigotzky@xenosoft.de>
+In-Reply-To: <20260813102521.1367737-2-aneesh.kumar@kernel.org>
 
-Hi Christian,
+On Thu, Aug 13, 2026 at 03:55:20PM +0530, Aneesh Kumar K.V (Arm) wrote:
+> The addressing_limited argument to swiotlb_init() no longer describes
+> all the reasons why a default swiotlb pool may be needed. Confidential
+> computing systems need a shared pool even without addressing limitations,
+> while some systems need a smaller pool for bouncing unaligned kmalloc
+> buffers.
+> 
+> Replace the argument with SWIOTLB_INIT_ADDRESSING_LIMIT and
+> SWIOTLB_INIT_CC_SHARED reason flags, and add swiotlb_should_init() to
+> determine whether initialization is required for limited DMA addressing,
+> confidential-computing shared DMA, unaligned kmalloc bouncing, or
+> swiotlb=force.
+> 
+> Have architectures report addressing-limit and confidential-computing
+> requirements before swiotlb_init(). Mark CC pools shared before their
+> memory attributes are updated, and keep both addressing-limited and
+> CC-shared pools at their normal size instead of applying the reduced
+> kmalloc-only sizing policy.
+> 
+> Move the reduced kmalloc-bounce sizing policy from arm64 and RISC-V into
+> the SWIOTLB core. This keeps architecture code responsible for reporting
+> why a pool is needed while centralizing initialization and sizing
+> decisions.
+> 
+> Signed-off-by: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>
+> ---
+>  arch/arm/mm/init.c                   |  6 +++-
+>  arch/arm64/mm/init.c                 | 18 ++++------
+>  arch/loongarch/kernel/setup.c        |  2 +-
+>  arch/mips/cavium-octeon/dma-octeon.c |  2 +-
+>  arch/mips/loongson64/dma.c           |  2 +-
+>  arch/mips/sibyte/common/dma.c        |  2 +-
+>  arch/powerpc/kernel/dma-swiotlb.c    |  4 ++-
+>  arch/powerpc/mm/mem.c                | 15 +++++++-
+>  arch/powerpc/platforms/pseries/svm.c | 10 ------
+>  arch/powerpc/sysdev/fsl_pci.c        |  1 +
+>  arch/riscv/mm/init.c                 | 18 +++-------
+>  arch/s390/mm/init.c                  |  2 +-
+>  arch/x86/include/asm/iommu.h         |  2 ++
+>  arch/x86/kernel/amd_gart_64.c        |  1 +
+>  arch/x86/kernel/pci-dma.c            | 17 +++++----
+>  arch/x86/mm/mem_encrypt.c            |  4 +++
+>  include/linux/swiotlb.h              | 12 ++++---
+>  kernel/dma/swiotlb.c                 | 52 ++++++++++++++++++++++++----
+>  18 files changed, 109 insertions(+), 61 deletions(-)
+> 
+> diff --git a/arch/arm/mm/init.c b/arch/arm/mm/init.c
+> index 0cc1bf04686d..aca97a4e5dcd 100644
+> --- a/arch/arm/mm/init.c
+> +++ b/arch/arm/mm/init.c
+> @@ -223,7 +223,11 @@ static inline void poison_init_mem(void *s, size_t count)
+>  void __init arch_mm_preinit(void)
+>  {
+>  #ifdef CONFIG_ARM_LPAE
+> -	swiotlb_init(max_pfn > arm_dma_pfn_limit, SWIOTLB_VERBOSE);
+> +	unsigned int flags = SWIOTLB_VERBOSE;
+> +
+> +	if (max_pfn > arm_dma_pfn_limit)
+> +		flags |= SWIOTLB_INIT_ADDRESSING_LIMIT;
+> +	swiotlb_init(flags);
+>  #endif
+>  
+>  #ifdef CONFIG_SA1111
+> diff --git a/arch/arm64/mm/init.c b/arch/arm64/mm/init.c
+> index e308a7cabd12..9f5b366d2086 100644
+> --- a/arch/arm64/mm/init.c
+> +++ b/arch/arm64/mm/init.c
+> @@ -338,19 +338,15 @@ void __init arch_setup_zero_pages(void)
+>  void __init arch_mm_preinit(void)
+>  {
+>  	unsigned int flags = SWIOTLB_VERBOSE;
+> +	/* pKVM uses restricted-dma-pool */
+> +	bool cc_guest = is_realm_world();
+>  
+> -	if (max_pfn <= PFN_DOWN(arm64_dma_phys_limit)) {
+> -		/*
+> -		 * If no bouncing needed for ZONE_DMA, reduce the swiotlb
+> -		 * buffer for kmalloc() bouncing to 1MB per 1GB of RAM.
+> -		 */
+> -		unsigned long size =
+> -			DIV_ROUND_UP(memblock_phys_mem_size(), 1024);
+> -
+> -		swiotlb_adjust_size(min(swiotlb_size_or_default(), size));
+> -	}
+> +	if (cc_guest)
+> +		flags |= SWIOTLB_INIT_CC_SHARED;
+> +	else if (max_pfn > PFN_DOWN(arm64_dma_phys_limit))
+> +		flags |= SWIOTLB_INIT_ADDRESSING_LIMIT;
+>  
+> -	swiotlb_init(true, flags);
+> +	swiotlb_init(flags);
 
-kernel test robot noticed the following build warnings:
+I like the idea of more flags than the boolean for address limit.
+However, depending on when such patch would go in (presumably on top of
+what's currently in -next), we may not need the SWIOTLB_INIT_CC_SHARED
+at all here just to remove it in the second patch. I think we have all
+the information available already.
 
-[auto build test WARNING on powerpc/next]
-[also build test WARNING on powerpc/fixes linus/master v7.2-rc7 next-20260813]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+Other than that, it looks fine to me. If you repost at -rc1, hopefully
+Sashiko will manage to apply it.
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Christian-Zigotzky/Connecting-the-SB600-s-i8259-controller-rather-in-pasemi-s-pci-c-than-in-pasemi-s-setup-c/20260813-054214
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
-patch link:    https://lore.kernel.org/r/20260701125941.906-2-chzigotzky%40xenosoft.de
-patch subject: [PATCH] Connecting the SB600's i8259 controller rather in pasemi's pci.c than in pasemi's setup.c.
-config: powerpc64-randconfig-r052-20260814 (https://download.01.org/0day-ci/archive/20260814/202608142355.4AeDorvg-lkp@intel.com/config)
-compiler: clang version 19.1.7 (https://github.com/llvm/llvm-project cd708029e0b2869e80abe31ddb175f7c35361f90)
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260814/202608142355.4AeDorvg-lkp@intel.com/reproduce)
-
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202608142355.4AeDorvg-lkp@intel.com/
-
-All warnings (new ones prefixed by >>):
-
->> arch/powerpc/platforms/pasemi/setup.c:217:6: warning: no previous prototype for function 'nemo_init_IRQ' [-Wmissing-prototypes]
-     217 | void nemo_init_IRQ(void)
-         |      ^
-   arch/powerpc/platforms/pasemi/setup.c:217:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
-     217 | void nemo_init_IRQ(void)
-         | ^
-         | static 
-   1 warning generated.
-
-
-vim +/nemo_init_IRQ +217 arch/powerpc/platforms/pasemi/setup.c
-
-   216	
- > 217	void nemo_init_IRQ(void)
-   218	{
-   219		struct device_node *np;
-   220		int gpio_virq;
-   221	        struct mpic *mpic;
-   222	
-   223		/* Connect the SB600's legacy i8259 controller */
-   224		np = of_find_node_by_path("/pxp@0,e0000000");
-   225		i8259_init(np, 0);
-   226		of_node_put(np);
-   227	
-   228		gpio_virq = irq_create_mapping(NULL, 3);
-   229		irq_set_irq_type(gpio_virq, IRQ_TYPE_LEVEL_HIGH);
-   230		irq_set_chained_handler(gpio_virq, sb600_8259_cascade);
-   231		mpic_unmask_irq(irq_get_irq_data(gpio_virq));
-   232	
-   233		mpic = irq_get_chip_data(gpio_virq);
-   234		irq_set_default_domain(mpic->irqhost);
-   235	}
-   236	
-
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
 
