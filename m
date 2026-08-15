@@ -1,77 +1,47 @@
-Return-Path: <linuxppc-dev+bounces-25884-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25885-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 260C7C5CFC1
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Aug 2026 10:37:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6A122C5DF6A
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Aug 2026 13:56:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hMbBM16kZz2xnW;
-	Sat, 15 Aug 2026 20:36:59 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::633"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786790219;
-	cv=none; b=j47AGSTzvh+bzZUCnwBOhzY41nXx9AR9cPqQ+iNObebMWQAfTAMSWD1zZNhMCbwkF9Xc5kmaHJBwHYYniW5rFGIr92ycNe+E4/9hM4AkKNgcbLEoFN8BaqUAWJDO4N/KqcKHU+l3nqvZwUfjZYESjD8R/3Ka+H6W06RFR0OPgGrx/U8zBYTE2nQWI0Fcqgjj5TGoom4KRae265m0zfdjacLzyDqopY1Qo3XR4BQslCLfrfnwq4gSWW3SDkUwgH09Eq31Twka0Oz/B0ME1xDUaCvZXH7b/NQcihkf/L3kw8Nx065noqP7FIMvEYy9P4JpXmEiFDgKv18W+tCJi1VXhw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hMgcC5NXWz2xnp;
+	Sat, 15 Aug 2026 23:56:11 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:4f8:fff3:b8::104"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786802171;
+	cv=none; b=AID2SjtcNsvM5U4/u9B2O/vjCLsdsWcd/hXIICTdbA44xu5dM8vguDBz5x23YEOHxPEzTCIEfGOOEdonDKKf2vIA40RwlpW9AM97qN2fSrLbe7RmE72ij6fd//FS93wS2UEFq5CEYp1LQMI6pzYMgrxkLgSTH4NPswjKnV5/agyLMahxWpSNPLy9Biat+CKNeu9DXFbDLlGiWhRREg8tXZo04hunLY5Rg+M/c5vYDyU/DhML81JxoRYsfD/klDukxilBJtNFWOReXctjzaiv+yglSEgROs4RwVo+sqMHWHSNiWwW489GJxP34ZVDfcgN2dKIofJgn6/bKaNp9Fss3g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786790219; c=relaxed/relaxed;
-	bh=NO3qcNt9868NrnyM/QD7pq3oywENIyYI7Ixnody6czs=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=olvhBTW8628qLJ3eFYhVje9XwlOZ9MtJYO6/brHMojphD9U5PRqHyMAqMXGa4p1OumXYlx0t48FEVpr77ffEENJl+A/HZTTlz9CISH2ydWiQhezmUkjvoO+CLyY9gXn2bJL5AUQpIf6DxNcGA8m+IttgcczIOsgkQq2duhkNwypCJJPuLiCxgQ+IJ7FggyRoyUQKcrR/4nCnKApSrneI2sKnvEYlMGbNpicbyUlTTTyjL7rzhuy7LaJkOIbEeAffZxH0oVtBf1d8EVOiCZQ7M1jjBGWQtAVlGR3v9BbIOBoFzEK6LyF0LUQGWcrIc1FVFUxFh7B4pjrIeHtlHNk1+g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=hDpYNaX/; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::633; helo=mail-pl1-x633.google.com; envelope-from=whi4ed0g@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=hDpYNaX/;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::633; helo=mail-pl1-x633.google.com; envelope-from=whi4ed0g@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x633.google.com (mail-pl1-x633.google.com [IPv6:2607:f8b0:4864:20::633])
+	t=1786802171; c=relaxed/relaxed;
+	bh=ZjadfM9Qojeka+fBmfhMWSSNy4mHnx5ijRWzXnkKOj4=;
+	h=Message-Id:From:Date:Subject:To:Cc; b=bEnVijopcAKAfu9F1Bor7H8S3R0l67uwve2zo35sFJ3rKs5DdPsh0vBhCm7dmok/Yi3p+0VxwNegMOkI9gX0JpATdouomUq0ncgytbRhjWNaKYSbzk86IPlv1vMjmDCJtAkEYjPr9Qwrm+gIeqG/10sSjmFKYDwPRHnOJ04KeTGz2VNFMuRKWvOs3BJoJsm3VsdevNeoidjo90xWE4GoSV8lLBjz32Wg5yG9Yj0zXLn2TgGa5VkTglFF2jUZ1X8ghtdNjKrTyBR0nCeO6ci4v61rxA4HAZNWAiKaRBQSJjenMOdX2EB/204my/QiIiGMGJaYB+9OmP/WPdDsKopbkg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de; spf=pass (client-ip=2a01:4f8:fff3:b8::104; helo=mailout3.hostsharing.net; envelope-from=lukas@wunner.de; receiver=lists.ozlabs.org) smtp.mailfrom=wunner.de
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=wunner.de (client-ip=2a01:4f8:fff3:b8::104; helo=mailout3.hostsharing.net; envelope-from=lukas@wunner.de; receiver=lists.ozlabs.org)
+X-Greylist: delayed 517 seconds by postgrey-1.37 at boromir; Sat, 15 Aug 2026 23:56:09 AEST
+Received: from mailout3.hostsharing.net (mailout3.hostsharing.net [IPv6:2a01:4f8:fff3:b8::104])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hMbBJ3qFkz2xlw
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Aug 2026 20:36:55 +1000 (AEST)
-Received: by mail-pl1-x633.google.com with SMTP id d9443c01a7336-2ceab75934dso22951515ad.2
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Aug 2026 03:36:55 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1786790213; x=1787395013; darn=lists.ozlabs.org;
-        h=cc:to:message-id:content-transfer-encoding:content-type
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=NO3qcNt9868NrnyM/QD7pq3oywENIyYI7Ixnody6czs=;
-        b=hDpYNaX/dB+5448Dg4IHonOt9I2LQ7ejjLcOLFwjJ8CHTO93GerrZSEhbzcxXeaRHx
-         f6IZG+jNITvC/ISl0J6YbtqinVKscFkX6Gjhhin+mznaY+vGKqnaI0zIFHRpPZygEYhs
-         JqBOva7I02nfMZyDAlVcQ+hMXwGRWOAHG+ZiAegUZKVUg5lP7T/ccKdofGZ9fHafsVXF
-         DIze+PpUxQ2WCSj3GxO6xGTtrBv7zIWYGUBqcdJpQfYdQY+0D/Oc4wzxzEn/Dye7513Q
-         sOs0l8ABEJ0kDgngnVVfSi5WLI/LdlTBwbkgaBgspGyGi9V16TdmGxXnvvt4CjbcfOTC
-         hjXw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786790213; x=1787395013;
-        h=cc:to:message-id:content-transfer-encoding:content-type
-         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=NO3qcNt9868NrnyM/QD7pq3oywENIyYI7Ixnody6czs=;
-        b=tX7P5sLnYsNHU0legEAD87U+4oGkO6Lyv7klSIR3gBPaNiDodXlspQgBOnR1Ltb6Hc
-         P7E/ja4LHosVGA6RQmL9Nq4lQdBfI+vtGN5mV2zJLCuidHogzMGN3vR89K96Gflo8LzV
-         KXUbOiAvBT6OAf13Q2/zdX+S5SvR1RxIviC+fIZmcwgOqnlzy+9ogHnXnIPevW2N/C7a
-         S2SYsmE2CcNcjv1PAlrGLKSs0IOSY5S2y8eRP654JtpVk86FlnrtpY1eigQA+/WEnMd+
-         XST50UPlnKqp5Sl4uUGMqr7hrmDtPCyRxqs523NwWP5kRG/KJgCzlBjaYYB2qtYzRs0y
-         h0ww==
-X-Gm-Message-State: AOJu0YxXL76q5S/yEQaXUZsLSUioCAHPNIvfwVHmgolB0nf/Nk3gzsDO
-	VGYoLRp6VeAif6p2FdFP3tJshI8o/imIZibM2ZAWfg80ohjYDBD2JyWN
-X-Gm-Gg: AR+sD13WUnWEXKmZPmV+icyw5RlzgU4tvSXv6XaaJvPmStxxO5yTnvefTNz55KDdLLL
-	tnrIWEc7eotgGLoOOK2jt0m2il+lS6Hkodr7g/AMWLX7T9v1L+Ni02vzi+IAZ6fi8XIyqBpeSGa
-	UWsOAqeFKSUYr1ZLUotW4r8zKGcwxg9yF/I7tB3JzhbcSwlohPzUUSN1Mh3xzhVITh7tTQiSmqQ
-	6ECnZwD/01UfVE0UfWzGWFnlIBdkj9o2s1lzH5cKDemn2wbFmapDcFU96V2DJNlVINH6dC2yvje
-	SMK63gmUNHaf9n6AWYu2v76f7aS6Nk7xg6Nq1byQ7Z9/nC7HaHCXyQVTcllJyNcdS2sXLCSr8un
-	64OWrt9ZaaveGF6yBdLOGaNw7eccg5fDE+RUwliU/b15qBx9ETUbadeuJslGnY12VvhZfIz3U1l
-	TMTTG12Y8EouGd6EnWwsFIKBchYpFvn+Ukh8Xl2ZMEa8GX0zQF1xne9g7ndGz9Y2ChyMg50oM=
-X-Received: by 2002:a17:90b:3bce:b0:393:288:29e3 with SMTP id 98e67ed59e1d1-3933e5c8586mr13824749a91.10.1786790213210;
-        Sat, 15 Aug 2026 03:36:53 -0700 (PDT)
-Received: from LAPTOP-N3B6U5LC.localdomain ([117.147.100.52])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-394ebc32b24sm5774757a91.17.2026.08.15.03.36.49
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 15 Aug 2026 03:36:52 -0700 (PDT)
-From: Zhenhao Wan <whi4ed0g@gmail.com>
-Date: Sat, 15 Aug 2026 18:32:03 +0800
-Subject: [PATCH] powerpc/spufs: account SPU context save area to memcg
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hMgc92jH5z2xnW
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Aug 2026 23:56:09 +1000 (AEST)
+Received: from h08.hostsharing.net (h08.hostsharing.net [IPv6:2a01:37:1000::53df:5f1c:0])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature ECDSA (secp384r1) server-digest SHA384
+	 client-signature ECDSA (secp384r1) client-digest SHA384)
+	(Client CN "*.hostsharing.net", Issuer "GlobalSign GCC R6 AlphaSSL CA 2025" (verified OK))
+	by mailout3.hostsharing.net (Postfix) with ESMTPS id 693F1C28;
+	Sat, 15 Aug 2026 15:47:10 +0200 (CEST)
+Received: by h08.hostsharing.net (Postfix, from userid 100393)
+	id 1E23F61AD955; Sat, 15 Aug 2026 15:47:10 +0200 (CEST)
+Message-Id: <120da0565eac0157ffd913423c7cfa66e985ff59.1786800931.git.lukas@wunner.de>
+From: Lukas Wunner <lukas@wunner.de>
+Date: Sat, 15 Aug 2026 15:47:10 +0200
+Subject: [PATCH] PCI/AER: Fix ratelimit and log level of Advisory Non-Fatal
+ Errors
+To: Bjorn Helgaas <helgaas@kernel.org>
+Cc: linux-pci@vger.kernel.org, Yury Murashka <yurypm@arista.com>, Matthew W Carlis <mattc@purestorage.com>, Zhenzhong Duan <zhenzhong.duan@intel.com>, Qingshun Wang <qingshun.wang@linux.intel.com>, Yicong Yang <yang.yicong@picoheart.com>, dio.sun@enflame-tech.com, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, Oliver OHalloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org, Terry Bowman <terry.bowman@amd.com>, Sathyanarayanan Kuppuswamy <sathyanarayanan.kuppuswamy@linux.intel.com>, Arjun Govindjee <agovindjee@purestorage.com>, Ashish Karkare <ashishk@purestorage.com>, Jasjeet Rangi <jrangi@purestorage.com>, Meeta Saggi <msaggi@purestorage.com>, rhan@purestorage.com, sconnor@purestorage.com, an.luo@enflame-tech.com, fernando.hu@enflame-tech.com, bill.wu@enflame-tech.com, xin.wang@enflame-tech.com
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -84,78 +54,100 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260815-spufs-lscsa-unaccounted-v1-1-3ee0949de787@gmail.com>
-X-B4-Tracking: v=1; b=H4sIACJAgGoC/yWMywrCMBBFf6XM2oG22Af+iriYTCY2omnJJCKU/
- ruJLs/lnrODSvSicGl2iPL26tdQoDs1wAuFu6C3haFv+7GduwF1y07xqayEORDzmkMSi5OhwY0
- yze5sodhbFOc/v/L19mfN5iGcaq4+DKmgiRR4qdOLNEmE4/gCsoFg8JQAAAA=
-X-Change-ID: 20260815-spufs-lscsa-unaccounted-7ba5f6e78f4d
-To: Madhavan Srinivasan <maddy@linux.ibm.com>, 
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
- Yuhao Jiang <danisjiang@gmail.com>, Zhenhao Wan <whi4ed0g@gmail.com>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1786790206; l=2340;
- i=whi4ed0g@gmail.com; h=from:subject:message-id;
- bh=rfMjaCOvmJRa0bbW+d5HkY5VYdG1X8m8Ugnqw/d236I=;
- b=wg58LxDZIXz1hpQmLQwgWCGJJTZT2uI4XeLYPtgnYerF32KxQGvId9qgFmti5zPlOEulIMrIq
- QIQF7gZb76KDYjB5QPlPu+2grZXfQklZRiO0u8neFCHRpH48zYPHuEt
-X-Developer-Key: i=whi4ed0g@gmail.com; a=ed25519;
- pk=zRTKlstE0LmilshGwJsFYEVjiT6RiXMBXK8Og6VmuVQ=
 
-Creating an SPU context with the spu_create(2) syscall allocates a
-struct spu_lscsa in spu_alloc_lscsa() to hold the context's save area.
-struct spu_lscsa embeds the 256 KiB local store and aligns it to a 64 KiB
-boundary, so sizeof(struct spu_lscsa) is 320 KiB and each context pins a
-320 KiB vmalloc allocation.  The allocation uses plain vzalloc()
-(GFP_KERNEL | __GFP_ZERO), so it carries no __GFP_ACCOUNT and is not
-charged to any memory cgroup.
+When Advisory Non-Fatal Errors are reported, the Uncorrectable Error bits
+should be reported using the same ratelimit counter and log level as the
+accompanying Correctable Error.
 
-The default spu_create() path (flags == 0) performs no capability check
--- it is gated only by ordinary directory write permission on the spufs
-mount -- and spufs imposes no limit of its own on how many contexts a
-caller may hold open (nr_spu_contexts is only a statistic, never
-compared against a limit).  An unprivileged user with spufs access can
-therefore hold many contexts open, pinning kernel memory that is not
-attributed to, and so cannot be limited by, their memory cgroup.
+This is done correctly when they are handled natively in aer_print_error()
+but it is not done correctly when they are handled in Firmware First mode
+in pci_print_aer().
 
-Charge the save area to the allocating task's memory cgroup by switching
-to __vmalloc() with GFP_KERNEL_ACCOUNT.  __GFP_ZERO preserves the zeroing
-that vzalloc() provided; the local store pages are mapped into user space
-via the context's "mem" file, so they must not expose stale memory.  This
-mirrors commit ec403e2ae0df ("memcg: enable accounting for ldt_struct
-objects"), which accounts the x86 LDT the same way.
+Fix it.
 
-Reported-by: Yuhao Jiang <danisjiang@gmail.com>
-Assisted-by: Claude:claude-opus-5
-Signed-off-by: Zhenhao Wan <whi4ed0g@gmail.com>
+Fixes: 21963e6e4e04 ("PCI/AER: Support Advisory Non-Fatal Errors")
+Signed-off-by: Lukas Wunner <lukas@wunner.de>
 ---
- arch/powerpc/platforms/cell/spufs/lscsa_alloc.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+The offending commit is the top-most one on pci/aer (queued for v7.3-rc1).
+This fix could either be folded into or applied on top of it.
 
-diff --git a/arch/powerpc/platforms/cell/spufs/lscsa_alloc.c b/arch/powerpc/platforms/cell/spufs/lscsa_alloc.c
-index 43b9dde7fd0d..df93e65bc7c1 100644
---- a/arch/powerpc/platforms/cell/spufs/lscsa_alloc.c
-+++ b/arch/powerpc/platforms/cell/spufs/lscsa_alloc.c
-@@ -23,7 +23,7 @@ int spu_alloc_lscsa(struct spu_state *csa)
- 	struct spu_lscsa *lscsa;
- 	unsigned char *p;
+ drivers/pci/pcie/aer.c | 27 +++++++++++++++++++++------
+ 1 file changed, 21 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
+index 2a380bb..dd2aa5d 100644
+--- a/drivers/pci/pcie/aer.c
++++ b/drivers/pci/pcie/aer.c
+@@ -1028,13 +1028,15 @@ int cper_severity_to_aer(int cper_severity)
+ EXPORT_SYMBOL_GPL(cper_severity_to_aer);
+ #endif
  
--	lscsa = vzalloc(sizeof(*lscsa));
-+	lscsa = __vmalloc(sizeof(*lscsa), GFP_KERNEL_ACCOUNT | __GFP_ZERO);
- 	if (!lscsa)
- 		return -ENOMEM;
- 	csa->lscsa = lscsa;
+-void pci_print_aer(struct pci_dev *dev, int aer_severity,
+-		   struct aer_capability_regs *aer)
++static void __pci_print_aer(struct pci_dev *dev, int aer_severity,
++			    struct aer_capability_regs *aer,
++			    bool ratelimit_print, const char *level)
+ {
+ 	const char *bus_type, *sev;
+ 	int tlp_header_valid = 0;
+ 	u32 status, mask;
+ 	struct aer_err_info info = {
++		.level = level,
+ 		.severity = aer_severity,
+ 		.first_error = PCI_ERR_CAP_FEP(aer->cap_control),
+ 	};
+@@ -1043,12 +1045,10 @@ void pci_print_aer(struct pci_dev *dev, int aer_severity,
+ 		status = aer->cor_status;
+ 		mask = aer->cor_mask;
+ 		sev = "cor";
+-		info.level = KERN_WARNING;
+ 	} else {
+ 		status = aer->uncor_status;
+ 		mask = aer->uncor_mask;
+ 		sev = "uncor";
+-		info.level = KERN_ERR;
+ 		tlp_header_valid = tlp_header_logged(status & ~mask,
+ 						     aer->cap_control);
+ 	}
+@@ -1067,7 +1067,7 @@ void pci_print_aer(struct pci_dev *dev, int aer_severity,
+ 	 * For Advisory Non-Fatal Errors, record statistics and tracing
+ 	 * even if ratelimited
+ 	 */
+-	if (!aer_ratelimit(dev, info.severity))
++	if (!ratelimit_print)
+ 		goto anfe;
+ 
+ 	aer_printk(info.level, dev,
+@@ -1094,10 +1094,25 @@ void pci_print_aer(struct pci_dev *dev, int aer_severity,
+ 		if (anfe_status) {
+ 			aer->uncor_status = anfe_status;
+ 			aer->uncor_mask = 0;
+-			pci_print_aer(dev, AER_NONFATAL, aer);
++			__pci_print_aer(dev, AER_NONFATAL, aer,
++					ratelimit_print, level);
+ 		}
+ 	}
+ }
++
++void pci_print_aer(struct pci_dev *dev, int aer_severity,
++		   struct aer_capability_regs *aer)
++{
++	/*
++	 * Precalculate ratelimit counter and log level so that Advisory
++	 * Non-Fatal Errors are treated like the accompanying Correctable Error
++	 */
++	bool ratelimit_print = aer_ratelimit(dev, aer_severity);
++	const char *level = aer_severity == AER_CORRECTABLE ? KERN_WARNING
++							    : KERN_ERR;
++
++	__pci_print_aer(dev, aer_severity, aer, ratelimit_print, level);
++}
+ EXPORT_SYMBOL_GPL(pci_print_aer);
+ 
+ /**
 
----
-base-commit: f80f8c5c68a5e4d68a829ca1d8717b943a26b334
-change-id: 20260815-spufs-lscsa-unaccounted-7ba5f6e78f4d
-
-Best regards,
---  
-Zhenhao Wan <whi4ed0g@gmail.com>
+base-commit: 21963e6e4e0425b12d3128eea5a5104a3bc909c4
+-- 
+2.53.0
 
 
