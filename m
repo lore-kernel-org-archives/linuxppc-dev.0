@@ -1,77 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-25890-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25891-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 541C9C5DF70
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 16 Aug 2026 13:56:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7949DC5B572
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 16 Aug 2026 13:56:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hNHZD2vFyz2xT6;
-	Sun, 16 Aug 2026 23:56:36 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::631"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786817571;
-	cv=none; b=cTxlQGx4pUX88avWjckE8dhFIBEDwwz6MYrzW6o1WfcD9+xJdXdVgj+34/vgYv16t3mK540YL9Fno0IGsAWi633OhcJZyIGdDrFx1IyMBUszSK/eAZpNhdmMb+JM0ABdr+UQLu/ttcUogWW1MbkGZUCsWteETKipiJV2FwHEXiutN8Ku2d1sUpc4l05HZPD/UMFYTImAUZqjailpO1lPpF9DZQeBKwgE68oF2Bb66ygzDDECp4S87tJX7O0hCpYUpSxcExZ8lW09p84R3d7rEequJ/z72uKFrQXKqcTduh4BOP7OTCriWBpOmxV8/OeULwiP/YUqUxdl8R9HbuAkJw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hNHZP6m7Qz2xtt;
+	Sun, 16 Aug 2026 23:56:45 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::102b"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786817585;
+	cv=none; b=Geo0Ec1hvQbzhPS1bIwYQMcShz3B6mEfhnX4ehyimfcGP256YCY8U+YOaMAp2FRu2LGo8xa0u8OEkJlgfT8iK3VJdzfOr+ir4Qw809OCyrCs1XoODsx1t9OPaAg0/+x5+PO4lYNpuu1LTxp5aThd1gb8s7fmfHF5pD35VXtuUFsxFTTOJB8s4oghrWDFU9OGgqJ2GQRMP9yFevtKoLJRj4yZ5iIpvauutHxZUeEJsj54MKcN4EftgP1JpnvCAzLKJQiO1ss4z1W8Dz7UwF9sDHcGlJjxGTDs8lnit0d9ydGMHgAvBnzDFO22duisyhhp02zCTUJhl35cc+tX8TUxbw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786817571; c=relaxed/relaxed;
-	bh=Uq/zXomRaUtmPVU0X/7Fe7/2pJ+viXdEE1hutqkzih4=;
+	t=1786817585; c=relaxed/relaxed;
+	bh=i7/QgzN5wyVgDaVsVdjpFdimGVN0rJBMi0oSVa7MqkE=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=cHH2YW8stFlVtifv1zdB1/WHCVA9oHRdG3rYTl5ODfg0HxxrDRc/2NnhOh3eudFhbX21WRs5K+nVF/EmW6bgQF5GMY9MkB4I5+LHF3Qi29MIPrEH0RW6IB1HypKp/aUilTXxmjIQCIdXcpYp4B4XF7nqOubumwPx5VED7XeYwyXkSo0gjTN0nPRU7xh0ZSNN5DD9H0/VpG8+oEHLFBPualO7gZGyue1yv6hnuBjPUn3thK5ltXO5ThFLdt83O5k+7SfqtIvlpksx+0nR/TVvVVPMJirOZ4+lDf1EnLrkLkRTWPadq22eMQza7mqSS6yJZJ3pe3nw4FLIYdsQL+JT/A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=o4reCyuk; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::631; helo=mail-pl1-x631.google.com; envelope-from=dragonliu2018@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version; b=PQ4QPE2p2brH4jLv4v0bqNHSrf+l+Y63KP/qkqvHNYNTun+ibjtdikU/RZu6VkL12/2Me+kSiFyCd2lPbbl/DWEEN9XqaVWTbbNa4VD2s0CWUNRMKVakwdO7DFnPBSSow4f95gmI1qggyqsdRWQ/2ZhG9SjNH03wv3k+NXgzmFpadD5DDx8X6KqbIYkbSaK7LH+P0bmo+KnBShynSAvPV/INS2UulFGB1QJsq11+CEHXByplw3zdC8yo5Dd7y3PFNSJGXibHRvJ/Vdc5QUpOxwrGNIf793coqIegwj/VNnZIUc9Wz0iSry6AmyE3Bnx7ozUD90ydiYE/8GZ2oCtBsQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ZvL5daH9; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::102b; helo=mail-pj1-x102b.google.com; envelope-from=dragonliu2018@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=o4reCyuk;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ZvL5daH9;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::631; helo=mail-pl1-x631.google.com; envelope-from=dragonliu2018@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x631.google.com (mail-pl1-x631.google.com [IPv6:2607:f8b0:4864:20::631])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102b; helo=mail-pj1-x102b.google.com; envelope-from=dragonliu2018@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x102b.google.com (mail-pj1-x102b.google.com [IPv6:2607:f8b0:4864:20::102b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hMnJL67GSz2xlw
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Aug 2026 04:12:50 +1000 (AEST)
-Received: by mail-pl1-x631.google.com with SMTP id d9443c01a7336-2cf452def93so24898425ad.1
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Aug 2026 11:12:50 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hMnJc2HGDz2xlw
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Aug 2026 04:13:04 +1000 (AEST)
+Received: by mail-pj1-x102b.google.com with SMTP id 98e67ed59e1d1-381b831d535so3224640a91.0
+        for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Aug 2026 11:13:04 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1786817568; x=1787422368; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1786817582; x=1787422382; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=Uq/zXomRaUtmPVU0X/7Fe7/2pJ+viXdEE1hutqkzih4=;
-        b=o4reCyukND3i8u3ZYuM3dLfsduJmyXiyW7EmNgJvAjs4PYNfcVkv33mY1fFAgmeq6m
-         Wk1CDYzsZatRqARYclWQUDSju1h2+d1S58plZ6YwPn00sJq19G3zkbdFLczTeXAJj0Op
-         xZwNFUTwmNETPA0M8WZQTjRMRstSptncjLR5DLQbUiyBo3WcFuTiT1/bQsLfMYsrjtOf
-         aTUmqqqYO1pviAYPwlFwMXNgAtkYl/fHKeFtgPSStjKrJdvXucNq3tVvlsdsinDMM2Zn
-         dfCipYAn+q1k346xEHB+vENrMcuc1f5stbDuzzsHiKzsGaKVgHTYiQLVKyJ1OJ616BE5
-         ah9Q==
+        bh=i7/QgzN5wyVgDaVsVdjpFdimGVN0rJBMi0oSVa7MqkE=;
+        b=ZvL5daH9Ki0yWj1qeuHZYI+MHDbeMtWY+0ASf2wiULKjBmIJQykKo0u0m6OJ/O/muH
+         mXFxqcgJJ7lSuxySQl5kuEZ+53dZsWpR1AHk/z2G18bbn4Un0rR1h2EScbe1xGf3XMdZ
+         jQWCfY5aFmz5/zrVZpNidhNkrPXv89fV3QCgOY1hlGh5D3/X9zVGZbnJhHRXzi4MpDKn
+         FVrbKdsOHEgzBkw2xkFHyR7gwHHVN5wqBl8DJtfvibNHqUkIhdwlCAhZ9yGIdHz+zxak
+         DBiCx6Grv+sQ3wfikhrywrk9eaVDuIopWWkDivi5c8CXASSGbE7M4wbIl1BYcezV1xCE
+         phcA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786817568; x=1787422368;
+        d=1e100.net; s=20251104; t=1786817582; x=1787422382;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=Uq/zXomRaUtmPVU0X/7Fe7/2pJ+viXdEE1hutqkzih4=;
-        b=RqoB3vNJrGR3slTnFA96SrGGnJ0cYO13URTNIsMwWoZtYnusXAn3eA2OUED0wSOTqj
-         0huBaXj9ezU8e27r0WbiUD8nVyktOImDboeKD26ztT/0ncwc+V4A+qRSLBEaIJslWfT8
-         EAtSecjatz8JIUxsJKxWlsDlcRokEQOs0rKoAdWIFR/SSPXY0MwtMrbfUvONNj/r9r/f
-         PfooT/WQ0IfuNCzHu2x1RblG0KROU2GxHOyNd4921VsqMaE/TlNdXdfBQu4edvvOVVwO
-         pdu/9oR6goKBV5Pth7gWcAkwvBNVMVmjquz4d92TYfr5UAc1DIBUwdoGzwLd5EuXloeC
-         3MVQ==
-X-Forwarded-Encrypted: i=1; AHgh+RrDyEGZGz0fK67vn3zoXBqUoVJ2G3Jv7xxqH0K+zweOhKu/LNIMgXAmyHJPI325f1COt8FHCisJxDTwrsM=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yzca2fUeC3PDJG6rVmVKA6b9Vs7I+HVd2Qa9EjFXtWT1PcW8Ozg
-	S1n5yJZ8sy95T76OVMKkDo/Rah5vdl3oViB5EzKveA9cnmVBzgOTTDu/
-X-Gm-Gg: AR+sD10wp3Y2HhmpYqaCYQF1Zy9w7NgLLC28ITDdESTDpA6OTVR6P1JA0vzsT31qpem
-	29iNn3BTFh+eXqUNJ2G2l/iPxtQW/Q4VnsRC16MXWUd9IyY6nUZ2VHVO6Y5weETHszfQTP/pbQK
-	D+Vk0mnOt8lztH0vmV/gRHG4dqHFLKt8qiBzDzecyg7ceYei1hom7u+vHxQd47BRN/i0ntzmSXu
-	d1Tf3t9nUhHa7x1hS4P9nSE+Mhlor3EFXP5EpQzWZ0tnsLmB1xuJ3obszV/1ZGLdlCc5ecybnMn
-	9PqJ47RVHHgVoyXNHf4OkH5dvKw6+imMMDEa2f5ezFjhJS16ZOLaVVb7npWloeWypN18dCBwhP1
-	2GfHNuCueXyY/kzgw1bcVCPk09sdLhjTaSaQMVSzmiPpHhQn8hNHH2HYurnn3VoT7UPkdfyUWjN
-	bqjzbjFljlm/frM0iHNR4BkXT4VUq4Q4S2Vl4x8QsLgi2uXBJZ+3A7VWz4Tyyl9+kBDLywF12cj
-	u1h9McitULxhNzwFLPeLBpCS8Q=
-X-Received: by 2002:a17:90b:1b43:b0:38e:9ca8:e99 with SMTP id 98e67ed59e1d1-3933af8b5d7mr10385225a91.5.1786817568272;
-        Sat, 15 Aug 2026 11:12:48 -0700 (PDT)
+        bh=i7/QgzN5wyVgDaVsVdjpFdimGVN0rJBMi0oSVa7MqkE=;
+        b=MhBjIky3/K46ZEgKGLXTX6rZq3z0V+V4k9o7ULEvLOwgxx7r/eoVOvy4TILTchz0NA
+         khFdQlWspyvRbgmv8yfpHTBCe2Yui0dwgBEdZ2+vveOzHm0UgfjmFCf5Pxw8BRMs8kWf
+         MN3l86tUFHdR9hmVPXV/EFCiZ/y2AyiwBere9YAWL16Yu3R3Vo/aF7CprxTNxtcV+l0M
+         cOtvx4a9Zp2FztiFETxiByX8D9KTOUjZK79L6HTZg3cr3aUHdFT+D881Tm40BGeUF7Jd
+         OavLBlIUjlAAraxQFLEtYkaKUN7/0jXQQr/A6dRJKF1/B1QiD6d4JktYTAuUlAOs6yEy
+         yjQQ==
+X-Forwarded-Encrypted: i=1; AHgh+Rq6Zf6kHSl5j44GRsHN9YhCoV8B+Y9wBfaSM1tUWE2CBQix653WQHg5pheNLNDc3apDYvi0pq+725grsEs=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzyiG/EY0AOgPXhXZT9tu5eAEZfAE+3/lrYY8IghGhTci+2LlHC
+	lDe3tTWfHFSVq7fwhEPCjRC0paVJyPJe44uuC9CRv2DL2fgn7C9xvPBn
+X-Gm-Gg: AR+sD10d/C00hxiDUWSAt1ytv6+kXbAsa5oWfw5RQThTzLsBaprEu/RhKQG3X9JKfKN
+	tjrm50oJ0jhcg/H23c2XSH+zG6CVNK6zINrkgHQeJu718G/FiF1CvF60ueK2BtZlI9gBJ7nhC3Y
+	GSH9j7ESjYcNa/ZXBZAdWrHT0yh6oMTnwElmJAGyinhmgyVs0uyc1aNdsZwPUJJ5NdqnUwX1ATJ
+	MRXOf42ZLD0Sp/apSynowSEP2mtxWzRS4z9DucjdUQPmjU9R6gw7PIQVO45mNTd8fbLJmxEIQpZ
+	0qvQNapI9FlMsBjZjSLwgujONdo99GzHffoKxSLAv8hCd7ERbO2vjl0hr3/SCPGlXlQk2h4ePP0
+	a1FsXHHYHgVZsFvayZiNv8xFpJch5tPUv1Xl+5Vx+bznYWpkXsYoGbIh6yNMyUqt3Tw5lKVgZLF
+	ya4ZE0Dzw5Gt5FP9O++CdUVH7Fd0YphgPzJ0GxbjJr7YKIsy2I9ZJe/9lC/5PasgoMbiUn/Vey/
+	peFlGHe78CLpLw0d5ptR9xRZR4=
+X-Received: by 2002:a17:90b:2747:b0:38e:2f21:3bb5 with SMTP id 98e67ed59e1d1-3933baa0da9mr17205808a91.21.1786817581938;
+        Sat, 15 Aug 2026 11:13:01 -0700 (PDT)
 Received: from localhost.localdomain ([240a:4280:4800:6ace:25e8:2607:e94d:caaf])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-394eb7539d3sm7304254a91.15.2026.08.15.11.12.39
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-394eb7539d3sm7304254a91.15.2026.08.15.11.12.53
         (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Sat, 15 Aug 2026 11:12:46 -0700 (PDT)
+        Sat, 15 Aug 2026 11:13:01 -0700 (PDT)
 From: Liu Zhenlong <dragonliu2018@gmail.com>
 To: andi.shyti@kernel.org,
 	chris.packham@alliedtelesis.co.nz,
@@ -93,9 +93,9 @@ Cc: mpe@ellerman.id.uk,
 	linux-kernel@vger.kernel.org,
 	Liu Zhenlong <dragonliu2018@gmail.com>,
 	stable@vger.kernel.org
-Subject: [PATCH 1/5] i2c: mpc: fix device_node refcount leak in fsl_i2c_probe()/fsl_i2c_remove()
-Date: Sun, 16 Aug 2026 02:12:00 +0800
-Message-ID: <20260815181204.2321-2-dragonliu2018@gmail.com>
+Subject: [PATCH 2/5] i2c: cpm: fix device_node refcount leak in cpm_i2c_probe()/cpm_i2c_remove()
+Date: Sun, 16 Aug 2026 02:12:01 +0800
+Message-ID: <20260815181204.2321-3-dragonliu2018@gmail.com>
 X-Mailer: git-send-email 2.55.0
 In-Reply-To: <20260815181204.2321-1-dragonliu2018@gmail.com>
 References: <20260815181204.2321-1-dragonliu2018@gmail.com>
@@ -114,28 +114,26 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-fsl_i2c_probe() calls of_node_get() to take an extra reference on the
+cpm_i2c_probe() calls of_node_get() to take an extra reference on the
 platform device's of_node when assigning it to the adapter device, but
-neither the probe error path nor fsl_i2c_remove() drops it.
+neither the probe error paths nor cpm_i2c_remove() drops it.
 
 device_release() does not call of_node_put() and i2c_adapter_dev_release()
 only completes a struct, so the extra reference is never released, leaking
 the device_node on every probe failure and every adapter removal.
 
-Add the matching of_node_put() to both paths.
+Add the matching of_node_put() to the probe error cleanup (out_free, which
+covers both the cpm_i2c_setup() and i2c_add_numbered_adapter() failure
+paths, neither of which runs i2c_del_adapter()) and to cpm_i2c_remove().
 
-In the probe error path, i2c_add_numbered_adapter() failure does not run
-i2c_del_adapter(), so of_node_put(i2c->adap.dev.of_node) is safe.
-
-In fsl_i2c_remove(), i2c_del_adapter() clears adap->dev with memset() at
+In cpm_i2c_remove(), i2c_del_adapter() clears adap->dev with memset() at
 the end (commit bd4bc3dbded9 ("i2c: Clear i2c_adapter.dev on adapter
-removal")), which zeroes adap->dev.of_node before of_node_put() runs,
-turning it into a no-op.  Cache the pointer before calling
-i2c_del_adapter(), the same approach used in i2c-mux
-(i2c_mux_del_adapters) and mtd (commit 56570bdad5e3 ("mtd: core: Fix
-refcount error in del_mtd_device()")).
+removal")), which zeroes adap->dev.of_node before of_node_put() runs.
+Cache the pointer before calling i2c_del_adapter(), the same approach
+used in i2c-mux (i2c_mux_del_adapters) and mtd (commit 56570bdad5e3
+("mtd: core: Fix refcount error in del_mtd_device()")).
 
-Compile-tested with gcc-powerpc-linux-gnu on pmac32 defconfig; no
+Compile-tested with gcc-powerpc-linux-gnu on tqm8xx defconfig; no
 hardware available for runtime testing.
 
 Fixes: 9fd049927ccb ("of/i2c: Generalize OF support")
@@ -143,36 +141,33 @@ Cc: stable@vger.kernel.org
 Assisted-by: Claude:claude-opus-5
 Signed-off-by: Liu Zhenlong <dragonliu2018@gmail.com>
 ---
- drivers/i2c/busses/i2c-mpc.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ drivers/i2c/busses/i2c-cpm.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
-index a21fa45bd64c..8182f7dc3d0f 100644
---- a/drivers/i2c/busses/i2c-mpc.c
-+++ b/drivers/i2c/busses/i2c-mpc.c
-@@ -867,8 +867,10 @@ static int fsl_i2c_probe(struct platform_device *op)
- 	i2c_set_adapdata(&i2c->adap, i2c);
+diff --git a/drivers/i2c/busses/i2c-cpm.c b/drivers/i2c/busses/i2c-cpm.c
+index 2cb6a233d313..08e33db32f14 100644
+--- a/drivers/i2c/busses/i2c-cpm.c
++++ b/drivers/i2c/busses/i2c-cpm.c
+@@ -671,6 +671,7 @@ static int cpm_i2c_probe(struct platform_device *ofdev)
+ out_shut:
+ 	cpm_i2c_shutdown(cpm);
+ out_free:
++	of_node_put(cpm->adap.dev.of_node);
+ 	kfree(cpm);
  
- 	result = i2c_add_numbered_adapter(&i2c->adap);
--	if (result)
-+	if (result) {
-+		of_node_put(i2c->adap.dev.of_node);
- 		return result;
-+	}
- 
- 	return 0;
- };
-@@ -876,8 +878,10 @@ static int fsl_i2c_probe(struct platform_device *op)
- static void fsl_i2c_remove(struct platform_device *op)
+ 	return result;
+@@ -679,9 +680,11 @@ static int cpm_i2c_probe(struct platform_device *ofdev)
+ static void cpm_i2c_remove(struct platform_device *ofdev)
  {
- 	struct mpc_i2c *i2c = platform_get_drvdata(op);
-+	struct device_node *node = i2c->adap.dev.of_node;
+ 	struct cpm_i2c *cpm = platform_get_drvdata(ofdev);
++	struct device_node *node = cpm->adap.dev.of_node;
  
- 	i2c_del_adapter(&i2c->adap);
+ 	i2c_del_adapter(&cpm->adap);
+ 
 +	of_node_put(node);
- };
+ 	cpm_i2c_shutdown(cpm);
  
- static int __maybe_unused mpc_i2c_suspend(struct device *dev)
+ 	kfree(cpm);
 -- 
 2.55.0
 
