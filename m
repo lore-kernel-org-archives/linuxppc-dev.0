@@ -1,90 +1,102 @@
-Return-Path: <linuxppc-dev+bounces-25882-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25883-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BBAD5C5AD5A
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Aug 2026 04:57:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D8DE3C5CFDB
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Aug 2026 09:58:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hMRg44Y6Lz2xGZ;
-	Sat, 15 Aug 2026 14:57:52 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::102f"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786769872;
-	cv=none; b=VhLiLw8Fu4uhEEb0sAJUqn7nd58iFyfLBqzWKpTHQraA8MMVhU9EjdApswP4YkQ86hFSKgbslIFXPF6SedK23KgqNfYbIQddcZ6ilIKrBge/r/DBMD2oAWJinYlZTtJ62CLXMRmZKeTwMTl0zQTPvNPcbhza0rqELmi4mKA48jm27Hrth+/QF5lHZ7Oxx5sG5fRt2y0AcEvM8pzenl9NzmRAJVbDNsYg6t5IZB7FDgwAtoql6JF5lykw8YO/YFMPxfPU9ZmZ2W9BnpuS7iorFTj18cFG+f587Bj6fJiBRQ0DAnyaU/2aUxkGlT1igKHfy2VQiOw6I0TQmMDqgab/iA==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786769872; c=relaxed/relaxed;
-	bh=tDXBZClvjZ3mO22zZfFxTw3yKq4iUvRblP+m3ta8coE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=kIFsxypg8hUe+MVdyX8kygiijfno6tft/qSWX2NtTN40ThB+suhGLRXyI2OvBr0BggN+Yc1yKyBmnH7Eq/eztzdHhh5U4KIZpNtZ+t35XysnvFwJMy3dzOBnCsZD1LfpbH+1NamJpOt5zl4gJS2m86DtSFl48cZJQLPnd0EkZ298ZrXgFpdcpA4cVdB0tiWQJ4DMtNRX8KPBqRVYNz9H9nB/SLFl/qD1BXd4PHp0ZTFzxksN1LrUxA+M2O0KHA10jTqbn3lgfOs4e5YEUe2SCgB42B+SfvffjT0iG6ocT/iQn+l6u+kz2iSVPo+hmdB+SQtR1ajYwMR5/PT1tR1elQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=rT1aurih; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::102f; helo=mail-pj1-x102f.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hMZKQ53phz2xnH;
+	Sat, 15 Aug 2026 19:58:02 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=81.169.146.165 arc.chain=strato.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786787882;
+	cv=pass; b=bhCStSQ9xDk+bn19JLSKYqwHf2qNZfaOM2xnDr9u/+B8AHRDH+mfBnRv8vlLaN2fz+RYKIS70WtDpmJxSivoD3NLpPrfhPQdfeOU4DZ50TuI0TjLrKqOQ8eaV11xrnmxB/LaknMsOeXHqN01HtyIlGbdDxQFUeKwFVEboieheyx0HB0fJgs1jJkYU+/b58XDj0KX/f+4qp4yM5KJ6l/Kq3eVPLvQaHxamHI31YvarKsLiPUXK/An14Bj9y4FR8H1llkZ6Z0W+goe8AzQLMzHiaVT62DQHw407vNsKKcapgTQAl9MuIeyFXqHq+rhK/OGDlsXuIrZRd8jXyrjPwGXfA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1786787882; c=relaxed/relaxed;
+	bh=afnTQAXkp3yavSjC2F6pm9TdU2bctdI0zMMMGBji++A=;
+	h=Subject:To:Cc:References:From:Message-ID:Date:MIME-Version:
+	 In-Reply-To:Content-Type; b=lXoaVyN4AbEf3WCw/I5zH4H95UZJohcT0cnN5sBcYyS0P1lJRA4vJ1kLfDy3+wMHnNpHF1NqFuFVV7BB73YW7lOPfqTQAiz/LBuN0ZVO+CdKPoxra6lJN3wtrYhIYC6gMaefoUFa5hEsT1NrUbzFNDrA74wC719usd+baXzto2OIhk+ZA8UIHVGFkTBDxax2ouAJOpDoY/nrBbaJsBLoxlXcBSQoCHdy4H1cM01Az5C5obtt8L+MaHnpVhdZpVwD0T2ilHck7uJ/rh3uDCtiWoKtXFRAmQWfjwCflzpOwhMSp33f88JWnli/oWCtCLrZeZksPZpPqPov1XaQC7Ztkw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xenosoft.de; dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=eI2bi5Gc; dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=3iSI2cFO; dkim-atps=neutral; spf=pass (client-ip=81.169.146.165; helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org) smtp.helo=mo4-p01-ob.smtp.rzone.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xenosoft.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=rT1aurih;
+	dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=eI2bi5Gc;
+	dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=3iSI2cFO;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102f; helo=mail-pj1-x102f.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x102f.google.com (mail-pj1-x102f.google.com [IPv6:2607:f8b0:4864:20::102f])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=mo4-p01-ob.smtp.rzone.de (client-ip=81.169.146.165; helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org)
+Received: from mo4-p01-ob.smtp.rzone.de (mo4-p01-ob.smtp.rzone.de [81.169.146.165])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hMRg25S8jz2x9g
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Aug 2026 14:57:49 +1000 (AEST)
-Received: by mail-pj1-x102f.google.com with SMTP id 98e67ed59e1d1-38f0f132f56so2451664a91.0
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2026 21:57:49 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1786769866; x=1787374666; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=tDXBZClvjZ3mO22zZfFxTw3yKq4iUvRblP+m3ta8coE=;
-        b=rT1aurihLRkyQH/f6OEPN8uHpCBFf3PFOHKVFn3ybPokjVQZcknQT6WJ8dVQ0ieZSh
-         Kx7CsNc2Ey4Gl6dHROk3fkovXNGRvL8leFrUt3gfPsNDj1HxfMQsQhnt7quuaLERSKt2
-         Kln/ZRGN/0ss20V0wf/onFtdY6N7ABF0iKgPyZRZPQX8xzBe1UlqoVyFrqjJxD0gANm3
-         gG9NvHIKORPTdwEmp6fpcYT6ZxjSSGHNLpGe4P6iXX3k7U3A/6x600T/l3rWJ0FpdD/A
-         VcJtmWeNm1TN2LL0RcJxO6Um7vbjNHz5Y4hTqYRma+xfr8Zr2tVbDUCIXkMO+ptRpH7A
-         5Tjw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786769866; x=1787374666;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=tDXBZClvjZ3mO22zZfFxTw3yKq4iUvRblP+m3ta8coE=;
-        b=A6NTuldmzSuv3AQApfBkLKb86WmbUyl7x914CHiwTv1USX5+6nKEnbsq3wAT6FH5qX
-         jLs8WpNxgj6SozeVk/o3caTHLmt1a9MFv1QO9mlJa0tEVmxY0KCCCr/LCP/qhmMA5XjT
-         gEguwHe3W9DZnj5WaQaO8+tnnkReO5MsJCWK64tB5fLB/KYkOYx4PZ409+tekGfm+hjz
-         Qs2MeUno3vMMuWSUixcT9/viHZCDmUfdrCDfHjWYt89Mo9taFxPMQJOUVgRpjq7vK6Ir
-         wtefPN3jToD2I1DT0hGT1UVB3JNw9CPe/EblBnNno25aWoRlc4P9Uqy7jFPAiMV7VdV4
-         kL6Q==
-X-Forwarded-Encrypted: i=1; AHgh+RoBFZ1jQruiEBTHLq0Grz/31DTRym9Lp9sS6Z4jtLL8VS4l85DpQuzpNN9q277BimObQQuPfqDTCZes9QY=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Ywl8MxHzyQnIRTLcUuqZ/t5VCK++j9nLxDZ+WdidJN01YMv2HxD
-	oSh/xaXZmN7EKzvBK3TYgQB2BTzmJPpWoXhWNFgNkZg5CbSrWOhtSRFY
-X-Gm-Gg: AR+sD13bLt7EvLAybjqNiKw7exS02Lff0DbR/2cvQx7aXW0R3ccA7vaNuJHEpbmKC26
-	ND5J/swvBzxhnV4coxiF/+HsgcUY1VaXdIXCw6I+kRJuCMcHVwfnzKBIi8rY4GaHE8LT3gS8B3/
-	/SKWdFDRuQeVehYrPsh9co485PfRNU0fw8P7gqCqrJ2K4vSqXwqqgis3xplH7Jz+4wHB+W4GKSn
-	CNPix2qTsvjXr7EJUVcVnzfpARArVRL3vI/b4egmcs5ym0a2rvaiLvZz61/KOnJbuUDf0fHnuU7
-	4VrPbvjThASaGIm3aA2gfb2yE2W30Ixqji2CZgxdWupEkGiNQ2A+OudwArt88Kudvwqtn6p+ZzH
-	8QcXNSbtUbZHJY6RZ+DRzcee94zntwHCx8f/n2uWQZYiehtjGoSM1lalpHEJN16zRNjgHkdbDVH
-	g33OxY5qyPHwRkIDFKhyJ98hQt1LoP6oHU7yoo4q9wNbx06w68m+xK3jMZNj0A3/8OFVvZrhWuR
-	wTs8UEstdOO7ElZKaZn055wxHZDv/nI97ZC
-X-Received: by 2002:a17:90b:1d01:b0:38e:7f22:f674 with SMTP id 98e67ed59e1d1-3933b09e9e2mr8863706a91.11.1786769866365;
-        Fri, 14 Aug 2026 21:57:46 -0700 (PDT)
-Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([106.51.165.140])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-320d61e1568sm10929301eec.11.2026.08.14.21.57.42
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 14 Aug 2026 21:57:45 -0700 (PDT)
-Date: Sat, 15 Aug 2026 10:27:39 +0530
-From: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
-To: Shrikanth Hegde <sshegde@linux.ibm.com>
-Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
-	chleroy@kernel.org, mchauras@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org, Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Subject: Re: [PATCH] powerpc/entry: Use hard_irq_disable() in
- arch_interrupt_exit_prepare()
-Message-ID: <an_xbqRgm4RaRw0r@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-References: <20260812152035.1661781-1-mkchauras@gmail.com>
- <e49d543e-80b2-4c8c-968d-0c8b68717cbb@linux.ibm.com>
- <an6w517sUDWwpVfZ@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hMZKH252Hz2xW5
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Aug 2026 19:57:51 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; t=1786787819; cv=none;
+    d=strato.com; s=strato-dkim-0002;
+    b=GK41msrg61ldnYf6c/5zqVTZGkUDKE4NOFBAStpkLO7kDqA52Ghoao0mGAhVIXI0YY
+    NnoC/7ZfT9ntviFUok0Vw2BSTyUbA1k+Mn7NB8ToEVTznfUtkkwZLEkwuzGt5WlKXuWA
+    pQPrXF8XZGmA5TYLe6VsP7xFG1U36LeA5ktENuaURE9kc3QdQeUsQ0owQxoeFj0LdbFY
+    R0NMX15zzYvgMDh6FQI2xhJb4Luitp+J9s+O//SAZZLHevf54qGYg2gtHHYR+TMYk0WJ
+    YAZNZ9mCHpchFFL9ME795IWxINaUCObrfYCohe9iZvvgndKYl4oE35mwuZAKJmh7bUMO
+    o2Tg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1786787819;
+    s=strato-dkim-0002; d=strato.com;
+    h=In-Reply-To:Date:Message-ID:From:References:Cc:To:Subject:Cc:Date:
+    From:Subject:Sender;
+    bh=afnTQAXkp3yavSjC2F6pm9TdU2bctdI0zMMMGBji++A=;
+    b=M4A2huit6DLkXj2WD2eu6/9FY+Bhpli4E1y2X6duFXYrVhIBQuTi0Ob4VnkKAdGx0H
+    bhjBzjC2QDuKHLFIAXl2SHiG0lflITfnVT024jSKo/Zd4pzL+vnOKvMDG9ERilSZV8y1
+    midHXlmDjkGdIaxfKa8LAM2vPZuqCQsiM7CFABgk07I54k33tTv3SWzg5ndAyYhgjLIU
+    LGj1OajE13s3Nc8y0qnM60XJK58j2/C+h8PwxEt+xLemTnPhzAv8iFLEvb9c4DxkM9x8
+    7Z627/qNrftIRzKBVrMx1JHl993nMaf8l9L14Vww8c9x5gpG7RNyoeN8lZuUuah9uxUk
+    Fn7w==
+ARC-Authentication-Results: i=1; strato.com;
+    arc=none;
+    dkim=none
+X-RZG-CLASS-ID: mo01
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1786787819;
+    s=strato-dkim-0002; d=xenosoft.de;
+    h=In-Reply-To:Date:Message-ID:From:References:Cc:To:Subject:Cc:Date:
+    From:Subject:Sender;
+    bh=afnTQAXkp3yavSjC2F6pm9TdU2bctdI0zMMMGBji++A=;
+    b=eI2bi5GcYWpDzRZ3RFixTH3Qi22yvznq6J1bfpGzLR+GIQo1ks4mOJV0tVa14s8kI0
+    ldGlDWarZI1ryTGfJcbrwGoZahQy+l/6AQQwOcW45GnzBPWwLhAhe8n5tXE5ZMHeqth8
+    E21ngjJpQGVDGPKOSpB3ZkXL33VpKB8RAz7e/s52klprGOgL6LMyXdQWWVxyar4bx4w1
+    klJqNcjRL+JWMBBUhtpZZg3O7RZLNsNA7KluGVcTOuQWqk2Bvkx+WYKqdU3fWLItqE6Z
+    UjQP2w13MBvNZAyXpISV2JzMeD8JWSvnW0tqhGCNak6rU/57oZ6XH4ltNG2MtqZWyufk
+    Pbuw==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1786787819;
+    s=strato-dkim-0003; d=xenosoft.de;
+    h=In-Reply-To:Date:Message-ID:From:References:Cc:To:Subject:Cc:Date:
+    From:Subject:Sender;
+    bh=afnTQAXkp3yavSjC2F6pm9TdU2bctdI0zMMMGBji++A=;
+    b=3iSI2cFOEL/yOe1f7MX6V+C5SRXWQYhApKDdFiV60DZu36l1RCMy4FKzEBh4MpamoG
+    7SqvtKe+2JiW2M3UwDDg==
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGN0rBVhd9dFr4thIFiqT9BURIC+l7Rzg"
+Received: from void-ppc.a-eon.tld
+    by smtp.strato.de (RZmta 55.5.6 DYNA|AUTH)
+    with ESMTPSA id eed0ee27F9uvmf3
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
+	(Client did not present a certificate);
+    Sat, 15 Aug 2026 11:56:57 +0200 (CEST)
+Subject: Re: [PATCH] Connecting the SB600's i8259 controller rather in
+ pasemi's pci.c than in pasemi's setup.c.
+To: kernel test robot <lkp@intel.com>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ Krzysztof Kozlowski <krzk@kernel.org>,
+ "(open list:LINUX FOR POWERPC \\(32-BIT AND 64-BIT\\))"
+ <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org
+Cc: oe-kbuild-all@lists.linux.dev, "R.T.Dickinson" <rtd2@xtra.co.nz>,
+ Darren Stevens <darren@stevens-zone.net>,
+ Damien Stewart <hypexed@yahoo.com.au>, Christian Zigotzky <info@xenosoft.de>
+References: <20260701125941.906-2-chzigotzky@xenosoft.de>
+ <202608142355.4AeDorvg-lkp@intel.com>
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Organization: A-EON Open Source
+Message-ID: <5ad17e60-7c02-2cd9-7cad-0c14896b8f3d@xenosoft.de>
+Date: Sat, 15 Aug 2026 11:56:56 +0200
+X-Mailer: BrassMonkey/34.3.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -98,46 +110,38 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <an6w517sUDWwpVfZ@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+In-Reply-To: <202608142355.4AeDorvg-lkp@intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Fri, Aug 14, 2026 at 11:42:22AM +0530, Mukesh Kumar Chaurasiya wrote:
-> On Fri, Aug 14, 2026 at 11:06:43AM +0530, Shrikanth Hegde wrote:
-> [...]
-> > This is good explanation, but what i not understanding is,
-> > 
-> > why pattern of setting PACA_IRQ_HARD_DIS changed?
-> > Previous code at interrupt_exit_kernel_prepare which did local_irq_disable too.
-> > 
-> > Please check where was PACA_IRQ_HARD_DIS set without GENERIC_ENTRY which was preventing
-> > this from happening?
-> 
-> That's an excellent point. I think we are looking at this incorrectly,
-> If this is related to the nested soft replay interrupt than this whole 
-> dynamics changes, local_irq_disable will work for the actual interrupt
-> but when we go nested something is telling that the nested interrupt
-> that interrupts are enabled. Let me look at this more deeply.
-> 
-> Regards,
-> Mukesh
+On 14/08/26 17:42, kernel test robot wrote:
+ > Hi Christian,
+ >
+ > kernel test robot noticed the following build warnings:
+ >
+ > [auto build test WARNING on powerpc/next]
+ > [also build test WARNING on powerpc/fixes linus/master v7.2-rc7 
+next-20260813]
+ > [If your patch is applied to the wrong git tree, kindly drop us a note.
+ > And when submitting patch, we suggest to use '--base' as documented in
+ > https://git-scm.com/docs/git-format-patch#_base_tree_information]
+ >
+ > url: 
+https://github.com/intel-lab-lkp/linux/commits/Christian-Zigotzky/Connecting-the-SB600-s-i8259-controller-rather-in-pasemi-s-pci-c-than-in-pasemi-s-setup-c/20260813-054214
+ >
+ > All warnings (new ones prefixed by >>):
+ >
+ >>> arch/powerpc/platforms/pasemi/setup.c:217:6: warning: no previous 
+prototype for function 'nemo_init_IRQ' [-Wmissing-prototypes]
 
-Hey Venkat,
+This is the old patch.
 
-Can you try this diff,
+Here is the new patch with pasemi.h: 
+https://patchwork.ozlabs.org/project/linuxppc-dev/patch/20260801043458.12500-1-chzigotzky@xenosoft.de/
 
-diff --git a/arch/powerpc/kernel/irq_64.c b/arch/powerpc/kernel/irq_64.c
-index d5c48d1b0a31..2fbfebef74fe 100644
---- a/arch/powerpc/kernel/irq_64.c
-+++ b/arch/powerpc/kernel/irq_64.c
-@@ -117,7 +117,7 @@ static __no_kcsan void __replay_soft_interrupts(void)
- 	local_paca->irq_happened |= PACA_IRQ_REPLAYING;
- 
- 	ppc_save_regs(&regs);
--	regs.softe = IRQS_ENABLED;
-+	regs.softe = IRQS_DISABLED;
- 	regs.msr |= MSR_EE;
- 
- 	/*
+Thanks
+
+-- 
+Sent with BrassMonkey 34.3.1 (https://github.com/chzigotzky/Web-Browsers-and-Suites-for-Linux-PPC/releases/tag/BrassMonkey_34.3.1)
 
 
