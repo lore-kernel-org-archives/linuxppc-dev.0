@@ -1,68 +1,75 @@
-Return-Path: <linuxppc-dev+bounces-25880-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25881-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0981DC5CFCF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Aug 2026 22:06:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 71B83C5CFDB
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Aug 2026 00:47:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hMGXy1fTZz2y7Y;
-	Sat, 15 Aug 2026 08:06:58 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786745218;
-	cv=none; b=D64V1gXkPFlzpjcW30ZSG6+bS9kA9hlbup+1sgHGu9P6zYJdeJC2+kxZB0STTt4JS65BThce+nlWkKhnd/1efBFAwd5B+IrpjZ/+ayUwNVcKqKzs5Oike8hOh5FugPgLUI+pZ0oI/qIKT0Sx6vExck6CVfdmTbrZlVJarfWpFZ3xL62tPpc6AqcDr4X0C+/O0tGIgr1Z3FPMUYuG7HXJb7J/cr2/hMbwPo5i4hpIcTcFTFI2sMXRz1fDSzbvG/RIif0rLteG5bp3/eOxqsOzsDz170pTmR10xwg6GMgQz2Bp+6xccaOBCI317dZ8PebmWRwwZiZjUM6u0pzxu2P1Rg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hML5y0xYCz2xy6;
+	Sat, 15 Aug 2026 10:47:18 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.13
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786754838;
+	cv=none; b=LbgbIaVz2u5DtWGPoeqz628Y50wqfCsVnU6LbilLNH+vT+lswZmwbgGVVnd1AN9K1CrHR3WRK0koyQ/KBN2nnC/R5qRL8nEtrTEBDZbvC48E0qK09gGN04zm+bViluKWBGnCaGJZBFElecoa5y9wzkPqI6CyemNZAz6E3jq0DqDnQBoneYmOWx04qWwbylwZ5Xicp8zTCAB6Q3D7eojJy7rPwQXike8Ko845OjLnFQT6+RbZLocVJQFdpl2vtRTq3h1ibWxf4LiMy88nFUgttv1AwGkejgZ2txjdAGlV/hSKiR5+alhP5z0QApXUnBNzyjmlBX91wk1qzBdEmhlltg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786745218; c=relaxed/relaxed;
-	bh=43EJgsZqDVbV2DjeQ/GksSldFhIpCXxnr2u8QDpaJTE=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To; b=gKsW2EmgUpZ/5e/2DzKvgSJp3y+1KUII7cY7JeYqAGavoxmx+vlNGoMOzi627SuYTfbbWqAZXjtWMSM5jTjQ1NLUYG0mgig/4LqQYW0+5unqd3ZdlJkU3cAi1Gt3X/ogQfJtCJMfmnwDRHNdmCB5Uyh1TV5PC2DGgYpdS0m5zk2TPUByXpt0hnErvrQJyTO8sW1mZWyH2S71QM333rvf95JUW0zVBOwbILMBnZNuL0cJJabEkmau8h3mrGkEPF/dAw9j6tjSqVx7VfCPD+5KWcMqeBRkM06nDhlX4EEYTcCgibn0rC4PgqIXNXRIyvT0FPwfqqLssua/4ZkolgkzIA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ksZSNSI4; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1786754838; c=relaxed/relaxed;
+	bh=jGt4LrlCFr4+ICwTb2T9nscKa29NLIsS5EoduDa2V30=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=jIW3N6FaxQA9K9YETYHSHiibpfXWR/0P9hcBMMbxhWP147Fm5HpFlz7Idoi5b9INdzMpffW6RRfEVeIMz49peHNnFqZBLPOjy7dmdkhZbVu/3tEpegaUsLU61Frcj762rSxzJn3wy0qS5h84oHd2Khc2F/U0+ObRd/K7fmJJ4PGf/vRLu7zOOB62LxSEMuef9Qi2HTqLbzl5qCaEp9OwhwlKPIKmIOQnqYfAspeguQPQ2skTc0t3AhHkPARPUsWcEwmmFxmroSIQVUxV4JMKpLrn2A/UxxQSF23nb8YoU0mEHd4IxD8GZzu3SlR19IpgbvcKqu0GYSLjIOJP3okWEQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=CbdwpQFk; dkim-atps=neutral; spf=pass (client-ip=198.175.65.13; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ksZSNSI4;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=CbdwpQFk;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.13; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.13])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hMGXx26Frz2xyl
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Aug 2026 08:06:57 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 07C3D60008;
-	Fri, 14 Aug 2026 22:06:54 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 84C631F000E9;
-	Fri, 14 Aug 2026 22:06:53 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1786745213;
-	bh=43EJgsZqDVbV2DjeQ/GksSldFhIpCXxnr2u8QDpaJTE=;
-	h=Date:From:To:Cc:Subject:In-Reply-To;
-	b=ksZSNSI4qVp+ZNRnuKGiTDmtvihG+f7HWyfWu2U1CiOA3t/q5PKYI7YJ9NbEq6uRV
-	 D1jYBvEV7wqvdR04OkcmBhnYokh+Wu5TslKBH23vlbNwABCAvnmcEfzo0uklmfykB+
-	 PSs7TYmstpmM9IplQYRPBEPgX6hwdygvzrMd6QJd99Rgdk96OrMPyzNMEsjcsHp5j4
-	 sQZ+o6W51tNRUvvePQpHrg68dzF/4BE0AczHorskc3vcR7bobDUz9yVyUAyA7WjVPb
-	 vF8xyU5ge7/TjD7iu9+JC30YEs+cG++044TwKr54O1NJUZ88ghk7jY/fR1y44NNbMB
-	 ugxObgm8V7PJA==
-Date: Fri, 14 Aug 2026 17:06:52 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Tarun Sahu <tarunsahu@google.com>
-Cc: dmatlack@google.com, Nicholas Piggin <npiggin@gmail.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	sourabhjain@linux.ibm.com,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Pasha Tatashin <pasha.tatashin@soleen.com>,
-	Russell King <linux@armlinux.org.uk>, radheys@amd.com,
-	skhawaja@google.com, djeffery@redhat.com,
-	Geoff Levand <geoff@infradead.org>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hML5t2MTQz2xns
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Aug 2026 10:47:11 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1786754835; x=1818290835;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=NObMa3pZfRNWZi7qClKgPXqIqjV99yfig0YmhAPyyY8=;
+  b=CbdwpQFkPXf9TuF5BZtRonGWzJ5rgqgS+BptDgdBQ0ou7Ub20Eb/H0hS
+   7+Q/hjZm28F4kf3GZX8j80HqVWMDiTx95C2AkPi2P0GMVaI3puqNdlDus
+   0b682vqhUuJGrskyXtASgoP4NBwgaoUrLH/ivabe5AXyQUqyt8iOT5nzi
+   un+FOfDpD/3t4Ms/mFpAgcELvStEhRcvOQOu6YXth6hoR9GddJAmgZLZc
+   khew7RyHG4c52HpyW5ez2APx23EuE8SzdwnOKL8j8Vn+1LqA4Z4r7sM9m
+   ayiqC4z8Nb7LptTDah7ASfSAs8MTFIUzBbOq+nSOb+5ld7dpTG/4XM66E
+   w==;
+X-CSE-ConnectionGUID: Ur/gksp/Q9mAjHjuBnGo4g==
+X-CSE-MsgGUID: zcXVqrRpQHiNp2k2cLxUQQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11875"; a="98487995"
+X-IronPort-AV: E=Sophos;i="6.25,224,1779174000"; 
+   d="scan'208";a="98487995"
+Received: from orviesa010.jf.intel.com ([10.64.159.150])
+  by orvoesa105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Aug 2026 17:47:06 -0700
+X-CSE-ConnectionGUID: 8db7sIexQ1KwqJAkCbD22A==
+X-CSE-MsgGUID: jO6fncqJTxmuWNzokzeYnQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.25,224,1779174000"; 
+   d="scan'208";a="263030085"
+Received: from lkp-server01.sh.intel.com (HELO 6eda058d650d) ([10.239.97.150])
+  by orviesa010.jf.intel.com with ESMTP; 14 Aug 2026 17:47:04 -0700
+Received: from kbuild by 6eda058d650d with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1wv2YA-00000000afm-1Qcd;
+	Sat, 15 Aug 2026 00:47:02 +0000
+Date: Sat, 15 Aug 2026 08:46:37 +0800
+From: kernel test robot <lkp@intel.com>
+To: Vaibhav Jain <vaibhav@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+	kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
+Cc: oe-kbuild-all@lists.linux.dev, Vaibhav Jain <vaibhav@linux.ibm.com>,
 	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	linux-arm-kernel@lists.infradead.org, souravsgl@google.com,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	driver-core@lists.linux.dev
-Subject: Re: [PATCH v3 2/3] firmware/edd: use kobject_put() on
- edd_device_register() failure
-Message-ID: <20260814220652.GA101268@bhelgaas>
+	Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] KVM: PPC: Book3S HV nestedv2: Don't drop pending
+ doorbell across L2 entry
+Message-ID: <202608150815.zhSReMmH-lkp@intel.com>
+References: <20260803034426.44249-1-vaibhav@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -78,62 +85,115 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260814210057.4102768-3-tarunsahu@google.com>
+In-Reply-To: <20260803034426.44249-1-vaibhav@linux.ibm.com>
 
-On Fri, Aug 14, 2026 at 09:00:56PM +0000, Tarun Sahu wrote:
-> As per koject_init_and_add() function kernel document, even if this
-> function returns error kobject_put must be used instead of kfree.
+Hi Vaibhav,
 
-Thanks for adding this specific pointer.  I wouldn't repost just for
-these nits, and wait at least a few days before reposting for any
-reason.  But if you do repost:
+kernel test robot noticed the following build errors:
 
-s/koject_init_and_add/kobject_init_and_add/
+[auto build test ERROR on powerpc/topic/ppc-kvm]
+[also build test ERROR on kvm/queue kvm/next mst-vhost/linux-next linus/master v7.2-rc7 next-20260813]
+[cannot apply to kvm/linux-next]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-Might also add "()" after function names consistently (kobject_put and
-kfree above, edd_release below).  Also applies to the other patches.
+url:    https://github.com/intel-lab-lkp/linux/commits/Vaibhav-Jain/KVM-PPC-Book3S-HV-nestedv2-Don-t-drop-pending-doorbell-across-L2-entry/20260815-070415
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git topic/ppc-kvm
+patch link:    https://lore.kernel.org/r/20260803034426.44249-1-vaibhav%40linux.ibm.com
+patch subject: [PATCH] KVM: PPC: Book3S HV nestedv2: Don't drop pending doorbell across L2 entry
+config: powerpc-allmodconfig (https://download.01.org/0day-ci/archive/20260815/202608150815.zhSReMmH-lkp@intel.com/config)
+compiler: powerpc64-linux-gcc (GCC) 16.1.0
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260815/202608150815.zhSReMmH-lkp@intel.com/reproduce)
 
-The current subject lines basically restate the C code; you might
-consider more of a focus on the problem.  I ran this through gemini
-and I think it did a decent job:
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202608150815.zhSReMmH-lkp@intel.com/
 
-  firmware: edd: Fix kobject reference leak on registration failure
+All errors (new ones prefixed by >>):
 
-  Per kobject_init_and_add() kernel-doc, calling kfree() directly on
-  error bypasses reference counting and skips the kobject's release
-  callback, leaking the reference.
+   arch/powerpc/kvm/book3s_hv.c: In function 'kvmhv_vcpu_entry_nestedv2':
+>> arch/powerpc/kvm/book3s_hv.c:4304:25: error: 'cpu' undeclared (first use in this function)
+    4304 |                         cpu->arch.doorbell_request = 0;
+         |                         ^~~
+   arch/powerpc/kvm/book3s_hv.c:4304:25: note: each undeclared identifier is reported only once for each function it appears in
 
-  Use kobject_put() instead of kfree() on registration failure to fix
-  this.
 
-> When edd_device_register() fails after initializing the kobject with
-> kobject_init_and_add(), calling kfree(edev) directly bypasses the
-> kobject release callback (edd_release) and leaks the allocated kobject
-> resources.
-> 
-> Fix this by replacing direct kfree(edev) with kobject_put(&edev->kobj) on
-> registration failure.
-> 
-> Signed-off-by: Tarun Sahu <tarunsahu@google.com>
-> Reviewed-by: Sourabh Jain <sourabhjain@linux.ibm.com>
-> ---
->  drivers/firmware/edd.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/firmware/edd.c b/drivers/firmware/edd.c
-> index f980c5b56858..763e7b16d517 100644
-> --- a/drivers/firmware/edd.c
-> +++ b/drivers/firmware/edd.c
-> @@ -748,7 +748,7 @@ edd_init(void)
->  
->  		rc = edd_device_register(edev, i);
->  		if (rc) {
-> -			kfree(edev);
-> +			kobject_put(&edev->kobj);
->  			goto out;
->  		}
->  		edd_devices[i] = edev;
-> -- 
-> 2.55.0.691.gc56d675ccc-goog
-> 
+vim +/cpu +4304 arch/powerpc/kvm/book3s_hv.c
+
+  4248	
+  4249	static int kvmhv_vcpu_entry_nestedv2(struct kvm_vcpu *vcpu, u64 time_limit,
+  4250					     unsigned long lpcr, u64 *tb)
+  4251	{
+  4252		struct kvmhv_nestedv2_io *io;
+  4253		unsigned long msr, i;
+  4254		int trap;
+  4255		long rc;
+  4256	
+  4257		io = &vcpu->arch.nestedv2_io;
+  4258	
+  4259		msr = mfmsr();
+  4260		kvmppc_msr_hard_disable_set_facilities(vcpu, msr);
+  4261		if (lazy_irq_pending())
+  4262			return 0;
+  4263	
+  4264		if (vcpu->arch.doorbell_request)
+  4265			kvmppc_set_dpdes(vcpu, 1);
+  4266	
+  4267		rc = kvmhv_nestedv2_flush_vcpu(vcpu, time_limit);
+  4268		if (rc < 0)
+  4269			return -EINVAL;
+  4270	
+  4271		kvmppc_gse_put_u64(io->vcpu_run_input, KVMPPC_GSID_LPCR, lpcr);
+  4272	
+  4273		accumulate_time(vcpu, &vcpu->arch.in_guest);
+  4274		rc = plpar_guest_run_vcpu(0, vcpu->kvm->arch.lpid, vcpu->vcpu_id,
+  4275					  &trap, &i);
+  4276	
+  4277		if (rc != H_SUCCESS) {
+  4278			pr_err("KVM Guest Run VCPU hcall failed\n");
+  4279			if (rc == H_INVALID_ELEMENT_ID)
+  4280				pr_err("KVM: Guest Run VCPU invalid element id at %ld\n", i);
+  4281			else if (rc == H_INVALID_ELEMENT_SIZE)
+  4282				pr_err("KVM: Guest Run VCPU invalid element size at %ld\n", i);
+  4283			else if (rc == H_INVALID_ELEMENT_VALUE)
+  4284				pr_err("KVM: Guest Run VCPU invalid element value at %ld\n", i);
+  4285			return -EINVAL;
+  4286		}
+  4287		accumulate_time(vcpu, &vcpu->arch.guest_exit);
+  4288	
+  4289		*tb = mftb();
+  4290		kvmppc_gsm_reset(io->vcpu_message);
+  4291		kvmppc_gsm_reset(io->vcore_message);
+  4292		kvmppc_gsbm_zero(&io->valids);
+  4293	
+  4294		rc = kvmhv_nestedv2_parse_output(vcpu);
+  4295		if (rc < 0)
+  4296			return -EINVAL;
+  4297	
+  4298		/* Check if privileged door bell was requested and handled */
+  4299		if (vcpu->arch.vcore->dpdes) {
+  4300			kvmhv_nestedv2_cached_reload(vcpu, KVMPPC_GSID_DPDES);
+  4301			if (vcpu->arch.vcore->dpdes)
+  4302				vcpu->arch.doorbell_request |= vcpu->arch.vcore->dpdes;
+  4303			else
+> 4304				cpu->arch.doorbell_request = 0;
+  4305		} else {
+  4306			vcpu->arch.doorbell_request = 0;
+  4307		}
+  4308	
+  4309		timer_rearm_host_dec(*tb);
+  4310	
+  4311		/* Record context switch and guest_run_time data */
+  4312		if (kvmhv_get_l2_counters_status())
+  4313			do_trace_nested_cs_time(vcpu);
+  4314	
+  4315		return trap;
+  4316	}
+  4317	
+
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
 
