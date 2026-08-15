@@ -1,102 +1,91 @@
-Return-Path: <linuxppc-dev+bounces-25888-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25889-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 26515C5DF6E
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 16 Aug 2026 12:56:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 127FFC5B572
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 16 Aug 2026 13:55:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hNGDv1MdXz2xwM;
-	Sun, 16 Aug 2026 22:56:31 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::42f"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786884991;
-	cv=none; b=XQicCjDMZqlKryd55LB8ZmX2g84b5Vikdz0MUqpH6x3eSXTx2gVIAdg4OcV6tbWhLen94uEXp70kQ8hLGEUiKkSA87UfCASeLpk4b2ci+t0AP2cbR6IRVKHNjRaYN0Nzdm3v2Yxv9hwO1b/PXHFsAS0Wh70lXTONJEOLQ668AxbONKJ+/khv4/dFo29S+sOic80kjl7mOcTKx2Dg/FKWPujEve7hCmZ/7Gc9Aq+eJKrKexfb1a1Ok6uXHMWi04ad55g65TyaFrSS0UwbaglqZN1145zQlt/vfvRZoGHPzLbOzl9oprq5X90+f/ZZJQm9Mx95WRhTxb++rhahR3rg8Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hNHY11kVDz2xtt;
+	Sun, 16 Aug 2026 23:55:33 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1032"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786817555;
+	cv=none; b=CWVaxdSwPo6pVLHwrs4B3bimZvKN4/GxLSuFs7+ZfSO/bwfBzTJohUQMH9SGbb+H8ZDz8JUaeoPLufnhggmrW/JkvY38ovPOoX0na4D5iWtSgB/iR29tZtr/TXOjjnMaat4tP4V7vb1quU2eZ+WTWUTPaxPAd5YQcez0C4jlfVerdeTfU5Vp60jIb3qRjkV81n/nYyzdQWu/65twrvwAs4mgZeW5d4wu6JbTTe1+s53poyY/VvY5BWsu9M0iQTvFwr/h0jZZpG/ziPuLZ4le9o/LnGVz3r9r5PFYISObx3MWU5jzcK8RWVZaWUCZBhlWaJbFH1Dxv7iXdjFRRYpS8A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786884991; c=relaxed/relaxed;
-	bh=Vrd+QFouPQzWgEI6eWzCwSjjj2vAhx5C8gTbTzA/yUI=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=IUbwbnJaDuLRzIEr0/22Xsm5pkF4aDDHe9pGWBGB0Rt4z+leQs5ULK9aAQJNMLzIMpnk8Gpk1i4FTCxt/I8u+qHW0W8W8Mut1rIoiXei3corTd5CMEGtNobWsaW9MnCUUw4VEawUaCFwf9B//zJUsu1yxXWPACipX1tnyCxxrjLf4SFaS7NN1whRBe4ACU7UdH1cj3NPGlHus4p+A0cQaVJ9875R+LSkG0ucav3BaCIrOmspSFMu9eHPu3gZnvNEhsyvwFK42OYs2QshpbBl3BodzhnrNuysQlTtAz1JIJ7wS2nQwxB6Qqw47+Z7Sn6QDmT9oMg9QhBY40Oxag8oTA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=QONV25mT; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::42f; helo=mail-wr1-x42f.google.com; envelope-from=julianbraha@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1786817555; c=relaxed/relaxed;
+	bh=xW2LYIDQQYDFwK3J1a0pZQU3BluSHf7AesdfpfaEO4A=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=KHSWcAa5j7s638s+FLfdqflcImX0PvhO2W2Q/ntTorspy+0kzEkg+ImmYW0GMPvGpR57Yl/jCVfP5o1TRgS0799lcEX037xRGqKPeAroUs23+ly0g1wWUiaahJwR9j/ZeE8gc8ZNHeaHGNRJL8BvVqfBSCzqlkq2GJWSFvcE1o0eLmCliJFbrd6eJhCD3mom39D7MGGUFVtL5s22rTSvf3pMkxU9CwpQ/wtyNSg2ejyjSkPm2tngegC3EarMz3clTdzcSGv1oJ6EcZIdKRKJq6L0B4HqQ646/N2zuynEsTABmEa9IuDiaLYPVCHvLy+9DX4luzx0vkbPm/B5Qt3Zwg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=X8ubeoL+; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1032; helo=mail-pj1-x1032.google.com; envelope-from=dragonliu2018@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=QONV25mT;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=X8ubeoL+;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::42f; helo=mail-wr1-x42f.google.com; envelope-from=julianbraha@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-wr1-x42f.google.com (mail-wr1-x42f.google.com [IPv6:2a00:1450:4864:20::42f])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1032; helo=mail-pj1-x1032.google.com; envelope-from=dragonliu2018@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x1032.google.com (mail-pj1-x1032.google.com [IPv6:2607:f8b0:4864:20::1032])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hNGDs0SvVz2xjN
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Aug 2026 22:56:27 +1000 (AEST)
-Received: by mail-wr1-x42f.google.com with SMTP id ffacd0b85a97d-47f7872abb6so1380133f8f.3
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Aug 2026 05:56:27 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hMnJ14gNTz2xlw
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Aug 2026 04:12:32 +1000 (AEST)
+Received: by mail-pj1-x1032.google.com with SMTP id 98e67ed59e1d1-38d489b6b71so2194999a91.0
+        for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Aug 2026 11:12:32 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1786884979; x=1787489779; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1786817549; x=1787422349; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:sender:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=Vrd+QFouPQzWgEI6eWzCwSjjj2vAhx5C8gTbTzA/yUI=;
-        b=QONV25mT5qLE88366Om9MhLgWWiKR2LZscEjb0ghFtWWoNnk8S0RAForEtb2tpeMCj
-         i46iPmdabCkKryZOHDb5alVbaUf1T0smi4q1mOMjPcvfGw8/iKsdG/b1+e6VkE3y9Lx6
-         uRlqxQhznCAoePH1DFQNCcP38OU4rrnk8W1jeq5ahzcHAFq3zq2wTNignDt2RaivdICF
-         VTK6huy043sLnE9vyo7dNZYpzVJeypTf94COjY3KqxewbIOUCT+9cgC1I3Np8TCPuSgU
-         WgLeiv73jCVTAL3rQmYR0VuTjCQYb1hzocqebaTzCz1VLdTDGcUzWkZzkHCFfNRoEz/b
-         EjzQ==
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=xW2LYIDQQYDFwK3J1a0pZQU3BluSHf7AesdfpfaEO4A=;
+        b=X8ubeoL+rj8/pg3ZjqdUecIrZVHXWvsAUPTHYoSBmnq990+rg7KW1RNJ3wqsDMNR7/
+         R5uS0QGQMnPrW8Sikgcu4f9bmjUExLlKjap5irFFol9uDFhjgQNxmVQ1YgF7mymP+aox
+         fof11fs88zz1wojj60sxr9oqCVZ7j7PvTME94hOx6+L4vsD9+z5KNms5PhsIRK1vysAv
+         O3hL8Va03DhISMaZDxH8zlWOW+lCAvobKimdDKTuB+VXBi5QtgUbAQemxaKt9pdWy45t
+         NJxb8R4M8a19HukbPZ1OhsmGMzQG0TlVqtvnsJz1R0rQ7hhDmPphymKkWzONABBFaqSy
+         z/tg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786884979; x=1787489779;
+        d=1e100.net; s=20251104; t=1786817549; x=1787422349;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:sender:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=Vrd+QFouPQzWgEI6eWzCwSjjj2vAhx5C8gTbTzA/yUI=;
-        b=W0MUme4AE5qnSRtdwOPeqVN+SG4i1w3cyDmu5UxWeqE748LQAAckI9A571+/4tHYK2
-         /thLd+O0UTm/MkzymOQJePhD2oMYff1t2gfsW7fkQi+OrP5yqoSRDQJyBZ1dj0WF/Ozw
-         c9lG9mGlhphlBpOFwQYmIB6D9fUoSzYDHkVzI6fXA0CcmB5302w/tw8JGbkjTyU6SjVn
-         w2/u1Lu9Qs76G8uFpV2CkvD96GHcI/vW/abbFX0+7pF8YsNjVO3/rHIb15sQ8qWvRmoD
-         2XgxXUC7+sH78fkfMboXStAuCLazKfetsTyUPwDdCMrgPLpJcfkWbz6YUADYSpoP5abT
-         eBEQ==
-X-Forwarded-Encrypted: i=1; AHgh+RpHaNlwqvLEhh9Fzgj1sEoW4ej7oziHH0hteKD6BpAzqaDDYg7htg9+kOUtX4rjkgeT48MsZTsUslB2xnQ=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyTAhJH4/4T4cODYMTbGo6ofqyWVRgfXxV5Y9+8Rk/2r4xDjQz+
-	nLqlf2fezi6aqYOT9lrt7swQ+5qTcMYL5p/RYhTxuHUgdRzakwxZDxOT
-X-Gm-Gg: AR+sD10ZOlCq8eZkjDTAWhxQgS7I3fqfHnitvwlMTREKyszPt85BLavkFJG8729HUAb
-	MqfJ/PRig3xGcpEvETUiPGZq72zQ2+XAi7ZIqPLSp+0cDdkYAg1QGfiqcfbN9I5lHb0BCQ3jtzz
-	+FmCCc7aKxWybbLUxXJOMpUJ2r34dZKf3H7mMiqTZf9mkSrmz4+Q4YBsBPrp8LOXdVI+N+3uEKL
-	zTJW3Vj93nn4UuSmUnobDLIaN8QYPEtGoZsDWF7R01SYEEuQimuv0UXpmzCQRlMcnPr6GS/1EiD
-	MB9YHnPk6L7bT/cMxlVE7P20KIN9zXvJwmTwcaflX8B1i/mAoqKeONyHMhToX26WOrrYuSS63MP
-	co5mQRKq9M1KLRW0d5DnROn6kcwnAWdCcMf2XRABamk8VB/saJlEsAL2y8Jz32F73Ws49l577bB
-	39urWNhXOJUGaTpUiEgU+sqkA+0a7WEt4hqvh45gE1HJJu9/uXCxN8crpCgrQcmL+TUalHh38cT
-	O2DE/BRyGUfMUneuR2AxXS4UBIm11SvKxscnw2LN6f0TOjTJtVW
-X-Received: by 2002:a05:600c:17d1:b0:495:7a04:b006 with SMTP id 5b1f17b1804b1-49987948adamr180850505e9.8.1786884979064;
-        Sun, 16 Aug 2026 05:56:19 -0700 (PDT)
-Received: from nixos-office (195-23-151-163.net.novis.pt. [195.23.151.163])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4999610e381sm63085105e9.9.2026.08.16.05.56.17
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 16 Aug 2026 05:56:18 -0700 (PDT)
-Sender: Julian Braha <julian.braha@gmail.com>
-From: Julian Braha <julianbraha@gmail.com>
-To: maddy@linux.ibm.com,
-	mpe@ellerman.id.au,
-	npiggin@gmail.com,
-	chleroy@kernel.org,
-	Frank.Li@kernel.org,
-	andrew+netdev@lunn.ch,
-	davem@davemloft.net,
-	edumazet@google.com,
-	kuba@kernel.org,
-	pabeni@redhat.com
-Cc: linusw@kernel.org,
-	kees@kernel.org,
-	colin.i.king@gmail.com,
-	rosenp@gmail.com,
-	joao@joaoff.com,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	dmaengine@vger.kernel.org,
-	netdev@vger.kernel.org,
-	kernel-janitors@vger.kernel.org,
-	Julian Braha <julianbraha@gmail.com>
-Subject: [PATCH] powerpc: remove dead 440SP code
-Date: Sun, 16 Aug 2026 13:56:15 +0100
-Message-ID: <20260816125615.985387-1-julianbraha@gmail.com>
+        bh=xW2LYIDQQYDFwK3J1a0pZQU3BluSHf7AesdfpfaEO4A=;
+        b=YUhWSHPLZnPwlnGvE0VrFaiIY8orgLAOgCV17Bg7QcubbubO4/QJE7jytqRu8qpiRU
+         ie/eQTU3zQMQWw26nEgMRTVLVYzV5fv2sSgYob2qYY04YyoAq+gbJbT7R/JboUz8ks55
+         GSu9SZ7Juve0r+IcGEK+6clnPe9JdopuUwd4nSSNiH+oSMuYtsJ4lt8Pdu0xsmVZofyX
+         MdauyRwmfqWazfh/bbm6aGRnbUEOtfPIPchudcsg27VAVFHiogPs6hVBJ886suTFmG5K
+         7qim1x3lk3M+eSynHb9c+BC2+oFqcjLXmUFp5eNficdPPUTdJ/+pTDC80xUYXVY/o/85
+         e8uA==
+X-Forwarded-Encrypted: i=1; AHgh+Rp+AM7tcuR2KJ3jYzhD3j2K4fIRWBZq6JnaYxipHJjE2MCWVYUw5JXzgTtd88ELYLaP6bFqLkFQFNHimLI=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzjjV2dk6pxcVPrAlWD8un8YgInl4w72Mh2dpbcpc8ZPE/rUwGl
+	hu1FKNfjQr4gPWxCiQm1MBGFCLojyMrWgvWta8VCA7ODvH1ok55BASLy
+X-Gm-Gg: AR+sD102khPFRYNCzpvus+f4oRTlEF/jEJoAR1PNFN3mZcv0DRxMXoqcuFELBVeT3ir
+	qzM2Y27jePxdu1WCBP0jDgRy761qxbdHiZXr9TdpVQTEqsFl8O4eGRmCr6x3pRyPlTA57f5yOf+
+	2oU5ki4ownqMSxGD0qPjIvIkCX4jFhufty6/G+s1JnqkkpToMu41Rn7uhCi/J21CqQSaKUhVhuJ
+	4VEkFurLsCmeH+jpDZcZOtc0XJuVbNrYWAwx+tXQCFzPzou11bupVkK66N83pzNX7AM9ioV0kL9
+	m1exgXYz+fB9+639C1xOsXcXWSKCXsoAUhbWjfjNZmazulKxpDgtExQRSsm5uZIP2PokydXoO9c
+	33F1X4cTnNera0/5BcQ+V9dO42axjMzQESHtOnpFwTryVzl5smwOpwH0Hjiu1ZikpOLmNbHa6mC
+	e6Iw97wM3xipy69ecl693AtdosWzPitluabvc8aUn9u5fTH3CHp2iwE6hWUQbJLTvJDE56LpgAU
+	nUkkx3pY//c0gne1flnvcWhVf0=
+X-Received: by 2002:a17:90b:4ec6:b0:38d:e658:5959 with SMTP id 98e67ed59e1d1-3933b80052cmr15988255a91.5.1786817549396;
+        Sat, 15 Aug 2026 11:12:29 -0700 (PDT)
+Received: from localhost.localdomain ([240a:4280:4800:6ace:25e8:2607:e94d:caaf])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-394eb7539d3sm7304254a91.15.2026.08.15.11.12.22
+        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
+        Sat, 15 Aug 2026 11:12:28 -0700 (PDT)
+From: Liu Zhenlong <dragonliu2018@gmail.com>
+To: andi.shyti@kernel.org,
+	chris.packham@alliedtelesis.co.nz,
+	jochen@scram.de,
+	maddy@linux.ibm.com,
+	vz@mleia.com,
+	piotr.wojtaszczyk@timesys.com
+Cc: mpe@ellerman.id.uk, npiggin@gmail.com, chleroy@kernel.org,
+	grant.likely@secretlab.ca, neelegup@linux.vnet.ibm.com,
+	benh@kernel.crashing.org, wsa@kernel.org, stigge@antcom.de,
+	linux-i2c@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+	Liu Zhenlong <dragonliu2018@gmail.com>, stable@vger.kernel.org
+Subject: [PATCH 0/5] i2c: fix device_node refcount leaks in 5 bus drivers
+Date: Sun, 16 Aug 2026 02:11:59 +0800
+Message-ID: <20260815181204.2321-1-dragonliu2018@gmail.com>
 X-Mailer: git-send-email 2.55.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -113,225 +102,59 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The 440SP config option can never be enabled, making all references to it
-dead code.
+This series fixes device_node refcount leaks in 5 i2c bus drivers that
+share the same bug pattern:
 
-Let's remove support for 440SP, since nobody can be using it anyway.
+  adap->dev.of_node = of_node_get(pdev->dev.of_node);
 
-This dead code was found by kconfirm, a static analysis tool for Kconfig.
+Each driver calls of_node_get() to take an extra reference on the
+platform device's of_node when assigning it to the adapter device, but
+none of them drop it in the probe error paths nor in the remove()
+callback.
 
-Signed-off-by: Julian Braha <julianbraha@gmail.com>
----
- arch/powerpc/boot/cuboot-katmai.c   |  2 +-
- arch/powerpc/include/asm/async_tx.h |  2 +-
- arch/powerpc/include/asm/dcr-regs.h | 10 +++++-----
- arch/powerpc/kernel/cpu_specs_44x.h | 12 ------------
- arch/powerpc/platforms/44x/Kconfig  |  3 ---
- drivers/dma/Kconfig                 |  2 +-
- drivers/dma/ppc4xx/adma.c           |  9 ---------
- drivers/dma/ppc4xx/adma.h           |  2 +-
- drivers/dma/ppc4xx/dma.h            |  9 ---------
- drivers/net/ethernet/ibm/emac/mal.h |  2 +-
- 10 files changed, 10 insertions(+), 43 deletions(-)
+device_release() does not call of_node_put(), and
+i2c_adapter_dev_release() only completes a struct, so the extra
+reference is never released, leaking the device_node on every probe
+failure and every adapter removal.
 
-diff --git a/arch/powerpc/boot/cuboot-katmai.c b/arch/powerpc/boot/cuboot-katmai.c
-index 034a748fde24..fcd71e76309f 100644
---- a/arch/powerpc/boot/cuboot-katmai.c
-+++ b/arch/powerpc/boot/cuboot-katmai.c
-@@ -31,7 +31,7 @@ static void katmai_fixups(void)
- {
- 	unsigned long sysclk = 33333000;
- 
--	/* 440SP Clock logic is all but identical to 440GX
-+	/* 440SPe Clock logic is all but identical to 440GX
- 	 * so we just use that code for now at least
- 	 */
- 	ibm440spe_fixup_clocks(sysclk, 6 * 1843200, 0);
-diff --git a/arch/powerpc/include/asm/async_tx.h b/arch/powerpc/include/asm/async_tx.h
-index a14758426dd5..1ff5b2ca3ed1 100644
---- a/arch/powerpc/include/asm/async_tx.h
-+++ b/arch/powerpc/include/asm/async_tx.h
-@@ -7,7 +7,7 @@
- #ifndef _ASM_POWERPC_ASYNC_TX_H_
- #define _ASM_POWERPC_ASYNC_TX_H_
- 
--#if defined(CONFIG_440SPe) || defined(CONFIG_440SP)
-+#if defined(CONFIG_440SPe)
- extern struct dma_chan *
- ppc440spe_async_tx_find_best_channel(enum dma_transaction_type cap,
- 	struct page **dst_lst, int dst_cnt, struct page **src_lst,
-diff --git a/arch/powerpc/include/asm/dcr-regs.h b/arch/powerpc/include/asm/dcr-regs.h
-index 5c1a4973f46a..e39a55e527da 100644
---- a/arch/powerpc/include/asm/dcr-regs.h
-+++ b/arch/powerpc/include/asm/dcr-regs.h
-@@ -25,11 +25,11 @@
-  * of the driver main register set
-  */
- 
--/* CPRs (440GX and 440SP/440SPe) */
-+/* CPRs (440GX and 440SPe) */
- #define DCRN_CPR0_CONFIG_ADDR	0xc
- #define DCRN_CPR0_CONFIG_DATA	0xd
- 
--/* SDRs (440GX and 440SP/440SPe) */
-+/* SDRs (440GX and 440SPe) */
- #define DCRN_SDR0_CONFIG_ADDR 	0xe
- #define DCRN_SDR0_CONFIG_DATA	0xf
- 
-@@ -159,18 +159,18 @@
- #define  L2C_SNP_ESR		0x00000800
- 
- /*
-- * DCR register offsets for 440SP/440SPe I2O/DMA controller.
-+ * DCR register offsets for 440SPe I2O/DMA controller.
-  * The base address is configured in the device tree.
-  */
- #define DCRN_I2O0_IBAL		0x006
- #define DCRN_I2O0_IBAH		0x007
- #define I2O_REG_ENABLE		0x00000001	/* Enable I2O/DMA access */
- 
--/* 440SP/440SPe Software Reset DCR */
-+/* 440SPe Software Reset DCR */
- #define DCRN_SDR0_SRST		0x0200
- #define DCRN_SDR0_SRST_I2ODMA	(0x80000000 >> 15)	/* Reset I2O/DMA */
- 
--/* 440SP/440SPe Memory Queue DCR offsets */
-+/* 440SPe Memory Queue DCR offsets */
- #define DCRN_MQ0_XORBA		0x04
- #define DCRN_MQ0_CF2H		0x06
- #define DCRN_MQ0_CFBHL		0x0f
-diff --git a/arch/powerpc/kernel/cpu_specs_44x.h b/arch/powerpc/kernel/cpu_specs_44x.h
-index 69c4cdc0cdee..41ed2c16d8cc 100644
---- a/arch/powerpc/kernel/cpu_specs_44x.h
-+++ b/arch/powerpc/kernel/cpu_specs_44x.h
-@@ -172,18 +172,6 @@ static struct cpu_spec cpu_specs[] __initdata = {
- 		.machine_check		= machine_check_440A,
- 		.platform		= "ppc440",
- 	},
--	{ /* 440SP Rev. A */
--		.pvr_mask		= 0xfff00fff,
--		.pvr_value		= 0x53200891,
--		.cpu_name		= "440SP Rev. A",
--		.cpu_features		= CPU_FTRS_44X,
--		.cpu_user_features	= COMMON_USER_BOOKE,
--		.mmu_features		= MMU_FTR_TYPE_44x,
--		.icache_bsize		= 32,
--		.dcache_bsize		= 32,
--		.machine_check		= machine_check_4xx,
--		.platform		= "ppc440",
--	},
- 	{ /* 440SPe Rev. A */
- 		.pvr_mask               = 0xfff00fff,
- 		.pvr_value              = 0x53400890,
-diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
-index 150813cea945..b481ef2b0f4c 100644
---- a/arch/powerpc/platforms/44x/Kconfig
-+++ b/arch/powerpc/platforms/44x/Kconfig
-@@ -260,9 +260,6 @@ config 440GX
- 	select IBM_EMAC_ZMII if IBM_EMAC #test only
- 	select IBM_EMAC_TAH if IBM_EMAC  #test only
- 
--config 440SP
--	bool
--
- config 440SPe
- 	bool
- 	select IBM_EMAC_EMAC4 if IBM_EMAC
-diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
-index ae6a682c9f76..f0f61b4932f5 100644
---- a/drivers/dma/Kconfig
-+++ b/drivers/dma/Kconfig
-@@ -77,7 +77,7 @@ config AMBA_PL08X
- 
- config AMCC_PPC440SPE_ADMA
- 	tristate "AMCC PPC440SPe ADMA support"
--	depends on 440SPe || 440SP
-+	depends on 440SPe
- 	select DMA_ENGINE
- 	select DMA_ENGINE_RAID
- 	select ARCH_HAS_ASYNC_TX_FIND_CHANNEL
-diff --git a/drivers/dma/ppc4xx/adma.c b/drivers/dma/ppc4xx/adma.c
-index 279a431ccae3..ecbf4c84a318 100644
---- a/drivers/dma/ppc4xx/adma.c
-+++ b/drivers/dma/ppc4xx/adma.c
-@@ -4349,14 +4349,9 @@ static ssize_t poly_show(struct device_driver *dev, char *buf)
- 	ssize_t size = 0;
- 	u32 reg;
- 
--#ifdef CONFIG_440SP
--	/* 440SP has fixed polynomial */
--	reg = 0x4d;
--#else
- 	reg = dcr_read(ppc440spe_mq_dcr_host, DCRN_MQ0_CFBHL);
- 	reg >>= MQ0_CFBHL_POLY;
- 	reg &= 0xFF;
--#endif
- 
- 	size = sysfs_emit(buf, "PPC440SP(e) RAID-6 driver "
- 			"uses 0x1%02x polynomial.\n", reg);
-@@ -4368,10 +4363,6 @@ static ssize_t poly_store(struct device_driver *dev, const char *buf,
- {
- 	unsigned long reg, val;
- 	int err;
--#ifdef CONFIG_440SP
--	/* 440SP uses default 0x14D polynomial only */
--	return -EINVAL;
--#endif
- 
- 	if (!count || count > 6)
- 		return -EINVAL;
-diff --git a/drivers/dma/ppc4xx/adma.h b/drivers/dma/ppc4xx/adma.h
-index f8a5d7c1fb40..0ec35382d274 100644
---- a/drivers/dma/ppc4xx/adma.h
-+++ b/drivers/dma/ppc4xx/adma.h
-@@ -19,7 +19,7 @@
- #define tx_to_ppc440spe_adma_slot(tx) \
- 		container_of(tx, struct ppc440spe_adma_desc_slot, async_tx)
- 
--/* Default polynomial (for 440SP is only available) */
-+/* Default polynomial */
- #define PPC440SPE_DEFAULT_POLY	0x4d
- 
- #define PPC440SPE_ADMA_ENGINES_NUM	(XOR_ENGINES_NUM + DMA_ENGINES_NUM)
-diff --git a/drivers/dma/ppc4xx/dma.h b/drivers/dma/ppc4xx/dma.h
-index b5725481bfa6..17cbb2d1ee1c 100644
---- a/drivers/dma/ppc4xx/dma.h
-+++ b/drivers/dma/ppc4xx/dma.h
-@@ -70,20 +70,11 @@
- 
- #define DMA_CUED_XOR_BASE	(0x10000000)
- #define DMA_CUED_XOR_HB		(0x00000008)
--
--#ifdef CONFIG_440SP
--#define DMA_CUED_MULT1_OFF	0
--#define DMA_CUED_MULT2_OFF	8
--#define DMA_CUED_MULT3_OFF	16
--#define DMA_CUED_REGION_OFF	24
--#define DMA_CUED_XOR_WIN_MSK	(0xFC000000)
--#else
- #define DMA_CUED_MULT1_OFF	2
- #define DMA_CUED_MULT2_OFF	10
- #define DMA_CUED_MULT3_OFF	18
- #define DMA_CUED_REGION_OFF	26
- #define DMA_CUED_XOR_WIN_MSK	(0xF0000000)
--#endif
- 
- #define DMA_CUED_REGION_MSK	0x3
- #define DMA_RXOR123		0x0
-diff --git a/drivers/net/ethernet/ibm/emac/mal.h b/drivers/net/ethernet/ibm/emac/mal.h
-index e0ddc41186a2..6cdd40bca2cd 100644
---- a/drivers/net/ethernet/ibm/emac/mal.h
-+++ b/drivers/net/ethernet/ibm/emac/mal.h
-@@ -26,7 +26,7 @@
-  * We call MAL 1 the version in 405GP, 405GPR, 405EP, 440EP, 440GR and
-  * NP405H.
-  *
-- * We call MAL 2 the version in 440GP, 440GX, 440SP, 440SPE and Axon
-+ * We call MAL 2 the version in 440GP, 440GX, 440SPE and Axon
-  *
-  * The driver expects a "version" property in the emac node containing
-  * a number 1 or 2. New device-trees for EMAC capable platforms are thus
--- 
+Additionally, in the remove() callbacks, i2c_del_adapter() clears
+adap->dev with memset() at the end (commit bd4bc3dbded9 ("i2c: Clear
+i2c_adapter.dev on adapter removal")), which zeroes adap->dev.of_node
+before of_node_put() runs, turning it into a no-op.  The fix caches the
+pointer before calling i2c_del_adapter(), the same approach used in
+i2c-mux (i2c_mux_del_adapters) and mtd (commit 56570bdad5e3 ("mtd: core:
+Fix refcount error in del_mtd_device()")).
+
+A related fix for the i2c-qcom-cci driver has already been submitted
+separately:
+
+  https://lore.kernel.org/linux-i2c/20260815140931.53297-1-dragonliu2018@gmail.com/
+
+These 5 drivers are the remaining i2c bus drivers that use of_node_get()
+on the adapter device; all other drivers either assign of_node directly
+(without taking an extra reference) or don't use Device Tree at all.
+
+Each patch has its own Fixes: tag pointing to the commit that introduced
+of_node_get() in the respective driver, and requests stable backport via
+Cc: stable@vger.kernel.org.
+
+Compile-tested with gcc on arm64 defconfig using COMPILE_TEST; no
+hardware available for runtime testing.
+
+Liu Zhenlong (5):
+  i2c: mpc: fix device_node refcount leak in fsl_i2c_probe()/fsl_i2c_remove()
+  i2c: cpm: fix device_node refcount leak in cpm_i2c_probe()/cpm_i2c_remove()
+  i2c: ibm_iic: fix device_node refcount leak in iic_probe()/iic_remove()
+  i2c: opal: fix device_node refcount leak in i2c_opal_probe/remove()
+  i2c: pnx: fix device_node refcount leak in i2c_pnx_probe()/i2c_pnx_remove()
+
+ drivers/i2c/busses/i2c-cpm.c     |  3 +++
+ drivers/i2c/busses/i2c-ibm_iic.c |  4 ++++
+ drivers/i2c/busses/i2c-mpc.c     |  6 +++++-
+ drivers/i2c/busses/i2c-opal.c    |  6 +++++-
+ drivers/i2c/busses/i2c-pnx.c     | 15 ++++++++++++---
+ 5 files changed, 29 insertions(+), 5 deletions(-)
+
+--
 2.55.0
-
 
