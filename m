@@ -1,51 +1,78 @@
-Return-Path: <linuxppc-dev+bounces-25902-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25903-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 017FEC5B572
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2026 12:16:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4C3C9C5DF66
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2026 14:06:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hNsJQ06btz2y1Y;
-	Mon, 17 Aug 2026 22:16:38 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786966482;
-	cv=none; b=iqIZeZr/xrkQM94pQOEc+CG6WGvk1XFGVYLWNgDSvI9StM7zmkDlQsKj+y4RWNt9gtZH7mQup56ldEmP6pBgKr4O1FfJjH4j2SCGcsBM5+8ow1eoJQ/6ZxYYKw+TuRG+cqjL2dBkPXgOqh7rSogLf3vCla51QsvMTB7/qxvmJu9fn20GTvf+mtOakFYRkc1mwVP1+dGA56wV9UgwMbxxXN0Qwrc7XCpHnv5vtIFxG2JB9oLyyZt1m+Q9Dccmg/dJQIKlrcz75NNyYXjKgMpJjdo8s6QCGNbLD/DQokAyR6GjWKzsiIELa6FDKy6jazZnEgEz3xbsUSIpouZbIZSVIg==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786966482; c=relaxed/relaxed;
-	bh=FjHlsmYEYzijKqgNs4Mx5SPcKYbT3PPdor0Bf0avHyQ=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=i7c5Bb5guGGsHVZAqHrDnRDt67pzthbeTZGoOSN7pM7k0NTqsEyiFjYPtNLZoZbChnpJHMuMS56jABkSvx1vJwNZyHfuhL7Bwlt8gCuuVvonP9bu4dJ22xfek+y/x6UKy8MouPFoGn4Lp2XAGSuKvJZ3vxh4Ikmc22OA33MDTjn72HEr8kLVtooZpuC3uepJuOxvWthzcXZLPBcRwoEKeT6VnIW0hrLD/suqdUrsPWzXHkQQo0AmgEu42ApEf8ufqoqadGYWZ9o4AWnrAgTmNXlXDwXKtj6woT0+Xir85JihdHIDWM8/PlHbgmQuF5dJQ4lfx6YMY72vRtSdJujTOA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Cnp3ospn; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=vz@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hNvkw1S7Jz2y8G;
+	Tue, 18 Aug 2026 00:06:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c202::7" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786975576;
+	cv=pass; b=lbAqT7SUghI4pW5tOlKzhf5olZABpu/N9VSVUyyumxZt7/nsf6HV0sMZxIVn27zmFtr5CI7OOHyOdCCbaxxmtEjdTDgGtcsx/SBgUZTepjrtuYkaMWRsFeL2EZ/Z/uWB8pPflqEp4ZRZT7IQBZ64ZTl61IPBlKz4eeCH4L1zppe/Dl2vk06e/QlEYmS+UyuBiydzenzQmlihHOsH6dd/pA9dM/+toSEg+0ZoSdLCK17QgIAqZSO3dXQh8duaVN2H+xuyvxrbt7dIXFXQLADDPEmZ6bd49sc0ZzrX8sO7dT9d5SUdLxm4kBnfSOHSxwCbKPDTCRsaroSxtXUfYINSLw==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1786975576; c=relaxed/relaxed;
+	bh=jQLvIxYQgJ+BTBFBVOWQWOMIVM59F/pZhMxEOdVR7ok=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=e5tSQLqZrqfGbnJwt076sz+wCZUvTT0hm5/eHpwS+kutr+hBWEzuXhCdb/K5ddJ/tZQ6DiDmwgKBYVIQ3KmAI69dbFE/0z+3IffJbq0cmv0PpR7m17pHct2HMrVgtCd11Ut6/XU5hTbaoBR1n147euoOihmtz5aR7hug00MR2RrYvtVR8RGRWUQuPnYMhm5Osoex0NPw48OC1qs+E5TZjJX84DfnkOa8MuAJ04qkX2xoylwQ1zvbVkHVrhWU62/1/Z/TN0nTFVAXVRWE3OBPQ0j0toVE88wTgK0D6peKNs3rVrXpJ9JEWTfZFbXBeFF9MZsBjKLw/7ZVLa5G+V6PEg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=MDViLpQ8; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c202::7; helo=gvxpr05cu001.outbound.protection.outlook.com; envelope-from=frank.li@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
+Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Cnp3ospn;
+	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=MDViLpQ8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=vz@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:c202::7; helo=gvxpr05cu001.outbound.protection.outlook.com; envelope-from=frank.li@oss.nxp.com; receiver=lists.ozlabs.org)
+Received: from GVXPR05CU001.outbound.protection.outlook.com (mail-swedencentralazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c202::7])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hNrN207qgz2xy6
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2026 21:34:41 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 8E226601E0;
-	Mon, 17 Aug 2026 11:34:38 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 201CD1F00A3A;
-	Mon, 17 Aug 2026 11:34:31 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1786966478;
-	bh=FjHlsmYEYzijKqgNs4Mx5SPcKYbT3PPdor0Bf0avHyQ=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=Cnp3ospn5OkaQDkq5Itjxg8hE1vg3hKPqo3W1GsUtdWTAuWaglKlTfpS7mmzKn/RE
-	 5L9LOcJFa5CKuT15jpEpNj7kWcSxhQ1OsCJuYGZFC5lmR5eosXS9tLP2Jn7lqiMFLs
-	 453H6l686fx70UqrrPHtC9+BfnpTSws3cdb3olIZv5K0CRAKB6AYIHBcrMiVFelfYF
-	 TyN88E+2IML5T0Mh+5enCkekscNd2AOX+GhmXU2IoQ3uRiMy9u67+tnCaFzc+W1kkm
-	 oZ2xgOvlp7FHZmmLN1WdzPUbIqM/icgNPOTA4/H5yVtQ84DiIKga1pRz2u0OYXCcXY
-	 CLWfYteKQ4ClA==
-Message-ID: <c4047dcc-c0d4-4b53-aa89-a126d81445e0@kernel.org>
-Date: Mon, 17 Aug 2026 14:34:24 +0300
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hNvkt70cmz2xtt
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2026 00:06:14 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=Xdx+XDG4cFAK1Mo7oKVdS1zauxAlkGYLVUlDoJmQKn+EC3Kb1yD24wC3yf+s2WpH/K7eO1ThCJ+wUae6upG7u+yTHjIYQj5mKmi0nmz9MXDTJ0Ku/l4W8O2Iv/Vpb3FZQTnbc9ikLnyj68Niviiv3oUVxXwnnktnQiUons+dFOIKSlPFxl3RcnRd74lK0+ABnLR+UzFXov0lJ5dFHvujKDd7dPxYF55FYm+unRG9DuS6Y+Mi3H96P4b8EiuijwXf2GU+KkqhGArzRIl5HzTGbs9B2tWchYXvsfX6pr7dJAXJKPLll5K0VmC8CkGsyzg8ehGqxI/cQviQEIiHhoaQYg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=jQLvIxYQgJ+BTBFBVOWQWOMIVM59F/pZhMxEOdVR7ok=;
+ b=rlbJB8pTV1UJS1VEtdVKgOjH73l0+2N02RRYPZgMj8JD7x1d0hP4RM8QWxGmKe58cwmeugjh347LpmRE68TVmdgPbcDLehEGUODkAuyFrV3mn8AUv6+dbD8C3qdQvDk36RfXR9phKg8X5e5PzzUZ0///SwF5f7KcV2vX3dIJ78utkSSMSf5wZ+xL4CKAiddFsgTnj5jPrdPBqRu8OOf5Hxc2nnH0jwyMYedEy/hOQFyrxA0cuvrDu6W8bRf7AKjo2tmVwfUChNAVhIpxvjcYjLmRnsYjPcHRrH1qcVUxjsDKuOi0CLi963R6eQs9D99tliJonsO/fgUF4yyfdfzUbA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
+ dkim=pass header.d=oss.nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
+ s=selector1-NXP1-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=jQLvIxYQgJ+BTBFBVOWQWOMIVM59F/pZhMxEOdVR7ok=;
+ b=MDViLpQ8qrCu4LqQYGv8jYK68JVgFs297TD4G21Q8dd3R/ExW9IxFohbUvvQm6mXYqQY7c0jA2KOr+X0PTfxLh6IivdcLpkcDGWtb3x89iRXznIzcDzXbWLqY6czKIVtfjz6JBV4xXMNpczKW+3yEO2D/UoCz0d3NRFmROH2ajDh/U/wBU6S0lXAQljWiHfXzC7zqHTLEOZvt5i9M5V/TuaskXMsEwCqikRJHZh5CpHCf7/FPU+et71miSIwyzDRMULdRsTPxJpNk5q2YpV7pky8sh9x/RQ7lFDWOMECt1mE1BX0LJUgiXLakpbcydQ3h+zih0PUGCmSrXSF6t1zTw==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=oss.nxp.com;
+Received: from GV2PR04MB11799.eurprd04.prod.outlook.com (2603:10a6:150:2cf::9)
+ by GV2PR04MB11192.eurprd04.prod.outlook.com (2603:10a6:150:279::5) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.315.17; Mon, 17 Aug
+ 2026 14:05:48 +0000
+Received: from GV2PR04MB11799.eurprd04.prod.outlook.com
+ ([fe80::2146:83a2:5329:b7c]) by GV2PR04MB11799.eurprd04.prod.outlook.com
+ ([fe80::2146:83a2:5329:b7c%7]) with mapi id 15.21.0315.016; Mon, 17 Aug 2026
+ 14:05:48 +0000
+Date: Mon, 17 Aug 2026 09:05:38 -0500
+From: Frank Li <Frank.li@oss.nxp.com>
+To: Rosen Penev <rosenp@gmail.com>
+Cc: dmaengine@vger.kernel.org, Vinod Koul <vkoul@kernel.org>,
+	Frank Li <Frank.Li@kernel.org>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	open list <linux-kernel@vger.kernel.org>,
+	"open list:FREESCALE SOC DRIVERS" <linuxppc-dev@lists.ozlabs.org>,
+	"moderated list:FREESCALE SOC DRIVERS" <linux-arm-kernel@lists.infradead.org>
+Subject: Re: [PATCH] dmaengine: bestcomm: ioremap and get irq early
+Message-ID: <aoMVMvGvELugkRiP@SMW015318>
+References: <20260817004500.59251-1-rosenp@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260817004500.59251-1-rosenp@gmail.com>
+X-ClientProxiedBy: SA1P222CA0082.NAMP222.PROD.OUTLOOK.COM
+ (2603:10b6:806:35e::29) To GV2PR04MB11799.eurprd04.prod.outlook.com
+ (2603:10a6:150:2cf::9)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,59 +86,266 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 5/5] i2c: pnx: fix device_node refcount leak in
- i2c_pnx_probe()/i2c_pnx_remove()
-To: Liu Zhenlong <dragonliu2018@gmail.com>, andi.shyti@kernel.org,
- chris.packham@alliedtelesis.co.nz, jochen@scram.de, maddy@linux.ibm.com,
- piotr.wojtaszczyk@timesys.com
-Cc: mpe@ellerman.id.uk, npiggin@gmail.com, chleroy@kernel.org,
- grant.likely@secretlab.ca, neelegup@linux.vnet.ibm.com,
- benh@kernel.crashing.org, wsa@kernel.org, stigge@antcom.de,
- linux-i2c@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- stable@vger.kernel.org
-References: <20260815181204.2321-1-dragonliu2018@gmail.com>
- <20260815181204.2321-6-dragonliu2018@gmail.com>
-From: Vladimir Zapolskiy <vz@kernel.org>
-In-Reply-To: <20260815181204.2321-6-dragonliu2018@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: GV2PR04MB11799:EE_|GV2PR04MB11192:EE_
+X-MS-Office365-Filtering-Correlation-Id: 391ca022-72a2-493e-35df-08defc68a368
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|366016|19092799006|23010399003|1800799024|376014|10067099003|56012099006|11063799006|22082099003|18002099003;
+X-Microsoft-Antispam-Message-Info:
+	nPLuL0XiYZtDxZAUzbXj6i6UouPv9zFGN/7eLTNLQtdmLVPqKzZzXXAs32v9sn/YihmFFTZQfPaWVjraycVvXlx40LQSFEYFV++PXv1b6DdwmGvfnVeFtC3xOzttBuvanAMcU62qkJ8bTjUFswF7yfO6oXVDec0kUEEtTeYZ6NLrccNLLXv6QitYTVOlfk0bqMN8dDy+KY/bQzUm3ejBjfUL4Tp8AHtCSuMmrh8IA+j1JdT57Zg8M7CdbFidNNBN497em0QWF6e+hYDjBeNaQHVsnMpG7VzDgigsfL8TTtIYM7TRxUFa3LLBJTD8WywNScop0hpWalpNsl9TC+YBA+iV8DHgjAReWILc9C3STmBVkLcQC0RRs5DBgwoqVcRhdkB5kFSUsp89e8+pVoj1Fh4IbWIBgbeP7qMaf+mSsTd/YMATRoBaDrjZVwR6/2sJ1OIyqsowdNcLcaaPUsc/9LcvYVF/ouPA0PUdqn+p7zsup7pBzf7C4xF/0jv44AzObsYyZcFs2jrYm1QCPI+/gzMHOEpI0VUqy60Pc4SQ9xJtamQeD9y2/zWiLpqP+MiYSY2H+gBaaRT8h6nTBqSlgC/hBjRxhuXTqRLVAbpX7hAtWqABH2SBSYI6wkpJGwD6QmNh6tnqAV3U/jKnWSRnXH1MZjsZy7XDQ6AXTt8XY+o=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GV2PR04MB11799.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(19092799006)(23010399003)(1800799024)(376014)(10067099003)(56012099006)(11063799006)(22082099003)(18002099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?3lynresbXs/8fdnCc3agVE9HLc0xuRP+wY9SYPlLwPAdqdsTw2qoyWx/KobB?=
+ =?us-ascii?Q?lvUdFXv+KWAwFUW8aXdFChmyjefloo0UU7HOytvFLKn5sAFAJ1UDclaLl3jC?=
+ =?us-ascii?Q?2LPPyzx15sv7bUgNfaKO51eWt2rpRrw5AWhC+InoI87yJbSt7Z/qMsrZ8GUF?=
+ =?us-ascii?Q?pJk/vGCs4UcixPpC9wlwgPMnuzrIDyLeVoRD7sgz1vWE0cvBy/s2P6+/hBP8?=
+ =?us-ascii?Q?T2z4f1EtUhzJcWN3gbYCMq3INYUiVuiQYb5aSjOiRFYwdQjQY6NaGgGjjG1V?=
+ =?us-ascii?Q?WxkfK6oObjH4kUNeqZi2awxWUbQARjAwwmygUuTcluKpozlP9PRanXwL3s1K?=
+ =?us-ascii?Q?gQ7UtAw1QAQ3uIlNKKvrvNUEuVtdAQ1ob1r27mNGwEcLzQHejqLaA9U0Z3AF?=
+ =?us-ascii?Q?18xX2S33nkx0tMDGg3kjG+qozC57kzt2WxCU03XotdkD9WLjEpXKUcmG159n?=
+ =?us-ascii?Q?3vcdHxk2wydaERKGpmXuZWvSkPYG/RdHaq8hkvYh+JSJ0Iu34G18V+zjZDi7?=
+ =?us-ascii?Q?U/mZiljtzTEQabbB9pSF73Gy7PnDpIqYIHXjrSVYab0nvxcsWqk5pwP1juC+?=
+ =?us-ascii?Q?MiUMdRCr8xc3kGCzfYbsUoNPWrPLUHlhoDZVkMPzrMhxvjm/EzixoqIZ5P9G?=
+ =?us-ascii?Q?2jGnQvcdhjLcw85fNw9OXeHm2i7QY2ijWpXPK0irsVvWxkVZOFmiHPMpfJiT?=
+ =?us-ascii?Q?jmsSzJKnWJhQ6HujShsG+XM1rildtEEnokcVeQWbmMYN8PUH7jmvE0AvHkaQ?=
+ =?us-ascii?Q?UJnScwQPJiRFAOI2z9slugTE4I0de3ZFdjrVccIW7BOKB1ZNXt1BN+9yo9x7?=
+ =?us-ascii?Q?l/kxX/Rpkeqz6XawUlvcQyLeTfj2tlda29Ri24figFI+DO9oel3N5npqocDu?=
+ =?us-ascii?Q?HrIOv6wqRKDxk/gfRIDSeMyeBz653O7xNRPjgxPoT1Nq0D8bwEZufg3Tyynv?=
+ =?us-ascii?Q?7NDBYylMX9Q5qkSfIMX7SCbmRkoTN9mj+vawDjz+xbwdL4Ed9gBpbpXsG+88?=
+ =?us-ascii?Q?tmdwoV3wbzr1iI46oLEERVaiyls83bqjMMPUWrH7vW+6srynW4VqwfIdk5Dg?=
+ =?us-ascii?Q?YOkTcC8JGDRyiuLrFAZ8IkXT5k7rJakWClhCB9QG6uHDDVDNziaQcB8OkDOZ?=
+ =?us-ascii?Q?nUHAAGPpe3+xYILszpMnB6SOW6ZAKfKGA+yAp+UxuATAFhLnC7KWoB8Ro6S9?=
+ =?us-ascii?Q?s11zW6SCTUfdJg5/cRnPemMKY4wPufsuARkKTSdVKkv12amo1dmBRRSFmdEs?=
+ =?us-ascii?Q?Cl8dkSKEqoXLPMo8ii1ZuZqdSfVjuC9Mv4CdDn7iKxMIANcBdOiyk7cze5wE?=
+ =?us-ascii?Q?fGG9JOP1xRzlneqaoZvoKLY20o3amIIl/5ifeDoISKXBxCWErjWLmAodkO7m?=
+ =?us-ascii?Q?GnL0GITvEUVk6RZtFkkrm6qnMTaPOE8EajI+Cv/jcbq+hNHpLPVGxW0saYlw?=
+ =?us-ascii?Q?0K80W/kQH4NmLkmi+8BCXoi3UUCqEeIR6fRTisnNM3gqtCYGzR+gc3HGmzao?=
+ =?us-ascii?Q?IAEjBB5A7m1X548WS11MimZq1o/tFXuc7xNoO3GTbuZ4faeHrzk8e1P8SbQn?=
+ =?us-ascii?Q?LdAkyhKKiyg4It7ad26hI8g55ZUL2QxoBcBueb7Rp8ISXTieQtinSidkL7aj?=
+ =?us-ascii?Q?wlnUzb0AKq0Rpca1tVQL8KwHWbTUI9ml06kVhVhnHTPNcYpHDlOgXQuJXN+3?=
+ =?us-ascii?Q?2oPkddH4KOvtsVodkpk+jiawyJcl8YN/34gMofXfXI2qL/nZvJ1bDBMb04s+?=
+ =?us-ascii?Q?DOU4NPbNQoRO4zQHkUSvlNlPKqWxiMqCbqoe2lC2PYep2IkcMl0/?=
+X-OriginatorOrg: oss.nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 391ca022-72a2-493e-35df-08defc68a368
+X-MS-Exchange-CrossTenant-AuthSource: GV2PR04MB11799.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Aug 2026 14:05:48.4293
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: rRWe6KsY8rwDcPOV4GztEFtl/2dI9FZxzbE3xJSLDUTDSG6Tjcxm0obyq8t9ZYOPooMKzVdCT015+QVt3yaP+rszOgtG2t88TLVslWIwDyyoFGfOoNbicvdP5zqYFh1m
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: GV2PR04MB11192
 
-On 8/15/26 21:12, Liu Zhenlong wrote:
-> i2c_pnx_probe() calls of_node_get() to take an extra reference on the
-> platform device's of_node when assigning it to the adapter device, but
-> none of the probe error paths nor i2c_pnx_remove() drops it.
-> 
-> device_release() does not call of_node_put() and i2c_adapter_dev_release()
-> only completes a struct, so the extra reference is never released, leaking
-> the device_node on every probe failure and every adapter removal.
-> 
-> Add the matching of_node_put() to all probe error paths (the three early
-> return paths before clk_prepare_enable(), and the out_clock label which
-> covers the wait_reset(), platform_get_irq(), devm_request_irq() and
-> i2c_add_numbered_adapter() failure paths; dev is devm_kzalloc'ed so
-> adapter.dev.of_node is NULL and of_node_put() is a no-op when CONFIG_OF
-> is not set) and to i2c_pnx_remove().
-> 
-> In i2c_pnx_remove(), i2c_del_adapter() clears adap->dev with memset()
-> at the end (commit bd4bc3dbded9 ("i2c: Clear i2c_adapter.dev on adapter
-> removal")), which zeroes adap->dev.of_node before of_node_put() runs.
-> Cache the pointer before calling i2c_del_adapter(), the same approach
-> used in i2c-mux (i2c_mux_del_adapters) and mtd (commit 56570bdad5e3
-> ("mtd: core: Fix refcount error in del_mtd_device()")).
-> 
-> Compile-tested with gcc on arm64 defconfig using COMPILE_TEST; no
-> hardware available for runtime testing.
-> 
-> Fixes: b41a216dafe4 ("i2c: Add device tree support to i2c-pnx.c")
-> Cc: stable@vger.kernel.org
-> Assisted-by: Claude:claude-opus-5
-> Signed-off-by: Liu Zhenlong <dragonliu2018@gmail.com>
+On Sun, Aug 16, 2026 at 05:45:00PM -0700, Rosen Penev wrote:
+> Doing so allows handling potential -EPROBE_DEFER before any work gets
+> done.
+>
+> Replace the open-coded resource lookup, request_mem_region, ioremap and
+> the manual iounmap/release_mem_region cleanup in probe/remove with the
+> managed devm_platform_get_and_ioremap_resource() helper. This removes the
+> now-unused error-unmap/release paths and simplifies the driver.
+>
+> Assisted-by: opencode:hy3-free
+> Signed-off-by: Rosen Penev <rosenp@gmail.com>
+>
+> dmaengine: bestcomm: get irq early
 
-Reviewed-by: Vladimir Zapolskiy <vz@kernel.org>
+make irq change as seperate patch
 
--- 
-Best wishes,
-Vladimir
+Reviewed-by: Frank Li <Frank.Li@nxp.com>
+
+>
+> platform_get_irq can return -EPROBE_DEFER, which is useful to avoid
+> doing extra work in such a case
+>
+> Signed-off-by: Rosen Penev <rosenp@gmail.com>
+> ---
+>  drivers/dma/bestcomm/bestcomm.c            | 70 ++++++----------------
+>  include/linux/fsl/bestcomm/bestcomm_priv.h |  2 +-
+>  2 files changed, 18 insertions(+), 54 deletions(-)
+>
+> diff --git a/drivers/dma/bestcomm/bestcomm.c b/drivers/dma/bestcomm/bestcomm.c
+> index 432b43520ddc..55ad7bc34df7 100644
+> --- a/drivers/dma/bestcomm/bestcomm.c
+> +++ b/drivers/dma/bestcomm/bestcomm.c
+> @@ -48,6 +48,7 @@ bcom_task_alloc(int bd_count, int bd_size, int priv_size)
+>  {
+>  	int i, tasknum = -1;
+>  	struct bcom_task *tsk;
+> +	int irq;
+>
+>  	/* Don't try to do anything if bestcomm init failed */
+>  	if (!bcom_eng)
+> @@ -68,6 +69,10 @@ bcom_task_alloc(int bd_count, int bd_size, int priv_size)
+>  	if (tasknum < 0)
+>  		return NULL;
+>
+> +	irq = platform_get_irq(bcom_eng->pdev, tasknum);
+> +	if (irq < 0)
+> +		return irq;
+> +
+>  	/* Allocate our structure */
+>  	tsk = kzalloc(sizeof(struct bcom_task) + priv_size, GFP_KERNEL);
+>  	if (!tsk)
+> @@ -77,10 +82,7 @@ bcom_task_alloc(int bd_count, int bd_size, int priv_size)
+>  	if (priv_size)
+>  		tsk->priv = (void*)tsk + sizeof(struct bcom_task);
+>
+> -	/* Get IRQ of that task */
+> -	tsk->irq = irq_of_parse_and_map(bcom_eng->ofnode, tsk->tasknum);
+> -	if (!tsk->irq)
+> -		goto error;
+> +	tsk->irq = irq;
+>
+>  	/* Init the BDs, if needed */
+>  	if (bd_count) {
+> @@ -102,8 +104,6 @@ bcom_task_alloc(int bd_count, int bd_size, int priv_size)
+>
+>  error:
+>  	if (tsk) {
+> -		if (tsk->irq)
+> -			irq_dispose_mapping(tsk->irq);
+>  		bcom_sram_free(tsk->bd);
+>  		kfree(tsk->cookie);
+>  		kfree(tsk);
+> @@ -126,7 +126,6 @@ bcom_task_free(struct bcom_task *tsk)
+>  	bcom_eng->tdt[tsk->tasknum].stop  = 0;
+>
+>  	/* Free everything */
+> -	irq_dispose_mapping(tsk->irq);
+>  	bcom_sram_free(tsk->bd);
+>  	kfree(tsk->cookie);
+>  	kfree(tsk);
+> @@ -365,23 +364,24 @@ bcom_engine_cleanup(void)
+>  static int mpc52xx_bcom_probe(struct platform_device *op)
+>  {
+>  	struct device_node *ofn_sram;
+> -	struct resource res_bcom;
+> +	struct resource *res_bcom;
+> +	void __iomem *regs;
+>
+>  	int rv;
+>
+>  	/* Inform user we're ok so far */
+>  	printk(KERN_INFO "DMA: MPC52xx BestComm driver\n");
+>
+> -	/* Get the bestcomm node */
+> -	of_node_get(op->dev.of_node);
+> +	regs = devm_platform_get_and_ioremap_resource(op, 0, &res_bcom);
+> +	if (IS_ERR(regs))
+> +		return PTR_ERR(regs);
+>
+>  	/* Prepare SRAM */
+>  	ofn_sram = of_find_matching_node(NULL, mpc52xx_sram_ids);
+>  	if (!ofn_sram) {
+>  		printk(KERN_ERR DRIVER_NAME ": "
+>  			"No SRAM found in device tree\n");
+> -		rv = -ENODEV;
+> -		goto error_ofput;
+> +		return -ENODEV;
+>  	}
+>  	rv = bcom_sram_init(ofn_sram, DRIVER_NAME);
+>  	of_node_put(ofn_sram);
+> @@ -389,7 +389,7 @@ static int mpc52xx_bcom_probe(struct platform_device *op)
+>  	if (rv) {
+>  		printk(KERN_ERR DRIVER_NAME ": "
+>  			"Error in SRAM init\n");
+> -		goto error_ofput;
+> +		return rv;
+>  	}
+>
+>  	/* Get a clean struct */
+> @@ -400,37 +400,14 @@ static int mpc52xx_bcom_probe(struct platform_device *op)
+>  	}
+>
+>  	/* Save the node */
+> -	bcom_eng->ofnode = op->dev.of_node;
+> -
+> -	/* Get, reserve & map io */
+> -	if (of_address_to_resource(op->dev.of_node, 0, &res_bcom)) {
+> -		printk(KERN_ERR DRIVER_NAME ": "
+> -			"Can't get resource\n");
+> -		rv = -EINVAL;
+> -		goto error_sramclean;
+> -	}
+> -
+> -	if (!request_mem_region(res_bcom.start, resource_size(&res_bcom),
+> -				DRIVER_NAME)) {
+> -		printk(KERN_ERR DRIVER_NAME ": "
+> -			"Can't request registers region\n");
+> -		rv = -EBUSY;
+> -		goto error_sramclean;
+> -	}
+> -
+> -	bcom_eng->regs_base = res_bcom.start;
+> -	bcom_eng->regs = ioremap(res_bcom.start, sizeof(struct mpc52xx_sdma));
+> -	if (!bcom_eng->regs) {
+> -		printk(KERN_ERR DRIVER_NAME ": "
+> -			"Can't map registers\n");
+> -		rv = -ENOMEM;
+> -		goto error_release;
+> -	}
+> +	bcom_eng->pdev = op;
+> +	bcom_eng->regs = regs;
+> +	bcom_eng->regs_base = res_bcom->start;
+>
+>  	/* Now, do the real init */
+>  	rv = bcom_engine_init();
+>  	if (rv)
+> -		goto error_unmap;
+> +		goto error_sramclean;
+>
+>  	/* Done ! */
+>  	printk(KERN_INFO "DMA: MPC52xx BestComm engine @%08lx ok !\n",
+> @@ -439,15 +416,9 @@ static int mpc52xx_bcom_probe(struct platform_device *op)
+>  	return 0;
+>
+>  	/* Error path */
+> -error_unmap:
+> -	iounmap(bcom_eng->regs);
+> -error_release:
+> -	release_mem_region(res_bcom.start, sizeof(struct mpc52xx_sdma));
+>  error_sramclean:
+>  	kfree(bcom_eng);
+>  	bcom_sram_cleanup();
+> -error_ofput:
+> -	of_node_put(op->dev.of_node);
+>
+>  	printk(KERN_ERR "DMA: MPC52xx BestComm init failed !\n");
+>
+> @@ -463,13 +434,6 @@ static void mpc52xx_bcom_remove(struct platform_device *op)
+>  	/* Cleanup SRAM */
+>  	bcom_sram_cleanup();
+>
+> -	/* Release regs */
+> -	iounmap(bcom_eng->regs);
+> -	release_mem_region(bcom_eng->regs_base, sizeof(struct mpc52xx_sdma));
+> -
+> -	/* Release the node */
+> -	of_node_put(bcom_eng->ofnode);
+> -
+>  	/* Release memory */
+>  	kfree(bcom_eng);
+>  	bcom_eng = NULL;
+> diff --git a/include/linux/fsl/bestcomm/bestcomm_priv.h b/include/linux/fsl/bestcomm/bestcomm_priv.h
+> index 3b52f3ffbdf8..cddde7c74cb5 100644
+> --- a/include/linux/fsl/bestcomm/bestcomm_priv.h
+> +++ b/include/linux/fsl/bestcomm/bestcomm_priv.h
+> @@ -66,7 +66,7 @@ struct bcom_tdt {
+>   * This holds all info needed globaly to handle the engine
+>   */
+>  struct bcom_engine {
+> -	struct device_node		*ofnode;
+> +	struct platform_device		*pdev;
+>  	struct mpc52xx_sdma __iomem     *regs;
+>  	phys_addr_t                      regs_base;
+>
+> --
+> 2.55.0
+>
 
