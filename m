@@ -1,95 +1,88 @@
-Return-Path: <linuxppc-dev+bounces-25895-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25896-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 98916C5B572
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 16 Aug 2026 23:19:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7C0F6C5DF66
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2026 00:45:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hNX473Rylz2y1Y;
-	Mon, 17 Aug 2026 09:19:51 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=202.36.163.20
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786922391;
-	cv=none; b=NHZVI5ATFJ6uSn4PhFNMHdwVXdezx/REouC15gEB07l/dnqzj6dz+09Cxct/GBPqmxtVWd2vPWYeB9LYO/C3g5aitLUS9mknS8L9yTBt5QGifNnL58hTx5tXwM5liTMGPkk/PgMaz4kC/R+YwcyxEQjM5rV/EppfUI77kBV8fFK4piO/gOGYPzJefTVF/FEkWuAyB36aLnRNsaoRWgASblUzHP4J0zwqAsZNLMTL0QBP6bkRH0no9kCJNdQPCui2NdWOtyMzVJHNRMkYQ+8Vv6HBwp8ZLW2FL/54nNJK8B61Z3gXJA6UPlWKA/UY8NdRDiUUridlwg2eMCBldyXlnA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hNYyY4g5Zz2xd5;
+	Mon, 17 Aug 2026 10:45:09 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::52f"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786927509;
+	cv=none; b=CFqkSlttG4z4gFMqoHydcESQtUS6Bp+2XrQUsd70dxtqYGvdbzw+5RL27AicjQh4lC/os6+LmnFeYOd4JR4iCSjOQTzqzTrqQAiWKvU/M3jBKkXozCfTPR3xsup9yYyvvXEmdEuBnhQoiUZbS8HOMwf2RT+OWhTwprwuCDwGw4ch81Me54zqnXeDY6xdCmRQ0OJh0H10UboSy+7YgPigoBx4hz1a3ntu0HZEoSCs0kw91aPEHEbNChohhXv4gY/ulixDkDq3vyBQ7exAHXnSr49YIYILLhLfw5FvgL2f7RcV2URID5yRmzWbmXu3B+2zbnrbzlDVuq3rqs5Ze7WvVw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786922391; c=relaxed/relaxed;
-	bh=JddUaa0wLJyC6eSU+yxvhJrBLSskqrBTBPGi8c6Tuww=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=iZaXhKGKRfv74jDJrZ/CRZrmHA3FWh+Z+pZ1cSF2fBjf+vvh0c5Q2pj4x4KMX5B/S204+aEqT4qgsKR7Ol1GnxbVDetS6h6yNNDTPSBTPjdUfJwpSp1o6VVDErb3oAeFW7b2gWVEc0DSkmUC5pVXKY04vS5a9EBHajCUjbKA7kkXyJykG+p6uLIoNAPDIWag+B7Ka7wHBoWp7mlklDgcgxg4zA02HAuA2bLs33e02VITRY2f9OU5BaSwPPAKS1NQ+rsyg+tnkBexN3Dg4vjZlMaFWliz2drz/LUvHr1yOR+9WMviPXRjxjwIitVQt5wOy/qiRNsvfH7iQqmr1ibKyQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=alliedtelesis.co.nz; dkim=pass (2048-bit key; unprotected) header.d=alliedtelesis.co.nz header.i=@alliedtelesis.co.nz header.a=rsa-sha256 header.s=mail181024 header.b=N1i4pxtV; dkim-atps=neutral; spf=pass (client-ip=202.36.163.20; helo=gate2.alliedtelesis.co.nz; envelope-from=chris.packham@alliedtelesis.co.nz; receiver=lists.ozlabs.org) smtp.mailfrom=alliedtelesis.co.nz
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=alliedtelesis.co.nz
+	t=1786927509; c=relaxed/relaxed;
+	bh=virBiSedo0RsjgNtDHeYNu9b5zOw0VcBr57wB4SYviw=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=WmdIo9rGVNqocYxrGYo8kVPgRRgs2KMmfWjtIo1sIkiS5r/q+TTDbFqpCzBEsZ/pfvFQ4r+M/3gRTMEihSlXSlkukaFiinVNQW2AC3wdrdbv4n25KukzFwy5Dm1ET/zNVbNjQ9ZIs1sZcQn/TPY1ghX4gMMsgGr5Jxug5osWTHeJfWwp5FQTreAKqhzuSrUCeJhfj0S9DZ1SU2TBjpBvBydd3AwXZKq3QXEiHvOBrK0HSUVU59D6bICtOYDfPGgdHFtF8HQFZGEI1oqbgF+/BiHKT4aeqiBXMp9riN4htwmhZSRm+95fiCaL4vZcUtDIsYDTfoVPHn7YO5ldwQT4UA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=q2DtD2Zu; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::52f; helo=mail-pg1-x52f.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=alliedtelesis.co.nz header.i=@alliedtelesis.co.nz header.a=rsa-sha256 header.s=mail181024 header.b=N1i4pxtV;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=q2DtD2Zu;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=alliedtelesis.co.nz (client-ip=202.36.163.20; helo=gate2.alliedtelesis.co.nz; envelope-from=chris.packham@alliedtelesis.co.nz; receiver=lists.ozlabs.org)
-X-Greylist: delayed 3300 seconds by postgrey-1.37 at boromir; Mon, 17 Aug 2026 09:19:50 AEST
-Received: from gate2.alliedtelesis.co.nz (gate2.alliedtelesis.co.nz [202.36.163.20])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::52f; helo=mail-pg1-x52f.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x52f.google.com (mail-pg1-x52f.google.com [IPv6:2607:f8b0:4864:20::52f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hNX460vQZz2y0B
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2026 09:19:49 +1000 (AEST)
-Received: from svr-chch-seg1.atlnz.lc (mmarshal3.atlnz.lc [10.32.18.43])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(Client did not present a certificate)
-	by gate2.alliedtelesis.co.nz (Postfix) with ESMTPS id 168E52C01D7;
-	Mon, 17 Aug 2026 09:32:10 +1200 (NZST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alliedtelesis.co.nz;
-	s=mail181024; t=1786915930;
-	bh=JddUaa0wLJyC6eSU+yxvhJrBLSskqrBTBPGi8c6Tuww=;
-	h=From:To:CC:Subject:Date:References:In-Reply-To:From;
-	b=N1i4pxtVLgvcn+9ZtP+NKO0YeaJXIumjb0bTEbZWKAULW8zMI1Bmx2wbBEEVSlvR9
-	 Eucafh1bXagxm4ADjS18kq6kfkbMQBLXfbyUWa/Yaii8z9zFdZXA5+/SdgOj5lU0W+
-	 XH2N+jkSbRhnvnukdP1/fRTa3l5bGWw3v7AzgZgS4RKqGGtWqq8jUqCE4yznb8ivty
-	 d9rbtJ82lNYRUokLY0NjxW4Z1kqPoVDlG2qlGIsn4m2ScWlZaXwaB3LPXNovYvdjS2
-	 s5DBpk8yXebj5P5svgIyGfApOCBQR/akL638/+YDPJnrAxJSjoqG3aJJETaEZ+19+n
-	 zb56oJHhKv+7g==
-Received: from svr-chch-ex2.atlnz.lc (Not Verified[2001:df5:b000:bc8::76]) by svr-chch-seg1.atlnz.lc with Trustwave SEG (v8,2,6,11305)
-	id <B6a822c590000>; Mon, 17 Aug 2026 09:32:09 +1200
-Received: from svr-chch-ex2.atlnz.lc (2001:df5:b000:bc8:f753:6de:11c0:a008) by
- svr-chch-ex2.atlnz.lc (2001:df5:b000:bc8:f753:6de:11c0:a008) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1748.39; Mon, 17 Aug 2026 09:32:09 +1200
-Received: from svr-chch-ex2.atlnz.lc ([fe80::a9eb:c9b7:8b52:9567]) by
- svr-chch-ex2.atlnz.lc ([fe80::a9eb:c9b7:8b52:9567%15]) with mapi id
- 15.02.1748.039; Mon, 17 Aug 2026 09:32:09 +1200
-From: Chris Packham <Chris.Packham@alliedtelesis.co.nz>
-To: Liu Zhenlong <dragonliu2018@gmail.com>, "andi.shyti@kernel.org"
-	<andi.shyti@kernel.org>, "jochen@scram.de" <jochen@scram.de>,
-	"maddy@linux.ibm.com" <maddy@linux.ibm.com>, "vz@mleia.com" <vz@mleia.com>,
-	"piotr.wojtaszczyk@timesys.com" <piotr.wojtaszczyk@timesys.com>
-CC: "mpe@ellerman.id.uk" <mpe@ellerman.id.uk>, "npiggin@gmail.com"
-	<npiggin@gmail.com>, "chleroy@kernel.org" <chleroy@kernel.org>,
-	"grant.likely@secretlab.ca" <grant.likely@secretlab.ca>,
-	"neelegup@linux.vnet.ibm.com" <neelegup@linux.vnet.ibm.com>,
-	"benh@kernel.crashing.org" <benh@kernel.crashing.org>, "wsa@kernel.org"
-	<wsa@kernel.org>, "stigge@antcom.de" <stigge@antcom.de>,
-	"linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-	"linux-arm-kernel@lists.infradead.org"
-	<linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org"
-	<linux-kernel@vger.kernel.org>, "stable@vger.kernel.org"
-	<stable@vger.kernel.org>
-Subject: Re: [PATCH 1/5] i2c: mpc: fix device_node refcount leak in
- fsl_i2c_probe()/fsl_i2c_remove()
-Thread-Topic: [PATCH 1/5] i2c: mpc: fix device_node refcount leak in
- fsl_i2c_probe()/fsl_i2c_remove()
-Thread-Index: AQHdLOGwizUCWCZB906ULMjP0xiw17aganMA
-Date: Sun, 16 Aug 2026 21:32:09 +0000
-Message-ID: <5d7663b2-628e-43d3-9077-fc3a8c0fe9b3@alliedtelesis.co.nz>
-References: <20260815181204.2321-1-dragonliu2018@gmail.com>
- <20260815181204.2321-2-dragonliu2018@gmail.com>
-In-Reply-To: <20260815181204.2321-2-dragonliu2018@gmail.com>
-Accept-Language: en-NZ, en-US
-Content-Language: en-US
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-x-originating-ip: [10.33.22.12]
-Content-Type: text/plain; charset="utf-8"
-Content-ID: <795203B68820D24CBB330239887239E9@alliedtelesis.co.nz>
-Content-Transfer-Encoding: base64
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hNYyX0WbPz2xW5
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2026 10:45:07 +1000 (AEST)
+Received: by mail-pg1-x52f.google.com with SMTP id 41be03b00d2f7-ca766c1c9ccso1468685a12.0
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Aug 2026 17:45:07 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1786927504; x=1787532304; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=virBiSedo0RsjgNtDHeYNu9b5zOw0VcBr57wB4SYviw=;
+        b=q2DtD2ZuUDWia++X0szISK+m0K3xmZ1m64MnE/0V69GzoZluNSg9fptDQ2umirRK8V
+         hHpHmgy0JtXQUFMsBo80yauLybodbK/Ulh5RAxiM3pX79z8Pp5G0V1oAKFDoX1575aF7
+         YOYV6Lpj+O3iczqldHOIWfPBP3PIxlgZnEpW3b+Ifv9bmNNrgzKG7e8M3fIP1CORdHte
+         k2cre/Yi5/DtbvT/bQPfuX9BZDxGvKxk6DTxkPbuvEpK32yIx35InJtSRMEmNZA029VR
+         l4kU61Er29xHQcJ0lSbmIauLo2LqAbrdRc9ccH2v9yLy1U0/hrD7Lrda+blqjw20gNyX
+         lRHw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1786927504; x=1787532304;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=virBiSedo0RsjgNtDHeYNu9b5zOw0VcBr57wB4SYviw=;
+        b=DJG272HmNI14cZJBWMuKXegYIecytZ7l9u3AccoXgzj4fGw0n7aNFUEWDiNVi1exlf
+         2mdWX/e8m25n7OreNxLbCa5evR6KJ9iZ4UYc6EK8jnwHTMIKXOoxMVNiutVNJNmOuiGc
+         Pn6UKA3V9Jn9LsmqwyXXFUqCk44tA6Ujw40Tis8bVq5rqHFaKtXAN1mG7MslxuFJo5KT
+         S3hjy+WtrzSJE+vGdmqZo6dSj12m3YXx3G3G8reo2DVw5NMxBmthzqcF+ujVLizUlbyp
+         +gz/9ma7eEzS3PCfOtgJN6YGzaAWH2DGD1gPl5Jn65oZzks8Edl9OmIVPltz7cwL89zM
+         EsTQ==
+X-Forwarded-Encrypted: i=1; AHgh+Rq0x0vTXETehHPkNSJwcrq4lDpV6IUHXHcp8KDOe3yf+jTdPJs+pac/UYE3xm0DCgtdb/6ShOudm4CcR+w=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyVyio4yoJEXd1nwQcV7rzrIEtFdgb5YN7Vwb3POCxbxnsXv85C
+	pzngkXdJp9+k1CBjNVPJZFgFyoVE85u0lMM9eiirgutvlN4K3GkN0sES
+X-Gm-Gg: AR+sD10ZyJwM1UanvfNLwvLNajvPyQ9k5ekPi7TFO7TYrNm7zIj2sLOZ3sReDvzjPZP
+	tCI4rV3SPZHtUSZewcpyrBnOjJ0BSS7SNfY9DMonSp4N3+V+Z27YqW9CVIbbl9GvFBDd+lbIYbw
+	mZg7KrFXDEozL6QLJBpxHUtuk3UK6q1lLSr6aW49nQQTvt6UAACNXaigCRYLjiOm145Q9JLNsut
+	4arQQ7etmidIWAnmSg5PUHFE7qqXN2wxrznBjuOkvTXm3ZWxO9AoFWiqG7NHcUcA+ZTrMjgwL4d
+	Ly7ZZUUocjBl0Ur9VjyMABKZqcMojpjWymHX+yhP/suJxPLmzwaVPJudvKL1D5sHWJx1ar+nCK0
+	Kvkbd8ujTuWii45Nj1/rc5EG8dzsavSuci+1+ZfLpXo+j6Hf/3K3BxK3gHG5Bkrj+6mZqkbU7Lt
+	xAwcI3R0lYvQLpvokxgYTQeHdkrt45oNjcEh5y4N5clYTs9BnAjp3x5nYMXQmQE9NAhamtruBk9
+	pB+rLTSBYrl5VhrCYPmbHOhEXnW/tkuUWiIdn5FMJMCnWf4gPdyIpBvcOO12Hv5tBxlO7LzQ9PD
+	e2XS/DH8vfORjKcXhRQuGZSmwLSpenGYhCOOXIbi3EOHXwmO
+X-Received: by 2002:a05:6a00:179f:b0:842:2419:6bfe with SMTP id d2e1a72fcca58-84fde364c19mr20472853b3a.7.1786927504085;
+        Sun, 16 Aug 2026 17:45:04 -0700 (PDT)
+Received: from ryzen.lan ([2601:644:8000:7a86::e35])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8517d01c2e7sm2164077b3a.13.2026.08.16.17.45.01
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 16 Aug 2026 17:45:02 -0700 (PDT)
+From: Rosen Penev <rosenp@gmail.com>
+To: dmaengine@vger.kernel.org
+Cc: Vinod Koul <vkoul@kernel.org>,
+	Frank Li <Frank.Li@kernel.org>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	linux-kernel@vger.kernel.org (open list),
+	linuxppc-dev@lists.ozlabs.org (open list:FREESCALE SOC DRIVERS),
+	linux-arm-kernel@lists.infradead.org (moderated list:FREESCALE SOC DRIVERS)
+Subject: [PATCH] dmaengine: bestcomm: ioremap and get irq early
+Date: Sun, 16 Aug 2026 17:45:00 -0700
+Message-ID: <20260817004500.59251-1-rosenp@gmail.com>
+X-Mailer: git-send-email 2.55.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -103,58 +96,207 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-SEG-SpamProfiler-Analysis: v=2.4 cv=CKmJXgrD c=1 sm=1 tr=0 ts=6a822c59 a=Xf/6aR1Nyvzi7BryhOrcLQ==:117 a=xqWC_Br6kY4A:10 a=drD7vYo3kbIA:10 a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=VwQbUJbxAAAA:8 a=pGLkceISAAAA:8 a=g5w_v8IkoF8M0yuuWAMA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-SEG-SpamProfiler-Score: 0
+Content-Transfer-Encoding: 8bit
 
-SGkgTGl1DQoNCk9uIDE2LzA4LzIwMjYgMDY6MTIsIExpdSBaaGVubG9uZyB3cm90ZToNCj4gZnNs
-X2kyY19wcm9iZSgpIGNhbGxzIG9mX25vZGVfZ2V0KCkgdG8gdGFrZSBhbiBleHRyYSByZWZlcmVu
-Y2Ugb24gdGhlDQo+IHBsYXRmb3JtIGRldmljZSdzIG9mX25vZGUgd2hlbiBhc3NpZ25pbmcgaXQg
-dG8gdGhlIGFkYXB0ZXIgZGV2aWNlLCBidXQNCj4gbmVpdGhlciB0aGUgcHJvYmUgZXJyb3IgcGF0
-aCBub3IgZnNsX2kyY19yZW1vdmUoKSBkcm9wcyBpdC4NCj4NCj4gZGV2aWNlX3JlbGVhc2UoKSBk
-b2VzIG5vdCBjYWxsIG9mX25vZGVfcHV0KCkgYW5kIGkyY19hZGFwdGVyX2Rldl9yZWxlYXNlKCkN
-Cj4gb25seSBjb21wbGV0ZXMgYSBzdHJ1Y3QsIHNvIHRoZSBleHRyYSByZWZlcmVuY2UgaXMgbmV2
-ZXIgcmVsZWFzZWQsIGxlYWtpbmcNCj4gdGhlIGRldmljZV9ub2RlIG9uIGV2ZXJ5IHByb2JlIGZh
-aWx1cmUgYW5kIGV2ZXJ5IGFkYXB0ZXIgcmVtb3ZhbC4NCj4NCj4gQWRkIHRoZSBtYXRjaGluZyBv
-Zl9ub2RlX3B1dCgpIHRvIGJvdGggcGF0aHMuDQo+DQo+IEluIHRoZSBwcm9iZSBlcnJvciBwYXRo
-LCBpMmNfYWRkX251bWJlcmVkX2FkYXB0ZXIoKSBmYWlsdXJlIGRvZXMgbm90IHJ1bg0KPiBpMmNf
-ZGVsX2FkYXB0ZXIoKSwgc28gb2Zfbm9kZV9wdXQoaTJjLT5hZGFwLmRldi5vZl9ub2RlKSBpcyBz
-YWZlLg0KPg0KPiBJbiBmc2xfaTJjX3JlbW92ZSgpLCBpMmNfZGVsX2FkYXB0ZXIoKSBjbGVhcnMg
-YWRhcC0+ZGV2IHdpdGggbWVtc2V0KCkgYXQNCj4gdGhlIGVuZCAoY29tbWl0IGJkNGJjM2RiZGVk
-OSAoImkyYzogQ2xlYXIgaTJjX2FkYXB0ZXIuZGV2IG9uIGFkYXB0ZXINCj4gcmVtb3ZhbCIpKSwg
-d2hpY2ggemVyb2VzIGFkYXAtPmRldi5vZl9ub2RlIGJlZm9yZSBvZl9ub2RlX3B1dCgpIHJ1bnMs
-DQo+IHR1cm5pbmcgaXQgaW50byBhIG5vLW9wLiAgQ2FjaGUgdGhlIHBvaW50ZXIgYmVmb3JlIGNh
-bGxpbmcNCj4gaTJjX2RlbF9hZGFwdGVyKCksIHRoZSBzYW1lIGFwcHJvYWNoIHVzZWQgaW4gaTJj
-LW11eA0KPiAoaTJjX211eF9kZWxfYWRhcHRlcnMpIGFuZCBtdGQgKGNvbW1pdCA1NjU3MGJkYWQ1
-ZTMgKCJtdGQ6IGNvcmU6IEZpeA0KPiByZWZjb3VudCBlcnJvciBpbiBkZWxfbXRkX2RldmljZSgp
-IikpLg0KPg0KPiBDb21waWxlLXRlc3RlZCB3aXRoIGdjYy1wb3dlcnBjLWxpbnV4LWdudSBvbiBw
-bWFjMzIgZGVmY29uZmlnOyBubw0KPiBoYXJkd2FyZSBhdmFpbGFibGUgZm9yIHJ1bnRpbWUgdGVz
-dGluZy4NCj4NCj4gRml4ZXM6IDlmZDA0OTkyN2NjYiAoIm9mL2kyYzogR2VuZXJhbGl6ZSBPRiBz
-dXBwb3J0IikNCj4gQ2M6IHN0YWJsZUB2Z2VyLmtlcm5lbC5vcmcNCj4gQXNzaXN0ZWQtYnk6IENs
-YXVkZTpjbGF1ZGUtb3B1cy01DQo+IFNpZ25lZC1vZmYtYnk6IExpdSBaaGVubG9uZyA8ZHJhZ29u
-bGl1MjAxOEBnbWFpbC5jb20+DQoNCkkgZGlkIHdvbmRlciBpZiB0aGVyZSB3YXMgYSBiZXR0ZXIg
-d2F5IG9mIGZpeGluZyB0aGlzIGdlbmVyaWNhbGx5IHNpbmNlIA0KaXQgYWZmZWN0cyBtdWx0aXBs
-ZSBkcml2ZXJzIGUuZy4gZG9pbmcgdGhlIHB1dCBpbiBpMmNfZGVsX2FkYXB0ZXIoKSwgDQphZGRp
-bmcgYSBkZXZtXyBmdW5jdGlvbiB0aGFuIGRlYWxzIHdpdGggdGhlIHJlZmVyZW5jZSBvciBqdXN0
-IG5vdCANCmFjcXVpcmluZyB0aGUgcmVmZXJlbmNlICh3aGljaCBzZWVtcyB0byBiZSB3aGF0IFNQ
-SSBkb2VzKS4NCg0KUmVnYXJkbGVzcyBmb3IgYW4gb2xkZXIgZHJpdmVyIGxpa2UgaTJjLW1wYyB0
-aGlzIGlzIHByb2JhYmx5IGEgbWluaW1hbGx5IA0Kc2FuZSBmaXguDQoNClJldmlld2VkLWJ5OiBD
-aHJpcyBQYWNraGFtIDxjaHJpcy5wYWNraGFtQGFsbGllZHRlbGVzaXMuY28ubno+DQoNCj4gLS0t
-DQo+ICAgZHJpdmVycy9pMmMvYnVzc2VzL2kyYy1tcGMuYyB8IDYgKysrKystDQo+ICAgMSBmaWxl
-IGNoYW5nZWQsIDUgaW5zZXJ0aW9ucygrKSwgMSBkZWxldGlvbigtKQ0KPg0KPiBkaWZmIC0tZ2l0
-IGEvZHJpdmVycy9pMmMvYnVzc2VzL2kyYy1tcGMuYyBiL2RyaXZlcnMvaTJjL2J1c3Nlcy9pMmMt
-bXBjLmMNCj4gaW5kZXggYTIxZmE0NWJkNjRjLi44MTgyZjdkYzNkMGYgMTAwNjQ0DQo+IC0tLSBh
-L2RyaXZlcnMvaTJjL2J1c3Nlcy9pMmMtbXBjLmMNCj4gKysrIGIvZHJpdmVycy9pMmMvYnVzc2Vz
-L2kyYy1tcGMuYw0KPiBAQCAtODY3LDggKzg2NywxMCBAQCBzdGF0aWMgaW50IGZzbF9pMmNfcHJv
-YmUoc3RydWN0IHBsYXRmb3JtX2RldmljZSAqb3ApDQo+ICAgCWkyY19zZXRfYWRhcGRhdGEoJmky
-Yy0+YWRhcCwgaTJjKTsNCj4gICANCj4gICAJcmVzdWx0ID0gaTJjX2FkZF9udW1iZXJlZF9hZGFw
-dGVyKCZpMmMtPmFkYXApOw0KPiAtCWlmIChyZXN1bHQpDQo+ICsJaWYgKHJlc3VsdCkgew0KPiAr
-CQlvZl9ub2RlX3B1dChpMmMtPmFkYXAuZGV2Lm9mX25vZGUpOw0KPiAgIAkJcmV0dXJuIHJlc3Vs
-dDsNCj4gKwl9DQo+ICAgDQo+ICAgCXJldHVybiAwOw0KPiAgIH07DQo+IEBAIC04NzYsOCArODc4
-LDEwIEBAIHN0YXRpYyBpbnQgZnNsX2kyY19wcm9iZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpv
-cCkNCj4gICBzdGF0aWMgdm9pZCBmc2xfaTJjX3JlbW92ZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNl
-ICpvcCkNCj4gICB7DQo+ICAgCXN0cnVjdCBtcGNfaTJjICppMmMgPSBwbGF0Zm9ybV9nZXRfZHJ2
-ZGF0YShvcCk7DQo+ICsJc3RydWN0IGRldmljZV9ub2RlICpub2RlID0gaTJjLT5hZGFwLmRldi5v
-Zl9ub2RlOw0KPiAgIA0KPiAgIAlpMmNfZGVsX2FkYXB0ZXIoJmkyYy0+YWRhcCk7DQo+ICsJb2Zf
-bm9kZV9wdXQobm9kZSk7DQo+ICAgfTsNCj4gICANCj4gICBzdGF0aWMgaW50IF9fbWF5YmVfdW51
-c2VkIG1wY19pMmNfc3VzcGVuZChzdHJ1Y3QgZGV2aWNlICpkZXYp
+Doing so allows handling potential -EPROBE_DEFER before any work gets
+done.
+
+Replace the open-coded resource lookup, request_mem_region, ioremap and
+the manual iounmap/release_mem_region cleanup in probe/remove with the
+managed devm_platform_get_and_ioremap_resource() helper. This removes the
+now-unused error-unmap/release paths and simplifies the driver.
+
+Assisted-by: opencode:hy3-free
+Signed-off-by: Rosen Penev <rosenp@gmail.com>
+
+dmaengine: bestcomm: get irq early
+
+platform_get_irq can return -EPROBE_DEFER, which is useful to avoid
+doing extra work in such a case
+
+Signed-off-by: Rosen Penev <rosenp@gmail.com>
+---
+ drivers/dma/bestcomm/bestcomm.c            | 70 ++++++----------------
+ include/linux/fsl/bestcomm/bestcomm_priv.h |  2 +-
+ 2 files changed, 18 insertions(+), 54 deletions(-)
+
+diff --git a/drivers/dma/bestcomm/bestcomm.c b/drivers/dma/bestcomm/bestcomm.c
+index 432b43520ddc..55ad7bc34df7 100644
+--- a/drivers/dma/bestcomm/bestcomm.c
++++ b/drivers/dma/bestcomm/bestcomm.c
+@@ -48,6 +48,7 @@ bcom_task_alloc(int bd_count, int bd_size, int priv_size)
+ {
+ 	int i, tasknum = -1;
+ 	struct bcom_task *tsk;
++	int irq;
+ 
+ 	/* Don't try to do anything if bestcomm init failed */
+ 	if (!bcom_eng)
+@@ -68,6 +69,10 @@ bcom_task_alloc(int bd_count, int bd_size, int priv_size)
+ 	if (tasknum < 0)
+ 		return NULL;
+ 
++	irq = platform_get_irq(bcom_eng->pdev, tasknum);
++	if (irq < 0)
++		return irq;
++
+ 	/* Allocate our structure */
+ 	tsk = kzalloc(sizeof(struct bcom_task) + priv_size, GFP_KERNEL);
+ 	if (!tsk)
+@@ -77,10 +82,7 @@ bcom_task_alloc(int bd_count, int bd_size, int priv_size)
+ 	if (priv_size)
+ 		tsk->priv = (void*)tsk + sizeof(struct bcom_task);
+ 
+-	/* Get IRQ of that task */
+-	tsk->irq = irq_of_parse_and_map(bcom_eng->ofnode, tsk->tasknum);
+-	if (!tsk->irq)
+-		goto error;
++	tsk->irq = irq;
+ 
+ 	/* Init the BDs, if needed */
+ 	if (bd_count) {
+@@ -102,8 +104,6 @@ bcom_task_alloc(int bd_count, int bd_size, int priv_size)
+ 
+ error:
+ 	if (tsk) {
+-		if (tsk->irq)
+-			irq_dispose_mapping(tsk->irq);
+ 		bcom_sram_free(tsk->bd);
+ 		kfree(tsk->cookie);
+ 		kfree(tsk);
+@@ -126,7 +126,6 @@ bcom_task_free(struct bcom_task *tsk)
+ 	bcom_eng->tdt[tsk->tasknum].stop  = 0;
+ 
+ 	/* Free everything */
+-	irq_dispose_mapping(tsk->irq);
+ 	bcom_sram_free(tsk->bd);
+ 	kfree(tsk->cookie);
+ 	kfree(tsk);
+@@ -365,23 +364,24 @@ bcom_engine_cleanup(void)
+ static int mpc52xx_bcom_probe(struct platform_device *op)
+ {
+ 	struct device_node *ofn_sram;
+-	struct resource res_bcom;
++	struct resource *res_bcom;
++	void __iomem *regs;
+ 
+ 	int rv;
+ 
+ 	/* Inform user we're ok so far */
+ 	printk(KERN_INFO "DMA: MPC52xx BestComm driver\n");
+ 
+-	/* Get the bestcomm node */
+-	of_node_get(op->dev.of_node);
++	regs = devm_platform_get_and_ioremap_resource(op, 0, &res_bcom);
++	if (IS_ERR(regs))
++		return PTR_ERR(regs);
+ 
+ 	/* Prepare SRAM */
+ 	ofn_sram = of_find_matching_node(NULL, mpc52xx_sram_ids);
+ 	if (!ofn_sram) {
+ 		printk(KERN_ERR DRIVER_NAME ": "
+ 			"No SRAM found in device tree\n");
+-		rv = -ENODEV;
+-		goto error_ofput;
++		return -ENODEV;
+ 	}
+ 	rv = bcom_sram_init(ofn_sram, DRIVER_NAME);
+ 	of_node_put(ofn_sram);
+@@ -389,7 +389,7 @@ static int mpc52xx_bcom_probe(struct platform_device *op)
+ 	if (rv) {
+ 		printk(KERN_ERR DRIVER_NAME ": "
+ 			"Error in SRAM init\n");
+-		goto error_ofput;
++		return rv;
+ 	}
+ 
+ 	/* Get a clean struct */
+@@ -400,37 +400,14 @@ static int mpc52xx_bcom_probe(struct platform_device *op)
+ 	}
+ 
+ 	/* Save the node */
+-	bcom_eng->ofnode = op->dev.of_node;
+-
+-	/* Get, reserve & map io */
+-	if (of_address_to_resource(op->dev.of_node, 0, &res_bcom)) {
+-		printk(KERN_ERR DRIVER_NAME ": "
+-			"Can't get resource\n");
+-		rv = -EINVAL;
+-		goto error_sramclean;
+-	}
+-
+-	if (!request_mem_region(res_bcom.start, resource_size(&res_bcom),
+-				DRIVER_NAME)) {
+-		printk(KERN_ERR DRIVER_NAME ": "
+-			"Can't request registers region\n");
+-		rv = -EBUSY;
+-		goto error_sramclean;
+-	}
+-
+-	bcom_eng->regs_base = res_bcom.start;
+-	bcom_eng->regs = ioremap(res_bcom.start, sizeof(struct mpc52xx_sdma));
+-	if (!bcom_eng->regs) {
+-		printk(KERN_ERR DRIVER_NAME ": "
+-			"Can't map registers\n");
+-		rv = -ENOMEM;
+-		goto error_release;
+-	}
++	bcom_eng->pdev = op;
++	bcom_eng->regs = regs;
++	bcom_eng->regs_base = res_bcom->start;
+ 
+ 	/* Now, do the real init */
+ 	rv = bcom_engine_init();
+ 	if (rv)
+-		goto error_unmap;
++		goto error_sramclean;
+ 
+ 	/* Done ! */
+ 	printk(KERN_INFO "DMA: MPC52xx BestComm engine @%08lx ok !\n",
+@@ -439,15 +416,9 @@ static int mpc52xx_bcom_probe(struct platform_device *op)
+ 	return 0;
+ 
+ 	/* Error path */
+-error_unmap:
+-	iounmap(bcom_eng->regs);
+-error_release:
+-	release_mem_region(res_bcom.start, sizeof(struct mpc52xx_sdma));
+ error_sramclean:
+ 	kfree(bcom_eng);
+ 	bcom_sram_cleanup();
+-error_ofput:
+-	of_node_put(op->dev.of_node);
+ 
+ 	printk(KERN_ERR "DMA: MPC52xx BestComm init failed !\n");
+ 
+@@ -463,13 +434,6 @@ static void mpc52xx_bcom_remove(struct platform_device *op)
+ 	/* Cleanup SRAM */
+ 	bcom_sram_cleanup();
+ 
+-	/* Release regs */
+-	iounmap(bcom_eng->regs);
+-	release_mem_region(bcom_eng->regs_base, sizeof(struct mpc52xx_sdma));
+-
+-	/* Release the node */
+-	of_node_put(bcom_eng->ofnode);
+-
+ 	/* Release memory */
+ 	kfree(bcom_eng);
+ 	bcom_eng = NULL;
+diff --git a/include/linux/fsl/bestcomm/bestcomm_priv.h b/include/linux/fsl/bestcomm/bestcomm_priv.h
+index 3b52f3ffbdf8..cddde7c74cb5 100644
+--- a/include/linux/fsl/bestcomm/bestcomm_priv.h
++++ b/include/linux/fsl/bestcomm/bestcomm_priv.h
+@@ -66,7 +66,7 @@ struct bcom_tdt {
+  * This holds all info needed globaly to handle the engine
+  */
+ struct bcom_engine {
+-	struct device_node		*ofnode;
++	struct platform_device		*pdev;
+ 	struct mpc52xx_sdma __iomem     *regs;
+ 	phys_addr_t                      regs_base;
+ 
+-- 
+2.55.0
+
 
