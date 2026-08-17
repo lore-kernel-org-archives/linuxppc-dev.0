@@ -1,88 +1,82 @@
-Return-Path: <linuxppc-dev+bounces-25896-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25897-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7C0F6C5DF66
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2026 00:45:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8CD91C5B572
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2026 00:59:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hNYyY4g5Zz2xd5;
-	Mon, 17 Aug 2026 10:45:09 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::52f"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786927509;
-	cv=none; b=CFqkSlttG4z4gFMqoHydcESQtUS6Bp+2XrQUsd70dxtqYGvdbzw+5RL27AicjQh4lC/os6+LmnFeYOd4JR4iCSjOQTzqzTrqQAiWKvU/M3jBKkXozCfTPR3xsup9yYyvvXEmdEuBnhQoiUZbS8HOMwf2RT+OWhTwprwuCDwGw4ch81Me54zqnXeDY6xdCmRQ0OJh0H10UboSy+7YgPigoBx4hz1a3ntu0HZEoSCs0kw91aPEHEbNChohhXv4gY/ulixDkDq3vyBQ7exAHXnSr49YIYILLhLfw5FvgL2f7RcV2URID5yRmzWbmXu3B+2zbnrbzlDVuq3rqs5Ze7WvVw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hNZGy00cgz2xfB;
+	Mon, 17 Aug 2026 10:59:22 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::533"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786928361;
+	cv=none; b=JyHcYyAkwt1f3fjdxYFLd+OWUCwv5jV+S7HIASvj3AmSO4iykZ84uVqzKZiDn00lUHRkYrlaJm9g4733BPec3q6O+8clINUf2s/bQq+ynsoVoYmiaNEuSZwkjSma2MyCtDpEaWWkcf5i3zk7HFr2tCk1C46Uh06EABwOg4B/CZp4uG5DppJNBlBtG648IH42Wb4R2G9esIxBTNGwsONnXHYdYxyPcmK8CN39CjVgGzrXI5xW7MZxaonVQSMsyEo967lrGGkzwqfVQkP5yKgE5fnhMnkftFH9Ep8IKJRcYDxYEK1VBo7TQLqEV46PmppyhR8Wu4a8lBkUNyNxhmM9tA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786927509; c=relaxed/relaxed;
-	bh=virBiSedo0RsjgNtDHeYNu9b5zOw0VcBr57wB4SYviw=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=WmdIo9rGVNqocYxrGYo8kVPgRRgs2KMmfWjtIo1sIkiS5r/q+TTDbFqpCzBEsZ/pfvFQ4r+M/3gRTMEihSlXSlkukaFiinVNQW2AC3wdrdbv4n25KukzFwy5Dm1ET/zNVbNjQ9ZIs1sZcQn/TPY1ghX4gMMsgGr5Jxug5osWTHeJfWwp5FQTreAKqhzuSrUCeJhfj0S9DZ1SU2TBjpBvBydd3AwXZKq3QXEiHvOBrK0HSUVU59D6bICtOYDfPGgdHFtF8HQFZGEI1oqbgF+/BiHKT4aeqiBXMp9riN4htwmhZSRm+95fiCaL4vZcUtDIsYDTfoVPHn7YO5ldwQT4UA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=q2DtD2Zu; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::52f; helo=mail-pg1-x52f.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1786928361; c=relaxed/relaxed;
+	bh=uuS5dJTjzCBe9OWxiZC20f++qso8otPmot2RU8P/3xU=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=IcE0ucy41o878I1nqSMK0WoXtXXtJo0bbbpZcs4Tc0LLF6eycycXxwJ8zi7ZrNQUrc+N1J3O8RtnekzPx4pfkopf+Capd8WImpt9t0Obt6HfRK5KeFtYOOYuMUfT3fVm3qVGi5spVdMgmIcbsyzkQXQUszLaxU45/G3UjmKcm86im0nXKhpPkh343Zn7GjhuPqsCq/WV2D9iaaAUxRQj80z0qVlqqQT+cLl2xAn4XOBsLGOrv0TJ1UuHeqe/8hJ1Gv3N7V0lOrZpD56PCyIu7YDO4cZgUKCIJBJWo5rndgEde66ofWG/vCmQNv1pCtELVMFGRrecEHAP9QELuSXsRg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=mF+KBTBD; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::533; helo=mail-pg1-x533.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=q2DtD2Zu;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=mF+KBTBD;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::52f; helo=mail-pg1-x52f.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x52f.google.com (mail-pg1-x52f.google.com [IPv6:2607:f8b0:4864:20::52f])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::533; helo=mail-pg1-x533.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x533.google.com (mail-pg1-x533.google.com [IPv6:2607:f8b0:4864:20::533])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hNYyX0WbPz2xW5
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2026 10:45:07 +1000 (AEST)
-Received: by mail-pg1-x52f.google.com with SMTP id 41be03b00d2f7-ca766c1c9ccso1468685a12.0
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Aug 2026 17:45:07 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hNZGw4zgbz2xSl
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2026 10:59:19 +1000 (AEST)
+Received: by mail-pg1-x533.google.com with SMTP id 41be03b00d2f7-cbedda4c154so1504421a12.1
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Aug 2026 17:59:19 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1786927504; x=1787532304; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=virBiSedo0RsjgNtDHeYNu9b5zOw0VcBr57wB4SYviw=;
-        b=q2DtD2ZuUDWia++X0szISK+m0K3xmZ1m64MnE/0V69GzoZluNSg9fptDQ2umirRK8V
-         hHpHmgy0JtXQUFMsBo80yauLybodbK/Ulh5RAxiM3pX79z8Pp5G0V1oAKFDoX1575aF7
-         YOYV6Lpj+O3iczqldHOIWfPBP3PIxlgZnEpW3b+Ifv9bmNNrgzKG7e8M3fIP1CORdHte
-         k2cre/Yi5/DtbvT/bQPfuX9BZDxGvKxk6DTxkPbuvEpK32yIx35InJtSRMEmNZA029VR
-         l4kU61Er29xHQcJ0lSbmIauLo2LqAbrdRc9ccH2v9yLy1U0/hrD7Lrda+blqjw20gNyX
-         lRHw==
+        d=gmail.com; s=20251104; t=1786928357; x=1787533157; darn=lists.ozlabs.org;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
+         :cc:subject:date:message-id:reply-to:content-type;
+        bh=uuS5dJTjzCBe9OWxiZC20f++qso8otPmot2RU8P/3xU=;
+        b=mF+KBTBDMYotCuEqNJcA9NFNq5ApzHSmuXpn2EYTF9FcDhsOnWaAoIa32imgb7Gil5
+         NmLS/4QrsLy65n1NXTlclWqHyZu8SwslrNu36fqBgwdPOo1zpcmBZmVV25aYnxcc2u5T
+         kX/Z9ZvUNkFv8r5RfwvlgHXzPgwTxVEc+4136TFmj7We1rvMoexTIRh6XVKWo3emW38Y
+         ymmksJ3w9lpUsj8G9yidhofWR3WI1USTPwzehZkbLQlfWYUBF+O/m1PzFYwqSgMpTuEP
+         POw6vo1rlhPcTjjzAxGNgyEkWBP2ISMp8dlVKysvFImLUqNmB+20tPgXKsdn35cbCkmB
+         iCSg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786927504; x=1787532304;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=virBiSedo0RsjgNtDHeYNu9b5zOw0VcBr57wB4SYviw=;
-        b=DJG272HmNI14cZJBWMuKXegYIecytZ7l9u3AccoXgzj4fGw0n7aNFUEWDiNVi1exlf
-         2mdWX/e8m25n7OreNxLbCa5evR6KJ9iZ4UYc6EK8jnwHTMIKXOoxMVNiutVNJNmOuiGc
-         Pn6UKA3V9Jn9LsmqwyXXFUqCk44tA6Ujw40Tis8bVq5rqHFaKtXAN1mG7MslxuFJo5KT
-         S3hjy+WtrzSJE+vGdmqZo6dSj12m3YXx3G3G8reo2DVw5NMxBmthzqcF+ujVLizUlbyp
-         +gz/9ma7eEzS3PCfOtgJN6YGzaAWH2DGD1gPl5Jn65oZzks8Edl9OmIVPltz7cwL89zM
-         EsTQ==
-X-Forwarded-Encrypted: i=1; AHgh+Rq0x0vTXETehHPkNSJwcrq4lDpV6IUHXHcp8KDOe3yf+jTdPJs+pac/UYE3xm0DCgtdb/6ShOudm4CcR+w=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyVyio4yoJEXd1nwQcV7rzrIEtFdgb5YN7Vwb3POCxbxnsXv85C
-	pzngkXdJp9+k1CBjNVPJZFgFyoVE85u0lMM9eiirgutvlN4K3GkN0sES
-X-Gm-Gg: AR+sD10ZyJwM1UanvfNLwvLNajvPyQ9k5ekPi7TFO7TYrNm7zIj2sLOZ3sReDvzjPZP
-	tCI4rV3SPZHtUSZewcpyrBnOjJ0BSS7SNfY9DMonSp4N3+V+Z27YqW9CVIbbl9GvFBDd+lbIYbw
-	mZg7KrFXDEozL6QLJBpxHUtuk3UK6q1lLSr6aW49nQQTvt6UAACNXaigCRYLjiOm145Q9JLNsut
-	4arQQ7etmidIWAnmSg5PUHFE7qqXN2wxrznBjuOkvTXm3ZWxO9AoFWiqG7NHcUcA+ZTrMjgwL4d
-	Ly7ZZUUocjBl0Ur9VjyMABKZqcMojpjWymHX+yhP/suJxPLmzwaVPJudvKL1D5sHWJx1ar+nCK0
-	Kvkbd8ujTuWii45Nj1/rc5EG8dzsavSuci+1+ZfLpXo+j6Hf/3K3BxK3gHG5Bkrj+6mZqkbU7Lt
-	xAwcI3R0lYvQLpvokxgYTQeHdkrt45oNjcEh5y4N5clYTs9BnAjp3x5nYMXQmQE9NAhamtruBk9
-	pB+rLTSBYrl5VhrCYPmbHOhEXnW/tkuUWiIdn5FMJMCnWf4gPdyIpBvcOO12Hv5tBxlO7LzQ9PD
-	e2XS/DH8vfORjKcXhRQuGZSmwLSpenGYhCOOXIbi3EOHXwmO
-X-Received: by 2002:a05:6a00:179f:b0:842:2419:6bfe with SMTP id d2e1a72fcca58-84fde364c19mr20472853b3a.7.1786927504085;
-        Sun, 16 Aug 2026 17:45:04 -0700 (PDT)
-Received: from ryzen.lan ([2601:644:8000:7a86::e35])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8517d01c2e7sm2164077b3a.13.2026.08.16.17.45.01
+        d=1e100.net; s=20251104; t=1786928357; x=1787533157;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=uuS5dJTjzCBe9OWxiZC20f++qso8otPmot2RU8P/3xU=;
+        b=V0nNckCxWzUT5zwAjJB00Zxtd7J38KYabSHYG3tXlDQWUcrOswfFVyB4rW/cy8Vp3T
+         37kljYwy7BKqN2KoDQPZ0JNDnwNEbys6xUzEUtyMAEPCXmo5KtJZmShz2xQiPL4W9X7R
+         1pUSvC9/PxFqBn8hKBl/QvETjlyxq2x+qRm60e8XMmht41PwMCzIR5wkhAyclrfwdzpC
+         rukAWiTB8OL6gveJFlCnTPNR/MniPfZU/gy+R5HvwwnJjO+JvEc0BGnMuO2q95p+cPJ4
+         fr6zRN9r5HdQ94WJ1cK1zqb5VeslzJbZewW1unBjuwh30BrChIt8DTYhW/wHtL8Cep2o
+         FUDw==
+X-Gm-Message-State: AOJu0Yx2jeaOlHV5u7MSulMuCYH0aAG7iBKmS2lvEEVsqKp08WcmYexp
+	TG0I4C6PQoQCnSDXjmdCkbb7WSX+KWgF/Ef1FzO/nyzzkE6tlJPpSVeQBohBdbD/
+X-Gm-Gg: AR+sD13BC8vydfwEjC8FXhhjVLdcaIFAAo1X8NwvzeUl/WCwL9TfaaP0gnsT9cvku8m
+	YjbR4p35ystvhycKlTswMgNMnjA1WDX3XfV3CWC6f8YmBwdDYC6mhPSCCrRJHBlBuXM0E5ix1f9
+	26gSAqkZ/GjpfXH7dFiDhFd6AvOyB3uRI0VvNq/XyM+VLxjbSbvfUocXM4r1hxdGpTlK7MPMnhI
+	fZG4iEzHUC1Zlx8Vdox3AI96KDSqfCxy2QDkX2+DF9qtLD+AncOPFSWat7EhZ8rjE442q8hDWy6
+	dWhRFE6SSDVOOrGfNwICtiZ+8g9BjUZcc5Gp4ne7CzDBZaCSmxfSkQ1XMUIXak3oHX5YhdR0xfR
+	kExzIsdYrdxchHPm82AE3gpNtZuJO2YXTBaxtZx1SROJzFoYxt6AHfYqXcK1MNg2YuXoqk7rhzx
+	ln6Q4Gp1PL5LlvtOADRZFQwOTTAG+rtyX7z42YreRGUnaUIz+fWNpXgNXVqVPDm+B0UQdo8dqQj
+	J5ZtdAg/hLOgE8hcD9nwCnBakofeJ+8p/jrFnBQ0vS2
+X-Received: by 2002:a05:6a20:160e:b0:3b4:5ff3:45cb with SMTP id adf61e73a8af0-3cc719ff645mr23740494637.8.1786928356408;
+        Sun, 16 Aug 2026 17:59:16 -0700 (PDT)
+Received: from pve-server ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-326793c43b7sm28578eec.7.2026.08.16.17.59.12
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 16 Aug 2026 17:45:02 -0700 (PDT)
-From: Rosen Penev <rosenp@gmail.com>
-To: dmaengine@vger.kernel.org
-Cc: Vinod Koul <vkoul@kernel.org>,
-	Frank Li <Frank.Li@kernel.org>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	linux-kernel@vger.kernel.org (open list),
-	linuxppc-dev@lists.ozlabs.org (open list:FREESCALE SOC DRIVERS),
-	linux-arm-kernel@lists.infradead.org (moderated list:FREESCALE SOC DRIVERS)
-Subject: [PATCH] dmaengine: bestcomm: ioremap and get irq early
-Date: Sun, 16 Aug 2026 17:45:00 -0700
-Message-ID: <20260817004500.59251-1-rosenp@gmail.com>
-X-Mailer: git-send-email 2.55.0
+        Sun, 16 Aug 2026 17:59:15 -0700 (PDT)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Timothy Pearson <tpearson@raptorengineering.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Shivaprasad G Bhat <sbhat@linux.ibm.com>, Gaurav Batra <gbatra@linux.ibm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+Subject: Re: [BUG] VFIO on POWER9 / QEMU fails to allocate 32-bit DMA
+In-Reply-To: <192733194.2399.1786205965385.JavaMail.zimbra@raptorengineeringinc.com>
+Date: Mon, 17 Aug 2026 05:52:18 +0530
+Message-ID: <qzjxk345.ritesh.list@gmail.com>
+References: <334689093.41938.1785796754275.JavaMail.zimbra@raptorengineeringinc.com> <o6fflsxx.ritesh.list@gmail.com> <980372793.1709.1786165222084.JavaMail.zimbra@raptorengineeringinc.com> <wlu1jj0b.ritesh.list@gmail.com> <31839892.1773.1786167284864.JavaMail.zimbra@raptorengineeringinc.com> <v79kk8ei.ritesh.list@gmail.com> <192733194.2399.1786205965385.JavaMail.zimbra@raptorengineeringinc.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -95,208 +89,135 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 
-Doing so allows handling potential -EPROBE_DEFER before any work gets
-done.
 
-Replace the open-coded resource lookup, request_mem_region, ioremap and
-the manual iounmap/release_mem_region cleanup in probe/remove with the
-managed devm_platform_get_and_ioremap_resource() helper. This removes the
-now-unused error-unmap/release paths and simplifies the driver.
+Hi Timothy
 
-Assisted-by: opencode:hy3-free
-Signed-off-by: Rosen Penev <rosenp@gmail.com>
+Timothy Pearson <tpearson@raptorengineering.com> writes:
 
-dmaengine: bestcomm: get irq early
+> ----- Original Message -----
+>> From: "Ritesh Harjani" <ritesh.list@gmail.com>
+>> To: "Timothy Pearson" <tpearson@raptorengineering.com>
+>> Cc: "linuxppc-dev" <linuxppc-dev@lists.ozlabs.org>, "Shivaprasad G Bhat" <sbhat@linux.ibm.com>, "Gaurav Batra"
+>> <gbatra@linux.ibm.com>, "Madhavan Srinivasan" <maddy@linux.ibm.com>, "Venkat Rao Bagalkote" <venkat88@linux.ibm.com>
+>> Sent: Saturday, August 8, 2026 9:13:09 AM
+>> Subject: Re: [BUG] VFIO on POWER9 / QEMU fails to allocate 32-bit DMA
+>
+>> Timothy Pearson <tpearson@raptorengineering.com> writes:
+>> 
+>>> ----- Original Message -----
+>>> No worries, appreciated.  This is only one of several major problems with Linux
+>>> on PowerNV that we have run into after recent upgrades, and the primary focus
+>>> at the moment is on restoring broken functionality.  In many cases, that means
+>>> moving to different hardware, so gathering logs afterward can be difficult /
+>>> impossible.
+>>>
+>> 
+>> Sorry to hear that you have been facing such issues recently. I will
+>> bring this up internally. We will try to add more test matrix for
+>> upstream PowerNV (note that we already have PowerNV tested regularly as
+>> part of our upstream CI, but I suppose we could extend more KVM guest
+>> testing there), so that we can reduce down on such reports.
+>
+> That would be very helpful.  I have a number of other internal reports (and some external customer reports) that I will try to get together for submission here.  Given the testing on PowerNV seems quite sparse at the moment, if you do need additional PowerNV machines for testing we have bare metal cloud leases available.
+>
 
-platform_get_irq can return -EPROBE_DEFER, which is useful to avoid
-doing extra work in such a case
+Thanks for bringing up your concern. Based on your feedback, we brought
+up this topic internally. So currently w.r.t upstream maintainance work,
+we have build, boot, selftests and few other test runs, on our PowerNV
+systems, but I agree our other major testing was happening on Pseries
+platform. So, we decided to add more PowerNV machines to our internal CI
+and expand / increase our upstream CI tests and runs on these baremetal
+machines too. This is going to happen very soon, so hopefully, this
+should reduce such reports in the future.
 
-Signed-off-by: Rosen Penev <rosenp@gmail.com>
----
- drivers/dma/bestcomm/bestcomm.c            | 70 ++++++----------------
- include/linux/fsl/bestcomm/bestcomm_priv.h |  2 +-
- 2 files changed, 18 insertions(+), 54 deletions(-)
 
-diff --git a/drivers/dma/bestcomm/bestcomm.c b/drivers/dma/bestcomm/bestcomm.c
-index 432b43520ddc..55ad7bc34df7 100644
---- a/drivers/dma/bestcomm/bestcomm.c
-+++ b/drivers/dma/bestcomm/bestcomm.c
-@@ -48,6 +48,7 @@ bcom_task_alloc(int bd_count, int bd_size, int priv_size)
- {
- 	int i, tasknum = -1;
- 	struct bcom_task *tsk;
-+	int irq;
- 
- 	/* Don't try to do anything if bestcomm init failed */
- 	if (!bcom_eng)
-@@ -68,6 +69,10 @@ bcom_task_alloc(int bd_count, int bd_size, int priv_size)
- 	if (tasknum < 0)
- 		return NULL;
- 
-+	irq = platform_get_irq(bcom_eng->pdev, tasknum);
-+	if (irq < 0)
-+		return irq;
-+
- 	/* Allocate our structure */
- 	tsk = kzalloc(sizeof(struct bcom_task) + priv_size, GFP_KERNEL);
- 	if (!tsk)
-@@ -77,10 +82,7 @@ bcom_task_alloc(int bd_count, int bd_size, int priv_size)
- 	if (priv_size)
- 		tsk->priv = (void*)tsk + sizeof(struct bcom_task);
- 
--	/* Get IRQ of that task */
--	tsk->irq = irq_of_parse_and_map(bcom_eng->ofnode, tsk->tasknum);
--	if (!tsk->irq)
--		goto error;
-+	tsk->irq = irq;
- 
- 	/* Init the BDs, if needed */
- 	if (bd_count) {
-@@ -102,8 +104,6 @@ bcom_task_alloc(int bd_count, int bd_size, int priv_size)
- 
- error:
- 	if (tsk) {
--		if (tsk->irq)
--			irq_dispose_mapping(tsk->irq);
- 		bcom_sram_free(tsk->bd);
- 		kfree(tsk->cookie);
- 		kfree(tsk);
-@@ -126,7 +126,6 @@ bcom_task_free(struct bcom_task *tsk)
- 	bcom_eng->tdt[tsk->tasknum].stop  = 0;
- 
- 	/* Free everything */
--	irq_dispose_mapping(tsk->irq);
- 	bcom_sram_free(tsk->bd);
- 	kfree(tsk->cookie);
- 	kfree(tsk);
-@@ -365,23 +364,24 @@ bcom_engine_cleanup(void)
- static int mpc52xx_bcom_probe(struct platform_device *op)
- {
- 	struct device_node *ofn_sram;
--	struct resource res_bcom;
-+	struct resource *res_bcom;
-+	void __iomem *regs;
- 
- 	int rv;
- 
- 	/* Inform user we're ok so far */
- 	printk(KERN_INFO "DMA: MPC52xx BestComm driver\n");
- 
--	/* Get the bestcomm node */
--	of_node_get(op->dev.of_node);
-+	regs = devm_platform_get_and_ioremap_resource(op, 0, &res_bcom);
-+	if (IS_ERR(regs))
-+		return PTR_ERR(regs);
- 
- 	/* Prepare SRAM */
- 	ofn_sram = of_find_matching_node(NULL, mpc52xx_sram_ids);
- 	if (!ofn_sram) {
- 		printk(KERN_ERR DRIVER_NAME ": "
- 			"No SRAM found in device tree\n");
--		rv = -ENODEV;
--		goto error_ofput;
-+		return -ENODEV;
- 	}
- 	rv = bcom_sram_init(ofn_sram, DRIVER_NAME);
- 	of_node_put(ofn_sram);
-@@ -389,7 +389,7 @@ static int mpc52xx_bcom_probe(struct platform_device *op)
- 	if (rv) {
- 		printk(KERN_ERR DRIVER_NAME ": "
- 			"Error in SRAM init\n");
--		goto error_ofput;
-+		return rv;
- 	}
- 
- 	/* Get a clean struct */
-@@ -400,37 +400,14 @@ static int mpc52xx_bcom_probe(struct platform_device *op)
- 	}
- 
- 	/* Save the node */
--	bcom_eng->ofnode = op->dev.of_node;
--
--	/* Get, reserve & map io */
--	if (of_address_to_resource(op->dev.of_node, 0, &res_bcom)) {
--		printk(KERN_ERR DRIVER_NAME ": "
--			"Can't get resource\n");
--		rv = -EINVAL;
--		goto error_sramclean;
--	}
--
--	if (!request_mem_region(res_bcom.start, resource_size(&res_bcom),
--				DRIVER_NAME)) {
--		printk(KERN_ERR DRIVER_NAME ": "
--			"Can't request registers region\n");
--		rv = -EBUSY;
--		goto error_sramclean;
--	}
--
--	bcom_eng->regs_base = res_bcom.start;
--	bcom_eng->regs = ioremap(res_bcom.start, sizeof(struct mpc52xx_sdma));
--	if (!bcom_eng->regs) {
--		printk(KERN_ERR DRIVER_NAME ": "
--			"Can't map registers\n");
--		rv = -ENOMEM;
--		goto error_release;
--	}
-+	bcom_eng->pdev = op;
-+	bcom_eng->regs = regs;
-+	bcom_eng->regs_base = res_bcom->start;
- 
- 	/* Now, do the real init */
- 	rv = bcom_engine_init();
- 	if (rv)
--		goto error_unmap;
-+		goto error_sramclean;
- 
- 	/* Done ! */
- 	printk(KERN_INFO "DMA: MPC52xx BestComm engine @%08lx ok !\n",
-@@ -439,15 +416,9 @@ static int mpc52xx_bcom_probe(struct platform_device *op)
- 	return 0;
- 
- 	/* Error path */
--error_unmap:
--	iounmap(bcom_eng->regs);
--error_release:
--	release_mem_region(res_bcom.start, sizeof(struct mpc52xx_sdma));
- error_sramclean:
- 	kfree(bcom_eng);
- 	bcom_sram_cleanup();
--error_ofput:
--	of_node_put(op->dev.of_node);
- 
- 	printk(KERN_ERR "DMA: MPC52xx BestComm init failed !\n");
- 
-@@ -463,13 +434,6 @@ static void mpc52xx_bcom_remove(struct platform_device *op)
- 	/* Cleanup SRAM */
- 	bcom_sram_cleanup();
- 
--	/* Release regs */
--	iounmap(bcom_eng->regs);
--	release_mem_region(bcom_eng->regs_base, sizeof(struct mpc52xx_sdma));
--
--	/* Release the node */
--	of_node_put(bcom_eng->ofnode);
--
- 	/* Release memory */
- 	kfree(bcom_eng);
- 	bcom_eng = NULL;
-diff --git a/include/linux/fsl/bestcomm/bestcomm_priv.h b/include/linux/fsl/bestcomm/bestcomm_priv.h
-index 3b52f3ffbdf8..cddde7c74cb5 100644
---- a/include/linux/fsl/bestcomm/bestcomm_priv.h
-+++ b/include/linux/fsl/bestcomm/bestcomm_priv.h
-@@ -66,7 +66,7 @@ struct bcom_tdt {
-  * This holds all info needed globaly to handle the engine
-  */
- struct bcom_engine {
--	struct device_node		*ofnode;
-+	struct platform_device		*pdev;
- 	struct mpc52xx_sdma __iomem     *regs;
- 	phys_addr_t                      regs_base;
- 
--- 
-2.55.0
+BTW - notice that the current issue - I reproduced on Pseries
+development environment itself. So this one seems to be some special
+case where you either have a 32-bit and a 64-bit HW sitting on the same
+PE (partitionable endpoint) behind the same iommu group (like sometimes
+behind a PCIe switch) or maybe the HW does both 32-bit and 64-bit probe.
+But anyways the patch I pointed should fix that problem and we will
+ensure it is backported to all stable kernels, and likely the
+distributions should pick that up as well (we will take care of that too).
+
+> One of the customer reports I already forwarded up to Github, but further logs aren't available as the customer has already moved to different hardware:
+>
+> https://github.com/tbsdtv/linux_media/issues/431
+>
+> The final straw that caused migration on that side was yet another VFIO bug on top of the invalid DMA that prevented EEH recovery and was forcing host resets to thaw the frozen PE.  I'll try to submit that report here as well.
+>
+
+Sure thanks. I see you already have shared few reports. We will take a
+look at those. If there is anything else please feel free to share it
+with us.
+
+>> Although not with VFIO - but I verified this issue by adding e1000
+>> 32-bit DMA device on the same PHB where other 64bit DMA devices were
+>> attached (in my Qemu development environment).
+>> 
+>> And with that I was able to re-create the issue with kexec i.e. on kexec
+>> I see the following error similar to what you reported in your
+>> environment:
+>> 
+>> [    5.537726] pci 0000:00:01.0: ibm,query-pe-dma-windows(2026) 800 8000000
+>> 20000000 returned 0, lb=2000000000 ps=107 wn=0
+>> [    5.540233] pci 0000:00:01.0: Adding to iommu group 0
+>> [    5.556968] pci 0000:00:03.0: Adding to iommu group 0
+>> [    5.567164] PCI: Probing PCI hardware done
+>> [    9.395499] virtio-pci 0000:00:03.0: lsa_required: 0, lsa_enabled: 0, direct
+>> mapping: 0
+>> [    9.396111] virtio-pci 0000:00:03.0: lsa_required: 0, lsa_enabled: 0, direct
+>> mapping: 0
+>> [   13.228575] e1000: Intel(R) PRO/1000 Network Driver
+>> [   13.229566] e1000: Copyright (c) 1999-2006 Intel Corporation.
+>> [   13.253804] e1000 0000:00:01.0: Warning: IOMMU offset too big for device mask
+>> [   13.255200] e1000 0000:00:01.0: mask: 0xffffffff, table offset:
+>> 0x800000000000000
+>> [   13.256611] e1000: No usable DMA config, aborting
+>> [   13.267336] e1000 0000:00:01.0: probe with driver e1000 failed with error -5
+>> 
+>> This is failing with same error as you had reported:
+>>     "Warning: IOMMU offset too big for device mask"
+>> 
+>> Whereas after I applied the patch mentioned in [1], I am able to see the
+>> device working fine after kexec. Here are the logs with the fix applied:
+>> 
+>> [    6.197623] pci 0000:00:01.0: ibm,query-pe-dma-windows(2026) 800 8000000
+>> 20000000 returned 0, lb=2000000000 ps=107 wn=0
+>> [    6.201686] pci 0000:00:01.0: Adding to iommu group 0
+>> [    6.221890] pci 0000:00:03.0: Adding to iommu group 0
+>> [    8.991990] virtio-pci 0000:00:03.0: lsa_required: 0, lsa_enabled: 0, direct
+>> mapping: 0
+>> [    8.992710] virtio-pci 0000:00:03.0: lsa_required: 0, lsa_enabled: 0, direct
+>> mapping: 0
+>> [   11.315607] e1000: Intel(R) PRO/1000 Network Driver
+>> [   11.316191] e1000: Copyright (c) 1999-2006 Intel Corporation.
+>> [   11.671185] e1000 0000:00:01.0 eth1: (PCI:33MHz:32-bit) 52:54:00:12:34:56
+>> [   11.672604] e1000 0000:00:01.0 eth1: Intel(R) PRO/1000 Network Connection
+>> 
+>>>
+>>> Thank you for the link.  When / if we want to test a migration of that hardware
+>>> back to VFIO on PowerNV I will ensure that patch is applied before testing.
+>> 
+>> Sure, I think this should fix the issue you reported. We have tagged
+>> that fix with stable - so we will ensure it is backported to stable
+>> kernel releases as well.
+>
+> That sounds great, thanks.  Does IBM have any plans to support Debian LTS (Freexian) so these patches can flow into the broken distribution kernels?
+>
+
+yes, we do support that. Once the patch is merged and available in
+stable kernels, we will ensure this is backported to this distribution
+as well.
+
+> Thanks!
+
+I see you have already shared few more reports with us. We will be
+looking into those and will bring those to closure too.
+
+Thanks again for sharing the details with us.
+
+-ritesh
 
 
