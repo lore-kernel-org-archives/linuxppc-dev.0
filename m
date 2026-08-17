@@ -1,74 +1,55 @@
-Return-Path: <linuxppc-dev+bounces-25908-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25909-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B068C5DF66
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2026 19:38:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 16A32C5B572
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2026 20:28:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hP36858Nzz2yGf;
-	Tue, 18 Aug 2026 05:38:24 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786995504;
-	cv=none; b=BErynxNFurVrC5+Bd2xxdfz9qHjeD56liaftWzhzNs0MSzRaqmJITyc8cpjPkvBxCjzNr9Np4JUzA2idPPTr4Lq45War4pWUDviSOQ2JgrlSXS+YsVzcNRc6rKV5w96cC5kjIORYmlOzv4JKaJeOjfleU84/WJC+vgKktPQYfyn9ort+K6NIytU1Zm7KDiClIlnJUfo0KVco4aRBwHZVzsSl8DJbf+kfp3d+FiXnHhJvcd/RtAO1JytydWz9U+InfRvSQ0a1yEa4V+Yi7ouvmeTr7KeD0y7CprmcwFehftsxvj7ACmxlhlGI9HPsLTgEGzMI+uAfWN5zi7TlrawYdA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hP4CS621bz2yS0;
+	Tue, 18 Aug 2026 06:28:04 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786998484;
+	cv=none; b=AuGY8RlJGSZQ+bCENbET0jGfiyvtDgh9Pi/tucZEW2XibePQ99ik5lmSzEpSatvaAxsDQL/gEyWodhuzr6xS8DljuUntcVaxP9Dp2CG5Ovgzm51C27sL4lU38xxhhXG8lFZbMa33/KYC6Sk1tsBNUL36A2gYoLWFJPEBvzy0eYhfvWzHN6uEelnE3OYOiYhoCO2xhRgmRO98o9sd2Jk2cP+dRcsuF8ODoBM0bW1JV8miHGrUtJATy19TSoKVEFSmuwPSrPSrCH9G5wot4F3uSmlbSBc0CTLP2MeDQ5fUWeyalm3dGKxn0GK7djhk7EiV4MMa47+7T3aSLJY1Ucgokw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786995504; c=relaxed/relaxed;
-	bh=cD3mmvYKpha8dr0drJhM5eVX4f+kSXFZpxrYv6xr2MI=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=WIGDMixSOoEBgEkyjPh/PKYNdH/uxUVoXQqRS04kQ/6JYwxOn3npcdBc8bk3g76igB7uSS9zfDDSOcsUPkz3UA3FE/gbXO8nbGzwFpKLjzFqWX2ubj27PaO7Hb/EEuk33y6znN013EXS4GFlOJY6hH92ni44SarFoeplk45o1GQd0U0kwZJvlf4Kj+9Dv4YVkBKyk026gOKNq6iT5KYUCkuKmkCKPv1SeJJMsucN+Tck7E4HUrxC4JvgQeUNa6LSgjO3Ky9p0ooI1prqrEfttEVUU5RUUJnERiESstyJHTdLHATOqO+ShdIzFP722O+24cBtDEB1aZ5B2he3lDFprg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Vv5RJUiu; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1786998484; c=relaxed/relaxed;
+	bh=iT7pyeCP68IrimjhvYp3yrFygUyQrKbAj9ZakBBlvWc=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=nuiotfTZTbfGTB1ouXIwJzs+lp74QQapZGeBW93MURjOQdmUtCxZbIjQLjTMQZDoPS3aEz157dHQIU4f1Zz4C4X8QKpecuZFyFfYURQo52TTdei/8tqwDsbra/6eG4H8TVHyYhXIPlbD/pzzJsj8W7A9WsLGn6zfwWPEnP2+lBUWUqm3v+vpfUAGG+T5VoPtQGVAAiLktCi2b/P4PhGujYFFsjyfp5h6y47EWV0joZP1OXmD+WCkMBa6nbDae4BnRhTRDNZkQQFEaE5TxRsarw8SA9eSpmIylufvNJ41ZZsKrcsi+Fz7ejcBojQmhUKvBUM1kaL2pNfj4jypXPcvVg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gF10GSGJ; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=devnull+davemarq.linux.ibm.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Vv5RJUiu;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gF10GSGJ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=devnull+davemarq.linux.ibm.com@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hP3674Yxmz2y8G
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2026 05:38:23 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 726F9601DE;
-	Mon, 17 Aug 2026 19:38:20 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id F32211F000E9;
-	Mon, 17 Aug 2026 19:38:12 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1786995500;
-	bh=cD3mmvYKpha8dr0drJhM5eVX4f+kSXFZpxrYv6xr2MI=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=Vv5RJUiurDKE+42m3+I7fooZ17angkcbBiMDqDM8ibSdc48S/D8pELAOlGV3auY2a
-	 swGTKPUkuoYVei0oUYXOZ11RnUu6pf3lLUOkqe1BEVQHs9dNtxABN4RU6Vhv3eGMmw
-	 VCbcM7xtWGKmpl0LKqSoknM29gzUvw9jFSbJGl35sgzARcjrfCmRz9OjWIUexJ+5w5
-	 Hv1af/O5CSR+i2PSv0+6bneQJtmAVf8fpjiA1w6rmOYQUwEQLf8Ala7pJsX353LX42
-	 +QoBl0WJ7uzZMkvhY+A+gdFfAzpqdZYMs+Zo0sbBk4f/ufpbCCrqxvGkJOXu574Rqc
-	 dT1EoMcyHeR9A==
-Date: Mon, 17 Aug 2026 12:38:10 -0700
-From: Nathan Chancellor <nathan@kernel.org>
-To: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
-Cc: FUJITA Tomonori <tomo@flapping.org>, linkmauve@linkmauve.fr,
-	maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
-	chleroy@kernel.org, peterz@infradead.org, jpoimboe@kernel.org,
-	jbaron@akamai.com, aliceryhl@google.com, rostedt@goodmis.org,
-	ardb@kernel.org, ojeda@kernel.org, boqun@kernel.org,
-	gary@garyguo.net, bjorn3_gh@protonmail.com, lossin@kernel.org,
-	a.hindborg@kernel.org, tmgross@umich.edu, dakr@kernel.org,
-	daniel.almeida@collabora.com, tamird@kernel.org,
-	acourbot@nvidia.com, work@onurozkan.dev, ndesaulniers@google.com,
-	morbo@google.com, justinstitt@google.com, fujita.tomonori@gmail.com,
-	joelagnelf@nvidia.com, gregkh@linuxfoundation.org,
-	prafulrai522@gmail.com, nsc@kernel.org, japo@linux.ibm.com,
-	lina+kernel@asahilina.net, j@jannau.net, airlied@gmail.com,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	rust-for-linux@vger.kernel.org, llvm@lists.linux.dev
-Subject: Re: [PATCH V17 0/7] Rust Support for powerpc
-Message-ID: <20260817193810.GA4060679@ax162>
-References: <20260708082454.1254320-1-mkchauras@gmail.com>
- <178574013457.29744.6211258618175255546.b4-ty@linux.ibm.com>
- <anG67Q6Y59kDqh-c@desktop>
- <20260804.224035.269658578200153488.tomo@flapping.org>
- <anMsbbRNiihKB-z7@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hP4CR4g4Mz2yGf
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2026 06:28:03 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id C2E00438A5;
+	Mon, 17 Aug 2026 20:28:00 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 9709BC2BCFB;
+	Mon, 17 Aug 2026 20:28:00 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1786998480;
+	bh=ibH6S6bENnAuY6Aa+juHgFRTm4gvytfx9OuJzg8EsIY=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=gF10GSGJCzm6/VSnsXkagfLOTPmDgqQ/P/vDV4Et94s58qfdkxWElNBnO4ikpmCE5
+	 zyMbJFxXVDFvrJlAj8TpgVmodRZzfmQaEg1qcAwkvhwifOiZ5l3EFBKnpiu9WHOlu7
+	 IlUqRWxh+TFFtH/dYEeKKWwLNj55meaADEYUEzW3l5PZBd5wEBlHrT7MP+ViJ15xfY
+	 SnPdBxuBmfAEKPGxldeCDhhEJ9AyiywQnkd+rtI4clUippC/b9qokb1dvB+bX5chkF
+	 aLA2tbinbLHbHCF59a9mWbDAbOT268VU+JsulgQmdzR74lDC3qWcVof4ieK6b2K/vs
+	 ZiGgru06KBxPg==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E21EC5DF7A;
+	Mon, 17 Aug 2026 20:28:00 +0000 (UTC)
+From: Dave Marquardt via B4 Relay <devnull+davemarq.linux.ibm.com@kernel.org>
+Date: Mon, 17 Aug 2026 15:27:56 -0500
+Subject: [PATCH v6 3/8] scsi: ibmvfc: define asynchronous sub-queue
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,115 +63,86 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <anMsbbRNiihKB-z7@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260817-ibmvfc-fpin-support-v6-3-62a2d525e70d@linux.ibm.com>
+References: <20260817-ibmvfc-fpin-support-v6-0-62a2d525e70d@linux.ibm.com>
+In-Reply-To: <20260817-ibmvfc-fpin-support-v6-0-62a2d525e70d@linux.ibm.com>
+To: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, 
+ "Martin K. Petersen" <martin.petersen@oracle.com>, 
+ Madhavan Srinivasan <maddy@linux.ibm.com>, 
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
+ Tyrel Datwyler <tyreld@linux.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org, 
+ linuxppc-dev@lists.ozlabs.org, Brian King <brking@linux.ibm.com>, 
+ Greg Joyce <gjoyce@linux.ibm.com>, Kyle Mahlkuch <kmahlkuc@linux.ibm.com>, 
+ Dave Marquardt <davemarq@linux.ibm.com>
+X-Mailer: b4 0.16.0
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1786998478; l=1724;
+ i=davemarq@linux.ibm.com; s=20260216; h=from:subject:message-id;
+ bh=/KuclEPljx50OTgTOexb3g3OjrWOPH3RuTwtYAu4ZCA=;
+ b=+1629IP57o+J51b+3ITeltUAP+OLqWdGeAZJHhZ90rI7MHuCuzRXht3bgo2YPc7JdegRHvPQg
+ OJb/Ew+AxR3B0ZuppdltVOt7zVVrsY1iGhr+1qq82o7EImQS8yqL1zI
+X-Developer-Key: i=davemarq@linux.ibm.com; a=ed25519;
+ pk=vy0/nfobrje6EqZxuyw6a3ZstytG8WK2vf5Y3xtGrEg=
+X-Endpoint-Received: by B4 Relay for davemarq@linux.ibm.com/20260216 with
+ auth_id=689
+X-Original-From: Dave Marquardt <davemarq@linux.ibm.com>
+Reply-To: davemarq@linux.ibm.com
 
-Hi Mukesh,
+From: Dave Marquardt <davemarq@linux.ibm.com>
 
-On Wed, Aug 05, 2026 at 05:59:14PM +0530, Mukesh Kumar Chaurasiya wrote:
-> On Tue, Aug 04, 2026 at 10:40:35PM +0900, FUJITA Tomonori wrote:
-> > On Tue, 4 Aug 2026 12:11:57 +0200
-> > Link Mauve <linkmauve@linkmauve.fr> wrote:
-> > > I just tested those again in linux-next, with the Wii support series on
-> > > top, but now the kernel fails to build due to ARCH_WARN_ASM and
-> > > ARCH_WARN_REACHABLE not being defined on PowerPC:
-> > > ```
-> > > error: no rules expected `ARCH_WARN_ASM`
-> > >    --> /home/linkmauve/dev/linux/wii/rust/kernel/generated_arch_warn_asm.rs:1:28
-> > >     |
-> > >   1 | ::kernel::concat_literals!(ARCH_WARN_ASM("{file}", "{line}", "{flags}", "{size}"))
-> > >     |                            ^^^^^^^^^^^^^ no rules expected this token in macro call
-> > >     |
-> > >    ::: ../rust/kernel/lib.rs:279:1
-> > >     |
-> > > 279 | macro_rules! concat_literals {
-> > >     | ---------------------------- when calling this macro
-> > >     |
-> > >     = note: while trying to match sequence start
-> > > 
-> > > error: no rules expected `ARCH_WARN_REACHABLE`
-> > >    --> /home/linkmauve/dev/linux/wii/rust/kernel/generated_arch_reachable_asm.rs:1:28
-> > >     |
-> > >   1 | ::kernel::concat_literals!(ARCH_WARN_REACHABLE)
-> > >     |                            ^^^^^^^^^^^^^^^^^^^ no rules expected this token in macro call
-> > >     |
-> > >    ::: ../rust/kernel/lib.rs:279:1
-> > >     |
-> > > 279 | macro_rules! concat_literals {
-> > >     | ---------------------------- when calling this macro
-> > >     |
-> > >     = note: while trying to match sequence start
-> > > 
-> > > error: aborting due to 2 previous errors
-> > > ```
-> > 
-> > Looks like powerpc needs something like the followings:
-> > 
-> > diff --git a/arch/powerpc/include/asm/bug.h b/arch/powerpc/include/asm/bug.h
-> > index 0db48977c70c..8aba39e0cf26 100644
-> > --- a/arch/powerpc/include/asm/bug.h
-> > +++ b/arch/powerpc/include/asm/bug.h
-> > @@ -32,34 +32,38 @@
-> >  #endif /* verbose */
-> >  
-> >  #else /* !__ASSEMBLER__ */
-> > -/* _EMIT_BUG_ENTRY expects args %0,%1,%2,%3 to be FILE, LINE, flags and
-> > -   sizeof(struct bug_entry), respectively */
-> >  #ifdef CONFIG_DEBUG_BUGVERBOSE
-> > -#define _EMIT_BUG_ENTRY				\
-> > +#define _EMIT_BUG_ENTRY(file, line, flags)	\
-> >  	".section __bug_table,\"aw\"\n"		\
-> >  	"2:	.4byte 1b - .\n"		\
-> > -	"	.4byte %0 - .\n"		\
-> > -	"	.short %1, %2\n"		\
-> > -	".org 2b+%3\n"				\
-> > -	".previous\n"
-> > +	"	.4byte " file " - .\n"		\
-> > +	"	.short " line ", " flags "\n"
-> >  #else
-> > -#define _EMIT_BUG_ENTRY				\
-> > +#define _EMIT_BUG_ENTRY(file, line, flags)	\
-> >  	".section __bug_table,\"aw\"\n"		\
-> >  	"2:	.4byte 1b - .\n"		\
-> > -	"	.short %2\n"			\
-> > -	".org 2b+%3\n"				\
-> > -	".previous\n"
-> > +	"	.short " flags "\n"
-> >  #endif
-> >  
-> >  #define BUG_ENTRY(cond_str, insn, flags, ...)		\
-> >  	__asm__ __volatile__(				\
-> >  		"1:	" insn "\n"			\
-> > -		_EMIT_BUG_ENTRY				\
-> > +		_EMIT_BUG_ENTRY("%0", "%1", "%2")	\
-> > +		".org 2b+%3\n"				\
-> > +		".previous\n"				\
-> >  		: : "i" (WARN_CONDITION_STR(cond_str) __FILE__), "i" (__LINE__),	\
-> >  		  "i" (flags),				\
-> >  		  "i" (sizeof(struct bug_entry)),	\
-> >  		  ##__VA_ARGS__)
-> >  
-> > +#define ARCH_WARN_ASM(file, line, flags, size)		\
-> > +		"1:	twi 31, 0, 0\n"			\
-> > +		_EMIT_BUG_ENTRY(file, line, flags)	\
-> > +		".org 2b+" size "\n"			\
-> > +		".previous\n"
-> > +
-> > +#define ARCH_WARN_REACHABLE
-> > +
-> >  /*
-> >   * BUG_ON() and WARN_ON() do their best to cooperate with compile-time
-> >   * optimisations. However depending on the complexity of the condition
-> 
-> Yeah, This makes sense.
-> 
-> I'll work on this and send out a fix soon.
+Define data structures for asynchronous sub-queue support required for
+full and extended FPIN functionality.
 
-Did a fix for this ever materialize? I am still seeing the errors that
-Link posted above in next-20260817.
+Add ibmvfc_async_subq structure to represent async events received via
+the sub-queue, including FPIN status, link state, event type, and WWPN
+information.
+
+Update ibmvfc_channel_setup structure to include async_subq_handle field
+and reduce IBMVFC_MAX_CHANNELS from 502 to 501 to accommodate the async
+sub-queue. Add async_scrq pointer to ibmvfc_channels structure.
+
+Add capability flags IBMVFC_USE_ASYNC_SUBQ and IBMVFC_SUPPORT_ASYNC_SUBQ
+for negotiating async sub-queue support with VIOS during login.
+
+Signed-off-by: Dave Marquardt <davemarq@linux.ibm.com>
+---
+ drivers/scsi/ibmvscsi/ibmvfc.h | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/scsi/ibmvscsi/ibmvfc.h b/drivers/scsi/ibmvscsi/ibmvfc.h
+index e8ca0d30f483..d8880d02685b 100644
+--- a/drivers/scsi/ibmvscsi/ibmvfc.h
++++ b/drivers/scsi/ibmvscsi/ibmvfc.h
+@@ -773,6 +773,7 @@ struct ibmvfc_async_sub_crq {
+ 	volatile u8 valid;
+ 	u8 flags;
+ #define IBMVFC_ASYNC_ID_IS_ASSOC_ID	0x01
++#define IBMVFC_ASYNC_IS_FPIN_EXT	0x02
+ 	u8 link_state;
+ 	u8 fpin_status;
+ 	__be16 event;
+@@ -790,7 +791,6 @@ struct ibmvfc_async_work {
+ 	struct ibmvfc_async_crq crq;
+ 	struct work_struct async_work_s;
+ };
+-
+ union ibmvfc_iu {
+ 	struct ibmvfc_mad_common mad_common;
+ 	struct ibmvfc_npiv_login_mad npiv_login;
+@@ -990,6 +990,7 @@ struct ibmvfc_host {
+ 	mempool_t *tgt_pool;
+ 	struct ibmvfc_queue crq;
+ 	struct ibmvfc_queue async_crq;
++	struct ibmvfc_queue async_sub_crq;
+ 	struct ibmvfc_channels scsi_scrqs;
+ 	struct ibmvfc_channels nvme_scrqs;
+ 	struct ibmvfc_npiv_login login_info;
 
 -- 
-Cheers,
-Nathan
+2.55.0
+
+
 
