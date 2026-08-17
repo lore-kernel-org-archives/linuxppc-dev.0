@@ -1,82 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-25897-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25898-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8CD91C5B572
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2026 00:59:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A0D2CC5CFC1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2026 04:03:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hNZGy00cgz2xfB;
-	Mon, 17 Aug 2026 10:59:22 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::533"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786928361;
-	cv=none; b=JyHcYyAkwt1f3fjdxYFLd+OWUCwv5jV+S7HIASvj3AmSO4iykZ84uVqzKZiDn00lUHRkYrlaJm9g4733BPec3q6O+8clINUf2s/bQq+ynsoVoYmiaNEuSZwkjSma2MyCtDpEaWWkcf5i3zk7HFr2tCk1C46Uh06EABwOg4B/CZp4uG5DppJNBlBtG648IH42Wb4R2G9esIxBTNGwsONnXHYdYxyPcmK8CN39CjVgGzrXI5xW7MZxaonVQSMsyEo967lrGGkzwqfVQkP5yKgE5fnhMnkftFH9Ep8IKJRcYDxYEK1VBo7TQLqEV46PmppyhR8Wu4a8lBkUNyNxhmM9tA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hNfLq1yfNz2xrC;
+	Mon, 17 Aug 2026 14:02:59 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786939379;
+	cv=none; b=RP8NPgH1pXnth05Cel3MLTstPcai8RtaaozI0eh18z5edG8t3rPV8dmlv2DWpRgdUDjBGfuurGx0xiGt3Ahs+eMq0qi1WRU8ih7TaAM5CXET7ZtSfFkWtAhK0yiFHQSt+E0IlwjIgqtF0HND3HDORU+zvBWDUMRIEGts9rbmP4Uw6Qt9WmI9A4RrhfTP+BhOOpmLoA0y7N09OfdeUdNM9V/n3If7f5TB55Zxc/AXEWT0x9YMkcagk+x/KOPqRJhkTEMmcVK/mnEmz6rc1Dgj8GIapIB8xNY4kTPIafOeLKtj55CqbPtZLF83n1qXZPGNl61yjAMxOfXC/Tr//Vp5hA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786928361; c=relaxed/relaxed;
-	bh=uuS5dJTjzCBe9OWxiZC20f++qso8otPmot2RU8P/3xU=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=IcE0ucy41o878I1nqSMK0WoXtXXtJo0bbbpZcs4Tc0LLF6eycycXxwJ8zi7ZrNQUrc+N1J3O8RtnekzPx4pfkopf+Capd8WImpt9t0Obt6HfRK5KeFtYOOYuMUfT3fVm3qVGi5spVdMgmIcbsyzkQXQUszLaxU45/G3UjmKcm86im0nXKhpPkh343Zn7GjhuPqsCq/WV2D9iaaAUxRQj80z0qVlqqQT+cLl2xAn4XOBsLGOrv0TJ1UuHeqe/8hJ1Gv3N7V0lOrZpD56PCyIu7YDO4cZgUKCIJBJWo5rndgEde66ofWG/vCmQNv1pCtELVMFGRrecEHAP9QELuSXsRg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=mF+KBTBD; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::533; helo=mail-pg1-x533.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1786939379; c=relaxed/relaxed;
+	bh=m7rjdXvxmQVC11hGSLVWeG7Ao0hxbGsMr2H+5qF0uQA=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Xs0P9H1OWOz7eiSrCH1l1GxT8CGXYzJ22TnIp7r3ymHV8jiclNaD3DuX8vtYic3xKP/kpfe5HEgw27999Mdh/bxXGQrbWBq3Zq7fjwvn1gUYIQyrmkY9VZ+nJCM5EHfL4a9YbsDc2QYO0dq8kYM6ZFp6jk31KuIS8MDvKjxkJTlYx4H1mwv/lMKDO8LdlZWrIbrK/Q9iZDd8tFTwCTQm07IxMT4cJEBzjorrfh/IJH43YJOiIbIi8jaRspyPfd8fSSe3aXeEL7KK4wpx/KHWqknbymytFbMbPPOZjYRhZH1qIzm4YlAdsMQYm4SnYnD25MWbQydFkLMq0GV00uiNwA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JphkqLm8; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=mF+KBTBD;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JphkqLm8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::533; helo=mail-pg1-x533.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x533.google.com (mail-pg1-x533.google.com [IPv6:2607:f8b0:4864:20::533])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hNZGw4zgbz2xSl
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2026 10:59:19 +1000 (AEST)
-Received: by mail-pg1-x533.google.com with SMTP id 41be03b00d2f7-cbedda4c154so1504421a12.1
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Aug 2026 17:59:19 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1786928357; x=1787533157; darn=lists.ozlabs.org;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=uuS5dJTjzCBe9OWxiZC20f++qso8otPmot2RU8P/3xU=;
-        b=mF+KBTBDMYotCuEqNJcA9NFNq5ApzHSmuXpn2EYTF9FcDhsOnWaAoIa32imgb7Gil5
-         NmLS/4QrsLy65n1NXTlclWqHyZu8SwslrNu36fqBgwdPOo1zpcmBZmVV25aYnxcc2u5T
-         kX/Z9ZvUNkFv8r5RfwvlgHXzPgwTxVEc+4136TFmj7We1rvMoexTIRh6XVKWo3emW38Y
-         ymmksJ3w9lpUsj8G9yidhofWR3WI1USTPwzehZkbLQlfWYUBF+O/m1PzFYwqSgMpTuEP
-         POw6vo1rlhPcTjjzAxGNgyEkWBP2ISMp8dlVKysvFImLUqNmB+20tPgXKsdn35cbCkmB
-         iCSg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786928357; x=1787533157;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=uuS5dJTjzCBe9OWxiZC20f++qso8otPmot2RU8P/3xU=;
-        b=V0nNckCxWzUT5zwAjJB00Zxtd7J38KYabSHYG3tXlDQWUcrOswfFVyB4rW/cy8Vp3T
-         37kljYwy7BKqN2KoDQPZ0JNDnwNEbys6xUzEUtyMAEPCXmo5KtJZmShz2xQiPL4W9X7R
-         1pUSvC9/PxFqBn8hKBl/QvETjlyxq2x+qRm60e8XMmht41PwMCzIR5wkhAyclrfwdzpC
-         rukAWiTB8OL6gveJFlCnTPNR/MniPfZU/gy+R5HvwwnJjO+JvEc0BGnMuO2q95p+cPJ4
-         fr6zRN9r5HdQ94WJ1cK1zqb5VeslzJbZewW1unBjuwh30BrChIt8DTYhW/wHtL8Cep2o
-         FUDw==
-X-Gm-Message-State: AOJu0Yx2jeaOlHV5u7MSulMuCYH0aAG7iBKmS2lvEEVsqKp08WcmYexp
-	TG0I4C6PQoQCnSDXjmdCkbb7WSX+KWgF/Ef1FzO/nyzzkE6tlJPpSVeQBohBdbD/
-X-Gm-Gg: AR+sD13BC8vydfwEjC8FXhhjVLdcaIFAAo1X8NwvzeUl/WCwL9TfaaP0gnsT9cvku8m
-	YjbR4p35ystvhycKlTswMgNMnjA1WDX3XfV3CWC6f8YmBwdDYC6mhPSCCrRJHBlBuXM0E5ix1f9
-	26gSAqkZ/GjpfXH7dFiDhFd6AvOyB3uRI0VvNq/XyM+VLxjbSbvfUocXM4r1hxdGpTlK7MPMnhI
-	fZG4iEzHUC1Zlx8Vdox3AI96KDSqfCxy2QDkX2+DF9qtLD+AncOPFSWat7EhZ8rjE442q8hDWy6
-	dWhRFE6SSDVOOrGfNwICtiZ+8g9BjUZcc5Gp4ne7CzDBZaCSmxfSkQ1XMUIXak3oHX5YhdR0xfR
-	kExzIsdYrdxchHPm82AE3gpNtZuJO2YXTBaxtZx1SROJzFoYxt6AHfYqXcK1MNg2YuXoqk7rhzx
-	ln6Q4Gp1PL5LlvtOADRZFQwOTTAG+rtyX7z42YreRGUnaUIz+fWNpXgNXVqVPDm+B0UQdo8dqQj
-	J5ZtdAg/hLOgE8hcD9nwCnBakofeJ+8p/jrFnBQ0vS2
-X-Received: by 2002:a05:6a20:160e:b0:3b4:5ff3:45cb with SMTP id adf61e73a8af0-3cc719ff645mr23740494637.8.1786928356408;
-        Sun, 16 Aug 2026 17:59:16 -0700 (PDT)
-Received: from pve-server ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-326793c43b7sm28578eec.7.2026.08.16.17.59.12
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 16 Aug 2026 17:59:15 -0700 (PDT)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: Timothy Pearson <tpearson@raptorengineering.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Shivaprasad G Bhat <sbhat@linux.ibm.com>, Gaurav Batra <gbatra@linux.ibm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Subject: Re: [BUG] VFIO on POWER9 / QEMU fails to allocate 32-bit DMA
-In-Reply-To: <192733194.2399.1786205965385.JavaMail.zimbra@raptorengineeringinc.com>
-Date: Mon, 17 Aug 2026 05:52:18 +0530
-Message-ID: <qzjxk345.ritesh.list@gmail.com>
-References: <334689093.41938.1785796754275.JavaMail.zimbra@raptorengineeringinc.com> <o6fflsxx.ritesh.list@gmail.com> <980372793.1709.1786165222084.JavaMail.zimbra@raptorengineeringinc.com> <wlu1jj0b.ritesh.list@gmail.com> <31839892.1773.1786167284864.JavaMail.zimbra@raptorengineeringinc.com> <v79kk8ei.ritesh.list@gmail.com> <192733194.2399.1786205965385.JavaMail.zimbra@raptorengineeringinc.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hNfLp1hlWz2xl6
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2026 14:02:57 +1000 (AEST)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67GLVtGj3636306;
+	Mon, 17 Aug 2026 04:02:55 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=m7rjdX
+	vxmQVC11hGSLVWeG7Ao0hxbGsMr2H+5qF0uQA=; b=JphkqLm8kIRAkbhLkVJxnI
+	q/AYOS1AKsmUtvA8demXZlGXCsiNiH6eKVGf426K9EBt4Yjfmc4WrbcRQWIHuzvh
+	dUgR26gSGuGTvf4nXunsO1ChqdEYTR0oTOwfI7fYVYVcP/1MkD/dqtZOyV0kMEOt
+	ofH+tPhie/Vdahik/0E0Y6G0Vogx+7g1icIBKRKUYWjYz3148XbHPPxzAVq5BzHX
+	BvmQoivqtSGejJFhDAYnb140JE4uLn+3/+zB/ZQdPRNXf1iBZEtRBmroczr8vtUY
+	WTgTJl2/HwqMEZlh8Q54AxmoWTh31I862agguKWYWIn0LbalA+S+M64jKFkbdeBA
+	==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4g2dhkr61c-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 17 Aug 2026 04:02:54 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 67H3uaoq018398;
+	Mon, 17 Aug 2026 04:02:54 GMT
+Received: from smtprelay04.dal12v.mail.ibm.com ([172.16.1.6])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4g34ng40td-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 17 Aug 2026 04:02:54 +0000 (GMT)
+Received: from smtpav06.dal12v.mail.ibm.com (smtpav06.dal12v.mail.ibm.com [10.241.53.105])
+	by smtprelay04.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 67H42rnX17629780
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 17 Aug 2026 04:02:53 GMT
+Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 9BF9058059;
+	Mon, 17 Aug 2026 04:02:53 +0000 (GMT)
+Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 7C2B058043;
+	Mon, 17 Aug 2026 04:02:52 +0000 (GMT)
+Received: from [9.123.14.9] (unknown [9.123.14.9])
+	by smtpav06.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 17 Aug 2026 04:02:52 +0000 (GMT)
+Message-ID: <931bb729-a991-49a8-ba42-5bf45eea21ec@linux.ibm.com>
+Date: Mon, 17 Aug 2026 09:32:51 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,135 +80,78 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [BUG] Continuously increasing spurious interrupts inside pSeries
+ guest on PowerNV host
+To: Timothy Pearson <tpearson@raptorengineering.com>,
+        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Ritesh Harjani <ritesh.list@gmail.com>
+References: <582904882.11159.1786719390349.JavaMail.zimbra@raptorengineeringinc.com>
+Content-Language: en-US
+From: Madhavan Srinivasan <maddy@linux.ibm.com>
+In-Reply-To: <582904882.11159.1786719390349.JavaMail.zimbra@raptorengineeringinc.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODE3MDAyOCBTYWx0ZWRfX9kbMi7QaO6iE
+ HE1EPFCamX9r997V6dvVyi0gBWffCsDs8Ujcbkd0icWwVJEJJHj69NMeHcKrFC3Q9f+0jEZk4EZ
+ iLbuuTBTnduAzUXbwh7caB59SAJyfHSH7mx3N7zO1DYUBcjNlv2kMPyOAIFxn2pum7zto/Vr4R4
+ OXL8bpiEAtAlMI6Mj0FwsiRTBGWlQNrdt95kNdgBz1prADI4IzXRrwkH/Nm6LFor1M2b+8LHZ6w
+ Ee7zGl/tPV3I344Muu/PiiARJlFj4yZWmSZitJjHi22W0ZH22pQMKVbjiHiCbkuqy8bvKxves/U
+ rApDxUCsA0xClLmXaQ75OPBGKxIBsmcUu/OZRB/jCUqj7KUZ6SbvQ5S4P7ojRSkl1WQLJTzL67z
+ i8C5k2y2lppX53VTlCDqVXFWZzEfeRfVmeJou3Vdl1OQnmkyIrjhNqpuHE9httdDuTukCzJQrDw
+ QfBr4OWVHh41XwR9a3Q==
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODE3MDAyOCBTYWx0ZWRfX5TGyHwyo1tJS
+ SKOx3bHGdFe7TVXRX2wkG7/pF8RMeotYnz89GHIF588v4GuLIcO27i4FADcrkr6s4edgkqbiIMr
+ 89xP9DsjQHIL5loJt063BHNPtZMZLYM=
+X-Authority-Analysis: v=2.4 cv=JKkLdcKb c=1 sm=1 tr=0 ts=6a8287ef cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=nJLlUGOcei1BVvQT3c8A:9
+ a=QEXdDO2ut3YA:10
+X-Proofpoint-ORIG-GUID: _olPxzV9vWDBQtSJ3cKBssHNf8kLFAOw
+X-Proofpoint-GUID: I8QSrJ0aQJKY5yGDTBEeTyfdN8oiSVRW
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-08-16_06,2026-08-12_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 bulkscore=0 malwarescore=0 priorityscore=1501
+ lowpriorityscore=0 clxscore=1011 adultscore=0 impostorscore=0 spamscore=0
+ phishscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
+ definitions=main-2608170028
 
 
-Hi Timothy
-
-Timothy Pearson <tpearson@raptorengineering.com> writes:
-
-> ----- Original Message -----
->> From: "Ritesh Harjani" <ritesh.list@gmail.com>
->> To: "Timothy Pearson" <tpearson@raptorengineering.com>
->> Cc: "linuxppc-dev" <linuxppc-dev@lists.ozlabs.org>, "Shivaprasad G Bhat" <sbhat@linux.ibm.com>, "Gaurav Batra"
->> <gbatra@linux.ibm.com>, "Madhavan Srinivasan" <maddy@linux.ibm.com>, "Venkat Rao Bagalkote" <venkat88@linux.ibm.com>
->> Sent: Saturday, August 8, 2026 9:13:09 AM
->> Subject: Re: [BUG] VFIO on POWER9 / QEMU fails to allocate 32-bit DMA
+On 8/14/26 8:26 PM, Timothy Pearson wrote:
+> With kernel 6.12 (Debian stable) we see a continuously increasing spurious interrupt count inside a pSeries guest running on a PowerNV host:
 >
->> Timothy Pearson <tpearson@raptorengineering.com> writes:
->> 
->>> ----- Original Message -----
->>> No worries, appreciated.  This is only one of several major problems with Linux
->>> on PowerNV that we have run into after recent upgrades, and the primary focus
->>> at the moment is on restoring broken functionality.  In many cases, that means
->>> moving to different hardware, so gathering logs afterward can be difficult /
->>> impossible.
->>>
->> 
->> Sorry to hear that you have been facing such issues recently. I will
->> bring this up internally. We will try to add more test matrix for
->> upstream PowerNV (note that we already have PowerNV tested regularly as
->> part of our upstream CI, but I suppose we could extend more KVM guest
->> testing there), so that we can reduce down on such reports.
+> cat /proc/interrupts
+>             CPU0
+>   16:          0  XIVE-IPI   0 Edge      IPI-0
+>   17:          0  XIVE-IRQ 4096 Edge      RAS_EPOW
+>   21:          2  XIVE-IRQ 4353 Edge      hvc_console
+>   23:          0  XIVE-IRQ 4097 Edge      RAS_HOTPLUG
+>   24:          0  pSeries-PCI-MSI   0 Edge      virtio0-config
+>   25:      50995  pSeries-PCI-MSI   1 Edge      virtio0-input.0
+>   26:      45569  pSeries-PCI-MSI   2 Edge      virtio0-output.0
+>   27:          0  pSeries-PCI-MSI 16384 Edge      virtio1-config
+>   28:          6  pSeries-PCI-MSI 16385 Edge      virtio1-input
+> LOC:       5781   Local timer interrupts for timer event device
+> BCT:          0   Broadcast timer interrupts for timer event device
+> LOC:          2   Local timer interrupts for others
+> SPU:     449927   Spurious interrupts
+> PMI:          0   Performance monitoring interrupts
+> MCE:          0   Machine check exceptions
+> NMI:          0   System Reset interrupts
+> WDG:          0   Watchdog soft-NMI interrupts
+> DBL:          0   Doorbell interrupts
 >
-> That would be very helpful.  I have a number of other internal reports (and some external customer reports) that I will try to get together for submission here.  Given the testing on PowerNV seems quite sparse at the moment, if you do need additional PowerNV machines for testing we have bare metal cloud leases available.
->
+> The spurious interrupts are apparently from the virtio0-[input|output] devices.
 
-Thanks for bringing up your concern. Based on your feedback, we brought
-up this topic internally. So currently w.r.t upstream maintainance work,
-we have build, boot, selftests and few other test runs, on our PowerNV
-systems, but I agree our other major testing was happening on Pseries
-platform. So, we decided to add more PowerNV machines to our internal CI
-and expand / increase our upstream CI tests and runs on these baremetal
-machines too. This is going to happen very soon, so hopefully, this
-should reduce such reports in the future.
+Thanks for the report Timothy, we will have a look at it.
 
-
-BTW - notice that the current issue - I reproduced on Pseries
-development environment itself. So this one seems to be some special
-case where you either have a 32-bit and a 64-bit HW sitting on the same
-PE (partitionable endpoint) behind the same iommu group (like sometimes
-behind a PCIe switch) or maybe the HW does both 32-bit and 64-bit probe.
-But anyways the patch I pointed should fix that problem and we will
-ensure it is backported to all stable kernels, and likely the
-distributions should pick that up as well (we will take care of that too).
-
-> One of the customer reports I already forwarded up to Github, but further logs aren't available as the customer has already moved to different hardware:
->
-> https://github.com/tbsdtv/linux_media/issues/431
->
-> The final straw that caused migration on that side was yet another VFIO bug on top of the invalid DMA that prevented EEH recovery and was forcing host resets to thaw the frozen PE.  I'll try to submit that report here as well.
->
-
-Sure thanks. I see you already have shared few reports. We will take a
-look at those. If there is anything else please feel free to share it
-with us.
-
->> Although not with VFIO - but I verified this issue by adding e1000
->> 32-bit DMA device on the same PHB where other 64bit DMA devices were
->> attached (in my Qemu development environment).
->> 
->> And with that I was able to re-create the issue with kexec i.e. on kexec
->> I see the following error similar to what you reported in your
->> environment:
->> 
->> [    5.537726] pci 0000:00:01.0: ibm,query-pe-dma-windows(2026) 800 8000000
->> 20000000 returned 0, lb=2000000000 ps=107 wn=0
->> [    5.540233] pci 0000:00:01.0: Adding to iommu group 0
->> [    5.556968] pci 0000:00:03.0: Adding to iommu group 0
->> [    5.567164] PCI: Probing PCI hardware done
->> [    9.395499] virtio-pci 0000:00:03.0: lsa_required: 0, lsa_enabled: 0, direct
->> mapping: 0
->> [    9.396111] virtio-pci 0000:00:03.0: lsa_required: 0, lsa_enabled: 0, direct
->> mapping: 0
->> [   13.228575] e1000: Intel(R) PRO/1000 Network Driver
->> [   13.229566] e1000: Copyright (c) 1999-2006 Intel Corporation.
->> [   13.253804] e1000 0000:00:01.0: Warning: IOMMU offset too big for device mask
->> [   13.255200] e1000 0000:00:01.0: mask: 0xffffffff, table offset:
->> 0x800000000000000
->> [   13.256611] e1000: No usable DMA config, aborting
->> [   13.267336] e1000 0000:00:01.0: probe with driver e1000 failed with error -5
->> 
->> This is failing with same error as you had reported:
->>     "Warning: IOMMU offset too big for device mask"
->> 
->> Whereas after I applied the patch mentioned in [1], I am able to see the
->> device working fine after kexec. Here are the logs with the fix applied:
->> 
->> [    6.197623] pci 0000:00:01.0: ibm,query-pe-dma-windows(2026) 800 8000000
->> 20000000 returned 0, lb=2000000000 ps=107 wn=0
->> [    6.201686] pci 0000:00:01.0: Adding to iommu group 0
->> [    6.221890] pci 0000:00:03.0: Adding to iommu group 0
->> [    8.991990] virtio-pci 0000:00:03.0: lsa_required: 0, lsa_enabled: 0, direct
->> mapping: 0
->> [    8.992710] virtio-pci 0000:00:03.0: lsa_required: 0, lsa_enabled: 0, direct
->> mapping: 0
->> [   11.315607] e1000: Intel(R) PRO/1000 Network Driver
->> [   11.316191] e1000: Copyright (c) 1999-2006 Intel Corporation.
->> [   11.671185] e1000 0000:00:01.0 eth1: (PCI:33MHz:32-bit) 52:54:00:12:34:56
->> [   11.672604] e1000 0000:00:01.0 eth1: Intel(R) PRO/1000 Network Connection
->> 
->>>
->>> Thank you for the link.  When / if we want to test a migration of that hardware
->>> back to VFIO on PowerNV I will ensure that patch is applied before testing.
->> 
->> Sure, I think this should fix the issue you reported. We have tagged
->> that fix with stable - so we will ensure it is backported to stable
->> kernel releases as well.
->
-> That sounds great, thanks.  Does IBM have any plans to support Debian LTS (Freexian) so these patches can flow into the broken distribution kernels?
->
-
-yes, we do support that. Once the patch is merged and available in
-stable kernels, we will ensure this is backported to this distribution
-as well.
-
-> Thanks!
-
-I see you have already shared few more reports with us. We will be
-looking into those and will bring those to closure too.
-
-Thanks again for sharing the details with us.
-
--ritesh
+Maddy
 
 
