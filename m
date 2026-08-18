@@ -1,79 +1,79 @@
-Return-Path: <linuxppc-dev+bounces-25948-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25949-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 38093C5DF74
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2026 04:45:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A10DEC5DF67
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2026 04:45:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hPHDp4cYWz2yQJ;
-	Tue, 18 Aug 2026 14:44:58 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787028298;
-	cv=none; b=Bo545wSAFlwk5VO2d9jjc4hhtvrtcHCyJsUzAGZoYlT+au/6nEd59MTI09CJ9CH7NfyYaDWy/Kj3Lxla7oMKPF5/AOK9rkDgafuq+SpKIzthlIx4jJgloDmymaidG6lAAEnKxLy0LipHDqiLh8affcbzbNA1Pw4QG86xePnroaI8g4R0q5mGrf6e6lYAZ4vzaTN4XDLJjtVBd2Ls1HElUhwMZ6f4CBhAYVvROdfZYZEN48Zd/Q+yzGnc1NNydPY0Y0pI3cw3voXGADsTcUNXJq1Noq/oIZEVTBdcQKda+DeQlaSjsv202qkBU4FQbbJ/4HroIhq2uf/lW6s2xtmVUw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hPHDy0ybNz2yFP;
+	Tue, 18 Aug 2026 14:45:06 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787028306;
+	cv=none; b=ojLJFz52kxTCdAcRbr3cibFAf7PUEP8gKFyS+lKXlN250AMzMn4wU659XQcRmghKDAujpjUsolTQm9InxZNuiLRLlIIVlFkQJ5SrIvEijBcIps9wFIMtoQ+poh2On92m0jfdKseAUM/l62YBTfVTyuwqYxkb12oK5HL1BeJBjvzMRl40gzJMQnoX89R3BaGf5PkqWsJvhm4gm8JqZgu6kgY/ada1uCnLN4sYWjjYO9CVy5kw55LMsNvBwVCLsiMO/QvYZ3JqQYsYfGARXUedWHG+mNHLiP4/x+u0mzUhmKJNBHuqLkW4Lz0dOchFpq6TalVU4jHnHYPnee8MlZULlQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787028298; c=relaxed/relaxed;
-	bh=ZIuxr7ve1EsfHD4TIwV9wbRem91LqTMa/I1SxblSMEc=;
+	t=1787028306; c=relaxed/relaxed;
+	bh=6wEsgL8K9KN+G5AWnQ96mL1pVrLWlkU/qw9KAPMbtqU=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=NzUdhBTBaX6s70k2Bpu6ffncFd02SnE4JxHzQTkWK1VtdQqtUgkGM0KHPEP0hYcRZRTq70EaHE0pmgEg+FN10PQtcDjef2uej6uhKhe7RzX5VUUw9SZrthdbqzsyj8ZWfQUD7afupqETmnmoXJh2bF2yJRGLSwo+pezm7i0zaWGkaidOEuqURhYVjlK/m9jaO9v/GkG3cTxlPNJa0fWfiVUFDjZ8+yL5SrP21LY30tVRkuS1BJZAznzbpfhRTg7xoK+FfDYObmEKF2CR7LQpUh96JwZyteqODJ3iqozreshz7O3V3LRpr07XQyxPEb5///naUDRgM3dy8X2sWskMWQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=aPompkAQ; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=skb99@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 MIME-Version; b=HVEwkluUcMq/Mz6iF93F1k7ACtpf3oBCzrbZu691LV/j+PkanIbScLC6+z5WGX0pITnSw2Y4DG4QLZCcwXezkQwQeFaHdWuI9VVZEDnfpv7NZctXllgW0YVWGxe414PerX21Jn/lntAdqFr8R3G7N7Ex0q5QUlKEbqpOK3ZCvRsNzL/XB8k20btLoWjbwOtv940/KYQ1C3sXpb6Xt1D3SpB8OxXVyf1PM/so9FiorknWjWBt4DNqfQ6bDzxxJtFe9MIPLzYtlbHybRKWKVNYEfRPLVx5pYoRGBT+UsQoxgDyW2t1j8vbf9Bj5ZMHFm2YN7e80V2ACH5twp08GxfyzQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=eGb+lGpi; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=skb99@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=aPompkAQ;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=eGb+lGpi;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=skb99@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=skb99@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hPHDn5W7Yz2yT0
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2026 14:44:57 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67HM1kvw2526485;
-	Tue, 18 Aug 2026 04:44:39 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hPHDx1HBHz2yT0
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2026 14:45:05 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67HM1gs32575103;
+	Tue, 18 Aug 2026 04:44:47 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=ZIuxr7ve1EsfHD4TI
-	wV9wbRem91LqTMa/I1SxblSMEc=; b=aPompkAQk8N9HDuQtAVv0kWTGAJACA4fZ
-	aND5RpDoe7A4WtSYboVe5BtkH8ZUNjXIgZ3nk8CiA2BzOEQ8PvjoLMgq2QdBj/M4
-	ZFMGP84JKklyC/CupBS4jCivkgyIk0HfmI57Rua8SedYvQ30R2TDICBAxao1KAPf
-	Qv2M06qCQXiTJ7mmQZ/Q9/ftpYmV/6qos8qcNA7O18W71D7NwlLCOut78XDA9fKi
-	nlmf8LNp/jbGrhPjXxanDxYHEGcJ5f7Ov6jBe5oaRqs86tRfAtl0zVBS50hPkZCq
-	qJVXEQL/607yBJYTkvcbfkY2fx3GFSzeIqUgeteMyhWN5BkUl2kbw==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4g2dhkwx7e-1
+	:mime-version:references:subject:to; s=pp1; bh=6wEsgL8K9KN+G5AWn
+	Q96mL1pVrLWlkU/qw9KAPMbtqU=; b=eGb+lGpidhu9mAWf85HEtOnZHf2jvT29V
+	9gTu504EBD6QeJvPF3L+6Vwt1zrwVTBvYN+8eJPZEB2j8aEgzYLzkXclhAohuxcr
+	05YhTTQX5nU9bx9Qdu35RHnRggU+uZ3NqPul4y/dD/f9yE3lHXRa4wWiTwzllDTr
+	rXIyKcyr2Pgk8MnwxF5g/JmH3CJ2oLXagWdhqlL3s6CN55S/50pdTFFMkzB4DPhZ
+	rUI0sM4gpc2q+P1Ws6ljtlR/X6kUdeJIkMsvuXOMFL544r/lglCIJUwY2XW3Ftwe
+	lz+8mBdHjL1LPPibBVoJlamSrYBuk/uE4zYgRX7ecwXvrvpxP82rg==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4g2fm3p1kp-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 18 Aug 2026 04:44:39 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 67I4fIQh020830;
-	Tue, 18 Aug 2026 04:44:38 GMT
+	Tue, 18 Aug 2026 04:44:47 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 67I4fTIM023690;
+	Tue, 18 Aug 2026 04:44:46 GMT
 Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4g34ng95e9-1
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4g354y940p-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 18 Aug 2026 04:44:38 +0000 (GMT)
+	Tue, 18 Aug 2026 04:44:46 +0000 (GMT)
 Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 67I4iZ4Y37159196
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 67I4igGq43319744
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 18 Aug 2026 04:44:35 GMT
+	Tue, 18 Aug 2026 04:44:42 GMT
 Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 2E1992004B;
-	Tue, 18 Aug 2026 04:44:35 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 42D202004B;
+	Tue, 18 Aug 2026 04:44:42 +0000 (GMT)
 Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D305720040;
-	Tue, 18 Aug 2026 04:44:28 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 54F7E20049;
+	Tue, 18 Aug 2026 04:44:36 +0000 (GMT)
 Received: from li-1cb9f04c-2ae1-11b2-a85c-a8a0a83790a8.ibm.com.com (unknown [9.39.17.69])
 	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 18 Aug 2026 04:44:28 +0000 (GMT)
+	Tue, 18 Aug 2026 04:44:36 +0000 (GMT)
 From: Saket Kumar Bhaskar <skb99@linux.ibm.com>
 To: bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Cc: hbathini@linux.ibm.com, maddy@linux.ibm.com, ast@kernel.org,
         andrii@kernel.org, daniel@iogearbox.net, shuah@kernel.org,
         linux-kselftest@vger.kernel.org, stable@vger.kernel.org,
         venkat88@linux.ibm.com, yeswanth@linux.ibm.com, skb99@linux.ibm.com
-Subject: [PATCH v12 4/8] powerpc64/bpf: fix compare instruction emitted for tailcall
-Date: Tue, 18 Aug 2026 10:13:37 +0530
-Message-ID: <25eadeff8698eae0fb2ce9e6bc323d3e0876fcd8.1787027080.git.skb99@linux.ibm.com>
+Subject: [PATCH v12 5/8] powerpc64/bpf: fix percpu private stack leak on JIT failure
+Date: Tue, 18 Aug 2026 10:13:38 +0530
+Message-ID: <97a39fe69332e2db95f2e653445c5b8c9adc205b.1787027080.git.skb99@linux.ibm.com>
 X-Mailer: git-send-email 2.55.0
 In-Reply-To: <cover.1787027080.git.skb99@linux.ibm.com>
 References: <cover.1787027080.git.skb99@linux.ibm.com>
@@ -92,126 +92,78 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODE4MDAzMSBTYWx0ZWRfXw1c2d0kIR1/d
- C4PWggmXXs17jiZ0XvRJf2a1DUBg9c8JvCRGJpkekGeHuVEOzRGsnGDWOnAkcx3AmhQvDsLc7jy
- EJXacWlf4bjXYvY3mg8f21s3c+vErdDm/3Mfw4GcIbxJNjKRRMLXTwD7hoCNIzhX17GhdYbJtXY
- aVz1NcQQKJ+umOnHvFw1MyaEdEfU8yCtm2CjfgRf2kFC1tkjxqGDwboeiaiG7TXTKRYaQ/TmypL
- 9BKxwrNqJYz3LW7NaKOowdYHGJWm9PMvOyQdKEJ12VSws4GBNtrsPuClY+QcsT4hWlj2bRIEavx
- 5uDjQqdfwMRfY0UnFGvGKoN2b3NHMtBh0o3J0m8COtLvBP4uSnDGQD4Tqx6F056gecUTBnmPLYI
- go0WwdrPT7N5r8gcuF8bELtOfN2sGrTjRtrI4gkOj/stfTgEjLGXgIq3l7gbFLqKOIRaMjrGgOt
- gQ5fo9xwSRsOqkdafIQ==
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODE4MDAzMSBTYWx0ZWRfXxwmFnb1hozqf
- JRitTtpIYAwPjARMhRg1Cu+UQZpbqln81LpQI5JgdUGkkdKtlZRwenV1dsCNffPbayaQvHF0245
- xESyf5yzo6ZnkHvJmYg8XINJjPC6z+U=
-X-Authority-Analysis: v=2.4 cv=JKkLdcKb c=1 sm=1 tr=0 ts=6a83e337 cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+X-Proofpoint-GUID: plkH1UaF8RCXxZMrpvXChUlEQqeXPHgP
+X-Proofpoint-ORIG-GUID: plkH1UaF8RCXxZMrpvXChUlEQqeXPHgP
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODE4MDAzMSBTYWx0ZWRfX9p+YbsyDb5RF
+ 06WXvieIQ47bc1T9XXvI71cXVR6JifQVySJbAlq10ip2wgmTrWkvIyChHQ8mgrJWYzAg8SGdj6f
+ WQ0inBzJTdqN42u5iNmtePnSd3X1zXU=
+X-Authority-Analysis: v=2.4 cv=WtQb99fv c=1 sm=1 tr=0 ts=6a83e33f cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
  a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
- a=_ChPpPKTfPU_lHkPiKQA:9
-X-Proofpoint-ORIG-GUID: aLsGWgYVyTDJaMb8XlUSjLx5-YowwcQl
-X-Proofpoint-GUID: aLsGWgYVyTDJaMb8XlUSjLx5-YowwcQl
+ a=iQ6ETzBq9ecOQQE5vZCe:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
+ a=SJ-jtujo7bo76xSWeacA:9
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODE4MDAzMSBTYWx0ZWRfXwdwtC2Pkf1qt
+ lYRaDi1xAW4PmrL1DJoE6tc0Y7bIb0oPiHdYcBx2V/IWt/wxGbcRcXWxoFoZMYW3vP+IBWA7Rj+
+ LsBoJWY7wc26KHmL3z/G8U14NQoKvBEuUOVsaiOq5sJEgJHfeCCZmZaoFpSr9++KADbOQukp37I
+ RzRui6GEm4tvvPILVK3P6hqwV1QnpHTdpn5UF3hdn4dgKh0t/BdlJ+Zo1kg5dVHLDpkiLSL8E9y
+ CSHKy5d58ne05Nj38sv4Ch9kne0sPfoXm4Vnc3EGZnqoUCkd118TcELTElVkBtmqXcy1XgYXOkD
+ h/RwaTyi7rfAysotRGRAHt5mUYfHzILAzSoAejnn49+b6sT0BnRiVJp1+Uxe8ju3zGXrIqqEAOn
+ kCNkr6HOFXF1T6q0hA98vPWzq12p3moGtIsXyJ1k7mijf9qodSiWEAYmUYnc2ojyAj9sXPEy2Up
+ U1AWT4htKglyzFZx7gQ==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-08-17_04,2026-08-12_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 bulkscore=0 malwarescore=0 priorityscore=1501
- lowpriorityscore=0 clxscore=1015 adultscore=0 impostorscore=0 spamscore=0
- phishscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ bulkscore=0 spamscore=0 malwarescore=0 suspectscore=0 phishscore=0
+ lowpriorityscore=0 clxscore=1015 adultscore=0 priorityscore=1501
+ impostorscore=0 classifier=typeunknown authscore=0 authtc= authcc=
  route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
  definitions=main-2608180031
 
 From: Abhishek Dubey <adubey@linux.ibm.com>
 
-The tail_call_info field can contain either a scalar counter
-value or a 64-bit pointer to the counter, using a 32-bit
-compare (cmplwi) only checks the lower 32 bits, which can lead
-to incorrect comparisions when location of counter is near 4GB
-boundary. Use instruction cmpldi/cmplwi for accurate comparision
-in corresponding cases.
+The existing conditional statement in bpf_int_jit_compile() frees the
+percpu private stack at out_addrs only when the image buffer was never
+allocated.
+
+If bpf_jit_build_body() fails during a code-generation pass, the
+image buffer has already been allocated, so !image is false and the
+percpu stack is not freed.
+
+Because JIT compilation failed, fp->jited remains at 0. The subsequent
+bpf_jit_free() path only frees priv_stack_ptr when fp->jited is set, so
+freeing is skipped here too, leaking the percpu allocation.
+
+Fix implements freeing the private stack whenever fp->jited was not set,
+i.e. compilation did not succeed, instead of keying off !image. !fp->jited
+already covers the !image case, since image is only NULL on early-failure
+paths where fp->jited is likewise 0.
 
 Reported-by: sashiko-bot@kernel.org
-Closes: https://lore.kernel.org/bpf/20260517191450.85AE6C2BCB8@smtp.kernel.org/
-Fixes: 2ed2d8f6fb38 ("powerpc64/bpf: Support tailcalls with subprogs")
+Closes: https://lore.kernel.org/bpf/20260616135426.A06B71F000E9@smtp.kernel.org
+Fixes: 156d985123b6 ("powerpc64/bpf: Implement JIT support for private stack")
+Cc: stable@vger.kernel.org
 Signed-off-by: Abhishek Dubey <adubey@linux.ibm.com>
 Signed-off-by: Saket Kumar Bhaskar <skb99@linux.ibm.com>
 Tested-by: Yeswanth Krishna Tellakula <yeswanth@linux.ibm.com>
 Acked-by: Hari Bathini <hbathini@linux.ibm.com>
 ---
- arch/powerpc/net/bpf_jit.h        | 6 ++++++
- arch/powerpc/net/bpf_jit_comp.c   | 2 +-
- arch/powerpc/net/bpf_jit_comp64.c | 8 ++++----
- 3 files changed, 11 insertions(+), 5 deletions(-)
+ arch/powerpc/net/bpf_jit_comp.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/net/bpf_jit.h b/arch/powerpc/net/bpf_jit.h
-index 44fa414dc5a7..4da8bde92e1e 100644
---- a/arch/powerpc/net/bpf_jit.h
-+++ b/arch/powerpc/net/bpf_jit.h
-@@ -195,6 +195,12 @@ struct codegen_context {
- 
- #define bpf_to_ppc(r)	(ctx->b2p[r])
- 
-+#ifdef CONFIG_PPC64
-+#define PPC_RAW_CMPLLI(a, i)    PPC_RAW_CMPLDI(a, i)
-+#else
-+#define PPC_RAW_CMPLLI(a, i)    PPC_RAW_CMPLWI(a, i)
-+#endif
-+
- #ifdef CONFIG_PPC32
- #define BPF_FIXUP_LEN	3 /* Three instructions => 12 bytes */
- #else
 diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
-index 870cbffdbb93..38acef44c097 100644
+index 38acef44c097..b45fa8027106 100644
 --- a/arch/powerpc/net/bpf_jit_comp.c
 +++ b/arch/powerpc/net/bpf_jit_comp.c
-@@ -786,7 +786,7 @@ static void bpf_trampoline_setup_tail_call_info(u32 *image, struct codegen_conte
- 		 * Setting the tail_call_info in trampoline's frame
- 		 * depending on if previous frame had value or reference.
- 		 */
--		EMIT(PPC_RAW_CMPLWI(_R3, MAX_TAIL_CALL_CNT));
-+		EMIT(PPC_RAW_CMPLLI(_R3, MAX_TAIL_CALL_CNT));
- 		PPC_BCC_CONST_SHORT(COND_GT, 8);
- 		EMIT(PPC_RAW_ADDI(_R3, _R4, -BPF_PPC_TAILCALL));
+@@ -404,7 +404,7 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_verifier_env *env, struct bpf_pr
+ 				(void *)fimage + FUNCTION_DESCR_SIZE);
  
-diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
-index 951eb10ca1f6..e80312171aa7 100644
---- a/arch/powerpc/net/bpf_jit_comp64.c
-+++ b/arch/powerpc/net/bpf_jit_comp64.c
-@@ -276,7 +276,7 @@ void bpf_jit_build_prologue(u32 *image, struct codegen_context *ctx)
- 		 */
- 		EMIT(PPC_RAW_LD(bpf_to_ppc(TMP_REG_2), _R1, 0));
- 		EMIT(PPC_RAW_LD(bpf_to_ppc(TMP_REG_1), bpf_to_ppc(TMP_REG_2), -(BPF_PPC_TAILCALL)));
--		EMIT(PPC_RAW_CMPLWI(bpf_to_ppc(TMP_REG_1), MAX_TAIL_CALL_CNT));
-+		EMIT(PPC_RAW_CMPLDI(bpf_to_ppc(TMP_REG_1), MAX_TAIL_CALL_CNT));
- 		PPC_BCC_CONST_SHORT(COND_GT, 8);
- 		EMIT(PPC_RAW_ADDI(bpf_to_ppc(TMP_REG_1), bpf_to_ppc(TMP_REG_2),
- 								-(BPF_PPC_TAILCALL)));
-@@ -662,7 +662,7 @@ static int bpf_jit_emit_tail_call(u32 *image, struct codegen_context *ctx, u32 o
- 	PPC_BCC_SHORT(COND_GE, out);
- 
- 	EMIT(PPC_RAW_LD(bpf_to_ppc(TMP_REG_1), _R1, bpf_jit_stack_tailcallinfo_offset(ctx)));
--	EMIT(PPC_RAW_CMPLWI(bpf_to_ppc(TMP_REG_1), MAX_TAIL_CALL_CNT));
-+	EMIT(PPC_RAW_CMPLDI(bpf_to_ppc(TMP_REG_1), MAX_TAIL_CALL_CNT));
- 	PPC_BCC_CONST_SHORT(COND_LE, 8);
- 
- 	/* dereference TMP_REG_1 */
-@@ -672,7 +672,7 @@ static int bpf_jit_emit_tail_call(u32 *image, struct codegen_context *ctx, u32 o
- 	 * if (tail_call_info == MAX_TAIL_CALL_CNT)
- 	 *   goto out;
- 	 */
--	EMIT(PPC_RAW_CMPLWI(bpf_to_ppc(TMP_REG_1), MAX_TAIL_CALL_CNT));
-+	EMIT(PPC_RAW_CMPLDI(bpf_to_ppc(TMP_REG_1), MAX_TAIL_CALL_CNT));
- 	PPC_BCC_SHORT(COND_EQ, out);
- 
- 	/*
-@@ -707,7 +707,7 @@ static int bpf_jit_emit_tail_call(u32 *image, struct codegen_context *ctx, u32 o
- 	 * tail_call_info.
- 	 */
- 	EMIT(PPC_RAW_LD(bpf_to_ppc(TMP_REG_2), _R1, bpf_jit_stack_tailcallinfo_offset(ctx)));
--	EMIT(PPC_RAW_CMPLWI(bpf_to_ppc(TMP_REG_2), MAX_TAIL_CALL_CNT));
-+	EMIT(PPC_RAW_CMPLDI(bpf_to_ppc(TMP_REG_2), MAX_TAIL_CALL_CNT));
- 	PPC_BCC_CONST_SHORT(COND_GT, 8);
- 
- 	/* First get address of tail_call_info */
+ out_addrs:
+-		if (!image && priv_stack_ptr) {
++		if (!fp->jited && priv_stack_ptr) {
+ 			fp->aux->priv_stack_ptr = NULL;
+ 			free_percpu(priv_stack_ptr);
+ 		}
 -- 
 2.55.0
 
