@@ -1,50 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-25955-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25956-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A4F5CC5DF74
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2026 05:32:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F332DC5DF67
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2026 05:45:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hPJHd0Cfdz2xrC;
-	Tue, 18 Aug 2026 15:32:29 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787031148;
-	cv=none; b=VM6T9SC4FjdLNXg5ThKCYp7dchsoNTbzuTf1ALP/nqxRuQpaU9/iNo5nA8aSoVLkWLSYxgattFvvwJI4AHDDTirvPF9GWuk3VTrIjh4GdpoLhNG9gpZ9zIp9QUB63c0ixCVGIg807QloVeKDXh5vbFJ8cauc+2GFPheLQS3FECBlE5/kZBDRb1xBerRqY8nNTlbJIfBpL2L9v0Wf7HX0bQJBXIUTBOVLQHIXeP2tptjfEcja2NxrFNps9LmUp84pVIaP89GIOqtKXNvi0ltxfppGF/UjFEV94i4+1Y44mKD7FAYd6PJ8y6zeu4XfT0utdvxoVUAYXQE/3d4QPFci7Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hPJZh0w4Lz2xxr;
+	Tue, 18 Aug 2026 15:45:32 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787031932;
+	cv=none; b=SO4W/+zYCQiEE/8Zg+42FlNMWJq2pG9B+xahAzQ8iV+cDxiWVZY+fnMl7kDzwDLw3bcIPygQFxU/Lm2OeaBoiCHcNMmvw42EIPOvhJ1tvnCQOwD9nX8yxnQDlrA82GOzG/W46jILU1x822aFX2zskq8wgJGXjFYHJtRMkaNwJnyC1c4fyAI8cTtXVWfcI1sszhYJ7Sw3jkHv0K2FUBSsVuzv6uLzxEZPShn65cZtLezvc97PMU3jmn9G6xGZGKBnD3DWFtzJtB6tN10G1qkUBNovrQPrFx7vgRGn1aZswVfvLVSNKSISwodY9maFo7jsLUCTlzTvHUP2J/wVIUs2uQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787031148; c=relaxed/relaxed;
-	bh=T8RxXeGn8bAp2KUhS5P+i/rDx0NmqjAw4E/pv4YyWsE=;
+	t=1787031932; c=relaxed/relaxed;
+	bh=mtHYt05/dWW0H2RHmI5a47PvI9BCSxbqC/IwNWkMqMo=;
 	h=Content-Type:MIME-Version:Message-Id:In-Reply-To:References:
-	 Subject:From:To:Cc:Date; b=b1oo/xTs7tP/qIr2AANC7Ifp5vK0A2U7PDm6D7/IT69H70KFZEGucg4UuH02en42/Z0vUxmyapU3quleNfakz+BCF6xu0jGRHdoSyN8eb/3YUZmWJyhbkpUQKL9UBBsFRbK+Z0ajHu66CaFJlpfMESMediy1p5G0Cm0i8Bk0X9axg0t7QBV4c3zpnPGJZjxz7cwo2phl2PWvyaFWw47uVgevMzJwxcalIv7jCyAeumGW8DuV9rpSNB6WrNBvG9KxVndjAVwxngA2xcDMygEeUxfX4Uswh+n6/DIuIFoeqXnlWU4UBpVLn+RAVdQ9JXGDqkQANUSJxKOGDtdbIKfE7A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Pr3/w8cc; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=bot+bpf-ci@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Subject:From:To:Cc:Date; b=cKCeyVBvc99Pw48ZunQm0SGHy0LyVlE2RzplVYF2LHgr2k0MJ+ZJIHi/B8ppVK9WhnQzhYa+TcoE19x178+UYWyynWg0t/jhr8CmDAHtXYWIBr33EME6qgIt8eaiBJJ2Hd4cRd/w9y1jo4K8K3Fi0c7UQW4ixoKr7VPbdy+R6nawZxNk7ZVGF4M4w5llvLioSjBFHoMWSNxYnrXZNwYclHK8AYPTNmNw35XohoQiRPbTtNQb5/jtAO2BoaCVnJ1lOJu0+ApT4fkt0X9lkNPJ7kTNuCXfS0+MvZwH6jqsYMy/rrih6BHTKFLVOZdYSo7qeOwXYH7AcS0pbSXoZaOkmA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kEwsWg+0; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=bot+bpf-ci@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Pr3/w8cc;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kEwsWg+0;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=bot+bpf-ci@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=bot+bpf-ci@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hPJHc1XJQz2ySm
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2026 15:32:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hPJZf5LSDz2xrC
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2026 15:45:30 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 55F9560204;
-	Tue, 18 Aug 2026 05:32:26 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 345441F000E9;
-	Tue, 18 Aug 2026 05:32:25 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 6ABEC43983;
+	Tue, 18 Aug 2026 05:45:27 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 732D51F000E9;
+	Tue, 18 Aug 2026 05:45:26 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1787031146;
-	bh=T8RxXeGn8bAp2KUhS5P+i/rDx0NmqjAw4E/pv4YyWsE=;
+	s=k20260515; t=1787031927;
+	bh=mtHYt05/dWW0H2RHmI5a47PvI9BCSxbqC/IwNWkMqMo=;
 	h=In-Reply-To:References:Subject:From:To:Cc:Date;
-	b=Pr3/w8ccIwKtOepmlA7sJNZw0eL3UbfPy4JWbq0JFPj6ZZiyRA3+IQYGV7ryn5Q4c
-	 J3hyiaSOt4MhhoYG3KdIAizb8JW87+bPDwrIfbixF669L0HMTG70TDEPXGqUjYtNq5
-	 vMf4jtWGWTPHbT/4nueDV6AikzGkidlBSF+bjbXXEH/qUzlkItyYmLD5abblFC4ZXQ
-	 o4SVBlzaDJOA+O+70ESvkMgBX45ICqeeLBFbWzesmvBITf0qwQvm6kKGTWkJV1sALH
-	 I9Uly0yIEYCQqmsPo13jDnie+3DDFYVraou/+9Eq39laZ5A9VzKtRgJwZG7JKuAZxE
-	 WSYIleUyx4k1w==
-Content-Type: multipart/mixed; boundary="===============0559593494344673386=="
+	b=kEwsWg+0myLL36TRgxdYcE8cJLjJugBbc6Sizdaw0Gmf48yUb936HGSjg4OkAQqoV
+	 m0XRh4W6Nu1B1NGeK9hqvoJ8JCd9yxG3TNoXMoNDW5IcuSdiEx9d7XiDK7ro2rfd5k
+	 rU1pH36/4FImW24D/DMuchsHu8xkvT5rSGfn50T2G1pO3ejydSptN5NMRUJ4hEn+A/
+	 +noNJ0IiCnVpq3iAFAjWBuypwa8nEgew5vozbzQl2Zdqc+n7PQLddq+nwM/vnrky/U
+	 HyJXa+HfZ4vY2VuqLP3M2LGKkl5AJMRfv59/ZhM9tQNMNwytbJiB0pMyQkLd46+V20
+	 IVAX1csSurL1g==
+Content-Type: multipart/mixed; boundary="===============8162154980185016120=="
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,169 +58,111 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Message-Id: <4157135143a92751c2292e12dcb1c13e027211442d73796564fa0936646ac138@mail.kernel.org>
-In-Reply-To: <0a70cdb21d953c55cd2b39a1754190d7542af165.1787027080.git.skb99@linux.ibm.com>
-References: <0a70cdb21d953c55cd2b39a1754190d7542af165.1787027080.git.skb99@linux.ibm.com>
-Subject: Re: [PATCH v12 8/8] selftests/bpf: Add tailcall verifier selftest for powerpc64
+Message-Id: <1654cd0b38eec2c92914cda4356c25434187c9a5de5e8fdae901556f0479129b@mail.kernel.org>
+In-Reply-To: <ccf3ae66535ea8a7fd3442b7183c87c61f67b24c.1787027080.git.skb99@linux.ibm.com>
+References: <ccf3ae66535ea8a7fd3442b7183c87c61f67b24c.1787027080.git.skb99@linux.ibm.com>
+Subject: Re: [PATCH v12 2/8] powerpc/bpf: fix alignment of long branch trampoline address
 From: bot+bpf-ci@kernel.org
 To: skb99@linux.ibm.com,bpf@vger.kernel.org,linuxppc-dev@lists.ozlabs.org
 Cc: hbathini@linux.ibm.com,maddy@linux.ibm.com,ast@kernel.org,andrii@kernel.org,daniel@iogearbox.net,shuah@kernel.org,linux-kselftest@vger.kernel.org,stable@vger.kernel.org,venkat88@linux.ibm.com,yeswanth@linux.ibm.com,skb99@linux.ibm.com,ast@kernel.org,andrii@kernel.org,daniel@iogearbox.net,martin.lau@kernel.org,eddyz87@gmail.com,yonghong.song@linux.dev,clm@meta.com,ihor.solodrai@linux.dev
-Date: Tue, 18 Aug 2026 05:32:25 +0000 (UTC)
+Date: Tue, 18 Aug 2026 05:45:26 +0000 (UTC)
 
---===============0559593494344673386==
+--===============8162154980185016120==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 
-> diff --git a/tools/testing/selftests/bpf/progs/verifier_tailcall_jit.c b/tools/testing/selftests/bpf/progs/verifier_tailcall_jit.c
-> index 48fa34d2959f..880c4636b000 100644
-> --- a/tools/testing/selftests/bpf/progs/verifier_tailcall_jit.c
-> +++ b/tools/testing/selftests/bpf/progs/verifier_tailcall_jit.c
-> @@ -91,6 +91,82 @@ __jited("	popq	%rax")
->  __jited("	jmp	{{.*}}")		/* jump to tail call tgt   */
->  __jited("L0:	leave")
->  __jited("	{{(retq|jmp	0x)}}")		/* return or jump to rethunk */
-> +__arch_powerpc64
-> +/* program entry for main(), regular function prologue */
-> +__jited("	nop")
-> +__jited("...")                          /* ld 2, 16(13) absent with CONFIG_PPC_KERNEL_PCREL */
-> +__jited("	li 9, 0")
-> +__jited("	std 9, -8(1)")
-> +__jited("	mflr 0")
-> +__jited("	std 0, 16(1)")
-> +__jited("	stdu 1, {{.*}}(1)")
-> +/*
-> + * load address and call sub() via count register
-> + *
-> + * Address materialization differs between PCREL and non-PCREL kernels.
-> + * Skip the address generation sequence and verify only that the call
-> + * target is loaded into CTR before branching.
-> + */
-> +__jited("...")
-> +__jited("...")
-> +__jited("...")
-> +__jited("...")
-> +__jited("...")
-> +__jited("	mtctr 12")
+> Ensure the dummy trampoline address field present between the OOL stub
+> and the long branch stub is 8-byte aligned, for memory compatibility
+> when content loaded to a register.
 
-Does 'mtctr 12' work on ELF ABIv1 configurations?
+This isn't a bug, but could the changelog name the concrete failure mode?
+The actual mechanism is that bpf_arch_text_poke() patches this field via
+patch_ulong() which returns -EINVAL unless IS_ALIGNED(addr,
+sizeof(unsigned long)), so attaching a bpf trampoline whose target is out
+of branch range fails when the field lands at a 4-mod-8 address.
 
-Looking at bpf_jit_emit_func_call_rel(), the JIT only loads the target
-into r12 on ELFv2; on CONFIG_PPC64_ELF_ABI_V1 it materializes the
-function-descriptor address into TMP_REG_2 (r10), then does 'ld 9, 0(10)'
-and 'mtctr 9', so the CTR load reads 'mtctr 9' there:
+The phrase "for memory compatibility when content loaded to a register" is
+vague - powerpc 'ld' does not require 8-byte alignment; the alignment
+requirement comes from patch_ulong().
 
-arch/powerpc/net/bpf_jit_comp64.c:bpf_jit_emit_func_call_rel() {
-    if (PPC_ELF_ABI_V1) {
-        ...
-        EMIT(PPC_RAW_LD(_R9, TMP_REG_2, 0));  /* ld 9, 0(10) */
-        EMIT(PPC_RAW_MTCTR(_R9));             /* mtctr 9 */
-    } else {
-        ...
-        EMIT(PPC_RAW_MTCTR(_R12));            /* mtctr 12 */
-    }
-}
-
-test_loader.c:get_current_arch() returns ARCH_POWERPC64 for any
-__powerpc64__ build regardless of ABI, so a big-endian ABIv1 kernel would
-run this block and see a mismatch.
-
-If ABIv1 builds are out of scope for this test, would wildcarding the CTR
-register make the line ABI-agnostic?
-
-> +__jited("	bctrl")
-> +__jited("	mr	8, 3")
-> +__jited("	li 8, 0")
-> +__jited("	addi 1, 1, {{.*}}")
+> diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
+> index 8bee2674d4a9..caea53cde063 100644
+> --- a/arch/powerpc/net/bpf_jit_comp.c
+> +++ b/arch/powerpc/net/bpf_jit_comp.c
 
 [ ... ]
 
-> +/* subprogram entry for sub() */
-> +__jited("	nop")
-> +__jited("...")                          /* ld 2, 16(13) absent with CONFIG_PPC_KERNEL_PCREL */
-> +/* tail call prologue for subprogram */
-> +__jited("	ld 10, 0(1)")
-> +__jited("	ld 9, -8(10)")
-> +__jited("	cmpldi	9, 33")
-> +__jited("	bt	{{.*}}, {{.*}}")
-> +__jited("	addi 9, 10, -8")
-> +__jited("	std 9, -8(1)")
+> @@ -49,11 +49,39 @@ asm (
+>  "	.popsection				;"
+>  );
+>
+> -void bpf_jit_build_fentry_stubs(u32 *image, struct codegen_context *ctx)
+> +void bpf_jit_build_fentry_stubs(u32 *image, u32 *fimage, struct codegen_context *ctx)
+>  {
+>  	int ool_stub_idx, long_branch_stub_idx;
+> +	int ool_stub_sz;
+>
+>  	/*
+> +	 * In the final pass, align the mis-aligned dummy_tramp_addr field
+> +	 * in the fimage. The alignment NOP must appear before OOL stub,
+> +	 * to make ool_stub_idx & long_branch_stub_idx constant from end.
+> +	 *
+> +	 * dummy_tramp_addr must be 8-byte aligned for load-register
+> +	 * compatibility. The fimage can be non 8-byte aligned, so final
+> +	 * alignment depends on start of fimage and the stub's instruction
+> +	 * count offset. The OOL stub size is 4 instructions (with
+> +	 * CONFIG_PPC_FTRACE_OUT_OF_LINE) or 3 instructions (without)
+> +	 * before dummy_tramp_addr.
+> +	 *
+> +	 * Emit a NOP here if (ctx->idx + ool_stub_sz) is odd, so that
+> +	 * dummy_tramp_addr lands at an even instruction offset (== 8-byte
+> +	 * aligned from an 8-byte aligned base).
+> +	 *
+> +	 * In pass=0 when image==NULL, conservatively account for space
+> +	 * required to accommodate alignment NOP. In case final pass skips
+> +	 * emitting alignment NOP, the image buffer have 4 spare bytes and
+> +	 * jited_len signifies correct program size.
+> +	 */
+> +
+> +	ool_stub_sz = IS_ENABLED(CONFIG_PPC_FTRACE_OUT_OF_LINE) ? 16 : 12;
+> +	if (!image || !IS_ALIGNED((unsigned long)fimage + ctx->idx*4 + ool_stub_sz, SZL))
+> +		EMIT(PPC_RAW_NOP());
 
-Should the '/* tail call prologue for subprogram */' comment end here?
+Does the new comment block accurately describe the code? Looking at the
+comment and the implementation:
 
-The comment heading covers the next 15 lines, but only the first 6 lines
-(ld 10,0(1) through std 9,-8(1)) come from the is_subprog branch of
-bpf_jit_build_prologue(). The lines that follow are:
+(1) Unit mismatch: The comment says "Emit a NOP here if (ctx->idx +
+ool_stub_sz) is odd" but ctx->idx is an instruction index while ool_stub_sz
+is a byte count (16 or 12). The code actually tests:
 
-- Lines 136-140 (lis / sldi / oris / ori / li) are ordinary body
-  instructions for 'r2 = jmp_table ll' and 'r3 = 0'
+    IS_ALIGNED((unsigned long)fimage + ctx->idx*4 + ool_stub_sz, SZL)
 
-- Lines 141-144 (lwz / slwi / cmplw / bf 0) are already the first block of
-  bpf_jit_emit_tail_call() - the 'index >= array->map.max_entries' check -
-  which sits above the '/* bpf_tail_call implementation */' heading
+which properly multiplies ctx->idx by 4 to convert to bytes. The comment's
+stated parity expression doesn't match what the code performs.
 
-A reader using the comment to map expectations onto JIT functions would be
-misdirected for 9 of the 15 lines.
+(2) Alignment assumption contradiction: The comment states dummy_tramp_addr
+"lands at an even instruction offset (== 8-byte aligned from an 8-byte
+aligned base)", but the preceding sentence explicitly says "The fimage can
+be non 8-byte aligned". In fact, bpf_jit_binary_pack_alloc() is called
+with alignment 4 in bpf_int_jit_compile(), and the code correctly folds the
+real fimage address into the IS_ALIGNED() check rather than assuming an
+aligned base.
 
-> +__jited("	lis {{.*}}, {{.*}}")
-> +__jited("	sldi {{.*}}, {{.*}}, 32")
-> +__jited("	oris {{.*}}, {{.*}}, {{.*}}")
-> +__jited("	ori {{.*}}, {{.*}}, {{.*}}")
+(3) "In the final pass" is inaccurate: the alignment decision is taken in
+every codegen pass where image != NULL. Looking at the loop in
+bpf_jit_comp.c starting around bpf_jit_build_prologue(), 2-3 such passes
+run, not just the final one.
 
-Does this fixed four-instruction sequence match what PPC_LI64 actually
-emits?
+Also, "the image buffer have 4 spare bytes" is ungrammatical and
+understates the case: a fentry-stub block is also emitted mid-body by
+bpf_jit_emit_exit_insn()'s fallback path, so a program can contain several
+stub sites and therefore several spare NOP slots.
 
-These lines hardcode a fixed expansion (lis / sldi / oris / ori) for the
-'r2 = jmp_table ll' map-pointer materialization in sub(), but the ppc64
-JIT emits PPC_LI64() there, whose length and shape depend on the runtime
-value of the pointer:
-
-arch/powerpc/net/bpf_jit.h:PPC_LI64(d, i) {
-    if (!((uintptr_t)(i) & 0xffff800000000000ULL))
-        EMIT(PPC_RAW_LI(d, ((uintptr_t)(i) >> 32) & 0xffff));
-    else {
-        EMIT(PPC_RAW_LIS(d, ((uintptr_t)(i) >> 48)));
-        if ((uintptr_t)(i) & 0x0000ffff00000000ULL)
-            EMIT(PPC_RAW_ORI(d, d, ((uintptr_t)(i) >> 32) & 0xffff));
-    }
-    EMIT(PPC_RAW_SLDI(d, d, 32));
-    if ((uintptr_t)(i) & 0x00000000ffff0000ULL)
-        EMIT(PPC_RAW_ORIS(d, d, ((uintptr_t)(i) >> 16) & 0xffff));
-    if ((uintptr_t)(i) & 0x000000000000ffffULL)
-        EMIT(PPC_RAW_ORI(d, d, (uintptr_t)(i) & 0xffff));
-}
-
-The immediate here is the struct bpf_map * returned by
-__bpf_map_area_alloc() (kernel/bpf/syscall.c:372), which for a small map
-takes the kmalloc_node() path and therefore lives in the linear map at
-0xc000000000000000 | pa.
-
-Bits 47:32 of that address are pa[47:32]. On any ppc64 machine where the
-allocation lands at a physical address >= 4 GiB - routine on a box with
-more than 4 GiB of RAM - PPC_LI64 emits an extra 'ori d, d, <pa[47:32]>'
-between the lis and the sldi.
-
-Because consecutive non-"..." __jited() patterns are pushed with
-on_next_line = true (test_loader.c:push_disasm_msg), validate_msgs()
-enforces prev_match->line + 1 == match->line and the test fails with
-'expected next match: "\tsldi ..." ... WRONG LINE'. Conversely, an
-allocation that happens to be 64 KiB aligned drops the trailing 'ori' and
-the line-139 pattern fails to match at all.
-
-Would the address-dependent part of this sequence need the same '...'
-treatment already used for the call-target materialization in main(), for
-example keeping 'lis' and the terminal 'li {{.*}}, 0' as anchors and
-wildcarding what is between them?
-
-> +__jited("	li {{.*}}, 0")
-> +__jited("	lwz 9, {{.*}}({{.*}})")
-> +__jited("	slwi {{.*}}, {{.*}}, 0")
-> +__jited("	cmplw	{{.*}}, 9")
-> +__jited("	bf	0, {{.*}}")
-> +/* bpf_tail_call implementation */
-> +__jited("	ld 9, -8(1)")
-
-[ ... ]
+Note: the immediate follow-up commit 1525fbfebfe9 ("powerpc/bpf: Move out
+dummy_tramp_addr after Long branch stub") deletes exactly this wording and
+replaces the 16:12 constant with 44:40, which suggests the description was
+known to be confusing.
 
 
 ---
@@ -228,5 +170,5 @@ AI reviewed your patch. Please fix the bug or email reply why it's not a bug.
 See: https://github.com/kernel-patches/vmtest/blob/master/ci/claude/README.md
 
 CI run summary: https://github.com/kernel-patches/bpf/actions/runs/32100929603
---===============0559593494344673386==--
+--===============8162154980185016120==--
 
