@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-25961-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25962-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 036F2C5DF86
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2026 17:26:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B6BD9C5DF89
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2026 17:26:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hPc7323Mbz2yLG;
-	Wed, 19 Aug 2026 03:26:07 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787073967;
-	cv=none; b=PsPOVNI0GlFnE9ShMfK2yiTIgx9gDKypFY6t2LltVYMOf8+qgq6gIgo3LlyLE6i987MdBUzKZ/dKko5OycDQAxmQI5E3zhkhsYd5I7yNhst93R+pmKcHNER5p8S/H63/rZ6Nq4P71eO3hJt8KSVxEuqLlRjeNtunaZiCAS+D2vQ09snE4VnhEy4GAnqgxSKg9dv8l8TB/CTDbDDcsYlLnYUpV+kLIrnPpRvUfmhCaBcQ37oTTmGVVK+Gl9B+7JX5LXJFy++H9Rjg9A1lz5ZLF09V3IsJIrmAS+Gr4kAFtlJe/XVt/TKvjHvu2rGSLjc3A5k5hSrllsNHMnDjx8zIug==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hPc7l6c0Nz2y1Y;
+	Wed, 19 Aug 2026 03:26:43 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787074003;
+	cv=none; b=blFwP2KUrMZsVE1biEMPFOKXNoqXnzwiGoU1trumZFuuJxYaVyGjpv6ILv0OHkIXIz5aOCL1MWzZwyYflH6EGrlbADChvPc7CPyFQVXo52z5VFu5shC4Whbrv06JgDVuW+BKzFCd0j90lxBDi1q297PwGSJK2QI2g0rK/Zeo0RdLWS4GnpPkEHR/pjHDBBHveaRuNX/k0umlgs/lSUlGCX2eZK4w/0dZdj0t9fOHHVfsFo4r5/IBq2o1/r/8HcPEGCAR8qr1oqGCWi3Uy2xHIT8qKBxaQHZTvyPGychhB4SIFsTTxbpVB2AsFKgxkwghIR6kQ4fsR/ZYBzOkSk3GMQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787073967; c=relaxed/relaxed;
-	bh=bVsmR2M21o1vKJ3cy/12UmIutLddLn3TpoYg5BwFDD0=;
+	t=1787074003; c=relaxed/relaxed;
+	bh=rnEdMRtIz89oIwbynNL9OjJWy1tOvB6Av/Ys5ptNXPk=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=W7Z28XJw00D4vfcI6C8K/MeZlD3bnSqXL9G9yOyQMWZrtFmnMzWTgIp4PaZ2YFVz6USGtXC7CuzW8o21SjfPrvFX7q/JwFPerT2/0b6YAMLc8Nby+G9zxSn9ga6qGPgdx3tnYP7DIo2nlT6/whTUblXt8l/QEkMy/r3r3M0j6X6e15/6XeyyunXOCLUFXy5e/kijCLPnSKN6Zg084icvW0ecTrHSsy+oBfjKbqd7631rE2GdSthPm/pNUvyd/QTOEx2ZwG+m91COaqB2cWZTaVbScJA7lDpg+j49befvhmV/5gWko5H8vWx5qs+54h9oM0ppWXsT9KJONwuhwAJtTA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Hd4zZqYl; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=VyWcOar03xvBJNrwe/vGsOXZX1TskOzNKJtH0SuolOkKhk2W373fhTgFESx1bhCd1ET32eX632dGD8jN2Ear6xbCudMb287SDLUSNnl0HQHuBXzL7QB7qXVRVybYPHy70MwYUCyVmPPEysNvwTy6e6jKjNF15WmfJ6rkRrjCvmPm9VhFaS6FycsE/8JT7i/7x4EPNIj1mx/95iWGki7q2SzBS4p7SbiAPGItV9u2XsJF+h1t+W6YWVjYniihCNVrMqeTouJFhwXPceS06pDSTnauD5lgWzNYNVrYNyiJb3A0G9Amw86z+4+RR+/APkoDjRIOgNLusMYzb8jEO0ItYQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=VkTka9sB; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Hd4zZqYl;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=VkTka9sB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hPc722Vd0z2xyB
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2026 03:26:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hPc7l1CXzz2xyB
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2026 03:26:43 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 1DD6D403C9;
-	Tue, 18 Aug 2026 17:26:04 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B7EAE1F000E9;
-	Tue, 18 Aug 2026 17:25:55 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 5BC3743687;
+	Tue, 18 Aug 2026 17:26:41 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B62471F000E9;
+	Tue, 18 Aug 2026 17:26:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1787073964;
-	bh=bVsmR2M21o1vKJ3cy/12UmIutLddLn3TpoYg5BwFDD0=;
+	s=k20260515; t=1787074001;
+	bh=rnEdMRtIz89oIwbynNL9OjJWy1tOvB6Av/Ys5ptNXPk=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=Hd4zZqYlsGKEx/jhtQpqKkSx9RTUboWG40nyZZJHu3aMW61Z87euXiGJSy0ADtjyR
-	 m66jdF1q+357id1bqIreIhbEdpZ/sgMPUxHsRL5upT0UyFGrvM6HyCS9SVpJA4TU+d
-	 gassLD90Xeh6KMJaO1fqTs+OebEDB8HnsqsPPn/z3u5gxAPalXv3a4gb1hT5xHadHh
-	 fdg8S8VR8ZQvXv6NBUwwaSAUrE12u/ZJCbhBwd6+Psh5v0mgM7k+65hSQgJg6UjjKK
-	 hdN0pPR0VYT1k9eqEIiOxYwmelrWgOV0PAZslwiEj/BEKTam2bKJR5YLAScDZA3fpC
-	 RmKBXcclg5XyA==
-Message-ID: <1de1adf1-84a6-4247-98c1-406686233d3f@kernel.org>
-Date: Tue, 18 Aug 2026 19:25:53 +0200
+	b=VkTka9sBrgxZBjvuWUfpq/xlYMQqt4vpe7baWUl2zn2trNJ8rpzrhrpwL6vtjm3qW
+	 wbBqpaxiu9lVfp57KyMZOJ7kiRQV+cpJAlq/k/zDZfJLSvyZUzi/0CTmFciWw53seW
+	 vhjcZ7sV12pjEumpOcvCJzxXwMSMqf/WGil9kIw7Tu+AxtV8233UXYJIJiJB2/EHVb
+	 WniMIdls6pU17tb/SWmZ8ViqAqCUJqJ72muZNyGzWteYnFUePKPv7MWye28Hnrbr6t
+	 XqELe+93riD5Sw2O3gRt+a1tqkyKyasmmoOMQSHfaI6RV28GMzsXnPLYB2jq1hl07U
+	 mMfTEguOfeKeg==
+Message-ID: <12829f76-f577-4305-abe6-319405bf8dc6@kernel.org>
+Date: Tue, 18 Aug 2026 19:26:31 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,7 +60,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC V3 3/8] loongarch/mm: Stop using pte_ERROR()
+Subject: Re: [RFC V3 5/8] sh/mm: Stop using pte_ERROR()
 To: Anshuman Khandual <anshuman.khandual@arm.com>, linux-mm@kvack.org,
  akpm@linux-foundation.org
 Cc: Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker
@@ -78,7 +78,7 @@ Cc: Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker
  linux-um@lists.infradead.org, linux-arch@vger.kernel.org,
  linux-kernel@vger.kernel.org
 References: <20260818040041.1891769-1-anshuman.khandual@arm.com>
- <20260818040041.1891769-4-anshuman.khandual@arm.com>
+ <20260818040041.1891769-6-anshuman.khandual@arm.com>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -125,21 +125,22 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <20260818040041.1891769-4-anshuman.khandual@arm.com>
+In-Reply-To: <20260818040041.1891769-6-anshuman.khandual@arm.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 8/18/26 06:00, Anshuman Khandual wrote:
-> Directly use pr_err() in __set_fixmap() and drop pte_ERROR() which helps in
+> Directly use pr_err() in set_pte_phys() and drop pte_ERROR() which helps in
 > eventually dropping pte_ERROR() macro across the tree. In this new printing
 > __FILE__ and __LINE__ has been dropped because they are always the same and
-> don't really add any value. The new ptval_to_str() helper is being used for
-> converting pgtable entry value into a string. The error message itself has
-> been cleaned up as well.
+> don't really add any value. Besides ptrval_to_str() has been able to handle
+> different PTE representation with and without CONFIG_X2TLB, which helped in
+> unifying error message printing.
 > 
-> Cc: Huacai Chen <chenhuacai@kernel.org>
-> Cc: WANG Xuerui <kernel@xen0n.name>
-> Cc: loongarch@lists.linux.dev
+> Cc: Yoshinori Sato <ysato@users.sourceforge.jp>
+> Cc: Rich Felker <dalias@libc.org>
+> Cc: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
+> Cc: linux-sh@vger.kernel.org
 > Cc: linux-kernel@vger.kernel.org
 > Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
 > ---
