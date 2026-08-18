@@ -1,50 +1,94 @@
-Return-Path: <linuxppc-dev+bounces-25956-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25957-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F332DC5DF67
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2026 05:45:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A89EEC5DF7D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2026 10:33:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hPJZh0w4Lz2xxr;
-	Tue, 18 Aug 2026 15:45:32 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787031932;
-	cv=none; b=SO4W/+zYCQiEE/8Zg+42FlNMWJq2pG9B+xahAzQ8iV+cDxiWVZY+fnMl7kDzwDLw3bcIPygQFxU/Lm2OeaBoiCHcNMmvw42EIPOvhJ1tvnCQOwD9nX8yxnQDlrA82GOzG/W46jILU1x822aFX2zskq8wgJGXjFYHJtRMkaNwJnyC1c4fyAI8cTtXVWfcI1sszhYJ7Sw3jkHv0K2FUBSsVuzv6uLzxEZPShn65cZtLezvc97PMU3jmn9G6xGZGKBnD3DWFtzJtB6tN10G1qkUBNovrQPrFx7vgRGn1aZswVfvLVSNKSISwodY9maFo7jsLUCTlzTvHUP2J/wVIUs2uQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hPQyv1h7Kz2yGB;
+	Tue, 18 Aug 2026 20:33:27 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a07:de40:b251:101:10:150:64:2"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787049207;
+	cv=none; b=YG88bzi6EgcmbLF++9h/RwH3nzfr7OVkUiDFkC5ckU0Xl58HOSm1x/c/mkKhfDpLmafBxf2h9ARdA6BoKzv8DQE0lJ7xEeywIyWrZUcP6AoiMUarBrw4cUZCvrMOT6NOw5Vd2UDbF8OdgtllyEdXVd1dUbVnvEwmoYfWsM+0Yj1ktJnvnPRwFNw1rUSWgmvZe5nFYNcBH8Pk967q/qxnWzeQ2VVEzK8qHefzQ6SffT9qZ9aHY7MZ/vfHzeM02I+QWwjyD9uyAwp2oByRLhjTgww6xNv9RueVWIe/Gh6n+ojygPYPJct7vMsfb3EPl2a/8LOOaciM31V+uZblzPjg7A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787031932; c=relaxed/relaxed;
-	bh=mtHYt05/dWW0H2RHmI5a47PvI9BCSxbqC/IwNWkMqMo=;
-	h=Content-Type:MIME-Version:Message-Id:In-Reply-To:References:
-	 Subject:From:To:Cc:Date; b=cKCeyVBvc99Pw48ZunQm0SGHy0LyVlE2RzplVYF2LHgr2k0MJ+ZJIHi/B8ppVK9WhnQzhYa+TcoE19x178+UYWyynWg0t/jhr8CmDAHtXYWIBr33EME6qgIt8eaiBJJ2Hd4cRd/w9y1jo4K8K3Fi0c7UQW4ixoKr7VPbdy+R6nawZxNk7ZVGF4M4w5llvLioSjBFHoMWSNxYnrXZNwYclHK8AYPTNmNw35XohoQiRPbTtNQb5/jtAO2BoaCVnJ1lOJu0+ApT4fkt0X9lkNPJ7kTNuCXfS0+MvZwH6jqsYMy/rrih6BHTKFLVOZdYSo7qeOwXYH7AcS0pbSXoZaOkmA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kEwsWg+0; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=bot+bpf-ci@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1787049207; c=relaxed/relaxed;
+	bh=hajFIrQyCHqzUS+imbiKOjxd+SjzPOZ/FjaQYcoIJZc=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=OEsDvosNeVW3E90sqKnOgoeF+mCLd+OS54S8dydPkoEYd9oanUeXGopiyCGQLZbunwohi1LQPq+e+3ZyYG9dBQyqglu0nJ3mjqrr8vI+FLLlK3QTc+TICiNfCG6++g7RVZgF68C6Ck4OsfoRIoZVNtiovJWuknKX9BaTcJ3SAfA7bN5Jy2wKSxYSnr7R9yWIw9DW4hrS5fg+2gP3z0NHBZYWp5/llrgibIUxAAIYKkaNbU7N3/H0yv31SphQhqwmqYbZPFS3tMhO82AkF85A9FJv/I12AjMJvdIb9v68kMSdgIzruxZuj6TY3sLijce6+V0NAJNK1foqpwpDLt4FnQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=uxW0jaCw; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=Q+7zrDZw; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=sAB2Te+o; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=2jJxqJ5b; dkim-atps=neutral; spf=pass (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=hare@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kEwsWg+0;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=uxW0jaCw;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=Q+7zrDZw;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=sAB2Te+o;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=2jJxqJ5b;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=bot+bpf-ci@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=hare@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2a07:de40:b251:101:10:150:64:2])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hPJZf5LSDz2xrC
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2026 15:45:30 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 6ABEC43983;
-	Tue, 18 Aug 2026 05:45:27 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 732D51F000E9;
-	Tue, 18 Aug 2026 05:45:26 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1787031927;
-	bh=mtHYt05/dWW0H2RHmI5a47PvI9BCSxbqC/IwNWkMqMo=;
-	h=In-Reply-To:References:Subject:From:To:Cc:Date;
-	b=kEwsWg+0myLL36TRgxdYcE8cJLjJugBbc6Sizdaw0Gmf48yUb936HGSjg4OkAQqoV
-	 m0XRh4W6Nu1B1NGeK9hqvoJ8JCd9yxG3TNoXMoNDW5IcuSdiEx9d7XiDK7ro2rfd5k
-	 rU1pH36/4FImW24D/DMuchsHu8xkvT5rSGfn50T2G1pO3ejydSptN5NMRUJ4hEn+A/
-	 +noNJ0IiCnVpq3iAFAjWBuypwa8nEgew5vozbzQl2Zdqc+n7PQLddq+nwM/vnrky/U
-	 HyJXa+HfZ4vY2VuqLP3M2LGKkl5AJMRfv59/ZhM9tQNMNwytbJiB0pMyQkLd46+V20
-	 IVAX1csSurL1g==
-Content-Type: multipart/mixed; boundary="===============8162154980185016120=="
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hPQys1C24z2yCL
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2026 20:33:24 +1000 (AEST)
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 22DE33E43;
+	Tue, 18 Aug 2026 10:33:12 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1787049196; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=hajFIrQyCHqzUS+imbiKOjxd+SjzPOZ/FjaQYcoIJZc=;
+	b=uxW0jaCwDeghPDckED3gDJmXBF2L1KXNvWQwNQcvkpCYUTSIJFfHZQD8NmX7526XdRWgp2
+	q8qPhbmESwKShUSdmrQ7CYIxy1mXW8FK52yLzlB/+cCdeKBLD4zbl8pEvJBs+zMLAtSW+U
+	d62o1Qy70uDPutY4EMinPeCcfk/UTi0=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1787049196;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=hajFIrQyCHqzUS+imbiKOjxd+SjzPOZ/FjaQYcoIJZc=;
+	b=Q+7zrDZwmusR/vv2cEVcf6RWUVwCIgC/jZB9QMCaAsd79PR3XpcaW0N8AQ11UsFU3dNnNi
+	U3HxtHUAPzl54uDw==
+Authentication-Results: smtp-out2.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=sAB2Te+o;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=2jJxqJ5b
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1787049192; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=hajFIrQyCHqzUS+imbiKOjxd+SjzPOZ/FjaQYcoIJZc=;
+	b=sAB2Te+o2xnRETmTLvuIvnoZ20uJWHJ0TYPNSy1AhUNh2dULDv0jJx0cyr241PulZOWYkV
+	t0i/It3wY+89PVMQZoJzWYNsEtcMV6VQEsZyzEntXOWaJ+hOtzUOBK4b3hUZJZiHf0vAbF
+	COtWvP6HXK5jzeY4nuU1s31K1XBQ8QQ=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1787049192;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=hajFIrQyCHqzUS+imbiKOjxd+SjzPOZ/FjaQYcoIJZc=;
+	b=2jJxqJ5b8IzXrfXBYYTRsoDvh8gVFCNz3zZPXOA8ts03GUipyAT2CRMybaXRFNckIVx1nD
+	PkuUtCZu61m+GwAQ==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id E5AEE22BA;
+	Tue, 18 Aug 2026 10:33:11 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id Cp0EN+c0hGqKGQAAD6G6ig
+	(envelope-from <hare@suse.de>); Tue, 18 Aug 2026 10:33:11 +0000
+Message-ID: <ef23cb9e-f358-40a2-b494-a78f4983d0ad@suse.de>
+Date: Tue, 18 Aug 2026 12:33:11 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,117 +102,82 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Message-Id: <1654cd0b38eec2c92914cda4356c25434187c9a5de5e8fdae901556f0479129b@mail.kernel.org>
-In-Reply-To: <ccf3ae66535ea8a7fd3442b7183c87c61f67b24c.1787027080.git.skb99@linux.ibm.com>
-References: <ccf3ae66535ea8a7fd3442b7183c87c61f67b24c.1787027080.git.skb99@linux.ibm.com>
-Subject: Re: [PATCH v12 2/8] powerpc/bpf: fix alignment of long branch trampoline address
-From: bot+bpf-ci@kernel.org
-To: skb99@linux.ibm.com,bpf@vger.kernel.org,linuxppc-dev@lists.ozlabs.org
-Cc: hbathini@linux.ibm.com,maddy@linux.ibm.com,ast@kernel.org,andrii@kernel.org,daniel@iogearbox.net,shuah@kernel.org,linux-kselftest@vger.kernel.org,stable@vger.kernel.org,venkat88@linux.ibm.com,yeswanth@linux.ibm.com,skb99@linux.ibm.com,ast@kernel.org,andrii@kernel.org,daniel@iogearbox.net,martin.lau@kernel.org,eddyz87@gmail.com,yonghong.song@linux.dev,clm@meta.com,ihor.solodrai@linux.dev
-Date: Tue, 18 Aug 2026 05:45:26 +0000 (UTC)
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4] scsi: core: Drop Scsi_Host.default_lock
+To: John Garry <john.g.garry@oracle.com>,
+ James.Bottomley@HansenPartnership.com, martin.petersen@oracle.com
+Cc: linux-scsi@vger.kernel.org, bvanassche@acm.org,
+ linux-s390@vger.kernel.org, linux-ide@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-usb@vger.kernel.org, John Garry <john.garry@linux.dev>,
+ Damien Le Moal <dlemoal@kernel.org>
+References: <20260817075324.2737619-1-john.g.garry@oracle.com>
+Content-Language: en-US
+From: Hannes Reinecke <hare@suse.de>
+In-Reply-To: <20260817075324.2737619-1-john.g.garry@oracle.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Spamd-Result: default: False [-4.51 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	ARC_NA(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[12];
+	MID_RHS_MATCH_FROM(0.00)[];
+	RCVD_TLS_ALL(0.00)[];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	TO_DN_SOME(0.00)[];
+	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[oracle.com:email,acm.org:email,imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo,linux.dev:email,suse.de:email,suse.de:mid,suse.de:dkim];
+	RCVD_COUNT_TWO(0.00)[2];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	DKIM_TRACE(0.00)[suse.de:+]
+X-Rspamd-Queue-Id: 22DE33E43
+X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
+X-Rspamd-Action: no action
 
---===============8162154980185016120==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
+On 8/17/26 9:53 AM, John Garry wrote:
+> From: John Garry <john.garry@linux.dev>
+> 
+> Back in the 2.6.xx days, it was possible to for low-level drivers to set
+> the shost lock pointer. That is why there is a default lock and a pointer
+> to the shost lock.
+> 
+> However, support for this has long been removed, so drop
+> Scsi_Host.default_lock and make Scsi_Host.host_lock as the actual lock.
+> 
+> Getting the address of embedded host_lock structure just requires adding
+> a fixed offset value to the shost pointer. However, getting the value of
+> the host_lock pointer requires loading from a fixed offset to the shost
+> pointer. The latter should be very slightly slower, which is relevant as
+> this lock is used a lot throughout the core code and drivers.
+> 
+> Signed-off-by: John Garry <john.g.garry@oracle.com>
+> Acked-by: Damien Le Moal <dlemoal@kernel.org> # ata parts
+> Reviewed-by: Bart Van Assche <bvanassche@acm.org>
+> ---
+> Difference to v3:
+> - Rebase and update some annotations
+> 
+> Differences to v2:
+> - Add tags from Bart and Damien (Thanks!)
+> - Update Documentation reference to default_lock (Bart)
+> 
+Reviewed-by: Hannes Reinecke <hare@kernel.org>
 
-> Ensure the dummy trampoline address field present between the OOL stub
-> and the long branch stub is 8-byte aligned, for memory compatibility
-> when content loaded to a register.
+Cheers,
 
-This isn't a bug, but could the changelog name the concrete failure mode?
-The actual mechanism is that bpf_arch_text_poke() patches this field via
-patch_ulong() which returns -EINVAL unless IS_ALIGNED(addr,
-sizeof(unsigned long)), so attaching a bpf trampoline whose target is out
-of branch range fails when the field lands at a 4-mod-8 address.
-
-The phrase "for memory compatibility when content loaded to a register" is
-vague - powerpc 'ld' does not require 8-byte alignment; the alignment
-requirement comes from patch_ulong().
-
-> diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
-> index 8bee2674d4a9..caea53cde063 100644
-> --- a/arch/powerpc/net/bpf_jit_comp.c
-> +++ b/arch/powerpc/net/bpf_jit_comp.c
-
-[ ... ]
-
-> @@ -49,11 +49,39 @@ asm (
->  "	.popsection				;"
->  );
->
-> -void bpf_jit_build_fentry_stubs(u32 *image, struct codegen_context *ctx)
-> +void bpf_jit_build_fentry_stubs(u32 *image, u32 *fimage, struct codegen_context *ctx)
->  {
->  	int ool_stub_idx, long_branch_stub_idx;
-> +	int ool_stub_sz;
->
->  	/*
-> +	 * In the final pass, align the mis-aligned dummy_tramp_addr field
-> +	 * in the fimage. The alignment NOP must appear before OOL stub,
-> +	 * to make ool_stub_idx & long_branch_stub_idx constant from end.
-> +	 *
-> +	 * dummy_tramp_addr must be 8-byte aligned for load-register
-> +	 * compatibility. The fimage can be non 8-byte aligned, so final
-> +	 * alignment depends on start of fimage and the stub's instruction
-> +	 * count offset. The OOL stub size is 4 instructions (with
-> +	 * CONFIG_PPC_FTRACE_OUT_OF_LINE) or 3 instructions (without)
-> +	 * before dummy_tramp_addr.
-> +	 *
-> +	 * Emit a NOP here if (ctx->idx + ool_stub_sz) is odd, so that
-> +	 * dummy_tramp_addr lands at an even instruction offset (== 8-byte
-> +	 * aligned from an 8-byte aligned base).
-> +	 *
-> +	 * In pass=0 when image==NULL, conservatively account for space
-> +	 * required to accommodate alignment NOP. In case final pass skips
-> +	 * emitting alignment NOP, the image buffer have 4 spare bytes and
-> +	 * jited_len signifies correct program size.
-> +	 */
-> +
-> +	ool_stub_sz = IS_ENABLED(CONFIG_PPC_FTRACE_OUT_OF_LINE) ? 16 : 12;
-> +	if (!image || !IS_ALIGNED((unsigned long)fimage + ctx->idx*4 + ool_stub_sz, SZL))
-> +		EMIT(PPC_RAW_NOP());
-
-Does the new comment block accurately describe the code? Looking at the
-comment and the implementation:
-
-(1) Unit mismatch: The comment says "Emit a NOP here if (ctx->idx +
-ool_stub_sz) is odd" but ctx->idx is an instruction index while ool_stub_sz
-is a byte count (16 or 12). The code actually tests:
-
-    IS_ALIGNED((unsigned long)fimage + ctx->idx*4 + ool_stub_sz, SZL)
-
-which properly multiplies ctx->idx by 4 to convert to bytes. The comment's
-stated parity expression doesn't match what the code performs.
-
-(2) Alignment assumption contradiction: The comment states dummy_tramp_addr
-"lands at an even instruction offset (== 8-byte aligned from an 8-byte
-aligned base)", but the preceding sentence explicitly says "The fimage can
-be non 8-byte aligned". In fact, bpf_jit_binary_pack_alloc() is called
-with alignment 4 in bpf_int_jit_compile(), and the code correctly folds the
-real fimage address into the IS_ALIGNED() check rather than assuming an
-aligned base.
-
-(3) "In the final pass" is inaccurate: the alignment decision is taken in
-every codegen pass where image != NULL. Looking at the loop in
-bpf_jit_comp.c starting around bpf_jit_build_prologue(), 2-3 such passes
-run, not just the final one.
-
-Also, "the image buffer have 4 spare bytes" is ungrammatical and
-understates the case: a fentry-stub block is also emitted mid-body by
-bpf_jit_emit_exit_insn()'s fallback path, so a program can contain several
-stub sites and therefore several spare NOP slots.
-
-Note: the immediate follow-up commit 1525fbfebfe9 ("powerpc/bpf: Move out
-dummy_tramp_addr after Long branch stub") deletes exactly this wording and
-replaces the 16:12 constant with 44:40, which suggests the description was
-known to be confusing.
-
-
----
-AI reviewed your patch. Please fix the bug or email reply why it's not a bug.
-See: https://github.com/kernel-patches/vmtest/blob/master/ci/claude/README.md
-
-CI run summary: https://github.com/kernel-patches/bpf/actions/runs/32100929603
---===============8162154980185016120==--
+Hannes
+-- 
+Dr. Hannes Reinecke                  Kernel Storage Architect
+hare@suse.de                                +49 911 74053 688
+SUSE Software Solutions GmbH, Frankenstr. 146, 90461 Nürnberg
+HRB 36809 (AG Nürnberg), GF: I. Totev, A. McDonald, W. Knoblich
 
