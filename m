@@ -1,66 +1,71 @@
-Return-Path: <linuxppc-dev+bounces-25965-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25966-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 02D0FC5DF85
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2026 19:15:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 74AE6C5DF7D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2026 22:33:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hPfYY6z1wz2xrL;
-	Wed, 19 Aug 2026 05:15:45 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787080545;
-	cv=none; b=TgLEdJw8eZX7vRFUlCK0wrFfNwsn6OAWIk68HWqeqbXQ9dB3Sw3Qdty1Ro29XJ7Yvqn7Lax8dCKV+TXm6iI4HkEaV9lfs6h1DrOK863eyghIHA3NqadIChmuXAl24ahLVbtDOumdwCRP5VFh1LkqXcaNlEORfgsqSwJAZtxCjVd1WLDHIZMWUznAyNTimCD6qd1YS70Cm7M6bKNk1p8JmjytrAaTOBpSQviykoyJD0q+D0eoPTRxWARh5wOr71I5o1JbNE7pyqYKYJ3o8mQ586bJ+nC6JyCMTkns0aCPnE6a+Prl4Lgy1s0VP8sS+2+lVWkJaFOaV9YZlxqGjJ9pYQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hPkxd3cvXz2xfq;
+	Wed, 19 Aug 2026 08:33:25 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787092405;
+	cv=none; b=bwiWniKtdJbvluDEIXNt3CQyFKr7XVPCyB9vPIS8TW5YYjO9s6B+4MyMrlC3EVHIofwlJSGgLLxabYRVARqxZGyd3Tu30Mivi+sg1p5tlsDI5fQbKWDr3fatSDjRpO/5J0kIZhK19iXRNH6U2iN0gqvly36wOxd0UlB4sDxXwJganTbg0TIMGFHuiIfbi3nn9YpDmj6VSupeRdShrFbWWKH4HlTDMwXOWVdGOAHmJw276LhWNWzDI/amNaoiTJuI0HCRWWEWQpptkRzUMJQ8LzTbVicKKrqITJn2+FHyO/T8Ma9hCDTGN7qQI79EH615gpaxyDTTyRi6c3gUgVH6qg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787080545; c=relaxed/relaxed;
-	bh=eeTt1ekCuzJ0dbvI3QlwDLHcjKpOhdLKb2WDc+PP3zA=;
-	h=Subject:From:In-Reply-To:References:Message-Id:Date:To:Cc; b=WfTwpBKEfKhYmsFBqBX+c5nRsfyQFU81c5+Sqww2TscTX2gqxeVKCGeaO+oynwptnOCmJjxzKiFjpVu3eS89qE3T+9uJbzbIePFR+ldLgxUYLtmQkSx2OQz96+51HdBlZ7Wi16uY9HcDrKLNOZjbJ13U1uAAs6tRbxdylrIsUPdXCs0kSkZIYQ5HxbUTLjIBpug+G8Eb2mFT9lABS8oXAgpbhAr3av4vSnCqlTR2WOFlWXD7l1OKwKOtgHdtjKac4IlYDmftpC4dFb2s9X05qfs4aQdHAI1M2+nOniU1d3Fsram1Tc9YKZAHbB0IAbktJAxTcxiRF37LIDlkGLvEdg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=aKI/HRKW; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=pr-tracker-bot@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1787092405; c=relaxed/relaxed;
+	bh=VzIoIlZm6E4Py29G+xr1f5KcVWWzvZl6UCHZeZxLjCw=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To; b=X7f6eDeKZmQjlXXQqTdNzeUBqOu6YzgYCu3RZHWkug0hjJTe4csIXmN7UpSnqLvQG6UXhWHLljNxkn1xLxNepe4JejiCDuMbmLp9RtEvitylM7GUS/bgfVadB0K6zjbWcN6EVhoN/slh4NtBLHgnWMzO8vCNcdVz4Bh5fFWlONWISPRfTkKuikvUOXncKWBwFVvii63qXcX4f9j3PkB+EEXsF4PHmxawAvVozN6NBo4wgxd0+VAOUXgA1moXw9xRsJVwAEZ8YBWuZqLVlA2O03c8+eQchWsbeE1znp0YIwHteHWhSD0d9m9dZVTqoWF5TGW59Q/w/GDJUJw/WVM6tA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=GDKv/9ep; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=aKI/HRKW;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=GDKv/9ep;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=pr-tracker-bot@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hPfYX5g19z2xnS
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2026 05:15:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hPkxc4Yx8z2xWt
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2026 08:33:24 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id A5F7960A63;
-	Tue, 18 Aug 2026 19:15:41 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5654D1F01561;
-	Tue, 18 Aug 2026 19:15:41 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id D0BDF43DA7;
+	Tue, 18 Aug 2026 22:33:21 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 86F6A1F000E9;
+	Tue, 18 Aug 2026 22:33:21 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1787080541;
-	bh=eeTt1ekCuzJ0dbvI3QlwDLHcjKpOhdLKb2WDc+PP3zA=;
-	h=Subject:From:In-Reply-To:References:Date:To:Cc;
-	b=aKI/HRKWtbeli3BVqlWF0xiuap7VBoKErKeD0YJ7FTwcDe0KoFFPLbMoPEjwU3fs8
-	 TNlEV0yU7ot78n0YiZWAYuxfWz80NoPd9oeLEV9g0Al3aWeyhxCeooV4Xp1EJfu58i
-	 Be6RvagxcHdM6aok35LCIf/2OigAX6hDRtlmTxdWD/6OcX2bjgBV03RBiMd+k25ELk
-	 7fsYPHBqdtTFMLVImcWsQ8Am3Qa13pm3F4gvmKhjtz4bhS1icOah8HNP8NhVwWuxWD
-	 G/pm9PUmIwEXqu5EYw4FHPcvJgUw8fvriO6x16BLiwaUrVD49C1POnqBg3cGOAvLSc
-	 hcyULkaFg8Rdg==
-Received: from [10.30.226.235] (localhost [IPv6:::1])
-	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 199073927051;
-	Tue, 18 Aug 2026 19:14:54 +0000 (UTC)
-Subject: Re: [GIT PULL] Please pull powerpc/linux.git powerpc-7.3-1 tag
-From: pr-tracker-bot@kernel.org
-In-Reply-To: <a0c34d36-fa5c-494f-8525-13e0af8a40f0@linux.ibm.com>
-References: <a0c34d36-fa5c-494f-8525-13e0af8a40f0@linux.ibm.com>
-X-PR-Tracked-List-Id: <linux-kernel.vger.kernel.org>
-X-PR-Tracked-Message-Id: <a0c34d36-fa5c-494f-8525-13e0af8a40f0@linux.ibm.com>
-X-PR-Tracked-Remote: https://lore.kernel.org/linux-next/ans20_e3b_8XJsvA@sirena.org.uk/ Thanks
-X-PR-Tracked-Commit-Id: 1304643a1c20badbb91b86a5084dd76cb7620c05
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: 1200d84f4c0a929a0780180d25063d93773be79c
-Message-Id: <178708049269.2235733.17283840532040668161.pr-tracker-bot@kernel.org>
-Date: Tue, 18 Aug 2026 19:14:52 +0000
-To: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, amachhiw@linux.ibm.com, atrajeev@linux.ibm.com, bp@alien8.de, chleroy@kernel.org, christophe.leroy@csgroup.eu, gary@garyguo.net, gautam@linux.ibm.com, gbatra@linux.ibm.com, gouhao@uniontech.com, linkmauve@linkmauve.fr, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, mahesh@linux.ibm.com, mkchauras@gmail.com, mpe@ellerman.id.au, mwalle@kernel.org, naveen@kernel.org, nikhilks@linux.ibm.com, npiggin@gmail.com, ritesh.list@gmail.com, rosenp@gmail.com, ruanjinjie@huawei.com, skb99@linux.ibm.com, sourabhjain@linux.ibm.com, sshegde@linux.ibm.com, thorsten.blum@linux.dev, vishalc@linux.ibm.com, yanfei.xu@bytedance.com
+	s=k20260515; t=1787092401;
+	bh=VzIoIlZm6E4Py29G+xr1f5KcVWWzvZl6UCHZeZxLjCw=;
+	h=Date:From:To:Cc:Subject:In-Reply-To;
+	b=GDKv/9epMcQOnQr52iagRqKynBMi0oAe8yVGSpPK0pK5VDvwy2wAnz1+TJ+wM3USF
+	 23JCrHcc6MGakkTC6ZG7+kTFeRyeIHjywRR/arR8K41O5cmuOAMSyDnjWq8jdi+qwO
+	 JNI8a2wPBXzkhkMXB8ziutbCfDCqpx0d1VmeGbvKiUDLF9vwMf9dLIYZvhdT9SrnoI
+	 lMbeLRIiWac59fwhuQjR72AG04y1NLWN9lLmu7DWkJZ/L4EbrAMg8qQcmMmDaQCyts
+	 bHbQELngutqF6dhbhRYS1Drg9Ze6poXcNBQ4K3HrjTr8jyIxxazSCYEcVyyUsoykXm
+	 etG89O6ffadgg==
+Date: Tue, 18 Aug 2026 17:33:20 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Lukas Wunner <lukas@wunner.de>
+Cc: linux-pci@vger.kernel.org, Yury Murashka <yurypm@arista.com>,
+	Matthew W Carlis <mattc@purestorage.com>,
+	Zhenzhong Duan <zhenzhong.duan@intel.com>,
+	Qingshun Wang <qingshun.wang@linux.intel.com>,
+	Yicong Yang <yang.yicong@picoheart.com>, dio.sun@enflame-tech.com,
+	Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+	Oliver OHalloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+	Terry Bowman <terry.bowman@amd.com>,
+	Sathyanarayanan Kuppuswamy <sathyanarayanan.kuppuswamy@linux.intel.com>,
+	Arjun Govindjee <agovindjee@purestorage.com>,
+	Ashish Karkare <ashishk@purestorage.com>,
+	Jasjeet Rangi <jrangi@purestorage.com>,
+	Meeta Saggi <msaggi@purestorage.com>, rhan@purestorage.com,
+	sconnor@purestorage.com, an.luo@enflame-tech.com,
+	fernando.hu@enflame-tech.com, bill.wu@enflame-tech.com,
+	xin.wang@enflame-tech.com
+Subject: Re: [PATCH] PCI/AER: Fix ratelimit and log level of Advisory
+ Non-Fatal Errors
+Message-ID: <20260818223320.GA754605@bhelgaas>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -73,17 +78,107 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <120da0565eac0157ffd913423c7cfa66e985ff59.1786800931.git.lukas@wunner.de>
 
-The pull request you sent on Mon, 17 Aug 2026 10:15:32 +0530:
+On Sat, Aug 15, 2026 at 03:47:10PM +0200, Lukas Wunner wrote:
+> When Advisory Non-Fatal Errors are reported, the Uncorrectable Error bits
+> should be reported using the same ratelimit counter and log level as the
+> accompanying Correctable Error.
+> 
+> This is done correctly when they are handled natively in aer_print_error()
+> but it is not done correctly when they are handled in Firmware First mode
+> in pci_print_aer().
+> 
+> Fix it.
+> 
+> Fixes: 21963e6e4e04 ("PCI/AER: Support Advisory Non-Fatal Errors")
+> Signed-off-by: Lukas Wunner <lukas@wunner.de>
+> ---
+> The offending commit is the top-most one on pci/aer (queued for v7.3-rc1).
+> This fix could either be folded into or applied on top of it.
 
-> https://lore.kernel.org/linux-next/ans20_e3b_8XJsvA@sirena.org.uk/ Thanks
+Folded in, thanks!
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/1200d84f4c0a929a0780180d25063d93773be79c
-
-Thank you!
-
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/prtracker.html
+>  drivers/pci/pcie/aer.c | 27 +++++++++++++++++++++------
+>  1 file changed, 21 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
+> index 2a380bb..dd2aa5d 100644
+> --- a/drivers/pci/pcie/aer.c
+> +++ b/drivers/pci/pcie/aer.c
+> @@ -1028,13 +1028,15 @@ int cper_severity_to_aer(int cper_severity)
+>  EXPORT_SYMBOL_GPL(cper_severity_to_aer);
+>  #endif
+>  
+> -void pci_print_aer(struct pci_dev *dev, int aer_severity,
+> -		   struct aer_capability_regs *aer)
+> +static void __pci_print_aer(struct pci_dev *dev, int aer_severity,
+> +			    struct aer_capability_regs *aer,
+> +			    bool ratelimit_print, const char *level)
+>  {
+>  	const char *bus_type, *sev;
+>  	int tlp_header_valid = 0;
+>  	u32 status, mask;
+>  	struct aer_err_info info = {
+> +		.level = level,
+>  		.severity = aer_severity,
+>  		.first_error = PCI_ERR_CAP_FEP(aer->cap_control),
+>  	};
+> @@ -1043,12 +1045,10 @@ void pci_print_aer(struct pci_dev *dev, int aer_severity,
+>  		status = aer->cor_status;
+>  		mask = aer->cor_mask;
+>  		sev = "cor";
+> -		info.level = KERN_WARNING;
+>  	} else {
+>  		status = aer->uncor_status;
+>  		mask = aer->uncor_mask;
+>  		sev = "uncor";
+> -		info.level = KERN_ERR;
+>  		tlp_header_valid = tlp_header_logged(status & ~mask,
+>  						     aer->cap_control);
+>  	}
+> @@ -1067,7 +1067,7 @@ void pci_print_aer(struct pci_dev *dev, int aer_severity,
+>  	 * For Advisory Non-Fatal Errors, record statistics and tracing
+>  	 * even if ratelimited
+>  	 */
+> -	if (!aer_ratelimit(dev, info.severity))
+> +	if (!ratelimit_print)
+>  		goto anfe;
+>  
+>  	aer_printk(info.level, dev,
+> @@ -1094,10 +1094,25 @@ void pci_print_aer(struct pci_dev *dev, int aer_severity,
+>  		if (anfe_status) {
+>  			aer->uncor_status = anfe_status;
+>  			aer->uncor_mask = 0;
+> -			pci_print_aer(dev, AER_NONFATAL, aer);
+> +			__pci_print_aer(dev, AER_NONFATAL, aer,
+> +					ratelimit_print, level);
+>  		}
+>  	}
+>  }
+> +
+> +void pci_print_aer(struct pci_dev *dev, int aer_severity,
+> +		   struct aer_capability_regs *aer)
+> +{
+> +	/*
+> +	 * Precalculate ratelimit counter and log level so that Advisory
+> +	 * Non-Fatal Errors are treated like the accompanying Correctable Error
+> +	 */
+> +	bool ratelimit_print = aer_ratelimit(dev, aer_severity);
+> +	const char *level = aer_severity == AER_CORRECTABLE ? KERN_WARNING
+> +							    : KERN_ERR;
+> +
+> +	__pci_print_aer(dev, aer_severity, aer, ratelimit_print, level);
+> +}
+>  EXPORT_SYMBOL_GPL(pci_print_aer);
+>  
+>  /**
+> 
+> base-commit: 21963e6e4e0425b12d3128eea5a5104a3bc909c4
+> -- 
+> 2.53.0
+> 
 
