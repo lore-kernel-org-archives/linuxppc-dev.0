@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-25922-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25923-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BADF1C5DF70
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2026 01:47:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4B021C5DF74
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2026 01:48:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hPCHz4Yvsz2ygm;
-	Tue, 18 Aug 2026 11:47:27 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787017647;
-	cv=none; b=owdleQLe5RgRbwNvSfB/Qe/QVxUMoy2F9Gs16HWuCtExTSGInv2W8hiy+1i6Gj+w+71aoy1gSsv0xAobctmCqBlZWDdLIxzAJRas1OskkcD4zd5YQN7ic6TDNaL/V9K1WexfoxUa7+RSm+0Ah7ypalIasacZdjkeovJCQovXkJfb0rrLAYTIGl061Rk6LS7ufLundQFQk9b+LEX1PZrI0cGoHoxcSe+YIMU3D8GkEUq77NCBuL8m1dhNgPXDd9GbUCjjfytKBKEcYWBIVhtb3Pme/nRTUhc7l+WOoEVwESnWnKTHOug4WRppP/tQazUanIfI64fwHyDPvyJEBmTOzA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hPCJ12ddrz2yl1;
+	Tue, 18 Aug 2026 11:47:29 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787017649;
+	cv=none; b=e3eNx3heGr9GYby/uJU1qcVAnAkCcdcqnFUfLzmNWLfkict16pPwicEMPWRdY1FMviHpeNixhtkj6lyjOzX8G0JOEWybclqM7EvI7CDqXfu1EotRzY43YbnxTQMrrwSosrUGbPKJNJB+nL17j4QUz2tG1avakT2/XbUOVpelfgiTFnQT5Ich88GKYr/oC727eTP7lsJjKUFZbfb2WTdZFq6VJ2vfmHFaTEXrPoCEfczn37PD2/S53ozZxEAxziDJo8tp8WKpPdPKvwX0i8mljKGaMI7WvZtLiclbYlT3Ynt2EN1gVIeM/cfNi1/CO4TAz0S/N3X/COmwvhyaURxVsA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787017647; c=relaxed/relaxed;
-	bh=83ZNN2Dir2gqtSP4d6Qmtf/8HOPgnaBtC8Y9j5M25hY=;
+	t=1787017649; c=relaxed/relaxed;
+	bh=XdRoyahfxngH+Wmqfv4fk5SrfAawGFTVSypyi858am4=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=mAXJBVJvwp1ZBQlfTZhcOS42ELsYzCBY5TIJR8FC2d8xn/kdUpZ0MvsSTeJb45JalDd3PWKqaLy2bS4UiOR4uqzMgyWsevoPusPWt0SsAgR8i/Xnt4h5FEDD/QdLiJHIMI3ZSNAzixJRUh7NZA0JsyFaT51au7IcB8KlvH17C/xGuB+ZSb353oHlkYgUaPXOVPqMNo48PIO5M6GkTBT8vmvP0TFIFLG3120D8lAfCXGYx7HnpYtA9xe/ZyaNXvUO1h5XcMpb4SesOFUNqe7Ar4wWS2KAgYKuSIED4NvA7nQQ29HURRQzDKxo9i8yLQQD7EG+NAykRsS8mXMur0xlug==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EdXN09iy; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=B28Jo4AxCRSw86cqSv9mzNkh0ZA2KnO93j24250P2+3qCHP5nB3kHWq/6DZq4p1n949WGg5RR6IyCodpaWXmgk/ghhGS3Vhi9bfHCpxySDGh5doTyZ6SUfcHmELkQmsDjivP6p7kcN9u3P3gSg1mn+D32z8o8z+JKbtEfc7sQxywfIccYgJgIQegA93vXavyCjmykWkcfXERVBJku1YThlkePmUO4JFXjvRCjzRSXdcSxC36TavVLOg7hJAOQ8UVIK9LBPW89cNr6f3Vq0YZ7gdlAyp+uVQvoBujzkGCoX4HtOSTQA4WWgse6jN5B7kFRATazVYpITIM6t2jqBM/Iw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=dtSJLClb; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EdXN09iy;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=dtSJLClb;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hPCHy0XBsz2ySg
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2026 11:47:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hPCJ01SCkz2xYg
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2026 11:47:28 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 1FF3060204;
+	by tor.source.kernel.org (Postfix) with ESMTP id 3FFD8601E9;
+	Tue, 18 Aug 2026 01:47:26 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9BA5A1F000E9;
 	Tue, 18 Aug 2026 01:47:24 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 66C2C1F00A3D;
-	Tue, 18 Aug 2026 01:47:23 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1787017643;
-	bh=83ZNN2Dir2gqtSP4d6Qmtf/8HOPgnaBtC8Y9j5M25hY=;
+	s=k20260515; t=1787017646;
+	bh=XdRoyahfxngH+Wmqfv4fk5SrfAawGFTVSypyi858am4=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=EdXN09iyQRpCLJO5vBX1FuoEN6sp9iMwNJCWKIvv9dPNOhI6FU3lHd2C+GCcjocux
-	 JFGdqCCn3HJhJPC6wTasbkM3fQ7LMwSadTdr7PJwjObqPLtJaFMixe4WOxpnYMw+Hw
-	 3pgbDddrr8KgBUj/AebK0621WUrWidJvTyl3TbeLFKhVQIYEuvtgrfrCSRPqZ30P5L
-	 Zk5vv4oMGMGLHM37RbIfAQOMWQKl8OKcHom4dozUGs17SJ0JNR2q04iB/BuENeMQyr
-	 mHmbNGvGgNZz1m6L3Jp5mHh/ajmvhBXXu9i+RErZ0eH6b5YFSUP/rkLuZRI4Kdsxh7
-	 5yB2d5vuJMT7w==
+	b=dtSJLClbsVTXZ3X6NEjjlejLI7QbM2n7j4L5AtZGyJ1Vfz9EFkjo6I4kSAQUUNLT3
+	 TN3ZQ/LgsFo4GzqH8+6+vmp0jWm3nc7Ai48Yg2637w4NTRvuuwjj5aQPfbQl3pRJ+o
+	 yFOfnD6LR3p53dYz13yYavP7J0/0nAet7UZLKP88GE87xVr4Ht6BBY9e8L8FVb6qm2
+	 1XZI56wXhlSLnhCqpqUC1yo/GGqxQVrHoFlmUBfTYKTnBVG5vOA8kh+NLa7cWX+ZS5
+	 mLuslc3jAr2XOX3+Z8Ox4t3qwXZ/+hKZwbQVkLhFxA0iG/ay66sN29YpwJjK5e4p41
+	 TGV0VKthOD61Q==
 From: Jakub Kicinski <kuba@kernel.org>
 To: mmc@linux.ibm.com
 Cc: Jakub Kicinski <kuba@kernel.org>,
@@ -61,12 +61,12 @@ Cc: Jakub Kicinski <kuba@kernel.org>,
 	davemarq@linux.ibm.com,
 	bjking1@linux.ibm.com,
 	shaik.abdulla1@ibm.com
-Subject: Re: [PATCH net-next v5 05/15] ibmveth: Refactor RX interrupt control for MQ RX queues
-Date: Mon, 17 Aug 2026 18:47:22 -0700
-Message-ID: <20260818014722.3854051-1-kuba@kernel.org>
+Subject: Re: [PATCH net-next v5 06/15] ibmveth: Refactor TX resource allocation in open/close paths
+Date: Mon, 17 Aug 2026 18:47:24 -0700
+Message-ID: <20260818014724.3854085-1-kuba@kernel.org>
 X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20260814073642.24630-6-mmc@linux.ibm.com>
-References: <20260814073642.24630-6-mmc@linux.ibm.com>
+In-Reply-To: <20260814073642.24630-7-mmc@linux.ibm.com>
+References: <20260814073642.24630-7-mmc@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -85,307 +85,315 @@ Content-Transfer-Encoding: 8bit
 This is an AI-generated review of your patch. The human sending this
 email has considered the AI review valid, or at least plausible.
 ---
-ibmveth: Refactor RX interrupt control for MQ RX queues
+ibmveth: Refactor TX resource allocation in open/close paths
 
-This patch introduces queue-indexed RX interrupt helpers (toggle/enable/
-disable, setup/cleanup, schedule) and wires them into open(), close(),
-poll() and the IRQ handler, with request_irq() now using &adapter->napi[i]
-as the per-queue cookie. Runtime behaviour stays single-queue.
+This moves the per-queue TX long term buffer alloc/free loops out of
+ibmveth_open()/ibmveth_close() into ibmveth_alloc_tx_resources() and
+ibmveth_free_tx_resources(), moves the TX allocation to the end of open()
+after RX is live, and adds a tx_ltb_ptr[] presence check to
+ibmveth_start_xmit().  No Link: tags are present in the commit header.
 
-A few questions below.
+A few questions on the LTB lifetime rules the patch establishes.
 
 > diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
-> index 1a428ee60d58c..99eeb6ef51bf3 100644
+> index 99eeb6ef51bf3..b39e8c53cbfd1 100644
 > --- a/drivers/net/ethernet/ibm/ibmveth.c
 > +++ b/drivers/net/ethernet/ibm/ibmveth.c
-
-[ ... ]
-
-> @@ -331,6 +333,311 @@ ibmveth_cleanup_rx_resources(struct ibmveth_adapter *adapter)
-
-[ ... ]
-
-> +		/*
-> +		 * H_PARAMETER is ambiguous (already in requested state vs bad
-> +		 * args). Fold only on disable as an idempotent mask. On enable
-> +		 * keep it an error so a stuck-masked queue stays visible to
-> +		 * poll/resize recovery.
-> +		 */
-> +		if (h_rc == H_PARAMETER && !enable) {
-> +			dev_warn_ratelimited(&adapter->netdev->dev,
-> +					     "H_VIOCTL %s IRQ returned H_PARAMETER for queue %d (hwirq=%lu)\n",
-> +					     action, queue_index, hwirq);
-> +			return 0;
-> +		}
-
-[ ... ]
-
-> +	if (adapter->multi_queue && num > 1) {
-> +		for (i = 0; i < num; i++) {
-> +			rc = ibmveth_enable_irq(adapter, i);
-> +			if (rc) {
-> +				netdev_err(netdev,
-> +					   "Failed to enable IRQ for queue %d, rc=%d\n",
-> +					   i, rc);
-> +				while (--i >= 0) {
-> +					ibmveth_disable_irq(adapter, i);
-> +					synchronize_irq(adapter->queue_irq[i]);
-> +				}
-> +				rc = -EIO;
-> +				goto err_disable_napi;
-> +			}
-> +		}
-> +	}
-
-[ ... ]
-
-> +err_disable_napi:
-> +	/* PHYP unmask was rolled back above; disable NAPI before free_irq */
-> +	for (i = 0; i < num; i++)
-> +		napi_disable(&adapter->napi[i]);
-> +	for (i = 0; i < num; i++) {
-> +		if (adapter->queue_irq[i])
-> +			free_irq(adapter->queue_irq[i], &adapter->napi[i]);
-> +	}
+> @@ -1183,8 +1183,12 @@ static int ibmveth_rxq_harvest_buffer(struct ibmveth_adapter *adapter,
+>  
+>  static void ibmveth_free_tx_ltb(struct ibmveth_adapter *adapter, int idx)
+>  {
+> +	if (!adapter->tx_ltb_ptr[idx])
+> +		return;
+> +
+>  	dma_unmap_single(&adapter->vdev->dev, adapter->tx_ltb_dma[idx],
+>  			 adapter->tx_ltb_size, DMA_TO_DEVICE);
+> +	adapter->tx_ltb_dma[idx] = 0;
+>  	kfree(adapter->tx_ltb_ptr[idx]);
+>  	adapter->tx_ltb_ptr[idx] = NULL;
+>  }
 
 [Severity: Medium]
-In ibmveth_setup_rx_interrupts(), when ibmveth_enable_irq() fails for queue
-i the rollback loop begins with --i, so queue i itself is never masked, yet
-err_disable_napi then napi_disable()s and free_irq()s that same queue.
+tx_ltb_ptr[] now doubles as the guard for tx_ltb_dma[], but the retire
+order here clears the guarded value first:
 
-Is queue i guaranteed to be masked at that point?  ibmveth_toggle_irq()
-folds H_PARAMETER to success only on disable, and its own comment says
-H_PARAMETER may mean "already in requested state":
+	dma_unmap_single(...);
+	adapter->tx_ltb_dma[idx] = 0;
+	kfree(adapter->tx_ltb_ptr[idx]);
+	adapter->tx_ltb_ptr[idx] = NULL;
 
-	if (h_rc == H_PARAMETER && !enable) {
+Can an ibmveth_start_xmit() that already passed the new check
 
-so an enable can report an error for a queue PHYP has already unmasked.
+	if (unlikely(!adapter->tx_ltb_ptr[queue_num])) {
 
-While napi_disable() sleeps, an interrupt on that still-unmasked queue
-reaches ibmveth_interrupt() -> ibmveth_schedule_rx_queue(), where
-napi_schedule_prep() fails and the helper deliberately does not mask:
+then reach
 
-	if (napi_schedule_prep(napi)) {
-		rc = ibmveth_disable_irq(adapter, qindex);
-		WARN_ON(rc);
-		__napi_schedule(napi);
-		return true;
-	}
-	return false;
+	desc.fields.address = adapter->tx_ltb_dma[queue_num];
 
-The handler still returns IRQ_HANDLED, so nothing quiets the source.  Can
-this leave the PHYP interrupt asserted and re-entering the handler for the
-duration of the napi_disable() wait, which is the opposite of the "mask
-PHYP and synchronize_irq before napi_disable" rule stated in the changelog?
+and hand a zeroed DMA address to H_SEND_LOGICAL_LAN?
 
-The multi_queue && num > 1 branch cannot run at this commit because
-multi_queue is hardcoded to 0, but it becomes live later in the series and
-the rollback loop is unchanged at the end of the series.
+The publish side has the mirror-image order: ibmveth_allocate_tx_ltb()
+stores tx_ltb_ptr[idx] from kzalloc() before tx_ltb_dma[idx] is filled in
+by dma_map_single(), with no release/acquire pairing.
 
-[ ... ]
+Both the check in ibmveth_start_xmit() and its later uses (the memcpy into
+tx_ltb_ptr[queue_num] and the descriptor address read) are plain loads with
+no READ_ONCE and no common lock, so nothing prevents a reload of
+tx_ltb_ptr[queue_num] after it was set to NULL.
 
+Against ibmveth_close() this appears harmless, since ibmveth does not set
+lltx and netif_tx_disable() therefore takes every __netif_tx_lock.  Against
+ibmveth_set_channels() (more below) there is no such serialization.  Would a
+real lock, or gating on adapter->opened, express this better than a pointer
+used as a flag?
+
+> @@ -1207,12 +1211,54 @@ static int ibmveth_allocate_tx_ltb(struct ibmveth_adapter *adapter, int idx)
+>  			   "unable to DMA map tx long term buffer\n");
+>  		kfree(adapter->tx_ltb_ptr[idx]);
+>  		adapter->tx_ltb_ptr[idx] = NULL;
+> +		adapter->tx_ltb_dma[idx] = 0;
+>  		return -ENOMEM;
+>  	}
+>  
+>  	return 0;
+>  }
+>  
 > +/**
-> + * ibmveth_schedule_rx_queue - Mask PHYP IRQ and schedule NAPI for one RX queue
+> + * ibmveth_alloc_tx_resources - Allocate TX resources for all queues
 > + * @adapter: ibmveth adapter structure
-> + * @qindex: RX queue index
 > + *
-> + * Shared by the IRQ handler and process-context kick sites (open, resume,
-> + * pool sysfs, poll_controller).
+> + * Allocates TX Long Term Buffers (LTBs) for all TX queues.
 > + *
-> + * Return: true if NAPI was scheduled (and PHYP masked), false if prep failed
+> + * Return: 0 on success, -ENOMEM on failure
 > + */
-> +static bool ibmveth_schedule_rx_queue(struct ibmveth_adapter *adapter,
-> +				      int qindex)
+> +static int ibmveth_alloc_tx_resources(struct ibmveth_adapter *adapter)
 > +{
-> +	struct napi_struct *napi = &adapter->napi[qindex];
-> +	int rc;
+> +	struct net_device *netdev = adapter->netdev;
+> +	int i;
 > +
-> +	if (WARN_ON(qindex < 0 || qindex >= adapter->num_rx_queues))
-> +		return false;
+> +	for (i = 0; i < netdev->real_num_tx_queues; i++) {
+> +		if (ibmveth_allocate_tx_ltb(adapter, i))
+> +			goto err_free_ltbs;
+> +	}
 
 [Severity: Low]
-This isn't a bug, but the documented return contract does not match the
-code in two ways.
+This isn't a bug introduced by this patch, and it looks unreachable by the
+end of the series, but noting it for traceability: ibmveth_allocate_tx_ltb()
+assigns the kzalloc() and dma_map_single() results straight into
+tx_ltb_ptr[i] / tx_ltb_dma[i] with no check for an already-populated slot,
+unlike ibmveth_set_channels() which does
 
-The out-of-range WARN_ON branch also returns false, which is not a prep
-failure, so callers cannot distinguish the two cases.
+	if (adapter->tx_ltb_ptr[i])
+		continue;
 
-And "true ... (and PHYP masked)" is not established, since the return of
-ibmveth_disable_irq() is only passed to WARN_ON() and then discarded:
+so a caller reaching this helper with a live mapping in the slot would
+strand the old TCE mapping.  With the later set_channels rewrite in this
+series the !adapter->opened branch allocates nothing and the opened branch
+frees everything it allocated on failure, so no path leaves tx_ltb_ptr[]
+populated while adapter->opened is false and open() cannot overwrite a live
+mapping.  Would a defensive check (or a comment stating the invariant) be
+worth it here?
 
-	if (napi_schedule_prep(napi)) {
-		rc = ibmveth_disable_irq(adapter, qindex);
-		WARN_ON(rc);
-		__napi_schedule(napi);
-		return true;
-	}
+> +
+> +	return 0;
+> +
+> +err_free_ltbs:
+> +	while (--i >= 0)
+> +		ibmveth_free_tx_ltb(adapter, i);
+> +	return -ENOMEM;
+> +}
+> +
+> +/**
+> + * ibmveth_free_tx_resources - Free TX resources for all queues
+> + * @adapter: ibmveth adapter structure
+> + *
+> + * Frees TX Long Term Buffers (LTBs) for all TX queues.
+> + */
+> +static void ibmveth_free_tx_resources(struct ibmveth_adapter *adapter)
+> +{
+> +	struct net_device *netdev = adapter->netdev;
+> +	int i;
+> +
+> +	for (i = 0; i < netdev->real_num_tx_queues; i++)
+> +		ibmveth_free_tx_ltb(adapter, i);
+> +}
 
-so when the mask hypercall fails the helper still reports true while the
-queue remains unmasked.  Should the kernel-doc be reworded, or should the
-mask failure be reflected in the return value for callers like open(),
-resume(), veth_pool_store() and the later ibmveth_restart_rx_queue()?
+[Severity: Low]
+Small wording mismatch: the kernel-doc says "Frees TX Long Term Buffers
+(LTBs) for all TX queues", but the loop is bounded by real_num_tx_queues
+while tx_ltb_ptr[] is IBMVETH_MAX_QUEUES wide.  Since ibmveth_free_tx_ltb()
+is now NULL-safe, either iterating IBMVETH_MAX_QUEUES or saying
+"real_num_tx_queues" in the comment would make the two agree.
+
+> @@ -1263,12 +1309,6 @@ static int ibmveth_open(struct net_device *netdev)
 
 [ ... ]
 
-> @@ -991,24 +1297,20 @@ static int ibmveth_open(struct net_device *netdev)
+>  	rc = ibmveth_alloc_buffer_pools(adapter);
 >  	if (rc)
->  		goto out_free_tx_ltb;
+> -		goto out_free_tx_ltb;
+> +		goto out_unregister_lan;
 >  
-> -	netdev_dbg(netdev, "registering irq 0x%x\n", netdev->irq);
-> -	rc = request_irq(netdev->irq, ibmveth_interrupt, 0, netdev->name,
-> -			 netdev);
-> -	if (rc != 0) {
-> -		netdev_err(netdev, "unable to request irq 0x%x, rc %d\n",
-> -			   netdev->irq, rc);
-> +	rc = ibmveth_setup_rx_interrupts(adapter);
-> +	if (rc) {
->  		do {
->  			lpar_rc = h_free_logical_lan(adapter->vdev->unit_address);
->  		} while (H_IS_LONG_BUSY(lpar_rc) || (lpar_rc == H_BUSY));
-> -
->  		goto out_free_buffer_pools;
->  	}
+>  	rc = ibmveth_setup_rx_interrupts(adapter);
+> -	if (rc) {
+> -		do {
+> -			lpar_rc = h_free_logical_lan(adapter->vdev->unit_address);
+> -		} while (H_IS_LONG_BUSY(lpar_rc) || (lpar_rc == H_BUSY));
+> -		goto out_free_buffer_pools;
+> -	}
+> +	if (rc)
+> +		goto out_unregister_lan;
+
+[ ... ]
+
+> -out_free_buffer_pools:
+> +out_cleanup_rx_interrupts:
+> +	ibmveth_cleanup_rx_interrupts(adapter);
+> +out_unregister_lan:
+> +	do {
+> +		lpar_rc = h_free_logical_lan(adapter->vdev->unit_address);
+> +	} while (H_IS_LONG_BUSY(lpar_rc) || (lpar_rc == H_BUSY));
+>  	ibmveth_free_buffer_pools(adapter);
+> -out_free_tx_ltb:
+> -	while (--i >= 0)
+> -		ibmveth_free_tx_ltb(adapter, i);
+> +out_free_queue_mem:
+>  	ibmveth_cleanup_rx_resources(adapter);
+
+[Severity: Medium]
+This isn't a bug introduced by this patch, but is the changelog wording
+accurate about what changed here?  The commit message says:
+
+  "After LAN registration, open-fail teardown frees the logical LAN before
+  tearing down RX pool DMA (intentional safer order than leaving the LAN
+  registered while unmapping RX memory)."
+
+At the parent commit, an ibmveth_alloc_buffer_pools() failure after a
+successful ibmveth_register_logical_lan() went
+
+	rc = ibmveth_alloc_buffer_pools(adapter);
+	if (rc)
+		goto out_free_tx_ltb;
+
+and out_free_tx_ltb fell through to ibmveth_cleanup_rx_resources() and
+ibmveth_free_filter_list() with no h_free_logical_lan() anywhere on that
+path, so the RX queue and buffer/filter lists were unmapped and freed while
+PHYP still had the LAN registered.  Post-patch that failure goes to
+out_unregister_lan, which issues the deregistration hcall first.
+
+So this looks less like a reordering and more like adding a hcall that was
+never issued on that path.  Should this be split out as its own patch with a
+Fixes: tag so it can be picked up for stable, rather than described as an
+ordering preference inside a TX-only refactor?
+
+> @@ -1343,7 +1385,10 @@ static int ibmveth_close(struct net_device *netdev)
+
+[ ... ]
+
+> -	netif_tx_stop_all_queues(netdev);
+> +	/* Disable and wait for in-flight ndo_start_xmit (stop_all_queues
+> +	 * alone does not). Direct close() callers bypass synchronize_net().
+> +	 */
+> +	netif_tx_disable(netdev);
 
 [Severity: High]
-This isn't a bug introduced by this patch, but the ordering here is worth a
-question now that close() gains an early return.
+This isn't a bug introduced by this patch, but the reasoning in this new
+comment seems to apply equally to ibmveth_set_channels(), which still frees
+the same LTBs after only netif_tx_stop_all_queues():
 
-ibmveth_open() registers the logical LAN before allocating buffer pools, and
-the pool allocation failure branch takes goto out_free_tx_ltb, which runs:
+ibmveth_set_channels() {
+	...
+	netif_tx_stop_all_queues(netdev);
+	...
+	/* Free any that are no longer needed */
+	for (i = old; i > goal; i--) {
+		if (adapter->tx_ltb_ptr[i - 1])
+			ibmveth_free_tx_ltb(adapter, i - 1);
+	}
 
-out_free_tx_ltb:
-	while (--i >= 0)
-		ibmveth_free_tx_ltb(adapter, i);
-	ibmveth_cleanup_rx_resources(adapter);
-out_free_filter_list:
-	ibmveth_free_filter_list(adapter);
+	netif_tx_wake_all_queues(netdev);
+}
 
-That dma_unmaps buffer_list_dma[0], dma_free_coherent()s the RX ring and
-frees the filter list page without ever calling h_free_logical_lan().  Does
-this leave PHYP registered against the buffer list, filter list and RX
-descriptor ring after those pages have been unmapped and returned to the
-page allocator?
+netif_tx_stop_all_queues() only sets __QUEUE_STATE_DRV_XOFF; it takes no
+__netif_tx_lock, and netif_set_real_num_tx_queues() only touches the qdisc
+root lock.  Since ibmveth does not declare lltx, an ndo_start_xmit already
+running on another CPU holds the txq lock and keeps going:
 
-The same ordering exists in the baseline at 4f93b12cf7b2, so the root
-problem predates this patch.  What changes here is that the new
-"if (!adapter->opened) return 0;" gate in ibmveth_close() also removes the
-accidental recovery a later ndo_stop used to provide by running the
-h_free_logical_lan() loop.
+CPU0 ibmveth_start_xmit()
+	/* already passed !adapter->tx_ltb_ptr[queue_num] */
+	memcpy(adapter->tx_ltb_ptr[queue_num], skb->data, skb_headlen(skb));
+	...
+	desc.fields.address = adapter->tx_ltb_dma[queue_num];
 
-For reference, this is resolved by the end of the series: open() there
-allocates the buffer pools before ibmveth_register_rx_queues(), and every
-post-registration error path funnels into ibmveth_free_all_queues(), which
-issues h_free_logical_lan() in a retry loop.
+CPU1 ibmveth_set_channels()
+	ibmveth_free_tx_ltb(adapter, i - 1);
+	  dma_unmap_single(...);
+	  adapter->tx_ltb_dma[idx] = 0;
+	  kfree(adapter->tx_ltb_ptr[idx]);
 
-> @@ -1032,27 +1333,32 @@ static int ibmveth_close(struct net_device *netdev)
->  	long lpar_rc;
->  	int i;
+Can an ethtool -L shrink therefore memcpy into kfree()d memory and pass a
+stale or zeroed DMA address to H_SEND_LOGICAL_LAN?  The new one-shot
+tx_ltb_ptr[] check in ibmveth_start_xmit() does not close this window, and
+this stop-then-free sequence is unchanged at the end of the series.  Should
+ibmveth_set_channels() use netif_tx_disable() too?
+
+> @@ -1359,13 +1404,14 @@ static int ibmveth_close(struct net_device *netdev)
+
+[ ... ]
+
+> @@ -1789,6 +1835,12 @@ static netdev_tx_t ibmveth_start_xmit(struct sk_buff *skb,
+>  	int i, queue_num = skb_get_queue_mapping(skb);
+>  	unsigned long mss = 0;
 >  
-> -	netdev_dbg(netdev, "close starting\n");
-> +	/* Gate on opened, not IFF_UP: pool_store/change_mtu close+open can
-> +	 * leave IFF_UP set after a failed reopen.
-> +	 */
-> +	if (!adapter->opened)
-> +		return 0;
->  
-> -	napi_disable(&adapter->napi[0]);
-> +	adapter->opened = false;
-
-[Severity: Low]
-This is a pre-existing issue rather than something introduced here, but
-should this gate carry a Fixes: tag and a note in the changelog?
-
-In the baseline, ibmveth_close() unconditionally ran
-napi_disable(&adapter->napi[0]) and free_irq(netdev->irq, netdev).  After a
-failed reopen from veth_pool_store() or ibmveth_change_mtu() (both call
-close() then open() directly and leave IFF_UP set when open fails), a
-subsequent "ip link set down" re-entered ndo_stop with NAPI already
-disabled and no IRQ registered.  napi_disable_locked() leaves
-NAPIF_STATE_SCHED|NPSVC set, so the second napi_disable() spins in its
-usleep_range() loop while holding rtnl, and free_irq() splats "Trying to
-free already-free IRQ".
-
-The changelog describes the mechanism ("opened / rx_irq_setup gate whether
-cleanup walks IRQ/NAPI state") and the v5 notes below the --- describe the
-scenario, but the commit message itself never says a hang is being fixed
-and there is no Fixes: tag, so the fix is hard to identify for backports.
-It also cannot be applied on its own since it depends on the new helpers,
-flags and queue_irq[] array added here.
+> +	/* Close / failed reopen can free LTBs while IFF_UP is still set. */
+> +	if (unlikely(!adapter->tx_ltb_ptr[queue_num])) {
+> +		dev_kfree_skb_any(skb);
+> +		return NETDEV_TX_OK;
+> +	}
+> +
 
 [Severity: Medium]
-Separately, can this early return skip TX long-term-buffer teardown?  At
-this commit ibmveth_set_channels() keys its allocation decision off IFF_UP:
+Should this drop bump netdev->stats.tx_dropped like every other drop in this
+function does?
+
+	if (unlikely(skb->len > adapter->tx_ltb_size)) {
+		...
+		netdev->stats.tx_dropped++;
+		goto out;
+	}
+
+The other drop sites (ibmveth_is_packet_unsupported(), the checksum-help
+failure, the oversize check, the total_bytes mismatch and the
+ibmveth_send() failure) all increment tx_dropped, and returning
+NETDEV_TX_OK tells the core the skb was consumed so the core cannot account
+for it either.  In exactly the abnormal states this guard targets, traffic
+is then discarded with nothing visible in ip -s link or in
+/sys/class/net/<if>/statistics/tx_dropped.  Could this reuse the existing
+out: label after the tx_dropped++ instead?
+
+[Severity: Low]
+This isn't a bug introduced by this patch, and it looks resolved later in
+the series, but noting it for traceability against the claim in the commit
+message that "close/failed-reopen with IFF_UP set cannot UAF".
+
+The guard keys off tx_ltb_ptr[] rather than adapter->opened, while
+ibmveth_set_channels() at this point in the series still selects its live
+path from IFF_UP alone:
 
 	if (!(netdev->flags & IFF_UP))
 		return netif_set_real_num_tx_queues(netdev, goal);
 
-so after a failed reopen (IFF_UP still set, adapter->opened false),
-"ethtool -L eth0 tx N" takes the allocating branch while the adapter is
-closed.  The next ndo_stop then returns early and never reaches:
+In the state the driver documents in ibmveth_close() (IFF_UP set,
+adapter->opened false after a failed reopen), ethtool -L would allocate LTBs
+and finish with netif_tx_wake_all_queues() on an adapter whose logical LAN
+was already released, so packets pass this pointer-only check and reach
+ibmveth_send() with no registered LAN, and those LTBs are not freed by a
+later close() because it early-returns on !adapter->opened.  The later patch
+"ibmveth: Wire ethtool set_channels to MQ RX queue resize" replaces the
+IFF_UP gating with an adapter->opened test whose !opened branch allocates
+nothing and wakes no queues, which removes this window.
 
-	for (i = 0; i < netdev->real_num_tx_queues; i++)
-		ibmveth_free_tx_ltb(adapter, i);
-
-and the next ibmveth_open() assigns tx_ltb_ptr[i]/tx_ltb_dma[i]
-unconditionally.  Does that leak the bounce buffer and its DMA mapping per
-TX queue?
-
-By the end of the series ibmveth_set_channels() gates on
-"if (!adapter->opened)" and only stashes queue counts, so no path allocates
-TX LTBs while the adapter is closed, which removes this window.
-
-[ ... ]
-
-> @@ -1696,7 +2002,7 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
->  			container_of(napi, struct ibmveth_adapter, napi[0]);
->  	struct net_device *netdev = adapter->netdev;
->  	int frames_processed = 0;
-> -	unsigned long lpar_rc;
-> +	int rc;
->  	u16 mss = 0;
->  
->  restart_poll:
-
-[ ... ]
-
-> @@ -1796,15 +2102,15 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
->  	/* We think we are done - reenable interrupts,
->  	 * then check once more to make sure we are done.
->  	 */
-> -	lpar_rc = h_vio_signal(adapter->vdev->unit_address, VIO_IRQ_ENABLE);
-> -	if (WARN_ON(lpar_rc != H_SUCCESS)) {
-> +	rc = ibmveth_enable_irq(adapter, 0);
-> +	if (WARN_ON(rc)) {
->  		schedule_work(&adapter->work);
+>  	if (ibmveth_is_packet_unsupported(skb, netdev))
 >  		goto out;
->  	}
->  
->  	if (ibmveth_rxq_pending_buffer(adapter) && napi_schedule(napi)) {
-> -		lpar_rc = h_vio_signal(adapter->vdev->unit_address,
-> -				       VIO_IRQ_DISABLE);
-> +		rc = ibmveth_disable_irq(adapter, 0);
-> +		WARN_ON(rc);
->  		goto restart_poll;
->  	}
-
-[Severity: Low]
-This isn't a bug today, but the two halves of the new per-queue protocol
-disagree.  ibmveth_interrupt() now resolves the queue that fired:
-
-	qindex = napi - adapter->napi;
-	...
-	ibmveth_schedule_rx_queue(adapter, qindex);
-
-while ibmveth_poll() still recovers the adapter through
-container_of(napi, struct ibmveth_adapter, napi[0]) and hardcodes queue 0
-in ibmveth_enable_irq(adapter, 0) / ibmveth_disable_irq(adapter, 0).  For a
-napi index above 0 that container_of would compute a wrong adapter pointer
-and the unmask would target queue 0 rather than the queue that fired.
-
-Since IBMVETH_MAX_RX_QUEUES is 1 and multi_queue is 0 at this commit only
-napi[0] can be registered, and later commits in the series ("ibmveth:
-Harden RX poll path with helpers" / "ibmveth: Enable multi-queue RX receive
-path") derive queue_index = napi - adapter->napi in poll() with a range
-check.  Would it be clearer to convert poll() in the same patch that
-introduces the queue-indexed handler, so the two sides never disagree?
+>  	/* veth can't checksum offload UDP */
 
