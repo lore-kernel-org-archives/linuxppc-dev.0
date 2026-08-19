@@ -1,79 +1,145 @@
-Return-Path: <linuxppc-dev+bounces-25969-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-25970-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8B849C5DF6D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2026 07:54:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1D5E0C5B572
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2026 08:12:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hPzPV33PKz2yCK;
-	Wed, 19 Aug 2026 17:54:54 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787126094;
-	cv=none; b=TKktSVWDCfJ5LyrdbLQml5TNEDDgqX+KtUQDNFNZfnZJtgyqlvmqdJfSm83h8RfsoRIUhXk9m/LrT3tD0wDDPXkyXCUufxTbZJYWVZ4UCzvxJDEvGixDqPjv8P85CKoB6iFkOiihJvRVJOqDJXWADn/sv56wjz9QcHuhTtS9knSMapI1lWWZk3ila14RNz0FOSEXvcvnK5DKrOb9RvwYp7jh8mXKLLnXYnR9W8YGg8UAfRjLuvfC/S9s8gsIpIyg69q7je44xK6DYN4DeXRZGzJm6tAxJwF/0khYGxS1OpsvrTNPQcJbPkI5r4OGkzDaYLITOT6UoZTZ4W7ISB1xZg==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787126094; c=relaxed/relaxed;
-	bh=mZngZduxrFQALZMlxRHsA7IicZDx6tf8QmDryyLLDqA=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Ar1owQaKYUAU1BoAAWjrTaNJWLUx6LF0TrY6K8B/nGOAj0hIrH1y3zC2S7MwrXwzCIyVTvd9rqKVYnm4cCqXIB7z2zYa2y8JzcEStinrYhZtwQUP15Ks/nUR6HuR6FjC1rOqlTzd7lsceFbg+udGrTdyKx4O/WAKokwfp43vihi8ny25LHEsIWE+7I0epVn/z9xG4XfOXc+1USx14HSau8t8tHkxXHyWFCiPB2PnAudLOLLi6D2V52ZvLVWCJxdLtFjLURBlLGJlcwa0qgDKruJ71yz5Dx+u0hB8f8WNLVIyU9KvWFoytCGqJbp/Qh6AFFnT1GC19KO57GFMk137BQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=dEgl4Oj8; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hPzny1TBWz2yCK;
+	Wed, 19 Aug 2026 18:12:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c405::7" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787127158;
+	cv=pass; b=NaNtHg+pSA+DSZ7tIHdZQnO1J2Y5DjQHM5IHFkQK6p4AUKUg/Rq+tNhe6mMXBhsX7EACMVmSB16lHgR1oxAQ6Q3zfIhSMhj4h+/s+dmt0M9MfmYygqns9n6m/plCkRsh0rCzXx8dbr0I7Vn9xSPJtasgR7dbfFeRGatVm/MvMLk6jtdemujM/IhQfhScK1tSfgbQmzFdnXLeCykByGWcxDoSKp/XEt3FRhUJ2/TgaTW2xFfZqDxoVLhd4qN76mhzSV+9qC01hREELn8OlBb4luWIEf4cIurZRqdIWfpNUI46Dk4MnkNTPOrPeZgDG+9vZ6OgougXj4mBBO15ozMwbg==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1787127158; c=relaxed/relaxed;
+	bh=d84hCATNqnUCsUt/1WDjP8LtD1u8eNmXIKR7OiNQFo0=;
+	h=From:To:CC:Subject:Date:Message-ID:Content-Type:MIME-Version; b=cXKZOIgpDDz7sE1u01Z60EtnGj8icmeMm1J8GP/ZrBzkqZ+4eEMW+f5vChXAY4q0EBL7VAmiz1n+uFwbAEuZDfM246tLaXVdNOcF93WVbalquzoY62WeMig+nxNt3yHjHE0Pmfnpzv/HHkRwccTNLEd5ls8b9MJ6Q0DSg2NIGLe1jWQCsI9LEsV+95sabO/yYcb2wpqoeb2EgvZEyecSyckXGEYfCvCZfkgwVvbcQ03z3f0Hm9Q+0H/SuoG8LSTtmgtlnPNlVtcwOxg0bibp6aDajybaEJYqNwotILCtAKOXM5GlabbTy/4KeGhji7nE4T8BQc+wzp7J6MP4Qj/E0A==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=transsion.com; dkim=pass (1024-bit key; unprotected) header.d=transsion.com header.i=@transsion.com header.a=rsa-sha256 header.s=selector1 header.b=trS+M/3+; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c405::7; helo=tydpr03cu002.outbound.protection.outlook.com; envelope-from=hongyan.xia@transsion.com; receiver=lists.ozlabs.org) smtp.mailfrom=transsion.com
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=transsion.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=dEgl4Oj8;
+	dkim=pass (1024-bit key; unprotected) header.d=transsion.com header.i=@transsion.com header.a=rsa-sha256 header.s=selector1 header.b=trS+M/3+;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=transsion.com (client-ip=2a01:111:f403:c405::7; helo=tydpr03cu002.outbound.protection.outlook.com; envelope-from=hongyan.xia@transsion.com; receiver=lists.ozlabs.org)
+Received: from TYDPR03CU002.outbound.protection.outlook.com (mail-japaneastazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c405::7])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hPzPT03Glz2xfq
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2026 17:54:52 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67J6WZ2o1545680;
-	Wed, 19 Aug 2026 07:54:49 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=mZngZduxrFQALZMlxRHsA7IicZDx6t
-	f8QmDryyLLDqA=; b=dEgl4Oj8OLQT1UfbW/ZTg+PMYvBrjTxQvgFpJ5SQpjAtqd
-	sy5z+oya3S6fgTsKPDlWK2X16D+6FX2eA6RUIEXqbG3OiF2hFigbDocRsuslSvpT
-	i1XuA6L11EHRSQ/4wJm+8EvkXPdppmf7DtB4MdouyFXEgCW68J964hNlbor39nOt
-	TxjNf3FIL00wwsGZtjofUVhe0z/QexctwAP/CLooJTM9fQDvZAfdnn6zMwdLiMkL
-	NS7ZvW4PfHx26C77UsbDHb+zJbesIuBW80IAt1TD0zgbbbS2EbVqSjA9ILyWaz+W
-	QVZfL6KTKzYBdO1Aiuo8mIQ2wWuakys0vmThYZVA==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4g4yu22a9x-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 19 Aug 2026 07:54:48 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 67J7fJ91017106;
-	Wed, 19 Aug 2026 07:54:48 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4g32tw7wj3-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 19 Aug 2026 07:54:47 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 67J7sjGG45416746
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 19 Aug 2026 07:54:46 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id DD07F20043;
-	Wed, 19 Aug 2026 07:54:45 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 0703D20040;
-	Wed, 19 Aug 2026 07:54:45 +0000 (GMT)
-Received: from dhcp-9-123-15-208.bl1-in.ibm.com (unknown [9.123.15.208])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Wed, 19 Aug 2026 07:54:44 +0000 (GMT)
-Date: Wed, 19 Aug 2026 13:24:42 +0530
-From: Gautam Menghani <gautam@linux.ibm.com>
-To: Timothy Pearson <tpearson@raptorengineering.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-        Ritesh Harjani <ritesh.list@gmail.com>
-Subject: Re: [BUG] Continuously increasing spurious interrupts inside pSeries
- guest on PowerNV host
-Message-ID: <aoVhQpVvWcIIlES-@dhcp-9-123-15-208.bl1-in.ibm.com>
-References: <582904882.11159.1786719390349.JavaMail.zimbra@raptorengineeringinc.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hPznv3k9Jz2xfq
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2026 18:12:34 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=HfS+ewTrYSphbObGuzP/RgPvbx7O9b41zYlm6vkq/vPGksWVGJrnz+gVj1Qr2dyWXn4R70qEAY3gzQGHXAEWFO8IhDNO4uoOb5AOQxEGn857AjSz+0zlvmG/ZYUfMZiiDa6KIqOLbDZm9iB5S2sFfuP0a2uCx7L9ZzCx/NggjDA7/f2LhWBDIAaOEKk32ntKR+7rJqSWy0qEclTnVKemqQZqwGdlSuIIkTDnjgx2IvQuVGcNTffpr56J0sLHGPUNj7JnQkMcRY7TgYzLyNyqibxaXAMWOdqsgE1Rq0MCRWJIF6DHOf7vYNPkO94zGy/9Fn3Qae6mdnnKIPWTiBQeLw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=d84hCATNqnUCsUt/1WDjP8LtD1u8eNmXIKR7OiNQFo0=;
+ b=BQDNrsbZqqJHSxYmmZv+K31QGGbQIOrz4WPrN3gxVhssdFluwtqCBd347CsL6beQCqTXXc7V08JbGZYrcm469Qk3c4086Yvwv7YdaFwkI7y5alaMPaMqwxRIlXDd+CmE0VH9yQn0vplV+RBzgMdbBfg22eDPG0SnPK3834pYMb9QQsWs787cIByGttOhhRNxm3ob5GTF9URWEbDEKQrt3k7N9z5gCqpxLkaRIDoyjWr8CqPWPse6IuhC7ovzPjhh3nQe1v0w9PjLoCY/XQvpSL4DevNUQjTKk1bewdDz743ipSh44ZtvAbbFMScBSHjCiuKZD51pb7xo7kPWsUiSgg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=transsion.com; dmarc=pass action=none
+ header.from=transsion.com; dkim=pass header.d=transsion.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=transsion.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=d84hCATNqnUCsUt/1WDjP8LtD1u8eNmXIKR7OiNQFo0=;
+ b=trS+M/3+1UuFoHFDnAG5KK1O3hlYMw8+9RjteJDPP/QvYvDOH4JfgTBepxUxzt8/EJzzg3QCsYTkzF3wzBmukSuwLhHDDMIjghwD+KrVh3wpr0qcJOEN8z+0jSpuynJWuVk1I/xCwqp1Obe2Pej9Ob/EnyIr4ORvGC+b1qCG/Go=
+Received: from KL1PR0401MB6196.apcprd04.prod.outlook.com
+ (2603:1096:820:c7::13) by SEZPR04MB6432.apcprd04.prod.outlook.com
+ (2603:1096:101:a8::6) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.339.8; Wed, 19 Aug
+ 2026 08:12:09 +0000
+Received: from KL1PR0401MB6196.apcprd04.prod.outlook.com
+ ([fe80::f2ee:1e28:9022:99f3]) by KL1PR0401MB6196.apcprd04.prod.outlook.com
+ ([fe80::f2ee:1e28:9022:99f3%3]) with mapi id 15.21.0339.007; Wed, 19 Aug 2026
+ 08:12:09 +0000
+From: Hongyan Xia <hongyan.xia@transsion.com>
+To: Juergen Gross <jgross@suse.com>, Ajay Kaher <ajay.kaher@broadcom.com>,
+	Alexey Makhalov <alexey.makhalov@broadcom.com>, Broadcom internal kernel
+ review list <bcm-kernel-feedback-list@broadcom.com>, Catalin Marinas
+	<catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, Huacai Chen
+	<chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>, Madhavan Srinivasan
+	<maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin
+	<npiggin@gmail.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Paul
+ Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou
+	<aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>, Thomas Gleixner
+	<tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov
+	<bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, "x86@kernel.org"
+	<x86@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, Paolo Bonzini
+	<pbonzini@redhat.com>, Vitaly Kuznetsov <vkuznets@redhat.com>, Stefano
+ Stabellini <sstabellini@kernel.org>, Oleksandr Tyshchenko
+	<oleksandr_tyshchenko@epam.com>, Peter Zijlstra <peterz@infradead.org>, Juri
+ Lelli <juri.lelli@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>,
+	Dietmar Eggemann <dietmar.eggemann@arm.com>, Steven Rostedt
+	<rostedt@goodmis.org>, Ben Segall <bsegall@google.com>, Mel Gorman
+	<mgorman@suse.de>, Valentin Schneider <vschneid@redhat.com>, K Prateek Nayak
+	<kprateek.nayak@amd.com>
+CC: Jiazi Li <jiazi.li@transsion.com>, "virtualization@lists.linux.dev"
+	<virtualization@lists.linux.dev>, "linux-arm-kernel@lists.infradead.org"
+	<linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org"
+	<linux-kernel@vger.kernel.org>, "loongarch@lists.linux.dev"
+	<loongarch@lists.linux.dev>, "linuxppc-dev@lists.ozlabs.org"
+	<linuxppc-dev@lists.ozlabs.org>, "linux-riscv@lists.infradead.org"
+	<linux-riscv@lists.infradead.org>, "kvm@vger.kernel.org"
+	<kvm@vger.kernel.org>, "xen-devel@lists.xenproject.org"
+	<xen-devel@lists.xenproject.org>
+Subject: [PATCH RESEND] sched: Convert paravirt_steal to new static key APIs
+Thread-Topic: [PATCH RESEND] sched: Convert paravirt_steal to new static key
+ APIs
+Thread-Index: AQHdL7JurDcnsknKnUOaLMvw1Db+YA==
+Date: Wed, 19 Aug 2026 08:12:09 +0000
+Message-ID: <20260819081207.12150-1-hongyan.xia@transsion.com>
+Accept-Language: zh-CN, en-US
+Content-Language: en-US
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=transsion.com;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: KL1PR0401MB6196:EE_|SEZPR04MB6432:EE_
+x-ms-office365-filtering-correlation-id: befa3bdb-2ae8-4060-d27d-08defdc990d6
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam:
+ BCL:0;ARA:13230040|7416014|376014|1800799024|23010399003|366016|921020|38070700021|6133799003|10067099003|56012099006|11063799006|18002099003;
+x-microsoft-antispam-message-info:
+ d8clx7CxpRAa7wDJWB7i0klecT0DiSo22kLcX70H82L7a4gg0NdJrkEtcqUOdNIwosLMHYe0XUNDBVs/NhktiHHwHtj2QkCeGcdpxFPmMls2XC9RBCwVVgm2ajs5N8t3HtkgZnqReAMJZyywnq5d0jTTwIpfpYfFgXawESMmAmNkzzsr1SLWruQ7f4Hk2+gqcd5wZgkTLPFyoTVtNCCeE8rKsrwkPQ31BzI78TZkhXdSB+Qv2V6DOz0VdMRgHa17lQgcC5jTj9HL5zCBF5b+12FstdHYISJnh6p7CPkpw0PGXa7NiXmP1lhk0Cl2/zUOUc/ZeqGsSdNNPinZUEnqGgBuDL/GTGURucPA1mkxl77PohNaXuFesP70S6swapKFVd2aT+VoEQYdsXzIn5yxpnQ3LsSWO7Fc+xKO8LPExZdQnyJ9jem0WSG83F+B83Ie70hWFEGgyqRY6S5LiLULNsU0/NgrnvnHMgYJxhCC26g8jo3Ffv2CpChLMP9NIUSb8FGN4UoTH7QbmzSE6GcDTXLUTUv0qYJu+CzmFq23IlmJzl2eYM4AtOdXj7ysaQh//Mp0+fAhaX5/P+B/UnDJMc/DsuUHCniw6UZr9PnCGl91OYWZ4VOnmhBFmx7mOMf9a6nXAGId+79AyywjQM0dRQPZ9qPDNMbk1vCFkup7X8dmcCn2LhK0EQgWh3hT8/YLc/DSTF3IvXgZTxQ6QS9Hi7dRtqbmxG/nWOWxynlfK9nqP7LJ7uQl5q4OJkn8mwKz
+x-forefront-antispam-report:
+ CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:KL1PR0401MB6196.apcprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(1800799024)(23010399003)(366016)(921020)(38070700021)(6133799003)(10067099003)(56012099006)(11063799006)(18002099003);DIR:OUT;SFP:1102;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:
+ =?iso-8859-1?Q?Odxo+I8eXOuMeqm5vDHyLaZpOpKBP20/pEIg1Hlaiw95uP2SsGAv55wdQt?=
+ =?iso-8859-1?Q?jlKFqPTVy5IDwLR2OYSi3i5HDYkolIrBk4IzV5padxa9xV7CmWgGu8URpP?=
+ =?iso-8859-1?Q?t7052kutoeHqgA1aYkEDgSOr9KxClnZXitRKRR+QkprYVc4gIlrH1/ZNCk?=
+ =?iso-8859-1?Q?PWgIhgJZrH6hxr3IP8KtAp6xqGQZa2kHkGp5YaobRA4BZAWweUmEYkfnps?=
+ =?iso-8859-1?Q?e4G4RKGWuk0EpcOpebrPROUoK61gfIgZmnXEAOZn/Be+jA6ZFJlcmuB7YW?=
+ =?iso-8859-1?Q?IHhAOyIlG9lDaGCEsjAzhbJo2okmJMaT/au92Emk9cZXd0TBntWM4nr9e/?=
+ =?iso-8859-1?Q?sf9cY8FKxM5zzW473dLU5nEpYwVBsGo+tJ3JCZGdTuguYKFoVKx9oEU2A5?=
+ =?iso-8859-1?Q?0QtCucd1NT3fgyKSuv9fu2+Pdx4mSjVdy31OGxiFA6UpL10WTM7j+dDp/b?=
+ =?iso-8859-1?Q?9/ZXNREcScYt64xbi1xEjpuN47e7D82SiKnJtjhmFsfs3uRiUwvPBKbJF3?=
+ =?iso-8859-1?Q?mrJv9+d3QcVv00QavF1CCPigmkmCgf9IYH11vuj5dUPCsrTXIND7+OlRhz?=
+ =?iso-8859-1?Q?FfaS8JFp8x61NPINL+nUGHSwgFbufz8Jo3X8hDCHT1zaGAJYyrB0ExyNYi?=
+ =?iso-8859-1?Q?XieQwJUVwVfiLk3lRnJ1qY/wJSxGAudDvy7SiUKbBbsqQQMZ4UKJDd9JSa?=
+ =?iso-8859-1?Q?jRRcdwK+jcmnwrAIHSOrQilwj3BY3dshkpd8ZyAHNGG/7XFu70smJyiUQ0?=
+ =?iso-8859-1?Q?wl6VgF0XPmtSI3PsxD4AyhWrZLjZ9y3Dx78c3sYI+/rdc2ReD6y8CZuDob?=
+ =?iso-8859-1?Q?rIbA/ZNPmanTxBfjiYnXwGYg+4a1oUf7KizvVHz1EYrLcYX7qwBHVScYjT?=
+ =?iso-8859-1?Q?xm71PHk7txJvONIV9gS4+3o7pVmN+E1XfBCpGgGtLoyYUF7nWMJyLQW3FA?=
+ =?iso-8859-1?Q?79/iiIGV6/cy+J8cIvFL36LJxWN+7ohTFj1ZXLSxWuVi63fxGEDbR5Sx+O?=
+ =?iso-8859-1?Q?CgRp8osfe3EIn9Rfp6OCs8lfIeoYykDcj/eJI6/F2Hks661vxFFxsHm9Jc?=
+ =?iso-8859-1?Q?+F96FhqTOz2Mr7E9QRx/L2mSacCCzXmyhYRccypaYwrphTw6Ao12OGHnpG?=
+ =?iso-8859-1?Q?k9leOs5rCL3+vknwnr25r1wmEhuTzZeWuAbZVhfIiAuoWc9VMOczjvLA5d?=
+ =?iso-8859-1?Q?o9fL1xPyoS9YqdvmcYrLAhDF2EWkWXdzKt7MqeDDw5YsHHrlIigociDETA?=
+ =?iso-8859-1?Q?VcxU2hKOvjHHzW+1qO5v0xXqOHdJZC8gZDmYK1s+YaZOSbPZiQDCCmemPT?=
+ =?iso-8859-1?Q?YyPVgnGfnO4waCsIpSjtaJWAl5CIaI5T0rthGoLSQafPEU+Ett9d0YB9DL?=
+ =?iso-8859-1?Q?IoNQtJUR1p5vHLr88Dno+vgnpvP/cMgVCiqBhveIsmVDPuolcMCI688H5I?=
+ =?iso-8859-1?Q?anOB5/CIDLviX1uBhb3NKAAB9iCxjzSKFfggywHvZmJnhMBTX3UBtC4CDd?=
+ =?iso-8859-1?Q?Da+6ipEMVhyemyHz3BMqdVt8CqGITjqM7APWVk3aaoDrQuYGn6l1p51MDS?=
+ =?iso-8859-1?Q?Ydm1JUPePZn/y30L0hxz4JkoNuJtWGtUXqXlGWo/d/bc9qiK0dWPuVK9zW?=
+ =?iso-8859-1?Q?vF1L9KW0r3hVibwZFfszwHNF/4GQ0HTZYWJK4quj6tiVgT7dih2DIuMtv2?=
+ =?iso-8859-1?Q?G1gJSCEEQ3v+h99lggXlOS7nuTwplaUm2nWw7DExOEO9wGfl+WuCBitgRP?=
+ =?iso-8859-1?Q?KIfUQxSNSigKdin9PzRYWMxH+/hM+j0Zr9ypkUpWbKuzrhoGTlDaf0uwAr?=
+ =?iso-8859-1?Q?JYyUZT+kVg=3D=3D?=
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -87,75 +153,225 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <582904882.11159.1786719390349.JavaMail.zimbra@raptorengineeringinc.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=AdqB2XXG c=1 sm=1 tr=0 ts=6a856149 cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=kj9zAlcOel0A:10 a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=9KDQ1UL0WzeGepnXIz0A:9
- a=CjuIK1q_8ugA:10
-X-Proofpoint-GUID: eIVaAg2ew7tla4Xqv__QeL6YKZndxB-d
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODE5MDA1NSBTYWx0ZWRfX6HXMDOKhNQXw
- 86uoUL3YSbACkX7Sl7f8jjX1Hg018ur/5yhksdqegSVP/peksGLzngTQxFkCMyRdHEmcDP3BgOF
- 5tdXg1g1PSOjSpMyHp/uxifT4Uurm//EyPmF0FiZn1f2ka8Q8P9u8+9ZE8GHbk6oPoprnVfnaug
- SpNJL7ZlvJEseuEK0/MZNPD/pLBCmGuwC3muSRO4oLt7jpRGUShsL29OH5Eb9EjXobSOGs9nkBI
- zGXKe/nt8qd48xx2JM0jq5+KcZtMC8nlbEUAOLw4xrXcmzQCeuR5X5wjvlMqQMTOeq2gvS7nusH
- 3DeXxOlPR8L1NQxrYolk2v++lyb81BwaxChJqpqm1wq1o/n5R7OU+M59l9DCl3y12JhcYmL3fg/
- GXJFV0ogQFTL6Q77RB2Ovjl30chHfgz72VToYPsfVSZNlz4N9BmgQwTyvMWma1iLsCmatQfi4DY
- Bs1n493Y6xM45ARoTXw==
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODE5MDA1NSBTYWx0ZWRfXwtKBCcM8Q13C
- 53qxR9TvFgSc7rQEG0fd4sdJ5hebRdSpZytXBikq1wTI592NBx39D1KVVH3itUHUJBrDlbWgA+M
- 8bvCqduo+q6bI49yT//iPemILtX83pA=
-X-Proofpoint-ORIG-GUID: jZtT2ONyC8WXsOZM1ITsMZW3rUIReOIa
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-08-19_02,2026-08-18_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1011 priorityscore=1501 suspectscore=0 malwarescore=0
- impostorscore=0 adultscore=0 bulkscore=0 lowpriorityscore=0 phishscore=0
- spamscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
- adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
- definitions=main-2608190055
+X-OriginatorOrg: transsion.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: KL1PR0401MB6196.apcprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: befa3bdb-2ae8-4060-d27d-08defdc990d6
+X-MS-Exchange-CrossTenant-originalarrivaltime: 19 Aug 2026 08:12:09.3185
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 2e8503a6-2d01-4333-8e36-6ab7c8cd7ae2
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: hahIfAI68GG4NH7OftBS1CZP1PWA2JXjn6x51ud59dJAgdzNyPwXHPNEGP9iVwarDN/dWZFuGQaIOxQqZF0lS26mGmSBp4GhxB4Us/HB+tE=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SEZPR04MB6432
 
-On Fri, Aug 14, 2026 at 09:56:30AM -0500, Timothy Pearson wrote:
-> With kernel 6.12 (Debian stable) we see a continuously increasing spurious interrupt count inside a pSeries guest running on a PowerNV host:
-> 
-> cat /proc/interrupts
->            CPU0
->  16:          0  XIVE-IPI   0 Edge      IPI-0
->  17:          0  XIVE-IRQ 4096 Edge      RAS_EPOW
->  21:          2  XIVE-IRQ 4353 Edge      hvc_console
->  23:          0  XIVE-IRQ 4097 Edge      RAS_HOTPLUG
->  24:          0  pSeries-PCI-MSI   0 Edge      virtio0-config
->  25:      50995  pSeries-PCI-MSI   1 Edge      virtio0-input.0
->  26:      45569  pSeries-PCI-MSI   2 Edge      virtio0-output.0
->  27:          0  pSeries-PCI-MSI 16384 Edge      virtio1-config
->  28:          6  pSeries-PCI-MSI 16385 Edge      virtio1-input
-> LOC:       5781   Local timer interrupts for timer event device
-> BCT:          0   Broadcast timer interrupts for timer event device
-> LOC:          2   Local timer interrupts for others
-> SPU:     449927   Spurious interrupts
-> PMI:          0   Performance monitoring interrupts
-> MCE:          0   Machine check exceptions
-> NMI:          0   System Reset interrupts
-> WDG:          0   Watchdog soft-NMI interrupts
-> DBL:          0   Doorbell interrupts
-> 
-> The spurious interrupts are apparently from the virtio0-[input|output] devices.
-> 
-
-I am able to replicate this observation with KVM on PowerNV (XIVE):
-
-1. Host and guest with kernel 6.19 (stock fedora kernels): Huge number of spurious interrupts
-
-2. Host and guest with upstream kernel 5.19: A very small number of spurious
-interrupts observed.
-
-We'll look into this and post a fix.
-
-Thanks,
-Gautam
+From: Hongyan Xia <hongyan.xia@transsion.com>=0A=
+=0A=
+paravirt_steal_rq_enabled and paravirt_steal_enabled use raw static_key=0A=
+APIs which are now deprecated. Use the new API instead.=0A=
+=0A=
+No functional change.=0A=
+=0A=
+Signed-off-by: Hongyan Xia <hongyan.xia@transsion.com>=0A=
+Acked-by: Juergen Gross <jgross@suse.com>=0A=
+---=0A=
+Changed in RESEND:=0A=
+- Separate the original series into individual patches. They aren't easy=0A=
+  to review as a series.=0A=
+=0A=
+ arch/arm64/kernel/paravirt.c           | 4 ++--=0A=
+ arch/loongarch/kernel/paravirt.c       | 4 ++--=0A=
+ arch/powerpc/platforms/pseries/setup.c | 4 ++--=0A=
+ arch/riscv/kernel/paravirt.c           | 4 ++--=0A=
+ arch/x86/kernel/cpu/vmware.c           | 4 ++--=0A=
+ arch/x86/kernel/kvm.c                  | 4 ++--=0A=
+ drivers/xen/time.c                     | 4 ++--=0A=
+ include/linux/sched/cputime.h          | 6 +++---=0A=
+ kernel/sched/core.c                    | 4 ++--=0A=
+ kernel/sched/cputime.c                 | 4 ++--=0A=
+ 10 files changed, 21 insertions(+), 21 deletions(-)=0A=
+=0A=
+diff --git a/arch/arm64/kernel/paravirt.c b/arch/arm64/kernel/paravirt.c=0A=
+index 572efb96b23f..30bf61d031eb 100644=0A=
+--- a/arch/arm64/kernel/paravirt.c=0A=
++++ b/arch/arm64/kernel/paravirt.c=0A=
+@@ -157,9 +157,9 @@ int __init pv_time_init(void)=0A=
+ =0A=
+ 	static_call_update(pv_steal_clock, para_steal_clock);=0A=
+ =0A=
+-	static_key_slow_inc(&paravirt_steal_enabled);=0A=
++	static_branch_inc(&paravirt_steal_enabled);=0A=
+ 	if (steal_acc)=0A=
+-		static_key_slow_inc(&paravirt_steal_rq_enabled);=0A=
++		static_branch_inc(&paravirt_steal_rq_enabled);=0A=
+ =0A=
+ 	pr_info("using stolen time PV\n");=0A=
+ =0A=
+diff --git a/arch/loongarch/kernel/paravirt.c b/arch/loongarch/kernel/parav=
+irt.c=0A=
+index 10821cce554c..e8965a3f8082 100644=0A=
+--- a/arch/loongarch/kernel/paravirt.c=0A=
++++ b/arch/loongarch/kernel/paravirt.c=0A=
+@@ -308,10 +308,10 @@ int __init pv_time_init(void)=0A=
+ =0A=
+ 	static_call_update(pv_steal_clock, paravt_steal_clock);=0A=
+ =0A=
+-	static_key_slow_inc(&paravirt_steal_enabled);=0A=
++	static_branch_inc(&paravirt_steal_enabled);=0A=
+ #ifdef CONFIG_PARAVIRT_TIME_ACCOUNTING=0A=
+ 	if (steal_acc)=0A=
+-		static_key_slow_inc(&paravirt_steal_rq_enabled);=0A=
++		static_branch_inc(&paravirt_steal_rq_enabled);=0A=
+ #endif=0A=
+ =0A=
+ 	if (static_key_enabled(&virt_preempt_key))=0A=
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platform=
+s/pseries/setup.c=0A=
+index 1223dc961242..8dcbc4bb7025 100644=0A=
+--- a/arch/powerpc/platforms/pseries/setup.c=0A=
++++ b/arch/powerpc/platforms/pseries/setup.c=0A=
+@@ -852,9 +852,9 @@ static void __init pSeries_setup_arch(void)=0A=
+ 			static_branch_enable(&shared_processor);=0A=
+ 			pv_spinlocks_init();=0A=
+ #ifdef CONFIG_PARAVIRT_TIME_ACCOUNTING=0A=
+-			static_key_slow_inc(&paravirt_steal_enabled);=0A=
++			static_branch_inc(&paravirt_steal_enabled);=0A=
+ 			if (steal_acc)=0A=
+-				static_key_slow_inc(&paravirt_steal_rq_enabled);=0A=
++				static_branch_inc(&paravirt_steal_rq_enabled);=0A=
+ #endif=0A=
+ 		}=0A=
+ =0A=
+diff --git a/arch/riscv/kernel/paravirt.c b/arch/riscv/kernel/paravirt.c=0A=
+index 5f56be79cd06..9c13a6f1ea2a 100644=0A=
+--- a/arch/riscv/kernel/paravirt.c=0A=
++++ b/arch/riscv/kernel/paravirt.c=0A=
+@@ -116,9 +116,9 @@ int __init pv_time_init(void)=0A=
+ =0A=
+ 	static_call_update(pv_steal_clock, pv_time_steal_clock);=0A=
+ =0A=
+-	static_key_slow_inc(&paravirt_steal_enabled);=0A=
++	static_branch_inc(&paravirt_steal_enabled);=0A=
+ 	if (steal_acc)=0A=
+-		static_key_slow_inc(&paravirt_steal_rq_enabled);=0A=
++		static_branch_inc(&paravirt_steal_rq_enabled);=0A=
+ =0A=
+ 	pr_info("Computing paravirt steal-time\n");=0A=
+ =0A=
+diff --git a/arch/x86/kernel/cpu/vmware.c b/arch/x86/kernel/cpu/vmware.c=0A=
+index 34b73573b108..f7ab9e7902cf 100644=0A=
+--- a/arch/x86/kernel/cpu/vmware.c=0A=
++++ b/arch/x86/kernel/cpu/vmware.c=0A=
+@@ -328,9 +328,9 @@ static int vmware_cpu_down_prepare(unsigned int cpu)=0A=
+ static __init int activate_jump_labels(void)=0A=
+ {=0A=
+ 	if (has_steal_clock) {=0A=
+-		static_key_slow_inc(&paravirt_steal_enabled);=0A=
++		static_branch_inc(&paravirt_steal_enabled);=0A=
+ 		if (steal_acc)=0A=
+-			static_key_slow_inc(&paravirt_steal_rq_enabled);=0A=
++			static_branch_inc(&paravirt_steal_rq_enabled);=0A=
+ 	}=0A=
+ =0A=
+ 	return 0;=0A=
+diff --git a/arch/x86/kernel/kvm.c b/arch/x86/kernel/kvm.c=0A=
+index dcef84da304b..d3dcd64f22c2 100644=0A=
+--- a/arch/x86/kernel/kvm.c=0A=
++++ b/arch/x86/kernel/kvm.c=0A=
+@@ -1052,9 +1052,9 @@ const __initconst struct hypervisor_x86 x86_hyper_kvm=
+ =3D {=0A=
+ static __init int activate_jump_labels(void)=0A=
+ {=0A=
+ 	if (has_steal_clock) {=0A=
+-		static_key_slow_inc(&paravirt_steal_enabled);=0A=
++		static_branch_inc(&paravirt_steal_enabled);=0A=
+ 		if (steal_acc)=0A=
+-			static_key_slow_inc(&paravirt_steal_rq_enabled);=0A=
++			static_branch_inc(&paravirt_steal_rq_enabled);=0A=
+ 	}=0A=
+ =0A=
+ 	return 0;=0A=
+diff --git a/drivers/xen/time.c b/drivers/xen/time.c=0A=
+index a2be0a4d45b0..a02d48a2aa68 100644=0A=
+--- a/drivers/xen/time.c=0A=
++++ b/drivers/xen/time.c=0A=
+@@ -169,7 +169,7 @@ void __init xen_time_setup_guest(void)=0A=
+ =0A=
+ 	static_call_update(pv_steal_clock, xen_steal_clock);=0A=
+ =0A=
+-	static_key_slow_inc(&paravirt_steal_enabled);=0A=
++	static_branch_inc(&paravirt_steal_enabled);=0A=
+ 	if (xen_runstate_remote)=0A=
+-		static_key_slow_inc(&paravirt_steal_rq_enabled);=0A=
++		static_branch_inc(&paravirt_steal_rq_enabled);=0A=
+ }=0A=
+diff --git a/include/linux/sched/cputime.h b/include/linux/sched/cputime.h=
+=0A=
+index e90efaf6d26e..694126411dfe 100644=0A=
+--- a/include/linux/sched/cputime.h=0A=
++++ b/include/linux/sched/cputime.h=0A=
+@@ -182,9 +182,9 @@ extern unsigned long long=0A=
+ task_sched_runtime(struct task_struct *task);=0A=
+ =0A=
+ #ifdef CONFIG_PARAVIRT=0A=
+-struct static_key;=0A=
+-extern struct static_key paravirt_steal_enabled;=0A=
+-extern struct static_key paravirt_steal_rq_enabled;=0A=
++#include <linux/jump_label.h>=0A=
++DECLARE_STATIC_KEY_FALSE(paravirt_steal_enabled);=0A=
++DECLARE_STATIC_KEY_FALSE(paravirt_steal_rq_enabled);=0A=
+ =0A=
+ #ifdef CONFIG_HAVE_PV_STEAL_CLOCK_GEN=0A=
+ u64 dummy_steal_clock(int cpu);=0A=
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c=0A=
+index 5c07d53e43b5..84d090581a08 100644=0A=
+--- a/kernel/sched/core.c=0A=
++++ b/kernel/sched/core.c=0A=
+@@ -795,7 +795,7 @@ struct rq *_task_rq_lock(struct task_struct *p, struct =
+rq_flags *rf)=0A=
+ =0A=
+ /* Use CONFIG_PARAVIRT as this will avoid more #ifdef in arch code. */=0A=
+ #ifdef CONFIG_PARAVIRT=0A=
+-struct static_key paravirt_steal_rq_enabled;=0A=
++DEFINE_STATIC_KEY_FALSE(paravirt_steal_rq_enabled);=0A=
+ #endif=0A=
+ =0A=
+ static void update_rq_clock_task(struct rq *rq, s64 delta)=0A=
+@@ -834,7 +834,7 @@ static void update_rq_clock_task(struct rq *rq, s64 del=
+ta)=0A=
+ 	}=0A=
+ #endif=0A=
+ #ifdef CONFIG_PARAVIRT_TIME_ACCOUNTING=0A=
+-	if (static_key_false((&paravirt_steal_rq_enabled))) {=0A=
++	if (static_branch_unlikely(&paravirt_steal_rq_enabled)) {=0A=
+ 		u64 prev_steal;=0A=
+ =0A=
+ 		steal =3D prev_steal =3D paravirt_steal_clock(cpu_of(rq));=0A=
+diff --git a/kernel/sched/cputime.c b/kernel/sched/cputime.c=0A=
+index 06bddaa738e5..f16970ca81d0 100644=0A=
+--- a/kernel/sched/cputime.c=0A=
++++ b/kernel/sched/cputime.c=0A=
+@@ -255,7 +255,7 @@ void __account_forceidle_time(struct task_struct *p, u6=
+4 delta)=0A=
+  * occasion account more time than the calling functions think elapsed.=0A=
+  */=0A=
+ #ifdef CONFIG_PARAVIRT=0A=
+-struct static_key paravirt_steal_enabled;=0A=
++DEFINE_STATIC_KEY_FALSE(paravirt_steal_enabled);=0A=
+ =0A=
+ #ifdef CONFIG_HAVE_PV_STEAL_CLOCK_GEN=0A=
+ static u64 native_steal_clock(int cpu)=0A=
+@@ -270,7 +270,7 @@ DEFINE_STATIC_CALL(pv_steal_clock, native_steal_clock);=
+=0A=
+ static __always_inline u64 steal_account_process_time(u64 maxtime)=0A=
+ {=0A=
+ #ifdef CONFIG_PARAVIRT=0A=
+-	if (static_key_false(&paravirt_steal_enabled)) {=0A=
++	if (static_branch_unlikely(&paravirt_steal_enabled)) {=0A=
+ 		u64 steal;=0A=
+ =0A=
+ 		steal =3D paravirt_steal_clock(smp_processor_id());=0A=
+-- =0A=
+2.47.3=0A=
+=0A=
 
