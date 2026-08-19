@@ -1,52 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-25999-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26000-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6D1C6C5DF81
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2026 23:11:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B2FF7C5B572
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2026 23:11:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hQMkf1Xklz3brB;
-	Thu, 20 Aug 2026 09:11:06 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787181066;
-	cv=none; b=Opds95zHhHC/wqthRwC07jgeZET2bZCPV4Wi/xUMwO2hrsCnG798RkDgyeya0igjUdseVaWL43wSaQdGv8NIEVMIedJUxcveQxqQGMQI75dnouXLi6EO/aU1W/XC1YASGognU74Ak9zasXY9EmmynKiAgTDCjwB5N4FfTZAuw73mbQ9pFQuCkZ2nWUnQKN2Nuk9cgHE4s4A7xMCdokB/KTS8YBXFIid0A/w5kiS4PH5iX5O25Z0FU9j3VyJSx5VwJjsaLtd9LnAZSbG/97JXfcs2F3pgy1kdcgHXAu+hz86B1EApH4EW4VZOfQUTitoIqOjZBu3qpNdhSrL+bRfAHg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hQMkn0V0Pz3046;
+	Thu, 20 Aug 2026 09:11:13 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787181073;
+	cv=none; b=eRYYRn1elpt+Hoid1S0cpvpRc6zs5fIk+jYRe+6uZdZO8WRA2jA31Lqyy8jAL44ybVcFls9zzi1fbAb9vGKp5bbSOoXDUjSQGXdokA+PfoT7HHXaOkUVRicrp2DNQCycNfjDGjeivuKt/CJHFWpv58PRNhaQWiwXNXDtazQCXlKXbkEupSSz30URJ2+g1xc+giBcViA9rjl3Glz+7UndAk/K76B/vPAywMKA+U+zhrpZ787qfBOaG6GMZicdV4Pz7oAOXB/yQfgsbU7rSEsYK+ZST8TSQBzqqlHyFiMm4y/906fIWhVvFE61raXjlgmf0tHm0+fzZAqlnKJ5nQqa7w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787181066; c=relaxed/relaxed;
-	bh=sGDQ3YmCTojuSJbjn27N+fr9efe+etjDeNqh262Gj7Q=;
+	t=1787181073; c=relaxed/relaxed;
+	bh=jCUvWFr7gPW9ynmwtqLqLk7sLgqWKyJVLH5+/uw4b/c=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=ANBMDtHZX9Ox5i8WIZpyPfdVxVXrUGsWaihK5IM/pFHIynlJx9/qNbawUbDFlW7ikRQW9WbDtIa/sILMS7vZf1mb5Lo/3qXW3C87EWdIZIQGgNkYd/Tkh1Qmre+ZXQRuFZr/fQWeJItRa3di3KsiIsxQ+U5hkPt2fqnsKXrIfAYIpfYTJd2rCRGfUx5BUIOA2t42Dt/4GABkzQMyw8W0sVIPwF3NBOLuGJOGd6ru69j45PWb8VjU2pIcqiXrzW2xhg11kK16I/raOBglzO8MW1rfenvZTxKQBzGUQZ+pFFpBb2ufjXwC/253Udrt1C4c+ALu07sIogQW/PRlP8Lpng==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=OSGVtS7Q; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=mG+EbzFUJ/BZEcjkYsLzwJbAg7yriYaygkoQqhC5DF0oo/tEUvKehnUfb0geh0CZYejCnN10a2W0Lx46AtVMd0JCnySRrpHprGVF67D1hmKdAaxmY2oIzUHM2GxoAdGXGNvwNhlwMj+I1aPU8KS10uR9s3I2xVso6Pos8Kaw5WHug6MrpFC6s9j6ieGu4inFDsYpn3jLot9mmM5CbYsNBmpkDDkkQ608xwU2BkTW7YQx2w1pbwf5fZOuIdiUX/ajPale4o+rOdkmsEfUg3LUYQ4P15rMCnKY6KTJgMsMomGadtrzms8Foy0kbX3RwAcll4yOgbYuTnShtElGD/eERg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XQBRGmLy; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=OSGVtS7Q;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XQBRGmLy;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hQMkd2D04z3000
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2026 09:11:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hQMkm0xhhz2yqd
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2026 09:11:12 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 6F9986187F;
+	by sea.source.kernel.org (Postfix) with ESMTP id E7BD243BD1;
+	Wed, 19 Aug 2026 23:11:09 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9ECFE1F00A3D;
 	Wed, 19 Aug 2026 23:11:03 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C8D301F000E9;
-	Wed, 19 Aug 2026 23:10:57 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1787181063;
-	bh=sGDQ3YmCTojuSJbjn27N+fr9efe+etjDeNqh262Gj7Q=;
+	s=k20260515; t=1787181069;
+	bh=jCUvWFr7gPW9ynmwtqLqLk7sLgqWKyJVLH5+/uw4b/c=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=OSGVtS7Q3C1PiY1DwysMyvWOxe3EMCG9C328C7WP41XjGBHCkSGVQaBmnh1qX/B/T
-	 sf+QzWo36bcLP/++gImDSa2r3YyzKV8t2Cdw3x/zVL8A+IWPuwEzsjb1saXT+Ui1jj
-	 Dcs5c8bU9Cpd5XujvUkErNzsiFNHNp6UlKye1VQqGEEZrC2QF4SrrGOoc8hWitVnev
-	 KU+taCNdZbbGk06BCBg0OqtJgBfMzqdtDc5h5XBDlh5YXBKK9Jg5im78rEQb244tAu
-	 YTItg6bX5zAE/xs1HXfFZCUYrfK66AMLUmRo0P0VWR0Nw9qPd6+sil/mQQmUeJEyP4
-	 WFXbMYkXRKXZw==
+	b=XQBRGmLyQq+gFdTAfXJTbo4gh1jXQzfreWedQazCzjs87t7/N+VKU6T9W+qUn38ZR
+	 j57ezN5YX/+dNb2pl+ZLvK0Hdx+iF15DU/zpG8wiAXOQBlC5VUuqWfpFZaqn3Uavig
+	 dFJnnTLx5cHdFsMpBHg/EKrLaUEvdXMD+LnlttUDvAHHSwaOPpXoX4p9rL+k5CqryN
+	 K1hxF94nl58Lx3koPf/d5lzpiQ0UavvwTnwGQwI/mWHjlTQoDQiIY90bXwAIm/oMRB
+	 PZ8YYwSWT5U6u+c8KAIOOXLW7rxcDRD04zZ3ZosFQdDTa2c/JZkOxNN0sdcFeWyAX4
+	 fTcZUi2YIX2HQ==
 From: Christian Brauner <brauner@kernel.org>
-Date: Thu, 20 Aug 2026 01:09:29 +0200
-Subject: [PATCH v2 12/22] coredump: clean up coredump state handling
+Date: Thu, 20 Aug 2026 01:09:30 +0200
+Subject: [PATCH v2 13/22] coredump: add COREDUMP_RECORDS to the coredump
+ socket protocol
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,7 +63,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260820-work-coredump-sparse-v2-12-ba32dd718c51@kernel.org>
+Message-Id: <20260820-work-coredump-sparse-v2-13-ba32dd718c51@kernel.org>
 References: <20260820-work-coredump-sparse-v2-0-ba32dd718c51@kernel.org>
 In-Reply-To: <20260820-work-coredump-sparse-v2-0-ba32dd718c51@kernel.org>
 To: linux-fsdevel@vger.kernel.org
@@ -78,294 +79,128 @@ Cc: Jacob Lalonde <jalalonde@meta.com>, Josef Bacik <josef@toxicpanda.com>,
  linux-kselftest@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
  "Christian Brauner (Amutable)" <brauner@kernel.org>
 X-Mailer: b4 0.17-dev-362b8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=9559; i=brauner@kernel.org;
- h=from:subject:message-id; bh=JHAlDqfsPwl09HuEN7hMd7/TH3T1BllgiDVBecbZIZk=;
- b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS1me8PmyLBVBTTmND4KyzVs7Pt6F3mhV/tFrBoHDL9v
- ++T+ZqgjlIWBjEuBlkxRRaHdpNwueU8FZuNMjVg5rAygQxh4OIUgIn0TGdkeLzsXTifptJ2hie6
- rvOCpiSGS/TPNuq6X/JMOXDDWWW+bQz/a+QrBU5GNrReUPP9bsjiHn89YabaVdHPDWHnz191zVz
- DAgA=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=4628; i=brauner@kernel.org;
+ h=from:subject:message-id; bh=r1vIA9hpNEqv9L3LrgExsab6+Vxj9iHA3Av+wMJZgnw=;
+ b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS1me+P1N8vecCyR3bxmp9b1X6zrvxbmSh4bm2mgIReo
+ naBw8+6jlIWBjEuBlkxRRaHdpNwueU8FZuNMjVg5rAygQxh4OIUgInMfsvwTyvFasLKOTm/GH+9
+ r9Sv+/7jzp/yNe7FL798/XCbrSXtFj/D/zyvH2/uzv7MNlW68YuvmZ9eikOUSdCrxb8XTmJ5V7T
+ EnBMA
 X-Developer-Key: i=brauner@kernel.org; a=openpgp;
  fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
 
-Right now coredump state handling is messy. The binfmt->core_dump::
-methods return 1 when the coredump method did anything at all which
-means that a partial write counts as having dumped core. This is fine as
-the state is really only used to indicate that a coredump event occurred
-in the exit status of the task. That should obviously be indicated even
-if the actual writeout of the coredump failed.
+Currently a coredump sent over a socket is raw data. The kernel knows
+things about the data it's sending that are useful for a coredump
+server. For example, it knows where the unpopulated parts of a mapping
+are. We can't communicate this to userspace currently though.
 
-But it means the coredump method of the binary formats is different from
-all the other coredump helpers. And there's no way to communicate to
-userspace that a coredump was truncated. We'll add support for that in a
-second. For now, clean this up.
+Add a COREDUMP_RECORDS feature bit and a struct coredump_record_header
+so userspace can negotiate that feature. Instead of a byte stream it
+gets a header plus data. Reassembling the records yields the same
+coredump that would have been sent without them.
 
-Add a flag member into struct coredump_params. Let the coredump method
-raise COREDUMP_STATE_STARTED. This is what coredump_finish() will end up
-using to splice in the coredump bit into the exit status.
+The record itself is also versioned and thus extensible with the same
+protocol as the ack-req sync.
 
-This allows us to let the return value mean success or failure and align
-it with the other coredump helpers. We also start raising
-COREDUMP_STATE_TRUNCATED. This will be used in the next patches to
-communicate truncation to userspace via the coredump socket.
+A record stream ends explicitly. A COREDUMP_RECORD_END record closes it,
+carries no data and reports the size of the coredump. It is only sent
+once the whole coredump has been written. If it's missing the coredump
+should be treated as truncated.
 
-No functional changes.
+This just adds the infrastructure.
 
 Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
- fs/binfmt_elf.c          | 12 +++++++-----
- fs/binfmt_elf_fdpic.c    | 12 +++++++-----
- fs/coredump.c            | 31 +++++++++++++++++--------------
- include/linux/binfmts.h  |  3 ++-
- include/linux/coredump.h | 12 ++++++++++++
- 5 files changed, 45 insertions(+), 25 deletions(-)
+ include/uapi/linux/coredump.h | 66 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 66 insertions(+)
 
-diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
-index 16a56b6b3f6c..f85b2137bdb9 100644
---- a/fs/binfmt_elf.c
-+++ b/fs/binfmt_elf.c
-@@ -74,7 +74,7 @@ static int load_elf_binary(struct linux_binprm *bprm);
-  * don't even try.
+diff --git a/include/uapi/linux/coredump.h b/include/uapi/linux/coredump.h
+index 662e0468da6e..0bd5c8662ebe 100644
+--- a/include/uapi/linux/coredump.h
++++ b/include/uapi/linux/coredump.h
+@@ -11,12 +11,16 @@
+  * @COREDUMP_USERSPACE: userspace writes coredump
+  * @COREDUMP_REJECT: don't generate coredump
+  * @COREDUMP_WAIT: wait for coredump server
++ * @COREDUMP_RECORDS: send the coredump as a sequence of records instead of
++ *                    as a plain byte stream, see struct coredump_record_header;
++ *                    requires COREDUMP_KERNEL
   */
- #ifdef CONFIG_ELF_CORE
--static int elf_core_dump(struct coredump_params *cprm);
-+static bool elf_core_dump(struct coredump_params *cprm);
- #else
- #define elf_core_dump	NULL
- #endif
-@@ -1990,9 +1990,9 @@ static void fill_extnum_info(struct elfhdr *elf, struct elf_shdr *shdr4extnum,
-  * and then they are actually written out.  If we run out of core limit
-  * we just truncate.
-  */
--static int elf_core_dump(struct coredump_params *cprm)
-+static bool elf_core_dump(struct coredump_params *cprm)
- {
--	int has_dumped = 0;
-+	bool ret = false;
- 	int segs, i;
- 	struct elfhdr elf;
- 	loff_t offset = 0, dataoff;
-@@ -2023,7 +2023,7 @@ static int elf_core_dump(struct coredump_params *cprm)
- 	if (!fill_note_info(&elf, e_phnum, &info, cprm))
- 		goto end_coredump;
- 
--	has_dumped = 1;
-+	cprm->state |= COREDUMP_STATE_STARTED;
- 
- 	offset += sizeof(elf);				/* ELF header */
- 	offset += segs * sizeof(struct elf_phdr);	/* Program headers */
-@@ -2118,11 +2118,13 @@ static int elf_core_dump(struct coredump_params *cprm)
- 			goto end_coredump;
- 	}
- 
-+	ret = true;
-+
- end_coredump:
- 	free_note_info(&info);
- 	kfree(shdr4extnum);
- 	kfree(phdr4note);
--	return has_dumped;
-+	return ret;
- }
- 
- #endif		/* CONFIG_ELF_CORE */
-diff --git a/fs/binfmt_elf_fdpic.c b/fs/binfmt_elf_fdpic.c
-index fe0b5c5ed2bc..252eb155965b 100644
---- a/fs/binfmt_elf_fdpic.c
-+++ b/fs/binfmt_elf_fdpic.c
-@@ -75,7 +75,7 @@ static int elf_fdpic_map_file_by_direct_mmap(struct elf_fdpic_params *,
- 					     struct file *, struct mm_struct *);
- 
- #ifdef CONFIG_ELF_CORE
--static int elf_fdpic_core_dump(struct coredump_params *cprm);
-+static bool elf_fdpic_core_dump(struct coredump_params *cprm);
- #endif
- 
- static struct linux_binfmt elf_fdpic_format = {
-@@ -1476,9 +1476,9 @@ static bool elf_fdpic_dump_segments(struct coredump_params *cprm,
-  * and then they are actually written out.  If we run out of core limit
-  * we just truncate.
-  */
--static int elf_fdpic_core_dump(struct coredump_params *cprm)
-+static bool elf_fdpic_core_dump(struct coredump_params *cprm)
- {
--	int has_dumped = 0;
-+	bool ret = false;
- 	int segs;
- 	int i;
- 	struct elfhdr *elf = NULL;
-@@ -1535,7 +1535,7 @@ static int elf_fdpic_core_dump(struct coredump_params *cprm)
- 	/* Set up header */
- 	fill_elf_fdpic_header(elf, e_phnum);
- 
--	has_dumped = 1;
-+	cprm->state |= COREDUMP_STATE_STARTED;
- 	/*
- 	 * Set up the notes in similar form to SVR4 core dumps made
- 	 * with info from their /proc.
-@@ -1655,6 +1655,8 @@ static int elf_fdpic_core_dump(struct coredump_params *cprm)
- 		       cprm->file->f_pos, offset);
- 	}
- 
-+	ret = true;
-+
- end_coredump:
- 	while (thread_list) {
- 		tmp = thread_list;
-@@ -1665,7 +1667,7 @@ static int elf_fdpic_core_dump(struct coredump_params *cprm)
- 	kfree(elf);
- 	kfree(psinfo);
- 	kfree(shdr4extnum);
--	return has_dumped;
-+	return ret;
- }
- 
- #endif		/* CONFIG_ELF_CORE */
-diff --git a/fs/coredump.c b/fs/coredump.c
-index d61f36239f91..6af3ff0e19a6 100644
---- a/fs/coredump.c
-+++ b/fs/coredump.c
-@@ -98,7 +98,6 @@ struct core_name {
- 	char *corename __counted_by_ptr(size);
- 	int used, size;
- 	unsigned int core_pipe_limit;
--	bool core_dumped;
- 	enum coredump_type_t core_type;
+ enum {
+ 	COREDUMP_KERNEL		= (1ULL << 0),
+ 	COREDUMP_USERSPACE	= (1ULL << 1),
+ 	COREDUMP_REJECT		= (1ULL << 2),
+ 	COREDUMP_WAIT		= (1ULL << 3),
++	COREDUMP_RECORDS	= (1ULL << 4),
  };
  
-@@ -250,7 +249,6 @@ static bool coredump_parse(struct core_name *cn, struct coredump_params *cprm,
- 	cn->used = 0;
- 	cn->corename = NULL;
- 	cn->core_pipe_limit = 0;
--	cn->core_dumped = false;
- 	if (*pat_ptr == '|')
- 		cn->core_type = COREDUMP_PIPE;
- 	else if (*pat_ptr == '@')
-@@ -549,13 +547,13 @@ static int coredump_wait(int exit_code, struct core_state *core_state)
- 	return core_waiters;
- }
+ /**
+@@ -101,4 +105,66 @@ enum coredump_mark {
+ 	__COREDUMP_MARK_MAX		= (1U << 31),
+ };
  
--static void coredump_finish(bool core_dumped)
-+static void coredump_finish(enum coredump_state state)
- {
- 	struct core_thread *curr, *next;
- 	struct task_struct *task;
- 
- 	spin_lock_irq(&current->sighand->siglock);
--	if (core_dumped && !__fatal_signal_pending(current))
-+	if ((state & COREDUMP_STATE_STARTED) && !__fatal_signal_pending(current))
- 		current->signal->group_exit_code |= 0x80;
- 	next = current->signal->core_state->dumper.next;
- 	current->signal->core_state = NULL;
-@@ -1045,19 +1043,23 @@ static bool coredump_pipe(struct core_name *cn, struct coredump_params *cprm,
- 	return true;
- }
- 
--static bool coredump_write(struct core_name *cn,
--			  struct coredump_params *cprm,
--			  const struct linux_binfmt *binfmt)
-+static bool coredump_write(struct coredump_params *cprm,
-+			   const struct linux_binfmt *binfmt)
- {
- 
--	if (dump_interrupted())
-+	if (dump_interrupted()) {
-+		cprm->state |= COREDUMP_STATE_TRUNCATED;
- 		return true;
-+	}
- 
--	if (!dump_vma_snapshot(cprm))
-+	if (!dump_vma_snapshot(cprm)) {
-+		cprm->state |= COREDUMP_STATE_TRUNCATED;
- 		return false;
-+	}
- 
- 	file_start_write(cprm->file);
--	cn->core_dumped = binfmt->core_dump(cprm);
-+	if (!binfmt->core_dump(cprm))
-+		cprm->state |= COREDUMP_STATE_TRUNCATED;
- 	/*
- 	 * Ensures that file size is big enough to contain the current
- 	 * file postion. This prevents gdb from complaining about
-@@ -1066,7 +1068,8 @@ static bool coredump_write(struct core_name *cn,
- 	 */
- 	if (cprm->to_skip) {
- 		cprm->to_skip--;
--		dump_emit(cprm, "", 1);
-+		if (!dump_emit(cprm, "", 1))
-+			cprm->state |= COREDUMP_STATE_TRUNCATED;
- 	}
- 	file_end_write(cprm->file);
- 	free_vma_snapshot(cprm);
-@@ -1082,7 +1085,7 @@ static void coredump_cleanup(struct core_name *cn, struct coredump_params *cprm)
- 		atomic_dec(&core_pipe_count);
- 	}
- 	kfree(cn->corename);
--	coredump_finish(cn->core_dumped);
-+	coredump_finish(cprm->state);
- }
- 
- static inline bool coredump_skip(const struct coredump_params *cprm,
-@@ -1136,14 +1139,14 @@ static void do_coredump(struct core_name *cn, struct coredump_params *cprm,
- 	if (unshare_files())
- 		return;
- 
--	if ((cprm->mask & COREDUMP_KERNEL) && !coredump_write(cn, cprm, binfmt))
-+	if ((cprm->mask & COREDUMP_KERNEL) && !coredump_write(cprm, binfmt))
- 		return;
- 
- 	coredump_sock_shutdown(cprm->file);
- 
- 	/* Let the parent know that a coredump was generated. */
- 	if (cprm->mask & COREDUMP_USERSPACE)
--		cn->core_dumped = true;
-+		cprm->state |= COREDUMP_STATE_STARTED;
- 
- 	/*
- 	 * When core_pipe_limit is set we wait for the coredump server
-diff --git a/include/linux/binfmts.h b/include/linux/binfmts.h
-index 2c77e383e737..64f82fb642bf 100644
---- a/include/linux/binfmts.h
-+++ b/include/linux/binfmts.h
-@@ -94,7 +94,8 @@ struct linux_binfmt {
- 	struct module *module;
- 	int (*load_binary)(struct linux_binprm *);
- #ifdef CONFIG_COREDUMP
--	int (*core_dump)(struct coredump_params *cprm);
-+	/* Returns true if the whole coredump was written. */
-+	bool (*core_dump)(struct coredump_params *cprm);
- 	unsigned long min_coredump;	/* minimal dump size */
- #endif
- } __randomize_layout;
-diff --git a/include/linux/coredump.h b/include/linux/coredump.h
-index 943bddfb22bf..709388dd5659 100644
---- a/include/linux/coredump.h
-+++ b/include/linux/coredump.h
-@@ -9,6 +9,16 @@
- #include <asm/siginfo.h>
- 
- #ifdef CONFIG_COREDUMP
 +/**
-+ * enum coredump_state - what happened while the coredump was written
-+ * @COREDUMP_STATE_STARTED: the dumper committed to writing a coredump
-+ * @COREDUMP_STATE_TRUNCATED: the dumper stopped before it had written all of it
++ * enum coredump_record_type - Type of a coredump record
++ *
++ * @COREDUMP_RECORD_DATA: the header is followed by ->len bytes of data
++ * @COREDUMP_RECORD_END: the coredump ends here, the header is not followed
++ *                       by any data and no further record is sent
++ * @__COREDUMP_RECORD_TYPE_MAX: the maximum coredump record type value
 + */
-+enum coredump_state {
-+	COREDUMP_STATE_STARTED		= (1U << 0),
-+	COREDUMP_STATE_TRUNCATED	= (1U << 1),
++enum coredump_record_type {
++	COREDUMP_RECORD_DATA		= 0U,
++	COREDUMP_RECORD_END		= 1U,
++	__COREDUMP_RECORD_TYPE_MAX	= (1U << 31),
 +};
 +
- struct core_vma_metadata {
- 	unsigned long start, end;
- 	vm_flags_t flags;
-@@ -28,6 +38,8 @@ struct coredump_params {
- 	int cpu;
- 	/* COREDUMP_* options negotiated with the coredump server. */
- 	u64 mask;
-+	/* COREDUMP_STATE_* raised while the coredump is written. */
-+	enum coredump_state state;
- 	loff_t written;
- 	loff_t pos;
- 	loff_t to_skip;
++/**
++ * struct coredump_record_header - header of a coredump record
++ * @size: size of struct coredump_record_header
++ * @type: one of enum coredump_record_type
++ * @flags: modifiers for this record
++ * @offset: offset in the coredump this record starts at
++ * @len: number of coredump bytes this record accounts for
++ *
++ * If the coredump server raises COREDUMP_RECORDS in coredump_ack->mask
++ * the kernel doesn't send the coredump as a plain byte stream. It sends
++ * a sequence of records instead. A COREDUMP_RECORD_DATA record is
++ * followed by @len bytes of actual coredump data. Records arrive in
++ * order and leave no gaps. So @offset is the sum of the @len of all
++ * records before it.
++ *
++ * The last record is a COREDUMP_RECORD_END record. It is followed by
++ * nothing. Its @len is zero. Its @offset is the size of the coredump.
++ * The kernel only sends it once it has written the whole coredump. A
++ * server that hits end-of-file without having seen an end record must
++ * treat the coredump as incomplete.
++ *
++ * The @size member is set to the size of struct coredump_record_header
++ * the kernel knows and lets the header grow later. It comes first so it
++ * can be peeked. Userspace must consume @size bytes and discard
++ * anything beyond what it knows. It must refuse a @size smaller than
++ * COREDUMP_RECORD_HEADER_SIZE_VER0. @size covers the header alone.
++ * @offset and @len count coredump bytes.
++ *
++ * The @flags member carries modifiers that change how the record is to
++ * be interpreted. No flag is defined yet. Userspace must refuse a
++ * record carrying a flag or a type it doesn't know. Every new record
++ * type is raised in coredump_req->mask as a feature of its own. A
++ * server only ever sees the types it asked for.
++ *
++ * COREDUMP_RECORDS must be combined with COREDUMP_KERNEL.
++ */
++struct coredump_record_header {
++	__u32 size;
++	__u32 type;
++	__u64 flags;
++	__u64 offset;
++	__u64 len;
++};
++
++enum {
++	COREDUMP_RECORD_HEADER_SIZE_VER0 = 32U, /* size of first published struct */
++};
++
+ #endif /* _UAPI_LINUX_COREDUMP_H */
 
 -- 
 2.53.0
