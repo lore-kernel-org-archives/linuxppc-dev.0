@@ -1,95 +1,94 @@
-Return-Path: <linuxppc-dev+bounces-26013-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26014-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 72D99C5DF85
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Aug 2026 04:53:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7B1B2C5DF81
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Aug 2026 06:49:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hQWKf4YRHz2xGr;
-	Thu, 20 Aug 2026 14:53:26 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::631"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787201606;
-	cv=none; b=drZmx223Rp76igt9S9EaKWt97Nd8s5uYQSHQy+C/NGI3UX3pVcRfGPFePD8Ho3DBwrBPGa+foDrm6k1bZBtJC4z/Hjq9vZYbVs9S9xyJIK0yRnE975JpIs7lDRCLFRMALzwtOM8WbnK3N4/0b//JKsVKEJfZuSXB2En9mu1ZzmSpRV51MqeCJ+0WkpiEanTCye2et77qytdhsxFMhzaeV3WzX1aHdl5BYHwOwVfR8Ok6sPegLGWO6s2OIznz8PuRsHRq9H+mkDbXUpBMdlCCfEeNC7fS5wSY22JfRRjSmLNmb3GhI/+8Cli18WHKGobsQo9j+ypd24lr4VUhjFeTSg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hQYvv5VLFz2xGr;
+	Thu, 20 Aug 2026 16:49:47 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::102b"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787208587;
+	cv=none; b=U08UpJYhzFjDgl9KOKPa4BDkqv7mE0A2l5XFobLAsaO6HDlzPHXwgUSBki9z+GxqiF8P4Gdi0ta/7jc9lbP9d0NmzQEZIre1j/yDHJgj/0i5/JEcnHj0wF0+mHE3oZxnb+LvraPC+GA1dOdo0RwLBtY1kz+Iri/nybVPyS5IpixOfFVca2m7gSDOp0IOwcYkSsXIdjn/fZftDRdX7ZN6+YiRVI3iCfhaei/O76KJZfG2zUAzKSzOsahLWOW5++qB2HjjVVIZ4ZglyC8qpVdtvgf/N1zQE8Tw3+L5hzXRtTDt94lADgnIZD7My6duSjZ6hUgqYZucnfxv2aHTyaJrvA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787201606; c=relaxed/relaxed;
-	bh=l9wj2SfAEFlyWs5rfPYIvPGryxF2GcrwlTasIRVI5Ds=;
+	t=1787208587; c=relaxed/relaxed;
+	bh=kRc1eSHVwu1q1qbvgzDIPRU3EZV0cBSELC6VRfYKDj0=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=AMtDhKnvp6Svly/wMDpYfd98W9xWN0hPY76Nhx+Hfajg1uhzxrcpENAjOK5jK4fWg40/hKHRfjdxMRSD3Zv/n5jdkGSSmB/kVt+jfSkixEQZfMTlzx1g1iZzVfcVkfmcLrO5vtk4n7W7ZWwtn9nEP2GDfaRYPauN1xQBlZydwCuU056AmK4ChILHOFxF6Ky9Y6idZnXbUZBzl7Fz5SH21lnjclsX5ouysvkeayc9Ta6oXZ1wjc+Sf3rGx2g+DD2+rp915AA0LxbKSIJNkdHSqdHvrvk4nXXvQoKlsZKNfknp3FEg4T0DZcCDKL5WjogtAGRLIAMYWssEth0Mz4/R4g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=feOuuaid; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::631; helo=mail-pl1-x631.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=OrR0tsolf9zW9d2HuqoBdXNSE7KZiWskFZE5JtEE2LKd7U1vBLoDOgXVsUXahxxNbKmvwVwZITfEDAb3tSIzIm/PLWy/JLQsKLLiVbvP26v92g6LVLrLF+SuFG32X+vAikpIOzQLRK3Nh/CkqeF6cV1tzb9ngiruZ/xwuIwBLqrIbaA0OB9ZofmdBFadCg4QR3gjUx9IC/Wiu0Q9emwx+EqLJZ9OUNWzdG+zWuliToJILeV2EiRd9QZ7pbFZg/4uYTHw5IC+lR2Uvcvvb+8g7er5FKzhvVCC1AGoB4vuIFSLjIwVUVDihSJXb60DT6XIyTJ8OjJSS2dv0Cg211hKNQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=H9bKnITQ; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::102b; helo=mail-pj1-x102b.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=feOuuaid;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=H9bKnITQ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::631; helo=mail-pl1-x631.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x631.google.com (mail-pl1-x631.google.com [IPv6:2607:f8b0:4864:20::631])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102b; helo=mail-pj1-x102b.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x102b.google.com (mail-pj1-x102b.google.com [IPv6:2607:f8b0:4864:20::102b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hQWKd1NHqz2xGZ
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2026 14:53:24 +1000 (AEST)
-Received: by mail-pl1-x631.google.com with SMTP id d9443c01a7336-2ccf2360620so13236995ad.3
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2026 21:53:24 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hQYvv0G5Bz2xBK
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2026 16:49:46 +1000 (AEST)
+Received: by mail-pj1-x102b.google.com with SMTP id 98e67ed59e1d1-381c51fde6bso2277989a91.2
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2026 23:49:46 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1787201602; x=1787806402; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=l9wj2SfAEFlyWs5rfPYIvPGryxF2GcrwlTasIRVI5Ds=;
-        b=feOuuaidj2Wbnei57AiXZI0d7OeSHxwlYDvfON/Hx2QHh99ATGOFa3Zj7QjIL/uIJo
-         xDMkMpG5x8KdI1terH7yg1002N4gigQvD4mBjREafth650LQQmrwQlA/mrbQoQhJeye6
-         I2UQas6WiTX2g5AqhI0zHUqZoLKeCBmxjoiwYCLLEH/zLHsivuqplyAt+e2STdgbsv3e
-         jb6eFHbTV1Tx+HvDZRGnldmXQeYpaWwiIijnjwdes3mlnVYcv9CLeqC5fWpEJem21tNy
-         kscchRirx/t9jQlTu2h54cwulCVBEnt7oIPu7CykilmWG+xCq7oD7LZU+TtecKWaoMoW
-         Ls+g==
+        d=gmail.com; s=20251104; t=1787208584; x=1787813384; darn=lists.ozlabs.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :content-type:mime-version:references:message-id:subject:cc:to:from
+         :date:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=kRc1eSHVwu1q1qbvgzDIPRU3EZV0cBSELC6VRfYKDj0=;
+        b=H9bKnITQ//6j4hEnnRjWpnSy2Siw+z6JdaQCob5t6pANQ8syaQHZevWaNdhlPYssqi
+         ymt7CY7mNPy7lEugMEYikRSYYdDPrNPBM13V1mquRkCkqbjdzkkMNW9/DB5NT0Blck/9
+         /yk3arXs3WtpQ34DES+0lvikcJ/B0ek5EzX7/NphDs3wYY5oPCQBdJ2FRw1KBV5Rc+kW
+         7nap02N5YolejzZnfUYJaBYR7F2H6AGECIOBIkiczkuXI8xOkJ9rZrlfeQMzniRm/Pvg
+         yh0LQFVFZGrScyDZCmNF8rNYgNzUCiuJ65SQN/SF2ZvnxPqEDoakF4vBcGqKk6xc6btA
+         U2WA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1787201602; x=1787806402;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=l9wj2SfAEFlyWs5rfPYIvPGryxF2GcrwlTasIRVI5Ds=;
-        b=CibWn1RTta6FuJ36pRnDlgp3IpQopAur9po2IdqHcSOaqbT3JZXML634a39awgar0d
-         X/6yWMbG7N1rSr2Jav4FlgE2ccK5e8DZySfwVSUon4UwUiLK5c3FobGKd0aWHYZBbrF8
-         78haDkfbPam4qt1xhzpxNThOrPwNHuc+miy+XxBdqhc+YzXwqGl9AGB1fjvOnxcLe0Pi
-         7JtkSMbZM2Qpp9QsF2p1lZiKPF1690pQrQw7WxR2ROQuZJZ5dmfp7FVumYrcg1Rm8Y0w
-         926ZWztDVKTyLynAi/0pKBRetfmGDvztEqWiepqOWIFHoe1wnF3qWj6rLI0ARp9ax789
-         B9dQ==
-X-Forwarded-Encrypted: i=1; AHgh+Rr6WBisjMzt+PyC3cimeqf5WSkG1RmtZuTXB/+ETvgp2Rn0kv0izZ3o9z68ikZnavtuwcoiF/T1CkTE5xU=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++lV/0NU54oCUwYv5NFQJeCtWsJhV44foR2yzOJ5pnSoT6fKJsO7
-	Q1VIFZlT79zC7XV1EcoDZVxO9wohN/UYPQaMFJ17xqWB29jpGmaBjm99
-X-Gm-Gg: AR+sD12BCrIPgI++h5JIGrLTofXljSEUs+vMeoBRpVcnzKnsrgu9HSDiR5sLgbvqHK2
-	+hHvG/XSXsst8IbDNzUW2Yz9MlYwt/iTL/oL9/jG/gLRMkg9ReRgNSDA6pRbY128JK15Cuwv7cQ
-	3+yFEy56iMAc2q7gplevv9IscilRy30GAdNyjGx3fdy9F+7Cn6gH7700Gi3QnRc3GuGb2/bYkSO
-	v5WSS6Lz/egG+dZDf20KVSue2N6Gbgh8DfMTlfD6a7rlQp3+gk0xTBunXkGmzE6JoK4Vo4GoJod
-	KwmpMfscC5V+isKf+INHer5O06IVeA+lI5qU4zAmJx/xoTmn2wUsKzksY49C1plrMGF8kvdN8gs
-	zK+kXRaQPuSG+d/VRp4/QzBOOLh7wkLAIxog6Nai6+IGloKU8Z7BeVfrikIQSh8hfLFIvdiC/8X
-	bxthsqhk2IabQeSDynC9vDI+q5qFjJ1ZZwstFqRQTJvAWvfr0XQ4OsGwbpwRa7HoRzk9hKhOO6A
-	RS69/eazEC4NA/YzKWM9YLGfyNjWO9DaUAqXQ==
-X-Received: by 2002:a17:90b:4fd0:b0:38e:5b59:c2ff with SMTP id 98e67ed59e1d1-39580a4d031mr18756576a91.3.1787201602401;
-        Wed, 19 Aug 2026 21:53:22 -0700 (PDT)
-Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([106.51.165.140])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-327bec30f49sm11190678eec.0.2026.08.19.21.53.17
+        d=1e100.net; s=20251104; t=1787208584; x=1787813384;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :content-type:mime-version:references:message-id:subject:cc:to:from
+         :date:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=kRc1eSHVwu1q1qbvgzDIPRU3EZV0cBSELC6VRfYKDj0=;
+        b=g81yCCTbl+Viahzcg6FgmrCGHAU6HSQO1F1M5zoMQQPOGjmXqzHXP0KkHJ/EBPcVGO
+         BgAdxqySQowzjhuD80/0zk7TI0hGWqZYmY6p4APu6cIetckpXKJXy9sqxglDX17TLvJZ
+         X9kL5MJfdlPPrh2u1/5nCrMvi/2mi34wrlTuYM7Vjv3n1s99bZCLYBNB9s9cvUV3osD8
+         REMWTNmsBwga0gHTQKivn47Kt/CVnQD6XSlnNF817MQ2z6FcZjHAXMDGNiQDPoYtxfm+
+         ujrg9tX5ykXz8+ZN7RAF3FrIZ1dBeO54ypo6o0ySEawg9NAO4+5+zUshMxJsrPvpzIBD
+         yoNw==
+X-Forwarded-Encrypted: i=1; AHgh+RpRhyTqmSkhvJ+x9vsj0vo+40HXFSRVV8JMUUfOnLjp7+BcSB10rvhRW1D38pBqkddX4Xe9Dc3X/1boa2k=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++le2N/NTgs3kY5OtWPPdYHA6IFbzlm2nkIliq7eygRlT6jO7Tqg
+	f2xs+iSDNfcUPboZsWc0dZOhQ+l0B7NXAtxxYdt5ooLl0zS/bK17qFSI
+X-Gm-Gg: AR+sD114ObIxy7K3xhaV4GDIj9HkoiBxqDlo8pwtHjIno9yC9aN0ZI+YG3nqhI+5t2a
+	tIn33iLFQR9oonyQPJmtXbtZHQRn5ja3BG0sTK8k29CLaexj3konKgSpCcJBQ1SI5zPHckNbVR8
+	MsPoEAdog5grfEl2XjLOeFWNjR13N1AkAHhcD4fKLaBeJ6DtLMgHfjUzjII85XSOyOWq2a/QKJZ
+	5ZZv6ZxO7IEwbemyqjLSHF3laCtwLub4qZrmHHkzqZfKwlqRkW45MzVz94gud46Q/ZoijuvSo6F
+	f4r19c4o8wS7zqFjZSNTaFiR/T7/CxXtlKtY9Towyh3ZCuTufKojiEBqM3Vg7iOYmoVQ3RFL829
+	BcR79HKlSSYBTTwpemgQogHuCuGdzXGzTqqNuD3VMHBHzaJkNX5rWEebFxU3nABPQLy7SjwTAiX
+	8Tydwcv54Z17dIza3pdeJ5GPTDZdgbtj9dvdyQSU6mE+I79aYILC0mI0cfoiF3oN2cxSoTDo7ex
+	lkD9fdEmJ/hFjLbKoLhBQ/YxLdPu8rH
+X-Received: by 2002:a17:90b:4e8f:b0:38e:bfe:81e9 with SMTP id 98e67ed59e1d1-39580a80a58mr18755677a91.1.1787208584359;
+        Wed, 19 Aug 2026 23:49:44 -0700 (PDT)
+Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([129.41.58.4])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3957fb3069csm6696864a91.15.2026.08.19.23.49.36
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 19 Aug 2026 21:53:21 -0700 (PDT)
-Date: Thu, 20 Aug 2026 10:23:14 +0530
+        Wed, 19 Aug 2026 23:49:43 -0700 (PDT)
+Date: Thu, 20 Aug 2026 12:19:33 +0530
 From: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
-To: Venkat Rao Bagalkote <venkat88@linux.ibm.com>, 
-	Shrikanth Hegde <sshegde@linux.ibm.com>
+To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
 Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
-	chleroy@kernel.org, mchauras@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] powerpc/entry: Use hard_irq_disable() in
- arch_interrupt_exit_prepare()
-Message-ID: <aoaHtGvA6rAcQxwL@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-References: <20260812152035.1661781-1-mkchauras@gmail.com>
- <e49d543e-80b2-4c8c-968d-0c8b68717cbb@linux.ibm.com>
- <an6w517sUDWwpVfZ@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
- <an_xbqRgm4RaRw0r@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
- <999c327b-3ec9-4636-a29e-57795d333912@linux.ibm.com>
- <aoVrvjiSMmEDbwIF@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
- <d9c19203-a9d8-4815-9f60-97e7411976e4@linux.ibm.com>
+	pjw@kernel.org, palmer@dabbelt.com, aou@eecs.berkeley.edu, alex@ghiti.fr, 
+	ojeda@kernel.org, boqun@kernel.org, gary@garyguo.net, bjorn3_gh@protonmail.com, 
+	lossin@kernel.org, a.hindborg@kernel.org, aliceryhl@google.com, tmgross@umich.edu, 
+	dakr@kernel.org, daniel.almeida@collabora.com, tamird@kernel.org, 
+	acourbot@nvidia.com, work@onurozkan.dev, thuth@redhat.com, 
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org, 
+	rust-for-linux@vger.kernel.org, FUJITA Tomonori <tomo@flapping.org>
+Subject: Re: [PATCH] powerpc/bug: Add ARCH_WARN_ASM and refactor
+ _EMIT_BUG_ENTRY for Rust support
+Message-ID: <aoahpef37-7EaTrY@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+References: <20260819084825.969116-1-mkchauras@gmail.com>
+ <4c5b2ab5-83f8-4ee7-bb02-3046ed01fd84@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -103,27 +102,96 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <d9c19203-a9d8-4815-9f60-97e7411976e4@linux.ibm.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4c5b2ab5-83f8-4ee7-bb02-3046ed01fd84@kernel.org>
 
-On Wed, Aug 19, 2026 at 04:22:31PM +0530, Shrikanth Hegde wrote:
+On Wed, Aug 19, 2026 at 01:50:43PM +0200, Christophe Leroy (CS GROUP) wrote:
 > 
-> Can you collect vmcore with panic on warning enabled?
 > 
-> It maybe nested replay of soft interrupts which maybe causing problems here.
-> We should see the regs state.
+> Le 19/08/2026 à 10:48, Mukesh Kumar Chaurasiya (IBM) a écrit :
+> > The Rust kernel infrastructure generates inline asm for WARN() via
+> > ARCH_WARN_ASM(file, line, flags, size), expanding it through a C
+> > preprocessor pass (generated_arch_warn_asm.rs.S) to produce an
+> > arch-specific asm template string for use in Rust's core::arch macros.
+> > 
+> > powerpc currently lacks ARCH_WARN_ASM and ARCH_WARN_REACHABLE, causing
+> > Rust builds to fail on powerpc.
+> > 
+> > Refactor _EMIT_BUG_ENTRY to accept explicit (file, line, flags) string
+> > arguments rather than relying on positional asm operand references
+> > (%0, %1, %2, %3). This allows the macro to be composed as a plain
+> > string concatenation, which is required for ARCH_WARN_ASM where no asm
+> > operand context exists.
+> > 
+> > Move the .org and .previous directives out of _EMIT_BUG_ENTRY and into
+> > the BUG_ENTRY() call site to preserve existing behaviour while enabling
+> > ARCH_WARN_ASM to supply its own size operand independently.
+> > 
+> > Add ARCH_WARN_REACHABLE as an empty define, matching the arm64
+> > convention, indicating that no additional reachability annotation is
+> > needed after a WARN on powerpc.
+> > 
+> > This brings powerpc into line with x86, arm64, s390, and riscv, all of
+> > which already define ARCH_WARN_ASM and ARCH_WARN_REACHABLE.
+> > 
+> > Suggested-by: FUJITA Tomonori <tomo@flapping.org>
+> > Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
+> > ---
+> >   arch/powerpc/include/asm/bug.h | 28 ++++++++++++++++------------
+> >   1 file changed, 16 insertions(+), 12 deletions(-)
+> > 
+> > diff --git a/arch/powerpc/include/asm/bug.h b/arch/powerpc/include/asm/bug.h
+> > index 0db48977c70c..8aba39e0cf26 100644
+> > --- a/arch/powerpc/include/asm/bug.h
+> > +++ b/arch/powerpc/include/asm/bug.h
+> > @@ -32,34 +32,38 @@
+> >   #endif /* verbose */
+> >   #else /* !__ASSEMBLER__ */
 > 
-> > Regards,
-> > Mukesh
+> Sorry, I still don't understand. The only place the new macro is used is a
+> .S file (namely rust/kernel/generated_arch_warn_asm.rs.S), and the change
+> this patch implements is inside a #if !__ASSEMBLER__.
 > 
-Hey Venkat,
+> What am I missing ?
+> 
+> Christophe
 
-I have identified the root cause for this and discussed it with
-Shrikanth also. We have agreed that the fix we have now is a proper fix
-and why we got this issue now and not earlier. I'll send out a new
-revision for this.
+Hey Christophe,
+
+The code calling ARCH_WARN_ASM is a .rs.S file that goes through the C
+preprocessor as part of the Rust build machinery.
+
+The intended mechanism is essentially
+
+generated_arch_warn_asm.rs.S
+          |
+          v
+         CPP
+          |
+          | includes <linux/bug.h>
+          |
+          v
+ARCH_WARN_ASM(...) gets expanded
+          |
+          v
+Rust source containing the generated assembly string
+
+The patch therefore needs ARCH_WARN_ASM in the non-__ASSEMBLER__ section,
+because that section is where the macros intended for C preprocessing
+are defined.
+
+The thing is .rs.S is not using ARCH_WARN_ASM as an assembler-time macro,
+it is using the C preprocessor to expand ARCH_WARN_ASM before the
+Rust/assembly processing stage.
+
+This is my understanding of things, if i am wrong somewhere maybe
+someone can clarify.
 
 Regards,
 Mukesh
+
+
+[...]
 
