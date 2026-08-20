@@ -1,78 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-26023-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26024-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CE535C5DF81
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Aug 2026 15:48:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 85297C5DF81
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Aug 2026 16:06:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hQnsv4c6wz2xT6;
-	Fri, 21 Aug 2026 01:48:51 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c200::1" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787240931;
-	cv=pass; b=DTsi0PphzEVtq7dJGEAdaKO1JtssFbTp50Xe44Z0Gg3xLujwRCKRscHPoO3cPmQ7Hl4pIKtTRIorSu1TBs0a5jE6BWXf2n/ipkvq3nZNAXSCUnSpVTjHLpIJWpi26sII9zPGA/+LcqFl84q5Po+VzJLaWRwZo5Nz1YFIe0ZF5yPQ/IWrIKQw3gZ81BRb/5wgMM1ydsce+KE7YNEeA3xkmt0cgv+P/gML/rJmOI7DDtk1ALbQX9gGaEkF4nMba+Hjf3j+5eVyERJFy2Zn7uuUUFPPMrL8mtVBX4Dhl6+cjL56U1kOKr3FWM38eK56vfOXXZp0wnaMYcbcvlwaHaeTWw==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787240931; c=relaxed/relaxed;
-	bh=Ud6aDbZ0Lcn7skElVQT7S1fgF2RS44N6gV8XrR01MiM=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=aOVdjE0qa8jz20wuoa5GNHC6+98AQTrJrDWEEc9PuO0Zj3E1EApUoImw85OiFFfU7iad/jAC62DdHAs9mtR2WGf+AAczK059JW4ftSNXgPoLsxEiMzjYEF3EzgZ82+UvxH3bZ0geIGR6FkaREC0qDjT8MFzJKOl5VHYB5yB0AaZVRJfLyiS4OoGcaS/THw83P+CBCzbZW5pxuLo6bZw6I8qY5COM3NyflC3Say6kkmsoSefE9J0zo8FBJosvO4oOyHMZQFRj/DayQlVtNaCTRcflFU2wQl8Fb1kIoBH61v1/KbVkVdyzxN1P8OSbH7zE6MFEzrJTH7jiLizI+gtxtg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=d8QMWAsA; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c200::1; helo=db3pr0202cu003.outbound.protection.outlook.com; envelope-from=frank.li@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hQpGP6r7qz2xT6;
+	Fri, 21 Aug 2026 02:06:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787241997;
+	cv=none; b=b9FIywxDi9tu6ID7Up1+sAhVtRTUkYNOBCcYDFFez3sTK8RK/hIaOYHbpwcjmCOUJgeNmUtJnujzDk/xVYIo4aHV4NFaUKfnlyTlGTPHk4QTdXYoSBboa2Grcc5Q6Daf75wwMgBZDfBkEh8qo+CUqom/1nspZBTaFt3FO/2fnK+ZBSsQJH9q9pg2TxSb3QQwYg6uDlOb6IRDcbjwYtR7aYgWiRKK6Y3BrRkC0KzVm3mYTddza4//jZquLXz8ITFkPGE1WHFn/zZV4z7ox2xXO0pYoafHJ/XjVR4YqtZQX8Og0aWRVWDwvZZW8RF1wnqqYfglm0mOcetuT921us91AQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1787241997; c=relaxed/relaxed;
+	bh=OmDGCLOLvz9twqmNhvVULGwHz+Mhciv2KBabJXzZfCw=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=hplTJYzHDaJ+fXLHF1RSxYL/LNojycLD7L7UZTYD9srmPXHNK4uuo5qzH71vAOAgJP/IB6Dyl/+rjUMlSvXcedXfHxIUl5YSTOZlI2tsif+HR5OfZxrdpvRyqv6Gt6xwZv3CZXCK/PuuUKvGT0uOx/3PLRmajcd46+aNRM2oHNYbufUbqXGafmEPvmYqyq60mx7CBrpFN6ytP6UW1of9NdwwtMlJyJKrJkaAp9g+TMbf/SJSA9bWsriwprw7G2FUrqLh9pDw/J2B+G/iWSVnFS1f18yG573vvU0rvUuU16i0Uvo93Wng20pNt6iKMiGgFvQwpS8CjJ9WnhNQm1OW5A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=AaDD6BW2; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=d8QMWAsA;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=AaDD6BW2;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:c200::1; helo=db3pr0202cu003.outbound.protection.outlook.com; envelope-from=frank.li@oss.nxp.com; receiver=lists.ozlabs.org)
-Received: from DB3PR0202CU003.outbound.protection.outlook.com (mail-northeuropeazlp170100001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c200::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hQnss6l53z2xRw
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Aug 2026 01:48:49 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=N61fI3ych7FBBLBDTYiLBxJVR8gmznAgRHnutHv7Uz6Knyx9SJIrSs6Q+s6/X1tLdeSltHBhi4ZBTB4E9WgUePwDV9CgsOEhHjBBDUvWi9f4S8FHJAAuL/TaubGdkTxVlUQ6PVMQ8rgCfAo3fmTulT/g73NDdkjg2OygdcuwmC3OTKNpYYp7EnaLC7q15bOKSmuBqCXeQ92C0qdjqGJowJBy7Qdtrcw4WKQ4RwxZ8J15O567ZJ6Pp5rhyeJKnuMLhGkJz9O8tE+UTC8ZOymXfXkaw/2D7kFAULgK1oSOCoikKPs9CuMDIDEhuvR9bX5ojv9HGNkvom1egfq374ygwA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=Ud6aDbZ0Lcn7skElVQT7S1fgF2RS44N6gV8XrR01MiM=;
- b=eqfmx6xnsjqoqa9m6vfnN0utDG+Lwfxk5uqjEYONz6ES2/bhNe3kq4wBsmN3BBMT8enWTU178FKWcXs/PKCCUXcaYJz2HTit/9OjJGLoqhT3Idp/hBV8MEGxvctfJZCJe4d8an8cog6wbHlCjlrZF3EFKQerfLqooT/ILJB/xJu1xg06EdHEwIQjdxF7PEMc/Knd35wXhfvrqAtF9A2AACArfe2Y4QFrOBgxicb6eLztG/0SXHzp4s931UncyuHZvUBAjVuZNd9DPH250mU1whmFMPQPOwEyb3txeZkllQ5/8DShSwB5i+pbUeKUhqFTPf907poC6PVf7LY4hynvJQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
- dkim=pass header.d=oss.nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
- s=selector1-NXP1-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=Ud6aDbZ0Lcn7skElVQT7S1fgF2RS44N6gV8XrR01MiM=;
- b=d8QMWAsAKA4mmuq2yFjkBhx/qsTSpXBr6aJtGdxJ+S9vmsUmpXOujMlJLX0oIOa2xS25G5owfx5x0RNO9XF9qbgbANNagThnmfNt2DDDWbZ3fxvhtRqfLOS5H1fD/jc+3m5YLNCJg4Dxi+U4y6MPHoe2eZFhBJ0O87ugmfBh9mDwOUgM9zVveX9r9YQexBoeEOjVjhi6wSGN/XQ2BUWkQ3CcOk0waWY8hYKNEpdW+z37OxdaXHMtk0TFvjtYFQpbG6qz6HzmPBptuV8oxj/MyKlJpJX2QAenjwDliujcxf0StVWv/aqNFsqyAk/ONJOQWoozVNHoBRbp1Yp3DKBQNQ==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=oss.nxp.com;
-Received: from GV2PR04MB11799.eurprd04.prod.outlook.com (2603:10a6:150:2cf::9)
- by GV1PR04MB10776.eurprd04.prod.outlook.com (2603:10a6:150:20b::10) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.339.8; Thu, 20 Aug
- 2026 15:48:24 +0000
-Received: from GV2PR04MB11799.eurprd04.prod.outlook.com
- ([fe80::2146:83a2:5329:b7c]) by GV2PR04MB11799.eurprd04.prod.outlook.com
- ([fe80::2146:83a2:5329:b7c%7]) with mapi id 15.21.0339.007; Thu, 20 Aug 2026
- 15:48:23 +0000
-Date: Thu, 20 Aug 2026 11:48:15 -0400
-From: Frank Li <Frank.li@oss.nxp.com>
-To: Chancel Liu <chancel.liu@oss.nxp.com>
-Cc: shengjiu.wang@gmail.com, Xiubo.Lee@gmail.com, festevam@gmail.com,
-	nicoleotsuka@gmail.com, lgirdwood@gmail.com, broonie@kernel.org,
-	perex@perex.cz, tiwai@suse.com, Frank.Li@nxp.com,
-	linuxppc-dev@lists.ozlabs.org, linux-sound@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ASoC: fsl_mqs: Add DAPM output widgets for MQS_L/MQS_R
- pins
-Message-ID: <aochvwR3MubqISOS@lizhi-Precision-Tower-5810>
-References: <20260820021454.2229094-1-chancel.liu@oss.nxp.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260820021454.2229094-1-chancel.liu@oss.nxp.com>
-X-ClientProxiedBy: PH5P222CA0003.NAMP222.PROD.OUTLOOK.COM
- (2603:10b6:510:34b::17) To GV2PR04MB11799.eurprd04.prod.outlook.com
- (2603:10a6:150:2cf::9)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hQpGN5bHDz2xRw
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Aug 2026 02:06:35 +1000 (AEST)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67KEVl3G2771358;
+	Thu, 20 Aug 2026 16:06:24 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=OmDGCL
+	OLvz9twqmNhvVULGwHz+Mhciv2KBabJXzZfCw=; b=AaDD6BW2aK5JA/Lv25mZaT
+	MLHWPmO39PXdXT8ONZBZHln/gg0hL5ahh9xrk/YqdoTzUvEm+5cHPLlDcp3PisZ6
+	3i1YNGL1RuOWaZDRk826RU9iuCKiq+NZFfX48KacZA1aWulAkakVaqdiXrl+QYpu
+	bJCb5EDZfKeVijHPbHr2/6WOaWGV+7TFyI+jxxXdg81whtO8UO1N52/yzAJxQpNL
+	IGPrQSkr/1zeAXeKyzsENRj48sFzIT+ICVWsC2TNnv60XwkuZruv+rXKDa9zRWI0
+	BrP2nK687qyAr35j9+OiIFwtF7VXs7IRkZitrhh6xpRR1lW77r0Bs1B4z/DnXIMQ
+	==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4g4yu4b9rj-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 20 Aug 2026 16:06:23 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 67KFuJU0008714;
+	Thu, 20 Aug 2026 16:06:22 GMT
+Received: from smtprelay03.dal12v.mail.ibm.com ([172.16.1.5])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4g34ngq8xd-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 20 Aug 2026 16:06:22 +0000 (GMT)
+Received: from smtpav01.dal12v.mail.ibm.com (smtpav01.dal12v.mail.ibm.com [10.241.53.100])
+	by smtprelay03.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 67KG6M1m47972680
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 20 Aug 2026 16:06:22 GMT
+Received: from smtpav01.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id F1E8658059;
+	Thu, 20 Aug 2026 16:06:21 +0000 (GMT)
+Received: from smtpav01.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 1AC4358057;
+	Thu, 20 Aug 2026 16:06:19 +0000 (GMT)
+Received: from [9.61.245.245] (unknown [9.61.245.245])
+	by smtpav01.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Thu, 20 Aug 2026 16:06:18 +0000 (GMT)
+Message-ID: <09660675-05db-4a06-8d1f-4697f45b0752@linux.ibm.com>
+Date: Thu, 20 Aug 2026 21:36:17 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -86,104 +81,173 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: GV2PR04MB11799:EE_|GV1PR04MB10776:EE_
-X-MS-Office365-Filtering-Correlation-Id: 607623b9-8cd9-4006-b2e3-08defed2778c
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|7416014|376014|23010399003|366016|19092799006|1800799024|3023799007|56012099006|10067099003|5023799004|11063799006|22082099003|18002099003;
-X-Microsoft-Antispam-Message-Info:
-	Xr7+omjhw6cZE06Mf4g5rjMLZRScNEDURJtR0NYcBg5JatjJl8Aagi+1+UJXkxoAxDN/z4sqASPBkiDkUqWSr66qByvPvPb0wozcogWLwk8waUWcwd4GwpwzdVO5Ccj6X8IYR6D1Ful3Vn8iSxF0fV98p+0GaAPGd8jwlx/4kNu83q1nRlsRag0Yo6W8U0vka1qytDSAsMVUkmtejm3lmnD+vmDAx94MjXiYCHUpVNJxlWXYuAzvbQyUUzWFacwwQWBN/w0NdYvAbtuTVY4jiItiMlanmkW5dBGslc2jvGIsEvhRNQbTQ6PJz/8RAk3MsDcGQ++aBN6QkkWgGtldp689D/Fappv/WblN/N01yG415m6Km+YFuSi7x14YNT+aC1A/CRRTyd4ygPxBAwC5TDWNj/qdFp02CTDytwfCnYc+SdmUErDr+wtMb/b1lUPavCxQXVYaVGjIuVtba0P+nE4Yanw/X6bDkpz/cctooIHrra2xJ/d54yWCDQNr/XufQTyTWliDG8+U0LyJytAFbI/+UzyBQV5umhBvHVmCqT/IiZMagBcLLESkPyvgh5ROmuxXK+o8vtD555wI+ge9DHSZ9JDjMPiPdN1BjNK92OtYMgaspr6ex04iUx8eE2r6IALMOdZC5Nnwu27QuZtVohzHSPXzqo1sQvnnnMnxmiw=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GV2PR04MB11799.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(23010399003)(366016)(19092799006)(1800799024)(3023799007)(56012099006)(10067099003)(5023799004)(11063799006)(22082099003)(18002099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?7zXq51mecgt9zhdR7/6hex9cfjKO3+KubMWr/MrJHx98kdQJcyVI33qGI9kV?=
- =?us-ascii?Q?HPg90t+2IIcNW1IeJ+Z/HNfU17nZ89grW3jmCq/Bx8IzLWY837FOa+FExgZ3?=
- =?us-ascii?Q?qmbAxIJ9mEKssefBFGRpBImCK/e2opbWRSd61dXTQkH5W3qgFbHHqyaLYw7d?=
- =?us-ascii?Q?MXSzsHtP3giHbqxMERK31ul37Tjt4og3AJ0PykfL4XHWTvXiEF14YWfTs8qR?=
- =?us-ascii?Q?xzPLd2vgr1UicJEDkLtrL/v6TTsyfZAMyz8d+rgMZNnEhNgj79aPVtS8DqVR?=
- =?us-ascii?Q?AUINHAx+CdtR+80dWO+MJlCWioy+Wbeq7W3UN/dG6AJzIs7nqoh2uZQx8JKj?=
- =?us-ascii?Q?CLmerSFLVXI1J9Nnr7fMKG4F9ChBqfP8xm3NhA2pR5Kj1bxw1fVzwTSu0S/D?=
- =?us-ascii?Q?qTc3Pl1RoSg4agU24fETyDnUdjH5vdXiPF7eVlpVYrzcfcIQLWrVWLlW7Afs?=
- =?us-ascii?Q?vLwc+AnsHVbDzzUg15/tqHSmquVfnjqSy/pSIk98Z5kcjPqPI19Wska1xVUj?=
- =?us-ascii?Q?yclXocrmR5m/ovStm5n0b9r5b9AQlRi95geC15dFOYsKEd+69rxrQnKUUHjr?=
- =?us-ascii?Q?HNsAEZUZT9St4WQP6woJ920t1C7d0ELGEaYzDRc0rMgfA5h6am6Aohs96+ft?=
- =?us-ascii?Q?amTBAhCS5np3CT9Ar40Tyk6bpTgjdJglfFk14r+26a5wmCB5uEeA/oeDAI21?=
- =?us-ascii?Q?CbX989K3G2UuNwfAW23z69G6FJlRylaKtFawGoHLc1RYS9sGiXxZYAyeaL60?=
- =?us-ascii?Q?hJWDrnhOsmKSIDy3BB6uIGiXR1tRWAoIniF9GyEsewT1nIvzeLp/cyCzyish?=
- =?us-ascii?Q?RIF/SKGrw1QWQfo8Pikk27dWZnW6V+ePOzNmygnpvhQINRFlknLWrl2Vlhpu?=
- =?us-ascii?Q?VOxjb+Azc+TA9H1dpCXYvkc34+DwdztA7ULJI8RUUsC/kecUXR7zMm/S7V9i?=
- =?us-ascii?Q?zo9nMsGCjfhsaRkhEN602bmec+a86YZ0435eU6LSpTP0owoe4A1+7wGW6N0G?=
- =?us-ascii?Q?am3pObWHbfjlb0IyyMr9h/NLqUmA8qCZ+QxDQQpxHZlahuofLOdkWgJdTJEK?=
- =?us-ascii?Q?6o6FqaSVI+ogRhFhaGZkZfTRFY8XRNK/kKaiEgj/Cd3jkTV1xkrX/C2VeHcu?=
- =?us-ascii?Q?4vccSE+yilN0wZOR54BG6c0d9NGp41qJA4IdkPeJWXKkNg8xHBscfiCgYIMQ?=
- =?us-ascii?Q?RJup8B/ue/pzLRNSRf2XNJ5JGsQWtLVGAlB8uqI39grx7yaZ/LQkBnB4qiHY?=
- =?us-ascii?Q?PloUketwGdPV6wbxkKloglspNhYu5wwsE46OKhN/vOoIc30QCXYWdNgP5eq6?=
- =?us-ascii?Q?9RdsnPY4+5Eui+Jcd4hiF/NWWrjjZZvj6LIaClxpoqFgV59tbNoMFba1zTs7?=
- =?us-ascii?Q?W0v9rIL1yFqztQyBUbt5A38ogXceaxBmMLQAXwuTKLn9oev4bGliAaGUvnns?=
- =?us-ascii?Q?IYYCjaTwC8CPNRShZZwwsKiesnUrgh9baisWG9BKZ23ARDZR2RCcLFIorBr6?=
- =?us-ascii?Q?t1uk47xqyuXNkcdJYyFwLV/zznFQojJ8nOF/mevUgPcMl4idOripAdKni58p?=
- =?us-ascii?Q?bFD31ikM0kLmbXqn1K+wZ7ldWqHz/7jD86gm5FkollJVKnJbAFj8Zldw8Ycv?=
- =?us-ascii?Q?pvUd1SON2MLNravGxMe9cyqmVPistNeJ2gAxPFGrcY7gX1e3Eozb30CVPWtK?=
- =?us-ascii?Q?jC+4+CvHElPpRHayia9C8pJKdRTjgh22LuwK4OnfiPjFAF0YNU2guz6sUUca?=
- =?us-ascii?Q?/hRknUtbsfwfuJR2htI9eCGRIkFvFr3ML+fQ/fo0F5msc8qTfZoR?=
-X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 607623b9-8cd9-4006-b2e3-08defed2778c
-X-MS-Exchange-CrossTenant-AuthSource: GV2PR04MB11799.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 20 Aug 2026 15:48:23.8154
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: YkrV0CVWTSmy2jN+0s4tE0h1nOCKr3DfQ9vO9+rqkD/OtYMw6fIdoL3TN4dufPyE7VdQiYVmn3cPFW2euO5W0Jnz3s11iqQyvKlQ63MuzMXSN3vDcnpOdV129gjxWoz+
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: GV1PR04MB10776
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH V2] powerpc/entry: Fix irq_soft_mask corruption on
+ replayed interrupt exit
+Content-Language: en-GB
+To: Shrikanth Hegde <sshegde@linux.ibm.com>,
+        "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+        chleroy@kernel.org, mchauras@linux.ibm.com,
+        linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+References: <20260820134718.2176411-1-mkchauras@gmail.com>
+ <2e16b624-be55-4127-8ec8-db9479957f96@linux.ibm.com>
+From: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+In-Reply-To: <2e16b624-be55-4127-8ec8-db9479957f96@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=CpuPtH4D c=1 sm=1 tr=0 ts=6a872600 cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=VwQbUJbxAAAA:8
+ a=VnNF1IyMAAAA:8 a=pGLkceISAAAA:8 a=aLwFzr78qqh7rE2BBSIA:9 a=3ZKOabzyN94A:10
+ a=QEXdDO2ut3YA:10
+X-Proofpoint-ORIG-GUID: Vfr3wVg2-YYIcKAa1YzkQWfAyIbXSYnR
+X-Proofpoint-GUID: yMgSVNtu2OSdhaicQ_x5jg_8km_3xFdz
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODIwMDEyMSBTYWx0ZWRfX68HiTtc2N2gt
+ YjZ9GnM03enubWQpnpeM5guWhx4BLr4TW7GUp6/VMrrYeTzJXA5aVBJIhjsBcYfF3llP5tawlWW
+ HoYVN4Kms/90dKSp9w4lYeRIynG4jpg=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODIwMDEyMSBTYWx0ZWRfXzQ+4QftW4O2I
+ zDio5+z9TN6AXlpcUg53m+6TcbEobrViJMJAMAdzAZbqiBZGhMqjEF16VM0obt17zIallfW4vzd
+ iC2V7UwmJB+kGkWbaYNPuby47bJ1xvb+r8Qe4LA237INcYLlvLIlJBn2lOTtaHGCOz1mDK4bjuo
+ pNxkA905F2BNETg9xIghZKXRmQFDFlXzCw5i1M3jMiBB+kWgNFx0QHXZ7blL4ynQX5y+Iyn/tSR
+ lsbpiyNL1BPJBBPpIIoOj6E38YU8fl9sAjj/k1WMrygg5QmdFqCJoS3+JK3WsO9xEMBZpo3CQ9H
+ 0bIBSXkHB4nYGf+/yOWmzB4URPSOE2WqCweecq5e37E687v8wrTzvViouTHlwmksJQmcrYPqfV3
+ gh6svS+E2RpzY2UfpxzSwh1nZ5sWLvGo1T2j5Qt/KB96q4nwhNYzVu1kKApho2zo9UN0IDu3McN
+ ctTlP+C180Wa8UFJJ9g==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-08-19_06,2026-08-20_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 adultscore=0 bulkscore=0 malwarescore=0 phishscore=0
+ lowpriorityscore=0 spamscore=0 clxscore=1015 priorityscore=1501
+ suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
+ definitions=main-2608200121
 
-On Thu, Aug 20, 2026 at 11:14:53AM +0900, Chancel Liu wrote:
-> From: Chancel Liu <chancel.liu@nxp.com>
->
-> Provide DAPM output widgets for the MQS_L/MQS_R pins and route them
-> from the "Playback" stream. This allows external amplifiers connected
-> to the MQS outputs to be properly linked into the DAPM graph, so their
-> power state can follow the playback stream.
->
-> Signed-off-by: Chancel Liu <chancel.liu@nxp.com>
-> ---
 
-Reviewed-by: Frank Li <Frank.Li@nxp.com>
+On 20/08/26 8:17 pm, Shrikanth Hegde wrote:
+>
+>
+> On 8/20/26 7:17 PM, Mukesh Kumar Chaurasiya (IBM) wrote:
+>> When __replay_soft_interrupts() replays a pending interrupt (e.g.
+>> PACA_IRQ_DEC → timer_interrupt), it calls the handler directly with a
+>> synthetic pt_regs. The DEFINE_INTERRUPT_HANDLER_ASYNC wrapper around
+>> each handler calls arch_interrupt_async_exit_prepare() on the way out,
+>> which calls arch_interrupt_exit_prepare() → local_irq_disable() →
+>> arch_local_irq_disable(), which does:
+>>
+>>      irq_soft_mask_set(IRQS_DISABLED)   /* 0x1 */
+>>
+>> This unconditionally overwrites irq_soft_mask with IRQS_DISABLED (0x1),
+>> stripping the IRQS_PMI_DISABLED (0x2) bit. The result is that
+>> irq_soft_mask is 0x1 instead of IRQS_ALL_DISABLED (0x3) when the
+>> handler returns to __replay_soft_interrupts().
+>>
+>> For a normally-taken interrupt this is harmless: the next interrupt
+>> always enters through arch_interrupt_enter_prepare() which
+>> unconditionally sets irq_soft_mask to IRQS_ALL_DISABLED.
+>> But during replay, next_interrupt() is called
+>> directly between replayed handlers without going back through
+>> arch_interrupt_enter_prepare(), so the stripped bit is never restored.
+>> next_interrupt() then fires a WARNING:
+>>
+>>      WARNING: arch/powerpc/kernel/irq_64.c:75
+>>      WARN_ON(irq_soft_mask_return() != IRQS_ALL_DISABLED)
+>>
+>> This was introduced by commit bee25f97ad24 ("powerpc: Enable
+>> GENERIC_ENTRY feature"). Before that commit, the old
+>> interrupt_async_exit_prepare() called irq_exit() followed by an empty
+>> interrupt_exit_prepare() stub and never touched irq_soft_mask at all,
+>> so the soft mask was left at IRQS_ALL_DISABLED throughout replay.
+>>
+>> The root cause: arch_interrupt_exit_prepare() uses local_irq_disable()
+>> whose only job is to set the IRQS_DISABLED bit; it has no knowledge of
+>> IRQS_PMI_DISABLED. It is there to satisfy irqentry_exit()'s
+>> requirement that interrupts be disabled, but using the plain
+>> irq_soft_mask_set(IRQS_ALL_DISABLED) is the right primitive:
+>>
+>>    - irq_soft_mask_set(IRQS_ALL_DISABLED): sets soft mask to 0x3
+>>      (both IRQS_DISABLED and IRQS_PMI_DISABLED). Touches only the soft
+>>      mask. MSR[EE] and PACA_IRQ_HARD_DIS are already correct because
+>>      hard interrupts were never re-enabled during replay
+>>      (PACA_IRQ_REPLAYING is in PACA_IRQ_MUST_HARD_MASK, which blocks
+>>      should_hard_irq_enable()).
+>>
+>>    - local_irq_disable() / arch_local_irq_disable(): sets soft mask to
+>>      IRQS_DISABLED (0x1) only, silently dropping IRQS_PMI_DISABLED.
+>>
+>>    - hard_irq_disable(): also issues __mtmsrd to clear MSR[EE] in
+>>      hardware and sets PACA_IRQ_HARD_DIS — redundant and wrong here
+>>      since both are already set.
+>>
+>> Fix by replacing local_irq_disable() with 
+>> irq_soft_mask_set(IRQS_ALL_DISABLED)
+>> in arch_interrupt_exit_prepare(), making the exit symmetric with the
+>> entry path in arch_interrupt_enter_prepare() which always sets
+>> IRQS_ALL_DISABLED.
+>>
+>> The warning was observed early in boot on a POWER10 pseries guest
+>> during kmem_cache_init_late(), where a spinlock release triggers
+>> interrupt replay that processes a pending timer interrupt.
+>>
+>> Debugger state confirming the bug:
+>>    Before timer_interrupt(&regs):
+>>      irq_soft_mask = 0x3 (IRQS_ALL_DISABLED)   correct
+>>      irq_happened  = 0x41 (HARD_DIS|REPLAYING)  correct
+>>    After timer_interrupt(&regs) returns:
+>>      irq_soft_mask = 0x1 (IRQS_DISABLED)        WRONG — PMI bit stripped
+>>      irq_happened  = 0x41                        unchanged
+>>
+>
+> Indeed. Thanks for the fix and good explanation.
+>
+> Reviewed-by: Shrikanth Hegde <sshegde@linux.ibm.com>
+>> Fixes: 334f3f6d7a16 ("powerpc/entry: Disable interrupts before 
+>> irqentry_exit")
+>> Reported-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+>> Closes: 
+>> https://lore.kernel.org/all/6f9bfb0f-b14c-468e-bb9f-c157d120d0dc@linux.ibm.com/
+>> Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
+>> ---
 
->  sound/soc/fsl/fsl_mqs.c | 14 ++++++++++++++
->  1 file changed, 14 insertions(+)
+
+This patch fixes the reported issue.
+
+Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+
+
+Regards,
+
+Venkat.
+
+
+>> Change log:
+>> V1 -> V2:
+>>     - Instead of using hard_irq_disable use irq_soft_mask_set
+>> V1: 
+>> https://lore.kernel.org/all/20260812152035.1661781-1-mkchauras@gmail.com
+>>
+>>   arch/powerpc/include/asm/entry-common.h | 2 +-
+>>   1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/arch/powerpc/include/asm/entry-common.h 
+>> b/arch/powerpc/include/asm/entry-common.h
+>> index c5adb5006361..2a153dca962c 100644
+>> --- a/arch/powerpc/include/asm/entry-common.h
+>> +++ b/arch/powerpc/include/asm/entry-common.h
+>> @@ -270,7 +270,7 @@ static inline void 
+>> arch_interrupt_exit_prepare(struct pt_regs *regs)
+>>       }
+>>         /* irqentry_exit expects to be called with interrupts 
+>> disabled */
+>> -    local_irq_disable();
+>> +    irq_soft_mask_set(IRQS_ALL_DISABLED);
+>>   }
+>>     static inline void arch_interrupt_async_enter_prepare(struct 
+>> pt_regs *regs)
 >
-> diff --git a/sound/soc/fsl/fsl_mqs.c b/sound/soc/fsl/fsl_mqs.c
-> index 901f840df904..5b00488253bb 100644
-> --- a/sound/soc/fsl/fsl_mqs.c
-> +++ b/sound/soc/fsl/fsl_mqs.c
-> @@ -183,7 +183,21 @@ static void fsl_mqs_shutdown(struct snd_pcm_substream *substream,
->  			   mqs_priv->soc->en_mask, 0);
->  }
->
-> +static const struct snd_soc_dapm_widget fsl_mqs_dapm_widgets[] = {
-> +	SND_SOC_DAPM_OUTPUT("MQS_L"),
-> +	SND_SOC_DAPM_OUTPUT("MQS_R"),
-> +};
-> +
-> +static const struct snd_soc_dapm_route fsl_mqs_dapm_routes[] = {
-> +	{ "MQS_L", NULL, "Playback" },
-> +	{ "MQS_R", NULL, "Playback" },
-> +};
-> +
->  static const struct snd_soc_component_driver soc_codec_fsl_mqs = {
-> +	.dapm_widgets = fsl_mqs_dapm_widgets,
-> +	.num_dapm_widgets = ARRAY_SIZE(fsl_mqs_dapm_widgets),
-> +	.dapm_routes = fsl_mqs_dapm_routes,
-> +	.num_dapm_routes = ARRAY_SIZE(fsl_mqs_dapm_routes),
->  	.idle_bias_on = 1,
->  };
->
-> --
-> 2.50.1
 >
 
