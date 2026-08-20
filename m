@@ -1,70 +1,61 @@
-Return-Path: <linuxppc-dev+bounces-26017-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26018-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C004DC5DF88
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Aug 2026 10:53:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B1E48C5DF81
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Aug 2026 13:12:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hQgJb1XhXz2xW5;
-	Thu, 20 Aug 2026 20:53:03 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::645"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787223183;
-	cv=none; b=lpooF1X6iWj8LDcMw1dN+0ArNeM7Da9wr+cmEiX/0F9lX/hr404Avhcpd/yH2uzVfReQW4WesB1XzihyvaOmfe2FH0i8ayld7XctGt9ItIhl+OOPxkobX6kZ0+a2p+bApFwgVwODiSz80Lv1LK872BvT00++CXXCRevM26oB5Cv4Yz/NIZZeoeRyYeR6zxeE8h/5OxRIKUj/Yk7irGpDSIGMZvnT8louTld0Yb4dVUiBQjPHZbUoT+vTSot7OgnoonuPfx9ECn3pXnrCORFG0i6YnrNcHWiJp/poVeFKcuQBvPCzq7caHjdVEnv/sOJwnOois6rbvHDdMPWDdCUtlw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hQkPq16Bgz2xT6;
+	Thu, 20 Aug 2026 23:12:47 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a07:de40:b251:101:10:150:64:2"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787231567;
+	cv=none; b=anMNEHuqijt5RXLLyyc+zVAZoRktA6/HxbLqPtTeUylxyllIFB3NzJ/CoJs5yO7WVwxgc/ljPn8QlT/G+hEqfSli5QV+vl3VGzp8XD4SAVwJNAQcVeewrhXV9F2s/fbaCgYEfe84Ywfkb9ctvgzaEVKZDB36xrqAYqsq4XY7YqAEcZEoXuoOZa33KuOK+FPatIBI+6ng6Ca0Lpc0mdrLnwSD87hpiWUlPhk4rQPl3Ny3fS9QseRRlZC3QO14WPTG2FfMI40eD0/IEgu3O3JNfrHz5L2Eado7FiFrEuWF5Mg3sbd4LBURayQIpCCHEnaEmh2Efu4e6baYuWafv6Y6Lw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787223183; c=relaxed/relaxed;
-	bh=eBG80TE8O7koV0M/Wd/+svOF4P4mOtCGkWlnllaV+RA=;
-	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=oBkeLH7GsHqOW/NEOvmOZRTilVSv7JVA91bVGnwPG563zokGV1vJHhzGpubyCApAA75HiLexpnOfTNSIAKBhtzw+BQNLFna9MVbUlUu57z3joXkv0jnWCUqihRS8KvgeyAu0ilvX7/LqQKQuwgS8GEUuW3DPxFJ+vm1pFDasDAZlpkeLqUPFe5/m0uqnBNKDmSunI9/GmNGZGLPnOA0Gbxl9r1dXoJIgDhnOIlBFJlel6ewXdWnn7aJnq7ZTJnAa72av+sZishJG1HbZ55t96IOrDtpUxXtX4rxe//CLOtrj/6Th63UC2kZExqvjbMKqljd+8LaNPIs4tNXgs9OWlA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=ag9bfg6R; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::645; helo=mail-ej1-x645.google.com; envelope-from=3h9ygagkkdlypwnqjowdqckkcha.ykihejqtlly-zarheopo.kvhwxo.knc@flex--tarunsahu.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--tarunsahu.bounces.google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	t=1787231567; c=relaxed/relaxed;
+	bh=dJh7R0socmEoqo/IMHpdxGQe33Oo99W+P9AP/twAzOM=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=J0+9tZZ49zOPMdMSLLG3mr1oGQBdTP5B+UQ0RgG7KUPsHqyH6rX5MFinfJgSO+YrN66MN0WcBnRQdyIrmFZT39p2E8kWSoGS03wtP0jstly1D+yZuEueBtOgN7NeEI7R9A69a1+bgyVITtdeDVavFQgxUDWSs2z2/cJmTnwy5+rY3E4so70f+QGzMCZT0DT8NGwyiXLa67QMvu/sQbSeAfgVF88xhW+igNwQBcAevSth8lJmXlTm4Mg/Idac1X2eWxsTbKlL5MZmnyX7ouz1aFRZVY74NAWj2vAYn5PGdjzmPKft08ztXN9gGzS01lDtCQfnGi6noG2jshEVuetF1g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; dkim=pass (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=Yc77xth0; dkim=pass (1024-bit key) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=J4tXnGMV; dkim-atps=neutral; spf=pass (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=ailiop@suse.com; receiver=lists.ozlabs.org) smtp.mailfrom=suse.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=ag9bfg6R;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=Yc77xth0;
+	dkim=pass (1024-bit key) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=J4tXnGMV;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--tarunsahu.bounces.google.com (client-ip=2a00:1450:4864:20::645; helo=mail-ej1-x645.google.com; envelope-from=3h9ygagkkdlypwnqjowdqckkcha.ykihejqtlly-zarheopo.kvhwxo.knc@flex--tarunsahu.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-ej1-x645.google.com (mail-ej1-x645.google.com [IPv6:2a00:1450:4864:20::645])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=ailiop@suse.com; receiver=lists.ozlabs.org)
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2a07:de40:b251:101:10:150:64:2])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hQgJY4GDnz2xT6
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2026 20:53:00 +1000 (AEST)
-Received: by mail-ej1-x645.google.com with SMTP id a640c23a62f3a-c15ceb17a28so159527366b.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2026 03:53:00 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1787223176; x=1787827976; darn=lists.ozlabs.org;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=eBG80TE8O7koV0M/Wd/+svOF4P4mOtCGkWlnllaV+RA=;
-        b=ag9bfg6RSddZKkhYtP1UnPWVpR9yFMZqP2ZGZUaf7QSii3hP3SbSUDR8nkWFhkqePY
-         pyFVFNCrpSty2nmY4oUHggYzOtdRXAHYhdqNIQA6cPvjTvw8JtHewDd13ngp0vqb4RPU
-         gIjTSMXDXcRtDK4F6iHb/w/w1fyI1GrZO2+juXNqv4qaZXOx9tGU9VQwuPGLzk213Q6y
-         ijPDsD5MXKH9vmWF5olJH+7mC3QriaqBrSTpjro6Y7KuJVSVzCw9qt1wm5rbHRlwIZRW
-         yLUSje+tozLiFADdal8SONcBD7iYjRkLAggKRhmjU7Zqe5hWAbLD5MYS3VWG54Oqlfgr
-         2+cg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1787223176; x=1787827976;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=eBG80TE8O7koV0M/Wd/+svOF4P4mOtCGkWlnllaV+RA=;
-        b=YUZTCJgFsPveNbEdBC3RDDL3ADOIYVkKZOVCb9LXE/hAX4lndKxFTlPodD1P+Oq6WC
-         bMjK7snd0iSzXOhvXrP2Nj2+OPJJe+j5bVrvGN7BNVqE3dEVfUZ5N6MyU9Ym9qLh9rVr
-         KW7p/D/AISHmjFJxQDuzjr4QP5WKcVHLk7VTerCUEXQQadf3zGCTLsqgugiHdlhvQIek
-         rU6u9Ve5pu1249blhSIQVZS8b3May1AQMI7/stv9f2kHW7zsfvZBYapleFjkJn+TKpS9
-         4te6m0M7f20YS/IfWwH0dAPDW78CoGxZqwv99Z4mEkcPH0eDcNupErCI71vdn2TE95Jm
-         yQqQ==
-X-Forwarded-Encrypted: i=1; AHgh+RoE99MnGDf6CCLoNWeKVnc/bPnWR5RD2UsTlWcOx+5wymfxc9hN2g0USq605OzHHbfX5Ni0SLM+R3urHuE=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yy38lYcY9RT1r7JVmTr/jkRQJ+1b+1Dz0xYNhSIaRs1iSBqF8pM
-	4Q0iPrzLcylAOl3zJp9OLo0pP8B7VhDL93TM7SZOx5Q5H0qrJweFe8entyVxURB0Se2NxXM6ZpP
-	eLeemCLYYr+WcUgMBSg==
-X-Received: from ejel3.prod.google.com ([2002:a17:906:2a83:b0:c16:11e4:9d9])
- (user=tarunsahu job=prod-delivery.src-stubby-dispatcher) by
- 2002:a17:907:928c:b0:c16:26c7:6ba8 with SMTP id a640c23a62f3a-c23f92c3376mr791823566b.6.1787223175489;
- Thu, 20 Aug 2026 03:52:55 -0700 (PDT)
-Date: Thu, 20 Aug 2026 10:52:46 +0000
-In-Reply-To: <20260814220652.GA101268@bhelgaas>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hQkPn2G5Bz2xRw
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2026 23:12:44 +1000 (AEST)
+Received: from kunlun.suse.cz (unknown [IPv6:2a07:de40:b306:2000::2])
+	by smtp-out2.suse.de (Postfix) with ESMTP id 49F583EE2;
+	Thu, 20 Aug 2026 13:12:27 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
+	t=1787231551; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=dJh7R0socmEoqo/IMHpdxGQe33Oo99W+P9AP/twAzOM=;
+	b=Yc77xth04Yi8lE058M/W/o8ks7+eg2OjDAJh0WxZXeGzRyX5i0hM5t0jMzWcE9W/I3ccUo
+	9GUFQ/wPnRMedxMCJRFAFoDllnnTIn3fw85WiEUWMcyKacFdIPHCdsarBYHPDF9tKcotLv
+	7obL57WeyaQVfshkA4oZjXD2FYs52GM=
+Authentication-Results: smtp-out2.suse.de;
+	dkim=pass header.d=suse.com header.s=susede1 header.b=J4tXnGMV
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
+	t=1787231547; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=dJh7R0socmEoqo/IMHpdxGQe33Oo99W+P9AP/twAzOM=;
+	b=J4tXnGMVRWlWcz8YiewbGZMS3GpzJD/tXvow3lnbr934hvPu8vYMQp3xnBVx+qQ17SMQr1
+	cEqsCoN5SGwl6yFvdKMtFdzZJ6V4c4GzgjnddmmULxpGphNtHpMHmffMU52g/3e/tFTnTA
+	D1Jj4G9gcKqABu2W3zOd9+E+Qr1QrIM=
+From: Anthony Iliopoulos <ailiop@suse.com>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] powerpc: remove unused profile.h includes
+Date: Thu, 20 Aug 2026 15:12:22 +0200
+Message-ID: <20260820131225.13848-1-ailiop@suse.com>
+X-Mailer: git-send-email 2.55.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -77,86 +68,103 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0
-References: <20260814220652.GA101268@bhelgaas> :q
-Message-ID: <9huzik55kqrl.fsf@tarunix.c.googlers.com>
-Subject: Re: [PATCH v3 2/3] firmware/edd: use kobject_put() on
- edd_device_register() failure
-From: tarunsahu@google.com
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: dmatlack@google.com, Nicholas Piggin <npiggin@gmail.com>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, sourabhjain@linux.ibm.com, 
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Pasha Tatashin <pasha.tatashin@soleen.com>, 
-	Russell King <linux@armlinux.org.uk>, radheys@amd.com, skhawaja@google.com, 
-	djeffery@redhat.com, Geoff Levand <geoff@infradead.org>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
-	linux-arm-kernel@lists.infradead.org, souravsgl@google.com, 
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
-	driver-core@lists.linux.dev
-Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-Spamd-Result: default: False [16.65 / 50.00];
+	SPAM_FLAG(5.00)[];
+	NEURAL_SPAM_LONG(3.50)[1.000];
+	BAYES_HAM(-3.00)[100.00%];
+	NEURAL_SPAM_SHORT(2.96)[0.985];
+	HFILTER_HOSTNAME_UNKNOWN(2.50)[];
+	RDNS_NONE(2.00)[];
+	ONCE_RECEIVED(1.20)[];
+	HFILTER_HELO_IP_A(1.00)[kunlun.suse.cz];
+	MID_CONTAINS_FROM(1.00)[];
+	R_MISSING_CHARSET(0.50)[];
+	HFILTER_HELO_NORES_A_OR_MX(0.30)[kunlun.suse.cz];
+	R_DKIM_ALLOW(-0.20)[suse.com:s=susede1];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	ARC_NA(0.00)[];
+	RCPT_COUNT_THREE(0.00)[3];
+	MIME_TRACE(0.00)[0:+];
+	TO_DN_SOME(0.00)[];
+	SPAMHAUS_XBL(0.00)[2a07:de40:b306:2000::2:from];
+	DIRECT_TO_MX(0.00)[git-send-email 2.55.0];
+	FROM_EQ_ENVFROM(0.00)[];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[kunlun.suse.cz:helo,suse.com:email,suse.com:mid,suse.com:dkim];
+	FROM_HAS_DN(0.00)[];
+	DKIM_TRACE(0.00)[suse.com:+];
+	DKIM_SIGNED(0.00)[suse.com:s=susede1];
+	RCVD_COUNT_ZERO(0.00)[0]
+X-Spamd-Bar: ++++++++++++++++
+X-Rspamd-Queue-Id: 49F583EE2
+X-Rspamd-Action: add header
+X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
+X-Spam: Yes
 
-Hi,
+None of the code in these files uses declarations provided by profile.h.
+Remove the unnecessary header includes across the various files to clean
+up dependencies and reduce include bloat.
 
-Bjorn Helgaas <helgaas@kernel.org> writes:
+Signed-off-by: Anthony Iliopoulos <ailiop@suse.com>
+---
+ arch/powerpc/kernel/irq.c    | 1 -
+ arch/powerpc/kernel/irq_64.c | 1 -
+ arch/powerpc/kernel/smp.c    | 1 -
+ arch/powerpc/kernel/time.c   | 1 -
+ 4 files changed, 4 deletions(-)
 
-> On Fri, Aug 14, 2026 at 09:00:56PM +0000, Tarun Sahu wrote:
->> As per koject_init_and_add() function kernel document, even if this
->> function returns error kobject_put must be used instead of kfree.
->
-> Thanks for adding this specific pointer.  I wouldn't repost just for
-> these nits, and wait at least a few days before reposting for any
-> reason.  But if you do repost:
->
-> s/koject_init_and_add/kobject_init_and_add/
->
-> Might also add "()" after function names consistently (kobject_put and
-> kfree above, edd_release below).  Also applies to the other patches.
->
-> The current subject lines basically restate the C code; you might
-> consider more of a focus on the problem.  I ran this through gemini
-> and I think it did a decent job:
->
->   firmware: edd: Fix kobject reference leak on registration failure
->
->   Per kobject_init_and_add() kernel-doc, calling kfree() directly on
->   error bypasses reference counting and skips the kobject's release
->   callback, leaking the reference.
->
->   Use kobject_put() instead of kfree() on registration failure to fix
->   this.
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index 15a3c3fd8e70..4483aa770966 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -41,7 +41,6 @@
+ #include <linux/irq.h>
+ #include <linux/seq_file.h>
+ #include <linux/cpumask.h>
+-#include <linux/profile.h>
+ #include <linux/bitops.h>
+ #include <linux/list.h>
+ #include <linux/radix-tree.h>
+diff --git a/arch/powerpc/kernel/irq_64.c b/arch/powerpc/kernel/irq_64.c
+index d5c48d1b0a31..8c8890fd227e 100644
+--- a/arch/powerpc/kernel/irq_64.c
++++ b/arch/powerpc/kernel/irq_64.c
+@@ -33,7 +33,6 @@
+ #include <linux/irq.h>
+ #include <linux/seq_file.h>
+ #include <linux/cpumask.h>
+-#include <linux/profile.h>
+ #include <linux/bitops.h>
+ #include <linux/list.h>
+ #include <linux/radix-tree.h>
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 6a5a5469aaae..196d184d1651 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -29,7 +29,6 @@
+ #include <linux/cpu.h>
+ #include <linux/notifier.h>
+ #include <linux/topology.h>
+-#include <linux/profile.h>
+ #include <linux/processor.h>
+ #include <linux/random.h>
+ #include <linux/stackprotector.h>
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index 11145c40183d..b21bf4914876 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -41,7 +41,6 @@
+ #include <linux/kernel_stat.h>
+ #include <linux/time.h>
+ #include <linux/init.h>
+-#include <linux/profile.h>
+ #include <linux/cpu.h>
+ #include <linux/security.h>
+ #include <linux/percpu.h>
+-- 
+2.55.0
 
-Thanks Bjron for reviewing. I will take care of them.
-
-~Tarun
->
->> When edd_device_register() fails after initializing the kobject with
->> kobject_init_and_add(), calling kfree(edev) directly bypasses the
->> kobject release callback (edd_release) and leaks the allocated kobject
->> resources.
->> 
->> Fix this by replacing direct kfree(edev) with kobject_put(&edev->kobj) on
->> registration failure.
->> 
->> Signed-off-by: Tarun Sahu <tarunsahu@google.com>
->> Reviewed-by: Sourabh Jain <sourabhjain@linux.ibm.com>
->> ---
->>  drivers/firmware/edd.c | 2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
->> 
->> diff --git a/drivers/firmware/edd.c b/drivers/firmware/edd.c
->> index f980c5b56858..763e7b16d517 100644
->> --- a/drivers/firmware/edd.c
->> +++ b/drivers/firmware/edd.c
->> @@ -748,7 +748,7 @@ edd_init(void)
->>  
->>  		rc = edd_device_register(edev, i);
->>  		if (rc) {
->> -			kfree(edev);
->> +			kobject_put(&edev->kobj);
->>  			goto out;
->>  		}
->>  		edd_devices[i] = edev;
->> -- 
->> 2.55.0.691.gc56d675ccc-goog
->> 
 
