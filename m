@@ -1,71 +1,78 @@
-Return-Path: <linuxppc-dev+bounces-26040-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26041-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8B0AFC5DF87
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Aug 2026 11:56:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 08320C5DF89
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Aug 2026 12:34:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hRJgX0ng2z2yDs;
-	Fri, 21 Aug 2026 21:56:40 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787313400;
-	cv=none; b=ihYrafnutclOxytS+zA5vPHmPQ8nd6wvK5Hgh9kuawL6EH/XcIj3kFuW3KxS2ksnmionW7i2c8kiW8XniiXS/v1HjUFTEgIwJTcTfaDxRMekPDF6sbxzG1xj9DHPgBaYvH37IabPWlcNyhybknj9vfPxc98yTGL6tlDzaI1l04zS7yfrC3Cq648UHH9TKo/eI5UXrC98Ag4gVv74bPace4QDTfTfSaKUepLyhG4WF+eoN3SNbBH13ToePAoOyVGXzGQrcRUq6wG7uBGOMpSyrvtwQ3/UHF1df0V0AY+giNymkUmIiV34vbEJcA7oSFTqCh+wd8GHFoY0uahN4XnYNg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hRKW524Gwz2yFl;
+	Fri, 21 Aug 2026 22:34:25 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787315665;
+	cv=none; b=k1iIA50TK9Uyh3/i8JnI9y5K3u5bGsWTr7xkWBs90NTAUreD2JCyzZfotWcLotX8yN688evqnY2bucyE+j7n507DGx76jQZgWsxE44WvqiIKjnM7w+7SYD0NKfh3m+TvK85MXvu4Tll2dbX0r1o3ioPSjmBsMB2lvra+fk13ygAiFFG4hD6mOGP6EbVrzotWquVhceo9MobeSQTEveA6ZXZzRucd07pqAnXqemA6KENDYm0lgfUwoYI9sZ6Gi1ALX38ntH/obZlI+Hc5Pmi3guoIT8LCWig0rH8Bic8eXEMxhKnoDQA+EmSYiyHQ6oNmGo9N2pDXMT+np+A7vVAFrA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787313400; c=relaxed/relaxed;
-	bh=T/nW1BCc6K6NF98RkjC+qK+gveVrIp2Ec0sQaOBBYEE=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=cr7fsUsq1e2w6pO46rxnoSKfau9d5iu0g+bBqlqogd+XImKu7ZTVYFaWb81sY5shIk87TXRRBJbwo/l8NYGUnQDMvzfuiXaqzltNOXjg86rKv2kjWvHkFE5POe83n9ndpn34MitwRcL+sAGCtd5x5puxw0x318tUJgNtreiKEgtrolDOykAOP1KMVbpcrnvj367+OjNfhJ5P0ZnekzBCaQDRa33DKeSJC6C09b9aQaCp17r3+wnhCaaH0tW5/0G6Vo8dZgImf0I8urvZktSX4bVRAsXv2vjqIy/wD2HOOQHXwFSBreY8u91qGgM4W2loaebffAow9UUfOc8S2fk9Jw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=IjX6NrjC; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=pratyush@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1787315665; c=relaxed/relaxed;
+	bh=mXPpO1YGeM9k4SuCjfksGzRUcbRF1jin4g0NcVPtFbw=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=MhE1q4vdoMmVlLURgaRB0TL4dUgAn/PNlxDmy7IPXY7h7a/O1YAqyvJQy83aVFBTfekHvxHxx4mp8IvFvKRpyBTUcgw84lEHat/+tM3VvjFi8SmAU1oONpQg4lkzynVmkZ/Otry98XrU7+ICqVh3qUu7EaXvqlFaGe65R99wNZjrftjAUAaACdOi/L2QqPd+H9LM/A4PKW6wSIFyC9cw5H49lyoGfsHHzmTa0mPf7lRZx0OESvWnsVCcY6lFrrA7B4nkpTPopu/78BsbgHEZlP+AglyrX4pcaFKrJltmQxyJXBHtVthi5YwWPm+ah/juNCSG+PIxzb2YTpG8ifQXVA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kOx+uxLE; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=avinash@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=IjX6NrjC;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kOx+uxLE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=pratyush@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=avinash@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hRJgW155Hz2xtt
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Aug 2026 21:56:39 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 0D88460008;
-	Fri, 21 Aug 2026 11:56:37 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6E4241F000E9;
-	Fri, 21 Aug 2026 11:56:33 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1787313396;
-	bh=T/nW1BCc6K6NF98RkjC+qK+gveVrIp2Ec0sQaOBBYEE=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date;
-	b=IjX6NrjC3RkHO/JFhPapADIOyk+E1jBkTDgGo0GoE7ZhEPRwowskKlbDKrR8KzKHH
-	 NY3WAiCrMWRBsUCCS4MDbfGefLGO40A+TsC75fti1YW5L7xF9zfV8l3GSHCqJrXA+k
-	 ZvtdiaBXqxEmH5FkpkZ8pGtgcg3sV5ka+qHmfDChqTXrrFbzjw7BMvU3qdl7eEzE1Y
-	 kTQPwpx0hfxx02L9V8Y/0q3FHrig8/mWBunoUnba/u2+RLamaV+V4o9ePaTGLoEhTC
-	 afJTsCDPTUqbv3C26AEi9nsLinowo1aSZ5RFmPj/WhbIyxiP6Ar/g5AQOxqJdgCrDc
-	 J89yfPLdeQOyw==
-From: Pratyush Yadav <pratyush@kernel.org>
-To: Sourabh Jain <sourabhjain@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org,  Aditya Gupta <adityag@linux.ibm.com>,
-  Alexander Graf <graf@amazon.com>,  Andrew Morton
- <akpm@linux-foundation.org>,  Baoquan He <baoquan.he@linux.dev>,
-  "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,  Hari Bathini
- <hbathini@linux.ibm.com>,  Madhavan Srinivasan <maddy@linux.ibm.com>,
-  Mahesh Salgaonkar <mahesh@linux.ibm.com>,  Michael Ellerman
- <mpe@ellerman.id.au>,  Mike Rapoport <rppt@kernel.org>,  Nicholas Piggin
- <npiggin@gmail.com>,  Pasha Tatashin <pasha.tatashin@soleen.com>,
-  Pratyush Yadav <pratyush@kernel.org>,  "Ritesh Harjani (IBM)"
- <ritesh.list@gmail.com>,  Shivang Upadhyay <shivangu@linux.ibm.com>,
-  Shrikanth Hegde <sshegde@linux.ibm.com>,  kexec@lists.infradead.org,
-  linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH 2/3] powerpc: add support for Kexec HandOver (KHO)
-In-Reply-To: <20260821105609.983622-3-sourabhjain@linux.ibm.com> (Sourabh
-	Jain's message of "Fri, 21 Aug 2026 16:26:08 +0530")
-References: <20260821105609.983622-1-sourabhjain@linux.ibm.com>
-	<20260821105609.983622-3-sourabhjain@linux.ibm.com>
-Date: Fri, 21 Aug 2026 13:56:31 +0200
-Message-ID: <2vxza4qfznyo.fsf@kernel.org>
-User-Agent: Gnus/5.13 (Gnus v5.13)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hRKW35byVz2yDs
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Aug 2026 22:34:22 +1000 (AEST)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67LC1oXY1466727;
+	Fri, 21 Aug 2026 12:34:11 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=mXPpO1YGeM9k4SuCjfksGzRUcbRF1jin4g0NcVPtF
+	bw=; b=kOx+uxLEaWJdMRw1X4iw3qWUyXGIghxJjn6N3S3wgaONK/mVAQUATvFfn
+	T/CnK/Stf1KnC2YTbvZI0dK9fzSjN1ZjCbK+on7i+YJ36kXrELA9pN5hjxE9WQBi
+	HTRVJomE5m+4ydqAuwbJhIvkdf+R8qCQRbND28mRWRL8BC3m9bwMp+PGQycFQ7He
+	ftfC0FVi7dEKUXepBzsZS/WVAQTjRIGiUdRmQuTRT98bP9RQt3H4RMWfziHl/NdC
+	EmRes8b5xMwv1CWOAjUshoG3TaF262BzkuOp/k7CbDnnZgJMqJ2hvt9hoQ2/sW2Q
+	NX+dtx3JPjkAt11PLrzl795iRgIGw==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4g4yu4h6qn-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 21 Aug 2026 12:34:10 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 67LCQNmX032578;
+	Fri, 21 Aug 2026 12:34:09 GMT
+Received: from smtprelay02.dal12v.mail.ibm.com ([172.16.1.4])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4g33xhmkyv-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 21 Aug 2026 12:34:09 +0000 (GMT)
+Received: from smtpav05.dal12v.mail.ibm.com (smtpav05.dal12v.mail.ibm.com [10.241.53.104])
+	by smtprelay02.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 67LCY8Wh30671556
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 21 Aug 2026 12:34:08 GMT
+Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2798558067;
+	Fri, 21 Aug 2026 12:34:08 +0000 (GMT)
+Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 762465805D;
+	Fri, 21 Aug 2026 12:34:04 +0000 (GMT)
+Received: from li-75d4d1cc-257f-11b2-a85c-f97fadd0f3fb.ibm.com.com (unknown [9.61.86.15])
+	by smtpav05.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 21 Aug 2026 12:34:04 +0000 (GMT)
+From: Avinash Roy <avinash@linux.ibm.com>
+To: maddy@linux.ibm.com, mpe@ellerman.id.au, bhelgaas@google.com
+Cc: npiggin@gmail.com, chleroy@kernel.org, sbhat@linux.ibm.com,
+        linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Avinash Roy <avinash.roy1@linux.ibm.com>
+Subject: [PATCH v2] PCI: quirks: Add warm reset quirk for IBM Spyre accelerator
+Date: Fri, 21 Aug 2026 18:04:01 +0530
+Message-ID: <20260821123401.1375297-1-avinash@linux.ibm.com>
+X-Mailer: git-send-email 2.55.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -79,160 +86,163 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=CpuPtH4D c=1 sm=1 tr=0 ts=6a8845c2 cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+ a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=RzCfie-kr_QcCd8fBx8p:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
+ a=TViotR2JPqG71lRTnZ4A:9
+X-Proofpoint-ORIG-GUID: 8-Igf-cscOQ7Mqv9a2oQBrizT_PvQo9c
+X-Proofpoint-GUID: NkqGL5Wu2kcVnl4tNioL_NjS1rGpr6PU
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODIxMDA5NiBTYWx0ZWRfXyTUcspArcxBB
+ NYnK1H4Rd4vwMuX9RndzyFS6xF0D9AtL+3KHQGu+yW+O0uhxkB/LbHtgNG0xfLuL7pXKs7Xsx3Z
+ 0Wjfik6ciglgqFi4pfu+hl39YiT6Rd4=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODIxMDA5NiBTYWx0ZWRfXzSRn/e7ezT56
+ c/r8GNnPMDdIl5sFjRJUFv2KQOTtq2x4OxHr8W8iwdRoH5G51eKLFRTwo8fQJwCbfI/JD+5Bqr7
+ wmBnrDSJTR5QmDRBqwNJdBpsdqIS7Tmbn3SO09dbzG5Zr4Xj7vQvziHfhGaBojcfsR0VV3tRIV7
+ 2R9DG1iIQZ1lr6t41AlD+BG8OBQwniuB6P/WVlMzGkrjlveTDIHxVzlhN3Ng5nUeW8FdwvUbSAd
+ StPyPN4oqf8yCgMiqvSxljA3LZBHgWxOfPl7ixhLPmcOSOCA11OYsJ92N4Z46b75IiskdaTeCzx
+ HIZl6vWuPiSvHjUu9XNznERFNCjkN7gl2c/p/kJMgkqkrohj/+1PHQZ2o8ZzPqVJ3FxRHqnx0Wd
+ SKSIa7ygxu6fKOFDmCjY3ZFplupd3cm8vsR5UfYfvfmqT59gcl4xj1Z7xyq+VbtE65xq433rCHo
+ G1K42VbuokocJzhrGeg==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-08-21_04,2026-08-21_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 adultscore=0 bulkscore=0 malwarescore=0 phishscore=0
+ lowpriorityscore=0 spamscore=0 clxscore=1015 priorityscore=1501
+ suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
+ definitions=main-2608210096
 
-On Fri, Aug 21 2026, Sourabh Jain wrote:
+From: Shivaprasad G Bhat <sbhat@linux.ibm.com>
 
-> Add the architecture bits needed to enable CONFIG_KEXEC_HANDOVER on
-> powerpc.
->
-> Set ARCH_SUPPORTS_KEXEC_HANDOVER for PPC64, following the existing
-> pattern used by ARCH_SUPPORTS_KEXEC and ARCH_SUPPORTS_KEXEC_FILE.
->
-> On the boot path, parse the "linux,kho-fdt" and "linux,kho-scratch"
-> properties from /chosen and pass them to kho_populate(). This lets a
-> kernel booted via KHO kexec recover the FDT and scratch region left
-> behind by the previous kernel. The call is placed early in
-> setup_arch(), before unflatten_device_tree().
->
-> Open issues:
-> ============
->
-> This patch also adds "depends on !CRASH_DUMP" to
-> ARCH_SUPPORTS_KEXEC_HANDOVER. This is needed because of an ordering
-> conflict between crashkernel reservation and KHO scratch reservation
-> on powerpc.
->
-> Crashkernel memory is reserved very early in boot, from arch-specific
-> code: head.S -> early_setup() -> early_init_devtree() ->
-> arch_reserve_crashkernel() / fadump_reserve_mem(). KHO's scratch
-> region is reserved later, from generic code: start_kernel() ->
-> mm_core_init() -> kho_memory_init(). So on powerpc, crashkernel
-> memory is always reserved first.
->
-> This ordering causes a real failure. In the common case, crashkernel
-> reservation on powerpc starts at a 512M offset (the exact offset can
-> vary, but 512M is typical). So with crashkernel=3G, the reservation
-> occupies memory from 512M up to 3.5G -- roughly 75% of the entire low
-> 4G area.
->
-> Since crashkernel reservation always happens first, that 3G is
-> already committed by the time kho_memory_init() runs. It then tries
-> to reserve a low scratch region sized at 200% of whatever is already
-> reserved below 4G. With ~75% of that 4G area already taken by
-> crashkernel memory, 200% of that easily exceeds the remaining space
-> -- and since the low scratch region is itself capped at 4G, there's
-> no room left to fit it. The reservation fails.
+The IBM Spyre accelerator (PCI ID 1014:06a7) requires a dedicated warm
+reset method for reliable EEH recovery on pSeries/ppc64 platforms.
 
-crashkernel has the variant "crashkernel=size[KMG],high", which ensures
-memory is allocated above 4G. Unless powerpc has some requirement for
-strictly having the crashkernel below 4G, I think it will make a lot of
-sense to enable support for this feature. So KHO users can specify this
-to get crashkernel working with KHO.
+FLR alone is insufficient because it does not re-initialize firmware
+state machine for the current version of the card. The existing API
+pci_set_pcie_reset_state() is used to drive the platform-level
+PERST# using the EEH interfaces by adding a device specific quirk.
 
-Powerpc doesn't support this right now, but from a quick skim of the
-code, I think it should be simple enough. From
-arch_reserve_crashkernel() you just need to pass a bool * to
-parse_crashkernel(), and then pass the result to
-reserve_crashkernel_generic().
+The reset function is placed in arch/powerpc/platforms/pseries/pci.c
+where the EEH infrastructure is already present, declared in
+pseries.h, and registered in the generic pci_dev_reset_methods[] table
+in drivers/pci/quirks.c under a CONFIG_PPC_PSERIES guard.
 
-Solving the ordering of crash reservations and KHO is tricky and comes
-with some difficult tradeoffs. Allocating crash from highmem should be a
-lot simpler.
+This reset method is only registered when CONFIG_PPC_PSERIES is enabled,
+so it is not available on other platforms.
 
-And on that note, I don't think you should do a depends on !CRASH_DUMP.
-Even when CONFIG_KEXEC_HANDOVER is enabled, KHO isn't on by default
-(well, unless KEXEC_HANDOVER_ENABLE_DEFAULT is set). You need to enable
-it via cmdline. So it is entirely possible for people using KHO on PPC
-to not use crash and vice versa. This decision can be made at deployment
-time, not at compile time.
+Reset sequence:
+  - Assert PERST# via pcie_warm_reset, hold 250 ms
+  - Deassert PERST# via pcie_deassert_reset
+  - Wait 250 ms for PCIe link retrain 	
 
->
-> To work around this and get KHO working on powerpc, this patch:
->
-> 1. Makes KHO usable on powerpc only when CRASH_DUMP is disabled.
-> 2. Calls kho_populate() from setup_arch(), so it runs before
->    kho_memory_init() reserves the scratch region.
->
-> The real fix would be to reserve the KHO scratch region before
-> crashkernel memory instead of after. But scratch reservation happens
-> in generic code (kho_memory_init(), called from mm_core_init()), so
-> this isn't something powerpc can address on its own -- it needs
-> discussion on how to influence the ordering between generic scratch
-> reservation and arch-specific crashkernel reservation. This patch
-> doesn't attempt that; it's meant as a starting point for that
-> discussion.
->
-[...]
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 2580e27e4328..61350d3e7a19 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -716,6 +716,11 @@ config ARCH_SELECTS_CRASH_DUMP
->  	depends on CRASH_DUMP
->  	select RELOCATABLE if PPC64 || 44x || PPC_85xx
->  
-> +config ARCH_SUPPORTS_KEXEC_HANDOVER
-> +	def_bool y
-> +	depends on PPC64
-> +	depends on !CRASH_DUMP
-> +
->  config ARCH_SUPPORTS_CRASH_HOTPLUG
->  	def_bool y
->  	depends on PPC64
-> diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-> index 4afaba19b586..1fee743abdf2 100644
-> --- a/arch/powerpc/kernel/setup-common.c
-> +++ b/arch/powerpc/kernel/setup-common.c
-[...]
->  }
->  #endif
->  
-> +#ifdef CONFIG_PPC64
-> +static void __init init_kho(const void *fdt)
-> +{
-> +	unsigned long node;
-> +	u64 fdt_start, fdt_size, scratch_start, scratch_size;
-> +
-> +	if (!IS_ENABLED(CONFIG_KEXEC_HANDOVER))
-> +		return;
-> +
-> +	/* Find and verify the /chosen node, same as early_init_dt_scan_chosen() does */
-> +	node = fdt_path_offset(fdt, "/chosen");
-> +	if ((long)node < 0)
-> +		node = fdt_path_offset(fdt, "/chosen@0");
-> +	if ((long)node < 0)
-> +		return;
-> +
-> +	if (!of_flat_dt_get_addr_size(node, "linux,kho-fdt",
-> +				      &fdt_start, &fdt_size))
-> +		return;
-> +	if (!of_flat_dt_get_addr_size(node, "linux,kho-scratch",
-> +				      &scratch_start, &scratch_size))
-> +		return;
-> +
-> +	kho_populate(fdt_start, fdt_size, scratch_start, scratch_size);
-> +}
+Signed-off-by: Avinash Roy <avinash.roy1@linux.ibm.com>
+Signed-off-by: Shivaprasad G Bhat <sbhat@linux.ibm.com>
 
-This looks pretty much a duplicate of early_init_dt_check_kho(). On
-arm64 this is called via early_init_dt_scan(). But from a quick search I
-don't see powerpc calling it.
+---
+Changelog
+v1: https://lore.kernel.org/linux-pci/20260805125100.1-1-avinash.roy1@linux.ibm.com/
 
-Would it make sense to call this function (or
-early_init_dt_scan_nodes()) for powerpc?
+   Reworded the commit message to highlight the warm reset requirement being
+   a need of the current card and not a platform deficiency.
 
-If not, I think it would be a better idea to expose
-early_init_dt_check_kho() and call it from powerpc setup_arch() instead
-of duplicating the logic.
-
-> +#endif
-> +
->  /*
->   * Called into from start_kernel this initializes memblock, which is used
->   * to manage page allocation until mem_init is called.
-[...]
-
--- 
-Regards,
-Pratyush Yadav
+diff --git a/arch/powerpc/platforms/pseries/pci.c b/arch/powerpc/platforms/pseries/pci.c
+index 84e4ffe957a8..7aa58d57208f 100644
+--- a/arch/powerpc/platforms/pseries/pci.c
++++ b/arch/powerpc/platforms/pseries/pci.c
+@@ -11,6 +11,7 @@
+ #include <linux/kernel.h>
+ #include <linux/pci.h>
+ #include <linux/string.h>
++#include <linux/delay.h>
+ 
+ #include <asm/eeh.h>
+ #include <asm/pci-bridge.h>
+@@ -236,6 +237,41 @@ static void fixup_winbond_82c105(struct pci_dev* dev)
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_WINBOND, PCI_DEVICE_ID_WINBOND_82C105,
+ 			 fixup_winbond_82c105);
+ 
++/*
++ * Reset Spyre adapter using pci_set_pcie_reset_state()
++ * This is specifically for PPC platforms where EEH (Enhanced Error Handling)
++ * requires this reset method for proper device recovery.
++ */
++int reset_spyre(struct pci_dev *dev, bool probe)
++{
++	int ret;
++
++	if (probe)
++		return 0;
++
++	/* Assert warm reset */
++	ret = pci_set_pcie_reset_state(dev, pcie_warm_reset);
++	if (ret) {
++		pci_err(dev, "Failed to assert reset: %d\n", ret);
++		return ret;
++	}
++
++	/* Wait for reset to take effect */
++	msleep(250);
++
++	/* Deassert reset */
++	ret = pci_set_pcie_reset_state(dev, pcie_deassert_reset);
++	if (ret) {
++		pci_err(dev, "Failed to deassert reset: %d\n", ret);
++		return ret;
++	}
++
++	/* Wait for device to recover */
++	msleep(250);
++
++	return 0;
++}
++
+ static enum pci_bus_speed prop_to_pci_speed(u32 prop)
+ {
+ 	switch (prop) {
+diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
+index 3968a6970fa8..79c194aeb3c6 100644
+--- a/arch/powerpc/platforms/pseries/pseries.h
++++ b/arch/powerpc/platforms/pseries/pseries.h
+@@ -92,6 +92,10 @@ extern struct pci_controller_ops pseries_pci_controller_ops;
+ int pseries_msi_allocate_domains(struct pci_controller *phb);
+ void pseries_msi_free_domains(struct pci_controller *phb);
+ 
++/* PCI device reset method for Spyre adapter */
++struct pci_dev;
++int reset_spyre(struct pci_dev *dev, bool probe);
++
+ extern int CMO_PrPSP;
+ extern int CMO_SecPSP;
+ extern unsigned long CMO_PageSize;
+diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
+index b09f27f7846f..1b8ab5d9764b 100644
+--- a/drivers/pci/quirks.c
++++ b/drivers/pci/quirks.c
+@@ -4237,6 +4237,11 @@ static int reset_hinic_vf_dev(struct pci_dev *pdev, bool probe)
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_PPC_PSERIES
++/* Defined in arch/powerpc/platforms/pseries/pci.c */
++int reset_spyre(struct pci_dev *dev, bool probe);
++#endif
++
+ static const struct pci_dev_reset_methods pci_dev_reset_methods[] = {
+ 	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82599_SFP_VF,
+ 		 reset_intel_82599_sfp_virtfn },
+@@ -4252,6 +4257,10 @@ static const struct pci_dev_reset_methods pci_dev_reset_methods[] = {
+ 		reset_chelsio_generic_dev },
+ 	{ PCI_VENDOR_ID_HUAWEI, PCI_DEVICE_ID_HINIC_VF,
+ 		reset_hinic_vf_dev },
++#ifdef CONFIG_PPC_PSERIES
++	{ PCI_VENDOR_ID_IBM, 0x06a7,
++		reset_spyre},
++#endif
+ 	{ 0 }
+ };
 
