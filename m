@@ -1,52 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-26037-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26038-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 28D34C5DF89
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Aug 2026 11:52:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 962DEC5DF89
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Aug 2026 11:53:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hRJb34Yp1z2yFY;
-	Fri, 21 Aug 2026 21:52:47 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787313167;
-	cv=none; b=cv/l4nqSzkwTzr6xLgqiDLIGio5Zu7U39fZSOmn6jZcwXcXFmSJXh3InUf0mtb+nwJcG2eH+cFLYiNdUoLxH6fFiOvW+xeNTW9BWDHSmAFnFU7QqvgsLrP5rLhIyb/5a+GTvPl4SZNZVmEzL/JMu8vNttHhiBADMSZl2hJefI1OLCd28dgZiy9pn87O51R/r1E9GWNLQlX80uYqQj2QqufB8FFTuYS0dLlXAvljDKGjHvnD46r0T2EcZD2xSXcO+9sIip5WZcYhXUE1HQyHptgk+7YXLRw4japbCJz6MXYIkBpZfh+TmEG8UzL3aKb4iBX0fDn+JsK/pfgDfkXWX7A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hRJb66KzFz2yVP;
+	Fri, 21 Aug 2026 21:52:50 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787313170;
+	cv=none; b=hfxFChmKilokz3Px19ZYJKHe8c4rPd/L6UMac3wYZpYguS1JBxlCu6AA20szQnocXeSLbQeH/3CQZ+05Lrllu+54jRo8HdRhyKJD/I6BZAV46d7MPz9SYQl7bH6sdkTKfsgvXLmmH8ZxVBw6p+MG2+5/XTQsRXpMnxNLjzrPJ3pNnuf+tEJwy1XY7QpILl02JO8CuWvQEnlVMDgaT1WvuNxhvpwgyCJ5xKHFVBNjstl/KnxQscB7tZHM6kupPgczqQISHCR0kst2Q6zXpkyR/akY59Y9QxSKkaqzu6TrPAG51uPqP3yY1uB9e8NdANMGgwj+qWSPAYAUOvxrNWwQHA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787313167; c=relaxed/relaxed;
-	bh=IXWvtvXGxO35Vl+XPRwRngoM6ZHn7SszfzwfWqJDWm8=;
+	t=1787313170; c=relaxed/relaxed;
+	bh=Tt1d/IA89t7ad2oqUEehN9UR2bac+o3dmB6BIZ/bhKY=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=NB/HtvIEeHfBlNyRlbfhKQfAC6k4VoGw83732o0h5Czz1ZpOwSclVgkBvIAbD28Z7Q+lNRNxjTQtitAEz5tLJEEaYkF7oW99SWTPp9WNWtIT5HLbseDx3hqLOfWAyk/p8dWrdBDbDolod9R1MHT+om02+N5U9uGkvjlSCfqJUGqOn3QjsMFlfjLVxdNxq0GATg9XR5SWkbjK8J45pZpAyceUpNXCuPi8jkyxCUaMSp3JpjxJjT55pc/iO2jES6EP4lhvUks3/w/neiSXrr9tYNTSXLFaHrS2V2XMAxi/ZkI/Qo+J/Xw+iMzItOIR6jSNwlQyvqE+iaBZ9ouThIXwiw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mVCaMbB7; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=Sszs2pDeKPV2qQBAwwRVE5tRjdR8iteeEOuH76O3w8VMZ8PPeBABDL4kg3pFFRriiRpa3S46rNFNo5rUlPeN5UUDS7WxUVKgZFRC0dG+fyxpwdm05cUlQu1O+BZUQ0vG4fBPIMWeq8q4QZdqTxnqhMW9Rrl52fticjWjZO+05XmSLmFpy0VB9/Z42+8g3bx8vir2wPDHAC/1YwCcGdcPWuwdv1VUUV1QRoxf9npD2WZiSt+VFhy6FGtKgrMgqMYk4IpiRNqtY9/jJBuMJ8Yxc9bQ6ACQoJ8+bdPH0eeqjRzXejQcnKSZyeqM5FIjAeG8rRqY8ZqcW334bKPfahQUEA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EWdO4SES; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mVCaMbB7;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EWdO4SES;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hRJb22nNVz2xtt
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Aug 2026 21:52:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hRJb60FbLz2xtt
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Aug 2026 21:52:50 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id C24CE60A69;
+	by sea.source.kernel.org (Postfix) with ESMTP id 8203643B3A;
+	Fri, 21 Aug 2026 11:52:48 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EEF961F00A3E;
 	Fri, 21 Aug 2026 11:52:43 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EF1BC1F000E9;
-	Fri, 21 Aug 2026 11:52:38 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1787313163;
-	bh=IXWvtvXGxO35Vl+XPRwRngoM6ZHn7SszfzwfWqJDWm8=;
+	s=k20260515; t=1787313168;
+	bh=Tt1d/IA89t7ad2oqUEehN9UR2bac+o3dmB6BIZ/bhKY=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=mVCaMbB7CE2NzEOGSYdqSB3igKF9RdTYZJ3eQJIlJjye2JsJaekvX2ONxsBQLd5+E
-	 sbRUiHheOmnT8c+egfz4PZZtibnPWXX2blx580W6acwF9JFk0jjFlmnRxn86R4+8p7
-	 dtPDPXthM7ltDun1fVLZbeHkUF2hhUIQ6Vt+SrI9T0dkcVFH3RnFGBQ+imUde3O3g6
-	 HHUBG6gYlZgXIx7POCvVQqa0b49ZcWyWU7vyRu+NvdNT80ZrHVouC9nL1pLhMJz37I
-	 LjhKRmlzCjoDwkHYVTU2wHNrbFar2Prytfd0mZ1shro2Xyhg3o2j+XZ7yVTf51IP3g
-	 YNOyXr5BkicZQ==
+	b=EWdO4SES6essD0JG1zlfU8O7uNui7x3kWHGpLGElgEAwBfrVkR2ch22Par/hVXjlv
+	 ukOA/Z+alv9Ub7JIA861etyGgNclPY92sdpF9y0HRZr4UbxI5H+/agR1Qh/I2o5Nwe
+	 +52rDChrU3hUY11sELmlUpANullX4rvzzVNGOKazcG6jrcDk9U+PaiwVdE/VPa2QdX
+	 xKggvYLQG/ZOmxrb4L3LpP5NYLpzUj2ToO6/UjStBMsnyiGo8Nhz+baQvZcVj5xwwe
+	 iMftru1Tvc3HYlOV5KZQXTSUlX9mVEkeuyNjpvxSP/M0LlhNPdcL5IKc/FLuzEGbU6
+	 fuNB6ZQkuHFLg==
 From: Christian Brauner <brauner@kernel.org>
-Date: Fri, 21 Aug 2026 13:52:05 +0200
-Subject: [PATCH 4/6] selftests/coredump: test COREDUMP_MEMORY_TYPES
+Date: Fri, 21 Aug 2026 13:52:06 +0200
+Subject: [PATCH 5/6] selftests/coredump: improve coredump size negotiation
+ tests
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,7 +63,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260821-work-coredump-filter-v1-4-91f9a73ef03e@kernel.org>
+Message-Id: <20260821-work-coredump-filter-v1-5-91f9a73ef03e@kernel.org>
 References: <20260821-work-coredump-filter-v1-0-91f9a73ef03e@kernel.org>
 In-Reply-To: <20260821-work-coredump-filter-v1-0-91f9a73ef03e@kernel.org>
 To: linux-fsdevel@vger.kernel.org
@@ -78,704 +79,305 @@ Cc: Jacob Lalonde <jalalonde@meta.com>, Josef Bacik <josef@toxicpanda.com>,
  linux-kselftest@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
  "Christian Brauner (Amutable)" <brauner@kernel.org>
 X-Mailer: b4 0.17-dev-362b8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=21458; i=brauner@kernel.org;
- h=from:subject:message-id; bh=fYr0VtUEwUQZyccXtSK8IkCIjeBFvShqL35/3wejwiI=;
- b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWR1WH9kYRXJ9dlnnb6Xac+1+0Gh+1j42x/NmfnX91HQF
- qu24KmnOkpZGMS4GGTFFFkc2k3C5ZbzVGw2ytSAmcPKBDKEgYtTACYyYxojwyzXtVMCG/ZPfp15
- NCmIp/VYpHnVq4sLjMq3bXv97qXj7imMDCv/BZzWjmdXVVWYfefW1l0nN+eEx032vd07/ffT3on
- avVwA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=11283; i=brauner@kernel.org;
+ h=from:subject:message-id; bh=Ph9cVYPWQKviUVd2sgQm4e/YWk7Nwx52QQ2y8/kNEcs=;
+ b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWR1WH/KKrsk/Pjfms1KGZ+j7d4VCO1JuOscu17N9qVh/
+ r/UG785O0pZGMS4GGTFFFkc2k3C5ZbzVGw2ytSAmcPKBDKEgYtTACayZybDf4dtyR16MaF7PTtv
+ L27zULF75LDtzQcHkRq+mz8u/PjV9Y/hf/6Z/vrlycvPP+8+4OCTZFR4OjAyeWdy9uFIPYeq93o
+ 3WAA=
 X-Developer-Key: i=brauner@kernel.org; a=openpgp;
  fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
 
-Test the new COREDUMP_MEMORY_TYPES flag.
+Improve the size handling tests when negotiating a coredump through req
+and ack.
 
 Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
- .../coredump/coredump_socket_protocol_test.c       | 349 +++++++++++++++++++++
- .../selftests/coredump/coredump_test_helpers.c     | 203 +++++++++++-
- .../selftests/coredump/coredump_test_helpers.h     |  23 ++
- 3 files changed, 568 insertions(+), 7 deletions(-)
+ .../coredump/coredump_socket_protocol_test.c       | 158 +++++++++++++++++++--
+ .../selftests/coredump/coredump_test_helpers.c     |  17 ++-
+ .../selftests/coredump/coredump_test_helpers.h     |   1 +
+ 3 files changed, 155 insertions(+), 21 deletions(-)
 
 diff --git a/tools/testing/selftests/coredump/coredump_socket_protocol_test.c b/tools/testing/selftests/coredump/coredump_socket_protocol_test.c
-index a07546e79651..6dcd6c15a565 100644
+index 6dcd6c15a565..6c7327832d44 100644
 --- a/tools/testing/selftests/coredump/coredump_socket_protocol_test.c
 +++ b/tools/testing/selftests/coredump/coredump_socket_protocol_test.c
-@@ -1932,4 +1932,353 @@ TEST_F(coredump, socket_request_stream_choice_large)
+@@ -1932,11 +1932,74 @@ TEST_F(coredump, socket_request_stream_choice_large)
  	ASSERT_LT(choice.received, choice.size / 8);
  }
  
-+/* What a memory types test asks of the kernel and what it expects back. */
-+struct memory_choice {
-+	/* Memory types the crashing child selects, or FILTER_TASK_INHERIT. */
-+	__u64 task_filter;
-+	/* The ack. */
-+	__u64 mask;
-+	__u64 memory_types;
-+	size_t size_ack;
-+	/* The shared mapping is in the coredump with all of its memory. */
-+	bool shared_dumped;
-+	/* No memory at all. Pull a page from /proc/<pid>/mem instead. */
-+	bool skeleton;
++/* What a coredump server was built with. */
++struct server_build {
++	/* sizeof(struct coredump_req) and sizeof(struct coredump_ack) back then. */
++	size_t req_size;
++	size_t ack_size;
++	/* The features it raises if the kernel offers them. */
++	__u64 wants;
++	/* Its policy: what it drops from and adds to the task's selection. */
++	__u64 drop;
++	__u64 add;
 +};
 +
-+/* A skeleton still carries the vdso and friends, nothing bigger. */
-+#define SKELETON_DATA_PAGES 16
++/* A server from when the structs were first published: kernel-written dumps. */
++static const struct server_build server_build_ver0 = {
++	.req_size	= COREDUMP_REQ_SIZE_VER0,
++	.ack_size	= COREDUMP_ACK_SIZE_VER0,
++	.wants		= COREDUMP_KERNEL,
++};
++
++/* A server built against this header: no shared memory, always the ELF headers. */
++static const struct server_build server_build_ver1 = {
++	.req_size	= sizeof(struct coredump_req),
++	.ack_size	= sizeof(struct coredump_ack),
++	.wants		= COREDUMP_KERNEL | COREDUMP_RECORDS | COREDUMP_SPARSE |
++			  COREDUMP_MEMORY_TYPES,
++	.drop		= COREDUMP_MEMORY_ANON_SHARED | COREDUMP_MEMORY_FILE_SHARED,
++	.add		= COREDUMP_MEMORY_ELF_HEADERS,
++};
 +
 +/*
-+ * The crashing child maps shared anonymous memory and tells the server
-+ * where. The server acks with @choice and checks whether that mapping's
-+ * segment in the coredump carries its memory.
++ * Build the ack the way a server does: from what the kernel offers, what
++ * this build implements, and what fits in the ack the kernel accepts.
++ * Fields the build never read are zero and never consulted.
 + */
-+static void check_memory_dump(struct __test_metadata *const _metadata,
-+			      FIXTURE_DATA(coredump) *self,
-+			      const struct memory_choice *choice)
++static void negotiate(const struct coredump_req *req,
++		      const struct server_build *build,
++		      struct coredump_ack *ack)
 +{
-+	int pidfd, status;
-+	pid_t pid, pid_coredump_server;
-+	struct pidfd_info info = {};
-+	int ipc_sockets[2];
-+	int addr_pipe[2];
-+	char c;
++	__u64 offered = req->mask & build->wants;
 +
-+	ASSERT_EQ(socketpair(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0, ipc_sockets), 0);
-+	ASSERT_EQ(pipe(addr_pipe), 0);
-+	ASSERT_TRUE(set_core_pattern("@@/tmp/coredump.socket"));
++	memset(ack, 0, sizeof(*ack));
++	ack->size = build->ack_size < req->size_ack ? build->ack_size : req->size_ack;
++	/* These builds only ever have the kernel write the coredump. */
++	ack->mask = COREDUMP_KERNEL;
 +
-+	pid_coredump_server = fork();
-+	ASSERT_GE(pid_coredump_server, 0);
-+	if (pid_coredump_server == 0) {
-+		int fd_server = -1, fd_coredump = -1, fd_peer_pidfd = -1;
-+		int fd_file = -1;
-+		int exit_code = EXIT_FAILURE;
-+		struct coredump_req req = {};
-+		__u64 task_filter;
-+		ElfW(Phdr) segment;
-+		ssize_t received;
-+		off_t size;
-+		char *addr;
-+
-+		close(ipc_sockets[0]);
-+		close(addr_pipe[1]);
-+
-+		fd_server = create_and_listen_unix_socket("/tmp/coredump.socket");
-+		if (fd_server < 0)
-+			goto out;
-+
-+		if (write_nointr(ipc_sockets[1], "1", 1) < 0)
-+			goto out;
-+
-+		close(ipc_sockets[1]);
-+
-+		fd_coredump = accept4(fd_server, NULL, NULL, SOCK_CLOEXEC);
-+		if (fd_coredump < 0)
-+			goto out;
-+
-+		fd_peer_pidfd = get_peer_pidfd(fd_coredump);
-+		if (fd_peer_pidfd < 0)
-+			goto out;
-+
-+		fd_file = open_coredump_tmpfile(self->fd_tmpfs_detached);
-+		if (fd_file < 0)
-+			goto out;
-+
-+		if (!read_coredump_req(fd_coredump, &req))
-+			goto out;
-+
-+		if (!check_coredump_req(&req))
-+			goto out;
-+
-+		/* The request reports the memory types the task selected. */
-+		if (!peer_coredump_filter(fd_peer_pidfd, &task_filter))
-+			goto out;
-+
-+		if (req.memory_types != task_filter) {
-+			fprintf(stderr, "Request reports 0x%llx, task selected 0x%llx\n",
-+				(unsigned long long)req.memory_types,
-+				(unsigned long long)task_filter);
-+			goto out;
-+		}
-+
-+		if (choice->task_filter != FILTER_TASK_INHERIT &&
-+		    task_filter != choice->task_filter) {
-+			fprintf(stderr, "Task selected 0x%llx, child asked for 0x%llx\n",
-+				(unsigned long long)task_filter,
-+				(unsigned long long)choice->task_filter);
-+			goto out;
-+		}
-+
-+		/* The child sent the address of its mapping before it crashed. */
-+		if (read_nointr(addr_pipe[0], &addr, sizeof(addr)) != sizeof(addr))
-+			goto out;
-+
-+		if (!send_coredump_ack_types(fd_coredump, &req, choice->mask,
-+					      choice->memory_types,
-+					      choice->size_ack))
-+			goto out;
-+
-+		if (!read_marker(fd_coredump, COREDUMP_MARK_REQACK))
-+			goto out;
-+
-+		if (choice->mask & COREDUMP_RECORDS)
-+			received = recv_coredump_records(fd_coredump, fd_file,
-+							 &size, NULL, -1);
-+		else
-+			received = recv_coredump_bytes(fd_coredump, fd_file);
-+		if (received < 0)
-+			goto out;
-+
-+		if (!is_elf_core(fd_file))
-+			goto out;
-+
-+		/* A dump ending in holes or empty segments must still be whole. */
-+		if (!check_coredump_extent(fd_file))
-+			goto out;
-+
-+		if (!find_coredump_segment(fd_file, (__u64)(uintptr_t)addr, &segment))
-+			goto out;
-+
-+		if (segment.p_memsz != MEMORY_MAPPING_SIZE) {
-+			fprintf(stderr, "Segment spans %llu bytes, the mapping %u\n",
-+				(unsigned long long)segment.p_memsz,
-+				MEMORY_MAPPING_SIZE);
-+			goto out;
-+		}
-+
-+		if (segment.p_filesz != (choice->shared_dumped ? segment.p_memsz : 0)) {
-+			fprintf(stderr, "Segment carries %llu bytes, expected %s of them\n",
-+				(unsigned long long)segment.p_filesz,
-+				choice->shared_dumped ? "all" : "none");
-+			goto out;
-+		}
-+
-+		if (choice->skeleton) {
-+			__u64 data, notes, data_max;
-+			char buf[PAGE_SIZE];
-+
-+			if (!sum_coredump_segments(fd_file, &data, &notes))
-+				goto out;
-+
-+			data_max = SKELETON_DATA_PAGES * sysconf(_SC_PAGESIZE);
-+			if (!notes || data > data_max) {
-+				fprintf(stderr, "Skeleton has %llu note and %llu memory bytes\n",
-+					(unsigned long long)notes,
-+					(unsigned long long)data);
-+				goto out;
-+			}
-+
-+			/* The task is parked in COREDUMP_WAIT with its memory. */
-+			if (peer_read_mem(fd_peer_pidfd, (__u64)(uintptr_t)addr,
-+					  buf, sizeof(buf)) != sizeof(buf))
-+				goto out;
-+
-+			if (buf[0] != 'x') {
-+				fprintf(stderr, "Pulled memory lacks the child's mark\n");
-+				goto out;
-+			}
-+
-+			fprintf(stderr, "Skeleton of %zd bytes, pulled %zu bytes of memory\n",
-+				received, sizeof(buf));
-+		}
-+
-+		exit_code = EXIT_SUCCESS;
-+out:
-+		close(addr_pipe[0]);
-+		if (fd_file >= 0)
-+			close(fd_file);
-+		if (fd_peer_pidfd >= 0)
-+			close(fd_peer_pidfd);
-+		if (fd_coredump >= 0)
-+			close(fd_coredump);
-+		if (fd_server >= 0)
-+			close(fd_server);
-+		_exit(exit_code);
++	/* Sparse needs records, records need the kernel to write. */
++	if (offered & COREDUMP_RECORDS) {
++		ack->mask |= COREDUMP_RECORDS;
++		if (offered & COREDUMP_SPARSE)
++			ack->mask |= COREDUMP_SPARSE;
 +	}
-+	self->pid_coredump_server = pid_coredump_server;
 +
-+	EXPECT_EQ(close(ipc_sockets[1]), 0);
-+	EXPECT_EQ(close(addr_pipe[0]), 0);
-+	ASSERT_EQ(read_nointr(ipc_sockets[0], &c, 1), 1);
-+	EXPECT_EQ(close(ipc_sockets[0]), 0);
-+
-+	pid = fork();
-+	ASSERT_GE(pid, 0);
-+	if (pid == 0)
-+		crashing_child_memory(choice->task_filter, addr_pipe[1]);
-+	EXPECT_EQ(close(addr_pipe[1]), 0);
-+
-+	pidfd = sys_pidfd_open(pid, 0);
-+	ASSERT_GE(pidfd, 0);
-+
-+	waitpid(pid, &status, 0);
-+	ASSERT_TRUE(WIFSIGNALED(status));
-+	ASSERT_TRUE(WCOREDUMP(status));
-+
-+	ASSERT_TRUE(get_pidfd_info(pidfd, &info));
-+	ASSERT_GT((info.mask & PIDFD_INFO_COREDUMP), 0);
-+	ASSERT_GT((info.coredump_mask & PIDFD_COREDUMPED), 0);
-+
-+	wait_and_check_coredump_server(pid_coredump_server, _metadata, self);
++	/* The memory types need an ack that carries them. */
++	if ((offered & COREDUMP_MEMORY_TYPES) && ack->size >= COREDUMP_ACK_SIZE_VER1) {
++		ack->mask |= COREDUMP_MEMORY_TYPES;
++		/* Start from the task's selection; only advertised types pass. */
++		ack->memory_types = (req->memory_types & ~build->drop) | build->add;
++		ack->memory_types &= req->memory_types_mask;
++	}
 +}
 +
-+/* Without COREDUMP_MEMORY_TYPES the task's own selection decides. */
-+TEST_F(coredump, socket_request_memory_types_task_includes)
+ /* What a memory types test asks of the kernel and what it expects back. */
+ struct memory_choice {
+ 	/* Memory types the crashing child selects, or FILTER_TASK_INHERIT. */
+ 	__u64 task_filter;
+-	/* The ack. */
++	/* Negotiate the ack as this server build, NULL to send it as given. */
++	const struct server_build *build;
++	/* The ack, or what the negotiation must arrive at. */
+ 	__u64 mask;
+ 	__u64 memory_types;
+ 	size_t size_ack;
+@@ -1976,6 +2039,13 @@ static void check_memory_dump(struct __test_metadata *const _metadata,
+ 		int fd_file = -1;
+ 		int exit_code = EXIT_FAILURE;
+ 		struct coredump_req req = {};
++		struct coredump_ack ack = {
++			.size = choice->size_ack,
++			.mask = choice->mask,
++			.memory_types = choice->memory_types,
++		};
++		/* How much of the request this server reads. */
++		size_t req_size = choice->build ? choice->build->req_size : sizeof(req);
+ 		__u64 task_filter;
+ 		ElfW(Phdr) segment;
+ 		ssize_t received;
+@@ -2006,21 +2076,24 @@ static void check_memory_dump(struct __test_metadata *const _metadata,
+ 		if (fd_file < 0)
+ 			goto out;
+ 
+-		if (!read_coredump_req(fd_coredump, &req))
+-			goto out;
+-
+-		if (!check_coredump_req(&req))
++		if (!read_coredump_req_sized(fd_coredump, &req, req_size))
+ 			goto out;
+ 
+-		/* The request reports the memory types the task selected. */
+ 		if (!peer_coredump_filter(fd_peer_pidfd, &task_filter))
+ 			goto out;
+ 
+-		if (req.memory_types != task_filter) {
+-			fprintf(stderr, "Request reports 0x%llx, task selected 0x%llx\n",
+-				(unsigned long long)req.memory_types,
+-				(unsigned long long)task_filter);
+-			goto out;
++		/* A build from before the memory types never read that far. */
++		if (req_size >= COREDUMP_REQ_SIZE_VER1) {
++			if (!check_coredump_req(&req))
++				goto out;
++
++			/* The request reports the memory types the task selected. */
++			if (req.memory_types != task_filter) {
++				fprintf(stderr, "Request reports 0x%llx, task selected 0x%llx\n",
++					(unsigned long long)req.memory_types,
++					(unsigned long long)task_filter);
++				goto out;
++			}
+ 		}
+ 
+ 		if (choice->task_filter != FILTER_TASK_INHERIT &&
+@@ -2035,15 +2108,28 @@ static void check_memory_dump(struct __test_metadata *const _metadata,
+ 		if (read_nointr(addr_pipe[0], &addr, sizeof(addr)) != sizeof(addr))
+ 			goto out;
+ 
+-		if (!send_coredump_ack_types(fd_coredump, &req, choice->mask,
+-					      choice->memory_types,
+-					      choice->size_ack))
++		/* A server build negotiates its ack and must arrive at the choice. */
++		if (choice->build) {
++			negotiate(&req, choice->build, &ack);
++
++			if (ack.size != choice->size_ack || ack.mask != choice->mask ||
++			    ack.memory_types != choice->memory_types) {
++				fprintf(stderr,
++					"Negotiated %u bytes, mask 0x%llx, types 0x%llx\n",
++					ack.size, (unsigned long long)ack.mask,
++					(unsigned long long)ack.memory_types);
++				goto out;
++			}
++		}
++
++		if (!send_coredump_ack_types(fd_coredump, &req, ack.mask,
++					      ack.memory_types, ack.size))
+ 			goto out;
+ 
+ 		if (!read_marker(fd_coredump, COREDUMP_MARK_REQACK))
+ 			goto out;
+ 
+-		if (choice->mask & COREDUMP_RECORDS)
++		if (ack.mask & COREDUMP_RECORDS)
+ 			received = recv_coredump_records(fd_coredump, fd_file,
+ 							 &size, NULL, -1);
+ 		else
+@@ -2281,4 +2367,46 @@ TEST_F(coredump, socket_request_memory_types_without_kernel)
+ 	check_conflicting_ack(_metadata, self, COREDUMP_USERSPACE | COREDUMP_MEMORY_TYPES);
+ }
+ 
++/*
++ * A server built with the first structs reads the request it knows,
++ * discards the rest and acks with the ack it knows. It raises nothing
++ * it wasn't built for and the kernel dumps what the task selected.
++ */
++TEST_F(coredump, socket_request_negotiate_ver0)
 +{
 +	struct memory_choice choice = {
 +		.task_filter = COREDUMP_MEMORY_ANON_PRIVATE |
 +			       COREDUMP_MEMORY_ANON_SHARED,
++		.build = &server_build_ver0,
 +		.mask = COREDUMP_KERNEL,
++		.memory_types = 0,
++		.size_ack = COREDUMP_ACK_SIZE_VER0,
 +		.shared_dumped = true,
 +	};
 +
 +	check_memory_dump(_metadata, self, &choice);
 +}
 +
-+TEST_F(coredump, socket_request_memory_types_task_excludes)
-+{
-+	struct memory_choice choice = {
-+		.task_filter = 0,
-+		.mask = COREDUMP_KERNEL,
-+		.shared_dumped = false,
-+	};
-+
-+	check_memory_dump(_metadata, self, &choice);
-+}
-+
-+/* The server drops a memory type the task would have dumped. */
-+TEST_F(coredump, socket_request_memory_types_restricts)
++/*
++ * A server built against this header takes every feature the kernel
++ * offers, drops shared memory from what the task selected and adds the
++ * ELF headers.
++ */
++TEST_F(coredump, socket_request_negotiate_ver1)
 +{
 +	struct memory_choice choice = {
 +		.task_filter = COREDUMP_MEMORY_ANON_PRIVATE |
 +			       COREDUMP_MEMORY_ANON_SHARED,
-+		.mask = COREDUMP_KERNEL | COREDUMP_MEMORY_TYPES,
-+		.memory_types = COREDUMP_MEMORY_ANON_PRIVATE,
-+		.shared_dumped = false,
-+	};
-+
-+	check_memory_dump(_metadata, self, &choice);
-+}
-+
-+/* The server adds a memory type the task had excluded. */
-+TEST_F(coredump, socket_request_memory_types_widens)
-+{
-+	struct memory_choice choice = {
-+		.task_filter = 0,
-+		.mask = COREDUMP_KERNEL | COREDUMP_MEMORY_TYPES,
-+		.memory_types = COREDUMP_MEMORY_ANON_PRIVATE |
-+			  COREDUMP_MEMORY_ANON_SHARED,
-+		.shared_dumped = true,
-+	};
-+
-+	check_memory_dump(_metadata, self, &choice);
-+}
-+
-+/* The memory types decide what goes into a record stream just the same. */
-+TEST_F(coredump, socket_request_memory_types_records)
-+{
-+	struct memory_choice choice = {
-+		.task_filter = FILTER_TASK_INHERIT,
++		.build = &server_build_ver1,
 +		.mask = COREDUMP_KERNEL | COREDUMP_RECORDS | COREDUMP_SPARSE |
 +			COREDUMP_MEMORY_TYPES,
-+		.memory_types = COREDUMP_MEMORY_ANON_PRIVATE,
++		.memory_types = COREDUMP_MEMORY_ANON_PRIVATE |
++				 COREDUMP_MEMORY_ELF_HEADERS,
++		.size_ack = COREDUMP_ACK_SIZE_VER1,
 +		.shared_dumped = false,
 +	};
 +
 +	check_memory_dump(_metadata, self, &choice);
-+}
-+
-+/*
-+ * An empty selection leaves a skeleton: every program header and every note
-+ * but no memory. A server that wants to pick the memory itself reads it
-+ * from /proc/<pid>/mem while the task waits for it to finish.
-+ */
-+TEST_F(coredump, socket_request_memory_types_skeleton)
-+{
-+	struct memory_choice choice = {
-+		.task_filter = FILTER_TASK_INHERIT,
-+		.mask = COREDUMP_KERNEL | COREDUMP_WAIT | COREDUMP_MEMORY_TYPES,
-+		.memory_types = 0,
-+		.shared_dumped = false,
-+		.skeleton = true,
-+	};
-+
-+	check_memory_dump(_metadata, self, &choice);
-+}
-+
-+/* A memory type the kernel didn't advertise in memory_types_mask. */
-+TEST_F(coredump, socket_request_memory_types_unknown_bit)
-+{
-+	struct refused_ack refused = {
-+		.ack = {
-+			.size = sizeof(struct coredump_ack),
-+			.mask = COREDUMP_KERNEL | COREDUMP_MEMORY_TYPES,
-+			.memory_types = 1ULL << 63,
-+		},
-+		.bytes = sizeof(struct coredump_ack),
-+		.mark = COREDUMP_MARK_UNSUPPORTED,
-+	};
-+
-+	check_refused_ack(_metadata, self, &refused);
-+}
-+
-+/* The memory types must be zero unless COREDUMP_MEMORY_TYPES is raised. */
-+TEST_F(coredump, socket_request_memory_types_stale_field)
-+{
-+	struct refused_ack refused = {
-+		.ack = {
-+			.size = sizeof(struct coredump_ack),
-+			.mask = COREDUMP_KERNEL,
-+			.memory_types = COREDUMP_MEMORY_ANON_PRIVATE,
-+		},
-+		.bytes = sizeof(struct coredump_ack),
-+		.mark = COREDUMP_MARK_UNSUPPORTED,
-+	};
-+
-+	check_refused_ack(_metadata, self, &refused);
-+}
-+
-+/* COREDUMP_MEMORY_TYPES needs an ack that has the memory types. */
-+TEST_F(coredump, socket_request_memory_types_short_ack)
-+{
-+	struct refused_ack refused = {
-+		.ack = {
-+			.size = COREDUMP_ACK_SIZE_VER0,
-+			.mask = COREDUMP_KERNEL | COREDUMP_MEMORY_TYPES,
-+		},
-+		.bytes = COREDUMP_ACK_SIZE_VER0,
-+		.mark = COREDUMP_MARK_MINSIZE,
-+	};
-+
-+	check_refused_ack(_metadata, self, &refused);
-+}
-+
-+/* The memory types select what the kernel writes, nothing else. */
-+TEST_F(coredump, socket_request_memory_types_without_kernel)
-+{
-+	check_conflicting_ack(_metadata, self, COREDUMP_USERSPACE | COREDUMP_MEMORY_TYPES);
 +}
 +
  TEST_HARNESS_MAIN
 diff --git a/tools/testing/selftests/coredump/coredump_test_helpers.c b/tools/testing/selftests/coredump/coredump_test_helpers.c
-index 9aa901e14f02..7ae0c6c458aa 100644
+index 7ae0c6c458aa..ab94c45cd8be 100644
 --- a/tools/testing/selftests/coredump/coredump_test_helpers.c
 +++ b/tools/testing/selftests/coredump/coredump_test_helpers.c
-@@ -17,6 +17,7 @@
- #include <sys/ioctl.h>
- #include <sys/mman.h>
- #include <sys/socket.h>
-+#include <sys/stat.h>
- #include <sys/types.h>
- #include <sys/un.h>
- #include <sys/wait.h>
-@@ -73,6 +74,48 @@ void crashing_child_sparse(size_t size)
- 	*(volatile int *)NULL = 0;
+@@ -1467,10 +1467,11 @@ bool read_marker(int fd, enum coredump_mark mark)
+ 	return ret == mark;
  }
  
-+/* Select @types through the caller's own /proc/self/coredump_filter. */
-+static bool set_coredump_filter(__u64 types)
-+{
-+	char buf[32];
-+	int fd, len;
-+	bool ok;
-+
-+	fd = open("/proc/self/coredump_filter", O_WRONLY | O_CLOEXEC);
-+	if (fd < 0)
-+		return false;
-+
-+	len = snprintf(buf, sizeof(buf), "0x%llx", (unsigned long long)types);
-+	ok = write_nointr(fd, buf, len) == len;
-+	close(fd);
-+	return ok;
-+}
-+
-+/*
-+ * Map shared anonymous memory, touch it, tell the server where it is and
-+ * crash. A @task_filter other than FILTER_TASK_INHERIT is selected first.
-+ */
-+void crashing_child_memory(__u64 task_filter, int fd_addr)
-+{
-+	char *p;
-+
-+	if (task_filter != FILTER_TASK_INHERIT && !set_coredump_filter(task_filter))
-+		_exit(EXIT_FAILURE);
-+
-+	p = mmap(NULL, MEMORY_MAPPING_SIZE, PROT_READ | PROT_WRITE,
-+		 MAP_SHARED | MAP_ANONYMOUS, -1, 0);
-+	if (p == MAP_FAILED)
-+		_exit(EXIT_FAILURE);
-+	p[0] = 'x';
-+
-+	if (write_nointr(fd_addr, &p, sizeof(p)) != sizeof(p))
-+		_exit(EXIT_FAILURE);
-+	close(fd_addr);
-+
-+	/* crash on purpose */
-+	*(volatile int *)NULL = 0;
-+}
-+
- /* Sink a reassembled record stream is handed to, record by record. */
- struct coredump_record_sink {
- 	/* @len bytes of coredump data that belong at @offset. */
-@@ -916,6 +959,82 @@ static const ElfW(Phdr) *find_segment(const ElfW(Phdr) *phdr, size_t nr,
- 	return NULL;
- }
- 
-+/* The PT_LOAD segment @vaddr falls into. */
-+bool find_coredump_segment(int fd, __u64 vaddr, ElfW(Phdr) *segment)
-+{
-+	const ElfW(Phdr) *found;
-+	ElfW(Phdr) *phdr;
-+	size_t nr;
-+
-+	phdr = read_phdrs(fd, &nr);
-+	if (!phdr)
-+		return false;
-+
-+	found = find_segment(phdr, nr, vaddr);
-+	if (found)
-+		*segment = *found;
-+	else
-+		fprintf(stderr, "%s: no segment for 0x%llx\n", __func__,
-+			(unsigned long long)vaddr);
-+
-+	free(phdr);
-+	return found;
-+}
-+
-+/* How many bytes the PT_LOAD and the PT_NOTE segments of @fd carry. */
-+bool sum_coredump_segments(int fd, __u64 *data, __u64 *notes)
-+{
-+	ElfW(Phdr) *phdr;
-+	size_t nr, i;
-+
-+	phdr = read_phdrs(fd, &nr);
-+	if (!phdr)
-+		return false;
-+
-+	*data = 0;
-+	*notes = 0;
-+	for (i = 0; i < nr; i++) {
-+		if (phdr[i].p_type == PT_LOAD)
-+			*data += phdr[i].p_filesz;
-+		else if (phdr[i].p_type == PT_NOTE)
-+			*notes += phdr[i].p_filesz;
-+	}
-+
-+	free(phdr);
-+	return true;
-+}
-+
-+/* The coredump in @fd is at least as long as every segment it declares. */
-+bool check_coredump_extent(int fd)
-+{
-+	ElfW(Phdr) *phdr;
-+	struct stat st;
-+	size_t nr, i;
-+	bool ok = true;
-+
-+	if (fstat(fd, &st)) {
-+		fprintf(stderr, "%s: fstat: %m\n", __func__);
-+		return false;
-+	}
-+
-+	phdr = read_phdrs(fd, &nr);
-+	if (!phdr)
-+		return false;
-+
-+	for (i = 0; i < nr; i++) {
-+		if (phdr[i].p_offset + phdr[i].p_filesz <= (__u64)st.st_size)
-+			continue;
-+		fprintf(stderr, "%s: segment %zu ends at %llu, the coredump at %llu\n",
-+			__func__, i,
-+			(unsigned long long)(phdr[i].p_offset + phdr[i].p_filesz),
-+			(unsigned long long)st.st_size);
-+		ok = false;
-+	}
-+
-+	free(phdr);
-+	return ok;
-+}
-+
- /* The next stretch of memory the segments cover, split ones merged back. */
- static bool next_range(const ElfW(Phdr) *phdr, size_t nr, size_t *i,
- 		       __u64 *start, __u64 *end)
-@@ -1250,6 +1369,62 @@ ssize_t peer_vm_size(int fd_peer_pidfd)
- 
- /* Protocol helper functions */
- 
-+/* The peer's /proc/<pid>/coredump_filter, which is in memory types. */
-+bool peer_coredump_filter(int fd_peer_pidfd, __u64 *memory_types)
-+{
-+	struct pidfd_info info = {};
-+	unsigned long value;
-+	char path[64];
-+	FILE *f;
-+	int ret;
-+
-+	if (!get_pidfd_info(fd_peer_pidfd, &info))
-+		return false;
-+
-+	snprintf(path, sizeof(path), "/proc/%d/coredump_filter", info.pid);
-+	f = fopen(path, "r");
-+	if (!f) {
-+		fprintf(stderr, "%s: %s: %m\n", __func__, path);
-+		return false;
-+	}
-+
-+	ret = fscanf(f, "%lx", &value);
-+	fclose(f);
-+	if (ret != 1) {
-+		fprintf(stderr, "%s: %s: no value\n", __func__, path);
-+		return false;
-+	}
-+
-+	*memory_types = value;
-+	return true;
-+}
-+
-+/* Read @len bytes at @addr from the peer's /proc/<pid>/mem. */
-+ssize_t peer_read_mem(int fd_peer_pidfd, __u64 addr, void *buf, size_t len)
-+{
-+	struct pidfd_info info = {};
-+	char path[64];
-+	ssize_t ret;
-+	int fd;
-+
-+	if (!get_pidfd_info(fd_peer_pidfd, &info))
-+		return -1;
-+
-+	snprintf(path, sizeof(path), "/proc/%d/mem", info.pid);
-+	fd = open(path, O_RDONLY | O_CLOEXEC);
-+	if (fd < 0) {
-+		fprintf(stderr, "%s: %s: %m\n", __func__, path);
-+		return -1;
-+	}
-+
-+	ret = pread(fd, buf, len, addr);
-+	if (ret < 0)
-+		fprintf(stderr, "%s: %s at 0x%llx: %m\n", __func__, path,
-+			(unsigned long long)addr);
-+	close(fd);
-+	return ret;
-+}
-+
- ssize_t recv_marker(int fd)
+-bool read_coredump_req(int fd, struct coredump_req *req)
++/* Read the request as a server built with a @user_size byte struct does. */
++bool read_coredump_req_sized(int fd, struct coredump_req *req, size_t user_size)
  {
- 	enum coredump_mark mark = COREDUMP_MARK_REQACK;
-@@ -1377,16 +1552,18 @@ bool send_coredump_ack_bytes(int fd, const struct coredump_ack *ack, size_t len)
+ 	ssize_t ret;
+-	size_t field_size, user_size, known_size, kernel_size, remaining_size;
++	size_t field_size, known_size, kernel_size, remaining_size;
+ 
+ 	memset(req, 0, sizeof(*req));
+ 	field_size = sizeof(req->size);
+@@ -1478,25 +1479,24 @@ bool read_coredump_req(int fd, struct coredump_req *req)
+ 	/* Peek the size of the coredump request. */
+ 	ret = recv(fd, req, field_size, MSG_PEEK | MSG_WAITALL);
+ 	if (ret != field_size) {
+-		fprintf(stderr, "read_coredump_req: peek failed (got %zd, expected %zu): %m\n",
++		fprintf(stderr, "%s: peek failed (got %zd, expected %zu): %m\n", __func__,
+ 			ret, field_size);
+ 		return false;
+ 	}
+ 	kernel_size = req->size;
+ 
+ 	if (kernel_size < COREDUMP_REQ_SIZE_VER0) {
+-		fprintf(stderr, "read_coredump_req: kernel_size %zu < min %d\n",
++		fprintf(stderr, "%s: kernel_size %zu < min %d\n", __func__,
+ 			kernel_size, COREDUMP_REQ_SIZE_VER0);
+ 		return false;
+ 	}
+ 	if (kernel_size >= PAGE_SIZE) {
+-		fprintf(stderr, "read_coredump_req: kernel_size %zu >= PAGE_SIZE %d\n",
++		fprintf(stderr, "%s: kernel_size %zu >= PAGE_SIZE %d\n", __func__,
+ 			kernel_size, PAGE_SIZE);
  		return false;
  	}
  
--	fprintf(stderr, "Sent %zu bytes of coredump ack: size %u, mask 0x%llx\n",
--		len, ack->size, (unsigned long long)ack->mask);
-+	fprintf(stderr, "Sent %zu bytes of coredump ack: size %u, mask 0x%llx, types 0x%llx\n",
-+		len, ack->size, (unsigned long long)ack->mask,
-+		(unsigned long long)ack->memory_types);
+ 	/* Consume as much of the request as we know about. */
+-	user_size = sizeof(struct coredump_req);
+ 	known_size = user_size < kernel_size ? user_size : kernel_size;
+ 	ret = recv(fd, req, known_size, MSG_WAITALL);
+ 	if (ret != known_size)
+@@ -1529,6 +1529,11 @@ bool read_coredump_req(int fd, struct coredump_req *req)
  	return true;
  }
  
--bool send_coredump_ack(int fd, const struct coredump_req *req,
--		       __u64 mask, size_t size_ack)
-+bool send_coredump_ack_types(int fd, const struct coredump_req *req,
-+			      __u64 mask, __u64 memory_types, size_t size_ack)
- {
- 	struct coredump_ack ack = {
- 		.mask = mask,
-+		.memory_types = memory_types,
- 	};
- 
- 	if (!size_ack)
-@@ -1397,17 +1574,23 @@ bool send_coredump_ack(int fd, const struct coredump_req *req,
- 	return send_coredump_ack_bytes(fd, &ack, size_ack);
- }
- 
-+bool send_coredump_ack(int fd, const struct coredump_req *req,
-+		       __u64 mask, size_t size_ack)
++bool read_coredump_req(int fd, struct coredump_req *req)
 +{
-+	return send_coredump_ack_types(fd, req, mask, 0, size_ack);
++	return read_coredump_req_sized(fd, req, sizeof(*req));
 +}
 +
- /* Every option the kernel is expected to advertise in coredump_req->mask. */
- #define TEST_REQ_MASK_ALL					\
- 	(COREDUMP_KERNEL | COREDUMP_USERSPACE |			\
- 	 COREDUMP_REJECT | COREDUMP_WAIT |			\
--	 COREDUMP_RECORDS | COREDUMP_SPARSE)
-+	 COREDUMP_RECORDS | COREDUMP_SPARSE | COREDUMP_MEMORY_TYPES)
- 
- bool check_coredump_req(const struct coredump_req *req)
+ /* Send @len bytes of @ack as they are, more than the struct if asked to. */
+ bool send_coredump_ack_bytes(int fd, const struct coredump_ack *ack, size_t len)
  {
--	if (req->size < COREDUMP_REQ_SIZE_VER0) {
-+	if (req->size < COREDUMP_REQ_SIZE_VER1) {
- 		fprintf(stderr, "%s: size %u below minimum %d\n",
--			__func__, req->size, COREDUMP_REQ_SIZE_VER0);
-+			__func__, req->size, COREDUMP_REQ_SIZE_VER1);
- 		return false;
- 	}
- 	if (req->mask != TEST_REQ_MASK_ALL) {
-@@ -1416,6 +1599,12 @@ bool check_coredump_req(const struct coredump_req *req)
- 			(unsigned long long)TEST_REQ_MASK_ALL);
- 		return false;
- 	}
-+	if (req->memory_types_mask != TEST_MEMORY_ALL) {
-+		fprintf(stderr, "%s: memory_types_mask 0x%llx, expected 0x%llx\n",
-+			__func__, (unsigned long long)req->memory_types_mask,
-+			(unsigned long long)TEST_MEMORY_ALL);
-+		return false;
-+	}
- 	return true;
- }
- 
 diff --git a/tools/testing/selftests/coredump/coredump_test_helpers.h b/tools/testing/selftests/coredump/coredump_test_helpers.h
-index 0970d3550fc1..fc21b8620359 100644
+index fc21b8620359..8e0187645c93 100644
 --- a/tools/testing/selftests/coredump/coredump_test_helpers.h
 +++ b/tools/testing/selftests/coredump/coredump_test_helpers.h
-@@ -3,6 +3,7 @@
- #ifndef __COREDUMP_TEST_HELPERS_H
- #define __COREDUMP_TEST_HELPERS_H
- 
-+#include <link.h>
- #include <stdbool.h>
- #include <sys/types.h>
- #include <linux/coredump.h>
-@@ -21,10 +22,30 @@
- /* A task mapping at least this much is worth a record stream. */
- #define SPARSE_STREAM_THRESHOLD (SPARSE_MAPPING_SIZE / 2)
- 
-+/* Size of the shared anonymous mapping the memory types tests map. */
-+#define MEMORY_MAPPING_SIZE (4 * 1024 * 1024)
-+
-+/* Leave the coredump_filter the crashing child inherited alone. */
-+#define FILTER_TASK_INHERIT ((__u64)-1)
-+
-+/* Every memory type the kernel is expected to advertise. */
-+#define TEST_MEMORY_ALL						\
-+	(COREDUMP_MEMORY_ANON_PRIVATE | COREDUMP_MEMORY_ANON_SHARED |	\
-+	 COREDUMP_MEMORY_FILE_PRIVATE | COREDUMP_MEMORY_FILE_SHARED |	\
-+	 COREDUMP_MEMORY_ELF_HEADERS |					\
-+	 COREDUMP_MEMORY_HUGETLB_PRIVATE | COREDUMP_MEMORY_HUGETLB_SHARED | \
-+	 COREDUMP_MEMORY_DAX_PRIVATE | COREDUMP_MEMORY_DAX_SHARED)
-+
- /* Shared helper function declarations */
- void *do_nothing(void *arg);
- void crashing_child(void);
- void crashing_child_sparse(size_t size);
-+void crashing_child_memory(__u64 task_filter, int fd_addr);
-+bool find_coredump_segment(int fd, __u64 vaddr, ElfW(Phdr) *segment);
-+bool sum_coredump_segments(int fd, __u64 *data, __u64 *notes);
-+bool check_coredump_extent(int fd);
-+bool peer_coredump_filter(int fd_peer_pidfd, __u64 *memory_types);
-+ssize_t peer_read_mem(int fd_peer_pidfd, __u64 addr, void *buf, size_t len);
- ssize_t recv_coredump_records(int fd_coredump, int fd_core_file,
- 			      off_t *coredump_size, bool *truncated,
- 			      int fd_peer_pidfd);
-@@ -46,6 +67,8 @@ bool read_marker(int fd, enum coredump_mark mark);
+@@ -65,6 +65,7 @@ bool get_pidfd_info(int fd_peer_pidfd, struct pidfd_info *info);
+ ssize_t recv_marker(int fd);
+ bool read_marker(int fd, enum coredump_mark mark);
  bool read_coredump_req(int fd, struct coredump_req *req);
++bool read_coredump_req_sized(int fd, struct coredump_req *req, size_t user_size);
  bool send_coredump_ack(int fd, const struct coredump_req *req,
  		       __u64 mask, size_t size_ack);
-+bool send_coredump_ack_types(int fd, const struct coredump_req *req,
-+			      __u64 mask, __u64 memory_types, size_t size_ack);
- bool send_coredump_ack_bytes(int fd, const struct coredump_ack *ack, size_t len);
- bool check_coredump_req(const struct coredump_req *req);
- int open_coredump_tmpfile(int fd_tmpfs_detached);
+ bool send_coredump_ack_types(int fd, const struct coredump_req *req,
 
 -- 
 2.53.0
