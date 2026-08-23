@@ -1,73 +1,82 @@
-Return-Path: <linuxppc-dev+bounces-26053-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26054-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DC077C5DF8C
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 23 Aug 2026 13:53:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 27371C5DF81
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 23 Aug 2026 14:37:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hSb9Q5Hnzz2xrL;
-	Sun, 23 Aug 2026 23:53:30 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787493210;
-	cv=none; b=CrcObrNcbKg/u66Rkufz/MVOFlXsqG/GjkqRswCG8qUod4YAOcqzIbnbtJvBHgnJc/4m4QRRVTijoe4UcraAC7RAgKUhdCNdA1Zi1W53VhVcvi+ttyumSipcQNEjZp3xImkPa//HpvA/tmbdEokRMRVFva5eMx6dL7LIgsonRU27PFcyOF67WKH8J1Hq40NuD4HtyXH9rNTlxbC8h855WjzIfHsGkfiZnSAnvW3HJWQFXdsw2Nj+7HZQ9eINK0raXcIY7s0byXNAyDYACkkTg0A1GGBgAHYP06+ixGvxATw4K31M/WCDA+p+dShtwPB1/kJScpHCpQHLYM6296nDTA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hSc7r2L9gz2xnQ;
+	Mon, 24 Aug 2026 00:37:12 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::436"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787495832;
+	cv=none; b=nGcSfq+UAsxfOaGAf87hRqpKaJnoCiLcwnjBqcAl6ee+MwGtEH3s0XMbqDZiK5irK1Q2DvDoI0vo3M0ixw+vnUfXrgRnX7DoYiGdYFSkcApzvtC9+SvAQ7UXBkT6QcppJkBW/hvaJ0loufC1OzhT1MX/dx/I46tFxZltznIFebKYIl007/qYu4/mNR3d8jgAivduMvMTjQP36PD3E0JaNLtVILdkNs00Ixg87bhf1+AzM+eObdaoXI5YtROEbCQs25UTkVv1yjUTY7kXe9KIXHSOz9tZN/czOlPL7jY9MLOBEAYWFJJnqNxu8+u7AnSosadgOPBBbjC+17QuybIMSQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787493210; c=relaxed/relaxed;
-	bh=/PSkdWoxxFZWMDZlH5CmES0JKLFIRxkLW52c+MbtjJg=;
+	t=1787495832; c=relaxed/relaxed;
+	bh=IjVwgap47YOeIukz8yw67SDCadu22oFRx+M5RlZB4jk=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ACpxMF/GHde2NQRYxadrgyiTalnI1noJAKn1acqe9EZo7z6UaYh8VG/M4sUW+qpDqukKPFFqiVI0tqAtLlyRnOdhHXshPgpUCvLm8YSkACLOnBJccwc1Ng+m3VDpReAmp+3ZbfSmj3mFG41XeBQW8nc3c1Ap3JtAmhjmT2q/Z0/7h+RJoV0A86v3E2iwKSypciMLIfSfe6Qc7ErFXRsIYH7ruHidNKD9dQYQpLj2rE9JItM8sREAiOrQRgtcliD6dWoG5B8gMs1jP0FWvSwcaapVfnu6cYLtj/LZCTrJb6JorDlKjkeSl4ii1AjdDvN7DNlSLCGtguakhsj6j5uzeg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=RsragAoC; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	 In-Reply-To:Content-Type; b=YFX3VGdXxfHjCmb0ZxYeKYbEyamKhh+76IexZrOOsgyPNlCE5XiW+QfOLNMeFZE/zcfqkXnSKeRcWufHEsOJJtQHYGvZz/xl2cE6d01HVcU7ZzmQBupfyW/iLlI0vx3foTgbuSI6U+zCBQhBOxzqVh6ClXhkfvGCN9QK87oqnK1jGin8J4BgcR1IJRIP79Ldt/zNwxmSXbxFvxfs3fGlliii6GCci4RbxdvdsKlPPMRWSK1lX6uhMQl/e3IL7GOUMlq7XEzAJ5xipEFwBlARjHD6/Q88M+0S4BVWqdwtVCV6DAOwMNxrTpam+giJIYC1cWTR+bBke0wIioelB91BoA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=i0JF3wsr; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::436; helo=mail-wr1-x436.google.com; envelope-from=julianbraha@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=RsragAoC;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=i0JF3wsr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::436; helo=mail-wr1-x436.google.com; envelope-from=julianbraha@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-wr1-x436.google.com (mail-wr1-x436.google.com [IPv6:2a00:1450:4864:20::436])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hSb9P2t9zz2xnQ
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Aug 2026 23:53:28 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67NDVXJO1370431;
-	Sun, 23 Aug 2026 13:53:04 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=/PSkdW
-	oxxFZWMDZlH5CmES0JKLFIRxkLW52c+MbtjJg=; b=RsragAoC7l8cDZTi9+o2Bk
-	AA5bhR9HZSITZy1IkXmn1qk7586S4kF9gdHr8JUuF/IpFGE/D9NPlMpj92sC9l7w
-	eQFzbbkFZmFHjb8mwGTEIoKYDkDDhoHp6y7LX/EY3NSvaY+rcPOJMcucppmY14pG
-	TzW/Gzqb1OCy6d7BfJlwSwfCiH6cGa7tZ6RsaAAt1/4fik6JrwezTV+rvBoUfwFA
-	5+/jyrkpEthXn6nWJtlP4/S1DedBgmmSxDv+eS5Go7IErM7U4hl/wsBVcyYZDvWH
-	8S6aVVIsq46ddEYKF6c+TLzwQRNYVQHxY/yOQXXRAJhuV70xCJqVlUqqs2PBDkIQ
-	==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4g73eqcsk1-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 23 Aug 2026 13:53:03 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 67NDfE9i016029;
-	Sun, 23 Aug 2026 13:53:02 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4g7p3pssgc-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 23 Aug 2026 13:53:02 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 67NDqwOu46006632
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sun, 23 Aug 2026 13:52:58 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5C75C20043;
-	Sun, 23 Aug 2026 13:52:58 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 6901F20040;
-	Sun, 23 Aug 2026 13:52:52 +0000 (GMT)
-Received: from [9.39.19.229] (unknown [9.39.19.229])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Sun, 23 Aug 2026 13:52:52 +0000 (GMT)
-Message-ID: <02cc93c1-b5ff-44f6-bbe5-f2f791092a6e@linux.ibm.com>
-Date: Sun, 23 Aug 2026 19:22:50 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hSc7n5gP0z2xQ7
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Aug 2026 00:37:08 +1000 (AEST)
+Received: by mail-wr1-x436.google.com with SMTP id ffacd0b85a97d-47ddf7b09e5so2355856f8f.1
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Aug 2026 07:37:08 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1787495824; x=1788100624; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:sender:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=IjVwgap47YOeIukz8yw67SDCadu22oFRx+M5RlZB4jk=;
+        b=i0JF3wsr7hlzWiqDMOm1riXrSTy2Wbr6UoL2QZ/8wUn4a9qMmwL+w3LpSsyiSoCVkT
+         AMn6UEjyckA3Ny9Ob34eXdtxeyigDBpt9wE1Xst6xIA+Vnc/b8og9Cu4EXVFvoVVFg1v
+         VBTWSl4hPNxBKGvehtjNjaXbYeRsz73hk6AVTpte+78sS8y0wX6nrm4G6VWhDSOup8Ov
+         B5fFSS1FiYtJXkEhAQi28rC2lwXEDLv/Pv3yE/IfuSTfx4wry/2O3BazqwFdbUPQas8Q
+         roc65PvA3DPxYviGKfB68Dxd5SJyanJHTULVVi7Jmh33LzkUG3vuQxR0D8KvDGbyin6F
+         +U3w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1787495824; x=1788100624;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:sender:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=IjVwgap47YOeIukz8yw67SDCadu22oFRx+M5RlZB4jk=;
+        b=rHY+7kEJuZD8qDk8Dvws5zTYoQqwX9+0L8E3aSGP6RWWaMGyFhgEEiMiwARof6HoKM
+         a+NisL0DJpA25c6biWuTbfBYnMR5Bn/mZEdfJdOSI+kubgCO8XqRV8Sq9wjP7PHOQU+H
+         B7Y0YPWjxTPN1LLY6jZm1e6VU11CX7WowIvW/2C72cgs/GcGc1zxkkoNssNJVxU23YJg
+         WlpGjz1tgjiCweqU+Hi31mTaorjZpPHYZtv7phc3m3bXr04m6vNhIRN6EmbN3DZ64ubD
+         3UHznQCjZXQxzxAs8orQGLAPPuuX/giwfxSEuqzsAXQD2ZV+ocR8LiAIfmJX8mZ6d7BM
+         ISiA==
+X-Forwarded-Encrypted: i=1; AHgh+RrlYnIFeuZ2uAhPRr/f8OXgh7rrIMMTt6gCipgZ1J1XOxZG6vYWDZvQRLQUhKlyrPwD3c+pLiFituO7J0g=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++nSiJ5yMIlEoPXkIzbl7b4Vby+C8vwVNKse+R6y7+XfXmQBXRim
+	UrDUJ1w37nx3DS+X10izvhZprmk8dQNFvgpzHEqHzg7eeuYRyfK7xQOZ
+X-Gm-Gg: AR+sD10fKQ+iD8+dU8vslSo81t5sl42TAI/90iYfmoxrXWBroITsjJGa/i5YB8m3jXd
+	fIRLSW5B2SMyj1zZbZnnysaL1zb5GwwDxnAKzT5btaelpBnPcM/MUNH9EGhPUgQ59+YIU/XjNFA
+	Tg2zI4Drhw5+ocHa1Pj9gS8u5VBedxh0LyH2xJCHIOKsg3JUpQxidmL8AR5cKdGbYmjGjPPLPi/
+	0/8Aomp3f/tpw20Uq+ozUZnftO0BxmVcW0Sw4ByYUdsgjcxwrplApROpLfqbA3BuBKuzmqNtKoo
+	bf94VmGU/0Hgorq4/umHw0jU7wmYejd7t3FtIJAv+kwy6NOIuOzSCAD9zmVcJwlBpgqjuCrVDeC
+	lO7IKGZUGw08MYtA5MLXZLTTfZpGDlU2huXe8hueeQTTlQ1JtTxAVJMGFHb9LGk2s8zhnfi0ah2
+	CEdeyhu//wQY7v+4Du/mTPHvz5PB51mo9+k1eBp7Gs1F5gwD+XHCk2Sds+3GUtrAqbOhQS9/lK6
+	ffuQvTuUuZBsOmDlZPOgVznYcyyvNyBt17n8BIjSAHOGafZGPHAX/gHKw==
+X-Received: by 2002:a05:6000:46c2:b0:482:c650:8c89 with SMTP id ffacd0b85a97d-482c6508d4emr12735930f8f.9.1787495824002;
+        Sun, 23 Aug 2026 07:37:04 -0700 (PDT)
+Received: from [10.128.10.232] (195-23-151-163.net.novis.pt. [195.23.151.163])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-482c9b69b3csm5404807f8f.3.2026.08.23.07.37.02
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sun, 23 Aug 2026 07:37:03 -0700 (PDT)
+Sender: Julian Braha <julian.braha@gmail.com>
+Message-ID: <f66f3199-df76-4158-9ddd-23e9096a1fd4@gmail.com>
+Date: Sun, 23 Aug 2026 15:37:01 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,152 +91,87 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC PATCH 3/3] powerpc/kho: exclude THP and HUGETLB_PAGE
-To: Pratyush Yadav <pratyush@kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Aditya Gupta <adityag@linux.ibm.com>,
-        Alexander Graf <graf@amazon.com>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Baoquan He <baoquan.he@linux.dev>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        Hari Bathini <hbathini@linux.ibm.com>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Mahesh Salgaonkar <mahesh@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>, Mike Rapoport <rppt@kernel.org>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Pasha Tatashin <pasha.tatashin@soleen.com>,
-        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-        Shivang Upadhyay <shivangu@linux.ibm.com>,
-        Shrikanth Hegde <sshegde@linux.ibm.com>, kexec@lists.infradead.org,
-        linux-kernel@vger.kernel.org, Michal Clapinski <mclapinski@google.com>
-References: <20260821105609.983622-1-sourabhjain@linux.ibm.com>
- <20260821105609.983622-4-sourabhjain@linux.ibm.com>
- <2vxzecfrzoyv.fsf@kernel.org>
+Subject: Re: [PATCH] powerpc: remove dead 440SP code
+To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, maddy@linux.ibm.com,
+ mpe@ellerman.id.au, npiggin@gmail.com, Frank.Li@kernel.org,
+ andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
+ kuba@kernel.org, pabeni@redhat.com
+Cc: linusw@kernel.org, kees@kernel.org, colin.i.king@gmail.com,
+ rosenp@gmail.com, joao@joaoff.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org,
+ netdev@vger.kernel.org, kernel-janitors@vger.kernel.org
+References: <20260816125615.985387-1-julianbraha@gmail.com>
+ <c4d970dd-cb54-4530-9491-01b6d90e4a2b@kernel.org>
 Content-Language: en-US
-From: Sourabh Jain <sourabhjain@linux.ibm.com>
-In-Reply-To: <2vxzecfrzoyv.fsf@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: s52PKxhJoxSqu7gQIRPqB42Kcg-iUlkr
-X-Proofpoint-ORIG-GUID: GBtYw8Q2QL00Lftq1JMVDoVvPhEH5RAK
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODIzMDEyMiBTYWx0ZWRfX5rnZ/fVeuOHs
- GpPg4uuks+hBFavj0+RZIXNy4UlLL9Ku9T8Y1kYd8wAiGfhJMJmrbLdKXn5LBjy33atsnhIPgZV
- EK/z7Ex4EB5RbRqFSECgaaCKvb1/2S+7DoqEffTkrO1ut7O2frDN2KVQTJkeiZhO3AWHXnEozjF
- KeHMK2uKDrgvPKF2tCEGlluaubc+FfGJXGpA3KbQt6SF8ngo1pYmX7G8tyicToK5G/SEyC3+0BB
- tY0rqmGOyWKUy+iBfrM4mnYMrIb5DiqKQxjMgOyS2iFYSfCUItQCVoEChm8LV9fMuTtVrTICuqG
- L1hGlTr7CQX+RisUxW9L8mwsXI1a/C8WXfXRiFoBophRwTQcx/mWpq7u3jpNdnQaAL8QDHUj9Te
- CBNwUWDf+CrwWOnt0Ao/IPVdg9hz4CZPWJgVFMlpAzF9IexUoJaXKECJ64v2FefC9FwQb86x6tE
- Nj9iCOMrAIJKLtBREvw==
-X-Authority-Analysis: v=2.4 cv=QsRuG1yd c=1 sm=1 tr=0 ts=6a8afb3f cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
- a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=VnNF1IyMAAAA:8
- a=vggBfdFIAAAA:8 a=Z4Rwk6OoAAAA:8 a=VwQbUJbxAAAA:8 a=pGLkceISAAAA:8
- a=7ipKWUHlAAAA:8 a=JfrnYn6hAAAA:8 a=jbd8uGjBXzmtj_AwXB8A:9 a=QEXdDO2ut3YA:10
- a=HkZW87K1Qel5hWWM3VKY:22 a=gpc5p9EgBqZVLdJeV_V1:22 a=1CNFftbPRP8L7MoqJWF3:22
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODIzMDEyMiBTYWx0ZWRfX5kYcQlb2dkos
- dGXD21fuy/Ijm52p7xdJkl639XP9J4CLYl0wBU4Z99Zb10zUE97Bfd8RzjfKTItqr0145Ztgx9J
- QEOqdjdSDV//ugL3YI0MjpBkTmk0DPU=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-08-23_05,2026-08-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 adultscore=0 suspectscore=0 priorityscore=1501 impostorscore=0
- spamscore=0 lowpriorityscore=0 clxscore=1015 bulkscore=0 phishscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608230122
+From: Julian Braha <julianbraha@gmail.com>
+In-Reply-To: <c4d970dd-cb54-4530-9491-01b6d90e4a2b@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
+Hi Christophe,
 
-
-On 21/08/26 17:04, Pratyush Yadav wrote:
-> On Fri, Aug 21 2026, Sourabh Jain wrote:
->
->> Enabling CONFIG_KEXEC_HANDOVER together with CONFIG_TRANSPARENT_HUGEPAGE
->> or CONFIG_HUGETLB_PAGE on powerpc fails to build:
+On 8/17/26 07:29, Christophe Leroy (CS GROUP) wrote:
+> 
+> 
+> Le 16/08/2026 à 14:56, Julian Braha a écrit :
+>> The 440SP config option can never be enabled, making all references to it
+>> dead code.
 >>
->>      kernel/liveupdate/kexec_handover.c:49:39: error: expression in static assertion is not constant
->>         49 | static_assert(SCRATCH_ALIGNMENT_BYTES >= CMA_MIN_ALIGNMENT_BYTES);
->>      ./include/linux/build_bug.h:80:56: note: in definition of macro '__static_assert'
->>         80 | #define __static_assert(expr, msg, ...) _Static_assert(expr, msg)
->>            |                                                        ^~~~
->>      kernel/liveupdate/kexec_handover.c:49:1: note: in expansion of macro 'static_assert'
->>         49 | static_assert(SCRATCH_ALIGNMENT_BYTES >= CMA_MIN_ALIGNMENT_BYTES);
+>> Let's remove support for 440SP, since nobody can be using it anyway.
 >>
->> CMA_MIN_ALIGNMENT_BYTES is derived from pageblock_order, which on
->> powerpc is not a compile-time constant when THP or HUGETLB_PAGE is
->> enabled -- powerpc can determine huge page size at runtime in that
->> configuration, so pageblock_order becomes a variable rather than a
->> constant expression. KHO's static_assert() on
->> SCRATCH_ALIGNMENT_BYTES >= CMA_MIN_ALIGNMENT_BYTES then fails to
->> compile, since it requires both sides to be constant expressions.
+>> This dead code was found by kconfirm, a static analysis tool for Kconfig.
+> 
+> It would be good to include history in the commit description:
+> 
+> As far as I can see, users of CONFIG_440SP were commented out by commit
+> f65573314e4e ("[POWERPC] Re-organize Kconfig code for 4xx in arch/
+> powerpc") and removed by commit ff5f483f3091 ("powerpc: 4xx: remove
+> commented out Kconfig entries")
+> 
+> 
 >>
->> Until CMA_MIN_ALIGNMENT_BYTES (or KHO's use of it) is made to handle
->> the non-constant pageblock_order case on powerpc, exclude
->> TRANSPARENT_HUGEPAGE and HUGETLB_PAGE from ARCH_SUPPORTS_KEXEC_HANDOVER
->> so the two can't be enabled together and hit this build failure.
-> This should be a part of patch 2 I think. It is not a good idea to break
-> the build in one patch and fix it in the next.
-
-Agree. Since this is an RFC patch series, I kept it separate so that 
-this issue could
-be reviewed independently from patch 2. Going forward, I will merge them.
-
-
->
-> That said, this is a debug check of sorts since SCRATCH_ALIGNMENT_BYTES
-> is of MAX_ORDER_NR_PAGES, and pageblocks _should_ always be smaller of
-> equal to this.
->
-> Anyway, I don't think this is something you should gate by a config. I
-> think you should either remove the static_assert(), or turn it into a
-> runtime check.
-
-Agreed. I will evaluate both options and decide which approach makes 
-more sense.
-
-Thanks for the review Pratyush.
-
-- Sourabh Jain
-
-
->
-> +Cc Michal.
->
->> Cc: Aditya Gupta <adityag@linux.ibm.com>
->> Cc: Alexander Graf <graf@amazon.com>
->> Cc: Andrew Morton <akpm@linux-foundation.org>
->> Cc: Baoquan He <baoquan.he@linux.dev>
->> Cc: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
->> Cc: Hari Bathini <hbathini@linux.ibm.com>
->> Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
->> Cc: Mahesh Salgaonkar <mahesh@linux.ibm.com>
->> Cc: Michael Ellerman <mpe@ellerman.id.au>
->> Cc: Mike Rapoport <rppt@kernel.org>
->> Cc: Nicholas Piggin <npiggin@gmail.com>
->> Cc: Pasha Tatashin <pasha.tatashin@soleen.com>
->> Cc: Pratyush Yadav <pratyush@kernel.org>
->> Cc: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
->> Cc: Shivang Upadhyay <shivangu@linux.ibm.com>
->> Cc: Shrikanth Hegde <sshegde@linux.ibm.com>
->> Cc: kexec@lists.infradead.org
->> Cc: linux-kernel@vger.kernel.org
->> Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
+>> Signed-off-by: Julian Braha <julianbraha@gmail.com>
 >> ---
->>   arch/powerpc/Kconfig | 1 +
->>   1 file changed, 1 insertion(+)
+>>   arch/powerpc/boot/cuboot-katmai.c   |  2 +-
+>>   arch/powerpc/include/asm/async_tx.h |  2 +-
+>>   arch/powerpc/include/asm/dcr-regs.h | 10 +++++-----
+>>   arch/powerpc/kernel/cpu_specs_44x.h | 12 ------------
+>>   arch/powerpc/platforms/44x/Kconfig  |  3 ---
+>>   drivers/dma/Kconfig                 |  2 +-
+>>   drivers/dma/ppc4xx/adma.c           |  9 ---------
+>>   drivers/dma/ppc4xx/adma.h           |  2 +-
+>>   drivers/dma/ppc4xx/dma.h            |  9 ---------
+>>   drivers/net/ethernet/ibm/emac/mal.h |  2 +-
+>>   10 files changed, 10 insertions(+), 43 deletions(-)
 >>
->> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
->> index 61350d3e7a19..f68b9fc883ba 100644
->> --- a/arch/powerpc/Kconfig
->> +++ b/arch/powerpc/Kconfig
->> @@ -720,6 +720,7 @@ config ARCH_SUPPORTS_KEXEC_HANDOVER
->>   	def_bool y
->>   	depends on PPC64
->>   	depends on !CRASH_DUMP
->> +	depends on !TRANSPARENT_HUGEPAGE && !HUGETLB_PAGE
->>   
->>   config ARCH_SUPPORTS_CRASH_HOTPLUG
->>   	def_bool y
+>> diff --git a/arch/powerpc/boot/cuboot-katmai.c b/arch/powerpc/boot/
+>> cuboot-katmai.c
+>> index 034a748fde24..fcd71e76309f 100644
+>> --- a/arch/powerpc/boot/cuboot-katmai.c
+>> +++ b/arch/powerpc/boot/cuboot-katmai.c
+>> @@ -31,7 +31,7 @@ static void katmai_fixups(void)
+>>   {
+>>       unsigned long sysclk = 33333000;
+>>   -    /* 440SP Clock logic is all but identical to 440GX
+>> +    /* 440SPe Clock logic is all but identical to 440GX
+>>        * so we just use that code for now at least
+>>        */
+>>       ibm440spe_fixup_clocks(sysclk, 6 * 1843200, 0);
+>> diff --git a/arch/powerpc/include/asm/async_tx.h b/arch/powerpc/
+>> include/asm/async_tx.h
+>> index a14758426dd5..1ff5b2ca3ed1 100644
+>> --- a/arch/powerpc/include/asm/async_tx.h
+>> +++ b/arch/powerpc/include/asm/async_tx.h
+>> @@ -7,7 +7,7 @@
+>>   #ifndef _ASM_POWERPC_ASYNC_TX_H_
+>>   #define _ASM_POWERPC_ASYNC_TX_H_
+>>   -#if defined(CONFIG_440SPe) || defined(CONFIG_440SP)
+>> +#if defined(CONFIG_440SPe)
+> 
+> Replace by #ifdef CONFIG_440SPe
+
+Thanks for your feedback, will send a v2!
+
+- Julian Braha
 
 
