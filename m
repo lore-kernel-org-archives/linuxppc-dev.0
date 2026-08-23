@@ -1,95 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-26052-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26053-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 332CCC5B572
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Aug 2026 12:12:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DC077C5DF8C
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 23 Aug 2026 13:53:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hRwyp6yRzz2xWt;
-	Sat, 22 Aug 2026 22:12:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::62e"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787400018;
-	cv=none; b=ecazl1jdhVaGUuOyyNHlJD0x4avHA2wPl/cnBWxMeraTDRQ0YTZ2aOMquBvVYnuDkJQ3i81D2/aVbs+1nzuQy1cyYc35p1TU6ger3wU2BmaW+L5jptmWelGr9zJ+CI6G/03vt0+mgSWQQAYlHExZmDOzLVF7xbirOolDDs8g5Cb66vHThLacKsxvyN9j9Dij+TX1PD1k4tamcuPT4tVHIiBtWJbMv6WP4VKlk6ENV2tYBPbmaW/pUucmRGCJG+XQ5dY/ICx0Lkp/VfYFcO+g0kTkb4VviupNI5yF6pe9QuYQOvxis2jgUxXxmzKHqAmbdg/OFCxHtkQniJer4z7MgQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hSb9Q5Hnzz2xrL;
+	Sun, 23 Aug 2026 23:53:30 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787493210;
+	cv=none; b=CrcObrNcbKg/u66Rkufz/MVOFlXsqG/GjkqRswCG8qUod4YAOcqzIbnbtJvBHgnJc/4m4QRRVTijoe4UcraAC7RAgKUhdCNdA1Zi1W53VhVcvi+ttyumSipcQNEjZp3xImkPa//HpvA/tmbdEokRMRVFva5eMx6dL7LIgsonRU27PFcyOF67WKH8J1Hq40NuD4HtyXH9rNTlxbC8h855WjzIfHsGkfiZnSAnvW3HJWQFXdsw2Nj+7HZQ9eINK0raXcIY7s0byXNAyDYACkkTg0A1GGBgAHYP06+ixGvxATw4K31M/WCDA+p+dShtwPB1/kJScpHCpQHLYM6296nDTA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787400018; c=relaxed/relaxed;
-	bh=KvGxsjxJ9mwyqXPBI6LRqXNLhQj/rj1NMh48pIDPvnw=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=EOrUSPrHkfHbK7SpYkUQ0HG+E7E05aASeK2H0SIgxmPWuag/gE5Keg+59bj4S6wx7SGEPOOuNeAslGGSXrINm9y7f3ct0J29r5uwaBoPnjxKqJO9bQfflxQ0P/1Rp7mhsGeoGpEZ+2d0v2hSB09YU429L44zT8qvGpUMzbfSiG9uxUIE5XrNV80uCe0gEqNfU9j54/cNuQjZQCsR5nu5tbdBXyDntVc5hGP7A04A1Bx6ayNhcaMI4zIT50y8nyLP+OPO7dkTXJCd0IW1ePLFDQ6T7UCGI/AqSncSYFFcpeXz9Jv0ZUNpRrRs45m+1hNYLBkSgZGZfbyYTTQrp0+Dcw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=VC4dTVsF; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::62e; helo=mail-ej1-x62e.google.com; envelope-from=stefanghetu9@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1787493210; c=relaxed/relaxed;
+	bh=/PSkdWoxxFZWMDZlH5CmES0JKLFIRxkLW52c+MbtjJg=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=ACpxMF/GHde2NQRYxadrgyiTalnI1noJAKn1acqe9EZo7z6UaYh8VG/M4sUW+qpDqukKPFFqiVI0tqAtLlyRnOdhHXshPgpUCvLm8YSkACLOnBJccwc1Ng+m3VDpReAmp+3ZbfSmj3mFG41XeBQW8nc3c1Ap3JtAmhjmT2q/Z0/7h+RJoV0A86v3E2iwKSypciMLIfSfe6Qc7ErFXRsIYH7ruHidNKD9dQYQpLj2rE9JItM8sREAiOrQRgtcliD6dWoG5B8gMs1jP0FWvSwcaapVfnu6cYLtj/LZCTrJb6JorDlKjkeSl4ii1AjdDvN7DNlSLCGtguakhsj6j5uzeg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=RsragAoC; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=VC4dTVsF;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=RsragAoC;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::62e; helo=mail-ej1-x62e.google.com; envelope-from=stefanghetu9@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ej1-x62e.google.com (mail-ej1-x62e.google.com [IPv6:2a00:1450:4864:20::62e])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hRwjD4KQRz2yH5
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Aug 2026 22:00:16 +1000 (AEST)
-Received: by mail-ej1-x62e.google.com with SMTP id a640c23a62f3a-c2055f5a993so220757966b.2
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Aug 2026 05:00:16 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1787400013; x=1788004813; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:mime-version:message-id:date
-         :subject:cc:to:from:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=KvGxsjxJ9mwyqXPBI6LRqXNLhQj/rj1NMh48pIDPvnw=;
-        b=VC4dTVsF17HncXBIhsAA5G1IVlaqP0pbtKd9TKp95mIuYbbt7xOhX78wQM60cTal8r
-         bM5PAUZ1hJkHbRO9GfReNFXqinzpPWlSN8iLF+Se1HoKLaemvZr7SKf2sZ5C5CreIkD8
-         kanXeUhFCWvQP2LQQDCC7LlTNNmqCFpphGCSiuDWOx/9uGCLgIeM5ft+yEUvkVGLnh4n
-         Ktdjl2ulv6Qn6ujjF5oYm7nuSaCL/LG12y30O32nMv81Cjs3JG/Cs4XAZVnzowWd1VxA
-         x+XiSsoqAVFiDqbGfN+35u0yimm0MlF6sRfXN7T8nXsNJhuOuPpKWTp2U+MJC4LIyCaW
-         saIQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1787400013; x=1788004813;
-        h=content-transfer-encoding:content-type:mime-version:message-id:date
-         :subject:cc:to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=KvGxsjxJ9mwyqXPBI6LRqXNLhQj/rj1NMh48pIDPvnw=;
-        b=bPQ86zOn3deoIehB+63xSPlcCPZQ7IVfvZxBxoZmT1R1KjbaLBdl9LPl4tWFJX0sVB
-         oj0NDFCSCwbrNLnU/itxIz5+GGlQB58RFiqGmL776cjTvzWI0Y3wmlnHxjy+292ctPu/
-         SKFp2BiSdVDWcNzMD7aAPcSSv7A/WZMSsn0/abSxovwec/X5fp8bn/9yaP8PxCBRvY7Z
-         tMC6UQYwYymyy7qIuu5HEfKmCRJcEuS1jc2CtaANyymHeQ0weQz2KTkPlsEKQ2NNSWB6
-         6QHsj3pwn3CbPE2EFKGtY/gwVgyr+JNhhAy9WvQ/3MKC6ukE+EfbXnFOc8PS0Q+5Pv8I
-         i5ug==
-X-Forwarded-Encrypted: i=1; AHgh+RoWjcciIHnhwQUUTSd0s8HrSCpqImi89E7wa/aI78QKsMFlufpvP4SKtAJP4F4DICh0DUyEcyol19ZNVOM=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++lq5AqiQvTtwT5vzBW9suuySELCE+11kRKvTchYlNjXKdGaUuUU
-	MMm6Lr1SyaLcmolTdceaz4Kj6NAxRw9pHLBRPBir+A1KVONDpydJMTFQ
-X-Gm-Gg: AR+sD10GhzYSORDC9ZDyQ6BuvFYqIG7OXLsZbE5HLObVRFLHUGzZrFRniTr8evojspV
-	K/YHQmDBzRU5OvKWrrrTaoSIrN9d/S2CQ/c4fZX3ME3+bEHJb5lalkrRb2Gu1wc1QbLURdIxD5D
-	ZBboGz3KGa5O2flvVxEr3JwcPxkPFISzpxUM9UYoR1i1cnbztkWRUVYxfbjF04XG7DuGXtkcYF5
-	/c48HMTQkeW6VBA2fjGxsVUIKy2FIH7RnK36YS2V0PobEpEEd9hrWW2fSpCYOTrIEgQB31HVKxX
-	5zsUmZ+Q2pNihnSRgtE/ikpWgXgOHbbYrSjrqIhXzhkyFXRaFxYTlloDEfXpA6wXwBPYqkrPkCe
-	/Q27pmLVoU8nRW7GZzZCdCuXFy2jZWkWXzJ1HZ0BZRWKK82BBI3jhAsODltNFYL/sf5d2/odfPk
-	8q587v7OxqpQnzT2te6+ChUpW+92zkpqrvf1sj5RwEd6Njz8ASw4KyKUVFUfeZ+AcEO0yilnW8u
-	UcoWHkE5lXu5HGC5WADka/MFIVlivwVTD1+crLhzQwzF1/p+SkC4XwTC/tu3D/y5O+9QSY/H3Eu
-	yWyknV1JloyA5o9wlK4ATy4DpeSqOciG9WIUzZ0P648Rhtwi9Z/dlbSiOUv87xANnExM5Grlzky
-	nQsLBMvriV/wt1Vqo
-X-Received: by 2002:a17:906:2481:b0:c1c:2007:298e with SMTP id a640c23a62f3a-c246b4c5e33mr1111437566b.24.1787400012648;
-        Sat, 22 Aug 2026 05:00:12 -0700 (PDT)
-Received: from workstation ([85.186.165.159])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c2496296cafsm298776866b.14.2026.08.22.05.00.11
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 22 Aug 2026 05:00:12 -0700 (PDT)
-From: =?UTF-8?q?=C8=98tefan=20Ghe=C8=9Bu?= <stefanghetu9@gmail.com>
-To: Shengjiu Wang <shengjiu.wang@gmail.com>,
-	Xiubo Li <Xiubo.Lee@gmail.com>,
-	Fabio Estevam <festevam@gmail.com>,
-	Nicolin Chen <nicoleotsuka@gmail.com>,
-	Mark Brown <broonie@kernel.org>
-Cc: Liam Girdwood <lgirdwood@gmail.com>,
-	Jaroslav Kysela <perex@perex.cz>,
-	Takashi Iwai <tiwai@suse.com>,
-	linux-sound@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	=?UTF-8?q?=C8=98tefan=20Ghe=C8=9Bu?= <stefanghetu9@gmail.com>
-Subject: [PATCH] ASoC: fsl_micfil: balance mclk enable/disable
-Date: Sat, 22 Aug 2026 14:59:59 +0300
-Message-ID: <20260822115959.74496-1-stefanghetu9@gmail.com>
-X-Mailer: git-send-email 2.53.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hSb9P2t9zz2xnQ
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Aug 2026 23:53:28 +1000 (AEST)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67NDVXJO1370431;
+	Sun, 23 Aug 2026 13:53:04 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=/PSkdW
+	oxxFZWMDZlH5CmES0JKLFIRxkLW52c+MbtjJg=; b=RsragAoC7l8cDZTi9+o2Bk
+	AA5bhR9HZSITZy1IkXmn1qk7586S4kF9gdHr8JUuF/IpFGE/D9NPlMpj92sC9l7w
+	eQFzbbkFZmFHjb8mwGTEIoKYDkDDhoHp6y7LX/EY3NSvaY+rcPOJMcucppmY14pG
+	TzW/Gzqb1OCy6d7BfJlwSwfCiH6cGa7tZ6RsaAAt1/4fik6JrwezTV+rvBoUfwFA
+	5+/jyrkpEthXn6nWJtlP4/S1DedBgmmSxDv+eS5Go7IErM7U4hl/wsBVcyYZDvWH
+	8S6aVVIsq46ddEYKF6c+TLzwQRNYVQHxY/yOQXXRAJhuV70xCJqVlUqqs2PBDkIQ
+	==
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4g73eqcsk1-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sun, 23 Aug 2026 13:53:03 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 67NDfE9i016029;
+	Sun, 23 Aug 2026 13:53:02 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4g7p3pssgc-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sun, 23 Aug 2026 13:53:02 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 67NDqwOu46006632
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Sun, 23 Aug 2026 13:52:58 GMT
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 5C75C20043;
+	Sun, 23 Aug 2026 13:52:58 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 6901F20040;
+	Sun, 23 Aug 2026 13:52:52 +0000 (GMT)
+Received: from [9.39.19.229] (unknown [9.39.19.229])
+	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Sun, 23 Aug 2026 13:52:52 +0000 (GMT)
+Message-ID: <02cc93c1-b5ff-44f6-bbe5-f2f791092a6e@linux.ibm.com>
+Date: Sun, 23 Aug 2026 19:22:50 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -103,75 +81,153 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [RFC PATCH 3/3] powerpc/kho: exclude THP and HUGETLB_PAGE
+To: Pratyush Yadav <pratyush@kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Aditya Gupta <adityag@linux.ibm.com>,
+        Alexander Graf <graf@amazon.com>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Baoquan He <baoquan.he@linux.dev>,
+        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+        Hari Bathini <hbathini@linux.ibm.com>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Mahesh Salgaonkar <mahesh@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>, Mike Rapoport <rppt@kernel.org>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        Pasha Tatashin <pasha.tatashin@soleen.com>,
+        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+        Shivang Upadhyay <shivangu@linux.ibm.com>,
+        Shrikanth Hegde <sshegde@linux.ibm.com>, kexec@lists.infradead.org,
+        linux-kernel@vger.kernel.org, Michal Clapinski <mclapinski@google.com>
+References: <20260821105609.983622-1-sourabhjain@linux.ibm.com>
+ <20260821105609.983622-4-sourabhjain@linux.ibm.com>
+ <2vxzecfrzoyv.fsf@kernel.org>
+Content-Language: en-US
+From: Sourabh Jain <sourabhjain@linux.ibm.com>
+In-Reply-To: <2vxzecfrzoyv.fsf@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-GUID: s52PKxhJoxSqu7gQIRPqB42Kcg-iUlkr
+X-Proofpoint-ORIG-GUID: GBtYw8Q2QL00Lftq1JMVDoVvPhEH5RAK
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODIzMDEyMiBTYWx0ZWRfX5rnZ/fVeuOHs
+ GpPg4uuks+hBFavj0+RZIXNy4UlLL9Ku9T8Y1kYd8wAiGfhJMJmrbLdKXn5LBjy33atsnhIPgZV
+ EK/z7Ex4EB5RbRqFSECgaaCKvb1/2S+7DoqEffTkrO1ut7O2frDN2KVQTJkeiZhO3AWHXnEozjF
+ KeHMK2uKDrgvPKF2tCEGlluaubc+FfGJXGpA3KbQt6SF8ngo1pYmX7G8tyicToK5G/SEyC3+0BB
+ tY0rqmGOyWKUy+iBfrM4mnYMrIb5DiqKQxjMgOyS2iFYSfCUItQCVoEChm8LV9fMuTtVrTICuqG
+ L1hGlTr7CQX+RisUxW9L8mwsXI1a/C8WXfXRiFoBophRwTQcx/mWpq7u3jpNdnQaAL8QDHUj9Te
+ CBNwUWDf+CrwWOnt0Ao/IPVdg9hz4CZPWJgVFMlpAzF9IexUoJaXKECJ64v2FefC9FwQb86x6tE
+ Nj9iCOMrAIJKLtBREvw==
+X-Authority-Analysis: v=2.4 cv=QsRuG1yd c=1 sm=1 tr=0 ts=6a8afb3f cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+ a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=VnNF1IyMAAAA:8
+ a=vggBfdFIAAAA:8 a=Z4Rwk6OoAAAA:8 a=VwQbUJbxAAAA:8 a=pGLkceISAAAA:8
+ a=7ipKWUHlAAAA:8 a=JfrnYn6hAAAA:8 a=jbd8uGjBXzmtj_AwXB8A:9 a=QEXdDO2ut3YA:10
+ a=HkZW87K1Qel5hWWM3VKY:22 a=gpc5p9EgBqZVLdJeV_V1:22 a=1CNFftbPRP8L7MoqJWF3:22
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODIzMDEyMiBTYWx0ZWRfX5kYcQlb2dkos
+ dGXD21fuy/Ijm52p7xdJkl639XP9J4CLYl0wBU4Z99Zb10zUE97Bfd8RzjfKTItqr0145Ztgx9J
+ QEOqdjdSDV//ugL3YI0MjpBkTmk0DPU=
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-08-23_05,2026-08-21_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 adultscore=0 suspectscore=0 priorityscore=1501 impostorscore=0
+ spamscore=0 lowpriorityscore=0 clxscore=1015 bulkscore=0 phishscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608230122
 
-hw_params() enables mclk unconditionally and hw_free() disables it
-unconditionally, but the PCM core does not guarantee 1:1 pairing:
-hw_free() can run without hw_params(), and hw_params() can be called
-multiple times from the SETUP state. This triggers an "already
-disabled" WARN() in the first case and leaks an enable reference in
-the second, leaving the clock ungateable.
 
-Guard both sides with the existing mclk_flag, as fsl_sai.c does with
-mclk_streams.
 
-Fixes: b47024dc624b ("ASoC: fsl_micfil: Add mclk enable flag")
+On 21/08/26 17:04, Pratyush Yadav wrote:
+> On Fri, Aug 21 2026, Sourabh Jain wrote:
+>
+>> Enabling CONFIG_KEXEC_HANDOVER together with CONFIG_TRANSPARENT_HUGEPAGE
+>> or CONFIG_HUGETLB_PAGE on powerpc fails to build:
+>>
+>>      kernel/liveupdate/kexec_handover.c:49:39: error: expression in static assertion is not constant
+>>         49 | static_assert(SCRATCH_ALIGNMENT_BYTES >= CMA_MIN_ALIGNMENT_BYTES);
+>>      ./include/linux/build_bug.h:80:56: note: in definition of macro '__static_assert'
+>>         80 | #define __static_assert(expr, msg, ...) _Static_assert(expr, msg)
+>>            |                                                        ^~~~
+>>      kernel/liveupdate/kexec_handover.c:49:1: note: in expansion of macro 'static_assert'
+>>         49 | static_assert(SCRATCH_ALIGNMENT_BYTES >= CMA_MIN_ALIGNMENT_BYTES);
+>>
+>> CMA_MIN_ALIGNMENT_BYTES is derived from pageblock_order, which on
+>> powerpc is not a compile-time constant when THP or HUGETLB_PAGE is
+>> enabled -- powerpc can determine huge page size at runtime in that
+>> configuration, so pageblock_order becomes a variable rather than a
+>> constant expression. KHO's static_assert() on
+>> SCRATCH_ALIGNMENT_BYTES >= CMA_MIN_ALIGNMENT_BYTES then fails to
+>> compile, since it requires both sides to be constant expressions.
+>>
+>> Until CMA_MIN_ALIGNMENT_BYTES (or KHO's use of it) is made to handle
+>> the non-constant pageblock_order case on powerpc, exclude
+>> TRANSPARENT_HUGEPAGE and HUGETLB_PAGE from ARCH_SUPPORTS_KEXEC_HANDOVER
+>> so the two can't be enabled together and hit this build failure.
+> This should be a part of patch 2 I think. It is not a good idea to break
+> the build in one patch and fix it in the next.
 
-Signed-off-by: Ștefan Ghețu <stefanghetu9@gmail.com>
----
- sound/soc/fsl/fsl_micfil.c | 21 +++++++++++++--------
- 1 file changed, 13 insertions(+), 8 deletions(-)
+Agree. Since this is an RFC patch series, I kept it separate so that 
+this issue could
+be reviewed independently from patch 2. Going forward, I will merge them.
 
-diff --git a/sound/soc/fsl/fsl_micfil.c b/sound/soc/fsl/fsl_micfil.c
-index 60ac8eabab9da..5d8f0f76ab46f 100644
---- a/sound/soc/fsl/fsl_micfil.c
-+++ b/sound/soc/fsl/fsl_micfil.c
-@@ -953,12 +953,17 @@ static int fsl_micfil_reparent_rootclk(struct fsl_micfil *micfil, unsigned int s
- 	/* Get root clock */
- 	clk = micfil->mclk;
- 
--	/* Disable clock first, for it was enabled by pm_runtime */
-+	/* Reparent root clock to the PLL matching this sample rate */
- 	fsl_asoc_reparent_pll_clocks(dev, clk, micfil->pll8k_clk,
- 				     micfil->pll11k_clk, ratio);
--	ret = clk_prepare_enable(clk);
--	if (ret)
--		return ret;
-+
-+	/* Enable only once; hw_params can be called multiple times */
-+	if (!micfil->mclk_flag) {
-+		ret = clk_prepare_enable(clk);
-+		if (ret)
-+			return ret;
-+		micfil->mclk_flag = true;
-+	}
- 
- 	return 0;
- }
-@@ -991,8 +996,6 @@ static int fsl_micfil_hw_params(struct snd_pcm_substream *substream,
- 	if (ret)
- 		return ret;
- 
--	micfil->mclk_flag = true;
--
- 	/* floor(K * CLKDIV) */
- 	switch (micfil->quality) {
- 	case QUALITY_HIGH:
-@@ -1068,8 +1071,10 @@ static int fsl_micfil_hw_free(struct snd_pcm_substream *substream,
- {
- 	struct fsl_micfil *micfil = snd_soc_dai_get_drvdata(dai);
- 
--	clk_disable_unprepare(micfil->mclk);
--	micfil->mclk_flag = false;
-+	if (micfil->mclk_flag) {
-+		clk_disable_unprepare(micfil->mclk);
-+		micfil->mclk_flag = false;
-+	}
- 
- 	return 0;
- }
--- 
-2.53.0
+
+>
+> That said, this is a debug check of sorts since SCRATCH_ALIGNMENT_BYTES
+> is of MAX_ORDER_NR_PAGES, and pageblocks _should_ always be smaller of
+> equal to this.
+>
+> Anyway, I don't think this is something you should gate by a config. I
+> think you should either remove the static_assert(), or turn it into a
+> runtime check.
+
+Agreed. I will evaluate both options and decide which approach makes 
+more sense.
+
+Thanks for the review Pratyush.
+
+- Sourabh Jain
+
+
+>
+> +Cc Michal.
+>
+>> Cc: Aditya Gupta <adityag@linux.ibm.com>
+>> Cc: Alexander Graf <graf@amazon.com>
+>> Cc: Andrew Morton <akpm@linux-foundation.org>
+>> Cc: Baoquan He <baoquan.he@linux.dev>
+>> Cc: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
+>> Cc: Hari Bathini <hbathini@linux.ibm.com>
+>> Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+>> Cc: Mahesh Salgaonkar <mahesh@linux.ibm.com>
+>> Cc: Michael Ellerman <mpe@ellerman.id.au>
+>> Cc: Mike Rapoport <rppt@kernel.org>
+>> Cc: Nicholas Piggin <npiggin@gmail.com>
+>> Cc: Pasha Tatashin <pasha.tatashin@soleen.com>
+>> Cc: Pratyush Yadav <pratyush@kernel.org>
+>> Cc: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+>> Cc: Shivang Upadhyay <shivangu@linux.ibm.com>
+>> Cc: Shrikanth Hegde <sshegde@linux.ibm.com>
+>> Cc: kexec@lists.infradead.org
+>> Cc: linux-kernel@vger.kernel.org
+>> Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
+>> ---
+>>   arch/powerpc/Kconfig | 1 +
+>>   1 file changed, 1 insertion(+)
+>>
+>> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+>> index 61350d3e7a19..f68b9fc883ba 100644
+>> --- a/arch/powerpc/Kconfig
+>> +++ b/arch/powerpc/Kconfig
+>> @@ -720,6 +720,7 @@ config ARCH_SUPPORTS_KEXEC_HANDOVER
+>>   	def_bool y
+>>   	depends on PPC64
+>>   	depends on !CRASH_DUMP
+>> +	depends on !TRANSPARENT_HUGEPAGE && !HUGETLB_PAGE
+>>   
+>>   config ARCH_SUPPORTS_CRASH_HOTPLUG
+>>   	def_bool y
 
 
