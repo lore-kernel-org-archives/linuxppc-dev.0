@@ -1,91 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-26065-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26066-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E504BC5DF94
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Aug 2026 10:07:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7B513C5DF9D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Aug 2026 15:45:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hT66Y05gcz2y2c;
-	Mon, 24 Aug 2026 20:07:49 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::432"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787566068;
-	cv=none; b=a1N7OTNhDcOMfXo3UMWv+UleNlIuMMknUwkow76wvNiTpuuypAe0m67ilu/qENi6fxP0cahcd8r51g5FJqUYr9noNpI6NMWR3HRShcXg4xzgx0w7EdoLYuQHAidFbO3w9EFi3IzlE6NYa8UlJpIJCyBCXQuu9YOqHYVr8ZNN0iMd6S3CMpm70noaDG1VA9ltsuM461dlz8mxlPaH44Fx9wG6LgSr0QPCXNXlmMq53EcLhiVPWEICHPydFmTXS+AR3p53CO1iFtCGuqDllJpLXHtRuLrSHCraisQ5v26FoHMgoZ4TQgYOI52yRf2fPS5LSd+zY4LJyZozANDvT7UDqg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hTFbx54Gnz2xpv;
+	Tue, 25 Aug 2026 01:45:17 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::52a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787586317;
+	cv=none; b=D7Zzj4sF+U4uYcZZR8ijFpOCc7WDrXHnSIstkB2EqZf1qeNsXBb4c4pFBbh9JYCpqpXSp+YozUb0pt1YkThyAOi9S0VNf3yhQCsIy/244pQRXawZimY9Dtg500eNkUbhDD9AdV8fVkED3BMG8O0bV2LHMxB4aAZ/viePgLPZl+p77EmIzT18PHXjFvsKeqV5pE/c5SxGp/7DRlLpRMMTYxS1zpIt0CTSV0X2EBme4ufJhYuO5ABxsxUvvMGAsNQCbP71dJFlU5OuT1iH0+OdRPsmPCsRDtMtDBXWrbVztOvHfWGsE8iTO1HJ91BmThNjUunEMsS8k/f+nZS5wY4HlA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787566068; c=relaxed/relaxed;
-	bh=I0etaik6WYExchhy19XEVUSW7e1ryrbbO6lOF0t7pQM=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=fnKFDVRmdyVgHAOtPDQrjwIJMIywb7dBStbK6sfEDlHD0yqWCJhSZ50vunW2fT2kOll2qKUJGifakeTGO2lR2GuAxXQZM3c3TZBJvQQmUiv79TQhm/LRd8V2MbtNJXxYz0Smi15OvDph2p0ZUNI18ZwuTBbntY49jANzg8VfdWP2m72lHbUaviQLnkEglAFFqDBINYZYL5qhpSvtVm3i7Pa5EkTo96qRHC43O0wq1QQk66G0g4mEhrcc8g2KqmsbsqfjpqXbTillpSSUpqp6wJJjIcCFza6aCEgJ9drwXxYPH4iu/lTNjOrcXNVVgl8w5kLAYbu/VIjZ3vz1hKgqmg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=NdHaNVhA; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::432; helo=mail-pf1-x432.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1787586317; c=relaxed/relaxed;
+	bh=QEtJVtkW7q375yAi3A0GskrIJ2s9H0yJ3yupt0Y509Y=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=TagAOlOScV5zhC4rPFAM19kfV4c1TEFfZGC6bAqZqLi99BDIjxUL3+BZEzOXMmlYm9ZAHnyXX+XwWhUaKo31nFivf49FJC2r2K1yOt5481ZBjNptBqv+EdcAGXryCWzPLSUJcHtF1fEhvg5JWEWuwREYjsTs8XLFFYBlwjRrTobQnqv0mpIgkyrr2f/Zq8N2mO8In8WQ5ySmAOnzF37EgkV31qEoo/YSvaBrna1+K8hVLCsjkBfMhfXm4DgD175/ElqcnZVgKrBSF5hG7us8H4eMchAyD2b7SI3YccJPsbgAmkU+j5Q/oKAVd2S9J6bPlI9CShMk7Qij722GPtVXLQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=sifive.com; dkim=pass (2048-bit key; unprotected) header.d=sifive.com header.i=@sifive.com header.a=rsa-sha256 header.s=google header.b=FOOFqf0A; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::52a; helo=mail-pg1-x52a.google.com; envelope-from=samuel.holland@sifive.com; receiver=lists.ozlabs.org) smtp.mailfrom=sifive.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=sifive.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=NdHaNVhA;
+	dkim=pass (2048-bit key; unprotected) header.d=sifive.com header.i=@sifive.com header.a=rsa-sha256 header.s=google header.b=FOOFqf0A;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::432; helo=mail-pf1-x432.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x432.google.com (mail-pf1-x432.google.com [IPv6:2607:f8b0:4864:20::432])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=sifive.com (client-ip=2607:f8b0:4864:20::52a; helo=mail-pg1-x52a.google.com; envelope-from=samuel.holland@sifive.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x52a.google.com (mail-pg1-x52a.google.com [IPv6:2607:f8b0:4864:20::52a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hT66W1yVZz2y06
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Aug 2026 20:07:46 +1000 (AEST)
-Received: by mail-pf1-x432.google.com with SMTP id d2e1a72fcca58-8487b7b3fc8so3365039b3a.3
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Aug 2026 03:07:46 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hTFbv5tHwz2xmh
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2026 01:45:14 +1000 (AEST)
+Received: by mail-pg1-x52a.google.com with SMTP id 41be03b00d2f7-c9b373d5af0so2820102a12.2
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Aug 2026 08:45:14 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1787566063; x=1788170863; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=I0etaik6WYExchhy19XEVUSW7e1ryrbbO6lOF0t7pQM=;
-        b=NdHaNVhAYMaV3rmnU5EUkC9sISdlGAdiscgbzKNIGQTGvn76T4rU1aP06eIzA9UUsg
-         xAick5HQVR638J1h6toEpD+Jd9phVWE8bwoleqXGBmMe3ESnaZFfwdSvm/WnpLyVflsB
-         v13cNBeORJ2JxgfajQjEj6aSUczNH58/ESI3d/Vl26U1I/JAKX68Fg3+02F/jzgVyx6m
-         EdH1DH/hAToeqEFhz7imBUQFgPuIbl+yzJLxAFfdcOIRWpYnYcjiGRUU2mu215QJJA9W
-         dtxfvXuH6RZLI/tHTblP2AcdqUjm5sZHYGHr9VmBqNibHEUwYSUtJssQSzXwcC5+bN0T
-         OsCQ==
+        d=sifive.com; s=google; t=1787586312; x=1788191112; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:in-reply-to:content-language
+         :from:references:cc:to:subject:user-agent:mime-version:date
+         :message-id:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=QEtJVtkW7q375yAi3A0GskrIJ2s9H0yJ3yupt0Y509Y=;
+        b=FOOFqf0ASokvlP1oZgkLpBTg+LpiGHQ3FlHGI1tfOjEO5RVfmJaOrv2Z3O0LkqrU3Z
+         hMQorzqdbQiJSNn0Hgh5WDfvN9QliPJmwqKFL8nlFr/FTxanH7gzjcc5hJZBHstBVyEZ
+         SQvhoiGQjKIIvqLBdMTaX73tJv+Y32xGoF37VB2Z0XSGI/sdvLWzjL7MDdeulXPr0csK
+         dQsBx0wGRbCutEb89F192qCk+/kwMrNFklYM1uyMBF5oSq1IfsXBrmw+fnoZgUhrAnc0
+         pznDDFcaBph1dK7Wgk03NuRV4I5qNq1fdyk2nihG/OKCydWCJT0hejV8qv1q8X5i6NXp
+         6glw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1787566063; x=1788170863;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=1e100.net; s=20251104; t=1787586312; x=1788191112;
+        h=content-transfer-encoding:content-type:in-reply-to:content-language
+         :from:references:cc:to:subject:user-agent:mime-version:date
+         :message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=I0etaik6WYExchhy19XEVUSW7e1ryrbbO6lOF0t7pQM=;
-        b=LV5Wr60rhuaKxJmjiq4djLB6OWj3Jl004O5mY7V+5mAiGBx5po4L0dgR+ccPGzU7yQ
-         9dxt/ire1IEXcCA1YKthlL0Yrq1Tyt9DWor3oy80JQ1hM5rWWqhyUtZ92Gea2E0fqM26
-         bomSy9ddYJUA+4xg0P6M+4jkJJVCg/tyo/tH4HjrTDLA37wpnrbturID/sQ6+NvuImE+
-         50QDC4n4UFeaM6/ePH2vaXRfSaT0jUOB6VR4wVhwsKr/BtgYGWmbc+U5Ym0CohQqi6Im
-         RFshoZUkNAcuWr56paT/M8xqvkT6Q22ZXIwYt4OdqnuZddw274LWUY965nv82L00YpC0
-         09yA==
-X-Forwarded-Encrypted: i=1; AHgh+Rq62iqv3uNE8NeOI4olyM8QihynSGAfLPtreHIEln21UY9dKUKMEdFr69ZuWnre0Zycv+Gu8EO+0trxzQU=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++lYucIixdrmQio2RffUgmHoCix1I/QR/hpDqshNctnuPnyyymCc
-	qlfXPnXSysXNlgwtrAlbDznW5bSq56IvHjwh7VcqqIKhJXpLHGEze8Pj
-X-Gm-Gg: AR+sD13nW1ihWGKEmzQAVXHKVwMzZim6lzeNBUGtMKHwIh7a/I5FJV/aaigkHvtaPs5
-	HCWIR6ly6JnjeRji6Ox2v85zW3lJmTnBkoWIXvKmqGG0RCC16XUFfHTYt+dxtC3MNLjiHZmbLQF
-	szCasvdLW/QA8X4lPtsvmNuUXgDQATOMSMV44CmNTWpgg/RwQVjiOo9ZYOFcLW0Xcm9E9hUkzQU
-	x03vYhLHS4gtBhGs8t5RwjQviQRv1WUp06oUcbLsCa1xGbH2hQTpOHdLuhLUZnf2jsPmp/cu00W
-	FD2JBWOXzJ3Fe86n6FlbYXaejJ/b5q3k6KUj8AIYxV1J8z5aYvj7gDMBBJWWito/8MJuncKD1mO
-	sYDB31rArNJZNumkHNJsxAw2skp/LVJVfoGFSxKUlRznm00eQEEgL33XQgYnbKXneToi9mPNH8S
-	9vejLVNqDY2m1H7MtH2TXFTJAYb8L1DpuIWvDm5lDj2rQ0ULy+nf6Iik1fM2AoMT9QdQU2BqTGi
-	I62qSQ0ARdDI4PwjLoC6TOPBgSfU/RJFJxvrtNueF+MelvQN6Dp0f8QNatpx2JIf/FiNKJS/Hob
-	00Kl
-X-Received: by 2002:a05:6a00:4f94:b0:84e:2f2e:8def with SMTP id d2e1a72fcca58-851f9aafc0emr39369376b3a.6.1787566063324;
-        Mon, 24 Aug 2026 03:07:43 -0700 (PDT)
-Received: from phuc-desktop.. ([183.91.15.56])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8520eed8b22sm1777275b3a.4.2026.08.24.03.07.39
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 24 Aug 2026 03:07:42 -0700 (PDT)
-From: phucduc.bui@gmail.com
-To: Johannes Berg <johannes@sipsolutions.net>,
-	Jaroslav Kysela <perex@perex.cz>,
-	Takashi Iwai <tiwai@suse.com>
-Cc: Kees Cook <kees@kernel.org>,
-	Thorsten Blum <thorsten.blum@linux.dev>,
-	cassiogabrielcontato@gmail.com,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-sound@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	bui duc phuc <phucduc.bui@gmail.com>
-Subject: [PATCH] ALSA: aoa: i2sbus: Check IRQ before requesting it
-Date: Mon, 24 Aug 2026 17:07:30 +0700
-Message-ID: <20260824100730.31601-1-phucduc.bui@gmail.com>
-X-Mailer: git-send-email 2.43.0
+        bh=QEtJVtkW7q375yAi3A0GskrIJ2s9H0yJ3yupt0Y509Y=;
+        b=PAKoJlRzed++FCqnfb3cnQKSdlH+tN56oed8VCjthqgFUCFun71n+Ez8gFl5ERvgJ1
+         TczUAsc6WuMFoz5OKdJa7FrdzofL5yg8m3lBnWtmS7hOhwx8k58u1amZSCHn8GMTpwJw
+         znAHXZDUGYl2INO6t6DivmuhA3nWoV0t6B7yxvqy9w3ARTuiSDbqKsv8LYEQaIMZwTnA
+         GfEysJQPemPRAKYbr+7Z5SN35tG4SkFIW4zr/pi2T137o3ZX7BRAJiHMWL7kx/hgXqpj
+         IySW5eZKHPVTaq14Mg8PE+zkfGUjNI+FhFluYUH6xO9/YSkA2MOvOLlhEVzpCA59N6dL
+         nV9Q==
+X-Forwarded-Encrypted: i=1; AHgh+RqN+U3XKQZ77gDiG9cYhMcXrI7LH9+Qi0N1Ik9wjihZc7tlo9bVFXvwpjgrIZ8XrxqliPqtP+vz7PPX3BI=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++mV4JAXR0DYS43DOtdSNhRwroUha1eBecWr4QmuWjKPcKxypLZh
+	v9FwZipCYlfvcZlIHjfr8/IksCL3bsUGvMGgWoji3xgC4tkUZWxVD48xxZKy4J6sKZ8=
+X-Gm-Gg: AR+sD11E12256rzfOv8F8xid25R0BQzYPu1t6wva3q6EBKjAjyKqEtdVGvXxhTqxfwI
+	cYJDc3Zz2FrGVYjKzZ4Gsa3N8QU5gh3zCwZoRzbPlRJK1LHjxlnSzFxDeXG49/NK275fUH+V24D
+	KQyH+zp1xgUkNpDT+1bCjnIbRAzun6geEpX9ABY0lBBf/1N0vU03zmI/nLbzHxn1dH94B8QEIjx
+	HRVJH0aFXyPN9+NtcLer310MwU/ORbeQISAhgblbPQPEjgSCHxnMMqppkyoKQG0sOCAlXxzcTyT
+	oyuYcnyAstfklCqamP5gE1uUzZZohlllkKqPbQDlu+WLmfWBjkD1Jo/MWTjMywkl6ztVcYTFYN8
+	QM/c82rWGrzfID6Asg3JrWK2jvu+bXgLHunXdqus2P63TMp1G+Asnlq1XNgAoVONbHGqiwkPYZS
+	UIGSLqDQqM1cyImKrdVKDTqgdHHaruDm+NVPASSldF1nHxDFlGCJEyO86+W7HoneAfjKLTB0kO7
+	f6s0yLOBXbJiVM=
+X-Received: by 2002:a17:90b:5867:b0:395:4de4:92c8 with SMTP id 98e67ed59e1d1-395df4dcdbcmr39252435a91.15.1787586312489;
+        Mon, 24 Aug 2026 08:45:12 -0700 (PDT)
+Received: from [100.64.0.1] ([165.225.242.163])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-39645b7ff6dsm23611a91.10.2026.08.24.08.45.10
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 24 Aug 2026 08:45:11 -0700 (PDT)
+Message-ID: <029cfde8-74fc-4437-bc18-b1b53d44cab2@sifive.com>
+Date: Mon, 24 Aug 2026 10:45:09 -0500
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -99,35 +88,61 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [RFC V3 1/8] mm: Make ptrval_to_str() generally available
+To: Anshuman Khandual <anshuman.khandual@arm.com>
+Cc: Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker
+ <dalias@libc.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+ Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>,
+ WANG Xuerui <kernel@xen0n.name>, linux-alpha@vger.kernel.org,
+ linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
+ linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org,
+ loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org,
+ linux-mips@vger.kernel.org, linux-openrisc@vger.kernel.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-um@lists.infradead.org, linux-arch@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Lorenzo Stoakes <ljs@kernel.org>,
+ linux-mm@kvack.org, akpm@linux-foundation.org, david@kernel.org
+References: <20260818040041.1891769-1-anshuman.khandual@arm.com>
+ <20260818040041.1891769-2-anshuman.khandual@arm.com>
+From: Samuel Holland <samuel.holland@sifive.com>
+Content-Language: en-US
+In-Reply-To: <20260818040041.1891769-2-anshuman.khandual@arm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-From: bui duc phuc <phucduc.bui@gmail.com>
+On 2026-08-17 11:00 PM, Anshuman Khandual wrote:
+> Move ptrval_to_str() inside a header thus making the helper more generally
 
-irq_of_parse_and_map() returns 0 when parsing or mapping an IRQ fails.
-The return value was passed to request_irq() without checking for
-failure.
+Typo here and in subject: ptrval -> ptval
 
-Check the return value before passing it to request_irq().
-
-Signed-off-by: bui duc phuc <phucduc.bui@gmail.com>
----
- sound/aoa/soundbus/i2sbus/core.c | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/sound/aoa/soundbus/i2sbus/core.c b/sound/aoa/soundbus/i2sbus/core.c
-index 833c44c0a950..adf123dd79a2 100644
---- a/sound/aoa/soundbus/i2sbus/core.c
-+++ b/sound/aoa/soundbus/i2sbus/core.c
-@@ -240,6 +240,8 @@ static int i2sbus_add_dev(struct macio_dev *macio,
- 	}
- 	for (i = aoa_resource_i2smmio; i <= aoa_resource_rxdbdma; i++) {
- 		int irq = irq_of_parse_and_map(np, i);
-+		if (!irq)
-+			goto err;
- 		if (request_irq(irq, ints[i], 0, dev->rnames[i], dev))
- 			goto err;
- 		dev->interrupts[i] = irq;
--- 
-2.43.0
-
+> available for new users which are being added later. While here, also move
+> another related string size macro PTVAL_STR_MAX inside the header as well.
+> 
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: David Hildenbrand <david@kernel.org>
+> Cc: Lorenzo Stoakes <ljs@kernel.org>
+> Cc: linux-mm@kvack.org
+> Cc: linux-kernel@vger.kernel.org
+> Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
+> ---
+>  include/linux/mm_types.h | 15 +++++++++++++++
+>  mm/memory.c              | 16 ++--------------
+>  2 files changed, 17 insertions(+), 14 deletions(-)
+> 
+> diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
+> index b18c2b2e7d2c..a5b514e55dd7 100644
+> --- a/include/linux/mm_types.h
+> +++ b/include/linux/mm_types.h
+> @@ -2001,4 +2001,19 @@ static inline unsigned long mmf_init_legacy_flags(unsigned long flags)
+>  	return flags & MMF_INIT_LEGACY_MASK;
+>  }
+>  
+> +void ptval_bytes_to_hex_str(char *buf, size_t buf_size, const void *entry, size_t entry_size);
+> +
+> +#define ptval_to_str(buf, val)								\
+>...
 
