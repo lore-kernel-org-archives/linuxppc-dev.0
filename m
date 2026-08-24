@@ -1,79 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-26067-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26068-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 736C1C61DB6
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Aug 2026 15:50:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B02DFC5DF9C
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Aug 2026 18:50:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hTFkC5Yxkz2xpv;
-	Tue, 25 Aug 2026 01:50:43 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787586643;
-	cv=none; b=O7TXpU8XQGcePAz22hwkfTsRH8YSGGey+PS9u9uZYfg9Ys+DxRYm3VN1+yWzTQdjYsnyl7LULJa2nhT2vdrX7cV2R7uxfLXPmlXzh/UTU+/YZGCDIM+navzT8jmkVyQAMbxl5tMRJbrJGOCdklADRjjvrsnGe6WTmAC1SXw9QT5rj2T43prj80C2uWKNKRIU+Fo+u7X8ZZpmNrauSTh/EKJt7ikwsmlDGif8XMrfplw9tlRXB+ZCqHGJVuoFE1khqnkIEWPJPy+U4arP7c71m2Shxlxmp3JyEMGNo/QFz5bB78UKgX6RXrmhQBJuvImvb+lniTI4l5wP6lD6Y9wF8g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hTKj64hcRz2y06;
+	Tue, 25 Aug 2026 04:50:02 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787597402;
+	cv=none; b=OapUrHKdRN7jZlD8UUyrMXhGiRKNMBsyZRLhjpOfrSwu6EjGhV0VH3UjYTXO7eCW+SHSG1eRwlVxR2U06xTVwvLhHgD0nlYdXnFEz/FVkf7Lgn4LET6dSHnYjDrll33zQpviHApTvq/dN6iIE/jMpK+bKthiwHIyvd4BG3GO91FCcg1h59IHux7uMNacumxpVJqSMXWAyMyRgn8x+x2hIUvXEWWXs1wCh7yLul0wiQ8i24wIyem2CB9jjkdG214KujbJxVpCXSh/sOhIpx+m3yV+5lLH5kwwcMSwuw/kcWqvz4ja7tR9J1dnXfKfawrOKIXgh/x5D1r28T5qIfMS3A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787586643; c=relaxed/relaxed;
-	bh=8n2sUFyNkTeeyJ480adWKOU51gCub2/F4WE3r3BRNf0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=EHW2RtL0IPg7OOR3kBsmXZUC05hV7Jj0lPng+8VvUWMr6lZ0m0QElLV1iQNnA5h3MUNDjNpm5BAizih3Hq+ououV2qU9YCWnpDRfgifjqlsKTcNJJgsnYLbLk+rPloKUIieUE3KGh4JBOS+jxEVv+oNZilr55ZF7qfsz4qxHagbljFpL2MZenIZXpC7BvuGWdxvr5tpWss/z0+FNTCigrD4cU6NxYdsLYn8M9bgi3cChaFHNzKF/qCT5A2w1tEDnDNOQQIhYnfdHKnF3bW9NRA2RjL0PjyQUX1qDJNT/mI/hqpsz2MlccPuLQc0O+gnP7BD4TJQlagBakN4zBPymLg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=sifive.com; dkim=pass (2048-bit key; unprotected) header.d=sifive.com header.i=@sifive.com header.a=rsa-sha256 header.s=google header.b=E0bPSDYE; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42a; helo=mail-pf1-x42a.google.com; envelope-from=samuel.holland@sifive.com; receiver=lists.ozlabs.org) smtp.mailfrom=sifive.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=sifive.com
+	t=1787597402; c=relaxed/relaxed;
+	bh=wv3hSyc7KpV2vcpK4ExKVfFvsrqD+y8hugaEQYXGNOo=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=k+bH32w0O8CGL+HSr6JmFyD0jbslONUWvZPH5/1T6/MYCR/I/SQx/QIQVKosOxmmNs2cH9Xe9n6TaLlJLLCBMzul+O6aql1QNP64r6LAhbumgSj8qGklTtfeIWUMkCe8mZleYZgYIIXgPdxsqIhSmoLJoerTzwbIUJEjTjCAm5qrHwmJePbSAsa3QTptcp7c2vLz+tIUJc7qFWxjRDFYX8LqxWjMThGXD4g2Lti6OPL14BfTImnFlz9rQSPo1gygjjwDeCwH2pynMGuwtapAgLGRl0CXDHb+SdDYbfTvl9RB0pKAodNMDfx+i2tWFH0Y7EeqUWWWC5FeymQwyFg+9Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=FLSzt3qU; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=sifive.com header.i=@sifive.com header.a=rsa-sha256 header.s=google header.b=E0bPSDYE;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=FLSzt3qU;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=sifive.com (client-ip=2607:f8b0:4864:20::42a; helo=mail-pf1-x42a.google.com; envelope-from=samuel.holland@sifive.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x42a.google.com (mail-pf1-x42a.google.com [IPv6:2607:f8b0:4864:20::42a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hTFkB5C1Fz2xmh
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2026 01:50:41 +1000 (AEST)
-Received: by mail-pf1-x42a.google.com with SMTP id d2e1a72fcca58-84e04df8c46so4831356b3a.2
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Aug 2026 08:50:41 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=sifive.com; s=google; t=1787586639; x=1788191439; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:in-reply-to:content-language
-         :from:references:cc:to:subject:user-agent:mime-version:date
-         :message-id:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=8n2sUFyNkTeeyJ480adWKOU51gCub2/F4WE3r3BRNf0=;
-        b=E0bPSDYERJb6tl0WB1DmAYF+QKEy1nnCtKZkTvg3YGZGFKzrRae1ug1gp2vKvtUOA1
-         vYGuY4ApDArFwKH0cJ22x1gcJ2Ayo+Reh6CSy3e0cmHRPPVwZL5pjcDtnIK1DI5CIapy
-         IWng18h5IZa6r2o/xcOz22yluFEzbg+ddSa2njXSGPkF1LKEN76G4Vz/MgaqzeuHpCCh
-         UMKd7d3Npiv0HDJiW6k6CkHUXyK03rug8H6GhsIqfk/PvlD6OBjuvAt41FI6by677v0T
-         BeVgYtcf1wMo6cjMnMgHEfHlHymHYPa/sDX3AabpvnbL6liYK3ZwEfD0WMQV18AFHQ9u
-         CI5w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1787586639; x=1788191439;
-        h=content-transfer-encoding:content-type:in-reply-to:content-language
-         :from:references:cc:to:subject:user-agent:mime-version:date
-         :message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=8n2sUFyNkTeeyJ480adWKOU51gCub2/F4WE3r3BRNf0=;
-        b=PgUY2VDGWVxZmRrO7PARnySQBSU6dqPFhg+iKkalK9Qam97Dlliaci3eSUXIy2QrL9
-         ah9vTiquY+Ns2dBc1Idi7z6jQ+OIW8mf025pbYzQs+KNpchUPCL4MXMOlkNbupqbZuR0
-         V9KGpsVBgXW+4yuuwkkcQeHBdtHxOSsg3U5chrUoIFLKnxdaL4yR5Nosei+LzoU/nocc
-         sSzA4bLnHV5ZeI+yIRnh0YAfD8qi7M7N3RODlny7xaR7Bz45EcgGQEZQ68zp/1KcmwT2
-         fV58TU+iYM4SQYxfe5vnFy02NgkZTR47rBv5qj+hX+KE2Rv44dLDnaB94O+y5/Cb0Cl4
-         jV4Q==
-X-Forwarded-Encrypted: i=1; AHgh+Ro5HRCXgQr9PlX0tRkuf759ldCjRWU9wGcK5A1mqViAHJOJMuoFgD8COrIG5+x/KXf/4TqP6VZOly1YVKE=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++lTpiF0kMQtnp3u2Qhl6HCuyHonFkemJTiUAIrbmxx/GXHYeJSp
-	7kGlPQHPaAYUv8Jm6UjqkbVtg3xcHJh6KUY8yvNqeXPPhZACHivZpAWHwleYafdM/vU=
-X-Gm-Gg: AR+sD13VEHu1DYBC5y1iMmp7kG6WwU0tQ7Vj+W/KNggWD4IhC9kyzQeFIrDwk5UPs4+
-	WqAbFz5TgcNHFzCn9k57h3u2SGMh11G5vwcdX2RGu5USN0x4/P4VCrp6cX+KE262QJf++Y73YLe
-	Q63Di7z1qD3W3vx3CPuQ+cZ3mNmFUj0yGNaXngrcXf16zaxUu/nwZ2hiBBtG2ufXnyigXcLoW44
-	NodFF8XnajiJ7mwzXOY7CTMipXanC+pbd3m2nG4U3le67Vw30OtHhpQWP9Fqdw7qXiFksDDLq4C
-	s2gg3X8LPxi3tsMs4NkwZByGUhBGmbnzflKC2aWEVv/dvcZpaY6z0mI58fsAU6mFNMKF5CdJbhl
-	sCzzmvXQdVUQxIFSz7/tQieyqXEIY15SHsEQGr1Mbp+XHFcWa7iahLecpH6mfhTf8tF6hjeFZoX
-	wINV8G3SVCJG6xFBrycJPRAnONdebAhcyYZYnxaO6JGCqZZO7sQWtosYY/iJbXQOnV
-X-Received: by 2002:a05:6a00:10d1:b0:848:5540:2377 with SMTP id d2e1a72fcca58-851fa070c14mr40910400b3a.17.1787586639434;
-        Mon, 24 Aug 2026 08:50:39 -0700 (PDT)
-Received: from [100.64.0.1] ([165.225.242.163])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8520ef36048sm2219670b3a.26.2026.08.24.08.50.37
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 24 Aug 2026 08:50:38 -0700 (PDT)
-Message-ID: <6dae9cae-9665-4dc8-9a49-d6e5acda221b@sifive.com>
-Date: Mon, 24 Aug 2026 10:50:37 -0500
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hTKj535VZz2xZh
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2026 04:50:00 +1000 (AEST)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67OG1aJR500916;
+	Mon, 24 Aug 2026 18:49:26 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=pp1; bh=wv3hSyc7KpV2vcpK4ExKVfFvsrqD+y
+	8hugaEQYXGNOo=; b=FLSzt3qUNzOpXHeoMpAVTPku8qkNhLTiieCR4CXFb/wcF5
+	tuuL6PPp+1cE5VVFK56uVB5TDpbUGXf8rfiWhH2dKx4iNzAI+nMFczEQlDuUPujq
+	X0hBU4pORfHlBJLIKJz8i1eU5DIU+avoTGUheujPXPQNoe+jghO04Y3HJZWemxiE
+	K2CLZmUYWvQXV6DhNJyd5fxNEyxPzFV4dX6iDKJ8VhrgvJtK0CatAthxncaiQCYf
+	CWhCWN57Kef7ltvJZuJV2LGsZmWl6yyERlICDrwRHKnE4GTX6KLdJ46TJxI8UuMo
+	f+dUW+GW96ltCkY8hOf32/s7qAWt3zc6W0eGMMnQ==
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4g73eqkg3p-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 24 Aug 2026 18:49:25 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 67OIfJ1a023207;
+	Mon, 24 Aug 2026 18:49:24 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4g7pfw0116-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 24 Aug 2026 18:49:24 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 67OInKoM41025926
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 24 Aug 2026 18:49:20 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 00F7F20043;
+	Mon, 24 Aug 2026 18:49:20 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E194520040;
+	Mon, 24 Aug 2026 18:49:16 +0000 (GMT)
+Received: from Gautams-MacBook-Pro.local (unknown [9.124.214.83])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Mon, 24 Aug 2026 18:49:16 +0000 (GMT)
+Date: Tue, 25 Aug 2026 00:19:13 +0530
+From: Gautam Menghani <gautam@linux.ibm.com>
+To: Shivaprasad G Bhat <sbhat@linux.ibm.com>
+Cc: maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org,
+        tpearson@raptorengineering.com, mpe@ellerman.id.au, npiggin@gmail.com,
+        chleroy@kernel.org, namcao@linutronix.de, tglx@kernel.org,
+        yury.norov@gmail.com, tiwai@suse.de, wangruikang@iscas.ac.cn,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] powerpc: pci-ioda: Fix the stale irq chip reference
+Message-ID: <aoySKRSGKMXho8Ij@Gautams-MacBook-Pro.local>
+References: <178716225364.1437.6201568081502251835.stgit@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -87,119 +89,98 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC V3 8/8] mm: Drop pxd_ERROR()
-To: Anshuman Khandual <anshuman.khandual@arm.com>
-Cc: Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker
- <dalias@libc.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
- Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>,
- WANG Xuerui <kernel@xen0n.name>, linux-alpha@vger.kernel.org,
- linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
- linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org,
- loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org,
- linux-mips@vger.kernel.org, linux-openrisc@vger.kernel.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-um@lists.infradead.org, linux-arch@vger.kernel.org,
- linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>,
- linux-mm@kvack.org, akpm@linux-foundation.org, david@kernel.org
-References: <20260818040041.1891769-1-anshuman.khandual@arm.com>
- <20260818040041.1891769-9-anshuman.khandual@arm.com>
-From: Samuel Holland <samuel.holland@sifive.com>
-Content-Language: en-US
-In-Reply-To: <20260818040041.1891769-9-anshuman.khandual@arm.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <178716225364.1437.6201568081502251835.stgit@linux.ibm.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-GUID: 8hn9C5WobgogztKIAdQUBo3K_wnph8G2
+X-Proofpoint-ORIG-GUID: Nd3qSs4oO3usFBvAXrRidJfzCZV8ya7n
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODI0MDE1NiBTYWx0ZWRfX719ziVHf6r3h
+ ebbbKU/RNqINJ0KtDzKP7wXd2B+/3WSYC7LXdzdismqcxyA4Jr8zBxC1xgsiOWotgNnX+mVo+A+
+ M8vhcII3F6yQt9Df86/2ZBkqk+aQE573qVS7bYwWw7A9b1BuAuXwZozWZAbuL1TBK1OXR4Y47iK
+ U3liPUOweTTZ49dyPtzhBuyw1Y69Y8luPWnkTS/O7digKDG3zXeVscYi+/evi6mUlc45Ic1KBFN
+ 69FqqXkhMZG8Z9TOXrFVM+Uv6xMrvW9JgcvB6w3I97b/t1eDaOp/vmbupuGiheT2OQKyvHTmgb6
+ GDQnNL91Meb55cmejD/IPRK064mIEd1K73bWiD1SMb0NUYyaKcwn6YEoKv028RpfI4wsm1/W+kp
+ BTuhlQjUaiE5FDU2Rx/TwTw/yuuux4VAe3bfwRyRmrsVeXUyU1GLNGsWx3dhcHZbmBRSkygwWBy
+ NrC+JO3eQwevWAvML4A==
+X-Authority-Analysis: v=2.4 cv=QsRuG1yd c=1 sm=1 tr=0 ts=6a8c9236 cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
+ a=kj9zAlcOel0A:10 a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=VwQbUJbxAAAA:8
+ a=VnNF1IyMAAAA:8 a=aqPL-WvAAm6ynEwNJewA:9 a=CjuIK1q_8ugA:10
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODI0MDE1NiBTYWx0ZWRfX/9lYbB7cHCHS
+ +jyJmbJNCDglXeiAJn/5/rtYayQSoCJ0SFbJiKTxaTVURFxvQixe5WPhhsbVeBIzKhnDNuyAc95
+ kLYm1z2eaJdHjhAfTHtm7Yvsc76MNQw=
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-08-24_05,2026-08-24_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 adultscore=0 suspectscore=0 priorityscore=1501 impostorscore=0
+ spamscore=0 lowpriorityscore=0 clxscore=1011 bulkscore=0 phishscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608240156
 
-On 2026-08-17 11:00 PM, Anshuman Khandual wrote:
-> There are no more users left for any pxd_ERROR() either in generic MM or in
-> the platform MM. Hence all these platform macros along with their generic
-> fallback could be dropped across the tree.
+On Wed, Aug 19, 2026 at 05:58:22PM +0000, Shivaprasad G Bhat wrote:
+> The commit f0ac60e6e311 ("powerpc/powernv/pci: Switch to use
+> msi_create_parent_irq_domain()") removed the legacy MSI irq chip
+> pnv_pci_msi_irq_chip but left behind the static definition of it and
+> its reference in is_pnv_opal_msi().
 > 
-> Cc: linux-alpha@vger.kernel.org
-> Cc: linux-snps-arc@lists.infradead.org
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: linux-csky@vger.kernel.org
-> Cc: linux-hexagon@vger.kernel.org
-> Cc: loongarch@lists.linux.dev
-> Cc: linux-m68k@lists.linux-m68k.org
-> Cc: linux-mips@vger.kernel.org
-> Cc: linux-openrisc@vger.kernel.org
-> Cc: linux-parisc@vger.kernel.org
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: linux-riscv@lists.infradead.org
-> Cc: linux-s390@vger.kernel.org
-> Cc: linux-sh@vger.kernel.org
-> Cc: sparclinux@vger.kernel.org
-> Cc: linux-um@lists.infradead.org
-> Cc: linux-arch@vger.kernel.org
-> Cc: linux-mm@kvack.org
-> Cc: linux-kernel@vger.kernel.org
-> Acked-by: Geert Uytterhoeven <geert@linux-m68k.org> # m68k
-> Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
+> The KVM IRQ bypass for vfio devices is broken because the
+> comparision in is_pnv_opal_msi() fails on the comparision with
+> stale unused variable showing the below errors in dmesg.
+> 
+>  kvmppc_set_passthru_irq_hv: Could not assign IRQ map for (X,Y)
+>  kvmppc_set_passthru_irq (irq X, gsi Y) fails: -2
+>  vfio-pci A:B:C.D irq bypass producer (eventfd Z) registration fails: -2
+> 
+> The patch removes the stale variable definition and fixes the
+> is_pnv_opal_msi() by comparing against the chip name prefix.
+> 
+> Fixes: f0ac60e6e311 ("powerpc/powernv/pci: Switch to use msi_create_parent_irq_domain()")
+> Cc: stable@kernel.org
+> Signed-off-by: Shivaprasad G Bhat <sbhat@linux.ibm.com>
 > ---
-> Changes in RFC V3
+>  arch/powerpc/platforms/powernv/pci-ioda.c |    6 ++----
+>  1 file changed, 2 insertions(+), 4 deletions(-)
 > 
-> - Moved ptrval_to_str() as header in a [PATCH 1/8]
-> - Stopped using pxd_ERROR() in generic MM in [PATCH 2/8]
-> - Dropped pxd_ERRO() macros from all platforms in this patch
-> 
->  arch/alpha/include/asm/pgtable.h               |  7 -------
->  arch/arc/include/asm/pgtable-levels.h          | 11 -----------
->  arch/arm/include/asm/pgtable.h                 |  7 -------
->  arch/arm/kernel/traps.c                        | 17 -----------------
->  arch/arm64/include/asm/pgtable.h               | 15 ---------------
->  arch/csky/include/asm/pgtable.h                |  4 ----
->  arch/hexagon/include/asm/pgtable.h             |  3 ---
->  arch/loongarch/include/asm/pgtable.h           | 11 -----------
->  arch/m68k/include/asm/mcf_pgtable.h            |  6 ------
->  arch/m68k/include/asm/motorola_pgtable.h       |  8 --------
->  arch/m68k/include/asm/sun3_pgtable.h           |  7 -------
->  arch/microblaze/include/asm/pgtable.h          |  7 -------
->  arch/mips/include/asm/pgtable-32.h             | 10 ----------
->  arch/mips/include/asm/pgtable-64.h             | 13 -------------
->  arch/nios2/include/asm/pgtable.h               |  7 -------
->  arch/openrisc/include/asm/pgtable.h            |  7 -------
->  arch/parisc/include/asm/pgtable.h              |  9 ---------
->  arch/powerpc/include/asm/book3s/32/pgtable.h   |  2 --
->  arch/powerpc/include/asm/book3s/64/pgtable.h   |  7 -------
->  arch/powerpc/include/asm/nohash/32/pgtable.h   |  2 --
->  .../powerpc/include/asm/nohash/64/pgtable-4k.h |  3 ---
->  arch/powerpc/include/asm/nohash/64/pgtable.h   |  5 -----
->  arch/riscv/include/asm/pgtable-64.h            |  9 ---------
->  arch/riscv/include/asm/pgtable.h               |  4 ----
->  arch/s390/include/asm/pgtable.h                | 11 -----------
->  arch/sh/include/asm/pgtable-3level.h           |  3 ---
->  arch/sh/include/asm/pgtable_32.h               |  8 --------
->  arch/sparc/include/asm/pgtable_32.h            |  3 ---
->  arch/sparc/include/asm/pgtable_64.h            | 10 ----------
->  arch/um/include/asm/pgtable-2level.h           |  7 -------
->  arch/um/include/asm/pgtable-4level.h           | 13 -------------
->  arch/x86/include/asm/pgtable-2level.h          |  5 -----
->  arch/x86/include/asm/pgtable-3level.h          | 11 -----------
->  arch/x86/include/asm/pgtable_64.h              | 18 ------------------
->  arch/xtensa/include/asm/pgtable.h              |  4 ----
->  include/asm-generic/pgtable-nop4d.h            |  1 -
->  include/asm-generic/pgtable-nopmd.h            |  1 -
->  include/asm-generic/pgtable-nopud.h            |  1 -
->  38 files changed, 277 deletions(-)
-> ...
-> diff --git a/arch/riscv/include/asm/pgtable.h b/arch/riscv/include/asm/pgtable.h
-> index 5d5756bda82e..993a6505eb8f 100644
-> --- a/arch/riscv/include/asm/pgtable.h
-> +++ b/arch/riscv/include/asm/pgtable.h
-> @@ -559,10 +559,6 @@ static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
->  	return __pte((pte_val(pte) & _PAGE_CHG_MASK) | newprot_val);
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+> index 32ecbc46e74b..728a5610d167 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -1623,15 +1623,13 @@ int64_t pnv_opal_pci_msi_eoi(struct irq_data *d)
+>  	return opal_pci_msi_eoi(phb->opal_id, d->parent_data->hwirq);
 >  }
 >  
-> -#define pgd_ERROR(e) \
-> -	pr_err("%s:%d: bad pgd " PTE_FMT ".\n", __FILE__, __LINE__, pgd_val(e))
+> -static struct irq_chip pnv_pci_msi_irq_chip;
+> -
+>  /*
+>   * Returns true iff chip is something that we could call
+>   * pnv_opal_pci_msi_eoi for.
+>   */
+>  bool is_pnv_opal_msi(struct irq_chip *chip)
+>  {
+> -	return chip == &pnv_pci_msi_irq_chip;
+> +	return chip && chip->name && str_has_prefix(chip->name, "PNV-");
+>  }
+>  EXPORT_SYMBOL_GPL(is_pnv_opal_msi);
+>  
+> @@ -1728,7 +1726,7 @@ static const struct msi_parent_ops pnv_msi_parent_ops = {
+>  	.chip_flags		= MSI_CHIP_FLAG_SET_EOI,
+>  	.bus_select_token	= DOMAIN_BUS_NEXUS,
+>  	.bus_select_mask	= MATCH_PCI_MSI,
+> -	.prefix			= "PNV-",
+> +	.prefix			= "PNV-", /* Note: is_pnv_opal_msi() uses this */
+>  	.init_dev_msi_info	= pnv_init_dev_msi_info,
+>  };
+>  
 
-We can drop the PTE_FMT macro now too.
+I boot tested this patch on KVM on PowerNV (P9) and KVM on LPAR (P10),
+with the USB controller passed through to the guest.
+The warnings are not observed.
 
-Regards,
-Samuel
+Tested-by: Gautam Menghani <gautam@linux.ibm.com>
+
 
 
