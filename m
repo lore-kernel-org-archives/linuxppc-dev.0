@@ -1,96 +1,104 @@
-Return-Path: <linuxppc-dev+bounces-26082-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26083-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 89812C5DF81
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2026 02:28:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D032DC61DB6
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2026 07:59:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hTWsx1f2Qz2yrX;
-	Tue, 25 Aug 2026 12:28:21 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.9
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787624901;
-	cv=none; b=DFvloyxWylMEEt+Qw+rIEaBqu+kHyq3z4wujaheoKm9Euz5YRSNHvY3DYm6AbfQOmIlpNRaau/GbEEYUuh2BF0SzJbznvPNOqtedvPWmrO2l42xpgtyUbCTAX4NidWTfL8zqojp9/N6aXpKHJWW0qxlw9cYDEhd/AAs9httZ1EGfsjmmikOAs4f/Of00ACUv4vZC+E2k5OzmIEBFHQxvEulWb3qJgAeWj6gx6GkhEBnnkqa2a+SBNlO7hRaF9ebwSkc7g0p8H+QJjn2JAGbRLq7Ta2fgaxrbPnEVPC7q/eBYrKM630g4YFEjk70QTn0LT+W7AX+TMEFDH+Tidl41ow==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hTgDN6Y6lz2xKh;
+	Tue, 25 Aug 2026 17:59:48 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a07:de40:b251:101:10:150:64:2"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787644788;
+	cv=none; b=JNXCcMtT27s+NZkyeRJMT+nt8WaXy7Y+RIcWO9iH1PT2vc/xkoBlZ+jKtxQsdunNiYbsnFoeeCA5CQTp6MccjTMNVPtEdefepK0W9kpq1LhVWtx3LZiEQ/Dh5lJDrvuWNAKtW3LrLbxCskTTRyNrUcAlmiKyM/SiIoqlKDwsrmWpjoLOOOgGFHf7p2ax9gUCP492coKPklNKpLw7L08VBpySUBUDBHZeAcsYiYYSclNpYBGf6mUezBAWOT6e5rCEvX1hVv9Lrr+3QWtgjgsr1zUiQaxDQqA31K+wl/zYUbsE3Fk2kJ+rq9kf2B4xswPeHMT08JkxZaiDtl2UfNF9FA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787624901; c=relaxed/relaxed;
-	bh=eFoGkw61yrTpvSi9Hrtm/h8z3f6hMLs6W1Ix5GODQJU=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=cbxucRWHy44j92BhlEbYUvqC1okszSMPZV+EFrZqlDLVA9XvAut/I2N4vOWPGt8Ls+eawXMtfB0psdDZqDCrdcr8AEc7bGKDx4c9N/EF3b9+oWtYXco4N2tz8jSD9T+zqzKbqZ7XdE3T7dRV+2XeL6gldg4I1QmebAi1NX3GHs4cEkqt5Uf9cPMz6WC/ee2Gf5n1aYokLGWmIGBRTLS7VwV15M3EgFMU4btwV2gTrizu2WCDG2t0qNIKR513cARNmy8oRrXuZ9ys4ECQAke59wEoOnAyyXbnmfyOtMLzTMR+TtdBQV5wC/PicvA03ERSveHT9vU0k1PxZPNBbHfWKA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=KwI1y8Mx; dkim-atps=neutral; spf=pass (client-ip=192.198.163.9; helo=mgamail.intel.com; envelope-from=fabio.m.de.francesco@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+	t=1787644788; c=relaxed/relaxed;
+	bh=rMWaJJRYuPPY8Ps5wum1jNYqSkp8y1Vg3ryyqNdrmhQ=;
+	h=Date:Message-ID:From:To:Cc:Subject:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=AIWUYtQz+gpOhFNvTT6jcKI8kMmIP+g9me4gkqCSVTy1mm1XtL2/VU+vR80G+/puvI1QvjbOMbqdnBlNhGiPMv/C2j3Kr2pLRDvfNAqFfuS7/SufRc6yvNWXQMGxNTrQ443GOuHSIXzWFyiJ9xUrz/wJdQ+VWhwmzhnVoOf+fuom1glOkudgOCnNDh4hwvNBbvxC2jz3u3u/RIMY5qukvGfloiVCJpVKWhc3qwb8jCAtBLPsTM7OFTImWGL/B7HCF/LiJ4kjxDp+SXycBAgtQYxT3DUi8UP3o7pBU9C0JTUOuEo0Aw6KzJQ4VmPvqlk2g8yrsQuXulj6Qeq5GUSMfg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=o+4pjZ6b; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=oMSnqea4; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=tRDr5KNG; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=1aKU7Hgx; dkim-atps=neutral; spf=pass (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=tiwai@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=KwI1y8Mx;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=o+4pjZ6b;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=oMSnqea4;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=tRDr5KNG;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=1aKU7Hgx;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.9; helo=mgamail.intel.com; envelope-from=fabio.m.de.francesco@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.9])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=tiwai@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2a07:de40:b251:101:10:150:64:2])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hTWsv6XLKz2yqs
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2026 12:28:19 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1787624900; x=1819160900;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=p35ooKxDDEqYJs00+ywe+gwGYag0qhbr8UgYGTT8yA4=;
-  b=KwI1y8Mx+ANjS51grDfDtJkWxofDU1Ifu4l8EaJtJwrJpDKu9ESxogJC
-   3IO1qrUZm26v5cLsKuxx0FH2s7QaSIlWzYJLxSHMbmk+P9aY70el/y8K+
-   z5/ULUcfys7m9NlEzTs898FSjdl3LYLZVvWd6RLOcUjwnC8Bl9clEmxTC
-   A2qK/qymOwacNxj77Nz3PgZVTiTQjMMiRZChJplwfNO+FsfgFLvsD3zk4
-   jS1FOZ/uy/i02XfTEq4w0WbztmHish+qOgX4Z5t/g39nHRBn13Cj5JWDb
-   ZHzg9gho9v/wBtiFhA915yJZa9+cc+8v2W8OxELqMQ5bxD+oW/Hn3CR7A
-   g==;
-X-CSE-ConnectionGUID: RuBtR3a/ShSP9Zs9hhbrDA==
-X-CSE-MsgGUID: 1yboiB0xROu/5+NWxHdHeQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11885"; a="98761243"
-X-IronPort-AV: E=Sophos;i="6.25,241,1779174000"; 
-   d="scan'208";a="98761243"
-Received: from orviesa006.jf.intel.com ([10.64.159.146])
-  by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Aug 2026 19:28:16 -0700
-X-CSE-ConnectionGUID: KQlGpQmQRWef0MiKW/Zq2g==
-X-CSE-MsgGUID: n6NeHPHmT6KWhioKt0tOhQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,241,1779174000"; 
-   d="scan'208";a="265390156"
-Received: from fdefranc-mobl3.igk.intel.com ([172.28.182.157])
-  by orviesa006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Aug 2026 19:28:09 -0700
-From: "Fabio M. De Francesco" <fabio.m.de.francesco@linux.intel.com>
-To: linux-cxl@vger.kernel.org
-Cc: David Hildenbrand <david@kernel.org>,
-	Oscar Salvador <osalvador@suse.de>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	"Rafael J . Wysocki" <rafael@kernel.org>,
-	Danilo Krummrich <dakr@kernel.org>,
-	Davidlohr Bueso <dave@stgolabs.net>,
-	Jonathan Cameron <jic23@kernel.org>,
-	Dave Jiang <dave.jiang@intel.com>,
-	Alison Schofield <alison.schofield@intel.com>,
-	Vishal Verma <vishal.l.verma@intel.com>,
-	Ira Weiny <iweiny@kernel.org>,
-	Li Ming <ming.li@zohomail.com>,
-	Bjorn Helgaas <bhelgaas@google.com>,
-	Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
-	Oliver O'Halloran <oohall@gmail.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Lorenzo Stoakes <ljs@kernel.org>,
-	"Liam R . Howlett" <liam@infradead.org>,
-	Vlastimil Babka <vbabka@kernel.org>,
-	Mike Rapoport <rppt@kernel.org>,
-	Suren Baghdasaryan <surenb@google.com>,
-	Michal Hocko <mhocko@suse.com>,
-	linux-kernel@vger.kernel.org,
-	linux-mm@kvack.org,
-	driver-core@lists.linux.dev,
-	linux-pci@vger.kernel.org,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hTgDJ0jcDz2xGr
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2026 17:59:43 +1000 (AEST)
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 4906D1F78B;
+	Tue, 25 Aug 2026 07:59:20 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1787644764; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=rMWaJJRYuPPY8Ps5wum1jNYqSkp8y1Vg3ryyqNdrmhQ=;
+	b=o+4pjZ6birxJPBdb5zckW5WhBPKl++aN2F1lJMfwro3F4Q2iIEgAc3p3c8D1Ol2QBHmQSX
+	LmnoK1AEEKzazmzdd8muTqZYleO/f0X5l4odFnI+e99ZpOiLyE3yzwWTQG0JDCwxsMjDDK
+	WmRjfvRlzYnVPwO/w6uOl/wwqIXfDu4=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1787644764;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=rMWaJJRYuPPY8Ps5wum1jNYqSkp8y1Vg3ryyqNdrmhQ=;
+	b=oMSnqea40b2d6Jidv/yVi6DzKq+shXY6WVzvH5iIJ1SJr9xasUYSzoxouoe4fi7GJ9H1no
+	Ceup0Rgp3a5Di1Ag==
+Authentication-Results: smtp-out2.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1787644760; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=rMWaJJRYuPPY8Ps5wum1jNYqSkp8y1Vg3ryyqNdrmhQ=;
+	b=tRDr5KNGjHavQ7NZk/b8jL4k/91wyJtO3iOcXkvdZvn9fRlRcDqKgQMVaz0twTShKA3WI/
+	bkv6VDR3iE8ZV2W0KxxA5r6nIH7hKIat32xg3bd0RcN/M5bI7v1l8ZRriURvRw+oY5AqzG
+	/w63KZ+5RMnOjBd80LKzURIxT0dt8gM=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1787644760;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=rMWaJJRYuPPY8Ps5wum1jNYqSkp8y1Vg3ryyqNdrmhQ=;
+	b=1aKU7Hgx2tA8yv/KXDLuO5QIgr0zQttp403GLXXrHPJzFLUaoO74S5geAwrJl9Rr/TUFCU
+	TmzIFCCfFEszFDAg==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 0652513332;
+	Tue, 25 Aug 2026 07:59:20 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id B741AFhLjWrybwAAD6G6ig
+	(envelope-from <tiwai@suse.de>); Tue, 25 Aug 2026 07:59:20 +0000
+Date: Tue, 25 Aug 2026 09:59:19 +0200
+Message-ID: <87ik4ytyug.wl-tiwai@suse.de>
+From: Takashi Iwai <tiwai@suse.de>
+To: phucduc.bui@gmail.com
+Cc: Johannes Berg <johannes@sipsolutions.net>,
+	Jaroslav Kysela <perex@perex.cz>,
+	Takashi Iwai <tiwai@suse.com>,
+	Kees Cook <kees@kernel.org>,
+	Thorsten Blum <thorsten.blum@linux.dev>,
+	cassiogabrielcontato@gmail.com,
 	linuxppc-dev@lists.ozlabs.org,
-	"Fabio M. De Francesco" <fabio.m.de.francesco@linux.intel.com>
-Subject: [PATCH v2 13/13] PCI/CXL: Refuse an SBR of a CXL DPort unless authorized
-Date: Tue, 25 Aug 2026 04:26:28 +0200
-Message-ID: <20260825022628.3651434-14-fabio.m.de.francesco@linux.intel.com>
-X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20260825022628.3651434-1-fabio.m.de.francesco@linux.intel.com>
-References: <20260825022628.3651434-1-fabio.m.de.francesco@linux.intel.com>
+	linux-sound@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ALSA: aoa: i2sbus: Check IRQ before requesting it
+In-Reply-To: <20260824100730.31601-1-phucduc.bui@gmail.com>
+References: <20260824100730.31601-1-phucduc.bui@gmail.com>
+User-Agent: Wanderlust/2.15.9 (Almost Unreal) Emacs/30.2 Mule/6.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -103,80 +111,47 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+MIME-Version: 1.0 (generated by SEMI-EPG 1.14.7 - "Harue")
+Content-Type: text/plain; charset=US-ASCII
+X-Spamd-Result: default: False [-1.80 / 50.00];
+	BAYES_HAM(-3.00)[99.99%];
+	SUSPICIOUS_RECIPS(1.50)[];
+	MID_CONTAINS_FROM(1.00)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	NEURAL_HAM_SHORT(-0.20)[-0.997];
+	MIME_GOOD(-0.10)[text/plain];
+	TAGGED_RCPT(0.00)[];
+	RCVD_TLS_ALL(0.00)[];
+	ARC_NA(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	TO_DN_SOME(0.00)[];
+	FREEMAIL_TO(0.00)[gmail.com];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	FROM_HAS_DN(0.00)[];
+	FREEMAIL_CC(0.00)[sipsolutions.net,perex.cz,suse.com,kernel.org,linux.dev,gmail.com,lists.ozlabs.org,vger.kernel.org];
+	RCPT_COUNT_SEVEN(0.00)[10];
+	FROM_EQ_ENVFROM(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:mid,imap1.dmz-prg2.suse.org:helo]
 
-CXL r4.0 sec 8.1.5.2 Table 8-32 describes a bit that makes the SBR bit
-in Bridge Control take effect at all, so a Port left at the firmware
-default is one the reset must not silently unmask.
+On Mon, 24 Aug 2026 12:07:30 +0200,
+phucduc.bui@gmail.com wrote:
+> 
+> From: bui duc phuc <phucduc.bui@gmail.com>
+> 
+> irq_of_parse_and_map() returns 0 when parsing or mapping an IRQ fails.
+> The return value was passed to request_irq() without checking for
+> failure.
+> 
+> Check the return value before passing it to request_irq().
+> 
+> Signed-off-by: bui duc phuc <phucduc.bui@gmail.com>
 
-Add cxl_sbr_allowed() to answer if SBR is allowed: check if a Port whose
-Unmask SBR is already set needs no consent, as it happens with cxl_bus
-reset.
+Applied now.  Thanks.
 
-Signed-off-by: Fabio M. De Francesco <fabio.m.de.francesco@linux.intel.com>
----
- drivers/pci/pci.c | 26 ++++++++++++++++++++++++++
- drivers/pci/pci.h |  1 +
- 2 files changed, 27 insertions(+)
 
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index eedd516f8484..08873ea3957b 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -4881,6 +4881,11 @@ static int cxl_sbr_prepare(struct pci_dev *bridge, u16 dvsec,
- {
- 	int rc;
- 
-+	if (action == CXL_SBR_OFFLINE_AND_UNBIND && !cxl_sbr_allowed(bridge)) {
-+		pci_info(bridge, "SBR masked, write 1 to cxl_unmask_sbr to allow a bus reset\n");
-+		return -ENOTTY;
-+	}
-+
- 	/*
- 	 * CXL_SBR_UNBIND: the link is already down, so offlining the regions'
- 	 * memory would take the reads that page migration performs as a machine
-@@ -5138,6 +5143,27 @@ static bool cxl_sbr_masked(struct pci_dev *dev)
- 	return true;
- }
- 
-+/*
-+ * cxl_sbr_allowed - whether an SBR of a CXL Downstream Port may go ahead
-+ * @dev: Downstream Port to test
-+ *
-+ * Per CXL r4.0 sec 8.1.5.2 Table 8-32 the SBR bit in a CXL Port's Bridge
-+ * Control register has no effect while the Port's Unmask SBR bit is clear, and
-+ * sec 9.12.3 says System Firmware may leave it clear "to prevent CXL-unaware
-+ * PCIe software from resetting the device and the link". A Port that already
-+ * has it set needs no further permission; otherwise unmasking it takes the
-+ * administrator's consent, given by writing 1 to the Port's cxl_unmask_sbr.
-+ *
-+ * Return: true if the reset paths may unmask and generate an SBR of @dev.
-+ */
-+bool cxl_sbr_allowed(struct pci_dev *dev)
-+{
-+	if (!cxl_port_dvsec(dev))
-+		return false;
-+
-+	return dev->cxl_unmask_sbr || !cxl_sbr_masked(dev);
-+}
-+
- static int pci_reset_bus_function(struct pci_dev *dev, bool probe)
- {
- 	struct pci_dev *bridge = pci_upstream_bridge(dev);
-diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
-index b6d873b077ed..bea05acc58f0 100644
---- a/drivers/pci/pci.h
-+++ b/drivers/pci/pci.h
-@@ -248,6 +248,7 @@ int __pci_bridge_secondary_bus_reset(struct pci_dev *dev,
- 				     enum cxl_sbr_region_action action);
- bool is_cxl_dport(struct pci_dev *dev);
- u16 cxl_port_dvsec(struct pci_dev *dev);
-+bool cxl_sbr_allowed(struct pci_dev *dev);
- int pci_bus_error_reset(struct pci_dev *dev);
- int pci_try_reset_bridge(struct pci_dev *bridge);
- 
--- 
-2.55.0
-
+Takashi
 
