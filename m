@@ -1,81 +1,93 @@
-Return-Path: <linuxppc-dev+bounces-26068-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26069-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B02DFC5DF9C
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Aug 2026 18:50:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4B2A9C5DF81
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2026 02:26:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hTKj64hcRz2y06;
-	Tue, 25 Aug 2026 04:50:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787597402;
-	cv=none; b=OapUrHKdRN7jZlD8UUyrMXhGiRKNMBsyZRLhjpOfrSwu6EjGhV0VH3UjYTXO7eCW+SHSG1eRwlVxR2U06xTVwvLhHgD0nlYdXnFEz/FVkf7Lgn4LET6dSHnYjDrll33zQpviHApTvq/dN6iIE/jMpK+bKthiwHIyvd4BG3GO91FCcg1h59IHux7uMNacumxpVJqSMXWAyMyRgn8x+x2hIUvXEWWXs1wCh7yLul0wiQ8i24wIyem2CB9jjkdG214KujbJxVpCXSh/sOhIpx+m3yV+5lLH5kwwcMSwuw/kcWqvz4ja7tR9J1dnXfKfawrOKIXgh/x5D1r28T5qIfMS3A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hTWrF28t8z2y2M;
+	Tue, 25 Aug 2026 12:26:53 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.9
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787624813;
+	cv=none; b=kfRRZXUYmBju1MqnzmrAf1cRPcr2TRyp0tjaW2G/iLnVvtKjad2+9ysjC1/9AUXdvbRpNdvxhSru6hApU/RGA1PsxvpF6dlM58PRwzrUzxzmSg2Dkt0rPC4UDQlLY9NfAutJaqistPd13MbZje/BrkFQxsSO8yl3FekvjNuG0Lc/FYR/kVWWzJRDim6mqlIfKSwW7gC5zilpJya2lvR3pQSQioTj/By2rwIt6juqCoElWnqClXa1zhaEewrJPVlNOVaVnxZ1PPQYHpmrX0TGMIXFTK/vuOUYnDNWvu/mliqSVC475t+ANeOXHlQqBWXI112M+NfN7LLsS1nZtRKLZw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787597402; c=relaxed/relaxed;
-	bh=wv3hSyc7KpV2vcpK4ExKVfFvsrqD+y8hugaEQYXGNOo=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=k+bH32w0O8CGL+HSr6JmFyD0jbslONUWvZPH5/1T6/MYCR/I/SQx/QIQVKosOxmmNs2cH9Xe9n6TaLlJLLCBMzul+O6aql1QNP64r6LAhbumgSj8qGklTtfeIWUMkCe8mZleYZgYIIXgPdxsqIhSmoLJoerTzwbIUJEjTjCAm5qrHwmJePbSAsa3QTptcp7c2vLz+tIUJc7qFWxjRDFYX8LqxWjMThGXD4g2Lti6OPL14BfTImnFlz9rQSPo1gygjjwDeCwH2pynMGuwtapAgLGRl0CXDHb+SdDYbfTvl9RB0pKAodNMDfx+i2tWFH0Y7EeqUWWWC5FeymQwyFg+9Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=FLSzt3qU; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1787624813; c=relaxed/relaxed;
+	bh=zY9nF2RQ3gTikZfjKcS1scrUKxgxGYtG8WcgkyAvxNg=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=QIEsVytmmEDdvkmoFRzUC9f9bOX4NWUsc/c54eBa+oFwN4wyARDj4y3RXQMlHOgUKHenZPyM+wlDYWIdOVXqVb+Ws6XedMtgV9OOCPvCmcibAQegeVrcRSsTII/0zNthW1r3ESYTizlVNYUDJAsjnnVTL86Vn0WjKEya0Wg0dPWWKLLmbz54uOHgx1l2cBIQDDyWl5Eh9bfYjOKg/L4ggBBH9fRLThnniI32yEiT3gWGvGQhX/C2rQA6n5qV/hWYKJt+GEZ7t/di0+/6b8JYCJIo8607Vk1eNgnx9nAaMQ7fYRnQUlfPkAu5N6FnnnMXM2tHjpbF1TKS2rJldYKzoQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=YeuQ+l2l; dkim-atps=neutral; spf=pass (client-ip=192.198.163.9; helo=mgamail.intel.com; envelope-from=fabio.m.de.francesco@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=FLSzt3qU;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=YeuQ+l2l;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.9; helo=mgamail.intel.com; envelope-from=fabio.m.de.francesco@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.9])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hTKj535VZz2xZh
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2026 04:50:00 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67OG1aJR500916;
-	Mon, 24 Aug 2026 18:49:26 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=wv3hSyc7KpV2vcpK4ExKVfFvsrqD+y
-	8hugaEQYXGNOo=; b=FLSzt3qUNzOpXHeoMpAVTPku8qkNhLTiieCR4CXFb/wcF5
-	tuuL6PPp+1cE5VVFK56uVB5TDpbUGXf8rfiWhH2dKx4iNzAI+nMFczEQlDuUPujq
-	X0hBU4pORfHlBJLIKJz8i1eU5DIU+avoTGUheujPXPQNoe+jghO04Y3HJZWemxiE
-	K2CLZmUYWvQXV6DhNJyd5fxNEyxPzFV4dX6iDKJ8VhrgvJtK0CatAthxncaiQCYf
-	CWhCWN57Kef7ltvJZuJV2LGsZmWl6yyERlICDrwRHKnE4GTX6KLdJ46TJxI8UuMo
-	f+dUW+GW96ltCkY8hOf32/s7qAWt3zc6W0eGMMnQ==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4g73eqkg3p-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 24 Aug 2026 18:49:25 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 67OIfJ1a023207;
-	Mon, 24 Aug 2026 18:49:24 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4g7pfw0116-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 24 Aug 2026 18:49:24 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 67OInKoM41025926
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 24 Aug 2026 18:49:20 GMT
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 00F7F20043;
-	Mon, 24 Aug 2026 18:49:20 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E194520040;
-	Mon, 24 Aug 2026 18:49:16 +0000 (GMT)
-Received: from Gautams-MacBook-Pro.local (unknown [9.124.214.83])
-	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Mon, 24 Aug 2026 18:49:16 +0000 (GMT)
-Date: Tue, 25 Aug 2026 00:19:13 +0530
-From: Gautam Menghani <gautam@linux.ibm.com>
-To: Shivaprasad G Bhat <sbhat@linux.ibm.com>
-Cc: maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org,
-        tpearson@raptorengineering.com, mpe@ellerman.id.au, npiggin@gmail.com,
-        chleroy@kernel.org, namcao@linutronix.de, tglx@kernel.org,
-        yury.norov@gmail.com, tiwai@suse.de, wangruikang@iscas.ac.cn,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] powerpc: pci-ioda: Fix the stale irq chip reference
-Message-ID: <aoySKRSGKMXho8Ij@Gautams-MacBook-Pro.local>
-References: <178716225364.1437.6201568081502251835.stgit@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hTWr93SzXz2xnQ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2026 12:26:46 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1787624810; x=1819160810;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=59oDA8OxqCcTABs6FaXD4uZZ6h0YHjbqVgHwIRKfCEk=;
+  b=YeuQ+l2lCfThsyuy8qTBq1ZKYbnKlG7HmCZSkeFeSh6tjVOfSQcOq0Cx
+   9sEiUuqxC7q5sJM7wP6VQ/IQMj9PJe1/BGDyXDctOx+XyGKrLM/7UzQHy
+   ZxYGyXF9akkrxWuJXQuX3HpzoDSZkPCr0aylQwYx2V4cpuNpWbkD4ovMn
+   HjckG3GhO3XgVVCv9X+336Ctda+lgR5HhOjMhWKekjaaAHoJqllA7G3Kf
+   4DjdVCU3XzSkeugrYfrzVl2w+PlKoN4TuVH6DjRXQ3d+i6h3HsS/x6AxE
+   5cLowZWM0kmZFVHPiSpFiblpNB7EbfZCBIhfApcnrQR99KDFWOa+ZqHdB
+   w==;
+X-CSE-ConnectionGUID: xN8vNazsQKukHEnsoCU7eg==
+X-CSE-MsgGUID: PmkhDiUVQBak2QYdNhSuLA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11885"; a="98760926"
+X-IronPort-AV: E=Sophos;i="6.25,241,1779174000"; 
+   d="scan'208";a="98760926"
+Received: from orviesa006.jf.intel.com ([10.64.159.146])
+  by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Aug 2026 19:26:41 -0700
+X-CSE-ConnectionGUID: qw57hyDPQVqR+IkyCbQLew==
+X-CSE-MsgGUID: yqTxaTRTTP67lZe80asckg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.25,241,1779174000"; 
+   d="scan'208";a="265390022"
+Received: from fdefranc-mobl3.igk.intel.com ([172.28.182.157])
+  by orviesa006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Aug 2026 19:26:34 -0700
+From: "Fabio M. De Francesco" <fabio.m.de.francesco@linux.intel.com>
+To: linux-cxl@vger.kernel.org
+Cc: David Hildenbrand <david@kernel.org>,
+	Oscar Salvador <osalvador@suse.de>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	"Rafael J . Wysocki" <rafael@kernel.org>,
+	Danilo Krummrich <dakr@kernel.org>,
+	Davidlohr Bueso <dave@stgolabs.net>,
+	Jonathan Cameron <jic23@kernel.org>,
+	Dave Jiang <dave.jiang@intel.com>,
+	Alison Schofield <alison.schofield@intel.com>,
+	Vishal Verma <vishal.l.verma@intel.com>,
+	Ira Weiny <iweiny@kernel.org>,
+	Li Ming <ming.li@zohomail.com>,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+	Oliver O'Halloran <oohall@gmail.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Lorenzo Stoakes <ljs@kernel.org>,
+	"Liam R . Howlett" <liam@infradead.org>,
+	Vlastimil Babka <vbabka@kernel.org>,
+	Mike Rapoport <rppt@kernel.org>,
+	Suren Baghdasaryan <surenb@google.com>,
+	Michal Hocko <mhocko@suse.com>,
+	linux-kernel@vger.kernel.org,
+	linux-mm@kvack.org,
+	driver-core@lists.linux.dev,
+	linux-pci@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	"Fabio M. De Francesco" <fabio.m.de.francesco@linux.intel.com>
+Subject: [PATCH v2 00/13] Make SBR work for CXL Downstream Ports
+Date: Tue, 25 Aug 2026 04:26:15 +0200
+Message-ID: <20260825022628.3651434-1-fabio.m.de.francesco@linux.intel.com>
+X-Mailer: git-send-email 2.55.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,98 +101,90 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <178716225364.1437.6201568081502251835.stgit@linux.ibm.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: 8hn9C5WobgogztKIAdQUBo3K_wnph8G2
-X-Proofpoint-ORIG-GUID: Nd3qSs4oO3usFBvAXrRidJfzCZV8ya7n
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODI0MDE1NiBTYWx0ZWRfX719ziVHf6r3h
- ebbbKU/RNqINJ0KtDzKP7wXd2B+/3WSYC7LXdzdismqcxyA4Jr8zBxC1xgsiOWotgNnX+mVo+A+
- M8vhcII3F6yQt9Df86/2ZBkqk+aQE573qVS7bYwWw7A9b1BuAuXwZozWZAbuL1TBK1OXR4Y47iK
- U3liPUOweTTZ49dyPtzhBuyw1Y69Y8luPWnkTS/O7digKDG3zXeVscYi+/evi6mUlc45Ic1KBFN
- 69FqqXkhMZG8Z9TOXrFVM+Uv6xMrvW9JgcvB6w3I97b/t1eDaOp/vmbupuGiheT2OQKyvHTmgb6
- GDQnNL91Meb55cmejD/IPRK064mIEd1K73bWiD1SMb0NUYyaKcwn6YEoKv028RpfI4wsm1/W+kp
- BTuhlQjUaiE5FDU2Rx/TwTw/yuuux4VAe3bfwRyRmrsVeXUyU1GLNGsWx3dhcHZbmBRSkygwWBy
- NrC+JO3eQwevWAvML4A==
-X-Authority-Analysis: v=2.4 cv=QsRuG1yd c=1 sm=1 tr=0 ts=6a8c9236 cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=kj9zAlcOel0A:10 a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=VwQbUJbxAAAA:8
- a=VnNF1IyMAAAA:8 a=aqPL-WvAAm6ynEwNJewA:9 a=CjuIK1q_8ugA:10
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODI0MDE1NiBTYWx0ZWRfX/9lYbB7cHCHS
- +jyJmbJNCDglXeiAJn/5/rtYayQSoCJ0SFbJiKTxaTVURFxvQixe5WPhhsbVeBIzKhnDNuyAc95
- kLYm1z2eaJdHjhAfTHtm7Yvsc76MNQw=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-08-24_05,2026-08-24_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 adultscore=0 suspectscore=0 priorityscore=1501 impostorscore=0
- spamscore=0 lowpriorityscore=0 clxscore=1011 bulkscore=0 phishscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608240156
+Content-Transfer-Encoding: 8bit
 
-On Wed, Aug 19, 2026 at 05:58:22PM +0000, Shivaprasad G Bhat wrote:
-> The commit f0ac60e6e311 ("powerpc/powernv/pci: Switch to use
-> msi_create_parent_irq_domain()") removed the legacy MSI irq chip
-> pnv_pci_msi_irq_chip but left behind the static definition of it and
-> its reference in is_pnv_opal_msi().
-> 
-> The KVM IRQ bypass for vfio devices is broken because the
-> comparision in is_pnv_opal_msi() fails on the comparision with
-> stale unused variable showing the below errors in dmesg.
-> 
->  kvmppc_set_passthru_irq_hv: Could not assign IRQ map for (X,Y)
->  kvmppc_set_passthru_irq (irq X, gsi Y) fails: -2
->  vfio-pci A:B:C.D irq bypass producer (eventfd Z) registration fails: -2
-> 
-> The patch removes the stale variable definition and fixes the
-> is_pnv_opal_msi() by comparing against the chip name prefix.
-> 
-> Fixes: f0ac60e6e311 ("powerpc/powernv/pci: Switch to use msi_create_parent_irq_domain()")
-> Cc: stable@kernel.org
-> Signed-off-by: Shivaprasad G Bhat <sbhat@linux.ibm.com>
-> ---
->  arch/powerpc/platforms/powernv/pci-ioda.c |    6 ++----
->  1 file changed, 2 insertions(+), 4 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> index 32ecbc46e74b..728a5610d167 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -1623,15 +1623,13 @@ int64_t pnv_opal_pci_msi_eoi(struct irq_data *d)
->  	return opal_pci_msi_eoi(phb->opal_id, d->parent_data->hwirq);
->  }
->  
-> -static struct irq_chip pnv_pci_msi_irq_chip;
-> -
->  /*
->   * Returns true iff chip is something that we could call
->   * pnv_opal_pci_msi_eoi for.
->   */
->  bool is_pnv_opal_msi(struct irq_chip *chip)
->  {
-> -	return chip == &pnv_pci_msi_irq_chip;
-> +	return chip && chip->name && str_has_prefix(chip->name, "PNV-");
->  }
->  EXPORT_SYMBOL_GPL(is_pnv_opal_msi);
->  
-> @@ -1728,7 +1726,7 @@ static const struct msi_parent_ops pnv_msi_parent_ops = {
->  	.chip_flags		= MSI_CHIP_FLAG_SET_EOI,
->  	.bus_select_token	= DOMAIN_BUS_NEXUS,
->  	.bus_select_mask	= MATCH_PCI_MSI,
-> -	.prefix			= "PNV-",
-> +	.prefix			= "PNV-", /* Note: is_pnv_opal_msi() uses this */
->  	.init_dev_msi_info	= pnv_init_dev_msi_info,
->  };
->  
+A Secondary Bus Reset (SBR), a Link Down or a Downstream Port
+Containment (DPC) event on a CXL Downstream Port clears the Downstream
+Component's captured Bus Number. CXL r4.0 sec 8.1.5.1 notes that, if the
+Component then sources its Power Management (PM) Initialization traffic
+with Requester Bus = 0, a Port with Access Control Services (ACS) Source
+Validation (SV) enabled may reject the Component's CREDIT_RTN IP2PM
+message, PM Initialization may fail to complete, and that "another
+Secondary Bus Reset alone will not facilitate recovery". PCIe r7.0 sec
+6.12.1.1 makes the rejection an error that is reported as ACS Violation.
 
-I boot tested this patch on KVM on PowerNV (P9) and KVM on LPAR (P10),
-with the USB controller passed through to the guest.
-The warnings are not observed.
+The Implementation Note under sec 8.1.5.1 gives the sequence that avoids
+it: save and clear Bus Master Enable and ACS SV, generate the SBR, wait
+for Port PM Initialization Complete, restore both bits, continue device
+re-initialization. This series takes a step further to a preventive
+measure that avoids the ACS Violation in the first place, not after
+failure.
 
-Tested-by: Gautam Menghani <gautam@linux.ibm.com>
+Patches 1-5 restore HDM Decoder registers below a reset CXL Downstream
+Port.
 
+Patches 6-8 disable and re-enable the CXL Regions around the reset:
+offline memory, invalidate CPU caches for its range, collect the set of
+regions the CXL DPort which is SBR andunbind the driver.
+
+Patch 9 disable and re-enable CXL regions across a Downstream Port reset
+and registers the CXL region callbacks for a Downstream Port bus. We
+want the reset to be called only when the CXL driver is loaded.
+
+Patch 10 calls the CXL operations from pci_bridge_secondary_bus_reset().
+
+Patch 11 issues the same sequence from dpc_reset_link().
+
+Patches 12 and 13 gives root a sysfs attribute that conrols whether the
+SBR is allowed to be unmasked and prevents kernel from unmasking SBR on
+its own.
+
+What user space finds after an SBR of a CXL Downstream Port: the dax
+device returns under the same name, the region's HPA range, interleave
+geometry and decoder programming are restored, and the media content is
+unchanged for PMEM. System RAM comes back registered but offline.
+
+Fabio M. De Francesco (13):
+  cxl/pci: Make the HDM and Mem_Enable writes callable from cxl_core
+  cxl/hdm: Add cxl_decoder_recommit() to restore one HDM decoder
+  cxl/hdm: Add cxl_endpoint_enable_hdm_decode() to restore CXL.mem
+    decode
+  cxl/hdm: Reprogram the HDM Decoders below a CXL Port
+  cxl/core: Restore the HDM decoders below a reset Downstream Port
+  drivers/base/memory: Add cxl_offline_memory() to offline a physical
+    range
+  cxl/core: Add region disable and enable for a Downstream Port reset
+  cxl/core: Collect the CXL regions routed through a Downstream Port
+  PCI/CXL: Register CXL region callbacks for a Downstream Port bus reset
+  PCI/CXL: Clear ACS SV across an SBR of a CXL Downstream Port
+  PCI/DPC: Issue the CXL recovery SBR from DPC without offlining memory
+  PCI/CXL: Add cxl_unmask_sbr to permit an SBR of a CXL Downstream Port
+  PCI/CXL: Refuse an SBR of a CXL Downstream Port without the unmask
+    consent
+
+ Documentation/ABI/testing/sysfs-bus-pci |  16 +
+ drivers/base/memory.c                   |  36 +++
+ drivers/cxl/core/Makefile               |   2 +-
+ drivers/cxl/core/core.h                 |  28 ++
+ drivers/cxl/core/dport_sbr.c            | 374 ++++++++++++++++++++++++
+ drivers/cxl/core/hdm.c                  | 341 +++++++++++++++++++++
+ drivers/cxl/core/pci.c                  |  19 +-
+ drivers/cxl/core/port.c                 |   4 +-
+ drivers/cxl/core/ras.c                  |  10 +
+ drivers/cxl/core/region.c               |   6 +-
+ drivers/pci/pci-sysfs.c                 |  31 ++
+ drivers/pci/pci.c                       | 254 +++++++++++++++-
+ drivers/pci/pci.h                       |  15 +
+ drivers/pci/pcie/dpc.c                  |  46 ++-
+ include/linux/aer.h                     |   9 +
+ include/linux/memory.h                  |   5 +
+ include/linux/pci.h                     |  16 +
+ include/uapi/linux/pci_regs.h           |   2 +
+ tools/testing/cxl/Kbuild                |   2 +-
+ 19 files changed, 1193 insertions(+), 23 deletions(-)
+ create mode 100644 drivers/cxl/core/dport_sbr.c
+
+-- 
+2.55.0
 
 
