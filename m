@@ -1,61 +1,61 @@
-Return-Path: <linuxppc-dev+bounces-26090-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26091-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D6C7DC61DC2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Aug 2026 08:55:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0FD47C61DC4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Aug 2026 09:05:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hVJQD6cTQz2y32;
-	Wed, 26 Aug 2026 18:55:32 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c10d::1" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787734532;
-	cv=pass; b=Nj1U7Vj0/mrkRbAL1lSOC7uXiLPgWMfhM+Qwpx8XxLbWyE7l7Wsm2REWWYHmLtA35/dsypsV8cF6sTHNZ5YfRCENYSrg8AmckugD/NLr3wy+rHXo+pxKJCm9BGWnVxBXTvhe6scn2Y5YurqVQThvpR49LqMlslGv4bLT8MJ61urpDqCckF1SkwJIYzVgvV6WxXWpi/B6uihDXAd4VEQuiEz58d6vXLeIgpx/+ZE6drRRrI6M+0Bfb+4fjmWFZ6T+Ezs5uGLpIsHe89sGGiTEmBTel9PStsjAcGY9CT0OQ8m4FiTdQeLfMD69+UvKzKZOfdxO8kI2r29CdbKQMVbe7g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hVJd63659z2y32;
+	Wed, 26 Aug 2026 19:04:58 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c107::1" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787735098;
+	cv=pass; b=oIqFW2LM3VZBHsGVxRbtomcaiMbSgqy45Bfx42WYwZqylVApVs87QvBNFSHAjtunjmov4m4dkXjVUCIFPfxoifnZ9sTs5ziSmikf360iFifevM2cC2ua1MBbIGX0AtnXsVUJrBQd+/ub2viV1xiFhX5HX8b4wgN20+3lN5Go/l+iX/h975bZ+3gP2kdepM80Y3iW8AsAVa1I7GRD2fR7S8Z/91QYPxqdrRRfRStk+x5zrxd4uz0xrHXZB7IoYLgiQ/8VdbrpUKXeq9RDQS56pRhXgEc7EjnDwiR2nmi0qA8KFs1WAWML/RL/nesNV6Kei8gniSMGFdI8YYk0dCB7Ew==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787734532; c=relaxed/relaxed;
-	bh=1/PcoQM+000j5ZL5xZbKXtOzXBL13caCL1lIvDlyxNQ=;
+	t=1787735098; c=relaxed/relaxed;
+	bh=rblnGl/TCdSAJxMVSGhWvzeh9VL8vpviygUmxik6MOA=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=lKtX55iuQhc7VcCDvAGTS8GuvjqsWo4ucNJvtwsItQHrv9SIuZHRqndzJGk8oH+m9/ojg2eOKMiaHobtl/U2BrnXMfARYurfSc0IWQhG2PeQbvtw6v9AAM9XG7O3YhiMsh6xNSAinrJ+fgOQHOafVAaeXLw9Tvt5bQOdrj9bFJjHrlrY0BTbLzMQbsPJAtWQSQmx44p1Pt1I4JrTzK+QrJkrmznA/aGgrBjF6cabIIlC2EGxAOGk4/UOQPYGi/K+9s7miJVEeKYpITnWYjawlYoROaY7OUf6DbeFfcfUkdOrFzRuNDfKGeIlRRzKLu+o2f7n+iSrCjI4J3gWJ1X9sw==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=AytmZtTR; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c10d::1; helo=sn4pr2101cu001.outbound.protection.outlook.com; envelope-from=icheng@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
+	 Content-Disposition:In-Reply-To:MIME-Version; b=VPVX4JH2H4u8IXKb8nv0EVTUydphRuIZD5hWbhELVT0RG4rMYqpKV6KNaBf4mhvKMc+DIWGhfD5uVwz37oS8W9Sei/G5gY8M2yu5X62/TALXYjQM/sVTgGGiJDEWk4RgDqopuzdnGo3ePPahq6Jj4C+dof6o26fvfY7afx12na9aJA9oaHOSGOeLvuSAR+44H3UxKp0LHKlPMJ5x5W7rTf2UGMbb0iIsJXNOK2b7jDhobJKlCz3l2CJrpx4mGYeWuq2NYtS8BW0b0i78dLqw9dWds/eGmwEHjW+ZO5WNlhEyh8FBncH92p1+2Og00/8yNTTXionEcrnjnx2fsO5KJg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=iuS7iNM7; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c107::1; helo=ph8pr06cu001.outbound.protection.outlook.com; envelope-from=icheng@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=AytmZtTR;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=iuS7iNM7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:c10d::1; helo=sn4pr2101cu001.outbound.protection.outlook.com; envelope-from=icheng@nvidia.com; receiver=lists.ozlabs.org)
-Received: from SN4PR2101CU001.outbound.protection.outlook.com (mail-southcentralusazlp170120001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c10d::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:c107::1; helo=ph8pr06cu001.outbound.protection.outlook.com; envelope-from=icheng@nvidia.com; receiver=lists.ozlabs.org)
+Received: from PH8PR06CU001.outbound.protection.outlook.com (mail-westus3azlp170120001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c107::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hVJQC50npz2xLq
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2026 18:55:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hVJd51140z2xGw
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2026 19:04:56 +1000 (AEST)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=EiYREHiHdOZJhpSzmw+tXo3vvv3VMlSkj9wIvB2lyYH7Cf6N7/zb3NCoH6MhEoiNl3bUA4oibZae29dylYhKPY8roKZMp4mxJ7FKl4yyJP8c4v3OA7ovanI/lq/Mwycm8lwfZUL2A0QfbPZxsYpCsZl/zMpRURr2QEK+ljyMTjo2uuaa4JpBGM+E0LdfU50vbR2t5LD/xjF0FWLZEzHq6u0XZSudmJj0QuZS0YrltUmfigZgJtw6ns6X3f34x3QPcCbeqPVBhOF+EJKW8kOT2VbsDCNFxqfL9BkIDxxpxA7eluXb2z5R6WOdMNGq7DcYkg11U5ppP/6dNJrZXo6KtQ==
+ b=D+TuGR/UBsUKSqKr3cYs+552jQ2Ef8eiAEfWMFW+t/PS/NJqssM96qQZQMRDJxps2K+hzoIYYpDxjvktf1V17eus98pT9j6SwzM7L41SKpchWwRuyIPfM8wwXVRPfGyenNVK0NVVpyZAoT5sAKMx1LtN6YBnk+9EpA+pMLeO8RM33CThvaDJrzkCM8aUS3cyWWQzrhbbTaVWjZKPzMKQ0g3J+27kwkrW90uOxZiUgFyP4vdugMz7XDMlk/1ygry9xTAsaSE1FVjSU+LcrZaoaQ211wTtfHKAGt0KZ7WQBJLmWJ1VunNzo6Y+GScm9hMMOeVvSty/OzSKuyhwYHYCjg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=1/PcoQM+000j5ZL5xZbKXtOzXBL13caCL1lIvDlyxNQ=;
- b=SXKhEYY4hejNYWr+wSQH57YCrgqjSt4m5/XS0yPVkOP1oaqkJSqCpMNQY11rEbv2/RdFFS9iwYj6FctIk5O6ye3yURhtQ8ont+ZV3CJZoHrXfE6cXvhBccoB1OzWpjvi0LlP67baOwtUesOFtr2lW4kdQrhj4/bpVYp75VU0yePcMIEkSYuNdSAtN2j2eQBUtvSyQLUzcn2Aw+7h7P+oFzrLA87LQpk47l2bgtHGrEw5zs+5N3f3L+Ahm78Qr8PGqoC8Co7ZCL/1nsL+Wb2dxfe3PGszQkwfBAPoB6diHq05jFH23C2kuzqP/t8IUqaDj9a1PY3tBaAHHmvsnMJ+vg==
+ bh=rblnGl/TCdSAJxMVSGhWvzeh9VL8vpviygUmxik6MOA=;
+ b=nslBh/l1NtBZjjR/6Y85wh9tLHYnGI8nz5GiYrKf7KsgKxf6caX24oBWTda5ANqOi9Ld5QZa9FES5dx1Ao+FSCgGpRttPqS5YGDbSwhCwXeD3WvrpByBocZ1E/mI4o3Y1/5zn1dethdzJemhDPQdSajAaG3Mu2JEwJ57tUdi1UHloIPIYbyUS8nnlHhsPzdh15hX9JQKf6GWDiVBGzTZYekFYFLnYyyjVUNUnwA6USIrR8Km4OamkG4rOhujfZwN7DVaxDSAJ/k9/xIBpFz5hFwMp2aZ3OzjCgLmNKuwT4KSOqlUB4Xk3bMbUO1THM5JD1WiknvLKiuoI9mqrhKngA==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
  dkim=pass header.d=nvidia.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
  s=selector2;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=1/PcoQM+000j5ZL5xZbKXtOzXBL13caCL1lIvDlyxNQ=;
- b=AytmZtTRUIQKiiMRGud6DA/360BZ+/G+8mg4m+rj46xhN19Fp8GgI34PFaXmCeDMDyMqDOZWhL5ncaLX65+FN4/95R0iTJK8A5Uaobp1uqyKFq2oJPivhmb7uPPjhW2C6yBBcvTg1bq5tV69KwF5Rvh8arTHx4mGtqY7NC2NJk0XVDsaxCWq/xNOAdp7cpSL5ibbsB2MZzJFuZTCUJ/nGu3TyYIelKs8py6kB+78pCZK3dtI3dqfRHPvxLq4dsOAfkRGd5nlUy/ovi3C4RZqC0IBdORj5g98d18YiRXU5ez5jmYs7kE5cdaIx6i2Pz2cRqOPF34HNBVRF9wGyHq2Gw==
+ bh=rblnGl/TCdSAJxMVSGhWvzeh9VL8vpviygUmxik6MOA=;
+ b=iuS7iNM7MJDr7EHB+2c4t20a0tvWPjBrZTjZMMhZn13IdFOCoiHlkRbj86R/gYblpmhMD7WzTaGPTH/9A/TZHjBS7KXZD2upwL2PPnFOZQZEmV9K3ZeZuKtsA2vjvlMyNRaquObOro0QqXOrfUJ7BbiloJC2BdvJ4zx7TsDb9MEAHZKyKqoWNxwBmSVfTct49bWZs6f5AF9n4W5sSfxgAsMf2KbjcpzU3Ms1PSfJRNzBtQvAPdFcwflqtcNJ/QYOhjIR5Zm4KxkXvL6HKjAo6f10DyF9LQMEoi9Sbjl3Uxg6gL0z6GlI3FB1uxvTkvj4d/bMrXyYOsA/TUSJpgxoJg==
 Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=nvidia.com;
 Received: from BL0PR12MB2370.namprd12.prod.outlook.com (2603:10b6:207:47::27)
  by CH2PR12MB4039.namprd12.prod.outlook.com (2603:10b6:610:a8::11) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.360.6; Wed, 26 Aug
- 2026 08:55:04 +0000
+ 2026 09:04:28 +0000
 Received: from BL0PR12MB2370.namprd12.prod.outlook.com
  ([fe80::86cf:c3ec:2cf5:74c8]) by BL0PR12MB2370.namprd12.prod.outlook.com
  ([fe80::86cf:c3ec:2cf5:74c8%7]) with mapi id 15.21.0360.005; Wed, 26 Aug 2026
- 08:55:03 +0000
-Date: Wed, 26 Aug 2026 16:54:56 +0800
+ 09:04:28 +0000
+Date: Wed, 26 Aug 2026 17:04:22 +0800
 From: Richard Cheng <icheng@nvidia.com>
 To: "Fabio M. De Francesco" <fabio.m.de.francesco@linux.intel.com>
 Cc: linux-cxl@vger.kernel.org, David Hildenbrand <david@kernel.org>, 
@@ -71,15 +71,16 @@ Cc: linux-cxl@vger.kernel.org, David Hildenbrand <david@kernel.org>,
 	Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, linux-kernel@vger.kernel.org, 
 	linux-mm@kvack.org, driver-core@lists.linux.dev, linux-pci@vger.kernel.org, 
 	linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 11/13] PCI/DPC: Unbind regions for DPC recovery
-Message-ID: <ao6oQo8Lo5oy5pIL@MWDK4CY14F>
+Subject: Re: [PATCH v2 09/13] PCI/CXL: Disable and re-enable CXL regions
+Message-ID: <ao6qbt6JNYxnIfLF@MWDK4CY14F>
 References: <20260825022628.3651434-1-fabio.m.de.francesco@linux.intel.com>
- <20260825022628.3651434-12-fabio.m.de.francesco@linux.intel.com>
+ <20260825022628.3651434-10-fabio.m.de.francesco@linux.intel.com>
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260825022628.3651434-12-fabio.m.de.francesco@linux.intel.com>
-X-ClientProxiedBy: SG2P153CA0027.APCP153.PROD.OUTLOOK.COM (2603:1096:4:c7::14)
- To BL0PR12MB2370.namprd12.prod.outlook.com (2603:10b6:207:47::27)
+In-Reply-To: <20260825022628.3651434-10-fabio.m.de.francesco@linux.intel.com>
+X-ClientProxiedBy: SI3PR02CA0012.apcprd02.prod.outlook.com
+ (2603:1096:4:295::11) To BL0PR12MB2370.namprd12.prod.outlook.com
+ (2603:10b6:207:47::27)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -95,456 +96,401 @@ Precedence: list
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
 X-MS-TrafficTypeDiagnostic: BL0PR12MB2370:EE_|CH2PR12MB4039:EE_
-X-MS-Office365-Filtering-Correlation-Id: 67b08072-49db-43bf-60ac-08df034fb7f4
+X-MS-Office365-Filtering-Correlation-Id: d5baac45-698a-4fe6-da0b-08df035108c9
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|23010399003|366016|7416014|376014|6133799003|4143699003|10067099003|56012099006|11063799006|22082099003|18002099003;
+	BCL:0;ARA:13230040|1800799024|23010399003|366016|7416014|376014|4143699003|10067099003|56012099006|5023799004|11063799006|22082099003|18002099003;
 X-Microsoft-Antispam-Message-Info:
-	OKeX0gY4WjtQXQ4xI7OkPVUrAZSgfhNObKIQapdVQTgWvhdOQhHLzg4DfHpndU/lONs7brWScCCK1ub2bO2mJM0Kr5RlxCp4CeXI78WkraGdYbSKZk60M0H6VeGxdHxXZFWQAhFMkNKmim5DhF7g1kUIujCFaDb4hwb9n+m4EUSK+s9DTkql/pTlmKbx08jdf0tsEqaAZAmxoor3ns8TRu8VGEUUJx3Ippr1uNwCGCM8uuQSF36uCs0B+Pc8kCS6SIfLFaFeiEavqz22ZTrt71/aUD4DxSEAN+0cS/V3QicvGjIZKwBaEqhmGJUZz48Ufkg+zNF/NU2M83c35o97qw8aaM/esmYsQgNsTTy6T81Y+uZwbEEteGGdgePliF1E5I9AIG3r/0eISQxFZItIUFB28tpW9Hr2RZ0Lb7oaBBdf2rg50cbVaoKuPY8+BSVFGC+RjaGuUwV5i6/rynxF49oE8KHWjl9NcGFrtilYrSNejozwho3SgZI5EyDHat8VAvS2DDe3A4RMJhbjD61F3U6fqWNrL9skdfMgjP5de2gXj1I0aSYFz8XuuY9tYKJ+5Bc5zrDURKtAESCt162lQp/J4mShACxUVIzISCPIQ3Yh2IBNamm3D+ucHIozxXRWflib6x/zUV+8KT1OluvCIgURs71BcJQIAIMrsqp+LB8=
+	nxTUW/JPBt7z/it0QoJWdHcqeVboOA/3TOZwOlm4wqsw/H86J3tvVtq/HWe6ayT7Eh0EQYMIfQ44NOArniLxy/BDSOx7r4JK15yO0kzVe6bSap+Od11npkxytNWhWnbmEXK1DgXl/VhD9EnAVIeL08c6L/xPRGydhxhlrvcPlQ7EHirYYA/zflnxMQi9Mkqg5QykZ5N0c8ohXgZnrSVBG4MJH2IuPSaEW/1gFM2g1jr5SFvXr2kyYaJwRKzwdXCUUoPUnZAx6M9YEjQCVAVLOVtyJVxrZLw028KITCOo9MQcgVem98Kx4RZ0UEyAQD8EuE+iZeWA7/eWQ5UxI0nr8iHLJMOQTbmVokSJLqZAqLhJ1E8r2lGisO1l3ev/eOk8sI0bLMYubY8arRxbTN9bhJJXYudICBSQwif6riIuCF61C7HQmSm2VtK1fqnapzEKq/wcGtoVlC1tLQ83ilvYUw+LETPn/7jEApB07DB0Bcr29XGC7Ey3ZlJ7BkvCXpl9lWKhALXsig3+Ror+SxP9MpJhvQCPLV8LpMk1TSyoTxf36RNO91bGThI/+GOICIUJ8tgAC6LBWMIOb3e2hS7HpExfAPONYYO7xdxNibBEfZT7nknrm3oNGmulkAmUDd1iIwBbJAExJcvPbxSQFsp8qig1lm5D2rW96iLdvecJ6eQ=
 X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BL0PR12MB2370.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(23010399003)(366016)(7416014)(376014)(6133799003)(4143699003)(10067099003)(56012099006)(11063799006)(22082099003)(18002099003);DIR:OUT;SFP:1101;
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BL0PR12MB2370.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(23010399003)(366016)(7416014)(376014)(4143699003)(10067099003)(56012099006)(5023799004)(11063799006)(22082099003)(18002099003);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?nRyLxjSGtnTXfvxSLj9Ij8gxSnjUTKzn01X3qZBmcImE5pL8er+v8H7OF7gV?=
- =?us-ascii?Q?4j/zAKKVTzgVD9lgAUkmsTHFkg6aywYqPaOdqJFij7/tWpRy2TlQ5WMMp92n?=
- =?us-ascii?Q?XP5KXDyOaeXuc3pKRIYlW1BmaqauuNtp74u30M9UQ0tVATVqvUSM/K9e8fz6?=
- =?us-ascii?Q?X2P8jEF8CJn6STWnscUnK8jhi+KRCK9kGlRzyp+9iexikpDHTWRqyg6Hnxbc?=
- =?us-ascii?Q?1Q1Hu6DmcsKaNPpl9Ax7AxPt0/WkjQ3Jd02C4l9ecRSHcTBCqVU1coC+IaKM?=
- =?us-ascii?Q?CL3tcwiD5m0uFLJ/fhLDKlEEnDwWr3yBnyzPbcAP+3aoY8JsBBJz6Lc9Tnlb?=
- =?us-ascii?Q?2uZt2BwH1YTBqsU6zHzOH5ITz18GiCox2lDKifoCJA38zcsvOtO1D+FmJyFH?=
- =?us-ascii?Q?ap9p7TaE3f3XX6l82P6vu/8YILzEV2EpOcT+hZx4mPz4q76BpTwUKthqTOjF?=
- =?us-ascii?Q?FFlKHQOzis2uGap6Ob3QrywUHLS71z1+D1N4Whf/GlUDtoz/y0fqzmSPPv3j?=
- =?us-ascii?Q?RcDnxoSsi0hE+zBaPxd6bfNNK4/0uMWjHNdZBe8fiVRV1EhaM5pkuOHB+v2x?=
- =?us-ascii?Q?+dK3JiEBleVKi42svErxS68KS69fbmulWmwLFKtG++pNTBBbIliOn/VxjzPh?=
- =?us-ascii?Q?Z9pBcrXva3JriV0d6ZztRz7mlB/fUIs6DnkLDjFYJBHe5LhAItQZtyuo7y1L?=
- =?us-ascii?Q?O5R9rqRuutB1du5EkxkeqCUhzqBOP9+CpRU6i1tZTwDPqoc+ej/Atbvf6UhC?=
- =?us-ascii?Q?hrnBgNNjhlSnSn4yrQlue7uQGXIzyxhXbHrWXzVMrucVT0xcYlVzaTj5rJEW?=
- =?us-ascii?Q?5brbuXL/DWX+oyacEyLN6mSmIuotuK1xzUtzMm1PL1H1z9WGMD9dwNosh0To?=
- =?us-ascii?Q?PX94xMQhnZiVF7fSIDc+iIZoupNo86tijCWSc+l7yjNpmAtmpquF2b8cOkye?=
- =?us-ascii?Q?XsIFsfKIs9tRbPuNWaC4U24zNN5DnHIPanr17SBBx2Pw2y31AWsVaPUexR6s?=
- =?us-ascii?Q?iFSwEI3sBj3f1UmfiDuXzzMklBYgtshHFRDwVG2O1o7D681jaKmBfFvPL6Gy?=
- =?us-ascii?Q?zHpKLfTazk5K5UdC6FsUkCGCHSWTxNFcsZANE7yZp3g6meyAqD1AQGnvUU5M?=
- =?us-ascii?Q?aA6VYMsBKLqM6VThxMMemxrwfO2xy3oJIUMMNTCk5FMowKgJ1IRkCZWgRgof?=
- =?us-ascii?Q?0rym707d1GxC1wbj+M97ty6kF7QOhWDmp9V2OtPCilrQ2thuSoGmA9381Trv?=
- =?us-ascii?Q?IRBiGvRvC+gz7/Q0J7N2xGUHrWM4EfMMYU+ZOdz8CpRj9yym1PAk2C7dmIQ6?=
- =?us-ascii?Q?6cX5geZOjVWxqpZd5ctIp8wLMvYyoQtLNwAqjOup4hX9Qe7kEbgDXrvpNGum?=
- =?us-ascii?Q?k0k0mAelJ8T5BZIGkbKuPIipHSYiNViMytrWxCbvHmu+EQjrMDxxX+kGXk72?=
- =?us-ascii?Q?4NENTSywyiGJxhPXlWYS5s6X/G2I3rTlfN1DyxMJMvDdP4yvfzFJUTVNk3c4?=
- =?us-ascii?Q?IopZj4kntrHM3ehOBdnTGjnVSnxmyGSVD11nVdFGzeKFUmFC9eQ4g5WXDkfq?=
- =?us-ascii?Q?UmP47jiQ+SrO4O83KeTuBZFSYb9uaNWaAAEXJSRn4l7hDq31saPJmF5RqPHw?=
- =?us-ascii?Q?F3J2is1gNfhEYgC5B7zUab737LDmbFaEg3+12AvsxJgBvogrCHbdQIcAiAVM?=
- =?us-ascii?Q?CtLn4oJMXN+bS9Rz4FuS9VmMXcSbNNn9eM3zQMxerQWFb0C02GlIXSJ45mWA?=
- =?us-ascii?Q?CIH+J4L77Q=3D=3D?=
+	=?us-ascii?Q?J7WEku+yBZy3d4CuLZwXgqGh7/V/UgmObUN5KyVXyMaWs8HeSMAA9S+Shm8n?=
+ =?us-ascii?Q?dB4JEbGDVAZ2rYBs595yI0fUhW/OEO7lAVR/lHFq5hNjoyqH4I6eSI7DEsHO?=
+ =?us-ascii?Q?x4xhyqPhMBJO2wMn5xAdLyZOSs92vOJ2hhv/Gd0yxPfTdtIgVi+7yz13x43L?=
+ =?us-ascii?Q?vCjOTli41EbQePIx1fmBYKkKU2VEbfAwEfKbTalgL2l28z9Y8fzcm4b0jrzD?=
+ =?us-ascii?Q?rCn4XJtEN4/mqI7M3D3UjWehLPc5NX3Lf39XOy6lqCiuF02bbo+FtqXdUXRw?=
+ =?us-ascii?Q?HqeoVA4UVy0KslLS58XhvRgl+d7PC7Y9O13cFngqbe6sSK7J5O/ia3IKq9aC?=
+ =?us-ascii?Q?Suw5QadYBIo5wS2GGdQP09IaSxq+GVUr7dUrWJZQNepfyMfFi9bH/zkij1hN?=
+ =?us-ascii?Q?8OVi2CfdLekx9h11u4944PIgrDlkj1KZG61LcL7ZdNFj21JsTsh5ARFNTVti?=
+ =?us-ascii?Q?ITioGk33QkTxnII2RcCbOXYQA1Dq1b79ehP+vZuv/YEK+BSv0NjzvI/eRhvn?=
+ =?us-ascii?Q?lhgyxG4s3kaZKhwR//Wp/4PBrZimqtxYr/Ma2Yfij4R/CWDr9ZtUyhmSND5r?=
+ =?us-ascii?Q?lI9A7tSqpIIUL36O7muMdOj99Q5GT8MDnLoDa4tk6mjz7rUv7Q0VhdSVVRGG?=
+ =?us-ascii?Q?au9Y2taGNLHg5nPm6sFSS7jvFZilVjroePJYf2kaWWDjIZcp8PbnC9FWW66G?=
+ =?us-ascii?Q?1GoHNkBXEoEjcnNjqMHoWqGC5QPqFPl3dUjcYQ9KnHsDvrs7OhSTAFOqafkH?=
+ =?us-ascii?Q?ieRnuCbEKEq09+bW9kSOQXGNfsBMu0nXM+48fc3xulHiGKs3TfaPtJtE9sTZ?=
+ =?us-ascii?Q?U02X/jDgW8KzzyjhYhtyUkbGbz80xSghgMfT91H0C3JWLvqD14QCz8dK/+/M?=
+ =?us-ascii?Q?RdxFycRM0mY9VkCJb+khLOo6/bIjEkTyJU/haM9aMusPJLhr/J4A4HdARH/+?=
+ =?us-ascii?Q?cQ3D6hmTkFxihz0oN00ewnftLOr66iYnA5S1/6iQ3E41h0mh6Tjc5xlB8mpI?=
+ =?us-ascii?Q?Q+LxDfbKenyvye+2/sO/FDQ1AFuTjtqDECU2kPQpfZo/k/yjS1QxhjpclkVz?=
+ =?us-ascii?Q?swnWGys85a+7jdmsn93gJUYDd60ulvn2dlmb2K4/hour4EKL669aOVsjW1Zk?=
+ =?us-ascii?Q?T/fewTtwCRSjgVQmpYFo+asgoZi+FCF24Wces23gu2uPduID28EmgGA6qFoM?=
+ =?us-ascii?Q?GmBuBBoiaMTYKjJXYxn2O2YsoiGPuseGaNIlv7aOhz4cHuvt2Vw4KSh1W4fo?=
+ =?us-ascii?Q?+JduC8eF0dxHMZ+yQQxMjBIM4KpGcZgYWIwVHvlB0B3y1L6DbXrkYfzDvdi9?=
+ =?us-ascii?Q?CxfovznP6nJ36g75FSHDL77K83icLcxXIWTP91Qv5XDlLB3nXKHyjgb418rC?=
+ =?us-ascii?Q?psVVPFlSt1TxLWpEgYYjqdiiwhv6+X7q8N7IPkZfHPlVJbEB9KrI8gHGcBcE?=
+ =?us-ascii?Q?06atXkW0mMZDtuBrDPr9O/vTqW0cFv6IU3U3z6diE1tLHJGufNAi5PFMWDn5?=
+ =?us-ascii?Q?haZCF4q6mMotkVLAJatIUkJxleSWh4xgAJ4sPwr0UscXGkV076Pnu7QzRKrp?=
+ =?us-ascii?Q?Snq3dJ4TymvXZ/0MTag2kGJr2ZcixUotLYnxEQtOOLBWHJ5nvJlO5yV2Bbiu?=
+ =?us-ascii?Q?O9hipxxm3Cym7AR4ofq5dqC7+MeZ/sJTBXFooOB+SI+49YvJTbkSAmYT00OV?=
+ =?us-ascii?Q?JgwNb7NCspICkBxQUKxCUHBCw5zlXulB/pt+IpuNYHbWSRKvftSqmCc26uCg?=
+ =?us-ascii?Q?e11BZhQ4MA=3D=3D?=
 X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 67b08072-49db-43bf-60ac-08df034fb7f4
+X-MS-Exchange-CrossTenant-Network-Message-Id: d5baac45-698a-4fe6-da0b-08df035108c9
 X-MS-Exchange-CrossTenant-AuthSource: BL0PR12MB2370.namprd12.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 26 Aug 2026 08:55:03.6168
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 26 Aug 2026 09:04:28.6512
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: mjqcfCDj15f0Lf7Po6p+zalwYV9BjjedT6eG2cTTvn64Bb+qnWpQvAbrKHN8A9SrKPRpFCcm3XMOqr/vvaw9YA==
+X-MS-Exchange-CrossTenant-UserPrincipalName: 2jej7qlJbs/fygqJQCY59X/0LiHyOWkaFWoMSAs9m8XHqmvwhmP9jIPsJQbGg5cGSjDnr7shUJNemCqKyXEFJw==
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: CH2PR12MB4039
 
-On Tue, Aug 25, 2026 at 04:26:26AM +0800, Fabio M. De Francesco wrote:
-> CXL r4.0 sec 8.1.5.1 lists Downstream Port Containment among the
-> conditions that reset the Downstream Component's bus number. DPC
-> recovery needs to wait for the link to come back up, but if Access
-> Control Services Source Validation bit is enables PM Initialization will
-> fail to complete. 
+On Tue, Aug 25, 2026 at 04:26:24AM +0800, Fabio M. De Francesco wrote:
+> A Secondary Bus Reset of a CXL Downstream Port needs every CXL region
+> routed through that Port disabled for the duration.
 > 
-> Have dpc_reset_link() reset the secondary bus of a CXL Downstream Port.
-> Split pci_bridge_secondary_bus_reset() so the reset takes an action
-> saying what to do with the CXL regions routed through the Port, and pass
-> the action that unbinds them without offlining their memory. Offlining
-> migrates the memory that the memdev back and on a contained link are not
-> addressable.  Don't release the memdev driver in cxl_error_detected(). 
->
-
-Hi Fabio,
-
-Do we have any mechanism to prevent CPU or DMA devices from accessing the System RAM
-while the link and HDM decoder are unavailable ?
-
-Unbinding the region only tops region managment, it doesn't stop CPU or DMA memory traffic
-that's still online.
-
-Unbinding also removes DAX/kmem device while its memory is online.
-dev_dax_kmem_remove() can't remove that memory in this state and will leave the resource reserved
-until reboot, so the region may not rebind afterward.
-
-Also while DPC link is down, cxl_sbr_save_hdm-state() can't safely read downstream HDM register
-through MMIO, I am not sure whether it's correct to save HDM state here.
-
-Best regards,
-Richard Cheng.
- 
+> Add struct pci_cxl_sbr_region_ops, holding a disable_regions() and an
+> enable_regions() callback, and pci_cxl_set_sbr_region_ops() for the CXL
+> core to register them. The pointer is NULL whenever the CXL region code
+> is absent, either not built or built as a module that is not loaded.
+> 
+> Add cxl_sbr_disable_regions(), which collects the regions with a member
+> endpoint below the Port and disables each one. If any fails, re-enable
+> the whole collected set and return the error, so the PCI core aborts the
+> reset before touching hardware; re-enabling a region left untouched is a
+> no-op, which also recovers the one that failed midway.
+> 
+> Add cxl_sbr_enable_regions() for the other side. It restores the HDM
+> decoders below the Port before it re-attaches any region driver, since a
+> region cannot serve memory through decoders that are not programmed.
+> 
+> cxl_sbr_disable_regions() records the decoder registers before it
+> touches anything and cxl_sbr_enable_regions() hands them to the restore
+> and releases them. They are held in an xarray indexed by the Downstream
+> Port's struct pci_dev, so resets of different Ports do not share an
+> entry, and they are released on the abort path too, where
+> enable_regions() never runs.
+> 
+> Register both ops from cxl_region_init() and clear the pointer in
+> cxl_region_exit().
+> 
 > Signed-off-by: Fabio M. De Francesco <fabio.m.de.francesco@linux.intel.com>
 > ---
->  drivers/cxl/core/dport_sbr.c | 57 ++++++++++++++++++++++++++++++++-
->  drivers/cxl/core/ras.c       | 10 ++++++
->  drivers/pci/pci.c            | 62 ++++++++++++++++++++++++++----------
->  drivers/pci/pci.h            | 15 +++++++++
->  drivers/pci/pcie/dpc.c       | 46 +++++++++++++++++++++++++-
->  include/linux/aer.h          |  9 ++++++
->  include/linux/pci.h          |  3 ++
->  7 files changed, 183 insertions(+), 19 deletions(-)
+>  drivers/cxl/core/core.h      |   9 +--
+>  drivers/cxl/core/dport_sbr.c | 152 +++++++++++++++++++++++++++++++++--
+>  drivers/cxl/core/region.c    |   3 +
+>  drivers/pci/pci.c            |  13 +++
+>  include/linux/pci.h          |  12 +++
+>  5 files changed, 175 insertions(+), 14 deletions(-)
 > 
+> diff --git a/drivers/cxl/core/core.h b/drivers/cxl/core/core.h
+> index 077a2af9cf0c..b250fa346184 100644
+> --- a/drivers/cxl/core/core.h
+> +++ b/drivers/cxl/core/core.h
+> @@ -57,13 +57,8 @@ int devm_cxl_add_dax_region(struct cxl_region *cxlr);
+>  int devm_cxl_add_pmem_region(struct cxl_region *cxlr);
+>  void kill_regions(struct cxl_root_decoder *cxlrd);
+>  int cxl_region_invalidate_memregion(struct cxl_region *cxlr);
+> -int cxl_region_disable(struct cxl_region *cxlr);
+> -void cxl_region_enable(struct cxl_region *cxlr);
+> -struct pci_dev;
+> -int cxl_sbr_collect_regions(struct pci_dev *dport_pci, struct xarray *regions);
+> -void cxl_sbr_put_regions(struct xarray *regions);
+> -void cxl_sbr_recommit_decoders(struct pci_dev *dport_pci,
+> -			       struct xarray *hdm_state);
+> +struct pci_cxl_sbr_region_ops;
+> +extern const struct pci_cxl_sbr_region_ops cxl_sbr_region_ops;
+>  
+>  #else
+>  static inline u64 cxl_dpa_to_hpa(struct cxl_region *cxlr,
 > diff --git a/drivers/cxl/core/dport_sbr.c b/drivers/cxl/core/dport_sbr.c
-> index 2b6f840e22a7..823b63012f45 100644
+> index 233499bc1fad..2b6f840e22a7 100644
 > --- a/drivers/cxl/core/dport_sbr.c
 > +++ b/drivers/cxl/core/dport_sbr.c
-> @@ -9,6 +9,30 @@
->  #include <cxl.h>
->  #include "core.h"
+> @@ -21,7 +21,7 @@
+>   * Context: process context. Offlining and driver unbind sleep and take the
+>   * memory hotplug lock, so this cannot run in atomic context.
+>   */
+> -int cxl_region_disable(struct cxl_region *cxlr)
+> +static int cxl_region_disable(struct cxl_region *cxlr)
+>  {
+>  	struct cxl_region_params *p = &cxlr->params;
+>  	unsigned long block_size;
+> @@ -72,7 +72,7 @@ int cxl_region_disable(struct cxl_region *cxlr)
+>   * Rebind the region driver. The System RAM is left offline; bringing it back
+>   * online is a separate administrative step.
+>   */
+> -void cxl_region_enable(struct cxl_region *cxlr)
+> +static void cxl_region_enable(struct cxl_region *cxlr)
+>  {
+>  	struct cxl_region_params *p = &cxlr->params;
 >  
-> +/*
-> + * cxl_region_unbind - take a region out of service ahead of a reset
-> + * @cxlr: region routed through the CXL Downstream Port being reset
-> + *
-> + * Unbind the region driver, which tears down everything built on the region:
-> + * the dax region device, its dax device and the driver bound to it. An SBR
-> + * zeroes the downstream bus number, so a region left bound would decode to a
-> + * device in reset.
-> + *
-> + * The memory the region hosts is left as it is. A caller that reaches a live
-> + * device offlines it first; see cxl_region_disable().
-> + *
-> + * Context: process context. Driver unbind sleeps, so this cannot run in atomic
-> + * context.
-> + */
-> +static void cxl_region_unbind(struct cxl_region *cxlr)
-> +{
-> +	struct cxl_region_params *p = &cxlr->params;
-> +
-> +	device_release_driver(&cxlr->dev);
-> +	dev_dbg(&cxlr->dev, "%s: region unbound before reset, HPA %pr\n",
-> +		__func__, p->res);
-> +}
-> +
->  /*
->   * cxl_region_disable - make a region inactive ahead of a Secondary Bus Reset
->   * @cxlr: region routed through the CXL Downstream Port being reset
-> @@ -58,7 +82,7 @@ static int cxl_region_disable(struct cxl_region *cxlr)
->  		return rc;
->  	}
->  
-> -	device_release_driver(&cxlr->dev);
-> +	cxl_region_unbind(cxlr);
->  	dev_dbg(&cxlr->dev, "%s: System RAM offline, region disabled before reset, HPA %pr\n",
->  		__func__, p->res);
->  
-> @@ -284,6 +308,36 @@ static int cxl_sbr_disable_regions(struct pci_dev *dport_pci)
->  	return rc;
+> @@ -93,8 +93,8 @@ void cxl_region_enable(struct cxl_region *cxlr)
+>   * cxl_region_disable()/cxl_region_enable() run with the rwsem released (they
+>   * unbind and rebind the region driver). Hence snapshot the set first.
+>   */
+> -int cxl_sbr_collect_regions(struct pci_dev *dport_pci,
+> -			    struct xarray *regions)
+> +static int cxl_sbr_collect_regions(struct pci_dev *dport_pci,
+> +				   struct xarray *regions)
+>  {
+>  	struct cxl_region_ref *cxl_rr;
+>  	struct cxl_dport *dport;
+> @@ -141,7 +141,7 @@ int cxl_sbr_collect_regions(struct pci_dev *dport_pci,
+>  	return 0;
 >  }
 >  
+> -void cxl_sbr_put_regions(struct xarray *regions)
+> +static void cxl_sbr_put_regions(struct xarray *regions)
+>  {
+>  	struct cxl_region *cxlr;
+>  	unsigned long index;
+> @@ -159,8 +159,8 @@ void cxl_sbr_put_regions(struct xarray *regions)
+>   * requires. The caller has already disabled the regions, so nothing reaches the
+>   * decoders being reprogrammed.
+>   */
+> -void cxl_sbr_recommit_decoders(struct pci_dev *dport_pci,
+> -			       struct xarray *hdm_state)
+> +static void cxl_sbr_recommit_decoders(struct pci_dev *dport_pci,
+> +				      struct xarray *hdm_state)
+>  {
+>  	struct cxl_dport *dport;
+>  	int rc;
+> @@ -179,3 +179,141 @@ void cxl_sbr_recommit_decoders(struct pci_dev *dport_pci,
+>  	if (rc)
+>  		pci_warn(dport_pci, "HDM decode restore failed: %d\n", rc);
+>  }
+> +
 > +/*
-> + * Unbind the regions routed through the Downstream Port being reset, leaving
-> + * their memory online. Used on the DPC recovery path, where dpc_reset_link()
-> + * clears DPC Trigger Status and enters the reset without waiting for the link,
-> + * so the device may still be unreachable and the page migration that an offline
-> + * performs would have no device to read from.
-> + *
-> + * Unbinding cannot fail, so unlike cxl_sbr_disable_regions() this never aborts
-> + * the reset. The memory stays online across the reset with no region decoding
-> + * it; cxl_sbr_enable_regions() reprograms the decoders on the way out.
+> + * The HDM decoder control registers the reset is about to clear, held from the
+> + * disable to the enable of one Downstream Port and indexed by that Port's
+> + * struct pci_dev, so resets of different Ports do not share an entry.
 > + */
-> +static void cxl_sbr_unbind_regions(struct pci_dev *dport_pci)
+> +static DEFINE_XARRAY(cxl_sbr_hdm_state);
+> +
+> +static void cxl_sbr_drop_hdm_state(struct pci_dev *dport_pci)
+> +{
+> +	struct xarray *hdm_state;
+> +
+> +	hdm_state = xa_erase(&cxl_sbr_hdm_state, (unsigned long)dport_pci);
+> +	if (!hdm_state)
+> +		return;
+> +
+> +	cxl_port_put_hdm_state(hdm_state);
+> +	kfree(hdm_state);
+> +}
+> +
+> +/*
+> + * Record the control registers of every port below @dport_pci before the reset
+> + * clears them. cxl_sbr_enable_regions() consumes the set and drops it.
+> + */
+> +static int cxl_sbr_save_hdm_state(struct pci_dev *dport_pci)
+> +{
+> +	struct xarray *hdm_state;
+> +	struct cxl_dport *dport;
+> +	int rc;
+> +
+> +	struct cxl_port *port __free(put_cxl_port) =
+> +		find_cxl_port(&dport_pci->dev, &dport);
+> +	if (!port)
+> +		return 0;
+> +
+> +	hdm_state = kzalloc_obj(*hdm_state);
+> +	if (!hdm_state)
+> +		return -ENOMEM;
+> +
+> +	xa_init(hdm_state);
+> +
+> +	scoped_guard(rwsem_read, &cxl_rwsem.region)
+> +		rc = cxl_port_save_hdm_state(port, hdm_state);
+> +
+> +	if (!rc)
+> +		rc = xa_insert(&cxl_sbr_hdm_state, (unsigned long)dport_pci,
+> +			       hdm_state, GFP_KERNEL);
+> +	if (rc) {
+> +		cxl_port_put_hdm_state(hdm_state);
+> +		kfree(hdm_state);
+> +		return rc;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +/*
+> + * Disable the regions routed through the Downstream Port being reset. On
+> + * failure re-enable the regions already disabled and return the error so the
+> + * PCI core aborts the reset with the topology unchanged.
+> + */
+> +static int cxl_sbr_disable_regions(struct pci_dev *dport_pci)
 > +{
 > +	struct cxl_region *cxlr;
 > +	struct xarray regions;
 > +	unsigned long index;
+> +	int rc;
 > +
-> +	if (cxl_sbr_save_hdm_state(dport_pci))
-> +		pci_warn(dport_pci, "HDM state not saved, decode will not be restored\n");
+> +	rc = cxl_sbr_save_hdm_state(dport_pci);
+> +	if (rc)
+> +		return rc;
+> +
+> +	xa_init(&regions);
+> +
+> +	rc = cxl_sbr_collect_regions(dport_pci, &regions);
+> +	if (rc)
+> +		goto out;
+> +
+> +	xa_for_each(&regions, index, cxlr) {
+> +		rc = cxl_region_disable(cxlr);
+> +		if (rc)
+> +			break;
+> +	}
+> +
+> +	/*
+> +	 * On failure restore every collected region and return the error so the
+> +	 * PCI core aborts the reset before touching the hardware. Re-enabling a
+> +	 * region left untouched is a no-op, so enabling the whole set also
+> +	 * recovers the region whose offline failed midway.
+> +	 */
+> +	if (rc) {
+> +		dev_dbg(&dport_pci->dev, "%s: disable failed (%d), re-enabling collected regions and aborting reset\n",
+> +			__func__, rc);
+> +		xa_for_each(&regions, index, cxlr)
+> +			cxl_region_enable(cxlr);
+> +	}
+> +
+> +out:
+> +	cxl_sbr_put_regions(&regions);
+> +	/* No enable_regions() call follows an aborted reset, so drop the set. */
+> +	if (rc)
+> +		cxl_sbr_drop_hdm_state(dport_pci);
+> +	return rc;
+> +}
+> +
+> +/*
+> + * Re-enable the regions disabled by cxl_sbr_disable_regions(). Restore the HDM
+> + * decode first: a region cannot serve memory through decoders that are not
+> + * programmed, so its driver must not re-attach before they are.
+> + */
+> +static void cxl_sbr_enable_regions(struct pci_dev *dport_pci)
+> +{
+> +	struct xarray *hdm_state;
+> +	struct cxl_region *cxlr;
+> +	struct xarray regions;
+> +	unsigned long index;
 > +
 > +	xa_init(&regions);
 > +
 > +	cxl_sbr_collect_regions(dport_pci, &regions);
 > +
+> +	hdm_state = xa_load(&cxl_sbr_hdm_state, (unsigned long)dport_pci);
+> +	if (hdm_state)
+> +		cxl_sbr_recommit_decoders(dport_pci, hdm_state);
+> +	else
+> +		pci_warn(dport_pci, "no saved HDM state, decode not restored\n");
+> +
 > +	xa_for_each(&regions, index, cxlr)
-> +		cxl_region_unbind(cxlr);
+> +		cxl_region_enable(cxlr);
 > +
 > +	cxl_sbr_put_regions(&regions);
+> +	cxl_sbr_drop_hdm_state(dport_pci);
 > +}
 > +
->  /*
->   * Re-enable the regions disabled by cxl_sbr_disable_regions(). Restore the HDM
->   * decode first: a region cannot serve memory through decoders that are not
-> @@ -315,5 +369,6 @@ static void cxl_sbr_enable_regions(struct pci_dev *dport_pci)
+> +const struct pci_cxl_sbr_region_ops cxl_sbr_region_ops = {
+> +	.disable_regions = cxl_sbr_disable_regions,
+> +	.enable_regions = cxl_sbr_enable_regions,
+> +};
+> diff --git a/drivers/cxl/core/region.c b/drivers/cxl/core/region.c
+> index fc0bec991a69..d1dd4924fba1 100644
+> --- a/drivers/cxl/core/region.c
+> +++ b/drivers/cxl/core/region.c
+> @@ -12,6 +12,7 @@
+>  #include <linux/idr.h>
+>  #include <linux/memory-tiers.h>
+>  #include <linux/string_choices.h>
+> +#include <linux/pci.h>
+>  #include <cxlmem.h>
+>  #include <cxl.h>
+>  #include "core.h"
+> @@ -4263,12 +4264,14 @@ static struct cxl_driver cxl_region_driver = {
 >  
->  const struct pci_cxl_sbr_region_ops cxl_sbr_region_ops = {
->  	.disable_regions = cxl_sbr_disable_regions,
-> +	.unbind_regions = cxl_sbr_unbind_regions,
->  	.enable_regions = cxl_sbr_enable_regions,
->  };
-> diff --git a/drivers/cxl/core/ras.c b/drivers/cxl/core/ras.c
-> index 99fb00949c2f..568a906f3b50 100644
-> --- a/drivers/cxl/core/ras.c
-> +++ b/drivers/cxl/core/ras.c
-> @@ -323,6 +323,16 @@ pci_ers_result_t cxl_error_detected(struct pci_dev *pdev,
->  		}
->  		return PCI_ERS_RESULT_CAN_RECOVER;
->  	case pci_channel_io_frozen:
-> +		/*
-> +		 * A Port on the path in DPC means dpc_reset_link() is about to
-> +		 * reset the link, and that path takes the CXL regions out of
-> +		 * service and restores the HDM decode itself. Keep the memdev
-> +		 * driver bound so the endpoint and its decoders are still there
-> +		 * to restore.
-> +		 */
-> +		if (pci_dpc_containment_active(pdev))
-> +			return PCI_ERS_RESULT_NEED_RESET;
-> +
->  		dev_warn(&pdev->dev,
->  			 "%s: frozen state error detected, disable CXL.mem\n",
->  			 dev_name(dev));
+>  int cxl_region_init(void)
+>  {
+> +	pci_cxl_set_sbr_region_ops(&cxl_sbr_region_ops);
+>  	return cxl_driver_register(&cxl_region_driver);
+>  }
+>  
+>  void cxl_region_exit(void)
+>  {
+>  	cxl_driver_unregister(&cxl_region_driver);
+> +	pci_cxl_set_sbr_region_ops(NULL);
+>  }
+>  
+>  MODULE_IMPORT_NS("CXL");
 > diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-> index f3781d1e8f6e..eedd516f8484 100644
+> index 77b17b13ee61..417b6b44473e 100644
 > --- a/drivers/pci/pci.c
 > +++ b/drivers/pci/pci.c
-> @@ -4864,24 +4864,37 @@ struct cxl_sbr_ctx {
->  	u16 command;
->  };
->  
-> -static bool is_cxl_dport(struct pci_dev *dev)
-> +bool is_cxl_dport(struct pci_dev *dev)
->  {
->  	return pcie_is_cxl(dev) && pcie_downstream_port(dev);
+> @@ -4844,6 +4844,19 @@ void __weak pcibios_reset_secondary_bus(struct pci_dev *dev)
+>  	pci_reset_secondary_bus(dev);
 >  }
 >  
-> -static u16 cxl_port_dvsec(struct pci_dev *dev)
-> +u16 cxl_port_dvsec(struct pci_dev *dev)
->  {
->  	return pci_find_dvsec_capability(dev, PCI_VENDOR_ID_CXL,
->  					 PCI_DVSEC_CXL_PORT);
->  }
->  
->  static int cxl_sbr_prepare(struct pci_dev *bridge, u16 dvsec,
-> -			   struct cxl_sbr_ctx *ctx)
-> +			   struct cxl_sbr_ctx *ctx,
-> +			   enum cxl_sbr_region_action action)
->  {
->  	int rc;
->  
-> -	/* Abort before touching hardware if the regions cannot be disabled. */
-> -	if (cxl_sbr_region_ops) {
-> +	/*
-> +	 * CXL_SBR_UNBIND: the link is already down, so offlining the regions'
-> +	 * memory would take the reads that page migration performs as a machine
-> +	 * check. Per PCIe r7.0 sec 2.9.3 the Port answers a Non-Posted Request
-> +	 * with an Unsupported Request or Completer Abort completion while it is
-> +	 * in DPC. Unbinding never fails, so the reset always goes ahead.
-> +	 *
-> +	 * CXL_SBR_OFFLINE_AND_UNBIND: the device is reachable, so offline the
-> +	 * memory first and abort the reset before touching hardware if that
-> +	 * fails.
-> +	 */
-> +	if (cxl_sbr_region_ops && action == CXL_SBR_UNBIND) {
-> +		cxl_sbr_region_ops->unbind_regions(bridge);
-> +	} else if (cxl_sbr_region_ops) {
->  		rc = cxl_sbr_region_ops->disable_regions(bridge);
->  		if (rc)
->  			return rc;
-> @@ -5003,19 +5016,17 @@ static void cxl_sbr_complete(struct pci_dev *bridge, u16 dvsec,
->  		cxl_sbr_region_ops->enable_regions(bridge);
->  }
->  
-> -/**
-> - * pci_bridge_secondary_bus_reset - Reset the secondary bus on a PCI bridge.
-> - * @dev: Bridge device
-> - *
-> - * Use the bridge control register to assert reset on the secondary bus.
-> - * Devices on the secondary bus are left in power-on state.
 > +/*
-> + * __pci_bridge_secondary_bus_reset - assert Secondary Bus Reset on a bridge
-> + * @dev: bridge device
-> + * @action: what to do with the CXL regions reached through @dev
->   *
-> - * When @dev is a CXL Downstream Port, clear ACS Source Validation and Bus
-> - * Master Enable across the reset, per the workaround in CXL r4.0 sec 8.1.5.1,
-> - * so that Port Power Management Initialization completes at link-up. The
-> - * bits stay cleared until the secondary bus is back, then are restored.
-> + * See pci_bridge_secondary_bus_reset(). Pass CXL_SBR_UNBIND when the link is
-> + * already down, which leaves the regions' memory online because offlining it
-> + * needs a reachable device.
->   */
-> -int pci_bridge_secondary_bus_reset(struct pci_dev *dev)
-> +int __pci_bridge_secondary_bus_reset(struct pci_dev *dev,
-> +				     enum cxl_sbr_region_action action)
->  {
->  	struct cxl_sbr_ctx ctx = {};
->  	u16 dvsec = 0;
-> @@ -5028,7 +5039,7 @@ int pci_bridge_secondary_bus_reset(struct pci_dev *dev)
->  	if (is_cxl_dport(dev))
->  		dvsec = cxl_port_dvsec(dev);
->  	if (dvsec) {
-> -		rc = cxl_sbr_prepare(dev, dvsec, &ctx);
-> +		rc = cxl_sbr_prepare(dev, dvsec, &ctx, action);
->  		if (rc)
->  			return rc;
->  	}
-> @@ -5042,6 +5053,23 @@ int pci_bridge_secondary_bus_reset(struct pci_dev *dev)
->  
->  	return rc;
->  }
-> +
-> +/**
-> + * pci_bridge_secondary_bus_reset - Reset the secondary bus on a PCI bridge.
-> + * @dev: Bridge device
-> + *
-> + * Use the bridge control register to assert reset on the secondary bus.
-> + * Devices on the secondary bus are left in power-on state.
-> + *
-> + * When @dev is a CXL Downstream Port, clear ACS Source Validation and Bus
-> + * Master Enable across the reset, per the workaround in CXL r4.0 sec 8.1.5.1,
-> + * so that Port Power Management Initialization completes at link-up. The
-> + * bits stay cleared until the secondary bus is back, then are restored.
+> + * Registered by the CXL core to disable and re-enable the regions mapped
+> + * through a CXL Downstream Port across a Secondary Bus Reset. NULL whenever
+> + * the CXL region code is absent: not built, or built as a module not loaded.
 > + */
-> +int pci_bridge_secondary_bus_reset(struct pci_dev *dev)
+> +static const struct pci_cxl_sbr_region_ops *cxl_sbr_region_ops;
+> +
+> +void pci_cxl_set_sbr_region_ops(const struct pci_cxl_sbr_region_ops *ops)
 > +{
-> +	return __pci_bridge_secondary_bus_reset(dev, CXL_SBR_OFFLINE_AND_UNBIND);
+> +	cxl_sbr_region_ops = ops;
 > +}
->  EXPORT_SYMBOL_GPL(pci_bridge_secondary_bus_reset);
->  
->  static int pci_parent_bus_reset(struct pci_dev *dev, bool probe)
-> diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
-> index 4469e1a77f3c..b6d873b077ed 100644
-> --- a/drivers/pci/pci.h
-> +++ b/drivers/pci/pci.h
-> @@ -233,6 +233,21 @@ int pci_mmap_fits(struct pci_dev *pdev, int resno, struct vm_area_struct *vmai,
->  bool pci_reset_supported(struct pci_dev *dev);
->  void pci_init_reset_methods(struct pci_dev *dev);
->  int pci_bridge_secondary_bus_reset(struct pci_dev *dev);
+> +EXPORT_SYMBOL_GPL(pci_cxl_set_sbr_region_ops);
 > +
-> +/*
-> + * What to do with the CXL regions reached through a Downstream Port before it
-> + * is reset. Offlining their memory needs a reachable device, so a Port whose
-> + * link is already down only unbinds and leaves the memory online.
-> + */
-> +enum cxl_sbr_region_action {
-> +	CXL_SBR_OFFLINE_AND_UNBIND,
-> +	CXL_SBR_UNBIND,
-> +};
-> +
-> +int __pci_bridge_secondary_bus_reset(struct pci_dev *dev,
-> +				     enum cxl_sbr_region_action action);
-> +bool is_cxl_dport(struct pci_dev *dev);
-> +u16 cxl_port_dvsec(struct pci_dev *dev);
->  int pci_bus_error_reset(struct pci_dev *dev);
->  int pci_try_reset_bridge(struct pci_dev *bridge);
->  
-> diff --git a/drivers/pci/pcie/dpc.c b/drivers/pci/pcie/dpc.c
-> index 2b779bd1d861..ad74086bf82c 100644
-> --- a/drivers/pci/pcie/dpc.c
-> +++ b/drivers/pci/pcie/dpc.c
-> @@ -127,6 +127,44 @@ bool pci_dpc_recovered(struct pci_dev *pdev)
->  }
->  #endif /* CONFIG_HOTPLUG_PCI_PCIE */
->  
-> +/**
-> + * pci_dpc_containment_active - whether a Port above @pdev is contained by DPC
-> + * @pdev: PCI device below the Port
-> + *
-> + * Per PCIe r7.0 sec 2.9.3 the Port's LTSSM stays in the Disabled state while
-> + * DPC Trigger Status is set, and dpc_reset_link() clears that bit only after
-> + * pcie_do_recovery() has broadcast error_detected. A ->error_detected()
-> + * callback can therefore use this to tell a DPC containment from any other
-> + * frozen-channel error, and to know that the link is about to be reset.
-> + *
-> + * The Port that triggered is on the path to @pdev, because the broadcast walks
-> + * that Port's subordinate bus, so test every bridge above @pdev.
-> + *
-> + * Return: true if a Port on the path to @pdev has DPC Trigger Status set.
-> + */
-> +bool pci_dpc_containment_active(struct pci_dev *pdev)
-> +{
-> +	struct pci_dev *bridge;
-> +
-> +	for (bridge = pci_upstream_bridge(pdev); bridge;
-> +	     bridge = pci_upstream_bridge(bridge)) {
-> +		u16 status;
-> +
-> +		if (!bridge->dpc_cap)
-> +			continue;
-> +
-> +		pci_read_config_word(bridge,
-> +				     bridge->dpc_cap + PCI_EXP_DPC_STATUS,
-> +				     &status);
-> +		if (!PCI_POSSIBLE_ERROR(status) &&
-> +		    (status & PCI_EXP_DPC_STATUS_TRIGGER))
-> +			return true;
-> +	}
-> +
-> +	return false;
-> +}
-> +EXPORT_SYMBOL_GPL(pci_dpc_containment_active);
-> +
->  static int dpc_wait_rp_inactive(struct pci_dev *pdev)
->  {
->  	unsigned long timeout = jiffies + HZ;
-> @@ -149,6 +187,7 @@ pci_ers_result_t dpc_reset_link(struct pci_dev *pdev)
->  {
->  	pci_ers_result_t ret;
->  	u16 cap;
-> +	int rc;
->  
->  	set_bit(PCI_DPC_RECOVERING, &pdev->priv_flags);
->  
-> @@ -174,7 +213,12 @@ pci_ers_result_t dpc_reset_link(struct pci_dev *pdev)
->  	pci_write_config_word(pdev, cap + PCI_EXP_DPC_STATUS,
->  			      PCI_EXP_DPC_STATUS_TRIGGER);
->  
-> -	if (pci_bridge_wait_for_secondary_bus(pdev, "DPC")) {
-> +	if (is_cxl_dport(pdev) && cxl_port_dvsec(pdev))
-> +		rc = __pci_bridge_secondary_bus_reset(pdev, CXL_SBR_UNBIND);
-> +	else
-> +		rc = pci_bridge_wait_for_secondary_bus(pdev, "DPC");
-> +
-> +	if (rc) {
->  		clear_bit(PCI_DPC_RECOVERED, &pdev->priv_flags);
->  		ret = PCI_ERS_RESULT_DISCONNECT;
->  	} else {
-> diff --git a/include/linux/aer.h b/include/linux/aer.h
-> index df0f5c382286..7ac029f01c25 100644
-> --- a/include/linux/aer.h
-> +++ b/include/linux/aer.h
-> @@ -66,6 +66,15 @@ static inline int pcie_aer_is_native(struct pci_dev *dev) { return 0; }
->  static inline void pci_aer_unmask_internal_errors(struct pci_dev *dev) { }
->  #endif
->  
-> +#if defined(CONFIG_PCIE_DPC)
-> +bool pci_dpc_containment_active(struct pci_dev *pdev);
-> +#else
-> +static inline bool pci_dpc_containment_active(struct pci_dev *pdev)
-> +{
-> +	return false;
-> +}
-> +#endif
-> +
->  void pci_print_aer(struct pci_dev *dev, int aer_severity,
->  		    struct aer_capability_regs *aer);
->  int cper_severity_to_aer(int cper_severity);
+
+Is the lifetime of this callback table being protected ?
+
+cxl_core can be a module, PCI reads the pointer without sync or a module ref.
+It could see a non-NULL pointer.
+
+I think the callback table registration needs synchronization and module ownership. PCI should pin
+the provider for the complete reset, for example with an owner field. Unregistration should first
+stop new users and then wait for any reset already using the callbacks.
+
+What do you think about this ?
+
+Best regards,
+Richard Cheng.
+
+>  /**
+>   * pci_bridge_secondary_bus_reset - Reset the secondary bus on a PCI bridge.
+>   * @dev: Bridge device
 > diff --git a/include/linux/pci.h b/include/linux/pci.h
-> index 2feb0e355305..0d9832ce6f3d 100644
+> index 64b308b6e61c..2feb0e355305 100644
 > --- a/include/linux/pci.h
 > +++ b/include/linux/pci.h
-> @@ -1609,10 +1609,13 @@ int pci_bridge_secondary_bus_reset(struct pci_dev *dev);
->  /**
->   * struct pci_cxl_sbr_region_ops - CXL region callbacks for a bus reset
->   * @disable_regions: disable the regions below @dport, 0 or errno
-> + * @unbind_regions: unbind the drivers of the regions below @dport, leaving
-> + *		    their memory online, for a link already contained
->   * @enable_regions: re-enable the regions below @dport
->   */
->  struct pci_cxl_sbr_region_ops {
->  	int (*disable_regions)(struct pci_dev *dport);
-> +	void (*unbind_regions)(struct pci_dev *dport);
->  	void (*enable_regions)(struct pci_dev *dport);
->  };
+> @@ -1606,6 +1606,18 @@ int devm_request_pci_bus_resources(struct device *dev,
+>  /* Temporary until new and working PCI SBR API in place */
+>  int pci_bridge_secondary_bus_reset(struct pci_dev *dev);
 >  
+> +/**
+> + * struct pci_cxl_sbr_region_ops - CXL region callbacks for a bus reset
+> + * @disable_regions: disable the regions below @dport, 0 or errno
+> + * @enable_regions: re-enable the regions below @dport
+> + */
+> +struct pci_cxl_sbr_region_ops {
+> +	int (*disable_regions)(struct pci_dev *dport);
+> +	void (*enable_regions)(struct pci_dev *dport);
+> +};
+> +
+> +void pci_cxl_set_sbr_region_ops(const struct pci_cxl_sbr_region_ops *ops);
+> +
+>  #define __pci_bus_for_each_res0(bus, res, ...)				\
+>  	for (unsigned int __b = 0;					\
+>  	     (res = pci_bus_resource_n(bus, __b)) || __b < PCI_BRIDGE_RESOURCE_NUM; \
 > -- 
 > 2.55.0
 > 
