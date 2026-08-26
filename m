@@ -1,73 +1,95 @@
-Return-Path: <linuxppc-dev+bounces-26116-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26117-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1C583C61DC2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Aug 2026 13:34:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D319BC5DF97
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Aug 2026 15:07:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hVQc020vGz2y32;
-	Wed, 26 Aug 2026 23:34:24 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787751264;
-	cv=none; b=BMpAmxMGmKtVVrALqjm7Hm+ia4hRxmTol95B7lEw1EiNuy7qNRozwWK0pLNMC3CAXpnb9OwKva2EgvMXgpaUuLItyXT5+1ZIrc6E9tfDNYqB9XRh2RFZUTC42Nn0LPHwk6A64jHKlDtRkDtqeISbkafNNWo2ssQ80OlAOMRmSE5Ec8+TdLeufK1M/p+aYkkSkG4ZLIfSJnYhYSRbfWNqY/K9scviZFehdwFElerKcw+vZLTHaQgvHGH9tr82mWROugpkaomzRQ19QSev7zmMWjz/wMfLouCu7xMRdSp7J/6Zy8t9Oqqml8q8vJMLDA0GFJ/CweROinkGCfy04eHZgQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787751264; c=relaxed/relaxed;
-	bh=aUuqCM/H7yKu0Fh92W3wPrQA2+UWJ+cdE2KxrWfpoHw=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=OtmQgK886sCYyEEIfPSBLSQt5oZQbLFFMKHIFlhhwI70r6Q4wXBF4nlAsQBTuJukcs5EZf/i2aG0PqPMfS94bdDUbsdu2Ns8WKcY5jUFTY39C04taKjpk8ze5KPQt9DPKm9zjCrI03sUPG5qD4Js0nQg5fjGK1KDL+MkKDyIJr4sgUoQ9Cdx1TC3N0/UTKdmUqXdsFhWrrgjA2Ah6UlK4xXXLbaPHyLsDjRQF9y4uJrrl7DWezeqCjqVX7dxpjuakdPmDeagL35/kd74P35dch/D+xxbcVnizijr/HBRzUaCv3TL4Dhm2vVfcguGhQH9DsHMSr+PauLPinbXY7OSVA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=KVNT6rCb; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hVSgW4Cc8z2y32;
+	Thu, 27 Aug 2026 01:07:35 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=85.215.255.21 arc.chain=strato.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787756855;
+	cv=pass; b=IlF+S5gaJsLxqsQeloTSIonkEIkMajTz/+5E44DZENsn40LbYv9IrFjITkJqKBxgjAPgEDA/cIqDTQ44HuJH6NgMWNsEuwHEFwLxQ0rPfKMViBZgzmfbr5qzM2/tMQSIZFq5jiF9eqkhmwaDbRbkAZBoKgcv9oGaDFQrfdQrzb9Ein4Lb65TXAnshz2Ksl3OIgvCiaxVW5innlOjcEpy8tepf7TVMoni3DWYuPkA+yJolCH+WxZ6dYWZuR0Jfiik/wdr53q6IMQAI/1gb+D5vFdiUpA8ZzSZZHiDA9l/uu5xG0AO43dSfodWnVkE/JzSn+hF/pOziV5jczJw6B5zSA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1787756855; c=relaxed/relaxed;
+	bh=Hjhp8QZkf1qJ5QQbYRUC95C0cpNGrQZe5EY41Fjimww=;
+	h=Subject:To:Cc:References:From:Message-ID:Date:MIME-Version:
+	 In-Reply-To:Content-Type; b=fM58Z5GwQaIADnJZrAJiXy44VXwBjJQ6s6XYhYLz0xr2K8FC9rsL6Nnn89QOX+mPaxNM3nAeUQQ3jviZhEffcHe49RzkzVd7OAtrdlkdMYIhAKaoyeNV0o96iVxdQxftHI5XmZsOkFwQaqWo+hLqD09YwNeSQmfsZ4THn7LuJpDcvcXs1YLKBkiC4f4oOw5uWY0wmHgW/dWa3Miput4MKVlF7O+/jF3ps4b+wj7fjsZGrhK1Pige2BAcO/fWUUn/LpYXR3n5eIUlKlWBlZFuBCZsNBFXJw/UalsORRCV4nWd0uDDiL9fMyez2pkSDFr0nfxPhaQvaukJkNqawjuSPg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xenosoft.de; dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=MU8YK7lr; dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=fttUFSBA; dkim-atps=neutral; spf=pass (client-ip=85.215.255.21; helo=mo4-p00-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org) smtp.helo=mo4-p00-ob.smtp.rzone.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xenosoft.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=KVNT6rCb;
+	dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=MU8YK7lr;
+	dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=fttUFSBA;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=mo4-p00-ob.smtp.rzone.de (client-ip=85.215.255.21; helo=mo4-p00-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org)
+Received: from mo4-p00-ob.smtp.rzone.de (mo4-p00-ob.smtp.rzone.de [85.215.255.21])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hVQbz103Yz2xLG
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2026 23:34:22 +1000 (AEST)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67QCVvMR3977499;
-	Wed, 26 Aug 2026 13:34:04 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=aUuqCM
-	/H7yKu0Fh92W3wPrQA2+UWJ+cdE2KxrWfpoHw=; b=KVNT6rCbbBFKRQtGn+RoAy
-	2opEgVMX5/jNCfvukNr3ZM1G7wAKQ72iA63QqDTEONct4ZEP8cz86APhcwsC+o/W
-	uevVa2Ojp4qjNGglaIpxGkRVvF91K21rvXe1hHe5XYochd1VmkNdifipda5O/YlR
-	Eg4n0lv6jgu/kNmWoN7GC258DKSsmkrmYnvI99GtWTzNlN1sXPO0wRJZprSmzyNy
-	7Ehw7+Dnkzy2laMRwIvBoqBG9u3WpFoq4dV9UdXuVZegbNVFLcjZMzf1EuvaQmNt
-	5YzfVpnViSSAV5kegCXaObih/ILJuKjMmky4YpchY6DKZT6f3ZByGs+5QYnSLYyw
-	==
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4g73946x7h-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 26 Aug 2026 13:34:03 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 67QDQKH6027453;
-	Wed, 26 Aug 2026 13:34:02 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4g7qkha3kk-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 26 Aug 2026 13:34:02 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 67QDXwo845809932
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 26 Aug 2026 13:33:58 GMT
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 21A9620043;
-	Wed, 26 Aug 2026 13:33:58 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 6352B20040;
-	Wed, 26 Aug 2026 13:33:54 +0000 (GMT)
-Received: from [9.123.14.142] (unknown [9.123.14.142])
-	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 26 Aug 2026 13:33:54 +0000 (GMT)
-Message-ID: <008fe00e-fd52-4010-86ca-f0ab80a65a46@linux.ibm.com>
-Date: Wed, 26 Aug 2026 19:03:53 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hVSgP1DLVz2xGw
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2026 01:07:25 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; t=1787756836; cv=none;
+    d=strato.com; s=strato-dkim-0002;
+    b=m2jR6jNPVu35V1OVThYzVnaNBsjMLmC3U9BPJ8j2tVmb9yWSIqrun7ptwvEugxopmy
+    sPi+05ZfBCSe7em9dfHhB7VwWDgVKSigwHExbvTyng+zD/g/3JmJVUADFMuTdDoAknLP
+    AzZvdubgeuOrnD+I3qBeVP2GnyxqltdzxYBh4ZqkugxOjlo3RiXQW0x5ozvc0scSteul
+    N0JBiyjsGOFPMR0DIExlQgkfDprvA7pKUPu7r5/lFdr3J+Y09710FCeF905Kv2i6CIWC
+    AWiy/4JUfc3ln3fnZDrzNmM0pcHEZYBFv7LcKQdUaWNpiohax8QY1l92SCz+3gA1hj7N
+    VCKA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1787756836;
+    s=strato-dkim-0002; d=strato.com;
+    h=In-Reply-To:Date:Message-ID:From:References:Cc:To:Subject:Cc:Date:
+    From:Subject:Sender;
+    bh=Hjhp8QZkf1qJ5QQbYRUC95C0cpNGrQZe5EY41Fjimww=;
+    b=IoSIvxOewkjbdMZpYQ+zotkeW8vLJdG2Gs6aN0yjWsUl3Zy28Oa6zLb9AVL37FKTFO
+    0Zt181QNHSDQHFHn4PfFFaWYF1zQZI2mzTdW7LzOYGANV+Sdn9v/oDCcqDuxtzfH8dAH
+    pzAdPOM1CUcPHgHD7u39wGPRFB8LSrz3bNaGVkqDicgobZA+FQvAX5vGvhESpq7hd2gW
+    mg6EiYrFDEi/viifh3znaeq+vhYizfqdnpGuYNwTZICcaeXhX9jiyMNPx5+k2ZPIQjR2
+    kg+Z+PL+qSNFqCWox6u/8YdZIpMrUsq9i2nnCh+HhTqYjNRuTi9k7ZEm+clgwLtWukNN
+    FrgQ==
+ARC-Authentication-Results: i=1; strato.com;
+    arc=none;
+    dkim=none
+X-RZG-CLASS-ID: mo00
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1787756836;
+    s=strato-dkim-0002; d=xenosoft.de;
+    h=In-Reply-To:Date:Message-ID:From:References:Cc:To:Subject:Cc:Date:
+    From:Subject:Sender;
+    bh=Hjhp8QZkf1qJ5QQbYRUC95C0cpNGrQZe5EY41Fjimww=;
+    b=MU8YK7lrIr9spO39P8iUm3TzIzlB6MdfQDJN44E2Yfg9fDcEFpPY+Qff++nryZNB4G
+    KN95bOXNGtQpGxm95mYW4EaVpSlz75NzreznsxOALlv08MufwS4Jy41GXYNaHswgwutt
+    GOPVW16pcPPwGwur85whpRWqZVeneNxmoMtrlMeyF8WxG2btOZYTu1yY+QoagcKguazt
+    XOT08zziqpQo5/GIfWO0zfZ8bISMACWdMRF0pm7uu/PKL8EjcnhmYYL6PcYMDKzVyGiK
+    6Qa5o2U1zI17ESaDGCFJDFZ7RWFhS0UFqQb4sAsiTxhy6ezFW8DpAKx3r8ZEb390fUdB
+    OI1g==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1787756836;
+    s=strato-dkim-0003; d=xenosoft.de;
+    h=In-Reply-To:Date:Message-ID:From:References:Cc:To:Subject:Cc:Date:
+    From:Subject:Sender;
+    bh=Hjhp8QZkf1qJ5QQbYRUC95C0cpNGrQZe5EY41Fjimww=;
+    b=fttUFSBAn5yBEpweceQCwJkhYTZU2fumt8qaQyTnlgOZDZRsPol8KFvnXwzswCJ5zR
+    riOY1EiCXdY8rYtb3EDw==
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGN0rBVhd9dFr4thIFiqT9BURIi+m7xzg"
+Received: from void-ppc.a-eon.tld
+    by smtp.strato.de (RZmta 55.6.2 DYNA|AUTH)
+    with ESMTPSA id ee2bee27QF7FSFU
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
+	(Client did not present a certificate);
+    Wed, 26 Aug 2026 17:07:15 +0200 (CEST)
+Subject: Re: drm/mgag200: Fix big-endian support
+To: Thomas Zimmermann <tzimmermann@suse.de>, rene@exactco.de
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Trevor Dickinson <rtd2@xtra.co.nz>, hypexed@yahoo.com.au,
+ mad skateman <madskateman@gmail.com>, Christian Zigotzky <info@xenosoft.de>
+References: <4ACA9FCA-683C-44D0-B31F-CE70C40070BB@xenosoft.de>
+ <6c265d1e-c301-4095-83e2-0e669222469a@suse.de>
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Organization: A-EON Open Source
+Message-ID: <0ac66673-034b-4fa0-089d-788ca7fde899@xenosoft.de>
+Date: Wed, 26 Aug 2026 17:07:14 +0200
+X-Mailer: BrassMonkey/34.3.2.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,253 +103,185 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC PATCH 2/3] powerpc: add support for Kexec HandOver (KHO)
-To: Pratyush Yadav <pratyush@kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Aditya Gupta <adityag@linux.ibm.com>,
-        Alexander Graf <graf@amazon.com>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Baoquan He <baoquan.he@linux.dev>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        Hari Bathini <hbathini@linux.ibm.com>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Mahesh Salgaonkar <mahesh@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>, Mike Rapoport <rppt@kernel.org>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Pasha Tatashin <pasha.tatashin@soleen.com>,
-        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-        Shivang Upadhyay <shivangu@linux.ibm.com>,
-        Shrikanth Hegde <sshegde@linux.ibm.com>, kexec@lists.infradead.org,
-        linux-kernel@vger.kernel.org
-References: <20260821105609.983622-1-sourabhjain@linux.ibm.com>
- <20260821105609.983622-3-sourabhjain@linux.ibm.com>
- <2vxza4qfznyo.fsf@kernel.org>
-Content-Language: en-US
-From: Sourabh Jain <sourabhjain@linux.ibm.com>
-In-Reply-To: <2vxza4qfznyo.fsf@kernel.org>
+In-Reply-To: <6c265d1e-c301-4095-83e2-0e669222469a@suse.de>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: YXY2Xiz6Hvm01ZOibYwHTzEeoO4EOAor
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODI2MDExMiBTYWx0ZWRfX6RTLr3wTAsDt
- Y7EvGdssfQuvW5+aFUqEv9T1/sToybXRDxrA53d2uueWT3FEQnhTkagTHFDQ3nw0IVRVN+2MBst
- JEktgYNY572U4ZiKBxiWnW8uRZvViyn+0jbBeE9Bgy2hdoqYQBXv936xGzcbT2htEwMSIaLEwzm
- pXZUgKGnYuGePm2A/CNMMpu0NXrA4YvbnZBWeu3c9Dc+ute5N+Gm4I/D5Z+aW32FUlL2lW2P3t0
- r1Su3Ek+9wbGoOwzqc5bhWkXva/0/PTwJeEwIstu2WonlUaDVfzvyde+EGEzXdfthx6bnLLZXwj
- 46/bqoYqY9l2R0yl48sdzCqu91YGA8wzpelSyfNQXKo1wkQQxzXuKd2c1sz+7Kfn9MNA3kdSgYz
- ug1VRzhmyE6ecYu5BHdkoltNg6li2/qrxicpEDgqgnN2oAt/LUMBEI1l3+/h/AESgDwb3lUu1RK
- wa2j44usJYNeuSnTi2g==
-X-Authority-Analysis: v=2.4 cv=Y/nIdBeN c=1 sm=1 tr=0 ts=6a8eeb4b cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
- a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=fkfyDzpKf0ij7gQ8ic8A:9
- a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10 a=O8hF6Hzn-FEA:10
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODI2MDExMiBTYWx0ZWRfX11I2+C4s6hHS
- fszNZDli3VtmQMLNCjv2ZgA20RenF5889I4rF76OR6u1KHiT5Y6oXSPkLHkv62B1XEycsqTscEF
- M7Ti8un3q71Q6RXvxYdnTcUNVI22DnI=
-X-Proofpoint-ORIG-GUID: aQHARQU-IMpprAFetTNIObGSUFYg229f
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-08-26_03,2026-08-26_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 impostorscore=0 priorityscore=1501 adultscore=0 bulkscore=0
- suspectscore=0 malwarescore=0 clxscore=1015 lowpriorityscore=0 phishscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608260112
 
-Hello Pratyush,
+On 26/08/26 11:06, Thomas Zimmermann wrote:
+ > Hi
+ >
+ > Am 02.08.26 um 20:06 schrieb Christian Zigotzky:
+ >> Hello René,
+ >>
+ >> Many thanks for your patch. [1]
+ >>
+ >> I have bought the PCI graphics card Matrox G200 G2+/QUADP-PL/7 32MB 
+with 4x DVI. It is an AGP card connected via PCI.
+ >>
+ >> We use the new DRM driver MGAG200 since the kernel 7.2.0-rc4 and the 
+old DRM legacy driver for Matrox g200/g400 graphics cards since the 
+stable long-term kernel 5.10.260.
+ >>
+ >> I tested it with the RC5 of kernel 7.2 in my PowerPC machine (e5500) 
+today. Unfortunately, the DRM driver mgag200 can't read the PCI ROM. 
+Maybe only an x86 ROM?
+ >>
+ >> xrandr detects the ports but reports that they are not connected, 
+even though the cables are plugged in.
+ >>
+ >> I also tested it with the stable long-term kernel 5.10.261 with the 
+old legacy DRM drivers for Matrox graphics cards.
+ >> I installed the Xorg MGA server xf86-video-mga-2.0.0_3 for the old 
+legacy DRM driver but unfortunately I get only a black screen.
+ >>
+ >> Is it possible to use this card with PPC Linux?
+ >
+ > Attached is the patch I promised.  Please apply it and test it on 
+your machine. Does it make the card work?
+ >
+ > Best regards
+ > Thomas
 
-After looking at the x86 crashkernel and KHO scratch memory
-allocation order, I realized that the same issue should exist on x86
-as well. I ran the same experiment on an x86 guest, and the results
-confirmed this.
+Hello Thomas,
 
+Thank you for your patch. Unfortunately the card doesn't work with the 
+patched kernel.
 
-[root@localhost ~]# dmesg | grep -i -e kho -e crashkernel
-[    0.000000] Command line: 
-BOOT_IMAGE=(hd0,gpt3)/boot/vmlinuz-6.19.10-300.fc44.x86_64 
-no_timer_check console=tty1 console=ttyS0,115200n8 systemd.firstboot=off 
-root=UUID=15c26993-ac30-424a-9c4b-faec4434d234 rootflags=subvol=root 
-kho=on crashkernel=1G
-[    0.004615] crashkernel reserved: 0x000000007f000000 - 
-0x00000000bf000000 (1024 MB)
-[    0.034746] Kernel command line: 
-BOOT_IMAGE=(hd0,gpt3)/boot/vmlinuz-6.19.10-300.fc44.x86_64 
-no_timer_check console=tty1 console=ttyS0,115200n8 systemd.firstboot=off 
-root=UUID=15c26993-ac30-424a-9c4b-faec4434d234 rootflags=subvol=root 
-kho=on crashkernel=1G
-[    0.095761] KHO: Failed to reserve scratch area, disabling kexec handover
+dmesg | grep -i mga
 
-I agree that this can be avoided by using the crashkernel=xxM,high option.
-However, I just wanted to share the same problem currently exists on x86 
-as well.
+[    2.307195] [drm] Initialized mgag200 1.0.0 for 0001:05:00.0 on minor 1
+[    2.308649] mgag200 0001:05:00.0: [drm] Cannot find any crtc or sizes
+[    2.309551] mgag200 0001:05:04.0: Invalid PCI ROM header signature: 
+expecting 0xaa55, got 0xffff
+[    2.310305] [drm] Initialized mgag200 1.0.0 for 0001:05:04.0 on minor 2
+[    2.312660] mgag200 0001:05:04.0: [drm] Cannot find any crtc or sizes
+[    2.313177] mgag200 0001:05:00.0: [drm] Cannot find any crtc or sizes
+[    2.313640] mgag200 0001:05:08.0: Invalid PCI ROM header signature: 
+expecting 0xaa55, got 0xffff
+[    2.314357] [drm] Initialized mgag200 1.0.0 for 0001:05:08.0 on minor 3
+[    2.317630] mgag200 0001:05:08.0: [drm] Cannot find any crtc or sizes
+[    2.318185] mgag200 0001:05:0c.0: Invalid PCI ROM header signature: 
+expecting 0xaa55, got 0xffff
+[    2.318840] mgag200 0001:05:04.0: [drm] Cannot find any crtc or sizes
+[    2.319345] [drm] Initialized mgag200 1.0.0 for 0001:05:0c.0 on minor 4
+[    2.321014] mgag200 0001:05:0c.0: [drm] Cannot find any crtc or sizes
+[    2.322400] mgag200 0001:05:08.0: [drm] Cannot find any crtc or sizes
+[    2.327215] mgag200 0001:05:0c.0: [drm] Cannot find any crtc or sizes
 
-While reading the KHO code, I came across the following commit, which 
-handles
-a somewhat similar problem with HugeTLB:
+lspci -vvv
 
-fdd843f2be1a ("kho: exclude hugetlb memory from scratch size calculation")
+0001:05:00.0 VGA compatible controller: Matrox Electronics Systems Ltd. 
+MGA G200 AGP (rev 03) (prog-if 00 [VGA controller])
+     Subsystem: Matrox Electronics Systems Ltd. G200 Multi-Monitor
+     Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- 
+Stepping- SERR- FastB2B- DisINTx-
+     Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- 
+<TAbort- <MAbort- >SERR- <PERR- INTx-
+     Latency: 128 (4000ns min, 8000ns max), Cache Line Size: 32 bytes
+     Interrupt: pin A routed to IRQ 18
+     Region 0: Memory at c20000000 (32-bit, prefetchable) [size=16M]
+     Region 1: Memory at c21000000 (32-bit, non-prefetchable) [size=16K]
+     Region 2: Memory at c21800000 (32-bit, non-prefetchable) [size=8M]
+     Expansion ROM at c21010000 [disabled] [size=64K]
+     Capabilities: [dc] Power Management version 1
+         Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA 
+PME(D0-,D1-,D2-,D3hot-,D3cold-)
+         Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=0 PME-
+     Capabilities: [f0] AGP version 1.0
+         Status: RQ=32 Iso- ArqSz=0 Cal=0 SBA+ ITACoh- GART64- HTrans- 
+64bit- FW- AGP3- Rate=x1,x2
+         Command: RQ=1 ArqSz=0 Cal=0 SBA- AGP- GART64- 64bit- FW- 
+Rate=<none>
+     Kernel driver in use: mgag200
 
-The approach is to first account for HugeTLB allocations as a separate 
-memblock
-reservation type and then exclude them when calculating the scratch memory
-reservation.
+0001:05:04.0 Display controller: Matrox Electronics Systems Ltd. MGA 
+G200 AGP (rev 03)
+     Subsystem: Matrox Electronics Systems Ltd. G200 Multi-Monitor
+     Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- 
+Stepping- SERR- FastB2B- DisINTx-
+     Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- 
+<TAbort- <MAbort- >SERR- <PERR- INTx-
+     Latency: 128 (4000ns min, 8000ns max), Cache Line Size: 32 bytes
+     Interrupt: pin A routed to IRQ 18
+     Region 0: Memory at c22000000 (32-bit, prefetchable) [size=16M]
+     Region 1: Memory at c23000000 (32-bit, non-prefetchable) [size=16K]
+     Region 2: Memory at c23800000 (32-bit, non-prefetchable) [size=8M]
+     Expansion ROM at c21020000 [disabled] [size=64K]
+     Capabilities: [dc] Power Management version 1
+         Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA 
+PME(D0-,D1-,D2-,D3hot-,D3cold-)
+         Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=0 PME-
+     Capabilities: [f0] AGP version 1.0
+         Status: RQ=32 Iso- ArqSz=0 Cal=0 SBA+ ITACoh- GART64- HTrans- 
+64bit- FW- AGP3- Rate=x1,x2
+         Command: RQ=1 ArqSz=0 Cal=0 SBA- AGP- GART64- 64bit- FW- 
+Rate=<none>
+     Kernel driver in use: mgag200
 
-How about using the same approach to avoid accounting for crashkernel memory
-when calculating the scratch memory size?
+0001:05:08.0 Display controller: Matrox Electronics Systems Ltd. MGA 
+G200 AGP (rev 03)
+     Subsystem: Matrox Electronics Systems Ltd. G200 Multi-Monitor
+     Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- 
+Stepping- SERR- FastB2B- DisINTx-
+     Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- 
+<TAbort- <MAbort- >SERR- <PERR- INTx-
+     Latency: 128 (4000ns min, 8000ns max), Cache Line Size: 32 bytes
+     Interrupt: pin A routed to IRQ 18
+     Region 0: Memory at c24000000 (32-bit, prefetchable) [size=16M]
+     Region 1: Memory at c25000000 (32-bit, non-prefetchable) [size=16K]
+     Region 2: Memory at c25800000 (32-bit, non-prefetchable) [size=8M]
+     Expansion ROM at c21030000 [disabled] [size=64K]
+     Capabilities: [dc] Power Management version 1
+         Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA 
+PME(D0-,D1-,D2-,D3hot-,D3cold-)
+         Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=0 PME-
+     Capabilities: [f0] AGP version 1.0
+         Status: RQ=32 Iso- ArqSz=0 Cal=0 SBA+ ITACoh- GART64- HTrans- 
+64bit- FW- AGP3- Rate=x1,x2
+         Command: RQ=1 ArqSz=0 Cal=0 SBA- AGP- GART64- 64bit- FW- 
+Rate=<none>
+     Kernel driver in use: mgag200
 
-- Sourabh Jain
+0001:05:0c.0 Display controller: Matrox Electronics Systems Ltd. MGA 
+G200 AGP (rev 03)
+     Subsystem: Matrox Electronics Systems Ltd. G200 Multi-Monitor
+     Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- 
+Stepping- SERR- FastB2B- DisINTx-
+     Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- 
+<TAbort- <MAbort- >SERR- <PERR- INTx-
+     Latency: 128 (4000ns min, 8000ns max), Cache Line Size: 32 bytes
+     Interrupt: pin A routed to IRQ 18
+     Region 0: Memory at c26000000 (32-bit, prefetchable) [size=16M]
+     Region 1: Memory at c27000000 (32-bit, non-prefetchable) [size=16K]
+     Region 2: Memory at c27800000 (32-bit, non-prefetchable) [size=8M]
+     Expansion ROM at c21040000 [disabled] [size=64K]
+     Capabilities: [dc] Power Management version 1
+         Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA 
+PME(D0-,D1-,D2-,D3hot-,D3cold-)
+         Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=0 PME-
+     Capabilities: [f0] AGP version 1.0
+         Status: RQ=32 Iso- ArqSz=0 Cal=0 SBA+ ITACoh- GART64- HTrans- 
+64bit- FW- AGP3- Rate=x1,x2
+         Command: RQ=1 ArqSz=0 Cal=0 SBA- AGP- GART64- 64bit- FW- 
+Rate=<none>
+     Kernel driver in use: mgag200
 
+xrandr
 
-On 21/08/26 17:26, Pratyush Yadav wrote:
-> On Fri, Aug 21 2026, Sourabh Jain wrote:
->
->> Add the architecture bits needed to enable CONFIG_KEXEC_HANDOVER on
->> powerpc.
->>
->> Set ARCH_SUPPORTS_KEXEC_HANDOVER for PPC64, following the existing
->> pattern used by ARCH_SUPPORTS_KEXEC and ARCH_SUPPORTS_KEXEC_FILE.
->>
->> On the boot path, parse the "linux,kho-fdt" and "linux,kho-scratch"
->> properties from /chosen and pass them to kho_populate(). This lets a
->> kernel booted via KHO kexec recover the FDT and scratch region left
->> behind by the previous kernel. The call is placed early in
->> setup_arch(), before unflatten_device_tree().
->>
->> Open issues:
->> ============
->>
->> This patch also adds "depends on !CRASH_DUMP" to
->> ARCH_SUPPORTS_KEXEC_HANDOVER. This is needed because of an ordering
->> conflict between crashkernel reservation and KHO scratch reservation
->> on powerpc.
->>
->> Crashkernel memory is reserved very early in boot, from arch-specific
->> code: head.S -> early_setup() -> early_init_devtree() ->
->> arch_reserve_crashkernel() / fadump_reserve_mem(). KHO's scratch
->> region is reserved later, from generic code: start_kernel() ->
->> mm_core_init() -> kho_memory_init(). So on powerpc, crashkernel
->> memory is always reserved first.
->>
->> This ordering causes a real failure. In the common case, crashkernel
->> reservation on powerpc starts at a 512M offset (the exact offset can
->> vary, but 512M is typical). So with crashkernel=3G, the reservation
->> occupies memory from 512M up to 3.5G -- roughly 75% of the entire low
->> 4G area.
->>
->> Since crashkernel reservation always happens first, that 3G is
->> already committed by the time kho_memory_init() runs. It then tries
->> to reserve a low scratch region sized at 200% of whatever is already
->> reserved below 4G. With ~75% of that 4G area already taken by
->> crashkernel memory, 200% of that easily exceeds the remaining space
->> -- and since the low scratch region is itself capped at 4G, there's
->> no room left to fit it. The reservation fails.
-> crashkernel has the variant "crashkernel=size[KMG],high", which ensures
-> memory is allocated above 4G. Unless powerpc has some requirement for
-> strictly having the crashkernel below 4G, I think it will make a lot of
-> sense to enable support for this feature. So KHO users can specify this
-> to get crashkernel working with KHO.
->
-> Powerpc doesn't support this right now, but from a quick skim of the
-> code, I think it should be simple enough. From
-> arch_reserve_crashkernel() you just need to pass a bool * to
-> parse_crashkernel(), and then pass the result to
-> reserve_crashkernel_generic().
->
-> Solving the ordering of crash reservations and KHO is tricky and comes
-> with some difficult tradeoffs. Allocating crash from highmem should be a
-> lot simpler.
->
-> And on that note, I don't think you should do a depends on !CRASH_DUMP.
-> Even when CONFIG_KEXEC_HANDOVER is enabled, KHO isn't on by default
-> (well, unless KEXEC_HANDOVER_ENABLE_DEFAULT is set). You need to enable
-> it via cmdline. So it is entirely possible for people using KHO on PPC
-> to not use crash and vice versa. This decision can be made at deployment
-> time, not at compile time.
->
->> To work around this and get KHO working on powerpc, this patch:
->>
->> 1. Makes KHO usable on powerpc only when CRASH_DUMP is disabled.
->> 2. Calls kho_populate() from setup_arch(), so it runs before
->>     kho_memory_init() reserves the scratch region.
->>
->> The real fix would be to reserve the KHO scratch region before
->> crashkernel memory instead of after. But scratch reservation happens
->> in generic code (kho_memory_init(), called from mm_core_init()), so
->> this isn't something powerpc can address on its own -- it needs
->> discussion on how to influence the ordering between generic scratch
->> reservation and arch-specific crashkernel reservation. This patch
->> doesn't attempt that; it's meant as a starting point for that
->> discussion.
->>
-> [...]
->> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
->> index 2580e27e4328..61350d3e7a19 100644
->> --- a/arch/powerpc/Kconfig
->> +++ b/arch/powerpc/Kconfig
->> @@ -716,6 +716,11 @@ config ARCH_SELECTS_CRASH_DUMP
->>   	depends on CRASH_DUMP
->>   	select RELOCATABLE if PPC64 || 44x || PPC_85xx
->>   
->> +config ARCH_SUPPORTS_KEXEC_HANDOVER
->> +	def_bool y
->> +	depends on PPC64
->> +	depends on !CRASH_DUMP
->> +
->>   config ARCH_SUPPORTS_CRASH_HOTPLUG
->>   	def_bool y
->>   	depends on PPC64
->> diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
->> index 4afaba19b586..1fee743abdf2 100644
->> --- a/arch/powerpc/kernel/setup-common.c
->> +++ b/arch/powerpc/kernel/setup-common.c
-> [...]
->>   }
->>   #endif
->>   
->> +#ifdef CONFIG_PPC64
->> +static void __init init_kho(const void *fdt)
->> +{
->> +	unsigned long node;
->> +	u64 fdt_start, fdt_size, scratch_start, scratch_size;
->> +
->> +	if (!IS_ENABLED(CONFIG_KEXEC_HANDOVER))
->> +		return;
->> +
->> +	/* Find and verify the /chosen node, same as early_init_dt_scan_chosen() does */
->> +	node = fdt_path_offset(fdt, "/chosen");
->> +	if ((long)node < 0)
->> +		node = fdt_path_offset(fdt, "/chosen@0");
->> +	if ((long)node < 0)
->> +		return;
->> +
->> +	if (!of_flat_dt_get_addr_size(node, "linux,kho-fdt",
->> +				      &fdt_start, &fdt_size))
->> +		return;
->> +	if (!of_flat_dt_get_addr_size(node, "linux,kho-scratch",
->> +				      &scratch_start, &scratch_size))
->> +		return;
->> +
->> +	kho_populate(fdt_start, fdt_size, scratch_start, scratch_size);
->> +}
-> This looks pretty much a duplicate of early_init_dt_check_kho(). On
-> arm64 this is called via early_init_dt_scan(). But from a quick search I
-> don't see powerpc calling it.
->
-> Would it make sense to call this function (or
-> early_init_dt_scan_nodes()) for powerpc?
->
-> If not, I think it would be a better idea to expose
-> early_init_dt_check_kho() and call it from powerpc setup_arch() instead
-> of duplicating the logic.
->
->> +#endif
->> +
->>   /*
->>    * Called into from start_kernel this initializes memblock, which is used
->>    * to manage page allocation until mem_init is called.
-> [...]
->
+VGA-4-4 disconnected (normal left inverted right x axis y axis)
+VGA-3-3 disconnected (normal left inverted right x axis y axis)
+VGA-2-2 disconnected (normal left inverted right x axis y axis)
+VGA-1-1 disconnected (normal left inverted right x axis y axis)
 
+lspci -nnk | grep VGA
+
+0001:05:00.0 VGA compatible controller [0300]: Matrox Electronics 
+Systems Ltd. MGA G200 AGP [102b:0521] (rev 03)
+
+Thanks,
+Christian
+
+-- 
+Sent with BrassMonkey 34.3.2.1 
+(https://github.com/chzigotzky/Web-Browsers-and-Suites-for-Linux-PPC/releases/tag/BrassMonkey_34.3.2.1)
 
