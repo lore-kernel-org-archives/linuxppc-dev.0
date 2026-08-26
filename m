@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-26101-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26103-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C71E4C61DCB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Aug 2026 09:26:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B3CC5C61DC2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Aug 2026 09:26:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hVK4s1tRnz3btt;
-	Wed, 26 Aug 2026 19:25:33 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.222
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787736333;
-	cv=none; b=a9PYTIWI5xfIMsNhmPlEH6KfVNjSpeN3Ln8gYiRJvQ6OoLgW20aoGeW2RuDh8l/e06UQOEy554onOEGEuH0Pj7R5R6JORYs8aLlb7SZnXZc78d6yPJ8/LnTzJgcxOFu+fl7unL29FodN+klPD8reZFYNLR19yJEjqe1bp1VYJWj2PG9vDG+DJ2HuAmWSJmiPk+3b+iACQw3tWAcwmiwIFSKaqMEV6qA1p8P17zCpFf4vCQJD00YZnjkEMVLF4ha4peH5cTjz1sZiNxS/jkE4COa9ZfzUVPjcTX4M72pLKGQoHuSsM7eWqXyMcuuEDt0nnfh4kGcKOirYs89EhNqCFQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hVK4t0qn4z3bwk;
+	Wed, 26 Aug 2026 19:25:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.221
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787736334;
+	cv=none; b=ZpQtNG5+3QwWw1drtcQrIlgy41rx4gWZ6dI8IHyLWMnJZCrylZZsbQeLPbFXO9mQIa9qg8AS9NCFWB61A9Ijx0O2pftNdt6C4wmhdRQhhPKD9B4fMzBxoxdhx08rgfUjs2C+TCTkDjRzOTmYXFmjf2XXXY7shUUXW0iIXugW8eWSY8a8R7Vzs1nqMGsBU26fkiyDuQS61v1JvNH8zpgYqPTq7qXLXfGf04WUKrNo7I+FNRqGuvDqdfBRc34GR64UWP8K0kgPyCSlP1JCZ51iCus3oMHttJV7IsVP3cLQquavoVgIRf5xI4SzEu3k/fvB/cXEn+wN+b9TxhHX6mR11g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787736333; c=relaxed/relaxed;
-	bh=y759v80hfcLGexoE6U+P0qCW895e0rqrtykfndhs3p4=;
+	t=1787736334; c=relaxed/relaxed;
+	bh=0gF1CX+SLowxFh9fJKRvX/sCOgXb1E06TJatahYgRnw=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=FGJOMbpYQoRwJYr7uWbFW9XEF+U7RZ0wGHwpUAsAuZxMC6hTdN0RllX5BJ18imxm2/wMUjFuFnOXvwZ2y3oSsNusKpi3R9lJc/xKTbq9GXVVXYP4ywTu8m2d7piB+3wLI71rFEGK+6tCHwOrwJjJtDin5+/aimjp9+74x/x0tLqnubNeyw+7fHuASo0/bk2A59ECjDegwRH1Kdm5x363YDvTYGzPi09BR7AdPxk83by2lqU6w1PJ7e5+pWv0DkMkmcUcB3Si8PLZ1CzlIqTEkIrNPeHTVMwWz7NMJRJ1wMk6Ujt4fUO4Z3gjPKHyJVBz44bW8cp/Lc6ST2Jyp4QuMA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=i/qQKHNz; dkim-atps=neutral; spf=pass (client-ip=113.46.200.222; helo=canpmsgout07.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+	 MIME-Version:Content-Type; b=Z8q33cxPDKHd7+tq6hNouGjJpz9Il1UfQA9TLbQWnvS7/JJRBeJ9nxftFwpRm3UBBSzscTdo8Ag3v6QsqjH77Yi/uBsqvLR6pojnKXy50chHBSHJQyXNeVJR5Z8qpMwJRpJx/AOt8hfP2lKxKGI/Z2TFHl5aYuetRO/rbEza6RR3JRJIlIQsHkM8ql1AhnDQ6wd1FEG+gBIKuzCThnyTzinsnpKjzD5IzVBLlXyHOS/jPpFiWvCvp2GdJ/UxZLVJqYS2x3/5VVlDYxrT5pvR+URU0TDSz9C0av7d4DHf1yQS7uznQUbA//Moa/Me1ulP0GPuZymlpoJByr3cm+s9Xg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=JX+hJB4h; dkim-atps=neutral; spf=pass (client-ip=113.46.200.221; helo=canpmsgout06.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=i/qQKHNz;
+	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=JX+hJB4h;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.222; helo=canpmsgout07.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
-Received: from canpmsgout07.his.huawei.com (canpmsgout07.his.huawei.com [113.46.200.222])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.221; helo=canpmsgout06.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
+Received: from canpmsgout06.his.huawei.com (canpmsgout06.his.huawei.com [113.46.200.221])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hVK4q32z8z3bSw
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2026 19:25:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hVK4r1WWJz3bsT
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2026 19:25:32 +1000 (AEST)
 dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
 	c=relaxed/relaxed; q=dns/txt;
 	h=From;
-	bh=y759v80hfcLGexoE6U+P0qCW895e0rqrtykfndhs3p4=;
-	b=i/qQKHNz8OxKmJLSE6ETOW3Vyzml5TlfhhQAVfoBCgLl3ppxbzz6ZfYvrUMLwW7wzTAHquxJ5
-	7xkkPqtSSJUuN3dgmG4MYGSJZEltvqtaf1bLmuJ2Nfz2lINRwFVWYySZIoIptnPTMwZvuSdXvB9
-	ZX7arRtCRna8ymHdQexhtqQ=
-Received: from mail.maildlp.com (unknown [172.19.162.92])
-	by canpmsgout07.his.huawei.com (SkyGuard) with ESMTPS id 4hVJrJ0mhvzLlXB;
-	Wed, 26 Aug 2026 17:14:40 +0800 (CST)
+	bh=0gF1CX+SLowxFh9fJKRvX/sCOgXb1E06TJatahYgRnw=;
+	b=JX+hJB4hTDDgkqA1/sg50c8MkVgqGYd5+tQwQD3uhUYhWr5tSyj9b7DiiSZk+6f6uc8AIE9K+
+	ir0Lyq63+jQ7c35zwdyKfSwDnYHnSJCkKIb5GmhVr88An2gsqRKmbRDNYbe4sIKFnFBQ50Jwe6I
+	os3GmFKja6Un1xAaUllqd0w=
+Received: from mail.maildlp.com (unknown [172.19.163.104])
+	by canpmsgout06.his.huawei.com (SkyGuard) with ESMTPS id 4hVJrN2SFjzRhrs;
+	Wed, 26 Aug 2026 17:14:44 +0800 (CST)
 Received: from dggpemf500011.china.huawei.com (unknown [7.185.36.131])
-	by mail.maildlp.com (Postfix) with ESMTPS id B445D4058A;
-	Wed, 26 Aug 2026 17:25:25 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id 0BF314058C;
+	Wed, 26 Aug 2026 17:25:28 +0800 (CST)
 Received: from huawei.com (10.90.53.73) by dggpemf500011.china.huawei.com
  (7.185.36.131) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Wed, 26 Aug
- 2026 17:25:23 +0800
+ 2026 17:25:25 +0800
 From: Jinjie Ruan <ruanjinjie@huawei.com>
 To: <catalin.marinas@arm.com>, <will@kernel.org>, <mark.rutland@arm.com>,
 	<chenhuacai@kernel.org>, <kernel@xen0n.name>, <maddy@linux.ibm.com>,
@@ -68,9 +68,9 @@ To: <catalin.marinas@arm.com>, <will@kernel.org>, <mark.rutland@arm.com>,
 	<kexec@lists.infradead.org>, <linux-fsdevel@vger.kernel.org>,
 	<linux-mm@kvack.org>
 CC: <ruanjinjie@huawei.com>
-Subject: [PATCH v3 07/17] crash_dump: Fix potential double-free of keys_header
-Date: Wed, 26 Aug 2026 17:25:31 +0800
-Message-ID: <20260826092541.3905933-8-ruanjinjie@huawei.com>
+Subject: [PATCH v3 08/17] crash: Extract crash_get_memory_ranges() helper
+Date: Wed, 26 Aug 2026 17:25:32 +0800
+Message-ID: <20260826092541.3905933-9-ruanjinjie@huawei.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20260826092541.3905933-1-ruanjinjie@huawei.com>
 References: <20260826092541.3905933-1-ruanjinjie@huawei.com>
@@ -93,67 +93,81 @@ X-Originating-IP: [10.90.53.73]
 X-ClientProxiedBy: kwepems500002.china.huawei.com (7.221.188.17) To
  dggpemf500011.china.huawei.com (7.185.36.131)
 
-`keys_header` was freed in `build_keys_header()` without being reset
-to NULL, and the error path in `crash_load_dm_crypt_keys()` freed it
-unconditionally even when reused, leading to double-free or
-use-after-free.
-
-Add `free_keys_header()` to centralize freeing and NULL-setting.
-Use it in `build_keys_header()` and only free in the error path when
-the header was newly built (`!is_dm_key_reused`).
+Factor out the crash memory range collection logic from
+crash_prepare_headers() into a separate function. This allows
+the memory hotplug path to obtain and modify the range list
+(e.g. remove offlined memory) before generating the elfcorehdr.
 
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Baoquan He <bhe@redhat.com>
+Cc: Baoquan He <baoquan.he@linux.dev>
 Cc: Mike Rapoport <rppt@kernel.org>
 Cc: Pasha Tatashin <pasha.tatashin@soleen.com>
 Cc: Pratyush Yadav <pratyush@kernel.org>
 Cc: Dave Young <ruirui.yang@linux.dev>
-Cc: stable@vger.kernel.org
-Fixes: e3a84be1ec2f ("arm64,ppc64le/kdump: pass dm-crypt keys to kdump kernel")
 Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
 ---
- kernel/crash_dump_dm_crypt.c | 15 +++++++++++----
- 1 file changed, 11 insertions(+), 4 deletions(-)
+ include/linux/crash_core.h |  1 +
+ kernel/crash_core.c        | 22 +++++++++++++++++++---
+ 2 files changed, 20 insertions(+), 3 deletions(-)
 
-diff --git a/kernel/crash_dump_dm_crypt.c b/kernel/crash_dump_dm_crypt.c
-index c685497cd470..ed0960ff0987 100644
---- a/kernel/crash_dump_dm_crypt.c
-+++ b/kernel/crash_dump_dm_crypt.c
-@@ -363,15 +363,21 @@ static struct configfs_subsystem config_keys_subsys = {
- 	},
- };
+diff --git a/include/linux/crash_core.h b/include/linux/crash_core.h
+index bc087124cd78..619af312bd9a 100644
+--- a/include/linux/crash_core.h
++++ b/include/linux/crash_core.h
+@@ -62,6 +62,7 @@ extern int crash_prepare_elf64_headers(struct crash_mem *mem, int need_kernel_ma
+ extern int crash_prepare_headers(int need_kernel_map, void **addr,
+ 				 unsigned long *sz, unsigned long *nr_mem_ranges);
+ extern int crash_exclude_core_ranges(struct crash_mem **cmem);
++extern int crash_get_memory_ranges(struct crash_mem **mem_ranges);
  
-+static void free_keys_header(void)
-+{
-+	if (keys_header) {
-+		kvfree(keys_header);
-+		keys_header = NULL;
-+	}
+ struct kimage;
+ struct kexec_segment;
+diff --git a/kernel/crash_core.c b/kernel/crash_core.c
+index d0bd2d0cf899..991d1599cf9a 100644
+--- a/kernel/crash_core.c
++++ b/kernel/crash_core.c
+@@ -317,8 +317,7 @@ int crash_exclude_core_ranges(struct crash_mem **cmem)
+ 	return 0;
+ }
+ 
+-int crash_prepare_headers(int need_kernel_map, void **addr, unsigned long *sz,
+-			  unsigned long *nr_mem_ranges)
++int crash_get_memory_ranges(struct crash_mem **mem_ranges)
+ {
+ 	unsigned int max_nr_ranges;
+ 	struct crash_mem *cmem;
+@@ -344,13 +343,30 @@ int crash_prepare_headers(int need_kernel_map, void **addr, unsigned long *sz,
+ 	if (ret)
+ 		goto out;
+ 
++	*mem_ranges = cmem;
++	return 0;
++
++out:
++	kvfree(cmem);
++	return ret;
 +}
 +
- static int build_keys_header(void)
- {
- 	struct config_item *item = NULL;
- 	struct config_key *key;
- 	int i, r;
++int crash_prepare_headers(int need_kernel_map, void **addr, unsigned long *sz,
++			  unsigned long *nr_mem_ranges)
++{
++	struct crash_mem *cmem = NULL;
++	int ret;
++
++	ret = crash_get_memory_ranges(&cmem);
++	if (ret)
++		return ret;
++
+ 	/* Return the computed number of memory ranges, for hotplug usage */
+ 	if (nr_mem_ranges)
+ 		*nr_mem_ranges = cmem->nr_ranges;
  
--	if (keys_header != NULL)
--		kvfree(keys_header);
--
-+	free_keys_header();
- 	keys_header = kzalloc(get_keys_header_size(key_count), GFP_KERNEL);
- 	if (!keys_header)
- 		return -ENOMEM;
-@@ -441,7 +447,8 @@ int crash_load_dm_crypt_keys(struct kimage *image)
- 	r = kexec_add_buffer(&kbuf);
- 	if (r) {
- 		pr_err("Failed to call kexec_add_buffer, ret=%d\n", r);
--		kvfree((void *)kbuf.buffer);
-+		if (!is_dm_key_reused)
-+			free_keys_header();
- 		return r;
- 	}
- 	image->dm_crypt_keys_addr = kbuf.mem;
+ 	ret = crash_prepare_elf64_headers(cmem, need_kernel_map, addr, sz);
+ 
+-out:
+ 	kvfree(cmem);
+ 	return ret;
+ }
 -- 
 2.34.1
 
