@@ -1,73 +1,86 @@
-Return-Path: <linuxppc-dev+bounces-26085-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26086-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1C68FC61DB9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2026 15:16:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1D1BBC61DBD
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Aug 2026 07:18:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hTrwW5GTgz2xVq;
-	Wed, 26 Aug 2026 01:16:43 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787671003;
-	cv=none; b=W6h2H3gOX+0F41bzdcJSM8XRYNy4FPRkjPxYKUZdpJioYhqDO8JwR2OjdKprJAccdeL2Evn1gS1PixU2JMEbM2CtzbI1w7XgNy+sC+68AnInBQVRIeVnNQWVUdggWHOFoWewo01a+0qTaF/v1pWi6+G5/4VzhkEfKM39+xgYtKMTGRgEYzsl8Vo20ewz0hgPEuTPndlk77HP4JYPvim/0SYzrgvolGg8pNXkQfZ3e75huRZC0kotRxp2DVi1RFtGnV+H7bRYIqyOrnGf0oPo58ddOV/KwOW7KU0tnudUDN8i/IqCVy7+FPzRSCFSux2nwZ/B8ISrLfhA3IguL119lg==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787671003; c=relaxed/relaxed;
-	bh=+rc6e6Zc0mG/DaIfNSDD2hfj1uCVwvLCyWZb8d14LXk=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=J9qoeIgVE2tE5T59t/01JPo2nu4hhdtS5TLEo7sF9bV9Yj0lpLrnH4ChwBR+cNp3su4vD3nHD5CyMIvAh7RVI0wBS39qLumOkzjXKI8T/acgx3UfZD9XboGctiC2qLnjSi7t6AuvEZ9dtU/dI5IVURtR1s1bRtbqLd0xfzsDHQQxK6PnNnZ9uket/rPaTPsmSbkeWx1NeHU/XVqLQ8W532bareKqHUr+mtumGe9HyfekOEO2LotVBrdt2GTMlwuOeRyXX9yz4MAohwx3YgfnMVt1AnHq+o/i7T1gIelAOBgPnSUL1ZwYNAwjNfGJomvCnd9obWYC70kCc4rHZJd8Hg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=UOjoEQeR; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=harshpb@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hVGG85jGdz2y32;
+	Wed, 26 Aug 2026 17:18:24 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=81.169.146.220 arc.chain=strato.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787728704;
+	cv=pass; b=Mk65bAfrVgMxiiuM9OFk3/JiGRpQlppnr9q0x7BBfskv+JGqUuAx6B+aCW3/fZOYF0Iiv4spR27MEVtWJcyQq+2H7Lv6UeHwPwKiz5nLO4MWUiVQqnwgBzlEQJJuRcbYVL1DeDvJ+qmoBA4umoBgqQmOXZgCt2vxA/eDnYmY54xzDcZVQhHS3+Uum+W+mPy3huvQI4zuw+wQtZMdbRr/9qThHpRmaheuUaJXyLjbj9waYhlGqYLguOZkPAXlErlTUfigWa6+yI7jyiNM0Fx5Vvv4aW1SluATCohNEYyLwhjD1RjNsLekV+MtGJ0llTiHJ5FfdkLAwLpRuvFj5ilskQ==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1787728704; c=relaxed/relaxed;
+	bh=+Kq2RsohRbnLlL1fIC+hGIycAbUIkalQ+/Z78X5c0ew=;
+	h=Content-Type:From:Mime-Version:Subject:Date:Message-Id:References:
+	 Cc:In-Reply-To:To; b=gc1UdI62hWFvDL6YcFH+4RBthFiHUlaCGZbZKaDBN/jEM5iz68hKjcQH6n9s6/++mdqgPqMJm9AjDJuGAWxk+e4hgaIXLMUnCoHnbJTz3Zk8/p4DFt5cixduL2+Kx+3XfxMRGVLFnKfp/DC0lO1qKBmq5Wza/Rcf9zKmJz0YZBTa3DXt0yb3nphF1OZtHcdpvmw+d8JebT+RUqjqIKt0V+8ju2pEBftV79jISNiQnp0SWOsN47l22KM162L7n1IKDT0UPiPldDxOYYeeK9y6DYkT5WjTax2D5kAGy7Y4PEFM0J+kVN6w6HlNMZgfjXGYY0PH3QdJwF8SLgyj093+wg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xenosoft.de; dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=BhMpx/KI; dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=qjid3Wyy; dkim-atps=neutral; spf=pass (client-ip=81.169.146.220; helo=mo4-p00-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org) smtp.helo=mo4-p00-ob.smtp.rzone.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xenosoft.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=UOjoEQeR;
+	dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=BhMpx/KI;
+	dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=qjid3Wyy;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=harshpb@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=mo4-p00-ob.smtp.rzone.de (client-ip=81.169.146.220; helo=mo4-p00-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org)
+Received: from mo4-p00-ob.smtp.rzone.de (mo4-p00-ob.smtp.rzone.de [81.169.146.220])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hTrwV3sJgz2x9g
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2026 01:16:41 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67PEYwF21024702;
-	Tue, 25 Aug 2026 15:16:23 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=+rc6e6
-	Zc0mG/DaIfNSDD2hfj1uCVwvLCyWZb8d14LXk=; b=UOjoEQeRCD1WIh00bwGE+0
-	CKKB7xPhm9UED1sYaCV8PAxDkOUHyyqUNuUKVf4q05zpu6sFNWRgcYiD2O8IHxgQ
-	jlDxt577f1TcqgotNCd3RE0T6RLRiySo3FwRdRk0fj1mFUYjYO18/DX4s8utFw/7
-	brZwurGKBLDTIqKqiHiCXUrIQP+ICpzdoMmq4IfXqn4xx6N47hpKzjdFCecKlAqU
-	DRVpS2AQP9tTuOKqyr+7ePei77EKS8UWfSMx7DmII4VosOGYvG5RKBao48nqPzW4
-	4I7/jeTU0B6mYl+WDW+qCRqzy1pLxOxy8Rw3GFpbYLoey3lYM7f/jJ/HHBv0fONQ
-	==
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4g716hs3qs-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 25 Aug 2026 15:16:22 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 67PEuISt019496;
-	Tue, 25 Aug 2026 15:16:21 GMT
-Received: from smtprelay01.wdc07v.mail.ibm.com ([172.16.1.68])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4g7qkh4skb-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 25 Aug 2026 15:16:21 +0000 (GMT)
-Received: from smtpav03.dal12v.mail.ibm.com (smtpav03.dal12v.mail.ibm.com [10.241.53.102])
-	by smtprelay01.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 67PFGKKO59048358
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 25 Aug 2026 15:16:20 GMT
-Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 678B658061;
-	Tue, 25 Aug 2026 15:16:20 +0000 (GMT)
-Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3A23F5803F;
-	Tue, 25 Aug 2026 15:16:17 +0000 (GMT)
-Received: from [9.124.213.132] (unknown [9.124.213.132])
-	by smtpav03.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 25 Aug 2026 15:16:16 +0000 (GMT)
-Message-ID: <c6117753-10a7-4e10-bd8f-526a5dd8a300@linux.ibm.com>
-Date: Tue, 25 Aug 2026 20:46:15 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hVGG12p6Nz2xGw
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2026 17:18:13 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; t=1787728672; cv=none;
+    d=strato.com; s=strato-dkim-0002;
+    b=PjEtvZ+WGgW7qU+JqGwK6cTzjfiPA0fXaKHjIwnVNtH+3IGvQj5c0UVRE+7P1FrAs9
+    jD1zopqIAZssAWwWYzdT6RK9gAyBlWrHlEhdkcBrD1g28Aow+gpWRLMGn0ugZTnjziHy
+    AHb7rg4X21UXml2Z4RGBrxPs9zBYVEv79dUKc2Mce3Q5kjdLE49bplzeAjhEa7DAbeRO
+    h6yQlpblZAIHItmQ/opYKDYuChkwYrUpEZEbGqgBjYzH0/fHa4tnOBL7jh2d7ZSdkh5l
+    hNz5TrVVOtl9gfcIdlBiisQ604MTTREauN3ADLtkTGeju6LTKC+yVJ97gU7fXA6siqxD
+    pDvQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1787728672;
+    s=strato-dkim-0002; d=strato.com;
+    h=To:In-Reply-To:Cc:References:Message-Id:Date:Subject:From:Cc:Date:
+    From:Subject:Sender;
+    bh=+Kq2RsohRbnLlL1fIC+hGIycAbUIkalQ+/Z78X5c0ew=;
+    b=E3DsjgBn5JaawB/W+QP4uDEVFRK9E55hKexx6EYDjMz31HJa1jGdcoCrjoxQ+uptmq
+    qNnSSUSp6ccYWsFZ9vPWxVQCc+JuJH6ezCQkQF/aaVf45k1Fyh1T8AKXkyPqcEk7v/32
+    vueqTJ9Z66nw9grf2HHh3NP+S6ojfnJRd79+KFINjpW+eK5kGvid9QP3QhH/mx75gHA3
+    TWllodV/SYiquksMucW+GrwUdMOtsRUbStlYFEXW33vEmTK/PQ3a+dBaZVuzJSIZ6RAX
+    m5rFbHMxPBisuPgnb1zqJIGJH8U2wdGRPq5aIzdzWPm/2o0XeV3ox5FU/ApX2sd3E9xX
+    +i9w==
+ARC-Authentication-Results: i=1; strato.com;
+    arc=none;
+    dkim=none
+X-RZG-CLASS-ID: mo00
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1787728672;
+    s=strato-dkim-0002; d=xenosoft.de;
+    h=To:In-Reply-To:Cc:References:Message-Id:Date:Subject:From:Cc:Date:
+    From:Subject:Sender;
+    bh=+Kq2RsohRbnLlL1fIC+hGIycAbUIkalQ+/Z78X5c0ew=;
+    b=BhMpx/KIgx8CiMJqy4fmDmtaIKY42vdlkmV/VgqFkdlma2XI7n0AYMTT6fzhCsoQSi
+    HqZuK2wNwxT6OO1TuvCBfh+zihUHirpvWaCwgF6keNkWRtBgWB8bGnEPyX5/+KGTsl6G
+    zxPxdO/flkVExgiITHO/HPzeUeWYAtmXAEwPSGhNvIwoWDWx6PM7Cxr0pl6OheXxNhbC
+    14awMmTK8yra8HmhGTiaSr4sdFrduaKWHZ1gEha69vwFjmpbFRj+wFZ09VGhdjYj6u3I
+    K9BfB3cLK/cfrwJDNOLwAD4JveumpVfR5t4xxYzsIl9+UuxYH/tkY4F5kPDRRoclsGCe
+    v1dA==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1787728672;
+    s=strato-dkim-0003; d=xenosoft.de;
+    h=To:In-Reply-To:Cc:References:Message-Id:Date:Subject:From:Cc:Date:
+    From:Subject:Sender;
+    bh=+Kq2RsohRbnLlL1fIC+hGIycAbUIkalQ+/Z78X5c0ew=;
+    b=qjid3WyygEdaNwHSGuFp9D9mPe4FTeINW75SYZKcD1N/n41pnQSkKKvdP+IrkCcOw0
+    YC6R26uAA+hiXQ4JfRAA==
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGN0rBVhd9dFr6KxrfO5Oh7V7X5jhs3mQAn9OTkNOrN3EgwCWK5/AC49UK5N/"
+Received: from smtpclient.apple
+    by smtp.strato.de (RZmta 55.6.2 AUTH)
+    with ESMTPSA id ee2bee27Q7HpPtq
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
+	(Client did not present a certificate);
+    Wed, 26 Aug 2026 09:17:51 +0200 (CEST)
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,148 +93,201 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] powerpc/rtas_pci: No hotplug on permanently removed
- device on pSeries
-To: tasmiya <tasmiya@linux.ibm.com>, Shivaprasad G Bhat
- <sbhat@linux.ibm.com>,
-        maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
-Cc: mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org,
-        linux-kernel@vger.kernel.org
-References: <177725851139.12391.5948009745181492600.stgit@linux.ibm.com>
- <80aded32-3975-49f4-a91a-b58b236c832a@linux.ibm.com>
-Content-Language: en-GB
-From: Harsh Prateek Bora <harshpb@linux.ibm.com>
-In-Reply-To: <80aded32-3975-49f4-a91a-b58b236c832a@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODI1MDEyOCBTYWx0ZWRfXzplxPLeWcqVf
- 91jksxwvXPZD7YgneCqZMOqEjWn9dyunZG1nyIf3HIY4q/J0hKa2sldo4An1uVh+6LX/JS52hJq
- sXvBRzxk1knAfIvf3e/qHQiDM7GNYqU=
-X-Proofpoint-GUID: XD1d5de-4feQHCDNdLFYSKzFjzORVEmc
-X-Proofpoint-ORIG-GUID: JSyYUBOPqZxABSEd6JDLrd0RxJE1nk-z
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODI1MDEyOCBTYWx0ZWRfX5C6vS1ykdovs
- Ez21EuQ3RS7VqSMiixO8Ba0Hh4dGMhIvepqcQtJm+hHoS6GdnFaK7QMcegiT/jBhV3ZT/qXULBs
- MkuHiv1B4fll/ozj8RRFUc4x90NpynTeOq3gI1tiIcuwgi6YgT3cLyq5M54fXLraNEqhOqCD4Ti
- 6kCWKnoH5eCGVR/Af87V2yIc+7aFScejmVilCG+1Znu6aOOfal0rzQGdHfmJBVqZWbiXbBiU3cY
- xP5+U0nhkp8Bz5Q4EWjq6pJs+KWEK9pBhd5XxTV/Vk6TJoQu4HscZhEjremzpP8b5wH/Gg+KDmu
- jxLCx0cffP0R3zvRxf92vfKAoTs3lv3aNFNhf8FterXTKlctMgy52aq2azzfD9apdWWTtL1yLtQ
- Hgwr21jaDZsjaVxfgpmC2lEbbliAxjXkWIj1UuE78Nb7ZCrXornyL1QTp5txjHNCyIVq800zTkw
- zfqWRsn1jlLU3va/6Dw==
-X-Authority-Analysis: v=2.4 cv=H7brBeYi c=1 sm=1 tr=0 ts=6a8db1c6 cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
- a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=f7IdgyKtn90A:10
- a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22
- a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8 a=koTKpVfbUEzoDsrEVSgA:9 a=3ZKOabzyN94A:10
- a=QEXdDO2ut3YA:10
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-08-25_04,2026-08-24_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 malwarescore=0 lowpriorityscore=0 impostorscore=0 spamscore=0
- bulkscore=0 adultscore=0 priorityscore=1501 clxscore=1015 phishscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608250128
+Mime-Version: 1.0 (1.0)
+Subject: Re: drm/mgag200: Fix big-endian support
+Date: Wed, 26 Aug 2026 09:17:40 +0200
+Message-Id: <22C49569-6B51-4FEC-B689-ACD28A41D1DA@xenosoft.de>
+References: <4ACA9FCA-683C-44D0-B31F-CE70C40070BB@xenosoft.de>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Trevor Dickinson <rtd2@xtra.co.nz>, hypexed@yahoo.com.au,
+ mad skateman <madskateman@gmail.com>,
+ Christian Zigotzky <info@xenosoft.de>
+In-Reply-To: <4ACA9FCA-683C-44D0-B31F-CE70C40070BB@xenosoft.de>
+To: rene@exactco.de, Thomas Zimmermann <tzimmermann@suse.de>
+X-Mailer: iPhone Mail (23G83)
 
-Hi Tasmiya,
+Hi All,
 
-There was a v2 posted here:
-https://lore.kernel.org/linuxppc-dev/178246517230.1267.12206176311111155505.stgit@linux.ibm.com/
+Any hints because of this issue?
 
-Although a minor change in return value and re-ordering before 
-CONFIG_BLOCKED incorporated in v2, it's better to test v2 and provide 
-test feedback on the same.
+Further information: https://forum.hyperion-entertainment.com/viewtopic.php?=
+t=3D5201
 
-Thanks
-Harsh
+Thanks,
+Christian
 
-On 25/08/26 3:52 pm, tasmiya wrote:
-> Greetings,
-> 
-> Tested-by: Tasmiya Nalatwad <tasmiya@linux.ibm.com>
-> Reported-by: Tasmiya Nalatwad <tasmiya@linux.ibm.com>
-> 
-> 
-> I have Tested the patch in my KVM guest environment with device 
-> passthrough via vfio, It works fine and fixes the issue.
-> Triggered EEH freeze beyond eeh_max_freezes to permanently remove the 
-> device, then hotplugged a new PCI device. Without the patch, the rescan 
-> attempted to bring back the permanently removed device. With the patch 
-> applied, the removed device is correctly skipped during rescan and only 
-> newly hotplugged device is seen in the guest.
-> 
-> 
-> Thank you,
-> 
-> Tasmiya
-> 
-> 
-> On 27/04/26 8:25 am, Shivaprasad G Bhat wrote:
->> The eeh_driver disables and offlines the PE permanently when it
->> exceeds the freeze count beyond eeh_max_freeze within the last hour.
->> The PE is only offline, so the device tree entries, eeh device
->> references are all intact till the real unplug of the device from
->> the guest/host takes place.
->>
->> On pSeries, with a new hotplug of any PCI device, the drmgr initiates
->> a system-wide PCI rescan, which finds devices offlined by the eeh_driver
->> and there will be attempts to bring them online. This leads to
->> recurring EEHs either at the config read time itself or a bit
->> later depending on the type of the problem.
->>
->> For PowerNV, the commit d2b0f6f77ee5 ("powerpc/eeh: No hotplug on
->> permanently removed dev") introduced the EEH_DEV_REMOVED flag to
->> prevent such inadvertent rescans on hierarchical toplogies relavent in
->> Baremetal setups. For pSeries, such topologies don't really make sense
->> as the devices are either part of the same PE OR exposed as independent
->> devices on multiple virtual PHBs. However, the inadvertent rescans are
->> still a possibility with either hotplug of a new device or otherwise
->> with manual system-wide pci bus rescan attempts.
->>
->> So the patch checks for EEH_DEV_REMOVED before allowing config space
->> access just like PowerNV, making the PCI core omit the PE, and thus
->> preventing subsequent EEH recurances. The patch is tested on PowerVM
->> and KVM machines with single and multi-function devices, and on the
->> devices behind a switch. The unplug of the affected devices post EEH
->> removal is also working fine as expected.
->>
->> Signed-off-by: Shivaprasad G Bhat <sbhat@linux.ibm.com>
->> References: d2b0f6f77ee5 ("powerpc/eeh: No hotplug on permanently 
->> removed dev")
->> ---
->>   arch/powerpc/kernel/rtas_pci.c |    6 ++++++
->>   1 file changed, 6 insertions(+)
->>
->> diff --git a/arch/powerpc/kernel/rtas_pci.c b/arch/powerpc/kernel/ 
->> rtas_pci.c
->> index fccf96e897f6..ce24b18712ca 100644
->> --- a/arch/powerpc/kernel/rtas_pci.c
->> +++ b/arch/powerpc/kernel/rtas_pci.c
->> @@ -57,6 +57,9 @@ int rtas_pci_dn_read_config(struct pci_dn *pdn, int 
->> where, int size, u32 *val)
->>       if (pdn->edev && pdn->edev->pe &&
->>           (pdn->edev->pe->state & EEH_PE_CFG_BLOCKED))
->>           return PCIBIOS_SET_FAILED;
->> +
->> +    if (pdn->edev && pdn->edev->mode & EEH_DEV_REMOVED)
->> +        return PCIBIOS_SET_FAILED;
->>   #endif
->>       addr = rtas_config_addr(pdn->busno, pdn->devfn, where);
->> @@ -108,6 +111,9 @@ int rtas_pci_dn_write_config(struct pci_dn *pdn, 
->> int where, int size, u32 val)
->>       if (pdn->edev && pdn->edev->pe &&
->>           (pdn->edev->pe->state & EEH_PE_CFG_BLOCKED))
->>           return PCIBIOS_SET_FAILED;
->> +
->> +    if (pdn->edev && pdn->edev->mode & EEH_DEV_REMOVED)
->> +        return PCIBIOS_SET_FAILED;
->>   #endif
->>       addr = rtas_config_addr(pdn->busno, pdn->devfn, where);
->>
->>
-> 
+
+On 02 August 2026 at 08:07 pm, Christian Zigotzky <chzigotzky@xenosoft.de> w=
+rote:
+
+=EF=BB=BFHello Ren=C3=A9,
+
+Many thanks for your patch. [1]
+
+I have bought the PCI graphics card Matrox G200 G2+/QUADP-PL/7 32MB with 4x D=
+VI. It is an AGP card connected via PCI.
+
+We use the new DRM driver MGAG200 since the kernel 7.2.0-rc4 and the old DRM=
+ legacy driver for Matrox g200/g400 graphics cards since the stable long-ter=
+m kernel 5.10.260.
+
+I tested it with the RC5 of kernel 7.2 in my PowerPC machine (e5500) today. U=
+nfortunately, the DRM driver mgag200 can't read the PCI ROM. Maybe only an x=
+86 ROM?
+
+xrandr detects the ports but reports that they are not connected, even thoug=
+h the cables are plugged in.
+
+I also tested it with the stable long-term kernel 5.10.261 with the old lega=
+cy DRM drivers for Matrox graphics cards.
+I installed the Xorg MGA server xf86-video-mga-2.0.0_3 for the old legacy DR=
+M driver but unfortunately I get only a black screen.
+
+Is it possible to use this card with PPC Linux?
+
+More information:
+
+lspci -vvv
+
+0001:05:00.0 VGA compatible controller: Matrox Electronics Systems Ltd. MGA G=
+200 AGP (rev 03) (prog-if 00 [VGA controller])
+   Subsystem: Matrox Electronics Systems Ltd. G200 Multi-Monitor
+   Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepp=
+ing- SERR- FastB2B- DisINTx-
+   Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=3Dmedium >TAbort- <TAbor=
+t- <MAbort- >SERR- <PERR- INTx-
+   Latency: 128 (4000ns min, 8000ns max), Cache Line Size: 32 bytes
+   Interrupt: pin A routed to IRQ 18
+   Region 0: Memory at c20000000 (32-bit, prefetchable) [size=3D16M]
+   Region 1: Memory at c21000000 (32-bit, non-prefetchable) [size=3D16K]
+   Region 2: Memory at c21800000 (32-bit, non-prefetchable) [size=3D8M]
+   Expansion ROM at c21010000 [disabled] [size=3D64K]
+   Capabilities: [dc] Power Management version 1
+       Flags: PMEClk- DSI+ D1- D2- AuxCurrent=3D0mA PME(D0-,D1-,D2-,D3hot-,D=
+3cold-)
+       Status: D0 NoSoftRst- PME-Enable- DSel=3D0 DScale=3D0 PME-
+   Capabilities: [f0] AGP version 1.0
+       Status: RQ=3D32 Iso- ArqSz=3D0 Cal=3D0 SBA+ ITACoh- GART64- HTrans- 6=
+4bit- FW- AGP3- Rate=3Dx1,x2
+       Command: RQ=3D1 ArqSz=3D0 Cal=3D0 SBA- AGP- GART64- 64bit- FW- Rate=3D=
+<none>
+   Kernel driver in use: mgag200
+
+0001:05:04.0 Display controller: Matrox Electronics Systems Ltd. MGA G200 AG=
+P (rev 03)
+   Subsystem: Matrox Electronics Systems Ltd. G200 Multi-Monitor
+   Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepp=
+ing- SERR- FastB2B- DisINTx-
+   Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=3Dmedium >TAbort- <TAbor=
+t- <MAbort- >SERR- <PERR- INTx-
+   Latency: 128 (4000ns min, 8000ns max), Cache Line Size: 32 bytes
+   Interrupt: pin A routed to IRQ 18
+   Region 0: Memory at c22000000 (32-bit, prefetchable) [size=3D16M]
+   Region 1: Memory at c23000000 (32-bit, non-prefetchable) [size=3D16K]
+   Region 2: Memory at c23800000 (32-bit, non-prefetchable) [size=3D8M]
+   Expansion ROM at c21020000 [disabled] [size=3D64K]
+   Capabilities: [dc] Power Management version 1
+       Flags: PMEClk- DSI+ D1- D2- AuxCurrent=3D0mA PME(D0-,D1-,D2-,D3hot-,D=
+3cold-)
+       Status: D0 NoSoftRst- PME-Enable- DSel=3D0 DScale=3D0 PME-
+   Capabilities: [f0] AGP version 1.0
+       Status: RQ=3D32 Iso- ArqSz=3D0 Cal=3D0 SBA+ ITACoh- GART64- HTrans- 6=
+4bit- FW- AGP3- Rate=3Dx1,x2
+       Command: RQ=3D1 ArqSz=3D0 Cal=3D0 SBA- AGP- GART64- 64bit- FW- Rate=3D=
+<none>
+   Kernel driver in use: mgag200
+
+0001:05:08.0 Display controller: Matrox Electronics Systems Ltd. MGA G200 AG=
+P (rev 03)
+   Subsystem: Matrox Electronics Systems Ltd. G200 Multi-Monitor
+   Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepp=
+ing- SERR- FastB2B- DisINTx-
+   Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=3Dmedium >TAbort- <TAbor=
+t- <MAbort- >SERR- <PERR- INTx-
+   Latency: 128 (4000ns min, 8000ns max), Cache Line Size: 32 bytes
+   Interrupt: pin A routed to IRQ 18
+   Region 0: Memory at c24000000 (32-bit, prefetchable) [size=3D16M]
+   Region 1: Memory at c25000000 (32-bit, non-prefetchable) [size=3D16K]
+   Region 2: Memory at c25800000 (32-bit, non-prefetchable) [size=3D8M]
+   Expansion ROM at c21030000 [disabled] [size=3D64K]
+   Capabilities: [dc] Power Management version 1
+       Flags: PMEClk- DSI+ D1- D2- AuxCurrent=3D0mA PME(D0-,D1-,D2-,D3hot-,D=
+3cold-)
+       Status: D0 NoSoftRst- PME-Enable- DSel=3D0 DScale=3D0 PME-
+   Capabilities: [f0] AGP version 1.0
+       Status: RQ=3D32 Iso- ArqSz=3D0 Cal=3D0 SBA+ ITACoh- GART64- HTrans- 6=
+4bit- FW- AGP3- Rate=3Dx1,x2
+       Command: RQ=3D1 ArqSz=3D0 Cal=3D0 SBA- AGP- GART64- 64bit- FW- Rate=3D=
+<none>
+   Kernel driver in use: mgag200
+
+0001:05:0c.0 Display controller: Matrox Electronics Systems Ltd. MGA G200 AG=
+P (rev 03)
+   Subsystem: Matrox Electronics Systems Ltd. G200 Multi-Monitor
+   Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepp=
+ing- SERR- FastB2B- DisINTx-
+   Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=3Dmedium >TAbort- <TAbor=
+t- <MAbort- >SERR- <PERR- INTx-
+   Latency: 128 (4000ns min, 8000ns max), Cache Line Size: 32 bytes
+   Interrupt: pin A routed to IRQ 18
+   Region 0: Memory at c26000000 (32-bit, prefetchable) [size=3D16M]
+   Region 1: Memory at c27000000 (32-bit, non-prefetchable) [size=3D16K]
+   Region 2: Memory at c27800000 (32-bit, non-prefetchable) [size=3D8M]
+   Expansion ROM at c21040000 [disabled] [size=3D64K]
+   Capabilities: [dc] Power Management version 1
+       Flags: PMEClk- DSI+ D1- D2- AuxCurrent=3D0mA PME(D0-,D1-,D2-,D3hot-,D=
+3cold-)
+       Status: D0 NoSoftRst- PME-Enable- DSel=3D0 DScale=3D0 PME-
+   Capabilities: [f0] AGP version 1.0
+       Status: RQ=3D32 Iso- ArqSz=3D0 Cal=3D0 SBA+ ITACoh- GART64- HTrans- 6=
+4bit- FW- AGP3- Rate=3Dx1,x2
+       Command: RQ=3D1 ArqSz=3D0 Cal=3D0 SBA- AGP- GART64- 64bit- FW- Rate=3D=
+<none>
+   Kernel driver in use: mgag200
+
+
+dmesg | grep -i mga
+
+[    2.302206] [drm] Initialized mgag200 1.0.0 for 0001:05:00.0 on minor 1
+[    2.303761] mgag200 0001:05:00.0: [drm] Cannot find any crtc or sizes
+[    2.304697] mgag200 0001:05:04.0: Invalid PCI ROM header signature: expec=
+ting 0xaa55, got 0xffff
+[    2.305792] [drm] Initialized mgag200 1.0.0 for 0001:05:04.0 on minor 2
+[    2.308281] mgag200 0001:05:04.0: [drm] Cannot find any crtc or sizes
+[    2.308802] mgag200 0001:05:08.0: Invalid PCI ROM header signature: expec=
+ting 0xaa55, got 0xffff
+[    2.309319] [drm] Initialized mgag200 1.0.0 for 0001:05:08.0 on minor 3
+[    2.309785] mgag200 0001:05:00.0: [drm] Cannot find any crtc or sizes
+[    2.310900] mgag200 0001:05:08.0: [drm] Cannot find any crtc or sizes
+[    2.311895] mgag200 0001:05:0c.0: Invalid PCI ROM header signature: expec=
+ting 0xaa55, got 0xffff
+[    2.312633] [drm] Initialized mgag200 1.0.0 for 0001:05:0c.0 on minor 4
+[    2.312844] mgag200 0001:05:04.0: [drm] Cannot find any crtc or sizes
+[    2.315512] mgag200 0001:05:0c.0: [drm] Cannot find any crtc or sizes
+[    2.317178] mgag200 0001:05:08.0: [drm] Cannot find any crtc or sizes
+[    2.323318] mgag200 0001:05:0c.0: [drm] Cannot find any crtc or sizes
+
+xrandr
+
+=E2=80=A6
+
+VGA-4-4 disconnected (normal left inverted right x axis y axis)
+VGA-3-3 disconnected (normal left inverted right x axis y axis)
+VGA-2-2 disconnected (normal left inverted right x axis y axis)
+VGA-1-1 disconnected (normal left inverted right x axis y axis)
+
+=E2=80=A6
+
+lspci -nnk | grep VGA
+
+0001:05:00.0 VGA compatible controller [0300]: Matrox Electronics Systems Lt=
+d. MGA G200 AGP [102b:0521] (rev 03)
+
+Thanks,
+Christian
+
+[1] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commi=
+t/drivers/gpu/drm/mgag200/mgag200_mode.c?id=3D6cb31fba137d45e682ce455b8ea364=
+f44d5d4f98=
 
 
