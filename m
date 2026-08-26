@@ -1,78 +1,86 @@
-Return-Path: <linuxppc-dev+bounces-26123-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26124-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E4828C61DBD
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Aug 2026 16:21:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3461BC61DBD
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Aug 2026 17:31:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hVVJN72pDz2y32;
-	Thu, 27 Aug 2026 02:21:08 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787761268;
-	cv=none; b=nOCVPQ6GvLku3EfNnxGZ4nSgcxuwdEPt/yyymdhaaf6B4ZWowI+W7h42lz2q5uWWrnNZq1SKJX+VMsJVdymtzSskuwy3L1SaF/VBnw8zo0WAFcE6cvFIvTCPZKmLLdxjYQubztrnDjIem0QzXp2GlYfsVAVGBDzj8LZv+1dTm7Zz3ZexPyVwn9OgReXsBMrtHGSw45CVO11f7kBuyElBydgq8Hn10xy8lG4OGxSAYxHk03ZDvGNuiPlQRDUmZtE/V/+0Rnj+ZHgDGPVEatcMsvyRExoFx2QZPFI+PMbFbDrXmTQAjQ74v2nGDxJzM4fmfO9U9+75bFLex+s/3H/iiw==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787761268; c=relaxed/relaxed;
-	bh=MTcBMEIesxM3zL+MfpgL/JhtUxSn3joUFmm5h4/d+Lc=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=NrwgEZcSYf/HFx7Ux2p/AweG4NrLAn9K6oPhFIVftxfSPddKv0X2FhV7vYMmylV8O0vxO7qPakpg9rhFjTElr6Md2u/n+HtgZ33Id07MOp3pK/BeCcA6L5bzVT5B0hSTR2C5lhGTw8pWZkTCPHMMiMhEXzvAiJ95IaU6MV/ID3MHIMwsQ7yH+DrHxGShQXbT4DtWeuo/ehrqDCvPTUSKYCigZkGTdwFF7NoXEp0ebIiYiAVH6B4nSubLmNht7dKikD3y2GVyxb/3/tPVg6bFYZZ8BigVvKwaWiQQz2X0gbpElZQSxUXVUBQBG8oFhZAXBNkshvJiOh9LQ3KOsGGD1w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=FoakEkAa; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hVWsY0PLjz2y32;
+	Thu, 27 Aug 2026 03:31:29 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=85.215.255.22 arc.chain=strato.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787765488;
+	cv=pass; b=HukXuMe8/geUNwDVttresfHZr7ZOvvxzA09fSIAaBD3+OTO0ynv+cp/Tx1EYsZ0ldF0iX1lMQk89FTeCFMPtbWTTjOPuqRcY/PfvpxppjyHHwup+wKicer1xo9H4i6HtDz2s1XxB7mHFjUBuhE/O1/49Yhzz13ZWZSfLg4WIqqOJJEzXmA1yK8NThtuqIahrR1A3MoV6FSRRcNGdbZDBNxRx7Ea1BL4pOByfqZEJIJmlO4KVDzNZKcefEhyF/9+O3G9YBDSbGMwTnOYy1aOQWRfURXB4n6Ehqry84Hp1PJEr6Cqwlvp2n6Tnfa2TlTNaFSsIVgOyQpQsLIcyB27HFg==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1787765488; c=relaxed/relaxed;
+	bh=dHFTw7/2ICxfrrbU0+VTjCyxlOfLZOUP3+UnA6phRU4=;
+	h=Content-Type:From:Mime-Version:Subject:Date:Message-Id:References:
+	 Cc:In-Reply-To:To; b=WZt+gA0vQosFiBnmV4LD6KCvO3umOt8QaKKte9rWm+h7I4O5B6pmyJSw7oRow5lEYeVyPf8tAT3dnw7oLmuk1Mdxgg9suqzEK32jNyxKa/0C5dKgUwi/sSyaxKXyQuUsNjh/lzpulOx3x5Y8DBZS0IWRzzNmdUGhL+jmExtvCFd0H62nPPHw8r8bbpuOucX+r08P46p9T3tO4nH4KY5tvgjKARH3q/vDslZFomyjed1yfifimqilR0d5w7BIKEpRuFTOzvgBcC/XhD7BlTcm1K6bWkAgI4vjnprYsc4uO77eCX3c6rhzHprK8a8NAtVZUiFDUBg4YFZheVtGV2r+gA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xenosoft.de; dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=B601A8ig; dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=f5Yux5kw; dkim-atps=neutral; spf=pass (client-ip=85.215.255.22; helo=mo4-p00-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org) smtp.helo=mo4-p00-ob.smtp.rzone.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xenosoft.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=FoakEkAa;
+	dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=B601A8ig;
+	dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=f5Yux5kw;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=mo4-p00-ob.smtp.rzone.de (client-ip=85.215.255.22; helo=mo4-p00-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org)
+Received: from mo4-p00-ob.smtp.rzone.de (mo4-p00-ob.smtp.rzone.de [85.215.255.22])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hVVJM4CJMz2xGw
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2026 02:21:06 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67QE1cFl3084617;
-	Wed, 26 Aug 2026 16:20:49 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=MTcBMEIesxM3zL+MfpgL/JhtUxSn3joUFmm5h4/d+
-	Lc=; b=FoakEkAaugzX+V0CzAWKUmvwFTY4Gvt71U3zjn4hCgB4LQBGlrTPmuU+n
-	08x9K0rNkFik2QaF0EBLKb59qJj7kJvrPeUsSNYK3ClUUMt2byOmYzEzmV2Q5Gco
-	bWDJ3CR2zVePDxJ9QGAwZb06bD9mwfiIPTUnbUFF0LPDMzdnmkHU30hAiXNKWWj+
-	ZU7/RIQzoqNQ2nNEe2JbEBLG/va+l1CnDVKaaXJMbhPLPgcmVyATOkTlAp1ERuZa
-	bPhC77VlktTj2rHEDjcADqNYjj6Jhco/021EaZIAI6Xxih7qfby66+Qv861Q+g9z
-	Wh4jS983pZl+N5RX9BTcnSB7a0DhA==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4g726eqraq-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 26 Aug 2026 16:20:49 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 67QGBGGC017011;
-	Wed, 26 Aug 2026 16:20:48 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4g7p3qb45f-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 26 Aug 2026 16:20:48 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 67QGKiMa47317446
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 26 Aug 2026 16:20:44 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 64B9F20043;
-	Wed, 26 Aug 2026 16:20:44 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id F06B620040;
-	Wed, 26 Aug 2026 16:20:41 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.39.21.125])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 26 Aug 2026 16:20:41 +0000 (GMT)
-From: Gautam Menghani <gautam@linux.ibm.com>
-To: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
-        chleroy@kernel.org, ritesh.list@gmail.com, sshegde@linux.ibm.com
-Cc: Gautam Menghani <gautam@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc/configs: Add debug configs for debugging
-Date: Wed, 26 Aug 2026 21:50:34 +0530
-Message-ID: <20260826162035.27068-1-gautam@linux.ibm.com>
-X-Mailer: git-send-email 2.50.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hVWsP3fqpz2xLG
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2026 03:31:18 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; t=1787765470; cv=none;
+    d=strato.com; s=strato-dkim-0002;
+    b=M3uVrKwm+gOLOGVtN2a4TfEx+9puDg++eB/zrmUle1JWTHqKUgRi0E687322ars5V7
+    hF4t/YCg1i9d1yw5hilLmYwjQJAP6AL5P/fIPU+zMurlkfLUdy/xbNrtmXSgFNvpiEbS
+    7OlvJxmahdSCYfGgl4L4aIb4qCRdyIegzpuqSGH8WLZ3+CW8we5jrytcY1r1fWbI4JLd
+    zdKAFh5HGfbhAa5d7YCBnG/ZB9g1+Iq5z6ynGMWYlw7gEbyFrOqcB60ptNQ23XkK9kcn
+    yTpLdWlY5D4MCgIKKCn++GQET8pMzpQLGSjPce9LANLlVGjNcEaIsQVj58jQtMCy+Lc9
+    aFcg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1787765470;
+    s=strato-dkim-0002; d=strato.com;
+    h=To:In-Reply-To:Cc:References:Message-Id:Date:Subject:From:Cc:Date:
+    From:Subject:Sender;
+    bh=dHFTw7/2ICxfrrbU0+VTjCyxlOfLZOUP3+UnA6phRU4=;
+    b=k5GBhtLUyheYntzWEaGdD9o5pjRx9nFut97x6tOaEDCnlxJY3wkfGUHsfahjga5lQ1
+    L6EMeKGX+GgyJH31/Od3eEiYaL95HnXjZLZKkB9TcTXhrAXLDSQgDSrlC4rcOdGMZHk+
+    AtL+jhwj7HZZ8caHRD5p1wwcRl5AQHFinn5fvSul//DP4E/9qJ0qmn1QCempP5lsHO5W
+    WsrWoYUdfoZgpapdIqYAfv4ZHl7mT9JHJrxG3fAPA5L5uTumk+7YoM1ywjidUp5pxymd
+    7doO8eWvt7aA3ATCvVSartPiOm4bHHv0SOgxmZMC9O5NLFF7ow/OizUDXQYJGXA/tLK7
+    /nAQ==
+ARC-Authentication-Results: i=1; strato.com;
+    arc=none;
+    dkim=none
+X-RZG-CLASS-ID: mo00
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1787765470;
+    s=strato-dkim-0002; d=xenosoft.de;
+    h=To:In-Reply-To:Cc:References:Message-Id:Date:Subject:From:Cc:Date:
+    From:Subject:Sender;
+    bh=dHFTw7/2ICxfrrbU0+VTjCyxlOfLZOUP3+UnA6phRU4=;
+    b=B601A8igDepzqPixS05EksDPosIbskIL9pJ4LTfNf6Pqh7gEZnKBEA5WE3L53zSYuf
+    Yn1eLV4BIF+YwJHV8hFACaFo0zwZlqSfOj5lXefqaI399y9LbMcVYzcnMSryNo4CURCf
+    m5VuRnrOUcmKsx4tAz5sFtaPup1vDM6F6/W1AaV3SRr5G6iO5JjIJ20W0HZ21ShdFXZY
+    tM/wjHTnSGPoRR5ypX3yhZ9a2uUJSjzCJzVsi4VI5yjZinIZg2VR2WtD37VwzYqZ2+Xo
+    pGI5PAHFUd8kmmMZ95peOSS3RRYYH5ZCTs3lEISgtSjjt7IGbjqLtR6iT/ncd/Hxgbtr
+    zDDA==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1787765470;
+    s=strato-dkim-0003; d=xenosoft.de;
+    h=To:In-Reply-To:Cc:References:Message-Id:Date:Subject:From:Cc:Date:
+    From:Subject:Sender;
+    bh=dHFTw7/2ICxfrrbU0+VTjCyxlOfLZOUP3+UnA6phRU4=;
+    b=f5Yux5kwDcI8gN6SRMr8BAb0Ac8QUmB9+8Q870jTa2elraRXEqwsryg2ZnN/OQQy4K
+    AaUyLjq8nSS6tiGO82CA==
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGN0rBVhd9dFr6KxrfO5Oh7V7X5qws3+VDnp3aohrb0r/qwpnIIHXHXKqUe5KakE="
+Received: from smtpclient.apple
+    by smtp.strato.de (RZmta 55.6.2 AUTH)
+    with ESMTPSA id ee2bee27QHVASgQ
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
+	(Client did not present a certificate);
+    Wed, 26 Aug 2026 19:31:10 +0200 (CEST)
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -85,157 +93,38 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=TfimcxQh c=1 sm=1 tr=0 ts=6a8f1261 cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
- a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=V8glGbnc2Ofi9Qvn3v5h:22 a=VnNF1IyMAAAA:8 a=9H6hm6EcYpu-G-HrPV4A:9
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODI2MDEzNCBTYWx0ZWRfX64hhbhQGj2p8
- 7ai0gU2ts+CnEj7sUoxLs6awUylEWeMIizl8q7IAIR+P5lPU3mFWnXeQbCTMDP587NQI6TrYWAY
- W/fBqd5WlsGLvCxUJ8PfjKrcxC1Zqxg=
-X-Proofpoint-GUID: 3UCyiatnfKRy1DDXz6SpigJP9lFagNtN
-X-Proofpoint-ORIG-GUID: adf3iqlxp19pBC_XksMqsYn0rfeheCVy
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODI2MDEzNCBTYWx0ZWRfXwGXTKhsYKTut
- 49+5JJMhZw6kuKaJl0adiicSDXMjZc9Fox1snqGUEbtlS72M399jymwA7fOqmGsjGNiwIh9iuIB
- etOerWfiL3eC6h1B0X2a2Nerw/uvsiVNu9XqXyyQ4Kx+8GhZeDovArPa6UjM9okqlqNiIt8+z78
- UcLH6SjWtog/yp833XNnfoOkAWtGrxaTznRqrfZt4WWnSq2hpWBVIo9OIIfuSVEZIfvSLm84zWq
- 6pKXKI2ISW89jhKegq7HvHw/Q4EmG97xqLdpeH2Bpj4MS/iTdzZ8BT6kW4zOo53j2sORPqplsbe
- fYD74LU08/NAmSUZTphNbHP/UMB3p2+wntyLOrf3J9jQWD9KJKP4Hg44Egh83kDYVdLKZvxMbOi
- 75vP0b3CaEGfBbwx2h2qoaVRw83vpN/IBOQ5bAmPy3YhwYl9IMPS8MgPlvLMDRaK9vRi0mQGFy0
- 5vZYc2ImxG5s5xwknrQ==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-08-26_04,2026-08-26_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 spamscore=0 bulkscore=0 malwarescore=0 priorityscore=1501
- lowpriorityscore=0 clxscore=1015 phishscore=0 impostorscore=0 adultscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608260134
+Mime-Version: 1.0 (1.0)
+Subject: Re: drm/mgag200: Fix big-endian support
+Date: Wed, 26 Aug 2026 19:30:59 +0200
+Message-Id: <A1B9BBC7-0CBA-45DC-8DA1-EEC6776CDA62@xenosoft.de>
+References: <1fe9c172-c12c-4827-b9a5-2870c45e67af@suse.de>
+Cc: rene@exactco.de, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Trevor Dickinson <rtd2@xtra.co.nz>, hypexed@yahoo.com.au,
+ mad skateman <madskateman@gmail.com>,
+ Christian Zigotzky <info@xenosoft.de>
+In-Reply-To: <1fe9c172-c12c-4827-b9a5-2870c45e67af@suse.de>
+To: Thomas Zimmermann <tzimmermann@suse.de>
+X-Mailer: iPhone Mail (23G83)
 
-Kernel has multiple config options to run extra validation checks that
-can help catch bugs. Define new configs for major subsystems to
-make it easy to enable the debug config options for a given area.
+On 26 August 2026 at 05:23 pm, Thomas Zimmermann <tzimmermann@suse.de> wrote=
+:
 
-Signed-off-by: Gautam Menghani <gautam@linux.ibm.com>
----
- arch/powerpc/Makefile                    | 16 ++++++++++++++++
- arch/powerpc/configs/common_debug.config | 11 +++++++++++
- arch/powerpc/configs/locks_debug.config  | 13 +++++++++++++
- arch/powerpc/configs/lockup_debug.config |  4 ++++
- arch/powerpc/configs/mm_debug.config     | 24 ++++++++++++++++++++++++
- 5 files changed, 68 insertions(+)
- create mode 100644 arch/powerpc/configs/common_debug.config
- create mode 100644 arch/powerpc/configs/locks_debug.config
- create mode 100644 arch/powerpc/configs/lockup_debug.config
- create mode 100644 arch/powerpc/configs/mm_debug.config
+=EF=BB=BFHi
 
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 9385db478c59..425f36c3f471 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -259,6 +259,22 @@ generated_configs += ppc64le_guest_defconfig
- ppc64le_guest_defconfig:
- 	$(call merge_into_defconfig,ppc64_defconfig,le guest kvm_guest)
+Could be that we have to enable access to the ROM first. That's why it retur=
+ns only 0xffff. Does the card display output when you switch on the computer=
+?
 
-+generated_configs += ppc64le_common_debug_defconfig
-+ppc64le_common_debug_defconfig:
-+	$(call merge_into_defconfig,ppc64_defconfig,le common_debug)
-+
-+generated_configs += ppc64le_locks_debug_defconfig
-+ppc64le_locks_debug_defconfig:
-+	$(call merge_into_defconfig,ppc64_defconfig,le locks_debug)
-+
-+generated_configs += ppc64le_mm_debug_defconfig
-+ppc64le_mm_debug_defconfig:
-+	$(call merge_into_defconfig,ppc64_defconfig,le mm_debug)
-+
-+generated_configs += ppc64le_lockup_debug_defconfig
-+ppc64le_lockup_debug_defconfig:
-+	$(call merge_into_defconfig,ppc64_defconfig,le lockup_debug)
-+
- generated_configs += ppc64_guest_defconfig
- ppc64_guest_defconfig:
- 	$(call merge_into_defconfig,ppc64_defconfig,be guest kvm_guest)
-diff --git a/arch/powerpc/configs/common_debug.config b/arch/powerpc/configs/common_debug.config
-new file mode 100644
-index 000000000000..a341c8b41468
---- /dev/null
-+++ b/arch/powerpc/configs/common_debug.config
-@@ -0,0 +1,11 @@
-+# For use in CI testing
-+CONFIG_EXPERT=y
-+CONFIG_PROVE_LOCKING=y
-+CONFIG_PROVE_RCU=y
-+CONFIG_KASAN=y
-+CONFIG_UBSAN=y
-+CONFIG_DEBUG_PAGEALLOC=y
-+CONFIG_DEBUG_VM=y
-+CONFIG_DEBUG_OBJECTS=y
-+CONFIG_DEBUG_KMEMLEAK=y
-+CONFIG_DEBUG_STACKOVERFLOW=y
-diff --git a/arch/powerpc/configs/locks_debug.config b/arch/powerpc/configs/locks_debug.config
-new file mode 100644
-index 000000000000..b2cb23de75db
---- /dev/null
-+++ b/arch/powerpc/configs/locks_debug.config
-@@ -0,0 +1,13 @@
-+CONFIG_EXPERT=y
-+CONFIG_PROVE_LOCKING=y
-+CONFIG_DEBUG_LOCK_ALLOC=y
-+CONFIG_DEBUG_ATOMIC_SLEEP=y
-+CONFIG_DEBUG_LOCKING_API_SELFTESTS=y
-+CONFIG_DEBUG_MUTEXES=y
-+CONFIG_DEBUG_SPINLOCK=y
-+CONFIG_DEBUG_RT_MUTEXES=y
-+CONFIG_DEBUG_RWSEMS=y
-+CONFIG_PROVE_RAW_LOCK_NESTING=y
-+CONFIG_RCU_EXPERT=y
-+CONFIG_PROVE_RCU=y
-+CONFIG_RCU_TRACE=y
-diff --git a/arch/powerpc/configs/lockup_debug.config b/arch/powerpc/configs/lockup_debug.config
-new file mode 100644
-index 000000000000..ad0a79abf60f
---- /dev/null
-+++ b/arch/powerpc/configs/lockup_debug.config
-@@ -0,0 +1,4 @@
-+CONFIG_EXPERT=y
-+CONFIG_WQ_WATCHDOG=y
-+CONFIG_DETECT_HUNG_TASK=y
-+CONFIG_PANIC_ON_OOPS=y
-diff --git a/arch/powerpc/configs/mm_debug.config b/arch/powerpc/configs/mm_debug.config
-new file mode 100644
-index 000000000000..0e88eb983536
---- /dev/null
-+++ b/arch/powerpc/configs/mm_debug.config
-@@ -0,0 +1,24 @@
-+CONFIG_EXPERT=y
-+CONFIG_DEBUG_PAGEALLOC=y
-+CONFIG_DEBUG_SLAB=y
-+CONFIG_KASAN=y
-+CONFIG_KFENCE=y
-+CONFIG_KMSAN=y
-+CONFIG_DEBUG_KMEMLEAK=y
-+CONFIG_DEBUG_VM=y
-+CONFIG_DEBUG_VIRTUAL=y
-+CONFIG_DEBUG_OBJECTS=y
-+CONFIG_DEBUG_OBJECTS_FREE=y
-+CONFIG_DEBUG_OBJECTS_TIMERS=y
-+CONFIG_DEBUG_OBJECTS_WORK=y
-+CONFIG_DEBUG_OBJECTS_RCU_HEAD=y
-+CONFIG_DEBUG_OBJECTS_PERCPU_COUNTER=y
-+CONFIG_SCHED_STACK_END_CHECK=y
-+CONFIG_DEBUG_VM_MAPLE_TREE=y
-+CONFIG_DEBUG_VM_RB=y
-+CONFIG_DEBUG_VM_PGFLAGS=y
-+CONFIG_DEBUG_MEMORY_INIT=y
-+CONFIG_DEBUG_PER_CPU_MAPS=y
-+CONFIG_DEBUG_KMAP_LOCAL=y
-+CONFIG_DEBUG_HIGHMEM=y
-+CONFIG_DEBUG_STACKOVERFLOW=y
---
-2.54.0
+Best regards
+Thomas
+
+- - -
+
+Hello Thomas,
+
+No, the card doesn=E2=80=99t display output when I switch on the computer.
+
+Cheers,
+Christian=
 
 
