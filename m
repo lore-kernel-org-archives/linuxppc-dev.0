@@ -1,73 +1,85 @@
-Return-Path: <linuxppc-dev+bounces-26093-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26094-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4E694C61DC2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Aug 2026 09:12:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2706EC61DC2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Aug 2026 09:22:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hVJnG47Ckz2y32;
-	Wed, 26 Aug 2026 19:12:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787735522;
-	cv=none; b=P1MaGvn0TTS1KnOat0gMElPUj4DA7S/l+ByobyT/FtuKF1jHNDwj26PJSZ9XEmORPAYlLxv7rchNCyR66Y0HBAYelGGxc+4vpPjhLGmN2tmj9+CyBE5dmdiKzSb6D/nXly+AG2OKQj+QcXicbiFFSDUxdZ1cm7Q/eOZ57nNC8kk+vVeBhrCKcVrKoCaK213CA6AJ65HLTaQ2/l4MDG8g1dcmJJaijJpM6FBrX92xPJUOpDkE7AZQR6Pv/dVhkh5f4G1L57xHs+Zpsnw+H5uuhNceheI1XaBVux7hNTYPxJoCagaGlxCG35Tbb02pY2zu90kTPqZuU1MOq2fjdn24FQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787735522; c=relaxed/relaxed;
-	bh=qzmRDW5+BT1TUmpDV2FLEMCRGhZscH6iP64nSTGwFpI=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=aXOexUICDtHZA0Hnjpm4YV44GpnFURQMU2npgOpbm3yEKPzueSAPxY3paov4mM9KWWj3rEMLvhygBUYgsTC4tCWo3kSNEBMzLo2S16Qy10iIHg9pDxynpUUIs84AuI2TIJ8dJjwpEoff3Y0SNbuJQyMQUS/soxwIYX72jSeZEVdhhXVrE94yU0OB4fIQe+bLqUihNiQ71qjoV5cm9hcIZWd9MCAtGtUsxQlj2ch/3slL5Rmd+LQkZ8dG7so61QMb8qUcs2rpNAt2dIr8GELKtVJcD7lbhC1x+j5zSA1UT4Zr5eNnMkWzaumqlSE71zkBTjGGZ9Te5AptOlX+s1Dn7g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PF9WOn1p; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=nnmlinux@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hVK1M4Lzhz2y32;
+	Wed, 26 Aug 2026 19:22:31 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c112::5" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787736151;
+	cv=pass; b=RDMnoumL6A3+pLdOrNnDKJE63ErCtdghZ2Gw49GTziNY34SC+xBrQRPrPWxyFmgzCm6hgmVeybsYTC5AGVpodyhIvmYOsXQ/P4aSmSIVyT6/Qer42apgvqGuG9Ax1b1WO+jFHgloSgfy3SOXUG8a5OFUWacyjFHs3ruDicegXeFLIb3oT5yySiKPHSn/GhvoZg4vnAmmVsfCkLHhdXYHZMyZBGJtOkQQ66uWXXba0Uk4JUuKchnhyjhwx+Voywi0JRkD6BN+6QZdWBqg+rzLoShrJHp/m7f7F6/QW8RnjRLBFkkz+GCCxBe/IhNAyoQDGkxYZDnzS32FaqN+NqSAlA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1787736151; c=relaxed/relaxed;
+	bh=8Td7tzNl8jHC9SEFY0PZNAjhSnuN0IhVu5X+XSAcPsI=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=QHKJuD8xaIExpWgKNKvihYdoCAz8RzlS8DryO3yabNKZLI1IslYBtkxCRQP8nDCgbNaeuMBY8tFj8IVAsrIUxSOFKp8G+FmHsTmbmgs1fRDIHWD1GEWA55m5PmjLdoruSq5E5Ii213Jal7lF5pFbxgCxlaMeSjQnxH2b6Si0fMhmvPRg6NE+f+heL66EcV5dzKlyW9OURxs0L6gkwKPQdgOk+iN4Jyb/2h1egPJWzPhrfzoZdNukgFxIVKcnI0P/cJ/5O65g7NUPhgNsnMFrvgTlc657CzOITWkZjOXycX/1IC2UNbNGwdnYH5i+4woOhXvAZJpmQikS3t3f6dkSUQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=Qcf5VRNM; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c112::5; helo=cy7pr03cu001.outbound.protection.outlook.com; envelope-from=icheng@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PF9WOn1p;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=Qcf5VRNM;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=nnmlinux@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:c112::5; helo=cy7pr03cu001.outbound.protection.outlook.com; envelope-from=icheng@nvidia.com; receiver=lists.ozlabs.org)
+Received: from CY7PR03CU001.outbound.protection.outlook.com (mail-westcentralusazlp170100005.outbound.protection.outlook.com [IPv6:2a01:111:f403:c112::5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hVJnF3vThz2xGw
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2026 19:12:01 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67Q6WHPQ2087678;
-	Wed, 26 Aug 2026 09:11:49 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=qzmRDW
-	5+BT1TUmpDV2FLEMCRGhZscH6iP64nSTGwFpI=; b=PF9WOn1p9/hvxQbKYsa2z9
-	VMsM5XeWkoneVn4Xziczl1x9bwPo4Js47pM2if4yskz69Wwg68ORqm8GTN9gdZzr
-	MZHhRJEtzHFASdilDoYE1SiVzn4j7O77f5Sg+C+TSnL/Ri4lIwM1yVMONqyVKhEO
-	FfNQli0cIrWo+UDJprW+I4C2joh5mO5BgnwXlVlIV3iHbTZ+g8nY2iA5UMpyTUsr
-	nD54ZAtEyYQHvmn1SUTMxo2tUDCUj8MHjKKm/nNOhvmP+1EZdhpXZ+kUn2CHOf1k
-	24afUEfQwogoc5XGxrecGsiaM7Tm221HQkkUk6SbQMqM3D3HwfekznNqdhXtaEmw
-	==
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4g726enkks-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 26 Aug 2026 09:11:48 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 67Q8uINp012053;
-	Wed, 26 Aug 2026 09:11:47 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4g7qkh91es-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 26 Aug 2026 09:11:47 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 67Q9Bf0w34537872
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 26 Aug 2026 09:11:41 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B3F422004B;
-	Wed, 26 Aug 2026 09:11:41 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9B12420040;
-	Wed, 26 Aug 2026 09:11:38 +0000 (GMT)
-Received: from [9.123.12.89] (unknown [9.123.12.89])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 26 Aug 2026 09:11:38 +0000 (GMT)
-Message-ID: <f1b9207f-5366-422e-8060-5afd00019012@linux.ibm.com>
-Date: Wed, 26 Aug 2026 14:41:37 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hVK1L3hsgz2xGw
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2026 19:22:29 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=xEkHo4mfGxHVcDKtSH6/ORdnwa/RCyUKH8p1K6Ty3P0Qmwd4txeOaj8YZrWFgHZk7B4MohPNxtglylQN/Ju/Wi280NrOmRODVzsME9tqpQBP8XrgnpCyMBPAvvzPSvA5vcsYapgJgFm8bMnFQjIa+4GZ2xp+AZGamoonSF/Xh+jpSe0cFcWeYW7E81y/Mu0pu1TQWFPrEiQlTezS2d2EnRocLIJgNugRrppKveGOCtiFfoxkNsgZM1UGhryDGqZGK9RUO+aOQQ1TGgRxG4HzCTz62ABZBRSAorOgu3m6gNCMRg9npCLUMFYMGCq26wbSi2+aLF3n6fPGmfoLDunE7Q==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=8Td7tzNl8jHC9SEFY0PZNAjhSnuN0IhVu5X+XSAcPsI=;
+ b=h3GRnl12n9MFZWerKkh5O/tgomYZecKoHzXfLgt2JsttRatTE5DEqpvRQc9tQ2HyCwFULgsnvrmE/tdBDoS7P17Tvtmx2J1xz6jnP2c+l7SZQVUx3rJLARkWjpha7dIs2yJx9uieuDFyj8/f7ySoWr2O5zLH7mNDtGCi5E+HsOOy66bRJkqPFNOU8uKFoNcp0qN3Hw9V/vebp0aLA08wp0OVaUjCEhqYOGhR+M58W2tmzclCSUKHiySoqYI6OE9k49Vp6Tr1eX3nfmU8413Gn2Wm+ct02ZtAvRdGe/8QXHyO6elBfidDWLLBpsGISrjL1UNVtZyglPHDD80lhH9ezA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=8Td7tzNl8jHC9SEFY0PZNAjhSnuN0IhVu5X+XSAcPsI=;
+ b=Qcf5VRNMyqj805g+KGkpIP+iKqMzjRzZhVhDnkvBaWfzU9fLNs/qhRRITCLKOLa8lzzMHuVhZ+BSOR02GXtTADFKg3nSFKkQ7d5PSqpWRsW5PQhfRt4M4/veC9kPt9mL8QUAOLKVva9OdUk6POgkmzKKKV4BEZEjjkYiD65iz9PoqE61XBjuc6Gmk6tA3yKRn5jD11vuArMPQGJFFHqMiLNV9X4TGmyf5xxIuS1zvlMnH++VOCjfLAc9nuJdVyQrrdJReEHwBLhzu3THxZCx3q4EUBibnNFL5P998Maph1E+bsL5Oa3tF5jUMj0rg4203z76amw+bUn1D5KbvVpRHA==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from BL0PR12MB2370.namprd12.prod.outlook.com (2603:10b6:207:47::27)
+ by SJ2PR12MB9085.namprd12.prod.outlook.com (2603:10b6:a03:564::10) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.360.9; Wed, 26 Aug
+ 2026 09:22:06 +0000
+Received: from BL0PR12MB2370.namprd12.prod.outlook.com
+ ([fe80::86cf:c3ec:2cf5:74c8]) by BL0PR12MB2370.namprd12.prod.outlook.com
+ ([fe80::86cf:c3ec:2cf5:74c8%7]) with mapi id 15.21.0360.005; Wed, 26 Aug 2026
+ 09:22:06 +0000
+Date: Wed, 26 Aug 2026 17:21:59 +0800
+From: Richard Cheng <icheng@nvidia.com>
+To: "Fabio M. De Francesco" <fabio.m.de.francesco@linux.intel.com>
+Cc: linux-cxl@vger.kernel.org, David Hildenbrand <david@kernel.org>, 
+	Oscar Salvador <osalvador@suse.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	"Rafael J . Wysocki" <rafael@kernel.org>, Danilo Krummrich <dakr@kernel.org>, 
+	Davidlohr Bueso <dave@stgolabs.net>, Jonathan Cameron <jic23@kernel.org>, 
+	Dave Jiang <dave.jiang@intel.com>, Alison Schofield <alison.schofield@intel.com>, 
+	Vishal Verma <vishal.l.verma@intel.com>, Ira Weiny <iweiny@kernel.org>, Li Ming <ming.li@zohomail.com>, 
+	Bjorn Helgaas <bhelgaas@google.com>, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, 
+	Oliver O'Halloran <oohall@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, 
+	Lorenzo Stoakes <ljs@kernel.org>, "Liam R . Howlett" <liam@infradead.org>, 
+	Vlastimil Babka <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>, 
+	Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, linux-kernel@vger.kernel.org, 
+	linux-mm@kvack.org, driver-core@lists.linux.dev, linux-pci@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2 00/13] Make SBR work for CXL Downstream Ports
+Message-ID: <ao6tOronSmLlU17B@MWDK4CY14F>
+References: <20260825022628.3651434-1-fabio.m.de.francesco@linux.intel.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260825022628.3651434-1-fabio.m.de.francesco@linux.intel.com>
+X-ClientProxiedBy: SI2PR02CA0022.apcprd02.prod.outlook.com
+ (2603:1096:4:195::23) To BL0PR12MB2370.namprd12.prod.outlook.com
+ (2603:10b6:207:47::27)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,276 +93,196 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 0/5] powerpc/eeh: Add RTAS-based error injection
- support on pSeries
-To: Anushree Mathur <anushree.mathur@linux.ibm.com>, mahesh@linux.ibm.com,
-        maddy@linux.ibm.com, mpe@ellerman.id.au, christophe.leroy@csgroup.eu,
-        gregkh@linuxfoundation.org, oohall@gmail.com, npiggin@gmail.com
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-        tyreld@linux.ibm.com, vaibhav@linux.ibm.com, sbhat@linux.ibm.com,
-        ganeshgr@linux.ibm.com, sourabhjain@linux.ibm.com, haren@linux.ibm.com,
-        thuth@redhat.com, Anushree Mathur <anushree.mathur@linux.vnet.ibm.com>
-References: <20260721033815.5300-1-nnmlinux@linux.ibm.com>
- <df9d8419-43cd-4e95-a030-f7b0bc420a93@linux.ibm.com>
-Content-Language: en-US
-From: Narayana Murty N <nnmlinux@linux.ibm.com>
-In-Reply-To: <df9d8419-43cd-4e95-a030-f7b0bc420a93@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=TfimcxQh c=1 sm=1 tr=0 ts=6a8eadd4 cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
- a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8
- a=VnNF1IyMAAAA:8 a=3ZwucR2MOHLG0_Ajg7wA:9 a=lqcHg5cX4UMA:10 a=3ZKOabzyN94A:10
- a=QEXdDO2ut3YA:10 a=z2U-W3hJrleVIN9YIjzO:22
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODI2MDA3NCBTYWx0ZWRfXxTmIvWddfmn+
- g+fV7O4PkFRhMEXSdOYEoEv3aWJRBXD7/OHFVxUEopSxkm8X3901s8Mqg59rBayVU5vqYHYbnUh
- wcIMJE+bNH0KcmBORn+jXq2UWT0nud8=
-X-Proofpoint-GUID: 4z74f_ddkSyQjN3RzKC_Qk9oXsvwSNOt
-X-Proofpoint-ORIG-GUID: t52cOJ--9R-3M2jxlPZ81rSZ5-RsMe5N
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODI2MDA3NCBTYWx0ZWRfXwzkOHwKXJVxR
- tg87hbIPP8TFrPPMkeIToUmOZRWxIhxAOYb1PtgG+1UHVw1k/TFoZKeSdO+F/3eFzIQOTHbbj1n
- GEs2A8JZlkqCgs3JHyyU3wL2Pz6Pu3flfTg73xklTgo0BfcUsuYa+kpxgAGk7n59foF3WToaSB5
- 4G70GLn5nbi6GS4OyrbuXpGKpW5YZby01g86wCCukQsRz0umNznjKERdctEeiobulT73giAMd4R
- L0j5KkzYRE5TfKOtWcpuSsd2hEA2x6fT0KRXxNI3cLkLjgBN5SZe67nFDBjm8Hh4rtUH7TReS08
- AunhvWEvFJmjONBepwvEbfZlPBqs91uv6rpKLR21EYL50tveGBV3XF2oi6H6Buvav7Nf+71Kjke
- zHhjb7w03TN7m/rz0j6baX+fPun5J4sp8kdx4qydgJk5NwM0WRvMLxHudSrfAaBTFYl8I1Q7ped
- v3vTLnPWTUOmZy3BBDw==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-08-26_02,2026-08-24_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 spamscore=0 bulkscore=0 malwarescore=0 priorityscore=1501
- lowpriorityscore=0 clxscore=1015 phishscore=0 impostorscore=0 adultscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608260074
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: BL0PR12MB2370:EE_|SJ2PR12MB9085:EE_
+X-MS-Office365-Filtering-Correlation-Id: 1766a462-c6e8-4c0f-a7ff-08df03537eef
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|376014|7416014|1800799024|23010399003|366016|6133799003|56012099006|10067099003|11063799006|18002099003|22082099003;
+X-Microsoft-Antispam-Message-Info:
+	u7CjVG11Y3nneLaXDfTDkV6GgD3tfwPJH0Er3d6QGo1JInQ6Sr/++dJWFCeM0ILoYd2ZOgrYl0Hh3hIQ4Zt9fc/ki6wgbhXB+6feeK6K92S7dTkoD1N1jPixqPJwhlkSJll0ExQrGAU8NFU9I1uIVe0uiKyWQrLK5GifLZAvk2FlcPjI6gzUcPpz9nU7cZzOGgaG9pFh2TV/LWetnu64K1+JdX1SLQKBs7BT9W41imKfpWcHc0YLtP8hTkXwaglXSkdzxJkkvek5Bo3YJiShawm7qWnkuTguAeenHwOhgSk+6hJM9Yjx1uF8zz9dZpRjfheXojuJ8GMNMl3RYZHFFZXKa2ipauX1s4CRj+pO8nofhEz7g4HaGDYucD0+OuG+7gjopy3ZRjhe2rppGHK2Q95bZveaiNQuOCc8i9vnYUlDcsTUKc+TWJ0Vn9lDcslrNiNPn22lKomOUjlCLvvtgKEWbPYnqZcoLMewk9L2lbOlpqID3hq/XnTNdUf89d/bHJB/uL1t1900wkzM7Mzol/P9JT2k8SrOIfqN0qnENt1HLHvUcgQnziYrfSarehgiPZUqqYPsCpGW+EpavRGjY12Ahxk0RIgt22xhC7juAAHfFa+aXB0H5w5zOMK2NEiXQ+gMj9t35MVLJ+eo+G2tAUcbKrq2JeOTViKeMzwTofc=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BL0PR12MB2370.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(1800799024)(23010399003)(366016)(6133799003)(56012099006)(10067099003)(11063799006)(18002099003)(22082099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?iE08vbf1YPVI+9ph1W47ApvGfbRmz2O1Yb9kSNyau/SYOVJT2sbjRnekEZ6r?=
+ =?us-ascii?Q?RDQe8R8xG1YxfamBhKbvnWy1eHLxqw3U9ad6JyNlvSYfBYpw2PmnRcNyZRZZ?=
+ =?us-ascii?Q?9USf9IV3+wu7K+V8Wa8yua7rJlqYlNgwAyQXKSGGp7BtCI8x4vUFpPgix0Gt?=
+ =?us-ascii?Q?dzyRwZLiW2dFN/DN+T8TsVm5irmRY31E1kC6M5pjgy4Mew+oLfkgM4eQ+JMq?=
+ =?us-ascii?Q?fIyrn41C/l9i7/7SEsdPpp6gDGPRiLt8hAwd6m79bonGOvvf/T3JNbg9I9Yc?=
+ =?us-ascii?Q?gm6yL1HxcaY0/lR5CbyKV2PNrLgv53wCPiiq8xHP/Tr8ryt7yx8xGIH7crVZ?=
+ =?us-ascii?Q?Ohn1evDYlm42TIk0iLu3gTxjr1WtcoM96Trfbo6XkwZMJ+Yoo5tKZ5gPApCx?=
+ =?us-ascii?Q?rm9bXK/3aFkh+GfArEwr0sq1rZmtkCOeDkaG87m4Rt0wkLZlBVv+3WU57qAc?=
+ =?us-ascii?Q?pcfWwz/YlN3vkUCehAtPtPU58XvbeJw0YV1GCueaJgGRuLrW/BtYmDcIW7mf?=
+ =?us-ascii?Q?g4D5zkl1NhQy6IzQBS896dnFwb9Fcr5tuRxbkh7gneZwt9TYbjYGSD0iTGbX?=
+ =?us-ascii?Q?yLc8RgmwyOr79PczXELksPdjF+l3P7l+aA7Tz7YFEFlHCWeeUMO5Ieft4oKa?=
+ =?us-ascii?Q?d3wrxoNkYQ4cZDG3dVYKzIDiLmg+6YJgqBnTa5PHmO2ONYvZJDYTJI/mmobY?=
+ =?us-ascii?Q?r7Ao4UZwYF4YK1Rpuv/YvF1DFSPhBZ9Q+HHnq5mzGmgmV/u+pDytkDyIHQwU?=
+ =?us-ascii?Q?XPIa4W5OFy4/t5XPsqg3Fvr/TPuMMtQvMfLnoxvJs5eEvlDB/CfEBPzqS7CA?=
+ =?us-ascii?Q?wEXeSiePRJTzYaN23pFdX8PSD6/H5C0AulFFJWJkiO2PVd9SLNfmnxJaZLvs?=
+ =?us-ascii?Q?weq7wiEYp0VY26bMJZsrklFjo0tmHYbr/LM48nEcBRCyOVmuOxec4Ra14DRG?=
+ =?us-ascii?Q?DWy2CB/tbK8hXvb9dNlw9mxV/LIt5WTihN1n4g1mtQRuCQ3xFrOeBWXJuCuU?=
+ =?us-ascii?Q?XpPdQYsmrAhVXZ/JOzGdpkuNJkRiyJKbmIhcNKS/2xUphEJCo3OK39hIT+FO?=
+ =?us-ascii?Q?iSlxn7wg0Wy4bMv58ls4zTeVbXCbmw23yM4HR2Tk/7ylkFsTrWXY3T7jxPGN?=
+ =?us-ascii?Q?eqtShS/noOXabwtErPA/1OR/PZuXP3dwsh+ZtlIsV88+nUglXiXN/JnSf5tE?=
+ =?us-ascii?Q?1jdI3bTTf5BDJvjDSmgEiosTUd3eLTL/nt5ruPhneS2aX3MPWNCcbPXhKxd2?=
+ =?us-ascii?Q?nAad7Q5SQR8MXBiE3Bj7n8ON4+KzUs/WIgg+YSiQ5VQ100xcIEeuG7MBXwqd?=
+ =?us-ascii?Q?4ORhJSWbNEefZg2JqeIDMTcA5VhJLpG0DlhoH5C9Iz/OWSJWLrtUhi8aMSCT?=
+ =?us-ascii?Q?0qFS6tkUPXYHY/LN5ndxGomQSjSUxsx4eS4108YbAng2b7sRIZ1e06yK4g2j?=
+ =?us-ascii?Q?2zJvwuT/CJtazL0EqgrTRaD8qdslORouEhc0BQA0D/lx9HoXIg6tYMOTTCi8?=
+ =?us-ascii?Q?g7epZjfn9hNtN8G5weef0d1lC94Pkq0xi8u9uD9//hqZp49pBDF8imza8L8U?=
+ =?us-ascii?Q?DURaTA4IAp2/dFWn8XkocacBokUZY9X+BgFw7TERSHNbq+WEijuKtity8qZF?=
+ =?us-ascii?Q?ZTbFFX0JVMCX17Y/1OKe+T2ub+xZkW99H2gwC0HjJE4p16gzCQGTxUGkTa4T?=
+ =?us-ascii?Q?zw6Q/yzdYtyVzt9mYXEhOsMWs5ZTT1iExKnnF0wvFLBdwmRYL4Mo2RnUZhQW?=
+ =?us-ascii?Q?Y2iEyZe4zw=3D=3D?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 1766a462-c6e8-4c0f-a7ff-08df03537eef
+X-MS-Exchange-CrossTenant-AuthSource: BL0PR12MB2370.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 26 Aug 2026 09:22:05.9733
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: hIQOZt6KzaAL3zesnaIj/HaqQz74OznzAkburBfxqOIfx5ke/8aMo+CA7Q8GKWOtVMO4wqU11zGZUMlWnMoQ7Q==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ2PR12MB9085
 
-Hi Anushree,
+On Tue, Aug 25, 2026 at 04:26:15AM +0800, Fabio M. De Francesco wrote:
+> A Secondary Bus Reset (SBR), a Link Down or a Downstream Port
+> Containment (DPC) event on a CXL Downstream Port clears the Downstream
+> Component's captured Bus Number. CXL r4.0 sec 8.1.5.1 notes that, if the
+> Component then sources its Power Management (PM) Initialization traffic
+> with Requester Bus = 0, a Port with Access Control Services (ACS) Source
+> Validation (SV) enabled may reject the Component's CREDIT_RTN IP2PM
+> message, PM Initialization may fail to complete, and that "another
+> Secondary Bus Reset alone will not facilitate recovery". PCIe r7.0 sec
+> 6.12.1.1 makes the rejection an error that is reported as ACS Violation.
+> 
+> The Implementation Note under sec 8.1.5.1 gives the sequence that avoids
+> it: save and clear Bus Master Enable and ACS SV, generate the SBR, wait
+> for Port PM Initialization Complete, restore both bits, continue device
+> re-initialization. This series takes a step further to a preventive
+> measure that avoids the ACS Violation in the first place, not after
+> failure.
+> 
+> Patches 1-5 restore HDM Decoder registers below a reset CXL Downstream
+> Port.
+> 
+> Patches 6-8 disable and re-enable the CXL Regions around the reset:
+> offline memory, invalidate CPU caches for its range, collect the set of
+> regions the CXL DPort which is SBR andunbind the driver.
+> 
+> Patch 9 disable and re-enable CXL regions across a Downstream Port reset
+> and registers the CXL region callbacks for a Downstream Port bus. We
+> want the reset to be called only when the CXL driver is loaded.
+> 
+> Patch 10 calls the CXL operations from pci_bridge_secondary_bus_reset().
+> 
+> Patch 11 issues the same sequence from dpc_reset_link().
+> 
+> Patches 12 and 13 gives root a sysfs attribute that conrols whether the
+> SBR is allowed to be unmasked and prevents kernel from unmasking SBR on
+> its own.
+> 
+> What user space finds after an SBR of a CXL Downstream Port: the dax
+> device returns under the same name, the region's HPA range, interleave
+> geometry and decoder programming are restored, and the media content is
+> unchanged for PMEM. System RAM comes back registered but offline.
+>
 
-Thanks for testing the series.
+Hi Fabio,
 
-On 18/08/26 4:31 PM, Anushree Mathur wrote:
-> 
-> 
-> On 21/07/26 9:08 AM, Narayana Murty N wrote:
->> The pSeries EEH error-injection backend currently implements a limited
->> software-generated MMIO failure and does not use the error-injection
->> services provided by RTAS.
->>
->> This series replaces that implementation with the PAPR-defined RTAS
->> workflow based on:
->>
->>    - ibm,open-errinjct
->>    - ibm,errinjct
->>    - ibm,close-errinjct
->>
->> The implementation opens an RTAS error-injection session, prepares the
->> firmware work buffer, performs the requested injection, and closes the
->> session on both success and failure paths.
->>
->> The existing EEH userspace ABI is preserved. EEH_ERR_TYPE_32 and
->> EEH_ERR_TYPE_64 continue to represent generic 32-bit and 64-bit IOA
->> bus-error injection requests. The pSeries backend maps these values to
->> the corresponding RTAS error types, while the PowerNV backend
->> explicitly maps them to the corresponding OPAL types.
->>
->> Additional generic EEH error types (EEH_ERR_TYPE_RECOVERED_SPECIAL_EVENT,
->> EEH_ERR_TYPE_CORRUPTED_PAGE, and the cache/TLB corruption types) are now
->> defined in the UAPI header and mapped explicitly to RTAS firmware 
->> encodings
->> by the pSeries backend. Platform backends that do not support a valid
->> generic type return -EOPNOTSUPP.
->>
->> No existing userspace ABI values are changed.
->>
->> The current injection path can be exercised for VFIO-assigned devices
->> through VFIO_EEH_PE_INJECT_ERR. The guest or userspace VFIO application
->> continues to use the same generic EEH type and function values,
->> independent of whether the host platform uses RTAS or OPAL.
->>
->> The series also handles the unusual return format of
->> ibm,open-errinjct:
->>
->> rets[0] = error-injection session token
->> rets[1] = RTAS status
->>
->> rtas_call() now returns rets[1] as the status and places the session
->> token in outputs[0], preserving the normal kernel rtas_call()
->> convention.
->>
->> sys_rtas() is intentionally unchanged because it exposes the raw RTAS
->> return cells to userspace. Userspace therefore continues to receive
->> the session token and status in their PAPR-defined positions.
->>
->> The RTAS work buffer is allocated during RTAS initialization below:
->>
->> min(ppc64_rma_size, RTAS_INSTANTIATE_MAX)
->>
->> using the same accessible-memory limit used for rtas_rmo_buf. The
->> kernel populates the buffer through its virtual mapping but passes its
->> physical address to firmware.
->>
->> The complete open, inject and close sequence is serialized with a
->> mutex. RTAS busy and extended-delay return values are handled for all
->> three calls. A session token value of zero is accepted, and session
->> state is tracked independently from the token value.
->>
->> The patches are organised as follows:
->>
->> Handle the special ibm,open-errinjct return format in rtas_call().
->> Allocate an RTAS-accessible error-injection work buffer.
->> Add pSeries RTAS parameter validation and buffer encoding helpers.
->> Implement RTAS-based pSeries EEH error injection.
->> Explicitly map generic EEH error types to OPAL types on PowerNV.
->>
->> Testing was performed on PowerVM with firmware providing the RTAS
->> error-injection services and with the corresponding QEMU support:
->>
->> https://lore.kernel.org/qemu-devel/20260520095446.64206-1- 
->> nnmlinux@linux.ibm.com/
->>
->> Signed-off-by: Narayana Murty N <nnmlinux@linux.ibm.com>
->>
->> Narayana Murty N (5):
->>    powerpc/rtas: Handle ibm,open-errinjct return format
->>    powerpc/rtas: Allocate ibm,errinjct buffer below RTAS limit
->>    powerpc/pseries/eeh: Add RTAS error validation helpers
->>    powerpc/pseries/eeh: Implement RTAS-based EEH error injection
->>    powerpc/powernv/eeh: Map VFIO EEH error injection to OPAL
->>
->>   arch/powerpc/include/asm/rtas.h              |  26 ++
->>   arch/powerpc/include/uapi/asm/eeh.h          |  24 +-
->>   arch/powerpc/kernel/rtas.c                   |  68 +++-
->>   arch/powerpc/platforms/powernv/eeh-powernv.c |  36 +-
->>   arch/powerpc/platforms/pseries/eeh_pseries.c | 367 +++++++++++++++++--
->>   5 files changed, 483 insertions(+), 38 deletions(-)
->>
->> Change Log:
->> V2 -> V3:
->>   * Fixed ibm,open-errinjct return handling to correctly process 
->> firmware responses.
->>   * Allocate the error-injection buffer in RTAS-accessible memory 
->> instead of general kernel memory.
->>   * Pass the physical address of the error-injection buffer to 
->> firmware (previously incorrect address type).
->>   * Accept session token zero as a valid token (previously rejected 
->> erroneously).
->>   * Handle RTAS busy and extended-delay return codes for open-inject, 
->> and close calls.
->>   * Simplified the validation helper — reduced complexity and removed 
->> redundant checks.
->>   * Simplified the buffer-preparation helper for cleaner, more 
->> maintainable code.
->>   * Validate that all required RTAS tokens are present before 
->> attempting to open a session.
->>   * Added explicit generic EEH-to-OPAL error-type mapping for the 
->> PowerNV platform.
->> v1 -> v2: https://lore.kernel.org/all/20260527072433.94510-1- 
->> nnmlinux@linux.ibm.com/
->>   * Addressed all review comments from Sourabh Jain
->>     - Removed unnecessary empty line in rtas_call()
->>     - Enhanced comment to explain PAPR specification requirements
->>     - Corrected misleading comment about output handling
->>     - Improved else block comment for better code clarity
->>   * Fixed kernel test robot warnings
->>     - Fixed kernel-doc warning for __maybe_unused parameter
->>     - Confirmed sparse warnings are false positives (correct 
->> endianness handling)
->>   * Added PowerNV platform abstraction layer (new Patch 5)
->>     - Maps EEH error types to OPAL-specific types
->>     - Simplifies type handling by direct variable update
->>   * Improved code comments and documentation throughout
->>   * Added Reported-by tags for kernel test robot findings
->>   * Split into logical 5-patch series for better review
->>
->> RFC -> v1: https://lore.kernel.org/all/20251205094510.4671-1- 
->> nnmlinux@linux.ibm.com/
->>   * Initial 4-patch series
->>   * Fixed PAPR ibm,open-errinjct output format (token,status order)
->>   * Added pr_fmt handling for EEH subsystem compatibility
->>   * Implemented comprehensive validation helpers
->>
->> RFC: https://lore.kernel.org/all/20251107091009.43034-1- 
->> nnmlinux@linux.ibm.com/
->>   * Initial RFC implementation
-> Hi Narayana,
-> I have tested this patch along with the qemu patch series (https:// 
-> lore.kernel.org/all/20260520095446.64206-1-nnmlinux@linux.ibm.com/)
-> and I am still seeing the issue in which I am not able to trigger EEH on 
-> NVME Backplane device after passthroughing it to guest.
-> I tried using location code with and without mask and address and EEH is 
-> not getting triggered.
-> 
-> 1st command :
-> 
-> errinjct ioa-bus-error-64  -f 6 -p U2E4A.ND0.WZS0211-P1-C0  -a 
-> 0x88020000 -m 0xffffffffffff8000 -k 1
-> 
-> 2nd command :
-> 
-> errinjct ioa-bus-error-64  -f 6 -p U2E4A.ND0.WZS0211-P1-C0 -m 0 -k 1
-> 
-> Getting the following issue everytime
-> 
-> errinjct: Could not open file /proc/device-tree/ibm,loc-code, No such 
-> file or directory
-> 
-> errinjct: Could not open file /proc/device-tree/ibm,platform-keystore/ 
-> ibm,loc-code, No such file or directory
-> 
-> errinjct: Could not open file /proc/device-tree/memory@0/ibm,loc-code, 
-> No such file or directory
-> 
-> Injecting an ioa-bus-error...
-> errinjct: RTAS error injection failed!
-> 
-> errinjct: RTAS: ioa-bus-error: Argument error (-3)
-> 
-> This error may have occurred because error injection
-> is disabled for this partition. Please check the
-> FSP and ensure you have error injection enabled.
-> 
-> Please look into this.
-> 
-> Thank you,
-> Anushree Mathur
-> 
-> 
-The commands shown below appear to be running the errinjct tool on the 
-host. That path uses the host RTAS interface through sys_rtas() and 
-therefore does not exercise the VFIO/QEMU passthrough error-injection 
-path added by this kernel and QEMU series.
+I think overall the recovery sequence makes sense, but I have some concerns
+about how the state of one reset is represented.
 
-The intention of these patches is to allow an EEH error-injection 
-request originating from the guest for a PCI device assigned through 
-vfio-pci to be propagated through QEMU/VFIO to the host EEH backend.
+In your current design, if I'm not misunderstanding, the state of one reset is split
+across several places:
 
-Could you please retry the test from inside the guest after passing the 
-NVMe backplane device through with vfio-pci?
+- PCI keeps ACS, BME, and Port Control in its local cxl_sbr_ctx
+- CXL keeps HDM state in a global xarray keyed by the Downstream Port
+- disable_regions() collects a region set, operates on it, and then discards it
+- enable_regions() collects the region set again after the reset
 
-The expected path for this test is roughly:
+There's no single owner that remembers exactly which regions and memory blocks were
+changed by the corresponded reset. The set collected after the reset should be the
+same set that was disabled, but I don't get where does this guaranteed ?
+Collection or decoder restoration may fail, but enable_regions() can't report failure
+and may still reattach regions.
 
-guest errinjct
-→ guest ibm,open-errinjct / ibm,errinjct / ibm,close-errinjct
-→ QEMU RTAS emulation
-→ VFIO_EEH_PE_INJECT_ERR
-→ host EEH/RTAS error-injection backend
+IMHO, maybe have an opaque per-reset context, something like
 
-In contrast, invoking errinjct directly on the host goes through 
-sys_rtas() and talks directly to the host firmware. The 
-/proc/device-tree/.../ibm,loc-code lookup failures and the RTAS Argument 
-error (-3) reported in your log are therefore from that host-side 
-errinjct path and are not testing the guest VFIO passthrough support 
-provided by this series.
+"""
+prepare(dport, mode) -> context
+reset
+restore(context)
+"""
 
-Please try the same error injection from the guest against the 
-passed-through NVMe device and share the guest errinjct output together 
-with the corresponding guest, QEMU, and host logs if it still fails.
+The context should hold
+- Ref to the exact affected reegions, ports, EP
+- The original bound state of each region
+- The original online type of each memory block changed by preparation
+- Cached HDM Global Control and decoder state
+- The current phase and which preparation steps completed
 
-Thanks,
-Narayana
+I think PCI core doesn't need to know the contents of this context, it only pass it
+to CXL core. This can allow the recovery path to dinstinguish 3 outcomes
+- Preparation failed before SBR
+- SBR and restoration succeeded
+- SBR was issued but restoration failed
 
+This can also avoid the need to recollect topology after reset or store operation state
+in a global xarray.
+Separate resets would naturally have separate state.
+
+Does this model fit the indended flow ?
+
+Best regards,
+Richard Cheng.
+
+ 
+> Fabio M. De Francesco (13):
+>   cxl/pci: Make the HDM and Mem_Enable writes callable from cxl_core
+>   cxl/hdm: Add cxl_decoder_recommit() to restore one HDM decoder
+>   cxl/hdm: Add cxl_endpoint_enable_hdm_decode() to restore CXL.mem
+>     decode
+>   cxl/hdm: Reprogram the HDM Decoders below a CXL Port
+>   cxl/core: Restore the HDM decoders below a reset Downstream Port
+>   drivers/base/memory: Add cxl_offline_memory() to offline a physical
+>     range
+>   cxl/core: Add region disable and enable for a Downstream Port reset
+>   cxl/core: Collect the CXL regions routed through a Downstream Port
+>   PCI/CXL: Register CXL region callbacks for a Downstream Port bus reset
+>   PCI/CXL: Clear ACS SV across an SBR of a CXL Downstream Port
+>   PCI/DPC: Issue the CXL recovery SBR from DPC without offlining memory
+>   PCI/CXL: Add cxl_unmask_sbr to permit an SBR of a CXL Downstream Port
+>   PCI/CXL: Refuse an SBR of a CXL Downstream Port without the unmask
+>     consent
+> 
+>  Documentation/ABI/testing/sysfs-bus-pci |  16 +
+>  drivers/base/memory.c                   |  36 +++
+>  drivers/cxl/core/Makefile               |   2 +-
+>  drivers/cxl/core/core.h                 |  28 ++
+>  drivers/cxl/core/dport_sbr.c            | 374 ++++++++++++++++++++++++
+>  drivers/cxl/core/hdm.c                  | 341 +++++++++++++++++++++
+>  drivers/cxl/core/pci.c                  |  19 +-
+>  drivers/cxl/core/port.c                 |   4 +-
+>  drivers/cxl/core/ras.c                  |  10 +
+>  drivers/cxl/core/region.c               |   6 +-
+>  drivers/pci/pci-sysfs.c                 |  31 ++
+>  drivers/pci/pci.c                       | 254 +++++++++++++++-
+>  drivers/pci/pci.h                       |  15 +
+>  drivers/pci/pcie/dpc.c                  |  46 ++-
+>  include/linux/aer.h                     |   9 +
+>  include/linux/memory.h                  |   5 +
+>  include/linux/pci.h                     |  16 +
+>  include/uapi/linux/pci_regs.h           |   2 +
+>  tools/testing/cxl/Kbuild                |   2 +-
+>  19 files changed, 1193 insertions(+), 23 deletions(-)
+>  create mode 100644 drivers/cxl/core/dport_sbr.c
+> 
+> -- 
+> 2.55.0
+> 
+> 
 
