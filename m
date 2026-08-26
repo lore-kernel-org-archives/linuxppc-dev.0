@@ -1,79 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-26112-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26113-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BE745C5DF97
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Aug 2026 09:27:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9C6BBC5DF97
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Aug 2026 11:07:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hVK5G3FBZz3c9b;
-	Wed, 26 Aug 2026 19:25:54 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.220
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787736354;
-	cv=none; b=ZTev32AFRxojP96qQ7YRiabifsGJS1g85ytcbwJvCMU/B+MhvQQHg3xrK0qa+Tonm+j2lQlVsvDZFdaOa1lOiigWwf/jLgJx/iYvr8BddYdVBEQDLbM2mMa33fdoHGHSi0wvypdJ4QejsOjAAgzVknhnFblqyonUjuJCVJnQgxQ6RU/59TllIoA2PuZazJbW5hcBJTU+ZVejHWEqNeiU21QFsdzN0O5YucvvhPk1pVIKVWiCwrJckEaXAsxmppnDOS+XD8KR3LKb6zYzBaOQgONvX6dQwrNJbQMW7+ZAVHJxZnG6lItG1JSXmkVSppkptAiORq+pMyoN0jdtpeqFfg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hVMLp6Wvkz2y32;
+	Wed, 26 Aug 2026 21:07:46 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787742466;
+	cv=none; b=X/p8rB3m/RUzWJ+7c++L0tPdrmxX6MYtXubDNOnDZJINTqrtyi14veitD3awl1HHiymUqgD7Wbioaj1GJp9MB1uZ8+V8cLC/cKocKoOltqwtkqpYnHGYazNP7OXrBl6QDpm/DT68Wc/5b7i9dEEbrNgmsNd1dCRYc0LWL1f2l7nFpbQeVEQ6ySLEtD4ZssS0NMI3kjjogs+kNFJsNeWPRWbXUpy0ikXF/uFfnszY/Q2/UxgpoiOdHVN2q6jNdVPJGYMh6FTuOPvulNUi8Th2aqYbNof6PgQkUwqqxQkaa2Ap4faIQERqS1iI7IQbmlH8NKkrvItR30mhfDGslqc7lg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787736354; c=relaxed/relaxed;
-	bh=fFAgomx6mCnvCLtDv+rkVQ5LTZ6jKJXYGpd9rmPNNE8=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=Tyd1EPpZl945EdoNcmCGKDwzpNZLT9nD/vlSPHM2J2/cEZf12TurZAXsMZHrhsTAQeofhU7ZZB0pRmHw/9UJQ3Vs19enLGn799/sxxBKASm0HQbeVuBOpoBYejZYF0cBYNacNKx/OowVFiZ0a2iO4fJbE0RKEJFFg0Jn1NM1dNCHrsLwuMQNOifJNrsSv+lcummp4GDaXOES10HaSNqEKD/a2fxAgZXHxmPvFzsFmlKN9lJKixdxlS2U4AJj0fslhbYiCzY6I54dkWkEcFa1K+/YDYj6MbRukO+M8iVgNAMtc/lBp/Yt5Pdsh74Jvrc7e7GnGUcYYRM7XD+unNhn/Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=1LNL5mVC; dkim-atps=neutral; spf=pass (client-ip=113.46.200.220; helo=canpmsgout05.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+	t=1787742466; c=relaxed/relaxed;
+	bh=SICwhhjGxNhXSsOq7GPFaV9hQygchFki3GkCkSPKHXU=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Lh8i1bbzVhSA92upfPVnMcCzAxu2gYncy1qz1+Y05rEjWg5BwjFrGqQyHzc+K4WUHcErktzaplUiUqbuFpLfLlBnSalMT26ztp9DuLsghzjujwU5YoQUXzkJ7oS48pgOqWH1mfLYA94PwGP8wZau2h+LJ1ZYnYkIk5g7xb7NCd805JpNN15YKkVsHa5PEHex8QcqKO5EJ8E9PQBcnGQtLoZLJgdl+dyQtGrhc3KZUmHseamNxeQB+umWlq211fKA4ah11hOXzwOvFd9G1mTvsbJ0uHMyRY65KO1EPWYWa2IX5x+BX1BbGBzPBTKqYqVO8g7EMIKEa+12kmynNd/rXQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PoLnJ/Tn; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=tasmiya@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=1LNL5mVC;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PoLnJ/Tn;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.220; helo=canpmsgout05.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
-Received: from canpmsgout05.his.huawei.com (canpmsgout05.his.huawei.com [113.46.200.220])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=tasmiya@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hVK5D5DQGz2yft
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2026 19:25:52 +1000 (AEST)
-dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=fFAgomx6mCnvCLtDv+rkVQ5LTZ6jKJXYGpd9rmPNNE8=;
-	b=1LNL5mVCelb85PN9fuNceaoD72o8fCN0n9slnJpLPRXvNMoCM0ey58jciL1xalSTzmOGIlIZt
-	QzwhzeumxoPtPnpkWa53lh7mcQOpffypdPA7T9QpcG02Et76WZVHm8Ut1q5RAjOtW3UhqZEIj3d
-	sRmKY9R7dvYnIIPD8CQYKTI=
-Received: from mail.maildlp.com (unknown [172.19.163.0])
-	by canpmsgout05.his.huawei.com (SkyGuard) with ESMTPS id 4hVJsH4bLtz12LF9;
-	Wed, 26 Aug 2026 17:15:31 +0800 (CST)
-Received: from dggpemf500011.china.huawei.com (unknown [7.185.36.131])
-	by mail.maildlp.com (Postfix) with ESMTPS id B7F6640537;
-	Wed, 26 Aug 2026 17:25:48 +0800 (CST)
-Received: from huawei.com (10.90.53.73) by dggpemf500011.china.huawei.com
- (7.185.36.131) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Wed, 26 Aug
- 2026 17:25:46 +0800
-From: Jinjie Ruan <ruanjinjie@huawei.com>
-To: <catalin.marinas@arm.com>, <will@kernel.org>, <mark.rutland@arm.com>,
-	<chenhuacai@kernel.org>, <kernel@xen0n.name>, <maddy@linux.ibm.com>,
-	<mpe@ellerman.id.au>, <npiggin@gmail.com>, <chleroy@kernel.org>,
-	<tglx@kernel.org>, <mingo@redhat.com>, <bp@alien8.de>,
-	<dave.hansen@linux.intel.com>, <hpa@zytor.com>, <akpm@linux-foundation.org>,
-	<baoquan.he@linux.dev>, <rppt@kernel.org>, <pasha.tatashin@soleen.com>,
-	<pratyush@kernel.org>, <ruirui.yang@linux.dev>, <kees@kernel.org>,
-	<thuth@redhat.com>, <gshan@redhat.com>, <jic23@kernel.org>,
-	<james.morse@arm.com>, <ardb@kernel.org>, <leitao@debian.org>,
-	<yeoreum.yun@arm.com>, <sourabhjain@linux.ibm.com>, <coxu@redhat.com>,
-	<tangyouling@kylinos.cn>, <hbathini@linux.ibm.com>, <adityag@linux.ibm.com>,
-	<ionut.nechita@windriver.com>, <liaoyuanhong@vivo.com>, <seanjc@google.com>,
-	<fuqiang.wang@easystack.cn>, <makb@juniper.net>, <piliu@redhat.com>,
-	<ebiggers@kernel.org>, <jbouron@amazon.com>, <mclapinski@google.com>,
-	<me@linux.beauty>, <graf@amazon.com>, <bgwin@google.com>, <robh@kernel.org>,
-	<takahiro.akashi@linaro.org>, <palmer@rivosinc.com>, <x86@kernel.org>,
-	<linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
-	<loongarch@lists.linux.dev>, <linuxppc-dev@lists.ozlabs.org>,
-	<kexec@lists.infradead.org>, <linux-fsdevel@vger.kernel.org>,
-	<linux-mm@kvack.org>
-CC: <ruanjinjie@huawei.com>
-Subject: [PATCH v3 17/17] arm64: crash: Add crash hotplug support
-Date: Wed, 26 Aug 2026 17:25:41 +0800
-Message-ID: <20260826092541.3905933-18-ruanjinjie@huawei.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20260826092541.3905933-1-ruanjinjie@huawei.com>
-References: <20260826092541.3905933-1-ruanjinjie@huawei.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hVMLn2j2yz2xLG
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2026 21:07:44 +1000 (AEST)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67QAVfIs3793926;
+	Wed, 26 Aug 2026 11:07:27 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=SICwhh
+	jGxNhXSsOq7GPFaV9hQygchFki3GkCkSPKHXU=; b=PoLnJ/TnBrkpFewceYCw7/
+	FVR5RzZtjgDsqjBjaDWRdPaAQl0UtEa7BlsYR/YBKnjE3VyyS/+/VhC9OZtsbu+P
+	weccOkTetSpEkxPoTvcBP7uefJmUEpBkNhnB8ffMyMbzVr7HbXVqPfhADBXFJPqu
+	PQtOd4H5jGAkqhfuCQFw+b4Qfoz2KvO/CNyLVNVz4xzktlsEGPcLUB/VpH6RaHo+
+	VNdO1KqHjsdG/9LGng1EvsFyA0xpULNEZrcvMIX1kzW9SOTdN/e3O/OmsaUvUH5b
+	0hlK2XVInreUKX2u1aZpJseMYfKLO0oZO6LyW2J9J92PsdEGZSn6egxiVTYDIzwQ
+	==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4g73dxdvvt-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 26 Aug 2026 11:07:26 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 67QAuGkJ018391;
+	Wed, 26 Aug 2026 11:07:26 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4g7rsy9akf-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 26 Aug 2026 11:07:26 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 67QB7MGv36372952
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 26 Aug 2026 11:07:22 GMT
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 5380520049;
+	Wed, 26 Aug 2026 11:07:22 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 8EE7F2004D;
+	Wed, 26 Aug 2026 11:07:18 +0000 (GMT)
+Received: from [9.61.245.81] (unknown [9.61.245.81])
+	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 26 Aug 2026 11:07:18 +0000 (GMT)
+Message-ID: <6a37522d-ac3d-4992-a240-40fcd49557aa@linux.ibm.com>
+Date: Wed, 26 Aug 2026 16:37:16 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -87,356 +81,161 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] powerpc/rtas_pci: No hotplug on permanently removed
+ device on pSeries
+To: Harsh Prateek Bora <harshpb@linux.ibm.com>,
+        Shivaprasad G Bhat <sbhat@linux.ibm.com>, maddy@linux.ibm.com,
+        linuxppc-dev@lists.ozlabs.org
+Cc: mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org,
+        linux-kernel@vger.kernel.org
+References: <177725851139.12391.5948009745181492600.stgit@linux.ibm.com>
+ <80aded32-3975-49f4-a91a-b58b236c832a@linux.ibm.com>
+ <c6117753-10a7-4e10-bd8f-526a5dd8a300@linux.ibm.com>
+Content-Language: en-US
+From: tasmiya <tasmiya@linux.ibm.com>
+In-Reply-To: <c6117753-10a7-4e10-bd8f-526a5dd8a300@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.90.53.73]
-X-ClientProxiedBy: kwepems500002.china.huawei.com (7.221.188.17) To
- dggpemf500011.china.huawei.com (7.185.36.131)
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODI2MDA5MiBTYWx0ZWRfXwwbhpsOgHEZa
+ 95rjgCZsFzs1ioJcp53xCl7FnYlq0OPDxg/MX0vfC93sSJuEgbXR/dRO+sR2oLJYQM//efxGHCe
+ Bmf4ogjFEaCmG20QQbysz1YRTlXE7iw=
+X-Authority-Analysis: v=2.4 cv=AYuB2XXG c=1 sm=1 tr=0 ts=6a8ec8ef cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=VwQbUJbxAAAA:8
+ a=VnNF1IyMAAAA:8 a=M3Y7q1RbFEiiUnmc_lAA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-ORIG-GUID: 0fx5DpBPdoEHRzHDDtF4wPRqxyYqcKEr
+X-Proofpoint-GUID: oRR8Vl0N0-ZrmMbBwM3BXXhikqdXDhts
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODI2MDA5MiBTYWx0ZWRfX5UEH16XRrdbs
+ Y48fnlzXt1Z+q/JHz5Cwy/iNVpCYPInYDeKmw9BXeNpplOM+EzHYAjWsnUhAqyyb4kf+kU9mLh3
+ oh+Up8IFdsJXnmgdb4T7kMAA6LwYmWNXlEk51TxqCLyuEXhWfBRjOy73IsX+RZwOJsG3i8kjzTd
+ b3SBUGgnypz4x4Z6fHR1rcB4B1oOLUBm/LhK+cNUlEVZU1wJ5jgXLiC87mgXqUY9wmAC4JFqiPm
+ V9J5BwptMZNCJ2zNlTYw/XgNr95L2V3Wf+f9HeI/UGq2jTmR3rJ4lSg8zHtwMNbXp5t8Q3xSfXG
+ KlcMEhUELdX5MKcmafmGx34vc9jgoGAWfjTLW1OZHkmsjaNSwyn/9g8AE+jXyIypm6zHSyyODC6
+ ts1/YGxJ+Fg20o+ym4/QMwwy4gfThw0az0/W0wmUOyeJ54EKhJbcZTa/7gYaO050i2YHq+ID5yJ
+ 0U/h+btnK56SReklskg==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-08-26_03,2026-08-26_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 phishscore=0 clxscore=1015 adultscore=0 bulkscore=0
+ impostorscore=0 priorityscore=1501 lowpriorityscore=0 spamscore=0
+ suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
+ definitions=main-2608260092
 
-When CPU or memory hotplug events occur, the elfcorehdr in the kdump
-image becomes stale, potentially leading to incomplete crash dumps.
+Greetings,
 
-Currently, userspace udev rules reload the entire kdump image upon such
-events, which is inefficient and leaves kdump inactive for a long time.
+Latest Patch tested 
+: https://lore.kernel.org/linuxppc-dev/178246517230.1267.12206176311111155505.stgit@linux.ibm.com/ 
 
-Commit 247262756121 ("crash: add generic infrastructure for crash hotplug
-support") introduced a kernel mechanism to update only the elfcorehdr.
-This patch enables that support for arm64.
 
-On arm64, only memory hotplug events require elfcorehdr updates:
-- Physical CPU hotplug is not supported.
+I have tested latest patch in my environment. The patch fixes the issue 
+reported.
 
-- For ACPI based vCPU hotplug [1], the elfcorehdr is built using
-  for_each_possible_cpu(), so no update is needed.
 
-The patch:
-- Adds CONFIG_ARCH_SUPPORTS_CRASH_HOTPLUG (default y).
-
-- Implements following arch functions to handle memory hotplug:
-  1. arch_crash_hotplug_support()
-  2. arch_crash_get_elfcorehdr_size()
-  3. arch_crash_handle_hotplug_event()
-
-- Moves arch_get_system_nr_ranges() and arch_crash_populate_cmem()
-  from machine_kexec_file.c to crash.c for crash hotplug reuse.
-
-Follows the approach of x86 commit ea53ad9cf73b ("x86/crash: add x86 crash
-hotplug support") and powerpc commit b741092d5976 ("powerpc/crash: add
-crash CPU hotplug support").
-
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Will Deacon <will@kernel.org>
-Cc: Baoquan He <bhe@redhat.com>
-Cc: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Breno Leitao <leitao@debian.org>
-Cc: Sourabh Jain <sourabhjain@linux.ibm.com>
-Cc: Mark Rutland <mark.rutland@arm.com>
-Cc: Ard Biesheuvel <ardb@kernel.org>
-Cc: Thomas Huth <thuth@redhat.com>
-[1]: https://lore.kernel.org/all/20240529133446.28446-1-Jonathan.Cameron@huawei.com/
-Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
----
- arch/arm64/Kconfig                     |   3 +
- arch/arm64/include/asm/kexec.h         |  11 ++
- arch/arm64/kernel/Makefile             |   2 +-
- arch/arm64/kernel/crash.c              | 165 +++++++++++++++++++++++++
- arch/arm64/kernel/machine_kexec_file.c |  36 +-----
- 5 files changed, 184 insertions(+), 33 deletions(-)
- create mode 100644 arch/arm64/kernel/crash.c
-
-diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index b5a51b0ef944..96de2660b1cb 100644
---- a/arch/arm64/Kconfig
-+++ b/arch/arm64/Kconfig
-@@ -1720,6 +1720,9 @@ config ARCH_DEFAULT_CRASH_DUMP
- config ARCH_HAS_GENERIC_CRASHKERNEL_RESERVATION
- 	def_bool CRASH_RESERVE
- 
-+config ARCH_SUPPORTS_CRASH_HOTPLUG
-+	def_bool y
-+
- config TRANS_TABLE
- 	def_bool y
- 	depends on HIBERNATION || KEXEC_CORE
-diff --git a/arch/arm64/include/asm/kexec.h b/arch/arm64/include/asm/kexec.h
-index 892e5bebda95..f165c094b32e 100644
---- a/arch/arm64/include/asm/kexec.h
-+++ b/arch/arm64/include/asm/kexec.h
-@@ -130,6 +130,17 @@ extern int load_other_segments(struct kimage *image,
- 		char *cmdline);
- #endif
- 
-+#ifdef CONFIG_CRASH_HOTPLUG
-+void arch_crash_handle_hotplug_event(struct kimage *image, void *arg);
-+#define arch_crash_handle_hotplug_event arch_crash_handle_hotplug_event
-+
-+int arch_crash_hotplug_support(struct kimage *image, unsigned long kexec_flags);
-+#define arch_crash_hotplug_support arch_crash_hotplug_support
-+
-+unsigned int arch_crash_get_elfcorehdr_size(void);
-+#define crash_get_elfcorehdr_size arch_crash_get_elfcorehdr_size
-+#endif
-+
- #endif /* __ASSEMBLER__ */
- 
- #endif
-diff --git a/arch/arm64/kernel/Makefile b/arch/arm64/kernel/Makefile
-index d2690c3ec528..9bbac452994c 100644
---- a/arch/arm64/kernel/Makefile
-+++ b/arch/arm64/kernel/Makefile
-@@ -64,7 +64,7 @@ obj-$(CONFIG_KEXEC_CORE)		+= machine_kexec.o relocate_kernel.o	\
- obj-$(CONFIG_KEXEC_FILE)		+= machine_kexec_file.o kexec_image.o
- obj-$(CONFIG_ARM64_RELOC_TEST)		+= arm64-reloc-test.o
- arm64-reloc-test-y := reloc_test_core.o reloc_test_syms.o
--obj-$(CONFIG_CRASH_DUMP)		+= crash_dump.o
-+obj-$(CONFIG_CRASH_DUMP)		+= crash_dump.o crash.o
- obj-$(CONFIG_VMCORE_INFO)		+= vmcore_info.o
- obj-$(CONFIG_ARM_SDE_INTERFACE)		+= sdei.o
- obj-$(CONFIG_ARM64_PTR_AUTH)		+= pointer_auth.o
-diff --git a/arch/arm64/kernel/crash.c b/arch/arm64/kernel/crash.c
-new file mode 100644
-index 000000000000..d97e9cea2fc9
---- /dev/null
-+++ b/arch/arm64/kernel/crash.c
-@@ -0,0 +1,165 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * Architecture specific functions for kexec based crash dumps.
-+ */
-+
-+#define pr_fmt(fmt)	"crash hp: " fmt
-+
-+#include <linux/cacheflush.h>
-+#include <linux/elf.h>
-+#include <linux/kexec.h>
-+#include <linux/memblock.h>
-+#include <linux/memory.h>
-+#include <linux/vmalloc.h>
-+
-+#include <asm/kexec.h>
-+
-+#if defined(CONFIG_KEXEC_FILE) || defined(CONFIG_CRASH_HOTPLUG)
-+unsigned int arch_get_system_nr_ranges(void)
-+{
-+	unsigned int nr_ranges = 2 + crashk_cma_cnt; /* for exclusion of crashkernel region */
-+	phys_addr_t start, end;
-+	u64 i;
-+
-+	for_each_mem_range(i, &start, &end)
-+		nr_ranges++;
-+
-+	return nr_ranges;
-+}
-+
-+int arch_crash_populate_cmem(struct crash_mem *cmem)
-+{
-+	phys_addr_t start, end;
-+	u64 i;
-+
-+	for_each_mem_range(i, &start, &end) {
-+		cmem->ranges[cmem->nr_ranges].start = start;
-+		cmem->ranges[cmem->nr_ranges].end = end - 1;
-+		cmem->nr_ranges++;
-+	}
-+
-+	return 0;
-+}
-+#endif
-+
-+#ifdef CONFIG_CRASH_HOTPLUG
-+int arch_crash_hotplug_support(struct kimage *image, unsigned long kexec_flags)
-+{
-+#ifdef CONFIG_KEXEC_FILE
-+	if (image->file_mode)
-+		return 1;
-+#endif
-+	/*
-+	 * For kexec_load syscall, crash hotplug support requires
-+	 * KEXEC_CRASH_HOTPLUG_SUPPORT flag to be passed by userspace.
-+	 */
-+	return kexec_flags & KEXEC_CRASH_HOTPLUG_SUPPORT;
-+}
-+
-+unsigned int arch_crash_get_elfcorehdr_size(void)
-+{
-+	unsigned long phdr_cnt;
-+
-+	/* A program header for possible CPUs, vmcoreinfo and kernel_map */
-+	phdr_cnt = 2 + num_possible_cpus() + CONFIG_CRASH_MAX_MEMORY_RANGES;
-+
-+	return elf64_phdr_size(phdr_cnt);
-+}
-+
-+/**
-+ * update_crash_elfcorehdr() - Recreate the elfcorehdr and replace it with old
-+ *			       elfcorehdr in the kexec segment array.
-+ * @image: the active struct kimage
-+ * @mn: struct memory_notify data handler
-+ */
-+static void update_crash_elfcorehdr(struct kimage *image, struct memory_notify *mn)
-+{
-+	void *elfbuf = NULL, *old_elfcorehdr;
-+	unsigned long mem, memsz, elfsz = 0;
-+	struct crash_mem *cmem = NULL;
-+	u64 start, end;
-+	int ret;
-+
-+	ret = crash_get_memory_ranges_nolock(&cmem);
-+	if (ret) {
-+		pr_err("Failed to get crash memory ranges.\n");
-+		goto out;
-+	}
-+
-+	/*
-+	 * The hot unplugged memory is part of crash memory ranges,
-+	 * remove it here.
-+	 */
-+	if (image->hp_action == KEXEC_CRASH_HP_REMOVE_MEMORY) {
-+		start = PFN_PHYS(mn->start_pfn);
-+		end = start + PFN_PHYS(mn->nr_pages) - 1;
-+
-+		ret = crash_exclude_mem_range(cmem, start, end);
-+		if (ret) {
-+			pr_err("Failed to remove hot-unplugged memory from crash memory ranges.\n");
-+			goto out;
-+		}
-+	}
-+
-+	/*
-+	 * Create the new elfcorehdr reflecting the changes to CPU and/or
-+	 * memory resources.
-+	 */
-+	ret = crash_prepare_elf64_headers(cmem, true, &elfbuf, &elfsz);
-+	if (ret) {
-+		pr_err("Failed to create new elfcorehdr");
-+		goto out;
-+	}
-+
-+	/*
-+	 * Obtain address and size of the elfcorehdr segment, and
-+	 * check it against the new elfcorehdr buffer.
-+	 */
-+	mem = image->segment[image->elfcorehdr_index].mem;
-+	memsz = image->segment[image->elfcorehdr_index].memsz;
-+	if (elfsz > memsz) {
-+		pr_err("update elfcorehdr elfsz %lu > memsz %lu",
-+			elfsz, memsz);
-+		goto out;
-+	}
-+
-+	/* Copy new elfcorehdr over the old elfcorehdr at destination. */
-+	old_elfcorehdr = phys_to_virt(mem);
-+
-+	/*
-+	 * Temporarily invalidate the crash image while the
-+	 * elfcorehdr is updated.
-+	 */
-+	xchg(&kexec_crash_image, NULL);
-+	memcpy(old_elfcorehdr, elfbuf, elfsz);
-+	dcache_clean_inval_poc((unsigned long)old_elfcorehdr,
-+			       (unsigned long)(old_elfcorehdr + elfsz));
-+	xchg(&kexec_crash_image, image);
-+	pr_debug("updated elfcorehdr\n");
-+
-+out:
-+	kvfree(cmem);
-+	vfree(elfbuf);
-+}
-+
-+/**
-+ * arch_crash_handle_hotplug_event() - Handle hotplug elfcorehdr changes
-+ * @image: a pointer to kexec_crash_image
-+ * @arg: struct memory_notify handler for memory hotplug case and
-+ *       NULL for CPU hotplug case.
-+ *
-+ * Update the kdump image based on the type of hotplug event:
-+ * - CPU add and remove: No action is needed.
-+ * - Memory add/remove: Update the elfcorehdr to reflect the current memory layout.
-+ *
-+ * Prepare the new elfcorehdr and replace the existing elfcorehdr.
-+ */
-+void arch_crash_handle_hotplug_event(struct kimage *image, void *arg)
-+{
-+	if (image->hp_action == KEXEC_CRASH_HP_ADD_CPU ||
-+	    image->hp_action == KEXEC_CRASH_HP_REMOVE_CPU)
-+		return;
-+
-+	update_crash_elfcorehdr(image, (struct memory_notify *)arg);
-+}
-+#endif /* CONFIG_CRASH_HOTPLUG */
-diff --git a/arch/arm64/kernel/machine_kexec_file.c b/arch/arm64/kernel/machine_kexec_file.c
-index 3d907f8ee594..acba49b04ae1 100644
---- a/arch/arm64/kernel/machine_kexec_file.c
-+++ b/arch/arm64/kernel/machine_kexec_file.c
-@@ -14,7 +14,6 @@
- #include <linux/kernel.h>
- #include <linux/kexec.h>
- #include <linux/libfdt.h>
--#include <linux/memblock.h>
- #include <linux/of.h>
- #include <linux/of_fdt.h>
- #include <linux/slab.h>
-@@ -39,34 +38,6 @@ int arch_kimage_file_post_load_cleanup(struct kimage *image)
- 	return kexec_image_post_load_cleanup_default(image);
- }
- 
--#ifdef CONFIG_CRASH_DUMP
--unsigned int arch_get_system_nr_ranges(void)
--{
--	unsigned int nr_ranges = 2 + crashk_cma_cnt; /* for exclusion of crashkernel region */
--	phys_addr_t start, end;
--	u64 i;
--
--	for_each_mem_range(i, &start, &end)
--		nr_ranges++;
--
--	return nr_ranges;
--}
--
--int arch_crash_populate_cmem(struct crash_mem *cmem)
--{
--	phys_addr_t start, end;
--	u64 i;
--
--	for_each_mem_range(i, &start, &end) {
--		cmem->ranges[cmem->nr_ranges].start = start;
--		cmem->ranges[cmem->nr_ranges].end = end - 1;
--		cmem->nr_ranges++;
--	}
--
--	return 0;
--}
--#endif
--
- /*
-  * Tries to add the initrd and DTB to the image. If it is not possible to find
-  * valid locations, this function will undo changes to the image and return non
-@@ -89,8 +60,9 @@ int load_other_segments(struct kimage *image,
- 	kbuf.buf_min = kernel_load_addr + kernel_size;
- 
- #ifdef CONFIG_CRASH_DUMP
-+	unsigned long nr_ranges = 0;
- 	if (image->type == KEXEC_TYPE_CRASH) {
--		ret = crash_prepare_headers(true, &kbuf.buffer, &kbuf.bufsz, NULL);
-+		ret = crash_prepare_headers(true, &kbuf.buffer, &kbuf.bufsz, &nr_ranges);
- 		if (ret) {
- 			pr_err("Preparing elf core header failed\n");
- 			goto out_err;
-@@ -100,10 +72,10 @@ int load_other_segments(struct kimage *image,
- 			vfree(image->elf_headers);
- 
- 		image->elf_headers = kbuf.buffer;
--		image->elf_headers_sz = kbuf.bufsz;
- 
- 		kbuf.mem = KEXEC_BUF_MEM_UNKNOWN;
--		kbuf.memsz = kbuf.bufsz;
-+		kbuf.memsz = kbuf.bufsz + crash_extra_elfcorehdr_size(nr_ranges);
-+		image->elf_headers_sz = kbuf.memsz;
- 		kbuf.buf_align = SZ_64K; /* largest supported page size */
- 		kbuf.buf_max = ULONG_MAX;
- 		kbuf.top_down = true;
--- 
-2.34.1
-
+On 25/08/26 8:46 pm, Harsh Prateek Bora wrote:
+> Hi Tasmiya,
+>
+> There was a v2 posted here:
+> https://lore.kernel.org/linuxppc-dev/178246517230.1267.12206176311111155505.stgit@linux.ibm.com/ 
+>
+>
+> Although a minor change in return value and re-ordering before 
+> CONFIG_BLOCKED incorporated in v2, it's better to test v2 and provide 
+> test feedback on the same.
+>
+> Thanks
+> Harsh
+>
+> On 25/08/26 3:52 pm, tasmiya wrote:
+>> Greetings,
+>>
+>> Tested-by: Tasmiya Nalatwad <tasmiya@linux.ibm.com>
+>> Reported-by: Tasmiya Nalatwad <tasmiya@linux.ibm.com>
+>>
+>>
+>> I have Tested the patch in my KVM guest environment with device 
+>> passthrough via vfio, It works fine and fixes the issue.
+>> Triggered EEH freeze beyond eeh_max_freezes to permanently remove the 
+>> device, then hotplugged a new PCI device. Without the patch, the 
+>> rescan attempted to bring back the permanently removed device. With 
+>> the patch applied, the removed device is correctly skipped during 
+>> rescan and only newly hotplugged device is seen in the guest.
+>>
+>>
+>> Thank you,
+>>
+>> Tasmiya
+>>
+>>
+>> On 27/04/26 8:25 am, Shivaprasad G Bhat wrote:
+>>> The eeh_driver disables and offlines the PE permanently when it
+>>> exceeds the freeze count beyond eeh_max_freeze within the last hour.
+>>> The PE is only offline, so the device tree entries, eeh device
+>>> references are all intact till the real unplug of the device from
+>>> the guest/host takes place.
+>>>
+>>> On pSeries, with a new hotplug of any PCI device, the drmgr initiates
+>>> a system-wide PCI rescan, which finds devices offlined by the 
+>>> eeh_driver
+>>> and there will be attempts to bring them online. This leads to
+>>> recurring EEHs either at the config read time itself or a bit
+>>> later depending on the type of the problem.
+>>>
+>>> For PowerNV, the commit d2b0f6f77ee5 ("powerpc/eeh: No hotplug on
+>>> permanently removed dev") introduced the EEH_DEV_REMOVED flag to
+>>> prevent such inadvertent rescans on hierarchical toplogies relavent in
+>>> Baremetal setups. For pSeries, such topologies don't really make sense
+>>> as the devices are either part of the same PE OR exposed as independent
+>>> devices on multiple virtual PHBs. However, the inadvertent rescans are
+>>> still a possibility with either hotplug of a new device or otherwise
+>>> with manual system-wide pci bus rescan attempts.
+>>>
+>>> So the patch checks for EEH_DEV_REMOVED before allowing config space
+>>> access just like PowerNV, making the PCI core omit the PE, and thus
+>>> preventing subsequent EEH recurances. The patch is tested on PowerVM
+>>> and KVM machines with single and multi-function devices, and on the
+>>> devices behind a switch. The unplug of the affected devices post EEH
+>>> removal is also working fine as expected.
+>>>
+>>> Signed-off-by: Shivaprasad G Bhat <sbhat@linux.ibm.com>
+>>> References: d2b0f6f77ee5 ("powerpc/eeh: No hotplug on permanently 
+>>> removed dev")
+>>> ---
+>>>   arch/powerpc/kernel/rtas_pci.c |    6 ++++++
+>>>   1 file changed, 6 insertions(+)
+>>>
+>>> diff --git a/arch/powerpc/kernel/rtas_pci.c b/arch/powerpc/kernel/ 
+>>> rtas_pci.c
+>>> index fccf96e897f6..ce24b18712ca 100644
+>>> --- a/arch/powerpc/kernel/rtas_pci.c
+>>> +++ b/arch/powerpc/kernel/rtas_pci.c
+>>> @@ -57,6 +57,9 @@ int rtas_pci_dn_read_config(struct pci_dn *pdn, 
+>>> int where, int size, u32 *val)
+>>>       if (pdn->edev && pdn->edev->pe &&
+>>>           (pdn->edev->pe->state & EEH_PE_CFG_BLOCKED))
+>>>           return PCIBIOS_SET_FAILED;
+>>> +
+>>> +    if (pdn->edev && pdn->edev->mode & EEH_DEV_REMOVED)
+>>> +        return PCIBIOS_SET_FAILED;
+>>>   #endif
+>>>       addr = rtas_config_addr(pdn->busno, pdn->devfn, where);
+>>> @@ -108,6 +111,9 @@ int rtas_pci_dn_write_config(struct pci_dn *pdn, 
+>>> int where, int size, u32 val)
+>>>       if (pdn->edev && pdn->edev->pe &&
+>>>           (pdn->edev->pe->state & EEH_PE_CFG_BLOCKED))
+>>>           return PCIBIOS_SET_FAILED;
+>>> +
+>>> +    if (pdn->edev && pdn->edev->mode & EEH_DEV_REMOVED)
+>>> +        return PCIBIOS_SET_FAILED;
+>>>   #endif
+>>>       addr = rtas_config_addr(pdn->busno, pdn->devfn, where);
+>>>
+>>>
+>>
+>
 
