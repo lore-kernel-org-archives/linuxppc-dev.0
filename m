@@ -1,95 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-26146-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26147-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1BB5DC61DC2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Aug 2026 11:21:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 75E65C61DC2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Aug 2026 11:38:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hVzc91c1hz2y2b;
-	Thu, 27 Aug 2026 21:21:29 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::52e"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787829689;
-	cv=none; b=Z6chnrAcawbxVQuaBu/fLIxvAz+fpFX85lpyhwRRQw/UQFnHzCXk1g5aArws6XZGZ3SW5Neqo5BdQkj8+vxEDvS0zBH+j+GSGur/FfEtl0gFNmglZNEwXvIgmDJUefcnKMtRDJ0fDiwbsTieobTGBP2kJ7TZ0vyhUclaMLzRtOM0FVRW/HN4SUkwIiS4g7V4Zi9Zcq10B+pqrBkYU7vFCiNzMVj14qK/Xne6uEbB+oRA3F0YD4atT0KnmFG/j4aOV2Bk3opCLRsSBV2vnoaGt54lTiUwc9hQVRgAlqGO+pLyZd29Bk1Vj2A/JK9kO1XbZBMctwYqQ/m/exHb54fGZA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hW00F6R37z2xwN;
+	Thu, 27 Aug 2026 21:38:53 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787830733;
+	cv=none; b=F2O2C22gsqLoj3ZqSPWkuvDc8CnT2zi4bvyAigE+cLe1YgLM8i5tYR7U3rNFulLBc3Qyu0J5prinmSvR7TyJ/SJshEKPaO/1jY6ISifXver9Rl95crxU/KxSzHRtX8EnYTrSiindj6lWh7IsPwYY8LkYu19Cu6PDuAACK7LxozfcZanEfhK5le1ox+wAPjKrRylHG+c6cDyUGraT3LYwnEgu0dGNCicPG2nXFoWEhqFA5+/EthCvyDS4wIL9atW59F/4arqOtaNXDr2OFC8RAA7voI7dxzZOcBioGyCTVvO0Etrc4WWiIApvdH0v3EyqI8vLmqIExNCVwGJHGUGadw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787829689; c=relaxed/relaxed;
-	bh=6AQl5RP9TxXn81ZgXLlb05Y9y6XA1JA2H2ttGtX56P8=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=j3wOXey8BQExmXA4p3ODExGT8A4NvIomCoYc3P+yDtGZrc9fyGv4Ux7MaLJa+EaeMdVPqRwcKuOox9v8JZb3w6kmUBP4UDH9o6wHxBlBNqUk3wOwN3p140BeX35MJ5rMersVUNDhrPdWjAkS94EgUsgE6al0vOUW3OjRip4RbgFWriGGBtYRz5rKTQAFRZ2jUV0odaXmBHSpg6wNqyCTOAOVQ+iNr5od/HVthnF1EcCz0UudDNia9lTTi4nN66l+/VXkCuLqZ8WTiW0sjiIA+ywcE9/H01/WVNOsYWePwTRgILPPg7yo0CP9vOlgCHgyAWY8Ewnm2yWD3bG1VNQHDg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=SglKLgkw; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::52e; helo=mail-pg1-x52e.google.com; envelope-from=falakreyaz@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1787830733; c=relaxed/relaxed;
+	bh=JOJR1dEASHzxHZj+6oDP4u5XYnz7HCY5rmJTSbFiOgA=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=ierkJb7l8TRpOTsDWW4XsMo559jzXfiGsYwf9qrUgQ/AkoGz45DA+5heRcWMP4pep4307+Fvcmgosk2I7742S+WxypdQA8zxNHOYIiB01weGCLYZR2Y2muU5lkKub7LH0pfE7Z7SUsi0V7HwSI+iwEhrNvq5jKaTAnC8vwNG0zL1NR4silXaBvZROoLLBjTfUvDoNx0VnEGRBZ2mrBj+7SY8CW1e9GbMdE5icdRUw/7mMOKYIk76+OcIbZCIUSlWReljVSvi9zf+vuOe7Wd6cfSTKH4wz43YDxlSkTMEyEOwJ2yHqNSdnfH7hUNEHRp7Tri4OiHyOHaW7mKy6uik7g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=faS261Q1; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=SglKLgkw;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=faS261Q1;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::52e; helo=mail-pg1-x52e.google.com; envelope-from=falakreyaz@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x52e.google.com (mail-pg1-x52e.google.com [IPv6:2607:f8b0:4864:20::52e])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hVzc83Gm1z2y2L
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2026 21:21:28 +1000 (AEST)
-Received: by mail-pg1-x52e.google.com with SMTP id 41be03b00d2f7-cbe6295f05bso686844a12.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2026 04:21:28 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1787829686; x=1788434486; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=6AQl5RP9TxXn81ZgXLlb05Y9y6XA1JA2H2ttGtX56P8=;
-        b=SglKLgkw+wDZcrXDphDed/FlwyWm4pRACHP0aohgepJ5Vqe/bu7mbqYS+AscLGkgnl
-         4GBQ6753DvFw1QCqDwcDc6rQ7peBGMiLjgJVF7I/jADHrt/UYeA3FJ6D0tHW9oY4J4hu
-         EZQC/0kSqh+ON2WkRuHP77HpGuPcMNh5QKjL+hcNn/D1sBrWFYwVMBIQSjbf0uc8rc5C
-         kLnFdtobrkA9U9kHehV4lCcvuRgBlwES8c9wip0pPeizMvatE58toVKxOEZzOFHnKUiO
-         Mgd2Uz4Vjs+N3neYvFt+0qkf/Jh8eBF9XB+wxdTT8lrS1xTt++C9FdN/90iIaVIkr8KI
-         uyYg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1787829686; x=1788434486;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=6AQl5RP9TxXn81ZgXLlb05Y9y6XA1JA2H2ttGtX56P8=;
-        b=hY5iPQM0POsyHvjUJhC3lxIxVOTFGcxAK/lEnQgooGjITr/vORAM8mb5LbNdeLI/na
-         6n2ZLYoNRxjcJyHBoUqptXBLka52q43L8vcOc6PbtBY9tsg1q5DQI9kXfk+TylBg+IGS
-         yQ4S2My88Ki6bgh1CucZddoa/RAI0cC6wOVzSy3u8f7PkYzQPutP64E51SOkhjGWaT5J
-         EYuWAwVJU+JcEmeBRCRQ7jXYVRH0ePihL23EsVxhasnqoqrvrPlkgUH/VhJDHfK+9rtj
-         sUj9lwfmGKVanbLZMer0kb3u7wNQ52mgurI1wPBxsPYU/01dguppe/FJrz/MOEeMJYsF
-         WI8w==
-X-Forwarded-Encrypted: i=1; AHgh+Rq3XQJvMBTE/v/CAtVA/SvjnmmAAdTACRfNSnPnS4ruYtBdbhTKCGH9Pb6dGOz7/Q6UwBlddJcbbN4g4kk=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++npnErvRZi05nAzKVBMm4Z4SzczkTpoHLJEh+p/3bljoYASs29A
-	iiQ85Y7jnDb6xOMWQK8SjzlTy1xQ8GF9P19cezPS7W0n9mhaQ6YtQzA9
-X-Gm-Gg: AR+sD13kOeZgqvKgj6CartHajiBfeZ7IYbOoaf0u+ehkvSDfzszN3o49EEtL/KShI2c
-	0MT2xZKx1njp7AroTZJi3RCjiiH9R04+1cD6v0P74x8waBEuqy14WaYIs2GJDLZS36NoDuMVXzN
-	1G3d7HRsNAkY89PJch2GtvwemLCXfD6hiCreODt2xRXAXERqNkZXSdIYD+InJeS5vplbBSq0Bsf
-	YHFJk0tiNHT6XUBLLouZVeEOKD8//FTVsngn1rUpRs6s+IVKT/EVyyDibUuWwDcXsRwgHkFfK1t
-	xk33OL4YORpwLeZeh3rf2iIAVH3kbjTMy6dwck+iF5EqRNZzpTmWq4wpTLn0aB46+U39RmKQacT
-	ti5LytEKlyOepMYcPh5cwZq18ZCOsW6fSbQdxQ5/rv6dE6Jh/eplLUa5LtXlXlmWuxZXX1GyHFN
-	0MWxSUye//ORxHY8eXMDDwb994eX888C+Xk8KmiZPSsuo+qIz0FcFbnWk3ORcarpz3FC1PumXgs
-	Gzqjp9qvDlsBOq4U1imq6KjfZj2vkq3M+YmgM8=
-X-Received: by 2002:a17:90a:e70f:b0:38f:cfe2:fd3a with SMTP id 98e67ed59e1d1-3969bc5054dmr8099705a91.15.1787829686419;
-        Thu, 27 Aug 2026 04:21:26 -0700 (PDT)
-Received: from baaz.tail58d41.ts.net ([2401:4900:8853:c223:d8cf:ffee:2034:18a5])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-141a8f20095sm16423327c88.6.2026.08.27.04.21.16
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 27 Aug 2026 04:21:25 -0700 (PDT)
-From: Muhammad Falak R Wani <falakreyaz@gmail.com>
-To: Tyrel Datwyler <tyreld@linux.ibm.com>,
-	"Martin K. Petersen" <martin.petersen@oracle.com>,
-	"James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
-Cc: linux-scsi@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	kernel test robot <lkp@intel.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/2] scsi: ibmvfc: document protocol parameter of ibmvfc_alloc_target()
-Date: Thu, 27 Aug 2026 16:50:38 +0530
-Message-ID: <b073968ae020b6ae0240e91341a92f428587ebd9.1787828961.git.falakreyaz@gmail.com>
-X-Mailer: git-send-email 2.55.0
-In-Reply-To: <dd866cf2321381694af027fbd726bcbd63ac3751.1787828961.git.falakreyaz@gmail.com>
-References: <dd866cf2321381694af027fbd726bcbd63ac3751.1787828961.git.falakreyaz@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hW00C2tCkz2xGr
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2026 21:38:50 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67R9VVU22581880;
+	Thu, 27 Aug 2026 11:38:43 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=JOJR1d
+	EASHzxHZj+6oDP4u5XYnz7HCY5rmJTSbFiOgA=; b=faS261Q1lcTrz33qQ14aA1
+	XvUiCXG+kmmFyiY7HSfGpXfTwe0gzdWKoB5z5mwOLYs0nFWQCK0NNKy8DpLBxb0w
+	RtoDwLSsakpdDZHYorOaWK11blcAz+8gXME50hXWB+UVpz1EFtZFtX+IFq0BjiZW
+	xvXPCzt+b/ypwXTodVuMlS/Z8BhH+LzbIa72hgrRUSkTFo342F6pekpqqjbfKOoz
+	K78173TOvl6+QvMvVLlQyV0ocpfWxEcyL5l7pTPA7Lrv6sKGFiHf+wcvCSXPzdwH
+	70LDditpwIipWmBlP7FA8We4dIFTdrFFZN9e5/VSvQ4HqXQ+MPBnBv1JazuKxcWw
+	==
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4g7394d2ew-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 27 Aug 2026 11:38:43 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 67RBQOt9010891;
+	Thu, 27 Aug 2026 11:38:42 GMT
+Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4g7pfwfvfw-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 27 Aug 2026 11:38:42 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 67RBcZ4E41025810
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 27 Aug 2026 11:38:35 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E8CCB20040;
+	Thu, 27 Aug 2026 11:38:34 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 497F32004E;
+	Thu, 27 Aug 2026 11:38:32 +0000 (GMT)
+Received: from [9.39.21.111] (unknown [9.39.21.111])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Thu, 27 Aug 2026 11:38:31 +0000 (GMT)
+Message-ID: <a147c153-0c73-422c-a183-dad5c5b9aa5c@linux.ibm.com>
+Date: Thu, 27 Aug 2026 17:08:31 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -103,38 +81,124 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: powerpc: userspace processes crash on abort() from libc.so.6
+To: Shivaprasad G Bhat <sbhat@linux.ibm.com>,
+        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, tglx@kernel.org
+Cc: linux-kernel@vger.kernel.org, maddy@linux.ibm.com,
+        christophe.leroy@csgroup.eu, riteshh@linux.ibm.com
+References: <e301014d-568f-4ed5-bc64-b8a85ca0b1e1@linux.ibm.com>
+Content-Language: en-US
+From: Shrikanth Hegde <sshegde@linux.ibm.com>
+In-Reply-To: <e301014d-568f-4ed5-bc64-b8a85ca0b1e1@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: UyLBrmhSsgjsiKkj1IdvrlYbjGq-MIWB
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODI3MDA5NiBTYWx0ZWRfXwF7a8D2C1emA
+ KtAsLiapJz9YsWw+2M72hSE8QVLLkdas2bjulNliRHjVL+l+tDJJ5MRrPtBHLxip48GrVjoR+PL
+ bamN/j5bOqeHoA38m4Hq69Wd1VM+2/EgCQ3Uny3imEgYLgKseM3JgFAMvNLluLvf7LyUhFV5ZHZ
+ RgtIh7AULaPn4B7OyX+Xd/b3QsXeP2vSZdK6AgxnzOUfi3sqCjaspwrWb6DGn0OrMAjTXoZ1gmQ
+ S8rwq482gP+E+LuGJJSMQvFCLf6gul+IVvlxKlvMequvPDmxvwdjkjqNWnZC5SF2MIF6VdF+wuw
+ W6BY1Ovs7nxu0ASAKntHXOVGnt7sVV+NzhqBSznSeiBdJGI/JZpf7Nb1TpC2c1v1KiuaTz8gfCz
+ td+7wcCwvi4ggdqzIB7VvQV/YYHiga108V+XdV5qHKKaoXZXdGIOPaNCxoEX7N2n7wBbw+J2pku
+ nwOcYY52Kep2wzDZlBA==
+X-Authority-Analysis: v=2.4 cv=Y/nIdBeN c=1 sm=1 tr=0 ts=6a9021c3 cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
+ a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=NEAV23lmAAAA:8
+ a=VwQbUJbxAAAA:8 a=pGLkceISAAAA:8 a=dz-O3gLL9ZW_plmJqncA:9 a=3ZKOabzyN94A:10
+ a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODI3MDA5NiBTYWx0ZWRfXwMPuG7lrZ6US
+ GaryvuelSVHgKG6bGyWs3QlxD4D7F8hoV/49pjqAsbHt+EaUCa3AWHDfiz4qHR4ev6hC214wi/F
+ j8iwEjdeuHHM+/RIsYk1NQlPvqOjp9E=
+X-Proofpoint-ORIG-GUID: UyLBrmhSsgjsiKkj1IdvrlYbjGq-MIWB
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-08-27_04,2026-08-26_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 impostorscore=0 priorityscore=1501 adultscore=0 bulkscore=0
+ suspectscore=0 malwarescore=0 clxscore=1015 lowpriorityscore=0 phishscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608270096
 
-Commit 249313b3f7b5 ("scsi: ibmvfc: allocate targets based on protocol")
-added a protocol parameter to ibmvfc_alloc_target() but did not describe
-it in the function's kernel-doc comment, so a W=1 build warns:
+Hi Shivaprasad.
 
-  drivers/scsi/ibmvscsi/ibmvfc-core.c:4996: warning: Function parameter
-  or struct member 'protocol' not described in 'ibmvfc_alloc_target'
+On 8/27/26 11:13 AM, Shivaprasad G Bhat wrote:
+> 
+> Hi All, Thomas,
+> 
+> On my PPC64 machine, I see the below systemd crash orginating from abort() during boot on top of the tree. Complete dmesg can be seen here [1]
+>        abort (libc.so.6 + 0x29484)
+>        __libc_message_impl (libc.so.6 + 0x9e00c)
+>        __libc_fatal (libc.so.6 + 0x9e06c)
+>        start_thread (libc.so.6 + 0xadffc)
+>        __clone (libc.so.6 + 0x152d68)
+>        __clone (libc.so.6 + 0x152d68)
+>        create_thread.constprop.0 (libc.so.6 + 0xad9c8)
+> 
+> The git bisect pointed me to commit 3424d8c18a7da "(Merge tag 'core-entry-2026-08-17' of git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip)"
+> 
+> Please find the kernel config used to build the kernel at [2].
+> 
+> I have tried applying the pending fixes from Mukesh [3] and Ritesh [4] for the currently outstanding issues and still see the problem.
+> 
+> The system is running Fedora 42, with glibc-2.41-7.fc42.ppc64le. The
+> complete list of toolchain and packages can be found here [5]
+> 
+> Thanks and Regards,
+> Shivaprasad
+> 
+> References:
+> 1 - https://gist.github.com/shivaprasadbhat/6f166374bab12b4f4c1cd4ac829e562c
+> 2 - https://gist.github.com/shivaprasadbhat/aa499468e124015eec5932fb13e88e05
+> 3 - https://lore.kernel.org/linuxppc-dev/lda1jyut.ritesh.list@gmail.com/#t
+> 4 - https://lore.kernel.org/linuxppc-dev/20260820134718.2176411-1-mkchauras@gmail.com/
+> 5 - https://gist.github.com/shivaprasadbhat/ae56ca849c3009e8642a6313dc465ea7
+> 
+> =========
+> Backtrace from dmesg:
+> [   22.039343][ T1833] systemd-coredump[1833]: Module libsystemd-shared-257.6-1.fc42.so from rpm systemd-257.6-1.fc42.ppc64le
+> [   22.039378][ T1833] systemd-coredump[1833]: Stack trace of thread 1828:
+> [   22.039378][ T1833] systemd-coredump[1833]: Stack trace of thread 1828:
+> [   22.039401][ T1833] systemd-coredump[1833]: #0  0x00007fffa4c29484 abort (libc.so.6 + 0x29484)
+> [   22.039401][ T1833] systemd-coredump[1833]: #0  0x00007fffa4c29484 abort (libc.so.6 + 0x29484)
+> [   22.039429][ T1833] systemd-coredump[1833]: #1  0x00007fffa4c9e00c __libc_message_impl (libc.so.6 + 0x9e00c)
+> [   22.039429][ T1833] systemd-coredump[1833]: #1  0x00007fffa4c9e00c __libc_message_impl (libc.so.6 + 0x9e00c)
+> [   22.039461][ T1833] systemd-coredump[1833]: #2  0x00007fffa4c9e06c __libc_fatal (libc.so.6 + 0x9e06c)
+> [   22.039461][ T1833] systemd-coredump[1833]: #2  0x00007fffa4c9e06c __libc_fatal (libc.so.6 + 0x9e06c)
+> [   22.039491][ T1833] systemd-coredump[1833]: #3  0x00007fffa4cadffc start_thread (libc.so.6 + 0xadffc)
+> [   22.039491][ T1833] systemd-coredump[1833]: #3  0x00007fffa4cadffc start_thread (libc.so.6 + 0xadffc)
+> [   22.039521][ T1833] systemd-coredump[1833]: #4  0x00007fffa4d52d68 __clone (libc.so.6 + 0x152d68)
+> [   22.039521][ T1833] systemd-coredump[1833]: #4  0x00007fffa4d52d68 __clone (libc.so.6 + 0x152d68)
+> [   22.039551][ T1833] systemd-coredump[1833]: #5  0x00007fffa4d52d68 __clone (libc.so.6 + 0x152d68)
+> [   22.039551][ T1833] systemd-coredump[1833]: #5  0x00007fffa4d52d68 __clone (libc.so.6 + 0x152d68)
+> [   22.039580][ T1833] systemd-coredump[1833]: #6  0x00007fffa4cad9c8 create_thread.constprop.0 (libc.so.6 + 0xad9c8)
+> [   22.039580][ T1833] systemd-coredump[1833]: #6  0x00007fffa4cad9c8 create_thread.constprop.0 (libc.so.6 + 0xad9c8)
+> [   22.039614][ T1833] systemd-coredump[1833]: #7  0x00000000003af858 n/a (n/a + 0x0)
+> [   22.039614][ T1833] systemd-coredump[1833]: #7  0x00000000003af858 n/a (n/a + 0x0)
+> [   22.039639][ T1833] systemd-coredump[1833]: ELF object binary architecture: PowerPC64
+> [   22.039639][ T1833] systemd-coredump[1833]: ELF object binary architecture: PowerPC64
+> [   22.042109][    T1] systemd[1]: systemd-journald.service: Scheduled restart job, restart counter is at 1.
 
-Add the missing parameter description.
+I was looking at merge patch and It is possible that TIF_SYSCALL_RET is still set when it is returned
+and maybe causing a mismatch.
 
-Fixes: 249313b3f7b5 ("scsi: ibmvfc: allocate targets based on protocol")
-Reported-by: kernel test robot <lkp@intel.com>
-Closes: https://lore.kernel.org/oe-kbuild-all/202608270829.lHI1FAdO-lkp@intel.com/
-Signed-off-by: Muhammad Falak R Wani <falakreyaz@gmail.com>
+Does below help?
 ---
- drivers/scsi/ibmvscsi/ibmvfc-core.c | 1 +
- 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/scsi/ibmvscsi/ibmvfc-core.c b/drivers/scsi/ibmvscsi/ibmvfc-core.c
-index d1956552698e0..6fd4c601f978c 100644
---- a/drivers/scsi/ibmvscsi/ibmvfc-core.c
-+++ b/drivers/scsi/ibmvscsi/ibmvfc-core.c
-@@ -4987,6 +4987,7 @@ static void ibmvfc_tgt_query_target(struct ibmvfc_target *tgt)
-  * ibmvfc_alloc_target - Allocate and initialize an ibmvfc target
-  * @vhost:		ibmvfc host struct
-  * @target:		Holds SCSI ID to allocate target forand the WWPN
-+ * @protocol:		protocol of the target to allocate
-  *
-  * Returns:
-  *	0 on success / other on failure
--- 
-2.55.0
-
+--- a/arch/powerpc/kernel/syscall.c
++++ b/arch/powerpc/kernel/syscall.c
+@@ -19,8 +19,10 @@ notrace long system_call_exception(struct pt_regs *regs, unsigned long r0)
+  	long ret;
+  	syscall_fn f;
+  
+-	if (unlikely(!syscall_enter_from_user_mode_randomize_stack(regs, &r0)))
++	if (unlikely(!syscall_enter_from_user_mode_randomize_stack(regs, &r0))) {
++		clear_thread_flag(TIF_SYSCALL_RET);
+  		return syscall_get_error(current, regs);
++	}
+  
+  	if (unlikely(test_and_clear_thread_flag(TIF_SYSCALL_RET)))
+  		return syscall_get_error(current, regs);
 
