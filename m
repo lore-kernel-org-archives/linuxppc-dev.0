@@ -1,52 +1,66 @@
-Return-Path: <linuxppc-dev+bounces-26157-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26158-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0EF37C61DC4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Aug 2026 22:48:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B1CBBC61DB9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Aug 2026 23:15:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hWGrQ0mQrz2xKh;
-	Fri, 28 Aug 2026 08:48:06 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:7c80:54:3::136"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787870886;
-	cv=none; b=FEWl63B8H6fJYGk41MdRtzPQkPABgjTVB9hM7AcVBbr5s40CvA90YlBhak8kAX4r0/1SpzPPdYrgLoRwv2FRV2dbqn0tZPWwGVnaHr3cAVvr2AONl5khfsphjdesU5WmzMx4BEAJr6tWhtI6Uqi3OdHlXfql/lEJvrBp2qlnolyerOT+fe2j2HuDa6QG9RVPynH7afpz9exlvKssszSwNZLW3MXgJooVTS+zaL4LWoEnZF0RIYhQ2Dkzo2Qe6IHF1TCbU9Ht0/cceJeR/UXmhpEJVncvpf3z1aZSjVdPpafqqlE+CE6Gomwrf2hckDb7DgninzkWQ6AI6zcjz/2Xwg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hWHSL5x3nz2y8f;
+	Fri, 28 Aug 2026 09:15:46 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.10.208.50
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787845865;
+	cv=none; b=B0Xykqum5Reklb4T0eyJYhor1PmkYzX59dfkEL8d/KU5sBM4yo6KO5/kVYHS2wSvnhlHeQHPb2jaN4n3I0MKGc/+MLFGPKV3Jfs0lc5TooZIIn6xoMTmhP6JTw3t2SAcBrQfOdOdFnsTI/jFvNXHO822YOzv/w8uyZTwWaD7CavKfiR94X3EIZ6X+81TiBwpKTuMdWsIJvnGhJWJPvI2P1MjaGm/cOf8GmMcujAU/rI4sGkCHna2veGosvepAlSB1dWVqDPZbxRlyu5ltcjewTpO770SIJVmM7Wgt5JpARsDg2AINXUghS/rw5mING9eCrLzPJpFlOHvW8hu3QPMOA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787870886; c=relaxed/relaxed;
-	bh=EXQuytFudEdgp91C+uFz8aeu/WW15G7DgPzpxtGKF4M=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=RfyUSjhwzXRUkLZuZ1bbV6dRFl9mPxpd/d4QsZTGegF6FCA2TQsE2GBWhCZkuKAXUIeyiE6OUT4NP5Q8EGQbEIFPHulviJP2+Zs2i/tPtFf98Em9kuEqkbmrtRFnlLPDUr3VX1iTL0fXwhXUdmwAOJ5p8ewU2S5+7pusZta3J4ZM+cLsuEXgK6Cq9166q9D9NCCBDgPrrUzMjD7acZ9A++LCg+L9VkzWII/zJo+A39C3+tWnClmGPsp+anl0GDfCC9+Zh1Dyn6V2tEbL8TdETXmVm2dquj3dqAm4joaYMxHCy7+7meGKpDvY1e5LitQiF8TG8yrmi/ATE+bJ2g2hUA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zytor.com; dkim=pass (2048-bit key; unprotected) header.d=zytor.com header.i=@zytor.com header.a=rsa-sha256 header.s=2026072801 header.b=GymOd4Rk; dkim-atps=neutral; spf=pass (client-ip=2607:7c80:54:3::136; helo=mail.zytor.com; envelope-from=hpa@zytor.com; receiver=lists.ozlabs.org) smtp.mailfrom=zytor.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zytor.com
+	t=1787845865; c=relaxed/relaxed;
+	bh=+WUyt0i+GSy2Gq4Mu2qBP0O11Puo1gl4vVXEYTcZH7E=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=F8HtMO0yDg/rna4Hb4Z+MVMliGlTKvtkCDJae50GRwRtangUBXgBMGj5lDuVO05gqodkgc8kpd80Sinj9nWYcy3M4/rUgTtHavyllghzdktsPa8egDrWJcxhsxfFqyxKn84wDvzUg6mAUZ94UcePRjOELsqCaLVzC4MZ60F6mHMWmgHPd2I2YsNuB0sZPVhir7SQMQlVkOMghpoxzC7MSa1eCX50vuyyBJ2fdwrsIdVwuS1a9QaGyIg5fW4YxLkuThhGki0hpuhJfWBntD6m/yIhR9KITBYPNiELLGU1Ayzv3PpMwdYisOIu1SvDxtrla0mf2L0viPy7eUuHVhcqsQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=mandelbit.com; dkim=pass (2048-bit key; unprotected) header.d=mandelbit.com header.i=@mandelbit.com header.a=rsa-sha256 header.s=MBO0001 header.b=q6LIjY6o; dkim-atps=neutral; spf=pass (client-ip=195.10.208.50; helo=mout-b-105.mailbox.org; envelope-from=ralf@mandelbit.com; receiver=lists.ozlabs.org) smtp.mailfrom=mandelbit.com
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=mandelbit.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=zytor.com header.i=@zytor.com header.a=rsa-sha256 header.s=2026072801 header.b=GymOd4Rk;
+	dkim=pass (2048-bit key; unprotected) header.d=mandelbit.com header.i=@mandelbit.com header.a=rsa-sha256 header.s=MBO0001 header.b=q6LIjY6o;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=zytor.com (client-ip=2607:7c80:54:3::136; helo=mail.zytor.com; envelope-from=hpa@zytor.com; receiver=lists.ozlabs.org)
-Received: from mail.zytor.com (terminus.zytor.com [IPv6:2607:7c80:54:3::136])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=mandelbit.com (client-ip=195.10.208.50; helo=mout-b-105.mailbox.org; envelope-from=ralf@mandelbit.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 460 seconds by postgrey-1.37 at boromir; Fri, 28 Aug 2026 01:51:02 AEST
+Received: from mout-b-105.mailbox.org (mout-b-105.mailbox.org [195.10.208.50])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bit raw public key) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hWGrN3Fmfz2xHK
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Aug 2026 08:48:04 +1000 (AEST)
-Received: from [IPV6:2601:646:8081:8d71:8c93:dacb:e5fa:49aa] ([IPv6:2601:646:8081:8d71:8c93:dacb:e5fa:49aa])
-	(authenticated bits=0)
-	by mail.zytor.com (8.18.1/8.17.1) with ESMTPSA id 67RMl4Qn1836438
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NO);
-	Thu, 27 Aug 2026 15:47:04 -0700
-DKIM-Filter: OpenDKIM Filter v2.11.0 mail.zytor.com 67RMl4Qn1836438
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zytor.com;
-	s=2026072801; t=1787870834;
-	bh=EXQuytFudEdgp91C+uFz8aeu/WW15G7DgPzpxtGKF4M=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=GymOd4RkxGi8njVCQCfisvKP39Bb44ZVOGqd2ZqhsM67DzFyYn8S/jMXCU8Rma33W
-	 PEelxL7L8kBY+qk5qAEjpsMwfkxEwjrDmJEsL+fSa6zkpR+h5d+MOwPtTLVMwwm0lZ
-	 bCPemLIjQYuVaQEQRjl132J4YP0xzX54ej4JFh90v2xhqZFikkHSFSnGkczichDoFv
-	 sZK/qGKEclFkhvxq+v2kMkmJ4o1BjYqiHVTd5aGLm7HyH0fkUCbFxhX7p3xCNzPfY0
-	 gzR1rveeuo2MbtEx3KqfD+thNsEFw5il2Dad3o6axDhdFmbVxxjrh2OwAc/diiyN8G
-	 nWKtXnX6xx8pw==
-Message-ID: <995a61ef-ce8c-4c8b-bea8-77f375076a39@zytor.com>
-Date: Thu, 27 Aug 2026 15:46:58 -0700
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hW5bB14RZz2xGr
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Aug 2026 01:51:01 +1000 (AEST)
+Received: from smtp2.mailbox.org (smtp2.mailbox.org [IPv6:2001:67c:2050:b231:465::2])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mout-b-105.mailbox.org (Postfix) with ESMTPS id 4hW5Q715KNz9rvZ;
+	Thu, 27 Aug 2026 17:43:11 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mandelbit.com;
+	s=MBO0001; t=1787845391;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=+WUyt0i+GSy2Gq4Mu2qBP0O11Puo1gl4vVXEYTcZH7E=;
+	b=q6LIjY6ou2T1gmaRHTci14DgO7omruedHRTLJyx2DpsJe5EipztVpTzRbbDoqlZr9nmTVF
+	3Y3nQWBhIGITdaifNHrvzv/INCP8rW11sPpT9Tg1Ob8xAOE5n9ehpVCNdKwzvJLt4Rixe9
+	yrMBOhgSjUz/gPXmD58ISfgi70M4p7/fSZ4n5p7t9vlrOe2xZ4SKpjQpgYjDvXpAp456Uf
+	GRvhNABCgPiazVHStvFjggVi+7ogCFmzWOQd/i3cR0t5ZsNYXI7rHhXG/rOhrdMPluNW64
+	RnRvjbsTgPwlTsJ6WN89D4w7CcRhmGYXP0t95dP80/PO7gPRywG6vu8Ycsk1Sw==
+Authentication-Results: outgoing_mbo_mout;
+	dkim=none;
+	spf=pass (outgoing_mbo_mout: domain of ralf@mandelbit.com designates 2001:67c:2050:b231:465::2 as permitted sender) smtp.mailfrom=ralf@mandelbit.com
+From: Ralf Lici <ralf@mandelbit.com>
+To: stable@vger.kernel.org
+Cc: regressions@lists.linux.dev,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Ran Wang <ran.wang_1@nxp.com>,
+	Duoming Zhou <duoming@zju.edu.cn>,
+	linux-usb@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	Ben Hutchings <ben@decadent.org.uk>
+Subject: [REGRESSION] 6.1.y/6.6.y: fsl-usb fails to build
+Date: Thu, 27 Aug 2026 17:43:00 +0200
+Message-ID: <20260827154302.706689-1-ralf@mandelbit.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,105 +74,57 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [patch 03/18] entry: Provide
- [syscall_]enter_from_user_mode_randomize_stack()
-To: Thomas Gleixner <tglx@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Shrikanth Hegde <sshegde@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
-        Kees Cook <kees@kernel.org>, Huacai Chen <chenhuacai@kernel.org>,
-        loongarch@lists.linux.dev, Paul Walmsley <pjw@kernel.org>,
-        Palmer Dabbelt <palmer@dabbelt.com>, linux-riscv@lists.infradead.org,
-        Sven Schnelle <svens@linux.ibm.com>, linux-s390@vger.kernel.org,
-        x86@kernel.org, Mark Rutland <mark.rutland@arm.com>,
-        Jinjie Ruan <ruanjinjie@huawei.com>, Andy Lutomirski <luto@kernel.org>,
-        Oleg Nesterov <oleg@redhat.com>,
-        Richard Henderson <richard.henderson@linaro.org>,
-        Russell King <linux@armlinux.org.uk>,
-        Catalin Marinas <catalin.marinas@arm.com>, Guo Ren <guoren@kernel.org>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-        Helge Deller
- <deller@gmx.de>,
-        Yoshinori Sato <ysato@users.sourceforge.jp>,
-        Richard Weinberger <richard@nod.at>, Chris Zankel <chris@zankel.net>,
-        linux-arm-kernel@lists.infradead.org, linux-alpha@vger.kernel.org,
-        linux-csky@vger.kernel.org, linux-m68k@vger.kernel.org,
-        linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org,
-        linux-sh@vger.kernel.org, linux-um@lists.infradead.org,
-        Arnd Bergmann <arnd@arndb.de>, Vineet Gupta <vgupta@kernel.org>,
-        Will Deacon <will@kernel.org>, Brian Cain <bcain@kernel.org>,
-        Michal Simek <monstr@monstr.eu>, Dinh Nguyen <dinguyen@kernel.org>,
-        "David S. Miller" <davem@davemloft.net>,
-        Andreas Larsson <andreas@gaisler.com>,
-        linux-snps-arc@lists.infradead.org, linux-hexagon@vger.kernel.org,
-        linux-openrisc@vger.kernel.org, sparclinux@vger.kernel.org,
-        linux-arch@vger.kernel.org,
-        =?UTF-8?Q?Michal_Such=C3=A1nek?= <msuchanek@suse.de>,
-        Jonathan Corbet <corbet@lwn.net>, linux-doc@vger.kernel.org
-References: <20260707181957.433213175@kernel.org>
- <20260707190253.816918647@kernel.org>
-Content-Language: en-US, sv-SE
-From: "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <20260707190253.816918647@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-Rspamd-Queue-Id: 4hW5Q715KNz9rvZ
 
-On 2026-07-07 12:06, Thomas Gleixner wrote:
-> Randomizing the syscall stack can only happen after state is established
-> via enter_from_user_mode() or syscall_enter_from_user_mode(). The earlier
-> it happens the better.
-> 
-> Provide two new macros to consolidate that:
-> 
->   - enter_from_user_mode_randomize_stack()
-> 	enter_from_user_mode();
-> 	add_random_kstack_offset_irqsoff();
-> 
->   - syscall_enter_from_user_mode_randomize_stack()
-> 	enter_from_user_mode_randomize_stack();
-> 	syscall_enter_from_user_mode_work();
->     
-> to reduce boiler plate code.
-> 
-> Those are macros and not inline functions as the latter would limit the
-> stack randomization scope to the inline function itself.
-> 
-Not directly related to this patchset, but still:
+Hi,
 
-Can anyone *please* find out what the actual security requirements are for the
-syscall randomization offset?
+While working on some backport patches for an out-of-tree module and
+looking for the exact versions containing the disable_delayed_work_sync
+symbol, I stumbled upon occurrences of that function on longterm v6.1
+and v6.6 in drivers/usb/phy/phy-fsl-usb.c despite not being declared or
+defined anywhere. In fact, disable_delayed_work_sync was introduced by
+upstream commit 86898fa6b8cd ("workqueue: Implement disable/enable for
+(delayed) work items") and is only available since v6.10. Neither 6.1.y
+nor 6.6.y defines it.
 
-The original checkin, 39218ff4c625 ("stack: Optionally randomize kernel stack
-offset each syscall") indicates that it is fundamental that the stack offset
-is applied *after* pt_regs pushing, but that isn't documented anywhere in the
-kernel sources as far as I can tell.
+Consequently, kernels built with CONFIG_FSL_USB2_OTG fail with:
 
-However, I have also come to understand that there are further, undocumented
-constraints; at least at one point I was told that "the offset should not be
-stored in memory while running in the kernel", which seems more than a bit odd.
+drivers/usb/phy/phy-fsl-usb.c:990:2: error: call to undeclared function 'disable_delayed_work_sync'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+  990 |         disable_delayed_work_sync(&fsl_otg_dev->otg_event);
+      |         ^
+drivers/usb/phy/phy-fsl-usb.c:990:2: note: did you mean 'cancel_delayed_work_sync'?
+include/linux/workqueue.h:470:13: note: 'cancel_delayed_work_sync' declared here
+  470 | extern bool cancel_delayed_work_sync(struct delayed_work *dwork);
+      |             ^
 
-This matters, because it creates a data dependency on exit. The original
-checkin does call out that RDTSC timing is inappropriate if the user could
-control it, but using a hardware CSPRNG like RDRAND (or its equivalent for
-other architectures) would be feasible if it isn't in the critical path. If an
-RDRAND - store sequence can be executed on entry, *after* the stack
-adjustment, then the high latency of RDRAND can hopefully be very effectively
-hidden by an OO CPU.
+I reproduced the failure on PowerPC using corenet64_smp_defconfig with
+CONFIG_FSL_USB2_OTG=m, building drivers/usb/phy/phy-fsl-usb.o with
+Clang.
 
-Incidentally, in case you are wondering "why doesn't each core get a dedicated
-CSPRNG and hardware randomness generator, to avoid high latency", the answer
-is pretty simple: a hardware random number source, regardless of the specifics
-of the design, almost by definition violates the hardware design rules of any
-digital design; after all, the design rules are designed to *eliminate* noise
-(making the circuit behave as closely as physically possible to a realization
-of the abstract digital circuit), whereas the very goal of a HWRNG source is
-to *extract and amplify* quantum thermal noise. This means that considerable
-chip area is consumed by a "keep-out zone", a designated "no man's land"
-keeping the digital logic away from the noise source. This keep-out zone is
-typically much, much larger than the noise source itself.
+AFAICT, in 6.1.y, the regression was introduced in v6.1.160 by commit
+4476c73bbbb0 ("usb: phy: fsl-usb: Fix use-after-free in delayed work
+during device removal") and remains present in v6.1.185.
 
-	-hpa
+In 6.6.y, it was introduced in v6.6.120 by commit 319f7a85b3c4 ("usb:
+phy: fsl-usb: Fix use-after-free in delayed work during device removal")
+and remains present in v6.6.154.
 
+Note that the same problem was pointed out by Ben Hutchings during the
+5.10.y review:
+https://lore.kernel.org/all/d147f0eb71f9cefbfb7605e95d98564d7f0ed346.camel@decadent.org.uk/
+
+The corresponding patches were dropped from 5.10.y and 5.15.y, but
+appear to have been retained in 6.1.y and 6.6.y.
+
+Simply replacing disable_delayed_work_sync with cancel_delayed_work_sync
+at its current location may not be sufficient: it looks like the delayed
+work can also be scheduled from fsl_otg_set_host and from the IRQ
+handler but I'm not familiar with this part of the kernel.
+
+Cheers!
+
+-- 
+Ralf Lici
+Mandelbit Srl
 
