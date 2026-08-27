@@ -1,86 +1,62 @@
-Return-Path: <linuxppc-dev+bounces-26125-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26126-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4BFE8C5DF97
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Aug 2026 18:48:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6E50EC5DF9D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Aug 2026 05:28:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hVYZm06vxz2xyk;
-	Thu, 27 Aug 2026 04:48:48 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=103.168.172.149
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787770127;
-	cv=none; b=B5BjV2x2KNNO+ZWLUQq3t86ARt1r6vWdXwR9qThC+XTXuYpk1mIZpvEpaT0K3CqI0s8A9Uaj4TevI8guDepetihoDyIl5y4O8FsY7qX/D5cqv6lmxelG/b7vqZBS0V9iVJJnxYrnZbnYNfRa/FRkv/illU+dI6hcTkzGZGBFXeBnraWnL9or2u36m/3nTrKv8FOznn3IVQDnNfLuPgzZlFzOtPKGH77rrsu8C5OjkTpmNvRfuNr7d9h6gUaQt8/FK4e0kKal0iXZYCi93YKr+sF0qi5PnyNif9kzokrRffpA0sFocgARQcyqD1en2D5fabFkPcqo/08NWlRXQQ2a1g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hVqnP3ZNVz2xwN;
+	Thu, 27 Aug 2026 15:28:57 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787808537;
+	cv=none; b=ouopBj8zpB5twDyEpFSLO32kCwHnUjCT4nRC33V8bth95Z86OmMJP62hicnyb5kfU99iMixaDyr5svZ9k4CT7UtcxgeycHHkBv8YA4L9WXgnXyGoZqD1aR7mZnadUidOzzO2rlEx7H60C3M+i91YZsrbnu+IsYzmZbbE98OXCfEFGd2ergmJrQbUlfVCKgtQkYY+nolu7AkjXhIMHm8AUWBuWG5rAGMAyWTQf6w06onr7X4S2CSrhmqCu9poL3Z1vMizPnfSNCgqgFeR6xwe2BfDLo2mQd1K8qrWSXdB+XrJ8HazeHsZwxDtvdCYO/57sOIlUsIbk4oDPrwNkOLChQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787770127; c=relaxed/relaxed;
-	bh=f4zU9c/JNdk5KJC+Sd8nuCSHq/+ymmDGSesrVV8zzl8=;
-	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
-	 Subject:Content-Type; b=iQRKxtmVHI1G243otcFVVNahv/eVEjn1NkgEGcDmp2STd5qyY/N8Y820oepottPWtHmc85a0iU2o+W6LYSbGl89/evVScF5SNAP3Erus5ZKL5S87vMJpkFJr4Kx4YtJmVj3x3jZlUrUtwCksfhcMGog9RCkoSvUS2+CZk9kf7Qnrvx7BL9iXfcPUfTsXKE/h9RsBxsJeb4ZwpU590sZg8ExIIDbV8ZBxiMfCSe/G33Zd3XVwHfS+RXRGZh+bB3gK8QY+nAd8Ki6MHghE+qhOqXTXax9E1ssIh+6eBlx5zR6qcDS1FDAhbCYu2QPlNdWUrjNdhKUv1ntDm2I24FwPYg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de; dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm3 header.b=IhVrX5yT; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=hRmcu/I7; dkim-atps=neutral; spf=pass (client-ip=103.168.172.149; helo=fout-a6-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org) smtp.mailfrom=arndb.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de
+	t=1787808537; c=relaxed/relaxed;
+	bh=1H2HKWXQ51kiTh+XvcBnYz+8AssjoQxnEuTfe7RXVqU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=BwZOlXipnjhJVBBoN+ZzwHgKbvN4fru/yOwG/HFfa/pdEvMbFgvE6ol/x/5Xfu6zSs0RSrdy8Jgp0NyQv2EZdG+daZSjlt1govXQBnQDnYHmYOMFb2vc3SrKpvqSqKJt75geWM90dsxglMZUXdO48kOLKQTgRA2uNwmytKH48Y8JHgLFWE0X2vDc3hTtg6mDujMVqrnWgKeMbOO3yIaWTGEKn8o3VyakkoVJHdgYnCw24IeQJBiOIk+7pae1JOLZcdp3/8d6aJ0uxHj5xUKI9n+wHu+c5+BfvLDu1SGRvfzRI/6VcrTg8KM+ttLlGQAH8mK4zgsyZfNYGT5iRm+ugA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=Qbvokt9Y; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=anshuman.khandual@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm3 header.b=IhVrX5yT;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=hRmcu/I7;
+	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=Qbvokt9Y;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=103.168.172.149; helo=fout-a6-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org)
-Received: from fout-a6-smtp.messagingengine.com (fout-a6-smtp.messagingengine.com [103.168.172.149])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hVYZg1Gqjz2xLg
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2026 04:48:41 +1000 (AEST)
-Received: from ams-compute-02.internal (ams-compute-02.internal [10.64.2.62])
-	by mailfout.phl.internal (Postfix) with ESMTP id 2D8CCEC0201;
-	Wed, 26 Aug 2026 14:48:32 -0400 (EDT)
-Received: from ams-imap-03 ([10.64.2.23])
-  by ams-compute-02.internal (MEProxy); Wed, 26 Aug 2026 14:48:33 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
-	:cc:content-transfer-encoding:content-type:content-type:date
-	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to; s=fm3; t=1787770111;
-	 x=1787856511; bh=f4zU9c/JNdk5KJC+Sd8nuCSHq/+ymmDGSesrVV8zzl8=; b=
-	IhVrX5yTPt8Xnhzy/yUIwFjv+jVH4XuIrxY9SfvWNmpw1wW9FEt8cwMlEznP/f1d
-	xxOcnqxcTRWu8VQSXNeRDIjJobmvJQG068Lnyn7Qrazy/1ui5/4Qb8obE6lv0/09
-	k+AxjIPqhHjpqqZkKOkR93McV3gonWbbmV80D6S1zheqTht+/o3ic9BjkuTZZOPq
-	dGBcunqrKVBsbBS5vFicSnOh0Z8knC5u/X5rqvFbnOop7VhDe+v+idG3ns68Dj6W
-	RJDSK3YSLJeT1jNyALPDM87VOmuBZRMfihtmmpmOQ/XcaUevF6mo6LmDsFD3XZjs
-	P5irH8Ki/PIEoImd5ZKJ2g==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding
-	:content-type:content-type:date:date:feedback-id:feedback-id
-	:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to:x-me-proxy
-	:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; t=1787770111; x=
-	1787856511; bh=f4zU9c/JNdk5KJC+Sd8nuCSHq/+ymmDGSesrVV8zzl8=; b=h
-	Rmcu/I7pLUKE/vxGJDdCqzNcwYS5BrWQ3XaYWeuGxJTvo/7ZE9wKNDfmofR5+oRz
-	WNBHv7zl4qU0LI+ypEYVRxmZQ7Da7fopLHmEMQ0C8RkDaBnKEGiODxsqB2/gKLQ3
-	1mq+8IOYQH/n/FUNZ5litlyjumTCYKtOlsbpz2VWFcArklef20fGp0xCtHK5By+j
-	7YDrTvO6gWXgfFV+qNrHyRRvEdGdYI59z9dzXp40WsUvEJEiXVEcVS5/RVQRhlAN
-	Dfzk5f2aR74xhlvKig5hPY675SOhW2787Jbf3e3vACy00f2FBQWPXBZlUI0oU8fU
-	JdUzRQu7Yz65mwxTsBZow==
-X-ME-Sender: <xms:9zSPajgupCG8BY4ZyIMGUe_bkjrCt5qybhm0IqtRiFptc1StepAveQ>
-    <xme:9zSPaq3RnNtNDc2dr_2ZCNjAqqjHIhTHJP5Pni7KDB8vRUJFOkHbKf4XdSwCGbDFe
-    irtWZ_FO9wsngl6dbmqzDBU-T4yO7LP2RePW6coMqtU1rX3lPKoKT0>
-X-ME-Proxy-Cause: dmFkZTEpJFbkILkdbnjJPhhmIqMU7frV80/nt9hFZsQu4PZ9qgJjoHJyPUWOrwrcASJLCi
-    abBYNRANM9ymUYLu4eDv6nLUvz3u+yuAbvEC800+m2hdGgGEDc9Q5Kn4vPfteqbrTFlH9u
-    IiI2rNBGoS4iM8Up8wSEqKfxSF60yTHji+aKM680VRZkwna5Sd7/qZXalPIoE2NrQDP9g5
-    azVWcv5jzsjf0M/3+Mq361J+OOHmuHQB0kx0ps2KHxXXbhAPlPQyZEO+PuqUmWE4P1ZmY3
-    9Pl93zfQ5JvJpAxAU73uHu4r7yTAwEMig1jH0pqBZIX9BUGFqPrfJjXgFnk9+yofRnGWJ4
-    a7Kp7JQCrM8mNfMODBVDAvhmfX4nMrhdnbRlpL7bKUc3eHzFP6/PWYVzwAKBsRJlL0zeM6
-    3dkKSs0EAISwGAqfeV11ajXrj6JxloHFs6bXR9qcpJ5Fk8yxWBFhSZg0KdZ/950y+ZsnlM
-    snrhuXa2E7YR4/XqwcZTUXqNXo4ILdyKyj1vccPJvzA6BVQ3k15S/GSgUwQxJEPVnI0yo7
-    yEbG5nhte6DRa+U5nufffKmXyP5iEWJuP6dOk2gAxHMZ0eJcd7aJMCRhf928g6k4ut+CXn
-    0GCtyN2e8TdoHrVjTsB7TpS02zk4ojw1CbCLQBXhGFqpl+uJOMFFa3fvHt/g
-X-ME-Proxy: <xmx:-jSPavw-Z6GFgrl-O215TTEgOmon29324qhtnwq77LVYoVcOXt3y6w>
-    <xmx:-jSPahpOEZvHqHBsoM0u1LaUtCrTwLSMUL9sCVsRgX4ytDqKGpBiLg>
-    <xmx:-jSPavc8SMvZagtYUGWzdqX3SqRBKgVL3bg3GOLmG5p5kHHLeHEAPw>
-    <xmx:-jSPakoDo_Xe_EHu5zD7CYC-Y5PtxRT9GOeN9eDvdYyxsECDUxgePw>
-    <xmx:_zSPakqSMyvGK_Wf9cZPt0W3GU45cUc1tUt6hb7oLSuolHLWWxHELk4u>
-Feedback-ID: i56a14606:Fastmail
-Received: by mailuser.ams.internal (Postfix, from userid 501)
-	id E2A3E32A007C; Wed, 26 Aug 2026 14:48:22 -0400 (EDT)
-X-Mailer: MessagingEngine.com Webmail Interface
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=anshuman.khandual@arm.com; receiver=lists.ozlabs.org)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hVqnL0cdsz2xGr
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2026 15:28:51 +1000 (AEST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id E07A71691;
+	Wed, 26 Aug 2026 22:28:14 -0700 (PDT)
+Received: from localhost (a085714.arm.com [10.164.19.28])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id EE0D43F66F;
+	Wed, 26 Aug 2026 22:28:17 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1787808498; bh=r3zpWAjSDYwO4obpTt1hi/LzERvjZcV2ma+xAQZJE1k=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=Qbvokt9YNMXIimouS57c8IUjHG3UY/NxbyriHVJNF09htLAHlcOYfMdqN9rNk2Y3/
+	 mSu7y20m+SkO9PdnMyXySHrLzwhN7q5RvdaRZuxZGl6y42IopDCGHEBnjAJBHjcg2R
+	 GlMX/PkmQ3bkQo82ApB3CeCPp5qCKqiyYLpu1D5M=
+Date: Thu, 27 Aug 2026 10:58:15 +0530
+From: Anshuman Khandual <anshuman.khandual@arm.com>
+To: Samuel Holland <samuel.holland@sifive.com>
+Cc: Yoshinori Sato <ysato@users.sourceforge.jp>, 
+	Rich Felker <dalias@libc.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, 
+	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, Helge Deller <deller@gmx.de>, 
+	Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>, linux-alpha@vger.kernel.org, 
+	linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org, linux-csky@vger.kernel.org, 
+	linux-hexagon@vger.kernel.org, loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org, 
+	linux-mips@vger.kernel.org, linux-openrisc@vger.kernel.org, linux-parisc@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, 
+	linux-sh@vger.kernel.org, sparclinux@vger.kernel.org, linux-um@lists.infradead.org, 
+	linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	Geert Uytterhoeven <geert@linux-m68k.org>, linux-mm@kvack.org, akpm@linux-foundation.org, david@kernel.org
+Subject: Re: [RFC V3 8/8] mm: Drop pxd_ERROR()
+Message-ID: <ajnoyja6a3hi2b7zn52n4dwrnpaa3ofpk6enekdan3babfsmbv@lnc3mbpogtq5>
+References: <20260818040041.1891769-1-anshuman.khandual@arm.com>
+ <20260818040041.1891769-9-anshuman.khandual@arm.com>
+ <6dae9cae-9665-4dc8-9a49-d6e5acda221b@sifive.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -94,48 +70,119 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-ThreadId: A-UguAUR6dUN
-Date: Wed, 26 Aug 2026 20:47:42 +0200
-From: "Arnd Bergmann" <arnd@arndb.de>
-To: "Christian Brauner" <brauner@kernel.org>, linux-fsdevel@vger.kernel.org,
- "Michael Ellerman" <mpe@ellerman.id.au>,
- "Nicholas Piggin" <npiggin@gmail.com>
-Cc: "Madhavan Srinivasan" <maddy@linux.ibm.com>,
- "Christophe Leroy" <chleroy@kernel.org>, "Kees Cook" <kees@kernel.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, "Alexander Viro" <viro@zeniv.linux.org.uk>,
- "Jan Kara" <jack@suse.cz>, "Geoff Levand" <geoff@infradead.org>
-Message-Id: <8ddf7d95-05b1-4758-9b5b-9360db77f904@app.fastmail.com>
-In-Reply-To: <20260826-work-spufs-coredump-v1-0-579e72a7ab66@kernel.org>
-References: <20260826-work-spufs-coredump-v1-0-579e72a7ab66@kernel.org>
-Subject: Re: [PATCH 0/2] powerpc: remove spufs coredump support
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6dae9cae-9665-4dc8-9a49-d6e5acda221b@sifive.com>
 
-On Wed, Aug 26, 2026, at 18:06, Christian Brauner wrote:
-> Note that the IBM Cell blades that shipped the Cell processor were
-> removed in commit 05bf59fbeef3 ("powerpc/cell: Remove support for IBM
-> Cell Blades"). The PlayStation 3 is the only platform left and nothing
-> there produces or reads these notes.
+On Mon, Aug 24, 2026 at 10:50:37AM -0500, Samuel Holland wrote:
+> On 2026-08-17 11:00 PM, Anshuman Khandual wrote:
+> > There are no more users left for any pxd_ERROR() either in generic MM or in
+> > the platform MM. Hence all these platform macros along with their generic
+> > fallback could be dropped across the tree.
+> > 
+> > Cc: linux-alpha@vger.kernel.org
+> > Cc: linux-snps-arc@lists.infradead.org
+> > Cc: linux-arm-kernel@lists.infradead.org
+> > Cc: linux-csky@vger.kernel.org
+> > Cc: linux-hexagon@vger.kernel.org
+> > Cc: loongarch@lists.linux.dev
+> > Cc: linux-m68k@lists.linux-m68k.org
+> > Cc: linux-mips@vger.kernel.org
+> > Cc: linux-openrisc@vger.kernel.org
+> > Cc: linux-parisc@vger.kernel.org
+> > Cc: linuxppc-dev@lists.ozlabs.org
+> > Cc: linux-riscv@lists.infradead.org
+> > Cc: linux-s390@vger.kernel.org
+> > Cc: linux-sh@vger.kernel.org
+> > Cc: sparclinux@vger.kernel.org
+> > Cc: linux-um@lists.infradead.org
+> > Cc: linux-arch@vger.kernel.org
+> > Cc: linux-mm@kvack.org
+> > Cc: linux-kernel@vger.kernel.org
+> > Acked-by: Geert Uytterhoeven <geert@linux-m68k.org> # m68k
+> > Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
+> > ---
+> > Changes in RFC V3
+> > 
+> > - Moved ptrval_to_str() as header in a [PATCH 1/8]
+> > - Stopped using pxd_ERROR() in generic MM in [PATCH 2/8]
+> > - Dropped pxd_ERRO() macros from all platforms in this patch
+> > 
+> >  arch/alpha/include/asm/pgtable.h               |  7 -------
+> >  arch/arc/include/asm/pgtable-levels.h          | 11 -----------
+> >  arch/arm/include/asm/pgtable.h                 |  7 -------
+> >  arch/arm/kernel/traps.c                        | 17 -----------------
+> >  arch/arm64/include/asm/pgtable.h               | 15 ---------------
+> >  arch/csky/include/asm/pgtable.h                |  4 ----
+> >  arch/hexagon/include/asm/pgtable.h             |  3 ---
+> >  arch/loongarch/include/asm/pgtable.h           | 11 -----------
+> >  arch/m68k/include/asm/mcf_pgtable.h            |  6 ------
+> >  arch/m68k/include/asm/motorola_pgtable.h       |  8 --------
+> >  arch/m68k/include/asm/sun3_pgtable.h           |  7 -------
+> >  arch/microblaze/include/asm/pgtable.h          |  7 -------
+> >  arch/mips/include/asm/pgtable-32.h             | 10 ----------
+> >  arch/mips/include/asm/pgtable-64.h             | 13 -------------
+> >  arch/nios2/include/asm/pgtable.h               |  7 -------
+> >  arch/openrisc/include/asm/pgtable.h            |  7 -------
+> >  arch/parisc/include/asm/pgtable.h              |  9 ---------
+> >  arch/powerpc/include/asm/book3s/32/pgtable.h   |  2 --
+> >  arch/powerpc/include/asm/book3s/64/pgtable.h   |  7 -------
+> >  arch/powerpc/include/asm/nohash/32/pgtable.h   |  2 --
+> >  .../powerpc/include/asm/nohash/64/pgtable-4k.h |  3 ---
+> >  arch/powerpc/include/asm/nohash/64/pgtable.h   |  5 -----
+> >  arch/riscv/include/asm/pgtable-64.h            |  9 ---------
+> >  arch/riscv/include/asm/pgtable.h               |  4 ----
+> >  arch/s390/include/asm/pgtable.h                | 11 -----------
+> >  arch/sh/include/asm/pgtable-3level.h           |  3 ---
+> >  arch/sh/include/asm/pgtable_32.h               |  8 --------
+> >  arch/sparc/include/asm/pgtable_32.h            |  3 ---
+> >  arch/sparc/include/asm/pgtable_64.h            | 10 ----------
+> >  arch/um/include/asm/pgtable-2level.h           |  7 -------
+> >  arch/um/include/asm/pgtable-4level.h           | 13 -------------
+> >  arch/x86/include/asm/pgtable-2level.h          |  5 -----
+> >  arch/x86/include/asm/pgtable-3level.h          | 11 -----------
+> >  arch/x86/include/asm/pgtable_64.h              | 18 ------------------
+> >  arch/xtensa/include/asm/pgtable.h              |  4 ----
+> >  include/asm-generic/pgtable-nop4d.h            |  1 -
+> >  include/asm-generic/pgtable-nopmd.h            |  1 -
+> >  include/asm-generic/pgtable-nopud.h            |  1 -
+> >  38 files changed, 277 deletions(-)
+> > ...
+> > diff --git a/arch/riscv/include/asm/pgtable.h b/arch/riscv/include/asm/pgtable.h
+> > index 5d5756bda82e..993a6505eb8f 100644
+> > --- a/arch/riscv/include/asm/pgtable.h
+> > +++ b/arch/riscv/include/asm/pgtable.h
+> > @@ -559,10 +559,6 @@ static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
+> >  	return __pte((pte_val(pte) & _PAGE_CHG_MASK) | newprot_val);
+> >  }
+> >  
+> > -#define pgd_ERROR(e) \
+> > -	pr_err("%s:%d: bad pgd " PTE_FMT ".\n", __FILE__, __LINE__, pgd_val(e))
+> 
+> We can drop the PTE_FMT macro now too.
 
-I don't see how you concluded the PS3 does not produce these
-notes: as far as I can tell, spufs on PS3 should still be able to do
-this if a process using an SPU crashes, and old gdb binaries should
-still be able to read them.
+Agreed, will just fold in the following changes.
 
-Whether anyone is still developing SPU programs on new kernels and
-would benefit from the information in the dump I don't know.
+diff --git a/arch/riscv/include/asm/page.h b/arch/riscv/include/asm/page.h
+index 709a36fb4323..b4bbae55e931 100644
+--- a/arch/riscv/include/asm/page.h
++++ b/arch/riscv/include/asm/page.h
+@@ -76,12 +76,6 @@ typedef struct page *pgtable_t;
+ #define __pgd(x)       ((pgd_t) { (x) })
+ #define __pgprot(x)    ((pgprot_t) { (x) })
 
-> So remove it.
->
-> Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
+-#ifdef CONFIG_64BIT
+-#define PTE_FMT "%016lx"
+-#else
+-#define PTE_FMT "%08lx"
+-#endif
+-
+ #if defined(CONFIG_64BIT) && defined(CONFIG_MMU)
+ /*
+  * We override this value as its generic definition uses __pa too early in
 
-With clarifications in the changelog:
-
-Acked-by: Arnd Bergmann <arnd@arndb.de>
-
-I have no objection to removing the spufs coredump. If anyone still
-cares, Geoff Levand would know, so I've added him to Cc.
-
-       Arnd
+> 
+> Regards,
+> Samuel
+> 
 
