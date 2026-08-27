@@ -1,52 +1,87 @@
-Return-Path: <linuxppc-dev+bounces-26139-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26140-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9E3E0C5DF9D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Aug 2026 06:36:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B82AC61DB9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Aug 2026 06:37:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hVsHL6HJ6z2xdb;
-	Thu, 27 Aug 2026 16:36:30 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.130
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787812590;
-	cv=none; b=TDybh/KnoQdhT26rbx027NImQLVswk8GS/VCN7D0RxQ3K/iZQDCZ055zIti4468xuKKfiVrahNR5S/W/jS2mtGJfeMb4irnWyYNh//4nlYuCkyq8hOG9pXetn1RtWCnKdx30l8Pa1Xh8wYpSvFJAY0XioL/4BqAJhXLU2KipZoN904Las3AlAvtJrIC/BHbm8vlahpGth/GrVeVknY/MYaytMjMoKwr3WXbYo8LB3vZMruAprRdNgDKgeOzzdl16c9V2bLQaMUFmj7d+e5ETzoVFY0xFHzFtylQCRyGwvSrK+91dOcd75uPKm+lPUuz5SysFiGjpOFBA1RCcPPxXnA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hVsHv5kJbz2y2b;
+	Thu, 27 Aug 2026 16:36:59 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787812619;
+	cv=none; b=gnnxJwtyOUwm0UBGTD7MTVYxE4XDSbCkpNsWKBmCuUVPJi0XgVMFBwx3zZN/zAyr341HT6cy7pi3qXRCctswJXHf+bAuwwi6l08f43gvdrn+LrNM0KgzZJ21o2wFMMRK744P0Gc7wUrKv/M9zNVHq6SxyxUX+5psM+0PQ6r9H1A96Nz8a/2vIMnxmXXWXHlIm7xhRH+7eiS0WyyQAfbowhmZ1ehX9DAyAIEkU6o4wCwxyOJdwMl905cjvx4dEThYzNe1cxr6rLKqaBNgR8eniszuOLEYRqhnr52guYytPDJFQRKdGZMeqE75DnE/bSdPos4heWy25VIQ7qZtYv71DA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787812590; c=relaxed/relaxed;
-	bh=wr3+NuyH395H2SxtwXysQTVGt+fboTOYIxBvrlzYmeQ=;
-	h=Content-Type:Message-ID:Date:MIME-Version:Subject:To:Cc:
-	 References:From:In-Reply-To; b=WDsayhxUqSDyoehH6xJ8seyLBz0ovC2IsOCVXmFDFlmSN1yZkyNmuWqvgvNM7qW673AUqd6fWHGSoDNEPjtj2iZV7uD7d016ziPaVbPmjlcpkQKPWsP6wFMke/wuAAg539vUjAbCl3+n1S+qQsqKQothl6i+YJ9y2V3fLd4Q64yAIPia9xFaeublro8wYHoeb4ubMqJBIp3tALCvJz5xF1gGMlgU0W40wUOObbVsAlfehbzrxGHWmH7H0A6HxgyB2DJEluT3f/M0LpKIsist+h21WjpTB+VozQoAXcoqxsz22lTqQmulHJZeviNWn6Pr4p18I1gx+R7fKxtUPTlMOQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+	t=1787812619; c=relaxed/relaxed;
+	bh=774X5XYQfk2yYWBsf0UUS3OosFUHf1+lQ1N65JAXb9Y=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=CZedmZJbVVcAssR2BDe7Ju6PXYgJ+DhF7B8w75/8HqNxZAc8DQQWWCUTSON0670+2t5/jRKxHimu2dv+6g3oP6suBpDLaxQe3euxjO1EJU8+qnJpymFFUrGCNZnPNu97FM3NSRas2qfPgtocVzwPxtME4QXAKeXL8ZoomOy5cwJWLdsIEH+mNTlwdlaZpjeAucZgRhUOQKiLIl2z0MpzYfVXH+Y7BeMLbB7XVL9vm9XUFSxkeYdCWnA4pymfON2yTgJbTaDGbtEzkjjDn61UCSvdeNj50DBwDTCCFU3dapDvhMxpjYOMtQKuqxGIH1Ui3qxU62wz5pjW5b7KCKy+aA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=e7OBJsjn; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=shivangu@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=e7OBJsjn;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=shivangu@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hVsHK4ztYz2xGr
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2026 16:36:29 +1000 (AEST)
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 63EE62122B;
-	Thu, 27 Aug 2026 06:36:25 +0000 (UTC)
-Authentication-Results: smtp-out1.suse.de;
-	none
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 32CF113354;
-	Thu, 27 Aug 2026 06:36:25 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id Jon+Cunaj2rlSgAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Thu, 27 Aug 2026 06:36:25 +0000
-Content-Type: multipart/mixed; boundary="------------Fre0lCbe1fbvdz2iSeF0j0tb"
-Message-ID: <4ba35195-5421-4c52-bbe5-ed88e15e394d@suse.de>
-Date: Thu, 27 Aug 2026 08:36:24 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hVsHt6jtPz2xwN
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2026 16:36:58 +1000 (AEST)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67R6Vc2L2266280;
+	Thu, 27 Aug 2026 06:36:48 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=774X5X
+	YQfk2yYWBsf0UUS3OosFUHf1+lQ1N65JAXb9Y=; b=e7OBJsjnRMpFf9wetTIfnZ
+	cRSIaBwpBoZbiJ6y96yFXOrj2FFooJrqveN1GbiE7FjkWSevwhqHAXAcZcDj9sYM
+	WYrhGRjs71plXN/vkCcdDDmBM/Cb1cV6/u8gGRreagg4IXdYk9aVI0/JW4dFxYhF
+	C4J5NmMESGSxhiV3z6KOYv0bs6Rsaq8WlHsw6JJfoo5xT1Ofd8RUjD9gYsDtwNjJ
+	TG+zqO4NGhQ+ERGqKC2hAhergsWxbSS7QV4YJ3tRuH9phNYYCge4KgA2cGFPo6+2
+	T9nbo3FqGD99aNXi98/h+LjhwCMq9FKXDygnB5vWAMsPOubSLhDtw8I9af27cLpA
+	==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4g73dxkafv-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 27 Aug 2026 06:36:47 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 67R6QeqT028927;
+	Thu, 27 Aug 2026 06:36:47 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4g7rsye9gh-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 27 Aug 2026 06:36:47 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 67R6ahsW50725218
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 27 Aug 2026 06:36:43 GMT
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 4E4D920043;
+	Thu, 27 Aug 2026 06:36:43 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 1C9AC20040;
+	Thu, 27 Aug 2026 06:36:41 +0000 (GMT)
+Received: from shivang.upadyay (unknown [9.123.12.247])
+	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Thu, 27 Aug 2026 06:36:40 +0000 (GMT)
+Message-ID: <7ed10640c0b27403d7e9ef9807b957cff59eba60.camel@linux.ibm.com>
+Subject: Re: [PATCH v2] ppc/fadump: collect dump if the collected size is
+ lesser than reserved
+From: Shivang Upadhyay <shivangu@linux.ibm.com>
+To: Sourabh Jain <sourabhjain@linux.ibm.com>, linux-kernel@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org
+Cc: adityag@linux.ibm.com, adri.vero.dev@gmail.com,
+        anushree.mathur@linux.vnet.ibm.com, chleroy@kernel.org,
+        maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com
+Date: Thu, 27 Aug 2026 12:06:39 +0530
+In-Reply-To: <1a0a3a16-b92e-47ec-8545-035022583de7@linux.ibm.com>
+References: <20260826125626.2108771-1-shivangu@linux.ibm.com>
+	 <1a0a3a16-b92e-47ec-8545-035022583de7@linux.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.58.3 (3.58.3-1.fc43) 
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,165 +95,60 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: drm/mgag200: Fix big-endian support
-To: Christian Zigotzky <chzigotzky@xenosoft.de>
-Cc: rene@exactco.de, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Trevor Dickinson <rtd2@xtra.co.nz>, hypexed@yahoo.com.au,
- mad skateman <madskateman@gmail.com>, Christian Zigotzky <info@xenosoft.de>
-References: <1fe9c172-c12c-4827-b9a5-2870c45e67af@suse.de>
- <A1B9BBC7-0CBA-45DC-8DA1-EEC6776CDA62@xenosoft.de>
-Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <A1B9BBC7-0CBA-45DC-8DA1-EEC6776CDA62@xenosoft.de>
-X-Rspamd-Pre-Result: action=no action;
-	module=replies;
-	Message is reply to one we originated
-X-Rspamd-Queue-Id: 63EE62122B
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
-X-Rspamd-Pre-Result: action=no action;
-	module=replies;
-	Message is reply to one we originated
-X-Spamd-Result: default: False [-4.00 / 50.00];
-	REPLY(-4.00)[]
-X-Rspamd-Action: no action
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODI3MDA1MiBTYWx0ZWRfXwp01h2IqJNBB
+ JCKG/0W6PdQQjIB+HjkDmLaF34bkCSNkMfWhQvs2NRl7pKQZN3bhXxejAXvkBu30XmRoX5nMJfk
+ Pdx8ZQf1fccObXNCjkatC2ayRpQaQn4=
+X-Authority-Analysis: v=2.4 cv=AYuB2XXG c=1 sm=1 tr=0 ts=6a8fdb00 cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=KmcBeXU3GxEOogffeAkA:9
+ a=QEXdDO2ut3YA:10
+X-Proofpoint-ORIG-GUID: FCF_hExInMVtTzag69QzXVWCkA5buUqY
+X-Proofpoint-GUID: fIJQqww17JMr5S6blgc3OLLDhCy5cRAo
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODI3MDA1MiBTYWx0ZWRfXwN9U1ZECMXiD
+ t17vb3b3nZmqIjxajKdz43UPCYbijdQX79C4rVWLuO8UkjFVM9KKKfU1pfDC/fWk1rhuInprQ8a
+ auZvUVgN7Q1Hd2jMsLoLxeUzbg5xgBSOnXcWeMyZbzlyfxymxNGeALCrUrDZrCLKGp9QwfvgIQz
+ 5TDKJs5gzcsGjBlZKP2Pm3esvhneUTiI9DbtHiHyIPmq7vwKPgqPLUEQHsQc2LlS8fKDooKYUSj
+ sE/Bn38YNqcBomMgzLja2AOC/e7j+nxXCT3bVu9ee9utQsSc14l82MCa5Vr7jQVVApILdLvyRTh
+ iWHAwqldG/BhJL2N7wcy1o5nPKJ6DH4HgmQiiNYJ+bboJmSVKAtaPl4oTadec15z9k3L7ZvQ5kR
+ 9XwcphxbNFcm3gJkfgNtFKnSVuUcM8oc4IUL3hRbt26IDT59BWHCS2er2pGovywn1caVhYe98v/
+ EG6OUeOTEGmn+7LJLmw==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-08-27_03,2026-08-26_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 phishscore=0 clxscore=1015 adultscore=0 bulkscore=0
+ impostorscore=0 priorityscore=1501 lowpriorityscore=0 spamscore=0
+ suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
+ definitions=main-2608270052
 
-This is a multi-part message in MIME format.
---------------Fre0lCbe1fbvdz2iSeF0j0tb
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+On Thu, 2026-08-27 at 11:05 +0530, Sourabh Jain wrote:
+>=20
+> > bytes_dumped <=3D source_len));
+>=20
+> Do we really need region_collected variable? Can't we manage with rc
+> only?
+>=20
+> Is bytes_dumped < source_len is good enough instead of <=3D. There are
+> a=20
+> couple of warnings/errors reported by the checkpatch script.
+> Please address them in the next version.
+>=20
+> - Sourabh Jain
+>=20
+Hi Sourabh,=20
 
-Hi
+bytes_dumped < source_len should also be correct, but "<=3D" is more
+expressive. Why not leave such optimizations to compiler.
 
-Am 26.08.26 um 19:30 schrieb Christian Zigotzky:
-> On 26 August 2026 at 05:23 pm, Thomas Zimmermann <tzimmermann@suse.de> wrote:
->
-> ﻿Hi
->
-> Could be that we have to enable access to the ROM first. That's why it returns only 0xffff. Does the card display output when you switch on the computer?
->
-> Best regards
-> Thomas
->
-> - - -
->
-> Hello Thomas,
->
-> No, the card doesn’t display output when I switch on the computer.
+For the region_collected, RC should be used to manage the return code,
+so I as per me it is more appropriate to use new variable here. Or
+maybe, type the condition in the bracket itself(?).
 
-Attached you'll find another patch that also enables ROM access in the 
-PCI config options.  I took the code out of the old matroxfb driver 
-without further testing. Please try and report back on the results.
+Thanks for pointing out the checkpatch bugs, I'll send a revision soon.
 
-Best regards
-Thomas
-
-
-
->
-> Cheers,
-> Christian
-
--- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
-GF: Jochen Jaser, Andrew McDonald, (HRB 36809, AG Nürnberg)
-
-
---------------Fre0lCbe1fbvdz2iSeF0j0tb
-Content-Type: text/x-patch; charset=UTF-8;
- name="0001-v2-mgag200-go-looking-for-PInS-in-the-video-BIOS-ROM.patch"
-Content-Disposition: attachment;
- filename*0="0001-v2-mgag200-go-looking-for-PInS-in-the-video-BIOS-ROM.pa";
- filename*1="tch"
-Content-Transfer-Encoding: base64
-
-RnJvbSAxMDFlZTJjMThhNjQxMDE5NzgwOTEwMDZiNzk3YTdjMzI3ZDI5NWZmIE1vbiBTZXAg
-MTcgMDA6MDA6MDAgMjAwMQpGcm9tOiBUaG9tYXMgWmltbWVybWFubiA8dHppbW1lcm1hbm5A
-c3VzZS5kZT4KRGF0ZTogV2VkLCAyNiBBdWcgMjAyNiAxMTowMzoxMSArMDIwMApTdWJqZWN0
-OiBbUEFUQ0hdIFt2Ml0gbWdhZzIwMDogZ28gbG9va2luZyBmb3IgUEluUyBpbiB0aGUgdmlk
-ZW8gQklPUyBST00gb24KIG5vbi14ODYKCi0tLQogZHJpdmVycy9ncHUvZHJtL21nYWcyMDAv
-bWdhZzIwMF9nMjAwLmMgfCAzOCArKysrKysrKysrKysrKysrKysrKysrKystLQogMSBmaWxl
-IGNoYW5nZWQsIDM1IGluc2VydGlvbnMoKyksIDMgZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0
-IGEvZHJpdmVycy9ncHUvZHJtL21nYWcyMDAvbWdhZzIwMF9nMjAwLmMgYi9kcml2ZXJzL2dw
-dS9kcm0vbWdhZzIwMC9tZ2FnMjAwX2cyMDAuYwppbmRleCA5ZTZiNDYxOGZhZGQuLjU3Zjg3
-ZGZkMjZlYyAxMDA2NDQKLS0tIGEvZHJpdmVycy9ncHUvZHJtL21nYWcyMDAvbWdhZzIwMF9n
-MjAwLmMKKysrIGIvZHJpdmVycy9ncHUvZHJtL21nYWcyMDAvbWdhZzIwMF9nMjAwLmMKQEAg
-LTIzOSw3ICsyMzksNyBAQCBzdGF0aWMgdm9pZCBtZ2FnMjAwX2cyMDBfaW50ZXJwcmV0X2Jp
-b3Moc3RydWN0IG1nYWcyMDBfZzIwMF9kZXZpY2UgKmcyMDAsCiAJfTsKIAlzdHJ1Y3QgbWdh
-X2RldmljZSAqbWRldiA9ICZnMjAwLT5iYXNlOwogCXN0cnVjdCBkcm1fZGV2aWNlICpkZXYg
-PSAmbWRldi0+YmFzZTsKLQljb25zdCB1bnNpZ25lZCBjaGFyICpwaW5zOworCWNvbnN0IHVu
-c2lnbmVkIGNoYXIgKnBpbnMgPSBOVUxMOwogCXVuc2lnbmVkIGludCBwaW5zX2xlbiwgdmVy
-c2lvbjsKIAlpbnQgb2Zmc2V0OwogCWludCB0bXA7CkBAIC0yNTAsMTYgKzI1MCwzNCBAQCBz
-dGF0aWMgdm9pZCBtZ2FnMjAwX2cyMDBfaW50ZXJwcmV0X2Jpb3Moc3RydWN0IG1nYWcyMDBf
-ZzIwMF9kZXZpY2UgKmcyMDAsCiAJaWYgKG1lbWNtcCgmYmlvc1s0NV0sIG1hdHJveCwgc2l6
-ZW9mKG1hdHJveCkpICE9IDApCiAJCXJldHVybjsKIAorI2lmIGRlZmluZWQoQ09ORklHX1g4
-NikKIAkvKiBHZXQgdGhlIFBJblMgb2Zmc2V0LiAqLwogCWlmIChzaXplIDwgTUdBX0JJT1Nf
-T0ZGU0VUICsgMikKIAkJcmV0dXJuOwogCW9mZnNldCA9IChiaW9zW01HQV9CSU9TX09GRlNF
-VCArIDFdIDw8IDgpIHwgYmlvc1tNR0FfQklPU19PRkZTRVRdOworCWlmIChzaXplIDwgb2Zm
-c2V0ICsgNikKKwkJcmV0dXJuOwogCiAJLyogR2V0IFBJblMgZGF0YSBzdHJ1Y3R1cmUuICov
-CisJcGlucyA9IGJpb3MgKyBvZmZzZXQ7CisjZWxzZQorCS8qCisJICogT24gT3BlbkZpcm13
-YXJlIHN5c3RlbXMgKFBQQywgTUlQUywgU1BBUkMpIHRoZSBvZmZzZXQgaXNuJ3Qgc3RvcmVk
-CisJICogYXQgdGhlIGVuZCBvZiB0aGUgQklPUyBpbWFnZS4gTG9vayBmb3IgdGhlIFBJblMg
-aGVhZGVyIGluc3RlYWQuCisJICovCisJZm9yIChvZmZzZXQgPSAwIDsgb2Zmc2V0IDwgc2l6
-ZSAtIDY7ICsrb2Zmc2V0KSB7CisJCWNvbnN0IHVuc2lnbmVkIGNoYXIgKmJ1ZiA9IGJpb3Mg
-KyBvZmZzZXQ7CisKKwkJaWYgKGJ1ZlswXSA9PSAweDJlICYmIGJ1ZlsxXSA9PSAweDQxICYm
-ICgoYnVmWzJdID09IDY0KSB8fCAoYnVmWzJdID09IDEyOCkpKSB7CisJCQlwaW5zID0gYnVm
-OworCQkJYnJlYWs7CisJCX0KKwl9CiAKLQlpZiAoc2l6ZSA8IG9mZnNldCArIDYpCisJaWYg
-KCFwaW5zKQogCQlyZXR1cm47Ci0JcGlucyA9IGJpb3MgKyBvZmZzZXQ7CisjZW5kaWYKKwog
-CWlmIChwaW5zWzBdID09IDB4MmUgJiYgcGluc1sxXSA9PSAweDQxKSB7CiAJCXZlcnNpb24g
-PSBwaW5zWzVdOwogCQlwaW5zX2xlbiA9IHBpbnNbMl07CkBAIC0zMjAsNiArMzM4LDggQEAg
-c3RhdGljIHZvaWQgbWdhZzIwMF9nMjAwX2ludGVycHJldF9iaW9zKHN0cnVjdCBtZ2FnMjAw
-X2cyMDBfZGV2aWNlICpnMjAwLAogCX0KIH0KIAorI2RlZmluZSBQQ0lfTUdBX09QVElPTl9C
-SU9TRU4gMHg0MDAwMDAwMAorCiBzdGF0aWMgdm9pZCBtZ2FnMjAwX2cyMDBfaW5pdF9yZWZj
-bGsoc3RydWN0IG1nYWcyMDBfZzIwMF9kZXZpY2UgKmcyMDApCiB7CiAJc3RydWN0IG1nYV9k
-ZXZpY2UgKm1kZXYgPSAmZzIwMC0+YmFzZTsKQEAgLTMyOCwxMSArMzQ4LDIwIEBAIHN0YXRp
-YyB2b2lkIG1nYWcyMDBfZzIwMF9pbml0X3JlZmNsayhzdHJ1Y3QgbWdhZzIwMF9nMjAwX2Rl
-dmljZSAqZzIwMCkKIAl1bnNpZ25lZCBjaGFyIF9faW9tZW0gKnJvbTsKIAl1bnNpZ25lZCBj
-aGFyICpiaW9zOwogCXNpemVfdCBzaXplOworCXUzMiBvcHQ7CisJdTMyIGJpb3NiYXNlOwor
-CXUzMiBmYmJhc2U7CiAKIAlnMjAwLT5wY2xrX21pbiA9IDUwMDAwOwogCWcyMDAtPnBjbGtf
-bWF4ID0gMjMwMDAwOwogCWcyMDAtPnJlZl9jbGsgPSAyNzA1MDsKIAorCXBjaV9yZWFkX2Nv
-bmZpZ19kd29yZChwZGV2LCBQQ0lfTUdBX09QVElPTiwgJm9wdCk7CisJcGNpX3dyaXRlX2Nv
-bmZpZ19kd29yZChwZGV2LCBQQ0lfTUdBX09QVElPTiwgb3B0IHwgUENJX01HQV9PUFRJT05f
-QklPU0VOKTsKKwlwY2lfcmVhZF9jb25maWdfZHdvcmQocGRldiwgUENJX1JPTV9BRERSRVNT
-LCAmYmlvc2Jhc2UpOworCXBjaV9yZWFkX2NvbmZpZ19kd29yZChwZGV2LCBQQ0lfQkFTRV9B
-RERSRVNTXzAsICZmYmJhc2UpOworCXBjaV93cml0ZV9jb25maWdfZHdvcmQocGRldiwgUENJ
-X1JPTV9BRERSRVNTLCAoZmJiYXNlICYgUENJX1JPTV9BRERSRVNTX01BU0spIHwgUENJX1JP
-TV9BRERSRVNTX0VOQUJMRSk7CisKIAlyb20gPSBwY2lfbWFwX3JvbShwZGV2LCAmc2l6ZSk7
-CiAJaWYgKCFyb20pCiAJCXJldHVybjsKQEAgLTM1MSw2ICszODAsOSBAQCBzdGF0aWMgdm9p
-ZCBtZ2FnMjAwX2cyMDBfaW5pdF9yZWZjbGsoc3RydWN0IG1nYWcyMDBfZzIwMF9kZXZpY2Ug
-KmcyMDApCiAJdmZyZWUoYmlvcyk7CiBvdXQ6CiAJcGNpX3VubWFwX3JvbShwZGV2LCByb20p
-OworCisJcGNpX3dyaXRlX2NvbmZpZ19kd29yZChwZGV2LCBQQ0lfUk9NX0FERFJFU1MsIGJp
-b3NiYXNlKTsKKwlwY2lfd3JpdGVfY29uZmlnX2R3b3JkKHBkZXYsIFBDSV9NR0FfT1BUSU9O
-LCBvcHQpOwogfQogCiBzdGF0aWMgY29uc3Qgc3RydWN0IG1nYWcyMDBfZGV2aWNlX2Z1bmNz
-IG1nYWcyMDBfZzIwMF9kZXZpY2VfZnVuY3MgPSB7Ci0tIAoyLjU1LjAKCg==
-
---------------Fre0lCbe1fbvdz2iSeF0j0tb--
+~Shivang.
 
