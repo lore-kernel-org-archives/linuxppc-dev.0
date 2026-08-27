@@ -1,70 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-26131-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26132-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DC559C5DF9D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Aug 2026 06:23:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 70C32C61DB9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Aug 2026 06:24:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hVs0t2jCwz2y2b;
-	Thu, 27 Aug 2026 16:23:58 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787811838;
-	cv=none; b=JwOrlUqqu8vzWkH+Q0VAsHWlno1QyaUze8eblruQMUivqL+Y216Gy7i630EyY/CvLiJlZwxHW1S9LtX9M8djmMQ5gWZkIJAdZOrxrUvzqbQquGlWw4y6m5ILztMfLs6dNUBQiLidODeOtGRAaGX2DixQBnpPu2rFv2WfRlK1VsMfZD6uToiHOoPZ7ltfE2yDoWjjZMzcgo7+5ZUnLLmR2jyYu4PBFuMTAb2OZt80SynH/FZ0QDZg5UXzjCb9iepVd4sJ423oxQB8YF91WbctJIZK+FH3InK9hO/Ov3IpFQ0FAtdz4Ig6RhcXmgtznF/sfCRmggqviNf4MnnymP/JLg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hVs155qP4z2yYY;
+	Thu, 27 Aug 2026 16:24:09 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787811849;
+	cv=none; b=GkuyZ7amslSgux2f6IiUobMVA+ybc6VtwUts2QdfyIboRcuT25EY72PiiRaHfCNrJ26i1GSgLB0IRKtY9PHqQnx+B7/OoKsGpviZSncCk7/Tz8478KocaYT8A3UcgUlcWOfavOaO0nDa4Z0eporj4THjSnm6fVB94qUcgLM/QRy4sA0DhtiOl4JIRsJavdmWOh3oIU/kW7nipNER/RReYs53TeoBy4koPpdeJBewxQ946xSspwgPwUGOclV4Y6R+QnA2xIyk4HWIT/qIXUP2bt9Wi6UufD5MPMbOBQ08R6nytlfXfS/8om1b7dQQL8C/xcZcE+SPZ5WODT15qQSVvg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787811838; c=relaxed/relaxed;
-	bh=IL05qI0zF9+6tMvjpCrbdI1qk258KXsyIPDjSVuxBpk=;
+	t=1787811849; c=relaxed/relaxed;
+	bh=fQoVl+C7ic20wFH9zMPu6rlMjpEI6FGSpNV3Fp23enI=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=EKjLyJcnaRNKjiWQWyHS7jdrvidEq2k13KBt0m0WTkDb3ia3IzkhfIfjOJZFuiZrtY6PbYVeb85ixNwax58YyCs+Q9IANx21QLxZq3VFIZScbMMvvcWxbG7ftGzbXmYK1p21gmj0fWv+70Xq7dgIkz91ZxEtBt4mzLYEswWAHyxb5FWWzcQtoRv+xadd+9E9O7hBF25/eEaX+pIBqZoCRqBAF86mFKVGL1gDBw/I3lQbtu9n5Hfd0aF2g9Fnn3t85bSePqGapLrHt94LexNb2UmtsrSJ+3HiyaIhacHPJTwcMtyHa7nQAtDZ2T8awbmvPitU9PL+pKYKgur9S0at0A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ntK5gGGn; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ssrish@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 MIME-Version; b=bS5GVscJH3fNpcXBRruTk9n3j5breGr7ZBirY6QToPSQkqs9eRhcE+/oqGikEDGlC/UorFa5ikvFxcuZySKCbE/eQkjJ638jtTHJdEymg3BZT5B1EUQgz84bmmyKvw1fWm3/+BpQ1Q34kNVeODUWDopUvghTMGev3c6NSohzcJRdIH1fMUpdys8vd6laPCEZAfzbLKrVGCLoFVCq+gi4ZjJDuAvIizl01BVyqnMB4JxZHn1a30cJLZyTPTiY3y5Rcow8K/LAK4VUufAP8tpb3pYpKnUzzsWoh6WY+0ZTB3Pt899RCXieoDVwnnrNs/Z662xf6664YBr2OAz5RcmTyA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=o93Dkd0w; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ssrish@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ntK5gGGn;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=o93Dkd0w;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ssrish@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ssrish@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hVs0s4G5Sz2xGr
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2026 16:23:57 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67R3VarM4139815;
-	Thu, 27 Aug 2026 06:23:43 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hVs146zJVz2yfH
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2026 16:24:08 +1000 (AEST)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67R3W8g41716516;
+	Thu, 27 Aug 2026 06:23:55 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=IL05qI0zF9+6tMvjp
-	CrbdI1qk258KXsyIPDjSVuxBpk=; b=ntK5gGGnGsMaW9Rtw4TorTMaIyKWp1eBF
-	33tTmRUUt1AorET1z9WDZak8QtpsQzGgHS1xlXAMzd4WmoAYM7HCT6/YgVYFoWBN
-	0DIZo7v7VLuehPeIzOj2vEQqX2umztMKx0hzOGl9521iCQ6DjWCkAYMsOyJMrlKb
-	WkoMp36DblIAsIJwQFtjh7w64lz0LvgzTOT6cwQ5DtGgCiK2BeytMTjNnQxWCk1A
-	8da5DvifreY9OJ+CL//KaXAj5SRlFVaXP0ffmP3thNpqpDuMAE8kcPjsv4rxIYzb
-	xoVPxs1kuocyoz2gDYrPfDciTTkGMLQavVWPwp5xmLdy4fV9gSQEQ==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4g73er3h60-1
+	:mime-version:references:subject:to; s=pp1; bh=fQoVl+C7ic20wFH9z
+	MPu6rlMjpEI6FGSpNV3Fp23enI=; b=o93Dkd0wygQ/vdvc9gveJ0XcTAEc+zzVP
+	V9GSCNTBQRUhSSiVcQai4M5Wmh0G8QyeellhhlhfKiWFG0YxwMy7NEWqeoreEPp6
+	QUsQrtTmq/STGbKFJ9wimSg3XPNHRrzWafGcunMybXsk1NY767K9b25wMzT31gbM
+	QF0JopH6JIDtLm448fT93BNy9BqPZYyvfuaIaK2st3ilVqnHAhrRtgvS4u7etDVI
+	+4M8iJQQ6Vrt7I8gGy3nTn7sV1lDUZwbfz0ud6MyC29MfbZwa71bwmoDDbuaw5Bg
+	wQo3W33UkEWbM/ampFi+p0Adh0OfPrc9egX3XZb+FZD8t2M257HwQ==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4g716j3ner-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 27 Aug 2026 06:23:42 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 67R6BF10013824;
-	Thu, 27 Aug 2026 06:23:41 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4g7ragpawx-1
+	Thu, 27 Aug 2026 06:23:55 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 67R6BIpP032039;
+	Thu, 27 Aug 2026 06:23:54 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4g7qkhedqe-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 27 Aug 2026 06:23:41 +0000 (GMT)
+	Thu, 27 Aug 2026 06:23:54 +0000 (GMT)
 Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 67R6Nb4D51053026
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 67R6NolG30933564
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 27 Aug 2026 06:23:37 GMT
+	Thu, 27 Aug 2026 06:23:50 GMT
 Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9FD342004B;
-	Thu, 27 Aug 2026 06:23:37 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 4E36A20043;
+	Thu, 27 Aug 2026 06:23:50 +0000 (GMT)
 Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 0B75220040;
-	Thu, 27 Aug 2026 06:23:26 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id CB9A020040;
+	Thu, 27 Aug 2026 06:23:38 +0000 (GMT)
 Received: from li-fc74f8cc-3279-11b2-a85c-ef5828687581.ibm.com.com (unknown [9.76.202.253])
 	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 27 Aug 2026 06:23:25 +0000 (GMT)
+	Thu, 27 Aug 2026 06:23:38 +0000 (GMT)
 From: Srish Srinivasan <ssrish@linux.ibm.com>
 To: linux-integrity@vger.kernel.org, keyrings@vger.kernel.org,
         linuxppc-dev@lists.ozlabs.org
@@ -73,9 +73,9 @@ Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
         jarkko@kernel.org, zohar@linux.ibm.com, linux-kernel@vger.kernel.org,
         linux-security-module@vger.kernel.org, nayna@linux.ibm.com,
         rnsastry@linux.ibm.com, ssrish@linux.ibm.com
-Subject: [PATCH 1/8] pseries/plpks: update PKS documentation and maintainer entry
-Date: Thu, 27 Aug 2026 11:53:01 +0530
-Message-ID: <20260827062309.724808-2-ssrish@linux.ibm.com>
+Subject: [PATCH 2/8] pseries/plpks: fix error handling in plpks_read_var()
+Date: Thu, 27 Aug 2026 11:53:02 +0530
+Message-ID: <20260827062309.724808-3-ssrish@linux.ibm.com>
 X-Mailer: git-send-email 2.55.0
 In-Reply-To: <20260827062309.724808-1-ssrish@linux.ibm.com>
 References: <20260827062309.724808-1-ssrish@linux.ibm.com>
@@ -95,107 +95,94 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: E5KGnUswwFo-46pFTKTVWSc5UDgwDV5r
-X-Proofpoint-ORIG-GUID: LbGZbk5F3iG2KsUicI5Szx52pvJNnEQC
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODI3MDA0OCBTYWx0ZWRfX+34rS6nAkAzr
- Hf1ppNN+ai/wFyCtqtPi/y01A/sK5QlJFbx2Di+6AjGZEKdB8XlCAtoWj7iYJ35Zk5o+Lji1TDD
- QsBMZc3ojSv5htLXww1y57LxW4nrgbF+JxCc+OFCdbmnqG8V2w5xOISS2XUTYtGWPPWC7SCZB47
- mQDv37+z4l53QaVIm49oUWkLT5i5D6Wp7VLmbASF2tn1d54AxECy4P8aZmi7B/3Y7rOYeSMgSnJ
- LXyY7XiQ1LCh4ZEqBDsTwVNMo4Nm8EAFZEadeL1ABEUAGXgKE5GbUNx2QqhcM6tu7CMb6Q/o9Ij
- uUULtUpXnaca7uaNEQRgsPQCQMt2dKj8aiTUijqkV+vjuGjXDDCHv5ceHeeKkTUTh7ThoOiw3gk
- FRWpiGjc+TMJofzwrRD5HWQ8FvgJ7S4h+/Xu6zQYJgiqyXmim7fjRxzMULzbMnKs4QtcyDexyib
- Z02fPy8hzW69HB1aEhw==
-X-Authority-Analysis: v=2.4 cv=QsRuG1yd c=1 sm=1 tr=0 ts=6a8fd7ee cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODI3MDA0OCBTYWx0ZWRfXxi8KTWZeoPgA
+ /+QFjhToOCvAPKV5K/4jQ/QPXXYTjGgpg71fpzhIkpwCKTCLyyGoYjYzTFwl0mcooaJq2fR1hg4
+ I7vEE1JordkWRp6Ka3/6hv8hP6EoxsE=
+X-Proofpoint-GUID: 1f6GFyNTOWhnaMUBssfemC4Dp3oSCBh-
+X-Proofpoint-ORIG-GUID: yqtAB48qtqi5bYMVejs1M5ll1Kb3qjyx
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODI3MDA0OCBTYWx0ZWRfX1ab0m/hNCXjA
+ 1XrIzEaYLV/AVQqhulmcfYxbDEepZaSLsBAorWrGB4C7otEWh/23s9GWgFHNUo85hQR1JKxaied
+ LGcUvMkQA2j9nwuD4SUcOju+3vnn1TNbBbzVwXEOpGdMVddYFNjywaUWrMw1A2w7Y10kWzKwzsW
+ xVH1jkeuFwnEWhYTzP3eCbLlZMu7m/6ZnmT/ij29mI74AUrkaxQE+6vLipHxG9HFR8ygXgrnDib
+ r0lz7fhRhPlWBCMegaJZxbDdtJ23Csw/Z1Y0pdSmeA14o/JsmtyLpv28KwNrbcuqMqMAD3a8PDI
+ g6GKH26cFfYJ8jhyv6rbtXCAyw7vrR9Ww525+iDcspswDdz4DbWogj2YGfbmKUR3N+m+YTL3Nqn
+ 9zb+k/Wg39snVoD0BC19hLynDfl+MvS5b14bI8SjNus+OlAnM26Sxn+hITKkog8OoIiAiUN9UYM
+ ILoi7xwtlwxAZtcIQKQ==
+X-Authority-Analysis: v=2.4 cv=H7brBeYi c=1 sm=1 tr=0 ts=6a8fd7fb cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
  a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=uAbxVGIbfxUO_5tXvNgY:22 a=VnNF1IyMAAAA:8 a=VwQbUJbxAAAA:8
- a=2YPxekF_mspUCEnIjzkA:9
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODI3MDA0OCBTYWx0ZWRfXzHaFJMhQwOuD
- Ao6BC1eI62J6ywaz4uT4m/rOmKZ6Ur6TUjuWtc7U13Y8McX6cCzOiBp6ekKna6/ylFJZcygSr4o
- itck6hLb/ZgN/saX3dRIIGY9vx8Wxic=
+ a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VnNF1IyMAAAA:8 a=oL9t_hqQ2ej-tATgvj4A:9
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-08-27_02,2026-08-26_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 adultscore=0 suspectscore=0 priorityscore=1501 impostorscore=0
- spamscore=0 lowpriorityscore=0 clxscore=1011 bulkscore=0 phishscore=0
+ suspectscore=0 malwarescore=0 lowpriorityscore=0 impostorscore=0 spamscore=0
+ bulkscore=0 adultscore=0 priorityscore=1501 clxscore=1015 phishscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608270048
 
-Wrap long PKS hcall return-value lines consistently and fix a typo in the
-H_PKS_UNWRAP_OBJECT description.
+When a plpks variable is initialized without a policy and used to read an
+object with the 'wrapping key' policy set, the hypervisor returns
+H_AUTHORITY along with the object's policy. However, plpks_read_var() at
+present treats this the same as any other H_AUTHORITY failure and returns
+an error without propagating the policy information to the caller.
 
-Also update the MAINTAINERS entry from KEYS-TRUSTED-PLPKS to
-KEYS-TRUSTED-PKWM to reflect the PowerVM Key Wrapping Module naming.
+Distinguish this case from other H_AUTHORITY failures and only propagate
+policy information when it is returned alongside H_AUTHORITY by the
+hypervisor. Remove the explicit assignment of rc to zero in the case of
+H_SUCCESS as it is redundant.
 
+Also return -EPERM instead of -EINVAL when the 'wrapping key' policy bit is
+set by the caller, better reflecting the access restriction being enforced.
+
+Fixes: 2454a7af0f2a ("powerpc/pseries: define driver for Platform KeyStore")
 Fixes: 133aa79e211d ("pseries/plpks: add HCALLs for PowerVM Key Wrapping Module")
-Fixes: c99fcb0d735b ("keys/trusted_keys: establish PKWM as a trusted source")
 Signed-off-by: Srish Srinivasan <ssrish@linux.ibm.com>
 ---
- Documentation/arch/powerpc/papr_hcalls.rst | 16 ++++++++--------
- MAINTAINERS                                |  2 +-
- 2 files changed, 9 insertions(+), 9 deletions(-)
+ arch/powerpc/platforms/pseries/plpks.c | 13 ++++++-------
+ 1 file changed, 6 insertions(+), 7 deletions(-)
 
-diff --git a/Documentation/arch/powerpc/papr_hcalls.rst b/Documentation/arch/powerpc/papr_hcalls.rst
-index 14e39f095a1c..44c9c8b32ae3 100644
---- a/Documentation/arch/powerpc/papr_hcalls.rst
-+++ b/Documentation/arch/powerpc/papr_hcalls.rst
-@@ -305,8 +305,8 @@ like core instruction, core LLAT and nest.
- | Input: authorization, objectlabel, objectlabellen, policy, out, outlen
- | Out: *Hypervisor Generated Key, or None when the wrapping key policy is set*
- | Return Value: *H_SUCCESS, H_Function, H_State, H_R_State, H_Parameter, H_P2,
--                H_P3, H_P4, H_P5, H_P6, H_Authority, H_Nomem, H_Busy, H_Resource,
--                H_Aborted*
-+                H_P3, H_P4, H_P5, H_P6, H_Authority, H_Nomem, H_Busy,
-+                H_Resource, H_Aborted*
+diff --git a/arch/powerpc/platforms/pseries/plpks.c b/arch/powerpc/platforms/pseries/plpks.c
+index 23e4e2a922fc..7bd5c149dd09 100644
+--- a/arch/powerpc/platforms/pseries/plpks.c
++++ b/arch/powerpc/platforms/pseries/plpks.c
+@@ -826,7 +826,7 @@ static int plpks_read_var(u8 consumer, struct plpks_var *var)
+ 		return -EINVAL;
  
- H_PKS_GEN_KEY is used to have the hypervisor generate a new random key.
- This key is stored as an object in the Power LPAR Platform KeyStore with
-@@ -321,8 +321,8 @@ the user. Generation of wrapping keys is supported only for a key size of
- |        inlen, out, outlen, continue-token
- | Out: *continue-token, byte size of wrapped object, wrapped object*
- | Return Value: *H_SUCCESS, H_Function, H_State, H_R_State, H_Parameter, H_P2,
--                H_P3, H_P4, H_P5, H_P6, H_P7, H_P8, H_P9, H_Authority, H_Invalid_Key,
--                H_NOT_FOUND, H_Busy, H_LongBusy, H_Aborted*
-+                H_P3, H_P4, H_P5, H_P6, H_P7, H_P8, H_P9, H_Authority,
-+                H_Invalid_Key, H_NOT_FOUND, H_Busy, H_LongBusy, H_Aborted*
+ 	if (var->policy & PLPKS_WRAPPINGKEY)
+-		return -EINVAL;
++		return -EPERM;
  
- H_PKS_WRAP_OBJECT is used to wrap an object using a wrapping key stored in the
- Power LPAR Platform KeyStore and return the wrapped object to the caller. The
-@@ -331,16 +331,16 @@ which must have been previously created with H_PKS_GEN_KEY. The provided object
- is then encrypted with the wrapping key and additional metadata and the result
- is returned to the caller.
+ 	auth = construct_auth(consumer);
+ 	if (IS_ERR(auth))
+@@ -856,22 +856,21 @@ static int plpks_read_var(u8 consumer, struct plpks_var *var)
+ 				 virt_to_phys(var->name), var->namelen, virt_to_phys(output),
+ 				 maxobjsize);
  
 -
- **H_PKS_UNWRAP_OBJECT**
+ 	if (rc != H_SUCCESS) {
+ 		rc = pseries_status_to_err(rc);
+-		goto out_free_output;
++		if (rc != -EPERM || !retbuf[1])
++			goto out_free_output;
++		goto out_copy_policy;
+ 	}
  
- | Input: authorization, objectwrapflags, in, inlen, out, outlen, continue-token
- | Out: *continue-token, byte size of unwrapped object, unwrapped object*
- | Return Value: *H_SUCCESS, H_Function, H_State, H_R_State, H_Parameter, H_P2,
--                H_P3, H_P4, H_P5, H_P6, H_P7, H_Authority, H_Unsupported, H_Bad_Data,
--                H_NOT_FOUND, H_Invalid_Key, H_Busy, H_LongBusy, H_Aborted*
-+                H_P3, H_P4, H_P5, H_P6, H_P7, H_Authority, H_Unsupported,
-+                H_Bad_Data, H_NOT_FOUND, H_Invalid_Key, H_Busy, H_LongBusy,
-+                H_Aborted*
+ 	if (!var->data || var->datalen > retbuf[0])
+ 		var->datalen = retbuf[0];
  
--H_PKS_UNWRAP_OBJECT is used to unwrap an object that was previously warapped with
-+H_PKS_UNWRAP_OBJECT is used to unwrap an object that was previously wrapped with
- H_PKS_WRAP_OBJECT.
+-	var->policy = retbuf[1];
+-
+ 	if (var->data)
+ 		memcpy(var->data, output, var->datalen);
  
- References
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 24ca91ce5d86..7d92526fbf64 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -14479,7 +14479,7 @@ S:	Supported
- F:	include/keys/trusted_dcp.h
- F:	security/keys/trusted-keys/trusted_dcp.c
- 
--KEYS-TRUSTED-PLPKS
-+KEYS-TRUSTED-PKWM
- M:	Srish Srinivasan <ssrish@linux.ibm.com>
- M:	Nayna Jain <nayna@linux.ibm.com>
- L:	linux-integrity@vger.kernel.org
+-	rc = 0;
+-
++out_copy_policy:
++	var->policy = retbuf[1];
+ out_free_output:
+ 	kfree(output);
+ out_free_label:
 -- 
 2.52.0
 
