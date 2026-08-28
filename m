@@ -1,66 +1,62 @@
-Return-Path: <linuxppc-dev+bounces-26162-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26163-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2AA7CC61DB9
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Aug 2026 07:06:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 18B1EC61DB9
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Aug 2026 07:27:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hWTtv34jDz2y2T;
-	Fri, 28 Aug 2026 17:05:59 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.10.208.40
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787900759;
-	cv=none; b=eI7rB50JcbiTCO6dZAE4/L9lYxYy+v38FzmisE4zHYamkoiWJu1irqC+g8WGR8UdhTz9LLknXoP9h/2kOsGbsZG/U/Z1NfvphrHkl2OrvHwPYf3yJvD2p8VGecf50TLX8YgLZe/Fi/R0JeYVHLy1X1h7h1jTWduFx0YNn3sqNT0zKBVealvaX2R3AHO8W4oMqJRAG+CbZ5IK8gMN5kCM0c7kr9P1XEsRqM0ZI9iTy1s1fl0kXszqAOAVTmwXF48jDxTOpyZfPn+HUagZSgzZqwPOQ7NDsZ9yvGxiqlVs3IcMEb1xaIq1D1CulvVQgCzBdUfHE2KwYC7I5Zb+RyTyAA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hWVMW2H3lz2y2T;
+	Fri, 28 Aug 2026 17:27:19 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:67c:2050:102:465::201"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787902039;
+	cv=none; b=X+GaLTjGfx7bY/FwYThkaWSZhRnIACIkyC0VlOnL6Kx9PZEgq0jf5JIzc5sw07cbLcEKTAse1wsRiMq/5T0w6bnaTtfYvn6k8fvKQwDlTu5G8VGdjigxt38qn86qGb++8SmF22/9WFxgQOmUqvsBTXo7cC3d0m2/3BF+Tpbwn1SRtqsLZLecXm9YtL2+np6UUoIuXwu0SuK33JKGwoRACLQr22cWYFBWWo875VeqMzeLbzV/7jeLi8o6mCBoPLazeBa3JfClGKvbCBOT1i2tVpt/bU7ro3yZXVN8d+RRxONoBVNnOXcC+7jFahy9SFfAsPBb+kOp0jjtDzcjkt2dWQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787900759; c=relaxed/relaxed;
-	bh=oyhWX7eOAfeEW9vgW0WBxjvrBvoN2XFCwMEYhnpzZJA=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=mrnYbVbm5Se0eVmJuEmHjqOD0h2UPSk4O6wjjDaMtM283BOq6shn3vQx5pecKJKmrKSl0Ac2wU+0lHPoof9bpfLGovtMx2zYWJZXw3hlb5bcl3PZqCIkROY8t8M7byIZlZ6wjUQ70Wm/AXyaa3uv8P+hFhCJXYDy1BzqdEf9fh2x4Iebs6JG5R3590lHAxX4jnebjuBBBOGBEYzyNVHms4JHVMa2M430M9Dez0K7cGEw4ASNMoNF6BW+oGeppNaSBdcjxAQl1Fy0nLvpc0OY82/wumuWUmIP1S025HfBB1+6frXZjuBKhK3XmOmFLU+iMWV91YYmzrKzkTzgXFLW4A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=mandelbit.com; dkim=pass (2048-bit key; unprotected) header.d=mandelbit.com header.i=@mandelbit.com header.a=rsa-sha256 header.s=MBO0001 header.b=p49vXzGd; dkim-atps=neutral; spf=pass (client-ip=195.10.208.40; helo=mout-b-210.mailbox.org; envelope-from=ralf@mandelbit.com; receiver=lists.ozlabs.org) smtp.mailfrom=mandelbit.com
+	t=1787902039; c=relaxed/relaxed;
+	bh=uu2quDv9BXIJXVAu8nYVgirdDkUUo0uu4AfJYmAk8Io=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=QeuSARqOAGg+UxIoXg6TZBIcCHXW6U6zM1URipPgBAXo3PybxUkfzW+1WwOgQvm9eDJ4zC3mOjlA/NHBb8LbnDUc9DqTR+9CEkN5DjALDCCvxu65SsbcBoL1I6qBsLSx9WzHmQUCLH88Dzs9IwYTg0ZflfdEBiIAsbjHBcEL7fXJiIkub+CMUFlOKNk+XfTcwdlyW1tK7rJm+d1wHoofpKWZJjcSPsLycnem1ooHcfN43OWlbpyrbsPnvBwhlxrZ7nAInrDrQkR94jSt3BgOkCZqLRAQYf4R1KVz1iGsyGxjORvw9gSGiybd7mEgA/jJBhOxY1Viglu7iSTd8ztWsg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=mandelbit.com; dkim=pass (2048-bit key; unprotected) header.d=mandelbit.com header.i=@mandelbit.com header.a=rsa-sha256 header.s=MBO0001 header.b=nTKPEt/g; dkim-atps=neutral; spf=pass (client-ip=2001:67c:2050:102:465::201; helo=mout-b-201.mailbox.org; envelope-from=ralf@mandelbit.com; receiver=lists.ozlabs.org) smtp.mailfrom=mandelbit.com
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=mandelbit.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=mandelbit.com header.i=@mandelbit.com header.a=rsa-sha256 header.s=MBO0001 header.b=p49vXzGd;
+	dkim=pass (2048-bit key; unprotected) header.d=mandelbit.com header.i=@mandelbit.com header.a=rsa-sha256 header.s=MBO0001 header.b=nTKPEt/g;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=mandelbit.com (client-ip=195.10.208.40; helo=mout-b-210.mailbox.org; envelope-from=ralf@mandelbit.com; receiver=lists.ozlabs.org)
-Received: from mout-b-210.mailbox.org (mout-b-210.mailbox.org [195.10.208.40])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=mandelbit.com (client-ip=2001:67c:2050:102:465::201; helo=mout-b-201.mailbox.org; envelope-from=ralf@mandelbit.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 56624 seconds by postgrey-1.37 at boromir; Fri, 28 Aug 2026 17:27:15 AEST
+Received: from mout-b-201.mailbox.org (mout-b-201.mailbox.org [IPv6:2001:67c:2050:102:465::201])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bit raw public key) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hWTtq1Vq9z2xLg
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Aug 2026 17:05:52 +1000 (AEST)
-Received: from smtp2.mailbox.org (smtp2.mailbox.org [10.196.197.2])
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hWVMR5MhYz2xLg
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Aug 2026 17:27:14 +1000 (AEST)
+Received: from smtp1.mailbox.org (smtp1.mailbox.org [10.196.197.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mout-b-210.mailbox.org (Postfix) with ESMTPS id 4hWTtd0F2MzFqjg;
-	Fri, 28 Aug 2026 09:05:45 +0200 (CEST)
+	by mout-b-201.mailbox.org (Postfix) with ESMTPS id 4hWVMD18qVzLlr8;
+	Fri, 28 Aug 2026 09:27:04 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mandelbit.com;
-	s=MBO0001; t=1787900745;
+	s=MBO0001; t=1787902024;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=oyhWX7eOAfeEW9vgW0WBxjvrBvoN2XFCwMEYhnpzZJA=;
-	b=p49vXzGdVKpNp9GptBkhbT1mcK/ABByD8PKX7EeU47qxaSz/J5jWqhjKsdrBc64OYjWnwy
-	kCksJw+uYaLbaf7lgDJJXpnzeiJJLpqXx06mLG5RoJISV0gryJW7Ri2alwD4TL+pRLjdfE
-	w8qsRJypSpLPAD/A3DFtTnIjBfrhVS05zZY/NHXbdSkr9/+/cQGo/i9BNABMo8t+VeVR5b
-	eoJ7ry3cO+cvQG5XOAP2TOcT60stRtU+HWkTcFZWUzgod+H8qGct6sI6590wyAX/hh+w6K
-	CAkNIlQ6wzdqNL9q2RxZB4paNBFTc4IpwNzg+jYcjqCUhutXUdUrNpLwq/Qmnw==
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=uu2quDv9BXIJXVAu8nYVgirdDkUUo0uu4AfJYmAk8Io=;
+	b=nTKPEt/gXykPqT7gsEUv856eL0gw7J+sfgcroVjAb40gPzJr1OuG6pS7EmL3NxhIY1p7jA
+	3CpQGTZuzzVQ9UMp5gfV4/ubCOisaxjQdslUaZwH9FCnKvX74RRtNgbox3VNcXoDLn2o9s
+	8TmAUg49Tb1FWrPaI+1jZzb5+6NGCEEOIZq1wmW1UgOqd2M5tO294GjUYSg3e17wU81qbP
+	IBhO8wAqBhcq2ZCO8czmdTnGzpKE9l3nUIke1e7q7/Izf135pjkA8N34VPUy/20/lfd7ii
+	7ZfbwnAYdn7sXci1sx70CMAHwYCy31ODbG3Prqd8n579IaaUEqunueuZ7o4n0w==
 From: Ralf Lici <ralf@mandelbit.com>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: stable@vger.kernel.org,
-	regressions@lists.linux.dev,
-	Ran Wang <ran.wang_1@nxp.com>,
+To: stable@vger.kernel.org
+Cc: Ralf Lici <ralf@mandelbit.com>,
 	Duoming Zhou <duoming@zju.edu.cn>,
-	linux-usb@vger.kernel.org,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	linux-kernel@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
-	Ben Hutchings <ben@decadent.org.uk>
-Subject: Re: [REGRESSION] 6.1.y/6.6.y: fsl-usb fails to build
-Date: Fri, 28 Aug 2026 09:05:34 +0200
-Message-ID: <20260828070535.38490-1-ralf@mandelbit.com>
-In-Reply-To: <2026082858-footing-calorie-a196@gregkh>
-References: <2026082858-footing-calorie-a196@gregkh>
+	linux-usb@vger.kernel.org
+Subject: [PATCH 6.1.y] Revert "usb: phy: fsl-usb: Fix use-after-free in delayed work during device removal"
+Date: Fri, 28 Aug 2026 09:26:45 +0200
+Message-ID: <de6cc86708372c418d670cf8ec4d5929538c3417.1787901520.git.ralf@mandelbit.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -76,67 +72,39 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-On Fri, 28 Aug 2026 07:44:44 +0200, Greg Kroah-Hartman <gregkh@linuxfoundation.org> wrote:
-> On Thu, Aug 27, 2026 at 05:43:00PM +0200, Ralf Lici wrote:
-> > Hi,
-> > 
-> > While working on some backport patches for an out-of-tree module and
-> > looking for the exact versions containing the disable_delayed_work_sync
-> > symbol, I stumbled upon occurrences of that function on longterm v6.1
-> > and v6.6 in drivers/usb/phy/phy-fsl-usb.c despite not being declared or
-> > defined anywhere. In fact, disable_delayed_work_sync was introduced by
-> > upstream commit 86898fa6b8cd ("workqueue: Implement disable/enable for
-> > (delayed) work items") and is only available since v6.10. Neither 6.1.y
-> > nor 6.6.y defines it.
-> > 
-> > Consequently, kernels built with CONFIG_FSL_USB2_OTG fail with:
-> > 
-> > drivers/usb/phy/phy-fsl-usb.c:990:2: error: call to undeclared function 'disable_delayed_work_sync'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
-> >   990 |         disable_delayed_work_sync(&fsl_otg_dev->otg_event);
-> >       |         ^
-> > drivers/usb/phy/phy-fsl-usb.c:990:2: note: did you mean 'cancel_delayed_work_sync'?
-> > include/linux/workqueue.h:470:13: note: 'cancel_delayed_work_sync' declared here
-> >   470 | extern bool cancel_delayed_work_sync(struct delayed_work *dwork);
-> >       |             ^
-> > 
-> > I reproduced the failure on PowerPC using corenet64_smp_defconfig with
-> > CONFIG_FSL_USB2_OTG=m, building drivers/usb/phy/phy-fsl-usb.o with
-> > Clang.
-> > 
-> > AFAICT, in 6.1.y, the regression was introduced in v6.1.160 by commit
-> > 4476c73bbbb0 ("usb: phy: fsl-usb: Fix use-after-free in delayed work
-> > during device removal") and remains present in v6.1.185.
-> > 
-> > In 6.6.y, it was introduced in v6.6.120 by commit 319f7a85b3c4 ("usb:
-> > phy: fsl-usb: Fix use-after-free in delayed work during device removal")
-> > and remains present in v6.6.154.
-> > 
-> > Note that the same problem was pointed out by Ben Hutchings during the
-> > 5.10.y review:
-> > https://lore.kernel.org/all/d147f0eb71f9cefbfb7605e95d98564d7f0ed346.camel@decadent.org.uk/
-> > 
-> > The corresponding patches were dropped from 5.10.y and 5.15.y, but
-> > appear to have been retained in 6.1.y and 6.6.y.
-> > 
-> > Simply replacing disable_delayed_work_sync with cancel_delayed_work_sync
-> > at its current location may not be sufficient: it looks like the delayed
-> > work can also be scheduled from fsl_otg_set_host and from the IRQ
-> > handler but I'm not familiar with this part of the kernel.
->
-> Can you just send patches to revert the offending commits?  Or we can
-> just ignore it as it's been this way for a while and no one has noticed
-> which implies to me that no one builds these modules for these arches on
-> these very old kernel trees :)
->
+This reverts commit 4476c73bbbb09b13a962176fca934b32d3954a2e.
 
-Right, the lack of reports after roughly ten months suggests that nobody
-is building these modules for the affected configurations. Still, I
-would rather not knowingly leave those configurations unbuildable, so
-I'll send revert patches shortly.
+The reverted commit uses disable_delayed_work_sync, which was introduced
+by commit 86898fa6b8cd ("workqueue: Implement disable/enable for
+(delayed) work items") in v6.10. The function is therefore unavailable
+in 6.1.y, causing configurations that enable CONFIG_FSL_USB2_OTG to fail
+to build.
 
-Thanks,
+The upstream commit is unaffected; only its incompatible stable backport
+is being reverted.
 
+Fixes: 4476c73bbbb0 ("usb: phy: fsl-usb: Fix use-after-free in delayed work during device removal")
+Link: https://lore.kernel.org/stable/20260827154302.706689-1-ralf@mandelbit.com/
+Signed-off-by: Ralf Lici <ralf@mandelbit.com>
+---
+ drivers/usb/phy/phy-fsl-usb.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/drivers/usb/phy/phy-fsl-usb.c b/drivers/usb/phy/phy-fsl-usb.c
+index ab4df5819ef8..972704262b02 100644
+--- a/drivers/usb/phy/phy-fsl-usb.c
++++ b/drivers/usb/phy/phy-fsl-usb.c
+@@ -987,7 +987,6 @@ static int fsl_otg_remove(struct platform_device *pdev)
+ {
+ 	struct fsl_usb2_platform_data *pdata = dev_get_platdata(&pdev->dev);
+ 
+-	disable_delayed_work_sync(&fsl_otg_dev->otg_event);
+ 	usb_remove_phy(&fsl_otg_dev->phy);
+ 	free_irq(fsl_otg_dev->irq, fsl_otg_dev);
+ 
+
+base-commit: d64a499eea6b62b5121beceed9e8a1f57b00d863
 -- 
-Ralf Lici
-Mandelbit Srl
+2.55.0
+
 
