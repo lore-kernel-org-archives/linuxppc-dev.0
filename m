@@ -1,51 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-26163-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26164-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 18B1EC61DB9
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Aug 2026 07:27:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 41E1CC61DB9
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Aug 2026 07:27:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hWVMW2H3lz2y2T;
-	Fri, 28 Aug 2026 17:27:19 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:67c:2050:102:465::201"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787902039;
-	cv=none; b=X+GaLTjGfx7bY/FwYThkaWSZhRnIACIkyC0VlOnL6Kx9PZEgq0jf5JIzc5sw07cbLcEKTAse1wsRiMq/5T0w6bnaTtfYvn6k8fvKQwDlTu5G8VGdjigxt38qn86qGb++8SmF22/9WFxgQOmUqvsBTXo7cC3d0m2/3BF+Tpbwn1SRtqsLZLecXm9YtL2+np6UUoIuXwu0SuK33JKGwoRACLQr22cWYFBWWo875VeqMzeLbzV/7jeLi8o6mCBoPLazeBa3JfClGKvbCBOT1i2tVpt/bU7ro3yZXVN8d+RRxONoBVNnOXcC+7jFahy9SFfAsPBb+kOp0jjtDzcjkt2dWQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hWVN24jWTz2y2T;
+	Fri, 28 Aug 2026 17:27:46 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.10.208.51
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787902066;
+	cv=none; b=Dj3YAjsk58p6zsRLOOVrPqGIWW74Ye4uDjkuTaKFn8LqtTKj2qrOAukqS5vG71RCVLv3uGEtGBAOH3Da4TngeUddLiPZpBY0dUpvFlwtVMn5eNcyBvVeO6VnJThRnK5MqCDlOjBTwdWG2XWG5AZ+6kOqzMCcVmd/0RymqBnCBa1NmhWLbeOSjV3zkUW4XDZTPUopvxRQsr/KFNVKJ5IQ+rpGSALJcXF9PvApOHkDQUDgxDF2oOomqYI7biobJjtfuaXaqaq/xHD9IFI1nDsDpfyiiipVwoD8833VPiV635q//vg7di22jSpPHpbZ/DwBYVSR3d5nE++7Uvo2HopLCg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787902039; c=relaxed/relaxed;
-	bh=uu2quDv9BXIJXVAu8nYVgirdDkUUo0uu4AfJYmAk8Io=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=QeuSARqOAGg+UxIoXg6TZBIcCHXW6U6zM1URipPgBAXo3PybxUkfzW+1WwOgQvm9eDJ4zC3mOjlA/NHBb8LbnDUc9DqTR+9CEkN5DjALDCCvxu65SsbcBoL1I6qBsLSx9WzHmQUCLH88Dzs9IwYTg0ZflfdEBiIAsbjHBcEL7fXJiIkub+CMUFlOKNk+XfTcwdlyW1tK7rJm+d1wHoofpKWZJjcSPsLycnem1ooHcfN43OWlbpyrbsPnvBwhlxrZ7nAInrDrQkR94jSt3BgOkCZqLRAQYf4R1KVz1iGsyGxjORvw9gSGiybd7mEgA/jJBhOxY1Viglu7iSTd8ztWsg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=mandelbit.com; dkim=pass (2048-bit key; unprotected) header.d=mandelbit.com header.i=@mandelbit.com header.a=rsa-sha256 header.s=MBO0001 header.b=nTKPEt/g; dkim-atps=neutral; spf=pass (client-ip=2001:67c:2050:102:465::201; helo=mout-b-201.mailbox.org; envelope-from=ralf@mandelbit.com; receiver=lists.ozlabs.org) smtp.mailfrom=mandelbit.com
+	t=1787902066; c=relaxed/relaxed;
+	bh=Wp8Cfi0TykYT6FODsDy0pOVzbapztWfE+Fg8egS0CPY=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=DhXkmg/cc29OzStXKG+H9O0xkseeBiMj0wIh0f13LYqOVfHUsEDW87Z/dcku81Uhq2cUklH+6VwMSqexfM20q/Qs7cPFAiZ7amSKa9p9QNfB7Z48SsJetIZya3DLI7AWDOE1fB18ZUK0zd/dEzAIqy6flmPp1LwwLljyiZuHPS5bZ7Xe6hIo4Ic2WgNEZPtHOP4tPLxhZYqE7B2itQsQfNlB1bFDooKB7ZSdGmyVyvGpY/6YkBLlRA45rwXv6aQc6IzQ6WroFOYERpYpKhY+ZCHW/pQ8fyPO68uGWuJEEClAt0RFuTR0YVL6pxKQU8kicWAVTl8GmhZShlLaT2BeuQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=mandelbit.com; dkim=pass (2048-bit key; unprotected) header.d=mandelbit.com header.i=@mandelbit.com header.a=rsa-sha256 header.s=MBO0001 header.b=yNS5dyAB; dkim-atps=neutral; spf=pass (client-ip=195.10.208.51; helo=mout-b-206.mailbox.org; envelope-from=ralf@mandelbit.com; receiver=lists.ozlabs.org) smtp.mailfrom=mandelbit.com
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=mandelbit.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=mandelbit.com header.i=@mandelbit.com header.a=rsa-sha256 header.s=MBO0001 header.b=nTKPEt/g;
+	dkim=pass (2048-bit key; unprotected) header.d=mandelbit.com header.i=@mandelbit.com header.a=rsa-sha256 header.s=MBO0001 header.b=yNS5dyAB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=mandelbit.com (client-ip=2001:67c:2050:102:465::201; helo=mout-b-201.mailbox.org; envelope-from=ralf@mandelbit.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 56624 seconds by postgrey-1.37 at boromir; Fri, 28 Aug 2026 17:27:15 AEST
-Received: from mout-b-201.mailbox.org (mout-b-201.mailbox.org [IPv6:2001:67c:2050:102:465::201])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=mandelbit.com (client-ip=195.10.208.51; helo=mout-b-206.mailbox.org; envelope-from=ralf@mandelbit.com; receiver=lists.ozlabs.org)
+Received: from mout-b-206.mailbox.org (mout-b-206.mailbox.org [195.10.208.51])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bit raw public key) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hWVMR5MhYz2xLg
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Aug 2026 17:27:14 +1000 (AEST)
-Received: from smtp1.mailbox.org (smtp1.mailbox.org [10.196.197.1])
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hWVN13w7Tz2xLg
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Aug 2026 17:27:45 +1000 (AEST)
+Received: from smtp1.mailbox.org (smtp1.mailbox.org [IPv6:2001:67c:2050:b231:465::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mout-b-201.mailbox.org (Postfix) with ESMTPS id 4hWVMD18qVzLlr8;
-	Fri, 28 Aug 2026 09:27:04 +0200 (CEST)
+	by mout-b-206.mailbox.org (Postfix) with ESMTPS id 4hWVMw6C0yzJF;
+	Fri, 28 Aug 2026 09:27:40 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mandelbit.com;
-	s=MBO0001; t=1787902024;
+	s=MBO0001; t=1787902060;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding;
-	bh=uu2quDv9BXIJXVAu8nYVgirdDkUUo0uu4AfJYmAk8Io=;
-	b=nTKPEt/gXykPqT7gsEUv856eL0gw7J+sfgcroVjAb40gPzJr1OuG6pS7EmL3NxhIY1p7jA
-	3CpQGTZuzzVQ9UMp5gfV4/ubCOisaxjQdslUaZwH9FCnKvX74RRtNgbox3VNcXoDLn2o9s
-	8TmAUg49Tb1FWrPaI+1jZzb5+6NGCEEOIZq1wmW1UgOqd2M5tO294GjUYSg3e17wU81qbP
-	IBhO8wAqBhcq2ZCO8czmdTnGzpKE9l3nUIke1e7q7/Izf135pjkA8N34VPUy/20/lfd7ii
-	7ZfbwnAYdn7sXci1sx70CMAHwYCy31ODbG3Prqd8n579IaaUEqunueuZ7o4n0w==
+	bh=Wp8Cfi0TykYT6FODsDy0pOVzbapztWfE+Fg8egS0CPY=;
+	b=yNS5dyAByIsjlxBeOsUbRNFbYm4Uoq+VfB6pjKhIVzgvMVAbjUD5dq1V5m4NiJvtonwknH
+	gbqgbW9bn7dWghveeHVd0KYjBDlnvcg3d6RjWwr5eeU3QlVBBUBdNJIn/RC22SKmmVgfaN
+	Q9kp4plCBY1eyon/alJUS9jVG9/dWi1Ly+sCg94XgesPWfcwV9yIRKypLGWwMAI9LrTrub
+	iRfh8v+YV6GsqR7gn6+rVdrmE6TkaBmAw/7Hl/y1bazLhiYhisZmt69boKlgrq/4pSM4qe
+	0fXvyvhL7MBexxYYXM/gTqYsHm6JBDtZS6LgrmhEs/CnuexKA/nL4GmX9oFBag==
+Authentication-Results: outgoing_mbo_mout;
+	dkim=none;
+	spf=pass (outgoing_mbo_mout: domain of ralf@mandelbit.com designates 2001:67c:2050:b231:465::1 as permitted sender) smtp.mailfrom=ralf@mandelbit.com
 From: Ralf Lici <ralf@mandelbit.com>
 To: stable@vger.kernel.org
 Cc: Ralf Lici <ralf@mandelbit.com>,
@@ -54,9 +56,9 @@ Cc: Ralf Lici <ralf@mandelbit.com>,
 	linux-kernel@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-usb@vger.kernel.org
-Subject: [PATCH 6.1.y] Revert "usb: phy: fsl-usb: Fix use-after-free in delayed work during device removal"
-Date: Fri, 28 Aug 2026 09:26:45 +0200
-Message-ID: <de6cc86708372c418d670cf8ec4d5929538c3417.1787901520.git.ralf@mandelbit.com>
+Subject: [PATCH 6.6.y] Revert "usb: phy: fsl-usb: Fix use-after-free in delayed work during device removal"
+Date: Fri, 28 Aug 2026 09:27:27 +0200
+Message-ID: <32dc704af59ce1a137f076a1bdec4f2aa0034463.1787901681.git.ralf@mandelbit.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -71,19 +73,20 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-Rspamd-Queue-Id: 4hWVMw6C0yzJF
 
-This reverts commit 4476c73bbbb09b13a962176fca934b32d3954a2e.
+This reverts commit 319f7a85b3c4e34ac2fe083eb146fe129a556317.
 
 The reverted commit uses disable_delayed_work_sync, which was introduced
 by commit 86898fa6b8cd ("workqueue: Implement disable/enable for
 (delayed) work items") in v6.10. The function is therefore unavailable
-in 6.1.y, causing configurations that enable CONFIG_FSL_USB2_OTG to fail
+in 6.6.y, causing configurations that enable CONFIG_FSL_USB2_OTG to fail
 to build.
 
 The upstream commit is unaffected; only its incompatible stable backport
 is being reverted.
 
-Fixes: 4476c73bbbb0 ("usb: phy: fsl-usb: Fix use-after-free in delayed work during device removal")
+Fixes: 319f7a85b3c4 ("usb: phy: fsl-usb: Fix use-after-free in delayed work during device removal")
 Link: https://lore.kernel.org/stable/20260827154302.706689-1-ralf@mandelbit.com/
 Signed-off-by: Ralf Lici <ralf@mandelbit.com>
 ---
@@ -91,10 +94,10 @@ Signed-off-by: Ralf Lici <ralf@mandelbit.com>
  1 file changed, 1 deletion(-)
 
 diff --git a/drivers/usb/phy/phy-fsl-usb.c b/drivers/usb/phy/phy-fsl-usb.c
-index ab4df5819ef8..972704262b02 100644
+index 552899fa985e..79617bb0a70e 100644
 --- a/drivers/usb/phy/phy-fsl-usb.c
 +++ b/drivers/usb/phy/phy-fsl-usb.c
-@@ -987,7 +987,6 @@ static int fsl_otg_remove(struct platform_device *pdev)
+@@ -987,7 +987,6 @@ static void fsl_otg_remove(struct platform_device *pdev)
  {
  	struct fsl_usb2_platform_data *pdata = dev_get_platdata(&pdev->dev);
  
@@ -103,7 +106,7 @@ index ab4df5819ef8..972704262b02 100644
  	free_irq(fsl_otg_dev->irq, fsl_otg_dev);
  
 
-base-commit: d64a499eea6b62b5121beceed9e8a1f57b00d863
+base-commit: a4a971135a2ff64382ae4235b3ae60503bb1036a
 -- 
 2.55.0
 
