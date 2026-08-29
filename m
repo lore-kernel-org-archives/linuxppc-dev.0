@@ -1,74 +1,87 @@
-Return-Path: <linuxppc-dev+bounces-26188-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26189-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B92CAC61DCB
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Aug 2026 07:55:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EC814C61DD6
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Aug 2026 21:12:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hX6xP3GM0z2y2W;
-	Sat, 29 Aug 2026 17:55:21 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=45.249.212.190
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787985884;
-	cv=none; b=Vv30xCss09ST8htoVDXQRtHnGaG6qRO6ACbENeIuIBHGiVuErHTCRuFVzWJBLPdAOprOJT7oGCF/m7EJRwZZJG9YKY0otzLuEmSc3SbQ1sYqi97+wzStmWyRmp6wT6xX0Ej3PayR2VGmi8mK5G5wyq9YkPy8jnwWaFITHfOjAQ//5If3ZDf8n6VAQkBUeHCMZnKS8y4iH7QaZKLHyiK/flyi/VHTkZKTbIctPdlSldGMyYU6intoBRCiHVTPrF2fyPgwH9PvTk/5g51+52kCf/7r81n6oIL0AxQLhLlloU/etBJ5jUlpmB1pr9AJO8hw8frz811Frv+ZS613JOYIZw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hXSdf70xRz2xfq;
+	Sun, 30 Aug 2026 07:12:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788037974;
+	cv=none; b=ACI6l7FCCvtIWSX07QfcDZFjgGbMpzYjag6l7KeoqsILkT91fydo80xMmXXb38YdddnxZg170+pZ8pYjJIBqr0UY7TR60QbVqy3+fTT9jxk8iMxGoEmvTP8+kxGHeEUjaLlxOIY/fMy7wxXn6NLPmDuDcQ7OfJD9nXXH+FTUqM3DQUlAlTv4HJX/IFVwAL64c4BfZ0xRQQyODidbJyCl2tHDvrSEuSnxWwMsNgj4IubEXZY2Jhf7/8YUuJHt7BW8ihL/vj5ssfqZuSgM8KmjWpXnuHSJ6raUWeMfCeOvMDmfcZRieNO55l0LdeqX80erL8xyUb97BZLkBA61B4LrXA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787985884; c=relaxed/relaxed;
-	bh=S1yrFP4Pe6B/KX4VlbIF1fox942sBDwMlaUs6T4ODEg=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=RGt5/pAD1AHkHuk1085Jwox24ZKOKzqlx6hgIJDybmn0L8N+Fa+G9QUiQ5lUDEFCBv23zconliRvvMQtyh58+tQP0QvXKJOMyUJEJVMmEhaT+RZPs1XjyIO9Oa+17ElOLwzR87bjFV4LpbZo0R9jXY2tmtReyODc1ERZYQXz6FRDe/gQcpHID10DbvMgHvqwFbmEleESCvhPKk4dEQz1FV/T26UhwN7qJeOEBwuL7jUySSrcbU3lTPrUDgFyDbYVX79hkkLf6zItSjQkcYbzIYNACr0OXB8+9vchL8qXoVB6oQroWRLGXgSNWLOVofQGqrFCueS6Nh/9GO8v1pr43A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=kGw3GOQA; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=kGw3GOQA; dkim-atps=neutral; spf=pass (client-ip=45.249.212.190; helo=szxga04-in.huawei.com; envelope-from=zhouminqiang2@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+	t=1788037974; c=relaxed/relaxed;
+	bh=Dtc/3TiWrxvKp0avjjHTAnH0zP9eaKC6iJzs8wdLbVc=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=j8QjsJQkPF80iy1GlQv6MvJMe7PXfisChgPfgxJ0fBD/T3kY9Yl1OI3R/ELvRxREtd3rz8Odvd3Dxz+F93W7/xlGkLbXPYsN5Qy4oGYSR0FgiVwTYu9/YMJBhqX1dPTX48yEadUVBMghMD85vpz9UCE8rUJt+nV/69cH8IOF4OZ6MCvRtsTCnkM0wo5zRLYL2h/vy5/BY9juJ4WJWB6qyAd4ixUfgZSWaITxQRns+0xoQFnGG0qRrYi/i5wuYUqzsbQL/CU89bYDP51Saf8uu5hd/Bzp+fMSzQS5wI8f3JaFDx6taYpf1HNB3AVhDouOSMNPKA0VJv+1RPmZo9D3RA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=n1seToYo; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=kGw3GOQA;
-	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=kGw3GOQA;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=n1seToYo;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.190; helo=szxga04-in.huawei.com; envelope-from=zhouminqiang2@huawei.com; receiver=lists.ozlabs.org)
-Received: from szxga04-in.huawei.com (szxga04-in.huawei.com [45.249.212.190])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hX5Ms6pvfz2xlZ
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Aug 2026 16:44:41 +1000 (AEST)
-dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=S1yrFP4Pe6B/KX4VlbIF1fox942sBDwMlaUs6T4ODEg=;
-	b=kGw3GOQA7j/ll6HjJ7opjr9yugQSx0srBbftBV0nHJqV0lNwEOmiK55GOyWVY9oQbti8dmf7Y
-	fC4xbX4RXHos2KXMZCje/FHwjDuB0cBw1kirsBique2cBcbiJQ2mXWYVhME5LToy5ot11FKhUtz
-	sEGnHGsHsyS5KN6nFTFNgsI=
-Received: from canpmsgout05.his.huawei.com (unknown [172.19.92.145])
-	by szxga04-in.huawei.com (SkyGuard) with ESMTPS id 4hX4ww3fmJz126M1g
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Aug 2026 14:24:48 +0800 (CST)
-dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=S1yrFP4Pe6B/KX4VlbIF1fox942sBDwMlaUs6T4ODEg=;
-	b=kGw3GOQA7j/ll6HjJ7opjr9yugQSx0srBbftBV0nHJqV0lNwEOmiK55GOyWVY9oQbti8dmf7Y
-	fC4xbX4RXHos2KXMZCje/FHwjDuB0cBw1kirsBique2cBcbiJQ2mXWYVhME5LToy5ot11FKhUtz
-	sEGnHGsHsyS5KN6nFTFNgsI=
-Received: from mail.maildlp.com (unknown [172.19.162.140])
-	by canpmsgout05.his.huawei.com (SkyGuard) with ESMTPS id 4hX4jv5tR9z12LDl;
-	Sat, 29 Aug 2026 14:15:15 +0800 (CST)
-Received: from dggpemr100018.china.huawei.com (unknown [7.185.36.64])
-	by mail.maildlp.com (Postfix) with ESMTPS id 4728820333;
-	Sat, 29 Aug 2026 14:25:31 +0800 (CST)
-Received: from huawei.com (10.50.85.155) by dggpemr100018.china.huawei.com
- (7.185.36.64) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.36; Sat, 29 Aug
- 2026 14:25:30 +0800
-From: zhouminqiang <zhouminqiang2@huawei.com>
-To: <linux@armlinux.org.uk>, <vz@mleia.com>, <piotr.wojtaszczyk@timesys.com>,
-	<maddy@linux.ibm.com>, <dwmw2@infradead.org>, <richard@nod.at>
-CC: <linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
-	<linuxppc-dev@lists.ozlabs.org>, <linux-mtd@lists.infradead.org>,
-	<chengzhihao1@huawei.com>, <yangerkun@huawei.com>, <yi.zhang@huawei.com>
-Subject: [PATCH v2 2/7] jffs2: replace per-superblock verify buffer with per-write buffer
-Date: Sat, 29 Aug 2026 14:16:52 +0800
-Message-ID: <20260829061658.306854-3-zhouminqiang2@huawei.com>
-X-Mailer: git-send-email 2.52.0
-In-Reply-To: <20260829061658.306854-1-zhouminqiang2@huawei.com>
-References: <20260829061658.306854-1-zhouminqiang2@huawei.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hXSdd5lJQz2xZV
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Aug 2026 07:12:53 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 2C70F42D83;
+	Sat, 29 Aug 2026 21:12:50 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 649AD1F000E9;
+	Sat, 29 Aug 2026 21:12:49 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1788037970;
+	bh=Dtc/3TiWrxvKp0avjjHTAnH0zP9eaKC6iJzs8wdLbVc=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date;
+	b=n1seToYoBBT3aH6XYy57AvAYoTN8Sa1DDhmW2pGm9sBs8rkBWyAhcowrHekDBroX/
+	 LQ9shz0t6AxoS/RQDPShfDSc0m9IWLcU9cIQJq3FkW1jzrInW5+Iv/KAuW8URYVB2n
+	 2vCrp2pcnJfrchIq4fTPd7v9FJeK1MDe0dV9wrUv3zK9IWSwAUoaPxvg0yAGixhM4c
+	 Z9dwi/DUpv4kJC8uG3byshQrVjTrnzKYKROHUXMRnPyH/qBRKuo9hNfxOcn7FEeewO
+	 jvzQ+uh7MKEZRseKSgUEU40CtjsBO3Ee/xgR+WN5+SACHRv8m1z/ulKCStwZ7OqVFK
+	 esh+04RW4xs+A==
+From: Thomas Gleixner <tglx@kernel.org>
+To: "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Michael Ellerman
+ <mpe@ellerman.id.au>, Shrikanth Hegde <sshegde@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, Kees Cook <kees@kernel.org>, Huacai Chen
+ <chenhuacai@kernel.org>, loongarch@lists.linux.dev, Paul Walmsley
+ <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+ linux-riscv@lists.infradead.org, Sven Schnelle <svens@linux.ibm.com>,
+ linux-s390@vger.kernel.org, x86@kernel.org, Mark Rutland
+ <mark.rutland@arm.com>, Jinjie Ruan <ruanjinjie@huawei.com>, Andy
+ Lutomirski <luto@kernel.org>, Oleg Nesterov <oleg@redhat.com>, Richard
+ Henderson <richard.henderson@linaro.org>, Russell King
+ <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Guo
+ Ren <guoren@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Thomas
+ Bogendoerfer <tsbogend@alpha.franken.de>, Helge Deller <deller@gmx.de>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, Richard Weinberger
+ <richard@nod.at>, Chris Zankel <chris@zankel.net>,
+ linux-arm-kernel@lists.infradead.org, linux-alpha@vger.kernel.org,
+ linux-csky@vger.kernel.org, linux-m68k@vger.kernel.org,
+ linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org,
+ linux-sh@vger.kernel.org, linux-um@lists.infradead.org, Arnd Bergmann
+ <arnd@arndb.de>, Vineet Gupta <vgupta@kernel.org>, Will Deacon
+ <will@kernel.org>, Brian Cain <bcain@kernel.org>, Michal Simek
+ <monstr@monstr.eu>, Dinh Nguyen <dinguyen@kernel.org>, "David S. Miller"
+ <davem@davemloft.net>, Andreas Larsson <andreas@gaisler.com>,
+ linux-snps-arc@lists.infradead.org, linux-hexagon@vger.kernel.org,
+ linux-openrisc@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-arch@vger.kernel.org, Michal =?utf-8?Q?Such=C3=A1nek?=
+ <msuchanek@suse.de>, Jonathan
+ Corbet <corbet@lwn.net>, linux-doc@vger.kernel.org
+Subject: Re: [patch 03/18] entry: Provide
+ [syscall_]enter_from_user_mode_randomize_stack()
+In-Reply-To: <995a61ef-ce8c-4c8b-bea8-77f375076a39@zytor.com>
+References: <20260707181957.433213175@kernel.org>
+ <20260707190253.816918647@kernel.org>
+ <995a61ef-ce8c-4c8b-bea8-77f375076a39@zytor.com>
+Date: Sat, 29 Aug 2026 23:12:47 +0200
+Message-ID: <87bjakeils.ffs@fw13>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,172 +95,26 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
-X-Originating-IP: [10.50.85.155]
-X-ClientProxiedBy: kwepems100001.china.huawei.com (7.221.188.238) To
- dggpemr100018.china.huawei.com (7.185.36.64)
 
-Subsequent patches will extend write verification to additional write
-paths that may execute concurrently. A shared per-superblock buffer
-would require a coarse lock to serialize all verification, hurting
-concurrency.
+On Thu, Aug 27 2026 at 15:46, H. Peter Anvin wrote:
+> Can anyone *please* find out what the actual security requirements are for the
+> syscall randomization offset?
+>
+> The original checkin, 39218ff4c625 ("stack: Optionally randomize kernel stack
+> offset each syscall") indicates that it is fundamental that the stack offset
+> is applied *after* pt_regs pushing, but that isn't documented anywhere in the
+> kernel sources as far as I can tell.
 
-To avoid this contention, remove the wbuf_verify field from
-jffs2_sb_info, along with the scattered kmalloc/kfree of wbuf_verify
-in jffs2_nand_flash_setup, jffs2_dataflash_setup,
-jffs2_nor_wbuf_flash_setup and their corresponding cleanup functions.
+> However, I have also come to understand that there are further, undocumented
+> constraints; at least at one point I was told that "the offset should not be
+> stored in memory while running in the kernel", which seems more than a bit odd.
 
-Instead, allocate a temporary buffer inside jffs2_verify_write(),
-giving each invocation its own buffer and eliminating the shared state.
+This thread has the initial discussions about it with more explanations:
 
-Signed-off-by: zhouminqiang <zhouminqiang2@huawei.com>
----
- fs/jffs2/jffs2_fs_sb.h |  3 ---
- fs/jffs2/wbuf.c        | 61 ++++++++++++++++--------------------------
- 2 files changed, 23 insertions(+), 41 deletions(-)
+  https://lore.kernel.org/kernel-hardening/2236FBA76BA1254E88B949DDB74E612BA4BC57C1@IRSMSX102.ger.corp.intel.com/
 
-diff --git a/fs/jffs2/jffs2_fs_sb.h b/fs/jffs2/jffs2_fs_sb.h
-index 5a7091746f68..8a75870d3fc8 100644
---- a/fs/jffs2/jffs2_fs_sb.h
-+++ b/fs/jffs2/jffs2_fs_sb.h
-@@ -124,9 +124,6 @@ struct jffs2_sb_info {
- 
- 	uint32_t wbuf_pagesize; /* 0 for NOR and other flashes with no wbuf */
- 
--#ifdef CONFIG_JFFS2_FS_WBUF_VERIFY
--	unsigned char *wbuf_verify; /* read-back buffer for verification */
--#endif
- #ifdef CONFIG_JFFS2_FS_WRITEBUFFER
- 	unsigned char *wbuf; /* Write-behind buffer for NAND flash */
- 	uint32_t wbuf_ofs;
-diff --git a/fs/jffs2/wbuf.c b/fs/jffs2/wbuf.c
-index 61e3dbd4cd7b..f10be57c5543 100644
---- a/fs/jffs2/wbuf.c
-+++ b/fs/jffs2/wbuf.c
-@@ -233,19 +233,31 @@ static int jffs2_verify_write(struct jffs2_sb_info *c, unsigned char *buf,
- 	int ret;
- 	size_t retlen;
- 	char *eccstr;
-+	void *verify_buf;
-+
-+	verify_buf = kmalloc(c->wbuf_pagesize, GFP_NOFS);
-+	if (!verify_buf) {
-+		pr_warn("%s(): verify buffer allocation failed, skipping verification\n",
-+			__func__);
-+		return 0;
-+	}
-+
-+	ret = mtd_read(c->mtd, ofs, c->wbuf_pagesize, &retlen, verify_buf);
- 
--	ret = mtd_read(c->mtd, ofs, c->wbuf_pagesize, &retlen, c->wbuf_verify);
- 	if (ret && ret != -EUCLEAN && ret != -EBADMSG) {
- 		pr_warn("%s(): Read back of page at %08x failed: %d\n",
- 			__func__, c->wbuf_ofs, ret);
--		return ret;
-+		goto out_free;
- 	} else if (retlen != c->wbuf_pagesize) {
- 		pr_warn("%s(): Read back of page at %08x gave short read: %zd not %d\n",
- 			__func__, ofs, retlen, c->wbuf_pagesize);
--		return -EIO;
-+		ret = -EIO;
-+		goto out_free;
-+	}
-+	if (!memcmp(buf, verify_buf, c->wbuf_pagesize)) {
-+		ret = 0;
-+		goto out_free;
- 	}
--	if (!memcmp(buf, c->wbuf_verify, c->wbuf_pagesize))
--		return 0;
- 
- 	if (ret == -EUCLEAN)
- 		eccstr = "corrected";
-@@ -261,9 +273,14 @@ static int jffs2_verify_write(struct jffs2_sb_info *c, unsigned char *buf,
- 
- 	pr_warn("Read back:\n");
- 	print_hex_dump(KERN_WARNING, "", DUMP_PREFIX_OFFSET, 16, 1,
--		       c->wbuf_verify, c->wbuf_pagesize, 0);
-+		       verify_buf, c->wbuf_pagesize, 0);
- 
-+	kfree(verify_buf);
- 	return -EIO;
-+
-+out_free:
-+	kfree(verify_buf);
-+	return ret;
- }
- #else
- #define jffs2_verify_write(c,b,o) (0)
-@@ -1217,22 +1234,11 @@ int jffs2_nand_flash_setup(struct jffs2_sb_info *c)
- 		return -ENOMEM;
- 	}
- 
--#ifdef CONFIG_JFFS2_FS_WBUF_VERIFY
--	c->wbuf_verify = kmalloc(c->wbuf_pagesize, GFP_KERNEL);
--	if (!c->wbuf_verify) {
--		kfree(c->oobbuf);
--		kfree(c->wbuf);
--		return -ENOMEM;
--	}
--#endif
- 	return 0;
- }
- 
- void jffs2_nand_flash_cleanup(struct jffs2_sb_info *c)
- {
--#ifdef CONFIG_JFFS2_FS_WBUF_VERIFY
--	kfree(c->wbuf_verify);
--#endif
- 	kfree(c->wbuf);
- 	kfree(c->oobbuf);
- }
-@@ -1272,14 +1278,6 @@ int jffs2_dataflash_setup(struct jffs2_sb_info *c) {
- 	if (!c->wbuf)
- 		return -ENOMEM;
- 
--#ifdef CONFIG_JFFS2_FS_WBUF_VERIFY
--	c->wbuf_verify = kmalloc(c->wbuf_pagesize, GFP_KERNEL);
--	if (!c->wbuf_verify) {
--		kfree(c->wbuf);
--		return -ENOMEM;
--	}
--#endif
--
- 	pr_info("write-buffering enabled buffer (%d) erasesize (%d)\n",
- 		c->wbuf_pagesize, c->sector_size);
- 
-@@ -1287,9 +1285,6 @@ int jffs2_dataflash_setup(struct jffs2_sb_info *c) {
- }
- 
- void jffs2_dataflash_cleanup(struct jffs2_sb_info *c) {
--#ifdef CONFIG_JFFS2_FS_WBUF_VERIFY
--	kfree(c->wbuf_verify);
--#endif
- 	kfree(c->wbuf);
- }
- 
-@@ -1309,20 +1304,10 @@ int jffs2_nor_wbuf_flash_setup(struct jffs2_sb_info *c) {
- 	if (!c->wbuf)
- 		return -ENOMEM;
- 
--#ifdef CONFIG_JFFS2_FS_WBUF_VERIFY
--	c->wbuf_verify = kmalloc(c->wbuf_pagesize, GFP_KERNEL);
--	if (!c->wbuf_verify) {
--		kfree(c->wbuf);
--		return -ENOMEM;
--	}
--#endif
- 	return 0;
- }
- 
- void jffs2_nor_wbuf_flash_cleanup(struct jffs2_sb_info *c) {
--#ifdef CONFIG_JFFS2_FS_WBUF_VERIFY
--	kfree(c->wbuf_verify);
--#endif
- 	kfree(c->wbuf);
- }
- 
--- 
-2.52.0
+Thanks,
 
+        tglx
 
