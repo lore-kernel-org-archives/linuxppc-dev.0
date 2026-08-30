@@ -1,52 +1,52 @@
-Return-Path: <linuxppc-dev+bounces-26196-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26197-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 01D19C61DB9
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 30 Aug 2026 07:49:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 960C6C61DE2
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 30 Aug 2026 07:49:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hXkmT4v9lz2ygg;
-	Sun, 30 Aug 2026 17:49:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hXkmY1MkFz306N;
+	Sun, 30 Aug 2026 17:49:49 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788076185;
-	cv=none; b=gz1N1jtcseVen8AXUvpgMlU4+4Yp2ySSrPzHBPzZNCAZMdcdVvZGo/oxuonSDgl21yzChUypab+hQoBTA5c/Wd6xQi3/I6rjmmwEHCrBetCJ4qpxS+OeHOzgNgYEdaO90u8HaPAMF5v+3KJmUZWCgJ2bApAMeBa4i3ednHC4s3scUq2NyceeTTsAlN1J1/PUcmW6RN9ltMF18fbZ4F5o9cB7XUlCVyU9JhYIDxHAtzGhQxnaUOfkupZbGYiItu00ebExtVBsiE33TPnOvuImhARdnt2xmaBi6RrOqcxK0LoFRSSSQNZ0yML4MR1MfWrZK7zbq1FADNPikwa10wYOTw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788076189;
+	cv=none; b=oBhFOcYxBLFENkApWLfIixhwygsKEq7fOhe6hodtlAPPyv8HpDeLwei4Ryt9qeArLJSXrbA/KPIzrVzu31QsxvnvwxilBBBISh73LMhuEttKc4usIdk5ycYX77v2DCVAF3AS8vsMgAS1tQMhzea7AViaAEbWVNFCywm64uye2kCfftuSYnky28qoqtIe2QI1+5YDXLfucaMC35HIYRbdt0TmlpkHAhQxUQdzz/rucRftNrDHGgC9YIchXYlAaTCQD8JkX5qtguum4PImKNhxxMRlfE+8zEJIdcxm+LR0cMhHWxWhInpFeeMdOkjhIONbQiTHKKLpcX3lXagyQNWytg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788076185; c=relaxed/relaxed;
-	bh=Kmf7UNuR3TJfz0wmHchwj7E8FCZ4Ng6XB4qrntzPsXg=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=nBuKCn26ZCF7kG94/dm3Z52OfTxEUkUCNX+l3hUSyoPewvSJLmji+xhIRTUofWMWJlOB2ZVcNr0ScnC5cU63EcLM466MEi0YqiHDyu3JqA8TU80Ijxz9/tFE2K5xZ0h1kDf6UCUIX2NdGgQryXaz2irz7ljyIZam2GvDF2lrp20JRxPOVyt87VUrQuMKm2NM49Qts7hsPOeu7DUP/Jp7mpxbxSkNaQsskoN76AtRvX/t+9gudjVUvYmAnzxYV3DjahTfNkLiqIm/Fviq+aDghgbE1Y61u7x+yZRzJbgEifZQHCnFuEb9gceqsscWlnqztEL7ONqACzVM/AeXCeEB7w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=eNe9x6Un; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1788076189; c=relaxed/relaxed;
+	bh=HuAQFZwiOZzqNfEaGbCIrZqTUyDwkDp9iUPeNuXnT0k=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=WNkHBFpJdhGrmCuWzBvqbMk57awjZ8fucHi9513mEk0ZzOI7FctJZ9evuaB0JGIZJIHTIZZqFwMLG+oLK8KcAlXSlFwO0+sblXEq2+J/lEirA2qjIeqRRVZqMTo7PWMljYpPOhoIuVBIa8C5fjFd+nkxwosX4h28Z0SzXclecRF+5rLYUTdgFN/Vu/PaQjD6bu2Sfwp2NOoM6QBIRbBSEt9FjMhPC/iZx86oUgBRmU84W/g/vZpOURwxhG1GdOn1JnchUeUGeCRP2jhBkdCD0mwvIUzqjHIdHExWp+n2MezLeGvd5zLknunbjI7cZVO2AoMewg3xOxojPyszu2aMZQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=NOx4HGWj; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=eNe9x6Un;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=NOx4HGWj;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hXkmS4Q2qz2ygW
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Aug 2026 17:49:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hXkmW46RKz2ygW
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Aug 2026 17:49:47 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 4B5E54059D;
+	by sea.source.kernel.org (Postfix) with ESMTP id 5533543C8C;
+	Sun, 30 Aug 2026 07:49:45 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id ACE331F00A3D;
 	Sun, 30 Aug 2026 07:49:42 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A190A1F000E9;
-	Sun, 30 Aug 2026 07:49:39 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788076182;
-	bh=Kmf7UNuR3TJfz0wmHchwj7E8FCZ4Ng6XB4qrntzPsXg=;
-	h=From:Subject:Date:To:Cc;
-	b=eNe9x6UnAK5IeFqG2g12NDUx45i6Sa7NrF/9OqdSg+uGiEVFvzk5LFJM1blh/UbMy
-	 BZdDLd/DVd8TX6VxnkN9vZ8z4Y0G81c3wDyXh6pV3V/c/msuMtzKI1ivKcA4LbE3GJ
-	 SMADYzhe0EHnAp8QVn9iHnc4HAwNqZp0DizycG89nBIv7RLinZsDF8J5uANqqAdMd5
-	 +2quL2ySSSXwdofmmFlhwgLBxah6rWfg7/YTIT0DhFiGrsE+iIVRR1rSgfZmODmmmW
-	 bYJFZfVqhJVUepBerrCFkXFvHkrqPe7aFeEXQg2zv7dE5mUBz907gwL1aKOKkqXg2T
-	 KV2IanmTnRHOw==
+	s=k20260515; t=1788076185;
+	bh=HuAQFZwiOZzqNfEaGbCIrZqTUyDwkDp9iUPeNuXnT0k=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc;
+	b=NOx4HGWjxeuC3f34ZH/BvB1br+XJ+CJKR4IxRAwWAEqdxRYw7/ImwrMEVKFpf/Kg0
+	 AJode0vDl1kcX4QqspysvvD+TJYk5aQ2GZl/ZwmXIH4gkQNWcny+xwYp37F7E40tsE
+	 VZnpJUN/K56Pg2Z5AJJx004ORINtZRaC3nH+H0rGRd9gCkSx3EjnUeeYv0XriMDcT/
+	 RGLuYELGfmmQBecnLFSat3U2/DheEczEzej8qj+W0u8KIizfDBNepX9Si2yzIuTW/+
+	 bDbogz42uOCEB8zkoZB2xUXKnSPldxToGvEjFNMuL23yN7HZJdMzAwcACVYjzLamXF
+	 XManrSAy5lqLA==
 From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
-Subject: [PATCH 0/3] tty: replace page allocator calls with k[mz]alloc()
-Date: Sun, 30 Aug 2026 10:49:36 +0300
-Message-Id: <20260830-tty-v1-0-0cbe6170649b@kernel.org>
+Date: Sun, 30 Aug 2026 10:49:37 +0300
+Subject: [PATCH 1/3] tty: port: replace get_zeroed_page() with kzalloc()
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,10 +62,9 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/yXMwQ6DIBAE0F8xey4NRavUX2k8AF3r9kAbFhsN8
- d8FPb7JzCRgDIQMfZUg4J+Yvj7jdqnATca/UdArG5RUrdTqIWJchW5Gebddo1tlIDd/AUdajpf
- ncJpn+0EXy7Q0rGEUNhjvphId7K41bNsOOOCfDYIAAAA=
-X-Change-ID: 20260829-tty-84f05b74862a
+Message-Id: <20260830-tty-v1-1-0cbe6170649b@kernel.org>
+References: <20260830-tty-v1-0-0cbe6170649b@kernel.org>
+In-Reply-To: <20260830-tty-v1-0-0cbe6170649b@kernel.org>
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
  Jiri Slaby <jirislaby@kernel.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>, 
@@ -75,56 +74,73 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
  linux-serial@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 X-Mailer: b4 0.17-dev
 
-This is a (small) part of larger work of replacing page allocator calls
-with kmalloc.
+tty_port_alloc_xmit_buf() allocates the transmit buffer of a tty port. The
+buffer only backs the port's kfifo, the data being sent is copied in and
+out of it.
 
-My initial intention a few month ago was to remove ugly casts [1], but then
-willy pointed out that Linus objected to something like this [2] and it
-looks like more than a decade old technical debt.
+This buffer can be allocated with kmalloc() as there's nothing special
+about it to go directly to the page allocator.
 
-Largely, anything that doesn't need struct page (or a memdesc in the
-future) should just use kmalloc() or kvmalloc() to allocate memory.
-kmalloc() guarantees alignment, physical contiguity and working
-virt_to_phys() and beside nicer API that returns void * on alloc and
-doesn't require to know the allocation size on free, kmalloc() provides
-better debugging capabilities than page allocator.
+kmalloc() provides a better API that does not require ugly casts and
+kfree() does not need to know the size of the freed object.
 
-Another thing is that touching these allocation sites gives the reviewers
-opportunity to see if a PAGE_SIZE buffer is actually needed or maybe
-another size is appropriate.
+Performance difference between kmalloc() and __get_free_pages() is not
+measurable as both allocators take an object/page from a per-CPU list for
+fast path allocations.
 
-For larger allocations that don't need physically contiguous memory
-kvmalloc() can be a better option that __get_free_pages() because under
-memory pressure it's is easier to allocate several order-0 pages than a
-physically contiguous chunk with the same number of pages.
+For the slow path the performance is anyway determined by the amount of
+reclaim involved rather than by what allocator is used.
 
-And last, but not least, removing needless calls to page allocator should
-help with memdesc (aka project folio) conversion. There will be way less
-places to audit to see if the user was actually using struct page.
+Replace use of get_zeroed_page() with kzalloc() and free_page() with
+kfree().
 
-The patches are deliberately kept small: each one deals with a single
-driver or subsystem and with a single type of allocation, so that every
-conversion can be reviewed, and if needed reverted, on its own.
-
-[1] https://lore.kernel.org/all/20251018093002.3660549-1-rppt@kernel.org/
-[2] https://lore.kernel.org/all/CA+55aFwp4iy4rtX2gE2WjBGFL=NxMVnoFeHqYa2j1dYOMMGqxg@mail.gmail.com/
-
+Link: https://lore.kernel.org/all/635405e4-9423-4a25-a6e7-e03c8ea0bcbe@redhat.com
+Assisted-by: copilot:claude-opus
+Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
 ---
-Mike Rapoport (Microsoft) (3):
-      tty: port: replace get_zeroed_page() with kzalloc()
-      serial: core: replace get_zeroed_page() with kzalloc()
-      tty: hvcs: replace __get_free_page() with kmalloc()
+ drivers/tty/tty_port.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
- drivers/tty/hvc/hvcs.c           |  6 +++---
- drivers/tty/serial/serial_core.c | 16 ++++++++--------
- drivers/tty/tty_port.c           |  8 ++++----
- 3 files changed, 15 insertions(+), 15 deletions(-)
----
-base-commit: 1b78070aaef63512688aebfbc82365ef9d6660f1
-change-id: 20260829-tty-84f05b74862a
+diff --git a/drivers/tty/tty_port.c b/drivers/tty/tty_port.c
+index 54359310e293..44122921fc45 100644
+--- a/drivers/tty/tty_port.c
++++ b/drivers/tty/tty_port.c
+@@ -240,13 +240,13 @@ EXPORT_SYMBOL_GPL(tty_port_unregister_device);
+ 
+ int tty_port_alloc_xmit_buf(struct tty_port *port)
+ {
+-	/* We may sleep in get_zeroed_page() */
++	/* We may sleep in kzalloc() */
+ 	guard(mutex)(&port->buf_mutex);
+ 
+ 	if (port->xmit_buf)
+ 		return 0;
+ 
+-	port->xmit_buf = (u8 *)get_zeroed_page(GFP_KERNEL);
++	port->xmit_buf = kzalloc(PAGE_SIZE, GFP_KERNEL);
+ 	if (port->xmit_buf == NULL)
+ 		return -ENOMEM;
+ 
+@@ -259,7 +259,7 @@ EXPORT_SYMBOL(tty_port_alloc_xmit_buf);
+ void tty_port_free_xmit_buf(struct tty_port *port)
+ {
+ 	guard(mutex)(&port->buf_mutex);
+-	free_page((unsigned long)port->xmit_buf);
++	kfree(port->xmit_buf);
+ 	port->xmit_buf = NULL;
+ 	INIT_KFIFO(port->xmit_fifo);
+ }
+@@ -288,7 +288,7 @@ static void tty_port_destructor(struct kref *kref)
+ 	/* check if last port ref was dropped before tty release */
+ 	if (WARN_ON(port->itty))
+ 		return;
+-	free_page((unsigned long)port->xmit_buf);
++	kfree(port->xmit_buf);
+ 	tty_port_destroy(port);
+ 	if (port->ops && port->ops->destruct)
+ 		port->ops->destruct(port);
 
---
-Sincerely yours,
-Mike.
+-- 
+2.53.0
 
 
