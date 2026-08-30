@@ -1,66 +1,100 @@
-Return-Path: <linuxppc-dev+bounces-26201-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26202-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 323FBC61DD9
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 30 Aug 2026 20:28:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 89822C61DD9
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 30 Aug 2026 20:51:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hY3cC0tMZz2xwN;
-	Mon, 31 Aug 2026 06:28:43 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::546"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788121723;
-	cv=none; b=oyxwZ+Bu8R3hL0kHq8EneX8gv5FzCpZYSejsd9b64Lyubipbva6myCVKfngVPGAODhh+DbIZS0SX3hgRNcxC211qrCC7uhKSt0LVew04EuzugPJZ/wTibicEakPPewEqPO+gQk6ZURA59NOf/a/jfjPK67bndrUj2SZVzf1Vkc0hmf9mP/BLBb8Wo3+8LhopTf79j+B3r7q4Nt6oeZ3tGwk2h+4XstD9R0xyibB8J7e69gjGJ5RjTYFDZH58y3gBuQY3lGGJrKK8SJaPDP4IB9fOdx/pUUxiI3LTOVuqtYYTSkeQby/VrRUQci9mQTV9HVLfmo3rGEda1Jjjuhh9Ig==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hY46G1Jnlz2xwN;
+	Mon, 31 Aug 2026 06:51:18 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::333"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788123078;
+	cv=none; b=miZpNLdEzHRWNTpTwHBFcaRj4+U8b8Bf90WADF3kC2NXZ5sNLxn3WAAjN/kPUckPbJvkboiWVN4Ea7Mtt5JHnHb/BTu6DG+n2SstVrasmX9LO/xIEdhZH0D9v/C8V3OY2MJ5VkAG1IewU13dosymFKSaWd4nXFbNOQsYaKho/0+RcZNzLlC7cPLHR1BDQIc4WvVf2BPIIUmJuael/8xAATRPJDpm91N/KTA06ysFOEdI8gyf7nY5ykTkx2TTtW59NhoLv5KZ/TErCScmY8YVb93ZPJQtbzDVoABQo8BzMGxfD6LXpn/Po0JPXucSAMAwE5jhwpb08g5mHDMSOjcuvQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788121723; c=relaxed/relaxed;
-	bh=li9ks3fzgj1JF/ynP8/WlTAM/bKVb0+AaGC4hKm7+4g=;
-	h=Date:Mime-Version:Message-ID:Subject:From:To:Cc:Content-Type; b=hqZ5Pat5dwwLREPTtA0BY2nejKtOfMUTijS9Em77ycvAE9s6oeTZ9d3F4/0eOQsjTmBIkVS2rQmnMPrkCr8pJbiY7/MMF2MgkmDrSmcIOslPwfBqQZgETF2qekipQPn2wmusQWO9a4wsoWvZmE2XMrLCAz173aJQX5sZodNyxr0iawJ/+CtdqnJdO4ysYtv7z428uSTdMX21SpU56GwamHEBpZLp9vZsYnuRFSQQya60BDUvgpGDcwZtx5S70pILriknqoTg6BULw+msjRIFB0H1v31swRDU+2HFsbWrpvOMmducTlErEGioIthX9EJBhiwaaOMuKbIJhI7VRGsC0w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=V9v5MgCB; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::546; helo=mail-pg1-x546.google.com; envelope-from=3dzkuag0kdeg1k3rynz1s8kxuqyyqvo.mywvsx47zzm-no5vs232.y9vkl2.y1q@flex--rathodpriyank.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--rathodpriyank.bounces.google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	t=1788123078; c=relaxed/relaxed;
+	bh=LoZfYCgqZbEQ0teo+NtTssPLrP4Kgxaj7h/3WUn4gBg=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=WhI9nUbOrJHrb7Hzkzcmek+wkYNDooMK7Yvbb9s9eYpA4TgJRZBfCjVq1A3efar82oSvbk2/l7shYP5r2bvQuLxH6DDIfVexLQ49wMRD9EwZK2wsSkqA69M1cxjN4MoanC0nQHc1+kcuNUn75+akPSy6wBFQ2Y6iYk9WKwvvW7T9B85rwngPMRnP7tfCojC1XHv6t2sGo31Fjn/UFY8swgTnsI3Uzyne7HATe9AeQqhYYU5kgqmjpS2uyWt78ElUUDhvo3GExUIxLPPpysyT4HDex/xoU4ikGj/v1WWGIo8jR0phSIBSf+1qz71MrcYvb/DubPuh2TN1Li8inLjxQg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=TthT9J1v; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::333; helo=mail-wm1-x333.google.com; envelope-from=stefanghetu9@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=V9v5MgCB;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=TthT9J1v;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--rathodpriyank.bounces.google.com (client-ip=2607:f8b0:4864:20::546; helo=mail-pg1-x546.google.com; envelope-from=3dzkuag0kdeg1k3rynz1s8kxuqyyqvo.mywvsx47zzm-no5vs232.y9vkl2.y1q@flex--rathodpriyank.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x546.google.com (mail-pg1-x546.google.com [IPv6:2607:f8b0:4864:20::546])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::333; helo=mail-wm1-x333.google.com; envelope-from=stefanghetu9@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-wm1-x333.google.com (mail-wm1-x333.google.com [IPv6:2a00:1450:4864:20::333])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hY3c94Rptz2xr2
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Aug 2026 06:28:41 +1000 (AEST)
-Received: by mail-pg1-x546.google.com with SMTP id 41be03b00d2f7-cc1c5810451so3657621a12.1
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Aug 2026 13:28:40 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hY46D3fCzz2xLg
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Aug 2026 06:51:15 +1000 (AEST)
+Received: by mail-wm1-x333.google.com with SMTP id 5b1f17b1804b1-490cf322ed0so31463325e9.1
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Aug 2026 13:51:15 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1788121718; x=1788726518; darn=lists.ozlabs.org;
-        h=content-type:cc:to:from:subject:message-id:mime-version:date:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=li9ks3fzgj1JF/ynP8/WlTAM/bKVb0+AaGC4hKm7+4g=;
-        b=V9v5MgCBTifv6F3MASCUFIEpEgD2riEfHgwP2QxeQlyRtGQPzn1hIEISYd6GLBPDCP
-         ylfQFFxLXz4RF+sC8uvR02bp+XW4vBtRJaNJaJkPWR2cbUCj0bZZT6nRnwYB3nLhLhpc
-         Afht4tbx4PWLhnSLWqyEbAwQBtAyCy+ZsmQSOFJwRlvBAUpvb/jOxCC4LejBGvSV/Ehv
-         kRJ8xxFZtd6CDWCf6XTK1JELjRfSpEeKpWzoR6v1uYticNP+LrhEFX2Urlzlq2tAaEzv
-         i8Ew3CNBHRaxdfOTduDO737MZrG6RW2AYU1zubN9h88REMgFLUqowo7WjPt0gIGPGEMF
-         DKOA==
+        d=gmail.com; s=20251104; t=1788123071; x=1788727871; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=LoZfYCgqZbEQ0teo+NtTssPLrP4Kgxaj7h/3WUn4gBg=;
+        b=TthT9J1vGME4k0J9IpFj2pKj6aw0kVYDOW+GogwfupQid1PYSW1TMFdkixMOjj8owi
+         l+wSKE7ur4S0f06TPrtjdKSXCmHDdvOs3FVSBclocnQ+upk67LtlqGIZMF4mZ2sPOGr/
+         OLJHFJUmW5iw3zYNodkM0nEzEX6ARnhURzpWifyugMZq/wPsQnZRwZGC4UWfMb6ssWTX
+         ZsUVkwZvuZfj9I09h225zQ0ZGpF8udzVg+SgpgyXY4pCHifESTkCqyCjfy5q2CfQdCEQ
+         yc4ibA05HYER4f4ZMc/vRRrHA7nhJUk6WfXAqqEhFJBfe4bKFD7fetp16olWOtaGJDhF
+         YxFA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788121718; x=1788726518;
-        h=content-type:cc:to:from:subject:message-id:mime-version:date
+        d=1e100.net; s=20251104; t=1788123071; x=1788727871;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=li9ks3fzgj1JF/ynP8/WlTAM/bKVb0+AaGC4hKm7+4g=;
-        b=MblIPUbxRp9rMiPfjrBqvrm7fFOL3UU0o8+SSBOi6Kis8xh0tznE/taKMifHGJMeeS
-         YKwW2GwZox2pecB5mO3TGQKLT8YhnSVCtVOL55UR4Gulgp57xvIftcsEh8fSmTW942sb
-         Nwma/1bBudSKZEyzRzH5NmWrKz4cSe31fVv/e4A49B9Nr3WqCm+KK+O90VbtbvPDa1Py
-         Gm0cvhXSjNHlUTSpK6Ugj8p9nn+qg6y4pRhvWFknbFMdIc3AqSsd36EWYvq4XrXXo7gF
-         xVFNmca2CJbQPQDizk/u5tmdQ/mNaVGPsNyoP1bDB+VaLmpHBmhtN3W11rSueruyGvcT
-         ABoQ==
-X-Gm-Message-State: AFuF++m+0TytlfcrkTZJZot5YeVHLqDNF32lqd9WASYUrPOjScn2f/TZ
-	JWsNT3vzGO9A67t8u742DDLCChKWj24OVGryHnS+mvdKGdV5tjl0GudbPpr9dJNs3YTilYoTDqQ
-	uS9T52M1+5ZMnM5nSEM0N6DoFlzGNomZGMw==
-X-Received: from pgca19-n1.prod.google.com ([2002:a05:6a02:6393:10b0:c92:460e:4f73])
- (user=rathodpriyank job=prod-delivery.src-stubby-dispatcher) by
- 2002:a05:6a00:218c:b0:857:7317:cff1 with SMTP id d2e1a72fcca58-8577317d1a1mr20165511b3a.18.1788121717681;
- Sun, 30 Aug 2026 13:28:37 -0700 (PDT)
-Date: Sun, 30 Aug 2026 20:28:28 +0000
+        bh=LoZfYCgqZbEQ0teo+NtTssPLrP4Kgxaj7h/3WUn4gBg=;
+        b=GShUL6l5M1XVWJmn5zHlIpq0bAZoQuVVbY3m1XjpFZnaIaOl5k3GpB+2dGmfUN+zSm
+         CX17gJIGcpmGaitqBLoagVU6DE1LAtxk9GHhSqly2NSExe8vmaZEwdDxW2OrjHSn6xfk
+         CQ48G1iVG/2MQ3xporac2v7V/FcXlz1JIqOSBTD10tj9v7torKaGIl484MOUciT/oZWM
+         NsBL43ClkczIO19EeW3Pxt5RF4HnlATGw+1GDdZNOW8elyrdH9gjNoHvCB3QX2rfvJ8H
+         0JrdMFMF2gtC3hksfX8WakR+L9uMmzmNr8Wk+0i3xhn+edN4y4ZWSzCJrJZl/f6uwvvY
+         x2Sw==
+X-Forwarded-Encrypted: i=1; AHgh+RoHVw061RfHT7ykXJG5G12JATnKUHU7Xub2TbC9Adxv//Fxb4V9xYwO9//yvs7NP4Gj/3lgegBhth+WygU=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++nh4QKQjBofesT86F40gF+mZWIZLrzitRyGFasfq/UI2bNu6Tcb
+	T3GQTKjMJe+x7t1Pa2PMmLASNKUML2l+qO4J2yHzQAn1d5dkd7ZjYdvM
+X-Gm-Gg: AR+sD11RtAymnuoteEuvGUsCQzJcSVBJc7NLhj0kftoIQKapaZRJ8Op63WHfTjTyELa
+	OqM4Aey3FGGI2hNQ92F0eufPzQIUmT+0e4VD7sBkSefhkG60xDEtlaKCnYS8V8c9YEh67KkUV62
+	mbsdImxR6RhO/x54iAoMaI1QAy+dw5xaD6IMlT8hAqXyPgAfGCVCjJApnus+HwpTL+QBVs6Li/f
+	kYbQ2iOpOVpOULF7FbGZbGaLDhwL1mJHmTpzBsBTxmqM1ctxHeq/HP7vV5hYjqmk/2N2tnq5zp4
+	ISB/LUzY6HC8Qkd/+eaVXi445P4nLI1M9ezQDJSsD+Qpoz61YQ69mYHGiZdSf6lgGctu9ZYXgDJ
+	PcpBXnEdTiKEbLRLmLNfZFbrQpZSvmYFF8cD3/Nwx36QHXy+YXkx/A4A/AZKDphXBlwK6azhYPQ
+	S0GMqwQr4J//kCzbo7/c1boRuH6dWOzE8I1l6gqFJ3eawadpyt2BwSMkjeltlyZnbMnC2g2qNoI
+	EpAwEpRv1EeN9apf8LJQlHfh8tqD85l9RfCyRmezrDWTDWAcuxlfpeY+/occTilIIW8umX3+7lK
+	zteEt4xkCdsDn4QjPT7NwrfQq+1bWs1WxLlFcSzzcQRyzWm9a+B+iQf1tpnG577L5wZipx44I5A
+	4aqGTdg==
+X-Received: by 2002:a05:600c:c4ac:b0:499:a5fc:2087 with SMTP id 5b1f17b1804b1-49b91c20e36mr320052515e9.6.1788123070924;
+        Sun, 30 Aug 2026 13:51:10 -0700 (PDT)
+Received: from workstation ([85.186.165.159])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49b94dd2517sm233634495e9.7.2026.08.30.13.51.09
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 30 Aug 2026 13:51:10 -0700 (PDT)
+From: =?UTF-8?q?=C8=98tefan=20Ghe=C8=9Bu?= <stefanghetu9@gmail.com>
+To: Shengjiu Wang <shengjiu.wang@gmail.com>,
+	Xiubo Li <Xiubo.Lee@gmail.com>,
+	Fabio Estevam <festevam@gmail.com>,
+	Nicolin Chen <nicoleotsuka@gmail.com>,
+	Mark Brown <broonie@kernel.org>
+Cc: Chancel Liu <chancel.liu@nxp.com>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Jaroslav Kysela <perex@perex.cz>,
+	Takashi Iwai <tiwai@suse.com>,
+	linux-sound@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	=?UTF-8?q?=C8=98tefan=20Ghe=C8=9Bu?= <stefanghetu9@gmail.com>
+Subject: [PATCH v2] ASoC: fsl_micfil: balance mclk enable/disable
+Date: Sun, 30 Aug 2026 23:51:06 +0300
+Message-ID: <20260830205106.11267-1-stefanghetu9@gmail.com>
+X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20260822115959.74496-1-stefanghetu9@gmail.com>
+References: <20260822115959.74496-1-stefanghetu9@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -73,152 +107,75 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0
-X-B4-Tracking: v=1; b=H4sIAGuSlGoC/x2MQQqAIBAAvxJ7bsEsTPpKdLBcaykstEKI/p50H
- IaZByIFpghd8UCgmyPvPkNVFjAtxs+EbDODFFIJXQt0nNBQwEBu2i9/4kZmRVW32unGKjkayO2 RNaf/2w/v+wEceHDWZwAAAA==
-X-Change-Id: 20260830-fix-aer-refcount-leak-6378f84d62ba
-X-Mailer: b4 0.14.3
-Message-ID: <20260830-fix-aer-refcount-leak-v1-1-64e1013add12@google.com>
-Subject: [PATCH] PCI/AER: Fix struct pci_dev reference leak in aer_process_err_devices()
-From: Priyank Rathod <rathodpriyank@google.com>
-To: Mahesh J Salgaonkar <mahesh@linux.ibm.com>, "Oliver O'Halloran" <oohall@gmail.com>, 
-	Bjorn Helgaas <bhelgaas@google.com>, Lukas Wunner <lukas@wunner.de>, 
-	Stefan Roese <stefan.roese@mailbox.org>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, Priyank Rathod <rathodpriyank@google.com>
-Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-When an AER error occurs, candidate error-source devices are identified
-and recorded into e_info->dev[] via add_error_device(), which increments
-each device's reference count with pci_dev_get().
+hw_params() enables mclk unconditionally and hw_free() disables it
+unconditionally, but the PCM core does not guarantee 1:1 pairing:
+hw_free() can run without hw_params(), and hw_params() can be called
+multiple times from the SETUP state. This triggers an "already
+disabled" WARN() in the first case and leaks an enable reference in
+the second, leaving the clock ungateable.
 
-If is_error_source() matches a device purely by Requester/Completer ID
-match (e_info->id == pci_dev_id(dev)), the device is added to e_info->dev[]
-even if it lacks the AER extended capability (dev->aer_cap == 0).
+Guard both sides with the existing mclk_flag, as fsl_sai.c does with
+mclk_streams.
 
-Later, during aer_process_err_devices(), aer_get_device_error_info()
-returns 0 when dev->aer_cap is 0 (or if no active error status is read),
-causing aer_process_err_devices() to skip handle_error_source().
-Previously, handle_error_source() was responsible for calling
-pci_dev_put(dev). When handle_error_source() was skipped, pci_dev_put()
-was never invoked, permanently leaking the struct pci_dev reference.
-
-Decouple device reference release from error handling by removing
-pci_dev_put() from handle_error_source() and calling pci_dev_put()
-unconditionally for all recorded devices in aer_process_err_devices().
-
-Fixes: 1ab4a3c80508 ("PCI/AER: Stop ruling out unbound devices as error source")
-Signed-off-by: Priyank Rathod <rathodpriyank@google.com>
+Fixes: b47024dc624b ("ASoC: fsl_micfil: Add mclk enable flag")
+Signed-off-by: Ștefan Ghețu <stefanghetu9@gmail.com>
 ---
-When native PCIe Advanced Error Reporting (AER) handles an error signaled
-by a Root Port or Root Complex Event Collector (RCEC) via
-aer_isr_one_error_type(), candidate error-source devices are identified
-by walking the downstream hierarchy in find_source_device().
+ sound/soc/fsl/fsl_micfil.c | 21 +++++++++++++--------
+ 1 file changed, 13 insertions(+), 8 deletions(-)
 
-During this walk, each matching device is enqueued into e_info->dev[] by
-add_error_device(), which increments the device's reference count via
-pci_dev_get(dev).
-
-1. The Vulnerable Use Cases:
-============================
-is_error_source() matches devices through two distinct mechanisms:
-  a) Explicit Requester/Completer ID match:
-     if (e_info->id == pci_dev_id(dev))
-         return true;
-  b) Uncorrectable/Correctable status register inspection across the hierarchy.
-
-On the ID-match fast path (a), is_error_source() returns true without
-checking whether the device implements the AER extended capability
-(dev->aer_cap != 0). This creates a real, non-exotic situation in several
-common hardware topologies and operational states:
-
-  - Non-AER Endpoints: Simple or legacy PCIe endpoints (e.g. basic serial,
-    sensor, audio, or older controller ICs) that implement standard PCIe
-    capabilities (0x10) but omit the AER Extended Capability (0x0001) in
-    extended configuration space.
-  - Multi-function PCIe Devices: Multi-function endpoints where AER is only
-    implemented on Function 0, but an error is routed or attributed to
-    Function 1..7 which have dev->aer_cap == 0.
-  - Devices behind PCIe-to-PCI/PCI-X Bridges: Conventional PCI devices
-    aliased under a bridge's Requester ID or lacking AER registers.
-  - Unbound Devices: Following commit 1ab4a3c80508 ("PCI/AER: Stop ruling out
-    unbound devices as error source"), devices with dev->enable_cnt == 0 are
-    no longer filtered out. An unbound, un-configured device without AER
-    registers that triggers link-level errors is matched purely by ID.
-  - Transient Errors / Zero Status: Devices whose AER status registers read
-    as 0 or return ~0 (link down / device in D3) during config read in
-    aer_get_device_error_info().
-
-2. The Refcount Leak Mechanics:
-===============================
-When any of the above conditions occur:
-  1. add_error_device() takes a reference: e_info->dev[i] = pci_dev_get(dev).
-  2. aer_process_err_devices() iterates over e_info->dev[i] and calls
-     aer_get_device_error_info(e_info, i).
-  3. aer_get_device_error_info() checks 'if (!aer) return 0;' and immediately
-     returns 0 because dev->aer_cap == 0.
-  4. aer_process_err_devices() evaluates:
-       if (aer_get_device_error_info(e_info, i))
-           handle_error_source(e_info->dev[i], e_info);
-     Because aer_get_device_error_info() returned 0, handle_error_source()
-     is completely bypassed.
-  5. Previously, handle_error_source() was the sole owner of pci_dev_put(dev).
-     Bypassing handle_error_source() leaves the reference taken in step (1)
-     unreleased.
-
-3. Impact:
-==========
-Because the struct pci_dev reference count never reaches zero:
-  - The struct device release callback pci_release_dev() is never invoked.
-  - Dynamic device resources, sysfs entries, DMA mappings, and aer_info
-    remain allocated in memory, even after the device is hot-unplugged or
-    removed via sysfs ('echo 1 > /sys/bus/pci/devices/.../remove').
-  - Under link instability or an error storm where errors are repeatedly
-    attributed to a non-AER device, each error event leaks one pci_dev
-    reference, leading to unbounded refcount inflation and memory leaks.
-
-4. Proposed Fix:
-================
-Decouple device reference lifetime management from error reporting:
-  - Remove pci_dev_put() from handle_error_source().
-  - Unconditionally invoke pci_dev_put(e_info->dev[i]) in
-    aer_process_err_devices() for every candidate device recorded in
-    e_info->dev[] across the loop.
-
-This ensures every pci_dev_get() in add_error_device() has a strict,
-guaranteed 1:1 lifecycle match in aer_process_err_devices(), irrespective of
-device capability presence, status bit reads, or driver binding state.
----
- drivers/pci/pcie/aer.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
-index c4fd9c0b2a54..2401b3a18f07 100644
---- a/drivers/pci/pcie/aer.c
-+++ b/drivers/pci/pcie/aer.c
-@@ -1197,7 +1197,6 @@ static void handle_error_source(struct pci_dev *dev, struct aer_err_info *info)
+diff --git a/sound/soc/fsl/fsl_micfil.c b/sound/soc/fsl/fsl_micfil.c
+index 60ac8eabab9da..5d8f0f76ab46f 100644
+--- a/sound/soc/fsl/fsl_micfil.c
++++ b/sound/soc/fsl/fsl_micfil.c
+@@ -953,12 +953,17 @@ static int fsl_micfil_reparent_rootclk(struct fsl_micfil *micfil, unsigned int s
+ 	/* Get root clock */
+ 	clk = micfil->mclk;
+ 
+-	/* Disable clock first, for it was enabled by pm_runtime */
++	/* Reparent root clock to the PLL matching this sample rate */
+ 	fsl_asoc_reparent_pll_clocks(dev, clk, micfil->pll8k_clk,
+ 				     micfil->pll11k_clk, ratio);
+-	ret = clk_prepare_enable(clk);
+-	if (ret)
+-		return ret;
++
++	/* Enable only once; hw_params can be called multiple times */
++	if (!micfil->mclk_flag) {
++		ret = clk_prepare_enable(clk);
++		if (ret)
++			return ret;
++		micfil->mclk_flag = true;
++	}
+ 
+ 	return 0;
+ }
+@@ -991,8 +996,6 @@ static int fsl_micfil_hw_params(struct snd_pcm_substream *substream,
+ 	if (ret)
+ 		return ret;
+ 
+-	micfil->mclk_flag = true;
+-
+ 	/* floor(K * CLKDIV) */
+ 	switch (micfil->quality) {
+ 	case QUALITY_HIGH:
+@@ -1068,8 +1071,10 @@ static int fsl_micfil_hw_free(struct snd_pcm_substream *substream,
  {
- 	cxl_rch_handle_error(dev, info);
- 	pci_aer_handle_error(dev, info);
--	pci_dev_put(dev);
- }
+ 	struct fsl_micfil *micfil = snd_soc_dai_get_drvdata(dai);
  
- #ifdef CONFIG_ACPI_APEI_PCIEAER
-@@ -1361,6 +1360,7 @@ static inline void aer_process_err_devices(struct aer_err_info *e_info)
- 	for (i = 0; i < e_info->error_dev_num && e_info->dev[i]; i++) {
- 		if (aer_get_device_error_info(e_info, i))
- 			handle_error_source(e_info->dev[i], e_info);
-+		pci_dev_put(e_info->dev[i]);
- 	}
- }
+-	clk_disable_unprepare(micfil->mclk);
+-	micfil->mclk_flag = false;
++	if (micfil->mclk_flag) {
++		clk_disable_unprepare(micfil->mclk);
++		micfil->mclk_flag = false;
++	}
  
-
----
-base-commit: 0f23d56f17fdfc7db69d51f64c8b91bbab947aa9
-change-id: 20260830-fix-aer-refcount-leak-6378f84d62ba
-
-Best regards,
+ 	return 0;
+ }
 -- 
-Priyank Rathod <rathodpriyank@google.com>
+2.53.0
 
 
