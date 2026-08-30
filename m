@@ -1,53 +1,52 @@
-Return-Path: <linuxppc-dev+bounces-26195-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26196-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D736FC61DE2
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 30 Aug 2026 07:48:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 01D19C61DB9
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 30 Aug 2026 07:49:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hXkkv6r2Yz2yft;
-	Sun, 30 Aug 2026 17:48:23 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788076103;
-	cv=none; b=DoPDeJKm9d87hhajnkAfMXIfXTWLUEfDNgRn6UyOFf3a4YkxIe9jqI3Dx9k0No/SPuBLJhwgG9/XgcCqYMVRyw2gomG5x033VWMCyX2lxR/IGW1SnaANuO5AZPFHiAIuGduFoilXGUV176HUltXTRdGSB4/+VLQLnSly4Nlz5KuNL/rmQeg0D3zwZR+kY+GMu/QjM7k/rnO9yzF5THDaOTKyMfGWLmcttMszE1043rHcj70n2DamkvXGuOWOM4l6i2P+rHSjcD+kfHrwcG20pTwS/njbMB0rqYGuB7uTh1MflofOaaRXlvV0gFlFIUtDQCMgCwdqFQCRUP0WiEbPAA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hXkmT4v9lz2ygg;
+	Sun, 30 Aug 2026 17:49:45 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788076185;
+	cv=none; b=gz1N1jtcseVen8AXUvpgMlU4+4Yp2ySSrPzHBPzZNCAZMdcdVvZGo/oxuonSDgl21yzChUypab+hQoBTA5c/Wd6xQi3/I6rjmmwEHCrBetCJ4qpxS+OeHOzgNgYEdaO90u8HaPAMF5v+3KJmUZWCgJ2bApAMeBa4i3ednHC4s3scUq2NyceeTTsAlN1J1/PUcmW6RN9ltMF18fbZ4F5o9cB7XUlCVyU9JhYIDxHAtzGhQxnaUOfkupZbGYiItu00ebExtVBsiE33TPnOvuImhARdnt2xmaBi6RrOqcxK0LoFRSSSQNZ0yML4MR1MfWrZK7zbq1FADNPikwa10wYOTw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788076103; c=relaxed/relaxed;
-	bh=XPiSY9Bg2IUmtzWz3D0CJ/RjIxKOrrK01Vto+HJVySQ=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=ZLttKQj7+4UGPcwSZsAyYUqZ3TylOioKlXTE9icFenCcQvUvJgUeVwlORW1giVc4z85VGRBSOuLZEq1ZdLfVFrCGvHujCQEbvbL4TIUMAuiUIU8LBX6hhbZqsUykZKxc16/UH8G921/eCenNSRHdi9mc3vsTxxkzlMeYAUAW+BxVjb090kMHN8QepNEPF26N01ArT8DWFLZPIBWkqYHf2znpPT/qBR9+WTPusjTWgjG5AssBDwEq8qAearNw1xyuzQwFbacJDhjG+0s3q5H1rLipEO81PMEvGcFP1kl5Wa6XYWRDiHxPUhLX90p/pmZflnmBjz2qvzNfN/A43Ebvaw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=j4ktx4jy; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1788076185; c=relaxed/relaxed;
+	bh=Kmf7UNuR3TJfz0wmHchwj7E8FCZ4Ng6XB4qrntzPsXg=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=nBuKCn26ZCF7kG94/dm3Z52OfTxEUkUCNX+l3hUSyoPewvSJLmji+xhIRTUofWMWJlOB2ZVcNr0ScnC5cU63EcLM466MEi0YqiHDyu3JqA8TU80Ijxz9/tFE2K5xZ0h1kDf6UCUIX2NdGgQryXaz2irz7ljyIZam2GvDF2lrp20JRxPOVyt87VUrQuMKm2NM49Qts7hsPOeu7DUP/Jp7mpxbxSkNaQsskoN76AtRvX/t+9gudjVUvYmAnzxYV3DjahTfNkLiqIm/Fviq+aDghgbE1Y61u7x+yZRzJbgEifZQHCnFuEb9gceqsscWlnqztEL7ONqACzVM/AeXCeEB7w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=eNe9x6Un; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=j4ktx4jy;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=eNe9x6Un;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hXkkv11s9z2xbQ
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Aug 2026 17:48:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hXkmS4Q2qz2ygW
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Aug 2026 17:49:44 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 18CFD600AE;
-	Sun, 30 Aug 2026 07:48:21 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5FE301F000E9;
-	Sun, 30 Aug 2026 07:48:17 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 4B5E54059D;
+	Sun, 30 Aug 2026 07:49:42 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A190A1F000E9;
+	Sun, 30 Aug 2026 07:49:39 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788076100;
-	bh=XPiSY9Bg2IUmtzWz3D0CJ/RjIxKOrrK01Vto+HJVySQ=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=j4ktx4jyXz/KrmL0BMXIAcnNMVGRcpncozoVazBsVEq0DQ1QMoznmPt00il0SqMro
-	 arr9cHkcyoymqcJ7BKnbvNLt/5eB9ELfo9e1chMcnXFryp65iza5Vr36r/p7nGHSUd
-	 E1W/jtNNZ/nDz3QsyrEGQkBzP3ex3xlnQeNx4MoAQ+bVpj1m+WnjY8aeTQ4VwF705C
-	 b/zq9GLiTWwMg+cW5bKsBjq409aTTR2X0/KHXY2j/rMvJ1g9dKJbnJtfzGB1f+77c2
-	 PMBlzPeOA/s/3CQAtDVgX9FJpYyLHYQqzq5DVfe2ALOw7yBY7XaFnzqkmYro7l04Gv
-	 kWPhAqASy764g==
+	s=k20260515; t=1788076182;
+	bh=Kmf7UNuR3TJfz0wmHchwj7E8FCZ4Ng6XB4qrntzPsXg=;
+	h=From:Subject:Date:To:Cc;
+	b=eNe9x6UnAK5IeFqG2g12NDUx45i6Sa7NrF/9OqdSg+uGiEVFvzk5LFJM1blh/UbMy
+	 BZdDLd/DVd8TX6VxnkN9vZ8z4Y0G81c3wDyXh6pV3V/c/msuMtzKI1ivKcA4LbE3GJ
+	 SMADYzhe0EHnAp8QVn9iHnc4HAwNqZp0DizycG89nBIv7RLinZsDF8J5uANqqAdMd5
+	 +2quL2ySSSXwdofmmFlhwgLBxah6rWfg7/YTIT0DhFiGrsE+iIVRR1rSgfZmODmmmW
+	 bYJFZfVqhJVUepBerrCFkXFvHkrqPe7aFeEXQg2zv7dE5mUBz907gwL1aKOKkqXg2T
+	 KV2IanmTnRHOw==
 From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
-Date: Sun, 30 Aug 2026 10:48:01 +0300
-Subject: [PATCH 4/4] platform: goldfish: pipe: replace __get_free_page()
- with kmalloc()
+Subject: [PATCH 0/3] tty: replace page allocator calls with k[mz]alloc()
+Date: Sun, 30 Aug 2026 10:49:36 +0300
+Message-Id: <20260830-tty-v1-0-0cbe6170649b@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,118 +62,69 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260830-char-misc-v1-4-05e2ce44f291@kernel.org>
-References: <20260830-char-misc-v1-0-05e2ce44f291@kernel.org>
-In-Reply-To: <20260830-char-misc-v1-0-05e2ce44f291@kernel.org>
-To: Arnd Bergmann <arnd@arndb.de>, Brad Warrum <bwarrum@linux.ibm.com>, 
- Eli Billauer <eli.billauer@gmail.com>, 
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
- Michal Simek <michal.simek@amd.com>, Ritu Agarwal <rituagar@linux.ibm.com>
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/yXMwQ6DIBAE0F8xey4NRavUX2k8AF3r9kAbFhsN8
+ d8FPb7JzCRgDIQMfZUg4J+Yvj7jdqnATca/UdArG5RUrdTqIWJchW5Gebddo1tlIDd/AUdajpf
+ ncJpn+0EXy7Q0rGEUNhjvphId7K41bNsOOOCfDYIAAAA=
+X-Change-ID: 20260829-tty-84f05b74862a
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+ Jiri Slaby <jirislaby@kernel.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>, 
  David Hildenbrand <david@kernel.org>, Matthew Wilcox <willy@infradead.org>, 
  Mike Rapoport <rppt@kernel.org>, Vlastimil Babka <vbabka@kernel.org>, 
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
- linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org, 
+ linux-serial@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 X-Mailer: b4 0.17-dev
 
-goldfish_pipe_open() allocates the per-pipe command buffer and
-goldfish_pipe_device_init() allocates the buffers the device shares with
-the host. Both are passed to the host as physical addresses and must be
-physically contiguous, which kmalloc() guarantees.
+This is a (small) part of larger work of replacing page allocator calls
+with kmalloc.
 
-These buffers can be allocated with kmalloc() as there's nothing special
-about them to go directly to the page allocator.
+My initial intention a few month ago was to remove ugly casts [1], but then
+willy pointed out that Linus objected to something like this [2] and it
+looks like more than a decade old technical debt.
 
-kmalloc() provides a better API that does not require ugly casts and
-kfree() does not need to know the size of the freed object.
+Largely, anything that doesn't need struct page (or a memdesc in the
+future) should just use kmalloc() or kvmalloc() to allocate memory.
+kmalloc() guarantees alignment, physical contiguity and working
+virt_to_phys() and beside nicer API that returns void * on alloc and
+doesn't require to know the allocation size on free, kmalloc() provides
+better debugging capabilities than page allocator.
 
-Performance difference between kmalloc() and __get_free_pages() is not
-measurable as both allocators take an object/page from a per-CPU list for
-fast path allocations.
+Another thing is that touching these allocation sites gives the reviewers
+opportunity to see if a PAGE_SIZE buffer is actually needed or maybe
+another size is appropriate.
 
-For the slow path the performance is anyway determined by the amount of
-reclaim involved rather than by what allocator is used.
+For larger allocations that don't need physically contiguous memory
+kvmalloc() can be a better option that __get_free_pages() because under
+memory pressure it's is easier to allocate several order-0 pages than a
+physically contiguous chunk with the same number of pages.
 
-While on it, size both allocations after the structures they hold instead
-of always taking a full page.
+And last, but not least, removing needless calls to page allocator should
+help with memdesc (aka project folio) conversion. There will be way less
+places to audit to see if the user was actually using struct page.
 
-Replace use of __get_free_page() with kmalloc() and free_page() with
-kfree().
+The patches are deliberately kept small: each one deals with a single
+driver or subsystem and with a single type of allocation, so that every
+conversion can be reviewed, and if needed reverted, on its own.
 
-Link: https://lore.kernel.org/all/635405e4-9423-4a25-a6e7-e03c8ea0bcbe@redhat.com
-Assisted-by: copilot:claude-opus
-Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+[1] https://lore.kernel.org/all/20251018093002.3660549-1-rppt@kernel.org/
+[2] https://lore.kernel.org/all/CA+55aFwp4iy4rtX2gE2WjBGFL=NxMVnoFeHqYa2j1dYOMMGqxg@mail.gmail.com/
+
 ---
- drivers/platform/goldfish/goldfish_pipe.c | 22 ++++++++++------------
- 1 file changed, 10 insertions(+), 12 deletions(-)
+Mike Rapoport (Microsoft) (3):
+      tty: port: replace get_zeroed_page() with kzalloc()
+      serial: core: replace get_zeroed_page() with kzalloc()
+      tty: hvcs: replace __get_free_page() with kmalloc()
 
-diff --git a/drivers/platform/goldfish/goldfish_pipe.c b/drivers/platform/goldfish/goldfish_pipe.c
-index fa241ca8feb0..3f34db896ece 100644
---- a/drivers/platform/goldfish/goldfish_pipe.c
-+++ b/drivers/platform/goldfish/goldfish_pipe.c
-@@ -708,12 +708,11 @@ static int goldfish_pipe_open(struct inode *inode, struct file *file)
- 	init_waitqueue_head(&pipe->wake_queue);
- 
- 	/*
--	 * Command buffer needs to be allocated on its own page to make sure
--	 * it is physically contiguous in host's address space.
-+	 * The command buffer is passed to the host as a physical address, so
-+	 * it must be physically contiguous, which kmalloc() guarantees.
- 	 */
- 	BUILD_BUG_ON(sizeof(struct goldfish_pipe_command) > PAGE_SIZE);
--	pipe->command_buffer =
--		(struct goldfish_pipe_command *)__get_free_page(GFP_KERNEL);
-+	pipe->command_buffer = kmalloc_obj(*pipe->command_buffer);
- 	if (!pipe->command_buffer) {
- 		status = -ENOMEM;
- 		goto err_pipe;
-@@ -749,7 +748,7 @@ static int goldfish_pipe_open(struct inode *inode, struct file *file)
- 	dev->pipes[id] = NULL;
- err_id_locked:
- 	spin_unlock_irqrestore(&dev->lock, flags);
--	free_page((unsigned long)pipe->command_buffer);
-+	kfree(pipe->command_buffer);
- err_pipe:
- 	kfree(pipe);
- 	return status;
-@@ -770,7 +769,7 @@ static int goldfish_pipe_release(struct inode *inode, struct file *filp)
- 	spin_unlock_irqrestore(&dev->lock, flags);
- 
- 	filp->private_data = NULL;
--	free_page((unsigned long)pipe->command_buffer);
-+	kfree(pipe->command_buffer);
- 	kfree(pipe);
- 	return 0;
- }
-@@ -833,13 +832,12 @@ static int goldfish_pipe_device_init(struct platform_device *pdev,
- 
- 	/*
- 	 * We're going to pass two buffers, open_command_params and
--	 * signalled_pipe_buffers, to the host. This means each of those buffers
--	 * needs to be contained in a single physical page. The easiest choice
--	 * is to just allocate a page and place the buffers in it.
-+	 * signalled_pipe_buffers, to the host as physical addresses. This means
-+	 * each of those buffers needs to be physically contiguous, which
-+	 * kmalloc() guarantees.
- 	 */
- 	BUILD_BUG_ON(sizeof(struct goldfish_pipe_dev_buffers) > PAGE_SIZE);
--	dev->buffers = (struct goldfish_pipe_dev_buffers *)
--		__get_free_page(GFP_KERNEL);
-+	dev->buffers = kmalloc_obj(*dev->buffers);
- 	if (!dev->buffers) {
- 		kfree(dev->pipes);
- 		misc_deregister(&dev->miscdev);
-@@ -867,7 +865,7 @@ static void goldfish_pipe_device_deinit(struct platform_device *pdev,
- {
- 	misc_deregister(&dev->miscdev);
- 	kfree(dev->pipes);
--	free_page((unsigned long)dev->buffers);
-+	kfree(dev->buffers);
- }
- 
- static int goldfish_pipe_probe(struct platform_device *pdev)
+ drivers/tty/hvc/hvcs.c           |  6 +++---
+ drivers/tty/serial/serial_core.c | 16 ++++++++--------
+ drivers/tty/tty_port.c           |  8 ++++----
+ 3 files changed, 15 insertions(+), 15 deletions(-)
+---
+base-commit: 1b78070aaef63512688aebfbc82365ef9d6660f1
+change-id: 20260829-tty-84f05b74862a
 
--- 
-2.53.0
+--
+Sincerely yours,
+Mike.
 
 
