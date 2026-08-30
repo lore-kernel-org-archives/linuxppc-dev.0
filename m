@@ -1,53 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-26192-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26193-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 326C0C61DE4
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 30 Aug 2026 07:48:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DCB29C61DE4
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 30 Aug 2026 07:48:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hXkkj0r53z2ypY;
-	Sun, 30 Aug 2026 17:48:13 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788076093;
-	cv=none; b=e4rhDc3vQQoXmYvte0V1HYcTtgXJ0IdJzm4MwQJviACPHeYMWQro3eQefmSKixashu+nN71Q6INmnlCpFC5YnYtW2etv7ZY+fB9VPPwHqElxu61aejxnEs/YeafleKalYG23Mvdzp+kieTcgtAxCNIYwCbdy1/cZWS2+BKKg/BsDMteaqsceI9niZoBsknMesUq39Qi8dHsi/W5We8v9g8iRl/uvpQBHfy7SO0JNnyWRcDoxDIiXAmY4qt7bPqd9Y0IYchwBiHKy7um14aPOZXA02eeexa8su9bsqFSpe/KWOjQ2uhRn1DrRi53wPD9fW32BTfzm2npfBc6jrV6T+g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hXkkm4mfYz3090;
+	Sun, 30 Aug 2026 17:48:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788076096;
+	cv=none; b=nx1mBbI1mcb419CiStUprQcQhW21B92ziGRcwc6KdJiBPe2o70Gp5076IYkRnBCiFe1yjPOQq/IB5yp+NoGw9OMx7WwMVQ8oo7joo8VGde756lB3cIEWpMJEsMecbGvlnNdtyNOYXnSKmK6eg3uBdaIjYJA09VxCF/UvG13yv0S6wuNiLz9Q3RTngaoUDjxAxVr7l9T2P11UZO+CbWWP0dnPjE82nRxm32SrWj76IEqC2LWYuTETrD/H0BJOdHaDq5PtJQFMAt9QAx//3ucf1NayVRrqD5ZXGGVboCemL3jkNaRzMJaPm7wLPnbF7OVAZR2Gt3KL4vV/ZBH03Dp8bQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788076093; c=relaxed/relaxed;
-	bh=lBV4SRjso+EkgLj4PkYZQJzo+GNlBWOlH+QTKJh25O4=;
+	t=1788076096; c=relaxed/relaxed;
+	bh=38jl+dsC2EM5o3wlTYxKA9vi8q2Wl79pFO6QzTnvIhE=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=Wn82rnZ42lonHg45ej+rmenhHs5Wi0O6eO0wXbi97u8/45xHPLoMMO7+NDPi3GJ8H/HCuvGmIjJ6vn7ws3956IpVjpUf2EXXaTKU8kNTeuGBP72AEpr2Z/4TwyOieGrQvNFFffPcrXB8vmriMpBjZin80JpTubDck9jyhCpDnzToZxBghlPuq1CMoOnkC4OmsRQWZcRmq5MbZbr22yWG9tTNdlctiSbLkikL3Rlc5LDkKwqS7hvz0lm5DkP0ti/Q2K0UJdZ/mc0NJqR/xZAtyGsRO220AchpvUL0440Bpb6TDcGTQW6lKZHmU/Uw903UDE+opu0z5IXLrLsV5gLElQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=C5WEFdIx; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=b3DovVIhb9o0fVMMYJIluox8EocR3u4ULYctgcdcDapjWLOfgXQksIjv4YYfLDZ6KiT4xs9tzKTJERKSXJiUCan1yaV8kMUVWEOSmsNyP4Vgm+4rEDe7zKUJlBpCmcrhJYwO26f+7El9yaWCmEgOSONIKQN/2f+OAJFUTt6A4ef3flfmEUPVcpzUe/gfT37eoGzcasqvseJygGpvUt9PePxnt4lrsMbDwk6LQ0WG1XOdkXCjpn2V7A348LZPHG1lJxvpaAByZISDkYLwsxutlE/TzKdcw+HIejNIvq5APz6CSU3seJ5n62d74m1975yrhyyJf/46ryqLhlkB4NDfDA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MITK9vI0; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=C5WEFdIx;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MITK9vI0;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hXkkh1jRSz2xbQ
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Aug 2026 17:48:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hXkkl4zvyz2xbQ
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Aug 2026 17:48:15 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 472016020A;
+	by sea.source.kernel.org (Postfix) with ESMTP id 0D1A243C8C;
+	Sun, 30 Aug 2026 07:48:13 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7F1FF1F00A3D;
 	Sun, 30 Aug 2026 07:48:09 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8E3281F000E9;
-	Sun, 30 Aug 2026 07:48:05 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788076089;
-	bh=lBV4SRjso+EkgLj4PkYZQJzo+GNlBWOlH+QTKJh25O4=;
+	s=k20260515; t=1788076092;
+	bh=38jl+dsC2EM5o3wlTYxKA9vi8q2Wl79pFO6QzTnvIhE=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=C5WEFdIxnZu7NyCEa0917/q9m8RAavDxTcdqoLLl699TQIsq4EeOhuxI+szK6oUPX
-	 BBIzv3+IJ6+fS9FQmBehVilOS0JWGi1UM3ADz5QENEJkQ7B/lCi6MWuSsmh9d24gC/
-	 xqZO9ZbJgzAnKUPKUwFxOq36/mp/Mjxngs08R/Q2YejbbFqe90lyuLn5rhvLGud3X2
-	 EVKuB+T3cucf4i8ZuJBhzJEXqmfg9dO6oauWM/ZNRbde/XgSesB8Mx+xxgTVU6krb/
-	 +wgLp1Rk81AU4bDORSu6mDLNfdNz2kcvtvVoz/m10gaevkyEoeDi6cwxlvkD5TYLbP
-	 9ZbWSJno7s5+w==
+	b=MITK9vI0TqCwtGzG/5NMmeWpLrvyxDEIRP5gcuykrnjJ8pC3e+zwNDgzgR7zvRtLU
+	 KIzQKgJMT9sNr5suPtvvhbWU/cROpvKy18evTNfnEXuj1IZyDAqWfI4lgUkIp0DZha
+	 ciw9wYDeDuB2aHMYJUyfKdodFjmUGsXMvoQQ6UFn1UIGvnuSh0429/xcIJLYDiSMeE
+	 VlLLt/omlbjjYeDJc6JWI8dSpj7U6b/541bhnYGQGVYvMSzU6VT7VvnrjrNKct2d+m
+	 /GEswHY8ZS366BC6EBjVsqmNvbQ0/G81R4uGCcBP0y0kVpcd9ISRxxu4KKOgC/ZbP4
+	 aLDP1Kl/ay2AQ==
 From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
-Date: Sun, 30 Aug 2026 10:47:58 +0300
-Subject: [PATCH 1/4] char: xilinx_hwicap: replace page allocator calls with
- k[mz]alloc()
+Date: Sun, 30 Aug 2026 10:47:59 +0300
+Subject: [PATCH 2/4] char: xillybus: replace __get_free_pages() with
+ kmalloc()
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +63,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260830-char-misc-v1-1-05e2ce44f291@kernel.org>
+Message-Id: <20260830-char-misc-v1-2-05e2ce44f291@kernel.org>
 References: <20260830-char-misc-v1-0-05e2ce44f291@kernel.org>
 In-Reply-To: <20260830-char-misc-v1-0-05e2ce44f291@kernel.org>
 To: Arnd Bergmann <arnd@arndb.de>, Brad Warrum <bwarrum@linux.ibm.com>, 
@@ -77,8 +77,8 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
  linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org
 X-Mailer: b4 0.17-dev
 
-hwicap_read() and hwicap_write() allocate temporary buffers used to pass
-the FPGA configuration data to and from userspace.
+fifo_init() allocates the buffers backing the software FIFO and
+endpoint_alloc() allocates the transfer buffers of a USB endpoint.
 
 These buffers can be allocated with kmalloc() as there's nothing special
 about them to go directly to the page allocator.
@@ -93,97 +93,141 @@ fast path allocations.
 For the slow path the performance is anyway determined by the amount of
 reclaim involved rather than by what allocator is used.
 
-Replace use of __get_free_page() and get_zeroed_page() with kmalloc() and
-kzalloc() and free_page() with kfree().
+Since kmalloc() does not need the allocation order, ask it for the buffer
+sizes the driver already tracks and drop the now unused order fields. For
+a FIFO smaller than a page this also stops rounding the allocation up to
+PAGE_SIZE.
+
+Replace use of __get_free_pages() with kmalloc() and free_pages() with
+kfree().
 
 Link: https://lore.kernel.org/all/635405e4-9423-4a25-a6e7-e03c8ea0bcbe@redhat.com
 Assisted-by: copilot:claude-opus
 Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
 ---
- drivers/char/xilinx_hwicap/xilinx_hwicap.c | 18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
+ drivers/char/xillybus/xillyusb.c | 25 +++++++------------------
+ 1 file changed, 7 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/char/xilinx_hwicap/xilinx_hwicap.c b/drivers/char/xilinx_hwicap/xilinx_hwicap.c
-index 9bb5fa642fd8..bbeb9b6060dc 100644
---- a/drivers/char/xilinx_hwicap/xilinx_hwicap.c
-+++ b/drivers/char/xilinx_hwicap/xilinx_hwicap.c
-@@ -382,7 +382,7 @@ hwicap_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
- 		       4 - bytes_to_read);
+diff --git a/drivers/char/xillybus/xillyusb.c b/drivers/char/xillybus/xillyusb.c
+index 34e7ad3bcab3..193e2a5b599e 100644
+--- a/drivers/char/xillybus/xillyusb.c
++++ b/drivers/char/xillybus/xillyusb.c
+@@ -71,7 +71,6 @@ struct xillyfifo {
+ 	unsigned int bufsize; /* In bytes, always a power of 2 */
+ 	unsigned int bufnum;
+ 	unsigned int size; /* Lazy: Equals bufsize * bufnum */
+-	unsigned int buf_order;
+ 
+ 	int fill; /* Number of bytes in the FIFO */
+ 	spinlock_t lock;
+@@ -95,7 +94,6 @@ struct xillyusb_endpoint {
+ 	struct list_head filled_buffers;
+ 	spinlock_t buffers_lock; /* protect these two lists */
+ 
+-	unsigned int order;
+ 	unsigned int buffer_size;
+ 
+ 	unsigned int fill_mask;
+@@ -370,7 +368,6 @@ static int fifo_init(struct xillyfifo *fifo,
+ 		     unsigned int log2_size)
+ {
+ 	unsigned int log2_bufnum;
+-	unsigned int buf_order;
+ 	int i;
+ 
+ 	unsigned int log2_fifo_buf_size;
+@@ -380,18 +377,14 @@ static int fifo_init(struct xillyfifo *fifo,
+ 
+ 	if (log2_size > log2_fifo_buf_size) {
+ 		log2_bufnum = log2_size - log2_fifo_buf_size;
+-		buf_order = fifo_buf_order;
+ 		fifo->bufsize = 1 << log2_fifo_buf_size;
  	} else {
- 		/* Get new data from the ICAP, and return what was requested. */
--		kbuf = (u32 *) get_zeroed_page(GFP_KERNEL);
-+		kbuf = kzalloc(PAGE_SIZE, GFP_KERNEL);
- 		if (!kbuf) {
- 			status = -ENOMEM;
- 			goto error;
-@@ -412,13 +412,13 @@ hwicap_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
- 
- 		/* If we didn't read correctly, then bail out. */
- 		if (status) {
--			free_page((unsigned long)kbuf);
-+			kfree(kbuf);
- 			goto error;
- 		}
- 
- 		/* If we fail to return the data to the user, then bail out. */
- 		if (copy_to_user(buf, kbuf, bytes_to_read)) {
--			free_page((unsigned long)kbuf);
-+			kfree(kbuf);
- 			status = -EFAULT;
- 			goto error;
- 		}
-@@ -426,7 +426,7 @@ hwicap_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
- 		       kbuf,
- 		       bytes_remaining);
- 		drvdata->read_buffer_in_use = bytes_remaining;
--		free_page((unsigned long)kbuf);
-+		kfree(kbuf);
- 	}
- 	status = bytes_to_read;
-  error:
-@@ -457,7 +457,7 @@ hwicap_write(struct file *file, const char __user *buf,
- 		goto error;
+ 		log2_bufnum = 0;
+-		buf_order = (log2_size > PAGE_SHIFT) ?
+-			log2_size - PAGE_SHIFT : 0;
+ 		fifo->bufsize = 1 << log2_size;
  	}
  
--	kbuf = (u32 *) __get_free_page(GFP_KERNEL);
-+	kbuf = kmalloc(PAGE_SIZE, GFP_KERNEL);
- 	if (!kbuf) {
- 		status = -ENOMEM;
- 		goto error;
-@@ -479,13 +479,13 @@ hwicap_write(struct file *file, const char __user *buf,
- 			    (((char *)kbuf) + drvdata->write_buffer_in_use),
- 			    buf + written,
- 			    len - (drvdata->write_buffer_in_use))) {
--				free_page((unsigned long)kbuf);
-+				kfree(kbuf);
- 				status = -EFAULT;
- 				goto error;
- 			}
- 		} else {
- 			if (copy_from_user(kbuf, buf + written, len)) {
--				free_page((unsigned long)kbuf);
-+				kfree(kbuf);
- 				status = -EFAULT;
- 				goto error;
- 			}
-@@ -495,7 +495,7 @@ hwicap_write(struct file *file, const char __user *buf,
- 				kbuf, len >> 2);
+ 	fifo->bufnum = 1 << log2_bufnum;
+ 	fifo->size = fifo->bufnum * fifo->bufsize;
+-	fifo->buf_order = buf_order;
  
- 		if (status) {
--			free_page((unsigned long)kbuf);
-+			kfree(kbuf);
- 			status = -EFAULT;
- 			goto error;
- 		}
-@@ -516,7 +516,7 @@ hwicap_write(struct file *file, const char __user *buf,
- 		}
+ 	fifo->mem = kmalloc_array(fifo->bufnum, sizeof(void *), GFP_KERNEL);
+ 
+@@ -399,8 +392,7 @@ static int fifo_init(struct xillyfifo *fifo,
+ 		return -ENOMEM;
+ 
+ 	for (i = 0; i < fifo->bufnum; i++) {
+-		fifo->mem[i] = (void *)
+-			__get_free_pages(GFP_KERNEL, buf_order);
++		fifo->mem[i] = kmalloc(fifo->bufsize, GFP_KERNEL);
+ 
+ 		if (!fifo->mem[i])
+ 			goto memfail;
+@@ -417,7 +409,7 @@ static int fifo_init(struct xillyfifo *fifo,
+ 
+ memfail:
+ 	for (i--; i >= 0; i--)
+-		free_pages((unsigned long)fifo->mem[i], buf_order);
++		kfree(fifo->mem[i]);
+ 
+ 	kfree(fifo->mem);
+ 	fifo->mem = NULL;
+@@ -438,7 +430,7 @@ static void fifo_mem_release(struct xillyfifo *fifo)
+ 		return;
+ 
+ 	for (i = 0; i < fifo->bufnum; i++)
+-		free_pages((unsigned long)fifo->mem[i], fifo->buf_order);
++		kfree(fifo->mem[i]);
+ 
+ 	kfree(fifo->mem);
+ }
+@@ -477,7 +469,7 @@ static void endpoint_dealloc(struct xillyusb_endpoint *ep)
+ 		struct xillybuffer *xb =
+ 			list_entry(this, struct xillybuffer, entry);
+ 
+-		free_pages((unsigned long)xb->buf, ep->order);
++		kfree(xb->buf);
+ 		kfree(xb);
  	}
  
--	free_page((unsigned long)kbuf);
-+	kfree(kbuf);
- 	status = written;
-  error:
- 	mutex_unlock(&drvdata->sem);
+@@ -509,8 +501,7 @@ static struct xillyusb_endpoint
+ 	init_usb_anchor(&ep->anchor);
+ 	INIT_WORK(&ep->workitem, work);
+ 
+-	ep->order = order;
+-	ep->buffer_size =  1 << (PAGE_SHIFT + order);
++	ep->buffer_size = 1 << (PAGE_SHIFT + order);
+ 	ep->outstanding_urbs = 0;
+ 	ep->drained = true;
+ 	ep->wake_on_drain = false;
+@@ -520,7 +511,6 @@ static struct xillyusb_endpoint
+ 
+ 	for (i = 0; i < bufnum; i++) {
+ 		struct xillybuffer *xb;
+-		unsigned long addr;
+ 
+ 		xb = kzalloc_obj(*xb);
+ 
+@@ -529,15 +519,14 @@ static struct xillyusb_endpoint
+ 			return NULL;
+ 		}
+ 
+-		addr = __get_free_pages(GFP_KERNEL, order);
++		xb->buf = kmalloc(ep->buffer_size, GFP_KERNEL);
+ 
+-		if (!addr) {
++		if (!xb->buf) {
+ 			kfree(xb);
+ 			endpoint_dealloc(ep);
+ 			return NULL;
+ 		}
+ 
+-		xb->buf = (void *)addr;
+ 		xb->ep = ep;
+ 		list_add_tail(&xb->entry, &ep->buffers);
+ 	}
 
 -- 
 2.53.0
