@@ -1,64 +1,63 @@
-Return-Path: <linuxppc-dev+bounces-26295-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26296-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0B6AEC624C6
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2026 13:44:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8DC94C624A4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2026 13:45:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hYVbX1Tw8z2yCv;
-	Mon, 31 Aug 2026 23:44:40 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788183880;
-	cv=none; b=MuuhOLVBS/39K0y02rN7D1w+97wB5spVGvpdb8ZNDY79A+F+LW1Hhna7ViE5J2LpFVI/l59qb3/lkvY/pVdcte4jYFu1SOYa1vBYpoptI0iEdkLn3xsNQGj//CY8dPbda++SEk1bYg2oNGi7YzmvjrUmD4jXPM3lJuwEp8bMcKV3QHp/zm0MWYYlzKCb7LVKDAXAFMs4DhZfLmZKP/M9dcR+ALSwwZN8GWb6MocyLRDoRXUwNG3UHCJYXrvZsNnBairFf6UoJXRxCXa2gNerwdsylUDndMp2c1ROpTkMkJRQYR3DyocfYrqy1H4iP/43DcvecxQGaYZgQjirZw6jKA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hYVcH0mCbz2yCv;
+	Mon, 31 Aug 2026 23:45:19 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788183919;
+	cv=none; b=FqCfLHypdxfUkAU6DlNhEdhbXZuYTczfir3t4C7rRtmtgg3+IyZB+/VgEiJZHsqhce4SthfCIFJ7QU4d0JsPNK9lke49F56+8/WcKobBVBjRRYjeVp+a7I1rGt8v3Z0JhvKcfLueD4mUI8hT/4++UNCV1UElVYD9b/EPW6m8eyhXZBd3bj+UCbcZH6o6SllA/MyordSICezXSc0zv6u1Ib/SzJp1iTNOwJvy3mehgA6N48OXJnsuaPqY2jE//o5fjrCc8UjuVesTG1Q6zhQFe3CHHf/NmPwKga6z0Gb5Y+Oyct7WCe5Y5F3/sD5vpfYUvdexmoWLJSlp5ByUoaqd1A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788183880; c=relaxed/relaxed;
-	bh=J2Jw5sWgvHqjZIXUDjEAfq88hH8ePVNKIO0/CdBgR+M=;
+	t=1788183919; c=relaxed/relaxed;
+	bh=oSEW1sZndZdlzCRNRuF4bhV3AHpNUq6XsCYj5F7lCNE=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=aqJLbBYh8qRUSg1wPnCFeueZKgsnlySxg6+V0bHZAFwfS6avn9TxkUFlH9BGg/qe9xKfcpAAR2hGIfEC3pnUJf78hoMDf9A/x3/hFqQqFgAwolY9plBskUU091xkePB20v7xGAj66I/fyNzg4+ZANWgRMkwsxhaEeQDYmnEOFVbpOosEuiab5jr0e1Zx4lYCyPsl6dm7lSJVBScdR0qwXk9/s34i6NBjGTACwHBdvPiCRClsNMOgtXR9N/y8HQnZh2v2j20mSmKxQEBvHafhBUlMYpT8m24CdQhfP6h4EbfO5mBgaZkGu3C438qrvn01+ElHwVONzWQoHX4obZg0xw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HFQdH1yM; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version:Content-Type; b=BL65iC/IrGOhj0nrpoAXJgV0qM4jJcnTgcglaxwiqsuPWb90fQQ0ADH2fEmQPG0ECWBKnZdZDYkqU56NWEDuRzzBxb679x29KWTJZeD+0dKFPOICl0MXm+gNinFDvXdulkLKYkO1n4/AUTma9B2BlfWkRiH10BB9/av9WLW+CXU6IckOeFxBS1KBcLwRG1P9eCnmhQZnKFXHK3TpE2A47H7piclNwwC+UkkmtrwET8tkSHTS7v8UKGf8Pmz1xyCGn+M5hIPa1mZ0/y0pop8rbw2guaywpdGe8ieF+Zjc6H9af/8sQsiN1p+6AaoYXL7utmv0qYLxzs6Q4iHlHg/LVg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=fBidIe/l; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HFQdH1yM;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=fBidIe/l;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hYVbV6pQfz2y2J
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Aug 2026 23:44:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hYVcG1DC9z2y2J
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Aug 2026 23:45:18 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 067B76025F;
-	Mon, 31 Aug 2026 13:44:37 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 75FEF1F00A3D;
-	Mon, 31 Aug 2026 13:44:35 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 9A8C440B56;
+	Mon, 31 Aug 2026 13:45:16 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EE2D21F00A3E;
+	Mon, 31 Aug 2026 13:45:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788183876;
-	bh=J2Jw5sWgvHqjZIXUDjEAfq88hH8ePVNKIO0/CdBgR+M=;
+	s=k20260515; t=1788183916;
+	bh=oSEW1sZndZdlzCRNRuF4bhV3AHpNUq6XsCYj5F7lCNE=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=HFQdH1yMQyq4n128Db5+CAniGv2huDq54zGRQpsncq+Zqt4os0kItfg7znKoFZfZ6
-	 ta/vz9YS/ywBhLP1POsTVG9lv6V5TPf9hddDhemaE2S2LXZzQmik8vu/7QHdE9fYer
-	 dc7GvRn6k9dUn4Hz9NvWSqytq7lz70JtsqTVVRDMeAMMIiGYmrDMPY8s0zYGxb10J9
-	 R2jUr5nLZa/GpIn3pODM29KPlEMj6PiTAfqqtmuUFfxLto6dquJ9zAxnUkMMouXet2
-	 b/8McsGPxA+rQb1zUPVZ4y5MxL004q9qjJPIjji4j36GIVStSCac+1bydARx/uLtez
-	 Gtchvv/91NvXw==
+	b=fBidIe/lO91/OMDGKeJKfn1oTx7r2gipnwk3y38S+FI4qeLSgDN6MldN91xZs3c3O
+	 QMrgQ4olid8CggPQjcfpRR1EwBEqZ2deMyd0QfRX6zAB9dnGTjO+frrCvKPIEtLiLw
+	 y7u34qOlgy5rhLlQfUolt9t7EV/RLU6QOM1BvD0bPI411K/3cnv1S2zP3Fg3FSwszZ
+	 aRqc0LMnx+zFSvs4ybJ+cgd5vZHDwX8CSWoShQsy+H1WcVtLVO4DJmiPnxgvV+Casz
+	 nxek9mW2HZV0qY4F1JfthxQ4VMDyKtq8+yZVkYPXInHQVPKBLjJSv4RurMglx/ze6O
+	 5qZsuvghJaDbw==
 From: Sasha Levin <sashal@kernel.org>
 To: patches@lists.linux.dev,
 	stable@vger.kernel.org
-Cc: Thomas Zimmermann <tzimmermann@suse.de>,
-	Helge Deller <deller@gmx.de>,
+Cc: Shivang Upadhyay <shivangu@linux.ibm.com>,
+	Shirisha G <shirisha@linux.ibm.com>,
+	Sourabh Jain <sourabhjain@linux.ibm.com>,
+	Mahesh Salgaonkar <mahesh@linux.ibm.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Sasha Levin <sashal@kernel.org>,
-	simona@ffwll.ch,
-	maddy@linux.ibm.com,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH AUTOSEL 6.18] fbdev: Wrap user-invoked calls to fb_set_var() in helper
-Date: Mon, 31 Aug 2026 09:26:24 -0400
-Message-ID: <20260831133314.4125787-356-sashal@kernel.org>
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH AUTOSEL 6.18] ppc/fadump: invoke kmsg_dump in fadump panic path
+Date: Mon, 31 Aug 2026 09:26:47 -0400
+Message-ID: <20260831133314.4125787-379-sashal@kernel.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260831133314.4125787-1-sashal@kernel.org>
 References: <20260831133314.4125787-1-sashal@kernel.org>
@@ -81,134 +80,140 @@ X-stable-base: Linux 6.18.48
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-From: Thomas Zimmermann <tzimmermann@suse.de>
+From: Shivang Upadhyay <shivangu@linux.ibm.com>
 
-[ Upstream commit 6f611e5e5f3327cf2e2daabe6ee5acac58cc784e ]
+[ Upstream commit 6ed8332639853b77329594a241eb99fc36d591a2 ]
 
-Handle fbcon during display updates in fb_set_var_from_user(). Check
-with fbcon if the mode change is possible, update hardware state and
-finally update fbcon. Update all callers.
+fadump is registered in panic_notifier_list and gets triggered before
+kmsg_dump_desc() in the panic path. As a result, kmsg_dumpers such as
+pstore are not executed during fadump crashes.
 
-Only the FBIOPUT_VSCREENINFO ioctl currently does all steps. Other
-mode-changes callers in sysfs and driver code are missing fbcon-related
-steps.
+This is problematic because pstore provides a critical fallback mechanism
+for crash analysis. When fadump fails to successfully reboot the system
+or capture a dump, pstore logs may be the only available information from
+the crashed kernel. Without invoking kmsg_dump_desc() in the fadump path,
+we lose this valuable diagnostic data.
 
-With the new helper, ps3fb and sh_mobile_lcdcfb no longer maintain
-fbcon state themselves.
+Invoke kmsg_dump_desc() from the fadump panic handler, but only when
+fadump is actually registered (checked via should_fadump_crash()). This
+ensures kmsg_dumpers are called without duplicating the call that occurs
+later in panic() when fadump is not active.
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Signed-off-by: Helge Deller <deller@gmx.de>
+The call is placed before crash_fadump() to ensure logs are captured
+before the system attempts to trigger the firmware-assisted dump.
+
+Reported-by: Shirisha G <shirisha@linux.ibm.com>
+Suggested-by: Sourabh Jain <sourabhjain@linux.ibm.com>
+Signed-off-by: Shivang Upadhyay <shivangu@linux.ibm.com>
+Tested-by: Shirisha G <shirisha@linux.ibm.com>
+Reviewed-by: Mahesh Salgaonkar <mahesh@linux.ibm.com>
+Reviewed-by: Sourabh Jain <sourabhjain@linux.ibm.com>
+Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>
+Link: https://patch.msgid.link/20260412113057.46090-1-shivangu@linux.ibm.com
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
 
 LLM Generated explanations, may be completely bogus:
 
-# Stable Backport Analysis: `fbdev: Wrap user-invoked calls to
-fb_set_var() in helper`
+# Stable Backport Analysis: `ppc/fadump: invoke kmsg_dump in fadump
+panic path`
 
-**Local tree:** `v6.18.44` (6.18.y stable)
-**Commit under review:** `6f611e5e5f3327cf2e2daabe6ee5acac58cc784e` (not
-in HEAD; present as git object, applies cleanly)
+**Local tree:** Linux **6.18.44** (`git describe HEAD` → `v6.18.44`)
 
 ---
 
 ## PHASE 1: COMMIT MESSAGE FORENSICS
 
 ### Step 1.1: Subject line
-**Record:** `[fbdev]` `[wrap/consolidate]` — Introduce
-`fb_set_var_from_user()` helper and route all user-invoked mode-change
-paths through it.
+**Record:** `[ppc/fadump]` `[invoke]` — Ensure `kmsg_dump` (e.g. pstore)
+runs on the fadump panic path before firmware takes over.
 
 ### Step 1.2: Tags
 **Record:**
-- **Signed-off-by:** Thomas Zimmermann `<tzimmermann@suse.de>` (author)
-- **Signed-off-by:** Helge Deller `<deller@gmx.de>` (fbdev maintainer)
-- No `Fixes:`, `Reported-by:`, `Cc: stable@vger.kernel.org`, `Link:`,
-  `Reviewed-by:`, `Tested-by:`, or `Acked-by:` tags
+| Tag | Value |
+|-----|-------|
+| Fixes: | *(none)* |
+| Reported-by: | Shirisha G \<shirisha@linux.ibm.com\> |
+| Suggested-by: | Sourabh Jain \<sourabhjain@linux.ibm.com\> |
+| Tested-by: | Shirisha G \<shirisha@linux.ibm.com\> |
+| Reviewed-by: | Mahesh Salgaonkar, Sourabh Jain (IBM fadump
+maintainers) |
+| Signed-off-by: | Shivang Upadhyay, Madhavan Srinivasan |
+| Link: |
+https://patch.msgid.link/20260412113057.46090-1-shivangu@linux.ibm.com |
+| Cc: stable | *(none — expected for pipeline candidates)* |
 
-Notable: maintainer sign-off; absence of stable tag is expected for
-manual review.
+**Notable:** IBM fadump subsystem reporters/reviewers; no syzbot; no NAK
+indicators in message.
 
 ### Step 1.3: Body analysis
 **Record:**
-- **Bug described:** Only `FBIOPUT_VSCREENINFO` ioctl performs the full
-  fbcon sequence (`fbcon_modechange_possible` → `fb_set_var` →
-  `fbcon_update_vcs`). Sysfs mode-change paths and driver ioctl/reconfig
-  paths skip the `fbcon_modechange_possible` check.
-- **Symptom/failure mode:** Incomplete fbcon synchronization on mode
-  changes; missing validation that resolution is not smaller than
-  console font size.
-- **Version info:** None in message.
-- **Root cause:** Inconsistent fbcon handling across user-facing entry
-  points after the ioctl-only fix from 2022.
+- **Bug:** `ppc_panic_fadump_handler` is registered on
+  `panic_notifier_list` with `INT_MAX` priority and runs **before**
+  `panic()` reaches `kmsg_dump_desc()`. When fadump triggers firmware-
+  assisted dump (`rtas_os_term` / OPAL MPIPL reboot), execution
+  typically never returns to `panic()`, so pstore and other kmsg dumpers
+  never run.
+- **Symptom:** On fadump-configured POWER systems, panic logs are not
+  saved to pstore; if fadump also fails, administrators may have **no**
+  kernel log from the crash.
+- **Root cause:** Ordering gap between early fadump panic notifier and
+  later `kmsg_dump_desc()` in `panic()`.
+- **Fix approach:** Call `kmsg_dump_desc(KMSG_DUMP_PANIC, …)` in
+  `ppc_panic_fadump_handler()` when `should_fadump_crash()` is true,
+  **before** `crash_fadump()`.
 
-### Step 1.4: Hidden bug fix detection
-**Record:** Yes — despite refactor-style wording, this completes a real
-correctness/safety gap. The original `fbcon_modechange_possible()`
-commit (`e64242caef18b`, 2022) explicitly warned that undersized
-resolutions cause character rendering to access memory outside the
-graphics region. That check was ioctl-only; sysfs and driver paths
-remained vulnerable.
+### Step 1.4: Hidden bug fix?
+**Record:** No — this is an explicit, well-described functional bug fix
+(missing kmsg dump invocation), not disguised cleanup.
 
 ---
 
 ## PHASE 2: DIFF ANALYSIS
 
-### Step 2.1: Change inventory
+### Step 2.1: Inventory
 **Record:**
-| File | Change |
-|------|--------|
-| `fb_chrdev.c` | −5/+1 |
-| `fbcon.c` | −2 (remove exports) |
-| `fbmem.c` | +13 (new helper) |
-| `fbsysfs.c` | −3/+1 |
-| `ps3fb.c` | −4/+1 |
-| `sh_mobile_lcdcfb.c` | −4/+1 |
-| `include/linux/fb.h` | +2 |
+- **Files:** `arch/powerpc/kernel/setup-common.c` (+1 include, +7 lines
+  in handler)
+- **Functions:** `ppc_panic_fadump_handler()`
+- **Scope:** Single-file, surgical (~10 lines)
 
-**Functions modified:** `do_fb_ioctl()`, `activate()`,
-`fb_set_var_from_user()` (new), `ps3fb_ioctl()`,
-`sh_mobile_fb_reconfig()`
-**Scope:** Small, multi-file but tightly focused consolidation.
-
-### Step 2.2: Code flow per hunk
+### Step 2.2: Code flow change
 **Record:**
-1. **`fb_chrdev.c` / `FBIOPUT_VSCREENINFO`:** Three-step inline sequence
-   → single `fb_set_var_from_user()` call. Behavior unchanged.
-2. **`fbmem.c`:** New helper encapsulates the three-step sequence.
-3. **`fbsysfs.c` / `activate()`:** Before: `fb_set_var` +
-   `fbcon_update_vcs` (no validation). After: `fb_set_var_from_user`
-   (adds `fbcon_modechange_possible`).
-4. **`ps3fb.c`:** Same — gains validation via helper; drops direct
-   `fbcon.h` usage.
-5. **`sh_mobile_lcdcfb.c`:** Before: `fb_set_var` then separate
-   `fbcon_update_vcs`. After: single helper call with validation.
-6. **`fbcon.c`:** Removes `EXPORT_SYMBOL` / `EXPORT_SYMBOL_GPL` from
-   `fbcon_update_vcs` and `fbcon_modechange_possible`.
+
+| Hunk | Before | After |
+|------|--------|-------|
+| Include | No `kmsg_dump.h` | Adds `#include <linux/kmsg_dump.h>` |
+| `ppc_panic_fadump_handler()` | `hard_irq_disable()` → `crash_fadump()`
+| `hard_irq_disable()` → `kmsg_dump_desc()` (if fadump registered) →
+`crash_fadump()` |
+
+**Path affected:** Kernel panic on PowerPC with `CONFIG_FA_DUMP` and
+fadump registered.
 
 ### Step 2.3: Bug mechanism
 **Record:**
-- **Category:** Memory safety / logic correctness (OOB access prevention
-  + fbcon state consistency).
-- **Mechanism:** `fbcon_modechange_possible()` rejects resolutions where
-  font width/height exceeds effective `xres`/`yres` (with rotation).
-  Sysfs (`store_mode`, `store_rotate`, `store_virtual`, `store_bpp` via
-  `activate()`) and ps3fb/sh_mobile paths bypassed this check.
-  Undersized modes could proceed to `fb_set_var` and fbcon rendering,
-  risking out-of-bounds framebuffer access — the same failure mode
-  documented in `e64242caef18b`.
+- **Category:** Logic / ordering bug on crash path (missing diagnostic
+  dump invocation).
+- **Mechanism:** Verified in `kernel/panic.c` —
+  `atomic_notifier_call_chain(&panic_notifier_list, …)` at line 520 runs
+  **before** `kmsg_dump_desc(KMSG_DUMP_PANIC, buf)` at line 524. Fadump
+  notifier runs first (`INT_MAX` priority in `setup-common.c` line 780).
+  `crash_fadump()` → `fadump_trigger()` calls `rtas_os_term()` (pseries)
+  or `opal_cec_reboot2(OPAL_REBOOT_MPIPL)` (powernv), which
+  terminate/reboot and normally do not return to `panic()`.
 
 ### Step 2.4: Fix quality
 **Record:**
-- Fix is obviously correct: extracts ioctl’s already-proven three-step
-  pattern.
-- Minimal, no unrelated changes.
-- **Regression risk:** Low for in-tree code. Removing exports of
-  `fbcon_update_vcs` / `fbcon_modechange_possible` could affect out-of-
-  tree GPL modules; in-tree users (`ps3fb`, `sh_mobile_lcdcfb`) are
-  updated in the same patch. ps3fb/sh_mobile may now reject mode changes
-  that previously succeeded but were unsafe — intentional behavior
-  change.
+- **Obviously correct:** Yes — mirrors the existing system-reset path in
+  `traps.c:474` (`kmsg_dump()` before `crash_fadump()`).
+- **Minimal:** Yes.
+- **Regression risk:** Very low. `should_fadump_crash()` guard avoids
+  extra dump when fadump is inactive. If `fadump_trigger()` fails and
+  returns (e.g. OPAL `OPAL_UNSUPPORTED`), `panic()` may call
+  `kmsg_dump_desc()` again — redundant but harmless for pstore.
+- **Uses `kmsg_dump_desc` with panic message pointer:** Better than bare
+  `kmsg_dump()` — matches `panic()` behavior.
 
 ---
 
@@ -216,167 +221,145 @@ remained vulnerable.
 
 ### Step 3.1: Blame
 **Record:**
-- `fb_chrdev.c:88-92`: Added in `588b35634a5aa` (Thomas Zimmermann,
-  2023) with full three-step sequence.
-- `fbsysfs.c:23-25`: `fb_set_var` since 2005; `fbcon_update_vcs` added
-  in `d88ca7e1a27eb` (2020, syzbot OOB fix); never gained
-  `fbcon_modechange_possible`.
-- **Bug introduced:** Gap since `e64242caef18b` (Jun 2022) when
-  validation was ioctl-only.
+- `ppc_panic_fadump_handler` / `crash_fadump()` call: **ab9dbf771ff9b6**
+  (David Gibson, Dec 2017) — fadump panic notifier restored.
+- Handler structure/priority: **e2aa34ce80a26** (Guilherme Piccoli, Apr
+  2022) — split notifiers, fadump runs early with `INT_MAX` priority.
+- Bug present since fadump panic notifier runs before `kmsg_dump_desc()`
+  in `panic()` — long-standing on 6.18.y.
 
-### Step 3.2: Fixes tag
-**Record:** N/A — no `Fixes:` tag. Related fix `e64242caef18b` is in
-this tree (`git merge-base --is-ancestor` confirms).
+### Step 3.2: Fixes: tag
+**Record:** N/A — no `Fixes:` tag. Related prior fix: **e7ca44ed3ba77**
+(2019) fixed the **same pstore gap** on the **system reset** path in
+`traps.c`, not the `panic()` notifier path.
 
 ### Step 3.3: Related file history
 **Record:**
-- `e64242caef18b` — ioctl-only font-size validation (Cc: stable # v5.4+)
-- `d88ca7e1a27eb` — syzbot OOB in `vc_do_resize`, pulled
-  `fbcon_update_vcs` out of `fb_set_var`
-- Recent stable-relevant fbcon fixes in tree: OOB/null-ptr fixes
-  (`076b1aa65f77a`, `6617df8c24631`)
-- **Standalone:** Patch 1/4 of “Internalize fbcon” series; does not
-  require patches 2–4 to function.
+- `e7ca44ed3ba77` — "powerpc: dump kernel log before carrying out fadump
+  or kdump" (traps.c system-reset path).
+- `e2aa34ce80a26` — panic notifier refactor (made fadump run earliest).
+- Standalone 1-patch fix; not part of a series.
 
 ### Step 3.4: Author context
-**Record:** Thomas Zimmermann is active fbdev/fbcon maintainer. Helge
-Deller (co-author of original `fbcon_modechange_possible`) signed off.
+**Record:** Shivang Upadhyay / IBM team; reviewed by Mahesh Salgaonkar
+and Sourabh Jain (long-time fadump maintainers). Same subsystem as 2019
+pstore/fadump fix.
 
 ### Step 3.5: Dependencies
-**Record:** No prerequisite commits required.
-`fbcon_modechange_possible` and `fbcon_update_vcs` exist in tree. `git
-apply --check` passes cleanly on 6.18.44.
+**Record:** None. All symbols exist in this tree:
+- `should_fadump_crash()` — `arch/powerpc/kernel/fadump.c:227`
+- `kmsg_dump_desc()` — `kernel/printk/printk.c:4765`
+- `linux/kmsg_dump.h` — present
+- Applies standalone to 6.18.44.
 
 ---
 
 ## PHASE 4: MAILING LIST AND EXTERNAL RESEARCH
 
-### Step 4.1: Original discussion
+### Step 4.1–4.5
 **Record:**
-- **b4 dig URL:**
-  https://patch.msgid.link/20260527151551.258659-2-tzimmermann@suse.de
-- **Series revisions:** v1 (2026-05-20), v2 (2026-05-22), v3
-  (2026-05-27) — committed version is v3.
-- **WebFetch of lore:** Blocked by Anubis bot protection; could not read
-  full thread.
-- **From search snippets:** AI review noted ps3fb gains
-  `fbcon_modechange_possible` check as intentional behavioral change.
-
-### Step 4.2: Reviewers
-**Record:** CC list includes Helge Deller, Geert Uytterhoeven, Simona
-Vetter, airlied, linux-fbdev, dri-devel, linuxppc-dev — appropriate
-subsystem coverage.
-
-### Step 4.3: Bug reports
-**Record:** No direct bug report in this commit. Underlying issue
-matches `e64242caef18b` rationale (OOB framebuffer access). Related
-syzbot fix `d88ca7e1a27eb` addressed a different fbcon/OOB path.
-
-### Step 4.4: Series context
-**Record:** Part of 4-patch “fbdev: Internalize fbcon” series. Patches
-2–4 handle `fb_blank_from_user` and unexporting fbcon symbols more
-broadly. This patch is self-contained for the `fb_set_var` path.
-
-### Step 4.5: Stable list history
-**Record:** UNVERIFIED — could not search lore stable list due to fetch
-blocking. Original `e64242caef18b` was explicitly nominated `Cc:
-stable@vger.kernel.org # v5.4+`.
+- **b4 dig:** Could not run — patch commit not in local tree (`b4 dig
+  -c` requires commitish).
+- **WebFetch lore / patch.msgid.link:** Blocked by Anubis bot protection
+  — could not read thread.
+- **Commit message Link:** Present but content unverified externally.
+- **Stable list search:** Not performed (lore blocked).
+- **Inference from commit message only:** IBM-internal report; tested
+  and reviewed by fadump maintainers. No evidence of NAKs in commit
+  message.
 
 ---
 
 ## PHASE 5: CODE SEMANTIC ANALYSIS
 
 ### Step 5.1: Key functions
-**Record:** `fb_set_var_from_user()` (new), `activate()`,
-`do_fb_ioctl()`, `ps3fb_ioctl()`, `sh_mobile_fb_reconfig()`.
+**Record:** `ppc_panic_fadump_handler()`, `should_fadump_crash()`,
+`crash_fadump()`, `kmsg_dump_desc()`
 
 ### Step 5.2: Callers
 **Record:**
-- `activate()` ← `store_mode`, `store_bpp`, `store_rotate`,
-  `store_virtual` (sysfs, root-writable framebuffer attributes)
-- `do_fb_ioctl()` ← `FBIOPUT_VSCREENINFO` (userspace ioctl on
-  `/dev/fb*`)
-- `ps3fb_ioctl()` ← `PS3FB_IOCTL_SETMODE` (PS3 platform)
-- `sh_mobile_fb_reconfig()` ← `sh_mobile_lcdc_release()` on display
-  hotplug/reconfig (SH Mobile embedded)
+- `ppc_panic_fadump_handler` — registered via `setup_panic()` →
+  `atomic_notifier_chain_register(&panic_notifier_list,
+  &ppc_fadump_block)` (line 795).
+- Invoked from `panic()` → `atomic_notifier_call_chain()`
+  (`kernel/panic.c:520`).
+- **Context:** Panic path only; all CPUs eventually panic.
 
 ### Step 5.3: Callees
-**Record:** `fbcon_modechange_possible()` → `fb_set_var()` →
-`fbcon_update_vcs()`. Requires `console_lock()` + `lock_fb_info()` at
-all call sites (already present).
+**Record:** `hard_irq_disable()`, `should_fadump_crash()`,
+`kmsg_dump_desc()` → iterates registered dumpers (pstore, etc.),
+`crash_fadump()` → `fadump_trigger()` → firmware reboot.
 
 ### Step 5.4: Reachability
 **Record:**
-- Sysfs paths: reachable by privileged users (root) on any system with
-  framebuffer sysfs nodes.
-- Ioctl: reachable by users with framebuffer device access.
-- ps3fb/sh_mobile: platform-specific but real hardware paths.
-- **Userspace triggerable:** Yes (sysfs/ioctl, privileged).
+- Triggered on any kernel panic when fadump is registered
+  (`fw_dump.dump_registered` and `fw_dump.fadumphdr_addr` set).
+- Common on IBM POWER LPARs / PowerNV with fadump enabled.
+- Not userspace-triggerable directly, but panics are the exact scenario
+  this code handles.
 
 ### Step 5.5: Similar patterns
-**Record:** ioctl path in `fb_chrdev.c` already had the correct three-
-step pattern since 2022/2023. Sysfs and drivers were the inconsistent
-outliers.
+**Record:** `arch/powerpc/kernel/traps.c:474` already does
+`kmsg_dump(KMSG_DUMP_OOPS)` before `crash_fadump()` on system-reset dump
+path — this patch closes the analogous gap on the **panic notifier**
+path.
 
 ---
 
-## PHASE 6: CROSS-REFERENCE AGAINST LOCAL TREE (6.18.44)
+## PHASE 6: CROSS-REFERENCING AGAINST LOCAL TREE (6.18.44)
 
-### Step 6.1: Buggy code present?
-**Record:** **Yes.** Current tree at `fbsysfs.c:23-25` calls
-`fb_set_var` + `fbcon_update_vcs` without `fbcon_modechange_possible`.
-Same gap in `ps3fb.c:833-835` and `sh_mobile_lcdcfb.c:1768-1772`. Commit
-`6f611e5` is **NOT** in HEAD.
+### Step 6.1: Buggy code exists?
+**Record:** **YES.** Current `setup-common.c:738-751` has no
+`kmsg_dump_desc()` call. Fix is **not** present in v6.18.44.
 
 ### Step 6.2: Backport complications
-**Record:** `git apply --check` on commit patch: **clean apply**. No
-structural conflicts observed.
+**Record:** **Clean apply expected** — single hunk, no structural
+conflicts; file unchanged for fadump handler since 2022 refactor.
 
 ### Step 6.3: Related fixes already present?
-**Record:** `e64242caef18b` (ioctl-only validation) is in tree. No
-`fb_set_var_from_user` or equivalent consolidation. Gap remains open.
+**Record:** System-reset path fix (e7ca44ed3ba77) is present in
+`traps.c`. Panic-notifier path fix is **missing** — this commit fills
+that gap.
 
 ---
 
-## PHASE 7: SUBSYSTEM CONTEXT
+## PHASE 7: SUBSYSTEM AND MAINTAINER CONTEXT
 
-### Step 7.1: Subsystem criticality
-**Record:** `drivers/video/fbdev` / `fbcon` — **IMPORTANT** (framebuffer
-console on servers, embedded, legacy platforms; less universal than
-mm/net but affects console stability).
+### Step 7.1: Subsystem
+**Record:** `arch/powerpc` / fadump crash dump — **IMPORTANT** for IBM
+POWER enterprise; **PERIPHERAL** globally (architecture- and config-
+specific: `CONFIG_FA_DUMP`).
 
 ### Step 7.2: Activity
-**Record:** Actively maintained — recent fixes include UAF, null-ptr-
-deref, and OOB fixes in fbdev/fbcon on this branch.
+**Record:** Fadump actively maintained in 6.18.y (recent commits: param
+area, CMA init, hugetlb interaction, etc.).
 
 ---
 
 ## PHASE 8: IMPACT AND RISK ASSESSMENT
 
 ### Step 8.1: Who is affected
-**Record:** Users of fbdev with active fbcon text console who change
-modes via sysfs or affected drivers (not only ioctl). Embedded (SH
-Mobile), PS3, and general framebuffer sysfs users.
+**Record:** IBM POWER (pseries/PowerNV) systems with firmware-assisted
+dump enabled and pstore (or other kmsg dumpers) configured.
 
 ### Step 8.2: Trigger conditions
-**Record:** Set framebuffer mode/rotation/virtual resolution via sysfs
-to a value smaller than current console font dimensions while fbcon is
-active in text mode. Requires privileged access. Not everyday, but
-realistic for admin tooling and embedded hotplug scenarios.
+**Record:** Kernel panic while fadump is registered. Common crash
+scenario on servers using fadump. Not unprivileged attack vector; crash-
+path diagnostic issue.
 
 ### Step 8.3: Failure mode severity
-**Record:** Out-of-bounds framebuffer memory access during console
-character rendering → potential kernel oops, memory corruption.
-**Severity: HIGH** (same class as the 2022 ioctl fix that went to
-stable).
+**Record:** **MEDIUM-HIGH** for affected users — loss of pstore panic
+logs when fadump takes over or fails; no normal-runtime impact.
+Operationally critical when fadump is the primary dump mechanism and
+fails (exact scenario described in commit and in e7ca44ed3ba77).
 
 ### Step 8.4: Risk-benefit
 **Record:**
-- **Benefit:** HIGH — closes a known validation gap left by incomplete
-  application of `e64242caef18b`.
-- **Risk:** LOW — ~37 lines, behavior matches existing ioctl path;
-  applies cleanly.
-- **Ratio:** Strong benefit, low risk.
+- **Benefit:** Restores last-resort crash diagnostics (pstore) on fadump
+  panic path; same rationale as 2019 stable-class fix.
+- **Risk:** Very low — ~10 lines, guarded by `should_fadump_crash()`,
+  tested by IBM.
+- **Ratio:** Strong benefit for POWER/fadump users; negligible risk.
 
 ---
 
@@ -385,247 +368,119 @@ stable).
 ### Step 9.1: Evidence summary
 
 **FOR backport:**
-- Fixes real OOB/corruption-class bug (documented in `e64242caef18b`)
-- Completes ioctl-only fix from 2022 across sysfs and driver paths
-- Small, surgical, applies cleanly to 6.18.44
-- Maintainer sign-off (Helge Deller)
-- Same bug class previously deemed stable-worthy (`Cc: stable` on
-  original)
-- Privileged userspace can trigger via sysfs
+- Real, verifiable ordering bug in panic path
+- Buggy code present in 6.18.44; fix not yet applied
+- Small, self-contained, reviewed/tested by fadump maintainers
+- Direct precedent: e7ca44ed3ba77 fixed same pstore gap on system-reset
+  path
+- Important for IBM POWER crash diagnostics when fadump is active
 
 **AGAINST backport:**
-- Adds new exported helper `fb_set_var_from_user` (kernel-internal, not
-  userspace API)
-- Removes exports of `fbcon_update_vcs` / `fbcon_modechange_possible`
-  (minor ABI concern for OOT modules)
-- Part of larger “internalize fbcon” series (but functionally
-  standalone)
-- No syzbot/user bug report for this specific gap
+- Platform/config specific (not all stable users)
+- Fixes diagnostic data loss, not runtime crash/corruption/deadlock
+- Mailing list discussion unverified (lore blocked)
 
-**Unresolved:** Full lore review thread content (fetch blocked).
+**Unresolved:** Full lore thread content; whether reviewers explicitly
+nominated for stable.
 
 ### Step 9.2: Stable rules checklist
-1. Obviously correct and tested? **PASS** — logic mirrors proven ioctl
-   path; maintainer SOB.
-2. Fixes real bug affecting users? **PASS** — sysfs/driver paths lack
-   font-size validation.
-3. Important issue? **PASS** — OOB memory access / potential crash or
-   corruption (**HIGH**).
-4. Small and contained? **PASS** — 7 files, ~37 lines net.
-5. No new features/APIs? **PASS** (with nuance) — new kernel helper
-   export only; no userspace API; behavior fix not feature addition.
-6. Can apply to local tree? **PASS** — `git apply --check` succeeds.
+
+| Criterion | Result |
+|-----------|--------|
+| 1. Obviously correct and tested? | **PASS** — clear ordering fix;
+Tested-by + Reviewed-by IBM maintainers |
+| 2. Fixes real bug affecting users? | **PASS** — pstore not invoked on
+fadump panic path |
+| 3. Important issue? | **PASS (borderline)** — crash-path diagnostic
+loss on enterprise POWER; fallback when fadump fails |
+| 4. Small and contained? | **PASS** — ~10 lines, one file |
+| 5. No new features/APIs? | **PASS** — invokes existing kmsg_dump
+infrastructure |
+| 6. Applies to local tree? | **PASS** — all prerequisites present;
+clean apply |
 
 ### Step 9.3: Exception categories
-**Record:** None (not device ID, quirk, DT, build, or docs). Qualifies
-as a correctness/memory-safety bug fix.
+**Record:** None (not device ID, quirk, DT, build, or docs). Standard
+bug fix.
 
-### Step 9.4: Problem summary for stable users
-When the 2022 fix added `fbcon_modechange_possible()` to prevent console
-font rendering past framebuffer bounds, it was wired only into the
-`FBIOPUT_VSCREENINFO` ioctl. Sysfs mode/rotation/virtual-resolution
-writes and ps3fb/sh_mobile driver paths still allowed undersized modes,
-risking the same out-of-bounds access. This commit routes all user-
-invoked `fb_set_var` paths through one helper that performs validation,
-hardware update, and fbcon refresh — closing that gap on 6.18.y.
+### Step 9.4: Decision rationale
+On **6.18.44**, fadump’s early panic notifier prevents `panic()` from
+ever reaching `kmsg_dump_desc()`, leaving pstore empty when firmware
+takes over — precisely when those logs are most needed as a fallback.
+The fix is minimal, matches an established pattern already used on the
+system-reset path, and is low risk. Diagnostic loss on the crash path
+for a supported enterprise platform meets stable backport criteria under
+the “important issue” umbrella, especially given prior acceptance of the
+same class of fix in 2019.
 
 ---
 
 ## Verification
 
-- **[Phase 1]** Parsed subject, tags, body; no Reported-by/syzbot/Fixes
-  tags.
-- **[Phase 1]** Identified hidden bug fix via cross-reference to
-  `e64242caef18b` message.
-- **[Phase 2]** Diff inventory: 7 files, functions listed; bug = missing
-  `fbcon_modechange_possible` on non-ioctl paths.
-- **[Phase 3]** `git describe HEAD` → `v6.18.44`; `make kernelversion` →
-  `6.18.44`.
-- **[Phase 3]** `git blame` on `fb_chrdev.c:86-92` and
-  `fbsysfs.c:16-26`.
-- **[Phase 3]** `git show e64242caef18b` — original OOB rationale and
-  ioctl-only placement confirmed.
-- **[Phase 3]** `git merge-base --is-ancestor e64242caef18b HEAD` → in
-  tree.
-- **[Phase 3]** `git merge-base --is-ancestor 6f611e5 HEAD` → NOT in
-  tree.
-- **[Phase 3]** `git log -S fbcon_modechange_possible` — introduced
-  `e64242caef18b`, ioctl placement `588b35634a5aa`.
-- **[Phase 4]** `b4 dig -c 6f611e5` → lore URL found; v1/v2/v3 revisions
-  listed.
-- **[Phase 4]** `b4 dig -w` → CC list with Deller, Geert, linux-fbdev,
-  dri-devel.
-- **[Phase 4]** WebFetch lore URL → blocked (Anubis); thread content
-  UNVERIFIED.
-- **[Phase 5]** `grep` callers: `activate()` used by `store_mode`,
-  `store_bpp`, `store_rotate`, `store_virtual`.
-- **[Phase 5]** `grep` for `fbcon_update_vcs` /
-  `fbcon_modechange_possible` — only fbdev core + ps3fb + sh_mobile.
-- **[Phase 6]** Read current `fbsysfs.c`, `fb_chrdev.c`, `ps3fb.c`,
-  `sh_mobile_lcdcfb.c` — buggy pattern confirmed.
-- **[Phase 6]** `git show 6f611e5 | git apply --check` → clean apply.
-- **[Phase 6]** `grep fb_set_var_from_user` → not in tree.
-- **[Phase 8]** Failure mode from `e64242caef18b`: OOB graphics memory
-  access; severity HIGH.
+- **[Phase 1]** Parsed commit message tags and body from user-provided
+  content
+- **[Phase 2]** Read diff; verified `panic()` ordering in
+  `kernel/panic.c:520-524`
+- **[Phase 2]** Read `ppc_panic_fadump_handler` at `setup-
+  common.c:738-780`; confirmed no `kmsg_dump_desc` call
+- **[Phase 2]** Read `crash_fadump()` and `fadump_trigger`
+  implementations (`fadump.c`, `rtas-fadump.c:555-559`, `opal-
+  fadump.c:581-600`)
+- **[Phase 2]** Read `kmsg_dump_desc()` in
+  `kernel/printk/printk.c:4765-4788`
+- **[Phase 3]** `git describe HEAD` → v6.18.44; Makefile VERSION 6.18.44
+- **[Phase 3]** `git blame` on handler lines → ab9dbf771ff9b6 (2017),
+  e2aa34ce80a26 (2022)
+- **[Phase 3]** `git show e2aa34ce80a26` — fadump notifier INT_MAX
+  priority
+- **[Phase 3]** `git show e7ca44ed3ba77` — prior pstore/fadump fix on
+  system-reset path
+- **[Phase 3]** `git log --oneline -20 -- arch/powerpc/kernel/setup-
+  common.c`
+- **[Phase 4]** `b4 dig -c` — failed (no commit in tree)
+- **[Phase 4]** WebFetch lore.kernel.org and patch.msgid.link — blocked
+  (Anubis)
+- **[Phase 5]** Grep callers: `setup_panic()` registers notifier;
+  `panic()` invokes chain
+- **[Phase 5]** Verified `traps.c:474` kmsg_dump before crash_fadump on
+  system-reset path
+- **[Phase 6]** Confirmed buggy code present; fix absent in v6.18.44
+- **[Phase 6]** Verified `should_fadump_crash()`, `kmsg_dump_desc`,
+  `linux/kmsg_dump.h` exist
+- **UNVERIFIED:** Lore thread review comments and explicit stable
+  nominations
 
-**YES****Verdict for 6.18.44:** **YES** — backport this commit.
+**YES**
 
-It closes a real gap left by the 2022 ioctl-only
-`fbcon_modechange_possible()` fix: sysfs mode/rotation/virtual writes
-and ps3fb/sh_mobile paths could still set resolutions smaller than the
-console font, risking out-of-bounds framebuffer access. The patch is
-small (~37 lines), applies cleanly, and mirrors the ioctl path’s
-existing three-step sequence.
+ arch/powerpc/kernel/setup-common.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-**Commit:** `6f611e5e5f3327cf2e2daabe6ee5acac58cc784e` (not yet in this
-tree).
-
- drivers/video/fbdev/core/fb_chrdev.c   |  6 +-----
- drivers/video/fbdev/core/fbcon.c       |  2 --
- drivers/video/fbdev/core/fbmem.c       | 13 +++++++++++++
- drivers/video/fbdev/core/fbsysfs.c     |  4 +---
- drivers/video/fbdev/ps3fb.c            |  5 +----
- drivers/video/fbdev/sh_mobile_lcdcfb.c |  5 +----
- include/linux/fb.h                     |  2 ++
- 7 files changed, 19 insertions(+), 18 deletions(-)
-
-diff --git a/drivers/video/fbdev/core/fb_chrdev.c b/drivers/video/fbdev/core/fb_chrdev.c
-index 4ebd16b7e3b8d..54f926fb411bd 100644
---- a/drivers/video/fbdev/core/fb_chrdev.c
-+++ b/drivers/video/fbdev/core/fb_chrdev.c
-@@ -85,11 +85,7 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
- 		var.activate &= ~FB_ACTIVATE_KD_TEXT;
- 		console_lock();
- 		lock_fb_info(info);
--		ret = fbcon_modechange_possible(info, &var);
--		if (!ret)
--			ret = fb_set_var(info, &var);
--		if (!ret)
--			fbcon_update_vcs(info, var.activate & FB_ACTIVATE_ALL);
-+		ret = fb_set_var_from_user(info, &var);
- 		unlock_fb_info(info);
- 		console_unlock();
- 		if (!ret && copy_to_user(argp, &var, sizeof(var)))
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index df1ecbf3f5d02..35210f2bb7b2b 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -2754,7 +2754,6 @@ void fbcon_update_vcs(struct fb_info *info, bool all)
- 	else
- 		fbcon_modechanged(info);
- }
--EXPORT_SYMBOL(fbcon_update_vcs);
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index 68d47c53876c6..28186f9ec8da0 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -68,6 +68,7 @@
+ #include <asm/kasan.h>
+ #include <asm/mce.h>
+ #include <asm/systemcfg.h>
++#include <linux/kmsg_dump.h>
  
- /* let fbcon check if it supports a new screen resolution */
- int fbcon_modechange_possible(struct fb_info *info, struct fb_var_screeninfo *var)
-@@ -2782,7 +2781,6 @@ int fbcon_modechange_possible(struct fb_info *info, struct fb_var_screeninfo *va
+ #include "setup.h"
  
- 	return 0;
- }
--EXPORT_SYMBOL_GPL(fbcon_modechange_possible);
+@@ -744,6 +745,13 @@ static int ppc_panic_fadump_handler(struct notifier_block *this,
+ 	 */
+ 	hard_irq_disable();
  
- int fbcon_mode_deleted(struct fb_info *info,
- 		       struct fb_videomode *mode)
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index 30a2c0d47e5c8..1533d43a0a0c9 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -346,6 +346,19 @@ fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var)
- }
- EXPORT_SYMBOL(fb_set_var);
- 
-+int fb_set_var_from_user(struct fb_info *info, struct fb_var_screeninfo *var)
-+{
-+	int ret = fbcon_modechange_possible(info, var);
++	/*
++	 * Invoke kmsg_dump (e.g., pstore) before crash_fadump() as fadump
++	 * runs before panic()'s kmsg_dump_desc() call.
++	 */
++	if (should_fadump_crash())
++		kmsg_dump_desc(KMSG_DUMP_PANIC, (char *)ptr);
 +
-+	if (!ret)
-+		ret = fb_set_var(info, var);
-+	if (!ret)
-+		fbcon_update_vcs(info, var->activate & FB_ACTIVATE_ALL);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL(fb_set_var_from_user);
-+
- static void fb_lcd_notify_blank(struct fb_info *info)
- {
- 	int power;
-diff --git a/drivers/video/fbdev/core/fbsysfs.c b/drivers/video/fbdev/core/fbsysfs.c
-index fe8bd33e64ab1..d363f94207c3e 100644
---- a/drivers/video/fbdev/core/fbsysfs.c
-+++ b/drivers/video/fbdev/core/fbsysfs.c
-@@ -20,9 +20,7 @@ static int activate(struct fb_info *fb_info, struct fb_var_screeninfo *var)
- 	var->activate |= FB_ACTIVATE_FORCE;
- 	console_lock();
- 	lock_fb_info(fb_info);
--	err = fb_set_var(fb_info, var);
--	if (!err)
--		fbcon_update_vcs(fb_info, var->activate & FB_ACTIVATE_ALL);
-+	err = fb_set_var_from_user(fb_info, var);
- 	unlock_fb_info(fb_info);
- 	console_unlock();
- 	if (err)
-diff --git a/drivers/video/fbdev/ps3fb.c b/drivers/video/fbdev/ps3fb.c
-index dbcda307f6a67..1376d19b19aeb 100644
---- a/drivers/video/fbdev/ps3fb.c
-+++ b/drivers/video/fbdev/ps3fb.c
-@@ -29,7 +29,6 @@
- #include <linux/freezer.h>
- #include <linux/uaccess.h>
- #include <linux/fb.h>
--#include <linux/fbcon.h>
- #include <linux/init.h>
- 
- #include <asm/cell-regs.h>
-@@ -830,9 +829,7 @@ static int ps3fb_ioctl(struct fb_info *info, unsigned int cmd,
- 				/* Force, in case only special bits changed */
- 				var.activate |= FB_ACTIVATE_FORCE;
- 				par->new_mode_id = val;
--				retval = fb_set_var(info, &var);
--				if (!retval)
--					fbcon_update_vcs(info, var.activate & FB_ACTIVATE_ALL);
-+				retval = fb_set_var_from_user(info, &var);
- 				console_unlock();
- 			}
- 			break;
-diff --git a/drivers/video/fbdev/sh_mobile_lcdcfb.c b/drivers/video/fbdev/sh_mobile_lcdcfb.c
-index dd950e4ab5ceb..6038f217ab427 100644
---- a/drivers/video/fbdev/sh_mobile_lcdcfb.c
-+++ b/drivers/video/fbdev/sh_mobile_lcdcfb.c
-@@ -15,7 +15,6 @@
- #include <linux/ctype.h>
- #include <linux/dma-mapping.h>
- #include <linux/delay.h>
--#include <linux/fbcon.h>
- #include <linux/init.h>
- #include <linux/interrupt.h>
- #include <linux/ioctl.h>
-@@ -1765,11 +1764,9 @@ static void sh_mobile_fb_reconfig(struct fb_info *info)
- 	var.height = ch->display.height;
- 	var.activate = FB_ACTIVATE_NOW;
- 
--	if (fb_set_var(info, &var) < 0)
-+	if (fb_set_var_from_user(info, &var) < 0)
- 		/* Couldn't reconfigure, hopefully, can continue as before */
- 		return;
--
--	fbcon_update_vcs(info, true);
- }
- 
- /*
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index da2fdabd18cb3..f622f5f520cf0 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -541,6 +541,8 @@ extern int fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var);
- extern int fb_pan_display(struct fb_info *info, struct fb_var_screeninfo *var);
- extern int fb_blank(struct fb_info *info, int blank);
- 
-+int fb_set_var_from_user(struct fb_info *info, struct fb_var_screeninfo *var);
-+
- /*
-  * Helpers for framebuffers in I/O memory
-  */
+ 	/*
+ 	 * If firmware-assisted dump has been registered then trigger
+ 	 * its callback and let the firmware handles everything else.
 -- 
 2.53.0
 
