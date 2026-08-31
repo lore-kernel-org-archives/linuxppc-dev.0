@@ -1,70 +1,69 @@
-Return-Path: <linuxppc-dev+bounces-26276-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26277-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 954F5C61DD3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2026 11:17:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1D302C61DE2
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2026 11:18:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hYRLD3Td1z2y2f;
-	Mon, 31 Aug 2026 21:17:56 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788175076;
-	cv=none; b=MO2PEtRw7WMMfX8EB/DWslSuGveZdPzpq0IJ31JeLRi5Yg429iND/PFjGEKxConi0vkHPERMhbZ3SYDXvUJN62ltGwErSTPTXI8zhEeXNT64AIyvZxy/zvUhpXGpgxjz0J2SoIPS+sGjW2PPmbUWtdMmrqimvjhWIUyGqaUPvvemciUQp/qIFJ8JTGmHllHMf3QwYFu6gJemclkiPFnHLL8YFOyZwu0D3rbfSZZHA/1O58f1FfULPQcz6e2R0ohmsdLhYTDP/hLl1QSI8rl03bJVHDffVVxuZl/w9kFXpMzJKWHr5XgSa/kGDHNr59ePGcMhzmAsNcQs7++qYB4kDQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hYRLM1Xdrz2ygW;
+	Mon, 31 Aug 2026 21:18:03 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788175083;
+	cv=none; b=Xlwx83nZaWPN+zEb7sibHi/xTbbfF96HgfrQjnP8BNR8wNHQtPEJK/acDyOa8NQqZy+DMZVWm+vLdALRosVvq/3tGtSGyISwD3t69mtTAf2v8iRM+9m/sltMpLiDjGjgbUGs4ICt6TyNk+LoFaAHU6YeXym3e5bZvsThnHhmVbnYeHhfuW028OUETXM+zNCBeBWQjDGS1Pja4l/EL6NcY+QDEp6l3yL537mMzArvSI6ltV3wKrKEygRzHM6ceQAG9YnxEGQEMWi+sLXP+k5jGI8P4R64k6nMtll0O2mMHmUTLr9PWWtNuxeDpkfij4VycA/lF680orENjF7OA+pi6g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788175076; c=relaxed/relaxed;
-	bh=G9mDYgItyOkSuZg9u5J3SdEPeCqDGWcTNHF4yfy6l5I=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=HKu9aZ6O1Ez7ISTnbd7raLY3P8HA+hJXfbonBQy9OSDYacV2do3iNaVZThG1oJc3YIzDOk9qvuR/M1F5nIHI/9HxcxarGAVkXSjzanxFrwOsg91TsK3vp2LgDnI5jhL0+wrcGc+y86yRQDR39F/kOz4/0ksDFNed5nLkGjM/a6MMoz96QvaTaZyvYl5LS5/K2PmI6uc57T96WieJDJIiDWdY/dfUalBhkwGWAH6AnGyoVtaL6O3kcHo+isNe+MB3SPXGtrjD2JBbgBjrkqaSzBsS4eiHqa+FlVwetpO/eD66d8wcgR+jtssnInFcEDJjGAv1uYUTF984iK/rDBb5JQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=UztgbIy5; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ssrish@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1788175083; c=relaxed/relaxed;
+	bh=D8oFSxQDdU5s+9mMREcnsOc7CgzaIj/jUW/WT6lXaM8=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=HuqznrapOXEUzkAVjTVx5ZlBQvOz/ca5IgjOb2y3WVDeRsLPbZh+Yi09VXk6FR5xNo3KkuQXk6blFsp3/pm2oFWgfUPyv0BwqOX8zAJwsRSQ/MFZSaigxRiYZZLHAqK2XpY0sKjLH1dyegsJD6CZaIb356YOkiDH3p/zoBWV+JdeMzIAWg2I/o4r63orPvPBNQrQoKuctkNEHzmr++k2HHclyZkBudy6wMd+Cm7hnNqmByajWO/Oilo+Hee9yYmMxqHohKcpfYmRMjGwcIws5o4oaPLxh2aED6jxE2ENq6Y0EKrUbiIUwE0BqGdRvUiGtrj41bazzUJCea9a13oarA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZMJa3+h+; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ssrish@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=UztgbIy5;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZMJa3+h+;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ssrish@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ssrish@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hYRLC4BvFz2y2J
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Aug 2026 21:17:55 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67V82GT41530799;
-	Mon, 31 Aug 2026 11:17:52 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hYRLL3LBSz2y2J
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Aug 2026 21:18:02 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67V82MuO1640462;
+	Mon, 31 Aug 2026 11:17:48 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=G9mDYgItyOkSuZg9u
-	5J3SdEPeCqDGWcTNHF4yfy6l5I=; b=UztgbIy5gKEtgx/8Z4+CrQTVy+fR4M3Xp
-	um2bTK+b4EI/F8nHV8hE+GxNmAsqxyR7AgPzMA5tH/3Azgeig6P/a8131OaloCuc
-	HekrYy2VAfDiK/FlmHrfIW+oihxxYJk2gAaen4TY7wVi1V158RIBG8Cwg57OuQWZ
-	yW1Q1IQ2QixAu6lKmcHCj6IpRhoOgLaQGvppHNhQhYy2nXvU1YePDuLg3TvSCBlK
-	QYMuI+jmATJjYw0E0f0rVs5kP5UX2V5Qh/O5IVln+bNpeXy2bxZL0DAFdyqyAjoI
-	SsS01aH0OIM++7g2PdDhYOi/FIs54aiAnwJB/BcPTvd5aW8NsBPow==
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=D8oFSxQDdU5s+9mMREcnsOc7CgzaIj/jUW/WT6lXa
+	M8=; b=ZMJa3+h+jVReUtUjSEw1DGX8+anATYaA9mE/hIFV+FAVcrCONC2s+Vk3c
+	f7lvY4VBMIOsl5AuJziSpSbW6v8ckvHy3VvjMb0+d6ewep+h2LQOHYdhO7jG7kfF
+	0zAd+JJY3GReKJhmZYxLfWfvVaKdnDGYdBA844rTyOrT4BVnj4iUnvM+of71V9Co
+	sB5IRPKrw8XgCBi7v31J5COiQkOecUnwErGgX5xh/h3ryFxIJkV3FA6E85gH+0Hd
+	qUFDXLm/2Nk/1eHaenNL+0fH8FeVV71fi3jZjYI7oBGaykvW9nzM4YQve297YscL
+	+XObUZlG/rQ6+dk2jRPFBTCi3xnAw==
 Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gbmuhh1nf-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gbpx58vt4-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 31 Aug 2026 11:17:52 +0000 (GMT)
+	Mon, 31 Aug 2026 11:17:47 +0000 (GMT)
 Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 67VBDIc8008524;
-	Mon, 31 Aug 2026 11:17:52 GMT
-Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4gcb8h5f4u-1
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 67VBDJ4p008540;
+	Mon, 31 Aug 2026 11:17:46 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4gcb8h5f46-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 31 Aug 2026 11:17:51 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 67VBHo1p30671120
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 31 Aug 2026 11:17:50 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E27812004D;
-	Mon, 31 Aug 2026 11:17:49 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 908C62004F;
 	Mon, 31 Aug 2026 11:17:46 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 67VBHgQl50856338
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 31 Aug 2026 11:17:42 GMT
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 65FD22004F;
+	Mon, 31 Aug 2026 11:17:42 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 367012004B;
+	Mon, 31 Aug 2026 11:17:39 +0000 (GMT)
 Received: from li-fc74f8cc-3279-11b2-a85c-ef5828687581.bl1-in.ibm.com (unknown [9.123.14.23])
 	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 31 Aug 2026 11:17:46 +0000 (GMT)
+	Mon, 31 Aug 2026 11:17:38 +0000 (GMT)
 From: Srish Srinivasan <ssrish@linux.ibm.com>
 To: linux-integrity@vger.kernel.org, keyrings@vger.kernel.org,
         linuxppc-dev@lists.ozlabs.org
@@ -73,12 +72,10 @@ Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
         jarkko@kernel.org, zohar@linux.ibm.com, linux-kernel@vger.kernel.org,
         linux-security-module@vger.kernel.org, nayna@linux.ibm.com,
         rnsastry@linux.ibm.com, ssrish@linux.ibm.com
-Subject: [PATCH v2 02/10] pseries/plpks: fix error handling in plpks_read_var()
-Date: Mon, 31 Aug 2026 16:47:30 +0530
-Message-ID: <20260831111738.334857-3-ssrish@linux.ibm.com>
+Subject: [PATCH v2 00/10] Extend PKWM to support user-created wrapping keys
+Date: Mon, 31 Aug 2026 16:47:28 +0530
+Message-ID: <20260831111738.334857-1-ssrish@linux.ibm.com>
 X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20260831111738.334857-1-ssrish@linux.ibm.com>
-References: <20260831111738.334857-1-ssrish@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -94,96 +91,91 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: iWnzLJvtMWUuzQvMJx5ZXthGDssAZPSG
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODMxMDA5NSBTYWx0ZWRfX194yWTpBRn7b
- ylaR7fA5ZbK8kesJojyVEZtSbLD76Idxh9jvARLKrT6ZBVMKU21qMCTbS39hZxj429tmYhh+NQG
- veiqGIKZ0vH/UTAAlRduqVP+HRqFP3hFdqtqFsuIu7+68Gz5jqMBxfLMhE/WJAvuieetSZ2Gq2k
- FxZe4h1uebllRZJxX2CmWCiStVrsl67XrZ4qidw1eBQmPTQsFbxfQuBH5avCQSm1qcVMKqCiXMF
- Jip+uZALsU5u5MR85izNOesvGi+PWMMsjzmrIQZoKVNmClbOkGoMprie5hRJJ/gBB/4KK8M6ewS
- VVNLTHjNzV5rUCg0vwtcftaNJEQc45WbwnYL+G315MJLQ7Ani66hTFIIVKs0dGGyt8kTM4wvlh4
- KLf8wdnfXVnq+mCR2GUOI4Z2gCdYrgghtSP5OY21CIHRP4K4PHWXYa9Qz5+HCyP3QAT+MDkhjE0
- ChQk+OoS1r9oVFk0ZPw==
-X-Authority-Analysis: v=2.4 cv=Osl/DS/t c=1 sm=1 tr=0 ts=6a9562e0 cx=c_pps
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=PPc/P/qC c=1 sm=1 tr=0 ts=6a9562dc cx=c_pps
  a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
  a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
- a=oL9t_hqQ2ej-tATgvj4A:9
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODMxMDA5NSBTYWx0ZWRfX0QQiYlBn8Fjl
- jNnuLU5GgAyaXFpOtfd6+p5rNziv4kl3H47QdNgsq/Z1/E13lZF8r4oTPMJWZXnR3+yJbuyogbp
- Btg0CnsO00MGzi3j+sJzTVX/C6VGvcg=
-X-Proofpoint-ORIG-GUID: iWnzLJvtMWUuzQvMJx5ZXthGDssAZPSG
+ a=iQ6ETzBq9ecOQQE5vZCe:22 a=VwQbUJbxAAAA:8 a=jXZBl2vuKrkg1_MI_zwA:9
+X-Proofpoint-GUID: whz4q49IN8Olb62AN7MKimLRZsscfrtt
+X-Proofpoint-ORIG-GUID: ChfKTTpnEcbq8QL7jSIWQEneuq1p8QmW
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODMxMDA5NSBTYWx0ZWRfX9YafB7IdOSG0
+ u2pI2i2XQTfW+tQNSKjq/aNCp4JeyU+hxQ9lXtnpodeOrC+TzjQZS5W/MKV0N7TvSTaUS2TKoAP
+ ui6bY1dSu8OeDU/1K0sBE+R2SUeLu/o=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODMxMDA5NSBTYWx0ZWRfX/SgAwkz6osRT
+ n10f63sUoDNy0lIYMwlOtYznknV++7LS9lO3WI11E/osy04Q1S62SjrDJpBw4SesyvjIWQgZjxA
+ Y+2dDDOms9RIMsBPvH2oQO4F0hzAL7YjLqeLi+f8Zo89xe55X1FHTtL93wlqjIXOYvnf9s55JrO
+ faxnL8qX00w0R2s1XIiISdG73DXBUtWiW67pvvkLRAABaekwPKEhkzo8CY5nnDk4G+ZOppsgDfI
+ n8UXSDua9DujzDJH5vCytr/Wdu/veWoM5XM8PtUPymTURMu/bHjh4/QkhDkD5+BuxmYMwZIkz5p
+ 7s6VsNZcefePz/Dh28fRe2eMDpDIAWQRtduQSSrlypQXLqZprAd0envnO81fjr5qusL6TLw6qQy
+ hkb/5wddBXbmttDSPLRzYC302ijg5smxF60Nuo/wUmmS+5adVbiPBs5SnDqgg+hPJX8PplOgZGL
+ JXwlenvuL3y2Ql2/fXw==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-08-31_03,2026-08-27_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 malwarescore=0 suspectscore=0 bulkscore=0 lowpriorityscore=0
- adultscore=0 impostorscore=0 phishscore=0 clxscore=1015 priorityscore=1501
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608310095
+ clxscore=1015 phishscore=0 adultscore=0 suspectscore=0 bulkscore=0
+ spamscore=0 priorityscore=1501 impostorscore=0 malwarescore=0
+ lowpriorityscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
+ definitions=main-2608310095
 
-When a plpks variable is initialized without a policy and used to read an
-object with the 'wrapping key' policy set, the hypervisor returns
-H_AUTHORITY along with the object's policy. However, plpks_read_var() at
-present treats this the same as any other H_AUTHORITY failure and returns
-an error without propagating the policy information to the caller.
+The PKWM trusted source currently uses a single default wrapping key per
+LPAR. This key is created during trusted source initialization, and all
+trusted keys backed by PKWM are sealed and unsealed using it.
 
-Distinguish this case from other H_AUTHORITY failures and only propagate
-policy information when it is returned alongside H_AUTHORITY by the
-hypervisor. Remove the explicit assignment of rc to zero in the case of
-H_SUCCESS as it is redundant.
+Recent versions of PKWM allow users to create and manage their own wrapping
+keys through a set of lifecycle operations. This patch series brings these
+PKWM capabilities into the kernel, allowing users to create, manage, and
+select wrapping keys for sealing and unsealing their trusted keys, rather
+than requiring all trusted keys to use the default wrapping key.
 
-Also return -EPERM instead of -EINVAL when the 'wrapping key' policy bit is
-set by the caller, better reflecting the access restriction being enforced.
+This series adds support for user-created wrapping keys to PLPKS and PKWM.
+It begins with seven preparatory cleanup and bug-fix patches that improve
+error handling and type consistency, clarify macro naming, prevent
+unsupported capabilities from being exposed through sysfs, and update the
+documentation and MAINTAINERS entry.
 
-Fixes: 2454a7af0f2a ("powerpc/pseries: define driver for Platform KeyStore")
-Fixes: 133aa79e211d ("pseries/plpks: add HCALLs for PowerVM Key Wrapping Module")
-Cc: stable@vger.kernel.org
-Signed-off-by: Srish Srinivasan <ssrish@linux.ibm.com>
----
- arch/powerpc/platforms/pseries/plpks.c | 13 ++++++-------
- 1 file changed, 6 insertions(+), 7 deletions(-)
+The final three patches add the required hcalls, enable wrapping key
+selection by label for PKWM-backed trusted keys, and provide a sysfs
+interface for managing wrapping keys from userspace.
 
-diff --git a/arch/powerpc/platforms/pseries/plpks.c b/arch/powerpc/platforms/pseries/plpks.c
-index 23e4e2a922fc..7bd5c149dd09 100644
---- a/arch/powerpc/platforms/pseries/plpks.c
-+++ b/arch/powerpc/platforms/pseries/plpks.c
-@@ -826,7 +826,7 @@ static int plpks_read_var(u8 consumer, struct plpks_var *var)
- 		return -EINVAL;
- 
- 	if (var->policy & PLPKS_WRAPPINGKEY)
--		return -EINVAL;
-+		return -EPERM;
- 
- 	auth = construct_auth(consumer);
- 	if (IS_ERR(auth))
-@@ -856,22 +856,21 @@ static int plpks_read_var(u8 consumer, struct plpks_var *var)
- 				 virt_to_phys(var->name), var->namelen, virt_to_phys(output),
- 				 maxobjsize);
- 
--
- 	if (rc != H_SUCCESS) {
- 		rc = pseries_status_to_err(rc);
--		goto out_free_output;
-+		if (rc != -EPERM || !retbuf[1])
-+			goto out_free_output;
-+		goto out_copy_policy;
- 	}
- 
- 	if (!var->data || var->datalen > retbuf[0])
- 		var->datalen = retbuf[0];
- 
--	var->policy = retbuf[1];
--
- 	if (var->data)
- 		memcpy(var->data, output, var->datalen);
- 
--	rc = 0;
--
-+out_copy_policy:
-+	var->policy = retbuf[1];
- out_free_output:
- 	kfree(output);
- out_free_label:
+Changelog:
+
+v1 -> v2:
+- Addressed parameter validation issues reported by Nageswara
+- Tweaked PLPKS_WRAPKEY_SYSFS Kconfig help text
+- Added two preparatory bug-fix patches
+- Cc'd stable@vger.kernel.org where applicable
+
+Srish Srinivasan (10):
+  pseries/plpks: update PKS documentation and maintainer entry
+  pseries/plpks: fix error handling in plpks_read_var()
+  pseries/plpks: improve type consistency and parameter validation
+  keys/trusted_keys: propagate wrapping key generation errors
+  pseries/plpks: rename the default wrapping key macro
+  pseries/plpks: fix self-reference in plpks_var initializer
+  pseries/plpks: hide wrapping_features when unsupported
+  pseries/plpks: add HCALLs for PKWM wrapping key life cycle management
+  keys/trusted_keys: enable PKWM wrapping key selection by label
+  pseries/plpks/wrapkey: expose PKWM wrapping key management to
+    userspace via sysfs
+
+ .../ABI/testing/sysfs-firmware-plpks          | 106 ++++
+ Documentation/arch/powerpc/papr_hcalls.rst    |  49 +-
+ .../security/keys/trusted-encrypted.rst       |   4 +-
+ MAINTAINERS                                   |   2 +-
+ arch/powerpc/include/asm/hvcall.h             |   5 +-
+ arch/powerpc/include/asm/plpks.h              |  40 +-
+ arch/powerpc/platforms/pseries/Kconfig        |  15 +
+ arch/powerpc/platforms/pseries/Makefile       |   1 +
+ arch/powerpc/platforms/pseries/plpks-sysfs.c  |  31 +-
+ .../platforms/pseries/plpks-wrapkey-sysfs.c   | 407 ++++++++++++
+ arch/powerpc/platforms/pseries/plpks.c        | 577 ++++++++++++++++--
+ include/keys/trusted_pkwm.h                   |   3 +
+ security/keys/trusted-keys/trusted_pkwm.c     |  40 +-
+ 13 files changed, 1210 insertions(+), 70 deletions(-)
+ create mode 100644 arch/powerpc/platforms/pseries/plpks-wrapkey-sysfs.c
+
 -- 
 2.52.0
 
