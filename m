@@ -1,52 +1,65 @@
-Return-Path: <linuxppc-dev+bounces-26268-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26269-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2A1F0C61DE2
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2026 08:28:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EA2E0C61DD3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2026 08:29:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hYMZB73mqz2yrm;
-	Mon, 31 Aug 2026 18:28:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788164882;
-	cv=none; b=PWAmGaRNCxSX++oObCKHtszH/L9wjGaWTLwKcsaPSW2Dkqq/ZBx3SIW1NzURf1zmXLO83XLZCtexFV5Q0EQbFAOAhNKXpBSIA0SZYesGHB7fyUtnRQMcSGoEJa69JUFOJnJiE83qxjBmbKiwdwccVE5uALKRKDiscNATs9bBUx+LGVgRwBTA9JducZB6lmD1cK67F1lZknnw5Fc1MjWBsEpcXs3aSY00BpG7RvFzNz/G6PvbFFUMi7CpnR66HHsjoX5YOhHtJw6qs2gn9zUGJZWs6QBcT0gBYIHI6ZZcbG7eGlFIZYM+YW1ksGjPnhUMPD2fqiPAA5rMvkOoLcrXmg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hYMbJ3j4Cz2yDm;
+	Mon, 31 Aug 2026 18:29:00 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788164940;
+	cv=none; b=XkFLBZf/uoB5Iopz+JvAEsu7HDIYF8rgPV0UxyrYhv3TW+ZEEAHE/AI0dXh4z5rT+Xt2Z6K5k+lfxm2CY5f6cPlwavQNUMwysau+S1ky7qcPPAHaBoT4bWLA8fy4LBxA15T+UGh861cZHXQCNnjyOQ3psxmB01CHOuUiOJr75NnEoSo5mEnTVK5k1nAr+rX+m7Xx+lZW8V0pNO1AiEqi+uQNtyEKhZP5apO44nyaHAvhQ9DV4xpEt9Crt3DfNlS6JOA11QbT9eAKo51BT/ZYZJKh6A85NC1BfIX1AgI3EB+2mUkNhSey2d3+4s4v8SEBlJog7rYn/pGUc+faJig6Sg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788164882; c=relaxed/relaxed;
-	bh=UDLOrEWk8s8P9NPs/hJ9ReKcQQKs4DBoKeRaLa6eCp4=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=VM4CYZzX1MCPxMmQGsYtA6n3+LomsDAvO3lDSR5V04kKPMvsXR3aPy2m9grFyHu8/llM9e62tHIUM+E/XRuCkt2wdfSqUeoyRosUIvDCpaGUaZ4mgsglcZNtcuIr/1oQ6xzY5DZmNy7AHo9ZtdAv2p5kxqHseSvpvqQ7oTf2IsLBrEItNUklJU7WaF2k0kgysg8YySqqlCZLot3DYervvZyt7tvEUBCPuJrArihd+nlPYIxVzNsq+iyEmXq1DEzuTe/tun5ItBL6r8PsWKC0HaH4yWh0n9qCJPWXx4F+6cVcJXpiNvXS0SxfVEDHE5r5z8K5tkJtYdDdI/ZmgIZtkw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CFigFzSX; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1788164940; c=relaxed/relaxed;
+	bh=VQpc8lTOdX3xSHi8EiRB4f2hLx8t85VdxKOuNWE2LD0=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=lmcMVWAGnxnLpDAdb3RSo6ZAWoQwV+LzI7RJyL9o7Wxvt4gTzlcixfE7PY58j1u59q1JEQFrKPhmBVGXAxpoVlsrVKHrAS0nt8qQ+vVnvkHddbHy1BFMrIDvhesnrWwwb5KZavEefycbzqyZU/JimgxVWRzD3OYvnyt0cjKO3L2z0EY5CffkVS9Im4go1YAhsvpICmaZqz3dVzhOW1Fi7t8yNKoIucIzqL82dFn8LvsGQOYPft/asafuIHyi6wQjziT2dL8HQAsvL9FRn6fENzccNyAg1cJVcvBkr2eQNr/IpLkhsytDY9sP0fSwKU9GmZKfoYTD5OaQi1MsD9yTeA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=d4ZAcMaG; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CFigFzSX;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=d4ZAcMaG;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hYMZB1nD0z2y2J
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Aug 2026 18:28:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hYMbG585zz2yDc
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Aug 2026 18:28:58 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 45EFC6013A;
-	Mon, 31 Aug 2026 08:28:00 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 64C251F00A3D;
-	Mon, 31 Aug 2026 08:27:57 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 4EE5B4383A;
+	Mon, 31 Aug 2026 08:28:56 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F240B1F000E9;
+	Mon, 31 Aug 2026 08:28:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788164880;
-	bh=UDLOrEWk8s8P9NPs/hJ9ReKcQQKs4DBoKeRaLa6eCp4=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=CFigFzSXaYQh2+i8PwAo/W/QAkG/+QNSnIqgZ9uo6Z81XZPLznd8ZqutwbhR4DpQK
-	 9kjtCiNQ3KnSwEBxI6ZijIBbLCjxEwXge/vi7LM/J0iLgdXtwg6rx+8Rc2FBmCOTyf
-	 aSAnFL3rVGi88PgnzHO4Tt4XG4Zo8LByhZUhUAqvNBaS3UH0/Br64p8EBAYfyS1ywi
-	 hykMJYf6b69ZxGswHh2qHgsLNdqp0XcZT/tBcEhyMw8BemGV26GLtUoMVrc1PVOwg6
-	 IwcPobyIcnYYdgvmTsH6+qp22iSImRew9B4QAJqbH9ikBFYeSogG0srG6SPwZRu6JH
-	 ftcvtOvQ09eCw==
-From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
-Date: Mon, 31 Aug 2026 11:27:45 +0300
-Subject: [PATCH v2 3/3] tty: hvcs: replace __get_free_page() with kmalloc()
+	s=k20260515; t=1788164936;
+	bh=VQpc8lTOdX3xSHi8EiRB4f2hLx8t85VdxKOuNWE2LD0=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=d4ZAcMaGmhWkbt0Rh1OPbj1YlvacnstiEn1h6FFml6IuFq+3UCfM+lcx8aLY2H5Sb
+	 aTcviB67lh56jpthcbuARnaiLX4X0zEJ5iPxkrisAndSC28M/yhEdVLGlUkt0diRxO
+	 9bduFdfWk+hI7CWNkelr83aVU9pAyG0ntG7S56uds6uH8gbohovzZGzBTSkSIocm39
+	 gnGlVJEZbg6CRfoOomrsStasSuqGXnXNNxknZttY9AdVDI4XPTmJ93LIezloeltrna
+	 rqfo0Swu4IbyUCEIkpSb0iea7aqu2MJDVQwQFkcSN19DRtkiVxfkbBz7lauGqWknXo
+	 5oualX6cx/Q9g==
+Date: Mon, 31 Aug 2026 11:28:49 +0300
+From: Mike Rapoport <rppt@kernel.org>
+To: Jiri Slaby <jirislaby@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	David Hildenbrand <david@kernel.org>,
+	Matthew Wilcox <willy@infradead.org>,
+	Vlastimil Babka <vbabka@kernel.org>, linux-kernel@vger.kernel.org,
+	linux-mm@kvack.org, linux-serial@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 2/3] serial: core: replace get_zeroed_page() with
+ kzalloc()
+Message-ID: <apU7QSOV22VJL3ay@kernel.org>
+References: <20260830-tty-v1-0-0cbe6170649b@kernel.org>
+ <20260830-tty-v1-2-0cbe6170649b@kernel.org>
+ <602bdc5f-e9fa-4ed5-a009-03af860d31a6@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,84 +73,80 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260831-tty-v2-3-88cd58c3c640@kernel.org>
-References: <20260831-tty-v2-0-88cd58c3c640@kernel.org>
-In-Reply-To: <20260831-tty-v2-0-88cd58c3c640@kernel.org>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
- Jiri Slaby <jirislaby@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, 
- David Hildenbrand <david@kernel.org>, Matthew Wilcox <willy@infradead.org>, 
- Mike Rapoport <rppt@kernel.org>, Vlastimil Babka <vbabka@kernel.org>, 
- linux-kernel@vger.kernel.org, linux-mm@kvack.org, 
- linux-serial@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-X-Mailer: b4 0.17-dev
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <602bdc5f-e9fa-4ed5-a009-03af860d31a6@kernel.org>
 
-hvcs_initialize() allocates the buffer that receives the partner info
-returned by the H_VTERM_PARTNER_INFO hypercall. The buffer is passed to
-the hypervisor as a physical address and it must not cross a page
-boundary.
+On Mon, Aug 31, 2026 at 05:02:54AM +0200, Jiri Slaby wrote:
+> On 30. 08. 26, 9:49, Mike Rapoport (Microsoft) wrote:
+> > uart_alloc_xmit_buf() allocates the transmit buffer of a serial port. The
+> > buffer only backs the port's kfifo, the data being sent is copied in and
+> > out of it.
+> > 
+> > This buffer can be allocated with kmalloc() as there's nothing special
+> > about it to go directly to the page allocator.
+> > 
+> > kmalloc() provides a better API that does not require ugly casts and
+> > kfree() does not need to know the size of the freed object.
+> > 
+> > Performance difference between kmalloc() and __get_free_pages() is not
+> > measurable as both allocators take an object/page from a per-CPU list for
+> > fast path allocations.
+> > 
+> > For the slow path the performance is anyway determined by the amount of
+> > reclaim involved rather than by what allocator is used.
+> > 
+> > While on it, make the local variable holding the buffer a pointer to get
+> > rid of the casts.
+> > 
+> > Replace use of get_zeroed_page() with kzalloc() and free_page() with
+> > kfree().
+> > 
+> > Link: https://lore.kernel.org/all/635405e4-9423-4a25-a6e7-e03c8ea0bcbe@redhat.com
+> > Assisted-by: copilot:claude-opus
+> > Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+> > ---
+> >   drivers/tty/serial/serial_core.c | 16 ++++++++--------
+> >   1 file changed, 8 insertions(+), 8 deletions(-)
+> > 
+> > diff --git a/drivers/tty/serial/serial_core.c b/drivers/tty/serial/serial_core.c
+> > index 95774b0f1484..f12ce7d190fe 100644
+> > --- a/drivers/tty/serial/serial_core.c
+> > +++ b/drivers/tty/serial/serial_core.c
+> > @@ -247,29 +247,29 @@ static int uart_alloc_xmit_buf(struct tty_port *port)
+> >   	struct uart_state *state = container_of(port, struct uart_state, port);
+> >   	struct uart_port *uport;
+> >   	unsigned long flags;
+> > -	unsigned long page;
+> 
+> 1:
+> 
+> > +	unsigned char *buf;
+> >   	/*
+> >   	 * Initialise and allocate the transmit and temporary
+> >   	 * buffer.
+> >   	 */
+> > -	page = get_zeroed_page(GFP_KERNEL);
+> > -	if (!page)
+> > +	buf = kzalloc(PAGE_SIZE, GFP_KERNEL);
+> > +	if (!buf)
+> >   		return -ENOMEM;
+> >   	uport = uart_port_ref_lock(state, &flags);
+> >   	if (!state->port.xmit_buf) {
+> > -		state->port.xmit_buf = (unsigned char *)page;
+> > +		state->port.xmit_buf = buf;
+> 
+> xmit_buf is u8 *. This uchar was omitted when I was changing the type back
+> then. Could you use the right type at 1b now?
 
-kmalloc() guarantees that a power of two sized allocation is aligned to
-its size, so a PAGE_SIZE allocation is page aligned as well.
-
-This buffer can be allocated with kmalloc() as there's nothing special
-about it to go directly to the page allocator.
-
-kmalloc() provides a better API that does not require ugly casts and
-kfree() does not need to know the size of the freed object.
-
-Performance difference between kmalloc() and __get_free_pages() is not
-measurable as both allocators take an object/page from a per-CPU list for
-fast path allocations.
-
-For the slow path the performance is anyway determined by the amount of
-reclaim involved rather than by what allocator is used.
-
-Replace use of __get_free_page() with kmalloc() and free_page() with
-kfree().
-
-Link: https://lore.kernel.org/all/635405e4-9423-4a25-a6e7-e03c8ea0bcbe@redhat.com
-Assisted-by: copilot:claude-opus
-Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
----
- drivers/tty/hvc/hvcs.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/tty/hvc/hvcs.c b/drivers/tty/hvc/hvcs.c
-index d32b1e3c50bfd..b94d59fa36274 100644
---- a/drivers/tty/hvc/hvcs.c
-+++ b/drivers/tty/hvc/hvcs.c
-@@ -1470,7 +1470,7 @@ static int hvcs_initialize(void)
- 		goto register_fail;
- 	}
+Sure, I also made this change in uart_free_xmit_buf().
  
--	hvcs_pi_buff = (unsigned long *) __get_free_page(GFP_KERNEL);
-+	hvcs_pi_buff = kmalloc(PAGE_SIZE, GFP_KERNEL);
- 	if (!hvcs_pi_buff) {
- 		rc = -ENOMEM;
- 		goto buff_alloc_fail;
-@@ -1486,7 +1486,7 @@ static int hvcs_initialize(void)
- 	return 0;
- 
- kthread_fail:
--	free_page((unsigned long)hvcs_pi_buff);
-+	kfree(hvcs_pi_buff);
- buff_alloc_fail:
- 	tty_unregister_driver(hvcs_tty_driver);
- register_fail:
-@@ -1528,7 +1528,7 @@ static void __exit hvcs_module_exit(void)
- 	kthread_stop(hvcs_task);
- 
- 	spin_lock(&hvcs_pi_lock);
--	free_page((unsigned long)hvcs_pi_buff);
-+	kfree(hvcs_pi_buff);
- 	hvcs_pi_buff = NULL;
- 	spin_unlock(&hvcs_pi_lock);
- 
+> thanks,
+> -- 
+> js
+> suse labs
 
 -- 
-2.53.0
-
+Sincerely yours,
+Mike.
 
