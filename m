@@ -1,70 +1,87 @@
-Return-Path: <linuxppc-dev+bounces-26207-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26208-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 89A60C61DD3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2026 03:24:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9174CC61DF0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2026 04:11:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hYDrG51G2z2yCr;
-	Mon, 31 Aug 2026 13:24:46 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1048"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788146686;
-	cv=none; b=hjg17biWlH3ySfuYes+H52X9iHEmFM1FSfHHlC/8bnaPSHTU90qnBWTke8/Dqgq59gCLpWUhbBH6pi/LeSlyxXsHGMPgnmrC7++oriuWclg1NL9Mxrp9cZZZU/gS6EDhxHPdXeV3u5u9SY4Pf+1VQNyq8TJwEP1YOXds2Iq6AP2zwoJKpv1Em4Rmmva7u6/ZsESoUDgnchxwweZKQ8v9SJNLJf98Z14aetPtu0yH32OD+J/iRbKdfU7DhL7poprV0RYA60jTco5kY4up1fCh1RH5Cr8dCFSJAALYePzB1MkbMaUvCzF40Oz/JwMOofT9BXcCCVNyOVY1mXCAm3GGpg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hYFtP5Njcz2xyh;
+	Mon, 31 Aug 2026 14:11:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::531"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788149501;
+	cv=none; b=ACzf3wgSTTDUt+KvpW3xaJD8cIFPBBn8tiH9WrhaH9eR/eS16Rf6+niR8g9kuRrsF19Wi2IQCiUzY2iT1OEBGtf+h8rXuVz8cOIRmGPCZDQZBgUupeo1lVLENTIlBJ3N1Hc+G9R3Rgc72/wssksYzFL4EXyD6uDXPe4NN/Q6pMsbkjvE8kR3iuCOwU9VEsJvKiO3XBwO+FBfjPmmgtQsFiCHLXVvP/BrFAVy1IAfce9YYGGp18ElTECbnKHr5CIRMRias/PdHNDvZHCLxW0kmpkCxLmb88KkYYipijyLAcYmDklKXDgUa8Q0xoUzmw3ke1ZrbrCNOCbFCc1s+lmQmQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788146686; c=relaxed/relaxed;
-	bh=LqUXShy4Y1uwDBlZFsBdfY3ls/HGLA3gGP5AeZZ/dKE=;
-	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=mIe+Np/n5hms36jTPE/oormhyug++A4EN41LaktjfHGCblkqkaNIyNuYXKcr/FdgQuFEXcbypHLxn59zNfVKOLQ/Ixos88OY+83yHlHLlDeeIRrYPLrcACTdRZOOqtM8YfEv71GApNmteYiPOIdfgXLUHZcQQvMCUuGSSQhXo1gEV4GJRnx/GQf689nhiLGU2Ap5cw6qcySYeuSWUKfZrAvQgxr/h8CAC4RgDmNj6ekPiAncveZeI4vDxhYPy8F+De4sEUBKgSolznHlip7iUueocACdk32EVYh9bvcNR2pNndNFuVD3l8Tal3ybZLwV2/ef7qDCDVqfn+1scyoW2Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=J6e6JufH; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1048; helo=mail-pj1-x1048.google.com; envelope-from=3-fouag0kdjabud18x9b2iu7408805y.w86527eh99w-xyf52cdc.8j5uvc.8b0@flex--rathodpriyank.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--rathodpriyank.bounces.google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	t=1788149501; c=relaxed/relaxed;
+	bh=aggjwNuWMp1Ff0NjfMnlNn4nOjq+mr9N+RLu6RxZSfI=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=MZvS598ct5Kx8ExT0QHBdo2+jC8ukFZZ83UAHBqoxoSLFgri/fsv7F4oqlch6B6tB7Ih6JIoyYwCQ+KoXzd72hwATLQYDVgxXrPFRfGaaQ/4w2MEoOttNzjXIu+fEuCbedPIZnSxBqsWWVNLF7Ttg7Pi45x2rFIIUg9YH0eOqixFgxZ2lGbsqgnvVG7WXKJ1f/ziUQKYPmtqY80UbHo+fmYA7GbjDOgxP0OuIlwbXnFEhpt5R/Cx6k1E7ZYbyGnJziX9kj/BF4RvJq5xnLJ80EFjfBEKGfBfUBHsCEIE4hW0y7FVAipHvrw1gLQrwwDuwTTqU4uqaI2qZTdypaIyGg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=dzRyVxrj; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::531; helo=mail-pg1-x531.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=J6e6JufH;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=dzRyVxrj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--rathodpriyank.bounces.google.com (client-ip=2607:f8b0:4864:20::1048; helo=mail-pj1-x1048.google.com; envelope-from=3-fouag0kdjabud18x9b2iu7408805y.w86527eh99w-xyf52cdc.8j5uvc.8b0@flex--rathodpriyank.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x1048.google.com (mail-pj1-x1048.google.com [IPv6:2607:f8b0:4864:20::1048])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::531; helo=mail-pg1-x531.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x531.google.com (mail-pg1-x531.google.com [IPv6:2607:f8b0:4864:20::531])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hYDrF04CMz2y2J
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Aug 2026 13:24:44 +1000 (AEST)
-Received: by mail-pj1-x1048.google.com with SMTP id 98e67ed59e1d1-398d292eac1so1783741a91.1
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Aug 2026 20:24:44 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hYFtN0PGNz2xKh
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Aug 2026 14:11:38 +1000 (AEST)
+Received: by mail-pg1-x531.google.com with SMTP id 41be03b00d2f7-cc1cc1b42b5so3233083a12.2
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Aug 2026 21:11:38 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1788146681; x=1788751481; darn=lists.ozlabs.org;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=LqUXShy4Y1uwDBlZFsBdfY3ls/HGLA3gGP5AeZZ/dKE=;
-        b=J6e6JufHVVWwILZo5Vig74+Ivmrgdp2gVd4kkIYrvDpT5pey/53PxSyCkXAWuYK88c
-         auPnkWwPeuMeu6m2t/J30XwRnOt3+BdjV5A41RYPLYljNv2rONi5NG6mPillXLHxcVeM
-         lodu7Qsy17KWfMEvOolsDl4j+EK78WOFRTGAfYfof3/vsf0g+6ZTEDyyvMXnkDg5YIh/
-         TA3E0Ym8HR/hPE/uDXE9yZtYA1y6ZSNaRoGnOnqinLljExNtdajJHtafDv1mbIjDK/Ks
-         MHlUOSGEO/G/K9r+8Vvs9QmPPnGyZwJy9kWcMxV+0G20zsOH8JOBgJCYYYAGKTGeRFpQ
-         zm+Q==
+        d=gmail.com; s=20251104; t=1788149496; x=1788754296; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=aggjwNuWMp1Ff0NjfMnlNn4nOjq+mr9N+RLu6RxZSfI=;
+        b=dzRyVxrjC2OdbcUsDiozCxkc4FiUeNqAQf/kRMyefN5ZMJb5zDVZxyogK3HwQHsdaq
+         MO0mS5JfKrf7ZkJjAC8TzsOW2SjzkGAXM74jk0HEeJnrHDVsL0flCgpVcfT/TfskzTFZ
+         nHzUKbPQm/9UNF/EPRG+8zSYsMey6IO/xj+7aji+mosREWEDASTatMFH8pgtdFPHRPqQ
+         r/6vVgiv5RGkH/SOLV82E52M2o5Ny5bhzvUqqmwDbIKiYFcIOdBoET0ll6MGYxXuc/kI
+         8h3PYxUXSnuHF3JuQ6MB/8Zwcg2N2cUOWU0I+hawkP57I58hmVTkmKq/AqbBnICgkOrB
+         jk8Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788146681; x=1788751481;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=LqUXShy4Y1uwDBlZFsBdfY3ls/HGLA3gGP5AeZZ/dKE=;
-        b=LonozJmOlpLB6RtZeQpIz7Yv9g5w5xXjxuv4FoljfF05ZuBNPgvrsjR67u0jT/LblM
-         ry9815wrOt2F7noriN/apN/UTEWqJ4DxXb56qDRQQZut8OaPV2YLg+WiOtmyp2kr0h1q
-         LA6uip0vU3PXDMa1qMkzLYCdNao/zOltVVDBvt386QvESyAXIiFysYU3kNDkDrUSjmX8
-         DC0a355D5meBvDK3LS+9SOnuIsT5bp0SpAbUcn8EO2TyVe6koD59IYJdG0VkzfZwYQ/z
-         Fh4+ADmm1saCO3C8w3GCgDj09Ybyd1FXORsLmfrbBIA6bBToPlIcGW/q2LP3IO1A+lNn
-         U58Q==
-X-Forwarded-Encrypted: i=1; AKwUvBzam5p3zN2MNukdre8OA0/vMtxKQUyE27B+cuBQTtAOBWmN/B0Ld53zC5lIFiSk4ad/rUbHdNLLGZCJEMw=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++lFDHO1mZ+GdxIc0UtljRcvfZVXJ8MdY5AdaHg/e5UgPFEUZCPb
-	ISzYTzfvnYI1eEvW+SJcxcwDV2txUHcSQn+rMAuYXLVBo8HF2h4lnjAZ5MRY9qKMCqGXw1gU1xn
-	XC/lmjLUX6tAneL6z6p4ESWoWqfquhdee4g==
-X-Received: from pjbgw21.prod.google.com ([2002:a17:90b:a55:b0:383:7b51:b1cd])
- (user=rathodpriyank job=prod-delivery.src-stubby-dispatcher) by
- 2002:a17:90b:3d4b:b0:398:9be8:ea6a with SMTP id 98e67ed59e1d1-398f87e4b39mr785477a91.23.1788146681049;
- Sun, 30 Aug 2026 20:24:41 -0700 (PDT)
-Date: Mon, 31 Aug 2026 03:24:40 +0000
-In-Reply-To: <apSdOnbdLdrJ7ksF@wunner.de>
+        d=1e100.net; s=20251104; t=1788149496; x=1788754296;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=aggjwNuWMp1Ff0NjfMnlNn4nOjq+mr9N+RLu6RxZSfI=;
+        b=HRhCVl74PR5cN/tP9S6poyA7bnTFKhqbYnw1q4T7ZdTeXaxI0ZiU4tG+b/c4cRnzkJ
+         XIdaEs6xqO4a4gOgw8hJ9FoiJgXoDSXL32/IK4md/yAg67fXpvZqk2W3apBj/2LmeR3a
+         JvvYKfgA0//5aMUL6inhNZyoOCR6azH/6L6Avw0Eek8CfezM3b5URsGO4l1+LoTkJ9pb
+         gvrNLgr8B0O/E8qewcp2WZsCJEkp+MlhbWziyaolQgVjAobhmj4BTXQJ8qaXz+VK9fUd
+         r8ZaTZPsq1zAHGQklWpKtvLSRepOkLp9+OPxfvnhpKpGxiAEdYJrvVcmxCqy/TzeHfUB
+         4XzA==
+X-Gm-Message-State: AFuF++ktXbgGHvjS4oK2Lz/D/SuLtnBDrzq77hwgUPp8BkW52w/pGfdf
+	1nRJTL1UX+LPsaPnkPJVeLsc7THJkw0AoTJJqAxK3Al0hJvs+cTBFn35
+X-Gm-Gg: AYBFou0KD7XHZ7fri5D3ToJOfoU0StmCTZmLCAz+0vP7Vazy3wbx/mYvZBr2hPee10t
+	i+gdsWwpEAbI7dv5LZWISHlUDvRBnXAL/3yrOAEdYXezGXF+pKnl7i2x0pvvxsrOP75Impodj1I
+	gAcsgFLWfFElHWFBXF+HUBdgPUN05RUg+vYxbUkGFsju/uKm24q1yZRd9m+w9osU0E8+NU7f1F5
+	OEZ7o3GdeErdcnIu3d/Lpx0KJXVz7qKS9dE6hrzn8a1NUk2+7li1aG+hQWeAZgQT0ko6FzFcMaY
+	bsKyxZHEXepKo+5NuWsS9DPQB2CnOv7dPGMDz6hZlBeu+nqzWigS/WMztbjA+TiJQeyir0GBI7p
+	Kw7mY3Oa4lIHO2AWeCXVZc2WL088U7F2uNc5jucHUhvjrd23PWFZf75DIjrm2iASHBgiYJubrB8
+	u14Y/e3sB2xGiFmHeNXmwcxgkhrBAyxYcbFpzFUvI+Inr6ymAboYTByqMBrwm/UNQ165a24VNMU
+	HJdVhgUitf4jMe3ZNcPtkY0V4e5+XdHlQ==
+X-Received: by 2002:a17:90a:e70c:b0:398:9be8:ea68 with SMTP id 98e67ed59e1d1-398f86c8470mr1156311a91.21.1788149496202;
+        Sun, 30 Aug 2026 21:11:36 -0700 (PDT)
+Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([49.43.112.37])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-396ddc58d51sm14596165a91.15.2026.08.30.21.11.33
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 30 Aug 2026 21:11:35 -0700 (PDT)
+Date: Mon, 31 Aug 2026 09:41:31 +0530
+From: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
+To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, 
+	Venkat Rao Bagalkote <venkat88@linux.ibm.com>, Shrikanth Hegde <sshegde@linux.ibm.com>
+Subject: Re: [PATCH] powerpc: Do not restore KUAP in
+ arch_exit_to_user_mode_prepare()
+Message-ID: <apT-oVMnqgnQrisN@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+References: <52fee44fd23acf8e1c024ace668728e626a783a8.1788101609.git.ritesh.list@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -77,44 +94,118 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0
-References: <20260830-fix-aer-refcount-leak-v1-1-64e1013add12@google.com> <apSdOnbdLdrJ7ksF@wunner.de>
-X-Mailer: git-send-email 2.55.0.897.gb25b4bd76c-goog
-Message-ID: <20260831032440.1053206-1-rathodpriyank@google.com>
-Subject: Re: [PATCH] PCI/AER: Fix struct pci_dev reference leak in aer_process_err_devices()
-From: Priyank Rathod <rathodpriyank@google.com>
-To: lukas@wunner.de
-Cc: Priyank Rathod <rathodpriyank@google.com>, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, 
-	"Oliver O'Halloran" <oohall@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>, 
-	Stefan Roese <stefan.roese@mailbox.org>, linuxppc-dev@lists.ozlabs.org, 
-	linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <52fee44fd23acf8e1c024ace668728e626a783a8.1788101609.git.ritesh.list@gmail.com>
 
-On Sun, Aug 30, 2026 at 11:14:34PM +0200, Lukas Wunner wrote:
-> The "no active error status is read" is the only scenario where
-> this *could* happen.  However if no error bits are set in the
-> status register, why did the device send an error message upstream
-> in the first place?  That would be a broken device.
+On Sun, Aug 30, 2026 at 08:24:30PM +0530, Ritesh Harjani (IBM) wrote:
+> KUAP means kernel cannot touch user memory unless it explicitly is
+> enabled. In the kernel it should stay AMR_KUAP_BLOCKED. While returning
+> to userspace just before RFI, kernel should restore the user AMR value
+> back.
 > 
-> Another theoretical possibility would be that the device becomes
-> inaccessible by the time aer_get_device_error_info() reads the
-> status/mask registers.  They'd both be read as "all ones",
-> hence info->status & ~info->mask == 0.
+> Looks like GENERIC_ENTRY might be treating arch_exit_to_user_mode_prepare()
+> as the last architecture step before returning to userspace.
+> commit bee25f97ad24 ("powerpc: Enable GENERIC_ENTRY feature")
+> therefore called kuap_user_restore() from that hook. But on PowerPC that
+> is too early. After irqentry_exit() / syscall_exit_to_user_mode() we
+> still run platform specific exit routines.
+> 
+> e.g. code snippets showing both exception handling and system call
+> handling as the callers of function arch_exit_to_user_mode_prepare()
+> which does kuap_user_restore(). The below path shows that calling
+> kuap_user_restore() is too early when called from
+> arch_exit_to_user_mode_prepare().
+> 
+> Exception handling in exceptions-64s.S
+> =======================================
+> 
+> bl	CFUNC(do_page_fault)
+> 	  ..DEFINE_INTERRUPT_HANDLER_ASYNC(do_page_fault)
+> 	      arch_interrupt_async_enter_prepare(regs);
+> 	      state = irqentry_enter(regs);
+> 	      instrumentation_begin();
+> 	      irq_enter_rcu();
+> 	      handler(regs);
+> 	      nap_adjust_return(regs);
+> 	      irq_exit_rcu();
+> 	      instrumentation_end();
+> 	      arch_interrupt_async_exit_prepare(regs);
+> 	      irqentry_exit(regs, state); 		   <<< too early
+> 	        irqentry_exit_to_user_mode()
+> 		  __exit_to_user_mode_prepare(regs, EXIT_TO_USER_MODE_WORK_IRQ);
+> 		    arch_exit_to_user_mode_prepare(regs, ti_work);  <<< too early
+> b	interrupt_return_srr
+> 		.. bl	CFUNC(interrupt_exit_user_prepare) <<< already calls kuap_user_restore
+> 
+> prep_irq_for_enabled_exit() retry can run kernel code with IRQs on. So
+> only when that routine is fully finished is when the user KUAP should be
+> fully restored which interrupt_exit_user_prepare() already takes care of
+> before returning.
+> 
+> Similarly for system call handling in interrupt_64.S
+> ======================================================
+> 
+> 	bl	CFUNC(system_call_exception)
+> 
+> .Lsyscall_exit:
+> 	addi	r4,r1,STACK_INT_FRAME_REGS
+> 	li	r5,0 /* !scv */
+> 	bl	CFUNC(syscall_exit_prepare)
+> 		  .. kuap_assert_locked();
+> 		     syscall_exit_to_user_mode(regs); <<< too early
+> 		       syscall_exit_to_user_mode_prepare(regs);  <<< too early
+>  		     kuap_user_restore(regs);         <<< already calls
+> 
+> syscall_exit_prepare(), which can enable IRQs, replay a pending
+> interrupt, and only then rfi. Those functions already restore KUAP
+> immediately before rfi.
+> 
+> Note that if we restore the user AMR too early like in the current code
+> as shown from the code snippets above, then we get the following warning
+> when CONFIG_PPC_KUAP_DEBUG is enabled:
+>   WARNING: arch/powerpc/include/asm/book3s/64/kup.h:293 at interrupt_exit_user_prepare+0x1a0/0x1c0
+>   Hardware name: IBM pSeries (emulated by qemu) POWER10 (architected)
+>   TRAP: 0700
+>   LR: c00000000000d8d4 CTR: c0000000021fe500
+>   MSR: <SF,EE,ME,IR,DR,RI,LE>  CR: 44000804  XER: 20040000
+>   interrupt_exit_user_prepare+0x1a0/0x1c0
+>   interrupt_return_srr_user+0x8/0x12c
+> 
+> Fixes: bee25f97ad24 ("powerpc: Enable GENERIC_ENTRY feature")
+> Fixes: 02565a782c1ee ("powerpc: Introduce syscall exit arch functions")
+> Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+> ---
+>  arch/powerpc/include/asm/entry-common.h | 10 ++++++++--
+>  1 file changed, 8 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/entry-common.h b/arch/powerpc/include/asm/entry-common.h
+> index c5adb5006361..94083516df57 100644
+> --- a/arch/powerpc/include/asm/entry-common.h
+> +++ b/arch/powerpc/include/asm/entry-common.h
+> @@ -515,8 +515,14 @@ static inline void arch_exit_to_user_mode_prepare(struct pt_regs *regs,
+>  #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+>  	local_paca->tm_scratch = regs->msr;
+>  #endif
+> -	/* Restore user access locks last */
+> -	kuap_user_restore(regs);
+> +	/*
+> +	 * Do not restore KUAP here. Generic entry might treat this as the last
+> +	 * arch step before userspace but PowerPC still has kernel work after
+> +	 * irqentry_exit()/syscall_exit_to_user_mode() i.e. in
+> +	 * interrupt_exit_user_prepare() / syscall_exit_prepare() may enable
+> +	 * IRQs and retry. Those functions restore KUAP immediately before rfi,
+> +	 * which is where it should belong.
+> +	 */
+>  }
+> 
+>  #define arch_exit_to_user_mode_prepare arch_exit_to_user_mode_prepare
+> --
+> 2.39.5
+> 
+> 
+Yeah, KUAP access should be restored last.
 
-Hi Lukas,
-
-Thanks for the review and clarifying that.
-
-The underlying reference count leak is genuine, but the additional topology
-scenarios listed in v1 were inadvertently incorporated from an automated AI
-review bot report, which introduced those inaccurate/hallucinated cases.
-
-I have updated this in v2:
-- Corrected the Fixes tag to 60271ab044a5 ("PCI/AER: Take reference on error devices").
-- Cleaned up the commit description to remove the extra scenarios and focus
-  strictly on the actual failure path (device becoming inaccessible / register
-  read returning no active unmasked status).
-
-Thanks,
-Priyank
+Reviewed-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
 
