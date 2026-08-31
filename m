@@ -1,111 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-26270-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26271-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 75A97C61DE2
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2026 08:51:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0CC49C61DE2
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2026 09:04:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hYN5h6R2Kz2y2f;
-	Mon, 31 Aug 2026 18:51:52 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788166312;
-	cv=none; b=IOzorOJLzGMYoZwdIAd6KVJ4OVJQRTI5Ej29Uah/8TPxTltYw5MKIGc+/AW1mfUQUnJF+O/bvBEha8KPa0P1zmjGlfdLPRSFuqoLBu9rVt3VYD4M88EtGlahgx3vCneQdf1Vu1S8YOKPF+rgD2va50jpchHUUDujLr2qnyT/Fu2/hUyxlpqHFqX8Gsft/VZnpT37AUANJquIgZsfJKInfPIrf5Llc1VkYcSWd/lMjHWiuG8dDMihzWF+cpTLWwZYlIGKIZjiiI/LoJ8fr/xoELqA20f5cjAs2xh84Pq8cr4oryLt8Tbc8fBPhHm4mwcVVfb52nDycZCf1UXXnjSEVA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hYNN672Cyz2y2f;
+	Mon, 31 Aug 2026 19:04:22 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788167062;
+	cv=none; b=YnP1MntKNdRlbrY57vwxl3bOYD33ln6TYoNq6C+HOrD66D+YFfJXHyX99JWCyXr9fSmiS+Ki1UXjBiCqX/I5JcV+J2xmFf9vG50UdEVTa78KLmkM4a7jt1r2LGtf/x+w8cMXDvnyEOuXMxDcX2RDxyM+3+5Qzi0We8zxDyvcB6sNUJSUlry4G3M23cTywffysQ8S8lA9WjeYYcTAs+8l43SEwt9Jp7R7hrxMPvfLMYOCgZ7JkHe2Goz88+o2wSUocko2Z6dCVXDyK5/35j6FT2eP60NHQ81CpATXvC9RJvk1L62b1dQ0l0yZXffmQBMJwJZqeUc0K+TGto2w4m+cFw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788166312; c=relaxed/relaxed;
-	bh=CVbYk0gj5KXQ67iRLFH6F++pXSWYVzV4bNLBCZkNVy8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=i7pRpX8YqP+XV6nhIROKV7sbPWkFlvAF0uI3NyRjAqF7A8UYmMB0XR2Hw01O8w2j6qbnafGTySddnH0b5eg+83quoxgQQ5MQyV6nj+az38cGxt/BRghls2T2NvJ8rjvkje7ElgvHIci3d11moSsDi7QLKnM2vdjTmRzVhe0yMK+BqbnefkRR/+OU+Jcr9QaLJVEtstYq6TbtNEGK98cEdHbxaJpEPWs8XOYOqxahVkUOfxgPzIZKFkNso8u5ugFvgr6mFrzr8id7WzXA3vGrn4oUKO/aY8WPXJ0k67DURaCm2VeqdOeZbcQ4xyGmZu4Ji0vNyX0nObCqKZL88TnJ6Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Ybb5RZzS; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=hca@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1788167062; c=relaxed/relaxed;
+	bh=z70lFI2sFxK6u43xH5E2e2Ans30vhEIrhDYKlweLjnc=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=C1Vv6UjEj3hkl4/DrrSwggyCSgCGWzZdB2QBlYTTFhLP2lOuWwl6s5K/7lv1BMBxIxVCAYV0v26VTApQ85TsUPrQjA/5aOeqdsilA4Sg9x17Nh9Mi9Bkoed0/ijAaEAM4qiEfwIrdrlDMEW4+WpT1o6Jf+I3StVyqSlrfYUHaBvu9XJxIDo6g1X56r4ePaqNoFsjPLAjTvXrQQtGv32Klupt8XwW2ZHYCL29dZkblqHle5Vg/JnGQU5xt9ck+upN7chNHqIywr0Lsajgw5YqQcrlElw+Q5c/U0mEazThg/9Lo6u8z22Oqv63Sf8aYsj5qe4dV6n+XTubmfgiiFHt5g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=b4kLC/XB; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Ybb5RZzS;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=b4kLC/XB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=hca@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hYN5h00MPz2y2J
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Aug 2026 18:51:51 +1000 (AEST)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67V82Hp11697480;
-	Mon, 31 Aug 2026 08:51:05 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hYNN61RK3z2y2J
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Aug 2026 19:04:21 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67V829hp1639246;
+	Mon, 31 Aug 2026 09:04:18 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=CVbYk0gj5KXQ67iRLFH6F++pXSWYVz
-	V4bNLBCZkNVy8=; b=Ybb5RZzSRXxH50tJV/HBUhrjVmIBDpR4ZbNq1+HWNZhvB9
-	5HFz5fRUyA93c16kA0wp16C+QRBksBq4Z2KEuh8Av/VE+KpkeZ4uGIQUuFwYp8uU
-	xXuqtLg0wMfNjYZFaPxAZCnM2V/o7hGSST9533aNdTPRiEx1JiKTCYt27zmk25J7
-	Qw4/U6qUdjt1S5siGQniStMxnMLzif3hA7fIxhRdTsEHTdlIJlnFntrVxKha/qic
-	jfLVcJD6XvtrKnI0i+4S97wyvEoc8kTmGGZfn4idvJs95XCVMPcS/yo7mKOpHgTT
-	AC11isR2/K0RsQ0eMx0d3i4xR5MWVk3oiovvNb3w==
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=z70lFI
+	2sFxK6u43xH5E2e2Ans30vhEIrhDYKlweLjnc=; b=b4kLC/XBjo5Th7Wk/jMo8k
+	1qKROjB6uBl+BDucN1MNLkgMmH+eMJWxchHzpr5KOrj4Ki73PVI9rehmc34qnMX3
+	+8L2yqZ8D5p1ecVtzfeEPgKHNW3RLsAatHh8MbK4tufnp7mJ4fiMD96SdaIgRSSh
+	dyKPAmin0sBH4tweejEnws0/PGBrpajZv5XeObnwOtxpV75XDQl4FT8LJGBki9q3
+	qQ/LBSGS7vIqto/MCaGjXpQvwiIDyTw2ddDiRoWsfkYjZqQV5oU8vRRnTZA4PQJ7
+	AdzUt2jk5W6RS02x0aYC1LsvFXFw8dqC8HBnnVJf6sAWDC12zqq10HN1kr3+CQOw
+	==
 Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gbq2t00t9-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gbq54g7vs-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 31 Aug 2026 08:51:04 +0000 (GMT)
+	Mon, 31 Aug 2026 09:04:17 +0000 (GMT)
 Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 67V8fIDE023473;
-	Mon, 31 Aug 2026 08:51:03 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gccexvpqk-1
+	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 67V8uGiV010700;
+	Mon, 31 Aug 2026 09:04:17 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gccexvs34-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 31 Aug 2026 08:51:03 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 67V8oxQj46334272
+	Mon, 31 Aug 2026 09:04:16 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 67V94D3e31392400
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 31 Aug 2026 08:50:59 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 2A75F2004D;
-	Mon, 31 Aug 2026 08:50:59 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 8CAB12004B;
-	Mon, 31 Aug 2026 08:50:57 +0000 (GMT)
-Received: from osiris (unknown [9.111.81.24])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Mon, 31 Aug 2026 08:50:57 +0000 (GMT)
-Date: Mon, 31 Aug 2026 10:50:56 +0200
-From: Heiko Carstens <hca@linux.ibm.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Thomas Gleixner <tglx@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Shrikanth Hegde <sshegde@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
-        Kees Cook <kees@kernel.org>, Huacai Chen <chenhuacai@kernel.org>,
-        loongarch@lists.linux.dev, Paul Walmsley <pjw@kernel.org>,
-        Palmer Dabbelt <palmer@dabbelt.com>, linux-riscv@lists.infradead.org,
-        Sven Schnelle <svens@linux.ibm.com>, linux-s390@vger.kernel.org,
-        x86@kernel.org, Mark Rutland <mark.rutland@arm.com>,
-        Jinjie Ruan <ruanjinjie@huawei.com>, Andy Lutomirski <luto@kernel.org>,
-        Oleg Nesterov <oleg@redhat.com>,
-        Richard Henderson <richard.henderson@linaro.org>,
-        Russell King <linux@armlinux.org.uk>,
-        Catalin Marinas <catalin.marinas@arm.com>, Guo Ren <guoren@kernel.org>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-        Helge Deller <deller@gmx.de>,
-        Yoshinori Sato <ysato@users.sourceforge.jp>,
-        Richard Weinberger <richard@nod.at>, Chris Zankel <chris@zankel.net>,
-        linux-arm-kernel@lists.infradead.org, linux-alpha@vger.kernel.org,
-        linux-csky@vger.kernel.org, linux-m68k@vger.kernel.org,
-        linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org,
-        linux-sh@vger.kernel.org, linux-um@lists.infradead.org,
-        Arnd Bergmann <arnd@arndb.de>, Vineet Gupta <vgupta@kernel.org>,
-        Will Deacon <will@kernel.org>, Brian Cain <bcain@kernel.org>,
-        Michal Simek <monstr@monstr.eu>, Dinh Nguyen <dinguyen@kernel.org>,
-        "David S. Miller" <davem@davemloft.net>,
-        Andreas Larsson <andreas@gaisler.com>,
-        linux-snps-arc@lists.infradead.org, linux-hexagon@vger.kernel.org,
-        linux-openrisc@vger.kernel.org, sparclinux@vger.kernel.org,
-        linux-arch@vger.kernel.org,
-        Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>,
-        Jonathan Corbet <corbet@lwn.net>, linux-doc@vger.kernel.org
-Subject: Re: [patch 00/18] entry: Consolidate and rework syscall entry
- handling
-Message-ID: <20260831085056.34274A00-hca@linux.ibm.com>
-References: <20260707181957.433213175@kernel.org>
- <ed8b99e6-4d90-4622-9d43-451bf6a8db2c@zytor.com>
+	Mon, 31 Aug 2026 09:04:13 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 5765C2004F;
+	Mon, 31 Aug 2026 09:04:13 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id A69182004B;
+	Mon, 31 Aug 2026 09:04:11 +0000 (GMT)
+Received: from [9.124.216.182] (unknown [9.124.216.182])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 31 Aug 2026 09:04:11 +0000 (GMT)
+Message-ID: <46786528-4e56-4df3-b142-bcf047bacbb0@linux.ibm.com>
+Date: Mon, 31 Aug 2026 14:34:10 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -119,46 +81,114 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ed8b99e6-4d90-4622-9d43-451bf6a8db2c@zytor.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] powerpc/entry: Clear TIF_SYSCALL_RET before syscall error
+ return
+To: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
+Cc: tglx@kernel.org, maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org,
+        linux-kernel@vger.kernel.org, chleroy@kernel.org, sbhat@linux.ibm.com
+References: <20260828053811.1042300-1-sshegde@linux.ibm.com>
+ <apUBdKP1ytHSvuQd@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+Content-Language: en-US
+From: Shrikanth Hegde <sshegde@linux.ibm.com>
+In-Reply-To: <apUBdKP1ytHSvuQd@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=bc1bluPB c=1 sm=1 tr=0 ts=6a954078 cx=c_pps
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODMxMDA3NyBTYWx0ZWRfXzFTolJvah5Pv
+ yXAdmp8GoYhyKqANmB+cmk/heofkgBh9unib0ih/i5QNoufGulrKztfOcUZZU5nLfun7xClsKHF
+ /hsS+Ba4US28T7RqaXE8fL7MEnzxFZTPMuE4gExb2yQf2CLMgKd8dR8IyTP+BB03XjsohSYUTt+
+ 9fzDm9P95y6kOJdIs8bZV5xx0TPTjU/it53RRBRCBPriLvQ9xDjjD2/F+z0Mfmf+3KWHZ0o3WnY
+ gsewf98QKQdu8QwPlbY1+iZRI8Jh8UbfwCPjURLK9Y/Ye6MnGiX/hMxjUxvKSoN4vqHZ+EB5AyV
+ DNbp16PU6livTGu6vB25WXX2vB/Tt/zkHDEANc2DQ20HZJDsD3kojYKWzOzKTtQ8FBoX3jtAyLj
+ 49DYbP5XnA5aZNk5lj1S5jRdwWszQdSDOIOJRjpcF82+sOrV+l1ALGffnqLoTzy9EBUoauPDUnQ
+ JZn+oLyi+ll0jAZ29Aw==
+X-Proofpoint-ORIG-GUID: giTcipX-Ij6HT5ku43W8HViuvLD3ftBL
+X-Authority-Analysis: v=2.4 cv=CNgamxrD c=1 sm=1 tr=0 ts=6a954392 cx=c_pps
  a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=kj9zAlcOel0A:10 a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=2rmWDWJpZfqxup52QhcA:9
- a=CjuIK1q_8ugA:10
-X-Proofpoint-Spam-Info: AW1haW4tMjYwODMxMDA3MiBTYWx0ZWRfXw6StCSqGUaXh
- WvbpCQlGtz7BWihs+RH7DTv2WTOPxVyCWDhiSWtYE+xXgludqixVfK/gU8MUaWS0fxPWdxy86vH
- qJzG6nhsABnZyATt5K5eJawaXFm8xNE=
-X-Proofpoint-ORIG-GUID: bDXbK4NJXMMf6_5R5lg1wFJEO5GSpFz5
-X-Proofpoint-GUID: Fhr_wfi5ePHh4Bqv3MhKtt0iPRZ1Mvkg
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODMxMDA3MiBTYWx0ZWRfX/htDxJBtEHnv
- Z5NhKYazvuvBRJ72zC10F4fqCuZQvNxl5T1bxWCM9YyDyUuOyarWnRe1p0lqpKZl/OmyRFcmZLf
- ktLOOUR/RrJ6H/n8LU3DyRN14Rj88+RKLatjVJj6EvUm7yCYuy01GuzOqCiTMwCDp3qPyD8ygcz
- 8e7DrOBxrdld6/gHT5EMTdlMQoVKjlCd8tRGftrZtFR0eBrKEt+PFXrl5pqVW+wMvV30DgdS65s
- FO2OVicoQhWTWZLtRydH/w0eDM4R+aziyu8zv53VSgwZjxKL71DDEhdZB1VFr5JeZaTp0hNvCNd
- fL1C2mdKKTto6StljkY/Esj1kJ2CLVmDhxayGEQpB6INuQ8vyDvgd1hcoKr++IMzU8bbI32PX2p
- erwW4FtLz+3ZSzAofzRUQ2Kh1tXMYtSiayqZ9s635kOCihBZsW9PohTK3Pmd5E5U5z+A/YfXl7T
- OPEW+V8lEUn+zLxSJdQ==
+ a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=VwQbUJbxAAAA:8
+ a=VnNF1IyMAAAA:8 a=xwUu9NtTp7HEtEivpooA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: vqNarg_kRM04mj0aHMgucFMMve6HZIGl
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODMxMDA3NyBTYWx0ZWRfX/tZaDeWsH9/0
+ jx8nb3MStiJBoBKU4nHlI/J0aaZpJD19Glj6xv+r5IudYPIj1a7RgnpF/Mk6v3+G+rIeZsuuciC
+ WtCrf41024KGyhqvqgKi0o5eeY/aNZY=
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-08-31_03,2026-08-27_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 suspectscore=0 adultscore=0 malwarescore=0 spamscore=0
- lowpriorityscore=0 phishscore=0 clxscore=1011 priorityscore=1501
- impostorscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
- definitions=main-2608310072
+ spamscore=0 bulkscore=0 suspectscore=0 phishscore=0 lowpriorityscore=0
+ priorityscore=1501 clxscore=1015 impostorscore=0 adultscore=0 malwarescore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2608310077
 
-On Thu, Aug 27, 2026 at 03:22:35PM -0700, H. Peter Anvin wrote:
-> This isn't a hard thing to solve in any way: replacing the pointer argument
-> with a two-element structure return would do the trick. As far as I know,
-> *all* architectures that support Linux support returning structures with two
-> register-sized values in registers.
 
-That is unfortunately not true. The s390 ABI defines that structures,
-regardless of size, are returned in a return value buffer allocated by
-the caller.
+
+On 8/31/26 10:09 AM, Mukesh Kumar Chaurasiya wrote:
+> On Fri, Aug 28, 2026 at 11:08:11AM +0530, Shrikanth Hegde wrote:
+>> Shivaprasad reported a boot failure due to userspace processes crash on
+>> abort() from libc.so.6. It was bisected to merge request
+>> commit '3424d8c18a7d ("Merge tag  'core-entry-2026-08-17' of
+>> git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip")'
+>>
+>> Upon checking the merge, when syscall_enter_from_user_mode_randomize_stack
+>> fails, which could happen when a tracer like seccomp or ptrace intercepts
+>> and skips the syscall, the code returns to userspace immediately without
+>> clearing the intermediate flag which was set.
+>>
+>> When the next syscall is made, it immediately aborts the valid syscall
+>> since the flag is still set. Hence clear the flag on occurrence of first
+>> failure.
+>>
+>> Reported-by: Shivaprasad G Bhat <sbhat@linux.ibm.com>
+>> Closes: https://lore.kernel.org/all/e301014d-568f-4ed5-bc64-b8a85ca0b1e1@linux.ibm.com/
+>> Fixes: 3424d8c18a7d ("Merge tag 'core-entry-2026-08-17' of git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip")
+>> Signed-off-by: Shrikanth Hegde <sshegde@linux.ibm.com>
+>> ---
+>> PS: I have kept the block below since earlier code was checking it
+>> regardless of result of syscall_enter_from_user_mode. If it turns out
+>> to be a redundant, it can be removed later.
+>>
+> I think it is redundant as of now. The TIF_SYSCALL_RET flag is set when
+> error is set by the ptrace or seccomp, If the error value is set then
+> the syscall_enter_from_user_mode_randomize_stack will return false.
+> Hence the next check will become redundant.
+> 
+> I also see that TIF_SYSCALL_RET is also set when processing the ptrace
+> syscall, Which can leave the flag set for next syscall execution. Which
+> can again trigger the same issue.
+> 
+
+I believe it is a pre-existing bug which can be fixed independent of this issue.
+Since merge request broke the userspace it is better we fix it right away and
+this pre-existing issue fix can be done subsequently.
+
+No?
+
+> Regards,
+> Mukesh
+>>   arch/powerpc/kernel/syscall.c | 4 +++-
+>>   1 file changed, 3 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/arch/powerpc/kernel/syscall.c b/arch/powerpc/kernel/syscall.c
+>> index 4916c205c4bb..fbefe1927b10 100644
+>> --- a/arch/powerpc/kernel/syscall.c
+>> +++ b/arch/powerpc/kernel/syscall.c
+>> @@ -18,8 +18,10 @@ notrace long system_call_exception(struct pt_regs *regs, unsigned long r0)
+>>   	long ret;
+>>   	syscall_fn f;
+>>   
+>> -	if (unlikely(!syscall_enter_from_user_mode_randomize_stack(regs, &r0)))
+>> +	if (unlikely(!syscall_enter_from_user_mode_randomize_stack(regs, &r0))) {
+>> +		clear_thread_flag(TIF_SYSCALL_RET);
+>>   		return syscall_get_error(current, regs);
+>> +	}
+>>   
+>>   	if (unlikely(test_and_clear_thread_flag(TIF_SYSCALL_RET)))
+>>   		return syscall_get_error(current, regs);
+>> -- 
+>> 2.47.3
+>>
+
 
