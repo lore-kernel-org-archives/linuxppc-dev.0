@@ -1,50 +1,52 @@
-Return-Path: <linuxppc-dev+bounces-26264-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26265-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 64E72C61DD3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2026 08:25:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 803BCC61DD3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2026 08:27:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hYMVl6hwQz2yDD;
-	Mon, 31 Aug 2026 18:25:03 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788164703;
-	cv=none; b=ocMYIlTw8BF1o4jeSeEsBxnmTH0671G1sVdsT4L+qkzyiYZavpC2A3ZDuMvAD+QrUfh2OiZ5x5KxXclGtsIxMpLkaLj42QEg1/sEjUN4SUmgHMckGslz4IVryO+tQBjsL/SXK2elkzQ6uX3RjwC7Gp7rgUqGYTvy2KSt2/LP2txyB8vjCi1GhrC8Mp9HX4R3+BYpJoaKhDF1auwVMFk+7mezcWbvwwes7tg7+s1RMT6utjsF9yeO6tbeUw3nOZhlAaZi/GwE9HlLVneq2mEs3nXu3OxOyN84HmoGOoy700VrPNuq7lNG15qkHzjxOZ/plEKyAfNbE/uS8fE4Xnfnaw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hYMZ21WyGz2yCt;
+	Mon, 31 Aug 2026 18:27:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788164874;
+	cv=none; b=I3c8D38OS0CNinat7MD1s8SLGmVE+hVtw85lk1ZkV3KOSSmfJTEH3TTSm0RvWqLDMgsbvmIHEYHu9vms24jdyoQgXf+bR3+gQNHIP5JuCiariATmPv+DPvJ9G99vJwRLzLBL1Esoyl3vWd3CAfuiykz1+6ThqggEn71HvQ++BM25e3X8yxM5lpc/zM167oI0LDpI0J4vV9vicsZN+D9WpPr4u9qyZbb2sEBLGGC0u+cKafGIDwiorC/R3aDJeFkII4o33NZX/0Q6sZkPwm0EKRCswX+ccCHZekpDn1wx26fJr+sROmlcR7MugBh6xu7dK/mxQFL0cLIzfV4iJTbiMg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788164703; c=relaxed/relaxed;
-	bh=O9m4b46omMgani/6PKydjvX3UeCse2JOjMD2pfjWU/U=;
-	h=Content-Type:MIME-Version:Message-Id:In-Reply-To:References:
-	 Subject:From:To:Cc:Date; b=mC7+gSbopKc30Be6fP0+Na1BWz3vY6ksX1eRzNqIdtP/SyqSpe6knL55ArTy4aG3kA5S1+/OfnV98u3SJ/eM0r2H6OGz9gRYfZLznEzPmqeoGBgAbSda8zHVmgdNPQA/uTM2rKbjDfClY2KFSsfw5yxr5ziUhwB/8NUqqPLlXblxbp83Evmb2BpzwAP5IMeLvyicw3GV2SIqDZmrX/VuhcKGkpQjSzd0rz/+iBGab0jLKL/cItDUwuOioScPneoy7dGMy/DZpTZFhpwl1QzGheRm7E2e8x5Y6jfqBbpGMr/J8x+AYixx9027q9KUXvTxwjQ0LnzKsyQL6avEH7jQ2w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=W0ZZW/NG; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=bot+bpf-ci@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1788164874; c=relaxed/relaxed;
+	bh=sdnDSnE27149BUcPj7rnlsDQtbHL0lCszRlaB8rnvRg=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=BM3OgDVmCJIaBhUmcQr5tFVKStivu85iL4nzgOL+M+7qjBo19CDtje4RTVDeHim8CuNpIAWET7PB2X5rmrS3tELcWPfZMltGoBAeqREPhs3RtMHbXf/+rgIpMXILncq84BV1+7Hd4ZWPXLNtNuev8EPM+eN5wWCG5Yw7oUqNW++xFqEHTMgwqzCktpxZPjCvYMzvueESOXZPnriUcurI0bzK0bR52SudHSBf41qLkzxwXyd1yTdAiLpSWW8rjGPCIneSrQwyg6He8W/tkYIHFVmDodrpfrCSitB2ZTTzMXVJHTBzFPe2MW6UbsopsFeGXA4elZlPlAXPPqAacMV+Ng==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jWpmUpON; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=W0ZZW/NG;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jWpmUpON;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=bot+bpf-ci@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hYMVl02w2z2yCt
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Aug 2026 18:25:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hYMZ10gFhz2y2J
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Aug 2026 18:27:52 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 019D74093E;
-	Mon, 31 Aug 2026 08:25:01 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E4AD11F000E9;
-	Mon, 31 Aug 2026 08:24:59 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 046D760120;
+	Mon, 31 Aug 2026 08:27:51 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 237EA1F000E9;
+	Mon, 31 Aug 2026 08:27:47 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788164700;
-	bh=O9m4b46omMgani/6PKydjvX3UeCse2JOjMD2pfjWU/U=;
-	h=In-Reply-To:References:Subject:From:To:Cc:Date;
-	b=W0ZZW/NGEfCZiYf2OPIpmgAblK5Ugo3IgkljKf8nw/520yhHsc6NqMguOFYKqtTVx
-	 Yy4tb5eS91Xpyr1bqigd+aSBQA0P6Zo3TpOKY54LPShOBhjPZjGufMNKxyqAd+MP62
-	 ha57cIuMxbxZ2feDsZgeI993ITZfLkwaDzxzWSTLIU4WbCLFC4KfO1KeiErtmcL1Fm
-	 azXo8vWJbRiz5cLxQo4EXKXGLIKBQ/QvuQa/A56uBDXtOxWA5WSwzRRlaxg5xYS2fw
-	 lw3OqpZPY54/0y4izV73moSBqwoJEUBBoq+L81JBlH6iSwpb131IDAEj5QWFO97fAF
-	 XBDu/mFRJhSbA==
-Content-Type: multipart/mixed; boundary="===============2430223902918538978=="
+	s=k20260515; t=1788164870;
+	bh=sdnDSnE27149BUcPj7rnlsDQtbHL0lCszRlaB8rnvRg=;
+	h=From:Subject:Date:To:Cc;
+	b=jWpmUpONIzS8DwMc97TLTkDvp8xhwhffGlQU+Gw9Em5B9/M5J/Cen3D8DG3Ny5rXA
+	 /X3Zg8kghs4opYX4bsP2kTLk7XDnWbqMZL1Vzm8Jn5XuxlWYWT4hHFfEGvfrdd8c9H
+	 NzVseV+IXY50R4md+TZPLh5gPD1MHVOAhL0DHzfVzpTNJglk+qDD37TlvsX99DW0Xt
+	 9isP1ngUcA7K4+tMAixOnjetJSa3kcD67YzuGUckxXQs2OqW8bg80rihAolDXHb6Md
+	 TAMBYtTxtXGKbCNm7OumQSKQVq06YANUkHxfDCqBserLdiA6hvWA6Ga4/Iplu5R8Ir
+	 yc49DsjUUXjFg==
+From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
+Subject: [PATCH v2 0/3] tty: replace page allocator calls with k[mz]alloc()
+Date: Mon, 31 Aug 2026 11:27:42 +0300
+Message-Id: <20260831-tty-v2-0-88cd58c3c640@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,140 +60,78 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Message-Id: <f073ec2085f90747a8909276f42726a0a0e12f99f8f81b0297dad05c4eec3667@mail.kernel.org>
-In-Reply-To: <e5fc39c4f3340791bec5e7a92e1d146d3ed6296e.1788154635.git.skb99@linux.ibm.com>
-References: <e5fc39c4f3340791bec5e7a92e1d146d3ed6296e.1788154635.git.skb99@linux.ibm.com>
-Subject: Re: [PATCH v13 3/8] powerpc/bpf: fix buffer overflow in JIT for large BPF programs
-From: bot+bpf-ci@kernel.org
-To: skb99@linux.ibm.com,bpf@vger.kernel.org,linuxppc-dev@lists.ozlabs.org
-Cc: hbathini@linux.ibm.com,maddy@linux.ibm.com,ast@kernel.org,andrii@kernel.org,daniel@iogearbox.net,shuah@kernel.org,linux-kselftest@vger.kernel.org,stable@vger.kernel.org,venkat88@linux.ibm.com,yeswanth@linux.ibm.com,skb99@linux.ibm.com,ast@kernel.org,andrii@kernel.org,daniel@iogearbox.net,martin.lau@kernel.org,eddyz87@gmail.com,yonghong.song@linux.dev,mason@kernel.org,ihor.solodrai@linux.dev
-Date: Mon, 31 Aug 2026 08:24:59 +0000 (UTC)
-
---===============2430223902918538978==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/y2OzQ6CMBCEX4X0bMlSsPycfA/Doa0LVE0x20okh
+ HeXVo/fzOzMbswjWfSsyzZGuFhvZ3eAOGXMTMqNyO3tYCZASGhEy0NYeVMNcNZ11Uih2JF8EQ7
+ 2k1qu/Y/9W9/RhHgaE1p55JqUM1OUEtZ5Ga3J+jDTmj5YiljxHyshjS0FBw5GoyxqkFWrLw8kh
+ 898ppH1+75/AVqHITrEAAAA
+X-Change-ID: 20260829-tty-84f05b74862a
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+ Jiri Slaby <jirislaby@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, 
+ David Hildenbrand <david@kernel.org>, Matthew Wilcox <willy@infradead.org>, 
+ Mike Rapoport <rppt@kernel.org>, Vlastimil Babka <vbabka@kernel.org>, 
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org, 
+ linux-serial@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+X-Mailer: b4 0.17-dev
 
->     Fixes: d243b62b7bd3 ("powerpc64/bpf: Add support for bpf trampolines")
+This is a (small) part of larger work of replacing page allocator calls
+with kmalloc.
 
-Does the Fixes: tag name the correct commit?
+My initial intention a few month ago was to remove ugly casts [1], but then
+willy pointed out that Linus objected to something like this [2] and it
+looks like more than a decade old technical debt.
 
-With Cc: stable@vger.kernel.org this fix will only reach v6.13+ and will
-leave every stable tree from v5.18 to v6.12 carrying the same JIT buffer
-overflow.
+Largely, anything that doesn't need struct page (or a memdesc in the
+future) should just use kmalloc() or kvmalloc() to allocate memory.
+kmalloc() guarantees alignment, physical contiguity and working
+virt_to_phys() and beside nicer API that returns void * on alloc and
+doesn't require to know the allocation size on free, kmalloc() provides
+better debugging capabilities than page allocator.
 
-The faulty logic predates d243b62b7bd3. Looking at the parent of that commit:
+Another thing is that touching these allocation sites gives the reviewers
+opportunity to see if a PAGE_SIZE buffer is actually needed or maybe
+another size is appropriate.
 
-git show d243b62b7bd3^:arch/powerpc/net/bpf_jit_comp.c
+For larger allocations that don't need physically contiguous memory
+kvmalloc() can be a better option that __get_free_pages() because under
+memory pressure it's is easier to allocate several order-0 pages than a
+physically contiguous chunk with the same number of pages.
 
-already contains the exact code being fixed:
+And last, but not least, removing needless calls to page allocator should
+help with memdesc (aka project folio) conversion. There will be way less
+places to audit to see if the user was actually using struct page.
 
-    if (!exit_addr || is_offset_in_branch_range(exit_addr - (ctx->idx * 4))) {
-            PPC_JMP(exit_addr);
-    } else if (ctx->alt_exit_addr) {
-            if (WARN_ON(!is_offset_in_branch_range((long)ctx->alt_exit_addr - (ctx->idx * 4))))
-                    return -1;
-            PPC_JMP(ctx->alt_exit_addr);
-    } else {
-            ctx->alt_exit_addr = ctx->idx * 4;
-            bpf_jit_build_epilogue(image, ctx);
-    }
+The patches are deliberately kept small: each one deals with a single
+driver or subsystem and with a single type of allocation, so that every
+conversion can be reviewed, and if needed reverted, on its own.
 
-The real introducing commit is 0ffdbce6f4a89bb7c0002904d6438ec83cf05ce7
-("powerpc/bpf: Handle large branch ranges with BPF_EXIT"), merged in v5.18-rc1
-(git describe --contains: v5.18-rc1~124^2~42). It created
-bpf_jit_emit_exit_insn() with the '!exit_addr' early-out and replaced the
-previous unconditional one-instruction emission:
-
-    -               if (i != flen - 1)
-    -                       PPC_JMP(exit_addr);
-    +               if (i != flen - 1) {
-    +                       ret = bpf_jit_emit_exit_insn(image, ctx, b2p[TMP_REG_1], exit_addr);
-
-Before 0ffdbce6f4a8 a non-final BPF_EXIT always cost exactly one instruction in
-every pass, so the sizing pass could not under-count and no overflow was
-possible. After it, the sizing pass emits PPC_JMP(0) (1 instruction) while
-later passes may emit a full inline epilogue, which is precisely the
-under-count described in this commit message.
-
-The commit d243b62b7bd3 only enlarged the epilogue (it added
-bpf_jit_build_fentry_stubs()), making an already-existing overflow bigger.
-
-Citing the ppc64-trampoline commit also wrongly implies PPC32 is unaffected.
-The commit 0ffdbce6f4a8 made the identical change to
-arch/powerpc/net/bpf_jit_comp32.c, so 32-bit powerpc has the same bug over the
-same range.
-
-A tag survey confirms the range: 'alt_exit_addr' has 0 occurrences in
-arch/powerpc/net/ at v5.16 and v5.17, and 5 occurrences at v5.18, v5.19, v6.0,
-v6.1 and v6.6.
-
-Should the tag be:
-
-  Fixes: 0ffdbce6f4a8 ("powerpc/bpf: Handle large branch ranges with BPF_EXIT")
-
-> diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
-> index 8f7501954d9f0..11981d2270a9d 100644
-> --- a/arch/powerpc/net/bpf_jit_comp.c
-> +++ b/arch/powerpc/net/bpf_jit_comp.c
-> @@ -99,11 +99,10 @@ void bpf_jit_build_fentry_stubs(u32 *image, struct codegen_context *ctx)
->
->  int bpf_jit_emit_exit_insn(u32 *image, struct codegen_context *ctx, int tmp_reg, long exit_addr)
->  {
-> -	if (!exit_addr || is_offset_in_branch_range(exit_addr - (ctx->idx * 4))) {
-> +	if (exit_addr && is_offset_in_branch_range(exit_addr - (long)(ctx->idx * 4))) {
->  		PPC_JMP(exit_addr);
-> -	} else if (ctx->alt_exit_addr) {
-> -		if (WARN_ON(!is_offset_in_branch_range((long)ctx->alt_exit_addr - (ctx->idx * 4))))
-> -			return -1;
-> +	} else if (ctx->alt_exit_addr && is_offset_in_branch_range(
-> +			(long)(ctx->alt_exit_addr) - (long)(ctx->idx * 4))) {
-              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
->  		PPC_JMP(ctx->alt_exit_addr);
-
-With alt_exit_addr defined as unsigned int, does the expression
-(long)(ctx->alt_exit_addr) - (long)(ctx->idx * 4) produce a different result
-than (long)ctx->alt_exit_addr - (ctx->idx * 4) due to how integer promotion
-works?
-
-In v7 review, Hari Bathini pointed out that the cast placement may affect
-integer promotion semantics and requested restoring the earlier syntax with the
-cast only on alt_exit_addr:
-
-https://lore.kernel.org/bpf/038a115b-e2a5-4ecf-82b1-3689535e986b@linux.ibm.com
-
-While the current code has passed testing, the concern about integer promotion
-semantics was never explicitly addressed.
-
-[ ... ]
-
-> @@ -399,7 +417,7 @@ int bpf_add_extable_entry(struct bpf_prog *fp, u32 *image, u32 *fimage, int pass
->  	u32 *fixup;
->
->  	/* Populate extable entries only in the last pass */
-> -	if (pass != 2)
-> +	if (pass < CODEGEN_MIN_PASSES)
->  		return 0;
-
-Does the comment still match the code?
-
-With the old 'if (pass != 2)' and a fixed two-pass loop, pass 2 was the last
-pass, so the comment was accurate. With the new loop and 'pass <
-CODEGEN_MIN_PASSES', both pass 2 and pass 3 can write extable entries, so
-entries are populated in every pass from 2 onwards, not only in the last one.
-
-Also, CODEGEN_MIN_PASSES is being reused here with a different meaning. In
-arch/powerpc/net/bpf_jit.h it documents the minimum number of code-generation
-passes, but here it is used as 'the first pass in which extable entries are
-valid'. The two are logically independent - bumping CODEGEN_MIN_PASSES to 3 to
-force more settling iterations would silently stop extable entries being
-written in pass 2.
-
+[1] https://lore.kernel.org/all/20251018093002.3660549-1-rppt@kernel.org/
+[2] https://lore.kernel.org/all/CA+55aFwp4iy4rtX2gE2WjBGFL=NxMVnoFeHqYa2j1dYOMMGqxg@mail.gmail.com/
 
 ---
-AI reviewed your patch. Please fix the bug or email reply why it's not a bug.
-See: https://github.com/kernel-patches/vmtest/blob/master/ci/claude/README.md
+v2 changes:
+* change xmit_buf type in uart_{alloc,free}_xmit_buf() to u8 *
 
-CI run summary: https://github.com/kernel-patches/bpf/actions/runs/33368376983
---===============2430223902918538978==--
+v1: https://patch.msgid.link/20260830-tty-v1-0-0cbe6170649b@kernel.org
+
+---
+Mike Rapoport (Microsoft) (3):
+      tty: port: replace get_zeroed_page() with kzalloc()
+      serial: core: replace get_zeroed_page() with kzalloc()
+      tty: hvcs: replace __get_free_page() with kmalloc()
+
+ drivers/tty/hvc/hvcs.c           |  6 +++---
+ drivers/tty/serial/serial_core.c | 18 +++++++++---------
+ drivers/tty/tty_port.c           |  8 ++++----
+ 3 files changed, 16 insertions(+), 16 deletions(-)
+---
+base-commit: 1b78070aaef63512688aebfbc82365ef9d6660f1
+change-id: 20260829-tty-84f05b74862a
+
+--
+Sincerely yours,
+Mike.
+
 
