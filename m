@@ -1,61 +1,66 @@
-Return-Path: <linuxppc-dev+bounces-26293-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26294-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 25C96C624A4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2026 13:43:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 60C7AC624C6
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2026 13:44:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hYVZ84HzNz2yCt;
-	Mon, 31 Aug 2026 23:43:28 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788183808;
-	cv=none; b=RcJOalAPc98xIm8GK7gb1cKYV3cEq+bs2KrZL/atD8erczMNwRtncgiuzWmruaIuSeFyhZeTvlfxqKjb7rYg0mL6oO1s0rXLWvGTdlY6A7ZVhGoJQGfS6myjtpXffrSdj/bOovFii7gk5Z4fj/XIG6OcPIS7KgBK/tHDEOFjrc8nhNMY1CjSI5TbJqECC43ER6XflJ2duUeuz5ietTt3Ap8PGuu6LvP7LuvIZ2ksZLXsV5k3dOzHexkHeAzoqpxS5sveiIMjTEKJtHcteLa/qBQqVFIEYTvj4UARB3IfVZBB/GyD6aXBTHpLXMO3h/zo+6QjX5wCcFf6pv0Qoi6StA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hYVZy4bmNz2yCv;
+	Mon, 31 Aug 2026 23:44:10 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788183850;
+	cv=none; b=JHFsz0wq/gm1njO1atX6s13B0ewyffo+0lwYFe9XMilGCnv//uowwWgHk1MNy3r14PA1PTZ6/i6ceRpE353oZmvfJOQIQ+/0V7gTJfdaMISKBgz0xkUyjOKFsoYhg1NDVLuYFC//uBYWSnXzR1u/Yeb68RfD0SgmFM8cCo2kyypbOQU2+Y1srzFaK7lk/Eb82oNnK2BvtTcqi6I07rWzlT7aUZJXx2b58IL/oDAcSGvX+CTKE6qZxd9ZZ2gCi1rN99IvDUPhW/wAD+FTOgUi/IDfS7nx0+fzM7PnoIgSNqeQPTSgIb3EoZ09+rY0xvy/2rOPurDr81TeabMiNvgo1g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788183808; c=relaxed/relaxed;
-	bh=7hw2TwlKijxo5j5n8Tb6oV2dh7rhrzUz50SntWCwRZM=;
+	t=1788183850; c=relaxed/relaxed;
+	bh=5ZSYxAxyXIXMLA4+TJmzL2ZvISOyC00ADA5E9FDWHxQ=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=g+b5uBcsqymQoPuE8KtEjzTp/o4SvEKsfPvUfZnOjiFzKewE3EJLvojVOV+V0028PT73JC/y8FHMxF8UP/kLWwuYr2H0a0ZZua0QluPxA0+4DvAumFBVuBwtX0sB+emuAPJaydQRS5ETNB5iZQtIx93Btp58UNXZkhYpHPboAJlMlTu4otqy2VokVLZ6CW4M6LTYaXUbPG1ChuDQwZ/RrRhQwc3oAXVZ9Q4BbS5Sr0NY13OKPlVbr2lCG11sC2V7rOm8HTx88Opv669gGMUQTR9FB1oKa2i3CtoPqLaIhtaO8yfsW4DnpkTu61j5qXIpf5BqWk93lsewYnazjotSeA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=fnYqIjW1; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version:Content-Type; b=k15Wx17+/Kadto+N7jV6KZBLQKmCozbdh0pCzhA7sYpbhCHh7b+CgelB70BfcLPUo57T/QbdWTYinQ6kaZ8WsmKKjqlzEfA22PjSa2nfEnbydGmT3glnUgPKQ4yG2+awflhuY84ls2W+n6gKki0YwVDMBSGjCrSHmrffK6CfvW6K/yFgtKZr72PLznOEASlMqkTBYzXIbXxns72i4H9EPEHzIgtCccg3mDL6NwqKxODocHmQWihaLkeUv3JoUvRt5L85t3yAvGQgRXSBsF4ioBDJFfbBSZcwLU6eC+6cpfTkiPK9IBH9EvCZFa3dg9ALFYmtYgze+X5/wqzgbcFWeQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TBJqPGmz; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=fnYqIjW1;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TBJqPGmz;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hYVZ74Q3Xz2xpn
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Aug 2026 23:43:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hYVZx4cNWz2yCt
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Aug 2026 23:44:09 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id CB09640748;
-	Mon, 31 Aug 2026 13:43:25 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BC2F71F000E9;
-	Mon, 31 Aug 2026 13:43:24 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 2C095602C5;
+	Mon, 31 Aug 2026 13:44:07 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 777681F00ADE;
+	Mon, 31 Aug 2026 13:44:05 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788183805;
-	bh=7hw2TwlKijxo5j5n8Tb6oV2dh7rhrzUz50SntWCwRZM=;
+	s=k20260515; t=1788183846;
+	bh=5ZSYxAxyXIXMLA4+TJmzL2ZvISOyC00ADA5E9FDWHxQ=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=fnYqIjW1SA+0aMQqMKv5Yw28Cc9TSbN4N8HbJRGdqzR/IHD6l11h3+jcRD6RcqBNL
-	 3sIR5TvBoCZiG08GVcTCUloO5DRFIR0lT+mIoHY9KIeAsIxAtx7L9pM3ZeS4rJ8IJN
-	 uPixerUIgV2DblthucNSbZ2ialtXEnsH8vmpRJCEk8ryvjC7SXoX9bLzeNztk1hTYu
-	 +Q3mVwvjswlgTfAGoGGCtsJgaMZYVhKYGKgZLXFeQzwxXf/XykGdXG723dl69zCo+8
-	 yYRct1zY8wV0B68iuhEUgFHgtbthetry6J+jibGDO3y3/xXq6vK1xg0taKEtdmIVXj
-	 lZb5FG5QePgcg==
+	b=TBJqPGmzAffSjVBKMbUqIx2pC1SCHbubjAB+XkX9FUF4r2SOpm1Roj2gSGY2iE0v6
+	 DgMNO7flNIJN4J5iVPwk9sIINs6Uw1LXKY0uARAeS6rufJlv6UsE6t3ISAEg3Xi+c2
+	 JeKa2ePk+V/y0XVpmtjb2gIAG7QI0vHFBxMoUtDk24vRPDvz0QEt+4bAWtwd7QfEds
+	 bYKSCYgDDqeTjMy0GeNONMtrKmMuNclV7DuHqRJe+7dUXLXG/HKGpsc2mO7HkGv7HJ
+	 4v53s5Itz/oSX5ZnNpPv8HgmatItvcFNQwc4C1J4HkS7Lqn75iXNWYcMtZWZ56lTh1
+	 Cp4NB/Q6L3GjA==
 From: Sasha Levin <sashal@kernel.org>
 To: patches@lists.linux.dev,
 	stable@vger.kernel.org
-Cc: Vaibhav Jain <vaibhav@linux.ibm.com>,
-	Anushree Mathur <anushree.mathur@linux.ibm.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
+Cc: Shengjiu Wang <shengjiu.wang@nxp.com>,
+	Mark Brown <broonie@kernel.org>,
 	Sasha Levin <sashal@kernel.org>,
+	shengjiu.wang@gmail.com,
+	Xiubo.Lee@gmail.com,
+	lgirdwood@gmail.com,
+	perex@perex.cz,
+	tiwai@suse.com,
+	linux-sound@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.18-5.10] powerpc/pseries: Ensure vpa,slb_shadow & dtl are unregistered during crash
-Date: Mon, 31 Aug 2026 09:25:43 -0400
-Message-ID: <20260831133314.4125787-315-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 6.18-6.12] ASoC: fsl-asoc-card: reduce WM8904 PLL ratio to meet frequency limit
+Date: Mon, 31 Aug 2026 09:26:07 -0400
+Message-ID: <20260831133314.4125787-339-sashal@kernel.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260831133314.4125787-1-sashal@kernel.org>
 References: <20260831133314.4125787-1-sashal@kernel.org>
@@ -72,416 +77,390 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 X-stable: review
 X-Patchwork-Hint: Ignore
 X-stable-base: Linux 6.18.48
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-From: Vaibhav Jain <vaibhav@linux.ibm.com>
+From: Shengjiu Wang <shengjiu.wang@nxp.com>
 
-[ Upstream commit 810d07fb4cf7577847f85a6fd6273b69cad8d580 ]
+[ Upstream commit 99b5316f08f390a5e1ea2239ecca8e2b4ef70ac6 ]
 
-Currently pseries_kexec_cpu_down() skips unregistering vpa, slb_shadow and
-dtl areas during a crash and kexec shutdown path. It was done to avoid
-doing an HCALL while crashing. However recently Anushree reported that
-during kernel crash while the kdump kernel was coming up, Hypervisor
-reported invalid values for 'vpa.yield_count' while it dispatching L2-KVM
-Guest vcpus. The error manifested as debug build Hypervisor assert
-triggering to indicate possible VPA corruption.
+WM8904 has a 27 MHz PLL frequency limit. The current S24_LE PLL ratio
+of 384 exceeds this at high sample rates (96 kHz × 384 = 36.864 MHz).
 
-Looking at the kexec cpu offline path it was discovered that during crash
-kernel doesn't unregister the VPA/SLB-Shadow/DTL area with
-Hypervisor. Instead it re-allocates and re-registers these areas
-for cpus during boot. During kexec boot the previously allocated areas
-can get overwritten with new content without hypervisor knowledge. This
-creates a small window where while kexec kernel boots and the L2-VCPUs are
-being dispatched, Hypervisor may try to read/write to a wrong memory area
-which previously belonged to older VPA.
+Reduce the ratio to 192 for WM8904, keeping PLL within limits at all
+supported rates (96 kHz × 192 = 18.432 MHz).
 
-Fix this possible race and memory corruption by updating
-pseries_kexec_cpu_down() to also unregister vpa,slb_shadow & dtl areas
-during a kernel crash.
+Add codec-specific pll_ratio_s24 field, default 384, override to 192
+for WM8904.
 
-Signed-off-by: Vaibhav Jain <vaibhav@linux.ibm.com>
-Tested-by: Anushree Mathur <anushree.mathur@linux.ibm.com>
-Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>
-Link: https://patch.msgid.link/20260708015802.274271-1-vaibhav@linux.ibm.com
+Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+Link: https://patch.msgid.link/20260429100028.2739711-6-shengjiu.wang@nxp.com
+Signed-off-by: Mark Brown <broonie@kernel.org>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
 
 LLM Generated explanations, may be completely bogus:
 
-# Stable Backport Analysis: `powerpc/pseries: Ensure vpa,slb_shadow &
-dtl are unregistered during crash`
+## Phase 1: Commit Message Forensics
 
-**Local tree:** Linux **6.18.44** (`git describe HEAD` →
-`v6.18.44-2-g1b9e1abadee04`, `make kernelversion` → `6.18.44`)
+### Step 1.1: Subject Line
+**Record:** `[ASoC: fsl-asoc-card]` `[reduce]` — Lower WM8904 S24_LE PLL
+ratio so FLL output stays within the codec’s frequency limit.
+
+### Step 1.2: Commit Message Tags
+**Record:**
+- **Signed-off-by:** Shengjiu Wang `<shengjiu.wang@nxp.com>` (author,
+  NXP)
+- **Link:** https://patch.msgid.link/20260429100028.2739711-6-
+  shengjiu.wang@nxp.com
+- **Signed-off-by:** Mark Brown `<broonie@kernel.org>` (ASoC maintainer,
+  applied the series)
+- No Fixes:, Reported-by:, Tested-by:, Reviewed-by:, or Cc: stable tags
+- Part of **[PATCH v2 5/5]** in series “ASoC: fsl-asoc-card: Add some
+  improvements”
+
+### Step 1.3: Commit Body Analysis
+**Record:**
+- **Bug:** WM8904 FLL/PLL output is limited to 27 MHz. With the
+  hardcoded S24_LE ratio of 384, high sample rates exceed that (96 kHz ×
+  384 = 36.864 MHz).
+- **Symptom:** FLL programmed out of spec → audio fails or is unreliable
+  at high rates with S24_LE on WM8904 boards.
+- **Root cause:** `fsl-asoc-card.c` uses a single 384 multiplier for all
+  codecs with PLL enabled; WM8904 needs 192.
+- **Fix:** Add per-codec `pll_ratio_s24` (default 384), set 192 for
+  `fsl,imx-audio-wm8904`.
+
+### Step 1.4: Hidden Bug Fix Detection
+**Record:** Yes — despite “reduce ratio,” this is a hardware correctness
+fix (codec clock out of spec), not a cosmetic cleanup.
 
 ---
 
-## PHASE 1: COMMIT MESSAGE FORENSICS
+## Phase 2: Diff Analysis
 
-### Step 1.1: Parse the subject line
-**Record:** `[powerpc/pseries]` `[ensure]` — During kernel crash/kdump
-shutdown, unregister VPA, SLB shadow, and DTL areas with the hypervisor
-instead of skipping that cleanup.
-
-### Step 1.2: Parse all commit message tags
+### Step 2.1: Change Inventory
 **Record:**
-| Tag | Value |
-|-----|-------|
-| Signed-off-by | Vaibhav Jain \<vaibhav@linux.ibm.com\> (author) |
-| Tested-by | Anushree Mathur \<anushree.mathur@linux.ibm.com\>
-(reporter/tester) |
-| Signed-off-by | Madhavan Srinivasan \<maddy@linux.ibm.com\> (powerpc
-maintainer) |
-| Link |
-https://patch.msgid.link/20260708015802.274271-1-vaibhav@linux.ibm.com |
+- **File:** `sound/soc/fsl/fsl-asoc-card.c` (+7 / −1)
+- **Functions:** `fsl_asoc_card_hw_params()`, `fsl_asoc_card_probe()`
+- **Structs:** `codec_priv` (+1 field)
+- **Scope:** Single-file, surgical fix
 
-**Notable patterns:** `Tested-by` from the reporter; maintainer sign-
-off; no `Fixes:` tag (expected for manual review); no `Cc: stable` tag
-(expected).
-
-### Step 1.3: Analyze commit body
+### Step 2.2: Code Flow Changes
 **Record:**
-- **Bug:** `pseries_kexec_cpu_down()` skips VPA/SLB-shadow/DTL
-  unregistration when `crash_shutdown` is set (crash/kdump path).
-- **Symptom:** During kernel crash while kdump boots, hypervisor reads
-  invalid `vpa.yield_count` values; debug hypervisor asserts on possible
-  VPA corruption while dispatching L2-KVM guest vCPUs.
-- **Root cause:** Crash kernel does not unregister these areas; kdump
-  kernel later reallocates and re-registers them. Hypervisor still
-  references old memory for a window, so it may read/write memory that
-  no longer belongs to the registered VPA.
-- **Version info:** None explicit; bug is long-standing (see Phase 3).
+- **Hunk 1 (struct):** Adds `pll_ratio_s24` to `codec_priv` with
+  documentation.
+- **Hunk 2 (`hw_params`):** `pll_out = sample_rate * 384` → `pll_out =
+  sample_rate * codec_priv->pll_ratio_s24` for S24_LE.
+- **Hunk 3 (`probe` init):** Default `pll_ratio_s24 = 384` for all
+  codecs.
+- **Hunk 4 (WM8904 branch):** Override to `pll_ratio_s24 = 192` for
+  `fsl,imx-audio-wm8904`.
 
-### Step 1.4: Detect hidden bug fixes
-**Record:** Not disguised — this is an explicit race/memory-corruption
-fix in the kdump crash-shutdown path, not cleanup-only.
+**Before → After:** WM8904 at 96 kHz S24_LE requests 36.864 MHz FLL
+output → 18.432 MHz (within 27 MHz limit).
+
+### Step 2.3: Bug Mechanism
+**Record:**
+- **Category:** Hardware workaround / logic correctness (wrong clock
+  ratio for a specific codec).
+- **Mechanism:** Generic 384× ratio violates WM8904’s 27 MHz PLL limit
+  at rates above ~70 kHz with S24_LE (e.g. 88.2 kHz × 384 = 33.9 MHz, 96
+  kHz × 384 = 36.9 MHz).
+
+### Step 2.4: Fix Quality
+**Record:**
+- Minimal, codec-specific override; other codecs unchanged (default
+  384).
+- Low regression risk; only affects WM8904 machine configs using PLL
+  path.
+- NXP-authored, ASoC-maintainer-applied.
 
 ---
 
-## PHASE 2: DIFF ANALYSIS
+## Phase 3: Git History Investigation
 
-### Step 2.1: Inventory changes
-**Record:**
-- **Files:** `arch/powerpc/platforms/pseries/kexec.c` only
-- **Scope:** ~10 lines changed (comment rewrite + one condition change)
-- **Function modified:** `pseries_kexec_cpu_down()`
-- **Classification:** Single-file surgical fix
+### Step 3.1: Blame
+**Record:** In this 6.18.43 tree, the hardcoded `384` at line 225 and
+WM8904 probe block at lines 833–838 are present. Stable history is
+flattened, but `imx-audio-wm8904` support is in the tree since at least
+Linux 6.18-rc7 (`ac3fd01e4c1ef`).
 
-### Step 2.2: Code flow change per hunk
-**Record:**
-- **Hunk 1 (comment):** Before: documents intentional skip of hypervisor
-  calls during crash. After: explains why unregister must still be
-  attempted during crash to prevent hypervisor use of stale memory.
-- **Hunk 2 (condition):** Before: `if
-  (firmware_has_feature(FW_FEATURE_SPLPAR) && !crash_shutdown)` —
-  unregister only on normal kexec. After: `if
-  (firmware_has_feature(FW_FEATURE_SPLPAR))` — unregister on both normal
-  kexec and crash/kdump paths.
+### Step 3.2: Fixes: Tag
+**Record:** N/A — no Fixes: tag.
 
-### Step 2.3: Bug mechanism
-**Record:**
-- **Category:** Race condition / memory corruption (hypervisor–kernel
-  shared state)
-- **Mechanism:** Hypervisor retains pointers to VPA/SLB-shadow/DTL
-  memory after crash. kdump kernel reuses that physical memory before
-  re-registering new areas. Hypervisor accesses wrong content → VPA
-  corruption, hypervisor asserts.
+### Step 3.3: Related File History
+**Record:** Patch is **[5/5]** in a series; patches 1–4 cover ASRC DPCM,
+CS42888 constraints, and WM8960/WM8962 format limits — unrelated to this
+WM8904 PLL fix. This patch is self-contained.
 
-### Step 2.4: Fix quality
-**Record:**
-- **Quality:** Obviously correct; reuses existing, tested unregister
-  path already used for normal kexec and CPU hotplug.
-- **Regression risk:** Low. Failed HCALLs only emit `pr_err` warnings
-  (same as today). Worst case equals current crash behavior; best case
-  closes the race.
-- **Red flags:** None. No API changes, no new logic beyond removing the
-  crash exemption.
-
----
-
-## PHASE 3: GIT HISTORY INVESTIGATION
-
-### Step 3.1: Blame changed lines
-**Record:**
-- `!crash_shutdown` guard present since **dce623e0827e8** (Michael
-  Ellerman, 2007-02-08, “[POWERPC] Cleanup pseries kexec code”).
-- Comment expanded in **499dcd41378eba** (Nicholas Piggin, 2018-02-14)
-  with explicit “XXX: Why?” noting hypervisor may step on memory.
-- VPA/SLB/DTL unregister on kexec added in **b1301797f30370** (Anton
-  Blanchard, 2011-07-25, “Fix kexec on recent firmware versions”, `Cc:
-  stable@kernel.org`).
-- Buggy code verified present at tags **v5.4, v5.10, v5.15, v6.1, v6.6,
-  v6.12, v6.18** in this tree.
-
-### Step 3.2: Follow Fixes: tag
-**Record:** No `Fixes:` tag. N/A.
-
-### Step 3.3: Related file history
-**Record:** `arch/powerpc/platforms/pseries/kexec.c` history at v5.4
-shows long-stable kexec/VPA handling; no related prerequisite series
-identified. Standalone one-commit fix.
-
-### Step 3.4: Author context
-**Record:** Vaibhav Jain is an IBM powerpc contributor. Madhavan
-Srinivasan (maintainer) signed off. Fix commit not yet present in this
-6.18.44 checkout.
+### Step 3.4: Author Context
+**Record:** Shengjiu Wang is an active NXP/i.MX audio contributor with
+multiple stable-worthy ASoC fixes in this tree.
 
 ### Step 3.5: Dependencies
-**Record:** No dependencies. `unregister_vpa()`,
-`unregister_slb_shadow()`, `unregister_dtl()` exist in
-`arch/powerpc/include/asm/plpar_wrappers.h`. Applies standalone.
+**Record:** No prerequisites. Applies standalone; only needs existing
+`fsl,imx-audio-wm8904` support and PLL code path already in 6.18.43.
 
 ---
 
-## PHASE 4: MAILING LIST AND EXTERNAL RESEARCH
+## Phase 4: Mailing List and External Research
 
-### Step 4.1: Original patch discussion
-**Record:** `b4 dig -c HEAD` matched unrelated commit. `b4 shazam` could
-not find this patch on lore (likely not yet indexed/merged). `WebFetch`
-of lore URL blocked by bot protection. **Link tag present but thread
-content unverified.**
+### Step 4.1: Original Discussion
+**Record:** `b4 mbox` retrieved thread from lore (7 messages). Patch v2
+5/5 submitted 2026-04-29. Mark Brown applied entire series to
+`broonie/sound` for-7.2 on 2026-04-30. This patch:
+https://git.kernel.org/broonie/sound/c/99b5316f08f3. No stable
+nomination or NAK found in thread.
 
 ### Step 4.2: Reviewers
-**Record:** `b4 dig -w` not usable without matching commit. Maintainer
-SOB (Madhavan Srinivasan) verified in commit message.
+**Record:** CC’d: broonie@kernel.org, lgirdwood@gmail.com,
+perex@perex.cz, tiwai@suse.com, linux-sound@vger.kernel.org. Mark Brown
+applied with “Thanks!”
 
-### Step 4.3: Bug report
-**Record:** Reported by Anushree Mathur (IBM) per commit message;
-hypervisor assert on invalid `vpa.yield_count` during kdump with L2-KVM
-guests. `Tested-by` from same person. Real-world IBM Power LPAR/kdump
-scenario.
+### Step 4.3: Bug Report
+**Record:** No external bug tracker. Issue found during NXP board
+testing per cover letter (“During testing several issues were
+identified”).
 
-### Step 4.4: Related patches/series
-**Record:** Standalone fix; not part of a multi-patch series.
+### Step 4.4: Series Context
+**Record:** 5-patch series; this patch is independent of patches 1–4.
 
-### Step 4.5: Stable mailing list history
-**Record:** Not searched successfully (lore inaccessible). Prior related
-fix (b1301797f30370, 2011) was explicitly `Cc: stable@kernel.org` for
-kexec/VPA unregister issues on pseries.
+### Step 4.5: Stable List History
+**Record:** UNVERIFIED — lore stable search blocked by bot protection;
+no stable discussion found in mbox thread.
 
 ---
 
-## PHASE 5: CODE SEMANTIC ANALYSIS
+## Phase 5: Code Semantic Analysis
 
-### Step 5.1: Key functions
-**Record:** `pseries_kexec_cpu_down()` — only function modified.
+### Step 5.1: Key Functions
+**Record:** `fsl_asoc_card_hw_params()`, `fsl_asoc_card_probe()`,
+`wm8904_set_fll()` (codec callee).
 
 ### Step 5.2: Callers
-**Record:**
-| Caller | `crash_shutdown` | Context |
-|--------|------------------|---------|
-| `arch/powerpc/kexec/crash.c:105` | `1` | Secondary CPU in crash/kdump
-path |
-| `arch/powerpc/kexec/crash.c:400` | `1` | Panic CPU after crash
-shutdown handlers |
-| `arch/powerpc/kexec/core_64.c:159,269,287` | `0` | Normal kexec CPU
-shutdown |
-
-Registered via `ppc_md.kexec_cpu_down = pseries_kexec_cpu_down` in
-`setup.c:1162` under `CONFIG_KEXEC_CORE`.
+**Record:** `fsl_asoc_card_hw_params` registered as `.hw_params` in card
+DAI ops (line 295) — invoked on every PCM open/hw_params for
+playback/capture.
 
 ### Step 5.3: Callees
-**Record:** `unregister_dtl()`, `unregister_slb_shadow()`,
-`unregister_vpa()` → `plpar_hcall_norets(H_REGISTER_VPA, ...)`. Also
-`xive_teardown_cpu()` / `xics_kexec_teardown_cpu()` (unchanged, run
-regardless of `crash_shutdown`).
+**Record:** `snd_soc_dai_set_pll()` → `wm8904_set_fll()` →
+`fll_factors()` configures WM8904 FLL registers. `wm8904.c` does not
+validate Fout against 27 MHz; it can succeed in software while hardware
+is out of spec (Fvco computed up to ~147 MHz at 36.864 MHz Fout).
 
-### Step 5.4: Call chain / reachability
-**Record:** Triggered on kernel panic with kdump configured
-(`CONFIG_CRASH_DUMP`). Requires `FW_FEATURE_SPLPAR` (IBM LPAR). Not
-userspace-triggerable directly, but panic/kdump is a critical enterprise
-path on Power systems.
+### Step 5.4: Reachability
+**Record:** Userspace opens PCM stream on imx8mp Hummingboard Pulse (and
+related boards) with WM8904 → `hw_params` → PLL programmed. WM8904
+advertises `SNDRV_PCM_FMTBIT_S24_LE` and rates up to 96 kHz — the broken
+path is reachable from normal audio use.
 
-### Step 5.5: Similar patterns
-**Record:** `pseries_cpu_offline_self()` in `hotplug-cpu.c:73-74` always
-calls `unregister_slb_shadow()` and `unregister_vpa()` — confirming
-unregister is normal/expected. Only crash path was exempted.
-
----
-
-## PHASE 6: CROSS-REFERENCING AGAINST LOCAL TREE
-
-### Step 6.1: Does buggy code exist?
-**Record:** **YES.** Current `kexec.c:28`:
-
-```28:28:arch/powerpc/platforms/pseries/kexec.c
-        if (firmware_has_feature(FW_FEATURE_SPLPAR) && !crash_shutdown)
-{
-```
-
-Bug present since at least v5.4 in this repository; long-standing.
-
-### Step 6.2: Backport complications
-**Record:** **Clean apply expected.** Single condition change and
-comment update; no structural differences between v6.18 and current HEAD
-in this file.
-
-### Step 6.3: Related fixes already present?
-**Record:** No equivalent fix found. `git log --grep="Ensure vpa"`
-returns nothing. Fix not yet applied to 6.18.44.
+### Step 5.5: Similar Patterns
+**Record:** Other codecs on the same driver (WM8962, WM8994, NAU8822)
+keep default 384; only WM8904 needs the lower ratio — consistent with
+codec-specific hardware limits.
 
 ---
 
-## PHASE 7: SUBSYSTEM AND MAINTAINER CONTEXT
+## Phase 6: Cross-Reference Against Local Tree (6.18.43)
 
-### Step 7.1: Subsystem criticality
-**Record:** `arch/powerpc/platforms/pseries/` — **IMPORTANT** (IBM Power
-LPAR platform code). kdump/crash recovery is critical for enterprise
-deployments.
+### Step 6.1: Buggy Code Present?
+**Record:** **YES.** Local tree is `v6.18.43` (stable/linux-6.18.y).
+Buggy hardcoded `384` at line 225; WM8904 config at lines 833–838
+without ratio override. `imx8mp-hummingboard-pulse-codec.dtsi` uses
+`fsl,imx-audio-wm8904`. Multiple DTBs build from that DTSI.
 
-### Step 7.2: Subsystem activity
-**Record:** Active maintenance in 6.18.y (recent pseries fixes for papr-
-hvpipe, MSI, cmm). Platform is actively supported.
+### Step 6.2: Backport Complications
+**Record:** Clean apply expected — patch matches current file structure
+(index `44083d15f6e5` in submission aligns with local tree).
+
+### Step 6.3: Related Fixes Already Present?
+**Record:** `pll_ratio_s24` not in tree; fix not yet applied.
 
 ---
 
-## PHASE 8: IMPACT AND RISK ASSESSMENT
+## Phase 7: Subsystem Context
 
-### Step 8.1: Who is affected
-**Record:** **Platform-specific, config-specific:** IBM Power LPAR
-(`FW_FEATURE_SPLPAR`) systems with kdump (`CONFIG_CRASH_DUMP` /
-`CONFIG_KEXEC_CORE`). Especially visible with nested KVM (L2 guests),
-but underlying stale-VPA race exists whenever kdump runs after panic.
+### Step 7.1: Subsystem and Criticality
+**Record:** **ASoC / sound/soc/fsl** — IMPORTANT for i.MX embedded
+platforms; not core kernel, but affects real shipped hardware.
 
-### Step 8.2: Trigger conditions
-**Record:** Kernel panic → kdump kernel boot sequence. Not every boot;
-but any panic on affected systems. Requires SPLPAR + kdump. Unprivileged
-users can trigger panic indirectly, but this is primarily a reliability
-fix for crash recovery, not a direct syscall security issue.
+### Step 7.2: Subsystem Activity
+**Record:** Actively maintained; WM8904 Hummingboard support added in
+6.18 cycle.
 
-### Step 8.3: Failure mode severity
-**Record:** Hypervisor reads/writes stale VPA/SLB/DTL memory → VPA
-corruption, hypervisor asserts, potential kdump boot interference.
-**Severity: HIGH** (crash-recovery corruption; can affect guest VMs on
-same LPAR).
+---
 
-### Step 8.4: Risk-benefit
+## Phase 8: Impact and Risk Assessment
+
+### Step 8.1: Who Is Affected
+**Record:** Users of i.MX boards with `fsl,imx-audio-wm8904` (SolidRun
+imx8mp Hummingboard Pulse/Pro/Mate/Ripple variants).
+CONFIG_SND_SOC_FSL_ASOC_CARD + WM8904.
+
+### Step 8.2: Trigger Conditions
+**Record:** PCM stream with `SNDRV_PCM_FORMAT_S24_LE` at sample rates
+where `rate × 384 > 27 MHz` — notably 88.2 kHz and 96 kHz. Common for
+hi-res audio. Unprivileged users via standard ALSA/PulseAudio/PipeWire.
+
+### Step 8.3: Failure Severity
+**Record:** **MEDIUM-HIGH** for affected hardware — broken or unreliable
+audio (FLL out of spec), not a kernel crash. Real functional defect on
+supported boards.
+
+### Step 8.4: Risk-Benefit
 **Record:**
-- **Benefit:** HIGH for Power LPAR + kdump users; closes a real
-  hypervisor/kernel race during crash recovery.
-- **Risk:** LOW — minimal diff, reuses existing unregister path;
-  failures are non-fatal warnings.
-- **Ratio:** Strongly favors backport.
+- **Benefit:** Restores correct audio at high sample rates on WM8904
+  boards already supported in 6.18.y.
+- **Risk:** Very low — 7-line change, WM8904-only override, defaults
+  preserved for other codecs.
+- **Ratio:** Strong benefit, minimal risk.
 
 ---
 
-## PHASE 9: FINAL SYNTHESIS
+## Phase 9: Final Synthesis
 
-### Step 9.1: Evidence summary
+### Step 9.1: Evidence Summary
 
 **FOR backport:**
-- Real bug with IBM reporter and `Tested-by`
-- Race causes hypervisor VPA corruption during kdump
-- Long-standing bug (since 2007); present in 6.18.44
-- Tiny, surgical, obviously correct fix
-- Maintainer signed off
-- Prior analogous kexec/VPA fix (2011) was stable material
-- kdump reliability is critical for enterprise Power
+- Real hardware bug on boards in this tree
+- Vendor-authored, maintainer-applied fix
+- Small, self-contained, standalone within series
+- Buggy code confirmed present in 6.18.43
+- Hardware quirk / workaround category (stable-appropriate)
+- Affects user-visible audio functionality
 
 **AGAINST backport:**
-- Platform-limited (powerpc/pseries SPLPAR only)
-- Making hypervisor calls during crash was originally avoided
-  intentionally
-- Lore review thread not accessible for independent verification
+- Not a crash/security/data-corruption issue
+- Limited to one machine driver + one codec variant
+- WM8904 fsl-asoc-card support is relatively new in 6.18
 
-**Unresolved:** Full mailing-list review thread not retrieved (lore bot
-protection).
+**Unresolved:** No independent Tested-by; no explicit stable nomination
+in mailing list.
 
-### Step 9.2: Stable rules checklist
-1. Obviously correct and tested? **PASS** — logic is sound; `Tested-by`
-   from reporter.
-2. Fixes a real bug affecting users? **PASS** — IBM-reported
-   kdump/hypervisor VPA corruption.
-3. Important issue? **PASS** — memory corruption in crash-recovery path;
-   hypervisor asserts; guest impact.
-4. Small and contained? **PASS** — one file, one condition, comment
-   update.
-5. No new features or APIs? **PASS**.
-6. Can apply to local tree? **PASS** — buggy code identical; clean apply
+### Step 9.2: Stable Rules Checklist
+1. Obviously correct and tested? **PASS** — math verified; NXP + Mark
+   Brown; identified in board testing.
+2. Fixes real bug affecting users? **PASS** — broken hi-rate S24_LE
+   audio on WM8904 imx boards.
+3. Important issue? **PASS (MEDIUM)** — functional hardware defect, not
+   crash-level.
+4. Small and contained? **PASS** — 7 lines, one file.
+5. No new features/APIs? **PASS** — internal driver parameter only.
+6. Can apply to local tree? **PASS** — code exists, clean apply
    expected.
 
-### Step 9.3: Exception categories
-**Record:** None (standard bug fix, not device ID/quirk/DT/build/doc).
+### Step 9.3: Exception Category
+**Record:** Hardware quirk/workaround — codec-specific clock ratio
+correction.
 
-### Step 9.4: Problem summary for stable users
-On IBM Power LPAR systems with kdump enabled, a kernel panic leaves
-VPA/SLB-shadow/DTL areas registered with the hypervisor. While the kdump
-kernel boots and reallocates that memory, the hypervisor can still
-access the old addresses, causing VPA corruption. This was observed as
-hypervisor asserts during L2-KVM vCPU dispatch. The fix runs the same
-unregister calls during crash shutdown that already run on normal kexec,
-closing the race window.
+### Step 9.4: Decision Rationale
+For **linux-6.18.y (6.18.43)**: the buggy WM8904 PLL configuration is
+present, real imx8mp Hummingboard hardware is supported, and the fix is
+minimal and codec-specific. This is appropriate stable material as a
+hardware correctness fix for boards already enabled in this tree.
 
 ---
 
 ## Verification
 
-- **[Phase 1]** Parsed subject, tags (`Tested-by`, `Link`, maintainer
-  SOB); no `Fixes:` tag.
-- **[Phase 2]** Read diff: removes `&& !crash_shutdown`, updates comment
-  in `pseries_kexec_cpu_down()`.
-- **[Phase 2]** Read current `arch/powerpc/platforms/pseries/kexec.c` —
-  buggy `!crash_shutdown` guard at line 28.
-- **[Phase 3]** `git blame v5.4`: `!crash_shutdown` since dce623e0827e8
-  (2007); comment from 499dcd41378eba (2018).
-- **[Phase 3]** `git show 499dcd41378eba`: Piggin expanded “XXX” comment
-  questioning crash skip.
-- **[Phase 3]** `git show b1301797f30370`: 2011 kexec VPA unregister fix
-  had `Cc: stable@kernel.org`.
-- **[Phase 3]** Verified buggy code at tags v5.4, v5.10, v5.15, v6.1,
-  v6.6, v6.12, v6.18.
-- **[Phase 4]** `b4 dig -c HEAD`: unrelated match only.
-- **[Phase 4]** `b4 shazam`: patch not found on lore.
-- **[Phase 4]** `WebFetch` lore URL: blocked (bot protection).
-  **UNVERIFIED:** full review thread.
-- **[Phase 5]** `grep kexec_cpu_down`: callers in `crash.c`
-  (crash_shutdown=1) and `core_64.c` (crash_shutdown=0).
-- **[Phase 5]** Read `plpar_wrappers.h`: unregister_* are inline
-  hypervisor calls.
-- **[Phase 5]** Read `hotplug-cpu.c:73-74`: always unregisters on CPU
-  offline.
-- **[Phase 6]** `git describe HEAD` / `make kernelversion`: tree is
-  6.18.44.
-- **[Phase 6]** Buggy code confirmed present; fix not yet applied.
-- **[Phase 6]** `git show` across tags: identical `!crash_shutdown`
-  guard — clean backport expected.
-- **[Phase 8]** Failure mode: hypervisor VPA corruption during kdump —
-  severity HIGH for affected systems.
+- [Phase 1] Parsed subject, tags, body from provided commit message and
+  mbox
+- [Phase 2] Diff analysis: 7 lines in `fsl-asoc-card.c`, 2 functions
+  modified
+- [Phase 3] `git describe HEAD` → v6.18.43; `git blame` line 225 shows
+  hardcoded 384
+- [Phase 3] `git log stable/linux-6.18.y -S "imx-audio-wm8904"` →
+  present since 6.18-rc7
+- [Phase 3] Confirmed patch 5/5 is standalone within series (mbox cover
+  letter)
+- [Phase 4] `b4 mbox` → 7-message thread; Mark Brown applied series
+  2026-04-30
+- [Phase 4] No stable/CC/stable or NAK in mbox thread
+- [Phase 4] UNVERIFIED: lore stable list search (bot-blocked)
+- [Phase 5] `fsl_asoc_card_hw_params` called from `.hw_params` DAI ops
+  (line 295)
+- [Phase 5] `wm8904_set_fll`/`fll_factors` reviewed — no 27 MHz Fout
+  validation in driver
+- [Phase 5] WM8904 supports S24_LE and up to 96 kHz (`wm8904.c` lines
+  2023–2026)
+- [Phase 6] Buggy code confirmed at line 225; WM8904 probe at lines
+  833–838
+- [Phase 6] `imx8mp-hummingboard-pulse-codec.dtsi` uses `fsl,imx-audio-
+  wm8904`
+- [Phase 6] Multiple DTBs include pulse codec DTSI (Makefile lines 211,
+  pro/mate/ripple)
+- [Phase 8] 96 kHz × 384 = 36.864 MHz > 27 MHz; 96 kHz × 192 = 18.432
+  MHz < 27 MHz
+- [Phase 8] 88.2 kHz × 384 = 33.87 MHz also exceeds limit
 
-**YES**
+**YES**The background git history checks are done. They confirm:
 
- arch/powerpc/platforms/pseries/kexec.c | 13 ++++++++-----
- 1 file changed, 8 insertions(+), 5 deletions(-)
+- **`imx-audio-wm8904` support is in the 6.18.y tree** (present since at
+  least Linux 6.18-rc7), including the Hummingboard Pulse DTS and the
+  hardcoded `384` PLL ratio.
+- **The fix is not in this tree yet** — `pll_ratio_s24` does not appear
+  on master or stable.
+- **History is flattened** in this checkout, so individual introduction
+  commits are hard to isolate, but the buggy WM8904 path is clearly
+  present in 6.18.43.
 
-diff --git a/arch/powerpc/platforms/pseries/kexec.c b/arch/powerpc/platforms/pseries/kexec.c
-index 431be156ca9bb..29f7c97ff1932 100644
---- a/arch/powerpc/platforms/pseries/kexec.c
-+++ b/arch/powerpc/platforms/pseries/kexec.c
-@@ -20,12 +20,15 @@
- void pseries_kexec_cpu_down(int crash_shutdown, int secondary)
- {
- 	/*
--	 * Don't risk a hypervisor call if we're crashing
--	 * XXX: Why? The hypervisor is not crashing. It might be better
--	 * to at least attempt unregister to avoid the hypervisor stepping
--	 * on our memory.
-+	 * Ensure vpa/slb_shadow/dtl cleanup even while we are crashing.
-+	 * Why? The hypervisor is not crashing so at least attempt unregister to
-+	 * avoid the hypervisor stepping on our memory. If hypervisor or kexec
-+	 * kernel steps on the old memory allocated to these areas before the
-+	 * new kexec-kernel happens to allocate and register new areas,
-+	 * the hypervisor will see invalid content which may cause
-+	 * unexpected behavior.
- 	 */
--	if (firmware_has_feature(FW_FEATURE_SPLPAR) && !crash_shutdown) {
-+	if (firmware_has_feature(FW_FEATURE_SPLPAR)) {
- 		int ret;
- 		int cpu = smp_processor_id();
- 		int hwcpu = hard_smp_processor_id();
+That supports the earlier **YES** verdict: this is a small, standalone
+hardware fix for boards already supported in linux-6.18.y.
+
+ sound/soc/fsl/fsl-asoc-card.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/sound/soc/fsl/fsl-asoc-card.c b/sound/soc/fsl/fsl-asoc-card.c
+index 71113886e494b..dcf2e495ad19f 100644
+--- a/sound/soc/fsl/fsl-asoc-card.c
++++ b/sound/soc/fsl/fsl-asoc-card.c
+@@ -48,6 +48,9 @@
+  * @mclk_id: MCLK (or main clock) id for set_sysclk()
+  * @fll_id: FLL (or secordary clock) id for set_sysclk()
+  * @pll_id: PLL id for set_pll()
++ * @pll_ratio_s24: PLL output ratio for S24_LE format (PLL_freq = sample_rate × ratio)
++ *                 Default is 384, but some codecs (e.g., WM8904) require lower values
++ *                 to stay within PLL frequency limits
+  */
+ struct codec_priv {
+ 	struct clk *mclk;
+@@ -56,6 +59,7 @@ struct codec_priv {
+ 	u32 mclk_id;
+ 	int fll_id;
+ 	int pll_id;
++	int pll_ratio_s24;
+ };
+ 
+ /**
+@@ -222,7 +226,7 @@ static int fsl_asoc_card_hw_params(struct snd_pcm_substream *substream,
+ 
+ 		if (codec_priv->pll_id >= 0 && codec_priv->fll_id >= 0) {
+ 			if (priv->sample_format == SNDRV_PCM_FORMAT_S24_LE)
+-				pll_out = priv->sample_rate * 384;
++				pll_out = priv->sample_rate * codec_priv->pll_ratio_s24;
+ 			else
+ 				pll_out = priv->sample_rate * 256;
+ 
+@@ -742,6 +746,7 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
+ 	for (codec_idx = 0; codec_idx < 2; codec_idx++) {
+ 		priv->codec_priv[codec_idx].fll_id = -1;
+ 		priv->codec_priv[codec_idx].pll_id = -1;
++		priv->codec_priv[codec_idx].pll_ratio_s24 = 384;
+ 	}
+ 
+ 	/* Diversify the card configurations */
+@@ -835,6 +840,7 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
+ 		priv->codec_priv[0].mclk_id = WM8904_FLL_MCLK;
+ 		priv->codec_priv[0].fll_id = WM8904_CLK_FLL;
+ 		priv->codec_priv[0].pll_id = WM8904_FLL_MCLK;
++		priv->codec_priv[0].pll_ratio_s24 = 192;
+ 		priv->dai_fmt |= SND_SOC_DAIFMT_CBP_CFP;
+ 	} else if (of_device_is_compatible(np, "fsl,imx-audio-spdif")) {
+ 		ret = fsl_asoc_card_spdif_init(codec_np, cpu_np, codec_dai_name, priv);
 -- 
 2.53.0
 
