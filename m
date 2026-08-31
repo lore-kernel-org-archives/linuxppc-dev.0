@@ -1,66 +1,64 @@
-Return-Path: <linuxppc-dev+bounces-26294-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26295-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 60C7AC624C6
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2026 13:44:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0B6AEC624C6
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2026 13:44:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hYVZy4bmNz2yCv;
-	Mon, 31 Aug 2026 23:44:10 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hYVbX1Tw8z2yCv;
+	Mon, 31 Aug 2026 23:44:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788183850;
-	cv=none; b=JHFsz0wq/gm1njO1atX6s13B0ewyffo+0lwYFe9XMilGCnv//uowwWgHk1MNy3r14PA1PTZ6/i6ceRpE353oZmvfJOQIQ+/0V7gTJfdaMISKBgz0xkUyjOKFsoYhg1NDVLuYFC//uBYWSnXzR1u/Yeb68RfD0SgmFM8cCo2kyypbOQU2+Y1srzFaK7lk/Eb82oNnK2BvtTcqi6I07rWzlT7aUZJXx2b58IL/oDAcSGvX+CTKE6qZxd9ZZ2gCi1rN99IvDUPhW/wAD+FTOgUi/IDfS7nx0+fzM7PnoIgSNqeQPTSgIb3EoZ09+rY0xvy/2rOPurDr81TeabMiNvgo1g==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788183880;
+	cv=none; b=MuuhOLVBS/39K0y02rN7D1w+97wB5spVGvpdb8ZNDY79A+F+LW1Hhna7ViE5J2LpFVI/l59qb3/lkvY/pVdcte4jYFu1SOYa1vBYpoptI0iEdkLn3xsNQGj//CY8dPbda++SEk1bYg2oNGi7YzmvjrUmD4jXPM3lJuwEp8bMcKV3QHp/zm0MWYYlzKCb7LVKDAXAFMs4DhZfLmZKP/M9dcR+ALSwwZN8GWb6MocyLRDoRXUwNG3UHCJYXrvZsNnBairFf6UoJXRxCXa2gNerwdsylUDndMp2c1ROpTkMkJRQYR3DyocfYrqy1H4iP/43DcvecxQGaYZgQjirZw6jKA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788183850; c=relaxed/relaxed;
-	bh=5ZSYxAxyXIXMLA4+TJmzL2ZvISOyC00ADA5E9FDWHxQ=;
+	t=1788183880; c=relaxed/relaxed;
+	bh=J2Jw5sWgvHqjZIXUDjEAfq88hH8ePVNKIO0/CdBgR+M=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=k15Wx17+/Kadto+N7jV6KZBLQKmCozbdh0pCzhA7sYpbhCHh7b+CgelB70BfcLPUo57T/QbdWTYinQ6kaZ8WsmKKjqlzEfA22PjSa2nfEnbydGmT3glnUgPKQ4yG2+awflhuY84ls2W+n6gKki0YwVDMBSGjCrSHmrffK6CfvW6K/yFgtKZr72PLznOEASlMqkTBYzXIbXxns72i4H9EPEHzIgtCccg3mDL6NwqKxODocHmQWihaLkeUv3JoUvRt5L85t3yAvGQgRXSBsF4ioBDJFfbBSZcwLU6eC+6cpfTkiPK9IBH9EvCZFa3dg9ALFYmtYgze+X5/wqzgbcFWeQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TBJqPGmz; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version:Content-Type; b=aqJLbBYh8qRUSg1wPnCFeueZKgsnlySxg6+V0bHZAFwfS6avn9TxkUFlH9BGg/qe9xKfcpAAR2hGIfEC3pnUJf78hoMDf9A/x3/hFqQqFgAwolY9plBskUU091xkePB20v7xGAj66I/fyNzg4+ZANWgRMkwsxhaEeQDYmnEOFVbpOosEuiab5jr0e1Zx4lYCyPsl6dm7lSJVBScdR0qwXk9/s34i6NBjGTACwHBdvPiCRClsNMOgtXR9N/y8HQnZh2v2j20mSmKxQEBvHafhBUlMYpT8m24CdQhfP6h4EbfO5mBgaZkGu3C438qrvn01+ElHwVONzWQoHX4obZg0xw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HFQdH1yM; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TBJqPGmz;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HFQdH1yM;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
 Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hYVZx4cNWz2yCt
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Aug 2026 23:44:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hYVbV6pQfz2y2J
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Aug 2026 23:44:38 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 2C095602C5;
-	Mon, 31 Aug 2026 13:44:07 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 777681F00ADE;
-	Mon, 31 Aug 2026 13:44:05 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 067B76025F;
+	Mon, 31 Aug 2026 13:44:37 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 75FEF1F00A3D;
+	Mon, 31 Aug 2026 13:44:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788183846;
-	bh=5ZSYxAxyXIXMLA4+TJmzL2ZvISOyC00ADA5E9FDWHxQ=;
+	s=k20260515; t=1788183876;
+	bh=J2Jw5sWgvHqjZIXUDjEAfq88hH8ePVNKIO0/CdBgR+M=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=TBJqPGmzAffSjVBKMbUqIx2pC1SCHbubjAB+XkX9FUF4r2SOpm1Roj2gSGY2iE0v6
-	 DgMNO7flNIJN4J5iVPwk9sIINs6Uw1LXKY0uARAeS6rufJlv6UsE6t3ISAEg3Xi+c2
-	 JeKa2ePk+V/y0XVpmtjb2gIAG7QI0vHFBxMoUtDk24vRPDvz0QEt+4bAWtwd7QfEds
-	 bYKSCYgDDqeTjMy0GeNONMtrKmMuNclV7DuHqRJe+7dUXLXG/HKGpsc2mO7HkGv7HJ
-	 4v53s5Itz/oSX5ZnNpPv8HgmatItvcFNQwc4C1J4HkS7Lqn75iXNWYcMtZWZ56lTh1
-	 Cp4NB/Q6L3GjA==
+	b=HFQdH1yMQyq4n128Db5+CAniGv2huDq54zGRQpsncq+Zqt4os0kItfg7znKoFZfZ6
+	 ta/vz9YS/ywBhLP1POsTVG9lv6V5TPf9hddDhemaE2S2LXZzQmik8vu/7QHdE9fYer
+	 dc7GvRn6k9dUn4Hz9NvWSqytq7lz70JtsqTVVRDMeAMMIiGYmrDMPY8s0zYGxb10J9
+	 R2jUr5nLZa/GpIn3pODM29KPlEMj6PiTAfqqtmuUFfxLto6dquJ9zAxnUkMMouXet2
+	 b/8McsGPxA+rQb1zUPVZ4y5MxL004q9qjJPIjji4j36GIVStSCac+1bydARx/uLtez
+	 Gtchvv/91NvXw==
 From: Sasha Levin <sashal@kernel.org>
 To: patches@lists.linux.dev,
 	stable@vger.kernel.org
-Cc: Shengjiu Wang <shengjiu.wang@nxp.com>,
-	Mark Brown <broonie@kernel.org>,
+Cc: Thomas Zimmermann <tzimmermann@suse.de>,
+	Helge Deller <deller@gmx.de>,
 	Sasha Levin <sashal@kernel.org>,
-	shengjiu.wang@gmail.com,
-	Xiubo.Lee@gmail.com,
-	lgirdwood@gmail.com,
-	perex@perex.cz,
-	tiwai@suse.com,
-	linux-sound@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.18-6.12] ASoC: fsl-asoc-card: reduce WM8904 PLL ratio to meet frequency limit
-Date: Mon, 31 Aug 2026 09:26:07 -0400
-Message-ID: <20260831133314.4125787-339-sashal@kernel.org>
+	simona@ffwll.ch,
+	maddy@linux.ibm.com,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH AUTOSEL 6.18] fbdev: Wrap user-invoked calls to fb_set_var() in helper
+Date: Mon, 31 Aug 2026 09:26:24 -0400
+Message-ID: <20260831133314.4125787-356-sashal@kernel.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260831133314.4125787-1-sashal@kernel.org>
 References: <20260831133314.4125787-1-sashal@kernel.org>
@@ -77,390 +75,557 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 X-stable: review
 X-Patchwork-Hint: Ignore
 X-stable-base: Linux 6.18.48
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-From: Shengjiu Wang <shengjiu.wang@nxp.com>
+From: Thomas Zimmermann <tzimmermann@suse.de>
 
-[ Upstream commit 99b5316f08f390a5e1ea2239ecca8e2b4ef70ac6 ]
+[ Upstream commit 6f611e5e5f3327cf2e2daabe6ee5acac58cc784e ]
 
-WM8904 has a 27 MHz PLL frequency limit. The current S24_LE PLL ratio
-of 384 exceeds this at high sample rates (96 kHz × 384 = 36.864 MHz).
+Handle fbcon during display updates in fb_set_var_from_user(). Check
+with fbcon if the mode change is possible, update hardware state and
+finally update fbcon. Update all callers.
 
-Reduce the ratio to 192 for WM8904, keeping PLL within limits at all
-supported rates (96 kHz × 192 = 18.432 MHz).
+Only the FBIOPUT_VSCREENINFO ioctl currently does all steps. Other
+mode-changes callers in sysfs and driver code are missing fbcon-related
+steps.
 
-Add codec-specific pll_ratio_s24 field, default 384, override to 192
-for WM8904.
+With the new helper, ps3fb and sh_mobile_lcdcfb no longer maintain
+fbcon state themselves.
 
-Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
-Link: https://patch.msgid.link/20260429100028.2739711-6-shengjiu.wang@nxp.com
-Signed-off-by: Mark Brown <broonie@kernel.org>
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Signed-off-by: Helge Deller <deller@gmx.de>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
 
 LLM Generated explanations, may be completely bogus:
 
-## Phase 1: Commit Message Forensics
+# Stable Backport Analysis: `fbdev: Wrap user-invoked calls to
+fb_set_var() in helper`
 
-### Step 1.1: Subject Line
-**Record:** `[ASoC: fsl-asoc-card]` `[reduce]` — Lower WM8904 S24_LE PLL
-ratio so FLL output stays within the codec’s frequency limit.
-
-### Step 1.2: Commit Message Tags
-**Record:**
-- **Signed-off-by:** Shengjiu Wang `<shengjiu.wang@nxp.com>` (author,
-  NXP)
-- **Link:** https://patch.msgid.link/20260429100028.2739711-6-
-  shengjiu.wang@nxp.com
-- **Signed-off-by:** Mark Brown `<broonie@kernel.org>` (ASoC maintainer,
-  applied the series)
-- No Fixes:, Reported-by:, Tested-by:, Reviewed-by:, or Cc: stable tags
-- Part of **[PATCH v2 5/5]** in series “ASoC: fsl-asoc-card: Add some
-  improvements”
-
-### Step 1.3: Commit Body Analysis
-**Record:**
-- **Bug:** WM8904 FLL/PLL output is limited to 27 MHz. With the
-  hardcoded S24_LE ratio of 384, high sample rates exceed that (96 kHz ×
-  384 = 36.864 MHz).
-- **Symptom:** FLL programmed out of spec → audio fails or is unreliable
-  at high rates with S24_LE on WM8904 boards.
-- **Root cause:** `fsl-asoc-card.c` uses a single 384 multiplier for all
-  codecs with PLL enabled; WM8904 needs 192.
-- **Fix:** Add per-codec `pll_ratio_s24` (default 384), set 192 for
-  `fsl,imx-audio-wm8904`.
-
-### Step 1.4: Hidden Bug Fix Detection
-**Record:** Yes — despite “reduce ratio,” this is a hardware correctness
-fix (codec clock out of spec), not a cosmetic cleanup.
+**Local tree:** `v6.18.44` (6.18.y stable)
+**Commit under review:** `6f611e5e5f3327cf2e2daabe6ee5acac58cc784e` (not
+in HEAD; present as git object, applies cleanly)
 
 ---
 
-## Phase 2: Diff Analysis
+## PHASE 1: COMMIT MESSAGE FORENSICS
 
-### Step 2.1: Change Inventory
+### Step 1.1: Subject line
+**Record:** `[fbdev]` `[wrap/consolidate]` — Introduce
+`fb_set_var_from_user()` helper and route all user-invoked mode-change
+paths through it.
+
+### Step 1.2: Tags
 **Record:**
-- **File:** `sound/soc/fsl/fsl-asoc-card.c` (+7 / −1)
-- **Functions:** `fsl_asoc_card_hw_params()`, `fsl_asoc_card_probe()`
-- **Structs:** `codec_priv` (+1 field)
-- **Scope:** Single-file, surgical fix
+- **Signed-off-by:** Thomas Zimmermann `<tzimmermann@suse.de>` (author)
+- **Signed-off-by:** Helge Deller `<deller@gmx.de>` (fbdev maintainer)
+- No `Fixes:`, `Reported-by:`, `Cc: stable@vger.kernel.org`, `Link:`,
+  `Reviewed-by:`, `Tested-by:`, or `Acked-by:` tags
 
-### Step 2.2: Code Flow Changes
+Notable: maintainer sign-off; absence of stable tag is expected for
+manual review.
+
+### Step 1.3: Body analysis
 **Record:**
-- **Hunk 1 (struct):** Adds `pll_ratio_s24` to `codec_priv` with
-  documentation.
-- **Hunk 2 (`hw_params`):** `pll_out = sample_rate * 384` → `pll_out =
-  sample_rate * codec_priv->pll_ratio_s24` for S24_LE.
-- **Hunk 3 (`probe` init):** Default `pll_ratio_s24 = 384` for all
-  codecs.
-- **Hunk 4 (WM8904 branch):** Override to `pll_ratio_s24 = 192` for
-  `fsl,imx-audio-wm8904`.
+- **Bug described:** Only `FBIOPUT_VSCREENINFO` ioctl performs the full
+  fbcon sequence (`fbcon_modechange_possible` → `fb_set_var` →
+  `fbcon_update_vcs`). Sysfs mode-change paths and driver ioctl/reconfig
+  paths skip the `fbcon_modechange_possible` check.
+- **Symptom/failure mode:** Incomplete fbcon synchronization on mode
+  changes; missing validation that resolution is not smaller than
+  console font size.
+- **Version info:** None in message.
+- **Root cause:** Inconsistent fbcon handling across user-facing entry
+  points after the ioctl-only fix from 2022.
 
-**Before → After:** WM8904 at 96 kHz S24_LE requests 36.864 MHz FLL
-output → 18.432 MHz (within 27 MHz limit).
-
-### Step 2.3: Bug Mechanism
-**Record:**
-- **Category:** Hardware workaround / logic correctness (wrong clock
-  ratio for a specific codec).
-- **Mechanism:** Generic 384× ratio violates WM8904’s 27 MHz PLL limit
-  at rates above ~70 kHz with S24_LE (e.g. 88.2 kHz × 384 = 33.9 MHz, 96
-  kHz × 384 = 36.9 MHz).
-
-### Step 2.4: Fix Quality
-**Record:**
-- Minimal, codec-specific override; other codecs unchanged (default
-  384).
-- Low regression risk; only affects WM8904 machine configs using PLL
-  path.
-- NXP-authored, ASoC-maintainer-applied.
+### Step 1.4: Hidden bug fix detection
+**Record:** Yes — despite refactor-style wording, this completes a real
+correctness/safety gap. The original `fbcon_modechange_possible()`
+commit (`e64242caef18b`, 2022) explicitly warned that undersized
+resolutions cause character rendering to access memory outside the
+graphics region. That check was ioctl-only; sysfs and driver paths
+remained vulnerable.
 
 ---
 
-## Phase 3: Git History Investigation
+## PHASE 2: DIFF ANALYSIS
+
+### Step 2.1: Change inventory
+**Record:**
+| File | Change |
+|------|--------|
+| `fb_chrdev.c` | −5/+1 |
+| `fbcon.c` | −2 (remove exports) |
+| `fbmem.c` | +13 (new helper) |
+| `fbsysfs.c` | −3/+1 |
+| `ps3fb.c` | −4/+1 |
+| `sh_mobile_lcdcfb.c` | −4/+1 |
+| `include/linux/fb.h` | +2 |
+
+**Functions modified:** `do_fb_ioctl()`, `activate()`,
+`fb_set_var_from_user()` (new), `ps3fb_ioctl()`,
+`sh_mobile_fb_reconfig()`
+**Scope:** Small, multi-file but tightly focused consolidation.
+
+### Step 2.2: Code flow per hunk
+**Record:**
+1. **`fb_chrdev.c` / `FBIOPUT_VSCREENINFO`:** Three-step inline sequence
+   → single `fb_set_var_from_user()` call. Behavior unchanged.
+2. **`fbmem.c`:** New helper encapsulates the three-step sequence.
+3. **`fbsysfs.c` / `activate()`:** Before: `fb_set_var` +
+   `fbcon_update_vcs` (no validation). After: `fb_set_var_from_user`
+   (adds `fbcon_modechange_possible`).
+4. **`ps3fb.c`:** Same — gains validation via helper; drops direct
+   `fbcon.h` usage.
+5. **`sh_mobile_lcdcfb.c`:** Before: `fb_set_var` then separate
+   `fbcon_update_vcs`. After: single helper call with validation.
+6. **`fbcon.c`:** Removes `EXPORT_SYMBOL` / `EXPORT_SYMBOL_GPL` from
+   `fbcon_update_vcs` and `fbcon_modechange_possible`.
+
+### Step 2.3: Bug mechanism
+**Record:**
+- **Category:** Memory safety / logic correctness (OOB access prevention
+  + fbcon state consistency).
+- **Mechanism:** `fbcon_modechange_possible()` rejects resolutions where
+  font width/height exceeds effective `xres`/`yres` (with rotation).
+  Sysfs (`store_mode`, `store_rotate`, `store_virtual`, `store_bpp` via
+  `activate()`) and ps3fb/sh_mobile paths bypassed this check.
+  Undersized modes could proceed to `fb_set_var` and fbcon rendering,
+  risking out-of-bounds framebuffer access — the same failure mode
+  documented in `e64242caef18b`.
+
+### Step 2.4: Fix quality
+**Record:**
+- Fix is obviously correct: extracts ioctl’s already-proven three-step
+  pattern.
+- Minimal, no unrelated changes.
+- **Regression risk:** Low for in-tree code. Removing exports of
+  `fbcon_update_vcs` / `fbcon_modechange_possible` could affect out-of-
+  tree GPL modules; in-tree users (`ps3fb`, `sh_mobile_lcdcfb`) are
+  updated in the same patch. ps3fb/sh_mobile may now reject mode changes
+  that previously succeeded but were unsafe — intentional behavior
+  change.
+
+---
+
+## PHASE 3: GIT HISTORY INVESTIGATION
 
 ### Step 3.1: Blame
-**Record:** In this 6.18.43 tree, the hardcoded `384` at line 225 and
-WM8904 probe block at lines 833–838 are present. Stable history is
-flattened, but `imx-audio-wm8904` support is in the tree since at least
-Linux 6.18-rc7 (`ac3fd01e4c1ef`).
+**Record:**
+- `fb_chrdev.c:88-92`: Added in `588b35634a5aa` (Thomas Zimmermann,
+  2023) with full three-step sequence.
+- `fbsysfs.c:23-25`: `fb_set_var` since 2005; `fbcon_update_vcs` added
+  in `d88ca7e1a27eb` (2020, syzbot OOB fix); never gained
+  `fbcon_modechange_possible`.
+- **Bug introduced:** Gap since `e64242caef18b` (Jun 2022) when
+  validation was ioctl-only.
 
-### Step 3.2: Fixes: Tag
-**Record:** N/A — no Fixes: tag.
+### Step 3.2: Fixes tag
+**Record:** N/A — no `Fixes:` tag. Related fix `e64242caef18b` is in
+this tree (`git merge-base --is-ancestor` confirms).
 
-### Step 3.3: Related File History
-**Record:** Patch is **[5/5]** in a series; patches 1–4 cover ASRC DPCM,
-CS42888 constraints, and WM8960/WM8962 format limits — unrelated to this
-WM8904 PLL fix. This patch is self-contained.
+### Step 3.3: Related file history
+**Record:**
+- `e64242caef18b` — ioctl-only font-size validation (Cc: stable # v5.4+)
+- `d88ca7e1a27eb` — syzbot OOB in `vc_do_resize`, pulled
+  `fbcon_update_vcs` out of `fb_set_var`
+- Recent stable-relevant fbcon fixes in tree: OOB/null-ptr fixes
+  (`076b1aa65f77a`, `6617df8c24631`)
+- **Standalone:** Patch 1/4 of “Internalize fbcon” series; does not
+  require patches 2–4 to function.
 
-### Step 3.4: Author Context
-**Record:** Shengjiu Wang is an active NXP/i.MX audio contributor with
-multiple stable-worthy ASoC fixes in this tree.
+### Step 3.4: Author context
+**Record:** Thomas Zimmermann is active fbdev/fbcon maintainer. Helge
+Deller (co-author of original `fbcon_modechange_possible`) signed off.
 
 ### Step 3.5: Dependencies
-**Record:** No prerequisites. Applies standalone; only needs existing
-`fsl,imx-audio-wm8904` support and PLL code path already in 6.18.43.
+**Record:** No prerequisite commits required.
+`fbcon_modechange_possible` and `fbcon_update_vcs` exist in tree. `git
+apply --check` passes cleanly on 6.18.44.
 
 ---
 
-## Phase 4: Mailing List and External Research
+## PHASE 4: MAILING LIST AND EXTERNAL RESEARCH
 
-### Step 4.1: Original Discussion
-**Record:** `b4 mbox` retrieved thread from lore (7 messages). Patch v2
-5/5 submitted 2026-04-29. Mark Brown applied entire series to
-`broonie/sound` for-7.2 on 2026-04-30. This patch:
-https://git.kernel.org/broonie/sound/c/99b5316f08f3. No stable
-nomination or NAK found in thread.
+### Step 4.1: Original discussion
+**Record:**
+- **b4 dig URL:**
+  https://patch.msgid.link/20260527151551.258659-2-tzimmermann@suse.de
+- **Series revisions:** v1 (2026-05-20), v2 (2026-05-22), v3
+  (2026-05-27) — committed version is v3.
+- **WebFetch of lore:** Blocked by Anubis bot protection; could not read
+  full thread.
+- **From search snippets:** AI review noted ps3fb gains
+  `fbcon_modechange_possible` check as intentional behavioral change.
 
 ### Step 4.2: Reviewers
-**Record:** CC’d: broonie@kernel.org, lgirdwood@gmail.com,
-perex@perex.cz, tiwai@suse.com, linux-sound@vger.kernel.org. Mark Brown
-applied with “Thanks!”
+**Record:** CC list includes Helge Deller, Geert Uytterhoeven, Simona
+Vetter, airlied, linux-fbdev, dri-devel, linuxppc-dev — appropriate
+subsystem coverage.
 
-### Step 4.3: Bug Report
-**Record:** No external bug tracker. Issue found during NXP board
-testing per cover letter (“During testing several issues were
-identified”).
+### Step 4.3: Bug reports
+**Record:** No direct bug report in this commit. Underlying issue
+matches `e64242caef18b` rationale (OOB framebuffer access). Related
+syzbot fix `d88ca7e1a27eb` addressed a different fbcon/OOB path.
 
-### Step 4.4: Series Context
-**Record:** 5-patch series; this patch is independent of patches 1–4.
+### Step 4.4: Series context
+**Record:** Part of 4-patch “fbdev: Internalize fbcon” series. Patches
+2–4 handle `fb_blank_from_user` and unexporting fbcon symbols more
+broadly. This patch is self-contained for the `fb_set_var` path.
 
-### Step 4.5: Stable List History
-**Record:** UNVERIFIED — lore stable search blocked by bot protection;
-no stable discussion found in mbox thread.
+### Step 4.5: Stable list history
+**Record:** UNVERIFIED — could not search lore stable list due to fetch
+blocking. Original `e64242caef18b` was explicitly nominated `Cc:
+stable@vger.kernel.org # v5.4+`.
 
 ---
 
-## Phase 5: Code Semantic Analysis
+## PHASE 5: CODE SEMANTIC ANALYSIS
 
-### Step 5.1: Key Functions
-**Record:** `fsl_asoc_card_hw_params()`, `fsl_asoc_card_probe()`,
-`wm8904_set_fll()` (codec callee).
+### Step 5.1: Key functions
+**Record:** `fb_set_var_from_user()` (new), `activate()`,
+`do_fb_ioctl()`, `ps3fb_ioctl()`, `sh_mobile_fb_reconfig()`.
 
 ### Step 5.2: Callers
-**Record:** `fsl_asoc_card_hw_params` registered as `.hw_params` in card
-DAI ops (line 295) — invoked on every PCM open/hw_params for
-playback/capture.
+**Record:**
+- `activate()` ← `store_mode`, `store_bpp`, `store_rotate`,
+  `store_virtual` (sysfs, root-writable framebuffer attributes)
+- `do_fb_ioctl()` ← `FBIOPUT_VSCREENINFO` (userspace ioctl on
+  `/dev/fb*`)
+- `ps3fb_ioctl()` ← `PS3FB_IOCTL_SETMODE` (PS3 platform)
+- `sh_mobile_fb_reconfig()` ← `sh_mobile_lcdc_release()` on display
+  hotplug/reconfig (SH Mobile embedded)
 
 ### Step 5.3: Callees
-**Record:** `snd_soc_dai_set_pll()` → `wm8904_set_fll()` →
-`fll_factors()` configures WM8904 FLL registers. `wm8904.c` does not
-validate Fout against 27 MHz; it can succeed in software while hardware
-is out of spec (Fvco computed up to ~147 MHz at 36.864 MHz Fout).
+**Record:** `fbcon_modechange_possible()` → `fb_set_var()` →
+`fbcon_update_vcs()`. Requires `console_lock()` + `lock_fb_info()` at
+all call sites (already present).
 
 ### Step 5.4: Reachability
-**Record:** Userspace opens PCM stream on imx8mp Hummingboard Pulse (and
-related boards) with WM8904 → `hw_params` → PLL programmed. WM8904
-advertises `SNDRV_PCM_FMTBIT_S24_LE` and rates up to 96 kHz — the broken
-path is reachable from normal audio use.
-
-### Step 5.5: Similar Patterns
-**Record:** Other codecs on the same driver (WM8962, WM8994, NAU8822)
-keep default 384; only WM8904 needs the lower ratio — consistent with
-codec-specific hardware limits.
-
----
-
-## Phase 6: Cross-Reference Against Local Tree (6.18.43)
-
-### Step 6.1: Buggy Code Present?
-**Record:** **YES.** Local tree is `v6.18.43` (stable/linux-6.18.y).
-Buggy hardcoded `384` at line 225; WM8904 config at lines 833–838
-without ratio override. `imx8mp-hummingboard-pulse-codec.dtsi` uses
-`fsl,imx-audio-wm8904`. Multiple DTBs build from that DTSI.
-
-### Step 6.2: Backport Complications
-**Record:** Clean apply expected — patch matches current file structure
-(index `44083d15f6e5` in submission aligns with local tree).
-
-### Step 6.3: Related Fixes Already Present?
-**Record:** `pll_ratio_s24` not in tree; fix not yet applied.
-
----
-
-## Phase 7: Subsystem Context
-
-### Step 7.1: Subsystem and Criticality
-**Record:** **ASoC / sound/soc/fsl** — IMPORTANT for i.MX embedded
-platforms; not core kernel, but affects real shipped hardware.
-
-### Step 7.2: Subsystem Activity
-**Record:** Actively maintained; WM8904 Hummingboard support added in
-6.18 cycle.
-
----
-
-## Phase 8: Impact and Risk Assessment
-
-### Step 8.1: Who Is Affected
-**Record:** Users of i.MX boards with `fsl,imx-audio-wm8904` (SolidRun
-imx8mp Hummingboard Pulse/Pro/Mate/Ripple variants).
-CONFIG_SND_SOC_FSL_ASOC_CARD + WM8904.
-
-### Step 8.2: Trigger Conditions
-**Record:** PCM stream with `SNDRV_PCM_FORMAT_S24_LE` at sample rates
-where `rate × 384 > 27 MHz` — notably 88.2 kHz and 96 kHz. Common for
-hi-res audio. Unprivileged users via standard ALSA/PulseAudio/PipeWire.
-
-### Step 8.3: Failure Severity
-**Record:** **MEDIUM-HIGH** for affected hardware — broken or unreliable
-audio (FLL out of spec), not a kernel crash. Real functional defect on
-supported boards.
-
-### Step 8.4: Risk-Benefit
 **Record:**
-- **Benefit:** Restores correct audio at high sample rates on WM8904
-  boards already supported in 6.18.y.
-- **Risk:** Very low — 7-line change, WM8904-only override, defaults
-  preserved for other codecs.
-- **Ratio:** Strong benefit, minimal risk.
+- Sysfs paths: reachable by privileged users (root) on any system with
+  framebuffer sysfs nodes.
+- Ioctl: reachable by users with framebuffer device access.
+- ps3fb/sh_mobile: platform-specific but real hardware paths.
+- **Userspace triggerable:** Yes (sysfs/ioctl, privileged).
+
+### Step 5.5: Similar patterns
+**Record:** ioctl path in `fb_chrdev.c` already had the correct three-
+step pattern since 2022/2023. Sysfs and drivers were the inconsistent
+outliers.
 
 ---
 
-## Phase 9: Final Synthesis
+## PHASE 6: CROSS-REFERENCE AGAINST LOCAL TREE (6.18.44)
 
-### Step 9.1: Evidence Summary
+### Step 6.1: Buggy code present?
+**Record:** **Yes.** Current tree at `fbsysfs.c:23-25` calls
+`fb_set_var` + `fbcon_update_vcs` without `fbcon_modechange_possible`.
+Same gap in `ps3fb.c:833-835` and `sh_mobile_lcdcfb.c:1768-1772`. Commit
+`6f611e5` is **NOT** in HEAD.
+
+### Step 6.2: Backport complications
+**Record:** `git apply --check` on commit patch: **clean apply**. No
+structural conflicts observed.
+
+### Step 6.3: Related fixes already present?
+**Record:** `e64242caef18b` (ioctl-only validation) is in tree. No
+`fb_set_var_from_user` or equivalent consolidation. Gap remains open.
+
+---
+
+## PHASE 7: SUBSYSTEM CONTEXT
+
+### Step 7.1: Subsystem criticality
+**Record:** `drivers/video/fbdev` / `fbcon` — **IMPORTANT** (framebuffer
+console on servers, embedded, legacy platforms; less universal than
+mm/net but affects console stability).
+
+### Step 7.2: Activity
+**Record:** Actively maintained — recent fixes include UAF, null-ptr-
+deref, and OOB fixes in fbdev/fbcon on this branch.
+
+---
+
+## PHASE 8: IMPACT AND RISK ASSESSMENT
+
+### Step 8.1: Who is affected
+**Record:** Users of fbdev with active fbcon text console who change
+modes via sysfs or affected drivers (not only ioctl). Embedded (SH
+Mobile), PS3, and general framebuffer sysfs users.
+
+### Step 8.2: Trigger conditions
+**Record:** Set framebuffer mode/rotation/virtual resolution via sysfs
+to a value smaller than current console font dimensions while fbcon is
+active in text mode. Requires privileged access. Not everyday, but
+realistic for admin tooling and embedded hotplug scenarios.
+
+### Step 8.3: Failure mode severity
+**Record:** Out-of-bounds framebuffer memory access during console
+character rendering → potential kernel oops, memory corruption.
+**Severity: HIGH** (same class as the 2022 ioctl fix that went to
+stable).
+
+### Step 8.4: Risk-benefit
+**Record:**
+- **Benefit:** HIGH — closes a known validation gap left by incomplete
+  application of `e64242caef18b`.
+- **Risk:** LOW — ~37 lines, behavior matches existing ioctl path;
+  applies cleanly.
+- **Ratio:** Strong benefit, low risk.
+
+---
+
+## PHASE 9: FINAL SYNTHESIS
+
+### Step 9.1: Evidence summary
 
 **FOR backport:**
-- Real hardware bug on boards in this tree
-- Vendor-authored, maintainer-applied fix
-- Small, self-contained, standalone within series
-- Buggy code confirmed present in 6.18.43
-- Hardware quirk / workaround category (stable-appropriate)
-- Affects user-visible audio functionality
+- Fixes real OOB/corruption-class bug (documented in `e64242caef18b`)
+- Completes ioctl-only fix from 2022 across sysfs and driver paths
+- Small, surgical, applies cleanly to 6.18.44
+- Maintainer sign-off (Helge Deller)
+- Same bug class previously deemed stable-worthy (`Cc: stable` on
+  original)
+- Privileged userspace can trigger via sysfs
 
 **AGAINST backport:**
-- Not a crash/security/data-corruption issue
-- Limited to one machine driver + one codec variant
-- WM8904 fsl-asoc-card support is relatively new in 6.18
+- Adds new exported helper `fb_set_var_from_user` (kernel-internal, not
+  userspace API)
+- Removes exports of `fbcon_update_vcs` / `fbcon_modechange_possible`
+  (minor ABI concern for OOT modules)
+- Part of larger “internalize fbcon” series (but functionally
+  standalone)
+- No syzbot/user bug report for this specific gap
 
-**Unresolved:** No independent Tested-by; no explicit stable nomination
-in mailing list.
+**Unresolved:** Full lore review thread content (fetch blocked).
 
-### Step 9.2: Stable Rules Checklist
-1. Obviously correct and tested? **PASS** — math verified; NXP + Mark
-   Brown; identified in board testing.
-2. Fixes real bug affecting users? **PASS** — broken hi-rate S24_LE
-   audio on WM8904 imx boards.
-3. Important issue? **PASS (MEDIUM)** — functional hardware defect, not
-   crash-level.
-4. Small and contained? **PASS** — 7 lines, one file.
-5. No new features/APIs? **PASS** — internal driver parameter only.
-6. Can apply to local tree? **PASS** — code exists, clean apply
-   expected.
+### Step 9.2: Stable rules checklist
+1. Obviously correct and tested? **PASS** — logic mirrors proven ioctl
+   path; maintainer SOB.
+2. Fixes real bug affecting users? **PASS** — sysfs/driver paths lack
+   font-size validation.
+3. Important issue? **PASS** — OOB memory access / potential crash or
+   corruption (**HIGH**).
+4. Small and contained? **PASS** — 7 files, ~37 lines net.
+5. No new features/APIs? **PASS** (with nuance) — new kernel helper
+   export only; no userspace API; behavior fix not feature addition.
+6. Can apply to local tree? **PASS** — `git apply --check` succeeds.
 
-### Step 9.3: Exception Category
-**Record:** Hardware quirk/workaround — codec-specific clock ratio
-correction.
+### Step 9.3: Exception categories
+**Record:** None (not device ID, quirk, DT, build, or docs). Qualifies
+as a correctness/memory-safety bug fix.
 
-### Step 9.4: Decision Rationale
-For **linux-6.18.y (6.18.43)**: the buggy WM8904 PLL configuration is
-present, real imx8mp Hummingboard hardware is supported, and the fix is
-minimal and codec-specific. This is appropriate stable material as a
-hardware correctness fix for boards already enabled in this tree.
+### Step 9.4: Problem summary for stable users
+When the 2022 fix added `fbcon_modechange_possible()` to prevent console
+font rendering past framebuffer bounds, it was wired only into the
+`FBIOPUT_VSCREENINFO` ioctl. Sysfs mode/rotation/virtual-resolution
+writes and ps3fb/sh_mobile driver paths still allowed undersized modes,
+risking the same out-of-bounds access. This commit routes all user-
+invoked `fb_set_var` paths through one helper that performs validation,
+hardware update, and fbcon refresh — closing that gap on 6.18.y.
 
 ---
 
 ## Verification
 
-- [Phase 1] Parsed subject, tags, body from provided commit message and
-  mbox
-- [Phase 2] Diff analysis: 7 lines in `fsl-asoc-card.c`, 2 functions
-  modified
-- [Phase 3] `git describe HEAD` → v6.18.43; `git blame` line 225 shows
-  hardcoded 384
-- [Phase 3] `git log stable/linux-6.18.y -S "imx-audio-wm8904"` →
-  present since 6.18-rc7
-- [Phase 3] Confirmed patch 5/5 is standalone within series (mbox cover
-  letter)
-- [Phase 4] `b4 mbox` → 7-message thread; Mark Brown applied series
-  2026-04-30
-- [Phase 4] No stable/CC/stable or NAK in mbox thread
-- [Phase 4] UNVERIFIED: lore stable list search (bot-blocked)
-- [Phase 5] `fsl_asoc_card_hw_params` called from `.hw_params` DAI ops
-  (line 295)
-- [Phase 5] `wm8904_set_fll`/`fll_factors` reviewed — no 27 MHz Fout
-  validation in driver
-- [Phase 5] WM8904 supports S24_LE and up to 96 kHz (`wm8904.c` lines
-  2023–2026)
-- [Phase 6] Buggy code confirmed at line 225; WM8904 probe at lines
-  833–838
-- [Phase 6] `imx8mp-hummingboard-pulse-codec.dtsi` uses `fsl,imx-audio-
-  wm8904`
-- [Phase 6] Multiple DTBs include pulse codec DTSI (Makefile lines 211,
-  pro/mate/ripple)
-- [Phase 8] 96 kHz × 384 = 36.864 MHz > 27 MHz; 96 kHz × 192 = 18.432
-  MHz < 27 MHz
-- [Phase 8] 88.2 kHz × 384 = 33.87 MHz also exceeds limit
+- **[Phase 1]** Parsed subject, tags, body; no Reported-by/syzbot/Fixes
+  tags.
+- **[Phase 1]** Identified hidden bug fix via cross-reference to
+  `e64242caef18b` message.
+- **[Phase 2]** Diff inventory: 7 files, functions listed; bug = missing
+  `fbcon_modechange_possible` on non-ioctl paths.
+- **[Phase 3]** `git describe HEAD` → `v6.18.44`; `make kernelversion` →
+  `6.18.44`.
+- **[Phase 3]** `git blame` on `fb_chrdev.c:86-92` and
+  `fbsysfs.c:16-26`.
+- **[Phase 3]** `git show e64242caef18b` — original OOB rationale and
+  ioctl-only placement confirmed.
+- **[Phase 3]** `git merge-base --is-ancestor e64242caef18b HEAD` → in
+  tree.
+- **[Phase 3]** `git merge-base --is-ancestor 6f611e5 HEAD` → NOT in
+  tree.
+- **[Phase 3]** `git log -S fbcon_modechange_possible` — introduced
+  `e64242caef18b`, ioctl placement `588b35634a5aa`.
+- **[Phase 4]** `b4 dig -c 6f611e5` → lore URL found; v1/v2/v3 revisions
+  listed.
+- **[Phase 4]** `b4 dig -w` → CC list with Deller, Geert, linux-fbdev,
+  dri-devel.
+- **[Phase 4]** WebFetch lore URL → blocked (Anubis); thread content
+  UNVERIFIED.
+- **[Phase 5]** `grep` callers: `activate()` used by `store_mode`,
+  `store_bpp`, `store_rotate`, `store_virtual`.
+- **[Phase 5]** `grep` for `fbcon_update_vcs` /
+  `fbcon_modechange_possible` — only fbdev core + ps3fb + sh_mobile.
+- **[Phase 6]** Read current `fbsysfs.c`, `fb_chrdev.c`, `ps3fb.c`,
+  `sh_mobile_lcdcfb.c` — buggy pattern confirmed.
+- **[Phase 6]** `git show 6f611e5 | git apply --check` → clean apply.
+- **[Phase 6]** `grep fb_set_var_from_user` → not in tree.
+- **[Phase 8]** Failure mode from `e64242caef18b`: OOB graphics memory
+  access; severity HIGH.
 
-**YES**The background git history checks are done. They confirm:
+**YES****Verdict for 6.18.44:** **YES** — backport this commit.
 
-- **`imx-audio-wm8904` support is in the 6.18.y tree** (present since at
-  least Linux 6.18-rc7), including the Hummingboard Pulse DTS and the
-  hardcoded `384` PLL ratio.
-- **The fix is not in this tree yet** — `pll_ratio_s24` does not appear
-  on master or stable.
-- **History is flattened** in this checkout, so individual introduction
-  commits are hard to isolate, but the buggy WM8904 path is clearly
-  present in 6.18.43.
+It closes a real gap left by the 2022 ioctl-only
+`fbcon_modechange_possible()` fix: sysfs mode/rotation/virtual writes
+and ps3fb/sh_mobile paths could still set resolutions smaller than the
+console font, risking out-of-bounds framebuffer access. The patch is
+small (~37 lines), applies cleanly, and mirrors the ioctl path’s
+existing three-step sequence.
 
-That supports the earlier **YES** verdict: this is a small, standalone
-hardware fix for boards already supported in linux-6.18.y.
+**Commit:** `6f611e5e5f3327cf2e2daabe6ee5acac58cc784e` (not yet in this
+tree).
 
- sound/soc/fsl/fsl-asoc-card.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ drivers/video/fbdev/core/fb_chrdev.c   |  6 +-----
+ drivers/video/fbdev/core/fbcon.c       |  2 --
+ drivers/video/fbdev/core/fbmem.c       | 13 +++++++++++++
+ drivers/video/fbdev/core/fbsysfs.c     |  4 +---
+ drivers/video/fbdev/ps3fb.c            |  5 +----
+ drivers/video/fbdev/sh_mobile_lcdcfb.c |  5 +----
+ include/linux/fb.h                     |  2 ++
+ 7 files changed, 19 insertions(+), 18 deletions(-)
 
-diff --git a/sound/soc/fsl/fsl-asoc-card.c b/sound/soc/fsl/fsl-asoc-card.c
-index 71113886e494b..dcf2e495ad19f 100644
---- a/sound/soc/fsl/fsl-asoc-card.c
-+++ b/sound/soc/fsl/fsl-asoc-card.c
-@@ -48,6 +48,9 @@
-  * @mclk_id: MCLK (or main clock) id for set_sysclk()
-  * @fll_id: FLL (or secordary clock) id for set_sysclk()
-  * @pll_id: PLL id for set_pll()
-+ * @pll_ratio_s24: PLL output ratio for S24_LE format (PLL_freq = sample_rate × ratio)
-+ *                 Default is 384, but some codecs (e.g., WM8904) require lower values
-+ *                 to stay within PLL frequency limits
+diff --git a/drivers/video/fbdev/core/fb_chrdev.c b/drivers/video/fbdev/core/fb_chrdev.c
+index 4ebd16b7e3b8d..54f926fb411bd 100644
+--- a/drivers/video/fbdev/core/fb_chrdev.c
++++ b/drivers/video/fbdev/core/fb_chrdev.c
+@@ -85,11 +85,7 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
+ 		var.activate &= ~FB_ACTIVATE_KD_TEXT;
+ 		console_lock();
+ 		lock_fb_info(info);
+-		ret = fbcon_modechange_possible(info, &var);
+-		if (!ret)
+-			ret = fb_set_var(info, &var);
+-		if (!ret)
+-			fbcon_update_vcs(info, var.activate & FB_ACTIVATE_ALL);
++		ret = fb_set_var_from_user(info, &var);
+ 		unlock_fb_info(info);
+ 		console_unlock();
+ 		if (!ret && copy_to_user(argp, &var, sizeof(var)))
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index df1ecbf3f5d02..35210f2bb7b2b 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -2754,7 +2754,6 @@ void fbcon_update_vcs(struct fb_info *info, bool all)
+ 	else
+ 		fbcon_modechanged(info);
+ }
+-EXPORT_SYMBOL(fbcon_update_vcs);
+ 
+ /* let fbcon check if it supports a new screen resolution */
+ int fbcon_modechange_possible(struct fb_info *info, struct fb_var_screeninfo *var)
+@@ -2782,7 +2781,6 @@ int fbcon_modechange_possible(struct fb_info *info, struct fb_var_screeninfo *va
+ 
+ 	return 0;
+ }
+-EXPORT_SYMBOL_GPL(fbcon_modechange_possible);
+ 
+ int fbcon_mode_deleted(struct fb_info *info,
+ 		       struct fb_videomode *mode)
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index 30a2c0d47e5c8..1533d43a0a0c9 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -346,6 +346,19 @@ fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var)
+ }
+ EXPORT_SYMBOL(fb_set_var);
+ 
++int fb_set_var_from_user(struct fb_info *info, struct fb_var_screeninfo *var)
++{
++	int ret = fbcon_modechange_possible(info, var);
++
++	if (!ret)
++		ret = fb_set_var(info, var);
++	if (!ret)
++		fbcon_update_vcs(info, var->activate & FB_ACTIVATE_ALL);
++
++	return ret;
++}
++EXPORT_SYMBOL(fb_set_var_from_user);
++
+ static void fb_lcd_notify_blank(struct fb_info *info)
+ {
+ 	int power;
+diff --git a/drivers/video/fbdev/core/fbsysfs.c b/drivers/video/fbdev/core/fbsysfs.c
+index fe8bd33e64ab1..d363f94207c3e 100644
+--- a/drivers/video/fbdev/core/fbsysfs.c
++++ b/drivers/video/fbdev/core/fbsysfs.c
+@@ -20,9 +20,7 @@ static int activate(struct fb_info *fb_info, struct fb_var_screeninfo *var)
+ 	var->activate |= FB_ACTIVATE_FORCE;
+ 	console_lock();
+ 	lock_fb_info(fb_info);
+-	err = fb_set_var(fb_info, var);
+-	if (!err)
+-		fbcon_update_vcs(fb_info, var->activate & FB_ACTIVATE_ALL);
++	err = fb_set_var_from_user(fb_info, var);
+ 	unlock_fb_info(fb_info);
+ 	console_unlock();
+ 	if (err)
+diff --git a/drivers/video/fbdev/ps3fb.c b/drivers/video/fbdev/ps3fb.c
+index dbcda307f6a67..1376d19b19aeb 100644
+--- a/drivers/video/fbdev/ps3fb.c
++++ b/drivers/video/fbdev/ps3fb.c
+@@ -29,7 +29,6 @@
+ #include <linux/freezer.h>
+ #include <linux/uaccess.h>
+ #include <linux/fb.h>
+-#include <linux/fbcon.h>
+ #include <linux/init.h>
+ 
+ #include <asm/cell-regs.h>
+@@ -830,9 +829,7 @@ static int ps3fb_ioctl(struct fb_info *info, unsigned int cmd,
+ 				/* Force, in case only special bits changed */
+ 				var.activate |= FB_ACTIVATE_FORCE;
+ 				par->new_mode_id = val;
+-				retval = fb_set_var(info, &var);
+-				if (!retval)
+-					fbcon_update_vcs(info, var.activate & FB_ACTIVATE_ALL);
++				retval = fb_set_var_from_user(info, &var);
+ 				console_unlock();
+ 			}
+ 			break;
+diff --git a/drivers/video/fbdev/sh_mobile_lcdcfb.c b/drivers/video/fbdev/sh_mobile_lcdcfb.c
+index dd950e4ab5ceb..6038f217ab427 100644
+--- a/drivers/video/fbdev/sh_mobile_lcdcfb.c
++++ b/drivers/video/fbdev/sh_mobile_lcdcfb.c
+@@ -15,7 +15,6 @@
+ #include <linux/ctype.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/delay.h>
+-#include <linux/fbcon.h>
+ #include <linux/init.h>
+ #include <linux/interrupt.h>
+ #include <linux/ioctl.h>
+@@ -1765,11 +1764,9 @@ static void sh_mobile_fb_reconfig(struct fb_info *info)
+ 	var.height = ch->display.height;
+ 	var.activate = FB_ACTIVATE_NOW;
+ 
+-	if (fb_set_var(info, &var) < 0)
++	if (fb_set_var_from_user(info, &var) < 0)
+ 		/* Couldn't reconfigure, hopefully, can continue as before */
+ 		return;
+-
+-	fbcon_update_vcs(info, true);
+ }
+ 
+ /*
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index da2fdabd18cb3..f622f5f520cf0 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -541,6 +541,8 @@ extern int fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var);
+ extern int fb_pan_display(struct fb_info *info, struct fb_var_screeninfo *var);
+ extern int fb_blank(struct fb_info *info, int blank);
+ 
++int fb_set_var_from_user(struct fb_info *info, struct fb_var_screeninfo *var);
++
+ /*
+  * Helpers for framebuffers in I/O memory
   */
- struct codec_priv {
- 	struct clk *mclk;
-@@ -56,6 +59,7 @@ struct codec_priv {
- 	u32 mclk_id;
- 	int fll_id;
- 	int pll_id;
-+	int pll_ratio_s24;
- };
- 
- /**
-@@ -222,7 +226,7 @@ static int fsl_asoc_card_hw_params(struct snd_pcm_substream *substream,
- 
- 		if (codec_priv->pll_id >= 0 && codec_priv->fll_id >= 0) {
- 			if (priv->sample_format == SNDRV_PCM_FORMAT_S24_LE)
--				pll_out = priv->sample_rate * 384;
-+				pll_out = priv->sample_rate * codec_priv->pll_ratio_s24;
- 			else
- 				pll_out = priv->sample_rate * 256;
- 
-@@ -742,6 +746,7 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
- 	for (codec_idx = 0; codec_idx < 2; codec_idx++) {
- 		priv->codec_priv[codec_idx].fll_id = -1;
- 		priv->codec_priv[codec_idx].pll_id = -1;
-+		priv->codec_priv[codec_idx].pll_ratio_s24 = 384;
- 	}
- 
- 	/* Diversify the card configurations */
-@@ -835,6 +840,7 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
- 		priv->codec_priv[0].mclk_id = WM8904_FLL_MCLK;
- 		priv->codec_priv[0].fll_id = WM8904_CLK_FLL;
- 		priv->codec_priv[0].pll_id = WM8904_FLL_MCLK;
-+		priv->codec_priv[0].pll_ratio_s24 = 192;
- 		priv->dai_fmt |= SND_SOC_DAIFMT_CBP_CFP;
- 	} else if (of_device_is_compatible(np, "fsl,imx-audio-spdif")) {
- 		ret = fsl_asoc_card_spdif_init(codec_np, cpu_np, codec_dai_name, priv);
 -- 
 2.53.0
 
