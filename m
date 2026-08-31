@@ -1,43 +1,42 @@
-Return-Path: <linuxppc-dev+bounces-26212-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26213-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D0514C624A5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2026 05:44:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DCF1AC624C6
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2026 05:44:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hYHx91LMkz2yCt;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hYHx93LXCz2yDm;
 	Mon, 31 Aug 2026 15:44:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788155053;
-	cv=none; b=JjeYM88bENBsZOtlAIvBuagNKkC2KvYmaJcJWQFULWdfO2EFrxGkyg+tEYFETDm49cKitQovtyvQfArhZ7beydr/hJAjPMMFWqUEz7tKNtkzJ7WrUquo7ql7wrqYyWT7Ii9I1svEUX1yUd732ZpjW7w8W3inHIZo9bU4RRWKdUD1NBlfLvM8GkutknSL+J03tEZ0mqzrzYneqxJxzwQZirWwJbOwPVFUcuYOIcSaP3Evkeopn2Jex3KFraXb9auEsBd4XvWsHL6UtyUJzRpiP0sMV1nCJRXjFfwD/14CuDrqMVLb0mQGhjT9+7vCUk5yEvc8xYWkms/UjcmkHD7t/Q==
+	cv=none; b=EL5UyDolhgJCP6GK0Glx/v5EaN4IDB65GShehiWCDOPpn+AYX/LQ3klA8AqRyOPdB9ThRcQ0Fd+KAoRnGBTnUlBls15QynovZt2JIJQMxEh9wCV2k8z5AoSk3SdGOWo/nB19nrowE5SdA7+hp8NSpMQ3ULXPByQ1vhVa7h2cGguoLJetc1PfbQaHcGeAzAIMIw+6HqqMssfs+vsrvTJGZLZ+fkG4MnbZt7X9FEPyOL4wmyVeGpcmsf47qEEp7H+uBgBDtey5UBtGdq1aXWwK8J/Rgjzly+ZuUzKhwdjzu7DqG+9jYLq4FAGKtwipS1mVui9118mQ7Annhw9Q12GRmQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1788155053; c=relaxed/relaxed;
-	bh=HX2UJHkvYtIE8Iv3IhpwI5DtNIWDsoCmIUsixatil5Y=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=HwC2pF454BonpfdhTSu8x+skteLpvoKMwuC6aZ9I6q83ALlZkmwA+qGAWGPGEMwE28fNufbhF//1ZLBEWS07QSFrvtfFPUbpt1f3lQFtyncMib77fZGyPOkOt1Lq0QC54fc/tP57KHCTrdQuXtGtzm0c4kNtBpifJOcSpt1OjCIbX4rxHt7Erd3VS3KWpZScYz0O4ZrZ93x+Xo9rqlvp3lUkkxu61u+N/GwBT0bsBR7nNcs5EhfUPuXluKnasd7Kt+LimFiKu+5Hkfwr/m3tiYI1vmRO6Q7GjUClN0JcIoQHn0B4eTiIGrOFwGxIlgHbIjI6ObUpYzDMQp/i5KbAOQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=CnW75J3D; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=anshuman.khandual@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
+	bh=+sjajWrfj2wM9zCU9qb6V0Zy3xK1fZ/kgY+W3FSBiiw=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=TqK786ZhGO5JRawa7IhOtQERYTi+DaLCpeBSIGnM+DtdZbfuqZpTPaflM/AzJq7OKqPKs1HUcy36MaKMl2O8I8T9lKa0XRQzvJtZrxvE3laED/BZtwHlh+Smq3521xhBdUwrmOeovRHqUALx9CmQ/E/Ftu1KLW2SrebGgKniMV9LI9FQD8WN4BDGAtdG767riLigvh9xwWLRhD9IHE7G5ahXskKvAPGjcgNR9RwRE6PXRLXBGz/2PvMiB3VFNRQqiIw0jyyoSVlUtSWu03jIr2qRXQSVJslo/tRn92CFRlpCImiQ0D9lOS5LuIqD/RDCEU9ygPplcdm7X8Q4KAkGwQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=BqfKECU3; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=anshuman.khandual@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=CnW75J3D;
+	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=BqfKECU3;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=anshuman.khandual@arm.com; receiver=lists.ozlabs.org)
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hYHx63W2Pz2y2J
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Aug 2026 15:44:10 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hYHx55Wbgz2xLf
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Aug 2026 15:44:07 +1000 (AEST)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id E3F871692;
-	Sun, 30 Aug 2026 22:43:34 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 5511914BF;
+	Sun, 30 Aug 2026 22:43:31 -0700 (PDT)
 Received: from localhost (a085714.arm.com [10.164.19.28])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id E96B63F85F;
-	Sun, 30 Aug 2026 22:43:37 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 5B2D73F85F;
+	Sun, 30 Aug 2026 22:43:34 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1788155018; bh=GGK9AC8Tv1PQeecS48AIrQ55e9LqtRQAIQ7FmY+hs+k=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=CnW75J3DRkRMOvrNTUSCnYFQNOIbOUOnmVJQMtfF42eAuoH7YKNUi6ESpSwqTyfrG
-	 vG0N5mSEM+8VmDd50f9PcBmxjBOkfiS4wh7Lhpjo2rW0nQBSjOK1m4mUYkK3mw+zi4
-	 N5OIrqAwr66EWBpqjhoDF/YwciJOKv9ClphMWYs0=
+	t=1788155015; bh=QKfwc4zep2ayth9wQau6lhc5F2hRk7N0saDoBUOnEqo=;
+	h=From:To:Cc:Subject:Date:From;
+	b=BqfKECU337E7qsCYRaYZ551VunTXFknuFyCaLMIudB5TVUVPy9lcqXU9kDceG55xE
+	 3k/uh1THmhFNmRViRgc/nMwvFC4fkZ8h2ai9fhKnQX7Hczm+O8oU7JE/xv/FBEfkCv
+	 3sSZnJfiyZzjdo3E1Ch5J2JPk2brrk5Zet6wHHlk=
 From: Anshuman Khandual <anshuman.khandual@arm.com>
 To: linux-mm@kvack.org
 Cc: samuel.holland@sifive.com,
@@ -71,12 +70,10 @@ Cc: samuel.holland@sifive.com,
 	linux-um@lists.infradead.org,
 	linux-arch@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH 1/8] mm: Make ptval_to_str() generally available
-Date: Mon, 31 Aug 2026 11:13:23 +0530
-Message-ID: <20260831054331.625505-2-anshuman.khandual@arm.com>
+Subject: [PATCH 0/8] mm: Drop pxd_ERROR()
+Date: Mon, 31 Aug 2026 11:13:22 +0530
+Message-ID: <20260831054331.625505-1-anshuman.khandual@arm.com>
 X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260831054331.625505-1-anshuman.khandual@arm.com>
-References: <20260831054331.625505-1-anshuman.khandual@arm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -92,86 +89,134 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Move ptval_to_str() inside a header thus making the helper more generally
-available for new users which are being added later. While here, also move
-another related string size macro PTVAL_STR_MAX inside the header as well.
+pxd_ERROR() macros have been provided by all platforms, which are very much
+identical and can be dropped off completely if these pgtable printing could
+be moved to callers in generic MM aka all pxd_clear_bad().
 
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Hildenbrand <david@kernel.org>
-Cc: Lorenzo Stoakes <ljs@kernel.org>
-Cc: linux-mm@kvack.org
-Cc: linux-kernel@vger.kernel.org
-Acked-by: David Hildenbrand (Arm) <david@kernel.org>
-Acked-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
-Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
----
+But first cleanups and re-organizations are required in some platforms that
+are using these macros internally. Afterwards [pte|pmd|pud|p4d|pgd]_ERROR()
+macros have been completely dropped from the entire tree.
+
+This series is based on v7.3-rc1 after the following patch and has also been
+built tested on multiple platforms.
+
 Changes in V1:
 
 - Moved ptval_to_str() and adjcent declarations inside <include/linux/pgtable.h>
 - Fixed type s/ptrval_to_str/ptval_to_str in [PATCH 1/8]
+- Dropped PTE_FMT from riscv platform
+- Added all tags received
 
- include/linux/pgtable.h | 14 ++++++++++++++
- mm/memory.c             | 15 +--------------
- 2 files changed, 15 insertions(+), 14 deletions(-)
+Changes in RFC V3:
 
-diff --git a/include/linux/pgtable.h b/include/linux/pgtable.h
-index 8c093c119e5a..e3c8ab96941c 100644
---- a/include/linux/pgtable.h
-+++ b/include/linux/pgtable.h
-@@ -2313,6 +2313,20 @@ static inline const char *pgtable_level_to_str(enum pgtable_level level)
- 	}
- }
- 
-+void ptval_bytes_to_hex_str(char *buf, size_t buf_size, const void *entry, size_t entry_size);
-+
-+#define ptval_to_str(buf, val)								\
-+	do {										\
-+		auto __val = (val);							\
-+											\
-+		ptval_bytes_to_hex_str((buf), sizeof(buf), &__val, sizeof(__val));	\
-+	} while (0)
-+
-+#if defined(__SIZEOF_INT128__)
-+#define PTVAL_STR_MAX	(32 + 1) /* Max 128-bit value in hex + NUL */
-+#else
-+#define PTVAL_STR_MAX	(16 + 1) /* Max 64-bit value in hex + NUL */
-+#endif
- #endif /* !__ASSEMBLER__ */
- 
- #if !defined(MAX_POSSIBLE_PHYSMEM_BITS) && !defined(CONFIG_64BIT)
-diff --git a/mm/memory.c b/mm/memory.c
-index 8b0c2c735d3d..aa6b2fc770fc 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -519,7 +519,7 @@ static bool is_bad_page_map_ratelimited(void)
- 	return false;
- }
- 
--static void ptval_bytes_to_hex_str(char *buf, size_t buf_size, const void *entry, size_t entry_size)
-+void ptval_bytes_to_hex_str(char *buf, size_t buf_size, const void *entry, size_t entry_size)
- {
- 	if (WARN_ON_ONCE(buf_size < entry_size * 2 + 1)) {
- 		snprintf(buf, buf_size, "overflow");
-@@ -546,19 +546,6 @@ static void ptval_bytes_to_hex_str(char *buf, size_t buf_size, const void *entry
- 	}
- }
- 
--#define ptval_to_str(buf, val)								\
--	do {										\
--		auto __val = (val);							\
--											\
--		ptval_bytes_to_hex_str((buf), sizeof(buf), &__val, sizeof(__val));	\
--	} while (0)
--
--#if defined(__SIZEOF_INT128__)
--#define PTVAL_STR_MAX	(32 + 1) /* Max 128-bit value in hex + NUL */
--#else
--#define PTVAL_STR_MAX	(16 + 1) /* Max 64-bit value in hex + NUL */
--#endif
--
- static void __print_bad_page_map_pgtable(struct mm_struct *mm, unsigned long addr)
- {
- 	char pgd_str[PTVAL_STR_MAX];
+https://lore.kernel.org/all/20260818040041.1891769-1-anshuman.khandual@arm.com/
+
+- Moved ptrval_to_str() as header in a separate patch
+- Stopped using pxd_ERROR() in generic MM in a separate patch
+- Dropped pxd_ERRO() macros from all platforms in a separate patch
+- Dropped print_bad_pte() and also cleaned up set_pte_phys()
+- Added some pr_error() messages in __get_pte_phys()
+- Cleaned up error messages and used ptrval_to_str() in platforms
+
+Changes in RFC V2:
+
+https://lore.kernel.org/all/20260811042119.3652929-1-anshuman.khandual@arm.com/
+
+- Added clean up patches for platforms with existing pxd_ERROR() usage
+- Dropped __FILE__ and __LINE__ from all print sections per David
+
+Changes in RFC V1:
+
+https://lore.kernel.org/all/20260806080639.1916749-1-anshuman.khandual@arm.com/
+
+Cc: David Hildenbrand (Arm) <david@kernel.org>
+Cc: Mike Rapoport (Microsoft) <rppt@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Lorenzo Stoakes <ljs@kernel.org>
+Cc: Yoshinori Sato <ysato@users.sourceforge.jp>
+Cc: Rich Felker <dalias@libc.org>
+Cc: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
+Cc: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
+Cc: Helge Deller <deller@gmx.de>
+Cc: Huacai Chen <chenhuacai@kernel.org>
+Cc: WANG Xuerui <kernel@xen0n.name>
+Cc: linux-alpha@vger.kernel.org
+Cc: linux-snps-arc@lists.infradead.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-csky@vger.kernel.org
+Cc: linux-hexagon@vger.kernel.org
+Cc: loongarch@lists.linux.dev
+Cc: linux-m68k@lists.linux-m68k.org
+Cc: linux-mips@vger.kernel.org
+Cc: linux-openrisc@vger.kernel.org
+Cc: linux-parisc@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-riscv@lists.infradead.org
+Cc: linux-s390@vger.kernel.org
+Cc: linux-sh@vger.kernel.org
+Cc: sparclinux@vger.kernel.org
+Cc: linux-um@lists.infradead.org
+Cc: linux-arch@vger.kernel.org
+Cc: linux-mm@kvack.org
+Cc: linux-kernel@vger.kernel.org
+
+Anshuman Khandual (8):
+  mm: Make ptval_to_str() generally available
+  mm: Stop using pxd_ERROR()
+  loongarch/mm: Stop using pte_ERROR()
+  parisc/mm: Directly use generic [pmd|pgd]_clear_bad()
+  sh/mm: Stop using pte_ERROR()
+  sh/mm: Stop using [p4d|pud|pmd]_ERROR()
+  sh/mm: Stop using pgd_ERROR()
+  mm: Drop pxd_ERROR()
+
+ arch/alpha/include/asm/pgtable.h              |  7 -------
+ arch/arc/include/asm/pgtable-levels.h         | 11 ----------
+ arch/arm/include/asm/pgtable.h                |  7 -------
+ arch/arm/kernel/traps.c                       | 17 ----------------
+ arch/arm64/include/asm/pgtable.h              | 15 --------------
+ arch/csky/include/asm/pgtable.h               |  4 ----
+ arch/hexagon/include/asm/pgtable.h            |  3 ---
+ arch/loongarch/include/asm/pgtable.h          | 13 ------------
+ arch/loongarch/mm/init.c                      |  4 +++-
+ arch/m68k/include/asm/mcf_pgtable.h           |  6 ------
+ arch/m68k/include/asm/motorola_pgtable.h      |  8 --------
+ arch/m68k/include/asm/sun3_pgtable.h          |  7 -------
+ arch/microblaze/include/asm/pgtable.h         |  7 -------
+ arch/mips/include/asm/pgtable-32.h            | 10 ----------
+ arch/mips/include/asm/pgtable-64.h            | 13 ------------
+ arch/nios2/include/asm/pgtable.h              |  7 -------
+ arch/openrisc/include/asm/pgtable.h           |  7 -------
+ arch/parisc/include/asm/pgtable.h             |  9 ---------
+ arch/parisc/kernel/pci-dma.c                  |  6 ++----
+ arch/powerpc/include/asm/book3s/32/pgtable.h  |  2 --
+ arch/powerpc/include/asm/book3s/64/pgtable.h  |  7 -------
+ arch/powerpc/include/asm/nohash/32/pgtable.h  |  2 --
+ .../include/asm/nohash/64/pgtable-4k.h        |  3 ---
+ arch/powerpc/include/asm/nohash/64/pgtable.h  |  5 -----
+ arch/riscv/include/asm/page.h                 |  6 ------
+ arch/riscv/include/asm/pgtable-64.h           |  9 ---------
+ arch/riscv/include/asm/pgtable.h              |  4 ----
+ arch/s390/include/asm/pgtable.h               | 11 ----------
+ arch/sh/include/asm/pgtable-3level.h          |  3 ---
+ arch/sh/include/asm/pgtable_32.h              | 13 ------------
+ arch/sh/mm/init.c                             | 16 ++++++++-------
+ arch/sparc/include/asm/pgtable_32.h           |  3 ---
+ arch/sparc/include/asm/pgtable_64.h           | 10 ----------
+ arch/um/include/asm/pgtable-2level.h          |  7 -------
+ arch/um/include/asm/pgtable-4level.h          | 13 ------------
+ arch/x86/include/asm/pgtable-2level.h         |  5 -----
+ arch/x86/include/asm/pgtable-3level.h         | 11 ----------
+ arch/x86/include/asm/pgtable_64.h             | 18 -----------------
+ arch/xtensa/include/asm/pgtable.h             |  4 ----
+ include/asm-generic/pgtable-nop4d.h           |  1 -
+ include/asm-generic/pgtable-nopmd.h           |  1 -
+ include/asm-generic/pgtable-nopud.h           |  1 -
+ include/linux/pgtable.h                       | 14 +++++++++++++
+ mm/memory.c                                   | 15 +-------------
+ mm/pgtable-generic.c                          | 20 +++++++++++++++----
+ 45 files changed, 45 insertions(+), 320 deletions(-)
+
 -- 
 2.43.0
 
