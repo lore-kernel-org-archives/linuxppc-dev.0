@@ -1,93 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-26263-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26264-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DA2D9C624C8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2026 08:21:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 64E72C61DD3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2026 08:25:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hYMPt6JVhz2ytT;
-	Mon, 31 Aug 2026 18:20:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.130
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788164450;
-	cv=none; b=BT20LqAwHO7f7vNVCkPaiuTb6fHImU+bfue6vn9bg+CvqEMxShsiARDkROYNpFlO09Ah4Mie5UnTw2FzYcCyVBvnF6OrnEcGnpM6h+y8lmXGmG9uOUw33lRYpDKJ9sZbgmirnQkf+cU+Dk09oU4Hhfrix1iXaCIlkn81ba8CQlJ5jBBXS+1GJnwKfsNQMpgY0ZDZR5lVHooJst/ynh21SG5RZD+f727RsIk0fuznoY13hF0j5TLn5EwvPTXand0pRIRzHK86JQnBruZwcHv29+mPxl3BIf2wbCgRQ/wBfDAwgaIMm4iX21MNxw0GYZXE+lkBq1OxMdq4GlseAbFj5g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hYMVl6hwQz2yDD;
+	Mon, 31 Aug 2026 18:25:03 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788164703;
+	cv=none; b=ocMYIlTw8BF1o4jeSeEsBxnmTH0671G1sVdsT4L+qkzyiYZavpC2A3ZDuMvAD+QrUfh2OiZ5x5KxXclGtsIxMpLkaLj42QEg1/sEjUN4SUmgHMckGslz4IVryO+tQBjsL/SXK2elkzQ6uX3RjwC7Gp7rgUqGYTvy2KSt2/LP2txyB8vjCi1GhrC8Mp9HX4R3+BYpJoaKhDF1auwVMFk+7mezcWbvwwes7tg7+s1RMT6utjsF9yeO6tbeUw3nOZhlAaZi/GwE9HlLVneq2mEs3nXu3OxOyN84HmoGOoy700VrPNuq7lNG15qkHzjxOZ/plEKyAfNbE/uS8fE4Xnfnaw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788164450; c=relaxed/relaxed;
-	bh=8MhaLmZPp4KLl6FJKDOv4LZLkIzyw4q4TX09F3wk/yE=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=PFLDJm5adh+X780zrupVqr/6sJyQuAO1sYr1WlJzEu/RswwYnKz9zdqm9ofCflCE13a7xs8izkuBFi/OgzrYaDoobhtc3rSd9/HtAuq6orQX/++2ufp8YNSCHmrZbHAdQJ8S9h//+ButhOQi1ZUqlHYt87NIXyZE1YQs6v9mYtkpNaLe1Mn0yniKBd2vUbJJ4HxkCK2dgoKV6hIWEFaXZ0XftR0pdcx66Cti3P0e6rlL/GhS7XRp/TJ0JZxa/vb6Sq0FQItafNj+WSqGx/2chYQ9YTetda7QjUNZiSfaq58LgbCIykhllAgKKlC8pSQL0Zr/Zepd1KmyCPjHpoNfNg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=ZgAAjPyJ; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=21lSuVNo; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=qpUiYkXp; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=a/ayIUtG; dkim-atps=neutral; spf=pass (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
+	t=1788164703; c=relaxed/relaxed;
+	bh=O9m4b46omMgani/6PKydjvX3UeCse2JOjMD2pfjWU/U=;
+	h=Content-Type:MIME-Version:Message-Id:In-Reply-To:References:
+	 Subject:From:To:Cc:Date; b=mC7+gSbopKc30Be6fP0+Na1BWz3vY6ksX1eRzNqIdtP/SyqSpe6knL55ArTy4aG3kA5S1+/OfnV98u3SJ/eM0r2H6OGz9gRYfZLznEzPmqeoGBgAbSda8zHVmgdNPQA/uTM2rKbjDfClY2KFSsfw5yxr5ziUhwB/8NUqqPLlXblxbp83Evmb2BpzwAP5IMeLvyicw3GV2SIqDZmrX/VuhcKGkpQjSzd0rz/+iBGab0jLKL/cItDUwuOioScPneoy7dGMy/DZpTZFhpwl1QzGheRm7E2e8x5Y6jfqBbpGMr/J8x+AYixx9027q9KUXvTxwjQ0LnzKsyQL6avEH7jQ2w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=W0ZZW/NG; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=bot+bpf-ci@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=ZgAAjPyJ;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=21lSuVNo;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=qpUiYkXp;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=a/ayIUtG;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=W0ZZW/NG;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=bot+bpf-ci@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hYMPr4dmcz305P
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Aug 2026 18:20:48 +1000 (AEST)
-Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id D9E0122429;
-	Mon, 31 Aug 2026 08:20:36 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1788164441; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=8MhaLmZPp4KLl6FJKDOv4LZLkIzyw4q4TX09F3wk/yE=;
-	b=ZgAAjPyJzOC7ZaJMV4UXAskuMD6o8axDtO5HoqQzBX83ukXAT878B9x95Rdd8bvjAczGon
-	4QPaEwl5t6uU5BzopDIU1R7lHc8pqve5sa64CqGRqzvLDZQu0UCEyrbJgwP3D9GGzQAQNZ
-	hV/WZzisC7xxfP8/DGn4Ps2Zp2S6dV4=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1788164441;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=8MhaLmZPp4KLl6FJKDOv4LZLkIzyw4q4TX09F3wk/yE=;
-	b=21lSuVNoJENI1MyqHcl+QmrrOMUcqN9H4cKInYCpeTIFtT8Wbgmc/nckGFOwxi1Ln0TyN0
-	ZELnJETjo7D/09Ag==
-Authentication-Results: smtp-out1.suse.de;
-	none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1788164436; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=8MhaLmZPp4KLl6FJKDOv4LZLkIzyw4q4TX09F3wk/yE=;
-	b=qpUiYkXpn+w7Apjwpa/fqv5FVTpoMYOfvfSf0oKHKotJcWNI1ZTAUK+xw4OJII/9PzFaW0
-	eIaV2lKWNOmqFDSPQfbiZzjmE4KtsnBctzEbz9ow60kXZ20owv6bDFpk1i5yT0bfNrLaLg
-	Dv656v6RrSKpH7xVKP0TyyWQJTebji4=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1788164436;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=8MhaLmZPp4KLl6FJKDOv4LZLkIzyw4q4TX09F3wk/yE=;
-	b=a/ayIUtG7LRfl3ZMnRBOfLYINLojkjvhePH18CNlK4O25Z1eFoHiAee+YIw4KTQNjwWq8G
-	z4Azgv8A822mOZBA==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 8D7C913694;
-	Mon, 31 Aug 2026 08:20:36 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id GME1IVQ5lWqVDAAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Mon, 31 Aug 2026 08:20:36 +0000
-Message-ID: <43e1427b-fe7d-42e3-8615-226d1d87b9dd@suse.de>
-Date: Mon, 31 Aug 2026 10:20:36 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hYMVl02w2z2yCt
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Aug 2026 18:25:02 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 019D74093E;
+	Mon, 31 Aug 2026 08:25:01 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E4AD11F000E9;
+	Mon, 31 Aug 2026 08:24:59 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1788164700;
+	bh=O9m4b46omMgani/6PKydjvX3UeCse2JOjMD2pfjWU/U=;
+	h=In-Reply-To:References:Subject:From:To:Cc:Date;
+	b=W0ZZW/NGEfCZiYf2OPIpmgAblK5Ugo3IgkljKf8nw/520yhHsc6NqMguOFYKqtTVx
+	 Yy4tb5eS91Xpyr1bqigd+aSBQA0P6Zo3TpOKY54LPShOBhjPZjGufMNKxyqAd+MP62
+	 ha57cIuMxbxZ2feDsZgeI993ITZfLkwaDzxzWSTLIU4WbCLFC4KfO1KeiErtmcL1Fm
+	 azXo8vWJbRiz5cLxQo4EXKXGLIKBQ/QvuQa/A56uBDXtOxWA5WSwzRRlaxg5xYS2fw
+	 lw3OqpZPY54/0y4izV73moSBqwoJEUBBoq+L81JBlH6iSwpb131IDAEj5QWFO97fAF
+	 XBDu/mFRJhSbA==
+Content-Type: multipart/mixed; boundary="===============2430223902918538978=="
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -101,100 +58,140 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: drm/mgag200: Fix big-endian support
-To: Christian Zigotzky <chzigotzky@xenosoft.de>
-Cc: rene@exactco.de, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Trevor Dickinson <rtd2@xtra.co.nz>, hypexed@yahoo.com.au,
- mad skateman <madskateman@gmail.com>, Christian Zigotzky <info@xenosoft.de>
-References: <a2d102b6-033d-49c9-96a6-a9edda26b4bd@suse.de>
- <1805E6A7-52E7-403F-8E57-7ED951DCB1CA@xenosoft.de>
-Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <1805E6A7-52E7-403F-8E57-7ED951DCB1CA@xenosoft.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Spamd-Result: default: False [-4.30 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	NEURAL_HAM_SHORT(-0.20)[-0.999];
-	MIME_GOOD(-0.10)[text/plain];
-	RCVD_TLS_ALL(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	ARC_NA(0.00)[];
-	RCPT_COUNT_SEVEN(0.00)[7];
-	MIME_TRACE(0.00)[0:+];
-	MID_RHS_MATCH_FROM(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com,xtra.co.nz,yahoo.com.au];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FROM_HAS_DN(0.00)[];
-	FREEMAIL_CC(0.00)[exactco.de,lists.ozlabs.org,xtra.co.nz,yahoo.com.au,gmail.com,xenosoft.de];
-	TO_DN_SOME(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.com:url,imap1.dmz-prg2.suse.org:helo,suse.de:mid,suse.de:email]
+Message-Id: <f073ec2085f90747a8909276f42726a0a0e12f99f8f81b0297dad05c4eec3667@mail.kernel.org>
+In-Reply-To: <e5fc39c4f3340791bec5e7a92e1d146d3ed6296e.1788154635.git.skb99@linux.ibm.com>
+References: <e5fc39c4f3340791bec5e7a92e1d146d3ed6296e.1788154635.git.skb99@linux.ibm.com>
+Subject: Re: [PATCH v13 3/8] powerpc/bpf: fix buffer overflow in JIT for large BPF programs
+From: bot+bpf-ci@kernel.org
+To: skb99@linux.ibm.com,bpf@vger.kernel.org,linuxppc-dev@lists.ozlabs.org
+Cc: hbathini@linux.ibm.com,maddy@linux.ibm.com,ast@kernel.org,andrii@kernel.org,daniel@iogearbox.net,shuah@kernel.org,linux-kselftest@vger.kernel.org,stable@vger.kernel.org,venkat88@linux.ibm.com,yeswanth@linux.ibm.com,skb99@linux.ibm.com,ast@kernel.org,andrii@kernel.org,daniel@iogearbox.net,martin.lau@kernel.org,eddyz87@gmail.com,yonghong.song@linux.dev,mason@kernel.org,ihor.solodrai@linux.dev
+Date: Mon, 31 Aug 2026 08:24:59 +0000 (UTC)
 
-Hi
+--===============2430223902918538978==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
 
-Am 28.08.26 um 12:19 schrieb Christian Zigotzky:
-> On 28 August 2026 at 07:58 am, Thomas Zimmermann <tzimmermann@suse.de> wrote:
->
-> ﻿Hi
->
-> Oh well. I assume it's a ROM for x86?   I guess the PPC firmware doesn't POST the graphics card, so the driver has to.  The power-up logic is given in Sec 4.3.3 of the MGA200 spec.  But TBH I won't have the time to work on it.  At best, I can help a bit if someone wants to address the problem.
->
-> Best regards
-> Thomas
->
-> - - -
->
-> Hi,
->
-> Are there any Matrox cards with PowerPC roms?
+>     Fixes: d243b62b7bd3 ("powerpc64/bpf: Add support for bpf trampolines")
 
-To my knowledge there exist Matrox cards from old PPC Macs, but I don't 
-know if any of them is a G200 that this driver would support.
+Does the Fixes: tag name the correct commit?
 
-Best regards
-Thomas
+With Cc: stable@vger.kernel.org this fix will only reach v6.13+ and will
+leave every stable tree from v5.18 to v6.12 carrying the same JIT buffer
+overflow.
 
+The faulty logic predates d243b62b7bd3. Looking at the parent of that commit:
+
+git show d243b62b7bd3^:arch/powerpc/net/bpf_jit_comp.c
+
+already contains the exact code being fixed:
+
+    if (!exit_addr || is_offset_in_branch_range(exit_addr - (ctx->idx * 4))) {
+            PPC_JMP(exit_addr);
+    } else if (ctx->alt_exit_addr) {
+            if (WARN_ON(!is_offset_in_branch_range((long)ctx->alt_exit_addr - (ctx->idx * 4))))
+                    return -1;
+            PPC_JMP(ctx->alt_exit_addr);
+    } else {
+            ctx->alt_exit_addr = ctx->idx * 4;
+            bpf_jit_build_epilogue(image, ctx);
+    }
+
+The real introducing commit is 0ffdbce6f4a89bb7c0002904d6438ec83cf05ce7
+("powerpc/bpf: Handle large branch ranges with BPF_EXIT"), merged in v5.18-rc1
+(git describe --contains: v5.18-rc1~124^2~42). It created
+bpf_jit_emit_exit_insn() with the '!exit_addr' early-out and replaced the
+previous unconditional one-instruction emission:
+
+    -               if (i != flen - 1)
+    -                       PPC_JMP(exit_addr);
+    +               if (i != flen - 1) {
+    +                       ret = bpf_jit_emit_exit_insn(image, ctx, b2p[TMP_REG_1], exit_addr);
+
+Before 0ffdbce6f4a8 a non-final BPF_EXIT always cost exactly one instruction in
+every pass, so the sizing pass could not under-count and no overflow was
+possible. After it, the sizing pass emits PPC_JMP(0) (1 instruction) while
+later passes may emit a full inline epilogue, which is precisely the
+under-count described in this commit message.
+
+The commit d243b62b7bd3 only enlarged the epilogue (it added
+bpf_jit_build_fentry_stubs()), making an already-existing overflow bigger.
+
+Citing the ppc64-trampoline commit also wrongly implies PPC32 is unaffected.
+The commit 0ffdbce6f4a8 made the identical change to
+arch/powerpc/net/bpf_jit_comp32.c, so 32-bit powerpc has the same bug over the
+same range.
+
+A tag survey confirms the range: 'alt_exit_addr' has 0 occurrences in
+arch/powerpc/net/ at v5.16 and v5.17, and 5 occurrences at v5.18, v5.19, v6.0,
+v6.1 and v6.6.
+
+Should the tag be:
+
+  Fixes: 0ffdbce6f4a8 ("powerpc/bpf: Handle large branch ranges with BPF_EXIT")
+
+> diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
+> index 8f7501954d9f0..11981d2270a9d 100644
+> --- a/arch/powerpc/net/bpf_jit_comp.c
+> +++ b/arch/powerpc/net/bpf_jit_comp.c
+> @@ -99,11 +99,10 @@ void bpf_jit_build_fentry_stubs(u32 *image, struct codegen_context *ctx)
 >
-> Have a nice weekend,
+>  int bpf_jit_emit_exit_insn(u32 *image, struct codegen_context *ctx, int tmp_reg, long exit_addr)
+>  {
+> -	if (!exit_addr || is_offset_in_branch_range(exit_addr - (ctx->idx * 4))) {
+> +	if (exit_addr && is_offset_in_branch_range(exit_addr - (long)(ctx->idx * 4))) {
+>  		PPC_JMP(exit_addr);
+> -	} else if (ctx->alt_exit_addr) {
+> -		if (WARN_ON(!is_offset_in_branch_range((long)ctx->alt_exit_addr - (ctx->idx * 4))))
+> -			return -1;
+> +	} else if (ctx->alt_exit_addr && is_offset_in_branch_range(
+> +			(long)(ctx->alt_exit_addr) - (long)(ctx->idx * 4))) {
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  		PPC_JMP(ctx->alt_exit_addr);
+
+With alt_exit_addr defined as unsigned int, does the expression
+(long)(ctx->alt_exit_addr) - (long)(ctx->idx * 4) produce a different result
+than (long)ctx->alt_exit_addr - (ctx->idx * 4) due to how integer promotion
+works?
+
+In v7 review, Hari Bathini pointed out that the cast placement may affect
+integer promotion semantics and requested restoring the earlier syntax with the
+cast only on alt_exit_addr:
+
+https://lore.kernel.org/bpf/038a115b-e2a5-4ecf-82b1-3689535e986b@linux.ibm.com
+
+While the current code has passed testing, the concern about integer promotion
+semantics was never explicitly addressed.
+
+[ ... ]
+
+> @@ -399,7 +417,7 @@ int bpf_add_extable_entry(struct bpf_prog *fp, u32 *image, u32 *fimage, int pass
+>  	u32 *fixup;
 >
-> Christian
+>  	/* Populate extable entries only in the last pass */
+> -	if (pass != 2)
+> +	if (pass < CODEGEN_MIN_PASSES)
+>  		return 0;
 
--- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
-GF: Jochen Jaser, Andrew McDonald, (HRB 36809, AG Nürnberg)
+Does the comment still match the code?
+
+With the old 'if (pass != 2)' and a fixed two-pass loop, pass 2 was the last
+pass, so the comment was accurate. With the new loop and 'pass <
+CODEGEN_MIN_PASSES', both pass 2 and pass 3 can write extable entries, so
+entries are populated in every pass from 2 onwards, not only in the last one.
+
+Also, CODEGEN_MIN_PASSES is being reused here with a different meaning. In
+arch/powerpc/net/bpf_jit.h it documents the minimum number of code-generation
+passes, but here it is used as 'the first pass in which extable entries are
+valid'. The two are logically independent - bumping CODEGEN_MIN_PASSES to 3 to
+force more settling iterations would silently stop extable entries being
+written in pass 2.
 
 
+---
+AI reviewed your patch. Please fix the bug or email reply why it's not a bug.
+See: https://github.com/kernel-patches/vmtest/blob/master/ci/claude/README.md
+
+CI run summary: https://github.com/kernel-patches/bpf/actions/runs/33368376983
+--===============2430223902918538978==--
 
