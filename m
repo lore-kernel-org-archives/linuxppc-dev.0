@@ -1,43 +1,43 @@
-Return-Path: <linuxppc-dev+bounces-26218-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26219-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A6E9BC61DF0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2026 05:44:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1A0A0C61DD3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2026 05:45:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hYHxn6z8Mz2yFj;
-	Mon, 31 Aug 2026 15:44:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hYHxq1f3Mz2yvT;
+	Mon, 31 Aug 2026 15:44:47 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788155085;
-	cv=none; b=MmbJemEFkVdw0mt/6m8ZgkdBdWH2DA+6t38tJthYhJ/iln4GFrWZ5lg3o/r5DVgttzhEASApkv50lEtOrVJAnJ11ruy/OKycvpDaDCM2e4ywuRcc4AafToKVoql1rxQdFomTimZLI0hNL8gIP2WjXtCzWbk2eY3Ov7idficNzIQSex+lrZdhJK9v0/2fqX23OmH2a4lwOFjisdyS8VCmIpkug1NpUAHR2qrzjV4ve/eKmqDUEN488ODG1e6nsXQMiyr9cfZnUPC5mQhThmD8UetTUhG2fjmUqXuuytCeKAtTg1xSOEF0WwXjXS6LxinFUhuj84dvhvuK87C66psxgw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788155087;
+	cv=none; b=MQdEvFG+m0CKh56pzU0qkw4ENNYLkDVPIuYgp/4dRnOF02yV5PyoLxkfR/rJV6PyZp2okl2WcBB4zUNCeNm91tGEvwU75+lDedbIVtME1Potw+ZwlOc80aVFNWVVInA2SzRni31Xt2KMUeXe8Jp1AXaFoaOvY3xx+UPyWImCRtoKIkdBm7A8o1+h5/z1t1AmpG9D/35rFR2b+OlwzjQjKyqwHRGJsVDQseqnHiRKNF2Xy6SzumyhK8ztIvW2cDAEFr3nj/YWOTZxWo3l7tdzREOXWU69xFDKO8gCnst+dPukyRB8kZCmUaJIHg4hGMg4WYXfCy8dxy8FWC1Y9C2w2g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788155085; c=relaxed/relaxed;
-	bh=Na0nWqicnS2MtEk2/ZmNefkrvxhUMME7xzBfJeHlXfE=;
+	t=1788155087; c=relaxed/relaxed;
+	bh=l8tEaJoybxgEHiydhpmRrd0zyZxOUOa5tuSqtahiLM8=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=TvXuBpfeEttuj7CO4Khd6ZeBj9DKOycho+QrKUb4jo47qd8bFn/0NjtwLviGR7x3XyTX6h4Nesli2fQ8TM+MuazJX6r6q8/gxQmli/SjRiqKrk1PcZkI/MwiTwPMRi8oYmy9tdrQbT3uyyDyTJxoLBKG0PQUr4xUiPnWtmtJvoBPyMDSivcqNWexN+XnVBxvsQjCNMSgiR7A9vBqVjdvwnTLw3B/6NcoPnySgTlNAQXW8l9o3ZC/yyLky9ZEFH4NfPYS2ffZnjVJgqMcW2Yio0VtvNoBL8SxBbiHJQdEXl4/A9f8EHJbM9eKenceTDFNSnd5xR2JbBmhBMek/nhtJg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=mexQGEwh; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=anshuman.khandual@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
+	 MIME-Version; b=TAqUdrobTgJMrevVT8v+/nkeKJTCM1OEwT2SFJt85QM5jFz4uMGzm7ZGK+FMRkjXHvtfQB40rAbH+/Brtkaxt1/JRzABK7i4nw2ha6EA4qXD3OXu71zffWW8udNSQrsfQVT5vHt0E1RPElW3uoFwnjN0bHM8sCQ1+65aff87tfHenSvmpw04OV792vVpFBHMwfp2vgzYtTsDMj4aqvVp+XFvnQTjLiG0hyuaQzBO4lsDQ93D/K71Fia548xvDuYLTifww2Ixm469T3ecoxUqAY4kVog0mDP11QSKydgNrHeJp5BIWUktQ/DtJl4RrIXQxE2vjYN96GfPWBTRNg4bng==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=U0L19rtb; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=anshuman.khandual@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=mexQGEwh;
+	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=U0L19rtb;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=anshuman.khandual@arm.com; receiver=lists.ozlabs.org)
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hYHxn0sLTz2yDD
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hYHxn1bwFz2yDm
 	for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Aug 2026 15:44:44 +1000 (AEST)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id CE4A51A2D;
-	Sun, 30 Aug 2026 22:43:52 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 9CF061A32;
+	Sun, 30 Aug 2026 22:43:56 -0700 (PDT)
 Received: from localhost (a085714.arm.com [10.164.19.28])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id CE08E3F85F;
-	Sun, 30 Aug 2026 22:43:55 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 6785C3F85F;
+	Sun, 30 Aug 2026 22:43:59 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1788155036; bh=tv5DjbtfmXjBBuL3EGYgZEMiDxUCxKafhP8IwXphMBE=;
+	t=1788155040; bh=19JNL2aQ1m2bgjsQFbzvNHwUtw8tQlkca/Xxp7GPwo8=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=mexQGEwhHQAlOrXrZQ25kdw0Ek/wBEDGfOAXtdmcIVany4CjdRHDvTRCAQnRszXkF
-	 brFCVNYJ3wXIMOzy/m82CHQbQfsZL/9752QXUP8CK+p/FFq6WUSn/ton2ZHgaAcI4A
-	 mipdr60mJO12jxZ7sxfPTPRFfT7MvotJi5x09tSk=
+	b=U0L19rtbEHy9Bp2X2iUVLKKtbExFWVCCT5piVe9NpoUB1AFhA8YHZQbH1wlPAPfX4
+	 Ay2S64IR505XEPoJ0IN4Oh6nslmTu7PwulMz8Lw7NqgU8iCXl/uxnUPMxcESRtkCpw
+	 mWcDca7zBkcW4qfWA9izm/4P351I4KVkwzyARqd8=
 From: Anshuman Khandual <anshuman.khandual@arm.com>
 To: linux-mm@kvack.org
 Cc: samuel.holland@sifive.com,
@@ -71,9 +71,9 @@ Cc: samuel.holland@sifive.com,
 	linux-um@lists.infradead.org,
 	linux-arch@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH 6/8] sh/mm: Stop using [p4d|pud|pmd]_ERROR()
-Date: Mon, 31 Aug 2026 11:13:28 +0530
-Message-ID: <20260831054331.625505-7-anshuman.khandual@arm.com>
+Subject: [PATCH 7/8] sh/mm: Stop using pgd_ERROR()
+Date: Mon, 31 Aug 2026 11:13:29 +0530
+Message-ID: <20260831054331.625505-8-anshuman.khandual@arm.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260831054331.625505-1-anshuman.khandual@arm.com>
 References: <20260831054331.625505-1-anshuman.khandual@arm.com>
@@ -92,8 +92,8 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Stop using [p4d|pud|pmd]_ERROR() in __get_pte_phys() as the pgtable entries
-are known to be NULL and hence could not really be accessed.
+Stop using pgd_ERROR() in __get_pte_phys() when page table entry is already
+known to be empty.
 
 Cc: Yoshinori Sato <ysato@users.sourceforge.jp>
 Cc: Rich Felker <dalias@libc.org>
@@ -104,36 +104,25 @@ Reviewed-by: David Hildenbrand (Arm) <david@kernel.org>
 Acked-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
 Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
 ---
- arch/sh/mm/init.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ arch/sh/mm/init.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
 diff --git a/arch/sh/mm/init.c b/arch/sh/mm/init.c
-index 9466ae6f9f16..8d65e60688dc 100644
+index 8d65e60688dc..93921109f4e6 100644
 --- a/arch/sh/mm/init.c
 +++ b/arch/sh/mm/init.c
-@@ -59,19 +59,19 @@ static pte_t *__get_pte_phys(unsigned long addr)
+@@ -52,10 +52,8 @@ static pte_t *__get_pte_phys(unsigned long addr)
+ 	pmd_t *pmd;
+ 
+ 	pgd = pgd_offset_k(addr);
+-	if (pgd_none(*pgd)) {
+-		pgd_ERROR(*pgd);
++	if (pgd_none(*pgd))
+ 		return NULL;
+-	}
  
  	p4d = p4d_alloc(NULL, pgd, addr);
  	if (unlikely(!p4d)) {
--		p4d_ERROR(*p4d);
-+		pr_err("allocating p4d table failed\n");
- 		return NULL;
- 	}
- 
- 	pud = pud_alloc(NULL, p4d, addr);
- 	if (unlikely(!pud)) {
--		pud_ERROR(*pud);
-+		pr_err("allocating pud table failed\n");
- 		return NULL;
- 	}
- 
- 	pmd = pmd_alloc(NULL, pud, addr);
- 	if (unlikely(!pmd)) {
--		pmd_ERROR(*pmd);
-+		pr_err("allocating pmd table failed\n");
- 		return NULL;
- 	}
- 
 -- 
 2.43.0
 
