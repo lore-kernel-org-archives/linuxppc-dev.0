@@ -1,55 +1,56 @@
-Return-Path: <linuxppc-dev+bounces-26327-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26328-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7B07DC61DFD
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2026 19:00:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5C930C61DD3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2026 19:00:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hYdbq71fVz2xLf;
-	Tue, 01 Sep 2026 05:00:23 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788202823;
-	cv=none; b=n7w1cRZ4XJZPmBpSEW5IHdl+1FMEhdA+WMljzWcPOP5AsnwjXo8wjSGMEDHN0rt0XqaG9P0yOxjIJJ9caJO5ZuwFdXuqfCf+70ai/y32PDeXVi1dSTq/AU8zNwlEMjky8cG2geXpnsOiqbTWQ/xmEmgz8EXbD02WFZn5bziiUVT8QyzyBBjxjjo3ikqSAJ16PHgbxO+fZ3bTgRJxEYsv8/vsTb+HZyFHvQhT47F+WjFkIblAVRB7+2xkd8Tnbn+C58zUvccUNSViw7sftdmfNBmk0A/X9fyebUZBgGDo/6ZyS11veEKRybOpAwYDOCKoZaND7p7PxCmmCyCivAbEEA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hYdbv3F4Rz2yCt;
+	Tue, 01 Sep 2026 05:00:27 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788202827;
+	cv=none; b=j5GYaY7NYEj4SsAGx9ZtjSd3mI9hNpBVheUZoG4hd8+vYj8183v+ebPCZHvJ/ovSoAN7hR6Etw7LRmpJCwl6GND6Pjdd7hmPFWNGq6nh5i4iVY0MGeyWeMtty4GTERDDed1KQObtjvSaqSSBm2EK6dFLo1gda/8kV6NdTTzRvzth8dVahT9wK3OG0uHcYtux8TG9nv031Sbhi8/PzMT+XzQV5Yzd0SbivOACBOwTyFMOKWFtEG3a8tY9VNrMBrB/g8c75bhxL8hOs3OfgHYkPrEmcwgsnrJPdVp6yaDi+NSaCLrO+az7delIS01q7Vrz4rOzuKM9nztsBCPco+P/Tw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788202823; c=relaxed/relaxed;
-	bh=MVRLxdA85+ipkD82v0OQ9FDOEqks4IX6wv6c2eVov/s=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=oW323J9qUCl4W82Ykm7Jkg+fqaqhCBct+HYfM4YQwgsGb1JpCm5EQf3BFc8OJFM214RP7gunkvsIZxv/WmwtkS2UMwo86Tr5Cuw1X5YIMR6FBlJMrrd/pQkz7nL2NHGWNkXMxnPnjLqHCS09V66KyxcgKPABc5jjU5bH4pk+0DKuDXuLbxQTcUBUJLHQBlXK0ryDP8VQG9Ni/6IhsScZqHrozPyL5rsJzs0W/30upYCXi9wSR+r37XxDeWYQ9kJSEIJApS7U+v8c48/lzuGcH80e0Ndbu8xcXkWYAmC/sjN493cpGmxSuk643y9nMUum9DxP6ayTRbZYPZwvdxroiA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Evt5lOXb; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=devnull+davemarq.linux.ibm.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1788202827; c=relaxed/relaxed;
+	bh=UXKp5Nub8lVHAV8YhzKyD3pSJWPUrEl1WluQq8nga1Q=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=WMZxfNiN3DMHAzO10RDQHEitcrbaS0Y0GdKxRPhIa2VGzYjPff4YBZs8XTpEUfnOj2A+NayZ+RZFRLVbS4EM3Xhld/NqSMJGQH7vAT6BR/7a+5rdK3ZKqozuQoAVwP3ahCRig1uy8P7Urh2oSOHmQuH3PtQaEhlka18b6xdJKO32eEgZxylerwQNveCKHWy7LqwxZ3AYKMniJK2zyixgjmeSzEIgJWdZ5YmuiFemuqRpR9M4t96/1pzFIIRnpv9pOQxudF2oNqjbRb+7CT1EWBZ0eNCfdaJdNzcfWIoTzZV4gS6Nzbye83zwTdzgaljUnKbVC9U/C84jrR/PebfSLA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Q4ZLTzgG; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=devnull+davemarq.linux.ibm.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Evt5lOXb;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Q4ZLTzgG;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=devnull+davemarq.linux.ibm.com@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=devnull+davemarq.linux.ibm.com@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hYdbm64XWz2yCt
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Sep 2026 05:00:20 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hYdbp17c8z2yFK
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Sep 2026 05:00:21 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id A934E601FB;
+	by sea.source.kernel.org (Postfix) with ESMTP id C263740405;
 	Mon, 31 Aug 2026 19:00:17 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 54BF0C2BCB8;
+Received: by smtp.kernel.org (Postfix) with ESMTPS id A64FDC2BCFD;
 	Mon, 31 Aug 2026 19:00:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1788202817;
-	bh=bGxCMqk7Tca/HbrntvZOHhlkrnA0xoCRIXj6OVdWpxo=;
-	h=From:Subject:Date:To:Cc:Reply-To:From;
-	b=Evt5lOXbat8HyDuN+ollb0bw3LRYYP4duOAd03GbHpwIjybHBaMqgzcO6Fbd09cwS
-	 p4/gED8D0NBOwDZAcQZSsa7NIhOEuIPZzSY1F+lLprehg0MTOfjrV51E7RKmikImZV
-	 owhH/76QIXMrrJfrZSAWULbqOzNGW74G5CgnwnlYKAr2MYKgBUgVXPIX1xTy6vkQ2n
-	 JgWtzSDc2rB2y8lJgarO1qTPh77EpJstqfv2m1Czn/6D+Ots9Qfsz+Oq6HEYh/oEuX
-	 UGh35aY5F0IuMA2v1cLd8PokPqr2qYtzCmlXBM4pnGvMtYucuae1IFrjbh2xvY/9wI
-	 e8X7lBC7Y8g7w==
+	bh=LqWcRXumeJYZA72WHW3PLzNhJPQBDpbRw3md9MMNmEI=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=Q4ZLTzgGt20sP8+G4svA4fJXIqpZyRXNRUPGmo2niC9jJBqLTjOEZtR4CPHcx24Uo
+	 0l5BpGPAi2VeWzYA1qESOdOBw8Uj+8G1kmEibGsSCPh5kFO2Pd/FW02v2H+Ijh5maP
+	 l2B0kkjuzA2nSVM938+Z9LQJWY1jJjnq0lQ90yrV7RbnSAtsjFPIXyHS5FXBZj4Bl/
+	 sy8PS/YXnXwWgvCzjptLLSPRzdjOrf5xLoOM4o1QmRhHytCdFG5W1hyq7nvEk85AEQ
+	 Wg+o82NzkEa1Bi/F4ohIVyrPDQUCOkDCCaXKFEYpcq5mfLVUx+8dhaHda8JYfkvY5G
+	 M1ZalUgNFSBgw==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E731C624A4;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 90E0AC624A4;
 	Mon, 31 Aug 2026 19:00:17 +0000 (UTC)
 From: Dave Marquardt via B4 Relay <devnull+davemarq.linux.ibm.com@kernel.org>
-Subject: [PATCH v7 0/8] scsi: ibmvfc: make ibmvfc support FPIN messages
-Date: Mon, 31 Aug 2026 14:00:12 -0500
-Message-Id: <20260831-ibmvfc-fpin-support-v7-0-77d0b9809080@linux.ibm.com>
+Date: Mon, 31 Aug 2026 14:00:17 -0500
+Subject: [PATCH v7 5/8] scsi: ibmvfc: add interrupt routine for
+ asynchronous sub CRQ
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -65,12 +66,9 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIADzPlWoC/3XRTU7DMBAF4KtUXuNq7HhshxX3QCz8S41oEsWJV
- VTl7jhFqBUyyye9+d5iriSHOYVMng9XMoeSchqHGtTTgbiTGd4DTb5mwoFLEKBosucSHY1TGmh
- ep2mcF2p7iwqd594wUi+nOcR0uamvbz85r/YjuGWn9sYp5WWcv26zhe293wXdXCiMAkVuQTohR
- YDu5TMN6+VYu0c3nsm+Uvjdkf85vDpesIgCojXoWk53dxTwttPtTo+2R6Fc1LrliAeHQdsR1Qk
- ROmYc65FDy8G7o0G2HawO66KXURsdtW058sFh7U8WWR3JDffIMSjwf51t274BMPZrQTQCAAA=
-X-Change-ID: 20260407-ibmvfc-fpin-support-b9b575cd2da1
+Message-Id: <20260831-ibmvfc-fpin-support-v7-5-77d0b9809080@linux.ibm.com>
+References: <20260831-ibmvfc-fpin-support-v7-0-77d0b9809080@linux.ibm.com>
+In-Reply-To: <20260831-ibmvfc-fpin-support-v7-0-77d0b9809080@linux.ibm.com>
 To: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, 
  Madhavan Srinivasan <maddy@linux.ibm.com>, 
  Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
@@ -82,11 +80,11 @@ Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
  Greg Joyce <gjoyce@linux.ibm.com>, Kyle Mahlkuch <kmahlkuc@linux.ibm.com>, 
  Dave Marquardt <davemarq@linux.ibm.com>
 X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1788202815; l=5318;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1788202815; l=2764;
  i=davemarq@linux.ibm.com; s=20260216; h=from:subject:message-id;
- bh=bGxCMqk7Tca/HbrntvZOHhlkrnA0xoCRIXj6OVdWpxo=;
- b=A7iQTutu+dU3vu9jiywR5kwlmiVFYEJuzMJfkBBxWBd3WrtGzqPsWURMi3FcVvTIhBV6pcOSv
- 5H1wlfVsOekBV6fLddp5A/leff0rbq9ssfSKPWfOQGf0EHRQws7jUAB
+ bh=7W2E8wNnNCT6dRKpJAoR0RSGm10kkog2oddF7I2lfCY=;
+ b=Dg+2adqbpCsZvOQ8QrGbdBUmYLxSYyjN3twltuhxFvFRy3zJrmhxK3BTqVYySPO3uy0zVQIQb
+ JYvlYhJJiwQCs4SzQwR+DeR06GqwZ8HEpJvrquIjQDxtD2MEzTzDDSz
 X-Developer-Key: i=davemarq@linux.ibm.com; a=ed25519;
  pk=vy0/nfobrje6EqZxuyw6a3ZstytG8WK2vf5Y3xtGrEg=
 X-Endpoint-Received: by B4 Relay for davemarq@linux.ibm.com/20260216 with
@@ -94,118 +92,91 @@ X-Endpoint-Received: by B4 Relay for davemarq@linux.ibm.com/20260216 with
 X-Original-From: Dave Marquardt <davemarq@linux.ibm.com>
 Reply-To: davemarq@linux.ibm.com
 
-This patch series adds FPIN (fabric performance impact notification)
-support to the ibmvfc (IBM Virtual Fibre Channel) driver. This comes
-in three flavors:
+From: Dave Marquardt <davemarq@linux.ibm.com>
 
-- basic, to recognize existing FPIN messages from the virtual I/O
-  server (VIOS) (patch 1)
-- full, supporting additional FPIN information and using its own
-  asynchronous sub-queue and interrupt (patches 3-7)
-- extended, supporting FC-LS-5 (patch 8)
+Add ibmvfc_interrupt_async_subq(), an IRQ handler dedicated to
+asynchronous sub-CRQ events from the adapter. The handler disables
+the sub-CRQ IRQ and then calls ibmvfc_drain_async_subq() to consume
+all pending entries before re-enabling interrupts. The handler is
+marked as __maybe_unused until a later patch when it is used.
 
-Full and extended FPIN support requires a new asynchronous sub-queue
-with its own interrupt. The asynchronous sub-queue support requires
-ibmvfc to also support a new IBMVFC_NOOP command, which the driver
-recognizes and ignores (patch 2).
-
-The asynchronous sub-queue work is split across three patches: patch 3
-defines the necessary data structures, patch 5 adds the interrupt and
-drain routines for the queue, and patch 6 refactors channel
-registration and deregistration to accommodate the new queue. Patch 7
-wires everything together, registering the async sub-queue during
-channel initialization and advertising support to VIOS during NPIV
-login.
-
-All three modes convert an incoming FPIN message from VIOS to an FC
-extended link service message, in some cases using default values for
-information not provided by the VIOS FPIN message but expected in the
-FC ELS message. This FC ELS message is passed to fc_host_rcv_fpin for
-updating statistics and sending the information upstream by netlink
-multicast, where it may be read by listeners including the DM
-multipath daemon "multipathd."
+ibmvfc_drain_async_subq() holds the per-queue q_lock while
+processing. It loops over available CRQ entries via ibmvfc_next_scrq(),
+wrapping each in a typed struct ibmvfc_async_crq_event and dispatching
+it to ibmvfc_handle_async(), then clears the valid bit and issues a
+write barrier. After draining, it re-enables the sub-CRQ IRQ and performs
+one final check for a newly arrived entry to close the IRQ-enable race;
+if one is found it is processed before exiting the loop.
 
 Signed-off-by: Dave Marquardt <davemarq@linux.ibm.com>
 ---
-Changes in v7:
-- Removed CRQ valid bit clearing to callers of ibmvfc_handle_async in
-  all cases
-- Added validity checks that IBMVFC_ASYNC_ID_IS_ASSOC_ID is clear
-  before using node_name
-- Fixed error path cleanup in ibmvfc_init_sub_crqs
-- Deregister and reregister async sub-CRQ in CRQ reset and reenable
-  code.
-- Moved work queue destruction after sub CRQs teardown in ibmvfc_remove
-- Modified async event handling code to use a tagged union rather than
-  void *.
-- Use WQ_UNBOUND rather than WQ_PERCPU for fpin workqueue, as FPIN
-  events should be rare. Hold q_lock only in
-  ibmvfc_drain_async_subq(), like ibmvfc_drain_sub_crq().
-- Hardened KUnit tests to use host_lock and kref.
-- Link to v6: https://patch.msgid.link/20260817-ibmvfc-fpin-support-v6-0-62a2d525e70d@linux.ibm.com
+ drivers/scsi/ibmvscsi/ibmvfc-core.c | 50 +++++++++++++++++++++++++++++++++++++
+ 1 file changed, 50 insertions(+)
 
-Changes in v6:
-- Use alloc_workqueue rather than devm_alloc_workqueue, and add
-  explicit destroy_workqueue calls
-- Moved ibmvfc_find_target into patch 1
-- Link to v5: https://patch.msgid.link/20260806-ibmvfc-fpin-support-v5-0-13fd6f8a8f8b@linux.ibm.com
+diff --git a/drivers/scsi/ibmvscsi/ibmvfc-core.c b/drivers/scsi/ibmvscsi/ibmvfc-core.c
+index 229b06effd4c..a28875c1f983 100644
+--- a/drivers/scsi/ibmvscsi/ibmvfc-core.c
++++ b/drivers/scsi/ibmvscsi/ibmvfc-core.c
+@@ -4369,6 +4369,56 @@ static struct ibmvfc_crq *ibmvfc_next_scrq(struct ibmvfc_queue *scrq)
+ 	return crq;
+ }
+ 
++static void ibmvfc_drain_async_subq(struct ibmvfc_queue *scrq)
++{
++	struct ibmvfc_crq *crq;
++	int done = 0;
++
++	spin_lock(scrq->q_lock);
++	while (!done) {
++		while ((crq = ibmvfc_next_scrq(scrq)) != NULL) {
++			struct ibmvfc_async_crq_event ae = {
++				.type = IBMVFC_ASYNC_CRQ_SUB,
++				.subq = *(struct ibmvfc_async_sub_crq *)crq,
++			};
++			ibmvfc_handle_async(&ae, scrq->vhost);
++			crq->valid = 0;
++			wmb();	/* complete write */
++		}
++
++		ibmvfc_toggle_scrq_irq(scrq, 1);
++		crq = ibmvfc_next_scrq(scrq);
++		if (crq != NULL) {
++			struct ibmvfc_async_crq_event ae = {
++				.type = IBMVFC_ASYNC_CRQ_SUB,
++				.subq = *(struct ibmvfc_async_sub_crq *)crq,
++			};
++			ibmvfc_toggle_scrq_irq(scrq, 0);
++			ibmvfc_handle_async(&ae, scrq->vhost);
++			crq->valid = 0;
++			wmb();	/* complete write */
++		} else
++			done = 1;
++	}
++	spin_unlock(scrq->q_lock);
++}
++
++/**
++ * ibmvfc_interrupt_async_subq - Handle an async event from the adapter
++ * @irq:           interrupt request
++ * @scrq_instance: async subq
++ *
++ **/
++static irqreturn_t __maybe_unused ibmvfc_interrupt_async_subq(int irq, void *scrq_instance)
++{
++	struct ibmvfc_queue *scrq = (struct ibmvfc_queue *)scrq_instance;
++
++	ibmvfc_toggle_scrq_irq(scrq, 0);
++	ibmvfc_drain_async_subq(scrq);
++
++	return IRQ_HANDLED;
++}
++
+ static void ibmvfc_drain_sub_crq(struct ibmvfc_queue *scrq)
+ {
+ 	struct ibmvfc_crq *crq;
 
-Changes in v5:
-- Incorporate changes for NVME-over-FC.
-- Removed now redundant fabric login patch.
-- Link to v4: https://patch.msgid.link/20260710-ibmvfc-fpin-support-v4-0-ef031ac19520@linux.ibm.com
-
-Changes in v4:
-- Refactored channel registration
-- Check whether async work queue is allocated before using or freeing
-- Fixed work queue allocation/destruction
-- Skip basic KUnit test when there are no ibmvfc devices available
-- Fix target not found condition in ibmvfc_process_async_work
-- Link to v3: https://patch.msgid.link/20260702-ibmvfc-fpin-support-v3-0-d95b9747cf88@linux.ibm.com
-
-Changes in v3:
-- Fixed latent bug, exposed by VFC_NOOP, related to dataless CRQs and events
-- Fixed FPIN TLV descriptor length calculations
-- Use safe list walker to walk targets in ibmvfc_process_async_work
-- Added write memory barriers after clearing CRQ valid field
-- Use per-vhost work queue for FPIN work
-- Link to v2: https://patch.msgid.link/20260608-ibmvfc-fpin-support-v2-0-d41f540fba5c@linux.ibm.com
-
-Highlights of changes in v2:
-- Refactored mostly common FPIN conversion routines and async event
-  processing into single routines with wrappers for differences.
-- Moved FPIN processing to a work queue to avoid conflicts with
-  fc_host_fpin_rcv and memory allocation
-- Set descriptor sizes correctly
-- Use target WWPN for basic FPIN descriptor
-- Split patch 4 into 3 patches, for definition, allocation, and use of
-  the asynchronous sub-queue for events
-- Link to v1: https://patch.msgid.link/20260408-ibmvfc-fpin-support-v1-0-52b06c464e03@linux.ibm.com
-
----
-Dave Marquardt (8):
-      scsi: ibmvfc: add basic FPIN support
-      scsi: ibmvfc: Add NOOP command support
-      scsi: ibmvfc: add FPIN extended flag and async sub-CRQ queue handle
-      scsi: ibmvfc: extend async event handlers to handle async sub queue events
-      scsi: ibmvfc: add interrupt routine for asynchronous sub CRQ
-      scsi: ibmvfc: extend channel registration and deregistration for async subq
-      scsi: ibmvfc: register and use asynchronous sub CRQ for events
-      scsi: ibmvfc: handle extended FPIN events
-
- drivers/scsi/Kconfig                 |  10 +
- drivers/scsi/ibmvscsi/Makefile       |   1 +
- drivers/scsi/ibmvscsi/ibmvfc-core.c  | 690 ++++++++++++++++++++++++++++++++---
- drivers/scsi/ibmvscsi/ibmvfc.h       |  63 ++++
- drivers/scsi/ibmvscsi/ibmvfc_kunit.c | 398 ++++++++++++++++++++
- 5 files changed, 1105 insertions(+), 57 deletions(-)
----
-base-commit: 12e67eb89eb2b9516685c744d3f7de0a2d1bd701
-change-id: 20260407-ibmvfc-fpin-support-b9b575cd2da1
-
-Best regards,
---  
-Dave Marquardt <davemarq@linux.ibm.com>
+-- 
+2.55.0
 
 
 
