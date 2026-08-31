@@ -1,50 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-26289-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26290-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 80258C61DD3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2026 12:24:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4AD71C624CE
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2026 13:30:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hYSpY0qRyz2xpn;
-	Mon, 31 Aug 2026 22:24:05 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::73"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788169600;
-	cv=none; b=KgoTNzL3qsa8CVAhGg4Q+aKARIlsQ3mG5ndZJwWNTJet8hJrQsqXXk2ZE2pD8Bvrh1ZCBE+FVa9GdpY4nvj6yaoDQWk4pvxhrPsvLG8Kpb7fL/7Gc/lb8HCn3a9M+UTtXLVn97ntqEk2cOu5pdu6b+YqWeD7/G94SvhRdfAly92Pch8FYFTiBHQgkLqnFTNc5ym60zyiniyv7PZDf1DnnBGhbWH2lLiYMZ5mKzIbrN37iebdvTx90PRvK50uTUWu62K/OZgUIz0SQCT1MyIGXtphVs00j3UYQ6P4rSIfMB39inSgS7ijrYUxzVXQ2vKJf6JWHHL4bHLasZUQ8Vye8A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hYVHS4J6Jz2y2J;
+	Mon, 31 Aug 2026 23:30:44 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::633"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788183044;
+	cv=none; b=evrh3Vatgg9IQIiX+40RgT+8Bgv1cRq/ajEZtOj6FaCTM+lYOvR323SyB+FCgPPTRLqT0t0n96Fg1ODHTpUk44btszpnv2OOaMzp0LOecFPn5SnK9W7Ak/Wi4xkd1zRGiQ+0aMZFBiX38FelgQROxj/1IEoTENhTfx1ECsVwLYROWAy0KfjsTadu0J7lB7nE7EVm8Xq+WQfQ7a9Ywz2f6hoyBWE8OG2kuJvxRHSzXjpFU70S2ylQEuxNkzaxxpnie7GgYjS0gipUkY8Qiam4v1dXHzSkGTLFGoCptyXe9GVGQILDk8X4OT7BfpxE6cRmvaYmXSOzW2axRWHXuDFUEQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788169600; c=relaxed/relaxed;
-	bh=lssN/+g4CsD3iBF3KDZ0/HynoTt5PqQamjTFAdGkwv8=;
+	t=1788183044; c=relaxed/relaxed;
+	bh=bclo5dNXV+6Jy1wwsMfxD1j5QCeC9PLq5D/ZXM1ZV+o=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=LPPVjKxDi+uqK5li95haph7PenDBmKhRugrTnBseLAqPq1d2RgBuYTmxWuvaJHFRar/nFYkdc2xATcdsEnTyXkBP5ZaJCcfgJ/CsofPec0H4n7Iq+G6zc7EXN724j5ntLDhPc2VvAPtbo51BfGwA8poKxH4kPRKtYwaRvsscXhvYqiBYcfy/YVNVE6PcU0doREoe1vxXRrS9xrqndHFAVcA52X/+ly0RY+p9MLOMgFKfoqRU2ur8JysGgsu6TxK/5B46SMi/JYaLRAENcyNEdUDYTFBlMLR4sMWaUBSmqgNMsD//dP5wPztKWbI9jhwR6qCcJMaPbzvXrCMT9bJBwA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=d/xv5z2o; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::73; helo=mta0.migadu.com; envelope-from=qi.zheng@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+	 In-Reply-To:Content-Type; b=BKyW0NPReMe+aK4mwlZhLbbH8W+6XYkPWH2Cc/jRCgSa8VvG38T5w3ewt5nvTh7aa6bxlSHLIZpxC/HPva8edLLvqNPlDqlgyDrnWeRcnMb+l/PtHe+mB/sXB23bh4YXV8tB7ZfN/diefHis4XsDX1BbQe5HKLi+/hv7iY2raGP8tIUXbTee+CMO+moeT68o8qWOhsYW/hZ7L1a1AfMYtkwLO+s0OgSdPrvTnOJA7mYrDdgzz1va8L6gVnhRpkQkk9jQ8pvJKkZT2ymEUnNmAttdlJPVcrNNZDzsGqX90Md/irR/Atf0b3BtSbaw4yghN8N6SroIBK86be1324GZ/A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=T3PAypEu; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::633; helo=mail-ej1-x633.google.com; envelope-from=petr.pavlu@suse.com; receiver=lists.ozlabs.org) smtp.mailfrom=suse.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=d/xv5z2o;
+	dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=T3PAypEu;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::73; helo=mta0.migadu.com; envelope-from=qi.zheng@linux.dev; receiver=lists.ozlabs.org)
-X-Greylist: delayed 79 seconds by postgrey-1.37 at boromir; Mon, 31 Aug 2026 19:46:36 AEST
-Received: from mta0.migadu.com (out-115.mta0.migadu.com [IPv6:2001:41d0:1004:224b::73])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=2a00:1450:4864:20::633; helo=mail-ej1-x633.google.com; envelope-from=petr.pavlu@suse.com; receiver=lists.ozlabs.org)
+Received: from mail-ej1-x633.google.com (mail-ej1-x633.google.com [IPv6:2a00:1450:4864:20::633])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hYPJr5Vd5z2xLf
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Aug 2026 19:46:36 +1000 (AEST)
-X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-DKIM-Signature: a=rsa-sha256; bh=fQebo7Azp0AKIE2puaSGtaPeAdhrfMBt6pp9DjsjoIY=;
- c=simple/simple; d=linux.dev;
- h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
- t=1788169578; v=1; x=1788774378;
- b=d/xv5z2oTErHPmEyKM3NtxKBEzR7SXmSemyKCQ0vf6EM7wlXaZbSFZVmdNqnFKMqxps+EIlB
- MjvYsUI7/jBfvWtXHhBYL0m07Eyhm103KmdHHM9MoNkxS6/5+GsYAGRutQOlgc1V9RJ7n3pY3oe
- DCAhRkVerq5TJVt/+lIJuZco=
-X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-Received: by smtp.migadu.com with ESMTPS id 9880a24a06b3ebf9;
-	Mon, 31 Aug 2026 09:44:55 +0000
-X-Mizu-Trace-ID: 9880a24a06b3ebf9
-X-Migadu-Flow: FLOW_OUT
-Message-ID: <0e1c3bb8-49a4-479e-adb3-17c21261d409@linux.dev>
-Date: Mon, 31 Aug 2026 17:44:46 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hYVHR04s4z2xpn
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Aug 2026 23:30:41 +1000 (AEST)
+Received: by mail-ej1-x633.google.com with SMTP id a640c23a62f3a-c2544ff970dso542019966b.2
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Aug 2026 06:30:41 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=suse.com; s=google; t=1788183038; x=1788787838; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=bclo5dNXV+6Jy1wwsMfxD1j5QCeC9PLq5D/ZXM1ZV+o=;
+        b=T3PAypEuH41VMMz0DCyBgvY0djXj6ez9WK79Qzp3bhMSw1yra1J3fOBh+igXD04IXu
+         rErX8HBBgsLga5CLyeg096KvSRddRRVBDizSlhWxcHevImM1G41YaTGDtKS5ppinl41E
+         tv6y4dUmiUT4CYG9fyRvebdCpqR/xDd6ZdvwSTMu+FqBtq8k+HQZ1S8XRM1d91vB79I5
+         9K4Ou6r9Ie4cFYnZMafzM5jXY27C4WoRMJ/35DpD+PXlnXA5cb98N0gMGJ9Bq4PQyRTU
+         MtoA5VBW1bhKE16dexkk0s460uhtMSaF1R96uT0YCJNcxBSguJKEqA8X7jn0JjGg7xky
+         pmag==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1788183038; x=1788787838;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=bclo5dNXV+6Jy1wwsMfxD1j5QCeC9PLq5D/ZXM1ZV+o=;
+        b=fScXACks69fW9QBcFp66w1Wx8Mv4DndMgJD7FJe3N1f0ORs215bc4m89SzD3cO4itF
+         6QUlX+PadSysdKK6JC87IzU0wwoGAlopCWKO4VixDbrGW938wMylvKaDWfWmKfzmyC1j
+         k6n7pOiV85lQDlrs62SlINgbxCeLODkqKyIWRfCumO/It/oehWMDkk2yA67o4gTxxKOs
+         +Q1Mxm0Ur4hfNLIpcBhfejTpDOrWooOUKfLWlracn4oR8km+qKRSoS7JQNkIoGtp2hxi
+         YeoD9kdiRb4HkIRMn0erxFUpe5Ho8gD/YH7x0hWvC9PIkRz71m2lOzc7J3qcGUVKyryb
+         uN6A==
+X-Forwarded-Encrypted: i=1; AHgh+RopS9ihpQN5pBGMNwWKE+YcuiPUfGnwyVxh9jWmNc3L1Vk8RJqDQ2nFTf6bcM/ysGf0KTjEx8ZjYyOQ3Sw=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++nOlZJk0t8D5Gy1W3OnPnRn1KBCNxX8F4l9pd1G5zD+Y45TT1Q3
+	PQgXsVQ5snxAB4kJKKU1jFS/NT+kXpL1pEbFITy0TL4nbYhZj3cShYFRBck3rajarBE=
+X-Gm-Gg: AR+sD11GCSmg+L+/+j9ynICHERAt6OMIfTa1kZo+/DSt1Z/qTo06z7VSYGkhwdH6HBP
+	O83+WbcKWHPHHuDk9zYnXpARN28+Wq74JOc9ybu0SJYDDJdlmBQbLZrRbLn8RQRnWn8yIjWPKxC
+	01faaeTNQgGNJyKyli8+dT6QCY3GNW/Aq02HnJFUuiLvuL5IJp/3NHGJXurxafyGpeMwmkocJBT
+	ikLp+0iG+rXD0i2bz+HC6TuEnaTVQsdqcnJ6nmHWPu4kdpyTJ0NZcmUmN00LH8IDZ3LEQEkmf+b
+	nlMwloMeEmBTcLV1W6ZlUO//5tzxveLATOj35PoyyPStf/bmstVg4lBHGPHZ8NRuVRjt8AAEexT
+	cxB2tazKIX+4IkTepj0BxcNutb+htDAP2w1AgcCJuBHWe4B9vc+8mtHv7z7zgmsZiuHFxAh2UDK
+	r7SOBdfu9Q9yYNAdW5SWRS6WkEfGnmJM/dyKwH5xXyZVY8SSc8r7SB2ShlC1rvDFqsNS6lVH8pk
+	+TupubfpNVDnFprPaS3PJk2
+X-Received: by 2002:a17:907:3cc2:b0:c1c:5aa1:de57 with SMTP id a640c23a62f3a-c2557030696mr1575327866b.13.1788183038289;
+        Mon, 31 Aug 2026 06:30:38 -0700 (PDT)
+Received: from ?IPV6:2a07:de40:8100:0:fc6c:f9a2:4a0a:6354? ([2001:af0:8000:1409:193:86:92:181])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c255ee0b233sm435317266b.11.2026.08.31.06.30.37
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 31 Aug 2026 06:30:37 -0700 (PDT)
+Message-ID: <5e6231aa-10b9-4c41-b7ab-dee5e8f64bec@suse.com>
+Date: Mon, 31 Aug 2026 15:30:36 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,218 +90,89 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 01/11] mm/sparse-vmemmap: introduce
- CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION
-To: Muchun Song <songmuchun@bytedance.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- David Hildenbrand <david@kernel.org>, Oscar Salvador <osalvador@suse.de>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Jonathan Corbet <corbet@lwn.net>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-doc@vger.kernel.org,
- Muchun Song <muchun.song@linux.dev>, Lorenzo Stoakes <ljs@kernel.org>,
- Mike Rapoport <rppt@kernel.org>, Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy <chleroy@kernel.org>, Randy Dunlap <rdunlap@infradead.org>
-References: <20260831075342.57563-1-songmuchun@bytedance.com>
- <20260831075342.57563-2-songmuchun@bytedance.com>
-From: Qi Zheng <qi.zheng@linux.dev>
-In-Reply-To: <20260831075342.57563-2-songmuchun@bytedance.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Subject: Re: [RFC PATCH 0/9] arm64: Allocate .text and .init.text together
+To: Ard Biesheuvel <ardb@kernel.org>
+Cc: Ard Biesheuvel <ardb+git@google.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
+ Steven Rostedt <rostedt@goodmis.org>, Masami Hiramatsu
+ <mhiramat@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Mike Rapoport <rppt@kernel.org>,
+ Luis Chamberlain <mcgrof@kernel.org>, Daniel Gomez <da.gomez@kernel.org>,
+ Sami Tolvanen <samitolvanen@google.com>, Aaron Tomlin <atomlin@atomlin.com>,
+ =?UTF-8?Q?Adrian_Barna=C5=9B?= <abarnas@google.com>,
+ Ryan Roberts <ryan.roberts@arm.com>, Kevin Brodsky <kevin.brodsky@arm.com>,
+ linux-arm-kernel@lists.infradead.org, linux-trace-kernel@vger.kernel.org,
+ linux-mm@kvack.org, linux-modules@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+References: <20260822135323.795946-11-ardb+git@google.com>
+ <524b5817-c097-47cb-b301-4a9c0f1d2947@suse.com>
+ <cee89666-9de0-4012-b665-69da3846c5ef@app.fastmail.com>
+Content-Language: en-US
+From: Petr Pavlu <petr.pavlu@suse.com>
+In-Reply-To: <cee89666-9de0-4012-b665-69da3846c5ef@app.fastmail.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-
-
-On 8/31/26 3:53 PM, Muchun Song wrote:
-> The section-based vmemmap optimization infrastructure is still guarded by
-> CONFIG_HUGETLB_PAGE_OPTIMIZE_VMEMMAP, but it also can be used by device
-> DAX. Introduce CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION as a common config
-> for the shared infrastructure.
+On 8/28/26 3:45 PM, Ard Biesheuvel wrote:
+> On Fri, 28 Aug 2026, at 15:07, Petr Pavlu wrote:
+>> On 8/22/26 3:53 PM, Ard Biesheuvel wrote:
+>>> From: Ard Biesheuvel <ardb@kernel.org>
+>>>
+>>> The arm64 module loader has to deal with a couple of corner cases that
+>>> may occur when .init.text is placed out of direct branch range of .text:
+>>>
+>>> - ordinary direct branches from .init.text into .text may require the
+>>>   use of a PLT entry (i.e., a trampoline aka veneer), which means not
+>>>   only that additional PLT entries need to be allocated for
+>>>   cross-section calls, but also that .init.text needs its own PLT
+>>>   reservation, as the one in .text will be out of range as well;
+>>>
+>>> - dynamic patching of the ftrace handler into .init.text code needs its
+>>>   own dedicated trampoline as the one in .text may be too far away.
+>>>
+>>> - recent compilers may omit BTI veneers for static functions that never
+>>>   have their address taken, and so additional veneers will need to be
+>>>   added to .text in case cross-section direct branches from .init.text 
+>>>   require a PLT entry (and therefore a landing pad at the target end).
+>>>
+>>> This is unfortunate, because it is actually somewhat unusual for .text
+>>> and .init.text to be so far away from each other: only when allocating
+>>> either of them (but not both) exhausts the 'near' (PLT-less) module
+>>> region, the other will be allocated from the spillover region, which is
+>>> not in direct branching range, and therefore requires PLT entries for
+>>> cross-section calls.
+>>>
+>>> This series addresses this wart by allocating both of them as a single
+>>> chunk, and freeing the .init.text part along with the other init
+>>> sections at the appropriate time. This ensures that the two regions will
+>>> never require veneers for cross-section calls, allowing the arm64 module
+>>> loader to be simplified.
+>>
+>> It looks like this should also be useful for ppc64, which currently
+>> merges .init.text and .text because keeping them separate would require
+>> stubs between the two, and consequently .init.text is never released in
+>> modules on this architecture.
+>>
 > 
-> Select the new option from HUGETLB_PAGE_OPTIMIZE_VMEMMAP and from
-> DEV_DAX when the architecture opts in to DAX vmemmap optimization, and
-> use it to guard the generic sparse-vmemmap state and helpers.
-> 
-> Signed-off-by: Muchun Song <songmuchun@bytedance.com>
-> ---
->   arch/x86/entry/vdso/vdso32/fake_32bit_build.h |  2 +-
->   drivers/dax/Kconfig                           |  1 +
->   fs/Kconfig                                    |  1 +
->   include/linux/mm.h                            |  3 +++
->   include/linux/mmzone.h                        | 13 +++++++------
->   include/linux/page-flags.h                    |  5 ++---
->   mm/Kconfig                                    |  3 +++
->   mm/sparse.h                                   |  4 ++--
->   8 files changed, 20 insertions(+), 12 deletions(-)
-> 
-> diff --git a/arch/x86/entry/vdso/vdso32/fake_32bit_build.h b/arch/x86/entry/vdso/vdso32/fake_32bit_build.h
-> index bc3e549795c3..5f8424eade2b 100644
-> --- a/arch/x86/entry/vdso/vdso32/fake_32bit_build.h
-> +++ b/arch/x86/entry/vdso/vdso32/fake_32bit_build.h
-> @@ -11,7 +11,7 @@
->   #undef CONFIG_PGTABLE_LEVELS
->   #undef CONFIG_ILLEGAL_POINTER_VALUE
->   #undef CONFIG_SPARSEMEM_VMEMMAP
-> -#undef CONFIG_HUGETLB_PAGE_OPTIMIZE_VMEMMAP
-> +#undef CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION
->   #undef CONFIG_NR_CPUS
->   #undef CONFIG_PARAVIRT_XXL
->   
-> diff --git a/drivers/dax/Kconfig b/drivers/dax/Kconfig
-> index 602f9a0839a9..85ad4c135cdd 100644
-> --- a/drivers/dax/Kconfig
-> +++ b/drivers/dax/Kconfig
-> @@ -8,6 +8,7 @@ if DAX
->   config DEV_DAX
->   	tristate "Device DAX: direct access mapping device"
->   	depends on TRANSPARENT_HUGEPAGE
-> +	select SPARSEMEM_VMEMMAP_OPTIMIZATION if ARCH_WANT_OPTIMIZE_DAX_VMEMMAP
->   	help
->   	  Support raw access to differentiated (persistence, bandwidth,
->   	  latency...) memory via an mmap(2) capable character
-> diff --git a/fs/Kconfig b/fs/Kconfig
-> index d1c210c6508f..9b32ce79cc80 100644
-> --- a/fs/Kconfig
-> +++ b/fs/Kconfig
-> @@ -278,6 +278,7 @@ config HUGETLB_PAGE_OPTIMIZE_VMEMMAP
->   	def_bool HUGETLB_PAGE
->   	depends on ARCH_WANT_OPTIMIZE_HUGETLB_VMEMMAP
->   	depends on SPARSEMEM_VMEMMAP
-> +	select SPARSEMEM_VMEMMAP_OPTIMIZATION
->   
->   config HUGETLB_PMD_PAGE_TABLE_SHARING
->   	def_bool HUGETLB_PAGE
-> diff --git a/include/linux/mm.h b/include/linux/mm.h
-> index a9fbe26536f4..edadd7549b72 100644
-> --- a/include/linux/mm.h
-> +++ b/include/linux/mm.h
-> @@ -5188,6 +5188,9 @@ static inline bool __vmemmap_can_optimize(struct vmem_altmap *altmap,
->   	unsigned long nr_pages;
->   	unsigned long nr_vmemmap_pages;
->   
-> +	if (!IS_ENABLED(CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION))
-> +		return false;
-> +
->   	if (!pgmap || !is_power_of_2(sizeof(struct page)))
->   		return false;
->   
-> diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
-> index c9ae7991a8b2..e9b54ea0eff0 100644
-> --- a/include/linux/mmzone.h
-> +++ b/include/linux/mmzone.h
-> @@ -102,9 +102,9 @@
->    *
->    * HVO which is only active if the size of struct page is a power of 2.
->    */
-> -#define MAX_FOLIO_VMEMMAP_ALIGN \
-> -	(IS_ENABLED(CONFIG_HUGETLB_PAGE_OPTIMIZE_VMEMMAP) && \
-> -	 is_power_of_2(sizeof(struct page)) ? \
-> +#define MAX_FOLIO_VMEMMAP_ALIGN					\
-> +	(IS_ENABLED(CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION) &&	\
-> +	 is_power_of_2(sizeof(struct page)) ?			\
->   	 MAX_FOLIO_NR_PAGES * sizeof(struct page) : 0)
->   
->   /* The number of retained vmemmap pages with HVO enabled. */
-> @@ -116,7 +116,8 @@
->   #define __VMEMMAP_OPTIMIZATION_NR_ORDERS	\
->   	(MAX_FOLIO_ORDER - VMEMMAP_OPTIMIZATION_MIN_ORDER + 1)
->   #define VMEMMAP_OPTIMIZATION_NR_ORDERS		\
-> -	(__VMEMMAP_OPTIMIZATION_NR_ORDERS > 0 ? __VMEMMAP_OPTIMIZATION_NR_ORDERS : 0)
-> +	((__VMEMMAP_OPTIMIZATION_NR_ORDERS > 0 &&	\
-> +	  IS_ENABLED(CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION)) ? __VMEMMAP_OPTIMIZATION_NR_ORDERS : 0)
->   
->   enum migratetype {
->   	MIGRATE_UNMOVABLE,
-> @@ -1155,7 +1156,7 @@ struct zone {
->   	/* Zone statistics */
->   	atomic_long_t		vm_stat[NR_VM_ZONE_STAT_ITEMS];
->   	atomic_long_t		vm_numa_event[NR_VM_NUMA_EVENT_ITEMS];
-> -#ifdef CONFIG_HUGETLB_PAGE_OPTIMIZE_VMEMMAP
-> +#ifdef CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION
->   	struct page *vmemmap_tails[VMEMMAP_OPTIMIZATION_NR_ORDERS];
->   #endif
->   } ____cacheline_internodealigned_in_smp;
-> @@ -2019,7 +2020,7 @@ struct mem_section {
->   	unsigned long section_mem_map;
->   
->   	struct mem_section_usage *usage;
-> -#ifdef CONFIG_HUGETLB_PAGE_OPTIMIZE_VMEMMAP
-> +#ifdef CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION
->   	/*
->   	 * Normally, sections hold regular (order-0) pages. However, for
->   	 * sections with HVO enabled, this tracks the compound page order
-> diff --git a/include/linux/page-flags.h b/include/linux/page-flags.h
-> index ae2ebaed6d4d..de3c06062bc6 100644
-> --- a/include/linux/page-flags.h
-> +++ b/include/linux/page-flags.h
-> @@ -208,14 +208,13 @@ enum pageflags {
->   static __always_inline bool compound_info_has_mask(void)
->   {
->   	/*
-> -	 * Limit mask usage to HugeTLB vmemmap optimization (HVO) where it
-> -	 * makes a difference.
-> +	 * Limit mask usage to HVO where it makes a difference.
->   	 *
->   	 * The approach with mask would work in the wider set of conditions,
->   	 * but it requires validating that struct pages are naturally aligned
->   	 * for all orders up to the MAX_FOLIO_ORDER, which can be tricky.
->   	 */
-> -	if (!IS_ENABLED(CONFIG_HUGETLB_PAGE_OPTIMIZE_VMEMMAP))
-> +	if (!IS_ENABLED(CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION))
->   		return false;
->   
->   	return is_power_of_2(sizeof(struct page));
-> diff --git a/mm/Kconfig b/mm/Kconfig
-> index c1ddf59c0d71..b5f8372cd164 100644
-> --- a/mm/Kconfig
-> +++ b/mm/Kconfig
-> @@ -461,6 +461,9 @@ config SPARSEMEM_VMEMMAP
->   	  pfn_to_page and page_to_pfn operations.  This is the most
->   	  efficient option when sufficient kernel resources are available.
->   
-> +config SPARSEMEM_VMEMMAP_OPTIMIZATION
-> +	bool
+> Thanks for the data point - are those stubs needed when there is some
+> distance between the placements of .text and .init.text?
 
-As sashiko was concerned about [1], it seems we need to add
+Yes, my understanding is that these stubs are primarily needed because
+the BL instruction on ppc64 can only reach a range of +-32 MB.
 
-         depends on SPARSEMEM_VMEMMAP
+Another aspect on ppc64 is the use of the Table of Contents (TOC). In
+theory, when splitting .text and .init.text, one would also want
+separate TOCs, along with stubs to support switching between them.
+However, I don't think this is particularly feasible. As far as I can
+see, the ABI and GCC don't allow separate TOCs within a single
+relocatable object file. In practice, it shouldn't be a large problem to
+keep a single TOC, even if some data related only to .init.text remains
+present after the module is loaded. Being able to free .init.text is the
+important part. On newer Power10 with PCREL, the TOC is not used, so
+this issue goes away.
 
-here.
-
-Apart from that, LGTM. With this fix included:
-
-Acked-by: Qi Zheng <qi.zheng@linux.dev>
-
-Thanks,
-Qi
-
-[1]. 
-https://sashiko.dev/#/patchset/20260831075342.57563-1-songmuchun%40bytedance.com
-
-> +
->   #
->   # Select this config option from the architecture Kconfig, if it is preferred
->   # to enable the feature of HugeTLB/dev_dax vmemmap optimization.
-> diff --git a/mm/sparse.h b/mm/sparse.h
-> index 049272aba84e..b408d15baf7b 100644
-> --- a/mm/sparse.h
-> +++ b/mm/sparse.h
-> @@ -10,7 +10,7 @@
->   
->   #include <linux/mmzone.h>
->   
-> -#ifdef CONFIG_HUGETLB_PAGE_OPTIMIZE_VMEMMAP
-> +#ifdef CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION
->   static inline unsigned int section_order(const struct mem_section *section)
->   {
->   	return section->order;
-> @@ -72,7 +72,7 @@ static inline bool vmemmap_optimizable_pfn(unsigned long pfn)
->   
->   static inline bool vmemmap_optimizable_order(unsigned int order)
->   {
-> -	if (!IS_ENABLED(CONFIG_HUGETLB_PAGE_OPTIMIZE_VMEMMAP))
-> +	if (!IS_ENABLED(CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION))
->   		return false;
->   
->   	if (!is_power_of_2(sizeof(struct page)))
-
+-- 
+Cheers,
+Petr
 
