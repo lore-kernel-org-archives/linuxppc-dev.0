@@ -1,65 +1,111 @@
-Return-Path: <linuxppc-dev+bounces-26269-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26270-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EA2E0C61DD3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2026 08:29:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 75A97C61DE2
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2026 08:51:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hYMbJ3j4Cz2yDm;
-	Mon, 31 Aug 2026 18:29:00 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788164940;
-	cv=none; b=XkFLBZf/uoB5Iopz+JvAEsu7HDIYF8rgPV0UxyrYhv3TW+ZEEAHE/AI0dXh4z5rT+Xt2Z6K5k+lfxm2CY5f6cPlwavQNUMwysau+S1ky7qcPPAHaBoT4bWLA8fy4LBxA15T+UGh861cZHXQCNnjyOQ3psxmB01CHOuUiOJr75NnEoSo5mEnTVK5k1nAr+rX+m7Xx+lZW8V0pNO1AiEqi+uQNtyEKhZP5apO44nyaHAvhQ9DV4xpEt9Crt3DfNlS6JOA11QbT9eAKo51BT/ZYZJKh6A85NC1BfIX1AgI3EB+2mUkNhSey2d3+4s4v8SEBlJog7rYn/pGUc+faJig6Sg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hYN5h6R2Kz2y2f;
+	Mon, 31 Aug 2026 18:51:52 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788166312;
+	cv=none; b=IOzorOJLzGMYoZwdIAd6KVJ4OVJQRTI5Ej29Uah/8TPxTltYw5MKIGc+/AW1mfUQUnJF+O/bvBEha8KPa0P1zmjGlfdLPRSFuqoLBu9rVt3VYD4M88EtGlahgx3vCneQdf1Vu1S8YOKPF+rgD2va50jpchHUUDujLr2qnyT/Fu2/hUyxlpqHFqX8Gsft/VZnpT37AUANJquIgZsfJKInfPIrf5Llc1VkYcSWd/lMjHWiuG8dDMihzWF+cpTLWwZYlIGKIZjiiI/LoJ8fr/xoELqA20f5cjAs2xh84Pq8cr4oryLt8Tbc8fBPhHm4mwcVVfb52nDycZCf1UXXnjSEVA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788164940; c=relaxed/relaxed;
-	bh=VQpc8lTOdX3xSHi8EiRB4f2hLx8t85VdxKOuNWE2LD0=;
+	t=1788166312; c=relaxed/relaxed;
+	bh=CVbYk0gj5KXQ67iRLFH6F++pXSWYVzV4bNLBCZkNVy8=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=lmcMVWAGnxnLpDAdb3RSo6ZAWoQwV+LzI7RJyL9o7Wxvt4gTzlcixfE7PY58j1u59q1JEQFrKPhmBVGXAxpoVlsrVKHrAS0nt8qQ+vVnvkHddbHy1BFMrIDvhesnrWwwb5KZavEefycbzqyZU/JimgxVWRzD3OYvnyt0cjKO3L2z0EY5CffkVS9Im4go1YAhsvpICmaZqz3dVzhOW1Fi7t8yNKoIucIzqL82dFn8LvsGQOYPft/asafuIHyi6wQjziT2dL8HQAsvL9FRn6fENzccNyAg1cJVcvBkr2eQNr/IpLkhsytDY9sP0fSwKU9GmZKfoYTD5OaQi1MsD9yTeA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=d4ZAcMaG; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=i7pRpX8YqP+XV6nhIROKV7sbPWkFlvAF0uI3NyRjAqF7A8UYmMB0XR2Hw01O8w2j6qbnafGTySddnH0b5eg+83quoxgQQ5MQyV6nj+az38cGxt/BRghls2T2NvJ8rjvkje7ElgvHIci3d11moSsDi7QLKnM2vdjTmRzVhe0yMK+BqbnefkRR/+OU+Jcr9QaLJVEtstYq6TbtNEGK98cEdHbxaJpEPWs8XOYOqxahVkUOfxgPzIZKFkNso8u5ugFvgr6mFrzr8id7WzXA3vGrn4oUKO/aY8WPXJ0k67DURaCm2VeqdOeZbcQ4xyGmZu4Ji0vNyX0nObCqKZL88TnJ6Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Ybb5RZzS; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=hca@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=d4ZAcMaG;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Ybb5RZzS;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=hca@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hYMbG585zz2yDc
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Aug 2026 18:28:58 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 4EE5B4383A;
-	Mon, 31 Aug 2026 08:28:56 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id F240B1F000E9;
-	Mon, 31 Aug 2026 08:28:52 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788164936;
-	bh=VQpc8lTOdX3xSHi8EiRB4f2hLx8t85VdxKOuNWE2LD0=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=d4ZAcMaGmhWkbt0Rh1OPbj1YlvacnstiEn1h6FFml6IuFq+3UCfM+lcx8aLY2H5Sb
-	 aTcviB67lh56jpthcbuARnaiLX4X0zEJ5iPxkrisAndSC28M/yhEdVLGlUkt0diRxO
-	 9bduFdfWk+hI7CWNkelr83aVU9pAyG0ntG7S56uds6uH8gbohovzZGzBTSkSIocm39
-	 gnGlVJEZbg6CRfoOomrsStasSuqGXnXNNxknZttY9AdVDI4XPTmJ93LIezloeltrna
-	 rqfo0Swu4IbyUCEIkpSb0iea7aqu2MJDVQwQFkcSN19DRtkiVxfkbBz7lauGqWknXo
-	 5oualX6cx/Q9g==
-Date: Mon, 31 Aug 2026 11:28:49 +0300
-From: Mike Rapoport <rppt@kernel.org>
-To: Jiri Slaby <jirislaby@kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	David Hildenbrand <david@kernel.org>,
-	Matthew Wilcox <willy@infradead.org>,
-	Vlastimil Babka <vbabka@kernel.org>, linux-kernel@vger.kernel.org,
-	linux-mm@kvack.org, linux-serial@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 2/3] serial: core: replace get_zeroed_page() with
- kzalloc()
-Message-ID: <apU7QSOV22VJL3ay@kernel.org>
-References: <20260830-tty-v1-0-0cbe6170649b@kernel.org>
- <20260830-tty-v1-2-0cbe6170649b@kernel.org>
- <602bdc5f-e9fa-4ed5-a009-03af860d31a6@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hYN5h00MPz2y2J
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Aug 2026 18:51:51 +1000 (AEST)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67V82Hp11697480;
+	Mon, 31 Aug 2026 08:51:05 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=pp1; bh=CVbYk0gj5KXQ67iRLFH6F++pXSWYVz
+	V4bNLBCZkNVy8=; b=Ybb5RZzSRXxH50tJV/HBUhrjVmIBDpR4ZbNq1+HWNZhvB9
+	5HFz5fRUyA93c16kA0wp16C+QRBksBq4Z2KEuh8Av/VE+KpkeZ4uGIQUuFwYp8uU
+	xXuqtLg0wMfNjYZFaPxAZCnM2V/o7hGSST9533aNdTPRiEx1JiKTCYt27zmk25J7
+	Qw4/U6qUdjt1S5siGQniStMxnMLzif3hA7fIxhRdTsEHTdlIJlnFntrVxKha/qic
+	jfLVcJD6XvtrKnI0i+4S97wyvEoc8kTmGGZfn4idvJs95XCVMPcS/yo7mKOpHgTT
+	AC11isR2/K0RsQ0eMx0d3i4xR5MWVk3oiovvNb3w==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gbq2t00t9-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 31 Aug 2026 08:51:04 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 67V8fIDE023473;
+	Mon, 31 Aug 2026 08:51:03 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gccexvpqk-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 31 Aug 2026 08:51:03 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 67V8oxQj46334272
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 31 Aug 2026 08:50:59 GMT
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2A75F2004D;
+	Mon, 31 Aug 2026 08:50:59 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 8CAB12004B;
+	Mon, 31 Aug 2026 08:50:57 +0000 (GMT)
+Received: from osiris (unknown [9.111.81.24])
+	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Mon, 31 Aug 2026 08:50:57 +0000 (GMT)
+Date: Mon, 31 Aug 2026 10:50:56 +0200
+From: Heiko Carstens <hca@linux.ibm.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Thomas Gleixner <tglx@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Shrikanth Hegde <sshegde@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+        Kees Cook <kees@kernel.org>, Huacai Chen <chenhuacai@kernel.org>,
+        loongarch@lists.linux.dev, Paul Walmsley <pjw@kernel.org>,
+        Palmer Dabbelt <palmer@dabbelt.com>, linux-riscv@lists.infradead.org,
+        Sven Schnelle <svens@linux.ibm.com>, linux-s390@vger.kernel.org,
+        x86@kernel.org, Mark Rutland <mark.rutland@arm.com>,
+        Jinjie Ruan <ruanjinjie@huawei.com>, Andy Lutomirski <luto@kernel.org>,
+        Oleg Nesterov <oleg@redhat.com>,
+        Richard Henderson <richard.henderson@linaro.org>,
+        Russell King <linux@armlinux.org.uk>,
+        Catalin Marinas <catalin.marinas@arm.com>, Guo Ren <guoren@kernel.org>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+        Helge Deller <deller@gmx.de>,
+        Yoshinori Sato <ysato@users.sourceforge.jp>,
+        Richard Weinberger <richard@nod.at>, Chris Zankel <chris@zankel.net>,
+        linux-arm-kernel@lists.infradead.org, linux-alpha@vger.kernel.org,
+        linux-csky@vger.kernel.org, linux-m68k@vger.kernel.org,
+        linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org,
+        linux-sh@vger.kernel.org, linux-um@lists.infradead.org,
+        Arnd Bergmann <arnd@arndb.de>, Vineet Gupta <vgupta@kernel.org>,
+        Will Deacon <will@kernel.org>, Brian Cain <bcain@kernel.org>,
+        Michal Simek <monstr@monstr.eu>, Dinh Nguyen <dinguyen@kernel.org>,
+        "David S. Miller" <davem@davemloft.net>,
+        Andreas Larsson <andreas@gaisler.com>,
+        linux-snps-arc@lists.infradead.org, linux-hexagon@vger.kernel.org,
+        linux-openrisc@vger.kernel.org, sparclinux@vger.kernel.org,
+        linux-arch@vger.kernel.org,
+        Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>,
+        Jonathan Corbet <corbet@lwn.net>, linux-doc@vger.kernel.org
+Subject: Re: [patch 00/18] entry: Consolidate and rework syscall entry
+ handling
+Message-ID: <20260831085056.34274A00-hca@linux.ibm.com>
+References: <20260707181957.433213175@kernel.org>
+ <ed8b99e6-4d90-4622-9d43-451bf6a8db2c@zytor.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -75,78 +121,44 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <602bdc5f-e9fa-4ed5-a009-03af860d31a6@kernel.org>
+In-Reply-To: <ed8b99e6-4d90-4622-9d43-451bf6a8db2c@zytor.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=bc1bluPB c=1 sm=1 tr=0 ts=6a954078 cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=kj9zAlcOel0A:10 a=Sv0fKeRqtYgA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=2rmWDWJpZfqxup52QhcA:9
+ a=CjuIK1q_8ugA:10
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODMxMDA3MiBTYWx0ZWRfXw6StCSqGUaXh
+ WvbpCQlGtz7BWihs+RH7DTv2WTOPxVyCWDhiSWtYE+xXgludqixVfK/gU8MUaWS0fxPWdxy86vH
+ qJzG6nhsABnZyATt5K5eJawaXFm8xNE=
+X-Proofpoint-ORIG-GUID: bDXbK4NJXMMf6_5R5lg1wFJEO5GSpFz5
+X-Proofpoint-GUID: Fhr_wfi5ePHh4Bqv3MhKtt0iPRZ1Mvkg
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODMxMDA3MiBTYWx0ZWRfX/htDxJBtEHnv
+ Z5NhKYazvuvBRJ72zC10F4fqCuZQvNxl5T1bxWCM9YyDyUuOyarWnRe1p0lqpKZl/OmyRFcmZLf
+ ktLOOUR/RrJ6H/n8LU3DyRN14Rj88+RKLatjVJj6EvUm7yCYuy01GuzOqCiTMwCDp3qPyD8ygcz
+ 8e7DrOBxrdld6/gHT5EMTdlMQoVKjlCd8tRGftrZtFR0eBrKEt+PFXrl5pqVW+wMvV30DgdS65s
+ FO2OVicoQhWTWZLtRydH/w0eDM4R+aziyu8zv53VSgwZjxKL71DDEhdZB1VFr5JeZaTp0hNvCNd
+ fL1C2mdKKTto6StljkY/Esj1kJ2CLVmDhxayGEQpB6INuQ8vyDvgd1hcoKr++IMzU8bbI32PX2p
+ erwW4FtLz+3ZSzAofzRUQ2Kh1tXMYtSiayqZ9s635kOCihBZsW9PohTK3Pmd5E5U5z+A/YfXl7T
+ OPEW+V8lEUn+zLxSJdQ==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-08-31_03,2026-08-27_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 suspectscore=0 adultscore=0 malwarescore=0 spamscore=0
+ lowpriorityscore=0 phishscore=0 clxscore=1011 priorityscore=1501
+ impostorscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
+ definitions=main-2608310072
 
-On Mon, Aug 31, 2026 at 05:02:54AM +0200, Jiri Slaby wrote:
-> On 30. 08. 26, 9:49, Mike Rapoport (Microsoft) wrote:
-> > uart_alloc_xmit_buf() allocates the transmit buffer of a serial port. The
-> > buffer only backs the port's kfifo, the data being sent is copied in and
-> > out of it.
-> > 
-> > This buffer can be allocated with kmalloc() as there's nothing special
-> > about it to go directly to the page allocator.
-> > 
-> > kmalloc() provides a better API that does not require ugly casts and
-> > kfree() does not need to know the size of the freed object.
-> > 
-> > Performance difference between kmalloc() and __get_free_pages() is not
-> > measurable as both allocators take an object/page from a per-CPU list for
-> > fast path allocations.
-> > 
-> > For the slow path the performance is anyway determined by the amount of
-> > reclaim involved rather than by what allocator is used.
-> > 
-> > While on it, make the local variable holding the buffer a pointer to get
-> > rid of the casts.
-> > 
-> > Replace use of get_zeroed_page() with kzalloc() and free_page() with
-> > kfree().
-> > 
-> > Link: https://lore.kernel.org/all/635405e4-9423-4a25-a6e7-e03c8ea0bcbe@redhat.com
-> > Assisted-by: copilot:claude-opus
-> > Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
-> > ---
-> >   drivers/tty/serial/serial_core.c | 16 ++++++++--------
-> >   1 file changed, 8 insertions(+), 8 deletions(-)
-> > 
-> > diff --git a/drivers/tty/serial/serial_core.c b/drivers/tty/serial/serial_core.c
-> > index 95774b0f1484..f12ce7d190fe 100644
-> > --- a/drivers/tty/serial/serial_core.c
-> > +++ b/drivers/tty/serial/serial_core.c
-> > @@ -247,29 +247,29 @@ static int uart_alloc_xmit_buf(struct tty_port *port)
-> >   	struct uart_state *state = container_of(port, struct uart_state, port);
-> >   	struct uart_port *uport;
-> >   	unsigned long flags;
-> > -	unsigned long page;
-> 
-> 1:
-> 
-> > +	unsigned char *buf;
-> >   	/*
-> >   	 * Initialise and allocate the transmit and temporary
-> >   	 * buffer.
-> >   	 */
-> > -	page = get_zeroed_page(GFP_KERNEL);
-> > -	if (!page)
-> > +	buf = kzalloc(PAGE_SIZE, GFP_KERNEL);
-> > +	if (!buf)
-> >   		return -ENOMEM;
-> >   	uport = uart_port_ref_lock(state, &flags);
-> >   	if (!state->port.xmit_buf) {
-> > -		state->port.xmit_buf = (unsigned char *)page;
-> > +		state->port.xmit_buf = buf;
-> 
-> xmit_buf is u8 *. This uchar was omitted when I was changing the type back
-> then. Could you use the right type at 1b now?
+On Thu, Aug 27, 2026 at 03:22:35PM -0700, H. Peter Anvin wrote:
+> This isn't a hard thing to solve in any way: replacing the pointer argument
+> with a two-element structure return would do the trick. As far as I know,
+> *all* architectures that support Linux support returning structures with two
+> register-sized values in registers.
 
-Sure, I also made this change in uart_free_xmit_buf().
- 
-> thanks,
-> -- 
-> js
-> suse labs
-
--- 
-Sincerely yours,
-Mike.
+That is unfortunately not true. The s390 ABI defines that structures,
+regardless of size, are returned in a return value buffer allocated by
+the caller.
 
