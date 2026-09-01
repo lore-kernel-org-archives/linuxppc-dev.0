@@ -1,53 +1,52 @@
-Return-Path: <linuxppc-dev+bounces-26376-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26377-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D1F5FC624D0
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2026 11:07:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EA061C624CF
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2026 11:07:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hZ33s1pnZz2yDr;
-	Tue, 01 Sep 2026 21:07:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788260857;
-	cv=none; b=aOu8ljghGN0N2I2zp5+w2stOTRGgvza08VsnQwNAYf8pgl5Bk2FsKnwCzuVSPo5znF34Q3hbyxFbCY+Li5tjCv8GS1rZbYRQtxYZrTeKEnODyUAIJJjrDzEpfoxSz6IKlWyysyRWZyOCSnk+PKbTBrTf5Ueg78aFmmrCDbmY9/r2/+CGjDYlMyxN+9EGE+2WXosftIIZ0nTHeNWp1Nq5A4j5KOWrS24oG6nV+N7aLKtFRqr9JW8skwFz/MWm1ZjsUqb1tKia3PgxbzD+h0exZTRsaRXgm0BF8eiW7em4GZcKcd5TDHBVKUnz0NGDTCaOnN8zngrLmFCSEyRXNHFHqw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hZ3473RVpz2y2P;
+	Tue, 01 Sep 2026 21:07:51 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788260871;
+	cv=none; b=IkkbnQySg6EcOiu2l7LXI1BaGqAW48c2qNil/9Xl2Va8Crc4wKcK2XMV8Si0uVTmv22gOXfI/B+JA8vBgIUSDIY/BQkTT+QtzKlkzofno6ApvNH9+ucYYx7xyEIQ8HR/NtBrDnF6C1ci/e6ZbSrm7uCjlPi0xCSW1EZPigKRI1toZDHCIEzx1qwzZcqEng27ycidBW3ac/Q3w88Xg1A0k1Yy5xAt3uWtpsWdcLsKnjSc+dWrvbC8Tfhom7UyZgBsG4fa8zru/hJxZxag4GxA6DmGf2zeN5JduVFI14NIzpTvTM76clKHyYjxJCyChuhldu7nTbPx1g3YPwG8S4gqQA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788260857; c=relaxed/relaxed;
-	bh=r59pxQpc2HnO7g8Xd7SmTRKFCMfW6qlwbRKzNqikO1A=;
+	t=1788260871; c=relaxed/relaxed;
+	bh=UzmfMP0eW0QWk8u/JUsvHFB9sPVEd1pOiiGI1COzZqo=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=hSj4nQkplQrPi12r6PHaQ+tC//o2ZQ6GB63F864E/OEf6QFOB2YbipmLQN3DtjXh5Xp0u4wiV6bSeBeqhTeYFCrUconUmWxD6bHGvpRju3cEvNsyuY+w9q0Gvaeg6ge4fojMzrONOdkd2cLIKDRxVQHEPQR1xlxaRxoh4hbnm/jhFhhDXfDNdYbnVHujtxfQsEd8O3YP8z6S6HLRB0Sf1zWtdmEJQHxCXZdMlUCBSnW+sCGqE4/xunCvuCPjSyrLI3pT7/Ov4Ys8/HB7A5JEpvsY2rlD98STn9U0TQ0RlOBE01liikBnNMFFiM/MqD1NsZT9QtVYKF2yUAQkMCh+3A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=H1Cp4bcm; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=mot06c7s6X9u669LsdJQXEqIMzOSKvUaex/5nbmYL3qmlsg10/B3QFmTjcxaBTnf4/qloJ5GPfST8uSI/hMvQ+HYieUk41CkZ4HAns9dvwgmg00pw5ANB7MfZNimCYZC3d8lFpz+8GWpCD6tXp7HT04trp+EohjLyfI4vZS35/01H73PCfTiTwgBqhuv2vfcatApDBO5rYFVj7RhJmO3OoycYcub0NmVKV8l4akorQ8bdQtyjaBCxIuRE2WTijyiOlQDUhl2dU+lB6v0J/yuXhOt05bDleTi1IX4BUqm3rHEh173ZJcREOA5NUTkq9a++muejkLPEED0R/Hwo0XRFw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ibERjQL4; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=H1Cp4bcm;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ibERjQL4;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hZ33q0xy3z2xlv
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Sep 2026 21:07:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hZ3464n14z2xlv
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Sep 2026 21:07:50 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 4824D42A81;
+	by sea.source.kernel.org (Postfix) with ESMTP id DF1A340786;
+	Tue,  1 Sep 2026 11:07:45 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 890D11F00A3E;
 	Tue,  1 Sep 2026 11:07:30 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 22BA41F00A3D;
-	Tue,  1 Sep 2026 11:07:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788260850;
-	bh=r59pxQpc2HnO7g8Xd7SmTRKFCMfW6qlwbRKzNqikO1A=;
+	s=k20260515; t=1788260865;
+	bh=UzmfMP0eW0QWk8u/JUsvHFB9sPVEd1pOiiGI1COzZqo=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=H1Cp4bcmyCtPW3T967T/dgqInT+lD+ja2MqM8qvjYKkjn2y8MQTBvrVCi43cnoMXJ
-	 lxDSQMKkx8p1rA+yfYLyqUJEM5wnp1buvYhxr8/h3sjljAFHjsvRB6CkC+D0/6kJvp
-	 V8zJ7ykWZV1H8L9XGaqV5WgYAizOoUUwD6HDxUF5s/SvGnESx8vadxQtv8oKbJcss8
-	 iaA6UgU3ggYAwwS0JavyArsKHm5ifn06ozLQn2Z7iFmC6mxogJ/9yLfBa13YI9JDZH
-	 /sJkWHceVV10ham6kQffhRSd9kFVD8F2MdTdTXjFO8eY84x/9WftMvuGeCLR44cMiQ
-	 ZIRGFY9AOpPfg==
+	b=ibERjQL4ebquAOt5buU64F486oqWBbfA2RuIUoKFTjhNX1tV+wd/vlzXzB2ChZkHv
+	 l81wOM2a96hacFPMbPkyXXoBNm2Hzxv/W4WdF2hM2MLHWeDUUI22Hgh/Uo2UP3EmsH
+	 6u1tLsmWjj175oxrugx4dQMXcTyodnPkdmSqOUnAv5k4zRONX/wRi1k1UeQuFDk4c9
+	 TOGuMPYZqERpof+Ma0CoF75P9Vb9bB8N/xhQG1X3/ETHZGTwbbnr8eP5HjxNvuOWvr
+	 /232U2NeMflD6ulot7zvWwwBLRdnsYSIvu9ACtq65I/v7n2wSL/1Kx7ZypCDDNaPUx
+	 Gislm4zUwKcZg==
 From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Date: Tue, 01 Sep 2026 12:01:29 +0100
-Subject: [PATCH 09/12] mm: enable MMU_GATHER_RCU_TABLE_FREE for
- m68k-motorola
+Date: Tue, 01 Sep 2026 12:01:30 +0100
+Subject: [PATCH 10/12] mm: enable MMU_GATHER_RCU_TABLE_FREE for sparc32
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +62,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260901-rcu-pagetable-freeing-v1-9-5456a81c8212@kernel.org>
+Message-Id: <20260901-rcu-pagetable-freeing-v1-10-5456a81c8212@kernel.org>
 References: <20260901-rcu-pagetable-freeing-v1-0-5456a81c8212@kernel.org>
 In-Reply-To: <20260901-rcu-pagetable-freeing-v1-0-5456a81c8212@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>, 
@@ -126,301 +125,214 @@ Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  linux-um@lists.infradead.org, Hugh Dickins <hughd@google.com>, 
  Qi Zheng <qi.zheng@linux.dev>, "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=9513; i=ljs@kernel.org;
- h=from:subject:message-id; bh=YPp0BOY0cp4Ahu0Pm+BSyaylIhdW6d3HcAy3HzwYfuo=;
- b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLKmbfTQn/30mM/8yPBbvc8OX2I78TfwT55CxB7fpCxHL
- XPTC5JnO0pZGMS4GGTFFFmefxHfHyQSNq/zgr8bzBxWJpAhDFycAjCR1UcZGa57Nuob+61nWhNw
- j0dBZPIbnrq50Tc3Cj024tnCFMMZepCR4drlO3d7e8szGCwPsScfybkb6D+/NuVfRcbZWxz/3Jm
- +swMA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=7123; i=ljs@kernel.org;
+ h=from:subject:message-id; bh=xq+2kEjitK8SahcerAyiHbVRI8AjRac23jnTjhfS/aE=;
+ b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLKmbfT4euup8O4LE9bU9LjsfrJFU1mER6vr92f+zX6eX
+ qX5n58u6ShlYRDjYpAVU2R5/kV8f5BI2LzOC/5uMHNYmUCGMHBxCsBElvUwMjybUD2LVcBQ48G7
+ BZN/xmmFneuLef1v1fMzj2ztbS0rVYIY/pd9TjZcoH2Mr77xm173C4uZ32aLBbl5TK7+IBjx9UG
+ yKTcA
 X-Developer-Key: i=ljs@kernel.org; a=openpgp;
  fpr=E7F417BF5214569E89D04F46CF9DCD8A81E27F14
 
-sun3 and coldfire are already supported, however motorola requires a little
-more care.
+Careful handling is required for sparc32 which implements page tables as
+part of a shared backing page.
 
-Here, custom table removal logic is required, so
-CONFIG_HAVE_ARCH_TLB_REMOVE_TABLE is enabled for m68k-motorola.
+To support this, a custom __tlb_remove_table() function is required, as
+specified by CONFIG_HAVE_ARCH_TLB_REMOVE_TABLE.
 
-Firstly as part of this change, the page table level must be communicated
-to the underlying __tlb_remove_table() implementation.
+This allows __pte_free_tlb() and __pmd_free_tlb() to specify which page
+table level is being freed, which is transmitted to __tlb_remove_table()
+through setting the lowest bit of the page table to 1 for a PMD and 0 for a
+PTE (the page tables are 256-byte aligned so this is safe to do).
 
-Take advantage of the fact that page tables are aligned by more than enough
-to permit setting TABLE_PTE or TABLE_PMD in the low bits of the pointer,
-and store this there.
+Next, since the page table freeing is done via RCU callback, and thus might
+be executed in softirq context, update the spin locks to IRQ save/restore.
 
-Then update __pte_free_tlb() and __pmd_free_tlb() to pass this through,
-then have __tlb_remove_table() decode this and pass it to
-free_pointer_table().
+Then, in __tlb_remove_table(), figure out whether to free a PMD page table
+via free_pmd_fast() or a PTE via the newly introduced __pte_free()
+function, using the lower bit encoded in __pte_free_tlb() or
+__pmd_free_tlb() to determine which to call.
 
-The page table freeing is performed via call_rcu(), so free_pointer_table()
-now will be invoked from softirq context, and as such may be re-entrant.
+__pte_free() is identical to preexisting pte_free(), except that it
+optionally allows a NULL mm pointer to be provided, in which case there is
+no mm whose mm->page_table_lock can be taken.
 
-Introduce an irq save/restore spinlock to handle this, and hold it over the
-time a given ptable entry is being referenced in both get_pointer_table()
-and free_pointer_table().
+This lock doesn't appear to have been doing quite as much as it intended,
+as backing pages can contain page tables for multiple mm's, which are not
+serialised by it.
 
-In order to make things a little easier in this respect, separate out the
-logic for adding a new ptable entry into add_pointer_table() and only hold
-the lock during ptable entry insertion in this case.
+But more importantly - the reference count increment in pte_alloc_one() and
+decrement in __pte_free() are atomic with full ordering, so it simply isn't
+possible for there to be a meaningful race here.
 
-Note that original list_add_tail(new, dp) added new prior to dp, which is
-ptable_list[type].next, i.e. after ptable_list[type].
-
-The equivalent therefore is list_add(new, &ptable_list[type]), which adds
-new after ptable_list[type], only without needing to make reference to dp.
-
-Note that, as m68k-motorola specifies CONFIG_HAVE_ARCH_TLB_REMOVE_TABLE, it
-does not enable CONFIG_PT_RECLAIM. This isn't meaningfully impactful.
-
-With this applied, all of m68k implements CONFIG_MMU_GATHER_RCU_TABLE_FREE.
+Note that the specification of CONFIG_HAVE_ARCH_TLB_REMOVE_TABLE disables
+CONFIG_PT_RECLAIM for sparc32, which mirrors sparc64.
 
 This forms part of an overall effort to switch every architecture to this
-mode.
+mode, and with it complete, means every architecture now supports
+CONFIG_MMU_GATHER_RCU_TABLE_FREE.
 
 Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 ---
- arch/m68k/Kconfig                        |   3 +-
- arch/m68k/include/asm/motorola_pgalloc.h |   9 ++-
- arch/m68k/mm/motorola.c                  | 121 ++++++++++++++++++++-----------
- 3 files changed, 86 insertions(+), 47 deletions(-)
+ arch/sparc/Kconfig                  |  2 ++
+ arch/sparc/include/asm/pgalloc_32.h |  7 +++++--
+ arch/sparc/lib/bitext.c             | 14 +++++++-------
+ arch/sparc/mm/srmmu.c               | 26 +++++++++++++++++++++++---
+ 4 files changed, 37 insertions(+), 12 deletions(-)
 
-diff --git a/arch/m68k/Kconfig b/arch/m68k/Kconfig
-index 6b8ec67c86fd..fa5d39549da9 100644
---- a/arch/m68k/Kconfig
-+++ b/arch/m68k/Kconfig
-@@ -29,6 +29,7 @@ config M68K
- 	select HAVE_ARCH_LIBGCC_H
- 	select HAVE_ARCH_SECCOMP
- 	select HAVE_ARCH_SECCOMP_FILTER
-+	select HAVE_ARCH_TLB_REMOVE_TABLE if MMU_MOTOROLA
- 	select HAVE_ASM_MODVERSIONS
- 	select HAVE_DEBUG_BUGVERBOSE
- 	select HAVE_EFFICIENT_UNALIGNED_ACCESS if !CPU_HAS_NO_UNALIGNED
-@@ -36,7 +37,7 @@ config M68K
- 	select HAVE_MOD_ARCH_SPECIFIC
+diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
+index 8d42ebc6d302..79c09d6ee466 100644
+--- a/arch/sparc/Kconfig
++++ b/arch/sparc/Kconfig
+@@ -64,6 +64,8 @@ config SPARC32
  	select HAVE_UID16
- 	select MMU_GATHER_NO_RANGE if MMU
--	select MMU_GATHER_RCU_TABLE_FREE if MMU && (SUN3 || COLDFIRE)
-+	select MMU_GATHER_RCU_TABLE_FREE if MMU
- 	select MODULES_USE_ELF_REL
- 	select MODULES_USE_ELF_RELA
- 	select NO_DMA if !MMU && !COLDFIRE
-diff --git a/arch/m68k/include/asm/motorola_pgalloc.h b/arch/m68k/include/asm/motorola_pgalloc.h
-index 1091fb0affbe..dcde40e8b5c6 100644
---- a/arch/m68k/include/asm/motorola_pgalloc.h
-+++ b/arch/m68k/include/asm/motorola_pgalloc.h
-@@ -17,6 +17,7 @@ enum m68k_table_types {
- extern void init_pointer_table(void *table, int type);
- extern void *get_pointer_table(struct mm_struct *mm, int type);
- extern int free_pointer_table(void *table, int type);
-+extern void __tlb_remove_table(void *table);
+ 	select HAVE_PAGE_SIZE_4KB
+ 	select LOCK_MM_AND_FIND_VMA
++	select MMU_GATHER_RCU_TABLE_FREE
++	select HAVE_ARCH_TLB_REMOVE_TABLE
+ 	select OLD_SIGACTION
+ 	select ZONE_DMA
  
- /*
-  * Allocate and free page tables. The xxx_kernel() versions are
-@@ -47,7 +48,7 @@ static inline void pte_free(struct mm_struct *mm, pgtable_t pgtable)
- static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t pgtable,
- 				  unsigned long address)
+diff --git a/arch/sparc/include/asm/pgalloc_32.h b/arch/sparc/include/asm/pgalloc_32.h
+index 4f73e87b22a3..36010852ba0c 100644
+--- a/arch/sparc/include/asm/pgalloc_32.h
++++ b/arch/sparc/include/asm/pgalloc_32.h
+@@ -48,7 +48,9 @@ static inline void free_pmd_fast(pmd_t * pmd)
+ }
+ 
+ #define pmd_free(mm, pmd)		free_pmd_fast(pmd)
+-#define __pmd_free_tlb(tlb, pmd, addr)	pmd_free((tlb)->mm, pmd)
++
++#define __pmd_free_tlb(tlb, pmd, addr)					\
++	tlb_remove_table((tlb), (void *)((unsigned long)(pmd) | 1UL))
+ 
+ #define pmd_populate(mm, pmd, pte)	pmd_set(pmd, pte)
+ 
+@@ -72,6 +74,7 @@ static inline void free_pte_fast(pte_t *pte)
+ #define pte_free_kernel(mm, pte)	free_pte_fast(pte)
+ 
+ void pte_free(struct mm_struct * mm, pgtable_t pte);
+-#define __pte_free_tlb(tlb, pte, addr)	pte_free((tlb)->mm, pte)
++void __tlb_remove_table(void *table);
++#define __pte_free_tlb(tlb, pte, addr)	tlb_remove_table((tlb), (void *)(pte))
+ 
+ #endif /* _SPARC_PGALLOC_H */
+diff --git a/arch/sparc/lib/bitext.c b/arch/sparc/lib/bitext.c
+index 32a5c1d9459c..c309e27973ce 100644
+--- a/arch/sparc/lib/bitext.c
++++ b/arch/sparc/lib/bitext.c
+@@ -22,8 +22,6 @@
+  * @align: requested alignment
+  *
+  * Returns offset in the map or -1 if out of space.
+- *
+- * Not safe to call from an interrupt (uses spin_lock).
+  */
+ int bit_map_string_get(struct bit_map *t, int len, int align)
  {
--	free_pointer_table(pgtable, TABLE_PTE);
-+	tlb_remove_table(tlb, (void *)((unsigned long)pgtable | TABLE_PTE));
- }
+@@ -31,6 +29,7 @@ int bit_map_string_get(struct bit_map *t, int len, int align)
+ 	int off_new;
+ 	int align1;
+ 	int i, color;
++	unsigned long flags;
  
+ 	if (t->num_colors) {
+ 		/* align is overloaded to be the page color */
+@@ -50,7 +49,7 @@ int bit_map_string_get(struct bit_map *t, int len, int align)
+ 		BUG();
+ 	color &= align1;
  
-@@ -61,10 +62,10 @@ static inline int pmd_free(struct mm_struct *mm, pmd_t *pmd)
- 	return free_pointer_table(pmd, TABLE_PMD);
- }
- 
--static inline int __pmd_free_tlb(struct mmu_gather *tlb, pmd_t *pmd,
--				 unsigned long address)
-+static inline void __pmd_free_tlb(struct mmu_gather *tlb, pmd_t *pmd,
-+				  unsigned long address)
+-	spin_lock(&t->lock);
++	spin_lock_irqsave(&t->lock, flags);
+ 	if (len < t->last_size)
+ 		offset = t->first_free;
+ 	else
+@@ -64,7 +63,7 @@ int bit_map_string_get(struct bit_map *t, int len, int align)
+ 		if (offset >= t->size)
+ 			offset = 0;
+ 		if (count + len > t->size) {
+-			spin_unlock(&t->lock);
++			spin_unlock_irqrestore(&t->lock, flags);
+ /* P3 */ printk(KERN_ERR
+   "bitmap out: size %d used %d off %d len %d align %d count %d\n",
+   t->size, t->used, offset, len, align, count);
+@@ -90,7 +89,7 @@ int bit_map_string_get(struct bit_map *t, int len, int align)
+ 					t->last_off = 0;
+ 				t->used += len;
+ 				t->last_size = len;
+-				spin_unlock(&t->lock);
++				spin_unlock_irqrestore(&t->lock, flags);
+ 				return offset;
+ 			}
+ 		}
+@@ -103,10 +102,11 @@ int bit_map_string_get(struct bit_map *t, int len, int align)
+ void bit_map_clear(struct bit_map *t, int offset, int len)
  {
--	return free_pointer_table(pmd, TABLE_PMD);
-+	tlb_remove_table(tlb, (void *)((unsigned long)pmd | TABLE_PMD));
+ 	int i;
++	unsigned long flags;
+ 
+ 	if (t->used < len)
+ 		BUG();		/* Much too late to do any good, but alas... */
+-	spin_lock(&t->lock);
++	spin_lock_irqsave(&t->lock, flags);
+ 	for (i = 0; i < len; i++) {
+ 		if (test_bit(offset + i, t->map) == 0)
+ 			BUG();
+@@ -115,7 +115,7 @@ void bit_map_clear(struct bit_map *t, int offset, int len)
+ 	if (offset < t->first_free)
+ 		t->first_free = offset;
+ 	t->used -= len;
+-	spin_unlock(&t->lock);
++	spin_unlock_irqrestore(&t->lock, flags);
  }
  
- 
-diff --git a/arch/m68k/mm/motorola.c b/arch/m68k/mm/motorola.c
-index b30aa69a73a6..ffc80483440b 100644
---- a/arch/m68k/mm/motorola.c
-+++ b/arch/m68k/mm/motorola.c
-@@ -20,6 +20,7 @@
- #include <linux/init.h>
- #include <linux/memblock.h>
- #include <linux/gfp.h>
-+#include <linux/cleanup.h>
- 
- #include <asm/setup.h>
- #include <linux/uaccess.h>
-@@ -103,6 +104,8 @@ static struct list_head ptable_list[3] = {
- 	LIST_HEAD_INIT(ptable_list[2]),
- };
- 
-+static DEFINE_SPINLOCK(ptable_lock);
-+
- #define PD_PTABLE(ptdesc) ((ptable_desc *)&(virt_to_ptdesc((void *)(ptdesc))->pt_list))
- #define PD_PTDESC(ptable) (list_entry(ptable, struct ptdesc, pt_list))
- #define PD_MARKBITS(dp) (*(unsigned int *)&PD_PTDESC(dp)->pt_index)
-@@ -139,52 +142,66 @@ void __init init_pointer_table(void *table, int type)
- 	return;
+ void bit_map_init(struct bit_map *t, unsigned long *map, int size)
+diff --git a/arch/sparc/mm/srmmu.c b/arch/sparc/mm/srmmu.c
+index 9a74902ad181..2a2c7bd21011 100644
+--- a/arch/sparc/mm/srmmu.c
++++ b/arch/sparc/mm/srmmu.c
+@@ -359,19 +359,39 @@ pgtable_t pte_alloc_one(struct mm_struct *mm)
+ 	return ptep;
  }
  
--void *get_pointer_table(struct mm_struct *mm, int type)
-+/*
-+ * For a pointer table for a user process address space, a
-+ * table is taken from a ptdesc allocated for the purpose.  Each
-+ * ptdesc can hold 8 pointer tables.  The ptdesc is remapped in
-+ * virtual address space to be noncacheable.
-+ */
-+static void *add_pointer_table(struct mm_struct *mm, int type)
+-void pte_free(struct mm_struct *mm, pgtable_t ptep)
++static void __pte_free(struct mm_struct *mm, pgtable_t ptep)
  {
--	ptable_desc *dp = ptable_list[type].next;
--	unsigned int mask = list_empty(&ptable_list[type]) ? 0 : PD_MARKBITS(dp);
--	unsigned int tmp, off;
-+	struct ptdesc *ptdesc;
-+	ptable_desc *new;
-+	void *pt_addr;
++	const bool process_context = mm;
+ 	struct page *page;
  
--	/*
--	 * For a pointer table for a user process address space, a
--	 * table is taken from a ptdesc allocated for the purpose.  Each
--	 * ptdesc can hold 8 pointer tables.  The ptdesc is remapped in
--	 * virtual address space to be noncacheable.
--	 */
--	if (mask == 0) {
--		struct ptdesc *ptdesc;
--		ptable_desc *new;
--		void *pt_addr;
--
--		ptdesc = pagetable_alloc(GFP_KERNEL | __GFP_ZERO, 0);
--		if (!ptdesc)
--			return NULL;
--
--		pt_addr = ptdesc_address(ptdesc);
--
--		switch (type) {
--		case TABLE_PTE:
--			/*
--			 * m68k doesn't have SPLIT_PTE_PTLOCKS for not having
--			 * SMP.
--			 */
--			pagetable_pte_ctor(mm, ptdesc);
--			break;
--		case TABLE_PMD:
--			pagetable_pmd_ctor(mm, ptdesc);
--			break;
--		case TABLE_PGD:
--			pagetable_pgd_ctor(ptdesc);
--			break;
--		}
-+	ptdesc = pagetable_alloc(GFP_KERNEL | __GFP_ZERO, 0);
-+	if (!ptdesc)
-+		return NULL;
-+
-+	pt_addr = ptdesc_address(ptdesc);
-+
-+	switch (type) {
-+	case TABLE_PTE:
-+		/*
-+		 * m68k doesn't have SPLIT_PTE_PTLOCKS for not having
-+		 * SMP.
-+		 */
-+		pagetable_pte_ctor(mm, ptdesc);
-+		break;
-+	case TABLE_PMD:
-+		pagetable_pmd_ctor(mm, ptdesc);
-+		break;
-+	case TABLE_PGD:
-+		pagetable_pgd_ctor(ptdesc);
-+		break;
-+	}
-+
-+	mmu_page_ctor(pt_addr);
-+
-+	new = PD_PTABLE(pt_addr);
+ 	page = pfn_to_page(__nocache_pa((unsigned long)ptep) >> PAGE_SHIFT);
+-	spin_lock(&mm->page_table_lock);
++	if (process_context)
++		spin_lock(&mm->page_table_lock);
+ 	if (page_ref_dec_return(page) == 1)
+ 		pagetable_dtor(page_ptdesc(page));
+-	spin_unlock(&mm->page_table_lock);
++	if (process_context)
++		spin_unlock(&mm->page_table_lock);
  
--		mmu_page_ctor(pt_addr);
-+	PD_MARKBITS(new) = ptable_mask(type) - 1;
-+	scoped_guard(spinlock_irqsave, &ptable_lock)
-+		list_add(new, &ptable_list[type]);
+ 	srmmu_free_nocache(ptep, SRMMU_PTE_TABLE_SIZE);
+ }
  
--		new = PD_PTABLE(pt_addr);
--		PD_MARKBITS(new) = ptable_mask(type) - 1;
--		list_add_tail(new, dp);
-+	return (pmd_t *)pt_addr;
++void pte_free(struct mm_struct *mm, pgtable_t ptep)
++{
++	__pte_free(mm, ptep);
 +}
 +
-+void *get_pointer_table(struct mm_struct *mm, int type)
-+{
-+	unsigned int tmp, off;
-+	unsigned long mask;
-+	unsigned long flags;
-+	ptable_desc *dp;
-+	void *ret;
- 
--		return (pmd_t *)pt_addr;
-+	spin_lock_irqsave(&ptable_lock, flags);
-+	dp = ptable_list[type].next;
-+	mask = list_empty(&ptable_list[type]) ? 0 : PD_MARKBITS(dp);
-+
-+	if (mask == 0) {
-+		spin_unlock_irqrestore(&ptable_lock, flags);
-+		return add_pointer_table(mm, type);
- 	}
- 
- 	for (tmp = 1, off = 0; (mask & tmp) == 0; tmp <<= 1, off += ptable_size(type))
-@@ -194,7 +211,10 @@ void *get_pointer_table(struct mm_struct *mm, int type)
- 		/* move to end of list */
- 		list_move_tail(dp, &ptable_list[type]);
- 	}
--	return ptdesc_address(PD_PTDESC(dp)) + off;
-+
-+	ret = ptdesc_address(PD_PTDESC(dp)) + off;
-+	spin_unlock_irqrestore(&ptable_lock, flags);
-+	return ret;
- }
- 
- int free_pointer_table(void *table, int type)
-@@ -203,6 +223,9 @@ int free_pointer_table(void *table, int type)
- 	unsigned long ptable = (unsigned long)table;
- 	unsigned long pt_addr = ptable & PAGE_MASK;
- 	unsigned int mask = 1U << ((ptable - pt_addr)/ptable_size(type));
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&ptable_lock, flags);
- 
- 	dp = PD_PTABLE(pt_addr);
- 	if (PD_MARKBITS (dp) & mask)
-@@ -213,6 +236,8 @@ int free_pointer_table(void *table, int type)
- 	if (PD_MARKBITS(dp) == ptable_mask(type)) {
- 		/* all tables in ptdesc are free, free ptdesc */
- 		list_del(dp);
-+		spin_unlock_irqrestore(&ptable_lock, flags);
-+
- 		mmu_page_dtor((void *)pt_addr);
- 		pagetable_dtor_free(virt_to_ptdesc((void *)pt_addr));
- 		return 1;
-@@ -223,9 +248,21 @@ int free_pointer_table(void *table, int type)
- 		 */
- 		list_move(dp, &ptable_list[type]);
- 	}
-+
-+	spin_unlock_irqrestore(&ptable_lock, flags);
- 	return 0;
- }
- 
 +void __tlb_remove_table(void *table)
 +{
-+	/* The bottom 2 bits are used to encode page table type. */
 +	const unsigned long encoded = (unsigned long)table;
-+	void *addr = (void *)(encoded & ~3UL);
-+	const int type = encoded & 3;
++	const unsigned long addr = encoded & ~1UL;
++	const bool is_pmd = encoded & 1;
 +
-+	free_pointer_table(addr, type);
++	if (is_pmd)
++		free_pmd_fast((pmd_t *)addr);
++	else /* Called from softirq context, no mm. */
++		__pte_free(NULL, (pgtable_t)addr);
 +}
 +
- /* size of memory already mapped in head.S */
- extern __initdata unsigned long m68k_init_mapped_size;
+ /* context handling - a dynamically sized pool is used */
+ #define NO_CONTEXT	-1
  
 
 -- 
