@@ -1,101 +1,101 @@
-Return-Path: <linuxppc-dev+bounces-26407-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26408-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9E01BC624D3
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2026 17:12:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 55B39C624D5
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2026 17:14:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hZC8s2kbcz2xmh;
-	Wed, 02 Sep 2026 03:12:29 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788282749;
-	cv=none; b=DuDkIFRxTS1q85Q2Yg6bn5rBGjh/LpTz8ZSkyCULFLs/LqCCJ1GfgGt9YXwATmGz2UV8j48QRcEhT/hOs2bRNFmjvj0qo1/o2sB71/2Ap2m5AdH8SQOZUFqwjCdnhjBLVQ9dWURwdjTN4PG+qLP+POWD4Stkogwnsl6yLUoaC0Nk5pT/3fbP0/8orNAUP3EgbPt21xg8vY4wkjIj3Dczx9oz+4rn1KVjeUV5+EgAqyZEjoO7EOcdPp+BqntEPr6yLGa348munyUIUZnizwjQYT+hiG/n+s4J7qt6eNKfr+9/WH+VcMN/m5GjpOa1lJrnP1w0jUHuibX5dxtwv3qM0g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hZCBl59vNz2xmh;
+	Wed, 02 Sep 2026 03:14:07 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788282847;
+	cv=none; b=oMu402nmFIyQC36ND3kfMr+5mo1GsTsH7KKZnpjdJYQmY9QugHMaLI6WCRTLy16U/LmyaU9/bxdP4CidlMPb76UgqM5Y+nOwGJd6kDEIyXdrbLOJgV++PfrSZ+oT0aB70/H3dk0ydkpDnSTYqzw+BPxVVQnYHtU3ZjicHiNaEfY0wGmgJUiyWaob06ofW9A/DKxFjhNvp6Ilu9ALq3jKhg6iBNol4hq055NRbp2M3tbIJlXln8rElN6y3yJCO8OF4UjCwUMhVvNxpzR/hlLlF80dKTLuSNFVl9CXSy+/nNR3x+wsPSwn/Ge0KL29EDUNXeqSbTQfK0W/SPX6b0sM+A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788282749; c=relaxed/relaxed;
-	bh=StaeALLek35hMlcSHa6BZyUhT0ljTsLx6yTS5xCyYM0=;
+	t=1788282847; c=relaxed/relaxed;
+	bh=rxSJ6upXAwrCdlBg+zPXUt0hwX65jWSdNQ6WR7zOubA=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=aZhFmemlesvcNGGdDRZskVuN4tfLB0G5pgPSnB28VtdIfON/0ETlFEH2/xMoFzaul1/Q4+VC/5iJWhXnr8ctHFqrEc1g14bUP7JxDVgsWXwjwdO6a4tnssQw70ApGA7A7oAkQ7w8Lw9vxpLL+QNb17ECxJIh4fi6JiWhmYYJEq8suaMW5xiySCPjE+7C5yF4OB4g42BQkaJ7ZHAuAtLBMRDt4ijh8ywteQ1gRKF2qIgrpFd1kSP0JOih3KgVaCsT34xgGaTLX7MEm85Kkwu2mik5cM7wzaUbaHR7UMo4IVu7+0CRbLsX3PGCv0n1JvA00jPj8uqIFdQXH0e1pNp3vA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=F7xGurub; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=kas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=Et0UlgbQ1vweyhahtKiXpMIf9+8U6Lap57tDDMH/DWIARTKDEfgDZnDiKf7MOWXkdDfWYynjMXLmVMLad/ihABLXlUtybET6uHb9ewF/dYDQKakCvxrL/9rUsP0Gw1U8RFq7SPA6QcwFrn/weZiPZ36VrJ5vxzjx12PZYDOtbTPl9aL+zLabPe5RRgrYjoFskst+xVdcj7ZIw5zxZbdmdEVVDVPn6djWL0LanACJQSIayLCV4IYFSJrx+lf45/+ilwj+eJxbrxLk3lF9JttI2erMwhaVXbcr5WK0AsGAXeg+uOKU664XDfOkjAHOB/1LPp+cJyqbqqY++SPYQrCp0A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jxDdE4On; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=kas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=F7xGurub;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jxDdE4On;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=kas@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=kas@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hZC8q1QSmz2xGt
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Sep 2026 03:12:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hZCBk4NGmz2xGt
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Sep 2026 03:14:06 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id ECEA9602D0;
-	Tue,  1 Sep 2026 17:12:23 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 57D9A1F00A3A;
-	Tue,  1 Sep 2026 17:12:18 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 4A746602BA;
+	Tue,  1 Sep 2026 17:14:04 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 52E281F000E9;
+	Tue,  1 Sep 2026 17:13:58 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788282743;
-	bh=StaeALLek35hMlcSHa6BZyUhT0ljTsLx6yTS5xCyYM0=;
+	s=k20260515; t=1788282844;
+	bh=rxSJ6upXAwrCdlBg+zPXUt0hwX65jWSdNQ6WR7zOubA=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=F7xGurub5lZpjDs1aDGfwYQjsUqqlOosQvLNchGQQWzDsAsXjm/bfgFuGkM+2goEl
-	 A3tZmuNFbM2kRhPZvh9S1P22IeFE5iiGfDDDDd17F5D804y5rPdv5sEw5oeDGtpjHk
-	 8fMhWsj66KRnRGkecbBoYbTDb8JlfScb/+tAumYYrtdivETCM9805zMhAy2jNPFBgG
-	 3+rxVhNNGTh6W8+MHuBjYezyNfaAPbKmDaQDJzZEL8uqbRiqCFQhAdUZPRkTUZSKA5
-	 Y/Jp66nLB14uDCATCQFaq6J05pPq9ClrATCE9vY0dAVxZMs/4MGJpMLvDMj+NbBsPA
-	 VSWBMdQkIOIhg==
-Received: from phl-compute-01.internal (phl-compute-01.internal [10.202.2.41])
-	by mailfauth.ams.internal (Postfix) with ESMTP id 509151980082;
-	Tue,  1 Sep 2026 13:12:02 -0400 (EDT)
-Received: from phl-frontend-03 ([10.202.2.162])
-  by phl-compute-01.internal (MEProxy); Tue, 01 Sep 2026 13:12:17 -0400
-X-ME-Sender: <xms:YQeXarupuu8lP4hODV4Kl4cTBMZRESUvNFli0neseEvSVdU6eTqegQ>
-    <xme:YQeXaujYR-JcqcZ5XRB19_Sp4AidO5MknnGtlz5Ss_8D6FAekB1GDKTys9TKm5dQ7
-    9-CzIWyGX5yW7Y4wxP7-FxE2PboOlz7Sija6KJsrP8cvzQQUwq3uQCR>
-X-ME-Received: <xmr:YQeXapWFsxw_1UNeqnO8z4EZg2oOg-FIVaehIEwbl2C9sTmSY05S5RPiU9I>
-X-ME-Proxy-Cause: dmFkZTE95wHRzu4Jku/uqR1uWajKbrR5zJX2cXnYtALksDxTaOWWCUqT0ALShYzFchhR19
-    jABbL3NMpQdq2Q4yk1wxABfpkhz1tXbwJ0ETPbBKtnkrOsetjBDE6HJPSHCSzQ+lV8p7hR
-    m8B5tw0NCYc8nr5KG+JJnI7EqrKbJ9j/iB4uBQ8v3yh2BnmhuMnsKxLkWZCbcUsikaiaIb
-    afOgG11+NHa8fIFfGiaQPV11ZUcZ/PxqcPGfORQq/nrNuM+iA2OtyKWdZtMIzuN7Y+Bitk
-    xOhO/HMBDeF+31R8MKrPNSYAO9QueQgK/MZ6ZozJxRSVjUBLpeca5t06PFY2rHErDLj+iW
-    2yn2As7fL8DmU2YIyhDqY4qqwa2/ZrsmjL2YjjyNf5Ut5V+o1Q2jHYwdnRpVE4qQekDIlA
-    0QFGDvxUI/D1PW8k3h1xG2sm2CMe+07Xc1+6x36TyY7o9SD12A1XaguCEJgvlOl/E4/LPo
-    GFNx+zoYsO4VdClgp1h7hc4suTeM5K0X91cofeEj76CiP8ubXYR9unXAMBRmzaTibsCFRl
-    htnRbe1HGqYqK8cW0PalkL3qgmd3CH6stsr7YLE6PHlCrh2N2VCi400sm4iXeFTUQOgmsx
-    q+kN/77vj/DcD2YNv53dz8Mkn5XTiexA6E9lSNNFtklTEqyElGj/pD/1naEQ
-X-ME-Proxy: <xmx:YQeXaiCrGQOdc0DQyRgUDZV_Q7rbwwtsvYy_6612aWm1Dw459aKeLg>
-    <xmx:YQeXak3aszLb-RuoyQQti3VDFiBgP4eq84UZpaU9PzzzbGI3kIPqQQ>
-    <xmx:YQeXagyRzlL5sf79pX7TX42r92YD-ITwLJRci3UCGMw3KLjWYgQL6Q>
-    <xmx:YQeXan2N5VeJKbhgyOObCD-q2vQfw0NbQQLabtDLgtNHoJWCeTl7HA>
-    <xmx:YQeXanzxgCScGaao3xUiAb6wqDwwmrMtpplfWrXaivHsO8SbqI1rMQni>
+	b=jxDdE4OnFCyPug0QpbjBRqlYgmFiHgueeXQ6LqGSWW/sCWrDZWvsDmVbjZexp/WWR
+	 3I9lVVMjQ3wrPsl3+Z0xMxE8qxTuFeUioxIvPqEFZWbRb1CskKlcOPkDZHU7aR+0+h
+	 TepBCX43AWGHWzpIiXD0IzzMM1DkiW7sRQBlm6DPaWIWprISG4390rTmfqE2G6sh+p
+	 UJEzYEK5d3+XmLVdCWgxXc6twH6VZ43GNOCCSmO9ocv6N/FL2OaRsmcjOFx9L9XHFt
+	 thBHbzALq7m49c4sP6rAZygLH3tuAczJgu99RPhF1WdD7GU7Z9w2kb29P09457E8wO
+	 QFWxyQICSEEvg==
+Received: from phl-compute-05.internal (phl-compute-05.internal [10.202.2.45])
+	by mailfauth.ams.internal (Postfix) with ESMTP id 67D9E1980083;
+	Tue,  1 Sep 2026 13:13:42 -0400 (EDT)
+Received: from phl-frontend-04 ([10.202.2.163])
+  by phl-compute-05.internal (MEProxy); Tue, 01 Sep 2026 13:13:57 -0400
+X-ME-Sender: <xms:xQeXaqV8loEGFnZexkyJCxP3rg-N4QYIToRp3rKjkDTxrnVQL1gS6A>
+    <xme:xQeXag4Lh3DDrks_RrbzG2k8C8awQN9zc8XObGUj7pHz_2iNwoMm0pTbNT7CTAPNk
+    vp0PQjkhXlbHPIb4iLRJEEruCXo0FxnN_E9iJQQljRa1p3y5LRtH20>
+X-ME-Received: <xmr:xQeXaqU1oLe_Okvv0a9Qy1njv_x3ymejuVS52bmcLF3DCgzxB4uHGniaR1M>
+X-ME-Proxy-Cause: dmFkZTFsVsS9QxzfNE8Zc/xkNjZIEuir/bwAcyK8hIwM2NebUd4sQatdwIPqNsbpB1XVse
+    5uZUzDbqWNwZ48AG7ZVwmjvFiAKn4L3IYAvaFn4DQPDJPouw0ut3ChVPjAmMCRYrpQks/f
+    1IjUjSdR6rGJ8PH/8ZN/bq9aaNcIwsIHJ+W10sXj73V3Ek8Vpnv1A6OHP+E9dr0YtgEEKV
+    ds5NeYj4TkdU/h2OzTs/e9I3HeHw006SE6KQ22XcXsVtQ5Ridmg+p2UCCPMnSsCFJwXq+o
+    NfKF1bGQIi/LvtSee1L5bRM3w76AYvrF/BqhfAU9qLCyleEU1XUiaHShW9MyXHSbVgJaOX
+    hMwdwR4eftF02GCubB+SFa7Q4QpoVzw7JM1DRHGNHXFwhmRbAVug7W/IdOcLb/nrDMWef0
+    KkUiA7nHVPxKD4AT8RxS/44MjP9xZYwD5jxu4rR1zHMmEvxhsrMZa1SDysOwuA7RUs7KJN
+    4ytLSGjlddPPqpyqvZaXgCDNd6mWeyIrBhFBlxdH7EUzrGV3F7qSsiNCyyHYUX1Cb4RUj4
+    hSni8vyJoXkGiivg9CkTIGCtDY2O1wlpN5xSB3Yzxu8Cf7vy8qmTAqMxZaY3f8YuCqBoRV
+    m1CTaBp39x6fO7SaPEpIs4UyFfLgZpIfwcnGb6I9WUGCyXkqsD4X84Y2L0cQ
+X-ME-Proxy: <xmx:xQeXau5SDPm8X9ZPVmC3nkfvnblsrbXXAB3UELP8S46KGzzjm75ZIw>
+    <xmx:xQeXapmTRhWrJa2dimFLN6HQHdphUKlZ5N9N_s7BRhRL5RYJv6aymA>
+    <xmx:xQeXaoZRRZdtTpR_oYP130ILceFgEOa8W9-fNA_pOWU-V2bjGgKeDQ>
+    <xmx:xQeXalF_s7CzAQ-VbOU7soyFklnjyuRKWmz2tNRVxZ-CNHXwYzKvAg>
+    <xmx:xQeXatt95GT14XoEAnDFWPH6gQb2fRXK3au_NtwTvG7r-BtoMwwQDwVx>
 Feedback-ID: i10464835:Fastmail
 Received: by mail.messagingengine.com (Postfix) with ESMTPA; Tue,
- 1 Sep 2026 13:11:59 -0400 (EDT)
-Date: Tue, 1 Sep 2026 18:11:57 +0100
+ 1 Sep 2026 13:13:39 -0400 (EDT)
+Date: Tue, 1 Sep 2026 18:13:38 +0100
 From: Kiryl Shutsemau <kas@kernel.org>
-To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Cc: Jason Gunthorpe <jgg@ziepe.ca>,
- 	Andrew Morton <akpm@linux-foundation.org>,
- David Hildenbrand <david@kernel.org>, Zi Yan <ziy@nvidia.com>,
+To: "Liam R. Howlett" <liam@infradead.org>
+Cc: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>,
+ 	Jason Gunthorpe <jgg@ziepe.ca>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ 	David Hildenbrand <david@kernel.org>, Zi Yan <ziy@nvidia.com>,
  	Baolin Wang <baolin.wang@linux.alibaba.com>,
- "Liam R. Howlett" <liam@infradead.org>,
- 	Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>,
- Dev Jain <dev.jain@arm.com>, 	Barry Song <baohua@kernel.org>,
- Lance Yang <lance.yang@linux.dev>, 	Usama Arif <usama.arif@linux.dev>,
- Guo Ren <guoren@kernel.org>, Brian Cain <bcain@kernel.org>,
- 	Geert Uytterhoeven <geert@linux-m68k.org>,
- Dinh Nguyen <dinguyen@kernel.org>,
- 	Simon Schuster <schuster.simon@siemens-energy.com>,
- Jonas Bonn <jonas@southpole.se>,
- 	Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
- Stafford Horne <shorne@gmail.com>,
- 	Yoshinori Sato <ysato@users.sourceforge.jp>,
- Rich Felker <dalias@libc.org>,
- 	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
- Paul Walmsley <pjw@kernel.org>, 	Palmer Dabbelt <palmer@dabbelt.com>,
- Albert Ou <aou@eecs.berkeley.edu>, 	Alexandre Ghiti <alex@ghiti.fr>,
- Russell King <linux@armlinux.org.uk>, 	Vineet Gupta <vgupta@kernel.org>,
- Michal Simek <monstr@monstr.eu>, Chris Zankel <chris@zankel.net>,
+ Nico Pache <nico.pache@linux.dev>, 	Ryan Roberts <ryan.roberts@arm.com>,
+ Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>,
+ 	Lance Yang <lance.yang@linux.dev>, Usama Arif <usama.arif@linux.dev>,
+ Guo Ren <guoren@kernel.org>, 	Brian Cain <bcain@kernel.org>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ 	Dinh Nguyen <dinguyen@kernel.org>,
+ Simon Schuster <schuster.simon@siemens-energy.com>,
+ 	Jonas Bonn <jonas@southpole.se>,
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+ 	Stafford Horne <shorne@gmail.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>,
+ 	Rich Felker <dalias@libc.org>,
+ John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+ 	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+ 	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+ 	Russell King <linux@armlinux.org.uk>, Vineet Gupta <vgupta@kernel.org>,
+ 	Michal Simek <monstr@monstr.eu>, Chris Zankel <chris@zankel.net>,
  	Max Filippov <jcmvbkbc@gmail.com>, Will Deacon <will@kernel.org>,
  	"Aneesh Kumar K.V" <aneesh.kumar@kernel.org>,
  Nick Piggin <npiggin@gmail.com>, 	Peter Zijlstra <peterz@infradead.org>,
@@ -138,7 +138,7 @@ Cc: Jason Gunthorpe <jgg@ziepe.ca>,
  Hugh Dickins <hughd@google.com>, 	Qi Zheng <qi.zheng@linux.dev>
 Subject: Re: [PATCH 01/12] mm/huge_memory: zap deposited page tables after an
  RCU grace period
-Message-ID: <apcFUthh0XSFg3JQ@thinkstation>
+Message-ID: <apcHiE7jDQaFYXOM@thinkstation>
 References: <20260901-rcu-pagetable-freeing-v1-0-5456a81c8212@kernel.org>
  <20260901-rcu-pagetable-freeing-v1-1-5456a81c8212@kernel.org>
  <apbOlyF77yDCV4cF@thinkstation>
@@ -146,7 +146,7 @@ References: <20260901-rcu-pagetable-freeing-v1-0-5456a81c8212@kernel.org>
  <20260901142408.GA56830@ziepe.ca>
  <apbiB51hjm-9pRzf@gremlin>
  <apbuO_QveZNAz3ns@thinkstation>
- <apbvoN6ttgHfI_xg@gremlin>
+ <kasi4mkjkt56wxsrmphm5o2qfg2lwsdxf3tlmzx5tq6t7uez74@kozleoavd6r2>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -162,28 +162,14 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <apbvoN6ttgHfI_xg@gremlin>
+In-Reply-To: <kasi4mkjkt56wxsrmphm5o2qfg2lwsdxf3tlmzx5tq6t7uez74@kozleoavd6r2>
 
-On Tue, Sep 01, 2026 at 04:45:14PM +0100, Lorenzo Stoakes (ARM) wrote:
-> > munmap() of 64G worth of THP should be enough to demonstrate the
-> > problem.
-> 
-> I mean you're going to hit that from RCU freeing page tables already, which
-> most architectures already do right?
+On Tue, Sep 01, 2026 at 11:54:47AM -0400, Liam R. Howlett wrote:
+> Do you have munmap() performance dependent workload that you are
+> concerned about regressing?
 
-Not at the same rate -- tlb_remove_table() batches into struct
-mmu_table_batch. One call_rcu() per MAX_TABLE_BATCH.
-
-> So if RCU saturation is a problem, that problem already exists, but I've
-> not heard of that being a problem at all?
-
-I did quick test and I don't see a measurable difference in munmap()
-wall time of 40G of THPs. I see ~17x more softirqs, but this is
-expected.
-
-The objection is retracted.
-
-We can return to this later if it is going to be visible anywhere.
+exit(2) path is performance critical for many workloads. Like, if you
+need to restart VM.
 
 -- 
   Kiryl Shutsemau / Kirill A. Shutemov
