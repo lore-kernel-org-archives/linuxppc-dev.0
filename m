@@ -1,53 +1,71 @@
-Return-Path: <linuxppc-dev+bounces-26345-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26346-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B9B23C61DFD
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2026 01:41:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 43E6CC624D0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2026 01:53:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hYpVg4X7pz2y2S;
-	Tue, 01 Sep 2026 11:41:31 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.221
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788226891;
-	cv=none; b=JHQwDhkB/mK114xB623wno98y4xdF6CrTirVhw57wTrlyXLrNAoVHPGQEW+Z0S0PV8UNZs2QTdKoxQ9cocxXEqYFq47zl6XQg8L7cv3GHIYnfbGB9JzAp5dCBuH0tBqc/tw4n3Vh2O5gyethej6JI7V/Vz7Hkl1/GC6TgzzKy3YL80+NDJEhaww89DqeOptCFeg2M0omvDGZHXjx+p7uKOeAfvaZhDgo5dyv7XBFW7PBlu5pdpAzuYnSNEEs2U+CgWjDwb3FLkZruMhq8qon4e/IHZwW+VVPkJjELke/hPgSXUGXywZQfOPC/qktcRoNQHoqwkZ+/h5XOGH1+6ouiw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hYpmK3Khzz2y2S;
+	Tue, 01 Sep 2026 11:53:21 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788227601;
+	cv=none; b=AooogJdTLRNGMhF+VRsIWxC1MZcIgCFkowoLtMdq+ofqnlmyNxsQRo1FtKqDnV6v63N38389geS8paqEpfY0MXSseIOeVhJrOEYWVC3UN2UefmCjzJUFNqnlOxDU5EfgfnIlxMR2Dc5PdBs3vh2WK1CQH6kGG54E3N8yLdjeBgwlHSnmF7REOw8kQb0HHgJ0driDA48dWHhjYRxz3UuoO+xvE+gWTB5pXRgXGa2OC5NKpP5lNQMR6Bzvz1UvIJwzVlB+wBwl0OMj5svur+XgqOqhKG/m5pWORnep65aPSkz6X03kiARReNWgMA2w+jZ/zik8O38RWgEnBFHGp4cDww==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788226891; c=relaxed/relaxed;
-	bh=zPvP1K9EnRd/mao8eJm5iib0cl/6wBDf4gm9yBOU/uA=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=U89/UVIy0npn1UJWilyrZAGIaNnjcgtiP27ctsg4olqaatC+Dq9LIRqEMCg1MyFiG7po4kjFV3OL8OE4E/kz3bcrVgAEfJsQzN238ky8XcYDl0kJHcXI9txAPq8sn6zUxP/tdGQE9NcSNFBT1mpeO5682u7UBfE7RNbg4sDdFUo43BrXIFwyOEMRPXKfmY6vqLwgYVqdEm2BRorU9rEjMU9KuP4Jr7noddcrrkNPkfq4yOGKOVtU/7oiMqeyr6DyKCieq1M2/WRNco8XAawV2WkaSLKZnx29ZzdYL+pjskXLsX0RCaMKuFWORYQ0MjHOrp0D58Rd0jI9Fr/jQuUpTw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=Jml/HTTQ; dkim-atps=neutral; spf=pass (client-ip=113.46.200.221; helo=canpmsgout06.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+	t=1788227601; c=relaxed/relaxed;
+	bh=nfPoQFWa5XJK2n+gLXq+InLZ1SHvMm2K6VuNoOpddPc=;
+	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
+	 Mime-Version:Content-Type; b=j7881YMsJs5b+gAILIdALJcFuhtloAMRddOe9WH0sgE1/XIXMv7vLTopXHfy9a29FghxFq4xItIHkGB50s0XajPcMCJKXQOIKThMfrLukNLX6l6dfThNlLZRNT3wWh5Ye4BSvGC4+vN55632CFyXlECpXd92x54CD1rlqHMp1Dwm3/1u1k63UohFGJnEw/t0Qb6Uj23UlcbBBHV0fRUk5loLOU6a4m7iuTs85E4PU2vLK7rIHbeQvcbc4XFE0KFi2N+NozQFF49IPKeg4s4YwsJijk+sq3BMUYC80T6bP0DIULoDNhiBs+eMeA9IIzlA1ObzvrK8/T8xsLlCQchHBg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=Zq8VpLup; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linux-foundation.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=Jml/HTTQ;
+	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=Zq8VpLup;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.221; helo=canpmsgout06.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
-Received: from canpmsgout06.his.huawei.com (canpmsgout06.his.huawei.com [113.46.200.221])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux-foundation.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hYpVb04Zsz2y2P
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Sep 2026 11:41:24 +1000 (AEST)
-dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=zPvP1K9EnRd/mao8eJm5iib0cl/6wBDf4gm9yBOU/uA=;
-	b=Jml/HTTQck/emuqLeeU2tibQLYjU8fXxCCcdo3klXPgO8NzCaTkbd5ycSpoG64qAUTvikX/3F
-	607VcvF+fmYaem7r38R+LD9SNSgKkzUeX3TLkcP4y7zA0vceMDXkYNbj0KO3qWM1ZVKio3aaJuW
-	cW+wJefcVETqqA/xk+td/6E=
-Received: from mail.maildlp.com (unknown [172.19.163.0])
-	by canpmsgout06.his.huawei.com (SkyGuard) with ESMTPS id 4hYpFv2FTwzRhVN;
-	Tue,  1 Sep 2026 09:30:27 +0800 (CST)
-Received: from dggpemf500011.china.huawei.com (unknown [7.185.36.131])
-	by mail.maildlp.com (Postfix) with ESMTPS id 689A840561;
-	Tue,  1 Sep 2026 09:41:14 +0800 (CST)
-Received: from [10.67.109.254] (10.67.109.254) by
- dggpemf500011.china.huawei.com (7.185.36.131) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.11; Tue, 1 Sep 2026 09:41:10 +0800
-Message-ID: <fa771c74-c0b0-435d-9ebf-e52c00865c90@huawei.com>
-Date: Tue, 1 Sep 2026 09:41:09 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hYpmJ3Tn1z2y2P
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Sep 2026 11:53:19 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 22D17409AC;
+	Tue,  1 Sep 2026 01:53:17 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1E38F1F000E9;
+	Tue,  1 Sep 2026 01:53:16 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=linux-foundation.org; s=korg; t=1788227597;
+	bh=nfPoQFWa5XJK2n+gLXq+InLZ1SHvMm2K6VuNoOpddPc=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References;
+	b=Zq8VpLupvgE2yRJw1KQGeavVibzTXHtpjCONjfoal2aDB/f32LHC+a9EHOOObR2dz
+	 XMrE7NHF4NkTlRLOvkXFK75juHDjUVcCkQ7WguvUjYiW12f7gOk81DFIAVNvWoojWS
+	 hStPm28T4PEXRZKb5fXVKK4E/erKvPmWGFqjKOw0=
+Date: Mon, 31 Aug 2026 18:53:15 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Anshuman Khandual <anshuman.khandual@arm.com>
+Cc: linux-mm@kvack.org, samuel.holland@sifive.com, David Hildenbrand
+ <david@kernel.org>, Mike Rapoport <rppt@kernel.org>, Lorenzo Stoakes
+ <ljs@kernel.org>, Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker
+ <dalias@libc.org>, John Paul Adrian Glaubitz
+ <glaubitz@physik.fu-berlin.de>, "James E.J. Bottomley"
+ <James.Bottomley@HansenPartnership.com>, Helge Deller <deller@gmx.de>,
+ Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>,
+ linux-alpha@vger.kernel.org, linux-snps-arc@lists.infradead.org,
+ linux-arm-kernel@lists.infradead.org, linux-csky@vger.kernel.org,
+ linux-hexagon@vger.kernel.org, loongarch@lists.linux.dev,
+ linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org,
+ linux-openrisc@vger.kernel.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
+ linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-um@lists.infradead.org,
+ linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 6/8] sh/mm: Stop using [p4d|pud|pmd]_ERROR()
+Message-Id: <20260831185315.ec745606e7eeae6d1116b7d1@linux-foundation.org>
+In-Reply-To: <20260831054331.625505-7-anshuman.khandual@arm.com>
+References: <20260831054331.625505-1-anshuman.khandual@arm.com>
+	<20260831054331.625505-7-anshuman.khandual@arm.com>
+X-Mailer: Sylpheed 3.8.0beta1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,122 +78,17 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 05/17] LoongArch: kexec: Fix CMA page leaks in segment
- placement retry loops
-To: Huacai Chen <chenhuacai@kernel.org>
-CC: <catalin.marinas@arm.com>, <will@kernel.org>, <mark.rutland@arm.com>,
-	<kernel@xen0n.name>, <maddy@linux.ibm.com>, <mpe@ellerman.id.au>,
-	<npiggin@gmail.com>, <chleroy@kernel.org>, <tglx@kernel.org>,
-	<mingo@redhat.com>, <bp@alien8.de>, <dave.hansen@linux.intel.com>,
-	<hpa@zytor.com>, <akpm@linux-foundation.org>, <baoquan.he@linux.dev>,
-	<rppt@kernel.org>, <pasha.tatashin@soleen.com>, <pratyush@kernel.org>,
-	<ruirui.yang@linux.dev>, <kees@kernel.org>, <thuth@redhat.com>,
-	<gshan@redhat.com>, <jic23@kernel.org>, <james.morse@arm.com>,
-	<ardb@kernel.org>, <leitao@debian.org>, <yeoreum.yun@arm.com>,
-	<sourabhjain@linux.ibm.com>, <coxu@redhat.com>, <tangyouling@kylinos.cn>,
-	<hbathini@linux.ibm.com>, <adityag@linux.ibm.com>,
-	<ionut.nechita@windriver.com>, <liaoyuanhong@vivo.com>, <seanjc@google.com>,
-	<fuqiang.wang@easystack.cn>, <makb@juniper.net>, <piliu@redhat.com>,
-	<ebiggers@kernel.org>, <jbouron@amazon.com>, <mclapinski@google.com>,
-	<me@linux.beauty>, <graf@amazon.com>, <bgwin@google.com>, <robh@kernel.org>,
-	<takahiro.akashi@linaro.org>, <palmer@rivosinc.com>, <x86@kernel.org>,
-	<linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
-	<loongarch@lists.linux.dev>, <linuxppc-dev@lists.ozlabs.org>,
-	<kexec@lists.infradead.org>, <linux-fsdevel@vger.kernel.org>,
-	<linux-mm@kvack.org>
-References: <20260826092541.3905933-1-ruanjinjie@huawei.com>
- <20260826092541.3905933-6-ruanjinjie@huawei.com>
- <CAAhV-H7+dO2rnb4KxRvVo1w_Mx8Vfsdq7LAbkzPfNYrwUhEtfg@mail.gmail.com>
-From: Jinjie Ruan <ruanjinjie@huawei.com>
-In-Reply-To: <CAAhV-H7+dO2rnb4KxRvVo1w_Mx8Vfsdq7LAbkzPfNYrwUhEtfg@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-Originating-IP: [10.67.109.254]
-X-ClientProxiedBy: kwepems500001.china.huawei.com (7.221.188.70) To
- dggpemf500011.china.huawei.com (7.185.36.131)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
+On Mon, 31 Aug 2026 11:13:28 +0530 Anshuman Khandual <anshuman.khandual@arm.com> wrote:
 
+> Stop using [p4d|pud|pmd]_ERROR() in __get_pte_phys() as the pgtable entries
+> are known to be NULL and hence could not really be accessed.
 
-在 2026/8/31 22:09, Huacai Chen 写道:
-> Hi, Jinjie,
-> 
-> Why does the ARM64 version of this patch use "kexec_file" in the
-> subject line but the LoongArch version uses "kexec"? It is better to
-> keep consistency.
+A note to the sh maintainers: Sashiko might have found a couple of bugs
+in __get_pte_phys():
 
-Hi Huacai,
-
-Thank you for the review. I will revise the subject in v4.
-
-Best regards,
-Jinjie
-
-> 
-> Huacai
-> 
-> On Wed, Aug 26, 2026 at 5:25 PM Jinjie Ruan <ruanjinjie@huawei.com> wrote:
->>
->> During kexec image placement retry loops, any midway failure causes
->> the loader to truncate `image->nr_segments` back to its initial state
->> to purge the failed segments.
->>
->> However, this truncation introduces a memory leak. The CMA pages
->> allocated via kexec_add_buffer() during the failed attempt are tracked
->> in the `image->segment_cma` array. Because the subsequent cleanup paths
->> only iterate up to the truncated `nr_segments` boundary, these allocated
->> CMA pages outside the new boundary are permanently leaked.
->>
->> Fix this by explicitly releasing the associated CMA buffers in
->> the failure paths before `image->nr_segments` is reduced.
->>
->> Cc: Huacai Chen <chenhuacai@kernel.org>
->> Cc: WANG Xuerui <kernel@xen0n.name>
->> Cc: Youling Tang <tangyouling@kylinos.cn>
->> Cc: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
->> Cc: Sourabh Jain <sourabhjain@linux.ibm.com>
->> Cc: Kees Cook <kees@kernel.org>
->> Cc: stable@vger.kernel.org
->> Link: https://sashiko.dev/#/patchset/20260729031235.2840255-1-ruanjinjie%40huawei.com
->> Fixes: 55d990f0084c ("LoongArch: Add EFI binary support for kexec_file")
->> Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
->> ---
->>  arch/loongarch/kernel/kexec_efi.c          | 1 +
->>  arch/loongarch/kernel/machine_kexec_file.c | 6 +++++-
->>  2 files changed, 6 insertions(+), 1 deletion(-)
->>
->> diff --git a/arch/loongarch/kernel/kexec_efi.c b/arch/loongarch/kernel/kexec_efi.c
->> index 5ee78ebb1546..15fd797ff3de 100644
->> --- a/arch/loongarch/kernel/kexec_efi.c
->> +++ b/arch/loongarch/kernel/kexec_efi.c
->> @@ -86,6 +86,7 @@ static void *efi_kexec_load(struct kimage *image,
->>                  * We couldn't find space for the other segments; erase the
->>                  * kernel segment and try the next available hole.
->>                  */
->> +               kexec_free_segment_cma(image, kernel_segment_number);
->>                 image->nr_segments -= 1;
->>                 kbuf.buf_min = kernel_segment->mem + kernel_segment->memsz;
->>                 kbuf.mem = KEXEC_BUF_MEM_UNKNOWN;
->> diff --git a/arch/loongarch/kernel/machine_kexec_file.c b/arch/loongarch/kernel/machine_kexec_file.c
->> index 5412aa9f3568..62a5be102065 100644
->> --- a/arch/loongarch/kernel/machine_kexec_file.c
->> +++ b/arch/loongarch/kernel/machine_kexec_file.c
->> @@ -217,7 +217,11 @@ int load_other_segments(struct kimage *image,
->>         return 0;
->>
->>  out_err:
->> -       image->nr_segments = orig_segments;
->> +       while (image->nr_segments > orig_segments) {
->> +               kexec_free_segment_cma(image, image->nr_segments - 1);
->> +               image->nr_segments--;
->> +       }
->> +
->>         kfree(modified_cmdline);
->>         return ret;
->>  }
->> --
->> 2.34.1
->>
-
+	https://sashiko.dev/#/patchset/20260831054331.625505-1-anshuman.khandual@arm.com
 
