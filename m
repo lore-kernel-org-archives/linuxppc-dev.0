@@ -1,54 +1,54 @@
-Return-Path: <linuxppc-dev+bounces-26396-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26397-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B10BEC624D6
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2026 14:31:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C26D0C624D6
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2026 14:41:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hZ7bY01Tcz2xmh;
-	Wed, 02 Sep 2026 00:31:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hZ7pw0frPz2xmh;
+	Wed, 02 Sep 2026 00:41:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788273112;
-	cv=none; b=G6x33Lw+WjpXzPiTY5dC745S2+pytjOjxGX7Cr4bOc9exQ628guCcBPJ6wkXn7YLGXQcjuYdvuE8H2S8SDkIp06D1ItUZAIrt+/lr5cgev1aXN5Zqp0xUPReT6/lDigkRhS5/0RAXZlIss3dJJWh08sQJtElKGUuWmtL8/7eRYOD5PJku2jY5DRGl0Mvv2/Ek6Ms0PV9oOBEcYuaEame9J6m2Q7YPVTejoiU4ZK4n3M9rkcuJgC1Kt25KBStjQPu/GH21CimofJvgkIkBX/peAQuxfNDEBrjrQRQdsTPQ5nu3dFYLP2AS30I/jZXPYqIKwSHagRXBKm4ljhHrMGxIA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788273704;
+	cv=none; b=eHAp3GNhLJn6K/HIL0DSxMaWMTgEX4vBxVTiERItfz3PHRa0XjEOgmvqktPo0MNIdCoRakkwy2EuXRK4Tl0Hzg+UYCtFNCWmnfsIETbGtLRPvv7L5k4vUHD4nn/P7un+pGwXtDL5w3g18dKr/nvn5CSXi7WYJHvPD4BR7DbrAx6/8gjCcLWV0YEziKiCkpG7BaPzx5EECVN4apov/7GU1m0HaRtWi6sNrPyhc3oOxTMkEP0zOPV5AJTI3EV11JS6eez9nfKtOwGRlm/acegOb9Z7chDetZz042Ac5RYenFbmcRGE1g/eWpaMMH+r8Y3W0R7pQPamrQFOdby27pYIwA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788273112; c=relaxed/relaxed;
-	bh=+SM87dKxgHKoTgR6BSYO1fL6Rd9rD874uyPlzcJDnuw=;
+	t=1788273704; c=relaxed/relaxed;
+	bh=aD1aeCXoZUTVkYkw8DYLgpTcX29H0YL7tFV55GqLOUs=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=WxwsK93pdYP5ekaP5MllBftu5I1IGFH0rJH4jp+3vwMMKimtxkWIeQ194EyCLJiZ/jc4QPIpQJ1KZHclfnl7XWvjbkXBZU6xJHMaGXVtcFpSWRDjihpgjxlhir3c5LTHMVc8v2AHI5wDeao+CwV/ZV0V6hTPRBerVV8sBInIseuHnSOqld8ptPoyPfO0/4p2vE0pmgFZNvsGP7x3vzlcGqgAf7HGdyLAuN2WArSogKafdqk7UoarRQ2383+La4d567pmtMN6w6XjeouJdCauzlXXYej7p73Yo2ak0MyG6jOprkKyCr5jinzACVyCQanqU8/LC7CvZOnetyYeqZ5UkA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=My/Zkw7E; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=gHFRU/O73vbaI/G/clBeuDRmzLNh1wQeV/zADgyK5PyIMgVdEImGzutVhtPR3goucSFv+SoYTTUdExML51BSrRD+8hFh9XJG7id1aVu5l+i4jTEyO1P3BwX078oyz2zuIYlWDm52lkdEIEB7XIMs360qvc+MGomry/mn7NKTi5Dr3XM7gqOmdYa7MnJy6DtXWz4FeMXZptwdLmy3oz2ZFcGqmBqvUb942UMb7XRsfviOBAlDVFhoJbk/E1x4xeVkx3FrMJIkKbYhTWqjjnw1NrQk5Tnl/QxGIM0a68xWQsP6U3g1qpyWGw4vcgd9ZiJoko82hms5FSyf0YT3GUc0PA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DCkYCgJH; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=My/Zkw7E;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DCkYCgJH;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
 Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hZ7bW4gtBz2xGt
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Sep 2026 00:31:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hZ7pv1BTvz2xGt
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Sep 2026 00:41:43 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id B07AB60267;
-	Tue,  1 Sep 2026 14:31:48 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5767E1F000E9;
-	Tue,  1 Sep 2026 14:31:29 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id EEA18602BE;
+	Tue,  1 Sep 2026 14:41:40 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5A26C1F000E9;
+	Tue,  1 Sep 2026 14:41:20 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788273108;
-	bh=+SM87dKxgHKoTgR6BSYO1fL6Rd9rD874uyPlzcJDnuw=;
+	s=k20260515; t=1788273700;
+	bh=aD1aeCXoZUTVkYkw8DYLgpTcX29H0YL7tFV55GqLOUs=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=My/Zkw7EkDQLUSB5jkacAppt65djuYrOjFPJWtAE+uuNKaseNbscCeIJiLFL5tjOF
-	 zK/l3KkQ2N9S29hI3UzfgzFa0i3rNCpVRYFstyNcwPJV5mzts5D3rGRQPGBcL2r5sl
-	 M4LoV6VJ/3D2KAGExFMGP7y9KIyumhdCGZjgQtts1w0HwS2NaKaLtzngF9+7NuNxTq
-	 97Ypv59rrpwA8Xfdjav2hWACORC+/7eWDiEOl7fC+2HguCIpqRQRocLFjIYq8tNPwN
-	 1Rl+PvXhytTcmeBeZ03XozFMVE7XZhTphKZmP8mF89keRLxkpfMQ1iGRJldtR0luyc
-	 IzD2SuW+PoJHA==
-Date: Tue, 1 Sep 2026 15:31:26 +0100
+	b=DCkYCgJHTMeXpcfI011IFyZWluRGgMafgbwW8u29qgQBVZ9Dxsno0gDXnl7hHZ0m+
+	 lkqnWV4wHDwKSWKnoQda11OIQ06fvWLfa32Ye05qYmX1Z7boJPT6aJZEl4EVv8r+G6
+	 Q8c5h5Eq9o8u4IVkNkDvCB17dlRL52JTqjsLsbOVCb03G2bti6Yh9u4sRvw0rWJ1Ca
+	 qwHtYbfIXyVj5uLcNFlMoaGF0xHllKs6NACCcVCPrJufvl5Fed3xFkkaUWs7j7W7ZV
+	 siJKVu6dFavxSGvLfYUXvuVBZcE7zllPLV8WeZFb1IHv1rO4zZ/Mqb/Gua1p6L6cXY
+	 pVvsocfBPnW+w==
+Date: Tue, 1 Sep 2026 15:41:17 +0100
 From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-To: Kiryl Shutsemau <kas@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, 
-	David Hildenbrand <david@kernel.org>, Zi Yan <ziy@nvidia.com>, 
+To: Jason Gunthorpe <jgg@ziepe.ca>
+Cc: Kiryl Shutsemau <kas@kernel.org>, 
+	Andrew Morton <akpm@linux-foundation.org>, David Hildenbrand <david@kernel.org>, Zi Yan <ziy@nvidia.com>, 
 	Baolin Wang <baolin.wang@linux.alibaba.com>, "Liam R. Howlett" <liam@infradead.org>, 
 	Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, 
 	Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, 
@@ -79,21 +79,23 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
 	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>, 
 	Arnd Bergmann <arnd@arndb.de>, Vlastimil Babka <vbabka@kernel.org>, 
 	Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, 
-	Michal Hocko <mhocko@suse.com>, Jason Gunthorpe <jgg@ziepe.ca>, 
-	John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, linux-mm@kvack.org, 
-	linux-kernel@vger.kernel.org, linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org, 
-	linux-m68k@lists.linux-m68k.org, linux-openrisc@vger.kernel.org, linux-sh@vger.kernel.org, 
-	linux-riscv@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
-	linux-snps-arc@lists.infradead.org, linux-arch@vger.kernel.org, sparclinux@vger.kernel.org, 
-	linux-alpha@vger.kernel.org, loongarch@lists.linux.dev, linux-mips@vger.kernel.org, 
-	linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, 
-	linux-um@lists.infradead.org, Hugh Dickins <hughd@google.com>, Qi Zheng <qi.zheng@linux.dev>
-Subject: Re: [PATCH 12/12] mm: change the contract for free_pgtables(),
- update docs
-Message-ID: <apbfzUwBQyxe3P9R@gremlin>
+	Michal Hocko <mhocko@suse.com>, John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, 
+	linux-mm@kvack.org, linux-kernel@vger.kernel.org, linux-csky@vger.kernel.org, 
+	linux-hexagon@vger.kernel.org, linux-m68k@lists.linux-m68k.org, linux-openrisc@vger.kernel.org, 
+	linux-sh@vger.kernel.org, linux-riscv@lists.infradead.org, 
+	linux-arm-kernel@lists.infradead.org, linux-snps-arc@lists.infradead.org, linux-arch@vger.kernel.org, 
+	sparclinux@vger.kernel.org, linux-alpha@vger.kernel.org, loongarch@lists.linux.dev, 
+	linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	linux-s390@vger.kernel.org, linux-um@lists.infradead.org, Hugh Dickins <hughd@google.com>, 
+	Qi Zheng <qi.zheng@linux.dev>
+Subject: Re: [PATCH 01/12] mm/huge_memory: zap deposited page tables after an
+ RCU grace period
+Message-ID: <apbiB51hjm-9pRzf@gremlin>
 References: <20260901-rcu-pagetable-freeing-v1-0-5456a81c8212@kernel.org>
- <20260901-rcu-pagetable-freeing-v1-12-5456a81c8212@kernel.org>
- <apbUpMDJglS99_yK@thinkstation>
+ <20260901-rcu-pagetable-freeing-v1-1-5456a81c8212@kernel.org>
+ <apbOlyF77yDCV4cF@thinkstation>
+ <apbcoMTVlL42G5tg@gremlin>
+ <20260901142408.GA56830@ziepe.ca>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -109,69 +111,67 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <apbUpMDJglS99_yK@thinkstation>
+In-Reply-To: <20260901142408.GA56830@ziepe.ca>
 
-On Tue, Sep 01, 2026 at 02:57:13PM +0100, Kiryl Shutsemau wrote:
-> On Tue, Sep 01, 2026 at 12:01:32PM +0100, Lorenzo Stoakes (ARM) wrote:
-> > diff --git a/mm/pgtable-generic.c b/mm/pgtable-generic.c
-> > index b91b1a98029c..ff8ff3706485 100644
-> > --- a/mm/pgtable-generic.c
-> > +++ b/mm/pgtable-generic.c
-> > @@ -386,9 +386,21 @@ pte_t *pte_offset_map_rw_nolock(struct mm_struct *mm, pmd_t *pmd,
-> >   * be read-only/read-write protected.
-> >   *
-> >   * Note that free_pgtables(), used after unmapping detached vmas, or when
-> > - * exiting the whole mm, does not take page table lock before freeing a page
-> > - * table, and may not use RCU at all: "outsiders" like khugepaged should avoid
-> > - * pte_offset_map() and co once the vma is detached from mm or mm_users is zero.
-> > + * exiting the whole mm, does not take the page table lock before freeing a
-> > + * table.
-> > + *
-> > + * However, the PMD entry is cleared first, and the table freed only after
-> > + * an RCU grace period, so a walker that mapped the table under
-> > + * rcu_read_lock() stays safe, and the pmd_same() recheck in
-> > + * pte_offset_map_lock() detects the teardown.
-> > + *
-> > + * Therefore it is safe for "outsiders" like khugepaged to use
-> > + * pte_offset_map() and co. for VMAs that might be undergoing page table
-> > + * teardown.
+On Tue, Sep 01, 2026 at 11:24:08AM -0300, Jason Gunthorpe wrote:
+> On Tue, Sep 01, 2026 at 03:12:45PM +0100, Lorenzo Stoakes (ARM) wrote:
 >
-> Is it strictly true?
+> > It won't be costly at the time of the calls obviously as its deferred. Maybe
+> > increase some time spent in softirq but again is 512x that big of a deal?
+> >
+> > I'm not sure how you'd both defer the free and somehow utilise mmu_gather here
+> > either really, certainly not without it becoming extremely messy.
 >
-> free_pte_range() clears the pmd without taking the PTL, so the
-> pmd_same() recheck in pte_offset_map_lock() can pass and the pmd gets
-> cleared right after.
+> The less costly version is to thread the page to be freed onto the
+> mmu_gather through a linked list in the struct page memory. This is
+> super cheap since it is just a singly linked list operation.
 >
-> Readers are fine -- __pte_offset_map() holds rcu_read_lock() until
-> pte_unmap(), so the table cannot go away.
+> Then when the mmu_gather is flushed it does a single call_rcu using
+> the rcu head of the struct page of the head of the list. The callback
+> clears the entire linked list of pages.
 >
-> khugepaged is an odd example here. collapse_pte_mapped_thp() and
-> retract_page_tables() don't rely on this recheck -- they take pmd_lock()
-> plus the ptl and do their own pmd_same() under both.
+> Since you have to tlb flush anyhow, it makes sense to always use the
+> mmu_gather. For example the design I ended up with for iommupt
+> accumulates all the invalidations and all the free-able memory into a
+> gather then invalidates and frees.
 >
-> Can we say walks are safe and leave the write rule where it is?
+> This allows maximizing the tlbi efficiency too. You can't do call_srcu
+> until you flush the tlb and if you call once per table then you are
+> also tlb flushing once per table too.
+>
+> So if the kernel really does want to clear out 512 leaf tables the
+> optimal implementation is one range tlbi for 512 entries followed by
+> one call_rcu to free the memory. Hence the gather..
 
-Hmm yeah, ah page tables, what a rabbit hole of horror :)
+I think there's some confusion here.
 
-I guess this is effectively a reflection of the 'write lock on write, RCU load
-on read' pattern in RCU itself generally.
+This isn't the path in which a page table is being freed, the _deposited_
+table is zapped, in zap_deposited_table().
 
-So, maybe something like:
+That is, the page table kept in reserve for THP split, that is not
+currently mapped.
 
- * Note that free_pgtables(), used after unampping detached vmas, or when
- * exiting the whoel mm, does not take a page table lock before freeing a page
- * table.
- *
- * As page table freeing itself is RCU-safe, page table readers can safely run
- * concurrently with page table teardown. However, writers cannot, as without
- * a lock nothing prevents concurrent teardown.
- */
+It amounts to a __free_pages() call.
 
-Instead? What do you think?
+The TLB operations are in e.g. zap_huge_pmd() etc. and nobody has
+complained about inefficiencies there.
+
+So, unless I'm missing something here, TLB flushes play no role in this
+whatsoever.
+
+The issue Kiryl raised was that instead of immediately freeing page tables,
+they are now batched up individually by call_rcu().
+
+I personally find it difficult to imagine the numbers here would be
+problematic or certainly cause anything observable beyond what is
+observable now.
+
+So I'm going to have to say, unless it can be clearly demonstrated this is
+problematic, I don't think there's any reason to add additional complexity
+here.
 
 >
-> --
->   Kiryl Shutsemau / Kirill A. Shutemov
+> Jason
 
 --
 Cheers, Lorenzo
