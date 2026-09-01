@@ -1,55 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-26419-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26420-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 75AB8C61DD3
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2026 20:05:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 91114C624D6
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2026 20:14:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hZH0172Twz2xmh;
-	Wed, 02 Sep 2026 06:05:05 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788293105;
-	cv=none; b=DeMkoJIVjDXhCsKa+pZ/0p4VGU2yjDjKQXLHGSdyiJcbHGx3Lg00RmfmyCE2t+8MOjRZEQoGcJPxuWvx6qoOgN1wKXpRnZ8oROl3H5aIhqyepk0PuewXnGKaKCHP4H4Uqf6jZgqcrEBh1TSEe7RT+h7B7+ovlAs8rtaSKAhyLumbubl5FRcLfchKZ3u7cqzVOLKxrl4mIDXrDHv9foKFnk45q+e0c+RyzANkG3OKiAjh1xxnDxhalNlqsQtXxcYMc4KqjkZY3kwaH+IF+lHSHGEt/ZDaTyXAYzQkpsDXyEzIEoobiC1PwNGtyT46qa04rwxpvrYk86pwZD+YX+/zVQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hZHBh62Flz2xmh;
+	Wed, 02 Sep 2026 06:14:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788293660;
+	cv=none; b=loBCGhXT5bryInaCm3mKd2C+L981vwB6I285k5ITi5su7H/K5ZK0nRepkBlLc1G4UdWQ7gZKYScY8Db62Yb7mzucIpVm6chdfhdF8I95HjOqETBa91zK5ezk7/FTsXhv5pNaM4H5Jqd3qjTe2ukP8WhLYEfYKWeHw0I2oHv/AGs1nE2PzETd3NZpAbpDmCnl2XYxIQekAuOx1F7pMDNfmyil2Bx3zKridQ2cxLnuzgPxWEjUQjwXrP6KhX0Kw8UfhJpuCIfZIuxYVsjSjjBG6ilpnZ7O1ymdUAss3j7So7Rp1L1FHjZXwsqlF6ixPuwCGYAMNXswH51icXw9sF/chg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788293105; c=relaxed/relaxed;
-	bh=01IkyQRQG/lSUmqdbouqV6kPDaesEhGkw7qS1Uqjgdk=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=awhhnx3vsOLwSxYAWjUso7VF/Gy7vxlPoJGwl7gJE8TRCWnIpxGCWYZOozkoq2xaSWObt5+/yol6mrSbuDmQk6N1sAiWg4rHD1dqkVJuISK5evXWD6Rryp9hCkHuAYw+Y840fvyICme1tL0ykigpyVFfczZscoHGX4R+Ua2u/vWmfZC8RLxWsWZWpdRnBDRVhJqJr9nxLL7s8nZ8I6ReXMovo/0sWVnA5In57wdxd24ma9nRJO53zYXgPD+5r1+qROJwPc6yeROMD7KDYVXoffGKj3asJmBpqFmSau1VuhOuIvwWUnK5lBMyDwy4LPD1eyBBV1DYpNAfmxbKFJUM4Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=TnzEUrOn; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=devnull+vjardin.free.fr@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1788293660; c=relaxed/relaxed;
+	bh=P2Y/7R1nKNC3hVgJ6HVCLjPdj/LqygKXED195b8rx8I=;
+	h=MIME-Version:Content-Type:Subject:From:To:Cc:In-Reply-To:
+	 References:Date:Message-Id; b=QefRUwBDAGFMbszePjv7sx3NUWWh35ZvGFywiTx4aHqO+KB3r7tO5tRKKsbBV9R3ZE3AhROTYfKJ4ZQYHSIL261AB6dXaG+eyJuACk3P6ZqWauue/hajkdsqBr/H1F7gmNwr8NCPdfPdBGmjZzoofpdHFoGNtGSEaxu5Sn5r+yGbZJ+XLqy3s1qGp/aingyA55H9D6GhIiDh8F/0GtVzHMkakU//Q0Zs0BF2g3T9CrwtWMokyCNuMpm/Ih14xd4IE75RH/fO5XX/c4ilEFLLzAdmlK1KPOogOP1d+Z6Cue/MKebbGLaxKv1qoDZLau21188SpiPa++Mi7LedgnB9Kw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QEWxDwuk; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=TnzEUrOn;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QEWxDwuk;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=devnull+vjardin.free.fr@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hZH010Jl6z2x9g
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Sep 2026 06:05:04 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 63248600D9;
-	Tue,  1 Sep 2026 20:05:01 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id F362CC2BCF4;
-	Tue,  1 Sep 2026 20:05:00 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1788293101;
-	bh=Qvg96r1uqRi7ZsIahTd0vxEuEUAxLGPkPnDx+jmOuQs=;
-	h=From:Date:Subject:To:Cc:Reply-To:From;
-	b=TnzEUrOnWeKc2IJhDqDEHr24D1ZpYZJTysb91o2LXRfFMdLZJD8mon8H9TFI1JY+g
-	 wHBs3NQfp/kNUO8unmeJXu9FFgc1ywOzd8wd8R6KsCjGi5+oOk+xXooNI6waXpRBPT
-	 2W2dJA8Pcon9slfvjKvGaa/Kg9MZLGSOBq4btFOzzOIHiaEwDoKsG5XRRvq1mVWmk3
-	 f4SK+nIxxW8UkkzcWPyH0g8mRQTtt3sZK2lTX7YK1dAKyRCEVq27puthHw8f5vTe+i
-	 0RoJG/1mMSvdGe7mmO1fK/sMGU+FF7ByXgL2fBH+62ePRjQ/LR50qBeKVlNC2qevZa
-	 85k4kYnncJzZg==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CC85DC61DD6;
-	Tue,  1 Sep 2026 20:05:00 +0000 (UTC)
-From: Vincent Jardin via B4 Relay <devnull+vjardin.free.fr@kernel.org>
-Date: Tue, 01 Sep 2026 22:04:37 +0200
-Subject: [PATCH] bus: fsl-mc: register the object drivers after misc_class
- exists
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hZHBg59Zfz2x9g
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Sep 2026 06:14:19 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 15579401E2;
+	Tue,  1 Sep 2026 20:14:17 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2D3951F000E9;
+	Tue,  1 Sep 2026 20:14:03 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1788293657;
+	bh=P2Y/7R1nKNC3hVgJ6HVCLjPdj/LqygKXED195b8rx8I=;
+	h=Subject:From:To:Cc:In-Reply-To:References:Date;
+	b=QEWxDwuklcAT5vpT/GCh8/tGOqL9zu9498j8F1chVU2f3pi31jaf21AraJN58Jaqg
+	 StWIeODS93d+9LhmpvfaD8yifmXFmiVhcmg/ozsZbRA8KGF5cx2pdfu1sEFrxVrNlO
+	 gv4OI7BfxFm9fkfmogqLl/Mllr/LdKuTAFHQsnDraEP2KJ1IOiVoXO0+IzcvwCuWLH
+	 kyTvnG7vAo/5CS2uCCGCKN1FNozw6LV7BkXmCcVBXJypXbHZGwXn6L5xH4Qw0A6JaS
+	 dNFnHQQDN7G6QsDXd10aYR9/IoAuU7u2pMRh5GFa8NKfwM9bJyjQIcXmoNAx7NRYYa
+	 LIxDGeBk/l7UQ==
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -65,121 +59,164 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260901-for-upstream-fsl-mc-initcall-order-v1-1-36ffe48f767d@free.fr>
-X-B4-Tracking: v=1; b=H4sIANQvl2oC/x3NwQrCMAyA4VcZORtoU5jMVxEPtUs10LUj2UQYe
- 3eLx+/y/wcYq7DBbThA+SMmrXb4ywDpHeuLUeZuIEejm4gwN8V9tU05Lpit4JJQqmwploJNZ1b
- kEPwYJnf19IQeWpWzfP+T++M8f6bGI1F0AAAA
-To: Ioana Ciornei <ioana.ciornei@nxp.com>, 
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: Laurentiu Tudor <laurentiu.tudor@nxp.com>, 
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, 
- linux-kernel@vger.kernel.org, stable+noautosel@kernel.org, 
- Vincent Jardin <vjardin@free.fr>
-X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1788293080; l=2613;
- i=vjardin@free.fr; s=20260525; h=from:subject:message-id;
- bh=SXlMvnAA+Yv9aOr3bof+GHsV/62VSrRffjRMXK6jUP8=;
- b=Q0DNQlW6k/74/YvmvMnm7KR6URJ1LrX/mfYfTlKrZ73dg+vhupeXaUuRo+NA7LhYlLA4RULEh
- Bl42jSLrySdALA0c54lYp2NUpW7m/nPrOleoqbafewj1sO6QtpbR7ZC
-X-Developer-Key: i=vjardin@free.fr; a=ed25519;
- pk=hppgLeFpGpKOi7LNwGEZ4jOYofJCoGd4Jf1ltAabiLw=
-X-Endpoint-Received: by B4 Relay for vjardin@free.fr/20260525 with
- auth_id=871
-X-Original-From: Vincent Jardin <vjardin@free.fr>
-Reply-To: vjardin@free.fr
+Subject: Re: [PATCH v3 01/17] kexec: Record allocated CMA pages to fix
+ release size mismatch
+From: Mike Rapoport <rppt@kernel.org>
+To: Jinjie Ruan <ruanjinjie@huawei.com>
+Cc: catalin.marinas@arm.com, will@kernel.org, mark.rutland@arm.com, 
+ chenhuacai@kernel.org, kernel@xen0n.name, maddy@linux.ibm.com, 
+ mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org, tglx@kernel.org, 
+ mingo@redhat.com, bp@alien8.de, dave.hansen@linux.intel.com, hpa@zytor.com, 
+ akpm@linux-foundation.org, baoquan.he@linux.dev, rppt@kernel.org, 
+ pasha.tatashin@soleen.com, pratyush@kernel.org, ruirui.yang@linux.dev, 
+ kees@kernel.org, thuth@redhat.com, gshan@redhat.com, jic23@kernel.org, 
+ james.morse@arm.com, ardb@kernel.org, leitao@debian.org, 
+ yeoreum.yun@arm.com, sourabhjain@linux.ibm.com, coxu@redhat.com, 
+ tangyouling@kylinos.cn, hbathini@linux.ibm.com, adityag@linux.ibm.com, 
+ ionut.nechita@windriver.com, liaoyuanhong@vivo.com, seanjc@google.com, 
+ fuqiang.wang@easystack.cn, makb@juniper.net, piliu@redhat.com, 
+ ebiggers@kernel.org, jbouron@amazon.com, mclapinski@google.com, 
+ me@linux.beauty, graf@amazon.com, bgwin@google.com, robh@kernel.org, 
+ takahiro.akashi@linaro.org, palmer@rivosinc.com, x86@kernel.org, 
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
+ loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, 
+ kexec@lists.infradead.org, linux-fsdevel@vger.kernel.org, 
+ linux-mm@kvack.org
+In-Reply-To: <20260826092541.3905933-2-ruanjinjie@huawei.com>
+References: <20260826092541.3905933-1-ruanjinjie@huawei.com>
+ <20260826092541.3905933-2-ruanjinjie@huawei.com>
+Date: Tue, 01 Sep 2026 23:14:00 +0300
+Message-Id: <178829364020.3691424.12323275610442178748.b4-review@b4>
+X-Mailer: b4 0.17-dev
 
-From: Vincent Jardin <vjardin@free.fr>
+Hi,
 
-Unbinding and re-binding the root DPRC fails with:
+> The CMA pages allocated for a kexec segment are released using the
+> segment's memsz to calculate the number of pages. However, some
+> architecture loaders modify the segment's memsz after allocation
+> (e.g. arm64 subtracts text_offset), causing the release function to
+> free fewer pages than were originally allocated, leaking the remaining
+> CMA pages.
+> 
+> Add a per-segment `segment_cma_pages` array to store the number of
+> pages actually allocated from CMA. Populate it during
+> kexec_add_buffer() using the aligned memsz, and use it in
+> kimage_free_cma() to accurately release all allocated pages.
+> 
+> This avoids relying on the potentially modified segment->memsz and
+> prevents silent CMA memory leaks.
+> 
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Baoquan He <baoquan.he@linux.dev>
+> Cc: Mike Rapoport <rppt@kernel.org>
+> Cc: Pasha Tatashin <pasha.tatashin@soleen.com>
+> Cc: Pratyush Yadav <pratyush@kernel.org>
+> Cc: Brian Mak <makb@juniper.net>
+> Cc: Pingfan Liu <piliu@redhat.com>
+> Cc: Sourabh Jain <sourabhjain@linux.ibm.com>
+> Cc: Justinien Bouron <jbouron@amazon.com>
+> Cc: Li Chen <me@linux.beauty>
+> Cc: stable@vger.kernel.org
+> Link: https://sashiko.dev/#/patchset/20260729031235.2840255-1-ruanjinjie%40huawei.com
+> Fixes: 07d24902977e ("kexec: enable CMA based contiguous allocation")
+> Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
+>
+> diff --git a/include/linux/kexec.h b/include/linux/kexec.h
+> index 0af8ae4fdd087..83c296c0eb6cc 100644
+> --- a/include/linux/kexec.h
+> +++ b/include/linux/kexec.h
+> @@ -349,6 +349,7 @@ struct kimage {
+>  	unsigned long nr_segments;
+>  	struct kexec_segment segment[KEXEC_SEGMENT_MAX];
+>  	struct page *segment_cma[KEXEC_SEGMENT_MAX];
+> +	unsigned int segment_cma_pages[KEXEC_SEGMENT_MAX];
 
-  sysfs: cannot create duplicate filename '/dev/char/10:256'
-    misc_register / fsl_mc_uapi_create_device_file /
-    dprc_setup / dprc_probe
+Can we universally use unsigned long for number of pages?
 
-Cc: stable+noautosel@kernel.org # niche: root DPRC unbind/rebind only
-Fixes: 2cf1e703f066 ("bus: fsl-mc: add fsl-mc userspace support")
-Signed-off-by: Vincent Jardin <vjardin@free.fr>
----
-Issue found when unbinding/rebinding the root DPRC on an LX2160A.
+>  
+>  	struct list_head control_pages;
+>  	struct list_head dest_pages;
+> diff --git a/kernel/kexec_core.c b/kernel/kexec_core.c
+> index dc770b9a6d053..611b15bb1369e 100644
+> --- a/kernel/kexec_core.c
+> +++ b/kernel/kexec_core.c
+> @@ -560,7 +560,7 @@ static void kimage_free_cma(struct kimage *image)
+>  
+>  	for (i = 0; i < image->nr_segments; i++) {
+>  		struct page *cma = image->segment_cma[i];
+> -		u32 nr_pages = image->segment[i].memsz >> PAGE_SHIFT;
+> +		unsigned int nr_pages = image->segment_cma_pages[i];
+>  
+>  		if (!cma)
+>  			continue;
+> @@ -568,6 +568,7 @@ static void kimage_free_cma(struct kimage *image)
+>  		arch_kexec_pre_free_pages(page_address(cma), nr_pages);
+>  		dma_release_from_contiguous(NULL, cma, nr_pages);
+>  		image->segment_cma[i] = NULL;
+> +		image->segment_cma_pages[i] = 0;
+>  	}
+>  
+>  }
+> diff --git a/kernel/kexec_file.c b/kernel/kexec_file.c
+> index 59fb9d71e9d86..bfae3fee7f2f9 100644
+> --- a/kernel/kexec_file.c
+> +++ b/kernel/kexec_file.c
+> @@ -670,7 +670,7 @@ static int kexec_walk_resources(struct kexec_buf *kbuf,
+>  
+>  static int kexec_alloc_contig(struct kexec_buf *kbuf)
+>  {
+> -	size_t nr_pages = kbuf->memsz >> PAGE_SHIFT;
+> +	size_t nr_pages = PFN_DOWN(kbuf->memsz);
+>  	unsigned long mem;
+>  	struct page *p;
+>  
+> @@ -756,6 +756,8 @@ int kexec_locate_mem_hole(struct kexec_buf *kbuf)
+>   */
+>  int kexec_add_buffer(struct kexec_buf *kbuf)
+>  {
+> +	unsigned long nr_segments = kbuf->image->nr_segments;
+> +	size_t nr_pages;
+>  	struct kexec_segment *ksegment;
+>  	int ret;
+>  
+> @@ -763,7 +765,7 @@ int kexec_add_buffer(struct kexec_buf *kbuf)
+>  	if (!kbuf->image->file_mode)
+>  		return -EINVAL;
+>  
+> -	if (kbuf->image->nr_segments >= KEXEC_SEGMENT_MAX)
+> +	if (nr_segments >= KEXEC_SEGMENT_MAX)
+>  		return -EINVAL;
+>  
+>  	/*
+> @@ -789,12 +791,18 @@ int kexec_add_buffer(struct kexec_buf *kbuf)
+>  		return ret;
+>  
+>  	/* Found a suitable memory range */
+> -	ksegment = &kbuf->image->segment[kbuf->image->nr_segments];
+> +	ksegment = &kbuf->image->segment[nr_segments];
+>  	ksegment->kbuf = kbuf->buffer;
+>  	ksegment->bufsz = kbuf->bufsz;
+>  	ksegment->mem = kbuf->mem;
+>  	ksegment->memsz = kbuf->memsz;
+> -	kbuf->image->segment_cma[kbuf->image->nr_segments] = kbuf->cma;
+> +	kbuf->image->segment_cma[nr_segments] = kbuf->cma;
+> +	if (kbuf->cma) {
+> +		nr_pages = (unsigned int)(PFN_DOWN(kbuf->memsz));
+> +		kbuf->image->segment_cma_pages[nr_segments] = nr_pages;
+		kbuf->image->segment_cma_pages[nr_segments] = nr_pages;
+> +	} else {
+> +		kbuf->image->segment_cma_pages[nr_segments] = 0;
+> +	}
 
-The failure is silent at bind time and only shows up as a
-duplicate /dev/char entry on the second bind.
----
- drivers/bus/fsl-mc/fsl-mc-bus.c | 40 ++++++++++++++++++++++++----------------
- 1 file changed, 24 insertions(+), 16 deletions(-)
+I suggest to rename nr_pages to nr_cma_pages, initialize it to 0 at
+declaration time and make this
 
-diff --git a/drivers/bus/fsl-mc/fsl-mc-bus.c b/drivers/bus/fsl-mc/fsl-mc-bus.c
-index 66a4fa73c5b86..7f283844e4500 100644
---- a/drivers/bus/fsl-mc/fsl-mc-bus.c
-+++ b/drivers/bus/fsl-mc/fsl-mc-bus.c
-@@ -1264,35 +1264,43 @@ static int __init fsl_mc_bus_driver_init(void)
- 	error = bus_register(&fsl_mc_bus_type);
- 	if (error < 0) {
- 		pr_err("bus type registration failed: %d\n", error);
--		goto error_cleanup_cache;
-+		return error;
- 	}
- 
--	error = platform_driver_register(&fsl_mc_bus_driver);
--	if (error < 0) {
--		pr_err("platform_driver_register() failed: %d\n", error);
-+	error = bus_register_notifier(&platform_bus_type, &fsl_mc_nb);
-+	if (error < 0)
- 		goto error_cleanup_bus;
--	}
-+
-+	return 0;
-+
-+error_cleanup_bus:
-+	bus_unregister(&fsl_mc_bus_type);
-+	return error;
-+}
-+postcore_initcall(fsl_mc_bus_driver_init);
-+
-+static int __init fsl_mc_bus_drivers_init(void)
-+{
-+	int error;
- 
- 	error = dprc_driver_init();
- 	if (error < 0)
--		goto error_cleanup_driver;
-+		return error;
- 
- 	error = fsl_mc_allocator_driver_init();
- 	if (error < 0)
- 		goto error_cleanup_dprc_driver;
- 
--	return bus_register_notifier(&platform_bus_type, &fsl_mc_nb);
-+	error = platform_driver_register(&fsl_mc_bus_driver);
-+	if (error < 0) {
-+		pr_err("platform_driver_register() failed: %d\n", error);
-+		goto error_cleanup_dprc_driver;
-+	}
-+
-+	return 0;
- 
- error_cleanup_dprc_driver:
- 	dprc_driver_exit();
--
--error_cleanup_driver:
--	platform_driver_unregister(&fsl_mc_bus_driver);
--
--error_cleanup_bus:
--	bus_unregister(&fsl_mc_bus_type);
--
--error_cleanup_cache:
- 	return error;
- }
--postcore_initcall(fsl_mc_bus_driver_init);
-+subsys_initcall_sync(fsl_mc_bus_drivers_init);
+	if (kbuf->cma)
+		nr_cma_pages = PFN_DOWN(kbuf->memsz);
+	kbuf->image->segment_cma_pages[nr_segments] = nr_cma_pages;
 
----
-base-commit: 786262be6048deab760f68c8acc2c85607165894
-change-id: 20260922-for-upstream-fsl-mc-initcall-order-e3316390712b
-
-Best regards,
 -- 
-Vincent Jardin <vjardin@free.fr>
-
+Sincerely yours,
+Mike.
 
 
