@@ -1,144 +1,57 @@
-Return-Path: <linuxppc-dev+bounces-26390-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26391-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7B99CC61DD3
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2026 13:33:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00473C61DD3
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2026 13:41:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hZ6JZ5nCbz2xlv;
-	Tue, 01 Sep 2026 23:33:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788269630;
-	cv=none; b=WHxWqazEy/Z5aRU5sW7mJhtHsExHrAkl/F1eS+BDzzDB1z/NeZC37OP8YEMQIj+orlFkqQtH2VahfpczwM4wlP2+kzn3jQRQPA/UDsHzk2QHgLHS8L6Jc9EdE+8uyob3qTA6MIOkBsHDcAeD/+0wyh3uZNkrOso1nW5oxOLDk1rjiK3ZSqY1FN6iEM8r1O6tDA0IE6WU5sMPzsUsEd07uAGYQ5+T8pjceVVgyu+h4cLvEJg97j2dzD0X1m4rGWKyAx35Cm5eY3WWalDKaAPwuiuol65tWGEIIsmzSGZ40hQZaaCuqR6CJ0jM6fUzAGPSaKHtxETcEveY1DGpWRgBow==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hZ6T42fWvz2xmh;
+	Tue, 01 Sep 2026 23:41:12 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.205.69.213
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788269618;
+	cv=none; b=aZarJ1/tc8qqQTAs2ek3uDyVdsAu0h3D/HguyWT8KhtP+CWmAZ+7sjHoqEbJp/WMSOyyS/zoiv9Qga6lQiIwpdvvX0JYQymFQyPef0dGHlXZotSIrGNHyjwUAGRJV8Y6xCVWSS9aAzkE139uLQldFbqIg6AiqbQO9Jg6ldE+xbvwIiEgjbWrDcaH1cy7SPFaLC7QV7KLn6FA2Yi9k+gPDmJ2Q1U8mOp0fIDE7tXbCwd+axQV+ARMaYKOqOJXm9e55WQBN9A0g7BP8qi1APASfVNAIJT41QlDRMGjsFgtRmqtzTCwbzSa79FqKFtb0q+Cj2DGWv95uozHRAXy+sjjoA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788269630; c=relaxed/relaxed;
-	bh=jcbNqyZ4CJOFUcx+fZWWPKksNhyQwz/xPjmgvkWytSE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=F/EtJWPU5sXDi0SxQlwm1v9FE1l9s+drfqXhzz8G4j2OHVNrJbrHfOYASYc6NoaBcSaxrv1Xzod+x9JuB0O+bIU85NsItenlFUThswPAVp17YxqVGEw+6skFdTF37WL37ISThWwx8nqC/zgQC6ZqbDejA/3oziJ/RWXhe38BI/1iywCl9BjkkRGrkgMsBh3ntouHNgiw/eipG8W3T3X+yPK0fpMd6oT5S+GBRYG0zPNdW6MGXuS6hAtzY9Ctp+RYGxSgcn6weyKns7iLZAJHrAUfGDIjq/keTPuRzGHBAgx5VTs4diwWBnuxghK4nrVNG2ivBbJ86iCZSQ/KPiHpwQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ndLlqhHl; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=kas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1788269618; c=relaxed/relaxed;
+	bh=q1EGlJo4k20wtjJ6LeZz9Ga195oecSYq4oH23A0N5nY=;
+	h=Date:From:To:Cc:Message-ID:Subject:MIME-Version:Content-Type; b=YI+u1P3zaf9dz5gr7sK1/MR3SAfF9/6Zp4C6g5Yi3sM3ga9haQCL7ij8Kxnp97usfyPjcmTd+3/zGPjAQhnTgA7E3jFfwHfF4/vaFdGR7mUYMXc4l+2SdZdh5PQbQQrwAE7ARttNGnbhj2ThzNXS2DVBSnI9ZslBZYhHfwCqEhbxwTjC0q5KyfLitXpdjhd+/3dwgoGAeyGuUJkgBlVZhq0EKIHQ2efonx9UC7nLTOhIBeIzI1jli4U02Gz6PEQpO2JIkUskAS2kv3J8nS7VEZ104CrzMf/ZTlmCC2ieyL4WJ/2SSMjMUADImUf7eu4Vw/vl21D8b2FLr6naWshV3Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=tutamail.com; dkim=pass (2048-bit key; secure) header.d=tutamail.com header.i=@tutamail.com header.a=rsa-sha256 header.s=s1 header.b=knKc+KkZ; dkim-atps=neutral; spf=pass (client-ip=185.205.69.213; helo=mail.w13.tutanota.de; envelope-from=nhuquynh@tutamail.com; receiver=lists.ozlabs.org) smtp.mailfrom=tutamail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=tutamail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ndLlqhHl;
+	dkim=pass (2048-bit key; secure) header.d=tutamail.com header.i=@tutamail.com header.a=rsa-sha256 header.s=s1 header.b=knKc+KkZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=kas@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=tutamail.com (client-ip=185.205.69.213; helo=mail.w13.tutanota.de; envelope-from=nhuquynh@tutamail.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 365 seconds by postgrey-1.37 at boromir; Tue, 01 Sep 2026 23:33:36 AEST
+Received: from mail.w13.tutanota.de (mail.w13.tutanota.de [185.205.69.213])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hZ6JR3RFgz2xBK
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Sep 2026 23:33:43 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 0F62142E8C;
-	Tue,  1 Sep 2026 13:33:39 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7F39D1F00A3E;
-	Tue,  1 Sep 2026 13:33:34 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788269618;
-	bh=jcbNqyZ4CJOFUcx+fZWWPKksNhyQwz/xPjmgvkWytSE=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=ndLlqhHlVeL1h7g7ph+Wt2NFtmrZ4rOV34TH/BkR1LV3hXV72TFKXBa6SSiWah+YS
-	 osor63kOccehDjmVkh3sQpwcQSMSNYVcFsZhRDfV0BOZWC20X/uzVpPoz11vEPx72u
-	 kLe6Dj8pgXjqMdQBlQ+iOksFRpcAk/cRL2f/1AsjTtd62N9p9KMdTkAyeamslLimmh
-	 rePS6mrE/57HAXFkLSbWMR+W5a6VAq9eNnH/iI1RsHXSsazC5suOIyBDNrTwwP628+
-	 9FLGn6PmlvlXDRo7ABVcbcGo7/AsOm/eX+GOgiWGn/e+QIZmVf+XE4geioRTZyxcRH
-	 0zLk/FGxJh8gA==
-Received: from phl-compute-02.internal (phl-compute-02.internal [10.202.2.42])
-	by mailfauth.ams.internal (Postfix) with ESMTP id 57E291980064;
-	Tue,  1 Sep 2026 09:33:18 -0400 (EDT)
-Received: from phl-frontend-03 ([10.202.2.162])
-  by phl-compute-02.internal (MEProxy); Tue, 01 Sep 2026 09:33:33 -0400
-X-ME-Sender: <xms:HdSWar0zDxM1rzMXPVKSiiHY4KJJXKW9_dKFmXqdbTa_fmaDqPnrAQ>
-    <xme:HdSWasJnHNfyfuCbnPXJ41QnOfMcQ3IsJbdR3mnGKXr-4wj9FELqFm8ZdfeRPj7fy
-    bnm6jh3UIcKaloZqTodN2-BguOMyRSr9poABUPkwGcmSl04lFepx8g>
-X-ME-Received: <xmr:HdSWamc0hBDzYeZ6meHT1N8NrjNwQDlG7ndA51A5p6yJYm1erjaIFQqZ_aA>
-X-ME-Proxy-Cause: dmFkZTE7XYI88DUY2gRkJOK6+ZyCIFoNn8bzP7pT6CkwBKHBvKWUe6kvcLZyJKqoR/mFua
-    tnuce/0i36y0TC7Im4WvZyoy/crD2rPu16GAU43MkToFESYNa+q/dgDmYeFoLAKy++6ZgW
-    8jn2vUxLTK4d+JU7NpIMhvmFWN+lBL6CrhfWBNMDXcQ2eFN5VMfwvgG7wpe8357MD3J5gK
-    7xFBRFrqPTsz4yMLY+EEChvmjl1qNNrFzTmc4wdkVOaUc1KRt3nz4X6b9lgB4AP7QFsDWQ
-    tYyrUQvI3wO8SrGFb+1aGvYLJgVsklk3Kc0+LAmLAEM6pSFrAQvRZGfFtBIFEXt5smoDZ8
-    0sIIODp3p+XbaMM1IQmfCvE2+2bbjw/rRlbPqyxvx3AWjW0wx69YF5Ocr+JktO0nTZOok2
-    HEw0ft0H3myd2V1s6FmW7lpkinX5D+jdOQrkC/osJIL3mBMTcjL7XfwqTbI8tt3mank0qt
-    BcT630GiS2PTitGfmJ6/iVLTorQObFhmiWUpu/4o8m4w+lLom0XGtnouU3SvS4FcugWWNZ
-    7nEECz0GGK+6YbBSmEMxBhw/vyLb4HqtpoQS+cM14FfTsm1gjY737Jmi4qjcP7ghw4NaMo
-    mSjmk0LJqLELQl49SSqDTw86/FRQj/i6o2/Z7vFbf6wnUbIU1mKMMzFy+Xyw
-X-ME-Proxy: <xmx:HdSWaorGnJV8X3w6RQ6-yTLBHwkt_MBfkV8RsDaiRQlkH0hCDXuTig>
-    <xmx:HdSWam_C35Dm2JBzL0A5fzPuG5ZvMut58CN7trPjhfIb_5hDuszCGQ>
-    <xmx:HdSWaobzZlmDe5Y-27Rtv7XIlXhpki_IJYzJN_lp2MB6mY3t1TeGow>
-    <xmx:HdSWam8XuaM7yobHeA1s3aD4FW-Jnsz8789jiGSamkl6EtIN7IErBA>
-    <xmx:HdSWaoYZmoLC2txSUqseUpEqs0XigJd8k-YHiiGmmzkLSGyss1bakguf>
-Feedback-ID: i10464835:Fastmail
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Tue,
- 1 Sep 2026 09:33:15 -0400 (EDT)
-Date: Tue, 1 Sep 2026 14:33:14 +0100
-From: Kiryl Shutsemau <kas@kernel.org>
-To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
- 	David Hildenbrand <david@kernel.org>, Zi Yan <ziy@nvidia.com>,
- 	Baolin Wang <baolin.wang@linux.alibaba.com>,
- "Liam R. Howlett" <liam@infradead.org>,
- 	Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>,
- Dev Jain <dev.jain@arm.com>, 	Barry Song <baohua@kernel.org>,
- Lance Yang <lance.yang@linux.dev>, 	Usama Arif <usama.arif@linux.dev>,
- Guo Ren <guoren@kernel.org>, Brian Cain <bcain@kernel.org>,
- 	Geert Uytterhoeven <geert@linux-m68k.org>,
- Dinh Nguyen <dinguyen@kernel.org>,
- 	Simon Schuster <schuster.simon@siemens-energy.com>,
- Jonas Bonn <jonas@southpole.se>,
- 	Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
- Stafford Horne <shorne@gmail.com>,
- 	Yoshinori Sato <ysato@users.sourceforge.jp>,
- Rich Felker <dalias@libc.org>,
- 	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
- Paul Walmsley <pjw@kernel.org>, 	Palmer Dabbelt <palmer@dabbelt.com>,
- Albert Ou <aou@eecs.berkeley.edu>, 	Alexandre Ghiti <alex@ghiti.fr>,
- Russell King <linux@armlinux.org.uk>, 	Vineet Gupta <vgupta@kernel.org>,
- Michal Simek <monstr@monstr.eu>, Chris Zankel <chris@zankel.net>,
- 	Max Filippov <jcmvbkbc@gmail.com>, Will Deacon <will@kernel.org>,
- 	"Aneesh Kumar K.V" <aneesh.kumar@kernel.org>,
- Nick Piggin <npiggin@gmail.com>, 	Peter Zijlstra <peterz@infradead.org>,
- "David S. Miller" <davem@davemloft.net>,
- 	Andreas Larsson <andreas@gaisler.com>,
- Richard Henderson <richard.henderson@linaro.org>,
- 	Matt Turner <mattst88@gmail.com>, Magnus Lindholm <linmag7@gmail.com>,
- 	Catalin Marinas <catalin.marinas@arm.com>,
- Mark Rutland <mark.rutland@arm.com>,
- 	Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>,
- 	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
- 	Helge Deller <deller@gmx.de>, Madhavan Srinivasan <maddy@linux.ibm.com>,
- 	Michael Ellerman <mpe@ellerman.id.au>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- 	Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
- 	Alexander Gordeev <agordeev@linux.ibm.com>,
- Christian Borntraeger <borntraeger@linux.ibm.com>,
- 	Sven Schnelle <svens@linux.ibm.com>,
- Richard Weinberger <richard@nod.at>,
- 	Anton Ivanov <anton.ivanov@cambridgegreys.com>,
- Johannes Berg <johannes@sipsolutions.net>,
- 	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
- Borislav Petkov <bp@alien8.de>,
- 	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
- "H. Peter Anvin" <hpa@zytor.com>, 	Arnd Bergmann <arnd@arndb.de>,
- Vlastimil Babka <vbabka@kernel.org>, 	Mike Rapoport <rppt@kernel.org>,
- Suren Baghdasaryan <surenb@google.com>, 	Michal Hocko <mhocko@suse.com>,
- Jason Gunthorpe <jgg@ziepe.ca>, 	John Hubbard <jhubbard@nvidia.com>,
- Peter Xu <peterx@redhat.com>, linux-mm@kvack.org,
- 	linux-kernel@vger.kernel.org, linux-csky@vger.kernel.org,
- linux-hexagon@vger.kernel.org, 	linux-m68k@lists.linux-m68k.org,
- linux-openrisc@vger.kernel.org, linux-sh@vger.kernel.org,
- 	linux-riscv@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
- 	linux-snps-arc@lists.infradead.org, linux-arch@vger.kernel.org,
- sparclinux@vger.kernel.org, 	linux-alpha@vger.kernel.org,
- loongarch@lists.linux.dev, linux-mips@vger.kernel.org,
- 	linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, 	linux-um@lists.infradead.org,
- Hugh Dickins <hughd@google.com>, Qi Zheng <qi.zheng@linux.dev>
-Subject: Re: [PATCH 11/12] mm: make userland page table freeing RCU-safe
-Message-ID: <apbSaL0YaQqtO9XB@thinkstation>
-References: <20260901-rcu-pagetable-freeing-v1-0-5456a81c8212@kernel.org>
- <20260901-rcu-pagetable-freeing-v1-11-5456a81c8212@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hZ6JJ3mPZz2xBK
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Sep 2026 23:33:36 +1000 (AEST)
+Received: from tutadb.w10.tutanota.de (w10.api.tuta.com [IPv6:fd:ac::d:10])
+	by mail.w13.tutanota.de (Postfix) with ESMTP id F15511787C43F
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Sep 2026 15:26:56 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1788269216;
+	s=s1; d=tutamail.com;
+	h=From:From:To:To:Subject:Subject:Content-Description:Content-ID:Content-Type:Content-Type:Content-Transfer-Encoding:Content-Transfer-Encoding:Cc:Cc:Date:Date:In-Reply-To:MIME-Version:MIME-Version:Message-ID:Message-ID:Reply-To:References:Sender;
+	bh=q1EGlJo4k20wtjJ6LeZz9Ga195oecSYq4oH23A0N5nY=;
+	b=knKc+KkZRsw4D1XOLeg/t19fbEy6xz2ObyD68nWBBhryn7haCmtg9A9LsPVg+MNO
+	GKR8nReUH7QgN9BN7eE1pggA4wv0TkZn7pF2YLui76lyQlRfacx7ZyVKcaHQgshI3gl
+	3Z+CVXNRHmNSfhw53H8yfOhR8FVU68HqMho345s2zGG+Rl8d9h4jN6SigWFHFekVTMJ
+	iXx7ZQyGJ54X9EhvyeZThTlji3DwglkL4rgL6agx2ef63DES3teqgT5r0rTwXeVheBg
+	XCUEPpl+J4pUPIIgIE70DFmc+eNSVQf29/RzoKurylNUJ0hfO0N5/EWRCDOmUf4ZDEP
+	Rrd5+K2iZg==
+Date: Tue, 1 Sep 2026 15:26:56 +0200 (CEST)
+From: nhuquynh@tutamail.com
+To: Maddy <maddy@linux.ibm.com>
+Cc: Npiggin <npiggin@gmail.com>, Mpe <mpe@ellerman.id.au>,
+	Chleroy <chleroy@kernel.org>,
+	Linuxppc Dev <linuxppc-dev@lists.ozlabs.org>,
+	Kvm <kvm@vger.kernel.org>,
+	Linux Kernel <linux-kernel@vger.kernel.org>
+Message-ID: <P0S7RHx--F-9@tutamail.com>
+Subject: [PATCH] KVM: PPC: Fix callback check in kvmppc_gsm_refresh_info
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -152,22 +65,45 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260901-rcu-pagetable-freeing-v1-11-5456a81c8212@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Feedback-ID: 01f623faf350242ee22fbff0b8773ebd8a7767447f9b594d83172fa356399049e52c0826425050c9f5eab48b0cde0804d49efbc89e5dcad8f064d92c63df02326c:TurnOnPrivacy!:tutamail
 
-On Tue, Sep 01, 2026 at 12:01:31PM +0100, Lorenzo Stoakes (ARM) wrote:
-> With this change in place the kernel policy is now that all page tables are
+From 80fd05e6d156d5a90d4908f2498bf6cc7acbdefd Mon Sep 17 00:00:00 2001
+From: Bui Nguyen Nhu Quynh <nhuquynh@tutamail.com>
+Date: Tue, 1 Sep 2026 19:39:49 +0700
+Subject: [PATCH] KVM: PPC: Fix callback check in kvmppc_gsm_refresh_info
 
-s/all/userspace/ as subject implies?
+The kvmppc_gsm_refresh_info() function incorrectly checks for the
+presence of the fill_info callback instead of refresh_info.
 
-BTW, what is your take on kernel page tables? Do we want the same policy
-there. pagetable_free_kernel() is not RCU-safe as it is.
+This can lead to:
+- NULL pointer dereference if refresh_info is NULL but fill_info is present
+- EINVAL return if refresh_info is present but fill_info is NULL
 
-> freed after an RCU grace period, and thus it is now safe to unconditionally
-> perform page table walks under RCU, safe in the knowledge that page tables
-> will not be freed underneath the walker.
+Fix this by checking the correct callback.
 
--- 
-  Kiryl Shutsemau / Kirill A. Shutemov
+Fixes: 6ccbbc33f06ad ("KVM: PPC: Add helper library for Guest State Buffers=
+")
+Signed-off-by: Bui Nguyen Nhu Quynh <nhuquynh@tutamail.com>
+---
+arch/powerpc/kvm/guest-state-buffer.c | 2 +-
+1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/kvm/guest-state-buffer.c b/arch/powerpc/kvm/guest=
+-state-buffer.c
+index 42843eca6727..aeb586ba4523 100644
+--- a/arch/powerpc/kvm/guest-state-buffer.c
++++ b/arch/powerpc/kvm/guest-state-buffer.c
+@@ -598,7 +598,7 @@ EXPORT_SYMBOL_GPL(kvmppc_gsm_fill_info);
+int kvmppc_gsm_refresh_info(struct kvmppc_gs_msg *gsm,
+=C2=A0=C2=A0=C2=A0 struct kvmppc_gs_buff *gsb)
+{
+-=09if (!gsm->ops->fill_info)
++=09if (!gsm->ops->refresh_info)
+return -EINVAL;
+=C2=A0
+return gsm->ops->refresh_info(gsm, gsb);
+--=C2=A0
+2.54.0
 
