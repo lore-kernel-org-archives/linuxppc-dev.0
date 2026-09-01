@@ -1,82 +1,103 @@
-Return-Path: <linuxppc-dev+bounces-26403-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26404-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 46F40C61DD6
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2026 15:33:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1DF48C624D7
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2026 15:45:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hZ8yL6SlKz2xmh;
-	Wed, 02 Sep 2026 01:33:14 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::32e"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788276794;
-	cv=none; b=asI8RHx3NxzV65/n7j0FSrzxtBEJhFqbVmHz3CHEof4IEkQlf/qsQ7LG/faA5JNljZ2QijiF6zhfdK8jujVYe0YQGbsNaAbhbXZ1FzuXI5pjfSF7/wrMzL92ABR+CdEPA1tEC9EBe+M2+o6+JW/dnOspLLgmx+u+ZFpAQaRSBca46K19RNIN2D16PcHJVQfDVRPJHrUhRA6CbZNc6Hl2WYJYo1egyh7YzB2iSUE+7x9UDx9D4uotFqD0s9AKD4cqV3vH5Kk0c5+aU6+l5+Eqm58Zj7YMC2j8liaZc/JX0gk7KvV5PW1jomUbENpynwpTocXnVJV9eAfYFVGb0omm7Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hZ9Dn2QVmz2xmh;
+	Wed, 02 Sep 2026 01:45:45 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788277545;
+	cv=none; b=h8aZoSRrX4T8DfA3qq1Dzjys4cwPLO/k9may3YanI/1nDuohIRsagzFUnAX9GWqnHNk5sV+6adC9rG57sG429Qg/+xGGAvYN1LunMY8bsv2OZYPHhvszr2Es4Eu+WY+coBPrrwU7GtMR0+38TUsOWrpYlnqxq2glxLXAZ+9P9aqc1zgnhRrf//HYhJlFl9kX31kwZMLiMZaaGqF/yZe9iPeHiOAzQnB8C7TzqAC8MQtwEAy7j8+NdnKNxqQsgV2syzCDKBWGnRGVbbCKhtAlNx1+ej1EyX/4DOEi6oT+jP4dHk6nIth6Heqn9ewdy33Grn1JjK8tC3aZl9Ux8FTOaA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788276794; c=relaxed/relaxed;
-	bh=V/qu2uva2bUx60SUUY+PGcI9I5si8eMEKV73xpdWKew=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=b1umxE+89xU0vKV/U83yhEMULyewsPkUIgPCUzJAokfObPO/QcrlHieCieqWJpkNpZhr37zEEWBchdozvjVX2E/Lh6I9z9/yprd2NAONViN+X+thGa7IG3hK85+OYbaPnmBhYEY/l2Zpb3Gv+Q+jumltWUNx13MGCGxmkpCK2iuAcpdQzjWA/buq+1bb/qaJm9tTbCiK5eR0f+MQS7IZIZorIN4hWLXzVBznbemyObu+xfMmGNDzVVMz4G5SDtH/e9CcCCf1uobxUeaZal/bi6G9fbqNVtmjAUSthosx1noJJu5oP3reqEah0Io0k2PJI+K3uwoP/oQnzphC+aqAoA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=as0bOG1H; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::32e; helo=mail-wm1-x32e.google.com; envelope-from=julianbraha@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1788277545; c=relaxed/relaxed;
+	bh=UVHtz6Elr1SZh1A7h5PnNFYa2TvXIJLXLTfOMhtO9T0=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=STF5IUE2pbZWaOlv9eNY4zl63I5iJAEWlhtLXFBcgCfUP+RcziER6F0D3UPJ5E/t8afkR+XDFjc78QLeI32bWwjzCctQdpsREMMhAY2DbLoVkKGubhV/teleAtIX1bzU0rMvt0zK9aTXfdBB/+bNNNR2Nog8XYTzK7+CUZa3AEO4XEAl+2gsuN1+Wwc4sDOigE9TZeNEmHuC+zW/aoNwB8fQOVNfA6DY3idCCMQyNKQjYEEStg1LkcQHCUMrVm6Uf/dwvSRvGcBi3H2/RUgitiqxp/KYpvzNTAUdUWiyBbbJAUIfV2KYGV97c7/ZSE1tuSlTuTa3g7C+F9U9sGL79A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ZTvYdEaL; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=as0bOG1H;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ZTvYdEaL;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::32e; helo=mail-wm1-x32e.google.com; envelope-from=julianbraha@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x32e.google.com (mail-wm1-x32e.google.com [IPv6:2a00:1450:4864:20::32e])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hZ8yL035Bz2xGt
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Sep 2026 01:33:13 +1000 (AEST)
-Received: by mail-wm1-x32e.google.com with SMTP id 5b1f17b1804b1-495590dde14so49775045e9.0
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Sep 2026 08:33:13 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1788276790; x=1788881590; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:sender:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=V/qu2uva2bUx60SUUY+PGcI9I5si8eMEKV73xpdWKew=;
-        b=as0bOG1HwvyARENhvVAbh2J2d899y4hgFYhcAtS9tA8Q+5PL4OtDahCvL/4oXEB9bP
-         d6i2ilYAuLjHW4xnoerof9mkRRp3tEYFe8bfDV5rpUoTpsHwTr5lRRjISSgTbiTjubFr
-         ZhItZndNGiRI407DZECariP48jy+TLfteh1+Zbd8RAajqkGmhBUcTNAeM94tDh6HudeT
-         sKfYqe2njnhXIZOItZs9KaZUxDXTIrAXFs9EONkVAEr2BfRWhkd3STTJ2RsJ7AA43CII
-         A9MnhFQMi6zHQD9apHpYuz15C4GnMX5olqmiUlMR39HlGaDHMeMuvALEiWWwum5Ua1Yz
-         E5TQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788276790; x=1788881590;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:sender:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=V/qu2uva2bUx60SUUY+PGcI9I5si8eMEKV73xpdWKew=;
-        b=e7KKJDRja5+YTqhdLasdTIWBZh95tY6xLYyyrooSQKHYUJ2ywHJCvM0uAf9JdI1naT
-         vBSUP/KAgVbTwJnJIErT01Z/XJqm9W/ZTGCxbYLMaTmZM2CrjLe0lTGwB0tnm7+V64ji
-         gW61iOsjodCLh0r6Sa5Uk+MU2qCXWc8dWhv+KDoVfryhI6EK67q9y47Z4XOfX+wKH6U6
-         KQUGXVABTT7N8+lQV74/FzJM5OZrnI4kNiFcpB58hCpWzDRJT82QgERF1qzqIKfUYDS1
-         Sx1+f/cCYceeLFZh2AEG2l3oPY7oE3nyWC0w+SdHl6g7o3dlGo2Azt5yUtL80XwBmuJr
-         oNGQ==
-X-Forwarded-Encrypted: i=1; AHgh+Rovb3bVFHef+Rtp+Emw1L3giEoQ+YaXoSc0BhRvwoRnOAt5F1KsauB6KQ4oYTcXdpZhUEtaoQiq0pnJdrk=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++kOvql+1buMbHFRHogMOXHu2Kx/OePAl5PbAasvWvKgfluCecGV
-	SEgYFTrFUBZglOebemxaWepyRzlZOSNl8vFF9fFN2E1fV0S04O7HtJzi
-X-Gm-Gg: AR+sD13BouJpWKO00NHfVoiT27Qzvyjaqc2pdRCIcbtlmWObLPgrZlipoU0/TNmgJW0
-	E9ckFcs+VgX8XibkjJdtaWPLUFWvuRDQWi9E6AWFaKC2r2qT4KY2e3Yikwnk8wrIBygHhakxZEb
-	Esrk6Lluqn9nSf5VG82GJb3MbAYSmhur1beuNhyq/jOMOwLBMns3Ki5QeA4/9hAFmUN5L62cG26
-	S1bj4E9DwUemtoPnaCdn9G42mx2ymGWmpVzeosP2pOeKNQ/t/tarb0tHmTRkQDVVB1T0q+8Hm7o
-	c5KZ/3bo5T7o1PLgLzIO/2gCUnbejRNp/6VbxwkPVF+jy0QQGtMlz+FFhjHjzaCTeN8pzYj4U9F
-	N6eWWEl46APDhJzsNp3FhvwlpYUYq4Bm6iG49qD3Op4tIGHYaqKmxGQM0n0+TgcytU0k/mPlmuW
-	4hTNjpbov99+z4PqK0W500ZzszwTzRdM48EeRdFxyg696TRGmkq4GkmiFWIOqhmOQGUPpinctIU
-	OFFwi15rP0guaVLE8Uc3VKTXvk6Aca2FyuY3n3hF3B8/y9BYaYIITRW
-X-Received: by 2002:a05:600c:4f4f:b0:49c:dca4:94c with SMTP id 5b1f17b1804b1-49cdca4097dmr190627635e9.13.1788276790183;
-        Tue, 01 Sep 2026 08:33:10 -0700 (PDT)
-Received: from [10.128.10.232] (195-23-151-163.net.novis.pt. [195.23.151.163])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49b91c510c9sm235087465e9.0.2026.09.01.08.33.08
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 01 Sep 2026 08:33:09 -0700 (PDT)
-Sender: Julian Braha <julian.braha@gmail.com>
-Message-ID: <ad0b9721-9528-4c59-b75e-bb52ae24211e@gmail.com>
-Date: Tue, 1 Sep 2026 16:33:07 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hZ9Dm0P4zz2xBK
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Sep 2026 01:45:43 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 2AC84434B4;
+	Tue,  1 Sep 2026 15:45:42 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 951D41F00A3A;
+	Tue,  1 Sep 2026 15:45:26 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1788277542;
+	bh=UVHtz6Elr1SZh1A7h5PnNFYa2TvXIJLXLTfOMhtO9T0=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=ZTvYdEaL17Xe57XD8vyZST14VBPRctjf28yyFGBI5rdY8BhdwP/dFY55tWjPYAROH
+	 wHw1cZaETEpdGFMWKgfrhKvyrIXd6bJDtcydcX3/fPqK8Kfi5IfzcyNr//cMw16txd
+	 HFiCeAX5f/1+Nu/YL3SO5aPns4ylRzukBeENUY24mi7KCFX+k7s14AOxgxiOOtHlum
+	 W6G9F88xDUVcAEipO83iD5JtJTIZcqLoGsvrFg6C9MQ0JUePRMRswDgKmoAF/Vk71T
+	 gM3PMpQT/NErJ7UkLFICeRZsY2Bjhj6d+sZWTtE2+9Pnuydiw13BrWhOWFQOR8QNap
+	 Lu8bcy8/bQcbQ==
+Date: Tue, 1 Sep 2026 16:45:14 +0100
+From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
+To: Kiryl Shutsemau <kas@kernel.org>
+Cc: Jason Gunthorpe <jgg@ziepe.ca>, 
+	Andrew Morton <akpm@linux-foundation.org>, David Hildenbrand <david@kernel.org>, Zi Yan <ziy@nvidia.com>, 
+	Baolin Wang <baolin.wang@linux.alibaba.com>, "Liam R. Howlett" <liam@infradead.org>, 
+	Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, 
+	Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, 
+	Usama Arif <usama.arif@linux.dev>, Guo Ren <guoren@kernel.org>, Brian Cain <bcain@kernel.org>, 
+	Geert Uytterhoeven <geert@linux-m68k.org>, Dinh Nguyen <dinguyen@kernel.org>, 
+	Simon Schuster <schuster.simon@siemens-energy.com>, Jonas Bonn <jonas@southpole.se>, 
+	Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, Stafford Horne <shorne@gmail.com>, 
+	Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, 
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Paul Walmsley <pjw@kernel.org>, 
+	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
+	Alexandre Ghiti <alex@ghiti.fr>, Russell King <linux@armlinux.org.uk>, 
+	Vineet Gupta <vgupta@kernel.org>, Michal Simek <monstr@monstr.eu>, Chris Zankel <chris@zankel.net>, 
+	Max Filippov <jcmvbkbc@gmail.com>, Will Deacon <will@kernel.org>, 
+	"Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nick Piggin <npiggin@gmail.com>, 
+	Peter Zijlstra <peterz@infradead.org>, "David S. Miller" <davem@davemloft.net>, 
+	Andreas Larsson <andreas@gaisler.com>, Richard Henderson <richard.henderson@linaro.org>, 
+	Matt Turner <mattst88@gmail.com>, Magnus Lindholm <linmag7@gmail.com>, 
+	Catalin Marinas <catalin.marinas@arm.com>, Mark Rutland <mark.rutland@arm.com>, 
+	Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>, 
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>, "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, 
+	Helge Deller <deller@gmx.de>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	Michael Ellerman <mpe@ellerman.id.au>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
+	Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
+	Alexander Gordeev <agordeev@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, 
+	Sven Schnelle <svens@linux.ibm.com>, Richard Weinberger <richard@nod.at>, 
+	Anton Ivanov <anton.ivanov@cambridgegreys.com>, Johannes Berg <johannes@sipsolutions.net>, 
+	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
+	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>, 
+	Arnd Bergmann <arnd@arndb.de>, Vlastimil Babka <vbabka@kernel.org>, 
+	Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, 
+	Michal Hocko <mhocko@suse.com>, John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, 
+	linux-mm@kvack.org, linux-kernel@vger.kernel.org, linux-csky@vger.kernel.org, 
+	linux-hexagon@vger.kernel.org, linux-m68k@lists.linux-m68k.org, linux-openrisc@vger.kernel.org, 
+	linux-sh@vger.kernel.org, linux-riscv@lists.infradead.org, 
+	linux-arm-kernel@lists.infradead.org, linux-snps-arc@lists.infradead.org, linux-arch@vger.kernel.org, 
+	sparclinux@vger.kernel.org, linux-alpha@vger.kernel.org, loongarch@lists.linux.dev, 
+	linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	linux-s390@vger.kernel.org, linux-um@lists.infradead.org, Hugh Dickins <hughd@google.com>, 
+	Qi Zheng <qi.zheng@linux.dev>
+Subject: Re: [PATCH 01/12] mm/huge_memory: zap deposited page tables after an
+ RCU grace period
+Message-ID: <apbvoN6ttgHfI_xg@gremlin>
+References: <20260901-rcu-pagetable-freeing-v1-0-5456a81c8212@kernel.org>
+ <20260901-rcu-pagetable-freeing-v1-1-5456a81c8212@kernel.org>
+ <apbOlyF77yDCV4cF@thinkstation>
+ <apbcoMTVlL42G5tg@gremlin>
+ <20260901142408.GA56830@ziepe.ca>
+ <apbiB51hjm-9pRzf@gremlin>
+ <apbuO_QveZNAz3ns@thinkstation>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,60 +111,103 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] powerpc: remove dead 440SP code
-To: Frank Li <Frank.li@oss.nxp.com>
-Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
- chleroy@kernel.org, Frank.Li@kernel.org, andrew+netdev@lunn.ch,
- davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
- pabeni@redhat.com, kernel-janitors@vger.kernel.org, linusw@kernel.org,
- kees@kernel.org, colin.i.king@gmail.com, rosenp@gmail.com, joao@joaoff.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- dmaengine@vger.kernel.org
-References: <20260901150645.1199097-1-julianbraha@gmail.com>
- <apbvL6_WqojjOeRA@SMW015318>
-Content-Language: en-US
-From: Julian Braha <julianbraha@gmail.com>
-In-Reply-To: <apbvL6_WqojjOeRA@SMW015318>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <apbuO_QveZNAz3ns@thinkstation>
 
-On 9/1/26 16:28, Frank Li wrote:
-> On Tue, Sep 01, 2026 at 04:06:45PM +0100, Julian Braha wrote:
->> The 440SP config option can never be enabled, making all references to it
->> dead code.
->>
->> The only board using CONFIG_440SP was IBM LUAN, which was commented out by
->> commit f65573314e4e ("[POWERPC] Re-organize Kconfig code for 4xx in
->> arch/powerpc") then removed by commit ff5f483f3091 ("powerpc: 4xx: remove
->> commented out Kconfig entries").
->>
->> Let's remove support for 440SP, since nobody can be using it anyway.
->>
->> This dead code was found by kconfirm, a static analysis tool for Kconfig.
->>
->> Signed-off-by: Julian Braha <julianbraha@gmail.com>
->> ---
->> Changes since v1:
->> - cleaned up preprocessor condition
->> - added historic details to description
->>
->> Link to v1:
->> https://lore.kernel.org/all/20260816125615.985387-1-julianbraha@gmail.com/
->> ---
->>  arch/powerpc/boot/cuboot-katmai.c   |  2 +-
->>  arch/powerpc/include/asm/async_tx.h |  2 +-
->>  arch/powerpc/include/asm/dcr-regs.h | 10 +++++-----
->>  arch/powerpc/kernel/cpu_specs_44x.h | 12 ------------
->>  arch/powerpc/platforms/44x/Kconfig  |  3 ---
->>  drivers/dma/Kconfig                 |  2 +-
->>  drivers/dma/ppc4xx/adma.c           |  9 ---------
->>  drivers/dma/ppc4xx/adma.h           |  2 +-
->>  drivers/dma/ppc4xx/dma.h            |  9 ---------
-> 
-> Please split for difference subsystem.
-Will do in v4, thanks! (v3 was already sent because of a dumb mistake in
-amending the commit.)
+On Tue, Sep 01, 2026 at 04:28:48PM +0100, Kiryl Shutsemau wrote:
+> On Tue, Sep 01, 2026 at 03:41:17PM +0100, Lorenzo Stoakes (ARM) wrote:
+> > On Tue, Sep 01, 2026 at 11:24:08AM -0300, Jason Gunthorpe wrote:
+> > > On Tue, Sep 01, 2026 at 03:12:45PM +0100, Lorenzo Stoakes (ARM) wrote:
+> > >
+> > > > It won't be costly at the time of the calls obviously as its deferred. Maybe
+> > > > increase some time spent in softirq but again is 512x that big of a deal?
+> > > >
+> > > > I'm not sure how you'd both defer the free and somehow utilise mmu_gather here
+> > > > either really, certainly not without it becoming extremely messy.
+> > >
+> > > The less costly version is to thread the page to be freed onto the
+> > > mmu_gather through a linked list in the struct page memory. This is
+> > > super cheap since it is just a singly linked list operation.
+> > >
+> > > Then when the mmu_gather is flushed it does a single call_rcu using
+> > > the rcu head of the struct page of the head of the list. The callback
+> > > clears the entire linked list of pages.
+> > >
+> > > Since you have to tlb flush anyhow, it makes sense to always use the
+> > > mmu_gather. For example the design I ended up with for iommupt
+> > > accumulates all the invalidations and all the free-able memory into a
+> > > gather then invalidates and frees.
+> > >
+> > > This allows maximizing the tlbi efficiency too. You can't do call_srcu
+> > > until you flush the tlb and if you call once per table then you are
+> > > also tlb flushing once per table too.
+> > >
+> > > So if the kernel really does want to clear out 512 leaf tables the
+> > > optimal implementation is one range tlbi for 512 entries followed by
+> > > one call_rcu to free the memory. Hence the gather..
+> >
+> > I think there's some confusion here.
+> >
+> > This isn't the path in which a page table is being freed, the _deposited_
+> > table is zapped, in zap_deposited_table().
+> >
+> > That is, the page table kept in reserve for THP split, that is not
+> > currently mapped.
+> >
+> > It amounts to a __free_pages() call.
+> >
+> > The TLB operations are in e.g. zap_huge_pmd() etc. and nobody has
+> > complained about inefficiencies there.
+> >
+> > So, unless I'm missing something here, TLB flushes play no role in this
+> > whatsoever.
+> >
+> > The issue Kiryl raised was that instead of immediately freeing page tables,
+> > they are now batched up individually by call_rcu().
+> >
+> > I personally find it difficult to imagine the numbers here would be
+> > problematic or certainly cause anything observable beyond what is
+> > observable now.
+> >
+> > So I'm going to have to say, unless it can be clearly demonstrated this is
+> > problematic, I don't think there's any reason to add additional complexity
+> > here.
+>
+> It would be nice to measure munmap() overhead here.
+>
+> I am worried about hitting DEFAULT_MAX_RCU_BLIMIT and trigger
+> rcu_force_quiescent_state() which can be disruptive to the system.
+>
+> DEFAULT_MAX_RCU_BLIMIT is 10K, so it is ~20G of THP unmapped on x86.
+>
+> munmap() of 64G worth of THP should be enough to demonstrate the
+> problem.
 
-- Julian Braha
+I mean you're going to hit that from RCU freeing page tables already, which
+most architectures already do right?
+
+So if RCU saturation is a problem, that problem already exists, but I've
+not heard of that being a problem at all?
+
+So you're going to have to demonstrate why this situation is markedly
+different from that. And it's the same scale.
+
+Overall I think freeing 64 GiB of mapped memory all at once will inevitably
+be a slow operation, freeing them directly will also be a lengthily process.
+
+And also it seems to me that RCU mishandling heavy load to the point of
+causing system instability should a bug filed with RCU no?
+
+Also note pte_free_defer() is already used in retract_page_tables() so a large
+collapse could also hit this problem?
+
+I'm not sure I'm convinced there's an issue here.
+
+>
+> --
+>   Kiryl Shutsemau / Kirill A. Shutemov
+
+--
+Cheers, Lorenzo
 
