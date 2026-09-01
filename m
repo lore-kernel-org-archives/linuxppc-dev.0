@@ -1,52 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-26371-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26372-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6F708C61DD3
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2026 11:06:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 65CA6C624D1
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2026 11:06:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hZ32R4Nzpz2yYY;
-	Tue, 01 Sep 2026 21:06:23 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788260783;
-	cv=none; b=NSxN/VRrI5KMGh0bXDmQqXQXpuxcrzN1raMDg/jkSfPMRI6Fqgua1Aq9TKP1e3eRmjPU3RvXALHTkxxHeJLh4cr79JWFcvQkwgfQKCZTPxOojlPPBYN+Cr1EOWfUDoIQdItCdugIFtoC5o1Bz0AkTmSfzaTlt7baygUd0W2qaaEhL42ffIrOgGWIytT7hYzPgVHuY3p7PSEFDVK5nUluDNVNYAmZcm4vIoOOb3or3xbu3zsk6bTpDaCS9hpxQjbcQH/GoSuoqj8f5j/JED9QDQyPgDNOeaAzBMGP2owodm/8eBbALrMw2d7oPT7fs3XhnhB+rYqkjfr8QOVABF0GhA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hZ32g52Syz2y2B;
+	Tue, 01 Sep 2026 21:06:35 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788260795;
+	cv=none; b=LF2ITlvEuNvu9U3QTB/eWTzp/InlzbMbTyvpQ4aMs8eMQ3UDNO+nPtCMHIb+CRql+0cpMlWhLlp/pHHMOnZ23y6vl5PmN55ahFipMNR3gd5RaahTnKZYOQ+OL4lZfMjVPCvZNE4onBbH8t7q5u8RQEmlWzUKw3bECw+c7xfkaNc/hY6ickV9PE/JGHei6bLOv+xHmRrRbG7IlBFX2lPyQMUVxrk5Ag/yltCWCzV5lKH/KGLR6QrjyjV5vKbqaJEANXPy3IQtf4Kl0tWjdvJM82nkzy88BI2dxhh6f+W6g2TDszI3T/RlbycPFKqmV7nVxZ0fMyT7lIRyc+OyDrfJPQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788260783; c=relaxed/relaxed;
-	bh=GKPgtCS/jb8sy+IgthnzqZkszffWbth2i2OdMiXJ3aY=;
+	t=1788260795; c=relaxed/relaxed;
+	bh=TUQ/bqWjoWegxWt3AQb93fUpQ2PrCnmOoUsz1IYEEAE=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=W7+luAI1kpOihZd2wZRdtPOReRekIY9WMQkGU4G7hlcHe3naFg4K8LYMTAyzFFnc86CB3JpFXBJnFI1cqO3xZRLgvpzRiBykqeT8TOeaNUnjl7ll0/yg7XRiVgx9BqcL3qxTMb+2ebs7evAXNM1SGDf912300refBD5UJ+HhtmxXlUdhPcGY0Unt8S945IwPXlHyym7rZZhUiv6ptsT/zEGBBY1bus1sPQyG89bbNKij4TYoUl812PQPNHCSe6CHcY/1jleUjVa0jVVzpNTF+gmlHcpvYIdg3FdL0qB5zTTnm3IT3vqfAKHrfv4hZHbF+RMX0buVeJFgZ2kbV/qg0g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DiowDP1j; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=mdWyYPhCCdlDH3AoN8OPP6TfZzMPxYubEoSOx/68taSWdcUiDQ1uW3qaVDdiPrGBA/SfCaMmxH8tQGJ0mhoO03ZqpSiYAac+bO5CspKNJV1aPdSuLZsWprmgSI8iObtZdlcaFN6yKRCPv+s+wURephexZBf5uFNYF6S2JXqZmYv8gTVIGVKVCd1Z6UJqw5zqJ3FNE+7ooL6aeZrgMwyx9jovJSF/ciXjzfyQecxCzgayvyVxvlpeYHPEsTWaYMxCuhLg1/UWJ5kPhOkX5H3s6LHZ5AqVc64t562gSqHEHvv1nmHctyUwxQBR/8vKEWvuEe3YVRkCse2g++m+V7ocaw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=GGF50wlp; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DiowDP1j;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=GGF50wlp;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hZ32Q2psgz2xmh
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Sep 2026 21:06:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hZ32f6WkQz2xns
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Sep 2026 21:06:34 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 6DDA642A77;
+	by sea.source.kernel.org (Postfix) with ESMTP id 9BC5942A7C;
+	Tue,  1 Sep 2026 11:06:28 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 672D31F00A3D;
 	Tue,  1 Sep 2026 11:06:13 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id F0F261F01562;
-	Tue,  1 Sep 2026 11:05:57 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788260773;
-	bh=GKPgtCS/jb8sy+IgthnzqZkszffWbth2i2OdMiXJ3aY=;
+	s=k20260515; t=1788260788;
+	bh=TUQ/bqWjoWegxWt3AQb93fUpQ2PrCnmOoUsz1IYEEAE=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=DiowDP1j1n5XlCF8U1bsHtuzN012sie75SVdXyIWaQX437ODGamaG8+dyw2U9ubLP
-	 ZQuORqY84alF4o7Xnb9l4E4w9MY0R9kv4cXPesYKeaO21X9V5t1J9jM6t8FOU6ikuy
-	 rwHNDo3oeWAPjqIeVWVsIP66njOhb+rnrhF3SVDfAj2sWhOXfEfEEsQfd1FnSFpSUT
-	 7uyG08SrjLIgMgvGh2sqL3JbG7jtin7/mj29pE9PwuRoAAnOkJ79fImd5f8RrCs6l7
-	 tyJFWeHJO81hWqDF+lZHR5ixipFciKy/9qPugDinCxm3vBNAzeRoHStXE0TrxYkfq2
-	 AJel7eEB7e32g==
+	b=GGF50wlpx5daBNc1SscpLRoU6tPHwKSR+bV8BmmnowzFMrNC7trXHUsfj3E29ekmP
+	 L994BAJdClVd9Yr3sw10ofz2hcYCefpn83H5DYofkntVOSN+eCftj5m4xWN3/2E2D/
+	 RFukLQfk+qbv3V89PdpuaKKmQP74DUXJDElrDgI1Dr4MmMgC9t6XspOEhIOgtQX01M
+	 wqfpQbMB1i3sYccAi4FcWcGcNPqf/WvHnQU2Xsyz3ahXaqNeamxd9OXRjYTbFrxc7S
+	 /vIhMXRqAYVq0FTclNXFmznsm97gJHIBWu1Lt/sABxm5WcMKOwI4+HiU5LGFpA5f/L
+	 7AiAMNGXxwKMQ==
 From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Date: Tue, 01 Sep 2026 12:01:24 +0100
-Subject: [PATCH 04/12] mm: enable MMU_GATHER_RCU_TABLE_FREE for MMU arm
+Date: Tue, 01 Sep 2026 12:01:25 +0100
+Subject: [PATCH 05/12] mm: enable MMU_GATHER_RCU_TABLE_FREE for arc,
+ microblaze, xtensa
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,7 +63,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260901-rcu-pagetable-freeing-v1-4-5456a81c8212@kernel.org>
+Message-Id: <20260901-rcu-pagetable-freeing-v1-5-5456a81c8212@kernel.org>
 References: <20260901-rcu-pagetable-freeing-v1-0-5456a81c8212@kernel.org>
 In-Reply-To: <20260901-rcu-pagetable-freeing-v1-0-5456a81c8212@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>, 
@@ -125,62 +126,134 @@ Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  linux-um@lists.infradead.org, Hugh Dickins <hughd@google.com>, 
  Qi Zheng <qi.zheng@linux.dev>, "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1932; i=ljs@kernel.org;
- h=from:subject:message-id; bh=0gkFDBwGD1EYsdFXWdaAMN6hHbo1XQYIk0QvwnU2gCY=;
- b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLKmbXQPjFVa63kgYD1nwDd5n/U/J56e/Sds1bv1xqzfk
- k9/K/rI01HKwiDGxSArpsjy/Iv4/iCRsHmdF/zdYOawMoEMYeDiFICJyKUzMjyZJ/zbXOdUdfG3
- 3lVZP8s03GYsefForppMeeA6s8AHPWsYGfYrl/n48ql+/h54kiNrev6UD/E3dxdvOxkQbW9aLfz
- amBcA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=4476; i=ljs@kernel.org;
+ h=from:subject:message-id; bh=pmFGalV7u20s+FwKIjahThGo/bP2PelMktCxEOFxTVg=;
+ b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLKmbfSIvHmucsrngzpFV6ri1iXfOvHwlaZthq+1b/Z7h
+ b/boqS4OkpZGMS4GGTFFFmefxHfHyQSNq/zgr8bzBxWJpAhDFycAnCROQx/pdWZM5/4V7cefbv6
+ 30bLDceeu9TYfHEtfr1/o9qro+8EbzP8FfadW57HeKAhZnUIw8e+uFk5CVr6H1ZPr3eZnWD9uVm
+ SCQA=
 X-Developer-Key: i=ljs@kernel.org; a=openpgp;
  fpr=E7F417BF5214569E89D04F46CF9DCD8A81E27F14
 
-Commit a0ad5496b2b3 ("arm: mm: enable HAVE_RCU_TABLE_FREE logic") enabled
-CONFIG_MMU_GATHER_RCU_TABLE_FREE (then named HAVE_RCU_TABLE_FREE) for SMP
-arm architectures with LPAE enabled.
+Each of these architectures directly free page tables without routing these
+changes through tlb_remove_ptdesc().
 
-Regardless of whether CONFIG_ARM_LPAE is enabled or not, the same page
-table freeing functions __pte_free_tlb() and __pmd_free_tlb() are used.
+The use of tlb_remove_ptdesc() is required for
+CONFIG_MMU_GATHER_RCU_TABLE_FREE to correctly free page tables under RCU,
+so simply update these architectures to use these functions.
 
-Non-LPAE PMD page tables are folded into the PGD and freed by
-pgd_free() (PGD freeing is not part of mmu_gather page table freeing in any
-case), so this is a noop in this case.
+Since none of the architectures share page tables or do anything unusual,
+nothing complicated is required here.
 
-Since commit 358d1c39c82a ("arm: convert various functions to use ptdescs")
-both LPAE and non-LPAE PTE page table freeing uses tlb_remove_ptdesc().
+Therefore this is simply a mechanical change - convert __pud_free_tlb(),
+__pmd_free_tlb() and __pte_free_tlb() to use tlb_remove_ptdesc() as
+required.
 
-Thus all page table freeing is performed under RCU with
-CONFIG_MMU_GATHER_RCU_TABLE_FREE enabled for LPAE and non-LPAE and thus it
-need not be gated on LPAE.
-
-A UP arm system can set CONFIG_PREEMPT_RCU, so a future pure RCU page
-table walker requires MMU_GATHER_RCU_TABLE_FREE to be enabled on UP as
-well, even if concurrent GUP fast is not possible there.
-
-Therefore, it is both safe and desirable to set
-CONFIG_MMU_GATHER_RCU_TABLE_FREE for all MMU arm architectures (nommu does
-not perform mmu_gather operations).
+At the point this is in place, all mmu_gather page table freeing is
+performed under RCU, and thus MMU_GATHER_RCU_TABLE_FREE is selected for
+each architecture.
 
 This forms part of an overall effort to switch every architecture to this
 mode.
 
 Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 ---
- arch/arm/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/arc/Kconfig                      | 1 +
+ arch/arc/include/asm/pgalloc.h        | 6 +++---
+ arch/microblaze/Kconfig               | 1 +
+ arch/microblaze/include/asm/pgalloc.h | 2 +-
+ arch/xtensa/Kconfig                   | 1 +
+ arch/xtensa/include/asm/tlb.h         | 2 +-
+ 6 files changed, 8 insertions(+), 5 deletions(-)
 
-diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index 408aa58a2a5b..72b9afc6ae10 100644
---- a/arch/arm/Kconfig
-+++ b/arch/arm/Kconfig
-@@ -134,7 +134,7 @@ config ARM
- 	select HAVE_PERF_REGS
- 	select HAVE_PERF_USER_STACK_DUMP
- 	select HAVE_POSIX_CPU_TIMERS_TASK_WORK
--	select MMU_GATHER_RCU_TABLE_FREE if SMP && ARM_LPAE
+diff --git a/arch/arc/Kconfig b/arch/arc/Kconfig
+index 2ed7186c81c5..7a7542b61823 100644
+--- a/arch/arc/Kconfig
++++ b/arch/arc/Kconfig
+@@ -47,6 +47,7 @@ config ARC
+ 	select HAVE_SYSCALL_TRACEPOINTS
+ 	select IRQ_DOMAIN
+ 	select LOCK_MM_AND_FIND_VMA
++	select MMU_GATHER_RCU_TABLE_FREE
+ 	select MODULES_USE_ELF_RELA
+ 	select OF
+ 	select OF_EARLY_FLATTREE
+diff --git a/arch/arc/include/asm/pgalloc.h b/arch/arc/include/asm/pgalloc.h
+index dfae070fe8d5..9b6c37f92e97 100644
+--- a/arch/arc/include/asm/pgalloc.h
++++ b/arch/arc/include/asm/pgalloc.h
+@@ -72,7 +72,7 @@ static inline void p4d_populate(struct mm_struct *mm, p4d_t *p4dp, pud_t *pudp)
+ 	set_p4d(p4dp, __p4d((unsigned long)pudp));
+ }
+ 
+-#define __pud_free_tlb(tlb, pmd, addr)  pud_free((tlb)->mm, pmd)
++#define __pud_free_tlb(tlb, pmd, addr)  tlb_remove_ptdesc((tlb), virt_to_ptdesc(pmd))
+ 
+ #endif
+ 
+@@ -83,10 +83,10 @@ static inline void pud_populate(struct mm_struct *mm, pud_t *pudp, pmd_t *pmdp)
+ 	set_pud(pudp, __pud((unsigned long)pmdp));
+ }
+ 
+-#define __pmd_free_tlb(tlb, pmd, addr)  pmd_free((tlb)->mm, pmd)
++#define __pmd_free_tlb(tlb, pmd, addr)  tlb_remove_ptdesc((tlb), virt_to_ptdesc(pmd))
+ 
+ #endif
+ 
+-#define __pte_free_tlb(tlb, pte, addr)  pte_free((tlb)->mm, pte)
++#define __pte_free_tlb(tlb, pte, addr)  tlb_remove_ptdesc((tlb), page_ptdesc(pte))
+ 
+ #endif /* _ASM_ARC_PGALLOC_H */
+diff --git a/arch/microblaze/Kconfig b/arch/microblaze/Kconfig
+index 484ebb3baedf..af7e821e96c1 100644
+--- a/arch/microblaze/Kconfig
++++ b/arch/microblaze/Kconfig
+@@ -41,6 +41,7 @@ config MICROBLAZE
+ 	select PCI_SYSCALL if PCI
+ 	select CPU_NO_EFFICIENT_FFS
+ 	select MMU_GATHER_NO_RANGE
++	select MMU_GATHER_RCU_TABLE_FREE
+ 	select SPARSE_IRQ
+ 	select ZONE_DMA
+ 	select TRACE_IRQFLAGS_SUPPORT
+diff --git a/arch/microblaze/include/asm/pgalloc.h b/arch/microblaze/include/asm/pgalloc.h
+index 084a8a0dc239..ffee6a009219 100644
+--- a/arch/microblaze/include/asm/pgalloc.h
++++ b/arch/microblaze/include/asm/pgalloc.h
+@@ -25,7 +25,7 @@ extern void __bad_pte(pmd_t *pmd);
+ 
+ extern pte_t *pte_alloc_one_kernel(struct mm_struct *mm);
+ 
+-#define __pte_free_tlb(tlb, pte, addr)	pte_free((tlb)->mm, (pte))
++#define __pte_free_tlb(tlb, pte, addr)	tlb_remove_ptdesc((tlb), page_ptdesc(pte))
+ 
+ #define pmd_populate(mm, pmd, pte) \
+ 			(pmd_val(*(pmd)) = (unsigned long)page_address(pte))
+diff --git a/arch/xtensa/Kconfig b/arch/xtensa/Kconfig
+index f2f9cd9cde50..33c4caee30e2 100644
+--- a/arch/xtensa/Kconfig
++++ b/arch/xtensa/Kconfig
+@@ -55,6 +55,7 @@ config XTENSA
+ 	select HAVE_VIRT_CPU_ACCOUNTING_GEN
+ 	select IRQ_DOMAIN
+ 	select LOCK_MM_AND_FIND_VMA
 +	select MMU_GATHER_RCU_TABLE_FREE if MMU
- 	select HAVE_REGS_AND_STACK_ACCESS_API
- 	select HAVE_RSEQ
- 	select HAVE_RUST if CPU_LITTLE_ENDIAN && CPU_32v7 && !KASAN
+ 	select MODULES_USE_ELF_RELA
+ 	select PERF_USE_VMALLOC
+ 	select TRACE_IRQFLAGS_SUPPORT
+diff --git a/arch/xtensa/include/asm/tlb.h b/arch/xtensa/include/asm/tlb.h
+index 8c3ceb427018..6fb7b78154f6 100644
+--- a/arch/xtensa/include/asm/tlb.h
++++ b/arch/xtensa/include/asm/tlb.h
+@@ -16,7 +16,7 @@
+ 
+ #include <asm-generic/tlb.h>
+ 
+-#define __pte_free_tlb(tlb, pte, address)	pte_free((tlb)->mm, pte)
++#define __pte_free_tlb(tlb, pte, address)	tlb_remove_ptdesc((tlb), page_ptdesc(pte))
+ 
+ void check_tlb_sanity(void);
+ 
 
 -- 
 2.55.0
