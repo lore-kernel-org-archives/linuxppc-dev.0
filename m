@@ -1,83 +1,62 @@
-Return-Path: <linuxppc-dev+bounces-26348-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26349-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E3FFEC61DFD
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2026 02:09:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 22F3FC61DFD
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2026 02:49:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hYq7T0hbFz2yps;
-	Tue, 01 Sep 2026 12:09:57 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788228597;
-	cv=none; b=mZ7sTbJZ7/fTgp//aK0EP6HvWGthNmOmBBnVYHTHkRlEdHZCJNmyx/vg53fx5TrFkLxGvGeeZz5WR5TzK/1THDyn8w7zEbFbnDR7Hho3mrDzKToyJ+Dmh1fG6maYqUhIwbqQMlTz9GM6nI0Ogg5lVhvroV9K1l0YYNeOQkZDVHFWqO0rhecR0s4fz5zWOqf5ZlRrx9jwA/bReurP0m998957TpWhGqTaA/uI4oa3VGfuC+m9sQ/31ED3hw+9Eb2S/ye4IFRKptnDaCEf07TsrHENVi4sSU4zj+zXjQ5wfrdK2SPz3PiFH9T1YFaetIl/HV1k1eCtTcF6iT2ZzqyrLw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hYr0h4FK3z2yCv;
+	Tue, 01 Sep 2026 12:49:08 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788230948;
+	cv=none; b=lnrTXgtip4Rbfpa4FMycqepFWxP/NrPd9u/Vzet+oiyCexivivMIHRIa30qgvCBJt3NdQATEGDu0tQ4WNvIlESLQR8dboATGxcmel3rQEqNu8UGV/oR0aaVFox4tX8PobAX+nDP+rhPJdI+MbJfrlr1msO5YQgzr89EeZfm8ka05Pxc4hl4xmY1q4WLXojQ9c9qd6P0ukpxdyvkm074+QYE+xPRjkGSR+rQDWZ9+uyzwRNWQ5Zb38XWB/bKksBdN11vLnFu07diKXinA/vHduk1oDv7QQrTu0EO9vQuAgB3TK1x6M8+HBy+FdYT5KKEbFsu2iUrgDfcLiXiTpcnG8g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788228597; c=relaxed/relaxed;
-	bh=R4ecXQO9vqNzXOeLVTWPt4EelG5cYusY7/xAh/+zYqA=;
-	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=c2v+iv7ok8h9xDFwdHgO83pVHzsOP2utVSnkNgmvwOHC81Ty08q8m1KspDaiVzgmGXm8FtkqXOyONWUTiimnYF0houWz/vDDsuzEzPu/seT1Fk0Z3Fba74GuVg7vrGXFWc6A3tnf2xs6F2eGLqVaiJr68y9tmTHK6YpHMEr6AoMduIBeMAIl2WczEzPV61Sxb3VmNL0oGoxNS0H9GDAcqTHI0NB0RB2OWkpIVFYMcPnX6vo7OpHPNTfTiydDdxpiPiWFI+dpT+2Pk4i079xvm+oc4/qL0xciWq/SuNU9dpmc4upmUCo78zAgP0ndzelNh8IWi23GWOVAqxoO0iDAAg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TmxFSkD2; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=andersson@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1788230948; c=relaxed/relaxed;
+	bh=PIPRUowfHI6K98aTZtO+bijz6IaH7fRlyyv5nHGo4e8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=euPCcympXSF/WeTNnGrFpRZXVwtOKmfaL8SqnzMLaELFWkDdLHS/wj46n+ZPdWDEwcQELvHEA6dIckpkfOiYOg1ceATd7kPqsWkARuRHjRYs+ws0LBK0J0dTp/40To41AiQjUXtnZYWpZ50ApUtD86GGlC0GNlNt+jdgrfSWgTzqHUDkatD3KItgjGDa44dSsTMgRRmm63b03xblKJopR+a4tYPLI6pSs/6dsWVGTRz575CnxX2UmbRStf9PQsMqcADK8l4A1SQzvrQOpmQM895fmerVfds6JMI5wNwEcamLH4hc6jg4OZbXASC5HAcpOV0/beyDJQPIjrgBH5S7tw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=usDt8rhj; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=anshuman.khandual@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TmxFSkD2;
+	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=usDt8rhj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=andersson@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hYq7S00sJz2ynZ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Sep 2026 12:09:55 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id AC032602C4;
-	Tue,  1 Sep 2026 02:09:53 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A476B1F0155B;
-	Tue,  1 Sep 2026 02:09:51 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788228593;
-	bh=R4ecXQO9vqNzXOeLVTWPt4EelG5cYusY7/xAh/+zYqA=;
-	h=From:To:Subject:Date:In-Reply-To:References;
-	b=TmxFSkD2YCDQouxFmPH971PgYOqSEV2vSyQpxt8rtsUCLoj8DDSnAsxeLNFc1Y/WP
-	 fWaNooKbLzCqmNqcJMgo/9tsuldIwoBJVX8hfq+P+D1rh51Jvg0AIqfUSPkSwnFXBk
-	 TkAW7TzUwFPA4Ih1R07fWPX4Ohm150DERZSF1R0UX6XrvLxqfaBQlV2HO6H24yeJ56
-	 nJwT1nlZhfXANy6prsIETo4v0wkXz8pLMAn1tErzAXp2sPrFP450iifYvMLTYCmnOM
-	 QNfFJw9VL6GaeCTK2MV9EOptRZFEy62ni/3zRtxaEFV+Ud2yDG8HUZaVW79Bc+xRXG
-	 5l2vcvhSTLZqQ==
-From: Bjorn Andersson <andersson@kernel.org>
-To: Roy Pledge <Roy.Pledge@nxp.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Linus Walleij <linusw@kernel.org>,
-	Imre Kaloz <kaloz@openwrt.org>,
-	Matthias Brugger <matthias.bgg@gmail.com>,
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
-	Konrad Dybcio <konradybcio@kernel.org>,
-	Thierry Reding <thierry.reding@kernel.org>,
-	Jonathan Hunter <jonathanh@nvidia.com>,
-	Nishanth Menon <nm@ti.com>,
-	Santosh Shilimkar <ssantosh@kernel.org>,
-	Michal Simek <michal.simek@amd.com>,
-	Shashank Balaji <shashank.mahadasyam@sony.com>,
-	Gary Guo <gary@garyguo.net>,
-	Sumit Gupta <sumitg@nvidia.com>,
-	Rahul Bukte <rahul.bukte@sony.com>,
-	=?UTF-8?q?Bruno=20Sobreira=20Fran=C3=A7a?= <brunofrancadevsec@gmail.com>,
-	Prasanna Kumar T S M <ptsm@linux.microsoft.com>,
-	Marco Crivellari <marco.crivellari@suse.com>,
-	Jay Buddhabhatti <jay.buddhabhatti@amd.com>,
-	linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-mediatek@lists.infradead.org,
-	linux-arm-msm@vger.kernel.org,
-	linux-tegra@vger.kernel.org,
-	Pan Chuang <panchuang@vivo.com>
-Subject: Re: (subset) [PATCH 0/7] soc: Remove redundant error messages on IRQ request failure
-Date: Mon, 31 Aug 2026 21:09:28 -0500
-Message-ID: <178822856264.1835959.6354603328430924135.b4-ty@kernel.org>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260720095920.542801-1-panchuang@vivo.com>
-References: <20260720095920.542801-1-panchuang@vivo.com>
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=anshuman.khandual@arm.com; receiver=lists.ozlabs.org)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hYr0f061pz2xpn
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Sep 2026 12:49:04 +1000 (AEST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 4CD931692;
+	Mon, 31 Aug 2026 19:48:28 -0700 (PDT)
+Received: from localhost (a085714.arm.com [10.164.19.28])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 5150C3F882;
+	Mon, 31 Aug 2026 19:48:31 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1788230912; bh=it2TzzIDYTIEJor+n+hAx7Y9VTg7srHvqDHPINLC58w=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=usDt8rhjPTPyhurOvXc8PdfuSoWH0nYsX72TOilRCeK51T4CARGkosyhwrLBvxyhc
+	 l9WrmE/Q4V575jMJywI4lXro08Z3FihKyE+sAH5OZKnsGdk8N6U5ibobJVe6+qJK5R
+	 M+KgzpkQ/xqu4+mMb5mvQGSArMljTWloMojjfQx4=
+Date: Tue, 1 Sep 2026 08:18:28 +0530
+From: Anshuman Khandual <anshuman.khandual@arm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-mm@kvack.org, samuel.holland@sifive.com, 
+	David Hildenbrand <david@kernel.org>, Mike Rapoport <rppt@kernel.org>, 
+	Lorenzo Stoakes <ljs@kernel.org>, Yoshinori Sato <ysato@users.sourceforge.jp>, 
+	Rich Felker <dalias@libc.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, 
+	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, Helge Deller <deller@gmx.de>, 
+	Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>, linux-alpha@vger.kernel.org, 
+	linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org, linux-csky@vger.kernel.org, 
+	linux-hexagon@vger.kernel.org, loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org, 
+	linux-mips@vger.kernel.org, linux-openrisc@vger.kernel.org, linux-parisc@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, 
+	linux-sh@vger.kernel.org, sparclinux@vger.kernel.org, linux-um@lists.infradead.org, 
+	linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/8] mm: Drop pxd_ERROR()
+Message-ID: <44crgg3r7p2d26blmgq2ewqan3anfhdo73zxe52rvpcjsdhdvd@xztk7osntzhf>
+References: <20260831054331.625505-1-anshuman.khandual@arm.com>
+ <20260831185519.66c6e6e83ce62d0fd9aee945@linux-foundation.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,29 +70,37 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260831185519.66c6e6e83ce62d0fd9aee945@linux-foundation.org>
 
-
-On Mon, 20 Jul 2026 17:59:06 +0800, Pan Chuang wrote:
-> Commit 55b48e23f5c4 ("genirq/devres: Add error handling in
-> devm_request_*_irq()") added automatic error logging to
-> devm_request_threaded_irq() and devm_request_any_context_irq()
-> via the new devm_request_result() helper, which prints device
-> name, IRQ number, handler functions, and error code on failure.
+On Mon, Aug 31, 2026 at 06:55:19PM -0700, Andrew Morton wrote:
+> On Mon, 31 Aug 2026 11:13:22 +0530 Anshuman Khandual <anshuman.khandual@arm.com> wrote:
 > 
-> Since devm_request_irq() is a static inline wrapper around
-> devm_request_threaded_irq(), it also benefits from this
-> automatic logging.
+> > pxd_ERROR() macros have been provided by all platforms, which are very much
+> > identical and can be dropped off completely if these pgtable printing could
+> > be moved to callers in generic MM aka all pxd_clear_bad().
+> > 
+> > But first cleanups and re-organizations are required in some platforms that
+> > are using these macros internally. Afterwards [pte|pmd|pud|p4d|pgd]_ERROR()
+> > macros have been completely dropped from the entire tree.
 > 
-> [...]
+> All was going nicely until...
+> 
+> > This series is based on v7.3-rc1 after the following patch and has also been
+> > built tested on multiple platforms.
+> 
+> *what* following patch???
 
-Applied, thanks!
+The dependency patch has already been merged upstream.
 
-[4/7] soc: qcom: Remove redundant dev_err()
-      commit: 29b96e2769def61531c19aa537f5a3cf3ef38e41
+092836fedd82 (mm: standardize printing for pgtable entries)
 
-Best regards,
--- 
-Bjorn Andersson <andersson@kernel.org>
+Please ignore this.
+
+> 
+> Oh well, I'll queue it all up and shall hope for the arch maintainer
+> acks to roll in.  Please.
+
+Thanks !
 
