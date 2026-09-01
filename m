@@ -1,57 +1,57 @@
-Return-Path: <linuxppc-dev+bounces-26385-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26386-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E690FC624D7
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2026 13:13:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 56038C624D4
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2026 13:13:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hZ5rs6tllz2yrm;
-	Tue, 01 Sep 2026 23:13:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hZ5rt3vjYz2yth;
+	Tue, 01 Sep 2026 23:13:18 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=45.249.212.190
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788268397;
-	cv=none; b=JdpbRJVhol/9l5lrfpn1lA7pH+7Yf4TYZhMlBEXrBkQs0XzfNYO7lwZA8feIt0x9cR7Q2WY61W0Z7UKv+V7kqCmYY1fuYupZIfgxVETqUrVnoBrTCjdA3eFr5VzGSPOlQ3Gvk2QH5buKtsP/8kyUGk+s0S+qzHo4T/KUXBz4knEZbb+hAdB6QVNa4ALVGL9EOvVy02aI26UEvYzQMZqWGeuqYp4GoJtFRNybFn8AxXczNZaSP7elVKbm270PF++KkeJdDkRl5g5KzO7sWDzJGr/GwcI57ID+qVKukJ86Cohg3gVYrhRqVCTFGGtlymsR8KesVAZym6Y88s0PFYQ+oA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788268398;
+	cv=none; b=b1ClQXFFT59My3ONuDLIj5bAQtvTLhaGOUT/UaHJ4JZiNY8+HDEKMufZGX0l4j0M4SOwJT6XnjPpUAH4HMxF61P4UI3B4EvhFXQukKijzTmUPsNxM+c6AhGdg8XR4jYXiQvfwLbFxg9iQqteJOlRIpo/10uLTmpQz4ydhuS3ZFgru3NldvfKedaz+Cx4P0Mes30Z22jBJlpGCx53ZVSsVe2V95g+FLCLWo2o3ifu+0prlii57a17pLrsCF+pqp5qaAxVGdAP8Pi4UaVw3GLPgCGGPf66JJCLGHcf02fmdRkM/UDnCZ7BlLdFaGFOCBFaqVpLmDyEEp/LQJWe2RQFIQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788268397; c=relaxed/relaxed;
-	bh=9NpBB7CEIjqjyGCb4SVckgVeutjU9azjoaZgEVa947o=;
+	t=1788268398; c=relaxed/relaxed;
+	bh=uoYKoPZ7YKPmsCHG/kXIjc+wB00oulf3PAI6t9L7dXc=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=YOk+rZUQOsNXlVKkoLdFRng0uqsKY5mh9J/+n+OvjwxNTsCjeRevhuXtF2sge7aKDrmZYqK7wQHM7wqF2pXYrqw24lTtTbmqpTpy769FB1FPdcbWXo2kuU1PMadPvmeDbxGbU3EMgxFYJLRkU0GhIwPZiDJw+g5gIiOmfmwcb6VWT0ZlPC7dNV1Ibo5NYeZyfetZ5BSv+YglmF6s0OJdJcuPn+vDMSEAk9d5qiTjApy5bM4miFA8D9zrwqz8arFOqOlITPIeItK6283dxn09M19k9VdERWSkrOV9eoQ2qYyaNYknELP4UTjRq1SvFYUqQ04FQmNIq5roMKLPjhW6Lw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=sLIQWxtr; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=sLIQWxtr; dkim-atps=neutral; spf=pass (client-ip=45.249.212.190; helo=szxga04-in.huawei.com; envelope-from=zhouminqiang2@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+	 MIME-Version:Content-Type; b=KdAFZfKfMdnnadg7V5gJlvVrIgYfQrNOezmDtKW+k1HECsGVFBFabQ4RFUbjeToMFEO1zYG50Pcdtr+ikr4loIi+DrcekJ/CDeGjc79Sn0p41PBZcDNglbonJEbwW4bzjfmdthIbjh38l1BGt41nef3zwyM6L9cofxHvbnagAux/6ids1kc0wFJpSx6dJ9grCpxUKE//NZrPsWcBn30EtdRhjreIY6cBM8l7I5pgw6QHUgSmDf1MHkX+5g8J+IUoZcV1evjQMQxNinSmXQ0du3l44RDX90gnJg+znt1Viy30wd9UTsdLjP/XPe8BgyqhSCpkKUGEbhtuGh/r/qnNkw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=AjShkyBI; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=AjShkyBI; dkim-atps=neutral; spf=pass (client-ip=45.249.212.190; helo=szxga04-in.huawei.com; envelope-from=zhouminqiang2@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=sLIQWxtr;
-	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=sLIQWxtr;
+	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=AjShkyBI;
+	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=AjShkyBI;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.190; helo=szxga04-in.huawei.com; envelope-from=zhouminqiang2@huawei.com; receiver=lists.ozlabs.org)
 Received: from szxga04-in.huawei.com (szxga04-in.huawei.com [45.249.212.190])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hZ5rm1f2mz2y2S
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Sep 2026 23:13:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hZ5rl72rqz2y2P
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Sep 2026 23:13:11 +1000 (AEST)
 dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
 	c=relaxed/relaxed; q=dns/txt;
 	h=From;
-	bh=9NpBB7CEIjqjyGCb4SVckgVeutjU9azjoaZgEVa947o=;
-	b=sLIQWxtrS8w5ERuoFDXmbubInkswYa662b4wJY61Zn7xeDFflLoibLq4MWzVHCe0KOiu45zz/
-	WsF0/wDXGz+6Irxls6bqJzT51YJ9VpzdmO28F/hdacMD9/6HUBU+B/lIjOaXLBS1rXND9jmd36W
-	gmNkFosl91edLNaX6LjQcZk=
-Received: from canpmsgout11.his.huawei.com (unknown [172.19.92.148])
-	by szxga04-in.huawei.com (SkyGuard) with ESMTPS id 4hZ5qT5xN4z126M6Y
+	bh=uoYKoPZ7YKPmsCHG/kXIjc+wB00oulf3PAI6t9L7dXc=;
+	b=AjShkyBICAQG93Xx24uO5WkxiKPbiNgccEYEo+cH2GjESgyKEM//MZ278+F6XzwOlEUJ34IXR
+	gGLmLMCdZY+TwaKIQcratPL0uQrHHNhh3oTLFnFNjRlq5slRg6HK0rXoLect9UvacjQfXAPOIG/
+	AW3dbypsROzmFphzCRweR1I=
+Received: from canpmsgout07.his.huawei.com (unknown [172.19.92.160])
+	by szxga04-in.huawei.com (SkyGuard) with ESMTPS id 4hZ5qT56Xfz126M6Y
 	for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Sep 2026 21:12:05 +0800 (CST)
 dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
 	c=relaxed/relaxed; q=dns/txt;
 	h=From;
-	bh=9NpBB7CEIjqjyGCb4SVckgVeutjU9azjoaZgEVa947o=;
-	b=sLIQWxtrS8w5ERuoFDXmbubInkswYa662b4wJY61Zn7xeDFflLoibLq4MWzVHCe0KOiu45zz/
-	WsF0/wDXGz+6Irxls6bqJzT51YJ9VpzdmO28F/hdacMD9/6HUBU+B/lIjOaXLBS1rXND9jmd36W
-	gmNkFosl91edLNaX6LjQcZk=
-Received: from mail.maildlp.com (unknown [172.19.163.15])
-	by canpmsgout11.his.huawei.com (SkyGuard) with ESMTPS id 4hZ5bq63dBzKm5m;
-	Tue,  1 Sep 2026 21:01:59 +0800 (CST)
+	bh=uoYKoPZ7YKPmsCHG/kXIjc+wB00oulf3PAI6t9L7dXc=;
+	b=AjShkyBICAQG93Xx24uO5WkxiKPbiNgccEYEo+cH2GjESgyKEM//MZ278+F6XzwOlEUJ34IXR
+	gGLmLMCdZY+TwaKIQcratPL0uQrHHNhh3oTLFnFNjRlq5slRg6HK0rXoLect9UvacjQfXAPOIG/
+	AW3dbypsROzmFphzCRweR1I=
+Received: from mail.maildlp.com (unknown [172.19.163.214])
+	by canpmsgout07.his.huawei.com (SkyGuard) with ESMTPS id 4hZ5bw237xzLlXZ;
+	Tue,  1 Sep 2026 21:02:04 +0800 (CST)
 Received: from dggpemr100018.china.huawei.com (unknown [7.185.36.64])
-	by mail.maildlp.com (Postfix) with ESMTPS id 01D1440586;
+	by mail.maildlp.com (Postfix) with ESMTPS id C14E04057C;
 	Tue,  1 Sep 2026 21:12:53 +0800 (CST)
 Received: from huawei.com (10.50.85.155) by dggpemr100018.china.huawei.com
  (7.185.36.64) with Microsoft SMTP Server (version=TLS1_2,
@@ -63,9 +63,9 @@ To: <linux@armlinux.org.uk>, <vz@mleia.com>, <piotr.wojtaszczyk@timesys.com>,
 CC: <linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
 	<linuxppc-dev@lists.ozlabs.org>, <linux-mtd@lists.infradead.org>,
 	<chengzhihao1@huawei.com>, <yangerkun@huawei.com>, <yi.zhang@huawei.com>
-Subject: [PATCH v3 1/8] jffs2: wbuf: clear wbuf on recovery failure paths
-Date: Tue, 1 Sep 2026 21:05:42 +0800
-Message-ID: <20260901130549.1761342-2-zhouminqiang2@huawei.com>
+Subject: [PATCH v3 2/8] jffs2: wbuf: fix space accounting in recovery secondary write failure
+Date: Tue, 1 Sep 2026 21:05:43 +0800
+Message-ID: <20260901130549.1761342-3-zhouminqiang2@huawei.com>
 X-Mailer: git-send-email 2.52.0
 In-Reply-To: <20260901130549.1761342-1-zhouminqiang2@huawei.com>
 References: <20260901130549.1761342-1-zhouminqiang2@huawei.com>
@@ -88,175 +88,42 @@ X-Originating-IP: [10.50.85.155]
 X-ClientProxiedBy: kwepems100002.china.huawei.com (7.221.188.206) To
  dggpemr100018.china.huawei.com (7.185.36.64)
 
-Write verification was introduced by commit a6bc432e296d ("[JFFS2]
-Add support for write-buffer verification.") to detect transport or
-program-time corruption. When verification fails, jffs2_wbuf_recover()
-attempts to recover the data: it first calls jffs2_block_refile()
-to mark the old eraseblock's remaining space as REF_OBSOLETE,
-then rewrites the old block's data along with the new data still
-in the wbuf to a new block.  However, when the recovery write
-verification also fails, the function returns without clearing
-c->wbuf_len, leaving the wbuf still pointing to the refiled old
-block, which leads to two kinds of bugs.
+In jffs2_wbuf_recover(), when the recovery write to the new erase block
+also fails, the code marks the already-written portion as REF_OBSOLETE
+via jffs2_add_physical_node_ref(). However, the length passed is
+ref_totlen(c, jeb, first_raw), which is the length of a single node on
+the old block, not retlen which is the actual number of bytes written to
+the new block.
 
-Both cases below are illustrated with a filesystem of
-erasesize=16KB and wbuf_pagesize=512B.
+When the recovery buffer contains multiple nodes, ref_totlen only
+accounts for the first node's length, which can be much smaller than
+retlen. This under-deducts free_size, causing subsequent allocations to
+land on already-programmed NAND pages and silently corrupt data. When
+first_raw is the only node in the recovery range, ref_totlen equals the
+full unaligned data size and exceeds the page-aligned retlen,
+over-deducting free_size and wasting space.
 
-Case 1: BUG_ON in jffs2_link_node_ref():
-
-    User: Two 1KB writes
-      ref0: [A+0,    A+1092) (ri:68B + data:1024B)
-      ref1: [A+1092, A+2184)
-
-    User: append 1KB write
-      ...
-      jffs2_write_dnode
-        jffs2_flash_writev
-          c->wbuf_ofs = A+2048, c->wbuf_len = 512
-          __jffs2_flush_wbuf
-            mtd_write                          -> 0-to-1 bit flip
-            jffs2_verify_write                 -> verify failed
-            jffs2_wbuf_recover
-              jffs2_block_refile
-                c->nextblock = NULL
-                jffs2_link_node_ref            -> mark A remaining
-                  ref2: [A+2184, A+16384)         space REF_OBSOLETE,
-                                                  jeb_A->free_size = 0
-              jffs2_reserve_space_gc
-                jffs2_do_reserve_space
-                  jffs2_find_nextblock
-                    c->nextblock = B
-              start = A+1092, end = A+2184
-              end - start >= c->wbuf_pagesize  -> recover data in A
-              mtd_write
-              jffs2_verify_write               -> verify also failed
-              return                           -> c->wbuf_ofs = A+2048
-                                                  c->wbuf_len = 512
-        retry
-        jffs2_flash_writev
-          if (SECTOR_ADDR(to) != SECTOR_ADDR(c->wbuf_ofs))
-                                               -> SECTOR(to) = B
-                                               -> SECTOR(c->wbuf_ofs) = A
-          __jffs2_flush_wbuf(c, PAD_NOACCOUNT) -> flush residual wbuf data
-            wbuf_jeb = A                       -> c->wbuf_ofs still points
-                                                  to refiled old block
-            mtd_write                          -> succeeds via NAND AND
-            jffs2_verify_write                 -> passed
-            if (pad)
-            jffs2_link_node_ref
-              ref_offset(ref) = c->wbuf_ofs + c->wbuf_len = A+2560
-              jeb_A->offset = A
-              c->sector_size = 16384
-              jeb_A->free_size = 0
-              ref_offset(ref) != jeb_A->offset +
-                c->sector_size - jeb_A->free_size -> BUG
-
-Case 2: deadlock in jffs2_flush_wbuf_pad():
-
-    User: 1KB write
-      A_ref0: [A+0,    A+1092) (ri:68B + data:1024B)
-
-    User: append 1K write
-      ...
-      jffs2_write_dnode
-        jffs2_flash_writev
-          c->wbuf_ofs = A+1024, c->wbuf_len = 512
-          __jffs2_flush_wbuf
-            mtd_write                          -> bit flip
-            jffs2_verify_write                 -> verify failed
-            jffs2_wbuf_recover
-              jffs2_block_refile
-                c->nextblock = NULL
-                jffs2_link_node_ref            -> mark A remaining
-                  A_ref1: [A+1092, A+16384)       space as REF_OBSOLETE
-              jffs2_reserve_space_gc
-                jffs2_do_reserve_space
-                  jffs2_find_nextblock
-                    c->nextblock = B
-              start = A, end = A+1092
-              end - start >= c->wbuf_pagesize  -> recover data in A
-              mtd_write
-              jffs2_verify_write               -> verify also failed
-              jffs2_add_physical_node_ref      -> mark written area in
-                B_ref0: [B+0, B+1536)             B as REF_OBSOLETE
-              return                           -> c->wbuf_ofs = A+1024
-                                                  c->wbuf_len = 512
-        retry
-        jffs2_flash_writev
-          down_write(&c->wbuf_sem)
-          if (SECTOR_ADDR(to) != SECTOR_ADDR(c->wbuf_ofs))
-                                               -> SECTOR(to) = B
-                                               -> SECTOR(c->wbuf_ofs) = A
-          __jffs2_flush_wbuf(c, PAD_NOACCOUNT) -> flush residual wbuf data
-            wbuf_jeb = A                       -> c->wbuf_ofs still points
-                                                  to refiled old block
-            mtd_write                          -> bit flip
-            jffs2_verify_write                 -> verify failed
-            jffs2_wbuf_recover
-              jffs2_block_refile
-                c->nextblock != jeb            -> jeb = A, nextblock = B
-                jffs2_link_node_ref            -> append zero-length ref
-                  A_ref2: [A+16384, A+16384)      marked REF_OBSOLETE
-                                                  after the existing one
-              end = jeb_A->last_node           -> inflates to
-                                                  eraseblock tail
-              start = A, end = A+16384
-              jffs2_reserve_space_gc
-                minsize = end - start = 16384
-                jffs2_do_reserve_space
-                  jeb = c->nextblock           -> points to B
-                  jeb_B->free_size = 16384 - 1536
-                  minsize > jeb_B->free_size   -> first recovery's OBSOLETE
-                                                  ref reduced free_size
-                  jffs2_wbuf_dirty(c)
-                  jffs2_flush_wbuf_pad(c)
-                    down_write(&c->wbuf_sem)   -> already held, deadlock
-
-Fix this by setting c->wbuf_len = 0 when jffs2_verify_write fails in
-recovery path, and also in the jffs2_reserve_space_gc() and
-jffs2_prealloc_raw_node_refs() failure paths, ensuring subsequent
-flushes will not attempt writes on refiled blocks.
+Use retlen so the new block's free_size accurately reflects which NAND
+pages have been programmed.
 
 Signed-off-by: zhouminqiang <zhouminqiang2@huawei.com>
 ---
- fs/jffs2/wbuf.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ fs/jffs2/wbuf.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/fs/jffs2/wbuf.c b/fs/jffs2/wbuf.c
-index 3b7803c75d58..61e3dbd4cd7b 100644
+index 61e3dbd4cd7b..360a291d9fd5 100644
 --- a/fs/jffs2/wbuf.c
 +++ b/fs/jffs2/wbuf.c
-@@ -390,6 +390,7 @@ static void jffs2_wbuf_recover(struct jffs2_sb_info *c)
- 	if (ret) {
- 		pr_warn("Failed to allocate space for wbuf recovery. Data loss ensues.\n");
- 		kfree(buf);
-+		c->wbuf_len = 0;
- 		return;
- 	}
- 
-@@ -400,6 +401,7 @@ static void jffs2_wbuf_recover(struct jffs2_sb_info *c)
- 	if (ret) {
- 		pr_warn("Failed to allocate node refs for wbuf recovery. Data loss ensues.\n");
- 		kfree(buf);
-+		c->wbuf_len = 0;
- 		return;
- 	}
- 
-@@ -431,12 +433,13 @@ static void jffs2_wbuf_recover(struct jffs2_sb_info *c)
- 
- 		if (ret || retlen != towrite || jffs2_verify_write(c, rewrite_buf, ofs)) {
- 			/* Argh. We tried. Really we did. */
--			pr_crit("Recovery of wbuf failed due to a second write error\n");
-+			pr_crit("Recovery of wbuf failed due to a second write error. Data loss ensues.\n");
+@@ -437,7 +437,7 @@ static void jffs2_wbuf_recover(struct jffs2_sb_info *c)
  			kfree(buf);
  
  			if (retlen)
- 				jffs2_add_physical_node_ref(c, ofs | REF_OBSOLETE, ref_totlen(c, jeb, first_raw), NULL);
+-				jffs2_add_physical_node_ref(c, ofs | REF_OBSOLETE, ref_totlen(c, jeb, first_raw), NULL);
++				jffs2_add_physical_node_ref(c, ofs | REF_OBSOLETE, retlen, NULL);
  
-+			c->wbuf_len = 0;
+ 			c->wbuf_len = 0;
  			return;
- 		}
- 		pr_notice("Recovery of wbuf succeeded to %08x\n", ofs);
 -- 
 2.52.0
 
