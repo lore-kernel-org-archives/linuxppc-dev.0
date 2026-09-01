@@ -1,80 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-26364-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26365-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9AC83C624C6
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2026 08:44:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 05021C624C6
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2026 09:17:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hYzth0pCBz2y2S;
-	Tue, 01 Sep 2026 18:44:28 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::62c"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788252268;
-	cv=none; b=iOMM1YFf4zEg2jLq0Gs2cckf9/+evN37WdzpdtrJ9dq6wY/i4ox0VruLqMx99Ch6Y9xdWLrwHFGEyccKXhDXuvkpAMKme1ysJ7C2395JcKbjNwR/z+3S9Hz2eFBUJIaVuKQ2VbEQrAi3xV3Up7jUAFEN4CBWaxXP9ZF1N0NxdXKLEI93s7xr4UHooUNevMfssRfUIehSa/W1J/ZSLgCxEN14ROVlf6X+4Hzm7bjpCCSBwyyFhAmx7mJZAdcTjuEztR5j7j9vKuppKcibC0H6j3EMx6f1bD6ZuNQ/A7cye+qNvS+AxgAgEeDzOB9U+yc+lnqH8TJxas1bfDtIWX2U0g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hZ0cs6xh0z2xGt;
+	Tue, 01 Sep 2026 19:17:33 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788254253;
+	cv=none; b=mj4itEARJ/yIrd31ttBzpgRXohG1ewjz9UT+cz+Pd4ynKkqIaK1n2r7oBdcLKYPtq07sAkn0dkVAAHqTz0FmNgi2DJ8dVehes+CJst+mR4Bfual5oI9Rn78Q2VsgOh3/8tKZe6ADAkXRGpIpc7zxVqFp6yT4usjSL0+385m+XMzv3nf0W9lMSdi53xh9VZ6xro20Tc5JchnDdGdwXDQxn6Zl414OY0PPPd7CDphVzDMa1TlYXND9cs9U6ojivqdAnp1F1+XnnfpbwP5UU5Sq+2pcbiqSiG9yX3nSahVXfKaAWruqnqa6h6yzmEvp9Xl8eaqEHI/Ug2LHYj/tv55q7Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788252268; c=relaxed/relaxed;
-	bh=kfkumJrDF1tZTAVRjvzgDO3hMk1gGG9KZ2g7tgv7l7Y=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=gZ1nvvfvkyXHGUjddy5vs2wSeOjAgAPCLpVkgMF4Q6D43id4xChxuCJ8CCpuWm3HtES+t1xTYh039CxjurEDhDcyN3tTVFzx/mPzJ/kV6OBRX8Um13QmSvtcGf6i0i7g31KnT81wEahhjHdyBWP/VDnx1f8GdyayxXz6Hl5EIKN96XMy3ThonGQuis3EBj7BVmT8Fs574NIjD4B2aWW7L6+QFLSnGa5U3nGQQ9JA791OQDiDeguZJVhJPG6eiC5K0riUqmqfOu1BEMhhskNtlH7zNeaYEacKApazYJNUZm+EhITBEFqxQGMD1+iM9ulES1FztNhSkWoINSEhSwG7eA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=THcLOMbE; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::62c; helo=mail-ej1-x62c.google.com; envelope-from=eli.billauer@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1788254253; c=relaxed/relaxed;
+	bh=xUuGoLCE+8fDfjHh5FczwjvzJVI36XWP0rFIy82Uyok=;
+	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
+	 Message-Id:References:To; b=S3wb6QZn9cCsPm3zcbLdkpPOZh6fHpDwksIkJRQW6bK1UidGIcVJjbZzctPKh+3OOSt3YCgdVBIajqTF27z7QXuNDpulbVmVqiBVDZpVcT9mN/hWJT4+FF7T3LTJOxyF1O4kh4sAk1fTl84+/P/hdUz/5KQBsRbst0BaylNx6Xy++fFTVqk3FYvLTffaFaeUXshgynNq8w/WoIENIXiRUGWPhhui/jciiGb3Y9e7tNc5GS8t+Dfef8qhA6bWR+gg/4OmDkjsHuWXwxnW6c8/ECRpgedC7hjeo37cFDElfYVp8a1KXwdm43Vn5HjG5he8pKOwBtlgQ2aG/3mkYwkv/w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kJlX3wTQ; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=THcLOMbE;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kJlX3wTQ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::62c; helo=mail-ej1-x62c.google.com; envelope-from=eli.billauer@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ej1-x62c.google.com (mail-ej1-x62c.google.com [IPv6:2a00:1450:4864:20::62c])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hYztf3PxCz2y2B
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Sep 2026 18:44:26 +1000 (AEST)
-Received: by mail-ej1-x62c.google.com with SMTP id a640c23a62f3a-c252e703fa3so657279366b.3
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Sep 2026 01:44:26 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1788252263; x=1788857063; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from:references
-         :cc:to:content-language:subject:user-agent:mime-version:date
-         :message-id:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=kfkumJrDF1tZTAVRjvzgDO3hMk1gGG9KZ2g7tgv7l7Y=;
-        b=THcLOMbEXA09TjV2GiazQa+nwAKFv5vS5QTYwapiwbwFXrYT8wnhcr42wFv9onAZhg
-         3csrAIgUZ+qrl52z1EtvW0eTrBhHBZAuSphXaFxO9zEFnrXrsPkLj8Xwc7sy+jJf7Cae
-         dTm8sblTb1yUZFqyIbNMDLgoGIvSpUjmeXVuvRapcQYuoVHInIeSQTksL7undtIEnv0v
-         bWcry8bppM9FLn84QM4lH9W3Aqn35H4NBrWQKw4rtEveI1W19HvIhC9prfmOEzzKbZiH
-         F+0PupgeaHb+LAi/Xa2JztnyWAVBDzcPTlGl7ao1qxYeOUoyDze9hsbDHR25FoFeMwcc
-         YnHA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788252263; x=1788857063;
-        h=content-transfer-encoding:content-type:in-reply-to:from:references
-         :cc:to:content-language:subject:user-agent:mime-version:date
-         :message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=kfkumJrDF1tZTAVRjvzgDO3hMk1gGG9KZ2g7tgv7l7Y=;
-        b=RytsvN9ES059GQHy7ePEqi67c6X17Q7YrDc2TubtymZdIXkoheglV2WQFegbc1V84g
-         t1pYpPrwJt7VjSJPig6pWBBewBFoaP5o3jcp3P5230IVW+UZ0ycqAh+LArdmE+Z0Me6J
-         ntFdqIbn+KruJrNHUr5JTTxH9Ph+ZLJL1mMa/XTKet1td2QKymquhijGsVZ4NUg0G876
-         TojEGIU79yZLFT3OYtAMCbFy4OoB2Er++ko6obxPBoUdmxwYqsfu4HqP7nTsB2KSLA5U
-         WBQ9wxKUhp+CIDjcOG5EIH1ws8zk3e3capnGKJHGRbrIgFhI42/2y1TdcoyxLCIcCiLD
-         qZ6Q==
-X-Forwarded-Encrypted: i=1; AHgh+RpAIt6PF4k1RJPaEbrGiPerblqT1BBbK6j+6XJKl8Dcc+Sj3iN5NSndj0MhxnuZvRloKQIuNJ5HRUFadKQ=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++nTycI7wyfADemCS3cU57DYL89hg+VIBiR/lk6GRjPH0Wc4YnJt
-	gJ8vyLFsnw7+jCXZ4MLXVhxSWAFHNY7VOm4jOUeAoMwPMV6j2CBzEOj1p55gJ0Yk
-X-Gm-Gg: AR+sD13Jo4LnR9PfztRyY34jGZJsOzpw9lv1VPKqo79Aqo+DIMTjD3X6nRBSlUdXwxy
-	KJpfl+aWOQ3Mh9PvpYtg4IP9L64hYxNbkE+XIX9ftBj/70nreMztWNqnz2hzCIVbMIWJLBY/VMY
-	mTrXugAHvvHriGkrqnZNKLCTO90YMJBBHEcqOGRDMPO6F3Y2pRSRs7LAU9lZzjm7Vbut2P1qxpW
-	Yc3zP7xaRBA9i1HMk9m03S47bR4pJnsZwnskottxcapAtbmM4FQueXBMZaxcULSCdczYLotyWnr
-	3/EdCh+y5rYQB6QbpGNf4qgBSTKapGnkWhLz5BATx4sS9gYF/OB2DZM8m2ed5wEbU52Uwp0WSBz
-	qK+vEgGxL/D4J57IK1i/lQnB6Plo/0ZEMlnARfSh00f7bBaF4VlyYklFZ0EZDVmVVgoTagI86uh
-	seciSX8vxvM91zuA3wj0Yv4eO9zxFr6BHTOj5EcRB8ahnMUqmdsrNBVItAOFJYiyjB5FvBFhV7r
-	SS5D7r7dvfn64unCFsUTgg=
-X-Received: by 2002:a17:906:f582:b0:c24:c22c:6372 with SMTP id a640c23a62f3a-c25b3affecdmr382949666b.5.1788252262902;
-        Tue, 01 Sep 2026 01:44:22 -0700 (PDT)
-Received: from [192.168.1.89] (c-85-228-45-68.bbcust.telenor.se. [85.228.45.68])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c255eacf6bbsm527267366b.0.2026.09.01.01.44.21
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 01 Sep 2026 01:44:22 -0700 (PDT)
-Message-ID: <1729fb06-6beb-f8ef-3e71-47fc3f00345d@outbound.gmail.com>
-Date: Tue, 1 Sep 2026 10:44:20 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hZ0cr5vjDz2xBK
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Sep 2026 19:17:32 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6817Vdqn3635859;
+	Tue, 1 Sep 2026 09:17:28 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=xUuGoL
+	CE+8fDfjHh5FczwjvzJVI36XWP0rFIy82Uyok=; b=kJlX3wTQcbdgBm+MqPXlC/
+	1EIVC2rQ3xxUUNpz4YDCS6eDLEFcM9R6wsBaNaCL6LGgQRiMYBK5qIFZ28HuB8aP
+	a+OeXnE6B/H/5B5tl/vV1qH0ZdJYOsXb1mSuGyLYuBFvShWtEGybe7HkrhmcNfHm
+	dJKSmGqfchy2+XYp2m5PXpOAM5wdOE9cdh5IbRB5WgdbRzgciF1BSSRqsxwh8iJL
+	K00CUnu2uq5lzgVkzLpvYDhCBZKdbXk3R5R6KjBKd/59FvvNd4SNxGFH7CXnngdl
+	Hh5NtuBuqohVGqJiO9sWG2S9+mciitX8NBk9jTJWnqar12air0ZZIwGPTF1m4U1Q
+	==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gbnudpqq6-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 01 Sep 2026 09:17:27 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6819BGbK028057;
+	Tue, 1 Sep 2026 09:17:27 GMT
+Received: from smtprelay06.wdc07v.mail.ibm.com ([172.16.1.73])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gccey2n5u-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 01 Sep 2026 09:17:26 +0000 (GMT)
+Received: from smtpav05.dal12v.mail.ibm.com (smtpav05.dal12v.mail.ibm.com [10.241.53.104])
+	by smtprelay06.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6819HP4K1377006
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 1 Sep 2026 09:17:25 GMT
+Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 374EF58052;
+	Tue,  1 Sep 2026 09:17:25 +0000 (GMT)
+Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C754458056;
+	Tue,  1 Sep 2026 09:17:22 +0000 (GMT)
+Received: from smtpclient.apple (unknown [9.123.9.83])
+	by smtpav05.dal12v.mail.ibm.com (Postfix) with ESMTPS;
+	Tue,  1 Sep 2026 09:17:22 +0000 (GMT)
+Content-Type: text/plain;
+	charset=utf-8
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -87,78 +80,116 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.10.0
-Subject: Re: [PATCH 2/4] char: xillybus: replace __get_free_pages() with
- kmalloc()
-Content-Language: en-US
-To: Mike Rapoport <rppt@kernel.org>,
- David Laight <david.laight.linux@gmail.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, Brad Warrum <bwarrum@linux.ibm.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Michal Simek <michal.simek@amd.com>, Ritu Agarwal <rituagar@linux.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- David Hildenbrand <david@kernel.org>, Matthew Wilcox <willy@infradead.org>,
- Vlastimil Babka <vbabka@kernel.org>, linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org
-References: <20260830-char-misc-v1-0-05e2ce44f291@kernel.org>
- <20260830-char-misc-v1-2-05e2ce44f291@kernel.org>
- <f6001085-9234-4025-ff34-6cc4a66c293a@outbound.gmail.com>
- <20260831123937.32255a49@pumpkin> <apaF1HUtJnstuUN4@kernel.org>
-From: Eli Billauer <eli.billauer@gmail.com>
-In-Reply-To: <apaF1HUtJnstuUN4@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3864.600.51.1.1\))
+Subject: Re: [PATCH] powerpc/entry: Clear TIF_SYSCALL_RET before syscall error
+ return
+From: Venkat <venkat88@linux.ibm.com>
+In-Reply-To: <20260828053811.1042300-1-sshegde@linux.ibm.com>
+Date: Tue, 1 Sep 2026 14:47:10 +0530
+Cc: tglx@kernel.org, maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org,
+        linux-kernel@vger.kernel.org, chleroy@kernel.org, sbhat@linux.ibm.com,
+        mkchauras@gmail.com
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <51BB4B46-5227-4FE6-A368-A05E45CA4915@linux.ibm.com>
+References: <20260828053811.1042300-1-sshegde@linux.ibm.com>
+To: Shrikanth Hegde <sshegde@linux.ibm.com>
+X-Mailer: Apple Mail (2.3864.600.51.1.1)
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-GUID: v7kA_hfiVqwZZueVb-2Av2MN1UpneIZ4
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTAxMDA4MCBTYWx0ZWRfXxgo11J9td64p
+ xwQ85WOSAFWgbz3P258pYKaymgxOGjIahzKvxMKeAxVArVKV4B+g6cnIpYOEUzPECouPD4+Lvna
+ FT4Ll9+4totAcrQ3YQN/KHYdsrISqAHBcBVQtFvLkCimmgMf0mRQWQ9+qMtgB87Ub7YCcVNXd9K
+ 56jkqGNTvOd796pzU4IwDr7hnvsFCbexc9Yn/fAgVJ9xfyz6MqhyCiBNe9gBBJ6vkElElL2oAKm
+ a+z9ladbu7n2Hr5QfCLPj87cBBAU0ILHzMHCjyTJt4c+TL/zjLmMCNr9U04ggRqfgzNEglzoQ8m
+ Zdx/hdEk+p4aNiTGbVRAHBUHwMsFYTOzSpHJG+ND/z6o3HDz6o4Wp9S1YG1r9HIJgJwbqN8ki6y
+ 8kcoThj0fSwKVgGcYAKXjGPefj3ApKUhIGX656SA9bAFPN6oEQEMHPnBAgyeaz+BNaoPBbdiA/5
+ 6f68MpfGrSliZ95coww==
+X-Proofpoint-ORIG-GUID: 0OnnASqNBx2GEwqB5pYim-XRWPOggbg3
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTAxMDA4MCBTYWx0ZWRfX0D8oKDWmy931
+ YkV/VChb5SvWyyN+tZd9h+L6HMT3Clp5fkhBqHomyXIy2TDwc79pKwZYNzqJSwZziO57esidXM0
+ OEJpThLrZ1KQBGG71nyc7irYC59aDm0=
+X-Authority-Analysis: v=2.4 cv=B92JFutM c=1 sm=1 tr=0 ts=6a969828 cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8
+ a=VnNF1IyMAAAA:8 a=jdSCQhKvPWLdp4stf3gA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-01_02,2026-08-31_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ adultscore=0 spamscore=0 clxscore=1015 suspectscore=0 phishscore=0
+ lowpriorityscore=0 bulkscore=0 priorityscore=1501 impostorscore=0
+ malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
+ definitions=main-2609010080
 
-On 01/09/2026 9:59, Mike Rapoport wrote:
->> Would it really make sense to allocate the four buffers separately?
->> And/or use vmalloc().
-> My understanding is that the buffers don't need to be physically
-> contiguous and vmalloc()ing the entire fifo->mem in one go should work.
 
-vmalloc() is an interesting point.
 
-fifo_init(), fifo_write(), fifo_read() and fifo_mem_release() implement 
-a FIFO in software that the XillyUSB driver uses internally.
+> On 28 Aug 2026, at 11:08=E2=80=AFAM, Shrikanth Hegde =
+<sshegde@linux.ibm.com> wrote:
+>=20
+> Shivaprasad reported a boot failure due to userspace processes crash =
+on
+> abort() from libc.so.6. It was bisected to merge request
+> commit '3424d8c18a7d ("Merge tag  'core-entry-2026-08-17' of=20
+> git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip")'
+>=20
+> Upon checking the merge, when =
+syscall_enter_from_user_mode_randomize_stack
+> fails, which could happen when a tracer like seccomp or ptrace =
+intercepts
+> and skips the syscall, the code returns to userspace immediately =
+without
+> clearing the intermediate flag which was set.
+>=20
+> When the next syscall is made, it immediately aborts the valid syscall
+> since the flag is still set. Hence clear the flag on occurrence of =
+first
+> failure.
+>=20
+> Reported-by: Shivaprasad G Bhat <sbhat@linux.ibm.com>
+> Closes: =
+https://lore.kernel.org/all/e301014d-568f-4ed5-bc64-b8a85ca0b1e1@linux.ibm=
+.com/
+> Fixes: 3424d8c18a7d ("Merge tag 'core-entry-2026-08-17' of =
+git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip")
+> Signed-off-by: Shrikanth Hegde <sshegde@linux.ibm.com>
+> ---
 
-The memory for this FIFO is allocated in fifo_init() by calling 
-__get_free_pages() with requests for up to 64 kiB. With the maximal 
-total buffer size of 256 MiB, we have a possibility of 4096 allocations 
-into an array of buffers. And if __get_free_pages() fails, the size of 
-each buffer is halved in the following attempt, which tries to allocate 
-8192 buffers, each 32 kiB, in this example. And so on.
+Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
 
-This mechanism with an array of buffers complicates the implementation 
-of the other functions as well.
+Regards,
+Venkat.
+> PS: I have kept the block below since earlier code was checking it
+> regardless of result of syscall_enter_from_user_mode. If it turns out
+> to be a redundant, it can be removed later.
+>=20
+> arch/powerpc/kernel/syscall.c | 4 +++-
+> 1 file changed, 3 insertions(+), 1 deletion(-)
+>=20
+> diff --git a/arch/powerpc/kernel/syscall.c =
+b/arch/powerpc/kernel/syscall.c
+> index 4916c205c4bb..fbefe1927b10 100644
+> --- a/arch/powerpc/kernel/syscall.c
+> +++ b/arch/powerpc/kernel/syscall.c
+> @@ -18,8 +18,10 @@ notrace long system_call_exception(struct pt_regs =
+*regs, unsigned long r0)
+> long ret;
+> syscall_fn f;
+>=20
+> - if (unlikely(!syscall_enter_from_user_mode_randomize_stack(regs, =
+&r0)))
+> + if (unlikely(!syscall_enter_from_user_mode_randomize_stack(regs, =
+&r0))) {
+> + clear_thread_flag(TIF_SYSCALL_RET);
+> return syscall_get_error(current, regs);
+> + }
+>=20
+> if (unlikely(test_and_clear_thread_flag(TIF_SYSCALL_RET)))
+> return syscall_get_error(current, regs);
+> --=20
+> 2.47.3
+>=20
 
-So why not replace this with a single call to vmalloc(), possibly asking 
-for 256 MiB in one call? That would mean simplifying all four functions.
-
-When I wrote this driver back in 2020, I avoided vmalloc() because Linus 
-wrote "vmalloc() is NOT SOMETHING YOU SHOULD EVER USE!". (See [1]). He 
-also noted that vmalloc() is a restricted resource. But that's from 
-2003, so maybe things have changed since?
-
-Questions that arise in this context:
-
-* Does vmalloc() guarantee that non-pageable physical RAM is allocated 
-when it returns?
-* Can copy_to/from_user() be used with memory allocated with vmalloc().
-* Is vmalloc() guaranteed to successfully allocate memory in the same 
-situation that __get_free_pages() could have been used to obtain the 
-same amount of memory (in smaller chunks, as with fifo_init() )? Maybe 
-they allocate memory from separate memory pools?
-
-And most important: In what way, if at all, is memory obtained with 
-vmalloc() practically different from memory allocated by 
-__get_free_pages(), if it's never used for DMA?
-
-Does the API offer clear answers to these questions?
-
-Thanks in advance,
-    Eli
-
-[1] https://lwn.net/Articles/57804/
 
