@@ -1,102 +1,150 @@
-Return-Path: <linuxppc-dev+bounces-26400-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26401-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 01437C61DD6
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2026 15:23:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4F796C624D6
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2026 15:29:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hZ8lX2LQ1z2xmh;
-	Wed, 02 Sep 2026 01:23:52 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::331"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788276232;
-	cv=none; b=WKXOmB/LwlCTNOusLmfCNbgD6vf8SlwojDtijgbPlTQwOLSMlPfwF3Uzoq4qvRZEkxV+6F76dpJY8f9i4dzx1C8/DwUtxlsmFkXsS7+FjpHNALtULHUMqNGd2HfbuFPn5xQv/0VX5mmn3pfnNwYFzZdpQ4OHi+azSix18J/zyN0qGOId01CtoZ4Ur1BChoyJ45oHt70v5VFbJKnQ+WsgmYd8TL+gcRup3Q520eHEjzrBQtyIYJJvnx2aRAAsVIPQ9lXRlVPc6F2PsoHNI0iAIBR0SREhUfRvWDgTSby0uP1tqzCv8+gqZPG2nHaK1rHJypMGOJF5mwzgpMrYRNPZuQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hZ8sm4GXVz2xmh;
+	Wed, 02 Sep 2026 01:29:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788276556;
+	cv=none; b=KcnnPITP5XtDrDrO1K0psZlK+K4urHOJUS0MWnn25DuuWgqcpvsGkhbZPh3TVExafG2IN/S4Fx3UWKTO4jZn0bziT/h6HLoMZB8NxlZV+Y5VY/792C8lWBA3fn1awyUBwnm7YvChYclUDUDYRGtZ+C3lsSmt+CKRNUAgZLPz4i10/dwLQ4F441mT137rfYgfR6CgSv/LE1qRp50pkG/P+Bq0dYVSFJTPGfGC2OUmOdaBdB8unvC4HzA9zeEqRhujB+n9gqlSNV4qe3ZpF+jh0ztwajGVyaAG2Z7+AHgsKamSL74FUFRKrE5RN3FZQDk7excbUJcYBYtoRI2LxHfKqA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788276232; c=relaxed/relaxed;
-	bh=K92Yl4E57wBJs/vOzI7nSASvxNXveg4UnerIhBKPiZw=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=GQFykABGPSUp/25nWzen0C53JRavOxB/jmtSIW3YuXh5uH1bxeSy1MW3YK1TLUSnC3tFJCT1dPZq4iIeFjVpoNVk0YKhwFeq5YBEP0wZt2dikNcVScsTRICN6ic1N5ahDBGAJkM5xH6FTXy/QVqipHS5vExp1JknPEqHq/XCizNUm3NWxMlJknCspPhpqVgJyLMn95g6gkKqFba2ZfVkYY2C60PG6Nn8A6PZ020bSKbD/6Ido1/3qeyNwcGmBS4CxNd/4COLNfHV+H0H+CfmW+y/eDw51ea8849IKFkAEAtUBU7qUf/x7vy/qUQzPZJxuOVwrUgpWmrL2ri7rsC3yA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=KxnDjUXA; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::331; helo=mail-wm1-x331.google.com; envelope-from=julianbraha@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1788276556; c=relaxed/relaxed;
+	bh=76k3ebeTiGHZdNKuTSQi/NWwAeUMZ+iwU02Jwt/dttM=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=grOO8LayD8sT6FSYivZol0ryB94L63bUuy0R1506ms+AjimkEOpRAcW08yr3BeFa1nfzfo40urt7DVunlXp3cgbhUgXlSgdlSyYM271fGgi3J+6koC1XOGzFzof2hCt5bY9G9dSaI/xyjNMD9TX7ScAiH1lkZqvQEsEqe+swOS6ERFAgPOVXaa8PwT8yMR9XPZ0cs34Qgihr+rPkbt2ikMNB1WC1JIwKkEdlDEiMKye5E38uI2j/95oinx7SBof1DFeyzqY01nGQmrLyxZn83l34TNo9/9kUrW2oCE/YcjDuBYL5j4ziEmR/UjndybPFP7inu6oqPU7pF1AlsmjE6A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JMJVO/Mg; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=kas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=KxnDjUXA;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JMJVO/Mg;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::331; helo=mail-wm1-x331.google.com; envelope-from=julianbraha@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x331.google.com (mail-wm1-x331.google.com [IPv6:2a00:1450:4864:20::331])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=kas@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hZ8lV6MGLz2xGt
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Sep 2026 01:23:49 +1000 (AEST)
-Received: by mail-wm1-x331.google.com with SMTP id 5b1f17b1804b1-49b0dbfbf7bso35428845e9.2
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Sep 2026 08:23:49 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1788276226; x=1788881026; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:sender:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=K92Yl4E57wBJs/vOzI7nSASvxNXveg4UnerIhBKPiZw=;
-        b=KxnDjUXAV+9MPQIqzY6ukklPd4EfsN/RqUe0nLrqzYLWzO4XeJScRYW/Xy8OBhD4is
-         G+ffkoOn7rRWcHKucxPEBSL8Rmp8I9qnY613wnyUmvRQU4i92O9mobh/ofhG4BKenZ74
-         9FyhQN4MeStIZWb70Z85W0Sx+ReWKwIp0iSSokVzHtK4uQ3GMtuZUc7YonsdOW+ukiSj
-         oquImAyHOMlDlCLJenTPstsVdJFemgU23dEyEkeosRowJDCJknB+K+C9+0TWU7k6NZmY
-         JUiiwZ59aB2AFayVtLX0vZEXge9qTStNfyZZuSi080+P2phVg+8otpwxSSL9MiyGPTrj
-         2gvA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788276226; x=1788881026;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:sender:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=K92Yl4E57wBJs/vOzI7nSASvxNXveg4UnerIhBKPiZw=;
-        b=d2c24G2Rl8MIBN8CovU2xP0U/J/Iv5kEp0yc2J2OLhnviTJ9Ysxhwtud6TC0o2ALqd
-         Sp6/QbfCxmb2QA+zUgXdKqgajlpSllwEvpbanXyWFO9H0fPhL+qupBup6cxeXjhTPo9T
-         LeiH4U3A4DRKjDWxT4gpzMDX7YDsiKd4zYvSdjTSh3siRl5G9F1uoI99glWOXmmi5DpM
-         cP/PytmnTKilou+H8nMaqUspaq1hRyON40jm6F4TgEyW0zOdMkqBtvy6C/ociwV6ltSl
-         GK9NkoTMYg435tOb+Z+S7Z321QOBAWSffkLSdg8rBZDWJUhbF8pKUewIsbSNIAg/0G7d
-         TH7w==
-X-Forwarded-Encrypted: i=1; AHgh+RqtQkkbk8OjZ0xxdEP1/KBw6cqqnSfm7AwKkdDcMnuoAIr4AAyf4FLcPLe0U+yxf/tZ9wOZ3S6pIioIvas=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++kkV6kVRip3bpTQsczhaUE+EpGWdG5l6j0K5eIytwjreaMPsnno
-	mZMCuzLTQQ2t2ZblBbdaerxtTOm9s42pDyRfmhFyQsZ4DencANaTp75J
-X-Gm-Gg: AR+sD12JRE6r7mvavzPopQv1MtZ9buIrWbJ2cvjkKrcPxVwfYuZcpr6O1WAJRwHnGh5
-	D8Gjjs05DYc71KU7WshoIREsf8Eyx23CfNbTV98rEjtp8BT8bxuTz8gE42nwVBDqzCCwVY42kvo
-	V4PcDXpNDzCL0q5gqBgvfKVzGfPQ/sCoiFdxaLolTkdVzOKIo7DT5mKk1FqQXcV/SDByspwRVz4
-	LWDYNvwVjlOtHPXFiZVDxg8UcuIKC/dQb4EwTKfR5YQLyNNwUgJUxnhy8JDXun7cdAyyIuV0enO
-	etvQKwzCewXAp0Zm9dkoxRcvvRY7iwdBEQRP41n7Mz8rtIm2WwCaTaZSHt4Hmp+zQSlYr5ziUj0
-	Df3pzT2ZYl3p/TcH9fpM6OCpFEjaakn2aTZfoa32S5sN0/kjUwCHOkwkxhJFOBuBDrpMm6jbQJl
-	+ddRkeiS4Y2Ws/nJv7WXLTuODiEd7UI+Xggd4hm9tYlo5p4YVD5qd32LZakI2sRiCAfJ7MBABMv
-	2kWpWDvyeyT9n+MjM0l1J9WN/e/x/yhvCzoR88xmIbeE3ksE7pT
-X-Received: by 2002:a05:600c:524c:b0:49b:9161:db26 with SMTP id 5b1f17b1804b1-49cdc55a9e5mr137399155e9.14.1788276226146;
-        Tue, 01 Sep 2026 08:23:46 -0700 (PDT)
-Received: from nixos-office (195-23-151-163.net.novis.pt. [195.23.151.163])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49cdce3e04csm67182305e9.10.2026.09.01.08.23.44
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 01 Sep 2026 08:23:45 -0700 (PDT)
-Sender: Julian Braha <julian.braha@gmail.com>
-From: Julian Braha <julianbraha@gmail.com>
-To: maddy@linux.ibm.com,
-	mpe@ellerman.id.au,
-	npiggin@gmail.com,
-	chleroy@kernel.org,
-	Frank.Li@kernel.org,
-	andrew+netdev@lunn.ch,
-	davem@davemloft.net,
-	edumazet@google.com,
-	kuba@kernel.org,
-	pabeni@redhat.com
-Cc: kernel-janitors@vger.kernel.org,
-	linusw@kernel.org,
-	kees@kernel.org,
-	colin.i.king@gmail.com,
-	rosenp@gmail.com,
-	joao@joaoff.com,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	dmaengine@vger.kernel.org,
-	Julian Braha <julianbraha@gmail.com>
-Subject: [PATCH v3] powerpc: remove dead 440SP code
-Date: Tue,  1 Sep 2026 16:23:41 +0100
-Message-ID: <20260901152341.1219343-1-julianbraha@gmail.com>
-X-Mailer: git-send-email 2.55.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hZ8sk60DCz2xGt
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Sep 2026 01:29:14 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id A8F5E433A9;
+	Tue,  1 Sep 2026 15:29:12 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9BD601F00A3D;
+	Tue,  1 Sep 2026 15:29:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1788276552;
+	bh=76k3ebeTiGHZdNKuTSQi/NWwAeUMZ+iwU02Jwt/dttM=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=JMJVO/Mgq1nw2cugzaWuBMlQKXNDvjnQaJckgGwAxqH4dsbatCO/FKJlQ1FRbWemA
+	 xLfTaJF7oT3R6ukl4+qARfSpmNkETFjxqFMSH9s32trFNpbZshu+3fUHmIquPZJFZE
+	 Uzq22icVf3dGYaKWVW3QvEv19fjnAy/71mJn840FL8R0B93SfT9bLXTJq/z9FEnb3C
+	 vnDjFqELWgXPC6z/IaSP6KbL3JtL8Hi+vdXZ8PZSZ4MuGJKpaWKmnyhYWEou26+Aqc
+	 /wSf8iQa/rnwKRGwfZUJlRXNNAnC4cQfn1De2ppCTQakCrVOBaiaRG91Up+N1tU8Uu
+	 4yltvlZSmwVCQ==
+Received: from phl-compute-05.internal (phl-compute-05.internal [10.202.2.45])
+	by mailfauth.ams.internal (Postfix) with ESMTP id 058231980054;
+	Tue,  1 Sep 2026 11:28:51 -0400 (EDT)
+Received: from phl-frontend-03 ([10.202.2.162])
+  by phl-compute-05.internal (MEProxy); Tue, 01 Sep 2026 11:29:07 -0400
+X-ME-Sender: <xms:M--WahvHse2oIRrD_rseDl9C-ZJhTbKIfPSqnIvcGI1zubf22JkOzw>
+    <xme:M--WasiaY12qk5MSNUOf1e6k2HlbkF91BHJu0rQVcKOQcth37N5HHPdAMUpwNeHj5
+    RFgfe07zms3GHjHXwPHq95R6ZX6lQOjTyHkoaEz1hReoqe__yYrBW4>
+X-ME-Received: <xmr:M--WavVRNHIwIUdDv5l9z4829oEwbHrjXMXF0xipj6MwWtuOW7rkFsCR_uU>
+X-ME-Proxy-Cause: dmFkZTFktg/hTQ+O6MbEiEwc2myH07+rMXf0DZqVtTUmRXg4RwvnbNppg3BbYl6I9K2dJp
+    zj2kvOaUXcu2ztpPSJQZ8Ogheq7n6crddipwfoV80/nKOVQCCUOZnwgAEYU3Av2yZmZYHP
+    7I24oVqb6S67vLQnUUVvqgo9Ogx60q3Zj3bOCLUAsSUEIPZoTe4V2V2wqRJqBwtgC7FsoJ
+    6rYeXjf2LD4UuiBTZ1hgiB6DybGuursalkVC5p+rE3Z61vyySwM3+mUWXx3KxMVsF55pfW
+    Y63Mg9mEwLnf5UI83C+MMBITxZq8Ug1aRj6MAutPXRzdrg4OYxGJGhFXVYpjOziQBAb9RI
+    1M1hA5OH+Ae4cWmjEpmcov0cbF7J1JTYooBZB1U/4PkwrHTcu5roVcjACm7Wf3tkWztBte
+    OY+5bwnhGsoj0FTHeT0/cau4njSfVbXlJZ1jSVb2nMKJnYqlsW3moVE3n8V2D8es2M3EPy
+    5xaMi7C2kz6Mg9KuRoNC4hwC7/Re1QxT08Hsh9sEILCxwqWQNx2QWNFYFS3vApiRt/qeEh
+    QZMs8OhwcUjv+4Gjxqp6zUOfl3bCas78PtJvCW7P93kuisSD3Qf06s4bxmIr/Ytjmx/fZ1
+    Qv+oLYQOOBA+Bv+X1KZMEAcNK1ia85teinZBzPxGV9H8TQ/W36HCzjE2uc7g
+X-ME-Proxy: <xmx:M--WagDwDsuRhYlPUS5009TVT-JmUmFPfk8tT8Ihad9WNGVEBkDr3Q>
+    <xmx:M--Waq1tg3CGJkpofqoMI1nmHu6fHckkcCOQ_n8FOk7vlXqALJ9S0g>
+    <xmx:M--WauyQGD8lNfq5dgpLZmF9YWh9ZUAptqBHc7qNY6yBQsLVM78reQ>
+    <xmx:M--Wat2_ypH88ppv7bgKgsvW6JDW0CuFRqEWiyfrcq-B01oqGstDHQ>
+    <xmx:M--Walyk2Wbie6GYaeRz0DZsXByeR-pm3LLszgFYWs2sIkT9ZW_LEq7e>
+Feedback-ID: i10464835:Fastmail
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Tue,
+ 1 Sep 2026 11:28:49 -0400 (EDT)
+Date: Tue, 1 Sep 2026 16:28:48 +0100
+From: Kiryl Shutsemau <kas@kernel.org>
+To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
+Cc: Jason Gunthorpe <jgg@ziepe.ca>,
+ 	Andrew Morton <akpm@linux-foundation.org>,
+ David Hildenbrand <david@kernel.org>, Zi Yan <ziy@nvidia.com>,
+ 	Baolin Wang <baolin.wang@linux.alibaba.com>,
+ "Liam R. Howlett" <liam@infradead.org>,
+ 	Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>,
+ Dev Jain <dev.jain@arm.com>, 	Barry Song <baohua@kernel.org>,
+ Lance Yang <lance.yang@linux.dev>, 	Usama Arif <usama.arif@linux.dev>,
+ Guo Ren <guoren@kernel.org>, Brian Cain <bcain@kernel.org>,
+ 	Geert Uytterhoeven <geert@linux-m68k.org>,
+ Dinh Nguyen <dinguyen@kernel.org>,
+ 	Simon Schuster <schuster.simon@siemens-energy.com>,
+ Jonas Bonn <jonas@southpole.se>,
+ 	Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+ Stafford Horne <shorne@gmail.com>,
+ 	Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Rich Felker <dalias@libc.org>,
+ 	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+ Paul Walmsley <pjw@kernel.org>, 	Palmer Dabbelt <palmer@dabbelt.com>,
+ Albert Ou <aou@eecs.berkeley.edu>, 	Alexandre Ghiti <alex@ghiti.fr>,
+ Russell King <linux@armlinux.org.uk>, 	Vineet Gupta <vgupta@kernel.org>,
+ Michal Simek <monstr@monstr.eu>, Chris Zankel <chris@zankel.net>,
+ 	Max Filippov <jcmvbkbc@gmail.com>, Will Deacon <will@kernel.org>,
+ 	"Aneesh Kumar K.V" <aneesh.kumar@kernel.org>,
+ Nick Piggin <npiggin@gmail.com>, 	Peter Zijlstra <peterz@infradead.org>,
+ "David S. Miller" <davem@davemloft.net>,
+ 	Andreas Larsson <andreas@gaisler.com>,
+ Richard Henderson <richard.henderson@linaro.org>,
+ 	Matt Turner <mattst88@gmail.com>, Magnus Lindholm <linmag7@gmail.com>,
+ 	Catalin Marinas <catalin.marinas@arm.com>,
+ Mark Rutland <mark.rutland@arm.com>,
+ 	Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>,
+ 	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+ 	Helge Deller <deller@gmx.de>, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ 	Michael Ellerman <mpe@ellerman.id.au>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ 	Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
+ 	Alexander Gordeev <agordeev@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ 	Sven Schnelle <svens@linux.ibm.com>,
+ Richard Weinberger <richard@nod.at>,
+ 	Anton Ivanov <anton.ivanov@cambridgegreys.com>,
+ Johannes Berg <johannes@sipsolutions.net>,
+ 	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>,
+ 	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+ "H. Peter Anvin" <hpa@zytor.com>, 	Arnd Bergmann <arnd@arndb.de>,
+ Vlastimil Babka <vbabka@kernel.org>, 	Mike Rapoport <rppt@kernel.org>,
+ Suren Baghdasaryan <surenb@google.com>, 	Michal Hocko <mhocko@suse.com>,
+ John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>,
+ 	linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ linux-csky@vger.kernel.org, 	linux-hexagon@vger.kernel.org,
+ linux-m68k@lists.linux-m68k.org, linux-openrisc@vger.kernel.org,
+ 	linux-sh@vger.kernel.org, linux-riscv@lists.infradead.org,
+ 	linux-arm-kernel@lists.infradead.org,
+ linux-snps-arc@lists.infradead.org, linux-arch@vger.kernel.org,
+ 	sparclinux@vger.kernel.org, linux-alpha@vger.kernel.org,
+ loongarch@lists.linux.dev, 	linux-mips@vger.kernel.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ 	linux-s390@vger.kernel.org, linux-um@lists.infradead.org,
+ Hugh Dickins <hughd@google.com>, 	Qi Zheng <qi.zheng@linux.dev>
+Subject: Re: [PATCH 01/12] mm/huge_memory: zap deposited page tables after an
+ RCU grace period
+Message-ID: <apbuO_QveZNAz3ns@thinkstation>
+References: <20260901-rcu-pagetable-freeing-v1-0-5456a81c8212@kernel.org>
+ <20260901-rcu-pagetable-freeing-v1-1-5456a81c8212@kernel.org>
+ <apbOlyF77yDCV4cF@thinkstation>
+ <apbcoMTVlL42G5tg@gremlin>
+ <20260901142408.GA56830@ziepe.ca>
+ <apbiB51hjm-9pRzf@gremlin>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -110,244 +158,78 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <apbiB51hjm-9pRzf@gremlin>
 
-The 440SP config option can never be enabled, making all references to it
-dead code.
+On Tue, Sep 01, 2026 at 03:41:17PM +0100, Lorenzo Stoakes (ARM) wrote:
+> On Tue, Sep 01, 2026 at 11:24:08AM -0300, Jason Gunthorpe wrote:
+> > On Tue, Sep 01, 2026 at 03:12:45PM +0100, Lorenzo Stoakes (ARM) wrote:
+> >
+> > > It won't be costly at the time of the calls obviously as its deferred. Maybe
+> > > increase some time spent in softirq but again is 512x that big of a deal?
+> > >
+> > > I'm not sure how you'd both defer the free and somehow utilise mmu_gather here
+> > > either really, certainly not without it becoming extremely messy.
+> >
+> > The less costly version is to thread the page to be freed onto the
+> > mmu_gather through a linked list in the struct page memory. This is
+> > super cheap since it is just a singly linked list operation.
+> >
+> > Then when the mmu_gather is flushed it does a single call_rcu using
+> > the rcu head of the struct page of the head of the list. The callback
+> > clears the entire linked list of pages.
+> >
+> > Since you have to tlb flush anyhow, it makes sense to always use the
+> > mmu_gather. For example the design I ended up with for iommupt
+> > accumulates all the invalidations and all the free-able memory into a
+> > gather then invalidates and frees.
+> >
+> > This allows maximizing the tlbi efficiency too. You can't do call_srcu
+> > until you flush the tlb and if you call once per table then you are
+> > also tlb flushing once per table too.
+> >
+> > So if the kernel really does want to clear out 512 leaf tables the
+> > optimal implementation is one range tlbi for 512 entries followed by
+> > one call_rcu to free the memory. Hence the gather..
+> 
+> I think there's some confusion here.
+> 
+> This isn't the path in which a page table is being freed, the _deposited_
+> table is zapped, in zap_deposited_table().
+> 
+> That is, the page table kept in reserve for THP split, that is not
+> currently mapped.
+> 
+> It amounts to a __free_pages() call.
+> 
+> The TLB operations are in e.g. zap_huge_pmd() etc. and nobody has
+> complained about inefficiencies there.
+> 
+> So, unless I'm missing something here, TLB flushes play no role in this
+> whatsoever.
+> 
+> The issue Kiryl raised was that instead of immediately freeing page tables,
+> they are now batched up individually by call_rcu().
+> 
+> I personally find it difficult to imagine the numbers here would be
+> problematic or certainly cause anything observable beyond what is
+> observable now.
+> 
+> So I'm going to have to say, unless it can be clearly demonstrated this is
+> problematic, I don't think there's any reason to add additional complexity
+> here.
 
-The only board using CONFIG_440SP was IBM LUAN, which was commented out by
-commit f65573314e4e ("[POWERPC] Re-organize Kconfig code for 4xx in
-arch/powerpc") then removed by commit ff5f483f3091 ("powerpc: 4xx: remove
-commented out Kconfig entries").
+It would be nice to measure munmap() overhead here.
 
-Let's remove support for 440SP, since nobody can be using it anyway.
+I am worried about hitting DEFAULT_MAX_RCU_BLIMIT and trigger
+rcu_force_quiescent_state() which can be disruptive to the system.
 
-This dead code was found by kconfirm, a static analysis tool for Kconfig.
+DEFAULT_MAX_RCU_BLIMIT is 10K, so it is ~20G of THP unmapped on x86.
 
-Signed-off-by: Julian Braha <julianbraha@gmail.com>
----
-Changes since v2:
-- cleaned up preprocessor condition
+munmap() of 64G worth of THP should be enough to demonstrate the
+problem.
 
-Link to v2:
-https://lore.kernel.org/all/20260901150645.1199097-1-julianbraha@gmail.com/
-
-Changes since v1:
-- added historic details to description 
-
-Link to v1:
-https://lore.kernel.org/all/20260816125615.985387-1-julianbraha@gmail.com/
----
- arch/powerpc/boot/cuboot-katmai.c   |  2 +-
- arch/powerpc/include/asm/async_tx.h |  2 +-
- arch/powerpc/include/asm/dcr-regs.h | 10 +++++-----
- arch/powerpc/kernel/cpu_specs_44x.h | 12 ------------
- arch/powerpc/platforms/44x/Kconfig  |  3 ---
- drivers/dma/Kconfig                 |  2 +-
- drivers/dma/ppc4xx/adma.c           |  9 ---------
- drivers/dma/ppc4xx/adma.h           |  2 +-
- drivers/dma/ppc4xx/dma.h            |  9 ---------
- drivers/net/ethernet/ibm/emac/mal.h |  2 +-
- 10 files changed, 10 insertions(+), 43 deletions(-)
-
-diff --git a/arch/powerpc/boot/cuboot-katmai.c b/arch/powerpc/boot/cuboot-katmai.c
-index 034a748fde24..fcd71e76309f 100644
---- a/arch/powerpc/boot/cuboot-katmai.c
-+++ b/arch/powerpc/boot/cuboot-katmai.c
-@@ -31,7 +31,7 @@ static void katmai_fixups(void)
- {
- 	unsigned long sysclk = 33333000;
- 
--	/* 440SP Clock logic is all but identical to 440GX
-+	/* 440SPe Clock logic is all but identical to 440GX
- 	 * so we just use that code for now at least
- 	 */
- 	ibm440spe_fixup_clocks(sysclk, 6 * 1843200, 0);
-diff --git a/arch/powerpc/include/asm/async_tx.h b/arch/powerpc/include/asm/async_tx.h
-index a14758426dd5..1ff5b2ca3ed1 100644
---- a/arch/powerpc/include/asm/async_tx.h
-+++ b/arch/powerpc/include/asm/async_tx.h
-@@ -7,7 +7,7 @@
- #ifndef _ASM_POWERPC_ASYNC_TX_H_
- #define _ASM_POWERPC_ASYNC_TX_H_
- 
--#if defined(CONFIG_440SPe) || defined(CONFIG_440SP)
-+#ifdef CONFIG_440SPe
- extern struct dma_chan *
- ppc440spe_async_tx_find_best_channel(enum dma_transaction_type cap,
- 	struct page **dst_lst, int dst_cnt, struct page **src_lst,
-diff --git a/arch/powerpc/include/asm/dcr-regs.h b/arch/powerpc/include/asm/dcr-regs.h
-index 5c1a4973f46a..e39a55e527da 100644
---- a/arch/powerpc/include/asm/dcr-regs.h
-+++ b/arch/powerpc/include/asm/dcr-regs.h
-@@ -25,11 +25,11 @@
-  * of the driver main register set
-  */
- 
--/* CPRs (440GX and 440SP/440SPe) */
-+/* CPRs (440GX and 440SPe) */
- #define DCRN_CPR0_CONFIG_ADDR	0xc
- #define DCRN_CPR0_CONFIG_DATA	0xd
- 
--/* SDRs (440GX and 440SP/440SPe) */
-+/* SDRs (440GX and 440SPe) */
- #define DCRN_SDR0_CONFIG_ADDR 	0xe
- #define DCRN_SDR0_CONFIG_DATA	0xf
- 
-@@ -159,18 +159,18 @@
- #define  L2C_SNP_ESR		0x00000800
- 
- /*
-- * DCR register offsets for 440SP/440SPe I2O/DMA controller.
-+ * DCR register offsets for 440SPe I2O/DMA controller.
-  * The base address is configured in the device tree.
-  */
- #define DCRN_I2O0_IBAL		0x006
- #define DCRN_I2O0_IBAH		0x007
- #define I2O_REG_ENABLE		0x00000001	/* Enable I2O/DMA access */
- 
--/* 440SP/440SPe Software Reset DCR */
-+/* 440SPe Software Reset DCR */
- #define DCRN_SDR0_SRST		0x0200
- #define DCRN_SDR0_SRST_I2ODMA	(0x80000000 >> 15)	/* Reset I2O/DMA */
- 
--/* 440SP/440SPe Memory Queue DCR offsets */
-+/* 440SPe Memory Queue DCR offsets */
- #define DCRN_MQ0_XORBA		0x04
- #define DCRN_MQ0_CF2H		0x06
- #define DCRN_MQ0_CFBHL		0x0f
-diff --git a/arch/powerpc/kernel/cpu_specs_44x.h b/arch/powerpc/kernel/cpu_specs_44x.h
-index 69c4cdc0cdee..41ed2c16d8cc 100644
---- a/arch/powerpc/kernel/cpu_specs_44x.h
-+++ b/arch/powerpc/kernel/cpu_specs_44x.h
-@@ -172,18 +172,6 @@ static struct cpu_spec cpu_specs[] __initdata = {
- 		.machine_check		= machine_check_440A,
- 		.platform		= "ppc440",
- 	},
--	{ /* 440SP Rev. A */
--		.pvr_mask		= 0xfff00fff,
--		.pvr_value		= 0x53200891,
--		.cpu_name		= "440SP Rev. A",
--		.cpu_features		= CPU_FTRS_44X,
--		.cpu_user_features	= COMMON_USER_BOOKE,
--		.mmu_features		= MMU_FTR_TYPE_44x,
--		.icache_bsize		= 32,
--		.dcache_bsize		= 32,
--		.machine_check		= machine_check_4xx,
--		.platform		= "ppc440",
--	},
- 	{ /* 440SPe Rev. A */
- 		.pvr_mask               = 0xfff00fff,
- 		.pvr_value              = 0x53400890,
-diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
-index 150813cea945..b481ef2b0f4c 100644
---- a/arch/powerpc/platforms/44x/Kconfig
-+++ b/arch/powerpc/platforms/44x/Kconfig
-@@ -260,9 +260,6 @@ config 440GX
- 	select IBM_EMAC_ZMII if IBM_EMAC #test only
- 	select IBM_EMAC_TAH if IBM_EMAC  #test only
- 
--config 440SP
--	bool
--
- config 440SPe
- 	bool
- 	select IBM_EMAC_EMAC4 if IBM_EMAC
-diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
-index ae6a682c9f76..f0f61b4932f5 100644
---- a/drivers/dma/Kconfig
-+++ b/drivers/dma/Kconfig
-@@ -77,7 +77,7 @@ config AMBA_PL08X
- 
- config AMCC_PPC440SPE_ADMA
- 	tristate "AMCC PPC440SPe ADMA support"
--	depends on 440SPe || 440SP
-+	depends on 440SPe
- 	select DMA_ENGINE
- 	select DMA_ENGINE_RAID
- 	select ARCH_HAS_ASYNC_TX_FIND_CHANNEL
-diff --git a/drivers/dma/ppc4xx/adma.c b/drivers/dma/ppc4xx/adma.c
-index 279a431ccae3..ecbf4c84a318 100644
---- a/drivers/dma/ppc4xx/adma.c
-+++ b/drivers/dma/ppc4xx/adma.c
-@@ -4349,14 +4349,9 @@ static ssize_t poly_show(struct device_driver *dev, char *buf)
- 	ssize_t size = 0;
- 	u32 reg;
- 
--#ifdef CONFIG_440SP
--	/* 440SP has fixed polynomial */
--	reg = 0x4d;
--#else
- 	reg = dcr_read(ppc440spe_mq_dcr_host, DCRN_MQ0_CFBHL);
- 	reg >>= MQ0_CFBHL_POLY;
- 	reg &= 0xFF;
--#endif
- 
- 	size = sysfs_emit(buf, "PPC440SP(e) RAID-6 driver "
- 			"uses 0x1%02x polynomial.\n", reg);
-@@ -4368,10 +4363,6 @@ static ssize_t poly_store(struct device_driver *dev, const char *buf,
- {
- 	unsigned long reg, val;
- 	int err;
--#ifdef CONFIG_440SP
--	/* 440SP uses default 0x14D polynomial only */
--	return -EINVAL;
--#endif
- 
- 	if (!count || count > 6)
- 		return -EINVAL;
-diff --git a/drivers/dma/ppc4xx/adma.h b/drivers/dma/ppc4xx/adma.h
-index f8a5d7c1fb40..0ec35382d274 100644
---- a/drivers/dma/ppc4xx/adma.h
-+++ b/drivers/dma/ppc4xx/adma.h
-@@ -19,7 +19,7 @@
- #define tx_to_ppc440spe_adma_slot(tx) \
- 		container_of(tx, struct ppc440spe_adma_desc_slot, async_tx)
- 
--/* Default polynomial (for 440SP is only available) */
-+/* Default polynomial */
- #define PPC440SPE_DEFAULT_POLY	0x4d
- 
- #define PPC440SPE_ADMA_ENGINES_NUM	(XOR_ENGINES_NUM + DMA_ENGINES_NUM)
-diff --git a/drivers/dma/ppc4xx/dma.h b/drivers/dma/ppc4xx/dma.h
-index b5725481bfa6..17cbb2d1ee1c 100644
---- a/drivers/dma/ppc4xx/dma.h
-+++ b/drivers/dma/ppc4xx/dma.h
-@@ -70,20 +70,11 @@
- 
- #define DMA_CUED_XOR_BASE	(0x10000000)
- #define DMA_CUED_XOR_HB		(0x00000008)
--
--#ifdef CONFIG_440SP
--#define DMA_CUED_MULT1_OFF	0
--#define DMA_CUED_MULT2_OFF	8
--#define DMA_CUED_MULT3_OFF	16
--#define DMA_CUED_REGION_OFF	24
--#define DMA_CUED_XOR_WIN_MSK	(0xFC000000)
--#else
- #define DMA_CUED_MULT1_OFF	2
- #define DMA_CUED_MULT2_OFF	10
- #define DMA_CUED_MULT3_OFF	18
- #define DMA_CUED_REGION_OFF	26
- #define DMA_CUED_XOR_WIN_MSK	(0xF0000000)
--#endif
- 
- #define DMA_CUED_REGION_MSK	0x3
- #define DMA_RXOR123		0x0
-diff --git a/drivers/net/ethernet/ibm/emac/mal.h b/drivers/net/ethernet/ibm/emac/mal.h
-index e0ddc41186a2..6cdd40bca2cd 100644
---- a/drivers/net/ethernet/ibm/emac/mal.h
-+++ b/drivers/net/ethernet/ibm/emac/mal.h
-@@ -26,7 +26,7 @@
-  * We call MAL 1 the version in 405GP, 405GPR, 405EP, 440EP, 440GR and
-  * NP405H.
-  *
-- * We call MAL 2 the version in 440GP, 440GX, 440SP, 440SPE and Axon
-+ * We call MAL 2 the version in 440GP, 440GX, 440SPE and Axon
-  *
-  * The driver expects a "version" property in the emac node containing
-  * a number 1 or 2. New device-trees for EMAC capable platforms are thus
 -- 
-2.55.0
-
+  Kiryl Shutsemau / Kirill A. Shutemov
 
