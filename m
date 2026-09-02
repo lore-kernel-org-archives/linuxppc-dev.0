@@ -1,49 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-26423-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26424-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 56E57C624D7
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2026 20:15:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7EF1FC61DD3
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Sep 2026 01:10:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hZHCS6KlPz2yCv;
-	Wed, 02 Sep 2026 06:15:00 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788293700;
-	cv=none; b=DpD7RZ2TmtlcRix5WKuBpB2iG9aiyISnoxnKOgcXLfU5ueKlAZITvvvr4YfI5YKSxkZ6+laYg+EqbHOhAFaf3x6crBNHIayCqS/lkZTvXLMQ7QHzySPERiefmHDZUEPSQxqqJF8rabAw22sNhtiCD0wgYrgTtkjzEFN2kZGIEit3TRK14DU7mBr20pwTF9K1PJ2sIRMZFLoKbVd76eX3xKwh2kArixQ1IVXQPQqY5p8LzK6g+NU7rnkjcEUueu9S/672m3q/Tl4qgTcY/xtm7K1fiezQivFAR78Fx10wO/9uS7Sh5uQn9aWhDu6Q/atJMx2d11Lk+JprYv8aWXtZSA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hZPmf1n9jz2y2h;
+	Wed, 02 Sep 2026 11:10:42 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.225
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788311442;
+	cv=none; b=e2yhKFCCuKoezR5UUsbuSuIkD1A2lcDQuw15KDpu3DcRQvuoRrMeUTI6+X5d/SK3hYvmV+b8gMVWjBgU1ZOwAhp6v97xQOQkq3Y6K9rk5+8qz186y4UV4r+iXL8+RfrTSGgz2X24r4iCuW/m5drkekwzLVMGdmi5nTjE8fsvjRSPKfat9i05qePEQ1MGckUJX/eC3RAsqea5WnjPwUHNiWBv7cPq2d5Epe0254cx29eNf8wjDddowjORIKhnQ+F8mt6CQur9Z7ABiD16CnLaBdZ9mK3KsZqFBT/ppCgm/sJPk/pwAVKdCZSK3t9Uf69U1tNpTEsz8ChiCZXtaFmFJw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788293700; c=relaxed/relaxed;
-	bh=f1/Jwq5+t6tQe5v6CVe+ERoBwhfQo9XFyVXChFbscQ0=;
-	h=MIME-Version:Content-Type:Subject:From:To:Cc:In-Reply-To:
-	 References:Date:Message-Id; b=QiQ2S8ApW1Dc3wE5bfRtVz5AtrxzA+U2et6GmGKN3ehCGknyIN4pZet7mCACbnXnpslXfS8bsu7B/Eemevp52/VMYJVkMCsGF3aKD5tETks1N8P9pcvqYV1/nMeHGq5wsP+0T3HOmkOg/M2hxU2PIx9ob/Cdhv+uYvh6FOws+gyFUPpWJGR1EAFtEE6Adi5/nTvxq6Ce27hQVq5wkqZ2jUVJV6QSwqjdGFEEfdKEDCyDSFTPrAAXhT/XT2H8itsI/tHzWMK0MQpwqQA+fu/4w6lMz85drK1HElR4v43rFkr9g8h/L3iErFwZcedAWCqGpLb8muVenvRBbSeCSMYtyw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bur9NIA5; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1788311442; c=relaxed/relaxed;
+	bh=ueZfUdbICpbFc4QJdF1KNCrnQsrHgevLIv0afVFUmZM=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=Tqa/G9/U7REOq47BPFXKZtNIK10TnpRde2lmiRoYWKy8EmhDAttLw0NJJdwuuTctSkYIMQj4sKBCTkMkhCZVQ4Fz4L9C/W10zgXmkMxcENtCEpUu2h2uOOzVgc+/fIKz21zGwYzvBu8gafOyMzAlVDaXh0aU3PpP8+Epcjxik/hEjkHWJaGKyyr9ZXhbt4r/DqLL8GgDvK12q4tt9mUshsns293+p7BwwVYa7qkS1aRb453etjTuZSr9dHlsf+xT4EEZsRUl29cUdu5oL09sp+ra9B6UevB0uJ5YUCc0u0IQ0FxJCV3bRlDAZEhmy2dd3bigsE1YNqfhhuDev6tV0A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=gxQtifHk; dkim-atps=neutral; spf=pass (client-ip=113.46.200.225; helo=canpmsgout10.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bur9NIA5;
+	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=gxQtifHk;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.225; helo=canpmsgout10.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
+Received: from canpmsgout10.his.huawei.com (canpmsgout10.his.huawei.com [113.46.200.225])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hZHCR2s9nz2yDD
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Sep 2026 06:14:59 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id EF20D43345;
-	Tue,  1 Sep 2026 20:14:56 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 17C7A1F00A3A;
-	Tue,  1 Sep 2026 20:14:43 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788293696;
-	bh=f1/Jwq5+t6tQe5v6CVe+ERoBwhfQo9XFyVXChFbscQ0=;
-	h=Subject:From:To:Cc:In-Reply-To:References:Date;
-	b=bur9NIA5VjZqJ3jA9kvUAsKCinpmhYAyRbr8Hb1A0OQctcuO7N9DscX1sNVWHL1V7
-	 T80F+vdakutewH2IMUKIulhBeYbTt74ZvhHoMosmzBE80N+qc3JJtFqfa+UOgi4b5H
-	 nhJt07pq+F5fJOJSXkLDfT4qSN/I+piV60qOEI6PAZyKdu1ycpYXmW4JdbL3YGBRSO
-	 QhxKekth0A8llYBOSGx9oqJNnoi3gtqRLBPJlVRvjImiywEubcsr5hoj1xB8ayZBwy
-	 q8rGlbxN+AW6qnyVN4sOrSL4v4mH+oG0IpyaHj57TG+k/Vbf4tA5+oKuV69TJt709Q
-	 ed/bhiUFFcOQA==
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hZPmY3w1Dz2xlv
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Sep 2026 11:10:34 +1000 (AEST)
+dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
+	c=relaxed/relaxed; q=dns/txt;
+	h=From;
+	bh=ueZfUdbICpbFc4QJdF1KNCrnQsrHgevLIv0afVFUmZM=;
+	b=gxQtifHkaLPw22BF6n0KMEk10IuxeqmsMYYop/hUPqKEf8knsZeKMkjksoN1EG/Q1sd/O9Di/
+	MWC9d9+IV55CGBmQmL79IAHmaox4lGW98FrA6ZXZh/7XOquukuCJCl9vL3nrYSwO4ytzpow/EiG
+	bZELp1KK04KMfSbcfFS8Feg=
+Received: from mail.maildlp.com (unknown [172.19.163.163])
+	by canpmsgout10.his.huawei.com (SkyGuard) with ESMTPS id 4hZPWl0vM1z1K96m;
+	Wed,  2 Sep 2026 08:59:31 +0800 (CST)
+Received: from dggpemf500011.china.huawei.com (unknown [7.185.36.131])
+	by mail.maildlp.com (Postfix) with ESMTPS id 13A854048B;
+	Wed,  2 Sep 2026 09:10:21 +0800 (CST)
+Received: from [10.67.109.254] (10.67.109.254) by
+ dggpemf500011.china.huawei.com (7.185.36.131) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.11; Wed, 2 Sep 2026 09:10:18 +0800
+Message-ID: <bf0e158e-4bd0-4495-a9e2-983556e4041b@huawei.com>
+Date: Wed, 2 Sep 2026 09:10:16 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -57,94 +61,181 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Subject: Re: [PATCH v3 15/17] crash: Simplify CRASH_MAX_MEMORY_RANGES
- handling
-From: Mike Rapoport <rppt@kernel.org>
-To: Jinjie Ruan <ruanjinjie@huawei.com>
-Cc: catalin.marinas@arm.com, will@kernel.org, mark.rutland@arm.com, 
- chenhuacai@kernel.org, kernel@xen0n.name, maddy@linux.ibm.com, 
- mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org, tglx@kernel.org, 
- mingo@redhat.com, bp@alien8.de, dave.hansen@linux.intel.com, hpa@zytor.com, 
- akpm@linux-foundation.org, baoquan.he@linux.dev, rppt@kernel.org, 
- pasha.tatashin@soleen.com, pratyush@kernel.org, ruirui.yang@linux.dev, 
- kees@kernel.org, thuth@redhat.com, gshan@redhat.com, jic23@kernel.org, 
- james.morse@arm.com, ardb@kernel.org, leitao@debian.org, 
- yeoreum.yun@arm.com, sourabhjain@linux.ibm.com, coxu@redhat.com, 
- tangyouling@kylinos.cn, hbathini@linux.ibm.com, adityag@linux.ibm.com, 
- ionut.nechita@windriver.com, liaoyuanhong@vivo.com, seanjc@google.com, 
- fuqiang.wang@easystack.cn, makb@juniper.net, piliu@redhat.com, 
- ebiggers@kernel.org, jbouron@amazon.com, mclapinski@google.com, 
- me@linux.beauty, graf@amazon.com, bgwin@google.com, robh@kernel.org, 
- takahiro.akashi@linaro.org, palmer@rivosinc.com, x86@kernel.org, 
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
- loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, 
- kexec@lists.infradead.org, linux-fsdevel@vger.kernel.org, 
- linux-mm@kvack.org
-In-Reply-To: <20260826092541.3905933-16-ruanjinjie@huawei.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 01/17] kexec: Record allocated CMA pages to fix release
+ size mismatch
+To: Mike Rapoport <rppt@kernel.org>
+CC: <catalin.marinas@arm.com>, <will@kernel.org>, <mark.rutland@arm.com>,
+	<chenhuacai@kernel.org>, <kernel@xen0n.name>, <maddy@linux.ibm.com>,
+	<mpe@ellerman.id.au>, <npiggin@gmail.com>, <chleroy@kernel.org>,
+	<tglx@kernel.org>, <mingo@redhat.com>, <bp@alien8.de>,
+	<dave.hansen@linux.intel.com>, <hpa@zytor.com>, <akpm@linux-foundation.org>,
+	<baoquan.he@linux.dev>, <pasha.tatashin@soleen.com>, <pratyush@kernel.org>,
+	<ruirui.yang@linux.dev>, <kees@kernel.org>, <thuth@redhat.com>,
+	<gshan@redhat.com>, <jic23@kernel.org>, <james.morse@arm.com>,
+	<ardb@kernel.org>, <leitao@debian.org>, <yeoreum.yun@arm.com>,
+	<sourabhjain@linux.ibm.com>, <coxu@redhat.com>, <tangyouling@kylinos.cn>,
+	<hbathini@linux.ibm.com>, <adityag@linux.ibm.com>,
+	<ionut.nechita@windriver.com>, <liaoyuanhong@vivo.com>, <seanjc@google.com>,
+	<fuqiang.wang@easystack.cn>, <makb@juniper.net>, <piliu@redhat.com>,
+	<ebiggers@kernel.org>, <jbouron@amazon.com>, <mclapinski@google.com>,
+	<me@linux.beauty>, <graf@amazon.com>, <bgwin@google.com>, <robh@kernel.org>,
+	<takahiro.akashi@linaro.org>, <palmer@rivosinc.com>, <x86@kernel.org>,
+	<linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
+	<loongarch@lists.linux.dev>, <linuxppc-dev@lists.ozlabs.org>,
+	<kexec@lists.infradead.org>, <linux-fsdevel@vger.kernel.org>,
+	<linux-mm@kvack.org>
 References: <20260826092541.3905933-1-ruanjinjie@huawei.com>
- <20260826092541.3905933-16-ruanjinjie@huawei.com>
-Date: Tue, 01 Sep 2026 23:14:00 +0300
-Message-Id: <178829364021.3691424.12328056849597833403.b4-review@b4>
-X-Mailer: b4 0.17-dev
+ <20260826092541.3905933-2-ruanjinjie@huawei.com>
+ <178829364020.3691424.12323275610442178748.b4-review@b4>
+From: Jinjie Ruan <ruanjinjie@huawei.com>
+In-Reply-To: <178829364020.3691424.12323275610442178748.b4-review@b4>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-Originating-IP: [10.67.109.254]
+X-ClientProxiedBy: kwepems500002.china.huawei.com (7.221.188.17) To
+ dggpemf500011.china.huawei.com (7.185.36.131)
 
-Hi,
 
-> Set CRASH_MAX_MEMORY_RANGES to 0 when MEMORY_HOTPLUG is disabled, then
-> remove the now unnecessary IS_ENABLED(CONFIG_MEMORY_HOTPLUG) checks in
-> powerpc and x86 arch_crash_get_elfcorehdr_size().
+
+在 2026/9/2 4:14, Mike Rapoport 写道:
+> Hi,
 > 
-> No functional change intended.
+>> The CMA pages allocated for a kexec segment are released using the
+>> segment's memsz to calculate the number of pages. However, some
+>> architecture loaders modify the segment's memsz after allocation
+>> (e.g. arm64 subtracts text_offset), causing the release function to
+>> free fewer pages than were originally allocated, leaking the remaining
+>> CMA pages.
+>>
+>> Add a per-segment `segment_cma_pages` array to store the number of
+>> pages actually allocated from CMA. Populate it during
+>> kexec_add_buffer() using the aligned memsz, and use it in
+>> kimage_free_cma() to accurately release all allocated pages.
+>>
+>> This avoids relying on the potentially modified segment->memsz and
+>> prevents silent CMA memory leaks.
+>>
+>> Cc: Andrew Morton <akpm@linux-foundation.org>
+>> Cc: Baoquan He <baoquan.he@linux.dev>
+>> Cc: Mike Rapoport <rppt@kernel.org>
+>> Cc: Pasha Tatashin <pasha.tatashin@soleen.com>
+>> Cc: Pratyush Yadav <pratyush@kernel.org>
+>> Cc: Brian Mak <makb@juniper.net>
+>> Cc: Pingfan Liu <piliu@redhat.com>
+>> Cc: Sourabh Jain <sourabhjain@linux.ibm.com>
+>> Cc: Justinien Bouron <jbouron@amazon.com>
+>> Cc: Li Chen <me@linux.beauty>
+>> Cc: stable@vger.kernel.org
+>> Link: https://sashiko.dev/#/patchset/20260729031235.2840255-1-ruanjinjie%40huawei.com
+>> Fixes: 07d24902977e ("kexec: enable CMA based contiguous allocation")
+>> Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
+>>
+>> diff --git a/include/linux/kexec.h b/include/linux/kexec.h
+>> index 0af8ae4fdd087..83c296c0eb6cc 100644
+>> --- a/include/linux/kexec.h
+>> +++ b/include/linux/kexec.h
+>> @@ -349,6 +349,7 @@ struct kimage {
+>>  	unsigned long nr_segments;
+>>  	struct kexec_segment segment[KEXEC_SEGMENT_MAX];
+>>  	struct page *segment_cma[KEXEC_SEGMENT_MAX];
+>> +	unsigned int segment_cma_pages[KEXEC_SEGMENT_MAX];
 > 
-> Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
->
-> diff --git a/arch/powerpc/kexec/crash.c b/arch/powerpc/kexec/crash.c
-> index fc0105c7af4c3..c47e3f867ea1f 100644
-> --- a/arch/powerpc/kexec/crash.c
-> +++ b/arch/powerpc/kexec/crash.c
-> @@ -474,9 +474,7 @@ unsigned int arch_crash_get_elfcorehdr_size(void)
->  	unsigned long phdr_cnt;
->  
->  	/* A program header for possible CPUs + vmcoreinfo */
-> -	phdr_cnt = num_possible_cpus() + 1;
-> -	if (IS_ENABLED(CONFIG_MEMORY_HOTPLUG))
-> -		phdr_cnt += CONFIG_CRASH_MAX_MEMORY_RANGES;
-> +	phdr_cnt = num_possible_cpus() + 1 + CONFIG_CRASH_MAX_MEMORY_RANGES;
->  
->  	return elf64_phdr_size(phdr_cnt);
->  }
-> diff --git a/arch/x86/kernel/crash.c b/arch/x86/kernel/crash.c
-> index 99eb8583d9321..116410ac90fb4 100644
-> --- a/arch/x86/kernel/crash.c
-> +++ b/arch/x86/kernel/crash.c
-> @@ -407,9 +407,7 @@ unsigned int arch_crash_get_elfcorehdr_size(void)
->  	unsigned int sz;
->  
->  	/* kernel_map, VMCOREINFO and maximum CPUs */
-> -	sz = 2 + num_possible_cpus();
-> -	if (IS_ENABLED(CONFIG_MEMORY_HOTPLUG))
-> -		sz += CONFIG_CRASH_MAX_MEMORY_RANGES;
-> +	sz = 2 + num_possible_cpus() + CONFIG_CRASH_MAX_MEMORY_RANGES;
->  	sz *= sizeof(Elf64_Phdr);
->  	return sz;
->  }
-> diff --git a/kernel/Kconfig.kexec b/kernel/Kconfig.kexec
-> index a97ed9605602f..e6251dfe451a8 100644
-> --- a/kernel/Kconfig.kexec
-> +++ b/kernel/Kconfig.kexec
-> @@ -160,7 +160,8 @@ config CRASH_HOTPLUG
->  
->  config CRASH_MAX_MEMORY_RANGES
->  	int "Specify the maximum number of memory regions for the elfcorehdr"
-> -	default 8192
-> +	default 8192 if MEMORY_HOTPLUG
-> +	default 0 if !MEMORY_HOTPLUG
+> Can we universally use unsigned long for number of pages?
 
-This only sets the default, but a user can change the value explicitly.
+Hi Mike,
 
--- 
-Sincerely yours,
-Mike.
+unsigned int is used here because the second parameter of
+arch_kexec_pre_free_pages is unsigned int.
+
+static inline void arch_kexec_pre_free_pages(void *vaddr, unsigned int
+pages) { }
+
+> 
+>>  
+>>  	struct list_head control_pages;
+>>  	struct list_head dest_pages;
+>> diff --git a/kernel/kexec_core.c b/kernel/kexec_core.c
+>> index dc770b9a6d053..611b15bb1369e 100644
+>> --- a/kernel/kexec_core.c
+>> +++ b/kernel/kexec_core.c
+>> @@ -560,7 +560,7 @@ static void kimage_free_cma(struct kimage *image)
+>>  
+>>  	for (i = 0; i < image->nr_segments; i++) {
+>>  		struct page *cma = image->segment_cma[i];
+>> -		u32 nr_pages = image->segment[i].memsz >> PAGE_SHIFT;
+>> +		unsigned int nr_pages = image->segment_cma_pages[i];
+>>  
+>>  		if (!cma)
+>>  			continue;
+>> @@ -568,6 +568,7 @@ static void kimage_free_cma(struct kimage *image)
+>>  		arch_kexec_pre_free_pages(page_address(cma), nr_pages);
+>>  		dma_release_from_contiguous(NULL, cma, nr_pages);
+>>  		image->segment_cma[i] = NULL;
+>> +		image->segment_cma_pages[i] = 0;
+>>  	}
+>>  
+>>  }
+>> diff --git a/kernel/kexec_file.c b/kernel/kexec_file.c
+>> index 59fb9d71e9d86..bfae3fee7f2f9 100644
+>> --- a/kernel/kexec_file.c
+>> +++ b/kernel/kexec_file.c
+>> @@ -670,7 +670,7 @@ static int kexec_walk_resources(struct kexec_buf *kbuf,
+>>  
+>>  static int kexec_alloc_contig(struct kexec_buf *kbuf)
+>>  {
+>> -	size_t nr_pages = kbuf->memsz >> PAGE_SHIFT;
+>> +	size_t nr_pages = PFN_DOWN(kbuf->memsz);
+>>  	unsigned long mem;
+>>  	struct page *p;
+>>  
+>> @@ -756,6 +756,8 @@ int kexec_locate_mem_hole(struct kexec_buf *kbuf)
+>>   */
+>>  int kexec_add_buffer(struct kexec_buf *kbuf)
+>>  {
+>> +	unsigned long nr_segments = kbuf->image->nr_segments;
+>> +	size_t nr_pages;
+>>  	struct kexec_segment *ksegment;
+>>  	int ret;
+>>  
+>> @@ -763,7 +765,7 @@ int kexec_add_buffer(struct kexec_buf *kbuf)
+>>  	if (!kbuf->image->file_mode)
+>>  		return -EINVAL;
+>>  
+>> -	if (kbuf->image->nr_segments >= KEXEC_SEGMENT_MAX)
+>> +	if (nr_segments >= KEXEC_SEGMENT_MAX)
+>>  		return -EINVAL;
+>>  
+>>  	/*
+>> @@ -789,12 +791,18 @@ int kexec_add_buffer(struct kexec_buf *kbuf)
+>>  		return ret;
+>>  
+>>  	/* Found a suitable memory range */
+>> -	ksegment = &kbuf->image->segment[kbuf->image->nr_segments];
+>> +	ksegment = &kbuf->image->segment[nr_segments];
+>>  	ksegment->kbuf = kbuf->buffer;
+>>  	ksegment->bufsz = kbuf->bufsz;
+>>  	ksegment->mem = kbuf->mem;
+>>  	ksegment->memsz = kbuf->memsz;
+>> -	kbuf->image->segment_cma[kbuf->image->nr_segments] = kbuf->cma;
+>> +	kbuf->image->segment_cma[nr_segments] = kbuf->cma;
+>> +	if (kbuf->cma) {
+>> +		nr_pages = (unsigned int)(PFN_DOWN(kbuf->memsz));
+>> +		kbuf->image->segment_cma_pages[nr_segments] = nr_pages;
+> 		kbuf->image->segment_cma_pages[nr_segments] = nr_pages;
+>> +	} else {
+>> +		kbuf->image->segment_cma_pages[nr_segments] = 0;
+>> +	}
+> 
+> I suggest to rename nr_pages to nr_cma_pages, initialize it to 0 at
+> declaration time and make this
+
+I agree with this.
+
+> 
+> 	if (kbuf->cma)
+> 		nr_cma_pages = PFN_DOWN(kbuf->memsz);
+> 	kbuf->image->segment_cma_pages[nr_segments] = nr_cma_pages;
+> 
 
 
