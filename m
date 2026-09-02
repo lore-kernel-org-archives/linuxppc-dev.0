@@ -1,53 +1,131 @@
-Return-Path: <linuxppc-dev+bounces-26425-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26426-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8C178C624D5
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Sep 2026 01:19:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E18D9C61DD6
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Sep 2026 01:44:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hZPz03kVqz2x9g;
-	Wed, 02 Sep 2026 11:19:40 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.227
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788311980;
-	cv=none; b=f/2Y6b3nTGIkVjTYD8jGjft6J4Ilhz4/XKUa+1U56pCyJ8syxaNnWNXRfa35HEgZ5L2UNovwb6VLx3LUZUdn3UJwYn4a29+WV2ixf/O7qzcgOkzEGJnHVzEnwZ+S2NLHWKgTJyQgeT3kPoXKygSmB1TzR8kiFf1QXYUV/W+EQ4hf8TY4aNLQbc0VO6Ff3YUCstVhG0PqQjuoI9WVWyDIeWOXphAAjOM39dYeidJ8oPK8jg5SNTbZ/xhWJ1EyX5YO9ypob7oXENbTvQZ+ynfsS2A5lF4+SmRBulsX9lPeEX6NIeVvLjgNkoTSnFZmMv1/1nAbqkuIcTGtHNBH7ciPgw==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788311980; c=relaxed/relaxed;
-	bh=t9UK13JKhSsPM/Vc9steoJSl+OnutIzRnlZukeamK+o=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=fJCBly6R0bRks+nL3Sr+H9Int7NOs3b78rVY/lfVItR6BxEv1jWsjf3ahP+1XIg22LbiXYa0i9IX3WX1FrTUkuadqUsQ1QW+pL2YDZdPu1Mk0BsGHEK4anUfs+TUF7nS0+1aeqWV1XKFScqnz/Mqhy7fZbDyqOeXPkpWdMJhg5lXxiAK3PXvw1BQ1nO9f6z7IVoUwN8cONqeuoyOsxkDhyYAy0FbfRAb/CIiqX/d/qIVYJNoBytjy9sAdpjA24AykeRmcIS+PBKUj7GBRxgRpfS3xRqyph80H0VS7HR+yvmj41G4cu1MD36PF2hj3QlnmUfRnqN4PnoV74Ra2c7dsA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=JSc/QrUE; dkim-atps=neutral; spf=pass (client-ip=113.46.200.227; helo=canpmsgout12.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hZQW26XwSz2xLG;
+	Wed, 02 Sep 2026 11:43:58 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c20f::7" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788313438;
+	cv=pass; b=jEePe30ehWZgOUJxeoqVXVw95/oybrM76EoTirkkgFXz+8Pcoq3gmUBFT3N1z4oDrZQzSLZk89bAVt7bBNmddDFTTWV/20VZc2TLPnukNSI+mQ+1dcL9f/btXWeQAwNmKGaVSuGegjZeznDNybnSzoDmKETIr0jz16Ilo3KmhsCk3x1M0X5Huov+RxJTm1y5ndCpGSiM2c42m6P3bKz9RcNHBRLk6ic0BCgSil07q4JWkmie3zD3WDzf9N2jbQE4Bx79nzYym3sPq+yI7Tk8iVAad4WC6FVOEemiYliS4ejaeRU2NwaUaYLXKp03/r7iKBetZQB+/d4dGKW8H8J4BQ==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1788313438; c=relaxed/relaxed;
+	bh=AQaLT2zZCFDWN2vwwfUKQXLUXtpMPHPvIGpOsySFKns=;
+	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=aGmaKfOsITVQFtPOzXTiJpaHV7sYn+z2kdD2mXry571bGsQZmGmvlU1+cb3wdScADfZtm/73eQ20NUjo0q7KhfVhPJ87HmVHOaLxUfWlGoU+btcPepbznKXureJmwjUV9mJHRLbH4/B5CFUAiXnM/y1vVi5xHzbWGj40fh4JpDEBlYDzl2HW9YSQABa0nsGGpThQxjEwAhMt9nOROf3bH8r0cCTiciGqBnxI1q6iaTGt8hfS5OTTuNbcMk5p3LQcEShVtqO01ec2OYIdduHqpG17RchYL76uefPPctGR5aALJ9J/BkUEL2bQVLrjFzwZj7tby4bc7u9HkqNS94iyXg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=Dcz3EJk/; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c20f::7; helo=osppr02cu001.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=JSc/QrUE;
+	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=Dcz3EJk/;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.227; helo=canpmsgout12.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
-Received: from canpmsgout12.his.huawei.com (canpmsgout12.his.huawei.com [113.46.200.227])
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c20f::7; helo=osppr02cu001.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org)
+Received: from OSPPR02CU001.outbound.protection.outlook.com (mail-norwayeastazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c20f::7])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hZPyy3Wvzz2xlv
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Sep 2026 11:19:38 +1000 (AEST)
-dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=t9UK13JKhSsPM/Vc9steoJSl+OnutIzRnlZukeamK+o=;
-	b=JSc/QrUEAnbPE7s6EK6aHXX4FMrI/ak+7N46GxWAYjo+hv4+e8IRFqw3R57vf10ZXvwgmTnw1
-	5LsKKvi+A3v/zJR4bWOVaYI3bbjz5k4AHVvkI67n+bm/COW12+QwJBDOanQFb2mbBv/tq3BctvX
-	qaDBA0HnMSM+ut7AmVDhzas=
-Received: from mail.maildlp.com (unknown [172.19.162.92])
-	by canpmsgout12.his.huawei.com (SkyGuard) with ESMTPS id 4hZPjt2PDTznTVd;
-	Wed,  2 Sep 2026 09:08:18 +0800 (CST)
-Received: from dggpemf500011.china.huawei.com (unknown [7.185.36.131])
-	by mail.maildlp.com (Postfix) with ESMTPS id B4C9C40565;
-	Wed,  2 Sep 2026 09:19:31 +0800 (CST)
-Received: from [10.67.109.254] (10.67.109.254) by
- dggpemf500011.china.huawei.com (7.185.36.131) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.11; Wed, 2 Sep 2026 09:19:29 +0800
-Message-ID: <96ba8924-b857-4dbc-9161-4c464901f974@huawei.com>
-Date: Wed, 2 Sep 2026 09:19:28 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hZQW10xR8z2xBK
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Sep 2026 11:43:56 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=qBZqaWaSU3ryvaPTCUQP435oqYWDrq5vubPZDA3TVjkzRlfMRXiKrcdUugiLcZ7lQVRu3T+Rh61/5glm2P+dM9D4zshx14GPoNkjS4I+qR1qQn/qwvk+GZ3UsvaKP0WOKxR1dBwVVR3n7h7BLE9Y+JFzJdDp+RyC5haF90jWT96XMLeqwLD2nqucNM8AOfCLLvhs2aw7PFps7a2dPciRtrN5VYaLlijuuw3XhqD9SgjbNage9aytSqz8sjI0Qi/mxVelBTF2uxzagZEsGj0Y9qHNyu3nhXYIOB7X/nw+YCe9hOdZXTa/A8VD8/N5rtpTbB2hIR0Or6xETnJNBZB/mQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=AQaLT2zZCFDWN2vwwfUKQXLUXtpMPHPvIGpOsySFKns=;
+ b=UpIKFqJWVnpOA/HKdR3opTuH0N00Ea2YgcWmakk2eUpw1/wVIQQRXrrz6YwLhrM65hWnPD5D56rpFcU8Eed2mX9GOvhWw31AH0Lh9+p/MyGmcfgrSOuFy3OSsngre7BbPrmSBpE4UuXRcn8M2JniKIH2PNXaP8Opu4h2MwZmsxqHY1AtPSlFC3CfW6388hWekXQQ8HNykIRi0XEiIXbkkQdXz0GdJmuieDx2b+YQozRrVKAvprhuSUBEinyrZGPcWBNtVkJ7toUVAVhovbXJ08g2y7z//tcTWBZ+mZ4rjW4gg9tglsoR4Tui1V+7E05OXsDv2l55xJhIC5U7+XDGiQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=AQaLT2zZCFDWN2vwwfUKQXLUXtpMPHPvIGpOsySFKns=;
+ b=Dcz3EJk/tiXpP/2aZA0SHoYEQ+M41gd0u1mufTLOtioSUgfU1q4YNZhjugHa4LYKWN7mkd4w1MQOKeRh/sD6q7dU1j1BgwfZyS96OYv29z3adbZSsls8vdfi8GLlagXj+bgz785KAJ5iUwnMh0SMNmD9WzY6n4zTHXzLzsQhcVhD0jsaScuiWNKkNS6ah/AtPLXtVSusEByoF2ZQSiwiU5JSKJGbOvTNu/eqNZNWCXT4IZCtcgUdw0yhNeEW0/uiN2JFano1yLCiHPrjmpa6EMFX2p3Gcl9pg+C+bfx4qXnFkHmZFTCVpx+E8x4r1uJLYxlWlJl8gMwXCIGb9PBHxQ==
+Received: from GV2PR04MB11739.eurprd04.prod.outlook.com
+ (2603:10a6:150:2fc::18) by GVXPR04MB10202.eurprd04.prod.outlook.com
+ (2603:10a6:150:1c2::20) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.360.13; Wed, 2 Sep
+ 2026 01:43:30 +0000
+Received: from GV2PR04MB11739.eurprd04.prod.outlook.com
+ ([fe80::71c2:937b:d466:174a]) by GV2PR04MB11739.eurprd04.prod.outlook.com
+ ([fe80::71c2:937b:d466:174a%6]) with mapi id 15.21.0360.008; Wed, 2 Sep 2026
+ 01:43:30 +0000
+From: Wei Fang <wei.fang@nxp.com>
+To: Jakub Kicinski <kuba@kernel.org>, "Wei Fang (OSS)" <wei.fang@oss.nxp.com>
+CC: Clark Wang <xiaoning.wang@nxp.com>, "andrew@lunn.ch" <andrew@lunn.ch>,
+	"olteanv@gmail.com" <olteanv@gmail.com>, "andrew+netdev@lunn.ch"
+	<andrew+netdev@lunn.ch>, "davem@davemloft.net" <davem@davemloft.net>,
+	"edumazet@google.com" <edumazet@google.com>, "pabeni@redhat.com"
+	<pabeni@redhat.com>, "horms@kernel.org" <horms@kernel.org>,
+	"richardcochran@gmail.com" <richardcochran@gmail.com>, "imx@lists.linux.dev"
+	<imx@lists.linux.dev>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+	"linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Subject: RE: [PATCH v3 net-next 0/8] net: dsa: netc: add PTP support for NETC
+ switch
+Thread-Topic: [PATCH v3 net-next 0/8] net: dsa: netc: add PTP support for NETC
+ switch
+Thread-Index: AQHdOSFyxDnezHhky0Oua7JIEybwnLa51ZsAgACwmjA=
+Date: Wed, 2 Sep 2026 01:43:30 +0000
+Message-ID:
+ <GV2PR04MB11739E3BACC0BAA6DE3E1461D88B72@GV2PR04MB11739.eurprd04.prod.outlook.com>
+References: <20260831082335.1184605-1-wei.fang@oss.nxp.com>
+ <20260901080950.63e28bab@kernel.org>
+In-Reply-To: <20260901080950.63e28bab@kernel.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+msip_labels:
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nxp.com;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: GV2PR04MB11739:EE_|GVXPR04MB10202:EE_
+x-ms-office365-filtering-correlation-id: 9a6a347b-0636-4312-540f-08df0893975e
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam:
+ BCL:0;ARA:13230040|19092799006|376014|7416014|23010399003|1800799024|366016|38070700021|10067099003|11063799006|4143699003|18002099003|22082099003|56012099006;
+x-microsoft-antispam-message-info:
+ TN+VY7AUOFwSsVzrlhJ2EPzi9Tpm1SAJiVfIILb9abEzyBZI+UL3GkAG3eaKOW5C5D5gKcI06f7F9wk86O7z4NknUZCjlrT2sIF3JP9/KiiVRpwEd/YKz5Pub2G83rqsLso/9iad79KpEuwu/tfHhhR1iKk0UBSqVmFgMDBTyq7CHtS7oHExr4PyFksoJ2eOji8Siv+p1cY2gi1++rlEgiRb0oDHt27xaldh5EnHdxaafm6Kh809mAv4+y0bdJ8H6KYLKAwtEtkWSVIFC9BDt2lRC3eo2gOiKQKGPwZNa8gfGFli/R5dzm6tE9htVDCvWY8g31rPijAvOjn44EZE0Ivpxc5y08RPtEb7W7QY6NfvXCdVNMBCPfd28M2LPoWxujqrkFrMQxuDRO1cZwUEKFvXVyHTNBlU02Tbr6IFMpAZE5LwganEfEozA0XAsKIV/d4qOq7MdLW0GbP9AZV14pxzdMowphZz0ioSiufL3h4KZ7xj835K9IqNpzVKekMb6k5sC+cVXXbx+WYDEQyIuR5jbpty+229XHP4cYT5xcq6xtr77BUCGJkpssIsvQYH5QGjkzwh77RUEXF2TXwGpbo0HV2yg/LcO3gM9kgZya/3iHJvcBUscr9lL+XqSgk2iO8PzeX5Mp3Q+asEYQ2oNl0g4S88adWiJTkfeaFygvhL+MuZ+E3jLgBL0kn14JhXbP8j4a9gE5uO+gJd4BDhPMIJcnH/5m2smX03OeWa4zA=
+x-forefront-antispam-report:
+ CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GV2PR04MB11739.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(19092799006)(376014)(7416014)(23010399003)(1800799024)(366016)(38070700021)(10067099003)(11063799006)(4143699003)(18002099003)(22082099003)(56012099006);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:
+ =?us-ascii?Q?4cVFDfVSYojDMiejlpGEjHh1GMSwPiC1BpFYx5wvyN/h+KO0cVq1uUUP2ICF?=
+ =?us-ascii?Q?Qhc4jgve2e2k+FKYe9O5jCjt3yq8aBMgn7U4Zisw2a0uj4w7GAtov+l/IjQY?=
+ =?us-ascii?Q?5va7ORJ6a3gxPkIwqx/f/hDqxFpoH/woYWiIQVDlbXVvumzL2KDtCgS+pQlo?=
+ =?us-ascii?Q?giYzMIT9d6Qscla7qqwBuZuC6c31CyfQmcQhUtHPSO9VC8KtW7XT5sHtHWWZ?=
+ =?us-ascii?Q?LFgfstBpBSgU6nWx9F50h37kMb0OPylF9mJ/XlLBBun9GJ+oFaIBPwnfz1RQ?=
+ =?us-ascii?Q?NTeZP+8TPTXJiojT38lAi1YQPQOxe769mH21PSYIOg1ggg1wtKrTVheChOpe?=
+ =?us-ascii?Q?NQRWIdXxJvZ91Paun41PapA0v40ayVuZkJGCfY4uEIH0bQjTUwoDwTsr9aIp?=
+ =?us-ascii?Q?SGlXAcFKHd3ZsEniys8kC65ntAZKt52CtuBGYrQxzcxQZ94fgsvTvN1OveBX?=
+ =?us-ascii?Q?ky/mYBrgULsUnIUVfHnmYXf1/B5cnUiTF1AoWEFQQ0B7ZPTL8xzaGnpEsB3K?=
+ =?us-ascii?Q?Rl8gQmgLPQLH/0BEV1PFDYKCY4q5gvoikisbCtIQ2JlsqzAIaHec7l1+JQFW?=
+ =?us-ascii?Q?X1tSY1ijcRogOuQDHLa/d9bo/qL6/Ia9WfyEgm8hUxy02kl8oj80m6U2r9gq?=
+ =?us-ascii?Q?18LLTMLGZz5+JRsg/6tpDv7kv8fZJ6VioaMnAo0cxmKIPsxDkuyUiJdQ6Vq5?=
+ =?us-ascii?Q?s0Os8Mw/pBEtuxdSnm+NN+7f0LJYrSylris8fMZr3EnG6osZNOfSolWeOPd/?=
+ =?us-ascii?Q?0rjzhcd+Ks9vcYK/y0Sf1cZ9Efq57cUAlF7idp5gOXJAlAn2R2htHbVRc6p5?=
+ =?us-ascii?Q?IcjGIsM6nQdiE3AZ5WhXWEv+MDJTBfQV4t42Ov0O5RHp2ztPLjRnFZyCbMEO?=
+ =?us-ascii?Q?uESZh8ykQWCjsW1fw4XXfzA4poBty7cMJZNaiuafePnfo5EsQGK9F/BaqAqY?=
+ =?us-ascii?Q?+y/3AfW2ZDhdnE0mr+r9oAdnGeumc5WmQX/WeXTxNe28y/W0fF6gMY+4e96a?=
+ =?us-ascii?Q?LYzxMAPS+NI65rEMb+eDDPzclZj/d1lx3t8TVkwwYPXD87QoCbtpqFVN2s9P?=
+ =?us-ascii?Q?iLLGAaTii8pdZ5Y5T9n6sp5uxB8PifsIrBSSF7XmXAA4plR1LpQ/CBHf5bSv?=
+ =?us-ascii?Q?FXXg83Y7QXTuNXiiLdJg4IPjXmQ8riu09z9DnQcYh0Dz7Mo1zniFLf0d+NuS?=
+ =?us-ascii?Q?ryhvVkhW+08Lky9/89Annx1GwLkySbR8H9pRTB36Z4i/2JyKv26PQh/bo1yS?=
+ =?us-ascii?Q?oiPvkPgKGMyq1OI2qU8NfLQ8d0I7WiyLY2v8TnG7X6et966V2VZ6a4CYijYQ?=
+ =?us-ascii?Q?ZnWHJQXDi4pnCnl/HbdvYTqBZtwhR9yqMn55i8hAjYbjMRkVy4gdbeH2sRH8?=
+ =?us-ascii?Q?RzR2gSjTMD7s4XsjtesOGSCt0uOaDP0AkfzGqy4CCcrnxXKbT6qgRJpCuYqN?=
+ =?us-ascii?Q?1c0HsEWyx+W3jOHd3p+/n3en5/r3j/9fN9PZgfiWPQwEVFy0MxGCvFGBIvN9?=
+ =?us-ascii?Q?qxA9xSk03Q3b7Z5G46S6YlwlF/GK4L/btTTUZJRvWJgPsa8qR2Lg92jIKKHT?=
+ =?us-ascii?Q?MYHms0nPWLpZYU+wpLpxJ7F+7yld2xrU/a3xf94G7Tg3w0z/bAKb4KdBRG19?=
+ =?us-ascii?Q?BeHM58ZbbsIX1nlORqYgyzNnA8iUp3Nqa70Pm1P2D6unyxw3E5W+X5H7Ulpq?=
+ =?us-ascii?Q?mLlVQbuTIsHDHc8fSbbK7S/gXsX+eKliJBNX9xeIsMM5ZljR?=
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -61,99 +139,30 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 15/17] crash: Simplify CRASH_MAX_MEMORY_RANGES handling
-To: Mike Rapoport <rppt@kernel.org>
-CC: <catalin.marinas@arm.com>, <will@kernel.org>, <mark.rutland@arm.com>,
-	<chenhuacai@kernel.org>, <kernel@xen0n.name>, <maddy@linux.ibm.com>,
-	<mpe@ellerman.id.au>, <npiggin@gmail.com>, <chleroy@kernel.org>,
-	<tglx@kernel.org>, <mingo@redhat.com>, <bp@alien8.de>,
-	<dave.hansen@linux.intel.com>, <hpa@zytor.com>, <akpm@linux-foundation.org>,
-	<baoquan.he@linux.dev>, <pasha.tatashin@soleen.com>, <pratyush@kernel.org>,
-	<ruirui.yang@linux.dev>, <kees@kernel.org>, <thuth@redhat.com>,
-	<gshan@redhat.com>, <jic23@kernel.org>, <james.morse@arm.com>,
-	<ardb@kernel.org>, <leitao@debian.org>, <yeoreum.yun@arm.com>,
-	<sourabhjain@linux.ibm.com>, <coxu@redhat.com>, <tangyouling@kylinos.cn>,
-	<hbathini@linux.ibm.com>, <adityag@linux.ibm.com>,
-	<ionut.nechita@windriver.com>, <liaoyuanhong@vivo.com>, <seanjc@google.com>,
-	<fuqiang.wang@easystack.cn>, <makb@juniper.net>, <piliu@redhat.com>,
-	<ebiggers@kernel.org>, <jbouron@amazon.com>, <mclapinski@google.com>,
-	<me@linux.beauty>, <graf@amazon.com>, <bgwin@google.com>, <robh@kernel.org>,
-	<takahiro.akashi@linaro.org>, <palmer@rivosinc.com>, <x86@kernel.org>,
-	<linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
-	<loongarch@lists.linux.dev>, <linuxppc-dev@lists.ozlabs.org>,
-	<kexec@lists.infradead.org>, <linux-fsdevel@vger.kernel.org>,
-	<linux-mm@kvack.org>
-References: <20260826092541.3905933-1-ruanjinjie@huawei.com>
- <20260826092541.3905933-16-ruanjinjie@huawei.com>
- <178829364021.3691424.12328056849597833403.b4-review@b4>
-From: Jinjie Ruan <ruanjinjie@huawei.com>
-In-Reply-To: <178829364021.3691424.12328056849597833403.b4-review@b4>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-Originating-IP: [10.67.109.254]
-X-ClientProxiedBy: kwepems500002.china.huawei.com (7.221.188.17) To
- dggpemf500011.china.huawei.com (7.185.36.131)
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: GV2PR04MB11739.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 9a6a347b-0636-4312-540f-08df0893975e
+X-MS-Exchange-CrossTenant-originalarrivaltime: 02 Sep 2026 01:43:30.2036
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: VurXMC6kxp/XhKIX1xxKhMbKKrA98VGYIITlmDtN2ZQSRbUe3ZdlYWUgDRSXJeYdufHW/3BAjJS2ZcpE5ZJbeg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: GVXPR04MB10202
 
+> On Mon, 31 Aug 2026 16:23:27 +0800 wei.fang@oss.nxp.com wrote:
+> > Subject: [PATCH v3 net-next 0/8] net: dsa: netc: add PTP support for NE=
+TC
+> switch
+>=20
+> Please be advised that the limit of 15 patches applies across
+> the series. You posted 2 large series to net-next at once.
+>=20
+> See "Limit patches outstanding on mailing list" in the docs.
+> If this happens again we'll be forced to start discarding your patches.
 
-
-在 2026/9/2 4:14, Mike Rapoport 写道:
-> Hi,
-> 
->> Set CRASH_MAX_MEMORY_RANGES to 0 when MEMORY_HOTPLUG is disabled, then
->> remove the now unnecessary IS_ENABLED(CONFIG_MEMORY_HOTPLUG) checks in
->> powerpc and x86 arch_crash_get_elfcorehdr_size().
->>
->> No functional change intended.
->>
->> Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
->>
->> diff --git a/arch/powerpc/kexec/crash.c b/arch/powerpc/kexec/crash.c
->> index fc0105c7af4c3..c47e3f867ea1f 100644
->> --- a/arch/powerpc/kexec/crash.c
->> +++ b/arch/powerpc/kexec/crash.c
->> @@ -474,9 +474,7 @@ unsigned int arch_crash_get_elfcorehdr_size(void)
->>  	unsigned long phdr_cnt;
->>  
->>  	/* A program header for possible CPUs + vmcoreinfo */
->> -	phdr_cnt = num_possible_cpus() + 1;
->> -	if (IS_ENABLED(CONFIG_MEMORY_HOTPLUG))
->> -		phdr_cnt += CONFIG_CRASH_MAX_MEMORY_RANGES;
->> +	phdr_cnt = num_possible_cpus() + 1 + CONFIG_CRASH_MAX_MEMORY_RANGES;
->>  
->>  	return elf64_phdr_size(phdr_cnt);
->>  }
->> diff --git a/arch/x86/kernel/crash.c b/arch/x86/kernel/crash.c
->> index 99eb8583d9321..116410ac90fb4 100644
->> --- a/arch/x86/kernel/crash.c
->> +++ b/arch/x86/kernel/crash.c
->> @@ -407,9 +407,7 @@ unsigned int arch_crash_get_elfcorehdr_size(void)
->>  	unsigned int sz;
->>  
->>  	/* kernel_map, VMCOREINFO and maximum CPUs */
->> -	sz = 2 + num_possible_cpus();
->> -	if (IS_ENABLED(CONFIG_MEMORY_HOTPLUG))
->> -		sz += CONFIG_CRASH_MAX_MEMORY_RANGES;
->> +	sz = 2 + num_possible_cpus() + CONFIG_CRASH_MAX_MEMORY_RANGES;
->>  	sz *= sizeof(Elf64_Phdr);
->>  	return sz;
->>  }
->> diff --git a/kernel/Kconfig.kexec b/kernel/Kconfig.kexec
->> index a97ed9605602f..e6251dfe451a8 100644
->> --- a/kernel/Kconfig.kexec
->> +++ b/kernel/Kconfig.kexec
->> @@ -160,7 +160,8 @@ config CRASH_HOTPLUG
->>  
->>  config CRASH_MAX_MEMORY_RANGES
->>  	int "Specify the maximum number of memory regions for the elfcorehdr"
->> -	default 8192
->> +	default 8192 if MEMORY_HOTPLUG
->> +	default 0 if !MEMORY_HOTPLUG
-> 
-> This only sets the default, but a user can change the value explicitly.
-
-You're right. Let me drop this patch for now. Thanks for the review!
-
-> 
+Oh, sorry, I was not aware of the rule has been updated. I will repost
+this series when the ENETC VF series is applied to net-next tree, thanks.
 
 
