@@ -1,53 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-26435-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26436-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 41590C624D0
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Sep 2026 10:01:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1C13EC61DD6
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Sep 2026 10:34:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hZdYC1gm6z2xlY;
-	Wed, 02 Sep 2026 20:01:35 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.227
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788343295;
-	cv=none; b=ASdxpw7gjnyn5vE7zH56uejwTJOs50FKxZCNcm99xIzAQEiB363HMPiFXfaajjeAB/HnmIecwHjcGENfxE4A+a3S9DDO9QJzhTomRQxDLLQKW3mpzqa04FWQPn1RVkmJIPEBH/qMMSL3NoJmRai+MvSj+acMf2Io6Kb6ZbhoGdADSt1JJxoMBwL7uiiSgwYBMN8lDt0GGLA+iNioAbWx9VghZQ/x9REpQIqdNGcb06a5mCyIxC4eCq7dY7WncNUywpiBMN0i0qQ8hwFtidFPPz68wNspkMvN/SsScXXFWZtI+PMa2bMSfkI8iym5JD05KG7iMw/XO7AFP9igXxNQvw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hZfHc0ZNWz2xlv;
+	Wed, 02 Sep 2026 20:34:52 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788345292;
+	cv=none; b=gGs9+FqEe4P0xpKDk45vFbP3dj7reBJqSzAj2+lUyfnWAA8NJET9xGDNCmKzta1OAS50sKoOq/LRmv5d6N+v4tVAv7bdtPAFXxOrFKyCfEbwNib/ldao4BY0/WNO67faAMvWSyjKzEwLA3YAHW5LOlKfXMs/ixh9xlXAgknv280MB9AjrHPvtRdsKQruveN1sWpv+dyepao/7F6izvAgO5t6GT6ZQ3xwF3QIdriOxeJEOJK/LYy1Y6rKjWB8lrMhaYkPCfZRryvvRfr6HU+8Q5cljo1IoK2dzGOQQiSFkVpo1LyOVYW5AVHBc58fNFC5Zc4+OqWN1/a3lQUEaw2++Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788343295; c=relaxed/relaxed;
-	bh=5muCGImxQEXCs9mgbU84wjK603R7oDB3KGXYhDYZoIc=;
-	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=KVgnzyhPx77/eMBXptHEqjdIcqs/Hv2+Kabpu6WyOQTqe3CpktwGpPhY2NFhkA9j+ekWq/71ijtDNvjXUxQR+oMzb7mSPy/dyglHrzToqQjKG+S7flbR4KyCMrsaaUblPDQ+qzXpAi6VkJygpIz77RI6eY0CpJ482x9DENWMNOo+o7vrxUGdgMflk/wyJ0wXfJcIkhMC3yu7DirPVQqoVdEY6TmSqiuEyduLkHlkqxALeT6YNVdw5MXeQBRb+OALltEJvf2bjLzf6XWC/germznM41Kk/kuDPDrK0xv/IwZy58nXOTQqfQXynvv6oHy0YTTyS7ix0bsRdL8dbtfTnA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=1OKXC1Wl; dkim-atps=neutral; spf=pass (client-ip=113.46.200.227; helo=canpmsgout12.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+	t=1788345292; c=relaxed/relaxed;
+	bh=MK28dQ5f53A24fyld3wbG3aqc9VcU43UIzUwKaic+Ts=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=PAOV3SHHFM9zpD0bmd7bOreicFlL/9OdiVifID0HmUmBHi7kibSVeKTNLzjYxp8jDyiMzH941nHrcr0sWodE/CooAGvA3Ip9M3O/ZI+78pG2+DgAlfvwImMDhAtxCiSCddTENSwu2mU0IYf9Bo/xYJBLOBxUJpvsWE3s4JwhkDgzeEPNBvO84DjDnBEt1Vgh4xmLZF6OSQwhb8yJ0+zOJAwx/5ZG2g0k/Dh0/yLULkTrRerj4WzCmHp+aOeIaTCKQ+CKSgqKWCTgHYz+uY30J573IobvVQ27gXLKtdwBAYUCWTIImREyFJeUSoQNUShTd8df9Gi61lUGQG322wKWlw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=PFpCr8hA; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=pratyush@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=1OKXC1Wl;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=PFpCr8hA;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.227; helo=canpmsgout12.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
-Received: from canpmsgout12.his.huawei.com (canpmsgout12.his.huawei.com [113.46.200.227])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=pratyush@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hZdY770yhz2xBK
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Sep 2026 20:01:28 +1000 (AEST)
-dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=5muCGImxQEXCs9mgbU84wjK603R7oDB3KGXYhDYZoIc=;
-	b=1OKXC1WlAcuXvATuYy9843J+ts23aqDRPtEBmymokcm2wcDFN7n+VLXs5YlFtuuOI17YRGOle
-	AE1kaDyBL8Psb6qsvqP6GD+2KaR9IZFlJSaA9VKKZKh4vJ8pLjxN4lSw5BvQVM6ddEVaTK1WC49
-	5AuTsqZ1V1GNz92YBNN1IQA=
-Received: from mail.maildlp.com (unknown [172.19.163.163])
-	by canpmsgout12.his.huawei.com (SkyGuard) with ESMTPS id 4hZdHw4T64znTwN;
-	Wed,  2 Sep 2026 17:50:04 +0800 (CST)
-Received: from dggpemf500011.china.huawei.com (unknown [7.185.36.131])
-	by mail.maildlp.com (Postfix) with ESMTPS id C74E54057A;
-	Wed,  2 Sep 2026 18:01:17 +0800 (CST)
-Received: from [10.67.109.254] (10.67.109.254) by
- dggpemf500011.china.huawei.com (7.185.36.131) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.11; Wed, 2 Sep 2026 18:01:15 +0800
-Message-ID: <d12302b0-f0b3-4df6-963c-bf25b6e720c7@huawei.com>
-Date: Wed, 2 Sep 2026 18:01:14 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hZfHb0Bs7z2xBK
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Sep 2026 20:34:50 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 05CCE600C8;
+	Wed,  2 Sep 2026 10:34:48 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7DEC31F000E9;
+	Wed,  2 Sep 2026 10:34:44 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1788345287;
+	bh=MK28dQ5f53A24fyld3wbG3aqc9VcU43UIzUwKaic+Ts=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date;
+	b=PFpCr8hASHzna++msY6KvlxeS6DrPD4/RHcCpalQJAkRCZ4yhqO43xVqeNQVkpLpI
+	 0nZP+hPaVPbQew8wieA7UJ8rcn2CYfceSAC4vOIbi5chacl0ivAErzJ0ZOyozwo3xk
+	 Tfi5l6KhXJdPajZ/WjMn0kYOl3207/H1O8Klw2HyK1DdGnVtCdnJNJKOvuEewKLYgO
+	 cvGeNXDtQkqwvm81J54oSMooJpsA/HCyE13C5IGVaXgHnLhr7CH8krUYzP700eLbSu
+	 Y0gMa9bP7yDLAFpPP+01rF7Z+R2xg944CSyEBR0RGNIHfYzaQu0zu0CNZnm9OKyX2r
+	 HSIeAI5YkeYrA==
+From: Pratyush Yadav <pratyush@kernel.org>
+To: Sourabh Jain <sourabhjain@linux.ibm.com>
+Cc: Pratyush Yadav <pratyush@kernel.org>,  linuxppc-dev@lists.ozlabs.org,
+  Aditya Gupta <adityag@linux.ibm.com>,  Alexander Graf <graf@amazon.com>,
+  Andrew Morton <akpm@linux-foundation.org>,  Baoquan He
+ <baoquan.he@linux.dev>,  "Christophe Leroy (CS GROUP)"
+ <chleroy@kernel.org>,  Hari Bathini <hbathini@linux.ibm.com>,  Madhavan
+ Srinivasan <maddy@linux.ibm.com>,  Mahesh Salgaonkar
+ <mahesh@linux.ibm.com>,  Michael Ellerman <mpe@ellerman.id.au>,  Mike
+ Rapoport <rppt@kernel.org>,  Nicholas Piggin <npiggin@gmail.com>,  Pasha
+ Tatashin <pasha.tatashin@soleen.com>,  "Ritesh Harjani (IBM)"
+ <ritesh.list@gmail.com>,  Shivang Upadhyay <shivangu@linux.ibm.com>,
+  Shrikanth Hegde <sshegde@linux.ibm.com>,  kexec@lists.infradead.org,
+  linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH 2/3] powerpc: add support for Kexec HandOver (KHO)
+In-Reply-To: <7bb84b8a-c394-4895-9e22-632dc506cbb6@linux.ibm.com> (Sourabh
+	Jain's message of "Sun, 23 Aug 2026 21:11:05 +0530")
+References: <20260821105609.983622-1-sourabhjain@linux.ibm.com>
+	<20260821105609.983622-3-sourabhjain@linux.ibm.com>
+	<2vxza4qfznyo.fsf@kernel.org>
+	<7bb84b8a-c394-4895-9e22-632dc506cbb6@linux.ibm.com>
+Date: Wed, 02 Sep 2026 12:34:42 +0200
+Message-ID: <2vxz5x0ox7p9.fsf@kernel.org>
+User-Agent: Gnus/5.13 (Gnus v5.13)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -61,98 +81,209 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 12/17] x86/crash: Use num_possible_cpus() for
- elfcorehdr size
-To: Sourabh Jain <sourabhjain@linux.ibm.com>, <catalin.marinas@arm.com>,
-	<will@kernel.org>, <mark.rutland@arm.com>, <chenhuacai@kernel.org>,
-	<kernel@xen0n.name>, <maddy@linux.ibm.com>, <mpe@ellerman.id.au>,
-	<npiggin@gmail.com>, <chleroy@kernel.org>, <tglx@kernel.org>,
-	<mingo@redhat.com>, <bp@alien8.de>, <dave.hansen@linux.intel.com>,
-	<hpa@zytor.com>, <akpm@linux-foundation.org>, <baoquan.he@linux.dev>,
-	<rppt@kernel.org>, <pasha.tatashin@soleen.com>, <pratyush@kernel.org>,
-	<ruirui.yang@linux.dev>, <kees@kernel.org>, <thuth@redhat.com>,
-	<gshan@redhat.com>, <jic23@kernel.org>, <james.morse@arm.com>,
-	<ardb@kernel.org>, <leitao@debian.org>, <yeoreum.yun@arm.com>,
-	<coxu@redhat.com>, <tangyouling@kylinos.cn>, <hbathini@linux.ibm.com>,
-	<adityag@linux.ibm.com>, <ionut.nechita@windriver.com>,
-	<liaoyuanhong@vivo.com>, <seanjc@google.com>, <fuqiang.wang@easystack.cn>,
-	<makb@juniper.net>, <piliu@redhat.com>, <ebiggers@kernel.org>,
-	<jbouron@amazon.com>, <mclapinski@google.com>, <me@linux.beauty>,
-	<graf@amazon.com>, <bgwin@google.com>, <robh@kernel.org>,
-	<takahiro.akashi@linaro.org>, <palmer@rivosinc.com>, <x86@kernel.org>,
-	<linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
-	<loongarch@lists.linux.dev>, <linuxppc-dev@lists.ozlabs.org>,
-	<kexec@lists.infradead.org>, <linux-fsdevel@vger.kernel.org>,
-	<linux-mm@kvack.org>
-References: <20260826092541.3905933-1-ruanjinjie@huawei.com>
- <20260826092541.3905933-13-ruanjinjie@huawei.com>
- <99b1121d-4277-4764-8c3a-b3f6d9a47ab0@linux.ibm.com>
-From: Jinjie Ruan <ruanjinjie@huawei.com>
-In-Reply-To: <99b1121d-4277-4764-8c3a-b3f6d9a47ab0@linux.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-Originating-IP: [10.67.109.254]
-X-ClientProxiedBy: kwepems200001.china.huawei.com (7.221.188.67) To
- dggpemf500011.china.huawei.com (7.185.36.131)
+Content-Type: text/plain
 
+On Sun, Aug 23 2026, Sourabh Jain wrote:
 
-
-在 2026/9/2 14:14, Sourabh Jain 写道:
-> Hello Jinjie,
-> 
-> This patch makes the below patch redundant..
-> https://lore.kernel.org/all/20260826073527.21487-2-
-> ionut.nechita@windriver.com/
-> 
-> I suggest dropping the first patch from the above series and including
-> the second patch from that series in this patch series with the updated
-> comment.
-
-Agreed. This approach makes sense to me.
-
-I will update it in v4.
-
-> 
-> - Sourabh Jain
-> 
-> 
-> On 26/08/26 14:55, Jinjie Ruan wrote:
->> Use num_possible_cpus() instead of CONFIG_NR_CPUS to calculate the
->> elfcorehdr buffer size, matching what crash_prepare_elf64_headers()
->> already uses for the actual header content.
+> On 21/08/26 17:26, Pratyush Yadav wrote:
+>> On Fri, Aug 21 2026, Sourabh Jain wrote:
 >>
->> This avoids over-allocation when the system has fewer possible CPUs
->> than the compile-time limit, and aligns x86 with PowerPC.
->>
->> Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
->> ---
->>   arch/x86/kernel/crash.c | 6 +++---
->>   1 file changed, 3 insertions(+), 3 deletions(-)
->>
->> diff --git a/arch/x86/kernel/crash.c b/arch/x86/kernel/crash.c
->> index a3bf786286d4..afe2aea19f47 100644
->> --- a/arch/x86/kernel/crash.c
->> +++ b/arch/x86/kernel/crash.c
->> @@ -369,9 +369,9 @@ int crash_load_segments(struct kimage *image)
->>        * maximum CPUs and maximum memory ranges.
->>        */
->>       if (IS_ENABLED(CONFIG_MEMORY_HOTPLUG))
->> -        pnum = 2 + CONFIG_NR_CPUS + CONFIG_CRASH_MAX_MEMORY_RANGES;
->> +        pnum = 2 + num_possible_cpus() + CONFIG_CRASH_MAX_MEMORY_RANGES;
->>       else
->> -        pnum += 2 + CONFIG_NR_CPUS;
->> +        pnum += 2 + num_possible_cpus();
->>         if (pnum < (unsigned long)PN_XNUM) {
->>           kbuf.memsz = elf64_phdr_size(pnum);
->> @@ -429,7 +429,7 @@ unsigned int arch_crash_get_elfcorehdr_size(void)
->>       unsigned int sz;
->>         /* kernel_map, VMCOREINFO and maximum CPUs */
->> -    sz = 2 + CONFIG_NR_CPUS;
->> +    sz = 2 + num_possible_cpus();
->>       if (IS_ENABLED(CONFIG_MEMORY_HOTPLUG))
->>           sz += CONFIG_CRASH_MAX_MEMORY_RANGES;
->>       sz *= sizeof(Elf64_Phdr);
-> 
+>>> Add the architecture bits needed to enable CONFIG_KEXEC_HANDOVER on
+>>> powerpc.
+>>>
+>>> Set ARCH_SUPPORTS_KEXEC_HANDOVER for PPC64, following the existing
+>>> pattern used by ARCH_SUPPORTS_KEXEC and ARCH_SUPPORTS_KEXEC_FILE.
+>>>
+>>> On the boot path, parse the "linux,kho-fdt" and "linux,kho-scratch"
+>>> properties from /chosen and pass them to kho_populate(). This lets a
+>>> kernel booted via KHO kexec recover the FDT and scratch region left
+>>> behind by the previous kernel. The call is placed early in
+>>> setup_arch(), before unflatten_device_tree().
+>>>
+>>> Open issues:
+>>> ============
+>>>
+>>> This patch also adds "depends on !CRASH_DUMP" to
+>>> ARCH_SUPPORTS_KEXEC_HANDOVER. This is needed because of an ordering
+>>> conflict between crashkernel reservation and KHO scratch reservation
+>>> on powerpc.
+>>>
+>>> Crashkernel memory is reserved very early in boot, from arch-specific
+>>> code: head.S -> early_setup() -> early_init_devtree() ->
+>>> arch_reserve_crashkernel() / fadump_reserve_mem(). KHO's scratch
+>>> region is reserved later, from generic code: start_kernel() ->
+>>> mm_core_init() -> kho_memory_init(). So on powerpc, crashkernel
+>>> memory is always reserved first.
+>>>
+>>> This ordering causes a real failure. In the common case, crashkernel
+>>> reservation on powerpc starts at a 512M offset (the exact offset can
+>>> vary, but 512M is typical). So with crashkernel=3G, the reservation
+>>> occupies memory from 512M up to 3.5G -- roughly 75% of the entire low
+>>> 4G area.
+>>>
+>>> Since crashkernel reservation always happens first, that 3G is
+>>> already committed by the time kho_memory_init() runs. It then tries
+>>> to reserve a low scratch region sized at 200% of whatever is already
+>>> reserved below 4G. With ~75% of that 4G area already taken by
+>>> crashkernel memory, 200% of that easily exceeds the remaining space
+>>> -- and since the low scratch region is itself capped at 4G, there's
+>>> no room left to fit it. The reservation fails.
+>> crashkernel has the variant "crashkernel=size[KMG],high", which ensures
+>> memory is allocated above 4G. Unless powerpc has some requirement for
+>> strictly having the crashkernel below 4G, I think it will make a lot of
+>> sense to enable support for this feature. So KHO users can specify this
+>> to get crashkernel working with KHO.
+>
+> I agree that this is one way to work around the low-memory reservation problem.
+> However, there are a few things that come into play here:
+>
+> 1. On powerpc, the crashkernel reservation can go up to 64 GB for kdump. With
+> the
+>    current default scratch memory reservation policy, this could result in
+> reserving
+>    up to 256 GB of scratch memory: 200% for the high-memory reservation and
+> another
+>    200% for per-node memory.
 
+That calculation looks off. It _should_ be 200% once not twice. So 128
+GB total. If the allocation came out via the global area, it should
+_only_ be accounted to the global scratch size. Similarly, only the
+allocations made specifically on that node should be counted for the
+per-node scratch size.
+
+But I have also noticed this problem on some of the systems Google has.
+Which makes me wonder if scratch_size_update() is broken and
+over-calculating. I have this on my TODO list and have been meaning to
+look into it, but other things keep intervening.
+
+If you are interested, feel free to take it off my hands.
+
+>    For fadump, which is the powerpc-specific memory dump capture mechanism, the
+> crashkernel
+>    reservation can go up to 180 GB. In this case, we could end up reserving up
+> to 720 GB of
+>    scratch memory, which is too much. I agree that users can tune this, but I
+> think the
+>    default scale should be more reasonable for powerpc.
+
+Once we fix scratch_size_update() to actually use 200% and not 400%,
+perhaps that alone will be enough? If not, we can discuss reducing the
+default scratch scale to maybe 150%. But I'd rather do it for all
+platforms if we do it at all, because this problem doesn't seem specific
+to PowerPC.
+
+>
+>
+> 2. Fadump also uses the crashkernel kernel command-line argument, but its
+> reservation policy
+>    is different from kdump. The crashkernel base address starts after the memory
+> needed for
+>    fadump. For example, with crashkernel=3G, the base address would be 3 GB, and
+> the crashkernel
+>    reservation would be from 3 GB to 6 GB. So, depending on the crashkernel
+> size, the reservation
+>    may or may not fall within low memory. Also, fadump does not support
+> crashkernel=xxM,high.
+>
+> 3. I do have a patch [1] to support high crashkernel reservations with kdump,
+> but this would not
+>    work with Hash MMU. With Hash MMU, the kernel image is constrained to low
+> memory, whereas with
+>    crashkernel=,high, all segments would be loaded into high memory.
+
+Oh, nice!
+
+>
+> So, while supporting crashkernel=,high can help address the low-memory
+> reservation issue for kdump,
+> I think there are still some powerpc-specific constraints to consider. I would
+> like to explore
+> whether we can fix the ordering between crashkernel and scratch memory
+> reservations, so that we can
+> avoid unnecessarily large scratch memory reservations and address some of the
+> other constraints mentioned
+> above. Please share your thoughts.
+>
+>>
+>> Powerpc doesn't support this right now, but from a quick skim of the
+>> code, I think it should be simple enough.
+>
+> I have patch series under review for the same:
+> [1]
+> https://lore.kernel.org/all/20260708143357.673251-1-sourabhjain@linux.ibm.com/
+>
+>> From
+>> arch_reserve_crashkernel() you just need to pass a bool * to
+>> parse_crashkernel(), and then pass the result to
+>> reserve_crashkernel_generic().
+>
+> Due to some architecture-specific dependencies (such as RTAS), booting the
+> kernel from above 4G with
+> support for high crashkernel is not as straightforward as on other
+> architectures. Patch 2/4 in [1] has the
+> details.
+>
+>>
+>> Solving the ordering of crash reservations and KHO is tricky and comes
+>> with some difficult tradeoffs. Allocating crash from highmem should be a
+>> lot simpler.
+>
+>
+> Could you please elaborate a bit on what makes the ordering tricky and what the
+> main tradeoffs are between crash reservations and KHO? It would help me better
+> understand the concerns here.
+
+The problem today is that kho_preserved_memory_reserve() (called by
+kho_mem_retrieve()) does a memblock_reserve() for each preserved folio.
+So if you have a lot of order-0 (or, 4k) folios, you end up with a lot
+of reservations in memblock. The large number of reservations can slow
+down later memblock operations like allocations too since memblock might
+have to walk through a lot of ranges to find free memory.
+
+We kind of work around this problem by calling kho_mem_retrieve() as
+pretty much the last thing in the MM init. So all allocations prior to
+this have already been fulfilled from scratch without any of the
+reservations added, so it should be pretty fast. You only take the
+performance hit at the end, where the only thing left is to release
+pages to buddy.
+
+Even then, the memblock reservations can get pretty damn slow. In some
+of my testing with under-load systems, preserving a 2G memfd with 4k
+pages can go over **5 minutes** in only kho_mem_retrieve() if the folios
+of the memfd are fragmented enough. Plus there is the memory overhead of
+the regions in memblock.reserved.
+
+So long-term, I would like to get rid of the memblock reservations
+entirely and use scratch-only mode all the way until buddy comes up. And
+I would like to modify buddy init (free_low_memory_core_early() and
+deferred_init_memmap_chunk()) to be KHO-aware and directly skip the KHO
+pages.
+
+This vision goes in the opposite direction of turning scratch-only mode
+off _earlier_. And turning off scratch-only mode earlier is necessary
+for doing crash reservations outside of scratch.
+
+That is the tradeoff I mentioned. Hope I was clear enough.
+
+>>
+>> And on that note, I don't think you should do a depends on !CRASH_DUMP.
+>> Even when CONFIG_KEXEC_HANDOVER is enabled, KHO isn't on by default
+>> (well, unless KEXEC_HANDOVER_ENABLE_DEFAULT is set). You need to enable
+>> it via cmdline. So it is entirely possible for people using KHO on PPC
+>> to not use crash and vice versa. This decision can be made at deployment
+>> time, not at compile time.
+>
+> Agree. depends on !CRASH_DUMP is temporary and will be removed once
+> we settle the crashkernel reservation and scratch region handling.
+
+My point is that !CRASH_DUMP can be removed _even if_ we don't settle
+the reservation thing, because it is perfectly valid for the same kernel
+to use either KHO or crash but not at the same time. These both can be
+enabled/disabled at runtime.
+
+[...]
+
+-- 
+Regards,
+Pratyush Yadav
 
