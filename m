@@ -1,73 +1,93 @@
-Return-Path: <linuxppc-dev+bounces-26499-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26500-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A2AC3C624A4
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Sep 2026 17:23:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9466CC624A4
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Sep 2026 18:10:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hbRJN4JFSz2y2X;
-	Fri, 04 Sep 2026 03:23:16 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788456196;
-	cv=none; b=W+01z+Gsexc0EqQmrR1TmWsY0i+6vDI03E8mSsu+qQ/4YDtx9RFg3tG3tXcwV4jmEZq4yKvlqkxWv+0auzYcDEmIpkSU1+YYajjctSEb7FjRJfGo3L0vD4O8nvk3DJ+qtVL235QwXcYBlICMugt9nJhUmz6Pq+Cetod3DNsn9E6Ju8Ha00nk3xH+NFefiAIw/MP2HD4N8fRuyLd1Kphrndr8uWhGlQiF0QBL3McwquWzXhtJAoZvw1nBpKPMwsWqWHz7j5V3faC5DKaJHoXkhhwDme6/vBQQ96SHG7R5X6khXxIeRtbplXAonegR2Bk68SBGB7uStFT9I0DU5/PKDQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788456196; c=relaxed/relaxed;
-	bh=1184yE4Y/VLcovEkv7Lb5WCDCOtF8Ph3QyYS82E5rUA=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=D2yJ0dfvtuU7Iqljv5oS0nq9b0f9lpp9jCVrCT5VzJrW4PcZ6+qlQXydoy754zylhVisUS9mcndSsIvwOjnusONNYWFog+bb1C7RtK+DKzJNTO2VgWK9WRTn/UoneNdiBT3/9NUpx6i+VZrYXd5bJoztgXgmNDKZMcv3edth1/30w6FiaVJn+zVCej00RBKOIAZdYFWiOBBEXeTvJMGPivh765k3zqdJAr3xHj2rnpfAByx91kerYFJJ/gZOhiiIJ67mRONrrnJ0OBCDa2Y74wA+bZA1RpPd42qezhfIXz20svLbZI6lyhvU+MC4UXujiL9lYBNJEHYrdK+2acwvHw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=RCLn1b+d; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hbSLJ751Mz2yhD;
+	Fri, 04 Sep 2026 04:10:00 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::62a" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788459000;
+	cv=pass; b=jx74FDIv9vZ39ZoaCtjqZIkZCvij3QEzjh4TU3guKeUKJTGSz5+dTgfNAsEqF7rlPbM8/HhdfgS3iGCvQCknqthbLskwQKEUFAIqcR+Yarl0Iz+r/kWspGvjI1wlkQ4JYDGr46iN86XvOiETGzalV4xSWyBVrl32tzrvOqkZ1KhjIU8/BGw2zpf1yJgoMf9/JZXnciMmi32o0MkCsrFDs0RMFYqcDNWWD0tv3JaC95zcuXxIVUlZP/Ll3Weppa5dwEa1JbnOmvFNp1oy51ZNea2bNwfs6eRQ78zfOwkLf9OXgnfOms9JRgs70QTgRQ8H3XG36+IR7eDfQkcgtechmQ==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1788459000; c=relaxed/relaxed;
+	bh=4yLjprjTjRYbF/wVxB+bQ+ELdtKxFUy0kzJbPnOdacs=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=ni4pL8hUqgppsMbOu/i75I3Vew+Qd92y8ZmLB1yTSfzJFDw/0xQ5KTJB3rjEkOWiCAOiu/ku5/wHRzIkj49KxyV8yZbN7LKp3ooC6wfX09EocnkeskfPqsEtESXbGwwqVZIkOjEltpp6JadyVHymGxWznGWX6OQ4c2h78YbRN9FCTUIAcvzBrnhrxxRHplLXIBaS0mJC2m6zhLmefs4t0rxGa31u8h3H/Si+MQ0iDg/QimwWQCvmnpW4VHLlBYtq03bs3XgYdw5kQJaDNRE1YmQpTINikOETNd7jzA2jksbncAhYmPOk2w72M+GDtEqD7UzAYVqcYm/DPD7+jnEZfw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=WGANXcLs; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::62a; helo=mail-ej1-x62a.google.com; envelope-from=harsh.prateek.bora@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=RCLn1b+d;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=WGANXcLs;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::62a; helo=mail-ej1-x62a.google.com; envelope-from=harsh.prateek.bora@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-ej1-x62a.google.com (mail-ej1-x62a.google.com [IPv6:2a00:1450:4864:20::62a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hbRJM618cz2xyl
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Sep 2026 03:23:15 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 683G2Ucn1550078;
-	Thu, 3 Sep 2026 17:23:07 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=1184yE
-	4Y/VLcovEkv7Lb5WCDCOtF8Ph3QyYS82E5rUA=; b=RCLn1b+d61ykHqHlBx+rXt
-	woS6EtAM5dT7+MysTHUZjUarz+B0Vt8cvO71MGWWEr+/Swv9CXOOplA+ej73vSra
-	1CrWO/BmrrsdCRLCP4K3FaCQRMRotaWrjBFCv4P/5eMy1hiM/HrEz1oRR7IxdEC8
-	DTjlB6X9eVvUYKRrY7rjvmSGF5Lk3RVvHpM672/Ks7djbkg/d9QfrAHSe6r4vh05
-	t2VFpGtpQJFsdCCTtuL205Nw5fdydRM2hJkzHoCbzpLQ0yEY5hEzZvuSNoFA2j9X
-	JmQtORjwDmPjUb4A8KZ77CMTE0B/RCdIHWaKAXRoLjl/DRZ1COlro1N/+6cw0XJg
-	==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gbq3rp4dd-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 03 Sep 2026 17:23:06 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 683HBHCE027373;
-	Thu, 3 Sep 2026 17:23:05 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gcbygrhaw-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 03 Sep 2026 17:23:05 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 683HN37Q45941222
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 3 Sep 2026 17:23:03 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 7DBA420040;
-	Thu,  3 Sep 2026 17:23:03 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 4223520043;
-	Thu,  3 Sep 2026 17:23:00 +0000 (GMT)
-Received: from [9.39.28.243] (unknown [9.39.28.243])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Thu,  3 Sep 2026 17:23:00 +0000 (GMT)
-Message-ID: <5ed38c3e-4aaa-4a91-9eda-e31d09b44abc@linux.ibm.com>
-Date: Thu, 3 Sep 2026 22:52:59 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hbSLH18Drz2y2R
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Sep 2026 04:09:58 +1000 (AEST)
+Received: by mail-ej1-x62a.google.com with SMTP id a640c23a62f3a-c25ee9d1264so9305766b.3
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Sep 2026 11:09:58 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1788458994; cv=none;
+        d=google.com; s=arc-20260327;
+        b=QEJR93BMPCRrxqjTCu6H573O2KEHMCUUlbIa4F5+dPnd3jTnMtIVT4TR0guNVcU6xj
+         nbCudhAHDaITHuC62bR/9sf/ZLh0QJ+S2Daj+NhnvQMLknu4Dr+oPdu5y9Kxj9BMusjp
+         RuCtI34OsYbKhes4eC1K4gMeruBLqMZipLnzBMxxHpK/x4QMgbYoEjug4PBfxTlrfWbe
+         YJYZHWaCKhEdmOsTEy0CtMpXlhMr1ogn73HNVrl6lq0EnWk1QPTKtpv6UnxJpLYCbmwn
+         KXejSOyMEDfp4YzHrW9QLJPyYQSm0pMLlR/XLrGjLreLtsWZQGbiuZgH1t3WP58nZ/m4
+         sQ0w==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=4yLjprjTjRYbF/wVxB+bQ+ELdtKxFUy0kzJbPnOdacs=;
+        fh=UTeP58xarP3vTnDE9gt1KfK/36zsEeTuq0fUgagdH/Y=;
+        b=QjvZvpzSnCfOiiuC48d2XbL/r011Yvnzw3reGl+tIThvU4mWb1oYy/SkfCeOJtjp8S
+         lNMKkQ+cFBCv7NxnqvaSrlThgossrRZPFTcJ8dOHhQl8igB9cxhlIht1tIO54mS5Oi5P
+         MaDHtsf6Tx0LcH5NYSB25kYhv2rdMLeCdZNyQWLiVYQ53/ha7iyvskQqXJTSlvUwIqSC
+         pYj85p6lGBt5xzcYAJDfwn4dF3oKpDC9ZTjLuZNXI+2tN+sPn24anGuIL4FxSXs3sGDD
+         Slx2mKO2Rne0QJP2obJT2A9KtJolTyLj8f0TXWo7G5avA9Am3zYkQ4r2+0lYqF2Wfo3h
+         T9yg==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1788458994; x=1789063794; darn=lists.ozlabs.org;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=4yLjprjTjRYbF/wVxB+bQ+ELdtKxFUy0kzJbPnOdacs=;
+        b=WGANXcLsOirgxT5lWrhT3qvSKVyAx5foZwFPe1PH8s4Szx4X9CHaAQrbB7ALj/L1rT
+         N4GOatYAaeePWNFXi+F7lFcMvvndItDznh5ciyB9USIOjTQvrO3YSWALPNINgCGNjJWr
+         iyopmDTbGgSynMKrz1uzw9Nj/PjfMDR/3cFSrhXY9VWOehrSM8+jGmKucqHIeYTUGn3N
+         TQ60mRSf7tNHcpeyaKvJfY7WScjwe4Tj/R29UrWfqqSA/6AUktxaRymzpL8x25yuyBUa
+         zHluwk8FeSIJSivFfKDbAGWBrW7ymWzYEpsK0dZnc6vFa3XGqsliDPPbWMD8OeBCJxiF
+         UKBw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1788458994; x=1789063794;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=4yLjprjTjRYbF/wVxB+bQ+ELdtKxFUy0kzJbPnOdacs=;
+        b=Wupu3wL8YNEk2TrOAK99AypTSvAT95S68JsKY7wrE6czOXdUV2PkP7V46ZMjc481HK
+         GGCwNb3vvMljH0Bdf0S/+clfnG3f3yPSu+rIhmVE3rabm139Jx41cLoC14jZe/GWMPTl
+         Q8+5YlEhjitqAz+bld/g+ZMwLXljDet+l+Kt6y6MTJJqTb0U3rRX0MgHiXzC1szwCPg7
+         ttE/cX5T3C5DHQIRx8lk9C7ibBnm4d8JHBYywDTqyaSfd247+fFW8uAPAXn2VJkemppV
+         SlTQIQdqqvh7nhEM56F2P+hmvM5X+tpzMXYtVTaaZ8EylBd3zwoSZ6G0KLYuy3AfE/wK
+         KCKg==
+X-Gm-Message-State: AFuF++nkBc7XRa1O0N/5GMVGfuGMNagigt/+2GB0RaUnPP0/2rPzm8o6
+	nfcdDx5lLrIgsh7jS4x9RaFQb/YTuoYbeOnP3bcHJkUrhvYSC9nK4Aldz9r6A/7tU5dZCMCMuWj
+	wXpBpTl70bJe6/Tnato0SqDLs1l6sxR4=
+X-Gm-Gg: AYBFou0yN54rqsQ8cP0lc/05vnQhI3+Du844jIPmUuhwGlOUZIRtotTJ/35h2jyDShy
+	Fv8H/a4RHszVK2ABJdGwb2i5Ip2MDHELTnj2QzKbj+3PMzOrAbvGDIPzWVIgQ2AGqyNNdmkW0Gn
+	PeDsVvRGO0q6pBhi21YlE2KwRpiBBMh+ZJ+4bPgd2YIF42qQjuR9vJ+6cy2nGktnoX9GR91JZZq
+	YAn1K4ZWKXXMEU6Gye5MjNGTHlD+hjj9EzETJGxG52p3KBTnguh20Qn3967ESXN/V3st5QRD3P/
+	mkFzOkm3Cc/ocsqiBu6lTIRT4VNj67dmEw3hDkMNvL74NSRRo8FIJbhB1TtYHgzQJzZOp0iACzt
+	m
+X-Received: by 2002:a17:907:c081:b0:c25:6230:dfcd with SMTP id
+ a640c23a62f3a-c260c9e3320mr37319866b.15.1788458993569; Thu, 03 Sep 2026
+ 11:09:53 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,164 +101,275 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [Linux PPC] Disable PREEMPT
-To: =?UTF-8?Q?Michal_Such=C3=A1nek?= <msuchanek@suse.de>
-Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        Christian Zigotzky <chzigotzky@xenosoft.de>,
-        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-        "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        "R.T.Dickinson" <rtd2@xtra.co.nz>, hypexed@yahoo.com.au,
-        mad skateman <madskateman@gmail.com>,
-        Christian Zigotzky <info@xenosoft.de>
-References: <dbbb7998-5245-170f-626b-81bc75a32591@xenosoft.de>
- <843b7c60-23f1-47d0-b4e8-2147c3e40c23@linux.ibm.com>
- <2a27e6fc-7eb4-41a5-ba88-58f6a22625b5@xenosoft.de>
- <1d79ec6f-ce7f-4432-80e0-a54fa1668642@linux.ibm.com>
- <e425cd24-e19a-3860-aad2-11e91af8323f@xenosoft.de>
- <1c9b879a-7907-4849-a416-5df3db5617d6@kernel.org>
- <34112e67-85a5-a380-a42b-24c6562d65be@xenosoft.de>
- <8c6f2510-1dc5-4c45-9288-6b9c8f9b6b24@kernel.org>
- <aplDm-byYL79laYG@kunlun.suse.cz>
- <9a58d944-405c-4519-852e-8fa04c22c2db@linux.ibm.com>
- <aplZNFMJUkfs-BFs@kunlun.suse.cz>
-Content-Language: en-US
-From: Shrikanth Hegde <sshegde@linux.ibm.com>
-In-Reply-To: <aplZNFMJUkfs-BFs@kunlun.suse.cz>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=EIc2FVZC c=1 sm=1 tr=0 ts=6a99acfa cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=VLc2VSdLAAAA:20
- a=5USFX70PNik1_o9ELjMA:9 a=QEXdDO2ut3YA:10 a=bA3UWDv6hWIuX7UZL3qL:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTAzMDE0OCBTYWx0ZWRfXz50eTmVbBwMU
- +PUnGL5ISWFKE3v00w+dGXaDKH0NVy4O8jTqAVTA2e62Frhs8Te6NA0Wwm/ns1jxCtzYqT5lYVM
- NRHP/w9CtBgXKyZfMRdmZo8ZZlh39fnTxKJzzVRDFNTVGZQKgWkspTzTnVvkiEQc6NNjnq/PIvm
- J+DoSWx3GNrRPHiS0/XT4FDmSvx3m34+8SJ1+9GwAvwMVST72BMkaMGWbOoFJM5ZEetJlOTDTLJ
- YTJuPy094OA1bw6gVYxjaflUIMfnAkzMlStci+EGeRaVmn49CdCvi09aOzLUpU110JLbQssfRf7
- NLpP+8CKhOs2NJuI70BcQV8GANU1CKr8sVZNl0HY+1SBPBmLju3oIaqtT8AkgCcPh1pBoDS31hd
- wmIFNn9gKduMBfgQ2d6t1UFRyjsR0eoYHGTbuzN7wtQdCSzQJdzXKYX1M5ufDaioElhKvVhKTtw
- O17GWwfdfZg/PVCg9Yg==
-X-Proofpoint-GUID: VfHkPwavebvPlhBgrJ55APUn6NDYpI2U
-X-Proofpoint-ORIG-GUID: Fd0ihIY8U4r1BzxXgz6IbrcSbVzqb55U
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTAzMDE0OCBTYWx0ZWRfX4BlUGG85seaQ
- Tyb0KNn+xUgahdWFToSTv0UJoqYV7DwrSnhKTreyAk3/NSv6U5xSvz43hrznDQaAgsTJCPXWqfa
- BY4GW8EwchIQwVeOyibecbAXssDzXHA=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-03_05,2026-09-03_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 impostorscore=0 suspectscore=0 priorityscore=1501 clxscore=1015
- phishscore=0 spamscore=0 adultscore=0 lowpriorityscore=0 malwarescore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2609030148
+References: <10c86c909f870d90b3094f76b692b44ebe9caeac.1787976185.git.ritesh.list@gmail.com>
+In-Reply-To: <10c86c909f870d90b3094f76b692b44ebe9caeac.1787976185.git.ritesh.list@gmail.com>
+From: Harsh Prateek Bora <harsh.prateek.bora@gmail.com>
+Date: Thu, 3 Sep 2026 23:39:40 +0530
+X-Gm-Features: AcwNN1UPfhGf1_xnf5CwdkQCCZcfRhkMv7rOK2GFzJz3Ib7b4geTwHaA-ECmUKM
+Message-ID: <CAEuJdmqPPYET2tjQmKCzamRr6aBhb4JNjBPN0R6G72w0KdLjKg@mail.gmail.com>
+Subject: Re: [PATCH] powerpc: Don't drop _TIF_RESTOREALL on syscall restart
+To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, 
+	Shrikanth Hegde <sshegde@linux.ibm.com>, Mukesh Kumar Chaurasiya <mkchauras@gmail.com>, 
+	Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+Content-Type: multipart/alternative; boundary="00000000000001d39a065a980f69"
 
+--00000000000001d39a065a980f69
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
->> If possible run against current upstream and share the results.
-> 
-> https://github.com/openSUSE/kernel-source/blob/6824496d1801f73def615dca8794202eeb7b0d86/config/ppc64le/default
-> 
-> [  472.091531][ T6181] Kernel panic - not syncing: stack-protector: Kernel stack is corrupted in: kvmhv_run_single_vcpu+0x19d4/0x1b50 [kvm_hv]
-> [  472.091598][ T6181] CPU: 29 UID: 107 PID: 6181 Comm: CPU 112/KVM Not tainted 7.2.2-5.g6824496-default #1 PREEMPT(full) openSUSE Tumbleweed (unreleased)  61871a5f06863b4006f5ef27cd9f18e8a7a2edad
-> [  472.091612][ T6181] Hardware name: IBM,9824-42A Power11 (architected) 0x820200 0xf000007 of:IBM,FW1110.20 (OB1110_130) hv:phyp pSeries
-> [  472.091624][ T6181] Call Trace:
-> [  472.091630][ T6181] [c00000000fdfb680] [c00000000134ce90] dump_stack_lvl+0x84/0xc0 (unreliable)
-> [  472.091653][ T6181] [c00000000fdfb6b0] [c00000000022e7c8] vpanic+0x324/0x5e4
-> [  472.091666][ T6181] [c00000000fdfb760] [c00000000022eac4] do_panic_on_target_cpu+0x0/0x2c
-> [  472.091677][ T6181] [c00000000fdfb780] [c0000000013c1ff8] __stack_chk_fail+0x48/0x60
-> [  472.091689][ T6181] [c00000000fdfb7f0] [c00800001aae219c] kvmhv_run_single_vcpu+0x19d4/0x1b50 [kvm_hv]
-> [  472.091712][ T6181] [c00000000fdfb940] [c00800001aae24b4] kvmppc_vcpu_run_hv+0x19c/0x12f0 [kvm_hv]
-> [  472.091732][ T6181] [c00000000fdfba10] [c00800001aeeed18] kvmppc_vcpu_run+0x30/0x48 [kvm]
-> [  472.091779][ T6181] [c00000000fdfba30] [c00800001aee9ef4] kvm_arch_vcpu_ioctl_run+0x35c/0x4a0 [kvm]
-> [  472.091813][ T6181] [c00000000fdfbac0] [c00800001aedaac4] kvm_vcpu_ioctl+0x1ac/0xad8 [kvm]
-> [  472.091844][ T6181] [c00000000fdfbca0] [c0000000007f1244] sys_ioctl+0x374/0x1060
-> [  472.091857][ T6181] [c00000000fdfbdb0] [c00000000002f7f8] system_call_exception+0x188/0x430
-> [  472.091871][ T6181] [c00000000fdfbe50] [c00000000000cfdc] system_call_vectored_common+0x15c/0x2ec
-> [  472.091886][ T6181] ---- interrupt: 3000 at 0x7fffb5565fac
-> [  472.091896][ T6181] NIP:  00007fffb5565fac LR: 00007fffb5565fac CTR: 0000000000000000
-> [  472.091904][ T6181] REGS: c00000000fdfbe80 TRAP: 3000   Not tainted  (7.2.2-5.g6824496-default)
-> [  472.091911][ T6181] MSR:  800000000280f033 <SF,VEC,VSX,EE,PR,FP,ME,IR,DR,RI,LE>  CR: 42044402  XER: 00000000
-> [  472.091938][ T6181] IRQMASK: 0
-> [  472.091938][ T6181] GPR00: 0000000000000036 00007fbfa77ed7a0 00007fffb5677100 00000000000000fa
-> [  472.091938][ T6181] GPR04: 000000002000ae80 0000000000000000 0000000000000000 0000000000000000
-> [  472.091938][ T6181] GPR08: 00000000000000fa 0000000000000000 0000000000000000 0000000000000000
-> [  472.091938][ T6181] GPR12: 0000000000000000 00007fbfa77f5ec0 000000014676f000 00007fbfa77ee7c0
-> [  472.091938][ T6181] GPR16: 000000014674e8d0 00007fbfa77eeec0 00007fbfa77eeec0 fffffffffffffff7
-> [  472.091938][ T6181] GPR20: 00007fffb71210d0 0000000000000001 00007fbfa77eeec0 0000000000000000
-> [  472.091938][ T6181] GPR24: 00007fbfa77ed8e8 0000000105971428 000000002000ae80 0000000105f77a70
-> [  472.091938][ T6181] GPR28: 0000000000000000 0000000000000000 000000002000ae80 000000014674f000
-> [  472.092020][ T6181] NIP [00007fffb5565fac] 0x7fffb5565fac
-> [  472.092027][ T6181] LR [00007fffb5565fac] 0x7fffb5565fac
-> [  472.092033][ T6181] ---- interrupt: 3000
-> [  472.098256][ T6181] pstore: backend (nvram) writing error (-1)
-> 
-> This is the host, cannot run the kernel as guest because it fails to boot most
-> of the time inside KVM.
-> 
->>
->>> Nonethless, there are quite a few platforms. Originally no preemption
->>> was the only option, and that's the reason why many people run that.
->>> It's the conservative, known working option. And that's the reason a lot
->>> of platfrom code does not get tested with more aggressive preemtion
->>> models, and never gets fixed to work with them.
->>>
->>
->> Full preemption has been there for many years!.
-> 
-> Possible for years, forced only recently.
-> 
->> Lazy is not that aggressive compared to that.
->>
->>> Simply disabling the no preemtion option does not make the platform code
->>> ready.
->>>
->>
->> Let's understand your crash case. Let's see where it is going wrong. I am suspecting
->> it is some wrong usage of preemption api rather than arch can't support preemption.
-> 
-> Very likely some wrong use of the preemption API by the arch code, or no
-> use where it should have been used. It did not matter so long as people
-> could run their no preempt configs and ignore the problem.
-> 
-> Thanks
+On Sat, 29 Aug, 2026, 9:49=E2=80=AFam Ritesh Harjani (IBM), <ritesh.list@gm=
+ail.com>
+wrote:
 
+> So the syscall return sequence is as follows:
+> A syscall return to userspace is prepared and then a short asm sequence
+> that actually does the RFI. Note that this asm range is restartable i.e.
+> EE is still on, so an interrupt (e.g. decrementer or external interrupt)
+> can hit while SRR/GPRs are being loaded. This is defined via:
+>
+> RESTART_TABLE(.Lsyscall_rst_start, .Lsyscall_rst_end, syscall_restart)
+>
+> This restart table then sends us to syscall_restart rather than resuming
+> in the middle of the RFI. The same stub is also used if irq_happened
+> already has a pending bit (soft-masked irq that has not been replayed
+> yet (PowerPC special case of local_irq_disable())).
+>
+> Here is a bit of a flow of sequence of code to visualize:
+>   syscall_exit_prepare
+>       decide full-GPR restore (_TIF_RESTOREALL) for signal,
+>       rt_sigreturn or syscall trace
+>       save that in regs->exit_result and return it in r3
+>            |
+>            v
+>   .Lsyscall_rst_start .. _end     EE still on
+>       irq_happened set or interrupt in this range?
+>            | no                         | yes
+>            v                            v
+>       cmpdi r3,0                  syscall_exit_restart
+>       restore all / zero            replay irq, try exit again
+>       volatiles; RFI                must return flags in r3
+>                                     again for the same cmpdi
+>
+> Now r3 after prepare is the flags word, not the actual syscall return. A
+> nested
+> interrupt clobbers it, so the restart stub reloads RESULT into r3 and the
+> C handler (syscall_exit_restart()) should put the flags back (because
+> later asm
+> checks whether r3 returned from C has _TIF_RESTOREALL set or not):
+>         cmpdi r3, 0
+>         bne     .Lsyscall_restore_regs
+>
+> Note that syscall_exit_restart() already ORs any new _TIF_RESTOREALL into
+> exit_result, but then it only returns the new sample and not the full
+> regs->exit_result.
+>
+> That sample could be often 0 even when restore-all is still required:
+>
+>   - rt_sigreturn / syscall trace set the bit in prepare's local
+>     ret and in exit_result. They never set exit_flags, which is
+>     what restart samples.
+>
+>   - a signal does set exit_flags but restart clears it. A
+>     second pass through the stub then returns 0 while
+>     exit_result still has the bit.
+>
+> The asm as mentioned earlier then treats r3=3D=3D0 as the fast path and
+> zeros r0/r4-r12. That means the userspace that needed the full register
+> set could SIGSEGVs, (which could happen often in ld64.so.2 like while
+> doing a parallel kernel build as reported by Venkat).
+>
+> So we should instead return the accumulated exit_result, like how we do
+> in interrupt_exit_user_restart(). Note that prior to this commit
+> 263e5159e00a ("powerpc: Fix exit_flags field placement in pt_regs for
+> ptrace")
+> we were returning regs->exit_result from syscall_exit_restart(), but
+> this commit changed that behaviour.
+>
+> Fixes: 263e5159e00a ("powerpc: Fix exit_flags field placement in pt_regs
+> for ptrace")
+> Reported-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+> Closes:
+> https://lore.kernel.org/all/75419f88-eab9-444b-bf97-28a9765819ad@linux.ib=
+m.com/
+> Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+> ---
+> Sorry about the long commit msg. It took sometime for me to fully
+> understand
+> that complex path, so I thought I may as well document that properly.
+>
+>  arch/powerpc/kernel/interrupt.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/kernel/interrupt.c
+> b/arch/powerpc/kernel/interrupt.c
+> index 5b88bf72786c..55f9c0c9922a 100644
+> --- a/arch/powerpc/kernel/interrupt.c
+> +++ b/arch/powerpc/kernel/interrupt.c
+> @@ -175,7 +175,7 @@ notrace unsigned long syscall_exit_restart(unsigned
+> long r3, struct pt_regs *reg
+>         current_thread_info()->exit_flags &=3D ~_TIF_RESTOREALL;
+>         regs->exit_result |=3D ret;
+>
+> -       return ret;
+> +       return regs->exit_result;
+>
 
-Friendly LLM analysis says preemption is enabled too early and before
-completing kvmppc_handle_exit_hv() / kvmppc_handle_nested_exit()
+Thanks for the fix, Ritesh!
+Are we leaving ret unused as well?
 
-Below is ONLY a speculation and completely UNTESTED.
-Maybe worth a try.
+Otherwise,
+Reviewed-by: Harsh Prateek Bora <harsh.prateek.bora@gmail.com>
 
----
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 0409ac9e7b31..78d2b0618887 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -5049,8 +5049,6 @@ int kvmhv_run_single_vcpu(struct kvm_vcpu *vcpu, u64 time_limit,
+ }
+>  #endif
+>
+> --
+> 2.39.5
+>
+>
+>
 
-         powerpc_local_irq_pmu_restore(flags);
+--00000000000001d39a065a980f69
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
--       preempt_enable();
--
-         /*
-          * cancel pending decrementer exception if DEC is now positive, or if
-          * entering a nested guest in which case the decrementer is now owned
-@@ -5072,6 +5070,8 @@ int kvmhv_run_single_vcpu(struct kvm_vcpu *vcpu, u64 time_limit,
-         }
-         vcpu->arch.ret = r;
+<div dir=3D"auto"><div><br><br><div class=3D"gmail_quote gmail_quote_contai=
+ner"><div dir=3D"ltr" class=3D"gmail_attr">On Sat, 29 Aug, 2026, 9:49=E2=80=
+=AFam Ritesh Harjani (IBM), &lt;<a href=3D"mailto:ritesh.list@gmail.com">ri=
+tesh.list@gmail.com</a>&gt; wrote:<br></div><blockquote class=3D"gmail_quot=
+e" style=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex">=
+So the syscall return sequence is as follows:<br>
+A syscall return to userspace is prepared and then a short asm sequence<br>
+that actually does the RFI. Note that this asm range is restartable i.e.<br=
+>
+EE is still on, so an interrupt (e.g. decrementer or external interrupt)<br=
+>
+can hit while SRR/GPRs are being loaded. This is defined via:<br>
+<br>
+RESTART_TABLE(.Lsyscall_rst_start, .Lsyscall_rst_end, syscall_restart)<br>
+<br>
+This restart table then sends us to syscall_restart rather than resuming<br=
+>
+in the middle of the RFI. The same stub is also used if irq_happened<br>
+already has a pending bit (soft-masked irq that has not been replayed<br>
+yet (PowerPC special case of local_irq_disable())).<br>
+<br>
+Here is a bit of a flow of sequence of code to visualize:<br>
+=C2=A0 syscall_exit_prepare<br>
+=C2=A0 =C2=A0 =C2=A0 decide full-GPR restore (_TIF_RESTOREALL) for signal,<=
+br>
+=C2=A0 =C2=A0 =C2=A0 rt_sigreturn or syscall trace<br>
+=C2=A0 =C2=A0 =C2=A0 save that in regs-&gt;exit_result and return it in r3<=
+br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0|<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0v<br>
+=C2=A0 .Lsyscall_rst_start .. _end=C2=A0 =C2=A0 =C2=A0EE still on<br>
+=C2=A0 =C2=A0 =C2=A0 irq_happened set or interrupt in this range?<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0| no=C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0| yes<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0v=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 v<br>
+=C2=A0 =C2=A0 =C2=A0 cmpdi r3,0=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 syscall_exit_restart<br>
+=C2=A0 =C2=A0 =C2=A0 restore all / zero=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 replay irq, try exit again<br>
+=C2=A0 =C2=A0 =C2=A0 volatiles; RFI=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 must return flags in r3<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 again for the same cmp=
+di<br>
+<br>
+Now r3 after prepare is the flags word, not the actual syscall return. A ne=
+sted<br>
+interrupt clobbers it, so the restart stub reloads RESULT into r3 and the<b=
+r>
+C handler (syscall_exit_restart()) should put the flags back (because later=
+ asm<br>
+checks whether r3 returned from C has _TIF_RESTOREALL set or not):<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 cmpdi r3, 0<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 bne=C2=A0 =C2=A0 =C2=A0.Lsyscall_restore_regs<b=
+r>
+<br>
+Note that syscall_exit_restart() already ORs any new _TIF_RESTOREALL into<b=
+r>
+exit_result, but then it only returns the new sample and not the full<br>
+regs-&gt;exit_result.<br>
+<br>
+That sample could be often 0 even when restore-all is still required:<br>
+<br>
+=C2=A0 - rt_sigreturn / syscall trace set the bit in prepare&#39;s local<br=
+>
+=C2=A0 =C2=A0 ret and in exit_result. They never set exit_flags, which is<b=
+r>
+=C2=A0 =C2=A0 what restart samples.<br>
+<br>
+=C2=A0 - a signal does set exit_flags but restart clears it. A<br>
+=C2=A0 =C2=A0 second pass through the stub then returns 0 while<br>
+=C2=A0 =C2=A0 exit_result still has the bit.<br>
+<br>
+The asm as mentioned earlier then treats r3=3D=3D0 as the fast path and<br>
+zeros r0/r4-r12. That means the userspace that needed the full register<br>
+set could SIGSEGVs, (which could happen often in ld64.so.2 like while<br>
+doing a parallel kernel build as reported by Venkat).<br>
+<br>
+So we should instead return the accumulated exit_result, like how we do<br>
+in interrupt_exit_user_restart(). Note that prior to this commit<br>
+263e5159e00a (&quot;powerpc: Fix exit_flags field placement in pt_regs for =
+ptrace&quot;)<br>
+we were returning regs-&gt;exit_result from syscall_exit_restart(), but<br>
+this commit changed that behaviour.<br>
+<br>
+Fixes: 263e5159e00a (&quot;powerpc: Fix exit_flags field placement in pt_re=
+gs for ptrace&quot;)<br>
+Reported-by: Venkat Rao Bagalkote &lt;<a href=3D"mailto:venkat88@linux.ibm.=
+com" target=3D"_blank" rel=3D"noreferrer">venkat88@linux.ibm.com</a>&gt;<br=
+>
+Closes: <a href=3D"https://lore.kernel.org/all/75419f88-eab9-444b-bf97-28a9=
+765819ad@linux.ibm.com/" rel=3D"noreferrer noreferrer" target=3D"_blank">ht=
+tps://lore.kernel.org/all/75419f88-eab9-444b-bf97-28a9765819ad@linux.ibm.co=
+m/</a><br>
+Signed-off-by: Ritesh Harjani (IBM) &lt;<a href=3D"mailto:ritesh.list@gmail=
+.com" target=3D"_blank" rel=3D"noreferrer">ritesh.list@gmail.com</a>&gt;<br=
+>
+---<br>
+Sorry about the long commit msg. It took sometime for me to fully understan=
+d<br>
+that complex path, so I thought I may as well document that properly.<br>
+<br>
+=C2=A0arch/powerpc/kernel/interrupt.c | 2 +-<br>
+=C2=A01 file changed, 1 insertion(+), 1 deletion(-)<br>
+<br>
+diff --git a/arch/powerpc/kernel/interrupt.c b/arch/powerpc/kernel/interrup=
+t.c<br>
+index 5b88bf72786c..55f9c0c9922a 100644<br>
+--- a/arch/powerpc/kernel/interrupt.c<br>
++++ b/arch/powerpc/kernel/interrupt.c<br>
+@@ -175,7 +175,7 @@ notrace unsigned long syscall_exit_restart(unsigned lon=
+g r3, struct pt_regs *reg<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 current_thread_info()-&gt;exit_flags &amp;=3D ~=
+_TIF_RESTOREALL;<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 regs-&gt;exit_result |=3D ret;<br>
+<br>
+-=C2=A0 =C2=A0 =C2=A0 =C2=A0return ret;<br>
++=C2=A0 =C2=A0 =C2=A0 =C2=A0return regs-&gt;exit_result;<br></blockquote></=
+div></div><div dir=3D"auto"><br></div><div dir=3D"auto">Thanks for the fix,=
+ Ritesh!</div><div dir=3D"auto">Are we leaving ret unused as well?</div><di=
+v dir=3D"auto"><br></div><div dir=3D"auto">Otherwise,</div><div dir=3D"auto=
+">Reviewed-by: Harsh Prateek Bora &lt;<a href=3D"mailto:harsh.prateek.bora@=
+gmail.com">harsh.prateek.bora@gmail.com</a>&gt;</div><div dir=3D"auto"><br>=
+</div><div dir=3D"auto"><div class=3D"gmail_quote gmail_quote_container"><b=
+lockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1px =
+#ccc solid;padding-left:1ex">
+=C2=A0}<br>
+=C2=A0#endif<br>
+<br>
+--<br>
+2.39.5<br>
+<br>
+<br>
+</blockquote></div></div></div>
 
-+       preempt_enable();
-+
-         if (is_kvmppc_resume_guest(r) && !kvmppc_vcpu_check_block(vcpu)) {
-                 kvmppc_set_timer(vcpu);
-
-
-> 
-> Michal
-
+--00000000000001d39a065a980f69--
 
