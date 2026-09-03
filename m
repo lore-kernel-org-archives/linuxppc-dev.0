@@ -1,82 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-26501-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26502-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CB7A7C61DD3
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Sep 2026 18:30:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 32A03C624D6
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Sep 2026 23:38:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hbSnp0gS5z2yQJ;
-	Fri, 04 Sep 2026 04:30:22 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1032"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788460222;
-	cv=none; b=TEw0KfFZ6r+Qf48SjWYdrWAiQV3gprkaYDIBoHozEvdVo0n50FhOYE0AisPe912JQFpFZKLoar6eDsXOwxrV1yEHB0IbkOIQs1PT3JCWMCF4syNitFAkWLO5ooHs+J1GXKEBT9NgITxC1dK4zF+3NTGg4W26XSbg09bcV4+YQyl5L0X+BAzQ9tdCWGhs6Xko/fPWosdBKMrHCo/qCa3GxnY9adk+/Of+C4RAzljBv6gHjCVQYN9OJz7ktZzO0grYZGCzgqkZkXbhDY7v3I06ZOa2GGT8glgkcpr+4v7K1KvpAe8RiZQTPfz08+VZwdRlMpqVgeQq3BSN+i/Palct7g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hbbdc2ywqz2xfP;
+	Fri, 04 Sep 2026 09:38:44 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788459034;
+	cv=none; b=MyynUh8g6W2qIZoF/iCPMHVzjjZ9slg9gTgZxiOAUDcFOlHf5y8qnsgO2Hc4TDvSXjqZbfzI20wO0Lg6QgLkAoXLnaM04v+lhXnqrQ2tiS7ACR10m5kVnFiF0TnSy6nb2Fxv4/r5xh24S8bM9zJWZqTZ147ilR/HKp75bd8wzsM45oF+LONJeFiLzy/9l+CPHk25Gfutz5YQFnoJeQwfY6mTUbMPlk//lIM8ckT+8E0HqJ6u7FG0ln+YO07sOMiVt9/eVu9+kD9g/vJjGJYydrD0PjD2fs4tZAvgJoF/RpPBUDXt6JT/FHtW+QrMGjL8sTRs6W7XGI8mxY49LcfSsA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788460222; c=relaxed/relaxed;
-	bh=u3M67kMpk6nns2PXTYpesW/nfB8N6hz7P82FMQIUr+I=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=NrhGaMvN3rCH5sxWDKm1/zYQbg0rr05o0YSHFxAEjWmfCnYp5yhwv8kcTkQ9F1ySaUugmN0Er15BErgga7MWiGvTwts8eA1URPuxe6rkgvIKRP4zV/VVwjx7EAeLfo2XNwLw/sFF2NVDdzj/FXmg4ZZz02gRu13DXaDWuWyXW6NDMPWsDjaKl8AujJ/qDJ6QAyQycbxXmDZTTT3KOK0IReXJatpkqKM0361MS0mJq1XQhOtAQeEdCnNFK+t7XGz+7jFE49PaYfGC0GPcdCmYxoI+i2cw7ogN5EPK4DCeIMXNi4S03nBCmRimxoX6jAYziRWGd84xJ+VXyJfAvROXPg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ayKFc4YJ; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1032; helo=mail-pj1-x1032.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1788459034; c=relaxed/relaxed;
+	bh=NlRDybBs4oFnFdw0mKBg+OGXTcovPntU/gWkRhWZePI=;
+	h=Subject:From:To:Cc:Date:Message-ID:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=auDrY3C7hIiDx0lXi3p9xsgGglgKNdDc4zhPa57+ohTQAgUFtxmhVbyOt6vLAbCLaQoPTauXXlUB1ypmNeiwADz1P7NW072HpthqX/wft12dGyFVSou4kRGHzWQwgx/fgRrR693lG6tUcCj/cZwjxCd93lZ3PQEyyyLY5xaxJ5Vl2x8cFepZdClOFLyoVymVfbByz+2R9vX0hu9M6Uvol3TrDjTCMfaL+dblI3f71nlMqkqqI8KVB/HU/CvhKopm1LW2zKPQjm/BNz6LS3ajj2zsUat9CUE+JAlAinGjUqR+QqLf8AxDssp9lzWbo0n2tqZmbcz09vU/Y31RSMq5BQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=V+fHpkUm; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ayKFc4YJ;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=V+fHpkUm;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1032; helo=mail-pj1-x1032.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x1032.google.com (mail-pj1-x1032.google.com [IPv6:2607:f8b0:4864:20::1032])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hbSnm6Vj4z2y2W
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Sep 2026 04:30:19 +1000 (AEST)
-Received: by mail-pj1-x1032.google.com with SMTP id 98e67ed59e1d1-39682983a0fso127956a91.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Sep 2026 11:30:19 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1788460217; x=1789065017; darn=lists.ozlabs.org;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=u3M67kMpk6nns2PXTYpesW/nfB8N6hz7P82FMQIUr+I=;
-        b=ayKFc4YJzFuRBWcF9M97TgjRBxJ1p91o48RkObkpydtairhT9S8cKBuCzaaj3sVNhw
-         X2LDv7q7eERCTkHuK6ungUrmNzenfx5NHbbcML0kIyRnRtCyEERNI4R+fCJggnskTR/5
-         /0dS3Y2yKYc+jTGqtCRlExe7Wz6jHdtRbDoB17nJNedplO2K9jlEYu5cAyHdnk4Iz81h
-         RURQSq0RlZSIVkxlY92eQhbdouy57vY/nvseyVYTKL7xlHHLeFSUtNgqLgK3isrs1lxh
-         KP9HYtB4+u20v8mFplb7sb5XiY7qqexHEsvZhmIOMYSZou3Ju+9tmUYDvQf1vfEy58Uj
-         IODg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788460217; x=1789065017;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=u3M67kMpk6nns2PXTYpesW/nfB8N6hz7P82FMQIUr+I=;
-        b=JSFD32giBWXE7G5R7PhbnTXFtuJQqVuicI8YEE5+d8FWBmpo5ecLx6DxTzAuzVdddM
-         141OhQzR7krfEFYCYOms8B2/b8cVYOOq2nF+7d/DfTBWSzrBLcMKCZDtKbqFr1IvbfHP
-         jMBa+GtRciErXkr9GuVdDaAr0Xfw7MlHmICbphHpSCnG712cTN1YCjtPhKYE78gE7GME
-         DXdVf/foyUPo8U4yTKXPT2RwGMtda75DqWifcOT/AcybbGKQ8MubkbTBkM7C7xvzWfQA
-         b03xC97JjbY5wgYl4qI023/itAwC/NNGiXP9ETjVWd7VXosZkxlO9mUai6HE1snTsz7G
-         buXw==
-X-Gm-Message-State: AFuF++mTaCwPkPU5QRX0jWu8DTa+GjwgSa36/yNs1n7uimxU/WlHigON
-	QB4GFH4FSJAOVWgahHrFivrK6LML70MaFb/cvUicN9sFdSywnRpYjl2g
-X-Gm-Gg: AYBFou1cz7DBHGiHSgIpyejKhOxB7xTjYZ+0fRe4D8bIftDitgcFTHyKDV5OeqMm6dI
-	AbenUs8eY+u6CMWG0OIsy38zGGtNo5PRSXTAb9ft2zOIkUlbx6jpOAIw+xpOBr3XrvK76l9dJgD
-	GEFsmd3x2Cqoov0SyJgL/3mgM29vLsqP0tCqEZJSMNXrq5B16mbpqp8UzzboCl+tWC8t4FPoH7u
-	EPhwPiNep4Fuwivov3S4CY8Da3WRBR6ALvcEzpMBihOGaPe/sMypWLxfZwszjsi3NXRLaXckVas
-	7qOGuegEUox6Wq6Oxvn2YQgiwGscGHD7Rn7bLD7gl77u9KyfUyXj+Hvq+XhnvpRO5H2Rv7OrBdI
-	MemGA3rLMn0Q5S2pWqDeoRUp90oDql5+ZMAodpok/EKbx7EPSgDbwK4m6D8qmPvDRJPzpIbteXC
-	IN27aVys13ysIt+QXWHpbhR4xwXD/yU7pTwnVH4RBVZdKcPeeVDW+C91+iqgzD/gSMsSi5Vwva5
-	uHKh/5PfCFLhHnS7/wHMZRqnpWdUA8wIw+d2MsQl4xX
-X-Received: by 2002:a17:90a:d44b:b0:398:bee5:61d6 with SMTP id 98e67ed59e1d1-39b26252edamr576657a91.24.1788460216726;
-        Thu, 03 Sep 2026 11:30:16 -0700 (PDT)
-Received: from pve-server ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-143243f780csm1161097c88.13.2026.09.03.11.30.13
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 03 Sep 2026 11:30:15 -0700 (PDT)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: Harsh Prateek Bora <harsh.prateek.bora@gmail.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Shrikanth Hegde <sshegde@linux.ibm.com>, Mukesh Kumar Chaurasiya <mkchauras@gmail.com>, Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Subject: Re: [PATCH] powerpc: Don't drop _TIF_RESTOREALL on syscall restart
-In-Reply-To: <CAEuJdmqPPYET2tjQmKCzamRr6aBhb4JNjBPN0R6G72w0KdLjKg@mail.gmail.com>
-Date: Thu, 03 Sep 2026 23:55:50 +0530
-Message-ID: <fqzqtcnl.ritesh.list@gmail.com>
-References: <10c86c909f870d90b3094f76b692b44ebe9caeac.1787976185.git.ritesh.list@gmail.com> <CAEuJdmqPPYET2tjQmKCzamRr6aBhb4JNjBPN0R6G72w0KdLjKg@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hbSLx6ktLz2y2R
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Sep 2026 04:10:33 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 1DF3B402DF;
+	Thu,  3 Sep 2026 18:10:31 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1B0951F00A3D;
+	Thu,  3 Sep 2026 18:10:30 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1788459031;
+	bh=NlRDybBs4oFnFdw0mKBg+OGXTcovPntU/gWkRhWZePI=;
+	h=Subject:From:To:Cc:Date:In-Reply-To:References;
+	b=V+fHpkUm+RCpDXrEErTITR2ZdmWdnnKWAZQV1V4kNjOJZtt/AhhtPdJajmKiN96tb
+	 ideBysxS1OgO8MBm8CS0E2zX3QiYAX/fRV9JiJRiBTMuH5jgOM0JAwqmdWz9WTP+rB
+	 JL8HAzUI40qilXNLmI+SDP/bLwQZW03aQXfzfql+cXXHoX4hL35PHEtdqskX+yPwSS
+	 YS9jLqNZapNxwFK//fUuMjDiwbWr4nPYftZFXv6WzgpS0crwfVZSosQ0Lmp7gG2Zyg
+	 63PPZJaNIWgylp5eqJQD+0WKIQFZhqNlyTdi672t4qVv2K6aedtETRrCC3lLkHHdTo
+	 ipS6HlWF0T1fg==
+Subject: Re: [net-next,v6,01/15] ibmveth: Add MQ RX hypercall wrappers and
+ call definitions
+From: netdev-bot+sashiko@kernel.org
+To: mmc@linux.ibm.com
+Cc: netdev@vger.kernel.org, davem@davemloft.net, kuba@kernel.org,
+ horms@kernel.org, edumazet@google.com, pabeni@redhat.com,
+ andrew+netdev@lunn.ch, nnac123@linux.ibm.com, maddy@linux.ibm.com,
+ mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, haren@linux.ibm.com,
+ ricklind@linux.ibm.com, davemarq@linux.ibm.com, bjking1@linux.ibm.com,
+ shaik.abdulla1@ibm.com
+Date: Thu, 03 Sep 2026 18:10:29 +0000
+Message-ID: <178845902960.3394541.10707165174722907578@kernel.org>
+In-Reply-To:
+ <b87d16ce8e52934877234af6085e47a89571c9ae.1788102125.git.mmc@linux.ibm.com>
+References:
+ <b87d16ce8e52934877234af6085e47a89571c9ae.1788102125.git.mmc@linux.ibm.com>
+X-sashiko-severity: Low
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,25 +75,159 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
+MIME-Version: 1.0
 
-Harsh Prateek Bora <harsh.prateek.bora@gmail.com> writes:
+Thank you for your contribution! Sashiko AI review found 3 potential
+issue(s) to consider:
 
->
-> Thanks for the fix, Ritesh!
-> Are we leaving ret unused as well?
->
+Critical: 0 · High: 0 · Medium: 0 · Low: 3
 
-No, it's not unused. It is getting used to sample whether exit_flags has
-_TIF_RESTOREALL set or not.
+- [Low] The commit message body contains a verbatim duplicated sentence.
+- [Low] kernel-doc for the three new MQ hcall wrappers added by this
+  patch is inconsistent about the H_FUNCTION (unsupported-hcall) return.
+- [Low] The in-tree perf hypercall decoder is not updated for the three
+  opcodes added by this patch.
 
-Though maybe it can be optimized away if needed in a separate patch
-later. But for now we are good and this fix is needed as many of us have
-reported ld64 crash on v7.2.
+--
 
-> Otherwise,
-> Reviewed-by: Harsh Prateek Bora <harsh.prateek.bora@gmail.com>
->
-Thanks!
+ibmveth: Add MQ RX hypercall wrappers and call definitions
 
--ritesh
+This adds the PAPR 11.20.00 hcall IDs H_REG_LOGICAL_LAN_QUEUE (0x49C),
+H_ADD_LOGICAL_LAN_BUFFERS_QUEUE (0x4A0) and H_FREE_LOGICAL_LAN_QUEUE
+(0x4A8), raising MAX_HCALL_OPCODE, and adds matching static inline
+wrappers in ibmveth.h plus h_register_logical_lan_with_handle() so
+queue 0 can capture the PHYP queue handle.
+
+A few questions below, all on the changelog text and the kernel-doc.
+
+>     Add ibmveth.h wrapper helpers (h_register_logical_lan_queue(),
+>     h_add_logical_lan_buffers_queue(), h_free_logical_lan_queue()) with
+>     argument ordering and return semantics matching the existing ibmveth
+>     hcall wrappers. h_free_logical_lan_queue() uses plpar_hcall_norets()
+>     like h_free_logical_lan(). Also add h_register_logical_lan_with_handle()
+>     so queue 0 can capture the PHYP queue handle in MQ mode. Both new
+>     registration wrappers use plpar_hcall() rather than plpar_hcall9(), so
+>     they do not read unwritten stack slots. Both new
+>     registration wrappers use plpar_hcall() rather than plpar_hcall9(), so
+>     they do not read unwritten stack slots.
+
+[Severity: Low]
+This isn't a bug, but the sentence "Both new registration wrappers use
+plpar_hcall() rather than plpar_hcall9(), so they do not read unwritten
+stack slots." appears twice in a row here.  Was the second copy meant to
+be dropped when the v6 rationale was folded into the changelog body?
+
+> diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
+> index dff90a7d7f70b..cb0ea53491e6c 100644
+> --- a/arch/powerpc/include/asm/hvcall.h
+> +++ b/arch/powerpc/include/asm/hvcall.h
+> @@ -362,7 +362,11 @@
+>  #define H_GUEST_DELETE		0x488
+>  #define H_PKS_WRAP_OBJECT	0x490
+>  #define H_PKS_UNWRAP_OBJECT	0x494
+> -#define MAX_HCALL_OPCODE	H_PKS_UNWRAP_OBJECT
+> +/* 0x498 reserved; 0x4A4 = H_FREE_LOGICAL_LAN_BUFFER_QUEUE (unused here) */
+> +#define H_REG_LOGICAL_LAN_QUEUE 0x49C
+> +#define H_ADD_LOGICAL_LAN_BUFFERS_QUEUE 0x4A0
+> +#define H_FREE_LOGICAL_LAN_QUEUE 0x4A8
+> +#define MAX_HCALL_OPCODE	H_FREE_LOGICAL_LAN_QUEUE
+
+[Severity: Low]
+Should tools/perf/scripts/python/powerpc-hcalls.py get entries for these
+three opcodes too?
+
+Its hcall_table currently tracks hvcall.h up to the previous
+MAX_HCALL_OPCODE:
+
+	1168: 'H_PKS_WRAP_OBJECT',
+	1172: 'H_PKS_UNWRAP_OBJECT',
+	# Platform-specific hcalls used by the Ultravisor
+	61184: 'H_SVM_PAGE_IN',
+
+There is nothing for 1180 (0x49C), 1184 (0x4A0) or 1192 (0x4A8), so
+tracing the new MQ RX path with that script prints the raw numbers rather
+than the names.
+
+> diff --git a/drivers/net/ethernet/ibm/ibmveth.h b/drivers/net/ethernet/ibm/ibmveth.h
+> index d87713668ed30..08504d1cafd55 100644
+> --- a/drivers/net/ethernet/ibm/ibmveth.h
+> +++ b/drivers/net/ethernet/ibm/ibmveth.h
+> @@ -66,6 +66,145 @@ static inline long h_add_logical_lan_buffers(unsigned long unit_address,
+>  			    desc5, desc6, desc7, desc8);
+>  }
+>  
+> +/**
+> + * h_register_logical_lan_queue - Register a subordinate receive queue
+> + * @unit_address: Device unit address
+> + * @buffer_list: DMA address of 4KB page for tracking registered buffers
+> + * @rec_queue: Buffer descriptor of receive queue
+> + * @queue_handle: Output queue handle on success (may be NULL)
+> + * @irq: Output hypervisor IRQ number on success (may be NULL)
+> + *
+> + * Registers a subordinate receive queue with the hypervisor.
+> + *
+> + * Return:
+> + *   H_SUCCESS (0) on success
+> + *   H_PARAMETER if parameters are invalid
+
+[Severity: Low]
+Should H_FUNCTION be listed here as well?
+
+H_REG_LOGICAL_LAN_QUEUE (0x49C) is new in PAPR 11.20.00, so firmware
+predating it returns H_FUNCTION, and h_register_logical_lan_queue()
+passes the hypervisor status straight back.  The later commit in this
+series ("ibmveth: Add RX queue register helpers for MQ") does distinguish
+that case:
+
+	if (lpar_rc == H_FUNCTION)
+		netdev_err(adapter->netdev,
+			   "h_register_logical_lan_queue H_FUNCTION for queue %d (firmware MQ unsupported)\n",
+
+so a caller reading only this Return: section has no documented way to
+tell "firmware has no MQ support, fall back to single queue" from a hard
+error.
+
+> +static inline long
+> +h_register_logical_lan_queue(unsigned long unit_address,
+> +			     unsigned long buffer_list,
+> +			     unsigned long rec_queue,
+> +			     unsigned long *queue_handle,
+> +			     unsigned long *irq)
+> +{
+
+[ ... ]
+
+> + * Return:
+> + *   H_SUCCESS - All buffers added successfully
+> + *   H_PARAMETER - Invalid parameters
+> + *   H_HARDWARE - Hardware error
+> + *   H_FUNCTION - Firmware does not support this hcall
+> + */
+> +static inline long h_add_logical_lan_buffers_queue(unsigned long unit_address,
+
+[ ... ]
+
+> + * Deregisters and frees all structures associated with the subordinate queue.
+> + *
+> + * Return:
+> + *   H_SUCCESS - Queue freed successfully
+> + *   H_PARAMETER - Invalid parameters
+> + *   H_HARDWARE - Hardware error
+> + *   H_STATE - VIOA not in valid state
+> + *   H_BUSY / H_LONG_BUSY_* - Resource busy, retry
+> + */
+> +static inline long h_free_logical_lan_queue(unsigned long unit_address,
+> +					    unsigned long queue_handle)
+> +{
+> +	return plpar_hcall_norets(H_FREE_LOGICAL_LAN_QUEUE,
+> +				  unit_address, queue_handle);
+> +}
+
+Same question for h_free_logical_lan_queue(): 0x4A8 is equally new, and
+plpar_hcall_norets() returns H_FUNCTION unchanged on firmware that lacks
+it, but only h_add_logical_lan_buffers_queue() documents that status.  Was
+the difference between the three Return: sections intentional?
+
+-- 
+Sashiko AI review · https://netdev-ai.bots.linux.dev/sashiko/#/patchset/cover.1788102125.git.mmc%40linux.ibm.com
 
