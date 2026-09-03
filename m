@@ -1,110 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-26494-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26495-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C4E6BC624A4
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Sep 2026 13:28:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99516C61DD3
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Sep 2026 14:29:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hbL5h1WmCz2yDD;
-	Thu, 03 Sep 2026 23:28:40 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a07:de40:b251:101:10:150:64:1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788442120;
-	cv=none; b=h1ip0YzAxfV1domgQ1G2mzbflcEHZxR8lTMYqoVvl8SY4XbpLN9IsH5ECvbimalYv0Jy5PLD+rmmpC2z0/J4HMn6S2YtUpLvQ4/dABU2co81yPzaGDimTMG25PMyxI6K9yFQKyaImePdFXX9EAalMLBd0qw8YZqG+5VeOakFepP6zvgJ9KAcBLZuCWLD3rvt/m11lwL9jQrGB5qPfDPE6fTZEr7hi00/C8rWGx1EED8eAGmtzNzfxHr6O24mpTVOH+znjfYgQYn0GX5+VKcya5q2SVfE2koeWuf8D+Yc3FzEg2Hw8ZtaWsEO58lQwfA1KrVODyhd1OxseXJB9NDsdw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hbMRG6K9Jz2y71;
+	Fri, 04 Sep 2026 00:28:58 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788445738;
+	cv=none; b=U8nk80Uv0kRJdL/Rmx5ptZKZwpIjHwJPagtGS1/P6k+D7rL2yNKUg+qtMcZXtjKUA0X99pNqPoqblXDdQi+d2u9N1KZQKEHqhfb4qP0TZkPkWDR8n0QE9dl0sA2nat3H/+6rB7q/rv6gsgxrR+MnLTyvRUYW0CKqHZIa1dgN54C3hOtNjb0JC2/UOKM2b19551oQkkciOJWBwoJeeB2A5OMJiM/M99qIUuo7obNrFE5uDdeMNzTKoim8Ms2kbXxQcirN/1BzBshoTQ001HewwJj8BdoCSUjnRmtbmGw+GPArfZDaQBn5DyZ1qZ3P4ja4DAsfAwvHsjHyYwRv5huhbQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788442120; c=relaxed/relaxed;
-	bh=4LSKALgcNXy48I4CyQtle579qlEcRFlZ/oTvqCmo0II=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=nRjtDvWpI4WcFy/EX7wsbIYkVuBTtxp8hF6jolyffmKui0iJ7aahp6bbH9WSbdw9CXvFo2+d1DLbvb/XXR/22BN4s7PkjYdRPbhCzzentiLJ7gm2QdYUXmNR8AZWUwbJfHO1/UcvMQX9lC2iR86RoI7IGI0K4OqyJzotioFivpqw2q848q5B+HC+rq4nOBBKy1QKNRIgLbbbMBPbm7u2grEO2oM0hh3nyahYocielLYQNDv3AEn4sgLNG2ZUxdt7bC/zg9oQQYi6Q5FMg5MY/AOOUXXCBn0/tSLAtsJCTvHszQs+9Ht/N9Fam5+Vive3EGNj2DJ8//lt5xSf+WGjfQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=vQY5NGtX; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=bqQ70ncP; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=G3RhxIPQ; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=4q/9gDW6; dkim-atps=neutral; spf=pass (client-ip=2a07:de40:b251:101:10:150:64:1; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
+	t=1788445738; c=relaxed/relaxed;
+	bh=TE2Me2Qaapw28vfR1oCk/7uMMKpbgxiAwR/j5we1CsM=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=CmDCub8N5uTJ8sBeG1NKpGkXYlqTgysy4kiwkHV7O+kKvnyfnojCCr6uL2L/dVIyqQ0arX6oQZds85OSjd/m3MXQkkZmd+1h7b2hnnOdgH4ClJ04O5jOw/i2y9YnbNidZncJYOnycYJ+mPwtfD0rFCOmzExN5unqIJqY2hBbzl/b3wYpMM9XoNA64kO4hn9oF42a/syw2yeLo+vooAdTnxCeIaJmCDkizLExWckFWnQuBf2lVZpAfmnGLRscC5h44pp3u1qVfIi/Qo2bUUgOBY9cEAHHasfjRqcjwmjKJ68T+zLSOD8kQ62fDS1CMGl4uebH9cBYp362GGA1chFHXA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=OE5hfAL3; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=vbabka@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=vQY5NGtX;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=bqQ70ncP;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=G3RhxIPQ;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=4q/9gDW6;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=OE5hfAL3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2a07:de40:b251:101:10:150:64:1; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2a07:de40:b251:101:10:150:64:1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=vbabka@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hbL5f6tBwz2xpv
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Sep 2026 23:28:38 +1000 (AEST)
-Received: from kunlun.suse.cz (unknown [IPv6:2a07:de40:b306:2000::2])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 4E3E521CF5;
-	Thu,  3 Sep 2026 13:28:27 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1788442111; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=4LSKALgcNXy48I4CyQtle579qlEcRFlZ/oTvqCmo0II=;
-	b=vQY5NGtXZrVyDQNaiuMPXbjGjm53YtWTqCmbKq1Omwd4eY/6QFS6EQi5v/aKs1YYaLRdYQ
-	eXflz06NU+/JsNrPtak1EqcADlwudXNn67LgDL6L3Fd9/6RIaFka0w+GAnQ6GgBQRwmoir
-	IohDLEmTq/Fq6z26L17Usf+etJSJJp0=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1788442111;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=4LSKALgcNXy48I4CyQtle579qlEcRFlZ/oTvqCmo0II=;
-	b=bqQ70ncPbKCB9By/UKp4MPpnGNBiRR/0MZQ09qnKgEylt/rFfPnY9zAFJmVnz4QMitQ4ps
-	BZGKHaASTLA7BNBQ==
-Authentication-Results: smtp-out1.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=G3RhxIPQ;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b="4q/9gDW6"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1788442107; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=4LSKALgcNXy48I4CyQtle579qlEcRFlZ/oTvqCmo0II=;
-	b=G3RhxIPQJxgBJl4bTqVyNsaIJNZmq0Qf9K3sGSbA0bGnhvMcrkAqn3O9EgLBjN3Bhf5WbG
-	jblaTiQ7sd/CzDDAngFlicd/VpkswUiF8pBqFpOeSOgsT0tmfNTqpwmVHXoOnwOVhkZQ8O
-	8SBrYlGnJUiAaozzHtyyDjtnL96lpik=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1788442107;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=4LSKALgcNXy48I4CyQtle579qlEcRFlZ/oTvqCmo0II=;
-	b=4q/9gDW6jNCh03KjjZlDbsArNUiXre0fisOxUI1kiqJKXXvmwvq5MVaB1csgJXShVipJaM
-	Oo9gMDa2BMrRQlBA==
-Date: Thu, 3 Sep 2026 15:28:26 +0200
-From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
-To: Harsh Prateek Bora <harshpb@linux.ibm.com>
-Cc: Shrikanth Hegde <sshegde@linux.ibm.com>,
-	Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Christian Zigotzky <chzigotzky@xenosoft.de>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	"kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Peter Zijlstra <peterz@infradead.org>,
-	"R.T.Dickinson" <rtd2@xtra.co.nz>, hypexed@yahoo.com.au,
-	mad skateman <madskateman@gmail.com>,
-	Christian Zigotzky <info@xenosoft.de>,
-	Amit Machhiwal <amachhiw@linux.ibm.com>,
-	Gautam Menghani <gautam@linux.ibm.com>
-Subject: Re: [Linux PPC] Disable PREEMPT
-Message-ID: <apl1-rm_-Hb_ROE4@kunlun.suse.cz>
-References: <34112e67-85a5-a380-a42b-24c6562d65be@xenosoft.de>
- <8c6f2510-1dc5-4c45-9288-6b9c8f9b6b24@kernel.org>
- <aplDm-byYL79laYG@kunlun.suse.cz>
- <9a58d944-405c-4519-852e-8fa04c22c2db@linux.ibm.com>
- <aplZNFMJUkfs-BFs@kunlun.suse.cz>
- <d98e38cb-74d7-48b9-93f3-7c20ff910675@linux.ibm.com>
- <aplclgAsq1d6f5U-@kunlun.suse.cz>
- <1d83264f-8eda-4321-9200-f12897e38cda@linux.ibm.com>
- <aplnPuVk4LWgpu3n@kunlun.suse.cz>
- <e211e1fd-0923-4ab4-9e01-e9151807cf26@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hbMRF3VZZz2y2R
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Sep 2026 00:28:57 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id F219F4026E;
+	Thu,  3 Sep 2026 14:28:52 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 26C921F00ACA;
+	Thu,  3 Sep 2026 14:28:49 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1788445732;
+	bh=TE2Me2Qaapw28vfR1oCk/7uMMKpbgxiAwR/j5we1CsM=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=OE5hfAL3bZQXVLclfyoI0zNWbNdoHhR0Y9tgkTkLT4dgLH1aK20LS1exAyJ7QW8TX
+	 zBYnmWVvbiVhEqGa+2UFTGrp+zYQ6x6WXAKG+heYjTEmhaywSP+24/clriu4Vg0lWB
+	 loFTOURzIqqlCw4bdaKpTPRA9eMqFBX9uLomnhQtGsVZFde9XO15oo49ZveZ6PiQwf
+	 qws563/lr7XaqPc++y9Qrg12M2EhRE/9E2U/EpiErsgFI1i+x03OucFkoU+cmoO2On
+	 1EG5AGpXI0EMAh+RIKyLEW2ZBvVJ8LzcN0d9zvL6uIEm/3/YRvEU0soOPJN76a3PnT
+	 flM3BixQBpQrA==
+Message-ID: <3c19c24f-5036-4bbe-b3af-e5eae102f34a@kernel.org>
+Date: Thu, 3 Sep 2026 16:28:48 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -118,248 +59,134 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <e211e1fd-0923-4ab4-9e01-e9151807cf26@linux.ibm.com>
-X-Spamd-Bar: ++++++++++++
-X-Rspamd-Queue-Id: 4E3E521CF5
-X-Rspamd-Action: add header
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
-X-Spamd-Result: default: False [12.68 / 50.00];
-	SPAM_FLAG(5.00)[];
-	NEURAL_SPAM_LONG(3.50)[1.000];
-	BAYES_HAM(-3.00)[100.00%];
-	HFILTER_HOSTNAME_UNKNOWN(2.50)[];
-	RDNS_NONE(2.00)[];
-	ONCE_RECEIVED(1.20)[];
-	HFILTER_HELO_IP_A(1.00)[kunlun.suse.cz];
-	R_MIXED_CHARSET(0.63)[subject];
-	HFILTER_HELO_NORES_A_OR_MX(0.30)[kunlun.suse.cz];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.14)[-0.676];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	TO_DN_EQ_ADDR_SOME(0.00)[];
-	RCPT_COUNT_TWELVE(0.00)[15];
-	MIME_TRACE(0.00)[0:+];
-	ARC_NA(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[xtra.co.nz,yahoo.com.au,gmail.com];
-	TO_DN_SOME(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	RCVD_COUNT_ZERO(0.00)[0];
-	DKIM_TRACE(0.00)[suse.de:+];
-	MISSING_XM_UA(0.00)[];
-	FREEMAIL_CC(0.00)[linux.ibm.com,kernel.org,xenosoft.de,lists.ozlabs.org,vger.kernel.org,infradead.org,xtra.co.nz,yahoo.com.au,gmail.com];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:dkim]
-X-Spam: Yes
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 2/4] char: xillybus: replace __get_free_pages() with
+ kmalloc()
+Content-Language: en-US
+To: Eli Billauer <eli.billauer@gmail.com>, Mike Rapoport <rppt@kernel.org>
+Cc: David Laight <david.laight.linux@gmail.com>, Arnd Bergmann
+ <arnd@arndb.de>, Brad Warrum <bwarrum@linux.ibm.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Michal Simek <michal.simek@amd.com>, Ritu Agarwal <rituagar@linux.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ David Hildenbrand <david@kernel.org>, Matthew Wilcox <willy@infradead.org>,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ linuxppc-dev@lists.ozlabs.org
+References: <20260830-char-misc-v1-0-05e2ce44f291@kernel.org>
+ <20260830-char-misc-v1-2-05e2ce44f291@kernel.org>
+ <f6001085-9234-4025-ff34-6cc4a66c293a@outbound.gmail.com>
+ <20260831123937.32255a49@pumpkin> <apaF1HUtJnstuUN4@kernel.org>
+ <1729fb06-6beb-f8ef-3e71-47fc3f00345d@outbound.gmail.com>
+ <apcPg_y-HsMki7we@kernel.org>
+ <9a3d6a08-339c-3315-cc81-46907d0836ad@outbound.gmail.com>
+ <apgSCyj-h2xVc2ss@kernel.org>
+ <1d7f8806-f4a0-fda0-a361-a011460ef308@outbound.gmail.com>
+From: "Vlastimil Babka (SUSE)" <vbabka@kernel.org>
+Autocrypt: addr=vbabka@kernel.org; keydata=
+ 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
+In-Reply-To: <1d7f8806-f4a0-fda0-a361-a011460ef308@outbound.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Thu, Sep 03, 2026 at 06:06:16PM +0530, Harsh Prateek Bora wrote:
-> + Amit, Gautam - since they recently came across a similar regression which
-> is seen with non KVM workload as well.
-> + Venkat - for CI improvement suggestion below.
+On 9/3/26 14:30, Eli Billauer wrote:
+> On 02/09/2026 14:09, Mike Rapoport wrote:
+>>> So using vmalloc() may result in a malfunction in the data transport where
+>>> the __get_free_pages() would have been successful. This outweighs the
+>>> benefit of a somewhat higher probability of success in allocating very large
+>>> buffers, and surely the improved aesthetics of the kernel code.
+>> kmalloc() still works, just like __get_free_pages()
+>>   
 > 
-> Hi Michal,
+> After these few days of discussion, this is what I make of this topic.
 > 
-> On 03/09/26 5:55 pm, Michal Suchánek wrote:
+> The memory allocation in fifo_init() is somewhat ugly, but this driver 
+> has been out there for five years, and no complaints from users.
+> 
+> The vmalloc() option may be successful sometimes where the current 
+> allocation will not. On the other hand, there is a possibility that it 
+> will cause real trouble with page faults. Plus, a large allocation with 
+> vmalloc() may be a weak spot on a platform to which the kernel is 
+> partially or poorly ported.
 
-> > 
-> > There is another problem that Linux 7.2.2 often locks up on boot inside
-> > the guest, and as a result a different kernel is needed in the guest to
-> > reproduce the host crash. This is more recent, linux 6.12 does not have
-> > this problem. Will try some different kernel combinations to see if I
-> > can narrow this down. For this the repro is merely booting the kernel in
-> > the VM, it typically fails early before userspace produces any messages.
+vmalloc() has its limitations, yes...
 
-This one regressed between 6.19.12
-https://github.com/openSUSE/kernel-source/blob/9f6830f/config/ppc64le/default
-and 7.0.12
-https://github.com/openSUSE/kernel-source/blob/2ebf0bc/config/ppc64le/default
+> With __get_free_pages(), there is no doubt that usable memory is 
+> allocated right away, and that it will work that way on every single 
+> esoteric platform. vmalloc() leaves us with "we're pretty sure there is 
+> probably no problem".
+> 
+> So I vote against vmalloc().
+> 
+> As for replacing __get_free_pages() with kmalloc(), it's a matter of 
+> taste. I think that if you're after a buffer that has a power-of-two 
+> number of pages, __get_free_pages() is the natural choice, and using it 
+> makes it easier for the reader to understand what you're doing. 
 
-Thanks
+If you are only after a buffer (that's physically contiguous and aligned)
+and don't need the struct page itself, then kmalloc() is the natural choice.
+This is where we are heading with the upcoming memdesc conversions etc.
 
-Michal
+> Replacing it with a kmalloc() is confusing in my opinion, and requires 
+> that the reader is aware that kmalloc() falls back to __get_free_pages() 
 
-SLOF **********************************************************************
-QEMU Starting
- Build Date = Aug 13 2026 14:47:36
- FW Version = abuild@OBS release 20230918
- Press "s" to enter Open Firmware.
+Why? The reader has only to know that kmalloc() will provide such a buffer
+(up to sizes that the page allocator would) and whether it falls back to the
+page allocator or not is an implementation detail.
+BTW, it's only at >2*PAGE_SIZE where it falls back. Which could change at
+any point and nobody should care.
 
-Populating /vdevice methods
-Populating /vdevice/vty@30000000
-Populating /vdevice/nvram@71000000
-Populating /pci@800000020000000
-Loading Linux 7.0.12-1.g2ebf0bc-default ...
-Loading initial ramdisk ...                
-OF stdout device is: /vdevice/vty@30000000
-Preparing to boot Linux version 7.0.12-1.g2ebf0bc-default (geeko@buildhost) (gcc (SUSE Linux) 15.3.0, GNU ld (GNU Binutils; openSUSE Tumbleweed) 2.45.0.20251103-4) #1 SMP PREEMPT_DYNAMIC Mon Jun 15 08:39:32 UTC 2026 (2ebf0bc)
-Detected machine type: 0000000000000101
-command line: BOOT_IMAGE=/boot/vmlinux-7.0.12-1.g2ebf0bc-default root=UUID=304c7f07-efbb-1070-2f27-accd935ec088 rw quiet systemd.show_status=1 security=selinux selinux=1
-Max number of cores passed to firmware: 8192 (NR_CPUS = 8192)
-Calling ibm,client-architecture-support... done
-memory layout at init:
-  memory_limit : 0000000000000000 (16 MB aligned)
-  alloc_bottom : 00000000066b0000
-  alloc_top    : 0000000030000000
-  alloc_top_hi : 0000003e00000000
-  rmo_top      : 0000000030000000
-  ram_top      : 0000003e00000000
-instantiating rtas at 0x000000002fff0000... done
-prom_hold_cpus: skipped
-copying OF device tree...
-Building dt strings...
-Building dt structure...
-Device tree strings 0x00000000066c0000 -> 0x00000000066c0bec
-Device tree struct  0x00000000066d0000 -> 0x00000000066f0000
-Quiescing Open Firmware ...
-Booting Linux via __start() @ 0x0000000000250000 ...
-[    0.000000][    T0] ERROR: Failed to allocate trace buffer
-[    0.000000][    T0] ERROR: tracer: failed to allocate ring buffer!
-Linux ppc64le
-#1 SMP PREEMPT_D[    0.285758][  T673] BUG: Kernel NULL pointer dereference on read at 0x00000010
-[    0.285877][  T673] Faulting instruction address: 0xc000000000485bd0
-[    0.285903][    T1] VFS: Dquot-cache hash table entries: 8192 (order 0, 65536 bytes)
-[    0.285954][  T673] Oops: Kernel access of bad area, sig: 7 [#1]
-[    0.286133][  T673] LE PAGE_SIZE=64K MMU=Radix  SMP NR_CPUS=8192 NUMA pSeries
-[    0.286240][  T673] Modules linked in:
-[    0.286288][  T673] CPU: 15 UID: 0 PID: 673 Comm: kworker/u531:0 Not tainted 7.0.12-1.g2ebf0bc-default #1 PREEMPT(full) openSUSE Tumbleweed (unreleased)  cf0846124d7853fab338aeae87203b36cac18419
-[    0.286527][  T673] Hardware name: IBM pSeries (emulated by qemu) Power11 (architected) 0x820200 0xf000007 of:SLOF,HEAD hv:linux,kvm pSeries
-[    0.286739][  T673] Workqueue: trace_init_wq tracer_init_tracefs_work_func
-[    0.286818][  T673] NIP:  c000000000485bd0 LR: c000000000448864 CTR: c0000000005a3420
-[    0.286906][  T673] REGS: c00000000a7a7960 TRAP: 0300   Not tainted  (7.0.12-1.g2ebf0bc-default)
-[    0.287014][  T673] MSR:  8000000000009033 <SF,EE,ME,IR,DR,RI,LE>  CR: 44088404  XER: 00000000
-[    0.287122][  T673] CFAR: c000000000448860 DAR: 0000000000000010 DSISR: 00080000 IRQMASK: 0 
-[    0.287122][  T673] GPR00: c000000000448864 c00000000a7a7c00 c000000001f38100 c000000002a5c098 
-[    0.287122][  T673] GPR04: c0000000017dc5f0 c0000000017dc5e8 000000000000001f 0000000000000064 
-[    0.287122][  T673] GPR08: c0000000017dc628 00000000000005f0 00000000000005e8 0000000084000404 
-[    0.287122][  T673] GPR12: c0000000005a3420 c000003dfff43d80 c0000000018e5600 c0000000018e54f0 
-[    0.287122][  T673] GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
-[    0.287122][  T673] GPR20: c0000000013ec418 c0000000013ef6d8 c0000000017dc5a0 c0000000017dc590 
-[    0.287122][  T673] GPR24: c000000001825330 c0000000017dc628 c000000014b52a05 0000000000000000 
-[    0.287122][  T673] GPR28: c0000000017dc5e8 0000000000000000 c0000000017dc5f0 c000000002a5e008 
-[    0.287970][  T673] NIP [c000000000485bd0] __find_event_file+0x70/0x3c0
-[    0.288046][  T673] LR [c000000000448864] init_tracer_tracefs+0x274/0xc80
-[    0.288122][  T673] Call Trace:
-[    0.288167][  T673] [c00000000a7a7c00] [c00000000a7a7c60] 0xc00000000a7a7c60 (unreliable)
-[    0.288258][  T673] [c00000000a7a7c60] [c000000000448864] init_tracer_tracefs+0x274/0xc80
-[    0.288348][  T673] [c00000000a7a7dc0] [c00000000203fcf0] tracer_init_tracefs_work_func+0x50/0x320
-[    0.288452][  T673] [c00000000a7a7e50] [c0000000002620e8] process_one_work+0x1e8/0x5c0
-[    0.288541][  T673] [c00000000a7a7f10] [c00000000026309c] worker_thread+0x1dc/0x3d0
-[    0.288630][  T673] [c00000000a7a7f90] [c00000000026fa34] kthread+0x194/0x1b0
-[    0.288721][  T673] [c00000000a7a7fe0] [c00000000000de58] start_kernel_thread+0x14/0x18
-[    0.288810][  T673] Code: fb410030 fb810040 fba10048 7cbc2b78 3ba00000 fbc10050 7d194378 7c9e2378 2e2a0fc0 2da90fc0 f8010070 60420000 <e93b0010> 81490058 e8890018 714a0208 
-[    0.289001][  T673] ---[ end trace 0000000000000000 ]---
-[    0.290718][  T673] pstore: backend (nvram) writing error (-1)
-[    0.290805][  T673] 
-[    0.290839][  T673] note: kworker/u531:0[673] exited with irqs disabled
-[    0.304261][    T1] NET: Registered PF_INET protocol family
-[    0.304602][    T1] IP idents hash table entries: 262144 (order: 5, 2097152 bytes, linear)
-[    0.315892][    T1] tcp_listen_portaddr_hash hash table entries: 65536 (order: 4, 1048576 bytes, linear)
-[    0.316104][    T1] Table-perturb hash table entries: 65536 (order: 2, 262144 bytes, linear)
-[    0.316224][    T1] TCP established hash table entries: 524288 (order: 6, 4194304 bytes, linear)
-[    0.316873][    T1] TCP bind hash table entries: 65536 (order: 5, 2097152 bytes, linear)
-[    0.317199][    T1] TCP: Hash tables configured (established 524288 bind 65536)
-[    0.317748][    T1] MPTCP token hash table entries: 65536 (order: 5, 1572864 bytes, linear)
-[    0.317970][    T1] UDP hash table entries: 65536 (order: 6, 4194304 bytes, linear)
-[    0.318402][    T1] UDP-Lite hash table entries: 65536 (order: 6, 4194304 bytes, linear)
-[    0.319148][    T1] NET: Registered PF_UNIX/PF_LOCAL protocol family
-[    0.319249][    T1] NET: Registered PF_XDP protocol family
-[    0.320019][    T1] PCI: CLS 0 bytes, default 128
-[    0.320281][    T1] rtas_flash: no firmware flash support
-[    0.320967][  T770] Trying to unpack rootfs image as initramfs...
-[    0.331385][    T1] Initialise system trusted keyrings
-[    0.331739][    T1] Key type blacklist registered
-[    0.332191][    T1] workingset: timestamp_bits=38 max_order=22 bucket_order=0
-[    0.333804][    T1] integrity: Platform Keyring initialized
-[    0.333875][    T1] integrity: Machine keyring initialized
-[    0.333935][    T1] Allocating IMA blacklist keyring.
-[    0.343039][    T1] Key type asymmetric registered
-[    0.343109][    T1] Asymmetric key parser 'x509' registered
-[    0.344215][    T1] Block layer SCSI generic (bsg) driver version 0.4 loaded (major 246)
-[    0.344623][    T1] io scheduler mq-deadline registered
-[    0.344688][    T1] io scheduler kyber registered
-[    0.344800][    T1] io scheduler bfq registered
-[    0.380554][    T1] ledtrig-cpu: registered to indicate activity on CPUs
-[    0.380794][    T1] virtio-pci 0000:00:01.0: enabling device (0100 -> 0103)
-[    0.382384][    T1] virtio-pci 0000:00:01.0: ibm,query-pe-dma-windows(2026) 800 8000000 20000000 returned 0, lb=2000000000 ps=107 wn=1
-[    0.383175][    T1] virtio-pci 0000:00:01.0: ibm,create-pe-dma-window(2027) 800 8000000 20000000 18 26 returned 0 (liobn = 0x80000001 starting addr = 8000000 0)
-[    0.386395][    T1] virtio-pci 0000:00:01.0: lsa_required: 0, lsa_enabled: 0, direct mapping: 1
-[    0.386509][    T1] virtio-pci 0000:00:01.0: iommu: 64-bit OK but direct DMA is limited by 800004000000000
-[    0.386621][    T1] virtio-pci 0000:00:01.0: lsa_required: 0, lsa_enabled: 0, direct mapping: 1
-[    0.386723][    T1] virtio-pci 0000:00:01.0: iommu: 64-bit OK but direct DMA is limited by 800004000000000
-[    0.388040][    T1] virtio-pci 0000:00:03.0: enabling device (0100 -> 0103)
-[    0.390005][    T1] virtio-pci 0000:00:03.0: lsa_required: 0, lsa_enabled: 0, direct mapping: 1
-[    0.390111][    T1] virtio-pci 0000:00:03.0: iommu: 64-bit OK but direct DMA is limited by 800004000000000
-[    0.390216][    T1] virtio-pci 0000:00:03.0: lsa_required: 0, lsa_enabled: 0, direct mapping: 1
-[    0.390316][    T1] virtio-pci 0000:00:03.0: iommu: 64-bit OK but direct DMA is limited by 800004000000000
-[    0.392116][    T1] virtio-pci 0000:00:04.0: enabling device (0100 -> 0103)
-[    0.394076][    T1] virtio-pci 0000:00:04.0: lsa_required: 0, lsa_enabled: 0, direct mapping: 1
-[    0.394184][    T1] virtio-pci 0000:00:04.0: iommu: 64-bit OK but direct DMA is limited by 800004000000000
-[    0.394288][    T1] virtio-pci 0000:00:04.0: lsa_required: 0, lsa_enabled: 0, direct mapping: 1
-[    0.394389][    T1] virtio-pci 0000:00:04.0: iommu: 64-bit OK but direct DMA is limited by 800004000000000
-[    0.395729][    T1] virtio-pci 0000:00:05.0: enabling device (0100 -> 0103)
-[    0.397705][    T1] virtio-pci 0000:00:05.0: lsa_required: 0, lsa_enabled: 0, direct mapping: 1
-[    0.397814][    T1] virtio-pci 0000:00:05.0: iommu: 64-bit OK but direct DMA is limited by 800004000000000
-[    0.397919][    T1] virtio-pci 0000:00:05.0: lsa_required: 0, lsa_enabled: 0, direct mapping: 1
-[    0.398024][    T1] virtio-pci 0000:00:05.0: iommu: 64-bit OK but direct DMA is limited by 800004000000000
-[    0.399426][    T1] virtio-pci 0000:00:06.0: enabling device (0100 -> 0103)
-[    0.401288][    T1] virtio-pci 0000:00:06.0: lsa_required: 0, lsa_enabled: 0, direct mapping: 1
-[    0.401396][    T1] virtio-pci 0000:00:06.0: iommu: 64-bit OK but direct DMA is limited by 800004000000000
-[    0.401502][    T1] virtio-pci 0000:00:06.0: lsa_required: 0, lsa_enabled: 0, direct mapping: 1
-[    0.401604][    T1] virtio-pci 0000:00:06.0: iommu: 64-bit OK but direct DMA is limited by 800004000000000
-[    0.403644][    T1] virtio-pci 0000:00:07.0: enabling device (0100 -> 0103)
-[    0.405723][    T1] virtio-pci 0000:00:07.0: lsa_required: 0, lsa_enabled: 0, direct mapping: 1
-[    0.405830][    T1] virtio-pci 0000:00:07.0: iommu: 64-bit OK but direct DMA is limited by 800004000000000
-[    0.405936][    T1] virtio-pci 0000:00:07.0: lsa_required: 0, lsa_enabled: 0, direct mapping: 1
-[    0.406044][    T1] virtio-pci 0000:00:07.0: iommu: 64-bit OK but direct DMA is limited by 800004000000000
-[    0.409460][    T1] Serial: 8250/16550 driver, 4 ports, IRQ sharing enabled
-[    0.427929][  T770] Freeing initrd memory: 21120K
-[    0.431965][    T1] Non-volatile memory driver v1.3
-[    0.432069][    T1] pseries_rng: Registering IBM pSeries RNG driver
-[    0.433884][    T1] mousedev: PS/2 mouse device common for all mice
-[    0.435769][    T1] pseries_idle_driver registered
-[    0.435912][    T1] hid: raw HID events driver (C) Jiri Kosina
-[    0.436062][    T1] drop_monitor: Initializing network drop monitor service
-[    0.436412][    T1] NET: Registered PF_INET6 protocol family
-[    0.437731][    T1] Segment Routing with IPv6
-[    0.437819][    T1] RPL Segment Routing with IPv6
-[    0.437897][    T1] In-situ OAM (IOAM) with IPv6
-[    0.438002][    T1] PFKEY is deprecated and scheduled to be removed in 2027, please contact the netdev mailing list
-[    0.438125][    T1] NET: Registered PF_KEY protocol family
-[    0.438508][    T1] secvar-sysfs: Failed to retrieve secvar operations
-[    0.441215][    T1] registered taskstats version 1
-[    0.464617][    T1] Loading compiled-in X.509 certificates
-[    0.481670][    T1] Loaded X.509 cert 'home:tiwai OBS Project: 466e10c6490242bdd3a9985914c1906197b53a81'
-[    0.487739][    T1] Demotion targets for Node 0: null
-[    0.487834][    T1] page_owner is disabled
-[    0.518088][    T1] Key type .fscrypt registered
-[    0.518163][    T1] Key type fscrypt-provisioning registered
-[    0.518473][    T1] Key type big_key registered
-[    0.536738][    T1] Key type encrypted registered
-[    0.536916][    T1] Secure boot mode disabled
-[    0.536994][    T1] ima: No TPM chip found, activating TPM-bypass!
-[    0.537070][    T1] Loading compiled-in module X.509 certificates
-[    0.537347][    T1] Loaded X.509 cert 'home:tiwai OBS Project: 466e10c6490242bdd3a9985914c1906197b53a81'
-[    0.537451][    T1] ima: Allocated hash algorithm: sha256
-[    0.538132][    T1] Secure boot mode disabled
-[    0.538236][    T1] Trusted boot mode disabled
-[    0.538303][    T1] ima: No architecture policies found
-[    0.538448][    T1] evm: Initialising EVM extended attributes:
-[    0.538523][    T1] evm: security.selinux
-[    0.538569][    T1] evm: security.SMACK64 (disabled)
-[    0.538629][    T1] evm: security.SMACK64EXEC (disabled)
-[    0.538689][    T1] evm: security.SMACK64TRANSMUTE (disabled)
-[    0.538762][    T1] evm: security.SMACK64MMAP (disabled)
-[    0.538822][    T1] evm: security.apparmor
-[    0.538868][    T1] evm: security.ima
-[    0.538915][    T1] evm: security.capability
-[    0.538983][    T1] evm: HMAC attrs: 0x1
-[    0.553344][    T1] SED: plpks not available
+> in this case. So we actually want __get_free_pages(), but call kmalloc() 
+> instead and let it fall back to __get_free_pages() so we don't have a 
+> cast and don't need to save the order, and assume that everyone knows 
+> that this is equivalent.
 
+Oh right with __get_free_pages() you need to pass the order for freeing.
+That's a real practical argument for kmalloc(). So I don't see why you'd
+hold it against kmalloc().
 
+> So I vote against the kmalloc() thing as well.
+> 
+> If this patch is part of a larger kernel cleanup, I suppose my votes 
+> don't count for much. But for the record, this is my opinion.
+> 
+> Thanks and regards,
+>     Eli
 
 
