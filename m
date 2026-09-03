@@ -1,73 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-26462-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26463-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1A1B0C624A4
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Sep 2026 07:46:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DC678C61DD3
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Sep 2026 07:51:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hbBVX4PMrz2yrD;
-	Thu, 03 Sep 2026 17:46:12 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788421572;
-	cv=none; b=nrjfaMqMaFKOc3CeUJdTXHKvBF1yqz2HHvhEXqEnFHu5edLrIOiq8EiD5a9cLS9jwtMeV/EcqIIi4fPsB76KCqbcsj4CfiQoTI5ShKbcY8XP8m223LFURy8WQH0Z45QisWg9z8KNEBhtWjuv3EM3vdcdIG5w3BS37IqB7psPC5JlaXEacHPssL/qbFNjL8BYXQBIJhAJI5VgO6LyFRD1+wB9pvnD11H0zC0CJJgykHJ/4St+UbhuGe1voG3fwmdvRueKriDRbuWSdTzrrGuCZp2jGaLWDxoM+SL1o7bK3MdunjtwOrCmFC62U4w8tXJNh6xblWiKwQ+mdsnMjw0epQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hbBcp0WPGz2xlY;
+	Thu, 03 Sep 2026 17:51:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0a:51c0:0:12e:550::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788421897;
+	cv=none; b=N9kO2zN+/JPgkuDWtXIm3JnjGd7ESWU9VdylFASBduPe9y773Wk2bkcQliGK4+8QpWMvE9MxwHSAJrvhgXhUHk7eKLqfdowWgmLrP+djykpWlxQdDCpCdMrUg8mgVnhN1/9FflugGQZLHIrXnLRP8Ygn6XdzJZ4bjDwMlPE239fUBV68cpjgrcjVo2qX2rNzFd/XDkTjrbByxmTPn+8sTEtWIkxLrIW/y9ItePJBAD9gzifTp8OHVS9KS4SWsXPRdl1ZDhUTfMJ3uMfPyIHsWgXwnWZ6r9nQ1uN2sJf+4kaAQXhuEDPwWBJN/3/d1MRoPHJVaxRUeudyi6vCsHtrMQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788421572; c=relaxed/relaxed;
-	bh=7f2WkifVw0NguaifgmPtUXuEgHUauSvNBua3tTJ+apc=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=l46JsaqMQ/J5SMNMPv8PGno2s4+kRuHIB/F4IlMvj7koMy8NW1PaN7K3MoZlIWQ+DOW8rS+P7IHF5YYMbQ+7MZ1I2SrHTQNI8leSPooxA51nP4C4p7AAARhQltCCWC+XdTS7gxz/lbHqDg6ssZqP0mi1qc6BXB53wqq616bj228wseKnnPE8a1YlRbN++Z5MBOnU75w6hhXCmX/vHJE9rTwsOAr0rpaOfgHnShrfVibvxr2dISswOu7tEsdzgSe+ZIczc9Xi5fJA8YoRqmicR3vq0jcU5p2GJDRcqi3FgCz9Q8NkH1qRaTvhdHHBSJIUT5USJew4YbKYYoB2udQWAw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=TSlU0VVE; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1788421897; c=relaxed/relaxed;
+	bh=5iW4jdWMi73lQm0xNAN3vvMpxq+9yLkV/tkClyyUkd0=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=f4eKx5Jo87wra6dApeebScVJuI6JhS/LK1JXMO5gAIW5pLPJihGYFnnl/WGCPh/Vzvpco3UTI3BaKx3sLAoP76kaz0mqh7jGi7W4MANDKaJ8k7A9UyXD7m2Q9TXQjQ/qfq3WnW9Naf55S9uXrubeTy64MfmZkSPcU3qqi9nxZTGzc8Eicz/xtJgkQLTMKJ3MzFTSQxR7juR/yo0PC3hfDDy4VddeIIBQ7XooCCKZEmAT0HDc3ilJnf8AV8/nLwpZM3Utaz1NVeIsqBOZWd3F/R6FyVtZgp/uVMcZxE/NHfyoGxivb3VxdvEMWB2VKXvP19Fq4tvb70Z4FCYArsWRjA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=epr8s8vL; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=/TtDngCq; dkim-atps=neutral; spf=pass (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=TSlU0VVE;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=epr8s8vL;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=/TtDngCq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
+Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hbBVW4Qmpz2yr9
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Sep 2026 17:46:10 +1000 (AEST)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68361ecM2239326;
-	Thu, 3 Sep 2026 07:46:08 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=7f2Wki
-	fVw0NguaifgmPtUXuEgHUauSvNBua3tTJ+apc=; b=TSlU0VVEOYZvXLfjWYV8Oa
-	HAVJ0k5OVz6Xe7WtELfQ65d7sEz+FNNVJ/8tXoyULUfL9rgSbcpTTqTGaf0fYbhg
-	QFjrGh7XhiIclcRsj17T9uKRluGDv8ScVcuJBg+lgFPDMsZ+vzaA+eplEuMsnTIe
-	xGxEgZ1jAbnIm3jKkSEEQynbBOPl7YXHZ8rVwNkxHqeTT1UiykVZVJVwDACJ1KYJ
-	dQSFnHw1iQP+vpNgfa34d5nwEUXej31i1sfc2JmwA7Wt5EahI3ihF5TD9YaT4wKO
-	VPDGBHY8eu6bjPmHCdfX+SIWDHGu9ANs7KQkWT64GB3CXu8D9LtZx84to/rwg3dQ
-	==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gbq2tk44f-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 03 Sep 2026 07:46:08 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6837fLDC028596;
-	Thu, 3 Sep 2026 07:46:07 GMT
-Received: from smtprelay04.dal12v.mail.ibm.com ([172.16.1.6])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4gecjaq03q-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 03 Sep 2026 07:46:07 +0000 (GMT)
-Received: from smtpav06.wdc07v.mail.ibm.com (smtpav06.wdc07v.mail.ibm.com [10.39.53.233])
-	by smtprelay04.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6837k56s30212708
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 3 Sep 2026 07:46:06 GMT
-Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id CF30558054;
-	Thu,  3 Sep 2026 07:46:05 +0000 (GMT)
-Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 78DFC5803F;
-	Thu,  3 Sep 2026 07:46:03 +0000 (GMT)
-Received: from [9.61.240.230] (unknown [9.61.240.230])
-	by smtpav06.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Thu,  3 Sep 2026 07:46:03 +0000 (GMT)
-Message-ID: <b9f8c317-f919-47f2-8988-e57e22176a82@linux.ibm.com>
-Date: Thu, 3 Sep 2026 13:16:01 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hbBcm0rTfz2yrd
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Sep 2026 17:51:35 +1000 (AEST)
+From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020; t=1788421290;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=5iW4jdWMi73lQm0xNAN3vvMpxq+9yLkV/tkClyyUkd0=;
+	b=epr8s8vLWpnga42EE26n/anTxvrFGHH4F82vRsZ686O+FbHTEyfL38Jbyrw33Fao8FUOgP
+	YvfpgVnoZnX8uTI0qolELM6IsguWl2qCqGWFBHlWnTJgmPYquNQMwRJfi9XWi6Y5mRGle4
+	KW3ueTspexywSZl3IKwRJHiOmkWiXh3Az2QaFtgBu2ylyRNKRnXLJSb4gZuN3or+uhXc+C
+	FD6GRaP/A1NC0OFndLerATSc2J8oWgw0KbM/ig2+8dvbYbF0vV+qJArn7vMmZZ7Ov6GROG
+	AQU6MqZCgZtTEo2NvDq+V4aCkcTPEMlQGt5c46v4ztQOs+3dQoiiMOY1XvcXvQ==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020e; t=1788421290;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=5iW4jdWMi73lQm0xNAN3vvMpxq+9yLkV/tkClyyUkd0=;
+	b=/TtDngCq8exQVQLXPVtjCK54BDhStRy2GTyEEXPtifFWiN3MyDpaRwkn0f1Dw6U+PBq7Nh
+	AeLBrYQ9oaU/umAw==
+Date: Thu, 03 Sep 2026 09:41:20 +0200
+Subject: [PATCH v2 05/15] x86: Remove AT_VECTOR_SIZE_ARCH from UAPI
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,121 +67,86 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: scsi: ibmvfc: Add Kconfig dependency on NVME_FC to prevent link
- failure
-To: Tyrel Datwyler <tyreld@linux.ibm.com>, pavrampu <pavrampu@linux.ibm.com>
-Cc: linux-scsi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        brking@linux.ibm.com, linux-kernel@vger.kernel.org,
-        davemarq@linux.ibm.com
-References: <327877a29337aa526cc50ac88fbddb86@linux.ibm.com>
- <afd6fdc7-0fae-4fcf-b30a-a69294d26576@linux.ibm.com>
- <9873559a-59df-4f4c-b653-6930636096a6@linux.ibm.com>
-Content-Language: en-GB
-From: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-In-Reply-To: <9873559a-59df-4f4c-b653-6930636096a6@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Authority-Analysis: v=2.4 cv=bc1bluPB c=1 sm=1 tr=0 ts=6a9925c0 cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=VwQbUJbxAAAA:8
- a=VnNF1IyMAAAA:8 a=gCSP5jI7dXej6UQmhssA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTAzMDA2NiBTYWx0ZWRfX9jLg9A4OksDW
- XLvMiPP3ON5x+lQ2s4+SG9wYnSQZyXphFPQYG8ZGaQMtpBxGQahEfM8eV39SYlg/l4cLj5kPvbw
- 6wrizuOvcRq1BTSESrCFnckZQ3tGSJI=
-X-Proofpoint-ORIG-GUID: rLt_s67DKpB8sDS9buZinlg1K1nrPOmZ
-X-Proofpoint-GUID: rLt_s67DKpB8sDS9buZinlg1K1nrPOmZ
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTAzMDA2NiBTYWx0ZWRfX+Pg0Dmh3W035
- /O4BFQ2PBsHDaNJ6Vs/rvt83WF9Y40i8yRDEjRrWg9jLsqqyFV9xCACSaDNYM6lFOGdso0kS90I
- AN/5KOgafIVvWNYxfm9/QOWQ+Uyw9HBW5KQ5IpFshQgLbf5mdiPLJMet2bXZT6pmJF1wSQHqbhx
- pmRiRGY+kVR44jhD/eO+F9ByqweQczD2iV8njE65nXReE5cuNlT5hJnj/Mug9wiwGehSQDKdtYK
- p2V73G+PULTk3ugnWCuW1feLiHgwtCEWWDqRSwYYXZwv1QPzhv2tjIyxcSEKvtC4TkxDIvX8NVU
- E9N0GvL5J+eTcUHf89GPYHVLRLqAQVociBqvVRiqfXZ7bHNEqM1awR2w7YGSFattxKuc6RNFPI/
- 6i6FAQZHpwnA7mVWkV1DdRpxQNnOTFACfe8TA1z6JScQ7I6qFFSWFg9kXiLfDCNXiZCUPQO5x6n
- TULLHzmYpj77PpcDcyQ==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-03_02,2026-09-02_04,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 suspectscore=0 adultscore=0 malwarescore=0 spamscore=0
- lowpriorityscore=0 phishscore=0 clxscore=1015 priorityscore=1501
- impostorscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
- definitions=main-2609030066
+Message-Id: <20260903-at-vector-size-arch-v2-5-5bc32a71e3d8@linutronix.de>
+References: <20260903-at-vector-size-arch-v2-0-5bc32a71e3d8@linutronix.de>
+In-Reply-To: <20260903-at-vector-size-arch-v2-0-5bc32a71e3d8@linutronix.de>
+To: Kees Cook <kees@kernel.org>, Arnd Bergmann <arnd@arndb.de>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, 
+ linux-arch@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ linux-riscv@lists.infradead.org, loongarch@lists.linux.dev, 
+ linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+ linux-mips@vger.kernel.org, sparclinux@vger.kernel.org, 
+ linux-sh@vger.kernel.org, linux-alpha@vger.kernel.org, 
+ =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1788421286; l=1994;
+ i=thomas.weissschuh@linutronix.de; s=20240209; h=from:subject:message-id;
+ bh=b7W/p77P/YlmxuUHtTjOCqsXrUn80Pb/0CSphAb3eXc=;
+ b=8bCm4iBaPTW9zBWat/+m5Ee1rmwD4EqMaEgVhxezGGaTPE5ECabv+Lrj7OAgMtDB5ybLV0Bjy
+ LrdI/FLc2B7BI3Ex+/EIsufonLKjzeY5VOZWKidM6LruyvF2pR3gqlh
+X-Developer-Key: i=thomas.weissschuh@linutronix.de; a=ed25519;
+ pk=pfvxvpFUDJV2h2nY0FidLUml22uGLSjByFbM6aqQQws=
 
+There is nothing userspace can do with this value. In the kernel is
+always combined with AT_VECTOR_SIZE_BASE, which is not exposed to
+userspace and also changes from time to time.
 
-On 03/09/26 6:57 am, Tyrel Datwyler wrote:
-> On 9/2/26 1:40 AM, Venkat Rao Bagalkote wrote:
->> On 02/09/26 1:55 pm, pavrampu wrote:
->>> Hi,
->>>
->>> I am seeing below build failure with latest linux-next repo.
->>>
->>> Description:
->>>
->>> Building the kernel with CONFIG_SCSI_IBMVFC=y and CONFIG_NVME_FC=m results in
->>> a link failure when building vmlinux:
->>>
->>> Build failure logs:
->>>
->>> ld: drivers/scsi/ibmvscsi/ibmvfc-nvme.o: in function
->>> `ibmvfc_nvme_register_remoteport':
->>> ibmvfc-nvme.c:488: undefined reference to `nvme_fc_register_remoteport'
->>> ld: drivers/scsi/ibmvscsi/ibmvfc-nvme.o: in function
->>> `ibmvfc_nvme_unregister_remoteport':
->>> ibmvfc-nvme.c:515: undefined reference to `nvme_fc_unregister_remoteport'
->>> ld: drivers/scsi/ibmvscsi/ibmvfc-nvme.o: in function `ibmvfc_nvme_register':
->>> ibmvfc-nvme.c:536: undefined reference to `nvme_fc_register_localport'
->>> ld: drivers/scsi/ibmvscsi/ibmvfc-nvme.o: in function `ibmvfc_nvme_unregister':
->>> ibmvfc-nvme.c:565: undefined reference to `nvme_fc_unregister_localport'
->>> ld: drivers/scsi/ibmvscsi/ibmvfc-nvme.o: in function `ibmvfc_nvme_unregister':
->>> ibmvfc-nvme.c:565: undefined reference to `nvme_fc_unregister_localport'
->>> ld: drivers/scsi/ibmvscsi/ibmvfc-core.c:6798: undefined reference to
->>> `nvme_fc_rescan_remoteport'
->>
->> Below simple check in Kconfig fixes the build failure.
->>
->> If this is acceptable, then I will send a formal patch.
-> Yep, need to force ibmvfc to be a module when NVME_FC isn't builtin, or NVME_FC
-> must be disabled.
+Move the symbol to a kernel-internal header.
 
+Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
+Reviewed-by: Kees Cook <kees@kernel.org>
+---
+ arch/x86/include/asm/auxvec.h      | 12 ++++++++++++
+ arch/x86/include/uapi/asm/auxvec.h | 13 +++----------
+ 2 files changed, 15 insertions(+), 10 deletions(-)
 
-Thank you for confirming.
+diff --git a/arch/x86/include/asm/auxvec.h b/arch/x86/include/asm/auxvec.h
+new file mode 100644
+index 000000000000..ed26ad09f3e3
+--- /dev/null
++++ b/arch/x86/include/asm/auxvec.h
+@@ -0,0 +1,12 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++#ifndef _ASM_X86_AUXVEC_H
++#define _ASM_X86_AUXVEC_H
++
++/* entries in ARCH_DLINFO: */
++#if defined(CONFIG_IA32_EMULATION) || !defined(CONFIG_X86_64)
++# define AT_VECTOR_SIZE_ARCH 3
++#else /* else it's non-compat x86-64 */
++# define AT_VECTOR_SIZE_ARCH 2
++#endif
++
++#endif /* _ASM_X86_AUXVEC_H */
+diff --git a/arch/x86/include/uapi/asm/auxvec.h b/arch/x86/include/uapi/asm/auxvec.h
+index bdde9e18f94e..6677c9ace117 100644
+--- a/arch/x86/include/uapi/asm/auxvec.h
++++ b/arch/x86/include/uapi/asm/auxvec.h
+@@ -1,6 +1,6 @@
+ /* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
+-#ifndef _ASM_X86_AUXVEC_H
+-#define _ASM_X86_AUXVEC_H
++#ifndef _UAPI_ASM_X86_AUXVEC_H
++#define _UAPI_ASM_X86_AUXVEC_H
+ /*
+  * Architecture-neutral AT_ values in 0-17, leave some room
+  * for more of them, start the x86-specific ones at 32.
+@@ -10,11 +10,4 @@
+ #endif
+ #define AT_SYSINFO_EHDR		33
+ 
+-/* entries in ARCH_DLINFO: */
+-#if defined(__KERNEL__) && (defined(CONFIG_IA32_EMULATION) || !defined(CONFIG_X86_64))
+-# define AT_VECTOR_SIZE_ARCH 3
+-#else /* else it's non-compat x86-64 */
+-# define AT_VECTOR_SIZE_ARCH 2
+-#endif
+-
+-#endif /* _ASM_X86_AUXVEC_H */
++#endif /* _UAPI_ASM_X86_AUXVEC_H */
 
-Link to Patch: 
-https://lore.kernel.org/all/20260903074329.6705-1-venkat88@linux.ibm.com/
+-- 
+2.55.0
 
-
-Regards,
-
-Venkat.
-
->
-> -Tyrel
->> # git diff
->> diff --git a/drivers/scsi/Kconfig b/drivers/scsi/Kconfig
->> index 4a2af0f702e1..6612d5d445e2 100644
->> --- a/drivers/scsi/Kconfig
->> +++ b/drivers/scsi/Kconfig
->> @@ -753,6 +753,7 @@ config SCSI_IBMVFC
->>          tristate "IBM Virtual FC support"
->>          depends on PPC_PSERIES && SCSI
->>          depends on SCSI_FC_ATTRS
->> +      depends on NVME_FC || NVME_FC=n
->>          help
->>            This is the IBM POWER Virtual FC Client
->>
->>
->> Regards,
->>
->> Venkat.
->>
->>> If you happen to fix this, please add below tag.
->>>
->>> Reported-by: Pavithra <pavrampu@linux.ibm.com>
->>>
->>> Thanks,
->>> Pavithra
 
