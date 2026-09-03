@@ -1,90 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-26455-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26456-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E4E65C624D4
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Sep 2026 20:14:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 80D93C61DD6
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Sep 2026 01:28:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hZv876pBNz2ypW;
-	Thu, 03 Sep 2026 06:14:15 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788380055;
-	cv=none; b=CSnB6zh9y5fiCHwzJyZ7RDfH1APCKagNZ8eU6lqTU5wo3hbj9Q38E6P4kOcrVASoEPm1MMp3/3eyOzOCDsM+nUmCrApBVeR/x6k18fYPg4k/K1ZcKegzIiFZFispdgfEg0eOQRUS5OE1+ISNAdr8RRYYJSEH52xYap6wrYb5zcbnpMQMcBMHiImovT9dW9DWrLBAu+a51xehyhFSlYZ+W1QWTF/uH3yYHiTSh2m6Bwu6y8Hdi/CEU1yZ5Ll1lrvHq1Kv+ktjPmVbIUHgYhK5pkgnUSy7+N1JJ36xTtC8C3i1j3cvBfq8t01gcHWnCtZJb73qrWlB5LT+Odi67SeDvw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hb26F3fK0z2y2X;
+	Thu, 03 Sep 2026 11:28:05 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788398885;
+	cv=none; b=QcWTtNUf/ycDjYbkgF+pv8ZazjJSGGt0jyOwYnpbXbTIAKVCh7HWqWLOWDRe6XoLAYK6V++XgSbD/qSynWsjJEmXhUs+e9LcA6E8FbpG6tuINXYdSN/0thpk4asL/luR1VxMviduibhlvA34z7t0nbNhwq25bJ25KYBhXrJPHh4xnRFAEq/8nu+/+Esw/viHCs+9vnSGzJsRJ06x25R0agEsXcAow7suJfM2Oal9TktGrvWKygdxSRUWlDvQWToagtHAMBGLa0WXKGLMzBadwFURcQ6SjpLkiZNwHEpuQXv9455WQGrypskDGVxNwUUyNQhNG52sYSHQ/YR+m2NlfA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788380055; c=relaxed/relaxed;
-	bh=vOx4tcQvro1eM7A4lRZSKqXvPfVUtTIPbWFZwRZg64k=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=SmNQ1nt4eI+TuPQvqiq2t3mEH62szPykBBgjyJQ3JLav+6088HM22VaOOgqACH17byyNZSjQDXg5/+yvXSomhQFcxGtuHPBM+XtVLIUyUlyNTiExt+WAJQPqlwyoQgUlHetokpW019YBrYAVoChDjfyNnh2zVJF9Mrm7jVW8uZiXoZozjiefVepH5oKuATM1k6XA354lbHMACZTTWD0d5TJNN2UG3entaElzYKTXeWtuCUZKTW/QYCXEhf8BC9aMlj+BDDsyqLx6tG3goGNYQlF7fYyzDbf9sy3qL74i+kreeDttDu43gb25mw5gu13MuJJpKmb11/2t0CuV51ztyg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=lpm2mECD; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=aboorvad@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1788398885; c=relaxed/relaxed;
+	bh=MOYDwww5UbDPQDuCOnc4C6bpM7ArImYjmh7y2/UGN08=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=eZlyEqz1J8+3QJ1m3ZND4jcxsksRABPiwHbfeNxBjTaeLI8TJDu3YQwQCRkiYfbRwQcg9e1yRfMQmvzNFl+4HnVyWMAsr9CuW4hRpE6B/APGJBIoCtzrfCgmSCM/yzqf/OUvTfRz0w2R6fsRAaWG5DEqPkX/y5mvJHTLlKYUYD9U8hPQ2L+8lblSzBQRCF3n5d1lER/nl+EBP++P+prcVCxA/6FMOhoW0sxvmKiQlzH3JQ8EXMPqSoopVwc+3JesbfdGubHXGCTSI1dOhc0JE8WjU64O3cvs/oYi7dcdrJmLFRpWXDyAbvOXXS6zeSVHv1oz5jLWMxB86sPkqqHXlQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=XaB1eERK; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=lpm2mECD;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=XaB1eERK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=aboorvad@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hZv871C5Jz2yjp
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Sep 2026 06:14:14 +1000 (AEST)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 682I1cpn726397;
-	Wed, 2 Sep 2026 20:14:12 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hb26C6Xk3z2y2W
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Sep 2026 11:28:03 +1000 (AEST)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 682NVg7w1472100;
+	Thu, 3 Sep 2026 01:28:00 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=vOx4tc
-	Qvro1eM7A4lRZSKqXvPfVUtTIPbWFZwRZg64k=; b=lpm2mECDR5aBuTCve9GQPF
-	llMN90hFFLGgjCg1WFRS+y16wuTmf1DVJnQzs5xrX8h+XGTcDMw8mqCed7PzVanu
-	sqQml696+jdjN4fiwMT71gbZOs6Qc08ZW5BtuOo3En3TCpuwiiLVs8iG+lV1iQnU
-	RwJEOA+FxPS/vznaOlwVb04p/oMVnmoz+RNLa9RmWK6QBYPUo5BQ4w+0yDKhym0i
-	mxsMi7yEEtiLUE28ipO30/jzI1hJUE/fopsKKBi1tgoY6T8f19GAm+inUyxvkEHF
-	UWm1sYrm1uqYH7r8T9d9xY4lm/k5WXDABZcWbfL+f+wcLFmFL/T7dpExQSBiexqA
+	:message-id:mime-version:references:subject:to; s=pp1; bh=MOYDww
+	w5UbDPQDuCOnc4C6bpM7ArImYjmh7y2/UGN08=; b=XaB1eERKnLh7ISIZ60Q3VI
+	fd7NwdaGH4JrS0Oo+ScKXK3p7nj+BrRO6offp1AmFR8n6fMoK7OoD246eAOLSHPg
+	E4p7b3A1HAOnBJZ04fb0jghygOltEj4b5601SssELbfmlzK48Jv2Kpahc2jofwmx
+	cBSxaYCsZ5n9rqkx8IiHwFNXZ1daDroS5e5zkIELn1qwPVDcfLA/EifEmsvEjz0K
+	S/W2CvgGp5l0TFg8xcLOFWf2vd2EiQvEM+fgD4FwmT2IQOI8kQjJ8vG5aD/HMdrw
+	m3qc4nelfaEmwu2OW60ia2xkaL1trbVVUV+7cOS47TPPiFrZm7Nmx9fJR+1CBlqw
 	==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gbpx5s7n1-1
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gbq2thxx3-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 02 Sep 2026 20:14:11 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 682KBGfp012636;
-	Wed, 2 Sep 2026 20:14:10 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gcbygkywx-1
+	Thu, 03 Sep 2026 01:27:59 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6831QHW3012383;
+	Thu, 3 Sep 2026 01:27:59 GMT
+Received: from smtprelay04.dal12v.mail.ibm.com ([172.16.1.6])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4gcb8hncfx-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 02 Sep 2026 20:14:10 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 682KE6st10879348
+	Thu, 03 Sep 2026 01:27:59 +0000 (GMT)
+Received: from smtpav06.dal12v.mail.ibm.com (smtpav06.dal12v.mail.ibm.com [10.241.53.105])
+	by smtprelay04.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6831RwUb7209622
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 2 Sep 2026 20:14:06 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9C09620040;
-	Wed,  2 Sep 2026 20:14:06 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 7C73A20043;
-	Wed,  2 Sep 2026 20:14:04 +0000 (GMT)
-Received: from aboo.ibm.com (unknown [9.36.18.93])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed,  2 Sep 2026 20:14:04 +0000 (GMT)
-Message-ID: <032f834f0f6147649d9a29ec17ac62551dbf5142.camel@linux.ibm.com>
-Subject: Re: [PATCH] powerpc/entry: Fix double accounting of user time on
- interrupt entry
-From: Aboorva Devarajan <aboorvad@linux.ibm.com>
-To: Shrikanth Hegde <sshegde@linux.ibm.com>
-Cc: Christophe Leroy <chleroy@kernel.org>, linux-kernel@vger.kernel.org,
-        Ritesh Harjani <ritesh.list@gmail.com>,
-        Madhavan Srinivasan
- <maddy@linux.ibm.com>,
-        linuxppc-dev@lists.ozlabs.org,
-        Mukesh Kumar
- Chaurasiya <mchauras@linux.ibm.com>
-Date: Thu, 03 Sep 2026 01:44:03 +0530
-In-Reply-To: <95913fca-5631-40ff-abed-4afad99722e6@linux.ibm.com>
-References: <20260902050628.2553909-1-aboorvad@linux.ibm.com>
-	 <95913fca-5631-40ff-abed-4afad99722e6@linux.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.60.1 (3.60.1-1.fc44) 
+	Thu, 3 Sep 2026 01:27:58 GMT
+Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 06D385805E;
+	Thu,  3 Sep 2026 01:27:58 +0000 (GMT)
+Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 6BB6858055;
+	Thu,  3 Sep 2026 01:27:57 +0000 (GMT)
+Received: from [9.61.27.13] (unknown [9.61.27.13])
+	by smtpav06.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Thu,  3 Sep 2026 01:27:57 +0000 (GMT)
+Message-ID: <9873559a-59df-4f4c-b653-6930636096a6@linux.ibm.com>
+Date: Wed, 2 Sep 2026 18:27:56 -0700
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -98,178 +81,114 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: scsi: ibmvfc: Add Kconfig dependency on NVME_FC to prevent link
+ failure
+To: Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
+        pavrampu <pavrampu@linux.ibm.com>
+Cc: linux-scsi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        brking@linux.ibm.com, linux-kernel@vger.kernel.org,
+        davemarq@linux.ibm.com
+References: <327877a29337aa526cc50ac88fbddb86@linux.ibm.com>
+ <afd6fdc7-0fae-4fcf-b30a-a69294d26576@linux.ibm.com>
+Content-Language: en-US
+From: Tyrel Datwyler <tyreld@linux.ibm.com>
+In-Reply-To: <afd6fdc7-0fae-4fcf-b30a-a69294d26576@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=PPc/P/qC c=1 sm=1 tr=0 ts=6a988393 cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+X-Authority-Analysis: v=2.4 cv=bc1bluPB c=1 sm=1 tr=0 ts=6a98cd1f cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
  a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=VnNF1IyMAAAA:8
- a=opBZN2_kVkm32md8eYUA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-GUID: kdUp5yMMC6YSYQDO8nSVRAi8OQm0_HHK
-X-Proofpoint-ORIG-GUID: YfOAApO53ATYyMFSuGLlbDc3fzKihqZp
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTAyMDE3NyBTYWx0ZWRfX6tCxOhQZZkpq
- 3lbtPSG59kuNVMmxxWO1+sxjtX1ChkvdIHLjmPkSLlM+J9AcfRnOZDK0ABUrkuntc5i+Nz4vL73
- jW9x7T6TYBT9fUjmSncdEnNSbnwAx6U=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTAyMDE3NyBTYWx0ZWRfX9uK5SAzl3BoU
- R5OMEpilG6gbt4dSJlRJacbProDdxSSjTyAmEo9K9btTlLW7MMuTm9QA6WoApT1upYCBVGquVZi
- eZEJi6B0HuS+NQ8UBp6Tc6A2iq3qMkjpR6uoMG9asrANXb4dcLJQGn2Trgpun3+6l8Bf8uCxzmJ
- NCsq+PtVB21iuzviAfGpnzY6pk5qy5kF/d+SXjs6uh2KcGdr0hlh5HKp2a9z1PEJStBYVPEK7Jm
- p8eblFlQre97rIzEovm4mkZbmy/RlucvNPRLWY9owo1ZIK9380vjqSHUcUUSjIZXYOuvCOoZ8R+
- fk74dsGY0i5ywQR4kV0/Oq/otZYJMvSe+LfuSHoZxXvzCbV+8wo7Jbl39WEB74/+NbRuMM11sFS
- 9UyFEHBD4CH6BGcTxaMHvE+Pp6EOuehwCdxGfo4/AILWtpPBbt8vLyI5lJT73rrLmX0PzmYpdW8
- jo1oN4YfEAi9lG4znfg==
+ a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=VnNF1IyMAAAA:8
+ a=KZpsQks5LnckocmEDf0A:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTAzMDAwNyBTYWx0ZWRfX4W1QbXC2jI+E
+ QGXCBnyRyrSdRn7OLNmE1v/PkbReLkQvlNRoP+jdA+adMSHtZMXTUznPIltvPLtQZzMsKkGzwmK
+ +vC4Q3K5gIgF319T29lB10TFkTvorCk=
+X-Proofpoint-ORIG-GUID: rRVE2T7NeSMiPmS2OLRgAJ9Xs7Hfm7_w
+X-Proofpoint-GUID: rRVE2T7NeSMiPmS2OLRgAJ9Xs7Hfm7_w
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTAzMDAwNyBTYWx0ZWRfX/P/b5dkJmOol
+ YRmf4Fw0KOn4+snJxI9c5cO3JFTPyjel+HQKuHJcBQuVCR0XFSETn2PmMlqy2rZCjx6CvWH5iKV
+ r9UbE+BChG8l4CW9k/rOw9ygap4b2CUj0byN/eJx5/qF1T87WmMbzvvk5ECVqZZiNwm+XT+Y7B2
+ Z46FPQVB6z9ZBWUz65muB7WbiWJ47VFTQhI/gU90moKTIASTQuv4pRDQ6azf/6QsP/BijyhvkMc
+ s7LftFllxREayr0LFn4/dkro0OZ+mqlktib/HxWxgeqKkQjK4CEHfDaq58HwJJdkACfrnHmUnAe
+ MKg5/NUhqW9HB+Nfx9LCgPWdZcYPIX5f0xaYpK52g+UP5VIGzm/VTW59ae0FnR4V0KydZV097SI
+ 7l+tt8pBC62o2/cZqV+l7eMlBoht0aOzojns45kBJRoYjlHa5p+7deZI0TTrr8O+LJjnmMYvjWm
+ dT8PoGuuukm6ROBNhZA==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-02_04,2026-09-02_04,2025-10-01_01
+ definitions=2026-09-02_06,2026-09-02_04,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 phishscore=0 adultscore=0 suspectscore=0 bulkscore=0
- spamscore=0 priorityscore=1501 impostorscore=0 malwarescore=0
- lowpriorityscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ bulkscore=0 suspectscore=0 adultscore=0 malwarescore=0 spamscore=0
+ lowpriorityscore=0 phishscore=0 clxscore=1015 priorityscore=1501
+ impostorscore=0 classifier=typeunknown authscore=0 authtc= authcc=
  route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
- definitions=main-2609020177
+ definitions=main-2609030007
 
-On Wed, 2026-09-02 at 12:37 +0530, Shrikanth Hegde wrote:
+On 9/2/26 1:40 AM, Venkat Rao Bagalkote wrote:
+> 
+> On 02/09/26 1:55 pm, pavrampu wrote:
+>> Hi,
+>>
+>> I am seeing below build failure with latest linux-next repo.
+>>
+>> Description:
+>>
+>> Building the kernel with CONFIG_SCSI_IBMVFC=y and CONFIG_NVME_FC=m results in
+>> a link failure when building vmlinux:
+>>
+>> Build failure logs:
+>>
+>> ld: drivers/scsi/ibmvscsi/ibmvfc-nvme.o: in function
+>> `ibmvfc_nvme_register_remoteport':
+>> ibmvfc-nvme.c:488: undefined reference to `nvme_fc_register_remoteport'
+>> ld: drivers/scsi/ibmvscsi/ibmvfc-nvme.o: in function
+>> `ibmvfc_nvme_unregister_remoteport':
+>> ibmvfc-nvme.c:515: undefined reference to `nvme_fc_unregister_remoteport'
+>> ld: drivers/scsi/ibmvscsi/ibmvfc-nvme.o: in function `ibmvfc_nvme_register':
+>> ibmvfc-nvme.c:536: undefined reference to `nvme_fc_register_localport'
+>> ld: drivers/scsi/ibmvscsi/ibmvfc-nvme.o: in function `ibmvfc_nvme_unregister':
+>> ibmvfc-nvme.c:565: undefined reference to `nvme_fc_unregister_localport'
+>> ld: drivers/scsi/ibmvscsi/ibmvfc-nvme.o: in function `ibmvfc_nvme_unregister':
+>> ibmvfc-nvme.c:565: undefined reference to `nvme_fc_unregister_localport'
+>> ld: drivers/scsi/ibmvscsi/ibmvfc-core.c:6798: undefined reference to
+>> `nvme_fc_rescan_remoteport'
+> 
+> 
+> Below simple check in Kconfig fixes the build failure.
+> 
+> If this is acceptable, then I will send a formal patch.
 
-Hi Shrikanth,
+Yep, need to force ibmvfc to be a module when NVME_FC isn't builtin, or NVME_FC
+must be disabled.
 
-> Hi Aboorva.
->=20
-> On 9/2/26 10:36 AM, Aboorva Devarajan wrote:
-> > Since the switch to generic entry, an interrupt taken from user mode
-> > accounts user time twice: once in arch_interrupt_enter_prepare() and
-> > again in arch_enter_from_user_mode(), which irqentry_enter() invokes
-> > for the same interrupt:
-> >=20
-> > =C2=A0=C2=A0 arch_interrupt_enter_prepare()
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 account_cpu_user_entry()
-> > =C2=A0=C2=A0 irqentry_enter()
-> > =C2=A0=C2=A0=C2=A0=C2=A0 arch_enter_from_user_mode()
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 account_cpu_user_entry()
-> >=20
-> > account_cpu_user_entry() accumulates the time spent in user mode
-> > since the last return to user space, so the second call charges the
-> > same interval again.
-> >=20
-> > With CONFIG_VIRT_CPU_ACCOUNTING_NATIVE=3Dy this roughly doubles the
-> > reported user time of any workload that takes interrupts. On a
-> > pseries LPAR, ps/top show ~200% CPU for a single-threaded CPU-bound
-> > loop, and time(1) reports user time about twice the elapsed time.
-> >=20
->=20
-> Could you please run mpstat with 50% or less loading workload like stress=
--ng
-> and document the difference in changelog.
+-Tyrel
+> 
+> # git diff
+> diff --git a/drivers/scsi/Kconfig b/drivers/scsi/Kconfig
+> index 4a2af0f702e1..6612d5d445e2 100644
+> --- a/drivers/scsi/Kconfig
+> +++ b/drivers/scsi/Kconfig
+> @@ -753,6 +753,7 @@ config SCSI_IBMVFC
+>         tristate "IBM Virtual FC support"
+>         depends on PPC_PSERIES && SCSI
+>         depends on SCSI_FC_ATTRS
+> +      depends on NVME_FC || NVME_FC=n
+>         help
+>           This is the IBM POWER Virtual FC Client
+> 
+> 
+> Regards,
+> 
+> Venkat.
+> 
+>>
+>> If you happen to fix this, please add below tag.
+>>
+>> Reported-by: Pavithra <pavrampu@linux.ibm.com>
+>>
+>> Thanks,
+>> Pavithra
+> 
 
-Sure, will add it in v2.
-
-1. On the same pseries LPAR, taskset -c 6 stress-ng --cpu 1 --cpu-load 50:
-
-Without the patch, the reported %usr is inflated, while with the patch
-it is close to the expected 50%.
-
-Without Patch:
-06:43:09 AM  CPU    %usr**   %nice    %sys %iowait    %irq   %soft  %steal =
- %guest  %gnice   %idle
-06:43:10 AM    6   69.74     0.00    0.00    0.00    0.00    0.00    0.00  =
-  0.00    0.00   30.26
-
-With Patch:
-06:29:33 AM  CPU    %usr**   %nice    %sys %iowait    %irq   %soft  %steal =
- %guest  %gnice   %idle
-06:29:34 AM    6   48.51     0.00    0.00    0.00    0.99    0.00    0.00  =
-  0.00    0.00   50.50
-
-2. Single-threaded CPU-bound workload:
-
-taskset -c 100 python3 -c 'while True: pass' (executed for ~3 seconds)
-
-Without patch:
-TIME         ELAPSED %CPU
-00:00:06       00:02  209
-
-With patch:
-TIME         ELAPSED %CPU
-00:00:03       00:03  104
-
->=20
-> > Remove the accounting from arch_interrupt_enter_prepare() and rely on
-> > arch_enter_from_user_mode(), which runs for both syscalls and
-> > interrupts. The duplicate account_stolen_time() call is removed the
-> > same way.
-> >=20
-> > Fixes: bee25f97ad24 ("powerpc: Enable GENERIC_ENTRY feature")
-> > Signed-off-by: Aboorva Devarajan <aboorvad@linux.ibm.com>
-> > ---
-> > Verified on a pseries LPAR (CONFIG_VIRT_CPU_ACCOUNTING_NATIVE=3Dy),
->=20
-> Usual default is VIRT_CPU_ACCOUNTING_GEN, selected by NO_HZ_FULL.
-> Most distros usually enable NO_HZ_FULL=3Dy.
->=20
-> At hindsight, I don't see the issue dependency on it. But better to be su=
-re.
-
-It is only observed with CONFIG_VIRT_CPU_ACCOUNTING_NATIVE.
-
-account_cpu_user_entry() updates utime only with NATIVE accounting.
-With CONFIG_VIRT_CPU_ACCOUNTING_GEN or tick-based accounting, it is
-an empty stub and therefore a no-op.
-
-So kernels using CONFIG_VIRT_CPU_ACCOUNTING_GEN or tick-based accounting
-are not affected.
-
-> > 7.3.0-rc1, single-threaded CPU-bound loop:
-> >=20
-> > Before:
-> >=20
-> > =C2=A0=C2=A0 $ python3 -c 'while True: pass' &
-> > =C2=A0=C2=A0 $ sleep 3; ps -p $! -o pid,etime,time,pcpu
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 PID=C2=A0=C2=A0=C2=A0=C2=A0 ELAPSE=
-D=C2=A0=C2=A0=C2=A0=C2=A0 TIME %CPU
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 4980=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
- 00:03 00:00:06=C2=A0 210
-> >=20
-> > After:
-> >=20
-> > =C2=A0=C2=A0 $ python3 -c 'while True: pass' &
-> > =C2=A0=C2=A0 $ sleep 3; ps -p $! -o pid,etime,time,pcpu
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 PID=C2=A0=C2=A0=C2=A0=C2=A0 ELAPSE=
-D=C2=A0=C2=A0=C2=A0=C2=A0 TIME %CPU
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 4951=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
- 00:03 00:00:03=C2=A0 105
-> >=20
-> > =C2=A0 arch/powerpc/include/asm/entry-common.h | 6 ++++--
-> > =C2=A0 1 file changed, 4 insertions(+), 2 deletions(-)
-> >=20
-> > diff --git a/arch/powerpc/include/asm/entry-common.h b/arch/powerpc/inc=
-lude/asm/entry-common.h
-> > index c5adb5006361..984294e62568 100644
-> > --- a/arch/powerpc/include/asm/entry-common.h
-> > +++ b/arch/powerpc/include/asm/entry-common.h
-> > @@ -222,8 +222,6 @@ static inline void arch_interrupt_enter_prepare(str=
-uct pt_regs *regs)
-> > =C2=A0=20
-> > =C2=A0=C2=A0	if (user_mode(regs)) {
-> > =C2=A0=C2=A0		kuap_lock();
-> > -		account_cpu_user_entry();
-> > -		account_stolen_time();
-> > =C2=A0=C2=A0	} else {
-> > =C2=A0=C2=A0		kuap_save_and_lock(regs);
-> > =C2=A0=C2=A0		/*
-> > @@ -426,6 +424,10 @@ static __always_inline void arch_enter_from_user_m=
-ode(struct pt_regs *regs)
-> > =C2=A0 #endif
-> > =C2=A0=C2=A0	kuap_assert_locked();
-> > =C2=A0=C2=A0	booke_restore_dbcr0();
-> > +	/*
-> > +	 * User and stolen time is accounted here for every entry from
-> > +	 * user mode. The interrupt prepare hooks must not account again.
-> > +	 */
-> > =C2=A0=C2=A0	account_cpu_user_entry();
-> > =C2=A0=C2=A0	account_stolen_time();
-> > =C2=A0=20
-> >=20
-> > base-commit: fb442a6673ff1046bf67754957d95880fdb394b5
-
-Thanks,
-Aboorva
 
