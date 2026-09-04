@@ -1,47 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-26559-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26560-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 412A5C624DE
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Sep 2026 11:56:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E5F33C79F87
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Sep 2026 14:51:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hbw0M2vm2z2yr2;
-	Fri, 04 Sep 2026 21:56:03 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=37.157.195.192
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788522963;
-	cv=none; b=HYixYtFAhtTy3g6i+goPN3lAIMy/iL7V+Y4N4zjZ+ACYCHFclCWWm3cN+KkPTitv5dOaq+JNssbiXGtl5T3pSnGsLmxB1bN0mqmWm66RLNDBsxnn0AqcT8EqsZukuLv1RKSrYhhOJJ7vz8PcpDghS5lNMWMa/23ILURSHOx4mWgYw9WLgkOTwlwuYMfiFSz+HnlIv7L5uSpi2CU6WaUwPdZ87gVMSnTlDa+0HwOFfRetLQhskI6rjVdRL12qUV33lH8au+N7i+WhbO7GlM3+e7Hm249vqfsVnR1wAIN/q3nFIn0fOYj81NVjZ3hMt3L5axhgQT7ihOow3Mb8ONNoAw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hbztX0J8jz2xpn;
+	Sat, 05 Sep 2026 00:51:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788533475;
+	cv=none; b=XZdKqJCKDMmtfcP5uBxuc8wm3yLyfK9MP4qQvJ5SjRk7k6OZOpzm+hG+A9CaNBPuxakOUKnNY3uGfWv82TpEAZBg9zRjyqVdOtDaFop0DtfaPlQqzFH2IOIsSI2/Q+3d7HxByXd6GAUa0BTlKCgEAv/WTD05YyTl8x0kX5JGGVMQhAW9oPsmBzO8VrC9CM/vk6Mi88ioEM83moFsLZYiwBZ/ShX7x+EgEz/0qNE1dm4EgGX1pa0aK95RWAmuNV63HbZyXxbjVxpSDOnpKN7EyCVtH4dVYgO7tFXzavkKwI8pv1tZ8+yZHI1otdOozt2rlivDABtOCK4HbYZqIOLpEA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788522963; c=relaxed/relaxed;
-	bh=ULHNMYRlDH5XGoxely6YhbWSN1xpu5t9kC9WuJ3M4ko=;
-	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
-	 Mime-Version:Content-Type; b=Ll1yfh2dDoUeE18yzgjB2Z4XIMJYbC9ovRcUsJSRcct+umc4te+KQYCtVFFwhiprXgljZ7K3ZGP0vt2UJxrBSdg40hodiOigQ0B1jEve4W0o9707yZFkKfktC/DFYfO18BKj69LXhxZVUFDI/Gp1YtCDeMgHdTkF06lMRaRX6cqOZ4sEU9tvu6drFm0SdIz7QCOpvwyfxNA0Q2njdO0Z293k3Q7AGacyhqdvmg3LYbeZLn1ieIETjL9ZCthrXu1qdcJBnaKEogF5C8WUydFfRJ9S7uwWWG96cB16O25R1vEZKwgdbiPisZnospHGjOmfgYW6f8G3c7hSwl5FIuVdDw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=danny.cz; spf=pass (client-ip=37.157.195.192; helo=redcrew.org; envelope-from=dan@danny.cz; receiver=lists.ozlabs.org) smtp.mailfrom=danny.cz
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=danny.cz
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=danny.cz (client-ip=37.157.195.192; helo=redcrew.org; envelope-from=dan@danny.cz; receiver=lists.ozlabs.org)
-Received: from redcrew.org (redcrew.org [37.157.195.192])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	t=1788533475; c=relaxed/relaxed;
+	bh=z84wpOj7CNOGSg65mDGIrYSnrJrlGh4ehhkoEAM8pT0=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=c9uQVUWcKDjYeo2gWs0p+girYXbRauyuQjNfUDpSVa3b9VXaDqRZsjGwaY+/tYy8OlzkIYoILTCXogpzzW2kMoUWjgxsYsx9hchpE1QxM/O2yJMxdGHJdW6OGJWhXUcEHyPMg37fXzg4a1GMWRvZsmycA0xUq0xhoMZssc38hWtChGszjdyqaRz3JKZpEW2e0fwgKvY86wIxcPfRCZqNj5ihFtMpnTUED1r+c+5Mnl/xkrtgokDBYmFwAdyXBQ1B9o3CfkqmpKPvdcyHyXkWFl8thFwEJpNMSkGbxepxGok44MyULgI/vnPzeW+JnbivnowGaRLghj2WyCm/v83/LQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=VlUnJy5L; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=VlUnJy5L;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hbw0K4msWz2y2b
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Sep 2026 21:56:01 +1000 (AEST)
-Received: from server.danny.cz (85-71-161-19.rce.o2.cz [85.71.161.19])
-	by redcrew.org (Postfix) with ESMTP id 33F56E8;
-	Fri,  4 Sep 2026 13:55:56 +0200 (CEST)
-DKIM-Filter: OpenDKIM Filter v2.11.0 redcrew.org 33F56E8
-Received: from talos.danny.cz (talos [IPv6:2001:470:5c11:160:47df:83f6:718e:218])
-	by server.danny.cz (Postfix) with SMTP id 07C4417A004;
-	Fri,  4 Sep 2026 13:55:55 +0200 (CEST)
-Date: Fri, 4 Sep 2026 13:55:55 +0200
-From: Dan =?UTF-8?B?SG9yw6Fr?= <dan@danny.cz>
-To: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: systemd-journal segfaulting with 7.3-rc1 on ppc64le
-Message-Id: <20260904135555.402d5abf678499301dc672af@danny.cz>
-In-Reply-To: <apqr7oUzHxrcj4mW@kunlun.suse.cz>
-References: <20260904125349.15b764f80bc54296b88e8f87@danny.cz>
-	<apqr7oUzHxrcj4mW@kunlun.suse.cz>
-X-Mailer: Sylpheed 3.7.0 (GTK+ 2.24.33; powerpc64le-redhat-linux-gnu)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hbztV55w8z2xlY
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 05 Sep 2026 00:51:14 +1000 (AEST)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 684E1nul1809083;
+	Fri, 4 Sep 2026 14:50:51 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=z84wpO
+	j7CNOGSg65mDGIrYSnrJrlGh4ehhkoEAM8pT0=; b=VlUnJy5LSg7sY30IsA5Bl3
+	wDXrdDbOjtTj42TngRcuf260Mlbbvqo5y8A6n5pFx0HeqFY1bz5rqelkYFaz56oz
+	iF9MqCfKrjc2e9PFwExohrJkvYSbdvWAzZv/tYUOh2Cu0Z1AuCZNbAljinYIuTvi
+	m6LC8oDEPbFFaeEnrCN0q+lpie58c6edzC/V0bsPDshJDHN0Nyj4sp6bobZGK6HW
+	NtySuTJF8c1V1DZL2YGTI1UE/IlRL0UMOZfvKQZUP9E4TZdYcbcWyqdxHhLhi6hi
+	5tLxlgMVwFzC0JvlGUNqN9sIwfmPCCvUBxq8PSYVQBPo2HHnV62Rz/UyTxCIeJjA
+	==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gbmujb2re-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 04 Sep 2026 14:50:49 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 684EfGJY005113;
+	Fri, 4 Sep 2026 14:50:48 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gcbygwf73-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 04 Sep 2026 14:50:48 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 684Eoj0m42467610
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 4 Sep 2026 14:50:45 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 070A120040;
+	Fri,  4 Sep 2026 14:50:45 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 496CD20043;
+	Fri,  4 Sep 2026 14:50:40 +0000 (GMT)
+Received: from [9.43.71.40] (unknown [9.43.71.40])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri,  4 Sep 2026 14:50:40 +0000 (GMT)
+Message-ID: <8fa790a7-f387-48f6-ac76-11cf71ef5589@linux.ibm.com>
+Date: Fri, 4 Sep 2026 20:20:38 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -54,119 +80,335 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [RFC PATCH 2/3] powerpc: add support for Kexec HandOver (KHO)
+To: Pratyush Yadav <pratyush@kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Aditya Gupta <adityag@linux.ibm.com>,
+        Alexander Graf <graf@amazon.com>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Baoquan He <baoquan.he@linux.dev>,
+        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+        Hari Bathini <hbathini@linux.ibm.com>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Mahesh Salgaonkar <mahesh@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>, Mike Rapoport <rppt@kernel.org>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        Pasha Tatashin <pasha.tatashin@soleen.com>,
+        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+        Shivang Upadhyay <shivangu@linux.ibm.com>,
+        Shrikanth Hegde <sshegde@linux.ibm.com>, kexec@lists.infradead.org,
+        linux-kernel@vger.kernel.org
+References: <20260821105609.983622-1-sourabhjain@linux.ibm.com>
+ <20260821105609.983622-3-sourabhjain@linux.ibm.com>
+ <2vxza4qfznyo.fsf@kernel.org>
+ <7bb84b8a-c394-4895-9e22-632dc506cbb6@linux.ibm.com>
+ <2vxz5x0ox7p9.fsf@kernel.org>
+Content-Language: en-US
+From: Sourabh Jain <sourabhjain@linux.ibm.com>
+In-Reply-To: <2vxz5x0ox7p9.fsf@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-
-On Fri, 4 Sep 2026 13:30:54 +0200
-Michal Suchánek <msuchanek@suse.de> wrote:
-
-> On Fri, Sep 04, 2026 at 12:53:49PM +0200, Dan Horák wrote:
-> > Hi,
-> > 
-> > I am using the rc kernels via
-> > https://fedoraproject.org/wiki/RawhideKernelNodebug on my Fedora 44
-> > Power9 based system (Talos II) and after installing
-> > kernel-7.3.0-0.rc1.18.fc46.ppc64le my system failed to boot
-> > successfully and I have found systemd-journal segfaults in the boot log
-> > like this
-> > 
-> > [   12.485876] systemd-coredump[1464]: Process 1409 (systemd-journal) of user 0 terminated abnormally with signal 6/ABRT, processing...
-> > [   12.578533] systemd-coredump[1464]: Process 1409 (systemd-journal) of user 0 dumped core.
-> > [   12.578554] systemd-coredump[1464]: Coredump diverted to /var/lib/systemd/coredump/core.systemd-journal.0.b7f8bc16143c4cc1832aeb4c64ff16a4.1409.1788339090000000.zst
-> > [   12.578560] systemd-coredump[1464]: Module libpcre2-8.so.0 from rpm pcre2-10.47-1.fc44.1.ppc64le
-> > [   12.578566] systemd-coredump[1464]: Module libselinux.so.1 from rpm libselinux-3.11-1.fc44.ppc64le
-> > [   12.578572] systemd-coredump[1464]: Module libz.so.1 from rpm zlib-ng-2.3.3-3.fc44.ppc64le
-> > [   12.578578] systemd-coredump[1464]: Module libcrypto.so.3 from rpm openssl-3.5.8-1.fc44.ppc64le
-> > [   12.578583] systemd-coredump[1464]: Module libcrypt.so.2 from rpm libxcrypt-4.5.2-3.fc44.ppc64le
-> > [   12.578596] systemd-coredump[1464]: Module libsystemd-shared-259.8-1.fc44.so from rpm systemd-259.8-1.fc44.ppc64le
-> > [   12.578602] systemd-coredump[1464]: Module systemd-journald from rpm systemd-259.8-1.fc44.ppc64le
-> > [   12.578608] systemd-coredump[1464]: Stack trace of thread 1409:
-> > [   12.578613] systemd-coredump[1464]: #0  0x00007fffaa82ae74 abort (libc.so.6 + 0x2ae74)
-> > [   12.578619] systemd-coredump[1464]: #1  0x00007fffaa8a4e60 __libc_message_impl (libc.so.6 + 0xa4e60)
-> > [   12.578624] systemd-coredump[1464]: #2  0x00007fffaa8a4eec __libc_fatal (libc.so.6 + 0xa4eec)
-> > [   12.578630] systemd-coredump[1464]: #3  0x00007fffaa8b54bc start_thread (libc.so.6 + 0xb54bc)
-> > [   12.578635] systemd-coredump[1464]: #4  0x00007fffaa9613e8 __clone (libc.so.6 + 0x1613e8)
-> > [   12.578641] systemd-coredump[1464]: #5  0x00007fffaa9613e8 __clone (libc.so.6 + 0x1613e8)
-> > [   12.578646] systemd-coredump[1464]: #6  0x00007fffaa8b4e40 create_thread.constprop.0 (libc.so.6 + 0xb4e40)
-> > [   12.578652] systemd-coredump[1464]: #7  0x00007fffe66094a0 n/a (n/a + 0x0)
-> > [   12.578657] systemd-coredump[1464]: ELF object binary architecture: PowerPC64
-> > [   12.646917] systemd[1]: systemd-journald.service: Scheduled restart job, restart counter is at 2.
-> > 
-> > I have reproduced the behaviour with the latest mainline kernel and my
-> > bisecting points to
-> > https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=3424d8c18a7da1010d03391a22e728b857d0d5c5
-> > (which is not that helpful as it is a merge commit). There are also
-> > messages about "dbus-broker.service: Failed with result 'exit-code'",
-> > so the journal crash might be a symptom of another root cause. Using
-> > the Fedora prebuilt kernels
-> > - kernel-7.3.0-0.rc0.260818g0f23d56f17fd.3.fc46.ppc64le  = OK
-> > - kernel-7.3.0-0.rc0.260819gbd5f485f3f02.5.fc46.ppc64le  = BAD
-> > doesn't help much in narrowing as it is when the big merges happened.
-> > 
-> > ---
-> > git bisect start
-> > # status: waiting for both 'good' and 'bad' commits
-> > # good: [8d3ae59288f1e7d58d76558a6ee96d533bc5019f] Linux 7.2
-> > git bisect good 8d3ae59288f1e7d58d76558a6ee96d533bc5019f
-> > # status: waiting for 'bad' commit, 1 'good' commit known
-> > # bad: [cee9395acd8043be0644b25c34bfa86623f2b935] Linux 7.3-rc1
-> > git bisect bad cee9395acd8043be0644b25c34bfa86623f2b935
-> > # bad: [55ab7e14222e5f0b0fd9f7711ca391d2924b35e3] Merge tag 'for-7.3/block-20260819' of git://git.kernel.org/pub/scm/linux/kernel/git/axboe/linux
-> > git bisect bad 55ab7e14222e5f0b0fd9f7711ca391d2924b35e3
-> > # bad: [e5c91aac491def6ab3f90c4cc246e3fcb0f8f058] Merge tag 'sound-7.3-rc1' of git://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound
-> > git bisect bad e5c91aac491def6ab3f90c4cc246e3fcb0f8f058
-> > # bad: [cbe8aadf1551f3f4a853f24b3b96d9f0eea49c53] Merge tag 'soc-dt-7.3' of git://git.kernel.org/pub/scm/linux/kernel/git/soc/soc
-> > git bisect bad cbe8aadf1551f3f4a853f24b3b96d9f0eea49c53
-> > # bad: [762fffa407d8d24288513538cf5d17c2c5425258] Merge tag 'irq-core-2026-08-17' of git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip
-> > git bisect bad 762fffa407d8d24288513538cf5d17c2c5425258
-> > # good: [a5778046a02570fd23bdf0b48dce330237d1996c] Merge tag 'pm-7.3-rc1' of git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm
-> > git bisect good a5778046a02570fd23bdf0b48dce330237d1996c
-> > # good: [85cdaca6970028bf6f544c355c90035586836ddf] Merge tag 'arm64-upstream' of git://git.kernel.org/pub/scm/linux/kernel/git/arm64/linux
-> > git bisect good 85cdaca6970028bf6f544c355c90035586836ddf
-> > # good: [8915457146a11d20a6c0786396376afda65eec40] Merge tag 'perf-core-2026-08-17' of git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip
-> > git bisect good 8915457146a11d20a6c0786396376afda65eec40
-> > # good: [e2457a664ea02c414c6b9828bff3a0df4c300f63] Merge tag 'sched-core-2026-08-17' of git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip
-> > git bisect good e2457a664ea02c414c6b9828bff3a0df4c300f63
-> > # good: [3a0dd7ba4f44cdc116d83712f61e7c1a95be3588] Merge tag 'x86-documentation-2026-08-17' of git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip
-> > git bisect good 3a0dd7ba4f44cdc116d83712f61e7c1a95be3588
-> > # good: [fb419d53f2619e29bf4f96613d9a614e1c263736] x86/entry: Simplify the syscall number logic
-> > git bisect good fb419d53f2619e29bf4f96613d9a614e1c263736
-> > # bad: [6138016752322261e26ac88eaeb64c0c890f98a2] Merge tag 'core-rseq-2026-08-17' of git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip
-> > git bisect bad 6138016752322261e26ac88eaeb64c0c890f98a2
-> > # good: [71ff30013f19ca46c2c72c25731c32b6cc7b5620] entry: Make return type of syscall_trace_enter() bool
-> > git bisect good 71ff30013f19ca46c2c72c25731c32b6cc7b5620
-> > # good: [2a98ffac7733e77a178af7240f9fa9392ca45aad] selftests/rseq: Add missing test binaries to .gitignore
-> > git bisect good 2a98ffac7733e77a178af7240f9fa9392ca45aad
-> > # bad: [3424d8c18a7da1010d03391a22e728b857d0d5c5] Merge tag 'core-entry-2026-08-17' of git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip
-> > git bisect bad 3424d8c18a7da1010d03391a22e728b857d0d5c5
-> > # good: [05c033db7e9ad3c34f6968ec568cb6ee01051c57] entry, treewide: Make syscall_enter_from_user_mode[_work]() indicate syscall execution
-> > git bisect good 05c033db7e9ad3c34f6968ec568cb6ee01051c57
-> > # first 'bad' commit: [3424d8c18a7da1010d03391a22e728b857d0d5c5] Merge tag 'core-entry-2026-08-17' of git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip
-> > ---
-> > 
-> > Also can be reproduced by using the recent Fedora Rawhide installers
-> > which won't initialize properly.
-> 
-> Hello,
-> 
-> can you try applying recent fixes for the entry code?
-> 
-> https://lore.kernel.org/all/10c86c909f870d90b3094f76b692b44ebe9caeac.1787976185.git.ritesh.list@gmail.com/
-> powerpc: Don't drop _TIF_RESTOREALL on syscall restart
-> https://lore.kernel.org/all/20260820134718.2176411-1-mkchauras@gmail.com/
-> powerpc/entry: Fix irq_soft_mask corruption on replayed
-> https://lore.kernel.org/all/52fee44fd23acf8e1c024ace668728e626a783a8.1788101609.git.ritesh.list@gmail.com/
-> powerpc: Do not restore KUAP in
-> https://lore.kernel.org/all/20260828053811.1042300-1-sshegde@linux.ibm.com/
-> powerpc/entry: Clear TIF_SYSCALL_RET before syscall error
-> https://lore.kernel.org/all/20260904025831.3439809-1-aboorvad@linux.ibm.com/
-> powerpc/entry: Fix double accounting of user time on
-
-thanks for pointers, Michal. With all of them applied the crash goes
-away. Forgot to mention that I tried with the "powerpc: Don't drop
-_TIF_RESTOREALL on syscall restart" alone and it didn't help.
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-GUID: ZuVGYkq6M7Ac90dVE0d7ogJJ4Uw4f_V4
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTA0MDEzMiBTYWx0ZWRfX6HJ8GB5LIm1I
+ 9yyQiaZCLp78oRy6HCn4nEMsi2sB+ws+Gaf9FPNv8AERig+Byvw9SOuYa8DJS3uEtjHkFBqkvfQ
+ b8eNm5a1hp9Z8Bt8hsYNjjDyntf2fkwe4WirN60gpMQeGBy1XYz5RAEYN+Tdcwpln+1A9iWPtz8
+ RBmOdmj23sII7TpxLxvzHgaYPYc2TU8ET5D9aRStiL7K28xbWIz/LVLhSwuYe1LZCwREjaYwS49
+ YKNVHNDcmWBnyRVf9NGh6vLnAELnaOy2jep1nAaPsvJRN1MBDHTQH7HnTxmTcWsextWoMRmjZFg
+ bvYT8DnLfZFVwFkw0q+nwg7tA/YKhKYDch1Du3ItdiSxPrlG3rFqwGU9FnkMLtup9L+xpH0hMTj
+ a1GrZvLYeLhVPaqmzPDEnef8e4c6GP2N0ExCdXbvLVHHay83sdkiS1oj9mLksGxOudJYSuXpo1L
+ ARZwAm6xfM2maxxcUlQ==
+X-Authority-Analysis: v=2.4 cv=Osl/DS/t c=1 sm=1 tr=0 ts=6a9adaca cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VwQbUJbxAAAA:8
+ a=VnNF1IyMAAAA:8 a=sUgROpt_8gkIZWawIRsA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTA0MDEzMiBTYWx0ZWRfX8pPn+rD+4iEK
+ QBTaJF7ilWe0zR0ir5GN0ZjiCfAQhxq/OGnQmI4KeOwkpxxEPP4U7MQyrcuQP1tb3mUW6bYWaTL
+ JwHy9Y5f2UH6+XCBTHqvOYr86ofcLGc=
+X-Proofpoint-ORIG-GUID: 55JCyPY_GdeWZ6Pfh6526yIwK2uy6q3s
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-04_04,2026-09-03_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 malwarescore=0 suspectscore=0 bulkscore=0 lowpriorityscore=0
+ adultscore=0 impostorscore=0 phishscore=0 clxscore=1015 priorityscore=1501
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2609040132
 
 
-		Dan
+
+On 02/09/26 16:04, Pratyush Yadav wrote:
+> On Sun, Aug 23 2026, Sourabh Jain wrote:
+>
+>> On 21/08/26 17:26, Pratyush Yadav wrote:
+>>> On Fri, Aug 21 2026, Sourabh Jain wrote:
+>>>
+>>>> Add the architecture bits needed to enable CONFIG_KEXEC_HANDOVER on
+>>>> powerpc.
+>>>>
+>>>> Set ARCH_SUPPORTS_KEXEC_HANDOVER for PPC64, following the existing
+>>>> pattern used by ARCH_SUPPORTS_KEXEC and ARCH_SUPPORTS_KEXEC_FILE.
+>>>>
+>>>> On the boot path, parse the "linux,kho-fdt" and "linux,kho-scratch"
+>>>> properties from /chosen and pass them to kho_populate(). This lets a
+>>>> kernel booted via KHO kexec recover the FDT and scratch region left
+>>>> behind by the previous kernel. The call is placed early in
+>>>> setup_arch(), before unflatten_device_tree().
+>>>>
+>>>> Open issues:
+>>>> ============
+>>>>
+>>>> This patch also adds "depends on !CRASH_DUMP" to
+>>>> ARCH_SUPPORTS_KEXEC_HANDOVER. This is needed because of an ordering
+>>>> conflict between crashkernel reservation and KHO scratch reservation
+>>>> on powerpc.
+>>>>
+>>>> Crashkernel memory is reserved very early in boot, from arch-specific
+>>>> code: head.S -> early_setup() -> early_init_devtree() ->
+>>>> arch_reserve_crashkernel() / fadump_reserve_mem(). KHO's scratch
+>>>> region is reserved later, from generic code: start_kernel() ->
+>>>> mm_core_init() -> kho_memory_init(). So on powerpc, crashkernel
+>>>> memory is always reserved first.
+>>>>
+>>>> This ordering causes a real failure. In the common case, crashkernel
+>>>> reservation on powerpc starts at a 512M offset (the exact offset can
+>>>> vary, but 512M is typical). So with crashkernel=3G, the reservation
+>>>> occupies memory from 512M up to 3.5G -- roughly 75% of the entire low
+>>>> 4G area.
+>>>>
+>>>> Since crashkernel reservation always happens first, that 3G is
+>>>> already committed by the time kho_memory_init() runs. It then tries
+>>>> to reserve a low scratch region sized at 200% of whatever is already
+>>>> reserved below 4G. With ~75% of that 4G area already taken by
+>>>> crashkernel memory, 200% of that easily exceeds the remaining space
+>>>> -- and since the low scratch region is itself capped at 4G, there's
+>>>> no room left to fit it. The reservation fails.
+>>> crashkernel has the variant "crashkernel=size[KMG],high", which ensures
+>>> memory is allocated above 4G. Unless powerpc has some requirement for
+>>> strictly having the crashkernel below 4G, I think it will make a lot of
+>>> sense to enable support for this feature. So KHO users can specify this
+>>> to get crashkernel working with KHO.
+>> I agree that this is one way to work around the low-memory reservation problem.
+>> However, there are a few things that come into play here:
+>>
+>> 1. On powerpc, the crashkernel reservation can go up to 64 GB for kdump. With
+>> the
+>>     current default scratch memory reservation policy, this could result in
+>> reserving
+>>     up to 256 GB of scratch memory: 200% for the high-memory reservation and
+>> another
+>>     200% for per-node memory.
+> That calculation looks off. It _should_ be 200% once not twice. So 128
+> GB total. If the allocation came out via the global area, it should
+> _only_ be accounted to the global scratch size. Similarly, only the
+> allocations made specifically on that node should be counted for the
+> per-node scratch size.
+
+For example, if a system has only one node and 64 GB is allocated from
+that node before the kernel starts calculating the per-node and global
+allocations for scratch memory, wouldn't the per-node allocation also be 
+64 GB?
+
+If so, wouldn't that result in 200% of 64 GB being allocated for the global
+area and another 200% of 64 GB for the per-node area, resulting in 256 GB
+of total scratch memory allocation? Or am I missing something here?
+
+
+>
+> But I have also noticed this problem on some of the systems Google has.
+> Which makes me wonder if scratch_size_update() is broken and
+> over-calculating. I have this on my TODO list and have been meaning to
+> look into it, but other things keep intervening.
+>
+> If you are interested, feel free to take it off my hands.
+
+Yes, I can take this up and propose patches to make crashkernel and
+scratch reservations work together.
+
+Based on my current testing, a Linux partition (powerpc) with 16 CPUs 
+and 30 GB
+of RAM needs only 16 MB of scratch memory in the low-memory area when
+crashkernel=xxM is not specified.
+
+16 MB is not much. I am also trying to get a larger Linux partition with 
+1000+
+CPUs to get a better idea of the limits for low-memory reservations.
+
+BTW, do you know the rationale behind the 200% value?
+
+I couldn't find any explanation for it in the commit message of
+3dc92c311498c ("kexec: add Kexec HandOver (KHO) generation helpers")
+
+
+>
+>>     For fadump, which is the powerpc-specific memory dump capture mechanism, the
+>> crashkernel
+>>     reservation can go up to 180 GB. In this case, we could end up reserving up
+>> to 720 GB of
+>>     scratch memory, which is too much. I agree that users can tune this, but I
+>> think the
+>>     default scale should be more reasonable for powerpc.
+> Once we fix scratch_size_update() to actually use 200% and not 400%,
+> perhaps that alone will be enough? If not, we can discuss reducing the
+> default scratch scale to maybe 150%. But I'd rather do it for all
+> platforms if we do it at all, because this problem doesn't seem specific
+> to PowerPC.
+
+Yes, it makes sense to have a general fix that works for all architectures.
+
+BTW, I was able to reproduce this issue on x86 as well. Please have a
+look at this:
+
+https://lore.kernel.org/all/008fe00e-fd52-4010-86ca-f0ab80a65a46@linux.ibm.com/ 
+<https://lore.kernel.org/all/008fe00e-fd52-4010-86ca-f0ab80a65a46@linux.ibm.com/>
+
+I have also suggested an approach to handle this issue which is similar 
+how you handle
+huge pages. Please share your thoughts on it.
+
+
+>
+>>
+>> 2. Fadump also uses the crashkernel kernel command-line argument, but its
+>> reservation policy
+>>     is different from kdump. The crashkernel base address starts after the memory
+>> needed for
+>>     fadump. For example, with crashkernel=3G, the base address would be 3 GB, and
+>> the crashkernel
+>>     reservation would be from 3 GB to 6 GB. So, depending on the crashkernel
+>> size, the reservation
+>>     may or may not fall within low memory. Also, fadump does not support
+>> crashkernel=xxM,high.
+>>
+>> 3. I do have a patch [1] to support high crashkernel reservations with kdump,
+>> but this would not
+>>     work with Hash MMU. With Hash MMU, the kernel image is constrained to low
+>> memory, whereas with
+>>     crashkernel=,high, all segments would be loaded into high memory.
+> Oh, nice!
+>
+>> So, while supporting crashkernel=,high can help address the low-memory
+>> reservation issue for kdump,
+>> I think there are still some powerpc-specific constraints to consider. I would
+>> like to explore
+>> whether we can fix the ordering between crashkernel and scratch memory
+>> reservations, so that we can
+>> avoid unnecessarily large scratch memory reservations and address some of the
+>> other constraints mentioned
+>> above. Please share your thoughts.
+>>
+>>> Powerpc doesn't support this right now, but from a quick skim of the
+>>> code, I think it should be simple enough.
+>> I have patch series under review for the same:
+>> [1]
+>> https://lore.kernel.org/all/20260708143357.673251-1-sourabhjain@linux.ibm.com/
+>>
+>>> From
+>>> arch_reserve_crashkernel() you just need to pass a bool * to
+>>> parse_crashkernel(), and then pass the result to
+>>> reserve_crashkernel_generic().
+>> Due to some architecture-specific dependencies (such as RTAS), booting the
+>> kernel from above 4G with
+>> support for high crashkernel is not as straightforward as on other
+>> architectures. Patch 2/4 in [1] has the
+>> details.
+>>
+>>> Solving the ordering of crash reservations and KHO is tricky and comes
+>>> with some difficult tradeoffs. Allocating crash from highmem should be a
+>>> lot simpler.
+>>
+>> Could you please elaborate a bit on what makes the ordering tricky and what the
+>> main tradeoffs are between crash reservations and KHO? It would help me better
+>> understand the concerns here.
+> The problem today is that kho_preserved_memory_reserve() (called by
+> kho_mem_retrieve()) does a memblock_reserve() for each preserved folio.
+> So if you have a lot of order-0 (or, 4k) folios, you end up with a lot
+> of reservations in memblock. The large number of reservations can slow
+> down later memblock operations like allocations too since memblock might
+> have to walk through a lot of ranges to find free memory.
+>
+> We kind of work around this problem by calling kho_mem_retrieve() as
+> pretty much the last thing in the MM init. So all allocations prior to
+> this have already been fulfilled from scratch without any of the
+> reservations added, so it should be pretty fast. You only take the
+> performance hit at the end, where the only thing left is to release
+> pages to buddy.
+
+Ah, okay, that makes sense. Thanks for the clarification.
+
+
+> Even then, the memblock reservations can get pretty damn slow. In some
+> of my testing with under-load systems, preserving a 2G memfd with 4k
+> pages can go over **5 minutes** in only kho_mem_retrieve() if the folios
+> of the memfd are fragmented enough. Plus there is the memory overhead of
+> the regions in memblock.reserved.
+
+5 minutes in kho_mem_retrieve(), which is primarily marking a bunch
+of memory as reserved using memblock, seems like quite a lot. If you
+have the test case handy somewhere, I would be interested in trying it
+myself, just to get a better feel for the issue.
+
+Regardless, I understand the concern now. From my perspective also, the
+current ordering of crashkernel and scratch memory reservations seems
+reasonable, because crashkernel is not as flexible as scratch reservation
+atleast on powerpc.
+
+On powerpc, the crashkernel offset is determined first, and the
+corresponding memory region is reserved. To make sure that no
+other reservation falls within the crashkernel region, the crashkernel
+reservation is one of the first reservations we make on powerpc.
+
+If we change this ordering, there is a possibility that a scratch
+reservation could end up in a region where the crashkernel is supposed
+to be placed. That would lead to crashkernel reservation failure.
+
+Also, reserving scratch memory at a location where the crashkernel
+cannot be placed could be problematic. Each architecture has its own
+constraints on where the crashkernel can be placed, so the available
+memory for scratch reservation may need to account for those constraints.
+Which I think too much to take care off...
+
+And, of course, moving kho_mem_retrieve()earlier during boot would
+also mean taking the performance hit you mentioned earlier.
+
+So let's keep the current ordering and find a way to make both
+reservations work with it: reserve the crashkernel first, and then
+reserve the scratch memory.
+
+
+> So long-term, I would like to get rid of the memblock reservations
+> entirely and use scratch-only mode all the way until buddy comes up. And
+> I would like to modify buddy init (free_low_memory_core_early() and
+> deferred_init_memmap_chunk()) to be KHO-aware and directly skip the KHO
+> pages.
+>
+> This vision goes in the opposite direction of turning scratch-only mode
+> off _earlier_. And turning off scratch-only mode earlier is necessary
+> for doing crash reservations outside of scratch.
+>
+> That is the tradeoff I mentioned. Hope I was clear enough.
+
+Yes, that makes sense. I understand the tradeoff you're pointing out
+now.
+
+>
+>>> And on that note, I don't think you should do a depends on !CRASH_DUMP.
+>>> Even when CONFIG_KEXEC_HANDOVER is enabled, KHO isn't on by default
+>>> (well, unless KEXEC_HANDOVER_ENABLE_DEFAULT is set). You need to enable
+>>> it via cmdline. So it is entirely possible for people using KHO on PPC
+>>> to not use crash and vice versa. This decision can be made at deployment
+>>> time, not at compile time.
+>> Agree. depends on !CRASH_DUMP is temporary and will be removed once
+>> we settle the crashkernel reservation and scratch region handling.
+> My point is that !CRASH_DUMP can be removed _even if_ we don't settle
+> the reservation thing, because it is perfectly valid for the same kernel
+> to use either KHO or crash but not at the same time. These both can be
+> enabled/disabled at runtime.
+
+Agree I will drop the !CRASH_DUMP dependency...
+
+- Sourabh Jain
 
