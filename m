@@ -1,107 +1,110 @@
-Return-Path: <linuxppc-dev+bounces-26588-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26589-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6BAC3C624D6
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Sep 2026 06:09:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A5290C624DB
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Sep 2026 06:09:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hcNFj6fYDz2yv4;
-	Sat, 05 Sep 2026 16:09:13 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1033"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788521995;
-	cv=none; b=orEZKIh6tc1VhdlH1qeGNU7h6dWM6taD0IFDtrPlMglO5nI7OyqRNQLm1WPSC0Ci8Q0oC1BhSNggMlwg86HptnriysRPczFRsjb0PmYSuhP39aYfEIm3uvHf4A7QTjH+DEtCSSzN28eS5LEVFSxb1cPdD6jsFDWS+a8rbHmKXUTAHtvU5wXCC/HlFIYjhHGSO9NTY/DqBcndvDS6EDlNjShS56SPWIgSUAzm0fv1mCkkPpQBj28esmzCaQTeTaeSLMVRp+leUCVESTevy7cuU0WyoOHWKaxCeaiIHw5mkabje1GXoZahTpOF5joyOs3XxbLl1+5PJzpVFWntq8yQ5Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hcNGM17qsz2yv4;
+	Sat, 05 Sep 2026 16:09:47 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::c36"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788522069;
+	cv=none; b=fZvNmloUYoGT4EF0FS1SCBniBeME4pVbWsjiTaiUUmHR9z7zU6v44MXhURsg3ChaGZl0L2L5BynF1hyZY+t0h7VRXhGAQ3p/xLRECV3hwi1ucLCaUkBFPEb7vM071vb85VdvdBTtA/Klmijo8wFTenmw6Wb1zNxLkQ+Gkj+/FgFPAI6T0eYeRItW7509VlRjGmBJJOM3KLPjji9eOOnRr7iqTugObwJmO/ZQZun7LJuCLXcM6dJi0Ct9Bj6WPNPrF76UENfurCp1JGMvk9hpEDgVm3zU+R3KnXYZ9BgiVEhp2s7M6v+mlPS5bOrl8qPBb+Hb/bLKxzOZyIoqEZNadA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788521995; c=relaxed/relaxed;
-	bh=Xe6EwabIXBD1fwJZlA9EYarG/RJHgSOSX9nc22lp4dc=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=LjRhgMZ1aivZGNSm/YoW4blLWH7KtsrnsxpRhR0mh74MejQiaOX/gI5SofD0fAolbo0HLM86yIrVJZQMDPLlKnBAOZQAyJ0v/sYjnqNu0CXdY/ENCUDBqROEdlDLpVkfGniohUjmIk/FluV9lbJbiBA/L83AvTlam9kAw9pY72Yip0UZ9rz2ux/5Iw0dmMSo0BAi94/bOj/dWl85pgiufoUR5KPJ7/+c+rNFOIkaN89tSjcdxSLNcAtQRMSUVZU/oi3ufR+mwvz0fnc0KZbw/HLui5mDPtcDZ6KY0a7epDvWYWK7siP5E9xlWOsxgMuNbkNIO+X5mo4u2cmUCXn2NA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=MxjC35Km; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1033; helo=mail-pj1-x1033.google.com; envelope-from=hemanth.selam@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1788522069; c=relaxed/relaxed;
+	bh=2E5WMWcIyJZoE2GE8k1ComnlqCfp2hy8iFWq+cBj4jU=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=E9QpeKDlcg6OroItHbJqcxIHl68SXesEQfvm/0U0LFLrqNyY/rr3siRH5mtt1gSNyzsnGghCeDGWONK+aetVIfUICGlJb/xeeWdB1GgIHOhdTvLBdPiuw1U8vt2kVhWDjxsX92GfVGPhBbXHaK8Pt9Zr4tfjbrpuFtsoZIT0wsVjEJZXpoG+zV/OEMIdYW2+Zs9Z8tXfOS+BWlCAmxbWHb6wSvt/KRyBTvxP6L4pQ6z7ZtBPaEqlaHm+gj6ne1AgZIy2unAS57AiTYP0ufjzQsATRb1hm90Rted74TTYX7ShUBRmNwikauQL8vS74nDO1pVCiZzdOpKGn7x35nq9cw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=aTE4KuCZ; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::c36; helo=mail-oo1-xc36.google.com; envelope-from=hemanth.selam@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=MxjC35Km;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=aTE4KuCZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1033; helo=mail-pj1-x1033.google.com; envelope-from=hemanth.selam@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x1033.google.com (mail-pj1-x1033.google.com [IPv6:2607:f8b0:4864:20::1033])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::c36; helo=mail-oo1-xc36.google.com; envelope-from=hemanth.selam@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-oo1-xc36.google.com (mail-oo1-xc36.google.com [IPv6:2607:f8b0:4864:20::c36])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hbvdl14gpz2y2K
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Sep 2026 21:39:55 +1000 (AEST)
-Received: by mail-pj1-x1033.google.com with SMTP id 98e67ed59e1d1-38dfe910e9dso987499a91.3
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Sep 2026 04:39:54 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hbvg83LTkz2y2K
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Sep 2026 21:41:08 +1000 (AEST)
+Received: by mail-oo1-xc36.google.com with SMTP id 006d021491bc7-6b1b9c3af5cso722073eaf.2
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Sep 2026 04:41:08 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1788521992; x=1789126792; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=Xe6EwabIXBD1fwJZlA9EYarG/RJHgSOSX9nc22lp4dc=;
-        b=MxjC35KmqGIM19PeC0cj3OGrBmhr/l91vO6JjB9O+Yeq/oyF/dvFDwqu0dL53I6hT4
-         6fBXvaz0cWyis3TmTjMU6693gJ3apCziODn7zEzf907CnpVJnlWSFkw7Vfa5W6m5Uobu
-         OkJbZ5G6YnpTWfKGDUvgVxCJWG8pLx+qul8Gke9Zf8lrKLgDOsRIOfQJ15iwuaYVc0MD
-         TvxldXwSRV98dXU/7i6CD6ZVh9AUu6Q4MZ1Qlr0I6MxUukOkZ9PHSwuZR8CtTQzTgWqx
-         tm1k5jLbZqVYRxGgqFCu9QxNsrNT3bJf1jNKc9Mw2afEiHIG9AL4DehTSQyWL9txec0D
-         hxcw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788521992; x=1789126792;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=gmail.com; s=20251104; t=1788522066; x=1789126866; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=Xe6EwabIXBD1fwJZlA9EYarG/RJHgSOSX9nc22lp4dc=;
-        b=J1l3XhKmB7Y82Rgev32zHu05ojr8OHi8Pkrk6PmfGp1QpjBBzIQzgjDg8+UeIpYlo7
-         sNX+D9IilZTe2g6IvgEpEZxpYp7NqsokHb84mVpaYr0N1JIALxIjoUbeebw5/PzlSi9n
-         Jsfir2YoMr5owSo7YBFRhaIsDMFL7PHCaUVaLsvzmKu9+/uebgyLHbLrviwCpPURiHXH
-         ZoR2oEYn185fNJp9YqbPrj4YeQqM5HLUe4M/S4aYL3kCWJwJ2l6NScYfSxaCaXI39XQL
-         LfNykcg09ISwcWZWgXMZtgWmaf0o5mdDPO018J1dVm0LcEW+2euS8IOnDJ1qt+X/6V3N
-         ESpA==
-X-Forwarded-Encrypted: i=1; AKwUvBzVk21YJf99cl47yW+O9zB0YHNw7XnFwb+YtFjeGPndWjK/ec7Mu64BuFuFC2+2I3VL2X+icc5CONOzjjM=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++nFXJos6wMOm1Tixh5IAE5HLIRVqZ6BBU+5BtoPzkjnlTZZafeO
-	W2SZOVGb9dV6UUXTlVSunUr8k+8W/KbOB6lwPgCn4PM/wZMuZ/m65/bS
-X-Gm-Gg: AYBFou1ILZOWkQXcfPk+8xKjC9Z7C6M6MY5B1ls6wtMbj2gIbo3+D23y3U4+Kc70GhW
-	XLbGT5SUGTxJjmigxrtQy8plEZ7RiT9mpIrm6L8g2OTI15m9BJ/z2tV0YKlygmRDUvxSXfauno7
-	2kRBrOYUMY6RLo+SwPKwXqER6QDCu2o29cCr4hSxW8Km7+6m2gvwCJU7wsVY5Z3NA8EDKZ2F8bl
-	Aa2/NfyavYDno4DJa5geu38/mcv2oFE4zaU6MllO+fDkOBYw/QhJtBO9qs4P6NURKV66VfkD0KB
-	eZUxF9L1on7gDchQxlof9ajgprtTC8UdPS0MzrIhKcQoDSQOzvQV6nvvEujESeQPWE7l4cnSU3l
-	pmSWsHH5i/OvBCxrCp+jWv922qXEzA9Gcg0nGNu8OcVx0Fj9EDQ6Sy0/dYPJTA3dV+WJHR1nGqF
-	JfVCC7hjuQavLV649W4XR55xYj6vqCHt1g39+pbp2WCw189nPJlG+Vtfw4bdaqTjZksoSGG3snH
-	jXq0GPzqQdtU93h0szuco3XMX/EWiq/fIcajQ==
-X-Received: by 2002:a17:90b:3b88:b0:398:dcfe:968e with SMTP id 98e67ed59e1d1-39b261da746mr7361746a91.20.1788521992489;
-        Fri, 04 Sep 2026 04:39:52 -0700 (PDT)
+        bh=2E5WMWcIyJZoE2GE8k1ComnlqCfp2hy8iFWq+cBj4jU=;
+        b=aTE4KuCZWNP+s6Pwx86F3pd8HZJwQeaQcPjDHH23Tph65SA+ToqI4xksNjk8PiUJDk
+         o0WGdh8INqXYzyfpQ/AHiBYrQ2AOoH0UpSLSCLopd3xYf+8skX1AbYAK+7ufd3VNw7y0
+         9Wpaa4+QtLJYW8tTPV7QGxbxdE81LHHAdzOnjxZupZjouajG2tY2QpV44ICuIc8gPkhv
+         FEdiGJDeCv9QWahxKcSpWgYSiqUtMXL4QZQRjkvScy1VDYUEjAwZMxZnE7emD7/lqaXe
+         kdkBm8uCztjFDwZTRYu3lUt6DYo0vrZLRXGTJuxVs6h9mVDBCbwqd4zf8ROwVb1pI4mX
+         Y5Gg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1788522066; x=1789126866;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=2E5WMWcIyJZoE2GE8k1ComnlqCfp2hy8iFWq+cBj4jU=;
+        b=OUnuGFau2+skCZJmi/orBcMcRiMBVbRMw9JXfmoYDZF/w+Op92wG+MqInVpND+QBUi
+         XzjU4GkrI65q8A7R2D45dwxcPvUKbCmgVQkzziulka6Uj1uEUtd1R/WgpKZUq1u3Dd2f
+         Hn/BswBvbf5phJQ3QjhOpmmqug6w+YPl2gGjVYb2hA0xYgcO7MSoVny/WKMS6X3bxPvh
+         735e3icclMCurqtULXE5y6I9WJsWY1qHi+RKdMliekC5d3oyf9ZxYssuJxhMSo4TdMAg
+         a03Qy+2moCawbiNnDerxC6e2XwA6qkC403cUIY88g8U2UEdWBYs8yhRUnU2ancCGyHYa
+         awBA==
+X-Forwarded-Encrypted: i=1; AKwUvBwkP0W+JvT4ImZtHNGt8akifpWz/hI4pClGkD74JCL5ALbP1Ia0NtOTy313M3CwJu2NqyqevsWbx1RquOc=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++nSfALVfCVQssKI2lqOc2IwwVnf1r76MbKZNF5vmnhoX1Jv+Y9y
+	WIjtiW61gzNyE1wZApfzSkO24dHdtJuRQyiHBqw4Cr3GUS90io3VrP9X
+X-Gm-Gg: AYBFou3XCitEvt8QyXcbEtLOePa0GCA+h4Jov42Ndnv3yE2I5h28lamjXEVBmJZ2H8p
+	bkp9cZ4rbGbCDIJAChcNVMbQDMD8hbFq4iqjGASB64amzOMmnR3FfxiAhG8ladoy6vtn5noB4U0
+	pl1UE4OXaUTYEdQq9DgD4sFWm1Ft1cf6xdUPdy6SDJbH9ZuLk01XDVrYQo1ax5v+uUD/rhf7IXL
+	HW71+Y9tTXUx3dhIVfIJXthgdVokB/dzkNYHwahRhj36e1KOkJEuGMUCuOXPJMfe7SW5xFX/f+O
+	Bwqa6jmNE715lsri3t4+nQ18JH9mgoSsXn0zYFkRriyMQKPqmEnfyc6f7NSxZH+Jxlidtpqe9mU
+	r+2ePFZ/ism7++AY0CwIH6fI6N0e6aW33COCu9dZEoTfdH6WI+/InqPNtHz3XgBvzgO2ERasSKm
+	icv1dYxs103bhp4sPAaPYl/JjyoKu2zGQS/QeYaFjVUYfc+3AztSUgPb/qmAUBXFRB4LGN1el6g
+	4v3Jefd7fh7wKZUj86+0U+GF2I=
+X-Received: by 2002:a05:6820:4b08:b0:6b7:46fc:1db with SMTP id 006d021491bc7-6b746fc0298mr2235475eaf.58.1788522065747;
+        Fri, 04 Sep 2026 04:41:05 -0700 (PDT)
 Received: from volcano9f6e-hostos.amd.com ([165.204.217.251])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3339ac24d7esm9124215eec.15.2026.09.04.04.39.44
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-33450e140d3sm2695292eec.4.2026.09.04.04.40.58
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 04 Sep 2026 04:39:52 -0700 (PDT)
+        Fri, 04 Sep 2026 04:41:05 -0700 (PDT)
 From: Hemanth Selam <hemanth.selam@gmail.com>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Jiri Slaby <jirislaby@kernel.org>,
-	Richard Genoud <richard.genoud@bootlin.com>,
-	Nicolas Ferre <nicolas.ferre@microchip.com>,
-	Alexandre Belloni <alexandre.belloni@bootlin.com>,
-	Claudiu Beznea <claudiu.beznea@tuxon.dev>,
-	Frank Li <Frank.Li@nxp.com>,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	Fabio Estevam <festevam@gmail.com>,
-	=?UTF-8?q?Pali=20Roh=C3=A1r?= <pali@kernel.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Laxman Dewangan <ldewangan@nvidia.com>,
-	Thierry Reding <thierry.reding@kernel.org>,
-	Jonathan Hunter <jonathanh@nvidia.com>,
-	Patrice Chotard <patrice.chotard@foss.st.com>,
-	Peter Korsgaard <jacmet@sunsite.dk>,
-	Michal Simek <michal.simek@amd.com>
+To: Matthieu CASTET <castet.matthieu@free.fr>,
+	Stanislaw Gruszka <stf_xl@wp.pl>,
+	Chas Williams <3chas3@gmail.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Linus Walleij <linusw@kernel.org>,
+	Justin Chen <justin.chen@broadcom.com>,
+	Al Cooper <alcooperx@gmail.com>,
+	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
+	Vladimir Zapolskiy <vz@mleia.com>,
+	Piotr Wojtaszczyk <piotr.wojtaszczyk@timesys.com>,
+	Michal Simek <michal.simek@amd.com>,
+	Mathias Nyman <mathias.nyman@intel.com>,
+	Thomas Winischhofer <thomas@winischhofer.net>,
+	Bin Liu <b-liu@ti.com>,
+	Oliver Neukum <oneukum@suse.com>,
+	Alan Stern <stern@rowland.harvard.edu>,
+	Heikki Krogerus <heikki.krogerus@linux.intel.com>,
+	Badhri Jagan Sridharan <badhri@google.com>
 Cc: linux-kernel@vger.kernel.org,
-	linux-serial@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	imx@lists.linux.dev,
+	linux-atm-general@lists.sourceforge.net,
+	netdev@vger.kernel.org,
+	linux-usb@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
-	linux-tegra@vger.kernel.org
-Subject: [PATCH] tty: fix typos in comments
-Date: Fri,  4 Sep 2026 17:09:35 +0530
-Message-ID: <20260904113942.22785-1-hemanth.selam@gmail.com>
+	linux-arm-kernel@lists.infradead.org,
+	linux-scsi@vger.kernel.org,
+	usb-storage@lists.one-eyed-alien.net
+Subject: [PATCH 1/2] usb: fix typos in comments
+Date: Fri,  4 Sep 2026 17:10:37 +0530
+Message-ID: <20260904114046.24048-2-hemanth.selam@gmail.com>
 X-Mailer: git-send-email 2.48.1
+In-Reply-To: <20260904114046.24048-1-hemanth.selam@gmail.com>
+References: <20260904114046.24048-1-hemanth.selam@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -124,268 +127,606 @@ changes.
 Assisted-by: Cursor:claude-opus-5
 Signed-off-by: Hemanth Selam <hemanth.selam@gmail.com>
 ---
- drivers/tty/serial/8250/8250_exar.c | 2 +-
- drivers/tty/serial/ar933x_uart.c    | 4 ++--
- drivers/tty/serial/atmel_serial.c   | 2 +-
- drivers/tty/serial/imx.c            | 2 +-
- drivers/tty/serial/men_z135_uart.c  | 2 +-
- drivers/tty/serial/mvebu-uart.c     | 2 +-
- drivers/tty/serial/mxs-auart.c      | 2 +-
- drivers/tty/serial/pic32_uart.c     | 2 +-
- drivers/tty/serial/pmac_zilog.c     | 4 ++--
- drivers/tty/serial/pmac_zilog.h     | 2 +-
- drivers/tty/serial/serial-tegra.c   | 2 +-
- drivers/tty/serial/st-asc.c         | 4 ++--
- drivers/tty/serial/uartlite.c       | 4 ++--
- drivers/tty/serial/xilinx_uartps.c  | 2 +-
- drivers/tty/vt/vt.c                 | 2 +-
- include/linux/tty_driver.h          | 2 +-
- 16 files changed, 20 insertions(+), 20 deletions(-)
+ drivers/usb/atm/ueagle-atm.c           | 2 +-
+ drivers/usb/c67x00/c67x00-ll-hpi.c     | 8 ++++----
+ drivers/usb/c67x00/c67x00-sched.c      | 2 +-
+ drivers/usb/class/cdc-wdm.c            | 2 +-
+ drivers/usb/core/hub.c                 | 2 +-
+ drivers/usb/fotg210/fotg210-hcd.h      | 2 +-
+ drivers/usb/gadget/configfs.c          | 2 +-
+ drivers/usb/gadget/function/f_hid.c    | 2 +-
+ drivers/usb/gadget/function/f_uac2.c   | 4 ++--
+ drivers/usb/gadget/legacy/inode.c      | 2 +-
+ drivers/usb/gadget/udc/bdc/bdc_core.c  | 2 +-
+ drivers/usb/gadget/udc/bdc/bdc_ep.c    | 2 +-
+ drivers/usb/gadget/udc/core.c          | 4 ++--
+ drivers/usb/gadget/udc/fsl_qe_udc.h    | 2 +-
+ drivers/usb/gadget/udc/fsl_udc_core.c  | 4 ++--
+ drivers/usb/gadget/udc/lpc32xx_udc.c   | 2 +-
+ drivers/usb/gadget/udc/pch_udc.c       | 4 ++--
+ drivers/usb/gadget/udc/r8a66597-udc.c  | 2 +-
+ drivers/usb/gadget/udc/snps_udc_plat.c | 2 +-
+ drivers/usb/gadget/udc/udc-xilinx.c    | 4 ++--
+ drivers/usb/host/fhci-q.c              | 2 +-
+ drivers/usb/host/fhci-tds.c            | 2 +-
+ drivers/usb/host/oxu210hp-hcd.c        | 2 +-
+ drivers/usb/host/xhci.c                | 8 ++++----
+ drivers/usb/image/mdc800.c             | 2 +-
+ drivers/usb/misc/sisusbvga/sisusbvga.c | 4 ++--
+ drivers/usb/musb/tusb6010.c            | 2 +-
+ drivers/usb/musb/ux500.c               | 2 +-
+ drivers/usb/phy/phy-fsl-usb.c          | 2 +-
+ drivers/usb/renesas_usbhs/mod_gadget.c | 2 +-
+ drivers/usb/renesas_usbhs/mod_host.c   | 2 +-
+ drivers/usb/storage/uas.c              | 2 +-
+ drivers/usb/typec/tcpm/fusb302.c       | 2 +-
+ drivers/usb/typec/tcpm/tcpm.c          | 2 +-
+ include/linux/usb/cdc.h                | 2 +-
+ 35 files changed, 47 insertions(+), 47 deletions(-)
 
-diff --git a/drivers/tty/serial/8250/8250_exar.c b/drivers/tty/serial/8250/8250_exar.c
-index 836792e861bf..1e37e3e5d319 100644
---- a/drivers/tty/serial/8250/8250_exar.c
-+++ b/drivers/tty/serial/8250/8250_exar.c
-@@ -587,7 +587,7 @@ pci_fastcom335_setup(struct exar8250 *priv, struct pci_dev *pcidev,
+diff --git a/drivers/usb/atm/ueagle-atm.c b/drivers/usb/atm/ueagle-atm.c
+index 61723e7ab351..d569ee93b493 100644
+--- a/drivers/usb/atm/ueagle-atm.c
++++ b/drivers/usb/atm/ueagle-atm.c
+@@ -2189,7 +2189,7 @@ static void uea_stop(struct uea_softc *sc)
+ 	release_firmware(sc->dsp_firm);
+ }
+ 
+-/* syfs interface */
++/* sysfs interface */
+ static struct uea_softc *dev_to_uea(struct device *dev)
+ {
+ 	struct usb_interface *intf;
+diff --git a/drivers/usb/c67x00/c67x00-ll-hpi.c b/drivers/usb/c67x00/c67x00-ll-hpi.c
+index 7a214a3a6cc7..f2225174f7df 100644
+--- a/drivers/usb/c67x00/c67x00-ll-hpi.c
++++ b/drivers/usb/c67x00/c67x00-ll-hpi.c
+@@ -113,7 +113,7 @@ static void hpi_write_word(struct c67x00_device *dev, u16 reg, u16 value)
+ }
+ 
+ /*
+- * Only data is little endian, addr has cpu endianess
++ * Only data is little endian, addr has cpu endianness
+  */
+ static void hpi_write_words_le16(struct c67x00_device *dev, u16 addr,
+ 				 __le16 *data, u16 count)
+@@ -131,7 +131,7 @@ static void hpi_write_words_le16(struct c67x00_device *dev, u16 addr,
+ }
+ 
+ /*
+- * Only data is little endian, addr has cpu endianess
++ * Only data is little endian, addr has cpu endianness
+  */
+ static void hpi_read_words_le16(struct c67x00_device *dev, u16 addr,
+ 				__le16 *data, u16 count)
+@@ -397,7 +397,7 @@ int c67x00_ll_reset(struct c67x00_device *dev)
+ 
+ /*
+  * c67x00_ll_write_mem_le16 - write into c67x00 memory
+- * Only data is little endian, addr has cpu endianess.
++ * Only data is little endian, addr has cpu endianness.
+  */
+ void c67x00_ll_write_mem_le16(struct c67x00_device *dev, u16 addr,
+ 			      void *data, int len)
+@@ -436,7 +436,7 @@ void c67x00_ll_write_mem_le16(struct c67x00_device *dev, u16 addr,
+ 
+ /*
+  * c67x00_ll_read_mem_le16 - read from c67x00 memory
+- * Only data is little endian, addr has cpu endianess.
++ * Only data is little endian, addr has cpu endianness.
+  */
+ void c67x00_ll_read_mem_le16(struct c67x00_device *dev, u16 addr,
+ 			     void *data, int len)
+diff --git a/drivers/usb/c67x00/c67x00-sched.c b/drivers/usb/c67x00/c67x00-sched.c
+index ae6c94f41cb3..3697a45b3cf1 100644
+--- a/drivers/usb/c67x00/c67x00-sched.c
++++ b/drivers/usb/c67x00/c67x00-sched.c
+@@ -37,7 +37,7 @@ struct c67x00_ep_data {
+ /*
+  * struct c67x00_td
+  *
+- * Hardware parts are little endiannes, SW in CPU endianess.
++ * Hardware parts are little endiannes, SW in CPU endianness.
+  */
+ struct c67x00_td {
+ 	/* HW specific part */
+diff --git a/drivers/usb/class/cdc-wdm.c b/drivers/usb/class/cdc-wdm.c
+index 7556c0dac908..1745d9f51a1c 100644
+--- a/drivers/usb/class/cdc-wdm.c
++++ b/drivers/usb/class/cdc-wdm.c
+@@ -1189,7 +1189,7 @@ static int wdm_probe(struct usb_interface *intf, const struct usb_device_id *id)
+  *
+  * The subdriver will manage the given interrupt endpoint exclusively
+  * and will issue control requests referring to the given intf. It
+- * will otherwise avoid interferring, and in particular not do
++ * will otherwise avoid interfering, and in particular not do
+  * usb_set_intfdata/usb_get_intfdata on intf.
+  *
+  * The return value is a pointer to the subdriver's struct usb_driver.
+diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
+index 3345b3298daf..54e0d4f61f00 100644
+--- a/drivers/usb/core/hub.c
++++ b/drivers/usb/core/hub.c
+@@ -6393,7 +6393,7 @@ int usb_reset_device(struct usb_device *udev)
+ 	 * is included in current configuration. The easist
+ 	 * approach is to do it for every device reset,
+ 	 * because the device 'memalloc_noio' flag may have
+-	 * not been set before reseting the usb device.
++	 * not been set before resetting the usb device.
+ 	 */
+ 	noio_flag = memalloc_noio_save();
+ 
+diff --git a/drivers/usb/fotg210/fotg210-hcd.h b/drivers/usb/fotg210/fotg210-hcd.h
+index 13c9342982ee..b7353a89a71a 100644
+--- a/drivers/usb/fotg210/fotg210-hcd.h
++++ b/drivers/usb/fotg210/fotg210-hcd.h
+@@ -283,7 +283,7 @@ struct fotg210_regs {
+ #define PORT_RWC_BITS   (PORT_CSC | PORT_PEC)
+ 	u32     reserved2[19];
+ 
+-	/* OTGCSR: offet 0x70 */
++	/* OTGCSR: offset 0x70 */
+ 	u32     otgcsr;
+ #define OTGCSR_HOST_SPD_TYP     (3 << 22)
+ #define OTGCSR_A_BUS_DROP	(1 << 5)
+diff --git a/drivers/usb/gadget/configfs.c b/drivers/usb/gadget/configfs.c
+index 51df6d1d1487..4e33239bb9e0 100644
+--- a/drivers/usb/gadget/configfs.c
++++ b/drivers/usb/gadget/configfs.c
+@@ -326,7 +326,7 @@ static ssize_t gadget_dev_desc_max_speed_store(struct config_item *item,
+ 
+ 	mutex_lock(&gi->lock);
+ 
+-	/* Prevent changing of max_speed after the driver is binded */
++	/* Prevent changing of max_speed after the driver is bound */
+ 	if (gi->composite.gadget_driver.udc_name)
+ 		goto err;
+ 
+diff --git a/drivers/usb/gadget/function/f_hid.c b/drivers/usb/gadget/function/f_hid.c
+index 3c6b43d06a6d..a946f0030109 100644
+--- a/drivers/usb/gadget/function/f_hid.c
++++ b/drivers/usb/gadget/function/f_hid.c
+@@ -353,7 +353,7 @@ static ssize_t f_hidg_intout_read(struct file *file, char __user *buffer,
+ 	list->pos += count;
+ 
+ 	/*
+-	 * if this request is completely handled and transfered to
++	 * if this request is completely handled and transferred to
+ 	 * userspace, remove its entry from the list and requeue it
+ 	 * again. Otherwise, we will revisit it again upon the next
+ 	 * call, taking into account its current read position.
+diff --git a/drivers/usb/gadget/function/f_uac2.c b/drivers/usb/gadget/function/f_uac2.c
+index d8cf710085a0..f9ca07dec17e 100644
+--- a/drivers/usb/gadget/function/f_uac2.c
++++ b/drivers/usb/gadget/function/f_uac2.c
+@@ -206,7 +206,7 @@ static struct uac2_input_terminal_descriptor io_in_it_desc = {
+ 	.bmControls = cpu_to_le16(CONTROL_RDWR << COPY_CTRL),
+ };
+ 
+-/* Ouput Terminal for USB_IN */
++/* Output Terminal for USB_IN */
+ static struct uac2_output_terminal_descriptor usb_in_ot_desc = {
+ 	.bLength = sizeof usb_in_ot_desc,
+ 	.bDescriptorType = USB_DT_CS_INTERFACE,
+@@ -220,7 +220,7 @@ static struct uac2_output_terminal_descriptor usb_in_ot_desc = {
+ 	.bmControls = cpu_to_le16(CONTROL_RDWR << COPY_CTRL),
+ };
+ 
+-/* Ouput Terminal for I/O-Out */
++/* Output Terminal for I/O-Out */
+ static struct uac2_output_terminal_descriptor io_out_ot_desc = {
+ 	.bLength = sizeof io_out_ot_desc,
+ 	.bDescriptorType = USB_DT_CS_INTERFACE,
+diff --git a/drivers/usb/gadget/legacy/inode.c b/drivers/usb/gadget/legacy/inode.c
+index db961aaa3740..c8b71afb4e15 100644
+--- a/drivers/usb/gadget/legacy/inode.c
++++ b/drivers/usb/gadget/legacy/inode.c
+@@ -1958,7 +1958,7 @@ static const struct file_operations ep0_operations = {
+ 
+ 
+ /* FIXME PAM etc could set this security policy without mount options
+- * if epfiles inherited ownership and permissons from ep0 ...
++ * if epfiles inherited ownership and permissions from ep0 ...
+  */
+ 
+ static unsigned default_uid;
+diff --git a/drivers/usb/gadget/udc/bdc/bdc_core.c b/drivers/usb/gadget/udc/bdc/bdc_core.c
+index a8dbaef54aba..dfdb4c2948da 100644
+--- a/drivers/usb/gadget/udc/bdc/bdc_core.c
++++ b/drivers/usb/gadget/udc/bdc/bdc_core.c
+@@ -361,7 +361,7 @@ int bdc_reinit(struct bdc *bdc)
+ 	return ret;
+ }
+ 
+-/* Allocate all the dyanmic memory */
++/* Allocate all the dynamic memory */
+ static int bdc_mem_alloc(struct bdc *bdc)
+ {
+ 	u32 page_size;
+diff --git a/drivers/usb/gadget/udc/bdc/bdc_ep.c b/drivers/usb/gadget/udc/bdc/bdc_ep.c
+index a7a22e5ec47b..608edd4ae5dd 100644
+--- a/drivers/usb/gadget/udc/bdc/bdc_ep.c
++++ b/drivers/usb/gadget/udc/bdc/bdc_ep.c
+@@ -298,7 +298,7 @@ static int bd_available_ep(struct bdc_ep *ep)
+ 		return bd_list->max_bdi - bd_list->num_tabs;
+ 
+ 	/*
+-	 * Depending upon where eqp and dqp pointers are, caculate number
++	 * Depending upon where eqp and dqp pointers are, calculate number
+ 	 * of avaialble bd's
+ 	 */
+ 	if (bd_list->hwd_bdi < bd_list->eqp_bdi) {
+diff --git a/drivers/usb/gadget/udc/core.c b/drivers/usb/gadget/udc/core.c
+index f6da12b553a0..fa2022e9bc60 100644
+--- a/drivers/usb/gadget/udc/core.c
++++ b/drivers/usb/gadget/udc/core.c
+@@ -1101,7 +1101,7 @@ int usb_gadget_ep_match_desc(struct usb_gadget *gadget,
+ EXPORT_SYMBOL_GPL(usb_gadget_ep_match_desc);
+ 
+ /**
+- * usb_gadget_check_config - checks if the UDC can support the binded
++ * usb_gadget_check_config - checks if the UDC can support the bound
+  *	configuration
+  * @gadget: controller to check the USB configuration
+  *
+@@ -1524,7 +1524,7 @@ EXPORT_SYMBOL_GPL(usb_add_gadget_udc_release);
+ /**
+  * usb_get_gadget_udc_name - get the name of the first UDC controller
+  * This functions returns the name of the first UDC controller in the system.
+- * Please note that this interface is usefull only for legacy drivers which
++ * Please note that this interface is useful only for legacy drivers which
+  * assume that there is only one UDC controller in the system and they need to
+  * get its name before initialization. There is no guarantee that the UDC
+  * of the returned name will be still available, when gadget driver registers
+diff --git a/drivers/usb/gadget/udc/fsl_qe_udc.h b/drivers/usb/gadget/udc/fsl_qe_udc.h
+index 53ca0ff7c2cb..de3c9deb7409 100644
+--- a/drivers/usb/gadget/udc/fsl_qe_udc.h
++++ b/drivers/usb/gadget/udc/fsl_qe_udc.h
+@@ -329,7 +329,7 @@ struct qe_udc {
+ 
+ 	u32 max_pipes;          /* Device max pipes */
+ 	u32 max_use_endpts;     /* Max endpointes to be used */
+-	u32 bus_reset;          /* Device is bus reseting */
++	u32 bus_reset;          /* Device is bus resetting */
+ 	u32 resume_state;       /* USB state to resume*/
+ 	u32 usb_state;          /* USB current state */
+ 	u32 usb_next_state;     /* USB next state */
+diff --git a/drivers/usb/gadget/udc/fsl_udc_core.c b/drivers/usb/gadget/udc/fsl_udc_core.c
+index 20392409afb1..9c82713abbc4 100644
+--- a/drivers/usb/gadget/udc/fsl_udc_core.c
++++ b/drivers/usb/gadget/udc/fsl_udc_core.c
+@@ -1398,7 +1398,7 @@ __acquires(udc->lock)
+ 
+ 	udc_reset_ep_queue(udc, 0);
+ 
+-	/* We process some stardard setup requests here */
++	/* We process some standard setup requests here */
+ 	switch (setup->bRequest) {
+ 	case USB_REQ_GET_STATUS:
+ 		/* Data+Status phase from udc */
+@@ -1831,7 +1831,7 @@ static void reset_irq(struct fsl_udc *udc)
+ 
+ 	if (fsl_readl(&dr_regs->portsc1) & PORTSCX_PORT_RESET) {
+ 		dev_vdbg(udc->dev, "Bus reset\n");
+-		/* Bus is reseting */
++		/* Bus is resetting */
+ 		udc->bus_reset = 1;
+ 		/* Reset all the queues, include XD, dTD, EP queue
+ 		 * head and TR Queue */
+diff --git a/drivers/usb/gadget/udc/lpc32xx_udc.c b/drivers/usb/gadget/udc/lpc32xx_udc.c
+index 044c31869cfb..7348704a9fc4 100644
+--- a/drivers/usb/gadget/udc/lpc32xx_udc.c
++++ b/drivers/usb/gadget/udc/lpc32xx_udc.c
+@@ -2743,7 +2743,7 @@ static irqreturn_t lpc32xx_usb_lp_irq(int irq, void *_udc)
+ 		/* All types of errors, from cable removal during transfer to
+ 		 * misc protocol and bit errors. These are mostly for just info,
+ 		 * as the USB hardware will work around these. If these errors
+-		 * happen alot, something is wrong. */
++		 * happen a lot, something is wrong. */
+ 		udc_protocol_cmd_w(udc, CMD_RD_ERR_STAT);
+ 		tmp = udc_protocol_cmd_r(udc, DAT_RD_ERR_STAT);
+ 		dev_dbg(udc->dev, "Device error (0x%x)!\n", tmp);
+diff --git a/drivers/usb/gadget/udc/pch_udc.c b/drivers/usb/gadget/udc/pch_udc.c
+index 99b3ce28210f..bf673e7faf37 100644
+--- a/drivers/usb/gadget/udc/pch_udc.c
++++ b/drivers/usb/gadget/udc/pch_udc.c
+@@ -319,7 +319,7 @@ struct pch_vbus_gpio_data {
+  * @ep:			array of endpoints
+  * @lock:		protects all state
+  * @stall:		stall requested
+- * @prot_stall:		protcol stall requested
++ * @prot_stall:		protocol stall requested
+  * @suspended:		driver in suspended state
+  * @connected:		gadget driver associated
+  * @vbus_session:	required vbus_session state
+@@ -846,7 +846,7 @@ static inline u32 pch_udc_read_ep_interrupts(struct pch_udc_dev *dev)
  }
  
  /**
-- * cti_tristate_disable() - Disable RS485 transciever tristate
-+ * cti_tristate_disable() - Disable RS485 transceiver tristate
-  * @priv: Device's private structure
-  * @port_num: Port number to set tristate off
-  *
-diff --git a/drivers/tty/serial/ar933x_uart.c b/drivers/tty/serial/ar933x_uart.c
-index 5b491db9d2fc..118fa8b1e44b 100644
---- a/drivers/tty/serial/ar933x_uart.c
-+++ b/drivers/tty/serial/ar933x_uart.c
-@@ -343,7 +343,7 @@ static void ar933x_uart_set_termios(struct uart_port *port,
- 	ar933x_uart_rmw_set(up, AR933X_UART_CS_REG,
- 			    AR933X_UART_CS_HOST_INT_EN);
- 
--	/* enable RX and TX ready overide */
-+	/* enable RX and TX ready override */
- 	ar933x_uart_rmw_set(up, AR933X_UART_CS_REG,
- 		AR933X_UART_CS_TX_READY_ORIDE | AR933X_UART_CS_RX_READY_ORIDE);
- 
-@@ -490,7 +490,7 @@ static int ar933x_uart_startup(struct uart_port *port)
- 	ar933x_uart_rmw_set(up, AR933X_UART_CS_REG,
- 			    AR933X_UART_CS_HOST_INT_EN);
- 
--	/* enable RX and TX ready overide */
-+	/* enable RX and TX ready override */
- 	ar933x_uart_rmw_set(up, AR933X_UART_CS_REG,
- 		AR933X_UART_CS_TX_READY_ORIDE | AR933X_UART_CS_RX_READY_ORIDE);
- 
-diff --git a/drivers/tty/serial/atmel_serial.c b/drivers/tty/serial/atmel_serial.c
-index 5d8c1cfc1c60..c4b465f6a69f 100644
---- a/drivers/tty/serial/atmel_serial.c
-+++ b/drivers/tty/serial/atmel_serial.c
-@@ -40,7 +40,7 @@
- /* Revisit: We should calculate this based on the actual port settings */
- #define PDC_RX_TIMEOUT		(3 * 10)		/* 3 bytes */
- 
--/* The minium number of data FIFOs should be able to contain */
-+/* The minimum number of data FIFOs should be able to contain */
- #define ATMEL_MIN_FIFO_SIZE	8
- /*
-  * These two offsets are substracted from the RX FIFO size to define the RTS
-diff --git a/drivers/tty/serial/imx.c b/drivers/tty/serial/imx.c
-index 513dbe95f7e9..0eac2fd2ed37 100644
---- a/drivers/tty/serial/imx.c
-+++ b/drivers/tty/serial/imx.c
-@@ -137,7 +137,7 @@
- #define USR1_DTRD	(1<<7)	 /* DTR Delta */
- #define USR1_RXDS	 (1<<6)	 /* Receiver idle interrupt flag */
- #define USR1_AIRINT	 (1<<5)	 /* Async IR wake interrupt flag */
--#define USR1_AWAKE	 (1<<4)	 /* Aysnc wake interrupt flag */
-+#define USR1_AWAKE	 (1<<4)	 /* Async wake interrupt flag */
- #define USR2_ADET	 (1<<15) /* Auto baud rate detect complete */
- #define USR2_TXFE	 (1<<14) /* Transmit buffer FIFO empty */
- #define USR2_DTRF	 (1<<13) /* DTR edge interrupt flag */
-diff --git a/drivers/tty/serial/men_z135_uart.c b/drivers/tty/serial/men_z135_uart.c
-index 9138fa29d301..41dd7059e367 100644
---- a/drivers/tty/serial/men_z135_uart.c
-+++ b/drivers/tty/serial/men_z135_uart.c
-@@ -532,7 +532,7 @@ static unsigned int men_z135_get_mctrl(struct uart_port *port)
-  * men_z135_stop_tx() - Stop transmitting characters
-  * @port: The UART port
-  *
-- * Stop transmitting characters. This might be due to CTS line becomming
-+ * Stop transmitting characters. This might be due to CTS line becoming
-  * inactive or the tty layer indicating we want to stop transmission due to
-  * an XOFF character.
+- * pch_udc_write_ep_interrupts() - Clear endpoint interupts
++ * pch_udc_write_ep_interrupts() - Clear endpoint interrupts
+  * @dev:	Reference to structure of type pch_udc_regs
+  * @val:	The value to be written to interrupt register
   */
-diff --git a/drivers/tty/serial/mvebu-uart.c b/drivers/tty/serial/mvebu-uart.c
-index 33ea496c93b2..0306f219feb0 100644
---- a/drivers/tty/serial/mvebu-uart.c
-+++ b/drivers/tty/serial/mvebu-uart.c
-@@ -942,7 +942,7 @@ static int mvebu_uart_probe(struct platform_device *pdev)
- 
- 	/* Manage interrupts */
- 	if (platform_irq_count(pdev) == 1) {
--		/* Old bindings: no name on the single unamed UART0 IRQ */
-+		/* Old bindings: no name on the single unnamed UART0 IRQ */
- 		irq = platform_get_irq(pdev, 0);
- 		if (irq < 0)
- 			return irq;
-diff --git a/drivers/tty/serial/mxs-auart.c b/drivers/tty/serial/mxs-auart.c
-index 697318dbb146..5355409134da 100644
---- a/drivers/tty/serial/mxs-auart.c
-+++ b/drivers/tty/serial/mxs-auart.c
-@@ -1009,7 +1009,7 @@ static void mxs_auart_settermios(struct uart_port *u,
- 		if (is_imx28_auart(s)
- 				&& test_bit(MXS_AUART_RTSCTS, &s->flags)) {
- 			if (!mxs_auart_dma_init(s))
--				/* enable DMA tranfer */
-+				/* enable DMA transfer */
- 				ctrl2 |= AUART_CTRL2_TXDMAE | AUART_CTRL2_RXDMAE
- 				       | AUART_CTRL2_DMAONERR;
- 		}
-diff --git a/drivers/tty/serial/pic32_uart.c b/drivers/tty/serial/pic32_uart.c
-index 8407f85776c0..1d4adb5c7d88 100644
---- a/drivers/tty/serial/pic32_uart.c
-+++ b/drivers/tty/serial/pic32_uart.c
-@@ -547,7 +547,7 @@ static int pic32_uart_startup(struct uart_port *port)
- 	pic32_uart_writel(sport, PIC32_CLR(PIC32_UART_STA),
- 			PIC32_UART_STA_UTXISEL1);
- 
--	/* enable all interrupts and eanable uart */
-+	/* enable all interrupts and enable uart */
- 	pic32_uart_en_and_unmask(port);
- 
- 	local_irq_restore(flags);
-diff --git a/drivers/tty/serial/pmac_zilog.c b/drivers/tty/serial/pmac_zilog.c
-index e3a919328695..31cb2cde3116 100644
---- a/drivers/tty/serial/pmac_zilog.c
-+++ b/drivers/tty/serial/pmac_zilog.c
-@@ -368,7 +368,7 @@ static void pmz_transmit_chars(struct uart_pmac_port *uap)
- 	 * R3 still signals the interrupts and we see them when taking
- 	 * an interrupt for the other channel (this could be a qemu
- 	 * bug but since the ESCC doc doesn't specify precsiely whether
--	 * R3 interrup status bits are masked by R1 interrupt enable
-+	 * R3 interrupt status bits are masked by R1 interrupt enable
- 	 * bits, better safe than sorry). --BenH.
- 	 */
- 	if (!ZS_IS_OPEN(uap))
-@@ -1929,7 +1929,7 @@ static int __init pmz_console_setup(struct console *co, char *options)
- 	port = &uap->port;
- 
- 	/*
--	 * Mark port as beeing a console
-+	 * Mark port as being a console
- 	 */
- 	uap->flags |= PMACZILOG_FLAG_IS_CONS;
- 
-diff --git a/drivers/tty/serial/pmac_zilog.h b/drivers/tty/serial/pmac_zilog.h
-index 837b97ca0a90..40f47b389b55 100644
---- a/drivers/tty/serial/pmac_zilog.h
-+++ b/drivers/tty/serial/pmac_zilog.h
-@@ -21,7 +21,7 @@ struct uart_pmac_port {
- 	 * early inited port)
- 	 */
- 	struct macio_dev		*dev;
--	/* device node to this port, this points to one of 2 childs
-+	/* device node to this port, this points to one of 2 children
- 	 * of "escc" node (ie. ch-a or ch-b)
- 	 */
- 	struct device_node		*node;
-diff --git a/drivers/tty/serial/serial-tegra.c b/drivers/tty/serial/serial-tegra.c
-index 8004fc00fb9c..2eb49bcc766d 100644
---- a/drivers/tty/serial/serial-tegra.c
-+++ b/drivers/tty/serial/serial-tegra.c
-@@ -1096,7 +1096,7 @@ static int tegra_uart_hw_init(struct tegra_uart_port *tup)
- 	 * EORD is different interrupt than RX_TIMEOUT - RX_TIMEOUT occurs when
- 	 * the DATA is sitting in the FIFO and couldn't be transferred to the
- 	 * DMA as the DMA size alignment (4 bytes) is not met. EORD will be
--	 * triggered when there is a pause of the incomming data stream for 4
-+	 * triggered when there is a pause of the incoming data stream for 4
- 	 * characters long.
- 	 *
- 	 * For pauses in the data which is not aligned to 4 bytes, we get
-diff --git a/drivers/tty/serial/st-asc.c b/drivers/tty/serial/st-asc.c
-index 6ed9a327702b..f065b300ac09 100644
---- a/drivers/tty/serial/st-asc.c
-+++ b/drivers/tty/serial/st-asc.c
-@@ -378,7 +378,7 @@ static void asc_set_mctrl(struct uart_port *port, unsigned int mctrl)
- static unsigned int asc_get_mctrl(struct uart_port *port)
- {
- 	/*
--	 * This routine is used for geting signals of: DTR, DCD, DSR, RI,
-+	 * This routine is used for getting signals of: DTR, DCD, DSR, RI,
- 	 * and CTS/RTS
- 	 */
- 	return TIOCM_CAR | TIOCM_DSR | TIOCM_CTS;
-@@ -829,7 +829,7 @@ static void asc_console_putchar(struct uart_port *port, unsigned char ch)
- {
- 	unsigned int timeout = 1000000;
- 
--	/* Wait for upto 1 second in case flow control is stopping us. */
-+	/* Wait for up to 1 second in case flow control is stopping us. */
- 	while (--timeout && !asc_txfifo_is_half_empty(port))
- 		udelay(1);
- 
-diff --git a/drivers/tty/serial/uartlite.c b/drivers/tty/serial/uartlite.c
-index 6240c3d4dfd7..153233fe4347 100644
---- a/drivers/tty/serial/uartlite.c
-+++ b/drivers/tty/serial/uartlite.c
-@@ -163,7 +163,7 @@ static int ulite_receive(struct uart_port *port, int stat)
- 		port->icount.frame++;
- 
- 
--	/* drop byte with parity error if IGNPAR specificed */
-+	/* drop byte with parity error if IGNPAR specified */
- 	if (stat & port->ignore_status_mask & ULITE_STATUS_PARITY)
- 		stat &= ~ULITE_STATUS_RXVALID;
- 
-@@ -393,7 +393,7 @@ static int ulite_request_port(struct uart_port *port)
- 	ret = uart_in32(ULITE_CONTROL, port);
- 	uart_out32(ULITE_CONTROL_RST_TX, ULITE_CONTROL, port);
- 	ret = uart_in32(ULITE_STATUS, port);
--	/* Endianess detection */
-+	/* Endianness detection */
- 	if ((ret & ULITE_STATUS_TXEMPTY) != ULITE_STATUS_TXEMPTY)
- 		pdata->reg_ops = &uartlite_le;
- 
-diff --git a/drivers/tty/serial/xilinx_uartps.c b/drivers/tty/serial/xilinx_uartps.c
-index a072b75dbaf2..7eaf70614f9c 100644
---- a/drivers/tty/serial/xilinx_uartps.c
-+++ b/drivers/tty/serial/xilinx_uartps.c
-@@ -1476,7 +1476,7 @@ static int cdns_uart_suspend(struct device *device)
- 			readl(port->membase + CDNS_UART_FIFO);
- 		/* set RX trigger level to 1 */
- 		writel(1, port->membase + CDNS_UART_RXWM);
--		/* disable RX timeout interrups */
-+		/* disable RX timeout interrupts */
- 		writel(CDNS_UART_IXR_TOUT, port->membase + CDNS_UART_IDR);
- 		uart_port_unlock_irqrestore(port, flags);
+diff --git a/drivers/usb/gadget/udc/r8a66597-udc.c b/drivers/usb/gadget/udc/r8a66597-udc.c
+index d190e16d43fc..105638d47c79 100644
+--- a/drivers/usb/gadget/udc/r8a66597-udc.c
++++ b/drivers/usb/gadget/udc/r8a66597-udc.c
+@@ -652,7 +652,7 @@ static int sudmac_alloc_channel(struct r8a66597 *r8a66597,
+ 		change_bfre_mode(r8a66597, ep->pipenum, 1);
  	}
-diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
-index 8f467b22b799..494749282041 100644
---- a/drivers/tty/vt/vt.c
-+++ b/drivers/tty/vt/vt.c
-@@ -1142,7 +1142,7 @@ int vc_allocate(unsigned int currcons)	/* return 0 on success */
- static inline int resize_screen(struct vc_data *vc, int width, int height,
- 				bool from_user)
- {
--	/* Resizes the resolution of the display adapater */
-+	/* Resizes the resolution of the display adapter */
- 	int err = 0;
  
- 	if (vc->vc_sw->con_resize)
-diff --git a/include/linux/tty_driver.h b/include/linux/tty_driver.h
-index 1f2896e56e77..626e0692c97a 100644
---- a/include/linux/tty_driver.h
-+++ b/include/linux/tty_driver.h
-@@ -22,7 +22,7 @@ struct serial_struct;
-  * These are flags passed to tty_alloc_driver().
+-	/* set r8a66597_ep paramters */
++	/* set r8a66597_ep parameters */
+ 	ep->use_dma = 1;
+ 	ep->dma = dma;
+ 	ep->fifoaddr = D0FIFO;
+diff --git a/drivers/usb/gadget/udc/snps_udc_plat.c b/drivers/usb/gadget/udc/snps_udc_plat.c
+index 0ee3ed185d9c..4b0c907b0f76 100644
+--- a/drivers/usb/gadget/udc/snps_udc_plat.c
++++ b/drivers/usb/gadget/udc/snps_udc_plat.c
+@@ -36,7 +36,7 @@ static void stop_udc(struct udc *udc)
+ 
+ 	spin_lock(&udc->lock);
+ 
+-	/* Flush the receieve fifo */
++	/* Flush the receive fifo */
+ 	reg = readl(&udc->regs->ctl);
+ 	reg |= AMD_BIT(UDC_DEVCTL_SRX_FLUSH);
+ 	writel(reg, &udc->regs->ctl);
+diff --git a/drivers/usb/gadget/udc/udc-xilinx.c b/drivers/usb/gadget/udc/udc-xilinx.c
+index bef06fe7543b..e6b9233ccdf9 100644
+--- a/drivers/usb/gadget/udc/udc-xilinx.c
++++ b/drivers/usb/gadget/udc/udc-xilinx.c
+@@ -128,7 +128,7 @@ struct xusb_req {
+  * @name: name of the endpoint
+  * @epnumber: endpoint number
+  * @maxpacket: maximum packet size the endpoint can store
+- * @buffer0count: the size of the packet recieved in the first buffer
++ * @buffer0count: the size of the packet received in the first buffer
+  * @buffer1count: the size of the packet received in the second buffer
+  * @curbufnum: current buffer of endpoint that will be processed next
+  * @buffer0ready: the busy state of first buffer
+@@ -311,7 +311,7 @@ static void xudc_epconfig(struct xusb_ep *ep, struct xusb_udc *udc)
+  * Return: 0 on success, error code on failure
   *
-  * @TTY_DRIVER_INSTALLED:
-- *	Whether this driver was succesfully installed. This is a tty internal
-+ *	Whether this driver was successfully installed. This is a tty internal
-  *	flag. Do not touch.
+  * This function starts DMA transfer by writing to DMA source,
+- * destination and lenth registers.
++ * destination and length registers.
+  */
+ static int xudc_start_dma(struct xusb_ep *ep, dma_addr_t src,
+ 			  dma_addr_t dst, u32 length)
+diff --git a/drivers/usb/host/fhci-q.c b/drivers/usb/host/fhci-q.c
+index 669c240523fe..b13ad02454e1 100644
+--- a/drivers/usb/host/fhci-q.c
++++ b/drivers/usb/host/fhci-q.c
+@@ -208,7 +208,7 @@ void fhci_urb_complete_free(struct fhci_hcd *fhci, struct urb *urb)
+ }
+ 
+ /*
+- * caculate transfer length/stats and update the urb
++ * calculate transfer length/stats and update the urb
+  * Precondition: irqsafe(only for urb-?status locking)
+  */
+ void fhci_done_td(struct urb *urb, struct td *td)
+diff --git a/drivers/usb/host/fhci-tds.c b/drivers/usb/host/fhci-tds.c
+index d7482dc0604e..a52bddb45bb7 100644
+--- a/drivers/usb/host/fhci-tds.c
++++ b/drivers/usb/host/fhci-tds.c
+@@ -367,7 +367,7 @@ static void fhci_td_transaction_confirm(struct fhci_usb *usb)
+  * Arguments:
+  * usb          A pointer to the USB structure
+  * pkt          A pointer to the user frame structure
+- * trans_type   Transaction tyep - IN,OUT or SETUP
++ * trans_type   Transaction type - IN,OUT or SETUP
+  * dest_addr    Device address - 0~127
+  * dest_ep      Endpoint number of the device - 0~16
+  * trans_mode   Pipe type - ISO,Interrupt,bulk or control
+diff --git a/drivers/usb/host/oxu210hp-hcd.c b/drivers/usb/host/oxu210hp-hcd.c
+index ca96067e6d6d..25c857efaa08 100644
+--- a/drivers/usb/host/oxu210hp-hcd.c
++++ b/drivers/usb/host/oxu210hp-hcd.c
+@@ -882,7 +882,7 @@ static void ehci_hub_descriptor(struct oxu_hcd *oxu,
+  */
+ static int oxu_buf_alloc(struct oxu_hcd *oxu, struct ehci_qtd *qtd, int len)
+ {
+-	int n_blocks;	/* minium blocks needed to hold len */
++	int n_blocks;	/* minimum blocks needed to hold len */
+ 	int a_blocks;	/* blocks allocated */
+ 	int i, j;
+ 
+diff --git a/drivers/usb/host/xhci.c b/drivers/usb/host/xhci.c
+index a9e47e178c28..4f1943fbd6ca 100644
+--- a/drivers/usb/host/xhci.c
++++ b/drivers/usb/host/xhci.c
+@@ -406,7 +406,7 @@ static void compliance_mode_recovery(struct timer_list *t)
+  * The quirk creates a timer that polls every 2 seconds the link state of
+  * each host controller's port and recovers it by issuing a Warm reset
+  * if Compliance mode is detected, otherwise the port will become "dead" (no
+- * device connections or disconnections will be detected anymore). Becasue no
++ * device connections or disconnections will be detected anymore). Because no
+  * status event is generated when entering compliance mode (per xhci spec),
+  * this quirk is needed on systems that have the failing hardware installed.
+  */
+@@ -1178,7 +1178,7 @@ int xhci_resume(struct xhci_hcd *xhci, bool power_lost, bool is_auto_resume)
+ 		/* Delete all remaining commands */
+ 		xhci_cleanup_command_queue(xhci);
+ 
+-		/* Clear data which is re-initilized during runtime */
++		/* Clear data which is re-initialized during runtime */
+ 		xhci_for_each_ring_seg(xhci->interrupters[0]->event_ring->first_seg, seg)
+ 			memset(seg->trbs, 0, sizeof(union xhci_trb) * TRBS_PER_SEGMENT);
+ 
+@@ -4296,7 +4296,7 @@ int xhci_alloc_dev(struct usb_hcd *hcd, struct usb_device *udev)
+ 		pm_runtime_get_noresume(hcd->self.controller);
+ 
+ 	/* Is this a LS or FS device under a HS hub? */
+-	/* Hub or peripherial? */
++	/* Hub or peripheral? */
+ 	return 1;
+ 
+ disable_slot:
+@@ -4512,7 +4512,7 @@ static int xhci_enable_device(struct usb_hcd *hcd, struct usb_device *udev)
+ 
+ /*
+  * Transfer the port index into real index in the HW port status
+- * registers. Caculate offset between the port's PORTSC register
++ * registers. Calculate offset between the port's PORTSC register
+  * and port status base. Divide the number of per port register
+  * to get the real index. The raw port number bases 1.
+  */
+diff --git a/drivers/usb/image/mdc800.c b/drivers/usb/image/mdc800.c
+index ca287b770e8c..5ff509a7e402 100644
+--- a/drivers/usb/image/mdc800.c
++++ b/drivers/usb/image/mdc800.c
+@@ -59,7 +59,7 @@
+  * has been removed.
   *
-  * @TTY_DRIVER_RESET_TERMIOS:
+  * version 0.6.0
+- * Rewrite of this driver: The Emulation of the rs232 protocoll
++ * Rewrite of this driver: The Emulation of the rs232 protocol
+  * has been removed from the driver. A special executeCommand function
+  * for this driver is included to gphoto.
+  * The driver supports two kind of communication to bulk endpoints.
+diff --git a/drivers/usb/misc/sisusbvga/sisusbvga.c b/drivers/usb/misc/sisusbvga/sisusbvga.c
+index 3e75a7c24828..5a86962d86c0 100644
+--- a/drivers/usb/misc/sisusbvga/sisusbvga.c
++++ b/drivers/usb/misc/sisusbvga/sisusbvga.c
+@@ -590,7 +590,7 @@ static int sisusb_send_bridge_packet(struct sisusb_usb_data *sisusb, int len,
+  * This means that
+  *   - the write routines expect "data" in machine endianness format.
+  *     The data will be converted to leXX in sisusb_xxx_packet.
+- *   - the read routines can expect read data in machine-endianess.
++ *   - the read routines can expect read data in machine-endianness.
+  */
+ 
+ static int sisusb_write_memio_byte(struct sisusb_usb_data *sisusb, int type,
+@@ -946,7 +946,7 @@ static int sisusb_write_mem_bulk(struct sisusb_usb_data *sisusb, u32 addr,
+ 	return ret ? -EIO : 0;
+ }
+ 
+-/* Remember: Read data in packet is in machine-endianess! So for
++/* Remember: Read data in packet is in machine-endianness! So for
+  * byte, word, 24bit, long no endian correction is necessary.
+  */
+ 
+diff --git a/drivers/usb/musb/tusb6010.c b/drivers/usb/musb/tusb6010.c
+index 1d9571f24a56..6a86bebc24ca 100644
+--- a/drivers/usb/musb/tusb6010.c
++++ b/drivers/usb/musb/tusb6010.c
+@@ -941,7 +941,7 @@ static void tusb_musb_enable(struct musb *musb)
+ 	musb_writel(tbase, TUSB_DMA_INT_MASK, 0x7fffffff);
+ 	musb_writel(tbase, TUSB_GPIO_INT_MASK, 0x1ff);
+ 
+-	/* Clear all subsystem interrups */
++	/* Clear all subsystem interrupts */
+ 	musb_writel(tbase, TUSB_USBIP_INT_CLEAR, 0x7fffffff);
+ 	musb_writel(tbase, TUSB_DMA_INT_CLEAR, 0x7fffffff);
+ 	musb_writel(tbase, TUSB_GPIO_INT_CLEAR, 0x1ff);
+diff --git a/drivers/usb/musb/ux500.c b/drivers/usb/musb/ux500.c
+index 8c2a43d992f5..6858beed1ac4 100644
+--- a/drivers/usb/musb/ux500.c
++++ b/drivers/usb/musb/ux500.c
+@@ -80,7 +80,7 @@ static void ux500_musb_set_vbus(struct musb *musb, int is_on)
+ 	/*
+ 	 * Devctl values will be updated after vbus goes below
+ 	 * session_valid. The time taken depends on the capacitance
+-	 * on VBUS line. The max discharge time can be upto 1 sec
++	 * on VBUS line. The max discharge time can be up to 1 sec
+ 	 * as per the spec. Typically on our platform, it is 200ms
+ 	 */
+ 	if (!is_on)
+diff --git a/drivers/usb/phy/phy-fsl-usb.c b/drivers/usb/phy/phy-fsl-usb.c
+index 1986f7e9d9be..96f206351c3f 100644
+--- a/drivers/usb/phy/phy-fsl-usb.c
++++ b/drivers/usb/phy/phy-fsl-usb.c
+@@ -166,7 +166,7 @@ static void fsl_otg_drv_vbus(struct otg_fsm *fsm, int on)
+ }
+ 
+ /*
+- * Pull-up D+, signalling connect by periperal. Also used in
++ * Pull-up D+, signalling connect by peripheral. Also used in
+  * data-line pulsing in SRP
+  */
+ static void fsl_otg_loc_conn(struct otg_fsm *fsm, int on)
+diff --git a/drivers/usb/renesas_usbhs/mod_gadget.c b/drivers/usb/renesas_usbhs/mod_gadget.c
+index 0c7fe109d5c7..92f4f35f8bb1 100644
+--- a/drivers/usb/renesas_usbhs/mod_gadget.c
++++ b/drivers/usb/renesas_usbhs/mod_gadget.c
+@@ -852,7 +852,7 @@ static int usbhsg_try_start(struct usbhs_priv *priv, u32 status)
+ 	usbhs_pipe_config_update(dcp->pipe, 0, 0, 64);
+ 
+ 	/*
+-	 * system config enble
++	 * system config enable
+ 	 * - HI speed
+ 	 * - function
+ 	 * - usb module
+diff --git a/drivers/usb/renesas_usbhs/mod_host.c b/drivers/usb/renesas_usbhs/mod_host.c
+index f7ef3a9f82a4..c6a9d916135f 100644
+--- a/drivers/usb/renesas_usbhs/mod_host.c
++++ b/drivers/usb/renesas_usbhs/mod_host.c
+@@ -1468,7 +1468,7 @@ static int usbhsh_start(struct usbhs_priv *priv)
+ 	usbhsh_pipe_init_for_host(priv);
+ 
+ 	/*
+-	 * system config enble
++	 * system config enable
+ 	 * - HI speed
+ 	 * - host
+ 	 * - usb module
+diff --git a/drivers/usb/storage/uas.c b/drivers/usb/storage/uas.c
+index 265162981269..0a3ffe15d26d 100644
+--- a/drivers/usb/storage/uas.c
++++ b/drivers/usb/storage/uas.c
+@@ -426,7 +426,7 @@ static void uas_data_cmplt(struct urb *urb)
+ 	if (status) {
+ 		if (status != -ENOENT && status != -ECONNRESET && status != -ESHUTDOWN)
+ 			uas_log_cmd_state(cmnd, "data cmplt err", status);
+-		/* error: no data transfered */
++		/* error: no data transferred */
+ 		scsi_set_resid(cmnd, sdb->length);
+ 		set_host_byte(cmnd, DID_ERROR);
+ 	} else {
+diff --git a/drivers/usb/typec/tcpm/fusb302.c b/drivers/usb/typec/tcpm/fusb302.c
+index 3319f6a2b0c9..d3258675fdbc 100644
+--- a/drivers/usb/typec/tcpm/fusb302.c
++++ b/drivers/usb/typec/tcpm/fusb302.c
+@@ -448,7 +448,7 @@ static int tcpm_get_current_limit(struct tcpc_dev *dev)
+ 
+ 	/*
+ 	 * USB2 Charger detection may still be in progress when we get here,
+-	 * this can take upto 600ms, wait 800ms max.
++	 * this can take up to 600ms, wait 800ms max.
+ 	 */
+ 	timeout = jiffies + msecs_to_jiffies(800);
+ 	do {
+diff --git a/drivers/usb/typec/tcpm/tcpm.c b/drivers/usb/typec/tcpm/tcpm.c
+index a8cd1959c426..15a3cae27b6c 100644
+--- a/drivers/usb/typec/tcpm/tcpm.c
++++ b/drivers/usb/typec/tcpm/tcpm.c
+@@ -2504,7 +2504,7 @@ static int tcpm_pd_svdm(struct tcpm_port *port, struct typec_altmode *adev,
+ 			/*
+ 			 * PD2.0 Spec 6.10.3: respond with NAK as DFP (data host)
+ 			 * PD3.1 Spec 6.4.4.2.5.1: respond with NAK if "invalid field" or
+-			 * "wrong configuation" or "Unrecognized"
++			 * "wrong configuration" or "Unrecognized"
+ 			 */
+ 			if ((port->data_role == TYPEC_DEVICE || svdm_version >= SVDM_VER_2_0) &&
+ 			    port->nr_snk_vdo) {
+diff --git a/include/linux/usb/cdc.h b/include/linux/usb/cdc.h
+index 0af0db51bc89..861fdfa984dc 100644
+--- a/include/linux/usb/cdc.h
++++ b/include/linux/usb/cdc.h
+@@ -10,7 +10,7 @@
+ #include <uapi/linux/usb/cdc.h>
+ 
+ /*
+- * inofficial magic numbers
++ * unofficial magic numbers
+  */
+ 
+ #define CDC_PHONET_MAGIC_NUMBER		0xAB
 -- 
 2.48.1
 
