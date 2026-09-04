@@ -1,89 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-26557-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26558-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 42F55C624DE
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Sep 2026 11:34:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 636C2C624DE
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Sep 2026 11:43:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hbvWq5cFqz2yr2;
-	Fri, 04 Sep 2026 21:34:47 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788521687;
-	cv=none; b=CGiRD7tJ5vSPsF1blXSozWrVZIqM8yF3z+f9pDdCtX3Wc2lLfsHQ4Bw6Cl1gaFXGANQoUgV6kZ9eN2UOv1HP67BEQMraeNZj89FxtGQLbeo6eNT9vxpr4A9nvoq0eICvJG0Rm9siMgjj8ZBfPr30LpCBkVr1d3MZX/7JuO4XD97d0KNoj9xGyCyIMNAunDitcAvqmo0/ui5uVlS5LYyPQATF6Ycmn3dRacI6ru5gTXLZMXcxE9t+cdYuPE2XyibnqyTNapOtz3PQedFtTOqibM2jTW7HAZVwxeFjSiNJYUxw/pfXhwxmZOtZQ5QaGr4C8VFNP5bH8vJkSuHdMHx+6A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hbvjg2gZ9z2y2b;
+	Fri, 04 Sep 2026 21:43:19 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788522199;
+	cv=none; b=RHEV95xuGQohq/pP0HPPAcHVlj1Li2pRzxH3/qIqW4KOYKtX0a9L0KvQ9I6+ffAALGP2CS17Q41L/drxEozxywJK7oD8fHPfzC665thhtRC500wrcdpeKodnux5NzKzwYSp9afDVcZP+efPMzveBB0G7mIniYoFIxuXGbuQnFV9i3CDONJ9W08YFiPq3RfhqMnNw3AjaLRHepvSZk3qQtcRXUOeBndvWjNiqBenGZqD1794CHdoM8gka25y70AW7sxJgDvilhnXI0zGy7WNDagdY4ufB6NJtiyR9QWzkMIxKlIorCaQJUt5Q7z/OrtwjB0I+fPJsUJdRZfPA3nInOQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788521687; c=relaxed/relaxed;
-	bh=AnZXsQc5hzhg4mdkNFNmG5Z6h2BQ91aM/5aosNwiPpw=;
+	t=1788522199; c=relaxed/relaxed;
+	bh=GgWGA3tRFjwasRcdaTq8NFprGOZYrgriEgoqozAWbas=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=mIr+eilbMwjTFvwVp7X5C0WTtdUMDyUExRBNNztM/FWUx4tty+DLZ28ICqtv4C6OR11xdzGfdltr9FAasKpOpOtyCCD/iVpRRHwEHIPzGBMcFuz0y0ILZ7EiAGgrOKQE5XQWvlBKcrjeFxjXi8CnsseA93nSviG9RZxfF5nLU4qrWouCVvqw7ORvtcddkHItPaZKVrYMowSqKymbD4oPgAs0AVhxbfVKaK7mP49rN11xDy3kE4sgwMUS6p0aAs8a7Bam3PaEFe82MmVvXEti8ZytxuWTQgkIcLuwqy9jtpiR2yJ1LQyEZU/XRddS1eLEnHOesPzeXzlxukGnUshJ2Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=doIrXJ+1; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=srikar@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=EIRyS9hJ4McBoOmHQzLHtV48r0MCoFMYb06FK9J+BN22WB3YKEK8WzEXDqD0qMhaBjY9Rbhe53Hzidoo5ovbIFFFizKGDQzH4EjzlHu/Pozswtn5oW248gk+WtbeJkwjXzzOMYCBaHaL2ZnfiVT4ocC9PH+BK/heDEtOWxPM353+x4ojlVH3OKFJvgMPW7HyQB1eg56Jh5Enzkp/SHhSEJJGaals+59oVbp3W2IJnQ1KJJ4ZDHCSmtbLUQBSSqBr+i+4z9BgLS8uCA3mhfKHQRV5wMvDetyHfiT4yUXC098IWFb3v7hSUsATJ6FBF4QDYY2VS/KjadGSQxQoayMcig==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=efkQZLkq; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=doIrXJ+1;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=efkQZLkq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=srikar@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hbvWp64pHz2y2b;
-	Fri, 04 Sep 2026 21:34:46 +1000 (AEST)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 684AVp3J1536461;
-	Fri, 4 Sep 2026 11:34:35 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:to; s=pp1; bh=AnZXsQc5hzhg4mdkNFNmG
-	5Z6h2BQ91aM/5aosNwiPpw=; b=doIrXJ+17mrrR1QfLrkY1OfGHqIb9bebzS+8x
-	ZIXMN9fFnl+eBUl8q0lJ/QRY1K42bXlS5H3S3No05/aVsCFLcZ9BnP2FhhRInuOy
-	hxluP9MWq0MCfro51raeTnytZwafqqLlsGuNTKwW2gt0o3OZC13cZsr0ZqxmpjaV
-	HX0x9BUbGTGXZtuAiiyALpj+QG76J8xiSXOUumA7jafStAnOXlbOFpVo8sudK+OY
-	Vul62QuU0bxNTLI+IHkOQSDCbkXlcCkSOQMEb96qfZM5fqB26jlVTYot88Bt4cSS
-	ZS0pUypEjvc8P8NuE2gfVefJS+8sWEg/zzsQtln50d6pW6hog==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gbq2tsr91-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 04 Sep 2026 11:34:35 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 684BQOYi024811;
-	Fri, 4 Sep 2026 11:34:34 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4gcarkmskg-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 04 Sep 2026 11:34:34 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 684BYUOJ48497078
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 4 Sep 2026 11:34:30 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 7A0A320043;
-	Fri,  4 Sep 2026 11:34:30 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id DC8202004E;
-	Fri,  4 Sep 2026 11:34:27 +0000 (GMT)
-Received: from linux.ibm.com (unknown [9.126.150.29])
-	by smtpav05.fra02v.mail.ibm.com (Postfix) with SMTP;
-	Fri,  4 Sep 2026 11:34:27 +0000 (GMT)
-Date: Fri, 4 Sep 2026 17:04:27 +0530
-From: Srikar Dronamraju <srikar@linux.ibm.com>
-To: Shrikanth Hegde <sshegde@linux.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        skiboot@lists.ozlabs.org, arbab@linux.ibm.com, mahesh@linux.ibm.com,
-        Ritesh Harjani <ritesh.list@gmail.com>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        "Mike Rapoport (Microsoft)" <rppt@kernel.org>,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3 3/3] powerpc/numa: Support coregroup on PowerNV
-Message-ID: <apqsw16smYGV3q3w@linux.ibm.com>
-Reply-To: Srikar Dronamraju <srikar@linux.ibm.com>
-References: <20260902123458.340456-5-srikar@linux.ibm.com>
- <20260902123458.340456-8-srikar@linux.ibm.com>
- <c11197ac-ce7b-4fba-8ea5-4f38be9f7106@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hbvjf3HLQz2y2M
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Sep 2026 21:43:18 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 642056020A;
+	Fri,  4 Sep 2026 11:43:16 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 49D921F00A3D;
+	Fri,  4 Sep 2026 11:43:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1788522196;
+	bh=GgWGA3tRFjwasRcdaTq8NFprGOZYrgriEgoqozAWbas=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=efkQZLkqO4RDG32p3HDB8moibYfGgFtd8IwObc9ULUb9uy4aZBXv2JOkJtTz9C6li
+	 KtIg1q+pF0wM/bOMpHN5Oh6qCpbIIaKAacLSD1Uq/WWlqNTeUbJsr2QW6E02nVhp//
+	 uG4KoC9KTlJs8Ioscr39heJ6S+2Psr2BSfhULVwhom8MQbfXkgDA3BZ2tfDe7IabKh
+	 BLoNMIVmNnCWY8HYpaL9rlMkrbwoBg0ErSuHzN6dluM8l37m5k1GTlhxmdNqCetxP8
+	 zaZdI7hJn71deW1GZadBBQ7vdgi2JMIpmEQkTK6Wl9nMhlLrkPJcrkb6u1dX/r56sG
+	 nGCPs3n+Zs5rg==
+Date: Fri, 4 Sep 2026 12:43:04 +0100
+From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
+To: Tigran Aivazian <aivazian.tigran@gmail.com>
+Cc: Ethan Nelson-Moore <enelsonmoore@gmail.com>, 
+	Shuah Khan <skhan@linuxfoundation.org>, Randy Dunlap <rdunlap@infradead.org>, 
+	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Jan Kara <jack@suse.cz>, Jakub Kicinski <kuba@kernel.org>, 
+	Namjae Jeon <linkinjeon@kernel.org>, Hisam Mehboob <hisamshar@gmail.com>, 
+	Martin =?utf-8?Q?Kepplinger-Novakovi=C4=87?= <martink@posteo.de>, Christian Brauner <brauner@kernel.org>, 
+	Amir Goldstein <amir73il@gmail.com>, Bagas Sanjaya <bagasdotme@gmail.com>, 
+	Eric Biggers <ebiggers@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, 
+	David Howells <dhowells@redhat.com>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
+	Theodore Ts'o <tytso@mit.edu>, Catalin Iacob <iacobcatalin@gmail.com>, 
+	Stephen Hemminger <stephen@networkplumber.org>, Andrew Lunn <andrew@lunn.ch>, 
+	"Maciej W. Rozycki" <macro@orcam.me.uk>, Andrei Vagin <avagin@gmail.com>, 
+	Wei Yang <richard.weiyang@gmail.com>, Bhavik Sachdev <b.sachdev1904@gmail.com>, 
+	Andrew Morton <akpm@linux-foundation.org>, Wang Yan <wangyan01@kylinos.cn>, 
+	Bala-Vignesh-Reddy <reddybalavignesh9979@gmail.com>, Malaya Kumar Rout <malayarout91@gmail.com>, 
+	linux-doc@vger.kernel.org, linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	linux-fsdevel@vger.kernel.org, linux-kselftest@vger.kernel.org, 
+	Luis de Bethencourt <luisbg@kernel.org>, Salah Triki <salah.triki@gmail.com>, 
+	Jonathan Corbet <corbet@lwn.net>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	Alexander Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [PATCH] bfs: remove the filesystem
+Message-ID: <apqtweK_abU7IsUc@gremlin>
+References: <20260904082954.48738-1-enelsonmoore@gmail.com>
+ <apqXNCL4X_i6xy2Z@gremlin>
+ <CAK+_RLm9HKkm8YCCanpOMxaMaAkt5eoxQBHBxC1-Xkvj=L=UsQ@mail.gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -97,110 +85,38 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <c11197ac-ce7b-4fba-8ea5-4f38be9f7106@linux.ibm.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=bc1bluPB c=1 sm=1 tr=0 ts=6a9aaccb cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=8nJEP1OIZ-IA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=VwQbUJbxAAAA:8
- a=VnNF1IyMAAAA:8 a=gTBKziIoMwFYf8sqKhIA:9 a=wPNLvfGTeEIA:10
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTA0MDEwNCBTYWx0ZWRfXyB9yyCKjeGrF
- 1eATvVcxOxHtZa+qN+/oUWrUi0HWhVMOFfg9WB+nH473yXLWJFf4Ebvt7t0XD9ONUZa98PQR1G8
- P2zoULXqSeMt2Q509lbvPo7otYTJ/Y8=
-X-Proofpoint-ORIG-GUID: ZPe1aEWAj9sJILkR9OHq9sqaw5TZzGbK
-X-Proofpoint-GUID: CEv9XwryGMlI8IMCptmP_OHLBYCKbMWk
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTA0MDEwNCBTYWx0ZWRfX5yhY9n83ni2g
- Aav4cEnr9vUKO0Mpb1u6t4E4KdYeuNMC9R+Dkgc3EdwgNaqBrEbIeQgzlQukAcoTUzdIwqR92KW
- ckFV3121m2dGMMFiEb82Lwghx4fBBbuVhlczKEI/y5PlG+0D50VxhDXX3ssy37ryF+hR/VcrSv6
- J4n3ATWRB7K+eK+MndvS7BIIANtiCpFzVDv6XY6a6zs4572Pxlx7yWTH/PItppo3wZqEfb0Molk
- kKJIHi9b9QTww8fAYiaPiaU3NsyNrmZyBWJ7eyXtYdpSjCtdEzTc8KkHtF4uOs5eh9+UNGSPl0U
- /llQFRr5imn7XF+Nz5fkdqnoahD7UstqIrZnlrvYMk0nf3nQxQw89M2cWmog98yTgdXfKCOZ3xQ
- bZFdPlQO1ULaKSKdA7J32L2CqsecnWHi0v5wT+HEAg0MRz3FwlL08B4yv9rglcSzobJWC/SDnHS
- IyL6SKbL7Gsig75kPow==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-04_03,2026-09-03_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 suspectscore=0 adultscore=0 malwarescore=0 spamscore=0
- lowpriorityscore=0 phishscore=0 clxscore=1015 priorityscore=1501
- impostorscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
- definitions=main-2609040104
+In-Reply-To: <CAK+_RLm9HKkm8YCCanpOMxaMaAkt5eoxQBHBxC1-Xkvj=L=UsQ@mail.gmail.com>
 
-* Shrikanth Hegde <sshegde@linux.ibm.com> [2026-09-04 15:34:50]:
+On Fri, Sep 04, 2026 at 11:18:10AM +0100, Tigran Aivazian wrote:
+> On Fri, 4 Sept 2026 at 11:05, Lorenzo Stoakes (ARM) <ljs@kernel.org> wrote:
+> > Based on Jan's feedback at [0] that closes the loop (it is indeed a
+> > maintenance headache):
+> >
+> > Acked-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+> >
+> > [0]:https://lore.kernel.org/all/35dsgpk5dsh6bm4xoblrq6hdslfvtuibl5grzag37cye2hgepk@rkrtkjxdyk5g/
+>
+> Ok, I won't cry about it :)
+>
+> In fact, if I may, I would like to say that it is a pleasure to be in
+> your (pl.) company once again. Looking at the list of people included
+> here -- some familiar, some unfamiliar -- I remember the younger days.
+> I have done my tiny share of contributing to the Linux kernel as best
+> as I could, but as I now grow older I can no longer maintain BFS
+> (older does not mean inactive, just active at other things), so if it
+> does give maintenance headache, by all means -- remove it :)
+>
+> Acked-by: Tigran Aivazian <aivazian.tigran@gmail.com>
+>
+> PS. This reminds me of d'Artagnan's phrase from the Soviet version of
+> "The Three Musketeers" -- "my consolation is that if I am to be
+> killed, I will be killed by a true musketeer" :)
 
-Thanks Shrikanth for taking a look.
+Well I think that is the classiest response I've ever seen on-list :) huge
+respect for that!
 
-> 
-> 
-> On 9/2/26 6:05 PM, Srikar Dronamraju wrote:
-> > Coregroup support on powerpc has so far been limited to PowerVM LPARs.
-> > However, PowerNV can also support coregroups when firmware exposes the
-> > required coregroup information through the associativity hierarchy.
-> > 
-> 
-> Existing firmware does expose this info already?
-
-The corresponding skiboot changes were sent to the skiboot mailing list.
-
-> 
-> > Detect coregroup support by checking whether primary_domain_index is the
-> > penultimate domain in the CPU node's ibm,associativity property. On
-> > PowerNV, a non-penultimate primary_domain_index indicates that firmware
-> > provides an additional level for coregroup information.
-> > 
-> > This keeps the logic compatible with PowerVM systems, where
-> > primary_domain_index is likewise not the penultimate associativity
-> > domain.
-> > 
-> 
-> Could you please put the ibm,associativity on this powernv? as well
-> PowerVM's so that one understands it better?
-
-With this patch and the skiboot change, the ibm,associativity will look
-similar.
-
-For example on a Power10 Baremetal box with skiboot changes.
-
-$ lsprop /proc/device-tree/cpus/PowerPC,POWER10@*/ibm,associativity |& head -n 20
-PowerPC,POWER10@0/ibm,associativity
-		 00000005 00000000 00000000 00000000 00000000 00000000
-PowerPC,POWER10@100/ibm,associativity
-		 00000005 00000000 00000001 00000001 00000002 00000000
-PowerPC,POWER10@108/ibm,associativity
-		 00000005 00000000 00000001 00000001 00000002 00000002
-PowerPC,POWER10@10/ibm,associativity
-		 00000005 00000000 00000000 00000000 00000001 00000004
-PowerPC,POWER10@110/ibm,associativity
-		 00000005 00000000 00000001 00000001 00000003 00000004
-PowerPC,POWER10@118/ibm,associativity
-		 00000005 00000000 00000001 00000001 00000003 00000006
-PowerPC,POWER10@120/ibm,associativity
-		 00000005 00000000 00000001 00000001 00000002 00000008
-PowerPC,POWER10@128/ibm,associativity
-		 00000005 00000000 00000001 00000001 00000002 0000000a
-PowerPC,POWER10@130/ibm,associativity
-		 00000005 00000000 00000001 00000001 00000003 0000000c
-PowerPC,POWER10@138/ibm,associativity
-		 00000005 00000000 00000001 00000001 00000003 0000000e
-
-> 
-> > Signed-off-by: Srikar Dronamraju <srikar@linux.ibm.com>
-> > ---
-> > Changelog from v2:
-> > - Handle comments from Ritesh (one hunk needed to be moved from patch 2 to
-> >    patch 3 to build correctly)
-> > 
-> > Changelog from v1: https://lkml.kernel.org/r/20260524010017.140408-1-srikar@linux.ibm.com
-> > - Handle comments from Christophe Leroy; make code more flat
-> > 
-> >   arch/powerpc/mm/numa.c | 58 ++++++++++++++++++++++++++++++++++--------
-> >   1 file changed, 48 insertions(+), 10 deletions(-)
-
--- 
-Thanks and Regards
-Srikar Dronamraju
+--
+Cheers, Lorenzo
 
