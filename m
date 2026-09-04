@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-26574-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26575-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D75EFC79F82
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Sep 2026 22:25:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 23C4EC624D3
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Sep 2026 22:25:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hc9yk027zz2xpn;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hc9yk1G7Mz2xy3;
 	Sat, 05 Sep 2026 08:25:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788560733;
-	cv=none; b=DVL4vrBpANV2b9GdvuzETkh4jzPITZWIH6OPQxNuTJ1NXe9IoeU/mRad13auyHhQd5h1/o985/zXKU2wqw/fshl2ujO00Dtk3PwvEnOVAtZU3iAhKx2a9Lt2AV7OwQJFCmLOZtp7RhHHivi4M6QfMKsGq2CXEfNI+ukj7sJBmDjbU5V7ixT86rdbt/ZeogiMKI5NCKtop3usIb9Q0dT4eo0nqk+jC6zkpfMUiteH8LnUTOVFNHtnbgf5+tgseZxf/ILg0weuSrx9NIEWJFVeHHbZhyuophGfXW/qoVJPRPZRZJLWrShkqrJXinbuFlJaXcYaNnVdN52IAoKE9+p1jA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788560734;
+	cv=none; b=RCD3VcFbKigoZYYAv9p4KCEGoXBsbKe2o4rRMTA3/oTJ+reqq+QFjY+coJuyr2zfw2rR9eoaEzsFcJpC83tM6PUMZPJxgNMhtmaxlU+XjyApyiaiVgHMdr1j9QD2QwV6HPETDNukBHHfxI/i7R6/RF8f1sttPz55J19daYfgDyzJwK1t0f8LpVqB7NgHusr9BGhq9GU6vOtWuJ21vdwq/0VBas5ERCCbODLFAq+pLKEz2B32XzVDb6E20UGYGEh+y8Z1P5cib2IWKca6/2ej5lqS7G2IL/gdJcZMMnRS/51x8HiFbLcsvO1tyKW15pdyzI/xTQz0RHbof6kPanGhqg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788560733; c=relaxed/relaxed;
-	bh=nNOtf2TzRxsLyFHPcWQa1TjnFgr337may2J1744aXQs=;
+	t=1788560734; c=relaxed/relaxed;
+	bh=A3vjSlAs0WBHdXPrKIdEU45RVIMErm6MTbTPGAeH5Mg=;
 	h=Subject:From:To:Cc:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=J1E/q7sozQmAyAe16QDZGEDTBWRffsHjd3euqkWeYoUYomOTBku6Tyfo87Wmlan/7p/zNOET0uZZmkrfDuEfyOxBTr55TMuy5lgbCetpJEyP/nhYlgRn4H/QGotYzhCVpwkUcWW1c9DOwo3RNxeCjRktvx5OiVwvYUrHb/Pm3dMrJAShWlXuk9lINgfClRP3ZQWHcdfART31DEkuSHNP04jsevs5UZGMVUZ0OhtwyApRsyppuDMuM+mjtwDINfOicwUSUC5Sx4wIyr9+hSgTs3lCvWxcQkxnpjhIcaCyHZ5CLreJvBO6UTCUEuM2yIzvY0EH68ZbpEHVs61X1CN2Tw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=X7uq9pUX; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:MIME-Version; b=SoNP79yKX3dE1NaOEcVhKFlPYKW3RxVx+8Gh2bNBsBaqxQxhf0Xxj3YHMQpHnqT/1wwHPXE80PXArM+QDt9uLORbrJaSCzFOlf1QqjMblzE5iqb5djaURU86I8v0DfHllzvb9LcRsNXWquJu2iHKYcm85hHRUthARZCXR/pZCybKMOSlQCX6sxXVej8aQEyIpld2xECmjsCyzNz/n3vET8jDcZoFLwnrdFpfhKYC5yL5CqDZriRZ5KUqMAyFzpbmgGEh4rz8ySG8sAW0tgdUmRW+s96f3afTYnuDt/ugKPyCbVR6NKy5ushw/Hzu7VhMefke3ZIoZgLUTeBRM3tpxg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=AsWtfwMZ; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=X7uq9pUX;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=AsWtfwMZ;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org)
 Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hc9yh4XKGz2xlY
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 05 Sep 2026 08:25:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hc9yj089Kz2xlw
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 05 Sep 2026 08:25:33 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 6DF0B60229;
+	by tor.source.kernel.org (Postfix) with ESMTP id E6D09602C5;
+	Fri,  4 Sep 2026 22:25:30 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BC4EB1F00A3E;
 	Fri,  4 Sep 2026 22:25:29 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 53DF91F00A3D;
-	Fri,  4 Sep 2026 22:25:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788560729;
-	bh=nNOtf2TzRxsLyFHPcWQa1TjnFgr337may2J1744aXQs=;
+	s=k20260515; t=1788560730;
+	bh=A3vjSlAs0WBHdXPrKIdEU45RVIMErm6MTbTPGAeH5Mg=;
 	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=X7uq9pUX0v5IDlI+2oVNdVSZ5YmNUUqzE6Hp9xgYoZZ3WXF0DmymGxhv5d2VS+Trv
-	 sdN3Q5RcSE80qNAVxD5bPUvX8vvxjMVrySggfBAciRnlMMdlBs9xrH3DvlkhnhEPtx
-	 Sl2XPn70QVsE0UnHhxJfDx7tafDN883vIQ45BwPtJgvPsUUY/u4PeVGHQjbalebRWn
-	 rbT0qj1/2UToSVnCf0q/P+3JO1rhI4NCWaJUF9sA3bfOqSsGc1dl/2oE/HYTDySoPY
-	 9nS5ysZllX0M/VnI4pUHMES2p2QiAPfAii8QK07b/3fEVkO/KDrdOvHe0+u9CChgRt
-	 11DvYkhjmcVgA==
-Subject: Re: [PATCH v3 net-next 3/8] ptp: netc: export
- netc_timer_get_current_time() for cross-driver use
+	b=AsWtfwMZAsOhd/EHu1R6YT6uEIPQ1zf7gnP8JMWV6E+byb2+AB3I9Ycb0TgfVgFPh
+	 u4AW5djx9sTysx9quDjX0XjMXMYtx4YPkuzSUga3kHAmoilTGCrYlcFLYRrDwrKwDX
+	 a4kiAAsVLFBbLL5+NkC3hFTuMJzx1PS+JXGSUml40EAMPMzMQretVQfLhB7zeMTHPz
+	 l1VMgd/3Fn3hlbILorbORD49XdKDj/sDB/wLYOe5L7/jhA6O2RmL8gXGKyxnBBDX9K
+	 df4PtdREgHZjYSUYHZpgxGKdxieuVjsk+Q1CEAknz42n8qxamkhJfiUHEPicc6eGiv
+	 Es/F0A4OywG7Q==
+Subject: Re: [PATCH v3 net-next 4/8] net: dsa: netc: use entry ID instead of
+ pointer to track host flood rule
 From: netdev-bot+sashiko@kernel.org
 To: wei.fang@oss.nxp.com
 Cc: xiaoning.wang@nxp.com, andrew@lunn.ch, olteanv@gmail.com,
@@ -54,11 +54,11 @@ Cc: xiaoning.wang@nxp.com, andrew@lunn.ch, olteanv@gmail.com,
  richardcochran@gmail.com, wei.fang@nxp.com, imx@lists.linux.dev,
  netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
-Date: Fri, 04 Sep 2026 22:25:27 +0000
-Message-ID: <178856072792.219967.11680386922247714173@kernel.org>
-In-Reply-To: <20260831082335.1184605-4-wei.fang@oss.nxp.com>
-References: <20260831082335.1184605-4-wei.fang@oss.nxp.com>
-X-sashiko-severity: High
+Date: Fri, 04 Sep 2026 22:25:29 +0000
+Message-ID: <178856072932.219967.8769401886867777305@kernel.org>
+In-Reply-To: <20260831082335.1184605-5-wei.fang@oss.nxp.com>
+References: <20260831082335.1184605-5-wei.fang@oss.nxp.com>
+X-sashiko-severity: Low
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
@@ -75,241 +75,218 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 
-Thank you for your contribution! Sashiko AI review found 3 potential
+Thank you for your contribution! Sashiko AI review found 2 potential
 issue(s) to consider:
 
-Critical: 0 · High: 1 · Medium: 1 · Low: 1
+Critical: 0 · High: 0 · Medium: 0 · Low: 2 (1)
 
-- [High] Using device_lock() in an exported API to protect against driver
-  unbind is an architectural anti-pattern that creates a circular lock…
-- [Medium] The newly exported netc_timer_get_current_time() gates the
-  TMR_CUR_TIME MMIO read only on 'a netc_timer driver is bound' and…
-- [Low] Inconsistent / semantically wrong errno contract for the new
-  exported API netc_timer_get_current_time().
+- [Low] struct netc_port is devm_kzalloc()'d, so the new `u32
+  ipft_hf_eid` starts at 0, but the patch only writes the…
+- [Low] Removing netc_free_host_flood_rules() also removes the only in-
+  tree documentation of a deliberate design decision: 'No need to clear…
+
+Pre-existing issues:
+- [Low] netc_port_remove_host_flood() discards the return status of
+  ntmp_ipft_delete_entry() (drivers/net/dsa/netc/netc_main.c:1776) and…
 
 --
 
-ptp: netc: export netc_timer_get_current_time() for cross-driver use
+net: dsa: netc: use entry ID instead of pointer to track host flood rule
 
-This adds netc_timer_get_current_time() to the NETC Timer driver and
-exports it so the NETC Switch driver, which is a separate PCIe function
-with its own driver, can read TMR_CUR_TIME. The helper takes the device
-lock to serialize against unbind and the per-device spinlock around the
-register read, and spin_lock_init() moves earlier so the lock is
-initialized before pci_set_drvdata().
+This replaces the struct ipft_entry_data pointer in struct netc_port with a
+u32 entry ID using NTMP_NULL_ENTRY_ID as the sentinel, frees the
+ipft_entry_data allocation inside netc_port_add_host_flood_rule() once the
+hardware entry is committed, and drops netc_free_host_flood_rules().
 
-> diff --git a/drivers/ptp/ptp_netc.c b/drivers/ptp/ptp_netc.c
-> index aa9be8e2a6304..854a206b6c5bc 100644
-> --- a/drivers/ptp/ptp_netc.c
-> +++ b/drivers/ptp/ptp_netc.c
+A few questions below.
 
-[ ... ]
-
-> @@ -1021,5 +1021,55 @@ static struct pci_driver netc_timer_driver = {
->  };
->  module_pci_driver(netc_timer_driver);
->  
-> +/**
-> + * netc_timer_get_current_time - read the current PTP time from the NETC Timer
-> + * @pdev: PCI device of the NETC Timer
-> + * @ns: The current PTP clock time in nanoseconds, returned to the caller
-> + *
-> + * Reads the 64-bit current time register (TMR_CUR_TIME) from the NETC Timer
-> + * device associated with @pdev. Returns an error if the Timer driver has not
-> + * yet probed or has already been removed.
-> + *
-> + * Context: Process context only. Acquires the device mutex via device_lock(),
-> + *          which may sleep. Must not be called from atomic context, softirq,
-> + *          BH, or while holding a spinlock.
-> + *
-> + * Return: 0 on success, otherwise a negative error code.
-> + */
-> +int netc_timer_get_current_time(struct pci_dev *pdev, u64 *ns)
-> +{
-> +	struct device *dev = &pdev->dev;
-> +	struct netc_timer *priv;
-> +	unsigned long flags;
-> +	int err = 0;
+> diff --git a/drivers/net/dsa/netc/netc_main.c b/drivers/net/dsa/netc/netc_main.c
+> index 77077352c1a57..d326a00104e1d 100644
+> --- a/drivers/net/dsa/netc/netc_main.c
+> +++ b/drivers/net/dsa/netc/netc_main.c
+> @@ -286,6 +286,12 @@ static int netc_init_all_ports(struct netc_switch *priv)
+>  				dev_err(dev, "Failed to create MDIO bus\n");
+>  				return err;
+>  			}
 > +
-> +	/* Serialize against driver unbind: the remove() callback runs under
-> +	 * the device lock, so holding it here ensures that priv remains valid
-> +	 * for the entire duration of the register read.
-> +	 */
-> +	device_lock(dev);
-> +
-> +	if (pci_dev_driver(pdev) != &netc_timer_driver) {
-> +		err = -EINVAL;
-> +		goto unlock_device;
-> +	}
-> +
-> +	priv = pci_get_drvdata(pdev);
-> +	if (!priv) {
-> +		err = -ENOMEM;
-> +		goto unlock_device;
-> +	}
-
-[Severity: High]
-Taking the supplier's device lock from an exported cross-driver
-helper worries me, both for the lock ordering it creates and for the
-contexts it rules out.
-
-On the ordering side, consider the consumer added later in this
-series. netc_switch_remove() runs with the switch device's dev->mutex
-held by the driver core; it calls dsa_unregister_switch(), which takes
-rtnl_lock(), and netc_port_disable(), which takes
-&onestep->work_lock. That gives dev->mutex -> rtnl_lock ->
-work_lock. In the datapath, netc_onestep_work() holds
-&onestep->work_lock and then calls netc_timer_get_current_time(),
-which takes the timer's dev->mutex here. Since lockdep tracks the
-dev->mutex of devices initialized through device_initialize() as one
-lock class, that second chain is work_lock -> dev->mutex and closes
-the cycle. A splat there disables lock debugging for the rest of the
-boot, so it is not something we can leave to be discovered by
-whoever unbinds the switch while Sync frames are in flight.
-
-On the context side, the kernel-doc you added already spells out the
-consequence: process context only, may sleep, no softirq, no BH, no
-spinlock held. That is a fairly severe restriction for what is
-fundamentally a single 64-bit register read on a timestamping path,
-and it is imposed purely by the unbind protection rather than by the
-hardware access itself.
-
-The usual way to express "this consumer needs that supplier to stay
-bound" is a device link. If the switch driver called
-device_link_add() against the Timer's pci_dev at probe time, the
-Timer could not be unbound underneath a live consumer, and
-netc_timer_get_current_time() could drop device_lock() entirely and
-keep only the spin_lock_irqsave(&priv->lock) around
-netc_timer_cur_time_read(), making it callable from atomic context
-too.
-
-Is there a reason a device link would not work for the
-Timer/Switch pair here (for example probe ordering between the two
-PCIe functions)? If so, could you describe what else guarantees the
-lock ordering above is safe?
+> +			/* The ipft_hf_eid is initialized to an invalid entry
+> +			 * ID because the host flood rule (IPFT entry) has not
+> +			 * been created.
+> +			 */
+> +			np->ipft_hf_eid = NTMP_NULL_ENTRY_ID;
+>  		}
+>  	}
 
 [Severity: Low]
-This isn't a bug, but the errno contract of the new exported interface
-looks inconsistent.
+Should the sentinel be written for every port rather than only inside the
+dsa_port_is_user(dp) branch?
 
-The same logical state, "the NETC Timer is not available", is reported
-three different ways:
+Each netc_port is devm_kzalloc()'d in the earlier loop of
+netc_init_all_ports(), so ipft_hf_eid starts at 0, which is a legal
+hardware IPFT entry ID rather than "no rule".  The old field was a pointer,
+where the zeroed value (NULL) was inherently the safe "no rule" marker.
 
-  - netc_timer_get_current_time() returns -EINVAL when no netc_timer
-    driver is bound
-  - netc_timer_get_current_time() returns -ENOMEM when
-    pci_get_drvdata() is NULL
-  - the !IS_REACHABLE(CONFIG_PTP_NETC_V4_TIMER) stub in
-    include/linux/fsl/netc_global.h returns -ENODEV
+netc_port_remove_host_flood() only recognizes the 0xffffffff sentinel:
 
-The -ENOMEM in particular does not match what happened, since this
-function performs no allocation at all, and the kernel-doc above
-describes the only failure condition as "the Timer driver has not yet
-probed or has already been removed".
+	if (entry_id == NTMP_NULL_ENTRY_ID)
+		return;
+	...
+	ntmp_ipft_delete_entry(&priv->ntmp, entry_id);
 
-Would -ENODEV for both in-function checks, matching the header stub,
-make the interface easier for callers to test?
+so a port that never got the assignment would pass that guard and delete
+hardware entry ID 0, which may belong to another port.
 
-> +
-> +	spin_lock_irqsave(&priv->lock, flags);
-> +	*ns = netc_timer_cur_time_read(priv);
-> +	spin_unlock_irqrestore(&priv->lock, flags);
+I could not find a path that reaches netc_port_remove_host_flood() or
+netc_port_bridge_join() with a non-user port today - dsa_port_set_host_flood()
+comes only from dsa_user_manage_host_flood(), and the bridge join/leave
+callers all operate on user ports - so this looks latent rather than
+reachable.  Would moving the assignment into the devm_kzalloc() loop that
+sets np->switch_priv and np->iobase make the representation fail-safe for
+all ports?
 
-[Severity: Medium]
-Can this read return a fabricated time and still report success while
-the Timer function is suspended?
+> @@ -938,30 +944,12 @@ static void netc_destroy_all_lists(struct netc_switch *priv)
+>  	mutex_destroy(&priv->vft_lock);
+>  }
+>  
+> -static void netc_free_host_flood_rules(struct netc_switch *priv)
+> -{
+> -	struct dsa_port *dp;
+> -
+> -	dsa_switch_for_each_user_port(dp, priv->ds) {
+> -		struct netc_port *np = priv->ports[dp->index];
+> -
+> -		/* No need to clear the hardware IPFT entry. Because PCIe
+> -		 * FLR will be performed when the switch is re-registered,
+> -		 * it will reset hardware state. So only need to free the
+> -		 * memory to avoid memory leak.
+> -		 */
+> -		kfree(np->host_flood);
+> -		np->host_flood = NULL;
+> -	}
+> -}
+> -
+>  static void netc_teardown(struct dsa_switch *ds)
+>  {
+>  	struct netc_switch *priv = ds->priv;
+>  
+>  	disable_delayed_work_sync(&priv->fdbt_ageing_work);
+>  	netc_destroy_all_lists(priv);
+> -	netc_free_host_flood_rules(priv);
+>  	netc_free_ntmp_user(priv);
+>  }
 
-The two checks above only establish that a netc_timer driver is bound
-and that drvdata is non-NULL. Neither implies that the Timer PCI
-function still decodes memory, that it is in D0, or that TMR_CTRL[TE]
-is still set.
+[Severity: Low]
+Could the deleted rationale be preserved somewhere?  Behaviour is unchanged
+(netc_teardown() still leaves the host flood IPFT entries programmed in
+hardware), but this hunk removes the only in-tree record of why that is
+intentional:
 
-netc_timer_driver registers no PM callbacks:
-
-drivers/ptp/ptp_netc.c:
-    static struct pci_driver netc_timer_driver = {
-        .name = KBUILD_MODNAME,
-        .id_table = netc_timer_id_table,
-        .probe = netc_timer_probe,
-        .remove = netc_timer_remove,
-    };
-
-so during system suspend the PCI core takes the no-dev_pm_ops path:
-
-pci_pm_suspend()
-  pci_pm_default_suspend()
-    pci_disable_enabled_device()   /* clears PCI_COMMAND_MEMORY */
-  -> D3hot
-
-The driver is not unbound in that window, so pci_dev_driver(pdev) ==
-&netc_timer_driver and pci_get_drvdata(pdev) != NULL both still pass,
-ioread64_lo_hi() reads all-ones, and the function returns 0. The
-cross-driver consumer added later in this series treats a 0 return as a
-valid time:
-
-drivers/net/dsa/netc/netc_ptp.c:netc_onestep_work() {
-    ...
-    if (unlikely(netc_get_phc_time(priv, &tstamp))) {
-    ...
-}
-
-and programs the value into a transmitted one-step Sync frame and into
-PM_SINGLE_STEP.
-
-Does the same apply after resume? Nothing re-runs netc_timer_init(), so
-TMR_CTRL (CK_SEL/TE/TCLK_PERIOD/COMP_MODE), TMR_PRSC, TMR_ADD and
-TMR_CNT are never reprogrammed after the D3hot->D0 transition, while
-the exported reader keeps reporting success. The driver's own comment
-documents these as preconditions:
-
-drivers/ptp/ptp_netc.c:netc_timer_init() {
-	/* Software must enable timer first and the clock selected must be
-	 * active, otherwise, the registers which are in the timer clock
-	 * domain are not accessible.
+	/* No need to clear the hardware IPFT entry. Because PCIe
+	 * FLR will be performed when the switch is re-registered,
+	 * it will reset hardware state. ...
 	 */
-	tmr_ctrl = FIELD_PREP(TMR_CTRL_CK_SEL, priv->clk_select) |
-		   TMR_CTRL_TE | TMR_CTRL_FS;
-    ...
-}
 
-The lack of suspend/resume support in ptp_netc predates this patch, but
-this patch turns that unchecked power and enable state into a
-cross-driver contract. Would it make sense for the exported helper to
-also check pci_dev->current_state == PCI_D0 (or TMR_CTRL[TE], or take a
-PM reference), or for the driver to gain suspend/resume handlers that
-re-run netc_timer_init()?
+Note that the FLR assumption holds for a PCI re-probe, where
+netc_switch_pci_probe() calls pcie_flr(pdev), but a DSA teardown/setup cycle
+on the same pci_dev does not perform FLR.  Would it help to keep the comment
+in netc_teardown() or next to the ipft_hf_eid field so the assumption can be
+re-checked later?
 
-> +
-> +unlock_device:
-> +	device_unlock(dev);
-> +
-> +	return err;
-> +}
-> +EXPORT_SYMBOL_GPL(netc_timer_get_current_time);
-> +
->  MODULE_DESCRIPTION("NXP NETC Timer PTP Driver");
->  MODULE_LICENSE("Dual BSD/GPL");
-> diff --git a/include/linux/fsl/netc_global.h b/include/linux/fsl/netc_global.h
-> index 5b8ff528d3699..d4a26c17f99a4 100644
-> --- a/include/linux/fsl/netc_global.h
-> +++ b/include/linux/fsl/netc_global.h
+> @@ -1759,37 +1747,36 @@ static int netc_port_add_host_flood_rule(struct netc_port *np,
 
 [ ... ]
 
-> @@ -22,4 +23,13 @@ static inline u64 netc_read64(void __iomem *reg)
->  	return ioread64(reg);
->  }
+> -static void netc_port_remove_host_flood(struct netc_port *np,
+> -					struct ipft_entry_data *host_flood)
+> +static void netc_port_remove_host_flood(struct netc_port *np, u32 entry_id)
+>  {
+>  	struct netc_switch *priv = np->switch_priv;
+>  	bool disable_host_flood = false;
 >  
-> +#if IS_REACHABLE(CONFIG_PTP_NETC_V4_TIMER)
-> +int netc_timer_get_current_time(struct pci_dev *pdev, u64 *ns);
-> +#else
-> +static inline int netc_timer_get_current_time(struct pci_dev *pdev, u64 *ns)
-> +{
-> +	return -ENODEV;
-> +}
-> +#endif
-> +
->  #endif
+> -	if (!host_flood)
+> +	if (entry_id == NTMP_NULL_ENTRY_ID)
+>  		return;
+>  
+> -	if (np->host_flood == host_flood)
+> +	if (np->ipft_hf_eid == entry_id)
+>  		disable_host_flood = true;
+>  
+> -	ntmp_ipft_delete_entry(&priv->ntmp, host_flood->entry_id);
+> -	kfree(host_flood);
+> +	ntmp_ipft_delete_entry(&priv->ntmp, entry_id);
+>  
+>  	if (disable_host_flood) {
+> -		np->host_flood = NULL;
+> +		np->ipft_hf_eid = NTMP_NULL_ENTRY_ID;
+>  		np->uc = false;
+>  		np->mc = false;
+>  		netc_port_wr(np, NETC_PIPFCR, 0);
+
+[Severity: Low]
+This is a pre-existing issue and not introduced by this patch, but can the
+IPFT entry become unremovable here?
+
+ntmp_ipft_delete_entry() can fail (DMA buffer allocation or command BD
+error), and its status is discarded before np->ipft_hf_eid is reset to
+NTMP_NULL_ENTRY_ID, so the armed entry (FLTFA=REDIRECT, HR=NETC_HR_HOST_FLOOD)
+stays in hardware with no software handle left.
+
+This appears to be addressed by the following patch in the series, which
+makes netc_port_remove_host_flood() return int, checks the delete status
+before clearing np->ipft_hf_eid/uc/mc, and handles the error at all call
+sites.
+
+> @@ -1818,20 +1805,18 @@ static void netc_port_set_host_flood(struct dsa_switch *ds, int port,
+>  
+>  	/* IPFT does not support in-place updates to the KEYE element,
+>  	 * we need to add a new entry and then delete the old one. So
+> -	 * save the old entry first.
+> +	 * save the old entry ID first.
+>  	 */
+> -	old_host_flood = np->host_flood;
+> -	np->host_flood = NULL;
+> +	old_entry_id = np->ipft_hf_eid;
+>  
+>  	if (netc_port_add_host_flood_rule(np, uc, mc)) {
+> -		np->host_flood = old_host_flood;
+>  		dev_err(ds->dev, "Failed to add host flood rule on port %d\n",
+>  			port);
+>  		return;
+>  	}
+>  
+>  	/* Remove the old host flood entry */
+> -	netc_port_remove_host_flood(np, old_host_flood);
+> +	netc_port_remove_host_flood(np, old_entry_id);
+>  }
+
+[Severity: Low]
+Same pre-existing concern in this key-update flow, which this patch does not
+change: because the new entry is added before the old one is deleted, a
+failed delete leaves two live IPFT entries matching the same source port with
+PIPFCR still enabled.  The subsequent patch in the series inverts the order to
+delete-then-add, which closes that window.
+
+> diff --git a/drivers/net/dsa/netc/netc_switch.h b/drivers/net/dsa/netc/netc_switch.h
+> index 305f2a92e2f9a..020e3661b8667 100644
+> --- a/drivers/net/dsa/netc/netc_switch.h
+> +++ b/drivers/net/dsa/netc/netc_switch.h
+> @@ -84,7 +84,11 @@ struct netc_port {
+>  	u16 uc:1;
+>  	u16 mc:1;
+>  	u16 pvid;
+> -	struct ipft_entry_data *host_flood;
+> +	/* ipft_hf_eid applies only to user ports and should be initialized
+> +	 * to NTMP_NULL_ENTRY_ID. Other ports (such as CPU ports) do not
+> +	 * require initialization.
+> +	 */
+> +	u32 ipft_hf_eid;
+>  };
+
+[Severity: Low]
+This comment records the partial initialization discussed above as an
+invariant.  Since 0 is a valid IPFT entry ID, would it be safer to
+initialize ipft_hf_eid for all ports and drop the "other ports ... do not
+require initialization" wording?
 
 -- 
 Sashiko AI review · https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20260831082335.1184605-1-wei.fang%40oss.nxp.com
