@@ -1,79 +1,79 @@
-Return-Path: <linuxppc-dev+bounces-26595-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26596-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E6F2BC79F85
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Sep 2026 06:18:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 08E5FC624D6
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Sep 2026 06:18:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hcNS34YW2z2xyk;
-	Sat, 05 Sep 2026 16:18:11 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788551502;
-	cv=none; b=lXDL4/Ud5xJXmBHNUCuR/wG/ju6sQCnD7GEp4yH/X7rCcyvd7/6TuI9yeRs3V9i40umaO9kzmDnbFlaUcgZ0mtw6Tb8+ciNA3bNYIDgu6UljoAUsyb/Bj/IQMDYvPR1ZBFA8D1igVetyEpWe6RyEVEGcxO6c1tc9rtwA+B7ZyUgO7Wp3o9KQaGwSJXQc53voaL4+FyZxIarzSMkjykFoyRD/zONt2yOszIaIa/Ctfbk4AViIMebKEzxK/CehihOY1OEOd7rkn/pfSRkqBwuTi6ogloHW5k1jvpfo5LQ2wGIXAmF+Hmk4EtcgFVoI3SgBllGVr3MSbXDW9vsWnlxm6Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hcNSD5GKMz2yvC;
+	Sat, 05 Sep 2026 16:18:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42c"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788551503;
+	cv=none; b=ECSvxe9AZV1ff8GVlKc5fXwN+sTfqo2KkeMa2jpEo9LzmyXJXi2J8kifu9vMmytVCBoCHsGbXML/G+fAtc8GX9UBCgV40QDTksWyy1ibJN8x5Gr6V9ufsaoLe5tu52FoPQoaCRgEO4tWssZCnBcitBCY1QNYj2U4fWP6xrCjGRY0cXZlnkyanC9Pq+JPL8AM0Io0WcfFcr8208t7QUhrGsD7ZgmHmCAhCelOWYDu+T3DGqEkzNL2oAqD3y0v5/k5hQMbTC9anX5HyrQaIsD5vdblvNZYtkF8Y6UYdQcu+5tLEiwtnM3pW33bpp59/Ys9DzNZBp7jRJeZbvT7zt6luw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788551502; c=relaxed/relaxed;
-	bh=fvrsiIV2Lldx5aqamYQifBQ5Wmg+CQWdeLatZB+qlSs=;
+	t=1788551503; c=relaxed/relaxed;
+	bh=+qDNedZBe5IOgOVXUT3YGJ7aNww3Lf+ZOsFiBHpPGIg=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=HbCRGjwPGVjYjHk47o+L7xZiI6GBSBFRT7OJrAV05fCzUaJcqxMPcEwt+iQOPLSzSZdgV76HQl1hnVeTJgEVrwNvLnl1PKzUgzOAvqZ9xkMYsDire3M8/QlmViwIdeyTjzD8fIBnDNSxuyRvIwQl3R+Ch4huRTDOWXghFIlXq7llMVMwUkgDBNXdHPyah1+0k86iUj/tqTB/Xti+2UTKrwx+4KFEAoxx6Jueib6HvKwIOZUyQoIcMIiQxjHJ/bE+aZewGnpd4EeXvb/4k+WsWslBcKjrsWA0R9sndH+6u+NLEs44IS9iaNCa52iYdx9j20Hcgz5bUoGBBjDt61N4XA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=RGiA4OGU; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42a; helo=mail-pf1-x42a.google.com; envelope-from=sidchintamaneni@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version; b=K3SAs9f6S9MYJ68yP+FbWZEaQrGIKoLps8iOtje2h2XA23WQ3kL8j3TgLjVW6g/Tv+KkI2bwKy0flhkPnLBm/wppAkYg85nG/9z/WpHTfRTkI5R+MNIGDmV/5bDFdAvjs0O7xcBwr+m9ZloPvpA1GCzacnxnKbXW48CbGP6TJMOkcIi1kWrN3OzhyoDi5astcx3chgsONtA62Y+pLnCjvZWResh0YpXWNbpZjAdUxNn2EjUnKKOkl4Cp+yEhtHXG3Yw7kyBUV5Poye7/x4RWr8Rb9LqTYMdJvY+aEUROvGoCRE2mpOYZAGVYfOyihoz2QAMOS0qNrAom9PXVegulGg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=b4EY80Gu; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42c; helo=mail-pf1-x42c.google.com; envelope-from=sidchintamaneni@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=RGiA4OGU;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=b4EY80Gu;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42a; helo=mail-pf1-x42a.google.com; envelope-from=sidchintamaneni@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x42a.google.com (mail-pf1-x42a.google.com [IPv6:2607:f8b0:4864:20::42a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42c; helo=mail-pf1-x42c.google.com; envelope-from=sidchintamaneni@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x42c.google.com (mail-pf1-x42c.google.com [IPv6:2607:f8b0:4864:20::42c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hc6Y859T2z2yrW
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 05 Sep 2026 05:51:40 +1000 (AEST)
-Received: by mail-pf1-x42a.google.com with SMTP id d2e1a72fcca58-86265451beeso359383b3a.0
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Sep 2026 12:51:40 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hc6Y82NVmz2y2h
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 05 Sep 2026 05:51:39 +1000 (AEST)
+Received: by mail-pf1-x42c.google.com with SMTP id d2e1a72fcca58-85377c8bc96so1278669b3a.3
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Sep 2026 12:51:39 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1788551498; x=1789156298; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1788551497; x=1789156297; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=fvrsiIV2Lldx5aqamYQifBQ5Wmg+CQWdeLatZB+qlSs=;
-        b=RGiA4OGUP7Ryy7fXy9iOkUb/y4qa7MN/AKXymRMr5E5uZyPwT7FDArnpgjrRag3AXs
-         u4iQXxXZVYMSCkHTiNfIhngkvNiMbUXHUjPi633l8/ddJwXdDfb1z3vgzoMQkGY5r/1F
-         wed9I4TZkT9QSjD8ry1xyuIi434Xwh9VLPcB2wNW4ffZAqeJ5tfTcPH3aSTQyXXz1fa9
-         iN8olNg55ssyBAr5aBhPeR5mq04M75kfGqtJjNOXaZaGe4L7nIvsVjjeo0FZfWS7aRY/
-         pg4PnrXUSaU8aS9tjmVFJ9ntfFx2ucGvbAekbcFdrufEtRQ7Mrc8+5Xg5qA2kZW2UcNj
-         4PmA==
+        bh=+qDNedZBe5IOgOVXUT3YGJ7aNww3Lf+ZOsFiBHpPGIg=;
+        b=b4EY80GuemvwCiY5hvc0T4gxozIdoLiSFzPdPmnmU8eCvMWnIvlUMPFbvVui1Noaav
+         dWMinZC/zgeOOPVIEwpZG3QWgB9EbIw/Y++pImlLic7FNDMrwI0EcsdDmRcdCWynAZjJ
+         mJf81X2viZ6O+DBQ1s8jQzK3cbWQ47xHKZ9w9GdVzFx+i5zF+26x9BQ7ZEnL+yCI59Ux
+         O291rlkqm5CZOJEWZ5aG9IBd0k7nQg74FOs3nG8B6UZkVIL9T3YsK1JgT+zjJ88OSlhr
+         K7LV5lK263EKhKnK6h7NB55nUvTwzORyc/ey2guAn43gkAwva0qIWcy799v9im4Clc26
+         R0IA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788551498; x=1789156298;
+        d=1e100.net; s=20251104; t=1788551497; x=1789156297;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=fvrsiIV2Lldx5aqamYQifBQ5Wmg+CQWdeLatZB+qlSs=;
-        b=JL5JxawEeMfUzrWJjfWo2+oYnoXvi6qkGBdJMtswwerHF+60OodSdtSZqr/oyHPZ8X
-         Iivair0jNObqmKjut8jxPQncFqnhiMhDAiDBvqn3HroO4+45WLd25cvGhrn+Q2x8ouyz
-         bluK2hwabJNP7tb0mrkpy8niP4mksa9Z1rHJlmayBAPxPljVYJ2HJCnGbLr2d0OWnNny
-         j24TCU80d5pPfzaHpvq74ZGpvmBLgoFe/idmTxZvtsVnt1exIRixzf1EUQbJFmt1ZCN1
-         P4FJgRwHrtwVMvFuWfdN9zLv1XPU1VgfWAKbWZIOXV7L+hxlfS/ULNM45VpjUSK7EF5v
-         hc9Q==
-X-Forwarded-Encrypted: i=1; AKwUvBzQ4ZpvwNZvrTrr4hjav9osDkPgxu648R/mwyh5CsTYF09ZwWfoxxoC/s7VXNGIhD01eMTrXAY+vCZ2+y4=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++kJMa4iKaqaxWB8pHONDaOiosbrLcmptMPWvS+hjsPpmzyKQHxe
-	wgMpXa6lXfv1PjbE2oebeeqbII+eDcOmxatlWJPmNvhX0NwQ6/46mO6f
-X-Gm-Gg: AYBFou1yhFf4kVSQiQ1h15HcBpXS3imnheRXrfZ5eEbZfq3svk+rNsaKu6/CFTKqBWs
-	kInDTmsCtDNf0uNJTFj6oAJoic2IpGEHalfFb6UBSrTvdwZu93vTZAbykhideqqOfRW/yS0R062
-	3fglQo+bPVQI6F2BYBQOTy1vAJEk5f5QtNlYLx/IT4z3Z0noWAdL3fbJ+UKjAUlpFK90AiYjkrx
-	f/BysE9gPpCIYXKBbv499QwtGcc465s8rQ3Nq7Yv7LIq2BnuSo/X79WcfYgmrE0n08DCfCQwD3s
-	K0FLipnmkJHEmRZpYZR0MUnwxJbqqIk4UlgseTD6W5S8EIAyIrYYJIeVKnLu06V1LK6HWbaPQgr
-	bIJGltAcFqy4wqBV6PGmPNGZWEbCAr98oe8WppAQ+VrhtQn6sgRvRtbkMwjPYQbBWxr3NVVu61u
-	+A2OfgtVSpEoPtjEUvg2WnWMizPtREoLW4EMfde7qJa1kcE30osOrp2+pa9bnjGk+WnHplYuUeA
-	ZeOmo1PWzkshYRIWvGf5AKf138I09VFL1xdh7cmYAu9NkG+638ZKHWD848a8E+fvAXvpgT/GdBE
-	9Kx4Q+HPotgTafHxB+Hn5fgqhKMIR8+ZFsDtTmbZMeEsDeFjxoUQzwfjcuj7SVdJvSdRcagQEbU
+        bh=+qDNedZBe5IOgOVXUT3YGJ7aNww3Lf+ZOsFiBHpPGIg=;
+        b=Vw5S5VT+GRSU2hNJI/JKU1xAfIIgu+9ZLmP2FMpzTo7+LMyGmEYEW7oHMV6NR8arbD
+         Qgo53xu+49TAEmEiUlWbhdw1Yz0KeBmH5X2JzD3T3y7dr8oEcWCKo2GOTKF1UQnyFr/X
+         +GQit64a6+36Do5EtV8ZyUDhdws3zU+4DSuwCpFE0yllnh5x6fn7iX+eBF4Lw09PCal4
+         QfvKxfyEmhkef3NfkKBwAexVucNFLsGUn6sx7psWr4XQtc0oivdAEB0M6LfbJ7jyDhhd
+         bVvYjDDuo2fgHtJekK6iRO4lfYZKl40OZ7xCXOmQgXIk0TpiA1aWhhyEbf0YJNZ3KMbi
+         6NVQ==
+X-Forwarded-Encrypted: i=1; AKwUvBzZZZw0PD0Z8L4aKFer4f1KxGDT7YpKkUBT5vBBB49ovwr28psK5gK3eog/WxsrgUEqjFrJ0m/TKwtt5H8=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++koAJi9oFQMQYStb6kbWXWt72wSUYFm1LS0gpeKOppT9zeqm0RY
+	gmA5y+b/tN8cJTdjL41pKOpfxP/r/p+bvvREr+KGAxtar4/TuevuOm5Q
+X-Gm-Gg: AYBFou0Ns72DR7pB+Jh/JPfm46Vj0uZnzsLmURwTQhYwijSc/iq+3PmIi7fDTyxQu1k
+	BLxpmK6iVxjgjFtk5vUvjtAZhaODVNyCca5PtdPyvacbMdM6Cfkc6tDexLrX5Uk0lm5Io45ncFH
+	L6NMLn/TC9uXdS0DUyVazjXcQWJNbMGvW0iX+nap29cCgp2tbPnZ9+vo+DGWi7VAef4Z/4DsJT5
+	Ck51cYhHVOXnq8Of3CVpm5W1wepT+vIkflpcwNQiYV/wSLyfi0a0sCVX+qXjz6CQOx3apmDNJm6
+	Q6X/+9Bvv5aa85MMJ8y59SXj/mrqFn+m59bnHiG+eIlT9Ek+OlDpQAXQx5DwYfpwnAFCH0olKZT
+	tqDpVO3hU8OM9uwYooAvtcAnEjRX/ELPVpAYLKSlf67eJL4Yg9my/S5hEKz7mbqzAXP8piSYfJy
+	/2u9YjemmDVOJny5Zi2MJ/KxdA9VHsHLdyceCgQWm4Om7NVIE8VxgXwlWbVpuBc93z5vfsnwOqA
+	gGtHuQ3fEkG+6mx3gljOZ+EhrN78iE6mlYTR4nFyRQZiJiM/sidsVNf0R4IwQPugkPpa4rQ0JLm
+	uwDArJz8inCVHNBjYZKijKSFq7gEeXLvbLe7I/4sC5IlB1y6C8N+4vAm8Ot3/+huDdL/D8eciW8
 	=
-X-Received: by 2002:a05:6a00:1151:b0:85d:84a5:b7bb with SMTP id d2e1a72fcca58-86168d8c2fdmr11042192b3a.18.1788551498348;
-        Fri, 04 Sep 2026 12:51:38 -0700 (PDT)
-Received: from sid-dev-env.cgrhrlrrq2nuffriizdlnb1x4b.xx.internal.cloudapp.net ([4.155.54.158])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8615404876fsm1497684b3a.59.2026.09.04.12.51.37
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+X-Received: by 2002:a05:6a00:3007:b0:846:4d4c:23f8 with SMTP id d2e1a72fcca58-861662d4c34mr11674869b3a.1.1788551497395;
         Fri, 04 Sep 2026 12:51:37 -0700 (PDT)
+Received: from sid-dev-env.cgrhrlrrq2nuffriizdlnb1x4b.xx.internal.cloudapp.net ([4.155.54.158])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8615404876fsm1497684b3a.59.2026.09.04.12.51.36
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 04 Sep 2026 12:51:36 -0700 (PDT)
 From: Siddharth Chintamaneni <sidchintamaneni@gmail.com>
 To: bpf@vger.kernel.org
 Cc: Siddharth Chintamaneni <sidchintamaneni@gmail.com>,
@@ -98,9 +98,9 @@ Cc: Siddharth Chintamaneni <sidchintamaneni@gmail.com>,
 	rlmenge@gmail.com,
 	hargar@linux.microsoft.com,
 	apais@microsoft.com
-Subject: [PATCH bpf-next v1 3/7] bpf, arm64: Use resolved pointer for timed may_goto
-Date: Fri,  4 Sep 2026 19:51:28 +0000
-Message-ID: <20260904195132.141068-4-sidchintamaneni@gmail.com>
+Subject: [PATCH bpf-next v1 2/7] bpf, x86: Use resolved pointer for timed may_goto
+Date: Fri,  4 Sep 2026 19:51:27 +0000
+Message-ID: <20260904195132.141068-3-sidchintamaneni@gmail.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260904195132.141068-1-sidchintamaneni@gmail.com>
 References: <20260904195132.141068-1-sidchintamaneni@gmail.com>
@@ -122,42 +122,34 @@ Content-Transfer-Encoding: 8bit
 The timed may_goto fixup now passes the resolved counter pointer through
 BPF_REG_AX instead of a stack offset.
 
-Copy the pointer directly into the first argument register rather than
-adding it to the BPF frame pointer again.
+Use the pointer directly rather than adding it to RBP. This preserves the
+private-stack address selected by the JIT through R9.
 
-Fixes: 16175375da36 ("bpf, arm64: Add JIT support for timed may_goto")
+Fixes: 2fb761823ead ("bpf, x86: Add x86 JIT support for timed may_goto")
 Reported-by: Jeremy Jean <jeremy.jean@oss.cyber.gouv.fr>
 Link: https://lore.kernel.org/all/20260824213158.3755932-2-Jeremy.Jean@oss.cyber.gouv.fr/
-Assisted-by: Copilot:gpt-5.6-sol
 Signed-off-by: Siddharth Chintamaneni <sidchintamaneni@gmail.com>
 ---
- arch/arm64/net/bpf_timed_may_goto.S | 12 +++---------
- 1 file changed, 3 insertions(+), 9 deletions(-)
+ arch/x86/net/bpf_timed_may_goto.S | 6 ------
+ 1 file changed, 6 deletions(-)
 
-diff --git a/arch/arm64/net/bpf_timed_may_goto.S b/arch/arm64/net/bpf_timed_may_goto.S
-index a9a802711a7f..53148c9a1c58 100644
---- a/arch/arm64/net/bpf_timed_may_goto.S
-+++ b/arch/arm64/net/bpf_timed_may_goto.S
-@@ -14,16 +14,10 @@ SYM_FUNC_START(arch_bpf_timed_may_goto)
- 	stp	x3, x4, [sp, #48]
+diff --git a/arch/x86/net/bpf_timed_may_goto.S b/arch/x86/net/bpf_timed_may_goto.S
+index 54c690cae190..6e9d9e7c2b1d 100644
+--- a/arch/x86/net/bpf_timed_may_goto.S
++++ b/arch/x86/net/bpf_timed_may_goto.S
+@@ -11,12 +11,6 @@
+ SYM_FUNC_START(arch_bpf_timed_may_goto)
+ 	ANNOTATE_NOENDBR
  
- 	/*
--	 * Stack depth was passed in BPF_REG_AX (x9), add it to the BPF_FP
--	 * (x25) to get the pointer to count and timestamp and pass it as the
--	 * first argument in x0.
--	 *
--	 * Before generating the call to arch_bpf_timed_may_goto, the verifier
--	 * generates a load instruction using FP, i.e. REG_AX = *(u64 *)(FP -
--	 * stack_off_cnt), so BPF_REG_FP (x25) is always set up by the arm64
--	 * jit in this case.
-+	 * BPF_REG_AX (x9) contains the count and timestamp pointer; pass it as
-+	 * the first argument in x0.
- 	 */
--	add	x0, x9, x25
-+	mov	x0, x9
- 	bl	bpf_check_timed_may_goto
- 	/* BPF_REG_AX(x9) will be stored into count, so move return value to it. */
- 	mov	x9, x0
+-	/*
+-	 * r10 passes us stack depth, load the pointer to count and timestamp
+-	 * into r10 by adding it to BPF frame pointer.
+-	 */
+-	leaq (%rbp, %r10, 1), %r10
+-
+ 	/* Setup frame. */
+ 	pushq %rbp
+ 	movq %rsp, %rbp
 -- 
 2.43.0
 
