@@ -1,96 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-26519-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26520-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 41ABBC61DD3
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Sep 2026 06:04:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A82A9C79F80
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Sep 2026 06:09:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hbmBG04TLz2xfj;
-	Fri, 04 Sep 2026 16:04:06 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::102c"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788500594;
-	cv=none; b=Jnhdxh6nrVbq30i8po5u140FwT+mhJ7aVnqGKG0Eu7+LBrc7tLsLDNVtUucm9Q/vNswDpUDldwowcwHurCqHeJlqb7ksDmTRGkzjV/zaWyc7XXyIhirHY5faIDa1GhUPH3vG/JqiMneCEHG3F2yi9Lj/EmaPgsMM9vUxoB97EKonzkQQYtHMo7cqueJMmCfvg57hLwktRdbQeHfpeP/UPT1gyMUy0QDDBFycTdPw74qfIEhU9Rxi0AKft4jXiEbyj88AYUM+SVCNKpW78PpTHwIFhmxWzttOOdGnWXTBjOme5ODSbwQQz6oTorjoOXxmzUbnnk9UhpfokhP3oUhs4w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hbmJ60qXNz2y2b;
+	Fri, 04 Sep 2026 16:09:10 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788502150;
+	cv=none; b=AeDVSMY571U+WVoAMo7aaJJw1MqgKEe3OcdKLaS9sGNoimSNtTE7XoX7tEotB6wq2F1KmU/kRcYtYmEnNaO3+v/0T8V0pFDXuD4PKuxMFGmvLzRyvmZmAsvbdo5yis2t56MV3suRpOluTRIes9NG/NjVQr40OxDsvSMVC7XHAjCpOL4xpXTpNpcO22Ai88iPh8jgs9mKlPOCJETGGlGrHqF4nGSjCj/KmDcUzhKjga54rxm7x0yoWkamWdlqNlOsM7kYRjHjZ3Wn9KptcjG5GImGDdzC0acCgZrxkIF8MSUJXGcV5BJtcJn0T1Cpo0b2YJJWCQpqyDtG/9SEDpGjOw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788500594; c=relaxed/relaxed;
-	bh=fyaQ4vR8zK9HgI6ETSL4jxpRT+46yI+OILInPbjhckM=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=mM4NrMvq+o2GnS+6BPxSslV37oLGeQG9SRnR6+czTbxmSBcX2hBcusp1Wj/X69STUdh9ZbW8UBUr4Rw0ci1Fthh3P0I49jJ68yXmh+T1mcUmamjUfn+OwhYLcMqrbvhq5bOxPcU11zNkhBkcHtaeXgqkpVdJjKACN2o7yy9XQXaJx+weH9TfwpPFAiClHc0aqpkyXILbWoScIMDcsQ0LQpA4Eo+7Z9DNHDtXgeVR6AVIM7crg6co9jH+4t0tQi0RQEsJZNTyCRIz4lIhV98ulutkEYcEy+spLGS8L1BUFlVAZ0cBaQ2zsyo/1+Bgc194UFCTxx59azaON8qkxSBW4A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=G3lIJUkD; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::102c; helo=mail-pj1-x102c.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1788502150; c=relaxed/relaxed;
+	bh=ykfieVvZNqtUa+4jWvCQTTFA2b6xsuqBfoeLrAe0uqQ=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=LKpwHgoSjYeE6P/DXC/wgVwi3i2Wg7uKLVquRD3H5aq+Bop6rlxXP0GC6OqUy38lI0FKXVp2LSQSZnWjcNwyfj6TwnkpCKJUlzan0xoZY4rGr3dzSrlT6bWlWZ5tjmQRj8LvYPuoHXAMiDnmazGuHyp8tYrucSOEhdGAu8OhyLPTqoA5Cz8nwVDmzGfRZD4ClKyVg7ClUQKYIIivuwJ7I++dCz75DsUxH/M0mc/x4+qNab5iuiGtjQnl4xkUbNqK6xv5bDU+bt05FjJp7ahEu3CyDQ8FS+Oy5nU7uLtOS3H4jQvyIvm/pvwGmxDPib7kGA0rhGfx9DOoXONPsJly+g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=P1fXFY/S; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=G3lIJUkD;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=P1fXFY/S;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102c; helo=mail-pj1-x102c.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x102c.google.com (mail-pj1-x102c.google.com [IPv6:2607:f8b0:4864:20::102c])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hblk834qHz2xlY
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Sep 2026 15:43:11 +1000 (AEST)
-Received: by mail-pj1-x102c.google.com with SMTP id 98e67ed59e1d1-39927410578so859665a91.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Sep 2026 22:43:11 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1788500588; x=1789105388; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=fyaQ4vR8zK9HgI6ETSL4jxpRT+46yI+OILInPbjhckM=;
-        b=G3lIJUkD3JfukQZAi5gyOyxyJzDNQM6ex+VeZ/ChNcsTg1y0aevTg0YICbsTObcxFm
-         TcoBKZGHOYIoQ3spGsV7NHQmZdOuTltuSJqpQLJu3JwYCH64RKHBXxcPViFnpgGc2qEJ
-         AoaoSQG3FPwcSKXNSLEjHJEZlYVWLpDuFlRw2hmsZ7oCXc2rLsBi8tMbAp/A+mfjgcqU
-         vsmiJ4YwGPdX4Tfq/1tNa0wMy+84nTJihMyOPAfbU9eVPznFIWgcKLrQcjFOiRFKQlbX
-         i1L8ixBmq63pozboxAtGU4H+Iu7o0PT/CXGWWzVnX640aF5lITonTuNKzNT82PjdAnOY
-         htzA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788500588; x=1789105388;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=fyaQ4vR8zK9HgI6ETSL4jxpRT+46yI+OILInPbjhckM=;
-        b=GvpAFCXk7v2jxZUtKRQQedPImETHJO3CaR1pBDqDogGluNtAQEYSlddiDtMVoVStRC
-         QzIhXlqRI9+bgBZNUdouIzWE7e69nRhyQJNpF/qV/BqlO7lbvIS3xXMRWQihFYagAqVd
-         5OJ7hpo/klsP8rHIuLk9/XxRK+nCizYoGk43GzKJOlcT7Y2HNsJIcHLE2Kq34L60Vbuj
-         wAMLDbyeDoHzr6AHD1k5xUGNibWFuHT+5hTlfKz/GzxUyCtNy7qzLDShxbPPSFpzNRVe
-         ZYOtmHGgp3odo/tjvOMe7exJ/VVb74umA9FBQh4Tz0QVXMfX92SuFYuATY3VK4ps/+yL
-         8HOQ==
-X-Forwarded-Encrypted: i=1; AKwUvBz5f2X8EtNdI4sglr1tHukmAeoLilfxNdXMgRI4w3r8b6yjnwbE7hVh1UnLs7lA/p2zQdmFmOLLFLoTajo=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++mXvhW+QwzxZsYTBfD0n/EPBh6Qr8+dsj7DeIJwU9XogDqADOLk
-	/t/Ht6ps04tpxoJ2KYAXXy4I4jfp08lT4QAJboQnUIC8EkpVuf+48dQb
-X-Gm-Gg: AYBFou0A5zDt7C+XT/NGKzonnqzY5/MBM5AaJbCbKbIzcGyQtGnL22JuxbwsZPiLOYs
-	E2xTcPea8Jv38sQyO3Z4oFZU2mzvWkMl+fqGUzvo8SCj+Aj4iDQ97bh4ndjcUUPl50PiozMQ+EO
-	V1Zl5w8dmFByxVLiByZzBCrOXed8iucalj33Rv8eNU4c0TL0js53WxYJf6hMLrdg9kk3ahAn4N0
-	hxrvsQKXSyvAq5cnW7waT+DDdOhNf/qjW35VIsyz0/pqclr15sAxjAB+nlctTpSdtLLceJsIHxl
-	9AFbByaojRSQYGyEatimqL4PRJIsUNCR9c1utn4gp3DWqVNqvDyc1Ui6f7iPRFbCIZAgPfdMFkK
-	PILi+tn/PMVue29pPyOE/IUoH7Q+V6l5Izp6IQBYRctXnQG0Es1t9gfntG8BlHcAm3qyh1quxbf
-	fvT4vPp4YgxKpt3gbHNBRDxyqZM4oiENtH2uzxRgPD6V4ZU6c3sqd4yb9TVrYdThi97a7qOMbM9
-	5HGdaJBjSZWlt9a0QDHO4yjkfPqSE2eot6B
-X-Received: by 2002:a17:90b:4a49:b0:392:ca3b:370a with SMTP id 98e67ed59e1d1-39b26100cd2mr5232253a91.2.1788500588005;
-        Thu, 03 Sep 2026 22:43:08 -0700 (PDT)
-Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([122.161.52.230])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-39b2615039asm2556683a91.15.2026.09.03.22.43.04
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 03 Sep 2026 22:43:07 -0700 (PDT)
-Date: Fri, 4 Sep 2026 11:13:01 +0530
-From: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
-To: Thorsten Leemhuis <regressions@leemhuis.info>
-Cc: Venkat Rao Bagalkote <venkat88@linux.ibm.com>, 
-	Shrikanth Hegde <sshegde@linux.ibm.com>, LKML <linux-kernel@vger.kernel.org>, 
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Peter Zijlstra <peterz@infradead.org>, 
-	Linux kernel regressions list <regressions@lists.linux.dev>
-Subject: Re: [REGRESSION] Power9 pseries boot hang in v7.2-rc6, narrowed to
- PowerPC GENERIC_ENTRY conversion window
-Message-ID: <appZ1UB1tzKz3IY9@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-References: <96dae110-f79b-4e54-8a9b-514369019b5d@linux.ibm.com>
- <e27eeaf4-c2c9-4ef7-9e1c-0a5fb45755d0@linux.ibm.com>
- <6d1b5f38-f4e4-46ca-88b4-7c18dd6c6280@linux.ibm.com>
- <anq72IebDSu-wWbb@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
- <ansZjSJMWMV8DDF-@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
- <2f7e6c34-7258-4b20-a38e-cedebccb835f@linux.ibm.com>
- <985770a7-e488-456a-a9fa-aa71f1cbafd5@leemhuis.info>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hbmJ46rP2z2y2K
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Sep 2026 16:09:08 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 69FA243999;
+	Fri,  4 Sep 2026 06:09:05 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1CF8F1F00A3E;
+	Fri,  4 Sep 2026 06:09:02 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1788502145;
+	bh=ykfieVvZNqtUa+4jWvCQTTFA2b6xsuqBfoeLrAe0uqQ=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=P1fXFY/Say3wJWn/3DLEhCoWyCe4uU/Z6AO/b3p409SgNVUl9xYp6kruuLVDZ3F0K
+	 pN9jh74KW6FRGbnzMu9loZiTKh/oudilsJKCVmVzBB/EkJTWNPaB7HREAc73/0jLNP
+	 qMS/KiggcALQ3y6RKrap4Nt+w791sW748pityCX7BIKok98/HvOzMrSU0APumOMxdW
+	 hTLwYQMyH18P+qFsvS8gwEJyAce8fFmqKwybrqhEOYJ16BrxzYuxRT6oNmuVAanRR3
+	 +7wRHhVUGXmw+woevJ4N6pjl27QYzthF8hMiFqiWP8Aeg2Tj0xcgB0oL4cZW7GKq/I
+	 S4sKdnz/d6gtw==
+Message-ID: <5c42b080-cdcb-43c8-9bf9-15f79339f0da@kernel.org>
+Date: Fri, 4 Sep 2026 08:09:00 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -104,48 +59,119 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <985770a7-e488-456a-a9fa-aa71f1cbafd5@leemhuis.info>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2] powerpc/entry: Fix double accounting of user time on
+ interrupt entry
+To: Aboorva Devarajan <aboorvad@linux.ibm.com>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Mukesh Kumar Chaurasiya <mchauras@linux.ibm.com>
+Cc: Shrikanth Hegde <sshegde@linux.ibm.com>, linux-kernel@vger.kernel.org,
+ Ritesh Harjani <ritesh.list@gmail.com>,
+ "Nysal Jan K . A ." <nysal@linux.ibm.com>
+References: <20260904025831.3439809-1-aboorvad@linux.ibm.com>
+Content-Language: fr-FR
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+In-Reply-To: <20260904025831.3439809-1-aboorvad@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On Thu, Sep 03, 2026 at 01:22:35PM +0200, Thorsten Leemhuis wrote:
-> On 8/12/26 07:16, Venkat Rao Bagalkote wrote:
-> > On 11/08/26 6:16 pm, Mukesh Kumar Chaurasiya wrote:
-> >> On Tue, Aug 11, 2026 at 11:37:45AM +0530, Mukesh Kumar Chaurasiya wrote:
-> >>> On Mon, Aug 10, 2026 at 05:19:27PM +0530, Venkat Rao Bagalkote wrote:
-> >>>> On 04/08/26 8:23 pm, Shrikanth Hegde wrote:
-> >>>>> On 8/4/26 2:04 PM, Venkat Rao Bagalkote wrote:
-> >>>>>>
-> >>>>>> I'm seeing a boot regression on a Power9 pseries LPAR. The system
-> >>>>>> hangs very early during boot after:
-> >>>>>>
-> >>>>>> Quiescing Open Firmware ...
-> >>>>>> Booting Linux via __start() ...
-> >>>>>>
-> >>>>> That is strange. not sure where to look at without any logs.
-> >>>>> Is it a specific config that fails or this specific LPAR that fails?
-> >>>>>
-> >>> Is this a specific lpar or all power9 pseries are exhibiting same
-> >>> behaviour?
-> > Its specific to a lpar.
-> >>
-> >> Can you try the below fix?
-> > [...]
-> >
-> > I tired this fix, but issue still persists.
-> This regression made it to my list of tracked regression -- and it looks
-> like this stalled. Is that the case? Or was this resolved meanwhile?
+
+
+Le 04/09/2026 à 04:58, Aboorva Devarajan a écrit :
+> Since the switch to generic entry, an interrupt from user mode
+> accounts user time twice: once in arch_interrupt_enter_prepare()
+> and again in arch_enter_from_user_mode(), which irqentry_enter()
+> invokes for the same interrupt:
 > 
-> Ciao, Thorsten
+> 	arch_interrupt_enter_prepare()
+> 	  account_cpu_user_entry()		/* first */
+> 	irqentry_enter()
+> 	  arch_enter_from_user_mode()
+> 	    account_cpu_user_entry()		/* second */
+> 
+> The second call charges the same interval again, because
+> account_cpu_user_entry() accumulates the time spent in user mode
+> since the last return to user space.
+> 
+> The two calls come from the GENERIC_ENTRY preparation series,
+> where each step was a no-op on its own. Commit 09a9d3a8499d
+> ("powerpc: introduce arch_enter_from_user_mode") added the hook
+> with the user-time accounting in it, but nothing called it yet.
+> Commit 893082ac769b ("powerpc: Prepare for IRQ entry exit")
+> copied interrupt_enter_prepare() verbatim into entry-common.h as
+> arch_interrupt_enter_prepare(); that copy was equally unused, as
+> handlers still called interrupt_enter_prepare().
+> 
+> Commit bee25f97ad24 ("powerpc: Enable GENERIC_ENTRY feature")
+> made both live. On the syscall side it did the full conversion:
+> system_call_exception() now accounts once through the hook via
+> syscall_enter_from_user_mode(), rather than calling
+> account_cpu_user_entry() directly. On the interrupt side it
+> switched the handler macros to arch_interrupt_enter_prepare()
+> followed by irqentry_enter(), which also runs the hook, but the
+> accounting in arch_interrupt_enter_prepare() was not removed to
+> match. The double accounting starts with that commit.
+> 
+> With CONFIG_VIRT_CPU_ACCOUNTING_NATIVE=y this roughly doubles the
+> reported user time of any workload that takes interrupts. The
+> other accounting modes compile account_cpu_user_entry() to an
+> empty stub, so they are not affected.
+> 
+> Remove the accounting from arch_interrupt_enter_prepare() and rely
+> on arch_enter_from_user_mode(), which already runs for both
+> syscalls and interrupts. The duplicate account_stolen_time() call
+> is removed the same way.
+> 
+> On a pseries LPAR a busy loop reports 6s user time in 3s elapsed
+> (~210% CPU) before the fix, and 3s (~105% CPU) after it:
+> 
+>    $ python3 -c 'while True: pass' &
+>    $ sleep 3; ps -p $! -o etime,time,pcpu
+> 
+>              ELAPSED     TIME  %CPU
+>    Before      00:03 00:00:06   210
+>    After       00:03 00:00:03   105
+> 
+> A 50% load reports ~70% usr / 30% idle before the fix, and
+> ~49% usr / 51% idle after it:
+> 
+>    $ taskset -c 6 stress-ng --cpu 1 --cpu-load 50 &
+>    $ mpstat -P 6 1
+> 
+>              CPU    %usr   %idle
+>    Before      6   69.74   30.26
+>    After       6   48.51   50.50
+> 
+> Fixes: bee25f97ad24 ("powerpc: Enable GENERIC_ENTRY feature")
+> Reviewed-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
+> Signed-off-by: Aboorva Devarajan <aboorvad@linux.ibm.com>
 
-Hey Thorsten,
-I am working on this, as of now I have a theory that the RMA size
-boundry is being crossed by something and causing this thing.
+Reviewed-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
 
-For now the workaround is disabling KASAN. Can you also confirm the
-same.
-Can I also know the compiler version you are using?
+ > ---> Changes in v2:
+>   - Explain which commits introduced each accounting call and how
+>     they overlapped in commit message.
+>   - Drop the code comment.
+> 
+> v1: https://lore.kernel.org/linuxppc-dev/20260902050628.2553909-1-aboorvad@linux.ibm.com/
+> 
+>   arch/powerpc/include/asm/entry-common.h | 2 --
+>   1 file changed, 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/entry-common.h b/arch/powerpc/include/asm/entry-common.h
+> index c5adb5006361..000fa925e26a 100644
+> --- a/arch/powerpc/include/asm/entry-common.h
+> +++ b/arch/powerpc/include/asm/entry-common.h
+> @@ -222,8 +222,6 @@ static inline void arch_interrupt_enter_prepare(struct pt_regs *regs)
+>   
+>   	if (user_mode(regs)) {
+>   		kuap_lock();
+> -		account_cpu_user_entry();
+> -		account_stolen_time();
+>   	} else {
+>   		kuap_save_and_lock(regs);
+>   		/*
+> 
+> base-commit: fb442a6673ff1046bf67754957d95880fdb394b5
 
-Regards,
-Mukesh
 
