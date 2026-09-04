@@ -1,94 +1,95 @@
-Return-Path: <linuxppc-dev+bounces-26585-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26586-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AA78FC624D6
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Sep 2026 06:07:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0AAC1C624D6
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Sep 2026 06:08:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hcNCm19Mhz2yr4;
-	Sat, 05 Sep 2026 16:07:32 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::b12e" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788517108;
-	cv=pass; b=cG7xNvzKUi0+ZyL9NTZl+B8fvL7dNzH4en4w1Gud5QyJTgUmfXNIdiI2uh8lv3UkWJNnekOHBOuJHUtJoxsJdKA6PkJZS5dmFy030jKGbcl1PnRbCTEB4voVZFgejj9e1Re4V7BWfGWguU/a9CLUYmJcBVV11JtHWhororYcdLHh5KpFAstGDm7jmuYamEfjIb/nwaLL8dWSvHuTtiLxib75hOqtZ+76CZe15bZvcElv59YM4x1EY/YCkKRQLkJjl13vIQH507rqKudyfTuE7qcTrwvuWAB4CnPhBXS/1qMSupQpbd2mbE3C4qx8vl8yVwE6rUrGD5E60VXG3RQsLQ==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788517108; c=relaxed/relaxed;
-	bh=7ecM1UWhebC/3/+iusmGdcjinHnlJFmUl69Lno0FSOQ=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=CeTQwT2NEdf8+E+zy1Pb8sbgQ2cWhS9TN3RYRORakBz6wXqpNXi1AOjgFJwLAt3alMpPAxBsSsIPM9eN1Xk4Fihc8gNCV2Dzow7NHyP3HWZUIFmgLQSA8s3Dppev0e4VdiAARVY//vdcfwrRmy9q7Kpw7z1szOoUIq4OcFukyAImibGyE7yAYRssOOd/kZnxv4b+AfjVxxErICDWNPB/BAwP1TJMZUP6hDFmN2Cf/Nf4Kbm7Tq492cYIhbp3vJHPpWldfBZ3H/PXOsezhB6qvJZ+LcbHwZYyqFe4uVbzSnJdPRk97MH+C5W+haz4lRRTsgQcE9sql27izZ/fPoU3CQ==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=grNnJKzl; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::b12e; helo=mail-yx1-xb12e.google.com; envelope-from=aivazian.tigran@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hcNDP5D94z2yr4;
+	Sat, 05 Sep 2026 16:08:05 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1031"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788519026;
+	cv=none; b=mDGvK7x+kfFcKHbwQ+b8hcwjcx0ZYUVjjodmYOsKFzfsSEMMZQBVZb1sSd8HaBzIeVMndZOgweAZf6QhV9KWbDbh14+17MA28dQjd9UGTDT/8Nh1z5Zn9qc7WjajJQYjE/jvUh+EWake+MjdGiVkHSXr9+koUb+z/U2wrdSGMwN8vG3nvidq5Z/QygcB7rs1h7cNJojabBFYTHB1BIgKZOjMEc5vzvhO8A80k5apS1aOD2PgRsrXIOReglQ+3NLFJKMv/XpNXvDTKgJ1unYC7XPlJK08qOfYGklV5VSqPzka5tQN8lqlEKax3AAEKwJezzhf7dWmKZpQqGNEwVGwmA==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1788519026; c=relaxed/relaxed;
+	bh=JVe3j7HRHHIhbvIbEK+C2SoCEY61/0kcnS4nfccAWlM=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=kM1tMby7PxaNbx/jkx3QHBWF+3jnxAeZ1yhhUJoMljyD9nYEDl+GAqGfoOV7JcWog2lP2XqQbz2CHrjd2fw/tEh+lXPSWmWhfHc8+bricYzaMi2jgn3xa36G9Zt56L2jMjWpGI4/1Lr8rZWyOXxET4/oEdEjWOzJKcZA5zVK8nNpUxzI67+6nxumvu588ASfmr6WiF0Vldeppe2xef828RT1OpsB67CuIwAQreqJ1Z1fl8OfbsymykC7lD2n7NyvQ1SkK5zPPccxJ/CFZeu7WEHuBnd91dgh4SENQE+b4QSjqnFrwjslykHpGQuWDhiXVtT8M7Zj7PlsdZsWtoQOMg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=J3/rum4Q; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1031; helo=mail-pj1-x1031.google.com; envelope-from=hemanth.selam@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=grNnJKzl;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=J3/rum4Q;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::b12e; helo=mail-yx1-xb12e.google.com; envelope-from=aivazian.tigran@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-yx1-xb12e.google.com (mail-yx1-xb12e.google.com [IPv6:2607:f8b0:4864:20::b12e])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1031; helo=mail-pj1-x1031.google.com; envelope-from=hemanth.selam@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x1031.google.com (mail-pj1-x1031.google.com [IPv6:2607:f8b0:4864:20::1031])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hbsqk6B7Gz2xpn
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Sep 2026 20:18:25 +1000 (AEST)
-Received: by mail-yx1-xb12e.google.com with SMTP id 956f58d0204a3-66fa996e65bso1479326d50.0
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Sep 2026 03:18:25 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1788517102; cv=none;
-        d=google.com; s=arc-20260327;
-        b=nK4Xkyf2tIO+hQpdZlqIs7GlrH1IW87ObMKJvfharfNsTTK1CYmJZUPvzHoKjWgY3n
-         fFKSXmNYius4Gf17sCvSO/GsiE2IoHdpIZJFYDvRH2N+My4D/0k1nT6okA70m8knqu3c
-         Vn0pH3Ow8SjeiHXYxFJXnJsx90MPGiU9ewCom2wmIiMWfMXQbNUychIDO5jBbSxJsnJJ
-         9Ux4HDRRFpSCVtsNqsj8NH5J5/H5WP3t7ZPgtHgav6h/urXvhEtsuvqgHNSl5EHwSD6k
-         MdXvGsHLjpQXTndrZERvjz1+iJX1QJ49xCC8YjOq7h9vaN9tLQq+XGwEBnFNn+O/YseU
-         9cKg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:dkim-signature;
-        bh=7ecM1UWhebC/3/+iusmGdcjinHnlJFmUl69Lno0FSOQ=;
-        fh=1piiaMP3nYEqJEpCdP7rby8G8vpelBuOBitPedEx4eo=;
-        b=qJLgHx3VytjVstQLEQeV0N20DABWWNJkVvE6zusl2QlPptCQWTfu6XGjA5q2iWtf/4
-         naY4YVhdYJWuEyE1HfEhUIdGo6qf1040YbcsZpeddXf+pqxv4LKVBOcBRSXdXVKWb3mE
-         dlwFvKci3dIaOtZyFTFYYlIpu+9kOKEYERlGfXYyfb3VE+r2AGwIfhk2UXyj7MrBy+pJ
-         ehXP7IVpXHjyojVCXFz0icqhPPAA59SrOOqwnlWVKf0PpRXYMnMMbJSzMv3WixIFPT2F
-         VGTeuqNpP3dvX8m0hKZtuepKt5Gok6XSMc87Oek5nalfdoX705RaIBUVXp8/I3gmmxbk
-         ibcg==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hbtXd4LJwz2xGt
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Sep 2026 20:50:25 +1000 (AEST)
+Received: by mail-pj1-x1031.google.com with SMTP id 98e67ed59e1d1-39682983a0fso905061a91.3
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Sep 2026 03:50:25 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1788517102; x=1789121902; darn=lists.ozlabs.org;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=7ecM1UWhebC/3/+iusmGdcjinHnlJFmUl69Lno0FSOQ=;
-        b=grNnJKzlvkJLAAoy+LwB3rP7OQ/TY4OqaXtCsuWnbG3yQB4OmsNVW8RC/XiIOhvhpK
-         wLG5RhyDH3yQHolfNEBk9lVU5OimNdIUignPT1T7U3rhCEOEOhRaJmDG84/jRroPcn7d
-         uhnX2BFJpvgK24QuoijAGLoqCbHcjWlnYyWJxSROcWdZCp4UR7Vy55hTUTSPjsx5ZSrD
-         4ZdYyXXIR24ERNt+Kv9+2hLNmx1GzraDJpkfhPEjh3nphNHi74RbpoG7t0jOfyv8hoyb
-         casosbkeGUL8fymsHI5xf9fM3oyVnr661GCbY6+q1tNezbHBDY7J6cJQ9xaglhwFOsww
-         NmJQ==
+        d=gmail.com; s=20251104; t=1788519023; x=1789123823; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=JVe3j7HRHHIhbvIbEK+C2SoCEY61/0kcnS4nfccAWlM=;
+        b=J3/rum4QRo5Xn4NdGJNRf+RWwZcKRMbq6AgYie8NxVS5aqJDXUG7o1RzRmmKVr5AtG
+         h6NG1auEmCFZuNGHytbk3r+8oLVdbG8MV/t5JLnJ9El6dLFVwU6W/vg9EzuG9hoX9WH3
+         Kh+SSTNgtmC188NzHtC6Iz7BiG5IOxgMbPVuOB0LR3bl5c3U6HOIWyL5XGVqjINHNae0
+         YEQ5onfqHpBJEAvUq4sMmknSGKZ5em3WAP2qsTcMYa46GiVA/SWvwokRoBGzn2iE5NmW
+         9jVCw5N+mbdOFrVNZLdiyjkpIQx1Hz25wvpWMEwfzQtBgC3WeYU8Z5k2o1zYIn6p3A+x
+         RnaQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788517102; x=1789121902;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=7ecM1UWhebC/3/+iusmGdcjinHnlJFmUl69Lno0FSOQ=;
-        b=jgm3FrenH5Ut7bIzrn6eJx/r7qhrRNuxXkEThPfu4VsYDDnpsxa1B9uNFGk1tshr9C
-         KIAWK7+Hkm11qfsZ+sPXCfOnge+ctDhNwJoMLVTEDoOpiI3GUFRt7IYVxtU7wbay15+1
-         e5w0YiK/2NpmOSWbecLpSsjolFmEloVSJIOtBMl8er5JzOZE+IR8LsAAnu4Y3Y9SqcUA
-         UMYdN7spfyFR+kNUwEJrXAANw8aGmql7T/kFoTVIKnlBAY8+kS+os8Z8zY1Dw2BL8Z7D
-         gW7U6NewyfZJifQTSKhQq/7qt7nvMh7WFuOvwT5jf12bvQovvBJ54IGm9A9bciHRwn/w
-         jFMg==
-X-Forwarded-Encrypted: i=1; AKwUvByczyX6v+aSI1WBtooygwHNO69A9AxjmV55hDT3BsrKnvq0YJBAkVS9pVazcvnnETWHWo3YTHUJLTu2Wbc=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++mX21Z/rbZ37rrH3d2xb+NEcJbla5nhK9eZe7KJ5a3mBAl2FJKN
-	YR4GT+tC3YZSKvgrRsUm8kJtvTrZEnbAkIvviAkovmYHkadCu+zf/kubuXsaS5fEp38nraq7a+s
-	HeezYr/bmkTgnW8AvEMb3QyxPpSd3jKw=
-X-Gm-Gg: AYBFou1J23mWSrjBzV+mncowac63tj7mv7hJQI7ykKyiPLTQC8drb+2dzyczqhetBjY
-	q4uFO1iitoAX63Xj0nyGEZ/IHtOxOP4W/1f3Ncd+hTiLSpbKo/yw+GGsoKUywNlrAPGIuN1zFv4
-	fzgBUOjea4mVc+6gUxr04LHM+hpDfvrGxzQ7xXxDmtBSX0oBJc5AFnjRzhCyC77XOanu7h1XmOL
-	rEQk50LH42+4dPEkq0WEW+9y2pvASgTFOc/9FHiewmYD1e215ucBU5imQJ0I5Zksypvcs/k1rQT
-	ezC0glPmGk/JU+JdbUjPfMiRn9iZNK5Bo7NBItthg5rTF8HniQ72t9WE56lC5dNThw40FkGoiQB
-	m
-X-Received: by 2002:a53:c053:0:20b0:66f:a1b4:741c with SMTP id
- 956f58d0204a3-66fb5958686mr1624093d50.12.1788517102415; Fri, 04 Sep 2026
- 03:18:22 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1788519023; x=1789123823;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=JVe3j7HRHHIhbvIbEK+C2SoCEY61/0kcnS4nfccAWlM=;
+        b=acYHkpZ+3lkVFNQOYPyyRKjG64ZGN2Gy3KaiG/Sw5hbVFQPE5CnqfrROh+6RIYzUn3
+         PmGS645YpkagBbPIG4+yhl4ctHh7Bk54zyobM/wEAAJFl/Cvt4J8q+IIUNKSa1mxksba
+         67bu6W6jenYNgE0cc8NiP3DymcFsS9CSR2UF+K/ceCPsT8b4WbP9fg/qk/Hd8IkacrIf
+         9ymR+iE3+dJ0WmLrwLrAYSkNHhrVMmKQaY9CPTONOr4aZgIIEKcKH8Ri/qp3T8LrmyXQ
+         PclxkrbFbQ6ZIAU1ssEHIkSYMLOTZ9u3H8ATamjexMKof6nHC+NXE5UUWhRaOiBbBOfj
+         MNbw==
+X-Forwarded-Encrypted: i=1; AKwUvBzeVX/V5djbGcTbZv7OVE9em0bC8kRi5KfBG/pc+AvNN/yOVt8dNeKlns+wzsbm09eVNR1hIAWFgHETbE4=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++ngcFaEd40jdCOEISgTLo/A0rVxu0TCCp60ePE6HeRG7ceiE6Rn
+	I8xeBZ+YzvvX4OYv7p2X0rKrhGEmJulPgSrBwC6xSctJeaHDexZ2btub
+X-Gm-Gg: AYBFou2WMy10aM2UPrqVJn8VVt6gUE6qeb8jruysvBJrN3cHf1trfDuvyfy89JHxfSV
+	cfSTsd3iGNjFDHmaD8QLuJ5zd5d6TDHiUdPU4G7VurL1rvrKBICTg4uJTPT09HhmwRDu7I0L1JF
+	2HMbNqh1vcvbZpUz+o6EmrBeYrIrjYf7kwHtsbLNjqzOY9yHpekxfJgpYNy2PvacQYgxZQ/AEWn
+	PMNjG9TGTuUFuyWWbTsQLcpvjKLH3IEOZCR6CSSqiw9ihecrhNW+F9SunJCh8tHcYytpQuCUbI9
+	IEVLnDqndYysqQ4ILCud6P/f/DdHchiNMhajgxdKJYBtOVn4HkykMXvzCt6/etyY99liHq23C8B
+	i1oknsw3E0ggeRKkoUwh7/qWyCiuiI8gtSGQxbUeZOC/JgW31Z97Tz1b3J1+ivbCI0fbSRBvtnQ
+	AHFS7hUJUTAn5UdaSsoQYeUOgIlFO/UE/2e5mZVf0xcuLD4rEagaNKOOcQM8jiz0WCSS4NlA5/k
+	zClQFQLStmCq6I=
+X-Received: by 2002:a17:90b:3912:b0:398:c724:1bb1 with SMTP id 98e67ed59e1d1-39b26101524mr6786890a91.8.1788519021437;
+        Fri, 04 Sep 2026 03:50:21 -0700 (PDT)
+Received: from volcano9f6e-hostos.amd.com ([165.204.217.251])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3339b608409sm6421454eec.21.2026.09.04.03.50.16
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 04 Sep 2026 03:50:20 -0700 (PDT)
+From: Hemanth Selam <hemanth.selam@gmail.com>
+To: Andi Shyti <andi.shyti@kernel.org>,
+	Florian Fainelli <florian.fainelli@broadcom.com>,
+	Ray Jui <rjui@broadcom.com>,
+	Scott Branden <sbranden@broadcom.com>,
+	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
+	Jochen Friedrich <jochen@scram.de>,
+	Patrice Chotard <patrice.chotard@foss.st.com>
+Cc: linux-kernel@vger.kernel.org,
+	linux-i2c@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org
+Subject: [PATCH 1/2] i2c: busses: fix typos in comments
+Date: Fri,  4 Sep 2026 16:20:07 +0530
+Message-ID: <20260904105010.27405-2-hemanth.selam@gmail.com>
+X-Mailer: git-send-email 2.48.1
+In-Reply-To: <20260904105010.27405-1-hemanth.selam@gmail.com>
+References: <20260904105010.27405-1-hemanth.selam@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -102,56 +103,74 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260904082954.48738-1-enelsonmoore@gmail.com> <apqXNCL4X_i6xy2Z@gremlin>
-In-Reply-To: <apqXNCL4X_i6xy2Z@gremlin>
-From: Tigran Aivazian <aivazian.tigran@gmail.com>
-Date: Fri, 4 Sep 2026 11:18:10 +0100
-X-Gm-Features: AcwNN1X7ex5eCk4ouskYN2ChvEs-v8zBI8q8LI-VGa7gCcqGKoso7q1xSbR0jLY
-Message-ID: <CAK+_RLm9HKkm8YCCanpOMxaMaAkt5eoxQBHBxC1-Xkvj=L=UsQ@mail.gmail.com>
-Subject: Re: [PATCH] bfs: remove the filesystem
-To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Cc: Ethan Nelson-Moore <enelsonmoore@gmail.com>, Shuah Khan <skhan@linuxfoundation.org>, 
-	Randy Dunlap <rdunlap@infradead.org>, Michael Ellerman <mpe@ellerman.id.au>, 
-	Nicholas Piggin <npiggin@gmail.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Jan Kara <jack@suse.cz>, 
-	Jakub Kicinski <kuba@kernel.org>, Namjae Jeon <linkinjeon@kernel.org>, 
-	Hisam Mehboob <hisamshar@gmail.com>, =?UTF-8?Q?Martin_Kepplinger=2DNovakovi=C4=87?= <martink@posteo.de>, 
-	Christian Brauner <brauner@kernel.org>, Amir Goldstein <amir73il@gmail.com>, 
-	Bagas Sanjaya <bagasdotme@gmail.com>, Eric Biggers <ebiggers@kernel.org>, 
-	Geert Uytterhoeven <geert@linux-m68k.org>, David Howells <dhowells@redhat.com>, 
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>, "Theodore Ts'o" <tytso@mit.edu>, 
-	Catalin Iacob <iacobcatalin@gmail.com>, Stephen Hemminger <stephen@networkplumber.org>, 
-	Andrew Lunn <andrew@lunn.ch>, "Maciej W. Rozycki" <macro@orcam.me.uk>, Andrei Vagin <avagin@gmail.com>, 
-	Wei Yang <richard.weiyang@gmail.com>, Bhavik Sachdev <b.sachdev1904@gmail.com>, 
-	Andrew Morton <akpm@linux-foundation.org>, Wang Yan <wangyan01@kylinos.cn>, 
-	Bala-Vignesh-Reddy <reddybalavignesh9979@gmail.com>, Malaya Kumar Rout <malayarout91@gmail.com>, 
-	linux-doc@vger.kernel.org, linux-mips@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, linux-fsdevel@vger.kernel.org, 
-	linux-kselftest@vger.kernel.org, Luis de Bethencourt <luisbg@kernel.org>, 
-	Salah Triki <salah.triki@gmail.com>, Jonathan Corbet <corbet@lwn.net>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Alexander Viro <viro@zeniv.linux.org.uk>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 
-On Fri, 4 Sept 2026 at 11:05, Lorenzo Stoakes (ARM) <ljs@kernel.org> wrote:
-> Based on Jan's feedback at [0] that closes the loop (it is indeed a
-> maintenance headache):
->
-> Acked-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
->
-> [0]:https://lore.kernel.org/all/35dsgpk5dsh6bm4xoblrq6hdslfvtuibl5grzag37cye2hgepk@rkrtkjxdyk5g/
+Fix typos in comments, reported by scripts/checkpatch.pl using the
+misspelling list in scripts/spelling.txt.  Only touches comments, no code
+changes.
 
-Ok, I won't cry about it :)
+Assisted-by: Cursor:claude-opus-5
+Signed-off-by: Hemanth Selam <hemanth.selam@gmail.com>
+---
+ drivers/i2c/busses/i2c-axxia.c    | 2 +-
+ drivers/i2c/busses/i2c-bcm-kona.c | 2 +-
+ drivers/i2c/busses/i2c-cpm.c      | 2 +-
+ drivers/i2c/busses/i2c-st.c       | 2 +-
+ 4 files changed, 4 insertions(+), 4 deletions(-)
 
-In fact, if I may, I would like to say that it is a pleasure to be in
-your (pl.) company once again. Looking at the list of people included
-here -- some familiar, some unfamiliar -- I remember the younger days.
-I have done my tiny share of contributing to the Linux kernel as best
-as I could, but as I now grow older I can no longer maintain BFS
-(older does not mean inactive, just active at other things), so if it
-does give maintenance headache, by all means -- remove it :)
+diff --git a/drivers/i2c/busses/i2c-axxia.c b/drivers/i2c/busses/i2c-axxia.c
+index 0555eeb6903a..62dc55c146f0 100644
+--- a/drivers/i2c/busses/i2c-axxia.c
++++ b/drivers/i2c/busses/i2c-axxia.c
+@@ -60,7 +60,7 @@
+ #define MST_RX_FIFO		0x44
+ #define MST_INT_ENABLE		0x48
+ #define MST_INT_STATUS		0x4c
+-#define   MST_STATUS_RFL	(1 << 13) /* RX FIFO serivce */
++#define   MST_STATUS_RFL	(1 << 13) /* RX FIFO service */
+ #define   MST_STATUS_TFL	(1 << 12) /* TX FIFO service */
+ #define   MST_STATUS_SNS	(1 << 11) /* Manual mode done */
+ #define   MST_STATUS_SS		(1 << 10) /* Automatic mode done */
+diff --git a/drivers/i2c/busses/i2c-bcm-kona.c b/drivers/i2c/busses/i2c-bcm-kona.c
+index d4f287b31fd7..0c30821e7b0a 100644
+--- a/drivers/i2c/busses/i2c-bcm-kona.c
++++ b/drivers/i2c/busses/i2c-bcm-kona.c
+@@ -12,7 +12,7 @@
+ #include <linux/io.h>
+ #include <linux/slab.h>
+ 
+-/* Hardware register offsets and field defintions */
++/* Hardware register offsets and field definitions */
+ #define CS_OFFSET				0x00000020
+ #define CS_ACK_SHIFT				3
+ #define CS_ACK_MASK				0x00000008
+diff --git a/drivers/i2c/busses/i2c-cpm.c b/drivers/i2c/busses/i2c-cpm.c
+index 2cb6a233d313..c8b72f14d179 100644
+--- a/drivers/i2c/busses/i2c-cpm.c
++++ b/drivers/i2c/busses/i2c-cpm.c
+@@ -334,7 +334,7 @@ static int cpm_i2c_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
+ 		tptr++;
+ 	}
+ 	/* Start transfer now */
+-	/* Enable RX/TX/Error interupts */
++	/* Enable RX/TX/Error interrupts */
+ 	out_8(&i2c_reg->i2cmr, I2CER_TXE | I2CER_TXB | I2CER_RXB);
+ 	out_8(&i2c_reg->i2cer, 0xff);	/* Clear interrupt status */
+ 	/* Chip bug, set enable here */
+diff --git a/drivers/i2c/busses/i2c-st.c b/drivers/i2c/busses/i2c-st.c
+index 0a2b43b5577b..873ce2f5a406 100644
+--- a/drivers/i2c/busses/i2c-st.c
++++ b/drivers/i2c/busses/i2c-st.c
+@@ -256,7 +256,7 @@ static void st_i2c_flush_rx_fifo(struct st_i2c_dev *i2c_dev)
+ static void st_i2c_soft_reset(struct st_i2c_dev *i2c_dev)
+ {
+ 	/*
+-	 * FIFO needs to be emptied before reseting the IP,
++	 * FIFO needs to be emptied before resetting the IP,
+ 	 * else the controller raises a BUSY error.
+ 	 */
+ 	st_i2c_flush_rx_fifo(i2c_dev);
+-- 
+2.48.1
 
-Acked-by: Tigran Aivazian <aivazian.tigran@gmail.com>
-
-PS. This reminds me of d'Artagnan's phrase from the Soviet version of
-"The Three Musketeers" -- "my consolation is that if I am to be
-killed, I will be killed by a true musketeer" :)
 
