@@ -1,95 +1,104 @@
-Return-Path: <linuxppc-dev+bounces-26586-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26587-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0AAC1C624D6
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Sep 2026 06:08:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E5482C624D6
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Sep 2026 06:08:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hcNDP5D94z2yr4;
-	Sat, 05 Sep 2026 16:08:05 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1031"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788519026;
-	cv=none; b=mDGvK7x+kfFcKHbwQ+b8hcwjcx0ZYUVjjodmYOsKFzfsSEMMZQBVZb1sSd8HaBzIeVMndZOgweAZf6QhV9KWbDbh14+17MA28dQjd9UGTDT/8Nh1z5Zn9qc7WjajJQYjE/jvUh+EWake+MjdGiVkHSXr9+koUb+z/U2wrdSGMwN8vG3nvidq5Z/QygcB7rs1h7cNJojabBFYTHB1BIgKZOjMEc5vzvhO8A80k5apS1aOD2PgRsrXIOReglQ+3NLFJKMv/XpNXvDTKgJ1unYC7XPlJK08qOfYGklV5VSqPzka5tQN8lqlEKax3AAEKwJezzhf7dWmKZpQqGNEwVGwmA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hcNF24VZ8z2yr4;
+	Sat, 05 Sep 2026 16:08:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62e"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788519490;
+	cv=none; b=dBVGo7KWtlsRopa6rYdKbwJZ9pdVPX6wNhv9Gx+Z+PT5VjxzaNYAYZK8+O/qK/mYYK5iJVYTAdr8hA3D8/OxNiU/SO3hFlDItfMNMZoh6+3sbglIMsSQA4axSQe8TSIzxe9OCNKpdM2FT9NOlKJYzuQpC7+gFVooZXVrRaDcpCm3b4MaVw8VsQVtYjrkoS4USq73ptclFKWdYVYjbdByJTVKK1KNo0avuAcSXGk3+4bmpgwt7EXK/BnN584JYt9/rbQZx549rSVxHoEkpfc4/xQvzzjUsZhy58tb5XrIbWCCLSdCm4MHlWWbgHstrB9jkr5MGbue6m8OuebtkLzrgA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788519026; c=relaxed/relaxed;
-	bh=JVe3j7HRHHIhbvIbEK+C2SoCEY61/0kcnS4nfccAWlM=;
+	t=1788519490; c=relaxed/relaxed;
+	bh=gH9gg1qvejjX/sPdW+X7GvG6xfgdjVwQ/p+bz1yISpM=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=kM1tMby7PxaNbx/jkx3QHBWF+3jnxAeZ1yhhUJoMljyD9nYEDl+GAqGfoOV7JcWog2lP2XqQbz2CHrjd2fw/tEh+lXPSWmWhfHc8+bricYzaMi2jgn3xa36G9Zt56L2jMjWpGI4/1Lr8rZWyOXxET4/oEdEjWOzJKcZA5zVK8nNpUxzI67+6nxumvu588ASfmr6WiF0Vldeppe2xef828RT1OpsB67CuIwAQreqJ1Z1fl8OfbsymykC7lD2n7NyvQ1SkK5zPPccxJ/CFZeu7WEHuBnd91dgh4SENQE+b4QSjqnFrwjslykHpGQuWDhiXVtT8M7Zj7PlsdZsWtoQOMg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=J3/rum4Q; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1031; helo=mail-pj1-x1031.google.com; envelope-from=hemanth.selam@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version; b=Kd8LVHsOAvbwrm02LYG3kADnG0xHnKysJBvYRRIFgX0060VxryeRwJYuAOqPvTfkVEsbRpC3Ge15V5x1efKg0cIZUfriv5Gtn/a+j+JLqhAUjVafU+BTZno2Q1yuYwf30RhOPtN6IiBs+2n6Z+bYgDjOKO6D03FYmXvHG6ESvKEZHaFQaed48fuDYwrq0i4VPGzHQLmC4URcwxbo0MXEoEYwdlEGBk43EDWlqHpIHAv9O2DTzGc9vgJEfUZ6WTp+N+Z9OACLR9LUWtqJ4KPIeQLthfAW73/U8AwIM2D3RdeL+MNEHMGDpzR1FBrGUhPgrKkG0kjtOdvQYl9VqRVKiQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=S/yU/GVM; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62e; helo=mail-pl1-x62e.google.com; envelope-from=hemanth.selam@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=J3/rum4Q;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=S/yU/GVM;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1031; helo=mail-pj1-x1031.google.com; envelope-from=hemanth.selam@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x1031.google.com (mail-pj1-x1031.google.com [IPv6:2607:f8b0:4864:20::1031])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62e; helo=mail-pl1-x62e.google.com; envelope-from=hemanth.selam@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x62e.google.com (mail-pl1-x62e.google.com [IPv6:2607:f8b0:4864:20::62e])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hbtXd4LJwz2xGt
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Sep 2026 20:50:25 +1000 (AEST)
-Received: by mail-pj1-x1031.google.com with SMTP id 98e67ed59e1d1-39682983a0fso905061a91.3
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Sep 2026 03:50:25 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hbtjY58Yjz2y22
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Sep 2026 20:58:08 +1000 (AEST)
+Received: by mail-pl1-x62e.google.com with SMTP id d9443c01a7336-2cace91f112so7651275ad.0
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Sep 2026 03:58:08 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1788519023; x=1789123823; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1788519486; x=1789124286; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=JVe3j7HRHHIhbvIbEK+C2SoCEY61/0kcnS4nfccAWlM=;
-        b=J3/rum4QRo5Xn4NdGJNRf+RWwZcKRMbq6AgYie8NxVS5aqJDXUG7o1RzRmmKVr5AtG
-         h6NG1auEmCFZuNGHytbk3r+8oLVdbG8MV/t5JLnJ9El6dLFVwU6W/vg9EzuG9hoX9WH3
-         Kh+SSTNgtmC188NzHtC6Iz7BiG5IOxgMbPVuOB0LR3bl5c3U6HOIWyL5XGVqjINHNae0
-         YEQ5onfqHpBJEAvUq4sMmknSGKZ5em3WAP2qsTcMYa46GiVA/SWvwokRoBGzn2iE5NmW
-         9jVCw5N+mbdOFrVNZLdiyjkpIQx1Hz25wvpWMEwfzQtBgC3WeYU8Z5k2o1zYIn6p3A+x
-         RnaQ==
+        bh=gH9gg1qvejjX/sPdW+X7GvG6xfgdjVwQ/p+bz1yISpM=;
+        b=S/yU/GVMrUWh5MShEx98dO9R9k3L3tEc3Oxl3kK7sxnvUZfMwXZ4TI5pI1Z7yxkta1
+         DASjhe/j2cqKle+VUzrz8lbVF5jJyDtSSirYVDgWytX53YLbKzg/Ad79Vly3EEjurXtO
+         /mejUZLXykpwpV5fQCwcW3STjww/OGAZGcqG+8KkkcDp11Zvr2ASJi/yqw6/q0up4trD
+         HdIlMpwstAfkbHkqVw7Kx3hLtgsYmIoPWImr6nrK1xDP8hwT1yIUNaa2X/P1ZQyjqk1I
+         HrUtyyueunSJTMQ12+joSLHQa5WVlFtk3Fh7YRZd3bGnAhgrSQKFCxUnkdD8jqyFqnMk
+         pFgw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788519023; x=1789123823;
+        d=1e100.net; s=20251104; t=1788519486; x=1789124286;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=JVe3j7HRHHIhbvIbEK+C2SoCEY61/0kcnS4nfccAWlM=;
-        b=acYHkpZ+3lkVFNQOYPyyRKjG64ZGN2Gy3KaiG/Sw5hbVFQPE5CnqfrROh+6RIYzUn3
-         PmGS645YpkagBbPIG4+yhl4ctHh7Bk54zyobM/wEAAJFl/Cvt4J8q+IIUNKSa1mxksba
-         67bu6W6jenYNgE0cc8NiP3DymcFsS9CSR2UF+K/ceCPsT8b4WbP9fg/qk/Hd8IkacrIf
-         9ymR+iE3+dJ0WmLrwLrAYSkNHhrVMmKQaY9CPTONOr4aZgIIEKcKH8Ri/qp3T8LrmyXQ
-         PclxkrbFbQ6ZIAU1ssEHIkSYMLOTZ9u3H8ATamjexMKof6nHC+NXE5UUWhRaOiBbBOfj
-         MNbw==
-X-Forwarded-Encrypted: i=1; AKwUvBzeVX/V5djbGcTbZv7OVE9em0bC8kRi5KfBG/pc+AvNN/yOVt8dNeKlns+wzsbm09eVNR1hIAWFgHETbE4=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++ngcFaEd40jdCOEISgTLo/A0rVxu0TCCp60ePE6HeRG7ceiE6Rn
-	I8xeBZ+YzvvX4OYv7p2X0rKrhGEmJulPgSrBwC6xSctJeaHDexZ2btub
-X-Gm-Gg: AYBFou2WMy10aM2UPrqVJn8VVt6gUE6qeb8jruysvBJrN3cHf1trfDuvyfy89JHxfSV
-	cfSTsd3iGNjFDHmaD8QLuJ5zd5d6TDHiUdPU4G7VurL1rvrKBICTg4uJTPT09HhmwRDu7I0L1JF
-	2HMbNqh1vcvbZpUz+o6EmrBeYrIrjYf7kwHtsbLNjqzOY9yHpekxfJgpYNy2PvacQYgxZQ/AEWn
-	PMNjG9TGTuUFuyWWbTsQLcpvjKLH3IEOZCR6CSSqiw9ihecrhNW+F9SunJCh8tHcYytpQuCUbI9
-	IEVLnDqndYysqQ4ILCud6P/f/DdHchiNMhajgxdKJYBtOVn4HkykMXvzCt6/etyY99liHq23C8B
-	i1oknsw3E0ggeRKkoUwh7/qWyCiuiI8gtSGQxbUeZOC/JgW31Z97Tz1b3J1+ivbCI0fbSRBvtnQ
-	AHFS7hUJUTAn5UdaSsoQYeUOgIlFO/UE/2e5mZVf0xcuLD4rEagaNKOOcQM8jiz0WCSS4NlA5/k
-	zClQFQLStmCq6I=
-X-Received: by 2002:a17:90b:3912:b0:398:c724:1bb1 with SMTP id 98e67ed59e1d1-39b26101524mr6786890a91.8.1788519021437;
-        Fri, 04 Sep 2026 03:50:21 -0700 (PDT)
+        bh=gH9gg1qvejjX/sPdW+X7GvG6xfgdjVwQ/p+bz1yISpM=;
+        b=CNCDbUj0LFMxN1tI2LPwxqhoJhLr9O+1vtspk7F/CVRqXXFbLNBjNAPYciX2zrPSw5
+         6h+vsgiilHu/iRPphwUpCG94qcCJ5ldhhjBTJanJzREG5yr2CD8x4Nj1Lmq7ZW33JdYe
+         s9WtZ7fR3shzmY6X2GvuIFYFyGQsg3DdM5UKC9hX12yTn4KknKCYhbDw10zCfuKhd4Bv
+         oEwur47uFMsZq4I9n1TPY2qdJGuy6/MFfZA8EwmhEvKwUUOkfPmNd9iAOCPZSGCklyqI
+         C217RIWJTFqDnr3x07sF6U3hdE9sWKxvu+IcHrOx1B8yCTQulPsvUUCvY1oStd82UakQ
+         aWQw==
+X-Forwarded-Encrypted: i=1; AKwUvByhR3jE+E8+rfM/mkK4FXjOCyvlobapgQVJ5j8+SIjRNxg1mC6NDe33N0AMLOo+LbbNAAXh4lGRMZpj150=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++kdc4B6KkWczWAM1rLydIDwlWQ2pguURO8fceHK+leaHV25iLCQ
+	KD1LKUbEoYhAjyzKM7IoD7uj0DehU87P9MXdk0jq5YQaNwv+bQm/bAP6
+X-Gm-Gg: AYBFou0KUnaWOWmlb4IW0uWlWuOE8czSdyLWuuR4/AbrbF0tUmtyvJTm7k2Fl55PwTn
+	5q3KkYB0XRRX6Ywbz+M55GP/LCAFNmhOikDWPkOJ8Z8IUuE3mfVSRG1yafn/oVW+RBZdKnx5jM3
+	sznkafB4MW24xbGK/ueMiLLKKJRZGRC6We9R1zHPjHA4uddxMg/vCevBNus9saNggTunBu2ABey
+	0eE2I214pSfPtk1Z5EqhjQtMIOFonNkVsnL3QLJfCzRDpag3dKK+3b5emhxXyjdQ9PbCQ1I/mzS
+	TT9rDeQqBJDLUu6G0X4vDGzaUQCjReRFTvnxnNyC90Ef+1r81P8Rb38LDOQkkf2ksO7wMy68EtA
+	xvp8UN5Kp6c6cMQY8qW4hL8XvRVYXSSSjYrAQjVuNmexe3O8gK209uBEph2YVUqUMSy+jUffFrw
+	sxmfXaAvEVh2+tXTHUyo9o4fkW1z+XAIoQ7gcMkVRora83VjeepGOSagHhPycQt2KDqhgcPUFnR
+	qxWyjWYD8XvGvQ=
+X-Received: by 2002:a17:90b:3810:b0:398:9beb:5c18 with SMTP id 98e67ed59e1d1-39b26213a86mr7980524a91.19.1788519486242;
+        Fri, 04 Sep 2026 03:58:06 -0700 (PDT)
 Received: from volcano9f6e-hostos.amd.com ([165.204.217.251])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3339b608409sm6421454eec.21.2026.09.04.03.50.16
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3339b123731sm5523091eec.18.2026.09.04.03.58.00
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 04 Sep 2026 03:50:20 -0700 (PDT)
+        Fri, 04 Sep 2026 03:58:05 -0700 (PDT)
 From: Hemanth Selam <hemanth.selam@gmail.com>
-To: Andi Shyti <andi.shyti@kernel.org>,
-	Florian Fainelli <florian.fainelli@broadcom.com>,
-	Ray Jui <rjui@broadcom.com>,
-	Scott Branden <sbranden@broadcom.com>,
-	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
-	Jochen Friedrich <jochen@scram.de>,
-	Patrice Chotard <patrice.chotard@foss.st.com>
+To: Alexei Starovoitov <ast@kernel.org>,
+	Daniel Borkmann <daniel@iogearbox.net>,
+	Andrii Nakryiko <andrii@kernel.org>,
+	Eduard Zingerman <eddyz87@gmail.com>,
+	Kumar Kartikeya Dwivedi <memxor@gmail.com>,
+	Martin KaFai Lau <martin.lau@linux.dev>,
+	Song Liu <song@kernel.org>,
+	Yonghong Song <yonghong.song@linux.dev>,
+	Jiri Olsa <jolsa@kernel.org>,
+	Emil Tsalapatis <emil@etsalapatis.com>,
+	Ihor Solodrai <ihor.solodrai@linux.dev>,
+	Hari Bathini <hbathini@linux.ibm.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Naveen N Rao <naveen@kernel.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>
 Cc: linux-kernel@vger.kernel.org,
-	linux-i2c@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org
-Subject: [PATCH 1/2] i2c: busses: fix typos in comments
-Date: Fri,  4 Sep 2026 16:20:07 +0530
-Message-ID: <20260904105010.27405-2-hemanth.selam@gmail.com>
+	bpf@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 3/7] powerpc: net: fix typo "upto" in comments
+Date: Fri,  4 Sep 2026 16:27:33 +0530
+Message-ID: <20260904105743.39799-4-hemanth.selam@gmail.com>
 X-Mailer: git-send-email 2.48.1
-In-Reply-To: <20260904105010.27405-1-hemanth.selam@gmail.com>
-References: <20260904105010.27405-1-hemanth.selam@gmail.com>
+In-Reply-To: <20260904105743.39799-1-hemanth.selam@gmail.com>
+References: <20260904105743.39799-1-hemanth.selam@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -105,71 +114,52 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Fix typos in comments, reported by scripts/checkpatch.pl using the
+Correct "upto" to "up to", reported by scripts/checkpatch.pl using the
 misspelling list in scripts/spelling.txt.  Only touches comments, no code
 changes.
 
 Assisted-by: Cursor:claude-opus-5
 Signed-off-by: Hemanth Selam <hemanth.selam@gmail.com>
 ---
- drivers/i2c/busses/i2c-axxia.c    | 2 +-
- drivers/i2c/busses/i2c-bcm-kona.c | 2 +-
- drivers/i2c/busses/i2c-cpm.c      | 2 +-
- drivers/i2c/busses/i2c-st.c       | 2 +-
- 4 files changed, 4 insertions(+), 4 deletions(-)
+ arch/powerpc/net/bpf_jit_comp32.c | 2 +-
+ arch/powerpc/net/bpf_jit_comp64.c | 4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/i2c/busses/i2c-axxia.c b/drivers/i2c/busses/i2c-axxia.c
-index 0555eeb6903a..62dc55c146f0 100644
---- a/drivers/i2c/busses/i2c-axxia.c
-+++ b/drivers/i2c/busses/i2c-axxia.c
-@@ -60,7 +60,7 @@
- #define MST_RX_FIFO		0x44
- #define MST_INT_ENABLE		0x48
- #define MST_INT_STATUS		0x4c
--#define   MST_STATUS_RFL	(1 << 13) /* RX FIFO serivce */
-+#define   MST_STATUS_RFL	(1 << 13) /* RX FIFO service */
- #define   MST_STATUS_TFL	(1 << 12) /* TX FIFO service */
- #define   MST_STATUS_SNS	(1 << 11) /* Manual mode done */
- #define   MST_STATUS_SS		(1 << 10) /* Automatic mode done */
-diff --git a/drivers/i2c/busses/i2c-bcm-kona.c b/drivers/i2c/busses/i2c-bcm-kona.c
-index d4f287b31fd7..0c30821e7b0a 100644
---- a/drivers/i2c/busses/i2c-bcm-kona.c
-+++ b/drivers/i2c/busses/i2c-bcm-kona.c
-@@ -12,7 +12,7 @@
- #include <linux/io.h>
- #include <linux/slab.h>
- 
--/* Hardware register offsets and field defintions */
-+/* Hardware register offsets and field definitions */
- #define CS_OFFSET				0x00000020
- #define CS_ACK_SHIFT				3
- #define CS_ACK_MASK				0x00000008
-diff --git a/drivers/i2c/busses/i2c-cpm.c b/drivers/i2c/busses/i2c-cpm.c
-index 2cb6a233d313..c8b72f14d179 100644
---- a/drivers/i2c/busses/i2c-cpm.c
-+++ b/drivers/i2c/busses/i2c-cpm.c
-@@ -334,7 +334,7 @@ static int cpm_i2c_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
- 		tptr++;
- 	}
- 	/* Start transfer now */
--	/* Enable RX/TX/Error interupts */
-+	/* Enable RX/TX/Error interrupts */
- 	out_8(&i2c_reg->i2cmr, I2CER_TXE | I2CER_TXB | I2CER_RXB);
- 	out_8(&i2c_reg->i2cer, 0xff);	/* Clear interrupt status */
- 	/* Chip bug, set enable here */
-diff --git a/drivers/i2c/busses/i2c-st.c b/drivers/i2c/busses/i2c-st.c
-index 0a2b43b5577b..873ce2f5a406 100644
---- a/drivers/i2c/busses/i2c-st.c
-+++ b/drivers/i2c/busses/i2c-st.c
-@@ -256,7 +256,7 @@ static void st_i2c_flush_rx_fifo(struct st_i2c_dev *i2c_dev)
- static void st_i2c_soft_reset(struct st_i2c_dev *i2c_dev)
- {
- 	/*
--	 * FIFO needs to be emptied before reseting the IP,
-+	 * FIFO needs to be emptied before resetting the IP,
- 	 * else the controller raises a BUSY error.
- 	 */
- 	st_i2c_flush_rx_fifo(i2c_dev);
+diff --git a/arch/powerpc/net/bpf_jit_comp32.c b/arch/powerpc/net/bpf_jit_comp32.c
+index bfdc50740da8..cf8c1b49da25 100644
+--- a/arch/powerpc/net/bpf_jit_comp32.c
++++ b/arch/powerpc/net/bpf_jit_comp32.c
+@@ -23,7 +23,7 @@
+  *
+  *		[	prev sp		] <-------------
+  *		[   nv gpr save area	] 16 * 4	|
+- * fp (r31) -->	[   ebpf stack space	] upto 512	|
++ * fp (r31) -->	[   ebpf stack space	] up to 512	|
+  *		[     frame header	] 16		|
+  * sp (r1) --->	[    stack pointer	] --------------
+  */
+diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
+index fc9db691e820..8a1a00026c69 100644
+--- a/arch/powerpc/net/bpf_jit_comp64.c
++++ b/arch/powerpc/net/bpf_jit_comp64.c
+@@ -23,7 +23,7 @@
+  * Stack layout with frame:
+  * Layout when setting up our own stack frame.
+  * Note: r1 at bottom, component offsets positive wrt r1.
+- * Ensure the top half (upto local_tmp_var) stays consistent
++ * Ensure the top half (up to local_tmp_var) stays consistent
+  * with our redzone usage.
+  *
+  * tail_call_info - stores tailcall count value in main program's
+@@ -35,7 +35,7 @@
+  *		[   nv gpr save area	] (6 * 8)	|
+  *		[ addl. nv gpr save area] (12 * 8)	| <--- exception boundary/callback program
+  *		[    local_tmp_var	] 24		|
+- * fp (r31) -->	[   ebpf stack space	] upto 512	|
++ * fp (r31) -->	[   ebpf stack space	] up to 512	|
+  *		[     frame header	] 32/112	|
+  * sp (r1) --->	[    stack pointer	] --------------
+  *
 -- 
 2.48.1
 
