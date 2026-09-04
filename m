@@ -1,50 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-26570-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26571-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B9006C79F82
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Sep 2026 20:33:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 24BB6C79F82
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Sep 2026 20:33:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hc7Tl5SZsz2y2b;
-	Sat, 05 Sep 2026 06:33:47 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788554027;
-	cv=none; b=Sijqtr2EljX/2si3TjvsvD9U+tVW8WqClkScnkVBkb34Ys6f0azzbc8tJ4V6wS65Ixokh6g/Xh01t6/YKTmh+EcwBQk7qFDx+CrNzRRIBiUta/NRulscDZN3bSzIF5zkvnafc4NE39VsvR70H8Ww8iySXUQp3qKWjVA34x8UiqNvJhlEWTEEAqcmUm79wIqRMjMRkrT4BJJ2VqqEykddysKdPy1bsSFxXQduTCvVmtCkqo4SziOZiEFY6URtHXafLp0WLYy7iKlQCoqHUMT67xpakxeNNH0tQRIGvMQ/uAxyfn0/9C2qSxK1bGbwzL4X+87+03UqExPDdx3KYu31ZA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hc7Tn6Hj5z2xpn;
+	Sat, 05 Sep 2026 06:33:49 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788554029;
+	cv=none; b=H0Hirm7VNjkuC2DeVT8oYro+WqccEhSnne0fvgkuOM+Q5GQGaAmogCvj6QCdRTpS9tcdZNuLXqTwW/8tdR/WkTOukHWUXG7+nZqsKJp04qQ/4NTsPxdme0lA0UokCsmuDjWlktwIYbOQGbS0uuhzcDqZtP+UdwDuLlGXQ9PT1KOzTQSZTNp9nZfMxi3mDFx0LPWYBXKszNjZJmxMJ7XxQnHyDu4ktqNS0n5yw4mbltkdj+RMl4e5VaN/sYqI1HipErH/DHqMZ45HxDANjlNDYkhImOIfFhSSKtN8xXK58TagOlPc4D0buo8lA7WPZW2jw2kKMfmTF6fXd3BfN4BVdg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788554027; c=relaxed/relaxed;
-	bh=S1Ltm0JPfJjiwiR8Yz5D6OIK6U9xShhvq6boNu3N5cI=;
+	t=1788554029; c=relaxed/relaxed;
+	bh=8aB1i9jJLG+tSKTCm+1ryvh5nYTDSP1C/YxKnVYbkFo=;
 	h=Content-Type:MIME-Version:Message-Id:In-Reply-To:References:
-	 Subject:From:To:Cc:Date; b=YSgXTNmX06bzk0PBAH3bI6KSAtPlj2Fi7JwZgJlyICOkyfXXyD22xNzd+wIIVWvzHGIlSRF+1SoYKy3C/OHNSc6RZYOKyEmqvBFdlcQ2mJ9iVOUR3X/pNjPxuRkm5Jx2VM/FW+KAiIBHXF4GmLkLM+OAKKIYaKsfIYdaY8/llmjI4JFduD2/UsdL+t+/jkAOIr/AL/MsKNF4JGSfEgAbKe/2ud36u1vC021D6zjtzS8BS0PQX89iONAb3JbVmnXJpkjiUmOi5uz8LlPWN7H0QmWqS3QXD+Qw0GG9wkMvAxlRuTc4hTP/vQLKoFRXiMEm+X4hfkMT2MCFZWZzh/K/HA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Gi33ko4A; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=bot+bpf-ci@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Subject:From:To:Cc:Date; b=RSUsOX6xGcL+NqgEsq4op9bbuJEky+a3SaG7f3OvF2UAeJ8J6Fw29Q5sqSzcwUO181WDf5shrPv/kB2pxlYp05hHQrVPbonrsIxGXMtFO6dtzE3eNL7u/nPg7WqP5pCDtx3cHK6cFlaCleEGX/yy11PCBNPfe5xmePbZ7TEH221S7MjcJk0skntYLlI+228yYf5izscSgrNqQPhGSzdpsyKKg5wSeOOUp2gaVfgXJGr8azDh9c2ewtmQz0+LirZ1w6MNIVhHh9js8H4syLHpgjxqDRCYVpHq3m74Xrb8hB6i8eEn+nLvRW36O1vKKPTR+8iC9tzLxJsyOolr7LaQ7A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Nw1B/cic; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=bot+bpf-ci@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Gi33ko4A;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Nw1B/cic;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=bot+bpf-ci@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=bot+bpf-ci@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hc7Tk35Fwz2xpn
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 05 Sep 2026 06:33:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hc7Tm30qFz2yv2
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 05 Sep 2026 06:33:48 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 6A60D600C8;
-	Fri,  4 Sep 2026 20:33:43 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CEF931F00A3D;
-	Fri,  4 Sep 2026 20:33:41 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id EA19A60209;
+	Fri,  4 Sep 2026 20:33:45 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6881E1F00A3E;
+	Fri,  4 Sep 2026 20:33:44 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788554023;
-	bh=S1Ltm0JPfJjiwiR8Yz5D6OIK6U9xShhvq6boNu3N5cI=;
+	s=k20260515; t=1788554025;
+	bh=8aB1i9jJLG+tSKTCm+1ryvh5nYTDSP1C/YxKnVYbkFo=;
 	h=In-Reply-To:References:Subject:From:To:Cc:Date;
-	b=Gi33ko4AShQ6SlVBUiya7gtJr/t0DdMgfn3GBt4hcOZ1Juj+7K0TB8/GZ+XmsfFxV
-	 7EyR61Z0AGyvUfB0zJXtqpaP7Zg8Jt1ReZQSQmXB5g+JuE4pLt87zV+YT/MdGv6bJ0
-	 LJdOCDr2pi7DgNwFKVgTFOY43p8zi/TfxpIjKz3Hgw+nT+kF9VZscD5BAHZoVGA9LP
-	 BWcbOTAY7vgEKAMW0qExXqRqrnQK3nlTbXqopzRSOgwr1WCl5KFMkyomfRmA4O1a8Q
-	 rOXbyzEsCrRqETaEhgjXFo11E+HeZwoTlkAD3xp9lAtnSYVRecUqD8mZmOfWImXrAA
-	 XAGjlNU3JRZ+A==
-Content-Type: multipart/mixed; boundary="===============7579324935920484098=="
+	b=Nw1B/cic15PV8GvcJBDU3KgUvAJCEDg1ovQi0JHYn+ONAlYGy+dGN7nC8R1VMhzVU
+	 P6y5s2cNwlnf2En8vgDUM+4WRjVWAnVv6qum4rdKSFpd7PElGXT//ley+6mZ9avApz
+	 tJzpPov8X0+v5xlfa32tgkywVgKAXqV8DpeW1knJ3W3e8vE6Hbl0rKHdxh6Ng0FPpO
+	 NrAtWI7NNT6jI4Y/iHu+4v6QSWwO/+VnLbQsD5V0dzxi7/myWyg/ifUrh/kPYXOdBI
+	 P3d230pecJL0TTFmWIqlWxhBmt9vkqZrtYef58g8CQ3yGu2eZlzPkoZ6h+X8PjhWUe
+	 xnGC3xZiiySKQ==
+Content-Type: multipart/mixed; boundary="===============0649529080789511206=="
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,104 +58,124 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Message-Id: <b67f406ebae81de9368fa6ef0a627548257d5db372ad1dfa2f84092086eaf745@mail.kernel.org>
-In-Reply-To: <20260904195132.141068-6-sidchintamaneni@gmail.com>
-References: <20260904195132.141068-6-sidchintamaneni@gmail.com>
-Subject: Re: [PATCH bpf-next v1 5/7] bpf, riscv: Use resolved pointer for timed may_goto
+Message-Id: <4866144aa416a8491c9874325394e88f5dc2e66259212baa56032e0428f0772b@mail.kernel.org>
+In-Reply-To: <20260904195132.141068-3-sidchintamaneni@gmail.com>
+References: <20260904195132.141068-3-sidchintamaneni@gmail.com>
+Subject: Re: [PATCH bpf-next v1 2/7] bpf, x86: Use resolved pointer for timed may_goto
 From: bot+bpf-ci@kernel.org
 To: sidchintamaneni@gmail.com,bpf@vger.kernel.org
 Cc: sidchintamaneni@gmail.com,jeremy.jean@oss.cyber.gouv.fr,ast@kernel.org,daniel@iogearbox.net,john.fastabend@gmail.com,andrii@kernel.org,eddyz87@gmail.com,memxor@gmail.com,martin.lau@linux.dev,song@kernel.org,yonghong.song@linux.dev,jolsa@kernel.org,emil@etsalapatis.com,ihor.solodrai@linux.dev,a.s.protopopov@gmail.com,puranjay@kernel.org,linuxppc-dev@lists.ozlabs.org,linux-s390@vger.kernel.org,linux-riscv@lists.infradead.org,rlmenge@gmail.com,hargar@linux.microsoft.com,apais@microsoft.com,ast@kernel.org,andrii@kernel.org,daniel@iogearbox.net,martin.lau@kernel.org,eddyz87@gmail.com,yonghong.song@linux.dev,mason@kernel.org,ihor.solodrai@linux.dev
-Date: Fri,  4 Sep 2026 20:33:41 +0000 (UTC)
+Date: Fri,  4 Sep 2026 20:33:44 +0000 (UTC)
 
---===============7579324935920484098==
+--===============0649529080789511206==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 
-> bpf, riscv: Use resolved pointer for timed may_goto
->
-> The timed may_goto fixup now passes the resolved counter pointer through
-> BPF_REG_AX instead of a stack offset.
->
-> Copy the pointer directly into the first argument register rather than
-> adding it to the BPF frame pointer again.
->
-> Fixes: 6ef8ff20c30b ("bpf, riscv: Add support for timed may_goto")
-
-Should the Fixes: tag point to d8319a04dafc ("bpf: Fix timed may_goto
-stack pointer for private stacks") instead? That commit changed the
-calling convention from passing a stack offset to passing a resolved
-pointer through BPF_REG_AX, which is what broke the riscv trampoline.
-
-The original riscv implementation (6ef8ff20c30b) worked correctly with
-the original calling convention. riscv64 cannot hit the private-stack bug
-that d8319a04dafc targeted: it does not implement
-bpf_jit_supports_private_stack(), so the __weak default in
-kernel/bpf/core.c returns false, and private stacks are gated on it in
-kernel/bpf/verifier.c. On riscv, regmap[BPF_REG_FP] = RV_REG_S5 is the
-one and only BPF frame pointer, and the pre-patch 'add a0, t0, s5'
-computed exactly the right address.
-
-What this patch actually does on riscv is adapt to the new BPF_REG_AX
-calling convention introduced by d8319a04dafc, which is patch 1 of the
-same series. If stable/AUTOSEL tooling picks this commit up on the
-strength of its Fixes: tag without also taking d8319a04dafc, BPF_REG_AX
-still holds the raw immediate from the old fixup (BPF_MOV64_IMM(BPF_REG_AX,
-stack_off_cnt), i.e. -stack_depth-16, up to -528):
-
-    mv a0, t0       /* a0 = -528, not a pointer */
-    call bpf_check_timed_may_goto
-
-bpf_check_timed_may_goto() then dereferences p->timestamp
-(kernel/bpf/core.c) at 0xfffffffffffffdf0, oopsing on every timed
-may_goto loop.
-
-Should the changelog also declare that d8319a04dafc is a prerequisite
-for this patch?
-
-Because d8319a04dafc lands first and each architecture is converted in a
-later commit, riscv64 (and arm64, powerpc64, s390) BPF timed may_goto is
-broken at every intermediate commit of the series. Does the series need to
-be structured differently to remain bisectable for those architectures?
-
-> diff --git a/arch/riscv/net/bpf_timed_may_goto.S b/arch/riscv/net/bpf_timed_may_goto.S
-> index 02c637d87420..8c03e272e0bf 100644
-> --- a/arch/riscv/net/bpf_timed_may_goto.S
-> +++ b/arch/riscv/net/bpf_timed_may_goto.S
-> @@ -6,12 +6,11 @@
->
->  /*
->   * Trampoline for the BPF timed may_goto loop bound. Custom calling convention:
-> - *	- input:  stack offset in BPF_REG_AX (t0)
-> + *	- input:  count and timestamp pointer in BPF_REG_AX (t0)
->   *	- output: updated count in BPF_REG_AX (t0)
->   *
-> - * Calls bpf_check_timed_may_goto(ptr) with the standard RISC-V ABI, where
-> - * ptr = BPF_REG_FP (s5) + BPF_REG_AX (t0). BPF R0-R5 (a5, a0-a4) are saved
-> - * across the call; BPF_REG_FP (s5) is callee-saved and needs no saving.
-> + * Calls bpf_check_timed_may_goto(ptr) with the standard RISC-V ABI.
-> + * BPF R0-R5 (a5, a0-a4) are saved across the call.
->   */
->
+> diff --git a/arch/x86/net/bpf_timed_may_goto.S b/arch/x86/net/bpf_timed_may_goto.S
+> index 54c690cae190..6e9d9e7c2b1d 100644
+> --- a/arch/x86/net/bpf_timed_may_goto.S
+> +++ b/arch/x86/net/bpf_timed_may_goto.S
+> @@ -11,12 +11,6 @@
 >  SYM_FUNC_START(arch_bpf_timed_may_goto)
-> @@ -28,7 +27,11 @@ SYM_FUNC_START(arch_bpf_timed_may_goto)
->  	REG_S	a3, 1*SZREG(sp)
->  	REG_S	a4, 0*SZREG(sp)
+>  	ANNOTATE_NOENDBR
 >
-> -	add	a0, t0, s5
-> +	/*
-> +	 * BPF_REG_AX (t0) contains the count and timestamp pointer; pass it as
-> +	 * the first argument in a0.
-> +	 */
-> +	mv	a0, t0
->  	call	bpf_check_timed_may_goto
->  	mv	t0, a0
+> -	/*
+> -	 * r10 passes us stack depth, load the pointer to count and timestamp
+> -	 * into r10 by adding it to BPF frame pointer.
+> -	 */
+> -	leaq (%rbp, %r10, 1), %r10
+> -
+
+A subsystem pattern flags this as potentially concerning: This commit
+changes the x86 trampoline to the new 'pointer in BPF_REG_AX' ABI, but the
+producer side of that ABI was changed one commit earlier, in d8319a04dafc
+("bpf: Fix timed may_goto stack pointer for private stacks"), which
+rewrote kernel/bpf/fixups.c to emit:
+
+    insn_buf[4] = BPF_MOV64_REG(BPF_REG_AX, BPF_REG_FP);
+    insn_buf[5] = BPF_ALU64_IMM(BPF_ADD, BPF_REG_AX, stack_off_cnt);
+
+At commit d8319a04dafc (i.e. HEAD~1), does x86 still execute
+'leaq (%rbp, %r10, 1), %r10' on a register that already holds a resolved
+pointer, producing r10 = rbp + (frame_ptr + stack_off_cnt) -- roughly
+2*rbp, a non-canonical address?
+
+bpf_check_timed_may_goto() then reads and writes p->timestamp / p->count
+through it (kernel/bpf/core.c:3410). Would any BPF program containing
+may_goto oops on x86_64 at that commit?
+
+The same window exists for arm64, riscv, powerpc64 and s390, whose
+trampolines are only converted in the four later commits d35642770d98,
+7053db7d3c0d, 6e03227c5677 and 20356163d51e. Is the tree bisectable across
+the series?
+
+The two halves carry different Fixes: tags (this one 2fb761823ead, the
+fixups.c one e723608bf428), which invites a partial stable backport that
+reintroduces exactly this wild-pointer write. Would squashing the fixups.c
+ABI change with the arch trampoline updates, or ordering all arch updates
+before the generic change, address the bisectability concern?
+
+>  	/* Setup frame. */
+>  	pushq %rbp
+>  	movq %rsp, %rbp
+
+The x86-only __xlated expectations for the timed may_goto expansion in
+tools/testing/selftests/bpf/progs/verifier_bpf_fastcall.c were never
+updated for the new 7-insn -> 8-insn sequence. The test expects:
+
+    __xlated("7: if r12 == 0x0 goto pc+6")
+    __xlated("8: r12 -= 1")
+    __xlated("9: if r12 != 0x0 goto pc+2")
+    __xlated("10: r12 = -24")
+    __xlated("11: call unknown")
+    __xlated("12: *(u64 *)(r10 -24) = r12")
+
+Does this test fail on x86_64 for the whole series? Every line from index
+7 onward is now wrong: the first branch becomes 'goto pc+7' (insn->off + 6
+instead of insn->off + 5), the second becomes 'goto pc+3' instead of
+'pc+2', 'r12 = -24' is replaced by the pair 'r12 = r10' / 'r12 += -24',
+and the trailing indices shift by one ('call unknown' at 12, the store at
+13, then 14 and 15).
+
+git log 28bd77eb835b..8dc5c7d5340d shows the only selftest commit in the
+series is 8dc5c7d5340d ("selftests/bpf: Test timed may_goto with private
+stacks"), which adds new coverage but does not touch
+verifier_bpf_fastcall.c. Note the original x86 JIT enablement commit
+2fb761823ead -- the commit this patch lists in its Fixes: tag -- adjusted
+this very test for the same reason, so the update belongs with the ABI
+change.
+
+> commit 28bd77eb835bc1a95190315e93afbc6bb186b9ff
+> Author: Siddharth Chintamaneni <sidchintamaneni@gmail.com>
 >
+>     bpf, x86: Use resolved pointer for timed may_goto
+>
+>     The timed may_goto fixup now passes the resolved counter pointer through
+>     BPF_REG_AX instead of a stack offset.
+>
+>     Use the pointer directly rather than adding it to RBP. This preserves the
+>     private-stack address selected by the JIT through R9.
+>
+>     Fixes: 2fb761823ead ("bpf, x86: Add x86 JIT support for timed may_goto")
+                 ^^^^^^^^^^^
+
+The existing Fixes: tag points to commit 2fb761823ead, which is not an
+ancestor of this fix and is on a different branch (bpf-next/res_spin_lock).
+
+The bug was actually introduced by commit 47ab38f3f4d9 in this branch's
+history, which added the incorrect code 'leaq (%rbp, %r10, 1), %r10' that
+overwrites r10 instead of preserving it.
+
+Should this use:
+
+  Fixes: 47ab38f3f4d9 ("adding ci files")
+
 
 ---
 AI reviewed your patch. Please fix the bug or email reply why it's not a bug.
 See: https://github.com/kernel-patches/vmtest/blob/master/ci/claude/README.md
 
 CI run summary: https://github.com/kernel-patches/bpf/actions/runs/33914557238
---===============7579324935920484098==--
+--===============0649529080789511206==--
 
