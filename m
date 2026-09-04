@@ -1,70 +1,66 @@
-Return-Path: <linuxppc-dev+bounces-26573-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26574-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 614C4C624DE
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Sep 2026 21:31:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D75EFC79F82
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Sep 2026 22:25:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hc8m66GmYz2yft;
-	Sat, 05 Sep 2026 07:31:18 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.14
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788557478;
-	cv=none; b=L8JkeCr+Ty9gU3+JgAbojrcESpYXsfs68kotEz7rk5qfUlhP0bjnmoammPeTWPW/9GnLP8XmiTiKKy12YsT2ZbZ6Buk3tcots82W3x0Q+6bUNg8QEHuKJBMx0uvbY+rP+6TNtdV/Iog8FWJxX1o7PGNt1UQ8lrzz6D1mCvTE9yCZvTtthuNvs4qWqIKeDtSMzQecKUvL8iSTj6Mzo72FGgW2TiLni4rbOuYHkKOEKY0YH+35rQzoASbXvBPxwERoMobYcDXrFJkHEJ8K5BsgtwOf4+7UNVmwKQ1hozpSMTfAEdAcV+hvk+bq3a+dcKnmr4Vau1xPBl70Gl5YHDumww==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hc9yk027zz2xpn;
+	Sat, 05 Sep 2026 08:25:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788560733;
+	cv=none; b=DVL4vrBpANV2b9GdvuzETkh4jzPITZWIH6OPQxNuTJ1NXe9IoeU/mRad13auyHhQd5h1/o985/zXKU2wqw/fshl2ujO00Dtk3PwvEnOVAtZU3iAhKx2a9Lt2AV7OwQJFCmLOZtp7RhHHivi4M6QfMKsGq2CXEfNI+ukj7sJBmDjbU5V7ixT86rdbt/ZeogiMKI5NCKtop3usIb9Q0dT4eo0nqk+jC6zkpfMUiteH8LnUTOVFNHtnbgf5+tgseZxf/ILg0weuSrx9NIEWJFVeHHbZhyuophGfXW/qoVJPRPZRZJLWrShkqrJXinbuFlJaXcYaNnVdN52IAoKE9+p1jA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788557478; c=relaxed/relaxed;
-	bh=xO5WwweDHW3VnNRlSdEyMfNeRgAlRiXY2ahFSA/hAsA=;
-	h=Date:From:To:Cc:Subject:Message-ID; b=EjaEAy5lATz0yY5CjERTGw8/1HBklbYbMLgbTmpV0RC3g97Utke/M1ii652RQogLVA0xv4IWXlA+/hvT+hgnFuIcR2l08oE0HSGsZ2P2SfrYCvAhNzhYHCrTONSSBfa5jgwGxnC/fWpVJ0Xdha7l21s21fDm2knd6TZnRd2UF8bv4YziAsfKN/VANB7tQL3blgAYPDr3h/3JZJJJvHkcaORbDseYWa0cDt8W65LTQC7udKTU88rYKZ5qU6SMzpI+d3C4BvnQKPbPUNfEhVyOruxbGKIvhHtKobtgeaxeKcFh+6AyTqj5vIBzCIpJ9iUB/v6LH3Xw25ezwGTpkjwMig==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=SwgHyFeh; dkim-atps=neutral; spf=pass (client-ip=192.198.163.14; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	t=1788560733; c=relaxed/relaxed;
+	bh=nNOtf2TzRxsLyFHPcWQa1TjnFgr337may2J1744aXQs=;
+	h=Subject:From:To:Cc:Date:Message-ID:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=J1E/q7sozQmAyAe16QDZGEDTBWRffsHjd3euqkWeYoUYomOTBku6Tyfo87Wmlan/7p/zNOET0uZZmkrfDuEfyOxBTr55TMuy5lgbCetpJEyP/nhYlgRn4H/QGotYzhCVpwkUcWW1c9DOwo3RNxeCjRktvx5OiVwvYUrHb/Pm3dMrJAShWlXuk9lINgfClRP3ZQWHcdfART31DEkuSHNP04jsevs5UZGMVUZ0OhtwyApRsyppuDMuM+mjtwDINfOicwUSUC5Sx4wIyr9+hSgTs3lCvWxcQkxnpjhIcaCyHZ5CLreJvBO6UTCUEuM2yIzvY0EH68ZbpEHVs61X1CN2Tw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=X7uq9pUX; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=SwgHyFeh;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=X7uq9pUX;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.14; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.14])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hc8m25Nv3z2xpn
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 05 Sep 2026 07:31:11 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1788557475; x=1820093475;
-  h=date:from:to:cc:subject:message-id;
-  bh=+ep7pNri1UF5vvEFl3UbmVNP/B0KnFa/jZd7WN+Qb/U=;
-  b=SwgHyFeh+YJtF0wuf8i514Fjq/DrL1dNaGMm0nIAO2CcC8uaY1DRhf3i
-   8FfMWtYwXNIC/U2n0xj5bJpWgMEJpa6p4CtBUcgMfOCXa/0WJEU4QCbp8
-   TgpDDFh040eHYaosMnGsPa9DHCXh7Y8aZhDmYtLYXMI8eAedn8Z1pODtC
-   9Q/ElQW2SxMTnLYRFHJL7Ri4mN61/qhmH1OZiOMpPdltk0NrDIAeir+g/
-   UYsL+OVLNBnEJWC6fqwxl12dNUmYwY7DLwJiNAVejSVj3JWsYZBJukq1C
-   Jus4L7Gv9U9ERgDtTKSBpDPPQriojJtZl1lpxzwEzadCrp2BrMxs5SDWm
-   A==;
-X-CSE-ConnectionGUID: Z3hJzOwNShmAcFwbYB9CcQ==
-X-CSE-MsgGUID: xEKgK38GQA+hYVfJT75bRA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11896"; a="89085209"
-X-IronPort-AV: E=Sophos;i="6.25,262,1779174000"; 
-   d="scan'208";a="89085209"
-Received: from orviesa007.jf.intel.com ([10.64.159.147])
-  by fmvoesa108.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Sep 2026 14:31:04 -0700
-X-CSE-ConnectionGUID: GK6ONbcHSia8pOOOazR3jA==
-X-CSE-MsgGUID: yp8F1tbiRFeyV34i1zRM5Q==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,262,1779174000"; 
-   d="scan'208";a="270119801"
-Received: from lkp-server01.sh.intel.com (HELO bfac249b2189) ([10.239.97.150])
-  by orviesa007.jf.intel.com with ESMTP; 04 Sep 2026 14:31:02 -0700
-Received: from kbuild by bfac249b2189 with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1x2bUy-00000000ABO-0KdN;
-	Fri, 04 Sep 2026 21:31:00 +0000
-Date: Sat, 05 Sep 2026 05:30:56 +0800
-From: kernel test robot <lkp@intel.com>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [powerpc:fixes-test] BUILD SUCCESS
- d79db535546b9858f64f27fe968005024d39f828
-Message-ID: <202609050553.8FE3gJpe-lkp@intel.com>
-User-Agent: s-nail v14.9.25
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hc9yh4XKGz2xlY
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 05 Sep 2026 08:25:32 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 6DF0B60229;
+	Fri,  4 Sep 2026 22:25:29 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 53DF91F00A3D;
+	Fri,  4 Sep 2026 22:25:28 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1788560729;
+	bh=nNOtf2TzRxsLyFHPcWQa1TjnFgr337may2J1744aXQs=;
+	h=Subject:From:To:Cc:Date:In-Reply-To:References;
+	b=X7uq9pUX0v5IDlI+2oVNdVSZ5YmNUUqzE6Hp9xgYoZZ3WXF0DmymGxhv5d2VS+Trv
+	 sdN3Q5RcSE80qNAVxD5bPUvX8vvxjMVrySggfBAciRnlMMdlBs9xrH3DvlkhnhEPtx
+	 Sl2XPn70QVsE0UnHhxJfDx7tafDN883vIQ45BwPtJgvPsUUY/u4PeVGHQjbalebRWn
+	 rbT0qj1/2UToSVnCf0q/P+3JO1rhI4NCWaJUF9sA3bfOqSsGc1dl/2oE/HYTDySoPY
+	 9nS5ysZllX0M/VnI4pUHMES2p2QiAPfAii8QK07b/3fEVkO/KDrdOvHe0+u9CChgRt
+	 11DvYkhjmcVgA==
+Subject: Re: [PATCH v3 net-next 3/8] ptp: netc: export
+ netc_timer_get_current_time() for cross-driver use
+From: netdev-bot+sashiko@kernel.org
+To: wei.fang@oss.nxp.com
+Cc: xiaoning.wang@nxp.com, andrew@lunn.ch, olteanv@gmail.com,
+ andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
+ kuba@kernel.org, pabeni@redhat.com, horms@kernel.org,
+ richardcochran@gmail.com, wei.fang@nxp.com, imx@lists.linux.dev,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Date: Fri, 04 Sep 2026 22:25:27 +0000
+Message-ID: <178856072792.219967.11680386922247714173@kernel.org>
+In-Reply-To: <20260831082335.1184605-4-wei.fang@oss.nxp.com>
+References: <20260831082335.1184605-4-wei.fang@oss.nxp.com>
+X-sashiko-severity: High
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -77,57 +73,244 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
+MIME-Version: 1.0
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git fixes-test
-branch HEAD: d79db535546b9858f64f27fe968005024d39f828  powerpc/pseries/pci: Fix misleading VF limit error message
+Thank you for your contribution! Sashiko AI review found 3 potential
+issue(s) to consider:
 
-elapsed time: 2108m
+Critical: 0 · High: 1 · Medium: 1 · Low: 1
 
-configs tested: 36
-configs skipped: 78
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-tested configs:
-alpha         allnoconfig    gcc-16.1.0
-alpha        allyesconfig    gcc-16.1.0
-arc           allnoconfig    gcc-16.1.0
-arm           allnoconfig    gcc-16.1.0
-arm64         allnoconfig    gcc-16.1.0
-csky         allmodconfig    gcc-16.1.0
-csky          allnoconfig    gcc-16.1.0
-hexagon      allmodconfig    gcc-16.1.0
-hexagon       allnoconfig    gcc-16.1.0
-i386         allmodconfig    clang-22
-i386          allnoconfig    gcc-16.1.0
-i386         allyesconfig    clang-22
-loongarch     allnoconfig    gcc-16.1.0
-m68k         allmodconfig    gcc-16.1.0
-m68k          allnoconfig    gcc-16.1.0
-microblaze    allnoconfig    gcc-16.1.0
-microblaze   allyesconfig    gcc-16.1.0
-mips          allnoconfig    gcc-16.1.0
-mips         allyesconfig    gcc-16.1.0
-nios2         allnoconfig    clang-24
-openrisc      allnoconfig    clang-24
-parisc        allnoconfig    clang-24
-powerpc       allnoconfig    clang-24
-powerpc       allnoconfig    gcc-16.1.0
-riscv         allnoconfig    clang-24
-s390          allnoconfig    clang-24
-sh           allmodconfig    gcc-16.1.0
-sh            allnoconfig    clang-24
-sparc         allnoconfig    clang-24
-um            allnoconfig    clang-24
-um           allyesconfig    gcc-16.1.0
-x86_64       allmodconfig    clang-22
-x86_64        allnoconfig    clang-24
-x86_64       allyesconfig    clang-22
-x86_64      rhel-9.4-rust    clang-22
-xtensa        allnoconfig    clang-24
+- [High] Using device_lock() in an exported API to protect against driver
+  unbind is an architectural anti-pattern that creates a circular lock…
+- [Medium] The newly exported netc_timer_get_current_time() gates the
+  TMR_CUR_TIME MMIO read only on 'a netc_timer driver is bound' and…
+- [Low] Inconsistent / semantically wrong errno contract for the new
+  exported API netc_timer_get_current_time().
 
 --
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+
+ptp: netc: export netc_timer_get_current_time() for cross-driver use
+
+This adds netc_timer_get_current_time() to the NETC Timer driver and
+exports it so the NETC Switch driver, which is a separate PCIe function
+with its own driver, can read TMR_CUR_TIME. The helper takes the device
+lock to serialize against unbind and the per-device spinlock around the
+register read, and spin_lock_init() moves earlier so the lock is
+initialized before pci_set_drvdata().
+
+> diff --git a/drivers/ptp/ptp_netc.c b/drivers/ptp/ptp_netc.c
+> index aa9be8e2a6304..854a206b6c5bc 100644
+> --- a/drivers/ptp/ptp_netc.c
+> +++ b/drivers/ptp/ptp_netc.c
+
+[ ... ]
+
+> @@ -1021,5 +1021,55 @@ static struct pci_driver netc_timer_driver = {
+>  };
+>  module_pci_driver(netc_timer_driver);
+>  
+> +/**
+> + * netc_timer_get_current_time - read the current PTP time from the NETC Timer
+> + * @pdev: PCI device of the NETC Timer
+> + * @ns: The current PTP clock time in nanoseconds, returned to the caller
+> + *
+> + * Reads the 64-bit current time register (TMR_CUR_TIME) from the NETC Timer
+> + * device associated with @pdev. Returns an error if the Timer driver has not
+> + * yet probed or has already been removed.
+> + *
+> + * Context: Process context only. Acquires the device mutex via device_lock(),
+> + *          which may sleep. Must not be called from atomic context, softirq,
+> + *          BH, or while holding a spinlock.
+> + *
+> + * Return: 0 on success, otherwise a negative error code.
+> + */
+> +int netc_timer_get_current_time(struct pci_dev *pdev, u64 *ns)
+> +{
+> +	struct device *dev = &pdev->dev;
+> +	struct netc_timer *priv;
+> +	unsigned long flags;
+> +	int err = 0;
+> +
+> +	/* Serialize against driver unbind: the remove() callback runs under
+> +	 * the device lock, so holding it here ensures that priv remains valid
+> +	 * for the entire duration of the register read.
+> +	 */
+> +	device_lock(dev);
+> +
+> +	if (pci_dev_driver(pdev) != &netc_timer_driver) {
+> +		err = -EINVAL;
+> +		goto unlock_device;
+> +	}
+> +
+> +	priv = pci_get_drvdata(pdev);
+> +	if (!priv) {
+> +		err = -ENOMEM;
+> +		goto unlock_device;
+> +	}
+
+[Severity: High]
+Taking the supplier's device lock from an exported cross-driver
+helper worries me, both for the lock ordering it creates and for the
+contexts it rules out.
+
+On the ordering side, consider the consumer added later in this
+series. netc_switch_remove() runs with the switch device's dev->mutex
+held by the driver core; it calls dsa_unregister_switch(), which takes
+rtnl_lock(), and netc_port_disable(), which takes
+&onestep->work_lock. That gives dev->mutex -> rtnl_lock ->
+work_lock. In the datapath, netc_onestep_work() holds
+&onestep->work_lock and then calls netc_timer_get_current_time(),
+which takes the timer's dev->mutex here. Since lockdep tracks the
+dev->mutex of devices initialized through device_initialize() as one
+lock class, that second chain is work_lock -> dev->mutex and closes
+the cycle. A splat there disables lock debugging for the rest of the
+boot, so it is not something we can leave to be discovered by
+whoever unbinds the switch while Sync frames are in flight.
+
+On the context side, the kernel-doc you added already spells out the
+consequence: process context only, may sleep, no softirq, no BH, no
+spinlock held. That is a fairly severe restriction for what is
+fundamentally a single 64-bit register read on a timestamping path,
+and it is imposed purely by the unbind protection rather than by the
+hardware access itself.
+
+The usual way to express "this consumer needs that supplier to stay
+bound" is a device link. If the switch driver called
+device_link_add() against the Timer's pci_dev at probe time, the
+Timer could not be unbound underneath a live consumer, and
+netc_timer_get_current_time() could drop device_lock() entirely and
+keep only the spin_lock_irqsave(&priv->lock) around
+netc_timer_cur_time_read(), making it callable from atomic context
+too.
+
+Is there a reason a device link would not work for the
+Timer/Switch pair here (for example probe ordering between the two
+PCIe functions)? If so, could you describe what else guarantees the
+lock ordering above is safe?
+
+[Severity: Low]
+This isn't a bug, but the errno contract of the new exported interface
+looks inconsistent.
+
+The same logical state, "the NETC Timer is not available", is reported
+three different ways:
+
+  - netc_timer_get_current_time() returns -EINVAL when no netc_timer
+    driver is bound
+  - netc_timer_get_current_time() returns -ENOMEM when
+    pci_get_drvdata() is NULL
+  - the !IS_REACHABLE(CONFIG_PTP_NETC_V4_TIMER) stub in
+    include/linux/fsl/netc_global.h returns -ENODEV
+
+The -ENOMEM in particular does not match what happened, since this
+function performs no allocation at all, and the kernel-doc above
+describes the only failure condition as "the Timer driver has not yet
+probed or has already been removed".
+
+Would -ENODEV for both in-function checks, matching the header stub,
+make the interface easier for callers to test?
+
+> +
+> +	spin_lock_irqsave(&priv->lock, flags);
+> +	*ns = netc_timer_cur_time_read(priv);
+> +	spin_unlock_irqrestore(&priv->lock, flags);
+
+[Severity: Medium]
+Can this read return a fabricated time and still report success while
+the Timer function is suspended?
+
+The two checks above only establish that a netc_timer driver is bound
+and that drvdata is non-NULL. Neither implies that the Timer PCI
+function still decodes memory, that it is in D0, or that TMR_CTRL[TE]
+is still set.
+
+netc_timer_driver registers no PM callbacks:
+
+drivers/ptp/ptp_netc.c:
+    static struct pci_driver netc_timer_driver = {
+        .name = KBUILD_MODNAME,
+        .id_table = netc_timer_id_table,
+        .probe = netc_timer_probe,
+        .remove = netc_timer_remove,
+    };
+
+so during system suspend the PCI core takes the no-dev_pm_ops path:
+
+pci_pm_suspend()
+  pci_pm_default_suspend()
+    pci_disable_enabled_device()   /* clears PCI_COMMAND_MEMORY */
+  -> D3hot
+
+The driver is not unbound in that window, so pci_dev_driver(pdev) ==
+&netc_timer_driver and pci_get_drvdata(pdev) != NULL both still pass,
+ioread64_lo_hi() reads all-ones, and the function returns 0. The
+cross-driver consumer added later in this series treats a 0 return as a
+valid time:
+
+drivers/net/dsa/netc/netc_ptp.c:netc_onestep_work() {
+    ...
+    if (unlikely(netc_get_phc_time(priv, &tstamp))) {
+    ...
+}
+
+and programs the value into a transmitted one-step Sync frame and into
+PM_SINGLE_STEP.
+
+Does the same apply after resume? Nothing re-runs netc_timer_init(), so
+TMR_CTRL (CK_SEL/TE/TCLK_PERIOD/COMP_MODE), TMR_PRSC, TMR_ADD and
+TMR_CNT are never reprogrammed after the D3hot->D0 transition, while
+the exported reader keeps reporting success. The driver's own comment
+documents these as preconditions:
+
+drivers/ptp/ptp_netc.c:netc_timer_init() {
+	/* Software must enable timer first and the clock selected must be
+	 * active, otherwise, the registers which are in the timer clock
+	 * domain are not accessible.
+	 */
+	tmr_ctrl = FIELD_PREP(TMR_CTRL_CK_SEL, priv->clk_select) |
+		   TMR_CTRL_TE | TMR_CTRL_FS;
+    ...
+}
+
+The lack of suspend/resume support in ptp_netc predates this patch, but
+this patch turns that unchecked power and enable state into a
+cross-driver contract. Would it make sense for the exported helper to
+also check pci_dev->current_state == PCI_D0 (or TMR_CTRL[TE], or take a
+PM reference), or for the driver to gain suspend/resume handlers that
+re-run netc_timer_init()?
+
+> +
+> +unlock_device:
+> +	device_unlock(dev);
+> +
+> +	return err;
+> +}
+> +EXPORT_SYMBOL_GPL(netc_timer_get_current_time);
+> +
+>  MODULE_DESCRIPTION("NXP NETC Timer PTP Driver");
+>  MODULE_LICENSE("Dual BSD/GPL");
+> diff --git a/include/linux/fsl/netc_global.h b/include/linux/fsl/netc_global.h
+> index 5b8ff528d3699..d4a26c17f99a4 100644
+> --- a/include/linux/fsl/netc_global.h
+> +++ b/include/linux/fsl/netc_global.h
+
+[ ... ]
+
+> @@ -22,4 +23,13 @@ static inline u64 netc_read64(void __iomem *reg)
+>  	return ioread64(reg);
+>  }
+>  
+> +#if IS_REACHABLE(CONFIG_PTP_NETC_V4_TIMER)
+> +int netc_timer_get_current_time(struct pci_dev *pdev, u64 *ns);
+> +#else
+> +static inline int netc_timer_get_current_time(struct pci_dev *pdev, u64 *ns)
+> +{
+> +	return -ENODEV;
+> +}
+> +#endif
+> +
+>  #endif
+
+-- 
+Sashiko AI review · https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20260831082335.1184605-1-wei.fang%40oss.nxp.com
 
