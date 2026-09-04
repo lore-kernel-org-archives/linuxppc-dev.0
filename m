@@ -1,82 +1,88 @@
-Return-Path: <linuxppc-dev+bounces-26533-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26534-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D0254C79F80
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Sep 2026 07:35:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 339ACC79F80
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Sep 2026 07:40:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hbpDC5f9Dz2y2K;
-	Fri, 04 Sep 2026 17:35:55 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.130
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788507355;
-	cv=none; b=XR2KCNXD/WLpKPKicjRMs4arPwqqkznsRH/GUTtogWd3oB/cQus8OgqbK+wi0608C6W3+frwfciIlZl5TOagWTdd4EJU/rLv7HjwNBqQ+TmShqnZ8vU9Je0amU0RDZEcYlTMOjnkQpjqjVKnTOOIOfMhNQ2x/Mw50gF9zqWS1u92UWS5Q8QvHcwFe4iK8h8mwj3p2vt/hQzGc+Z1o0FK1U5zCjnB+h6g3YdTXRaAYztJSJf0MQ6jVHcrzEsVGex8k0MZM7au1m+/m8idhrX40e+Kz+VN0QFTVHzDUydVvBfKLm9uC/CPMQlQka3n1r+txnyRYHXbrO5iMWwdkbhTTg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hbpKD1WGkz2y2K;
+	Fri, 04 Sep 2026 17:40:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a07:de40:b251:101:10:150:64:2"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788507616;
+	cv=none; b=mPdL7/WtrVrDbvxIvXUDXzCu9oR4CGlpXWW+KxuaqM3FKAdkvmBK/rJlopwopaD89eaROlAop4oIcSYmfnvJFjE6HxkkOv0hWg+LVFN+MLOm5x8OAcDZY9YN1nWPgwEOGFXmP38zfdGhP1vpwj/oozBFgnNgJvPO3gJrNrOCqd+FNRUqUajCxjg1lu/nqOgVFhhM3ztMLZOCgUorrInFrXRbA9TOfYViGw+L3n7k1FVEtQKiiudEuwdlIzb135xMkOnPO9huaDWEakeDxdvD/SwSrK/djePR71AceQGZTfJg9tppyoAEedZnN1NwDnZXnT6+jt2D13lNQ/isGf3c+g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788507355; c=relaxed/relaxed;
-	bh=jlo8glu3d8tCDMtMiX1PBDSYttsHIoBQEwFiVzMGTGE=;
+	t=1788507616; c=relaxed/relaxed;
+	bh=72ynzHiTc95VhO2YRAcBofsU8g/uUHFw/2CDLg7zbiY=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=jVgPvj+u5CZzVKL9CNufGIjVybyD1G1N5LcyaC6C7G4lxnnBmyIsRreKtn+YaBkPIpFApUvoCvalwYlkwy3TIdsuMFVAH+n8FzN8RSN9+HmAGBwIgz6bLl2dPWzl2j1hEMN7sKFP3PzgG8dFmMy19OCkL+0KI6u9Pd4rXonilx0GEQsn3cxj1ox0Qydz5SRRJKukIErcAYPs1+JhaZeNfcqJGd+IzbvSiPuTcfqg+KZWtZZWW0GgXVdy3yd5Sp5gABBfKdchY25CiJgf1K7d8u7vLNudmJ7UqOY6VpHWzS/deooquuL46Bg2lEXSILgrIIG2/OVHdkdmMC+gZCnsAg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=K374NweJ; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=t6P6y4Cy; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=wr0d46WO; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=XbHYql2H; dkim-atps=neutral; spf=pass (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
+	 Content-Type:Content-Disposition:In-Reply-To; b=Jb2nCsROlmFbPvqedfLSeNOOkmerGY4KfaJnpjczMtlBA9t6GBIX42Fz1P7poweXPDnqLQT6VMZf3dfZdLuxsdbpSbJINTs99jA8TwpFapMbDzqwONhNPEyrk24kPEgDRrgSm038uBnhIJVBODMcifAayZsTzjdEVTlC0R8ziGOSlXze3WI07/7jR4jxuMtklSApFUGYIA27qQBilD6gb1Lr+Oqm9tLBliYX0IdXAVGgkxfKiyqCdDGPNfGYQO6R7JXop6pNwZAcoXvC8GI3LVQCHMycYzZOBo1tD/DA53hLqcINVUnVs/Rmeut5jq12cuVzSc0dHytdPyxEzk7Buw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=yoKxESv8; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=uUr94xSx; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=TwbXDxL6; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=GW8EBkUx; dkim-atps=neutral; spf=pass (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=K374NweJ;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=t6P6y4Cy;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=wr0d46WO;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=XbHYql2H;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=yoKxESv8;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=uUr94xSx;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=TwbXDxL6;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=GW8EBkUx;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2a07:de40:b251:101:10:150:64:2])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hbpDB0cSBz2xZV
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Sep 2026 17:35:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hbpKB6vXjz2xZV
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Sep 2026 17:40:14 +1000 (AEST)
 Received: from kunlun.suse.cz (unknown [IPv6:2a07:de40:b306:2000::2])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 8813D22989;
-	Fri,  4 Sep 2026 07:35:41 +0000 (UTC)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 15B981FAB9;
+	Fri,  4 Sep 2026 07:39:58 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1788507345; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1788507602; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=jlo8glu3d8tCDMtMiX1PBDSYttsHIoBQEwFiVzMGTGE=;
-	b=K374NweJ5G7lZ79RZcP+dh+43Hnd810AkinlxZN52WQZ0XvboY1nVYhrwYOnGiAvxZDit2
-	z39AwwM6nTPlPomkqIeZ7q69t3bBLm2NTAUDUT2Bi8bXsG8HNc8rQswi3bMhrDHKT56EA1
-	+pHCNawijH0SsxbOrOXQLld/u7lWxYg=
+	bh=72ynzHiTc95VhO2YRAcBofsU8g/uUHFw/2CDLg7zbiY=;
+	b=yoKxESv8E4R5tvT1UZjCFG//Ka9t51zCfMj5rGlBgDU9rJPCwr8eKHVs3aIs7njuGh5dXj
+	40aDhnE3s/Yll9h/nYSZkn25RfGXud3OOgyrHPCGWn5EctCFE29CYbZAHC9U59OLMgp2KK
+	P73HDCDNMK6C6U1q2GEmcNFeUmndfKY=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1788507345;
+	s=susede2_ed25519; t=1788507602;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=jlo8glu3d8tCDMtMiX1PBDSYttsHIoBQEwFiVzMGTGE=;
-	b=t6P6y4CyIKvWkWkfp0vzAl2K0UTUmLueg80cL1MJzfWa62+u5t5uACxFQ2urO4QcbMPEHO
-	nSEFzXSY48QPYACw==
-Authentication-Results: smtp-out1.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=wr0d46WO;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=XbHYql2H
+	bh=72ynzHiTc95VhO2YRAcBofsU8g/uUHFw/2CDLg7zbiY=;
+	b=uUr94xSxN+alkWvJWLstdRgdxmuFm69aht4CIObDaHor+TpD0UG3ATthhmyDMCcmJLPDyB
+	GgmoG4pqb8gilMAA==
+Authentication-Results: smtp-out2.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=TwbXDxL6;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=GW8EBkUx
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1788507341; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1788507598; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=jlo8glu3d8tCDMtMiX1PBDSYttsHIoBQEwFiVzMGTGE=;
-	b=wr0d46WOI1EnqsvXiK1FfoWP3xl5p8cjjfVyiXmjGddyQ5jFdWLtA6jBO0lf0upPROcUvX
-	p+FBkPDwEmN3k4bc7XsPkRjldfAfkQtPSueIlXHSeTvGmhIjp1TrPxVtuH9HjM2GMS6bhm
-	5gPXCk5nsQfgNDHnrk+Q5vi2xA5WFTM=
+	bh=72ynzHiTc95VhO2YRAcBofsU8g/uUHFw/2CDLg7zbiY=;
+	b=TwbXDxL6EP0I+65nvnFqeCLlmrxeBCekzMZ8HNwY2nKhagugJxX1PnsoRaMOnHZr8VJk0J
+	T7otVzTO3YqjGGAo3UbMGTFETnGdHZ7sH8Td/YoDBYfcNPIOYiHEJieknPofQTCdZFFLYH
+	F9v6ewtFsLFr+CK7ZMUWoZSjmkcX0jM=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1788507341;
+	s=susede2_ed25519; t=1788507598;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=jlo8glu3d8tCDMtMiX1PBDSYttsHIoBQEwFiVzMGTGE=;
-	b=XbHYql2H4ogHqa7CNwiw/qkdWzeFKtXySXOSMQUYby0X1FRi8w6/oMw9JhaCdU63uYFZRF
-	DkHMrVMi+yH24pDw==
-Date: Fri, 4 Sep 2026 09:35:40 +0200
+	bh=72ynzHiTc95VhO2YRAcBofsU8g/uUHFw/2CDLg7zbiY=;
+	b=GW8EBkUxrUpdTq2kLnvBFnin+hWGvE2kmqBNfJ1yw0MP8d4aKxTmnaGVkgBAvJ49K9egAI
+	6FNP9mYIeJ0jb7AQ==
+Date: Fri, 4 Sep 2026 09:39:57 +0200
 From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
-To: Shrikanth Hegde <sshegde@linux.ibm.com>
-Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+To: Harsh Prateek Bora <harshpb@linux.ibm.com>
+Cc: Shrikanth Hegde <sshegde@linux.ibm.com>,
+	Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
 	Christian Zigotzky <chzigotzky@xenosoft.de>,
 	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
 	"kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
@@ -84,19 +90,21 @@ Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
 	Peter Zijlstra <peterz@infradead.org>,
 	"R.T.Dickinson" <rtd2@xtra.co.nz>, hypexed@yahoo.com.au,
 	mad skateman <madskateman@gmail.com>,
-	Christian Zigotzky <info@xenosoft.de>
+	Christian Zigotzky <info@xenosoft.de>,
+	Amit Machhiwal <amachhiw@linux.ibm.com>,
+	Gautam Menghani <gautam@linux.ibm.com>
 Subject: Re: [Linux PPC] Disable PREEMPT
-Message-ID: <app0zGv9bvtL4nHm@kunlun.suse.cz>
-References: <2a27e6fc-7eb4-41a5-ba88-58f6a22625b5@xenosoft.de>
- <1d79ec6f-ce7f-4432-80e0-a54fa1668642@linux.ibm.com>
- <e425cd24-e19a-3860-aad2-11e91af8323f@xenosoft.de>
- <1c9b879a-7907-4849-a416-5df3db5617d6@kernel.org>
- <34112e67-85a5-a380-a42b-24c6562d65be@xenosoft.de>
- <8c6f2510-1dc5-4c45-9288-6b9c8f9b6b24@kernel.org>
+Message-ID: <app1zeEbx4PHfDlC@kunlun.suse.cz>
+References: <8c6f2510-1dc5-4c45-9288-6b9c8f9b6b24@kernel.org>
  <aplDm-byYL79laYG@kunlun.suse.cz>
  <9a58d944-405c-4519-852e-8fa04c22c2db@linux.ibm.com>
  <aplZNFMJUkfs-BFs@kunlun.suse.cz>
- <5ed38c3e-4aaa-4a91-9eda-e31d09b44abc@linux.ibm.com>
+ <d98e38cb-74d7-48b9-93f3-7c20ff910675@linux.ibm.com>
+ <aplclgAsq1d6f5U-@kunlun.suse.cz>
+ <1d83264f-8eda-4321-9200-f12897e38cda@linux.ibm.com>
+ <aplnPuVk4LWgpu3n@kunlun.suse.cz>
+ <e211e1fd-0923-4ab4-9e01-e9151807cf26@linux.ibm.com>
+ <apl1-rm_-Hb_ROE4@kunlun.suse.cz>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -110,13 +118,14 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <5ed38c3e-4aaa-4a91-9eda-e31d09b44abc@linux.ibm.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <apl1-rm_-Hb_ROE4@kunlun.suse.cz>
 X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
 X-Rspamd-Action: add header
-X-Rspamd-Queue-Id: 8813D22989
-X-Spamd-Result: default: False [12.70 / 50.00];
+X-Rspamd-Queue-Id: 15B981FAB9
+X-Spamd-Result: default: False [12.68 / 50.00];
 	SPAM_FLAG(5.00)[];
 	NEURAL_SPAM_LONG(3.50)[1.000];
 	BAYES_HAM(-3.00)[100.00%];
@@ -127,113 +136,135 @@ X-Spamd-Result: default: False [12.70 / 50.00];
 	R_MIXED_CHARSET(0.63)[subject];
 	HFILTER_HELO_NORES_A_OR_MX(0.30)[kunlun.suse.cz];
 	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.12)[-0.584];
+	NEURAL_HAM_SHORT(-0.14)[-0.691];
 	MIME_GOOD(-0.10)[text/plain];
 	MX_GOOD(-0.01)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	MIME_TRACE(0.00)[0:+];
-	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b306:2000::2:from];
 	TO_DN_EQ_ADDR_SOME(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[15];
 	ARC_NA(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b306:2000::2:from];
 	FREEMAIL_ENVRCPT(0.00)[xtra.co.nz,yahoo.com.au,gmail.com];
-	FREEMAIL_CC(0.00)[kernel.org,xenosoft.de,lists.ozlabs.org,vger.kernel.org,linux.ibm.com,infradead.org,xtra.co.nz,yahoo.com.au,gmail.com];
 	TO_DN_SOME(0.00)[];
 	DNSWL_BLOCKED(0.00)[2a07:de40:b306:2000::2:from];
 	FROM_EQ_ENVFROM(0.00)[];
 	FROM_HAS_DN(0.00)[];
 	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	RCPT_COUNT_SEVEN(0.00)[11];
-	MISSING_XM_UA(0.00)[];
 	RCVD_COUNT_ZERO(0.00)[0];
 	DKIM_TRACE(0.00)[suse.de:+];
+	MISSING_XM_UA(0.00)[];
+	FREEMAIL_CC(0.00)[linux.ibm.com,kernel.org,xenosoft.de,lists.ozlabs.org,vger.kernel.org,infradead.org,xtra.co.nz,yahoo.com.au,gmail.com];
 	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:dkim,kunlun.suse.cz:mid,kunlun.suse.cz:helo]
 X-Spamd-Bar: ++++++++++++
 X-Spam: Yes
 
-On Thu, Sep 03, 2026 at 10:52:59PM +0530, Shrikanth Hegde wrote:
+On Thu, Sep 03, 2026 at 03:28:26PM +0200, Michal Suchánek wrote:
+> On Thu, Sep 03, 2026 at 06:06:16PM +0530, Harsh Prateek Bora wrote:
+> > + Amit, Gautam - since they recently came across a similar regression which
+> > is seen with non KVM workload as well.
+> > + Venkat - for CI improvement suggestion below.
+> > 
+> > Hi Michal,
+> > 
+> > On 03/09/26 5:55 pm, Michal Suchánek wrote:
 > 
-> > > If possible run against current upstream and share the results.
-> > 
-> > https://github.com/openSUSE/kernel-source/blob/6824496d1801f73def615dca8794202eeb7b0d86/config/ppc64le/default
-> > 
-> > [  472.091531][ T6181] Kernel panic - not syncing: stack-protector: Kernel stack is corrupted in: kvmhv_run_single_vcpu+0x19d4/0x1b50 [kvm_hv]
-> > [  472.091598][ T6181] CPU: 29 UID: 107 PID: 6181 Comm: CPU 112/KVM Not tainted 7.2.2-5.g6824496-default #1 PREEMPT(full) openSUSE Tumbleweed (unreleased)  61871a5f06863b4006f5ef27cd9f18e8a7a2edad
-> > [  472.091612][ T6181] Hardware name: IBM,9824-42A Power11 (architected) 0x820200 0xf000007 of:IBM,FW1110.20 (OB1110_130) hv:phyp pSeries
-> > [  472.091624][ T6181] Call Trace:
-> > [  472.091630][ T6181] [c00000000fdfb680] [c00000000134ce90] dump_stack_lvl+0x84/0xc0 (unreliable)
-> > [  472.091653][ T6181] [c00000000fdfb6b0] [c00000000022e7c8] vpanic+0x324/0x5e4
-> > [  472.091666][ T6181] [c00000000fdfb760] [c00000000022eac4] do_panic_on_target_cpu+0x0/0x2c
-> > [  472.091677][ T6181] [c00000000fdfb780] [c0000000013c1ff8] __stack_chk_fail+0x48/0x60
-> > [  472.091689][ T6181] [c00000000fdfb7f0] [c00800001aae219c] kvmhv_run_single_vcpu+0x19d4/0x1b50 [kvm_hv]
-> > [  472.091712][ T6181] [c00000000fdfb940] [c00800001aae24b4] kvmppc_vcpu_run_hv+0x19c/0x12f0 [kvm_hv]
-> > [  472.091732][ T6181] [c00000000fdfba10] [c00800001aeeed18] kvmppc_vcpu_run+0x30/0x48 [kvm]
-> > [  472.091779][ T6181] [c00000000fdfba30] [c00800001aee9ef4] kvm_arch_vcpu_ioctl_run+0x35c/0x4a0 [kvm]
-> > [  472.091813][ T6181] [c00000000fdfbac0] [c00800001aedaac4] kvm_vcpu_ioctl+0x1ac/0xad8 [kvm]
-> > [  472.091844][ T6181] [c00000000fdfbca0] [c0000000007f1244] sys_ioctl+0x374/0x1060
-> > [  472.091857][ T6181] [c00000000fdfbdb0] [c00000000002f7f8] system_call_exception+0x188/0x430
-> > [  472.091871][ T6181] [c00000000fdfbe50] [c00000000000cfdc] system_call_vectored_common+0x15c/0x2ec
-> > [  472.091886][ T6181] ---- interrupt: 3000 at 0x7fffb5565fac
-> > [  472.091896][ T6181] NIP:  00007fffb5565fac LR: 00007fffb5565fac CTR: 0000000000000000
-> > [  472.091904][ T6181] REGS: c00000000fdfbe80 TRAP: 3000   Not tainted  (7.2.2-5.g6824496-default)
-> > [  472.091911][ T6181] MSR:  800000000280f033 <SF,VEC,VSX,EE,PR,FP,ME,IR,DR,RI,LE>  CR: 42044402  XER: 00000000
-> > [  472.091938][ T6181] IRQMASK: 0
-> > [  472.091938][ T6181] GPR00: 0000000000000036 00007fbfa77ed7a0 00007fffb5677100 00000000000000fa
-> > [  472.091938][ T6181] GPR04: 000000002000ae80 0000000000000000 0000000000000000 0000000000000000
-> > [  472.091938][ T6181] GPR08: 00000000000000fa 0000000000000000 0000000000000000 0000000000000000
-> > [  472.091938][ T6181] GPR12: 0000000000000000 00007fbfa77f5ec0 000000014676f000 00007fbfa77ee7c0
-> > [  472.091938][ T6181] GPR16: 000000014674e8d0 00007fbfa77eeec0 00007fbfa77eeec0 fffffffffffffff7
-> > [  472.091938][ T6181] GPR20: 00007fffb71210d0 0000000000000001 00007fbfa77eeec0 0000000000000000
-> > [  472.091938][ T6181] GPR24: 00007fbfa77ed8e8 0000000105971428 000000002000ae80 0000000105f77a70
-> > [  472.091938][ T6181] GPR28: 0000000000000000 0000000000000000 000000002000ae80 000000014674f000
-> > [  472.092020][ T6181] NIP [00007fffb5565fac] 0x7fffb5565fac
-> > [  472.092027][ T6181] LR [00007fffb5565fac] 0x7fffb5565fac
-> > [  472.092033][ T6181] ---- interrupt: 3000
-> > [  472.098256][ T6181] pstore: backend (nvram) writing error (-1)
-> > 
-> > This is the host, cannot run the kernel as guest because it fails to boot most
-> > of the time inside KVM.
-> > 
 > > > 
-> > > > Nonethless, there are quite a few platforms. Originally no preemption
-> > > > was the only option, and that's the reason why many people run that.
-> > > > It's the conservative, known working option. And that's the reason a lot
-> > > > of platfrom code does not get tested with more aggressive preemtion
-> > > > models, and never gets fixed to work with them.
-> > > > 
-> > > 
-> > > Full preemption has been there for many years!.
-> > 
-> > Possible for years, forced only recently.
-> > 
-> > > Lazy is not that aggressive compared to that.
-> > > 
-> > > > Simply disabling the no preemtion option does not make the platform code
-> > > > ready.
-> > > > 
-> > > 
-> > > Let's understand your crash case. Let's see where it is going wrong. I am suspecting
-> > > it is some wrong usage of preemption api rather than arch can't support preemption.
-> > 
-> > Very likely some wrong use of the preemption API by the arch code, or no
-> > use where it should have been used. It did not matter so long as people
-> > could run their no preempt configs and ignore the problem.
-> > 
-> > Thanks
+> > > There is another problem that Linux 7.2.2 often locks up on boot inside
+> > > the guest, and as a result a different kernel is needed in the guest to
+> > > reproduce the host crash. This is more recent, linux 6.12 does not have
+> > > this problem. Will try some different kernel combinations to see if I
+> > > can narrow this down. For this the repro is merely booting the kernel in
+> > > the VM, it typically fails early before userspace produces any messages.
 > 
+> This one regressed between 6.19.12
+> https://github.com/openSUSE/kernel-source/blob/9f6830f/config/ppc64le/default
+> and 7.0.12
+> https://github.com/openSUSE/kernel-source/blob/2ebf0bc/config/ppc64le/default
 > 
-> Friendly LLM analysis says preemption is enabled too early and before
-> completing kvmppc_handle_exit_hv() / kvmppc_handle_nested_exit()
+> Thanks
 > 
-> Below is ONLY a speculation and completely UNTESTED.
-> Maybe worth a try.
+> Michal
+> 
+> SLOF **********************************************************************
+> QEMU Starting
+>  Build Date = Aug 13 2026 14:47:36
+>  FW Version = abuild@OBS release 20230918
+>  Press "s" to enter Open Firmware.
+> 
+> Populating /vdevice methods
+> Populating /vdevice/vty@30000000
+> Populating /vdevice/nvram@71000000
+> Populating /pci@800000020000000
+> Loading Linux 7.0.12-1.g2ebf0bc-default ...
+> Loading initial ramdisk ...                
+> OF stdout device is: /vdevice/vty@30000000
+> Preparing to boot Linux version 7.0.12-1.g2ebf0bc-default (geeko@buildhost) (gcc (SUSE Linux) 15.3.0, GNU ld (GNU Binutils; openSUSE Tumbleweed) 2.45.0.20251103-4) #1 SMP PREEMPT_DYNAMIC Mon Jun 15 08:39:32 UTC 2026 (2ebf0bc)
+> Detected machine type: 0000000000000101
+> command line: BOOT_IMAGE=/boot/vmlinux-7.0.12-1.g2ebf0bc-default root=UUID=304c7f07-efbb-1070-2f27-accd935ec088 rw quiet systemd.show_status=1 security=selinux selinux=1
+> Max number of cores passed to firmware: 8192 (NR_CPUS = 8192)
+> Calling ibm,client-architecture-support... done
+> memory layout at init:
+>   memory_limit : 0000000000000000 (16 MB aligned)
+>   alloc_bottom : 00000000066b0000
+>   alloc_top    : 0000000030000000
+>   alloc_top_hi : 0000003e00000000
+>   rmo_top      : 0000000030000000
+>   ram_top      : 0000003e00000000
+> instantiating rtas at 0x000000002fff0000... done
+> prom_hold_cpus: skipped
+> copying OF device tree...
+> Building dt strings...
+> Building dt structure...
+> Device tree strings 0x00000000066c0000 -> 0x00000000066c0bec
+> Device tree struct  0x00000000066d0000 -> 0x00000000066f0000
+> Quiescing Open Firmware ...
+> Booting Linux via __start() @ 0x0000000000250000 ...
+> [    0.000000][    T0] ERROR: Failed to allocate trace buffer
+> [    0.000000][    T0] ERROR: tracer: failed to allocate ring buffer!
+> Linux ppc64le
+> #1 SMP PREEMPT_D[    0.285758][  T673] BUG: Kernel NULL pointer dereference on read at 0x00000010
+> [    0.285877][  T673] Faulting instruction address: 0xc000000000485bd0
+> [    0.285903][    T1] VFS: Dquot-cache hash table entries: 8192 (order 0, 65536 bytes)
+> [    0.285954][  T673] Oops: Kernel access of bad area, sig: 7 [#1]
+> [    0.286133][  T673] LE PAGE_SIZE=64K MMU=Radix  SMP NR_CPUS=8192 NUMA pSeries
+> [    0.286240][  T673] Modules linked in:
+> [    0.286288][  T673] CPU: 15 UID: 0 PID: 673 Comm: kworker/u531:0 Not tainted 7.0.12-1.g2ebf0bc-default #1 PREEMPT(full) openSUSE Tumbleweed (unreleased)  cf0846124d7853fab338aeae87203b36cac18419
+> [    0.286527][  T673] Hardware name: IBM pSeries (emulated by qemu) Power11 (architected) 0x820200 0xf000007 of:SLOF,HEAD hv:linux,kvm pSeries
+> [    0.286739][  T673] Workqueue: trace_init_wq tracer_init_tracefs_work_func
+> [    0.286818][  T673] NIP:  c000000000485bd0 LR: c000000000448864 CTR: c0000000005a3420
+> [    0.286906][  T673] REGS: c00000000a7a7960 TRAP: 0300   Not tainted  (7.0.12-1.g2ebf0bc-default)
+> [    0.287014][  T673] MSR:  8000000000009033 <SF,EE,ME,IR,DR,RI,LE>  CR: 44088404  XER: 00000000
+> [    0.287122][  T673] CFAR: c000000000448860 DAR: 0000000000000010 DSISR: 00080000 IRQMASK: 0 
+> [    0.287122][  T673] GPR00: c000000000448864 c00000000a7a7c00 c000000001f38100 c000000002a5c098 
+> [    0.287122][  T673] GPR04: c0000000017dc5f0 c0000000017dc5e8 000000000000001f 0000000000000064 
+> [    0.287122][  T673] GPR08: c0000000017dc628 00000000000005f0 00000000000005e8 0000000084000404 
+> [    0.287122][  T673] GPR12: c0000000005a3420 c000003dfff43d80 c0000000018e5600 c0000000018e54f0 
+> [    0.287122][  T673] GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
+> [    0.287122][  T673] GPR20: c0000000013ec418 c0000000013ef6d8 c0000000017dc5a0 c0000000017dc590 
+> [    0.287122][  T673] GPR24: c000000001825330 c0000000017dc628 c000000014b52a05 0000000000000000 
+> [    0.287122][  T673] GPR28: c0000000017dc5e8 0000000000000000 c0000000017dc5f0 c000000002a5e008 
+> [    0.287970][  T673] NIP [c000000000485bd0] __find_event_file+0x70/0x3c0
+> [    0.288046][  T673] LR [c000000000448864] init_tracer_tracefs+0x274/0xc80
+> [    0.288122][  T673] Call Trace:
+> [    0.288167][  T673] [c00000000a7a7c00] [c00000000a7a7c60] 0xc00000000a7a7c60 (unreliable)
+> [    0.288258][  T673] [c00000000a7a7c60] [c000000000448864] init_tracer_tracefs+0x274/0xc80
+> [    0.288348][  T673] [c00000000a7a7dc0] [c00000000203fcf0] tracer_init_tracefs_work_func+0x50/0x320
+> [    0.288452][  T673] [c00000000a7a7e50] [c0000000002620e8] process_one_work+0x1e8/0x5c0
+> [    0.288541][  T673] [c00000000a7a7f10] [c00000000026309c] worker_thread+0x1dc/0x3d0
+> [    0.288630][  T673] [c00000000a7a7f90] [c00000000026fa34] kthread+0x194/0x1b0
+> [    0.288721][  T673] [c00000000a7a7fe0] [c00000000000de58] start_kernel_thread+0x14/0x18
+> [    0.288810][  T673] Code: fb410030 fb810040 fba10048 7cbc2b78 3ba00000 fbc10050 7d194378 7c9e2378 2e2a0fc0 2da90fc0 f8010070 60420000 <e93b0010> 81490058 e8890018 714a0208 
+> [    0.289001][  T673] ---[ end trace 0000000000000000 ]---
+> [    0.290718][  T673] pstore: backend (nvram) writing error (-1)
 
-The patch is munged by the e-mail client, and it causes immediate
-voluntary preemprion in rcu critical section and hard lockup on starting
-a KVM VM.
+This crash might be relevant to the problem, and while qemu can dump the
+memory content crash refuses to open it:
 
-Also it would be sort of bad news if it worked because that would be
-specific to book3s KVM HV and would not help with the KVM HV from the
-original report which likely is not book3s, nor with KVM PR.
+crash: incompatible arguments:
+   /usr/lib/modules/7.2.2-5.g6824496-default/vmlinux is not SMP -- /scratch/vmcore is SMP
+
+The problem is not 100% reproducible, bisecting it may be tricky.
 
 Thanks
 
