@@ -1,115 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-26544-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26545-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 34A8BC624DE
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Sep 2026 09:59:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EACD1C624D3
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Sep 2026 10:05:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hbsQK6N9Fz2yr2;
-	Fri, 04 Sep 2026 19:59:53 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a07:de40:b251:101:10:150:64:2"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788515993;
-	cv=none; b=dIhnhE9m3rvPwxGz6knGXWgDIC/8Txwa9jWobxPdEfKI72To0vV+VfLqgWMrTKQFli49OhSjIlX/plqEiU6XFssrSGvBnUGxhCEy3aIswhBXnpGg+HfZuEn8xgx0O1cdTPutTARBtFnBekvVCKy6UBYR8lFYz3EZ7BN5GvT68uR26W44vr+JjB87a4K0MbJ/CLnvCIB/RBHEWlj3dkmgc/dmhy/Xa2laUfILZy3NXP15CHcE9vb5u227GEu4XXXxO4X8EJNOl57FX/2bzjnWbjH4D4bml5t/s2/KfOVsqEAew/5MgnlNVqz5TSP/TBWaYoTTKZhyGLqdNEXsZiv8lA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hbsXd3LsMz2y2K;
+	Fri, 04 Sep 2026 20:05:21 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788516321;
+	cv=none; b=fI29Q8v3MVG/31hgUyCHsTWYf15Gpnqjscy9XfDy6kTmzSW1J6uSmD3B2JXEU0jCGUIZ2sdwHiKYu8IZXkUsJBzx17PHDWUzukL3/wddVt0wa3P+Y541f5Fi2yYy172iWMueMHCf5ILF5Mwzc8jKZbdtZ7Go4o7owtZBUxthbOncrOUq/vIss8Ax3p2UZjQyxRGGLJcgfPkt0n08z01i1JD/kooOBp6f1+HTWebxmIGigpUfweflsbmiaKl7/iLvRBWALBa8qtVxkuzQ+scp1wUvSZ+C01I6uLBATGJ6pWoryHBPxtqsLCfZwULW69ks7CiEsk7HM0KwIRDHIsvNDg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788515993; c=relaxed/relaxed;
-	bh=8eH5Sazuk1G4o7oNLxfGrGz9CqYEh1yWDF/k+PkJzGg=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=TCqIjGbdUlIteeUWjvsS2xUVz30iE0PuqUaEXTiQYv4R98S5eMZwKvBLtLkwsSOyOTBHFqrJfFZwylsbLW1JTApPv4AYe1vQOoSIkqzu2ibrEAIgZ5QsNVYio+lnBqAWFlVnbBmMLj5A2xnayfLucPJ0IotOLELUhMMQ44bJfuzvinQpZfKk5ss+UNE4Gu6J28lrN3pX7fDFft5jRjIJa2VgJYdnzcPf3msH7AC/QTx5eKBujkRW8ZoxNYDOIUdGiXuUDNPiU07Gu2oR/dYakfLjGNo+kxpG2QsTPd36bdC3w14hv6QNAdC1OvXaIdQrp0eFmLVdAr5dul/8bDctFw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=suse.cz; dkim=pass (1024-bit key; unprotected) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=tR//t31f; dkim=pass header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=lrbDz73N; dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=Qm1b5pqk; dkim=neutral header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=D4vlxWVI; dkim-atps=neutral; spf=pass (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=jack@suse.cz; receiver=lists.ozlabs.org) smtp.mailfrom=suse.cz
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=suse.cz
+	t=1788516321; c=relaxed/relaxed;
+	bh=Tt278+PuJiVNKdTw+nz7DMikcJ69J4GTQ6t7C0y8U+0=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=CEFHMgQc6FuQj9FTEtYNOEJ2xMRVRbJ9dUmPcHu84TxOUBYo4T3BlM2XUVkurCv4ol/PzMkZQ6INHwOOoqvAigmgGlUrN/YN3aDj+f9Dab0akKmfVqFAqdbAb4rg38nH9eC7C7HZ2dLytaUZnamytujs8LvD4DDTcw5kPaGtgWrJmGywq+D6mIe4J9YP118OqRQHsle3hbym5E0qe4pt6B2FQyi0fkcF++aDvGL7Kcek2QwKy8uDYb5O4DWPpR4fgrV5f1X5ZtWBOuRvY5Ba3ybCVgBmYH03ZpeEgFmnGLYtoeycJjJL3Py4QQ+QATOxRs/2YhPXL92CmvHAdj+iDQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=KgdFHgVr; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=tR//t31f;
-	dkim=pass header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=lrbDz73N;
-	dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=Qm1b5pqk;
-	dkim=neutral header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=D4vlxWVI;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=KgdFHgVr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.cz (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=jack@suse.cz; receiver=lists.ozlabs.org)
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2a07:de40:b251:101:10:150:64:2])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hbsQH1KvPz2xlY
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Sep 2026 19:59:51 +1000 (AEST)
-Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 805571F79A;
-	Fri,  4 Sep 2026 09:59:39 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
-	t=1788515983; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=8eH5Sazuk1G4o7oNLxfGrGz9CqYEh1yWDF/k+PkJzGg=;
-	b=tR//t31fr1UTCiJBr+P5Dywn8Wuc2E3k2JHIHxKvDygLDPByo9p0GF2CU5MZxMJ3Pmqjbr
-	WbQlHMfGdIoHrXjuisSnW/U+BxHArkZxaqwoLvWZ3pzCVNc85dizzWMQf17sfI58Qmvs1l
-	XVDHMn+CD6Up4NVDZDvz10nOUE+vF8k=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
-	s=susede2_ed25519; t=1788515983;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=8eH5Sazuk1G4o7oNLxfGrGz9CqYEh1yWDF/k+PkJzGg=;
-	b=lrbDz73NsNYU5RF686yFjbmNl3bwV8OMPhRbTHfyn5Yt8yzJT7EI2R5YAWJq0F6UIGwpm0
-	1eLPAfbxymamdVDw==
-Authentication-Results: smtp-out2.suse.de;
-	none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
-	t=1788515979; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=8eH5Sazuk1G4o7oNLxfGrGz9CqYEh1yWDF/k+PkJzGg=;
-	b=Qm1b5pqkOpB84Yk5C9J1XnYUHtUDE0krbTlzwQSikigd8NjwAm6fqcUcNKJWQb5ZkL/ftj
-	p8O6oyv1o0xML2s9ay1iBSvX4NXFNxj5j5SwqWGP25lTayOcie3R12k6j7xsR2MXiEsuDj
-	dpDPrnfUT/kU7ZY2BUZPJMpwELvX7Xg=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
-	s=susede2_ed25519; t=1788515979;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=8eH5Sazuk1G4o7oNLxfGrGz9CqYEh1yWDF/k+PkJzGg=;
-	b=D4vlxWVIJDQ8d9/4iE57q2VZVUtKlECxmPUw3HH9Ig3lJQfYujBtcdb0wPmlw6Wk494u8N
-	JiIJDGDQNH6eFOAg==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 35E7913678;
-	Fri,  4 Sep 2026 09:59:39 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id +t6gDIuWmmqdLwAAD6G6ig
-	(envelope-from <jack@suse.cz>); Fri, 04 Sep 2026 09:59:39 +0000
-Received: by quack3.suse.cz (Postfix, from userid 1000)
-	id BAD74A13CE; Fri, 04 Sep 2026 11:59:38 +0200 (CEST)
-Date: Fri, 4 Sep 2026 11:59:38 +0200
-From: Jan Kara <jack@suse.cz>
-To: Ethan Nelson-Moore <enelsonmoore@gmail.com>
-Cc: Shuah Khan <skhan@linuxfoundation.org>, 
-	Randy Dunlap <rdunlap@infradead.org>, Michael Ellerman <mpe@ellerman.id.au>, 
-	Nicholas Piggin <npiggin@gmail.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
-	Jan Kara <jack@suse.cz>, Jakub Kicinski <kuba@kernel.org>, 
-	Namjae Jeon <linkinjeon@kernel.org>, Hisam Mehboob <hisamshar@gmail.com>, 
-	Martin =?utf-8?Q?Kepplinger-Novakovi=C4=87?= <martink@posteo.de>, Christian Brauner <brauner@kernel.org>, 
-	Amir Goldstein <amir73il@gmail.com>, Bagas Sanjaya <bagasdotme@gmail.com>, 
-	Lorenzo Stoakes <ljs@kernel.org>, Eric Biggers <ebiggers@kernel.org>, 
-	Geert Uytterhoeven <geert@linux-m68k.org>, David Howells <dhowells@redhat.com>, 
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Theodore Ts'o <tytso@mit.edu>, 
-	Catalin Iacob <iacobcatalin@gmail.com>, Stephen Hemminger <stephen@networkplumber.org>, 
-	Andrew Lunn <andrew@lunn.ch>, "Maciej W. Rozycki" <macro@orcam.me.uk>, 
-	Andrei Vagin <avagin@gmail.com>, Wei Yang <richard.weiyang@gmail.com>, 
-	Bhavik Sachdev <b.sachdev1904@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, 
-	Wang Yan <wangyan01@kylinos.cn>, Bala-Vignesh-Reddy <reddybalavignesh9979@gmail.com>, 
-	Malaya Kumar Rout <malayarout91@gmail.com>, linux-doc@vger.kernel.org, linux-mips@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, linux-fsdevel@vger.kernel.org, linux-kselftest@vger.kernel.org, 
-	Luis de Bethencourt <luisbg@kernel.org>, Salah Triki <salah.triki@gmail.com>, 
-	Jonathan Corbet <corbet@lwn.net>, "Tigran A. Aivazian" <aivazian.tigran@gmail.com>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Alexander Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [PATCH] bfs: remove the filesystem
-Message-ID: <y75h7cbqzqe7j6tcv673v5cvtqrmciiewzbnw5vp5pvx4x6gmy@gmhmwyircgfj>
-References: <20260904082954.48738-1-enelsonmoore@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hbsXc3dCdz2xpn;
+	Fri, 04 Sep 2026 20:05:19 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68464ja33994215;
+	Fri, 4 Sep 2026 10:05:02 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=Tt278+
+	PuJiVNKdTw+nz7DMikcJ69J4GTQ6t7C0y8U+0=; b=KgdFHgVraRBGutUHIIWY8A
+	+geGIDR/JOdloJNmmmaiOQnD6GJVJTlErfetaAnXyQ8brn2kT2KuN2EJvdoX2CGn
+	him4bg3tsDTCNa66fb27mcB84c4suDLozowq6qvPMybUymkDXbB0349hwFwcAMWh
+	gXZYuTrq+EXDFYI0iWMp0X08vOqq8lfp6hjtE6i6rtnVZBoWKZ/wcS87bFxz6dNp
+	cjJwFZ2rmsUu/LtCrJdWfl/vxylzC34+c+Eu9nq84Czr2Uky3+BYKlFY/zUdap13
+	09iKmWczSXi+3sEEQ904S4wbNj7gl92R2iJuyQuJ+3eguda7Rj97da81cPkH4AxQ
+	==
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gbnue9hxw-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 04 Sep 2026 10:05:01 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6849uXc1025129;
+	Fri, 4 Sep 2026 10:05:00 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4gecjavsu8-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 04 Sep 2026 10:05:00 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 684A4tCE29164116
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 4 Sep 2026 10:04:56 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 0B92A20040;
+	Fri,  4 Sep 2026 10:04:55 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id D41E02005A;
+	Fri,  4 Sep 2026 10:04:51 +0000 (GMT)
+Received: from [9.124.221.192] (unknown [9.124.221.192])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri,  4 Sep 2026 10:04:51 +0000 (GMT)
+Message-ID: <c11197ac-ce7b-4fba-8ea5-4f38be9f7106@linux.ibm.com>
+Date: Fri, 4 Sep 2026 15:34:50 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -123,1557 +81,210 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260904082954.48738-1-enelsonmoore@gmail.com>
-X-Spamd-Result: default: False [-6.30 / 50.00];
-	REPLY(-4.00)[];
-	BAYES_HAM(-3.00)[100.00%];
-	SUSPICIOUS_RECIPS(1.50)[];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	MID_RHS_NOT_FQDN(0.50)[];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	ARC_NA(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com];
-	MISSING_XM_UA(0.00)[];
-	RCPT_COUNT_TWELVE(0.00)[42];
-	MIME_TRACE(0.00)[0:+];
-	TO_DN_SOME(0.00)[];
-	TAGGED_RCPT(0.00)[];
-	RCVD_COUNT_THREE(0.00)[3];
-	R_RATELIMIT(0.00)[to_ip_from(RLizrtjkoytmmoj3iud1rzij51)];
-	FROM_HAS_DN(0.00)[];
-	FREEMAIL_CC(0.00)[linuxfoundation.org,infradead.org,ellerman.id.au,gmail.com,kernel.org,suse.cz,posteo.de,linux-m68k.org,redhat.com,alpha.franken.de,mit.edu,networkplumber.org,lunn.ch,orcam.me.uk,linux-foundation.org,kylinos.cn,vger.kernel.org,lists.ozlabs.org,lwn.net,linux.ibm.com,zeniv.linux.org.uk];
-	FREEMAIL_TO(0.00)[gmail.com];
-	FROM_EQ_ENVFROM(0.00)[];
-	RCVD_TLS_LAST(0.00)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	DKIM_SIGNED(0.00)[suse.cz:s=susede2_rsa,suse.cz:s=susede2_ed25519];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.com:email,imap1.dmz-prg2.suse.org:helo]
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 3/3] powerpc/numa: Support coregroup on PowerNV
+To: Srikar Dronamraju <srikar@linux.ibm.com>,
+        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: skiboot@lists.ozlabs.org, arbab@linux.ibm.com, mahesh@linux.ibm.com,
+        Ritesh Harjani <ritesh.list@gmail.com>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        "Mike Rapoport (Microsoft)" <rppt@kernel.org>,
+        linux-kernel@vger.kernel.org
+References: <20260902123458.340456-5-srikar@linux.ibm.com>
+ <20260902123458.340456-8-srikar@linux.ibm.com>
+Content-Language: en-US
+From: Shrikanth Hegde <sshegde@linux.ibm.com>
+In-Reply-To: <20260902123458.340456-8-srikar@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-GUID: T6fjphv16xz__ksgV9FV8DBS00VnbVoj
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTA0MDA5MSBTYWx0ZWRfX517Sit4aupoC
+ nxn1Z0QEMatz56EyHZQ04rLaC8dnw9KyWy3yLiuzF+ugz2RG6NryaLA0VCWmz8PwI41j8v9UVj7
+ j7I/Gg4Rw/xgQqTz5PBe1eWmC8G9ah2bAOyx9Z6lxFIpt2IPIxAUhFEPp0SIA34JC+z9TIX6OrA
+ GKwp/r6imREgiMJA1hI9JAJXc3n+kkWntv3HGhri2R3z089P5O2x0zUpfizch1pSLX3yKEKSlwK
+ PxmQwNpqhhcgu5HwR//DpomvXS9BYvOBUg/rvMSPVAptRPdx9bBmyuQqwXXQUqBlrJgzXj982I5
+ wpZLuTDzTOZU2e20SoGJo70LbGSi3LAQw08p9WF7DWfKY4eO6+VdA17aOiZQil/28Ze+50Q5PQO
+ S0gJQy2E1+Fa8Bm/9wRDfkcPl0xlYUbm8UHtXJW8A0htuSTWaMul6DssWC2r+2BLhCnO0goOpH7
+ xPrZXu/qq4tj9cFltEQ==
+X-Proofpoint-ORIG-GUID: _VmXG-DC84mzdIuoGF-oSdXv1zxk0qIB
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTA0MDA5MSBTYWx0ZWRfX9JzXYSVCNakm
+ y8kQYKBBS8BaRqieyAnY0zwa/UVsLdwWPdA2OPSzmJgJ8sWvWeP+RfR2l8ePEQqXiR+S6MSMDI2
+ Wad8ns0Ff1jk1okV5thAdikHLgPZKZ4=
+X-Authority-Analysis: v=2.4 cv=B92JFutM c=1 sm=1 tr=0 ts=6a9a97ce cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
+ a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8
+ a=VnNF1IyMAAAA:8 a=xOIxTGQp75SbQC7pz58A:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-04_02,2026-09-03_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ adultscore=0 spamscore=0 clxscore=1011 suspectscore=0 phishscore=0
+ lowpriorityscore=0 bulkscore=0 priorityscore=1501 impostorscore=0
+ malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
+ definitions=main-2609040091
 
-On Fri 04-09-26 01:29:19, Ethan Nelson-Moore wrote:
-> BFS (not to be confused with BeFS, the BeOS filesystem) is the
-> filesystem UnixWare uses for its boot partition. It has extremely
-> limited functionality, only supporting contiguous files and no
-> subdirectories. Even though the bfs driver is very small and is
-> unlikely to cause future maintenance problems, given that the only type
-> of data stored on such a partition is likely to be kernels and
-> bootloader settings, there is very little reason anyone would want to
-> access it from Linux. Other old Unix filesystems (efs, freevxfs) have
-> been removed recently, and bfs is highly unlikely to have any users, so
-> remove it as well. Retain the UAPI header to be safe.
+
+
+On 9/2/26 6:05 PM, Srikar Dronamraju wrote:
+> Coregroup support on powerpc has so far been limited to PowerVM LPARs.
+> However, PowerNV can also support coregroups when firmware exposes the
+> required coregroup information through the associativity hierarchy.
 > 
-> Also update the former maintainer's email address in CREDITS.
+
+Existing firmware does expose this info already?
+
+> Detect coregroup support by checking whether primary_domain_index is the
+> penultimate domain in the CPU node's ibm,associativity property. On
+> PowerNV, a non-penultimate primary_domain_index indicates that firmware
+> provides an additional level for coregroup information.
 > 
-> Signed-off-by: Ethan Nelson-Moore <enelsonmoore@gmail.com>
+> This keeps the logic compatible with PowerVM systems, where
+> primary_domain_index is likewise not the penultimate associativity
+> domain.
+> 
 
-I think this is sensible. Feel free to add:
+Could you please put the ibm,associativity on this powernv? as well
+PowerVM's so that one understands it better?
 
-Acked-by: Jan Kara <jack@suse.cz>
-
-								Honza
-
-
+> Signed-off-by: Srikar Dronamraju <srikar@linux.ibm.com>
 > ---
->  CREDITS                                       |   2 +-
->  Documentation/filesystems/befs.rst            |   4 +-
->  Documentation/filesystems/bfs.rst             |  60 --
->  Documentation/filesystems/index.rst           |   1 -
->  MAINTAINERS                                   |   7 -
->  arch/mips/configs/malta_defconfig             |   1 -
->  arch/mips/configs/malta_kvm_defconfig         |   1 -
->  arch/mips/configs/maltaup_xpa_defconfig       |   1 -
->  arch/mips/configs/rm200_defconfig             |   1 -
->  arch/powerpc/configs/fsl-emb-nonhw.config     |   1 -
->  arch/powerpc/configs/ppc6xx_defconfig         |   1 -
->  fs/Kconfig                                    |   1 -
->  fs/Makefile                                   |   1 -
->  fs/bfs/Kconfig                                |  21 -
->  fs/bfs/Makefile                               |   8 -
->  fs/bfs/bfs.h                                  |  69 ---
->  fs/bfs/dir.c                                  | 356 ------------
->  fs/bfs/file.c                                 | 203 -------
->  fs/bfs/inode.c                                | 538 ------------------
->  .../filesystems/statmount/statmount_test.c    |   2 +-
->  20 files changed, 4 insertions(+), 1275 deletions(-)
->  delete mode 100644 Documentation/filesystems/bfs.rst
->  delete mode 100644 fs/bfs/Kconfig
->  delete mode 100644 fs/bfs/Makefile
->  delete mode 100644 fs/bfs/bfs.h
->  delete mode 100644 fs/bfs/dir.c
->  delete mode 100644 fs/bfs/file.c
->  delete mode 100644 fs/bfs/inode.c
+> Changelog from v2:
+> - Handle comments from Ritesh (one hunk needed to be moved from patch 2 to
+>    patch 3 to build correctly)
 > 
-> diff --git a/CREDITS b/CREDITS
-> index bba5071c29a5..c570dd7eebbd 100644
-> --- a/CREDITS
-> +++ b/CREDITS
-> @@ -57,7 +57,7 @@ S: Longford, Ireland
->  S: Sydney, Australia
->  
->  N: Tigran A. Aivazian
-> -E: tigran@aivazian.fsnet.co.uk
-> +E: aivazian.tigran@gmail.com
->  W: http://www.moses.uklinux.net/patches
->  D: BFS filesystem
->  D: Intel IA32 CPU microcode update support
-> diff --git a/Documentation/filesystems/befs.rst b/Documentation/filesystems/befs.rst
-> index a22f603b2938..c1dbfe9c95d2 100644
-> --- a/Documentation/filesystems/befs.rst
-> +++ b/Documentation/filesystems/befs.rst
-> @@ -44,8 +44,8 @@ implementation.
->  Which is it, BFS or BEFS?
->  =========================
->  Be, Inc said, "BeOS Filesystem is officially called BFS, not BeFS".
-> -But Unixware Boot Filesystem is called bfs, too. And they are already in
-> -the kernel. Because of this naming conflict, on Linux the BeOS
-> +But the UnixWare Boot Filesystem is called bfs, too, and it was already
-> +in the kernel. Because of this naming conflict, on Linux the BeOS
->  filesystem is called befs.
->  
->  How to Install
-> diff --git a/Documentation/filesystems/bfs.rst b/Documentation/filesystems/bfs.rst
-> deleted file mode 100644
-> index ce14b9018807..000000000000
-> --- a/Documentation/filesystems/bfs.rst
-> +++ /dev/null
-> @@ -1,60 +0,0 @@
-> -.. SPDX-License-Identifier: GPL-2.0
-> -
-> -========================
-> -BFS Filesystem for Linux
-> -========================
-> -
-> -The BFS filesystem is used by SCO UnixWare OS for the /stand slice, which
-> -usually contains the kernel image and a few other files required for the
-> -boot process.
-> -
-> -In order to access /stand partition under Linux you obviously need to
-> -know the partition number and the kernel must support UnixWare disk slices
-> -(CONFIG_UNIXWARE_DISKLABEL config option). However BFS support does not
-> -depend on having UnixWare disklabel support because one can also mount
-> -BFS filesystem via loopback::
-> -
-> -    # losetup /dev/loop0 stand.img
-> -    # mount -t bfs /dev/loop0 /mnt/stand
-> -
-> -where stand.img is a file containing the image of BFS filesystem.
-> -When you have finished using it and umounted you need to also deallocate
-> -/dev/loop0 device by::
-> -
-> -    # losetup -d /dev/loop0
-> -
-> -You can simplify mounting by just typing::
-> -
-> -    # mount -t bfs -o loop stand.img /mnt/stand
-> -
-> -this will allocate the first available loopback device (and load loop.o
-> -kernel module if necessary) automatically. If the loopback driver is not
-> -loaded automatically, make sure that you have compiled the module and
-> -that modprobe is functioning. Beware that umount will not deallocate
-> -/dev/loopN device if /etc/mtab file on your system is a symbolic link to
-> -/proc/mounts. You will need to do it manually using "-d" switch of
-> -losetup(8). Read losetup(8) manpage for more info.
-> -
-> -To create the BFS image under UnixWare you need to find out first which
-> -slice contains it. The command prtvtoc(1M) is your friend::
-> -
-> -    # prtvtoc /dev/rdsk/c0b0t0d0s0
-> -
-> -(assuming your root disk is on target=0, lun=0, bus=0, controller=0). Then you
-> -look for the slice with tag "STAND", which is usually slice 10. With this
-> -information you can use dd(1) to create the BFS image::
-> -
-> -    # umount /stand
-> -    # dd if=/dev/rdsk/c0b0t0d0sa of=stand.img bs=512
-> -
-> -Just in case, you can verify that you have done the right thing by checking
-> -the magic number::
-> -
-> -    # od -Ad -tx4 stand.img | more
-> -
-> -The first 4 bytes should be 0x1badface.
-> -
-> -If you have any patches, questions or suggestions regarding this BFS
-> -implementation please contact the author:
-> -
-> -Tigran Aivazian <aivazian.tigran@gmail.com>
-> diff --git a/Documentation/filesystems/index.rst b/Documentation/filesystems/index.rst
-> index 734a45e51667..7cce7cc28d12 100644
-> --- a/Documentation/filesystems/index.rst
-> +++ b/Documentation/filesystems/index.rst
-> @@ -75,7 +75,6 @@ Documentation for filesystem implementations.
->     autofs
->     autofs-mount-control
->     befs
-> -   bfs
->     btrfs
->     ceph
->     coda
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index fc320b373656..385309556705 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -4627,13 +4627,6 @@ S:	Odd Fixes
->  F:	Documentation/block/bfq-iosched.rst
->  F:	block/bfq-*
->  
-> -BFS FILE SYSTEM
-> -M:	"Tigran A. Aivazian" <aivazian.tigran@gmail.com>
-> -S:	Maintained
-> -F:	Documentation/filesystems/bfs.rst
-> -F:	fs/bfs/
-> -F:	include/uapi/linux/bfs_fs.h
-> -
->  BITMAP API
->  M:	Yury Norov <yury.norov@gmail.com>
->  R:	Rasmus Villemoes <linux@rasmusvillemoes.dk>
-> diff --git a/arch/mips/configs/malta_defconfig b/arch/mips/configs/malta_defconfig
-> index 56a8f76dab41..4fb4d45f3cdc 100644
-> --- a/arch/mips/configs/malta_defconfig
-> +++ b/arch/mips/configs/malta_defconfig
-> @@ -333,7 +333,6 @@ CONFIG_AFFS_FS=m
->  CONFIG_HFS_FS=m
->  CONFIG_HFSPLUS_FS=m
->  CONFIG_BEFS_FS=m
-> -CONFIG_BFS_FS=m
->  CONFIG_EFS_FS=m
->  CONFIG_JFFS2_FS=m
->  CONFIG_JFFS2_FS_XATTR=y
-> diff --git a/arch/mips/configs/malta_kvm_defconfig b/arch/mips/configs/malta_kvm_defconfig
-> index 85e95c0ae410..3d1c32d3475e 100644
-> --- a/arch/mips/configs/malta_kvm_defconfig
-> +++ b/arch/mips/configs/malta_kvm_defconfig
-> @@ -340,7 +340,6 @@ CONFIG_AFFS_FS=m
->  CONFIG_HFS_FS=m
->  CONFIG_HFSPLUS_FS=m
->  CONFIG_BEFS_FS=m
-> -CONFIG_BFS_FS=m
->  CONFIG_EFS_FS=m
->  CONFIG_JFFS2_FS=m
->  CONFIG_JFFS2_FS_XATTR=y
-> diff --git a/arch/mips/configs/maltaup_xpa_defconfig b/arch/mips/configs/maltaup_xpa_defconfig
-> index 0498a0115349..2545168b75bb 100644
-> --- a/arch/mips/configs/maltaup_xpa_defconfig
-> +++ b/arch/mips/configs/maltaup_xpa_defconfig
-> @@ -339,7 +339,6 @@ CONFIG_AFFS_FS=m
->  CONFIG_HFS_FS=m
->  CONFIG_HFSPLUS_FS=m
->  CONFIG_BEFS_FS=m
-> -CONFIG_BFS_FS=m
->  CONFIG_EFS_FS=m
->  CONFIG_JFFS2_FS=m
->  CONFIG_JFFS2_FS_XATTR=y
-> diff --git a/arch/mips/configs/rm200_defconfig b/arch/mips/configs/rm200_defconfig
-> index 09e006c7cd7c..cd2a831614c8 100644
-> --- a/arch/mips/configs/rm200_defconfig
-> +++ b/arch/mips/configs/rm200_defconfig
-> @@ -318,7 +318,6 @@ CONFIG_ADFS_FS=m
->  CONFIG_AFFS_FS=m
->  CONFIG_HFS_FS=m
->  CONFIG_BEFS_FS=m
-> -CONFIG_BFS_FS=m
->  CONFIG_EFS_FS=m
->  CONFIG_CRAMFS=m
->  CONFIG_VXFS_FS=m
-> diff --git a/arch/powerpc/configs/fsl-emb-nonhw.config b/arch/powerpc/configs/fsl-emb-nonhw.config
-> index 391c99117ee0..688051b11ce1 100644
-> --- a/arch/powerpc/configs/fsl-emb-nonhw.config
-> +++ b/arch/powerpc/configs/fsl-emb-nonhw.config
-> @@ -2,7 +2,6 @@ CONFIG_ADFS_FS=m
->  CONFIG_AFFS_FS=m
->  CONFIG_AUDIT=y
->  CONFIG_BEFS_FS=m
-> -CONFIG_BFS_FS=m
->  CONFIG_BINFMT_MISC=m
->  # CONFIG_BLK_DEV_BSG is not set
->  CONFIG_BLK_DEV_INITRD=y
-> diff --git a/arch/powerpc/configs/ppc6xx_defconfig b/arch/powerpc/configs/ppc6xx_defconfig
-> index acffc5c17f92..8aab229fb909 100644
-> --- a/arch/powerpc/configs/ppc6xx_defconfig
-> +++ b/arch/powerpc/configs/ppc6xx_defconfig
-> @@ -945,7 +945,6 @@ CONFIG_ECRYPT_FS=m
->  CONFIG_HFS_FS=m
->  CONFIG_HFSPLUS_FS=m
->  CONFIG_BEFS_FS=m
-> -CONFIG_BFS_FS=m
->  CONFIG_EFS_FS=m
->  CONFIG_CRAMFS=m
->  CONFIG_VXFS_FS=m
-> diff --git a/fs/Kconfig b/fs/Kconfig
-> index e05917adcd60..1cb0b3a8b12c 100644
-> --- a/fs/Kconfig
-> +++ b/fs/Kconfig
-> @@ -314,7 +314,6 @@ source "fs/ecryptfs/Kconfig"
->  source "fs/hfs/Kconfig"
->  source "fs/hfsplus/Kconfig"
->  source "fs/befs/Kconfig"
-> -source "fs/bfs/Kconfig"
->  source "fs/jffs2/Kconfig"
->  # UBIFS File system configuration
->  source "fs/ubifs/Kconfig"
-> diff --git a/fs/Makefile b/fs/Makefile
-> index 055dfc23d82b..16f1108b64e1 100644
-> --- a/fs/Makefile
-> +++ b/fs/Makefile
-> @@ -76,7 +76,6 @@ obj-$(CONFIG_CODA_FS)		+= coda/
->  obj-$(CONFIG_MINIX_FS)		+= minix/
->  obj-$(CONFIG_FAT_FS)		+= fat/
->  obj-$(CONFIG_EXFAT_FS)		+= exfat/
-> -obj-$(CONFIG_BFS_FS)		+= bfs/
->  obj-$(CONFIG_ISO9660_FS)	+= isofs/
->  obj-$(CONFIG_HFSPLUS_FS)	+= hfsplus/ # Before hfs to find wrapped HFS+
->  obj-$(CONFIG_HFS_FS)		+= hfs/
-> diff --git a/fs/bfs/Kconfig b/fs/bfs/Kconfig
-> deleted file mode 100644
-> index 8e7ef866b62a..000000000000
-> --- a/fs/bfs/Kconfig
-> +++ /dev/null
-> @@ -1,21 +0,0 @@
-> -# SPDX-License-Identifier: GPL-2.0-only
-> -config BFS_FS
-> -	tristate "BFS file system support"
-> -	depends on BLOCK
-> -	select BUFFER_HEAD
-> -	help
-> -	  Boot File System (BFS) is a file system used under SCO UnixWare to
-> -	  allow the bootloader access to the kernel image and other important
-> -	  files during the boot process.  It is usually mounted under /stand
-> -	  and corresponds to the slice marked as "STAND" in the UnixWare
-> -	  partition.  You should say Y if you want to read or write the files
-> -	  on your /stand slice from within Linux.  You then also need to say Y
-> -	  to "UnixWare slices support", below.  More information about the BFS
-> -	  file system is contained in the file
-> -	  <file:Documentation/filesystems/bfs.rst>.
-> -
-> -	  If you don't know what this is about, say N.
-> -
-> -	  To compile this as a module, choose M here: the module will be called
-> -	  bfs.  Note that the file system of your root partition (the one
-> -	  containing the directory /) cannot be compiled as a module.
-> diff --git a/fs/bfs/Makefile b/fs/bfs/Makefile
-> deleted file mode 100644
-> index 2b6bc5eb4de9..000000000000
-> --- a/fs/bfs/Makefile
-> +++ /dev/null
-> @@ -1,8 +0,0 @@
-> -# SPDX-License-Identifier: GPL-2.0-only
-> -#
-> -# Makefile for BFS filesystem.
-> -#
-> -
-> -obj-$(CONFIG_BFS_FS) += bfs.o
-> -
-> -bfs-objs := inode.o file.o dir.o
-> diff --git a/fs/bfs/bfs.h b/fs/bfs/bfs.h
-> deleted file mode 100644
-> index b08afe733e63..000000000000
-> --- a/fs/bfs/bfs.h
-> +++ /dev/null
-> @@ -1,69 +0,0 @@
-> -/* SPDX-License-Identifier: GPL-2.0 */
-> -/*
-> - *	fs/bfs/bfs.h
-> - *	Copyright (C) 1999-2018 Tigran Aivazian <aivazian.tigran@gmail.com>
-> - */
-> -#ifndef _FS_BFS_BFS_H
-> -#define _FS_BFS_BFS_H
-> -
-> -#include <linux/bfs_fs.h>
-> -
-> -/* In theory BFS supports up to 512 inodes, numbered from 2 (for /) up to 513 inclusive.
-> -   In actual fact, attempting to create the 512th inode (i.e. inode No. 513 or file No. 511)
-> -   will fail with ENOSPC in bfs_add_entry(): the root directory cannot contain so many entries, counting '..'.
-> -   So, mkfs.bfs(8) should really limit its -N option to 511 and not 512. For now, we just print a warning
-> -   if a filesystem is mounted with such "impossible to fill up" number of inodes */
-> -#define BFS_MAX_LASTI	513
-> -
-> -/*
-> - * BFS file system in-core superblock info
-> - */
-> -struct bfs_sb_info {
-> -	unsigned long si_blocks;
-> -	unsigned long si_freeb;
-> -	unsigned long si_freei;
-> -	unsigned long si_lf_eblk;
-> -	unsigned long si_lasti;
-> -	DECLARE_BITMAP(si_imap, BFS_MAX_LASTI+1);
-> -	struct mutex bfs_lock;
-> -};
-> -
-> -/*
-> - * BFS file system in-core inode info
-> - */
-> -struct bfs_inode_info {
-> -	unsigned long i_dsk_ino; /* inode number from the disk, can be 0 */
-> -	unsigned long i_sblock;
-> -	unsigned long i_eblock;
-> -	struct mapping_metadata_bhs i_metadata_bhs;
-> -	struct inode vfs_inode;
-> -};
-> -
-> -static inline struct bfs_sb_info *BFS_SB(struct super_block *sb)
-> -{
-> -	return sb->s_fs_info;
-> -}
-> -
-> -static inline struct bfs_inode_info *BFS_I(struct inode *inode)
-> -{
-> -	return container_of(inode, struct bfs_inode_info, vfs_inode);
-> -}
-> -
-> -
-> -#define printf(format, args...) \
-> -	printk(KERN_ERR "BFS-fs: %s(): " format, __func__, ## args)
-> -
-> -/* inode.c */
-> -extern struct inode *bfs_iget(struct super_block *sb, unsigned long ino);
-> -extern void bfs_dump_imap(const char *, struct super_block *);
-> -
-> -/* file.c */
-> -extern const struct inode_operations bfs_file_inops;
-> -extern const struct file_operations bfs_file_operations;
-> -extern const struct address_space_operations bfs_aops;
-> -
-> -/* dir.c */
-> -extern const struct inode_operations bfs_dir_inops;
-> -extern const struct file_operations bfs_dir_operations;
-> -
-> -#endif /* _FS_BFS_BFS_H */
-> diff --git a/fs/bfs/dir.c b/fs/bfs/dir.c
-> deleted file mode 100644
-> index 91a4871fa051..000000000000
-> --- a/fs/bfs/dir.c
-> +++ /dev/null
-> @@ -1,356 +0,0 @@
-> -// SPDX-License-Identifier: GPL-2.0
-> -/*
-> - *	fs/bfs/dir.c
-> - *	BFS directory operations.
-> - *	Copyright (C) 1999-2018  Tigran Aivazian <aivazian.tigran@gmail.com>
-> - *  Made endianness-clean by Andrew Stribblehill <ads@wompom.org> 2005
-> - */
-> -
-> -#include <linux/time.h>
-> -#include <linux/string.h>
-> -#include <linux/fs.h>
-> -#include <linux/buffer_head.h>
-> -#include <linux/sched.h>
-> -#include "bfs.h"
-> -
-> -#undef DEBUG
-> -
-> -#ifdef DEBUG
-> -#define dprintf(x...)	printf(x)
-> -#else
-> -#define dprintf(x...)
-> -#endif
-> -
-> -static int bfs_add_entry(struct inode *dir, const struct qstr *child, int ino);
-> -static struct buffer_head *bfs_find_entry(struct inode *dir,
-> -				const struct qstr *child,
-> -				struct bfs_dirent **res_dir);
-> -
-> -static int bfs_readdir(struct file *f, struct dir_context *ctx)
-> -{
-> -	struct inode *dir = file_inode(f);
-> -	struct buffer_head *bh;
-> -	struct bfs_dirent *de;
-> -	unsigned int offset;
-> -	int block;
-> -
-> -	if (ctx->pos & (BFS_DIRENT_SIZE - 1)) {
-> -		printf("Bad f_pos=%08lx for %s:%08llx\n",
-> -					(unsigned long)ctx->pos,
-> -					dir->i_sb->s_id, dir->i_ino);
-> -		return -EINVAL;
-> -	}
-> -
-> -	while (ctx->pos < dir->i_size) {
-> -		offset = ctx->pos & (BFS_BSIZE - 1);
-> -		block = BFS_I(dir)->i_sblock + (ctx->pos >> BFS_BSIZE_BITS);
-> -		bh = sb_bread(dir->i_sb, block);
-> -		if (!bh) {
-> -			ctx->pos += BFS_BSIZE - offset;
-> -			continue;
-> -		}
-> -		do {
-> -			de = (struct bfs_dirent *)(bh->b_data + offset);
-> -			if (de->ino) {
-> -				int size = strnlen(de->name, BFS_NAMELEN);
-> -				if (!dir_emit(ctx, de->name, size,
-> -						le16_to_cpu(de->ino),
-> -						DT_UNKNOWN)) {
-> -					brelse(bh);
-> -					return 0;
-> -				}
-> -			}
-> -			offset += BFS_DIRENT_SIZE;
-> -			ctx->pos += BFS_DIRENT_SIZE;
-> -		} while ((offset < BFS_BSIZE) && (ctx->pos < dir->i_size));
-> -		brelse(bh);
-> -	}
-> -	return 0;
-> -}
-> -
-> -const struct file_operations bfs_dir_operations = {
-> -	.read		= generic_read_dir,
-> -	.iterate_shared	= bfs_readdir,
-> -	.fsync		= simple_fsync,
-> -	.llseek		= generic_file_llseek,
-> -};
-> -
-> -static int bfs_create(struct mnt_idmap *idmap, struct inode *dir,
-> -		      struct dentry *dentry, umode_t mode)
-> -{
-> -	int err;
-> -	struct inode *inode;
-> -	struct super_block *s = dir->i_sb;
-> -	struct bfs_sb_info *info = BFS_SB(s);
-> -	unsigned long ino;
-> -
-> -	inode = new_inode(s);
-> -	if (!inode)
-> -		return -ENOMEM;
-> -	mutex_lock(&info->bfs_lock);
-> -	ino = find_first_zero_bit(info->si_imap, info->si_lasti + 1);
-> -	if (ino > info->si_lasti) {
-> -		mutex_unlock(&info->bfs_lock);
-> -		iput(inode);
-> -		return -ENOSPC;
-> -	}
-> -	set_bit(ino, info->si_imap);
-> -	info->si_freei--;
-> -	inode_init_owner(&nop_mnt_idmap, inode, dir, mode);
-> -	simple_inode_init_ts(inode);
-> -	inode->i_blocks = 0;
-> -	inode->i_op = &bfs_file_inops;
-> -	inode->i_fop = &bfs_file_operations;
-> -	inode->i_mapping->a_ops = &bfs_aops;
-> -	inode->i_ino = ino;
-> -	BFS_I(inode)->i_dsk_ino = ino;
-> -	BFS_I(inode)->i_sblock = 0;
-> -	BFS_I(inode)->i_eblock = 0;
-> -	insert_inode_hash(inode);
-> -        mark_inode_dirty(inode);
-> -	bfs_dump_imap("create", s);
-> -
-> -	err = bfs_add_entry(dir, &dentry->d_name, inode->i_ino);
-> -	if (err) {
-> -		inode_dec_link_count(inode);
-> -		mutex_unlock(&info->bfs_lock);
-> -		iput(inode);
-> -		return err;
-> -	}
-> -	mutex_unlock(&info->bfs_lock);
-> -	d_instantiate(dentry, inode);
-> -	return 0;
-> -}
-> -
-> -static struct dentry *bfs_lookup(struct inode *dir, struct dentry *dentry,
-> -						unsigned int flags)
-> -{
-> -	struct inode *inode = NULL;
-> -	struct buffer_head *bh;
-> -	struct bfs_dirent *de;
-> -	struct bfs_sb_info *info = BFS_SB(dir->i_sb);
-> -
-> -	if (dentry->d_name.len > BFS_NAMELEN)
-> -		return ERR_PTR(-ENAMETOOLONG);
-> -
-> -	mutex_lock(&info->bfs_lock);
-> -	bh = bfs_find_entry(dir, &dentry->d_name, &de);
-> -	if (bh) {
-> -		unsigned long ino = (unsigned long)le16_to_cpu(de->ino);
-> -		brelse(bh);
-> -		inode = bfs_iget(dir->i_sb, ino);
-> -	}
-> -	mutex_unlock(&info->bfs_lock);
-> -	return d_splice_alias(inode, dentry);
-> -}
-> -
-> -static int bfs_link(struct dentry *old, struct inode *dir,
-> -						struct dentry *new)
-> -{
-> -	struct inode *inode = d_inode(old);
-> -	struct bfs_sb_info *info = BFS_SB(inode->i_sb);
-> -	int err;
-> -
-> -	mutex_lock(&info->bfs_lock);
-> -	err = bfs_add_entry(dir, &new->d_name, inode->i_ino);
-> -	if (err) {
-> -		mutex_unlock(&info->bfs_lock);
-> -		return err;
-> -	}
-> -	inc_nlink(inode);
-> -	inode_set_ctime_current(inode);
-> -	mark_inode_dirty(inode);
-> -	ihold(inode);
-> -	d_instantiate(new, inode);
-> -	mutex_unlock(&info->bfs_lock);
-> -	return 0;
-> -}
-> -
-> -static int bfs_unlink(struct inode *dir, struct dentry *dentry)
-> -{
-> -	int error = -ENOENT;
-> -	struct inode *inode = d_inode(dentry);
-> -	struct buffer_head *bh;
-> -	struct bfs_dirent *de;
-> -	struct bfs_sb_info *info = BFS_SB(inode->i_sb);
-> -
-> -	mutex_lock(&info->bfs_lock);
-> -	bh = bfs_find_entry(dir, &dentry->d_name, &de);
-> -	if (!bh || (le16_to_cpu(de->ino) != inode->i_ino))
-> -		goto out_brelse;
-> -
-> -	if (!inode->i_nlink) {
-> -		printf("unlinking non-existent file %s:%llu (nlink=%d)\n",
-> -					inode->i_sb->s_id, inode->i_ino,
-> -					inode->i_nlink);
-> -		set_nlink(inode, 1);
-> -	}
-> -	de->ino = 0;
-> -	mmb_mark_buffer_dirty(bh, &BFS_I(dir)->i_metadata_bhs);
-> -	inode_set_mtime_to_ts(dir, inode_set_ctime_current(dir));
-> -	mark_inode_dirty(dir);
-> -	inode_set_ctime_to_ts(inode, inode_get_ctime(dir));
-> -	inode_dec_link_count(inode);
-> -	error = 0;
-> -
-> -out_brelse:
-> -	brelse(bh);
-> -	mutex_unlock(&info->bfs_lock);
-> -	return error;
-> -}
-> -
-> -static int bfs_rename(struct mnt_idmap *idmap, struct inode *old_dir,
-> -		      struct dentry *old_dentry, struct inode *new_dir,
-> -		      struct dentry *new_dentry, unsigned int flags)
-> -{
-> -	struct inode *old_inode, *new_inode;
-> -	struct buffer_head *old_bh, *new_bh;
-> -	struct bfs_dirent *old_de, *new_de;
-> -	struct bfs_sb_info *info;
-> -	int error = -ENOENT;
-> -
-> -	if (flags & ~RENAME_NOREPLACE)
-> -		return -EINVAL;
-> -
-> -	old_bh = new_bh = NULL;
-> -	old_inode = d_inode(old_dentry);
-> -	if (S_ISDIR(old_inode->i_mode))
-> -		return -EINVAL;
-> -
-> -	info = BFS_SB(old_inode->i_sb);
-> -
-> -	mutex_lock(&info->bfs_lock);
-> -	old_bh = bfs_find_entry(old_dir, &old_dentry->d_name, &old_de);
-> -
-> -	if (!old_bh || (le16_to_cpu(old_de->ino) != old_inode->i_ino))
-> -		goto end_rename;
-> -
-> -	error = -EPERM;
-> -	new_inode = d_inode(new_dentry);
-> -	new_bh = bfs_find_entry(new_dir, &new_dentry->d_name, &new_de);
-> -
-> -	if (new_bh && !new_inode) {
-> -		brelse(new_bh);
-> -		new_bh = NULL;
-> -	}
-> -	if (!new_bh) {
-> -		error = bfs_add_entry(new_dir, &new_dentry->d_name,
-> -					old_inode->i_ino);
-> -		if (error)
-> -			goto end_rename;
-> -	}
-> -	old_de->ino = 0;
-> -	inode_set_mtime_to_ts(old_dir, inode_set_ctime_current(old_dir));
-> -	mark_inode_dirty(old_dir);
-> -	if (new_inode) {
-> -		inode_set_ctime_current(new_inode);
-> -		inode_dec_link_count(new_inode);
-> -	}
-> -	mmb_mark_buffer_dirty(old_bh, &BFS_I(old_dir)->i_metadata_bhs);
-> -	error = 0;
-> -
-> -end_rename:
-> -	mutex_unlock(&info->bfs_lock);
-> -	brelse(old_bh);
-> -	brelse(new_bh);
-> -	return error;
-> -}
-> -
-> -const struct inode_operations bfs_dir_inops = {
-> -	.create			= bfs_create,
-> -	.lookup			= bfs_lookup,
-> -	.link			= bfs_link,
-> -	.unlink			= bfs_unlink,
-> -	.rename			= bfs_rename,
-> -};
-> -
-> -static int bfs_add_entry(struct inode *dir, const struct qstr *child, int ino)
-> -{
-> -	const unsigned char *name = child->name;
-> -	int namelen = child->len;
-> -	struct buffer_head *bh;
-> -	struct bfs_dirent *de;
-> -	int block, sblock, eblock, off, pos;
-> -	int i;
-> -
-> -	dprintf("name=%s, namelen=%d\n", name, namelen);
-> -
-> -	sblock = BFS_I(dir)->i_sblock;
-> -	eblock = BFS_I(dir)->i_eblock;
-> -	for (block = sblock; block <= eblock; block++) {
-> -		bh = sb_bread(dir->i_sb, block);
-> -		if (!bh)
-> -			return -EIO;
-> -		for (off = 0; off < BFS_BSIZE; off += BFS_DIRENT_SIZE) {
-> -			de = (struct bfs_dirent *)(bh->b_data + off);
-> -			if (!de->ino) {
-> -				pos = (block - sblock) * BFS_BSIZE + off;
-> -				if (pos >= dir->i_size) {
-> -					dir->i_size += BFS_DIRENT_SIZE;
-> -					inode_set_ctime_current(dir);
-> -				}
-> -				inode_set_mtime_to_ts(dir,
-> -						      inode_set_ctime_current(dir));
-> -				mark_inode_dirty(dir);
-> -				de->ino = cpu_to_le16((u16)ino);
-> -				for (i = 0; i < BFS_NAMELEN; i++)
-> -					de->name[i] =
-> -						(i < namelen) ? name[i] : 0;
-> -				mmb_mark_buffer_dirty(bh,
-> -						&BFS_I(dir)->i_metadata_bhs);
-> -				brelse(bh);
-> -				return 0;
-> -			}
-> -		}
-> -		brelse(bh);
-> -	}
-> -	return -ENOSPC;
-> -}
-> -
-> -static inline int bfs_namecmp(int len, const unsigned char *name,
-> -							const char *buffer)
-> -{
-> -	if ((len < BFS_NAMELEN) && buffer[len])
-> -		return 0;
-> -	return !memcmp(name, buffer, len);
-> -}
-> -
-> -static struct buffer_head *bfs_find_entry(struct inode *dir,
-> -			const struct qstr *child,
-> -			struct bfs_dirent **res_dir)
-> -{
-> -	unsigned long block = 0, offset = 0;
-> -	struct buffer_head *bh = NULL;
-> -	struct bfs_dirent *de;
-> -	const unsigned char *name = child->name;
-> -	int namelen = child->len;
-> -
-> -	*res_dir = NULL;
-> -	if (namelen > BFS_NAMELEN)
-> -		return NULL;
-> -
-> -	while (block * BFS_BSIZE + offset < dir->i_size) {
-> -		if (!bh) {
-> -			bh = sb_bread(dir->i_sb, BFS_I(dir)->i_sblock + block);
-> -			if (!bh) {
-> -				block++;
-> -				continue;
-> -			}
-> -		}
-> -		de = (struct bfs_dirent *)(bh->b_data + offset);
-> -		offset += BFS_DIRENT_SIZE;
-> -		if (le16_to_cpu(de->ino) &&
-> -				bfs_namecmp(namelen, name, de->name)) {
-> -			*res_dir = de;
-> -			return bh;
-> -		}
-> -		if (offset < bh->b_size)
-> -			continue;
-> -		brelse(bh);
-> -		bh = NULL;
-> -		offset = 0;
-> -		block++;
-> -	}
-> -	brelse(bh);
-> -	return NULL;
-> -}
-> diff --git a/fs/bfs/file.c b/fs/bfs/file.c
-> deleted file mode 100644
-> index d33d6bde992b..000000000000
-> --- a/fs/bfs/file.c
-> +++ /dev/null
-> @@ -1,203 +0,0 @@
-> -// SPDX-License-Identifier: GPL-2.0
-> -/*
-> - *	fs/bfs/file.c
-> - *	BFS file operations.
-> - *	Copyright (C) 1999-2018 Tigran Aivazian <aivazian.tigran@gmail.com>
-> - *
-> - *	Make the file block allocation algorithm understand the size
-> - *	of the underlying block device.
-> - *	Copyright (C) 2007 Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
-> - *
-> - */
-> -
-> -#include <linux/fs.h>
-> -#include <linux/mpage.h>
-> -#include <linux/buffer_head.h>
-> -#include "bfs.h"
-> -
-> -#undef DEBUG
-> -
-> -#ifdef DEBUG
-> -#define dprintf(x...)	printf(x)
-> -#else
-> -#define dprintf(x...)
-> -#endif
-> -
-> -const struct file_operations bfs_file_operations = {
-> -	.llseek 	= generic_file_llseek,
-> -	.read_iter	= generic_file_read_iter,
-> -	.write_iter	= generic_file_write_iter,
-> -	.mmap_prepare	= generic_file_mmap_prepare,
-> -	.splice_read	= filemap_splice_read,
-> -};
-> -
-> -static int bfs_move_block(unsigned long from, unsigned long to,
-> -					struct super_block *sb)
-> -{
-> -	struct buffer_head *bh, *new;
-> -
-> -	bh = sb_bread(sb, from);
-> -	if (!bh)
-> -		return -EIO;
-> -	new = sb_getblk(sb, to);
-> -	memcpy(new->b_data, bh->b_data, bh->b_size);
-> -	mark_buffer_dirty(new);
-> -	bforget(bh);
-> -	brelse(new);
-> -	return 0;
-> -}
-> -
-> -static int bfs_move_blocks(struct super_block *sb, unsigned long start,
-> -				unsigned long end, unsigned long where)
-> -{
+> Changelog from v1: https://lkml.kernel.org/r/20260524010017.140408-1-srikar@linux.ibm.com
+> - Handle comments from Christophe Leroy; make code more flat
+> 
+>   arch/powerpc/mm/numa.c | 58 ++++++++++++++++++++++++++++++++++--------
+>   1 file changed, 48 insertions(+), 10 deletions(-)
+> 
+> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+> index 5f326b005a2a..e97b624203ea 100644
+> --- a/arch/powerpc/mm/numa.c
+> +++ b/arch/powerpc/mm/numa.c
+> @@ -889,12 +889,32 @@ static int __init numa_setup_drmem_lmb(struct drmem_lmb *lmb,
+>   	return 0;
+>   }
+>   
+> +/*
+> + * If hierarchy extends beyond primary_domain_index + 1, then next
+> + * level corresponds to coregroup.
+> + */
+> +static int detect_and_enable_coregroup(const __be32 *associativity, int index)
+> +{
+> +	if (!associativity || index == -1)
+> +		goto out;
+> +
+> +	index = of_read_number(associativity, 1);
+> +
+> +	if (index > primary_domain_index + 1) {
+> +		coregroup_enabled = 1;
+> +		return index;
+> +	}
+> +out:
+> +	coregroup_enabled = 0;
+> +	return -1;
+> +}
+> +
+>   static int __init parse_numa_properties(void)
+>   {
+>   	struct device_node *memory, *pci;
+> -	int default_nid = 0;
 > -	unsigned long i;
-> -
-> -	dprintf("%08lx-%08lx->%08lx\n", start, end, where);
-> -	for (i = start; i <= end; i++)
-> -		if(bfs_move_block(i, where + i, sb)) {
-> -			dprintf("failed to move block %08lx -> %08lx\n", i,
-> -								where + i);
-> -			return -EIO;
-> -		}
-> -	return 0;
-> -}
-> -
-> -static int bfs_get_block(struct inode *inode, sector_t block,
-> -			struct buffer_head *bh_result, int create)
-> -{
-> -	unsigned long phys;
-> -	int err;
-> -	struct super_block *sb = inode->i_sb;
-> -	struct bfs_sb_info *info = BFS_SB(sb);
-> -	struct bfs_inode_info *bi = BFS_I(inode);
-> -
-> -	phys = bi->i_sblock + block;
-> -	if (!create) {
-> -		if (phys <= bi->i_eblock) {
-> -			dprintf("c=%d, b=%08lx, phys=%09lx (granted)\n",
-> -                                create, (unsigned long)block, phys);
-> -			map_bh(bh_result, sb, phys);
-> -		}
-> -		return 0;
-> -	}
-> -
-> -	/*
-> -	 * If the file is not empty and the requested block is within the
-> -	 * range of blocks allocated for this file, we can grant it.
-> -	 */
-> -	if (bi->i_sblock && (phys <= bi->i_eblock)) {
-> -		dprintf("c=%d, b=%08lx, phys=%08lx (interim block granted)\n", 
-> -				create, (unsigned long)block, phys);
-> -		map_bh(bh_result, sb, phys);
-> -		return 0;
-> -	}
-> -
-> -	/* The file will be extended, so let's see if there is enough space. */
-> -	if (phys >= info->si_blocks)
-> -		return -ENOSPC;
-> -
-> -	/* The rest has to be protected against itself. */
-> -	mutex_lock(&info->bfs_lock);
-> -
-> -	/*
-> -	 * If the last data block for this file is the last allocated
-> -	 * block, we can extend the file trivially, without moving it
-> -	 * anywhere.
-> -	 */
-> -	if (bi->i_eblock == info->si_lf_eblk) {
-> -		dprintf("c=%d, b=%08lx, phys=%08lx (simple extension)\n", 
-> -				create, (unsigned long)block, phys);
-> -		map_bh(bh_result, sb, phys);
-> -		info->si_freeb -= phys - bi->i_eblock;
-> -		info->si_lf_eblk = bi->i_eblock = phys;
-> -		mark_inode_dirty(inode);
-> -		err = 0;
+> +	int default_nid = 0, index = 0;
+>   	const __be32 *associativity;
+> +	unsigned long i;
+>   
+>   	if (numa_enabled == 0) {
+>   		pr_warn("disabled by user\n");
+> @@ -927,7 +947,6 @@ static int __init parse_numa_properties(void)
+>   	 */
+>   	for_each_present_cpu(i) {
+>   		__be32 vphn_assoc[VPHN_ASSOC_BUFSIZE];
+> -		struct device_node *cpu;
+>   		int nid = NUMA_NO_NODE;
+>   
+>   		memset(vphn_assoc, 0, VPHN_ASSOC_BUFSIZE * sizeof(__be32));
+> @@ -935,7 +954,9 @@ static int __init parse_numa_properties(void)
+>   		if (__vphn_get_associativity(i, vphn_assoc) == 0) {
+>   			nid = associativity_to_nid(vphn_assoc);
+>   			initialize_form1_numa_distance(vphn_assoc);
+> +			index = detect_and_enable_coregroup(vphn_assoc, index);
+
+nit: I don't see return value being used.
+
+Other than that, rest looks good to me.
+Reviewed-by: Shrikanth Hegde <sshegde@linux.ibm.com>
+
+>   		} else {
+> +			struct device_node *cpu;
+>   
+>   			/*
+>   			 * Don't fall back to default_nid yet -- we will plug
+> @@ -948,6 +969,7 @@ static int __init parse_numa_properties(void)
+>   			associativity = of_get_associativity(cpu);
+>   			if (associativity) {
+>   				nid = associativity_to_nid(associativity);
+> +				index = detect_and_enable_coregroup(associativity, index);
+>   				initialize_form1_numa_distance(associativity);
+>   			}
+>   			of_node_put(cpu);
+> @@ -1445,7 +1467,9 @@ static long vphn_get_associativity(unsigned long cpu,
+>   
+>   int cpu_to_coregroup_id(int cpu)
+>   {
+> -	__be32 associativity[VPHN_ASSOC_BUFSIZE] = {0};
+> +	int coregroup_id = cpu_to_core_id(cpu);
+> +	struct device_node *cpunode = NULL;
+> +	const __be32 *associativity;
+>   	int index;
+>   
+>   	if (cpu < 0 || cpu > nr_cpu_ids)
+> @@ -1454,17 +1478,31 @@ int cpu_to_coregroup_id(int cpu)
+>   	if (!coregroup_enabled)
+>   		goto out;
+>   
+> -	if (!firmware_has_feature(FW_FEATURE_VPHN))
 > -		goto out;
-> -	}
-> -
-> -	/* Ok, we have to move this entire file to the next free block. */
-> -	phys = info->si_lf_eblk + 1;
-> -	if (phys + block >= info->si_blocks) {
-> -		err = -ENOSPC;
-> -		goto out;
-> -	}
-> -
-> -	if (bi->i_sblock) {
-> -		err = bfs_move_blocks(inode->i_sb, bi->i_sblock, 
-> -						bi->i_eblock, phys);
-> -		if (err) {
-> -			dprintf("failed to move ino=%08lx -> fs corruption\n",
-> -								inode->i_ino);
-> -			goto out;
-> -		}
-> -	} else
-> -		err = 0;
-> -
-> -	dprintf("c=%d, b=%08lx, phys=%08lx (moved)\n",
-> -                create, (unsigned long)block, phys);
-> -	bi->i_sblock = phys;
-> -	phys += block;
-> -	info->si_lf_eblk = bi->i_eblock = phys;
-> -
-> -	/*
-> -	 * This assumes nothing can write the inode back while we are here
-> -	 * and thus update inode->i_blocks! (XXX)
-> -	 */
-> -	info->si_freeb -= bi->i_eblock - bi->i_sblock + 1 - inode->i_blocks;
-> -	mark_inode_dirty(inode);
-> -	map_bh(bh_result, sb, phys);
-> -out:
-> -	mutex_unlock(&info->bfs_lock);
-> -	return err;
+> +	if (firmware_has_feature(FW_FEATURE_VPHN)) {
+> +		__be32 tmp[VPHN_ASSOC_BUFSIZE] = {0};
+>   
+> -	if (vphn_get_associativity(cpu, associativity))
+> +		if (vphn_get_associativity(cpu, tmp))
+> +			goto out;
+> +
+> +		associativity = tmp;
+> +
+> +	} else {
+> +		cpunode = of_get_cpu_node(cpu, NULL);
+> +		if (!cpunode)
+> +			goto out;
+> +
+> +		associativity = of_get_associativity(cpunode);
+> +	}
+> +	if (!associativity)
+>   		goto out;
+>   
+>   	index = of_read_number(associativity, 1);
+>   	if (index > primary_domain_index + 1)
+> -		return of_read_number(&associativity[index - 1], 1);
+> +		coregroup_id = of_read_number(&associativity[index - 1], 1);
+>   
+>   out:
+> -	return cpu_to_core_id(cpu);
 > -}
-> -
-> -static int bfs_writepages(struct address_space *mapping,
-> -		struct writeback_control *wbc)
-> -{
-> -	return mpage_writepages(mapping, wbc, bfs_get_block);
-> -}
-> -
-> -static int bfs_read_folio(struct file *file, struct folio *folio)
-> -{
-> -	return block_read_full_folio(folio, bfs_get_block);
-> -}
-> -
-> -static void bfs_write_failed(struct address_space *mapping, loff_t to)
-> -{
-> -	struct inode *inode = mapping->host;
-> -
-> -	if (to > inode->i_size)
-> -		truncate_pagecache(inode, inode->i_size);
-> -}
-> -
-> -static int bfs_write_begin(const struct kiocb *iocb,
-> -			   struct address_space *mapping,
-> -			   loff_t pos, unsigned len,
-> -			   struct folio **foliop, void **fsdata)
-> -{
-> -	int ret;
-> -
-> -	ret = block_write_begin(mapping, pos, len, foliop, bfs_get_block);
-> -	if (unlikely(ret))
-> -		bfs_write_failed(mapping, pos + len);
-> -
-> -	return ret;
-> -}
-> -
-> -static sector_t bfs_bmap(struct address_space *mapping, sector_t block)
-> -{
-> -	return generic_block_bmap(mapping, block, bfs_get_block);
-> -}
-> -
-> -const struct address_space_operations bfs_aops = {
-> -	.dirty_folio	= block_dirty_folio,
-> -	.invalidate_folio = block_invalidate_folio,
-> -	.read_folio	= bfs_read_folio,
-> -	.writepages	= bfs_writepages,
-> -	.write_begin	= bfs_write_begin,
-> -	.write_end	= generic_write_end,
-> -	.migrate_folio	= buffer_migrate_folio,
-> -	.bmap		= bfs_bmap,
-> -};
-> -
-> -const struct inode_operations bfs_file_inops;
-> diff --git a/fs/bfs/inode.c b/fs/bfs/inode.c
-> deleted file mode 100644
-> index 06e3a848b4ef..000000000000
-> --- a/fs/bfs/inode.c
-> +++ /dev/null
-> @@ -1,538 +0,0 @@
-> -// SPDX-License-Identifier: GPL-2.0-only
-> -/*
-> - *	fs/bfs/inode.c
-> - *	BFS superblock and inode operations.
-> - *	Copyright (C) 1999-2018 Tigran Aivazian <aivazian.tigran@gmail.com>
-> - *	From fs/minix, Copyright (C) 1991, 1992 Linus Torvalds.
-> - *	Made endianness-clean by Andrew Stribblehill <ads@wompom.org>, 2005.
-> - */
-> -
-> -#include <linux/module.h>
-> -#include <linux/mm.h>
-> -#include <linux/slab.h>
-> -#include <linux/init.h>
-> -#include <linux/fs.h>
-> -#include <linux/buffer_head.h>
-> -#include <linux/vfs.h>
-> -#include <linux/writeback.h>
-> -#include <linux/uio.h>
-> -#include <linux/uaccess.h>
-> -#include <linux/fs_context.h>
-> -#include "bfs.h"
-> -
-> -MODULE_AUTHOR("Tigran Aivazian <aivazian.tigran@gmail.com>");
-> -MODULE_DESCRIPTION("SCO UnixWare BFS filesystem for Linux");
-> -MODULE_LICENSE("GPL");
-> -
-> -#undef DEBUG
-> -
-> -#ifdef DEBUG
-> -#define dprintf(x...)	printf(x)
-> -#else
-> -#define dprintf(x...)
-> -#endif
-> -
-> -struct inode *bfs_iget(struct super_block *sb, unsigned long ino)
-> -{
-> -	struct bfs_inode *di;
-> -	struct inode *inode;
-> -	struct buffer_head *bh;
-> -	int block, off;
-> -
-> -	inode = iget_locked(sb, ino);
-> -	if (!inode)
-> -		return ERR_PTR(-ENOMEM);
-> -	if (!(inode_state_read_once(inode) & I_NEW))
-> -		return inode;
-> -
-> -	if ((ino < BFS_ROOT_INO) || (ino > BFS_SB(inode->i_sb)->si_lasti)) {
-> -		printf("Bad inode number %s:%08lx\n", inode->i_sb->s_id, ino);
-> -		goto error;
-> -	}
-> -
-> -	block = (ino - BFS_ROOT_INO) / BFS_INODES_PER_BLOCK + 1;
-> -	bh = sb_bread(inode->i_sb, block);
-> -	if (!bh) {
-> -		printf("Unable to read inode %s:%08lx\n", inode->i_sb->s_id,
-> -									ino);
-> -		goto error;
-> -	}
-> -
-> -	off = (ino - BFS_ROOT_INO) % BFS_INODES_PER_BLOCK;
-> -	di = (struct bfs_inode *)bh->b_data + off;
-> -
-> -	/*
-> -	 * https://martin.hinner.info/fs/bfs/bfs-structure.html explains that
-> -	 * BFS in SCO UnixWare environment used only lower 9 bits of di->i_mode
-> -	 * value. This means that, although bfs_write_inode() saves whole
-> -	 * inode->i_mode bits (which include S_IFMT bits and S_IS{UID,GID,VTX}
-> -	 * bits), middle 7 bits of di->i_mode value can be garbage when these
-> -	 * bits were not saved by bfs_write_inode().
-> -	 * Since we can't tell whether middle 7 bits are garbage, use only
-> -	 * lower 12 bits (i.e. tolerate S_IS{UID,GID,VTX} bits possibly being
-> -	 * garbage) and reconstruct S_IFMT bits for Linux environment from
-> -	 * di->i_vtype value.
-> -	 */
-> -	inode->i_mode = 0x00000FFF & le32_to_cpu(di->i_mode);
-> -	if (le32_to_cpu(di->i_vtype) == BFS_VDIR) {
-> -		inode->i_mode |= S_IFDIR;
-> -		inode->i_op = &bfs_dir_inops;
-> -		inode->i_fop = &bfs_dir_operations;
-> -	} else if (le32_to_cpu(di->i_vtype) == BFS_VREG) {
-> -		inode->i_mode |= S_IFREG;
-> -		inode->i_op = &bfs_file_inops;
-> -		inode->i_fop = &bfs_file_operations;
-> -		inode->i_mapping->a_ops = &bfs_aops;
-> -	} else {
-> -		brelse(bh);
-> -		printf("Unknown vtype=%u %s:%08lx\n",
-> -		       le32_to_cpu(di->i_vtype), inode->i_sb->s_id, ino);
-> -		goto error;
-> -	}
-> -
-> -	BFS_I(inode)->i_sblock =  le32_to_cpu(di->i_sblock);
-> -	BFS_I(inode)->i_eblock =  le32_to_cpu(di->i_eblock);
-> -	BFS_I(inode)->i_dsk_ino = le16_to_cpu(di->i_ino);
-> -	i_uid_write(inode, le32_to_cpu(di->i_uid));
-> -	i_gid_write(inode,  le32_to_cpu(di->i_gid));
-> -	set_nlink(inode, le32_to_cpu(di->i_nlink));
-> -	inode->i_size = BFS_FILESIZE(di);
-> -	inode->i_blocks = BFS_FILEBLOCKS(di);
-> -	inode_set_atime(inode, le32_to_cpu(di->i_atime), 0);
-> -	inode_set_mtime(inode, le32_to_cpu(di->i_mtime), 0);
-> -	inode_set_ctime(inode, le32_to_cpu(di->i_ctime), 0);
-> -
-> -	brelse(bh);
-> -	unlock_new_inode(inode);
-> -	return inode;
-> -
-> -error:
-> -	iget_failed(inode);
-> -	return ERR_PTR(-EIO);
-> -}
-> -
-> -static struct bfs_inode *find_inode(struct super_block *sb, u16 ino, struct buffer_head **p)
-> -{
-> -	if ((ino < BFS_ROOT_INO) || (ino > BFS_SB(sb)->si_lasti)) {
-> -		printf("Bad inode number %s:%08x\n", sb->s_id, ino);
-> -		return ERR_PTR(-EIO);
-> -	}
-> -
-> -	ino -= BFS_ROOT_INO;
-> -
-> -	*p = sb_bread(sb, 1 + ino / BFS_INODES_PER_BLOCK);
-> -	if (!*p) {
-> -		printf("Unable to read inode %s:%08x\n", sb->s_id, ino);
-> -		return ERR_PTR(-EIO);
-> -	}
-> -
-> -	return (struct bfs_inode *)(*p)->b_data +  ino % BFS_INODES_PER_BLOCK;
-> -}
-> -
-> -static int bfs_write_inode(struct inode *inode, struct writeback_control *wbc)
-> -{
-> -	struct bfs_sb_info *info = BFS_SB(inode->i_sb);
-> -	unsigned int ino = (u16)inode->i_ino;
-> -	unsigned long i_sblock;
-> -	struct bfs_inode *di;
-> -	struct buffer_head *bh;
-> -
-> -	dprintf("ino=%08x\n", ino);
-> -
-> -	di = find_inode(inode->i_sb, ino, &bh);
-> -	if (IS_ERR(di))
-> -		return PTR_ERR(di);
-> -
-> -	mutex_lock(&info->bfs_lock);
-> -
-> -	if (ino == BFS_ROOT_INO)
-> -		di->i_vtype = cpu_to_le32(BFS_VDIR);
-> -	else
-> -		di->i_vtype = cpu_to_le32(BFS_VREG);
-> -
-> -	di->i_ino = cpu_to_le16(ino);
-> -	di->i_mode = cpu_to_le32(inode->i_mode);
-> -	di->i_uid = cpu_to_le32(i_uid_read(inode));
-> -	di->i_gid = cpu_to_le32(i_gid_read(inode));
-> -	di->i_nlink = cpu_to_le32(inode->i_nlink);
-> -	di->i_atime = cpu_to_le32(inode_get_atime_sec(inode));
-> -	di->i_mtime = cpu_to_le32(inode_get_mtime_sec(inode));
-> -	di->i_ctime = cpu_to_le32(inode_get_ctime_sec(inode));
-> -	i_sblock = BFS_I(inode)->i_sblock;
-> -	di->i_sblock = cpu_to_le32(i_sblock);
-> -	di->i_eblock = cpu_to_le32(BFS_I(inode)->i_eblock);
-> -	di->i_eoffset = cpu_to_le32(i_sblock * BFS_BSIZE + inode->i_size - 1);
-> -
-> -	mark_buffer_dirty(bh);
-> -	brelse(bh);
-> -	mutex_unlock(&info->bfs_lock);
-> -	set_inode_metadata_writeback(inode);
-> -	return 0;
-> -}
-> -
-> -static int bfs_sync_inode_metadata(struct inode *inode,
-> -				   struct writeback_control *wbc)
-> -{
-> -	int err = 0;
-> -	struct bfs_inode *di;
-> -	struct buffer_head *bh;
-> -
-> -	di = find_inode(inode->i_sb, (u16)inode->i_ino, &bh);
-> -	if (IS_ERR(di))
-> -		return PTR_ERR(di);
-> -
-> -	sync_dirty_buffer(bh);
-> -	if (buffer_write_io_error(bh)) {
-> -		err = -EIO;
-> -		goto out;
-> -	}
-> -	err = mmb_sync(&BFS_I(inode)->i_metadata_bhs);
-> -out:
-> -	brelse(bh);
-> -	return err;
-> -}
-> -
-> -static void bfs_evict_inode(struct inode *inode)
-> -{
-> -	unsigned long ino = inode->i_ino;
-> -	struct bfs_inode *di;
-> -	struct buffer_head *bh;
-> -	struct super_block *s = inode->i_sb;
-> -	struct bfs_sb_info *info = BFS_SB(s);
-> -	struct bfs_inode_info *bi = BFS_I(inode);
-> -
-> -	dprintf("ino=%08lx\n", ino);
-> -
-> -	truncate_inode_pages_final(&inode->i_data);
-> -	if (inode->i_nlink)
-> -		mmb_sync(&BFS_I(inode)->i_metadata_bhs);
-> -	mmb_invalidate(&BFS_I(inode)->i_metadata_bhs);
-> -	clear_inode(inode);
-> -
-> -	if (inode->i_nlink)
-> -		return;
-> -
-> -	di = find_inode(s, inode->i_ino, &bh);
-> -	if (IS_ERR(di))
-> -		return;
-> -
-> -	mutex_lock(&info->bfs_lock);
-> -	/* clear on-disk inode */
-> -	memset(di, 0, sizeof(struct bfs_inode));
-> -	mark_buffer_dirty(bh);
-> -	brelse(bh);
-> -
-> -	if (bi->i_dsk_ino) {
-> -		if (bi->i_sblock)
-> -			info->si_freeb += bi->i_eblock + 1 - bi->i_sblock;
-> -		info->si_freei++;
-> -		clear_bit(ino, info->si_imap);
-> -		bfs_dump_imap("evict_inode", s);
-> -	}
-> -
-> -	/*
-> -	 * If this was the last file, make the previous block
-> -	 * "last block of the last file" even if there is no
-> -	 * real file there, saves us 1 gap.
-> -	 */
-> -	if (info->si_lf_eblk == bi->i_eblock)
-> -		info->si_lf_eblk = bi->i_sblock - 1;
-> -	mutex_unlock(&info->bfs_lock);
-> -}
-> -
-> -static void bfs_put_super(struct super_block *s)
-> -{
-> -	struct bfs_sb_info *info = BFS_SB(s);
-> -
-> -	if (!info)
-> -		return;
-> -
-> -	mutex_destroy(&info->bfs_lock);
-> -	kfree(info);
-> -	s->s_fs_info = NULL;
-> -}
-> -
-> -static int bfs_statfs(struct dentry *dentry, struct kstatfs *buf)
-> -{
-> -	struct super_block *s = dentry->d_sb;
-> -	struct bfs_sb_info *info = BFS_SB(s);
-> -	u64 id = huge_encode_dev(s->s_bdev->bd_dev);
-> -	buf->f_type = BFS_MAGIC;
-> -	buf->f_bsize = s->s_blocksize;
-> -	buf->f_blocks = info->si_blocks;
-> -	buf->f_bfree = buf->f_bavail = info->si_freeb;
-> -	buf->f_files = info->si_lasti + 1 - BFS_ROOT_INO;
-> -	buf->f_ffree = info->si_freei;
-> -	buf->f_fsid = u64_to_fsid(id);
-> -	buf->f_namelen = BFS_NAMELEN;
-> -	return 0;
-> -}
-> -
-> -static struct kmem_cache *bfs_inode_cachep;
-> -
-> -static struct inode *bfs_alloc_inode(struct super_block *sb)
-> -{
-> -	struct bfs_inode_info *bi;
-> -	bi = alloc_inode_sb(sb, bfs_inode_cachep, GFP_KERNEL);
-> -	if (!bi)
-> -		return NULL;
-> -	mmb_init(&bi->i_metadata_bhs, &bi->vfs_inode.i_data);
-> -
-> -	return &bi->vfs_inode;
-> -}
-> -
-> -static void bfs_free_inode(struct inode *inode)
-> -{
-> -	kmem_cache_free(bfs_inode_cachep, BFS_I(inode));
-> -}
-> -
-> -static void init_once(void *foo)
-> -{
-> -	struct bfs_inode_info *bi = foo;
-> -
-> -	inode_init_once(&bi->vfs_inode);
-> -}
-> -
-> -static int __init init_inodecache(void)
-> -{
-> -	bfs_inode_cachep = kmem_cache_create("bfs_inode_cache",
-> -					     sizeof(struct bfs_inode_info),
-> -					     0, (SLAB_RECLAIM_ACCOUNT|
-> -						SLAB_ACCOUNT),
-> -					     init_once);
-> -	if (bfs_inode_cachep == NULL)
-> -		return -ENOMEM;
-> -	return 0;
-> -}
-> -
-> -static void destroy_inodecache(void)
-> -{
-> -	/*
-> -	 * Make sure all delayed rcu free inodes are flushed before we
-> -	 * destroy cache.
-> -	 */
-> -	rcu_barrier();
-> -	kmem_cache_destroy(bfs_inode_cachep);
-> -}
-> -
-> -static const struct super_operations bfs_sops = {
-> -	.alloc_inode	= bfs_alloc_inode,
-> -	.free_inode	= bfs_free_inode,
-> -	.write_inode	= bfs_write_inode,
-> -	.sync_inode_metadata = bfs_sync_inode_metadata,
-> -	.evict_inode	= bfs_evict_inode,
-> -	.put_super	= bfs_put_super,
-> -	.statfs		= bfs_statfs,
-> -};
-> -
-> -void bfs_dump_imap(const char *prefix, struct super_block *s)
-> -{
-> -#ifdef DEBUG
-> -	int i;
-> -	char *tmpbuf = kzalloc(PAGE_SIZE, GFP_KERNEL);
-> -
-> -	if (!tmpbuf)
-> -		return;
-> -	for (i = BFS_SB(s)->si_lasti; i >= 0; i--) {
-> -		if (i > PAGE_SIZE - 100) break;
-> -		if (test_bit(i, BFS_SB(s)->si_imap))
-> -			strcat(tmpbuf, "1");
-> -		else
-> -			strcat(tmpbuf, "0");
-> -	}
-> -	printf("%s: lasti=%08lx <%s>\n", prefix, BFS_SB(s)->si_lasti, tmpbuf);
-> -	kfree(tmpbuf);
-> -#endif
-> -}
-> -
-> -static int bfs_fill_super(struct super_block *s, struct fs_context *fc)
-> -{
-> -	struct buffer_head *bh, *sbh;
-> -	struct bfs_super_block *bfs_sb;
-> -	struct inode *inode;
-> -	unsigned i;
-> -	struct bfs_sb_info *info;
-> -	int ret = -EINVAL;
-> -	unsigned long i_sblock, i_eblock, i_eoff, s_size;
-> -	int silent = fc->sb_flags & SB_SILENT;
-> -
-> -	info = kzalloc_obj(*info);
-> -	if (!info)
-> -		return -ENOMEM;
-> -	mutex_init(&info->bfs_lock);
-> -	s->s_fs_info = info;
-> -	s->s_time_min = 0;
-> -	s->s_time_max = U32_MAX;
-> -
-> -	if (!sb_set_blocksize(s, BFS_BSIZE))
-> -		goto out;
-> -
-> -	sbh = sb_bread(s, 0);
-> -	if (!sbh)
-> -		goto out;
-> -	bfs_sb = (struct bfs_super_block *)sbh->b_data;
-> -	if (le32_to_cpu(bfs_sb->s_magic) != BFS_MAGIC) {
-> -		if (!silent)
-> -			printf("No BFS filesystem on %s (magic=%08x)\n", s->s_id,  le32_to_cpu(bfs_sb->s_magic));
-> -		goto out1;
-> -	}
-> -	if (BFS_UNCLEAN(bfs_sb, s) && !silent)
-> -		printf("%s is unclean, continuing\n", s->s_id);
-> -
-> -	s->s_magic = BFS_MAGIC;
-> -
-> -	if (le32_to_cpu(bfs_sb->s_start) > le32_to_cpu(bfs_sb->s_end) ||
-> -	    le32_to_cpu(bfs_sb->s_start) < sizeof(struct bfs_super_block) + sizeof(struct bfs_dirent)) {
-> -		printf("Superblock is corrupted on %s\n", s->s_id);
-> -		goto out1;
-> -	}
-> -
-> -	info->si_lasti = (le32_to_cpu(bfs_sb->s_start) - BFS_BSIZE) / sizeof(struct bfs_inode) + BFS_ROOT_INO - 1;
-> -	if (info->si_lasti == BFS_MAX_LASTI)
-> -		printf("NOTE: filesystem %s was created with 512 inodes, the real maximum is 511, mounting anyway\n", s->s_id);
-> -	else if (info->si_lasti > BFS_MAX_LASTI) {
-> -		printf("Impossible last inode number %lu > %d on %s\n", info->si_lasti, BFS_MAX_LASTI, s->s_id);
-> -		goto out1;
-> -	}
-> -	for (i = 0; i < BFS_ROOT_INO; i++)
-> -		set_bit(i, info->si_imap);
-> -
-> -	s->s_op = &bfs_sops;
-> -	inode = bfs_iget(s, BFS_ROOT_INO);
-> -	if (IS_ERR(inode)) {
-> -		ret = PTR_ERR(inode);
-> -		goto out1;
-> -	}
-> -	s->s_root = d_make_root(inode);
-> -	if (!s->s_root) {
-> -		ret = -ENOMEM;
-> -		goto out1;
-> -	}
-> -
-> -	info->si_blocks = (le32_to_cpu(bfs_sb->s_end) + 1) >> BFS_BSIZE_BITS;
-> -	info->si_freeb = (le32_to_cpu(bfs_sb->s_end) + 1 - le32_to_cpu(bfs_sb->s_start)) >> BFS_BSIZE_BITS;
-> -	info->si_freei = 0;
-> -	info->si_lf_eblk = 0;
-> -
-> -	/* can we read the last block? */
-> -	bh = sb_bread(s, info->si_blocks - 1);
-> -	if (!bh) {
-> -		printf("Last block not available on %s: %lu\n", s->s_id, info->si_blocks - 1);
-> -		ret = -EIO;
-> -		goto out2;
-> -	}
-> -	brelse(bh);
-> -
-> -	bh = NULL;
-> -	for (i = BFS_ROOT_INO; i <= info->si_lasti; i++) {
-> -		struct bfs_inode *di;
-> -		int block = (i - BFS_ROOT_INO) / BFS_INODES_PER_BLOCK + 1;
-> -		int off = (i - BFS_ROOT_INO) % BFS_INODES_PER_BLOCK;
-> -		unsigned long eblock;
-> -
-> -		if (!off) {
-> -			brelse(bh);
-> -			bh = sb_bread(s, block);
-> -		}
-> -
-> -		if (!bh)
-> -			continue;
-> -
-> -		di = (struct bfs_inode *)bh->b_data + off;
-> -
-> -		/* test if filesystem is not corrupted */
-> -
-> -		i_eoff = le32_to_cpu(di->i_eoffset);
-> -		i_sblock = le32_to_cpu(di->i_sblock);
-> -		i_eblock = le32_to_cpu(di->i_eblock);
-> -		s_size = le32_to_cpu(bfs_sb->s_end);
-> -
-> -		if (i_sblock > info->si_blocks ||
-> -			i_eblock > info->si_blocks ||
-> -			i_sblock > i_eblock ||
-> -			(i_eoff != le32_to_cpu(-1) && i_eoff > s_size) ||
-> -			i_sblock * BFS_BSIZE > i_eoff) {
-> -
-> -			printf("Inode 0x%08x corrupted on %s\n", i, s->s_id);
-> -
-> -			brelse(bh);
-> -			ret = -EIO;
-> -			goto out2;
-> -		}
-> -
-> -		if (!di->i_ino) {
-> -			info->si_freei++;
-> -			continue;
-> -		}
-> -		set_bit(i, info->si_imap);
-> -		info->si_freeb -= BFS_FILEBLOCKS(di);
-> -
-> -		eblock =  le32_to_cpu(di->i_eblock);
-> -		if (eblock > info->si_lf_eblk)
-> -			info->si_lf_eblk = eblock;
-> -	}
-> -	brelse(bh);
-> -	brelse(sbh);
-> -	bfs_dump_imap("fill_super", s);
-> -	return 0;
-> -
-> -out2:
-> -	dput(s->s_root);
-> -	s->s_root = NULL;
-> -out1:
-> -	brelse(sbh);
-> -out:
-> -	mutex_destroy(&info->bfs_lock);
-> -	kfree(info);
-> -	s->s_fs_info = NULL;
-> -	return ret;
-> -}
-> -
-> -static int bfs_get_tree(struct fs_context *fc)
-> -{
-> -	return get_tree_bdev(fc, bfs_fill_super);
-> -}
-> -
-> -static const struct fs_context_operations bfs_context_ops = {
-> -	.get_tree = bfs_get_tree,
-> -};
-> -
-> -static int bfs_init_fs_context(struct fs_context *fc)
-> -{
-> -	fc->ops = &bfs_context_ops;
-> -
-> -	return 0;
-> -}
-> -
-> -static struct file_system_type bfs_fs_type = {
-> -	.owner			= THIS_MODULE,
-> -	.name			= "bfs",
-> -	.init_fs_context	= bfs_init_fs_context,
-> -	.kill_sb		= kill_block_super,
-> -	.fs_flags		= FS_REQUIRES_DEV,
-> -};
-> -MODULE_ALIAS_FS("bfs");
-> -
-> -static int __init init_bfs_fs(void)
-> -{
-> -	int err = init_inodecache();
-> -	if (err)
-> -		goto out1;
-> -	err = register_filesystem(&bfs_fs_type);
-> -	if (err)
-> -		goto out;
-> -	return 0;
-> -out:
-> -	destroy_inodecache();
-> -out1:
-> -	return err;
-> -}
-> -
-> -static void __exit exit_bfs_fs(void)
-> -{
-> -	unregister_filesystem(&bfs_fs_type);
-> -	destroy_inodecache();
-> -}
-> -
-> -module_init(init_bfs_fs)
-> -module_exit(exit_bfs_fs)
-> diff --git a/tools/testing/selftests/filesystems/statmount/statmount_test.c b/tools/testing/selftests/filesystems/statmount/statmount_test.c
-> index 60c2c544db6a..52544512edc7 100644
-> --- a/tools/testing/selftests/filesystems/statmount/statmount_test.c
-> +++ b/tools/testing/selftests/filesystems/statmount/statmount_test.c
-> @@ -17,7 +17,7 @@
->  
->  static const char *const known_fs[] = {
->  	"9p", "adfs", "affs", "afs", "aio", "anon_inodefs", "apparmorfs",
-> -	"autofs", "bcachefs", "bdev", "befs", "bfs", "binder", "binfmt_misc",
-> +	"autofs", "bcachefs", "bdev", "befs", "binder", "binfmt_misc",
->  	"bpf", "btrfs", "btrfs_test_fs", "ceph", "cgroup", "cgroup2", "cifs",
->  	"coda", "configfs", "cpuset", "cramfs", "cxl", "dax", "debugfs",
->  	"devpts", "devtmpfs", "dmabuf", "drm", "ecryptfs", "efivarfs", "efs",
-> -- 
-> 2.43.0
-> 
--- 
-Jan Kara <jack@suse.com>
-SUSE Labs, CR
+> +	if (cpunode)
+> +		of_node_put(cpunode);
+>   
+> +	return coregroup_id;
+> +}
+
 
