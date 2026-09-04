@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-26576-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26577-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C6456C79F8E
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Sep 2026 22:25:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EF9E8C79F82
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Sep 2026 22:26:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hc9yn0fTbz2yvs;
-	Sat, 05 Sep 2026 08:25:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788560737;
-	cv=none; b=jk/qJmvLZ03Stgo2brr5Vvw6V6DlJth2Bs/Ccaiw7AqWJn+jheIT8TP1teZ9GkLJmpkQwSxnOTSfW2J/wzvhch+XitBYTw27pZM2aOVjmJdrM5BDTcKJUpDSKgZTmO5ODIKlnBagANdmsP0aIMvHvmeH0q0L/MznhybUkcpfP/M1iCFu5dCZfWyAFBj5t8ZVc6YQawiQfTzhSL+R5T9/mtTZKy33F9EROalQLSPa7kSvRgQK3sb0Gk3C5+VfkM76d0DVm38A7ZVffgNzSptsKMrRsiGuzGnrBE482Gw2cfElO3mj0/9Md93RRU69aYC/10bP4cZewdvwTQpwfd6G3A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hc9yp6F9Cz2yxk;
+	Sat, 05 Sep 2026 08:25:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788560738;
+	cv=none; b=KvmjkYiYHQC+ppDWRdorM14jfWJtm7vW/qzYNtrP7v3vBPinFGrYHnD6YjOG+tdK+8Ri7XyA28/rCJ7I5cj7wDlRDEFLlHrYaFyigBaK5KYCgqF65H8DDNguGL8HhtYm4+lPyulnmlRmoCxBVLCssxjD+pEjeqECcNzzRK0bAWE5QMBDXX7ka9wuNmVbM3sZQDZu6gzw4zxtLUEccNzsjGZ7pg21uc+2Kd56Yd7+yTljuHtRGzmF9WdO8+/L3HIBFfXgmQaaz7v95ENWckztaGFPusr756yCDOLSnFWdmkncijwrj2w1HLkz5zh55u5WJY0HquA0no1+bW+GfQYD3A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788560737; c=relaxed/relaxed;
-	bh=UHO+mi1IOt4R3cvz6YT+A6aAyOSJzeHq5bZ5NQ609xA=;
+	t=1788560738; c=relaxed/relaxed;
+	bh=sc+8JIF2uQ0t3P9vvf91E4KG3CzwGXIrY4q/cBCcwIw=;
 	h=Subject:From:To:Cc:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=RoN/s9MXTvKpVjRwJd+rrzt2smQSVQUwFGNWkf8zHNPr4P0Pwen3MAPeW/1LCITFYnwHPMMUZHugV2SP8W6cjTSX6DpMi8bCPboVFSrFoGR+fPk0TmuXhS/6fhrbiBp+Rn1XFNubNMoxca+/AbKuJw2tZK4DABdX4x/+z2tx44s4QB1w44vOfMgT/KHT2G7DHqSyas1jIsKwPQTRVWLyigLbeVpm1xON+yy34Wf0KEj3RZ2Y045OPGqNWHCcY58E8T6UFWk/RVpWct5mhctj9P8E4vXDi9bPDDRjixy3CPurDD6EASAcTg6V83XoJeSaS0NP5XZZFsdiXk2ezqEOnA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=SNo/UfXg; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:MIME-Version; b=Tv9tCsQgIfU1q+vz3KNsLeWZo4dQTT+GEKkv97t9SXDqNdA4wxIqSQ8waViud1L/Xr14tUEO29DIEx3+pgH1JEw8+cL1KPWoTXbvicivas5FH5vvYSpUybdGx299vQVKw4lnw3KeQUvVReX4epn32CLrnIvQSXdny76B03X8Ic6ljGerQuvxb4aQt3XnprMzVebg1vXTAr3OKFGQymZtHDjtHtHVEV1nGAlEN7XW2mn6xDb1TCg2s8SJpc/3hGaI53Hur3I0wq0OIDl+t+Tf8ENOUTxxSwaFOkl4xwr8KRre42wMTvPBM12q5B6rJ/E83qBXMj/IuCYTskpqZjGORQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=iswR2FC0; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=SNo/UfXg;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=iswR2FC0;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hc9yl50Vlz2xlw
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 05 Sep 2026 08:25:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hc9yn4Wkgz2yx5
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 05 Sep 2026 08:25:37 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id B9C89602C8;
-	Fri,  4 Sep 2026 22:25:33 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9F7B71F00ADB;
+	by sea.source.kernel.org (Postfix) with ESMTP id 2EE35408DD;
 	Fri,  4 Sep 2026 22:25:32 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3B8441F00A3F;
+	Fri,  4 Sep 2026 22:25:31 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788560733;
-	bh=UHO+mi1IOt4R3cvz6YT+A6aAyOSJzeHq5bZ5NQ609xA=;
+	s=k20260515; t=1788560732;
+	bh=sc+8JIF2uQ0t3P9vvf91E4KG3CzwGXIrY4q/cBCcwIw=;
 	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=SNo/UfXgNwMgteS4V59nftI0a7XprY1+K+ybYPsfJrIGlMphl4rCUIyLcuLOxoRFO
-	 /BPcIIgTM71pWYL0S7c/e33lPGYOqeABE7s04QbIwqomi7Uk3yaS5z/IZnPT3FatrI
-	 jLTsAA2+pktclE1YWWpKLSoqdGxpYocyu1+K06ODT3BiOWy756hPXvhPFyO+0W9i8a
-	 ApfKNy5F4NXqg4Aj/HdYKJRCJsbCBE7wAgpJmo6Ahe4OcptRIhml3WRV/6BtDYLxK9
-	 ncVG/Q7kdRLiRlZuRu2grv/Xcjre4vZ5spAIH1xRfQOkE+x28iD2oOX5ZMFCcktKHf
-	 sdEpfGEhJ5XWg==
-Subject: Re: [PATCH v3 net-next 7/8] net: dsa: netc: add PTP two-step
- timestamping support
+	b=iswR2FC0hCUpIYWWwDwcYOfpyi032xIYfkYX+ULX9/tvMv+pJ3yjz08v3PSruSavH
+	 kACFsWbdYX6qJ+lvZDvqNbTvNwyOnqMTOxq3b07xdJ2Vqu/9uqhCjxF4KuOmV5qeqv
+	 4ZnIk8hE5Lno+ZcH0iNSz1UhVlKk9EUDVNPXGSCupLjT+5ZfZya3trfZ9SegPziEs3
+	 9rPRkpgu/dV5j2cMsAOgsCY46JMSH6h6dOWiiJ1zYKSOJlp5zhBSDqOHd1y1VPG16m
+	 XaQW61WK9V5BkBc+XcYSV6eu3NjiE9nhPwWRePyzAup6lGgpJ+sWIIZ3eVjtKGmIsD
+	 59m8znRbxEadg==
+Subject: Re: [PATCH v3 net-next 5/8] net: dsa: netc: check return value of
+ ntmp_ipft_delete_entry()
 From: netdev-bot+sashiko@kernel.org
 To: wei.fang@oss.nxp.com
 Cc: xiaoning.wang@nxp.com, andrew@lunn.ch, olteanv@gmail.com,
@@ -54,10 +54,10 @@ Cc: xiaoning.wang@nxp.com, andrew@lunn.ch, olteanv@gmail.com,
  richardcochran@gmail.com, wei.fang@nxp.com, imx@lists.linux.dev,
  netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
-Date: Fri, 04 Sep 2026 22:25:32 +0000
-Message-ID: <178856073223.219967.8253414459480029392@kernel.org>
-In-Reply-To: <20260831082335.1184605-8-wei.fang@oss.nxp.com>
-References: <20260831082335.1184605-8-wei.fang@oss.nxp.com>
+Date: Fri, 04 Sep 2026 22:25:30 +0000
+Message-ID: <178856073082.219967.16628382371770285710@kernel.org>
+In-Reply-To: <20260831082335.1184605-6-wei.fang@oss.nxp.com>
+References: <20260831082335.1184605-6-wei.fang@oss.nxp.com>
 X-sashiko-severity: Medium
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -75,392 +75,339 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 
-Thank you for your contribution! Sashiko AI review found 4 potential
+Thank you for your contribution! Sashiko AI review found 5 potential
 issue(s) to consider:
 
-Critical: 0 · High: 0 · Medium: 3 · Low: 1
+Critical: 0 · High: 0 · Medium: 2 · Low: 3
 
-- [Medium] Failed IPFT deletion leaves PTP trap rules programmed in
-  hardware while the driver reports the new (possibly NONE) rx_filter as…
-- [Medium] netc_get_ts_info() and netc_port_hwtstamp_set() use different
-  definitions of 'hardware timestamping available'.
-- [Medium] The 4-bit two-step timestamp request ID is recycled purely on
-  the basis of 'the clone is no longer on np->skb_txtstamp_queue'.
-- [Low] netc_flow_dissect() (net/dsa/tag_netc.c:295) decides to skip
-  protocol/offset parsing based on the tag's subtype nibble alone: 'if…
+- [Medium] Commit message does not match the code in three ways.
+- [Medium] netc_port_remove_host_flood()
+  (drivers/net/dsa/netc/netc_main.c:1773-1792) now treats every error…
+- [Low] This user-visible bug fix carries no `Fixes:` tag (and no stable
+  Cc).
+- [Low] Format-specifier/argument signedness mismatch in the three newly
+  added dev_err() calls: they print the DSA port index with `%u` while…
+- [Low] netc_port_set_host_flood() is changed from make-before-break (add
+  new entry, then delete old) to break-before-make…
 
 --
 
-net: dsa: netc: add PTP two-step timestamping support
+net: dsa: netc: check return value of ntmp_ipft_delete_entry()
 
-This adds RX timestamping by installing IPFT rules that redirect PTP frames
-to the CPU port, plus two-step TX timestamping where a cloned skb is matched
-against a hardware-generated response frame using a 4-bit request ID. The
-tagger gains To_Port subtype 2 and To_Host subtype 1/2 handling and
-netc_connect()/netc_disconnect() to manage the shared netc_tagger_data.
+This converts netc_port_remove_host_flood() to return int, propagates the
+error from ntmp_ipft_delete_entry() to its callers, and reorders
+netc_port_set_host_flood() to delete the old IPFT host flood entry before
+adding the new one, with rollback paths in netc_port_set_host_flood() and
+netc_port_bridge_join().
 
-A few questions on the new PTP paths below.
-
-> diff --git a/drivers/net/dsa/netc/Kconfig b/drivers/net/dsa/netc/Kconfig
-> index 793f7691a24f3..8770b65d0f62d 100644
-> --- a/drivers/net/dsa/netc/Kconfig
-> +++ b/drivers/net/dsa/netc/Kconfig
-> @@ -4,6 +4,7 @@ config NET_DSA_NETC_SWITCH
->  	depends on ARM64 || COMPILE_TEST
->  	depends on NET_DSA && PCI
->  	depends on NET_VENDOR_FREESCALE
-> +	depends on PTP_1588_CLOCK_OPTIONAL
->  	select NET_DSA_TAG_NETC
->  	select FSL_ENETC_MDIO
->  	select NXP_NTMP
-
-> diff --git a/drivers/net/dsa/netc/netc_ptp.c b/drivers/net/dsa/netc/netc_ptp.c
-> new file mode 100644
-> index 0000000000000..f55010f46819c
-> --- /dev/null
-> +++ b/drivers/net/dsa/netc/netc_ptp.c
-> @@ -0,0 +1,471 @@
-> +// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
-
-[ ... ]
-
-> +#define NETC_NUM_TS_REQ_ID		16
-> +#define NETC_TXTSTAMP_TIMEOUT		(5 * HZ)
-> +
-> +static void netc_port_tstamp_timeout_work(struct work_struct *work)
-> +{
-> +	struct netc_port *np = container_of(work, struct netc_port,
-> +					    tstamp_timeout_work.work);
-> +	struct sk_buff_head free_list;
-> +	struct sk_buff *skb, *skb_tmp;
-> +
-> +	__skb_queue_head_init(&free_list);
-> +
-> +	spin_lock_bh(&np->tstamp_lock);
-> +	skb_queue_walk_safe(&np->skb_txtstamp_queue, skb, skb_tmp) {
-> +		if (time_before(jiffies, NETC_SKB_CB(skb)->ptp_tx_time +
-> +			       NETC_TXTSTAMP_TIMEOUT))
-> +			continue;
-> +
-> +		dev_dbg_ratelimited(np->switch_priv->dev,
-> +				    "Port %d ts_req_id %u which seems lost\n",
-> +				    np->dp->index, NETC_SKB_CB(skb)->ts_req_id);
-> +
-> +		__skb_unlink(skb, &np->skb_txtstamp_queue);
-> +		__skb_queue_tail(&free_list, skb);
-> +	}
+A few questions below, both about the changelog and the new error paths.
 
 [Severity: Medium]
+The changelog says:
 
-Can a request ID be handed out again while its response is still outstanding
-in hardware?
+  "In netc_port_add_host_flood_rule(), delete the old
+   entry before adding the new one, and guard against adding a new entry
+   when the old one still exists."
 
-netc_port_tstamp_timeout_work() unlinks and frees the clone after 5 seconds,
-and the allocator in netc_port_txtstamp_twostep() derives the free IDs purely
-from what is currently on the queue:
+Is the first half of that sentence accurate?  The post-patch
+netc_port_add_host_flood_rule() has no call to ntmp_ipft_delete_entry() at
+all; the only delete call site in the driver is
+netc_port_remove_host_flood().  The helper only gains the early bail-out
+that returns 0 when an entry already exists with the same uc/mc and -EINVAL
+otherwise.  The delete-before-add reordering actually lives in
+netc_port_set_host_flood() and netc_port_bridge_join().
 
-	skb_queue_walk_safe(&np->skb_txtstamp_queue, skb, skb_tmp)
-		__set_bit(NETC_SKB_CB(skb)->ts_req_id, ts_req_id_bitmap);
+Could the changelog also mention that the helper loses its "disable" side
+effect?  Before the patch, netc_port_add_host_flood_rule(np, false, false)
+wrote NETC_PIPFCR = 0 and cleared np->uc/np->mc; now it just returns 0
+without touching hardware.  netc_port_bridge_leave() still calls
+netc_port_add_host_flood_rule(np, uc, mc) with a possible (false, false) and
+now relies on PIPFCR already being 0.
 
-	ts_req_id = find_first_zero_bit(ts_req_id_bitmap, NETC_NUM_TS_REQ_ID);
+Lastly:
 
-So once a clone has timed out, nothing records that a To_Host subtype 2
-response for that ID may still arrive.
+  "such failures only occur under resource exhaustion conditions that are
+   already abnormal"
 
-If egress of the original frame is stalled past the timeout (link down, or
-sustained 802.3x PAUSE from the link partner), the late response reaches
-netc_port_twostep_tstamp_handler(), which matches on port and ts_req_id only,
-with no generation tag:
+Does that hold?  netc_xmit_ntmp_cmd() in
+drivers/net/ethernet/freescale/enetc/ntmp.c also returns -EBUSY when no
+control ring BD is free, -ETIMEDOUT from read_poll_timeout() (NETC_CBDR_TIMEOUT
+is 1000 us), and -EIO on a command BD system bus error or a non-zero writeback
+error status.  A failed rollback can therefore reflect a persistent device or
+control ring problem rather than transient memory pressure.
 
-	if (NETC_SKB_CB(skb)->ts_req_id != ts_req_id)
-		continue;
+[Severity: Low]
+Should this carry a Fixes: tag (and possibly a stable Cc)?  The bug being
+fixed, netc_port_remove_host_flood() ignoring the return value of
+ntmp_ipft_delete_entry() and then dropping np->ipft_hf_eid so a live
+hardware IPFT entry becomes untracked, was added by commit 46d6407692c8
+("net: dsa: netc: add FDB, STP, MTU, port setup and host flooding
+support"), which is already upstream, so released kernels are affected.
 
-	__skb_unlink(skb, &np->skb_txtstamp_queue);
-
-Would the newly queued clone then be completed with a timestamp that is
-seconds old, and the correct response for that clone later dropped as
-unmatched? Would a generation counter, or holding a timed-out ID back from
-reuse, avoid this?
-
-> +
-> +	/* Reschedule if there are still pending clones that have not
-> +	 * timed out yet.
-> +	 */
-> +	if (!skb_queue_empty(&np->skb_txtstamp_queue))
-> +		schedule_delayed_work(&np->tstamp_timeout_work,
-> +				      NETC_TXTSTAMP_TIMEOUT);
-> +
-> +	spin_unlock_bh(&np->tstamp_lock);
-> +	__skb_queue_purge(&free_list);
-> +}
-
-[ ... ]
-
-> +static int netc_get_phc_index(struct netc_switch *priv)
-> +{
-> +	if (!priv->tmr_dev)
-> +		return -1;
-> +
-> +	return ptp_clock_index_by_dev(&priv->tmr_dev->dev);
-> +}
-> +
-> +int netc_get_ts_info(struct dsa_switch *ds, int port,
-> +		     struct kernel_ethtool_ts_info *info)
-> +{
-> +	struct netc_switch *priv = ds->priv;
-> +
-> +	info->phc_index = netc_get_phc_index(priv);
-> +	if (info->phc_index < 0)
+> diff --git a/drivers/net/dsa/netc/netc_main.c b/drivers/net/dsa/netc/netc_main.c
+> index d326a00104e1d..2171c83f36407 100644
+> --- a/drivers/net/dsa/netc/netc_main.c
+> +++ b/drivers/net/dsa/netc/netc_main.c
+> @@ -1707,15 +1707,23 @@ static int netc_port_add_host_flood_rule(struct netc_port *np,
+>  	u32 cfg;
+>  	int err;
+>  
+> -	if (!uc && !mc) {
+> -		/* Disable ingress port filter table lookup */
+> -		netc_port_wr(np, NETC_PIPFCR, 0);
+> -		np->uc = false;
+> -		np->mc = false;
+> +	if (np->ipft_hf_eid != NTMP_NULL_ENTRY_ID) {
+> +		/* The old rule is the same as the new rule, return directly.
+> +		 * But if the existing rule differs from the requested one,
+> +		 * return an error.
+> +		 */
+> +		if (np->uc == uc && np->mc == mc)
+> +			return 0;
+>  
+> -		return 0;
+> +		dev_err(priv->dev,
+> +			"The old host flood rule has not been removed from port %u\n",
+> +			np->dp->index);
+> +		return -EINVAL;
+>  	}
+>  
+> +	if (!uc && !mc)
 > +		return 0;
 > +
-> +	info->so_timestamping |= SOF_TIMESTAMPING_TX_HARDWARE |
-> +				 SOF_TIMESTAMPING_RX_HARDWARE |
-> +				 SOF_TIMESTAMPING_RAW_HARDWARE;
-> +
-> +	info->tx_types = BIT(HWTSTAMP_TX_OFF) | BIT(HWTSTAMP_TX_ON);
-> +
-> +	info->rx_filters = BIT(HWTSTAMP_FILTER_NONE) |
-> +			   BIT(HWTSTAMP_FILTER_PTP_V2_EVENT) |
-> +			   BIT(HWTSTAMP_FILTER_PTP_V2_L2_EVENT) |
-> +			   BIT(HWTSTAMP_FILTER_PTP_V2_L4_EVENT);
-> +
-> +	return 0;
-> +}
-> +
-> +static void netc_port_del_ptp_filter(struct netc_port *np)
-> +{
-> +	struct netc_switch *priv = np->switch_priv;
-> +	u32 entry_id;
-> +	int i;
-> +
-> +	for (i = 0; i < NETC_PTP_MAX; i++) {
-> +		entry_id = np->ptp_ipft_eid[i];
-> +		if (entry_id != NTMP_NULL_ENTRY_ID) {
-> +			if (!ntmp_ipft_delete_entry(&priv->ntmp, entry_id)) {
-> +				np->ptp_ipft_eid[i] = NTMP_NULL_ENTRY_ID;
-> +				continue;
-> +			}
-> +
-> +			dev_err(priv->dev,
-> +				"Deleting PTP entry 0x%x (type %d) on port %d failed\n",
-> +				entry_id, i, np->dp->index);
-> +		}
-> +	}
-> +}
+>  	host_flood = kzalloc_obj(*host_flood);
+>  	if (!host_flood)
+>  		return -ENOMEM;
 
-[ ... ]
+[Severity: Medium]
+Can this new -EINVAL guard make a divergent np->ipft_hf_eid permanently
+sticky?  See the question on netc_port_remove_host_flood() below: once
+np->ipft_hf_eid is left set after a delete that the hardware may in fact
+have executed, every later netc_port_add_host_flood_rule() with different
+uc/mc returns -EINVAL, including the restore done by
+netc_port_bridge_leave().
 
-> +static int netc_port_add_ipft_ptp_entry(struct netc_port *np,
-> +					enum netc_ptp_type type)
-> +{
-> +	struct netc_switch *priv = np->switch_priv;
-> +	struct ipft_entry_data *entry;
-> +	struct ipft_keye_data *keye;
-> +	u32 cfg;
+> @@ -1762,32 +1770,33 @@ static int netc_port_add_host_flood_rule(struct netc_port *np,
+>  	return err;
+>  }
+>  
+> -static void netc_port_remove_host_flood(struct netc_port *np, u32 entry_id)
+> +static int netc_port_remove_host_flood(struct netc_port *np)
+>  {
+>  	struct netc_switch *priv = np->switch_priv;
+> -	bool disable_host_flood = false;
+> +	u32 entry_id = np->ipft_hf_eid;
 > +	int err;
-> +
-> +	/* The previously configured PTP entry may not have been successfully
-> +	 * deleted, so there is no need to configure it again.
-> +	 */
-> +	if (np->ptp_ipft_eid[type] != NTMP_NULL_ENTRY_ID)
+>  
+>  	if (entry_id == NTMP_NULL_ENTRY_ID)
+> -		return;
 > +		return 0;
-
-[ ... ]
-
-> +	cfg = FIELD_PREP(IPFT_FLTFA, IPFT_FLTFA_REDIRECT);
-> +	cfg |= FIELD_PREP(IPFT_HR, NETC_HR_PTP_TRAP);
-> +	cfg |= IPFT_TIMECAPE | IPFT_RRT;
-> +	entry->cfge.cfg = cpu_to_le32(cfg);
-
-[ ... ]
-
-> +static int netc_port_set_ptp_filter(struct netc_port *np, int rx_filter)
-> +{
-> +	int err = 0;
-> +
-> +	netc_port_del_ptp_filter(np);
-> +	np->ptp_rx_filter = HWTSTAMP_FILTER_NONE;
-> +
-> +	switch (rx_filter) {
-> +	case HWTSTAMP_FILTER_NONE:
-> +		break;
-
-[ ... ]
-
+>  
+> -	if (np->ipft_hf_eid == entry_id)
+> -		disable_host_flood = true;
+> +	err = ntmp_ipft_delete_entry(&priv->ntmp, entry_id);
 > +	if (err)
 > +		return err;
-> +
-> +	np->ptp_rx_filter = rx_filter;
-> +
-> +	return 0;
-> +}
-
-[Severity: Medium]
-
-What happens here when ntmp_ipft_delete_entry() fails?
-
-netc_port_del_ptp_filter() is void, and on failure it deliberately keeps
-np->ptp_ipft_eid[i] populated and only logs the error. netc_port_set_ptp_filter()
-calls it unconditionally, and on the HWTSTAMP_FILTER_NONE path err is never
-assigned, so np->ptp_rx_filter is committed and SIOCSHWTSTAMP returns success.
-
-The surviving entries were installed with:
-
-	cfg = FIELD_PREP(IPFT_FLTFA, IPFT_FLTFA_REDIRECT);
-	cfg |= FIELD_PREP(IPFT_HR, NETC_HR_PTP_TRAP);
-	cfg |= IPFT_TIMECAPE | IPFT_RRT;
-
-so would that port keep diverting all matching PTP frames to the CPU port
-(they are no longer bridged) and keep capturing ingress timestamps, while
-netc_port_hwtstamp_get() reports the filter as off?
-
-The reverse case is in netc_port_add_ipft_ptp_entry():
-
-	if (np->ptp_ipft_eid[type] != NTMP_NULL_ENTRY_ID)
-		return 0;
-
-If the hardware actually executed the delete but the command was reported as
-failed (command ring timeout after execution), a later enable request becomes
-a silent no-op. Would RX timestamping then stay dead while the driver reports
-the filter as enabled?
-
-Nothing retries the deletion, and netc_free_ports_resources() does not touch
-np->ptp_ipft_eid[], so the divergence would persist until the driver is
-unbound. Would it be reasonable to propagate the delete error out of
-netc_port_del_ptp_filter() and fail the ioctl instead?
-
-> +
-> +int netc_port_hwtstamp_set(struct dsa_switch *ds, int port,
-> +			   struct kernel_hwtstamp_config *config,
-> +			   struct netlink_ext_ack *extack)
-> +{
-> +	struct netc_port *np = NETC_PORT(ds, port);
-> +	struct netc_switch *priv = ds->priv;
-> +	int rx_filter, err;
-> +
-> +	if ((config->tx_type != HWTSTAMP_TX_OFF ||
-> +	     config->rx_filter != HWTSTAMP_FILTER_NONE) &&
-> +	    !priv->tmr_dev)
-> +		return -EOPNOTSUPP;
-
-[Severity: Medium]
-
-Should this gate use the same condition as netc_get_ts_info()?
-
-get_ts_info() advertises no timestamping capability at all unless a PHC is
-registered for tmr_dev:
-
-	info->phc_index = netc_get_phc_index(priv);
-	if (info->phc_index < 0)
-		return 0;
-
-while the set path only tests that the timer's PCI function exists, and
-netc_setup()'s own comment says that function is created during bus
-enumeration "even if the timer driver has not probed yet".
-
-Neither net_hwtstamp_validate() nor dsa_user_hwtstamp_set() cross-checks the
-driver's ts_info, so HWTSTAMP_TX_ON with HWTSTAMP_FILTER_PTP_V2_EVENT succeeds
-and installs the IPFT redirect entries while ethtool reports that the device
-supports no hardware timestamping.
-
-The same applies with CONFIG_PTP_1588_CLOCK=n, which the new "depends on
-PTP_1588_CLOCK_OPTIONAL" now permits: ptp_clock_index_by_dev() is stubbed to
--1 and ptp_classify_raw() returns PTP_CLASS_NONE, so no timestamp can ever be
-produced, yet the set path still returns 0.
-
-On the same subject, netc_port_twostep_tstamp_handler() passes the echoed
-value straight on:
-
-	hwtstamps.hwtstamp = ns_to_ktime(ts);
-	skb_complete_tx_timestamp(skb_match, &hwtstamps);
-
-whereas the RX path treats zero as "not captured":
-
-	/* ts == 0 indicates the hardware did not capture the RX timestamp
-	 * of the frame.
-	 */
-	if (!ts)
-		return false;
-
-Would a zero or frozen counter value from a timer that is not running be
-delivered to the socket error queue as a genuine hardware TX timestamp?
-
-[ ... ]
-
-> diff --git a/net/dsa/tag_netc.c b/net/dsa/tag_netc.c
-> index df72a61796ad5..d46576ae2f751 100644
-> --- a/net/dsa/tag_netc.c
-> +++ b/net/dsa/tag_netc.c
-
-[ ... ]
-
-> @@ -190,16 +300,48 @@ static void netc_flow_dissect(const struct sk_buff *skb, __be16 *proto,
->  	int type = FIELD_GET(NETC_TAG_TYPE, tag_cmn->type);
->  	int tag_len = netc_get_rx_tag_len(type, subtype);
 >  
-> -	/* The RX minimum frame length of the NETC switch port is 64 bytes,
-> -	 * and the frame is received by the ENETC driver. From the hardware
-> -	 * perspective, the receive buffer of RX BD is at least 128 bytes,
-> -	 * so the switch tag header is guaranteed to be in the linear region
-> -	 * of the skb.
-> +	/* The CPU port of the switch is connected to the ENETC, so the frame
-> +	 * is received by the ENETC driver. From the hardware perspective, the
-> +	 * receive buffer of RX BD is at least 128 bytes, so the switch tag
-> +	 * header is guaranteed to be in the linear region of the skb.
-> +	 *
-> +	 * When the subtype of the frame is NETC_TAG_TH_SUBTYPE2, it indicates
-> +	 * the frame is a hardware generated timestamp response, which is only
-> +	 * 26 bytes (DMAC + SMAC + tag), so the frame has no payload after the
-> +	 * tag. Therefore, there is no need to parse the protocol and offset.
-> +	 * For other types of the frames, they are all received from the switch
-> +	 * ports, and the RX minimum frame length of the port is 64 bytes,
-> +	 * frames shorter than 64 bytes will be discarded by the hardware and
-> +	 * will not be received by the software.
+> -	ntmp_ipft_delete_entry(&priv->ntmp, entry_id);
+> +	np->ipft_hf_eid = NTMP_NULL_ENTRY_ID;
+> +	np->uc = false;
+> +	np->mc = false;
+> +	netc_port_wr(np, NETC_PIPFCR, 0);
+
+[Severity: Medium]
+Is every error from ntmp_ipft_delete_entry() safe to interpret as "the
+entry is still programmed in hardware"?  The NTMP command path does not
+look transactional:
+
+drivers/net/ethernet/freescale/enetc/ntmp.c:netc_xmit_ntmp_cmd() {
+	...
+	cbdr->next_to_use = i;
+	netc_write(cbdr->regs.pir, i);
+
+	err = read_poll_timeout(netc_read, val, (val & NETC_CBDRCIR_INDEX) == i,
+				NETC_CBDR_DELAY_US, NETC_CBDR_TIMEOUT, true,
+				cbdr->regs.cir);
+	if (unlikely(err))
+		return err;
+	...
+}
+
+The DELETE BD and the producer index are published to hardware before the
+1 ms completion poll, so -ETIMEDOUT means "completion not observed", not
+"command not executed"; -EIO from the writeback error status is similarly
+indeterminate.  In those cases np->ipft_hf_eid keeps an entry ID the
+hardware may no longer own, and there is no other release path:
+ntmp_ipft_delete_entry() has this single caller and nothing else clears
+np->ipft_hf_eid (this is still the case at the end of the series).
+
+Two follow-on effects:
+
+netc_port_bridge_join() now returns the delete error, so if the retry keeps
+failing (for example the hardware reports an error status for a DELETE of a
+non-existent entry ID) the port can never be enslaved again from an ordinary
+sequence such as "ip link set swpX promisc on" followed by "ip link set swpX
+master br0".  Before this patch the error was ignored and the software state
+was resynchronised, so the port stayed usable.
+
+IPFT entry IDs are hardware assigned from a table shared by all ports (later
+patches in this series add per-port PTP entries in np->ptp_ipft_eid[]), so a
+retry on a stale ID could delete an unrelated rule.
+
+Whether the retry ends up as a permanent dead end or a wrong-entry deletion
+depends on how the hardware answers a DELETE for a freed or reallocated
+entry ID, which can't be determined from the tree, so this part is a
+question rather than a claim.
+
+>  
+> -	if (disable_host_flood) {
+> -		np->ipft_hf_eid = NTMP_NULL_ENTRY_ID;
+> -		np->uc = false;
+> -		np->mc = false;
+> -		netc_port_wr(np, NETC_PIPFCR, 0);
+> -	}
+> +	return 0;
+>  }
+>  
+>  static void netc_port_set_host_flood(struct dsa_switch *ds, int port,
+>  				     bool uc, bool mc)
+>  {
+>  	struct netc_port *np = NETC_PORT(ds, port);
+> -	u32 old_entry_id;
+> +	bool old_uc = np->uc;
+> +	bool old_mc = np->mc;
+>  
+>  	/* Do not add host flood rule to ingress port filter table when
+>  	 * the port has joined a bridge. Otherwise, the ingress frames
+> @@ -1795,7 +1804,12 @@ static void netc_port_set_host_flood(struct dsa_switch *ds, int port,
+>  	 * will be redirected directly to the CPU port.
 >  	 */
-> +	if (subtype == NETC_TAG_TH_SUBTYPE2)
+>  	if (dsa_port_bridge_dev_get(np->dp)) {
+> -		netc_port_remove_host_flood(np, np->ipft_hf_eid);
+> +		if (!netc_port_remove_host_flood(np))
+> +			return;
+> +
+> +		dev_err(ds->dev,
+> +			"Failed to delete host flood rule on bridge port %u\n",
+> +			port);
+
+[Severity: Low]
+Should this be %d?  port is declared int in netc_port_set_host_flood(struct
+dsa_switch *ds, int port, ...), matching the .port_set_host_flood prototype
+in include/net/dsa.h.  The pre-existing messages in the same function print
+the same variable with %d, so the file now uses both conventions for the
+same value.  The new dev_err() in netc_port_add_host_flood_rule() correctly
+uses %u because it prints np->dp->index, which is unsigned.  The mismatch
+is only diagnosed with -Wformat-signedness.
+
+>  
+>  		return;
+>  	}
+> @@ -1804,19 +1818,29 @@ static void netc_port_set_host_flood(struct dsa_switch *ds, int port,
+>  		return;
+>  
+>  	/* IPFT does not support in-place updates to the KEYE element,
+> -	 * we need to add a new entry and then delete the old one. So
+> -	 * save the old entry ID first.
+> +	 * we need to delete the old one and then add the new rule. If
+> +	 * the deletion fails, return immediately.
+>  	 */
+> -	old_entry_id = np->ipft_hf_eid;
+> +	if (netc_port_remove_host_flood(np)) {
+> +		dev_err(ds->dev,
+> +			"Failed to delete old host flood rule on port %u\n",
+> +			port);
+
+[Severity: Low]
+Same %u versus int port question here.
+
+[Severity: Low]
+This turns the update from make-before-break into break-before-make.  At
+this commit netc_port_remove_host_flood() also writes NETC_PIPFCR = 0, so
+between the delete and the following add the port's ingress filter lookup
+is disarmed and the host flood redirect to the CPU port is inactive.
+
+If the following add fails (kzalloc_obj() returning -ENOMEM,
+dma_alloc_coherent() inside ntmp_ipft_add_entry(), -EBUSY on the control
+ring, IPFT full), the function returns before np->ipft_hf_eid is set and
+before netc_port_wr(np, NETC_PIPFCR, PIPFCR_EN), and the rollback add
+re-enters the identical allocation path, so it is likely to fail for the
+same reason.  Since .port_set_host_flood returns void, the netdev/bridge
+layer still believes promisc/allmulti host flooding is in effect.
+
+The PIPFCR half of this is removed later in the same series by "net: dsa:
+netc: enable ingress port filtering lookup by default", which drops both
+PIPFCR writes from these helpers and enables PIPFCR_EN in
+netc_port_fixed_config(), so at the end of the series only the narrower
+window on the IPFT entry itself remains, which is the limitation documented
+in the comment below.
+
+> +
 > +		return;
+> +	}
+>  
+>  	if (netc_port_add_host_flood_rule(np, uc, mc)) {
+>  		dev_err(ds->dev, "Failed to add host flood rule on port %d\n",
+>  			port);
+> -		return;
+> -	}
+>  
+> -	/* Remove the old host flood entry */
+> -	netc_port_remove_host_flood(np, old_entry_id);
+> +		/* Try to restore the old flood rule, if the recovery fails,
+> +		 * there is nothing else we can do; this is a limitation.
+> +		 */
+> +		if (netc_port_add_host_flood_rule(np, old_uc, old_mc))
+> +			dev_err(ds->dev,
+> +				"Failed to restore host flood rule on port %d\n",
+> +				port);
+> +}
+>  
+>  static int netc_single_vlan_aware_bridge(struct dsa_switch *ds,
+
+[ ... ]
+
+> @@ -1992,6 +2018,12 @@ static int netc_port_bridge_join(struct dsa_switch *ds, int port,
+>  	if (err)
+>  		return err;
+>  
+> +	err = netc_port_remove_host_flood(np);
+> +	if (err) {
+> +		NL_SET_ERR_MSG_MOD(extack, "Failed to delete host flood rule");
+> +		return err;
+> +	}
+> +
+
+[Severity: Medium]
+This is the path that makes the stale np->ipft_hf_eid question above
+user visible: if the deletion keeps failing, bridge enslavement of that
+port fails every time, and nothing in the driver resets np->ipft_hf_eid.
+Would it be reasonable to distinguish "hardware confirmed the entry is
+still there" from "completion unknown" before deciding to keep the entry
+ID?
+
+>  	netc_port_set_mlo(np, MLO_NOT_OVERRIDE);
+>  
+>  	if (br_vlan_enabled(bridge.dev))
+
+[ ... ]
+
+> @@ -2016,6 +2046,11 @@ static int netc_port_bridge_join(struct dsa_switch *ds, int port,
+>  disable_mlo:
+>  	netc_port_set_mlo(np, MLO_DISABLE);
+>  
+> +	if (netc_port_add_host_flood_rule(np, uc, mc))
+> +		dev_err(ds->dev,
+> +			"Failed to restore host flood rule on port %u\n",
+> +			port);
 > +
 
 [Severity: Low]
+%u again for the int port argument of netc_port_bridge_join();
+netc_port_bridge_leave() prints the same value with %d.
 
-Should this test also require type == NETC_TAG_TO_HOST?
-
-Everywhere else in this file the subtype nibble is only meaningful under the
-To_Host type. netc_get_rx_tag_len() returns NETC_TAG_FORWARD_LEN for any
-subtype when the type is not To_Host:
-
-	if (type == NETC_TAG_TO_HOST) {
-		if (subtype == NETC_TAG_TH_SUBTYPE1)
-			return NETC_TAG_TH_SUBTYPE1_LEN;
-		else if (subtype == NETC_TAG_TH_SUBTYPE2)
-			return NETC_TAG_TH_SUBTYPE2_LEN;
-		else
-			return NETC_TAG_TH_SUBTYPE0_LEN;
-	}
-
-	return NETC_TAG_FORWARD_LEN;
-
-and netc_rcv() only enters the subtype switch inside its
-"else if (type == NETC_TAG_TO_HOST)" branch.
-
-If a Forward-tagged frame (type nibble 0) ever carries a subtype nibble of 2,
-netc_flow_dissect() returns before either output is written:
-
-	*offset = tag_len;
-	*proto = ((__be16 *)skb->data)[(tag_len / 2) - 1];
-
-__skb_flow_dissect() would then continue with proto == ETH_P_XDSA at offset 0
-and produce an all-zero flow key, so those frames all hash to the same bucket
-for RPS/RFS/GRO with no diagnostic. Does the hardware guarantee the subtype
-nibble is zero in Forward tags, or would
-"type == NETC_TAG_TO_HOST && subtype == NETC_TAG_TH_SUBTYPE2" be the safer
-guard?
-
->  	*offset = tag_len;
->  	*proto = ((__be16 *)skb->data)[(tag_len / 2) - 1];
+>  	return err;
 >  }
-
-[ ... ]
 
 -- 
 Sashiko AI review · https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20260831082335.1184605-1-wei.fang%40oss.nxp.com
