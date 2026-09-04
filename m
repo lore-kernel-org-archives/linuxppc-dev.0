@@ -1,88 +1,94 @@
-Return-Path: <linuxppc-dev+bounces-26584-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26585-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E9D2AC624DB
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Sep 2026 06:06:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AA78FC624D6
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Sep 2026 06:07:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hcNBy2NNPz2y22;
-	Sat, 05 Sep 2026 16:06:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42c"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788513102;
-	cv=none; b=di6KKpFwovp8UN0htgRWjOzKLXM93Fhs4wJV7TDTOj9UsdbtDsh1/BYqcoAyNSVk2kkxYFKXHgkPw+714b6XFwoyLe+jtz6XW4xrB4M4lhkQrFwZN+5TNkg+goDKUDg5CGnAIZTPYSSgSv75PjY95CcklLGEspRnXUKy+rMtiEYNccVTQdnZyGmhZ415NhSSIF5Snxmyd5sBwSiyecNSG2bHMKXfgqCs4BsNSm2gkTTg0ntwY7scH6r7qcqsdIBBNUYo/YVLHEZynwF2CDF3U0Ed8JNIEwH9TcVZW0LXOKtYPI94FJqu5VZzytRVjL2jUlG3bAukOVyzmOPiR52HKA==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788513102; c=relaxed/relaxed;
-	bh=bpLVtcxeLSgcfCU3L42j1VklWUvMTxW7/92G4rpbZfI=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=JLdqQr6tzpih8Qy2uN82SbT4eRtEU4pJGEXKiRaVvch9EMOeEZjsqZWzMZIZ8fNC6JUtQ1ZHi3in0+Dbn5SIZDUk/X66pY1QnKNbwgb6na+s+DyUKOA7fxAMMEjpgP8sdTiSLC4Dzj5oX+oOthkFBtibSYK5qoK7f/QR6YId/+qg/8yPjCnWcrYmBhYhglVS5wGQUfktuWtCMJJ5owO1iwRaXwPLJgFMZdXyDCxTEISoD2QCHuR+W17noK30k3ylnF3Npumjfw0wkDt/6aP1k2hjiiGCptMiKKM5hXaQTnaQLTJtUXFXfMbGgCV80fB8UWrAum/UuvsYpf2DasACiA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=cg9bJGWw; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42c; helo=mail-pf1-x42c.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hcNCm19Mhz2yr4;
+	Sat, 05 Sep 2026 16:07:32 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::b12e" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788517108;
+	cv=pass; b=cG7xNvzKUi0+ZyL9NTZl+B8fvL7dNzH4en4w1Gud5QyJTgUmfXNIdiI2uh8lv3UkWJNnekOHBOuJHUtJoxsJdKA6PkJZS5dmFy030jKGbcl1PnRbCTEB4voVZFgejj9e1Re4V7BWfGWguU/a9CLUYmJcBVV11JtHWhororYcdLHh5KpFAstGDm7jmuYamEfjIb/nwaLL8dWSvHuTtiLxib75hOqtZ+76CZe15bZvcElv59YM4x1EY/YCkKRQLkJjl13vIQH507rqKudyfTuE7qcTrwvuWAB4CnPhBXS/1qMSupQpbd2mbE3C4qx8vl8yVwE6rUrGD5E60VXG3RQsLQ==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1788517108; c=relaxed/relaxed;
+	bh=7ecM1UWhebC/3/+iusmGdcjinHnlJFmUl69Lno0FSOQ=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=CeTQwT2NEdf8+E+zy1Pb8sbgQ2cWhS9TN3RYRORakBz6wXqpNXi1AOjgFJwLAt3alMpPAxBsSsIPM9eN1Xk4Fihc8gNCV2Dzow7NHyP3HWZUIFmgLQSA8s3Dppev0e4VdiAARVY//vdcfwrRmy9q7Kpw7z1szOoUIq4OcFukyAImibGyE7yAYRssOOd/kZnxv4b+AfjVxxErICDWNPB/BAwP1TJMZUP6hDFmN2Cf/Nf4Kbm7Tq492cYIhbp3vJHPpWldfBZ3H/PXOsezhB6qvJZ+LcbHwZYyqFe4uVbzSnJdPRk97MH+C5W+haz4lRRTsgQcE9sql27izZ/fPoU3CQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=grNnJKzl; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::b12e; helo=mail-yx1-xb12e.google.com; envelope-from=aivazian.tigran@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=cg9bJGWw;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=grNnJKzl;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42c; helo=mail-pf1-x42c.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x42c.google.com (mail-pf1-x42c.google.com [IPv6:2607:f8b0:4864:20::42c])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::b12e; helo=mail-yx1-xb12e.google.com; envelope-from=aivazian.tigran@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-yx1-xb12e.google.com (mail-yx1-xb12e.google.com [IPv6:2607:f8b0:4864:20::b12e])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hbrLj3n2mz2xZV
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Sep 2026 19:11:41 +1000 (AEST)
-Received: by mail-pf1-x42c.google.com with SMTP id d2e1a72fcca58-8556ec44e9aso729730b3a.3
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Sep 2026 02:11:41 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hbsqk6B7Gz2xpn
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Sep 2026 20:18:25 +1000 (AEST)
+Received: by mail-yx1-xb12e.google.com with SMTP id 956f58d0204a3-66fa996e65bso1479326d50.0
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Sep 2026 03:18:25 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1788517102; cv=none;
+        d=google.com; s=arc-20260327;
+        b=nK4Xkyf2tIO+hQpdZlqIs7GlrH1IW87ObMKJvfharfNsTTK1CYmJZUPvzHoKjWgY3n
+         fFKSXmNYius4Gf17sCvSO/GsiE2IoHdpIZJFYDvRH2N+My4D/0k1nT6okA70m8knqu3c
+         Vn0pH3Ow8SjeiHXYxFJXnJsx90MPGiU9ewCom2wmIiMWfMXQbNUychIDO5jBbSxJsnJJ
+         9Ux4HDRRFpSCVtsNqsj8NH5J5/H5WP3t7ZPgtHgav6h/urXvhEtsuvqgHNSl5EHwSD6k
+         MdXvGsHLjpQXTndrZERvjz1+iJX1QJ49xCC8YjOq7h9vaN9tLQq+XGwEBnFNn+O/YseU
+         9cKg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=7ecM1UWhebC/3/+iusmGdcjinHnlJFmUl69Lno0FSOQ=;
+        fh=1piiaMP3nYEqJEpCdP7rby8G8vpelBuOBitPedEx4eo=;
+        b=qJLgHx3VytjVstQLEQeV0N20DABWWNJkVvE6zusl2QlPptCQWTfu6XGjA5q2iWtf/4
+         naY4YVhdYJWuEyE1HfEhUIdGo6qf1040YbcsZpeddXf+pqxv4LKVBOcBRSXdXVKWb3mE
+         dlwFvKci3dIaOtZyFTFYYlIpu+9kOKEYERlGfXYyfb3VE+r2AGwIfhk2UXyj7MrBy+pJ
+         ehXP7IVpXHjyojVCXFz0icqhPPAA59SrOOqwnlWVKf0PpRXYMnMMbJSzMv3WixIFPT2F
+         VGTeuqNpP3dvX8m0hKZtuepKt5Gok6XSMc87Oek5nalfdoX705RaIBUVXp8/I3gmmxbk
+         ibcg==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1788513099; x=1789117899; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=bpLVtcxeLSgcfCU3L42j1VklWUvMTxW7/92G4rpbZfI=;
-        b=cg9bJGWwV0KHSEOBHpXz+w0TC20qrH42obXO77qeuYs6TObb8WFQUmHo5dTX5HA+dR
-         3ZirUPzDsOb92/5ErJLQuCXopw/h6kLni5fDL0zZwHphF1fkjy4WJRzc4qIZ9VyCLfGQ
-         88t28t5plNUKiqZmn1jGKUOipR2UwFIHjEswjWpdrPGrXK/AS+z5gL57qy1C1iKd7rSm
-         aW0Q60lw39fOJC7OVaxc8m6lKYl2dxeGpZQ3A2RsXSagIqY4oCgVSmSjyWQvThaElpHm
-         ty74tVrc23X2nlZaUaqtZccNdQCc/FAh8hLgQQKGahqCWJEniR1NqGiF2gMc1l1KajQi
-         k94g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788513099; x=1789117899;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+        d=gmail.com; s=20251104; t=1788517102; x=1789121902; darn=lists.ozlabs.org;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=bpLVtcxeLSgcfCU3L42j1VklWUvMTxW7/92G4rpbZfI=;
-        b=rvzad5J2jUM9Fm+d7lISatD+CGXHy0UcXW50jg+JQAF6x2HDiPneuUsAUlYO01n+bo
-         /C5U422dGxycko7YvlyjKmDPX05FWvbbEB394LvDoL6F5fFjG4U3EvgqolOgNDuh8ZG8
-         tFWDKCNBYlhBKBIGI0uXzm8yPPtALOeXIYLP6yBjOuwh/OhPfVx1S/nKXExA5vbYFP4G
-         dx9OESNDpP972GBro0sw//9luns93uOIDLSm4UVO6R7fIyhMbs3vznSXM60IIrpc4EUN
-         KGZQDKkMVSElewK0BW6VOFEE0i/FL4u9+y0VrRyB+gVz0I6satlQomI6zlbpatVeEbcp
-         HPzw==
-X-Forwarded-Encrypted: i=1; AKwUvBwpAKBo973IZWkWuLJU+HkV8UlFosrxWIdxRsDbe40eZYXWSlHBh+M1roTM+OPCQwGGIdXErvQfIM9yJhc=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++nto35l3+6mtzj3vh8mjtuZ3cWb7ZW7aTVcavIGELC4XKnnOYRJ
-	D1x7dxXCPFXI+kY621jgg5TX5LGN5HQu1PuqTUCEwQYapJTnutel23YA
-X-Gm-Gg: AYBFou2ekUoG375m6RLJm706tKlwpMDZLo6mmhm1loJUNs35QAcevefzbkpuJ4ukVyo
-	5lVJHhOCbYJ0W9tLMi7VhJRC2/q7k2lfrHvYLF2ahjzOPM0KhhdHMA3+fcBgAyF2QQGTG0zVexQ
-	QJ8s4jUZabO+oqLg+q+G6MSZ1EFtnGjM4k9HVhnj+QhvgHGyrykuwTB55ZfvOOdpYgGeU4sWrar
-	Vw25UB2MxfXTcd1JseSwJTIw7YTnUfb3Jj2QfuSbMlbs8I5bEOvmGX3yS1hTFb3ZM3OEgJvJ46B
-	omPwdQuxvJloilq6i7QdUm/X+/HHYZvrB/MHgJNIHuqXxlAAvQNFaufvp5cYhzU0lI/Kg2/kIKB
-	I+JQAIslu3aARFCfFdqSCMIimCnQVar0+lTciIQq10zMoWA0Vcll4yMQVavfjqXyBqii02ZlJ/4
-	wAqnJ1rQJQEQUN1LjcaVhQGxj0Z2w6Gj1J5Gu1B31DFaznUeUsHxX2dWVd+SiOqLSNP3rUZlRq+
-	G+dpf7FpfrKm7vLOsS/Dd5Qbf4bkQfRGLOnDJaF5Y1FnFA=
-X-Received: by 2002:a05:6a00:2d0c:b0:857:72ba:ff0d with SMTP id d2e1a72fcca58-8616af5cf97mr6704891b3a.21.1788513099219;
-        Fri, 04 Sep 2026 02:11:39 -0700 (PDT)
-Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([122.161.52.230])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-86153027951sm913106b3a.40.2026.09.04.02.11.35
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 04 Sep 2026 02:11:38 -0700 (PDT)
-Date: Fri, 4 Sep 2026 14:41:33 +0530
-From: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
-To: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
-	chleroy@kernel.org, sshegde@linux.ibm.com, mchauras@linux.ibm.com, 
-	ritesh.list@gmail.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Cc: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Subject: Re: [PATCH V3] powerpc/entry: Fix irq_soft_mask corruption on
- replayed interrupt exit
-Message-ID: <apqLMmLNnhSQZz0g@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-References: <20260904090858.128563-1-mkchauras@gmail.com>
+        bh=7ecM1UWhebC/3/+iusmGdcjinHnlJFmUl69Lno0FSOQ=;
+        b=grNnJKzlvkJLAAoy+LwB3rP7OQ/TY4OqaXtCsuWnbG3yQB4OmsNVW8RC/XiIOhvhpK
+         wLG5RhyDH3yQHolfNEBk9lVU5OimNdIUignPT1T7U3rhCEOEOhRaJmDG84/jRroPcn7d
+         uhnX2BFJpvgK24QuoijAGLoqCbHcjWlnYyWJxSROcWdZCp4UR7Vy55hTUTSPjsx5ZSrD
+         4ZdYyXXIR24ERNt+Kv9+2hLNmx1GzraDJpkfhPEjh3nphNHi74RbpoG7t0jOfyv8hoyb
+         casosbkeGUL8fymsHI5xf9fM3oyVnr661GCbY6+q1tNezbHBDY7J6cJQ9xaglhwFOsww
+         NmJQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1788517102; x=1789121902;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=7ecM1UWhebC/3/+iusmGdcjinHnlJFmUl69Lno0FSOQ=;
+        b=jgm3FrenH5Ut7bIzrn6eJx/r7qhrRNuxXkEThPfu4VsYDDnpsxa1B9uNFGk1tshr9C
+         KIAWK7+Hkm11qfsZ+sPXCfOnge+ctDhNwJoMLVTEDoOpiI3GUFRt7IYVxtU7wbay15+1
+         e5w0YiK/2NpmOSWbecLpSsjolFmEloVSJIOtBMl8er5JzOZE+IR8LsAAnu4Y3Y9SqcUA
+         UMYdN7spfyFR+kNUwEJrXAANw8aGmql7T/kFoTVIKnlBAY8+kS+os8Z8zY1Dw2BL8Z7D
+         gW7U6NewyfZJifQTSKhQq/7qt7nvMh7WFuOvwT5jf12bvQovvBJ54IGm9A9bciHRwn/w
+         jFMg==
+X-Forwarded-Encrypted: i=1; AKwUvByczyX6v+aSI1WBtooygwHNO69A9AxjmV55hDT3BsrKnvq0YJBAkVS9pVazcvnnETWHWo3YTHUJLTu2Wbc=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++mX21Z/rbZ37rrH3d2xb+NEcJbla5nhK9eZe7KJ5a3mBAl2FJKN
+	YR4GT+tC3YZSKvgrRsUm8kJtvTrZEnbAkIvviAkovmYHkadCu+zf/kubuXsaS5fEp38nraq7a+s
+	HeezYr/bmkTgnW8AvEMb3QyxPpSd3jKw=
+X-Gm-Gg: AYBFou1J23mWSrjBzV+mncowac63tj7mv7hJQI7ykKyiPLTQC8drb+2dzyczqhetBjY
+	q4uFO1iitoAX63Xj0nyGEZ/IHtOxOP4W/1f3Ncd+hTiLSpbKo/yw+GGsoKUywNlrAPGIuN1zFv4
+	fzgBUOjea4mVc+6gUxr04LHM+hpDfvrGxzQ7xXxDmtBSX0oBJc5AFnjRzhCyC77XOanu7h1XmOL
+	rEQk50LH42+4dPEkq0WEW+9y2pvASgTFOc/9FHiewmYD1e215ucBU5imQJ0I5Zksypvcs/k1rQT
+	ezC0glPmGk/JU+JdbUjPfMiRn9iZNK5Bo7NBItthg5rTF8HniQ72t9WE56lC5dNThw40FkGoiQB
+	m
+X-Received: by 2002:a53:c053:0:20b0:66f:a1b4:741c with SMTP id
+ 956f58d0204a3-66fb5958686mr1624093d50.12.1788517102415; Fri, 04 Sep 2026
+ 03:18:22 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -96,109 +102,56 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260904090858.128563-1-mkchauras@gmail.com>
+References: <20260904082954.48738-1-enelsonmoore@gmail.com> <apqXNCL4X_i6xy2Z@gremlin>
+In-Reply-To: <apqXNCL4X_i6xy2Z@gremlin>
+From: Tigran Aivazian <aivazian.tigran@gmail.com>
+Date: Fri, 4 Sep 2026 11:18:10 +0100
+X-Gm-Features: AcwNN1X7ex5eCk4ouskYN2ChvEs-v8zBI8q8LI-VGa7gCcqGKoso7q1xSbR0jLY
+Message-ID: <CAK+_RLm9HKkm8YCCanpOMxaMaAkt5eoxQBHBxC1-Xkvj=L=UsQ@mail.gmail.com>
+Subject: Re: [PATCH] bfs: remove the filesystem
+To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
+Cc: Ethan Nelson-Moore <enelsonmoore@gmail.com>, Shuah Khan <skhan@linuxfoundation.org>, 
+	Randy Dunlap <rdunlap@infradead.org>, Michael Ellerman <mpe@ellerman.id.au>, 
+	Nicholas Piggin <npiggin@gmail.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Jan Kara <jack@suse.cz>, 
+	Jakub Kicinski <kuba@kernel.org>, Namjae Jeon <linkinjeon@kernel.org>, 
+	Hisam Mehboob <hisamshar@gmail.com>, =?UTF-8?Q?Martin_Kepplinger=2DNovakovi=C4=87?= <martink@posteo.de>, 
+	Christian Brauner <brauner@kernel.org>, Amir Goldstein <amir73il@gmail.com>, 
+	Bagas Sanjaya <bagasdotme@gmail.com>, Eric Biggers <ebiggers@kernel.org>, 
+	Geert Uytterhoeven <geert@linux-m68k.org>, David Howells <dhowells@redhat.com>, 
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>, "Theodore Ts'o" <tytso@mit.edu>, 
+	Catalin Iacob <iacobcatalin@gmail.com>, Stephen Hemminger <stephen@networkplumber.org>, 
+	Andrew Lunn <andrew@lunn.ch>, "Maciej W. Rozycki" <macro@orcam.me.uk>, Andrei Vagin <avagin@gmail.com>, 
+	Wei Yang <richard.weiyang@gmail.com>, Bhavik Sachdev <b.sachdev1904@gmail.com>, 
+	Andrew Morton <akpm@linux-foundation.org>, Wang Yan <wangyan01@kylinos.cn>, 
+	Bala-Vignesh-Reddy <reddybalavignesh9979@gmail.com>, Malaya Kumar Rout <malayarout91@gmail.com>, 
+	linux-doc@vger.kernel.org, linux-mips@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, linux-fsdevel@vger.kernel.org, 
+	linux-kselftest@vger.kernel.org, Luis de Bethencourt <luisbg@kernel.org>, 
+	Salah Triki <salah.triki@gmail.com>, Jonathan Corbet <corbet@lwn.net>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Alexander Viro <viro@zeniv.linux.org.uk>
+Content-Type: text/plain; charset="UTF-8"
 
-On Fri, Sep 04, 2026 at 02:38:58PM +0530, Mukesh Kumar Chaurasiya (IBM) wrote:
-> When __replay_soft_interrupts() replays a pending interrupt (e.g.
-> PACA_IRQ_DEC -> timer_interrupt), it calls the handler directly with a
-> synthetic pt_regs. The DEFINE_INTERRUPT_HANDLER_ASYNC wrapper around
-> each handler calls arch_interrupt_async_exit_prepare() on the way out,
-> which calls arch_interrupt_exit_prepare() -> local_irq_disable() ->
-> arch_local_irq_disable(), which does:
-> 
->     irq_soft_mask_set(IRQS_DISABLED)   /* 0x1 */
-> 
-> This unconditionally overwrites irq_soft_mask with IRQS_DISABLED (0x1),
-> stripping the IRQS_PMI_DISABLED (0x2) bit. The result is that
-> irq_soft_mask is 0x1 instead of IRQS_ALL_DISABLED (0x3) when the
-> handler returns to __replay_soft_interrupts().
-> 
-> For a normally-taken interrupt this is harmless: the next interrupt
-> always enters through arch_interrupt_enter_prepare() which
-> unconditionally sets irq_soft_mask to IRQS_ALL_DISABLED. But during
-> replay, next_interrupt() is called directly between replayed handlers
-> without going back through arch_interrupt_enter_prepare(), so the
-> stripped bit is never restored. next_interrupt() then fires a WARNING:
-> 
->     WARNING: arch/powerpc/kernel/irq_64.c:75
->     WARN_ON(irq_soft_mask_return() != IRQS_ALL_DISABLED)
-> 
-> The warning was observed early in boot on a POWER10 pseries guest
-> during kmem_cache_init_late(), where a spinlock release triggers
-> interrupt replay that processes a pending timer interrupt.
-> 
-> Debugger state confirming the bug:
->   Before timer_interrupt(&regs):
->     irq_soft_mask = 0x3 (IRQS_ALL_DISABLED)   correct
->     irq_happened  = 0x41 (HARD_DIS|REPLAYING)  correct
->   After timer_interrupt(&regs) returns:
->     irq_soft_mask = 0x1 (IRQS_DISABLED)        WRONG - PMI bit stripped
->     irq_happened  = 0x41                        unchanged
-> 
-> The fix is to replace local_irq_disable() with hard_irq_disable().
-> 
-> hard_irq_disable() is the right primitive here for two reasons:
-> 
-> 1. On PPC64 (hw_irq.h:301) it calls irq_soft_mask_set_return(IRQS_ALL_DISABLED),
->    setting the soft mask to 0x3 (both IRQS_DISABLED and IRQS_PMI_DISABLED),
->    which preserves the PMI bit and fixes the WARNING. The additional
->    work it does (__hard_irq_disable(), PACA_IRQ_HARD_DIS |=) is
->    redundant but safe since both are already set at this point in the
->    exit path; the trace_hardirqs_off() inside is guarded by
->    if (!arch_irqs_disabled_flags(flags)) so it will not double-fire.
-> 
-> 2. On PPC32 (hw_irq.h:467) hard_irq_disable() maps to
->    arch_local_irq_disable() -> __hard_irq_disable(), which clears
->    MSR[EE] in hardware. This is exactly correct: PPC32 has no soft-mask
->    PACA mechanism, so the hardware disable is the right way to satisfy
->    irqentry_exit()'s requirement. This also fixes a build error on PPC32
->    where irq_soft_mask_set() is only defined under CONFIG_PPC64:
-> 
->        arch/powerpc/include/asm/entry-common.h:273: error: implicit
->        declaration of function 'irq_soft_mask_set'
-> 
->    Using hard_irq_disable() requires no #ifdef and is consistent with
->    how the rest of the entry code (e.g. entry-common.h:463) handles the
->    same PPC32/PPC64 split.
-> 
-> Fixes: 334f3f6d7a16 ("powerpc/entry: Disable interrupts before irqentry_exit")
-> Reported-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-> Closes: https://lore.kernel.org/all/6f9bfb0f-b14c-468e-bb9f-c157d120d0dc@linux.ibm.com/
-> Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-> Reviewed-by: Shrikanth Hegde <sshegde@linux.ibm.com>
-> Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
-> ---
-> Change log:
-> V2 -> V3:
-> 	- Revert to hard_irq_disable
-> 	- Removed some dead code
-Ignore this line.
+On Fri, 4 Sept 2026 at 11:05, Lorenzo Stoakes (ARM) <ljs@kernel.org> wrote:
+> Based on Jan's feedback at [0] that closes the loop (it is indeed a
+> maintenance headache):
+>
+> Acked-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+>
+> [0]:https://lore.kernel.org/all/35dsgpk5dsh6bm4xoblrq6hdslfvtuibl5grzag37cye2hgepk@rkrtkjxdyk5g/
 
-Regards,
-Mukesh
-> V2: https://lore.kernel.org/all/20260820134718.2176411-1-mkchauras@gmail.com
-> V1 -> V2:
-> 	- Instead of using hard_irq_disable use irq_soft_mask_set
-> V1: https://lore.kernel.org/all/20260812152035.1661781-1-mkchauras@gmail.com
->  arch/powerpc/include/asm/entry-common.h | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/include/asm/entry-common.h b/arch/powerpc/include/asm/entry-common.h
-> index 94083516df57..80b07750b531 100644
-> --- a/arch/powerpc/include/asm/entry-common.h
-> +++ b/arch/powerpc/include/asm/entry-common.h
-> @@ -270,7 +270,7 @@ static inline void arch_interrupt_exit_prepare(struct pt_regs *regs)
->  	}
->  
->  	/* irqentry_exit expects to be called with interrupts disabled */
-> -	local_irq_disable();
-> +	hard_irq_disable();
->  }
->  
->  static inline void arch_interrupt_async_enter_prepare(struct pt_regs *regs)
-> -- 
-> 2.55.0
-> 
+Ok, I won't cry about it :)
+
+In fact, if I may, I would like to say that it is a pleasure to be in
+your (pl.) company once again. Looking at the list of people included
+here -- some familiar, some unfamiliar -- I remember the younger days.
+I have done my tiny share of contributing to the Linux kernel as best
+as I could, but as I now grow older I can no longer maintain BFS
+(older does not mean inactive, just active at other things), so if it
+does give maintenance headache, by all means -- remove it :)
+
+Acked-by: Tigran Aivazian <aivazian.tigran@gmail.com>
+
+PS. This reminds me of d'Artagnan's phrase from the Soviet version of
+"The Three Musketeers" -- "my consolation is that if I am to be
+killed, I will be killed by a true musketeer" :)
 
