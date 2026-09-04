@@ -1,80 +1,65 @@
-Return-Path: <linuxppc-dev+bounces-26562-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26563-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 893F2C79F87
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Sep 2026 15:29:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 080DCC624DE
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Sep 2026 15:29:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hc0kb0PL8z2y2K;
-	Sat, 05 Sep 2026 01:29:27 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::533"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788535766;
-	cv=none; b=HrB+heRDdN0Pu1qWgoCWxrXKLtKoj2KrmfpTbBk/sdJOmHG4FcQUdxccoElmPNb06sOmq2Z5bjjOiyPnQ3V2bzNvgqP6U3G9XXLxnj8Khc94hz+plf795fVH4XabH3AxPMxpLtn6LmYSDnq4mlYJvsiaVJKhXSeVuLcmvL2zA+TXZelfVQlZOtKYLkLQSTVilKaQnyJchUIwpLFe07YMHrh5AHBFU29hlQyrel8e41KGpIeUluihtt7UQF7bBwL48XKGrL2FJmTqlzbDr46WyVzUghB/A5N1AjafHmGZTy/MLpeiGtPX5tVYUw0t+We9Qp5vQmuXmhIzm364ZMMy9Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hc0kf4D48z2y22;
+	Sat, 05 Sep 2026 01:29:30 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.244.194.184
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788535770;
+	cv=none; b=CArJ+K+ad5Qk7n8b+0mPtz0yLvKTmtv/Iy5DbHu32UaFA3RLK5xPeALJOSSs+3VrS1VrSBmUADT+fmGZdF2WXknGfATMySFZaYLW6eyUjXk45Gf/EHx3zQ66YFzO38lx+gbRPb2g8tCUQiEHREkTPf1EHZ4wKCXweKj58lIUzH5KcdEaNJa0AAKIXREch1Boid3yNr/39ZDjIF3GnSIrYaYrrJloOjHIAEZva7AmfzLdVMDj/Bknxfe5SeKQhgjPWtpnPqdbcd+ctThPoex1Mv4Jr6dhDzs+7Cw3XknKkDkHw69bYlaZ9r/n5mK5FPj6R61SXEbq9fBtjOUO635dnw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788535766; c=relaxed/relaxed;
-	bh=b3s2kh4gj1DOKMjmkcbmo31+xgIaWNFlf4UB372dsWc=;
-	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:References:
-	 In-Reply-To:Content-Type; b=M2kMSA57ayqq5D4bjpYHMRG2SbpGhyp1aSc/eRPNgduhNFBWbwPyC5MJ0/K+GDMOWUuiCUKbwGQNOL4zMX95g9wr8m+Jkt0LiLJp8hakoVQOaDulcYnXHA6eSNGrHz8EyDmRmy0TIpNsar4IDjJjizxLX84cN3RU5aZsA2cTEf/ZC25hrzkqKHWhbsgqAkauP6btjyDad9XftbxECkJeU5sYZxK2qi7rJSyMRHPxG0VjbC5rVyqjV1qSbBf9fqfelqj3RpNaMQoqBCBeFZ9pEe71nNBmkPxhZtJaTtmGjJdm2UB2VZHv+7MVgEl+1t8QBUh7X1a0he9beDz0/VjXDA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=kD5l8XFG; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::533; helo=mail-ed1-x533.google.com; envelope-from=eli.billauer@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1788535770; c=relaxed/relaxed;
+	bh=nxI97ubcEM5+2BBS4utR3zx7Wwf4emiSTt1Vf7EV6EU=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Rw7F1LT1L9QUdhkfXQYApnDuo3YI5jx1FCkXK9SaGKVsRzvE2bpy70V/rLlHFI/Yi+y5P6C0rNVVQKjc0plKTQeE2VVDGR/9ae5W786Zhux7Dnm6q/yDdcULz+fhOD13WGrkDECVimsT0mjBpnK7RU8dAPkiAdcYOKBZJdDOYLAN768drj35z1nbYK77bF+5SW8ht4AGaY6WZ20hwMlAGw6ZIHfSgof4abcodtzMsHt/oo3g8vZgBrlALI0AoVnt+XefhQizHwulUrjmufiEhGQzmXUnBd8XjXJvOs+V6VdqOvXq90n9Wu3t3hgvAF2rJn+dMipMI+Nkr4MHcIbQcw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=leemhuis.info; dkim=pass (2048-bit key; unprotected) header.d=leemhuis.info header.i=@leemhuis.info header.a=rsa-sha256 header.s=key2 header.b=CS8zyAGO; dkim-atps=neutral; spf=pass (client-ip=185.244.194.184; helo=relay.yourmailgateway.de; envelope-from=regressions@leemhuis.info; receiver=lists.ozlabs.org) smtp.mailfrom=leemhuis.info
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=leemhuis.info
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=kD5l8XFG;
+	dkim=pass (2048-bit key; unprotected) header.d=leemhuis.info header.i=@leemhuis.info header.a=rsa-sha256 header.s=key2 header.b=CS8zyAGO;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::533; helo=mail-ed1-x533.google.com; envelope-from=eli.billauer@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ed1-x533.google.com (mail-ed1-x533.google.com [IPv6:2a00:1450:4864:20::533])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=leemhuis.info (client-ip=185.244.194.184; helo=relay.yourmailgateway.de; envelope-from=regressions@leemhuis.info; receiver=lists.ozlabs.org)
+X-Greylist: delayed 387 seconds by postgrey-1.37 at boromir; Sat, 05 Sep 2026 01:29:27 AEST
+Received: from relay.yourmailgateway.de (relay.yourmailgateway.de [185.244.194.184])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hc0kY0DHYz2y22
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 05 Sep 2026 01:29:24 +1000 (AEST)
-Received: by mail-ed1-x533.google.com with SMTP id 4fb4d7f45d1cf-6a668cacdadso1713011a12.2
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Sep 2026 08:29:24 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1788535759; x=1789140559; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:in-reply-to:content-language
-         :references:cc:to:subject:from:user-agent:mime-version:date
-         :message-id:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=b3s2kh4gj1DOKMjmkcbmo31+xgIaWNFlf4UB372dsWc=;
-        b=kD5l8XFGjhneJHipy9NSHtzg2Zt564um4HsZ3revV3AG+GaTfy45cRPUurOzMz9Lyl
-         zLzPoWMaFVWiCTF9Kco38YAFJ6cwWQC6CEiWYdrxGpMmkktopycy7l1e30Cf9BXBXLVg
-         HkJr9YNjlgM7Ds20jdtmxVt/KKzxPQncrfVFWwOtVh3FBfYsNbmmAXfoV3/fbFu58oPC
-         PaQ+ECUv8Ys0NIzJD3LTxVVzAsySfm0CtNifRd8D3cGZnxeaB5YUCW0CQ7iwzJP6hlXv
-         4VfEuGwrt91uHIKNuoiP0up2MR2m2Zlt9gwIrNlPlzcnIUUnGZVx2zTAKAQyAsXoBve9
-         ge8A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788535759; x=1789140559;
-        h=content-transfer-encoding:content-type:in-reply-to:content-language
-         :references:cc:to:subject:from:user-agent:mime-version:date
-         :message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=b3s2kh4gj1DOKMjmkcbmo31+xgIaWNFlf4UB372dsWc=;
-        b=Id8+GzMzJGbC5+OGaqjwLg3ZTigJRCtmy6ZTBGI7le5YjRWUfbfalnHn9EXjgEbVjL
-         wpzTbIKXLVU3e8B8QAnfLu6DXfnFyiwyQ167SL7+rCLtlvfqqp4EYJBhxagP7NOJhy/8
-         CnR9e3BMvvNlj+HEjWCwWGQct8k59p2tSab5G3MGXAdR/fm66FForH9qtoqwUYMp7Ldm
-         RA9jRORVThj2HSe8acVLGGLAuh9h3mkgmKAMzEVM2HDfGvCtvLBn3SMFN0ypam4/JRWt
-         xrxPUg1ZG73UTqPljaz9meN+icxrnE99i59CE80AMBNO9hlbtKc6QOPdWdRsnEYI/SzE
-         uMzw==
-X-Forwarded-Encrypted: i=1; AKwUvBzOoomd7K1w7IjtA9sjNTFnMLNwptjgHnt66ZPimrnhyOqYMZ066lsgTRG+iljsu3g5i/hiatNYr0n5Eo0=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++nOPDxQIVwtX9JiAmxCcBqniVhL0jpe8ZX5nczSO0iv7ceWkuTh
-	KCOD1SOHh9Y6CnoRbCaid3s1EvzgfH1MhcQPlk97mAtjxVGVabq5e5l8
-X-Gm-Gg: AYBFou10mUAZrv1dH8+UfDEGZrCpBi1CrY+ClZ5mME0hNp0GPPQKrx9n9Hjjcvq3I5C
-	pE/4QKcfw4XQamnfDcLUW++byHeKUogbd27CGQwh0vlawfk3qcejcKwUPImMWUN078PO6yq+E7I
-	2H8iZjyJmS9MCaCLMJkg18qo7xiQU56yxuLOQ08XWOY/zNiCtuu0WZp3H5Ib3TJcVE0t2duufTZ
-	twK0Fh78pqmUTlTbmUJFJ1a6SJSqmhPd/MFSlhiSVgzlEvb8ofGQ/oyHDY8koYfTEyl00JWnNAt
-	ioOOHzWYxKlSIohuJ16ZtGKGUQ0j5WPkKO39WJXMtcSAWhoLxbMpQbz9dtctPTLhsl1MmAJmY/1
-	O52G9Tbc4gM4b0/rmSD7JUoe1O11/reLBnaxbUOGl/DdiCTIMASTQ66ANFD7j8VXipPFNcbDX93
-	oAY5PyXsql6Ei5268Gel2MtYBvyldU6uLYgR0rgyicrvSQMCQGLSmZyM3Mx0enI+WYl3SFDK5gu
-	7O8uZJkStZ/DNmA74LmSBw=
-X-Received: by 2002:a05:6402:24d0:b0:6a7:ea54:386 with SMTP id 4fb4d7f45d1cf-6a7ea541e6cmr1470990a12.23.1788535759252;
-        Fri, 04 Sep 2026 08:29:19 -0700 (PDT)
-Received: from [192.168.1.89] (c-85-228-45-68.bbcust.telenor.se. [85.228.45.68])
-        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-6a7e6bee8e8sm1460646a12.23.2026.09.04.08.29.17
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 04 Sep 2026 08:29:18 -0700 (PDT)
-Message-ID: <49245a34-cc56-736e-b2b4-168c2a0b1df7@outbound.gmail.com>
-Date: Fri, 4 Sep 2026 17:29:16 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hc0kb5B0cz2yv2
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 05 Sep 2026 01:29:27 +1000 (AEST)
+Received: from relay01-mors.netcup.net (localhost [127.0.0.1])
+	by relay01-mors.netcup.net (Postfix) with ESMTPS id 4hc0b13zTjz9MW5;
+	Fri,  4 Sep 2026 17:22:53 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=leemhuis.info;
+	s=key2; t=1788535373;
+	bh=nxI97ubcEM5+2BBS4utR3zx7Wwf4emiSTt1Vf7EV6EU=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=CS8zyAGOP9LXa05GPpn9Vq1he1xRlR/5ZxoiFbeciZjmClL3Xcr1Ow8oTETujBzml
+	 RN57ezgBln53pwYuG0ZGfFNwsN1IJFKdYsJ/I/R4PtYVyY9VaZHhHUxRGFIqYgv/60
+	 UUXGGQR73bzVi4E4LdONz8HkaFND4h6JQZ40egYoyEUSmnBkBhJgCleo7fNODJIiTC
+	 r2RSOBv2I10GYgJUvVin7pqTrcaDhkHKX9m2NMsm8O3P0/ks5HDXI7BtHRRY3oetxS
+	 /gzgwzKQ4nEuY3Vrobi+eoDJFvjkbawSXrYztgOHG4fTM8FICGScP/t39z7CK+PP2F
+	 DJMoqo95Dq4Ww==
+Received: from policy02-mors.netcup.net (unknown [46.38.225.35])
+	by relay01-mors.netcup.net (Postfix) with ESMTPS id 4hc0b13HR1z7xH9;
+	Fri,  4 Sep 2026 17:22:53 +0200 (CEST)
+Received: from mxe9fb.netcup.net (unknown [10.243.12.53])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by policy02-mors.netcup.net (Postfix) with ESMTPS id 4hc0b00M77z8sgw;
+	Fri,  4 Sep 2026 17:22:52 +0200 (CEST)
+Received: from [IPV6:2a02:8108:8984:1d00:a0cf:1912:4be:477f] (unknown [IPv6:2a02:8108:8984:1d00:a0cf:1912:4be:477f])
+	by mxe9fb.netcup.net (Postfix) with ESMTPSA id 276FA5FAB5;
+	Fri,  4 Sep 2026 17:22:47 +0200 (CEST)
+Authentication-Results: mxe9fb;
+        spf=pass (sender IP is 2a02:8108:8984:1d00:a0cf:1912:4be:477f) smtp.mailfrom=regressions@leemhuis.info smtp.helo=[IPV6:2a02:8108:8984:1d00:a0cf:1912:4be:477f]
+Received-SPF: pass (mxe9fb: connection is authenticated)
+Message-ID: <10138a14-a7c6-424e-950e-c1e5f878beac@leemhuis.info>
+Date: Fri, 4 Sep 2026 17:22:46 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,54 +73,63 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.10.0
-From: Eli Billauer <eli.billauer@gmail.com>
-Subject: Re: [PATCH 2/4] char: xillybus: replace __get_free_pages() with
- kmalloc()
-To: "Vlastimil Babka (SUSE)" <vbabka@kernel.org>,
- Mike Rapoport <rppt@kernel.org>
-Cc: David Laight <david.laight.linux@gmail.com>, Arnd Bergmann
- <arnd@arndb.de>, Brad Warrum <bwarrum@linux.ibm.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Michal Simek <michal.simek@amd.com>, Ritu Agarwal <rituagar@linux.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- David Hildenbrand <david@kernel.org>, Matthew Wilcox <willy@infradead.org>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org
-References: <20260830-char-misc-v1-0-05e2ce44f291@kernel.org>
- <20260830-char-misc-v1-2-05e2ce44f291@kernel.org>
- <f6001085-9234-4025-ff34-6cc4a66c293a@outbound.gmail.com>
- <20260831123937.32255a49@pumpkin> <apaF1HUtJnstuUN4@kernel.org>
- <1729fb06-6beb-f8ef-3e71-47fc3f00345d@outbound.gmail.com>
- <apcPg_y-HsMki7we@kernel.org>
- <9a3d6a08-339c-3315-cc81-46907d0836ad@outbound.gmail.com>
- <apgSCyj-h2xVc2ss@kernel.org>
- <1d7f8806-f4a0-fda0-a361-a011460ef308@outbound.gmail.com>
- <3c19c24f-5036-4bbe-b3af-e5eae102f34a@kernel.org>
-Content-Language: en-US
-In-Reply-To: <3c19c24f-5036-4bbe-b3af-e5eae102f34a@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+User-Agent: Mozilla Thunderbird
+Subject: Re: [REGRESSION] Power9 pseries boot hang in v7.2-rc6, narrowed to
+ PowerPC GENERIC_ENTRY conversion window
+To: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
+Cc: Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
+ Shrikanth Hegde <sshegde@linux.ibm.com>, LKML
+ <linux-kernel@vger.kernel.org>, linuxppc-dev
+ <linuxppc-dev@lists.ozlabs.org>, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Linux kernel regressions list <regressions@lists.linux.dev>
+References: <96dae110-f79b-4e54-8a9b-514369019b5d@linux.ibm.com>
+ <e27eeaf4-c2c9-4ef7-9e1c-0a5fb45755d0@linux.ibm.com>
+ <6d1b5f38-f4e4-46ca-88b4-7c18dd6c6280@linux.ibm.com>
+ <anq72IebDSu-wWbb@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+ <ansZjSJMWMV8DDF-@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+ <2f7e6c34-7258-4b20-a38e-cedebccb835f@linux.ibm.com>
+ <985770a7-e488-456a-a9fa-aa71f1cbafd5@leemhuis.info>
+ <appZ1UB1tzKz3IY9@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+From: Thorsten Leemhuis <regressions@leemhuis.info>
+Content-Language: de-DE, en-US
+In-Reply-To: 
+ <appZ1UB1tzKz3IY9@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-PPP-Message-ID: <178853536760.332824.6991298509015054257@mxe9fb.netcup.net>
+X-Rspamd-Server: rspamd-worker-8404
+X-Rspamd-Queue-Id: 276FA5FAB5
+X-NC-CID: o/w1lT5fDgOK6gXaBrvPIBFhIb+UL7T+sDpvHEat68+j6lsB9MY=
 
-On 03/09/2026 16:28, Vlastimil Babka (SUSE) wrote:
->> Replacing it with a kmalloc() is confusing in my opinion, and requires
->> that the reader is aware that kmalloc() falls back to __get_free_pages()
-> Why? The reader has only to know that kmalloc() will provide such a buffer
-> (up to sizes that the page allocator would) and whether it falls back to the
-> page allocator or not is an implementation detail.
+On 9/4/26 07:43, Mukesh Kumar Chaurasiya wrote:
+> On Thu, Sep 03, 2026 at 01:22:35PM +0200, Thorsten Leemhuis wrote:
+>> On 8/12/26 07:16, Venkat Rao Bagalkote wrote:
+>>> On 11/08/26 6:16 pm, Mukesh Kumar Chaurasiya wrote:
+>>>> On Tue, Aug 11, 2026 at 11:37:45AM +0530, Mukesh Kumar Chaurasiya wrote:
+>>>>> On Mon, Aug 10, 2026 at 05:19:27PM +0530, Venkat Rao Bagalkote wrote:
+>>>>>> On 04/08/26 8:23 pm, Shrikanth Hegde wrote:
+>>>>>>> On 8/4/26 2:04 PM, Venkat Rao Bagalkote wrote:
+>>>>>>>>
+>>>>>>>> I'm seeing a boot regression on a Power9 pseries LPAR. The system
+>>>>>>>> hangs very early during boot after:
+>>>>>>>>
+>>>>>>>> Quiescing Open Firmware ...
+>>>>>>>> Booting Linux via __start() ...
+>>>>>>>>
+>>>>>>> That is strange. not sure where to look at without any logs.
+>>>>>>> Is it a specific config that fails or this specific LPAR that fails?
+>>>>>>>
+>>>>> Is this a specific lpar or all power9 pseries are exhibiting same
+>>>>> behaviour?
+>>> Its specific to a lpar.
+>
+> I am working on this, [...]
+Great, thx.
+> Can you also confirm the same.
+Na, sorry, can't help, I'm not affected, I'm just keeping an eye on
+regression to ensure they are fixed.
 
-When I see __get_free_pages(), I automatically assume there is some ugly 
-low-level memory management going on, which is exactly what fifo_init() 
-does. kmalloc() feels like something you use more for allocating memory 
-for a struct. There is no such rule, of course, but this is my 
-subjective view on these two functions. As I wrote earlier, this is a 
-matter of taste. Maybe it's only me thinking like that.
-
-And as I'm not the one deciding whether this patch is applied or not, it 
-doesn't matter so much what I think about this matter. I've humbly 
-voiced my opinion, and that's about as much as I can do.
-
-Regards,
-    Eli
+Ciao, Thorsten
 
