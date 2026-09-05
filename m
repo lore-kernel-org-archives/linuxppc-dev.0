@@ -1,87 +1,58 @@
-Return-Path: <linuxppc-dev+bounces-26592-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26593-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8C2FDC624DB
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Sep 2026 06:10:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 526B5C624DB
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Sep 2026 06:16:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hcNHF20c3z2yvP;
-	Sat, 05 Sep 2026 16:10:33 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:4860:4864:20::2a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788525958;
-	cv=none; b=mJ2b3ufITDfRYbjt6ncXz9pJjJdT+2kkSFvjfIrWnftm2BSjqutzERhW4JH8XjrFx7Pu3bkCJpYZ2MrKtSE0dAxHuH1lv9SM2uKJlpaN2JZ+erSJRus6CY8Xsuu6ZuHpODJQyDC/a16mHipkVam8UKgKow8kI+qxy4FJ1gtt2Fd1GVxmbd84tFpeHexYh1ra1OJwfhZjJUmxo4vo34+pL+JZ/o+g8tlujVERcf2VxwDKnB4iuthYIcPOhBbz+xXipDYurBl7j5lwGxiI1oZ0HkM3SRINUV9mRfjP5lGkkDdM+utUM7JHeAn+O4oCV6FGgkGWtYREJB1fO+D/A7jQtw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hcNQF050Hz2xlJ;
+	Sat, 05 Sep 2026 16:16:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788588996;
+	cv=none; b=TtvCeKoB8TxhCoTReQh5lh/qi6RgYpWKTGCO4ASbUlctADO3zryxgHzMsFVauDRzh8V8o5GpNcySitO9uMnm6OjNfe9iDu26kWeC/NklCdgo2lpyEqs1k8E6b/WTT58DR714ck8/VDeFzOg9MusGgGflvK0pONGxbwyAQTXPBaKhPS9abQC/ZU5n0hskVFfAKCPCVRXTr0QNevRO8Fh4Wng7a6IqfRI7zFlqsyPT82DmsDaMDG1PV3cTCQK/Qm2BiwgxpXYQWXTfkdxObY+jg1EDBQ2137M1KDT97DKJJXylkL9mVQVqdsEcEwm7SnV6KZo6cE2Qe5zPJFW7Y1aRVQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788525958; c=relaxed/relaxed;
-	bh=5CKWYHFFj2+Ay68a1spLAYVC7QQVQgeLpgvyjnrg6qw=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=nBW5xVp5e8quvlpls6EHmShdBxbMwO6Hp9l/xKUeAKF5Wodv51s2XXrEmYv7r8hlvhZMoKw+Jj6GTOtyUdS8tnwyLLMzOH1/fMxNDpeJO/8r9X6XITBbLZkxUmeA743fZgMc0ozI1QOD6/n7Quyxu2gzafgrRWgQFkIZfmskjMN5hsnRMQzKQlfreH8Hr/caRULeeGPMKcz0Huohi1IWwegXEwrFedq7rCVOK18Nocl9fxwl0s49n1vtLbQLzC/i/3TUf2zgbTZ/G6qyyxU+hFvg2nD3eeX/XYNEIWCviZMOkYWOgfKun+rqOE4uWl9trTU2jy7nqutcXZlePwLHBA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=HHsXjjVU; dkim-atps=neutral; spf=pass (client-ip=2001:4860:4864:20::2a; helo=mail-oa1-x2a.google.com; envelope-from=hemanth.selam@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1788588996; c=relaxed/relaxed;
+	bh=wroX+IXZ78hb2aQP5LUDjSlqEruTGuDIlApEgq/LO60=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=GLNQys8J2RRyhZTxiTDJLPvO6q3FEKoFnHHLEEF3Od5dxlV+lw+7/3duEIZ2412vxC7R/NNqFkKJ9fG8iD5ZPX4nb092mOhULVUN/HOv0Zi9/k0oLLUe+fV+VsTyfGoXua5l/gFtAdaCYqBJpr6b3u6zoIC3/K6hjZPAjTPydIxz7SBS5E+Ca1U7xA61ZFgQOLuA5twWNiLL+uqGUIel50CbOT7FqHIj/tZeljpozDv7C2fVwNyvbV7tHaWtHZchfrYyyPG/bfaVczgoMLWxPSsmyohGGis2IylVdmAgeZe5naTtUpROBJgpWkECLMcUm8dJV62au3+Jpq9hVJPm2Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=eG6Yau/S; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=linusw@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=HHsXjjVU;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=eG6Yau/S;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2001:4860:4864:20::2a; helo=mail-oa1-x2a.google.com; envelope-from=hemanth.selam@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-oa1-x2a.google.com (mail-oa1-x2a.google.com [IPv6:2001:4860:4864:20::2a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=linusw@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hbx5x1fKFz2xpn
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Sep 2026 22:45:57 +1000 (AEST)
-Received: by mail-oa1-x2a.google.com with SMTP id 586e51a60fabf-43b7e186a0cso491146fac.0
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Sep 2026 05:45:57 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1788525954; x=1789130754; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=5CKWYHFFj2+Ay68a1spLAYVC7QQVQgeLpgvyjnrg6qw=;
-        b=HHsXjjVU9SFlbChyYu84Fm4fm5nLSXIvuWhlhxM3q1A5UhkDWS8jQrhFxpQsPCQ1nV
-         iU/vuMlTk4uLSiBzQhsDOyL7Ppb/VZiK1/IcKNd89DD/3dSq9Bc6MftTAmPcN3o9e2by
-         3lUhVeKCYmIYwmTAE9R/okyQWPPWiez2aqcQnTMTR5lS30oTZHxPWDd74w68pfxq2OVf
-         +BE/HFvyBUY8GuVtVJlWiWBVWXxL56FvIWlXNb92hN8X4WMP5qxhWn7rngSvbZi+YCVW
-         BNfW19hYFot8CuD1Y6XLZIhpBcgm9Vwt5pZK6tVEWDukujWUiMBltzp1pAj0pqKgFH23
-         P/TQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788525954; x=1789130754;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=5CKWYHFFj2+Ay68a1spLAYVC7QQVQgeLpgvyjnrg6qw=;
-        b=RCrsG6adVoewSMDsLrin9Is6HkXwRz1h8ZSKCVNpHsUycfiKTGwFUEnoolNp7hh9kA
-         90XL0f8pDvrBZl3ClvMZgqosxC1lT+SvwbLJxaEIqrk76r0GSm4LFx9puFhDjAzWztvQ
-         kTTri++pU2wetbJ9LwU/g2ORKCgDg6Kp3AJJ+yUnzwq5M/wCb+nUlqn8JPfG5QXQXlxP
-         qEJvlJZVPrQDOVC76838G48QNbTxAj7QGwEt1FoIev8m5XR1NZOA9jwnPJYuoi0rkWFm
-         gp1iLnl7B8PRFJyaNzjtLGtbsPMJqHMBvxyjeJYveSnkWaTnDJNBVE1sURbr7BnDc5ic
-         znRA==
-X-Forwarded-Encrypted: i=1; AKwUvBwjMuYRCUdl40AJOEDZVqZ9qPTB5ltyO1uCXf4Uv5FuKmrvgMQQiYKE5iAZUlVsodFLGQlz0BUDKpeqDHM=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++lTb/9J2q4YbuQAGgaK6rbmIrh87+qTPKhEKkaQKBRXJYue8yHp
-	MiY562SwoCktOqv4S5HHDwoLX4+1a128rmgPGRFEiFK0R4PL+UVBjtgnkihEi/cPynI=
-X-Gm-Gg: AYBFou0RFO/T4SDWGfiXQXlYzf02fPwUzZvV0ZhKmZGpVCOvGIQvIm7Lwh/oFYW4HCw
-	8O9SY9tezZQEyhijzLWLg7aLRo3XifHma+jmqet85AjKL7sERVWgsMs4sB9w47pHSB/ZIu7AqhP
-	Q0Fp1tfvm9X9dsHX7YnkDXzpZNOBDpbBYgsgOHtUn5zBEgcCL5iVouLM9KfdPnldzQv+aJXPz7/
-	59zwUItxrHIMs1KhVnqvOmWd11Ne0AfzRAPHH833wkTCNeGqMZpJ75jU+BNzqL6HbcIC+tQ2f/W
-	/k7SCxUcY8Nds7w3LSs55UL6ZqtS2BE3aJbPIjNqWhi1U7wBUQQWzoSadriLb7/EjSBHCHRWR5f
-	aS3vHJFVXtncnvzu8PI/dtvGxJsxAMxwIjftThChPQvbq9xu8+5cdDq2waAxTffdIi6B/X/3WfM
-	Ri8PbilofBwJEe2NOb1KTRN/VgnGfzX4c8Da5HMx072Ho4NHY4g05k5kxSXjOERIDAMulq3zqj7
-	6/aNCQrKbeTEMs=
-X-Received: by 2002:a05:6820:858e:20b0:6b7:e065:c4f9 with SMTP id 006d021491bc7-6b7e065c573mr613694eaf.57.1788525954014;
-        Fri, 04 Sep 2026 05:45:54 -0700 (PDT)
-Received: from volcano9f6e-hostos.amd.com ([165.204.217.251])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-143243f780csm6477419c88.13.2026.09.04.05.45.52
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 04 Sep 2026 05:45:53 -0700 (PDT)
-From: Hemanth Selam <hemanth.selam@gmail.com>
-To: 
-Cc: linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 3/3] macintosh: fix repeated word 'up' in comment
-Date: Fri,  4 Sep 2026 18:15:37 +0530
-Message-ID: <20260904124540.7652-4-hemanth.selam@gmail.com>
-X-Mailer: git-send-email 2.48.1
-In-Reply-To: <20260904124540.7652-1-hemanth.selam@gmail.com>
-References: <20260904124540.7652-1-hemanth.selam@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hcNQC26qdz2xYg
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 05 Sep 2026 16:16:35 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 8F29E4411A
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Sep 2026 06:16:32 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6BF5F1F00ADB
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Sep 2026 06:16:32 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1788588992;
+	bh=wroX+IXZ78hb2aQP5LUDjSlqEruTGuDIlApEgq/LO60=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=eG6Yau/SZQyADBf7WEKKvoXO5elZ/bvCf/rLi+iKt3NTLV7xty74rhFfmCtOpPiim
+	 KsAmLG9Gn+z3shv/KSeuw44rHL9DtjgoqL/rXuxlacLkIVZF2+hqWRGRtWUTXi/qmJ
+	 kZl5s4svuLfbc9Q0nHCHcueEtH3KiRVj1uiGBF/HJ7S7HftHqGrPtY0Sno1Rhjpz4S
+	 r4ZM1gDlCVp9/4jsn5pfGOohCmBT4WDB98quAjGdOyMWd9pF1NAdOgRtz+4BlRvGeN
+	 E8KPCW/IB9VA/PTkef8GQF62ljNlTZ7dJCjGnGxIPtOxwhbNeoezclLf0Kn6pu8kjd
+	 1SF3HTI8TDArw==
+Received: by mail-lf1-f47.google.com with SMTP id 2adb3069b0e04-5b4adcce4b1so538385e87.1
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Sep 2026 23:16:32 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBxf1z9aky2LfTGUnFyhneGHKkbDRNY9ODqFMHexP1xgCzZTRkiLkgZnKrnDv7qpxqrnLggMD+BrHRQTELM=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++kt9ffLQmqNF3c6hb33ixWwId0DkPLTjgipgC+ov+O8kuoDrGku
+	Uq3jwi2V7EGPJunBwG91nZKFv+SBUSusSSnNSQQtgC12QbphFUufsvwTk9otYj7YzetJKG8d255
+	32HAx+LozoVUh/+7DAHVdVkIXTv7l6UY=
+X-Received: by 2002:a05:6512:2c0c:b0:5b4:74a2:cf2e with SMTP id
+ 2adb3069b0e04-5b616f235cemr3181239e87.21.1788588991087; Fri, 04 Sep 2026
+ 23:16:31 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -95,31 +66,109 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20260831082335.1184605-1-wei.fang@oss.nxp.com> <20260831082335.1184605-9-wei.fang@oss.nxp.com>
+In-Reply-To: <20260831082335.1184605-9-wei.fang@oss.nxp.com>
+From: Linus Walleij <linusw@kernel.org>
+Date: Sat, 5 Sep 2026 08:16:19 +0200
+X-Gmail-Original-Message-ID: <CAD++jLk+DMHzHiJoX6LMY5wUGMOWm3DN_yAHUUSvFKLKgFwJZw@mail.gmail.com>
+X-Gm-Features: AcwNN1VLKzpVVc3BcKIIuwpH2P20ZdeitB0o0lFGwyQdTkbcdnQSy6KPeNWVBSI
+Message-ID: <CAD++jLk+DMHzHiJoX6LMY5wUGMOWm3DN_yAHUUSvFKLKgFwJZw@mail.gmail.com>
+Subject: Re: [PATCH v3 net-next 8/8] net: dsa: netc: add PTP one-step
+ timestamping support
+To: wei.fang@oss.nxp.com
+Cc: xiaoning.wang@nxp.com, andrew@lunn.ch, olteanv@gmail.com, 
+	andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com, 
+	kuba@kernel.org, pabeni@redhat.com, horms@kernel.org, 
+	richardcochran@gmail.com, wei.fang@nxp.com, imx@lists.linux.dev, 
+	netdev@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Drop the second 'up', reported by checkpatch.pl as a possible repeated
-word.  Only touches a comment, no code changes.
+Hi Wei,
 
-Assisted-by: Cursor:claude-opus-5
-Signed-off-by: Hemanth Selam <hemanth.selam@gmail.com>
----
- drivers/macintosh/mediabay.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+thanks for your patch!
 
-diff --git a/drivers/macintosh/mediabay.c b/drivers/macintosh/mediabay.c
-index 36070c6586d1..c5115b88beb6 100644
---- a/drivers/macintosh/mediabay.c
-+++ b/drivers/macintosh/mediabay.c
-@@ -331,7 +331,7 @@ static void keylargo_mb_un_reset_ide(struct media_bay_info* bay)
- 
- static inline void set_mb_power(struct media_bay_info* bay, int onoff)
- {
--	/* Power up up and assert the bay reset line */
-+	/* Power up and assert the bay reset line */
- 	if (onoff) {
- 		bay->ops->power(bay, 1);
- 		bay->state = mb_powering_up;
--- 
-2.48.1
+On Mon, Aug 31, 2026 at 10:24=E2=80=AFAM <wei.fang@oss.nxp.com> wrote:
 
+> From: Wei Fang <wei.fang@nxp.com>
+>
+> The NETC switch supports one-step TX timestamping for PTP Sync frames.
+> When transmitting a Sync frame, the driver reads the current PTP time
+> and writes it into the frame's originTimestamp field, and inserts a
+> To_Port subtype 1 tag carrying the low 30 bits of that same PTP time.
+> As the frame leaves the wire, the MAC captures the SFD transmit time
+> and derives the residence time from the timestamp in the tag. It then
+> reads the correction field at the offset given by
+> PM_SINGLE_STEP[OFFSET], adds the residence time to it, and writes the
+> result back.
+>
+> PM_SINGLE_STEP is a per-port register that can describe only one
+> in-flight frame at a time, and programming it requires reading the
+> current PTP time, which may sleep. Both constraints rule out handling
+> one-step Sync on the xmit path.
+>
+> Instead, defer transmission to a per-port process-context work. The
+> xmit path classifies the frame in netc_port_txtstamp(): a genuine
+> one-step Sync (twoStepFlag cleared) has its PTP header offsets cached
+> in the skb control block; frames that cannot be handled as one-step
+> fall back to the two-step path or are sent as normal frames. netc_xmit()
+> hands the classified frame to the switch driver via the
+> onestep_sync_enqueue tagger callback, which queues it and kicks the work
+> if no frame is currently in flight.
+>
+> The work dequeues one frame at a time, reads a fresh PTP time, programs
+> PM_SINGLE_STEP, updates the originTimestamp field, and transmits the
+> frame directly to the conduit via the onestep_sync_xmit tagger callback,
+> bypassing dsa_user_xmit() to avoid double-counting TX stats. Only one
+> frame is in flight at a time: the frame carries a TX-completion
+> destructor that reschedules the work when the conduit frees the skb,
+> keeping PM_SINGLE_STEP always matched to the frame being transmitted.
+>
+> The one-step context is reference-counted and its lifetime is decoupled
+> from the devm-allocated netc_port. In-flight skbs hold a reference via
+> their destructor, so the context outlives port disable until the conduit
+> frees the last in-flight skb. Port disable clears onestep->active under
+> work_lock; a work that runs afterwards observes active cleared will
+> purge the onestep->queue and return without touching the freed port
+> resources.
+>
+> Assisted-by: Wchat:claude-opus-4-8
+> Signed-off-by: Wei Fang <wei.fang@nxp.com>
+
+You agent produces "dostoyevsky commits" with too much verbiage.
+
+Tell you agent to "be terse and to the point" in your AGENTS.md.
+
+> +
+> +               /* dsa_tree_teardown() calls dsa_tree_teardown_ports() be=
+fore
+> +                * dsa_tree_teardown_switches(), so netc_port_disable() i=
+s
+> +                * executed before netc_teardown() and onestep->active is=
+ set
+> +                * to false. In-flight one-step skbs still hold reference=
+s via
+> +                * the destructor; the context (and its work) is freed on=
+ly
+> +                * after the conduit frees the last in-flight skb. By the=
+n np
+> +                * may be gone, but the work no longer dereferences np be=
+cause
+> +                * onestep->active has been cleared. And onestep->queue w=
+ill be
+> +                * cleared by netc_onestep_work()/netc_onestep_destroy_wo=
+rk().
+> +                */
+> +               netc_onestep_put(np->onestep);
+> +               np->onestep =3D NULL;
+
+This type of stuff is over-commenting and is considered AI slop.
+Tell you agent to be very restrictive with inserting comments, essentially
+it should only do that when you explicitly tell it to, such as when you
+yourself feel it is really necessary or you got a review comment that
+this is needed.
+
+Yours,
+Linus Walleij
 
