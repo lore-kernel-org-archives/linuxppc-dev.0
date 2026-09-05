@@ -1,85 +1,90 @@
-Return-Path: <linuxppc-dev+bounces-26606-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26607-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 69EA0C624DB
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Sep 2026 10:31:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C9165C624D3
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Sep 2026 10:43:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hcV3L4FW5z2ywh;
-	Sat, 05 Sep 2026 20:30:38 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::32a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788604238;
-	cv=none; b=AU+SCFnlYbr83B+o5adojgq48Tif3MVXfBofMRKr8r3N9gUPRcrpEDkBsSriN8w55bF+ewZRoocAyPPSusXVBejVr5kDTrKBDpvWdiyYNspyuSsObqxivTZJEV26WcH2UoyysDAP92v6ff01iqxegAq11cxbq1y/2WCRdXucUkD+l74DnIRsLZ7jFLw7FCi/9ZJAQzBbnInLdDODEnlsuC1oqkg9MgxSn8Z5zqWVWk8/fmpMUWhPG8PjuWtIm4noJu5iT63KLgCM2wNyQhvI1SX5Wl9HzfQdaDla8SjQB/TFnop7J8ZW+iaGIrYbhsYE4zPb/EUu237aOvO2oS3SeA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hcVL30lDBz2yv2;
+	Sat, 05 Sep 2026 20:43:23 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::434"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788605003;
+	cv=none; b=JXSPH6bCf53auPSEbnco3po8MJIdDMvbtf9kto1W3tHvkiE57Iy4Z5GE/Rii/6w/SFbI7aNkm+GiDU3rKk2juLZuanWuL5kDnghTPlhQMQz8LTuNrnMRCvZ88zLy8n/ZkLeK0gNr4jsGsEATYRUsM6laTuhjQxZhakqOOeZiYmlKB6awnU0hICWcydFB53ZLR5hc0xr7Vq7zINvY2wRXEFd1dhgGrTJp1BW7iF/Kd3jjIOBpGDjYrZZc4gYzDKDA86KyvKUm0dx91KBp/0x1h+2zkRsEcJI3AQiWz0LlxWC4smh5XgYYhzmYZndKJVcyVXeZm46JlxJnN+ikg6hyXA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788604238; c=relaxed/relaxed;
-	bh=SDGEFS6dmNz/auClgpOub+iqE39gaMfjW5ny2d52V9Y=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=ZIxsdvqbJIDkcHFwOdHsvpsbSXQiG7tl4lTZSGm8mt2sIy/uu1uYZn43cVhw3WDJ8zBSXP0bfxhnSX7QYit27txHceq2rg7mEOVpiJuKeKE2Crap0Nk1Az6Fu9cwclZcPGMXItscPxCA3SFnl/Aw98/boaiGf6awY+sgh1HfLpxTSYPYJz2uRE04jWy/3o4oB4K1VM3J1t8NFEI28pR8vgFs0FG67/q6E7jgCBAiTOicxn05Jvz+BlAMT5D5F+dZlBUwtRhhg/kWPM/RWPOaoKbgDXyYAHAnyAs6qw4c7xUvfS3LodfJz0wJYoZy66XsbNavq4EjApMX2R3UL54JeQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=DOm4wJ/f; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::32a; helo=mail-wm1-x32a.google.com; envelope-from=kmehltretter@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1788605003; c=relaxed/relaxed;
+	bh=yYKzgOeBZLaXbTK9FiFpJ1LTahc5Bghrw6NjETh12gg=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=Anq1uVXP65HgQZDxAwjJImYrPB/dhKfCOOzvzhJ7Z1TD4Fq20bkUzqY5P3tubwFyR3jOZpepILw/uQgBiRkxuLemApTRqfNaMv+fu3MdEf37/G44vo6ASunU00jAbise+hXC3jrmc3uVu8SAh33BIJ6OmB4yiCDBlwa0m/oTTdZpwXxuKg2FvBZk7OyT83Kmu3eKcWDe+SehB9pGtt1hoipY+mzwUh2GY1qY5+FgRt9omrEpM1izO7MX6OtAD+7+/ihpJJt/dVQyw+2MHif0Pn8WAO262s5Vbwn1oQISBjejxnKvlnD/m+zRB8UefY8nD0yjfByIgwvejkHO5l6egg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=IOYjlNc3; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::434; helo=mail-wr1-x434.google.com; envelope-from=kmehltretter@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=DOm4wJ/f;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=IOYjlNc3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::32a; helo=mail-wm1-x32a.google.com; envelope-from=kmehltretter@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x32a.google.com (mail-wm1-x32a.google.com [IPv6:2a00:1450:4864:20::32a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::434; helo=mail-wr1-x434.google.com; envelope-from=kmehltretter@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-wr1-x434.google.com (mail-wr1-x434.google.com [IPv6:2a00:1450:4864:20::434])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hcV3J502Hz2ywS
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 05 Sep 2026 20:30:36 +1000 (AEST)
-Received: by mail-wm1-x32a.google.com with SMTP id 5b1f17b1804b1-49b8687630fso16482975e9.3
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 05 Sep 2026 03:30:36 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hcVL165qCz2ytj
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 05 Sep 2026 20:43:21 +1000 (AEST)
+Received: by mail-wr1-x434.google.com with SMTP id ffacd0b85a97d-48436251906so2088892f8f.0
+        for <linuxppc-dev@lists.ozlabs.org>; Sat, 05 Sep 2026 03:43:21 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1788604232; x=1789209032; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1788604998; x=1789209798; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=SDGEFS6dmNz/auClgpOub+iqE39gaMfjW5ny2d52V9Y=;
-        b=DOm4wJ/fFbL45zIyi6mF7Udc/JIfOqAECkwvQGOVQCxb9D2HZiPOsQ+D8KZbhLVk9W
-         OhkmRj421F94zWlq4IO/zDMQSFpoqd8Yvi44zwGrgukZU6QtQh2MwbLI7IAe4flhMQfi
-         Hvx4j7pcVtllQ10OjR5hTyrnnCNxyi1DT+zv7Kcy8NlY16Jv007YRt5ddKHpgzhVirwo
-         JqF3JjW2qhNbVB4kZNXzYb0Pd23gR2nFIN4QT+/aqFXXBwJXvLM8ipUUyCTZunNi4KnL
-         Kl6WZcWs+PmtptQu90uXaVjKDpAleIw72tAbpbriq14TW/TdDCa5d6jzWL+eOQzbMHCO
-         g2dQ==
+        bh=yYKzgOeBZLaXbTK9FiFpJ1LTahc5Bghrw6NjETh12gg=;
+        b=IOYjlNc3UO4aRoC4nN0SKK208xNne7HzxfIu2gflEiSxpetGVMA3kSbfLJn2G0Z6F2
+         zplpRc+MClPw1mZPwzDymVnucJ6EMbBGiaXscKd2l6lsIkpR/TBiUWiOSUaarR7AoQBO
+         /7R16GBeZ5fWeIo5h1BdP5XdsNNpH+t5pk/4EoINFPm1Pu5kiaBosuVWUcRXxmKNf5ou
+         UKhih+LcpHFAHabsb39neMzvh375+y6gSZ/4BytcY3YTFPZR6DHktWxfuU6zRHmfXEsJ
+         b4CZO0JuqeElMV6THLOd3VacoRLgHFDSMN5IwWtFKEVrhHI98hEfXKSFJOIXabia6395
+         7uHw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788604232; x=1789209032;
+        d=1e100.net; s=20251104; t=1788604998; x=1789209798;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=SDGEFS6dmNz/auClgpOub+iqE39gaMfjW5ny2d52V9Y=;
-        b=fTIOa7yhCMqFH5CoW3PurJ3O0nLkTOSUF/7o5oqyOJcofhxUACQiqiFfOWCxG9fZXF
-         lYy9wQ4GWijZjNz8xT+wyU/NxuVkXowZ5eLz1HBQQJK5ZSbcSUb9huDKIb9rtAuCqSiw
-         0grljLkpzyKNg5AFc2zZeHP5NLFz9X58spfybApJ18p+fSWoR193IQjaAbQdsQbA+nnB
-         hD33UEGWL+JAJdmjGEYykBXmKma+Io+ehpMqG+P2eVr+Mkp+6RKg4yKlLhjImFftRhiT
-         cjh7YbpviV+GueyGSm+eACaq0ZwXdSrdtl57qWE51AwHqDkDGUfAvEggQfp0INJtOzE2
-         8hqA==
-X-Forwarded-Encrypted: i=1; AKwUvBxjLZC7q3mkIhTKVwFI125qsD5BBbl62p4kVPYE8pFWI5rJX6H1zR3PtmUasIHIHhEMa75hr+5wD8FsZEo=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++mTj41JXKCM6A0M9rWX/8yHqntePKutb/qggIdW8jKfI5yFZMms
-	IHx2if4+k1bo/AiNU4N0jnC0M2TPzbWHzNT/bm4erqgqSEB+y1dBCzt4
-X-Gm-Gg: AYBFou3JGqim/2S+I4Tm3yOfr338Czh9k+2nDLAj6pKFLghD16igaslBAg9pslEEkdM
-	CVdwjxONDgv2TD84nzd6WcgJT83I4wW4A+db1KeJCOq14gm++U9wt4CgkP8cwLuztcvPhma1M09
-	T1TMA+6ivaSvRaUubc8FwhOe/2Lw1iBXNbQ2MuMJ1gDU/A+ZIJWk8KcVxmbnwygHB0o2JGqbhJp
-	sV9cLU7yVzYlIq0+BuNx8hu0EKO2C3ghWDduk68di+qd6ZGzAbMorIoU7V0RBVOwNuoji/1/tdR
-	5UXjSNk0FV+ggPzbWG6Q47YekNq0JlTKbRtnR08I7Q7ebqijGpLVI0yTd8iE1SaNrtw9INj3hqy
-	hA+dQ9xsJ4W2KzW5G2YR5zjc0uf7XJU0afyhMPpe51sw1sEgdsgD1Q6UJMnMHt3m9n6zDNr39Fd
-	CQ1gX7TidX5VUNhopZUYszBJKPl+4BZtwVCxjASV/AvCrQEN4SjnDbf+7s1fsadF5XKLLstMAMV
-	l4kHPpqx3RpDmM0TuKrG/PGudr0dIcSKCzabdK05Q0t9+E3OLapII3EgrFeO404visCy+SNQnDB
-	qz39ZXQQII2SUKLQIY9tlYrAddOL090IWpOMpCTSMHTtSZBrfqw9lLyPoFmd9ZkLkgpdPIdxH69
-	XL08=
-X-Received: by 2002:a05:600c:138e:b0:49c:d818:8771 with SMTP id 5b1f17b1804b1-49cf8240ba5mr110383085e9.7.1788604232162;
-        Sat, 05 Sep 2026 03:30:32 -0700 (PDT)
+        bh=yYKzgOeBZLaXbTK9FiFpJ1LTahc5Bghrw6NjETh12gg=;
+        b=AH/PRP+Xqpt5wFReNlGSODjEKTKZOY0RT8rmkViDdhONw1OhMRESPXVTxNP5UMjaRd
+         /EhKivnc2QmSDynSP2YbqxcRPybmdcKdoQRD0vKByvehA0CyRI7s1xNeHP/RzGwQDzl5
+         /aHjU/ZiLgxqcFmG2QtyWoPbTpD245p/r/zw6Dsn2XwbWo5zzstDSaP0UnNmjq6REZsZ
+         fO+9gm7pTYfwe2dAr7F5PoRipN1fOBjeAOWGz7bp02SsGs5QQ/uP9m6b2FoCwaAfi5Wl
+         Vbh1wtzCsXTG3mRM/QoBF007/rBLmvUJk1YqYKWyykWvDT86V8vzwkVRCgG8ydWRA8gP
+         DwOw==
+X-Forwarded-Encrypted: i=1; AKwUvBwWmbgjU1eAXclWQ65nrZOygnFrXmsoEEMuiNJe7I3RWArLHgaskNSJD5NPZg4CngddibJLbg/ceL+XB2s=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++k/QJUGgEBWsg1dbcV8TcNc+MqErHHCSS7xycRYRg9Gn3rvgSuq
+	eet196oFSl2q1EFYXIZrjWCCA3xzoI6N6V6bHlJ15E+N4YPsVKlRG9Xa
+X-Gm-Gg: AYBFou3QcJMRPrkV1xuJiO0RRxVbj4dYBYNpWB41/AXbdQ9YZ1YWd7Q4IYKp2/5BbZX
+	NkB/YS6demdiSLcqvOJQ67bsP2dR6bmpv3YZNx1p6puVxndn24DnjO+hYF9bKTDWhBVI8/TyDpq
+	JGQanF+bf53DPoTB4vQhbajx2fSUObfoPMRlUyTeuYAHtvnzYGN32CZTdp0r2HPnzkSO80OKYt/
+	W1J64bkeuxoY/JTy4v074XZvCV+hw5x0AVLkeyx7hz/iuSHg5F9Y1WDwL8VDylq+n+vG8V5iaY+
+	GM8aCfyTpQV6h0rfnHw7sI4PmQDRj8jJZUAH6jiKEulHOSUWP0jYU647zMkX9vEzohFGcgX4JZV
+	46Y1hRx6llCNVx17MSaom6IcsruKOslAomyYCtwu6W5Z39q5kMw6qiw+60Urd3nMuJVPBaDdMgL
+	PjzfBg+cBcygZpoHpEerpLGzbsgOLloRgIc1JQ9XknWPLNHS6u5kknSJbVZfsdWI3ncqPzXd17F
+	18Ym+EUHljD1IXO0iWwdyiuuflAeVXDHrmIabkdZp5DNIpk7LfpyTOj8yKR5yVEbF9t/PgOz3ZS
+	UaNLQ+iHvDTi3NgfhAoUzLfSQCQIDQPYDbngFD8nKAdIvtr+EzYrPwsgeLwmOPuEaywK57KhDJg
+	qcJAQ7I80sIg=
+X-Received: by 2002:a5d:5889:0:b0:485:8b5c:da26 with SMTP id ffacd0b85a97d-4858b5ce16cmr19044594f8f.11.1788604997962;
+        Sat, 05 Sep 2026 03:43:17 -0700 (PDT)
 Received: from localhost.localdomain (dynamic-2a02-3100-a4eb-3001-c06d-af27-9fa2-ea53.310.pool.telefonica.de. [2a02:3100:a4eb:3001:c06d:af27:9fa2:ea53])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49d08144037sm8125535e9.7.2026.09.05.03.30.31
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-485885bbb51sm13206632f8f.30.2026.09.05.03.43.16
         (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Sat, 05 Sep 2026 03:30:31 -0700 (PDT)
+        Sat, 05 Sep 2026 03:43:17 -0700 (PDT)
 From: Karl Mehltretter <kmehltretter@gmail.com>
 To: Madhavan Srinivasan <maddy@linux.ibm.com>
 Cc: Karl Mehltretter <kmehltretter@gmail.com>,
+	Haren Myneni <haren@us.ibm.com>,
 	Michael Ellerman <mpe@ellerman.id.au>,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] Documentation/ABI: hv_24x7: Fix the catalog_len attribute name
-Date: Sat,  5 Sep 2026 12:30:27 +0200
-Message-Id: <20260905103027.43239-1-kmehltretter@gmail.com>
+	linuxppc-dev@lists.ozlabs.org,
+	Jonathan Corbet <corbet@lwn.net>,
+	linux-doc@vger.kernel.org,
+	Shuah Khan <skhan@linuxfoundation.org>,
+	Randy Dunlap <rdunlap@infradead.org>
+Subject: [PATCH] docs: powerpc: vas-api: Use the uapi structure name in the example
+Date: Sat,  5 Sep 2026 12:43:13 +0200
+Message-Id: <20260905104313.43620-1-kmehltretter@gmail.com>
 X-Mailer: git-send-email 2.39.5 (Apple Git-154)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -96,32 +101,31 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-arch/powerpc/perf/hv-24x7.c creates the attribute as catalog_len
-(PAGE_0_ATTR(catalog_len, ...)); the ABI file has documented it as
-catalog_length since it was written.
+struct vas_setup_attr does not exist; the name is struct
+vas_tx_win_open_attr.
 
-Use catalog_len.
+Use struct vas_tx_win_open_attr.
 
-Fixes: ad0a02b83477 ("powerpc/perf/hv_{gpci, 24x7}: Add documentation of device attributes")
+Fixes: c12e38b1d52e ("Documentation/powerpc: VAS API")
 Assisted-by: LLM
 Signed-off-by: Karl Mehltretter <kmehltretter@gmail.com>
 ---
- .../ABI/testing/sysfs-bus-event_source-devices-hv_24x7          | 2 +-
+ Documentation/arch/powerpc/vas-api.rst | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-bus-event_source-devices-hv_24x7 b/Documentation/ABI/testing/sysfs-bus-event_source-devices-hv_24x7
-index de390a010af8..9b231c80ea66 100644
---- a/Documentation/ABI/testing/sysfs-bus-event_source-devices-hv_24x7
-+++ b/Documentation/ABI/testing/sysfs-bus-event_source-devices-hv_24x7
-@@ -33,7 +33,7 @@ Description:
- 		documented here:
- 		https://raw.githubusercontent.com/jmesmon/catalog-24x7/master/hv-24x7-catalog.h
+diff --git a/Documentation/arch/powerpc/vas-api.rst b/Documentation/arch/powerpc/vas-api.rst
+index 1d0d055356e3..00d98cfd95c9 100644
+--- a/Documentation/arch/powerpc/vas-api.rst
++++ b/Documentation/arch/powerpc/vas-api.rst
+@@ -265,7 +265,7 @@ Simple example
+ 		{
+ 			int rc, fd;
+ 			void *addr;
+-			struct vas_setup_attr txattr;
++			struct vas_tx_win_open_attr txattr;
  
--What:		/sys/bus/event_source/devices/hv_24x7/interface/catalog_length
-+What:		/sys/bus/event_source/devices/hv_24x7/interface/catalog_len
- Date:		February 2014
- Contact:	Linux on PowerPC Developer List <linuxppc-dev@lists.ozlabs.org>
- Description:
+ 			fd = open("/dev/crypto/nx-gzip", O_RDWR);
+ 			if (fd < 0) {
 -- 
 2.53.0
 
