@@ -1,88 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-26623-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26624-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 12663C79F99
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Sep 2026 09:03:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3775AC79F85
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Sep 2026 10:47:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hd44l17hjz2y2S;
-	Sun, 06 Sep 2026 19:03:51 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788685431;
-	cv=none; b=ZoKEN3qxgHXpnp1RwVdFgGnzt8K4RrZqN+oXT85ZCz17O/wZTgF6ReB+4D+33je4fDV5T02QeX9tVqs++J6d5qdEdbSj+PpzTfrWmz5rD0Qbgrl+xBCfUP/FX+51AiCfUM4h8pfXtB9SA1Glfu48msaW8AcuoOMkK477+w571w0XCTI201XIxqfs8CzbRXA3ujYbQKAXySxUSFWzIZxYV2X34h9qDeSFeiXeVNKtSUQ0HodLs1NQQsU4f2KjKKP8hXK7fLOSC9MA++xzdwm5kVnytcM/w2VKHoNO6rPVciF7EtDU+tYzj6q9R1LQPST7s9eGu7Zr+OFAJzn+teRg9Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hd6NV19KCz2y32;
+	Sun, 06 Sep 2026 20:47:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788691658;
+	cv=none; b=ZYFmP8J9JizVUT9OafF4CKCV/MqJMTdpaU0eni+bJJfm+evQJbuCtMKibh8/9gyxe2coGAn4igYJQY3biKteFociYjlqbvakcJFilGFZjPiGcXwPhGMTIm82LNnASNNYhylbjxYKOXXleaWOPnrngd7rIvhcCXOW1WNz/UTQLNkNfpv7PbnMRRa7BDhKGpCTnqd/dms2ptK8Sky7MGKcgGYG21Zgq3QZp0onDQUDc/fOVUf1SQrX4EZyqX8EXZKluqDsGtjW9bmIGyLv0Qzb7X+dU02Ij289L6OfYXORyCJM8FFwW8cdiDV9FKcghTS+GUIIime75SZi6SsiiNU6YA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788685431; c=relaxed/relaxed;
-	bh=u32qnIeOoL7s2TKUFguAHaNyN1zc5k7iOIP12zm7Cos=;
+	t=1788691658; c=relaxed/relaxed;
+	bh=W6DNGqDYfT3d8o6uHJqWVZo4/oRgPdSR1cxwF3mU6L4=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=jTJipwVJV6ECymFxsSZMhBvrnWlUmNOyfKuy2KM5anS7zBouBSRcq9BrLswlUjbpmU80hO6uyTLQfOyXPf9gWccP9fHD94r5IlpaM/rCM+d5XSl4OEmpkM4+aYiRM+WmErUkS29o5rXIWQKySUvp7PhI+TMdWYcJb/knenwgnxegLg/QWA9bg/NI2kp+WXiQ4vRln4l1wSXxOIG13PTpGk8gRPqfkoOrLSP6ripfSBVe1jcr6P5Uoh+c6pQ2IdtrGVOeVtncmXThqOVBQSEvyx1RvRB1jhWT6TLZLyscTAqb1W2WxkF5DHzSboAyEMDsigomK3OvmofDcrQExhaLwQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=AE6lsCLf; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=Tfc/s/S+iUNOo7ZJleO1zOhjx5g+vOsAAdRu+vz0bQZ3LJ8pbD9/UrIHuSzMy49rEoUUv7KhMMCmZCoontXiq9sqdhgmZ00HBwnF5RX1u0MyF+7rVH4dqcDVuvLUR3+sfl+AO3ZizSRohcf1phxXvkRfY9Mr6WUCMygwAR01wNi7Qme2Tw03gQNp6gl2SF81dQRxR2p00N540SKuIP0UyRFywzccYPbJoeFYRaRtVS+aM3YUG6TV2h6z0Tklgh75X8FBpYVNBXvVxD8/aO0bROEODNuXHtA7gJsZJdVQBy5r/zrxqX+t+txhDARvEtJUSinSop2dM+n8YC9Zgrls5A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kPTf9X6D; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=AE6lsCLf;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kPTf9X6D;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hd44k26GBz2xyh
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 06 Sep 2026 19:03:49 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68601gw61593908;
-	Sun, 6 Sep 2026 09:03:46 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=u32qnIeOoL7s2TKUFguAHaNyN1zc5k
-	7iOIP12zm7Cos=; b=AE6lsCLfO8kN/XcpFkv5ym2q5UeOymumsUgpF3TbmKB92I
-	5RAKKp5s2J5Bnuujeirxcvlo++2j3JDbFclTrvv1x824AppwJO9TREsZDXKQ6JtY
-	FpEmkuxtRbZKcuf+ua0ssNFMd+ATAbOD3X7xkATBdBnHxESGv/2Lugxmc1qspLxD
-	sA8uUZv6gdhoDdEtIYmDKnIlSi/sZ/FGT0TsZ4rqDmyMNVSGimO5kfqHqtKDXgjC
-	Ygnr4ZHqVuvboq4s11V9I1RtsErGihxaBIxZ7ozqFCbXQHeDIcflr/c5pqHi1JKm
-	HtCbrkvm/vuq0d4W2ylf9R9UsxmsCrLidOlzipEA==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4ggbj7upjm-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 06 Sep 2026 09:03:45 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6868ukcR012193;
-	Sun, 6 Sep 2026 09:03:44 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gh03y0q5x-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 06 Sep 2026 09:03:44 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68693eDq43319736
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sun, 6 Sep 2026 09:03:40 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C09A220043;
-	Sun,  6 Sep 2026 09:03:40 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id F28D020040;
-	Sun,  6 Sep 2026 09:03:38 +0000 (GMT)
-Received: from fedora (unknown [9.5.7.39])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Sun,  6 Sep 2026 09:03:38 +0000 (GMT)
-Date: Sun, 6 Sep 2026 14:41:23 +0530
-From: Amit Machhiwal <amachhiw@linux.ibm.com>
-To: Aboorva Devarajan <aboorvad@linux.ibm.com>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
-        Mukesh Kumar Chaurasiya <mchauras@linux.ibm.com>,
-        Christophe Leroy <chleroy@kernel.org>,
-        Shrikanth Hegde <sshegde@linux.ibm.com>, linux-kernel@vger.kernel.org,
-        Ritesh Harjani <ritesh.list@gmail.com>,
-        "Nysal Jan K . A ." <nysal@linux.ibm.com>
-Subject: Re: [PATCH v2] powerpc/entry: Fix double accounting of user time on
- interrupt entry
-Message-ID: <20260906143854.d5f6e8b2-19-amachhiw@linux.ibm.com>
-Mail-Followup-To: Aboorva Devarajan <aboorvad@linux.ibm.com>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, 
-	Mukesh Kumar Chaurasiya <mchauras@linux.ibm.com>, Christophe Leroy <chleroy@kernel.org>, 
-	Shrikanth Hegde <sshegde@linux.ibm.com>, linux-kernel@vger.kernel.org, 
-	Ritesh Harjani <ritesh.list@gmail.com>, "Nysal Jan K . A ." <nysal@linux.ibm.com>
-References: <20260904025831.3439809-1-aboorvad@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hd6NT16m1z2xmh
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 06 Sep 2026 20:47:37 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 3723D600AA;
+	Sun,  6 Sep 2026 10:47:34 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E62E81F00A3A;
+	Sun,  6 Sep 2026 10:47:28 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1788691653;
+	bh=W6DNGqDYfT3d8o6uHJqWVZo4/oRgPdSR1cxwF3mU6L4=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=kPTf9X6DCXVGxujdL6WGrcgDganHIgiyQ9VBs+LBDov8fdt4oMm5QEcC94AO24BYc
+	 TkkmPvx8FbDlhKTM6cspMGdzaoKTbNDizMXQFr2Ou+agCaepmZ498pKLqlNoto3itn
+	 quYCQ6taSHLzKo3HO4C30x8EOugzHLGsst1sBQBoecwdIe6WN7ivDDl+TfjUhlVxxN
+	 y1tR2o0H7eQnDNUnFFgerBVzhIzOm92pIl3LFErLMVMRM1LjWpCFmUOwYTk0sgiYYt
+	 0/uqFL4lj269UqdlzS9uR2f9+KxXdifPrgtFTgHRtEyjQg3ZdZnZ+uCbWT4hVa+u5J
+	 zZG0AXACyM3pA==
+Date: Sun, 6 Sep 2026 13:47:24 +0300
+From: Mike Rapoport <rppt@kernel.org>
+To: Pratyush Yadav <pratyush@kernel.org>
+Cc: Sourabh Jain <sourabhjain@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+	Aditya Gupta <adityag@linux.ibm.com>,
+	Alexander Graf <graf@amazon.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Baoquan He <baoquan.he@linux.dev>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Hari Bathini <hbathini@linux.ibm.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Mahesh Salgaonkar <mahesh@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Pasha Tatashin <pasha.tatashin@soleen.com>,
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+	Shivang Upadhyay <shivangu@linux.ibm.com>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>, kexec@lists.infradead.org,
+	linux-kernel@vger.kernel.org, Tarun Sahu <tarunsahu@google.com>
+Subject: Re: [RFC PATCH 2/3] powerpc: add support for Kexec HandOver (KHO)
+Message-ID: <ap1EvH00nKze9Kj4@kernel.org>
+References: <20260821105609.983622-1-sourabhjain@linux.ibm.com>
+ <20260821105609.983622-3-sourabhjain@linux.ibm.com>
+ <2vxza4qfznyo.fsf@kernel.org>
+ <7bb84b8a-c394-4895-9e22-632dc506cbb6@linux.ibm.com>
+ <2vxz5x0ox7p9.fsf@kernel.org>
+ <8fa790a7-f387-48f6-ac76-11cf71ef5589@linux.ibm.com>
+ <2vxzwlt1vvet.fsf@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -98,142 +87,94 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260904025831.3439809-1-aboorvad@linux.ibm.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: R9Y1jjbpGrm1LMe20f718skn-FAJcxkg
-X-Proofpoint-ORIG-GUID: 8Fgm4GK64Txvx3wYkvnlUYVtsvHs_U87
-X-Authority-Analysis: v=2.4 cv=RNCD2Yi+ c=1 sm=1 tr=0 ts=6a9d2c71 cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=kj9zAlcOel0A:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VwQbUJbxAAAA:8
- a=VnNF1IyMAAAA:8 a=pGLkceISAAAA:8 a=uId4siVdVRRDVQ4xNrcA:9 a=CjuIK1q_8ugA:10
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTA2MDA5NyBTYWx0ZWRfX0Pqhzp0WdLXj
- UWyzZWxBWQnJEG8z9zibxLf5LDn+yeLnAfUQS1Pic/Cs0qdhDPmIKYVADVq10/t2AbAUf1eRtku
- 4Oql0bg3j5vycQA+7Is7dIPKFj21oRk=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTA2MDA5NyBTYWx0ZWRfX7Ni1XySBs/72
- 7lvrIKl0iQajVb+tXf30zPCN003kZ/kVzWgpGpcd+IQU+4kkElKmplLWQI7KB3BnG/6ODGieY/l
- YiUheNoeF0yfuPyFbHorgaryH4wTWos/J6GvronWACvJsUbkdhvUo5RRyADFnSBoCdPXsdjvQh5
- LsCfjjeCeR0DZN4biumPYSPbN14Uc7pPPoXmBcVa5MvndxDULx2dKoVNHq3hK21hC5IHlZQXH1e
- OmWmucfnv1i8uan100ZP4vmHawKVK19qqjTc/18H5VuYfPTPpmwD2Q4iRudNizY/kZoZ2j0u0e5
- EJpugKy6DuP/3QTOXzxfTDNslFrXI3E1blqYZA7rhl7V+wocIQh3DoefAZYeQVnbtMvw+E5cMZH
- A+uzUiD59gNtdkVBNooKTHz0wxKyyC6cZbCR1Yxlm1vpsUWGf9kzBBzJ7Ltv9gyjGZN/VAi8MWl
- pG3nyijAXfaNiJaIsWg==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-05_08,2026-09-03_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 lowpriorityscore=0 bulkscore=0 clxscore=1015 spamscore=0
- impostorscore=0 adultscore=0 phishscore=0 suspectscore=0 malwarescore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2609060097
+In-Reply-To: <2vxzwlt1vvet.fsf@kernel.org>
 
-On 2026/09/04 08:28 AM, Aboorva Devarajan wrote:
-> Since the switch to generic entry, an interrupt from user mode
-> accounts user time twice: once in arch_interrupt_enter_prepare()
-> and again in arch_enter_from_user_mode(), which irqentry_enter()
-> invokes for the same interrupt:
+On Fri, Sep 04, 2026 at 06:22:18PM +0200, Pratyush Yadav wrote:
+> On Fri, Sep 04 2026, Sourabh Jain wrote:
+> > On 02/09/26 16:04, Pratyush Yadav wrote:
+> >> On Sun, Aug 23 2026, Sourabh Jain wrote:
+> >>
+> >>> On 21/08/26 17:26, Pratyush Yadav wrote:
+> >>>> On Fri, Aug 21 2026, Sourabh Jain wrote:
+> [...]
+> >>> I agree that this is one way to work around the low-memory reservation problem.
+> >>> However, there are a few things that come into play here:
+> >>>
+> >>> 1. On powerpc, the crashkernel reservation can go up to 64 GB for kdump. With
+> >>> the
+> >>>     current default scratch memory reservation policy, this could result in
+> >>> reserving
+> >>>     up to 256 GB of scratch memory: 200% for the high-memory reservation and
+> >>> another
+> >>>     200% for per-node memory.
+> >> That calculation looks off. It _should_ be 200% once not twice. So 128
+> >> GB total. If the allocation came out via the global area, it should
+> >> _only_ be accounted to the global scratch size. Similarly, only the
+> >> allocations made specifically on that node should be counted for the
+> >> per-node scratch size.
+> >
+> > For example, if a system has only one node and 64 GB is allocated from
+> > that node before the kernel starts calculating the per-node and global
+> > allocations for scratch memory, wouldn't the per-node allocation also be 64 GB?
+> >
+> > If so, wouldn't that result in 200% of 64 GB being allocated for the global
+> > area and another 200% of 64 GB for the per-node area, resulting in 256 GB
+> > of total scratch memory allocation? Or am I missing something here?
 > 
-> 	arch_interrupt_enter_prepare()
-> 	  account_cpu_user_entry()		/* first */
-> 	irqentry_enter()
-> 	  arch_enter_from_user_mode()
-> 	    account_cpu_user_entry()		/* second */
+> It shouldn't. If the 64 GB of allocation was done with NUMA_NO_NODE, and
+> it _happened_ to land on node X, it should not be counted for per-node
+> sizing. It should count towards the global pool. Only allocations that
+> were explicitly requested with node X should be count for that node's
+> scratch size.
 > 
-> The second call charges the same interval again, because
-> account_cpu_user_entry() accumulates the time spent in user mode
-> since the last return to user space.
+> So on a one node system where 64G of memory is allocated with
+> NUMA_NO_NODE and 8G is allocated with node X, we should get 128G of
+> global scratch and 16G of per-node scratch, giving us a total of 144G.
 > 
-> The two calls come from the GENERIC_ENTRY preparation series,
-> where each step was a no-op on its own. Commit 09a9d3a8499d
-> ("powerpc: introduce arch_enter_from_user_mode") added the hook
-> with the user-time accounting in it, but nothing called it yet.
-> Commit 893082ac769b ("powerpc: Prepare for IRQ entry exit")
-> copied interrupt_enter_prepare() verbatim into entry-common.h as
-> arch_interrupt_enter_prepare(); that copy was equally unused, as
-> handlers still called interrupt_enter_prepare().
+> I took a quick look and it looks like the problem might be that the
+> calculation for global scratch includes _all_ nodes in it. See
+> memblock_reserved_kern_size():
 > 
-> Commit bee25f97ad24 ("powerpc: Enable GENERIC_ENTRY feature")
-> made both live. On the syscall side it did the full conversion:
-> system_call_exception() now accounts once through the hook via
-> syscall_enter_from_user_mode(), rather than calling
-> account_cpu_user_entry() directly. On the interrupt side it
-> switched the handler macros to arch_interrupt_enter_prepare()
-> followed by irqentry_enter(), which also runs the hook, but the
-> accounting in arch_interrupt_enter_prepare() was not removed to
-> match. The double accounting starts with that commit.
+> 	for_each_reserved_mem_region(r) {
+> 		...
+>                 
+> 		if (nid == memblock_get_region_node(r) || !numa_valid_node(nid))
+> 			if (r->flags & MEMBLOCK_RSRV_KERN)
+> 				total += size;
+> 	}
 > 
-> With CONFIG_VIRT_CPU_ACCOUNTING_NATIVE=y this roughly doubles the
-> reported user time of any workload that takes interrupts. The
-> other accounting modes compile account_cpu_user_entry() to an
-> empty stub, so they are not affected.
+> And for global scratch we pass nid as NUMA_NO_NODE.
 > 
-> Remove the accounting from arch_interrupt_enter_prepare() and rely
-> on arch_enter_from_user_mode(), which already runs for both
-> syscalls and interrupts. The duplicate account_stolen_time() call
-> is removed the same way.
+> For KHO we could just drop the || !numa_valid_node(), but
+> memblock_estimated_nr_free_pages() seems to depend on that behaviour. It
+> wants to get _all_ allocations across all nodes. KHO only wants
+> allocations explicitly made with NUMA_NO_NODE.
 > 
-> On a pseries LPAR a busy loop reports 6s user time in 3s elapsed
-> (~210% CPU) before the fix, and 3s (~105% CPU) after it:
-> 
->   $ python3 -c 'while True: pass' &
->   $ sleep 3; ps -p $! -o etime,time,pcpu
-> 
->             ELAPSED     TIME  %CPU
->   Before      00:03 00:00:06   210
->   After       00:03 00:00:03   105
-> 
-> A 50% load reports ~70% usr / 30% idle before the fix, and
-> ~49% usr / 51% idle after it:
-> 
->   $ taskset -c 6 stress-ng --cpu 1 --cpu-load 50 &
->   $ mpstat -P 6 1
-> 
->             CPU    %usr   %idle
->   Before      6   69.74   30.26
->   After       6   48.51   50.50
-> 
-> Fixes: bee25f97ad24 ("powerpc: Enable GENERIC_ENTRY feature")
-> Reviewed-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
-> Signed-off-by: Aboorva Devarajan <aboorvad@linux.ibm.com>
+> But disclaimer: all this is from reading the code for maybe 15 minutes.
+> I didn't run anything and might be missing something. So please
+> double-check what I am saying.
 
-The fix is minimal and correct: removing the two lines from
-arch_interrupt_enter_prepare() leaves arch_enter_from_user_mode() as the single
-accounting site for both syscalls and interrupts, which matches the generic
-entry design intent.  The benchmarks in the commit message are convincing.
+That sounds about right, although I didn't check anything at all :)
+ 
+> > BTW, do you know the rationale behind the 200% value?
+> >
+> > I couldn't find any explanation for it in the commit message of
+> > 3dc92c311498c ("kexec: add Kexec HandOver (KHO) generation helpers")
+> 
+> We need to ask Alex (or maybe Mike?; I forget who added this).
+> 
+> But if I were to guess, I don't think there is much science involved
+> behind the number. Since the scratch lives across all kexecs, it needs
+> to be large enough in case the next kernel uses more memory. 200% sounds
+> "large enough".
 
-Reviewed-by: Amit Machhiwal <amachhiw@linux.ibm.com>
+Yeah, that was the rationale indeed :)
 
-Thanks,
-Amit
-
-> ---
-> Changes in v2:
->  - Explain which commits introduced each accounting call and how
->    they overlapped in commit message.
->  - Drop the code comment.
-> 
-> v1: https://lore.kernel.org/linuxppc-dev/20260902050628.2553909-1-aboorvad@linux.ibm.com/
-> 
->  arch/powerpc/include/asm/entry-common.h | 2 --
->  1 file changed, 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/entry-common.h b/arch/powerpc/include/asm/entry-common.h
-> index c5adb5006361..000fa925e26a 100644
-> --- a/arch/powerpc/include/asm/entry-common.h
-> +++ b/arch/powerpc/include/asm/entry-common.h
-> @@ -222,8 +222,6 @@ static inline void arch_interrupt_enter_prepare(struct pt_regs *regs)
->  
->  	if (user_mode(regs)) {
->  		kuap_lock();
-> -		account_cpu_user_entry();
-> -		account_stolen_time();
->  	} else {
->  		kuap_save_and_lock(regs);
->  		/*
-> 
-> base-commit: fb442a6673ff1046bf67754957d95880fdb394b5
 > -- 
-> 2.54.0
-> 
+> Regards,
+> Pratyush Yadav
+
+-- 
+Sincerely yours,
+Mike.
 
