@@ -1,58 +1,88 @@
-Return-Path: <linuxppc-dev+bounces-26622-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26623-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 01141C624DB
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Sep 2026 03:32:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 12663C79F99
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Sep 2026 09:03:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hcwkC1F93z2yvX;
-	Sun, 06 Sep 2026 13:32:19 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=45.249.212.56
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788665539;
-	cv=none; b=gXGsRQtrK/VIzpReizVZaDIk8z8bDmXuroctV7M7IucO0USWNd1ncJqJpBfuXLMz9AiQ3jSiItNA0KgqjNDGcxVJ1MLnrJTfDUKEmlBDefQIws7QAjY5hF7oYSFxUOV0VSox8dQXkz2ZyNzSP9eD7vQmsJYO8K+an+XxYn6qm1evJSPJYzGzabO0cPhk51HxN7QOff/q64Ff5q6FTVF/3mBg22zorIpWx0rFpCPWn7wxaTTWJ/rc7J7HVrD1Q14E7ufVIJSz8vpON3U1EIBJfT5vXyFnNl6ilza1FCDMDpcWCG9Kz1FDVt/WbPzJGS4CKvFIyCkpgJ7jEkNb2AfC0Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hd44l17hjz2y2S;
+	Sun, 06 Sep 2026 19:03:51 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788685431;
+	cv=none; b=ZoKEN3qxgHXpnp1RwVdFgGnzt8K4RrZqN+oXT85ZCz17O/wZTgF6ReB+4D+33je4fDV5T02QeX9tVqs++J6d5qdEdbSj+PpzTfrWmz5rD0Qbgrl+xBCfUP/FX+51AiCfUM4h8pfXtB9SA1Glfu48msaW8AcuoOMkK477+w571w0XCTI201XIxqfs8CzbRXA3ujYbQKAXySxUSFWzIZxYV2X34h9qDeSFeiXeVNKtSUQ0HodLs1NQQsU4f2KjKKP8hXK7fLOSC9MA++xzdwm5kVnytcM/w2VKHoNO6rPVciF7EtDU+tYzj6q9R1LQPST7s9eGu7Zr+OFAJzn+teRg9Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788665539; c=relaxed/relaxed;
-	bh=2+Drt2Lcng412cGsA7yc7fO84iZGmzAEe//OLv/utxM=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Bo7clvW+/ChT+a1AXm3MLY5q1HGlp4RutIKq3tXwRTDIekfcW58KLpH5TI+QVa4DF6OwMnBLvr/+IEEwqpYG0Mtxnu9/qMHsGSBoxo8hZ0YqK6q8b+Pd/kJlI7W8ZHGzWRCU8cenh86+qJNu3h/gvVAskriv/rVUoy2wqteLfMAZPUC00R5Vf1hMYwClmPdHA3QVSNjtsIEj5Ekm86LVAzKJuquy5DImxde+ycLtOqOYmEAlVs4oavHbcVKFLYLc1YMVDPh4BAbDuq6L5O5BsuBdup/P667kGpKmDxY8USTCaD/Ov1DESvz/44InamirSUvLogqY2QYfXQLAR6tXTw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=fail (p=quarantine dis=none) header.from=huawei.com; spf=pass (client-ip=45.249.212.56; helo=dggsgout12.his.huawei.com; envelope-from=zhouminqiang@huaweicloud.com; receiver=lists.ozlabs.org) smtp.mailfrom=huaweicloud.com
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huaweicloud.com (client-ip=45.249.212.56; helo=dggsgout12.his.huawei.com; envelope-from=zhouminqiang@huaweicloud.com; receiver=lists.ozlabs.org)
-Received: from dggsgout12.his.huawei.com (dggsgout12.his.huawei.com [45.249.212.56])
+	t=1788685431; c=relaxed/relaxed;
+	bh=u32qnIeOoL7s2TKUFguAHaNyN1zc5k7iOIP12zm7Cos=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=jTJipwVJV6ECymFxsSZMhBvrnWlUmNOyfKuy2KM5anS7zBouBSRcq9BrLswlUjbpmU80hO6uyTLQfOyXPf9gWccP9fHD94r5IlpaM/rCM+d5XSl4OEmpkM4+aYiRM+WmErUkS29o5rXIWQKySUvp7PhI+TMdWYcJb/knenwgnxegLg/QWA9bg/NI2kp+WXiQ4vRln4l1wSXxOIG13PTpGk8gRPqfkoOrLSP6ripfSBVe1jcr6P5Uoh+c6pQ2IdtrGVOeVtncmXThqOVBQSEvyx1RvRB1jhWT6TLZLyscTAqb1W2WxkF5DHzSboAyEMDsigomK3OvmofDcrQExhaLwQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=AE6lsCLf; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=AE6lsCLf;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hcwk85hYpz30Qy
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 06 Sep 2026 13:32:16 +1000 (AEST)
-Received: from mail.maildlp.com (unknown [172.19.163.177])
-	by dggsgout12.his.huawei.com (SkyGuard) with ESMTPS id 4hcwGK3lwQzKHMMZ
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 Sep 2026 11:11:37 +0800 (CST)
-Received: from mail02.huawei.com (unknown [10.116.40.112])
-	by mail.maildlp.com (Postfix) with ESMTP id 71AAF4058C
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 Sep 2026 11:12:35 +0800 (CST)
-Received: from huaweicloud.com (unknown [10.50.85.155])
-	by APP1 (Coremail) with UTF8SMTPSA id cCh0CgBnUAsW2pxqmzytAw--.18069S4;
-	Sun, 06 Sep 2026 11:12:35 +0800 (CST)
-From: Zhou Minqiang <zhouminqiang2@huawei.com>
-To: linux@armlinux.org.uk,
-	vz@mleia.com,
-	piotr.wojtaszczyk@timesys.com,
-	maddy@linux.ibm.com,
-	dwmw2@infradead.org,
-	richard@nod.at
-Cc: linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-mtd@lists.infradead.org,
-	chengzhihao1@huawei.com,
-	yangerkun@huawei.com,
-	yi.zhang@huawei.com,
-	Zhou Minqiang <zhouminqiang2@huawei.com>
-Subject: [PATCH v4 0/8] jffs2: extend write verification to all write paths
-Date: Sun,  6 Sep 2026 11:03:36 +0800
-Message-ID: <20260906030344.2448622-1-zhouminqiang2@huawei.com>
-X-Mailer: git-send-email 2.52.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hd44k26GBz2xyh
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 06 Sep 2026 19:03:49 +1000 (AEST)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68601gw61593908;
+	Sun, 6 Sep 2026 09:03:46 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=pp1; bh=u32qnIeOoL7s2TKUFguAHaNyN1zc5k
+	7iOIP12zm7Cos=; b=AE6lsCLfO8kN/XcpFkv5ym2q5UeOymumsUgpF3TbmKB92I
+	5RAKKp5s2J5Bnuujeirxcvlo++2j3JDbFclTrvv1x824AppwJO9TREsZDXKQ6JtY
+	FpEmkuxtRbZKcuf+ua0ssNFMd+ATAbOD3X7xkATBdBnHxESGv/2Lugxmc1qspLxD
+	sA8uUZv6gdhoDdEtIYmDKnIlSi/sZ/FGT0TsZ4rqDmyMNVSGimO5kfqHqtKDXgjC
+	Ygnr4ZHqVuvboq4s11V9I1RtsErGihxaBIxZ7ozqFCbXQHeDIcflr/c5pqHi1JKm
+	HtCbrkvm/vuq0d4W2ylf9R9UsxmsCrLidOlzipEA==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4ggbj7upjm-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sun, 06 Sep 2026 09:03:45 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6868ukcR012193;
+	Sun, 6 Sep 2026 09:03:44 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gh03y0q5x-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sun, 06 Sep 2026 09:03:44 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68693eDq43319736
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Sun, 6 Sep 2026 09:03:40 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C09A220043;
+	Sun,  6 Sep 2026 09:03:40 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id F28D020040;
+	Sun,  6 Sep 2026 09:03:38 +0000 (GMT)
+Received: from fedora (unknown [9.5.7.39])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Sun,  6 Sep 2026 09:03:38 +0000 (GMT)
+Date: Sun, 6 Sep 2026 14:41:23 +0530
+From: Amit Machhiwal <amachhiw@linux.ibm.com>
+To: Aboorva Devarajan <aboorvad@linux.ibm.com>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+        Mukesh Kumar Chaurasiya <mchauras@linux.ibm.com>,
+        Christophe Leroy <chleroy@kernel.org>,
+        Shrikanth Hegde <sshegde@linux.ibm.com>, linux-kernel@vger.kernel.org,
+        Ritesh Harjani <ritesh.list@gmail.com>,
+        "Nysal Jan K . A ." <nysal@linux.ibm.com>
+Subject: Re: [PATCH v2] powerpc/entry: Fix double accounting of user time on
+ interrupt entry
+Message-ID: <20260906143854.d5f6e8b2-19-amachhiw@linux.ibm.com>
+Mail-Followup-To: Aboorva Devarajan <aboorvad@linux.ibm.com>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, 
+	Mukesh Kumar Chaurasiya <mchauras@linux.ibm.com>, Christophe Leroy <chleroy@kernel.org>, 
+	Shrikanth Hegde <sshegde@linux.ibm.com>, linux-kernel@vger.kernel.org, 
+	Ritesh Harjani <ritesh.list@gmail.com>, "Nysal Jan K . A ." <nysal@linux.ibm.com>
+References: <20260904025831.3439809-1-aboorvad@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -66,136 +96,144 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:cCh0CgBnUAsW2pxqmzytAw--.18069S4
-X-Coremail-Antispam: 1UD129KBjvJXoWxuw4Uuw4UWFyfAF1Utr4kXrb_yoW7Wr43pF
-	9YkwnIy34kKryxKrsxA3W8X3s3KFs7GF17Wr1UCw1UZF9Y9ryjga95KFyjva48ZrsaqF4j
-	gr4FkF98KF18A3DanT9S1TB71UUUUUDqnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUU9lb4IE77IF4wAFF20E14v26r4j6ryUM7CY07I20VC2zVCF04k2
-	6cxKx2IYs7xG6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4
-	vEj48ve4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_Gr0_Xr1l84ACjcxK6xIIjxv20xvEc7Cj
-	xVAFwI0_Cr0_Gr1UM28EF7xvwVC2z280aVAFwI0_Gr1j6F4UJwA2z4x0Y4vEx4A2jsIEc7
-	CjxVAFwI0_Cr1j6rxdM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI64kE6c02
-	F40Ex7xfMcIj6xIIjxv20xvE14v26r106r15McIj6I8E87Iv67AKxVWUJVW8JwAm72CE4I
-	kC6x0Yz7v_Jr0_Gr1lF7xvr2IYc2Ij64vIr41lFIxGxcIEc7CjxVA2Y2ka0xkIwI1lc7Cj
-	xVAaw2AFwI0_GFv_Wryl42xK82IYc2Ij64vIr41l42xK82IY64kExVAvwVAq07x20xyl4I
-	8I3I0E4IkC6x0Yz7v_Jr0_Gr1lx2IqxVAqx4xG67AKxVWUJVWUGwC20s026x8GjcxK67AK
-	xVWUGVWUWwC2zVAF1VAY17CE14v26r1q6r43MIIYrxkI7VAKI48JMIIF0xvE2Ix0cI8IcV
-	AFwI0_JFI_Gr1lIxAIcVC0I7IYx2IY6xkF7I0E14v26r4j6F4UMIIF0xvE42xK8VAvwI8I
-	cIk0rVWUJVWUCwCI42IY6I8E87Iv67AKxVWUJVW8JwCI42IY6I8E87Iv6xkF7I0E14v26r
-	4j6r4UJbIYCTnIWIevJa73UjIFyTuYvjxU4MmhDUUUU
-Sender: zhouminqiang@huaweicloud.com
-X-CM-SenderInfo: 52kr3z5lqtxttqj6x35dzhxuhorxvhhfrp/
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260904025831.3439809-1-aboorvad@linux.ibm.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-GUID: R9Y1jjbpGrm1LMe20f718skn-FAJcxkg
+X-Proofpoint-ORIG-GUID: 8Fgm4GK64Txvx3wYkvnlUYVtsvHs_U87
+X-Authority-Analysis: v=2.4 cv=RNCD2Yi+ c=1 sm=1 tr=0 ts=6a9d2c71 cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=kj9zAlcOel0A:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VwQbUJbxAAAA:8
+ a=VnNF1IyMAAAA:8 a=pGLkceISAAAA:8 a=uId4siVdVRRDVQ4xNrcA:9 a=CjuIK1q_8ugA:10
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTA2MDA5NyBTYWx0ZWRfX0Pqhzp0WdLXj
+ UWyzZWxBWQnJEG8z9zibxLf5LDn+yeLnAfUQS1Pic/Cs0qdhDPmIKYVADVq10/t2AbAUf1eRtku
+ 4Oql0bg3j5vycQA+7Is7dIPKFj21oRk=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTA2MDA5NyBTYWx0ZWRfX7Ni1XySBs/72
+ 7lvrIKl0iQajVb+tXf30zPCN003kZ/kVzWgpGpcd+IQU+4kkElKmplLWQI7KB3BnG/6ODGieY/l
+ YiUheNoeF0yfuPyFbHorgaryH4wTWos/J6GvronWACvJsUbkdhvUo5RRyADFnSBoCdPXsdjvQh5
+ LsCfjjeCeR0DZN4biumPYSPbN14Uc7pPPoXmBcVa5MvndxDULx2dKoVNHq3hK21hC5IHlZQXH1e
+ OmWmucfnv1i8uan100ZP4vmHawKVK19qqjTc/18H5VuYfPTPpmwD2Q4iRudNizY/kZoZ2j0u0e5
+ EJpugKy6DuP/3QTOXzxfTDNslFrXI3E1blqYZA7rhl7V+wocIQh3DoefAZYeQVnbtMvw+E5cMZH
+ A+uzUiD59gNtdkVBNooKTHz0wxKyyC6cZbCR1Yxlm1vpsUWGf9kzBBzJ7Ltv9gyjGZN/VAi8MWl
+ pG3nyijAXfaNiJaIsWg==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-05_08,2026-09-03_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 lowpriorityscore=0 bulkscore=0 clxscore=1015 spamscore=0
+ impostorscore=0 adultscore=0 phishscore=0 suspectscore=0 malwarescore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2609060097
 
-When JFFS2 writes data to flash, corruption can occur during the
-write transfer (RAM failures, bus errors) or after commit to the
-medium (bit flips). To distinguish whether the corruption happened
-before or after the data reached the flash, commit a6bc432e296d
-("[JFFS2] Add support for write-buffer verification.") introduced
-CONFIG_JFFS2_FS_WBUF_VERIFY: reading the data back immediately
-after a successful write and comparing it with the in-memory
-source buffer provides the missing observation point for that
-diagnosis.
+On 2026/09/04 08:28 AM, Aboorva Devarajan wrote:
+> Since the switch to generic entry, an interrupt from user mode
+> accounts user time twice: once in arch_interrupt_enter_prepare()
+> and again in arch_enter_from_user_mode(), which irqentry_enter()
+> invokes for the same interrupt:
+> 
+> 	arch_interrupt_enter_prepare()
+> 	  account_cpu_user_entry()		/* first */
+> 	irqentry_enter()
+> 	  arch_enter_from_user_mode()
+> 	    account_cpu_user_entry()		/* second */
+> 
+> The second call charges the same interval again, because
+> account_cpu_user_entry() accumulates the time spent in user mode
+> since the last return to user space.
+> 
+> The two calls come from the GENERIC_ENTRY preparation series,
+> where each step was a no-op on its own. Commit 09a9d3a8499d
+> ("powerpc: introduce arch_enter_from_user_mode") added the hook
+> with the user-time accounting in it, but nothing called it yet.
+> Commit 893082ac769b ("powerpc: Prepare for IRQ entry exit")
+> copied interrupt_enter_prepare() verbatim into entry-common.h as
+> arch_interrupt_enter_prepare(); that copy was equally unused, as
+> handlers still called interrupt_enter_prepare().
+> 
+> Commit bee25f97ad24 ("powerpc: Enable GENERIC_ENTRY feature")
+> made both live. On the syscall side it did the full conversion:
+> system_call_exception() now accounts once through the hook via
+> syscall_enter_from_user_mode(), rather than calling
+> account_cpu_user_entry() directly. On the interrupt side it
+> switched the handler macros to arch_interrupt_enter_prepare()
+> followed by irqentry_enter(), which also runs the hook, but the
+> accounting in arch_interrupt_enter_prepare() was not removed to
+> match. The double accounting starts with that commit.
+> 
+> With CONFIG_VIRT_CPU_ACCOUNTING_NATIVE=y this roughly doubles the
+> reported user time of any workload that takes interrupts. The
+> other accounting modes compile account_cpu_user_entry() to an
+> empty stub, so they are not affected.
+> 
+> Remove the accounting from arch_interrupt_enter_prepare() and rely
+> on arch_enter_from_user_mode(), which already runs for both
+> syscalls and interrupts. The duplicate account_stolen_time() call
+> is removed the same way.
+> 
+> On a pseries LPAR a busy loop reports 6s user time in 3s elapsed
+> (~210% CPU) before the fix, and 3s (~105% CPU) after it:
+> 
+>   $ python3 -c 'while True: pass' &
+>   $ sleep 3; ps -p $! -o etime,time,pcpu
+> 
+>             ELAPSED     TIME  %CPU
+>   Before      00:03 00:00:06   210
+>   After       00:03 00:00:03   105
+> 
+> A 50% load reports ~70% usr / 30% idle before the fix, and
+> ~49% usr / 51% idle after it:
+> 
+>   $ taskset -c 6 stress-ng --cpu 1 --cpu-load 50 &
+>   $ mpstat -P 6 1
+> 
+>             CPU    %usr   %idle
+>   Before      6   69.74   30.26
+>   After       6   48.51   50.50
+> 
+> Fixes: bee25f97ad24 ("powerpc: Enable GENERIC_ENTRY feature")
+> Reviewed-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
+> Signed-off-by: Aboorva Devarajan <aboorvad@linux.ibm.com>
 
-However, the current implementation only performs read-back
-verification on write-buffer flush paths. NOR flash devices write
-directly through jffs2_flash_direct_write() and
-jffs2_flash_direct_writev(), with no equivalent check. Data
-corruption incidents have been observed on NOR-based devices in
-production environments, yet there is no quick diagnostic tool to
-isolate whether the corruption occurred during the write transfer
-or after commit to the medium. A significant number of deployed
-devices rely on JFFS2 on NOR flash, making this gap a practical
-concern.
+The fix is minimal and correct: removing the two lines from
+arch_interrupt_enter_prepare() leaves arch_enter_from_user_mode() as the single
+accounting site for both syscalls and interrupts, which matches the generic
+entry design intent.  The benchmarks in the commit message are convincing.
 
-During the investigation of the NOR flash gap, code inspection also
-revealed that when the write data length exceeds wbuf_pagesize in
-jffs2_flash_writev(), the excess data bypasses the write buffer and
-is written directly to flash via mtd_write(), with no verification.
-Additionally, jffs2_wbuf_recover() does not clear c->wbuf_len on
-recovery failure, which can lead to BUG_ON in jffs2_link_node_ref()
-or deadlock in jffs2_flush_wbuf_pad() on a subsequent write.
+Reviewed-by: Amit Machhiwal <amachhiw@linux.ibm.com>
 
-This series closes these gaps with the following changes:
+Thanks,
+Amit
 
-- Patch 1: fix wbuf recovery failure exit paths to clear
-		   c->wbuf_len, preventing BUG_ON and deadlock
-
-- Patch 2: fix ref_totlen misuse in jffs2_wbuf_recover() failure path
-
-- Patch 3: replace pre-allocated per-superblock wbuf_verify
-		   buffer with on-demand allocation inside jffs2_verify_write()
-
-- Patch 4: add byte-by-byte comparison after memcmp() mismatch
-		   to pinpoint the exact mismatch offset
-
-- Patch 5: add verification in jffs2_flash_writev() for the
-		   mtd_write() path that bypasses the write buffer
-
-- Patch 6: add verification calls in jffs2_flash_direct_write() and
-		   jffs2_flash_direct_writev() for NOR flash devices
-
-- Patch 7: rename CONFIG_JFFS2_FS_WBUF_VERIFY to
-		   CONFIG_JFFS2_FS_WRITE_VERIFY and remove the Kconfig
-		   dependency on CONFIG_JFFS2_FS_WRITEBUFFER
-
-- Patch 8: add module parameter write_verify for runtime
-		   enable/disable of write verification
-
-This series extends the existing write verification mechanism to
-cover all write paths. It remains off by default and does not
-alter JFFS2's node CRC integrity checks.
-
-Changes in v4:
-- Change the OBSOLETE length in jffs2_wbuf_recover() secondary write
-  failure path from retlen to end - start, and update the commit message
-- Link to v3: https://lore.kernel.org/linux-mtd/20260901130549.1761342-1-zhouminqiang2@huawei.com/T/#t
-
-Changes in v3:
-- Add patch to fix incorrect ref_totlen usage in jffs2_wbuf_recover()
-  secondary write failure path, which could corrupt free_size accounting
-- Add __GFP_NOWARN to jffs2_verify_write() kmalloc to suppres
-  high-order allocation splats on large-erasesize NAND
-- Link to v2: https://lore.kernel.org/linux-mtd/20260829061658.306854-1-zhouminqiang2@huawei.com/T/#t
-
-Changes in v2:
-- Add patch to fix wbuf recovery failure exit paths not clearing
-  c->wbuf_len, preventing BUG_ON and deadlock on subsequent writes
-- Use kmalloc() instead of vmalloc() for verify buffer allocation
-- Keep memcmp() on the hotpath and add byte-by-byte comparison
-  only after a mismatch, rather than replacing memcmp() entirely
-- In jffs2_flash_direct_write() and jffs2_flash_direct_writev(),
-  call mtd_write() before jffs2_sum_add_kvec() to prevent
-  retlen from being uninitialized if jffs2_sum_add_kvec() causes
-  an early return
-- Update defconfig files to rename CONFIG_JFFS2_FS_WBUF_VERIFY to
-  CONFIG_JFFS2_FS_WRITE_VERIFY
-- Link to v1: https://lore.kernel.org/linux-mtd/20260820105003.2525647-1-zhouminqiang2@huawei.com/T/#t
-
-zhouminqiang (8):
-  jffs2: wbuf: clear wbuf on recovery failure paths
-  jffs2: wbuf: fix OBSOLETE under-coverage on recovery failure
-  jffs2: replace per-superblock verify buffer with per-write buffer
-  jffs2: write verify: add byte-by-byte comparison on mismatch
-  jffs2: add write verification to direct page writes in flash_writev
-  jffs2: add write verification to NOR direct write paths
-  jffs2: rename CONFIG_JFFS2_FS_WBUF_VERIFY to
-    CONFIG_JFFS2_FS_WRITE_VERIFY
-  jffs2: add runtime toggle for write verification
-
- arch/arm/configs/keystone_defconfig     |   2 +-
- arch/arm/configs/lpc32xx_defconfig      |   2 +-
- arch/arm/configs/pxa3xx_defconfig       |   2 +-
- arch/arm/configs/pxa_defconfig          |   2 +-
- arch/powerpc/configs/44x/fsp2_defconfig |   2 +-
- fs/jffs2/Kconfig                        |  31 ++++-
- fs/jffs2/jffs2_fs_sb.h                  |   3 -
- fs/jffs2/os-linux.h                     |  11 ++
- fs/jffs2/wbuf.c                         |  93 +++------------
- fs/jffs2/writev.c                       | 144 +++++++++++++++++++++++-
- 10 files changed, 199 insertions(+), 93 deletions(-)
-
--- 
-2.52.0
-
+> ---
+> Changes in v2:
+>  - Explain which commits introduced each accounting call and how
+>    they overlapped in commit message.
+>  - Drop the code comment.
+> 
+> v1: https://lore.kernel.org/linuxppc-dev/20260902050628.2553909-1-aboorvad@linux.ibm.com/
+> 
+>  arch/powerpc/include/asm/entry-common.h | 2 --
+>  1 file changed, 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/entry-common.h b/arch/powerpc/include/asm/entry-common.h
+> index c5adb5006361..000fa925e26a 100644
+> --- a/arch/powerpc/include/asm/entry-common.h
+> +++ b/arch/powerpc/include/asm/entry-common.h
+> @@ -222,8 +222,6 @@ static inline void arch_interrupt_enter_prepare(struct pt_regs *regs)
+>  
+>  	if (user_mode(regs)) {
+>  		kuap_lock();
+> -		account_cpu_user_entry();
+> -		account_stolen_time();
+>  	} else {
+>  		kuap_save_and_lock(regs);
+>  		/*
+> 
+> base-commit: fb442a6673ff1046bf67754957d95880fdb394b5
+> -- 
+> 2.54.0
+> 
 
