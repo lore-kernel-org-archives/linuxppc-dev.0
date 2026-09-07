@@ -1,58 +1,88 @@
-Return-Path: <linuxppc-dev+bounces-26687-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26688-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0F8C9C79F89
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Sep 2026 14:05:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D5EF2C79FA0
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Sep 2026 15:16:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hdpkl1Mkfz2yvX;
-	Tue, 08 Sep 2026 00:05:51 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788789951;
-	cv=none; b=J5SJYPOLe6Wl7F6Jb7UXH69mcow7PGsSGT/Zz7jCoBMYLeUdYZRUo0jxcXRUwzPa2jdxwrtEl3Np7Je9p9inH3PPFR54dkA226Rd5OumftZ9DqbYWUCuTw7szw0lwQ+GgOjouSjpzgDkENbSLJLg0U3bkvkjzoNWoLQxTdy5Qy12Ql8dwqnQr+mh/nwQk/1ZWIVpBmJaGTs1LzQeYBrRzGXqKvuf1QT5de/wHHNn164bXROlhqA5xDDU8mKNpTyiPY4BOpktLx1QIjSwjwMkp5xfBFmtGr4NbSOruOMMbzUIalBEeLDYwmdKLimFgQltBSl4HZ4TsF2mMPhEPjoSbQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hdrHy50yJz2yvX;
+	Tue, 08 Sep 2026 01:16:14 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62d"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788765534;
+	cv=none; b=fDUz0t/NTvqPYLjPzoIs8GH5T/3CszoODB8uyjoDTIioiDq1cfO2oVESrTzRiQ1s4K8RGl4lfnmQzfOM8sZ2yI4WN/hFsQqObdI+kRCXHlECfaqN0ZDZ+nsXaKFSWSUXJ1brF/7vMEsqL5b1GrD3b5qiCUjDISUIyrmwAfroMf+9+/4Em7yX3YQ2Cnda5SevLKjulsmdiHFh7P4cXZBpCq6qwQD9xD+WmSt8Xy3dt0ax4vR/01yXZ0lJVG3BPfWJiKcfdZP0BvU6ECvHeEx7XK0XdDYvdxP9s8udmbMwgtEsNqEEkjiWBHqOUpa42mfRYgPOToh995QjMYp42W0bVA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788789951; c=relaxed/relaxed;
-	bh=J8wgTvZrkyOjbsQqIGG8z/GcZBW64PcNCuag9I7xU18=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=F+gt9DBXi36xBtOMBD9XXjELZKPr4YE4dTAHJ3J9Mr1BweoT4xtRhIGAC7YKHsRqpkDBRCDQ/rGtjooSJ+7CWHsjHFleStVZYXkd+5ox8fa4MgxXgThOof6tW5I5BsmPggx24yPuTIEdcFQrrfFwnGs2o+xtiASVje5HWisO810n2+AFOuWawH3h/wtvGnM473JGHnNmUMwQCkIylDbU1FcM55GAI1dgUtqhpcqZpBjNKYd+gs+1R53LXqJF455vulgx6bBCCb6SmZKHexoW0bIjBGIZkACJsrwJDjHw9ly9nvOQfpi5uE8Lorv5hf/Vw3UCxdyiBkeiqbJrvTF8fQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jyoR6vUa; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chenhuacai@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1788765534; c=relaxed/relaxed;
+	bh=9wnX7kbNfFv6WjYVBZaTARt9LTYfPVrd/RifhxC10JY=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=bNysETUxRcvQGznf1WiKi/kvA0h1W6tthPfzXrhCQKFnT+4wpBvng4ioLHGtUkWczrC6NF3wS4hcpuJeWSc6TNO/EWfmenhgY5T5Ei3ASHDsHPJtp6L36/dm7P005tQ/l2DJJZ7M1Tjl3Unx4noEMPwOCo//sbf/W9IIPJ0B9BxYZrJPFNkS4YL5yJcpFseeBo+8nOxFxs6jfKnpnQaUn8YAfNZrSE4kJzukF/fouulDLrZkAm/awtHJNtHA3MH6dS+tXo4+W5X+KHjK8DZpaboJDKCyHlJ5Ab6xnYTkIK8w9Z2R9B5wr9H1fbdJ6a2qagVzAzXKSQABxYGYl3YGpA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=UFvpEdTA; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62d; helo=mail-pl1-x62d.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jyoR6vUa;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=UFvpEdTA;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chenhuacai@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62d; helo=mail-pl1-x62d.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x62d.google.com (mail-pl1-x62d.google.com [IPv6:2607:f8b0:4864:20::62d])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hdpkf1rMnz2ygK
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Sep 2026 00:05:46 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id B0D1A4458B
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Sep 2026 14:05:42 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9803E1F01559
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Sep 2026 14:05:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788789942;
-	bh=J8wgTvZrkyOjbsQqIGG8z/GcZBW64PcNCuag9I7xU18=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=jyoR6vUapKR5jhLivfmjBARU8B+F+OcyChINsEiyQcmcncqmoFh4nR/WY1xMB4qbW
-	 SZ6/c1u/JlA4H5CX7f7mlQ5R5r6FFJHSnxuNy68TOL7Exjt9L/8POCTmlIZek5NDf/
-	 vSQEPBTauZHGg2dpZN0RAsf8QHru/GLRGxXYBNPhH557FULtQLKshtNyFaJ1TLf/FR
-	 VGO2DtvomYcv02EDInTSZEUOULBvYtXC+eZfgGqXpn1gPpLf/be4t5h3x0JZUmfEJH
-	 j+M5kMyrlnOjjNbLDdri8qTidxOrlcEQQvkPs8w7ifuMeVCQ/Hmb/aPT2UlzUZZvC8
-	 CXYUXx3AtE5dA==
-Received: by mail-ed1-f46.google.com with SMTP id 4fb4d7f45d1cf-6a682579c72so4524330a12.1
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Sep 2026 07:05:42 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBzc6YNCoXZvXSgrfAvQKD53iZGiazhofrCgC12ujd7/eN+vYmpPxcSarZOWrSa/kWmXaEL3TZ/cn2HI1tA=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++m98ZBesgLfDp/IsCow4KvP+z0xy5xaBGSRyGWp7/blcaZhWToY
-	rcVoqhS8ZBIt7qABreso4Q0ZmIsJF5TX8bDIw/Zv9Z5pOdJIl+a4LBpAivbaakjtfBlwSt9BbD1
-	/8yXFuAw+lSp/2DLurQlkHJeURiTERfU=
-X-Received: by 2002:a05:6402:44db:b0:6a6:7fa6:f0ac with SMTP id
- 4fb4d7f45d1cf-6a7e8f9e843mr12416286a12.22.1788789941040; Mon, 07 Sep 2026
- 07:05:41 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hddj94Cjjz2yjw
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Sep 2026 17:18:52 +1000 (AEST)
+Received: by mail-pl1-x62d.google.com with SMTP id d9443c01a7336-2d01663d816so21734875ad.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Sep 2026 00:18:52 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1788765530; x=1789370330; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=9wnX7kbNfFv6WjYVBZaTARt9LTYfPVrd/RifhxC10JY=;
+        b=UFvpEdTAcvgKvjI9OqoUU1TOwd6oagDBHIGazNDdlbMnEbV+pjiSGirdMY1DG3xyj6
+         zxmYu13LjwXTo55AEuGcPhatu0m9fR7lv6JjYB1yaNQE7btLlijqOMKvDyLiK30jt12r
+         aeG050OUM2LCSz44A+j6ixTBtzDemSNtINf2Z365U1viUFBNq/KhpfZI0vL017dy9bhh
+         TUobWnBgn/ePiN3iT4kbKieLE/LfvRCRPVHiUzu/27F5sDKgqXU9+RR0fEkuIi4yNb6j
+         mY16HWN5KhoEiiBC1jTIM4cNmnQAGjl/axoDeddhJubLcN8LzjlpLUW+5XRCE5DzyZsF
+         hySQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1788765530; x=1789370330;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=9wnX7kbNfFv6WjYVBZaTARt9LTYfPVrd/RifhxC10JY=;
+        b=ba3rcAW0BDR+x4fncmWBKqPe0gCH4Z4wMNYNYnvIEtTTKeXtHgFnp6hE1be+eI7weo
+         rGlOydT8M3AOYqfZ0wGbb7Qb9vDYzzc/IWXtUWgwbY4XT2c18D0ljUh9fpA5Zhy7KqvL
+         sA1EocAKjk1ubrU15J/btTqSzk0I0w4hINjzySDzrRtHhttxc2sgTX39FfPg+6ji4tBj
+         eQZz4hlXWHnu63fpgLZxQIn+PGpZJQAOd66ydRAqZgIk7jAr4ltc/bZ/qMT8ZGLtGtFG
+         Q4E18WCqFievhUXZ0SfD/f+qFx1q0Fng5Hs13YXlFdJpoqm7m7rsmpRdemcEoW4LGO/q
+         OpzA==
+X-Gm-Message-State: AFuF++lx0u6viNWQruJPcEXaHa8BiE8xBrjI+5T5nTjLir9kgvKQnt4Q
+	XiDCahe1Trd5iXpR9Hg5u+sNsAn5ZD/C0Ewfj2Nd8cGXZxHtaDatU29P
+X-Gm-Gg: AYBFou0eX0/iXw2xEGg68rd/VW5jCrTcjX27uI+Mc87j+lu2hSj5hKFx8zr2lik5njy
+	aYcPaIvUnSqpAOp0HUlmlWF85qxCO12OrnHbDbESPfIzGTnp6ykuTzpxaqCt9kiElb542Y8+3u+
+	7ng1I2lBOBMP3ksQdLVpgEgK3UjtXW0LhV3Phlczy3Lxbf71wUvrP9NJ8s6p8Xgdo32mzY5+PbX
+	7kJiOU56kTVqa0ZtyK2Uw9A6gc/sSRfNwGownRuW2W1B7Hk+p5vHgLVpX1naZEqKjoCp50WNo04
+	v4ccYmtiPzrckc2HKVXz0JpucLbbvaI3nFghOh3DEMaXITIMRQdSjm9MThnnFukse5JB37imvCm
+	vaj5BQZAhxa3BZaiRN8xUZ36QbkzbTIfxeoXh7TtXpKXIqSxJbe/xq/Aqejsc6NBAhRZBNll9A8
+	fIoItyLrBdrkATvHHTyoAk0RIrhu4yswgAHYiOQQh5HcL9lF6K92j+BuODzvnPcvVDMkPyK7ocU
+	g4si5WzaBv14Kr4ghcdy3cpyDRuL0veljMO
+X-Received: by 2002:a17:902:e804:b0:2d6:ff5f:eeda with SMTP id d9443c01a7336-2db1256cfa1mr302484215ad.6.1788765530410;
+        Mon, 07 Sep 2026 00:18:50 -0700 (PDT)
+Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([122.161.49.169])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2db14ae85eesm39192535ad.82.2026.09.07.00.18.45
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 07 Sep 2026 00:18:49 -0700 (PDT)
+Date: Mon, 7 Sep 2026 12:48:43 +0530
+From: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
+To: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com, mpe@ellerman.id.au, 
+	npiggin@gmail.com, chleroy@kernel.org, mkchauras@linux.ibm.com, 
+	sshegde@linux.ibm.com, ruanjinjie@huawei.com, ritesh.list@gmail.com, 
+	riteshh@linux.ibm.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] powerpc/interrupt: Use early_radix_enabled() in NMI
+ real-mode guard
+Message-ID: <ap5kv_92TzM-tcBp@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+References: <20260907070058.26338-1-venkat88@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -66,110 +96,68 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260907125404.922123-1-ruanjinjie@huawei.com> <20260907125404.922123-6-ruanjinjie@huawei.com>
-In-Reply-To: <20260907125404.922123-6-ruanjinjie@huawei.com>
-From: Huacai Chen <chenhuacai@kernel.org>
-Date: Mon, 7 Sep 2026 22:05:34 +0800
-X-Gmail-Original-Message-ID: <CAAhV-H7qjJ7BPnJ2KoQZSyMUvX_6i9H=EfdadXnmXtNiiB4ROA@mail.gmail.com>
-X-Gm-Features: AcwNN1WbqzVfALnNIkIUg_l9MiYgRfsYFTxDDEyu_aV6t47lWMUK_7ZDBokn7zg
-Message-ID: <CAAhV-H7qjJ7BPnJ2KoQZSyMUvX_6i9H=EfdadXnmXtNiiB4ROA@mail.gmail.com>
-Subject: Re: [PATCH v4 05/12] LoongArch: kexec_file: Fix CMA page leaks in
- segment placement retry loops
-To: Jinjie Ruan <ruanjinjie@huawei.com>
-Cc: catalin.marinas@arm.com, will@kernel.org, mark.rutland@arm.com, 
-	kernel@xen0n.name, maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
-	chleroy@kernel.org, tglx@kernel.org, mingo@redhat.com, bp@alien8.de, 
-	dave.hansen@linux.intel.com, hpa@zytor.com, akpm@linux-foundation.org, 
-	baoquan.he@linux.dev, rppt@kernel.org, pasha.tatashin@soleen.com, 
-	pratyush@kernel.org, ruirui.yang@linux.dev, kees@kernel.org, thuth@redhat.com, 
-	jic23@kernel.org, tan.shaopeng@jp.fujitsu.com, zengheng4@huawei.com, 
-	james.morse@arm.com, ardb@kernel.org, leitao@debian.org, yeoreum.yun@arm.com, 
-	sourabhjain@linux.ibm.com, robh@kernel.org, coxu@redhat.com, 
-	tangyouling@kylinos.cn, hbathini@linux.ibm.com, adityag@linux.ibm.com, 
-	djbw@kernel.org, seanjc@google.com, liaoyuanhong@vivo.com, 
-	vishal.l.verma@intel.com, fuqiang.wang@easystack.cn, makb@juniper.net, 
-	piliu@redhat.com, ebiggers@kernel.org, jbouron@amazon.com, 
-	mclapinski@google.com, me@linux.beauty, graf@amazon.com, bgwin@google.com, 
-	takahiro.akashi@linaro.org, palmer@rivosinc.com, x86@kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
-	loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, 
-	kexec@lists.infradead.org, linux-fsdevel@vger.kernel.org, linux-mm@kvack.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260907070058.26338-1-venkat88@linux.ibm.com>
 
-Hi, Jinjie,
-
-On Mon, Sep 7, 2026 at 8:53=E2=80=AFPM Jinjie Ruan <ruanjinjie@huawei.com> =
-wrote:
->
-> During kexec image placement retry loops, any midway failure causes
-> the loader to truncate `image->nr_segments` back to its initial state
-> to purge the failed segments.
->
-> However, this truncation introduces a memory leak. The CMA pages
-> allocated via kexec_add_buffer() during the failed attempt are tracked
-> in the `image->segment_cma` array. Because the subsequent cleanup paths
-> only iterate up to the truncated `nr_segments` boundary, these allocated
-> CMA pages outside the new boundary are permanently leaked.
->
-> Fix this by explicitly releasing the associated CMA buffers in
-> the failure paths before `image->nr_segments` is reduced.
-I'm not sure but does the elf version have similar problems as the efi vers=
-ion?
-
-Huacai
-
->
-> Cc: Huacai Chen <chenhuacai@kernel.org>
-> Cc: WANG Xuerui <kernel@xen0n.name>
-> Cc: Youling Tang <tangyouling@kylinos.cn>
-> Cc: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
-> Cc: Sourabh Jain <sourabhjain@linux.ibm.com>
-> Cc: Kees Cook <kees@kernel.org>
-> Cc: stable@vger.kernel.org
-> Link: https://sashiko.dev/#/patchset/20260729031235.2840255-1-ruanjinjie%=
-40huawei.com
-> Fixes: 55d990f0084c ("LoongArch: Add EFI binary support for kexec_file")
-> Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
+On Mon, Sep 07, 2026 at 12:30:58PM +0530, Venkat Rao Bagalkote wrote:
+> radix_enabled() uses a jump label which is only valid after
+> mmu_feature_keys_init() is called. Before that point, on a pSeries
+> hash guest, early_check_vec5() clears MMU_FTR_TYPE_RADIX in
+> cur_cpu_spec->mmu_features but the jump label has not yet been patched,
+> so radix_enabled() incorrectly returns true.
+> 
+> Replace radix_enabled() with early_radix_enabled() which does a plain
+> bitmask check against cur_cpu_spec->mmu_features and is correct at all
+> times, including before jump label initialization.
+> 
+> Add the missing #include <asm/mmu.h> since early_radix_enabled() is
+> declared there.
+> 
+> Signed-off-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
 > ---
->  arch/loongarch/kernel/kexec_efi.c          | 1 +
->  arch/loongarch/kernel/machine_kexec_file.c | 6 +++++-
->  2 files changed, 6 insertions(+), 1 deletion(-)
->
-> diff --git a/arch/loongarch/kernel/kexec_efi.c b/arch/loongarch/kernel/ke=
-xec_efi.c
-> index 5ee78ebb1546..15fd797ff3de 100644
-> --- a/arch/loongarch/kernel/kexec_efi.c
-> +++ b/arch/loongarch/kernel/kexec_efi.c
-> @@ -86,6 +86,7 @@ static void *efi_kexec_load(struct kimage *image,
->                  * We couldn't find space for the other segments; erase t=
-he
->                  * kernel segment and try the next available hole.
->                  */
-> +               kexec_free_segment_cma(image, kernel_segment_number);
->                 image->nr_segments -=3D 1;
->                 kbuf.buf_min =3D kernel_segment->mem + kernel_segment->me=
-msz;
->                 kbuf.mem =3D KEXEC_BUF_MEM_UNKNOWN;
-> diff --git a/arch/loongarch/kernel/machine_kexec_file.c b/arch/loongarch/=
-kernel/machine_kexec_file.c
-> index 5412aa9f3568..62a5be102065 100644
-> --- a/arch/loongarch/kernel/machine_kexec_file.c
-> +++ b/arch/loongarch/kernel/machine_kexec_file.c
-> @@ -217,7 +217,11 @@ int load_other_segments(struct kimage *image,
->         return 0;
->
->  out_err:
-> -       image->nr_segments =3D orig_segments;
-> +       while (image->nr_segments > orig_segments) {
-> +               kexec_free_segment_cma(image, image->nr_segments - 1);
-> +               image->nr_segments--;
-> +       }
-> +
->         kfree(modified_cmdline);
->         return ret;
->  }
-> --
-> 2.34.1
->
+>  arch/powerpc/include/asm/interrupt.h | 5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/interrupt.h b/arch/powerpc/include/asm/interrupt.h
+> index 1b45a49e9bed..36a654e780f7 100644
+> --- a/arch/powerpc/include/asm/interrupt.h
+> +++ b/arch/powerpc/include/asm/interrupt.h
+> @@ -71,6 +71,7 @@
+>  
+>  #include <asm/kprobes.h>
+>  #include <asm/runlatch.h>
+> +#include <asm/mmu.h>
+I would prefer this to be in alphabetical order.
+>  
+>  #ifdef CONFIG_PPC_IRQ_SOFT_MASK_DEBUG
+>  /*
+> @@ -290,7 +291,7 @@ interrupt_handler long func(struct pt_regs *regs)			\
+>  		state = irqentry_nmi_enter(regs);			\
+>  	} else if (IS_ENABLED(CONFIG_PPC_BOOK3S_64) &&			\
+>  		   firmware_has_feature(FW_FEATURE_LPAR) &&		\
+> -		   !radix_enabled()) {					\
+> +		   !early_radix_enabled()) {				\
+>  		/* no nmi_entry for a pseries hash guest		\
+>  		 * taking a real mode exception */			\
+>  	} else if (IS_ENABLED(CONFIG_KASAN)) {				\
+> @@ -307,7 +308,7 @@ interrupt_handler long func(struct pt_regs *regs)			\
+>  		irqentry_nmi_exit(regs, state);				\
+>  	} else if (IS_ENABLED(CONFIG_PPC_BOOK3S_64) &&			\
+>  		   firmware_has_feature(FW_FEATURE_LPAR) &&		\
+> -		   !radix_enabled()) {					\
+> +		   !early_radix_enabled()) {				\
+>  		/* no nmi_exit for a pseries hash guest			\
+>  		 * taking a real mode exception */			\
+>  	} else if (IS_ENABLED(CONFIG_KASAN)) {				\
+> -- 
+> 2.45.2
+> 
+
+Rest all looks good.
+
+Reviewed-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
+
+Regards,
+Mukesh
 
