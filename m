@@ -1,77 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-26668-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26669-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CF578C79FA0
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Sep 2026 12:01:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BC20FC79F9E
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Sep 2026 12:01:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hdlzK4TKDz2yvv;
-	Mon, 07 Sep 2026 22:01:33 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::c32"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788782493;
-	cv=none; b=QhMDRWhIFb8PtEGqAyrOS8wEXtX9ath/PmKROEJQNRWNqBjYrd0JmH3hfz+t0XNLlHtK03crVe56yEZI8o7jQ+aTrAEN5clcx0MPKF6vl8c/7G8kCgR2xmRVWgcVwt2BflgELgfIytvL5IG3wqQDOtwAUqR7zocFIwwV39rwSGqIUwKDSWzks5nQWMQQjtQYJtUZNzTcQAy6orAN7U8LHFmV7IoXmznqHxNd2Ghr5EXB6YQiGi7kxWCl1h7bSMkl3SPFFTrnEyDNbZapG7xvp6WkBXb0H3MOvRr5w8yck0YtomwHYzS2D3gssCFygBfxP/LkYawp6JMat0bDAxAmjg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hdlzV1ZFLz2ywS;
+	Mon, 07 Sep 2026 22:01:42 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::c30"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788782502;
+	cv=none; b=JJ8k6wP4lsc1dqBEUR6wMxqERUYB2TmjMxhjbo2DFDb0ZN/sQBs8uZZI4sRuOgIiMhyn4DlKM+ufRC2004czeLHz+WSKNTi/MHOQFs9Ws4Rk27+G/0DiD4qW6wlPB7889OY6FKMHsvPi/qh/wmMObEGWJoGgrMIILUMsEotHmvj8RQGIQeqESZznYoFk+NgASa003jB6/OcNPUcBBXHHhmESWw1CAgdsLyvbbJ4ixIAvnTK6MosMGUfgC5ifYEYnFjf84qB0yCoFAAgKlMwph7cPVLAYWZtIovhjHF766NNQqGUAoryKgF0iFNRWZYuHmG/U6zKAcXMePXj7Nvwb/g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788782493; c=relaxed/relaxed;
-	bh=rfDPZXNcg+Nl7/Ylu6hp6siIi0FsvzwquJx1kpnnIKw=;
+	t=1788782502; c=relaxed/relaxed;
+	bh=/3KV6RuBnnb3kSlImB7scYqnTaYm6MjcG3VOHCy4kfM=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=by0gfFjT2a2Qw2YC2LT0rjW7IEeTuL+ySWGtX2Ym5dMZZ/ojrYSyPNl1LqpRntjRbpi8qYvFGLktYxa7mj/P+PNpvLqDLTo77VwFebwSB43d9Wlc9seRH9/Bw1L4I1FbUK+e39Uhzm8WipEMLYtPXxELWe1X8Bi0vnzNuQLcOTr1OwL+l85CZ+a9u69wydHDNbqqliQuzC1elYNmwKOL/7a+k8BIJ2uwbTqByXiyiQeiJFvYV0EPQ3JWKNaPl/zx5DEwcQNRja9stG0qRha57C2BPSMR50zxSLpzvEPL/ohhS+a0d1f5F/dpqzpXU1KxDIIt4azfyOCLFE7iaSnYlQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ExDdnXRM; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::c32; helo=mail-oo1-xc32.google.com; envelope-from=hemanth.selam@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version; b=NBimUwZ5smE6sE9caGMLPN2sTTjOGUOgMqiyDlquQF4ucHrW8Kg3m2atxhN+wxhioWEl13LTcbtJcWdMGyCZQJ7gYt5Ct0iFFWqUOC/FOfWXC/mMsUbvjleOKHVtP6WgROHqI75EbUB224FBrZViwVvElI/eQ2yIcPSwZVFi/LKXn5Qtn5rpN6VqEj5d1W2IVMEKO5LtJhdTGBD7mM/KVeknfPSYmv1QHstNrZkJJ0+FlW0Ct6uPPzt12GbkUAd1oe8FnQUB+ubJLjhm71OkiemAFvNT9x9eclCLCL3CvrFD+cS+hvKtsOaKkgRlJ0bOFTWVw2zJOqSWHx+FydfaJw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Q0zSXxf9; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::c30; helo=mail-oo1-xc30.google.com; envelope-from=hemanth.selam@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ExDdnXRM;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Q0zSXxf9;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::c32; helo=mail-oo1-xc32.google.com; envelope-from=hemanth.selam@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-oo1-xc32.google.com (mail-oo1-xc32.google.com [IPv6:2607:f8b0:4864:20::c32])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::c30; helo=mail-oo1-xc30.google.com; envelope-from=hemanth.selam@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-oo1-xc30.google.com (mail-oo1-xc30.google.com [IPv6:2607:f8b0:4864:20::c30])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hdlzJ5pZRz308k
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Sep 2026 22:01:32 +1000 (AEST)
-Received: by mail-oo1-xc32.google.com with SMTP id 006d021491bc7-6b0496f4bbcso2109132eaf.0
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Sep 2026 05:01:32 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hdlzT2rBKz2ywR
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Sep 2026 22:01:41 +1000 (AEST)
+Received: by mail-oo1-xc30.google.com with SMTP id 006d021491bc7-6b8366e4755so1629248eaf.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Sep 2026 05:01:41 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1788782491; x=1789387291; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1788782499; x=1789387299; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=rfDPZXNcg+Nl7/Ylu6hp6siIi0FsvzwquJx1kpnnIKw=;
-        b=ExDdnXRMeSu6e7aEaXDGEVnT/4j0E1jAKrQTHzF/BnnOnqwzqesSR3PAUp6GelG/A5
-         nc3yMwHrzAVN3KUig80W36181ZVky1D2IJPIQ6zjmZQdgUZ/kQg1tD52xjtERyKd+GAR
-         gNnFrVZMdoAvsbXxmgAIc5AhY74LLLw3Y4kyS+xvltrt/w2U9BptIocgNZD2swoo/YgF
-         c0kF3HFn3hf+GFQXZEaTIu1vWmqS3sAXTvGdUM9OylZytdxUKuGTbW+I5LaDGD9crW+Y
-         AhILdnFhQHgyruTrUzFLD1QFJhJbl2jHRRZRpYtwFQZ23XT1Y2u/SzjPCIkgs3mDYnGb
-         ljAQ==
+        bh=/3KV6RuBnnb3kSlImB7scYqnTaYm6MjcG3VOHCy4kfM=;
+        b=Q0zSXxf9TbBj2u1yAodVCYIJFrrIkvldEuS+EPI89Qa+YQEfNO77DmsK6Drt6F59Zs
+         cytJ+gjCpegvfD0K+VXL6ilYZv1piGmEAl+b5YHDkf7daKjmBy+vkPM00kQLSoYQbU3V
+         8wRLOfjrGVuFe3rTXD/sKtLtF3GTnB5RxT2Q6SZWgrXq1/0onomsv2i8CdWvE53eMGzH
+         pAu9oQa0khp6wm+hkwr3ynZodBE61p4b4pk6kBk6f5Rc/a4WdyAd6wT0qC/Q6WJk2o2j
+         9yTOHGHuspC5uXBnzvtnnEFIz50xQZsDdGp9gEtPi9r6FVIkDK1RTrn2BqM91AoibTDL
+         ePkg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788782491; x=1789387291;
+        d=1e100.net; s=20251104; t=1788782499; x=1789387299;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=rfDPZXNcg+Nl7/Ylu6hp6siIi0FsvzwquJx1kpnnIKw=;
-        b=fUplvNS/6p3lg0kLwqGTMT853yLJFlplkIRa3kW27DTQR6TmdmYBSHOpFRFNcu/DOd
-         jrO1beHN3BGxRk9kU/j9WRyir/R5z887TK3cXA2Qa5lP1xIv/sZ2W2eGNVEcjXVpRuBt
-         x1twEXejh4LVxIlZ6IzowN96/u8kOVhmWmSI0oO+/n3aj6OXDHYUX63dEZF+Pj51FkHH
-         gNN6Kpp6BS8A+D9vFSEkfJVI/jO0b/GuDNPtFI5z1OLbGIuEkGDML41RshRDDAxrh2wi
-         VGJYtm3UpPq+idCS9fIPTix3yRKMB9SZHfB0UyQvXvq3M29bPOqTNB6Bfjcd/7KihbQ1
-         uoAQ==
-X-Forwarded-Encrypted: i=1; AKwUvBwMZ1gkLh/nDUUxLIgmhF8R6SKA3NKlt+/CXRh8yzv1wGPpWJvxGFY2UdzbkRBr3JQtiuAeztSiYSTZt+E=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++kfCT0NYQq/ZXOpbP4LlCgO3z3BYWzEAxx/W6OPBdfMJfT3IHFS
-	3csm5SL5sz0KDIWQ8ljHfbEOQ4H5gvy7hjZejsQz3+wEeNFly4nrCIlf
-X-Gm-Gg: AYBFou31WVNJ3tr42QdHts587vhJVOCieBhuj5O36oS+2vvFd8yDBkv9CgxnoAalELC
-	GFeEeJWy0R+SvZz0LhaAZJVqK1c3swurXgOroj6iITeLrENpTR+sB8A5gQVVsMEqwZ3tji+Sl2f
-	je8iawrMdm5tvEfToPV9POwp/2o16o56Ci12R5NSzmAeypv2dD1dC87nfxKBm5CzbanfZAC8BRz
-	MOBJjbAJv3uMH5A0ToBecuMF8zO7JEoV6QTap5ZxYAnJhMVf5O7ek8jwjAcnJB7/XH9KJ2p5foV
-	JPu8oFC2rzXzVyFLY1N0Fe9PM4jinTOwt3wTHoXgzTZN8jw4dzwkkGc7DDmvRysGnenaaE3uP+1
-	vpDiCtzQDngFUieLSPJ21rm01g/iH2wm8Y1jO/avZUwoEmUvqKZ4MYan0Huo92xIrDY9feWYYF9
-	nxAcP98cvOnYTRgAlF+wCVzbPQGrZnld59mLiwHCGpOTwmY48CyroNQ/CBIYsSPG4HgxTqCXNIb
-	xLQxJ0wBiYm/w==
-X-Received: by 2002:a05:6820:6ae7:b0:6aa:d13c:a709 with SMTP id 006d021491bc7-6b6fe2aeaf0mr12073907eaf.31.1788782490438;
-        Mon, 07 Sep 2026 05:01:30 -0700 (PDT)
+        bh=/3KV6RuBnnb3kSlImB7scYqnTaYm6MjcG3VOHCy4kfM=;
+        b=NrlFf4nfAPf+3LQTQUW0i6tg7fBaH99k1PoiYTuw39YNdMikCccZzO+xVl+IgrzHyl
+         V4mWnb8+0be7PObR37Mk3PnD6Ey1/SMDHCjrUKjG9tnWIRoAIn+vzWX0v5lcW5l5fPSG
+         5uYYigYvhbWIsYadzNB20O4Y/XNXHyDlzaVuh2wFTBlDE34i8BwWAl8rl/5VSTmCB3sM
+         RVQtclACG+U+hiEMly1LvQDLZ240AoC7llOVyYbcC/k1TJwU6vHswGwmgcpUASpftcuQ
+         oGtbhoSc6GNdwjycH+LK8p7a3rq4oO7fQD0BuvbwU3neqzYL8M39lPfknM6I7FItCYnq
+         bczA==
+X-Forwarded-Encrypted: i=1; AKwUvBytLLeNyhMdb6pGisycOoy2Gucj/WBQCbo/ZLoQxxSLe8Lac6XMYLaOqu8V/sgrIRkabm3hxMBR8BWkv2g=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++n96+uueMBgbOOiHJRyrxeOs1dV3csEcFKOpTTAh192DOc0FBTl
+	KN1x9bo8igPpH7Nlv3lAB6UAfzisimH0wcUreRLTSMYykhjTDrn+6D3S
+X-Gm-Gg: AYBFou0uSawUCrwxJ+bhoNXZfJpe8fwdKbtUeaenXXLgloMIVrYfVUtuXe08uJi0fBe
+	WEvzo6UgQVrUA59biRc4cvGlbQCXH7mtugxgbE3E6RuThWR0pUw2ThrjTj3LS9g54kGUQpicJ5S
+	orYJLL0dFyCi3TuCPxbafGMFuQBRHe7wETH696NPa2VioBZ15JuTIV6klZf90tgswR72aVMXiIy
+	2ypHVr/nNTcKSJnax6/xye1Y29S+6W5SXgAAcKyXwfWXBMUc8aqtuCq0ROtAkp5D7z6Fe6uQPBw
+	QcAQfWyjOk9tx/a9uJeif5f5ojX7042U7C4Z1UXmOe73/PMkto0ocfqBWZNiVO9taqnZiNUKDMN
+	FwsH51S2/j7scXrBqpAVDGwZaOPqtNViJjNSkOPwrsF9Ay2namJYaH5DxIDlsunte2VwhkXFzGP
+	SQ0lp3CfmrCllKV1+q+nRzKlxe8zrje843DZkch7lPfDdzjqrDdsIi8aRoHd0I8NDyyr9p31Zso
+	m9nriGB1Im6mA==
+X-Received: by 2002:a05:6820:c91:b0:6b1:535a:eb8 with SMTP id 006d021491bc7-6b6fa8e02aamr12552198eaf.2.1788782498996;
+        Mon, 07 Sep 2026 05:01:38 -0700 (PDT)
 Received: from volcano9f6e-hostos.amd.com ([165.204.217.251])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3339885ca07sm31244462eec.1.2026.09.07.05.01.22
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3339885ca07sm31244462eec.1.2026.09.07.05.01.30
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 07 Sep 2026 05:01:30 -0700 (PDT)
+        Mon, 07 Sep 2026 05:01:38 -0700 (PDT)
 From: Hemanth Selam <hemanth.selam@gmail.com>
 To: Alexei Starovoitov <ast@kernel.org>,
 	Daniel Borkmann <daniel@iogearbox.net>,
@@ -102,9 +102,9 @@ Cc: bpf@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-kselftest@vger.kernel.org,
 	sparclinux@vger.kernel.org
-Subject: [PATCH bpf-next v3 4/7] selftests/bpf: fix typos in comments
-Date: Mon,  7 Sep 2026 17:30:40 +0530
-Message-ID: <20260907120043.36894-5-hemanth.selam@gmail.com>
+Subject: [PATCH bpf-next v3 5/7] sparc: net: fix typo "evalute" in comment
+Date: Mon,  7 Sep 2026 17:30:41 +0530
+Message-ID: <20260907120043.36894-6-hemanth.selam@gmail.com>
 X-Mailer: git-send-email 2.48.1
 In-Reply-To: <20260907120043.36894-1-hemanth.selam@gmail.com>
 References: <20260907120043.36894-1-hemanth.selam@gmail.com>
@@ -123,74 +123,29 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Fix typos in comments, reported by scripts/checkpatch.pl using the
-misspelling list in scripts/spelling.txt.  Only touches comments, no code
-changes.
-
-The subject prefix changed since v1, from "selftests: bpf:" to
-"selftests/bpf:", to match the rest of the history in this directory.
+Correct "evalute" to "evaluate", reported by scripts/checkpatch.pl using
+the misspelling list in scripts/spelling.txt.  Only touches comments, no
+code changes.
 
 Assisted-by: Cursor:claude-opus-5
 Signed-off-by: Hemanth Selam <hemanth.selam@gmail.com>
 ---
- tools/testing/selftests/bpf/prog_tests/lwt_seg6local.c       | 2 +-
- tools/testing/selftests/bpf/prog_tests/task_local_data.h     | 2 +-
- tools/testing/selftests/bpf/progs/freplace_unreliable_prog.c | 2 +-
- tools/testing/selftests/bpf/progs/verifier_var_off.c         | 2 +-
- 4 files changed, 4 insertions(+), 4 deletions(-)
+ arch/sparc/net/bpf_jit_asm_32.S | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/tools/testing/selftests/bpf/prog_tests/lwt_seg6local.c b/tools/testing/selftests/bpf/prog_tests/lwt_seg6local.c
-index 1b25d5c5f8fb..8b96fb861368 100644
---- a/tools/testing/selftests/bpf/prog_tests/lwt_seg6local.c
-+++ b/tools/testing/selftests/bpf/prog_tests/lwt_seg6local.c
-@@ -13,7 +13,7 @@
-  * IPv6 header with a Segment Routing Header, with segments :
-  *	fd00::1 -> fd00::2 -> fd00::3 -> fd00::4
-  *
-- * 3 fd00::/16 IPv6 addresses are binded to seg6local End.BPF actions :
-+ * 3 fd00::/16 IPv6 addresses are bound to seg6local End.BPF actions :
-  * - fd00::1 : add a TLV, change the flags and apply a End.X action to fc42::1
-  * - fd00::2 : remove the TLV, change the flags, add a tag
-  * - fd00::3 : apply an End.T action to fd00::4, through routing table 117
-diff --git a/tools/testing/selftests/bpf/prog_tests/task_local_data.h b/tools/testing/selftests/bpf/prog_tests/task_local_data.h
-index 8ae4fb2027f7..9f2971fc7cd5 100644
---- a/tools/testing/selftests/bpf/prog_tests/task_local_data.h
-+++ b/tools/testing/selftests/bpf/prog_tests/task_local_data.h
-@@ -243,7 +243,7 @@ static tld_key_t __tld_create_key(const char *name, size_t size, bool dyn_data)
- 		}
- 
- 		/*
--		 * TLD_DEFINE_KEY() is given memory upto a page while at most
-+		 * TLD_DEFINE_KEY() is given memory up to a page while at most
- 		 * TLD_DYN_DATA_SIZE is allocated for tld_create_key()
- 		 */
- 		if (dyn_data) {
-diff --git a/tools/testing/selftests/bpf/progs/freplace_unreliable_prog.c b/tools/testing/selftests/bpf/progs/freplace_unreliable_prog.c
-index 624078abf3de..d7e30ee576c9 100644
---- a/tools/testing/selftests/bpf/progs/freplace_unreliable_prog.c
-+++ b/tools/testing/selftests/bpf/progs/freplace_unreliable_prog.c
-@@ -7,7 +7,7 @@
- 
- SEC("freplace/btf_unreliable_kprobe")
- /* context type is what BPF verifier expects for kprobe context, but target
-- * program has `stuct whatever *ctx` argument, so freplace operation will be
-+ * program has `struct whatever *ctx` argument, so freplace operation will be
-  * rejected with the following message:
-  *
-  * arg0 replace_btf_unreliable_kprobe(struct pt_regs *) doesn't match btf_unreliable_kprobe(struct whatever *)
-diff --git a/tools/testing/selftests/bpf/progs/verifier_var_off.c b/tools/testing/selftests/bpf/progs/verifier_var_off.c
-index a63e33675091..227dea0da3a0 100644
---- a/tools/testing/selftests/bpf/progs/verifier_var_off.c
-+++ b/tools/testing/selftests/bpf/progs/verifier_var_off.c
-@@ -225,7 +225,7 @@ __naked void stack_write_priv_vs_unpriv(void)
- }
- 
- /* Similar to the previous test, but this time also perform a read from the
-- * address written to with a variable offet. The read is allowed, showing that,
-+ * address written to with a variable offset. The read is allowed, showing that,
-  * after a variable-offset write, a privileged program can read the slots that
-  * were in the range of that write (even if the verifier doesn't actually know if
-  * the slot being read was really written to or not.
+diff --git a/arch/sparc/net/bpf_jit_asm_32.S b/arch/sparc/net/bpf_jit_asm_32.S
+index a2e28e0464a3..81430f065ac9 100644
+--- a/arch/sparc/net/bpf_jit_asm_32.S
++++ b/arch/sparc/net/bpf_jit_asm_32.S
+@@ -195,7 +195,7 @@ bpf_error:
+ 	/* Make the JIT program return zero.  The JIT epilogue
+ 	 * stores away the original %o7 into r_saved_O7.  The
+ 	 * normal leaf function return is to use "retl" which
+-	 * would evalute to "jmpl %o7 + 8, %g0" but we want to
++	 * would evaluate to "jmpl %o7 + 8, %g0" but we want to
+ 	 * use the saved value thus the sequence you see here.
+ 	 */
+ 	jmpl	r_saved_O7 + 8, %g0
 -- 
 2.48.1
 
