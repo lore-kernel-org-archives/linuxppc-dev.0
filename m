@@ -1,80 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-26653-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26654-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1EFBDC79F89
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Sep 2026 07:01:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B442DC79F9E
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Sep 2026 07:06:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hddK53Bwsz2yvY;
-	Mon, 07 Sep 2026 17:01:29 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788764489;
-	cv=none; b=bclTnEDIkAo91WUjwlx31YdHrY81TUUJRM3sBqgTqnHDRQXKa2O/J2Oj4FtJN3GJhdNhza4Nqsnq73GdSelFVKotSmuMlqSIycgbAchdSw0E0YXvn3a2dBOAAYGiSbQVIockguoSxD0ziTVe0fF0qFQrzFqajg/A8MTOwHoA+9YMGlv2uZHLeaDOwC0Lj+507crr6Oz2SIGxvOiYOTS8vB9BEXZ1iqkScWO4jXCcf7kW0mJ1AuhDARhE8wTrFvGs5zZrr5touy1TC6EuwTVVPYl+C3M14jl9XeWAcm6NjRC1hPy3lWgS3ArPF9h7Sxn6NKmGDfpXPNf2tN+cOQ3Ryw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hddRG28Hfz2yvX;
+	Mon, 07 Sep 2026 17:06:50 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788764810;
+	cv=none; b=H5+wa+ki8t5ZcYRwDdJX1+t0sLxETXdk4XQqOQBbITrSr6F/0UjrrA91qZC/XyQQqlzfJSl51yHL0+qZoFI/PAMXNHLg4A+aEVhrz+3GVk19O6mUqor7hchbq/J3DBpP512K5KiDxbdf76O8h+OL/bfA9SEC/fvVrGxXuXAQfjUXwNlecXrknwBgG+XdgdLmF+Ip099Y4kPfl0wttYgT1I6Snd/u5685GPZQavrNl5OoKLlL87YnPDlUtV5MnPZ2YJe1UaawzG5Tk/5a0CXUvw5PCW5diG969/NKZf+Cwx8yTOfeLiCrey+UbLmO3ky+nZ7UgxVtEykXiAmusP+iww==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788764489; c=relaxed/relaxed;
-	bh=v8di2ReL4fJeqRZ238VxsSIj62HayuEaxotlyw13MFs=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Ofks2XxOd77LxyVXXDRPHOFXHDWUrNEnIeLQCqEtEyhPLOSoe/9XGtmxbjzQrK2IhfJRMAxmqmxIW8fR2CqQPOhdbTXGTB+Mxh/1iEtSu8e+iFYv/A1KRVSdODjiopbF+MxhHZ6FL9lxr6p873hS7+5qWhw280WwOfr7oYlTVeOXwD0yWyAKiBjZ5zFaN9Tj6/8UTuvOTLzGg/gw/Bh5mnD7nIvGmR/GJhClkNFe1KRT0aChdcO/K+dxdO3YqW4vV8a0rP08aP7QtRAmqaQyPTzER1GLKyyvkh/AiWFZr6Ga4aO8vLFLBMM+2uUU4osUps6wIUt1YnRUd11UQrqO0Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tWgMKxGw; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1788764810; c=relaxed/relaxed;
+	bh=U4F1730LiN4V0F0jaP71ngB/OBRFul8aXhg6XG0+dpA=;
+	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
+	 Message-Id:References:To; b=WUih5wbgBFpR8jWqpDqE9NAkSwHXtKyQTpPPdX4mwr1Pe8dnl8FXeD5GmLCo35eBZnYZCg0nn4JoT9xZei06veq4tykiXst6PH7GdmC5K7yx7o5Zsy9Y4jGCFX54wsTDz+gjAn4v3jSQ9Mxv7i3ILbG5U+4es0VmL3mQ49ovf/u9HgeWMEZYrw4lXTb7ROuaSJC+Z+CsRmmHMuglWY6owgpcQ3sIfN65tgnKzkQ2n0KbYu/BD7zfWl243ejjskiDOu+XzINyltzJbPB2lku+J95D/VEQ72FWBe6vmLjPECZV+VxzDiC8xylNO2ncziKwOG3g4e9QlBq/vsi0LuZprA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ko0vC4FJ; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tWgMKxGw;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ko0vC4FJ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hddK42m1Hz2yvX
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Sep 2026 17:01:27 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68741bZv3104714;
-	Mon, 7 Sep 2026 07:01:15 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hddRF1NSNz2yjw
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Sep 2026 17:06:48 +1000 (AEST)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68741m4U660756;
+	Mon, 7 Sep 2026 07:06:44 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=v8di2ReL4fJeqRZ238VxsSIj62HayuEaxotlyw13M
-	Fs=; b=tWgMKxGwsFiXBU9Z4K4mRIJdS0ntDSHxn5k1qrPz5fhyFY2eBxGbbOw9v
-	EQ3n3EMSzyUKB/UqH3vyTU1h9yaNbt5LzB4by9/ywtmXWbNFJ1YzEIZoV5erreH0
-	Hjr22QCy5sCOk5B0aO9vv/TtgSO4e5Kf7MaDTvQ36oV9LRSDkSZgsOTWyomN+Wa+
-	egn9TJdyT14APIgd3bx6LEX61XtGLO34DRxrH64E/yo+1Fs0Wlf7O88AazLYx5Cn
-	BiTQiOEg2bIE3DGyhz63XNyJ3YjXK2U7uel7S2DpIYLH/3RnDR9HUF/06nKO8YcO
-	gDYap0WF0Ta9/s9+o3H9dFHn/4vFQ==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4ggbqjq2wu-1
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=U4F173
+	0LiN4V0F0jaP71ngB/OBRFul8aXhg6XG0+dpA=; b=ko0vC4FJh243BkxQ1m3Kxw
+	bTK0Kc6CdnUHxEpXGEEMlkxW+XMi4/mJIG6O/xCF31GHP0Ng6aPwRpnwh1TgRLk+
+	SSpH1U1DG+cPQxopn58jV7AzfbqOO+GtFd3eEMJLW3VmY1BIFqDmudmjewOuo37z
+	X63SlSAET9AHIw9gJgehzfFh/QUs50nEXgLQEo2EvWYpLsEWfbo6T7oFm5Swwi+w
+	JLaepuehLSk30bVUTIORZ+3KkuAuTwuPQM/PBNolQt92FHMireCb7ic3WCCi0/qn
+	JD4Z6O/ee/UxVH8KpvxHqz1PvllD/sTICd9FxFX4I17m6UKe7Gp4YYeihgBj8Stw
+	==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4ggbj7y19d-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 07 Sep 2026 07:01:14 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6876uFJI016207;
-	Mon, 7 Sep 2026 07:01:13 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gh03y47vj-1
+	Mon, 07 Sep 2026 07:06:43 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6876uGDl026935;
+	Mon, 7 Sep 2026 07:06:43 GMT
+Received: from smtprelay07.dal12v.mail.ibm.com ([172.16.1.9])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4ggymg4a1g-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 07 Sep 2026 07:01:13 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 687719IX35062144
+	Mon, 07 Sep 2026 07:06:42 +0000 (GMT)
+Received: from smtpav05.wdc07v.mail.ibm.com (smtpav05.wdc07v.mail.ibm.com [10.39.53.232])
+	by smtprelay07.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68776fPR26083992
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 7 Sep 2026 07:01:09 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C0F3D2004B;
-	Mon,  7 Sep 2026 07:01:09 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D207D2004F;
-	Mon,  7 Sep 2026 07:01:03 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.61.246.56])
-	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon,  7 Sep 2026 07:01:03 +0000 (GMT)
-From: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
-        chleroy@kernel.org, mkchauras@linux.ibm.com, mkchauras@gmail.com,
-        sshegde@linux.ibm.com, ruanjinjie@huawei.com, ritesh.list@gmail.com,
-        riteshh@linux.ibm.com, venkat88@linux.ibm.com,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc/interrupt: Use early_radix_enabled() in NMI real-mode guard
-Date: Mon,  7 Sep 2026 12:30:58 +0530
-Message-ID: <20260907070058.26338-1-venkat88@linux.ibm.com>
-X-Mailer: git-send-email 2.45.2
+	Mon, 7 Sep 2026 07:06:42 GMT
+Received: from smtpav05.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C10305805F;
+	Mon,  7 Sep 2026 07:06:41 +0000 (GMT)
+Received: from smtpav05.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id CB3C358053;
+	Mon,  7 Sep 2026 07:06:38 +0000 (GMT)
+Received: from smtpclient.apple (unknown [9.61.246.56])
+	by smtpav05.wdc07v.mail.ibm.com (Postfix) with ESMTPS;
+	Mon,  7 Sep 2026 07:06:38 +0000 (GMT)
+Content-Type: text/plain;
+	charset=utf-8
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -87,85 +80,166 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3864.600.51.1.1\))
+Subject: Re: [PATCH v2] powerpc/entry: Fix double accounting of user time on
+ interrupt entry
+From: Venkat <venkat88@linux.ibm.com>
+In-Reply-To: <20260904025831.3439809-1-aboorvad@linux.ibm.com>
+Date: Mon, 7 Sep 2026 12:36:25 +0530
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+        Mukesh Kumar Chaurasiya <mchauras@linux.ibm.com>,
+        Christophe Leroy <chleroy@kernel.org>,
+        Shrikanth Hegde <sshegde@linux.ibm.com>, linux-kernel@vger.kernel.org,
+        Ritesh Harjani <ritesh.list@gmail.com>,
+        "Nysal Jan K . A ." <nysal@linux.ibm.com>
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <31C68D4C-E2A4-4052-A884-CF142AAC01C2@linux.ibm.com>
+References: <20260904025831.3439809-1-aboorvad@linux.ibm.com>
+To: Aboorva Devarajan <aboorvad@linux.ibm.com>
+X-Mailer: Apple Mail (2.3864.600.51.1.1)
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: 2Fps_JePDCXjmmOstfv-_lAJwGP-2RU-
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTA3MDA3NCBTYWx0ZWRfXybpmLHr7Bqck
- EPjaj+0efPArnyXtHAAA20mwXMtMNdluPFbNY6GUqwbXkg8OgTbtRBp4rQd30rbJD2i4hYT8qvt
- qh4Eblg9zXjExiTfc1+6C1bijEYxtYY=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTA3MDA3NCBTYWx0ZWRfX8CFmN7ZS5Ya0
- gj7ZwCjXZ9RcgtiPRENxb2K7pa1BEFhMOyHNHbGVKkv5/8+7/tpKucyitAHABgd53H3qiCqus6b
- vMbcGy4nM5CkTKazAQU5nz8AkQg9r/2V30pB/qHWMH8b1WQ258M/fzjC4V4w4Q7LEA6I9qLaOZh
- 8UrZIcYh/hE9f8RAE5suzUNjpdp93SfEBKNZu8U+GzuJ1Ixr97a82foaUzpZEyd9/r2u31UPB8t
- rFpc7DMyvDknLq8XMgp4l2T8j8D7pNkbAhyL4w1no4nHexzTDATPjq/6D0JElK/nzK3MgswGI4Q
- 6rUAOQCM+xlGB6HQLckcCG4VZ0wv4Q/PGsnBnkk/Ir+gRdaoYmWaQPVWIeHRvjl+g94+r/dddrV
- R42pZkQtWrVSc3EKaolo6Dv9aIXQZUWv0plAgQFxq/WXEtK9bq0UY71Clf9wYH4fFiy3fGgW9QC
- fmpWEuOgsfuGqwhxfXw==
-X-Authority-Analysis: v=2.4 cv=JaKMa0KV c=1 sm=1 tr=0 ts=6a9e613a cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=uAbxVGIbfxUO_5tXvNgY:22 a=VnNF1IyMAAAA:8 a=gZpiDA7bhwe5fsxDx_8A:9
-X-Proofpoint-GUID: MWdhOWnnSkoJLfRMe_OTuiHmUgXA5o60
+X-Proofpoint-GUID: PWfMhVlJmuHV5igsf-2owlKHS7PAkfAt
+X-Proofpoint-ORIG-GUID: dd2lFNlfi2alnkv6gmJGNT8-EtxtSPM4
+X-Authority-Analysis: v=2.4 cv=RNCD2Yi+ c=1 sm=1 tr=0 ts=6a9e6284 cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VwQbUJbxAAAA:8
+ a=VnNF1IyMAAAA:8 a=pGLkceISAAAA:8 a=uId4siVdVRRDVQ4xNrcA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTA3MDA3NCBTYWx0ZWRfXxozI5vMopOKA
+ j9Ext8WqzoRM+yMsd9LvQovnrYB8wvPl/W60rJFgpdLsipOUY8Ls7RQcqk3AuHT0abo1Oxn7TbO
+ HtA8Gd+lbT3+RdWEzA+Hjr2VRLhFlJ8=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTA3MDA3NCBTYWx0ZWRfX1sj6PRMuVwHZ
+ udqLgbPemIVKmZ4h2AozJWVEvfpP+BzYlOKcpL7iSeojE/gsNjlqeduotB5tgtn4ZXyHDcDA25G
+ e0q91iALv2Z3R7vQs7mAxVyleLJFwko8MduKzqSF9dbEyg0IoaNOaoT0Jo2PuE3krgZzAXSblJi
+ Ab7pXusujmpPZLmKZS0OKjTdU6vWiaAF9P95K9ZTgGvyW423Gx/9izkWfpgC+Nr2u1Py/v7lf9T
+ DqYOmiITFsXqKbjzlGqpekAjE1S8DL2cZTLddz5veY+7gPN6VhdCezBMQEXFQbQF7rxp4gZtyDs
+ zF/PyINoIPMOLSTaz2j1GjBRkZOCXRKdSlEPxph21kfSxfnb9xFPWjdbAz4KoQ7M2ztxNvtRHTV
+ qjouCWyzzWQoI2xXlh+BA1DZ255cpPu9AWRCSxBnAbVBvpSm96hJGXM6ZYGVbYqgJkQj8iFZoVU
+ Vu/Vqx7t6D1l+AjHMyQ==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-09-07_01,2026-09-03_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 spamscore=0 phishscore=0 impostorscore=0 lowpriorityscore=0
- adultscore=0 bulkscore=0 priorityscore=1501 suspectscore=0 clxscore=1015
+ priorityscore=1501 lowpriorityscore=0 bulkscore=0 clxscore=1015 spamscore=0
+ impostorscore=0 adultscore=0 phishscore=0 suspectscore=0 malwarescore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2609070074
 
-radix_enabled() uses a jump label which is only valid after
-mmu_feature_keys_init() is called. Before that point, on a pSeries
-hash guest, early_check_vec5() clears MMU_FTR_TYPE_RADIX in
-cur_cpu_spec->mmu_features but the jump label has not yet been patched,
-so radix_enabled() incorrectly returns true.
 
-Replace radix_enabled() with early_radix_enabled() which does a plain
-bitmask check against cur_cpu_spec->mmu_features and is correct at all
-times, including before jump label initialization.
 
-Add the missing #include <asm/mmu.h> since early_radix_enabled() is
-declared there.
+> On 4 Sep 2026, at 8:28=E2=80=AFAM, Aboorva Devarajan =
+<aboorvad@linux.ibm.com> wrote:
+>=20
+> Since the switch to generic entry, an interrupt from user mode
+> accounts user time twice: once in arch_interrupt_enter_prepare()
+> and again in arch_enter_from_user_mode(), which irqentry_enter()
+> invokes for the same interrupt:
+>=20
+> arch_interrupt_enter_prepare()
+>  account_cpu_user_entry() /* first */
+> irqentry_enter()
+>  arch_enter_from_user_mode()
+>    account_cpu_user_entry() /* second */
+>=20
+> The second call charges the same interval again, because
+> account_cpu_user_entry() accumulates the time spent in user mode
+> since the last return to user space.
+>=20
+> The two calls come from the GENERIC_ENTRY preparation series,
+> where each step was a no-op on its own. Commit 09a9d3a8499d
+> ("powerpc: introduce arch_enter_from_user_mode") added the hook
+> with the user-time accounting in it, but nothing called it yet.
+> Commit 893082ac769b ("powerpc: Prepare for IRQ entry exit")
+> copied interrupt_enter_prepare() verbatim into entry-common.h as
+> arch_interrupt_enter_prepare(); that copy was equally unused, as
+> handlers still called interrupt_enter_prepare().
+>=20
+> Commit bee25f97ad24 ("powerpc: Enable GENERIC_ENTRY feature")
+> made both live. On the syscall side it did the full conversion:
+> system_call_exception() now accounts once through the hook via
+> syscall_enter_from_user_mode(), rather than calling
+> account_cpu_user_entry() directly. On the interrupt side it
+> switched the handler macros to arch_interrupt_enter_prepare()
+> followed by irqentry_enter(), which also runs the hook, but the
+> accounting in arch_interrupt_enter_prepare() was not removed to
+> match. The double accounting starts with that commit.
+>=20
+> With CONFIG_VIRT_CPU_ACCOUNTING_NATIVE=3Dy this roughly doubles the
+> reported user time of any workload that takes interrupts. The
+> other accounting modes compile account_cpu_user_entry() to an
+> empty stub, so they are not affected.
+>=20
+> Remove the accounting from arch_interrupt_enter_prepare() and rely
+> on arch_enter_from_user_mode(), which already runs for both
+> syscalls and interrupts. The duplicate account_stolen_time() call
+> is removed the same way.
+>=20
+> On a pseries LPAR a busy loop reports 6s user time in 3s elapsed
+> (~210% CPU) before the fix, and 3s (~105% CPU) after it:
+>=20
+>  $ python3 -c 'while True: pass' &
+>  $ sleep 3; ps -p $! -o etime,time,pcpu
+>=20
+>            ELAPSED     TIME  %CPU
+>  Before      00:03 00:00:06   210
+>  After       00:03 00:00:03   105
+>=20
+> A 50% load reports ~70% usr / 30% idle before the fix, and
+> ~49% usr / 51% idle after it:
+>=20
+>  $ taskset -c 6 stress-ng --cpu 1 --cpu-load 50 &
+>  $ mpstat -P 6 1
+>=20
+>            CPU    %usr   %idle
+>  Before      6   69.74   30.26
+>  After       6   48.51   50.50
+>=20
+> Fixes: bee25f97ad24 ("powerpc: Enable GENERIC_ENTRY feature")
+> Reviewed-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
+> Signed-off-by: Aboorva Devarajan <aboorvad@linux.ibm.com>
+> ---
 
-Signed-off-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
----
- arch/powerpc/include/asm/interrupt.h | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+I have tested this patch, by applying on top of latest mainline, and its =
+working as expected.
 
-diff --git a/arch/powerpc/include/asm/interrupt.h b/arch/powerpc/include/asm/interrupt.h
-index 1b45a49e9bed..36a654e780f7 100644
---- a/arch/powerpc/include/asm/interrupt.h
-+++ b/arch/powerpc/include/asm/interrupt.h
-@@ -71,6 +71,7 @@
- 
- #include <asm/kprobes.h>
- #include <asm/runlatch.h>
-+#include <asm/mmu.h>
- 
- #ifdef CONFIG_PPC_IRQ_SOFT_MASK_DEBUG
- /*
-@@ -290,7 +291,7 @@ interrupt_handler long func(struct pt_regs *regs)			\
- 		state = irqentry_nmi_enter(regs);			\
- 	} else if (IS_ENABLED(CONFIG_PPC_BOOK3S_64) &&			\
- 		   firmware_has_feature(FW_FEATURE_LPAR) &&		\
--		   !radix_enabled()) {					\
-+		   !early_radix_enabled()) {				\
- 		/* no nmi_entry for a pseries hash guest		\
- 		 * taking a real mode exception */			\
- 	} else if (IS_ENABLED(CONFIG_KASAN)) {				\
-@@ -307,7 +308,7 @@ interrupt_handler long func(struct pt_regs *regs)			\
- 		irqentry_nmi_exit(regs, state);				\
- 	} else if (IS_ENABLED(CONFIG_PPC_BOOK3S_64) &&			\
- 		   firmware_has_feature(FW_FEATURE_LPAR) &&		\
--		   !radix_enabled()) {					\
-+		   !early_radix_enabled()) {				\
- 		/* no nmi_exit for a pseries hash guest			\
- 		 * taking a real mode exception */			\
- 	} else if (IS_ENABLED(CONFIG_KASAN)) {				\
--- 
-2.45.2
+Please add below tag.
+
+Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+
+Regards,
+Venkat.
+> Changes in v2:
+> - Explain which commits introduced each accounting call and how
+>   they overlapped in commit message.
+> - Drop the code comment.
+>=20
+> v1: =
+https://lore.kernel.org/linuxppc-dev/20260902050628.2553909-1-aboorvad@lin=
+ux.ibm.com/
+>=20
+> arch/powerpc/include/asm/entry-common.h | 2 --
+> 1 file changed, 2 deletions(-)
+>=20
+> diff --git a/arch/powerpc/include/asm/entry-common.h =
+b/arch/powerpc/include/asm/entry-common.h
+> index c5adb5006361..000fa925e26a 100644
+> --- a/arch/powerpc/include/asm/entry-common.h
+> +++ b/arch/powerpc/include/asm/entry-common.h
+> @@ -222,8 +222,6 @@ static inline void =
+arch_interrupt_enter_prepare(struct pt_regs *regs)
+>=20
+> if (user_mode(regs)) {
+> kuap_lock();
+> - account_cpu_user_entry();
+> - account_stolen_time();
+> } else {
+> kuap_save_and_lock(regs);
+> /*
+>=20
+> base-commit: fb442a6673ff1046bf67754957d95880fdb394b5
+> --=20
+> 2.54.0
+>=20
 
 
