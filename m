@@ -1,80 +1,46 @@
-Return-Path: <linuxppc-dev+bounces-26644-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26646-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A896BC79F9E
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Sep 2026 05:14:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 881C9C79F9E
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Sep 2026 05:52:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hdZy20C1Nz2yvX;
-	Mon, 07 Sep 2026 15:14:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788758089;
-	cv=none; b=hb7Egw7A/UVTy2FgH2vU9c/wxnym/GnbqSG1hgXf/HFfkO/HQm+MfL3w5NS9Nk+qIHA8emHFzg91OgNXjIXifYI52VhOOsTZ4hYEij1NyHoWFv2qaQTXg+94eiUuoXFZfRKycOk5nmjUA8tA81Ye3cece/2x50jO5vRtM7EWImBoU75pxpC2MiJ2bQwz7jLwe3TdzmZz9ksEYqJGjEp0RjpGPQbwLvGU75xiFEUxkMMJMGXKRyxBHADgGGirjcJpDQSq0Wu/tgcnrK/6gHR7LRQz7u2SK71+ySiZkJcweplyWBdQihqeHTFgsxGncXe+wGr0tym+rGGqwjSZkPYqGA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hdbmy4ZtVz2yvv;
+	Mon, 07 Sep 2026 15:52:02 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.69.126.157
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788760322;
+	cv=none; b=EzRQp3dC3Qw+hAO3r6I4BT8IbzeXh9ChCgtNNG6qAm4Y9AYd5Q5STkaO6qZoCw/d7iuq/pX4AaiuWAt7tLHhxmH6M0jpkjYxaup8QTE+Ylq1NqEIN0Xc/oE/MNX43Fcfp+dm7ySY/u/JpNXexirHKRL6h4tlmFYEVfBIOQUycezggnUIQ1SfpBwMzYjKw+7b44I5Cz04JEqblGlzIh348U2OR5ISThuIxqItm/X/8SYpROiMLSU4LnWLn6jduLchDxjsVOiCGGBa6TFhf8v50lKA9AiqPbV4/h+HX95wQtT0svqp81NtDKrTzAQ9YC7gB8iqq2d9SldQzaE4JlZA1w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788758089; c=relaxed/relaxed;
-	bh=IK81py3xNqHbhXYHAH+PEmk62FCb/2sK5/oaFsldyKM=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=OT8vDx/N12Yi54R396JLu1zYfAqlRT1JkyltEKq9ea+77XiziR5/kEA4jvoWWKYqN9sCN4ExVi/eOlxiOADy2uvCsM154TvuyFfBFKCIutR63PM08fY3Ij//QvILOkpiWXFoFhfg/rQ6y/6X6wVzrm/Ga/YqF0H6dskdCz2cG8jmaHL48/FtmrYJNmTVI7s1zKqo9VRCpiC7n916iw1wlAXQTOQPx89E8ntyUBgtW+c3ERJ2DM+OPEHH9I7Thb+rXhNv/OUAvZGojNI9MsfUgdLWUZehfFegVYypwfDZ8GRRmq5LFN005ljTlXwXbRi8XcXpek976ksiX4xlkAzNhQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tpP6yIRn; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1788760322; c=relaxed/relaxed;
+	bh=jRYb+bei6+DQO38gLjylQZSOtSK8oSUs1xZR6GAs5kU=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=BRqn7Drvf8T5BiTimnOOdJALQ6n+0JgzQ8yCwz7KzJdmstmEznwNsE7/H02jEFI+kTpcQYRGiCwvn31tp8DePJJ9JRXUwwCAMA2CwVeNVUsZZjNsL9agQ9qzE+YG5ecXE9vQUMD4mH9aYQOGSXL4lImIEXc1byKKsbnY9rmCKEoTZH4qCk/PV1zUGMEcSaSs9SkVQuyLg3vkU4zUnL3lT4Kq2kCAl7T/lYrB4yy2GrZr1tdfxcMrjW8VFc8w+VbZKV103YxR7Y8fq9tsnlpItdOwfiiXuRPvzoa/1teDtJxPkxJv1pGMAML4KPmy3fmtnNYKeE/bO9G+u5ZjpHe07w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=SQXB8XnG; dkim-atps=neutral; spf=pass (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tpP6yIRn;
+	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=SQXB8XnG;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
+X-Greylist: delayed 400 seconds by postgrey-1.37 at boromir; Mon, 07 Sep 2026 15:52:00 AEST
+Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hdZy10snHz2yjw
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Sep 2026 15:14:48 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68741fvL3831295;
-	Mon, 7 Sep 2026 05:14:43 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=IK81py3xNqHbhXYHAH+PEmk62FCb/2sK5/oaFsldy
-	KM=; b=tpP6yIRnxQYg4/p2SO6Xp8Uu8cU//N9DQn/eA8SQjK7kMM4N+hiOUtuK6
-	zbN4wkRG3pxVptEviPf+vsfPxLh2UtjlufqeeJfKoZqYfkvp2VhgdKr6D5pVoLxj
-	oIrlokc/OkCqww8GGOJmGp8SwBROE3YTE3CApsusQzRBw3az7q65oLxIXe4H7IPw
-	SyQLiYWt3u20HggNed5xbnq32fcdmmFKgy8q0UnJXT7NA8OYS4pxuzJGrjSCeKcR
-	Z+4LCMUDhANJYkUPZLwnLXfojIk1QIgkShqsZVpYOMFpy9AS46zDtqt3/47Lv7m5
-	EVOmtv7u12G4bo0/DU8NyaTIzbJNw==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4ggbjrejw4-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 07 Sep 2026 05:14:42 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6875BF8X014272;
-	Mon, 7 Sep 2026 05:14:41 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4ggxdjm32t-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 07 Sep 2026 05:14:41 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6875EZgn47514084
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 7 Sep 2026 05:14:36 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D98D22004E;
-	Mon,  7 Sep 2026 05:14:35 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 209072004B;
-	Mon,  7 Sep 2026 05:14:32 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.124.222.166])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon,  7 Sep 2026 05:14:31 +0000 (GMT)
-From: Athira Rajeev <atrajeev@linux.ibm.com>
-To: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
-        maddy@linux.ibm.com, irogers@google.com, namhyung@kernel.org
-Cc: linux-perf-users@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        atrajeev@linux.ibm.com, hbathini@linux.vnet.ibm.com,
-        tejas05@linux.ibm.com, tshah@linux.ibm.com, venkat88@linux.ibm.com,
-        narnalli@in.ibm.com, vpuliyal@in.ibm.com
-Subject: [PATCH] perf disasm powerpc: handle Power10 prefixed instruction continuation lines
-Date: Mon,  7 Sep 2026 10:44:29 +0530
-Message-Id: <20260907051429.29080-1-atrajeev@linux.ibm.com>
-X-Mailer: git-send-email 2.39.5 (Apple Git-154)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hdbmw43zSz2yvX
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Sep 2026 15:52:00 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
+	s=mail; t=1788759912;
+	bh=zjio8W22GynDJMVZ+Z9fSpGxkhflvi4bv0Y2DSF0wFw=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
+	b=SQXB8XnGsJyqjxufdq52uGMyP66SmCPZVptYp9ENSeTt5tP7mhw7YQu9uXwTcFeep
+	 GlHZxFjMGWPggeRC8rXbvtI19KQhNekEX/w7Tue0lDBs0alRb/mq5qnI660Md9QzeU
+	 8qIQJsmlySp7VykKWyoyDrfuR6APyfnS9LmvwhBs=
+From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
+Date: Mon, 07 Sep 2026 07:45:01 +0200
+Subject: [PATCH v2 1/3] x86/mce: Use __DEVICE_ATTR() macro to initialize
+ dev_ext_attribute
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,98 +54,75 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=E7T9Y6dl c=1 sm=1 tr=0 ts=6a9e4842 cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=V8glGbnc2Ofi9Qvn3v5h:22 a=VnNF1IyMAAAA:8 a=U-cem9rO5JdOABcjNy0A:9
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTA3MDA1MSBTYWx0ZWRfX3V262781SRHm
- y93hLluLDzeQe4k/D6MUO/bvJdhjrqcp40Z9ECKcwKfMacu/diJ0K5+HNExp2c7CYfDnJyFTYXZ
- lLSp9TsOz1X4Y/qHH1oKD39kbMw6pIo=
-X-Proofpoint-ORIG-GUID: Lxl2djdbADJo_3BhOuD9Mmyg_UiSuTpr
-X-Proofpoint-GUID: jo92DFtmkAJwKN76m_e1KoNxOErwhZlq
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTA3MDA1MSBTYWx0ZWRfX6Qpnb6aG3CAM
- a/oAS7Z8hi56VqAo6GFXNlTjmCE5Jv6Lpq0pBbJsbXtQsjrzBF8LpPkDeBqEuu8CKeJ4tp5aXpL
- ezaivKWQ8T430Y6naHnVJcPUQNfhvJDxUln596Ws0I1UOsYsUVgU20ECLDeYS2OQgwEMpCEChm5
- /IVIjol+oVwnQ+3AIAhJczUPjhylKKxDWH0jtql89vlEJe0o9k4HAEwHg7+BnxgjLdJbYhfzBUZ
- OP2BfjkUqmFRLla122/U4TfKBDAB+0OPuQy3dVbii+aU1+UxPFhjiKo27A0YtEl85LF9RbRrzEJ
- 0V3ABLGtPr7xVkbCW09EwcXzgcw4kw0TjCbeXj5MeD9CGWhZpUhvuAGoJoR/N3ZBvJ0jQttwwRq
- 85lDcKN3i5x4plj8Vy2OxjWBxU7r48tp00rs2P2oc15bx/rasR9gaCsMp5OTvfxe+4cvYt7DWbw
- B6Bvk47our+5yPyEQtQ==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-07_01,2026-09-03_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 phishscore=0 spamscore=0 suspectscore=0 priorityscore=1501
- bulkscore=0 impostorscore=0 malwarescore=0 lowpriorityscore=0 adultscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2609070051
+Message-Id: <20260907-sysfs-const-attr-dev_ext_attr-v2-1-bf53afe57071@weissschuh.net>
+References: <20260907-sysfs-const-attr-dev_ext_attr-v2-0-bf53afe57071@weissschuh.net>
+In-Reply-To: <20260907-sysfs-const-attr-dev_ext_attr-v2-0-bf53afe57071@weissschuh.net>
+To: Tony Luck <tony.luck@intel.com>, Borislav Petkov <bp@alien8.de>, 
+ Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, 
+ Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, 
+ "H. Peter Anvin" <hpa@zytor.com>, Will Deacon <will@kernel.org>, 
+ Mark Rutland <mark.rutland@arm.com>, Jonathan Cameron <jic23@kernel.org>, 
+ Yushan Wang <wangyushan12@huawei.com>, Jijie Shao <shaojijie@huawei.com>, 
+ Khuong Dinh <khuong@os.amperecomputing.com>, 
+ Madhavan Srinivasan <maddy@linux.ibm.com>, 
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, Danilo Krummrich <dakr@kernel.org>
+Cc: linux-edac@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ linux-arm-kernel@lists.infradead.org, linux-perf-users@vger.kernel.org, 
+ linux-cxl@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
+ linuxppc-dev@lists.ozlabs.org, driver-core@lists.linux.dev, 
+ =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1788759912; l=1433;
+ i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
+ bh=zjio8W22GynDJMVZ+Z9fSpGxkhflvi4bv0Y2DSF0wFw=;
+ b=wCxOSjxvbbdreCrZQx/QcuWsGUDp3AKhme52hKzrMTjWGgj6/Xl3pga+77EN2z3Mzhz+s7r9O
+ 8kTcsTZ75BoDvjUCgBSrCP/Sgoye7IpQl3Y3m9Rg5T6F7BJNf2fq9E0
+X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
+ pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
-Power10 introduces prefixed instructions that are 8 bytes wide.  objdump
-emits these as two lines: the first carries both the raw bytes and the
-mnemonic, while the second carries only the raw bytes of the second word
-with no mnemonic:
+The upcoming constification of the device_show_int() and
+device_show_bool() signatures requires the users to handle the
+transition automatically.
 
-  1020900c:  0b 00 10 06  pla  r31,757280  # 102c1e2c <cctki_vi_ML_CCZ4>
-  10209010:  20 8e e0 3b
+Switch to the __DEVICE_ATTR() macro which can do this.
 
-disasm_line__parse_powerpc() calls disasm_line__parse() on the mnemonic
-portion of the line.  disasm_line__parse() returns -1 when the name
-string is empty, which causes disasm_line__new() to return NULL, which
-causes symbol__parse_objdump_line() to return -1, which immediately
-breaks the objdump output parsing loop in symbol__disassemble_objdump().
-
-The result is that annotation of any function containing a prefixed
-instruction stops at the continuation word and all subsequent
-instructions in the function are lost.
-
-Fix this by treating an empty mnemonic as a valid case in
-disasm_line__parse_powerpc(): skip the call to disasm_line__parse() and
-set the instruction name to an empty heap-allocated string instead,
-allowing parsing to continue to the next line.
-
-Reported-by: Narendra Nalli <narnalli@in.ibm.com>
-Reported-by: Vijay Puliyala <vpuliyal@in.ibm.com>
-Signed-off-by: Athira Rajeev <atrajeev@linux.ibm.com>
+Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
 ---
- tools/perf/util/disasm.c | 20 +++++++++++++++++---
- 1 file changed, 17 insertions(+), 3 deletions(-)
+ arch/x86/kernel/cpu/mce/core.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/tools/perf/util/disasm.c b/tools/perf/util/disasm.c
-index e263a2a8715d..8dca703a5c74 100644
---- a/tools/perf/util/disasm.c
-+++ b/tools/perf/util/disasm.c
-@@ -884,10 +884,24 @@ static int disasm_line__parse_powerpc(struct disasm_line *dl, struct annotate_ar
- 	if (name_raw_insn[0] == '\0')
- 		return -1;
+diff --git a/arch/x86/kernel/cpu/mce/core.c b/arch/x86/kernel/cpu/mce/core.c
+index ab469605fc89..d67f3b6b83d8 100644
+--- a/arch/x86/kernel/cpu/mce/core.c
++++ b/arch/x86/kernel/cpu/mce/core.c
+@@ -2621,17 +2621,17 @@ static DEVICE_BOOL_ATTR(dont_log_ce, 0644, mca_cfg.dont_log_ce);
+ static DEVICE_BOOL_ATTR(print_all, 0644, mca_cfg.print_all);
  
--	if (disasm)
--		ret = disasm_line__parse(name, namep, rawp);
--	else
-+	if (disasm) {
-+		/*
-+		 * Power10 prefixed instructions are 8 bytes and objdump emits
-+		 * the second word on its own line with raw bytes but no
-+		 * mnemonic, e.g.:
-+		 *   1020900c:  0b 00 10 06  pla  r31,757280
-+		 *   10209010:  20 8e e0 3b
-+		 *
-+		 * Treat a missing mnemonic as an empty instruction name rather
-+		 * than a parse failure, so that parsing continues past it.
-+		 */
-+		if (name[0] != '\0')
-+			ret = disasm_line__parse(name, namep, rawp);
-+		else
-+			*namep = strdup("");
-+	} else {
- 		*namep = "";
-+	}
+ static struct dev_ext_attribute dev_attr_check_interval = {
+-	__ATTR(check_interval, 0644, device_show_int, store_int_with_restart),
++	__DEVICE_ATTR(check_interval, 0644, device_show_int, store_int_with_restart),
+ 	&check_interval
+ };
  
- 	tmp_raw_insn = strndup(name_raw_insn, 11);
- 	if (tmp_raw_insn == NULL)
+ static struct dev_ext_attribute dev_attr_ignore_ce = {
+-	__ATTR(ignore_ce, 0644, device_show_bool, set_ignore_ce),
++	__DEVICE_ATTR(ignore_ce, 0644, device_show_bool, set_ignore_ce),
+ 	&mca_cfg.ignore_ce
+ };
+ 
+ static struct dev_ext_attribute dev_attr_cmci_disabled = {
+-	__ATTR(cmci_disabled, 0644, device_show_bool, set_cmci_disabled),
++	__DEVICE_ATTR(cmci_disabled, 0644, device_show_bool, set_cmci_disabled),
+ 	&mca_cfg.cmci_disabled
+ };
+ 
+
 -- 
-2.43.0
+2.55.0
 
 
