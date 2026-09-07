@@ -1,110 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-26690-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26691-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A80A4C79FA0
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Sep 2026 16:13:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F3C09C79FA0
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Sep 2026 16:30:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hdsZQ0DY3z2xk7;
-	Tue, 08 Sep 2026 02:13:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.130
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788797629;
-	cv=none; b=F1WMFuX+mAtEuiUPW1e3VR00a/ErQj4egIuAW7OU73+iKj6GweOtRJjC3gxU6bngYJvMJFH34tleob+lFDnfFDT1wBVVfN4HPG2CtgtqSKq9BFoL+2GV8u3hTEJXenykXquGbpz6vBjgfCGKfypgHa7h3Ex/Kr3+gg4H4R7d0DrjRHpwV1TgNz5D+4ovB+Vd3OYb/voaINJ4fNc9N7Z99i385W+TkmQJi2fyxzs3GOAl1TOUiswc2JM579Ol/wG1B4E4kP4Pq9gKqco0/PNL5GYslN5eNJ6Rx90acR+OhxohNYb5uHa8HL6YwOiEw27SdoaFi0IsSvgH0Jz/zmf/DA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hdsxr6ZTRz2xmh;
+	Tue, 08 Sep 2026 02:30:40 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:e0c:1:1599::15"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788798640;
+	cv=none; b=QqgEvGr6pmn/idCOexnkRgxmPe6jjQDqUxb1Pavf8dvTY0btzpPGZKxLtPYaD7QoYB4Wu6hqG07u3aKnKSrQlmmS8pot0hnNqhsTkRaqD7m7GVlNsZWnYowXnURvArUccdv4AvBaaYlZ1DLXMrcraqQlFnwctTFixUfBVRK7kAmm618RGjFGFaCqyEONedIAVRIcJC+H1UvWJ50MnDFlZhcCT240BmIbsF2jkfmbdymHdbcyzpf6WO6Ip8sEQe83bM82b0Ek0iZYOlGaZ252pfqEQ5mo2HaBT3L4DQQuD/6Y6y6CJhgkcP0WgCdgCf9kxsudsL64GyAkqzYcmkSZTw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788797629; c=relaxed/relaxed;
-	bh=ejjj/UktNvHuL6ZfBgZGy2xOjH4lWFO1beWpbKfBw+Y=;
+	t=1788798640; c=relaxed/relaxed;
+	bh=kCjFhWPNIHyCCGcOUKXpSBj6qunRSHfl8V2Z8EoV8nE=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=hMC/D5Vfpp4eLcjWTpNvEyPocBeXt1ITS8vsyMv7ABK5vVQr897Swk7JPAtkrW0qUOKZHE8qcvnTQtr7QF9/nI+l1iASVzbXFrxc5UQqZW3GMOAsHU0CAOn05iHSD8SzyNQ3JS+34Tmmd/MDTITnev7egldWiLjTGzsp/JPnrLKULrhOdkGDaqMgcH+c74vP+qXMEtR7rzywK+FPbN/C2VquuTw4yqWUMzsYyD3F2v1ClxGl0tYMHMB7LUzgaLuepG7aMIm2J5DPU6jnyyOCelZI5xx3GrGdHWN+06khNBRECU3zhJgozGap2E04YnjYeF6cxDkF/CyrM2xDbke9rg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=suse.cz; dkim=pass (1024-bit key; unprotected) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=oeIFSP/L; dkim=pass header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=kNANdT9i; dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=u1sO1jKj; dkim=neutral header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=rRrXf8R3; dkim-atps=neutral; spf=pass (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=dsterba@suse.cz; receiver=lists.ozlabs.org) smtp.mailfrom=suse.cz
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=suse.cz
+	 Content-Type:Content-Disposition:In-Reply-To; b=b52299obxckVaYPZxogTRIj2+DRCziSpmw6dJzkCeB62fYhvFGsbWRFUbuC4ws8j8cSDOo1YLPKCCpsRDUv/gYHyJQN8OWSoOygjXU6/30MY33LjeMKwT52yFTtO7Vitn8eQ8HioA3DqePIBg3lNvFy5wZ4Qae/A5dyl16z6rXkFdUG31ILGK913N4ZL5GRPJNuf0s6SzShyPsD79+BNB+j98CGXnCGCZVhl9GKIgW4TLg5kamVQz72IsVG3viIEIdI/5PSZxE7jvaNRSJoCN0zijwXoixmkT0weQ1yhfeVOCbGVFVAnLTpIFKVgIKpnv/ntLRpiIh91gM2KpnJdCQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=free.fr; dkim=pass (2048-bit key; unprotected) header.d=free.fr header.i=@free.fr header.a=rsa-sha256 header.s=smtp-20201208 header.b=SrVgf5A7; dkim-atps=neutral; spf=pass (client-ip=2a01:e0c:1:1599::15; helo=smtp6-g21.free.fr; envelope-from=vjardin@free.fr; receiver=lists.ozlabs.org) smtp.mailfrom=free.fr
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=free.fr
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=oeIFSP/L;
-	dkim=pass header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=kNANdT9i;
-	dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=u1sO1jKj;
-	dkim=neutral header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=rRrXf8R3;
+	dkim=pass (2048-bit key; unprotected) header.d=free.fr header.i=@free.fr header.a=rsa-sha256 header.s=smtp-20201208 header.b=SrVgf5A7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.cz (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=dsterba@suse.cz; receiver=lists.ozlabs.org)
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=free.fr (client-ip=2a01:e0c:1:1599::15; helo=smtp6-g21.free.fr; envelope-from=vjardin@free.fr; receiver=lists.ozlabs.org)
+Received: from smtp6-g21.free.fr (smtp6-g21.free.fr [IPv6:2a01:e0c:1:1599::15])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hdsZN3QFVz2yvX
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Sep 2026 02:13:48 +1000 (AEST)
-Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id E5479219FA;
-	Mon,  7 Sep 2026 16:13:35 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
-	t=1788797620;
-	h=from:from:reply-to:reply-to:date:date:message-id:message-id:to:to:
-	 cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=ejjj/UktNvHuL6ZfBgZGy2xOjH4lWFO1beWpbKfBw+Y=;
-	b=oeIFSP/L7324gUSNEaYyp0KvjIp3oQI6RVhqgp2FBq0m49WuGeoy1zRIO/5nqzENHG+mG1
-	3I9/e7RZBR0bX//gSSRRZHy+4nCa7HrY3t7N7iU9SeMYCFVC4sJVwNbKr6WTuh4G4x2/+I
-	ipZtHvSR+tcSiBKdXZn97W8WWTtz+R4=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
-	s=susede2_ed25519; t=1788797620;
-	h=from:from:reply-to:reply-to:date:date:message-id:message-id:to:to:
-	 cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=ejjj/UktNvHuL6ZfBgZGy2xOjH4lWFO1beWpbKfBw+Y=;
-	b=kNANdT9iEIOsfAslKtmL2Q5eOUtU61PuGxDvBbGP3Xy3WUe1CHTjmKw4dOQMHg++xKpkoX
-	9F2kXR1wCo97u3Cg==
-Authentication-Results: smtp-out1.suse.de;
-	none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
-	t=1788797615;
-	h=from:from:reply-to:reply-to:date:date:message-id:message-id:to:to:
-	 cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=ejjj/UktNvHuL6ZfBgZGy2xOjH4lWFO1beWpbKfBw+Y=;
-	b=u1sO1jKj1FfYIzynI5bvYBkCHyro3DcF4Brevq/t09F8gGP51aD7yvK3titlL8rwhbmuiI
-	A0j0RJcHyqXxzT+B+py3ObaISB8tPQomVAWwRDRUUVudapBz87sohNNZQXmmpCnItWecYc
-	8hlFuJ4UpElNyrD13S3AkRRWDsvjQiE=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
-	s=susede2_ed25519; t=1788797615;
-	h=from:from:reply-to:reply-to:date:date:message-id:message-id:to:to:
-	 cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=ejjj/UktNvHuL6ZfBgZGy2xOjH4lWFO1beWpbKfBw+Y=;
-	b=rRrXf8R3i97G0BUMSmSQiLikYTVEvTzIi0tEO54jMomkUPIdivwrpoQwYF7THAPUBMtj1H
-	tYUuuZzTr7cEy7Cg==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 9A6F71339B;
-	Mon,  7 Sep 2026 16:13:35 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id q4uAJa/inmqFDgAAD6G6ig
-	(envelope-from <dsterba@suse.cz>); Mon, 07 Sep 2026 16:13:35 +0000
-Date: Mon, 7 Sep 2026 18:13:30 +0200
-From: David Sterba <dsterba@suse.cz>
-To: Song Chen <chensong_2000@126.com>
-Cc: arnd@arndb.de, kees@kernel.org, clm@fb.com, dsterba@suse.com,
-	linux@armlinux.org.uk, catalin.marinas@arm.com, will@kernel.org,
-	guoren@kernel.org, kernel@xen0n.name, maddy@linux.ibm.com,
-	mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org,
-	pjw@kernel.org, palmer@dabbelt.com, aou@eecs.berkeley.edu,
-	alex@ghiti.fr, gor@linux.ibm.com, borntraeger@linux.ibm.com,
-	agordeev@linux.ibm.com, svens@linux.ibm.com, tglx@kernel.org,
-	mingo@redhat.com, bp@alien8.de, dave.hansen@linux.intel.com,
-	x86@kernel.org, hpa@zytor.com, jpoimboe@kernel.org,
-	linux-arm-kernel@lists.infradead.org, linux-csky@vger.kernel.org,
-	loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
-	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
-	linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH v2 0/3] btrfs: add error injection support for
- checksum verification
-Message-ID: <20260907161330.GX9053@suse.cz>
-Reply-To: dsterba@suse.cz
-References: <20260724021229.47302-1-chensong_2000@126.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hdsxp1TQgz2xfP
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Sep 2026 02:30:36 +1000 (AEST)
+Received: from L30177.local (unknown [213.36.7.12])
+	(Authenticated sender: vjardin@free.fr)
+	by smtp6-g21.free.fr (Postfix) with ESMTPSA id CBF1F780333;
+	Mon,  7 Sep 2026 18:30:18 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=free.fr;
+	s=smtp-20201208; t=1788798627;
+	bh=WBKBczPmnFNqn4oIBcLRMTmSwk8E7CwqvkPMeqXkv/g=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=SrVgf5A7eKYt7GcaIfUWEc2J962GNTRiqS4oleuwDrm0Q81xaxIZ+6YgQQ1Kh5ECi
+	 8Hi3DwQR1SgbwCldFJ6RnfI9F51NAqShrz9BM7OpxWOfAPu3RWpcl+ffU59PP3hvyI
+	 Avxgz7X6z2iXrwAQkIgNa6JHNzIOr4ygSO3ac2nERcIRpc+ADW0kSnwM7RigCaRgjz
+	 OcxEUl2LkMsX7sPMJ/wkSlnEckqLCoetx+FSnDVabZmhCibG/8LO79WNf7NS6yUnbP
+	 PVad2zu6mtidc84Npf65aHE1KAZQ6Zmv7YCI2C5b4ZRJ6UBeskblftFbxlsfBgWy/1
+	 EluxjPQQ4xkrw==
+Date: Mon, 7 Sep 2026 18:30:17 +0200
+From: Vincent Jardin <vjardin@free.fr>
+To: Ioana Ciornei <ioana.ciornei@nxp.com>
+Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Laurentiu Tudor <laurentiu.tudor@nxp.com>,
+	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org, stable+noautosel@kernel.org
+Subject: Re: [PATCH] bus: fsl-mc: register the object drivers after
+ misc_class exists
+Message-ID: <ap7mmR_4QV0k88dK@L30177.local>
+References: <20260901-for-upstream-fsl-mc-initcall-order-v1-1-36ffe48f767d@free.fr>
+ <fmmf72ypmmooyxszz3l47xabdhvetowgvbmbjmvj6bumuh5onh@pntmny63urbg>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -120,78 +70,67 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260724021229.47302-1-chensong_2000@126.com>
-User-Agent: Mutt/1.5.23.1-rc1 (2014-03-12)
-X-Spamd-Result: default: False [-2.50 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	SUSPICIOUS_RECIPS(1.50)[];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	HAS_REPLYTO(0.30)[dsterba@suse.cz];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	RCVD_TLS_ALL(0.00)[];
-	ARC_NA(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	RCPT_COUNT_TWELVE(0.00)[37];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	R_RATELIMIT(0.00)[to_ip_from(RLq7rgjtkhinpjg5fumb6k6gau)];
-	TO_DN_SOME(0.00)[];
-	FREEMAIL_TO(0.00)[126.com];
-	FREEMAIL_ENVRCPT(0.00)[126.com,gmail.com];
-	DKIM_SIGNED(0.00)[suse.cz:s=susede2_rsa,suse.cz:s=susede2_ed25519];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	FREEMAIL_CC(0.00)[arndb.de,kernel.org,fb.com,suse.com,armlinux.org.uk,arm.com,xen0n.name,linux.ibm.com,ellerman.id.au,gmail.com,dabbelt.com,eecs.berkeley.edu,ghiti.fr,redhat.com,alien8.de,linux.intel.com,zytor.com,lists.infradead.org,vger.kernel.org,lists.linux.dev,lists.ozlabs.org];
-	MID_RHS_MATCH_FROM(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.cz:replyto,suse.cz:mid,imap1.dmz-prg2.suse.org:helo];
-	RCVD_COUNT_TWO(0.00)[2];
-	REPLYTO_ADDR_EQ_FROM(0.00)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	REPLYTO_DOM_NEQ_TO_DOM(0.00)[]
+In-Reply-To: <fmmf72ypmmooyxszz3l47xabdhvetowgvbmbjmvj6bumuh5onh@pntmny63urbg>
 
-On Fri, Jul 24, 2026 at 10:12:26AM +0800, Song Chen wrote:
-> This patchset adds fault injection support for btrfs_data_csum_ok,
-> enabling controlled simulation of checksum mismatches to test btrfs
-> silent data corruption detection and reporting paths.
+Hi Ioana,
+
+> Do you mean that the above error messages are triggered by an unbind and
+> bind sequence like below?
 > 
-> The first patch extends the error injection framework with a new type,
-> EI_ETYPE_FALSE, which allows bool-returning functions to be overridden
-> with a false return value directly.
-> 
-> The second patch marks btrfs_data_csum_ok with ALLOW_ERROR_INJECTION
-> using this new type.
-> 
-> The third patch adds a parent field to fei_attr to allow fault injection
-> on a function only when called from a specific parent function. 
-> 
-> Song Chen (3):
->   error-injection: Introduce EI_ETYPE_FALSE for fail_function
->   btrfs: Allow error injection on btrfs_data_csum_ok
->   error-injection: Introduce parent in fei_attr
+> $ echo dprc.1 > /sys/bus/fsl-mc/drivers/fsl_mc_dprc/unbind
+> $ echo dprc.1 > /sys/bus/fsl-mc/drivers/fsl_mc_dprc/bind
 
-I'm going through my mailbox and found this. No objections to add the
-injection point to btrfs, but the rest is generic fault injection code
-so I can't take it via btrfs tree without acks.
+Yes, same sequence on the root DPRC
 
-There are some sashiko comments (as replies in the thread [1]) and there
-have been some changes to btrfs code too so the patchset needs a
-refresh.
+> I am asking this because I cannot seem to trigger it myself. There is a
+> misc_deregister() which should remove the char device upon unbinding the
+> root DPRC.
 
-I see maintainers in CC, if somebody could please let us know how to
-proceed.
+It does for every normal misc device, but not for this one, because the
+root DPRC's misc device is created classless.
 
-[1] https://lore.kernel.org/all/20260724021229.47302-1-chensong_2000@126.com/
+You can check the states with:
+    grep dprc /proc/misc   # e.g. "256 dprc.1"  -> registered
+    ls /sys/class/misc/ | grep dprc
 
->  arch/arm/lib/error-inject.c           |  6 ++
->  arch/arm64/lib/error-inject.c         |  6 ++
->  arch/csky/lib/error-inject.c          |  6 ++
->  arch/loongarch/lib/error-inject.c     |  6 ++
->  arch/powerpc/lib/error-inject.c       |  6 ++
->  arch/riscv/lib/error-inject.c         |  6 ++
->  arch/s390/lib/error-inject.c          |  6 ++
->  arch/x86/lib/error-inject.c           |  6 ++
->  fs/btrfs/inode.c                      |  1 +
->  include/asm-generic/error-injection.h |  6 ++
->  kernel/fail_function.c                | 98 ++++++++++++++++++++++++++-
->  11 files changed, 152 insertions(+), 1 deletion(-)
+If dprc.1 shows in /proc/misc but is absent from /sys/class/misc, its
+misc device is classless and the unbind/bind should collide. If it is
+present under /sys/class/misc, it was created after misc_class and the
+sequence is clean on your setup.
+
+fsl_mc_bus_driver_init() is a postcore_initcall, it registers both the
+platform and the dprc drivers.
+
+The fsl-mc DT node is populated at arch_initcall_sync, so the root DPRC
+probes synchronously.
+
+dprc_setup() -> fsl_mc_uapi_create_device_file() -> misc_register() runs
+before misc_init() does class_register(&misc_class) at subsys_initcall.
+
+misc_register() does not fail in that window: device_create_with_groups()
+with an unregistered class creates the device with no misc_class
+membership and still returns 0.
+
+-> So at unbind, misc_deregister() -> device_destroy(&misc_class, devt)
+cannot find the device within misc_class, it returns without removing it,
+and then it leaks the device + its /sys/dev/char/10:<minor> link while freeing
+the minor. The next bind reuses the minor and dies on the
+duplicate /sys/dev/char/ entry.
+
+I guess, from my setup, it happens when the root DPRC's misc device is
+created during the early probe, which needs CONFIG_FSL_MC_UAPI_SUPPORT=y,
+fsl-mc built in (not a module), and the root DPRC probe not going through
+EPROBE_DEFER.
+
+If it defers, the retry runs after subsys_initcall, misc_class exists,
+and unbind/bind is clean -> which is probably what you are seeing.
+
+I started to face this issue when I did try to restart
+the MC from Linux userland instead of uboot in order to be able to adapt
+with some DPC changes during the runtime.
+ see https://github.com/vjardin/lx2160-sdx/blob/main/src/lx2160-mc.c
+But I guess this issue should be quite generic.
+
+best regards,
+  Vincent
 
