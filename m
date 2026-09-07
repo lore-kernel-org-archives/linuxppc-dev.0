@@ -1,46 +1,45 @@
-Return-Path: <linuxppc-dev+bounces-26645-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26647-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E6F42C79F89
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Sep 2026 05:52:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A34D8C79F89
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Sep 2026 05:52:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hdbmy4TTgz2yvj;
-	Mon, 07 Sep 2026 15:52:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hdbmz63dxz2yys;
+	Mon, 07 Sep 2026 15:52:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:4f8:c010:41de::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788760322;
-	cv=none; b=lbOcTUYYScqn0ADI3M0NDLBQvzNAalWG/dllsMFtRxpMy+RomrvjMcIwDdrZa49QIj/t18T4J0Ri0wOLyzFGWchvkEZ3X87aEyKbBepLuKvzMmiQDRskFcLPijml4f8jFcd8l/jUkNE1t7sEGkyxjal/dBcSRDvFZTmh5wWrOnwBGEc/YcnyEm4zDTMU2Q8OsUcCmiHsxGwA1uA6dAQQ8t45PFvQ9CgIwKLqd+uXmFlaryjoIO5A+VQsh+VaAfdyQ41s3tRjHjQx74UWItmoakEuVpl6A2wB37a+BKtcwtGWerjJWNWaHoEb2v8vRwejtnEQXeIXigf8XUwJtwYYaQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788760323;
+	cv=none; b=KqQP7s3+Zecn98BwsXY9phzGa7HuGX3LfmqjyIlDZ3SzYywi7MZslALSJ8NK7Ee1bTzEsyPRY6FZL3f3lOL/PhWTAF5Q0W3665GFbZ3+QZ0Pqs2/yV0FXVMsszXGe5/1A6keYqeXqI4f6AiXU9jnLQbfPs4V/ohg0FH+MLqM1hTNu1TaO+oZcTQz5EqSsv2lCTBZ94xNds2g/FAy31z7N3JTZpr1zLV5wiQimZVS3PrKtsKzUaB104jYl3+O0AH2zALAsC9humv3uiKHUWjwhtQO5Bq7CU8qT3fAVhGjnLHlQ7Ww2k1itf/XBnS4JqYn2UHp2GTD0jbuFbSCgaIHUw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788760322; c=relaxed/relaxed;
-	bh=OE+94+rxnr6JyHzVf41++W806Ur3QbjQQuslFQknClE=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=C+o94o51cfbBIDU1kvNrThr1YW3zhsk/Od1LtoH9szigmLlRtSclW2eZhVr5ITSy9yaDAVbF2Yx/6klRdLmBJPAMQVKpkBuiw5TqSqif67J8qymakkz0SS1HVGxOU6tIZT0rdAQ2TPQb3tORYJzmluGDkcZAf2bH4PQwkEY5CnIM/0S03fba+qyOctbtSRnYc4XsHoDlCJgE1NsVQeeFtUsaWuZ43D4YIX27RcakBNMfTWmYrzdOrFqkODU+nv7IYysm8jQgX+EZ2EBmJlCcnoham63BY1l6nhCgvI/F+IiHw/2zFWoFpxL+fME4Ae5H0QwS09129De+bMuikVY+Qg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=A6HY3cV7; dkim-atps=neutral; spf=pass (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
+	t=1788760323; c=relaxed/relaxed;
+	bh=n6tgaHbVtiWTh3fQBGQAiRrlbsazgMdvtDokO7aUJ4I=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=Srdp1d3ZN1Lm/xuLdxE1EwOtbeDUFU6N7MoltC+ss5WpS3JOKzazYE4w39uAp/0plBw5VqrSicG34nhee6wRqdqlKg073qV8R0YNuh58WOTRnYCAc0x/K+NoMoJyiD+48oDqCBfZQ4Nkl04p/p6HMtNbBpjWCqFl+Hcrv+5XCQ+Ix5o+Enp5aY6xApeJr1BxrPyJFZ+jXDRr6RfAOG0SsDGbjoodCYj0s8klImGwb11v1Bt1RS/41y/ltFDdVuxH2hkcN7SCuTsOBIjc9xmMjexDkMDRy9FCDGk5yCBG2SVZkZmUeiQWtq3Krt0Rf8fsZ4qe4q1xSwXqUoH/XonkIQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=SfWSK/ah; dkim-atps=neutral; spf=pass (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=A6HY3cV7;
+	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=SfWSK/ah;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
-X-Greylist: delayed 400 seconds by postgrey-1.37 at boromir; Mon, 07 Sep 2026 15:52:00 AEST
 Received: from todd.t-8ch.de (todd.t-8ch.de [IPv6:2a01:4f8:c010:41de::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hdbmw2ktXz2xpv
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Sep 2026 15:52:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hdbmx1ZNPz2yvY
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Sep 2026 15:52:01 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
 	s=mail; t=1788759912;
-	bh=74OyWk+S1XapnZa91tZh7QGJ8Z65Zq0I4MGM9fNJNk4=;
-	h=From:Subject:Date:To:Cc:From;
-	b=A6HY3cV701dgp4nehXyHi0uuEnDYEsK/ruMG+iGzYoQjZUV/M7TXnif6yPqj1WCHf
-	 u6SwqmxYz6xiFp1/Wb0+Xphev6GzjL+dE1p6VSs5jEWoFF42oV7/2jf4QHzK47dG/q
-	 rSXkrDVQq0zPLslfyMEAaaLBw5epZDE/IPsbgxso=
+	bh=jHaxIQ3pA1eeWIle1Pk9J90EZmpff5RsKw2PfaVnl9A=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
+	b=SfWSK/ahn06kZntBnbhT0gYtxboxUyXFW9sznUoNgaeOlkScL/EVWj5kKaLRsnxwj
+	 qMTCIvjn1ZFkBsUI621/mshp8jAEz3LFaTdQTx92ltJp+/r/7ijQnRwI9imYQl/R3l
+	 jWF+lfEnUxnVx74sACHqIQFXMyfW7+dmRlk0kr4s=
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Subject: [PATCH v2 0/3] driver core: Constify the signature of
+Date: Mon, 07 Sep 2026 07:45:03 +0200
+Subject: [PATCH v2 3/3] driver core: Constify the signature of
  device_show/store_*()
-Date: Mon, 07 Sep 2026 07:45:00 +0200
-Message-Id: <20260907-sysfs-const-attr-dev_ext_attr-v2-0-bf53afe57071@weissschuh.net>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -56,11 +55,9 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/4WOyw7CIBBFf6Vh7RjAitGV/2GapoVBcEENQ7FN0
- 3+3j7h2eZKbc+7ECKNHYrdiYhGzJ9+FBeShYNo14YngzcJMcqn4RUigkSyB7gIlaFKKYDDXOKR
- 6h9YqdbXGmhLZ4nhHtH7Y/I9qZ+rbF+q0SteF85S6OG4Hslh3v1b5p5UFcFCt1Lw8nY2S4v5BT
- 0Ta9e4YMLFqnucvwCtUS+EAAAA=
-X-Change-ID: 20260712-sysfs-const-attr-dev_ext_attr-dbf669fdfd4e
+Message-Id: <20260907-sysfs-const-attr-dev_ext_attr-v2-3-bf53afe57071@weissschuh.net>
+References: <20260907-sysfs-const-attr-dev_ext_attr-v2-0-bf53afe57071@weissschuh.net>
+In-Reply-To: <20260907-sysfs-const-attr-dev_ext_attr-v2-0-bf53afe57071@weissschuh.net>
 To: Tony Luck <tony.luck@intel.com>, Borislav Petkov <bp@alien8.de>, 
  Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, 
  Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, 
@@ -79,62 +76,166 @@ Cc: linux-edac@vger.kernel.org, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, driver-core@lists.linux.dev, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1788759912; l=2248;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1788759912; l=5954;
  i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=74OyWk+S1XapnZa91tZh7QGJ8Z65Zq0I4MGM9fNJNk4=;
- b=XvYmhK8g23TtkqqxN7yFFdmL3QKRYan/Vq1gOpl1Rbpx5vGwB2eFDVQ3yILkyDbE08ZBxinF5
- wad1OfZF2tjA5gvkgXhlADqWAri64DSYcu+XOo2XcNPH3zmUHKsUZII
+ bh=jHaxIQ3pA1eeWIle1Pk9J90EZmpff5RsKw2PfaVnl9A=;
+ b=HSiLRH38g3xSkpGb5oIKBJaK+SOmvIEuNwqO/eqdT7KHt7JaySzEjU5t5xVPUxSbcL/2oSJ8q
+ Vg+/kfFlctnBza+sS9aoCZ//ve+6Dyrc1y3gZ5QVZWXlD8L1tbcV9W2
 X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
  pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
-Prepare for the constification of 'struct dev_ext_attribute' instances
-by changing the signature of the standard callback functions.
-The first two patches prepare some drivers to handle both the const and
-non-const callback variants.
+Prepare for the constification of 'struct dev_ext_attribute' by changing
+the signature of the standard callback functions.
 
-Intended for the driver-core tree.
+Migrate the hv-24x7 driver in the same commit. It is the only user to
+manually assign one of the standard callbacks.
 
 Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
 ---
-Changes in v2:
-- Rebase on v7.3-rc1.
-- Cover a few more drivers in drivers/perf/.
-- Link to v1: https://patch.msgid.link/20260714-sysfs-const-attr-dev_ext_attr-v1-0-6b2c0435d621@weissschuh.net
+ arch/powerpc/perf/hv-24x7.c |  2 +-
+ drivers/base/core.c         | 30 +++++++++++++++---------------
+ include/linux/device.h      | 14 +++++++-------
+ 3 files changed, 23 insertions(+), 23 deletions(-)
 
----
-Thomas Weißschuh (3):
-      x86/mce: Use __DEVICE_ATTR() macro to initialize dev_ext_attribute
-      drivers: perf: Use __DEVICE_ATTR() macro to initialize dev_ext_attribute
-      driver core: Constify the signature of device_show/store_*()
+diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
+index b0eedf185960..3e094dc7d76b 100644
+--- a/arch/powerpc/perf/hv-24x7.c
++++ b/arch/powerpc/perf/hv-24x7.c
+@@ -462,7 +462,7 @@ static struct attribute *device_str_attr_create_(char *name, char *str)
+ 	attr->var = str;
+ 	attr->attr.attr.name = name;
+ 	attr->attr.attr.mode = 0444;
+-	attr->attr.show = device_show_string;
++	attr->attr.show_const = device_show_string;
+ 
+ 	return &attr->attr.attr;
+ }
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index 4c0c373998a1..5daa88fa724a 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -2517,13 +2517,13 @@ static const struct sysfs_ops dev_sysfs_ops = {
+ 	.store	= dev_attr_store,
+ };
+ 
+-#define to_ext_attr(x) container_of(x, struct dev_ext_attribute, attr)
++#define to_ext_attr(x) container_of_const(x, struct dev_ext_attribute, attr)
+ 
+ ssize_t device_store_ulong(struct device *dev,
+-			   struct device_attribute *attr,
++			   const struct device_attribute *attr,
+ 			   const char *buf, size_t size)
+ {
+-	struct dev_ext_attribute *ea = to_ext_attr(attr);
++	const struct dev_ext_attribute *ea = to_ext_attr(attr);
+ 	int ret;
+ 	unsigned long new;
+ 
+@@ -2537,19 +2537,19 @@ ssize_t device_store_ulong(struct device *dev,
+ EXPORT_SYMBOL_GPL(device_store_ulong);
+ 
+ ssize_t device_show_ulong(struct device *dev,
+-			  struct device_attribute *attr,
++			  const struct device_attribute *attr,
+ 			  char *buf)
+ {
+-	struct dev_ext_attribute *ea = to_ext_attr(attr);
++	const struct dev_ext_attribute *ea = to_ext_attr(attr);
+ 	return sysfs_emit(buf, "%lx\n", *(unsigned long *)(ea->var));
+ }
+ EXPORT_SYMBOL_GPL(device_show_ulong);
+ 
+ ssize_t device_store_int(struct device *dev,
+-			 struct device_attribute *attr,
++			 const struct device_attribute *attr,
+ 			 const char *buf, size_t size)
+ {
+-	struct dev_ext_attribute *ea = to_ext_attr(attr);
++	const struct dev_ext_attribute *ea = to_ext_attr(attr);
+ 	int ret;
+ 	long new;
+ 
+@@ -2566,19 +2566,19 @@ ssize_t device_store_int(struct device *dev,
+ EXPORT_SYMBOL_GPL(device_store_int);
+ 
+ ssize_t device_show_int(struct device *dev,
+-			struct device_attribute *attr,
++			const struct device_attribute *attr,
+ 			char *buf)
+ {
+-	struct dev_ext_attribute *ea = to_ext_attr(attr);
++	const struct dev_ext_attribute *ea = to_ext_attr(attr);
+ 
+ 	return sysfs_emit(buf, "%d\n", *(int *)(ea->var));
+ }
+ EXPORT_SYMBOL_GPL(device_show_int);
+ 
+-ssize_t device_store_bool(struct device *dev, struct device_attribute *attr,
++ssize_t device_store_bool(struct device *dev, const struct device_attribute *attr,
+ 			  const char *buf, size_t size)
+ {
+-	struct dev_ext_attribute *ea = to_ext_attr(attr);
++	const struct dev_ext_attribute *ea = to_ext_attr(attr);
+ 
+ 	if (kstrtobool(buf, ea->var) < 0)
+ 		return -EINVAL;
+@@ -2587,19 +2587,19 @@ ssize_t device_store_bool(struct device *dev, struct device_attribute *attr,
+ }
+ EXPORT_SYMBOL_GPL(device_store_bool);
+ 
+-ssize_t device_show_bool(struct device *dev, struct device_attribute *attr,
++ssize_t device_show_bool(struct device *dev, const struct device_attribute *attr,
+ 			 char *buf)
+ {
+-	struct dev_ext_attribute *ea = to_ext_attr(attr);
++	const struct dev_ext_attribute *ea = to_ext_attr(attr);
+ 
+ 	return sysfs_emit(buf, "%d\n", *(bool *)(ea->var));
+ }
+ EXPORT_SYMBOL_GPL(device_show_bool);
+ 
+ ssize_t device_show_string(struct device *dev,
+-			   struct device_attribute *attr, char *buf)
++			   const struct device_attribute *attr, char *buf)
+ {
+-	struct dev_ext_attribute *ea = to_ext_attr(attr);
++	const struct dev_ext_attribute *ea = to_ext_attr(attr);
+ 
+ 	return sysfs_emit(buf, "%s\n", (char *)ea->var);
+ }
+diff --git a/include/linux/device.h b/include/linux/device.h
+index aee79fd6b32b..90cdd77458bb 100644
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -129,19 +129,19 @@ struct dev_ext_attribute {
+ 	void *var;
+ };
+ 
+-ssize_t device_show_ulong(struct device *dev, struct device_attribute *attr,
++ssize_t device_show_ulong(struct device *dev, const struct device_attribute *attr,
+ 			  char *buf);
+-ssize_t device_store_ulong(struct device *dev, struct device_attribute *attr,
++ssize_t device_store_ulong(struct device *dev, const struct device_attribute *attr,
+ 			   const char *buf, size_t count);
+-ssize_t device_show_int(struct device *dev, struct device_attribute *attr,
++ssize_t device_show_int(struct device *dev, const struct device_attribute *attr,
+ 			char *buf);
+-ssize_t device_store_int(struct device *dev, struct device_attribute *attr,
++ssize_t device_store_int(struct device *dev, const struct device_attribute *attr,
+ 			 const char *buf, size_t count);
+-ssize_t device_show_bool(struct device *dev, struct device_attribute *attr,
++ssize_t device_show_bool(struct device *dev, const struct device_attribute *attr,
+ 			char *buf);
+-ssize_t device_store_bool(struct device *dev, struct device_attribute *attr,
++ssize_t device_store_bool(struct device *dev, const struct device_attribute *attr,
+ 			 const char *buf, size_t count);
+-ssize_t device_show_string(struct device *dev, struct device_attribute *attr,
++ssize_t device_show_string(struct device *dev, const struct device_attribute *attr,
+ 			   char *buf);
+ 
+ typedef ssize_t __device_show_handler_const(struct device *dev, const struct device_attribute *attr,
 
- arch/powerpc/perf/hv-24x7.c                 |  2 +-
- arch/x86/kernel/cpu/mce/core.c              |  6 +++---
- drivers/base/core.c                         | 30 ++++++++++++++---------------
- drivers/perf/alibaba_uncore_drw_pmu.c       |  2 +-
- drivers/perf/arm-cci.c                      |  2 +-
- drivers/perf/arm-ccn.c                      |  2 +-
- drivers/perf/arm_cspmu/arm_cspmu.h          |  2 +-
- drivers/perf/arm_dsu_pmu.c                  |  2 +-
- drivers/perf/arm_spe_pmu.c                  |  6 +++---
- drivers/perf/cxl_pmu.c                      | 10 +++++-----
- drivers/perf/fsl_imx8_ddr_perf.c            |  2 +-
- drivers/perf/fujitsu_uncore_pmu.c           |  2 +-
- drivers/perf/hisilicon/hisi_pcie_pmu.c      |  2 +-
- drivers/perf/hisilicon/hisi_uncore_pmu.h    |  6 +++---
- drivers/perf/hisilicon/hns3_pmu.c           |  6 +++---
- drivers/perf/nvidia_t410_c2c_pmu.c          |  2 +-
- drivers/perf/nvidia_t410_cmem_latency_pmu.c | 12 ++++++------
- drivers/perf/qcom_l3_pmu.c                  |  8 ++++----
- drivers/perf/starfive_starlink_pmu.c        |  2 +-
- drivers/perf/xgene_pmu.c                    |  2 +-
- include/linux/device.h                      | 14 +++++++-------
- 21 files changed, 61 insertions(+), 61 deletions(-)
----
-base-commit: cee9395acd8043be0644b25c34bfa86623f2b935
-change-id: 20260712-sysfs-const-attr-dev_ext_attr-dbf669fdfd4e
-
-Best regards,
---  
-Thomas Weißschuh <linux@weissschuh.net>
+-- 
+2.55.0
 
 
