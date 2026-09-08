@@ -1,51 +1,52 @@
-Return-Path: <linuxppc-dev+bounces-26788-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26789-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BBD66C79FA1
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 11:58:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A4833C79F9E
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 12:32:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hfMsH6C2pz2y2b;
-	Tue, 08 Sep 2026 21:58:27 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788868707;
-	cv=none; b=OsmHfZfvnvxWvVIyowZwqxz/UJhFr4xQH0ldNTe5eX0sJZn1J+KCVXf+o3Vg9kdqy1OCtRoLOEJuvBWQ8hkVIX1v4g6uhwW7km2B6H2jHK6qxvU8VIHSGDl4v3kgkrjTmcTTEHiG/0vaht5UMp6IszSApoy0iffkaaeOGKJGoWCWwYGOaxilyTvlhz5H7FC6RKh0ZVc1nsTJdT3QCakV5hlhM0ULHm/7lebVJyGjxFtRouH/j4JAQcXARs1pEzy4kHgGEnY/0d7oIpID+ZGoaMaOPwTzHiFHim+bV/YTKmqlu+MQK+sLCf/ELMWnyY8PnwGloESByzkdBEDsADpD3A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hfNd25kNwz2y2b;
+	Tue, 08 Sep 2026 22:32:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788870774;
+	cv=none; b=DIUyYaDbFVttxQkr938sfjzGJ9eK32aOkkw+3L8xxDWUjSAIp1ceWUsWEXyRqd3wnJOYycsA8ubuwmO48W6NG9ER5GIggDoYSTm6wOQDu0tEStbrTk5Nv8vYBf+JXhtpb34BVAmrSxBtipkQEIQRNzj0QtfjPK90g+4C4ilUYNSPjOEgbe5s4aNegKip9lrlENMQOwAWMhEJWF3UYQDhR3cyNQ4SwiWIxRvUP777FJJjiUajW6ZU0zzfixYxCUx+HleMFg9OVRS4VymQ0efZLlEVQat73FZxKN0dN1xKM53paCRwMVsBI9DTvt4XRLyqjvpon/1l8n6KGoIkMWa/KQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788868707; c=relaxed/relaxed;
-	bh=a9ldav0mNmhl29cjdGzHHjkJJsG0TOXcYMScLmyKn3Q=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=QSb5PgInzYwihfQtxc/ws8y22c8HJPMmx207clm/8OPGhLVcpYDgUU+6DckhlikpGajYBjx77mGhLAkWJhbikwOYm0ZO1F15zRaVRBN2uokgjIkvvYv4+kbn5A7lhnsu3IQNkRhwFBgImgp36gC0yqIw+JgZvPzPydHoP/y1spwtNtMjKhiP4Km6Xgw3V3gIA3elSU34Dhvwm/8NdlgeKHhAfNAAmzp9I2sZLnD6a94+aln5fbsiAtEVZhvht7OQFpE7OuJiaFuwrCnL3b3Ehj0z5Jj2/ke8m5Kqh+PAf5t9sKMEBqa8zrBm52tlK3DeCWuaIWTXhgi8RENjGvi1Ig==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Bg3Jzwm+; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1788870774; c=relaxed/relaxed;
+	bh=/NX9zTuBJprAZbDQG/MM/JRatg67RVZV2hcrO8X3ERc=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=eR0R4Y54F63NwAWchm5n46RxET2Yi0bqpnxW77m3Sp6Gt0qL8IfhDFyLvvORGMc1MgTOWJwtwsnIiBgqRF1Xr4vAt8cyhJIgkSk8+k1alXdtjStnp0hcsWO6Hn7+WRFhMEQ3rKkERzy2uLj3Z0eDa9uUNLPmnEIGa5egZCrruRFWtr7fzyY/QQlRVeDlVz9hOSOhfXSgI26TcGA1m7Kcxy2gP9+N6t6yMMWYa9OwvhQkLwn8/qqkQnjDf6z0l8A4RASvVbWexEbPdaNYNdOsAtCXkrg6dQcJLX9MKPdPoMoyOtmzdje6ORKI45Ih7vw2qCupsEBmurV0Q7vg12TDog==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WFYrYtjg; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Bg3Jzwm+;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WFYrYtjg;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfMsG68SBz2xYh
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Sep 2026 21:58:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfNd06t4Sz2xlJ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Sep 2026 22:32:52 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id C45CB41072;
-	Tue,  8 Sep 2026 11:58:23 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B6A9F1F00A3A;
-	Tue,  8 Sep 2026 11:58:20 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id EAE44601F7;
+	Tue,  8 Sep 2026 12:32:49 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 571151F00A3D;
+	Tue,  8 Sep 2026 12:32:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788868703;
-	bh=a9ldav0mNmhl29cjdGzHHjkJJsG0TOXcYMScLmyKn3Q=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=Bg3Jzwm+WwX80LbfYYNnzePcfW3SqAOF3bqfIR/XU64eAqMbfO3v3zTBfrmrEEZRv
-	 0z781IgyJBmmjQUNs4nNW55whr57tMRWqdhNduTsxaedqm+MVF5YgIoivyCsqHmtwD
-	 14zhm0hMr70SaWlbX0B9C02QOWjZu2dSjRkxKo77ybjV9A/+LXRRBkxoi0u55I+JqN
-	 qqMQylifwCl+akjGyxyQYTjut8sifEY+pPISW4zdfKH5iEVQ46DBebQjvxcDqWU6wl
-	 H9VmFBjtajmSxuJAZ+CqHafHfF3p4UDSm+GsV8Avrq64wmUZu2mvAVPIthKL8B7xCs
-	 a7Y7Hjn9xpFDQ==
-Message-ID: <40845ad0-e321-4e1b-860d-ff798f430c42@kernel.org>
-Date: Tue, 8 Sep 2026 13:58:18 +0200
+	s=k20260515; t=1788870769;
+	bh=/NX9zTuBJprAZbDQG/MM/JRatg67RVZV2hcrO8X3ERc=;
+	h=From:Subject:Date:To:Cc;
+	b=WFYrYtjgPpbr/hwidvATlDVODrjSwP+HWI8Kl7S9xrf2WgC3hQDP6khQr1nMFslTq
+	 TbSm406p2qpnuADTGC+6tE/nTPxYxMVF+4OFtbIonotcYcHnM0FVW7CQcNxhAggcUy
+	 RUdZFz3Rk4EOtD42o1C7QsyTeI5jB0+a6xBDK24YSnjooKgQkR1yPg/GDD4Dz5VziZ
+	 BxufFpXHgn4IVJSiax8MYtTD99s3cRPFgRvhIRmYZXTK3A3NSD3NKUSHwY+wRDWw4x
+	 AiTr+io3dyDrqPy5gGGEQnV2GsPbu53vfgOvd1ivuOT3ziJeq3xMIIW4RCuGKGmMx3
+	 Ugtds1cv924RQ==
+From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
+Subject: [PATCH v2 00/12] mm: make userland page table freeing RCU-safe
+Date: Tue, 08 Sep 2026 13:32:09 +0100
+Message-Id: <20260908-rcu-pagetable-freeing-v2-0-1f60b64e878e@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,165 +60,266 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] soc: fsl: qe: drop GPIOD_FLAGS_BIT_NONEXCLUSIVE
-To: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Bartosz Golaszewski <brgl@kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- Qiang Zhao <qiang.zhao@nxp.com>, Linus Walleij <linusw@kernel.org>,
- linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
- linux-gpio@vger.kernel.org
-References: <20260908-usb-fhci-drop-gpio-nonexclusive-v1-1-8e405dc67874@oss.qualcomm.com>
-Content-Language: fr-FR
-From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-In-Reply-To: <20260908-usb-fhci-drop-gpio-nonexclusive-v1-1-8e405dc67874@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/3WNyw6CMBBFf4V07Zi2PFJd+R+GRVuHMmoKmQLRE
+ P5dHmuXJ7n3nFkkZMIkrtksGCdK1MUV9CkTvrUxINBjZaGlrqTJFbAfobcBB+veCA0jUgxgClc
+ 5NLlELcX67Rkb+uzee31wGt0T/bDJtkVLaej4u4cnte2OxkX+a0wKJJRFWVmjvNFK317IEd/nj
+ oOol2X5AezF2aLNAAAA
+X-Change-ID: 20260831-rcu-pagetable-freeing-84b6be830e20
+To: Andrew Morton <akpm@linux-foundation.org>, 
+ David Hildenbrand <david@kernel.org>, Zi Yan <ziy@nvidia.com>, 
+ Baolin Wang <baolin.wang@linux.alibaba.com>, 
+ "Liam R. Howlett" <liam@infradead.org>, Nico Pache <nico.pache@linux.dev>, 
+ Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, 
+ Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, 
+ Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, 
+ Guo Ren <guoren@kernel.org>, Brian Cain <bcain@kernel.org>, 
+ Geert Uytterhoeven <geert@linux-m68k.org>, 
+ Dinh Nguyen <dinguyen@kernel.org>, 
+ Simon Schuster <schuster.simon@siemens-energy.com>, 
+ Jonas Bonn <jonas@southpole.se>, 
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, 
+ Stafford Horne <shorne@gmail.com>, 
+ Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, 
+ John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, 
+ Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, 
+ Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>, 
+ Russell King <linux@armlinux.org.uk>, Vineet Gupta <vgupta@kernel.org>, 
+ Michal Simek <monstr@monstr.eu>, Chris Zankel <chris@zankel.net>, 
+ Max Filippov <jcmvbkbc@gmail.com>, Will Deacon <will@kernel.org>, 
+ "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, 
+ Nick Piggin <npiggin@gmail.com>, Peter Zijlstra <peterz@infradead.org>, 
+ "David S. Miller" <davem@davemloft.net>, 
+ Andreas Larsson <andreas@gaisler.com>, 
+ Richard Henderson <richard.henderson@linaro.org>, 
+ Matt Turner <mattst88@gmail.com>, Magnus Lindholm <linmag7@gmail.com>, 
+ Catalin Marinas <catalin.marinas@arm.com>, 
+ Mark Rutland <mark.rutland@arm.com>, Huacai Chen <chenhuacai@kernel.org>, 
+ WANG Xuerui <kernel@xen0n.name>, 
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, 
+ Helge Deller <deller@gmx.de>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+ Michael Ellerman <mpe@ellerman.id.au>, 
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
+ Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
+ Alexander Gordeev <agordeev@linux.ibm.com>, 
+ Christian Borntraeger <borntraeger@linux.ibm.com>, 
+ Sven Schnelle <svens@linux.ibm.com>, Richard Weinberger <richard@nod.at>, 
+ Anton Ivanov <anton.ivanov@cambridgegreys.com>, 
+ Johannes Berg <johannes@sipsolutions.net>, 
+ Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, 
+ Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, 
+ x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>, 
+ Arnd Bergmann <arnd@arndb.de>, Vlastimil Babka <vbabka@kernel.org>, 
+ Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, 
+ Michal Hocko <mhocko@suse.com>, Jason Gunthorpe <jgg@ziepe.ca>, 
+ John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, 
+ linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org, 
+ linux-m68k@lists.linux-m68k.org, linux-openrisc@vger.kernel.org, 
+ linux-sh@vger.kernel.org, linux-riscv@lists.infradead.org, 
+ linux-arm-kernel@lists.infradead.org, linux-snps-arc@lists.infradead.org, 
+ linux-arch@vger.kernel.org, sparclinux@vger.kernel.org, 
+ linux-alpha@vger.kernel.org, loongarch@lists.linux.dev, 
+ linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org, 
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, 
+ linux-um@lists.infradead.org, Hugh Dickins <hughd@google.com>, 
+ Qi Zheng <qi.zheng@linux.dev>, "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=openpgp-sha256; l=8463; i=ljs@kernel.org;
+ h=from:subject:message-id; bh=6eCzrD026JWfYI3OjzZFVyRbHq3AG1HN1FE1U0t3tyE=;
+ b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLIWMIRPP602XYgnvmNS5vJCMbXi/Y9CAn9+rTILzeg6J
+ 7XCLf9QRykLgxgXg6yYIsvzL+L7g0TC5nVe8HeDmcPKBDKEgYtTACbiacrwV1w7LODHtGezX1a+
+ O/iahycpqH6l3pK+3atiru6YLOVywZSRYb500p4Ln7ZVv/qQpiCk9ija67Fe34cr3Wdu5kYzTTl
+ VzgYA
+X-Developer-Key: i=ljs@kernel.org; a=openpgp;
+ fpr=E7F417BF5214569E89D04F46CF9DCD8A81E27F14
 
-Hi,
+The majority of architectures in the kernel defer page table freeing until
+an RCU grace period has elapsed, this series converts all remaining
+architectures to do so too and eliminates CONFIG_MMU_GATHER_RCU_TABLE_FREE
+altogether.
 
-Le 08/09/2026 à 11:27, Bartosz Golaszewski a écrit :
-> The GPIOD_FLAGS_BIT_NONEXCLUSIVE flag for gpiod_get() is deprecated. For
-> actually shared GPIOs, it should be replaced by using the functionality
-> provided by gpio-shared-proxy. The Freescale QUICC Engine GPIO driver
-> uses it as a workaround to access the GPIO descriptor already requested
-> by the caller of qe_pin_request() in order to access the private GPIO
-> chip data.
-> 
-> As the existing comment itself states, the user already requested this
-> GPIO and the only user in tree is the FHCI USB driver which does in fact
-> request it, we can safely modify the function to take the *exclusive*
-> GPIO descriptor as argument and stop using the deprecated flag.
+This is important because it enables safe lockless page table walking under
+RCU alone.
 
-This change seems sensible. I will take it via soc/fsl tree unless you 
-have other plans.
+Doing so allows for reduced lock contention, avoids lock ordering concerns
+and enables fast, efficient and correct page table walking as a result.
 
-Greg, can you ack the change to drivers/usb/host/fhci-hcd.c ?
+Additionally it removes a bunch of code and architecture-specific behaviour
+which is always a beneficial thing to do.
 
-Thanks
-Christophe
+There has been much recent work on this:
 
+* In 2023 Hugh Dickins RCU-deferred khugepaged page table retraction in
+  commit 13cf577e6b66 ("mm/pgtable: add pte_free_defer() for pgtable as
+  page").
 
-> 
-> Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-> ---
->   drivers/soc/fsl/qe/gpio.c   | 29 +++++++----------------------
->   drivers/usb/host/fhci-hcd.c |  2 +-
->   include/soc/fsl/qe/qe.h     |  6 ++++--
->   3 files changed, 12 insertions(+), 25 deletions(-)
-> 
-> diff --git a/drivers/soc/fsl/qe/gpio.c b/drivers/soc/fsl/qe/gpio.c
-> index 5cd59cfbf22fa68d39ad00b8f73ad389ac8860a3..5a3a1d5df669b1e0a084a0ebfd2aef91e15f126e 100644
-> --- a/drivers/soc/fsl/qe/gpio.c
-> +++ b/drivers/soc/fsl/qe/gpio.c
-> @@ -196,18 +196,17 @@ struct qe_pin {
->   /**
->    * qe_pin_request - Request a QE pin
->    * @dev:	device to get the pin from
-> - * @index:	index of the pin in the device tree
-> + * @gpiod:	GPIO descriptor associated with this pin
->    * Context:	non-atomic
->    *
->    * This function return qe_pin so that you could use it with the rest of
->    * the QE Pin Multiplexing API.
->    */
-> -struct qe_pin *qe_pin_request(struct device *dev, int index)
-> +struct qe_pin *qe_pin_request(struct device *dev, struct gpio_desc *gpiod)
->   {
-> +	struct gpio_device *gdev;
->   	struct qe_pin *qe_pin;
->   	struct gpio_chip *gc;
-> -	struct gpio_desc *gpiod;
-> -	int gpio_num;
->   	int err;
->   
->   	qe_pin = kzalloc_obj(*qe_pin);
-> @@ -216,34 +215,20 @@ struct qe_pin *qe_pin_request(struct device *dev, int index)
->   		return ERR_PTR(-ENOMEM);
->   	}
->   
-> -	/*
-> -	 * Request gpio as nonexclusive as it was likely reserved by the
-> -	 * caller, and we are not planning on controlling it, we only need
-> -	 * the descriptor to the to the gpio chip structure.
-> -	 */
-> -	gpiod = gpiod_get_index(dev, NULL, index,
-> -			        GPIOD_ASIS | GPIOD_FLAGS_BIT_NONEXCLUSIVE);
-> -	err = PTR_ERR_OR_ZERO(gpiod);
-> -	if (err)
-> -		goto err0;
-> -
-> -	gc = gpiod_to_chip(gpiod);
-> -	gpio_num = desc_to_gpio(gpiod);
-> -	/* We no longer need this descriptor */
-> -	gpiod_put(gpiod);
-> -
-> -	if (WARN_ON(!gc)) {
-> +	gdev = gpiod_to_gpio_device(gpiod);
-> +	if (WARN_ON(!gdev)) {
->   		err = -ENODEV;
->   		goto err0;
->   	}
->   
-> +	gc = gpio_device_get_chip(gdev);
->   	qe_pin->controller = gpiochip_get_data(gc);
->   	/*
->   	 * FIXME: this gets the local offset on the gpio_chip so that the driver
->   	 * can manipulate pin control settings through its custom API. The real
->   	 * solution is to create a real pin control driver for this.
->   	 */
-> -	qe_pin->num = gpio_num - gc->base;
-> +	qe_pin->num = desc_to_gpio(gpiod) - gc->base;
->   
->   	if (!fwnode_device_is_compatible(gc->fwnode, "fsl,mpc8323-qe-pario-bank")) {
->   		dev_dbg(dev, "%s: tried to get a non-qe pin\n", __func__);
-> diff --git a/drivers/usb/host/fhci-hcd.c b/drivers/usb/host/fhci-hcd.c
-> index 71e785f445a30e116a9cb421d417deaf24389174..d572f0c1dffaf3a40b2fe4326ba8ab021fefb986 100644
-> --- a/drivers/usb/host/fhci-hcd.c
-> +++ b/drivers/usb/host/fhci-hcd.c
-> @@ -643,7 +643,7 @@ static int of_fhci_probe(struct platform_device *ofdev)
->   	}
->   
->   	for (j = 0; j < NUM_PINS; j++) {
-> -		fhci->pins[j] = qe_pin_request(dev, j);
-> +		fhci->pins[j] = qe_pin_request(dev, fhci->gpiods[j]);
->   		if (IS_ERR(fhci->pins[j])) {
->   			ret = PTR_ERR(fhci->pins[j]);
->   			dev_err(dev, "can't get pin %d: %d\n", j, ret);
-> diff --git a/include/soc/fsl/qe/qe.h b/include/soc/fsl/qe/qe.h
-> index 8f967d15e479792219333264c2a463d26e5edae9..7f0e4165c3b0cafdf401be20862aa1bf28047102 100644
-> --- a/include/soc/fsl/qe/qe.h
-> +++ b/include/soc/fsl/qe/qe.h
-> @@ -24,6 +24,7 @@
->   #include <linux/types.h>
->   
->   struct device;
-> +struct gpio_desc;
->   
->   #define QE_NUM_OF_SNUM	256	/* There are 256 serial number in QE */
->   #define QE_NUM_OF_BRGS	16
-> @@ -193,12 +194,13 @@ static inline int par_io_data_set(u8 port, u8 pin, u8 val) { return -ENOSYS; }
->    */
->   struct qe_pin;
->   #ifdef CONFIG_QE_GPIO
-> -extern struct qe_pin *qe_pin_request(struct device *dev, int index);
-> +extern struct qe_pin *qe_pin_request(struct device *dev, struct gpio_desc *gpiod);
->   extern void qe_pin_free(struct qe_pin *qe_pin);
->   extern void qe_pin_set_gpio(struct qe_pin *qe_pin);
->   extern void qe_pin_set_dedicated(struct qe_pin *pin);
->   #else
-> -static inline struct qe_pin *qe_pin_request(struct device *dev, int index)
-> +static inline struct qe_pin *
-> +qe_pin_request(struct device *dev, struct gpio_desc *gpiod)
->   {
->   	return ERR_PTR(-ENOSYS);
->   }
-> 
-> ---
-> base-commit: af5f12805e5cefa4fe68d6127c7e1fb78cd5535c
-> change-id: 20260907-usb-fhci-drop-gpio-nonexclusive-584c5c808a30
-> 
-> Best regards,
+* Qi Zheng has done most of the work that made this possible starting with
+  the critical commit 718b13861d22 ("x86: mm: free page table pages by RCU
+  instead of semi RCU").
+
+* Qi then went on to convert a large number of architectures in commit
+  e3ecf7c7d082 ("mm: pgtable: convert some architectures to use
+  tlb_remove_ptdesc()"), commit 44b079583f7d ("alpha: mm: enable
+  MMU_GATHER_RCU_TABLE_FREE") and the series to which it belongs.
+
+* Qi then introduced the important CONFIG_HAVE_ARCH_TLB_REMOVE_TABLE
+  option in commit 086498aed3f6 ("mm: convert __HAVE_ARCH_TLB_REMOVE_TABLE
+  to CONFIG_HAVE_ARCH_TLB_REMOVE_TABLE config").
+
+* Finally, and critically, Lance Yang then converted the batch allocation
+  fallback case to be RCU-safe in commit 1fb3d8c20bfa ("mm/mmu_gather:
+  replace IPI with synchronize_rcu() when batch allocation fails").
+
+The work I do here is only possible due to the work Hugh, Qi, Lance and
+others have done previously.
+
+An initial task this series addresses is to zap deposited page tables after
+an RCU grace period. Not doing so is currently safe, but for page table
+walkers relying on RCU alone, it would not be.
+
+The changes are largely mechanical - the majority of arches already have
+the machinery required to support CONFIG_MMU_GATHER_RCU_TABLE_FREE and
+simply needed configuration changes or small implementation changes to
+switch over.
+
+However some arches required extra attention - sh-X2, m68k-motorola and
+sparc32.
+
+sh-X2 allocates PMDs from the slab allocator and PTEs as normal. Therefore
+CONFIG_HAVE_ARCH_TLB_REMOVE_TABLE is set to customise page table freeing
+and the LSB is used to encode which page table level is used, with
+__tlb_remove_table() doing the right thing depending on this.
+
+This pattern is repeated for m68k-motorola and sparc32 to account for
+different page table levels. In each case, the page tables are aligned such
+that sufficient bits are available in each case for encoding this
+information.
+
+m68k-motorola required the biggest change - since RCU page table freeing
+uses call_rcu(), this means page table freeing can arise from softirq
+context.
+
+This was fixed with an IRQ-safe spin lock used in both get_pointer_table()
+and free_pointer_table().
+
+As part of this change, the logic for allocation of a new pointer table was
+separated out into add_pointer_table() to make the locking more obviously
+correct.
+
+Finally, sparc32 was similar to m68k-motorola in that locking was required,
+however this was already implemented via a spinlock, and only had to be
+updated to be IRQ-safe.
+
+Additionally, the nocache pool's bit_map lock was updated to be IRQ-safe
+for softirq frees.
+
+Separately, the PTE path can't take mm->page_table_lock from softirq (no mm
+there), which is fine because the page reference count transitions are
+atomic and fully ordered.
+
+The series finally removes CONFIG_MMU_GATHER_RCU_TABLE_FREE and all related
+configurations and code that supported !CONFIG_MMU_GATHER_RCU_TABLE_FREE.
+
+As a result, page table walks can now be performed safely under RCU without
+any risk of page tables being freed underneath a walker.
+
+However, this is the only guarantee that this work provides - page table
+walkers must still ensure that page table entries are as expected
+throughout.
+
+All changes have been build tested. As most of the conversions are simply
+utilising existing mechanics that are known to work, this suffices for most
+cases.
+
+However those arches where significant changes have been made -
+m68k-motorola, sparc32 and sh-X2 - have been tested further.
+
+For each of these a boot test and stress test has been performed - fork 400
+children, each mmap()'ing 2 MiB and touching every page then partially
+munmap()'ing then exiting to trigger as much page table freeing as
+possible.
+
+All were found to be working correctly.
+
+Note that sparc32 LEON SMP is not emulated, Andreas - do you have a means
+of testing this?
+
+v2:
+* Updated commit message to reflect CONFIG_MMU dependency for xtensa as per
+  Suren.
+* Updated 12/12 to correctly describe the new contract re: readers/writes
+  as per Kiryl. Also fixed up typos there as per Kiryl, Suren and slightly
+  reworded for clarity, and updated commit message to reflect.
+* Updated 11/12 to reflect the fact the change is for userland only as per
+  Kiryl, also added a note about write locks similarly to 12/12.
+* Fixed bug as reported by sashiko for the sparc32 change (10/12) - the
+  refcounts are insufficient on their own, so replace the page_table_lock
+  altogether with an IRQ-safe spinlock.
+
+v1:
+https://patch.msgid.link/20260901-rcu-pagetable-freeing-v1-0-5456a81c8212@kernel.org
+
+Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+---
+Lorenzo Stoakes (ARM) (12):
+      mm/huge_memory: zap deposited page tables after an RCU grace period
+      mm: enable MMU_GATHER_RCU_TABLE_FREE for most 2-level architectures
+      mm: enable MMU_GATHER_RCU_TABLE_FREE for MMU riscv
+      mm: enable MMU_GATHER_RCU_TABLE_FREE for MMU arm
+      mm: enable MMU_GATHER_RCU_TABLE_FREE for arc, microblaze, xtensa
+      mm: enable MMU_GATHER_RCU_TABLE_FREE for sparc64
+      mm: enable MMU_GATHER_RCU_TABLE_FREE for m68k-coldfire
+      mm: enable MMU_GATHER_RCU_TABLE_FREE for sh-X2
+      mm: enable MMU_GATHER_RCU_TABLE_FREE for m68k-motorola
+      mm: enable MMU_GATHER_RCU_TABLE_FREE for sparc32
+      mm: make userland page table freeing RCU-safe
+      mm: change the contract for free_pgtables(), update docs
+
+ Documentation/mm/process_addrs.rst       |   6 ++
+ arch/Kconfig                             |   8 --
+ arch/alpha/Kconfig                       |   1 -
+ arch/arc/include/asm/pgalloc.h           |   6 +-
+ arch/arm/Kconfig                         |   1 -
+ arch/arm64/Kconfig                       |   1 -
+ arch/loongarch/Kconfig                   |   1 -
+ arch/m68k/Kconfig                        |   1 +
+ arch/m68k/include/asm/mcf_pgalloc.h      |   5 +-
+ arch/m68k/include/asm/motorola_pgalloc.h |   9 ++-
+ arch/m68k/mm/motorola.c                  | 121 ++++++++++++++++++++-----------
+ arch/microblaze/include/asm/pgalloc.h    |   2 +-
+ arch/mips/Kconfig                        |   1 -
+ arch/parisc/Kconfig                      |   1 -
+ arch/powerpc/Kconfig                     |   1 -
+ arch/riscv/Kconfig                       |   1 -
+ arch/s390/Kconfig                        |   1 -
+ arch/sh/Kconfig                          |   1 +
+ arch/sh/include/asm/pgalloc.h            |   6 +-
+ arch/sh/mm/pgtable.c                     |  20 +++++
+ arch/sparc/Kconfig                       |   4 +-
+ arch/sparc/include/asm/pgalloc_32.h      |   7 +-
+ arch/sparc/include/asm/pgalloc_64.h      |   8 --
+ arch/sparc/include/asm/tlb_64.h          |   2 -
+ arch/sparc/lib/bitext.c                  |  14 ++--
+ arch/sparc/mm/srmmu.c                    |  32 ++++++--
+ arch/um/Kconfig                          |   1 -
+ arch/x86/Kconfig                         |   1 -
+ arch/xtensa/include/asm/tlb.h            |   2 +-
+ include/asm-generic/tlb.h                |  66 +++--------------
+ mm/Kconfig                               |   2 +-
+ mm/gup.c                                 |   5 +-
+ mm/huge_memory.c                         |   2 +-
+ mm/mmu_gather.c                          |  30 ++------
+ mm/pgtable-generic.c                     |  15 +++-
+ 35 files changed, 194 insertions(+), 191 deletions(-)
+---
+base-commit: 88297631d4d42f6004cb39c0ba3da7d2d10a616f
+change-id: 20260831-rcu-pagetable-freeing-84b6be830e20
+
+Best regards,
+-- 
+Lorenzo Stoakes (ARM) <ljs@kernel.org>
 
 
