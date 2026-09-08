@@ -1,35 +1,35 @@
-Return-Path: <linuxppc-dev+bounces-26742-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26743-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 66C24C79FA0
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 06:35:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A17CCC79FA0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 06:36:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hfDg82gnYz3bsK;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hfDg85rK0z3bsX;
 	Tue, 08 Sep 2026 16:34:12 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0a:51c0:0:12e:550::1"
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788849252;
-	cv=none; b=g2BDVoVgMa5m65ipHIGB9cNjmoXkyumI6B+MPVkqwOpRN/SpbhswET0/Ucb26dboaKCc659vtLbuPYjEX//VjAylFD9sKs1JnibLPJ8mNq7mhhwFVfNls0vQoh99qVUtXweA9K1CsDakSiD77nym/Ljx1SbVJTrHJymS+lHy7VqsUaqeGzAmME08laEe5Zfqz8RWBGTW2/+BaiecCelh8AbnGkaXdj2jH5shwKHszH96Hlm6lVrz+7cYb0D1K76YG1thHdi0jMgj+GkdULOMn3fDjB78YhPYTaavahD1EaFOM4cy2cFfQ7iHLN4ePMgaP24etVujzqaprjHB9yVVdw==
+	cv=none; b=gURD+27MvnupzijuEmMOgilyVp2YH7N1RbVQ9jS2Ps9Dckcks+uiZF5goiDfaokrLbEPeWUOqitgVle3+uRSNn5VDShvmIkTrLyF0IepFIYK/WLIgQbO6nePt+wEEL2QiVKsb4c11a3adKTRdeRXOrm1p7UU3fZyIplCG7eoglQv0K2uy9mXUj/5hfQjH8xUWnf1VkII4UTSeAYrtBpf7ZI1EfS//ykOjDLyZMwErqnfjZPGxmsMXxYBaL/ph7TiFI3vnI2yCq8AQfe/VseZ7viUOXFSQbkGPPqIPc8fpBjjtzxoLq2llvCxsKTLcGISEm/AUCyeFkPoZoEXaMzbOA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1788849252; c=relaxed/relaxed;
-	bh=R8S5zUcti2qRnvnqiwdZ99APOoLvCYmczAvcwW6T+78=;
+	bh=B5v9YeHlqv3ovO/ql+3n8/DnO9S76Q/KXTK4Iu9nIj8=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=YNBcGpPm7mcCEGK7ZAeFtl4n0NRSj/NCsTGXFKrcjBZWUrYf0kZuNdU63+U4XLM0rl/43CTuOw4TdWtRhsPwEMm2mia96l9IjFaMko46wG7j+j6b1iXoU/3UH52yArFmMvaMNEYqMx1wJKbw7ECxdDwMNKKsifYp9AjPuRU3YMKS/nNevFFkb8F4QhTo/uUJWW/hyWUP8PJ1J8Watc5nLTXgHTQjYeVCUxvHtCPTnnSUtlIJcssQAxeCaC2lfCoIi6hG+cdELkWQ+TX16Ex0pUKfrpwERpIB+9pplC227lXfTwpqbPzgTkphGIQNLIeJZ1VF6cxoU+SYDrGLG9YEfw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=hBTTSmMh; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=pnROhmeQ; dkim-atps=neutral; spf=pass (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+	 In-Reply-To:To:Cc; b=VbbY4Pgga6Uj+0TfA6mgnCHy7EtzfHbrXnDwPbzJ1AwlVkGlWgQMZH5SKf+uWIW2HGDisnfnni5jKnBEVRp/5cNBE7dqEDliOCey/G5kkD/YC2tZx2hFBldCTyJ4QA+zV/RsXtkmTPhATjk8I7ngXRVX647x0Zkey78VNeRdIr7dzvu00UJ/o9AOxL8jh/IryeOJRs3W5/Bwqx68yACDIEtvgBLZcKKOt/Gj4bfKnZ8Fbnwyo5ZvvxA3ce0ljruxlQ2hyFvqphm9R203U9zr1r2z5cuDABvS8EZ0nPHmCYGDTkYjhO/s2Etiu3Xou3PDsUsp6mXo5RhKilE6tJGvUA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=Duhd+tzh; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=TsyWF+JN; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=hBTTSmMh;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=pnROhmeQ;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=Duhd+tzh;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=TsyWF+JN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfDg249crz30WD
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Sep 2026 16:34:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfDg32D6pz30dX
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Sep 2026 16:34:07 +1000 (AEST)
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
 	s=2020; t=1788849237;
@@ -37,23 +37,23 @@ DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=R8S5zUcti2qRnvnqiwdZ99APOoLvCYmczAvcwW6T+78=;
-	b=hBTTSmMhDdM2I6kdqJpAUOIrF69Iua1sqGHZrZEeJV+RrcDKO3Lh6TsXgdenOxFOnA4PoA
-	412uPFiR4UGcIb6zo/ixzKsRV5LZO72namgWFB+cnr4EH1Utd/VSj8gvUK8F63ekFmUhqH
-	e4ILH1GjbVqWGvLNLwK9XP+4Ygy6HN0YUB9kGB3oz57J5JzxQBb26TeNDe+cNb6xv87TOy
-	Z4jMkBFqsKI4y45ukbIyST/V0/zEwljrr2NXcntK+uBr0cM363V1w55zye9RhNq6wnigOn
-	7fYPjipzEFO17Oeq+ED1P9qQWrEtAGBcvP+xMvJvi49Am978rgJgX00l+QbCZg==
+	bh=B5v9YeHlqv3ovO/ql+3n8/DnO9S76Q/KXTK4Iu9nIj8=;
+	b=Duhd+tzhOIqAKD5Jsk7S5bIW+1/U+0lAyREaDyVMtUfkM+/2g6McMuZ8BVCtyusCW6KJhw
+	wjBNCvGCpNGgmhFNn9x5FtX2pPVsVPQncpaQfdGxuDFM2F8njXe/d+MpW+sHlGTHGFoNTq
+	Irhfb/b0d78bbsC8nUcr59RO2R6WK1QG6Wmmqjub7uMBsV8HzhabnT8Q3BXaImhnViQuCI
+	99Y24z+RnYH8P+/0VTaa0of5QDISRCOgkSmlsMF9mLF5D2je6Fs4Q2NdAPmpcUGUDioSm3
+	I7ouCpMLG1e5cQUG5eQhiKpjN9lpx2nzj/DsTf8/2g6tDQdVpp9HJVE2/Kspiw==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
 	s=2020e; t=1788849237;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=R8S5zUcti2qRnvnqiwdZ99APOoLvCYmczAvcwW6T+78=;
-	b=pnROhmeQiS3cU0albwBwH9dlRL1TxZa9HToYE3xYcsDLiQflLOIHiW/vhhcx0oenTo2D8f
-	TUqAyVRELIZVMCDg==
-Date: Tue, 08 Sep 2026 08:33:52 +0200
-Subject: [PATCH v5 18/24] riscv: vdso: Enable the vdsocheck tool
+	bh=B5v9YeHlqv3ovO/ql+3n8/DnO9S76Q/KXTK4Iu9nIj8=;
+	b=TsyWF+JNT75r27JmDD427VBvLmTOCV3ff2Y7hv2xF0uvSSVXKhCkoTtj5xhp4+hfJtB9PC
+	YrBA0mfCXrb6F8Cw==
+Date: Tue, 08 Sep 2026 08:33:51 +0200
+Subject: [PATCH v5 17/24] powerpc/vdso: Enable the vdsocheck tool
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -69,7 +69,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20260908-vdso-absolute-reloc-v5-18-3a93791af1cf@linutronix.de>
+Message-Id: <20260908-vdso-absolute-reloc-v5-17-3a93791af1cf@linutronix.de>
 References: <20260908-vdso-absolute-reloc-v5-0-3a93791af1cf@linutronix.de>
 In-Reply-To: <20260908-vdso-absolute-reloc-v5-0-3a93791af1cf@linutronix.de>
 To: Paul Walmsley <paul.walmsley@sifive.com>, 
@@ -111,11 +111,11 @@ Cc: linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
  Arnaldo Carvalho de Melo <acme@redhat.com>, 
  Alexandre Ghiti <alexghiti@rivosinc.com>, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1788849226; l=3596;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1788849226; l=3226;
  i=thomas.weissschuh@linutronix.de; s=20240209; h=from:subject:message-id;
- bh=rB4eegSBfTJvyEpPR1AwSf8HHKeuiOU4EBXL8/NjovM=;
- b=ckjkIaN/2GD1n4ZD/6VNQXvUS4c8EPXkV5wm26xnc8Ipzseks5mvPh9EdV3eGaQ2tZQZNlGho
- JgbUjoNJu6vBrX5nqStpT8ES8eXNkaNjgeSRWwJDzlvAf1sCbw19+8k
+ bh=PdmcaVe7pCu6upu7UTobIjeT+xi6m7cmShZzdDyDUqA=;
+ b=KtzFUmFB6ajLIxA6GIlsiL6NZpPyhZkhtmdUQSlrxF2Z0EifBwB7dmyJS0AwkyNYLtHN5Uenz
+ k87bxRvOvh3AuR3/IHMkszUyZg00Zcqz3Ne04gmZUna19VeKFdykejP
 X-Developer-Key: i=thomas.weissschuh@linutronix.de; a=ed25519;
  pk=pfvxvpFUDJV2h2nY0FidLUml22uGLSjByFbM6aqQQws=
 
@@ -127,75 +127,70 @@ Wire it up for the architecture.
 
 Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
 ---
- arch/riscv/Kconfig              |  1 +
- arch/riscv/kernel/vdso/Makefile |  4 ++--
- lib/vdso/check/vdsocheck.rs     | 26 ++++++++++++++++++++++++++
- 3 files changed, 29 insertions(+), 2 deletions(-)
+ arch/powerpc/Kconfig              |  1 +
+ arch/powerpc/kernel/vdso/Makefile |  4 ++--
+ lib/vdso/check/vdsocheck.rs       | 27 +++++++++++++++++++++++++++
+ 3 files changed, 30 insertions(+), 2 deletions(-)
 
-diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
-index f8e26c4bed2b..f580d2afecf7 100644
---- a/arch/riscv/Kconfig
-+++ b/arch/riscv/Kconfig
-@@ -229,6 +229,7 @@ config RISCV
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 2580e27e4328..f19e225cfc5c 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -330,6 +330,7 @@ config PPC
+ 	select SYSCTL_EXCEPTION_TRACE
  	select THREAD_INFO_IN_TASK
  	select TRACE_IRQFLAGS_SUPPORT
- 	select UACCESS_MEMCPY if !MMU
-+	select VDSO_CHECK if MMU
- 	select VDSO_DATASTORE if MMU
- 	select VDSO_GETRANDOM if MMU && 64BIT
- 	select USER_STACKTRACE_SUPPORT
-diff --git a/arch/riscv/kernel/vdso/Makefile b/arch/riscv/kernel/vdso/Makefile
-index 8dbf2532a573..7e707fdff26c 100644
---- a/arch/riscv/kernel/vdso/Makefile
-+++ b/arch/riscv/kernel/vdso/Makefile
-@@ -74,7 +74,7 @@ endif
- $(obj)/$(vdso_o): $(obj)/$(vdso_so)
++	select VDSO_CHECK
+ 	select VDSO_DATASTORE
+ 	select VDSO_GETRANDOM
+ 	#
+diff --git a/arch/powerpc/kernel/vdso/Makefile b/arch/powerpc/kernel/vdso/Makefile
+index 368759f81708..ca20b91b4373 100644
+--- a/arch/powerpc/kernel/vdso/Makefile
++++ b/arch/powerpc/kernel/vdso/Makefile
+@@ -81,9 +81,9 @@ targets += vdso64.lds
+ CPPFLAGS_vdso64.lds += -P -C
  
  # link rule for the .so file, .lds has to be first
--$(obj)/$(vdso_so_dbg): $(obj)/$(vdso_lds) $(obj-vdso) FORCE
-+$(obj)/$(vdso_so_dbg): $(obj)/$(vdso_lds) $(obj-vdso) $(vdsocheck) FORCE
- 	$(call if_changed,vdsold_and_check)
- LDFLAGS_$(vdso_so_dbg) = -shared -soname=linux-vdso.so.1 \
- 	--build-id=sha1 --eh-frame-hdr
-@@ -96,7 +96,7 @@ include/generated/$(vdso_offsets): $(obj)/$(vdso_so_dbg) FORCE
- # The DSO images are built using a special linker script
- # Make sure only to export the intended __vdso_xxx symbol offsets.
- quiet_cmd_vdsold_and_check = VDSOLD  $@
--      cmd_vdsold_and_check = $(LD) $(CFI_FULL) $(ld_flags) -T $(filter-out FORCE,$^) -o $@.tmp && \
-+      cmd_vdsold_and_check = $(LD) $(CFI_FULL) $(ld_flags) -T $(filter-out FORCE $(vdsocheck),$^) -o $@.tmp && \
-                    $(OBJCOPY) $(patsubst %, -G __vdso_%, $(vdso-syms)) $@.tmp $@ && \
-                    rm $@.tmp && \
-                    $(cmd_vdso_check)
+-$(obj)/vdso32.so.dbg: $(obj)/vdso32.lds $(obj-vdso32) $(obj)/vgettimeofday-32.o $(obj)/vgetrandom-32.o $(obj)/crtsavres-32.o FORCE
++$(obj)/vdso32.so.dbg: $(obj)/vdso32.lds $(obj-vdso32) $(obj)/vgettimeofday-32.o $(obj)/vgetrandom-32.o $(obj)/crtsavres-32.o $(vdsocheck) FORCE
+ 	$(call if_changed,vdso32ld_and_check)
+-$(obj)/vdso64.so.dbg: $(obj)/vdso64.lds $(obj-vdso64) $(obj)/vgettimeofday-64.o $(obj)/vgetrandom-64.o FORCE
++$(obj)/vdso64.so.dbg: $(obj)/vdso64.lds $(obj-vdso64) $(obj)/vgettimeofday-64.o $(obj)/vgetrandom-64.o $(vdsocheck) FORCE
+ 	$(call if_changed,vdso64ld_and_check)
+ 
+ # assembly rules for the .S files
 diff --git a/lib/vdso/check/vdsocheck.rs b/lib/vdso/check/vdsocheck.rs
-index 429bdcd65818..67562d21f877 100644
+index e45a1fbc6829..429bdcd65818 100644
 --- a/lib/vdso/check/vdsocheck.rs
 +++ b/lib/vdso/check/vdsocheck.rs
-@@ -96,6 +96,32 @@ fn allowed_relocations_for_machine(machine: u16) -> Option<AllowedRelocations<'s
+@@ -69,6 +69,33 @@ fn allowed_relocations_for_machine(machine: u16) -> Option<AllowedRelocations<'s
              ..Default::default()
          }
          .into(),
-+        bindings::EM_RISCV => AllowedRelocations {
++        bindings::EM_PPC => AllowedRelocations {
 +            in_object_file: &[
-+                bindings::R_RISCV_BRANCH,
-+                bindings::R_RISCV_JAL,
-+                bindings::R_RISCV_CALL,
-+                bindings::R_RISCV_CALL_PLT,
-+                bindings::R_RISCV_PCREL_HI20,
-+                bindings::R_RISCV_PCREL_LO12_I,
-+                bindings::R_RISCV_PCREL_LO12_S,
-+                bindings::R_RISCV_ADD8,
-+                bindings::R_RISCV_ADD16,
-+                bindings::R_RISCV_ADD32,
-+                bindings::R_RISCV_ADD64,
-+                bindings::R_RISCV_SUB8,
-+                bindings::R_RISCV_SUB16,
-+                bindings::R_RISCV_SUB32,
-+                bindings::R_RISCV_SUB64,
-+                bindings::R_RISCV_ALIGN,
-+                bindings::R_RISCV_RVC_BRANCH,
-+                bindings::R_RISCV_RVC_JUMP,
-+                bindings::R_RISCV_RELAX,
-+                bindings::R_RISCV_32_PCREL,
++                bindings::R_PPC_REL24,
++                bindings::R_PPC_REL14,
++                bindings::R_PPC_REL32,
++                bindings::R_PPC_REL16,
++                bindings::R_PPC_REL16_LO,
++                bindings::R_PPC_REL16_HI,
++                bindings::R_PPC_REL16_HA,
++            ],
++            ..Default::default()
++        }
++        .into(),
++        bindings::EM_PPC64 => AllowedRelocations {
++            in_object_file: &[
++                bindings::R_PPC64_REL24,
++                bindings::R_PPC64_REL14,
++                bindings::R_PPC64_REL32,
++                bindings::R_PPC64_REL64,
++                bindings::R_PPC64_REL16,
++                bindings::R_PPC64_REL16_LO,
++                bindings::R_PPC64_REL16_HI,
++                bindings::R_PPC64_REL16_HA,
 +            ],
 +            ..Default::default()
 +        }
