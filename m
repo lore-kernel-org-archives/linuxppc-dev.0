@@ -1,98 +1,99 @@
-Return-Path: <linuxppc-dev+bounces-26785-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26786-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B1757C79F82
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 11:22:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 524E3C79FAE
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 11:29:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hfM4D3hwBz2y2b;
-	Tue, 08 Sep 2026 21:22:52 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62c"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788866572;
-	cv=none; b=nxL0KhTnfHqUzfPhTh8rwFaBYM2CoX/eYLA/M+S3YBuKJrYVm2aiiumYdj24WHMCRuenot2EQ9u6FN2qxZeILdMvJVKstY0lbd+/P69SBE73tMiw266QY3NOaaOPpKas7LZKlq9HUE4XvXgi0g+BemFDwldfTE89qpUkbjsgh6XiIsfltAO4TqX/FFVWsVD/L2jZSSvK2K1/52EQSIKHG7EzvYySvtm+K2MA4J7DXH5GMLI/DyiyhJOLxh8GiitCmXfMv9iM7q1rsFpS4d5IMh+dUFLnx2sfpP+MY/aONvwgY0jXsM6SkP6dD3S8uURG86rVUzRKkoqzC+ePc0h+vQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hfMCd24lKz2y2b;
+	Tue, 08 Sep 2026 21:29:17 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788866957;
+	cv=none; b=Q3ifBUB0ty+RTjSe49NEkieph4jOfPjdREEQBjd77eDZXmFFf8naankKsUlRe3M9INedJSS7mybBxLmDoC1q2L+y8kjVfAhyzCqOUHffSRhgiOwwii4lybOEIbgLwNRsfoINtPXKIgNjgPocWZXSQHWBZQxMTkDGuzicmDN87DP+I5TPU/Fh52ApdamLU/GPsA7UPbCOzEyc3tr78VnXhtQxgzSFSWf2SrPf7ZMw0nBb0SKzJQbve4RiA3Vb1x/lNpGY2NkXv8wEKRuMo4/qD54KwQV3dVJpjBrEknqxg0a3V3Eqfr7xRKMxY4ltItBq0zFh0dOyAKvSu2NxghIjiQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788866572; c=relaxed/relaxed;
-	bh=/f3x8Z3givjt4IOINS3hmWB76mNz9OB3ZZIt4XHEaho=;
+	t=1788866957; c=relaxed/relaxed;
+	bh=wrZchMHbuIO6XXck0lzWb4MFVBIJqfPNOjZp2CkiLAo=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=K6HgaFKdwAweGybmk+DulRCyNTX+SzsDs5ugheJq/IBkrEfI1Un2id/QRj1zZ56p9D0z4sHcY+z3X4mHYt7Sl3xuaaEwnuU8cGjth3k8KWRDgSzjsXebr3ZH+KU1nsCGhx+cR9K3/eup2dvn+3GN+grH+MfzevWUgg6ePFpc/HRj1+kdVMrXMtIbvRDJaNwpyZTjq0sLE44C8BPbWQr1pMJKSq04sRLzxgHSLz/ibN/DBfq/MA/PzL4lPLFrc7ZdhwU/cpjut4mRXyteVXwpZ1T5vH5C8sO6ebyhI8E34SO/PEoQ2hqYRsQCDCguYdbd43de39GjRegaxtf6estxbA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=rNjnGdRG; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62c; helo=mail-pl1-x62c.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=QTYvMVlV6mLpWFUwAFJp0jzvYWN8eXdhHbUQbTCEzeLNFTOjqmzvxOsgo4cN5pdqC/Sg5WWvr+vYzq25ZRJuAR9XmfZkxmI/nzjKFHYwoRGfQx5q3KKmwPIuQdrcJXXHS+9yDSOVA3ju4+vdJnImQG4ifzF6ndrZHlYo3GXfB2OLS1icAGKIFj5AoOhPHxHx5BVXQKt0ApgAfmIqU3oozl6ilEr+OHS0yI61lgFR13icFOftqpS4s3alNV7bx/oQpuUCY/8cOQuegEkbj9kHVWPIfPoW4DtgEKRxZCs1GwInFCf/KQdV/sfpKKParOI2UHRvnN6BLGURFZgcZSwBjg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=UaGEuylv; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=rNjnGdRG;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=UaGEuylv;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62c; helo=mail-pl1-x62c.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x62c.google.com (mail-pl1-x62c.google.com [IPv6:2607:f8b0:4864:20::62c])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfM4C0g1Mz2xYh
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Sep 2026 21:22:50 +1000 (AEST)
-Received: by mail-pl1-x62c.google.com with SMTP id d9443c01a7336-2db18e5cb56so41512195ad.0
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Sep 2026 04:22:49 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1788866567; x=1789471367; darn=lists.ozlabs.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :content-type:mime-version:references:message-id:subject:cc:to:from
-         :date:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=/f3x8Z3givjt4IOINS3hmWB76mNz9OB3ZZIt4XHEaho=;
-        b=rNjnGdRGkYfgP99KxVrg7VDn94mZDGqqckcfVnyXj+p3pdZGQpfBfHVZtJKOiXZcWz
-         dymydiup7KI/jW/7BjQ+FODMOsjCM4c75/VOEUzvasylzNWILY0SRTQg3dtRoZFROFUv
-         YEYRkgwZmO5T4pFHixNx+7gsNa4aQl7Lhcqy3Kt1UUQpQFNstrhASxZOeP8x0dx0JpkE
-         G5vJEQnLcVxZ8qHTJt9z0ZIXXEXbAoqnWHcQXomhQBE6k9CzsNTTW08r5jckVkKdyTKK
-         37RsRivfaJTsIW/n+lIsptblmHQd5dvMqY+C7AM+K28M6rVlFa5oTAMFDP3jYNtLLGxe
-         SyxA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788866567; x=1789471367;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :content-type:mime-version:references:message-id:subject:cc:to:from
-         :date:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=/f3x8Z3givjt4IOINS3hmWB76mNz9OB3ZZIt4XHEaho=;
-        b=IulnONdql7J16khxOZJvbRwNwY+hXx1rShLYY3whLMzAcD2yk7DmVEHOAfH2/1isro
-         lqmdG8kADc2I18YtjwQPxiJao3ZdlWXNTxDBrU+Y3LRaO+wqLpGlcb4GJSbTrE0ctITL
-         XtsWmt+fEbFvXT+E5s90C2noAs37jV1xe3qN0lK9uDL/eBCmS9M2lfzNsOCCB2gl3Z8t
-         DkqIe4su3dcoqS4dPedghiAGEHQJxo2voonzQFR/ta6uMnQEOnT3LEDcDZsd/vVzfsxS
-         4/Z1bnHM6Hyuf1HK1p+dpBFntjGWjVZ6uAUHWOoCXfQHVjOOUu5QKqAtgtawIWq9tEon
-         +HPA==
-X-Forwarded-Encrypted: i=1; AKwUvBwW89NjTWzvcBI8ETxP8CQ6dKeggjMx/Ig+A17IxeM6I79LggOPtajifJAx956VUx8eq8ks7+EVHyppbUY=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++mAWb6lNO4urX00UjLObYnQgPGSTpHi3AyA6rFcxYl5zAtD1IK4
-	qvIte7wUyR+BFTqWELLfmZ1rqUAlkgk7CT7YbZdUgUfMbPjYGJ9Yhecr
-X-Gm-Gg: AYBFou1GESX0dddnaTomJE2IKmVI/kqsaNYPiGulRspEnoCcNDQwcvHH/isQdNzB8ZN
-	dEn3z+baPO7djmdZqXBN9/6lrvvBbQZLq8VM4jnfWBYVU8d2WtphhPmba2gsGbYoxy3R43JFQZs
-	SnY9GGzuBcvL9zG1beOPPV571EH/xgK+WO3Z42rdyfJbEMo/ZHsahdNZAwOZcrXX3sLFY2OmUDq
-	QkwsLQ6E8kLI0J87RmxNiWG9LPrEd/YI+2dYSIEEyrgIyd44bA1t9HZQmn5TObg63QkIJJ7R5Yy
-	Ary/agOfsJnbMa62ecyZH1ofCp5QmyglHSGlveBLyO197eqOJo637+crocj953zq5csQDk57TvK
-	Rw2mNSGqBAQVWFrWMyV90yfcwqEkU75LzWtIITcc/6xbpYwSc0Y3jsubj6VAJTpLZsTqB+yL6q4
-	3r8p/G7abo9NHuYijt+xC8cnyM22cZm1TKc0SGLFp2SAZeGD6QKxv7p3GAnjVVqdAoJPX2+1cZz
-	qopTCSNXBLNM+lM3XzNkRU2cJWxKniH8fCu
-X-Received: by 2002:a17:90b:3b46:b0:398:dcfe:967a with SMTP id 98e67ed59e1d1-39b2620a2ecmr40925181a91.17.1788866566728;
-        Tue, 08 Sep 2026 04:22:46 -0700 (PDT)
-Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([122.161.53.214])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3339a534df1sm41000804eec.7.2026.09.08.04.22.34
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 08 Sep 2026 04:22:46 -0700 (PDT)
-Date: Tue, 8 Sep 2026 16:52:32 +0530
-From: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
-To: Jirka Hladky <jhladky@redhat.com>
-Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
-	chleroy@kernel.org, ryabinin.a.a@gmail.com, glider@google.com, andreyknvl@gmail.com, 
-	dvyukov@google.com, vincenzo.frascino@arm.com, oleg@redhat.com, kees@kernel.org, 
-	luto@amacapital.net, wad@chromium.org, mchauras@linux.ibm.com, sshegde@linux.ibm.com, 
-	thuth@redhat.com, ruanjinjie@huawei.com, akpm@linux-foundation.org, 
-	macro@orcam.me.uk, ldv@strace.io, charlie@rivosinc.com, deller@gmx.de, 
-	kevin.brodsky@arm.com, ritesh.list@gmail.com, yeoreum.yun@arm.com, 
-	agordeev@linux.ibm.com, segher@kernel.crashing.org, mark.rutland@arm.com, 
-	ryan.roberts@arm.com, pmladek@suse.com, feng.tang@linux.alibaba.com, 
-	peterz@infradead.org, kan.liang@linux.intel.com, linuxppc-dev@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org, kasan-dev@googlegroups.com
-Subject: Re: [PATCH v5 0/8] Generic IRQ entry/exit support for powerpc
-Message-ID: <ap_vl6lyicTVWYrk@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-References: <20260427122742.210074-1-mkchauras@gmail.com>
- <CAE4VaGACd2es4NPQyhbR9pMEoGiTVBSE7Lw7x9VOb1Qbpvc6nw@mail.gmail.com>
- <amsapeQ2Kp6rwPpF@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
- <CAE4VaGB_EhbWq8_X6FLtOx2MqoP7JEkOKkKSjKB7N--tt-sCeA@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfMCc361Hz2xYh
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Sep 2026 21:29:16 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 0DDBA41328;
+	Tue,  8 Sep 2026 11:29:14 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DD8561F00A3A;
+	Tue,  8 Sep 2026 11:28:53 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1788866953;
+	bh=wrZchMHbuIO6XXck0lzWb4MFVBIJqfPNOjZp2CkiLAo=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=UaGEuylvnKTadsfjaS7bvwU33xN2v3VvG9wjjwlcHZzqg4jRyqMpEEdO03+MvqeIM
+	 0cduj0er10VqGiGsJx7yjqifKpSllSZ3vK2y8omgzwmD0GHCZufWGZlTXVUWUiJ1V9
+	 ryqufjLkVU0NIOGHntM/W5uaFdDur34HOl0mDF/iX8gW88SDJFV9ZGxssqTmrANwpQ
+	 ynMdPQCgyGQbU6JnCqU5u6mlf0Svv7YVwvZzUogSUfvbxLoYO7+FDhTi6mBmpO9DWp
+	 jokGL7RYOK/KgBIS1bsW+dwWJav2y/DtDFT7YQL4WN6vyefxcqOuYZ/U9v7ZU8r1QK
+	 2OBX8O/r781rA==
+Date: Tue, 8 Sep 2026 12:28:51 +0100
+From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
+To: Suren Baghdasaryan <surenb@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, 
+	David Hildenbrand <david@kernel.org>, Zi Yan <ziy@nvidia.com>, 
+	Baolin Wang <baolin.wang@linux.alibaba.com>, "Liam R. Howlett" <liam@infradead.org>, 
+	Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, 
+	Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, 
+	Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, Guo Ren <guoren@kernel.org>, 
+	Brian Cain <bcain@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, 
+	Dinh Nguyen <dinguyen@kernel.org>, Simon Schuster <schuster.simon@siemens-energy.com>, 
+	Jonas Bonn <jonas@southpole.se>, Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, 
+	Stafford Horne <shorne@gmail.com>, Yoshinori Sato <ysato@users.sourceforge.jp>, 
+	Rich Felker <dalias@libc.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, 
+	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, 
+	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>, 
+	Russell King <linux@armlinux.org.uk>, Vineet Gupta <vgupta@kernel.org>, 
+	Michal Simek <monstr@monstr.eu>, Chris Zankel <chris@zankel.net>, 
+	Max Filippov <jcmvbkbc@gmail.com>, Will Deacon <will@kernel.org>, 
+	"Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nick Piggin <npiggin@gmail.com>, 
+	Peter Zijlstra <peterz@infradead.org>, "David S. Miller" <davem@davemloft.net>, 
+	Andreas Larsson <andreas@gaisler.com>, Richard Henderson <richard.henderson@linaro.org>, 
+	Matt Turner <mattst88@gmail.com>, Magnus Lindholm <linmag7@gmail.com>, 
+	Catalin Marinas <catalin.marinas@arm.com>, Mark Rutland <mark.rutland@arm.com>, 
+	Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>, 
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>, "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, 
+	Helge Deller <deller@gmx.de>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	Michael Ellerman <mpe@ellerman.id.au>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
+	Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
+	Alexander Gordeev <agordeev@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, 
+	Sven Schnelle <svens@linux.ibm.com>, Richard Weinberger <richard@nod.at>, 
+	Anton Ivanov <anton.ivanov@cambridgegreys.com>, Johannes Berg <johannes@sipsolutions.net>, 
+	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
+	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>, 
+	Arnd Bergmann <arnd@arndb.de>, Vlastimil Babka <vbabka@kernel.org>, 
+	Mike Rapoport <rppt@kernel.org>, Michal Hocko <mhocko@suse.com>, Jason Gunthorpe <jgg@ziepe.ca>, 
+	John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, linux-mm@kvack.org, 
+	linux-kernel@vger.kernel.org, linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org, 
+	linux-m68k@lists.linux-m68k.org, linux-openrisc@vger.kernel.org, linux-sh@vger.kernel.org, 
+	linux-riscv@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
+	linux-snps-arc@lists.infradead.org, linux-arch@vger.kernel.org, sparclinux@vger.kernel.org, 
+	linux-alpha@vger.kernel.org, loongarch@lists.linux.dev, linux-mips@vger.kernel.org, 
+	linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, 
+	linux-um@lists.infradead.org, Hugh Dickins <hughd@google.com>, Qi Zheng <qi.zheng@linux.dev>
+Subject: Re: [PATCH 05/12] mm: enable MMU_GATHER_RCU_TABLE_FREE for arc,
+ microblaze, xtensa
+Message-ID: <ap_xXoS5XDqJ0mgU@gremlin>
+References: <20260901-rcu-pagetable-freeing-v1-0-5456a81c8212@kernel.org>
+ <20260901-rcu-pagetable-freeing-v1-5-5456a81c8212@kernel.org>
+ <CAJuCfpESe_BXihJh-8FhjQVKzsSpnS4zdMgg3e59byJTc8QViA@mail.gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -109,78 +110,143 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAE4VaGB_EhbWq8_X6FLtOx2MqoP7JEkOKkKSjKB7N--tt-sCeA@mail.gmail.com>
+In-Reply-To: <CAJuCfpESe_BXihJh-8FhjQVKzsSpnS4zdMgg3e59byJTc8QViA@mail.gmail.com>
 
-On Thu, Jul 30, 2026 at 01:24:46PM +0200, Jirka Hladky wrote:
-> On Thu, Jul 30, 2026 at 11:36 AM Mukesh Kumar Chaurasiya
-> <mkchauras@gmail.com> wrote:
+On Mon, Sep 07, 2026 at 02:07:37PM -0700, Suren Baghdasaryan wrote:
+> On Tue, Sep 1, 2026 at 4:06 AM Lorenzo Stoakes (ARM) <ljs@kernel.org> wrote:
 > >
-> > On Mon, Jul 27, 2026 at 11:41:07AM +0200, Jirka Hladky wrote:
-> > > Hi Mukesh, Shrikanth, Madhavan,
-> > >
-> > > I'm seeing a ~19% throughput regression on ppc64le (POWER10) in
-> > > syscall-heavy workloads between kernel 7.1 and 7.2-rc4, which I've
-> > > narrowed down to the GENERIC_ENTRY enablement for powerpc (commit
-> > > bee25f97ad24 "powerpc: Enable GENERIC_ENTRY feature").
-> > >
-> > > The regression manifests specifically when SELinux is enabled. Regression
-> > > disappears with selinux=0. With SELinux disabled, 7.2 is actually
-> > > slightly *faster* than 7.1.
-> > >
-> > > Test: stress-ng --kill 1 -t 23 (single-thread kill() syscall loop)
-> > > Machine: IBM,9080-HEX POWER10, 8 vCPUs (1 core SMT-8), 64 GiB
-> > >
-> > > Results (bogo-ops/sec, higher is better):
-> > >
-> > > Kernel   Enforcing   Permissive   Disabled    SELinux tax
-> > > ------   ---------   ----------   --------    -----------
-> > > 7.1      69,107      70,248       93,566      -26.1%
-> > > 7.2-rc4  56,247      59,075       99,240      -43.3%
-> > > Delta    -18.6%      -15.9%       +6.1%
-> > >
-> > > Key observations:
-> > > - SELinux permissive ~ enforcing on both kernels (overhead is in the
-> > >   code path, not policy evaluation)
-> > > - SELinux disabled: 7.2 is 6% faster than 7.1 -- the generic entry
-> > >   path itself is not slower for the base syscall
-> > > - The SELinux "tax" nearly doubles from 26% to 43% between 7.1->7.2
-> > > - No changes to security/selinux/avc.c between v7.1 and v7.2-rc4
-> > >
-> > > The kill() hot path (sys_kill -> check_kill_permission -> security_task_kill
-> > > -> selinux_task_kill -> avc_has_perm -> avc_lookup) wraps every AVC lookup
-> > > in rcu_read_lock()/rcu_read_unlock(). On ppc64le with PREEMPT_RCU, each
-> > > pair requires lwsync/isync barriers. I suspect the generic entry path
-> > > changes something in how context tracking, tracing, or RCU interacts
-> > > with the syscall fast path that amplifies the per-call RCU cost.
-> > >
-> > > Note: this is on top of a separate ~36% regression from 6.12->7.1 caused
-> > > by HAVE_PREEMPT_DYNAMIC_KEY enabling CONFIG_PREEMPT_RCU on ppc64le
-> > > (commit 6ad7751537e8), which I reported separately on the v4 thread.
-> > >
-> > > Thank you
-> > > Jirka
-> > [...]
-> > Hey Jirka,
+> > Each of these architectures directly free page tables without routing these
+> > changes through tlb_remove_ptdesc().
 > >
-> > Thanks for reporting this.
-> > I'll take a look.
+> > The use of tlb_remove_ptdesc() is required for
+> > CONFIG_MMU_GATHER_RCU_TABLE_FREE to correctly free page tables under RCU,
+> > so simply update these architectures to use these functions.
 > >
-> > Thanks,
-> > Mukesh
+> > Since none of the architectures share page tables or do anything unusual,
+> > nothing complicated is required here.
 > >
-> 
-> Thank you, Mukesh! I'm happy to run additional tests on the POWER10 machine
-> if you have patches to try or specific experiments you'd like me to do.
-> 
-> Jirka
-> 
+> > Therefore this is simply a mechanical change - convert __pud_free_tlb(),
+> > __pmd_free_tlb() and __pte_free_tlb() to use tlb_remove_ptdesc() as
+> > required.
+> >
+> > At the point this is in place, all mmu_gather page table freeing is
+> > performed under RCU, and thus MMU_GATHER_RCU_TABLE_FREE is selected for
+> > each architecture.
+> >
+> > This forms part of an overall effort to switch every architecture to this
+> > mode.
+> >
+> > Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+> > ---
+> >  arch/arc/Kconfig                      | 1 +
+> >  arch/arc/include/asm/pgalloc.h        | 6 +++---
+> >  arch/microblaze/Kconfig               | 1 +
+> >  arch/microblaze/include/asm/pgalloc.h | 2 +-
+> >  arch/xtensa/Kconfig                   | 1 +
+> >  arch/xtensa/include/asm/tlb.h         | 2 +-
+> >  6 files changed, 8 insertions(+), 5 deletions(-)
+> >
+> > diff --git a/arch/arc/Kconfig b/arch/arc/Kconfig
+> > index 2ed7186c81c5..7a7542b61823 100644
+> > --- a/arch/arc/Kconfig
+> > +++ b/arch/arc/Kconfig
+> > @@ -47,6 +47,7 @@ config ARC
+> >         select HAVE_SYSCALL_TRACEPOINTS
+> >         select IRQ_DOMAIN
+> >         select LOCK_MM_AND_FIND_VMA
+> > +       select MMU_GATHER_RCU_TABLE_FREE
+> >         select MODULES_USE_ELF_RELA
+> >         select OF
+> >         select OF_EARLY_FLATTREE
+> > diff --git a/arch/arc/include/asm/pgalloc.h b/arch/arc/include/asm/pgalloc.h
+> > index dfae070fe8d5..9b6c37f92e97 100644
+> > --- a/arch/arc/include/asm/pgalloc.h
+> > +++ b/arch/arc/include/asm/pgalloc.h
+> > @@ -72,7 +72,7 @@ static inline void p4d_populate(struct mm_struct *mm, p4d_t *p4dp, pud_t *pudp)
+> >         set_p4d(p4dp, __p4d((unsigned long)pudp));
+> >  }
+> >
+> > -#define __pud_free_tlb(tlb, pmd, addr)  pud_free((tlb)->mm, pmd)
+> > +#define __pud_free_tlb(tlb, pmd, addr)  tlb_remove_ptdesc((tlb), virt_to_ptdesc(pmd))
+> >
+> >  #endif
+> >
+> > @@ -83,10 +83,10 @@ static inline void pud_populate(struct mm_struct *mm, pud_t *pudp, pmd_t *pmdp)
+> >         set_pud(pudp, __pud((unsigned long)pmdp));
+> >  }
+> >
+> > -#define __pmd_free_tlb(tlb, pmd, addr)  pmd_free((tlb)->mm, pmd)
+> > +#define __pmd_free_tlb(tlb, pmd, addr)  tlb_remove_ptdesc((tlb), virt_to_ptdesc(pmd))
+> >
+> >  #endif
+> >
+> > -#define __pte_free_tlb(tlb, pte, addr)  pte_free((tlb)->mm, pte)
+> > +#define __pte_free_tlb(tlb, pte, addr)  tlb_remove_ptdesc((tlb), page_ptdesc(pte))
+> >
+> >  #endif /* _ASM_ARC_PGALLOC_H */
+> > diff --git a/arch/microblaze/Kconfig b/arch/microblaze/Kconfig
+> > index 484ebb3baedf..af7e821e96c1 100644
+> > --- a/arch/microblaze/Kconfig
+> > +++ b/arch/microblaze/Kconfig
+> > @@ -41,6 +41,7 @@ config MICROBLAZE
+> >         select PCI_SYSCALL if PCI
+> >         select CPU_NO_EFFICIENT_FFS
+> >         select MMU_GATHER_NO_RANGE
+> > +       select MMU_GATHER_RCU_TABLE_FREE
+> >         select SPARSE_IRQ
+> >         select ZONE_DMA
+> >         select TRACE_IRQFLAGS_SUPPORT
+> > diff --git a/arch/microblaze/include/asm/pgalloc.h b/arch/microblaze/include/asm/pgalloc.h
+> > index 084a8a0dc239..ffee6a009219 100644
+> > --- a/arch/microblaze/include/asm/pgalloc.h
+> > +++ b/arch/microblaze/include/asm/pgalloc.h
+> > @@ -25,7 +25,7 @@ extern void __bad_pte(pmd_t *pmd);
+> >
+> >  extern pte_t *pte_alloc_one_kernel(struct mm_struct *mm);
+> >
+> > -#define __pte_free_tlb(tlb, pte, addr) pte_free((tlb)->mm, (pte))
+> > +#define __pte_free_tlb(tlb, pte, addr) tlb_remove_ptdesc((tlb), page_ptdesc(pte))
+> >
+> >  #define pmd_populate(mm, pmd, pte) \
+> >                         (pmd_val(*(pmd)) = (unsigned long)page_address(pte))
+> > diff --git a/arch/xtensa/Kconfig b/arch/xtensa/Kconfig
+> > index f2f9cd9cde50..33c4caee30e2 100644
+> > --- a/arch/xtensa/Kconfig
+> > +++ b/arch/xtensa/Kconfig
+> > @@ -55,6 +55,7 @@ config XTENSA
+> >         select HAVE_VIRT_CPU_ACCOUNTING_GEN
+> >         select IRQ_DOMAIN
+> >         select LOCK_MM_AND_FIND_VMA
+> > +       select MMU_GATHER_RCU_TABLE_FREE if MMU
+>
+> And MMU is required because NOMMU does not perform mmu_gather
+> operations, same as in the previous patch? If so, maybe make a note of
+> it in the changelog?
 
-Hey Jirka,
+Right yup. Will update!
 
-Sry about the delayed response, i got occupied with functional issues.
-Anyways, I don't seem to reproduce it with default fedora policy. Can
-you share the details of policy which you are using?
+>
+> >         select MODULES_USE_ELF_RELA
+> >         select PERF_USE_VMALLOC
+> >         select TRACE_IRQFLAGS_SUPPORT
+> > diff --git a/arch/xtensa/include/asm/tlb.h b/arch/xtensa/include/asm/tlb.h
+> > index 8c3ceb427018..6fb7b78154f6 100644
+> > --- a/arch/xtensa/include/asm/tlb.h
+> > +++ b/arch/xtensa/include/asm/tlb.h
+> > @@ -16,7 +16,7 @@
+> >
+> >  #include <asm-generic/tlb.h>
+> >
+> > -#define __pte_free_tlb(tlb, pte, address)      pte_free((tlb)->mm, pte)
+> > +#define __pte_free_tlb(tlb, pte, address)      tlb_remove_ptdesc((tlb), page_ptdesc(pte))
+> >
+> >  void check_tlb_sanity(void);
+> >
+> >
+> > --
+> > 2.55.0
+> >
 
-Regards,
-Mukesh
+--
+Cheers, Lorenzo
 
