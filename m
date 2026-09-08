@@ -1,73 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-26806-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26807-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DE4FCC79F99
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 14:03:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3BDF6C79F99
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 14:04:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hfQdT1t2Dz2yDD;
-	Wed, 09 Sep 2026 00:03:25 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788876205;
-	cv=none; b=WExUc/y0D5KFgfuW9TSfIMoIKZpJlSmWKvC/yj80CoLpQBdZ+jb0Z9zeUvuG4CS1wa5Om+OBmWot5pmbM8kIfGhjvW216kB8TSQGFi72SBf3CqLytJK1VqRIMbCfoCsfpx4gqkHeswrZGAqsXYDvPWxHZ2ja1j3Rc83RF7DyTvs4kdkFhbnqfYQoIvFezn/OBth0rfExyZDghBbYI6FyRiwFmIwDEYNpw8Z79R/Sveo31uk1Y7cdeN1rcTOASNc2/KlNTWbjKcvRLZUrIuRRK4LzgoyzldmWhYOEqv2i59vy5N9WiKUWSR20WSwkTV7jP4TQcAB8Dc0qHbKBLx1zFw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hfQfB2gHbz2y8G;
+	Wed, 09 Sep 2026 00:04:02 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788876242;
+	cv=none; b=B9Ug2byDHSjUE2N6EpjrmZNyh+eyaprA4Msv2PsoSM0UxrOUWE6A3cRUgUMVEWLFPvQo4oXNjlQk6QfoKeOKXSRhDuBG+cXatJ3yh22qdk7trzikwl+rhpPtN+qdyf5lCknfEHODNE7JYxd1A1bFSRm/wa/KYgAX9oqmoakLF1iDmvHOEnbTeS1TUhGxkt5hU0Z1Zji6Xj8TzCn5xnhRod+7i3LVIDzqSb3h6GkJ19iQn/x9sYeSMMD7KQleOWPdtfV09Pw5LVwQhg0hwhNBj22kwnxWOmoCEKAfd07bCthHC5+e0rWyuDUJbv+KxVqgt8C4OKCyYKstof9sQ2LIlw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788876205; c=relaxed/relaxed;
-	bh=UqX3MGf8NpzxTcQ9X6cYrr7J0OROlL+yYETamRYF6h8=;
+	t=1788876242; c=relaxed/relaxed;
+	bh=KqndmaW8DL9z5lUDZrm9whEknryFxk+Tb/v8/jM4l2k=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=PveIdG1ltHX+bbn1Vw8QfM8Vhhpfz9vQfxRJuol1uYpw9CwVZNOuYioWkvDPelGjNqHdZVDhtDeh7lFMxcSoCmN/7N4n23sUo0jO6NS4QwDM27yFZf6VH0Aq1nLMuekNuFbjsqJtSXUbwQvKGfTQM4TIGcBYxLwlpIZRTnLlbt/v7vDLLX6L5I6iJ7U8vnPaVzMYZm1zjfvh0k3CMOrljdTeGr1zDF9wbZPwKRRiBth5K+naCsTHeBM8lfKrdkhXQolVjLtxT1skBch5f30UVFaFGh2Hhkx7SxKBC4CHuklDSEv4duzkptzbuRMRhFc0a7cFNxw+1V4oPnmZ8XXIQA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DkRaNUBq; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=rnsastry@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 In-Reply-To:Content-Type; b=WgoytbuH1IL7nagRAIfNP4MSVyxLwup8Mme9tT9sINZ2WWddelT+ywwqC2u/hiPL5h5ZtDbmiFN4X7ntm/Xw3bKAQYwcIXatp20ruK4+sPB5wSgpP3W0THwobn7wc95sdNgjmMHOzWcJ/7FsmQ1O5s6RRnomuBbGEzkXcoddHCq+9HlEBt5tUb013Fd7kfLlGP+jY6g9pR/VHSsojYZPg6O84GAkGAHQNIqXvu9BfhuhsJ2XQpXT/ekbp2MNxsleLnjPxIuSNFnSrPz48r1IFpDUqxFkFfy0yE4C4WlqpNnwFyfb0+55xuVESHZy71qQJzsWj8gEcuTkzsnIpU0mcQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=YIKyU/c/; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=rnsastry@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DkRaNUBq;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=YIKyU/c/;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=rnsastry@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=rnsastry@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfQdS3K6Zz2y8G
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Sep 2026 00:03:24 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 688D1SK33279394;
-	Tue, 8 Sep 2026 14:02:30 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfQf90xvKz2y2b
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Sep 2026 00:04:00 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 688D1gN04008041;
+	Tue, 8 Sep 2026 14:03:13 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=UqX3MG
-	f8NpzxTcQ9X6cYrr7J0OROlL+yYETamRYF6h8=; b=DkRaNUBq5Po3ZiYXLpdZHj
-	7P6w4FnM8dpQH99hSATTYsO4+R3x6LS7Q/BLTa58V7jASmR9DDF4HPXfnmYkwnYO
-	35j4owUo8+KVUM2AWF/slKJXWdMAZvgg4sFsfz0BkNd25LusvynIYb7WDyLr8Ph2
-	KcWRNuQ7cAgZWkkOqWoK20XbS4hCrrT88/KT6I6/B4AjL3LNx2KpqFwQ0jixWALR
-	wJ+ho21ylGC7S4S/kN1AC1g4PDijNOy1z+AD5APaHhaSMI0Yqv5Qz+34YPlHZRai
-	ZJE3AJnbRa6KbIfmhw55zgTFzJumsWcXitDXmb6LQTfMgzT+mrJROXxb9jPpAFkQ
+	:message-id:mime-version:references:subject:to; s=pp1; bh=Kqndma
+	W8DL9z5lUDZrm9whEknryFxk+Tb/v8/jM4l2k=; b=YIKyU/c/H2YnhGEjQBTa9F
+	dGyW1cMyR8KPdeMzvyf7ZKByaoGiinWEyo8cS/v1j4OLIntRGtT+aycfFi9HZZ6g
+	IupqGgQQhmriK5BQzjtXIQitZ3Z+sXnY8CEvS9rMjYVQJdO79qCnhyuEuhxaEH/L
+	y+XM+TuWHWlUgF/DdA25SyUq2zqec4Ah859o3SI1mkj803zNxzFQXTnZXH4z6GLE
+	ZCdp0TVWF9z+RXUIcyQXhlJ4E87Ct2Ss67T8WynuRHDsn5Zcj1PRqHRCOauCdw93
+	69kR/q7nng1XtMu11UlnKvVgFf5b1Y2ze3gWAWRYrRGHhnZXjCl6aK3G6NBYCpRg
 	==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4ggbqjyasp-1
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4ggbjrq4a1-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 08 Sep 2026 14:02:29 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 688DuHYU002298;
-	Tue, 8 Sep 2026 14:02:28 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4ggwdqcbec-1
+	Tue, 08 Sep 2026 14:03:12 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 688DuE46015482;
+	Tue, 8 Sep 2026 14:03:11 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gh03ybyjg-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 08 Sep 2026 14:02:27 +0000 (GMT)
+	Tue, 08 Sep 2026 14:03:10 +0000 (GMT)
 Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 688E2OPw52887812
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 688E37pW45154618
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 8 Sep 2026 14:02:24 GMT
+	Tue, 8 Sep 2026 14:03:07 GMT
 Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3E4242004D;
-	Tue,  8 Sep 2026 14:02:24 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 2C5972004B;
+	Tue,  8 Sep 2026 14:03:07 +0000 (GMT)
 Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9540620043;
-	Tue,  8 Sep 2026 14:01:58 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 5BD1E20043;
+	Tue,  8 Sep 2026 14:02:41 +0000 (GMT)
 Received: from [9.61.253.97] (unknown [9.61.253.97])
 	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Tue,  8 Sep 2026 14:01:58 +0000 (GMT)
-Message-ID: <ea5fe025-4d7c-4d57-b277-85a922f09f84@linux.ibm.com>
-Date: Tue, 8 Sep 2026 19:31:57 +0530
+	Tue,  8 Sep 2026 14:02:40 +0000 (GMT)
+Message-ID: <264436d6-4a2a-4fe7-8b10-bbbd69cf7fd5@linux.ibm.com>
+Date: Tue, 8 Sep 2026 19:32:37 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,8 +82,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 16/24] powerpc/elf: Add 32-bit REL16 relocation
- definitions
+Subject: Re: [PATCH v5 17/24] powerpc/vdso: Enable the vdsocheck tool
 To: =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>,
         Paul Walmsley <paul.walmsley@sifive.com>,
         Palmer Dabbelt
@@ -132,95 +131,125 @@ Cc: linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
         Arnaldo Carvalho de Melo <acme@redhat.com>,
         Alexandre Ghiti <alexghiti@rivosinc.com>
 References: <20260908-vdso-absolute-reloc-v5-0-3a93791af1cf@linutronix.de>
- <20260908-vdso-absolute-reloc-v5-16-3a93791af1cf@linutronix.de>
+ <20260908-vdso-absolute-reloc-v5-17-3a93791af1cf@linutronix.de>
 Content-Language: en-US
 From: R Nageswara Sastry <rnsastry@linux.ibm.com>
-In-Reply-To: <20260908-vdso-absolute-reloc-v5-16-3a93791af1cf@linutronix.de>
+In-Reply-To: <20260908-vdso-absolute-reloc-v5-17-3a93791af1cf@linutronix.de>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: aYV4ngoIThgEBPmBdnotS3o7i2N5Uzjf
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTA4MDE1MSBTYWx0ZWRfX3bZ8SdHju1u6
- WnAXanC7whchdXDQlbM1bnHHavM3A0XM+U9uNoCZL4isixam/MSBLOyuzMVMdu6l7VHgIEoOycZ
- dlEr5Z5cJkZxXmkrMQ+NOqNOTMk1aXk=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTA4MDE1MSBTYWx0ZWRfX1zaPWFuX+rUC
- riLtFhVLvRWmnm+PCm4A0algSS42oJsAX7QmPC5kzQVWr6sJJZJ7wVpRqR+HpAOpd51fNAQNH37
- vcxn0gYqvf7f/c2pQ3QqZgVmDTdIfS/RCrgwXn+BM9J5Judf5wM9QvQdcwDgBfZJ80Ds6Vvk05p
- z3D5rC5fVpd2v5hVSFzR2x+2nIEy9S4M1fR6OpKmPCb96lJDyBnRDmLeX+GH5PRpxAeInDJhqNm
- bRREiI/ol2jxBUm4xnRLGc3/i5RISKIhAsIqSVCGoz2W0oXpmKoE1P8pJPqeAAl+16UXH8833ES
- 1jQ42swBeeopjBnghrZOTHsjCuUFrk2z63ztUpveDTH+D7GQOM82m1IVezimT4QZ+Xv/j9LIsx4
- Qaow1RBjTKepe3FWLG7b9WypE1rQNpqeWLcHksl6ecvx616BKCLrxNEXC6q9hbHxaCmg1KIn/nz
- xdLTLzZaTJe5DzZ9Tkg==
-X-Authority-Analysis: v=2.4 cv=JaKMa0KV c=1 sm=1 tr=0 ts=6aa01576 cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+X-Authority-Analysis: v=2.4 cv=E7T9Y6dl c=1 sm=1 tr=0 ts=6aa015a0 cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
  a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=VnNF1IyMAAAA:8
- a=kTRc27yyOv6OL1rmJE4A:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-GUID: nj6Cv9HygVweTXNR7EWl_2v5ROwGQX2g
+ a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VnNF1IyMAAAA:8
+ a=0oLV-YkNZL8bY7TGgZYA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTA4MDE1MSBTYWx0ZWRfX3KyouA8o5rAD
+ ByjA/dZC1Xn2n5rWH2E08Rby3F+ieH1b8xVcBpTsx0Pq3F1Kh8H6gO0eZ56x8axONjS0M7Vrmnn
+ 1W+1YJV6A3rf0XXO5ICf/YfbKJvemH4=
+X-Proofpoint-ORIG-GUID: pTJswYdOioXws7GKWQycoAhrlwYXMjr-
+X-Proofpoint-GUID: gTxGanC_PLNk6Cp8fvurHqYNODghYxXb
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTA4MDE1MSBTYWx0ZWRfX+h8v/6PDKP+Z
+ jAdm1rpGv4OhJjZsh6igckQQoLJoC7k9srOWBrLXydyr1uM/ouNV0nG/uX0KMsRisoyR2/cj7Mb
+ Hy2sciE8csHY6RSCpOx2nHtrmmW9Bn3O8HYVkQEH4zuSVA5NUU414f/b1P3dY2Y9XVnEpbCvJEP
+ gZdPdvU+PEg2VuiKByiM4jecbnLFEgaHV5/AHo2rbC0Fn3xseCHAZ0BYnJpQACipja6Fj5ZcajM
+ 9S0iR7edRavzStHw3Bl0kcStsnMxiBYTJV59jwjjZrHbhDEDVEGjtlhKJlGMl7XI9iVT6tVB69E
+ /bcJ2zCAI+cma3BesLX1c2J13X5ouAGoXJs8yD7QAv6QzEAtvkL7oWFOsTBNu+FkE5yVjZH/1kZ
+ OZGjxAMbcSHhLhthhYM2mHEV+LTIa+3ZOqkA9IE9Sq7oBPMJ8eRmrGM9/yOAAzelV4MYH0qfW5K
+ 8wt2O27vBLIE4mVUxeA==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-09-08_02,2026-09-08_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 spamscore=0 phishscore=0 impostorscore=0 lowpriorityscore=0
- adultscore=0 bulkscore=0 priorityscore=1501 suspectscore=0 clxscore=1011
+ clxscore=1015 phishscore=0 spamscore=0 suspectscore=0 priorityscore=1501
+ bulkscore=0 impostorscore=0 malwarescore=0 lowpriorityscore=0 adultscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2609080151
 
 
 On 08.09.2026 12:03 PM, Thomas Weißschuh wrote:
-> These are used by userspace and are necessary for the vdsocheck tool.
-> They share the numbers with their 64-bit variants.
+> The vdsocheck tool validates the object files and final .so library.
+> It can detect if the compiler created relocations which are incompatible
+> with the vDSO which need to be worked around.
 >
-> Also update the copy in tools/ so they can be used by vdsocheck.
+> Wire it up for the architecture.
 >
 > Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
 Tested-by: R Nageswara Sastry <rnsastry@linux.ibm.com>
 
 System: ppc64le LPAR (IBM POWER), Linux 7.3-rc2
 > ---
->   include/uapi/linux/elf-r.h       | 7 ++++++-
->   tools/include/uapi/linux/elf-r.h | 7 ++++++-
->   2 files changed, 12 insertions(+), 2 deletions(-)
+>   arch/powerpc/Kconfig              |  1 +
+>   arch/powerpc/kernel/vdso/Makefile |  4 ++--
+>   lib/vdso/check/vdsocheck.rs       | 27 +++++++++++++++++++++++++++
+>   3 files changed, 30 insertions(+), 2 deletions(-)
 >
-> diff --git a/include/uapi/linux/elf-r.h b/include/uapi/linux/elf-r.h
-> index 72fc9045a5d4..170888422400 100644
-> --- a/include/uapi/linux/elf-r.h
-> +++ b/include/uapi/linux/elf-r.h
-> @@ -182,8 +182,13 @@
->   #define R_PPC_GOT_DTPREL16_HI	93 /* half16*	(sym+add)@got@dtprel@h */
->   #define R_PPC_GOT_DTPREL16_HA	94 /* half16*	(sym+add)@got@dtprel@ha */
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 2580e27e4328..f19e225cfc5c 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -330,6 +330,7 @@ config PPC
+>   	select SYSCTL_EXCEPTION_TRACE
+>   	select THREAD_INFO_IN_TASK
+>   	select TRACE_IRQFLAGS_SUPPORT
+> +	select VDSO_CHECK
+>   	select VDSO_DATASTORE
+>   	select VDSO_GETRANDOM
+>   	#
+> diff --git a/arch/powerpc/kernel/vdso/Makefile b/arch/powerpc/kernel/vdso/Makefile
+> index 368759f81708..ca20b91b4373 100644
+> --- a/arch/powerpc/kernel/vdso/Makefile
+> +++ b/arch/powerpc/kernel/vdso/Makefile
+> @@ -81,9 +81,9 @@ targets += vdso64.lds
+>   CPPFLAGS_vdso64.lds += -P -C
 >   
-> +#define R_PPC_REL16		249
-> +#define R_PPC_REL16_LO		250
-> +#define R_PPC_REL16_HI		251
-> +#define R_PPC_REL16_HA		252
-> +
->   /* keep this the last entry. */
-> -#define R_PPC_NUM		95
-> +#define R_PPC_NUM		253
+>   # link rule for the .so file, .lds has to be first
+> -$(obj)/vdso32.so.dbg: $(obj)/vdso32.lds $(obj-vdso32) $(obj)/vgettimeofday-32.o $(obj)/vgetrandom-32.o $(obj)/crtsavres-32.o FORCE
+> +$(obj)/vdso32.so.dbg: $(obj)/vdso32.lds $(obj-vdso32) $(obj)/vgettimeofday-32.o $(obj)/vgetrandom-32.o $(obj)/crtsavres-32.o $(vdsocheck) FORCE
+>   	$(call if_changed,vdso32ld_and_check)
+> -$(obj)/vdso64.so.dbg: $(obj)/vdso64.lds $(obj-vdso64) $(obj)/vgettimeofday-64.o $(obj)/vgetrandom-64.o FORCE
+> +$(obj)/vdso64.so.dbg: $(obj)/vdso64.lds $(obj-vdso64) $(obj)/vgettimeofday-64.o $(obj)/vgetrandom-64.o $(vdsocheck) FORCE
+>   	$(call if_changed,vdso64ld_and_check)
 >   
->   /* PowerPC64 relocations defined by the ABIs */
->   #define R_PPC64_NONE    R_PPC_NONE
-> diff --git a/tools/include/uapi/linux/elf-r.h b/tools/include/uapi/linux/elf-r.h
-> index 72fc9045a5d4..170888422400 100644
-> --- a/tools/include/uapi/linux/elf-r.h
-> +++ b/tools/include/uapi/linux/elf-r.h
-> @@ -182,8 +182,13 @@
->   #define R_PPC_GOT_DTPREL16_HI	93 /* half16*	(sym+add)@got@dtprel@h */
->   #define R_PPC_GOT_DTPREL16_HA	94 /* half16*	(sym+add)@got@dtprel@ha */
->   
-> +#define R_PPC_REL16		249
-> +#define R_PPC_REL16_LO		250
-> +#define R_PPC_REL16_HI		251
-> +#define R_PPC_REL16_HA		252
-> +
->   /* keep this the last entry. */
-> -#define R_PPC_NUM		95
-> +#define R_PPC_NUM		253
->   
->   /* PowerPC64 relocations defined by the ABIs */
->   #define R_PPC64_NONE    R_PPC_NONE
+>   # assembly rules for the .S files
+> diff --git a/lib/vdso/check/vdsocheck.rs b/lib/vdso/check/vdsocheck.rs
+> index e45a1fbc6829..429bdcd65818 100644
+> --- a/lib/vdso/check/vdsocheck.rs
+> +++ b/lib/vdso/check/vdsocheck.rs
+> @@ -69,6 +69,33 @@ fn allowed_relocations_for_machine(machine: u16) -> Option<AllowedRelocations<'s
+>               ..Default::default()
+>           }
+>           .into(),
+> +        bindings::EM_PPC => AllowedRelocations {
+> +            in_object_file: &[
+> +                bindings::R_PPC_REL24,
+> +                bindings::R_PPC_REL14,
+> +                bindings::R_PPC_REL32,
+> +                bindings::R_PPC_REL16,
+> +                bindings::R_PPC_REL16_LO,
+> +                bindings::R_PPC_REL16_HI,
+> +                bindings::R_PPC_REL16_HA,
+> +            ],
+> +            ..Default::default()
+> +        }
+> +        .into(),
+> +        bindings::EM_PPC64 => AllowedRelocations {
+> +            in_object_file: &[
+> +                bindings::R_PPC64_REL24,
+> +                bindings::R_PPC64_REL14,
+> +                bindings::R_PPC64_REL32,
+> +                bindings::R_PPC64_REL64,
+> +                bindings::R_PPC64_REL16,
+> +                bindings::R_PPC64_REL16_LO,
+> +                bindings::R_PPC64_REL16_HI,
+> +                bindings::R_PPC64_REL16_HA,
+> +            ],
+> +            ..Default::default()
+> +        }
+> +        .into(),
+>           _ => None,
+>       }
+>   }
 >
 -- 
 Thanks and Regards
