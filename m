@@ -1,73 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-26767-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26768-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5DBBBC79FA0
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 08:24:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0A83EC79F82
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 08:35:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hfH6066pxz2xqp;
-	Tue, 08 Sep 2026 18:24:08 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788855848;
-	cv=none; b=ILIZ7W0eQLykhvmjR09ZsIq5TD3fyadaFFaktdCmpkHwHGcEjhfFqgiwf3Y5GmuSb4qSTsClvU+duzsIfxOROjBmD98pwfHaVs+w9WdtzjGHwwbK347kXxQSl+KNuPCCvMolxhxiF5ovmVgwJFL3eNJqcCDcVWOJUn29MbuQWfG9mblu7XoTNqquBzlsJloC1mZY0c/gIMIDO9pdOurjOXnOmERinLhyT80xS5cN93p1ebjlyMiTbW3kGzQ/864UlEmr1jc2JBj5aSAFgPXBC1x8Vv+ZPZcs2QPGbp7YZOXRwhbblkHZ21JHsHD1Ljq9K1kjyRcrU/HHcatJm05rag==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hfHLf3D5Mz2xqp;
+	Tue, 08 Sep 2026 18:35:06 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:203:375::9a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788856506;
+	cv=none; b=maVIE+Bgki+5HI0+EC+2sZMZpysuHkNhMbAT/EqQS7UjDY7R27o0pjBwisni8/T/YhrTlEXDAffD9pwxpnQmvMqe2iUgCXg6Hixj/DvKyTbBR2yXNMew3Ms69MTJszYSBpe/Fz3E6EZk8Ym3+8DkcPWf/ZKRa7Mwk/Ml8PksqoX/6w/VmvwF6MNCZDyFYSU/C0dC1C56enEHuIYbznRhloBv0YPMbzpKj/kV0/q2lMSpOtpkaw31w5dbIuoiwsm1QZZWUFMvfgFpburTccKOCZ3ndys8bDRycwA5gDRV9ADjATPsDL/xakS3M6loPDcNjtCNztNxcpz1sUk7owOuWg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788855848; c=relaxed/relaxed;
-	bh=42oH6gJMbsL5NqcnQM3pgYq5B3K1P7Iql81JmEH9jA8=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=bsFZCqPzFme6fQb2cr32EGgwsFXg1gkgS9fJMXYjkiWGT/1WvQz1D7edz5Ieiykj68N3lP6PFK97OrT6KIdCb0N7i/jbZhOZHQ8NUrcC2JYAwfYFNYtX2/b1fqsmWi+kMocLgzILl54N/kkfEKD1r+gVJM7N0S5kpAA/y5eN4YN3mLVqHZkDakWoYPlfGQBAWSJcMc8kxYJWZVVPuJthZIuE/XuzI3xbP3qOHCjrXAQfTq28ri2H914LWkIpvDte1GvwnPZAl9CSp3o03kY/p3A4N09IzKFLC5nKenk89Rabpm7tkyREmIjr15IXjHwQL3armSsc2zcqndmW6Yv2ow==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=H0SHP5Ix; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1788856506; c=relaxed/relaxed;
+	bh=aN2ORbphLllnmDHaHvQtAfLkAW1wgx0CLNBFoa9NNVg=;
+	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
+	 Message-Id:References:To; b=F/sZxbgqkDeMg9Hyz/Q1BSF0szm2iAYO57qMKrCQOz/BR/pAoNkUwxSNdINctb3VKpwFvNy2elX8UNwuELrYlDfGt/eMkHr1XIfVuVgDkiynMpUPCWVX8HZwUQb44Pe9MspqnWxiWkwhbymRymlNDhOXo1n5b2Q6AaHjonOWGU/nDWvjNzl+QQ51kJmS9vaB0JWpVAHxvunkeUMMigUalCb/0iVkjzDJdtHK2wze3+SzkSaXlmW82uPFeAli3MAP/z3XmZJiVtMip33iFut2rAkSpRKHhKPuepCxGIOmv76oY7NdPWv0a552zhphSIzPT5aae8AT9m8ndIBmnCOYtQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=WaIV5EqJ; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:203:375::9a; helo=mta1.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=H0SHP5Ix;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=WaIV5EqJ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:203:375::9a; helo=mta1.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org)
+Received: from mta1.migadu.com (out-154.mta1.migadu.com [IPv6:2001:41d0:203:375::9a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfH600LY0z2xlJ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Sep 2026 18:24:07 +1000 (AEST)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6886WBtV066887;
-	Tue, 8 Sep 2026 08:23:47 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=42oH6g
-	JMbsL5NqcnQM3pgYq5B3K1P7Iql81JmEH9jA8=; b=H0SHP5IxZwI9EGw5Bg8nvb
-	VoC43gMvLlUcQLatwYobuLJqf3BWce5zz+L10192GMt75zmG1KSvAUm+DXVOx5BE
-	F0AnH9b6gb/fnVpZyhd64BzOqb6Hhno9IX/xpwWtAEc8UF328MC7wKCuaBhlAu6N
-	tM0fwklDfXUXF2FjCBYYrZU0OL9866aYG4xvwyKHIj8zILBKXE/RRTsSZjUYcKs6
-	fnMMFlqZhJvrKzxbINxma63ww43shp/BhdPJzFZprLFgVTl1r3cU+oBrxlNqHLa2
-	Nz1pWkKsDg4eP6tsjjYLEbtUIAWdr5XvC9Uz8TKuhDSkBe96113zZu4208jD8zAw
-	==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4ggbf3wk90-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 08 Sep 2026 08:23:46 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6888BKMt027142;
-	Tue, 8 Sep 2026 08:23:45 GMT
-Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4ggymgaekf-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 08 Sep 2026 08:23:45 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6888NfMd37028198
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 8 Sep 2026 08:23:41 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B7BD120043;
-	Tue,  8 Sep 2026 08:23:41 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id F126120040;
-	Tue,  8 Sep 2026 08:23:37 +0000 (GMT)
-Received: from [9.123.3.64] (unknown [9.123.3.64])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue,  8 Sep 2026 08:23:37 +0000 (GMT)
-Message-ID: <f8439dfb-7584-45c4-90fa-5659fa5507e2@linux.ibm.com>
-Date: Tue, 8 Sep 2026 13:53:36 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfHLb0sWqz2xlJ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Sep 2026 18:34:59 +1000 (AEST)
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+DKIM-Signature: a=rsa-sha256; bh=muqKO/Q4TVxj/cNMo0pajKXnu4hE0n3bdHEU8buxoq8=;
+ c=simple/simple; d=linux.dev;
+ h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
+ t=1788856481; v=1; x=1789461281;
+ b=WaIV5EqJnRx2MXsspd/aeq6ewHOKtevy6YI5y0RSqGgiEYxQtOOd7G8se5A+i2OffWaAQ+rI
+ GPVzzsSbfcj9r6GPdaXu4ObJvoNwpPEgDIvo3ACaDEL9/teG+XF0OklW4Ev2w+DKReeHPFo1dHY
+ dFEUXkxx7dUZJdWGEp4ctFbI=
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+Received: by mta11.migadu.com with ESMTPS id ef271c2c22e4d45d;
+	Tue, 08 Sep 2026 08:34:31 +0000
+X-Mizu-Trace-ID: ef271c2c22e4d45d
+X-Migadu-Flow: FLOW_OUT
+Content-Type: text/plain;
+	charset=utf-8
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,150 +56,86 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v13 4/8] powerpc/bpf: fix alignment of long branch
- trampoline address
-To: bot+bpf-ci@kernel.org, skb99@linux.ibm.com, bpf@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org
-Cc: maddy@linux.ibm.com, ast@kernel.org, andrii@kernel.org,
-        daniel@iogearbox.net, shuah@kernel.org,
-        linux-kselftest@vger.kernel.org, stable@vger.kernel.org,
-        venkat88@linux.ibm.com, yeswanth@linux.ibm.com, martin.lau@kernel.org,
-        eddyz87@gmail.com, yonghong.song@linux.dev, mason@kernel.org,
-        ihor.solodrai@linux.dev
-References: <0700c866205c8fa2f861e4b8d64fdf7469cba021.1788154635.git.skb99@linux.ibm.com>
- <71916017b03ad6e22c093094acae6a356a57f8fd0c3afda3833a20a2db10ec77@mail.kernel.org>
-Content-Language: en-US
-From: Hari Bathini <hbathini@linux.ibm.com>
-In-Reply-To: <71916017b03ad6e22c093094acae6a356a57f8fd0c3afda3833a20a2db10ec77@mail.kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: sqkZ9llR8M7ltf6nsMXpRlKZNBU3we3G
-X-Proofpoint-GUID: aizvzTKrY6e0ZXN_uaTz5vGGRHH4pw1d
-X-Authority-Analysis: v=2.4 cv=DbEnbPtW c=1 sm=1 tr=0 ts=6a9fc612 cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=VwQbUJbxAAAA:8
- a=kVk8kcng22Gj4D9CYR0A:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTA4MDA4MyBTYWx0ZWRfX6F7cC5p/SKxg
- 9sV1XQiO1A31a6H8GazoXkZqUOPTzPE4VdGHLjnTgJQDDkM0bfTa9ahbNekLfzqyIyDWVT31wy8
- AnFXgMAQFoe9uZ7SHlErG++54BJTYkB6zEvbjYC4tKxlxqsE2wTL4nRR+PjSPgaA1H/B0lxULUK
- YC52pEnlJxH1Mkhiy8aqmUr9YuBAngI3Fsd1A8lmVdfr4L/T8bI9ZA+uxnsv6MOC8s7tMBDJJIg
- WUvE/sUXm1xik/t87QRrOkCgS/ezygszHPxxK6g2oUdd/P7t7W2JtnAAgDyshpC8nZXE6vsBK2P
- 2jyQT476kLPywiOUZ8N/TcfYOoE36SDxRTxyTTB26yvX4vAd7jP0KK1+rz6Yb2if+4E1Su87AQx
- t1SAw8bDvWchpL68tynCQsP77/iyb6OTjYtnmUebaw7/QSTA7HI0ySWJ2gH+EAunU0qSEsbNFum
- 2vVN3ZGvhNz/v391AvQ==
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTA4MDA4MyBTYWx0ZWRfXz64NRiH6rO41
- Z06s+tKRVmad//+Q8CdKoG1AEa7Gu/HSc0npnN1jB09dGma8zdp9qBJy3ASpeLPTCMDLotzWDIj
- 6a1x9LJF6WuOes7mfMgx8Jki+Uaa2jg=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-08_01,2026-09-07_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 priorityscore=1501 impostorscore=0 adultscore=0 spamscore=0
- clxscore=1011 suspectscore=0 bulkscore=0 malwarescore=0 lowpriorityscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2609080083
+Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3864.700.51.1.1\))
+Subject: Re: [PATCH v2 06/11] mm/sparse-vmemmap: switch device DAX to shared
+ tail vmemmap pages
+From: Muchun Song <muchun.song@linux.dev>
+In-Reply-To: <1fc41803-a0b3-48ca-84a6-caf965fb11f9@linux.dev>
+Date: Tue, 8 Sep 2026 16:34:09 +0800
+Cc: Muchun Song <songmuchun@bytedance.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ David Hildenbrand <david@kernel.org>,
+ Oscar Salvador <osalvador@suse.de>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Jonathan Corbet <corbet@lwn.net>,
+ linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org,
+ linux-doc@vger.kernel.org,
+ Lorenzo Stoakes <ljs@kernel.org>,
+ Mike Rapoport <rppt@kernel.org>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Christophe Leroy <chleroy@kernel.org>,
+ Randy Dunlap <rdunlap@infradead.org>
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <B05E15FC-62A2-4F8D-8624-F3DD16056DF6@linux.dev>
+References: <20260908030335.96549-1-songmuchun@bytedance.com>
+ <20260908030335.96549-7-songmuchun@bytedance.com>
+ <1fc41803-a0b3-48ca-84a6-caf965fb11f9@linux.dev>
+To: Qi Zheng <qi.zheng@linux.dev>
+X-Mailer: Apple Mail (2.3864.700.51.1.1)
 
 
 
-On 31/08/26 1:42 pm, bot+bpf-ci@kernel.org wrote:
->> diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
->> index 11981d2270a9d..8ca36a933c7ae 100644
->> --- a/arch/powerpc/net/bpf_jit_comp.c
->> +++ b/arch/powerpc/net/bpf_jit_comp.c
-> 
-> [ ... ]
-> 
->> @@ -49,11 +49,35 @@ asm (
->>   "	.popsection				;"
->>   );
->>
->> -void bpf_jit_build_fentry_stubs(u32 *image, struct codegen_context *ctx)
->> +void bpf_jit_build_fentry_stubs(u32 *image, u32 *fimage, struct codegen_context *ctx)
->>   {
->>   	int ool_stub_idx, long_branch_stub_idx;
->> +	int ool_stub_sz;
->>
->>   	/*
->> +	 * Align the mis-aligned dummy_tramp_addr field in the fimage.
->> +	 * The alignment NOP must appear before OOL stub, to make
->> +	 * ool_stub_idx & long_branch_stub_idx constant from end.
->> +	 *
->> +	 * The fimage can be non 8-byte aligned, so final alignment depends
->> +	 * on start of fimage and the stub's instruction count offset. The
->> +	 * OOL stub size is 4 instructions (with CONFIG_PPC_FTRACE_OUT_OF_LINE)
->> +	 * or 3 instructions (without) before dummy_tramp_addr.
->> +	 *
->> +	 * Emit a NOP here if address is not SZL aligned.
->> +	 *
->> +	 * In pass=0 when image==NULL, conservatively account for space
->> +	 * required to accommodate alignment NOP. In case final pass skips
->> +	 * emitting alignment NOP, the image buffer have 4 spare bytes and
->> +	 * jited_len signifies correct program size.
->> +	 */
->> +
->> +	ool_stub_sz = IS_ENABLED(CONFIG_PPC_FTRACE_OUT_OF_LINE) ? 16 : 12;
->> +	if (!image || !IS_ALIGNED((unsigned long)fimage + ctx->idx*4 + ool_stub_sz, SZL))
->> +		EMIT(PPC_RAW_NOP());
-> 
-> Can the conditional alignment NOP here mask program length convergence?
-> 
-> The preceding commit (5175364d6174 "powerpc/bpf: fix buffer overflow in
-> JIT for large BPF programs") added a convergence check:
-> 
->      if (pass >= CODEGEN_MIN_PASSES && proglen == prev_proglen)
->          break;
-> 
-> to bpf_int_jit_compile(). But the alignment decision above forces the
-> stub block to end at a fixed residue mod 8: the field address (fimage +
-> ctx->idx*4 + ool_stub_sz) is aligned to SZL, and exactly SZL/4 + 7
-> instructions follow it. So fimage + proglen is congruent to a constant
-> mod 8 every pass, meaning proglen can only change in multiples of 8.
-> 
-> When the body shrinks by an odd multiple of 4 bytes between passes, the
-> NOP can absorb it and keep proglen unchanged. The body can shrink when
-> an exit goes from out-of-range (emitting a full epilogue) to in-range
-> (emitting a single branch):
-> 
-> arch/powerpc/net/bpf_jit_comp.c:bpf_jit_emit_exit_insn() {
->      if (exit_addr && is_offset_in_branch_range(...)) {
->          PPC_JMP(exit_addr);                    // 1 instruction
->      } else {
->          ...
->          bpf_jit_build_epilogue(image, fimage, ctx);  // N instructions
->      }
-> }
-> 
-> The shrink is (N-1)*4 bytes. When N-1 is odd, this is 4 mod 8. The NOP
-> appearance or disappearance compensates, making proglen identical across
-> passes even though addrs[] shifted.
-> 
-> Because forward branches use addrs[] from the previous pass (addrs[j]
-> for target j > current i is computed in the prior pass), those branches
-> would land (N-1)*4 bytes past the intended target.
-> 
-> The comment at arch/powerpc/net/bpf_jit.h:132-138 documents that the
-> PowerPC JIT avoids pass-to-pass size changes by padding the short branch
-> case with a NOP, specifically to prevent this scenario. Does reintroducing
-> an address-dependent, pass-varying size risk incorrect branches?
-> 
-> (Note: commit 0cd8bd7da278 later in this series reworks the stub layout
-> and is described as a layout improvement rather than a fix for this commit,
-> which may provide additional context.)
-> 
-The review correctly identifies a potential mechanism by which a 4-byte
-alignment NOP could mask a size change. However, that mechanism only
-causes a convergence failure if the total code-size reduction between
-passes is exactly compensated by the NOP (i.e. effectively only 4
-bytes). In this JIT, changing an exit from the inline epilogue to a
-branch removes the entire epilogue, so the size reduction is much
-larger than 4 bytes. The NOP can only compensate for 4 bytes; it
-cannot hide the remaining reduction. Therefore the proposed
-convergence failure does not apply to this code.
+> On Sep 8, 2026, at 15:46, Qi Zheng <qi.zheng@linux.dev> wrote:
+>=20
+>=20
+>=20
+> On 9/8/26 11:03 AM, Muchun Song wrote:
+>> HugeTLB vmemmap optimization now uses per-zone shared tail vmemmap =
+pages.
+>> Device DAX has not been switched to that mechanism yet.
+>> Switch device DAX to vmemmap_shared_tail_page() as well. This aligns =
+DAX
+>> with HugeTLB by using the common per-zone shared tail vmemmap page.
+>> The optimization is enabled only for DEV-DAX through =
+pgmap->vmemmap_shift,
+>> which is assigned when a DEV-DAX device is initialized. Unlike =
+FS-DAX,
+>> DEV-DAX does not modify tail struct pages, so sharing them is safe.
+>=20
+> Got it =E2=80=94 adding this description makes things significantly =
+clearer.
 
-- Hari
+Aha, also makes Sashiko happy. This time, it is no longer confused
+with FS-DAX.
+
+>=20
+>> Since the shared tail page can now back ZONE_DEVICE vmemmap mappings,
+>> initialize its entries with PG_reserved for device zones. Also skip
+>> poisoning vmemmap-optimizable sections while their struct pages may =
+be
+>> shared.
+>> Signed-off-by: Muchun Song <songmuchun@bytedance.com>
+>> ---
+>> v2:
+>> - Explain why sharing tail vmemmap pages is safe for DEV-DAX
+>>   (suggested by Qi Zheng)
+>> ---
+>>  include/linux/mmzone.h | 10 +++++++++
+>>  mm/memory_hotplug.c    |  5 +++--
+>>  mm/sparse-vmemmap.c    | 47 =
+++++++++++++++----------------------------
+>>  3 files changed, 28 insertions(+), 34 deletions(-)
+>=20
+> Acked-by: Qi Zheng <qi.zheng@linux.dev>
+
+Thanks.
+
+>=20
+> Thanks,
+> Qi
+
+
 
