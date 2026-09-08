@@ -1,59 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-26737-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26738-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 96C85C79FB3
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 06:35:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0B9CCC79F99
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 06:35:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hfDg24Qkyz30WR;
-	Tue, 08 Sep 2026 16:34:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hfDg42Fqgz3bVl;
+	Tue, 08 Sep 2026 16:34:08 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0a:51c0:0:12e:550::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788849246;
-	cv=none; b=P1XZocqt28SmOjf6NoA8BD7QzOq0VtdOaLucQG/cS6JzxpczFAmmA13Rj0YBMJ9E3rutJXia2kD2/v0VR6pZn32ddFyguv5CJmBQXchJvx+SP7wUO4IdVor8PfPW9qSD431rV+rIUfYWw7sOoQ99bPI/FsVoAxq/d4/v5BmsENQwe9OTvXWBH/5ASA3BuNtf3cD8ENAZ8X3XRbsYp4YAbOPr9Z/HVM2pnUA6xnxBBSWHpZh+Dh8DZzMbo4T/E0nHeyeyP7XIonT/K4iFFKdmlxZsRN/E5q7l9+bT2dedJQ2gl9UszUSNPVz7ngzVDgb3s28tRjEXkgUoWoFmIoljrg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788849248;
+	cv=none; b=oUWw2PQK9TO970IyLfEVr3JSCwoOe6ECj/+pobeUfwHK2xd0IAI5LlJdqrerAGO8zEfKqdV8vCO6Nt7oZbkysQxI0bNgksFvgm7liFJy/OX+BNqQQwljMgzD2SFA0AdxXFSCimxS7hVGdsd81wQFCSlgIjLGzsBECxkIxz3SMZP7iHzida+oI7wrP54ZsoSlwPhDpbo+0pRfAOXOcBeEAelmna7hjmThCG0wOIHDuqLglZ9TrD3KwRyFPCd5dN6fhhPsP3uN0QCp7FixmCK1aQqc9V8nuFKR2HNfBvUfqNxxft5wbSBM7oj6ot+9ASe7RWzpAIYYoSiFcxL7/MPMGw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788849246; c=relaxed/relaxed;
-	bh=JkLB6p5Aaygn3v1gYuxHR1a4yxVdgYLi/cxda/p+uN8=;
+	t=1788849248; c=relaxed/relaxed;
+	bh=Euss1hU2x2ZhK7+uMEH3xqUmzL1+lNLDeNKt8zx8Zkc=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=I8ms0gbzAecSOWcaptuZiRpA9Y51dAQHA2IRW1Rp5BCNJ0pHIWXmVYpuBahXtxGeWevsn/cxEFtr1aLygH4ICEj0dcZ1rseSrFcHBnyOr+S/ZspwtKmpvcieiUho+MdEeRT0kUC1GWupNSyenAc0oTDInrgv9SKA/+xu8SRsRcDo/f+RL5aMC3xos9FviKvbveZEB+OY+omEb937jbZSGnLa6w9VF06NrVay60Daj7OcGkoKYD153839AgQvUCIHMAJFkW8/9WcHf1yP82EI1fA/1MRLO6Eve1lwsq3MaKoOnzaCwU1pI73JSKyJQWVIA2LCbgawch18xQa9hdfpWA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=b2Bsc4yZ; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=x7vG3QWi; dkim-atps=neutral; spf=pass (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+	 In-Reply-To:To:Cc; b=ex1kyUKxFn79364xioTPNmv4gUQnSEIzjNYxb+ofONMG7TlHyKasr4Zv0LpyttOgSLcQhxZA+M8BsFknhIZW/NwmlVE1XTL1vMoX8pJ6g94BdQsTyV+ec/MI5wHc4QkrkSEsqEw4CbzRNl2DDVt4IeaOSGF0Tqst7El+h5Upn3c3A4x/lGBrUQhuEbPOl+GohwwdQyOrJIJG9Y2t0G1Y73/bgLaJRTdLS1i2nWU1wtcd6S+UJOOkXalMmuVsX9yh4Tgaa6bbuErr1bkYOC70xmIn/Xc3snYwfej7ogoo7OxMxlnohtesRl5ONfOk4Fh3TBXt0k3+1+DIENqv8Uq8EQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=MfWNTOL9; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=0B3ADoRp; dkim-atps=neutral; spf=pass (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=b2Bsc4yZ;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=x7vG3QWi;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=MfWNTOL9;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=0B3ADoRp;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
 Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfDfx5sCtz2yyJ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Sep 2026 16:34:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfDfv4Mkyz2yvS
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Sep 2026 16:33:59 +1000 (AEST)
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1788849235;
+	s=2020; t=1788849232;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=JkLB6p5Aaygn3v1gYuxHR1a4yxVdgYLi/cxda/p+uN8=;
-	b=b2Bsc4yZZCv/2zStvOHZ+5ePWQ0eZmT7xR1lkQClQSx0s+SJJVZsDS9kHDKSOqkV04EXRc
-	1Co/AU5QZB8ybfRyD3MRZHLU3U5EN+z2Nsr3nY4EZ3mrza0TUFynEzX8i4hmckaQYL150u
-	HvAm/2cY3Kyh3dFmID9+E0Gr7vn8+l1FhXhoHwaiEmKzrb5aHONKrYbeBhQlstbUJV2WVo
-	/Cu+QeuJCDvdl0AXRGRduW9ZDawna43n+2sGf3T1TJagsr5MBwClzchUDkvRjVatnSeZtK
-	nY2/4prGOYlHHzFHeX8N7JsFwydH46UcNwCZpP1P9canDwGt2uhvHTkqMxjTzg==
+	bh=Euss1hU2x2ZhK7+uMEH3xqUmzL1+lNLDeNKt8zx8Zkc=;
+	b=MfWNTOL9A5T1vKJNwIjD59pmTGPuW36oTts5TGKycfknuZNPWHLCXMwTXagPiM5olzrNXC
+	A2KmwpugkTYWoeqHDnToD2jl3QNHOIswTcybHrvOnlc4JoDkIlR04nz6Ibidrn5s8nZAZz
+	+GciVMvzSge9Vlz1fsbKdU1Wzkef0/Ky0c3NjMs6MjUvAKfXGksre3HmkLYGKqnLW9o7Wn
+	y8T2cq5/LZljl4BGC0uXKmxYxgMrXPXUbQC7B4GuVjrnj5HS4uJCzASAlVzsyHkX0YuIgX
+	nDze63+7a6KzaBfAEIy7iVTyLPX+eaJ2jVHV39+R1eshowrRkZ8BFQiTOfpc0Q==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1788849235;
+	s=2020e; t=1788849232;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=JkLB6p5Aaygn3v1gYuxHR1a4yxVdgYLi/cxda/p+uN8=;
-	b=x7vG3QWiRwmW98omRQPlaZFU76UvHL2q5q8hKbQ0OxRFsx2Px/LNZ+L3EC2Y+ySRKGHhQy
-	eS3yU3Z0tTMvxhAg==
-Date: Tue, 08 Sep 2026 08:33:48 +0200
-Subject: [PATCH v5 14/24] ARM: vdso: Enable the vdsocheck tool
+	bh=Euss1hU2x2ZhK7+uMEH3xqUmzL1+lNLDeNKt8zx8Zkc=;
+	b=0B3ADoRpJrC3qmibbpi8s3Rm0FLlooEMu2n34FPnb6gxO/K5fuylFaQ0QT96IU14e1TUB7
+	7fSguoDBSlga1zDQ==
+Date: Tue, 08 Sep 2026 08:33:42 +0200
+Subject: [PATCH v5 08/24] s390/elf: Move relocation constants to UAPI
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -69,7 +69,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20260908-vdso-absolute-reloc-v5-14-3a93791af1cf@linutronix.de>
+Message-Id: <20260908-vdso-absolute-reloc-v5-8-3a93791af1cf@linutronix.de>
 References: <20260908-vdso-absolute-reloc-v5-0-3a93791af1cf@linutronix.de>
 In-Reply-To: <20260908-vdso-absolute-reloc-v5-0-3a93791af1cf@linutronix.de>
 To: Paul Walmsley <paul.walmsley@sifive.com>, 
@@ -111,81 +111,211 @@ Cc: linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
  Arnaldo Carvalho de Melo <acme@redhat.com>, 
  Alexandre Ghiti <alexghiti@rivosinc.com>, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1788849226; l=2444;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1788849226; l=11064;
  i=thomas.weissschuh@linutronix.de; s=20240209; h=from:subject:message-id;
- bh=5Gobf0xeM6oQnluCotYvDM+iRhHp/CqDKzVKvDYgKwE=;
- b=lQ6F773yey6sveLRjZ316ezChGjQ/W1VbZFhepBwbB+581BX6rUFfyRGnwkoZjYfE1ZBXrBr1
- 697Lhc8ZNfWDhI1gNse15EH3qBq+xOPmSQUzK0CAa+i2HEmHInauhxP
+ bh=lWVxO2QThO9KZ071syRFd2yqH7yAImHYPgjFRfvsAZw=;
+ b=2TWWP6HVLxWfv7jDIA/m6Eu8ceLWfYcGBhxvF6/tO1AGkQbV7fcELQWaBtCEJ6WUoq40vLhZF
+ 7P+tlHmMhvyCp8JHYjB2hZYnihD6Uft1M/hUydD9OHIL1FS1MCFcQ9m
 X-Developer-Key: i=thomas.weissschuh@linutronix.de; a=ed25519;
  pk=pfvxvpFUDJV2h2nY0FidLUml22uGLSjByFbM6aqQQws=
 
-The vdsocheck tool validates the object files and final .so library.
-It can detect if the compiler created relocations which are incompatible
-with the vDSO which need to be worked around.
+These constants are useful for cross-platform userspace, for example to
+process ELF files during kernel cross-compilation.
 
-Wire it up for the architecture.
+Move them from the kernel-private architecture-specific header to the UAPI.
 
 Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
 ---
- arch/arm/mm/Kconfig         | 1 +
- arch/arm/vdso/Makefile      | 4 ++--
- lib/vdso/check/vdsocheck.rs | 9 +++++++++
- 3 files changed, 12 insertions(+), 2 deletions(-)
+ arch/s390/include/asm/elf.h | 83 ---------------------------------------------
+ include/uapi/linux/elf-r.h  | 83 +++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 83 insertions(+), 83 deletions(-)
 
-diff --git a/arch/arm/mm/Kconfig b/arch/arm/mm/Kconfig
-index 6574659dfb61..565988a66e98 100644
---- a/arch/arm/mm/Kconfig
-+++ b/arch/arm/mm/Kconfig
-@@ -950,6 +950,7 @@ config VDSO
- 	depends on AEABI && MMU && CPU_V7
- 	default y if ARM_ARCH_TIMER
- 	select GENERIC_GETTIMEOFDAY
-+	select VDSO_CHECK
- 	help
- 	  Place in the process address space an ELF shared object
- 	  providing fast implementations of gettimeofday and
-diff --git a/arch/arm/vdso/Makefile b/arch/arm/vdso/Makefile
-index cf8cd39ab804..fd34d0ff018a 100644
---- a/arch/arm/vdso/Makefile
-+++ b/arch/arm/vdso/Makefile
-@@ -37,7 +37,7 @@ endif
- $(obj)/vdso.o : $(obj)/vdso.so
+diff --git a/arch/s390/include/asm/elf.h b/arch/s390/include/asm/elf.h
+index bb63fa4d20bb..c3fa168f0c30 100644
+--- a/arch/s390/include/asm/elf.h
++++ b/arch/s390/include/asm/elf.h
+@@ -8,89 +8,6 @@
+ #ifndef __ASMS390_ELF_H
+ #define __ASMS390_ELF_H
  
- # Link rule for the .so file
--$(obj)/vdso.so.raw: $(obj)/vdso.lds $(obj-vdso) FORCE
-+$(obj)/vdso.so.raw: $(obj)/vdso.lds $(obj-vdso) $(vdsocheck) FORCE
- 	$(call if_changed,vdsold_and_vdso_check)
+-/* s390 relocations defined by the ABIs */
+-#define R_390_NONE		0	/* No reloc.  */
+-#define R_390_8			1	/* Direct 8 bit.  */
+-#define R_390_12		2	/* Direct 12 bit.  */
+-#define R_390_16		3	/* Direct 16 bit.  */
+-#define R_390_32		4	/* Direct 32 bit.  */
+-#define R_390_PC32		5	/* PC relative 32 bit.	*/
+-#define R_390_GOT12		6	/* 12 bit GOT offset.  */
+-#define R_390_GOT32		7	/* 32 bit GOT offset.  */
+-#define R_390_PLT32		8	/* 32 bit PC relative PLT address.  */
+-#define R_390_COPY		9	/* Copy symbol at runtime.  */
+-#define R_390_GLOB_DAT		10	/* Create GOT entry.  */
+-#define R_390_JMP_SLOT		11	/* Create PLT entry.  */
+-#define R_390_RELATIVE		12	/* Adjust by program base.  */
+-#define R_390_GOTOFF32		13	/* 32 bit offset to GOT.	 */
+-#define R_390_GOTPC		14	/* 32 bit PC rel. offset to GOT.  */
+-#define R_390_GOT16		15	/* 16 bit GOT offset.  */
+-#define R_390_PC16		16	/* PC relative 16 bit.	*/
+-#define R_390_PC16DBL		17	/* PC relative 16 bit shifted by 1.  */
+-#define R_390_PLT16DBL		18	/* 16 bit PC rel. PLT shifted by 1.  */
+-#define R_390_PC32DBL		19	/* PC relative 32 bit shifted by 1.  */
+-#define R_390_PLT32DBL		20	/* 32 bit PC rel. PLT shifted by 1.  */
+-#define R_390_GOTPCDBL		21	/* 32 bit PC rel. GOT shifted by 1.  */
+-#define R_390_64		22	/* Direct 64 bit.  */
+-#define R_390_PC64		23	/* PC relative 64 bit.	*/
+-#define R_390_GOT64		24	/* 64 bit GOT offset.  */
+-#define R_390_PLT64		25	/* 64 bit PC relative PLT address.  */
+-#define R_390_GOTENT		26	/* 32 bit PC rel. to GOT entry >> 1. */
+-#define R_390_GOTOFF16		27	/* 16 bit offset to GOT. */
+-#define R_390_GOTOFF64		28	/* 64 bit offset to GOT. */
+-#define R_390_GOTPLT12		29	/* 12 bit offset to jump slot.	*/
+-#define R_390_GOTPLT16		30	/* 16 bit offset to jump slot.	*/
+-#define R_390_GOTPLT32		31	/* 32 bit offset to jump slot.	*/
+-#define R_390_GOTPLT64		32	/* 64 bit offset to jump slot.	*/
+-#define R_390_GOTPLTENT		33	/* 32 bit rel. offset to jump slot.  */
+-#define R_390_PLTOFF16		34	/* 16 bit offset from GOT to PLT. */
+-#define R_390_PLTOFF32		35	/* 32 bit offset from GOT to PLT. */
+-#define R_390_PLTOFF64		36	/* 16 bit offset from GOT to PLT. */
+-#define R_390_TLS_LOAD		37	/* Tag for load insn in TLS code. */
+-#define R_390_TLS_GDCALL	38	/* Tag for function call in general
+-                                           dynamic TLS code.  */
+-#define R_390_TLS_LDCALL	39	/* Tag for function call in local
+-                                           dynamic TLS code.  */
+-#define R_390_TLS_GD32		40	/* Direct 32 bit for general dynamic
+-                                           thread local data.  */
+-#define R_390_TLS_GD64		41	/* Direct 64 bit for general dynamic
+-                                           thread local data.  */
+-#define R_390_TLS_GOTIE12	42	/* 12 bit GOT offset for static TLS
+-                                           block offset.  */
+-#define R_390_TLS_GOTIE32	43	/* 32 bit GOT offset for static TLS
+-                                           block offset.  */
+-#define R_390_TLS_GOTIE64	44	/* 64 bit GOT offset for static TLS
+-                                           block offset.  */
+-#define R_390_TLS_LDM32		45	/* Direct 32 bit for local dynamic
+-                                           thread local data in LD code.  */
+-#define R_390_TLS_LDM64		46	/* Direct 64 bit for local dynamic
+-                                           thread local data in LD code.  */
+-#define R_390_TLS_IE32		47	/* 32 bit address of GOT entry for
+-                                           negated static TLS block offset.  */
+-#define R_390_TLS_IE64		48	/* 64 bit address of GOT entry for
+-                                           negated static TLS block offset.  */
+-#define R_390_TLS_IEENT		49	/* 32 bit rel. offset to GOT entry for
+-                                           negated static TLS block offset.  */
+-#define R_390_TLS_LE32		50	/* 32 bit negated offset relative to
+-                                           static TLS block.  */
+-#define R_390_TLS_LE64		51	/* 64 bit negated offset relative to
+-                                           static TLS block.  */
+-#define R_390_TLS_LDO32		52	/* 32 bit offset relative to TLS
+-                                           block.  */
+-#define R_390_TLS_LDO64		53	/* 64 bit offset relative to TLS
+-                                           block.  */
+-#define R_390_TLS_DTPMOD	54	/* ID of module containing symbol.  */
+-#define R_390_TLS_DTPOFF	55	/* Offset in TLS block.  */
+-#define R_390_TLS_TPOFF		56	/* Negate offset in static TLS
+-                                           block.  */
+-#define R_390_20		57	/* Direct 20 bit.  */
+-#define R_390_GOT20		58	/* 20 bit GOT offset.  */
+-#define R_390_GOTPLT20		59	/* 20 bit offset to jump slot.  */
+-#define R_390_TLS_GOTIE20	60	/* 20 bit GOT offset for static TLS
+-					   block offset.  */
+-/* Keep this the last entry.  */
+-#define R_390_NUM	61
+-
+ /*
+  * HWCAP flags - for AT_HWCAP
+  *
+diff --git a/include/uapi/linux/elf-r.h b/include/uapi/linux/elf-r.h
+index 4b6d3f111d7b..3d9e3b57f1ff 100644
+--- a/include/uapi/linux/elf-r.h
++++ b/include/uapi/linux/elf-r.h
+@@ -510,4 +510,87 @@
+ #define R_LARCH_TLS_DESC_PCADD_HI20		138
+ #define R_LARCH_TLS_DESC_PCADD_LO12		139
  
- $(obj)/vdso.so.dbg: $(obj)/vdso.so.raw $(obj)/vdsomunge FORCE
-@@ -50,7 +50,7 @@ $(obj)/%.so: $(obj)/%.so.dbg FORCE
- 
- # Actual build commands
- quiet_cmd_vdsold_and_vdso_check = LD      $@
--      cmd_vdsold_and_vdso_check = $(cmd_ld); $(cmd_vdso_check)
-+      cmd_vdsold_and_vdso_check = $(cmd_ld_vdso); $(cmd_vdso_check)
- 
- quiet_cmd_vdsomunge = MUNGE   $@
-       cmd_vdsomunge = $(objtree)/$(obj)/vdsomunge $< $@
-diff --git a/lib/vdso/check/vdsocheck.rs b/lib/vdso/check/vdsocheck.rs
-index 1174d896a68b..fb88ef0be09d 100644
---- a/lib/vdso/check/vdsocheck.rs
-+++ b/lib/vdso/check/vdsocheck.rs
-@@ -48,6 +48,15 @@ fn allowed_relocations_for_machine(machine: u16) -> Option<AllowedRelocations<'s
-             ..Default::default()
-         }
-         .into(),
-+        bindings::EM_ARM => AllowedRelocations {
-+            in_object_file: &[
-+                bindings::R_ARM_NONE,
-+                bindings::R_ARM_REL32,
-+                bindings::R_ARM_PREL31,
-+            ],
-+            ..Default::default()
-+        }
-+        .into(),
-         _ => None,
-     }
- }
++/* s390 relocations defined by the ABIs */
++#define R_390_NONE		0	/* No reloc.  */
++#define R_390_8			1	/* Direct 8 bit.  */
++#define R_390_12		2	/* Direct 12 bit.  */
++#define R_390_16		3	/* Direct 16 bit.  */
++#define R_390_32		4	/* Direct 32 bit.  */
++#define R_390_PC32		5	/* PC relative 32 bit.	*/
++#define R_390_GOT12		6	/* 12 bit GOT offset.  */
++#define R_390_GOT32		7	/* 32 bit GOT offset.  */
++#define R_390_PLT32		8	/* 32 bit PC relative PLT address.  */
++#define R_390_COPY		9	/* Copy symbol at runtime.  */
++#define R_390_GLOB_DAT		10	/* Create GOT entry.  */
++#define R_390_JMP_SLOT		11	/* Create PLT entry.  */
++#define R_390_RELATIVE		12	/* Adjust by program base.  */
++#define R_390_GOTOFF32		13	/* 32 bit offset to GOT.	 */
++#define R_390_GOTPC		14	/* 32 bit PC rel. offset to GOT.  */
++#define R_390_GOT16		15	/* 16 bit GOT offset.  */
++#define R_390_PC16		16	/* PC relative 16 bit.	*/
++#define R_390_PC16DBL		17	/* PC relative 16 bit shifted by 1.  */
++#define R_390_PLT16DBL		18	/* 16 bit PC rel. PLT shifted by 1.  */
++#define R_390_PC32DBL		19	/* PC relative 32 bit shifted by 1.  */
++#define R_390_PLT32DBL		20	/* 32 bit PC rel. PLT shifted by 1.  */
++#define R_390_GOTPCDBL		21	/* 32 bit PC rel. GOT shifted by 1.  */
++#define R_390_64		22	/* Direct 64 bit.  */
++#define R_390_PC64		23	/* PC relative 64 bit.	*/
++#define R_390_GOT64		24	/* 64 bit GOT offset.  */
++#define R_390_PLT64		25	/* 64 bit PC relative PLT address.  */
++#define R_390_GOTENT		26	/* 32 bit PC rel. to GOT entry >> 1. */
++#define R_390_GOTOFF16		27	/* 16 bit offset to GOT. */
++#define R_390_GOTOFF64		28	/* 64 bit offset to GOT. */
++#define R_390_GOTPLT12		29	/* 12 bit offset to jump slot.	*/
++#define R_390_GOTPLT16		30	/* 16 bit offset to jump slot.	*/
++#define R_390_GOTPLT32		31	/* 32 bit offset to jump slot.	*/
++#define R_390_GOTPLT64		32	/* 64 bit offset to jump slot.	*/
++#define R_390_GOTPLTENT		33	/* 32 bit rel. offset to jump slot.  */
++#define R_390_PLTOFF16		34	/* 16 bit offset from GOT to PLT. */
++#define R_390_PLTOFF32		35	/* 32 bit offset from GOT to PLT. */
++#define R_390_PLTOFF64		36	/* 16 bit offset from GOT to PLT. */
++#define R_390_TLS_LOAD		37	/* Tag for load insn in TLS code. */
++#define R_390_TLS_GDCALL	38	/* Tag for function call in general
++                                           dynamic TLS code.  */
++#define R_390_TLS_LDCALL	39	/* Tag for function call in local
++                                           dynamic TLS code.  */
++#define R_390_TLS_GD32		40	/* Direct 32 bit for general dynamic
++                                           thread local data.  */
++#define R_390_TLS_GD64		41	/* Direct 64 bit for general dynamic
++                                           thread local data.  */
++#define R_390_TLS_GOTIE12	42	/* 12 bit GOT offset for static TLS
++                                           block offset.  */
++#define R_390_TLS_GOTIE32	43	/* 32 bit GOT offset for static TLS
++                                           block offset.  */
++#define R_390_TLS_GOTIE64	44	/* 64 bit GOT offset for static TLS
++                                           block offset.  */
++#define R_390_TLS_LDM32		45	/* Direct 32 bit for local dynamic
++                                           thread local data in LD code.  */
++#define R_390_TLS_LDM64		46	/* Direct 64 bit for local dynamic
++                                           thread local data in LD code.  */
++#define R_390_TLS_IE32		47	/* 32 bit address of GOT entry for
++                                           negated static TLS block offset.  */
++#define R_390_TLS_IE64		48	/* 64 bit address of GOT entry for
++                                           negated static TLS block offset.  */
++#define R_390_TLS_IEENT		49	/* 32 bit rel. offset to GOT entry for
++                                           negated static TLS block offset.  */
++#define R_390_TLS_LE32		50	/* 32 bit negated offset relative to
++                                           static TLS block.  */
++#define R_390_TLS_LE64		51	/* 64 bit negated offset relative to
++                                           static TLS block.  */
++#define R_390_TLS_LDO32		52	/* 32 bit offset relative to TLS
++                                           block.  */
++#define R_390_TLS_LDO64		53	/* 64 bit offset relative to TLS
++                                           block.  */
++#define R_390_TLS_DTPMOD	54	/* ID of module containing symbol.  */
++#define R_390_TLS_DTPOFF	55	/* Offset in TLS block.  */
++#define R_390_TLS_TPOFF		56	/* Negate offset in static TLS
++                                           block.  */
++#define R_390_20		57	/* Direct 20 bit.  */
++#define R_390_GOT20		58	/* 20 bit GOT offset.  */
++#define R_390_GOTPLT20		59	/* 20 bit offset to jump slot.  */
++#define R_390_TLS_GOTIE20	60	/* 20 bit GOT offset for static TLS
++					   block offset.  */
++/* Keep this the last entry.  */
++#define R_390_NUM	61
++
+ #endif /* _UAPI_LINUX_ELF_R_H */
 
 -- 
 2.55.0
