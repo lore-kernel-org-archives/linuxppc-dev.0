@@ -1,52 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-26854-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26855-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0CF8C79FAD
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 20:17:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 59D50C79FAE
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 20:17:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hfZwr1kHMz2yrg;
-	Wed, 09 Sep 2026 06:17:16 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788898636;
-	cv=none; b=LoMcE1bpcmuKtuFMCtQ5eofJvlfaYvT4+WO0TSS9+IFvpQ581v96ZbvooXC2BbnRWmzWShhZ75Db+PO5hsqgcFMwATl1F3miLYRsRGuiSM3HjWYHr7oTITPNyriJi9RpKvWgIGTqi0qbt/ofV/DSRBIfZuNJtJR8V49MD4+bh35PqaLHuEzBQ5zNXtmumhxAaoQY5CB2m80EXTM78eNXonCdXRjfa8+37gEsR9hOX4xoDILUkNtY7UXmWG2KZaZX7ZeKVPVcm9vpZ+ZEV3qOslPpneFBB/IK0ovOs/br1kwm0lfx1Spxx67i1vMF0jwLAIkB5NGz47HeDiKrrqX8mA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hfZxP53pyz2yqf;
+	Wed, 09 Sep 2026 06:17:45 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788898665;
+	cv=none; b=YEZlJVuI71/wKRnD5h8KQ2VpHjoEA5pAZ3HFp/j6dS4y80Wn/jCDNc9DiKArDSClzvCvnwsA1HDdPw9E6jVW2MHLiKkwl9cD2Ic6wQXKZ0WsQEmE1ZRnoZBqEZYVUePEYaYg1PuhjKWvoyGNdDbDgeF8seJqpH6QaIDgoob7Ad4l7WuVfrxojeIXt3lstOb4ntI+XdfkIsc+SM3+IkWBfsRcontATeZzSNYbJ+KSzo2Gphd+/n1v7L+qp9XxJXQqL0bralnXpWRvSNJxSdgEI3tjx8FmS113Gaj+8SRuOhxZSmJ5ZWj6H9qOtexvY3b+yG1mf/2OAWn1IemxxwnHLw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788898636; c=relaxed/relaxed;
-	bh=9WoUWUiccCZ5pmncdG/fVn1uDF622HEjGzqeAT5aHc8=;
+	t=1788898665; c=relaxed/relaxed;
+	bh=fq/fqooLp6MfqSbPhzdOUvBF6Y5t6h1fABLuyvNgM4c=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=ijfLLNyzpFIfspfefQIrdH6iYail/b6L73rveMJeyH0FPT1rCVJeyuPMKC6zKsiw1ZMcvTb8JGCp8KA0nXB2BASwCdl8U46wb4lnoqxi1qDpe/urA7R024Jjsd1/3kUGvqplCs2V+HqPxiLnmiugizoh+yKuBc6VGVnw3kZPSeOVqnscNW4TWekmzfqNkmCUgtzU9fk8HOBtHo9B3mRDPUdsIHscDuLEoUZshzXUO004zpfdEoEBuiIrtNPWSeq8AUxpMTMbkQQ5447zLAoePuiWzPJ8xenNEjOOH3ESrOVZ7D/2Iw613NbiLbMDt6B+LwL9wOyUBwaa59OAXPNpaw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WCx9g0et; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=H/czrOMoY2Dw62ky3fB3mMGAWGisRZUVwIqMSfCX/r8uui4I0aSckGX4cqA85gykdE/CKvFO7or5oY6XU+hfuWQgxsR/+HSgi1TZ7EthP2SeirOWv3lfUCymcU3WBSEoBC1zlhXWZypdJldvDREtkMAaH2DiFLZT7JZhaDO4RavkF7OuRepn+tSyIW6Q9mu+567vPWpByIWgGpGVBEG3sIBomD+kUnWH7Vym+weTSBfMyXTfL/0NaEI5MAI7/2TeKgHgbn+LD/GDRl26e0ojnutSf0ZiD3Bfnx6aLDLkxBFCQu7nxe8dHZeLl/Gb4v5M/9z83q3cICcysjdOK4fisQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nSWBV92L; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WCx9g0et;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nSWBV92L;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfZwq3073z2yrd
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Sep 2026 06:17:15 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfZxN4fhVz2yqX
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Sep 2026 06:17:44 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id D3C4542EAA;
-	Tue,  8 Sep 2026 20:17:13 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B9BD71F00A3A;
-	Tue,  8 Sep 2026 20:16:45 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id A9DB9601DE;
+	Tue,  8 Sep 2026 20:17:42 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3AFED1F00A3D;
+	Tue,  8 Sep 2026 20:17:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788898633;
-	bh=9WoUWUiccCZ5pmncdG/fVn1uDF622HEjGzqeAT5aHc8=;
+	s=k20260515; t=1788898662;
+	bh=fq/fqooLp6MfqSbPhzdOUvBF6Y5t6h1fABLuyvNgM4c=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=WCx9g0etxmzhUw/9vx7dYEuk+1E+t7RRF5GYxZ3UboiiICcZJ2Z9VJXIAX5jvZAuK
-	 yLn3n9H2CIkNxPVJIviLI/un0CQOivB5urZe9HHAgD5DOtxto4kGoralvGL6kuQxq7
-	 WlJdP4LsB8jP3OaO+x7IB2Mv8LkIcnHT+PIwoP8WVj8TGNcEmoljLAKM1f26rjlYBg
-	 KHgC8wVn6x7kLvbLQC+H30sQyVOp0lZUZU9rB9+gs97wte01EHALW54o2MKn9uudGh
-	 FvY0e3bpNwXp7EH2Agf5q2IWP50fU9Z2s03D2k/bOK8gl4G1EEOPz807EajKpcBayM
-	 cZJmMvliLRSAQ==
+	b=nSWBV92L+8t85kwuXHhkDdHjHxkPeSVQxnQMn5LDdjW/GH3RVqyylhr9uF/rq7fMw
+	 IfsOvxIPVuLYZAxIct2QzMu04i7HxvW5irZq3CgmmtoyeP8i8aQeqoI6bIukQ/2N5h
+	 XprLc3jpyjfbL5Gn4wzXeKKiM9sllVEhyrfcl9XF77WXNObvHKajzVmpIe5dBsd1Ko
+	 S7q6g3Te9Bt3hrNbZYTCSM8M6O0Ln9y/8KvHRS5h+yAbVSkOaWNKBwUXyDOx0f4iBz
+	 t0zSmYE9hyM3PIZ9eCfmiKanYIC9dhvvc33E3z6yfYVF2D54QxIabTvgmvGOdILKjf
+	 tqlk99+loBPuw==
 From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Date: Tue, 08 Sep 2026 21:01:35 +0100
-Subject: [PATCH 31/39] mm/uffd: use predicates for userfaultfd checks
+Date: Tue, 08 Sep 2026 21:01:36 +0100
+Subject: [PATCH 32/39] mm/madvise: use predicates for madvise(...,
+ MADV_DOFORK)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,7 +63,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260908-b4-mmap-prepare-vma-flag-sanify-v1-31-dacf19cce22b@kernel.org>
+Message-Id: <20260908-b4-mmap-prepare-vma-flag-sanify-v1-32-dacf19cce22b@kernel.org>
 References: <20260908-b4-mmap-prepare-vma-flag-sanify-v1-0-dacf19cce22b@kernel.org>
 In-Reply-To: <20260908-b4-mmap-prepare-vma-flag-sanify-v1-0-dacf19cce22b@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>, 
@@ -146,75 +147,52 @@ Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, 
  fuse-devel@lists.linux.dev, "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2289; i=ljs@kernel.org;
- h=from:subject:message-id; bh=RaKyg3GqRiVqHvw/UDaaHvGcpLhQwigi+RNlsL2zffs=;
- b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLIWZG6N47m4kJcv6WDE48sr8nKPqpXlTvmzNeP1N5ct/
- 8WWxMz/0VHKwiDGxSArpsjy/Iv4/iCRsHmdF/zdYOawMoEMYeDiFICJrHFkZPivHvnoI//nC3//
- vu0/ayir/68l9MOiJTsmir23Xe51QtWZkWHVl+PpG7ifX94VlC64cdvh6P9OBZ7sQWuMT79TX6r
- 6uowdAA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1318; i=ljs@kernel.org;
+ h=from:subject:message-id; bh=TpPN2uIwyk7OPd2HBI4HDHxlc10ZpBuX2afWbalydvk=;
+ b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLIWZG71OZ8YG6oUvPbDhZWKFe1bWV9uWZA4/eGCU08LV
+ +n9imKZ1lHKwiDGxSArpsjy/Iv4/iCRsHmdF/zdYOawMoEMYeDiFICJ8Bow/OGw4Fc81vZa3NGh
+ ZplwvVTyy0oLmQjl/ekSq1+lq1+acImR4WftM4X62JoP/VfumMyvvPKl3WmxvsPbdJG00K75q8P
+ mMQMA
 X-Developer-Key: i=ljs@kernel.org; a=openpgp;
  fpr=E7F417BF5214569E89D04F46CF9DCD8A81E27F14
 
-Rather than directly checking VMA flags, use the newly introduced
-vma_is_kernel_owned() and vma_is_persistent() helpers in userfaultfd when
-assessing VMA suitability for userfaultfd and UFFDIO_MOVE.
+Make it clear what we're blocking in MADV_DOFORK. Previously we simply
+disallowed VM_SPECIAL i.e. kernel-owned mappings, fixed mappings and
+VMA_IO_BIT.
 
-Update vma_move_compatible() so it's expressed in terms of VMA
-characteristics rather than arbitrary flags.
+Now the invariant is established that only kernel-owned mappings can set
+VMA_IO_BIT, the VMA_IO_BIT check is redundant.
 
-Additionally, update the use of the deprecated VMA flag API when checking
-VMA_SHADOW_STACK_BIT.
+The rest is equivalent to testing for a kernel-owned or fixed mapping,
+i.e. exactly the same check as whether the VMA is permitted to be merged.
 
-A VMA_IO_BIT check is no longer required but that is fine as a hard
-invariant has been established that only kernel-owned mappings may set
-VMA_IO_BIT so the check is now redundant.
+This was established by commit 0b2758f48f22 ("Require (reasonably) normal
+mappings for MADV_DOFORK") containing my hands-down favourite call out of
+all time.
+
+Express the same thing differently - if we wouldn't be allowed to merge it,
+then we aren't allowed to manipulate CoW behaviour on fork.
+
+No functional change intended.
 
 Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 ---
- mm/userfaultfd.c | 21 +++++++++++++++------
- 1 file changed, 15 insertions(+), 6 deletions(-)
+ mm/madvise.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/mm/userfaultfd.c b/mm/userfaultfd.c
-index 949017e60608..ddf0a4a3d399 100644
---- a/mm/userfaultfd.c
-+++ b/mm/userfaultfd.c
-@@ -1754,10 +1754,18 @@ static inline bool move_splits_huge_pmd(unsigned long dst_addr,
- }
- #endif
- 
--static inline bool vma_move_compatible(struct vm_area_struct *vma)
-+static inline bool vma_move_compatible(const struct vm_area_struct *vma)
- {
--	return !(vma->vm_flags & (VM_PFNMAP | VM_IO |  VM_HUGETLB |
--				  VM_MIXEDMAP | VM_SHADOW_STACK));
-+	/* uffd is generally incompatible with kernel-owned mappings. */
-+	if (vma_is_kernel_owned(vma))
-+		return false;
-+	/* The shadow stack should not be written to by userspace. */
-+	if (vma_test_single_mask(vma, VMA_SHADOW_STACK))
-+		return false;
-+	/* hugetlb mappings cannot be safely moved. */
-+	if (vma_is_hugetlb(vma))
-+		return false;
-+	return true;
- }
- 
- static int validate_move_areas(struct userfaultfd_ctx *ctx,
-@@ -2146,10 +2154,11 @@ static bool vma_can_userfault(struct vm_area_struct *vma, vm_flags_t vm_flags,
- {
- 	const struct vm_uffd_ops *ops = vma_uffd_ops(vma);
- 
--	if (vma->vm_flags & (VM_DROPPABLE | VM_SHADOW_STACK))
-+	/* Non-persistent memory is inherently not controllable by userspace. */
-+	if (!vma_is_persistent(vma))
- 		return false;
--
--	if (!vma_is_hugetlb(vma) && (vma->vm_flags & VM_SPECIAL))
-+	/* The shadow stack should not be written to by userspace. */
-+	if (vma_test_single_mask(vma, VMA_SHADOW_STACK))
- 		return false;
- 
- 	vm_flags &= __VM_UFFD_FLAGS;
+diff --git a/mm/madvise.c b/mm/madvise.c
+index 0fc31835fee1..f805a4876c87 100644
+--- a/mm/madvise.c
++++ b/mm/madvise.c
+@@ -1400,7 +1400,7 @@ static int madvise_vma_behavior(struct madvise_behavior *madv_behavior)
+ 		new_flags |= VM_DONTCOPY;
+ 		break;
+ 	case MADV_DOFORK:
+-		if (new_flags & VM_SPECIAL)
++		if (!vma_can_merge(vma))
+ 			return -EINVAL;
+ 		new_flags &= ~VM_DONTCOPY;
+ 		break;
 
 -- 
 2.55.0
