@@ -1,102 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-26712-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26713-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C571DC79F9F
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 03:05:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C51C2C79F82
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 03:53:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hf81b74Brz2yqd;
-	Tue, 08 Sep 2026 13:04:51 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::434"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788836691;
-	cv=none; b=Wx1DTApHOVC/CwbwowKPoMd9ISq/nkOEOG8eg3tL3mNGma0ixVt83WuanozP4VLElUsMqOBByj68/5/KrayPzgZECBHK2gbWJwMF0F1oR5OLTcTq5C7f9vq9JFqqhza6Bid+E8eUIFK9uePxNG6ckdLvPIPPitbONl22sV3yQq922puwTWMkh4TzkEql99zSNpys3GLfIdWB+AEmKF/YWueqb6OOsomCveK1e0RTP4Fidb6suotIzfVF9BKYWfa64zbQW6xY7YaW7wtItiNbxT4vFseJ+WqZGr9oeWc1CoxtF3wIxAbS8gs2DqKAQ8jUR0OARlZebAHN4gxm/E6coQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hf95Z0hTdz2xqp;
+	Tue, 08 Sep 2026 13:53:22 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788839602;
+	cv=none; b=n3pt60Y3WOImaR/F/A2jseFsZYjrbr+9RAahYyNyD2fqIi2GVBRS4f6LH7OMfQUZeaJrY0X9NSvECt8L4hCkzoAEJB6EEKzgxPOzisdJuHL3+yUIQUOZenWYM6+vMGuu5Y/vIZJ/FzLkrWHLe1Vj2aSSdJ9RnHzxg9uq170a1SZPrJwJrMsUW6Q1U7DimGdujeJJO9aMcPeeUD26ptdHl/6pqhOX5OKAWNCqwOcyfoyLPonH+p88saUtx8IOnIkn92w/bbLLJ3K3ZxXZm/vlk1AXC75ZfPnfGqJidlvfP6JuX17uGyw/pmNVyy0XBvLFyGly5z5FZPRfQODdlka7hQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788836691; c=relaxed/relaxed;
-	bh=IQIwuT52UGUULzXnvd9jyK7/apm1xntD2qx3gMLc028=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=PxDk9aQT7GKbkjsaEVc8/CCPWWToT5EE54GJW9Nbqpb3OeRuYHdSGc4nA0bOJ3rwNOcLfcUHxnUV/gZyICu+nshupY44lfmq/bQ0mU+MCQr8UTLRddSuqaTRMBbmgFzkmxVJQ5e3Vbb4ukuBmJTw6aiZHJQSmoCpm/ErqSjY61QM3xhPG6u2h7VFNGBRHtxhZvxJT16k+oRWyRYpS4y7aDhruTClXmoJUsCh/k67ipVRN5+V2E5S/KX6clMicePGeBmfrrxQbvG06l6lU4D0ulfRhqeVzmlMKxEFNBEG1kwBBO2A4CNC44eoTLGk+AhlIdMtzwHpWctc76UpVRJ8NA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=h5sK3ahq; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::434; helo=mail-pf1-x434.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com
+	t=1788839602; c=relaxed/relaxed;
+	bh=3uBMiZS8f0vKQfyxRDmopcFiYNmVAX97oSfRAF+7MNo=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=A6mNVbd7pwL3o1KHkobzneefn+O7Nydqes3SmYiqAP8y8VU1ta9/41jJLcicd1z/aZxMoVUbwCgjBXJlEG0x/ZHD1zy2PUIR+LXl5YoNfTUC4LCkePymKo+/tHMt+ONtw6MtGg/Lug9Xey0TgrBG9Zy6aLJlSuP1pj6X+zVKs7Ifhp2YMo0E43Obfl/QYKHW+JyUB3Jwjx6DBP9ShFBJbKNcFZNnyM/5u/sFcj9XJvuAq/LMn5rc6tr4jd5dTXtXK2BArSZ1yqTp+uhEHt2x5TmebJnxqDfwKGTDZIvwdOeeWJfVwuztWb3GTL1K/i8JDJYD0G6Gtl1ERqrex8vOPA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bgBZT+MP; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=h5sK3ahq;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bgBZT+MP;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::434; helo=mail-pf1-x434.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x434.google.com (mail-pf1-x434.google.com [IPv6:2607:f8b0:4864:20::434])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hf81b1qyrz2xq0
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Sep 2026 13:04:51 +1000 (AEST)
-Received: by mail-pf1-x434.google.com with SMTP id d2e1a72fcca58-84f3ab8750cso3021441b3a.0
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Sep 2026 20:04:51 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bytedance.com; s=google; t=1788836689; x=1789441489; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=IQIwuT52UGUULzXnvd9jyK7/apm1xntD2qx3gMLc028=;
-        b=h5sK3ahqnrAChppWnzvSDF4jZV+DsCo6cWpj8s38J6H615SPmtxYv4PtNvJVrmDbal
-         BddoDxOB4aHAHP6L7X1fU22sq0xD+aRmJelqOx+oAMge/y3B7jerCd76yc4qijKpMSBF
-         /4rstMhkd6HJmaj7oOORnelZwsQd5SAbPW5s7dC6jjVrBEC9DSnPkV2Y2RxgJd67Py89
-         opVFIbCpGIT5mWJTOOWNDsR4VujYseIlcTFiyMMAnO2uIMbKdLLcEYOuIwkzHGtLwJhT
-         eDVUZM3YgKf+wM9a5Yisn9OfqLanp2XX4i2MRrlN6aNRKzkblfTS1qk3YuEmG1du+kGs
-         2KYA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788836689; x=1789441489;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=IQIwuT52UGUULzXnvd9jyK7/apm1xntD2qx3gMLc028=;
-        b=NQ9XWKXH2EN6TIv7EbkhMNlARgwqT7pM4BN7SRZVAIg6th/hY9c7h1nySpEBwchZ8f
-         vyAcevPBO5P1NCT5zXdzdCgd616gal75skQ4SI8c9F9VEgtPgJ9G+Hoqpv23gfuQZyhD
-         kRJTDO0LZGO+0lTSuLRJ5crVQkp4Lhek7f89Z3dzgv/+XDCgyhogJ5kN8rnYP6gdOnAe
-         2YMftXgjNBq/wy4FfgZKuze+2sZ6sddycr/ZO5m4TLgCsFHAOX4KEmO6S0ZTiSlrfwK1
-         6Sxurado4mgqTTNeVjxI9qN5S/eOPzifpcWPc8eJEBlRx86Dvd42STBXXGRa6/IG6w+4
-         PeSA==
-X-Forwarded-Encrypted: i=1; AKwUvBzf03R1mfIAjG+nJqafH2z2alU2NVnwBlgkZ/9yDXcdE/J9WQO7H3Di5PCxXaWg4cAlNrpL0P3XLMdpYqQ=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++mxfjXvbdzbfyjvle8suKi2xRmdCFQp4XeiltdYatSZOMIad06x
-	GwDQJxJFLclNNK9Rwukovf/ujaj8hwn/xuHVzhbi+qfAJiItpUG2+TBMdRwATS4Sy8k=
-X-Gm-Gg: AYBFou08jmGv20Iffb+C2RAtA8ReQ9qsz4Db50qpndZh1YGLEewjaMuAVmxz2ea8N4l
-	E3ev9gvF+tP82TUr1XSCuiZbonZOawIKwVh+PhaD8CX1P15Hbl28rFaLfXzlPeVK7e0q/x9HV5w
-	ItIWjAppqLaz8N1hcAg1rDxsh2D7DkzzInSwzMnkSpqAtCzyobHDNknY5q5F2wQ2mpvYXORpcQ2
-	MCzMOkA6xgW8bLrEQGkAskvvR5n9OdBzad2jMOpCZGELN0xhGi49q7e0z7xQ2GKk0M3Ilw7j7WP
-	ft78msN8LUx9hp2gpg1WUVACx5CiAwYCss6YPkaia9kjLWFd/1OobEYnzKZk8QpCgZ387YLlvN3
-	4hralHw7hXGBOgOMkZc6muveVxSZDStzKxgTjp39mdV6Ho5PmJzgjfYMzD6j0VW7HiFXpY3zBNs
-	XKgeIm1pgobn5oxdYtQeM+gCGdmSsVTczCufxE9kjrUEq7Eb6ACnfPgNZMHBWMbFo+0tmL+OtPA
-	GgyXW4ec37T+SNyDe6HFbfhEArmWYjh1Jc=
-X-Received: by 2002:a05:6a00:400e:b0:84e:e741:174f with SMTP id d2e1a72fcca58-861669c6df9mr39676733b3a.7.1788836688830;
-        Mon, 07 Sep 2026 20:04:48 -0700 (PDT)
-Received: from G6L4RL2QG9.bytedance.net ([61.213.176.9])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-86152a358a2sm4868234b3a.29.2026.09.07.20.04.44
-        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Mon, 07 Sep 2026 20:04:48 -0700 (PDT)
-From: Muchun Song <songmuchun@bytedance.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-	David Hildenbrand <david@kernel.org>,
-	Oscar Salvador <osalvador@suse.de>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Jonathan Corbet <corbet@lwn.net>
-Cc: linux-mm@kvack.org,
-	linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-doc@vger.kernel.org,
-	Muchun Song <muchun.song@linux.dev>,
-	Lorenzo Stoakes <ljs@kernel.org>,
-	Mike Rapoport <rppt@kernel.org>,
-	Qi Zheng <qi.zheng@linux.dev>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <chleroy@kernel.org>,
-	Randy Dunlap <rdunlap@infradead.org>,
-	Muchun Song <songmuchun@bytedance.com>
-Subject: [PATCH v2 11/11] Documentation/mm: update DAX vmemmap deduplication docs
-Date: Tue,  8 Sep 2026 11:03:35 +0800
-Message-ID: <20260908030335.96549-12-songmuchun@bytedance.com>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <20260908030335.96549-1-songmuchun@bytedance.com>
-References: <20260908030335.96549-1-songmuchun@bytedance.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hf95X69Nqz2xYh
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Sep 2026 13:53:19 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68801sj73379399;
+	Tue, 8 Sep 2026 03:53:06 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=3uBMiZ
+	S8f0vKQfyxRDmopcFiYNmVAX97oSfRAF+7MNo=; b=bgBZT+MPbk2hPy05k/VJIk
+	YJvmy1T8y3nA9+Lnq/wVqadhCsU0DZdPZ4Fr82suN8Un6wnzNZH8w3iq10if+A+h
+	LFcwjoBwrlK8fTIZckmUlFES6expDsgh/Cu4abKzx9DBZXCbKBl9xbWdHzuJYqdr
+	BJxCg0inDpMAMoAG1o9inc9Ub7XMGB3BFShFvg+/8HIaG3t2jxE/z2IRWb/s6bGp
+	DHdHx4yCg3GQgu3bqSK2Sn6THUC1IxugJy9tbZfXzoDEvF2k5JHaFzMU6lqsZAi2
+	tcfdgEJwPh7YmZ+QMVt/I1Kfg82LJmpH6U+e5uLGs0ZeY8OH8qRBcBbbhxPNgoqg
+	==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4ggbf3va0f-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 08 Sep 2026 03:53:05 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6883fHhT023138;
+	Tue, 8 Sep 2026 03:53:04 GMT
+Received: from smtprelay06.dal12v.mail.ibm.com ([172.16.1.8])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4ggxwh1ba5-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 08 Sep 2026 03:53:04 +0000 (GMT)
+Received: from smtpav05.wdc07v.mail.ibm.com (smtpav05.wdc07v.mail.ibm.com [10.39.53.232])
+	by smtprelay06.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6883r2Lr12124926
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 8 Sep 2026 03:53:02 GMT
+Received: from smtpav05.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 69A325805D;
+	Tue,  8 Sep 2026 03:53:02 +0000 (GMT)
+Received: from smtpav05.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 1B7E358043;
+	Tue,  8 Sep 2026 03:52:58 +0000 (GMT)
+Received: from [9.123.0.173] (unknown [9.123.0.173])
+	by smtpav05.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Tue,  8 Sep 2026 03:52:57 +0000 (GMT)
+Message-ID: <690cdbec-d771-4aaa-bb0a-e057af5fd9cb@linux.ibm.com>
+Date: Tue, 8 Sep 2026 09:22:56 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -110,179 +81,159 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] powerpc/interrupt: Use early_radix_enabled() in NMI
+ real-mode guard
+To: Shrikanth Hegde <sshegde@linux.ibm.com>,
+        =?UTF-8?Q?Michal_Such=C3=A1nek?= <msuchanek@suse.de>
+Cc: linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com, mpe@ellerman.id.au,
+        npiggin@gmail.com, chleroy@kernel.org, mkchauras@linux.ibm.com,
+        mkchauras@gmail.com, ruanjinjie@huawei.com, ritesh.list@gmail.com,
+        riteshh@linux.ibm.com, linux-kernel@vger.kernel.org
+References: <20260907070058.26338-1-venkat88@linux.ibm.com>
+ <ap53KNdFJWaUw8GM@kunlun.suse.cz>
+ <a5836b4f-16ad-462c-bfa9-d523915239ea@linux.ibm.com>
+ <df5947b9-ba3f-48b1-81d1-fb4cf93ddd16@linux.ibm.com>
+Content-Language: en-GB
+From: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+In-Reply-To: <df5947b9-ba3f-48b1-81d1-fb4cf93ddd16@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-ORIG-GUID: lFW-7BnXC7FPCPhrm-dbid1SeIlIrQjj
+X-Proofpoint-GUID: pRZCwAaiveYDRuQcqOpGm8c-uOq7jcCw
+X-Authority-Analysis: v=2.4 cv=DbEnbPtW c=1 sm=1 tr=0 ts=6a9f86a1 cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+ a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=VnNF1IyMAAAA:8
+ a=HVQ2MUg0zB031LN6mvgA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTA4MDAzNSBTYWx0ZWRfX4m5/JDAOt0kA
+ veb7+X797Oyd1jpQSQiiiOUR6+jZd2nlu9hbPZWEPQDaJR/V7dnWfwUxsNiuBQVVUlt1aDF7PRc
+ 8OuLxprCD5X9bZNUTrtv9wAtuboI9LSjT1VC+bqCDepZFehfMzdz93PufjZh+/N5IcRCrVKJkjK
+ Ev6bd/FWlnup95UUdW+BoHlwdb/5Zh4PQw7j7eoHm42hsPo0umQgKjTwXza7Q+62VvI/BgBVf6i
+ NlyKviq6XEFlkiZ/Dtr5HRpRk8ydrNJbhHfFsaQ7Z4rX7GChVE1l8h4UUpvHejgl0NSIbroGZ7m
+ z9pz+Xr7ZeTB4UdpYnDkAYUrFJHrFyHMuMW9Eewk7cAJgWckAeD9mwSEFxBgggKjglUGhcw6YqJ
+ Ik4ga0kOztKoUshZKIMqsiuasVdPsDoL1/829kk//FhWTLLZ9o1PxHrz7gXH2H7t20IXg+YZxo4
+ iB/VcWU9f4DvNPdumJQ==
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTA4MDAzNSBTYWx0ZWRfXwjArrGfFazP2
+ MubkMov5w15MEAR9Uc9MFDA0P5LMQftkiDAGFiYr0UQusA96Plm0U50EsWEcuPiEDw+0rCFncYC
+ pp2c5AAc4OBOz+nLdU7p7s//pXsJhVE=
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-07_07,2026-09-07_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 priorityscore=1501 impostorscore=0 adultscore=0 spamscore=0
+ clxscore=1015 suspectscore=0 bulkscore=0 malwarescore=0 lowpriorityscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2609080035
 
-Device DAX now uses the common per-zone shared tail page for vmemmap
-deduplication. The old documentation still described a DAX-specific
-layout with a separately populated tail vmemmap page and half the HugeTLB
-savings.
 
-Update the generic and powerpc documentation to describe the shared layout.
-In the powerpc document, keep the radix and 64K-specific details, drop the
-duplicated 4K PUD arithmetic, and replace the repeated device-dax diagrams
-with a single parameterized PMD/PUD diagram.
+On 07/09/26 10:57 pm, Shrikanth Hegde wrote:
+>
+>
+> On 9/7/26 2:24 PM, Venkat Rao Bagalkote wrote:
+>>
+>> On 07/09/26 2:04 pm, Michal Suchánek wrote:
+>>> Hello,
+>>>
+>>> On Mon, Sep 07, 2026 at 12:30:58PM +0530, Venkat Rao Bagalkote wrote:
+>>>> radix_enabled() uses a jump label which is only valid after
+>>>> mmu_feature_keys_init() is called. Before that point, on a pSeries
+>>>> hash guest, early_check_vec5() clears MMU_FTR_TYPE_RADIX in
+>>>> cur_cpu_spec->mmu_features but the jump label has not yet been 
+>>>> patched,
+>>>> so radix_enabled() incorrectly returns true.
+>>>>
+>>>> Replace radix_enabled() with early_radix_enabled() which does a plain
+>>>> bitmask check against cur_cpu_spec->mmu_features and is correct at all
+>>>> times, including before jump label initialization.
+>>> Any Fixes: here?
+>>
+>>
+>> Hello Michal,
+>>
+>> Yes, this can have.
+>>
+>> Fixes: 118178e62e2e ("powerpc: move NMI entry/exit code into wrapper")
+>>
+>> As commit  originally introduced !radxi_enabled() check in NMI 
+>> wrapper path.
+>>
+>>
+>
+> looks like it did movement of code, rather than introducing.
+>
 
-Signed-off-by: Muchun Song <songmuchun@bytedance.com>
----
-v2:
-- Clarify the commit message to state that the 4K PUD arithmetic is
-  intentionally dropped reported by Sashiko.
----
- Documentation/arch/powerpc/vmemmap_dedup.rst | 90 ++++----------------
- Documentation/mm/vmemmap_dedup.rst           | 32 +------
- 2 files changed, 21 insertions(+), 101 deletions(-)
+Hello Shrikanth,
 
-diff --git a/Documentation/arch/powerpc/vmemmap_dedup.rst b/Documentation/arch/powerpc/vmemmap_dedup.rst
-index dc4db59fdf87..8286acbca9bc 100644
---- a/Documentation/arch/powerpc/vmemmap_dedup.rst
-+++ b/Documentation/arch/powerpc/vmemmap_dedup.rst
-@@ -19,82 +19,28 @@ With 1G PUD level mapping, we require 16384 struct pages and a single 64K
- vmemmap page can contain 1024 struct pages (64K/sizeof(struct page)). Hence we
- require 16 64K pages in vmemmap to map the struct page for 1G PUD level mapping.
- 
--Here's how things look like on device-dax after the sections are populated::
-- +-----------+ ---virt_to_page---> +-----------+   mapping to   +-----------+
-- |           |                     |     0     | -------------> |     0     |
-- |           |                     +-----------+                +-----------+
-- |           |                     |     1     | -------------> |     1     |
-- |           |                     +-----------+                +-----------+
-- |           |                     |     2     | ----------------^ ^ ^ ^ ^ ^
-- |           |                     +-----------+                   | | | | |
-- |           |                     |     3     | ------------------+ | | | |
-- |           |                     +-----------+                     | | | |
-- |           |                     |     4     | --------------------+ | | |
-- |    PUD    |                     +-----------+                       | | |
-- |   level   |                     |     .     | ----------------------+ | |
-- |  mapping  |                     +-----------+                         | |
-- |           |                     |     .     | ------------------------+ |
-- |           |                     +-----------+                           |
-- |           |                     |     15    | --------------------------+
-- |           |                     +-----------+
-- |           |
-- |           |
-- |           |
-- +-----------+
--
--
- With 4K page size, 2M PMD level mapping requires 512 struct pages and a single
- 4K vmemmap page contains 64 struct pages(4K/sizeof(struct page)). Hence we
- require 8 4K pages in vmemmap to map the struct page for 2M pmd level mapping.
- 
--Here's how things look like on device-dax after the sections are populated::
--
-- +-----------+ ---virt_to_page---> +-----------+   mapping to   +-----------+
-- |           |                     |     0     | -------------> |     0     |
-- |           |                     +-----------+                +-----------+
-- |           |                     |     1     | -------------> |     1     |
-- |           |                     +-----------+                +-----------+
-- |           |                     |     2     | ----------------^ ^ ^ ^ ^ ^
-- |           |                     +-----------+                   | | | | |
-- |           |                     |     3     | ------------------+ | | | |
-- |           |                     +-----------+                     | | | |
-- |           |                     |     4     | --------------------+ | | |
-- |    PMD    |                     +-----------+                       | | |
-- |   level   |                     |     5     | ----------------------+ | |
-- |  mapping  |                     +-----------+                         | |
-- |           |                     |     6     | ------------------------+ |
-- |           |                     +-----------+                           |
-- |           |                     |     7     | --------------------------+
-- |           |                     +-----------+
-- |           |
-- |           |
-- |           |
-- +-----------+
--
--With 1G PUD level mapping, we require 262144 struct pages and a single 4K
--vmemmap page can contain 64 struct pages (4K/sizeof(struct page)). Hence we
--require 4096 4K pages in vmemmap to map the struct pages for 1G PUD level
--mapping.
--
--Here's how things look like on device-dax after the sections are populated::
--
-- +-----------+ ---virt_to_page---> +-----------+   mapping to   +-----------+
-- |           |                     |     0     | -------------> |     0     |
-- |           |                     +-----------+                +-----------+
-- |           |                     |     1     | -------------> |     1     |
-- |           |                     +-----------+                +-----------+
-- |           |                     |     2     | ----------------^ ^ ^ ^ ^ ^
-- |           |                     +-----------+                   | | | | |
-- |           |                     |     3     | ------------------+ | | | |
-- |           |                     +-----------+                     | | | |
-- |           |                     |     4     | --------------------+ | | |
-- |    PUD    |                     +-----------+                       | | |
-- |   level   |                     |     .     | ----------------------+ | |
-- |  mapping  |                     +-----------+                         | |
-- |           |                     |     .     | ------------------------+ |
-- |           |                     +-----------+                           |
-- |           |                     |   4095    | --------------------------+
-- |           |                     +-----------+
-+Here's how things look on device-dax after vmemmap-optimized sections are
-+populated. ``N`` is the number of vmemmap pages required by the DAX mapping
-+above::
-+
-+  Device DAX                  vmemmap pages (N pages)         backing page frames
-+ +-----------+ ---virt_to_page---> +-----------+   mapping to   +-------------+
-+ |           |                     |     0     | -------------> |      0      |
-+ |           |                     +-----------+                +-------------+
-+ |           |                     |     1     | ------+
-+ |           |                     +-----------+       |
-+ |           |                     |     2     | ------+
-+ |           |                     +-----------+       |
-+ |           |                     |     .     | ------+        +-------------+
-+ |  PMD/PUD  |                     +-----------+       |        | A single,   |
-+ |   level   |                     |     .     | ------+------> | per-zone    |
-+ |  mapping  |                     +-----------+       |        | shared tail |
-+ |           |                     |   N - 1   | ------+        | page        |
-+ |           |                     +-----------+                +-------------+
-  |           |
-  |           |
-  |           |
-diff --git a/Documentation/mm/vmemmap_dedup.rst b/Documentation/mm/vmemmap_dedup.rst
-index 9fa8642ded48..8c287ae3f86c 100644
---- a/Documentation/mm/vmemmap_dedup.rst
-+++ b/Documentation/mm/vmemmap_dedup.rst
-@@ -1,4 +1,3 @@
--
- .. SPDX-License-Identifier: GPL-2.0
- 
- =========================================
-@@ -192,32 +191,7 @@ to 4 on HugeTLB pages.
- 
- There's no remapping of vmemmap given that device-dax memory is not part of
- System RAM ranges initialized at boot. Thus the tail page deduplication
--happens at a later stage when we populate the sections. HugeTLB reuses the
--the head vmemmap page representing, whereas device-dax reuses the tail
--vmemmap page. This results in only half of the savings compared to HugeTLB.
--
--Deduplicated tail pages are not mapped read-only.
-+happens at a later stage when we populate the sections.
- 
--Here's how things look like on device-dax after the sections are populated::
--
-- +-----------+ ---virt_to_page---> +-----------+   mapping to   +-----------+
-- |           |                     |     0     | -------------> |     0     |
-- |           |                     +-----------+                +-----------+
-- |           |                     |     1     | -------------> |     1     |
-- |           |                     +-----------+                +-----------+
-- |           |                     |     2     | ----------------^ ^ ^ ^ ^ ^
-- |           |                     +-----------+                   | | | | |
-- |           |                     |     3     | ------------------+ | | | |
-- |           |                     +-----------+                     | | | |
-- |           |                     |     4     | --------------------+ | | |
-- |    PMD    |                     +-----------+                       | | |
-- |   level   |                     |     5     | ----------------------+ | |
-- |  mapping  |                     +-----------+                         | |
-- |           |                     |     6     | ------------------------+ |
-- |           |                     +-----------+                           |
-- |           |                     |     7     | --------------------------+
-- |           |                     +-----------+
-- |           |
-- |           |
-- |           |
-- +-----------+
-+Deduplicated tail pages are not mapped read-only. The mapping layout is the same
-+as HugeTLB.
--- 
-2.54.0
+Yes, you are right. commit 118178e62e2e, just consolidated NMI wrapper 
+logic from arch/powerpc/kernel/mce.c into interrupt.h.
 
+Tracing it further back, radix_enabled() check for pseries hash guest in 
+real-mode NMI was originally introduced in
+
+commit: 8d0e21012743 ("powerpc/mce: Avoid nmi_enter/exit in real mode on 
+pseries hash")
+
+I can add Fixes: 8d0e21012743, and send V2, if that works.
+
+Regards,
+
+Venkat.
+
+>> Regards,
+>>
+>> Venkat.
+>>
+>>>
+>>> Thanks
+>>>
+>>> Michal
+>>>
+>>>> Add the missing #include <asm/mmu.h> since early_radix_enabled() is
+>>>> declared there.
+>>>>
+>>>> Signed-off-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+>>>> ---
+>>>>   arch/powerpc/include/asm/interrupt.h | 5 +++--
+>>>>   1 file changed, 3 insertions(+), 2 deletions(-)
+>>>>
+>>>> diff --git a/arch/powerpc/include/asm/interrupt.h 
+>>>> b/arch/powerpc/include/asm/interrupt.h
+>>>> index 1b45a49e9bed..36a654e780f7 100644
+>>>> --- a/arch/powerpc/include/asm/interrupt.h
+>>>> +++ b/arch/powerpc/include/asm/interrupt.h
+>>>> @@ -71,6 +71,7 @@
+>>>>   #include <asm/kprobes.h>
+>>>>   #include <asm/runlatch.h>
+>>>> +#include <asm/mmu.h>
+>>>>   #ifdef CONFIG_PPC_IRQ_SOFT_MASK_DEBUG
+>>>>   /*
+>>>> @@ -290,7 +291,7 @@ interrupt_handler long func(struct pt_regs 
+>>>> *regs)            \
+>>>>           state = irqentry_nmi_enter(regs);            \
+>>>>       } else if (IS_ENABLED(CONFIG_PPC_BOOK3S_64) &&            \
+>>>>              firmware_has_feature(FW_FEATURE_LPAR) &&        \
+>>>> -           !radix_enabled()) {                    \
+>>>> +           !early_radix_enabled()) {                \
+>>>>           /* no nmi_entry for a pseries hash guest        \
+>>>>            * taking a real mode exception */            \
+>>>>       } else if (IS_ENABLED(CONFIG_KASAN)) { \
+>>>> @@ -307,7 +308,7 @@ interrupt_handler long func(struct pt_regs 
+>>>> *regs)            \
+>>>>           irqentry_nmi_exit(regs, state);                \
+>>>>       } else if (IS_ENABLED(CONFIG_PPC_BOOK3S_64) &&            \
+>>>>              firmware_has_feature(FW_FEATURE_LPAR) &&        \
+>>>> -           !radix_enabled()) {                    \
+>>>> +           !early_radix_enabled()) {                \
+>>>>           /* no nmi_exit for a pseries hash guest \
+>>>>            * taking a real mode exception */            \
+>>>>       } else if (IS_ENABLED(CONFIG_KASAN)) { \
+>>>> -- 
+>>>> 2.45.2
+>>>>
+>>>>
+>
+>
 
