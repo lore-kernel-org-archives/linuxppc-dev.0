@@ -1,73 +1,66 @@
-Return-Path: <linuxppc-dev+bounces-26821-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26822-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BC314C79F99
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 16:34:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6491EC79F99
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 16:49:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hfTzj10Rtz2yjN;
-	Wed, 09 Sep 2026 02:34:25 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788885265;
-	cv=none; b=Yh6yLM+dDaCDMCxy13O7ZXt8t2Oh7fkFNwlRFMXIGsVnUESXkNddLuDh52YuBsms6JJGDKd0riy0fwW0afyqMT/ZMnGv8WXwjn9pcrvt2rrUf0kWb6UqJ8fIh/Kh+r180eY1m0fIn04vORoxG4GJN8UaqSka3LF7n3dOE4ZDhPqKuZ3WUU21pLBPedr+16Jk7il2pBR7VkgIypiZ36/OA44YV/VwMvzP0UP8lHSp0LLokxadH3AJaRf2azd2LXnAbrqcYJZO/nes53B75SDqPkywo2ZlYa1kIGCJp62AtJ7EKYjJr99A2xlYgIfoofHrGcjOxOIzSoeUnTJEpEuflw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hfVKT4B0bz2y1F;
+	Wed, 09 Sep 2026 02:49:49 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788886189;
+	cv=none; b=jJX42bW68GVGz7DcUE8YOYT6jjw2gUrluVkGsYqULLVRdSbSwCkDmsVVRCay1xef6TrtF3bw8sPRO6Zk2zyw/Pe6moQHrrqdUi37tnBzHl0Zqtxca6rHWU2zxCHsRfuqpUFMzfiUorDYDTd97Il7st5XXIP0ysO7zRuBY1THNPEXuz6E2YyM7uwJwTq/2ejzF7Bc8sVt6nGKMnIdT0oVsdr3YCwqYZhfXeBpKNGfPdZFveTUqnKPMvjimS9X1gXSmb/xSuog0XEuXwVqP/Os6dqo/oHuFr0LVY1r8sRpzkoxoPMIy2nHX2oGRhHk6PAt4/IoR6zZVK5q73ISR8gAHQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788885265; c=relaxed/relaxed;
-	bh=Dus/iwUPbGNHX/3+OvuB+79Dq3Pt2DPRdDIagViEDD8=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Jn0uFJmbeWtYbs/aogHWJpLidqjN8NuWUJigXXaVlCJ2aBHtNXrpE0QMQ1FUKwtEPrkJZs6wJ1RPQejvRXav0l8x9ymD9cgYaWwGI7siGNWlOZpGJlLV92ChWl/Ll8lB0LQtjyqZmw3JvzI3HmtfxYkprV7/cjfCEqyw1q6pMDn2ChZL4g/yRP+MyShU8bDNJUT0r3ejfmwKm59GMrmWJlcz3OgMiz+16hZYgATnNqU8+KaMcFMTTbo+UQaagzsxtAmAUt4YZ6clKHgtgHEjNHH0437asJMMiTGapQHHFcQhAK7VWpU5vX4Us9JX3h/qeKKCKB91KtdpMZwT3al3LA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=KbFf/uGQ; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=rnsastry@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1788886189; c=relaxed/relaxed;
+	bh=WxZ7LbfHACs3pzhWJ4CsjpCYtuYOS4Xcie8f7D0g/lk=;
+	h=Subject:From:In-Reply-To:References:Message-Id:Date:To:Cc; b=ARv/C2NS+/96HDj0Tx9lYPf5vPcHtuJO4rFPT1knD3UCgISsw/yRoxTazDEVCalEatnE59sSy1b9cWlNncgNxNQK65RccFhq9PKtrYG/OeJQ2fTripax44emUgx/XNhz5I0Z1ybjt9kkuHcw7OXN+0ENZqV90Zm/Qgm47ul0YX/L6QlLQ3weGfc85ackNH6fEaNX2MdbcVstuB++QsITZpi80/vizKvi0DQykHkaVsfpx/sgrQxwPWP1hnHQFpnOJLTaEb/twlGqgu3x8eKwQBfc/dYuZQftakSE/lTo3Qb2sm0wY4JJhG1qoFkdz8yoSNoPhqUFbSkySA5ueuZDNg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XLgL1NBZ; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=pr-tracker-bot@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=KbFf/uGQ;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XLgL1NBZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=rnsastry@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=pr-tracker-bot@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfTzh2jzSz2xYh
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Sep 2026 02:34:24 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 688F1imV3545327;
-	Tue, 8 Sep 2026 16:34:07 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=Dus/iw
-	UPbGNHX/3+OvuB+79Dq3Pt2DPRdDIagViEDD8=; b=KbFf/uGQ4p0YYY06y0soHW
-	KkMuFLGlPoa+qMn7oz+iXMSOonxycxTTtkgfevqepdiz6Lsm7UY5IZeQc74Edamt
-	+0RYHST+Rq4zDgAbDKha2Oc7a2kwOwpbQWd71epAM8BEG7Stpg6i3iessyF9CXq0
-	WP9xhsTjNXGJMnubVEB8U5ha/QffuYb7MlLIZmC0e927dTjSebgLN2MCaXAv2Hit
-	QTtcaqrEfXooy7FPi/QkT0IYBWF6oScJWRzAIbzRMCjotndlFffFYlm1YKCJoz65
-	FbLnIfDOznoRQrAQOGSZYzYz9c9ADbuvAI5DCWx1jb6iwXHI7+Zoe9hrKZI4bTUQ
-	==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4ggbqk0cyn-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 08 Sep 2026 16:34:06 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 688GUn4q012876;
-	Tue, 8 Sep 2026 16:34:05 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4ggxdjw38r-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 08 Sep 2026 16:34:05 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 688GY1X846858560
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 8 Sep 2026 16:34:02 GMT
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D5FBC20043;
-	Tue,  8 Sep 2026 16:34:01 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A194D20040;
-	Tue,  8 Sep 2026 16:33:55 +0000 (GMT)
-Received: from [9.61.253.97] (unknown [9.61.253.97])
-	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Tue,  8 Sep 2026 16:33:55 +0000 (GMT)
-Message-ID: <8a8fdd2d-b29b-4aa2-b9eb-66fd10bd476c@linux.ibm.com>
-Date: Tue, 8 Sep 2026 22:03:52 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfVKS3qqxz2xYh
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Sep 2026 02:49:48 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 8F20F601F7;
+	Tue,  8 Sep 2026 16:49:45 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4598F1F00A3A;
+	Tue,  8 Sep 2026 16:49:45 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1788886185;
+	bh=WxZ7LbfHACs3pzhWJ4CsjpCYtuYOS4Xcie8f7D0g/lk=;
+	h=Subject:From:In-Reply-To:References:Date:To:Cc;
+	b=XLgL1NBZROxtoqQzvxJKsPWibG5oG+VwSqnsTZhsAolZXqXqUPCt6H8diDodCgK0m
+	 mUmpEyuppxKREBDbBHNgb8iOLKuoB8p+DoJDewjkbow+SZhTDKMx2HuZJ2fXQCu7o0
+	 Z8uBKwohCzF6dnsa/ACLJ6vPYARjLfhl7c4X8Dq83rgjZKzDcjWpa6JQqIatfEwzGw
+	 vd19wE5Cc6RKOZKFs9E+dUDeE71Vo4yCAGXy8lncQHASP4onxC5kHo+h4ANt2x0eSi
+	 vJjoo2809V5aTPBti7zVk+VYN2HNQsWrbn7p9wwTIQkFREFf341N0a4cG13WKbPVwe
+	 uU4r5TcIbmaSg==
+Received: from [10.30.226.235] (localhost [IPv6:::1])
+	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 199C039EAFC0;
+	Tue,  8 Sep 2026 16:48:45 +0000 (UTC)
+Subject: Re: [GIT PULL] Please pull powerpc/linux.git powerpc-7.3-2 tag
+From: pr-tracker-bot@kernel.org
+In-Reply-To: <54e891f8-d549-4ab0-91ea-999d6e8dd385@linux.ibm.com>
+References: <54e891f8-d549-4ab0-91ea-999d6e8dd385@linux.ibm.com>
+X-PR-Tracked-List-Id: <linuxppc-dev.lists.ozlabs.org>
+X-PR-Tracked-Message-Id: <54e891f8-d549-4ab0-91ea-999d6e8dd385@linux.ibm.com>
+X-PR-Tracked-Remote: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-7.3-2
+X-PR-Tracked-Commit-Id: 45a5f7285f835adb3b74c9344c09a7bd2c4fb664
+X-PR-Merge-Tree: torvalds/linux.git
+X-PR-Merge-Refname: refs/heads/master
+X-PR-Merge-Commit-Id: 5acbae5f7eb3d5275120abfe698c394b7325dcec
+Message-Id: <178888612365.3639424.6482272206920161969.pr-tracker-bot@kernel.org>
+Date: Tue, 08 Sep 2026 16:48:43 +0000
+To: Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, chleroy@kernel.org, christophe.leroy@csgroup.eu, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, mkchauras@gmail.com, mpe@ellerman.id.au, naveen@kernel.org, npiggin@gmail.com, ritesh.list@gmail.com, sbhat@linux.ibm.com, sshegde@linux.ibm.com, thorsten.blum@linux.dev, yijiangshan@kylinos.cn
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,173 +73,17 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v13 8/8] selftests/bpf: Add tailcall verifier selftest for
- powerpc64
-To: Saket Kumar Bhaskar <skb99@linux.ibm.com>, bpf@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org
-Cc: hbathini@linux.ibm.com, maddy@linux.ibm.com, ast@kernel.org,
-        andrii@kernel.org, daniel@iogearbox.net, shuah@kernel.org,
-        linux-kselftest@vger.kernel.org, stable@vger.kernel.org,
-        venkat88@linux.ibm.com, yeswanth@linux.ibm.com
-References: <cover.1788154635.git.skb99@linux.ibm.com>
- <b11a7ad9ecf1dd7f6524067f061b4f7dabeff1d9.1788154635.git.skb99@linux.ibm.com>
-Content-Language: en-US
-From: R Nageswara Sastry <rnsastry@linux.ibm.com>
-In-Reply-To: <b11a7ad9ecf1dd7f6524067f061b4f7dabeff1d9.1788154635.git.skb99@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: Yf6a0WeLqNgGDzkSi7S5VPgr6VHdyJb_
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTA4MDE3OCBTYWx0ZWRfX3A2BWzidwS+n
- fK0l6FWvzXAszdCA50cahnk7DLLe94Qq226UjaWoLPdyWvMNv3Trc6eSKBm9iX6fCqIHDVrFTF/
- UD4pzxHVMCE7dNYRyPIN6IRgVU3RBZo=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTA4MDE3OCBTYWx0ZWRfX5keBCtbAuH/e
- WMDnfAZ7Avd2I+TLZtNyfFvCsPNJ9KKdRKB2DLCY4TpQfL7pcCgnF/R1IoCeSwV2ZEjUAuLT2nk
- EuB4VLQgiV+Cvty94l9+65g5pZmw8kZ9CqD3rLhZ8UdWNaB+qb9QH5d+ffd5qDcM2IXi4fdL4NL
- jWgipiJorb4hBD49vx5g/C4S+C/f616G48uq3vjNnz34fKcHWuL0NRVn3wt/jecX69pggOSbVdm
- JlT4I7XubWNRqWTNg/ICaPWDQvOEH0fWQ7ftjnmXnFWFuvK9Gkhpwd3yHj2uuAgXIF2YfnQU7tB
- dBLT+yGNxEpnjW5K7qLvGJOgdlRViyeCWuDrf8nja8nfGd6VafHH5ckV/1lpNf+qvCHdbHKT7R2
- +Wr+Cg6REiqdkU1UCQPCa1IHBqu34iangft9DompMmhHv5QhnFlOfcHtAVNYGjFC9ddoWgrPVLj
- H8/0E/3FGiS3WVp4v3g==
-X-Authority-Analysis: v=2.4 cv=JaKMa0KV c=1 sm=1 tr=0 ts=6aa038ff cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=VnNF1IyMAAAA:8
- a=fFdEStb9C0Pfc0vgUyYA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-GUID: Yf6a0WeLqNgGDzkSi7S5VPgr6VHdyJb_
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-08_03,2026-09-08_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 spamscore=0 phishscore=0 impostorscore=0 lowpriorityscore=0
- adultscore=0 bulkscore=0 priorityscore=1501 suspectscore=0 clxscore=1015
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2609080178
 
+The pull request you sent on Tue, 8 Sep 2026 12:00:29 +0530:
 
-On 31.08.2026 12:46 PM, Saket Kumar Bhaskar wrote:
-> From: Abhishek Dubey <adubey@linux.ibm.com>
->
-> Verifier testcase result for tailcalls:
->
-> # ./test_progs -t verifier_tailcall
->
-> #618/1   verifier_tailcall/invalid map type for tail call:OK
->
-> #618/2   verifier_tailcall/invalid map type for tail call @unpriv:OK
->
-> #618     verifier_tailcall:OK
->
-> #619/1   verifier_tailcall_jit/main:OK
->
-> #619     verifier_tailcall_jit:OK
->
-> Summary: 2/3 PASSED, 0 SKIPPED, 0 FAILED
->
-> Signed-off-by: Abhishek Dubey <adubey@linux.ibm.com>
-> Signed-off-by: Saket Kumar Bhaskar <skb99@linux.ibm.com>
-> Tested-by: Yeswanth Krishna Tellakula <yeswanth@linux.ibm.com>
-Tested-by: R Nageswara Sastry <rnsastry@linux.ibm.com>
+> https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-7.3-2
 
-System: ppc64le LPAR (IBM POWER), Linux 7.3-rc2
-> ---
->   .../bpf/progs/verifier_tailcall_jit.c         | 78 +++++++++++++++++++
->   1 file changed, 78 insertions(+)
->
-> diff --git a/tools/testing/selftests/bpf/progs/verifier_tailcall_jit.c b/tools/testing/selftests/bpf/progs/verifier_tailcall_jit.c
-> index 48fa34d2959f..9880ce4f1931 100644
-> --- a/tools/testing/selftests/bpf/progs/verifier_tailcall_jit.c
-> +++ b/tools/testing/selftests/bpf/progs/verifier_tailcall_jit.c
-> @@ -91,6 +91,84 @@ __jited("	popq	%rax")
->   __jited("	jmp	{{.*}}")		/* jump to tail call tgt   */
->   __jited("L0:	leave")
->   __jited("	{{(retq|jmp	0x)}}")		/* return or jump to rethunk */
-> +__arch_powerpc64
-> +/* program entry for main(), regular function prologue */
-> +__jited("	nop")
-> +__jited("...")                          /* ld 2, 16(13) absent with CONFIG_PPC_KERNEL_PCREL */
-> +__jited("	li 9, 0")
-> +__jited("	std 9, -8(1)")
-> +__jited("	mflr 0")
-> +__jited("	std 0, 16(1)")
-> +__jited("	stdu 1, {{.*}}(1)")
-> +/*
-> + * load address and call sub() via count register
-> + *
-> + * Address materialization differs between PCREL and non-PCREL kernels.
-> + * Skip the address generation sequence and verify only that the call
-> + * target is loaded into CTR before branching.
-> + */
-> +__jited("...")
-> +__jited("...")
-> +__jited("...")
-> +__jited("...")
-> +__jited("...")
-> +__jited("...")
-> +__jited("	mtctr {{.*}}")
-> +__jited("...")
-> +__jited("	bctrl")
-> +__jited("	mr	8, 3")
-> +__jited("	li 8, 0")
-> +__jited("	addi 1, 1, {{.*}}")
-> +__jited("	ld 0, 16(1)")
-> +__jited("	mtlr 0")
-> +__jited("	mr	3, 8")
-> +__jited("	blr")
-> +__jited("...")
-> +__jited("func #1")
-> +/* subprogram entry for sub() */
-> +__jited("	nop")
-> +__jited("...")                          /* ld 2, 16(13) absent with CONFIG_PPC_KERNEL_PCREL */
-> +/* tail call prologue for subprogram */
-> +__jited("	ld 10, 0(1)")
-> +__jited("	ld 9, -8(10)")
-> +__jited("	cmpldi	9, 33")
-> +__jited("	bt	{{.*}}, {{.*}}")
-> +__jited("	addi 9, 10, -8")
-> +__jited("	std 9, -8(1)")
-> +__jited("	lis {{.*}}, {{.*}}")
-> +__jited("	sldi {{.*}}, {{.*}}, 32")
-> +__jited("	oris {{.*}}, {{.*}}, {{.*}}")
-> +__jited("	ori {{.*}}, {{.*}}, {{.*}}")
-> +__jited("	li {{.*}}, 0")
-> +__jited("	lwz 9, {{.*}}({{.*}})")
-> +__jited("	slwi {{.*}}, {{.*}}, 0")
-> +__jited("	cmplw	{{.*}}, 9")
-> +__jited("	bf	0, {{.*}}")
-> +/* bpf_tail_call implementation */
-> +__jited("	ld 9, -8(1)")
-> +__jited("	cmpldi	9, 33")
-> +__jited("	bf	{{.*}}, {{.*}}")
-> +__jited("	ld 9, 0(9)")
-> +__jited("	cmpldi	9, 33")
-> +__jited("	bt	{{.*}}, {{.*}}")
-> +__jited("	addi 9, 9, 1")
-> +__jited("	mulli 10, {{.*}}, 8")
-> +__jited("	add 10, 10, {{.*}}")
-> +__jited("	ld 10, {{.*}}(10)")
-> +__jited("	cmpldi	10, 0")
-> +__jited("	bt	{{.*}}, {{.*}}")
-> +__jited("	ld 10, {{.*}}(10)")
-> +__jited("	addi 10, 10, {{.*}}")    /* offset depends on CONFIG_PPC_KERNEL_PCREL */
-> +__jited("	mtctr 10")
-> +__jited("	ld 10, -8(1)")
-> +__jited("	cmpldi	10, 33")
-> +__jited("	bt	{{.*}}, {{.*}}")
-> +__jited("	addi 10, 1, -8")
-> +__jited("	std 9, 0(10)")
-> +__jited("	bctr")
-> +__jited("	mr	3, 8")
-> +__jited("	blr")
-> +
->   SEC("tc")
->   __naked int main(void)
->   {
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/5acbae5f7eb3d5275120abfe698c394b7325dcec
+
+Thank you!
 
 -- 
-Thanks and Regards
-R.Nageswara Sastry
-
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/prtracker.html
 
