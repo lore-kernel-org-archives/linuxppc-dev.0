@@ -1,94 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-26765-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26766-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7AB7CC79FA0
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 08:17:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 76BDCC79FA0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 08:20:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hfGyb4rBVz2yqT;
-	Tue, 08 Sep 2026 18:17:43 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c201::3" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788855463;
-	cv=pass; b=lC+L8Bclld6lYn1nIa0kl6JS2WFEGIFoDO0kNwesB4FxosIYZ1XHIVuP+AXEZqO2oiRhckSzeWSaiKSjU1QzD1eD6Ss+38lSbs/hOCE36jWQ5kMEULyTtnhE67mpK+TGknojDo+qIV5u7zxB0WBtrosgX8uvTg6i3uifnmx0JGVF/sEwNJEMG4k2lFB6egANmulCOwDnSz3NMTWfWG1XtIANQedFQw9BHwJtyy7gamcrAsJZ0u0s1XwtySy2G4AWmYMsFtq5wuLSIvVK6+g+FzA4aXu2ToxfsW/p0HdakY9hZ3Q8pGiIcbVlNKfuSTh2nPi2sgcYF8oct8rAoHoLhA==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788855463; c=relaxed/relaxed;
-	bh=tE8ZVF77Q8olof0Q3h+z5+sV11+Hg/Pz6SdsPrODRLM=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=inbtmwKAbBifj2EWkkgn6zhYrajlpIaZ3N0fPwnJA0DOopySV3pWaz4Oyyfu2tKwfeOLsm0aX666B3prUsL36EbEX+rcnS08CSTrLDmDpDB+f3agFR4njsWJQ0TwvQI1mzJLiljMNwJh9uR3TISEsyL+RHOPxgsgY0L4RBlk+jEBKu39dOD61qz8Y8S4sl87lMePGuBpKDEtJE3WhZ2EO6E7OS/ucwtsGJyH41GT2DpM3YKOyALBdm8J0j16gKA5q0enE/awIueS33e7GUedvfebHI1FmWmTf3kzTryxMQoftrlIOT3bgQszbO/mVqs1aUiSQZCrCKSD1D53ryrDow==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=ZKrwtX66; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c201::3; helo=as8pr04cu009.outbound.protection.outlook.com; envelope-from=shengjiu.wang@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hfH1k69jlz2y8G;
+	Tue, 08 Sep 2026 18:20:26 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::45"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788855626;
+	cv=none; b=FKEydMQdn3/QGy9m4PAwjS6CNqphc5TYY+X2dtOK/GkXQGFHivpR4TI1STDVgudY8b9SSa7/2xuFxKeIQ0o35il/XWv2k9eTkG5rufVMENUyxOVU8ViymbAOuPdCvSsgHSS6hl4qajqkSnvMN5C5pnek+jm/XmPq/lNXO7ro4ppP0GdxIW/DtaErg1RmVKqvohk2Uc5RHHGR8GF5YnG/sBVEfgAjLc8Z0DppQhtN7EOxDWfeQvEbyls3gkSjIS00bDLGtEbiXYXKFoZVgTliH2AblH2jzy9ipQni5qc4PHtBz8ZhfKL9Nn5TQeHGruELCIFqAZ4+nEMi4E+hifvH3g==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1788855626; c=relaxed/relaxed;
+	bh=5rULyjEYB8jc20wwyAECU26R5DmQW+vLixPMPPn/ka8=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=GaVMkgSVfyA9ZW4g1ZYpFNMMT6qUZxco5gcCr7tBklj/GEqL7k7MTABIRhPIM19Js/CSwurmIvW6DOlpHcR5DH99E2quHLDE/QUdy34XWRe/h3hMSWeGgkEKJ6wdJX5+/gHGTMllFapE8rSm7J79HWTpdX6XRPT2zOOwdskHDNmLLRaLiHLnok/lIxGuoQh94F6fkfgWcCi3OpbNhIQCuwzn0zvrZYvXxKjfJh8Td671Dw8WonjrpoXTup/vthlPhw2coTUJvawtQ1WvvstFpl4ZhNmNoWsotVTgedbGJgIf9eDdrf0L5gYrlJhEFCJA0Z7jsC1n0CVNvnzVDLadOw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=xg67lryN; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::45; helo=mta0.migadu.com; envelope-from=qi.zheng@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=ZKrwtX66;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=xg67lryN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:c201::3; helo=as8pr04cu009.outbound.protection.outlook.com; envelope-from=shengjiu.wang@oss.nxp.com; receiver=lists.ozlabs.org)
-Received: from AS8PR04CU009.outbound.protection.outlook.com (mail-westeuropeazlp170110003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c201::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::45; helo=mta0.migadu.com; envelope-from=qi.zheng@linux.dev; receiver=lists.ozlabs.org)
+Received: from mta0.migadu.com (out-69.mta0.migadu.com [IPv6:2001:41d0:1004:224b::45])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfGyZ4yXjz2ywR
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Sep 2026 18:17:42 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=fPvqi3l7Xm8tqSNmekKwMkgPPbvxmgCdlNQihLHs6dWERTf9cSI0/nULWRKS0cW0F0nAsEz6z8W8Vpj7jE3TwzDlEj6bLwkDODeMvgteteNOVuBBPeUvsAevJw1PEbUD1bCV9P13jzcEB1tAgKGRA2UrgEZKshIjZNmjaqvO9dv8adInZ+x28osM09IPnz54Ja7uVIQscmwrbcEYx2+YLsIgWdfNsVogNncA4iCxg3mMIdU5CelI4tR17HUvpjX4Aq+DlWwxvncGrYmPxX2xUSYy1s1Jp86X/tm6Xd38Piqqqo8p/GpVaSTs5gEOZ1AkNg9CALg5gKgCBkN18sqQeg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=tE8ZVF77Q8olof0Q3h+z5+sV11+Hg/Pz6SdsPrODRLM=;
- b=xZ5LB/lasTBpHy29j2RiSNbWjEnEIboGC1fIjBT5p9VxtaFE5rAM6JABZmK6cvqXdBl2qrlm20KxVO72YHCChsKlcNUGmKnpJt3nB/RptidSgMai/H5YvBLJ2jFhi5Mh0s3nDkQVh9NFDbdG3BigIy3VKKiidc+4y3cL8kPOt30CP8LJ+vxdhvrHwm0H95MizCxmMgCU5wa8jcvtEXAwfxGF83QmlH7KhfDPGE+U98XWUruwTXiJkPcsqHxD0QRUltGHxtEeb7MG0wP9UE2Vz5RBrbZ605Fm51/pu0ND+U0CwkTwfZEXNp/xOQIJGGKLG1hQdf3SwhR5xKYRsK5mLg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
- dkim=pass header.d=oss.nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
- s=selector1-NXP1-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=tE8ZVF77Q8olof0Q3h+z5+sV11+Hg/Pz6SdsPrODRLM=;
- b=ZKrwtX66iyy6KHx9UtvlB3H5oHlPiI8n4U4SitgeyN+i9gft9CNOPYav/z5Vthj9/rJLCdkUuhe2RKyUo9aAi4bu949W36S7O14RFMW3wUuo6fWcgXsVsj8psH/9Az1159bSvVHnE+Ciopku9RyXztfJ1lsyjGUqUqGjKWl8g1Blfm5Bkjg/3Df4zk/TUfcm0fN8rGYvUF9LYJ9zxyTjIxlYNFHtY5RosYKPNh8rCbPUm/hw0Rw6YVe2XTTbeJY5Pb2vQ/D0WL/TKCHV4RW+m4w/cnFj+oGaRuxC9ctFbsu7focbgOa81/+LvsQQblTXDNccX5byc1jYVWlDwRwcjw==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=oss.nxp.com;
-Received: from PAXPR04MB9351.eurprd04.prod.outlook.com (2603:10a6:102:2b6::17)
- by VI0PR04MB754002.eurprd04.prod.outlook.com (2603:10a6:800:364::9) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.382.15; Tue, 8 Sep
- 2026 08:17:24 +0000
-Received: from PAXPR04MB9351.eurprd04.prod.outlook.com
- ([fe80::1058:a430:52c1:5aa]) by PAXPR04MB9351.eurprd04.prod.outlook.com
- ([fe80::1058:a430:52c1:5aa%6]) with mapi id 15.21.0406.005; Tue, 8 Sep 2026
- 08:17:24 +0000
-From: shengjiu.wang@oss.nxp.com
-To: lgirdwood@gmail.com,
-	broonie@kernel.org,
-	robh@kernel.org,
-	krzk+dt@kernel.org,
-	conor+dt@kernel.org,
-	Frank.Li@nxp.com,
-	s.hauer@pengutronix.de,
-	kernel@pengutronix.de,
-	festevam@gmail.com,
-	shawnguo@kernel.org,
-	linux-sound@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	imx@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	shengjiu.wang@gmail.com,
-	Xiubo.Lee@gmail.com,
-	nicoleotsuka@gmail.com,
-	perex@perex.cz,
-	tiwai@suse.com,
-	linuxppc-dev@lists.ozlabs.org
-Cc: Shengjiu Wang <shengjiu.wang@nxp.com>
-Subject: [PATCH v5 5/5] ASoC: fsl_easrc: expose individual DAIs per conversion path
-Date: Tue,  8 Sep 2026 16:21:40 +0800
-Message-Id: <20260908082140.1316872-6-shengjiu.wang@oss.nxp.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20260908082140.1316872-1-shengjiu.wang@oss.nxp.com>
-References: <20260908082140.1316872-1-shengjiu.wang@oss.nxp.com>
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: MA5P287CA0058.INDP287.PROD.OUTLOOK.COM
- (2603:1096:a01:1d3::17) To PAXPR04MB9351.eurprd04.prod.outlook.com
- (2603:10a6:102:2b6::17)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfH1f4kdgz2xlJ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Sep 2026 18:20:20 +1000 (AEST)
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+DKIM-Signature: a=rsa-sha256; bh=QMukAefZfPUgbpBQK+irv5yH2EpRpWK4MHebJsSatzY=;
+ c=simple/simple; d=linux.dev;
+ h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
+ t=1788855601; v=1; x=1789460401;
+ b=xg67lryNA+Q2GIQcWChikiwvGDVB5I/S93Sd26sq96BTE/kh8Rzxg/uGEcWxjtJJy7gQuO0Z
+ 6xh21eSrq0e+k+xIAZ/gtYqzg0+08NwhNoIF5ongyhDH1TtWg4V6NuWZVFPVq4033Ah9vbQj5KF
+ 1w/5fxtvwaUdKVlmf6c+WHic=
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+Received: by smtp.migadu.com with ESMTPS id e3be1945dc93c990;
+	Tue, 08 Sep 2026 08:20:01 +0000
+X-Mizu-Trace-ID: e3be1945dc93c990
+X-Migadu-Flow: FLOW_OUT
+Message-ID: <99aac41d-a68f-451b-ae10-f7132bb7a291@linux.dev>
+Date: Tue, 8 Sep 2026 16:19:55 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -102,221 +57,308 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PAXPR04MB9351:EE_|VI0PR04MB754002:EE_
-X-MS-Office365-Filtering-Correlation-Id: 900e138d-3d75-491b-d285-08df0d819c81
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|19092799006|23010399003|7416014|366016|1800799024|376014|10067099003|6133799003|18002099003|22082099003|11063799006|56012099006|921020;
-X-Microsoft-Antispam-Message-Info:
-	UF9org7daUlvP/iGtxRSV7IEV8h47zNVRcCamIDh4UGYEWYITDfSXR6qgHKBLEFVKf0sbKCkgMqTzBro4xY+lXgIXGAj4RMpF4RSZY6Z1CMCpJnCulozivKzebXLUlj/9qi8xilj97OvCTsA9swr7o59lzoSeQ7q+gXSeviKe0+s73mhONnRrtX0RmLomyMPN9NNUA7XRkJLF7VUoT1D9yv5BmpVVE26rFA8gg1ZxicjZEZBI71+iVDdIO1oZ/9m86NfmYgGLvM7rxo4AeuBumePBo9PkpM1OUlPOW6xlAVxlTsa9t0jqvBo25LTwl8k/6WiFekcFR9Ll7UVyBvrxfZoZBq3/2sSItQ2Y826NefTqenjCPjl9oXjani21NT9g8UhsI2Jkwj09tiLGrHD96pifEIebp3zZA9lD6ORxPd3J0tWHTewTozdt+OK2zhRzl8Vp7xA9SNqPjGas4/x4L1412Cn4BSYQUPYmbIffnhOJvV0utnwRJBYK9spdVXWh9lUrRK6PDj1GnBmjsZ7IG4kOYwMe3xRnd1fokfuz6XxyzrN/aoiVn+FIK0IoudhgbNjCwPcV9WdlTOO0QPdFqs5o7Hy68ALGEAyB+DZNGA+LOazYyxaQvRCit9eMjIfgpH6Rce9J+yrbIfAlpcC4l4vHpehUheplOCB7BoMybCe3F7ajLm8e5oKyl9zCw0loDugCiYcPn++r7+M5G2IYg==
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PAXPR04MB9351.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(19092799006)(23010399003)(7416014)(366016)(1800799024)(376014)(10067099003)(6133799003)(18002099003)(22082099003)(11063799006)(56012099006)(921020);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?rH16LI2avDfEeg4QUw/8LuLJsI4cI0k0g8UjQTuZpqwueMVfL2hGm96bqM1U?=
- =?us-ascii?Q?74CKlPa7aSvHoNPhzF72zvATqQdN0sRUqmWwZweD8C3bWfftZI/kT0YvLwGZ?=
- =?us-ascii?Q?caWNWNyGmxA8ulKH5jam52HmpnD+cjaroNzxOWdqCN6dL5M3kwOM9DAtpVva?=
- =?us-ascii?Q?K3sYef6LpceKh3SOZA1QsrBHAtKVdiOuNDPz+EoLixzkBquk7255DNYx8OoQ?=
- =?us-ascii?Q?AQXxYonaA3dOSVCBQ0p6L3UlqeDpOocI4TtWKTTaIEmFVNWU6gyZwCTy8y/+?=
- =?us-ascii?Q?sVUe5nZAfUcjSr8LwZRfzxhDXKu28XRcpIvwqWJ1QyhfZ+yp6C5v1OCTbuV/?=
- =?us-ascii?Q?EiceP3foflL+qiFA5DZjyYSXws/RwBxCFNsAV1Cil1NooFnTu+3O/td+NAt3?=
- =?us-ascii?Q?btfmdTzKjNlW8cBDDRmLhxGfb05UperS9gEojIHxkt6FQXhBzNgfajGpknl7?=
- =?us-ascii?Q?56C7gXssYLX/6ZLK4N/ZvOuMVW8mVcZt2fjOPXnn7YrS8/mJgMxvxUYw3V+X?=
- =?us-ascii?Q?Sxu6PKYUoZ41B0lVqChKzrVRkzJTxMM70mycLvuPmusv2Z4QzrWfPgFnsABr?=
- =?us-ascii?Q?0dZntKGIpL+ZmvwZ+zszsP5Sg02DLIUw1vA5slHbUiNTr+d1GRA/AnPp6TjI?=
- =?us-ascii?Q?dhpHL922C9iH9A5fed9nRoXkExYLmLY9LMMD7b5YQBVhQRyPvoBZSjcxPV+7?=
- =?us-ascii?Q?RlcS2zvI3jYIK7DBaNbQoKwMMY1HoPCRxjlALFw8Kmjy7l4egPl5HJGt46w7?=
- =?us-ascii?Q?GaPBsmud495FzXmzinZFvGQxV64xw8yXBp313dj9fYG1Z1Wh9ulNDSzCkd8M?=
- =?us-ascii?Q?DcsSszQsF4IY52JqQG5+tgIIC0C5FMzLgP2x4PM/g8syNL453CDWyXK9U4hg?=
- =?us-ascii?Q?1Rbup1IXUxsd8hgcj+sAY17W6WDT4OmSHrcl/glR+2vHTSTv68yKAmAl/gh7?=
- =?us-ascii?Q?T3RhChl18LD83yR/deqInpyDGWsZKRGQx9ot55JmGvhdfw5WoTEuLoZCgjs0?=
- =?us-ascii?Q?cf0Z/RAT7Iam0Pa+0e9NBzxyRQjRpmf8XoFBgdXPlBw7sMh9+roFJdcvP8Mc?=
- =?us-ascii?Q?N8Uk4I60CT4tA4zg7Psn2AK+bTUuGJgPOZ/oZoygNd1pU8Z1z+ASa74dOKHG?=
- =?us-ascii?Q?rBMwo7OcKULbu6Wn19gf0cFecTen4JaAYIoMOJVlq7xmqvKsFDRxAb7lJ19o?=
- =?us-ascii?Q?o0fEwLCDKJKJKWaIKaLsBLZNDDj8SNWklySOQKK/s3VNtEWz6Zr35B+BBG4z?=
- =?us-ascii?Q?fbIIjn3j9ifdA+bzkoteQXVo7UynzjxEvbz1ZhHs8WAUkpUOP/ZEKtTbF7rZ?=
- =?us-ascii?Q?XSpk7ShM27yW42qWpYWXCNzxToR9sDv45E6gn1UWg/b0cHS6fZ8dmlj6Gzud?=
- =?us-ascii?Q?YnkDtjra0Q7iZc6zaKeMDOYjhyl+9OLaj80lQZjDMKH8Yux2SOWmo1fQi4M6?=
- =?us-ascii?Q?UI7ZMJqdCB/bcDqXzC6U0KTfPfQqjyxRHfnPjpWma6QZ3v6bJVIDAoWrTOq9?=
- =?us-ascii?Q?Ad/KFjw8q2uBXAYzIVjg7LwLUWvzuNtanDPnzAm0K7dmO8PSqLFhkn8+svKY?=
- =?us-ascii?Q?n6o+gM8w5d5NQsNcQApkSHqVOQmiPM598PXNFI8suR4c3dzTnATJqhIOsV+C?=
- =?us-ascii?Q?yRZqJ7/8+pFEIylyf5UAfEahGy/5T2abTmmKQtDo4FWyGTGojmpVGBPy5y08?=
- =?us-ascii?Q?srKoZYladFmt1XwcaSw7bjRG7JBiUQunFkt/j74+vPrHW9BcQ+1229iYrHuQ?=
- =?us-ascii?Q?fzOO3Ll2JYDJMiURXgScO7kXuKGa1rrVc42DFBCuS2AS4o93s8/a?=
-X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 900e138d-3d75-491b-d285-08df0d819c81
-X-MS-Exchange-CrossTenant-AuthSource: PAXPR04MB9351.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 08 Sep 2026 08:17:24.0140
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 9gUvPL/auo2BL1UCd+0gQWJAoQuPxlnA1Tad7BNTFhGaJbGBn/H1JHvPPaOi46ln3YUUyJQTqlZOS3lUxRIlxDKAVS4LopI+i2GXnuVpafJMQJefNnXx80bqD8ia9MaR
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI0PR04MB754002
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 07/11] mm/sparse-vmemmap: move HVO helpers to a public
+ header
+To: Muchun Song <songmuchun@bytedance.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ David Hildenbrand <david@kernel.org>, Oscar Salvador <osalvador@suse.de>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Jonathan Corbet <corbet@lwn.net>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-doc@vger.kernel.org,
+ Muchun Song <muchun.song@linux.dev>, Lorenzo Stoakes <ljs@kernel.org>,
+ Mike Rapoport <rppt@kernel.org>, Nicholas Piggin <npiggin@gmail.com>,
+ Christophe Leroy <chleroy@kernel.org>, Randy Dunlap <rdunlap@infradead.org>
+References: <20260908030335.96549-1-songmuchun@bytedance.com>
+ <20260908030335.96549-8-songmuchun@bytedance.com>
+From: Qi Zheng <qi.zheng@linux.dev>
+In-Reply-To: <20260908030335.96549-8-songmuchun@bytedance.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-From: Shengjiu Wang <shengjiu.wang@nxp.com>
 
-The i.MX EASRC hardware supports four independent conversion contexts
-(A, B, C, D). The driver previously registered a single DAI with generic
-stream names "ASRC-Playback" and "ASRC-Capture", which prevents
-multiple independent conversion paths from being used simultaneously.
 
-Replace the single fsl_easrc_dai instance with an array of four DAI
-drivers to allow up to four independent conversion paths to be active
-at the same time:
+On 9/8/26 11:03 AM, Muchun Song wrote:
+> The vmemmap optimization helpers currently live in mm/sparse.h,
+> which is an internal MM header. That works for MM code, but
+> prevents powerpc from using the same interfaces without including a
+> private header.
+> 
+> Move the declarations and inline helpers to
+> include/linux/vmemmap-optimization.h. This is a preparatory change for
+> powerpc, which has its own vmemmap optimization implementation and
+> needs to use the HVO interfaces from architecture code.
 
-  easrc-0 -- ASRC-Playback / ASRC-Capture (backward compatible)
-  easrc-1 -- ASRC1-Playback / ASRC1-Capture
-  easrc-2 -- ASRC2-Playback / ASRC2-Capture
-  easrc-3 -- ASRC3-Playback / ASRC3-Capture
+Make sense.
 
-easrc-0 retains the original generic stream names to preserve backward
-compatibility with existing machine drivers and board configurations.
-Each DAI retains the same channel, rate and format capabilities as the
-original, including IEC958 subframe support on the capture side. Update
-the devm_snd_soc_register_component() call to register all four DAIs.
+Acked-by: Qi Zheng <qi.zheng@linux.dev>
 
-Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
----
- sound/soc/fsl/fsl_easrc.c | 112 +++++++++++++++++++++++++++++++-------
- 1 file changed, 92 insertions(+), 20 deletions(-)
+Thanks,
+Qi
 
-diff --git a/sound/soc/fsl/fsl_easrc.c b/sound/soc/fsl/fsl_easrc.c
-index a6ac94055b17..cd22ea3e03bc 100644
---- a/sound/soc/fsl/fsl_easrc.c
-+++ b/sound/soc/fsl/fsl_easrc.c
-@@ -1589,27 +1589,99 @@ static const struct snd_soc_dai_ops fsl_easrc_dai_ops = {
- 	.hw_free	= fsl_easrc_hw_free,
- };
- 
--static struct snd_soc_dai_driver fsl_easrc_dai = {
--	.playback = {
--		.stream_name = "ASRC-Playback",
--		.channels_min = 1,
--		.channels_max = 32,
--		.rate_min = 8000,
--		.rate_max = 768000,
--		.rates = SNDRV_PCM_RATE_KNOT,
--		.formats = FSL_EASRC_FORMATS,
-+static struct snd_soc_dai_driver fsl_easrc_dai[] = {
-+	{
-+		.name = "easrc-0",
-+		.playback = {
-+			.stream_name = "ASRC-Playback",
-+			.channels_min = 1,
-+			.channels_max = 32,
-+			.rate_min = 8000,
-+			.rate_max = 768000,
-+			.rates = SNDRV_PCM_RATE_KNOT,
-+			.formats = FSL_EASRC_FORMATS,
-+		},
-+		.capture = {
-+			.stream_name = "ASRC-Capture",
-+			.channels_min = 1,
-+			.channels_max = 32,
-+			.rate_min = 8000,
-+			.rate_max = 768000,
-+			.rates = SNDRV_PCM_RATE_KNOT,
-+			.formats = FSL_EASRC_FORMATS |
-+				   SNDRV_PCM_FMTBIT_IEC958_SUBFRAME_LE,
-+		},
-+		.ops = &fsl_easrc_dai_ops,
- 	},
--	.capture = {
--		.stream_name = "ASRC-Capture",
--		.channels_min = 1,
--		.channels_max = 32,
--		.rate_min = 8000,
--		.rate_max = 768000,
--		.rates = SNDRV_PCM_RATE_KNOT,
--		.formats = FSL_EASRC_FORMATS |
--			   SNDRV_PCM_FMTBIT_IEC958_SUBFRAME_LE,
-+	{
-+		.name = "easrc-1",
-+		.playback = {
-+			.stream_name = "ASRC1-Playback",
-+			.channels_min = 1,
-+			.channels_max = 32,
-+			.rate_min = 8000,
-+			.rate_max = 768000,
-+			.rates = SNDRV_PCM_RATE_KNOT,
-+			.formats = FSL_EASRC_FORMATS,
-+		},
-+		.capture = {
-+			.stream_name = "ASRC1-Capture",
-+			.channels_min = 1,
-+			.channels_max = 32,
-+			.rate_min = 8000,
-+			.rate_max = 768000,
-+			.rates = SNDRV_PCM_RATE_KNOT,
-+			.formats = FSL_EASRC_FORMATS |
-+				   SNDRV_PCM_FMTBIT_IEC958_SUBFRAME_LE,
-+		},
-+		.ops = &fsl_easrc_dai_ops,
-+	},
-+	{
-+		.name = "easrc-2",
-+		.playback = {
-+			.stream_name = "ASRC2-Playback",
-+			.channels_min = 1,
-+			.channels_max = 32,
-+			.rate_min = 8000,
-+			.rate_max = 768000,
-+			.rates = SNDRV_PCM_RATE_KNOT,
-+			.formats = FSL_EASRC_FORMATS,
-+		},
-+		.capture = {
-+			.stream_name = "ASRC2-Capture",
-+			.channels_min = 1,
-+			.channels_max = 32,
-+			.rate_min = 8000,
-+			.rate_max = 768000,
-+			.rates = SNDRV_PCM_RATE_KNOT,
-+			.formats = FSL_EASRC_FORMATS |
-+				   SNDRV_PCM_FMTBIT_IEC958_SUBFRAME_LE,
-+		},
-+		.ops = &fsl_easrc_dai_ops,
-+	},
-+	{
-+		.name = "easrc-3",
-+		.playback = {
-+			.stream_name = "ASRC3-Playback",
-+			.channels_min = 1,
-+			.channels_max = 32,
-+			.rate_min = 8000,
-+			.rate_max = 768000,
-+			.rates = SNDRV_PCM_RATE_KNOT,
-+			.formats = FSL_EASRC_FORMATS,
-+		},
-+		.capture = {
-+			.stream_name = "ASRC3-Capture",
-+			.channels_min = 1,
-+			.channels_max = 32,
-+			.rate_min = 8000,
-+			.rate_max = 768000,
-+			.rates = SNDRV_PCM_RATE_KNOT,
-+			.formats = FSL_EASRC_FORMATS |
-+				   SNDRV_PCM_FMTBIT_IEC958_SUBFRAME_LE,
-+		},
-+		.ops = &fsl_easrc_dai_ops,
- 	},
--	.ops = &fsl_easrc_dai_ops,
- };
- 
- static const struct snd_soc_component_driver fsl_easrc_component = {
-@@ -2234,7 +2306,7 @@ static int fsl_easrc_probe(struct platform_device *pdev)
- 	regcache_cache_only(easrc->regmap, true);
- 
- 	ret = devm_snd_soc_register_component(dev, &fsl_easrc_component,
--					      &fsl_easrc_dai, 1);
-+					      fsl_easrc_dai, ARRAY_SIZE(fsl_easrc_dai));
- 	if (ret) {
- 		dev_err(dev, "failed to register ASoC DAI\n");
- 		goto err_pm_disable;
--- 
-2.34.1
+> 
+> Signed-off-by: Muchun Song <songmuchun@bytedance.com>
+> ---
+> v2:
+> - Fix missing header dependencies.
+> ---
+>   MAINTAINERS                          |  1 +
+>   include/linux/vmemmap-optimization.h | 91 ++++++++++++++++++++++++++++
+>   mm/hugetlb.c                         |  2 +-
+>   mm/hugetlb_vmemmap.c                 |  2 +-
+>   mm/memory_hotplug.c                  |  1 +
+>   mm/sparse.h                          | 73 +---------------------
+>   6 files changed, 96 insertions(+), 74 deletions(-)
+>   create mode 100644 include/linux/vmemmap-optimization.h
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index c7aaa2e4790e..2985286cbbbf 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -12096,6 +12096,7 @@ F:	Documentation/mm/hugetlbfs_reserv.rst
+>   F:	Documentation/mm/vmemmap_dedup.rst
+>   F:	fs/hugetlbfs/
+>   F:	include/linux/hugetlb.h
+> +F:	include/linux/vmemmap-optimization.h
+>   F:	include/trace/events/hugetlbfs.h
+>   F:	mm/hugetlb.c
+>   F:	mm/hugetlb_cgroup.c
+> diff --git a/include/linux/vmemmap-optimization.h b/include/linux/vmemmap-optimization.h
+> new file mode 100644
+> index 000000000000..492dc662aae7
+> --- /dev/null
+> +++ b/include/linux/vmemmap-optimization.h
+> @@ -0,0 +1,91 @@
+> +/* SPDX-License-Identifier: GPL-2.0-or-later */
+> +/*
+> + * vmemmap-optimization.h
+> + *
+> + * Generic vmemmap optimization declarations.
+> + *
+> + * Author: Muchun Song <songmuchun@bytedance.com>
+> + */
+> +#ifndef _LINUX_VMEMMAP_OPTIMIZATION_H
+> +#define _LINUX_VMEMMAP_OPTIMIZATION_H
+> +
+> +#include <linux/align.h>
+> +#include <linux/log2.h>
+> +#include <linux/mmdebug.h>
+> +#include <linux/mmzone.h>
+> +
+> +#ifdef CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION
+> +static inline unsigned int section_order(const struct mem_section *section)
+> +{
+> +	return section->order;
+> +}
+> +
+> +static inline void section_set_order(struct mem_section *section, unsigned int order)
+> +{
+> +	VM_WARN_ON(section_order(section) && order && section_order(section) != order);
+> +	section->order = order;
+> +}
+> +
+> +static inline void section_set_order_range(unsigned long pfn, unsigned long nr_pages,
+> +					   unsigned int order)
+> +{
+> +	unsigned long section_nr = pfn_to_section_nr(pfn);
+> +
+> +	if (!IS_ALIGNED(pfn | nr_pages, PAGES_PER_SECTION))
+> +		return;
+> +
+> +	for (unsigned long i = 0; i < nr_pages / PAGES_PER_SECTION; i++)
+> +		section_set_order(__nr_to_section(section_nr + i), order);
+> +}
+> +
+> +static inline unsigned int pfn_to_section_order(unsigned long pfn)
+> +{
+> +	return section_order(__pfn_to_section(pfn));
+> +}
+> +#else
+> +static inline unsigned int section_order(const struct mem_section *section)
+> +{
+> +	return 0;
+> +}
+> +
+> +static inline void section_set_order(struct mem_section *section, unsigned int order)
+> +{
+> +}
+> +
+> +static inline void section_set_order_range(unsigned long pfn, unsigned long nr_pages,
+> +					   unsigned int order)
+> +{
+> +}
+> +
+> +static inline unsigned int pfn_to_section_order(unsigned long pfn)
+> +{
+> +	return 0;
+> +}
+> +#endif /* CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION */
+> +
+> +static inline bool vmemmap_optimizable_pfn(unsigned long pfn)
+> +{
+> +	const unsigned int order = pfn_to_section_order(pfn);
+> +	const unsigned long nr_pages = 1UL << order;
+> +
+> +	if (!is_power_of_2(sizeof(struct page)))
+> +		return false;
+> +
+> +	return (pfn & (nr_pages - 1)) >= VMEMMAP_OPTIMIZATION_NR_STRUCT_PAGES;
+> +}
+> +
+> +static inline bool vmemmap_optimizable_order(unsigned int order)
+> +{
+> +	if (!IS_ENABLED(CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION))
+> +		return false;
+> +
+> +	if (!is_power_of_2(sizeof(struct page)))
+> +		return false;
+> +
+> +	return order >= VMEMMAP_OPTIMIZATION_MIN_ORDER;
+> +}
+> +
+> +#ifdef CONFIG_SPARSEMEM_VMEMMAP
+> +struct page *vmemmap_shared_tail_page(unsigned int order, struct zone *zone);
+> +#endif /* CONFIG_SPARSEMEM_VMEMMAP */
+> +#endif /* _LINUX_VMEMMAP_OPTIMIZATION_H */
+> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+> index fda525bccf50..dff915e6c48b 100644
+> --- a/mm/hugetlb.c
+> +++ b/mm/hugetlb.c
+> @@ -38,6 +38,7 @@
+>   #include <linux/mm_inline.h>
+>   #include <linux/padata.h>
+>   #include <linux/pgalloc.h>
+> +#include <linux/vmemmap-optimization.h>
+>   
+>   #include <asm/page.h>
+>   #include <asm/tlb.h>
+> @@ -52,7 +53,6 @@
+>   #include "hugetlb_cma.h"
+>   #include "hugetlb_internal.h"
+>   #include "mm_init.h"
+> -#include "sparse.h"
+>   #include <linux/page-isolation.h>
+>   
+>   #define HUGE_BOOTMEM_ZONES_VALID	BIT(0)
+> diff --git a/mm/hugetlb_vmemmap.c b/mm/hugetlb_vmemmap.c
+> index 4a57e6c3352c..25c4e7d2664c 100644
+> --- a/mm/hugetlb_vmemmap.c
+> +++ b/mm/hugetlb_vmemmap.c
+> @@ -15,10 +15,10 @@
+>   #include <linux/mmdebug.h>
+>   #include <linux/pagewalk.h>
+>   #include <linux/pgalloc.h>
+> +#include <linux/vmemmap-optimization.h>
+>   
+>   #include <asm/tlbflush.h>
+>   #include "hugetlb_vmemmap.h"
+> -#include "sparse.h"
+>   #include "internal.h"
+>   
+>   /**
+> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+> index 0db0379826df..d7a59167bec4 100644
+> --- a/mm/memory_hotplug.c
+> +++ b/mm/memory_hotplug.c
+> @@ -43,6 +43,7 @@
+>   #include "mm_init.h"
+>   #include "page_alloc.h"
+>   #include "shuffle.h"
+> +#include "sparse.h"
+>   
+>   enum {
+>   	MEMMAP_ON_MEMORY_DISABLE = 0,
+> diff --git a/mm/sparse.h b/mm/sparse.h
+> index 59b825df83b9..e511d99fc26b 100644
+> --- a/mm/sparse.h
+> +++ b/mm/sparse.h
+> @@ -9,77 +9,7 @@
+>   #define __MM_SPARSE_H
+>   
+>   #include <linux/mmzone.h>
+> -
+> -#ifdef CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION
+> -static inline unsigned int section_order(const struct mem_section *section)
+> -{
+> -	return section->order;
+> -}
+> -
+> -static inline void section_set_order(struct mem_section *section, unsigned int order)
+> -{
+> -	VM_WARN_ON(section_order(section) && order && section_order(section) != order);
+> -	section->order = order;
+> -}
+> -
+> -static inline void section_set_order_range(unsigned long pfn, unsigned long nr_pages,
+> -					   unsigned int order)
+> -{
+> -	unsigned long section_nr = pfn_to_section_nr(pfn);
+> -
+> -	if (!IS_ALIGNED(pfn | nr_pages, PAGES_PER_SECTION))
+> -		return;
+> -
+> -	for (unsigned long i = 0; i < nr_pages / PAGES_PER_SECTION; i++)
+> -		section_set_order(__nr_to_section(section_nr + i), order);
+> -}
+> -
+> -static inline unsigned int pfn_to_section_order(unsigned long pfn)
+> -{
+> -	return section_order(__pfn_to_section(pfn));
+> -}
+> -#else
+> -static inline unsigned int section_order(const struct mem_section *section)
+> -{
+> -	return 0;
+> -}
+> -
+> -static inline void section_set_order(struct mem_section *section, unsigned int order)
+> -{
+> -}
+> -
+> -static inline void section_set_order_range(unsigned long pfn, unsigned long nr_pages,
+> -					   unsigned int order)
+> -{
+> -}
+> -
+> -static inline unsigned int pfn_to_section_order(unsigned long pfn)
+> -{
+> -	return 0;
+> -}
+> -#endif
+> -
+> -static inline bool vmemmap_optimizable_pfn(unsigned long pfn)
+> -{
+> -	const unsigned int order = pfn_to_section_order(pfn);
+> -	const unsigned long nr_pages = 1UL << order;
+> -
+> -	if (!is_power_of_2(sizeof(struct page)))
+> -		return false;
+> -
+> -	return (pfn & (nr_pages - 1)) >= VMEMMAP_OPTIMIZATION_NR_STRUCT_PAGES;
+> -}
+> -
+> -static inline bool vmemmap_optimizable_order(unsigned int order)
+> -{
+> -	if (!IS_ENABLED(CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION))
+> -		return false;
+> -
+> -	if (!is_power_of_2(sizeof(struct page)))
+> -		return false;
+> -
+> -	return order >= VMEMMAP_OPTIMIZATION_MIN_ORDER;
+> -}
+> +#include <linux/vmemmap-optimization.h>
+>   
+>   /*
+>    * mm/sparse.c
+> @@ -139,7 +69,6 @@ static inline void sparse_sections_init(void) {}
+>    * mm/sparse-vmemmap.c
+>    */
+>   #ifdef CONFIG_SPARSEMEM_VMEMMAP
+> -struct page *vmemmap_shared_tail_page(unsigned int order, struct zone *zone);
+>   void sparse_init_subsection_map(void);
+>   int section_nr_vmemmap_pages(unsigned long pfn, unsigned long nr_pages,
+>   		struct vmem_altmap *altmap, struct dev_pagemap *pgmap);
 
 
