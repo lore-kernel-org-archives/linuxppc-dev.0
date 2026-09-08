@@ -1,59 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-26743-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26744-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A17CCC79FA0
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 06:36:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E7DBCC79FAA
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 06:36:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hfDg85rK0z3bsX;
-	Tue, 08 Sep 2026 16:34:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hfDg90HpCz3btJ;
+	Tue, 08 Sep 2026 16:34:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788849252;
-	cv=none; b=gURD+27MvnupzijuEmMOgilyVp2YH7N1RbVQ9jS2Ps9Dckcks+uiZF5goiDfaokrLbEPeWUOqitgVle3+uRSNn5VDShvmIkTrLyF0IepFIYK/WLIgQbO6nePt+wEEL2QiVKsb4c11a3adKTRdeRXOrm1p7UU3fZyIplCG7eoglQv0K2uy9mXUj/5hfQjH8xUWnf1VkII4UTSeAYrtBpf7ZI1EfS//ykOjDLyZMwErqnfjZPGxmsMXxYBaL/ph7TiFI3vnI2yCq8AQfe/VseZ7viUOXFSQbkGPPqIPc8fpBjjtzxoLq2llvCxsKTLcGISEm/AUCyeFkPoZoEXaMzbOA==
+	cv=none; b=WMD6uOCKus03OHpfyz/5NQXFa9+buN9DUQbkFHDv27PLTorkY9SDYAtfpyiIwt0BPxZvuAUxjxvQy6WFnscejmsa95+k+ecSVWppfZztHEuVR+r5GnyyXVF+RbZfR/dXLl0O8Ze5AOPAikpvI0VAknReGUv1+TOz/b6IAL8Fqx75EIRCOCmsTwelRqcPozw2MH+VJQQt1dHYUoh8L0Gef9gm5IsTFCG0kRmbeIRQRuopvm/qDXErfJC26950TnTO5K9DcWI0KNlMD3gb7zpShjLvzEwmaMqrde8UfajL517iNu2AllhjdJI/FSL2TJYo6bM5KuEHuy/dEuJg8eW3ew==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1788849252; c=relaxed/relaxed;
-	bh=B5v9YeHlqv3ovO/ql+3n8/DnO9S76Q/KXTK4Iu9nIj8=;
+	bh=IidQ31ouFEpYA+nS17u9E6l6j5+J0X/Qbfbzc/4EoAk=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=VbbY4Pgga6Uj+0TfA6mgnCHy7EtzfHbrXnDwPbzJ1AwlVkGlWgQMZH5SKf+uWIW2HGDisnfnni5jKnBEVRp/5cNBE7dqEDliOCey/G5kkD/YC2tZx2hFBldCTyJ4QA+zV/RsXtkmTPhATjk8I7ngXRVX647x0Zkey78VNeRdIr7dzvu00UJ/o9AOxL8jh/IryeOJRs3W5/Bwqx68yACDIEtvgBLZcKKOt/Gj4bfKnZ8Fbnwyo5ZvvxA3ce0ljruxlQ2hyFvqphm9R203U9zr1r2z5cuDABvS8EZ0nPHmCYGDTkYjhO/s2Etiu3Xou3PDsUsp6mXo5RhKilE6tJGvUA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=Duhd+tzh; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=TsyWF+JN; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+	 In-Reply-To:To:Cc; b=jQlWLlxnRvQeMDx15BueOElvobVDlWbF4s4Gghgcn+Hef/Sj2tQtzcGuL4ZKJf2kwcgNILXWmc+Ao4MWMR9Pq+a/KQBEAvBkN20w2dePb8+LnLvK7uozjIrYX0OSlfLs3aLEurW3qsbKoUQpD06F5ZZ4mCXfNelR3Ae7hliAaujOyZppdwIgGC0pukkzB8/pkLwoA/Or4Ns/QL3cfx08xL0+xSsCCYFcRaMXlci1HE08xHMaBcg8iiTZlOvyQSEPayu16BK4zybdIst+vFzk+zZjinyZht/QEOqM5RwQq4Ue9r9uUbJk0YbWsFvZ22GSgFsH+MVwfCdEMKSw1Cr5oQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=13h/LZm3; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=iI6SCa0e; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=Duhd+tzh;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=TsyWF+JN;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=13h/LZm3;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=iI6SCa0e;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfDg32D6pz30dX
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfDg34nV7z30dh
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Sep 2026 16:34:07 +1000 (AEST)
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1788849237;
+	s=2020; t=1788849238;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=B5v9YeHlqv3ovO/ql+3n8/DnO9S76Q/KXTK4Iu9nIj8=;
-	b=Duhd+tzhOIqAKD5Jsk7S5bIW+1/U+0lAyREaDyVMtUfkM+/2g6McMuZ8BVCtyusCW6KJhw
-	wjBNCvGCpNGgmhFNn9x5FtX2pPVsVPQncpaQfdGxuDFM2F8njXe/d+MpW+sHlGTHGFoNTq
-	Irhfb/b0d78bbsC8nUcr59RO2R6WK1QG6Wmmqjub7uMBsV8HzhabnT8Q3BXaImhnViQuCI
-	99Y24z+RnYH8P+/0VTaa0of5QDISRCOgkSmlsMF9mLF5D2je6Fs4Q2NdAPmpcUGUDioSm3
-	I7ouCpMLG1e5cQUG5eQhiKpjN9lpx2nzj/DsTf8/2g6tDQdVpp9HJVE2/Kspiw==
+	bh=IidQ31ouFEpYA+nS17u9E6l6j5+J0X/Qbfbzc/4EoAk=;
+	b=13h/LZm3oUN5NX5d1pSwDpq6WOOrKuWkeooevs0Slh2NpnZURtKGe5KDBp1tQw/iOP/Foz
+	jG+leFqUbZb1il3/yws247n0LE1Oo2UrRebiDasMImoeAvycvfaJtgt5FG43hx0rRvf/kt
+	b+qd66u6bARnZouWXpm8baIEtwrHmqnbB+RfcaWW8MXCqXeqNj1m+ijLG4q2iVvSt4mr5y
+	vJu0ZR+0GxgCwURI/L5/KXvu6rMPzu3XO6orwkZFexgMHMpLQ9jIedo5jxhPNs6DVioHIi
+	NBeKQtqchUF1TAHOOMcD+uSWgwhGZFMn6e2sbJf5DzX9oTp0lkDYo51oJaVyWA==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1788849237;
+	s=2020e; t=1788849238;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=B5v9YeHlqv3ovO/ql+3n8/DnO9S76Q/KXTK4Iu9nIj8=;
-	b=TsyWF+JNT75r27JmDD427VBvLmTOCV3ff2Y7hv2xF0uvSSVXKhCkoTtj5xhp4+hfJtB9PC
-	YrBA0mfCXrb6F8Cw==
-Date: Tue, 08 Sep 2026 08:33:51 +0200
-Subject: [PATCH v5 17/24] powerpc/vdso: Enable the vdsocheck tool
+	bh=IidQ31ouFEpYA+nS17u9E6l6j5+J0X/Qbfbzc/4EoAk=;
+	b=iI6SCa0eTjj8cRYwu7N3BX4E5LcC26uVQ6b5eTpae2XyKJDB0AL3DOO+Qmt0gRz3YcZJfO
+	b4Ep6HUDa68rhZAg==
+Date: Tue, 08 Sep 2026 08:33:54 +0200
+Subject: [PATCH v5 20/24] s390/vdso: Enable the vdsocheck tool
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -69,7 +69,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20260908-vdso-absolute-reloc-v5-17-3a93791af1cf@linutronix.de>
+Message-Id: <20260908-vdso-absolute-reloc-v5-20-3a93791af1cf@linutronix.de>
 References: <20260908-vdso-absolute-reloc-v5-0-3a93791af1cf@linutronix.de>
 In-Reply-To: <20260908-vdso-absolute-reloc-v5-0-3a93791af1cf@linutronix.de>
 To: Paul Walmsley <paul.walmsley@sifive.com>, 
@@ -111,11 +111,11 @@ Cc: linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
  Arnaldo Carvalho de Melo <acme@redhat.com>, 
  Alexandre Ghiti <alexghiti@rivosinc.com>, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1788849226; l=3226;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1788849226; l=2270;
  i=thomas.weissschuh@linutronix.de; s=20240209; h=from:subject:message-id;
- bh=PdmcaVe7pCu6upu7UTobIjeT+xi6m7cmShZzdDyDUqA=;
- b=KtzFUmFB6ajLIxA6GIlsiL6NZpPyhZkhtmdUQSlrxF2Z0EifBwB7dmyJS0AwkyNYLtHN5Uenz
- k87bxRvOvh3AuR3/IHMkszUyZg00Zcqz3Ne04gmZUna19VeKFdykejP
+ bh=MheUrTVMsMhlO1Hx/uIAQcNaOa1zLZs90zNsA4xVFXI=;
+ b=QPV6rtkThGmgCrpePDg3k3KYmTBWvY98MetgMiUyonNPORVe5K/DIqywgywggjAngHoM9YG0V
+ mAFJANMdk6aBtyL1evmiJG/8n0kShbhIewzAsKEqRmtcX5PbBAf3zZb
 X-Developer-Key: i=thomas.weissschuh@linutronix.de; a=ed25519;
  pk=pfvxvpFUDJV2h2nY0FidLUml22uGLSjByFbM6aqQQws=
 
@@ -127,70 +127,53 @@ Wire it up for the architecture.
 
 Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
 ---
- arch/powerpc/Kconfig              |  1 +
- arch/powerpc/kernel/vdso/Makefile |  4 ++--
- lib/vdso/check/vdsocheck.rs       | 27 +++++++++++++++++++++++++++
- 3 files changed, 30 insertions(+), 2 deletions(-)
+ arch/s390/Kconfig              | 1 +
+ arch/s390/kernel/vdso/Makefile | 4 ++--
+ lib/vdso/check/vdsocheck.rs    | 9 +++++++++
+ 3 files changed, 12 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 2580e27e4328..f19e225cfc5c 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -330,6 +330,7 @@ config PPC
- 	select SYSCTL_EXCEPTION_TRACE
- 	select THREAD_INFO_IN_TASK
+diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
+index 4b51bc6e8948..bc12367a7b00 100644
+--- a/arch/s390/Kconfig
++++ b/arch/s390/Kconfig
+@@ -291,6 +291,7 @@ config S390
  	select TRACE_IRQFLAGS_SUPPORT
+ 	select TTY
+ 	select USER_STACKTRACE_SUPPORT
 +	select VDSO_CHECK
- 	select VDSO_DATASTORE
  	select VDSO_GETRANDOM
- 	#
-diff --git a/arch/powerpc/kernel/vdso/Makefile b/arch/powerpc/kernel/vdso/Makefile
-index 368759f81708..ca20b91b4373 100644
---- a/arch/powerpc/kernel/vdso/Makefile
-+++ b/arch/powerpc/kernel/vdso/Makefile
-@@ -81,9 +81,9 @@ targets += vdso64.lds
- CPPFLAGS_vdso64.lds += -P -C
+ 	select VIRT_CPU_ACCOUNTING
+ 	select VMAP_STACK
+diff --git a/arch/s390/kernel/vdso/Makefile b/arch/s390/kernel/vdso/Makefile
+index 35c834b895ec..509ef3f1e2eb 100644
+--- a/arch/s390/kernel/vdso/Makefile
++++ b/arch/s390/kernel/vdso/Makefile
+@@ -44,10 +44,10 @@ CPPFLAGS_vdso.lds += -P -C -U$(ARCH)
+ $(obj)/vdso_wrapper.o : $(obj)/vdso.so
+ 
+ quiet_cmd_vdso_and_check = VDSO    $@
+-      cmd_vdso_and_check = $(cmd_ld); $(cmd_vdso_check)
++      cmd_vdso_and_check = $(cmd_ld_vdso); $(cmd_vdso_check)
  
  # link rule for the .so file, .lds has to be first
--$(obj)/vdso32.so.dbg: $(obj)/vdso32.lds $(obj-vdso32) $(obj)/vgettimeofday-32.o $(obj)/vgetrandom-32.o $(obj)/crtsavres-32.o FORCE
-+$(obj)/vdso32.so.dbg: $(obj)/vdso32.lds $(obj-vdso32) $(obj)/vgettimeofday-32.o $(obj)/vgetrandom-32.o $(obj)/crtsavres-32.o $(vdsocheck) FORCE
- 	$(call if_changed,vdso32ld_and_check)
--$(obj)/vdso64.so.dbg: $(obj)/vdso64.lds $(obj-vdso64) $(obj)/vgettimeofday-64.o $(obj)/vgetrandom-64.o FORCE
-+$(obj)/vdso64.so.dbg: $(obj)/vdso64.lds $(obj-vdso64) $(obj)/vgettimeofday-64.o $(obj)/vgetrandom-64.o $(vdsocheck) FORCE
- 	$(call if_changed,vdso64ld_and_check)
+-$(obj)/vdso.so.dbg: $(obj)/vdso.lds $(obj-vdso) $(obj-cvdso) FORCE
++$(obj)/vdso.so.dbg: $(obj)/vdso.lds $(obj-vdso) $(obj-cvdso) $(vdsocheck) FORCE
+ 	$(call if_changed,vdso_and_check)
  
- # assembly rules for the .S files
+ # strip rule for the .so file
 diff --git a/lib/vdso/check/vdsocheck.rs b/lib/vdso/check/vdsocheck.rs
-index e45a1fbc6829..429bdcd65818 100644
+index 4aeb7094e552..b2135cf9add3 100644
 --- a/lib/vdso/check/vdsocheck.rs
 +++ b/lib/vdso/check/vdsocheck.rs
-@@ -69,6 +69,33 @@ fn allowed_relocations_for_machine(machine: u16) -> Option<AllowedRelocations<'s
+@@ -148,6 +148,15 @@ fn allowed_relocations_for_machine(machine: u16) -> Option<AllowedRelocations<'s
              ..Default::default()
          }
          .into(),
-+        bindings::EM_PPC => AllowedRelocations {
++        bindings::EM_S390 => AllowedRelocations {
 +            in_object_file: &[
-+                bindings::R_PPC_REL24,
-+                bindings::R_PPC_REL14,
-+                bindings::R_PPC_REL32,
-+                bindings::R_PPC_REL16,
-+                bindings::R_PPC_REL16_LO,
-+                bindings::R_PPC_REL16_HI,
-+                bindings::R_PPC_REL16_HA,
-+            ],
-+            ..Default::default()
-+        }
-+        .into(),
-+        bindings::EM_PPC64 => AllowedRelocations {
-+            in_object_file: &[
-+                bindings::R_PPC64_REL24,
-+                bindings::R_PPC64_REL14,
-+                bindings::R_PPC64_REL32,
-+                bindings::R_PPC64_REL64,
-+                bindings::R_PPC64_REL16,
-+                bindings::R_PPC64_REL16_LO,
-+                bindings::R_PPC64_REL16_HI,
-+                bindings::R_PPC64_REL16_HA,
++                bindings::R_390_PC32,
++                bindings::R_390_PC32DBL,
++                bindings::R_390_PLT32DBL,
 +            ],
 +            ..Default::default()
 +        }
