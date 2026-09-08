@@ -1,49 +1,109 @@
-Return-Path: <linuxppc-dev+bounces-26714-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26715-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 24D09C79F99
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 04:10:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B294CC79F9E
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 05:49:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hf9Sy0CSfz2yFK;
-	Tue, 08 Sep 2026 14:10:10 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:203:375::e7"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788840609;
-	cv=none; b=aM4S1p7hnAeF8iq2dYSqzOTagVnlIbfyLdevO96HLFPKi7do4eJLWqpCMCv4foDS2Nba56tqaLxmEa/vUOb0CmnUb4C9ZlfCFCW9djafu0xETvebUR3SCEOgaCOMKDa+QKLHdY0+BkmNxXHK/GOzDah1vweoLESWM4TRKeF2HwO/6eyE7WvzfQxArm7X25Ne0axk+7NlVliryX526FgOpTxo4oy7jMi7bIM+zRBrO/Mqvr3YpEQ1PRbntB6IbUtbzCierRMzFGeokluavzxLAPqh110uvOeN2UzqLkXKrA+LN8UwqddWOy+UWrhyif5E13LlPS3yuLxAU4DPErPt+g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hfCgC5Shcz2yFK;
+	Tue, 08 Sep 2026 15:49:11 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::431"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788846551;
+	cv=none; b=NroxAkEtEpCtFrN8s45N562bNn5iKYk6WqfoE/wOFzi9An1zQ403margeny1+hbxOD/u+CuKE3R6tidrPMcDKeqJgBJ7wpIf3uNqMERs9KSU6C48yskJy1Rq1xucxIpyOSNjIJ3b9D/H+xHAXtS/UXrGZHHZmpL4i2uYGKM624mRvDc/AEPUYWnf0ySw5C+9/Mpq8KFM+RJdD/WmbjnPpt8KemAOs5xetGa4qivqF1pwyFrXhvQAsFew1q9TuDNw70PginCf7hQ+0sNaYNSD/DWuR7gh6bIL/5okmOB3gI3XfGfxnE4GR+/WeFkSnExbGM8MHtSMneW1P55Jrynx7Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788840609; c=relaxed/relaxed;
-	bh=ETu/+IdC6wkVcR7kfefhUdeU0dpDBUqiUlZER/ibfSw=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=PRD6d6gJhrpbvJOhZI5Oe62UNJLImfsLFss77l6QkA2m+pAAr3h9t7/iqerL/t76b/S+0aIBrLFk/5VBvnluLe8evqYG7B1LzFm8/qpWQUD5wWD86a8FQP0wa3QnkTeoltZ7yVc2H6rhSroRT3JlRAca8cKKWZ7DA+PAZ2ADe3YfTU0mwNAsYi+ntCElKZlBqdHHLyEsE2hAsZMY4jxZHvPOmvDr/g80rFlYiaW5i9GQvOO0HnxdjVhMypPoeOmO3B1R9L6S41ZFd69Jv7hZ/i2Cx6d1Y3cDIOZewG86XdESMSUIf7UkSqtTDBuG2nPGxeG3BK9oUrJVuef4SRUq2w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=B6wMX3rO; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:203:375::e7; helo=mta1.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+	t=1788846551; c=relaxed/relaxed;
+	bh=3Hk+XNhijnUk0JrFp3DVPvigSnryVRt/+DzNzROaqfU=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=oFfqiJSvkrN+o0trLTK4c54hCVpuumYnM7/5w4yj7hcWvsFr371yn8toP/w3oltlVvucUERZ16LRmmCiKQ9yK6sYKpTPvWpP0EaRbFU+6kEqzpCtjVKdpY6unB+Lu9wH4ByP+voju16rRtLWEXEmfheAfkhcSNg6iWKd1cVBUatvhxyzKyw9bfAimrYXKKfL+uuhFtfGkQOuLdfTkimqQl/LWBx/Q/NlMI2auuSzfL5gykKV48wx4g0W0B/OTs0TEQvyzaJO+iKd1JIp8FK/5wwvenDBhj6BQt+h3OTTcDrrOVPugjF3PWZJYXTTDAOEasoG0gZMtqcTJ1I5YiFLJQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=JwjLAVPu; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::431; helo=mail-pf1-x431.google.com; envelope-from=hemanth.selam@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=B6wMX3rO;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=JwjLAVPu;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:203:375::e7; helo=mta1.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org)
-Received: from mta1.migadu.com (out-231.mta1.migadu.com [IPv6:2001:41d0:203:375::e7])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::431; helo=mail-pf1-x431.google.com; envelope-from=hemanth.selam@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x431.google.com (mail-pf1-x431.google.com [IPv6:2607:f8b0:4864:20::431])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hf9Sp2fm3z2xqp
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Sep 2026 14:09:58 +1000 (AEST)
-X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-DKIM-Signature: a=rsa-sha256; bh=x0VZgiJePeWqh4cLtuV0TthQ7an0Lkb4/kBk4eS0cSE=;
- c=simple/simple; d=linux.dev;
- h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
- t=1788840575; v=1; x=1789445375;
- b=B6wMX3rOxLJUReXa9Auyrgrk7+wZbrTI31hMBeZ64A7kLLekvpbjRg5ar5rESFwFZcx0S+fo
- +CV7YXgUzqAHJIJfX/g9zZbVTC6U/IE1Qkx8js0gkjce7/jSuffyvD5H5I2R/UIk7FRsGEvz1Pb
- FOmRXIDG4fZndVAfk7s1tRbk=
-X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-Received: by smtp.migadu.com with ESMTPS id aa67825df359c637;
-	Tue, 08 Sep 2026 04:09:34 +0000
-X-Mizu-Trace-ID: aa67825df359c637
-X-Migadu-Flow: FLOW_OUT
-Message-ID: <3856ab3a-5bc6-4483-a116-601ae431b2c1@linux.dev>
-Date: Tue, 8 Sep 2026 12:09:24 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfCgB0Bgwz2xqp
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Sep 2026 15:49:08 +1000 (AEST)
+Received: by mail-pf1-x431.google.com with SMTP id d2e1a72fcca58-85590c5aeabso2756947b3a.3
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Sep 2026 22:49:08 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1788846545; x=1789451345; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=3Hk+XNhijnUk0JrFp3DVPvigSnryVRt/+DzNzROaqfU=;
+        b=JwjLAVPuqF6M0VMZhJYOLF3VyUoEseSsJoPDCKdNf3wu1C52AIOO7NSXCD53vX93ym
+         tANwp7fuQq+rtI6ladx2PyzOec3oQfx5EI3ccgIIBtbfoGJ8wNDr+CPLbc7gS/Fe+O5M
+         HPP2Iohtv4zRrPwPX1q4oEP5hm/mXzDE3GrRytK3jDMWlenQ+OjCqLF5c00EnnbaMLp0
+         rgj2uf6LNlI8XM/YA/k8tC8AiIcvJK5PqdpMqvw/d0/OmhjSJR3gmJqmCweCPquaCJcp
+         f9v/hTWrP5L0H/H3Srb40NhSkY9iWG7ZIR5d7mZ36T5F9pyUUts3AA8TuFJfMM+HrI+T
+         sowg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1788846545; x=1789451345;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=3Hk+XNhijnUk0JrFp3DVPvigSnryVRt/+DzNzROaqfU=;
+        b=m3hpNFc1HM2fQtYVnWZ/xTOAs9uhcf3lSgC4/Yr+/aecK8Kyims1X9qETDYOvLgcLo
+         6UGzzWGSAvhN5PG9Q6C767tIblKXElMI7uyKbGLfo8BsC0J/caYKxY9+gUNRABr38wSm
+         UIm6clDcHK/kbm+iajgHv+epSZqkeRTA2ZcF1L+cH3X+u+nxKQ0+r4FHutWl6M1o02xR
+         9sEp0c6WZv6BgQMxmTyI86cs679UaNgw9kg3DLhI2cYHsgMTKmn2Hy9yThdcTNlpoxQ5
+         9xPLUCaGkn54gbEEqYSeh0Ubj7QHlr11HI/0ECU+F/2J6sPEIYMhRBfyHE7+5CjP7v/n
+         E6Og==
+X-Forwarded-Encrypted: i=1; AKwUvByzDdgP2ru4VrGuXtXgeKJQbvg5CMAy4JpLEYwvJQ3IW8ZzEyPpYPLgI/cHh3hajlSXttoLadZALWig/Kg=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++nv9wPX0EYVKoBOS+KtTfs+Vs8N0DYE7OC4D2CKOs51yiLVCehL
+	mCWH7UM64JBNC6uFV+GJ8VY3ChyXlMTilcYtHSVoEjkdqQqZRuBaTcUT
+X-Gm-Gg: AYBFou2Y/Y4B60u0DWtv/D239XE2h7WVzL6OrkQ1vB90PtASwue5Trangh8P0nsgYhQ
+	gI46t95NSOmCmNSfY2uQTpoi8Kc1QjlLrTjDWXaRt6cRVOsLMXM9Hrbzr2PkIMf8WUUC3UH6TLv
+	8c62kGfxyZoXykfF6jAMzqQZABJNxdwfKtNJ5Wxc3iKXTWtMzaKQoOkte1RIOFwsXfSEa9LssFz
+	QJVcisamg/GqCUzh+zuALHyJ2L6CNS6vG424F7EV6N6gbM5TfYmqQaJnGhLeGvljCal0lWZzURw
+	nsAziaPUEDBA4CExFZSyQLGXeNXY1XhvXM1mygjicwR5ANgjFG9Oh+qlxKrV9Qi+9HqqvZs8FgO
+	8Ci/8imA9jAsYGAGavv5XmdMf6FP8hBS6ETuh+wdG7OYttKOctGKcNj8SkQbGWCxJjF23tJSEEt
+	X44x4+xXlnT7LnRg/ORhpi4e/WiCF6QukrrSm7RQh1sMWYwjv7yHCyFskMn0nOYrqfBBLNOGxAH
+	MyzW3CDGhpc4g==
+X-Received: by 2002:a05:6a21:38c:b0:3d3:ae1f:d7f8 with SMTP id adf61e73a8af0-3da3a0cc91cmr42893779637.24.1788846544946;
+        Mon, 07 Sep 2026 22:49:04 -0700 (PDT)
+Received: from volcano9f6e-hostos.amd.com ([165.204.217.251])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-334fbd5e6f6sm25690109eec.23.2026.09.07.22.48.56
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 07 Sep 2026 22:49:04 -0700 (PDT)
+From: Hemanth Selam <hemanth.selam@gmail.com>
+To: Alexei Starovoitov <ast@kernel.org>,
+	Daniel Borkmann <daniel@iogearbox.net>,
+	Andrii Nakryiko <andrii@kernel.org>,
+	Eduard Zingerman <eddyz87@gmail.com>,
+	Kumar Kartikeya Dwivedi <memxor@gmail.com>,
+	Martin KaFai Lau <martin.lau@linux.dev>,
+	Song Liu <song@kernel.org>,
+	Yonghong Song <yonghong.song@linux.dev>,
+	Jiri Olsa <jolsa@kernel.org>,
+	Emil Tsalapatis <emil@etsalapatis.com>,
+	Ihor Solodrai <ihor.solodrai@linux.dev>,
+	Russell King <linux@armlinux.org.uk>,
+	Puranjay Mohan <puranjay@kernel.org>,
+	John Fastabend <john.fastabend@gmail.com>,
+	Hari Bathini <hbathini@linux.ibm.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Naveen N Rao <naveen@kernel.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Shuah Khan <shuah@kernel.org>,
+	"David S. Miller" <davem@davemloft.net>,
+	Andreas Larsson <andreas@gaisler.com>
+Cc: bpf@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kselftest@vger.kernel.org,
+	sparclinux@vger.kernel.org
+Subject: [PATCH bpf-next v4 0/7] bpf: fix typos and repeated words in comments
+Date: Tue,  8 Sep 2026 11:18:46 +0530
+Message-ID: <20260908054853.13820-1-hemanth.selam@gmail.com>
+X-Mailer: git-send-email 2.48.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -57,273 +117,49 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 06/11] mm/sparse-vmemmap: switch device DAX to shared
- tail vmemmap pages
-To: Muchun Song <songmuchun@bytedance.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-doc@vger.kernel.org,
- Lorenzo Stoakes <ljs@kernel.org>, Mike Rapoport <rppt@kernel.org>,
- Qi Zheng <qi.zheng@linux.dev>, Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy <chleroy@kernel.org>, Randy Dunlap <rdunlap@infradead.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- David Hildenbrand <david@kernel.org>, Oscar Salvador <osalvador@suse.de>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Jonathan Corbet <corbet@lwn.net>
-References: <20260908030335.96549-1-songmuchun@bytedance.com>
- <20260908030335.96549-7-songmuchun@bytedance.com>
-Content-Language: en-US
-From: Muchun Song <muchun.song@linux.dev>
-In-Reply-To: <20260908030335.96549-7-songmuchun@bytedance.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
+Fix misspellings and repeated words in comments, found with
+scripts/checkpatch.pl using the misspelling list in scripts/spelling.txt.
+Comments only, no code changes.
 
+Changes since v3:
+ - rebased onto bpf-next.  CI reported a conflict on v3 and asked for a
+   rebase and resubmit; the tree has moved on since and the series
+   applies cleanly again.  The patches are otherwise identical to v3.
 
-On 2026/9/8 11:03, Muchun Song wrote:
-> HugeTLB vmemmap optimization now uses per-zone shared tail vmemmap pages.
-> Device DAX has not been switched to that mechanism yet.
->
-> Switch device DAX to vmemmap_shared_tail_page() as well. This aligns DAX
-> with HugeTLB by using the common per-zone shared tail vmemmap page.
->
-> The optimization is enabled only for DEV-DAX through pgmap->vmemmap_shift,
-> which is assigned when a DEV-DAX device is initialized. Unlike FS-DAX,
-> DEV-DAX does not modify tail struct pages, so sharing them is safe.
->
-> Since the shared tail page can now back ZONE_DEVICE vmemmap mappings,
-> initialize its entries with PG_reserved for device zones. Also skip
-> poisoning vmemmap-optimizable sections while their struct pages may be
-> shared.
->
-> Signed-off-by: Muchun Song <songmuchun@bytedance.com>
-> ---
-> v2:
-> - Explain why sharing tail vmemmap pages is safe for DEV-DAX
->    (suggested by Qi Zheng)
-> ---
->   include/linux/mmzone.h | 10 +++++++++
->   mm/memory_hotplug.c    |  5 +++--
->   mm/sparse-vmemmap.c    | 47 ++++++++++++++----------------------------
->   3 files changed, 28 insertions(+), 34 deletions(-)
->
-> diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
-> index d3778ba976a5..03ed9232f186 100644
-> --- a/include/linux/mmzone.h
-> +++ b/include/linux/mmzone.h
-> @@ -1686,11 +1686,21 @@ static inline bool zone_is_zone_device(const struct zone *zone)
->   {
->   	return zone_idx(zone) == ZONE_DEVICE;
->   }
-> +
-> +static inline struct zone *device_zone(int nid)
-> +{
-> +	return &NODE_DATA(nid)->node_zones[ZONE_DEVICE];
-> +}
->   #else
->   static inline bool zone_is_zone_device(const struct zone *zone)
->   {
->   	return false;
->   }
-> +
-> +static inline struct zone *device_zone(int nid)
-> +{
-> +	return NULL;
-> +}
->   #endif
->   
->   /*
-> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-> index b428da66d279..0db0379826df 100644
-> --- a/mm/memory_hotplug.c
-> +++ b/mm/memory_hotplug.c
-> @@ -554,8 +554,9 @@ void remove_pfn_range_from_zone(struct zone *zone,
->   		/* Select all remaining pages up to the next section boundary */
->   		cur_nr_pages =
->   			min(end_pfn - pfn, SECTION_ALIGN_UP(pfn + 1) - pfn);
-> -		page_init_poison(pfn_to_page(pfn),
-> -				 sizeof(struct page) * cur_nr_pages);
-> +		if (!section_vmemmap_optimizable(__pfn_to_section(pfn)))
-> +			page_init_poison(pfn_to_page(pfn),
-> +					 sizeof(struct page) * cur_nr_pages);
->   	}
->   
->   	/*
-> diff --git a/mm/sparse-vmemmap.c b/mm/sparse-vmemmap.c
-> index aed1e7429daa..0201877a7f80 100644
-> --- a/mm/sparse-vmemmap.c
-> +++ b/mm/sparse-vmemmap.c
-> @@ -193,6 +193,8 @@ struct page __ref *vmemmap_shared_tail_page(unsigned int order, struct zone *zon
->   		set_page_node(page, zone_to_nid(zone));
->   		set_page_zone(page, zone_idx(zone));
->   		prep_compound_tail(page, NULL, order);
-> +		if (zone_is_zone_device(zone))
-> +			__SetPageReserved(page);
+Changes since v2:
+ - moved from mainline to bpf-next, which resolved the earlier conflict
+   in stream.c where the typo had already been fixed upstream.
+ - renamed the selftests patches to the selftests/bpf: prefix used by the
+   rest of that directory, as CI suggested.
 
-Sashiko said: "
-   Could setting PG_reserved here cause a use-after-free
-   during device hot-remove?
+Hemanth Selam (7):
+  ARM: net: fix typo "arithmatic" in comment
+  bpf: fix typos in comments
+  powerpc: net: fix typo "upto" in comments
+  selftests/bpf: fix typos in comments
+  sparc: net: fix typo "evalute" in comment
+  libbpf: Fix typos in comments
+  selftests/bpf: fix repeated words in comments
 
-   When a DEV-DAX device is removed and vmemmap_free is called,
-   remove_pte_table calls free_vmemmap_pages. In free_vmemmap_pages,
-   the PG_reserved flag redirects execution:
+ arch/arm/net/bpf_jit_32.c                                    | 2 +-
+ arch/powerpc/net/bpf_jit_comp32.c                            | 2 +-
+ arch/powerpc/net/bpf_jit_comp64.c                            | 4 ++--
+ arch/sparc/net/bpf_jit_asm_32.S                              | 2 +-
+ include/linux/filter.h                                       | 4 ++--
+ kernel/bpf/reuseport_array.c                                 | 2 +-
+ tools/lib/bpf/btf.c                                          | 4 ++--
+ tools/lib/bpf/usdt.c                                         | 2 +-
+ tools/testing/selftests/bpf/libarena/src/asan.bpf.c          | 2 +-
+ tools/testing/selftests/bpf/prog_tests/lwt_seg6local.c       | 2 +-
+ tools/testing/selftests/bpf/prog_tests/task_local_data.h     | 2 +-
+ tools/testing/selftests/bpf/progs/freplace_unreliable_prog.c | 2 +-
+ tools/testing/selftests/bpf/progs/iters.c                    | 2 +-
+ tools/testing/selftests/bpf/progs/verifier_var_off.c         | 2 +-
+ 14 files changed, 17 insertions(+), 17 deletions(-)
 
-   arch/x86/mm/init_64.c:free_vmemmap_pages() {
-       ...
-       else if (PageReserved(page))
-           free_reserved_pages(page, order);
-   }
-
-   Does this forcefully drop the refcount and free the shared
-   page to the buddy allocator, leaving a dangling pointer in
-   zone->vmemmap_tails[idx] that breaks other DAX devices
-   sharing this page?
-"
-
-It is a false positive.
-
-The struct page marked reserved here is an entry stored
-inside the shared vmemmap backing page; after mapping, it
-represents a Device DAX tail page. It is not the struct
-page describing the backing page itself.
-
-remove_pte_table() passes pte_page(*pte) to free_vmemmap_pages(),
-which is the latter. The runtime-allocated backing page is
-not reserved, so removal takes the __free_pages() path. Each
-reused PTE takes a reference via get_page(), and removal
-drops one such reference, while the allocation reference
-retained by zone->vmemmap_tails[] remains. Therefore removing
-one DAX device does not free the shared backing page or leave
-a dangling pointer.
-
->   	}
->   
->   	page = virt_to_page(addr);
-> @@ -490,23 +492,6 @@ static bool __meminit reuse_compound_section(unsigned long start_pfn,
->   	return !IS_ALIGNED(offset, nr_pages) && nr_pages > PAGES_PER_SUBSECTION;
->   }
->   
-> -static pte_t * __meminit compound_section_tail_page(unsigned long addr)
-> -{
-> -	pte_t *pte;
-> -
-> -	addr -= PAGE_SIZE;
-> -
-> -	/*
-> -	 * Assuming sections are populated sequentially, the previous section's
-> -	 * page data can be reused.
-> -	 */
-> -	pte = pte_offset_kernel(pmd_off_k(addr), addr);
-> -	if (!pte)
-> -		return NULL;
-> -
-> -	return pte;
-> -}
-> -
->   static int __meminit vmemmap_populate_compound_pages(unsigned long start_pfn,
->   						     unsigned long start,
->   						     unsigned long end, int node,
-> @@ -516,21 +501,18 @@ static int __meminit vmemmap_populate_compound_pages(unsigned long start_pfn,
->   	pte_t *pte;
->   	int rc;
->   	unsigned long flags = VMEMMAP_POPULATE_DAX;
-> +	struct page *page;
-> +	unsigned int order = pfn_to_section_order(start_pfn);
->   
-> -	if (reuse_compound_section(start_pfn, pgmap)) {
-> -		pte = compound_section_tail_page(start);
-> -		if (!pte)
-> -			return -ENOMEM;
-> +	page = vmemmap_shared_tail_page(order, device_zone(node));
-> +	if (!page)
-> +		return -ENOMEM;
->   
-> -		/*
-> -		 * Reuse the page that was populated in the prior iteration
-> -		 * with just tail struct pages.
-> -		 */
-> +	if (reuse_compound_section(start_pfn, pgmap))
->   		return vmemmap_populate_range(start, end, node, NULL,
-> -					      pte_pfn(ptep_get(pte)), flags);
-> -	}
-> +					      page_to_pfn(page), flags);
->   
-> -	size = min(end - start, pgmap_vmemmap_nr(pgmap) * sizeof(struct page));
-> +	size = min(end - start, (1UL << order) * sizeof(struct page));
->   	for (addr = start; addr < end; addr += size) {
->   		unsigned long next, last = addr + size;
->   
-> @@ -546,12 +528,12 @@ static int __meminit vmemmap_populate_compound_pages(unsigned long start_pfn,
->   			return -ENOMEM;
->   
->   		/*
-> -		 * Reuse the previous page for the rest of tail pages
-> +		 * Reuse the shared page for the rest of tail pages
->   		 * See layout diagram in Documentation/mm/vmemmap_dedup.rst
->   		 */
->   		next += PAGE_SIZE;
->   		rc = vmemmap_populate_range(next, last, node, NULL,
-> -					    pte_pfn(ptep_get(pte)), flags);
-> +					    page_to_pfn(page), flags);
-
-Another report is like:
-
-"
-   When this shared tail page is used to back the
-   DEV-DAX tail pages, could concurrent initialization
-   corrupt the compound_head pointer for the entire
-   node?
-
-   Looking at memmap_init_zone_device which calls
-   memmap_init_compound, the head page template is copied
-   unconditionally into the tail pages:
-
-   mm/mm_init.c:memmap_init_compound() {
-       for (pfn = head_pfn + 2; pfn < end_pfn; pfn++)
-           zone_device_page_init_from_template(pfn_to_page(pfn), pfn, 
-&template);
-   }
-
-   Since page_to_pfn(page) here points to a node-wide
-   shared physical page, would this template copy overwrite
-   the compound_head for all DEV-DAX tail pages on the node
-   to point to the latest initialized PMD's head page?
-"
-
-This is also a false positive.
-
-memmap_init_compound() does not initialize the full
-compound range when the section uses vmemmap optimization.
-compound_nr_pages() limits it to:
-
-   2 * PAGE_SIZE / sizeof(struct page)
-
-i.e. exactly the entries in the retained vmemmap page.
-The shared mappings start at addr + PAGE_SIZE, so the
-template-copy loop stops before reaching them.
-
-Thanks
-Muchun
-
->   		if (rc)
->   			return -ENOMEM;
->   	}
-> @@ -883,13 +865,14 @@ int __meminit sparse_add_section(int nid, unsigned long start_pfn,
->   	if (IS_ERR(memmap))
->   		return PTR_ERR(memmap);
->   
-> +	ms = __nr_to_section(section_nr);
->   	/*
->   	 * Poison uninitialized struct pages in order to catch invalid flags
->   	 * combinations.
->   	 */
-> -	page_init_poison(memmap, sizeof(struct page) * nr_pages);
-> +	if (!section_vmemmap_optimizable(ms))
-> +		page_init_poison(memmap, sizeof(struct page) * nr_pages);
->   
-> -	ms = __nr_to_section(section_nr);
->   	__section_mark_present(ms, section_nr);
->   
->   	/* Align memmap to section boundary in the subsection case */
+-- 
+2.48.1
 
 
