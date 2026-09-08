@@ -1,73 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-26772-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26773-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D1D9FC79FA0
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 08:48:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9DC2AC79FA1
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 08:57:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hfHfH2cHdz2xlJ;
-	Tue, 08 Sep 2026 18:48:39 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788857319;
-	cv=none; b=ERja6Wu4I/VYZW8M230mjDd/XQF6Q6xHK4pBICnub3WLVhnXjCbQEdSH7gpJyoTkg8OkzafRP7F+TcGBa9yYSJCYhrdxJ2Bq1N/H1EzTjl2fHNJGPjHjHH723uGyVKlvXDOyITQhM9NeJVTBrr2gcYsjwwvg1Gf+Fl/P4cxD3k3o7amzXZDe2xzAA7xO98+QdVD82YlzIoAR5279gSrvBfQgGZNGBQW/nEK7EG6NuL3kFDTZfzRbf7IirG5xbjQRGugs+87SPDUw+AupHcRtT7qghERCg1hQb3oYnxY8aa318JmjVfi6MALrA4ifG6kGRhdaGHjQKX+EIXghN4uMIA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hfHrH6hD3z2y8d;
+	Tue, 08 Sep 2026 18:57:19 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788857839;
+	cv=none; b=RnrKgxfYoQ+ARN8L/DLzwUcmgRP1Vw/YV1Kihe5VVc7J2n6aAVNOVKNtA0ETWYk2cFnLDvDI5F9tp2TTnWaMRG+LSpJF4UcrlJfmzMl3u/RTIfp8b5bQUW90BZHKY1Ys72Xe9wzAkzOqeUOp0xUQkzF+Ml3dI6HKUj/wh6qgAvDP2F6TPCPAsj2DFqImq644/NGLe0SlgxgVuNtSGc7l4NuxT73D8ORqrIoLiKFHZotBntK/HF9SFOEBIFARgUm9oCqUc50rzhYDJGL1A/7Rjt3J071GBRauKn+IeZDoOh8NppWTWseWGSaPUgPhOg/4QFhNqE4ZZAdYCPE9PaMdiA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788857319; c=relaxed/relaxed;
-	bh=7E/U+520FTb3oWHxFnA+5aRswaRPtZDdLqblUrfvZD8=;
+	t=1788857839; c=relaxed/relaxed;
+	bh=BOR2t3VtcjszZ4q3H4RF8INxqX7I/2OnFWmBk3yYh2U=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=WytNZrhogq/sFowWy1X+1YBoWW9ad/MJARldB3x0mTOGvm91UtIF/7zfMGO5W9JdeT5OfAosMb0lZTCr25aBHEVaSV/o2Uyat9/KB1cUby1pkrN1Ug0zN+JkF2Q6AJ1mIhXV7/PtQwt3+potadt/Vfxp0/Ic0KKAaUomZCKY9BV6lNJfBvc7GSzYv/oNLf1oelqVsb+zpWa9R1uBYmO/z5iQIWxDr3I0/ABGNqGQg8VXGIYnxjwdYEl4lI58Fdtmi0FeegUqSiURXqqTEc366en8OSPlgAHoepWUdwGI2EyaC7ulv751F5IVKtXpLGr9jAT+gs6XODkOzDukWMtFwg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=iXK48SN/; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	 In-Reply-To:Content-Type; b=lYEKKUSlgKCwabgCcic3V7343GZEwDf5O5dmVb0c4g4731bQXNgyOGm4xGiYKSnOSCZwUPZCw90tqzkpIBEryrzrD3JRIj0v+BtGuO+CvcRJhz57Bq8GZMCWVOOy8pGt5cS8jkOcqGStxvlucZjQ6cLEurR8oUsBMjItEFIEB5L5coOwQOHK3G5VF/0y4ZCtTC9R5wimw7nNVpXuvCDDD3tq15gnEWev4uUIXX2/+It+eJz8Ney58CZxwXq+0l7zhWKIS5b714pCJ+Ucs27epG43rIvvGltc6dOf9eXxtURQXbhq3J4PCDTEBtHpOuz92XJXxLoNdiRsl0CEy92DQQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=RMlWBWtH; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=iXK48SN/;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=RMlWBWtH;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfHfG4Nvxz2xYh
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Sep 2026 18:48:38 +1000 (AEST)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6886VZM6065726;
-	Tue, 8 Sep 2026 08:48:36 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=7E/U+5
-	20FTb3oWHxFnA+5aRswaRPtZDdLqblUrfvZD8=; b=iXK48SN/EHC9r9p83PnEWR
-	5578ywmS9dUIKkIhxjTbcBPrYRG0L46V/9378b1zdrmIxi+U4TGUk6i26IYDJv5n
-	jAbDrm+yMpjxaWiWojrOV6p4G/wXMglq1KPXfjnbZiDbVgIKxu0UG+7VYL1bobHx
-	UcAWrj7WmByXCVMntHI6EPCJClmGYLGONP5rQJX83c8ESw4/hMGDNPVhf02MXHH2
-	gc2mZTql1PwPRtEKZ+jll4tJkIK985P8J5WvArvQP0LtNphP5N7DmmneqR/ukv+A
-	2cRClCU1laQ3W6FVSHDE2AlqGxQrOZiP980O3RoRTq4NV8H67hu0gyDTydk1vmiw
-	==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4ggbf3wq12-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 08 Sep 2026 08:48:35 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6888fD4m001864;
-	Tue, 8 Sep 2026 08:48:34 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4ggymgahtd-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 08 Sep 2026 08:48:34 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6888mVvC50725166
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 8 Sep 2026 08:48:31 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E5CC620043;
-	Tue,  8 Sep 2026 08:48:30 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id EFC8420040;
-	Tue,  8 Sep 2026 08:48:27 +0000 (GMT)
-Received: from [9.123.3.64] (unknown [9.123.3.64])
-	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue,  8 Sep 2026 08:48:27 +0000 (GMT)
-Message-ID: <95915e1b-8c4a-443b-a182-d3b6d1aee2b4@linux.ibm.com>
-Date: Tue, 8 Sep 2026 14:18:27 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfHrG6QNHz2y8G
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Sep 2026 18:57:18 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id E869D60A93;
+	Tue,  8 Sep 2026 08:57:15 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 20D6F1F00A3A;
+	Tue,  8 Sep 2026 08:57:00 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1788857835;
+	bh=BOR2t3VtcjszZ4q3H4RF8INxqX7I/2OnFWmBk3yYh2U=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=RMlWBWtHsUr314SSes2RbgrXEdhowxsDExyywV6MWPiyRlQ2MiRcnzJrKxwP2Uq5y
+	 FxFi3d8oyrDb4Ns+a5YQol0nE9UlpMARb5Srs2FLa3c8UgJq9bIRFnwje3hSYKfvsy
+	 4lejU8BQqLNJPlkLkj5fUKy1asSopqBNr8Z/GdXh3YL25ZL/xotJOBdRT8X+1frbzz
+	 5wc8MC7jxG0TFbXkBqhY75SKcdrJ0GvpwyMgIKA6vQKX0ndFDZCBRqE2+uKYcWsIZK
+	 O423o/0XnOMDsJENmzRb5yAhovNWoPRl28a6i0Ifx5k/RVsnRdBM2JH4gLApjYzNXL
+	 e95ar8gZlvOGw==
+Message-ID: <06996199-5255-41d0-ba6a-ebeca57f61da@kernel.org>
+Date: Tue, 8 Sep 2026 10:56:58 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,179 +60,92 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v13 3/8] powerpc/bpf: fix buffer overflow in JIT for large
- BPF programs
-To: bot+bpf-ci@kernel.org, skb99@linux.ibm.com, bpf@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org
-Cc: maddy@linux.ibm.com, ast@kernel.org, andrii@kernel.org,
-        daniel@iogearbox.net, shuah@kernel.org,
-        linux-kselftest@vger.kernel.org, stable@vger.kernel.org,
-        venkat88@linux.ibm.com, yeswanth@linux.ibm.com, martin.lau@kernel.org,
-        eddyz87@gmail.com, yonghong.song@linux.dev, mason@kernel.org,
-        ihor.solodrai@linux.dev
-References: <e5fc39c4f3340791bec5e7a92e1d146d3ed6296e.1788154635.git.skb99@linux.ibm.com>
- <f073ec2085f90747a8909276f42726a0a0e12f99f8f81b0297dad05c4eec3667@mail.kernel.org>
-Content-Language: en-US
-From: Hari Bathini <hbathini@linux.ibm.com>
-In-Reply-To: <f073ec2085f90747a8909276f42726a0a0e12f99f8f81b0297dad05c4eec3667@mail.kernel.org>
+Subject: Re: [PATCH v5 11/24] tools headers UAPI: Sync ELF headers with the
+ kernel sources
+To: =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>,
+ Paul Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt
+ <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
+ Alexandre Ghiti <alex@ghiti.fr>, Nathan Chancellor <nathan@kernel.org>,
+ Nick Desaulniers <nick.desaulniers+lkml@gmail.com>,
+ Bill Wendling <morbo@google.com>, Justin Stitt <justinstitt@google.com>,
+ Andy Lutomirski <luto@kernel.org>,
+ Vincenzo Frascino <vincenzo.frascino@arm.com>, Kees Cook <kees@kernel.org>,
+ Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+ Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+ "H. Peter Anvin" <hpa@zytor.com>, Richard Weinberger <richard@nod.at>,
+ Anton Ivanov <anton.ivanov@cambridgegreys.com>,
+ Johannes Berg <johannes@sipsolutions.net>,
+ Russell King <linux@armlinux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>,
+ Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
+ Alexander Gordeev <agordeev@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ Sven Schnelle <svens@linux.ibm.com>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Miguel Ojeda <ojeda@kernel.org>, Alex Gaynor <alex.gaynor@gmail.com>,
+ Gary Guo <gary@garyguo.net>, =?UTF-8?Q?Bj=C3=B6rn_Roy_Baron?=
+ <bjorn3_gh@protonmail.com>, Benno Lossin <lossin@kernel.org>,
+ Andreas Hindborg <a.hindborg@kernel.org>, Alice Ryhl <aliceryhl@google.com>,
+ Trevor Gross <tmgross@umich.edu>, Danilo Krummrich <dakr@kernel.org>,
+ Thomas Gleixner <tglx@kernel.org>, Boqun Feng <boqun@kernel.org>,
+ Nicolas Schier <nsc@kernel.org>
+Cc: linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
+ llvm@lists.linux.dev, linux-mm@kvack.org, linux-um@lists.infradead.org,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ loongarch@lists.linux.dev, linux-s390@vger.kernel.org,
+ linux-mips@vger.kernel.org, rust-for-linux@vger.kernel.org,
+ linux-kbuild@vger.kernel.org, Jan Stancek <jstancek@redhat.com>,
+ Arnaldo Carvalho de Melo <acme@redhat.com>,
+ Alexandre Ghiti <alexghiti@rivosinc.com>
+References: <20260908-vdso-absolute-reloc-v5-0-3a93791af1cf@linutronix.de>
+ <20260908-vdso-absolute-reloc-v5-11-3a93791af1cf@linutronix.de>
+Content-Language: fr-FR
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+In-Reply-To: <20260908-vdso-absolute-reloc-v5-11-3a93791af1cf@linutronix.de>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: rhqZ7V2K86tN8QD6rchidYx0-u6YPPOS
-X-Proofpoint-GUID: rhqZ7V2K86tN8QD6rchidYx0-u6YPPOS
-X-Authority-Analysis: v=2.4 cv=DbEnbPtW c=1 sm=1 tr=0 ts=6a9fcbe3 cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=VwQbUJbxAAAA:8
- a=VnNF1IyMAAAA:8 a=iFABrAoMAAAA:20 a=NEAV23lmAAAA:8 a=ncrf8N5XN8wjm0ew9NgA:9
- a=QEXdDO2ut3YA:10 a=bA3UWDv6hWIuX7UZL3qL:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTA4MDA4OSBTYWx0ZWRfX7B941Awaraky
- LFOm8/bGC6iNHfhM1R2QHaXcIT15giNNcVoWcksuE9FmAo4XLENtjn6zcjqbyiqK+AITsnwOt39
- 4dQYZ+CnmIbYMMoQIG6dhyl7GbksULORAhFdDQ8aie0yiJSk5VuHviafGrGEezUw4vA3T2MjT+n
- EmSRDjwBYnuU0aSc+riqjh7lmtpw6H68V7jEW21zu5YZo5jJvJIgIsundaszqjN7le8+K3Z8VXG
- RL2HvPSltnj69nRfJaZvwu4TPVPpNhg6A34bqE5l4RifU8Yr4rhLRwsxPMqa46ceKOokjlCP13Y
- D06DNMQuceQ1TIO+4HOIoUcrBf/3eqllSBz7OA8o8Kyr9oD1YRwBlUHvksCP5CFQwu/JHW65szB
- Tttr68BD+CZm352u7TvFg++2JnfMbrGShAXRkPXqmz84LBuLbg5yixFAKXi4/7GhBohfhbBlCLm
- uKFijQOxo+8Ti0h7jGA==
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTA4MDA4OSBTYWx0ZWRfXxX1dSvhf54km
- 7+ramZ9qQ03c+FjntJDIowz5+AlooHLg49qptPB/XwtfzZ5yuThAIJQT0FQTj5UzKlv0MK1Y+5C
- bgDVIp+j/CE+PDskqGsqMnTkT5zopUM=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-08_01,2026-09-07_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 priorityscore=1501 impostorscore=0 adultscore=0 spamscore=0
- clxscore=1015 suspectscore=0 bulkscore=0 malwarescore=0 lowpriorityscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2609080089
+Content-Transfer-Encoding: 8bit
 
 
 
-On 31/08/26 1:54 pm, bot+bpf-ci@kernel.org wrote:
->>      Fixes: d243b62b7bd3 ("powerpc64/bpf: Add support for bpf trampolines")
+Le 08/09/2026 à 08:33, Thomas Weißschuh a écrit :
+> Pick up changes from the UAPI ELF header files.
+> This picks up general changes to elf.h, elf-em.h which was forgotten
+> previously and the new elf-r.h.
 > 
-> Does the Fixes: tag name the correct commit?
-> 
-> With Cc: stable@vger.kernel.org this fix will only reach v6.13+ and will
-> leave every stable tree from v5.18 to v6.12 carrying the same JIT buffer
-> overflow.
-> 
-> The faulty logic predates d243b62b7bd3. Looking at the parent of that commit:
-> 
-> git show d243b62b7bd3^:arch/powerpc/net/bpf_jit_comp.c
-> 
-> already contains the exact code being fixed:
-> 
->      if (!exit_addr || is_offset_in_branch_range(exit_addr - (ctx->idx * 4))) {
->              PPC_JMP(exit_addr);
->      } else if (ctx->alt_exit_addr) {
->              if (WARN_ON(!is_offset_in_branch_range((long)ctx->alt_exit_addr - (ctx->idx * 4))))
->                      return -1;
->              PPC_JMP(ctx->alt_exit_addr);
->      } else {
->              ctx->alt_exit_addr = ctx->idx * 4;
->              bpf_jit_build_epilogue(image, ctx);
->      }
-> 
-> The real introducing commit is 0ffdbce6f4a89bb7c0002904d6438ec83cf05ce7
-> ("powerpc/bpf: Handle large branch ranges with BPF_EXIT"), merged in v5.18-rc1
-> (git describe --contains: v5.18-rc1~124^2~42). It created
-> bpf_jit_emit_exit_insn() with the '!exit_addr' early-out and replaced the
-> previous unconditional one-instruction emission:
-> 
->      -               if (i != flen - 1)
->      -                       PPC_JMP(exit_addr);
->      +               if (i != flen - 1) {
->      +                       ret = bpf_jit_emit_exit_insn(image, ctx, b2p[TMP_REG_1], exit_addr);
-> 
-> Before 0ffdbce6f4a8 a non-final BPF_EXIT always cost exactly one instruction in
-> every pass, so the sizing pass could not under-count and no overflow was
-> possible. After it, the sizing pass emits PPC_JMP(0) (1 instruction) while
-> later passes may emit a full inline epilogue, which is precisely the
-> under-count described in this commit message.
-> 
-> The commit d243b62b7bd3 only enlarged the epilogue (it added
-> bpf_jit_build_fentry_stubs()), making an already-existing overflow bigger.
-> 
-> Citing the ppc64-trampoline commit also wrongly implies PPC32 is unaffected.
-> The commit 0ffdbce6f4a8 made the identical change to
-> arch/powerpc/net/bpf_jit_comp32.c, so 32-bit powerpc has the same bug over the
-> same range.
-> 
-> A tag survey confirms the range: 'alt_exit_addr' has 0 occurrences in
-> arch/powerpc/net/ at v5.16 and v5.17, and 5 occurrences at v5.18, v5.19, v6.0,
-> v6.1 and v6.6.
-> 
-
-> Should the tag be:
-> 
->    Fixes: 0ffdbce6f4a8 ("powerpc/bpf: Handle large branch ranges with BPF_EXIT")
-> 
-
-True. The current fixes tag is not correct.
-
->> diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
->> index 8f7501954d9f0..11981d2270a9d 100644
->> --- a/arch/powerpc/net/bpf_jit_comp.c
->> +++ b/arch/powerpc/net/bpf_jit_comp.c
->> @@ -99,11 +99,10 @@ void bpf_jit_build_fentry_stubs(u32 *image, struct codegen_context *ctx)
->>
->>   int bpf_jit_emit_exit_insn(u32 *image, struct codegen_context *ctx, int tmp_reg, long exit_addr)
->>   {
->> -	if (!exit_addr || is_offset_in_branch_range(exit_addr - (ctx->idx * 4))) {
->> +	if (exit_addr && is_offset_in_branch_range(exit_addr - (long)(ctx->idx * 4))) {
->>   		PPC_JMP(exit_addr);
->> -	} else if (ctx->alt_exit_addr) {
->> -		if (WARN_ON(!is_offset_in_branch_range((long)ctx->alt_exit_addr - (ctx->idx * 4))))
->> -			return -1;
->> +	} else if (ctx->alt_exit_addr && is_offset_in_branch_range(
->> +			(long)(ctx->alt_exit_addr) - (long)(ctx->idx * 4))) {
->                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
->>   		PPC_JMP(ctx->alt_exit_addr);
-> 
-> With alt_exit_addr defined as unsigned int, does the expression
-> (long)(ctx->alt_exit_addr) - (long)(ctx->idx * 4) produce a different result
-> than (long)ctx->alt_exit_addr - (ctx->idx * 4) due to how integer promotion
-> works?
-> 
-> In v7 review, Hari Bathini pointed out that the cast placement may affect
-> integer promotion semantics and requested restoring the earlier syntax with the
-> cast only on alt_exit_addr:
-> 
-> https://lore.kernel.org/bpf/038a115b-e2a5-4ecf-82b1-3689535e986b@linux.ibm.com
-> 
-> While the current code has passed testing, the concern about integer promotion
-> semantics was never explicitly addressed.
-> 
-> [ ... ]
-> 
->> @@ -399,7 +417,7 @@ int bpf_add_extable_entry(struct bpf_prog *fp, u32 *image, u32 *fimage, int pass
->>   	u32 *fixup;
->>
->>   	/* Populate extable entries only in the last pass */
->> -	if (pass != 2)
->> +	if (pass < CODEGEN_MIN_PASSES)
->>   		return 0;
-> 
-> Does the comment still match the code?
-> 
-> With the old 'if (pass != 2)' and a fixed two-pass loop, pass 2 was the last
-> pass, so the comment was accurate. With the new loop and 'pass <
-> CODEGEN_MIN_PASSES', both pass 2 and pass 3 can write extable entries, so
-> entries are populated in every pass from 2 onwards, not only in the last one.
-> 
-> Also, CODEGEN_MIN_PASSES is being reused here with a different meaning. In
-> arch/powerpc/net/bpf_jit.h it documents the minimum number of code-generation
-> passes, but here it is used as 'the first pass in which extable entries are
-> valid'. The two are logically independent - bumping CODEGEN_MIN_PASSES to 3 to
-> force more settling iterations would silently stop extable entries being
-> written in pass 2.
-> 
+> Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
 > 
 > ---
-> AI reviewed your patch. Please fix the bug or email reply why it's not a bug.
-> See: https://github.com/kernel-patches/vmtest/blob/master/ci/claude/README.md
+> Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+> ---
+>   tools/include/uapi/linux/elf-em.h |  71 ++++
+>   tools/include/uapi/linux/elf-r.h  | 696 ++++++++++++++++++++++++++++++++++++++
+>   tools/include/uapi/linux/elf.h    | 112 +++++-
+>   3 files changed, 868 insertions(+), 11 deletions(-)
 > 
-> CI run summary: https://github.com/kernel-patches/bpf/actions/runs/33368376983
 
+> diff --git a/tools/include/uapi/linux/elf.h b/tools/include/uapi/linux/elf.h
+> index 5834b83d7f9a..88bdcbb526c1 100644
+> --- a/tools/include/uapi/linux/elf.h
+> +++ b/tools/include/uapi/linux/elf.h
+
+> @@ -312,7 +323,7 @@ typedef struct elf64_phdr {
+>   #define SHN_ABS		0xfff1
+>   #define SHN_COMMON	0xfff2
+>   #define SHN_HIRESERVE	0xffff
+> -
+> +
+
+Getting the following warning when applying this series with 'b4 shazam'.
+
+/home/chleroy/linux-powerpc/.git/rebase-apply/patch:846: trailing 
+whitespace.
+
+Seems to come from here.
+
+>   typedef struct elf32_shdr {
+>     Elf32_Word	sh_name;
+>     Elf32_Word	sh_type;
 
