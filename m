@@ -1,69 +1,69 @@
-Return-Path: <linuxppc-dev+bounces-26758-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26759-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F346AC79F82
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 08:14:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 78CFEC79F82
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 08:14:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hfGv06bh8z2xqp;
-	Tue, 08 Sep 2026 18:14:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hfGv30T6Cz2xlJ;
+	Tue, 08 Sep 2026 18:14:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.13
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788855276;
-	cv=none; b=NsrvPgbgIjA9zaxCCzp47H4UbTJUefxlW/atZtFwtK5uIfG97Kp7KFV7AeH5rjgYN9ez00zM1ooD1Osmiw7vhbApME6CHPK9URKvZabEm1DdLlRCduMcva+zKf3vvcWjnghWKh6ZhNYFA1hQlUNG6TxjhcAKmlkseNi9qC2UzZnoXTdYCIcRb7wubsoisvu6VsxuOvffFCjZJbMcWlYj8CFP6FPlD2xTUWahl84jJfaeKORMqinL/ylpZnyAoLP6IgiuJpVTewiJoECeUtM2l+74Y1/sNYQuzfSQMiExkUhNH7AfcqzQ3oFEc/6nXmkVCjm+2wg7uSLMTtbKZwVuaQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788855279;
+	cv=none; b=cS93UTdKuY9WGwIDENReudPx0pUyveVHzXJdHJCTh9ruGd3thrqNlqx1vR5PzB/rp/BuTMAYf3mZSWFNdajRHF0iNmme9wPdJNgrmX1vK+tB3HWMlcUxK7T4GcITn+KFDHUklfyrH0eq4pGC6aiexDpBWOCx45mXumsKklRbnKae35Xn0RJcDgKehUct0+uKzbgItkGguujsvSItvDrojqMnZIFhobSFafBlNAKV5Mgg7V0zPzJyvmNQEpjuxHgR6Z8pkelQJOszaFvYfNnqaJITEmVRpk1ggGNCb5PxY1nfKP7qWHEfyjoxS2HROYGx6rY1xbBSNGOR19cyL5aqzQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788855276; c=relaxed/relaxed;
-	bh=1bNpq1tFp0ee5C7ELKl11y/UpdJHPoyRNwHfMWNCtts=;
-	h=Date:From:To:Cc:Subject:Message-ID; b=ib5ddvWbqDdcXLZ/NlU4rxUOp96WqEDKsN3Qmp3zQxA58YZz4h4HLpbSHCkRX+3wIsUJqNQnT16IW9hqE9gAiB071JwWxlYD/eV6BWEBb7sVG1LEqE33c/dC1HFxN27G4Rz8Ccdcf3Qaw0mEgKgcfIA5PG3ucttGUviDC7/wqQVKJqCEyVrFJppV6pkp75mp1ngKzSuGTUfaFST1yLFu7x9n76/mmizJnZBb2kIvY0oilheAmOD/6tyV9IKzTWmgU7Q76cxhMocv6dfKMmh35cGqPbkEXRudiaZg1bElcDf+ZHj5S4TZA3TGneHWtvNJs2TBU1VfYfOKz7bs4Ihzag==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=RVjtbPaU; dkim-atps=neutral; spf=pass (client-ip=198.175.65.13; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
+	t=1788855279; c=relaxed/relaxed;
+	bh=y0iy/6PXQnFBdlEZNqZ9ir3wK3mqCVMj0sMsXlHYipI=;
+	h=Date:From:To:Cc:Subject:Message-ID; b=QNzzYBwcb0HkaHrDV9P3i9sWZOz1MVjXiI3kt64O4HSsLXjvnNYAO8/bxvZmPGNcaSRtaBu80/Ywfhu7+EwkS1pJRrxZTgZ6qj3pvVvVdO6MEzF09jjYJf5Q41rf9HBsmQeTEhAdpn89J0ouRqmW0skbPTVgJ83EOCVtQfSZBeQCWsGQVZNYeaj/Wf8W7ZQPtJxFZmXGTQiRB7QMl9JeCP7ZFDGYVwaOl9Uy15XznY+6I/P5JKZg/qx2JT1hDgGsTzwUJTvzznd+npxp02Rd3zND1cTETLasxFJAy5+ZD243JkiGYxzoWXW/1R4ADAxzExj7qFomQdf+KdPN9/+oeA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=L8f5BFjv; dkim-atps=neutral; spf=pass (client-ip=198.175.65.13; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=RVjtbPaU;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=L8f5BFjv;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.13; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.13])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfGtx33xCz2xlJ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Sep 2026 18:14:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfGv14s0kz2yqf
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Sep 2026 18:14:37 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1788855274; x=1820391274;
+  t=1788855278; x=1820391278;
   h=date:from:to:cc:subject:message-id;
-  bh=vCfqN/QkmnlVJfzgAv8KP3sKAqhgFcMfNjIdj94S2wE=;
-  b=RVjtbPaU3s6P4JkEMTzk5jH0gv73KBHuCZhCuPBqds9YYD+3X28SXJaA
-   A+mQMLTmD1RZFsulu2UDI/fIrNDTR0bjR7a/F2ejdglSBbn0gNgF5DkOM
-   +Me5O4tKGdC2GgVGaDbeHc7SIau5RHEEmM30I2gYzmGnydROWOzJiLcvQ
-   1vKuVjxhpW9HAhRsh/P1G2PXBb3f+tQIYdkH7nHR2Yg4lpWPJITrTVGaO
-   iA/TeJYiCy1OBwcIhk93BiARz/6bDF22L1FjkSIUImmOvA7hXPwY+SyD8
-   O6bzJVOK0dxq55fWO6P29Pr3d51/hhR2Jg8/5H0MgaDA3uyqFL6k5MmbS
-   A==;
-X-CSE-ConnectionGUID: Z2o11cBNRg2qcLppITFaoQ==
-X-CSE-MsgGUID: 8YDTfrgTRWCCpjEPyYZ2iA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11899"; a="100409299"
+  bh=c7Icu6No/gCX7KSUPr1TVYUL03c9Nd+5pkwY8hvcB+4=;
+  b=L8f5BFjvbfOgZkYeXVYHzIQR/tFcuuWQBfETNzcmGZXaGoR/t+WWw3Wd
+   oEq7zyMLayPpJkSnrMSFbyvzJqj5XuZTw7jPpCQZYx7YUIwI+4Ng/SX33
+   Qcdl8T0e0Nw8HEMftSB68jgoNkZyQOWAHSzQHXxXe1SCVwo1LfoCPb8vU
+   TIkadHkG2f/GllPDNaxJoojy14SIu4laW8fXKDQ+4KFbIMhkN6TSFvs15
+   yt3vMplRGOCRz8Xga5G6NLXRyT1clVdZ3Of8hy/iZr9rcReo+svsSFu4v
+   SU8foP3HDq2ZP/r+2DW23xNUAGk7/bDvyEEVk5jtsGOMmjJh8zkrZXaSH
+   g==;
+X-CSE-ConnectionGUID: fsXlf7ZXQliUchrhQLQ5hQ==
+X-CSE-MsgGUID: UZ5+6CMoQV2Nrxe2z/GR6g==
+X-IronPort-AV: E=McAfee;i="6800,10657,11899"; a="100409301"
 X-IronPort-AV: E=Sophos;i="6.25,268,1779174000"; 
-   d="scan'208";a="100409299"
+   d="scan'208";a="100409301"
 Received: from fmviesa007.fm.intel.com ([10.60.135.147])
   by orvoesa105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Sep 2026 01:14:26 -0700
-X-CSE-ConnectionGUID: /AlWHuyVTvu7lqMdN+j+CQ==
-X-CSE-MsgGUID: n1NsfNH8SXiQ1eZK4PPwZw==
+X-CSE-ConnectionGUID: KTOOY2xlQleH6W7fwivfxQ==
+X-CSE-MsgGUID: q7+LF2hBTp+cKhn4HMgYEQ==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.25,268,1779174000"; 
-   d="scan'208";a="267683681"
+   d="scan'208";a="267683683"
 Received: from lkp-server01.sh.intel.com (HELO dff15f1b2031) ([10.239.97.150])
   by fmviesa007.fm.intel.com with ESMTP; 08 Sep 2026 01:14:23 -0700
 Received: from kbuild by dff15f1b2031 with local (Exim 4.98.2)
 	(envelope-from <lkp@intel.com>)
-	id 1x3qyC-000000001sa-46f4;
+	id 1x3qyD-000000001sc-0BTz;
 	Tue, 08 Sep 2026 08:14:21 +0000
-Date: Tue, 08 Sep 2026 16:13:56 +0800
+Date: Tue, 08 Sep 2026 16:14:05 +0800
 From: kernel test robot <lkp@intel.com>
 To: Madhavan Srinivasan <maddy@linux.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [powerpc:fixes] BUILD SUCCESS
- 45a5f7285f835adb3b74c9344c09a7bd2c4fb664
-Message-ID: <202609081654.cPYFJ82H-lkp@intel.com>
+Subject: [powerpc:merge] BUILD SUCCESS
+ 5287fd840531386541ec039d9e06af92f33593d7
+Message-ID: <202609081603.YNpIn6DP-lkp@intel.com>
 User-Agent: s-nail v14.9.25
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -78,10 +78,10 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git fixes
-branch HEAD: 45a5f7285f835adb3b74c9344c09a7bd2c4fb664  MAINTAINERS: powerpc: Add Ritesh and Shrikanth
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git merge
+branch HEAD: 5287fd840531386541ec039d9e06af92f33593d7  Automatic merge of 'fixes' into merge (2026-09-07 12:16)
 
-elapsed time: 1523m
+elapsed time: 1522m
 
 configs tested: 55
 configs skipped: 0
