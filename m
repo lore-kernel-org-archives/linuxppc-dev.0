@@ -1,38 +1,38 @@
-Return-Path: <linuxppc-dev+bounces-26809-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26810-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2E332C79FA1
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 14:33:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D7706C79FA1
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 14:41:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hfRJ52G51z2y8p;
-	Wed, 09 Sep 2026 00:33:25 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788878005;
-	cv=none; b=gLG68ccvmuuLcQd00g++Z63/1b34XIun/HrV0UlKjLS9lfRuEDA49WFkAsJMrr+iYoh0arxlKFqjt1lClu2IGJNpaZXzRP12FA5nnNAyMcylGVhLC/+JADlBpF9RQvChVDOZfjS61j8a1N1Xuv7b9Jcm62TYvGkAzOrBh/8hdiNzmA72zbTSmBPwjd3j19Gqtw3C3zBcd4oQVXAP1XP22ECEpCSYilKe+rRrfh1fPEsN676S5ycSXlWVuqAcZXTCzjNdUK4lU7LLYIlsZ7UpKthLKR4eUyc6A46hyjc6y8FOtJe4XjSGPQjBQAfnF4Gf1goFJ0eWwzi3Z9hYLyjXdg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hfRTY0Zbyz2y8p;
+	Wed, 09 Sep 2026 00:41:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788878496;
+	cv=none; b=KZHHcb1hDDPbvV4nLw0u1K8ndca5ZFZJG5fzXOD1Mrr67MYTgOY4QnWmHaPmoc8+nFNTYv89iIy5mm64wLT+GY3eUR6cSIDkhYoAFQEzDBJcpSptJNk4TdmRRPtfocr/N6M8eiT8Ra77UyDra4h8bPmnfNqIjUTNrLPyGMjDqFWod6m8it1knZkhaasAYEi4KrDgwguuuPLeRu98zNbP154Oy5ThU8EogNSUPoXUgrA2e/HqPgm7fdb4cX+mb43ej1vqHD+vsoLZKXN/mZprlubLu12NMExaOd7ZC33hEEzRetZLXqo+4NjiBBLe/PHAQGT7aXNBQ3MDPLfIVwY/og==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788878005; c=relaxed/relaxed;
-	bh=+Cz5ERVkEaR7M7w/Nfp8XjnpMbxd5qHpWGQvy+qtdf8=;
+	t=1788878496; c=relaxed/relaxed;
+	bh=UDv2ulwj8noxjdMQEqKxpUauXEITpLasbQE7qAV2OQU=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=haqmjPNgwlsIzxRnnDVXsj2nbVOQKuxMPlH/Ta4ktiqR7KaAKx9D5AVHrVQVEBYlCisLYCWf14FNyCNhumDfGwMTbItBD0gEt4qIQ7lw+PLjqGnxaqc0vdyCE0ubksR5oiSW6zlNWyfoSXOlXtQDHfkVXOLqfLoh8k87j86BmZBouAPZhYQ0owsWeNHJTcJHqcJKUPm/hHUI1fHNTBKjC+otBogNYw/hoOvXTMK9pmdg6azUCEjZ5qilUeOatTSxpmNSYXXOWpFsAUtsm9lzid2qh7vfMmjYujZn/AEdQEB2vk1mhu0z8UQPCZNmlrs2NOlV+gv4XtsF0tLmmceHtQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=kLg3R6mkoPBc/AcEqtOUcOaXAyFjTGIv1NeCFLRegDjF8EmjDQmQgLyG6e1t1+cH29L0IjHXotpIimuW//2p5ttcOGv1JorxhHvvjVRkr5QZ5W4X5bVe4Ff2t1aMNyiE3cG9Z4vihY3XnsPzyhR3Fh8QVwfW/H28QS1pcB15nmXVWqciUWrGS9HTTg6dc9jWLkjRa+oMsqh8qjd0Q3eD9s3vXgDtA2qN+YIY2+EBQ/A0UH6FKlB8TOFRemsFSr1DNL75Gmzd4LZINIV1ztANHOvWsqu7r7Mo6cWMnhsBM0HEXqGQJ2Ko95MGqniiQntRQddtSi506mLiGFxCuOZ9UQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfRJ42tC6z2xYh
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Sep 2026 00:33:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfRTW51hqz2xYh
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Sep 2026 00:41:35 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 34C5B601DE;
-	Tue,  8 Sep 2026 14:33:21 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CF0701F00A3E;
-	Tue,  8 Sep 2026 14:33:02 +0000 (UTC)
-Message-ID: <1ef2c31d-6ad5-46cd-98ca-0f31485cf8c1@kernel.org>
-Date: Tue, 8 Sep 2026 16:32:59 +0200
+	by sea.source.kernel.org (Postfix) with ESMTP id 4A81C4360A;
+	Tue,  8 Sep 2026 14:41:31 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A83611F00A3A;
+	Tue,  8 Sep 2026 14:41:14 +0000 (UTC)
+Message-ID: <7c9f6ec3-5886-41ea-8803-d81019321d29@kernel.org>
+Date: Tue, 8 Sep 2026 16:41:09 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -47,20 +47,18 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 02/24] x86/elf, um/x86/elf: Move relocation constants
- to UAPI
-To: Borislav Petkov <bp@alien8.de>,
- =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-Cc: Paul Walmsley <paul.walmsley@sifive.com>,
- Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
+Subject: Re: [PATCH v5 17/24] powerpc/vdso: Enable the vdsocheck tool
+To: =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>,
+ Paul Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt
+ <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
  Alexandre Ghiti <alex@ghiti.fr>, Nathan Chancellor <nathan@kernel.org>,
  Nick Desaulniers <nick.desaulniers+lkml@gmail.com>,
  Bill Wendling <morbo@google.com>, Justin Stitt <justinstitt@google.com>,
  Andy Lutomirski <luto@kernel.org>,
  Vincenzo Frascino <vincenzo.frascino@arm.com>, Kees Cook <kees@kernel.org>,
- Ingo Molnar <mingo@redhat.com>, Dave Hansen <dave.hansen@linux.intel.com>,
- x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
- Richard Weinberger <richard@nod.at>,
+ Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+ Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+ "H. Peter Anvin" <hpa@zytor.com>, Richard Weinberger <richard@nod.at>,
  Anton Ivanov <anton.ivanov@cambridgegreys.com>,
  Johannes Berg <johannes@sipsolutions.net>,
  Russell King <linux@armlinux.org.uk>,
@@ -79,39 +77,113 @@ Cc: Paul Walmsley <paul.walmsley@sifive.com>,
  Andreas Hindborg <a.hindborg@kernel.org>, Alice Ryhl <aliceryhl@google.com>,
  Trevor Gross <tmgross@umich.edu>, Danilo Krummrich <dakr@kernel.org>,
  Thomas Gleixner <tglx@kernel.org>, Boqun Feng <boqun@kernel.org>,
- Nicolas Schier <nsc@kernel.org>, linux-riscv@lists.infradead.org,
- linux-kernel@vger.kernel.org, llvm@lists.linux.dev, linux-mm@kvack.org,
- linux-um@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, loongarch@lists.linux.dev,
- linux-s390@vger.kernel.org, linux-mips@vger.kernel.org,
- rust-for-linux@vger.kernel.org, linux-kbuild@vger.kernel.org,
- Jan Stancek <jstancek@redhat.com>, Arnaldo Carvalho de Melo
- <acme@redhat.com>, Alexandre Ghiti <alexghiti@rivosinc.com>
+ Nicolas Schier <nsc@kernel.org>
+Cc: linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
+ llvm@lists.linux.dev, linux-mm@kvack.org, linux-um@lists.infradead.org,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ loongarch@lists.linux.dev, linux-s390@vger.kernel.org,
+ linux-mips@vger.kernel.org, rust-for-linux@vger.kernel.org,
+ linux-kbuild@vger.kernel.org, Jan Stancek <jstancek@redhat.com>,
+ Arnaldo Carvalho de Melo <acme@redhat.com>,
+ Alexandre Ghiti <alexghiti@rivosinc.com>
 References: <20260908-vdso-absolute-reloc-v5-0-3a93791af1cf@linutronix.de>
- <20260908-vdso-absolute-reloc-v5-2-3a93791af1cf@linutronix.de>
- <20260908135513.GAaqATwXHcQD7plnH-@fat_crate.local>
+ <20260908-vdso-absolute-reloc-v5-17-3a93791af1cf@linutronix.de>
 Content-Language: fr-FR
 From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-In-Reply-To: <20260908135513.GAaqATwXHcQD7plnH-@fat_crate.local>
+In-Reply-To: <20260908-vdso-absolute-reloc-v5-17-3a93791af1cf@linutronix.de>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
 
 
-Le 08/09/2026 à 15:55, Borislav Petkov a écrit :
-> On Tue, Sep 08, 2026 at 08:33:36AM +0200, Thomas Weißschuh wrote:
->> These constants are useful for cross-platform userspace, for example to
->> process ELF files during kernel cross-compilation.
->>
->> Move them from the kernel-private architecture-specific header to the UAPI.
+Le 08/09/2026 à 08:33, Thomas Weißschuh a écrit :
+> The vdsocheck tool validates the object files and final .so library.
+> It can detect if the compiler created relocations which are incompatible
+> with the vDSO which need to be worked around.
 > 
-> Why UAPI?
+> Wire it up for the architecture.
 > 
-> Why not include/linux/ ?
+> Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
+> ---
+>   arch/powerpc/Kconfig              |  1 +
+>   arch/powerpc/kernel/vdso/Makefile |  4 ++--
+>   lib/vdso/check/vdsocheck.rs       | 27 +++++++++++++++++++++++++++
+>   3 files changed, 30 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 2580e27e4328..f19e225cfc5c 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -330,6 +330,7 @@ config PPC
+>   	select SYSCTL_EXCEPTION_TRACE
+>   	select THREAD_INFO_IN_TASK
+>   	select TRACE_IRQFLAGS_SUPPORT
+> +	select VDSO_CHECK
+>   	select VDSO_DATASTORE
+>   	select VDSO_GETRANDOM
+>   	#
+> diff --git a/arch/powerpc/kernel/vdso/Makefile b/arch/powerpc/kernel/vdso/Makefile
+> index 368759f81708..ca20b91b4373 100644
+> --- a/arch/powerpc/kernel/vdso/Makefile
+> +++ b/arch/powerpc/kernel/vdso/Makefile
+> @@ -81,9 +81,9 @@ targets += vdso64.lds
+>   CPPFLAGS_vdso64.lds += -P -C
+>   
+>   # link rule for the .so file, .lds has to be first
+> -$(obj)/vdso32.so.dbg: $(obj)/vdso32.lds $(obj-vdso32) $(obj)/vgettimeofday-32.o $(obj)/vgetrandom-32.o $(obj)/crtsavres-32.o FORCE
+> +$(obj)/vdso32.so.dbg: $(obj)/vdso32.lds $(obj-vdso32) $(obj)/vgettimeofday-32.o $(obj)/vgetrandom-32.o $(obj)/crtsavres-32.o $(vdsocheck) FORCE
+>   	$(call if_changed,vdso32ld_and_check)
+> -$(obj)/vdso64.so.dbg: $(obj)/vdso64.lds $(obj-vdso64) $(obj)/vgettimeofday-64.o $(obj)/vgetrandom-64.o FORCE
+> +$(obj)/vdso64.so.dbg: $(obj)/vdso64.lds $(obj-vdso64) $(obj)/vgettimeofday-64.o $(obj)/vgetrandom-64.o $(vdsocheck) FORCE
+>   	$(call if_changed,vdso64ld_and_check)
+>   
+>   # assembly rules for the .S files
+> diff --git a/lib/vdso/check/vdsocheck.rs b/lib/vdso/check/vdsocheck.rs
+> index e45a1fbc6829..429bdcd65818 100644
+> --- a/lib/vdso/check/vdsocheck.rs
+> +++ b/lib/vdso/check/vdsocheck.rs
+> @@ -69,6 +69,33 @@ fn allowed_relocations_for_machine(machine: u16) -> Option<AllowedRelocations<'s
+>               ..Default::default()
+>           }
+>           .into(),
+> +        bindings::EM_PPC => AllowedRelocations {
+> +            in_object_file: &[
+> +                bindings::R_PPC_REL24,
+
+Not sure this is correct, see commit 42ed6d56ade2 ("powerpc/vdso: Block 
+R_PPC_REL24 relocations")
+
+> +                bindings::R_PPC_REL14,
+> +                bindings::R_PPC_REL32,
+> +                bindings::R_PPC_REL16,
+> +                bindings::R_PPC_REL16_LO,
+> +                bindings::R_PPC_REL16_HI,
+> +                bindings::R_PPC_REL16_HA,
+> +            ],
+> +            ..Default::default()
+> +        }
+> +        .into(),
+> +        bindings::EM_PPC64 => AllowedRelocations {
+> +            in_object_file: &[
+> +                bindings::R_PPC64_REL24,
+
+Not sure this is correct, see commit 42ed6d56ade2 ("powerpc/vdso: Block 
+R_PPC_REL24 relocations")
+
+> +                bindings::R_PPC64_REL14,
+> +                bindings::R_PPC64_REL32,
+> +                bindings::R_PPC64_REL64,
+> +                bindings::R_PPC64_REL16,
+> +                bindings::R_PPC64_REL16_LO,
+> +                bindings::R_PPC64_REL16_HI,
+> +                bindings::R_PPC64_REL16_HA,
+> +            ],
+> +            ..Default::default()
+> +        }
+> +        .into(),
+>           _ => None,
+>       }
+>   }
 > 
 
-I guess because on some architectures it is already in UAPI, see for 
-instance powerpc in patch 5 ?
-
-Christophe
 
