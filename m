@@ -1,53 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-26826-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26827-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 61FCAC79FAE
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 20:03:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9D6C6C79F99
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 20:04:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hfZdT4n8Hz2yjN;
-	Wed, 09 Sep 2026 06:03:57 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788897837;
-	cv=none; b=OIIQB/t+/4uzICDaBjO5o9hsP5sR7cc6PXuPV4kDZPfWqu35xcZJlElIxMLRw4bLyZZ1aII1g6I1ZBr1cZloWgy5y0IE3EVUcD5lNba9bICRVPR6/KIVaCzIH39p9PBjyFiqWjVH3qFWWHHLyzSTI/LXG5PeKhtCxiEeEpRC2ifIF5N3U16mZGjlCaXIjhX6yBmst0YGichkdm/F0QI2XjrIvY9PQxx7kFJkviEB1QNadWC6uWSUpGdKf8TVZO93qWM8YDoAPE5NjPFzThHfwUVWhtBjSDY3UBUWnr06s7T3hXuo0QxFTzHx37b+So1ie5aoBW91Oz/NXtbhvmm7cQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hfZf06z3Wz2y8p;
+	Wed, 09 Sep 2026 06:04:24 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788897864;
+	cv=none; b=X3OP+45NXnTeOmmxAOTHq8JCVXspW7CDNJ98kKJu2ukyaWKUMTJN5XvMQtHtMypH+4zve7cBnciG+2stXFqQTn6CjoAc+fZH95QdEUG7CUiKHo95i3y+twEtRV0Mu51M9ykOuYcnUI2KUKV/yCcPlI4FfxYrOC2v/wYuuncb/rmMNhJoztVEU928JarudWtImv5Ofpzgyjdl3/c7SbHSmwa9Dh1tnRgUELuEmtIGET+Ag9Dyt2yY5pbvoUcaXw+hcHFDVrnOinCgiES87NS47hOV125YDUAsm6htxJeSZWbF3VOlWSjxKamW5EelVkjSt08+RT6PjOZlWoImOWDenw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788897837; c=relaxed/relaxed;
-	bh=MgpJM0gxrPMK2aMmTEHBRsRtr8Iid1PSeEmXNGIS490=;
+	t=1788897864; c=relaxed/relaxed;
+	bh=lbRhb9Yb4gDbpWqPbus0qjNX5XJi5UO6wGbL0nzbXu8=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=AWeWb1a2XJ3ewfgEJXBanTmee7VarD9zIyDRbhx44Lq9QXWJOc4zLYO7WAN9yALwC04eHwO7JVtq1h2GGbea5jXptA56O7XqyqDrRGkPyeUH0eUvltt5KtgJAvdxrAmmlSx9NqINTBWABE/+Bju6eKgb2uOD14U75UJqTfZICxIHx2NDcZHcQH2YUGAqRxoapAY8oBz3TQWblvbko9b/Ww01EEaQ4ARyKTeJeQ+K6sBNNdYw4NNxj2BCBzKbRZPFe8DMtAmSKI8iNMBNbwTPBGjP7/x0KSTa9ATahc03NSUZi/Y8fbGafmRtLraabrtcnmrnz6iPR3aEtqBIUfJL6g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hOjkwIOp; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=Xb010VQRNLx7H3wwqzGVUv3n0n/AYgR+K4MXz7mDqfGDeuXEnLEpG6aFE0dtrKcfb+DnAUh9U5NqCh6E9uqhA2F4vhgHoUG7+R0C2ZLO5CHXFqB0uk778K0iXZxy8GrMXT7pHMYmGzSRR8iL1qMjS770oimzj5vbfymKs+V8s6PSCLPIHySjxKq/z0NbN4HXJ8Vxq4LUzNE+rhqkoPvoM0n6Mj4M9b6CUZ9N5sppc/3MuoU+rKnhZxsgfxpOp9+cODQfLBwWM6weVJ0WJs+quQZCbecdTAxxhGmMMcZwldruOmKhvOGsd0SV0ajs5pi08veg2Mf8+okpZokcJGp5jA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=np/JQQhi; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hOjkwIOp;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=np/JQQhi;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfZdS3q8Nz2y1F
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Sep 2026 06:03:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfZf01Mchz2y1F
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Sep 2026 06:04:24 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 2B8DB408AE;
+	by sea.source.kernel.org (Postfix) with ESMTP id A4C194179B;
+	Tue,  8 Sep 2026 20:04:22 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 86D0D1F00A3D;
 	Tue,  8 Sep 2026 20:03:54 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D3F831F00A3A;
-	Tue,  8 Sep 2026 20:03:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788897834;
-	bh=MgpJM0gxrPMK2aMmTEHBRsRtr8Iid1PSeEmXNGIS490=;
+	s=k20260515; t=1788897862;
+	bh=lbRhb9Yb4gDbpWqPbus0qjNX5XJi5UO6wGbL0nzbXu8=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=hOjkwIOp8261HSQudpZOV7VIYvTA7XH9us9Kk3LrjL/r/quuZsXNP9F1SR5sj03w5
-	 rR3FdHm+A3cEU0nLEmaFE1HFYpBiUTZ55tQVCe4ZHDPAwpaw1MMk32GGM+xgo1yRtX
-	 cllgFRN9A/8Y1Q+5BlqUC2hi7lvpsWXFcPTui3eJcomosYvQPH23D5WW0ft8peuf+o
-	 7gI+Wb4p5qe44OvVmimJcS9buxoeyKgNnpBgYDHXf5FDIELwKCKq26u3o+HJoe1may
-	 vK07AIq6FGFrDOEO08B+PKytMMezgzu/sjfrxRawONjtA2CV/BOhQPHVRyGURmjyU5
-	 vbXLNvLgH1mcg==
+	b=np/JQQhiq88j7qchaSLG5nKK+4MTAVPV5Cz/tGHq/JRR0GyrZjG7aNu4nPxIBia1c
+	 jxac+RkNG1cGl1z4g9eRlXzaCXAbqAkvsPkLIrATIct1AWudgqYZBwWohxnnT3WSWQ
+	 YiA74xVHAsTgahglVY85Lg8X3snP5j7qvgAmsk9aiVkpC3AZ4NfifYUKvjBafriw4B
+	 UQSWvtm0tLvagxTwX7bNEtXNA01kKexizL2SWm/SuAEifeoCc54u49ya9tW9AlrzTC
+	 tFzHfaN+2G9FPnBpbhcQPIj04P6m7U/FX8Zrp5dY+eVRXmY5qGs+wh872cMcGdMv7b
+	 mU8+hdM5Yt1Vg==
 From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Date: Tue, 08 Sep 2026 21:01:07 +0100
-Subject: [PATCH 03/39] mm: consistently validate VMA state after
- mmap[_prepare] hooks
+Date: Tue, 08 Sep 2026 21:01:08 +0100
+Subject: [PATCH 04/39] mm/vma: ensure mmap_prepare doesn't set actions on a
+ mergeable vma
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +63,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260908-b4-mmap-prepare-vma-flag-sanify-v1-3-dacf19cce22b@kernel.org>
+Message-Id: <20260908-b4-mmap-prepare-vma-flag-sanify-v1-4-dacf19cce22b@kernel.org>
 References: <20260908-b4-mmap-prepare-vma-flag-sanify-v1-0-dacf19cce22b@kernel.org>
 In-Reply-To: <20260908-b4-mmap-prepare-vma-flag-sanify-v1-0-dacf19cce22b@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>, 
@@ -147,392 +147,52 @@ Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, 
  fuse-devel@lists.linux.dev, "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=12573; i=ljs@kernel.org;
- h=from:subject:message-id; bh=lWoC370i/kohl/sqj0NKxzbsOFNUopCPVYoGOeoLoxk=;
- b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLIWZG6w5n9ZZHGLs0do4aJHwoWPvy2V03rz1GZd6xbl5
- Z5iLyYZdZSyMIhxMciKKbI8/yK+P0gkbF7nBX83mDmsTCBDGLg4BWAiy58x/BVY4a5nzT3vhfMV
- /gD29wvOSD00/RRQn75U3dVWsCCp6Q/DL6Y5jZkmMkvfzt+txr/bvWrSi50X9s/WNZ3MkFnVsPG
- 4KhsA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1311; i=ljs@kernel.org;
+ h=from:subject:message-id; bh=S4K4xxOQqYF6aIxj0t3GkPHnntUAtdbixR+JacKisSY=;
+ b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLIWZG64mvHudrS5dtz0Zef5H4ZMmtBj+u3ouxQnCTeBu
+ kCOVR3dHaUsDGJcDLJiiizPv4jvDxIJm9d5wd8NZg4rE8gQBi5OAZgIexAjwycGkz3ceeXz8uek
+ 5bxS9eCxT72j7DFdY/FCsZ0Sti4LCxgZpqzNbPedJSK4tdIn2mXq1+UPbFJKX/pYL7kwpb/4R3Q
+ CEwA=
 X-Developer-Key: i=ljs@kernel.org; a=openpgp;
  fpr=E7F417BF5214569E89D04F46CF9DCD8A81E27F14
 
-When the f_op->mmap_prepare or deprecated f_op->mmap hooks are invoked, the
-driver might have done something crazy that is not permitted by the kernel.
+When a user requests an mmap_action be performed in mmap_prepare, this
+involves populating the VMA range with data.
 
-Currently we check for three such cases in __mmap_new_file_vma(), but only
-if the legacy f_op->mmap hook is used:
+However, if the VMA is mergeable, it might then mistakenly be merged with
+another VMA without having populated the range.
 
-* Did sparc ADI result in invalid flags?
+Every mmap action currently available sets VMA flags such that the VMA
+cannot be merged.
 
-* Did the driver alter vma->vm_start?
-
-* Did the driver make a file-backed mapping on a read-only file writable?
-
-Generalise these checks for both mmap_prepare and mmap and apply to all
-invocations of mmap_file(), the f_op->mmap and f_op->mmap_prepare handling
-in the core VMA code and the mmap_prepare compatibility layer.
-
-We also WARN_ON_ONCE() on these conditions as they are things that should
-simply not occur in the kernel and it's important to call it out when it
-does.
-
-We invoke mmap_prepare_validate() after mmap_action_prepare(), as mmap
-actions often manipulate state in the descriptor thus providing the final
-state the VMA will be derived from.
-
-Also call mmap_validate_vma_flags() in insert_vm_struct() to ensure that
-special regions which are inserted (such as a VDSO or VVAR) also satisfy
-the sanity checks.
-
-This way every VMA established through an mmap hook, whether via mmap() or
-the compatibility layer, or inserted via insert_vm_struct(), has been
-validated. brk() VMAs never pass through a driver hook and so need no such
-check.
-
-While we're here, also fixup a couple disjoint blocks of #ifdef CONFIG_MMU.
-
-Finally, update the VMA userland tests to reflect the change.
+However, to ensure that no future mmap action falls foul of this, assert
+that this is the case upon mmap_prepare validation.
 
 Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 ---
- mm/internal.h                   | 47 ++++++++++++--------
- mm/util.c                       |  7 +++
- mm/vma.c                        | 98 ++++++++++++++++++++++++++++++++++-------
- mm/vma.h                        | 24 ++++++++--
- tools/testing/vma/include/dup.h | 10 +++++
- 5 files changed, 148 insertions(+), 38 deletions(-)
+ mm/vma.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff --git a/mm/internal.h b/mm/internal.h
-index da14c56fb24e..abb0fae8c637 100644
---- a/mm/internal.h
-+++ b/mm/internal.h
-@@ -212,6 +212,24 @@ static inline void *folio_raw_mapping(const struct folio *folio)
- 	return (void *)(mapping & ~FOLIO_MAPPING_FLAGS);
- }
- 
-+/*
-+ * If the VMA has a close hook then close it, and since closing it might leave
-+ * it in an inconsistent state which makes the use of any hooks suspect, clear
-+ * them down by installing dummy empty hooks.
-+ */
-+static inline void vma_close(struct vm_area_struct *vma)
-+{
-+	if (vma->vm_ops && vma->vm_ops->close) {
-+		vma->vm_ops->close(vma);
-+
-+		/*
-+		 * The mapping is in an inconsistent state, and no further hooks
-+		 * may be invoked upon it.
-+		 */
-+		vma->vm_ops = &vma_dummy_vm_ops;
-+	}
-+}
-+
- /*
-  * This is a file-backed mapping, and is about to be memory mapped - invoke its
-  * mmap hook and safely handle error conditions. On error, VMA hooks will be
-@@ -224,8 +242,11 @@ static inline void *folio_raw_mapping(const struct folio *folio)
-  */
- static inline int mmap_file(struct file *file, struct vm_area_struct *vma)
- {
--	int err = vfs_mmap(file, vma);
-+	const unsigned long prev_start = vma->vm_start;
-+	const vma_flags_t prev_flags = vma->flags;
-+	int err;
- 
-+	err = vfs_mmap(file, vma);
- 	/*
- 	 * Either we tried to call the file hook for mmap() and an error arose
- 	 * or a driver set vma->vm_ops = NULL intending there to be no VMA
-@@ -238,26 +259,14 @@ static inline int mmap_file(struct file *file, struct vm_area_struct *vma)
- 	 */
- 	if (unlikely(err || !vma->vm_ops))
- 		vma->vm_ops = &vma_dummy_vm_ops;
-+	if (unlikely(err))
-+		return err;
- 
--	return err;
--}
--
--/*
-- * If the VMA has a close hook then close it, and since closing it might leave
-- * it in an inconsistent state which makes the use of any hooks suspect, clear
-- * them down by installing dummy empty hooks.
-- */
--static inline void vma_close(struct vm_area_struct *vma)
--{
--	if (vma->vm_ops && vma->vm_ops->close) {
--		vma->vm_ops->close(vma);
-+	err = mmap_hook_validate(prev_start, &prev_flags, vma);
-+	if (unlikely(err))
-+		vma_close(vma);
- 
--		/*
--		 * The mapping is in an inconsistent state, and no further hooks
--		 * may be invoked upon it.
--		 */
--		vma->vm_ops = &vma_dummy_vm_ops;
--	}
-+	return err;
- }
- 
- /* unmap_vmas is in mm/memory.c */
-diff --git a/mm/util.c b/mm/util.c
-index bf0513d1d3d0..a3cef493ed70 100644
---- a/mm/util.c
-+++ b/mm/util.c
-@@ -1224,10 +1224,17 @@ EXPORT_SYMBOL(compat_set_desc_from_vma);
- int __compat_vma_mmap(struct vm_area_desc *desc,
- 		      struct vm_area_struct *vma)
- {
-+	struct vm_area_desc prev_desc;
- 	int err;
- 
-+	/* Derive state prior to mmap_prepare hook. */
-+	compat_set_desc_from_vma(&prev_desc, desc->file, vma);
- 	/* Perform any preparatory tasks for mmap action. */
- 	err = mmap_action_prepare(desc);
-+	if (err)
-+		return err;
-+	/* Check the caller did nothing crazy. */
-+	err = mmap_prepare_validate(&prev_desc, desc);
- 	if (err)
- 		return err;
- 	/* Update the VMA from the descriptor. */
 diff --git a/mm/vma.c b/mm/vma.c
-index 0db2fc306993..a24f04428580 100644
+index a24f04428580..9e45fc83f74c 100644
 --- a/mm/vma.c
 +++ b/mm/vma.c
-@@ -2581,7 +2581,6 @@ static int __mmap_setup(struct mmap_state *map, struct vm_area_desc *desc,
- 	return 0;
- }
- 
--
- static int __mmap_new_file_vma(struct mmap_state *map,
- 			       struct vm_area_struct *vma)
+@@ -2794,6 +2794,15 @@ static int mmap_validate(unsigned long prev_start,
+ int mmap_prepare_validate(const struct vm_area_desc *prev_desc,
+ 			  const struct vm_area_desc *desc)
  {
-@@ -2608,16 +2607,6 @@ static int __mmap_new_file_vma(struct mmap_state *map,
- 		return error;
- 	}
- 
--	/* Drivers cannot alter the address of the VMA. */
--	WARN_ON_ONCE(map->addr != vma->vm_start);
--	/*
--	 * Drivers should not permit writability when previously it was
--	 * disallowed.
--	 */
--	VM_WARN_ON_ONCE(!vma_flags_same_pair(&map->vma_flags, &vma->flags) &&
--			!vma_flags_test(&map->vma_flags, VMA_MAYWRITE_BIT) &&
--			vma_test(vma, VMA_MAYWRITE_BIT));
--
- 	map->file = vma->vm_file;
- 	map->vma_flags = vma->flags;
- 
-@@ -2696,11 +2685,6 @@ static int __mmap_new_vma(struct mmap_state *map, struct vm_area_struct **vmap,
- 		vma->flags = map->vma_flags;
- 	}
- 
--#ifdef CONFIG_SPARC64
--	/* TODO: Fix SPARC ADI! */
--	WARN_ON_ONCE(!arch_validate_flags(map->vm_flags));
--#endif
--
- 	/* Lock the VMA since it is modified after insertion into VMA tree */
- 	vma_start_write(vma);
- 	vma_iter_store_new(vmi, vma);
-@@ -2763,6 +2747,76 @@ static void __mmap_complete(struct mmap_state *map, struct vm_area_struct *vma)
- 	vma_set_page_prot(vma);
- }
- 
-+/* Check to ensure that the VMA flags of a newly mapped VMA are sane. */
-+static int mmap_validate_vma_flags(const vma_flags_t *flags)
-+{
-+#ifdef CONFIG_SPARC64
-+	const vm_flags_t legacy_flags = vma_flags_to_legacy(*flags);
-+
-+	/* TODO: Fix SPARC ADI! */
-+	if (WARN_ON_ONCE(!arch_validate_flags(legacy_flags)))
-+		return -EINVAL;
-+#endif
-+
-+	return 0;
-+}
-+
-+/* Check to ensure a driver hasn't done something crazy. */
-+static int mmap_validate(unsigned long prev_start,
-+			 unsigned long curr_start,
-+			 const vma_flags_t *prev_flags,
-+			 const vma_flags_t *curr_flags)
-+{
-+	bool was_maywrite, is_maywrite;
-+
-+	/* Drivers cannot alter the address of the VMA. */
-+	if (WARN_ON_ONCE(prev_start != curr_start))
++	/*
++	 * It is not valid to execute mmap actions for VMAs which can be merged,
++	 * as any such merge would leave portions of the mapping incorrectly
++	 * unmapped.
++	 */
++	if (vma_flags_can_merge(&desc->vma_flags) &&
++	    WARN_ON_ONCE(desc->action.type != MMAP_NOTHING))
 +		return -EINVAL;
 +
-+	was_maywrite = vma_flags_test(prev_flags, VMA_MAYWRITE_BIT);
-+	is_maywrite = vma_flags_test(curr_flags, VMA_MAYWRITE_BIT);
-+
-+	/* A driver may not make a previously unwritable mapping writable. */
-+	if (WARN_ON_ONCE(!was_maywrite && is_maywrite))
-+		return -EINVAL;
-+
-+	return mmap_validate_vma_flags(curr_flags);
-+}
-+
-+/**
-+ * mmap_prepare_validate() - Ensure the driver hasn't violated invariants in its
-+ * f_op->mmap_prepare hook.
-+ * @prev_desc: The VMA descriptor prior to the mmap_prepare hook being called.
-+ * @desc: The VMA descriptor after the mmap_prepare hook has been called.
-+ *
-+ * Returns: 0 on success, otherwise an error.
-+ */
-+int mmap_prepare_validate(const struct vm_area_desc *prev_desc,
-+			  const struct vm_area_desc *desc)
-+{
-+	return mmap_validate(prev_desc->start, desc->start,
-+			     &prev_desc->vma_flags, &desc->vma_flags);
-+}
-+
-+/**
-+ * mmap_hook_validate() - Ensure the driver hasn't violated invariants in
-+ * its f_op->mmap hook.
-+ * @prev_start: The start of the mapping prior to the mmap hook.
-+ * @prev_flags: The VMA flags set for the VMA prior to the mmap hook.
-+ * @vma: The VMA after the hook has been applied.
-+ *
-+ * Returns: 0 on success, otherwise an error.
-+ */
-+int mmap_hook_validate(unsigned long prev_start,
-+		       const vma_flags_t *prev_flags,
-+		       const struct vm_area_struct *vma)
-+{
-+	const unsigned long start = vma->vm_start;
-+	const vma_flags_t *flags = &vma->flags;
-+
-+	return mmap_validate(prev_start, start, prev_flags, flags);
-+}
-+
- static int call_action_prepare(struct mmap_state *map,
- 			       struct vm_area_desc *desc)
- {
-@@ -2789,6 +2843,7 @@ static int call_action_prepare(struct mmap_state *map,
- static int call_mmap_prepare(struct mmap_state *map,
- 		struct vm_area_desc *desc)
- {
-+	const struct vm_area_desc prev_desc = *desc;
- 	int err;
- 
- 	/* Invoke the hook. */
-@@ -2800,10 +2855,16 @@ static int call_mmap_prepare(struct mmap_state *map,
- 	if (!desc->vm_ops)
- 		return -EINVAL;
- 
-+	/* Perform any preparatory tasks for mmap action. */
- 	err = call_action_prepare(map, desc);
- 	if (err)
- 		return err;
- 
-+	/* Check the caller did nothing crazy. */
-+	err = mmap_prepare_validate(&prev_desc, desc);
-+	if (err)
-+		return err;
-+
- 	/* Update fields permitted to be changed. */
- 	map->pgoff = desc->pgoff;
- 	if (desc->vm_file != map->file) {
-@@ -3432,10 +3493,15 @@ int __vm_munmap(unsigned long start, size_t len, bool unlock)
- int insert_vm_struct(struct mm_struct *mm, struct vm_area_struct *vma)
- {
- 	unsigned long charged = vma_pages(vma);
-+	int err;
- 
- 	if (find_vma_intersection(mm, vma->vm_start, vma->vm_end))
- 		return -ENOMEM;
- 
-+	err = mmap_validate_vma_flags(&vma->flags);
-+	if (err)
-+		return err;
-+
- 	if (vma_test(vma, VMA_ACCOUNT_BIT) &&
- 	     security_vm_enough_memory_mm(mm, charged))
- 		return -ENOMEM;
-diff --git a/mm/vma.h b/mm/vma.h
-index e97bd2dfa786..af14ed7265ce 100644
---- a/mm/vma.h
-+++ b/mm/vma.h
-@@ -780,14 +780,19 @@ struct vm_area_struct *vm_area_alloc(struct mm_struct *mm);
- struct vm_area_struct *vm_area_dup(struct vm_area_struct *orig);
- void vm_area_free(struct vm_area_struct *vma);
- 
--/* vma_exec.c */
- #ifdef CONFIG_MMU
-+int mmap_prepare_validate(const struct vm_area_desc *prev_desc,
-+			  const struct vm_area_desc *desc);
-+
-+int mmap_hook_validate(unsigned long prev_start,
-+		       const vma_flags_t *prev_flags,
-+		       const struct vm_area_struct *vma);
-+
-+/* vma_exec.c */
- int create_init_stack_vma(struct mm_struct *mm, struct vm_area_struct **vmap,
- 			  unsigned long *top_mem_p);
- int relocate_vma_down(struct vm_area_struct *vma, unsigned long shift);
--#endif
- 
--#ifdef CONFIG_MMU
- /*
-  * Denies creating a writable executable mapping or gaining executable permissions.
-  *
-@@ -836,6 +841,19 @@ static inline bool map_deny_write_exec(const vma_flags_t *old,
- 
- 	return false;
+ 	return mmap_validate(prev_desc->start, desc->start,
+ 			     &prev_desc->vma_flags, &desc->vma_flags);
  }
-+#else
-+static inline int mmap_prepare_validate(const struct vm_area_desc *prev_desc,
-+					const struct vm_area_desc *desc)
-+{
-+	return 0;
-+}
-+
-+static inline int mmap_hook_validate(unsigned long prev_start,
-+				     const vma_flags_t *prev_flags,
-+				     const struct vm_area_struct *vma)
-+{
-+	return 0;
-+}
- #endif
- 
- struct vm_area_struct *__install_special_mapping(struct mm_struct *mm,
-diff --git a/tools/testing/vma/include/dup.h b/tools/testing/vma/include/dup.h
-index 2fd422789717..2986ae6ca1e5 100644
---- a/tools/testing/vma/include/dup.h
-+++ b/tools/testing/vma/include/dup.h
-@@ -1359,13 +1359,23 @@ static inline int vfs_mmap_prepare(struct file *file, struct vm_area_desc *desc)
- 	return file->f_op->mmap_prepare(desc);
- }
- 
-+int mmap_prepare_validate(const struct vm_area_desc *prev_desc,
-+			  const struct vm_area_desc *desc);
-+
- static inline int __compat_vma_mmap(struct vm_area_desc *desc,
- 		struct vm_area_struct *vma)
- {
-+	struct vm_area_desc prev_desc;
- 	int err;
- 
-+	/* Derive state prior to mmap_prepare hook. */
-+	compat_set_desc_from_vma(&prev_desc, desc->file, vma);
- 	/* Perform any preparatory tasks for mmap action. */
- 	err = mmap_action_prepare(desc);
-+	if (err)
-+		return err;
-+	/* Check the caller did nothing crazy. */
-+	err = mmap_prepare_validate(&prev_desc, desc);
- 	if (err)
- 		return err;
- 	/* Update the VMA from the descriptor. */
 
 -- 
 2.55.0
