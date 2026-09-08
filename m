@@ -1,52 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-26851-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26852-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E748AC79F82
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 20:15:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6535BC79F82
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 20:16:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hfZvC3H6Rz2ytJ;
-	Wed, 09 Sep 2026 06:15:51 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788898551;
-	cv=none; b=jGKFadB3MzsI2Qy1twzOtduXvxxZ3ZAs08vSHITldw8lg02OCz9FQQwW67ETPspa2VbLWzobfL2h5jhoTJmBTUIvpF6t3pmgLWbH0WKeYE+bM70gD01dQ3PvJapC25yJWxAkF3I0rtRx0PIVmFZRjm/1TcStHiGllVpyHMcHofL+uaA8onbrbfPoO96SQAwWfpeAJUma4PfzpaXaFT8iuqOw6RAuZAQ0OI0AAJy20LJN7MyRrF5rCCU0d11NjySVqsPjh7Sa5Qrtzj9knLFr+5ZEyx+hYZ1LLh2xQK5HuzHSb5mBB1THmfy+NOMUh0Qzgi6Hyq1FhnpHd2Buso6w6Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hfZvl6WWcz2ytV;
+	Wed, 09 Sep 2026 06:16:19 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788898579;
+	cv=none; b=JpUhvURMCL/G+92Jq9UgqRmlmLz8g+RjrKIM61aEDyIpDgrmJxscOcdFKdXrD5KJ7Cz+mm0I2D2AoacWc1J8HzG/9028or0aWX93gTiCXn7hK9T5EMNdWjIvLgRn3hB6tsD8JxKxtSe1NaZH4MDbL49k0KDZ3+glTtSbPtBKORfo+n9Cfsejwaaf9oGUG2chFwP08jiLlGNCOQUp9TNpU+YgwRGs60VEdEq+1CtASzbMiDhaPicNJd94UqGUYXSmv5OU4NnuONUlp/ugWOQgBikuFCjzGcNKZyM9oDMjRIF75uLH8mnvtMEdgNacIhUF+G3VdogYK6kI6Vx+s3fHUg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788898551; c=relaxed/relaxed;
-	bh=ppismYwdrne4x7KodwF6y3kmVmoi42d3nut3iH078TU=;
+	t=1788898579; c=relaxed/relaxed;
+	bh=pdqrKu8t+WYJ+ouEDCa9SDonWfa/NDTVSZ6bOn7dzu0=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=QNJTil1+XIc/z5i+DbFoxvtaM4VAo6ojsnSvNsadVeM4e2fXqYnL/LQm16Ux6egHvuY17a/1NH6gtmOjyTHTp8XMEHMPocZ/7DblyXdnk0sjofkfbrXqMx2EL+UKQkedBagM2x7qJGfjNUla7u0T5m2oJ87TPK5c7MDLTXKAL/HzPTaSf5FwSVrS3IYm1f8a0BvMUs3RwFxEx5hrOD6JoqY6zg+J7g7FfZ/XvFbF488oppPUoXo2AwQiEjYGSh5cIgo9fNZE9FO6smuqvnEcCfAjPuVNvapYUJqD9mF0HJEcTGD+0/NsrzEC0qqynoG0jUn0i0ty8Nt6f6t8QTAysQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lbDwRa8g; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=XrUoseCFmiLqQt/P9UO9zW2sOTSikuPyFtR9+746mkKJOuUGLU/utFbfiQVqYplwWU3fjZj3In16tHylE4FqCeoXsazos28A8KiWBwgZo0WvKQjlEKH7V9nCILK6BWrHE7hiKZ0pIQ7DrMSuhHJPv+TZR6becHQCEI+56Dv+bSKWIuCk9w+/bHtdKGpw7STecZZsTNJ7WzoTGaBQNwzI+HMIK0SA9U4u1hkupnXKWqXu+GF9EHz84n45d0HO5gj//Fier5MyjeUdWp006ty0rUcq3NhOEVRW9TjZiDLM8339NYKe7aQoWGjPiv+2M+koYxFnL3B1vUO1h/ARL1zxbQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BIny8R0H; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lbDwRa8g;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BIny8R0H;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfZvB40Vfz2yql
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Sep 2026 06:15:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfZvl0RSwz2yql
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Sep 2026 06:16:19 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 8E219601DE;
+	by tor.source.kernel.org (Postfix) with ESMTP id 1477E601DE;
+	Tue,  8 Sep 2026 20:16:17 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BD5741F00A3A;
 	Tue,  8 Sep 2026 20:15:48 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 404991F01569;
-	Tue,  8 Sep 2026 20:15:20 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788898548;
-	bh=ppismYwdrne4x7KodwF6y3kmVmoi42d3nut3iH078TU=;
+	s=k20260515; t=1788898576;
+	bh=pdqrKu8t+WYJ+ouEDCa9SDonWfa/NDTVSZ6bOn7dzu0=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=lbDwRa8g8oSyfwfXZHZrOWwL7Gd3NQRwfPH8vDfGhP7oU4sQeNBhNCDbOcmJujzz5
-	 Cw7PBIqcQfYVo5nMYl9iahJQJihvmCANm5T27TWL5AY+FLuJTEGdswZbj2qqcXJYmi
-	 d916uvYFzHYuffvh1DF4Utcb0C6DdyUUufmlKpZLw6J3CgoAzadE0Jc7rnux4y/I9s
-	 oEMQHbqS61Kpe6ib9AFJBFKCLezPGq+sSgepqUx/4FsBmnn+I0b2qCImAxaJ+fpcqK
-	 zHJ7hEsRqofAPvcMRpw7b+J+wb9GMoy3qfZN6tR1E/kM5D5nHIzbo2iDXEpDJWdI0c
-	 IGwes58ba5f9A==
+	b=BIny8R0H16xJOceHNFcowy6Hr/hPn3LpxBR3bBmr4ZsMC9AipqSk8VrHCGZMG90j4
+	 +rVBnsAk/T4cv60Ej5f8N4w8zpucQ/kpjVhsajnXqYy/eJn98Ogd/N0Aq6Mjfn3vgb
+	 YvxmZ8zyRYOnkjzeww3CKnk+IP7ZU4VyRCnICMQc5STFGwsOeq2zUB1jgb6y0Xedh1
+	 DCKtBeX7Z7Zld3RG3/pPTQEfrE+z0+SP5og2sTRztF2Jlg7Rljt4VdSbtfiLJaH6Ul
+	 WMqVFncdOGI3cpq3kl4nMgr2YmIhGLFyxfSzlEXpxv/oxYHx1w+q3ZX278KV0w4la+
+	 Gz0T8bZwmz9/w==
 From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Date: Tue, 08 Sep 2026 21:01:32 +0100
-Subject: [PATCH 28/39] mm: drop some redundant checks around hugetlb VMAs
+Date: Tue, 08 Sep 2026 21:01:33 +0100
+Subject: [PATCH 29/39] mm/madvise: update is_valid_guard_vma() to use
+ vma_can_merge()
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,7 +63,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260908-b4-mmap-prepare-vma-flag-sanify-v1-28-dacf19cce22b@kernel.org>
+Message-Id: <20260908-b4-mmap-prepare-vma-flag-sanify-v1-29-dacf19cce22b@kernel.org>
 References: <20260908-b4-mmap-prepare-vma-flag-sanify-v1-0-dacf19cce22b@kernel.org>
 In-Reply-To: <20260908-b4-mmap-prepare-vma-flag-sanify-v1-0-dacf19cce22b@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>, 
@@ -146,88 +147,72 @@ Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, 
  fuse-devel@lists.linux.dev, "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2689; i=ljs@kernel.org;
- h=from:subject:message-id; bh=IRDOQ1NSUqnc+chO1D9dAVkYabHZJrZYbY1u/yAFj/4=;
- b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLIWZG59d+5SRUvecp236z/qmyy7Ls+92MEl0OPmkqNu7
- rrJp4K2dZSyMIhxMciKKbI8/yK+P0gkbF7nBX83mDmsTCBDGLg4BWAiRxoYGQ7HbPy4VP5PMufz
- Tt93k1wV7/e9Yn1ddkC9xUIx6kj7tieMDM94nrM0tLcr7v2f/CDkYl54W/amNzvCYs/vvlj9xJj
- vOgcA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1939; i=ljs@kernel.org;
+ h=from:subject:message-id; bh=ggho2nxN8+GLmUxl2AhYwXCAN84J7vCZcuIKKsWQe0k=;
+ b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLIWZG41r7miprb/jZSCkXTIIZ3+TOGnJ3YKTDta80Thr
+ Ov9BZ+ndZSyMIhxMciKKbI8/yK+P0gkbF7nBX83mDmsTCBDGLg4BWAiDkyMDFsWcE/vDbgY2jCD
+ R+ZzzP+HT+4KPvb/MW3p7El9O7/qF7QyMqyeKRI3OeOiz/pLa2Y9miPUXGz4+Py6Wp/gfNNLS9y
+ Pe7MBAA==
 X-Developer-Key: i=ljs@kernel.org; a=openpgp;
  fpr=E7F417BF5214569E89D04F46CF9DCD8A81E27F14
 
-Adjust code which inadvertently perform redundant checks on hugetlb VMAs
-and clean them up:
+We currently disallow the installation of lightweight guard regions in VMAs
+whose flags intersect VMA_SPECIAL_FLAGS or VMA_HUGETLB_BIT, or
+VMA_LOCKED_BIT unless allow_locked is set.
 
-* hugetlb VMAs have VMA_DONTEXPAND_BIT set so a VMA_SPECIAL_FLAGS check
-  suffices. (migrate_vma_setup() regains an explicit hugetlb test later in
-  the series, once VMA_SPECIAL_FLAGS is removed.)
+hugetlb VMAs set VMA_DONTEXPAND_BIT so this was already redundant,
+VMA_SPECIAL_FLAGS already sufficed.
 
-* hugetlb VMAs unconditionally set vma->vm_ops, so they are never
-  anonymous.
+However, now that VMA_IO_BIT is only set if VMA_PFNMAP or VMA_MIXEDMAP_BIT
+is set, this check collapses to being the equivalent of
+!vma_can_merge().
 
-* hugetlb VMAs do not set VMA_PFNMAP_BIT so checking for this is redundant.
-
-While we're here also drop a VM_BUG_ON() which the simplified check above
-makes unreachable, and use the new VMA flag API.
+Update is_valid_guard_vma() to reflect this.
 
 No functional change intended.
 
 Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 ---
- arch/arm64/kvm/mmu.c         | 4 +---
- drivers/gpu/drm/drm_gpusvm.c | 3 +--
- mm/migrate_device.c          | 4 ++--
- 3 files changed, 4 insertions(+), 7 deletions(-)
+ mm/madvise.c | 20 +++++++++++++-------
+ 1 file changed, 13 insertions(+), 7 deletions(-)
 
-diff --git a/arch/arm64/kvm/mmu.c b/arch/arm64/kvm/mmu.c
-index a7968f8d24bf..3c1240ffc38d 100644
---- a/arch/arm64/kvm/mmu.c
-+++ b/arch/arm64/kvm/mmu.c
-@@ -1463,14 +1463,12 @@ static int get_vma_page_shift(struct vm_area_struct *vma, unsigned long hva)
+diff --git a/mm/madvise.c b/mm/madvise.c
+index 2db11c832d0f..d0b14cfe38a1 100644
+--- a/mm/madvise.c
++++ b/mm/madvise.c
+@@ -1055,19 +1055,25 @@ static long madvise_remove(struct madvise_behavior *madv_behavior)
+ 	return error;
+ }
+ 
+-static bool is_valid_guard_vma(struct vm_area_struct *vma, bool allow_locked)
++static bool is_valid_guard_vma(const struct vm_area_struct *vma,
++			       bool allow_locked)
  {
- 	unsigned long pa;
- 
--	if (vma_is_hugetlb(vma) && !(vma->vm_flags & VM_PFNMAP))
-+	if (vma_is_hugetlb(vma))
- 		return huge_page_shift(hstate_vma(vma));
- 
- 	if (!(vma->vm_flags & VM_PFNMAP))
- 		return PAGE_SHIFT;
- 
--	VM_BUG_ON(vma_is_hugetlb(vma));
+-	vm_flags_t disallowed = VM_SPECIAL | VM_HUGETLB;
 -
- 	pa = (vma->vm_pgoff << PAGE_SHIFT) + (hva - vma->vm_start);
- 
- #ifndef __PAGETABLE_PMD_FOLDED
-diff --git a/drivers/gpu/drm/drm_gpusvm.c b/drivers/gpu/drm/drm_gpusvm.c
-index a1d4989b0b61..fab34fea99c2 100644
---- a/drivers/gpu/drm/drm_gpusvm.c
-+++ b/drivers/gpu/drm/drm_gpusvm.c
-@@ -1141,8 +1141,7 @@ drm_gpusvm_range_find_or_insert(struct drm_gpusvm *gpusvm,
- 	 * limitations. If/when migrate_vma_* add more support, this logic will
- 	 * have to change.
+ 	/*
+-	 * A user could lock after setting a guard range but that's fine, as
++	 * A user could lock after setting a guard range but that's fine as
+ 	 * they'd not be able to fault in. The issue arises when we try to zap
+ 	 * existing locked VMAs. We don't want to do that.
  	 */
--	migrate_devmem = ctx->devmem_possible &&
--		vma_is_anonymous(vas) && !vma_is_hugetlb(vas);
-+	migrate_devmem = ctx->devmem_possible && vma_is_anonymous(vas);
+-	if (!allow_locked)
+-		disallowed |= VM_LOCKED;
++	if (!allow_locked && vma_test(vma, VMA_LOCKED_BIT))
++		return false;
++	/*
++	 * Guard regions require a VMA whose page tables are managed solely by
++	 * the core, which is also what merging requires, so disallow any flags
++	 * that would prevent a merge.
++	 */
++	if (!vma_can_merge(vma))
++		return false;
  
- 	chunk_size = drm_gpusvm_range_chunk_size(gpusvm, notifier, vas,
- 						 fault_addr, gpuva_start,
-diff --git a/mm/migrate_device.c b/mm/migrate_device.c
-index c38cbaaef5a4..b9c453c28795 100644
---- a/mm/migrate_device.c
-+++ b/mm/migrate_device.c
-@@ -743,8 +743,8 @@ int migrate_vma_setup(struct migrate_vma *args)
+-	return !(vma->vm_flags & disallowed);
++	return true;
+ }
  
- 	args->start &= PAGE_MASK;
- 	args->end &= PAGE_MASK;
--	if (!args->vma || vma_is_hugetlb(args->vma) ||
--	    (args->vma->vm_flags & VM_SPECIAL) || vma_is_dax(args->vma))
-+	if (!args->vma || vma_test_any_mask(args->vma, VMA_SPECIAL_FLAGS) ||
-+	    vma_is_dax(args->vma))
- 		return -EINVAL;
- 	if (nr_pages <= 0)
- 		return -EINVAL;
+ static bool is_guard_pte_marker(pte_t ptent)
 
 -- 
 2.55.0
