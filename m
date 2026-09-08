@@ -1,99 +1,71 @@
-Return-Path: <linuxppc-dev+bounces-26725-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26726-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BC44BC79F99
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 05:51:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4134FC79F99
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 06:31:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hfCkL24G8z2yv0;
-	Tue, 08 Sep 2026 15:51:54 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::533"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788846714;
-	cv=none; b=f9r4We5B++n1R9OaUKJ6Uf0id6VzPjlXzdWpdaK8v0DuupoDAB7aywXlGaad1AYiM7tYqV3NnE/hmBrl3RYtd6vDabbS0tJvA2XDB3ZGVmif5BHuuZUiT4akeqOD8HqCAXTHtAqhMZ+29m44rbKdao1GNtSvGcK+KysZ1h0fvbIP2W9V2YsXHtfWp7KktGQGOam2vsux7l74RldlvBPryOibG2sbR69SyggZHa/Umu2wJjh6YzhRoxNQ1zYu3l51HxUbJhmQzTSEO4omcWGy/0pNZUX3gQmMRbg8yS4iFwo694HgXZqO854nO2m5gjvV4cK2Q0WkzT7OQs4VY1z84w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hfDbk41f2z2y8p;
+	Tue, 08 Sep 2026 16:31:14 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788849074;
+	cv=none; b=AlQKqytfk7tZ8mjhlfwHituKKM4uFP3QP2VYQHqSN0POnLxxYwvWdHZGLymNgOMgObKzolUnsAooGiO1EV1zSpNoGjQL8880rwr6C5y6t/vPNer0dtPQx+glrR7PnDPwsa0+rmkEm89+93rogzIHoyseuPpPr+iIxOKZxhA3opTqx/yxlbImLt9mcgZ+zog1ZVod1i88a4DyQ2qA5uZ2dIHFQYuMbQZ6tnIBKgCLj0+HPolu9VnciXbUwgEQ8MBCWE0ITa7d1c6BpbukCHnQoFORaMDpItVsOpKgoLLEuG/GGshGNYmuZh6bZn/2jCR6j2X2bG+TS5HL246j3HSSHw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788846714; c=relaxed/relaxed;
-	bh=eU2hqSZpbBss3ZrupUP6xipFsBQw4quqy4F00JT4x5Q=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Cynv+eRmMibWdjWU+cpW5tR+SVxKbJ36tIEsvEaWGPHS3e8hrmmOzwosxDsZw/gktuCOPc0Y3cM/bDSxYhbyr2Zf/8r8jOGkgAmlgxjfcHc+UyrrZSLWuKYJ812aq01DV/zJ6/R9+dVRNvraRFU+4EDFSvolawMY3ZTgWk1Dd3zA9geucdpZgtC4o7WNbbd9pzYCAZdX4hjxhmpFF8LcLC4DsrYEEpOto3eSM8PJmqnV3nCVvLuF/t1JeQlfjL0Ay48xfMLu26uG6R50r4RaD0+ex/L2mhWrvclK35JrMIshtv6WE9/7msydUXJ0BeIoMdDNycFy8yEj7MYWB4kovw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=jEeF2fsg; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::533; helo=mail-pg1-x533.google.com; envelope-from=hemanth.selam@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1788849074; c=relaxed/relaxed;
+	bh=V34JaugQxeV4Go6LtcZQ+CAzlsquOP93taTuW5zRMwY=;
+	h=Message-ID:Date:MIME-Version:To:Cc:From:Subject:Content-Type; b=GFqD+bjNOKZmp0Yn952gPeBAcmj4jYAplkNnvuHvUunJMSPTM/keSZcsUyOQ1FTqFAYQwlfTRNImUl047oDzeHv0FBaIZRN6jsviJn6kFM/PdMc8cMGDlwsiGyr+JzYr5/GhfIQ6LH4qZetOlpIm1oYe9LJXc9WLhxIWd+GT12MIyHzynQv4CDnnpAd+Txi7X3X0g6J5MPldUdmQyCYApIjjUXEYcmSQaQ37KIWYR9BeekG6mSO1bghNh5fsjj60P5xHgVrlzAZlO7oY6CldEBixPci+j3gnVtTrlMc9r7jbaKOAz0xMB+GlsWOk+ZY0QZ9lso1hGYWWnwQ5fzi7GA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=YJx2YRgz; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=jEeF2fsg;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=YJx2YRgz;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::533; helo=mail-pg1-x533.google.com; envelope-from=hemanth.selam@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x533.google.com (mail-pg1-x533.google.com [IPv6:2607:f8b0:4864:20::533])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfCkK3dxjz2yFK
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Sep 2026 15:51:53 +1000 (AEST)
-Received: by mail-pg1-x533.google.com with SMTP id 41be03b00d2f7-ca766c1c9ccso2788492a12.0
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Sep 2026 22:51:53 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1788846711; x=1789451511; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=eU2hqSZpbBss3ZrupUP6xipFsBQw4quqy4F00JT4x5Q=;
-        b=jEeF2fsg4QDO7GCeFVYVv4H68qZAu+nAy+vqUaVCg/3wBRf1f4QkArV3yUn4QFOJ6Q
-         XbHsb56597fdUlQNCbxwGOw92JJc/6/A8m0fPXjN6TKnclb94eQ8ZAPPV1YmQIyjRI5e
-         ROVABCUGNElPw/N5zJhv7HCK+Z7QyOqdYWdUBDKZakv6Aef7axjd3sVsTkpNBaSrGoE9
-         RLU9JnMWz5wr4mQGKZwFvaD2Iggpz+0PztTgoWncATyLiKOp/c3ku4P6yTy60YumNYPK
-         LPDCkZ65OpE+Ds1EHd3X+ZxgmSPkH8SzPa+kL8EA7qQ4D4p37WTjC/CzgyiaRHyIXFzF
-         2rsg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788846711; x=1789451511;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=eU2hqSZpbBss3ZrupUP6xipFsBQw4quqy4F00JT4x5Q=;
-        b=jw4hgPDANVJBV0fBrfJP09xSFtIYtQ0v6XIPpS702jEDZwuRLHUuywKm2OJxIu2AK3
-         /n49ujcSJ++SNBQfFEVEbLjXzzfUWNgs2qIVHCpb7gKqur1muDvA4gg3VU4OYCUY32Vx
-         pzRhEVdXCzBG3e64eZDZwmItQNOg0FWU//nmMfRFE9csA5WRMdOfTwFm8ytgph0L5LFQ
-         /uUitTvJIYvU57yIicZGctMVbppjt8xXWLu6ibWKe8tB7NlBNOxQ/y0P0Xep1ChG2Qmo
-         O1WPQUZL++9zds5dr5iYuikF6O65OOLIrIQZ3+tihC2aWDEwCNaAUrVu+ONNsicg2Jx/
-         y0ZQ==
-X-Forwarded-Encrypted: i=1; AKwUvBwOTx5j4IUtqvfTuMWpfTayQe6B+Pfnwcxbqoko/gzgFrKkiAj19uIGY5aX9/BT5V/BECx6IzzAv7B0jsU=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++kOH0z9wGNc0ZBCTSFEdHmD4B4lKl8QOodg3k3KYcQPXYhhQMC2
-	zI+qdGC3h4a0fdGjEYIKK9kKT0scNl6EcOMMhe56Vbe/GJQZ4juMOU41
-X-Gm-Gg: AYBFou1iAL/9ku20EC/Wrhr3tMNyP0opQn+DOFZoH+rf3SsDrQdQ0uuTAQl2l8/dhjn
-	dWrwvPUc2YMy5lpWwzFEDoYZoZBeW1XDWvotb2gFRM9un07qGLXHd8M7zwQrozD0+z+zZ1N2Vo2
-	4H6RHLXXGp3XCqmJvfrw9J4BKEVV/CRpPhUHeM9IQtFY318Ns2zyRQ4mkiG3SbM+VImm3i77stL
-	gAfv7L9K+gl8s7KsG7tjA5+dd8Cbx4xS+cOdH/5jIKznpbjz77Z/Bes6nyZ0HoIqDckVIPuVFPW
-	RmQvMvy9lOatPVdOajo43IN5yDJUGpi0FShByk1hqpLsnHS02hYbuGLGT/8ofdiGb1r7gFQeq3a
-	knIu7VM//UVxDtIlAL6Odw8zfcapHjZf1nQvETFFPv3GNYLI9wRudlcmrhE4GDOsdruHomHkiQU
-	z547zbtJxomWw1f9cwkVcV7ZeZc3y7BzQ1xJOrDbRBahfJzFshHgfWmW8K9ap3mhLnWrvLrNLwN
-	jLdkttKwEAeQg==
-X-Received: by 2002:a05:6a21:648f:b0:3d1:5c01:e6cc with SMTP id adf61e73a8af0-3da39f7bf83mr40842064637.10.1788846711161;
-        Mon, 07 Sep 2026 22:51:51 -0700 (PDT)
-Received: from volcano9f6e-hostos.amd.com ([165.204.217.251])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3339a534df1sm37719041eec.7.2026.09.07.22.51.46
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 07 Sep 2026 22:51:50 -0700 (PDT)
-From: Hemanth Selam <hemanth.selam@gmail.com>
-To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	"Oliver O'Halloran" <oohall@gmail.com>,
-	Geoff Levand <geoff@infradead.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Jiri Slaby <jirislaby@kernel.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Shuah Khan <shuah@kernel.org>
-Cc: kvm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-kselftest@vger.kernel.org,
-	linux-serial@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 2/2] powerpc: fix repeated words in comments
-Date: Tue,  8 Sep 2026 11:21:33 +0530
-Message-ID: <20260908055133.16469-3-hemanth.selam@gmail.com>
-X-Mailer: git-send-email 2.48.1
-In-Reply-To: <20260908055133.16469-1-hemanth.selam@gmail.com>
-References: <20260908055133.16469-1-hemanth.selam@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfDbj3l7sz2xqp
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Sep 2026 16:31:12 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68801ql62221168;
+	Tue, 8 Sep 2026 06:30:41 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=pp1; bh=V34JaugQxeV4Go6LtcZQ+CAzlsqu
+	OP93taTuW5zRMwY=; b=YJx2YRgzD/bDkolL+43CQ21+WbXfz7RFxtar0IuUv+qD
+	0/lrNAE+k2khjHYBuHtcr6w7R19OYzriVddWX25a7ZSJTtds8rV8IHa16dq6hJKj
+	2tsMAOv6XLrweOoqOK9MkPbIqBuYwm3qDzErTOVUWW8QhHb7ScMtyHlVBRRvTxra
+	7nvd8YYyaAMoBpdHrB/zJQV6O4E+P0ViD9ToZcMdzuCN5lfXlt/jA8Eq+7mgO1j1
+	bSYU2VEFhiJ0UUFbw03Kf1EIGvKfm5v0LInKgWVwuqlksR/OZresNnW9TKvmuQ6X
+	E8/bW7GQ4Z2/xpKktikH+uRrbICwsJNjw6ytx4kjKg==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4ggbjrmsbp-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 08 Sep 2026 06:30:40 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6886QhEI008157;
+	Tue, 8 Sep 2026 06:30:39 GMT
+Received: from smtprelay04.dal12v.mail.ibm.com ([172.16.1.6])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4ggxwh20mv-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 08 Sep 2026 06:30:39 +0000 (GMT)
+Received: from smtpav06.wdc07v.mail.ibm.com (smtpav06.wdc07v.mail.ibm.com [10.39.53.233])
+	by smtprelay04.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6886UcDZ26870404
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 8 Sep 2026 06:30:38 GMT
+Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 552B158054;
+	Tue,  8 Sep 2026 06:30:38 +0000 (GMT)
+Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 32AC85804E;
+	Tue,  8 Sep 2026 06:30:31 +0000 (GMT)
+Received: from [9.43.98.45] (unknown [9.43.98.45])
+	by smtpav06.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Tue,  8 Sep 2026 06:30:30 +0000 (GMT)
+Message-ID: <54e891f8-d549-4ab0-91ea-999d6e8dd385@linux.ibm.com>
+Date: Tue, 8 Sep 2026 12:00:29 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -107,45 +79,152 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Content-Language: en-US
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: chleroy@kernel.org, christophe.leroy@csgroup.eu,
+        linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        mkchauras@gmail.com, mpe@ellerman.id.au, naveen@kernel.org,
+        npiggin@gmail.com, ritesh.list@gmail.com, sbhat@linux.ibm.com,
+        sshegde@linux.ibm.com, thorsten.blum@linux.dev, yijiangshan@kylinos.cn
+From: Madhavan Srinivasan <maddy@linux.ibm.com>
+Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-7.3-2 tag
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=E7T9Y6dl c=1 sm=1 tr=0 ts=6a9fab90 cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+ a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8
+ a=EJlZcYTZVgbFLH6Yc1EA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTA4MDA2NCBTYWx0ZWRfXzK0n68x+B9mW
+ A7G2TNDoxsYZZVko2YbZTx5xkO+eAWhoUhWBizPQ7dHLJFlxuEtSs1uFKOHtRDxCUHSogmvt9jt
+ LJMxpsKDpty79tvJ9h35SRjvbBtckFA=
+X-Proofpoint-ORIG-GUID: dPAJrhxn7vc62P6f7SqkdGAsZpktiYQG
+X-Proofpoint-GUID: 32g_EzjPSOQ3vE_BuAxOGdNyRwt6xZ0Z
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTA4MDA2NCBTYWx0ZWRfXyp+D1y8/x+8d
+ vjRRpA/EnaOeU28bvJdPHDaHmIP7TJNYC2Zo2zdOy6CFV3rMgSni2eSJVRRpz5mvEUV3cTzMix+
+ kp4CTjZNmljmDyIJES17Farjowijm3kjOT6bwgt+opnuZJLyW/l51OFZr8z9oO/p3NDKmqfTLkL
+ hU3Oim/2jllSU52XsFzMuSlAjgYzm/jzSQ/Zc6YuSaSbxN/RCY6bPPUVN3NA5HUAdRIvL+mT4/K
+ SMtj37KNQmqLuGMS3xcwLnSVvOrqZi7fFKt8liC+kBaL19XrIX9skQiC6Yae/7lq1CWv87VlXv6
+ FNwp8fSE7l3Jlqu5oTArEitiGiEAu1aHb7MSImZJQ9XW0+6xIhONjvILJE+jfPwEhGsUAdF8gxu
+ kvuziIdBg3VEceyT6OlO5c+PlSqKnZXWxoncsTLDYWf0xwEAPcHC2K890pT2JQWXbDXr1PJCaGL
+ rKbsWDTWPLn6LWBgUiA==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-07_07,2026-09-07_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1011 phishscore=0 spamscore=0 suspectscore=0 priorityscore=1501
+ bulkscore=0 impostorscore=0 malwarescore=0 lowpriorityscore=0 adultscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2609080064
 
-Drop words accidentally written twice, reported by checkpatch.pl as a
-possible repeated word.  Only touches comments, no code changes.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
 
-Assisted-by: Cursor:claude-opus-5
-Signed-off-by: Hemanth Selam <hemanth.selam@gmail.com>
----
- arch/powerpc/kernel/paca.c             | 2 +-
- arch/powerpc/sysdev/xics/xics-common.c | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+Hi Linus,
 
-diff --git a/arch/powerpc/kernel/paca.c b/arch/powerpc/kernel/paca.c
-index 0e263b97e016..2e0c5bac250d 100644
---- a/arch/powerpc/kernel/paca.c
-+++ b/arch/powerpc/kernel/paca.c
-@@ -101,7 +101,7 @@ static void *__init alloc_shared_lppaca(unsigned long size, unsigned long limit,
- /*
-  * See asm/lppaca.h for more detail.
-  *
-- * lppaca structures must must be 1kB in size, L1 cache line aligned,
-+ * lppaca structures must be 1kB in size, L1 cache line aligned,
-  * and not cross 4kB boundary. A 1kB size and 1kB alignment will satisfy
-  * these requirements.
-  */
-diff --git a/arch/powerpc/sysdev/xics/xics-common.c b/arch/powerpc/sysdev/xics/xics-common.c
-index c3fa539a9898..c2486b43c5cc 100644
---- a/arch/powerpc/sysdev/xics/xics-common.c
-+++ b/arch/powerpc/sysdev/xics/xics-common.c
-@@ -384,7 +384,7 @@ int xics_set_irq_type(struct irq_data *d, unsigned int flow_type)
- 	 * the corresponding descriptor bits mind you but those will in turn
- 	 * affect the resend function when re-enabling an edge interrupt.
- 	 *
--	 * Set set the default to edge as explained in map().
-+	 * Set the default to edge as explained in map().
- 	 */
- 	if (flow_type == IRQ_TYPE_DEFAULT || flow_type == IRQ_TYPE_NONE)
- 		flow_type = IRQ_TYPE_EDGE_RISING;
--- 
-2.48.1
+Notable out of area changes:
+   MAINTAINERS: powerpc: Add Ritesh and Shrikanth # 45a5f7285f83
 
+Please pull powerpc fixes for 7.3:
+
+The following changes since commit cee9395acd8043be0644b25c34bfa86623f2b935:
+
+   Linux 7.3-rc1 (2026-08-30 13:34:40 -0700)
+
+are available in the git repository at:
+
+https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git 
+tags/powerpc-7.3-2
+
+for you to fetch changes up to 45a5f7285f835adb3b74c9344c09a7bd2c4fb664:
+
+   MAINTAINERS: powerpc: Add Ritesh and Shrikanth (2026-09-07 12:15:39 
++0530)
+
+- ------------------------------------------------------------------
+powerpc fixes for 7.3 #2
+
+  - Clear TIF_SYSCALL_RET before syscall error return
+
+  - Don't drop _TIF_RESTOREALL on syscall restart
+
+  - Do not restore KUAP in arch_exit_to_user_mode_prepare()
+
+  - pci-ioda: Fix the stale irq chip reference
+
+  - Use inclusive range checks in add_usable_mem() and excluded memory
+
+  - Fix irq_soft_mask corruption on replayed interrupt exit
+
+  - MAINTAINERS: powerpc: Add Ritesh and Shrikanth
+
+  - misc fixes and cleanups
+
+Thanks to: Amit Machhiwal, Christophe Leroy (CS GROUP), Gautam Menghani, 
+Harsh
+Prateek Bora, Jiangshan Yi, Mukesh Kumar Chaurasiya (IBM), Ritesh Harjani
+(IBM), Shivaprasad G Bhat, Shrikanth Hegde, Sourabh Jain, Tasmiya Nalatwad,
+Thorsten Blum, Venkat Rao Bagalkote,
+
+- ------------------------------------------------------------------
+Jiangshan Yi (1):
+       powerpc/pseries/pci: Fix misleading VF limit error message
+
+Madhavan Srinivasan (1):
+       MAINTAINERS: powerpc: Add Ritesh and Shrikanth
+
+Mukesh Kumar Chaurasiya (IBM) (1):
+       powerpc/entry: Fix irq_soft_mask corruption on replayed interrupt 
+exit
+
+Ritesh Harjani (IBM) (2):
+       powerpc: Don't drop _TIF_RESTOREALL on syscall restart
+       powerpc: Do not restore KUAP in arch_exit_to_user_mode_prepare()
+
+Shivaprasad G Bhat (3):
+       powerpc: pci-ioda: Fix the stale irq chip reference
+       powerpc/eeh: Fix recursive locking on devices without EEH 
+sensitive driver
+       powerpc/rtas_pci: No hotplug on permanently removed device on pSeries
+
+Shrikanth Hegde (1):
+       powerpc/entry: Clear TIF_SYSCALL_RET before syscall error return
+
+Thorsten Blum (4):
+       powerpc/kexec_file: Use inclusive range checks in add_usable_mem()
+       powerpc/kexec: Simplify kdump_extra_elfcorehdr_size()
+       powerpc/kexec_file: Use inclusive range checks for excluded memory
+       powerpc/ps3: Fix repository.c build failure
+
+
+  MAINTAINERS                               |  2 ++
+  arch/powerpc/include/asm/entry-common.h   | 12 +++++++++---
+  arch/powerpc/kernel/eeh_driver.c          |  2 --
+  arch/powerpc/kernel/interrupt.c           |  2 +-
+  arch/powerpc/kernel/rtas_pci.c            |  8 ++++++++
+  arch/powerpc/kernel/syscall.c             |  4 +++-
+  arch/powerpc/kexec/file_load_64.c         | 10 +++-------
+  arch/powerpc/platforms/powernv/pci-ioda.c |  6 ++----
+  arch/powerpc/platforms/ps3/repository.c   |  5 ++++-
+  arch/powerpc/platforms/pseries/pci.c      | 13 ++++++++-----
+  10 files changed, 40 insertions(+), 24 deletions(-)
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEEqX2DNAOgU8sBX3pRpnEsdPSHZJQFAmqfqycACgkQpnEsdPSH
+ZJQfcA//fLyVXSmS7lXIYoWtlE+qZbDtSH2k9sKbjYtB42EE7SMtIfk7c/ID7nMm
+tL7bA6apAz+ih0bpjvtGhtASL3YgVlb5sRyW5L8UoxL8J/F7hYNBqPohOKvRL995
+hYTUkef9t8aA/OZ5KJW4MsVL19Zkx1bQ57TjTTDG/Z9JFhrDZyknIr2tYEZvmrMF
+1NH3sc5f0k8LjmFAeTfVoR7AJuR/kpnu07yT3XdS/QX6hlP89hkDW+ndfbCGkRb2
+uZklJZsFRqPRCUCwZcLhcD2yKBLpMV0E7ZHH39REiMlv1gJ9PhC2Voi9W9bPADK3
+ILuL8ZF8qeKyU4pVL/znr9qNG3GzJCYTF/K4aJyIxhNma/O9Hy8m+igC7/1o4gZA
+SnhB90BoVB1BQpsploZ3YnhNhnz8MH23raTGswGIbRaRAX3KOM/bi4CC6sKYhimx
+QYot5mJHyIkMQTZ0HwEx5CatUuQvdiAeeHafeUf0PD6LjqI8SUgfzrUa3SRfmSZM
+gkWbYd1cJd0otLrmyOKA5EL3fNjVa8UIlGAd5vWERYFxlx4p43GtDxfOk6hQk4Yd
+re6CbE9grgTH/OAsoROUItR1wvHdL9QkZlEEQPazfvdECFIU6xRoHGXJolBSm7XS
+I/vRuh7Mo5iF9/hoS8wihldNsVked7coZbxW/LYLPaYXgMTCK7s=
+=wh3X
+-----END PGP SIGNATURE-----
 
