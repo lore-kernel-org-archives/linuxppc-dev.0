@@ -1,107 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-26756-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26757-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DFD84C79F82
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 07:37:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 55E20C79FA0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 07:48:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hfG4Y1rnNz2xlJ;
-	Tue, 08 Sep 2026 17:37:49 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1:d65d:64ff:fe57:4e05"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788853069;
-	cv=none; b=TgfozTW10EuSEs1SbPhi7g9sMx2FBrSuoe3TRpvcxfTjmNyTnPTFd4oFcERE57ke21HZjl2liKX2ZblQq9ykOSkDy2zt1/+ikYeLLyG1r7x9DwdpF4oEECOeFhyJvQ52Xylvld7Lt4NxE35Xuzpz2WW9q9o83KFaU9CWmFovWfSEfc0JN/d3YtU1PaWoGgRyuIOxex9tAYY3/x/qav2/7pPNZM3BbWXbTQKpFjnboQSWT795IadXWxhTo5t1qGslqBg1uk239Yduip+MrzlkCTuBxrCTDq+D3blU7I3ztr+al2NLSBYxRtyPxm0q3ZGlLoHdVL1mDrBw4+XmnOrqdQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hfGJd6LbZz2xqp;
+	Tue, 08 Sep 2026 17:48:17 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::62"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788853697;
+	cv=none; b=gYzPFkd7zSOxrmURE5BKgcS8/IsAUkDO+os3XKV+v6Tfg1w/w/+FnR722X7ZAVHxJAM7olMV49k5i/NCAI6dQmPPeqPPD/oSggHEcs/ivc329YyaQa//frzx7O81Q4RUtkp6P3yfBbv8wRp/OkhEcnTBP7xlXavuO8YRxRtc/bSpe0WiuAd41MAS6S52RStWS8XDwpbEEzZFWATWQv3z+IujaVY5UyrtTVM2ZV8tz5+8mwWTe2nrvUNj12PiFMMYuSh0An70XDJX+nHpTNTjxyQDsyhSRYITWttAWePK8StcAX+QLjOlAMDrr2qz1alQvcfo7nZPwPRbmpdldqj6lg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788853069; c=relaxed/relaxed;
-	bh=dMspgRwQUUIexqKss7dqowtOmwD0tLbRBkFb+1ouQnY=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=H/qLt6+3otML+RLwqH/WYLcFfbs8JOD2EQ5EMH9Oc4Z0ISFEm3a0fGqDuTPGzj9GAFtGwsBUzX3mUdYDHTW5ly9lOSDjc5UtZpxgAe517afrd+D5n6pA+C0BzBf76zPuI2SIZ0fXXYJV0MxjzQz/Uy41zl74ROeJ2jOhnLyfDnn6aqTbDW6v9J5gWEH5aDFZM9LRg6EpXrstZ8e7ndvHX1jnjrfxuIt2t3NFa2deSek6Bf8Pabpur2KdwnFjLke25S8O5zDq+kOZX96nbhFCod5YHam7qol60a0c2pOXZ1qQOcDtZCWa6EGFhw2xhQsexreVnpnO3ELR1SVPnYXXwQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=irAwsshP; dkim-atps=neutral; spf=pass (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org
+	t=1788853697; c=relaxed/relaxed;
+	bh=sYYxiXN+Hb8rQ6JwFenQMkWjeUMFgmbC7eP4OQjvJIM=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=RS//4bZlrj3FWbw37/3c0ztgt8ZBEl0GQVGM84ApuXXfmtWet5/db58WsijdhcifID3isf64Q7FaO9OEhZiJ3Nnv3ZkBARYAComZ9JCr4DAuPndTlouow8nurHj+ee1B6lf26LCK1Z/aUuy9Be+fqhwpsVLl5QuK5m02DAs5RBWLqFc+taCR8aw6XnatAenoZ+YGqEoSSGf7FrkBpOwxHmv7H/B5SbBZoLX4tmYdurth0Dh84vaMyveAi5IOXy3+urgxYB7jCCkY+Lwmy+JvRG/ijEzK7aAc1kILuOrYRjJ/60RkvzSOTQi78a7suk652P5WMHjsJe//fslaLJdvfw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=iTVG8KC8; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::62; helo=mta0.migadu.com; envelope-from=qi.zheng@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=irAwsshP;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=iTVG8KC8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org)
-Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::62; helo=mta0.migadu.com; envelope-from=qi.zheng@linux.dev; receiver=lists.ozlabs.org)
+Received: from mta0.migadu.com (out-98.mta0.migadu.com [IPv6:2001:41d0:1004:224b::62])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfG4S598Jz2xYh
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Sep 2026 17:37:44 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Transfer-Encoding:
-	Content-Type:MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:
-	Sender:Reply-To:Content-ID:Content-Description;
-	bh=dMspgRwQUUIexqKss7dqowtOmwD0tLbRBkFb+1ouQnY=; b=irAwsshPXpU7Uf/rfFaj3uWs6G
-	difPdlK64/emyFJJjlL7wNOeoAd6Y+U30iaYxFlQNgUaXhJ5XP9GQvgT7SeejFL749VvbdmXzNQmr
-	ysoKC7HRo3DXe9AyxTg6XU4ih3jJvnovv2Ujltj+xakHIL0+9ST9dekY+kWUCq6mECTuqGA167fg+
-	YqFWds1pqUcKbMJUd2jIJjqcUYt3toc+D0q3aR2UwfeZbWbAc5JAxTcsD0VD8CvN28YZRwquKZu0g
-	pKwTeSbCwX4MUVnlh4QxgKngIIgLaxab029w2jsxL2wYaE+8OY428gXbHH21x+RnEEnFMu/t4r9jb
-	gZmtLwfw==;
-Received: from 77-249-17-252.cable.dynamic.v4.ziggo.nl ([77.249.17.252] helo=noisy.programming.kicks-ass.net)
-	by desiato.infradead.org with esmtpsa (Exim 4.99.2 #2 (Red Hat Linux))
-	id 1x3qOD-0000000H407-3KtV;
-	Tue, 08 Sep 2026 07:37:10 +0000
-Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
-	id E0348300400; Tue, 08 Sep 2026 09:37:07 +0200 (CEST)
-Date: Tue, 8 Sep 2026 09:37:07 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Thomas =?iso-8859-1?Q?Wei=DFschuh?= <thomas.weissschuh@linutronix.de>
-Cc: Paul Walmsley <paul.walmsley@sifive.com>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
-	Nathan Chancellor <nathan@kernel.org>,
-	Nick Desaulniers <nick.desaulniers+lkml@gmail.com>,
-	Bill Wendling <morbo@google.com>,
-	Justin Stitt <justinstitt@google.com>,
-	Andy Lutomirski <luto@kernel.org>,
-	Vincenzo Frascino <vincenzo.frascino@arm.com>,
-	Kees Cook <kees@kernel.org>, Ingo Molnar <mingo@redhat.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	Richard Weinberger <richard@nod.at>,
-	Anton Ivanov <anton.ivanov@cambridgegreys.com>,
-	Johannes Berg <johannes@sipsolutions.net>,
-	Russell King <linux@armlinux.org.uk>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Will Deacon <will@kernel.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Huacai Chen <chenhuacai@kernel.org>,
-	WANG Xuerui <kernel@xen0n.name>, Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	Miguel Ojeda <ojeda@kernel.org>,
-	Alex Gaynor <alex.gaynor@gmail.com>, Gary Guo <gary@garyguo.net>,
-	=?iso-8859-1?Q?Bj=F6rn?= Roy Baron <bjorn3_gh@protonmail.com>,
-	Benno Lossin <lossin@kernel.org>,
-	Andreas Hindborg <a.hindborg@kernel.org>,
-	Alice Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>,
-	Danilo Krummrich <dakr@kernel.org>,
-	Thomas Gleixner <tglx@kernel.org>,
-	Christophe Leroy <chleroy@kernel.org>,
-	Boqun Feng <boqun@kernel.org>, Nicolas Schier <nsc@kernel.org>,
-	linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
-	llvm@lists.linux.dev, linux-mm@kvack.org,
-	linux-um@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
-	linuxppc-dev@lists.ozlabs.org, loongarch@lists.linux.dev,
-	linux-s390@vger.kernel.org, linux-mips@vger.kernel.org,
-	rust-for-linux@vger.kernel.org, linux-kbuild@vger.kernel.org,
-	Jan Stancek <jstancek@redhat.com>,
-	Arnaldo Carvalho de Melo <acme@redhat.com>,
-	Alexandre Ghiti <alexghiti@rivosinc.com>
-Subject: Re: [PATCH v5 12/24] vdso: Add the vdsocheck tool
-Message-ID: <20260908073707.GV4120091@noisy.programming.kicks-ass.net>
-References: <20260908-vdso-absolute-reloc-v5-0-3a93791af1cf@linutronix.de>
- <20260908-vdso-absolute-reloc-v5-12-3a93791af1cf@linutronix.de>
- <20260908071911.GU4120091@noisy.programming.kicks-ass.net>
- <20260908093302-1a1cf0c7-8103-48b1-9f6a-abd5c5c16523@linutronix.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfGJT6T6yz2xlJ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Sep 2026 17:48:07 +1000 (AEST)
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+DKIM-Signature: a=rsa-sha256; bh=ixBAYP3Du6CsKocLljvRGfCjKPRhF0PCatiq8iaNJ/Q=;
+ c=simple/simple; d=linux.dev;
+ h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
+ t=1788853669; v=1; x=1789458469;
+ b=iTVG8KC8ALl1oRcC03gQibtb/Lg81FKvdtUtdo48mZPJqKsaCtQjIgW0UhNkm18ux58HM24H
+ 1Tm/Tpm9TiWn7GIb1mb6SBY4/9/LrEEDlV/iXy1Gb4mqy+6oY+ogMzoBFK30uRz5GFSpdgy9PIy
+ QqFnK7NXKxB7Cs7CJBaOlZ+A=
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+Received: by smtp.migadu.com with ESMTPS id 539c04568d93ce89;
+	Tue, 08 Sep 2026 07:46:17 +0000
+X-Mizu-Trace-ID: 539c04568d93ce89
+X-Migadu-Flow: FLOW_OUT
+Message-ID: <1fc41803-a0b3-48ca-84a6-caf965fb11f9@linux.dev>
+Date: Tue, 8 Sep 2026 15:46:08 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -115,48 +57,62 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 06/11] mm/sparse-vmemmap: switch device DAX to shared
+ tail vmemmap pages
+To: Muchun Song <songmuchun@bytedance.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ David Hildenbrand <david@kernel.org>, Oscar Salvador <osalvador@suse.de>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Jonathan Corbet <corbet@lwn.net>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-doc@vger.kernel.org,
+ Muchun Song <muchun.song@linux.dev>, Lorenzo Stoakes <ljs@kernel.org>,
+ Mike Rapoport <rppt@kernel.org>, Nicholas Piggin <npiggin@gmail.com>,
+ Christophe Leroy <chleroy@kernel.org>, Randy Dunlap <rdunlap@infradead.org>
+References: <20260908030335.96549-1-songmuchun@bytedance.com>
+ <20260908030335.96549-7-songmuchun@bytedance.com>
+From: Qi Zheng <qi.zheng@linux.dev>
+In-Reply-To: <20260908030335.96549-7-songmuchun@bytedance.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260908093302-1a1cf0c7-8103-48b1-9f6a-abd5c5c16523@linutronix.de>
 
-On Tue, Sep 08, 2026 at 09:35:46AM +0200, Thomas Weiﬂschuh wrote:
-> On Tue, Sep 08, 2026 at 09:19:11AM +0200, Peter Zijlstra wrote:
-> > On Tue, Sep 08, 2026 at 08:33:46AM +0200, Thomas Weiﬂschuh wrote:
-> > > All vDSO code needs to be completely position independent. Symbol
-> > > references are marked as hidden so the compiler emits PC-relative
-> > > relocations. However there are cases where the compiler may still
-> > > emit absolute relocations, as they are valid in regular PIC DSO code.
-> > > These would be resolved by the linker and will break at runtime.
-> > > This has been observed on arm64, see commit 0c314cda9325 ("arm64: vdso:
-> > > Work around invalid absolute relocations from GCC")
-> > > 
-> > > Introduce a tool to check for absolute relocations during the build,
-> > > as the current inline-shell logic is not expressive enough.
-> > > The check is done on the object files as the relocations will not exist
-> > > anymore in the final DSO. As there is no extension point for the
-> > > compilation of each object file, perform the validation in vdso_check.
-> > > 
-> > > Signed-off-by: Thomas Weiﬂschuh <thomas.weissschuh@linutronix.de>
-> > > ---
-> > >  Makefile                    |  19 ++
-> > >  lib/vdso/Kconfig            |   5 +
-> > >  lib/vdso/Makefile           |   2 +
-> > >  lib/vdso/Makefile.include   |  14 ++
-> > >  lib/vdso/check/.gitignore   |   3 +
-> > >  lib/vdso/check/Makefile     |  34 +++
-> > >  lib/vdso/check/elf.rs       | 498 ++++++++++++++++++++++++++++++++++++++++++++
-> > >  lib/vdso/check/vdsocheck.rs | 154 ++++++++++++++
-> > >  8 files changed, 729 insertions(+)
-> > 
-> > Urgh, does this mean I have to have rust installed just to build a
-> > kernel now?
-> 
-> No.
-> 
-> If you don't have rust installed the build will instead use the existing shell
-> script for a less thorough check. We only need one build machine at some point
-> to have rust installed to report issues and this check to be useful.
 
-Ah, *phew*. Thanks!
+
+On 9/8/26 11:03 AM, Muchun Song wrote:
+> HugeTLB vmemmap optimization now uses per-zone shared tail vmemmap pages.
+> Device DAX has not been switched to that mechanism yet.
+> 
+> Switch device DAX to vmemmap_shared_tail_page() as well. This aligns DAX
+> with HugeTLB by using the common per-zone shared tail vmemmap page.
+> 
+> The optimization is enabled only for DEV-DAX through pgmap->vmemmap_shift,
+> which is assigned when a DEV-DAX device is initialized. Unlike FS-DAX,
+> DEV-DAX does not modify tail struct pages, so sharing them is safe.
+
+Got it ‚Äî adding this description makes things significantly clearer.
+
+> 
+> Since the shared tail page can now back ZONE_DEVICE vmemmap mappings,
+> initialize its entries with PG_reserved for device zones. Also skip
+> poisoning vmemmap-optimizable sections while their struct pages may be
+> shared.
+> 
+> Signed-off-by: Muchun Song <songmuchun@bytedance.com>
+> ---
+> v2:
+> - Explain why sharing tail vmemmap pages is safe for DEV-DAX
+>    (suggested by Qi Zheng)
+> ---
+>   include/linux/mmzone.h | 10 +++++++++
+>   mm/memory_hotplug.c    |  5 +++--
+>   mm/sparse-vmemmap.c    | 47 ++++++++++++++----------------------------
+>   3 files changed, 28 insertions(+), 34 deletions(-)
+> 
+
+Acked-by: Qi Zheng <qi.zheng@linux.dev>
+
+Thanks,
+Qi
+
 
