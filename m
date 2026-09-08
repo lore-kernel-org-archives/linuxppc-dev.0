@@ -1,51 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-26779-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26780-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 32970C79FAB
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 09:21:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 15011C79F82
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 09:24:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hfJNP3pqvz2xlJ;
-	Tue, 08 Sep 2026 19:21:41 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788859301;
-	cv=none; b=G0R2VBKt4cFwxH7IV/akCkfftBIHZXlCbbcpvMbIE/i0vsHiUsi39GPK9jXIHntaVYPtaKcj9gcINM+o6tgod7nQDo7+nPGMC/4RboFhvB1UmfcMnXhHxyDqgq6f4s+5jgh1Ml/69dZ0WXrfWVlFkx16prA4wqHZAERRIgsgw+F4Cpz5voLeZhkXr8DGSe6eg2c0eeqnpGO/W3rKuu9sk4Yr7ICHDuzy+Y4ywrvSibOC8GTR43sHe6q1xWwORyLW/2F301pmj8IiyEETDMAbDdByjcyVCKryiurNEXCP52+Z6Gaz2RcWXVECOT++6yFdKc+vo2Z9GHJ9Rt6ke4DTwg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hfJRX1lHkz2y8G;
+	Tue, 08 Sep 2026 19:24:24 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:203:375::48"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788859464;
+	cv=none; b=Ya5ziPcxa3xgEYIwqvECq+0B9gzHL4mFo/YSpj7B640Q9UF2pD+xFfrQaooYrYOZCtruVNd90BcmrIzsmIFQMMfITMK1cKXvVXJZuzNv65RcX4J5L5Ayhu2MijHGQnHcRGcDeq4ejmZikkxH4S8ikWX/z6WX+UXvU0c0qmX3QkqT9c2tkv/LlA6Wz3rjDpqZL6oFAxqRhGZ05k2AEnO/+SiYyCH6/Hnkbk+xjjPix3BazoUPgnBH5TJQMHw+9lm/nxn2DKCcg+Zg9JGAxmue6Fz4rIVgwxgtwDOPwTT1LxOByk0METNhbbp6rHtmZtUzVQZ+J67hmd16o3GnbBl6rw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788859301; c=relaxed/relaxed;
-	bh=4k7jM/SARicUfiyID/Zb58FTA6TVrqfjgQqXrSbBJmY=;
+	t=1788859464; c=relaxed/relaxed;
+	bh=IM44ePpO94fxzu9/kZHKicLzbeTfvzqyw+Wr747U33c=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=oV3SXr3TlzXzPz52JXYF1kELhaCRjFzrnaIX0r9ULLGdoTK4CJWtKZOF+ILUo4FASeao1YkrlHvw+TcecRjY5h3jAvslTThHPAURD2Rm+wKOmHT5vfGgHcNKb/9DHmbUpUIpXPbAi2f6hTY5pNgI3u/e6c+If0dr7/zfkGNo/K9U77K2lHNAYxodzH8tEmUWHFQuPcwRkGmJbkLyJgJEktD7HQXtV5/T5NnxIey8eKdSOobAY6U7vDXTBxLgwSjXOOhudMgXCnswsQ8hiD9iy0hGCl001BcekmzLq3bcBb9jP3r48XHZdHfUL/VXSVoubIkztld/l1ZMaHPUe6iT0Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Xn9XtBCz; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	 In-Reply-To:Content-Type; b=FQvt+a7U0DuYNatD6CYnN5vGQ+vUR9l6OvVDCUu7GV70sNH7qcIIJUZEdiKlGMmND2jeQZ5oLBogjKpM0GXxO0FpiS8C/mquFVoGDlZOcJndA8GkqWWmsQ7477Ho3QOMFTrtM61JLNXj7r6iOfuaawyVXdcjS3lDzJn9P5zdODUHA+QhI5OAousSaxn9VLlFleFsko5ZEPzYZrvjWChxZFyJ3G1K8/lNHiXqa1WY8cR9f2AEzBK6+XXLzCPuoP5mAT5+qAm9cnnhl9EufguH5vAwD3/JyTqDZrPyPub1BauCvBe6YLCRA/NSFfFO0efGg3dUASrINP7QMBZNriWwEw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=q1Wlwc1t; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:203:375::48; helo=mta1.migadu.com; envelope-from=qi.zheng@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Xn9XtBCz;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=q1Wlwc1t;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:203:375::48; helo=mta1.migadu.com; envelope-from=qi.zheng@linux.dev; receiver=lists.ozlabs.org)
+X-Greylist: delayed 5852 seconds by postgrey-1.37 at boromir; Tue, 08 Sep 2026 19:24:21 AEST
+Received: from mta1.migadu.com (out-72.mta1.migadu.com [IPv6:2001:41d0:203:375::48])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfJNN3rPLz2xYh
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Sep 2026 19:21:40 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 5366660A97;
-	Tue,  8 Sep 2026 09:21:38 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 36E861F00A3A;
-	Tue,  8 Sep 2026 09:21:22 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788859298;
-	bh=4k7jM/SARicUfiyID/Zb58FTA6TVrqfjgQqXrSbBJmY=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=Xn9XtBCzNs8WX9mak5mpG8XRdy2i0zrbMydZ5LMlt1Qe6xYAL3LuxfUX8Atn2wQI5
-	 1axnL/wqewpo705igfKNy8cNCn9+Zo3sUO5bgJKNWeixiHCJ40tMpOcHYPd0ztKnwc
-	 thks3bDKvUFN5YfpBP21ImCqeVd4BuB9bshirgyOkT8qYPLl5IHF7GtOgYNVJtKM5z
-	 OWEfgEV7HLlzD0xSV0FLDhASxeMC0R5k+YiWCZlY18vuOZyNV5jOxZq4lBnvbHCbuK
-	 MWgRGux7fP8nPYbQvR4llwvXew14x5qlJam3L6qpRO9Kd3dID9dgWciFsi7Ok948U+
-	 EV4LzEuy2wGQQ==
-Message-ID: <9a27f318-2ab0-4f5e-8e87-daaa85dbc297@kernel.org>
-Date: Tue, 8 Sep 2026 11:21:20 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfJRT10gYz2xlJ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Sep 2026 19:24:19 +1000 (AEST)
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+DKIM-Signature: a=rsa-sha256; bh=Lq4ARpMbanal89TxHuI1tA2YfFgMGpzO1BWcDeL62IM=;
+ c=simple/simple; d=linux.dev;
+ h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
+ t=1788859441; v=1; x=1789464241;
+ b=q1Wlwc1tM+J8SYWg8S7iejZ2/QZ2aXPSQnppHpP1bMmlnNWxW5wCpgLIG40TPtcw7RIBi7Rj
+ LvV+ThsluTG0LBe0G4Spoxikele24s034tqj3W1wtLi+OMSKwfOxPQrmCZcfw7AMk4H/WWmCHw2
+ hpglh/bDvK+DiVFYi6ZkgXhU=
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+Received: by smtp.migadu.com with ESMTPS id 98e59e83dd11dcc5;
+	Tue, 08 Sep 2026 09:24:01 +0000
+X-Mizu-Trace-ID: 98e59e83dd11dcc5
+X-Migadu-Flow: FLOW_OUT
+Message-ID: <bb30518c-9046-418e-b190-9f3f1b542cbe@linux.dev>
+Date: Tue, 8 Sep 2026 17:23:54 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,109 +59,42 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 16/24] powerpc/elf: Add 32-bit REL16 relocation
- definitions
-To: =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>,
- Paul Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt
- <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
- Alexandre Ghiti <alex@ghiti.fr>, Nathan Chancellor <nathan@kernel.org>,
- Nick Desaulniers <nick.desaulniers+lkml@gmail.com>,
- Bill Wendling <morbo@google.com>, Justin Stitt <justinstitt@google.com>,
- Andy Lutomirski <luto@kernel.org>,
- Vincenzo Frascino <vincenzo.frascino@arm.com>, Kees Cook <kees@kernel.org>,
- Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
- Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
- "H. Peter Anvin" <hpa@zytor.com>, Richard Weinberger <richard@nod.at>,
- Anton Ivanov <anton.ivanov@cambridgegreys.com>,
- Johannes Berg <johannes@sipsolutions.net>,
- Russell King <linux@armlinux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
+Subject: Re: [PATCH v2 10/11] mm/sparse-vmemmap: drop unused
+ section_nr_vmemmap_pages() arguments
+To: Muchun Song <songmuchun@bytedance.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ David Hildenbrand <david@kernel.org>, Oscar Salvador <osalvador@suse.de>,
  Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>,
- Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
- Alexander Gordeev <agordeev@linux.ibm.com>,
- Christian Borntraeger <borntraeger@linux.ibm.com>,
- Sven Schnelle <svens@linux.ibm.com>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Miguel Ojeda <ojeda@kernel.org>, Alex Gaynor <alex.gaynor@gmail.com>,
- Gary Guo <gary@garyguo.net>, =?UTF-8?Q?Bj=C3=B6rn_Roy_Baron?=
- <bjorn3_gh@protonmail.com>, Benno Lossin <lossin@kernel.org>,
- Andreas Hindborg <a.hindborg@kernel.org>, Alice Ryhl <aliceryhl@google.com>,
- Trevor Gross <tmgross@umich.edu>, Danilo Krummrich <dakr@kernel.org>,
- Thomas Gleixner <tglx@kernel.org>, Boqun Feng <boqun@kernel.org>,
- Nicolas Schier <nsc@kernel.org>
-Cc: linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
- llvm@lists.linux.dev, linux-mm@kvack.org, linux-um@lists.infradead.org,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- loongarch@lists.linux.dev, linux-s390@vger.kernel.org,
- linux-mips@vger.kernel.org, rust-for-linux@vger.kernel.org,
- linux-kbuild@vger.kernel.org, Jan Stancek <jstancek@redhat.com>,
- Arnaldo Carvalho de Melo <acme@redhat.com>,
- Alexandre Ghiti <alexghiti@rivosinc.com>
-References: <20260908-vdso-absolute-reloc-v5-0-3a93791af1cf@linutronix.de>
- <20260908-vdso-absolute-reloc-v5-16-3a93791af1cf@linutronix.de>
-Content-Language: fr-FR
-From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-In-Reply-To: <20260908-vdso-absolute-reloc-v5-16-3a93791af1cf@linutronix.de>
+ Michael Ellerman <mpe@ellerman.id.au>, Jonathan Corbet <corbet@lwn.net>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-doc@vger.kernel.org,
+ Muchun Song <muchun.song@linux.dev>, Lorenzo Stoakes <ljs@kernel.org>,
+ Mike Rapoport <rppt@kernel.org>, Nicholas Piggin <npiggin@gmail.com>,
+ Christophe Leroy <chleroy@kernel.org>, Randy Dunlap <rdunlap@infradead.org>
+References: <20260908030335.96549-1-songmuchun@bytedance.com>
+ <20260908030335.96549-11-songmuchun@bytedance.com>
+From: Qi Zheng <qi.zheng@linux.dev>
+In-Reply-To: <20260908030335.96549-11-songmuchun@bytedance.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 
 
 
-Le 08/09/2026 à 08:33, Thomas Weißschuh a écrit :
-> These are used by userspace and are necessary for the vdsocheck tool.
-> They share the numbers with their 64-bit variants.
+On 9/8/26 11:03 AM, Muchun Song wrote:
+> section_nr_vmemmap_pages() no longer uses the altmap or pgmap
+> arguments, so drop them from the helper and its callers.
 > 
-> Also update the copy in tools/ so they can be used by vdsocheck.
-> 
-> Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
-
-Reviewed-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
-
+> Signed-off-by: Muchun Song <songmuchun@bytedance.com>
 > ---
->   include/uapi/linux/elf-r.h       | 7 ++++++-
->   tools/include/uapi/linux/elf-r.h | 7 ++++++-
->   2 files changed, 12 insertions(+), 2 deletions(-)
+>   mm/sparse-vmemmap.c | 10 ++++------
+>   mm/sparse.c         |  3 +--
+>   mm/sparse.h         |  6 ++----
+>   3 files changed, 7 insertions(+), 12 deletions(-)
 > 
-> diff --git a/include/uapi/linux/elf-r.h b/include/uapi/linux/elf-r.h
-> index 72fc9045a5d4..170888422400 100644
-> --- a/include/uapi/linux/elf-r.h
-> +++ b/include/uapi/linux/elf-r.h
-> @@ -182,8 +182,13 @@
->   #define R_PPC_GOT_DTPREL16_HI	93 /* half16*	(sym+add)@got@dtprel@h */
->   #define R_PPC_GOT_DTPREL16_HA	94 /* half16*	(sym+add)@got@dtprel@ha */
->   
-> +#define R_PPC_REL16		249
-> +#define R_PPC_REL16_LO		250
-> +#define R_PPC_REL16_HI		251
-> +#define R_PPC_REL16_HA		252
-> +
->   /* keep this the last entry. */
-> -#define R_PPC_NUM		95
-> +#define R_PPC_NUM		253
->   
->   /* PowerPC64 relocations defined by the ABIs */
->   #define R_PPC64_NONE    R_PPC_NONE
-> diff --git a/tools/include/uapi/linux/elf-r.h b/tools/include/uapi/linux/elf-r.h
-> index 72fc9045a5d4..170888422400 100644
-> --- a/tools/include/uapi/linux/elf-r.h
-> +++ b/tools/include/uapi/linux/elf-r.h
-> @@ -182,8 +182,13 @@
->   #define R_PPC_GOT_DTPREL16_HI	93 /* half16*	(sym+add)@got@dtprel@h */
->   #define R_PPC_GOT_DTPREL16_HA	94 /* half16*	(sym+add)@got@dtprel@ha */
->   
-> +#define R_PPC_REL16		249
-> +#define R_PPC_REL16_LO		250
-> +#define R_PPC_REL16_HI		251
-> +#define R_PPC_REL16_HA		252
-> +
->   /* keep this the last entry. */
-> -#define R_PPC_NUM		95
-> +#define R_PPC_NUM		253
->   
->   /* PowerPC64 relocations defined by the ABIs */
->   #define R_PPC64_NONE    R_PPC_NONE
-> 
+
+Acked-by: Qi Zheng <qi.zheng@linux.dev>
+
+Thanks,
+Qi
 
 
