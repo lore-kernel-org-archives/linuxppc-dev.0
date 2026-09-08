@@ -1,60 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-26731-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26732-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 86567C79FB2
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 06:34:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6E87EC79FAD
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 06:34:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hfDfv4b1mz2yvT;
-	Tue, 08 Sep 2026 16:33:59 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0a:51c0:0:12e:550::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788849239;
-	cv=none; b=nlWg2eo5S8SMTujjf67N6/eKDoFyl3QrWKuvL14vv9pP+C0qi+D2oOGC6ISz+QEfSLZd45fLGzdrrXsuWgFaccrkk/8c3VsGAGNd111BK3DUSsxCQaQt0F4BYOf75Cz59IpcosG+l38zNaCEtuGwIu7aMoPtmhsGRVMla8Jmqdps+byUbYOYuDqPw5QweXMBFFWv9UG+cEqYnJi4nZX5ehZEaVhJy/JJM3UlJ4y4b3ReCmahBqQdUgdW5w8Ddf24CC/S/yzgzgNDN9IP6G2YOONiJrQhYdleDukzqrocncy18HtZ7DIFlF0bOiBi0CBAJdjqYO4dZcOLmmt/zYTdig==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hfDfx3x0hz2yty;
+	Tue, 08 Sep 2026 16:34:01 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788849241;
+	cv=none; b=kHBdSGpYqXTe3FZfX5DrTFztMMGB6KNZLUXxsHoAdNij+AllmBX2hs5aPDWwefkDv/r2W0JUhTzw6MlgQ7I/+fnKWKEuSa0NLoj/ByZBmxxiOq4KPGHBrVMoiwKXqmurPJsxT6s1KWsVMHB0QbkdE9MkPnqMmjXVIf06ON/KileYWurr0+JL2TTaI7zq4fxGifZ5T+LSHwgPxqJAha4oYmyfEO7Ij/pubTp1/aYBa/+KgVqQuj4Q/rcDpUy5yrIrx2qTZR9Zj4/OMjfpFMKtHJswK6MoJjaqbKDTJizwZADLIseokqtt9dpstlVJXuKYOKRqABSBQZiqJD8045dN4A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788849239; c=relaxed/relaxed;
-	bh=ITX6vbZ0p2MNUnqySgiQU1yaeBX1Pv0fohxsnS17XIE=;
+	t=1788849241; c=relaxed/relaxed;
+	bh=FawW0xiyyB3XDpeEil2328xu9JZeGaaUH29QSwtR0fg=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=j5zynd3cobxuCvUrVmiWjzstUV8vLABScQWcTB9Bb852HWpEtw/n1qUCihjJXYHCUvzvoPhNWhQwZV/LZJo3VF6kiQnwRo8naSW4QH/Wbutiy/GfLFa310F7Dp+t8CnbH6hz3HQ1S63EbMdc7uUqHM72orGBxbZZUmCiT8W4hpKCHTcnW1zkrFPKL/UV4TB9GCsUDrBRY56By/32VJiGBVA4vEEpYYjBjrXCKoOs4v302MxZDtGI2ED7OQl0iC1BI+Gytkmgz11Y828Yb+h6D5Ugs+efInSNeciLY5LWYdoBmCoyqmZwNErNoOhApxX6qGWk2zdnolHdHft3RB1n0Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=rfwyK8rj; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=kmw243Q2; dkim-atps=neutral; spf=pass (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+	 In-Reply-To:To:Cc; b=T1HQRGhx5awmwTPRG3XnR09svdzr9sqUII5sZhRvR2zzJUReCpV2CzwlbGrzwsLKTuAqrblkAhXd+LQkkSDzR4a91xikjpU8IZfmiVRkhUc78y7UZ4B7JAryYc7nSy5S64nvEGvGIIGi1ZUEerRtsbS02vOYavrqsEV6dZ5vu3YSaK/VGa15fi7T36pv8Japus3tq/CV0f9bpc2qFmOTK+M7sHEf85xB+bgwlHi5lEMX5mbNPyiGc+b5twLL4BLvUVz7nKU4t4XnIKzQTQCkaMYTus3goiUs3vq6KiSavBcNNNyb+tcTtam8rwWBNMxDk2z+9jBtPfWekARa3WSKDw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=BBfchTQ3; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=epagOxWH; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=rfwyK8rj;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=kmw243Q2;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=BBfchTQ3;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=epagOxWH;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfDfs01P2z2yty
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Sep 2026 16:33:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfDfs2xdvz2ynZ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Sep 2026 16:33:57 +1000 (AEST)
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1788849228;
+	s=2020; t=1788849231;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=ITX6vbZ0p2MNUnqySgiQU1yaeBX1Pv0fohxsnS17XIE=;
-	b=rfwyK8rjLPkePRrnJHe5/m9/qJsnrWMCt3iK+M7M5ZYc6dfObs52IIDnFx5QgND5xV+RSg
-	DULbnxSrs1cNZLOgC5w74szhXRhwXueEKLWD5PiJIbFVmAO7uDHSPwLz9pK6DrIC85jwBv
-	NptQJNDLTlAl0caYUrvufk5jk9bhHOty9MKSjt4bQXd4/hUZnyPvtRUw6CVU8HCzHPiKDf
-	Qrx91oCLhunvM867s5Vs+oHAu9RifHTN2uGkz5Y7TRc6k2c42aM+pQ0MXz05XTOHWGO/tF
-	rgfxs/zda+BfhYnlFo95QXEfk/RSRvCg32nIwzWZtUQue6L7jrsHr6BvZdL3SA==
+	bh=FawW0xiyyB3XDpeEil2328xu9JZeGaaUH29QSwtR0fg=;
+	b=BBfchTQ31DifkjFqwb5y4n5BvOGW48DOyhiHYRpdPzrEQcn+IitYmXoSVnLWzvWa6lwHuy
+	sZD+8Y+YV+U5Q+RLLiaQuk6+JRBJF9vi1Y1DGh92/GH1x2M0Sy+puIE8ZRZhqgBqF9ZxcX
+	OVMEGjMH4cuC2Ih8qYPFGclgRGEjWPRnkw/+9BlYAZfTwu3dB+NLPwZ6JmOUFvLGShphqo
+	lpE6byOStxgm5iAG6jOHo0tEAOdE8cTToyKI6d+gadpfoJgZfZRrWhapeXH8p8WEX3WKnq
+	ZIRI/ePB8OFwnrq7FOJP8oo233EMrmmz/MJKwghMXEJPb8wamnhU9yuJgEsxpg==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1788849228;
+	s=2020e; t=1788849231;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=ITX6vbZ0p2MNUnqySgiQU1yaeBX1Pv0fohxsnS17XIE=;
-	b=kmw243Q2lOefM6sErINOe0v2bdegFzSBOYOJ/mtefV8467qCIp/KHbzuaZEJV6LMACNvq/
-	kbGYSfPlNIXmtvCA==
-Date: Tue, 08 Sep 2026 08:33:36 +0200
-Subject: [PATCH v5 02/24] x86/elf, um/x86/elf: Move relocation constants to
- UAPI
+	bh=FawW0xiyyB3XDpeEil2328xu9JZeGaaUH29QSwtR0fg=;
+	b=epagOxWHbraL4pZF2ABSEKqkk81eezIl8Gi009ltXa6+5yB+cGQ8VNDm3CyFBBc9mW3J0y
+	3loMMVZFFoRrE7AA==
+Date: Tue, 08 Sep 2026 08:33:40 +0200
+Subject: [PATCH v5 06/24] riscv: elf: Move relocation constants to UAPI
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -70,7 +69,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20260908-vdso-absolute-reloc-v5-2-3a93791af1cf@linutronix.de>
+Message-Id: <20260908-vdso-absolute-reloc-v5-6-3a93791af1cf@linutronix.de>
 References: <20260908-vdso-absolute-reloc-v5-0-3a93791af1cf@linutronix.de>
 In-Reply-To: <20260908-vdso-absolute-reloc-v5-0-3a93791af1cf@linutronix.de>
 To: Paul Walmsley <paul.walmsley@sifive.com>, 
@@ -112,11 +111,11 @@ Cc: linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
  Arnaldo Carvalho de Melo <acme@redhat.com>, 
  Alexandre Ghiti <alexghiti@rivosinc.com>, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1788849226; l=5793;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1788849226; l=4962;
  i=thomas.weissschuh@linutronix.de; s=20240209; h=from:subject:message-id;
- bh=EP6eD/uZ0V4wHN9+/JxWHWsljJ+xT4xd0R266HOP2Mk=;
- b=9fiwRBRCJd/GEgS5mAJxYeP44dMtEzEA5a59lLmblClvso6Eb+4WwYMKSod5q7tvCst53OR2v
- u8IKRzDMhHhAzblZpImUk9ElKP8BMqVg+cBR+BubteVty4SyzNMiSs+
+ bh=A2KwwyE44rpRvMfg8HmJMKqJMXpNGArDCbHCP2lPOtc=;
+ b=BIFQBlA6uOHvotUFp7WcFcjkRWr4zWTBvAzopoDSHqbuVQn/0iY7yQ9cklHXDfQCbhw1lLP4v
+ +pw2vSBQ8BmAxY2zgjj9x+KL+h6I3EZtcmF2oBqsXSxkzdljxYY/Ns5
 X-Developer-Key: i=thomas.weissschuh@linutronix.de; a=ed25519;
  pk=pfvxvpFUDJV2h2nY0FidLUml22uGLSjByFbM6aqQQws=
 
@@ -126,155 +125,160 @@ process ELF files during kernel cross-compilation.
 Move them from the kernel-private architecture-specific header to the UAPI.
 
 Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
+Acked-by: Palmer Dabbelt <palmer@dabbelt.com>
 ---
- arch/x86/include/asm/elf.h | 33 ---------------------------------
- arch/x86/um/asm/elf.h      | 33 ---------------------------------
- include/uapi/linux/elf-r.h | 34 ++++++++++++++++++++++++++++++++++
- 3 files changed, 34 insertions(+), 66 deletions(-)
+ arch/riscv/include/uapi/asm/elf.h | 66 ---------------------------------------
+ include/uapi/linux/elf-r.h        | 66 +++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 66 insertions(+), 66 deletions(-)
 
-diff --git a/arch/x86/include/asm/elf.h b/arch/x86/include/asm/elf.h
-index 4133c790e71a..ad84c0f60459 100644
---- a/arch/x86/include/asm/elf.h
-+++ b/arch/x86/include/asm/elf.h
-@@ -22,19 +22,6 @@ typedef struct user_i387_struct elf_fpregset_t;
+diff --git a/arch/riscv/include/uapi/asm/elf.h b/arch/riscv/include/uapi/asm/elf.h
+index 11a71b8533d5..05cf74a4a535 100644
+--- a/arch/riscv/include/uapi/asm/elf.h
++++ b/arch/riscv/include/uapi/asm/elf.h
+@@ -32,70 +32,4 @@ typedef union __riscv_fp_state elf_fpregset_t;
+ #define ELF_RISCV_R_TYPE(r_info)	ELF32_R_TYPE(r_info)
+ #endif
  
- #ifdef __i386__
- 
--#define R_386_NONE	0
--#define R_386_32	1
--#define R_386_PC32	2
--#define R_386_GOT32	3
--#define R_386_PLT32	4
--#define R_386_COPY	5
--#define R_386_GLOB_DAT	6
--#define R_386_JMP_SLOT	7
--#define R_386_RELATIVE	8
--#define R_386_GOTOFF	9
--#define R_386_GOTPC	10
--#define R_386_NUM	11
+-/*
+- * RISC-V relocation types
+- */
 -
- /*
-  * These are used to set parameters in the core dumps.
-  */
-@@ -44,26 +31,6 @@ typedef struct user_i387_struct elf_fpregset_t;
- 
- #else
- 
--/* x86-64 relocation types */
--#define R_X86_64_NONE		0	/* No reloc */
--#define R_X86_64_64		1	/* Direct 64 bit  */
--#define R_X86_64_PC32		2	/* PC relative 32 bit signed */
--#define R_X86_64_GOT32		3	/* 32 bit GOT entry */
--#define R_X86_64_PLT32		4	/* 32 bit PLT address */
--#define R_X86_64_COPY		5	/* Copy symbol at runtime */
--#define R_X86_64_GLOB_DAT	6	/* Create GOT entry */
--#define R_X86_64_JUMP_SLOT	7	/* Create PLT entry */
--#define R_X86_64_RELATIVE	8	/* Adjust by program base */
--#define R_X86_64_GOTPCREL	9	/* 32 bit signed pc relative
--					   offset to GOT */
--#define R_X86_64_32		10	/* Direct 32 bit zero extended */
--#define R_X86_64_32S		11	/* Direct 32 bit sign extended */
--#define R_X86_64_16		12	/* Direct 16 bit zero extended */
--#define R_X86_64_PC16		13	/* 16 bit sign extended pc relative */
--#define R_X86_64_8		14	/* Direct 8 bit sign extended  */
--#define R_X86_64_PC8		15	/* 8 bit sign extended pc relative */
--#define R_X86_64_PC64		24	/* Place relative 64-bit signed */
+-/* Relocation types used by the dynamic linker */
+-#define R_RISCV_NONE		0
+-#define R_RISCV_32		1
+-#define R_RISCV_64		2
+-#define R_RISCV_RELATIVE	3
+-#define R_RISCV_COPY		4
+-#define R_RISCV_JUMP_SLOT	5
+-#define R_RISCV_TLS_DTPMOD32	6
+-#define R_RISCV_TLS_DTPMOD64	7
+-#define R_RISCV_TLS_DTPREL32	8
+-#define R_RISCV_TLS_DTPREL64	9
+-#define R_RISCV_TLS_TPREL32	10
+-#define R_RISCV_TLS_TPREL64	11
+-#define R_RISCV_IRELATIVE	58
 -
- /*
-  * These are used to set parameters in the core dumps.
-  */
-diff --git a/arch/x86/um/asm/elf.h b/arch/x86/um/asm/elf.h
-index 22d0111b543b..b768497d5ee1 100644
---- a/arch/x86/um/asm/elf.h
-+++ b/arch/x86/um/asm/elf.h
-@@ -12,19 +12,6 @@
- 
- #ifdef CONFIG_X86_32
- 
--#define R_386_NONE	0
--#define R_386_32	1
--#define R_386_PC32	2
--#define R_386_GOT32	3
--#define R_386_PLT32	4
--#define R_386_COPY	5
--#define R_386_GLOB_DAT	6
--#define R_386_JMP_SLOT	7
--#define R_386_RELATIVE	8
--#define R_386_GOTOFF	9
--#define R_386_GOTPC	10
--#define R_386_NUM	11
+-/* Relocation types not used by the dynamic linker */
+-#define R_RISCV_BRANCH		16
+-#define R_RISCV_JAL		17
+-#define R_RISCV_CALL		18
+-#define R_RISCV_CALL_PLT	19
+-#define R_RISCV_GOT_HI20	20
+-#define R_RISCV_TLS_GOT_HI20	21
+-#define R_RISCV_TLS_GD_HI20	22
+-#define R_RISCV_PCREL_HI20	23
+-#define R_RISCV_PCREL_LO12_I	24
+-#define R_RISCV_PCREL_LO12_S	25
+-#define R_RISCV_HI20		26
+-#define R_RISCV_LO12_I		27
+-#define R_RISCV_LO12_S		28
+-#define R_RISCV_TPREL_HI20	29
+-#define R_RISCV_TPREL_LO12_I	30
+-#define R_RISCV_TPREL_LO12_S	31
+-#define R_RISCV_TPREL_ADD	32
+-#define R_RISCV_ADD8		33
+-#define R_RISCV_ADD16		34
+-#define R_RISCV_ADD32		35
+-#define R_RISCV_ADD64		36
+-#define R_RISCV_SUB8		37
+-#define R_RISCV_SUB16		38
+-#define R_RISCV_SUB32		39
+-#define R_RISCV_SUB64		40
+-#define R_RISCV_GNU_VTINHERIT	41
+-#define R_RISCV_GNU_VTENTRY	42
+-#define R_RISCV_ALIGN		43
+-#define R_RISCV_RVC_BRANCH	44
+-#define R_RISCV_RVC_JUMP	45
+-#define R_RISCV_GPREL_I		47
+-#define R_RISCV_GPREL_S		48
+-#define R_RISCV_TPREL_I		49
+-#define R_RISCV_TPREL_S		50
+-#define R_RISCV_RELAX		51
+-#define R_RISCV_SUB6		52
+-#define R_RISCV_SET6		53
+-#define R_RISCV_SET8		54
+-#define R_RISCV_SET16		55
+-#define R_RISCV_SET32		56
+-#define R_RISCV_32_PCREL	57
+-#define R_RISCV_PLT32		59
+-#define R_RISCV_SET_ULEB128	60
+-#define R_RISCV_SUB_ULEB128	61
 -
- /*
-  * This is used to ensure we don't load something for the wrong architecture.
-  */
-@@ -72,26 +59,6 @@
- 
- #else
- 
--/* x86-64 relocation types, taken from asm-x86_64/elf.h */
--#define R_X86_64_NONE		0	/* No reloc */
--#define R_X86_64_64		1	/* Direct 64 bit  */
--#define R_X86_64_PC32		2	/* PC relative 32 bit signed */
--#define R_X86_64_GOT32		3	/* 32 bit GOT entry */
--#define R_X86_64_PLT32		4	/* 32 bit PLT address */
--#define R_X86_64_COPY		5	/* Copy symbol at runtime */
--#define R_X86_64_GLOB_DAT	6	/* Create GOT entry */
--#define R_X86_64_JUMP_SLOT	7	/* Create PLT entry */
--#define R_X86_64_RELATIVE	8	/* Adjust by program base */
--#define R_X86_64_GOTPCREL	9	/* 32 bit signed pc relative
--					   offset to GOT */
--#define R_X86_64_32		10	/* Direct 32 bit zero extended */
--#define R_X86_64_32S		11	/* Direct 32 bit sign extended */
--#define R_X86_64_16		12	/* Direct 16 bit zero extended */
--#define R_X86_64_PC16		13	/* 16 bit sign extended pc relative */
--#define R_X86_64_8		14	/* Direct 8 bit sign extended  */
--#define R_X86_64_PC8		15	/* 8 bit sign extended pc relative */
--#define R_X86_64_PC64		24	/* Place relative 64-bit signed */
 -
- /*
-  * This is used to ensure we don't load something for the wrong architecture.
-  */
+ #endif /* _UAPI_ASM_RISCV_ELF_H */
 diff --git a/include/uapi/linux/elf-r.h b/include/uapi/linux/elf-r.h
-index 2c382c8a4807..45a160ecf405 100644
+index 0d0dfaa7c724..02e420c255df 100644
 --- a/include/uapi/linux/elf-r.h
 +++ b/include/uapi/linux/elf-r.h
-@@ -2,4 +2,38 @@
- #ifndef _UAPI_LINUX_ELF_R_H
- #define _UAPI_LINUX_ELF_R_H
+@@ -314,4 +314,70 @@
+ /* Keep this the last entry.  */
+ #define R_PPC64_NUM		253
  
-+/* i386 relocation types */
-+#define R_386_NONE	0
-+#define R_386_32	1
-+#define R_386_PC32	2
-+#define R_386_GOT32	3
-+#define R_386_PLT32	4
-+#define R_386_COPY	5
-+#define R_386_GLOB_DAT	6
-+#define R_386_JMP_SLOT	7
-+#define R_386_RELATIVE	8
-+#define R_386_GOTOFF	9
-+#define R_386_GOTPC	10
-+#define R_386_NUM	11
 +
-+/* x86-64 relocation types */
-+#define R_X86_64_NONE		0	/* No reloc */
-+#define R_X86_64_64		1	/* Direct 64 bit  */
-+#define R_X86_64_PC32		2	/* PC relative 32 bit signed */
-+#define R_X86_64_GOT32		3	/* 32 bit GOT entry */
-+#define R_X86_64_PLT32		4	/* 32 bit PLT address */
-+#define R_X86_64_COPY		5	/* Copy symbol at runtime */
-+#define R_X86_64_GLOB_DAT	6	/* Create GOT entry */
-+#define R_X86_64_JUMP_SLOT	7	/* Create PLT entry */
-+#define R_X86_64_RELATIVE	8	/* Adjust by program base */
-+#define R_X86_64_GOTPCREL	9	/* 32 bit signed pc relative
-+					   offset to GOT */
-+#define R_X86_64_32		10	/* Direct 32 bit zero extended */
-+#define R_X86_64_32S		11	/* Direct 32 bit sign extended */
-+#define R_X86_64_16		12	/* Direct 16 bit zero extended */
-+#define R_X86_64_PC16		13	/* 16 bit sign extended pc relative */
-+#define R_X86_64_8		14	/* Direct 8 bit sign extended  */
-+#define R_X86_64_PC8		15	/* 8 bit sign extended pc relative */
-+#define R_X86_64_PC64		24	/* Place relative 64-bit signed */
++/*
++ * RISC-V relocation types
++ */
++
++/* Relocation types used by the dynamic linker */
++#define R_RISCV_NONE		0
++#define R_RISCV_32		1
++#define R_RISCV_64		2
++#define R_RISCV_RELATIVE	3
++#define R_RISCV_COPY		4
++#define R_RISCV_JUMP_SLOT	5
++#define R_RISCV_TLS_DTPMOD32	6
++#define R_RISCV_TLS_DTPMOD64	7
++#define R_RISCV_TLS_DTPREL32	8
++#define R_RISCV_TLS_DTPREL64	9
++#define R_RISCV_TLS_TPREL32	10
++#define R_RISCV_TLS_TPREL64	11
++#define R_RISCV_IRELATIVE	58
++
++/* Relocation types not used by the dynamic linker */
++#define R_RISCV_BRANCH		16
++#define R_RISCV_JAL		17
++#define R_RISCV_CALL		18
++#define R_RISCV_CALL_PLT	19
++#define R_RISCV_GOT_HI20	20
++#define R_RISCV_TLS_GOT_HI20	21
++#define R_RISCV_TLS_GD_HI20	22
++#define R_RISCV_PCREL_HI20	23
++#define R_RISCV_PCREL_LO12_I	24
++#define R_RISCV_PCREL_LO12_S	25
++#define R_RISCV_HI20		26
++#define R_RISCV_LO12_I		27
++#define R_RISCV_LO12_S		28
++#define R_RISCV_TPREL_HI20	29
++#define R_RISCV_TPREL_LO12_I	30
++#define R_RISCV_TPREL_LO12_S	31
++#define R_RISCV_TPREL_ADD	32
++#define R_RISCV_ADD8		33
++#define R_RISCV_ADD16		34
++#define R_RISCV_ADD32		35
++#define R_RISCV_ADD64		36
++#define R_RISCV_SUB8		37
++#define R_RISCV_SUB16		38
++#define R_RISCV_SUB32		39
++#define R_RISCV_SUB64		40
++#define R_RISCV_GNU_VTINHERIT	41
++#define R_RISCV_GNU_VTENTRY	42
++#define R_RISCV_ALIGN		43
++#define R_RISCV_RVC_BRANCH	44
++#define R_RISCV_RVC_JUMP	45
++#define R_RISCV_GPREL_I		47
++#define R_RISCV_GPREL_S		48
++#define R_RISCV_TPREL_I		49
++#define R_RISCV_TPREL_S		50
++#define R_RISCV_RELAX		51
++#define R_RISCV_SUB6		52
++#define R_RISCV_SET6		53
++#define R_RISCV_SET8		54
++#define R_RISCV_SET16		55
++#define R_RISCV_SET32		56
++#define R_RISCV_32_PCREL	57
++#define R_RISCV_PLT32		59
++#define R_RISCV_SET_ULEB128	60
++#define R_RISCV_SUB_ULEB128	61
 +
  #endif /* _UAPI_LINUX_ELF_R_H */
 
