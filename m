@@ -1,77 +1,98 @@
-Return-Path: <linuxppc-dev+bounces-26802-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26803-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0A43BC79F82
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 13:07:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3BC86C79F99
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 13:26:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hfPP62yWxz2y2b;
-	Tue, 08 Sep 2026 23:07:38 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c201::1" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788872858;
-	cv=pass; b=YRMB0JR07U8QSO80WLvQ6TsstPuyXqHS2dtHfNI7QAs2VgitQ/j9RrVNxpHPs4AJydVfx32Zz96sfjZZcLv5hvAcuUA1DMRjN9ja/CB3CaSXgOpsFkfzxA9UCxC6qPVACGj97f/BnqgA9gpQdO+tsx1KeyJmUb8zhQAgWiZLpl0sfzPIOv0cLZiGntrSWc1xg61z5a0Sq/1x1vsM8Qkaw4MJFBageG9hsTwrFKBCHKOK3nDlQctjPkEFSIVavtQPESvgO3VqU1zzXDcdRDwRoojad8E8i+eKLzKAh0rlF17uMBHFBB/cpAcuXDrNkL8PfvogYbocDp7bvyJ/Rh0WLg==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788872858; c=relaxed/relaxed;
-	bh=MEjauvyT0w/GT73hhhlwoLtKxG4NTOTzFR4d3ry3foQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=T3Y5fRR9/hS3CJDq9pvw6bIWH32QL2RF9XnjlcsUfGLDNitioEAY75HzKrLUsdto84pgsIqfSNS4nMOKngIQz+0grl4P4nZjrK1AapurFzsMP6fPPyJBnOXkolgAEKyFl+HFLpU6/v6vzE9PubFvrmHC+MtW2v4rrv0Bm8P4FBZJUXaNhrM1z/YAcSnmHBCRMu/M7Q1Brx870338OhAEDbulk8/d8lO7bUJjRVOj2Wvgk+PEmrB0ihEz7R88UNkdpbUPJcYjYkCNofR6zwxRpkpFBDHfOvG654cxK30MwB9XbyzTCKpswM9Q6IhAaLFkQZ5tLuYIZBmbyQTOpVu/hg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=ZOkHf4XQ; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c201::1; helo=am0pr83cu005.outbound.protection.outlook.com; envelope-from=ioana.ciornei@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hfPpb377yz2y8G;
+	Tue, 08 Sep 2026 23:26:15 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42f"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788873975;
+	cv=none; b=TO5DjVZ/zj+TM60nSj/nmIMpmkXJwkPfZEXHfYfiMvqFcRe8JYG1F6FZQf5N61M0PPJQk1/H/D424UK2LKzV3F/ef+2fSHNWYJEqslgdD1oEWC4fy7tVEKODYIfDfv9W6ztA/WZahnrCeQm2tG22vaj4Ta68mYrPC5WcfOpQhzFQCodwDUU7DUOfnrXyuY4ocT194shVKrMy3r9po+kUNT161qE6POXMcE7Zffn3ks/tcl1oOhKaXsj3+PTkYnzAls9pe8pxSEcBzGuVAamfIKYZMdumBbq0p/C+uk43D9UJNNXqiPK8ieYszTz5mks2pDl9Rm5WMhJZgb7JkJQzcA==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1788873975; c=relaxed/relaxed;
+	bh=9ZOHA9tdlo1qTDpR1eEKANEz1uLz5blHgwM68Z+xZ28=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=hXi/a8GUPdTMx8+hk8m/bx4zxTufdApu5LapJd871xAxl8bPOmkY4YUqkIOpiRULJ4v8YuG4uF8E0AEVVIW21MtDSnoUfCAntXK0mUResHdbOtUof12Vz1WcVG/qWtR8K+vpEh/uq5YjqsmQSJKS8KxlgqU7BxBf17kUtlX1yC2CUkI1YeWqQeXo66Utnqstz7A7Z6iGlBGVyghJ0wqBg1CTAzAXZ7ny/UTPlvQALuI8fkVvCo2bt9A2w4SbWz7F3Epi2BPpmERYPtuICVNW3xUbD+wmkO3tE2tBWcuHW9FDNfJK3y4DNcoRYtPnFM1uZlmm/snJTSvfeg8UsD3z/Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=kl8t02Mv; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42f; helo=mail-pf1-x42f.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=ZOkHf4XQ;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=kl8t02Mv;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c201::1; helo=am0pr83cu005.outbound.protection.outlook.com; envelope-from=ioana.ciornei@nxp.com; receiver=lists.ozlabs.org)
-Received: from AM0PR83CU005.outbound.protection.outlook.com (mail-westeuropeazlp170100001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c201::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42f; helo=mail-pf1-x42f.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x42f.google.com (mail-pf1-x42f.google.com [IPv6:2607:f8b0:4864:20::42f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfPP41WHgz2xYh
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Sep 2026 23:07:35 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=eVtbPGcGnk0tZ/mpLCZJighKoFT9cxaoGeV/AnV6O4sNGGhmxkNkjyyGcjmiN9xqRcPGj4LppjjmUAI+Lj2QnIkoI7QualvMhK4gBTgyEKxuhdROfOw/ioHQILfUeo0PHJNA4sNnjXfzilgBAcVE2k7LqH++O/5QJMND51v7U0+XiY5LVl4DMadYyHeaYdnVwKl8j8ayOZotxRgy3FxomoOhnsqgPfrkdfS5fwDQE1kaR/bUydOdcdcS+u3uFlHOciysWLG3xYOuOFFRwOcIUuMfUrfmy2Eq1ZItjIdJIENZMsVoh4boucm3rGvc2OjjDSkEfAoWNdK5wKlKLiOBfA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=MEjauvyT0w/GT73hhhlwoLtKxG4NTOTzFR4d3ry3foQ=;
- b=ZFU+Hth9NZGq6jqphhzxFlY7QzhP+wJgt1Fi7rxk08cXm3H99EkCc69AY1cuxzn9DTyMGGlgATe12M14y/bCFQ8Nv4Q0ptN4Z7yV2lfszDxT7lZyaA3Ck2U87Hnjxzyycn0AheuNoukOiokZaW3G0CXsfUZmgy1j1iqxSCHnLTcIQ2+CEpQgQbCZAAa0QL2yAbllf7tX6Ew9HWL0qUyy9+5lkDMS+Sj1A2GVSuFBBncKmUI7C1LKIrUBqP3JmvsdvQXPrzRIHi9Xjgiwl1XDi0c3A/gVEWfLQ4xsZEMuoyAYaFI2P/QF2waKpVxwtyln/ecgpdw+pGc2NmjCZRzaMA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
- header.d=nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=MEjauvyT0w/GT73hhhlwoLtKxG4NTOTzFR4d3ry3foQ=;
- b=ZOkHf4XQiWCUBL2JDhs+nXZNus81jcSKTL4Nfi/ZwIjfHoI0F4BRMZopOVIllYQCHMoBR4aeuJlN6ig5pF7+cVxLUc+YDZm26PqOExsP4MIK7Bef4PiXi/exVVo2x1LJ/4GyMaQ4/DSmEPWalaBosYvc2F051CmdxdVl5Aw5vkGvzUsKHHR1P40b3CnuiAKQ/2kn/0wlGWbRfP2vs01lDe8zHHDZrww1MqpSUcfHUl3XeqSU/Dr6c6SwxWynv9RV5+I8Q+qRaRNZpavUnHPxTL0g1qnRKZbnucHznLt2AVml9kGGISgYhFcjXGnLOtmFV/5aQvvd9PDoqoZ+f6r3zA==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nxp.com;
-Received: from GVXPR04MB12290.eurprd04.prod.outlook.com
- (2603:10a6:150:319::13) by MI3PR04MB12634.eurprd04.prod.outlook.com
- (2603:10a6:290:81::21) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.382.15; Tue, 8 Sep
- 2026 13:07:06 +0000
-Received: from GVXPR04MB12290.eurprd04.prod.outlook.com
- ([fe80::1739:3404:2175:33dd]) by GVXPR04MB12290.eurprd04.prod.outlook.com
- ([fe80::1739:3404:2175:33dd%3]) with mapi id 15.21.0382.012; Tue, 8 Sep 2026
- 13:07:05 +0000
-Date: Tue, 8 Sep 2026 16:07:02 +0300
-From: Ioana Ciornei <ioana.ciornei@nxp.com>
-To: Vincent Jardin <vjardin@free.fr>
-Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
-	Laurentiu Tudor <laurentiu.tudor@nxp.com>, linuxppc-dev@lists.ozlabs.org, 
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, stable+noautosel@kernel.org
-Subject: Re: [PATCH] bus: fsl-mc: register the object drivers after
- misc_class exists
-Message-ID: <dvnnk7fnk57x7gf4mc25codec62xtpbe4v7omhjguqxd25ssmu@pqqjwe5xif4q>
-References: <20260901-for-upstream-fsl-mc-initcall-order-v1-1-36ffe48f767d@free.fr>
- <fmmf72ypmmooyxszz3l47xabdhvetowgvbmbjmvj6bumuh5onh@pntmny63urbg>
- <ap7mmR_4QV0k88dK@L30177.local>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ap7mmR_4QV0k88dK@L30177.local>
-X-ClientProxiedBy: AS4P195CA0009.EURP195.PROD.OUTLOOK.COM
- (2603:10a6:20b:5e2::17) To GVXPR04MB12290.eurprd04.prod.outlook.com
- (2603:10a6:150:319::13)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfPpY3fhVz2y2b
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Sep 2026 23:26:12 +1000 (AEST)
+Received: by mail-pf1-x42f.google.com with SMTP id d2e1a72fcca58-852c481415fso5548860b3a.3
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Sep 2026 06:26:12 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1788873970; x=1789478770; darn=lists.ozlabs.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :content-type:mime-version:references:message-id:subject:cc:to:from
+         :date:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=9ZOHA9tdlo1qTDpR1eEKANEz1uLz5blHgwM68Z+xZ28=;
+        b=kl8t02Mv4dhybByPRoXuc2tU0x2DqMEhmwltNN1c4twdg0uNIMgmwPUzpPO2wuVd3a
+         aap/G3mx/P4/QrsM+twq0NcNZGy2CMBAswbD80bMaEO8Ml2tnjJKJd3pEplLTkburHd7
+         ZAghCtnIrRKPzuoMLhoQR4b/KZXSbvsl7bZv9U/RN6y0SfO74RZeEcqkgWBGAYMC2kQl
+         zjOlIVX+wPQVortVG4guurKPLjRjvxumXBt8S1Ad19Ufq4+kqBIUc0aQfDPRXoHnNG6I
+         q2nAJMEOtbKpjkSKmWsZfYa9ZdwQtj3vn7tL1Gs33/kRzIqSeeA5WlOi49Zz9edePFvq
+         tS2w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1788873970; x=1789478770;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :content-type:mime-version:references:message-id:subject:cc:to:from
+         :date:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=9ZOHA9tdlo1qTDpR1eEKANEz1uLz5blHgwM68Z+xZ28=;
+        b=cBgbrKzzFAauKBj1wK7Hfo6BHiyPW99GdOowKYk5thKM8SALncd4JA+sST4x3ee7JI
+         q6spCNkQdQunY38w0jomPiG6FCQvOPguFd30wrO6uH8XueGKTsqODMXThHK4Yi3mnIvE
+         ATPDdp1hn2ZvkPoV70hrPsvHyccrXFZ6pMfjpRi6GTbqSDaxgdO/L3xTLnNU88BgwY3k
+         S9BXjFlrKZWXAJRhv8AZKG9Vz4mqZkzQWpviEFmECe5MTKENaWZO3GxTRFyuu9WCvDqZ
+         dph/mnKhuGCZBDCC1m3/u+ckhIV0OGQt0LVdxsUKExD84v6WCPHtoeYN2xJE9TLfxuuQ
+         REug==
+X-Forwarded-Encrypted: i=1; AKwUvByM1aDf3s1JdKWzKj0SsB5+zhqO5j71nPqvi6ryy7fmH6qzb8HVkquB62Y/gxryPTU8Yf+o0U8dl603tqY=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++miOyxsuGvLYLlBzkRJ+uTheniAvCS41Wcih1On8PEGo5rMlRbg
+	ue8wpUKkkoY0Q6uDn6ysN4gQjoXsXPbO2jwEeYQ381IssOXpDHv0OM38
+X-Gm-Gg: AYBFou1/jWB5MvZDvE8KzQMZcBaWunYOl04Ij81IbFI3vaz6H6T0wxowsSVv83CLfRI
+	FlY2fbkG5/YFjKpOM/MlOLCrOTxqt4nl31hTuViRcXmzlgtTXK1oroz/nGhL7j0vGDF7eoevzdy
+	bDdUClUHq0qVPCnWzJai2t46EFLENqo5NY8rE81tmZGJkTW1kf10c7MpHQkl0QMjC4+5nw1/z4H
+	fslwcfYftJ5A54iF2VNxmYqjfUEeU0paVoW67OXe8UYYBXE3PHa7qm2FNaeZMYvL/zUeXHr1eYb
+	oNJoRukDMxggzpUjQnfjUqM/mMzwaOvkYxSgnZZEaCWt1StbQ0QG64TXZz+OeNCpdQp+zZrRdb3
+	O+kb0g/mgNx0k8oYBiPzMjnGrFws7Pxirebz35C/RfEqGaRvntLi5yRU6uwDl47DlX/cqkrMpp2
+	2GUaa+R61wgbnIrL88J2vC71yDUsyQ2awCsJJTf7GIa4Je6Oabi6D5aR8XYU6h9NhN73bZVNznj
+	ETfsdloBQJVPDbwIr4NJmZU+U8Dpyg5GtqV
+X-Received: by 2002:a05:6a00:44c7:b0:857:7337:5dbb with SMTP id d2e1a72fcca58-8616b56e83cmr44216894b3a.25.1788873969342;
+        Tue, 08 Sep 2026 06:26:09 -0700 (PDT)
+Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([122.161.53.214])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8615292a8f5sm5695364b3a.27.2026.09.08.06.25.57
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 08 Sep 2026 06:26:08 -0700 (PDT)
+Date: Tue, 8 Sep 2026 18:55:55 +0530
+From: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
+To: Jirka Hladky <jhladky@redhat.com>
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
+	chleroy@kernel.org, ryabinin.a.a@gmail.com, glider@google.com, andreyknvl@gmail.com, 
+	dvyukov@google.com, vincenzo.frascino@arm.com, oleg@redhat.com, kees@kernel.org, 
+	luto@amacapital.net, wad@chromium.org, mchauras@linux.ibm.com, sshegde@linux.ibm.com, 
+	thuth@redhat.com, ruanjinjie@huawei.com, akpm@linux-foundation.org, 
+	macro@orcam.me.uk, ldv@strace.io, charlie@rivosinc.com, deller@gmx.de, 
+	kevin.brodsky@arm.com, ritesh.list@gmail.com, yeoreum.yun@arm.com, 
+	agordeev@linux.ibm.com, segher@kernel.crashing.org, mark.rutland@arm.com, 
+	ryan.roberts@arm.com, pmladek@suse.com, feng.tang@linux.alibaba.com, 
+	peterz@infradead.org, kan.liang@linux.intel.com, linuxppc-dev@lists.ozlabs.org, 
+	linux-kernel@vger.kernel.org, kasan-dev@googlegroups.com
+Subject: Re: [PATCH v5 0/8] Generic IRQ entry/exit support for powerpc
+Message-ID: <aqAMpawvpB7g1XdK@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+References: <20260427122742.210074-1-mkchauras@gmail.com>
+ <CAE4VaGACd2es4NPQyhbR9pMEoGiTVBSE7Lw7x9VOb1Qbpvc6nw@mail.gmail.com>
+ <amsapeQ2Kp6rwPpF@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+ <CAE4VaGB_EhbWq8_X6FLtOx2MqoP7JEkOKkKSjKB7N--tt-sCeA@mail.gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -85,139 +106,144 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: GVXPR04MB12290:EE_|MI3PR04MB12634:EE_
-X-MS-Office365-Filtering-Correlation-Id: 020231c5-3547-4dfa-a886-08df0daa14e4
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|366016|376014|23010399003|19092799006|6133799003|10067099003|4143699003|11063799006|56012099006|22082099003|18002099003|41080700001;
-X-Microsoft-Antispam-Message-Info:
-	EWyeWTWAyetuuPu+uVQvl6l1yRaW92ojPmC7Co2hrxcD90K/mUtl1OIZ5AiCvPuSV9TkIbQkZ2ORhjNqxMxoLMsXQ4zzKYmWquUWIfqzXeDLjndsrrVz7kdPG7uVZiBu907X866M3TTc7jE35M80jRlw50UC/d9M8qKaxh7BCm8bJIL0pXfBeYVM3pIihAuCqLTJpl1hnKjW6ljX3SPfMOv3QfHTyESJ0I75AFbKsWPAtJ1S+rCV/WPyb/n/jeYaPn90hKIOcv9mX5H7Ews1iEhMzLjoPJp8PQV6HYbj6D1Y5+eqygiHI1YmJOHRWaFCFe1Vx76xe0PMjlyBA55uDdpXMO04vj0zPaE7u0vP5N4E3DpWyimZfUqJ+RKqEKwSMYqk4EksrPiwNZExzk6bybNCHNjalJJGjv1OHib1DNe6XqzDZCx62X7W9nVrw5F6rs6+dOwXBgUTK68fx7SaxRKufyNJSDVnJoPKV1ecKOXXsi795zfbTxfnLrhQC8tl+7yuTS6B5sg/DWGNIFsWaCZ68pBbTNB7ujvAMgwhSWWyslWmfZFr+2tRYL/SgodVVBqwnKHvSkW+bdJvjEUAyPVssUoLBxoocnIfFs9pGiTqjo5t2min0xqRp76kHC6MR0rAzmqsp/3lEJ0Kd2Od94KiUrxzsxJUOGoqlqErRQI=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GVXPR04MB12290.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(376014)(23010399003)(19092799006)(6133799003)(10067099003)(4143699003)(11063799006)(56012099006)(22082099003)(18002099003)(41080700001);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?v5hFIu/7lXIcur34XKm+N6ZZDeP58RBirwypMTa40t66uGsEnGDhghdKxRIj?=
- =?us-ascii?Q?RK1f/fBR27zXxWgnN/GJ2mm+jY+fHCh/0WETc6qd+NNygSuQuojSq/Xn/2R/?=
- =?us-ascii?Q?60V/XZf4rHqtJEUF0Joah8JiJxdWWHW6kKuqajde3osUy1TUffdzUivzuzac?=
- =?us-ascii?Q?9bVmjUn3gWxqJK63IcWBLL7EgEGB+BuBCujWejfMzoKdZ92YYopJapv4fShz?=
- =?us-ascii?Q?UpQAGhI3j3kdnEIiLQjS13FrldfT6dcLjT2iGTts+hb+OGUZQ6SwjdpvU4an?=
- =?us-ascii?Q?6HdpkVlD2zbuUCIE5fqu2FCM4ohP1mTxpG2I48DbLPIGDfVmqFAhMbHilYsX?=
- =?us-ascii?Q?JBP6pVNNneRMcCXfSP18Db3uc5Gm0TlqQPlpPPEWzbQUYGh9BRH8/gALiWIG?=
- =?us-ascii?Q?H7j/QWEVnbf4EokMJunqtTSs5n8Z7rXpiWco/EF1GRD5ADzJ/jG5hEuJ0TjL?=
- =?us-ascii?Q?PHvDNkLPYckR2UBn4Lebg7ftBRmYFto8/srulkXUL6ayIHHuktaobDnrE1yI?=
- =?us-ascii?Q?bXsAjXT8DFf/1gK2C6++aMfw9n9hiaR8UFZ8VdbBnDI3Mmtm1uCu9CFZ17N0?=
- =?us-ascii?Q?Hkh310zTIbO2Z+H3BV1Tw7oSjKysFa26YClsreNeYjQOcgndnhK5GA6hkmUB?=
- =?us-ascii?Q?1Kf1IhTGfc9TSG8HBQ3GaBQYZfjI3nyIATmrfed9/tRK1TU3K77Kj2O9RTdE?=
- =?us-ascii?Q?tChurraZMWORSwtWd7iDFDUx93yYx+pr+98M0+p4Jw8d+2k2TqZiWHhjEFpb?=
- =?us-ascii?Q?cP2lNgP5oz6X9wicZ+66rG/RYfh3mqQ4VaL1ww+1p4Pw0hSPmd1d+z7qBM+J?=
- =?us-ascii?Q?ZmdxazJuRvjZ1Dtm7s2eNLoiOj9lR+CoNE6PslkQTJZCPdmtpj9rhfiZn1j5?=
- =?us-ascii?Q?LM6pWAVB4McXwGNDqv8AiErRog+v1z3LSEy4zp4gb74cJPGz5b3P9IMFFRA0?=
- =?us-ascii?Q?BOgckNpp0TNsNWNEEm2LKWgW1IPohjwhSPHQ0rlK3QsEOutiw+JtJ7/HSxyN?=
- =?us-ascii?Q?HyZIw+EFVT8weMZ+yXepRXHMg2ohfJTGLT4Ju1FZCEqEOxqRMIONAeJvhal3?=
- =?us-ascii?Q?eGA5Ouj1YzCK/Qm0wDP09aKbby4xaRQtx7hMcuwwe1p+ZJQ60cpiguXl2pY6?=
- =?us-ascii?Q?H9yNjY45OH3xDq+AE1gS38teJwRtg8pNyyqhMsChLgyIs7SX7K3y+IKaAGrG?=
- =?us-ascii?Q?RmTjw/Q6dBL2fUB2YrospGPCsYywIisRSexvJoriBt83Ck5mO9EU0j0QMKw5?=
- =?us-ascii?Q?jp5pnsQpMbzERdeL6RP2AozYaS7IPBL3sDaliUQdZD4m67eAoooWWLBraSt8?=
- =?us-ascii?Q?1y4MAx05xJAy6IkSdkH8q6LDyLZwmEti970cNPh6s3wMZcdUzRwibh0rRUVt?=
- =?us-ascii?Q?SUjG2HPRAQVyvUXIwb5gebFiJrr+X67/cHLpSWYGe9U5KxFcusVKlO1/vba3?=
- =?us-ascii?Q?7FPoVMwMcvmwXsf4fP+fhuWa9+7CzpUjHeVZbQvRV01YRgOs0MX0/8p8sTmo?=
- =?us-ascii?Q?jsyhtLt6dOsFnMVDicLNuy86P39Yj4wJhmkY81rVMzZe08Geso2bN9FKW8rC?=
- =?us-ascii?Q?8esgSOF5aboI09hHwspBytWGIbOv3SGc1T2uVxXFpuHhuiwu8LNnguh9bWaV?=
- =?us-ascii?Q?NJQWflu7hIQzNARN4e//6SLhvbPYQ2rWKrtXj3JJ0jP6NrQ83K4sXNNhUm77?=
- =?us-ascii?Q?rZHKXfLw3FDvROHme1sEZVoIcfpY0rWR4rh26wsVaXt1V37dOpem/bU48QyS?=
- =?us-ascii?Q?o/J+NupVRA=3D=3D?=
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 020231c5-3547-4dfa-a886-08df0daa14e4
-X-MS-Exchange-CrossTenant-AuthSource: GVXPR04MB12290.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 08 Sep 2026 13:07:05.7167
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: Y1pzR06jUZ6X4Rre2vkF3plGGI7jv3Jsk7+usJHHwnGt3tTniMlcWng2gZkAo7awVHZTFqhvRFB2ahJ4lbzMIg==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: MI3PR04MB12634
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAE4VaGB_EhbWq8_X6FLtOx2MqoP7JEkOKkKSjKB7N--tt-sCeA@mail.gmail.com>
 
-On Mon, Sep 07, 2026 at 06:30:17PM +0200, Vincent Jardin wrote:
-> Hi Ioana,
+On Thu, Jul 30, 2026 at 01:24:46PM +0200, Jirka Hladky wrote:
+> On Thu, Jul 30, 2026 at 11:36 AM Mukesh Kumar Chaurasiya
+> <mkchauras@gmail.com> wrote:
+> >
+> > On Mon, Jul 27, 2026 at 11:41:07AM +0200, Jirka Hladky wrote:
+> > > Hi Mukesh, Shrikanth, Madhavan,
+> > >
+> > > I'm seeing a ~19% throughput regression on ppc64le (POWER10) in
+> > > syscall-heavy workloads between kernel 7.1 and 7.2-rc4, which I've
+> > > narrowed down to the GENERIC_ENTRY enablement for powerpc (commit
+> > > bee25f97ad24 "powerpc: Enable GENERIC_ENTRY feature").
+> > >
+> > > The regression manifests specifically when SELinux is enabled. Regression
+> > > disappears with selinux=0. With SELinux disabled, 7.2 is actually
+> > > slightly *faster* than 7.1.
+> > >
+> > > Test: stress-ng --kill 1 -t 23 (single-thread kill() syscall loop)
+> > > Machine: IBM,9080-HEX POWER10, 8 vCPUs (1 core SMT-8), 64 GiB
+> > >
+> > > Results (bogo-ops/sec, higher is better):
+> > >
+> > > Kernel   Enforcing   Permissive   Disabled    SELinux tax
+> > > ------   ---------   ----------   --------    -----------
+> > > 7.1      69,107      70,248       93,566      -26.1%
+> > > 7.2-rc4  56,247      59,075       99,240      -43.3%
+> > > Delta    -18.6%      -15.9%       +6.1%
+> > >
+> > > Key observations:
+> > > - SELinux permissive ~ enforcing on both kernels (overhead is in the
+> > >   code path, not policy evaluation)
+> > > - SELinux disabled: 7.2 is 6% faster than 7.1 -- the generic entry
+> > >   path itself is not slower for the base syscall
+> > > - The SELinux "tax" nearly doubles from 26% to 43% between 7.1->7.2
+> > > - No changes to security/selinux/avc.c between v7.1 and v7.2-rc4
+> > >
+> > > The kill() hot path (sys_kill -> check_kill_permission -> security_task_kill
+> > > -> selinux_task_kill -> avc_has_perm -> avc_lookup) wraps every AVC lookup
+> > > in rcu_read_lock()/rcu_read_unlock(). On ppc64le with PREEMPT_RCU, each
+> > > pair requires lwsync/isync barriers. I suspect the generic entry path
+> > > changes something in how context tracking, tracing, or RCU interacts
+> > > with the syscall fast path that amplifies the per-call RCU cost.
+> > >
+> > > Note: this is on top of a separate ~36% regression from 6.12->7.1 caused
+> > > by HAVE_PREEMPT_DYNAMIC_KEY enabling CONFIG_PREEMPT_RCU on ppc64le
+> > > (commit 6ad7751537e8), which I reported separately on the v4 thread.
+> > >
+> > > Thank you
+> > > Jirka
+> > [...]
+> > Hey Jirka,
+> >
+> > Thanks for reporting this.
+> > I'll take a look.
+> >
+> > Thanks,
+> > Mukesh
+> >
 > 
-> > Do you mean that the above error messages are triggered by an unbind and
-> > bind sequence like below?
-> > 
-> > $ echo dprc.1 > /sys/bus/fsl-mc/drivers/fsl_mc_dprc/unbind
-> > $ echo dprc.1 > /sys/bus/fsl-mc/drivers/fsl_mc_dprc/bind
+> Thank you, Mukesh! I'm happy to run additional tests on the POWER10 machine
+> if you have patches to try or specific experiments you'd like me to do.
 > 
-> Yes, same sequence on the root DPRC
+> Jirka
 > 
-> > I am asking this because I cannot seem to trigger it myself. There is a
-> > misc_deregister() which should remove the char device upon unbinding the
-> > root DPRC.
-> 
-> It does for every normal misc device, but not for this one, because the
-> root DPRC's misc device is created classless.
-> 
-> You can check the states with:
->     grep dprc /proc/misc   # e.g. "256 dprc.1"  -> registered
->     ls /sys/class/misc/ | grep dprc
-> 
-> If dprc.1 shows in /proc/misc but is absent from /sys/class/misc, its
-> misc device is classless and the unbind/bind should collide. If it is
-> present under /sys/class/misc, it was created after misc_class and the
-> sequence is clean on your setup.
 
-Yes, it is present under /sys/class/misc.
+can you try this with the below diff?
 
-	$ grep dprc /proc/misc
-	260 dprc.1
-	$ ls /sys/class/misc/ | grep dprc
-	dprc.1
-> 
-> fsl_mc_bus_driver_init() is a postcore_initcall, it registers both the
-> platform and the dprc drivers.
-> 
-> The fsl-mc DT node is populated at arch_initcall_sync, so the root DPRC
-> probes synchronously.
-> 
-> dprc_setup() -> fsl_mc_uapi_create_device_file() -> misc_register() runs
-> before misc_init() does class_register(&misc_class) at subsys_initcall.
-> 
-> misc_register() does not fail in that window: device_create_with_groups()
-> with an unregistered class creates the device with no misc_class
-> membership and still returns 0.
-> 
-> -> So at unbind, misc_deregister() -> device_destroy(&misc_class, devt)
-> cannot find the device within misc_class, it returns without removing it,
-> and then it leaks the device + its /sys/dev/char/10:<minor> link while freeing
-> the minor. The next bind reuses the minor and dies on the
-> duplicate /sys/dev/char/ entry.
-> 
-> I guess, from my setup, it happens when the root DPRC's misc device is
-> created during the early probe, which needs CONFIG_FSL_MC_UAPI_SUPPORT=y,
-> fsl-mc built in (not a module), and the root DPRC probe not going through
-> EPROBE_DEFER.
-> 
-> If it defers, the retry runs after subsys_initcall, misc_class exists,
-> and unbind/bind is clean -> which is probably what you are seeing.
+diff --git a/include/linux/rcutiny.h b/include/linux/rcutiny.h
+index e56ded733b1b..dcad641eb2c2 100644
+--- a/include/linux/rcutiny.h
++++ b/include/linux/rcutiny.h
+@@ -120,6 +120,7 @@ static inline bool rcu_preempt_need_deferred_qs(struct task_struct *t)
+ 	return false;
+ }
+ static inline void rcu_preempt_deferred_qs(struct task_struct *t) { }
++static inline void rcu_ct_kernel_exit_qs(void) { }
+ void rcu_scheduler_starting(void);
+ static inline void rcu_end_inkernel_boot(void) { }
+ static inline bool rcu_inkernel_boot_has_ended(void) { return true; }
+diff --git a/include/linux/rcutree.h b/include/linux/rcutree.h
+index 16a04202888b..d623f2a7d3fc 100644
+--- a/include/linux/rcutree.h
++++ b/include/linux/rcutree.h
+@@ -87,6 +87,7 @@ static inline void rcu_irq_exit_check_preempt(void) { }
+ 
+ struct task_struct;
+ void rcu_preempt_deferred_qs(struct task_struct *t);
++void rcu_ct_kernel_exit_qs(void);
+ 
+ void exit_rcu(void);
+ 
+diff --git a/kernel/context_tracking.c b/kernel/context_tracking.c
+index a743e7ffa6c0..011018214c6d 100644
+--- a/kernel/context_tracking.c
++++ b/kernel/context_tracking.c
+@@ -118,7 +118,7 @@ static void noinstr ct_kernel_exit(bool user, int offset)
+ 	lockdep_assert_irqs_disabled();
+ 	trace_rcu_watching(TPS("End"), ct_nesting(), 0, ct_rcu_watching());
+ 	WARN_ON_ONCE(IS_ENABLED(CONFIG_RCU_EQS_DEBUG) && !user && !is_idle_task(current));
+-	rcu_preempt_deferred_qs(current);
++	rcu_ct_kernel_exit_qs();
+ 
+ 	// instrumentation for the noinstr ct_kernel_exit_state()
+ 	instrument_atomic_write(&ct->state, sizeof(ct->state));
+diff --git a/kernel/rcu/tree.c b/kernel/rcu/tree.c
+index 96848fc1f02b..c23478f70c17 100644
+--- a/kernel/rcu/tree.c
++++ b/kernel/rcu/tree.c
+@@ -368,6 +368,25 @@ notrace void rcu_momentary_eqs(void)
+ }
+ EXPORT_SYMBOL_GPL(rcu_momentary_eqs);
+ 
++/**
++ * rcu_ct_kernel_exit_qs - report deferred QS on syscall/exception exit if needed
++ *
++ * Called from ct_kernel_exit() on every return to userspace.  Guards the
++ * rcu_preempt_deferred_qs() call with rcu_preempt_need_deferred_qs() so that
++ * on the common fast path -- where nothing is deferred -- we avoid the
++ * cache-line traffic on current->rcu_read_unlock_special that the unconditional
++ * call causes.  This is particularly significant on weakly-ordered architectures
++ * (e.g. ppc64le) where rcu_read_lock/unlock issue lwsync/isync barriers and
++ * already touch that cache line in the syscall body.
++ *
++ * Follows the same pattern used by rcu_flavor_sched_clock_irq().
++ */
++notrace void rcu_ct_kernel_exit_qs(void)
++{
++	if (rcu_preempt_need_deferred_qs(current))
++		rcu_preempt_deferred_qs(current);
++}
++
+ /**
+  * rcu_is_cpu_rrupt_from_idle - see if 'interrupted' from idle
+  *
 
-I am indeed in the case in which the uapi support is builtin but the
-dprc.1 probing is deferred, thus it will get executed after misc_init()
-had a chance to run.
 
-The deferral happens because of_dma_configure_id() returns EPROBE_DEFER
-since it waits for arm-ssmu to probe. How did you get past this
-deferral?
-
-> 
-> I started to face this issue when I did try to restart
-> the MC from Linux userland instead of uboot in order to be able to adapt
-> with some DPC changes during the runtime.
->  see https://github.com/vjardin/lx2160-sdx/blob/main/src/lx2160-mc.c
-> But I guess this issue should be quite generic.
-
-Can you reproduce it without restarting the MC: boot to prompt, echo
-dprc.1 > .../unbind, echo dprc.1 > ..../bind ?
-
-Ioana
 
