@@ -1,60 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-26764-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26765-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E1F53C79F82
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 08:17:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7AB7CC79FA0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 08:17:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hfGyZ2spkz2yvs;
-	Tue, 08 Sep 2026 18:17:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hfGyb4rBVz2yqT;
+	Tue, 08 Sep 2026 18:17:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c201::3" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788855462;
-	cv=pass; b=U2/Xx3115azqgdyhSzb6uiN2HWl3bDuDdUOnFnYXgTi1837xGHKQimHb3efgDl1fi7eXyAzzXAC8qBg55M46d3GN/h+Bvyfe5WUUDhy+2MLvH/m7Eq55JiC7LWr11hGcNvq6rZXnwS53rqMGd8Q30QWq+7AFcYBwC7j0SZ4EGz+D01XCVmziXui+f51iEDZXwuzn/lRYA9SUxt4rucyco5LKsT4077WgZdKhLVRE+sfsDanL4qJFiVWdcbtQOXDGES1CEfx382WJaJcTcd0hwz2IvQBHKLlhNmTtB8cGtoZiKx8a8n5sFrnWnMmfY0phCTsDUcMVAYe1Ts2eiFNiBg==
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788855463;
+	cv=pass; b=lC+L8Bclld6lYn1nIa0kl6JS2WFEGIFoDO0kNwesB4FxosIYZ1XHIVuP+AXEZqO2oiRhckSzeWSaiKSjU1QzD1eD6Ss+38lSbs/hOCE36jWQ5kMEULyTtnhE67mpK+TGknojDo+qIV5u7zxB0WBtrosgX8uvTg6i3uifnmx0JGVF/sEwNJEMG4k2lFB6egANmulCOwDnSz3NMTWfWG1XtIANQedFQw9BHwJtyy7gamcrAsJZ0u0s1XwtySy2G4AWmYMsFtq5wuLSIvVK6+g+FzA4aXu2ToxfsW/p0HdakY9hZ3Q8pGiIcbVlNKfuSTh2nPi2sgcYF8oct8rAoHoLhA==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788855462; c=relaxed/relaxed;
-	bh=oax3EOtwSWUBbyOhPwHTShb1CFawMGBm1IfBJYkvZL4=;
+	t=1788855463; c=relaxed/relaxed;
+	bh=tE8ZVF77Q8olof0Q3h+z5+sV11+Hg/Pz6SdsPrODRLM=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=XWq/MkhP5ZUGEEqehh1hcxpVgtxu4R4OqJxqDMGE/aDi4sO/vseKkB0/9SFvCPNLjWRr2RM66m0gktJFV8JhrjfOnlIhgSIFkfhHmhJ2uV2Q9DxdJWHpHfNL3PI2glhf5AuLA/3GXNDOZe9JFr5X4hsXaBg1uZ58IZJ472TrFba+TiJFvjb3kuKkAEX/jfwqqTyBeGRCSiHNzxITjw516h8k3NG6VdiPkzzlKQ/K4AO3sxerk3XSnGPhB097PS8SgNooTpxsCCkPND0xwUTC4GQkHXOwsOwXG8wOJkiXQIZWU1lsYbjH7TYc5dzJAMqNJquj84WRU5m26xpv18UWpw==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=pQWAUapA; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c201::3; helo=as8pr04cu009.outbound.protection.outlook.com; envelope-from=shengjiu.wang@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
+	 Content-Type:MIME-Version; b=inbtmwKAbBifj2EWkkgn6zhYrajlpIaZ3N0fPwnJA0DOopySV3pWaz4Oyyfu2tKwfeOLsm0aX666B3prUsL36EbEX+rcnS08CSTrLDmDpDB+f3agFR4njsWJQ0TwvQI1mzJLiljMNwJh9uR3TISEsyL+RHOPxgsgY0L4RBlk+jEBKu39dOD61qz8Y8S4sl87lMePGuBpKDEtJE3WhZ2EO6E7OS/ucwtsGJyH41GT2DpM3YKOyALBdm8J0j16gKA5q0enE/awIueS33e7GUedvfebHI1FmWmTf3kzTryxMQoftrlIOT3bgQszbO/mVqs1aUiSQZCrCKSD1D53ryrDow==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=ZKrwtX66; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c201::3; helo=as8pr04cu009.outbound.protection.outlook.com; envelope-from=shengjiu.wang@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
 Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=pQWAUapA;
+	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=ZKrwtX66;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:c201::3; helo=as8pr04cu009.outbound.protection.outlook.com; envelope-from=shengjiu.wang@oss.nxp.com; receiver=lists.ozlabs.org)
 Received: from AS8PR04CU009.outbound.protection.outlook.com (mail-westeuropeazlp170110003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c201::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfGyY2j3Vz2yqT
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Sep 2026 18:17:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfGyZ4yXjz2ywR
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Sep 2026 18:17:42 +1000 (AEST)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=F2zAZuYNX/kAdI05wyrlIoPHoNTQPd7xnd28d9yrIl1c1ryD95+MUOcgWu1XHctl5vE1QtPQD/WsgERfUsNyOnVjbZAppWDMIXZsvOPCL7sji7B5WyH8DXO+/Z/CAQHh8OV9ZIAd8RpwqU4Sr39PEiCOjif+YJhj+XlBvG/x6hWCwH3hGWHDyIuGpU3z86VLrw+bDA8HVi2ZQv6DoOtdfAUMStzdROAr+Dxo6PCq0ZP9T/ZwVUNph/YIammqgfiV4DRBHGz/dpPdjhkSFumC7vUp6cC0+reXJsPSl3acWcU9VFHxPQTUzdYMBR3qNw7dXQv8vKiLMIQU4REQswMX1A==
+ b=fPvqi3l7Xm8tqSNmekKwMkgPPbvxmgCdlNQihLHs6dWERTf9cSI0/nULWRKS0cW0F0nAsEz6z8W8Vpj7jE3TwzDlEj6bLwkDODeMvgteteNOVuBBPeUvsAevJw1PEbUD1bCV9P13jzcEB1tAgKGRA2UrgEZKshIjZNmjaqvO9dv8adInZ+x28osM09IPnz54Ja7uVIQscmwrbcEYx2+YLsIgWdfNsVogNncA4iCxg3mMIdU5CelI4tR17HUvpjX4Aq+DlWwxvncGrYmPxX2xUSYy1s1Jp86X/tm6Xd38Piqqqo8p/GpVaSTs5gEOZ1AkNg9CALg5gKgCBkN18sqQeg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=oax3EOtwSWUBbyOhPwHTShb1CFawMGBm1IfBJYkvZL4=;
- b=Y5od339AyE/+CYVY+kaNBvcsvg+bmxRkFo5NGbbci2GkNDmNTyGO9DAvSvxJemeVRS3ot58w5S75rWy3S9GYVAbfu6bRVQjtNOTXgxIQsnyS030eAe9PkecW2tf1pK9qEp82BSZMmVom1xr0xDuNX0rcnzUA+rR/2l4Rseh5VMLAvZwgORdbMckLXNRd1dAX1I2frpehc8C5aBMz4pUBOZhYUlKfXlkBJiRB9TjSK3g6jTlBhXbVf20Q10vDx9e2g/rz0Hkt8ZFUvTp1kc7rc14UrdVyHKdEolFozS2w72/FSvCB6QMxla0meGxTvkG3+KpHJyjq++7ZD3DsCSfIwQ==
+ bh=tE8ZVF77Q8olof0Q3h+z5+sV11+Hg/Pz6SdsPrODRLM=;
+ b=xZ5LB/lasTBpHy29j2RiSNbWjEnEIboGC1fIjBT5p9VxtaFE5rAM6JABZmK6cvqXdBl2qrlm20KxVO72YHCChsKlcNUGmKnpJt3nB/RptidSgMai/H5YvBLJ2jFhi5Mh0s3nDkQVh9NFDbdG3BigIy3VKKiidc+4y3cL8kPOt30CP8LJ+vxdhvrHwm0H95MizCxmMgCU5wa8jcvtEXAwfxGF83QmlH7KhfDPGE+U98XWUruwTXiJkPcsqHxD0QRUltGHxtEeb7MG0wP9UE2Vz5RBrbZ605Fm51/pu0ND+U0CwkTwfZEXNp/xOQIJGGKLG1hQdf3SwhR5xKYRsK5mLg==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
  dkim=pass header.d=oss.nxp.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
  s=selector1-NXP1-onmicrosoft-com;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=oax3EOtwSWUBbyOhPwHTShb1CFawMGBm1IfBJYkvZL4=;
- b=pQWAUapAvXPP31eFaKrb3FJ6dWslMWxdiWf0XKvo7jn7ts3g+Sy8JvirIIxE9v/8pMnCfSsuAO3lgI6UvQzsabBr7D6S/SLTaspz31rUzmfd31fIOgOqBRskwoE2W+U3o9Xk9abiZ0sSK2QUlGZqxQj3DjLWbcyDBu6UODogdAbpzk/b4NpGSVET87AHQV/p3+kLRHU58OpAO43Yup5a2TYyPwkEI4cWoU6va0kQoq174MuWb1AT0igiqt7F8m0a3chGIPV3scw69gwro+zb+gwlcehr1Temp8JU84HI7ISTcnMlf3NjnVkB0nj46kcOuT0m8R1Ikea3oOjwbRHZpQ==
+ bh=tE8ZVF77Q8olof0Q3h+z5+sV11+Hg/Pz6SdsPrODRLM=;
+ b=ZKrwtX66iyy6KHx9UtvlB3H5oHlPiI8n4U4SitgeyN+i9gft9CNOPYav/z5Vthj9/rJLCdkUuhe2RKyUo9aAi4bu949W36S7O14RFMW3wUuo6fWcgXsVsj8psH/9Az1159bSvVHnE+Ciopku9RyXztfJ1lsyjGUqUqGjKWl8g1Blfm5Bkjg/3Df4zk/TUfcm0fN8rGYvUF9LYJ9zxyTjIxlYNFHtY5RosYKPNh8rCbPUm/hw0Rw6YVe2XTTbeJY5Pb2vQ/D0WL/TKCHV4RW+m4w/cnFj+oGaRuxC9ctFbsu7focbgOa81/+LvsQQblTXDNccX5byc1jYVWlDwRwcjw==
 Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=oss.nxp.com;
 Received: from PAXPR04MB9351.eurprd04.prod.outlook.com (2603:10a6:102:2b6::17)
  by VI0PR04MB754002.eurprd04.prod.outlook.com (2603:10a6:800:364::9) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.382.15; Tue, 8 Sep
- 2026 08:17:16 +0000
+ 2026 08:17:24 +0000
 Received: from PAXPR04MB9351.eurprd04.prod.outlook.com
  ([fe80::1058:a430:52c1:5aa]) by PAXPR04MB9351.eurprd04.prod.outlook.com
  ([fe80::1058:a430:52c1:5aa%6]) with mapi id 15.21.0406.005; Tue, 8 Sep 2026
- 08:17:16 +0000
+ 08:17:24 +0000
 From: shengjiu.wang@oss.nxp.com
 To: lgirdwood@gmail.com,
 	broonie@kernel.org,
@@ -78,16 +78,16 @@ To: lgirdwood@gmail.com,
 	tiwai@suse.com,
 	linuxppc-dev@lists.ozlabs.org
 Cc: Shengjiu Wang <shengjiu.wang@nxp.com>
-Subject: [PATCH v5 4/5] ASoC: fsl_asrc: expose individual DAIs per conversion path
-Date: Tue,  8 Sep 2026 16:21:39 +0800
-Message-Id: <20260908082140.1316872-5-shengjiu.wang@oss.nxp.com>
+Subject: [PATCH v5 5/5] ASoC: fsl_easrc: expose individual DAIs per conversion path
+Date: Tue,  8 Sep 2026 16:21:40 +0800
+Message-Id: <20260908082140.1316872-6-shengjiu.wang@oss.nxp.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20260908082140.1316872-1-shengjiu.wang@oss.nxp.com>
 References: <20260908082140.1316872-1-shengjiu.wang@oss.nxp.com>
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
-X-ClientProxiedBy: MA5P287CA0166.INDP287.PROD.OUTLOOK.COM
- (2603:1096:a01:1ba::9) To PAXPR04MB9351.eurprd04.prod.outlook.com
+X-ClientProxiedBy: MA5P287CA0058.INDP287.PROD.OUTLOOK.COM
+ (2603:1096:a01:1d3::17) To PAXPR04MB9351.eurprd04.prod.outlook.com
  (2603:10a6:102:2b6::17)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -104,194 +104,218 @@ Precedence: list
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
 X-MS-TrafficTypeDiagnostic: PAXPR04MB9351:EE_|VI0PR04MB754002:EE_
-X-MS-Office365-Filtering-Correlation-Id: c589841d-e481-4b66-9993-08df0d8197da
+X-MS-Office365-Filtering-Correlation-Id: 900e138d-3d75-491b-d285-08df0d819c81
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
 	BCL:0;ARA:13230040|19092799006|23010399003|7416014|366016|1800799024|376014|10067099003|6133799003|18002099003|22082099003|11063799006|56012099006|921020;
 X-Microsoft-Antispam-Message-Info:
-	9m7cCR0jbYBNiENgioUobrx4MGX6CQw8L1YoyqU+Na+Xi1ARzjix4AVIEBHb/evdyWZCduiQ+8FxOVCQzrUOau81U3IeLsqr7qv2MpmAVnINFzmZIYcBEHEkZHbaA9hs4t645nXMGUPkpKbyzWTWV7ScOB4ilnjDJii66n7l5sUnlMnkTI/eJUzurZn/AP+7c8TS1jZMkT4tMFeIgGC+TzAXHhgQ4AlfMNmip4WoaATyvs2dH9Ex36Yr1e3ZHYp2DPjSQO5GoYO+XayHRevMLrb+wynhsqjZOJvVgwJvg5LXjSEYWZx3MaUeE5QcgXtTPXieSD+TRHKWbBwUchL6S3rTO0vuX7lxqVkvper8+0G6i61U+sVY3CmuurGdnSFnQalvNUBuL9V1hgVgpxmfWJ7qVP+TuORrwKqjm1v0XZDyJLXDT3VaF28XeM9RLDUeFIjFYaPHSRZ1K4WRs06+X8qvVsQTSFXpM57SPx2QCvcfGj9AuuAfGWVmZyXuGk7sr/4anul4+ue5vkw2oOICraWcmfA0wgphzUyFTFJnsfKnvSO3GkRXHRX1rsXg35pI6HiDfbc/4tcVRfJW547jN3kaKveYbgYS7s/fxidtwTQmQBdczBDoQ2QoP4uE77wbRD7VPReG3SyLkwTO1wk0pZ9pz+OCMkxJuiVtUkr/yT7FRSAWu2hs9uStKQjUE1SVPeNzyia4vhoRMOmhTgtcjg==
+	UF9org7daUlvP/iGtxRSV7IEV8h47zNVRcCamIDh4UGYEWYITDfSXR6qgHKBLEFVKf0sbKCkgMqTzBro4xY+lXgIXGAj4RMpF4RSZY6Z1CMCpJnCulozivKzebXLUlj/9qi8xilj97OvCTsA9swr7o59lzoSeQ7q+gXSeviKe0+s73mhONnRrtX0RmLomyMPN9NNUA7XRkJLF7VUoT1D9yv5BmpVVE26rFA8gg1ZxicjZEZBI71+iVDdIO1oZ/9m86NfmYgGLvM7rxo4AeuBumePBo9PkpM1OUlPOW6xlAVxlTsa9t0jqvBo25LTwl8k/6WiFekcFR9Ll7UVyBvrxfZoZBq3/2sSItQ2Y826NefTqenjCPjl9oXjani21NT9g8UhsI2Jkwj09tiLGrHD96pifEIebp3zZA9lD6ORxPd3J0tWHTewTozdt+OK2zhRzl8Vp7xA9SNqPjGas4/x4L1412Cn4BSYQUPYmbIffnhOJvV0utnwRJBYK9spdVXWh9lUrRK6PDj1GnBmjsZ7IG4kOYwMe3xRnd1fokfuz6XxyzrN/aoiVn+FIK0IoudhgbNjCwPcV9WdlTOO0QPdFqs5o7Hy68ALGEAyB+DZNGA+LOazYyxaQvRCit9eMjIfgpH6Rce9J+yrbIfAlpcC4l4vHpehUheplOCB7BoMybCe3F7ajLm8e5oKyl9zCw0loDugCiYcPn++r7+M5G2IYg==
 X-Forefront-Antispam-Report:
 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PAXPR04MB9351.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(19092799006)(23010399003)(7416014)(366016)(1800799024)(376014)(10067099003)(6133799003)(18002099003)(22082099003)(11063799006)(56012099006)(921020);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?DbjVWXzOZF1AVS+Wse+8684qEcX3Tj2ArIXRvZLR85Nh9Y+qDIyWbRBHhTjt?=
- =?us-ascii?Q?E9Vie8x89rN7pROEYbUw3IHL3kx+5f7TzhJfCkehUoKeQ3DhxNk15VHlAqEI?=
- =?us-ascii?Q?Zcellk7MawkXP3zm78dyI0sUMsfAvYGCO4fDUz8uoKjN76P7yLGEqgl7lPZc?=
- =?us-ascii?Q?crGVu8nIiRFx/I28Se7WlMsibQd3fOCL8mcFToqzmj2pIjfdaEy5Un/X75gg?=
- =?us-ascii?Q?0yIPwBo3YpSDKyfmDMIAkTBZj1Y4bAOhslSG18x9tckUBWBwprvBe14Zcm+y?=
- =?us-ascii?Q?8+gRqpn7k2AdluQU2+Fq5vM8zq0DeJxbns8kI6aOYU7N/eAZIbDraxnSBHbC?=
- =?us-ascii?Q?RKyQVg6aBuga3uclpcEMn3EEYSIrFg9jXKvcoK/79U6lcUWCdBmSJhGKUvuk?=
- =?us-ascii?Q?p/lWXsbFDjwwkQ4R+8boXJHRmQLoFOgKaQ3Wh3mKhhkuEGGkNzIKorr4a0tE?=
- =?us-ascii?Q?9lDJ1RaMitThd232sNMEHAYXpqBELW5c09EHFaRp+GUHXexR7lrFGtSiwlGN?=
- =?us-ascii?Q?1vIzxlQ0VkK/pxYtbnmEhImU4sLjHN0/islrToNoBncSxwjESSz5oKN6qSA2?=
- =?us-ascii?Q?QWe720j/vF0g+87nww2bmLKuXzy/M/MnHJk9R6LcGMCgbRM6OULHb6FoAGKv?=
- =?us-ascii?Q?OrSks0NcvlGAUN97U90Xhv9XcVmiMOnTyFC95//XHyHZUtVY0dlEyJuG4vnd?=
- =?us-ascii?Q?uhaeFP+EX2ehyIzBZcJDYcrdO5DZpgQxzElXhcQRTclvkvEx3nJJfZK2iZ7Y?=
- =?us-ascii?Q?qKwEw23sGwgT3Z+QUIUpX3HB9MEukvI4H+/Q5/edxQ+a3nkSOe/CIgJp5nD8?=
- =?us-ascii?Q?A3IQlyDUiuPniH6jCG768ERUILIQcByYuyZgPOZO1e/3wkul8OVI26MBxNCQ?=
- =?us-ascii?Q?RVegcISAJuO0rUeAPURIu/ftIq+qHEZQ84AgzRzU6ojiFBlVJEvbKLbatCpA?=
- =?us-ascii?Q?3stfFQNn8iz8kNbcna3d0M1vcfhQ9y0+hpHmNIZKxBquSAOgXbEOvbeRAGVl?=
- =?us-ascii?Q?cZPf89UvBC4qq8SIbxPStEbXqk00iCVro1xsgruYPs9C5ka+1eWmV8LZaUy1?=
- =?us-ascii?Q?ftS2B8732FEnkdC4yywLZgvA1VPgveaiJjT9gDpagOcFrTls9AuCegIpjf8Y?=
- =?us-ascii?Q?6QdoNGal4F3OXVLoAnPgjfyW3J5FN3mPKK8LPKX66pGgHotwLy/FjqEEqKFK?=
- =?us-ascii?Q?mh1dwsLgtF+EBrdmXjsWnwtzf4UYbZzutErb2Cjn24e9E5MwJeGXZI+LMSqv?=
- =?us-ascii?Q?PXAZgeelgzgcjo9LyCL+PhsvSDG8lj57lnBgViUhGTyAbbLexHpdZm/mAOet?=
- =?us-ascii?Q?to5zkTK9bAMlWW/enI7jgcjrQFODvWXon9+v8Etakt+F1U/ie0okQj4uUOpp?=
- =?us-ascii?Q?7GNekC8MjyvRqPg4JMRGWXLQ+rLE3D6vK6iprFGxRfgXIbSSU4v/j3BddP7m?=
- =?us-ascii?Q?fuW0L5eNR4X421Zr2SNf39/XVN8Skvip/veBYpKTmb+TNvRQRgSwXdHjKMA1?=
- =?us-ascii?Q?sXusA+WhsZ5SwCBvnSb1czQxi1x0BMB431c4I7DvNkX3la/dV6rj0wJCEbf2?=
- =?us-ascii?Q?wuTT/+zKigrOZxFgoXT9fpi3HOVcHP+zKVyMngNqwwH3I/Qd7iMS54zX3vfv?=
- =?us-ascii?Q?noHBBLtI2GeNpj1u9F80CD3hy5l86CyWf4t+GhzfDNqg5ebicCfO7ClNHBXM?=
- =?us-ascii?Q?fOSSWBlttNqQFeOpYF3oDyfjSkR/t9TuGs+BdH/xJwsUTDC7Piq+M9GBmBh4?=
- =?us-ascii?Q?QIP8BXYhMN3SPtMJtxBYWvShQBMrJzRkhTHA7O+Kl4XWVryU/KhJ?=
+	=?us-ascii?Q?rH16LI2avDfEeg4QUw/8LuLJsI4cI0k0g8UjQTuZpqwueMVfL2hGm96bqM1U?=
+ =?us-ascii?Q?74CKlPa7aSvHoNPhzF72zvATqQdN0sRUqmWwZweD8C3bWfftZI/kT0YvLwGZ?=
+ =?us-ascii?Q?caWNWNyGmxA8ulKH5jam52HmpnD+cjaroNzxOWdqCN6dL5M3kwOM9DAtpVva?=
+ =?us-ascii?Q?K3sYef6LpceKh3SOZA1QsrBHAtKVdiOuNDPz+EoLixzkBquk7255DNYx8OoQ?=
+ =?us-ascii?Q?AQXxYonaA3dOSVCBQ0p6L3UlqeDpOocI4TtWKTTaIEmFVNWU6gyZwCTy8y/+?=
+ =?us-ascii?Q?sVUe5nZAfUcjSr8LwZRfzxhDXKu28XRcpIvwqWJ1QyhfZ+yp6C5v1OCTbuV/?=
+ =?us-ascii?Q?EiceP3foflL+qiFA5DZjyYSXws/RwBxCFNsAV1Cil1NooFnTu+3O/td+NAt3?=
+ =?us-ascii?Q?btfmdTzKjNlW8cBDDRmLhxGfb05UperS9gEojIHxkt6FQXhBzNgfajGpknl7?=
+ =?us-ascii?Q?56C7gXssYLX/6ZLK4N/ZvOuMVW8mVcZt2fjOPXnn7YrS8/mJgMxvxUYw3V+X?=
+ =?us-ascii?Q?Sxu6PKYUoZ41B0lVqChKzrVRkzJTxMM70mycLvuPmusv2Z4QzrWfPgFnsABr?=
+ =?us-ascii?Q?0dZntKGIpL+ZmvwZ+zszsP5Sg02DLIUw1vA5slHbUiNTr+d1GRA/AnPp6TjI?=
+ =?us-ascii?Q?dhpHL922C9iH9A5fed9nRoXkExYLmLY9LMMD7b5YQBVhQRyPvoBZSjcxPV+7?=
+ =?us-ascii?Q?RlcS2zvI3jYIK7DBaNbQoKwMMY1HoPCRxjlALFw8Kmjy7l4egPl5HJGt46w7?=
+ =?us-ascii?Q?GaPBsmud495FzXmzinZFvGQxV64xw8yXBp313dj9fYG1Z1Wh9ulNDSzCkd8M?=
+ =?us-ascii?Q?DcsSszQsF4IY52JqQG5+tgIIC0C5FMzLgP2x4PM/g8syNL453CDWyXK9U4hg?=
+ =?us-ascii?Q?1Rbup1IXUxsd8hgcj+sAY17W6WDT4OmSHrcl/glR+2vHTSTv68yKAmAl/gh7?=
+ =?us-ascii?Q?T3RhChl18LD83yR/deqInpyDGWsZKRGQx9ot55JmGvhdfw5WoTEuLoZCgjs0?=
+ =?us-ascii?Q?cf0Z/RAT7Iam0Pa+0e9NBzxyRQjRpmf8XoFBgdXPlBw7sMh9+roFJdcvP8Mc?=
+ =?us-ascii?Q?N8Uk4I60CT4tA4zg7Psn2AK+bTUuGJgPOZ/oZoygNd1pU8Z1z+ASa74dOKHG?=
+ =?us-ascii?Q?rBMwo7OcKULbu6Wn19gf0cFecTen4JaAYIoMOJVlq7xmqvKsFDRxAb7lJ19o?=
+ =?us-ascii?Q?o0fEwLCDKJKJKWaIKaLsBLZNDDj8SNWklySOQKK/s3VNtEWz6Zr35B+BBG4z?=
+ =?us-ascii?Q?fbIIjn3j9ifdA+bzkoteQXVo7UynzjxEvbz1ZhHs8WAUkpUOP/ZEKtTbF7rZ?=
+ =?us-ascii?Q?XSpk7ShM27yW42qWpYWXCNzxToR9sDv45E6gn1UWg/b0cHS6fZ8dmlj6Gzud?=
+ =?us-ascii?Q?YnkDtjra0Q7iZc6zaKeMDOYjhyl+9OLaj80lQZjDMKH8Yux2SOWmo1fQi4M6?=
+ =?us-ascii?Q?UI7ZMJqdCB/bcDqXzC6U0KTfPfQqjyxRHfnPjpWma6QZ3v6bJVIDAoWrTOq9?=
+ =?us-ascii?Q?Ad/KFjw8q2uBXAYzIVjg7LwLUWvzuNtanDPnzAm0K7dmO8PSqLFhkn8+svKY?=
+ =?us-ascii?Q?n6o+gM8w5d5NQsNcQApkSHqVOQmiPM598PXNFI8suR4c3dzTnATJqhIOsV+C?=
+ =?us-ascii?Q?yRZqJ7/8+pFEIylyf5UAfEahGy/5T2abTmmKQtDo4FWyGTGojmpVGBPy5y08?=
+ =?us-ascii?Q?srKoZYladFmt1XwcaSw7bjRG7JBiUQunFkt/j74+vPrHW9BcQ+1229iYrHuQ?=
+ =?us-ascii?Q?fzOO3Ll2JYDJMiURXgScO7kXuKGa1rrVc42DFBCuS2AS4o93s8/a?=
 X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: c589841d-e481-4b66-9993-08df0d8197da
+X-MS-Exchange-CrossTenant-Network-Message-Id: 900e138d-3d75-491b-d285-08df0d819c81
 X-MS-Exchange-CrossTenant-AuthSource: PAXPR04MB9351.eurprd04.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 08 Sep 2026 08:17:16.2349
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 08 Sep 2026 08:17:24.0140
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: rBHLaPbW9IP0owFKy+hkUnrXUxRaSF1EbxjaCMdZNDbUW3grorp3frUSvvhXKkUc0ouv/RouMotW1R3tNefA4BCt7YivqiO0ogRJlotvTs2f8O4f8X8XnTeVXyIQ3t04
+X-MS-Exchange-CrossTenant-UserPrincipalName: 9gUvPL/auo2BL1UCd+0gQWJAoQuPxlnA1Tad7BNTFhGaJbGBn/H1JHvPPaOi46ln3YUUyJQTqlZOS3lUxRIlxDKAVS4LopI+i2GXnuVpafJMQJefNnXx80bqD8ia9MaR
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI0PR04MB754002
 
 From: Shengjiu Wang <shengjiu.wang@nxp.com>
 
-The i.MX ASRC hardware supports three independent conversion pairs
-(A, B, C). The driver previously registered a single DAI with generic
+The i.MX EASRC hardware supports four independent conversion contexts
+(A, B, C, D). The driver previously registered a single DAI with generic
 stream names "ASRC-Playback" and "ASRC-Capture", which prevents
 multiple independent conversion paths from being used simultaneously.
 
-Replace the single fsl_asrc_dai instance with an array of three DAI
-drivers to allow up to three independent conversion paths to be active
+Replace the single fsl_easrc_dai instance with an array of four DAI
+drivers to allow up to four independent conversion paths to be active
 at the same time:
 
-  asrc-0 -- ASRC-Playback / ASRC-Capture (backward compatible)
-  asrc-1 -- ASRC1-Playback / ASRC1-Capture
-  asrc-2 -- ASRC2-Playback / ASRC2-Capture
+  easrc-0 -- ASRC-Playback / ASRC-Capture (backward compatible)
+  easrc-1 -- ASRC1-Playback / ASRC1-Capture
+  easrc-2 -- ASRC2-Playback / ASRC2-Capture
+  easrc-3 -- ASRC3-Playback / ASRC3-Capture
 
-asrc-0 retains the original generic stream names to preserve backward
+easrc-0 retains the original generic stream names to preserve backward
 compatibility with existing machine drivers and board configurations.
 Each DAI retains the same channel, rate and format capabilities as the
-original. Update the devm_snd_soc_register_component() call to register
-all three DAIs.
+original, including IEC958 subframe support on the capture side. Update
+the devm_snd_soc_register_component() call to register all four DAIs.
 
 Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
 ---
- sound/soc/fsl/fsl_asrc.c | 89 +++++++++++++++++++++++++++++++---------
- 1 file changed, 69 insertions(+), 20 deletions(-)
+ sound/soc/fsl/fsl_easrc.c | 112 +++++++++++++++++++++++++++++++-------
+ 1 file changed, 92 insertions(+), 20 deletions(-)
 
-diff --git a/sound/soc/fsl/fsl_asrc.c b/sound/soc/fsl/fsl_asrc.c
-index d226531f1332..1c611ca89dea 100644
---- a/sound/soc/fsl/fsl_asrc.c
-+++ b/sound/soc/fsl/fsl_asrc.c
-@@ -792,27 +792,76 @@ static const struct snd_soc_dai_ops fsl_asrc_dai_ops = {
- 				 SNDRV_PCM_FMTBIT_S16_LE | \
- 				 SNDRV_PCM_FMTBIT_S24_3LE)
+diff --git a/sound/soc/fsl/fsl_easrc.c b/sound/soc/fsl/fsl_easrc.c
+index a6ac94055b17..cd22ea3e03bc 100644
+--- a/sound/soc/fsl/fsl_easrc.c
++++ b/sound/soc/fsl/fsl_easrc.c
+@@ -1589,27 +1589,99 @@ static const struct snd_soc_dai_ops fsl_easrc_dai_ops = {
+ 	.hw_free	= fsl_easrc_hw_free,
+ };
  
--static struct snd_soc_dai_driver fsl_asrc_dai = {
+-static struct snd_soc_dai_driver fsl_easrc_dai = {
 -	.playback = {
 -		.stream_name = "ASRC-Playback",
 -		.channels_min = 1,
--		.channels_max = 10,
--		.rate_min = 5512,
--		.rate_max = 192000,
+-		.channels_max = 32,
+-		.rate_min = 8000,
+-		.rate_max = 768000,
 -		.rates = SNDRV_PCM_RATE_KNOT,
--		.formats = FSL_ASRC_FORMATS |
--			   SNDRV_PCM_FMTBIT_S8,
-+static struct snd_soc_dai_driver fsl_asrc_dai[] = {
+-		.formats = FSL_EASRC_FORMATS,
++static struct snd_soc_dai_driver fsl_easrc_dai[] = {
 +	{
-+		.name = "asrc-0",
++		.name = "easrc-0",
 +		.playback = {
 +			.stream_name = "ASRC-Playback",
 +			.channels_min = 1,
-+			.channels_max = 10,
-+			.rate_min = 5512,
-+			.rate_max = 192000,
++			.channels_max = 32,
++			.rate_min = 8000,
++			.rate_max = 768000,
 +			.rates = SNDRV_PCM_RATE_KNOT,
-+			.formats = FSL_ASRC_FORMATS |
-+				   SNDRV_PCM_FMTBIT_S8,
++			.formats = FSL_EASRC_FORMATS,
 +		},
 +		.capture = {
 +			.stream_name = "ASRC-Capture",
 +			.channels_min = 1,
-+			.channels_max = 10,
-+			.rate_min = 5512,
-+			.rate_max = 192000,
++			.channels_max = 32,
++			.rate_min = 8000,
++			.rate_max = 768000,
 +			.rates = SNDRV_PCM_RATE_KNOT,
-+			.formats = FSL_ASRC_FORMATS,
++			.formats = FSL_EASRC_FORMATS |
++				   SNDRV_PCM_FMTBIT_IEC958_SUBFRAME_LE,
 +		},
-+		.ops = &fsl_asrc_dai_ops,
-+	},
-+	{
-+		.name = "asrc-1",
-+		.playback = {
-+			.stream_name = "ASRC1-Playback",
-+			.channels_min = 1,
-+			.channels_max = 10,
-+			.rate_min = 5512,
-+			.rate_max = 192000,
-+			.rates = SNDRV_PCM_RATE_KNOT,
-+			.formats = FSL_ASRC_FORMATS |
-+				   SNDRV_PCM_FMTBIT_S8,
-+		},
-+		.capture = {
-+			.stream_name = "ASRC1-Capture",
-+			.channels_min = 1,
-+			.channels_max = 10,
-+			.rate_min = 5512,
-+			.rate_max = 192000,
-+			.rates = SNDRV_PCM_RATE_KNOT,
-+			.formats = FSL_ASRC_FORMATS,
-+		},
-+		.ops = &fsl_asrc_dai_ops,
++		.ops = &fsl_easrc_dai_ops,
  	},
 -	.capture = {
 -		.stream_name = "ASRC-Capture",
 -		.channels_min = 1,
--		.channels_max = 10,
--		.rate_min = 5512,
--		.rate_max = 192000,
+-		.channels_max = 32,
+-		.rate_min = 8000,
+-		.rate_max = 768000,
 -		.rates = SNDRV_PCM_RATE_KNOT,
--		.formats = FSL_ASRC_FORMATS,
+-		.formats = FSL_EASRC_FORMATS |
+-			   SNDRV_PCM_FMTBIT_IEC958_SUBFRAME_LE,
 +	{
-+		.name = "asrc-2",
++		.name = "easrc-1",
++		.playback = {
++			.stream_name = "ASRC1-Playback",
++			.channels_min = 1,
++			.channels_max = 32,
++			.rate_min = 8000,
++			.rate_max = 768000,
++			.rates = SNDRV_PCM_RATE_KNOT,
++			.formats = FSL_EASRC_FORMATS,
++		},
++		.capture = {
++			.stream_name = "ASRC1-Capture",
++			.channels_min = 1,
++			.channels_max = 32,
++			.rate_min = 8000,
++			.rate_max = 768000,
++			.rates = SNDRV_PCM_RATE_KNOT,
++			.formats = FSL_EASRC_FORMATS |
++				   SNDRV_PCM_FMTBIT_IEC958_SUBFRAME_LE,
++		},
++		.ops = &fsl_easrc_dai_ops,
++	},
++	{
++		.name = "easrc-2",
 +		.playback = {
 +			.stream_name = "ASRC2-Playback",
 +			.channels_min = 1,
-+			.channels_max = 10,
-+			.rate_min = 5512,
-+			.rate_max = 192000,
++			.channels_max = 32,
++			.rate_min = 8000,
++			.rate_max = 768000,
 +			.rates = SNDRV_PCM_RATE_KNOT,
-+			.formats = FSL_ASRC_FORMATS |
-+				   SNDRV_PCM_FMTBIT_S8,
++			.formats = FSL_EASRC_FORMATS,
 +		},
 +		.capture = {
 +			.stream_name = "ASRC2-Capture",
 +			.channels_min = 1,
-+			.channels_max = 10,
-+			.rate_min = 5512,
-+			.rate_max = 192000,
++			.channels_max = 32,
++			.rate_min = 8000,
++			.rate_max = 768000,
 +			.rates = SNDRV_PCM_RATE_KNOT,
-+			.formats = FSL_ASRC_FORMATS,
++			.formats = FSL_EASRC_FORMATS |
++				   SNDRV_PCM_FMTBIT_IEC958_SUBFRAME_LE,
 +		},
-+		.ops = &fsl_asrc_dai_ops,
++		.ops = &fsl_easrc_dai_ops,
++	},
++	{
++		.name = "easrc-3",
++		.playback = {
++			.stream_name = "ASRC3-Playback",
++			.channels_min = 1,
++			.channels_max = 32,
++			.rate_min = 8000,
++			.rate_max = 768000,
++			.rates = SNDRV_PCM_RATE_KNOT,
++			.formats = FSL_EASRC_FORMATS,
++		},
++		.capture = {
++			.stream_name = "ASRC3-Capture",
++			.channels_min = 1,
++			.channels_max = 32,
++			.rate_min = 8000,
++			.rate_max = 768000,
++			.rates = SNDRV_PCM_RATE_KNOT,
++			.formats = FSL_EASRC_FORMATS |
++				   SNDRV_PCM_FMTBIT_IEC958_SUBFRAME_LE,
++		},
++		.ops = &fsl_easrc_dai_ops,
  	},
--	.ops = &fsl_asrc_dai_ops,
+-	.ops = &fsl_easrc_dai_ops,
  };
  
- static bool fsl_asrc_readable_reg(struct device *dev, unsigned int reg)
-@@ -1393,7 +1442,7 @@ static int fsl_asrc_probe(struct platform_device *pdev)
- 		goto err_pm_get_sync;
+ static const struct snd_soc_component_driver fsl_easrc_component = {
+@@ -2234,7 +2306,7 @@ static int fsl_easrc_probe(struct platform_device *pdev)
+ 	regcache_cache_only(easrc->regmap, true);
  
- 	ret = devm_snd_soc_register_component(&pdev->dev, &fsl_asrc_component,
--					      &fsl_asrc_dai, 1);
-+					      fsl_asrc_dai, ARRAY_SIZE(fsl_asrc_dai));
+ 	ret = devm_snd_soc_register_component(dev, &fsl_easrc_component,
+-					      &fsl_easrc_dai, 1);
++					      fsl_easrc_dai, ARRAY_SIZE(fsl_easrc_dai));
  	if (ret) {
- 		dev_err(&pdev->dev, "failed to register ASoC DAI\n");
- 		goto err_pm_get_sync;
+ 		dev_err(dev, "failed to register ASoC DAI\n");
+ 		goto err_pm_disable;
 -- 
 2.34.1
 
