@@ -1,49 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-26766-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26767-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 76BDCC79FA0
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 08:20:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5DBBBC79FA0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2026 08:24:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hfH1k69jlz2y8G;
-	Tue, 08 Sep 2026 18:20:26 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::45"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788855626;
-	cv=none; b=FKEydMQdn3/QGy9m4PAwjS6CNqphc5TYY+X2dtOK/GkXQGFHivpR4TI1STDVgudY8b9SSa7/2xuFxKeIQ0o35il/XWv2k9eTkG5rufVMENUyxOVU8ViymbAOuPdCvSsgHSS6hl4qajqkSnvMN5C5pnek+jm/XmPq/lNXO7ro4ppP0GdxIW/DtaErg1RmVKqvohk2Uc5RHHGR8GF5YnG/sBVEfgAjLc8Z0DppQhtN7EOxDWfeQvEbyls3gkSjIS00bDLGtEbiXYXKFoZVgTliH2AblH2jzy9ipQni5qc4PHtBz8ZhfKL9Nn5TQeHGruELCIFqAZ4+nEMi4E+hifvH3g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hfH6066pxz2xqp;
+	Tue, 08 Sep 2026 18:24:08 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788855848;
+	cv=none; b=ILIZ7W0eQLykhvmjR09ZsIq5TD3fyadaFFaktdCmpkHwHGcEjhfFqgiwf3Y5GmuSb4qSTsClvU+duzsIfxOROjBmD98pwfHaVs+w9WdtzjGHwwbK347kXxQSl+KNuPCCvMolxhxiF5ovmVgwJFL3eNJqcCDcVWOJUn29MbuQWfG9mblu7XoTNqquBzlsJloC1mZY0c/gIMIDO9pdOurjOXnOmERinLhyT80xS5cN93p1ebjlyMiTbW3kGzQ/864UlEmr1jc2JBj5aSAFgPXBC1x8Vv+ZPZcs2QPGbp7YZOXRwhbblkHZ21JHsHD1Ljq9K1kjyRcrU/HHcatJm05rag==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788855626; c=relaxed/relaxed;
-	bh=5rULyjEYB8jc20wwyAECU26R5DmQW+vLixPMPPn/ka8=;
+	t=1788855848; c=relaxed/relaxed;
+	bh=42oH6gJMbsL5NqcnQM3pgYq5B3K1P7Iql81JmEH9jA8=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=GaVMkgSVfyA9ZW4g1ZYpFNMMT6qUZxco5gcCr7tBklj/GEqL7k7MTABIRhPIM19Js/CSwurmIvW6DOlpHcR5DH99E2quHLDE/QUdy34XWRe/h3hMSWeGgkEKJ6wdJX5+/gHGTMllFapE8rSm7J79HWTpdX6XRPT2zOOwdskHDNmLLRaLiHLnok/lIxGuoQh94F6fkfgWcCi3OpbNhIQCuwzn0zvrZYvXxKjfJh8Td671Dw8WonjrpoXTup/vthlPhw2coTUJvawtQ1WvvstFpl4ZhNmNoWsotVTgedbGJgIf9eDdrf0L5gYrlJhEFCJA0Z7jsC1n0CVNvnzVDLadOw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=xg67lryN; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::45; helo=mta0.migadu.com; envelope-from=qi.zheng@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+	 In-Reply-To:Content-Type; b=bsFZCqPzFme6fQb2cr32EGgwsFXg1gkgS9fJMXYjkiWGT/1WvQz1D7edz5Ieiykj68N3lP6PFK97OrT6KIdCb0N7i/jbZhOZHQ8NUrcC2JYAwfYFNYtX2/b1fqsmWi+kMocLgzILl54N/kkfEKD1r+gVJM7N0S5kpAA/y5eN4YN3mLVqHZkDakWoYPlfGQBAWSJcMc8kxYJWZVVPuJthZIuE/XuzI3xbP3qOHCjrXAQfTq28ri2H914LWkIpvDte1GvwnPZAl9CSp3o03kY/p3A4N09IzKFLC5nKenk89Rabpm7tkyREmIjr15IXjHwQL3armSsc2zcqndmW6Yv2ow==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=H0SHP5Ix; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=xg67lryN;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=H0SHP5Ix;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::45; helo=mta0.migadu.com; envelope-from=qi.zheng@linux.dev; receiver=lists.ozlabs.org)
-Received: from mta0.migadu.com (out-69.mta0.migadu.com [IPv6:2001:41d0:1004:224b::45])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfH1f4kdgz2xlJ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Sep 2026 18:20:20 +1000 (AEST)
-X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-DKIM-Signature: a=rsa-sha256; bh=QMukAefZfPUgbpBQK+irv5yH2EpRpWK4MHebJsSatzY=;
- c=simple/simple; d=linux.dev;
- h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
- t=1788855601; v=1; x=1789460401;
- b=xg67lryNA+Q2GIQcWChikiwvGDVB5I/S93Sd26sq96BTE/kh8Rzxg/uGEcWxjtJJy7gQuO0Z
- 6xh21eSrq0e+k+xIAZ/gtYqzg0+08NwhNoIF5ongyhDH1TtWg4V6NuWZVFPVq4033Ah9vbQj5KF
- 1w/5fxtvwaUdKVlmf6c+WHic=
-X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-Received: by smtp.migadu.com with ESMTPS id e3be1945dc93c990;
-	Tue, 08 Sep 2026 08:20:01 +0000
-X-Mizu-Trace-ID: e3be1945dc93c990
-X-Migadu-Flow: FLOW_OUT
-Message-ID: <99aac41d-a68f-451b-ae10-f7132bb7a291@linux.dev>
-Date: Tue, 8 Sep 2026 16:19:55 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfH600LY0z2xlJ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Sep 2026 18:24:07 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6886WBtV066887;
+	Tue, 8 Sep 2026 08:23:47 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=42oH6g
+	JMbsL5NqcnQM3pgYq5B3K1P7Iql81JmEH9jA8=; b=H0SHP5IxZwI9EGw5Bg8nvb
+	VoC43gMvLlUcQLatwYobuLJqf3BWce5zz+L10192GMt75zmG1KSvAUm+DXVOx5BE
+	F0AnH9b6gb/fnVpZyhd64BzOqb6Hhno9IX/xpwWtAEc8UF328MC7wKCuaBhlAu6N
+	tM0fwklDfXUXF2FjCBYYrZU0OL9866aYG4xvwyKHIj8zILBKXE/RRTsSZjUYcKs6
+	fnMMFlqZhJvrKzxbINxma63ww43shp/BhdPJzFZprLFgVTl1r3cU+oBrxlNqHLa2
+	Nz1pWkKsDg4eP6tsjjYLEbtUIAWdr5XvC9Uz8TKuhDSkBe96113zZu4208jD8zAw
+	==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4ggbf3wk90-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 08 Sep 2026 08:23:46 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6888BKMt027142;
+	Tue, 8 Sep 2026 08:23:45 GMT
+Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4ggymgaekf-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 08 Sep 2026 08:23:45 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6888NfMd37028198
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 8 Sep 2026 08:23:41 GMT
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id B7BD120043;
+	Tue,  8 Sep 2026 08:23:41 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id F126120040;
+	Tue,  8 Sep 2026 08:23:37 +0000 (GMT)
+Received: from [9.123.3.64] (unknown [9.123.3.64])
+	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Tue,  8 Sep 2026 08:23:37 +0000 (GMT)
+Message-ID: <f8439dfb-7584-45c4-90fa-5659fa5507e2@linux.ibm.com>
+Date: Tue, 8 Sep 2026 13:53:36 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,307 +82,148 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 07/11] mm/sparse-vmemmap: move HVO helpers to a public
- header
-To: Muchun Song <songmuchun@bytedance.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- David Hildenbrand <david@kernel.org>, Oscar Salvador <osalvador@suse.de>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Jonathan Corbet <corbet@lwn.net>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-doc@vger.kernel.org,
- Muchun Song <muchun.song@linux.dev>, Lorenzo Stoakes <ljs@kernel.org>,
- Mike Rapoport <rppt@kernel.org>, Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy <chleroy@kernel.org>, Randy Dunlap <rdunlap@infradead.org>
-References: <20260908030335.96549-1-songmuchun@bytedance.com>
- <20260908030335.96549-8-songmuchun@bytedance.com>
-From: Qi Zheng <qi.zheng@linux.dev>
-In-Reply-To: <20260908030335.96549-8-songmuchun@bytedance.com>
+Subject: Re: [PATCH v13 4/8] powerpc/bpf: fix alignment of long branch
+ trampoline address
+To: bot+bpf-ci@kernel.org, skb99@linux.ibm.com, bpf@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org
+Cc: maddy@linux.ibm.com, ast@kernel.org, andrii@kernel.org,
+        daniel@iogearbox.net, shuah@kernel.org,
+        linux-kselftest@vger.kernel.org, stable@vger.kernel.org,
+        venkat88@linux.ibm.com, yeswanth@linux.ibm.com, martin.lau@kernel.org,
+        eddyz87@gmail.com, yonghong.song@linux.dev, mason@kernel.org,
+        ihor.solodrai@linux.dev
+References: <0700c866205c8fa2f861e4b8d64fdf7469cba021.1788154635.git.skb99@linux.ibm.com>
+ <71916017b03ad6e22c093094acae6a356a57f8fd0c3afda3833a20a2db10ec77@mail.kernel.org>
+Content-Language: en-US
+From: Hari Bathini <hbathini@linux.ibm.com>
+In-Reply-To: <71916017b03ad6e22c093094acae6a356a57f8fd0c3afda3833a20a2db10ec77@mail.kernel.org>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-ORIG-GUID: sqkZ9llR8M7ltf6nsMXpRlKZNBU3we3G
+X-Proofpoint-GUID: aizvzTKrY6e0ZXN_uaTz5vGGRHH4pw1d
+X-Authority-Analysis: v=2.4 cv=DbEnbPtW c=1 sm=1 tr=0 ts=6a9fc612 cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=VwQbUJbxAAAA:8
+ a=kVk8kcng22Gj4D9CYR0A:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTA4MDA4MyBTYWx0ZWRfX6F7cC5p/SKxg
+ 9sV1XQiO1A31a6H8GazoXkZqUOPTzPE4VdGHLjnTgJQDDkM0bfTa9ahbNekLfzqyIyDWVT31wy8
+ AnFXgMAQFoe9uZ7SHlErG++54BJTYkB6zEvbjYC4tKxlxqsE2wTL4nRR+PjSPgaA1H/B0lxULUK
+ YC52pEnlJxH1Mkhiy8aqmUr9YuBAngI3Fsd1A8lmVdfr4L/T8bI9ZA+uxnsv6MOC8s7tMBDJJIg
+ WUvE/sUXm1xik/t87QRrOkCgS/ezygszHPxxK6g2oUdd/P7t7W2JtnAAgDyshpC8nZXE6vsBK2P
+ 2jyQT476kLPywiOUZ8N/TcfYOoE36SDxRTxyTTB26yvX4vAd7jP0KK1+rz6Yb2if+4E1Su87AQx
+ t1SAw8bDvWchpL68tynCQsP77/iyb6OTjYtnmUebaw7/QSTA7HI0ySWJ2gH+EAunU0qSEsbNFum
+ 2vVN3ZGvhNz/v391AvQ==
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTA4MDA4MyBTYWx0ZWRfXz64NRiH6rO41
+ Z06s+tKRVmad//+Q8CdKoG1AEa7Gu/HSc0npnN1jB09dGma8zdp9qBJy3ASpeLPTCMDLotzWDIj
+ 6a1x9LJF6WuOes7mfMgx8Jki+Uaa2jg=
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-08_01,2026-09-07_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 priorityscore=1501 impostorscore=0 adultscore=0 spamscore=0
+ clxscore=1011 suspectscore=0 bulkscore=0 malwarescore=0 lowpriorityscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2609080083
 
 
 
-On 9/8/26 11:03 AM, Muchun Song wrote:
-> The vmemmap optimization helpers currently live in mm/sparse.h,
-> which is an internal MM header. That works for MM code, but
-> prevents powerpc from using the same interfaces without including a
-> private header.
+On 31/08/26 1:42 pm, bot+bpf-ci@kernel.org wrote:
+>> diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
+>> index 11981d2270a9d..8ca36a933c7ae 100644
+>> --- a/arch/powerpc/net/bpf_jit_comp.c
+>> +++ b/arch/powerpc/net/bpf_jit_comp.c
 > 
-> Move the declarations and inline helpers to
-> include/linux/vmemmap-optimization.h. This is a preparatory change for
-> powerpc, which has its own vmemmap optimization implementation and
-> needs to use the HVO interfaces from architecture code.
-
-Make sense.
-
-Acked-by: Qi Zheng <qi.zheng@linux.dev>
-
-Thanks,
-Qi
-
+> [ ... ]
 > 
-> Signed-off-by: Muchun Song <songmuchun@bytedance.com>
-> ---
-> v2:
-> - Fix missing header dependencies.
-> ---
->   MAINTAINERS                          |  1 +
->   include/linux/vmemmap-optimization.h | 91 ++++++++++++++++++++++++++++
->   mm/hugetlb.c                         |  2 +-
->   mm/hugetlb_vmemmap.c                 |  2 +-
->   mm/memory_hotplug.c                  |  1 +
->   mm/sparse.h                          | 73 +---------------------
->   6 files changed, 96 insertions(+), 74 deletions(-)
->   create mode 100644 include/linux/vmemmap-optimization.h
+>> @@ -49,11 +49,35 @@ asm (
+>>   "	.popsection				;"
+>>   );
+>>
+>> -void bpf_jit_build_fentry_stubs(u32 *image, struct codegen_context *ctx)
+>> +void bpf_jit_build_fentry_stubs(u32 *image, u32 *fimage, struct codegen_context *ctx)
+>>   {
+>>   	int ool_stub_idx, long_branch_stub_idx;
+>> +	int ool_stub_sz;
+>>
+>>   	/*
+>> +	 * Align the mis-aligned dummy_tramp_addr field in the fimage.
+>> +	 * The alignment NOP must appear before OOL stub, to make
+>> +	 * ool_stub_idx & long_branch_stub_idx constant from end.
+>> +	 *
+>> +	 * The fimage can be non 8-byte aligned, so final alignment depends
+>> +	 * on start of fimage and the stub's instruction count offset. The
+>> +	 * OOL stub size is 4 instructions (with CONFIG_PPC_FTRACE_OUT_OF_LINE)
+>> +	 * or 3 instructions (without) before dummy_tramp_addr.
+>> +	 *
+>> +	 * Emit a NOP here if address is not SZL aligned.
+>> +	 *
+>> +	 * In pass=0 when image==NULL, conservatively account for space
+>> +	 * required to accommodate alignment NOP. In case final pass skips
+>> +	 * emitting alignment NOP, the image buffer have 4 spare bytes and
+>> +	 * jited_len signifies correct program size.
+>> +	 */
+>> +
+>> +	ool_stub_sz = IS_ENABLED(CONFIG_PPC_FTRACE_OUT_OF_LINE) ? 16 : 12;
+>> +	if (!image || !IS_ALIGNED((unsigned long)fimage + ctx->idx*4 + ool_stub_sz, SZL))
+>> +		EMIT(PPC_RAW_NOP());
 > 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index c7aaa2e4790e..2985286cbbbf 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -12096,6 +12096,7 @@ F:	Documentation/mm/hugetlbfs_reserv.rst
->   F:	Documentation/mm/vmemmap_dedup.rst
->   F:	fs/hugetlbfs/
->   F:	include/linux/hugetlb.h
-> +F:	include/linux/vmemmap-optimization.h
->   F:	include/trace/events/hugetlbfs.h
->   F:	mm/hugetlb.c
->   F:	mm/hugetlb_cgroup.c
-> diff --git a/include/linux/vmemmap-optimization.h b/include/linux/vmemmap-optimization.h
-> new file mode 100644
-> index 000000000000..492dc662aae7
-> --- /dev/null
-> +++ b/include/linux/vmemmap-optimization.h
-> @@ -0,0 +1,91 @@
-> +/* SPDX-License-Identifier: GPL-2.0-or-later */
-> +/*
-> + * vmemmap-optimization.h
-> + *
-> + * Generic vmemmap optimization declarations.
-> + *
-> + * Author: Muchun Song <songmuchun@bytedance.com>
-> + */
-> +#ifndef _LINUX_VMEMMAP_OPTIMIZATION_H
-> +#define _LINUX_VMEMMAP_OPTIMIZATION_H
-> +
-> +#include <linux/align.h>
-> +#include <linux/log2.h>
-> +#include <linux/mmdebug.h>
-> +#include <linux/mmzone.h>
-> +
-> +#ifdef CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION
-> +static inline unsigned int section_order(const struct mem_section *section)
-> +{
-> +	return section->order;
-> +}
-> +
-> +static inline void section_set_order(struct mem_section *section, unsigned int order)
-> +{
-> +	VM_WARN_ON(section_order(section) && order && section_order(section) != order);
-> +	section->order = order;
-> +}
-> +
-> +static inline void section_set_order_range(unsigned long pfn, unsigned long nr_pages,
-> +					   unsigned int order)
-> +{
-> +	unsigned long section_nr = pfn_to_section_nr(pfn);
-> +
-> +	if (!IS_ALIGNED(pfn | nr_pages, PAGES_PER_SECTION))
-> +		return;
-> +
-> +	for (unsigned long i = 0; i < nr_pages / PAGES_PER_SECTION; i++)
-> +		section_set_order(__nr_to_section(section_nr + i), order);
-> +}
-> +
-> +static inline unsigned int pfn_to_section_order(unsigned long pfn)
-> +{
-> +	return section_order(__pfn_to_section(pfn));
-> +}
-> +#else
-> +static inline unsigned int section_order(const struct mem_section *section)
-> +{
-> +	return 0;
-> +}
-> +
-> +static inline void section_set_order(struct mem_section *section, unsigned int order)
-> +{
-> +}
-> +
-> +static inline void section_set_order_range(unsigned long pfn, unsigned long nr_pages,
-> +					   unsigned int order)
-> +{
-> +}
-> +
-> +static inline unsigned int pfn_to_section_order(unsigned long pfn)
-> +{
-> +	return 0;
-> +}
-> +#endif /* CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION */
-> +
-> +static inline bool vmemmap_optimizable_pfn(unsigned long pfn)
-> +{
-> +	const unsigned int order = pfn_to_section_order(pfn);
-> +	const unsigned long nr_pages = 1UL << order;
-> +
-> +	if (!is_power_of_2(sizeof(struct page)))
-> +		return false;
-> +
-> +	return (pfn & (nr_pages - 1)) >= VMEMMAP_OPTIMIZATION_NR_STRUCT_PAGES;
-> +}
-> +
-> +static inline bool vmemmap_optimizable_order(unsigned int order)
-> +{
-> +	if (!IS_ENABLED(CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION))
-> +		return false;
-> +
-> +	if (!is_power_of_2(sizeof(struct page)))
-> +		return false;
-> +
-> +	return order >= VMEMMAP_OPTIMIZATION_MIN_ORDER;
-> +}
-> +
-> +#ifdef CONFIG_SPARSEMEM_VMEMMAP
-> +struct page *vmemmap_shared_tail_page(unsigned int order, struct zone *zone);
-> +#endif /* CONFIG_SPARSEMEM_VMEMMAP */
-> +#endif /* _LINUX_VMEMMAP_OPTIMIZATION_H */
-> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-> index fda525bccf50..dff915e6c48b 100644
-> --- a/mm/hugetlb.c
-> +++ b/mm/hugetlb.c
-> @@ -38,6 +38,7 @@
->   #include <linux/mm_inline.h>
->   #include <linux/padata.h>
->   #include <linux/pgalloc.h>
-> +#include <linux/vmemmap-optimization.h>
->   
->   #include <asm/page.h>
->   #include <asm/tlb.h>
-> @@ -52,7 +53,6 @@
->   #include "hugetlb_cma.h"
->   #include "hugetlb_internal.h"
->   #include "mm_init.h"
-> -#include "sparse.h"
->   #include <linux/page-isolation.h>
->   
->   #define HUGE_BOOTMEM_ZONES_VALID	BIT(0)
-> diff --git a/mm/hugetlb_vmemmap.c b/mm/hugetlb_vmemmap.c
-> index 4a57e6c3352c..25c4e7d2664c 100644
-> --- a/mm/hugetlb_vmemmap.c
-> +++ b/mm/hugetlb_vmemmap.c
-> @@ -15,10 +15,10 @@
->   #include <linux/mmdebug.h>
->   #include <linux/pagewalk.h>
->   #include <linux/pgalloc.h>
-> +#include <linux/vmemmap-optimization.h>
->   
->   #include <asm/tlbflush.h>
->   #include "hugetlb_vmemmap.h"
-> -#include "sparse.h"
->   #include "internal.h"
->   
->   /**
-> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-> index 0db0379826df..d7a59167bec4 100644
-> --- a/mm/memory_hotplug.c
-> +++ b/mm/memory_hotplug.c
-> @@ -43,6 +43,7 @@
->   #include "mm_init.h"
->   #include "page_alloc.h"
->   #include "shuffle.h"
-> +#include "sparse.h"
->   
->   enum {
->   	MEMMAP_ON_MEMORY_DISABLE = 0,
-> diff --git a/mm/sparse.h b/mm/sparse.h
-> index 59b825df83b9..e511d99fc26b 100644
-> --- a/mm/sparse.h
-> +++ b/mm/sparse.h
-> @@ -9,77 +9,7 @@
->   #define __MM_SPARSE_H
->   
->   #include <linux/mmzone.h>
-> -
-> -#ifdef CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION
-> -static inline unsigned int section_order(const struct mem_section *section)
-> -{
-> -	return section->order;
-> -}
-> -
-> -static inline void section_set_order(struct mem_section *section, unsigned int order)
-> -{
-> -	VM_WARN_ON(section_order(section) && order && section_order(section) != order);
-> -	section->order = order;
-> -}
-> -
-> -static inline void section_set_order_range(unsigned long pfn, unsigned long nr_pages,
-> -					   unsigned int order)
-> -{
-> -	unsigned long section_nr = pfn_to_section_nr(pfn);
-> -
-> -	if (!IS_ALIGNED(pfn | nr_pages, PAGES_PER_SECTION))
-> -		return;
-> -
-> -	for (unsigned long i = 0; i < nr_pages / PAGES_PER_SECTION; i++)
-> -		section_set_order(__nr_to_section(section_nr + i), order);
-> -}
-> -
-> -static inline unsigned int pfn_to_section_order(unsigned long pfn)
-> -{
-> -	return section_order(__pfn_to_section(pfn));
-> -}
-> -#else
-> -static inline unsigned int section_order(const struct mem_section *section)
-> -{
-> -	return 0;
-> -}
-> -
-> -static inline void section_set_order(struct mem_section *section, unsigned int order)
-> -{
-> -}
-> -
-> -static inline void section_set_order_range(unsigned long pfn, unsigned long nr_pages,
-> -					   unsigned int order)
-> -{
-> -}
-> -
-> -static inline unsigned int pfn_to_section_order(unsigned long pfn)
-> -{
-> -	return 0;
-> -}
-> -#endif
-> -
-> -static inline bool vmemmap_optimizable_pfn(unsigned long pfn)
-> -{
-> -	const unsigned int order = pfn_to_section_order(pfn);
-> -	const unsigned long nr_pages = 1UL << order;
-> -
-> -	if (!is_power_of_2(sizeof(struct page)))
-> -		return false;
-> -
-> -	return (pfn & (nr_pages - 1)) >= VMEMMAP_OPTIMIZATION_NR_STRUCT_PAGES;
-> -}
-> -
-> -static inline bool vmemmap_optimizable_order(unsigned int order)
-> -{
-> -	if (!IS_ENABLED(CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION))
-> -		return false;
-> -
-> -	if (!is_power_of_2(sizeof(struct page)))
-> -		return false;
-> -
-> -	return order >= VMEMMAP_OPTIMIZATION_MIN_ORDER;
-> -}
-> +#include <linux/vmemmap-optimization.h>
->   
->   /*
->    * mm/sparse.c
-> @@ -139,7 +69,6 @@ static inline void sparse_sections_init(void) {}
->    * mm/sparse-vmemmap.c
->    */
->   #ifdef CONFIG_SPARSEMEM_VMEMMAP
-> -struct page *vmemmap_shared_tail_page(unsigned int order, struct zone *zone);
->   void sparse_init_subsection_map(void);
->   int section_nr_vmemmap_pages(unsigned long pfn, unsigned long nr_pages,
->   		struct vmem_altmap *altmap, struct dev_pagemap *pgmap);
+> Can the conditional alignment NOP here mask program length convergence?
+> 
+> The preceding commit (5175364d6174 "powerpc/bpf: fix buffer overflow in
+> JIT for large BPF programs") added a convergence check:
+> 
+>      if (pass >= CODEGEN_MIN_PASSES && proglen == prev_proglen)
+>          break;
+> 
+> to bpf_int_jit_compile(). But the alignment decision above forces the
+> stub block to end at a fixed residue mod 8: the field address (fimage +
+> ctx->idx*4 + ool_stub_sz) is aligned to SZL, and exactly SZL/4 + 7
+> instructions follow it. So fimage + proglen is congruent to a constant
+> mod 8 every pass, meaning proglen can only change in multiples of 8.
+> 
+> When the body shrinks by an odd multiple of 4 bytes between passes, the
+> NOP can absorb it and keep proglen unchanged. The body can shrink when
+> an exit goes from out-of-range (emitting a full epilogue) to in-range
+> (emitting a single branch):
+> 
+> arch/powerpc/net/bpf_jit_comp.c:bpf_jit_emit_exit_insn() {
+>      if (exit_addr && is_offset_in_branch_range(...)) {
+>          PPC_JMP(exit_addr);                    // 1 instruction
+>      } else {
+>          ...
+>          bpf_jit_build_epilogue(image, fimage, ctx);  // N instructions
+>      }
+> }
+> 
+> The shrink is (N-1)*4 bytes. When N-1 is odd, this is 4 mod 8. The NOP
+> appearance or disappearance compensates, making proglen identical across
+> passes even though addrs[] shifted.
+> 
+> Because forward branches use addrs[] from the previous pass (addrs[j]
+> for target j > current i is computed in the prior pass), those branches
+> would land (N-1)*4 bytes past the intended target.
+> 
+> The comment at arch/powerpc/net/bpf_jit.h:132-138 documents that the
+> PowerPC JIT avoids pass-to-pass size changes by padding the short branch
+> case with a NOP, specifically to prevent this scenario. Does reintroducing
+> an address-dependent, pass-varying size risk incorrect branches?
+> 
+> (Note: commit 0cd8bd7da278 later in this series reworks the stub layout
+> and is described as a layout improvement rather than a fix for this commit,
+> which may provide additional context.)
+> 
+The review correctly identifies a potential mechanism by which a 4-byte
+alignment NOP could mask a size change. However, that mechanism only
+causes a convergence failure if the total code-size reduction between
+passes is exactly compensated by the NOP (i.e. effectively only 4
+bytes). In this JIT, changing an exit from the inline epilogue to a
+branch removes the entire epilogue, so the size reduction is much
+larger than 4 bytes. The NOP can only compensate for 4 bytes; it
+cannot hide the remaining reduction. Therefore the proposed
+convergence failure does not apply to this code.
 
+- Hari
 
