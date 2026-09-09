@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-26950-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26951-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BCBF4C79FB6
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2026 14:31:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2E8C7C79FB7
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2026 14:34:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hg3Bp6nF0z2ytj;
-	Thu, 10 Sep 2026 00:30:58 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788964258;
-	cv=none; b=lidUqrFVNUxgj4AZu+3aaW7qMnEkfGi5Xm99SazG34Att2+gkQTgROzHYveI3LrsEd6UYV1yk4HDVbDpMeZCN2GHwWaYsa9jKz4AMSkqD5+iho89rtuK7BQnWUAijlYfOh8YL3odzqi41SPHHzDsppH1reESrWVccP8jXxLUMI0ex/0immKEDipLeTrvYKu45CKjVezDzl54DdmrvfbOm4GD8k4857MdGDRV3SCscRCRjzMF8JwPJG/f4PI014iDn2ht02F/5GAj2yr8aYG4PJNqGpI8Tw425e3b8bzUNpp385ld4QA7RRweNV4oNeaMHtP9Xu8mA2EeC8GzfBqoAg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hg3Gm3nCwz2ytj;
+	Thu, 10 Sep 2026 00:34:24 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788964464;
+	cv=none; b=e7+I7Itk0onhw0Nqkm2TCm2v4ya2tn3qyO+4Vj5lOgIOhuzMv4LOSN9EZcHyc6POta1+AdYi6lam2hzmNhgdsNofWMAt/0nnBtOX5bJEjQ0w54cPXCtiSA3MoFyAuERMoZoSqz0nDvm3xyF8oz0EbR94HxUSWf9YW836EPP5X+rQDLBycpff2PT173lQJo1L8AvCeOJmHPnQ6w8/VevLf3Hz6orDIcUVU5+9lnbl7W0H45AW0VGwxWqN5UcF8Tn8fRZBqfi+WyoqTA+rNP1kP5g1I7VYWBfWeX3ZFla7V+NcbXituW62CDsJ1bBdTFfxXc3PKJ7OdkclHrngwgrL1g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788964258; c=relaxed/relaxed;
-	bh=0JQwRgvIC4ueJX8o+CvfaElIpF5L8LDHR7i3PCDbnuc=;
+	t=1788964464; c=relaxed/relaxed;
+	bh=H5VFQJKLrJMWStVt2bWfspV3D3iQxjXUYVfWqgSLNeE=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=VKObLdGurmlhOZhMLbXax8TfDKAYnnIQrf2FfIJy7uc/Ge8O7qdPC1jdQnaJ14x5O5rXRkbV2C53tgpRTqGlr0yRRAoDecPOI95uEnMss1FXGoERIi26PEMW3Dptk2vwJDr3BI5gbdKF2jCNMkFxLX29Dbn7UdvnyknvBv2Mh9gM6CsdqTQqX9pjeazTD9QBKLFk5GxiQRvYLfO4rUtSl4nIeWfcSefGOOQK0/C+oSVn1glSBX6o7AYTqCXWjnxeDK1Att+RvUK5IdKtGUog9k3e+hdT8qGTGRNRJYe36e8Res21JZ9Wkt0Ol2uveRT+o0Tu25qZvv+v8ouaeE00fA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Osi6BhtZ; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=QWvSsWqVRS4cvi/1z6/xsShmYvHqRGlf+nn7lVIijoZXGy9KUhR3VW7xfQ1JsVK/5lFxqm3qR63JfmKC4DBkSztTa02tzSrvZXE4WwHbODGnBp427A+2UJwf+6n2cFdUTAe35VkzGHgBsDL+oRIFZ1Nf4/iP0AHlgdwxewnRcsM4/Cul2iYFoICWatSy5OBPI2xc1IXI0rbEIdGsk1nKs/5WOJ0bOzO4ic1vvkUM1uYkrpYGEIPuho4q8IvixsvLA66/Ex8AfXdZd1VhtCxXQUmrBP5g1G/LQpKZV+uYahhQr9ckc2sy9hbuQ107xwSiyzwo3SSZ/gefHhjZVA7jCA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hhngoQ9o; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Osi6BhtZ;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hhngoQ9o;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hg3Bn4Xz2z2yth
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2026 00:30:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hg3Gl3ZGFz2yrr
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2026 00:34:23 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 352B160213;
-	Wed,  9 Sep 2026 14:30:55 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 268D71F00A3A;
-	Wed,  9 Sep 2026 14:30:54 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 52A3240830;
+	Wed,  9 Sep 2026 14:34:21 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 761BE1F00A3D;
+	Wed,  9 Sep 2026 14:34:20 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788964254;
-	bh=0JQwRgvIC4ueJX8o+CvfaElIpF5L8LDHR7i3PCDbnuc=;
+	s=k20260515; t=1788964461;
+	bh=H5VFQJKLrJMWStVt2bWfspV3D3iQxjXUYVfWqgSLNeE=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=Osi6BhtZqhTrOaqmb+QjrCrLFxkuMlOeXeHb0U1VRQ+oAkIcszWCHMJSXpRX5nvpn
-	 jlwtt/vtIYjzDcIYf7HQcwe2iezd1LqbEuw5nERWNiom6HkMES30RWHslj2o+05O8K
-	 m0UD+51a2td4kPemMmYfJq1jrEL9Jfju2WM50RB01g/w6+XGLz9EKF/fepu5A1m9zK
-	 0NjRiScrTrcfvhGxzdcBER89qp2h5rc56pNW699gTg0DcfUlrUiqAlAYwJ/RSSWHkK
-	 77kpvUM1l1l8nvz0+b4xPwNxnjVzdfaImJsT1zMQoYAaEqGvVb/tUCm7eCpOsv1QV0
-	 KL6oHuNfdmqKw==
+	b=hhngoQ9o3QI+CumjjhkFjkC3BJzKO1m0qM7+2z6kNl/R21ulBjq5G5GaYIMW8NRFl
+	 xm+mCPmesWiRtRD1rPqC9siWbubGSeyJA3OVc/ZNDzqDFzMPC/5cJd11cS69tO6Htn
+	 f7/HsqCn8AU0+CQFlZjaWGOADsx/SRJn3hVYICw5k1oOZvELZTadSscXz//Hm34K9K
+	 WJKrQHP6YLEOfBphEONe+sgiawL+7vuzixZTrxbhh8/R8NOLbPCS5twBO3L2iXQPYL
+	 1/NcwHxUqhadda61tz6rnlOKxf1v/+OzRdsBm3TA6wIl4oTJFYbi0OUX/jk5F71XXy
+	 sWE3XTVB/YmqQ==
 From: Sasha Levin <sashal@kernel.org>
 To: stable@vger.kernel.org
 Cc: Farhan Ali <alifm@linux.ibm.com>,
@@ -52,12 +52,12 @@ Cc: Farhan Ali <alifm@linux.ibm.com>,
 	Tyrel Datwyler <tyreld@linux.ibm.com>,
 	linuxppc-dev@lists.ozlabs.org,
 	Sasha Levin <sashal@kernel.org>
-Subject: [PATCH 6.1.y 1/2] PCI: Introduce PCI_SLOT_PLACEHOLDER constant for slot_nr placeholder value
-Date: Wed,  9 Sep 2026 10:30:51 -0400
-Message-ID: <20260909143052.2492494-1-sashal@kernel.org>
+Subject: [PATCH 5.15.y 1/2] PCI: Introduce PCI_SLOT_PLACEHOLDER constant for slot_nr placeholder value
+Date: Wed,  9 Sep 2026 10:34:18 -0400
+Message-ID: <20260909143419.2510278-1-sashal@kernel.org>
 X-Mailer: git-send-email 2.53.0
-In-Reply-To: <2026090356-exchange-blinking-b06e@gregkh>
-References: <2026090356-exchange-blinking-b06e@gregkh>
+In-Reply-To: <2026090357-campsite-deed-f492@gregkh>
+References: <2026090357-campsite-deed-f492@gregkh>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -110,10 +110,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  4 files changed, 51 insertions(+), 16 deletions(-)
 
 diff --git a/drivers/pci/hotplug/pnv_php.c b/drivers/pci/hotplug/pnv_php.c
-index ec7828ad66617..2bd2b7599d1c4 100644
+index 9ff979678644c..8e5bd6e8d3515 100644
 --- a/drivers/pci/hotplug/pnv_php.c
 +++ b/drivers/pci/hotplug/pnv_php.c
-@@ -799,7 +799,7 @@ static struct pnv_php_slot *pnv_php_alloc_slot(struct device_node *dn)
+@@ -798,7 +798,7 @@ static struct pnv_php_slot *pnv_php_alloc_slot(struct device_node *dn)
  	if (dn->child && PCI_DN(dn->child))
  		php_slot->slot_no = PCI_SLOT(PCI_DN(dn->child)->devfn);
  	else
@@ -123,10 +123,10 @@ index ec7828ad66617..2bd2b7599d1c4 100644
  	kref_init(&php_slot->kref);
  	php_slot->state	                = PNV_PHP_STATE_INITIALIZED;
 diff --git a/drivers/pci/hotplug/rpaphp_slot.c b/drivers/pci/hotplug/rpaphp_slot.c
-index 779eab12e9810..ac8c512190df4 100644
+index 93b4a945c55d9..bb20c0800dff4 100644
 --- a/drivers/pci/hotplug/rpaphp_slot.c
 +++ b/drivers/pci/hotplug/rpaphp_slot.c
-@@ -85,7 +85,7 @@ int rpaphp_register_slot(struct slot *slot)
+@@ -84,7 +84,7 @@ int rpaphp_register_slot(struct slot *slot)
  	struct device_node *child;
  	u32 my_index;
  	int retval;
@@ -136,7 +136,7 @@ index 779eab12e9810..ac8c512190df4 100644
  	dbg("%s registering slot:path[%pOF] index[%x], name[%s] pdomain[%x] type[%d]\n",
  		__func__, slot->dn, slot->index, slot->name,
 diff --git a/drivers/pci/slot.c b/drivers/pci/slot.c
-index 7f4bcf359b917..82a37a4973f9a 100644
+index 0e7c412c52478..aff4c47b59a06 100644
 --- a/drivers/pci/slot.c
 +++ b/drivers/pci/slot.c
 @@ -38,11 +38,20 @@ static const struct sysfs_ops pci_slot_sysfs_ops = {
@@ -171,7 +171,7 @@ index 7f4bcf359b917..82a37a4973f9a 100644
  			dev->slot = NULL;
  	up_read(&pci_bus_sem);
  
-@@ -167,7 +177,8 @@ void pci_dev_assign_slot(struct pci_dev *dev)
+@@ -166,7 +176,8 @@ void pci_dev_assign_slot(struct pci_dev *dev)
  
  	mutex_lock(&pci_slot_mutex);
  	list_for_each_entry(slot, &dev->bus->slots, list)
@@ -181,7 +181,7 @@ index 7f4bcf359b917..82a37a4973f9a 100644
  			dev->slot = slot;
  	mutex_unlock(&pci_slot_mutex);
  }
-@@ -189,7 +200,8 @@ static struct pci_slot *get_slot(struct pci_bus *parent, int slot_nr)
+@@ -188,7 +199,8 @@ static struct pci_slot *get_slot(struct pci_bus *parent, int slot_nr)
  /**
   * pci_create_slot - create or increment refcount for physical PCI slot
   * @parent: struct pci_bus of parent bridge
@@ -191,7 +191,7 @@ index 7f4bcf359b917..82a37a4973f9a 100644
   * @name: user visible string presented in /sys/bus/pci/slots/<name>
   * @hotplug: set if caller is hotplug driver, NULL otherwise
   *
-@@ -214,15 +226,26 @@ static struct pci_slot *get_slot(struct pci_bus *parent, int slot_nr)
+@@ -213,15 +225,26 @@ static struct pci_slot *get_slot(struct pci_bus *parent, int slot_nr)
   * In most cases, @pci_bus, @slot_nr will be sufficient to uniquely identify
   * a slot. There is one notable exception - pSeries (rpaphp), where the
   * @slot_nr cannot be determined until a device is actually inserted into
@@ -225,7 +225,7 @@ index 7f4bcf359b917..82a37a4973f9a 100644
   */
  struct pci_slot *pci_create_slot(struct pci_bus *parent, int slot_nr,
  				 const char *name,
-@@ -235,7 +258,7 @@ struct pci_slot *pci_create_slot(struct pci_bus *parent, int slot_nr,
+@@ -234,7 +257,7 @@ struct pci_slot *pci_create_slot(struct pci_bus *parent, int slot_nr,
  
  	mutex_lock(&pci_slot_mutex);
  
@@ -234,7 +234,7 @@ index 7f4bcf359b917..82a37a4973f9a 100644
  		goto placeholder;
  
  	/*
-@@ -287,7 +310,8 @@ struct pci_slot *pci_create_slot(struct pci_bus *parent, int slot_nr,
+@@ -286,7 +309,8 @@ struct pci_slot *pci_create_slot(struct pci_bus *parent, int slot_nr,
  
  	down_read(&pci_bus_sem);
  	list_for_each_entry(dev, &parent->devices, bus_list)
@@ -245,7 +245,7 @@ index 7f4bcf359b917..82a37a4973f9a 100644
  	up_read(&pci_bus_sem);
  
 diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 282e86b9a35fe..8babaffbe8b11 100644
+index fb11201f3fdb5..da7cfcadf64f1 100644
 --- a/include/linux/pci.h
 +++ b/include/linux/pci.h
 @@ -71,12 +71,23 @@
