@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-26932-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26933-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8D5B0C79FB7
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2026 13:23:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 39B9DC79FAD
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2026 13:23:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hg1j14r6sz30gS;
-	Wed, 09 Sep 2026 23:23:33 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788960213;
-	cv=none; b=D1auQNG/21NG0jPteyJZQsYazjBNWCY+mnRHNAGIKu0IVMGZcIYMvggFRdnVkfSY+BURDOhFJveU0qhvrZ/QsLcb0B6clQRu9KDgVrczcJnuIwAGZE2t3HrRXZiHrxfCAljbZyZw1jTMIoUV7fFCVMzFoXhTBqK4yoXfS2sKbDRVCeDYmBQh65FE7ZnJE125bvPHyw5ERoNzSYrsU87WVypm5lvfliGf0ol/a6BRLOX8N9FKIE0EhDgL9PloUNgDxkgtU/At83R3fChPVcfQno3teVGqTyppiXwRGy3sQVwExgh0DGzgM2KzxZQEEttfNbJVYxDcRDMlnN9DZMtopg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hg1jN4msqz2yvG;
+	Wed, 09 Sep 2026 23:23:52 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788960232;
+	cv=none; b=hzWWqrCmjqpjAEuXWtE8DaiYsQMHEP/a7S4gqzewbLYcMkpO96IbUXgMm2e+GbnDXktSr3YKCWrGRFe98Br0euwN0MDE594es7mHNz3oAQM5xsHIy3zdWTvJTQDrCXww6hT7L661yN/ghTp2PD2xxtM/JnAU5MZv68v/6lTxv1DS1mfTpjwKB+L/hHT6OALlXOsv14EUMetBqba7cRkykGDFi/crU/NZ3Ms1Z+HboF7MoFSv39+N7CgHObtJ0fKX05fPD9MDxSZ2Tf0A8ucSo3T2UszfkUaq6+ltAySLwz3IDbiHwSHj0aV4P5UIPybNXAAwIVCrA1bjnjDnEApXOg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788960213; c=relaxed/relaxed;
-	bh=iBwLDdkV0sGJ+KZn9/rYZCz+Ea5WOA44xoCHpPzQZhM=;
+	t=1788960232; c=relaxed/relaxed;
+	bh=Rzqj9n9ksmFbc/J8Q4xJvrVQ5z2IsqWrXw7zLxE+N3A=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=S+wvh0ppBYZ2KlRiMHjfyHLSeLm8vilxcGPRkLTfg5vNvt6F9r7RHIaSHouI3hE6jucSMMa2KGUmX/feeoMo8PQLWNVkQICM02A2H5kfuF36XQpR1xa5XfxEtpxpm+CXqSVn6TdozfdQpWUaVVVoFNL+h+/6LH5YAGpv57/VN9bdbJ51OCbkRL9CmUmPiMwu559+lGfAiFsYKfkcrIMY1LJDBLEF5kYvxeuoOv1IMJQSbF0K+eHDDaMGfbukLW9j3QU6w4S+I3Y3WfAWsXPZwLwOyLk4mfNvelyq69W8fKpcDp4nQLtPegbr0936iM7oMgxqpyPhSYHFZyswG9SHRw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ImlwPdT2; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=i5/Sb7ajWxWqJgpfhR8qc3inSw31ZXmFqhoW0LhWy7JcIYCZiUe+njoaifNbZnc5MCemW3gGnav3dMXns9NiSLXriyVpU7ART0oDvE68C28mlnQUg7zgh8Wq58XCBhnrlPKiqpxobSRi57GXgWaykcxzxT+dJsmOXv3p+nSUAaS/MghdFdTW6fGoArEnnq7Q5AOlUl+b5D2R4ojyUmCh9bZ2W9QONZjFag5FTiM0kAhYu3QV1UwpxTRFdStw6ua/4GSGs8PYLRncm2SM9oICOU+wby0wHvyx6aQNEnnXkU3SMtQQzqFFLcPlRfctyfyL6OKigY6lJjOgYn7p90sqmQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=OmmFcvSg; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ImlwPdT2;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=OmmFcvSg;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hg1j00j7pz2yvG
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Sep 2026 23:23:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hg1jJ6v4mz2yqf
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Sep 2026 23:23:48 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id F031060219;
-	Wed,  9 Sep 2026 13:23:29 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AD6591F00A3F;
-	Wed,  9 Sep 2026 13:23:21 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id EF65E60237;
+	Wed,  9 Sep 2026 13:23:46 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A46DE1F00A3A;
+	Wed,  9 Sep 2026 13:23:38 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788960209;
-	bh=iBwLDdkV0sGJ+KZn9/rYZCz+Ea5WOA44xoCHpPzQZhM=;
+	s=k20260515; t=1788960226;
+	bh=Rzqj9n9ksmFbc/J8Q4xJvrVQ5z2IsqWrXw7zLxE+N3A=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=ImlwPdT2AktB1xteiqmpsC4ryHbeaCHKiwPAiLsezjZ3MiKfzj2ESSI4ZbqaFCYry
-	 9YK/BCGd6yfkRp4VCmnHH/sTo7H11cjC2muIsA19Q7WjuOXzp8MXYTCcjMWkcJsTtB
-	 30FNx1w7JJqBROt7CxZ9cjgXIonMpxTpCXCmWycdU+cDNJ30AQjjiaBkCsbDxlHYQ2
-	 OlxX8R+XvyxKsIXVH5ZCL6eDF720Q/8hpef4WzB/HtHwsVcAiDXE9IFqzsOQQLXvVM
-	 HBsCoHhXNEF2+mNOnvvmrsc8TboO8rPq85KWh7nJQAKtmlUkRLSoOMlPv9YJutiTVs
-	 w/JGwsh0wdQgQ==
+	b=OmmFcvSgOFU1+pKyl8+XWfB/vmc70tmASxMPKANKt5lqbG3zO6xSTC/Yx5fppIkXd
+	 2aRvzVX5uFoGccjw/RMJ5USJsvUaBasCAReZ3nY15y35A5qZz//VyG3zDi7JONsknq
+	 F/W5FBSuv5t1grV/l2pL0R9AMbX6IOb7e7yNHYcEWFSBbMstgNbmbw9qJ71Jp6Jzz2
+	 7Z8RYFE4Zj9GXVQJFT2lH7xo+xdSOTfZwc0Yskps7h7fMOnCBFEBaN+a5V5xnbXkg3
+	 phzKE9UiaX9y+tmHE6nye3CXCo4eyx9H4XzQyz1kYyqOt6R4M7iSqxIbTBttKBxbTk
+	 Xp0xEg8PVwQbQ==
 From: Arnd Bergmann <arnd@kernel.org>
 To: Lee Jones <lee@kernel.org>,
 	mfd@lists.linux.dev
@@ -86,9 +86,9 @@ Cc: linux-kernel@vger.kernel.org,
 	linux-sound@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
 	llvm@lists.linux.dev
-Subject: [PATCH 08/14] mfd: remove unused aat2870 driver
-Date: Wed,  9 Sep 2026 15:21:45 +0200
-Message-ID: <20260909132153.1596191-9-arnd@kernel.org>
+Subject: [PATCH 10/14] mfd: remove unused rc5t583 driver
+Date: Wed,  9 Sep 2026 15:21:47 +0200
+Message-ID: <20260909132153.1596191-11-arnd@kernel.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260909132153.1596191-1-arnd@kernel.org>
 References: <20260909132153.1596191-1-arnd@kernel.org>
@@ -109,1175 +109,1697 @@ Content-Transfer-Encoding: 8bit
 
 From: Arnd Bergmann <arnd@arndb.de>
 
-This driver was apparently never used, as it has has no devicetree
-support and never had corresponding platform_data definitions.
+Ricoh RC5T583 support was added in 2012, but no upstream code ever
+defined the corresponding platform_data, and there is no devicetree
+support, so this is all dead code.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- drivers/mfd/Kconfig                   |  12 -
+ drivers/mfd/Kconfig                   |  14 -
  drivers/mfd/Makefile                  |   1 -
- drivers/mfd/aat2870-core.c            | 458 --------------------------
- drivers/regulator/Kconfig             |   7 -
+ drivers/mfd/rc5t583-irq.c             | 383 --------------------------
+ drivers/mfd/rc5t583.c                 | 299 --------------------
+ drivers/regulator/Kconfig             |  10 -
  drivers/regulator/Makefile            |   1 -
- drivers/regulator/aat2870-regulator.c | 201 -----------
- drivers/video/backlight/Kconfig       |   7 -
- drivers/video/backlight/Makefile      |   1 -
- drivers/video/backlight/aat2870_bl.c  | 206 ------------
- include/linux/mfd/aat2870.h           | 164 ---------
- 10 files changed, 1058 deletions(-)
- delete mode 100644 drivers/mfd/aat2870-core.c
- delete mode 100644 drivers/regulator/aat2870-regulator.c
- delete mode 100644 drivers/video/backlight/aat2870_bl.c
- delete mode 100644 include/linux/mfd/aat2870.h
+ drivers/regulator/rc5t583-regulator.c | 171 ------------
+ drivers/rtc/Kconfig                   |  10 -
+ drivers/rtc/Makefile                  |   1 -
+ drivers/rtc/rtc-rc5t583.c             | 312 ---------------------
+ include/linux/mfd/rc5t583.h           | 369 -------------------------
+ 11 files changed, 1571 deletions(-)
+ delete mode 100644 drivers/mfd/rc5t583-irq.c
+ delete mode 100644 drivers/mfd/rc5t583.c
+ delete mode 100644 drivers/regulator/rc5t583-regulator.c
+ delete mode 100644 drivers/rtc/rtc-rc5t583.c
+ delete mode 100644 include/linux/mfd/rc5t583.h
 
 diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-index 09e400e1f4b0..b0c7df448445 100644
+index 2cb2efafa8a4..fbcc45d2b0c4 100644
 --- a/drivers/mfd/Kconfig
 +++ b/drivers/mfd/Kconfig
-@@ -115,18 +115,6 @@ config MFD_AS3722
- 	  controllers, 11 LDOs, RTC, automatic battery, temperature and
- 	  over current monitoring, GPIOs, ADC and a watchdog.
+@@ -1291,20 +1291,6 @@ config MFD_RT5120
+ 	  is targeted at providing the CPU voltage, memory, I/O and peripheral
+ 	  power rails in home entertainment devices.
  
--config MFD_AAT2870_CORE
--	bool "AnalogicTech AAT2870"
--	select MFD_CORE
+-config MFD_RC5T583
+-	bool "Ricoh RC5T583 Power Management system device"
 -	depends on I2C=y
--	depends on GPIOLIB || COMPILE_TEST
--	depends on GPIOLIB_LEGACY
+-	select MFD_CORE
+-	select REGMAP_I2C
 -	help
--	  If you say yes here you get support for the AAT2870.
--	  This driver provides common support for accessing the device,
--	  additional drivers must be enabled in order to use the
--	  functionality of the device.
+-	  Select this option to get support for the RICOH583 Power
+-	  Management system device.
+-	  This driver provides common support for accessing the device
+-	  through i2c interface. The device supports multiple sub-devices
+-	  like GPIO, interrupts, RTC, LDO and DCDC regulators, onkey.
+-	  Additional drivers must be enabled in order to use the
+-	  different functionality of the device.
 -
- config MFD_AT91_USART
- 	tristate "AT91 USART Driver"
+ config MFD_RK8XX
+ 	tristate
  	select MFD_CORE
 diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
-index e3fe998c3513..cf3c70364538 100644
+index 8bd4c3e218bb..7aaad5855681 100644
 --- a/drivers/mfd/Makefile
 +++ b/drivers/mfd/Makefile
-@@ -206,7 +206,6 @@ obj-$(CONFIG_MFD_QCOM_RPM)	+= qcom_rpm.o
- obj-$(CONFIG_MFD_SPMI_PMIC)	+= qcom-spmi-pmic.o
- obj-$(CONFIG_TPS65911_COMPARATOR)	+= tps65911-comparator.o
- obj-$(CONFIG_MFD_TPS65090)	+= tps65090.o
--obj-$(CONFIG_MFD_AAT2870_CORE)	+= aat2870-core.o
- obj-$(CONFIG_MFD_AT91_USART)	+= at91-usart.o
- obj-$(CONFIG_MFD_ATMEL_FLEXCOM)	+= atmel-flexcom.o
- obj-$(CONFIG_MFD_ATMEL_HLCDC)	+= atmel-hlcdc.o
-diff --git a/drivers/mfd/aat2870-core.c b/drivers/mfd/aat2870-core.c
+@@ -217,7 +217,6 @@ obj-$(CONFIG_MFD_INTEL_PMC_BXT)	+= intel_pmc_bxt.o
+ obj-$(CONFIG_MFD_PALMAS)	+= palmas.o
+ obj-$(CONFIG_MFD_VIPERBOARD)    += viperboard.o
+ obj-$(CONFIG_MFD_NTXEC)		+= ntxec.o
+-obj-$(CONFIG_MFD_RC5T583)	+= rc5t583.o rc5t583-irq.o
+ obj-$(CONFIG_MFD_RK8XX)		+= rk8xx-core.o
+ obj-$(CONFIG_MFD_RK8XX_I2C)	+= rk8xx-i2c.o
+ obj-$(CONFIG_MFD_RK8XX_SPI)	+= rk8xx-spi.o
+diff --git a/drivers/mfd/rc5t583-irq.c b/drivers/mfd/rc5t583-irq.c
 deleted file mode 100644
-index 0d56cd6fbc6a..000000000000
---- a/drivers/mfd/aat2870-core.c
+index 97f52b671520..000000000000
+--- a/drivers/mfd/rc5t583-irq.c
 +++ /dev/null
-@@ -1,458 +0,0 @@
+@@ -1,383 +0,0 @@
 -// SPDX-License-Identifier: GPL-2.0-only
 -/*
-- * linux/drivers/mfd/aat2870-core.c
+- * Interrupt driver for RICOH583 power management chip.
 - *
-- * Copyright (c) 2011, NVIDIA Corporation.
-- * Author: Jin Park <jinyoungp@nvidia.com>
+- * Copyright (c) 2011-2012, NVIDIA CORPORATION.  All rights reserved.
+- * Author: Laxman dewangan <ldewangan@nvidia.com>
+- *
+- * based on code
+- *      Copyright (C) 2011 RICOH COMPANY,LTD
 - */
+-#include <linux/device.h>
+-#include <linux/interrupt.h>
+-#include <linux/irq.h>
+-#include <linux/mfd/rc5t583.h>
 -
--#include <linux/kernel.h>
--#include <linux/init.h>
--#include <linux/debugfs.h>
--#include <linux/slab.h>
--#include <linux/uaccess.h>
--#include <linux/i2c.h>
--#include <linux/delay.h>
--#include <linux/gpio/legacy.h>
--#include <linux/mfd/core.h>
--#include <linux/mfd/aat2870.h>
--#include <linux/regulator/machine.h>
--
--static struct aat2870_register aat2870_regs[AAT2870_REG_NUM] = {
--	/* readable, writeable, value */
--	{ 0, 1, 0x00 },	/* 0x00 AAT2870_BL_CH_EN */
--	{ 0, 1, 0x16 },	/* 0x01 AAT2870_BLM */
--	{ 0, 1, 0x16 },	/* 0x02 AAT2870_BLS */
--	{ 0, 1, 0x56 },	/* 0x03 AAT2870_BL1 */
--	{ 0, 1, 0x56 },	/* 0x04 AAT2870_BL2 */
--	{ 0, 1, 0x56 },	/* 0x05 AAT2870_BL3 */
--	{ 0, 1, 0x56 },	/* 0x06 AAT2870_BL4 */
--	{ 0, 1, 0x56 },	/* 0x07 AAT2870_BL5 */
--	{ 0, 1, 0x56 },	/* 0x08 AAT2870_BL6 */
--	{ 0, 1, 0x56 },	/* 0x09 AAT2870_BL7 */
--	{ 0, 1, 0x56 },	/* 0x0A AAT2870_BL8 */
--	{ 0, 1, 0x00 },	/* 0x0B AAT2870_FLR */
--	{ 0, 1, 0x03 },	/* 0x0C AAT2870_FM */
--	{ 0, 1, 0x03 },	/* 0x0D AAT2870_FS */
--	{ 0, 1, 0x10 },	/* 0x0E AAT2870_ALS_CFG0 */
--	{ 0, 1, 0x06 },	/* 0x0F AAT2870_ALS_CFG1 */
--	{ 0, 1, 0x00 },	/* 0x10 AAT2870_ALS_CFG2 */
--	{ 1, 0, 0x00 },	/* 0x11 AAT2870_AMB */
--	{ 0, 1, 0x00 },	/* 0x12 AAT2870_ALS0 */
--	{ 0, 1, 0x00 },	/* 0x13 AAT2870_ALS1 */
--	{ 0, 1, 0x00 },	/* 0x14 AAT2870_ALS2 */
--	{ 0, 1, 0x00 },	/* 0x15 AAT2870_ALS3 */
--	{ 0, 1, 0x00 },	/* 0x16 AAT2870_ALS4 */
--	{ 0, 1, 0x00 },	/* 0x17 AAT2870_ALS5 */
--	{ 0, 1, 0x00 },	/* 0x18 AAT2870_ALS6 */
--	{ 0, 1, 0x00 },	/* 0x19 AAT2870_ALS7 */
--	{ 0, 1, 0x00 },	/* 0x1A AAT2870_ALS8 */
--	{ 0, 1, 0x00 },	/* 0x1B AAT2870_ALS9 */
--	{ 0, 1, 0x00 },	/* 0x1C AAT2870_ALSA */
--	{ 0, 1, 0x00 },	/* 0x1D AAT2870_ALSB */
--	{ 0, 1, 0x00 },	/* 0x1E AAT2870_ALSC */
--	{ 0, 1, 0x00 },	/* 0x1F AAT2870_ALSD */
--	{ 0, 1, 0x00 },	/* 0x20 AAT2870_ALSE */
--	{ 0, 1, 0x00 },	/* 0x21 AAT2870_ALSF */
--	{ 0, 1, 0x00 },	/* 0x22 AAT2870_SUB_SET */
--	{ 0, 1, 0x00 },	/* 0x23 AAT2870_SUB_CTRL */
--	{ 0, 1, 0x00 },	/* 0x24 AAT2870_LDO_AB */
--	{ 0, 1, 0x00 },	/* 0x25 AAT2870_LDO_CD */
--	{ 0, 1, 0x00 },	/* 0x26 AAT2870_LDO_EN */
+-enum int_type {
+-	SYS_INT  = 0x1,
+-	DCDC_INT = 0x2,
+-	RTC_INT  = 0x4,
+-	ADC_INT  = 0x8,
+-	GPIO_INT = 0x10,
 -};
 -
--static struct mfd_cell aat2870_devs[] = {
--	{
--		.name = "aat2870-backlight",
--		.id = AAT2870_ID_BL,
--		.pdata_size = sizeof(struct aat2870_bl_platform_data),
--	},
--	{
--		.name = "aat2870-regulator",
--		.id = AAT2870_ID_LDOA,
--		.pdata_size = sizeof(struct regulator_init_data),
--	},
--	{
--		.name = "aat2870-regulator",
--		.id = AAT2870_ID_LDOB,
--		.pdata_size = sizeof(struct regulator_init_data),
--	},
--	{
--		.name = "aat2870-regulator",
--		.id = AAT2870_ID_LDOC,
--		.pdata_size = sizeof(struct regulator_init_data),
--	},
--	{
--		.name = "aat2870-regulator",
--		.id = AAT2870_ID_LDOD,
--		.pdata_size = sizeof(struct regulator_init_data),
--	},
+-static int gpedge_add[] = {
+-	RC5T583_GPIO_GPEDGE2,
+-	RC5T583_GPIO_GPEDGE2
 -};
 -
--static int __aat2870_read(struct aat2870_data *aat2870, u8 addr, u8 *val)
--{
--	int ret;
--
--	if (addr >= AAT2870_REG_NUM) {
--		dev_err(aat2870->dev, "Invalid address, 0x%02x\n", addr);
--		return -EINVAL;
--	}
--
--	if (!aat2870->reg_cache[addr].readable) {
--		*val = aat2870->reg_cache[addr].value;
--		goto out;
--	}
--
--	ret = i2c_master_send(aat2870->client, &addr, 1);
--	if (ret < 0)
--		return ret;
--	if (ret != 1)
--		return -EIO;
--
--	ret = i2c_master_recv(aat2870->client, val, 1);
--	if (ret < 0)
--		return ret;
--	if (ret != 1)
--		return -EIO;
--
--out:
--	dev_dbg(aat2870->dev, "read: addr=0x%02x, val=0x%02x\n", addr, *val);
--	return 0;
--}
--
--static int __aat2870_write(struct aat2870_data *aat2870, u8 addr, u8 val)
--{
--	u8 msg[2];
--	int ret;
--
--	if (addr >= AAT2870_REG_NUM) {
--		dev_err(aat2870->dev, "Invalid address, 0x%02x\n", addr);
--		return -EINVAL;
--	}
--
--	if (!aat2870->reg_cache[addr].writeable) {
--		dev_err(aat2870->dev, "Address 0x%02x is not writeable\n",
--			addr);
--		return -EINVAL;
--	}
--
--	msg[0] = addr;
--	msg[1] = val;
--	ret = i2c_master_send(aat2870->client, msg, 2);
--	if (ret < 0)
--		return ret;
--	if (ret != 2)
--		return -EIO;
--
--	aat2870->reg_cache[addr].value = val;
--
--	dev_dbg(aat2870->dev, "write: addr=0x%02x, val=0x%02x\n", addr, val);
--	return 0;
--}
--
--static int aat2870_read(struct aat2870_data *aat2870, u8 addr, u8 *val)
--{
--	int ret;
--
--	mutex_lock(&aat2870->io_lock);
--	ret = __aat2870_read(aat2870, addr, val);
--	mutex_unlock(&aat2870->io_lock);
--
--	return ret;
--}
--
--static int aat2870_write(struct aat2870_data *aat2870, u8 addr, u8 val)
--{
--	int ret;
--
--	mutex_lock(&aat2870->io_lock);
--	ret = __aat2870_write(aat2870, addr, val);
--	mutex_unlock(&aat2870->io_lock);
--
--	return ret;
--}
--
--static int aat2870_update(struct aat2870_data *aat2870, u8 addr, u8 mask,
--			  u8 val)
--{
--	int change;
--	u8 old_val, new_val;
--	int ret;
--
--	mutex_lock(&aat2870->io_lock);
--
--	ret = __aat2870_read(aat2870, addr, &old_val);
--	if (ret)
--		goto out_unlock;
--
--	new_val = (old_val & ~mask) | (val & mask);
--	change = old_val != new_val;
--	if (change)
--		ret = __aat2870_write(aat2870, addr, new_val);
--
--out_unlock:
--	mutex_unlock(&aat2870->io_lock);
--
--	return ret;
--}
--
--static inline void aat2870_enable(struct aat2870_data *aat2870)
--{
--	if (aat2870->en_pin >= 0)
--		gpio_set_value(aat2870->en_pin, 1);
--
--	aat2870->is_enable = 1;
--}
--
--static inline void aat2870_disable(struct aat2870_data *aat2870)
--{
--	if (aat2870->en_pin >= 0)
--		gpio_set_value(aat2870->en_pin, 0);
--
--	aat2870->is_enable = 0;
--}
--
--#ifdef CONFIG_DEBUG_FS
--static ssize_t aat2870_dump_reg(struct aat2870_data *aat2870, char *buf)
--{
--	u8 addr, val;
--	ssize_t count = 0;
--	int ret;
--
--	count += sprintf(buf, "aat2870 registers\n");
--	for (addr = 0; addr < AAT2870_REG_NUM; addr++) {
--		count += snprintf(buf + count, PAGE_SIZE - count, "0x%02x: ", addr);
--		if (count >= PAGE_SIZE - 1)
--			break;
--
--		ret = aat2870->read(aat2870, addr, &val);
--		if (ret == 0)
--			count += snprintf(buf + count, PAGE_SIZE - count,
--					  "0x%02x", val);
--		else
--			count += snprintf(buf + count, PAGE_SIZE - count,
--					  "<read fail: %d>", ret);
--
--		if (count >= PAGE_SIZE - 1)
--			break;
--
--		count += snprintf(buf + count, PAGE_SIZE - count, "\n");
--		if (count >= PAGE_SIZE - 1)
--			break;
--	}
--
--	/* Truncate count; min() would cause a warning */
--	if (count >= PAGE_SIZE)
--		count = PAGE_SIZE - 1;
--
--	return count;
--}
--
--static ssize_t aat2870_reg_read_file(struct file *file, char __user *user_buf,
--				     size_t count, loff_t *ppos)
--{
--	struct aat2870_data *aat2870 = file->private_data;
--	char *buf;
--	ssize_t ret;
--
--	buf = kmalloc(PAGE_SIZE, GFP_KERNEL);
--	if (!buf)
--		return -ENOMEM;
--
--	ret = aat2870_dump_reg(aat2870, buf);
--	if (ret >= 0)
--		ret = simple_read_from_buffer(user_buf, count, ppos, buf, ret);
--
--	kfree(buf);
--
--	return ret;
--}
--
--static ssize_t aat2870_reg_write_file(struct file *file,
--				      const char __user *user_buf, size_t count,
--				      loff_t *ppos)
--{
--	struct aat2870_data *aat2870 = file->private_data;
--	char buf[32];
--	ssize_t buf_size;
--	char *start = buf;
--	unsigned long addr, val;
--	int ret;
--
--	buf_size = min(count, (size_t)(sizeof(buf)-1));
--	if (copy_from_user(buf, user_buf, buf_size)) {
--		dev_err(aat2870->dev, "Failed to copy from user\n");
--		return -EFAULT;
--	}
--	buf[buf_size] = 0;
--
--	while (*start == ' ')
--		start++;
--
--	ret = kstrtoul(start, 16, &addr);
--	if (ret)
--		return ret;
--
--	if (addr >= AAT2870_REG_NUM) {
--		dev_err(aat2870->dev, "Invalid address, 0x%lx\n", addr);
--		return -EINVAL;
--	}
--
--	while (*start == ' ')
--		start++;
--
--	ret = kstrtoul(start, 16, &val);
--	if (ret)
--		return ret;
--
--	ret = aat2870->write(aat2870, (u8)addr, (u8)val);
--	if (ret)
--		return ret;
--
--	return buf_size;
--}
--
--static const struct file_operations aat2870_reg_fops = {
--	.open = simple_open,
--	.read = aat2870_reg_read_file,
--	.write = aat2870_reg_write_file,
+-static int irq_en_add[] = {
+-	RC5T583_INT_EN_SYS1,
+-	RC5T583_INT_EN_SYS2,
+-	RC5T583_INT_EN_DCDC,
+-	RC5T583_INT_EN_RTC,
+-	RC5T583_INT_EN_ADC1,
+-	RC5T583_INT_EN_ADC2,
+-	RC5T583_INT_EN_ADC3,
+-	RC5T583_GPIO_EN_INT
 -};
 -
--static void aat2870_init_debugfs(struct aat2870_data *aat2870)
--{
--	debugfs_create_file("regs", 0644, aat2870->client->debugfs, aat2870,
--			    &aat2870_reg_fops);
--}
+-static int irq_mon_add[] = {
+-	RC5T583_INT_MON_SYS1,
+-	RC5T583_INT_MON_SYS2,
+-	RC5T583_INT_MON_DCDC,
+-	RC5T583_INT_MON_RTC,
+-	RC5T583_INT_IR_ADCL,
+-	RC5T583_INT_IR_ADCH,
+-	RC5T583_INT_IR_ADCEND,
+-	RC5T583_INT_IR_GPIOF,
+-	RC5T583_INT_IR_GPIOR
+-};
 -
--#else
--static inline void aat2870_init_debugfs(struct aat2870_data *aat2870)
--{
--}
--#endif /* CONFIG_DEBUG_FS */
+-static int irq_clr_add[] = {
+-	RC5T583_INT_IR_SYS1,
+-	RC5T583_INT_IR_SYS2,
+-	RC5T583_INT_IR_DCDC,
+-	RC5T583_INT_IR_RTC,
+-	RC5T583_INT_IR_ADCL,
+-	RC5T583_INT_IR_ADCH,
+-	RC5T583_INT_IR_ADCEND,
+-	RC5T583_INT_IR_GPIOF,
+-	RC5T583_INT_IR_GPIOR
+-};
 -
--static int aat2870_i2c_probe(struct i2c_client *client)
--{
--	struct aat2870_platform_data *pdata = dev_get_platdata(&client->dev);
--	struct aat2870_data *aat2870;
--	int i, j;
--	int ret = 0;
+-static int main_int_type[] = {
+-	SYS_INT,
+-	SYS_INT,
+-	DCDC_INT,
+-	RTC_INT,
+-	ADC_INT,
+-	ADC_INT,
+-	ADC_INT,
+-	GPIO_INT,
+-	GPIO_INT,
+-};
 -
--	aat2870 = devm_kzalloc(&client->dev, sizeof(struct aat2870_data),
--				GFP_KERNEL);
--	if (!aat2870)
--		return -ENOMEM;
+-struct rc5t583_irq_data {
+-	u8	int_type;
+-	u8	master_bit;
+-	u8	int_en_bit;
+-	u8	mask_reg_index;
+-	int	grp_index;
+-};
 -
--	aat2870->dev = &client->dev;
--	aat2870->client = client;
--	i2c_set_clientdata(client, aat2870);
--
--	aat2870->reg_cache = aat2870_regs;
--
--	if (pdata->en_pin < 0)
--		aat2870->en_pin = -1;
--	else
--		aat2870->en_pin = pdata->en_pin;
--
--	aat2870->init = pdata->init;
--	aat2870->uninit = pdata->uninit;
--	aat2870->read = aat2870_read;
--	aat2870->write = aat2870_write;
--	aat2870->update = aat2870_update;
--
--	mutex_init(&aat2870->io_lock);
--
--	if (aat2870->init)
--		aat2870->init(aat2870);
--
--	if (aat2870->en_pin >= 0) {
--		ret = devm_gpio_request_one(&client->dev, aat2870->en_pin,
--					GPIOF_OUT_INIT_HIGH, "aat2870-en");
--		if (ret < 0) {
--			dev_err(&client->dev,
--				"Failed to request GPIO %d\n", aat2870->en_pin);
--			return ret;
--		}
+-#define RC5T583_IRQ(_int_type, _master_bit, _grp_index, \
+-			_int_bit, _mask_ind)		\
+-	{						\
+-		.int_type	= _int_type,		\
+-		.master_bit	= _master_bit,		\
+-		.grp_index	= _grp_index,		\
+-		.int_en_bit	= _int_bit,		\
+-		.mask_reg_index	= _mask_ind,		\
 -	}
 -
--	aat2870_enable(aat2870);
+-static const struct rc5t583_irq_data rc5t583_irqs[RC5T583_MAX_IRQS] = {
+-	[RC5T583_IRQ_ONKEY]		= RC5T583_IRQ(SYS_INT,  0, 0, 0, 0),
+-	[RC5T583_IRQ_ACOK]		= RC5T583_IRQ(SYS_INT,  0, 1, 1, 0),
+-	[RC5T583_IRQ_LIDOPEN]		= RC5T583_IRQ(SYS_INT,  0, 2, 2, 0),
+-	[RC5T583_IRQ_PREOT]		= RC5T583_IRQ(SYS_INT,  0, 3, 3, 0),
+-	[RC5T583_IRQ_CLKSTP]		= RC5T583_IRQ(SYS_INT,  0, 4, 4, 0),
+-	[RC5T583_IRQ_ONKEY_OFF]		= RC5T583_IRQ(SYS_INT,  0, 5, 5, 0),
+-	[RC5T583_IRQ_WD]		= RC5T583_IRQ(SYS_INT,  0, 7, 7, 0),
+-	[RC5T583_IRQ_EN_PWRREQ1]	= RC5T583_IRQ(SYS_INT,  0, 8, 0, 1),
+-	[RC5T583_IRQ_EN_PWRREQ2]	= RC5T583_IRQ(SYS_INT,  0, 9, 1, 1),
+-	[RC5T583_IRQ_PRE_VINDET]	= RC5T583_IRQ(SYS_INT,  0, 10, 2, 1),
 -
--	for (i = 0; i < pdata->num_subdevs; i++) {
--		for (j = 0; j < ARRAY_SIZE(aat2870_devs); j++) {
--			if ((pdata->subdevs[i].id == aat2870_devs[j].id) &&
--					!strcmp(pdata->subdevs[i].name,
--						aat2870_devs[j].name)) {
--				aat2870_devs[j].platform_data =
--					pdata->subdevs[i].platform_data;
--				break;
--			}
--		}
--	}
+-	[RC5T583_IRQ_DC0LIM]		= RC5T583_IRQ(DCDC_INT, 1, 0, 0, 2),
+-	[RC5T583_IRQ_DC1LIM]		= RC5T583_IRQ(DCDC_INT, 1, 1, 1, 2),
+-	[RC5T583_IRQ_DC2LIM]		= RC5T583_IRQ(DCDC_INT, 1, 2, 2, 2),
+-	[RC5T583_IRQ_DC3LIM]		= RC5T583_IRQ(DCDC_INT, 1, 3, 3, 2),
 -
--	ret = mfd_add_devices(aat2870->dev, 0, aat2870_devs,
--			      ARRAY_SIZE(aat2870_devs), NULL, 0, NULL);
--	if (ret != 0) {
--		dev_err(aat2870->dev, "Failed to add subdev: %d\n", ret);
--		goto out_disable;
--	}
+-	[RC5T583_IRQ_CTC]		= RC5T583_IRQ(RTC_INT,  2, 0, 0, 3),
+-	[RC5T583_IRQ_YALE]		= RC5T583_IRQ(RTC_INT,  2, 5, 5, 3),
+-	[RC5T583_IRQ_DALE]		= RC5T583_IRQ(RTC_INT,  2, 6, 6, 3),
+-	[RC5T583_IRQ_WALE]		= RC5T583_IRQ(RTC_INT,  2, 7, 7, 3),
 -
--	aat2870_init_debugfs(aat2870);
+-	[RC5T583_IRQ_AIN1L]		= RC5T583_IRQ(ADC_INT,  3, 0, 0, 4),
+-	[RC5T583_IRQ_AIN2L]		= RC5T583_IRQ(ADC_INT,  3, 1, 1, 4),
+-	[RC5T583_IRQ_AIN3L]		= RC5T583_IRQ(ADC_INT,  3, 2, 2, 4),
+-	[RC5T583_IRQ_VBATL]		= RC5T583_IRQ(ADC_INT,  3, 3, 3, 4),
+-	[RC5T583_IRQ_VIN3L]		= RC5T583_IRQ(ADC_INT,  3, 4, 4, 4),
+-	[RC5T583_IRQ_VIN8L]		= RC5T583_IRQ(ADC_INT,  3, 5, 5, 4),
+-	[RC5T583_IRQ_AIN1H]		= RC5T583_IRQ(ADC_INT,  3, 6, 0, 5),
+-	[RC5T583_IRQ_AIN2H]		= RC5T583_IRQ(ADC_INT,  3, 7, 1, 5),
+-	[RC5T583_IRQ_AIN3H]		= RC5T583_IRQ(ADC_INT,  3, 8, 2, 5),
+-	[RC5T583_IRQ_VBATH]		= RC5T583_IRQ(ADC_INT,  3, 9, 3, 5),
+-	[RC5T583_IRQ_VIN3H]		= RC5T583_IRQ(ADC_INT,  3, 10, 4, 5),
+-	[RC5T583_IRQ_VIN8H]		= RC5T583_IRQ(ADC_INT,  3, 11, 5, 5),
+-	[RC5T583_IRQ_ADCEND]		= RC5T583_IRQ(ADC_INT,  3, 12, 0, 6),
 -
--	return 0;
+-	[RC5T583_IRQ_GPIO0]		= RC5T583_IRQ(GPIO_INT, 4, 0, 0, 7),
+-	[RC5T583_IRQ_GPIO1]		= RC5T583_IRQ(GPIO_INT, 4, 1, 1, 7),
+-	[RC5T583_IRQ_GPIO2]		= RC5T583_IRQ(GPIO_INT, 4, 2, 2, 7),
+-	[RC5T583_IRQ_GPIO3]		= RC5T583_IRQ(GPIO_INT, 4, 3, 3, 7),
+-	[RC5T583_IRQ_GPIO4]		= RC5T583_IRQ(GPIO_INT, 4, 4, 4, 7),
+-	[RC5T583_IRQ_GPIO5]		= RC5T583_IRQ(GPIO_INT, 4, 5, 5, 7),
+-	[RC5T583_IRQ_GPIO6]		= RC5T583_IRQ(GPIO_INT, 4, 6, 6, 7),
+-	[RC5T583_IRQ_GPIO7]		= RC5T583_IRQ(GPIO_INT, 4, 7, 7, 7),
+-};
 -
--out_disable:
--	aat2870_disable(aat2870);
--	return ret;
+-static void rc5t583_irq_lock(struct irq_data *irq_data)
+-{
+-	struct rc5t583 *rc5t583 = irq_data_get_irq_chip_data(irq_data);
+-	mutex_lock(&rc5t583->irq_lock);
 -}
 -
--static int aat2870_i2c_suspend(struct device *dev)
+-static void rc5t583_irq_unmask(struct irq_data *irq_data)
 -{
--	struct i2c_client *client = to_i2c_client(dev);
--	struct aat2870_data *aat2870 = i2c_get_clientdata(client);
+-	struct rc5t583 *rc5t583 = irq_data_get_irq_chip_data(irq_data);
+-	unsigned int __irq = irq_data->irq - rc5t583->irq_base;
+-	const struct rc5t583_irq_data *data = &rc5t583_irqs[__irq];
 -
--	aat2870_disable(aat2870);
--
--	return 0;
+-	rc5t583->group_irq_en[data->grp_index] |= 1 << data->grp_index;
+-	rc5t583->intc_inten_reg |= 1 << data->master_bit;
+-	rc5t583->irq_en_reg[data->mask_reg_index] |= 1 << data->int_en_bit;
 -}
 -
--static int aat2870_i2c_resume(struct device *dev)
+-static void rc5t583_irq_mask(struct irq_data *irq_data)
 -{
--	struct i2c_client *client = to_i2c_client(dev);
--	struct aat2870_data *aat2870 = i2c_get_clientdata(client);
--	struct aat2870_register *reg = NULL;
+-	struct rc5t583 *rc5t583 = irq_data_get_irq_chip_data(irq_data);
+-	unsigned int __irq = irq_data->irq - rc5t583->irq_base;
+-	const struct rc5t583_irq_data *data = &rc5t583_irqs[__irq];
+-
+-	rc5t583->group_irq_en[data->grp_index] &= ~(1 << data->grp_index);
+-	if (!rc5t583->group_irq_en[data->grp_index])
+-		rc5t583->intc_inten_reg &= ~(1 << data->master_bit);
+-
+-	rc5t583->irq_en_reg[data->mask_reg_index] &= ~(1 << data->int_en_bit);
+-}
+-
+-static int rc5t583_irq_set_type(struct irq_data *irq_data, unsigned int type)
+-{
+-	struct rc5t583 *rc5t583 = irq_data_get_irq_chip_data(irq_data);
+-	unsigned int __irq = irq_data->irq - rc5t583->irq_base;
+-	const struct rc5t583_irq_data *data = &rc5t583_irqs[__irq];
+-	int val = 0;
+-	int gpedge_index;
+-	int gpedge_bit_pos;
+-
+-	/* Supporting only trigger level inetrrupt */
+-	if ((data->int_type & GPIO_INT) && (type & IRQ_TYPE_EDGE_BOTH)) {
+-		gpedge_index = data->int_en_bit / 4;
+-		gpedge_bit_pos = data->int_en_bit % 4;
+-
+-		if (type & IRQ_TYPE_EDGE_FALLING)
+-			val |= 0x2;
+-
+-		if (type & IRQ_TYPE_EDGE_RISING)
+-			val |= 0x1;
+-
+-		rc5t583->gpedge_reg[gpedge_index] &= ~(3 << gpedge_bit_pos);
+-		rc5t583->gpedge_reg[gpedge_index] |= (val << gpedge_bit_pos);
+-		rc5t583_irq_unmask(irq_data);
+-		return 0;
+-	}
+-	return -EINVAL;
+-}
+-
+-static void rc5t583_irq_sync_unlock(struct irq_data *irq_data)
+-{
+-	struct rc5t583 *rc5t583 = irq_data_get_irq_chip_data(irq_data);
 -	int i;
+-	int ret;
 -
--	aat2870_enable(aat2870);
--
--	/* restore registers */
--	for (i = 0; i < AAT2870_REG_NUM; i++) {
--		reg = &aat2870->reg_cache[i];
--		if (reg->writeable)
--			aat2870->write(aat2870, i, reg->value);
+-	for (i = 0; i < ARRAY_SIZE(rc5t583->gpedge_reg); i++) {
+-		ret = rc5t583_write(rc5t583->dev, gpedge_add[i],
+-				rc5t583->gpedge_reg[i]);
+-		if (ret < 0)
+-			dev_warn(rc5t583->dev,
+-				"Error in writing reg 0x%02x error: %d\n",
+-				gpedge_add[i], ret);
 -	}
 -
--	return 0;
+-	for (i = 0; i < ARRAY_SIZE(rc5t583->irq_en_reg); i++) {
+-		ret = rc5t583_write(rc5t583->dev, irq_en_add[i],
+-					rc5t583->irq_en_reg[i]);
+-		if (ret < 0)
+-			dev_warn(rc5t583->dev,
+-				"Error in writing reg 0x%02x error: %d\n",
+-				irq_en_add[i], ret);
+-	}
+-
+-	ret = rc5t583_write(rc5t583->dev, RC5T583_INTC_INTEN,
+-				rc5t583->intc_inten_reg);
+-	if (ret < 0)
+-		dev_warn(rc5t583->dev,
+-			"Error in writing reg 0x%02x error: %d\n",
+-			RC5T583_INTC_INTEN, ret);
+-
+-	mutex_unlock(&rc5t583->irq_lock);
 -}
 -
--static DEFINE_SIMPLE_DEV_PM_OPS(aat2870_pm_ops, aat2870_i2c_suspend,
--				aat2870_i2c_resume);
--
--static const struct i2c_device_id aat2870_i2c_id_table[] = {
--	{ "aat2870" },
--	{ }
--};
--
--static struct i2c_driver aat2870_i2c_driver = {
--	.driver = {
--		.name			= "aat2870",
--		.pm			= pm_sleep_ptr(&aat2870_pm_ops),
--		.suppress_bind_attrs	= true,
--	},
--	.probe		= aat2870_i2c_probe,
--	.id_table	= aat2870_i2c_id_table,
--};
--
--static int __init aat2870_init(void)
+-static int rc5t583_irq_set_wake(struct irq_data *irq_data, unsigned int on)
 -{
--	return i2c_add_driver(&aat2870_i2c_driver);
+-	struct rc5t583 *rc5t583 = irq_data_get_irq_chip_data(irq_data);
+-	return irq_set_irq_wake(rc5t583->chip_irq, on);
 -}
--subsys_initcall(aat2870_init);
-diff --git a/drivers/regulator/Kconfig b/drivers/regulator/Kconfig
-index 4b90d1cb045c..12d883e729bc 100644
---- a/drivers/regulator/Kconfig
-+++ b/drivers/regulator/Kconfig
-@@ -132,13 +132,6 @@ config REGULATOR_ANATOP
- 	  regulators. It is recommended that this option be
- 	  enabled on i.MX6 platform.
- 
--config REGULATOR_AAT2870
--	tristate "AnalogicTech AAT2870 Regulators"
--	depends on MFD_AAT2870_CORE
--	help
--	  If you have a AnalogicTech AAT2870 say Y to enable the
--	  regulator driver.
 -
- config REGULATOR_AB8500
- 	bool "ST-Ericsson AB8500 Power Regulators"
- 	depends on AB8500_CORE
-diff --git a/drivers/regulator/Makefile b/drivers/regulator/Makefile
-index fe0f099c217b..321c6ea73ee0 100644
---- a/drivers/regulator/Makefile
-+++ b/drivers/regulator/Makefile
-@@ -16,7 +16,6 @@ obj-$(CONFIG_REGULATOR_88PM8607) += 88pm8607.o
- obj-$(CONFIG_REGULATOR_88PM886) += 88pm886-regulator.o
- obj-$(CONFIG_REGULATOR_CROS_EC) += cros-ec-regulator.o
- obj-$(CONFIG_REGULATOR_CPCAP) += cpcap-regulator.o
--obj-$(CONFIG_REGULATOR_AAT2870) += aat2870-regulator.o
- obj-$(CONFIG_REGULATOR_AB8500)	+= ab8500-ext.o ab8500.o
- obj-$(CONFIG_REGULATOR_ACT8865) += act8865-regulator.o
- obj-$(CONFIG_REGULATOR_ACT8945A) += act8945a-regulator.o
-diff --git a/drivers/regulator/aat2870-regulator.c b/drivers/regulator/aat2870-regulator.c
+-static irqreturn_t rc5t583_irq(int irq, void *data)
+-{
+-	struct rc5t583 *rc5t583 = data;
+-	uint8_t int_sts[RC5T583_MAX_INTERRUPT_MASK_REGS];
+-	uint8_t master_int = 0;
+-	int i;
+-	int ret;
+-	unsigned int rtc_int_sts = 0;
+-
+-	/* Clear the status */
+-	for (i = 0; i < RC5T583_MAX_INTERRUPT_MASK_REGS; i++)
+-		int_sts[i] = 0;
+-
+-	ret  = rc5t583_read(rc5t583->dev, RC5T583_INTC_INTMON, &master_int);
+-	if (ret < 0) {
+-		dev_err(rc5t583->dev,
+-			"Error in reading reg 0x%02x error: %d\n",
+-			RC5T583_INTC_INTMON, ret);
+-		return IRQ_HANDLED;
+-	}
+-
+-	for (i = 0; i < RC5T583_MAX_INTERRUPT_MASK_REGS; ++i) {
+-		if (!(master_int & main_int_type[i]))
+-			continue;
+-
+-		ret = rc5t583_read(rc5t583->dev, irq_mon_add[i], &int_sts[i]);
+-		if (ret < 0) {
+-			dev_warn(rc5t583->dev,
+-				"Error in reading reg 0x%02x error: %d\n",
+-				irq_mon_add[i], ret);
+-			int_sts[i] = 0;
+-			continue;
+-		}
+-
+-		if (main_int_type[i] & RTC_INT) {
+-			rtc_int_sts = 0;
+-			if (int_sts[i] & 0x1)
+-				rtc_int_sts |= BIT(6);
+-			if (int_sts[i] & 0x2)
+-				rtc_int_sts |= BIT(7);
+-			if (int_sts[i] & 0x4)
+-				rtc_int_sts |= BIT(0);
+-			if (int_sts[i] & 0x8)
+-				rtc_int_sts |= BIT(5);
+-		}
+-
+-		ret = rc5t583_write(rc5t583->dev, irq_clr_add[i],
+-				~int_sts[i]);
+-		if (ret < 0)
+-			dev_warn(rc5t583->dev,
+-				"Error in reading reg 0x%02x error: %d\n",
+-				irq_clr_add[i], ret);
+-
+-		if (main_int_type[i] & RTC_INT)
+-			int_sts[i] = rtc_int_sts;
+-	}
+-
+-	/* Merge gpio interrupts for rising and falling case*/
+-	int_sts[7] |= int_sts[8];
+-
+-	/* Call interrupt handler if enabled */
+-	for (i = 0; i < RC5T583_MAX_IRQS; ++i) {
+-		const struct rc5t583_irq_data *data = &rc5t583_irqs[i];
+-		if ((int_sts[data->mask_reg_index] & (1 << data->int_en_bit)) &&
+-			(rc5t583->group_irq_en[data->master_bit] &
+-					(1 << data->grp_index)))
+-			handle_nested_irq(rc5t583->irq_base + i);
+-	}
+-
+-	return IRQ_HANDLED;
+-}
+-
+-static struct irq_chip rc5t583_irq_chip = {
+-	.name = "rc5t583-irq",
+-	.irq_mask = rc5t583_irq_mask,
+-	.irq_unmask = rc5t583_irq_unmask,
+-	.irq_bus_lock = rc5t583_irq_lock,
+-	.irq_bus_sync_unlock = rc5t583_irq_sync_unlock,
+-	.irq_set_type = rc5t583_irq_set_type,
+-	.irq_set_wake = pm_sleep_ptr(rc5t583_irq_set_wake),
+-};
+-
+-int rc5t583_irq_init(struct rc5t583 *rc5t583, int irq, int irq_base)
+-{
+-	int i, ret;
+-
+-	if (!irq_base) {
+-		dev_warn(rc5t583->dev, "No interrupt support on IRQ base\n");
+-		return -EINVAL;
+-	}
+-
+-	mutex_init(&rc5t583->irq_lock);
+-
+-	/* Initailize all int register to 0 */
+-	for (i = 0; i < RC5T583_MAX_INTERRUPT_EN_REGS; i++)  {
+-		ret = rc5t583_write(rc5t583->dev, irq_en_add[i],
+-				rc5t583->irq_en_reg[i]);
+-		if (ret < 0)
+-			dev_warn(rc5t583->dev,
+-				"Error in writing reg 0x%02x error: %d\n",
+-				irq_en_add[i], ret);
+-	}
+-
+-	for (i = 0; i < RC5T583_MAX_GPEDGE_REG; i++)  {
+-		ret = rc5t583_write(rc5t583->dev, gpedge_add[i],
+-				rc5t583->gpedge_reg[i]);
+-		if (ret < 0)
+-			dev_warn(rc5t583->dev,
+-				"Error in writing reg 0x%02x error: %d\n",
+-				gpedge_add[i], ret);
+-	}
+-
+-	ret = rc5t583_write(rc5t583->dev, RC5T583_INTC_INTEN, 0x0);
+-	if (ret < 0)
+-		dev_warn(rc5t583->dev,
+-			"Error in writing reg 0x%02x error: %d\n",
+-			RC5T583_INTC_INTEN, ret);
+-
+-	/* Clear all interrupts in case they woke up active. */
+-	for (i = 0; i < RC5T583_MAX_INTERRUPT_MASK_REGS; i++)  {
+-		ret = rc5t583_write(rc5t583->dev, irq_clr_add[i], 0);
+-		if (ret < 0)
+-			dev_warn(rc5t583->dev,
+-				"Error in writing reg 0x%02x error: %d\n",
+-				irq_clr_add[i], ret);
+-	}
+-
+-	rc5t583->irq_base = irq_base;
+-	rc5t583->chip_irq = irq;
+-
+-	for (i = 0; i < RC5T583_MAX_IRQS; i++) {
+-		int __irq = i + rc5t583->irq_base;
+-		irq_set_chip_data(__irq, rc5t583);
+-		irq_set_chip_and_handler(__irq, &rc5t583_irq_chip,
+-					 handle_simple_irq);
+-		irq_set_nested_thread(__irq, 1);
+-		irq_clear_status_flags(__irq, IRQ_NOREQUEST);
+-	}
+-
+-	ret = devm_request_threaded_irq(rc5t583->dev, irq, NULL, rc5t583_irq,
+-					IRQF_ONESHOT, "rc5t583", rc5t583);
+-	if (ret < 0)
+-		dev_err(rc5t583->dev,
+-			"Error in registering interrupt error: %d\n", ret);
+-	return ret;
+-}
+diff --git a/drivers/mfd/rc5t583.c b/drivers/mfd/rc5t583.c
 deleted file mode 100644
-index 970d86f2bbb8..000000000000
---- a/drivers/regulator/aat2870-regulator.c
+index 2c0e8e9630f7..000000000000
+--- a/drivers/mfd/rc5t583.c
 +++ /dev/null
-@@ -1,201 +0,0 @@
+@@ -1,299 +0,0 @@
 -// SPDX-License-Identifier: GPL-2.0-only
 -/*
-- * linux/drivers/regulator/aat2870-regulator.c
+- * Core driver access RC5T583 power management chip.
 - *
-- * Copyright (c) 2011, NVIDIA Corporation.
-- * Author: Jin Park <jinyoungp@nvidia.com>
+- * Copyright (c) 2011-2012, NVIDIA CORPORATION.  All rights reserved.
+- * Author: Laxman dewangan <ldewangan@nvidia.com>
+- *
+- * Based on code
+- *	Copyright (C) 2011 RICOH COMPANY,LTD
 - */
--
+-#include <linux/interrupt.h>
+-#include <linux/irq.h>
 -#include <linux/kernel.h>
 -#include <linux/init.h>
 -#include <linux/err.h>
--#include <linux/module.h>
 -#include <linux/slab.h>
--#include <linux/platform_device.h>
--#include <linux/regulator/driver.h>
--#include <linux/regulator/machine.h>
--#include <linux/mfd/aat2870.h>
+-#include <linux/i2c.h>
+-#include <linux/mfd/core.h>
+-#include <linux/mfd/rc5t583.h>
+-#include <linux/regmap.h>
 -
--struct aat2870_regulator {
--	struct aat2870_data *aat2870;
--	struct regulator_desc desc;
+-#define RICOH_ONOFFSEL_REG	0x10
+-#define RICOH_SWCTL_REG		0x5E
 -
--	u8 enable_addr;
--	u8 enable_shift;
--	u8 enable_mask;
--
--	u8 voltage_addr;
--	u8 voltage_shift;
--	u8 voltage_mask;
+-struct deepsleep_control_data {
+-	u8 reg_add;
+-	u8 ds_pos_bit;
 -};
 -
--static int aat2870_ldo_set_voltage_sel(struct regulator_dev *rdev,
--				       unsigned selector)
--{
--	struct aat2870_regulator *ri = rdev_get_drvdata(rdev);
--	struct aat2870_data *aat2870 = ri->aat2870;
+-#define DEEPSLEEP_INIT(_id, _reg, _pos)		\
+-	{					\
+-		.reg_add = RC5T583_##_reg,	\
+-		.ds_pos_bit = _pos,		\
+-	}
 -
--	return aat2870->update(aat2870, ri->voltage_addr, ri->voltage_mask,
--			       selector << ri->voltage_shift);
--}
+-static struct deepsleep_control_data deepsleep_data[] = {
+-	DEEPSLEEP_INIT(DC0, SLPSEQ1, 0),
+-	DEEPSLEEP_INIT(DC1, SLPSEQ1, 4),
+-	DEEPSLEEP_INIT(DC2, SLPSEQ2, 0),
+-	DEEPSLEEP_INIT(DC3, SLPSEQ2, 4),
+-	DEEPSLEEP_INIT(LDO0, SLPSEQ3, 0),
+-	DEEPSLEEP_INIT(LDO1, SLPSEQ3, 4),
+-	DEEPSLEEP_INIT(LDO2, SLPSEQ4, 0),
+-	DEEPSLEEP_INIT(LDO3, SLPSEQ4, 4),
+-	DEEPSLEEP_INIT(LDO4, SLPSEQ5, 0),
+-	DEEPSLEEP_INIT(LDO5, SLPSEQ5, 4),
+-	DEEPSLEEP_INIT(LDO6, SLPSEQ6, 0),
+-	DEEPSLEEP_INIT(LDO7, SLPSEQ6, 4),
+-	DEEPSLEEP_INIT(LDO8, SLPSEQ7, 0),
+-	DEEPSLEEP_INIT(LDO9, SLPSEQ7, 4),
+-	DEEPSLEEP_INIT(PSO0, SLPSEQ8, 0),
+-	DEEPSLEEP_INIT(PSO1, SLPSEQ8, 4),
+-	DEEPSLEEP_INIT(PSO2, SLPSEQ9, 0),
+-	DEEPSLEEP_INIT(PSO3, SLPSEQ9, 4),
+-	DEEPSLEEP_INIT(PSO4, SLPSEQ10, 0),
+-	DEEPSLEEP_INIT(PSO5, SLPSEQ10, 4),
+-	DEEPSLEEP_INIT(PSO6, SLPSEQ11, 0),
+-	DEEPSLEEP_INIT(PSO7, SLPSEQ11, 4),
+-};
 -
--static int aat2870_ldo_get_voltage_sel(struct regulator_dev *rdev)
+-#define EXT_PWR_REQ		\
+-	(RC5T583_EXT_PWRREQ1_CONTROL | RC5T583_EXT_PWRREQ2_CONTROL)
+-
+-static const struct mfd_cell rc5t583_subdevs[] = {
+-	{.name = "rc5t583-gpio",},
+-	{.name = "rc5t583-regulator",},
+-	{.name = "rc5t583-rtc",      },
+-	{.name = "rc5t583-key",      }
+-};
+-
+-static int __rc5t583_set_ext_pwrreq1_control(struct device *dev,
+-	int id, int ext_pwr, int slots)
 -{
--	struct aat2870_regulator *ri = rdev_get_drvdata(rdev);
--	struct aat2870_data *aat2870 = ri->aat2870;
--	u8 val;
 -	int ret;
+-	uint8_t sleepseq_val = 0;
+-	unsigned int en_bit;
+-	unsigned int slot_bit;
 -
--	ret = aat2870->read(aat2870, ri->voltage_addr, &val);
--	if (ret)
--		return ret;
--
--	return (val & ri->voltage_mask) >> ri->voltage_shift;
--}
--
--static int aat2870_ldo_enable(struct regulator_dev *rdev)
--{
--	struct aat2870_regulator *ri = rdev_get_drvdata(rdev);
--	struct aat2870_data *aat2870 = ri->aat2870;
--
--	return aat2870->update(aat2870, ri->enable_addr, ri->enable_mask,
--			       ri->enable_mask);
--}
--
--static int aat2870_ldo_disable(struct regulator_dev *rdev)
--{
--	struct aat2870_regulator *ri = rdev_get_drvdata(rdev);
--	struct aat2870_data *aat2870 = ri->aat2870;
--
--	return aat2870->update(aat2870, ri->enable_addr, ri->enable_mask, 0);
--}
--
--static int aat2870_ldo_is_enabled(struct regulator_dev *rdev)
--{
--	struct aat2870_regulator *ri = rdev_get_drvdata(rdev);
--	struct aat2870_data *aat2870 = ri->aat2870;
--	u8 val;
--	int ret;
--
--	ret = aat2870->read(aat2870, ri->enable_addr, &val);
--	if (ret)
--		return ret;
--
--	return val & ri->enable_mask ? 1 : 0;
--}
--
--static const struct regulator_ops aat2870_ldo_ops = {
--	.list_voltage = regulator_list_voltage_table,
--	.map_voltage = regulator_map_voltage_ascend,
--	.set_voltage_sel = aat2870_ldo_set_voltage_sel,
--	.get_voltage_sel = aat2870_ldo_get_voltage_sel,
--	.enable = aat2870_ldo_enable,
--	.disable = aat2870_ldo_disable,
--	.is_enabled = aat2870_ldo_is_enabled,
--};
--
--static const unsigned int aat2870_ldo_voltages[] = {
--	1200000, 1300000, 1500000, 1600000,
--	1800000, 2000000, 2200000, 2500000,
--	2600000, 2700000, 2800000, 2900000,
--	3000000, 3100000, 3200000, 3300000,
--};
--
--#define AAT2870_LDO(ids)				\
--	{						\
--		.desc = {				\
--			.name = #ids,			\
--			.id = AAT2870_ID_##ids,		\
--			.n_voltages = ARRAY_SIZE(aat2870_ldo_voltages),	\
--			.volt_table = aat2870_ldo_voltages, \
--			.ops = &aat2870_ldo_ops,	\
--			.type = REGULATOR_VOLTAGE,	\
--			.owner = THIS_MODULE,		\
--		},					\
--	}
--
--static struct aat2870_regulator aat2870_regulators[] = {
--	AAT2870_LDO(LDOA),
--	AAT2870_LDO(LDOB),
--	AAT2870_LDO(LDOC),
--	AAT2870_LDO(LDOD),
--};
--
--static struct aat2870_regulator *aat2870_get_regulator(int id)
--{
--	struct aat2870_regulator *ri = NULL;
--	int i;
--
--	for (i = 0; i < ARRAY_SIZE(aat2870_regulators); i++) {
--		ri = &aat2870_regulators[i];
--		if (ri->desc.id == id)
--			break;
--	}
--
--	if (i == ARRAY_SIZE(aat2870_regulators))
--		return NULL;
--
--	ri->enable_addr = AAT2870_LDO_EN;
--	ri->enable_shift = id - AAT2870_ID_LDOA;
--	ri->enable_mask = 0x1 << ri->enable_shift;
--
--	ri->voltage_addr = (id - AAT2870_ID_LDOA) / 2 ?
--			   AAT2870_LDO_CD : AAT2870_LDO_AB;
--	ri->voltage_shift = (id - AAT2870_ID_LDOA) % 2 ? 0 : 4;
--	ri->voltage_mask = 0xF << ri->voltage_shift;
--
--	return ri;
--}
--
--static int aat2870_regulator_probe(struct platform_device *pdev)
--{
--	struct aat2870_regulator *ri;
--	struct regulator_config config = { };
--	struct regulator_dev *rdev;
--
--	ri = aat2870_get_regulator(pdev->id);
--	if (!ri) {
--		dev_err(&pdev->dev, "Invalid device ID, %d\n", pdev->id);
--		return -EINVAL;
--	}
--	ri->aat2870 = dev_get_drvdata(pdev->dev.parent);
--
--	config.dev = &pdev->dev;
--	config.driver_data = ri;
--	config.init_data = dev_get_platdata(&pdev->dev);
--
--	rdev = devm_regulator_register(&pdev->dev, &ri->desc, &config);
--	if (IS_ERR(rdev)) {
--		dev_err(&pdev->dev, "Failed to register regulator %s\n",
--			ri->desc.name);
--		return PTR_ERR(rdev);
--	}
--	platform_set_drvdata(pdev, rdev);
--
--	return 0;
--}
--
--static struct platform_driver aat2870_regulator_driver = {
--	.driver = {
--		.name	= "aat2870-regulator",
--		.probe_type = PROBE_PREFER_ASYNCHRONOUS,
--	},
--	.probe	= aat2870_regulator_probe,
--};
--
--static int __init aat2870_regulator_init(void)
--{
--	return platform_driver_register(&aat2870_regulator_driver);
--}
--subsys_initcall(aat2870_regulator_init);
--
--static void __exit aat2870_regulator_exit(void)
--{
--	platform_driver_unregister(&aat2870_regulator_driver);
--}
--module_exit(aat2870_regulator_exit);
--
--MODULE_DESCRIPTION("AnalogicTech AAT2870 Regulator");
--MODULE_LICENSE("GPL");
--MODULE_AUTHOR("Jin Park <jinyoungp@nvidia.com>");
--MODULE_ALIAS("platform:aat2870-regulator");
-diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
-index 2c206d2713e3..4acbac1bbb9e 100644
---- a/drivers/video/backlight/Kconfig
-+++ b/drivers/video/backlight/Kconfig
-@@ -388,13 +388,6 @@ config BACKLIGHT_88PM860X
- 	help
- 	  Say Y to enable the backlight driver for Marvell 88PM8606.
- 
--config BACKLIGHT_AAT2870
--	tristate "AnalogicTech AAT2870 Backlight"
--	depends on MFD_AAT2870_CORE
--	help
--	  If you have a AnalogicTech AAT2870 say Y to enable the
--	  backlight driver.
--
- config BACKLIGHT_LM3509
- 	tristate "Backlight Driver for LM3509"
- 	depends on I2C
-diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
-index 0497eaa639cd..e11175bdd500 100644
---- a/drivers/video/backlight/Makefile
-+++ b/drivers/video/backlight/Makefile
-@@ -18,7 +18,6 @@ obj-$(CONFIG_LCD_TDO24M)		+= tdo24m.o
- obj-$(CONFIG_LCD_VGG2432A4)		+= vgg2432a4.o
- 
- obj-$(CONFIG_BACKLIGHT_88PM860X)	+= 88pm860x_bl.o
--obj-$(CONFIG_BACKLIGHT_AAT2870)		+= aat2870_bl.o
- obj-$(CONFIG_BACKLIGHT_ADP8860)		+= adp8860_bl.o
- obj-$(CONFIG_BACKLIGHT_ADP8870)		+= adp8870_bl.o
- obj-$(CONFIG_BACKLIGHT_APPLE)		+= apple_bl.o
-diff --git a/drivers/video/backlight/aat2870_bl.c b/drivers/video/backlight/aat2870_bl.c
-deleted file mode 100644
-index 8b790df1e842..000000000000
---- a/drivers/video/backlight/aat2870_bl.c
-+++ /dev/null
-@@ -1,206 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-only
--/*
-- * linux/drivers/video/backlight/aat2870_bl.c
-- *
-- * Copyright (c) 2011, NVIDIA Corporation.
-- * Author: Jin Park <jinyoungp@nvidia.com>
-- */
--
--#include <linux/module.h>
--#include <linux/kernel.h>
--#include <linux/init.h>
--#include <linux/platform_device.h>
--#include <linux/mutex.h>
--#include <linux/delay.h>
--#include <linux/backlight.h>
--#include <linux/mfd/aat2870.h>
--
--struct aat2870_bl_driver_data {
--	struct platform_device *pdev;
--	struct backlight_device *bd;
--
--	int channels;
--	int max_current;
--	int brightness; /* current brightness */
--};
--
--static inline int aat2870_brightness(struct aat2870_bl_driver_data *aat2870_bl,
--				     int brightness)
--{
--	struct backlight_device *bd = aat2870_bl->bd;
--	int val;
--
--	val = brightness * (aat2870_bl->max_current - 1);
--	val /= bd->props.max_brightness;
--
--	return val;
--}
--
--static inline int aat2870_bl_enable(struct aat2870_bl_driver_data *aat2870_bl)
--{
--	struct aat2870_data *aat2870
--			= dev_get_drvdata(aat2870_bl->pdev->dev.parent);
--
--	return aat2870->write(aat2870, AAT2870_BL_CH_EN,
--			      (u8)aat2870_bl->channels);
--}
--
--static inline int aat2870_bl_disable(struct aat2870_bl_driver_data *aat2870_bl)
--{
--	struct aat2870_data *aat2870
--			= dev_get_drvdata(aat2870_bl->pdev->dev.parent);
--
--	return aat2870->write(aat2870, AAT2870_BL_CH_EN, 0x0);
--}
--
--static int aat2870_bl_update_status(struct backlight_device *bd)
--{
--	struct aat2870_bl_driver_data *aat2870_bl = bl_get_data(bd);
--	struct aat2870_data *aat2870 =
--			dev_get_drvdata(aat2870_bl->pdev->dev.parent);
--	int brightness = backlight_get_brightness(bd);
--	int ret;
--
--	if ((brightness < 0) || (bd->props.max_brightness < brightness)) {
--		dev_err(&bd->dev, "invalid brightness, %d\n", brightness);
+-	if (id == RC5T583_DS_DC0) {
+-		dev_err(dev, "PWRREQ1 is invalid control for rail %d\n", id);
 -		return -EINVAL;
 -	}
 -
--	dev_dbg(&bd->dev, "brightness=%d, power=%d, state=%d\n",
--		 bd->props.brightness, bd->props.power, bd->props.state);
--
--	ret = aat2870->write(aat2870, AAT2870_BLM,
--			     (u8)aat2870_brightness(aat2870_bl, brightness));
--	if (ret < 0)
--		return ret;
--
--	if (brightness == 0) {
--		ret = aat2870_bl_disable(aat2870_bl);
--		if (ret < 0)
--			return ret;
--	} else if (aat2870_bl->brightness == 0) {
--		ret = aat2870_bl_enable(aat2870_bl);
--		if (ret < 0)
--			return ret;
--	}
--
--	aat2870_bl->brightness = brightness;
--
--	return 0;
--}
--
--static const struct backlight_ops aat2870_bl_ops = {
--	.options = BL_CORE_SUSPENDRESUME,
--	.update_status = aat2870_bl_update_status,
--};
--
--static int aat2870_bl_probe(struct platform_device *pdev)
--{
--	struct aat2870_bl_platform_data *pdata = dev_get_platdata(&pdev->dev);
--	struct aat2870_bl_driver_data *aat2870_bl;
--	struct backlight_device *bd;
--	struct backlight_properties props;
--	int ret = 0;
--
--	if (!pdata) {
--		dev_err(&pdev->dev, "No platform data\n");
--		ret = -ENXIO;
--		goto out;
--	}
--
--	if (pdev->id != AAT2870_ID_BL) {
--		dev_err(&pdev->dev, "Invalid device ID, %d\n", pdev->id);
--		ret = -EINVAL;
--		goto out;
--	}
--
--	aat2870_bl = devm_kzalloc(&pdev->dev,
--				  sizeof(struct aat2870_bl_driver_data),
--				  GFP_KERNEL);
--	if (!aat2870_bl) {
--		ret = -ENOMEM;
--		goto out;
--	}
--
--	memset(&props, 0, sizeof(struct backlight_properties));
--
--	props.type = BACKLIGHT_RAW;
--	bd = devm_backlight_device_register(&pdev->dev, "aat2870-backlight",
--					&pdev->dev, aat2870_bl, &aat2870_bl_ops,
--					&props);
--	if (IS_ERR(bd)) {
--		dev_err(&pdev->dev,
--			"Failed allocate memory for backlight device\n");
--		ret = PTR_ERR(bd);
--		goto out;
--	}
--
--	aat2870_bl->pdev = pdev;
--	platform_set_drvdata(pdev, aat2870_bl);
--
--	aat2870_bl->bd = bd;
--
--	if (pdata->channels > 0)
--		aat2870_bl->channels = pdata->channels;
--	else
--		aat2870_bl->channels = AAT2870_BL_CH_ALL;
--
--	if (pdata->max_current > 0)
--		aat2870_bl->max_current = pdata->max_current;
--	else
--		aat2870_bl->max_current = AAT2870_CURRENT_27_9;
--
--	if (pdata->max_brightness > 0)
--		bd->props.max_brightness = pdata->max_brightness;
--	else
--		bd->props.max_brightness = 255;
--
--	aat2870_bl->brightness = 0;
--	bd->props.power = BACKLIGHT_POWER_ON;
--	bd->props.brightness = bd->props.max_brightness;
--
--	ret = aat2870_bl_update_status(bd);
+-	en_bit = deepsleep_data[id].ds_pos_bit;
+-	slot_bit = en_bit + 1;
+-	ret = rc5t583_read(dev, deepsleep_data[id].reg_add, &sleepseq_val);
 -	if (ret < 0) {
--		dev_err(&pdev->dev, "Failed to initialize\n");
+-		dev_err(dev, "Error in reading reg 0x%x\n",
+-				deepsleep_data[id].reg_add);
 -		return ret;
 -	}
 -
--	return 0;
+-	sleepseq_val &= ~(0xF << en_bit);
+-	sleepseq_val |= BIT(en_bit);
+-	sleepseq_val |= ((slots & 0x7) << slot_bit);
+-	ret = rc5t583_set_bits(dev, RICOH_ONOFFSEL_REG, BIT(1));
+-	if (ret < 0) {
+-		dev_err(dev, "Error in updating the 0x%02x register\n",
+-				RICOH_ONOFFSEL_REG);
+-		return ret;
+-	}
 -
--out:
+-	ret = rc5t583_write(dev, deepsleep_data[id].reg_add, sleepseq_val);
+-	if (ret < 0) {
+-		dev_err(dev, "Error in writing reg 0x%x\n",
+-				deepsleep_data[id].reg_add);
+-		return ret;
+-	}
+-
+-	if (id == RC5T583_DS_LDO4) {
+-		ret = rc5t583_write(dev, RICOH_SWCTL_REG, 0x1);
+-		if (ret < 0)
+-			dev_err(dev, "Error in writing reg 0x%x\n",
+-				RICOH_SWCTL_REG);
+-	}
 -	return ret;
 -}
 -
--static void aat2870_bl_remove(struct platform_device *pdev)
+-static int __rc5t583_set_ext_pwrreq2_control(struct device *dev,
+-	int id, int ext_pwr)
 -{
--	struct aat2870_bl_driver_data *aat2870_bl = platform_get_drvdata(pdev);
--	struct backlight_device *bd = aat2870_bl->bd;
+-	int ret;
 -
--	bd->props.power = BACKLIGHT_POWER_OFF;
--	bd->props.brightness = 0;
--	backlight_update_status(bd);
+-	if (id != RC5T583_DS_DC0) {
+-		dev_err(dev, "PWRREQ2 is invalid control for rail %d\n", id);
+-		return -EINVAL;
+-	}
+-
+-	ret = rc5t583_set_bits(dev, RICOH_ONOFFSEL_REG, BIT(2));
+-	if (ret < 0)
+-		dev_err(dev, "Error in updating the ONOFFSEL 0x10 register\n");
+-	return ret;
 -}
 -
--static struct platform_driver aat2870_bl_driver = {
--	.driver = {
--		.name	= "aat2870-backlight",
--	},
--	.probe		= aat2870_bl_probe,
--	.remove		= aat2870_bl_remove,
+-int rc5t583_ext_power_req_config(struct device *dev, int ds_id,
+-	int ext_pwr_req, int deepsleep_slot_nr)
+-{
+-	if ((ext_pwr_req & EXT_PWR_REQ) == EXT_PWR_REQ)
+-		return -EINVAL;
+-
+-	if (ext_pwr_req & RC5T583_EXT_PWRREQ1_CONTROL)
+-		return __rc5t583_set_ext_pwrreq1_control(dev, ds_id,
+-				ext_pwr_req, deepsleep_slot_nr);
+-
+-	if (ext_pwr_req & RC5T583_EXT_PWRREQ2_CONTROL)
+-		return __rc5t583_set_ext_pwrreq2_control(dev,
+-			ds_id, ext_pwr_req);
+-	return 0;
+-}
+-EXPORT_SYMBOL(rc5t583_ext_power_req_config);
+-
+-static int rc5t583_clear_ext_power_req(struct rc5t583 *rc5t583,
+-	struct rc5t583_platform_data *pdata)
+-{
+-	int ret;
+-	int i;
+-	uint8_t on_off_val = 0;
+-
+-	/*  Clear ONOFFSEL register */
+-	if (pdata->enable_shutdown)
+-		on_off_val = 0x1;
+-
+-	ret = rc5t583_write(rc5t583->dev, RICOH_ONOFFSEL_REG, on_off_val);
+-	if (ret < 0)
+-		dev_warn(rc5t583->dev, "Error in writing reg %d error: %d\n",
+-					RICOH_ONOFFSEL_REG, ret);
+-
+-	ret = rc5t583_write(rc5t583->dev, RICOH_SWCTL_REG, 0x0);
+-	if (ret < 0)
+-		dev_warn(rc5t583->dev, "Error in writing reg %d error: %d\n",
+-					RICOH_SWCTL_REG, ret);
+-
+-	/* Clear sleep sequence register */
+-	for (i = RC5T583_SLPSEQ1; i <= RC5T583_SLPSEQ11; ++i) {
+-		ret = rc5t583_write(rc5t583->dev, i, 0x0);
+-		if (ret < 0)
+-			dev_warn(rc5t583->dev,
+-				"Error in writing reg 0x%02x error: %d\n",
+-				i, ret);
+-	}
+-	return 0;
+-}
+-
+-static bool volatile_reg(struct device *dev, unsigned int reg)
+-{
+-	/* Enable caching in interrupt registers */
+-	switch (reg) {
+-	case RC5T583_INT_EN_SYS1:
+-	case RC5T583_INT_EN_SYS2:
+-	case RC5T583_INT_EN_DCDC:
+-	case RC5T583_INT_EN_RTC:
+-	case RC5T583_INT_EN_ADC1:
+-	case RC5T583_INT_EN_ADC2:
+-	case RC5T583_INT_EN_ADC3:
+-	case RC5T583_GPIO_GPEDGE1:
+-	case RC5T583_GPIO_GPEDGE2:
+-	case RC5T583_GPIO_EN_INT:
+-		return false;
+-
+-	case RC5T583_GPIO_MON_IOIN:
+-		/* This is gpio input register */
+-		return true;
+-
+-	default:
+-		/* Enable caching in gpio registers */
+-		if ((reg >= RC5T583_GPIO_IOSEL) &&
+-				(reg <= RC5T583_GPIO_GPOFUNC))
+-			return false;
+-
+-		/* Enable caching in sleep seq registers */
+-		if ((reg >= RC5T583_SLPSEQ1) && (reg <= RC5T583_SLPSEQ11))
+-			return false;
+-
+-		/* Enable caching of regulator registers */
+-		if ((reg >= RC5T583_REG_DC0CTL) && (reg <= RC5T583_REG_SR3CTL))
+-			return false;
+-		if ((reg >= RC5T583_REG_LDOEN1) &&
+-					(reg <= RC5T583_REG_LDO9DAC_DS))
+-			return false;
+-
+-		break;
+-	}
+-
+-	return true;
+-}
+-
+-static const struct regmap_config rc5t583_regmap_config = {
+-	.reg_bits = 8,
+-	.val_bits = 8,
+-	.volatile_reg = volatile_reg,
+-	.max_register = RC5T583_MAX_REG,
+-	.num_reg_defaults_raw = RC5T583_NUM_REGS,
+-	.cache_type = REGCACHE_MAPLE,
 -};
 -
--static int __init aat2870_bl_init(void)
+-static int rc5t583_i2c_probe(struct i2c_client *i2c)
 -{
--	return platform_driver_register(&aat2870_bl_driver);
--}
--subsys_initcall(aat2870_bl_init);
+-	struct rc5t583 *rc5t583;
+-	struct rc5t583_platform_data *pdata = dev_get_platdata(&i2c->dev);
+-	int ret;
 -
--static void __exit aat2870_bl_exit(void)
+-	if (!pdata) {
+-		dev_err(&i2c->dev, "Err: Platform data not found\n");
+-		return -EINVAL;
+-	}
+-
+-	rc5t583 = devm_kzalloc(&i2c->dev, sizeof(*rc5t583), GFP_KERNEL);
+-	if (!rc5t583)
+-		return -ENOMEM;
+-
+-	rc5t583->dev = &i2c->dev;
+-	i2c_set_clientdata(i2c, rc5t583);
+-
+-	rc5t583->regmap = devm_regmap_init_i2c(i2c, &rc5t583_regmap_config);
+-	if (IS_ERR(rc5t583->regmap)) {
+-		ret = PTR_ERR(rc5t583->regmap);
+-		dev_err(&i2c->dev, "regmap initialization failed: %d\n", ret);
+-		return ret;
+-	}
+-
+-	ret = rc5t583_clear_ext_power_req(rc5t583, pdata);
+-	if (ret < 0)
+-		return ret;
+-
+-	if (i2c->irq) {
+-		ret = rc5t583_irq_init(rc5t583, i2c->irq, pdata->irq_base);
+-		/* Still continue with warning, if irq init fails */
+-		if (ret)
+-			dev_warn(&i2c->dev, "IRQ init failed: %d\n", ret);
+-	}
+-
+-	ret = devm_mfd_add_devices(rc5t583->dev, -1, rc5t583_subdevs,
+-				   ARRAY_SIZE(rc5t583_subdevs), NULL, 0, NULL);
+-	if (ret) {
+-		dev_err(&i2c->dev, "add mfd devices failed: %d\n", ret);
+-		return ret;
+-	}
+-
+-	return 0;
+-}
+-
+-static const struct i2c_device_id rc5t583_i2c_id[] = {
+-	{.name = "rc5t583", .driver_data = 0},
+-	{}
+-};
+-
+-static struct i2c_driver rc5t583_i2c_driver = {
+-	.driver = {
+-		   .name = "rc5t583",
+-		   },
+-	.probe = rc5t583_i2c_probe,
+-	.id_table = rc5t583_i2c_id,
+-};
+-
+-static int __init rc5t583_i2c_init(void)
 -{
--	platform_driver_unregister(&aat2870_bl_driver);
+-	return i2c_add_driver(&rc5t583_i2c_driver);
 -}
--module_exit(aat2870_bl_exit);
+-subsys_initcall(rc5t583_i2c_init);
+diff --git a/drivers/regulator/Kconfig b/drivers/regulator/Kconfig
+index 12d883e729bc..2d5eb954d122 100644
+--- a/drivers/regulator/Kconfig
++++ b/drivers/regulator/Kconfig
+@@ -1214,16 +1214,6 @@ config REGULATOR_RASPBERRYPI_TOUCHSCREEN_V2
+ 	  unit. The regulator is used to enable power to the display and to
+ 	  control backlight PWM.
+ 
+-config REGULATOR_RC5T583
+-	tristate "RICOH RC5T583 Power regulators"
+-	depends on MFD_RC5T583
+-	help
+-	  Select this option to enable the power regulator of RICOH
+-	  PMIC RC5T583.
+-	  This driver supports the control of different power rails of device
+-	  through regulator interface. The device supports multiple DCDC/LDO
+-	  outputs which can be controlled by i2c communication.
 -
--MODULE_DESCRIPTION("AnalogicTech AAT2870 Backlight");
--MODULE_LICENSE("GPL");
--MODULE_AUTHOR("Jin Park <jinyoungp@nvidia.com>");
-diff --git a/include/linux/mfd/aat2870.h b/include/linux/mfd/aat2870.h
+ config REGULATOR_RK808
+ 	tristate "Rockchip RK805/RK808/RK809/RK817/RK818 Power regulators"
+ 	depends on MFD_RK8XX
+diff --git a/drivers/regulator/Makefile b/drivers/regulator/Makefile
+index 321c6ea73ee0..861f86c30c73 100644
+--- a/drivers/regulator/Makefile
++++ b/drivers/regulator/Makefile
+@@ -140,7 +140,6 @@ obj-$(CONFIG_REGULATOR_PBIAS) += pbias-regulator.o
+ obj-$(CONFIG_REGULATOR_RAA215300) += raa215300.o
+ obj-$(CONFIG_REGULATOR_RASPBERRYPI_TOUCHSCREEN_ATTINY)  += rpi-panel-attiny-regulator.o
+ obj-$(CONFIG_REGULATOR_RASPBERRYPI_TOUCHSCREEN_V2)  += rpi-panel-v2-regulator.o
+-obj-$(CONFIG_REGULATOR_RC5T583)  += rc5t583-regulator.o
+ obj-$(CONFIG_REGULATOR_RK808)   += rk808-regulator.o
+ obj-$(CONFIG_REGULATOR_RN5T618) += rn5t618-regulator.o
+ obj-$(CONFIG_REGULATOR_ROHM)	+= rohm-regulator.o
+diff --git a/drivers/regulator/rc5t583-regulator.c b/drivers/regulator/rc5t583-regulator.c
 deleted file mode 100644
-index c7a3c53eba68..000000000000
---- a/include/linux/mfd/aat2870.h
+index a25a141e86c4..000000000000
+--- a/drivers/regulator/rc5t583-regulator.c
 +++ /dev/null
-@@ -1,164 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0-only */
+@@ -1,171 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-only
 -/*
-- * linux/include/linux/mfd/aat2870.h
+- * Regulator driver for RICOH RC5T583 power management chip.
 - *
-- * Copyright (c) 2011, NVIDIA Corporation.
-- * Author: Jin Park <jinyoungp@nvidia.com>
+- * Copyright (c) 2011-2012, NVIDIA CORPORATION.  All rights reserved.
+- * Author: Laxman dewangan <ldewangan@nvidia.com>
+- *
+- * based on code
+- *      Copyright (C) 2011 RICOH COMPANY,LTD
 - */
 -
--#ifndef __LINUX_MFD_AAT2870_H
--#define __LINUX_MFD_AAT2870_H
+-#include <linux/module.h>
+-#include <linux/init.h>
+-#include <linux/slab.h>
+-#include <linux/err.h>
+-#include <linux/platform_device.h>
+-#include <linux/regulator/driver.h>
+-#include <linux/regulator/machine.h>
+-#include <linux/mfd/rc5t583.h>
 -
--#include <linux/debugfs.h>
--#include <linux/i2c.h>
+-struct rc5t583_regulator_info {
+-	int			deepsleep_id;
 -
--/* Register offsets */
--#define AAT2870_BL_CH_EN	0x00
--#define AAT2870_BLM		0x01
--#define AAT2870_BLS		0x02
--#define AAT2870_BL1		0x03
--#define AAT2870_BL2		0x04
--#define AAT2870_BL3		0x05
--#define AAT2870_BL4		0x06
--#define AAT2870_BL5		0x07
--#define AAT2870_BL6		0x08
--#define AAT2870_BL7		0x09
--#define AAT2870_BL8		0x0A
--#define AAT2870_FLR		0x0B
--#define AAT2870_FM		0x0C
--#define AAT2870_FS		0x0D
--#define AAT2870_ALS_CFG0	0x0E
--#define AAT2870_ALS_CFG1	0x0F
--#define AAT2870_ALS_CFG2	0x10
--#define AAT2870_AMB		0x11
--#define AAT2870_ALS0		0x12
--#define AAT2870_ALS1		0x13
--#define AAT2870_ALS2		0x14
--#define AAT2870_ALS3		0x15
--#define AAT2870_ALS4		0x16
--#define AAT2870_ALS5		0x17
--#define AAT2870_ALS6		0x18
--#define AAT2870_ALS7		0x19
--#define AAT2870_ALS8		0x1A
--#define AAT2870_ALS9		0x1B
--#define AAT2870_ALSA		0x1C
--#define AAT2870_ALSB		0x1D
--#define AAT2870_ALSC		0x1E
--#define AAT2870_ALSD		0x1F
--#define AAT2870_ALSE		0x20
--#define AAT2870_ALSF		0x21
--#define AAT2870_SUB_SET		0x22
--#define AAT2870_SUB_CTRL	0x23
--#define AAT2870_LDO_AB		0x24
--#define AAT2870_LDO_CD		0x25
--#define AAT2870_LDO_EN		0x26
--#define AAT2870_REG_NUM		0x27
+-	/* Regulator register address.*/
+-	uint8_t			reg_disc_reg;
+-	uint8_t			disc_bit;
+-	uint8_t			deepsleep_reg;
 -
--/* Device IDs */
--enum aat2870_id {
--	AAT2870_ID_BL,
--	AAT2870_ID_LDOA,
--	AAT2870_ID_LDOB,
--	AAT2870_ID_LDOC,
--	AAT2870_ID_LDOD
+-	/* Regulator specific turn-on delay  and voltage settling time*/
+-	int			enable_uv_per_us;
+-
+-	/* Used by regulator core */
+-	struct regulator_desc	desc;
 -};
 -
--/* Backlight channels */
--#define AAT2870_BL_CH1		0x01
--#define AAT2870_BL_CH2		0x02
--#define AAT2870_BL_CH3		0x04
--#define AAT2870_BL_CH4		0x08
--#define AAT2870_BL_CH5		0x10
--#define AAT2870_BL_CH6		0x20
--#define AAT2870_BL_CH7		0x40
--#define AAT2870_BL_CH8		0x80
--#define AAT2870_BL_CH_ALL	0xFF
+-static int rc5t583_regulator_enable_time(struct regulator_dev *rdev)
+-{
+-	struct rc5t583_regulator_info *reg_info = rdev_get_drvdata(rdev);
+-	int vsel = regulator_get_voltage_sel_regmap(rdev);
+-	int curr_uV = regulator_list_voltage_linear(rdev, vsel);
 -
--/* Backlight current magnitude (mA) */
--enum aat2870_current {
--	AAT2870_CURRENT_0_45 = 1,
--	AAT2870_CURRENT_0_90,
--	AAT2870_CURRENT_1_80,
--	AAT2870_CURRENT_2_70,
--	AAT2870_CURRENT_3_60,
--	AAT2870_CURRENT_4_50,
--	AAT2870_CURRENT_5_40,
--	AAT2870_CURRENT_6_30,
--	AAT2870_CURRENT_7_20,
--	AAT2870_CURRENT_8_10,
--	AAT2870_CURRENT_9_00,
--	AAT2870_CURRENT_9_90,
--	AAT2870_CURRENT_10_8,
--	AAT2870_CURRENT_11_7,
--	AAT2870_CURRENT_12_6,
--	AAT2870_CURRENT_13_5,
--	AAT2870_CURRENT_14_4,
--	AAT2870_CURRENT_15_3,
--	AAT2870_CURRENT_16_2,
--	AAT2870_CURRENT_17_1,
--	AAT2870_CURRENT_18_0,
--	AAT2870_CURRENT_18_9,
--	AAT2870_CURRENT_19_8,
--	AAT2870_CURRENT_20_7,
--	AAT2870_CURRENT_21_6,
--	AAT2870_CURRENT_22_5,
--	AAT2870_CURRENT_23_4,
--	AAT2870_CURRENT_24_3,
--	AAT2870_CURRENT_25_2,
--	AAT2870_CURRENT_26_1,
--	AAT2870_CURRENT_27_0,
--	AAT2870_CURRENT_27_9
+-	return DIV_ROUND_UP(curr_uV, reg_info->enable_uv_per_us);
+-}
+-
+-static const struct regulator_ops rc5t583_ops = {
+-	.is_enabled		= regulator_is_enabled_regmap,
+-	.enable			= regulator_enable_regmap,
+-	.disable		= regulator_disable_regmap,
+-	.enable_time		= rc5t583_regulator_enable_time,
+-	.get_voltage_sel	= regulator_get_voltage_sel_regmap,
+-	.set_voltage_sel	= regulator_set_voltage_sel_regmap,
+-	.list_voltage		= regulator_list_voltage_linear,
+-	.map_voltage		= regulator_map_voltage_linear,
+-	.set_voltage_time_sel	= regulator_set_voltage_time_sel,
 -};
 -
--struct aat2870_register {
--	bool readable;
--	bool writeable;
--	u8 value;
+-#define RC5T583_REG(_id, _en_reg, _en_bit, _disc_reg, _disc_bit, \
+-		_vout_mask, _min_mv, _max_mv, _step_uV, _enable_mv) \
+-{								\
+-	.reg_disc_reg	= RC5T583_REG_##_disc_reg,		\
+-	.disc_bit	= _disc_bit,				\
+-	.deepsleep_reg	= RC5T583_REG_##_id##DAC_DS,		\
+-	.enable_uv_per_us = _enable_mv * 1000,			\
+-	.deepsleep_id	= RC5T583_DS_##_id,			\
+-	.desc = {						\
+-		.name = "rc5t583-regulator-"#_id,		\
+-		.id = RC5T583_REGULATOR_##_id,			\
+-		.n_voltages = (_max_mv - _min_mv) * 1000 / _step_uV + 1, \
+-		.ops = &rc5t583_ops,				\
+-		.type = REGULATOR_VOLTAGE,			\
+-		.owner = THIS_MODULE,				\
+-		.vsel_reg = RC5T583_REG_##_id##DAC,		\
+-		.vsel_mask = _vout_mask,			\
+-		.enable_reg = RC5T583_REG_##_en_reg,		\
+-		.enable_mask = BIT(_en_bit),			\
+-		.min_uV	= _min_mv * 1000,			\
+-		.uV_step = _step_uV,				\
+-		.ramp_delay = 40 * 1000,			\
+-	},							\
+-}
+-
+-static struct rc5t583_regulator_info rc5t583_reg_info[RC5T583_REGULATOR_MAX] = {
+-	RC5T583_REG(DC0, DC0CTL, 0, DC0CTL, 1, 0x7F, 700, 1500, 12500, 4),
+-	RC5T583_REG(DC1, DC1CTL, 0, DC1CTL, 1, 0x7F, 700, 1500, 12500, 14),
+-	RC5T583_REG(DC2, DC2CTL, 0, DC2CTL, 1, 0x7F, 900, 2400, 12500, 14),
+-	RC5T583_REG(DC3, DC3CTL, 0, DC3CTL, 1, 0x7F, 900, 2400, 12500, 14),
+-	RC5T583_REG(LDO0, LDOEN2, 0, LDODIS2, 0, 0x7F, 900, 3400, 25000, 160),
+-	RC5T583_REG(LDO1, LDOEN2, 1, LDODIS2, 1, 0x7F, 900, 3400, 25000, 160),
+-	RC5T583_REG(LDO2, LDOEN2, 2, LDODIS2, 2, 0x7F, 900, 3400, 25000, 160),
+-	RC5T583_REG(LDO3, LDOEN2, 3, LDODIS2, 3, 0x7F, 900, 3400, 25000, 160),
+-	RC5T583_REG(LDO4, LDOEN2, 4, LDODIS2, 4, 0x3F, 750, 1500, 12500, 133),
+-	RC5T583_REG(LDO5, LDOEN2, 5, LDODIS2, 5, 0x7F, 900, 3400, 25000, 267),
+-	RC5T583_REG(LDO6, LDOEN2, 6, LDODIS2, 6, 0x7F, 900, 3400, 25000, 133),
+-	RC5T583_REG(LDO7, LDOEN2, 7, LDODIS2, 7, 0x7F, 900, 3400, 25000, 233),
+-	RC5T583_REG(LDO8, LDOEN1, 0, LDODIS1, 0, 0x7F, 900, 3400, 25000, 233),
+-	RC5T583_REG(LDO9, LDOEN1, 1, LDODIS1, 1, 0x7F, 900, 3400, 25000, 133),
 -};
 -
--struct aat2870_data {
--	struct device *dev;
--	struct i2c_client *client;
--
--	struct mutex io_lock;
--	struct aat2870_register *reg_cache; /* register cache */
--	int en_pin; /* enable GPIO pin (if < 0, ignore this value) */
--	bool is_enable;
--
--	/* init and uninit for platform specified */
--	int (*init)(struct aat2870_data *aat2870);
--	void (*uninit)(struct aat2870_data *aat2870);
--
--	/* i2c io funcntions */
--	int (*read)(struct aat2870_data *aat2870, u8 addr, u8 *val);
--	int (*write)(struct aat2870_data *aat2870, u8 addr, u8 val);
--	int (*update)(struct aat2870_data *aat2870, u8 addr, u8 mask, u8 val);
--};
--
--struct aat2870_subdev_info {
+-static int rc5t583_regulator_probe(struct platform_device *pdev)
+-{
+-	struct rc5t583 *rc5t583 = dev_get_drvdata(pdev->dev.parent);
+-	struct rc5t583_platform_data *pdata = dev_get_platdata(rc5t583->dev);
+-	struct regulator_config config = { };
+-	struct regulator_dev *rdev;
+-	struct rc5t583_regulator_info *ri;
+-	int ret;
 -	int id;
--	const char *name;
--	void *platform_data;
+-
+-	if (!pdata) {
+-		dev_err(&pdev->dev, "No platform data, exiting...\n");
+-		return -ENODEV;
+-	}
+-
+-	for (id = 0; id < RC5T583_REGULATOR_MAX; ++id) {
+-		ri = &rc5t583_reg_info[id];
+-
+-		if (ri->deepsleep_id == RC5T583_DS_NONE)
+-			goto skip_ext_pwr_config;
+-
+-		ret = rc5t583_ext_power_req_config(rc5t583->dev,
+-				ri->deepsleep_id,
+-				pdata->regulator_ext_pwr_control[id],
+-				pdata->regulator_deepsleep_slot[id]);
+-		/*
+-		 * Configuring external control is not a major issue,
+-		 * just give warning.
+-		 */
+-		if (ret < 0)
+-			dev_warn(&pdev->dev,
+-				"Failed to configure ext control %d\n", id);
+-
+-skip_ext_pwr_config:
+-		config.dev = &pdev->dev;
+-		config.init_data = pdata->reg_init_data[id];
+-		config.driver_data = ri;
+-		config.regmap = rc5t583->regmap;
+-
+-		rdev = devm_regulator_register(&pdev->dev, &ri->desc, &config);
+-		if (IS_ERR(rdev)) {
+-			dev_err(&pdev->dev, "Failed to register regulator %s\n",
+-						ri->desc.name);
+-			return PTR_ERR(rdev);
+-		}
+-	}
+-	return 0;
+-}
+-
+-static struct platform_driver rc5t583_regulator_driver = {
+-	.driver	= {
+-		.name	= "rc5t583-regulator",
+-		.probe_type = PROBE_PREFER_ASYNCHRONOUS,
+-	},
+-	.probe		= rc5t583_regulator_probe,
 -};
 -
--struct aat2870_platform_data {
--	int en_pin; /* enable GPIO pin (if < 0, ignore this value) */
+-static int __init rc5t583_regulator_init(void)
+-{
+-	return platform_driver_register(&rc5t583_regulator_driver);
+-}
+-subsys_initcall(rc5t583_regulator_init);
 -
--	struct aat2870_subdev_info *subdevs;
--	int num_subdevs;
+-static void __exit rc5t583_regulator_exit(void)
+-{
+-	platform_driver_unregister(&rc5t583_regulator_driver);
+-}
+-module_exit(rc5t583_regulator_exit);
 -
--	/* init and uninit for platform specified */
--	int (*init)(struct aat2870_data *aat2870);
--	void (*uninit)(struct aat2870_data *aat2870);
+-MODULE_AUTHOR("Laxman Dewangan <ldewangan@nvidia.com>");
+-MODULE_DESCRIPTION("RC5T583 regulator driver");
+-MODULE_ALIAS("platform:rc5t583-regulator");
+-MODULE_LICENSE("GPL v2");
+diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
+index c201948b4d5b..c71398368f6d 100644
+--- a/drivers/rtc/Kconfig
++++ b/drivers/rtc/Kconfig
+@@ -630,16 +630,6 @@ config RTC_DRV_TPS65910
+ 	  This driver can also be built as a module. If so, the module
+ 	  will be called rtc-tps65910.
+ 
+-config RTC_DRV_RC5T583
+-	tristate "RICOH 5T583 RTC driver"
+-	depends on MFD_RC5T583
+-	help
+-	  If you say yes here you get support for the RTC on the
+-	  RICOH 5T583 chips.
+-
+-	  This driver can also be built as a module. If so, the module
+-	  will be called rtc-rc5t583.
+-
+ config RTC_DRV_RC5T619
+ 	tristate "RICOH RC5T619 RTC driver"
+ 	depends on MFD_RN5T618
+diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
+index 84bb2af5849e..b8fc1a17d27f 100644
+--- a/drivers/rtc/Makefile
++++ b/drivers/rtc/Makefile
+@@ -143,7 +143,6 @@ obj-$(CONFIG_RTC_DRV_PS3)	+= rtc-ps3.o
+ obj-$(CONFIG_RTC_DRV_PXA)	+= rtc-pxa.o
+ obj-$(CONFIG_RTC_DRV_R7301)	+= rtc-r7301.o
+ obj-$(CONFIG_RTC_DRV_R9701)	+= rtc-r9701.o
+-obj-$(CONFIG_RTC_DRV_RC5T583)	+= rtc-rc5t583.o
+ obj-$(CONFIG_RTC_DRV_RC5T619)	+= rtc-rc5t619.o
+ obj-$(CONFIG_RTC_DRV_RK808)	+= rtc-rk808.o
+ obj-$(CONFIG_RTC_DRV_RP5C01)	+= rtc-rp5c01.o
+diff --git a/drivers/rtc/rtc-rc5t583.c b/drivers/rtc/rtc-rc5t583.c
+deleted file mode 100644
+index 8ba9cda74acf..000000000000
+--- a/drivers/rtc/rtc-rc5t583.c
++++ /dev/null
+@@ -1,312 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-only
+-/*
+- * rtc-rc5t583.c -- RICOH RC5T583 Real Time Clock
+- *
+- * Copyright (c) 2012, NVIDIA CORPORATION.  All rights reserved.
+- * Author: Venu Byravarasu <vbyravarasu@nvidia.com>
+- */
+-
+-#include <linux/kernel.h>
+-#include <linux/errno.h>
+-#include <linux/init.h>
+-#include <linux/module.h>
+-#include <linux/types.h>
+-#include <linux/rtc.h>
+-#include <linux/bcd.h>
+-#include <linux/platform_device.h>
+-#include <linux/interrupt.h>
+-#include <linux/mfd/rc5t583.h>
+-
+-struct rc5t583_rtc {
+-	struct rtc_device	*rtc;
+-	/* To store the list of enabled interrupts, during system suspend */
+-	u32 irqen;
 -};
 -
--struct aat2870_bl_platform_data {
--	/* backlight channels, default is AAT2870_BL_CH_ALL */
--	int channels;
--	/* backlight current magnitude, default is AAT2870_CURRENT_27_9 */
--	int max_current;
--	/* maximum brightness, default is 255 */
--	int max_brightness;
+-/* Total number of RTC registers needed to set time*/
+-#define NUM_TIME_REGS	(RC5T583_RTC_YEAR - RC5T583_RTC_SEC + 1)
+-
+-/* Total number of RTC registers needed to set Y-Alarm*/
+-#define NUM_YAL_REGS	(RC5T583_RTC_AY_YEAR - RC5T583_RTC_AY_MIN + 1)
+-
+-/* Set Y-Alarm interrupt */
+-#define SET_YAL BIT(5)
+-
+-/* Get Y-Alarm interrupt status*/
+-#define GET_YAL_STATUS BIT(3)
+-
+-static int rc5t583_rtc_alarm_irq_enable(struct device *dev, unsigned enabled)
+-{
+-	struct rc5t583 *rc5t583 = dev_get_drvdata(dev->parent);
+-	u8 val;
+-
+-	/* Set Y-Alarm, based on 'enabled' */
+-	val = enabled ? SET_YAL : 0;
+-
+-	return regmap_update_bits(rc5t583->regmap, RC5T583_RTC_CTL1, SET_YAL,
+-		val);
+-}
+-
+-/*
+- * Gets current rc5t583 RTC time and date parameters.
+- *
+- * The RTC's time/alarm representation is not what gmtime(3) requires
+- * Linux to use:
+- *
+- *  - Months are 1..12 vs Linux 0-11
+- *  - Years are 0..99 vs Linux 1900..N (we assume 21st century)
+- */
+-static int rc5t583_rtc_read_time(struct device *dev, struct rtc_time *tm)
+-{
+-	struct rc5t583 *rc5t583 = dev_get_drvdata(dev->parent);
+-	u8 rtc_data[NUM_TIME_REGS];
+-	int ret;
+-
+-	ret = regmap_bulk_read(rc5t583->regmap, RC5T583_RTC_SEC, rtc_data,
+-		NUM_TIME_REGS);
+-	if (ret < 0) {
+-		dev_err(dev, "RTC read time failed with err:%d\n", ret);
+-		return ret;
+-	}
+-
+-	tm->tm_sec = bcd2bin(rtc_data[0]);
+-	tm->tm_min = bcd2bin(rtc_data[1]);
+-	tm->tm_hour = bcd2bin(rtc_data[2]);
+-	tm->tm_wday = bcd2bin(rtc_data[3]);
+-	tm->tm_mday = bcd2bin(rtc_data[4]);
+-	tm->tm_mon = bcd2bin(rtc_data[5]) - 1;
+-	tm->tm_year = bcd2bin(rtc_data[6]) + 100;
+-
+-	return ret;
+-}
+-
+-static int rc5t583_rtc_set_time(struct device *dev, struct rtc_time *tm)
+-{
+-	struct rc5t583 *rc5t583 = dev_get_drvdata(dev->parent);
+-	unsigned char rtc_data[NUM_TIME_REGS];
+-	int ret;
+-
+-	rtc_data[0] = bin2bcd(tm->tm_sec);
+-	rtc_data[1] = bin2bcd(tm->tm_min);
+-	rtc_data[2] = bin2bcd(tm->tm_hour);
+-	rtc_data[3] = bin2bcd(tm->tm_wday);
+-	rtc_data[4] = bin2bcd(tm->tm_mday);
+-	rtc_data[5] = bin2bcd(tm->tm_mon + 1);
+-	rtc_data[6] = bin2bcd(tm->tm_year - 100);
+-
+-	ret = regmap_bulk_write(rc5t583->regmap, RC5T583_RTC_SEC, rtc_data,
+-		NUM_TIME_REGS);
+-	if (ret < 0) {
+-		dev_err(dev, "RTC set time failed with error %d\n", ret);
+-		return ret;
+-	}
+-
+-	return ret;
+-}
+-
+-static int rc5t583_rtc_read_alarm(struct device *dev, struct rtc_wkalrm *alm)
+-{
+-	struct rc5t583 *rc5t583 = dev_get_drvdata(dev->parent);
+-	unsigned char alarm_data[NUM_YAL_REGS];
+-	u32 interrupt_enable;
+-	int ret;
+-
+-	ret = regmap_bulk_read(rc5t583->regmap, RC5T583_RTC_AY_MIN, alarm_data,
+-		NUM_YAL_REGS);
+-	if (ret < 0) {
+-		dev_err(dev, "rtc_read_alarm error %d\n", ret);
+-		return ret;
+-	}
+-
+-	alm->time.tm_sec = 0;
+-	alm->time.tm_min = bcd2bin(alarm_data[0]);
+-	alm->time.tm_hour = bcd2bin(alarm_data[1]);
+-	alm->time.tm_mday = bcd2bin(alarm_data[2]);
+-	alm->time.tm_mon = bcd2bin(alarm_data[3]) - 1;
+-	alm->time.tm_year = bcd2bin(alarm_data[4]) + 100;
+-
+-	ret = regmap_read(rc5t583->regmap, RC5T583_RTC_CTL1, &interrupt_enable);
+-	if (ret < 0)
+-		return ret;
+-
+-	/* check if YALE is set */
+-	if (interrupt_enable & SET_YAL)
+-		alm->enabled = 1;
+-
+-	return ret;
+-}
+-
+-static int rc5t583_rtc_set_alarm(struct device *dev, struct rtc_wkalrm *alm)
+-{
+-	struct rc5t583 *rc5t583 = dev_get_drvdata(dev->parent);
+-	unsigned char alarm_data[NUM_YAL_REGS];
+-	int ret;
+-
+-	ret = rc5t583_rtc_alarm_irq_enable(dev, 0);
+-	if (ret)
+-		return ret;
+-
+-	alarm_data[0] = bin2bcd(alm->time.tm_min);
+-	alarm_data[1] = bin2bcd(alm->time.tm_hour);
+-	alarm_data[2] = bin2bcd(alm->time.tm_mday);
+-	alarm_data[3] = bin2bcd(alm->time.tm_mon + 1);
+-	alarm_data[4] = bin2bcd(alm->time.tm_year - 100);
+-
+-	ret = regmap_bulk_write(rc5t583->regmap, RC5T583_RTC_AY_MIN, alarm_data,
+-		NUM_YAL_REGS);
+-	if (ret) {
+-		dev_err(dev, "rtc_set_alarm error %d\n", ret);
+-		return ret;
+-	}
+-
+-	if (alm->enabled)
+-		ret = rc5t583_rtc_alarm_irq_enable(dev, 1);
+-
+-	return ret;
+-}
+-
+-static irqreturn_t rc5t583_rtc_interrupt(int irq, void *rtc)
+-{
+-	struct device *dev = rtc;
+-	struct rc5t583 *rc5t583 = dev_get_drvdata(dev->parent);
+-	struct rc5t583_rtc *rc5t583_rtc = dev_get_drvdata(dev);
+-	unsigned long events = 0;
+-	int ret;
+-	u32 rtc_reg;
+-
+-	ret = regmap_read(rc5t583->regmap, RC5T583_RTC_CTL2, &rtc_reg);
+-	if (ret < 0)
+-		return IRQ_NONE;
+-
+-	if (rtc_reg & GET_YAL_STATUS) {
+-		events = RTC_IRQF | RTC_AF;
+-		/* clear pending Y-alarm interrupt bit */
+-		rtc_reg &= ~GET_YAL_STATUS;
+-	}
+-
+-	ret = regmap_write(rc5t583->regmap, RC5T583_RTC_CTL2, rtc_reg);
+-	if (ret)
+-		return IRQ_NONE;
+-
+-	/* Notify RTC core on event */
+-	rtc_update_irq(rc5t583_rtc->rtc, 1, events);
+-
+-	return IRQ_HANDLED;
+-}
+-
+-static const struct rtc_class_ops rc5t583_rtc_ops = {
+-	.read_time	= rc5t583_rtc_read_time,
+-	.set_time	= rc5t583_rtc_set_time,
+-	.read_alarm	= rc5t583_rtc_read_alarm,
+-	.set_alarm	= rc5t583_rtc_set_alarm,
+-	.alarm_irq_enable = rc5t583_rtc_alarm_irq_enable,
 -};
 -
--#endif /* __LINUX_MFD_AAT2870_H */
+-static int rc5t583_rtc_probe(struct platform_device *pdev)
+-{
+-	struct rc5t583 *rc5t583 = dev_get_drvdata(pdev->dev.parent);
+-	struct rc5t583_rtc *ricoh_rtc;
+-	struct rc5t583_platform_data *pmic_plat_data;
+-	int ret;
+-	int irq;
+-
+-	ricoh_rtc = devm_kzalloc(&pdev->dev, sizeof(struct rc5t583_rtc),
+-			GFP_KERNEL);
+-	if (!ricoh_rtc)
+-		return -ENOMEM;
+-
+-	platform_set_drvdata(pdev, ricoh_rtc);
+-
+-	/* Clear pending interrupts */
+-	ret = regmap_write(rc5t583->regmap, RC5T583_RTC_CTL2, 0);
+-	if (ret < 0)
+-		return ret;
+-
+-	/* clear RTC Adjust register */
+-	ret = regmap_write(rc5t583->regmap, RC5T583_RTC_ADJ, 0);
+-	if (ret < 0) {
+-		dev_err(&pdev->dev, "unable to program rtc_adjust reg\n");
+-		return -EBUSY;
+-	}
+-
+-	pmic_plat_data = dev_get_platdata(rc5t583->dev);
+-	irq = pmic_plat_data->irq_base;
+-	if (irq <= 0) {
+-		dev_warn(&pdev->dev, "Wake up is not possible as irq = %d\n",
+-			irq);
+-		return ret;
+-	}
+-
+-	irq += RC5T583_IRQ_YALE;
+-	ret = devm_request_threaded_irq(&pdev->dev, irq, NULL,
+-		rc5t583_rtc_interrupt, IRQF_TRIGGER_LOW,
+-		"rtc-rc5t583", &pdev->dev);
+-	if (ret < 0) {
+-		dev_err(&pdev->dev, "IRQ is not free.\n");
+-		return ret;
+-	}
+-	device_init_wakeup(&pdev->dev, true);
+-
+-	ricoh_rtc->rtc = devm_rtc_device_register(&pdev->dev, pdev->name,
+-		&rc5t583_rtc_ops, THIS_MODULE);
+-	if (IS_ERR(ricoh_rtc->rtc)) {
+-		ret = PTR_ERR(ricoh_rtc->rtc);
+-		dev_err(&pdev->dev, "RTC device register: err %d\n", ret);
+-		return ret;
+-	}
+-
+-	return 0;
+-}
+-
+-/*
+- * Disable rc5t583 RTC interrupts.
+- * Sets status flag to free.
+- */
+-static void rc5t583_rtc_remove(struct platform_device *pdev)
+-{
+-	struct rc5t583_rtc *rc5t583_rtc = platform_get_drvdata(pdev);
+-
+-	rc5t583_rtc_alarm_irq_enable(&rc5t583_rtc->rtc->dev, 0);
+-}
+-
+-#ifdef CONFIG_PM_SLEEP
+-static int rc5t583_rtc_suspend(struct device *dev)
+-{
+-	struct rc5t583 *rc5t583 = dev_get_drvdata(dev->parent);
+-	struct rc5t583_rtc *rc5t583_rtc = dev_get_drvdata(dev);
+-	int ret;
+-
+-	/* Store current list of enabled interrupts*/
+-	ret = regmap_read(rc5t583->regmap, RC5T583_RTC_CTL1,
+-		&rc5t583_rtc->irqen);
+-	return ret;
+-}
+-
+-static int rc5t583_rtc_resume(struct device *dev)
+-{
+-	struct rc5t583 *rc5t583 = dev_get_drvdata(dev->parent);
+-	struct rc5t583_rtc *rc5t583_rtc = dev_get_drvdata(dev);
+-
+-	/* Restore list of enabled interrupts before suspend */
+-	return regmap_write(rc5t583->regmap, RC5T583_RTC_CTL1,
+-		rc5t583_rtc->irqen);
+-}
+-#endif
+-
+-static SIMPLE_DEV_PM_OPS(rc5t583_rtc_pm_ops, rc5t583_rtc_suspend,
+-			rc5t583_rtc_resume);
+-
+-static struct platform_driver rc5t583_rtc_driver = {
+-	.probe		= rc5t583_rtc_probe,
+-	.remove		= rc5t583_rtc_remove,
+-	.driver		= {
+-		.name	= "rtc-rc5t583",
+-		.pm	= &rc5t583_rtc_pm_ops,
+-	},
+-};
+-
+-module_platform_driver(rc5t583_rtc_driver);
+-MODULE_ALIAS("platform:rtc-rc5t583");
+-MODULE_AUTHOR("Venu Byravarasu <vbyravarasu@nvidia.com>");
+-MODULE_DESCRIPTION("RICOH 5T583 RTC driver");
+-MODULE_LICENSE("GPL v2");
+diff --git a/include/linux/mfd/rc5t583.h b/include/linux/mfd/rc5t583.h
+deleted file mode 100644
+index 4f220146cc02..000000000000
+--- a/include/linux/mfd/rc5t583.h
++++ /dev/null
+@@ -1,369 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0-only */
+-/*
+- * Core driver interface to access RICOH_RC5T583 power management chip.
+- *
+- * Copyright (c) 2011-2012, NVIDIA CORPORATION.  All rights reserved.
+- * Author: Laxman dewangan <ldewangan@nvidia.com>
+- *
+- * Based on code
+- *      Copyright (C) 2011 RICOH COMPANY,LTD
+- */
+-
+-#ifndef __LINUX_MFD_RC5T583_H
+-#define __LINUX_MFD_RC5T583_H
+-
+-#include <linux/mutex.h>
+-#include <linux/types.h>
+-#include <linux/regmap.h>
+-
+-/* Maximum number of main interrupts */
+-#define MAX_MAIN_INTERRUPT		5
+-#define RC5T583_MAX_GPEDGE_REG		2
+-#define RC5T583_MAX_INTERRUPT_EN_REGS	8
+-#define RC5T583_MAX_INTERRUPT_MASK_REGS	9
+-
+-/* Interrupt enable register */
+-#define RC5T583_INT_EN_SYS1	0x19
+-#define RC5T583_INT_EN_SYS2	0x1D
+-#define RC5T583_INT_EN_DCDC	0x41
+-#define RC5T583_INT_EN_RTC	0xED
+-#define RC5T583_INT_EN_ADC1	0x90
+-#define RC5T583_INT_EN_ADC2	0x91
+-#define RC5T583_INT_EN_ADC3	0x92
+-
+-/* Interrupt status registers (monitor regs in Ricoh)*/
+-#define RC5T583_INTC_INTPOL	0xAD
+-#define RC5T583_INTC_INTEN	0xAE
+-#define RC5T583_INTC_INTMON	0xAF
+-
+-#define RC5T583_INT_MON_GRP	0xAF
+-#define RC5T583_INT_MON_SYS1	0x1B
+-#define RC5T583_INT_MON_SYS2	0x1F
+-#define RC5T583_INT_MON_DCDC	0x43
+-#define RC5T583_INT_MON_RTC	0xEE
+-
+-/* Interrupt clearing registers */
+-#define RC5T583_INT_IR_SYS1	0x1A
+-#define RC5T583_INT_IR_SYS2	0x1E
+-#define RC5T583_INT_IR_DCDC	0x42
+-#define RC5T583_INT_IR_RTC	0xEE
+-#define RC5T583_INT_IR_ADCL	0x94
+-#define RC5T583_INT_IR_ADCH	0x95
+-#define RC5T583_INT_IR_ADCEND	0x96
+-#define RC5T583_INT_IR_GPIOR	0xA9
+-#define RC5T583_INT_IR_GPIOF	0xAA
+-
+-/* Sleep sequence registers */
+-#define RC5T583_SLPSEQ1		0x21
+-#define RC5T583_SLPSEQ2		0x22
+-#define RC5T583_SLPSEQ3		0x23
+-#define RC5T583_SLPSEQ4		0x24
+-#define RC5T583_SLPSEQ5		0x25
+-#define RC5T583_SLPSEQ6		0x26
+-#define RC5T583_SLPSEQ7		0x27
+-#define RC5T583_SLPSEQ8		0x28
+-#define RC5T583_SLPSEQ9		0x29
+-#define RC5T583_SLPSEQ10	0x2A
+-#define RC5T583_SLPSEQ11	0x2B
+-
+-/* Regulator registers */
+-#define RC5T583_REG_DC0CTL	0x30
+-#define RC5T583_REG_DC0DAC	0x31
+-#define RC5T583_REG_DC0LATCTL	0x32
+-#define RC5T583_REG_SR0CTL	0x33
+-
+-#define RC5T583_REG_DC1CTL	0x34
+-#define RC5T583_REG_DC1DAC	0x35
+-#define RC5T583_REG_DC1LATCTL	0x36
+-#define RC5T583_REG_SR1CTL	0x37
+-
+-#define RC5T583_REG_DC2CTL	0x38
+-#define RC5T583_REG_DC2DAC	0x39
+-#define RC5T583_REG_DC2LATCTL	0x3A
+-#define RC5T583_REG_SR2CTL	0x3B
+-
+-#define RC5T583_REG_DC3CTL	0x3C
+-#define RC5T583_REG_DC3DAC	0x3D
+-#define RC5T583_REG_DC3LATCTL	0x3E
+-#define RC5T583_REG_SR3CTL	0x3F
+-
+-
+-#define RC5T583_REG_LDOEN1	0x50
+-#define RC5T583_REG_LDOEN2	0x51
+-#define RC5T583_REG_LDODIS1	0x52
+-#define RC5T583_REG_LDODIS2	0x53
+-
+-#define RC5T583_REG_LDO0DAC	0x54
+-#define RC5T583_REG_LDO1DAC	0x55
+-#define RC5T583_REG_LDO2DAC	0x56
+-#define RC5T583_REG_LDO3DAC	0x57
+-#define RC5T583_REG_LDO4DAC	0x58
+-#define RC5T583_REG_LDO5DAC	0x59
+-#define RC5T583_REG_LDO6DAC	0x5A
+-#define RC5T583_REG_LDO7DAC	0x5B
+-#define RC5T583_REG_LDO8DAC	0x5C
+-#define RC5T583_REG_LDO9DAC	0x5D
+-
+-#define RC5T583_REG_DC0DAC_DS	0x60
+-#define RC5T583_REG_DC1DAC_DS	0x61
+-#define RC5T583_REG_DC2DAC_DS	0x62
+-#define RC5T583_REG_DC3DAC_DS	0x63
+-
+-#define RC5T583_REG_LDO0DAC_DS	0x64
+-#define RC5T583_REG_LDO1DAC_DS	0x65
+-#define RC5T583_REG_LDO2DAC_DS	0x66
+-#define RC5T583_REG_LDO3DAC_DS	0x67
+-#define RC5T583_REG_LDO4DAC_DS	0x68
+-#define RC5T583_REG_LDO5DAC_DS	0x69
+-#define RC5T583_REG_LDO6DAC_DS	0x6A
+-#define RC5T583_REG_LDO7DAC_DS	0x6B
+-#define RC5T583_REG_LDO8DAC_DS	0x6C
+-#define RC5T583_REG_LDO9DAC_DS	0x6D
+-
+-/* GPIO register base address */
+-#define RC5T583_GPIO_IOSEL	0xA0
+-#define RC5T583_GPIO_PDEN	0xA1
+-#define RC5T583_GPIO_IOOUT	0xA2
+-#define RC5T583_GPIO_PGSEL	0xA3
+-#define RC5T583_GPIO_GPINV	0xA4
+-#define RC5T583_GPIO_GPDEB	0xA5
+-#define RC5T583_GPIO_GPEDGE1	0xA6
+-#define RC5T583_GPIO_GPEDGE2	0xA7
+-#define RC5T583_GPIO_EN_INT	0xA8
+-#define RC5T583_GPIO_MON_IOIN	0xAB
+-#define RC5T583_GPIO_GPOFUNC	0xAC
+-
+-/* RTC registers */
+-#define RC5T583_RTC_SEC		0xE0
+-#define RC5T583_RTC_MIN		0xE1
+-#define RC5T583_RTC_HOUR	0xE2
+-#define RC5T583_RTC_WDAY	0xE3
+-#define RC5T583_RTC_DAY		0xE4
+-#define RC5T583_RTC_MONTH	0xE5
+-#define RC5T583_RTC_YEAR	0xE6
+-#define RC5T583_RTC_ADJ		0xE7
+-#define RC5T583_RTC_AW_MIN	0xE8
+-#define RC5T583_RTC_AW_HOUR	0xE9
+-#define RC5T583_RTC_AW_WEEK	0xEA
+-#define RC5T583_RTC_AD_MIN	0xEB
+-#define RC5T583_RTC_AD_HOUR	0xEC
+-#define RC5T583_RTC_CTL1	0xED
+-#define RC5T583_RTC_CTL2	0xEE
+-#define RC5T583_RTC_AY_MIN	0xF0
+-#define RC5T583_RTC_AY_HOUR	0xF1
+-#define RC5T583_RTC_AY_DAY	0xF2
+-#define RC5T583_RTC_AY_MONTH 0xF3
+-#define RC5T583_RTC_AY_YEAR	0xF4
+-
+-#define RC5T583_MAX_REG		0xF7
+-#define RC5T583_NUM_REGS	(RC5T583_MAX_REG + 1)
+-
+-/* RICOH_RC5T583 IRQ definitions */
+-enum {
+-	RC5T583_IRQ_ONKEY,
+-	RC5T583_IRQ_ACOK,
+-	RC5T583_IRQ_LIDOPEN,
+-	RC5T583_IRQ_PREOT,
+-	RC5T583_IRQ_CLKSTP,
+-	RC5T583_IRQ_ONKEY_OFF,
+-	RC5T583_IRQ_WD,
+-	RC5T583_IRQ_EN_PWRREQ1,
+-	RC5T583_IRQ_EN_PWRREQ2,
+-	RC5T583_IRQ_PRE_VINDET,
+-
+-	RC5T583_IRQ_DC0LIM,
+-	RC5T583_IRQ_DC1LIM,
+-	RC5T583_IRQ_DC2LIM,
+-	RC5T583_IRQ_DC3LIM,
+-
+-	RC5T583_IRQ_CTC,
+-	RC5T583_IRQ_YALE,
+-	RC5T583_IRQ_DALE,
+-	RC5T583_IRQ_WALE,
+-
+-	RC5T583_IRQ_AIN1L,
+-	RC5T583_IRQ_AIN2L,
+-	RC5T583_IRQ_AIN3L,
+-	RC5T583_IRQ_VBATL,
+-	RC5T583_IRQ_VIN3L,
+-	RC5T583_IRQ_VIN8L,
+-	RC5T583_IRQ_AIN1H,
+-	RC5T583_IRQ_AIN2H,
+-	RC5T583_IRQ_AIN3H,
+-	RC5T583_IRQ_VBATH,
+-	RC5T583_IRQ_VIN3H,
+-	RC5T583_IRQ_VIN8H,
+-	RC5T583_IRQ_ADCEND,
+-
+-	RC5T583_IRQ_GPIO0,
+-	RC5T583_IRQ_GPIO1,
+-	RC5T583_IRQ_GPIO2,
+-	RC5T583_IRQ_GPIO3,
+-	RC5T583_IRQ_GPIO4,
+-	RC5T583_IRQ_GPIO5,
+-	RC5T583_IRQ_GPIO6,
+-	RC5T583_IRQ_GPIO7,
+-
+-	/* Should be last entry */
+-	RC5T583_MAX_IRQS,
+-};
+-
+-/* Ricoh583 gpio definitions */
+-enum {
+-	RC5T583_GPIO0,
+-	RC5T583_GPIO1,
+-	RC5T583_GPIO2,
+-	RC5T583_GPIO3,
+-	RC5T583_GPIO4,
+-	RC5T583_GPIO5,
+-	RC5T583_GPIO6,
+-	RC5T583_GPIO7,
+-
+-	/* Should be last entry */
+-	RC5T583_MAX_GPIO,
+-};
+-
+-enum {
+-	RC5T583_DS_NONE,
+-	RC5T583_DS_DC0,
+-	RC5T583_DS_DC1,
+-	RC5T583_DS_DC2,
+-	RC5T583_DS_DC3,
+-	RC5T583_DS_LDO0,
+-	RC5T583_DS_LDO1,
+-	RC5T583_DS_LDO2,
+-	RC5T583_DS_LDO3,
+-	RC5T583_DS_LDO4,
+-	RC5T583_DS_LDO5,
+-	RC5T583_DS_LDO6,
+-	RC5T583_DS_LDO7,
+-	RC5T583_DS_LDO8,
+-	RC5T583_DS_LDO9,
+-	RC5T583_DS_PSO0,
+-	RC5T583_DS_PSO1,
+-	RC5T583_DS_PSO2,
+-	RC5T583_DS_PSO3,
+-	RC5T583_DS_PSO4,
+-	RC5T583_DS_PSO5,
+-	RC5T583_DS_PSO6,
+-	RC5T583_DS_PSO7,
+-
+-	/* Should be last entry */
+-	RC5T583_DS_MAX,
+-};
+-
+-/*
+- * Ricoh pmic RC5T583 supports sleep through two external controls.
+- * The output of gpios and regulator can be enable/disable through
+- * this external signals.
+- */
+-enum {
+-	RC5T583_EXT_PWRREQ1_CONTROL = 0x1,
+-	RC5T583_EXT_PWRREQ2_CONTROL = 0x2,
+-};
+-
+-enum {
+-	RC5T583_REGULATOR_DC0,
+-	RC5T583_REGULATOR_DC1,
+-	RC5T583_REGULATOR_DC2,
+-	RC5T583_REGULATOR_DC3,
+-	RC5T583_REGULATOR_LDO0,
+-	RC5T583_REGULATOR_LDO1,
+-	RC5T583_REGULATOR_LDO2,
+-	RC5T583_REGULATOR_LDO3,
+-	RC5T583_REGULATOR_LDO4,
+-	RC5T583_REGULATOR_LDO5,
+-	RC5T583_REGULATOR_LDO6,
+-	RC5T583_REGULATOR_LDO7,
+-	RC5T583_REGULATOR_LDO8,
+-	RC5T583_REGULATOR_LDO9,
+-
+-	/* Should be last entry */
+-	RC5T583_REGULATOR_MAX,
+-};
+-
+-struct rc5t583 {
+-	struct device	*dev;
+-	struct regmap	*regmap;
+-	int		chip_irq;
+-	int		irq_base;
+-	struct mutex	irq_lock;
+-	unsigned long	group_irq_en[MAX_MAIN_INTERRUPT];
+-
+-	/* For main interrupt bits in INTC */
+-	uint8_t		intc_inten_reg;
+-
+-	/* For group interrupt bits and address */
+-	uint8_t		irq_en_reg[RC5T583_MAX_INTERRUPT_EN_REGS];
+-
+-	/* For gpio edge */
+-	uint8_t		gpedge_reg[RC5T583_MAX_GPEDGE_REG];
+-};
+-
+-/*
+- * rc5t583_platform_data: Platform data for ricoh rc5t583 pmu.
+- * The board specific data is provided through this structure.
+- * @irq_base: Irq base number on which this device registers their interrupts.
+- * @gpio_base: GPIO base from which gpio of this device will start.
+- * @enable_shutdown: Enable shutdown through the input pin "shutdown".
+- * @regulator_deepsleep_slot: The slot number on which device goes to sleep
+- *		in device sleep mode.
+- * @regulator_ext_pwr_control: External power request regulator control. The
+- *		regulator output enable/disable is controlled by the external
+- *		power request input state.
+- * @reg_init_data: Regulator init data.
+- */
+-
+-struct rc5t583_platform_data {
+-	int		irq_base;
+-	int		gpio_base;
+-	bool		enable_shutdown;
+-	int		regulator_deepsleep_slot[RC5T583_REGULATOR_MAX];
+-	unsigned long	regulator_ext_pwr_control[RC5T583_REGULATOR_MAX];
+-	struct regulator_init_data *reg_init_data[RC5T583_REGULATOR_MAX];
+-};
+-
+-static inline int rc5t583_write(struct device *dev, uint8_t reg, uint8_t val)
+-{
+-	struct rc5t583 *rc5t583 = dev_get_drvdata(dev);
+-	return regmap_write(rc5t583->regmap, reg, val);
+-}
+-
+-static inline int rc5t583_read(struct device *dev, uint8_t reg, uint8_t *val)
+-{
+-	struct rc5t583 *rc5t583 = dev_get_drvdata(dev);
+-	unsigned int ival;
+-	int ret;
+-	ret = regmap_read(rc5t583->regmap, reg, &ival);
+-	if (!ret)
+-		*val = (uint8_t)ival;
+-	return ret;
+-}
+-
+-static inline int rc5t583_set_bits(struct device *dev, unsigned int reg,
+-			unsigned int bit_mask)
+-{
+-	struct rc5t583 *rc5t583 = dev_get_drvdata(dev);
+-	return regmap_update_bits(rc5t583->regmap, reg, bit_mask, bit_mask);
+-}
+-
+-static inline int rc5t583_clear_bits(struct device *dev, unsigned int reg,
+-			unsigned int bit_mask)
+-{
+-	struct rc5t583 *rc5t583 = dev_get_drvdata(dev);
+-	return regmap_update_bits(rc5t583->regmap, reg, bit_mask, 0);
+-}
+-
+-static inline int rc5t583_update(struct device *dev, unsigned int reg,
+-		unsigned int val, unsigned int mask)
+-{
+-	struct rc5t583 *rc5t583 = dev_get_drvdata(dev);
+-	return regmap_update_bits(rc5t583->regmap, reg, mask, val);
+-}
+-
+-int rc5t583_ext_power_req_config(struct device *dev, int deepsleep_id,
+-	int ext_pwr_req, int deepsleep_slot_nr);
+-int rc5t583_irq_init(struct rc5t583 *rc5t583, int irq, int irq_base);
+-int rc5t583_irq_exit(struct rc5t583 *rc5t583);
+-
+-#endif
 -- 
 2.53.0
 
