@@ -1,64 +1,65 @@
-Return-Path: <linuxppc-dev+bounces-26944-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26945-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 32BD8C79FB7
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2026 14:04:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A9B47C79FB6
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2026 14:13:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hg2bs449Dz2ytT;
-	Thu, 10 Sep 2026 00:04:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hg2pj16B8z2ytj;
+	Thu, 10 Sep 2026 00:13:33 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788962649;
-	cv=none; b=X+ty2m3QJloWs34N8OLinfysYPp7bTsiT9tnf8RZyhLSeU/r/t47R5KddymPHZFNVUC2QyMUCrgFgPw7L7nrloudpPNi9EjZ7yFK8dCTA62f8bjEuhLqX/ZrJTgokcamUCPyRm97xtlHulrsOQ/7kwa2elxdBhA7faMJAvRn2TpBYP3+wZ7aB/rW971ILebrhX98St4Gof36lKdXYNyStwXEIIpcmKRVf6FrqmqyKUNtCS3wWPCqkR7aGE4JfejCBXZiNeiO8457V/Ogzuh/HslWQdJphCxyFET7OGljfG86AI96eqemURdqPKsu0wE40biq6GRm90IZyVGqlZvPWQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788963213;
+	cv=none; b=dhWEi8RMfmlNxibe3Xcovm4Rup/EKuLX8HBsJOXka80guM6dv3tHcE2bIw70/jjjNxkCwxD6LBM5qP1h7ey1cysLCQVjtEK871Z6KJyNladYQpjjCeYvah8Pzl22KDmppBOkhZnoqgL830RMHxNXfIR7+S9B9yf2ANtoCTJ4oKkBXNExpPkXVJ0TyMPDZun3E53ObZEWtXbm6maUWUQXdWwoNBesijVUrP0LISQzBUMsZ0FV9nULxL18cJWpumiYw/wPUfe9EftA+6LtPTD2UCk5IPW4nz9JdvIQtItx8m9RaLohYEh9IVxZLfpYu2kUWfbOISal/axEsjmBgudETA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788962649; c=relaxed/relaxed;
-	bh=0qvI3Ij6pHot4GWpLZbVGJuwCMn3p13tzKFz475rd7w=;
-	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=NWSEPWpnMAcF6ZYdgsWAikh7Kbu5+6QXJEqi5XVfS65NhPiCAk6a7/LoNnLuI0SO6EGzV7WViu/8PJoFZsiF6N0Zw3YF7bluPwxv8FQIvU1a1da91sB+Ihe1g2flVlMLNLigmym+9BB2vPUiUyaXBsGzgeinWzyJWEHMUNtW2SXntdC4Hsh/fH6UBOCSyZBfY0Fmqu9ct72xGo5i5XWKC5QqmSbZUHlcg8DRrWnKgX79CNV2sqpONG73KGHxkzu7/b7fpeDjgXOiGh++RUpdETtKIw7PNYKJB0QV9GoF8Rz7fSpqJmNkoMVVTflTEHoMyUjI0bouf2VbVDAv9beNPA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=f7DiDcNg; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brgl@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1788963213; c=relaxed/relaxed;
+	bh=DbCLwhHKsrQvuPl7c6hlRB0vBdGBu7+AOd7Y665FwRs=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=FNOwDSnUAAOi0CqafQ5FTJy5Fdjn3AMF/po+P2qxZjM1an+ZAR5jQEnRna+IUDCJGtzdY9iYe5P9oY6KM/vm44AQex9Wv0atHsmCRuVYT7F2daJo6RWtjlk1E37mwzAU9IcbG+xRuU/1nwxBz4p3bBmLm1jcQT0PwEBKbqtdMNoUyx1r1XERQF8m/KMyL0cgLhYY0R2cLol87W4nHxcB2Niotf7BF0wIC0jtrzaOtYYw2LOagIIquqcNvppmhd/E4KKA67N7YMgRFEn8AhROfDkxd7nekMvUA1Hr34QdZMFrcdhkD4xrhZEsoIAX7iraTbwEB+KwM7X1GJzb28j8nA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=Ic4x6+BJ; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linuxfoundation.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=f7DiDcNg;
+	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=Ic4x6+BJ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brgl@kernel.org; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hg2bp3Pvtz2ysW
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2026 00:04:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hg2pf2cpqz2yqX
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2026 00:13:29 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 8F36C44095
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Sep 2026 14:04:03 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 774371F01559
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Sep 2026 14:04:03 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788962643;
-	bh=0qvI3Ij6pHot4GWpLZbVGJuwCMn3p13tzKFz475rd7w=;
-	h=From:In-Reply-To:References:Date:Subject:To:Cc;
-	b=f7DiDcNgtX0V7nhexZdovTM5uwfD8FIy1VWToiVrwFCMZWT4ep6JgIAU9A08oRbCo
-	 AN5nLWLvXgYJ0tGr6wFrfzd3rKYIkdLPqiBR0VzeQED0wp7YlqC4jeS1GMXkHG4/9n
-	 rSRsC4A/6gdv9Gv8AQI600Wb6YYCblzz9DRARCproumk9co1hoW2WRhNGkDft6Tzax
-	 PlG1ifpPiYVwdpSR8gZdxMUAGkHqzxn1Z4gwkjoqczWwZ1lp/WEsPxvp3bMaLysJ7f
-	 oDPtMmEa6U0c/+EmoOFo4is5xc/9+yX8aTqSrj5Pdxa0aAdw1d0RPb3GcrSi18mgHW
-	 RbsjrhA44gWCQ==
-Received: by mail-lj1-f171.google.com with SMTP id 38308e7fff4ca-3a49a022221so8694981fa.3
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Sep 2026 07:04:03 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBw93N2vKugvWbcOG1DBOQUNSLkJeoI5V1vDHOWZLHjWZWT9upPFDMTMwtEhPnnnRnw1bOC+xUa2qB+7rF0=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++l0RVYYcQcLNHLy8Y0eOpXbXca6RToX8x8S28wpThQX/qXyDIGz
-	8zOov6fj0+kkN78IGqiVv80aO01LIVdVRJSNXR8uaquyytMtESmgJB4yy5Wd+WM5XMW8SmCvoML
-	wD8uuIw93ZYryzDBBQmGKyF1Pl4u2GSTlhHYH7SyZOw==
-X-Received: by 2002:a05:651c:a103:10b0:3a4:973c:9387 with SMTP id
- 38308e7fff4ca-3a4973c96fdmr5064251fa.26.1788962641476; Wed, 09 Sep 2026
- 07:04:01 -0700 (PDT)
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Wed, 9 Sep 2026 07:03:58 -0700
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Wed, 9 Sep 2026 07:03:57 -0700
-From: Bartosz Golaszewski <brgl@kernel.org>
-In-Reply-To: <20260909132153.1596191-1-arnd@kernel.org>
+	by sea.source.kernel.org (Postfix) with ESMTP id 2043940048;
+	Wed,  9 Sep 2026 14:13:27 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7C3001F00A3A;
+	Wed,  9 Sep 2026 14:13:26 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linuxfoundation.org;
+	s=korg; t=1788963207;
+	bh=DbCLwhHKsrQvuPl7c6hlRB0vBdGBu7+AOd7Y665FwRs=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=Ic4x6+BJfVqgA0x1EM68lr42+ffmU7gcKbd+GNBRbG7xDR4y/5tFVrFCgA/8ikbMh
+	 aZlZREMsNVVQqvoJFIXG+tRaHVtFng1vSSij6mEkUxiwalP1s4sDsJCi2V7SZ9G/CO
+	 JjE/WvUCJZqQwzHkvC4zBJrRqpRb1Hpq4aGSmSgw=
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: stable@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	patches@lists.linux.dev,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	Farhan Ali <alifm@linux.ibm.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Tyrel Datwyler <tyreld@linux.ibm.com>,
+	linuxppc-dev@lists.ozlabs.org,
+	Sasha Levin <sashal@kernel.org>
+Subject: [PATCH 7.2 555/556] PCI: Introduce PCI_SLOT_PLACEHOLDER constant for slot_nr placeholder value
+Date: Wed,  9 Sep 2026 15:43:55 +0200
+Message-ID: <20260909134249.905671911@linuxfoundation.org>
+X-Mailer: git-send-email 2.55.0
+In-Reply-To: <20260909134230.441546314@linuxfoundation.org>
+References: <20260909134230.441546314@linuxfoundation.org>
+User-Agent: quilt/0.69
+X-stable: review
+X-Patchwork-Hint: ignore
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -72,101 +73,124 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260909132153.1596191-1-arnd@kernel.org>
-Date: Wed, 9 Sep 2026 07:03:57 -0700
-X-Gmail-Original-Message-ID: <CAMRc=MfvwcvV7yvkXz_YikGxQ8M0_ajgGA3bf==ZpT_Z46v7EA@mail.gmail.com>
-X-Gm-Features: AcwNN1US7FJNeFLdpa5M-NPN5cGI7wXmVw6SZ5lmp-9zPkwIPUzMBGaaTvwumLk
-Message-ID: <CAMRc=MfvwcvV7yvkXz_YikGxQ8M0_ajgGA3bf==ZpT_Z46v7EA@mail.gmail.com>
-Subject: Re: [PATCH 00/14] mfd: unused driver purge
-To: Arnd Bergmann <arnd@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	Arnd Bergmann <arnd@arndb.de>, Daniel Thompson <danielt@kernel.org>, Jingoo Han <jingoohan1@gmail.com>, 
-	Mauro Carvalho Chehab <mchehab@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, 
-	Mark Brown <broonie@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Guenter Roeck <linux@roeck-us.net>, Linus Walleij <linusw@kernel.org>, 
-	Bartosz Golaszewski <brgl@kernel.org>, Jonathan Cameron <jic23@kernel.org>, 
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>, Pavel Machek <pavel@kernel.org>, 
-	Michael Hennerich <michael.hennerich@analog.com>, 
-	Support Opensource <support.opensource@diasemi.com>, Sebastian Reichel <sre@kernel.org>, 
-	Alexandre Belloni <alexandre.belloni@bootlin.com>, Helge Deller <deller@gmx.de>, 
-	dri-devel@lists.freedesktop.org, linux-doc@vger.kernel.org, 
-	linux-media@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-hwmon@vger.kernel.org, patches@opensource.cirrus.com, 
-	linux-watchdog@vger.kernel.org, linux-gpio@vger.kernel.org, 
-	linux-iio@vger.kernel.org, linux-input@vger.kernel.org, 
-	linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, 
-	linux-rtc@vger.kernel.org, linux-fbdev@vger.kernel.org, 
-	linux-sound@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	llvm@lists.linux.dev, Lee Jones <lee@kernel.org>, mfd@lists.linux.dev
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 
-On Wed, 9 Sep 2026 15:21:37 +0200, Arnd Bergmann <arnd@kernel.org> said:
-> From: Arnd Bergmann <arnd@arndb.de>
->
-> As part of my cleanup of old platforms, I had a look at all drivers that
-> may have become unused because the last platform_data or DT definition
-> was removed, or because of unmet Kconfig dependencies.
->
-> These are all the mfd drivers I found. The first ten in the list
-> actually turned out to have been unusable long before my series, and
-> I have added explanations on how I determined this in each patch. The
-> last four patches are still in use in linux-7.3 but become unused after
-> my series [1] that I hope to get merged for 7.4.
->
-> Somewhat unorthodox, I took a shortcut here and remove both the mfd drivers
-> and the corresponding subsystem drivers (gpio, hwmon, iio, input, led,
-> media, power, regulator, rtc, video, watchdog, asoc) in a combined patch,
-> to simplify the interdependencies: removing just the mfd driver would
-> leave unselectable or broken drivers in other subsystems.  I also have
-> additional patches for each of the other subsystems, currently a total
-> of 300 patches, many of which still need better testing or proper
-> changelog texts.
->
-> Please let me know if you all think this approach is ok, or if I should
-> explode this further and turn these 14 patches into 70 individual ones
-> by splitting them per subsystem.
->
-> See [2] for the current state of the overall series.
->
->      Arnd
->
-> [1] https://lore.kernel.org/lkml/20260908152808.3928630-1-arnd@kernel.org/
-> [2] https://git.kernel.org/pub/scm/linux/kernel/git/soc/soc.git/log/?h=board-remove-7.3
->
-> Arnd Bergmann (14):
->   mfd: remove unused 88pm80x driver
->   mfd: remove unused rdc321x southbridge support
->   mfd: remove unused si476x driver
->   mfd: remove unused wm8400 driver
->   mfd: remove unused adp5520 driver
->   mfd: remove unused da903x driver
->   mfd: remove unused lp8788 driver
->   mfd: remove unused aat2870 driver
->   mfd: remove unused lm3533 driver
->   mfd: remove unused rc5t583 driver
->   mfd: remove unused wm8350 driver
->   mfd: remove unused mcp-sa11x0/ucb1x00 driver
->   mfd: remove unused menelaus driver
->   mfd: remove unused iPaq micro driver
->
->  .../ABI/testing/sysfs-class-backlight         |   11 -
->  Documentation/admin-guide/devices.txt         |    1 -
->  .../admin-guide/media/radio-cardlist.rst      |    1 -
->  Documentation/admin-guide/media/si476x.rst    |  160 --
->  .../admin-guide/media/v4l-drivers.rst         |    1 -
->  .../devicetree/bindings/regulator/88pm800.txt |   38 -
->  Documentation/hwmon/index.rst                 |    1 -
->  Documentation/hwmon/wm8350.rst                |   30 -
->  .../watchdog/watchdog-parameters.rst          |    7 -
->  MAINTAINERS                                   |   14 -
->  drivers/gpio/Kconfig                          |   22 -
->  drivers/gpio/Makefile                         |    3 -
->  drivers/gpio/gpio-adp5520.c                   |  169 --
->  drivers/gpio/gpio-rdc321x.c                   |  199 --
->  drivers/gpio/gpio-wm8350.c                    |  144 --
+7.2-stable review patch.  If anyone has any objections, please let me know.
 
-For GPIO:
+------------------
 
-Acked-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+From: Farhan Ali <alifm@linux.ibm.com>
+
+[ Upstream commit c243e6c470c4695965cc8287767925bc1d9a7867 ]
+
+Introduce a constant for placeholder value and update the kerneldoc for
+pci_create_slot() to reference PCI_SLOT_PLACEHOLDER instead of -1
+throughout. No functional change.
+
+Suggested-by: Bjorn Helgaas <bhelgaas@google.com>
+Signed-off-by: Farhan Ali <alifm@linux.ibm.com>
+Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Tyrel Datwyler <tyreld@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Link: https://patch.msgid.link/20260805165518.794-2-alifm@linux.ibm.com
+Stable-dep-of: dcc5bec09e23 ("PCI: Allow per function PCI slots to fix slot reset on s390")
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
+ drivers/pci/hotplug/pnv_php.c     |    2 +-
+ drivers/pci/hotplug/rpaphp_slot.c |    2 +-
+ drivers/pci/slot.c                |   21 +++++++++++----------
+ include/linux/pci.h               |    3 +++
+ 4 files changed, 16 insertions(+), 12 deletions(-)
+
+--- a/drivers/pci/hotplug/pnv_php.c
++++ b/drivers/pci/hotplug/pnv_php.c
+@@ -808,7 +808,7 @@ static struct pnv_php_slot *pnv_php_allo
+ 	if (dn->child && PCI_DN(dn->child))
+ 		php_slot->slot_no = PCI_SLOT(PCI_DN(dn->child)->devfn);
+ 	else
+-		php_slot->slot_no = -1;   /* Placeholder slot */
++		php_slot->slot_no = PCI_SLOT_PLACEHOLDER;   /* Placeholder slot */
+ 
+ 	kref_init(&php_slot->kref);
+ 	php_slot->state	                = PNV_PHP_STATE_INITIALIZED;
+--- a/drivers/pci/hotplug/rpaphp_slot.c
++++ b/drivers/pci/hotplug/rpaphp_slot.c
+@@ -84,7 +84,7 @@ int rpaphp_register_slot(struct slot *sl
+ 	struct hotplug_slot *php_slot = &slot->hotplug_slot;
+ 	u32 my_index;
+ 	int retval;
+-	int slotno = -1;
++	int slotno = PCI_SLOT_PLACEHOLDER;
+ 
+ 	dbg("%s registering slot:path[%pOF] index[%x], name[%s] pdomain[%x] type[%d]\n",
+ 		__func__, slot->dn, slot->index, slot->name,
+--- a/drivers/pci/slot.c
++++ b/drivers/pci/slot.c
+@@ -37,7 +37,7 @@ static const struct sysfs_ops pci_slot_s
+ 
+ static ssize_t address_read_file(struct pci_slot *slot, char *buf)
+ {
+-	if (slot->number == 0xff)
++	if (slot->number == PCI_SLOT_PLACEHOLDER)
+ 		return sysfs_emit(buf, "%04x:%02x\n",
+ 				  pci_domain_nr(slot->bus),
+ 				  slot->bus->number);
+@@ -210,7 +210,7 @@ static struct pci_slot *get_slot(struct
+ /**
+  * pci_create_slot - create or increment refcount for physical PCI slot
+  * @parent: struct pci_bus of parent bridge
+- * @slot_nr: PCI_SLOT(pci_dev->devfn), -1 for placeholder, or
++ * @slot_nr: PCI_SLOT(pci_dev->devfn), PCI_SLOT_PLACEHOLDER for placeholder, or
+  *	PCI_SLOT_ALL_DEVICES
+  * @name: user visible string presented in /sys/bus/pci/slots/<name>
+  * @hotplug: set if caller is hotplug driver, NULL otherwise
+@@ -236,15 +236,16 @@ static struct pci_slot *get_slot(struct
+  * In most cases, @pci_bus, @slot_nr will be sufficient to uniquely identify
+  * a slot. There is one notable exception - pSeries (rpaphp), where the
+  * @slot_nr cannot be determined until a device is actually inserted into
+- * the slot. In this scenario, the caller may pass -1 for @slot_nr.
++ * the slot. In this scenario, the caller may pass PCI_SLOT_PLACEHOLDER for @slot_nr.
+  *
+  * The following semantics are imposed when the caller passes @slot_nr ==
+- * -1. First, we no longer check for an existing %struct pci_slot, as there
+- * may be many slots with @slot_nr of -1.  The other change in semantics is
+- * user-visible, which is the 'address' parameter presented in sysfs will
+- * consist solely of a dddd:bb tuple, where dddd is the PCI domain of the
+- * %struct pci_bus and bb is the bus number. In other words, the devfn of
+- * the 'placeholder' slot will not be displayed.
++ * PCI_SLOT_PLACEHOLDER. First, we no longer check for an existing %struct
++ * pci_slot, as there may be many slots with @slot_nr of
++ * PCI_SLOT_PLACEHOLDER. The other change in semantics is user-visible,
++ * which is the 'address' parameter presented in sysfs will consist solely
++ * of a dddd:bb tuple, where dddd is the PCI domain of the %struct pci_bus
++ * and bb is the bus number. In other words, the devfn of the 'placeholder'
++ * slot will not be displayed.
+  *
+  * Bus-wide slots:
+  * For PCIe hotplug, the physical slot encompasses the entire secondary
+@@ -267,7 +268,7 @@ struct pci_slot *pci_create_slot(struct
+ 
+ 	mutex_lock(&pci_slot_mutex);
+ 
+-	if (slot_nr == -1)
++	if (slot_nr == PCI_SLOT_PLACEHOLDER)
+ 		goto placeholder;
+ 
+ 	/*
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -81,6 +81,9 @@
+  */
+ #define PCI_SLOT_ALL_DEVICES	0xfe
+ 
++/* Used to identify a slot as a placeholder */
++#define PCI_SLOT_PLACEHOLDER	0xff
++
+ /* pci_slot represents a physical slot */
+ struct pci_slot {
+ 	struct pci_bus		*bus;		/* Bus this slot is on */
+
+
 
