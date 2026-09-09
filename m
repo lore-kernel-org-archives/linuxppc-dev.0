@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-26949-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26950-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 74E17C79FB7
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2026 14:26:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BCBF4C79FB6
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2026 14:31:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hg35d0Bzkz2ytj;
-	Thu, 10 Sep 2026 00:26:29 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788963988;
-	cv=none; b=bajw+gxlm7H6Dsv0DLl6wZjHPZ/nvstIc19ZaeSvR77OFt3lZRIspby9TQ21KFnJxAB2XUKQsPGZdYdAsDYLvExs8MVTU/RQbClCZXPsbzY7bdMrWiTv7Xl1AZD9xc7cQO8xX20ARntIxkpYeQmhbb8ZxGcAaCsLlGsqG6MyRrxwE91jm4eUwkSsX+58OxnL6vwvREd0zgdveK5UC3cJv0g1r+VRJh6wJaqBIboROOgTWxhzUDTZPU5kfZI6YAkzkUvVtsmVAPYaCRSnr6Yyf4t47auqGg/vMWyQd2ULlEaISsMC3BBJPbWmbl71zNRnhrR4CBXQA2nvDbvLgy6mVg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hg3Bp6nF0z2ytj;
+	Thu, 10 Sep 2026 00:30:58 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788964258;
+	cv=none; b=lidUqrFVNUxgj4AZu+3aaW7qMnEkfGi5Xm99SazG34Att2+gkQTgROzHYveI3LrsEd6UYV1yk4HDVbDpMeZCN2GHwWaYsa9jKz4AMSkqD5+iho89rtuK7BQnWUAijlYfOh8YL3odzqi41SPHHzDsppH1reESrWVccP8jXxLUMI0ex/0immKEDipLeTrvYKu45CKjVezDzl54DdmrvfbOm4GD8k4857MdGDRV3SCscRCRjzMF8JwPJG/f4PI014iDn2ht02F/5GAj2yr8aYG4PJNqGpI8Tw425e3b8bzUNpp385ld4QA7RRweNV4oNeaMHtP9Xu8mA2EeC8GzfBqoAg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788963988; c=relaxed/relaxed;
-	bh=B2E1XiouJbiKFZMbAZsWqLwigQkhP4Kdgia2e4biCBg=;
+	t=1788964258; c=relaxed/relaxed;
+	bh=0JQwRgvIC4ueJX8o+CvfaElIpF5L8LDHR7i3PCDbnuc=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=CfVogorCU0aV2N3YbIf0O4psdico14a0EHFzipXNvUmfSPRE7v9ZcleqeNAkeWt3LACiFKvkKyJAiBl4+4YVBYfRWah/4WP5C5FgarUe4/qhakSt8YK1x/JjHnwcNWBDSMITWykr/bsikbkT6eUcKCXFRYJk9CBp+ExFvX0fs1t4fG2nOotSn2Ye7gTlUdm/h38v6FpgY3CU5QXRozd/5JPDQa4Qg7MLwDi26u+WVJisbij1Bsw/DZQxHMhPvCc4S4ZguGDnEOMKIJstOX74tOHCJJqHSpj3f9ZfObQLIcRPRfF7B45YHK8yAFGLi6mmejlz7QnJFUJN+UI1q/nbVA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Lof0ndO+; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=VKObLdGurmlhOZhMLbXax8TfDKAYnnIQrf2FfIJy7uc/Ge8O7qdPC1jdQnaJ14x5O5rXRkbV2C53tgpRTqGlr0yRRAoDecPOI95uEnMss1FXGoERIi26PEMW3Dptk2vwJDr3BI5gbdKF2jCNMkFxLX29Dbn7UdvnyknvBv2Mh9gM6CsdqTQqX9pjeazTD9QBKLFk5GxiQRvYLfO4rUtSl4nIeWfcSefGOOQK0/C+oSVn1glSBX6o7AYTqCXWjnxeDK1Att+RvUK5IdKtGUog9k3e+hdT8qGTGRNRJYe36e8Res21JZ9Wkt0Ol2uveRT+o0Tu25qZvv+v8ouaeE00fA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Osi6BhtZ; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Lof0ndO+;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Osi6BhtZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hg35c1BSZz2yth
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2026 00:26:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hg3Bn4Xz2z2yth
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2026 00:30:57 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 6C77640E35;
-	Wed,  9 Sep 2026 14:26:26 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 912861F00A3D;
-	Wed,  9 Sep 2026 14:26:25 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 352B160213;
+	Wed,  9 Sep 2026 14:30:55 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 268D71F00A3A;
+	Wed,  9 Sep 2026 14:30:54 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788963986;
-	bh=B2E1XiouJbiKFZMbAZsWqLwigQkhP4Kdgia2e4biCBg=;
+	s=k20260515; t=1788964254;
+	bh=0JQwRgvIC4ueJX8o+CvfaElIpF5L8LDHR7i3PCDbnuc=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=Lof0ndO+GCvvBWzlCg0yuyQ5KaJmYCa1A9RAJ7L7UlIY4hT386H/5yqmWj13bm194
-	 tIDcdPEisVu66g0/lV8RVxBYwCrCYSJlm1/+mysASFusAIc8rm5ysuTDCgINWuCvzf
-	 u4F86HGZffRfd0dMRiICmcN6xeAl/m4c5nWBxh2hjbcLrR5twQkwH4me2Waldn6VDg
-	 glLz1gQSey5KTegEGp2bM0KVH+UNShIWypEX85pJtUL5NBn7NhyT9MOIk4a0S4iC83
-	 b2go8ZI0KoKhglZ1l7l6M2FBEf0znzStbZbhSqKTeZZ53q3LuavNXBe7pzRQLHRnDB
-	 V+YNUsH8IbkAQ==
+	b=Osi6BhtZqhTrOaqmb+QjrCrLFxkuMlOeXeHb0U1VRQ+oAkIcszWCHMJSXpRX5nvpn
+	 jlwtt/vtIYjzDcIYf7HQcwe2iezd1LqbEuw5nERWNiom6HkMES30RWHslj2o+05O8K
+	 m0UD+51a2td4kPemMmYfJq1jrEL9Jfju2WM50RB01g/w6+XGLz9EKF/fepu5A1m9zK
+	 0NjRiScrTrcfvhGxzdcBER89qp2h5rc56pNW699gTg0DcfUlrUiqAlAYwJ/RSSWHkK
+	 77kpvUM1l1l8nvz0+b4xPwNxnjVzdfaImJsT1zMQoYAaEqGvVb/tUCm7eCpOsv1QV0
+	 KL6oHuNfdmqKw==
 From: Sasha Levin <sashal@kernel.org>
 To: stable@vger.kernel.org
 Cc: Farhan Ali <alifm@linux.ibm.com>,
@@ -52,12 +52,12 @@ Cc: Farhan Ali <alifm@linux.ibm.com>,
 	Tyrel Datwyler <tyreld@linux.ibm.com>,
 	linuxppc-dev@lists.ozlabs.org,
 	Sasha Levin <sashal@kernel.org>
-Subject: [PATCH 6.6.y 1/2] PCI: Introduce PCI_SLOT_PLACEHOLDER constant for slot_nr placeholder value
-Date: Wed,  9 Sep 2026 10:26:22 -0400
-Message-ID: <20260909142623.2468439-1-sashal@kernel.org>
+Subject: [PATCH 6.1.y 1/2] PCI: Introduce PCI_SLOT_PLACEHOLDER constant for slot_nr placeholder value
+Date: Wed,  9 Sep 2026 10:30:51 -0400
+Message-ID: <20260909143052.2492494-1-sashal@kernel.org>
 X-Mailer: git-send-email 2.53.0
-In-Reply-To: <2026090355-depose-snarl-daa4@gregkh>
-References: <2026090355-depose-snarl-daa4@gregkh>
+In-Reply-To: <2026090356-exchange-blinking-b06e@gregkh>
+References: <2026090356-exchange-blinking-b06e@gregkh>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -136,7 +136,7 @@ index 779eab12e9810..ac8c512190df4 100644
  	dbg("%s registering slot:path[%pOF] index[%x], name[%s] pdomain[%x] type[%d]\n",
  		__func__, slot->dn, slot->index, slot->name,
 diff --git a/drivers/pci/slot.c b/drivers/pci/slot.c
-index ed645c7a4e4b4..4cdef17152779 100644
+index 7f4bcf359b917..82a37a4973f9a 100644
 --- a/drivers/pci/slot.c
 +++ b/drivers/pci/slot.c
 @@ -38,11 +38,20 @@ static const struct sysfs_ops pci_slot_sysfs_ops = {
@@ -245,10 +245,10 @@ index ed645c7a4e4b4..4cdef17152779 100644
  	up_read(&pci_bus_sem);
  
 diff --git a/include/linux/pci.h b/include/linux/pci.h
-index db4d82aae1343..9e28323631d03 100644
+index 282e86b9a35fe..8babaffbe8b11 100644
 --- a/include/linux/pci.h
 +++ b/include/linux/pci.h
-@@ -72,12 +72,23 @@
+@@ -71,12 +71,23 @@
  /* return bus from PCI devid = ((u16)bus_number) << 8) | devfn */
  #define PCI_BUS_NUM(x) (((x) >> 8) & 0xff)
  
