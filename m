@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-26942-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26943-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 174EBC79FB7
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2026 13:45:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 746CFC79FB6
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2026 13:47:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hg29x2nJQz2yvG;
-	Wed, 09 Sep 2026 23:45:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hg2Dq0HF7z2ysb;
+	Wed, 09 Sep 2026 23:47:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.246.85.4
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788961509;
-	cv=none; b=N+dJhGZIguqgsHyaPNGWCNpJEtSw+7YvUd9WN4hfdE3QIZGFDuoH/LpQ2/n2RTF68lvUZAsMhfW8kzHCm5YytcGDqa2cEdCgGKK49LHGFy548AvIypKwKDZbOkdTUAIS2fvAWpmw2p8lTnIoJNnyvF/TZKdl4E+bBwsHljTEl8t7oY86ngkHjDqUUQjpAPUhTiz+rEoFASnsPYegOiyOQK068L46SegYc9OujvTpAllGRNPj+KuUDT5F2qNWyjuQSbSgeBUwqUsu+5lYJTTKC+F7UFRtsF/IqMp0JrpKk5n2TjsIxYsSqGhVWrwNPdm1BXFdc2pPcgyGzsZU4OfK/g==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788961658;
+	cv=none; b=EzyzIM6V/nnqnw+JcJ1kaJnqgpMaguNYA1DHiKwPGssYVYzT8xCNia3RJp9chm1I6PwSsaBG8Mf69ufNULRMIU2mmo8PYGc27QdFtyqlpfgVr0a6wWc/1HigjF5UPhpc6OMO8pfpEHfyUjp8rfTwJ3MEjLJ0Bh4CGIhlOAMfXvGjRZ4ZW9XsWSqq4Fgld3LMxgBt2TfXVORzf0iZTYBtaC6IwFkdDlKE/cXdMPZd4DFoTAMj+ykLQhDaBJRidU01V7P+PwS+BBTeuZafTdshnRa21/I3wfge0yd3f4QMfo/J7pEhxof5bTuNJUe08w1Lo2tbOFx29EGuZzhOaPmlfg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788961509; c=relaxed/relaxed;
-	bh=SddRT3djP09Ed0ShkS8xpytcBnp+LMCenJGnP73m0/E=;
+	t=1788961658; c=relaxed/relaxed;
+	bh=UeQWrBHUsYzfR8OG1tLDH6xJ9uIj59JiQoZuHROubjw=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=fXSbjofp44+LsMrYTrwRhSzqm+mm1RruIMugL4h7mgTuI3JLPfHxNdhAzelDu/0gEG2pjjmPuMEuISnGJyrrlLNnBkAVKpjCklvWbRVv7MrCBqe9TxKyX1PXmaHPGrb47wACfDyhq9iNoBuosBcGt686QmMH2QOgol6vI0DHh+SG3jym2VZiuAAa8O9xX1tFVBlacXkAm4PgnMyxQLk8iZm5mITMBfL8HVuVx9HlE4ylifjK9mEjTRAdZOKs33FOhwTeoywRJij6NB5G9XIUndWthkzrXff9QWreMjiko+CE1fvikxec0X3uj6e8YEMIqd1ldkDW2ecyInyTrBmNQg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=qFOrBYn+; dkim-atps=neutral; spf=pass (client-ip=185.246.85.4; helo=smtpout-03.galae.net; envelope-from=alexandre.belloni@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=Z/QMkAqwDZZumEEn9+gE98lWntUaR2CociNt2xJqsCEExMZLaWkNGxXcKt+3EPFFbzJ/4JEWP8mRIsrF/ntSm9s+m8AizDIjfHgHW1yg9/8enA3v0hHbOpsfxovoQU7Ie7b3dj3zufbeu9TLUggteAijuvT3GAqEStg5g4YmTdrCOVAkps6up7A5ZWcVig4j8tHmggOK0wmAfV8QD7LQyRoBH/eGJ9pIY0l0RxOadx4iutgIqNdYYj553kx371ZnuqIeNDrCaGWPqeQbOFvzvrTZBdgJXJqUGnE1S9S1dJ4drf82tIGDD5MxK9DuvBsrRc5wqagYm1xWp69K5O1lDg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=GCHpAQ+O; dkim-atps=neutral; spf=pass (client-ip=185.246.85.4; helo=smtpout-03.galae.net; envelope-from=alexandre.belloni@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=qFOrBYn+;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=GCHpAQ+O;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=185.246.85.4; helo=smtpout-03.galae.net; envelope-from=alexandre.belloni@bootlin.com; receiver=lists.ozlabs.org)
 Received: from smtpout-03.galae.net (smtpout-03.galae.net [185.246.85.4])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hg29v4fz0z2yrW
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Sep 2026 23:45:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hg2Dp1N4kz2ysW
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Sep 2026 23:47:38 +1000 (AEST)
 Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
-	by smtpout-03.galae.net (Postfix) with ESMTPS id 2E3924E41592;
-	Wed,  9 Sep 2026 13:45:01 +0000 (UTC)
+	by smtpout-03.galae.net (Postfix) with ESMTPS id 18DAB4E41592;
+	Wed,  9 Sep 2026 13:47:35 +0000 (UTC)
 Received: from mail.galae.net (mail.galae.net [212.83.136.155])
-	by smtpout-01.galae.net (Postfix) with ESMTPS id E847760448;
-	Wed,  9 Sep 2026 13:45:00 +0000 (UTC)
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 6CCDC11C7AF3A;
-	Wed,  9 Sep 2026 15:44:44 +0200 (CEST)
+	by smtpout-01.galae.net (Postfix) with ESMTPS id D920F60448;
+	Wed,  9 Sep 2026 13:47:34 +0000 (UTC)
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id E878511C782BF;
+	Wed,  9 Sep 2026 15:47:25 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
-	t=1788961494; h=from:subject:date:message-id:to:cc:mime-version:content-type:
-	 in-reply-to:references; bh=SddRT3djP09Ed0ShkS8xpytcBnp+LMCenJGnP73m0/E=;
-	b=qFOrBYn+NlO3vUgsMN69fPT6LsFBYJ9WZx3ZN0bi+TXRklU5lr5/kdcqj8w+UMRPRv0j5t
-	1K3rOH7Bm7qvQu3jiyoKp6uHYGM8c6x1rhNO8aOD1Lqa6rFd6ssvwG5tRwPsppSGAGtRgd
-	5b7gVfCUPfVEFQMfGBUsdERF2y+Dm2OOXl5ZKnXmxvHCRKffwFRioHPfWG2OwRUDNrwXtE
-	ercet4pqf4lgc/m27S+AgsBlIdNPFQsq5ss03yxvE6jIxeHl0BvkjKMfvAs9dRYxJa2i7A
-	gY/Zw554xS/+HkDK8qpgmxzcL+SfGlFij2ztErujl+hxzRnuQbt80smJlDX5gQ==
-Date: Wed, 9 Sep 2026 15:44:43 +0200
+	t=1788961652; h=from:subject:date:message-id:to:cc:mime-version:content-type:
+	 in-reply-to:references; bh=UeQWrBHUsYzfR8OG1tLDH6xJ9uIj59JiQoZuHROubjw=;
+	b=GCHpAQ+OrX4KfJhFAWkevTRLOtcTPUS8G9Z+Qk0T1XTKkFRt9FjGrGjCYhRGd9BtQhCjo/
+	EjrkQN54tfMFRkO5+xmticdh9JQRCnP2A6n6eTLXDpmK7ohZQa0h2ZLHdz6McP4I8NsWd7
+	Vhhg7eZxU5SjMneaW0TFE74yKyqTBm3QDE3kSX31z2V59Awjm5z2K1z2U17N9pizI0//yg
+	GjoEmkXUvZsDmi3QmJQ5OdeX67P1EmPvSDqjVYKsmyBs8NvIaHtOqAOZbnt7yRBk6aq0Q9
+	1TDtXjaJ35VLd+ubtK3nvQd8cnqvwUzV/I8u/lS/OxzWY95CvKOygSUOa+SMoQ==
+Date: Wed, 9 Sep 2026 15:47:25 +0200
 From: Alexandre Belloni <alexandre.belloni@bootlin.com>
 To: Arnd Bergmann <arnd@kernel.org>
 Cc: Lee Jones <lee@kernel.org>, mfd@lists.linux.dev,
@@ -75,10 +75,10 @@ Cc: Lee Jones <lee@kernel.org>, mfd@lists.linux.dev,
 	linux-rtc@vger.kernel.org, linux-fbdev@vger.kernel.org,
 	linux-sound@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
 	llvm@lists.linux.dev
-Subject: Re: [PATCH 01/14] mfd: remove unused 88pm80x driver
-Message-ID: <20260909134443876d2166@mail.local>
+Subject: Re: [PATCH 07/14] mfd: remove unused lp8788 driver
+Message-ID: <202609091347259a3b9fa4@mail.local>
 References: <20260909132153.1596191-1-arnd@kernel.org>
- <20260909132153.1596191-2-arnd@kernel.org>
+ <20260909132153.1596191-8-arnd@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -94,18 +94,22 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260909132153.1596191-2-arnd@kernel.org>
+In-Reply-To: <20260909132153.1596191-8-arnd@kernel.org>
 X-Last-TLS-Session-Version: TLSv1.3
 
-On 09/09/2026 15:21:38+0200, Arnd Bergmann wrote:
+On 09/09/2026 15:21:44+0200, Arnd Bergmann wrote:
 > From: Arnd Bergmann <arnd@arndb.de>
 > 
-> This pair of drivers was originally added as companion chips for pxa/mmp
-> SoCs, but the corresponding platform code was never merged, so it has
-> been unused the entire time.
+> This driver was apparently never used upstream, and without devicetree
+> support cannot be used by external board support.
+> 
+> The MAINTAINER entry was already removed in 2021 as the email address
+> bounced.
 > 
 > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+
 Acked-by: Alexandre Belloni <alexandre.belloni@bootlin.com>
+
 
 
 -- 
