@@ -1,57 +1,57 @@
-Return-Path: <linuxppc-dev+bounces-26918-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26919-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5A3F8C79FBE
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2026 12:08:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A990AC79FAD
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2026 12:09:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hg01y4LrDz2yps;
-	Wed, 09 Sep 2026 22:08:06 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788955686;
-	cv=none; b=bbVDA16+BBa7cUdUDgoAzjjU0g5RU2cmuDKn2/hF7HmdYGlGOfTdlxCj1ZDLjFgDznc6X5CUcwjcKLOobGjmF8OnhUBJwJlRnDJq5Lvq7iFVD04k5NXIy6UbNkLM9F/E/HiunbJymWczdX9TlRR4+2YjaWYl45e9w3ZcXRwTf3RukJMPo2N18U2D0WOGAMa+caNtn2xZ27UVY8V3/qm+wgni+6MmRhId2nJSsw+6oDL7sPCTyPLCFLDUD7dmKY/EMm5lmxAm/CBdIf0CsFmaIQ92577ves/FpE5SMkOjYt3c++ll226+5i8h6SKJD0v7J2IHBnwRRrllmR9kr3F9uA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hg03873qXz2ypW;
+	Wed, 09 Sep 2026 22:09:08 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788955748;
+	cv=none; b=dUGLpoNmp3hrhxYLcqVxiO2jrbUpHcnJd3wQHlkUCO0Igm9G3v8RgwTVIowaSRWj3O8SNI5ZtkXWcmtuIhzfAGLMaRNVT4t3EcT7MgUvpDrsxUmGKHLiuqqSbPJrJDNkKm5iHENGjxianPycHE2sjshhDmtrrM8EjUymwaYKMdTqiJo6WMfB5i+0tOC7VhUe/lRyEVm4JcpLv7mib83IKOtdR4lMQbkmws3ASDgEjCx5eikyePAb77Dsg5ieWkmn9n1qOU4IuYcIG+5mq/rmqImFKznsuY/RW5Bh5yyB+zMTS9JVmLZhPWe1EOcsj3PQFIhWiZ/VvkYxHt2yZ3q8kg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788955686; c=relaxed/relaxed;
-	bh=s0XvwQqrYpxLMLTJmGlP3OBogX+H2vHo2hOLlq5lC/4=;
+	t=1788955748; c=relaxed/relaxed;
+	bh=+vl7JXesMvOyLvN4TqdpRFvW5tHWQV0Z6fTfMaOZcos=;
 	h=Date:Message-ID:From:To:Cc:Subject:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=on1qm7R/0ZuiF8G9+9qOTPZ2PaXl2MXvvMUy18SwH/VeOGZIg+eq0nqRgur/1OGkgxTecvKfYnGAilVrKutaiG4IjyWjwUdgr3PPLPBVNeX+bBZY3ikrzcT9DopNfimIjUCCGe/p9k5u82ibQa4hhv9Bsiht3adCnG/bUse8hBuJfy4i5G03K3D0BU0HJodHc0kknJcKbLdlaklq4xQFP2zNYeUDn3dQuYvlxY49JftDBoPhp5nTnzhdmy6KIEop4IHYHc11b05FLLH9LHcTy3KmFyU6BMaJVMISxAhfD6dfTludINvctXbzDrP0xLJuPx6CqaO1igIS6CSlR7QlGg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TLY49pi+; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=maz@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version:Content-Type; b=oQQb92gSVYYVpcEhNpZ2DwVwOjTNSZxQtw5kxEpSIZHfBewL8iUHEaby7RMSebWr4lsI7wXDxw64dn0ZETXpSUTG5y0XfAafJ0a4TIIlVTxSvRsQ+Sa1rlakmOVxO5LWj9xpT+BMC7YYQx6l1jmzaTPZJk9oBXJyNjj4PHge8UPLh7U7emGvTzhvT8ZOCBm5qR3sWlZmGxPFDchNfJFtXDNvE9062vcVKF8ipR1hDH+IjuDfuoPZSDIG4ED/ELS9x3q8cmtKWjHm70TyXVKoDvSUWOJv0TDXMBFh5/1R0PHv6+/IsImOKwvuGodo6y7K+8SSk6E8LVvQNft9F6wcrg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QSBO7XfB; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=maz@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TLY49pi+;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QSBO7XfB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=maz@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=maz@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hg01x2TjFz2ynZ
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Sep 2026 22:08:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hg0352Ht7z2xlZ
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Sep 2026 22:09:05 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 05A6F6020A;
-	Wed,  9 Sep 2026 12:08:03 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 59B041F00A3D;
-	Wed,  9 Sep 2026 12:08:02 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 6B45743668;
+	Wed,  9 Sep 2026 12:08:59 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EFC671F00A3E;
+	Wed,  9 Sep 2026 12:08:58 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788955682;
-	bh=s0XvwQqrYpxLMLTJmGlP3OBogX+H2vHo2hOLlq5lC/4=;
+	s=k20260515; t=1788955739;
+	bh=+vl7JXesMvOyLvN4TqdpRFvW5tHWQV0Z6fTfMaOZcos=;
 	h=Date:From:To:Cc:Subject:In-Reply-To:References;
-	b=TLY49pi+Cs7EEMaDTGcn4qy6Qpcb4tCLLQabsiuxRuieFcOduuhR0SXsNy/UqV053
-	 LTLJzRsrZobFM+u8KAWi/AxL9rak8lF/hB3ASc5j/P5gK6JsTYTLznyOIjtDTtDa+k
-	 ORmjuFe/YcEbLMRVg0hXrf/0pz4nkqGBIjyKjBGWoHBcNRUe90PkvSLs5HLrZYszHB
-	 EdQZy99ss9QvvDBlcj1jiu7Nbzz/FMu6uLgae9WC6VNYg9MrsiTw00X9RT6CKbWfK3
-	 uOoG3Ngxmo6HIBl33vl+TtXZPg1CPUWrOiI2FFoUv677uPNi2hHjh6Cry1F/dt0+F4
-	 wpDbNWMsR4n5Q==
+	b=QSBO7XfB9eJuCgdZw4woX9h6hLVv1DAAKEMcqqTtIlfNGaiMpuLvQbzhC/HsUDqDy
+	 15tzsyERcKb/dCy0KrTkU176RhbTCcy21TSs/XRVe0a2CeHrpUDlqlX+4eqWNdQmSP
+	 ZwfdXLWGjYgxyEXXB+UjA+lgDSAN24eS4K+Y/at+9+bmLKnF2sQtudlKc4XZf2yWBT
+	 GWiqoV+03Qgq8XKU5kEPlMdYwMF4DBOmSD8P6FFdNW88ziMwb+5x2tUJ7KBFC2OEkv
+	 y0F1ASE9ljvI2KQ6gM2g9pgM4YchyP5SgcvLLQZd8YcLUPlszfpfiqg7ho1AxZsTq8
+	 3yCEIs6vu9sRQ==
 Received: from sofa.misterjones.org ([185.219.108.64] helo=goblin-girl.misterjones.org)
 	by disco-boy.misterjones.org with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
 	(Exim 4.98.2)
 	(envelope-from <maz@kernel.org>)
-	id 1x4H5r-00000006fj0-1Co8;
-	Wed, 09 Sep 2026 12:07:59 +0000
-Date: Wed, 09 Sep 2026 13:07:57 +0100
-Message-ID: <86y0da39wi.wl-maz@kernel.org>
+	id 1x4H6m-00000006flL-2cBD;
+	Wed, 09 Sep 2026 12:08:56 +0000
+Date: Wed, 09 Sep 2026 13:08:55 +0100
+Message-ID: <86wlsu39uw.wl-maz@kernel.org>
 From: Marc Zyngier <maz@kernel.org>
 To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
@@ -187,10 +187,10 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
 	linux-s390@vger.kernel.org,
 	sparclinux@vger.kernel.org,
 	fuse-devel@lists.linux.dev
-Subject: Re: [PATCH 27/39] mm: rename is_vm_hugetlb_page() to vma_is_hugetlb()
-In-Reply-To: <20260908-b4-mmap-prepare-vma-flag-sanify-v1-27-dacf19cce22b@kernel.org>
+Subject: Re: [PATCH 28/39] mm: drop some redundant checks around hugetlb VMAs
+In-Reply-To: <20260908-b4-mmap-prepare-vma-flag-sanify-v1-28-dacf19cce22b@kernel.org>
 References: <20260908-b4-mmap-prepare-vma-flag-sanify-v1-0-dacf19cce22b@kernel.org>
-	<20260908-b4-mmap-prepare-vma-flag-sanify-v1-27-dacf19cce22b@kernel.org>
+	<20260908-b4-mmap-prepare-vma-flag-sanify-v1-28-dacf19cce22b@kernel.org>
 User-Agent: Wanderlust/2.15.9 (Almost Unreal) SEMI-EPG/1.14.7 (Harue)
  FLIM-LB/1.14.9 (=?UTF-8?B?R29qxY0=?=) APEL-LB/10.8 EasyPG/1.0.0 Emacs/30.1
  (aarch64-unknown-linux-gnu) MULE/6.0 (HANACHIRUSATO)
@@ -216,80 +216,53 @@ X-SA-Exim-Rcpt-To: ljs@kernel.org, akpm@linux-foundation.org, liam@infradead.org
 X-SA-Exim-Mail-From: maz@kernel.org
 X-SA-Exim-Scanned: No (on disco-boy.misterjones.org); SAEximRunCond expanded to false
 
-On Tue, 08 Sep 2026 21:01:31 +0100,
+On Tue, 08 Sep 2026 21:01:32 +0100,
 "Lorenzo Stoakes (ARM)" <ljs@kernel.org> wrote:
 > 
-> The is_vm_hugetlb_page() predicate is badly named - the mapping can span
-> more than a page and it is inconsistent with other VMA predicates that
-> typically are prefixed by vma_.
+> Adjust code which inadvertently perform redundant checks on hugetlb VMAs
+> and clean them up:
 > 
-> Rename to vma_is_hugetlb() for consistency, and while we're here update
-> some VM_BUG_ON_VMA() to VM_WARN_ON_ONCE_VMA() as to avoid unnecessary
-> oopses.
+> * hugetlb VMAs have VMA_DONTEXPAND_BIT set so a VMA_SPECIAL_FLAGS check
+>   suffices. (migrate_vma_setup() regains an explicit hugetlb test later in
+>   the series, once VMA_SPECIAL_FLAGS is removed.)
+> 
+> * hugetlb VMAs unconditionally set vma->vm_ops, so they are never
+>   anonymous.
+> 
+> * hugetlb VMAs do not set VMA_PFNMAP_BIT so checking for this is redundant.
+> 
+> While we're here also drop a VM_BUG_ON() which the simplified check above
+> makes unreachable, and use the new VMA flag API.
 > 
 > No functional change intended.
 > 
 > Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 > ---
->  arch/arm64/kvm/mmu.c                      |  4 ++--
->  arch/powerpc/mm/book3s64/radix_tlb.c      |  6 +++---
->  arch/powerpc/mm/nohash/e500_hugetlbpage.c |  2 +-
->  arch/powerpc/mm/nohash/tlb.c              |  2 +-
->  arch/riscv/kvm/mmu.c                      |  2 +-
->  arch/riscv/mm/tlbflush.c                  |  2 +-
->  arch/s390/mm/gmap_helpers.c               |  6 +++---
->  arch/sparc/mm/init_64.c                   |  2 +-
->  drivers/gpu/drm/drm_gpusvm.c              |  2 +-
->  fs/coredump.c                             |  2 +-
->  fs/hugetlbfs/inode.c                      |  2 +-
->  fs/proc/task_mmu.c                        |  8 ++++----
->  include/asm-generic/tlb.h                 |  2 +-
->  include/linux/hugetlb.h                   |  4 ++--
->  include/linux/mm.h                        | 19 ++++++++++++++++---
->  include/linux/rmap.h                      |  2 +-
->  kernel/events/core.c                      |  2 +-
->  kernel/sched/fair.c                       |  2 +-
->  mm/gup.c                                  |  4 ++--
->  mm/huge_memory.c                          |  2 +-
->  mm/hugetlb.c                              | 14 +++++++-------
->  mm/internal.h                             |  2 +-
->  mm/madvise.c                              |  4 ++--
->  mm/memory.c                               | 12 ++++++------
->  mm/mempolicy.c                            |  2 +-
->  mm/migrate_device.c                       |  2 +-
->  mm/mmap.c                                 |  2 +-
->  mm/mmu_gather.c                           |  2 +-
->  mm/mprotect.c                             |  2 +-
->  mm/mremap.c                               |  6 +++---
->  mm/page_vma_mapped.c                      |  4 ++--
->  mm/pagewalk.c                             |  2 +-
->  mm/swapfile.c                             |  2 +-
->  mm/userfaultfd.c                          | 26 +++++++++++++-------------
->  mm/vma.c                                  |  8 ++++----
->  mm/vmscan.c                               |  2 +-
->  tools/testing/vma/include/stubs.h         |  2 +-
->  37 files changed, 92 insertions(+), 79 deletions(-)
+>  arch/arm64/kvm/mmu.c         | 4 +---
+>  drivers/gpu/drm/drm_gpusvm.c | 3 +--
+>  mm/migrate_device.c          | 4 ++--
+>  3 files changed, 4 insertions(+), 7 deletions(-)
 > 
 > diff --git a/arch/arm64/kvm/mmu.c b/arch/arm64/kvm/mmu.c
-> index 9ba86450fe4a..a7968f8d24bf 100644
+> index a7968f8d24bf..3c1240ffc38d 100644
 > --- a/arch/arm64/kvm/mmu.c
 > +++ b/arch/arm64/kvm/mmu.c
-> @@ -1463,13 +1463,13 @@ static int get_vma_page_shift(struct vm_area_struct *vma, unsigned long hva)
+> @@ -1463,14 +1463,12 @@ static int get_vma_page_shift(struct vm_area_struct *vma, unsigned long hva)
 >  {
 >  	unsigned long pa;
 >  
-> -	if (is_vm_hugetlb_page(vma) && !(vma->vm_flags & VM_PFNMAP))
-> +	if (vma_is_hugetlb(vma) && !(vma->vm_flags & VM_PFNMAP))
+> -	if (vma_is_hugetlb(vma) && !(vma->vm_flags & VM_PFNMAP))
+> +	if (vma_is_hugetlb(vma))
 >  		return huge_page_shift(hstate_vma(vma));
 >  
 >  	if (!(vma->vm_flags & VM_PFNMAP))
 >  		return PAGE_SHIFT;
 >  
-> -	VM_BUG_ON(is_vm_hugetlb_page(vma));
-> +	VM_BUG_ON(vma_is_hugetlb(vma));
->  
+> -	VM_BUG_ON(vma_is_hugetlb(vma));
+> -
 >  	pa = (vma->vm_pgoff << PAGE_SHIFT) + (hva - vma->vm_start);
 >  
+>  #ifndef __PAGETABLE_PMD_FOLDED
 
 Acked-by: Marc Zyngier <maz@kernel.org>
 
