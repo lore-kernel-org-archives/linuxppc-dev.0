@@ -1,122 +1,64 @@
-Return-Path: <linuxppc-dev+bounces-26953-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26954-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F1A94C79FB6
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2026 14:50:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C64A2C79FB6
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2026 14:53:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hg3ds266Yz2ytx;
-	Thu, 10 Sep 2026 00:50:57 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:4f9:3051:3f93::2"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788965457;
-	cv=none; b=DnHF6Hj1lcnfmIYamAjg+AmiGMm68PClzRzfhOHs6L3U9fbSL9Z1ZKSxZREA572sTL9vzgBvrJddj95U2E5VFmitg5fQmnEkakRkDPQxAcI1LbTWqZ986BGA+TFQeDrOdVYLMsEXFmeeKZSIuff5V67+5ii5U700dx9COrUiCiwFZfWViwJRMi2LZO8O77oIosePVDVaQ2hmFvICLIheNNhgZTjz9eI+vPW7ZTMdXSN/MsF/5D4ghhoExuB/444yxEwG86saaGjbF5b8QeY1kFVtexF8e47i2K8lT93kPRyoO1rsFOUBsNJPF6YU9Qk+yOOkdCTZl2Rxihz106dFEw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hg3j114sWz2ytx;
+	Thu, 10 Sep 2026 00:53:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788965621;
+	cv=none; b=afutfgZDV48Sr2YRybXPOY+X4ZcmCbJ1Nn8j/GFBnW19F4SZkYH/XSS3Qur4OiFC2oICpOepzIRB5KwoCvHn3uCrSci1xPcO9oyi5ijzWz/fjnWRhYZiWxjtArtctq8gRmA2xmH4URc4tsuPvoFhBGKUsFtwwxA7TEpdDhnpz/CNaMWab+syQJ3jt5O07BzuLAobwnm0L+OSUIuzGKfI6px/Luu+uuPStN1lyE6734RbEa9iqQ5tQKZdKBocpgz87TDfQylsXu34DztmmLMQVQeQ4+qWfknnSjiy5BZ+R93Z9b6kBsNY5HTxZUn/9q5pMny5zkB5fBXrv8klECvWsg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788965457; c=relaxed/relaxed;
-	bh=WFpW3j2yfHvwL1AGJpeP1LDFFiQmnofCJ0pBK/QfQMA=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=gTGM935rqInObQ+4tvtOadosIlqz1f9oYBz2SQjVRQ15s4zd/3ovJlA0m5Lom31pHxUSxeoFXNjoz/YKMVPedH0QGCpWtWqyioOVvvQQZNlYuoPS8ODZDOgN544Gr42LjDUWTn6xkSS2JSUcLu7Eh30UrKffkcypnekf6G/0cAcW6Jwe0n4C2mpEVl2rM+AXLn7Kz+1MhWZfVBXXzJKOyYwiLZ+9rldGr2xKipM2nFgMmmZRf6j2g7n0aU7E9gxqFOPDiWOCEv18NsboXQ9C252/zco9bu85V/Ewh4zWJD5PzcbOWEEMec9O0A912zAvsXDk1CqTNVdwA5ciEqnaBw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=alien8.de; dkim=fail (4096-bit key; unprotected) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256 header.s=alien8 header.b=bEJ/8Uz5 reason="signature verification failed"; dkim-atps=neutral; spf=pass (client-ip=2a01:4f9:3051:3f93::2; helo=mail.alien8.de; envelope-from=bp@alien8.de; receiver=lists.ozlabs.org) smtp.mailfrom=alien8.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=alien8.de
+	t=1788965621; c=relaxed/relaxed;
+	bh=Cu7e+/glITxj+RcQ656fylfEU6xs0I0S8dv0bx2Y4So=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=Zm85znuD4pw4Kc3cR1wX1LpM7a8uyL17orH1j/09jMO2cm8Li+89R9aMcSyBkCZui8fdQ9+zlVOQbHySJWBGonMtfv+YpDS0jQ/tyhuvL/H87dXwJp3cTnQnETXrZH/oWpEOFc5OkkleS3F3Ce8tsQlTm+cNBZxcWn/uG6NKM4dxsJsQmr64Jlqt3rToy9H//3dlF3R30HW3b2vO+KnxYksQh6HX0yKnDkcDTadTQimpiroCfd9wIb1h7JTe9urEe7jfYfpvN9Nl8U6bSj5jly5c9U6T3Fa4N3L0LyZj/cAGVJgtKEylZg5DYgEwCOdbVWTZQiRMg5dm3AhUAR3N7w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jYc8Rg5s; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (4096-bit key; unprotected) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256 header.s=alien8 header.b=bEJ/8Uz5;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jYc8Rg5s;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=alien8.de (client-ip=2a01:4f9:3051:3f93::2; helo=mail.alien8.de; envelope-from=bp@alien8.de; receiver=lists.ozlabs.org)
-Received: from mail.alien8.de (mail.alien8.de [IPv6:2a01:4f9:3051:3f93::2])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hg3dp1nHNz2ytj
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2026 00:50:51 +1000 (AEST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by mail.alien8.de (SuperMail on ZX Spectrum 128k) with ESMTP id A382C40E02C2;
-	Wed,  9 Sep 2026 14:50:44 +0000 (UTC)
-X-Virus-Scanned: Debian amavisd-new at mail.alien8.de
-Authentication-Results: mail.alien8.de (amavisd-new); dkim=fail (4096-bit key)
-	reason="fail (body has been altered)" header.d=alien8.de
-Received: from mail.alien8.de ([127.0.0.1])
-	by localhost (mail.alien8.de [127.0.0.1]) (amavisd-new, port 10026)
-	with ESMTP id 9Q1sj3DJqz9o; Wed,  9 Sep 2026 14:50:37 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=alien8;
-	t=1788965436; bh=mhGQ4FEjJypHCScKuxG2hVB2Cr7EilB+iYsfNtWHQqM=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=bEJ/8Uz5UTuL3M3aJaZ+2GA6fHLcktGtyqNCvODV6vja9c5ofeLAw9r5500Ldr25H
-	 Qb1xaJZtybSTYQEAFER7kNXSbt0/1P3vev75HfTrRPKQqXMq8vzzF9d2raqW7yK4Jp
-	 bgsBr5p7kVDTB9kpcsKXnfA2oZFXqMgcW2v064dS00SqLJQ4fh+FTTqMfbeE6ylt6W
-	 xeBJaGn3HYw68e4HreCBSdk1xrJVqweEaR0hTlsp9ViWUcauqO5nf8umq0Nui9YTkV
-	 GKJQEUzDD6o8zodTcnqrpM4CPq6NuYAB1O13ttqJjGS36Z2uCbR6KyqXxKlafFr7b1
-	 7ctU5lA269NQ8wM09FSxrsRFiMlY4SvpNIR6FjrwsJi2GrkgzDphwoLgFgtc6VBlX6
-	 sZEWd8ZjXFr7d4kNRkfTSiYGwhdgPhGoqgJg8tB+bIw14Mw3cuHC0Q9xIa6xFUY5jp
-	 VWgJEsz5szwqtlotZDwBq7NU64xcPZ4oXFJ2qKu7h8QPHqSvB8mLBIMN7DQzBr9yKh
-	 3B1hlQLHULtH82PyIzJVS+TDy4H+TQutkiZUSuErREjAkJcHO33xV54eAiErgaiPkg
-	 dq6isTjw+AUWrupRkPovwFJvsVt6Naubw0PkaGCiRjPqR2r5eGwo9f4RLg22qsPqFP
-	 0lcuEVktIzws0Z/idTv4tvxk=
-Received: from stx.tnic (unknown [IPv6:2600:1700:38ca:c00::42])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature ECDSA (P-256) server-digest SHA256)
-	(No client certificate requested)
-	by mail.alien8.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id D243A40E01E1;
-	Wed,  9 Sep 2026 14:49:33 +0000 (UTC)
-Date: Wed, 9 Sep 2026 07:49:30 -0700
-From: Borislav Petkov <bp@alien8.de>
-To: Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-Cc: Paul Walmsley <paul.walmsley@sifive.com>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
-	Nathan Chancellor <nathan@kernel.org>,
-	Nick Desaulniers <nick.desaulniers+lkml@gmail.com>,
-	Bill Wendling <morbo@google.com>,
-	Justin Stitt <justinstitt@google.com>,
-	Andy Lutomirski <luto@kernel.org>,
-	Vincenzo Frascino <vincenzo.frascino@arm.com>,
-	Kees Cook <kees@kernel.org>, Ingo Molnar <mingo@redhat.com>,
-	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	Richard Weinberger <richard@nod.at>,
-	Anton Ivanov <anton.ivanov@cambridgegreys.com>,
-	Johannes Berg <johannes@sipsolutions.net>,
-	Russell King <linux@armlinux.org.uk>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Will Deacon <will@kernel.org>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hg3hz2k90z2ytj
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2026 00:53:39 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 38B9042EB6;
+	Wed,  9 Sep 2026 14:53:36 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5E9DA1F00A3D;
+	Wed,  9 Sep 2026 14:53:35 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1788965616;
+	bh=Cu7e+/glITxj+RcQ656fylfEU6xs0I0S8dv0bx2Y4So=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=jYc8Rg5sjFKA83ykPfKu+3F8CP3HBu4Oa+Z3E9zGK4+4Yja34Ei1GJ6RySpieMYlp
+	 J0OIeMTh7Afdqo/h0ePPDYjPfCsXFJ5bke6w+CFeBfrBViTnKRwlYrfEIA4nZW741q
+	 xFtYeMk41xp0AiDMXjZN1z6E7U1OPHt2n0RHm9TmX6fuvXmeoDhkWYV2QRVp3F2JKq
+	 WqS1Xh+edPwpMP4s205fHOxki4J8tDgHYkp9jlU39NiOi7kGH6QBkVDmie892YwAFV
+	 FjLthhH3Lk6mrkEGAT2WeY5zZAXUfSnFzaWA2+GxLSKJbmyghPGhHGu/R+wRZFlDR7
+	 bzZMOW11r94Iw==
+From: Sasha Levin <sashal@kernel.org>
+To: stable@vger.kernel.org
+Cc: Farhan Ali <alifm@linux.ibm.com>,
+	Bjorn Helgaas <bhelgaas@google.com>,
 	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Huacai Chen <chenhuacai@kernel.org>,
-	WANG Xuerui <kernel@xen0n.name>, Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	Miguel Ojeda <ojeda@kernel.org>,
-	Alex Gaynor <alex.gaynor@gmail.com>, Gary Guo <gary@garyguo.net>,
-	=?utf-8?B?QmrDtnJu?= Roy Baron <bjorn3_gh@protonmail.com>,
-	Benno Lossin <lossin@kernel.org>,
-	Andreas Hindborg <a.hindborg@kernel.org>,
-	Alice Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>,
-	Danilo Krummrich <dakr@kernel.org>,
-	Thomas Gleixner <tglx@kernel.org>,
-	Christophe Leroy <chleroy@kernel.org>,
-	Boqun Feng <boqun@kernel.org>, Nicolas Schier <nsc@kernel.org>,
-	linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
-	llvm@lists.linux.dev, linux-mm@kvack.org,
-	linux-um@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
-	linuxppc-dev@lists.ozlabs.org, loongarch@lists.linux.dev,
-	linux-s390@vger.kernel.org, linux-mips@vger.kernel.org,
-	rust-for-linux@vger.kernel.org, linux-kbuild@vger.kernel.org,
-	Jan Stancek <jstancek@redhat.com>,
-	Arnaldo Carvalho de Melo <acme@redhat.com>,
-	Alexandre Ghiti <alexghiti@rivosinc.com>
-Subject: Re: [PATCH v5 02/24] x86/elf, um/x86/elf: Move relocation constants
- to UAPI
-Message-ID: <20260909144930.GAaqFx-mjH3-u6jLjw@fat_crate.local>
-References: <20260908-vdso-absolute-reloc-v5-0-3a93791af1cf@linutronix.de>
- <20260908-vdso-absolute-reloc-v5-2-3a93791af1cf@linutronix.de>
- <20260908135513.GAaqATwXHcQD7plnH-@fat_crate.local>
- <20260908161740-0d79e592-87a6-43c5-9174-84ce1904e639@linutronix.de>
- <20260908151238.GBaqAl5iKb64meuPJl@fat_crate.local>
- <20260909075156-06ff671c-ab7b-47d8-aaa3-588b570888bc@linutronix.de>
+	Tyrel Datwyler <tyreld@linux.ibm.com>,
+	linuxppc-dev@lists.ozlabs.org,
+	Sasha Levin <sashal@kernel.org>
+Subject: [PATCH 5.10.y 2/3] PCI: Introduce PCI_SLOT_PLACEHOLDER constant for slot_nr placeholder value
+Date: Wed,  9 Sep 2026 10:53:31 -0400
+Message-ID: <20260909145332.2696721-2-sashal@kernel.org>
+X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20260909145332.2696721-1-sashal@kernel.org>
+References: <2026090357-freeness-pelvis-28aa@gregkh>
+ <20260909145332.2696721-1-sashal@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -130,69 +72,233 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20260909075156-06ff671c-ab7b-47d8-aaa3-588b570888bc@linutronix.de>
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-On Wed, Sep 09, 2026 at 07:59:51AM +0200, Thomas Wei=C3=9Fschuh wrote:
-> These names and numbers are defined by the architectures' ELF specifica=
-tions.
-> They are already cast in stone. For example see Table 4.9 of [0].
-> Changing them would break compilers, linkers, loaders and more or less =
-every
-> existing ELF binary.
+From: Farhan Ali <alifm@linux.ibm.com>
 
-So?
+[ Upstream commit c243e6c470c4695965cc8287767925bc1d9a7867 ]
 
-Your goal is to provide them to tools/. You want to provide them to
-*everything*. See the discrepance here?
+Introduce a constant for placeholder value and update the kerneldoc for
+pci_create_slot() to reference PCI_SLOT_PLACEHOLDER instead of -1
+throughout. No functional change.
 
-> That is the documentation for the tools UAPI headers.
+Suggested-by: Bjorn Helgaas <bhelgaas@google.com>
+Signed-off-by: Farhan Ali <alifm@linux.ibm.com>
+Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Tyrel Datwyler <tyreld@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Link: https://patch.msgid.link/20260805165518.794-2-alifm@linux.ibm.com
 
-Did you even read that file?
+[Backport preparation for dcc5bec09e23 on Linux 5.10]
+The stable tree lacks the bus-wide slot support present in the target's
+parent. Include PCI_SLOT_ALL_DEVICES and its core matching, address output,
+and documentation from 102c8b26b54e, without changing PCIe hotplug callers.
+This supplies the context needed for the target's per-function matching
+changes while retaining the existing behavior of current callers.
 
-"Why we want a copy of kernel headers in tools?
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+Keep the stable sprintf(), allocation, kobject, and module-link code.
+Convert only pci_dev_reset_slot_function()'s existing probe parameter to
+bool to match the target's reset hunk; its callers already pass 0 or 1.
+No functions are added. Preserve both PowerPC placeholder caller updates
+so they remain consistent when the target widens PCI_SLOT_PLACEHOLDER.
 
-There used to be no copies, with tools/ code using kernel headers
-directly. From time to time tools/perf/ broke due to legitimate kernel
-hacking. At some point Linus complained about such direct usage. Then we
-adopted the current model.
+Stable-dep-of: dcc5bec09e23 ("PCI: Allow per function PCI slots to fix slot reset on s390")
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/pci/hotplug/pnv_php.c     |  2 +-
+ drivers/pci/hotplug/rpaphp_slot.c |  2 +-
+ drivers/pci/pci.c                 |  2 +-
+ drivers/pci/slot.c                | 58 ++++++++++++++++++++++---------
+ include/linux/pci.h               | 13 ++++++-
+ 5 files changed, 56 insertions(+), 21 deletions(-)
 
-The way these headers are used in perf are not restricted to just
-including them to compile something.
-..."
+diff --git a/drivers/pci/hotplug/pnv_php.c b/drivers/pci/hotplug/pnv_php.c
+index 03c4d0d7f9b15..325192abb8fd1 100644
+--- a/drivers/pci/hotplug/pnv_php.c
++++ b/drivers/pci/hotplug/pnv_php.c
+@@ -798,7 +798,7 @@ static struct pnv_php_slot *pnv_php_alloc_slot(struct device_node *dn)
+ 	if (dn->child && PCI_DN(dn->child))
+ 		php_slot->slot_no = PCI_SLOT(PCI_DN(dn->child)->devfn);
+ 	else
+-		php_slot->slot_no = -1;   /* Placeholder slot */
++		php_slot->slot_no = PCI_SLOT_PLACEHOLDER;   /* Placeholder slot */
+ 
+ 	kref_init(&php_slot->kref);
+ 	php_slot->state	                = PNV_PHP_STATE_INITIALIZED;
+diff --git a/drivers/pci/hotplug/rpaphp_slot.c b/drivers/pci/hotplug/rpaphp_slot.c
+index 93b4a945c55d9..bb20c0800dff4 100644
+--- a/drivers/pci/hotplug/rpaphp_slot.c
++++ b/drivers/pci/hotplug/rpaphp_slot.c
+@@ -84,7 +84,7 @@ int rpaphp_register_slot(struct slot *slot)
+ 	struct device_node *child;
+ 	u32 my_index;
+ 	int retval;
+-	int slotno = -1;
++	int slotno = PCI_SLOT_PLACEHOLDER;
+ 
+ 	dbg("%s registering slot:path[%pOF] index[%x], name[%s] pdomain[%x] type[%d]\n",
+ 		__func__, slot->dn, slot->index, slot->name,
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index 6658bba9717d7..7d887c299e89b 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -4869,7 +4869,7 @@ static int pci_reset_hotplug_slot(struct hotplug_slot *hotplug, int probe)
+ 	return rc;
+ }
+ 
+-static int pci_dev_reset_slot_function(struct pci_dev *dev, int probe)
++static int pci_dev_reset_slot_function(struct pci_dev *dev, bool probe)
+ {
+ 	if (dev->multifunction || dev->subordinate || !dev->slot ||
+ 	    dev->dev_flags & PCI_DEV_FLAGS_NO_BUS_RESET)
+diff --git a/drivers/pci/slot.c b/drivers/pci/slot.c
+index a42e2cf774fd8..3a125a8417dca 100644
+--- a/drivers/pci/slot.c
++++ b/drivers/pci/slot.c
+@@ -38,15 +38,24 @@ static const struct sysfs_ops pci_slot_sysfs_ops = {
+ 
+ static ssize_t address_read_file(struct pci_slot *slot, char *buf)
+ {
+-	if (slot->number == 0xff)
++	if (slot->number == PCI_SLOT_PLACEHOLDER)
+ 		return sprintf(buf, "%04x:%02x\n",
+ 				pci_domain_nr(slot->bus),
+ 				slot->bus->number);
+-	else
+-		return sprintf(buf, "%04x:%02x:%02x\n",
++
++	/*
++	 * Preserve legacy ABI expectations that hotplug drivers that manage
++	 * multiple devices per slot emit 0 for the device number.
++	 */
++	if (slot->number == PCI_SLOT_ALL_DEVICES)
++		return sprintf(buf, "%04x:%02x:00\n",
+ 				pci_domain_nr(slot->bus),
+-				slot->bus->number,
+-				slot->number);
++				slot->bus->number);
++
++	return sprintf(buf, "%04x:%02x:%02x\n",
++			pci_domain_nr(slot->bus),
++			slot->bus->number,
++			slot->number);
+ }
+ 
+ static ssize_t bus_speed_read(enum pci_bus_speed speed, char *buf)
+@@ -74,7 +83,8 @@ static void pci_slot_release(struct kobject *kobj)
+ 
+ 	down_read(&pci_bus_sem);
+ 	list_for_each_entry(dev, &slot->bus->devices, bus_list)
+-		if (PCI_SLOT(dev->devfn) == slot->number)
++		if (slot->number == PCI_SLOT_ALL_DEVICES ||
++		    PCI_SLOT(dev->devfn) == slot->number)
+ 			dev->slot = NULL;
+ 	up_read(&pci_bus_sem);
+ 
+@@ -166,7 +176,8 @@ void pci_dev_assign_slot(struct pci_dev *dev)
+ 
+ 	mutex_lock(&pci_slot_mutex);
+ 	list_for_each_entry(slot, &dev->bus->slots, list)
+-		if (PCI_SLOT(dev->devfn) == slot->number)
++		if (slot->number == PCI_SLOT_ALL_DEVICES ||
++		    PCI_SLOT(dev->devfn) == slot->number)
+ 			dev->slot = slot;
+ 	mutex_unlock(&pci_slot_mutex);
+ }
+@@ -188,7 +199,8 @@ static struct pci_slot *get_slot(struct pci_bus *parent, int slot_nr)
+ /**
+  * pci_create_slot - create or increment refcount for physical PCI slot
+  * @parent: struct pci_bus of parent bridge
+- * @slot_nr: PCI_SLOT(pci_dev->devfn) or -1 for placeholder
++ * @slot_nr: PCI_SLOT(pci_dev->devfn), PCI_SLOT_PLACEHOLDER for placeholder, or
++ *	PCI_SLOT_ALL_DEVICES
+  * @name: user visible string presented in /sys/bus/pci/slots/<name>
+  * @hotplug: set if caller is hotplug driver, NULL otherwise
+  *
+@@ -213,15 +225,26 @@ static struct pci_slot *get_slot(struct pci_bus *parent, int slot_nr)
+  * In most cases, @pci_bus, @slot_nr will be sufficient to uniquely identify
+  * a slot. There is one notable exception - pSeries (rpaphp), where the
+  * @slot_nr cannot be determined until a device is actually inserted into
+- * the slot. In this scenario, the caller may pass -1 for @slot_nr.
++ * the slot. In this scenario, the caller may pass PCI_SLOT_PLACEHOLDER for @slot_nr.
+  *
+  * The following semantics are imposed when the caller passes @slot_nr ==
+- * -1. First, we no longer check for an existing %struct pci_slot, as there
+- * may be many slots with @slot_nr of -1.  The other change in semantics is
+- * user-visible, which is the 'address' parameter presented in sysfs will
+- * consist solely of a dddd:bb tuple, where dddd is the PCI domain of the
+- * %struct pci_bus and bb is the bus number. In other words, the devfn of
+- * the 'placeholder' slot will not be displayed.
++ * PCI_SLOT_PLACEHOLDER. First, we no longer check for an existing %struct
++ * pci_slot, as there may be many slots with @slot_nr of
++ * PCI_SLOT_PLACEHOLDER. The other change in semantics is user-visible,
++ * which is the 'address' parameter presented in sysfs will consist solely
++ * of a dddd:bb tuple, where dddd is the PCI domain of the %struct pci_bus
++ * and bb is the bus number. In other words, the devfn of the 'placeholder'
++ * slot will not be displayed.
++ *
++ * Bus-wide slots:
++ * For PCIe hotplug, the physical slot encompasses the entire secondary
++ * bus, not just a single device number. If the device supports ARI and ARI
++ * Forwarding is enabled in the upstream bridge, a multi-function device
++ * may include functions that appear to have several different device
++ * numbers, i.e., PCI_SLOT() values.  Pass @slot_nr == PCI_SLOT_ALL_DEVICES
++ * to create a slot that matches all devices on the bus. Unlike placeholder
++ * slots, bus-wide slots go through normal slot lookup and reuse existing
++ * slots if present.
+  */
+ struct pci_slot *pci_create_slot(struct pci_bus *parent, int slot_nr,
+ 				 const char *name,
+@@ -234,7 +257,7 @@ struct pci_slot *pci_create_slot(struct pci_bus *parent, int slot_nr,
+ 
+ 	mutex_lock(&pci_slot_mutex);
+ 
+-	if (slot_nr == -1)
++	if (slot_nr == PCI_SLOT_PLACEHOLDER)
+ 		goto placeholder;
+ 
+ 	/*
+@@ -286,7 +309,8 @@ struct pci_slot *pci_create_slot(struct pci_bus *parent, int slot_nr,
+ 
+ 	down_read(&pci_bus_sem);
+ 	list_for_each_entry(dev, &parent->devices, bus_list)
+-		if (PCI_SLOT(dev->devfn) == slot_nr)
++		if (slot_nr == PCI_SLOT_ALL_DEVICES ||
++		    PCI_SLOT(dev->devfn) == slot_nr)
+ 			dev->slot = slot;
+ 	up_read(&pci_bus_sem);
+ 
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 47c53bbf3f9d8..c7b2b98323bce 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -65,12 +65,23 @@
+ /* return bus from PCI devid = ((u16)bus_number) << 8) | devfn */
+ #define PCI_BUS_NUM(x) (((x) >> 8) & 0xff)
+ 
++/*
++ * PCI_SLOT_ALL_DEVICES indicates a slot that covers all devices on the bus.
++ * Used for PCIe hotplug where the physical slot is the entire secondary bus,
++ * and, if ARI Forwarding is enabled, functions may appear to be on multiple
++ * devices.
++ */
++#define PCI_SLOT_ALL_DEVICES	0xfe
++
++/* Used to identify a slot as a placeholder */
++#define PCI_SLOT_PLACEHOLDER	0xff
++
+ /* pci_slot represents a physical slot */
+ struct pci_slot {
+ 	struct pci_bus		*bus;		/* Bus this slot is on */
+ 	struct list_head	list;		/* Node in list of slots */
+ 	struct hotplug_slot	*hotplug;	/* Hotplug info (move here) */
+-	unsigned char		number;		/* PCI_SLOT(pci_dev->devfn) */
++	unsigned char		number;		/* Device nr, or PCI_SLOT_ALL_DEVICES */
+ 	struct kobject		kobj;
+ };
+ 
+-- 
+2.53.0
 
-Just read the damn thing before you reply.
-
-> Also we already have other, closely related, ELF constants in the UAPI,
-> see {,tools/}include/uapi/linux/elf{,-em}.h.
-
-Srsly?!?
-
-You moved them there:
-
-commit 626fd35278295fbb21f2da331cd8028e9738d965
-Author: Thomas Wei=C3=9Fschuh <thomas.weissschuh@linutronix.de>
-Date:   Wed Feb 26 12:44:46 2025 +0100
-
-    tools/include: Add uapi/linux/elf.h
-   =20
-    It will be used by the vDSO selftests.
-
-
-Looking at the rest, it looks like some elf bits got exported, you added =
-some
-more and that ship has sailed. I still think us providing headers is
-completely unnecessary and it will come to cause conflicts eventually but=
- hey,
-not my problem.
-
---=20
-Regards/Gruss,
-    Boris.
-
-https://people.kernel.org/tglx/notes-about-netiquette
 
