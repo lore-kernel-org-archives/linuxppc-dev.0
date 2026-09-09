@@ -1,101 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-26989-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26990-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 126B7C79FBD
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2026 17:27:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D4529C88E41
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2026 17:50:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hg7612y3Tz2ywh;
-	Thu, 10 Sep 2026 03:27:05 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::530"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788974825;
-	cv=none; b=HOqQTsGV/UyhhR/wXVYbHylmsiGf2AYDEFkz5nyjGa/n65mOoXNHHbQmor1f9c20eYtzezNTApioZ2Sqg2ixSnTR2womM/eLH60TD3dNSt5mkTgFmAjXA4b2TdptVWQa1Z0v257MIkwVQk/E1/uWDaahGxszTFmDuRfvTk8Nex46EbJscz80TesRCopErEN7vpfWn85tEuErSLzUh041pChutYxXhINiXeooYd9Gs4GPhNw4r99dotbjv83ptd4UDBzMgjnLKdchNcAiPPm+mRb9tqjJQlT4y4LVfTxGGZ3JsXH2Sg/BnHKrx8WRTHNJ99nTfcoJ4JW4EJ8Li5QCLA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hg7cv2MSmz2yx5;
+	Thu, 10 Sep 2026 03:50:23 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788976223;
+	cv=none; b=gP45J4d9u9rVgShxQuONzbhjkeE4Hr2zsBRGuy1xMsrfuJ1n8xFcVsbiOj/czM1e8iXzIzAsHKcgdC4bTuH6uXlyzXHTnFdsO5L3BkfEPWMjRsqiwPT+Kd6L7yHxQLNO1/whgACD+1QQWQLOLlHxBUtorJmIK8/maLXQJ1lXsidiknicjxx5snApqhNMCVu0eU5dnCnza276XjhqVE+DBVvNRZSFXC/TlTtBnEzL3bMnH+vyWIKmy8U54bjAYLVgCEQxery7b3S/0dIZ1u+0qj81Z9wmI40DdrwQ/ru3b72JhCQPI6LjmhmtWD51pCXSmGdxhue31FN/plts+fkyuw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788974825; c=relaxed/relaxed;
-	bh=BxkJmMQiuFGLIVhYvP7iekSRoJyyqxrT2LFSLJP0a4Q=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=bL/JBNYJOLF0FH4UUNGJIk0wK1iRVo9yto1Hwzno5HCe4K84J/Y2NNWYWvEkLNZgPQEbuYDQrb6QZt1O2/87P5Gg/i7CwYhQUtJaxLu2izFTIf22I36yDVHYxox9gdIya0YCNeMnVnRUVtNTFq/M5nTHKBcyuFfC+iyP3RLvFFjXot9Bq1pECKS0DuK3+G0aQmA7yuIZ+9yDXSXUMzalAFLvZruPkS9UzIT39i4LJyuZiLn1vN5TSwcokKrPgtySyiqPBKBWI7qxxsxAXH4Jy/7uAAlip3f8QeyQEEJ8zZeWkryUvbk/1rjBQncmvhEzDTOziiKYsIaz3SiwrtTKEQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=FhAGXROn; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::530; helo=mail-pg1-x530.google.com; envelope-from=dmitry.torokhov@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1788976223; c=relaxed/relaxed;
+	bh=vllDYnSPyYBC5MLdPMakBLcVa0f30Ab2JQe3/cgnTRo=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=T9/ciMvZTdCOsRuno1S/nwVwGHhvUj/FlQ4/ielMgkY/2vpigfN5q0AhD1q7hK5JoZJGFqTh9KFEwf2t1DYUj9WSFRZ7hyQNh5JRqD19wcsJ0JRCELw31sP9Ke9O/46CwIO/k0fsXfEmdylamBhcv/75bpfIu9WDV+2mPN6zLlxZuWHcJbpQ5lzbXSwRGKIl71x5K8EEbpMX436J8Nd3mJcrK4J0PudBkaBPkcV4w2hY0OAeCvPLl372anVWHQ1YT2qvHADQtikLcH4CJLxyQL/iWBbzsMS+XEuimxgwgwVLCVHeeXbZ8O5lst3qLU2opFf+wxmKT21eRaf2/0tDVA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qKs6NMnB; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=FhAGXROn;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qKs6NMnB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::530; helo=mail-pg1-x530.google.com; envelope-from=dmitry.torokhov@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x530.google.com (mail-pg1-x530.google.com [IPv6:2607:f8b0:4864:20::530])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hg7600lGyz2yvv
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2026 03:27:03 +1000 (AEST)
-Received: by mail-pg1-x530.google.com with SMTP id 41be03b00d2f7-cc4aa18f9afso421035a12.3
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Sep 2026 10:27:03 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1788974821; x=1789579621; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=BxkJmMQiuFGLIVhYvP7iekSRoJyyqxrT2LFSLJP0a4Q=;
-        b=FhAGXROnqaENAPU9IUW16iS4rgHVOz5urPxtPL7JsHVVhjIocl1eKw8YtSlyrsx5WZ
-         XvltFh2LpWKNL30ROsjuU4uqz/3gY/NVsZcshHtbFVcBEhAeV0UBKDQ1u9YgK8I80NPz
-         4iH3loTemATjT8W5bQVnjF/vRzz0FKJoDJdQ3WKfeHb2bj3pD/ZhnGQivpWPtlT3jMwW
-         hzVSf/gVeFgUAtbWyRxPgj0KrSC7/vhCDP5+xnDIGrlZ/hL72jhRJHAjnr+v8y4+cQsa
-         dogaUPYH7IMU/CcQUcfhozxifuvgWRUy5WF8JXIEBWZV1++wlI5Iv9bGojJWIQpWF7ke
-         4k6w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788974821; x=1789579621;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=BxkJmMQiuFGLIVhYvP7iekSRoJyyqxrT2LFSLJP0a4Q=;
-        b=QYblqeGpWvu0lrA6QX1Q9odifmNSBepUwhGHOSGBlXW52vRHa8t7kXGIfJESlXnYaU
-         MsVPaS8UIJjVAU5A0xJmNFouTGwR2HDlBhorCiNFWrjX/m53zLIwnqaAuCimFeBTNZ77
-         wSkUqyCoLeiNYZdoBCfmOZWpV7fTVrd/PLZRjH4HttIQDsHnoGrxysR2zZclDQhuzC8b
-         t0GnlMLHq5iSLjLoqZt9WY62IX2UvqpZDN5cz+dp0WnJWhw+ecbDi9HoYLXy4HugOLQ3
-         GSxynExoRCL6bEsnH1DHnVNfuwEOQA6JnI6ckwlTCE5uLE2N0lhaj4FjRkq/Eawh9EXA
-         zxIQ==
-X-Forwarded-Encrypted: i=1; AKwUvByW76Y+icyzVClBCRlj7Tdf1Qdg0uMu+zwVkeVRcFw0MueryFvbhq6A3cQpbqerCalaTfdEh2SmN8Fhufs=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++kJVgs54+o/9B8veLlkONWWQoDxLJbKHncHNh90JnMhyP+zwu0n
-	AYg0lL+XGH48RkqPt3Vb35JKCUnVseMfRlI8J48PMhDXqf22oUbfNH6j
-X-Gm-Gg: AYBFou3WzwQwoR05bTXIdgnVJjhrkSjH7fwsgWCBfLJVdLCDgOEFF3tck5YmQVZI4h7
-	785OhNxfbjc3qDzecjjKvPYvd7G0ZSVUIQP5kBtCtApBrka8UKE9WAfW7+kStaaANEUFHuU2JDu
-	98XRoKLwWSvTWVG29bjclWuOuxZRENuhd5gdUbFhJfxcZEjWrLhwyxTxXq64h9u9YYamSUdBjBm
-	RUOvngxGL338QmXtSjw8vXOkMmWMaz/ONdrAfydJ/truUhBbCvp2kM68zEUyhUqOX2VxuL+82AW
-	CDQ2yzBbiu+/g8z7otbt6GHRZOcR0AMOUycnTeZwTvZ0TxR7za8tcNnvwE4yNipsj9OneQoJ0rA
-	KPB8zremSnt26NdasAUjxCqatr1bihkilpyBAvYimGHWgZmiSQXPO7Fwax2jtyLwjumhV/OF2qY
-	KKzTsqnnUybyaIJzcyw7R5Y9zxpZN8cLyU1hBW0Gn0aUaURxpi12ggFBzGR/hEVJdZJbF9bWq4p
-	3LnYJc5wQvSFIh0S41T16gzu7N6r/ZKCKUeIaMPgS6O+bbKoPS3
-X-Received: by 2002:a05:6a21:9d84:b0:3d3:af85:eb98 with SMTP id adf61e73a8af0-3da3a16a579mr57975715637.26.1788974820346;
-        Wed, 09 Sep 2026 10:27:00 -0700 (PDT)
-Received: from google.com ([2a00:79e0:2ebe:8:2d43:5153:5c50:643e])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3339a534df1sm52422943eec.7.2026.09.09.10.26.57
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 09 Sep 2026 10:26:59 -0700 (PDT)
-Date: Wed, 9 Sep 2026 10:26:55 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Arnd Bergmann <arnd@kernel.org>
-Cc: Lee Jones <lee@kernel.org>, mfd@lists.linux.dev, 
-	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	Arnd Bergmann <arnd@arndb.de>, Daniel Thompson <danielt@kernel.org>, 
-	Jingoo Han <jingoohan1@gmail.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, 
-	Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Guenter Roeck <linux@roeck-us.net>, Linus Walleij <linusw@kernel.org>, 
-	Bartosz Golaszewski <brgl@kernel.org>, Jonathan Cameron <jic23@kernel.org>, 
-	Pavel Machek <pavel@kernel.org>, Michael Hennerich <michael.hennerich@analog.com>, 
-	Support Opensource <support.opensource@diasemi.com>, Sebastian Reichel <sre@kernel.org>, 
-	Alexandre Belloni <alexandre.belloni@bootlin.com>, Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org, 
-	linux-doc@vger.kernel.org, linux-media@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-hwmon@vger.kernel.org, patches@opensource.cirrus.com, linux-watchdog@vger.kernel.org, 
-	linux-gpio@vger.kernel.org, linux-iio@vger.kernel.org, linux-input@vger.kernel.org, 
-	linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, 
-	linux-fbdev@vger.kernel.org, linux-sound@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	llvm@lists.linux.dev
-Subject: Re: [PATCH 00/14] mfd: unused driver purge
-Message-ID: <aqGWjAuGXq_JHvxk@google.com>
-References: <20260909132153.1596191-1-arnd@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hg7cs4pXmz2ywy
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2026 03:50:21 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 689HVS0I458559;
+	Wed, 9 Sep 2026 17:50:09 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=vllDYn
+	SPyYBC5MLdPMakBLcVa0f30Ab2JQe3/cgnTRo=; b=qKs6NMnBm7nwWI+VclHU2R
+	+zyjK1BsZhieW+9x4EJpBUkx5iXQ7uj1tBxNlW0iuLYIme3OeGAhPyw2YM+iI4PJ
+	GoKOnaubF1Aw/6aAiWIEKrK1nhy+kNln6riObTZy3bANCzYkBcG9fqHOf6nmygPX
+	BD/w1cZt043lmUh0GGD6iabSsBFzByV/vM2+CFPQfn45aR2tw70LABTKqyvJpqkP
+	018qEfVT5hkQ7U5Py8zjhKOpVkG6vsZhuBCJKkXysLyjojWeS0fjMckHkNPgql5L
+	DmfxkxYV4i/4eII4K2w1db4on+glFg5b+4MjUNMNdruKpAZYH/tmjPTlDaYSZmTw
+	==
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4ggbf47jj9-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 09 Sep 2026 17:50:08 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 689HfEb8013573;
+	Wed, 9 Sep 2026 17:50:07 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4ggwswbt6k-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 09 Sep 2026 17:50:06 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 689Ho1Li50528720
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 9 Sep 2026 17:50:02 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 5E9952004B;
+	Wed,  9 Sep 2026 17:50:01 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 8DB6D20040;
+	Wed,  9 Sep 2026 17:49:57 +0000 (GMT)
+Received: from [9.124.210.73] (unknown [9.124.210.73])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed,  9 Sep 2026 17:49:57 +0000 (GMT)
+Message-ID: <8d45cfd1-55d0-4e8f-aac1-fae5c9c4d91c@linux.ibm.com>
+Date: Wed, 9 Sep 2026 23:19:56 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -109,43 +81,147 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260909132153.1596191-1-arnd@kernel.org>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3] powerpc/interrupt: Use early_radix_enabled() in NMI
+ real-mode guard
+To: Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
+        linuxppc-dev@lists.ozlabs.org
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+        chleroy@kernel.org, mkchauras@linux.ibm.com, mkchauras@gmail.com,
+        ruanjinjie@huawei.com, ritesh.list@gmail.com, riteshh@linux.ibm.com,
+        linux-kernel@vger.kernel.org
+References: <20260909123240.58786-1-venkat88@linux.ibm.com>
+Content-Language: en-US
+From: Shrikanth Hegde <sshegde@linux.ibm.com>
+In-Reply-To: <20260909123240.58786-1-venkat88@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-ORIG-GUID: le47yeovAKeL2kNIM8LlOwlNt8p9ry_K
+X-Proofpoint-GUID: nB3Ltu30_QnBcjIpIuxP_UbWUcAWYPJw
+X-Authority-Analysis: v=2.4 cv=DbEnbPtW c=1 sm=1 tr=0 ts=6aa19c50 cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
+ a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=VnNF1IyMAAAA:8
+ a=pGLkceISAAAA:8 a=is8AelrDeVLTFk3XgSAA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTA5MDE5NSBTYWx0ZWRfX4uGBVpUR7ZgD
+ XDqAtOVuNOlwrvA92FfWX3+T8JW09XJwahZY9XJ9JbS/YxiaK8Fd6qUCODA9P7oilZNRG9hfzmn
+ u9t9MWSkTmPTytvhPWFH07kCjPKFVCYI7RAiwAaaRHAk4r2MNyNxWaoWIH/BYPFb6isq1vrN1/c
+ 1eOMOrTeZJ4vbu2DrMkXbBw3SX0v99foQooIgapVaayl0e/wJvtzbzzE7I5BJDP0VVyYbaC7Rf7
+ BHKYoT8f49Wg3fF+PIKG/T8wsJRiOzEf0h2ewoGR6fO80PSAlbzYSZx+8h1W+Pu5COe8P5rfX3A
+ UPG88t4vtAbadqSBFxpbuJCN7UtTN+Akrpi0ZdJ685ABy+FVcJmxcBNLeYplgR/esXpCVGwy3VJ
+ YfAtig3fHwyAsuQN5Sl69t4/9jjfLMIh1b6tFzGVBEffHqYYJhBzcOp2dPSDq0tSsVecU8sgcUU
+ HT1cdpfjWdnot0jhcRg==
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTA5MDE5NSBTYWx0ZWRfXxFyTze+Ek32y
+ 8wszwQt368DhFK58AeOV4i02dijsfD5kaVlcPit7vl2gzTRqZf0+umGsbgrbmr3qea/9eB6LAVD
+ oDrERc0nrX/Ka1bI+WfNQkbq8UolT6E=
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-08_03,2026-09-09_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 priorityscore=1501 impostorscore=0 adultscore=0 spamscore=0
+ clxscore=1015 suspectscore=0 bulkscore=0 malwarescore=0 lowpriorityscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2609090195
 
-On Wed, Sep 09, 2026 at 03:21:37PM +0200, Arnd Bergmann wrote:
-> From: Arnd Bergmann <arnd@arndb.de>
+
+
+On 9/9/26 6:02 PM, Venkat Rao Bagalkote wrote:
+> radix_enabled() uses a jump label which is only valid after
+> setup_feature_keys() is called. Before that point, on a pSeries
+> hash guest, early_check_vec5() clears MMU_FTR_TYPE_RADIX in
+> cur_cpu_spec->mmu_features, but the jump label has not yet been patched,
+> so radix_enabled() incorrectly returns true.
 > 
-> As part of my cleanup of old platforms, I had a look at all drivers that
-> may have become unused because the last platform_data or DT definition
-> was removed, or because of unmet Kconfig dependencies.
+> The dangerous usage window where it goes wrong in early_setup():
 > 
-> These are all the mfd drivers I found. The first ten in the list
-> actually turned out to have been unusable long before my series, and
-> I have added explanations on how I determined this in each patch. The
-> last four patches are still in use in linux-7.3 but become unused after
-> my series [1] that I hope to get merged for 7.4.
+>      early_setup:
+>          configure_exceptions();
+>          <exceptions can happen now, and handler enter/exit can be invoked>
+>          <those could use radix_enabled(), which returns stale true>
+>          setup_feature_keys();
+>          <jump labels set up; post this it is safe to use radix_enabled()>
 > 
-> Somewhat unorthodox, I took a shortcut here and remove both the mfd drivers
-> and the corresponding subsystem drivers (gpio, hwmon, iio, input, led,
-> media, power, regulator, rtc, video, watchdog, asoc) in a combined patch,
-> to simplify the interdependencies: removing just the mfd driver would
-> leave unselectable or broken drivers in other subsystems.  I also have
-> additional patches for each of the other subsystems, currently a total
-> of 300 patches, many of which still need better testing or proper
-> changelog texts.
+> If an NMI occurs in this window, !radix_enabled() evaluates to false in
+> DEFINE_INTERRUPT_HANDLER_NMI. The handler fails to skip NMI entry in real
+> mode and attempts to access memory outside the Real Mode Area (RMA),
+> hanging the boot.
 > 
-> Please let me know if you all think this approach is ok, or if I should
-> explode this further and turn these 14 patches into 70 individual ones
-> by splitting them per subsystem.
+> Since common interrupt wrappers do not have the context of early or late,
+> using early_radix_enabled() is the safer option. It does a plain bitmask
+> check against cur_cpu_spec->mmu_features and is correct at all times.
+> 
+> Console logs from a pSeries HASH guest showing values across boot stages:
+> 
+> [    0.000000] DEBUG: after early_init_devtree: early_radix_enabled=0 radix_enabled=1 (mismatch means NMI real-mode check is unsafe!)
+> [    0.000000] DEBUG: after configure_exceptions (DANGEROUS WINDOW): early_radix_enabled=0 radix_enabled=1
+> [    0.000000] DEBUG: after setup_feature_keys (jump labels initialized): early_radix_enabled=0 radix_enabled=0 (should now match!)
+> [    0.057124] DEBUG: post secondary CPU bringup: early_radix_enabled=0 radix_enabled=0 (should match!)
+> 
+> Console logs from a RADIX guest showing values across boot stages:
+> 
+> [    0.000000] DEBUG: after early_init_devtree: early_radix_enabled=1 radix_enabled=1 (mismatch means NMI real-mode check is unsafe!)
+> [    0.000000] DEBUG: after configure_exceptions (DANGEROUS WINDOW): early_radix_enabled=1 radix_enabled=1
+> [    0.000000] DEBUG: after setup_feature_keys (jump labels initialized): early_radix_enabled=1 radix_enabled=1 (should now match!)
+> [    0.057016] DEBUG: post secondary CPU bringup: early_radix_enabled=1 radix_enabled=1 (should match!)
+> 
+> Add the missing #include <asm/mmu.h> in alphabetical order since
+> early_radix_enabled() is declared there.
+> 
 
-Sounds good to me, especially if Lee makes an immutable branch from this
-pull so we can all pull it in...
+Reviewed-by: Shrikanth Hegde <sshegde@linux.ibm.com>
 
-Acked-by: Dmitry Torokhov <dmitry.torokhov@gmail.com> # for input
+> Fixes: 8d0e21012743 ("powerpc/mce: Avoid nmi_enter/exit in real mode on pseries hash")
+> Signed-off-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+> Reviewed-by: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
 
-Thanks.
+Nit: I prefer to see Signed-off-by at the end.
+But i guess b4 or patchwork tools take care of ordering. So i think
+we are fine.
 
--- 
-Dmitry
+> ---
+> v3:
+>   - Clarified early_setup execution flow and race window in changelog.
+>   - Explained why early_radix_enabled() is required for context-agnostic wrappers.
+>   - Added console logs for both HASH and RADIX guests in changelog.
+> v2:
+>   - Added Fixes: tag referencing commit 8d0e21012743.
+>   - Included <asm/mmu.h> in alphabetical order.
+>   - Added Reviewed-by tag from Mukesh.
+> 
+>   arch/powerpc/include/asm/interrupt.h | 5 +++--
+>   1 file changed, 3 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/interrupt.h b/arch/powerpc/include/asm/interrupt.h
+> index 1b45a49e9bed..355f6bbf9894 100644
+> --- a/arch/powerpc/include/asm/interrupt.h
+> +++ b/arch/powerpc/include/asm/interrupt.h
+> @@ -70,6 +70,7 @@
+>   #include <linux/irq-entry-common.h>
+>   
+>   #include <asm/kprobes.h>
+> +#include <asm/mmu.h>
+>   #include <asm/runlatch.h>
+>   
+>   #ifdef CONFIG_PPC_IRQ_SOFT_MASK_DEBUG
+> @@ -290,7 +291,7 @@ interrupt_handler long func(struct pt_regs *regs)			\
+>   		state = irqentry_nmi_enter(regs);			\
+>   	} else if (IS_ENABLED(CONFIG_PPC_BOOK3S_64) &&			\
+>   		   firmware_has_feature(FW_FEATURE_LPAR) &&		\
+> -		   !radix_enabled()) {					\
+> +		   !early_radix_enabled()) {				\
+>   		/* no nmi_entry for a pseries hash guest		\
+>   		 * taking a real mode exception */			\
+>   	} else if (IS_ENABLED(CONFIG_KASAN)) {				\
+> @@ -307,7 +308,7 @@ interrupt_handler long func(struct pt_regs *regs)			\
+>   		irqentry_nmi_exit(regs, state);				\
+>   	} else if (IS_ENABLED(CONFIG_PPC_BOOK3S_64) &&			\
+>   		   firmware_has_feature(FW_FEATURE_LPAR) &&		\
+> -		   !radix_enabled()) {					\
+> +		   !early_radix_enabled()) {				\
+>   		/* no nmi_exit for a pseries hash guest			\
+>   		 * taking a real mode exception */			\
+>   	} else if (IS_ENABLED(CONFIG_KASAN)) {				\
+
 
