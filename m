@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-26935-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26938-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4E186C79FBF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2026 13:24:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5E552C79FB7
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2026 13:24:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hg1jY0yHcz2yvT;
-	Wed, 09 Sep 2026 23:24:01 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788960241;
-	cv=none; b=hO8JpMaVqnB99qPOuIm3rS9VHLu4jCFTxvXY6LPz2+BeOnLJTgLmzwYukQnkQzezuhOHXimP06prcMrEXk5ZNkKqK/7Mk/iWPIkqQjx46aJolLDWiUQolhW+1E0Evb8VEB/tyGWuxxhMRvB7W67DM8R6f0Z9Q0H2CxDZJwRQxL1GdiDBlDCPqUkcp8n0Iqfgb6vyPLbOIO6zWvYIBu566c/WFhHkUc3fYyExNbW6IPaSsHVkETANe4Boq96FPBaJzurRZ8/lpoGCY/h0vpgRGS4It+KLHAVgtnVDzLSqTebKD61j2U25pwhcrQpNZRP76HzXSs+q1RQ1N9jyzNvJrQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hg1k50nj4z2yvr;
+	Wed, 09 Sep 2026 23:24:29 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788960269;
+	cv=none; b=T/Wl/licL3V778MuyxneyTesS4l4ogfPhwN5fa5GLZ1eouMfK71AUTP1IHrk1Np2DrjWArhPpdtNxJewGrKiAedkshTwRmVjwaCQWbvZUezJ1i58uH8wBHjRZvIS1H+MkdM+eJfmba+4rneql4NiNNGwOtzfp9THj8pSUaslsEKKMJoZx0gR+ZpjMS+By0y7qnydqixcsEU06D+KSDmUBsRH08lxkURJs0xmkLkhM6I6Yw/lRS+j7ZpRxKSf0smYfrktB+rbQvh04pjh+5yepaG+4q9wt8hJYh3zG06sMKguAF6HJ2Lish7ZzPgIX9C4Fbq0OMmSYgWggtuLNFGklQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788960241; c=relaxed/relaxed;
-	bh=hWK0EH98Gut8oaAwPDU08+xZ7bIl8tbQ5dn/wan1Jf8=;
+	t=1788960269; c=relaxed/relaxed;
+	bh=GsvUef4hneB+xdHcxkeILGXl9Km9+VtxY+PwGgE+eto=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=d92jOlCcxkvDpz6HVX2GxuneYdiQvt4Noh8OAdQWqIW/nfmnI1rzvhKsIkA0raqlEamfkgk0668k1MzTxOXDY4UuOGgihYr5k7Ug/3OsfZ1ObLxbKNYUIyKTwd+uFIL5WMLxqxDe6b/eWIhD7jRPAX5yN6LP1MIoBNpOaaIeTntG3yClRl2tPrsCYMbPvBMEqxMGV39JjEAp9V985IA6/JdgVjPBpeZKXYZpr3ZUmV2BTGevbjRt2lXKvF7EyO+A/EJd8y5FasCV29n2EvdIn5hMbqByJdQt5SAxJMGQKekVuZgzpF6cKe5OgnMPZY5mes87BfY+TNqMSiSZ8p28iw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ZWNr1yV5; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=HXyup8TMFt91QfcrivhmX6tZH0Hf5zMW6FcV+rJ99XALKV7Pvi8iG8n8AVbmJgS0h59I3yMgFDFd1QDI8Cmi8nErf5ODAyfc0mJQ/e1d99UyCnAauEW+w30TUUQs7P6+2ist9hrvYLbnGFcjMGUVuPPyS6gAslw0duc4/n9d51ztNdEPHjBTHa+uOS8SwCsPq+LFBzVsnmwwJHml4MYZUMK+bjeyXs9FdOlMmVlJol5Y7d9ESTvKqSm8Nq5mGeM2rOJ6U4udCTI/ML3/m50tjcHEWqm2moJTyy5kAKDy7wCmhmcJpEEAzaaQ7dRf3M4C7QndNsxYnDxfJeVcWzHikQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=d+JiQCIK; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ZWNr1yV5;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=d+JiQCIK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hg1jT5LrSz2yrf
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Sep 2026 23:23:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hg1jj1c9yz2yrf
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Sep 2026 23:24:09 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 9F32C60214;
+	by sea.source.kernel.org (Postfix) with ESMTP id D77474131C;
+	Wed,  9 Sep 2026 13:24:03 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C747C1F00A3F;
 	Wed,  9 Sep 2026 13:23:55 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2DFA51F00AC4;
-	Wed,  9 Sep 2026 13:23:46 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788960235;
-	bh=hWK0EH98Gut8oaAwPDU08+xZ7bIl8tbQ5dn/wan1Jf8=;
+	s=k20260515; t=1788960243;
+	bh=GsvUef4hneB+xdHcxkeILGXl9Km9+VtxY+PwGgE+eto=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=ZWNr1yV5lyqLkpXVSxcBwGnmqhsBgDN94qiPEo2OsuHZT/pK9XVaqmBOZy/ymGylb
-	 fADOuQbHkUSYaTzKJ9lOSFkAMY0p/ejXzNDrbQPfj5kI/4xbonk0KV6gLEW61jRFMR
-	 AcfbS3SioNqXN82oO6La04ay8NbbqGI2LA3em0+9Jh097pI0sjeBKHCUG+afAzmVxn
-	 mRsZ3ohnUT5DFlL7xh6ZVswMGsJuL0K3gfqP39xpMMbMxzQ5sjyJulCqk+srfP006Y
-	 22yEbwC1c7/fW7bMrD2sUVtyTVNc66evPDRXXa8I8LxZJb7ff40aRRy7jfLwbSVG0a
-	 lY7/mHfGaswCQ==
+	b=d+JiQCIKd3jlqqdaDOteHFuE3oG36JyWUU+QWxk/n59ROKREnLLnr5WsLTb/dbd8L
+	 TPYEzmQIQ8Ym5n29AU5nqJ5FW67xXpBkMFFbpJ0AmjUYdaxaiVP8kFXbY1KTiTVA1n
+	 oXATGrn9c3jdn9KFcxvC5wrDXA+UN0S3zZvJRgYaJpcbunvy3t6vaEuyxsi9ym+1DC
+	 R3WpH0TtC77Zu3s2j9csObvAri9x3Q1R6JRZ20sM2vdysNr2fZu7hvZJMz7xXlzh5v
+	 KMhh5pIn8Lqh+TzFPcmbq+ZTpfzm2Hykvic25JUD39YmziT4GSfSsqmNbyKTODNYjg
+	 ucMA2X1FARVvQ==
 From: Arnd Bergmann <arnd@kernel.org>
 To: Lee Jones <lee@kernel.org>,
 	mfd@lists.linux.dev
@@ -86,9 +86,9 @@ Cc: linux-kernel@vger.kernel.org,
 	linux-sound@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
 	llvm@lists.linux.dev
-Subject: [PATCH 11/14] mfd: remove unused wm8350 driver
-Date: Wed,  9 Sep 2026 15:21:48 +0200
-Message-ID: <20260909132153.1596191-12-arnd@kernel.org>
+Subject: [PATCH 12/14] mfd: remove unused mcp-sa11x0/ucb1x00 driver
+Date: Wed,  9 Sep 2026 15:21:49 +0200
+Message-ID: <20260909132153.1596191-13-arnd@kernel.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260909132153.1596191-1-arnd@kernel.org>
 References: <20260909132153.1596191-1-arnd@kernel.org>
@@ -109,9961 +109,2439 @@ Content-Transfer-Encoding: 8bit
 
 From: Arnd Bergmann <arnd@arndb.de>
 
-This driver was used on the i.MX31 ADS reference board from Freescale
-and the smdk6410 reference board from Samsung. Both used platform_data
-based driver probing and are now gone from the kernel.
-
-Since probing with devicetree has never been supported by wm8350,
-it is clear that nothing can use the driver on an upstream kernel,
-and it is unlikely that anyone is still interested in a devicetree
-conversion, so remove it.
+The sa1100 platform has been removed, so these drivers are no longer
+used anywhere.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- Documentation/hwmon/index.rst                 |    1 -
- Documentation/hwmon/wm8350.rst                |   30 -
- .../watchdog/watchdog-parameters.rst          |    7 -
- MAINTAINERS                                   |    1 -
- drivers/gpio/Kconfig                          |    7 -
- drivers/gpio/Makefile                         |    1 -
- drivers/gpio/gpio-wm8350.c                    |  144 --
- drivers/hwmon/Kconfig                         |   10 -
- drivers/hwmon/Makefile                        |    1 -
- drivers/hwmon/wm8350-hwmon.c                  |   92 -
- drivers/leds/Kconfig                          |    8 -
- drivers/leds/Makefile                         |    1 -
- drivers/leds/leds-wm8350.c                    |  267 ---
- drivers/mfd/Kconfig                           |   15 -
- drivers/mfd/Makefile                          |    4 -
- drivers/mfd/wm8350-core.c                     |  444 -----
- drivers/mfd/wm8350-gpio.c                     |  217 ---
- drivers/mfd/wm8350-i2c.c                      |   64 -
- drivers/mfd/wm8350-irq.c                      |  542 ------
- drivers/mfd/wm8350-regmap.c                   |  335 ----
- drivers/power/supply/Kconfig                  |    7 -
- drivers/power/supply/Makefile                 |    1 -
- drivers/power/supply/wm8350_power.c           |  590 ------
- drivers/regulator/Kconfig                     |    7 -
- drivers/regulator/Makefile                    |    1 -
- drivers/regulator/wm8350-regulator.c          | 1330 -------------
- drivers/rtc/Kconfig                           |   10 -
- drivers/rtc/Makefile                          |    1 -
- drivers/rtc/rtc-wm8350.c                      |  474 -----
- drivers/watchdog/Kconfig                      |    8 -
- drivers/watchdog/Makefile                     |    1 -
- drivers/watchdog/wm8350_wdt.c                 |  171 --
- include/linux/mfd/wm8350/audio.h              |  620 -------
- include/linux/mfd/wm8350/comparator.h         |  171 --
- include/linux/mfd/wm8350/core.h               |  692 -------
- include/linux/mfd/wm8350/gpio.h               |  356 ----
- include/linux/mfd/wm8350/pmic.h               |  775 --------
- include/linux/mfd/wm8350/rtc.h                |  265 ---
- include/linux/mfd/wm8350/supply.h             |  129 --
- include/linux/mfd/wm8350/wdt.h                |   24 -
- sound/soc/codecs/Kconfig                      |    5 -
- sound/soc/codecs/Makefile                     |    2 -
- sound/soc/codecs/wm8350.c                     | 1638 -----------------
- sound/soc/codecs/wm8350.h                     |   25 -
- 44 files changed, 9494 deletions(-)
- delete mode 100644 Documentation/hwmon/wm8350.rst
- delete mode 100644 drivers/gpio/gpio-wm8350.c
- delete mode 100644 drivers/hwmon/wm8350-hwmon.c
- delete mode 100644 drivers/leds/leds-wm8350.c
- delete mode 100644 drivers/mfd/wm8350-core.c
- delete mode 100644 drivers/mfd/wm8350-gpio.c
- delete mode 100644 drivers/mfd/wm8350-i2c.c
- delete mode 100644 drivers/mfd/wm8350-irq.c
- delete mode 100644 drivers/mfd/wm8350-regmap.c
- delete mode 100644 drivers/power/supply/wm8350_power.c
- delete mode 100644 drivers/regulator/wm8350-regulator.c
- delete mode 100644 drivers/rtc/rtc-wm8350.c
- delete mode 100644 drivers/watchdog/wm8350_wdt.c
- delete mode 100644 include/linux/mfd/wm8350/audio.h
- delete mode 100644 include/linux/mfd/wm8350/comparator.h
- delete mode 100644 include/linux/mfd/wm8350/core.h
- delete mode 100644 include/linux/mfd/wm8350/gpio.h
- delete mode 100644 include/linux/mfd/wm8350/pmic.h
- delete mode 100644 include/linux/mfd/wm8350/rtc.h
- delete mode 100644 include/linux/mfd/wm8350/supply.h
- delete mode 100644 include/linux/mfd/wm8350/wdt.h
- delete mode 100644 sound/soc/codecs/wm8350.c
- delete mode 100644 sound/soc/codecs/wm8350.h
+ Documentation/admin-guide/devices.txt        |   1 -
+ drivers/mfd/Kconfig                          |  24 -
+ drivers/mfd/Makefile                         |   8 -
+ drivers/mfd/mcp-core.c                       | 235 ------
+ drivers/mfd/mcp-sa11x0.c                     | 304 -------
+ drivers/mfd/ucb1x00-assabet.c                | 175 ----
+ drivers/mfd/ucb1x00-core.c                   | 795 -------------------
+ drivers/mfd/ucb1x00-ts.c                     | 445 -----------
+ include/linux/mfd/mcp.h                      |  63 --
+ include/linux/mfd/ucb1x00.h                  | 261 ------
+ include/linux/platform_data/mfd-mcp-sa11x0.h |  17 -
+ 11 files changed, 2328 deletions(-)
+ delete mode 100644 drivers/mfd/mcp-core.c
+ delete mode 100644 drivers/mfd/mcp-sa11x0.c
+ delete mode 100644 drivers/mfd/ucb1x00-assabet.c
+ delete mode 100644 drivers/mfd/ucb1x00-core.c
+ delete mode 100644 drivers/mfd/ucb1x00-ts.c
+ delete mode 100644 include/linux/mfd/mcp.h
+ delete mode 100644 include/linux/mfd/ucb1x00.h
+ delete mode 100644 include/linux/platform_data/mfd-mcp-sa11x0.h
 
-diff --git a/Documentation/hwmon/index.rst b/Documentation/hwmon/index.rst
-index 9955a525436a..263fbad189c7 100644
---- a/Documentation/hwmon/index.rst
-+++ b/Documentation/hwmon/index.rst
-@@ -296,7 +296,6 @@ Hardware Monitoring Kernel Drivers
-    w83l785ts
-    w83l786ng
-    wm831x
--   wm8350
-    xgene-hwmon
-    xdp710
-    xdpe12284
-diff --git a/Documentation/hwmon/wm8350.rst b/Documentation/hwmon/wm8350.rst
-deleted file mode 100644
-index cec044ca5900..000000000000
---- a/Documentation/hwmon/wm8350.rst
-+++ /dev/null
-@@ -1,30 +0,0 @@
--Kernel driver wm8350-hwmon
--==========================
--
--Supported chips:
--
--  * Wolfson Microelectronics WM835x PMICs
--
--    Prefix: 'wm8350'
--
--    Datasheet:
--
--	- http://www.wolfsonmicro.com/products/WM8350
--	- http://www.wolfsonmicro.com/products/WM8351
--	- http://www.wolfsonmicro.com/products/WM8352
--
--Authors: Mark Brown <broonie@opensource.wolfsonmicro.com>
--
--Description
-------------
--
--The WM835x series of PMICs include an AUXADC which can be used to
--monitor a range of system operating parameters, including the voltages
--of the major supplies within the system.  Currently the driver provides
--simple access to these major supplies.
--
--Voltage Monitoring
--------------------
--
--Voltages are sampled by a 12 bit ADC.  For the internal supplies the ADC
--is referenced to the system VRTC.
-diff --git a/Documentation/watchdog/watchdog-parameters.rst b/Documentation/watchdog/watchdog-parameters.rst
-index 502cb6adbeda..8299d6e8d070 100644
---- a/Documentation/watchdog/watchdog-parameters.rst
-+++ b/Documentation/watchdog/watchdog-parameters.rst
-@@ -699,13 +699,6 @@ wm831x_wdt:
- 
- -------------------------------------------------
- 
--wm8350_wdt:
--    nowayout:
--	Watchdog cannot be stopped once started
--	(default=kernel config parameter)
--
---------------------------------------------------
--
- sun4v_wdt:
-     timeout_ms:
- 	Watchdog timeout in milliseconds 1..180000, default=60000)
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 360655cce7d1..fa15f7f72454 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -29385,7 +29385,6 @@ F:	drivers/video/backlight/wm83*_bl.c
- F:	drivers/watchdog/wm83*_wdt.c
- F:	include/linux/mfd/arizona/
- F:	include/linux/mfd/wm831x/
--F:	include/linux/mfd/wm8350/
- F:	include/linux/regulator/arizona*
- F:	include/linux/wm97xx.h
- F:	include/sound/wm????.h
-diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
-index 98b9931c59ff..b64dcc0aa9af 100644
---- a/drivers/gpio/Kconfig
-+++ b/drivers/gpio/Kconfig
-@@ -1792,13 +1792,6 @@ config GPIO_WM831X
- 	  Say yes here to access the GPIO signals of WM831x power management
- 	  chips from Wolfson Microelectronics.
- 
--config GPIO_WM8350
--	tristate "WM8350 GPIOs"
--	depends on MFD_WM8350
--	help
--	  Say yes here to access the GPIO signals of WM8350 power management
--	  chips from Wolfson Microelectronics.
--
- config GPIO_WM8994
- 	tristate "WM8994 GPIOs"
- 	depends on MFD_WM8994
-diff --git a/drivers/gpio/Makefile b/drivers/gpio/Makefile
-index 1fafd15d3fa6..2663a9cb435d 100644
---- a/drivers/gpio/Makefile
-+++ b/drivers/gpio/Makefile
-@@ -211,7 +211,6 @@ obj-$(CONFIG_GPIO_WCD934X)		+= gpio-wcd934x.o
- obj-$(CONFIG_GPIO_WHISKEY_COVE)		+= gpio-wcove.o
- obj-$(CONFIG_GPIO_WINBOND)		+= gpio-winbond.o
- obj-$(CONFIG_GPIO_WM831X)		+= gpio-wm831x.o
--obj-$(CONFIG_GPIO_WM8350)		+= gpio-wm8350.o
- obj-$(CONFIG_GPIO_WM8994)		+= gpio-wm8994.o
- obj-$(CONFIG_GPIO_WS16C48)		+= gpio-ws16c48.o
- obj-$(CONFIG_GPIO_XGENE)		+= gpio-xgene.o
-diff --git a/drivers/gpio/gpio-wm8350.c b/drivers/gpio/gpio-wm8350.c
-deleted file mode 100644
-index 46923b23a72e..000000000000
---- a/drivers/gpio/gpio-wm8350.c
-+++ /dev/null
-@@ -1,144 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0+
--/*
-- * gpiolib support for Wolfson WM835x PMICs
-- *
-- * Copyright 2009 Wolfson Microelectronics PLC.
-- *
-- * Author: Mark Brown <broonie@opensource.wolfsonmicro.com>
-- *
-- */
--
--#include <linux/gpio/driver.h>
--#include <linux/kernel.h>
--#include <linux/mfd/core.h>
--#include <linux/module.h>
--#include <linux/platform_device.h>
--#include <linux/slab.h>
--
--#include <linux/mfd/wm8350/core.h>
--#include <linux/mfd/wm8350/gpio.h>
--
--struct wm8350_gpio_data {
--	struct wm8350 *wm8350;
--	struct gpio_chip gpio_chip;
--};
--
--static int wm8350_gpio_direction_in(struct gpio_chip *chip, unsigned offset)
--{
--	struct wm8350_gpio_data *wm8350_gpio = gpiochip_get_data(chip);
--	struct wm8350 *wm8350 = wm8350_gpio->wm8350;
--
--	return wm8350_set_bits(wm8350, WM8350_GPIO_CONFIGURATION_I_O,
--			       1 << offset);
--}
--
--static int wm8350_gpio_get(struct gpio_chip *chip, unsigned offset)
--{
--	struct wm8350_gpio_data *wm8350_gpio = gpiochip_get_data(chip);
--	struct wm8350 *wm8350 = wm8350_gpio->wm8350;
--	int ret;
--
--	ret = wm8350_reg_read(wm8350, WM8350_GPIO_LEVEL);
--	if (ret < 0)
--		return ret;
--
--	if (ret & (1 << offset))
--		return 1;
--	else
--		return 0;
--}
--
--static int wm8350_gpio_set(struct gpio_chip *chip, unsigned int offset,
--			   int value)
--{
--	struct wm8350_gpio_data *wm8350_gpio = gpiochip_get_data(chip);
--	struct wm8350 *wm8350 = wm8350_gpio->wm8350;
--
--	if (value)
--		return wm8350_set_bits(wm8350, WM8350_GPIO_LEVEL, 1 << offset);
--
--	return wm8350_clear_bits(wm8350, WM8350_GPIO_LEVEL, 1 << offset);
--}
--
--static int wm8350_gpio_direction_out(struct gpio_chip *chip,
--				     unsigned offset, int value)
--{
--	struct wm8350_gpio_data *wm8350_gpio = gpiochip_get_data(chip);
--	struct wm8350 *wm8350 = wm8350_gpio->wm8350;
--	int ret;
--
--	ret = wm8350_clear_bits(wm8350, WM8350_GPIO_CONFIGURATION_I_O,
--				1 << offset);
--	if (ret < 0)
--		return ret;
--
--	/* Don't have an atomic direction/value setup */
--	return wm8350_gpio_set(chip, offset, value);
--}
--
--static int wm8350_gpio_to_irq(struct gpio_chip *chip, unsigned offset)
--{
--	struct wm8350_gpio_data *wm8350_gpio = gpiochip_get_data(chip);
--	struct wm8350 *wm8350 = wm8350_gpio->wm8350;
--
--	if (!wm8350->irq_base)
--		return -EINVAL;
--
--	return wm8350->irq_base + WM8350_IRQ_GPIO(offset);
--}
--
--static const struct gpio_chip template_chip = {
--	.label			= "wm8350",
--	.owner			= THIS_MODULE,
--	.direction_input	= wm8350_gpio_direction_in,
--	.get			= wm8350_gpio_get,
--	.direction_output	= wm8350_gpio_direction_out,
--	.set			= wm8350_gpio_set,
--	.to_irq			= wm8350_gpio_to_irq,
--	.can_sleep		= true,
--};
--
--static int wm8350_gpio_probe(struct platform_device *pdev)
--{
--	struct wm8350 *wm8350 = dev_get_drvdata(pdev->dev.parent);
--	struct wm8350_platform_data *pdata = dev_get_platdata(wm8350->dev);
--	struct wm8350_gpio_data *wm8350_gpio;
--
--	wm8350_gpio = devm_kzalloc(&pdev->dev, sizeof(*wm8350_gpio),
--				   GFP_KERNEL);
--	if (wm8350_gpio == NULL)
--		return -ENOMEM;
--
--	wm8350_gpio->wm8350 = wm8350;
--	wm8350_gpio->gpio_chip = template_chip;
--	wm8350_gpio->gpio_chip.ngpio = 13;
--	wm8350_gpio->gpio_chip.parent = &pdev->dev;
--	if (pdata && pdata->gpio_base)
--		wm8350_gpio->gpio_chip.base = pdata->gpio_base;
--	else
--		wm8350_gpio->gpio_chip.base = -1;
--
--	return devm_gpiochip_add_data(&pdev->dev, &wm8350_gpio->gpio_chip, wm8350_gpio);
--}
--
--static struct platform_driver wm8350_gpio_driver = {
--	.driver.name	= "wm8350-gpio",
--	.probe		= wm8350_gpio_probe,
--};
--
--static int __init wm8350_gpio_init(void)
--{
--	return platform_driver_register(&wm8350_gpio_driver);
--}
--subsys_initcall(wm8350_gpio_init);
--
--static void __exit wm8350_gpio_exit(void)
--{
--	platform_driver_unregister(&wm8350_gpio_driver);
--}
--module_exit(wm8350_gpio_exit);
--
--MODULE_AUTHOR("Mark Brown <broonie@opensource.wolfsonmicro.com>");
--MODULE_DESCRIPTION("GPIO interface for WM8350 PMICs");
--MODULE_LICENSE("GPL");
--MODULE_ALIAS("platform:wm8350-gpio");
-diff --git a/drivers/hwmon/Kconfig b/drivers/hwmon/Kconfig
-index fecff8610ea8..74e82fa1b099 100644
---- a/drivers/hwmon/Kconfig
-+++ b/drivers/hwmon/Kconfig
-@@ -2728,16 +2728,6 @@ config SENSORS_WM831X
- 	  This driver can also be built as a module. If so, the module
- 	  will be called wm831x-hwmon.
- 
--config SENSORS_WM8350
--	tristate "Wolfson Microelectronics WM835x"
--	depends on MFD_WM8350
--	help
--	  If you say yes here you get support for the hardware
--	  monitoring features of the WM835x series of PMICs.
--
--	  This driver can also be built as a module. If so, the module
--	  will be called wm8350-hwmon.
--
- config SENSORS_ULTRA45
- 	tristate "Sun Ultra45 PIC16F747"
- 	depends on SPARC64
-diff --git a/drivers/hwmon/Makefile b/drivers/hwmon/Makefile
-index 1229b6b3996d..64c97f337e40 100644
---- a/drivers/hwmon/Makefile
-+++ b/drivers/hwmon/Makefile
-@@ -251,7 +251,6 @@ obj-$(CONFIG_SENSORS_W83627EHF)	+= w83627ehf.o
- obj-$(CONFIG_SENSORS_W83L785TS)	+= w83l785ts.o
- obj-$(CONFIG_SENSORS_W83L786NG)	+= w83l786ng.o
- obj-$(CONFIG_SENSORS_WM831X)	+= wm831x-hwmon.o
--obj-$(CONFIG_SENSORS_WM8350)	+= wm8350-hwmon.o
- obj-$(CONFIG_SENSORS_XGENE)	+= xgene-hwmon.o
- obj-$(CONFIG_SENSORS_YOGAFAN)	+= yogafan.o
- 
-diff --git a/drivers/hwmon/wm8350-hwmon.c b/drivers/hwmon/wm8350-hwmon.c
-deleted file mode 100644
-index 10e17bb79895..000000000000
---- a/drivers/hwmon/wm8350-hwmon.c
-+++ /dev/null
-@@ -1,92 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-only
--/*
-- * drivers/hwmon/wm8350-hwmon.c - Wolfson Microelectronics WM8350 PMIC
-- *                                  hardware monitoring features.
-- *
-- * Copyright (C) 2009 Wolfson Microelectronics plc
-- */
--
--#include <linux/kernel.h>
--#include <linux/module.h>
--#include <linux/err.h>
--#include <linux/platform_device.h>
--#include <linux/hwmon.h>
--#include <linux/hwmon-sysfs.h>
--
--#include <linux/mfd/wm8350/core.h>
--#include <linux/mfd/wm8350/comparator.h>
--
--static const char * const input_names[] = {
--	[WM8350_AUXADC_USB]  = "USB",
--	[WM8350_AUXADC_LINE] = "Line",
--	[WM8350_AUXADC_BATT] = "Battery",
--};
--
--static ssize_t show_voltage(struct device *dev,
--			    struct device_attribute *attr, char *buf)
--{
--	struct wm8350 *wm8350 = dev_get_drvdata(dev);
--	int channel = to_sensor_dev_attr(attr)->index;
--	int val;
--
--	val = wm8350_read_auxadc(wm8350, channel, 0, 0) * WM8350_AUX_COEFF;
--	val = DIV_ROUND_CLOSEST(val, 1000);
--
--	return sprintf(buf, "%d\n", val);
--}
--
--static ssize_t show_label(struct device *dev,
--			  struct device_attribute *attr, char *buf)
--{
--	int channel = to_sensor_dev_attr(attr)->index;
--
--	return sprintf(buf, "%s\n", input_names[channel]);
--}
--
--#define WM8350_NAMED_VOLTAGE(id, name) \
--	static SENSOR_DEVICE_ATTR(in##id##_input, S_IRUGO, show_voltage,\
--				  NULL, name);		\
--	static SENSOR_DEVICE_ATTR(in##id##_label, S_IRUGO, show_label,	\
--				  NULL, name)
--
--WM8350_NAMED_VOLTAGE(0, WM8350_AUXADC_USB);
--WM8350_NAMED_VOLTAGE(1, WM8350_AUXADC_BATT);
--WM8350_NAMED_VOLTAGE(2, WM8350_AUXADC_LINE);
--
--static struct attribute *wm8350_attrs[] = {
--	&sensor_dev_attr_in0_input.dev_attr.attr,
--	&sensor_dev_attr_in0_label.dev_attr.attr,
--	&sensor_dev_attr_in1_input.dev_attr.attr,
--	&sensor_dev_attr_in1_label.dev_attr.attr,
--	&sensor_dev_attr_in2_input.dev_attr.attr,
--	&sensor_dev_attr_in2_label.dev_attr.attr,
--
--	NULL,
--};
--
--ATTRIBUTE_GROUPS(wm8350);
--
--static int wm8350_hwmon_probe(struct platform_device *pdev)
--{
--	struct wm8350 *wm8350 = platform_get_drvdata(pdev);
--	struct device *hwmon_dev;
--
--	hwmon_dev = devm_hwmon_device_register_with_groups(&pdev->dev, "wm8350",
--							   wm8350,
--							   wm8350_groups);
--	return PTR_ERR_OR_ZERO(hwmon_dev);
--}
--
--static struct platform_driver wm8350_hwmon_driver = {
--	.probe = wm8350_hwmon_probe,
--	.driver = {
--		.name = "wm8350-hwmon",
--	},
--};
--
--module_platform_driver(wm8350_hwmon_driver);
--
--MODULE_AUTHOR("Mark Brown <broonie@opensource.wolfsonmicro.com>");
--MODULE_DESCRIPTION("WM8350 Hardware Monitoring");
--MODULE_LICENSE("GPL");
--MODULE_ALIAS("platform:wm8350-hwmon");
-diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
-index 1a0663a6501c..7afcf00dea49 100644
---- a/drivers/leds/Kconfig
-+++ b/drivers/leds/Kconfig
-@@ -610,14 +610,6 @@ config LEDS_WM831X_STATUS
- 	  This option enables support for the status LEDs of the WM831x
- 	  series of PMICs.
- 
--config LEDS_WM8350
--	tristate "LED Support for WM8350 AudioPlus PMIC"
--	depends on LEDS_CLASS
--	depends on MFD_WM8350
--	help
--	  This option enables support for LEDs driven by the Wolfson
--	  Microelectronics WM8350 AudioPlus PMIC.
--
- config LEDS_DA9052
- 	tristate "Dialog DA9052/DA9053 LEDS"
- 	depends on LEDS_CLASS
-diff --git a/drivers/leds/Makefile b/drivers/leds/Makefile
-index b989803bedb9..8de413d714d0 100644
---- a/drivers/leds/Makefile
-+++ b/drivers/leds/Makefile
-@@ -94,7 +94,6 @@ obj-$(CONFIG_LEDS_TPS6105X)		+= leds-tps6105x.o
- obj-$(CONFIG_LEDS_TURRIS_OMNIA)		+= leds-turris-omnia.o
- obj-$(CONFIG_LEDS_UPBOARD)		+= leds-upboard.o
- obj-$(CONFIG_LEDS_WM831X_STATUS)	+= leds-wm831x-status.o
--obj-$(CONFIG_LEDS_WM8350)		+= leds-wm8350.o
- obj-$(CONFIG_LEDS_WRAP)			+= leds-wrap.o
- 
- # Kinetic ExpressWire Protocol
-diff --git a/drivers/leds/leds-wm8350.c b/drivers/leds/leds-wm8350.c
-deleted file mode 100644
-index 87e60ea927b9..000000000000
---- a/drivers/leds/leds-wm8350.c
-+++ /dev/null
-@@ -1,267 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-only
--/*
-- * LED driver for WM8350 driven LEDS.
-- *
-- * Copyright(C) 2007, 2008 Wolfson Microelectronics PLC.
-- */
--
--#include <linux/kernel.h>
--#include <linux/platform_device.h>
--#include <linux/leds.h>
--#include <linux/err.h>
--#include <linux/mfd/wm8350/pmic.h>
--#include <linux/regulator/consumer.h>
--#include <linux/slab.h>
--#include <linux/module.h>
--
--/* Microamps */
--static const int isink_cur[] = {
--	4,
--	5,
--	6,
--	7,
--	8,
--	10,
--	11,
--	14,
--	16,
--	19,
--	23,
--	27,
--	32,
--	39,
--	46,
--	54,
--	65,
--	77,
--	92,
--	109,
--	130,
--	154,
--	183,
--	218,
--	259,
--	308,
--	367,
--	436,
--	518,
--	616,
--	733,
--	872,
--	1037,
--	1233,
--	1466,
--	1744,
--	2073,
--	2466,
--	2933,
--	3487,
--	4147,
--	4932,
--	5865,
--	6975,
--	8294,
--	9864,
--	11730,
--	13949,
--	16589,
--	19728,
--	23460,
--	27899,
--	33178,
--	39455,
--	46920,
--	55798,
--	66355,
--	78910,
--	93840,
--	111596,
--	132710,
--	157820,
--	187681,
--	223191
--};
--
--#define to_wm8350_led(led_cdev) \
--	container_of(led_cdev, struct wm8350_led, cdev)
--
--static int wm8350_led_enable(struct wm8350_led *led)
--{
--	int ret = 0;
--
--	if (led->enabled)
--		return ret;
--
--	ret = regulator_enable(led->isink);
--	if (ret != 0) {
--		dev_err(led->cdev.dev, "Failed to enable ISINK: %d\n", ret);
--		return ret;
--	}
--
--	ret = regulator_enable(led->dcdc);
--	if (ret != 0) {
--		dev_err(led->cdev.dev, "Failed to enable DCDC: %d\n", ret);
--		regulator_disable(led->isink);
--		return ret;
--	}
--
--	led->enabled = 1;
--
--	return ret;
--}
--
--static int wm8350_led_disable(struct wm8350_led *led)
--{
--	int ret = 0;
--
--	if (!led->enabled)
--		return ret;
--
--	ret = regulator_disable(led->dcdc);
--	if (ret != 0) {
--		dev_err(led->cdev.dev, "Failed to disable DCDC: %d\n", ret);
--		return ret;
--	}
--
--	ret = regulator_disable(led->isink);
--	if (ret != 0) {
--		dev_err(led->cdev.dev, "Failed to disable ISINK: %d\n", ret);
--		ret = regulator_enable(led->dcdc);
--		if (ret != 0)
--			dev_err(led->cdev.dev, "Failed to reenable DCDC: %d\n",
--				ret);
--		return ret;
--	}
--
--	led->enabled = 0;
--
--	return ret;
--}
--
--static int wm8350_led_set(struct led_classdev *led_cdev,
--			   enum led_brightness value)
--{
--	struct wm8350_led *led = to_wm8350_led(led_cdev);
--	unsigned long flags;
--	int ret;
--	int uA;
--
--	led->value = value;
--
--	spin_lock_irqsave(&led->value_lock, flags);
--
--	if (led->value == LED_OFF) {
--		spin_unlock_irqrestore(&led->value_lock, flags);
--		return wm8350_led_disable(led);
--	}
--
--	/* This scales linearly into the index of valid current
--	 * settings which results in a linear scaling of perceived
--	 * brightness due to the non-linear current settings provided
--	 * by the hardware.
--	 */
--	uA = (led->max_uA_index * led->value) / LED_FULL;
--	spin_unlock_irqrestore(&led->value_lock, flags);
--	BUG_ON(uA >= ARRAY_SIZE(isink_cur));
--
--	ret = regulator_set_current_limit(led->isink, isink_cur[uA],
--					  isink_cur[uA]);
--	if (ret != 0) {
--		dev_err(led->cdev.dev, "Failed to set %duA: %d\n",
--			isink_cur[uA], ret);
--		return ret;
--	}
--
--	return wm8350_led_enable(led);
--}
--
--static void wm8350_led_shutdown(struct platform_device *pdev)
--{
--	struct wm8350_led *led = platform_get_drvdata(pdev);
--
--	led->value = LED_OFF;
--	wm8350_led_disable(led);
--}
--
--static int wm8350_led_probe(struct platform_device *pdev)
--{
--	struct regulator *isink, *dcdc;
--	struct wm8350_led *led;
--	struct wm8350_led_platform_data *pdata = dev_get_platdata(&pdev->dev);
--	int i;
--
--	if (pdata == NULL) {
--		dev_err(&pdev->dev, "no platform data\n");
--		return -ENODEV;
--	}
--
--	if (pdata->max_uA < isink_cur[0]) {
--		dev_err(&pdev->dev, "Invalid maximum current %duA\n",
--			pdata->max_uA);
--		return -EINVAL;
--	}
--
--	isink = devm_regulator_get(&pdev->dev, "led_isink");
--	if (IS_ERR(isink)) {
--		dev_err(&pdev->dev, "%s: can't get ISINK\n", __func__);
--		return PTR_ERR(isink);
--	}
--
--	dcdc = devm_regulator_get(&pdev->dev, "led_vcc");
--	if (IS_ERR(dcdc)) {
--		dev_err(&pdev->dev, "%s: can't get DCDC\n", __func__);
--		return PTR_ERR(dcdc);
--	}
--
--	led = devm_kzalloc(&pdev->dev, sizeof(*led), GFP_KERNEL);
--	if (led == NULL)
--		return -ENOMEM;
--
--	led->cdev.brightness_set_blocking = wm8350_led_set;
--	led->cdev.default_trigger = pdata->default_trigger;
--	led->cdev.name = pdata->name;
--	led->cdev.flags |= LED_CORE_SUSPENDRESUME;
--	led->enabled = regulator_is_enabled(isink);
--	led->isink = isink;
--	led->dcdc = dcdc;
--
--	for (i = 0; i < ARRAY_SIZE(isink_cur) - 1; i++)
--		if (isink_cur[i] >= pdata->max_uA)
--			break;
--	led->max_uA_index = i;
--	if (pdata->max_uA != isink_cur[i])
--		dev_warn(&pdev->dev,
--			 "Maximum current %duA is not directly supported,"
--			 " check platform data\n",
--			 pdata->max_uA);
--
--	spin_lock_init(&led->value_lock);
--	led->value = LED_OFF;
--	platform_set_drvdata(pdev, led);
--
--	return led_classdev_register(&pdev->dev, &led->cdev);
--}
--
--static void wm8350_led_remove(struct platform_device *pdev)
--{
--	struct wm8350_led *led = platform_get_drvdata(pdev);
--
--	led_classdev_unregister(&led->cdev);
--	wm8350_led_disable(led);
--}
--
--static struct platform_driver wm8350_led_driver = {
--	.driver = {
--		   .name = "wm8350-led",
--		   },
--	.probe = wm8350_led_probe,
--	.remove = wm8350_led_remove,
--	.shutdown = wm8350_led_shutdown,
--};
--
--module_platform_driver(wm8350_led_driver);
--
--MODULE_AUTHOR("Mark Brown");
--MODULE_DESCRIPTION("WM8350 LED driver");
--MODULE_LICENSE("GPL");
--MODULE_ALIAS("platform:wm8350-led");
+diff --git a/Documentation/admin-guide/devices.txt b/Documentation/admin-guide/devices.txt
+index f544399675fa..eaaa03118fc1 100644
+--- a/Documentation/admin-guide/devices.txt
++++ b/Documentation/admin-guide/devices.txt
+@@ -262,7 +262,6 @@
+ 		 10 = /dev/adbmouse	Apple Desktop Bus mouse
+ 		 11 = /dev/vrtpanel	Vr41xx embedded touch panel
+ 		 13 = /dev/vpcmouse	Connectix Virtual PC Mouse
+-		 14 = /dev/touchscreen/ucb1x00  UCB 1x00 touchscreen
+ 		 15 = /dev/touchscreen/mk712	MK712 touchscreen
+ 		128 = /dev/beep		Fancy beep device
+ 		129 =
 diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-index fbcc45d2b0c4..8a3bbb628693 100644
+index 8a3bbb628693..0395af7270f9 100644
 --- a/drivers/mfd/Kconfig
 +++ b/drivers/mfd/Kconfig
-@@ -2027,21 +2027,6 @@ config MFD_WM831X_SPI
- 	  for accessing the device, additional drivers must be enabled in
+@@ -2258,30 +2258,6 @@ config MFD_QCOM_PM8008
+ 	  under it in the device tree. Additional drivers must be enabled in
  	  order to use the functionality of the device.
  
--config MFD_WM8350
--	bool
+-menu "Multimedia Capabilities Port drivers"
+-	depends on ARCH_SA1100
 -
--config MFD_WM8350_I2C
--	bool "Wolfson Microelectronics WM8350 with I2C"
--	select MFD_WM8350
--	select REGMAP_I2C
--	depends on I2C=y
--	help
--	  The WM8350 is an integrated audio and power management
--	  subsystem with watchdog and RTC functionality for embedded
--	  systems.  This option enables core support for the WM8350 with
--	  I2C as the control interface.  Additional options must be
--	  selected to enable support for the functionality of the chip.
+-config MCP
+-	tristate
 -
- config MFD_WM8994
- 	tristate "Wolfson Microelectronics WM8994"
- 	select MFD_CORE
+-# Interface drivers
+-config MCP_SA11X0
+-	tristate "Support SA11x0 MCP interface"
+-	depends on ARCH_SA1100
+-	select MCP
+-
+-# Chip drivers
+-config MCP_UCB1200
+-	tristate "Support for UCB1200 / UCB1300"
+-	depends on MCP_SA11X0
+-	select MCP
+-
+-config MCP_UCB1200_TS
+-	tristate "Touchscreen interface support"
+-	depends on MCP_UCB1200 && INPUT
+-
+-endmenu
+-
+ config MFD_VEXPRESS_SYSREG
+ 	tristate "Versatile Express System Registers"
+ 	depends on VEXPRESS_CONFIG && GPIOLIB
 diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
-index 7aaad5855681..2cdbc693ee33 100644
+index 2cdbc693ee33..ff62e922209e 100644
 --- a/drivers/mfd/Makefile
 +++ b/drivers/mfd/Makefile
-@@ -60,10 +60,6 @@ wm831x-objs			+= wm831x-auxadc.o
- obj-$(CONFIG_MFD_WM831X)	+= wm831x.o
- obj-$(CONFIG_MFD_WM831X_I2C)	+= wm831x-i2c.o
- obj-$(CONFIG_MFD_WM831X_SPI)	+= wm831x-spi.o
--wm8350-objs			:= wm8350-core.o wm8350-regmap.o wm8350-gpio.o
--wm8350-objs			+= wm8350-irq.o
--obj-$(CONFIG_MFD_WM8350)	+= wm8350.o
--obj-$(CONFIG_MFD_WM8350_I2C)	+= wm8350-i2c.o
- wm8994-objs			:= wm8994-core.o wm8994-irq.o wm8994-regmap.o
- obj-$(CONFIG_MFD_WM8994)	+= wm8994.o
- obj-$(CONFIG_MFD_WM97xx)	+= wm97xx-core.o
-diff --git a/drivers/mfd/wm8350-core.c b/drivers/mfd/wm8350-core.c
-deleted file mode 100644
-index fbc77b218215..000000000000
---- a/drivers/mfd/wm8350-core.c
-+++ /dev/null
-@@ -1,444 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-or-later
--/*
-- * wm8350-core.c  --  Device access for Wolfson WM8350
-- *
-- * Copyright 2007, 2008 Wolfson Microelectronics PLC.
-- *
-- * Author: Liam Girdwood, Mark Brown
-- */
--
--#include <linux/kernel.h>
--#include <linux/init.h>
--#include <linux/export.h>
--#include <linux/slab.h>
--#include <linux/bug.h>
--#include <linux/device.h>
--#include <linux/delay.h>
--#include <linux/interrupt.h>
--#include <linux/regmap.h>
--#include <linux/workqueue.h>
--
--#include <linux/mfd/wm8350/core.h>
--#include <linux/mfd/wm8350/audio.h>
--#include <linux/mfd/wm8350/comparator.h>
--#include <linux/mfd/wm8350/gpio.h>
--#include <linux/mfd/wm8350/pmic.h>
--#include <linux/mfd/wm8350/rtc.h>
--#include <linux/mfd/wm8350/supply.h>
--#include <linux/mfd/wm8350/wdt.h>
--
--#define WM8350_CLOCK_CONTROL_1		0x28
--#define WM8350_AIF_TEST			0x74
--
--/* debug */
--#define WM8350_BUS_DEBUG 0
--#if WM8350_BUS_DEBUG
--#define dump(regs, src) do { \
--	int i_; \
--	u16 *src_ = src; \
--	printk(KERN_DEBUG); \
--	for (i_ = 0; i_ < regs; i_++) \
--		printk(" 0x%4.4x", *src_++); \
--	printk("\n"); \
--} while (0);
--#else
--#define dump(bytes, src)
--#endif
--
--#define WM8350_LOCK_DEBUG 0
--#if WM8350_LOCK_DEBUG
--#define ldbg(format, arg...) printk(format, ## arg)
--#else
--#define ldbg(format, arg...)
--#endif
--
--/*
-- * WM8350 Device IO
-- */
--static DEFINE_MUTEX(reg_lock_mutex);
--
--/*
-- * Safe read, modify, write methods
-- */
--int wm8350_clear_bits(struct wm8350 *wm8350, u16 reg, u16 mask)
--{
--	return regmap_update_bits(wm8350->regmap, reg, mask, 0);
--}
--EXPORT_SYMBOL_GPL(wm8350_clear_bits);
--
--int wm8350_set_bits(struct wm8350 *wm8350, u16 reg, u16 mask)
--{
--	return regmap_update_bits(wm8350->regmap, reg, mask, mask);
--}
--EXPORT_SYMBOL_GPL(wm8350_set_bits);
--
--u16 wm8350_reg_read(struct wm8350 *wm8350, int reg)
--{
--	unsigned int data;
--	int err;
--
--	err = regmap_read(wm8350->regmap, reg, &data);
--	if (err)
--		dev_err(wm8350->dev, "read from reg R%d failed\n", reg);
--
--	return data;
--}
--EXPORT_SYMBOL_GPL(wm8350_reg_read);
--
--int wm8350_reg_write(struct wm8350 *wm8350, int reg, u16 val)
--{
--	int ret;
--
--	ret = regmap_write(wm8350->regmap, reg, val);
--
--	if (ret)
--		dev_err(wm8350->dev, "write to reg R%d failed\n", reg);
--	return ret;
--}
--EXPORT_SYMBOL_GPL(wm8350_reg_write);
--
--int wm8350_block_read(struct wm8350 *wm8350, int start_reg, int regs,
--		      u16 *dest)
--{
--	int err = 0;
--
--	err = regmap_bulk_read(wm8350->regmap, start_reg, dest, regs);
--	if (err)
--		dev_err(wm8350->dev, "block read starting from R%d failed\n",
--			start_reg);
--
--	return err;
--}
--EXPORT_SYMBOL_GPL(wm8350_block_read);
--
--int wm8350_block_write(struct wm8350 *wm8350, int start_reg, int regs,
--		       u16 *src)
--{
--	int ret = 0;
--
--	ret = regmap_bulk_write(wm8350->regmap, start_reg, src, regs);
--	if (ret)
--		dev_err(wm8350->dev, "block write starting at R%d failed\n",
--			start_reg);
--
--	return ret;
--}
--EXPORT_SYMBOL_GPL(wm8350_block_write);
--
--/**
-- * wm8350_reg_lock()
-- *
-- * The WM8350 has a hardware lock which can be used to prevent writes to
-- * some registers (generally those which can cause particularly serious
-- * problems if misused).  This function enables that lock.
-- *
-- * @wm8350: pointer to local driver data structure
-- */
--int wm8350_reg_lock(struct wm8350 *wm8350)
--{
--	int ret;
--
--	mutex_lock(&reg_lock_mutex);
--
--	ldbg(__func__);
--
--	ret = wm8350_reg_write(wm8350, WM8350_SECURITY, WM8350_LOCK_KEY);
--	if (ret)
--		dev_err(wm8350->dev, "lock failed\n");
--
--	wm8350->unlocked = false;
--
--	mutex_unlock(&reg_lock_mutex);
--
--	return ret;
--}
--EXPORT_SYMBOL_GPL(wm8350_reg_lock);
--
--/**
-- * wm8350_reg_unlock()
-- *
-- * The WM8350 has a hardware lock which can be used to prevent writes to
-- * some registers (generally those which can cause particularly serious
-- * problems if misused).  This function disables that lock so updates
-- * can be performed.  For maximum safety this should be done only when
-- * required.
-- *
-- * @wm8350: pointer to local driver data structure
-- */
--int wm8350_reg_unlock(struct wm8350 *wm8350)
--{
--	int ret;
--
--	mutex_lock(&reg_lock_mutex);
--
--	ldbg(__func__);
--
--	ret = wm8350_reg_write(wm8350, WM8350_SECURITY, WM8350_UNLOCK_KEY);
--	if (ret)
--		dev_err(wm8350->dev, "unlock failed\n");
--
--	wm8350->unlocked = true;
--
--	mutex_unlock(&reg_lock_mutex);
--
--	return ret;
--}
--EXPORT_SYMBOL_GPL(wm8350_reg_unlock);
--
--int wm8350_read_auxadc(struct wm8350 *wm8350, int channel, int scale, int vref)
--{
--	u16 reg, result = 0;
--
--	if (channel < WM8350_AUXADC_AUX1 || channel > WM8350_AUXADC_TEMP)
--		return -EINVAL;
--	if (channel >= WM8350_AUXADC_USB && channel <= WM8350_AUXADC_TEMP
--	    && (scale != 0 || vref != 0))
--		return -EINVAL;
--
--	mutex_lock(&wm8350->auxadc_mutex);
--
--	/* Turn on the ADC */
--	reg = wm8350_reg_read(wm8350, WM8350_POWER_MGMT_5);
--	wm8350_reg_write(wm8350, WM8350_POWER_MGMT_5, reg | WM8350_AUXADC_ENA);
--
--	if (scale || vref) {
--		reg = scale << 13;
--		reg |= vref << 12;
--		wm8350_reg_write(wm8350, WM8350_AUX1_READBACK + channel, reg);
--	}
--
--	reg = wm8350_reg_read(wm8350, WM8350_DIGITISER_CONTROL_1);
--	reg |= 1 << channel | WM8350_AUXADC_POLL;
--	wm8350_reg_write(wm8350, WM8350_DIGITISER_CONTROL_1, reg);
--
--	/* If a late IRQ left the completion signalled then consume
--	 * the completion. */
--	try_wait_for_completion(&wm8350->auxadc_done);
--
--	/* We ignore the result of the completion and just check for a
--	 * conversion result, allowing us to soldier on if the IRQ
--	 * infrastructure is not set up for the chip. */
--	wait_for_completion_timeout(&wm8350->auxadc_done, msecs_to_jiffies(5));
--
--	reg = wm8350_reg_read(wm8350, WM8350_DIGITISER_CONTROL_1);
--	if (reg & WM8350_AUXADC_POLL)
--		dev_err(wm8350->dev, "adc chn %d read timeout\n", channel);
--	else
--		result = wm8350_reg_read(wm8350,
--					 WM8350_AUX1_READBACK + channel);
--
--	/* Turn off the ADC */
--	reg = wm8350_reg_read(wm8350, WM8350_POWER_MGMT_5);
--	wm8350_reg_write(wm8350, WM8350_POWER_MGMT_5,
--			 reg & ~WM8350_AUXADC_ENA);
--
--	mutex_unlock(&wm8350->auxadc_mutex);
--
--	return result & WM8350_AUXADC_DATA1_MASK;
--}
--EXPORT_SYMBOL_GPL(wm8350_read_auxadc);
--
--static irqreturn_t wm8350_auxadc_irq(int irq, void *irq_data)
--{
--	struct wm8350 *wm8350 = irq_data;
--
--	complete(&wm8350->auxadc_done);
--
--	return IRQ_HANDLED;
--}
--
--/*
-- * Register a client device.  This is non-fatal since there is no need to
-- * fail the entire device init due to a single platform device failing.
-- */
--static void wm8350_client_dev_register(struct wm8350 *wm8350,
--				       const char *name,
--				       struct platform_device **pdev)
--{
--	int ret;
--
--	*pdev = platform_device_alloc(name, -1);
--	if (*pdev == NULL) {
--		dev_err(wm8350->dev, "Failed to allocate %s\n", name);
--		return;
--	}
--
--	(*pdev)->dev.parent = wm8350->dev;
--	platform_set_drvdata(*pdev, wm8350);
--	ret = platform_device_add(*pdev);
--	if (ret != 0) {
--		dev_err(wm8350->dev, "Failed to register %s: %d\n", name, ret);
--		platform_device_put(*pdev);
--		*pdev = NULL;
--	}
--}
--
--int wm8350_device_init(struct wm8350 *wm8350, int irq,
--		       struct wm8350_platform_data *pdata)
--{
--	int ret;
--	unsigned int id1, id2, mask_rev;
--	unsigned int cust_id, mode, chip_rev;
--
--	dev_set_drvdata(wm8350->dev, wm8350);
--
--	/* get WM8350 revision and config mode */
--	ret = regmap_read(wm8350->regmap, WM8350_RESET_ID, &id1);
--	if (ret != 0) {
--		dev_err(wm8350->dev, "Failed to read ID: %d\n", ret);
--		goto err;
--	}
--
--	ret = regmap_read(wm8350->regmap, WM8350_ID, &id2);
--	if (ret != 0) {
--		dev_err(wm8350->dev, "Failed to read ID: %d\n", ret);
--		goto err;
--	}
--
--	ret = regmap_read(wm8350->regmap, WM8350_REVISION, &mask_rev);
--	if (ret != 0) {
--		dev_err(wm8350->dev, "Failed to read revision: %d\n", ret);
--		goto err;
--	}
--
--	if (id1 != 0x6143) {
--		dev_err(wm8350->dev,
--			"Device with ID %x is not a WM8350\n", id1);
--		ret = -ENODEV;
--		goto err;
--	}
--
--	mode = (id2 & WM8350_CONF_STS_MASK) >> 10;
--	cust_id = id2 & WM8350_CUST_ID_MASK;
--	chip_rev = (id2 & WM8350_CHIP_REV_MASK) >> 12;
--	dev_info(wm8350->dev,
--		 "CONF_STS %d, CUST_ID %d, MASK_REV %d, CHIP_REV %d\n",
--		 mode, cust_id, mask_rev, chip_rev);
--
--	if (cust_id != 0) {
--		dev_err(wm8350->dev, "Unsupported CUST_ID\n");
--		ret = -ENODEV;
--		goto err;
--	}
--
--	switch (mask_rev) {
--	case 0:
--		wm8350->pmic.max_dcdc = WM8350_DCDC_6;
--		wm8350->pmic.max_isink = WM8350_ISINK_B;
--
--		switch (chip_rev) {
--		case WM8350_REV_E:
--			dev_info(wm8350->dev, "WM8350 Rev E\n");
--			break;
--		case WM8350_REV_F:
--			dev_info(wm8350->dev, "WM8350 Rev F\n");
--			break;
--		case WM8350_REV_G:
--			dev_info(wm8350->dev, "WM8350 Rev G\n");
--			wm8350->power.rev_g_coeff = 1;
--			break;
--		case WM8350_REV_H:
--			dev_info(wm8350->dev, "WM8350 Rev H\n");
--			wm8350->power.rev_g_coeff = 1;
--			break;
--		default:
--			/* For safety we refuse to run on unknown hardware */
--			dev_err(wm8350->dev, "Unknown WM8350 CHIP_REV\n");
--			ret = -ENODEV;
--			goto err;
--		}
--		break;
--
--	case 1:
--		wm8350->pmic.max_dcdc = WM8350_DCDC_4;
--		wm8350->pmic.max_isink = WM8350_ISINK_A;
--
--		switch (chip_rev) {
--		case 0:
--			dev_info(wm8350->dev, "WM8351 Rev A\n");
--			wm8350->power.rev_g_coeff = 1;
--			break;
--
--		case 1:
--			dev_info(wm8350->dev, "WM8351 Rev B\n");
--			wm8350->power.rev_g_coeff = 1;
--			break;
--
--		default:
--			dev_err(wm8350->dev, "Unknown WM8351 CHIP_REV\n");
--			ret = -ENODEV;
--			goto err;
--		}
--		break;
--
--	case 2:
--		wm8350->pmic.max_dcdc = WM8350_DCDC_6;
--		wm8350->pmic.max_isink = WM8350_ISINK_B;
--
--		switch (chip_rev) {
--		case 0:
--			dev_info(wm8350->dev, "WM8352 Rev A\n");
--			wm8350->power.rev_g_coeff = 1;
--			break;
--
--		default:
--			dev_err(wm8350->dev, "Unknown WM8352 CHIP_REV\n");
--			ret = -ENODEV;
--			goto err;
--		}
--		break;
--
--	default:
--		dev_err(wm8350->dev, "Unknown MASK_REV\n");
--		ret = -ENODEV;
--		goto err;
--	}
--
--	mutex_init(&wm8350->auxadc_mutex);
--	init_completion(&wm8350->auxadc_done);
--
--	ret = wm8350_irq_init(wm8350, irq, pdata);
--	if (ret < 0)
--		goto err;
--
--	if (wm8350->irq_base) {
--		ret = request_threaded_irq(wm8350->irq_base +
--					   WM8350_IRQ_AUXADC_DATARDY,
--					   NULL, wm8350_auxadc_irq,
--					   IRQF_ONESHOT,
--					   "auxadc", wm8350);
--		if (ret < 0)
--			dev_warn(wm8350->dev,
--				 "Failed to request AUXADC IRQ: %d\n", ret);
--	}
--
--	if (pdata && pdata->init) {
--		ret = pdata->init(wm8350);
--		if (ret != 0) {
--			dev_err(wm8350->dev, "Platform init() failed: %d\n",
--				ret);
--			goto err_irq;
--		}
--	}
--
--	wm8350_reg_write(wm8350, WM8350_SYSTEM_INTERRUPTS_MASK, 0x0);
--
--	wm8350_client_dev_register(wm8350, "wm8350-codec",
--				   &(wm8350->codec.pdev));
--	wm8350_client_dev_register(wm8350, "wm8350-gpio",
--				   &(wm8350->gpio.pdev));
--	wm8350_client_dev_register(wm8350, "wm8350-hwmon",
--				   &(wm8350->hwmon.pdev));
--	wm8350_client_dev_register(wm8350, "wm8350-power",
--				   &(wm8350->power.pdev));
--	wm8350_client_dev_register(wm8350, "wm8350-rtc", &(wm8350->rtc.pdev));
--	wm8350_client_dev_register(wm8350, "wm8350-wdt", &(wm8350->wdt.pdev));
--
--	return 0;
--
--err_irq:
--	wm8350_irq_exit(wm8350);
--err:
--	return ret;
--}
--EXPORT_SYMBOL_GPL(wm8350_device_init);
-diff --git a/drivers/mfd/wm8350-gpio.c b/drivers/mfd/wm8350-gpio.c
-deleted file mode 100644
-index a653da69e3cc..000000000000
---- a/drivers/mfd/wm8350-gpio.c
-+++ /dev/null
-@@ -1,217 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-or-later
--/*
-- * wm8350-core.c  --  Device access for Wolfson WM8350
-- *
-- * Copyright 2007, 2008 Wolfson Microelectronics PLC.
-- *
-- * Author: Liam Girdwood
-- */
--
--#include <linux/kernel.h>
--#include <linux/module.h>
--#include <linux/errno.h>
--
--#include <linux/mfd/wm8350/core.h>
--#include <linux/mfd/wm8350/gpio.h>
--#include <linux/mfd/wm8350/pmic.h>
--
--static int gpio_set_dir(struct wm8350 *wm8350, int gpio, int dir)
--{
--	int ret;
--
--	wm8350_reg_unlock(wm8350);
--	if (dir == WM8350_GPIO_DIR_OUT)
--		ret = wm8350_clear_bits(wm8350,
--					WM8350_GPIO_CONFIGURATION_I_O,
--					1 << gpio);
--	else
--		ret = wm8350_set_bits(wm8350,
--				      WM8350_GPIO_CONFIGURATION_I_O,
--				      1 << gpio);
--	wm8350_reg_lock(wm8350);
--	return ret;
--}
--
--static int wm8350_gpio_set_debounce(struct wm8350 *wm8350, int gpio, int db)
--{
--	if (db == WM8350_GPIO_DEBOUNCE_ON)
--		return wm8350_set_bits(wm8350, WM8350_GPIO_DEBOUNCE,
--				       1 << gpio);
--	else
--		return wm8350_clear_bits(wm8350,
--					 WM8350_GPIO_DEBOUNCE, 1 << gpio);
--}
--
--static int gpio_set_func(struct wm8350 *wm8350, int gpio, int func)
--{
--	u16 reg;
--
--	wm8350_reg_unlock(wm8350);
--	switch (gpio) {
--	case 0:
--		reg = wm8350_reg_read(wm8350, WM8350_GPIO_FUNCTION_SELECT_1)
--		    & ~WM8350_GP0_FN_MASK;
--		wm8350_reg_write(wm8350, WM8350_GPIO_FUNCTION_SELECT_1,
--				 reg | ((func & 0xf) << 0));
--		break;
--	case 1:
--		reg = wm8350_reg_read(wm8350, WM8350_GPIO_FUNCTION_SELECT_1)
--		    & ~WM8350_GP1_FN_MASK;
--		wm8350_reg_write(wm8350, WM8350_GPIO_FUNCTION_SELECT_1,
--				 reg | ((func & 0xf) << 4));
--		break;
--	case 2:
--		reg = wm8350_reg_read(wm8350, WM8350_GPIO_FUNCTION_SELECT_1)
--		    & ~WM8350_GP2_FN_MASK;
--		wm8350_reg_write(wm8350, WM8350_GPIO_FUNCTION_SELECT_1,
--				 reg | ((func & 0xf) << 8));
--		break;
--	case 3:
--		reg = wm8350_reg_read(wm8350, WM8350_GPIO_FUNCTION_SELECT_1)
--		    & ~WM8350_GP3_FN_MASK;
--		wm8350_reg_write(wm8350, WM8350_GPIO_FUNCTION_SELECT_1,
--				 reg | ((func & 0xf) << 12));
--		break;
--	case 4:
--		reg = wm8350_reg_read(wm8350, WM8350_GPIO_FUNCTION_SELECT_2)
--		    & ~WM8350_GP4_FN_MASK;
--		wm8350_reg_write(wm8350, WM8350_GPIO_FUNCTION_SELECT_2,
--				 reg | ((func & 0xf) << 0));
--		break;
--	case 5:
--		reg = wm8350_reg_read(wm8350, WM8350_GPIO_FUNCTION_SELECT_2)
--		    & ~WM8350_GP5_FN_MASK;
--		wm8350_reg_write(wm8350, WM8350_GPIO_FUNCTION_SELECT_2,
--				 reg | ((func & 0xf) << 4));
--		break;
--	case 6:
--		reg = wm8350_reg_read(wm8350, WM8350_GPIO_FUNCTION_SELECT_2)
--		    & ~WM8350_GP6_FN_MASK;
--		wm8350_reg_write(wm8350, WM8350_GPIO_FUNCTION_SELECT_2,
--				 reg | ((func & 0xf) << 8));
--		break;
--	case 7:
--		reg = wm8350_reg_read(wm8350, WM8350_GPIO_FUNCTION_SELECT_2)
--		    & ~WM8350_GP7_FN_MASK;
--		wm8350_reg_write(wm8350, WM8350_GPIO_FUNCTION_SELECT_2,
--				 reg | ((func & 0xf) << 12));
--		break;
--	case 8:
--		reg = wm8350_reg_read(wm8350, WM8350_GPIO_FUNCTION_SELECT_3)
--		    & ~WM8350_GP8_FN_MASK;
--		wm8350_reg_write(wm8350, WM8350_GPIO_FUNCTION_SELECT_3,
--				 reg | ((func & 0xf) << 0));
--		break;
--	case 9:
--		reg = wm8350_reg_read(wm8350, WM8350_GPIO_FUNCTION_SELECT_3)
--		    & ~WM8350_GP9_FN_MASK;
--		wm8350_reg_write(wm8350, WM8350_GPIO_FUNCTION_SELECT_3,
--				 reg | ((func & 0xf) << 4));
--		break;
--	case 10:
--		reg = wm8350_reg_read(wm8350, WM8350_GPIO_FUNCTION_SELECT_3)
--		    & ~WM8350_GP10_FN_MASK;
--		wm8350_reg_write(wm8350, WM8350_GPIO_FUNCTION_SELECT_3,
--				 reg | ((func & 0xf) << 8));
--		break;
--	case 11:
--		reg = wm8350_reg_read(wm8350, WM8350_GPIO_FUNCTION_SELECT_3)
--		    & ~WM8350_GP11_FN_MASK;
--		wm8350_reg_write(wm8350, WM8350_GPIO_FUNCTION_SELECT_3,
--				 reg | ((func & 0xf) << 12));
--		break;
--	case 12:
--		reg = wm8350_reg_read(wm8350, WM8350_GPIO_FUNCTION_SELECT_4)
--		    & ~WM8350_GP12_FN_MASK;
--		wm8350_reg_write(wm8350, WM8350_GPIO_FUNCTION_SELECT_4,
--				 reg | ((func & 0xf) << 0));
--		break;
--	default:
--		wm8350_reg_lock(wm8350);
--		return -EINVAL;
--	}
--
--	wm8350_reg_lock(wm8350);
--	return 0;
--}
--
--static int gpio_set_pull_up(struct wm8350 *wm8350, int gpio, int up)
--{
--	if (up)
--		return wm8350_set_bits(wm8350,
--				       WM8350_GPIO_PIN_PULL_UP_CONTROL,
--				       1 << gpio);
--	else
--		return wm8350_clear_bits(wm8350,
--					 WM8350_GPIO_PIN_PULL_UP_CONTROL,
--					 1 << gpio);
--}
--
--static int gpio_set_pull_down(struct wm8350 *wm8350, int gpio, int down)
--{
--	if (down)
--		return wm8350_set_bits(wm8350,
--				       WM8350_GPIO_PULL_DOWN_CONTROL,
--				       1 << gpio);
--	else
--		return wm8350_clear_bits(wm8350,
--					 WM8350_GPIO_PULL_DOWN_CONTROL,
--					 1 << gpio);
--}
--
--static int gpio_set_polarity(struct wm8350 *wm8350, int gpio, int pol)
--{
--	if (pol == WM8350_GPIO_ACTIVE_HIGH)
--		return wm8350_set_bits(wm8350,
--				       WM8350_GPIO_PIN_POLARITY_TYPE,
--				       1 << gpio);
--	else
--		return wm8350_clear_bits(wm8350,
--					 WM8350_GPIO_PIN_POLARITY_TYPE,
--					 1 << gpio);
--}
--
--static int gpio_set_invert(struct wm8350 *wm8350, int gpio, int invert)
--{
--	if (invert == WM8350_GPIO_INVERT_ON)
--		return wm8350_set_bits(wm8350, WM8350_GPIO_INT_MODE, 1 << gpio);
--	else
--		return wm8350_clear_bits(wm8350,
--					 WM8350_GPIO_INT_MODE, 1 << gpio);
--}
--
--int wm8350_gpio_config(struct wm8350 *wm8350, int gpio, int dir, int func,
--		       int pol, int pull, int invert, int debounce)
--{
--	/* make sure we never pull up and down at the same time */
--	if (pull == WM8350_GPIO_PULL_NONE) {
--		if (gpio_set_pull_up(wm8350, gpio, 0))
--			goto err;
--		if (gpio_set_pull_down(wm8350, gpio, 0))
--			goto err;
--	} else if (pull == WM8350_GPIO_PULL_UP) {
--		if (gpio_set_pull_down(wm8350, gpio, 0))
--			goto err;
--		if (gpio_set_pull_up(wm8350, gpio, 1))
--			goto err;
--	} else if (pull == WM8350_GPIO_PULL_DOWN) {
--		if (gpio_set_pull_up(wm8350, gpio, 0))
--			goto err;
--		if (gpio_set_pull_down(wm8350, gpio, 1))
--			goto err;
--	}
--
--	if (gpio_set_invert(wm8350, gpio, invert))
--		goto err;
--	if (gpio_set_polarity(wm8350, gpio, pol))
--		goto err;
--	if (wm8350_gpio_set_debounce(wm8350, gpio, debounce))
--		goto err;
--	if (gpio_set_dir(wm8350, gpio, dir))
--		goto err;
--	return gpio_set_func(wm8350, gpio, func);
--
--err:
--	return -EIO;
--}
--EXPORT_SYMBOL_GPL(wm8350_gpio_config);
-diff --git a/drivers/mfd/wm8350-i2c.c b/drivers/mfd/wm8350-i2c.c
-deleted file mode 100644
-index 767c176b12a7..000000000000
---- a/drivers/mfd/wm8350-i2c.c
-+++ /dev/null
-@@ -1,64 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-or-later
--/*
-- * wm8350-i2c.c  --  Generic I2C driver for Wolfson WM8350 PMIC
-- *
-- * Copyright 2007, 2008 Wolfson Microelectronics PLC.
-- *
-- * Author: Liam Girdwood
-- *         linux@wolfsonmicro.com
-- */
--
--#include <linux/err.h>
--#include <linux/init.h>
--#include <linux/i2c.h>
--#include <linux/platform_device.h>
--#include <linux/mfd/wm8350/core.h>
--#include <linux/regmap.h>
--#include <linux/slab.h>
--
--static int wm8350_i2c_probe(struct i2c_client *i2c)
--{
--	struct wm8350 *wm8350;
--	struct wm8350_platform_data *pdata = dev_get_platdata(&i2c->dev);
--	int ret = 0;
--
--	wm8350 = devm_kzalloc(&i2c->dev, sizeof(struct wm8350), GFP_KERNEL);
--	if (wm8350 == NULL)
--		return -ENOMEM;
--
--	wm8350->regmap = devm_regmap_init_i2c(i2c, &wm8350_regmap);
--	if (IS_ERR(wm8350->regmap)) {
--		ret = PTR_ERR(wm8350->regmap);
--		dev_err(&i2c->dev, "Failed to allocate register map: %d\n",
--			ret);
--		return ret;
--	}
--
--	i2c_set_clientdata(i2c, wm8350);
--	wm8350->dev = &i2c->dev;
--
--	return wm8350_device_init(wm8350, i2c->irq, pdata);
--}
--
--static const struct i2c_device_id wm8350_i2c_id[] = {
--	{ "wm8350" },
--	{ "wm8351" },
--	{ "wm8352" },
--	{ }
--};
--
--static struct i2c_driver wm8350_i2c_driver = {
--	.driver = {
--		   .name = "wm8350",
--		   .suppress_bind_attrs = true,
--	},
--	.probe = wm8350_i2c_probe,
--	.id_table = wm8350_i2c_id,
--};
--
--static int __init wm8350_i2c_init(void)
--{
--	return i2c_add_driver(&wm8350_i2c_driver);
--}
--/* init early so consumer devices can complete system boot */
--subsys_initcall(wm8350_i2c_init);
-diff --git a/drivers/mfd/wm8350-irq.c b/drivers/mfd/wm8350-irq.c
-deleted file mode 100644
-index 3709ba3088c0..000000000000
---- a/drivers/mfd/wm8350-irq.c
-+++ /dev/null
-@@ -1,542 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-or-later
--/*
-- * wm8350-irq.c  --  IRQ support for Wolfson WM8350
-- *
-- * Copyright 2007, 2008, 2009 Wolfson Microelectronics PLC.
-- *
-- * Author: Liam Girdwood, Mark Brown
-- */
--
--#include <linux/kernel.h>
--#include <linux/module.h>
--#include <linux/bug.h>
--#include <linux/device.h>
--#include <linux/interrupt.h>
--#include <linux/irq.h>
--
--#include <linux/mfd/wm8350/core.h>
--#include <linux/mfd/wm8350/audio.h>
--#include <linux/mfd/wm8350/comparator.h>
--#include <linux/mfd/wm8350/gpio.h>
--#include <linux/mfd/wm8350/pmic.h>
--#include <linux/mfd/wm8350/rtc.h>
--#include <linux/mfd/wm8350/supply.h>
--#include <linux/mfd/wm8350/wdt.h>
--
--#define WM8350_INT_OFFSET_1                     0
--#define WM8350_INT_OFFSET_2                     1
--#define WM8350_POWER_UP_INT_OFFSET              2
--#define WM8350_UNDER_VOLTAGE_INT_OFFSET         3
--#define WM8350_OVER_CURRENT_INT_OFFSET          4
--#define WM8350_GPIO_INT_OFFSET                  5
--#define WM8350_COMPARATOR_INT_OFFSET            6
--
--struct wm8350_irq_data {
--	int primary;
--	int reg;
--	int mask;
--	int primary_only;
--};
--
--static struct wm8350_irq_data wm8350_irqs[] = {
--	[WM8350_IRQ_OC_LS] = {
--		.primary = WM8350_OC_INT,
--		.reg = WM8350_OVER_CURRENT_INT_OFFSET,
--		.mask = WM8350_OC_LS_EINT,
--		.primary_only = 1,
--	},
--	[WM8350_IRQ_UV_DC1] = {
--		.primary = WM8350_UV_INT,
--		.reg = WM8350_UNDER_VOLTAGE_INT_OFFSET,
--		.mask = WM8350_UV_DC1_EINT,
--	},
--	[WM8350_IRQ_UV_DC2] = {
--		.primary = WM8350_UV_INT,
--		.reg = WM8350_UNDER_VOLTAGE_INT_OFFSET,
--		.mask = WM8350_UV_DC2_EINT,
--	},
--	[WM8350_IRQ_UV_DC3] = {
--		.primary = WM8350_UV_INT,
--		.reg = WM8350_UNDER_VOLTAGE_INT_OFFSET,
--		.mask = WM8350_UV_DC3_EINT,
--	},
--	[WM8350_IRQ_UV_DC4] = {
--		.primary = WM8350_UV_INT,
--		.reg = WM8350_UNDER_VOLTAGE_INT_OFFSET,
--		.mask = WM8350_UV_DC4_EINT,
--	},
--	[WM8350_IRQ_UV_DC5] = {
--		.primary = WM8350_UV_INT,
--		.reg = WM8350_UNDER_VOLTAGE_INT_OFFSET,
--		.mask = WM8350_UV_DC5_EINT,
--	},
--	[WM8350_IRQ_UV_DC6] = {
--		.primary = WM8350_UV_INT,
--		.reg = WM8350_UNDER_VOLTAGE_INT_OFFSET,
--		.mask = WM8350_UV_DC6_EINT,
--	},
--	[WM8350_IRQ_UV_LDO1] = {
--		.primary = WM8350_UV_INT,
--		.reg = WM8350_UNDER_VOLTAGE_INT_OFFSET,
--		.mask = WM8350_UV_LDO1_EINT,
--	},
--	[WM8350_IRQ_UV_LDO2] = {
--		.primary = WM8350_UV_INT,
--		.reg = WM8350_UNDER_VOLTAGE_INT_OFFSET,
--		.mask = WM8350_UV_LDO2_EINT,
--	},
--	[WM8350_IRQ_UV_LDO3] = {
--		.primary = WM8350_UV_INT,
--		.reg = WM8350_UNDER_VOLTAGE_INT_OFFSET,
--		.mask = WM8350_UV_LDO3_EINT,
--	},
--	[WM8350_IRQ_UV_LDO4] = {
--		.primary = WM8350_UV_INT,
--		.reg = WM8350_UNDER_VOLTAGE_INT_OFFSET,
--		.mask = WM8350_UV_LDO4_EINT,
--	},
--	[WM8350_IRQ_CHG_BAT_HOT] = {
--		.primary = WM8350_CHG_INT,
--		.reg = WM8350_INT_OFFSET_1,
--		.mask = WM8350_CHG_BAT_HOT_EINT,
--	},
--	[WM8350_IRQ_CHG_BAT_COLD] = {
--		.primary = WM8350_CHG_INT,
--		.reg = WM8350_INT_OFFSET_1,
--		.mask = WM8350_CHG_BAT_COLD_EINT,
--	},
--	[WM8350_IRQ_CHG_BAT_FAIL] = {
--		.primary = WM8350_CHG_INT,
--		.reg = WM8350_INT_OFFSET_1,
--		.mask = WM8350_CHG_BAT_FAIL_EINT,
--	},
--	[WM8350_IRQ_CHG_TO] = {
--		.primary = WM8350_CHG_INT,
--		.reg = WM8350_INT_OFFSET_1,
--		.mask = WM8350_CHG_TO_EINT,
--	},
--	[WM8350_IRQ_CHG_END] = {
--		.primary = WM8350_CHG_INT,
--		.reg = WM8350_INT_OFFSET_1,
--		.mask = WM8350_CHG_END_EINT,
--	},
--	[WM8350_IRQ_CHG_START] = {
--		.primary = WM8350_CHG_INT,
--		.reg = WM8350_INT_OFFSET_1,
--		.mask = WM8350_CHG_START_EINT,
--	},
--	[WM8350_IRQ_CHG_FAST_RDY] = {
--		.primary = WM8350_CHG_INT,
--		.reg = WM8350_INT_OFFSET_1,
--		.mask = WM8350_CHG_FAST_RDY_EINT,
--	},
--	[WM8350_IRQ_CHG_VBATT_LT_3P9] = {
--		.primary = WM8350_CHG_INT,
--		.reg = WM8350_INT_OFFSET_1,
--		.mask = WM8350_CHG_VBATT_LT_3P9_EINT,
--	},
--	[WM8350_IRQ_CHG_VBATT_LT_3P1] = {
--		.primary = WM8350_CHG_INT,
--		.reg = WM8350_INT_OFFSET_1,
--		.mask = WM8350_CHG_VBATT_LT_3P1_EINT,
--	},
--	[WM8350_IRQ_CHG_VBATT_LT_2P85] = {
--		.primary = WM8350_CHG_INT,
--		.reg = WM8350_INT_OFFSET_1,
--		.mask = WM8350_CHG_VBATT_LT_2P85_EINT,
--	},
--	[WM8350_IRQ_RTC_ALM] = {
--		.primary = WM8350_RTC_INT,
--		.reg = WM8350_INT_OFFSET_1,
--		.mask = WM8350_RTC_ALM_EINT,
--	},
--	[WM8350_IRQ_RTC_SEC] = {
--		.primary = WM8350_RTC_INT,
--		.reg = WM8350_INT_OFFSET_1,
--		.mask = WM8350_RTC_SEC_EINT,
--	},
--	[WM8350_IRQ_RTC_PER] = {
--		.primary = WM8350_RTC_INT,
--		.reg = WM8350_INT_OFFSET_1,
--		.mask = WM8350_RTC_PER_EINT,
--	},
--	[WM8350_IRQ_CS1] = {
--		.primary = WM8350_CS_INT,
--		.reg = WM8350_INT_OFFSET_2,
--		.mask = WM8350_CS1_EINT,
--	},
--	[WM8350_IRQ_CS2] = {
--		.primary = WM8350_CS_INT,
--		.reg = WM8350_INT_OFFSET_2,
--		.mask = WM8350_CS2_EINT,
--	},
--	[WM8350_IRQ_SYS_HYST_COMP_FAIL] = {
--		.primary = WM8350_SYS_INT,
--		.reg = WM8350_INT_OFFSET_2,
--		.mask = WM8350_SYS_HYST_COMP_FAIL_EINT,
--	},
--	[WM8350_IRQ_SYS_CHIP_GT115] = {
--		.primary = WM8350_SYS_INT,
--		.reg = WM8350_INT_OFFSET_2,
--		.mask = WM8350_SYS_CHIP_GT115_EINT,
--	},
--	[WM8350_IRQ_SYS_CHIP_GT140] = {
--		.primary = WM8350_SYS_INT,
--		.reg = WM8350_INT_OFFSET_2,
--		.mask = WM8350_SYS_CHIP_GT140_EINT,
--	},
--	[WM8350_IRQ_SYS_WDOG_TO] = {
--		.primary = WM8350_SYS_INT,
--		.reg = WM8350_INT_OFFSET_2,
--		.mask = WM8350_SYS_WDOG_TO_EINT,
--	},
--	[WM8350_IRQ_AUXADC_DATARDY] = {
--		.primary = WM8350_AUXADC_INT,
--		.reg = WM8350_INT_OFFSET_2,
--		.mask = WM8350_AUXADC_DATARDY_EINT,
--	},
--	[WM8350_IRQ_AUXADC_DCOMP4] = {
--		.primary = WM8350_AUXADC_INT,
--		.reg = WM8350_INT_OFFSET_2,
--		.mask = WM8350_AUXADC_DCOMP4_EINT,
--	},
--	[WM8350_IRQ_AUXADC_DCOMP3] = {
--		.primary = WM8350_AUXADC_INT,
--		.reg = WM8350_INT_OFFSET_2,
--		.mask = WM8350_AUXADC_DCOMP3_EINT,
--	},
--	[WM8350_IRQ_AUXADC_DCOMP2] = {
--		.primary = WM8350_AUXADC_INT,
--		.reg = WM8350_INT_OFFSET_2,
--		.mask = WM8350_AUXADC_DCOMP2_EINT,
--	},
--	[WM8350_IRQ_AUXADC_DCOMP1] = {
--		.primary = WM8350_AUXADC_INT,
--		.reg = WM8350_INT_OFFSET_2,
--		.mask = WM8350_AUXADC_DCOMP1_EINT,
--	},
--	[WM8350_IRQ_USB_LIMIT] = {
--		.primary = WM8350_USB_INT,
--		.reg = WM8350_INT_OFFSET_2,
--		.mask = WM8350_USB_LIMIT_EINT,
--		.primary_only = 1,
--	},
--	[WM8350_IRQ_WKUP_OFF_STATE] = {
--		.primary = WM8350_WKUP_INT,
--		.reg = WM8350_COMPARATOR_INT_OFFSET,
--		.mask = WM8350_WKUP_OFF_STATE_EINT,
--	},
--	[WM8350_IRQ_WKUP_HIB_STATE] = {
--		.primary = WM8350_WKUP_INT,
--		.reg = WM8350_COMPARATOR_INT_OFFSET,
--		.mask = WM8350_WKUP_HIB_STATE_EINT,
--	},
--	[WM8350_IRQ_WKUP_CONV_FAULT] = {
--		.primary = WM8350_WKUP_INT,
--		.reg = WM8350_COMPARATOR_INT_OFFSET,
--		.mask = WM8350_WKUP_CONV_FAULT_EINT,
--	},
--	[WM8350_IRQ_WKUP_WDOG_RST] = {
--		.primary = WM8350_WKUP_INT,
--		.reg = WM8350_COMPARATOR_INT_OFFSET,
--		.mask = WM8350_WKUP_WDOG_RST_EINT,
--	},
--	[WM8350_IRQ_WKUP_GP_PWR_ON] = {
--		.primary = WM8350_WKUP_INT,
--		.reg = WM8350_COMPARATOR_INT_OFFSET,
--		.mask = WM8350_WKUP_GP_PWR_ON_EINT,
--	},
--	[WM8350_IRQ_WKUP_ONKEY] = {
--		.primary = WM8350_WKUP_INT,
--		.reg = WM8350_COMPARATOR_INT_OFFSET,
--		.mask = WM8350_WKUP_ONKEY_EINT,
--	},
--	[WM8350_IRQ_WKUP_GP_WAKEUP] = {
--		.primary = WM8350_WKUP_INT,
--		.reg = WM8350_COMPARATOR_INT_OFFSET,
--		.mask = WM8350_WKUP_GP_WAKEUP_EINT,
--	},
--	[WM8350_IRQ_CODEC_JCK_DET_L] = {
--		.primary = WM8350_CODEC_INT,
--		.reg = WM8350_COMPARATOR_INT_OFFSET,
--		.mask = WM8350_CODEC_JCK_DET_L_EINT,
--	},
--	[WM8350_IRQ_CODEC_JCK_DET_R] = {
--		.primary = WM8350_CODEC_INT,
--		.reg = WM8350_COMPARATOR_INT_OFFSET,
--		.mask = WM8350_CODEC_JCK_DET_R_EINT,
--	},
--	[WM8350_IRQ_CODEC_MICSCD] = {
--		.primary = WM8350_CODEC_INT,
--		.reg = WM8350_COMPARATOR_INT_OFFSET,
--		.mask = WM8350_CODEC_MICSCD_EINT,
--	},
--	[WM8350_IRQ_CODEC_MICD] = {
--		.primary = WM8350_CODEC_INT,
--		.reg = WM8350_COMPARATOR_INT_OFFSET,
--		.mask = WM8350_CODEC_MICD_EINT,
--	},
--	[WM8350_IRQ_EXT_USB_FB] = {
--		.primary = WM8350_EXT_INT,
--		.reg = WM8350_COMPARATOR_INT_OFFSET,
--		.mask = WM8350_EXT_USB_FB_EINT,
--	},
--	[WM8350_IRQ_EXT_WALL_FB] = {
--		.primary = WM8350_EXT_INT,
--		.reg = WM8350_COMPARATOR_INT_OFFSET,
--		.mask = WM8350_EXT_WALL_FB_EINT,
--	},
--	[WM8350_IRQ_EXT_BAT_FB] = {
--		.primary = WM8350_EXT_INT,
--		.reg = WM8350_COMPARATOR_INT_OFFSET,
--		.mask = WM8350_EXT_BAT_FB_EINT,
--	},
--	[WM8350_IRQ_GPIO(0)] = {
--		.primary = WM8350_GP_INT,
--		.reg = WM8350_GPIO_INT_OFFSET,
--		.mask = WM8350_GP0_EINT,
--	},
--	[WM8350_IRQ_GPIO(1)] = {
--		.primary = WM8350_GP_INT,
--		.reg = WM8350_GPIO_INT_OFFSET,
--		.mask = WM8350_GP1_EINT,
--	},
--	[WM8350_IRQ_GPIO(2)] = {
--		.primary = WM8350_GP_INT,
--		.reg = WM8350_GPIO_INT_OFFSET,
--		.mask = WM8350_GP2_EINT,
--	},
--	[WM8350_IRQ_GPIO(3)] = {
--		.primary = WM8350_GP_INT,
--		.reg = WM8350_GPIO_INT_OFFSET,
--		.mask = WM8350_GP3_EINT,
--	},
--	[WM8350_IRQ_GPIO(4)] = {
--		.primary = WM8350_GP_INT,
--		.reg = WM8350_GPIO_INT_OFFSET,
--		.mask = WM8350_GP4_EINT,
--	},
--	[WM8350_IRQ_GPIO(5)] = {
--		.primary = WM8350_GP_INT,
--		.reg = WM8350_GPIO_INT_OFFSET,
--		.mask = WM8350_GP5_EINT,
--	},
--	[WM8350_IRQ_GPIO(6)] = {
--		.primary = WM8350_GP_INT,
--		.reg = WM8350_GPIO_INT_OFFSET,
--		.mask = WM8350_GP6_EINT,
--	},
--	[WM8350_IRQ_GPIO(7)] = {
--		.primary = WM8350_GP_INT,
--		.reg = WM8350_GPIO_INT_OFFSET,
--		.mask = WM8350_GP7_EINT,
--	},
--	[WM8350_IRQ_GPIO(8)] = {
--		.primary = WM8350_GP_INT,
--		.reg = WM8350_GPIO_INT_OFFSET,
--		.mask = WM8350_GP8_EINT,
--	},
--	[WM8350_IRQ_GPIO(9)] = {
--		.primary = WM8350_GP_INT,
--		.reg = WM8350_GPIO_INT_OFFSET,
--		.mask = WM8350_GP9_EINT,
--	},
--	[WM8350_IRQ_GPIO(10)] = {
--		.primary = WM8350_GP_INT,
--		.reg = WM8350_GPIO_INT_OFFSET,
--		.mask = WM8350_GP10_EINT,
--	},
--	[WM8350_IRQ_GPIO(11)] = {
--		.primary = WM8350_GP_INT,
--		.reg = WM8350_GPIO_INT_OFFSET,
--		.mask = WM8350_GP11_EINT,
--	},
--	[WM8350_IRQ_GPIO(12)] = {
--		.primary = WM8350_GP_INT,
--		.reg = WM8350_GPIO_INT_OFFSET,
--		.mask = WM8350_GP12_EINT,
--	},
--};
--
--static inline struct wm8350_irq_data *irq_to_wm8350_irq(struct wm8350 *wm8350,
--							int irq)
--{
--	return &wm8350_irqs[irq - wm8350->irq_base];
--}
--
--/*
-- * This is a threaded IRQ handler so can access I2C/SPI.  Since all
-- * interrupts are clear on read the IRQ line will be reasserted and
-- * the physical IRQ will be handled again if another interrupt is
-- * asserted while we run - in the normal course of events this is a
-- * rare occurrence so we save I2C/SPI reads.  We're also assuming that
-- * it's rare to get lots of interrupts firing simultaneously so try to
-- * minimise I/O.
-- */
--static irqreturn_t wm8350_irq(int irq, void *irq_data)
--{
--	struct wm8350 *wm8350 = irq_data;
--	u16 level_one;
--	u16 sub_reg[WM8350_NUM_IRQ_REGS];
--	int read_done[WM8350_NUM_IRQ_REGS];
--	struct wm8350_irq_data *data;
--	int i;
--
--	level_one = wm8350_reg_read(wm8350, WM8350_SYSTEM_INTERRUPTS)
--		& ~wm8350_reg_read(wm8350, WM8350_SYSTEM_INTERRUPTS_MASK);
--
--	if (!level_one)
--		return IRQ_NONE;
--
--	memset(&read_done, 0, sizeof(read_done));
--
--	for (i = 0; i < ARRAY_SIZE(wm8350_irqs); i++) {
--		data = &wm8350_irqs[i];
--
--		if (!(level_one & data->primary))
--			continue;
--
--		if (!read_done[data->reg]) {
--			sub_reg[data->reg] =
--				wm8350_reg_read(wm8350, WM8350_INT_STATUS_1 +
--						data->reg);
--			sub_reg[data->reg] &= ~wm8350->irq_masks[data->reg];
--			read_done[data->reg] = 1;
--		}
--
--		if (sub_reg[data->reg] & data->mask)
--			handle_nested_irq(wm8350->irq_base + i);
--	}
--
--	return IRQ_HANDLED;
--}
--
--static void wm8350_irq_lock(struct irq_data *data)
--{
--	struct wm8350 *wm8350 = irq_data_get_irq_chip_data(data);
--
--	mutex_lock(&wm8350->irq_lock);
--}
--
--static void wm8350_irq_sync_unlock(struct irq_data *data)
--{
--	struct wm8350 *wm8350 = irq_data_get_irq_chip_data(data);
--	int i;
--
--	for (i = 0; i < ARRAY_SIZE(wm8350->irq_masks); i++) {
--		/* If there's been a change in the mask write it back
--		 * to the hardware. */
--		WARN_ON(regmap_update_bits(wm8350->regmap,
--					   WM8350_INT_STATUS_1_MASK + i,
--					   0xffff, wm8350->irq_masks[i]));
--	}
--
--	mutex_unlock(&wm8350->irq_lock);
--}
--
--static void wm8350_irq_enable(struct irq_data *data)
--{
--	struct wm8350 *wm8350 = irq_data_get_irq_chip_data(data);
--	struct wm8350_irq_data *irq_data = irq_to_wm8350_irq(wm8350,
--							     data->irq);
--
--	wm8350->irq_masks[irq_data->reg] &= ~irq_data->mask;
--}
--
--static void wm8350_irq_disable(struct irq_data *data)
--{
--	struct wm8350 *wm8350 = irq_data_get_irq_chip_data(data);
--	struct wm8350_irq_data *irq_data = irq_to_wm8350_irq(wm8350,
--							     data->irq);
--
--	wm8350->irq_masks[irq_data->reg] |= irq_data->mask;
--}
--
--static struct irq_chip wm8350_irq_chip = {
--	.name			= "wm8350",
--	.irq_bus_lock		= wm8350_irq_lock,
--	.irq_bus_sync_unlock	= wm8350_irq_sync_unlock,
--	.irq_disable		= wm8350_irq_disable,
--	.irq_enable		= wm8350_irq_enable,
--};
--
--int wm8350_irq_init(struct wm8350 *wm8350, int irq,
--		    struct wm8350_platform_data *pdata)
--{
--	int ret, cur_irq, i;
--	int flags = IRQF_ONESHOT;
--	int irq_base = -1;
--
--	if (!irq) {
--		dev_warn(wm8350->dev, "No interrupt support, no core IRQ\n");
--		return 0;
--	}
--
--	/* Mask top level interrupts */
--	wm8350_reg_write(wm8350, WM8350_SYSTEM_INTERRUPTS_MASK, 0xFFFF);
--
--	/* Mask all individual interrupts by default and cache the
--	 * masks.  We read the masks back since there are unwritable
--	 * bits in the mask registers. */
--	for (i = 0; i < ARRAY_SIZE(wm8350->irq_masks); i++) {
--		wm8350_reg_write(wm8350, WM8350_INT_STATUS_1_MASK + i,
--				 0xFFFF);
--		wm8350->irq_masks[i] =
--			wm8350_reg_read(wm8350,
--					WM8350_INT_STATUS_1_MASK + i);
--	}
--
--	mutex_init(&wm8350->irq_lock);
--	wm8350->chip_irq = irq;
--
--	if (pdata && pdata->irq_base > 0)
--		irq_base = pdata->irq_base;
--
--	wm8350->irq_base =
--		irq_alloc_descs(irq_base, 0, ARRAY_SIZE(wm8350_irqs), 0);
--	if (wm8350->irq_base < 0) {
--		dev_warn(wm8350->dev, "Allocating irqs failed with %d\n",
--			wm8350->irq_base);
--		return 0;
--	}
--
--	if (pdata && pdata->irq_high) {
--		flags |= IRQF_TRIGGER_HIGH;
--
--		wm8350_set_bits(wm8350, WM8350_SYSTEM_CONTROL_1,
--				WM8350_IRQ_POL);
--	} else {
--		flags |= IRQF_TRIGGER_LOW;
--
--		wm8350_clear_bits(wm8350, WM8350_SYSTEM_CONTROL_1,
--				  WM8350_IRQ_POL);
--	}
--
--	/* Register with genirq */
--	for (cur_irq = wm8350->irq_base;
--	     cur_irq < ARRAY_SIZE(wm8350_irqs) + wm8350->irq_base;
--	     cur_irq++) {
--		irq_set_chip_data(cur_irq, wm8350);
--		irq_set_chip_and_handler(cur_irq, &wm8350_irq_chip,
--					 handle_edge_irq);
--		irq_set_nested_thread(cur_irq, 1);
--
--		irq_clear_status_flags(cur_irq, IRQ_NOREQUEST | IRQ_NOPROBE);
--	}
--
--	ret = request_threaded_irq(irq, NULL, wm8350_irq, flags,
--				   "wm8350", wm8350);
--	if (ret != 0)
--		dev_err(wm8350->dev, "Failed to request IRQ: %d\n", ret);
--
--	/* Allow interrupts to fire */
--	wm8350_reg_write(wm8350, WM8350_SYSTEM_INTERRUPTS_MASK, 0);
--
--	return ret;
--}
--
--int wm8350_irq_exit(struct wm8350 *wm8350)
--{
--	free_irq(wm8350->chip_irq, wm8350);
--	return 0;
--}
-diff --git a/drivers/mfd/wm8350-regmap.c b/drivers/mfd/wm8350-regmap.c
-deleted file mode 100644
-index 3d0ebb004dbf..000000000000
---- a/drivers/mfd/wm8350-regmap.c
-+++ /dev/null
-@@ -1,335 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-or-later
--/*
-- * wm8350-regmap.c  --  Wolfson Microelectronics WM8350 register map
-- *
-- * This file splits out the tables describing the defaults and access
-- * status of the WM8350 registers since they are rather large.
-- *
-- * Copyright 2007, 2008 Wolfson Microelectronics PLC.
-- */
--
--#include <linux/mfd/wm8350/core.h>
--
--/*
-- * Access masks.
-- */
--
--static const struct wm8350_reg_access {
--	u16 readable;		/* Mask of readable bits */
--	u16 writable;		/* Mask of writable bits */
--	u16 vol;		/* Mask of volatile bits */
--} wm8350_reg_io_map[] = {
--	/*  read    write volatile */
--	{ 0xFFFF, 0xFFFF, 0x0000 }, /* R0   - Reset/ID */
--	{ 0x7CFF, 0x0C00, 0x0000 }, /* R1   - ID */
--	{ 0x007F, 0x0000, 0x0000 }, /* R2   - ROM Mask ID */
--	{ 0xBE3B, 0xBE3B, 0x8000 }, /* R3   - System Control 1 */
--	{ 0xFEF7, 0xFEF7, 0xF800 }, /* R4   - System Control 2 */
--	{ 0x80FF, 0x80FF, 0x8000 }, /* R5   - System Hibernate */
--	{ 0xFB0E, 0xFB0E, 0x0000 }, /* R6   - Interface Control */
--	{ 0x0000, 0x0000, 0x0000 }, /* R7 */
--	{ 0xE537, 0xE537, 0xFFFF }, /* R8   - Power mgmt (1) */
--	{ 0x0FF3, 0x0FF3, 0xFFFF }, /* R9   - Power mgmt (2) */
--	{ 0x008F, 0x008F, 0xFFFF }, /* R10  - Power mgmt (3) */
--	{ 0x6D3C, 0x6D3C, 0xFFFF }, /* R11  - Power mgmt (4) */
--	{ 0x1F8F, 0x1F8F, 0xFFFF }, /* R12  - Power mgmt (5) */
--	{ 0x8F3F, 0x8F3F, 0xFFFF }, /* R13  - Power mgmt (6) */
--	{ 0x0003, 0x0003, 0xFFFF }, /* R14  - Power mgmt (7) */
--	{ 0x0000, 0x0000, 0x0000 }, /* R15 */
--	{ 0x7F7F, 0x7F7F, 0xFFFF }, /* R16  - RTC Seconds/Minutes */
--	{ 0x073F, 0x073F, 0xFFFF }, /* R17  - RTC Hours/Day */
--	{ 0x1F3F, 0x1F3F, 0xFFFF }, /* R18  - RTC Date/Month */
--	{ 0x3FFF, 0x00FF, 0xFFFF }, /* R19  - RTC Year */
--	{ 0x7F7F, 0x7F7F, 0x0000 }, /* R20  - Alarm Seconds/Minutes */
--	{ 0x0F3F, 0x0F3F, 0x0000 }, /* R21  - Alarm Hours/Day */
--	{ 0x1F3F, 0x1F3F, 0x0000 }, /* R22  - Alarm Date/Month */
--	{ 0xEF7F, 0xEA7F, 0xFFFF }, /* R23  - RTC Time Control */
--	{ 0x3BFF, 0x0000, 0xFFFF }, /* R24  - System Interrupts */
--	{ 0xFEE7, 0x0000, 0xFFFF }, /* R25  - Interrupt Status 1 */
--	{ 0x35FF, 0x0000, 0xFFFF }, /* R26  - Interrupt Status 2 */
--	{ 0x0F3F, 0x0000, 0xFFFF }, /* R27  - Power Up Interrupt Status */
--	{ 0x0F3F, 0x0000, 0xFFFF }, /* R28  - Under Voltage Interrupt status */
--	{ 0x8000, 0x0000, 0xFFFF }, /* R29  - Over Current Interrupt status */
--	{ 0x1FFF, 0x0000, 0xFFFF }, /* R30  - GPIO Interrupt Status */
--	{ 0xEF7F, 0x0000, 0xFFFF }, /* R31  - Comparator Interrupt Status */
--	{ 0x3FFF, 0x3FFF, 0x0000 }, /* R32  - System Interrupts Mask */
--	{ 0xFEE7, 0xFEE7, 0x0000 }, /* R33  - Interrupt Status 1 Mask */
--	{ 0xF5FF, 0xF5FF, 0x0000 }, /* R34  - Interrupt Status 2 Mask */
--	{ 0x0F3F, 0x0F3F, 0x0000 }, /* R35  - Power Up Interrupt Status Mask */
--	{ 0x0F3F, 0x0F3F, 0x0000 }, /* R36  - Under Voltage Int status Mask */
--	{ 0x8000, 0x8000, 0x0000 }, /* R37  - Over Current Int status Mask */
--	{ 0x1FFF, 0x1FFF, 0x0000 }, /* R38  - GPIO Interrupt Status Mask */
--	{ 0xEF7F, 0xEF7F, 0x0000 }, /* R39  - Comparator IntStatus Mask */
--	{ 0xC9F7, 0xC9F7, 0xFFFF }, /* R40  - Clock Control 1 */
--	{ 0x8001, 0x8001, 0x0000 }, /* R41  - Clock Control 2 */
--	{ 0xFFF7, 0xFFF7, 0xFFFF }, /* R42  - FLL Control 1 */
--	{ 0xFBFF, 0xFBFF, 0x0000 }, /* R43  - FLL Control 2 */
--	{ 0xFFFF, 0xFFFF, 0x0000 }, /* R44  - FLL Control 3 */
--	{ 0x0033, 0x0033, 0x0000 }, /* R45  - FLL Control 4 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R46 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R47 */
--	{ 0x3033, 0x3033, 0x0000 }, /* R48  - DAC Control */
--	{ 0x0000, 0x0000, 0x0000 }, /* R49 */
--	{ 0x81FF, 0x81FF, 0xFFFF }, /* R50  - DAC Digital Volume L */
--	{ 0x81FF, 0x81FF, 0xFFFF }, /* R51  - DAC Digital Volume R */
--	{ 0x0000, 0x0000, 0x0000 }, /* R52 */
--	{ 0x0FFF, 0x0FFF, 0xFFFF }, /* R53  - DAC LR Rate */
--	{ 0x0017, 0x0017, 0x0000 }, /* R54  - DAC Clock Control */
--	{ 0x0000, 0x0000, 0x0000 }, /* R55 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R56 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R57 */
--	{ 0x4000, 0x4000, 0x0000 }, /* R58  - DAC Mute */
--	{ 0x7000, 0x7000, 0x0000 }, /* R59  - DAC Mute Volume */
--	{ 0x3C00, 0x3C00, 0x0000 }, /* R60  - DAC Side */
--	{ 0x0000, 0x0000, 0x0000 }, /* R61 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R62 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R63 */
--	{ 0x8303, 0x8303, 0xFFFF }, /* R64  - ADC Control */
--	{ 0x0000, 0x0000, 0x0000 }, /* R65 */
--	{ 0x81FF, 0x81FF, 0xFFFF }, /* R66  - ADC Digital Volume L */
--	{ 0x81FF, 0x81FF, 0xFFFF }, /* R67  - ADC Digital Volume R */
--	{ 0x0FFF, 0x0FFF, 0x0000 }, /* R68  - ADC Divider */
--	{ 0x0000, 0x0000, 0x0000 }, /* R69 */
--	{ 0x0FFF, 0x0FFF, 0xFFFF }, /* R70  - ADC LR Rate */
--	{ 0x0000, 0x0000, 0x0000 }, /* R71 */
--	{ 0x0707, 0x0707, 0xFFFF }, /* R72  - Input Control */
--	{ 0xC0C0, 0xC0C0, 0xFFFF }, /* R73  - IN3 Input Control */
--	{ 0xC09F, 0xC09F, 0xFFFF }, /* R74  - Mic Bias Control */
--	{ 0x0000, 0x0000, 0x0000 }, /* R75 */
--	{ 0x0F15, 0x0F15, 0xFFFF }, /* R76  - Output Control */
--	{ 0xC000, 0xC000, 0xFFFF }, /* R77  - Jack Detect */
--	{ 0x03FF, 0x03FF, 0x0000 }, /* R78  - Anti Pop Control */
--	{ 0x0000, 0x0000, 0x0000 }, /* R79 */
--	{ 0xE1FC, 0xE1FC, 0x8000 }, /* R80  - Left Input Volume */
--	{ 0xE1FC, 0xE1FC, 0x8000 }, /* R81  - Right Input Volume */
--	{ 0x0000, 0x0000, 0x0000 }, /* R82 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R83 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R84 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R85 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R86 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R87 */
--	{ 0x9807, 0x9807, 0xFFFF }, /* R88  - Left Mixer Control */
--	{ 0x980B, 0x980B, 0xFFFF }, /* R89  - Right Mixer Control */
--	{ 0x0000, 0x0000, 0x0000 }, /* R90 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R91 */
--	{ 0x8909, 0x8909, 0xFFFF }, /* R92  - OUT3 Mixer Control */
--	{ 0x9E07, 0x9E07, 0xFFFF }, /* R93  - OUT4 Mixer Control */
--	{ 0x0000, 0x0000, 0x0000 }, /* R94 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R95 */
--	{ 0x0EEE, 0x0EEE, 0x0000 }, /* R96  - Output Left Mixer Volume */
--	{ 0xE0EE, 0xE0EE, 0x0000 }, /* R97  - Output Right Mixer Volume */
--	{ 0x0E0F, 0x0E0F, 0x0000 }, /* R98  - Input Mixer Volume L */
--	{ 0xE0E1, 0xE0E1, 0x0000 }, /* R99  - Input Mixer Volume R */
--	{ 0x800E, 0x800E, 0x0000 }, /* R100 - Input Mixer Volume */
--	{ 0x0000, 0x0000, 0x0000 }, /* R101 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R102 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R103 */
--	{ 0xE1FC, 0xE1FC, 0xFFFF }, /* R104 - LOUT1 Volume */
--	{ 0xE1FC, 0xE1FC, 0xFFFF }, /* R105 - ROUT1 Volume */
--	{ 0xE1FC, 0xE1FC, 0xFFFF }, /* R106 - LOUT2 Volume */
--	{ 0xE7FC, 0xE7FC, 0xFFFF }, /* R107 - ROUT2 Volume */
--	{ 0x0000, 0x0000, 0x0000 }, /* R108 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R109 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R110 */
--	{ 0x80E0, 0x80E0, 0xFFFF }, /* R111 - BEEP Volume */
--	{ 0xBF00, 0xBF00, 0x0000 }, /* R112 - AI Formating */
--	{ 0x00F1, 0x00F1, 0x0000 }, /* R113 - ADC DAC COMP */
--	{ 0x00F8, 0x00F8, 0x0000 }, /* R114 - AI ADC Control */
--	{ 0x40FB, 0x40FB, 0x0000 }, /* R115 - AI DAC Control */
--	{ 0x7C30, 0x7C30, 0x0000 }, /* R116 - AIF Test */
--	{ 0x0000, 0x0000, 0x0000 }, /* R117 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R118 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R119 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R120 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R121 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R122 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R123 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R124 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R125 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R126 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R127 */
--	{ 0x1FFF, 0x1FFF, 0x0000 }, /* R128 - GPIO Debounce */
--	{ 0x1FFF, 0x1FFF, 0x0000 }, /* R129 - GPIO Pin pull up Control */
--	{ 0x1FFF, 0x1FFF, 0x0000 }, /* R130 - GPIO Pull down Control */
--	{ 0x1FFF, 0x1FFF, 0x0000 }, /* R131 - GPIO Interrupt Mode */
--	{ 0x0000, 0x0000, 0x0000 }, /* R132 */
--	{ 0x00C0, 0x00C0, 0x0000 }, /* R133 - GPIO Control */
--	{ 0x1FFF, 0x1FFF, 0x0000 }, /* R134 - GPIO Configuration (i/o) */
--	{ 0x1FFF, 0x1FFF, 0x0000 }, /* R135 - GPIO Pin Polarity / Type */
--	{ 0x0000, 0x0000, 0x0000 }, /* R136 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R137 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R138 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R139 */
--	{ 0xFFFF, 0xFFFF, 0x0000 }, /* R140 - GPIO Function Select 1 */
--	{ 0xFFFF, 0xFFFF, 0x0000 }, /* R141 - GPIO Function Select 2 */
--	{ 0xFFFF, 0xFFFF, 0x0000 }, /* R142 - GPIO Function Select 3 */
--	{ 0x000F, 0x000F, 0x0000 }, /* R143 - GPIO Function Select 4 */
--	{ 0xF0FF, 0xF0FF, 0xA000 }, /* R144 - Digitiser Control (1) */
--	{ 0x3707, 0x3707, 0x0000 }, /* R145 - Digitiser Control (2) */
--	{ 0x0000, 0x0000, 0x0000 }, /* R146 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R147 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R148 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R149 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R150 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R151 */
--	{ 0x7FFF, 0x7000, 0xFFFF }, /* R152 - AUX1 Readback */
--	{ 0x7FFF, 0x7000, 0xFFFF }, /* R153 - AUX2 Readback */
--	{ 0x7FFF, 0x7000, 0xFFFF }, /* R154 - AUX3 Readback */
--	{ 0x7FFF, 0x7000, 0xFFFF }, /* R155 - AUX4 Readback */
--	{ 0x0FFF, 0x0000, 0xFFFF }, /* R156 - USB Voltage Readback */
--	{ 0x0FFF, 0x0000, 0xFFFF }, /* R157 - LINE Voltage Readback */
--	{ 0x0FFF, 0x0000, 0xFFFF }, /* R158 - BATT Voltage Readback */
--	{ 0x0FFF, 0x0000, 0xFFFF }, /* R159 - Chip Temp Readback */
--	{ 0x0000, 0x0000, 0x0000 }, /* R160 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R161 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R162 */
--	{ 0x000F, 0x000F, 0x0000 }, /* R163 - Generic Comparator Control */
--	{ 0xFFFF, 0xFFFF, 0x0000 }, /* R164 - Generic comparator 1 */
--	{ 0xFFFF, 0xFFFF, 0x0000 }, /* R165 - Generic comparator 2 */
--	{ 0xFFFF, 0xFFFF, 0x0000 }, /* R166 - Generic comparator 3 */
--	{ 0xFFFF, 0xFFFF, 0x0000 }, /* R167 - Generic comparator 4 */
--	{ 0xBFFF, 0xBFFF, 0x8000 }, /* R168 - Battery Charger Control 1 */
--	{ 0xFFFF, 0x4FFF, 0xB000 }, /* R169 - Battery Charger Control 2 */
--	{ 0x007F, 0x007F, 0x0000 }, /* R170 - Battery Charger Control 3 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R171 */
--	{ 0x903F, 0x903F, 0xFFFF }, /* R172 - Current Sink Driver A */
--	{ 0xE333, 0xE333, 0xFFFF }, /* R173 - CSA Flash control */
--	{ 0x903F, 0x903F, 0xFFFF }, /* R174 - Current Sink Driver B */
--	{ 0xE333, 0xE333, 0xFFFF }, /* R175 - CSB Flash control */
--	{ 0x8F3F, 0x8F3F, 0xFFFF }, /* R176 - DCDC/LDO requested */
--	{ 0x332D, 0x332D, 0x0000 }, /* R177 - DCDC Active options */
--	{ 0x002D, 0x002D, 0x0000 }, /* R178 - DCDC Sleep options */
--	{ 0x5177, 0x5177, 0x8000 }, /* R179 - Power-check comparator */
--	{ 0x047F, 0x047F, 0x0000 }, /* R180 - DCDC1 Control */
--	{ 0xFFC0, 0xFFC0, 0x0000 }, /* R181 - DCDC1 Timeouts */
--	{ 0x737F, 0x737F, 0x0000 }, /* R182 - DCDC1 Low Power */
--	{ 0x535B, 0x535B, 0x0000 }, /* R183 - DCDC2 Control */
--	{ 0xFFC0, 0xFFC0, 0x0000 }, /* R184 - DCDC2 Timeouts */
--	{ 0x0000, 0x0000, 0x0000 }, /* R185 */
--	{ 0x047F, 0x047F, 0x0000 }, /* R186 - DCDC3 Control */
--	{ 0xFFC0, 0xFFC0, 0x0000 }, /* R187 - DCDC3 Timeouts */
--	{ 0x737F, 0x737F, 0x0000 }, /* R188 - DCDC3 Low Power */
--	{ 0x047F, 0x047F, 0x0000 }, /* R189 - DCDC4 Control */
--	{ 0xFFC0, 0xFFC0, 0x0000 }, /* R190 - DCDC4 Timeouts */
--	{ 0x737F, 0x737F, 0x0000 }, /* R191 - DCDC4 Low Power */
--	{ 0x535B, 0x535B, 0x0000 }, /* R192 - DCDC5 Control */
--	{ 0xFFC0, 0xFFC0, 0x0000 }, /* R193 - DCDC5 Timeouts */
--	{ 0x0000, 0x0000, 0x0000 }, /* R194 */
--	{ 0x047F, 0x047F, 0x0000 }, /* R195 - DCDC6 Control */
--	{ 0xFFC0, 0xFFC0, 0x0000 }, /* R196 - DCDC6 Timeouts */
--	{ 0x737F, 0x737F, 0x0000 }, /* R197 - DCDC6 Low Power */
--	{ 0x0000, 0x0000, 0x0000 }, /* R198 */
--	{ 0xFFD3, 0xFFD3, 0x0000 }, /* R199 - Limit Switch Control */
--	{ 0x441F, 0x441F, 0x0000 }, /* R200 - LDO1 Control */
--	{ 0xFFC0, 0xFFC0, 0x0000 }, /* R201 - LDO1 Timeouts */
--	{ 0x331F, 0x331F, 0x0000 }, /* R202 - LDO1 Low Power */
--	{ 0x441F, 0x441F, 0x0000 }, /* R203 - LDO2 Control */
--	{ 0xFFC0, 0xFFC0, 0x0000 }, /* R204 - LDO2 Timeouts */
--	{ 0x331F, 0x331F, 0x0000 }, /* R205 - LDO2 Low Power */
--	{ 0x441F, 0x441F, 0x0000 }, /* R206 - LDO3 Control */
--	{ 0xFFC0, 0xFFC0, 0x0000 }, /* R207 - LDO3 Timeouts */
--	{ 0x331F, 0x331F, 0x0000 }, /* R208 - LDO3 Low Power */
--	{ 0x441F, 0x441F, 0x0000 }, /* R209 - LDO4 Control */
--	{ 0xFFC0, 0xFFC0, 0x0000 }, /* R210 - LDO4 Timeouts */
--	{ 0x331F, 0x331F, 0x0000 }, /* R211 - LDO4 Low Power */
--	{ 0x0000, 0x0000, 0x0000 }, /* R212 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R213 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R214 */
--	{ 0x8F3F, 0x8F3F, 0x0000 }, /* R215 - VCC_FAULT Masks */
--	{ 0xFF3F, 0xE03F, 0x0000 }, /* R216 - Main Bandgap Control */
--	{ 0xEF2F, 0xE02F, 0x0000 }, /* R217 - OSC Control */
--	{ 0xF3FF, 0xB3FF, 0xc000 }, /* R218 - RTC Tick Control */
--	{ 0xFFFF, 0xFFFF, 0x0000 }, /* R219 - Security */
--	{ 0x09FF, 0x01FF, 0x0000 }, /* R220 - RAM BIST 1 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R221 */
--	{ 0xFFFF, 0xFFFF, 0xFFFF }, /* R222 */
--	{ 0xFFFF, 0xFFFF, 0xFFFF }, /* R223 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R224 */
--	{ 0x8F3F, 0x0000, 0xFFFF }, /* R225 - DCDC/LDO status */
--	{ 0x0000, 0x0000, 0xFFFF }, /* R226 - Charger status */
--	{ 0x34FE, 0x0000, 0xFFFF }, /* R227 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R228 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R229 */
--	{ 0xFFFF, 0x1FFF, 0xFFFF }, /* R230 - GPIO Pin Status */
--	{ 0xFFFF, 0x1FFF, 0xFFFF }, /* R231 */
--	{ 0xFFFF, 0x1FFF, 0xFFFF }, /* R232 */
--	{ 0xFFFF, 0x1FFF, 0xFFFF }, /* R233 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R234 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R235 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R236 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R237 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R238 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R239 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R240 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R241 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R242 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R243 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R244 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R245 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R246 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R247 */
--	{ 0xFFFF, 0x0010, 0xFFFF }, /* R248 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R249 */
--	{ 0xFFFF, 0x0010, 0xFFFF }, /* R250 */
--	{ 0xFFFF, 0x0010, 0xFFFF }, /* R251 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R252 */
--	{ 0xFFFF, 0x0010, 0xFFFF }, /* R253 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R254 */
--	{ 0x0000, 0x0000, 0x0000 }, /* R255 */
--};
--
--static bool wm8350_readable(struct device *dev, unsigned int reg)
--{
--	return wm8350_reg_io_map[reg].readable;
--}
--
--static bool wm8350_writeable(struct device *dev, unsigned int reg)
--{
--	struct wm8350 *wm8350 = dev_get_drvdata(dev);
--
--	if (!wm8350->unlocked) {
--		if ((reg >= WM8350_GPIO_FUNCTION_SELECT_1 &&
--		     reg <= WM8350_GPIO_FUNCTION_SELECT_4) ||
--		    (reg >= WM8350_BATTERY_CHARGER_CONTROL_1 &&
--		     reg <= WM8350_BATTERY_CHARGER_CONTROL_3))
--			return false;
--	}
--
--	return wm8350_reg_io_map[reg].writable;
--}
--
--static bool wm8350_volatile(struct device *dev, unsigned int reg)
--{
--	return wm8350_reg_io_map[reg].vol;
--}
--
--static bool wm8350_precious(struct device *dev, unsigned int reg)
--{
--	switch (reg) {
--	case WM8350_SYSTEM_INTERRUPTS:
--	case WM8350_INT_STATUS_1:
--	case WM8350_INT_STATUS_2:
--	case WM8350_POWER_UP_INT_STATUS:
--	case WM8350_UNDER_VOLTAGE_INT_STATUS:
--	case WM8350_OVER_CURRENT_INT_STATUS:
--	case WM8350_GPIO_INT_STATUS:
--	case WM8350_COMPARATOR_INT_STATUS:
--		return true;
--
--	default:
--		return false;
--	}
--}
--
--const struct regmap_config wm8350_regmap = {
--	.reg_bits = 8,
--	.val_bits = 16,
--
--	.cache_type = REGCACHE_MAPLE,
--
--	.max_register = WM8350_MAX_REGISTER,
--	.readable_reg = wm8350_readable,
--	.writeable_reg = wm8350_writeable,
--	.volatile_reg = wm8350_volatile,
--	.precious_reg = wm8350_precious,
--};
-diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-index 9bb2ac78dca9..d0b291db3f00 100644
---- a/drivers/power/supply/Kconfig
-+++ b/drivers/power/supply/Kconfig
-@@ -74,13 +74,6 @@ config WM831X_POWER
- 	  Say Y here to enable support for the power management unit
- 	  provided by Wolfson Microelectronics WM831x PMICs.
+@@ -126,14 +126,6 @@ obj-$(CONFIG_MFD_OCELOT)	+= ocelot-soc.o
  
--config WM8350_POWER
--	tristate "WM8350 PMU support"
--	depends on MFD_WM8350
--	help
--	  Say Y here to enable support for the power management unit
--	  provided by the Wolfson Microelectronics WM8350 PMIC.
--
- config TEST_POWER
- 	tristate "Test power driver"
- 	help
-diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
-index 76422bece94c..22d5f32966f6 100644
---- a/drivers/power/supply/Makefile
-+++ b/drivers/power/supply/Makefile
-@@ -16,7 +16,6 @@ obj-$(CONFIG_IP5XXX_POWER)	+= ip5xxx_power.o
- obj-$(CONFIG_MAX8925_POWER)	+= max8925_power.o
- obj-$(CONFIG_WM831X_BACKUP)	+= wm831x_backup.o
- obj-$(CONFIG_WM831X_POWER)	+= wm831x_power.o
--obj-$(CONFIG_WM8350_POWER)	+= wm8350_power.o
- obj-$(CONFIG_TEST_POWER)	+= test_power.o
+ obj-$(CONFIG_MFD_CPCAP)		+= motorola-cpcap.o
  
- obj-$(CONFIG_BATTERY_88PM860X)	+= 88pm860x_battery.o
-diff --git a/drivers/power/supply/wm8350_power.c b/drivers/power/supply/wm8350_power.c
+-obj-$(CONFIG_MCP)		+= mcp-core.o
+-obj-$(CONFIG_MCP_SA11X0)	+= mcp-sa11x0.o
+-obj-$(CONFIG_MCP_UCB1200)	+= ucb1x00-core.o
+-obj-$(CONFIG_MCP_UCB1200_TS)	+= ucb1x00-ts.o
+-
+-ifeq ($(CONFIG_SA1100_ASSABET),y)
+-obj-$(CONFIG_MCP_UCB1200)	+= ucb1x00-assabet.o
+-endif
+ 
+ obj-$(CONFIG_PMIC_DA9052)	+= da9052-irq.o
+ obj-$(CONFIG_PMIC_DA9052)	+= da9052-core.o
+diff --git a/drivers/mfd/mcp-core.c b/drivers/mfd/mcp-core.c
 deleted file mode 100644
-index b0eb6e0ce8bc..000000000000
---- a/drivers/power/supply/wm8350_power.c
+index be08eaee0a90..000000000000
+--- a/drivers/mfd/mcp-core.c
 +++ /dev/null
-@@ -1,590 +0,0 @@
+@@ -1,235 +0,0 @@
 -// SPDX-License-Identifier: GPL-2.0-only
 -/*
-- * Battery driver for wm8350 PMIC
+- *  linux/drivers/mfd/mcp-core.c
 - *
-- * Copyright 2007, 2008 Wolfson Microelectronics PLC.
+- *  Copyright (C) 2001 Russell King
 - *
-- * Based on OLPC Battery Driver
-- *
-- * Copyright 2006  David Woodhouse <dwmw2@infradead.org>
+- *  Generic MCP (Multimedia Communications Port) layer.  All MCP locking
+- *  is solely held within this file.
 - */
--
 -#include <linux/module.h>
--#include <linux/err.h>
--#include <linux/platform_device.h>
--#include <linux/power_supply.h>
--#include <linux/mfd/wm8350/supply.h>
--#include <linux/mfd/wm8350/core.h>
--#include <linux/mfd/wm8350/comparator.h>
--
--static int wm8350_read_battery_uvolts(struct wm8350 *wm8350)
--{
--	return wm8350_read_auxadc(wm8350, WM8350_AUXADC_BATT, 0, 0)
--		* WM8350_AUX_COEFF;
--}
--
--static int wm8350_read_line_uvolts(struct wm8350 *wm8350)
--{
--	return wm8350_read_auxadc(wm8350, WM8350_AUXADC_LINE, 0, 0)
--		* WM8350_AUX_COEFF;
--}
--
--static int wm8350_read_usb_uvolts(struct wm8350 *wm8350)
--{
--	return wm8350_read_auxadc(wm8350, WM8350_AUXADC_USB, 0, 0)
--		* WM8350_AUX_COEFF;
--}
--
--#define WM8350_BATT_SUPPLY	1
--#define WM8350_USB_SUPPLY	2
--#define WM8350_LINE_SUPPLY	4
--
--static inline int wm8350_charge_time_min(struct wm8350 *wm8350, int min)
--{
--	if (!wm8350->power.rev_g_coeff)
--		return (((min - 30) / 15) & 0xf) << 8;
--	else
--		return (((min - 30) / 30) & 0xf) << 8;
--}
--
--static int wm8350_get_supplies(struct wm8350 *wm8350)
--{
--	u16 sm, ov, co, chrg;
--	int supplies = 0;
--
--	sm = wm8350_reg_read(wm8350, WM8350_STATE_MACHINE_STATUS);
--	ov = wm8350_reg_read(wm8350, WM8350_MISC_OVERRIDES);
--	co = wm8350_reg_read(wm8350, WM8350_COMPARATOR_OVERRIDES);
--	chrg = wm8350_reg_read(wm8350, WM8350_BATTERY_CHARGER_CONTROL_2);
--
--	/* USB_SM */
--	sm = (sm & WM8350_USB_SM_MASK) >> WM8350_USB_SM_SHIFT;
--
--	/* CHG_ISEL */
--	chrg &= WM8350_CHG_ISEL_MASK;
--
--	/* If the USB state machine is active then we're using that with or
--	 * without battery, otherwise check for wall supply */
--	if (((sm == WM8350_USB_SM_100_SLV) ||
--	     (sm == WM8350_USB_SM_500_SLV) ||
--	     (sm == WM8350_USB_SM_STDBY_SLV))
--	    && !(ov & WM8350_USB_LIMIT_OVRDE))
--		supplies = WM8350_USB_SUPPLY;
--	else if (((sm == WM8350_USB_SM_100_SLV) ||
--		  (sm == WM8350_USB_SM_500_SLV) ||
--		  (sm == WM8350_USB_SM_STDBY_SLV))
--		 && (ov & WM8350_USB_LIMIT_OVRDE) && (chrg == 0))
--		supplies = WM8350_USB_SUPPLY | WM8350_BATT_SUPPLY;
--	else if (co & WM8350_WALL_FB_OVRDE)
--		supplies = WM8350_LINE_SUPPLY;
--	else
--		supplies = WM8350_BATT_SUPPLY;
--
--	return supplies;
--}
--
--static int wm8350_charger_config(struct wm8350 *wm8350,
--				 struct wm8350_charger_policy *policy)
--{
--	u16 reg, eoc_mA, fast_limit_mA;
--
--	if (!policy) {
--		dev_warn(wm8350->dev,
--			 "No charger policy, charger not configured.\n");
--		return -EINVAL;
--	}
--
--	/* make sure USB fast charge current is not > 500mA */
--	if (policy->fast_limit_USB_mA > 500) {
--		dev_err(wm8350->dev, "USB fast charge > 500mA\n");
--		return -EINVAL;
--	}
--
--	eoc_mA = WM8350_CHG_EOC_mA(policy->eoc_mA);
--
--	wm8350_reg_unlock(wm8350);
--
--	reg = wm8350_reg_read(wm8350, WM8350_BATTERY_CHARGER_CONTROL_1)
--		& WM8350_CHG_ENA_R168;
--	wm8350_reg_write(wm8350, WM8350_BATTERY_CHARGER_CONTROL_1,
--			 reg | eoc_mA | policy->trickle_start_mV |
--			 WM8350_CHG_TRICKLE_TEMP_CHOKE |
--			 WM8350_CHG_TRICKLE_USB_CHOKE |
--			 WM8350_CHG_FAST_USB_THROTTLE);
--
--	if (wm8350_get_supplies(wm8350) & WM8350_USB_SUPPLY) {
--		fast_limit_mA =
--			WM8350_CHG_FAST_LIMIT_mA(policy->fast_limit_USB_mA);
--		wm8350_reg_write(wm8350, WM8350_BATTERY_CHARGER_CONTROL_2,
--			    policy->charge_mV | policy->trickle_charge_USB_mA |
--			    fast_limit_mA | wm8350_charge_time_min(wm8350,
--						policy->charge_timeout));
--
--	} else {
--		fast_limit_mA =
--			WM8350_CHG_FAST_LIMIT_mA(policy->fast_limit_mA);
--		wm8350_reg_write(wm8350, WM8350_BATTERY_CHARGER_CONTROL_2,
--			    policy->charge_mV | policy->trickle_charge_mA |
--			    fast_limit_mA | wm8350_charge_time_min(wm8350,
--						policy->charge_timeout));
--	}
--
--	wm8350_reg_lock(wm8350);
--	return 0;
--}
--
--static int wm8350_batt_status(struct wm8350 *wm8350)
--{
--	u16 state;
--
--	state = wm8350_reg_read(wm8350, WM8350_BATTERY_CHARGER_CONTROL_2);
--	state &= WM8350_CHG_STS_MASK;
--
--	switch (state) {
--	case WM8350_CHG_STS_OFF:
--		return POWER_SUPPLY_STATUS_DISCHARGING;
--
--	case WM8350_CHG_STS_TRICKLE:
--	case WM8350_CHG_STS_FAST:
--		return POWER_SUPPLY_STATUS_CHARGING;
--
--	default:
--		return POWER_SUPPLY_STATUS_UNKNOWN;
--	}
--}
--
--static ssize_t charger_state_show(struct device *dev,
--				 struct device_attribute *attr, char *buf)
--{
--	struct wm8350 *wm8350 = dev_get_drvdata(dev);
--	char *charge;
--	int state;
--
--	state = wm8350_reg_read(wm8350, WM8350_BATTERY_CHARGER_CONTROL_2) &
--	    WM8350_CHG_STS_MASK;
--	switch (state) {
--	case WM8350_CHG_STS_OFF:
--		charge = "Charger Off";
--		break;
--	case WM8350_CHG_STS_TRICKLE:
--		charge = "Trickle Charging";
--		break;
--	case WM8350_CHG_STS_FAST:
--		charge = "Fast Charging";
--		break;
--	default:
--		return 0;
--	}
--
--	return sysfs_emit(buf, "%s\n", charge);
--}
--
--static DEVICE_ATTR_RO(charger_state);
--
--static irqreturn_t wm8350_charger_handler(int irq, void *data)
--{
--	struct wm8350 *wm8350 = data;
--	struct wm8350_power *power = &wm8350->power;
--	struct wm8350_charger_policy *policy = power->policy;
--
--	switch (irq - wm8350->irq_base) {
--	case WM8350_IRQ_CHG_BAT_FAIL:
--		dev_err(wm8350->dev, "battery failed\n");
--		break;
--	case WM8350_IRQ_CHG_TO:
--		dev_err(wm8350->dev, "charger timeout\n");
--		power_supply_changed(power->battery);
--		break;
--
--	case WM8350_IRQ_CHG_BAT_HOT:
--	case WM8350_IRQ_CHG_BAT_COLD:
--	case WM8350_IRQ_CHG_START:
--	case WM8350_IRQ_CHG_END:
--		power_supply_changed(power->battery);
--		break;
--
--	case WM8350_IRQ_CHG_FAST_RDY:
--		dev_dbg(wm8350->dev, "fast charger ready\n");
--		wm8350_charger_config(wm8350, policy);
--		wm8350_reg_unlock(wm8350);
--		wm8350_set_bits(wm8350, WM8350_BATTERY_CHARGER_CONTROL_1,
--				WM8350_CHG_FAST);
--		wm8350_reg_lock(wm8350);
--		break;
--
--	case WM8350_IRQ_CHG_VBATT_LT_3P9:
--		dev_warn(wm8350->dev, "battery < 3.9V\n");
--		break;
--	case WM8350_IRQ_CHG_VBATT_LT_3P1:
--		dev_warn(wm8350->dev, "battery < 3.1V\n");
--		break;
--	case WM8350_IRQ_CHG_VBATT_LT_2P85:
--		dev_warn(wm8350->dev, "battery < 2.85V\n");
--		break;
--
--		/* Supply change.  We will overnotify but it should do
--		 * no harm. */
--	case WM8350_IRQ_EXT_USB_FB:
--	case WM8350_IRQ_EXT_WALL_FB:
--		wm8350_charger_config(wm8350, policy);
--		fallthrough;
--	case WM8350_IRQ_EXT_BAT_FB:
--		power_supply_changed(power->battery);
--		power_supply_changed(power->usb);
--		power_supply_changed(power->ac);
--		break;
--
--	default:
--		dev_err(wm8350->dev, "Unknown interrupt %d\n", irq);
--	}
--
--	return IRQ_HANDLED;
--}
--
--/*********************************************************************
-- *		AC Power
-- *********************************************************************/
--static int wm8350_ac_get_prop(struct power_supply *psy,
--			      enum power_supply_property psp,
--			      union power_supply_propval *val)
--{
--	struct wm8350 *wm8350 = dev_get_drvdata(psy->dev.parent);
--	int ret = 0;
--
--	switch (psp) {
--	case POWER_SUPPLY_PROP_ONLINE:
--		val->intval = !!(wm8350_get_supplies(wm8350) &
--				 WM8350_LINE_SUPPLY);
--		break;
--	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
--		val->intval = wm8350_read_line_uvolts(wm8350);
--		break;
--	default:
--		ret = -EINVAL;
--		break;
--	}
--	return ret;
--}
--
--static enum power_supply_property wm8350_ac_props[] = {
--	POWER_SUPPLY_PROP_ONLINE,
--	POWER_SUPPLY_PROP_VOLTAGE_NOW,
--};
--
--/*********************************************************************
-- *		USB Power
-- *********************************************************************/
--static int wm8350_usb_get_prop(struct power_supply *psy,
--			       enum power_supply_property psp,
--			       union power_supply_propval *val)
--{
--	struct wm8350 *wm8350 = dev_get_drvdata(psy->dev.parent);
--	int ret = 0;
--
--	switch (psp) {
--	case POWER_SUPPLY_PROP_ONLINE:
--		val->intval = !!(wm8350_get_supplies(wm8350) &
--				 WM8350_USB_SUPPLY);
--		break;
--	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
--		val->intval = wm8350_read_usb_uvolts(wm8350);
--		break;
--	default:
--		ret = -EINVAL;
--		break;
--	}
--	return ret;
--}
--
--static enum power_supply_property wm8350_usb_props[] = {
--	POWER_SUPPLY_PROP_ONLINE,
--	POWER_SUPPLY_PROP_VOLTAGE_NOW,
--};
--
--/*********************************************************************
-- *		Battery properties
-- *********************************************************************/
--
--static int wm8350_bat_check_health(struct wm8350 *wm8350)
--{
--	u16 reg;
--
--	if (wm8350_read_battery_uvolts(wm8350) < 2850000)
--		return POWER_SUPPLY_HEALTH_UNSPEC_FAILURE;
--
--	reg = wm8350_reg_read(wm8350, WM8350_CHARGER_OVERRIDES);
--	if (reg & WM8350_CHG_BATT_HOT_OVRDE)
--		return POWER_SUPPLY_HEALTH_OVERHEAT;
--
--	if (reg & WM8350_CHG_BATT_COLD_OVRDE)
--		return POWER_SUPPLY_HEALTH_COLD;
--
--	return POWER_SUPPLY_HEALTH_GOOD;
--}
--
--static int wm8350_bat_get_charge_type(struct wm8350 *wm8350)
--{
--	int state;
--
--	state = wm8350_reg_read(wm8350, WM8350_BATTERY_CHARGER_CONTROL_2) &
--	    WM8350_CHG_STS_MASK;
--	switch (state) {
--	case WM8350_CHG_STS_OFF:
--		return POWER_SUPPLY_CHARGE_TYPE_NONE;
--	case WM8350_CHG_STS_TRICKLE:
--		return POWER_SUPPLY_CHARGE_TYPE_TRICKLE;
--	case WM8350_CHG_STS_FAST:
--		return POWER_SUPPLY_CHARGE_TYPE_FAST;
--	default:
--		return POWER_SUPPLY_CHARGE_TYPE_UNKNOWN;
--	}
--}
--
--static int wm8350_bat_get_property(struct power_supply *psy,
--				   enum power_supply_property psp,
--				   union power_supply_propval *val)
--{
--	struct wm8350 *wm8350 = dev_get_drvdata(psy->dev.parent);
--	int ret = 0;
--
--	switch (psp) {
--	case POWER_SUPPLY_PROP_STATUS:
--		val->intval = wm8350_batt_status(wm8350);
--		break;
--	case POWER_SUPPLY_PROP_ONLINE:
--		val->intval = !!(wm8350_get_supplies(wm8350) &
--				 WM8350_BATT_SUPPLY);
--		break;
--	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
--		val->intval = wm8350_read_battery_uvolts(wm8350);
--		break;
--	case POWER_SUPPLY_PROP_HEALTH:
--		val->intval = wm8350_bat_check_health(wm8350);
--		break;
--	case POWER_SUPPLY_PROP_CHARGE_TYPE:
--		val->intval = wm8350_bat_get_charge_type(wm8350);
--		break;
--	default:
--		ret = -EINVAL;
--		break;
--	}
--
--	return ret;
--}
--
--static enum power_supply_property wm8350_bat_props[] = {
--	POWER_SUPPLY_PROP_STATUS,
--	POWER_SUPPLY_PROP_ONLINE,
--	POWER_SUPPLY_PROP_VOLTAGE_NOW,
--	POWER_SUPPLY_PROP_HEALTH,
--	POWER_SUPPLY_PROP_CHARGE_TYPE,
--};
--
--static const struct power_supply_desc wm8350_ac_desc = {
--	.name		= "wm8350-ac",
--	.type		= POWER_SUPPLY_TYPE_MAINS,
--	.properties	= wm8350_ac_props,
--	.num_properties	= ARRAY_SIZE(wm8350_ac_props),
--	.get_property	= wm8350_ac_get_prop,
--};
--
--static const struct power_supply_desc wm8350_battery_desc = {
--	.name		= "wm8350-battery",
--	.properties	= wm8350_bat_props,
--	.num_properties	= ARRAY_SIZE(wm8350_bat_props),
--	.get_property	= wm8350_bat_get_property,
--	.use_for_apm	= 1,
--};
--
--static const struct power_supply_desc wm8350_usb_desc = {
--	.name		= "wm8350-usb",
--	.type		= POWER_SUPPLY_TYPE_USB,
--	.properties	= wm8350_usb_props,
--	.num_properties	= ARRAY_SIZE(wm8350_usb_props),
--	.get_property	= wm8350_usb_get_prop,
--};
--
--/*********************************************************************
-- *		Initialisation
-- *********************************************************************/
--
--static int wm8350_init_charger(struct wm8350 *wm8350)
--{
--	int ret;
--
--	/* register our interest in charger events */
--	ret = wm8350_register_irq(wm8350, WM8350_IRQ_CHG_BAT_HOT,
--			    wm8350_charger_handler, 0, "Battery hot", wm8350);
--	if (ret)
--		goto err;
--
--	ret = wm8350_register_irq(wm8350, WM8350_IRQ_CHG_BAT_COLD,
--			    wm8350_charger_handler, 0, "Battery cold", wm8350);
--	if (ret)
--		goto free_chg_bat_hot;
--
--	ret = wm8350_register_irq(wm8350, WM8350_IRQ_CHG_BAT_FAIL,
--			    wm8350_charger_handler, 0, "Battery fail", wm8350);
--	if (ret)
--		goto free_chg_bat_cold;
--
--	ret = wm8350_register_irq(wm8350, WM8350_IRQ_CHG_TO,
--			    wm8350_charger_handler, 0,
--			    "Charger timeout", wm8350);
--	if (ret)
--		goto free_chg_bat_fail;
--
--	ret = wm8350_register_irq(wm8350, WM8350_IRQ_CHG_END,
--			    wm8350_charger_handler, 0,
--			    "Charge end", wm8350);
--	if (ret)
--		goto free_chg_to;
--
--	ret = wm8350_register_irq(wm8350, WM8350_IRQ_CHG_START,
--			    wm8350_charger_handler, 0,
--			    "Charge start", wm8350);
--	if (ret)
--		goto free_chg_end;
--
--	ret = wm8350_register_irq(wm8350, WM8350_IRQ_CHG_FAST_RDY,
--			    wm8350_charger_handler, 0,
--			    "Fast charge ready", wm8350);
--	if (ret)
--		goto free_chg_start;
--
--	ret = wm8350_register_irq(wm8350, WM8350_IRQ_CHG_VBATT_LT_3P9,
--			    wm8350_charger_handler, 0,
--			    "Battery <3.9V", wm8350);
--	if (ret)
--		goto free_chg_fast_rdy;
--
--	ret = wm8350_register_irq(wm8350, WM8350_IRQ_CHG_VBATT_LT_3P1,
--			    wm8350_charger_handler, 0,
--			    "Battery <3.1V", wm8350);
--	if (ret)
--		goto free_chg_vbatt_lt_3p9;
--
--	ret = wm8350_register_irq(wm8350, WM8350_IRQ_CHG_VBATT_LT_2P85,
--			    wm8350_charger_handler, 0,
--			    "Battery <2.85V", wm8350);
--	if (ret)
--		goto free_chg_vbatt_lt_3p1;
--
--	/* and supply change events */
--	ret = wm8350_register_irq(wm8350, WM8350_IRQ_EXT_USB_FB,
--			    wm8350_charger_handler, 0, "USB", wm8350);
--	if (ret)
--		goto free_chg_vbatt_lt_2p85;
--
--	ret = wm8350_register_irq(wm8350, WM8350_IRQ_EXT_WALL_FB,
--			    wm8350_charger_handler, 0, "Wall", wm8350);
--	if (ret)
--		goto free_ext_usb_fb;
--
--	ret = wm8350_register_irq(wm8350, WM8350_IRQ_EXT_BAT_FB,
--			    wm8350_charger_handler, 0, "Battery", wm8350);
--	if (ret)
--		goto free_ext_wall_fb;
--
--	return 0;
--
--free_ext_wall_fb:
--	wm8350_free_irq(wm8350, WM8350_IRQ_EXT_WALL_FB, wm8350);
--free_ext_usb_fb:
--	wm8350_free_irq(wm8350, WM8350_IRQ_EXT_USB_FB, wm8350);
--free_chg_vbatt_lt_2p85:
--	wm8350_free_irq(wm8350, WM8350_IRQ_CHG_VBATT_LT_2P85, wm8350);
--free_chg_vbatt_lt_3p1:
--	wm8350_free_irq(wm8350, WM8350_IRQ_CHG_VBATT_LT_3P1, wm8350);
--free_chg_vbatt_lt_3p9:
--	wm8350_free_irq(wm8350, WM8350_IRQ_CHG_VBATT_LT_3P9, wm8350);
--free_chg_fast_rdy:
--	wm8350_free_irq(wm8350, WM8350_IRQ_CHG_FAST_RDY, wm8350);
--free_chg_start:
--	wm8350_free_irq(wm8350, WM8350_IRQ_CHG_START, wm8350);
--free_chg_end:
--	wm8350_free_irq(wm8350, WM8350_IRQ_CHG_END, wm8350);
--free_chg_to:
--	wm8350_free_irq(wm8350, WM8350_IRQ_CHG_TO, wm8350);
--free_chg_bat_fail:
--	wm8350_free_irq(wm8350, WM8350_IRQ_CHG_BAT_FAIL, wm8350);
--free_chg_bat_cold:
--	wm8350_free_irq(wm8350, WM8350_IRQ_CHG_BAT_COLD, wm8350);
--free_chg_bat_hot:
--	wm8350_free_irq(wm8350, WM8350_IRQ_CHG_BAT_HOT, wm8350);
--err:
--	return ret;
--}
--
--static void free_charger_irq(struct wm8350 *wm8350)
--{
--	wm8350_free_irq(wm8350, WM8350_IRQ_CHG_BAT_HOT, wm8350);
--	wm8350_free_irq(wm8350, WM8350_IRQ_CHG_BAT_COLD, wm8350);
--	wm8350_free_irq(wm8350, WM8350_IRQ_CHG_BAT_FAIL, wm8350);
--	wm8350_free_irq(wm8350, WM8350_IRQ_CHG_TO, wm8350);
--	wm8350_free_irq(wm8350, WM8350_IRQ_CHG_END, wm8350);
--	wm8350_free_irq(wm8350, WM8350_IRQ_CHG_START, wm8350);
--	wm8350_free_irq(wm8350, WM8350_IRQ_CHG_FAST_RDY, wm8350);
--	wm8350_free_irq(wm8350, WM8350_IRQ_CHG_VBATT_LT_3P9, wm8350);
--	wm8350_free_irq(wm8350, WM8350_IRQ_CHG_VBATT_LT_3P1, wm8350);
--	wm8350_free_irq(wm8350, WM8350_IRQ_CHG_VBATT_LT_2P85, wm8350);
--	wm8350_free_irq(wm8350, WM8350_IRQ_EXT_USB_FB, wm8350);
--	wm8350_free_irq(wm8350, WM8350_IRQ_EXT_WALL_FB, wm8350);
--	wm8350_free_irq(wm8350, WM8350_IRQ_EXT_BAT_FB, wm8350);
--}
--
--static int wm8350_power_probe(struct platform_device *pdev)
--{
--	struct wm8350 *wm8350 = platform_get_drvdata(pdev);
--	struct wm8350_power *power = &wm8350->power;
--	struct wm8350_charger_policy *policy = power->policy;
--	int ret;
--
--	power->ac = devm_power_supply_register(&pdev->dev, &wm8350_ac_desc, NULL);
--	if (IS_ERR(power->ac))
--		return PTR_ERR(power->ac);
--
--	power->battery = devm_power_supply_register(&pdev->dev, &wm8350_battery_desc, NULL);
--	if (IS_ERR(power->battery))
--		return PTR_ERR(power->battery);
--
--	power->usb = devm_power_supply_register(&pdev->dev, &wm8350_usb_desc, NULL);
--	if (IS_ERR(power->usb))
--		return PTR_ERR(power->usb);
--
--	ret = device_create_file(&pdev->dev, &dev_attr_charger_state);
--	if (ret < 0)
--		dev_warn(wm8350->dev, "failed to add charge sysfs: %d\n", ret);
--	ret = 0;
--
--	wm8350_init_charger(wm8350);
--	if (wm8350_charger_config(wm8350, policy) == 0) {
--		wm8350_reg_unlock(wm8350);
--		wm8350_set_bits(wm8350, WM8350_POWER_MGMT_5, WM8350_CHG_ENA);
--		wm8350_reg_lock(wm8350);
--	}
--
--	return ret;
--}
--
--static void wm8350_power_remove(struct platform_device *pdev)
--{
--	struct wm8350 *wm8350 = platform_get_drvdata(pdev);
--
--	free_charger_irq(wm8350);
--	device_remove_file(&pdev->dev, &dev_attr_charger_state);
--}
--
--static struct platform_driver wm8350_power_driver = {
--	.probe = wm8350_power_probe,
--	.remove = wm8350_power_remove,
--	.driver = {
--		.name = "wm8350-power",
--	},
--};
--
--module_platform_driver(wm8350_power_driver);
--
--MODULE_LICENSE("GPL");
--MODULE_DESCRIPTION("Power supply driver for WM8350");
--MODULE_ALIAS("platform:wm8350-power");
-diff --git a/drivers/regulator/Kconfig b/drivers/regulator/Kconfig
-index 2d5eb954d122..940456a62b0b 100644
---- a/drivers/regulator/Kconfig
-+++ b/drivers/regulator/Kconfig
-@@ -1824,13 +1824,6 @@ config REGULATOR_WM831X
- 	  Support the voltage and current regulators of the WM831x series
- 	  of PMIC devices.
- 
--config REGULATOR_WM8350
--	tristate "Wolfson Microelectronics WM8350 AudioPlus PMIC"
--	depends on MFD_WM8350
--	help
--	  This driver provides support for the voltage and current regulators
--	  of the WM8350 AudioPlus PMIC.
--
- config REGULATOR_WM8994
- 	tristate "Wolfson Microelectronics WM8994 CODEC"
- 	depends on MFD_WM8994
-diff --git a/drivers/regulator/Makefile b/drivers/regulator/Makefile
-index 861f86c30c73..da4c6b3b21c8 100644
---- a/drivers/regulator/Makefile
-+++ b/drivers/regulator/Makefile
-@@ -209,7 +209,6 @@ obj-$(CONFIG_REGULATOR_VQMMC_IPQ4019) += vqmmc-ipq4019-regulator.o
- obj-$(CONFIG_REGULATOR_WM831X) += wm831x-dcdc.o
- obj-$(CONFIG_REGULATOR_WM831X) += wm831x-isink.o
- obj-$(CONFIG_REGULATOR_WM831X) += wm831x-ldo.o
--obj-$(CONFIG_REGULATOR_WM8350) += wm8350-regulator.o
- obj-$(CONFIG_REGULATOR_WM8994) += wm8994-regulator.o
- 
- ccflags-$(CONFIG_REGULATOR_DEBUG) += -DDEBUG
-diff --git a/drivers/regulator/wm8350-regulator.c b/drivers/regulator/wm8350-regulator.c
-deleted file mode 100644
-index d09864bae5ef..000000000000
---- a/drivers/regulator/wm8350-regulator.c
-+++ /dev/null
-@@ -1,1330 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0+
--//
--// wm8350.c  --  Voltage and current regulation for the Wolfson WM8350 PMIC
--//
--// Copyright 2007, 2008 Wolfson Microelectronics PLC.
--//
--// Author: Liam Girdwood
--//         linux@wolfsonmicro.com
--
--#include <linux/module.h>
--#include <linux/moduleparam.h>
 -#include <linux/init.h>
--#include <linux/bitops.h>
--#include <linux/err.h>
--#include <linux/i2c.h>
--#include <linux/mfd/wm8350/core.h>
--#include <linux/mfd/wm8350/pmic.h>
--#include <linux/platform_device.h>
--#include <linux/regulator/driver.h>
--#include <linux/regulator/machine.h>
--
--/* Maximum value possible for VSEL */
--#define WM8350_DCDC_MAX_VSEL 0x66
--
--/* Microamps */
--static const unsigned int isink_cur[] = {
--	4,
--	5,
--	6,
--	7,
--	8,
--	10,
--	11,
--	14,
--	16,
--	19,
--	23,
--	27,
--	32,
--	39,
--	46,
--	54,
--	65,
--	77,
--	92,
--	109,
--	130,
--	154,
--	183,
--	218,
--	259,
--	308,
--	367,
--	436,
--	518,
--	616,
--	733,
--	872,
--	1037,
--	1233,
--	1466,
--	1744,
--	2073,
--	2466,
--	2933,
--	3487,
--	4147,
--	4932,
--	5865,
--	6975,
--	8294,
--	9864,
--	11730,
--	13949,
--	16589,
--	19728,
--	23460,
--	27899,
--	33178,
--	39455,
--	46920,
--	55798,
--	66355,
--	78910,
--	93840,
--	111596,
--	132710,
--	157820,
--	187681,
--	223191
--};
--
--/* turn on ISINK followed by DCDC */
--static int wm8350_isink_enable(struct regulator_dev *rdev)
--{
--	struct wm8350 *wm8350 = rdev_get_drvdata(rdev);
--	int isink = rdev_get_id(rdev);
--
--	switch (isink) {
--	case WM8350_ISINK_A:
--		switch (wm8350->pmic.isink_A_dcdc) {
--		case WM8350_DCDC_2:
--		case WM8350_DCDC_5:
--			wm8350_set_bits(wm8350, WM8350_POWER_MGMT_7,
--					WM8350_CS1_ENA);
--			wm8350_set_bits(wm8350, WM8350_CSA_FLASH_CONTROL,
--					WM8350_CS1_DRIVE);
--			wm8350_set_bits(wm8350, WM8350_DCDC_LDO_REQUESTED,
--					1 << (wm8350->pmic.isink_A_dcdc -
--					      WM8350_DCDC_1));
--			break;
--		default:
--			return -EINVAL;
--		}
--		break;
--	case WM8350_ISINK_B:
--		switch (wm8350->pmic.isink_B_dcdc) {
--		case WM8350_DCDC_2:
--		case WM8350_DCDC_5:
--			wm8350_set_bits(wm8350, WM8350_POWER_MGMT_7,
--					WM8350_CS2_ENA);
--			wm8350_set_bits(wm8350, WM8350_CSB_FLASH_CONTROL,
--					WM8350_CS2_DRIVE);
--			wm8350_set_bits(wm8350, WM8350_DCDC_LDO_REQUESTED,
--					1 << (wm8350->pmic.isink_B_dcdc -
--					      WM8350_DCDC_1));
--			break;
--		default:
--			return -EINVAL;
--		}
--		break;
--	default:
--		return -EINVAL;
--	}
--	return 0;
--}
--
--static int wm8350_isink_disable(struct regulator_dev *rdev)
--{
--	struct wm8350 *wm8350 = rdev_get_drvdata(rdev);
--	int isink = rdev_get_id(rdev);
--
--	switch (isink) {
--	case WM8350_ISINK_A:
--		switch (wm8350->pmic.isink_A_dcdc) {
--		case WM8350_DCDC_2:
--		case WM8350_DCDC_5:
--			wm8350_clear_bits(wm8350, WM8350_DCDC_LDO_REQUESTED,
--					  1 << (wm8350->pmic.isink_A_dcdc -
--						WM8350_DCDC_1));
--			wm8350_clear_bits(wm8350, WM8350_POWER_MGMT_7,
--					  WM8350_CS1_ENA);
--			break;
--		default:
--			return -EINVAL;
--		}
--		break;
--	case WM8350_ISINK_B:
--		switch (wm8350->pmic.isink_B_dcdc) {
--		case WM8350_DCDC_2:
--		case WM8350_DCDC_5:
--			wm8350_clear_bits(wm8350, WM8350_DCDC_LDO_REQUESTED,
--					  1 << (wm8350->pmic.isink_B_dcdc -
--						WM8350_DCDC_1));
--			wm8350_clear_bits(wm8350, WM8350_POWER_MGMT_7,
--					  WM8350_CS2_ENA);
--			break;
--		default:
--			return -EINVAL;
--		}
--		break;
--	default:
--		return -EINVAL;
--	}
--	return 0;
--}
--
--static int wm8350_isink_is_enabled(struct regulator_dev *rdev)
--{
--	struct wm8350 *wm8350 = rdev_get_drvdata(rdev);
--	int isink = rdev_get_id(rdev);
--
--	switch (isink) {
--	case WM8350_ISINK_A:
--		return wm8350_reg_read(wm8350, WM8350_CURRENT_SINK_DRIVER_A) &
--		    0x8000;
--	case WM8350_ISINK_B:
--		return wm8350_reg_read(wm8350, WM8350_CURRENT_SINK_DRIVER_B) &
--		    0x8000;
--	}
--	return -EINVAL;
--}
--
--static int wm8350_isink_enable_time(struct regulator_dev *rdev)
--{
--	struct wm8350 *wm8350 = rdev_get_drvdata(rdev);
--	int isink = rdev_get_id(rdev);
--	int reg;
--
--	switch (isink) {
--	case WM8350_ISINK_A:
--		reg = wm8350_reg_read(wm8350, WM8350_CSA_FLASH_CONTROL);
--		break;
--	case WM8350_ISINK_B:
--		reg = wm8350_reg_read(wm8350, WM8350_CSB_FLASH_CONTROL);
--		break;
--	default:
--		return -EINVAL;
--	}
--
--	if (reg & WM8350_CS1_FLASH_MODE) {
--		switch (reg & WM8350_CS1_ON_RAMP_MASK) {
--		case 0:
--			return 0;
--		case 1:
--			return 1950;
--		case 2:
--			return 3910;
--		case 3:
--			return 7800;
--		}
--	} else {
--		switch (reg & WM8350_CS1_ON_RAMP_MASK) {
--		case 0:
--			return 0;
--		case 1:
--			return 250000;
--		case 2:
--			return 500000;
--		case 3:
--			return 1000000;
--		}
--	}
--
--	return -EINVAL;
--}
--
--
--int wm8350_isink_set_flash(struct wm8350 *wm8350, int isink, u16 mode,
--			   u16 trigger, u16 duration, u16 on_ramp, u16 off_ramp,
--			   u16 drive)
--{
--	switch (isink) {
--	case WM8350_ISINK_A:
--		wm8350_reg_write(wm8350, WM8350_CSA_FLASH_CONTROL,
--				 (mode ? WM8350_CS1_FLASH_MODE : 0) |
--				 (trigger ? WM8350_CS1_TRIGSRC : 0) |
--				 duration | on_ramp | off_ramp | drive);
--		break;
--	case WM8350_ISINK_B:
--		wm8350_reg_write(wm8350, WM8350_CSB_FLASH_CONTROL,
--				 (mode ? WM8350_CS2_FLASH_MODE : 0) |
--				 (trigger ? WM8350_CS2_TRIGSRC : 0) |
--				 duration | on_ramp | off_ramp | drive);
--		break;
--	default:
--		return -EINVAL;
--	}
--	return 0;
--}
--EXPORT_SYMBOL_GPL(wm8350_isink_set_flash);
--
--static int wm8350_dcdc_set_suspend_voltage(struct regulator_dev *rdev, int uV)
--{
--	struct wm8350 *wm8350 = rdev_get_drvdata(rdev);
--	int sel, volt_reg, dcdc = rdev_get_id(rdev);
--	u16 val;
--
--	dev_dbg(wm8350->dev, "%s %d mV %d\n", __func__, dcdc, uV / 1000);
--
--	switch (dcdc) {
--	case WM8350_DCDC_1:
--		volt_reg = WM8350_DCDC1_LOW_POWER;
--		break;
--	case WM8350_DCDC_3:
--		volt_reg = WM8350_DCDC3_LOW_POWER;
--		break;
--	case WM8350_DCDC_4:
--		volt_reg = WM8350_DCDC4_LOW_POWER;
--		break;
--	case WM8350_DCDC_6:
--		volt_reg = WM8350_DCDC6_LOW_POWER;
--		break;
--	case WM8350_DCDC_2:
--	case WM8350_DCDC_5:
--	default:
--		return -EINVAL;
--	}
--
--	sel = regulator_map_voltage_linear(rdev, uV, uV);
--	if (sel < 0)
--		return sel;
--
--	/* all DCDCs have same mV bits */
--	val = wm8350_reg_read(wm8350, volt_reg) & ~WM8350_DC1_VSEL_MASK;
--	wm8350_reg_write(wm8350, volt_reg, val | sel);
--	return 0;
--}
--
--static int wm8350_dcdc_set_suspend_enable(struct regulator_dev *rdev)
--{
--	struct wm8350 *wm8350 = rdev_get_drvdata(rdev);
--	int dcdc = rdev_get_id(rdev);
--	u16 val;
--
--	switch (dcdc) {
--	case WM8350_DCDC_1:
--		val = wm8350_reg_read(wm8350, WM8350_DCDC1_LOW_POWER)
--			& ~WM8350_DCDC_HIB_MODE_MASK;
--		wm8350_reg_write(wm8350, WM8350_DCDC1_LOW_POWER,
--			val | wm8350->pmic.dcdc1_hib_mode);
--		break;
--	case WM8350_DCDC_3:
--		val = wm8350_reg_read(wm8350, WM8350_DCDC3_LOW_POWER)
--			& ~WM8350_DCDC_HIB_MODE_MASK;
--		wm8350_reg_write(wm8350, WM8350_DCDC3_LOW_POWER,
--			val | wm8350->pmic.dcdc3_hib_mode);
--		break;
--	case WM8350_DCDC_4:
--		val = wm8350_reg_read(wm8350, WM8350_DCDC4_LOW_POWER)
--			& ~WM8350_DCDC_HIB_MODE_MASK;
--		wm8350_reg_write(wm8350, WM8350_DCDC4_LOW_POWER,
--			val | wm8350->pmic.dcdc4_hib_mode);
--		break;
--	case WM8350_DCDC_6:
--		val = wm8350_reg_read(wm8350, WM8350_DCDC6_LOW_POWER)
--			& ~WM8350_DCDC_HIB_MODE_MASK;
--		wm8350_reg_write(wm8350, WM8350_DCDC6_LOW_POWER,
--			val | wm8350->pmic.dcdc6_hib_mode);
--		break;
--	case WM8350_DCDC_2:
--	case WM8350_DCDC_5:
--	default:
--		return -EINVAL;
--	}
--
--	return 0;
--}
--
--static int wm8350_dcdc_set_suspend_disable(struct regulator_dev *rdev)
--{
--	struct wm8350 *wm8350 = rdev_get_drvdata(rdev);
--	int dcdc = rdev_get_id(rdev);
--	u16 val;
--
--	switch (dcdc) {
--	case WM8350_DCDC_1:
--		val = wm8350_reg_read(wm8350, WM8350_DCDC1_LOW_POWER);
--		wm8350->pmic.dcdc1_hib_mode = val & WM8350_DCDC_HIB_MODE_MASK;
--		wm8350_reg_write(wm8350, WM8350_DCDC1_LOW_POWER,
--				 val | WM8350_DCDC_HIB_MODE_DIS);
--		break;
--	case WM8350_DCDC_3:
--		val = wm8350_reg_read(wm8350, WM8350_DCDC3_LOW_POWER);
--		wm8350->pmic.dcdc3_hib_mode = val & WM8350_DCDC_HIB_MODE_MASK;
--		wm8350_reg_write(wm8350, WM8350_DCDC3_LOW_POWER,
--				 val | WM8350_DCDC_HIB_MODE_DIS);
--		break;
--	case WM8350_DCDC_4:
--		val = wm8350_reg_read(wm8350, WM8350_DCDC4_LOW_POWER);
--		wm8350->pmic.dcdc4_hib_mode = val & WM8350_DCDC_HIB_MODE_MASK;
--		wm8350_reg_write(wm8350, WM8350_DCDC4_LOW_POWER,
--				 val | WM8350_DCDC_HIB_MODE_DIS);
--		break;
--	case WM8350_DCDC_6:
--		val = wm8350_reg_read(wm8350, WM8350_DCDC6_LOW_POWER);
--		wm8350->pmic.dcdc6_hib_mode = val & WM8350_DCDC_HIB_MODE_MASK;
--		wm8350_reg_write(wm8350, WM8350_DCDC6_LOW_POWER,
--				 val | WM8350_DCDC_HIB_MODE_DIS);
--		break;
--	case WM8350_DCDC_2:
--	case WM8350_DCDC_5:
--	default:
--		return -EINVAL;
--	}
--
--	return 0;
--}
--
--static int wm8350_dcdc25_set_suspend_enable(struct regulator_dev *rdev)
--{
--	struct wm8350 *wm8350 = rdev_get_drvdata(rdev);
--	int dcdc = rdev_get_id(rdev);
--	u16 val;
--
--	switch (dcdc) {
--	case WM8350_DCDC_2:
--		val = wm8350_reg_read(wm8350, WM8350_DCDC2_CONTROL)
--		    & ~WM8350_DC2_HIB_MODE_MASK;
--		wm8350_reg_write(wm8350, WM8350_DCDC2_CONTROL, val |
--		    (WM8350_DC2_HIB_MODE_ACTIVE << WM8350_DC2_HIB_MODE_SHIFT));
--		break;
--	case WM8350_DCDC_5:
--		val = wm8350_reg_read(wm8350, WM8350_DCDC5_CONTROL)
--		    & ~WM8350_DC5_HIB_MODE_MASK;
--		wm8350_reg_write(wm8350, WM8350_DCDC5_CONTROL, val |
--		    (WM8350_DC5_HIB_MODE_ACTIVE << WM8350_DC5_HIB_MODE_SHIFT));
--		break;
--	default:
--		return -EINVAL;
--	}
--	return 0;
--}
--
--static int wm8350_dcdc25_set_suspend_disable(struct regulator_dev *rdev)
--{
--	struct wm8350 *wm8350 = rdev_get_drvdata(rdev);
--	int dcdc = rdev_get_id(rdev);
--	u16 val;
--
--	switch (dcdc) {
--	case WM8350_DCDC_2:
--		val = wm8350_reg_read(wm8350, WM8350_DCDC2_CONTROL)
--		    & ~WM8350_DC2_HIB_MODE_MASK;
--		wm8350_reg_write(wm8350, WM8350_DCDC2_CONTROL, val |
--		    (WM8350_DC2_HIB_MODE_DISABLE << WM8350_DC2_HIB_MODE_SHIFT));
--		break;
--	case WM8350_DCDC_5:
--		val = wm8350_reg_read(wm8350, WM8350_DCDC5_CONTROL)
--		    & ~WM8350_DC5_HIB_MODE_MASK;
--		wm8350_reg_write(wm8350, WM8350_DCDC5_CONTROL, val |
--		    (WM8350_DC5_HIB_MODE_DISABLE << WM8350_DC5_HIB_MODE_SHIFT));
--		break;
--	default:
--		return -EINVAL;
--	}
--	return 0;
--}
--
--static int wm8350_dcdc_set_suspend_mode(struct regulator_dev *rdev,
--	unsigned int mode)
--{
--	struct wm8350 *wm8350 = rdev_get_drvdata(rdev);
--	int dcdc = rdev_get_id(rdev);
--	u16 *hib_mode;
--
--	switch (dcdc) {
--	case WM8350_DCDC_1:
--		hib_mode = &wm8350->pmic.dcdc1_hib_mode;
--		break;
--	case WM8350_DCDC_3:
--		hib_mode = &wm8350->pmic.dcdc3_hib_mode;
--		break;
--	case WM8350_DCDC_4:
--		hib_mode = &wm8350->pmic.dcdc4_hib_mode;
--		break;
--	case WM8350_DCDC_6:
--		hib_mode = &wm8350->pmic.dcdc6_hib_mode;
--		break;
--	case WM8350_DCDC_2:
--	case WM8350_DCDC_5:
--	default:
--		return -EINVAL;
--	}
--
--	switch (mode) {
--	case REGULATOR_MODE_NORMAL:
--		*hib_mode = WM8350_DCDC_HIB_MODE_IMAGE;
--		break;
--	case REGULATOR_MODE_IDLE:
--		*hib_mode = WM8350_DCDC_HIB_MODE_STANDBY;
--		break;
--	case REGULATOR_MODE_STANDBY:
--		*hib_mode = WM8350_DCDC_HIB_MODE_LDO_IM;
--		break;
--	default:
--		return -EINVAL;
--	}
--
--	return 0;
--}
--
--static const struct linear_range wm8350_ldo_ranges[] = {
--	REGULATOR_LINEAR_RANGE(900000, 0, 15, 50000),
--	REGULATOR_LINEAR_RANGE(1800000, 16, 31, 100000),
--};
--
--static int wm8350_ldo_set_suspend_voltage(struct regulator_dev *rdev, int uV)
--{
--	struct wm8350 *wm8350 = rdev_get_drvdata(rdev);
--	int sel, volt_reg, ldo = rdev_get_id(rdev);
--	u16 val;
--
--	dev_dbg(wm8350->dev, "%s %d mV %d\n", __func__, ldo, uV / 1000);
--
--	switch (ldo) {
--	case WM8350_LDO_1:
--		volt_reg = WM8350_LDO1_LOW_POWER;
--		break;
--	case WM8350_LDO_2:
--		volt_reg = WM8350_LDO2_LOW_POWER;
--		break;
--	case WM8350_LDO_3:
--		volt_reg = WM8350_LDO3_LOW_POWER;
--		break;
--	case WM8350_LDO_4:
--		volt_reg = WM8350_LDO4_LOW_POWER;
--		break;
--	default:
--		return -EINVAL;
--	}
--
--	sel = regulator_map_voltage_linear_range(rdev, uV, uV);
--	if (sel < 0)
--		return sel;
--
--	/* all LDOs have same mV bits */
--	val = wm8350_reg_read(wm8350, volt_reg) & ~WM8350_LDO1_VSEL_MASK;
--	wm8350_reg_write(wm8350, volt_reg, val | sel);
--	return 0;
--}
--
--static int wm8350_ldo_set_suspend_enable(struct regulator_dev *rdev)
--{
--	struct wm8350 *wm8350 = rdev_get_drvdata(rdev);
--	int volt_reg, ldo = rdev_get_id(rdev);
--	u16 val;
--
--	switch (ldo) {
--	case WM8350_LDO_1:
--		volt_reg = WM8350_LDO1_LOW_POWER;
--		break;
--	case WM8350_LDO_2:
--		volt_reg = WM8350_LDO2_LOW_POWER;
--		break;
--	case WM8350_LDO_3:
--		volt_reg = WM8350_LDO3_LOW_POWER;
--		break;
--	case WM8350_LDO_4:
--		volt_reg = WM8350_LDO4_LOW_POWER;
--		break;
--	default:
--		return -EINVAL;
--	}
--
--	/* all LDOs have same mV bits */
--	val = wm8350_reg_read(wm8350, volt_reg) & ~WM8350_LDO1_HIB_MODE_MASK;
--	wm8350_reg_write(wm8350, volt_reg, val);
--	return 0;
--}
--
--static int wm8350_ldo_set_suspend_disable(struct regulator_dev *rdev)
--{
--	struct wm8350 *wm8350 = rdev_get_drvdata(rdev);
--	int volt_reg, ldo = rdev_get_id(rdev);
--	u16 val;
--
--	switch (ldo) {
--	case WM8350_LDO_1:
--		volt_reg = WM8350_LDO1_LOW_POWER;
--		break;
--	case WM8350_LDO_2:
--		volt_reg = WM8350_LDO2_LOW_POWER;
--		break;
--	case WM8350_LDO_3:
--		volt_reg = WM8350_LDO3_LOW_POWER;
--		break;
--	case WM8350_LDO_4:
--		volt_reg = WM8350_LDO4_LOW_POWER;
--		break;
--	default:
--		return -EINVAL;
--	}
--
--	/* all LDOs have same mV bits */
--	val = wm8350_reg_read(wm8350, volt_reg) & ~WM8350_LDO1_HIB_MODE_MASK;
--	wm8350_reg_write(wm8350, volt_reg, val | WM8350_LDO1_HIB_MODE_DIS);
--	return 0;
--}
--
--int wm8350_dcdc_set_slot(struct wm8350 *wm8350, int dcdc, u16 start,
--			 u16 stop, u16 fault)
--{
--	int slot_reg;
--	u16 val;
--
--	dev_dbg(wm8350->dev, "%s %d start %d stop %d\n",
--		__func__, dcdc, start, stop);
--
--	/* slot valid ? */
--	if (start > 15 || stop > 15)
--		return -EINVAL;
--
--	switch (dcdc) {
--	case WM8350_DCDC_1:
--		slot_reg = WM8350_DCDC1_TIMEOUTS;
--		break;
--	case WM8350_DCDC_2:
--		slot_reg = WM8350_DCDC2_TIMEOUTS;
--		break;
--	case WM8350_DCDC_3:
--		slot_reg = WM8350_DCDC3_TIMEOUTS;
--		break;
--	case WM8350_DCDC_4:
--		slot_reg = WM8350_DCDC4_TIMEOUTS;
--		break;
--	case WM8350_DCDC_5:
--		slot_reg = WM8350_DCDC5_TIMEOUTS;
--		break;
--	case WM8350_DCDC_6:
--		slot_reg = WM8350_DCDC6_TIMEOUTS;
--		break;
--	default:
--		return -EINVAL;
--	}
--
--	val = wm8350_reg_read(wm8350, slot_reg) &
--	    ~(WM8350_DC1_ENSLOT_MASK | WM8350_DC1_SDSLOT_MASK |
--	      WM8350_DC1_ERRACT_MASK);
--	wm8350_reg_write(wm8350, slot_reg,
--			 val | (start << WM8350_DC1_ENSLOT_SHIFT) |
--			 (stop << WM8350_DC1_SDSLOT_SHIFT) |
--			 (fault << WM8350_DC1_ERRACT_SHIFT));
--
--	return 0;
--}
--EXPORT_SYMBOL_GPL(wm8350_dcdc_set_slot);
--
--int wm8350_ldo_set_slot(struct wm8350 *wm8350, int ldo, u16 start, u16 stop)
--{
--	int slot_reg;
--	u16 val;
--
--	dev_dbg(wm8350->dev, "%s %d start %d stop %d\n",
--		__func__, ldo, start, stop);
--
--	/* slot valid ? */
--	if (start > 15 || stop > 15)
--		return -EINVAL;
--
--	switch (ldo) {
--	case WM8350_LDO_1:
--		slot_reg = WM8350_LDO1_TIMEOUTS;
--		break;
--	case WM8350_LDO_2:
--		slot_reg = WM8350_LDO2_TIMEOUTS;
--		break;
--	case WM8350_LDO_3:
--		slot_reg = WM8350_LDO3_TIMEOUTS;
--		break;
--	case WM8350_LDO_4:
--		slot_reg = WM8350_LDO4_TIMEOUTS;
--		break;
--	default:
--		return -EINVAL;
--	}
--
--	val = wm8350_reg_read(wm8350, slot_reg) & ~WM8350_LDO1_SDSLOT_MASK;
--	wm8350_reg_write(wm8350, slot_reg, val | ((start << 10) | (stop << 6)));
--	return 0;
--}
--EXPORT_SYMBOL_GPL(wm8350_ldo_set_slot);
--
--int wm8350_dcdc25_set_mode(struct wm8350 *wm8350, int dcdc, u16 mode,
--			   u16 ilim, u16 ramp, u16 feedback)
--{
--	u16 val;
--
--	dev_dbg(wm8350->dev, "%s %d mode: %s %s\n", __func__, dcdc,
--		mode ? "normal" : "boost", ilim ? "low" : "normal");
--
--	switch (dcdc) {
--	case WM8350_DCDC_2:
--		val = wm8350_reg_read(wm8350, WM8350_DCDC2_CONTROL)
--		    & ~(WM8350_DC2_MODE_MASK | WM8350_DC2_ILIM_MASK |
--			WM8350_DC2_RMP_MASK | WM8350_DC2_FBSRC_MASK);
--		wm8350_reg_write(wm8350, WM8350_DCDC2_CONTROL, val |
--				 (mode << WM8350_DC2_MODE_SHIFT) |
--				 (ilim << WM8350_DC2_ILIM_SHIFT) |
--				 (ramp << WM8350_DC2_RMP_SHIFT) |
--				 (feedback << WM8350_DC2_FBSRC_SHIFT));
--		break;
--	case WM8350_DCDC_5:
--		val = wm8350_reg_read(wm8350, WM8350_DCDC5_CONTROL)
--		    & ~(WM8350_DC5_MODE_MASK | WM8350_DC5_ILIM_MASK |
--			WM8350_DC5_RMP_MASK | WM8350_DC5_FBSRC_MASK);
--		wm8350_reg_write(wm8350, WM8350_DCDC5_CONTROL, val |
--				 (mode << WM8350_DC5_MODE_SHIFT) |
--				 (ilim << WM8350_DC5_ILIM_SHIFT) |
--				 (ramp << WM8350_DC5_RMP_SHIFT) |
--				 (feedback << WM8350_DC5_FBSRC_SHIFT));
--		break;
--	default:
--		return -EINVAL;
--	}
--
--	return 0;
--}
--EXPORT_SYMBOL_GPL(wm8350_dcdc25_set_mode);
--
--static int force_continuous_enable(struct wm8350 *wm8350, int dcdc, int enable)
--{
--	int reg = 0, ret;
--
--	switch (dcdc) {
--	case WM8350_DCDC_1:
--		reg = WM8350_DCDC1_FORCE_PWM;
--		break;
--	case WM8350_DCDC_3:
--		reg = WM8350_DCDC3_FORCE_PWM;
--		break;
--	case WM8350_DCDC_4:
--		reg = WM8350_DCDC4_FORCE_PWM;
--		break;
--	case WM8350_DCDC_6:
--		reg = WM8350_DCDC6_FORCE_PWM;
--		break;
--	default:
--		return -EINVAL;
--	}
--
--	if (enable)
--		ret = wm8350_set_bits(wm8350, reg,
--			WM8350_DCDC1_FORCE_PWM_ENA);
--	else
--		ret = wm8350_clear_bits(wm8350, reg,
--			WM8350_DCDC1_FORCE_PWM_ENA);
--	return ret;
--}
--
--static int wm8350_dcdc_set_mode(struct regulator_dev *rdev, unsigned int mode)
--{
--	struct wm8350 *wm8350 = rdev_get_drvdata(rdev);
--	int dcdc = rdev_get_id(rdev);
--	u16 val;
--
--	if (dcdc < WM8350_DCDC_1 || dcdc > WM8350_DCDC_6)
--		return -EINVAL;
--
--	if (dcdc == WM8350_DCDC_2 || dcdc == WM8350_DCDC_5)
--		return -EINVAL;
--
--	val = 1 << (dcdc - WM8350_DCDC_1);
--
--	switch (mode) {
--	case REGULATOR_MODE_FAST:
--		/* force continuous mode */
--		wm8350_set_bits(wm8350, WM8350_DCDC_ACTIVE_OPTIONS, val);
--		wm8350_clear_bits(wm8350, WM8350_DCDC_SLEEP_OPTIONS, val);
--		force_continuous_enable(wm8350, dcdc, 1);
--		break;
--	case REGULATOR_MODE_NORMAL:
--		/* active / pulse skipping */
--		wm8350_set_bits(wm8350, WM8350_DCDC_ACTIVE_OPTIONS, val);
--		wm8350_clear_bits(wm8350, WM8350_DCDC_SLEEP_OPTIONS, val);
--		force_continuous_enable(wm8350, dcdc, 0);
--		break;
--	case REGULATOR_MODE_IDLE:
--		/* standby mode */
--		force_continuous_enable(wm8350, dcdc, 0);
--		wm8350_clear_bits(wm8350, WM8350_DCDC_SLEEP_OPTIONS, val);
--		wm8350_clear_bits(wm8350, WM8350_DCDC_ACTIVE_OPTIONS, val);
--		break;
--	case REGULATOR_MODE_STANDBY:
--		/* LDO mode */
--		force_continuous_enable(wm8350, dcdc, 0);
--		wm8350_set_bits(wm8350, WM8350_DCDC_SLEEP_OPTIONS, val);
--		break;
--	}
--
--	return 0;
--}
--
--static unsigned int wm8350_dcdc_get_mode(struct regulator_dev *rdev)
--{
--	struct wm8350 *wm8350 = rdev_get_drvdata(rdev);
--	int dcdc = rdev_get_id(rdev);
--	u16 mask, sleep, active, force;
--	int mode = REGULATOR_MODE_NORMAL;
--	int reg;
--
--	switch (dcdc) {
--	case WM8350_DCDC_1:
--		reg = WM8350_DCDC1_FORCE_PWM;
--		break;
--	case WM8350_DCDC_3:
--		reg = WM8350_DCDC3_FORCE_PWM;
--		break;
--	case WM8350_DCDC_4:
--		reg = WM8350_DCDC4_FORCE_PWM;
--		break;
--	case WM8350_DCDC_6:
--		reg = WM8350_DCDC6_FORCE_PWM;
--		break;
--	default:
--		return -EINVAL;
--	}
--
--	mask = 1 << (dcdc - WM8350_DCDC_1);
--	active = wm8350_reg_read(wm8350, WM8350_DCDC_ACTIVE_OPTIONS) & mask;
--	force = wm8350_reg_read(wm8350, reg) & WM8350_DCDC1_FORCE_PWM_ENA;
--	sleep = wm8350_reg_read(wm8350, WM8350_DCDC_SLEEP_OPTIONS) & mask;
--
--	dev_dbg(wm8350->dev, "mask %x active %x sleep %x force %x",
--		mask, active, sleep, force);
--
--	if (active && !sleep) {
--		if (force)
--			mode = REGULATOR_MODE_FAST;
--		else
--			mode = REGULATOR_MODE_NORMAL;
--	} else if (!active && !sleep)
--		mode = REGULATOR_MODE_IDLE;
--	else if (sleep)
--		mode = REGULATOR_MODE_STANDBY;
--
--	return mode;
--}
--
--static unsigned int wm8350_ldo_get_mode(struct regulator_dev *rdev)
--{
--	return REGULATOR_MODE_NORMAL;
--}
--
--struct wm8350_dcdc_efficiency {
--	int uA_load_min;
--	int uA_load_max;
--	unsigned int mode;
--};
--
--static const struct wm8350_dcdc_efficiency dcdc1_6_efficiency[] = {
--	{0, 10000, REGULATOR_MODE_STANDBY},       /* 0 - 10mA - LDO */
--	{10000, 100000, REGULATOR_MODE_IDLE},     /* 10mA - 100mA - Standby */
--	{100000, 1000000, REGULATOR_MODE_NORMAL}, /* > 100mA - Active */
--	{-1, -1, REGULATOR_MODE_NORMAL},
--};
--
--static const struct wm8350_dcdc_efficiency dcdc3_4_efficiency[] = {
--	{0, 10000, REGULATOR_MODE_STANDBY},      /* 0 - 10mA - LDO */
--	{10000, 100000, REGULATOR_MODE_IDLE},    /* 10mA - 100mA - Standby */
--	{100000, 800000, REGULATOR_MODE_NORMAL}, /* > 100mA - Active */
--	{-1, -1, REGULATOR_MODE_NORMAL},
--};
--
--static unsigned int get_mode(int uA, const struct wm8350_dcdc_efficiency *eff)
--{
--	int i = 0;
--
--	while (eff[i].uA_load_min != -1) {
--		if (uA >= eff[i].uA_load_min && uA <= eff[i].uA_load_max)
--			return eff[i].mode;
--		i++;
--	}
--	return REGULATOR_MODE_NORMAL;
--}
--
--/* Query the regulator for it's most efficient mode @ uV,uA
-- * WM8350 regulator efficiency is pretty similar over
-- * different input and output uV.
-- */
--static unsigned int wm8350_dcdc_get_optimum_mode(struct regulator_dev *rdev,
--						 int input_uV, int output_uV,
--						 int output_uA)
--{
--	int dcdc = rdev_get_id(rdev), mode;
--
--	switch (dcdc) {
--	case WM8350_DCDC_1:
--	case WM8350_DCDC_6:
--		mode = get_mode(output_uA, dcdc1_6_efficiency);
--		break;
--	case WM8350_DCDC_3:
--	case WM8350_DCDC_4:
--		mode = get_mode(output_uA, dcdc3_4_efficiency);
--		break;
--	default:
--		mode = REGULATOR_MODE_NORMAL;
--		break;
--	}
--	return mode;
--}
--
--static const struct regulator_ops wm8350_dcdc_ops = {
--	.set_voltage_sel = regulator_set_voltage_sel_regmap,
--	.get_voltage_sel = regulator_get_voltage_sel_regmap,
--	.list_voltage = regulator_list_voltage_linear,
--	.map_voltage = regulator_map_voltage_linear,
--	.enable = regulator_enable_regmap,
--	.disable = regulator_disable_regmap,
--	.is_enabled = regulator_is_enabled_regmap,
--	.get_mode = wm8350_dcdc_get_mode,
--	.set_mode = wm8350_dcdc_set_mode,
--	.get_optimum_mode = wm8350_dcdc_get_optimum_mode,
--	.set_suspend_voltage = wm8350_dcdc_set_suspend_voltage,
--	.set_suspend_enable = wm8350_dcdc_set_suspend_enable,
--	.set_suspend_disable = wm8350_dcdc_set_suspend_disable,
--	.set_suspend_mode = wm8350_dcdc_set_suspend_mode,
--};
--
--static const struct regulator_ops wm8350_dcdc2_5_ops = {
--	.enable = regulator_enable_regmap,
--	.disable = regulator_disable_regmap,
--	.is_enabled = regulator_is_enabled_regmap,
--	.set_suspend_enable = wm8350_dcdc25_set_suspend_enable,
--	.set_suspend_disable = wm8350_dcdc25_set_suspend_disable,
--};
--
--static const struct regulator_ops wm8350_ldo_ops = {
--	.map_voltage = regulator_map_voltage_linear_range,
--	.set_voltage_sel = regulator_set_voltage_sel_regmap,
--	.get_voltage_sel = regulator_get_voltage_sel_regmap,
--	.list_voltage = regulator_list_voltage_linear_range,
--	.enable = regulator_enable_regmap,
--	.disable = regulator_disable_regmap,
--	.is_enabled = regulator_is_enabled_regmap,
--	.get_mode = wm8350_ldo_get_mode,
--	.set_suspend_voltage = wm8350_ldo_set_suspend_voltage,
--	.set_suspend_enable = wm8350_ldo_set_suspend_enable,
--	.set_suspend_disable = wm8350_ldo_set_suspend_disable,
--};
--
--static const struct regulator_ops wm8350_isink_ops = {
--	.set_current_limit = regulator_set_current_limit_regmap,
--	.get_current_limit = regulator_get_current_limit_regmap,
--	.enable = wm8350_isink_enable,
--	.disable = wm8350_isink_disable,
--	.is_enabled = wm8350_isink_is_enabled,
--	.enable_time = wm8350_isink_enable_time,
--};
--
--static const struct regulator_desc wm8350_reg[NUM_WM8350_REGULATORS] = {
--	{
--		.name = "DCDC1",
--		.id = WM8350_DCDC_1,
--		.ops = &wm8350_dcdc_ops,
--		.irq = WM8350_IRQ_UV_DC1,
--		.type = REGULATOR_VOLTAGE,
--		.n_voltages = WM8350_DCDC_MAX_VSEL + 1,
--		.min_uV = 850000,
--		.uV_step = 25000,
--		.vsel_reg = WM8350_DCDC1_CONTROL,
--		.vsel_mask = WM8350_DC1_VSEL_MASK,
--		.enable_reg = WM8350_DCDC_LDO_REQUESTED,
--		.enable_mask = WM8350_DC1_ENA,
--		.owner = THIS_MODULE,
--	},
--	{
--		.name = "DCDC2",
--		.id = WM8350_DCDC_2,
--		.ops = &wm8350_dcdc2_5_ops,
--		.irq = WM8350_IRQ_UV_DC2,
--		.type = REGULATOR_VOLTAGE,
--		.enable_reg = WM8350_DCDC_LDO_REQUESTED,
--		.enable_mask = WM8350_DC2_ENA,
--		.owner = THIS_MODULE,
--	},
--	{
--		.name = "DCDC3",
--		.id = WM8350_DCDC_3,
--		.ops = &wm8350_dcdc_ops,
--		.irq = WM8350_IRQ_UV_DC3,
--		.type = REGULATOR_VOLTAGE,
--		.n_voltages = WM8350_DCDC_MAX_VSEL + 1,
--		.min_uV = 850000,
--		.uV_step = 25000,
--		.vsel_reg = WM8350_DCDC3_CONTROL,
--		.vsel_mask = WM8350_DC3_VSEL_MASK,
--		.enable_reg = WM8350_DCDC_LDO_REQUESTED,
--		.enable_mask = WM8350_DC3_ENA,
--		.owner = THIS_MODULE,
--	},
--	{
--		.name = "DCDC4",
--		.id = WM8350_DCDC_4,
--		.ops = &wm8350_dcdc_ops,
--		.irq = WM8350_IRQ_UV_DC4,
--		.type = REGULATOR_VOLTAGE,
--		.n_voltages = WM8350_DCDC_MAX_VSEL + 1,
--		.min_uV = 850000,
--		.uV_step = 25000,
--		.vsel_reg = WM8350_DCDC4_CONTROL,
--		.vsel_mask = WM8350_DC4_VSEL_MASK,
--		.enable_reg = WM8350_DCDC_LDO_REQUESTED,
--		.enable_mask = WM8350_DC4_ENA,
--		.owner = THIS_MODULE,
--	},
--	{
--		.name = "DCDC5",
--		.id = WM8350_DCDC_5,
--		.ops = &wm8350_dcdc2_5_ops,
--		.irq = WM8350_IRQ_UV_DC5,
--		.type = REGULATOR_VOLTAGE,
--		.enable_reg = WM8350_DCDC_LDO_REQUESTED,
--		.enable_mask = WM8350_DC5_ENA,
--		.owner = THIS_MODULE,
--	 },
--	{
--		.name = "DCDC6",
--		.id = WM8350_DCDC_6,
--		.ops = &wm8350_dcdc_ops,
--		.irq = WM8350_IRQ_UV_DC6,
--		.type = REGULATOR_VOLTAGE,
--		.n_voltages = WM8350_DCDC_MAX_VSEL + 1,
--		.min_uV = 850000,
--		.uV_step = 25000,
--		.vsel_reg = WM8350_DCDC6_CONTROL,
--		.vsel_mask = WM8350_DC6_VSEL_MASK,
--		.enable_reg = WM8350_DCDC_LDO_REQUESTED,
--		.enable_mask = WM8350_DC6_ENA,
--		.owner = THIS_MODULE,
--	},
--	{
--		.name = "LDO1",
--		.id = WM8350_LDO_1,
--		.ops = &wm8350_ldo_ops,
--		.irq = WM8350_IRQ_UV_LDO1,
--		.type = REGULATOR_VOLTAGE,
--		.n_voltages = WM8350_LDO1_VSEL_MASK + 1,
--		.linear_ranges = wm8350_ldo_ranges,
--		.n_linear_ranges = ARRAY_SIZE(wm8350_ldo_ranges),
--		.vsel_reg = WM8350_LDO1_CONTROL,
--		.vsel_mask = WM8350_LDO1_VSEL_MASK,
--		.enable_reg = WM8350_DCDC_LDO_REQUESTED,
--		.enable_mask = WM8350_LDO1_ENA,
--		.owner = THIS_MODULE,
--	},
--	{
--		.name = "LDO2",
--		.id = WM8350_LDO_2,
--		.ops = &wm8350_ldo_ops,
--		.irq = WM8350_IRQ_UV_LDO2,
--		.type = REGULATOR_VOLTAGE,
--		.n_voltages = WM8350_LDO2_VSEL_MASK + 1,
--		.linear_ranges = wm8350_ldo_ranges,
--		.n_linear_ranges = ARRAY_SIZE(wm8350_ldo_ranges),
--		.vsel_reg = WM8350_LDO2_CONTROL,
--		.vsel_mask = WM8350_LDO2_VSEL_MASK,
--		.enable_reg = WM8350_DCDC_LDO_REQUESTED,
--		.enable_mask = WM8350_LDO2_ENA,
--		.owner = THIS_MODULE,
--	},
--	{
--		.name = "LDO3",
--		.id = WM8350_LDO_3,
--		.ops = &wm8350_ldo_ops,
--		.irq = WM8350_IRQ_UV_LDO3,
--		.type = REGULATOR_VOLTAGE,
--		.n_voltages = WM8350_LDO3_VSEL_MASK + 1,
--		.linear_ranges = wm8350_ldo_ranges,
--		.n_linear_ranges = ARRAY_SIZE(wm8350_ldo_ranges),
--		.vsel_reg = WM8350_LDO3_CONTROL,
--		.vsel_mask = WM8350_LDO3_VSEL_MASK,
--		.enable_reg = WM8350_DCDC_LDO_REQUESTED,
--		.enable_mask = WM8350_LDO3_ENA,
--		.owner = THIS_MODULE,
--	},
--	{
--		.name = "LDO4",
--		.id = WM8350_LDO_4,
--		.ops = &wm8350_ldo_ops,
--		.irq = WM8350_IRQ_UV_LDO4,
--		.type = REGULATOR_VOLTAGE,
--		.n_voltages = WM8350_LDO4_VSEL_MASK + 1,
--		.linear_ranges = wm8350_ldo_ranges,
--		.n_linear_ranges = ARRAY_SIZE(wm8350_ldo_ranges),
--		.vsel_reg = WM8350_LDO4_CONTROL,
--		.vsel_mask = WM8350_LDO4_VSEL_MASK,
--		.enable_reg = WM8350_DCDC_LDO_REQUESTED,
--		.enable_mask = WM8350_LDO4_ENA,
--		.owner = THIS_MODULE,
--	},
--	{
--		.name = "ISINKA",
--		.id = WM8350_ISINK_A,
--		.ops = &wm8350_isink_ops,
--		.irq = WM8350_IRQ_CS1,
--		.type = REGULATOR_CURRENT,
--		.owner = THIS_MODULE,
--		.curr_table = isink_cur,
--		.n_current_limits = ARRAY_SIZE(isink_cur),
--		.csel_reg = WM8350_CURRENT_SINK_DRIVER_A,
--		.csel_mask = WM8350_CS1_ISEL_MASK,
--	 },
--	{
--		.name = "ISINKB",
--		.id = WM8350_ISINK_B,
--		.ops = &wm8350_isink_ops,
--		.irq = WM8350_IRQ_CS2,
--		.type = REGULATOR_CURRENT,
--		.owner = THIS_MODULE,
--		.curr_table = isink_cur,
--		.n_current_limits = ARRAY_SIZE(isink_cur),
--		.csel_reg = WM8350_CURRENT_SINK_DRIVER_B,
--		.csel_mask = WM8350_CS2_ISEL_MASK,
--	 },
--};
--
--static irqreturn_t pmic_uv_handler(int irq, void *data)
--{
--	struct regulator_dev *rdev = (struct regulator_dev *)data;
--
--	if (irq == WM8350_IRQ_CS1 || irq == WM8350_IRQ_CS2)
--		regulator_notifier_call_chain(rdev,
--					      REGULATOR_EVENT_REGULATION_OUT,
--					      NULL);
--	else
--		regulator_notifier_call_chain(rdev,
--					      REGULATOR_EVENT_UNDER_VOLTAGE,
--					      NULL);
--
--	return IRQ_HANDLED;
--}
--
--static int wm8350_regulator_probe(struct platform_device *pdev)
--{
--	struct wm8350 *wm8350 = dev_get_drvdata(&pdev->dev);
--	struct regulator_config config = { };
--	struct regulator_dev *rdev;
--	int ret;
--	u16 val;
--
--	if (pdev->id < WM8350_DCDC_1 || pdev->id > WM8350_ISINK_B)
--		return -ENODEV;
--
--	/* do any regulator specific init */
--	switch (pdev->id) {
--	case WM8350_DCDC_1:
--		val = wm8350_reg_read(wm8350, WM8350_DCDC1_LOW_POWER);
--		wm8350->pmic.dcdc1_hib_mode = val & WM8350_DCDC_HIB_MODE_MASK;
--		break;
--	case WM8350_DCDC_3:
--		val = wm8350_reg_read(wm8350, WM8350_DCDC3_LOW_POWER);
--		wm8350->pmic.dcdc3_hib_mode = val & WM8350_DCDC_HIB_MODE_MASK;
--		break;
--	case WM8350_DCDC_4:
--		val = wm8350_reg_read(wm8350, WM8350_DCDC4_LOW_POWER);
--		wm8350->pmic.dcdc4_hib_mode = val & WM8350_DCDC_HIB_MODE_MASK;
--		break;
--	case WM8350_DCDC_6:
--		val = wm8350_reg_read(wm8350, WM8350_DCDC6_LOW_POWER);
--		wm8350->pmic.dcdc6_hib_mode = val & WM8350_DCDC_HIB_MODE_MASK;
--		break;
--	}
--
--	config.dev = &pdev->dev;
--	config.init_data = dev_get_platdata(&pdev->dev);
--	config.driver_data = dev_get_drvdata(&pdev->dev);
--	config.regmap = wm8350->regmap;
--
--	/* register regulator */
--	rdev = devm_regulator_register(&pdev->dev, &wm8350_reg[pdev->id],
--				       &config);
--	if (IS_ERR(rdev)) {
--		dev_err(&pdev->dev, "failed to register %s\n",
--			wm8350_reg[pdev->id].name);
--		return PTR_ERR(rdev);
--	}
--
--	/* register regulator IRQ */
--	ret = wm8350_register_irq(wm8350, wm8350_reg[pdev->id].irq,
--				  pmic_uv_handler, 0, "UV", rdev);
--	if (ret < 0) {
--		dev_err(&pdev->dev, "failed to register regulator %s IRQ\n",
--			wm8350_reg[pdev->id].name);
--		return ret;
--	}
--
--	return 0;
--}
--
--static void wm8350_regulator_remove(struct platform_device *pdev)
--{
--	struct regulator_dev *rdev = platform_get_drvdata(pdev);
--	struct wm8350 *wm8350 = rdev_get_drvdata(rdev);
--
--	wm8350_free_irq(wm8350, wm8350_reg[pdev->id].irq, rdev);
--}
--
--int wm8350_register_regulator(struct wm8350 *wm8350, int reg,
--			      struct regulator_init_data *initdata)
--{
--	struct platform_device *pdev;
--	int ret;
--	if (reg < 0 || reg >= NUM_WM8350_REGULATORS)
--		return -EINVAL;
--
--	if (wm8350->pmic.pdev[reg])
--		return -EBUSY;
--
--	if (reg >= WM8350_DCDC_1 && reg <= WM8350_DCDC_6 &&
--	    reg > wm8350->pmic.max_dcdc)
--		return -ENODEV;
--	if (reg >= WM8350_ISINK_A && reg <= WM8350_ISINK_B &&
--	    reg > wm8350->pmic.max_isink)
--		return -ENODEV;
--
--	pdev = platform_device_alloc("wm8350-regulator", reg);
--	if (!pdev)
--		return -ENOMEM;
--
--	wm8350->pmic.pdev[reg] = pdev;
--
--	initdata->driver_data = wm8350;
--
--	pdev->dev.platform_data = initdata;
--	pdev->dev.parent = wm8350->dev;
--	platform_set_drvdata(pdev, wm8350);
--
--	ret = platform_device_add(pdev);
--
--	if (ret != 0) {
--		dev_err(wm8350->dev, "Failed to register regulator %d: %d\n",
--			reg, ret);
--		platform_device_put(pdev);
--		wm8350->pmic.pdev[reg] = NULL;
--	}
--
--	return ret;
--}
--EXPORT_SYMBOL_GPL(wm8350_register_regulator);
--
--/**
-- * wm8350_register_led - Register a WM8350 LED output
-- *
-- * @wm8350: The WM8350 device to configure.
-- * @lednum: LED device index to create.
-- * @dcdc: The DCDC to use for the LED.
-- * @isink: The ISINK to use for the LED.
-- * @pdata: Configuration for the LED.
-- *
-- * The WM8350 supports the use of an ISINK together with a DCDC to
-- * provide a power-efficient LED driver.  This function registers the
-- * regulators and instantiates the platform device for a LED.  The
-- * operating modes for the LED regulators must be configured using
-- * wm8350_isink_set_flash(), wm8350_dcdc25_set_mode() and
-- * wm8350_dcdc_set_slot() prior to calling this function.
-- */
--int wm8350_register_led(struct wm8350 *wm8350, int lednum, int dcdc, int isink,
--			struct wm8350_led_platform_data *pdata)
--{
--	struct wm8350_led *led;
--	struct platform_device *pdev;
--	int ret;
--
--	if (lednum >= ARRAY_SIZE(wm8350->pmic.led) || lednum < 0) {
--		dev_err(wm8350->dev, "Invalid LED index %d\n", lednum);
--		return -ENODEV;
--	}
--
--	led = &wm8350->pmic.led[lednum];
--
--	if (led->pdev) {
--		dev_err(wm8350->dev, "LED %d already allocated\n", lednum);
--		return -EINVAL;
--	}
--
--	pdev = platform_device_alloc("wm8350-led", lednum);
--	if (pdev == NULL) {
--		dev_err(wm8350->dev, "Failed to allocate LED %d\n", lednum);
--		return -ENOMEM;
--	}
--
--	led->isink_consumer.dev_name = dev_name(&pdev->dev);
--	led->isink_consumer.supply = "led_isink";
--	led->isink_init.num_consumer_supplies = 1;
--	led->isink_init.consumer_supplies = &led->isink_consumer;
--	led->isink_init.constraints.min_uA = 0;
--	led->isink_init.constraints.max_uA = pdata->max_uA;
--	led->isink_init.constraints.valid_ops_mask
--		= REGULATOR_CHANGE_CURRENT | REGULATOR_CHANGE_STATUS;
--	led->isink_init.constraints.valid_modes_mask = REGULATOR_MODE_NORMAL;
--	ret = wm8350_register_regulator(wm8350, isink, &led->isink_init);
--	if (ret != 0) {
--		platform_device_put(pdev);
--		return ret;
--	}
--
--	led->dcdc_consumer.dev_name = dev_name(&pdev->dev);
--	led->dcdc_consumer.supply = "led_vcc";
--	led->dcdc_init.num_consumer_supplies = 1;
--	led->dcdc_init.consumer_supplies = &led->dcdc_consumer;
--	led->dcdc_init.constraints.valid_modes_mask = REGULATOR_MODE_NORMAL;
--	led->dcdc_init.constraints.valid_ops_mask =  REGULATOR_CHANGE_STATUS;
--	ret = wm8350_register_regulator(wm8350, dcdc, &led->dcdc_init);
--	if (ret != 0) {
--		platform_device_put(pdev);
--		return ret;
--	}
--
--	switch (isink) {
--	case WM8350_ISINK_A:
--		wm8350->pmic.isink_A_dcdc = dcdc;
--		break;
--	case WM8350_ISINK_B:
--		wm8350->pmic.isink_B_dcdc = dcdc;
--		break;
--	}
--
--	pdev->dev.platform_data = pdata;
--	pdev->dev.parent = wm8350->dev;
--	ret = platform_device_add(pdev);
--	if (ret != 0) {
--		dev_err(wm8350->dev, "Failed to register LED %d: %d\n",
--			lednum, ret);
--		platform_device_put(pdev);
--		return ret;
--	}
--
--	led->pdev = pdev;
--
--	return 0;
--}
--EXPORT_SYMBOL_GPL(wm8350_register_led);
--
--static struct platform_driver wm8350_regulator_driver = {
--	.probe = wm8350_regulator_probe,
--	.remove = wm8350_regulator_remove,
--	.driver = {
--		.name = "wm8350-regulator",
--		.probe_type = PROBE_PREFER_ASYNCHRONOUS,
--	},
--};
--
--static int __init wm8350_regulator_init(void)
--{
--	return platform_driver_register(&wm8350_regulator_driver);
--}
--subsys_initcall(wm8350_regulator_init);
--
--static void __exit wm8350_regulator_exit(void)
--{
--	platform_driver_unregister(&wm8350_regulator_driver);
--}
--module_exit(wm8350_regulator_exit);
--
--/* Module information */
--MODULE_AUTHOR("Liam Girdwood");
--MODULE_DESCRIPTION("WM8350 voltage and current regulator driver");
--MODULE_LICENSE("GPL");
--MODULE_ALIAS("platform:wm8350-regulator");
-diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
-index c71398368f6d..4120ff2cebc3 100644
---- a/drivers/rtc/Kconfig
-+++ b/drivers/rtc/Kconfig
-@@ -1315,16 +1315,6 @@ config RTC_DRV_WM831X
- 	  This driver can also be built as a module. If so, the module
- 	  will be called "rtc-wm831x".
- 
--config RTC_DRV_WM8350
--	tristate "Wolfson Microelectronics WM8350 RTC"
--	depends on MFD_WM8350
--	help
--	  If you say yes here you will get support for the RTC subsystem
--	  of the Wolfson Microelectronics WM8350.
--
--	  This driver can also be built as a module. If so, the module
--	  will be called "rtc-wm8350".
--
- config RTC_DRV_SC27XX
- 	tristate "Spreadtrum SC27xx RTC"
- 	depends on MFD_SC27XX_PMIC || COMPILE_TEST
-diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
-index b8fc1a17d27f..0c805fe59608 100644
---- a/drivers/rtc/Makefile
-+++ b/drivers/rtc/Makefile
-@@ -193,7 +193,6 @@ obj-$(CONFIG_RTC_DRV_TWL4030)	+= rtc-twl.o
- obj-$(CONFIG_RTC_DRV_VT8500)	+= rtc-vt8500.o
- obj-$(CONFIG_RTC_DRV_WILCO_EC)	+= rtc-wilco-ec.o
- obj-$(CONFIG_RTC_DRV_WM831X)	+= rtc-wm831x.o
--obj-$(CONFIG_RTC_DRV_WM8350)	+= rtc-wm8350.o
- obj-$(CONFIG_RTC_DRV_X1205)	+= rtc-x1205.o
- obj-$(CONFIG_RTC_DRV_XGENE)	+= rtc-xgene.o
- obj-$(CONFIG_RTC_DRV_ZYNQMP)	+= rtc-zynqmp.o
-diff --git a/drivers/rtc/rtc-wm8350.c b/drivers/rtc/rtc-wm8350.c
-deleted file mode 100644
-index 3bd60d067a5e..000000000000
---- a/drivers/rtc/rtc-wm8350.c
-+++ /dev/null
-@@ -1,474 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-or-later
--/*
-- *	Real Time Clock driver for Wolfson Microelectronics WM8350
-- *
-- *	Copyright (C) 2007, 2008 Wolfson Microelectronics PLC.
-- *
-- *  Author: Liam Girdwood
-- *          linux@wolfsonmicro.com
-- */
--
--#include <linux/module.h>
--#include <linux/kernel.h>
--#include <linux/time.h>
--#include <linux/rtc.h>
--#include <linux/bcd.h>
--#include <linux/interrupt.h>
--#include <linux/ioctl.h>
--#include <linux/completion.h>
--#include <linux/mfd/wm8350/rtc.h>
--#include <linux/mfd/wm8350/core.h>
--#include <linux/delay.h>
--#include <linux/platform_device.h>
--
--#define WM8350_SET_ALM_RETRIES	5
--#define WM8350_SET_TIME_RETRIES	5
--#define WM8350_GET_TIME_RETRIES	5
--
--/*
-- * Read current time and date in RTC
-- */
--static int wm8350_rtc_readtime(struct device *dev, struct rtc_time *tm)
--{
--	struct wm8350 *wm8350 = dev_get_drvdata(dev);
--	u16 time1[4], time2[4];
--	int retries = WM8350_GET_TIME_RETRIES, ret;
--
--	/*
--	 * Read the time twice and compare.
--	 * If time1 == time2, then time is valid else retry.
--	 */
--	do {
--		ret = wm8350_block_read(wm8350, WM8350_RTC_SECONDS_MINUTES,
--					4, time1);
--		if (ret < 0)
--			return ret;
--		ret = wm8350_block_read(wm8350, WM8350_RTC_SECONDS_MINUTES,
--					4, time2);
--		if (ret < 0)
--			return ret;
--
--		if (memcmp(time1, time2, sizeof(time1)) == 0) {
--			tm->tm_sec = time1[0] & WM8350_RTC_SECS_MASK;
--
--			tm->tm_min = (time1[0] & WM8350_RTC_MINS_MASK)
--			    >> WM8350_RTC_MINS_SHIFT;
--
--			tm->tm_hour = time1[1] & WM8350_RTC_HRS_MASK;
--
--			tm->tm_wday = ((time1[1] >> WM8350_RTC_DAY_SHIFT)
--				       & 0x7) - 1;
--
--			tm->tm_mon = ((time1[2] & WM8350_RTC_MTH_MASK)
--				      >> WM8350_RTC_MTH_SHIFT) - 1;
--
--			tm->tm_mday = (time1[2] & WM8350_RTC_DATE_MASK);
--
--			tm->tm_year = ((time1[3] & WM8350_RTC_YHUNDREDS_MASK)
--				       >> WM8350_RTC_YHUNDREDS_SHIFT) * 100;
--			tm->tm_year += time1[3] & WM8350_RTC_YUNITS_MASK;
--
--			tm->tm_yday = rtc_year_days(tm->tm_mday, tm->tm_mon,
--						    tm->tm_year);
--			tm->tm_year -= 1900;
--
--			dev_dbg(dev, "Read (%d left): %04x %04x %04x %04x\n",
--				retries,
--				time1[0], time1[1], time1[2], time1[3]);
--
--			return 0;
--		}
--	} while (retries--);
--
--	dev_err(dev, "timed out reading RTC time\n");
--	return -EIO;
--}
--
--/*
-- * Set current time and date in RTC
-- */
--static int wm8350_rtc_settime(struct device *dev, struct rtc_time *tm)
--{
--	struct wm8350 *wm8350 = dev_get_drvdata(dev);
--	u16 time[4];
--	u16 rtc_ctrl;
--	int ret, retries = WM8350_SET_TIME_RETRIES;
--
--	time[0] = tm->tm_sec;
--	time[0] |= tm->tm_min << WM8350_RTC_MINS_SHIFT;
--	time[1] = tm->tm_hour;
--	time[1] |= (tm->tm_wday + 1) << WM8350_RTC_DAY_SHIFT;
--	time[2] = tm->tm_mday;
--	time[2] |= (tm->tm_mon + 1) << WM8350_RTC_MTH_SHIFT;
--	time[3] = ((tm->tm_year + 1900) / 100) << WM8350_RTC_YHUNDREDS_SHIFT;
--	time[3] |= (tm->tm_year + 1900) % 100;
--
--	dev_dbg(dev, "Setting: %04x %04x %04x %04x\n",
--		time[0], time[1], time[2], time[3]);
--
--	/* Set RTC_SET to stop the clock */
--	ret = wm8350_set_bits(wm8350, WM8350_RTC_TIME_CONTROL, WM8350_RTC_SET);
--	if (ret < 0)
--		return ret;
--
--	/* Wait until confirmation of stopping */
--	do {
--		rtc_ctrl = wm8350_reg_read(wm8350, WM8350_RTC_TIME_CONTROL);
--		schedule_timeout_uninterruptible(msecs_to_jiffies(1));
--	} while (--retries && !(rtc_ctrl & WM8350_RTC_STS));
--
--	if (!retries) {
--		dev_err(dev, "timed out on set confirmation\n");
--		return -EIO;
--	}
--
--	/* Write time to RTC */
--	ret = wm8350_block_write(wm8350, WM8350_RTC_SECONDS_MINUTES, 4, time);
--	if (ret < 0)
--		return ret;
--
--	/* Clear RTC_SET to start the clock */
--	ret = wm8350_clear_bits(wm8350, WM8350_RTC_TIME_CONTROL,
--				WM8350_RTC_SET);
--	return ret;
--}
--
--/*
-- * Read alarm time and date in RTC
-- */
--static int wm8350_rtc_readalarm(struct device *dev, struct rtc_wkalrm *alrm)
--{
--	struct wm8350 *wm8350 = dev_get_drvdata(dev);
--	struct rtc_time *tm = &alrm->time;
--	u16 time[4];
--	int ret;
--
--	ret = wm8350_block_read(wm8350, WM8350_ALARM_SECONDS_MINUTES, 4, time);
--	if (ret < 0)
--		return ret;
--
--	tm->tm_sec = time[0] & WM8350_RTC_ALMSECS_MASK;
--	if (tm->tm_sec == WM8350_RTC_ALMSECS_MASK)
--		tm->tm_sec = -1;
--
--	tm->tm_min = time[0] & WM8350_RTC_ALMMINS_MASK;
--	if (tm->tm_min == WM8350_RTC_ALMMINS_MASK)
--		tm->tm_min = -1;
--	else
--		tm->tm_min >>= WM8350_RTC_ALMMINS_SHIFT;
--
--	tm->tm_hour = time[1] & WM8350_RTC_ALMHRS_MASK;
--	if (tm->tm_hour == WM8350_RTC_ALMHRS_MASK)
--		tm->tm_hour = -1;
--
--	tm->tm_wday = ((time[1] >> WM8350_RTC_ALMDAY_SHIFT) & 0x7) - 1;
--	if (tm->tm_wday > 7)
--		tm->tm_wday = -1;
--
--	tm->tm_mon = time[2] & WM8350_RTC_ALMMTH_MASK;
--	if (tm->tm_mon == WM8350_RTC_ALMMTH_MASK)
--		tm->tm_mon = -1;
--	else
--		tm->tm_mon = (tm->tm_mon >> WM8350_RTC_ALMMTH_SHIFT) - 1;
--
--	tm->tm_mday = (time[2] & WM8350_RTC_ALMDATE_MASK);
--	if (tm->tm_mday == WM8350_RTC_ALMDATE_MASK)
--		tm->tm_mday = -1;
--
--	tm->tm_year = -1;
--
--	alrm->enabled = !(time[3] & WM8350_RTC_ALMSTS);
--
--	return 0;
--}
--
--static int wm8350_rtc_stop_alarm(struct wm8350 *wm8350)
--{
--	int retries = WM8350_SET_ALM_RETRIES;
--	u16 rtc_ctrl;
--	int ret;
--
--	/* Set RTC_SET to stop the clock */
--	ret = wm8350_set_bits(wm8350, WM8350_RTC_TIME_CONTROL,
--			      WM8350_RTC_ALMSET);
--	if (ret < 0)
--		return ret;
--
--	/* Wait until confirmation of stopping */
--	do {
--		rtc_ctrl = wm8350_reg_read(wm8350, WM8350_RTC_TIME_CONTROL);
--		schedule_timeout_uninterruptible(msecs_to_jiffies(1));
--	} while (retries-- && !(rtc_ctrl & WM8350_RTC_ALMSTS));
--
--	if (!(rtc_ctrl & WM8350_RTC_ALMSTS))
--		return -ETIMEDOUT;
--
--	return 0;
--}
--
--static int wm8350_rtc_start_alarm(struct wm8350 *wm8350)
--{
--	int ret;
--	int retries = WM8350_SET_ALM_RETRIES;
--	u16 rtc_ctrl;
--
--	ret = wm8350_clear_bits(wm8350, WM8350_RTC_TIME_CONTROL,
--				WM8350_RTC_ALMSET);
--	if (ret < 0)
--		return ret;
--
--	/* Wait until confirmation */
--	do {
--		rtc_ctrl = wm8350_reg_read(wm8350, WM8350_RTC_TIME_CONTROL);
--		schedule_timeout_uninterruptible(msecs_to_jiffies(1));
--	} while (retries-- && rtc_ctrl & WM8350_RTC_ALMSTS);
--
--	if (rtc_ctrl & WM8350_RTC_ALMSTS)
--		return -ETIMEDOUT;
--
--	return 0;
--}
--
--static int wm8350_rtc_alarm_irq_enable(struct device *dev,
--				       unsigned int enabled)
--{
--	struct wm8350 *wm8350 = dev_get_drvdata(dev);
--
--	if (enabled)
--		return wm8350_rtc_start_alarm(wm8350);
--	else
--		return wm8350_rtc_stop_alarm(wm8350);
--}
--
--static int wm8350_rtc_setalarm(struct device *dev, struct rtc_wkalrm *alrm)
--{
--	struct wm8350 *wm8350 = dev_get_drvdata(dev);
--	struct rtc_time *tm = &alrm->time;
--	u16 time[3];
--	int ret;
--
--	memset(time, 0, sizeof(time));
--
--	if (tm->tm_sec != -1)
--		time[0] |= tm->tm_sec;
--	else
--		time[0] |= WM8350_RTC_ALMSECS_MASK;
--
--	if (tm->tm_min != -1)
--		time[0] |= tm->tm_min << WM8350_RTC_ALMMINS_SHIFT;
--	else
--		time[0] |= WM8350_RTC_ALMMINS_MASK;
--
--	if (tm->tm_hour != -1)
--		time[1] |= tm->tm_hour;
--	else
--		time[1] |= WM8350_RTC_ALMHRS_MASK;
--
--	if (tm->tm_wday != -1)
--		time[1] |= (tm->tm_wday + 1) << WM8350_RTC_ALMDAY_SHIFT;
--	else
--		time[1] |= WM8350_RTC_ALMDAY_MASK;
--
--	if (tm->tm_mday != -1)
--		time[2] |= tm->tm_mday;
--	else
--		time[2] |= WM8350_RTC_ALMDATE_MASK;
--
--	if (tm->tm_mon != -1)
--		time[2] |= (tm->tm_mon + 1) << WM8350_RTC_ALMMTH_SHIFT;
--	else
--		time[2] |= WM8350_RTC_ALMMTH_MASK;
--
--	ret = wm8350_rtc_stop_alarm(wm8350);
--	if (ret < 0)
--		return ret;
--
--	/* Write time to RTC */
--	ret = wm8350_block_write(wm8350, WM8350_ALARM_SECONDS_MINUTES,
--				 3, time);
--	if (ret < 0)
--		return ret;
--
--	if (alrm->enabled)
--		ret = wm8350_rtc_start_alarm(wm8350);
--
--	return ret;
--}
--
--static irqreturn_t wm8350_rtc_alarm_handler(int irq, void *data)
--{
--	struct wm8350 *wm8350 = data;
--	struct rtc_device *rtc = wm8350->rtc.rtc;
--	int ret;
--
--	rtc_update_irq(rtc, 1, RTC_IRQF | RTC_AF);
--
--	/* Make it one shot */
--	ret = wm8350_set_bits(wm8350, WM8350_RTC_TIME_CONTROL,
--			      WM8350_RTC_ALMSET);
--	if (ret != 0) {
--		dev_err(&(wm8350->rtc.pdev->dev),
--			"Failed to disable alarm: %d\n", ret);
--	}
--
--	return IRQ_HANDLED;
--}
--
--static irqreturn_t wm8350_rtc_update_handler(int irq, void *data)
--{
--	struct wm8350 *wm8350 = data;
--	struct rtc_device *rtc = wm8350->rtc.rtc;
--
--	rtc_update_irq(rtc, 1, RTC_IRQF | RTC_UF);
--
--	return IRQ_HANDLED;
--}
--
--static const struct rtc_class_ops wm8350_rtc_ops = {
--	.read_time = wm8350_rtc_readtime,
--	.set_time = wm8350_rtc_settime,
--	.read_alarm = wm8350_rtc_readalarm,
--	.set_alarm = wm8350_rtc_setalarm,
--	.alarm_irq_enable = wm8350_rtc_alarm_irq_enable,
--};
--
--#ifdef CONFIG_PM_SLEEP
--static int wm8350_rtc_suspend(struct device *dev)
--{
--	struct wm8350 *wm8350 = dev_get_drvdata(dev);
--	int ret = 0;
--	u16 reg;
--
--	reg = wm8350_reg_read(wm8350, WM8350_RTC_TIME_CONTROL);
--
--	if (device_may_wakeup(&wm8350->rtc.pdev->dev) &&
--	    reg & WM8350_RTC_ALMSTS) {
--		ret = wm8350_rtc_stop_alarm(wm8350);
--		if (ret != 0)
--			dev_err(dev, "Failed to stop RTC alarm: %d\n", ret);
--	}
--
--	return ret;
--}
--
--static int wm8350_rtc_resume(struct device *dev)
--{
--	struct wm8350 *wm8350 = dev_get_drvdata(dev);
--	int ret;
--
--	if (wm8350->rtc.alarm_enabled) {
--		ret = wm8350_rtc_start_alarm(wm8350);
--		if (ret != 0)
--			dev_err(dev, "Failed to restart RTC alarm: %d\n", ret);
--	}
--
--	return 0;
--}
--#endif
--
--static int wm8350_rtc_probe(struct platform_device *pdev)
--{
--	struct wm8350 *wm8350 = platform_get_drvdata(pdev);
--	struct wm8350_rtc *wm_rtc = &wm8350->rtc;
--	int ret = 0;
--	u16 timectl, power5;
--
--	timectl = wm8350_reg_read(wm8350, WM8350_RTC_TIME_CONTROL);
--	if (timectl & WM8350_RTC_BCD) {
--		dev_err(&pdev->dev, "RTC BCD mode not supported\n");
--		return -EINVAL;
--	}
--	if (timectl & WM8350_RTC_12HR) {
--		dev_err(&pdev->dev, "RTC 12 hour mode not supported\n");
--		return -EINVAL;
--	}
--
--	/* enable the RTC if it's not already enabled */
--	power5 = wm8350_reg_read(wm8350, WM8350_POWER_MGMT_5);
--	if (!(power5 &  WM8350_RTC_TICK_ENA)) {
--		wm8350_reg_unlock(wm8350);
--
--		ret = wm8350_set_bits(wm8350, WM8350_POWER_MGMT_5,
--				      WM8350_RTC_TICK_ENA);
--		if (ret < 0) {
--			dev_err(&pdev->dev, "failed to enable RTC: %d\n", ret);
--			return ret;
--		}
--
--		wm8350_reg_lock(wm8350);
--	}
--
--	if (timectl & WM8350_RTC_STS) {
--		int retries;
--
--		ret = wm8350_clear_bits(wm8350, WM8350_RTC_TIME_CONTROL,
--					WM8350_RTC_SET);
--		if (ret < 0) {
--			dev_err(&pdev->dev, "failed to start: %d\n", ret);
--			return ret;
--		}
--
--		retries = WM8350_SET_TIME_RETRIES;
--		do {
--			timectl = wm8350_reg_read(wm8350,
--						  WM8350_RTC_TIME_CONTROL);
--		} while (timectl & WM8350_RTC_STS && --retries);
--
--		if (retries == 0) {
--			dev_err(&pdev->dev, "failed to start: timeout\n");
--			return -ENODEV;
--		}
--	}
--
--	device_init_wakeup(&pdev->dev, true);
--
--	wm_rtc->rtc = devm_rtc_device_register(&pdev->dev, "wm8350",
--					&wm8350_rtc_ops, THIS_MODULE);
--	if (IS_ERR(wm_rtc->rtc))
--		return PTR_ERR(wm_rtc->rtc);
--
--	ret = wm8350_register_irq(wm8350, WM8350_IRQ_RTC_SEC,
--			    wm8350_rtc_update_handler, 0,
--			    "RTC Seconds", wm8350);
--	if (ret)
--		return ret;
--
--	wm8350_mask_irq(wm8350, WM8350_IRQ_RTC_SEC);
--
--	ret = wm8350_register_irq(wm8350, WM8350_IRQ_RTC_ALM,
--			    wm8350_rtc_alarm_handler, 0,
--			    "RTC Alarm", wm8350);
--	if (ret) {
--		wm8350_free_irq(wm8350, WM8350_IRQ_RTC_SEC, wm8350);
--		return ret;
--	}
--
--	return 0;
--}
--
--static void wm8350_rtc_remove(struct platform_device *pdev)
--{
--	struct wm8350 *wm8350 = platform_get_drvdata(pdev);
--
--	wm8350_free_irq(wm8350, WM8350_IRQ_RTC_SEC, wm8350);
--	wm8350_free_irq(wm8350, WM8350_IRQ_RTC_ALM, wm8350);
--}
--
--static SIMPLE_DEV_PM_OPS(wm8350_rtc_pm_ops, wm8350_rtc_suspend,
--			wm8350_rtc_resume);
--
--static struct platform_driver wm8350_rtc_driver = {
--	.probe = wm8350_rtc_probe,
--	.remove = wm8350_rtc_remove,
--	.driver = {
--		.name = "wm8350-rtc",
--		.pm = &wm8350_rtc_pm_ops,
--	},
--};
--
--module_platform_driver(wm8350_rtc_driver);
--
--MODULE_AUTHOR("Mark Brown <broonie@opensource.wolfsonmicro.com>");
--MODULE_DESCRIPTION("RTC driver for the WM8350");
--MODULE_LICENSE("GPL");
--MODULE_ALIAS("platform:wm8350-rtc");
-diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
-index 7832cb8b2e7a..0327e36fc86a 100644
---- a/drivers/watchdog/Kconfig
-+++ b/drivers/watchdog/Kconfig
-@@ -363,14 +363,6 @@ config WM831X_WATCHDOG
- 	  Support for the watchdog in the WM831x AudioPlus PMICs.  When
- 	  the watchdog triggers the system will be reset.
- 
--config WM8350_WATCHDOG
--	tristate "WM8350 watchdog"
--	depends on MFD_WM8350
--	select WATCHDOG_CORE
--	help
--	  Support for the watchdog in the WM8350 AudioPlus PMIC.  When
--	  the watchdog triggers the system will be reset.
--
- config XILINX_WATCHDOG
- 	tristate "Xilinx Watchdog timer"
- 	depends on HAS_IOMEM
-diff --git a/drivers/watchdog/Makefile b/drivers/watchdog/Makefile
-index 460be2a566c4..8626f812c657 100644
---- a/drivers/watchdog/Makefile
-+++ b/drivers/watchdog/Makefile
-@@ -232,7 +232,6 @@ obj-$(CONFIG_DA9063_WATCHDOG) += da9063_wdt.o
- obj-$(CONFIG_GPIO_WATCHDOG)	+= gpio_wdt.o
- obj-$(CONFIG_WDAT_WDT) += wdat_wdt.o
- obj-$(CONFIG_WM831X_WATCHDOG) += wm831x_wdt.o
--obj-$(CONFIG_WM8350_WATCHDOG) += wm8350_wdt.o
- obj-$(CONFIG_MAX63XX_WATCHDOG) += max63xx_wdt.o
- obj-$(CONFIG_MAX77620_WATCHDOG) += max77620_wdt.o
- obj-$(CONFIG_NCT6694_WATCHDOG) += nct6694_wdt.o
-diff --git a/drivers/watchdog/wm8350_wdt.c b/drivers/watchdog/wm8350_wdt.c
-deleted file mode 100644
-index c82c1b77d91b..000000000000
---- a/drivers/watchdog/wm8350_wdt.c
-+++ /dev/null
-@@ -1,171 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0+
--/*
-- * Watchdog driver for the wm8350
-- *
-- * Copyright (C) 2007, 2008 Wolfson Microelectronics <linux@wolfsonmicro.com>
-- */
--
--#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
--
--#include <linux/module.h>
--#include <linux/moduleparam.h>
--#include <linux/types.h>
--#include <linux/kernel.h>
--#include <linux/platform_device.h>
--#include <linux/watchdog.h>
--#include <linux/uaccess.h>
--#include <linux/mfd/wm8350/core.h>
--
--static bool nowayout = WATCHDOG_NOWAYOUT;
--module_param(nowayout, bool, 0);
--MODULE_PARM_DESC(nowayout,
--		 "Watchdog cannot be stopped once started (default="
--		 __MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
--
--static DEFINE_MUTEX(wdt_mutex);
--
--static struct {
--	unsigned int time;  /* Seconds */
--	u16 val;	    /* To be set in WM8350_SYSTEM_CONTROL_2 */
--} wm8350_wdt_cfgs[] = {
--	{ 1, 0x02 },
--	{ 2, 0x04 },
--	{ 4, 0x05 },
--};
--
--static int wm8350_wdt_set_timeout(struct watchdog_device *wdt_dev,
--				  unsigned int timeout)
--{
--	struct wm8350 *wm8350 = watchdog_get_drvdata(wdt_dev);
--	int ret, i;
--	u16 reg;
--
--	for (i = 0; i < ARRAY_SIZE(wm8350_wdt_cfgs); i++)
--		if (wm8350_wdt_cfgs[i].time == timeout)
--			break;
--	if (i == ARRAY_SIZE(wm8350_wdt_cfgs))
--		return -EINVAL;
--
--	mutex_lock(&wdt_mutex);
--	wm8350_reg_unlock(wm8350);
--
--	reg = wm8350_reg_read(wm8350, WM8350_SYSTEM_CONTROL_2);
--	reg &= ~WM8350_WDOG_TO_MASK;
--	reg |= wm8350_wdt_cfgs[i].val;
--	ret = wm8350_reg_write(wm8350, WM8350_SYSTEM_CONTROL_2, reg);
--
--	wm8350_reg_lock(wm8350);
--	mutex_unlock(&wdt_mutex);
--
--	wdt_dev->timeout = timeout;
--	return ret;
--}
--
--static int wm8350_wdt_start(struct watchdog_device *wdt_dev)
--{
--	struct wm8350 *wm8350 = watchdog_get_drvdata(wdt_dev);
--	int ret;
--	u16 reg;
--
--	mutex_lock(&wdt_mutex);
--	wm8350_reg_unlock(wm8350);
--
--	reg = wm8350_reg_read(wm8350, WM8350_SYSTEM_CONTROL_2);
--	reg &= ~WM8350_WDOG_MODE_MASK;
--	reg |= 0x20;
--	ret = wm8350_reg_write(wm8350, WM8350_SYSTEM_CONTROL_2, reg);
--
--	wm8350_reg_lock(wm8350);
--	mutex_unlock(&wdt_mutex);
--
--	return ret;
--}
--
--static int wm8350_wdt_stop(struct watchdog_device *wdt_dev)
--{
--	struct wm8350 *wm8350 = watchdog_get_drvdata(wdt_dev);
--	int ret;
--	u16 reg;
--
--	mutex_lock(&wdt_mutex);
--	wm8350_reg_unlock(wm8350);
--
--	reg = wm8350_reg_read(wm8350, WM8350_SYSTEM_CONTROL_2);
--	reg &= ~WM8350_WDOG_MODE_MASK;
--	ret = wm8350_reg_write(wm8350, WM8350_SYSTEM_CONTROL_2, reg);
--
--	wm8350_reg_lock(wm8350);
--	mutex_unlock(&wdt_mutex);
--
--	return ret;
--}
--
--static int wm8350_wdt_ping(struct watchdog_device *wdt_dev)
--{
--	struct wm8350 *wm8350 = watchdog_get_drvdata(wdt_dev);
--	int ret;
--	u16 reg;
--
--	mutex_lock(&wdt_mutex);
--
--	reg = wm8350_reg_read(wm8350, WM8350_SYSTEM_CONTROL_2);
--	ret = wm8350_reg_write(wm8350, WM8350_SYSTEM_CONTROL_2, reg);
--
--	mutex_unlock(&wdt_mutex);
--
--	return ret;
--}
--
--static const struct watchdog_info wm8350_wdt_info = {
--	.options = WDIOF_SETTIMEOUT | WDIOF_KEEPALIVEPING | WDIOF_MAGICCLOSE,
--	.identity = "WM8350 Watchdog",
--};
--
--static const struct watchdog_ops wm8350_wdt_ops = {
--	.owner = THIS_MODULE,
--	.start = wm8350_wdt_start,
--	.stop = wm8350_wdt_stop,
--	.ping = wm8350_wdt_ping,
--	.set_timeout = wm8350_wdt_set_timeout,
--};
--
--static struct watchdog_device wm8350_wdt = {
--	.info = &wm8350_wdt_info,
--	.ops = &wm8350_wdt_ops,
--	.timeout = 4,
--	.min_timeout = 1,
--	.max_timeout = 4,
--};
--
--static int wm8350_wdt_probe(struct platform_device *pdev)
--{
--	struct wm8350 *wm8350 = platform_get_drvdata(pdev);
--
--	if (!wm8350) {
--		pr_err("No driver data supplied\n");
--		return -ENODEV;
--	}
--
--	watchdog_set_nowayout(&wm8350_wdt, nowayout);
--	watchdog_set_drvdata(&wm8350_wdt, wm8350);
--	wm8350_wdt.parent = &pdev->dev;
--
--	/* Default to 4s timeout */
--	wm8350_wdt_set_timeout(&wm8350_wdt, 4);
--
--	return devm_watchdog_register_device(&pdev->dev, &wm8350_wdt);
--}
--
--static struct platform_driver wm8350_wdt_driver = {
--	.probe = wm8350_wdt_probe,
--	.driver = {
--		.name = "wm8350-wdt",
--	},
--};
--
--module_platform_driver(wm8350_wdt_driver);
--
--MODULE_AUTHOR("Mark Brown");
--MODULE_DESCRIPTION("WM8350 Watchdog");
--MODULE_LICENSE("GPL");
--MODULE_ALIAS("platform:wm8350-wdt");
-diff --git a/include/linux/mfd/wm8350/audio.h b/include/linux/mfd/wm8350/audio.h
-deleted file mode 100644
-index ec01ec84d495..000000000000
---- a/include/linux/mfd/wm8350/audio.h
-+++ /dev/null
-@@ -1,620 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0-or-later */
--/*
-- * audio.h  --  Audio Driver for Wolfson WM8350 PMIC
-- *
-- * Copyright 2007, 2008 Wolfson Microelectronics PLC
-- */
--
--#ifndef __LINUX_MFD_WM8350_AUDIO_H_
--#define __LINUX_MFD_WM8350_AUDIO_H_
--
--#include <linux/platform_device.h>
--
--#define WM8350_CLOCK_CONTROL_1                  0x28
--#define WM8350_CLOCK_CONTROL_2                  0x29
--#define WM8350_FLL_CONTROL_1                    0x2A
--#define WM8350_FLL_CONTROL_2                    0x2B
--#define WM8350_FLL_CONTROL_3                    0x2C
--#define WM8350_FLL_CONTROL_4                    0x2D
--#define WM8350_DAC_CONTROL                      0x30
--#define WM8350_DAC_DIGITAL_VOLUME_L             0x32
--#define WM8350_DAC_DIGITAL_VOLUME_R             0x33
--#define WM8350_DAC_LR_RATE                      0x35
--#define WM8350_DAC_CLOCK_CONTROL                0x36
--#define WM8350_DAC_MUTE                         0x3A
--#define WM8350_DAC_MUTE_VOLUME                  0x3B
--#define WM8350_DAC_SIDE                         0x3C
--#define WM8350_ADC_CONTROL                      0x40
--#define WM8350_ADC_DIGITAL_VOLUME_L             0x42
--#define WM8350_ADC_DIGITAL_VOLUME_R             0x43
--#define WM8350_ADC_DIVIDER                      0x44
--#define WM8350_ADC_LR_RATE                      0x46
--#define WM8350_INPUT_CONTROL                    0x48
--#define WM8350_IN3_INPUT_CONTROL                0x49
--#define WM8350_MIC_BIAS_CONTROL                 0x4A
--#define WM8350_OUTPUT_CONTROL                   0x4C
--#define WM8350_JACK_DETECT                      0x4D
--#define WM8350_ANTI_POP_CONTROL                 0x4E
--#define WM8350_LEFT_INPUT_VOLUME                0x50
--#define WM8350_RIGHT_INPUT_VOLUME               0x51
--#define WM8350_LEFT_MIXER_CONTROL               0x58
--#define WM8350_RIGHT_MIXER_CONTROL              0x59
--#define WM8350_OUT3_MIXER_CONTROL               0x5C
--#define WM8350_OUT4_MIXER_CONTROL               0x5D
--#define WM8350_OUTPUT_LEFT_MIXER_VOLUME         0x60
--#define WM8350_OUTPUT_RIGHT_MIXER_VOLUME        0x61
--#define WM8350_INPUT_MIXER_VOLUME_L             0x62
--#define WM8350_INPUT_MIXER_VOLUME_R             0x63
--#define WM8350_INPUT_MIXER_VOLUME               0x64
--#define WM8350_LOUT1_VOLUME                     0x68
--#define WM8350_ROUT1_VOLUME                     0x69
--#define WM8350_LOUT2_VOLUME                     0x6A
--#define WM8350_ROUT2_VOLUME                     0x6B
--#define WM8350_BEEP_VOLUME                      0x6F
--#define WM8350_AI_FORMATING                     0x70
--#define WM8350_ADC_DAC_COMP                     0x71
--#define WM8350_AI_ADC_CONTROL                   0x72
--#define WM8350_AI_DAC_CONTROL                   0x73
--#define WM8350_AIF_TEST                         0x74
--#define WM8350_JACK_PIN_STATUS                  0xE7
--
--/* Bit values for R08 (0x08) */
--#define WM8350_CODEC_ISEL_1_5                   0	/* x1.5 */
--#define WM8350_CODEC_ISEL_1_0                   1	/* x1.0 */
--#define WM8350_CODEC_ISEL_0_75                  2	/* x0.75 */
--#define WM8350_CODEC_ISEL_0_5                   3	/* x0.5 */
--
--#define WM8350_VMID_OFF                         0
--#define WM8350_VMID_300K                        1
--#define WM8350_VMID_50K                         2
--#define WM8350_VMID_5K                          3
--
--/*
-- * R40 (0x28) - Clock Control 1
-- */
--#define WM8350_TOCLK_RATE                       0x4000
--#define WM8350_MCLK_SEL                         0x0800
--#define WM8350_MCLK_DIV_MASK                    0x0100
--#define WM8350_BCLK_DIV_MASK                    0x00F0
--#define WM8350_OPCLK_DIV_MASK                   0x0007
--
--/*
-- * R41 (0x29) - Clock Control 2
-- */
--#define WM8350_LRC_ADC_SEL                      0x8000
--#define WM8350_MCLK_DIR                         0x0001
--
--/*
-- * R42 (0x2A) - FLL Control 1
-- */
--#define WM8350_FLL_DITHER_WIDTH_MASK            0x3000
--#define WM8350_FLL_DITHER_HP                    0x0800
--#define WM8350_FLL_OUTDIV_MASK                  0x0700
--#define WM8350_FLL_RSP_RATE_MASK                0x00F0
--#define WM8350_FLL_RATE_MASK                    0x0007
--
--/*
-- * R43 (0x2B) - FLL Control 2
-- */
--#define WM8350_FLL_RATIO_MASK                   0xF800
--#define WM8350_FLL_N_MASK                       0x03FF
--
--/*
-- * R44 (0x2C) - FLL Control 3
-- */
--#define WM8350_FLL_K_MASK                       0xFFFF
--
--/*
-- * R45 (0x2D) - FLL Control 4
-- */
--#define WM8350_FLL_FRAC                         0x0020
--#define WM8350_FLL_SLOW_LOCK_REF                0x0010
--#define WM8350_FLL_CLK_SRC_MASK                 0x0003
--
--/*
-- * R48 (0x30) - DAC Control
-- */
--#define WM8350_DAC_MONO                         0x2000
--#define WM8350_AIF_LRCLKRATE                    0x1000
--#define WM8350_DEEMP_MASK                       0x0030
--#define WM8350_DACL_DATINV                      0x0002
--#define WM8350_DACR_DATINV                      0x0001
--
--/*
-- * R50 (0x32) - DAC Digital Volume L
-- */
--#define WM8350_DAC_VU                           0x0100
--#define WM8350_DACL_VOL_MASK                    0x00FF
--
--/*
-- * R51 (0x33) - DAC Digital Volume R
-- */
--#define WM8350_DAC_VU                           0x0100
--#define WM8350_DACR_VOL_MASK                    0x00FF
--
--/*
-- * R53 (0x35) - DAC LR Rate
-- */
--#define WM8350_DACLRC_ENA                       0x0800
--#define WM8350_DACLRC_RATE_MASK                 0x07FF
--
--/*
-- * R54 (0x36) - DAC Clock Control
-- */
--#define WM8350_DACCLK_POL                       0x0010
--#define WM8350_DAC_CLKDIV_MASK                  0x0007
--
--/*
-- * R58 (0x3A) - DAC Mute
-- */
--#define WM8350_DAC_MUTE_ENA                     0x4000
--
--/*
-- * R59 (0x3B) - DAC Mute Volume
-- */
--#define WM8350_DAC_MUTEMODE                     0x4000
--#define WM8350_DAC_MUTERATE                     0x2000
--#define WM8350_DAC_SB_FILT                      0x1000
--
--/*
-- * R60 (0x3C) - DAC Side
-- */
--#define WM8350_ADC_TO_DACL_MASK                 0x3000
--#define WM8350_ADC_TO_DACR_MASK                 0x0C00
--
--/*
-- * R64 (0x40) - ADC Control
-- */
--#define WM8350_ADC_HPF_CUT_MASK                 0x0300
--#define WM8350_ADCL_DATINV                      0x0002
--#define WM8350_ADCR_DATINV                      0x0001
--
--/*
-- * R66 (0x42) - ADC Digital Volume L
-- */
--#define WM8350_ADC_VU                           0x0100
--#define WM8350_ADCL_VOL_MASK                    0x00FF
--
--/*
-- * R67 (0x43) - ADC Digital Volume R
-- */
--#define WM8350_ADC_VU                           0x0100
--#define WM8350_ADCR_VOL_MASK                    0x00FF
--
--/*
-- * R68 (0x44) - ADC Divider
-- */
--#define WM8350_ADCL_DAC_SVOL_MASK               0x0F00
--#define WM8350_ADCR_DAC_SVOL_MASK               0x00F0
--#define WM8350_ADCCLK_POL                       0x0008
--#define WM8350_ADC_CLKDIV_MASK                  0x0007
--
--/*
-- * R70 (0x46) - ADC LR Rate
-- */
--#define WM8350_ADCLRC_ENA                       0x0800
--#define WM8350_ADCLRC_RATE_MASK                 0x07FF
--
--/*
-- * R72 (0x48) - Input Control
-- */
--#define WM8350_IN2R_ENA                         0x0400
--#define WM8350_IN1RN_ENA                        0x0200
--#define WM8350_IN1RP_ENA                        0x0100
--#define WM8350_IN2L_ENA                         0x0004
--#define WM8350_IN1LN_ENA                        0x0002
--#define WM8350_IN1LP_ENA                        0x0001
--
--/*
-- * R73 (0x49) - IN3 Input Control
-- */
--#define WM8350_IN3R_SHORT                       0x4000
--#define WM8350_IN3L_SHORT                       0x0040
--
--/*
-- * R74 (0x4A) - Mic Bias Control
-- */
--#define WM8350_MICBSEL                          0x4000
--#define WM8350_MCDTHR_MASK                      0x001C
--#define WM8350_MCDSCTHR_MASK                    0x0003
--
--/*
-- * R76 (0x4C) - Output Control
-- */
--#define WM8350_OUT4_VROI                        0x0800
--#define WM8350_OUT3_VROI                        0x0400
--#define WM8350_OUT2_VROI                        0x0200
--#define WM8350_OUT1_VROI                        0x0100
--#define WM8350_OUT2_FB                          0x0004
--#define WM8350_OUT1_FB                          0x0001
--
--/*
-- * R77 (0x4D) - Jack Detect
-- */
--#define WM8350_JDL_ENA                          0x8000
--#define WM8350_JDR_ENA                          0x4000
--
--/*
-- * R78 (0x4E) - Anti Pop Control
-- */
--#define WM8350_ANTI_POP_MASK                    0x0300
--#define WM8350_DIS_OP_LN4_MASK                  0x00C0
--#define WM8350_DIS_OP_LN3_MASK                  0x0030
--#define WM8350_DIS_OP_OUT2_MASK                 0x000C
--#define WM8350_DIS_OP_OUT1_MASK                 0x0003
--
--/*
-- * R80 (0x50) - Left Input Volume
-- */
--#define WM8350_INL_MUTE                         0x4000
--#define WM8350_INL_ZC                           0x2000
--#define WM8350_IN_VU                            0x0100
--#define WM8350_INL_VOL_MASK                     0x00FC
--
--/*
-- * R81 (0x51) - Right Input Volume
-- */
--#define WM8350_INR_MUTE                         0x4000
--#define WM8350_INR_ZC                           0x2000
--#define WM8350_IN_VU                            0x0100
--#define WM8350_INR_VOL_MASK                     0x00FC
--
--/*
-- * R88 (0x58) - Left Mixer Control
-- */
--#define WM8350_DACR_TO_MIXOUTL                  0x1000
--#define WM8350_DACL_TO_MIXOUTL                  0x0800
--#define WM8350_IN3L_TO_MIXOUTL                  0x0004
--#define WM8350_INR_TO_MIXOUTL                   0x0002
--#define WM8350_INL_TO_MIXOUTL                   0x0001
--
--/*
-- * R89 (0x59) - Right Mixer Control
-- */
--#define WM8350_DACR_TO_MIXOUTR                  0x1000
--#define WM8350_DACL_TO_MIXOUTR                  0x0800
--#define WM8350_IN3R_TO_MIXOUTR                  0x0008
--#define WM8350_INR_TO_MIXOUTR                   0x0002
--#define WM8350_INL_TO_MIXOUTR                   0x0001
--
--/*
-- * R92 (0x5C) - OUT3 Mixer Control
-- */
--#define WM8350_DACL_TO_OUT3                     0x0800
--#define WM8350_MIXINL_TO_OUT3                   0x0100
--#define WM8350_OUT4_TO_OUT3                     0x0008
--#define WM8350_MIXOUTL_TO_OUT3                  0x0001
--
--/*
-- * R93 (0x5D) - OUT4 Mixer Control
-- */
--#define WM8350_DACR_TO_OUT4                     0x1000
--#define WM8350_DACL_TO_OUT4                     0x0800
--#define WM8350_OUT4_ATTN                        0x0400
--#define WM8350_MIXINR_TO_OUT4                   0x0200
--#define WM8350_OUT3_TO_OUT4                     0x0004
--#define WM8350_MIXOUTR_TO_OUT4                  0x0002
--#define WM8350_MIXOUTL_TO_OUT4                  0x0001
--
--/*
-- * R96 (0x60) - Output Left Mixer Volume
-- */
--#define WM8350_IN3L_MIXOUTL_VOL_MASK            0x0E00
--#define WM8350_IN3L_MIXOUTL_VOL_SHIFT                9
--#define WM8350_INR_MIXOUTL_VOL_MASK             0x00E0
--#define WM8350_INR_MIXOUTL_VOL_SHIFT                 5
--#define WM8350_INL_MIXOUTL_VOL_MASK             0x000E
--#define WM8350_INL_MIXOUTL_VOL_SHIFT                 1
--
--/* Bit values for R96 (0x60) */
--#define WM8350_IN3L_MIXOUTL_VOL_OFF                  0
--#define WM8350_IN3L_MIXOUTL_VOL_M12DB                1
--#define WM8350_IN3L_MIXOUTL_VOL_M9DB                 2
--#define WM8350_IN3L_MIXOUTL_VOL_M6DB                 3
--#define WM8350_IN3L_MIXOUTL_VOL_M3DB                 4
--#define WM8350_IN3L_MIXOUTL_VOL_0DB                  5
--#define WM8350_IN3L_MIXOUTL_VOL_3DB                  6
--#define WM8350_IN3L_MIXOUTL_VOL_6DB                  7
--
--#define WM8350_INR_MIXOUTL_VOL_OFF                   0
--#define WM8350_INR_MIXOUTL_VOL_M12DB                 1
--#define WM8350_INR_MIXOUTL_VOL_M9DB                  2
--#define WM8350_INR_MIXOUTL_VOL_M6DB                  3
--#define WM8350_INR_MIXOUTL_VOL_M3DB                  4
--#define WM8350_INR_MIXOUTL_VOL_0DB                   5
--#define WM8350_INR_MIXOUTL_VOL_3DB                   6
--#define WM8350_INR_MIXOUTL_VOL_6DB                   7
--
--#define WM8350_INL_MIXOUTL_VOL_OFF                   0
--#define WM8350_INL_MIXOUTL_VOL_M12DB                 1
--#define WM8350_INL_MIXOUTL_VOL_M9DB                  2
--#define WM8350_INL_MIXOUTL_VOL_M6DB                  3
--#define WM8350_INL_MIXOUTL_VOL_M3DB                  4
--#define WM8350_INL_MIXOUTL_VOL_0DB                   5
--#define WM8350_INL_MIXOUTL_VOL_3DB                   6
--#define WM8350_INL_MIXOUTL_VOL_6DB                   7
--
--/*
-- * R97 (0x61) - Output Right Mixer Volume
-- */
--#define WM8350_IN3R_MIXOUTR_VOL_MASK            0xE000
--#define WM8350_IN3R_MIXOUTR_VOL_SHIFT               13
--#define WM8350_INR_MIXOUTR_VOL_MASK             0x00E0
--#define WM8350_INR_MIXOUTR_VOL_SHIFT                 5
--#define WM8350_INL_MIXOUTR_VOL_MASK             0x000E
--#define WM8350_INL_MIXOUTR_VOL_SHIFT                 1
--
--/* Bit values for R96 (0x60) */
--#define WM8350_IN3R_MIXOUTR_VOL_OFF                  0
--#define WM8350_IN3R_MIXOUTR_VOL_M12DB                1
--#define WM8350_IN3R_MIXOUTR_VOL_M9DB                 2
--#define WM8350_IN3R_MIXOUTR_VOL_M6DB                 3
--#define WM8350_IN3R_MIXOUTR_VOL_M3DB                 4
--#define WM8350_IN3R_MIXOUTR_VOL_0DB                  5
--#define WM8350_IN3R_MIXOUTR_VOL_3DB                  6
--#define WM8350_IN3R_MIXOUTR_VOL_6DB                  7
--
--#define WM8350_INR_MIXOUTR_VOL_OFF                   0
--#define WM8350_INR_MIXOUTR_VOL_M12DB                 1
--#define WM8350_INR_MIXOUTR_VOL_M9DB                  2
--#define WM8350_INR_MIXOUTR_VOL_M6DB                  3
--#define WM8350_INR_MIXOUTR_VOL_M3DB                  4
--#define WM8350_INR_MIXOUTR_VOL_0DB                   5
--#define WM8350_INR_MIXOUTR_VOL_3DB                   6
--#define WM8350_INR_MIXOUTR_VOL_6DB                   7
--
--#define WM8350_INL_MIXOUTR_VOL_OFF                   0
--#define WM8350_INL_MIXOUTR_VOL_M12DB                 1
--#define WM8350_INL_MIXOUTR_VOL_M9DB                  2
--#define WM8350_INL_MIXOUTR_VOL_M6DB                  3
--#define WM8350_INL_MIXOUTR_VOL_M3DB                  4
--#define WM8350_INL_MIXOUTR_VOL_0DB                   5
--#define WM8350_INL_MIXOUTR_VOL_3DB                   6
--#define WM8350_INL_MIXOUTR_VOL_6DB                   7
--
--/*
-- * R98 (0x62) - Input Mixer Volume L
-- */
--#define WM8350_IN3L_MIXINL_VOL_MASK             0x0E00
--#define WM8350_IN2L_MIXINL_VOL_MASK             0x000E
--#define WM8350_INL_MIXINL_VOL                   0x0001
--
--/*
-- * R99 (0x63) - Input Mixer Volume R
-- */
--#define WM8350_IN3R_MIXINR_VOL_MASK             0xE000
--#define WM8350_IN2R_MIXINR_VOL_MASK             0x00E0
--#define WM8350_INR_MIXINR_VOL                   0x0001
--
--/*
-- * R100 (0x64) - Input Mixer Volume
-- */
--#define WM8350_OUT4_MIXIN_DST                   0x8000
--#define WM8350_OUT4_MIXIN_VOL_MASK              0x000E
--
--/*
-- * R104 (0x68) - LOUT1 Volume
-- */
--#define WM8350_OUT1L_MUTE                       0x4000
--#define WM8350_OUT1L_ZC                         0x2000
--#define WM8350_OUT1_VU                          0x0100
--#define WM8350_OUT1L_VOL_MASK                   0x00FC
--#define WM8350_OUT1L_VOL_SHIFT                       2
--
--/*
-- * R105 (0x69) - ROUT1 Volume
-- */
--#define WM8350_OUT1R_MUTE                       0x4000
--#define WM8350_OUT1R_ZC                         0x2000
--#define WM8350_OUT1_VU                          0x0100
--#define WM8350_OUT1R_VOL_MASK                   0x00FC
--#define WM8350_OUT1R_VOL_SHIFT                       2
--
--/*
-- * R106 (0x6A) - LOUT2 Volume
-- */
--#define WM8350_OUT2L_MUTE                       0x4000
--#define WM8350_OUT2L_ZC                         0x2000
--#define WM8350_OUT2_VU                          0x0100
--#define WM8350_OUT2L_VOL_MASK                   0x00FC
--
--/*
-- * R107 (0x6B) - ROUT2 Volume
-- */
--#define WM8350_OUT2R_MUTE                       0x4000
--#define WM8350_OUT2R_ZC                         0x2000
--#define WM8350_OUT2R_INV                        0x0400
--#define WM8350_OUT2R_INV_MUTE                   0x0200
--#define WM8350_OUT2_VU                          0x0100
--#define WM8350_OUT2R_VOL_MASK                   0x00FC
--
--/*
-- * R111 (0x6F) - BEEP Volume
-- */
--#define WM8350_IN3R_OUT2R_VOL_MASK              0x00E0
--
--/*
-- * R112 (0x70) - AI Formating
-- */
--#define WM8350_AIF_BCLK_INV                     0x8000
--#define WM8350_AIF_TRI                          0x2000
--#define WM8350_AIF_LRCLK_INV                    0x1000
--#define WM8350_AIF_WL_MASK                      0x0C00
--#define WM8350_AIF_FMT_MASK                     0x0300
--
--/*
-- * R113 (0x71) - ADC DAC COMP
-- */
--#define WM8350_DAC_COMP                         0x0080
--#define WM8350_DAC_COMPMODE                     0x0040
--#define WM8350_ADC_COMP                         0x0020
--#define WM8350_ADC_COMPMODE                     0x0010
--#define WM8350_LOOPBACK                         0x0001
--
--/*
-- * R114 (0x72) - AI ADC Control
-- */
--#define WM8350_AIFADC_PD                        0x0080
--#define WM8350_AIFADCL_SRC                      0x0040
--#define WM8350_AIFADCR_SRC                      0x0020
--#define WM8350_AIFADC_TDM_CHAN                  0x0010
--#define WM8350_AIFADC_TDM                       0x0008
--
--/*
-- * R115 (0x73) - AI DAC Control
-- */
--#define WM8350_BCLK_MSTR                        0x4000
--#define WM8350_AIFDAC_PD                        0x0080
--#define WM8350_DACL_SRC                         0x0040
--#define WM8350_DACR_SRC                         0x0020
--#define WM8350_AIFDAC_TDM_CHAN                  0x0010
--#define WM8350_AIFDAC_TDM                       0x0008
--#define WM8350_DAC_BOOST_MASK                   0x0003
--
--/*
-- * R116 (0x74) - AIF Test
-- */
--#define WM8350_CODEC_BYP                        0x4000
--#define WM8350_AIFADC_WR_TST                    0x2000
--#define WM8350_AIFADC_RD_TST                    0x1000
--#define WM8350_AIFDAC_WR_TST                    0x0800
--#define WM8350_AIFDAC_RD_TST                    0x0400
--#define WM8350_AIFADC_ASYN                      0x0020
--#define WM8350_AIFDAC_ASYN                      0x0010
--
--/*
-- * R231 (0xE7) - Jack Status
-- */
--#define WM8350_JACK_L_LVL			0x0800
--#define WM8350_JACK_R_LVL                       0x0400
--#define WM8350_JACK_MICSCD_LVL			0x0200
--#define WM8350_JACK_MICSD_LVL			0x0100
--
--/*
-- * WM8350 Platform setup
-- */
--#define WM8350_S_CURVE_NONE			0x0
--#define WM8350_S_CURVE_FAST			0x1
--#define WM8350_S_CURVE_MEDIUM			0x2
--#define WM8350_S_CURVE_SLOW			0x3
--
--#define WM8350_DISCHARGE_OFF			0x0
--#define WM8350_DISCHARGE_FAST			0x1
--#define WM8350_DISCHARGE_MEDIUM			0x2
--#define WM8350_DISCHARGE_SLOW			0x3
--
--#define WM8350_TIE_OFF_500R			0x0
--#define WM8350_TIE_OFF_30K			0x1
--
--/*
-- * Clock sources & directions
-- */
--#define WM8350_SYSCLK				0
--
--#define WM8350_MCLK_SEL_PLL_MCLK		0
--#define WM8350_MCLK_SEL_PLL_DAC			1
--#define WM8350_MCLK_SEL_PLL_ADC			2
--#define WM8350_MCLK_SEL_PLL_32K			3
--#define WM8350_MCLK_SEL_MCLK			5
--
--/* clock divider id's */
--#define WM8350_ADC_CLKDIV			0
--#define WM8350_DAC_CLKDIV			1
--#define WM8350_BCLK_CLKDIV			2
--#define WM8350_OPCLK_CLKDIV			3
--#define WM8350_TO_CLKDIV			4
--#define WM8350_SYS_CLKDIV			5
--#define WM8350_DACLR_CLKDIV			6
--#define WM8350_ADCLR_CLKDIV			7
--
--/* ADC clock dividers */
--#define WM8350_ADCDIV_1				0x0
--#define WM8350_ADCDIV_1_5			0x1
--#define WM8350_ADCDIV_2				0x2
--#define WM8350_ADCDIV_3				0x3
--#define WM8350_ADCDIV_4				0x4
--#define WM8350_ADCDIV_5_5			0x5
--#define WM8350_ADCDIV_6				0x6
--
--/* ADC clock dividers */
--#define WM8350_DACDIV_1				0x0
--#define WM8350_DACDIV_1_5			0x1
--#define WM8350_DACDIV_2				0x2
--#define WM8350_DACDIV_3				0x3
--#define WM8350_DACDIV_4				0x4
--#define WM8350_DACDIV_5_5			0x5
--#define WM8350_DACDIV_6				0x6
--
--/* BCLK clock dividers */
--#define WM8350_BCLK_DIV_1			(0x0 << 4)
--#define WM8350_BCLK_DIV_1_5			(0x1 << 4)
--#define WM8350_BCLK_DIV_2			(0x2 << 4)
--#define WM8350_BCLK_DIV_3			(0x3 << 4)
--#define WM8350_BCLK_DIV_4			(0x4 << 4)
--#define WM8350_BCLK_DIV_5_5			(0x5 << 4)
--#define WM8350_BCLK_DIV_6			(0x6 << 4)
--#define WM8350_BCLK_DIV_8			(0x7 << 4)
--#define WM8350_BCLK_DIV_11			(0x8 << 4)
--#define WM8350_BCLK_DIV_12			(0x9 << 4)
--#define WM8350_BCLK_DIV_16			(0xa << 4)
--#define WM8350_BCLK_DIV_22			(0xb << 4)
--#define WM8350_BCLK_DIV_24			(0xc << 4)
--#define WM8350_BCLK_DIV_32			(0xd << 4)
--#define WM8350_BCLK_DIV_44			(0xe << 4)
--#define WM8350_BCLK_DIV_48			(0xf << 4)
--
--/* Sys (MCLK) clock dividers */
--#define WM8350_MCLK_DIV_1			(0x0 << 8)
--#define WM8350_MCLK_DIV_2			(0x1 << 8)
--
--/* OP clock dividers */
--#define WM8350_OPCLK_DIV_1			0x0
--#define WM8350_OPCLK_DIV_2			0x1
--#define WM8350_OPCLK_DIV_3			0x2
--#define WM8350_OPCLK_DIV_4			0x3
--#define WM8350_OPCLK_DIV_5_5			0x4
--#define WM8350_OPCLK_DIV_6			0x5
--
--/* DAI ID */
--#define WM8350_HIFI_DAI				0
--
--/*
-- * Audio interrupts.
-- */
--#define WM8350_IRQ_CODEC_JCK_DET_L		39
--#define WM8350_IRQ_CODEC_JCK_DET_R		40
--#define WM8350_IRQ_CODEC_MICSCD			41
--#define WM8350_IRQ_CODEC_MICD			42
--
--/*
-- * WM8350 Platform data.
-- *
-- * This must be initialised per platform for best audio performance.
-- * Please see WM8350 datasheet for information.
-- */
--struct wm8350_audio_platform_data {
--	int vmid_discharge_msecs;	/* VMID --> OFF discharge time */
--	int drain_msecs;	/* OFF drain time */
--	int cap_discharge_msecs;	/* Cap ON (from OFF) discharge time */
--	int vmid_charge_msecs;	/* vmid power up time */
--	u32 vmid_s_curve:2;	/* vmid enable s curve speed */
--	u32 dis_out4:2;		/* out4 discharge speed */
--	u32 dis_out3:2;		/* out3 discharge speed */
--	u32 dis_out2:2;		/* out2 discharge speed */
--	u32 dis_out1:2;		/* out1 discharge speed */
--	u32 vroi_out4:1;	/* out4 tie off */
--	u32 vroi_out3:1;	/* out3 tie off */
--	u32 vroi_out2:1;	/* out2 tie off */
--	u32 vroi_out1:1;	/* out1 tie off */
--	u32 vroi_enable:1;	/* enable tie off */
--	u32 codec_current_on:2;	/* current level ON */
--	u32 codec_current_standby:2;	/* current level STANDBY */
--	u32 codec_current_charge:2;	/* codec current @ vmid charge */
--};
--
--struct wm8350_codec {
--	struct platform_device *pdev;
--	struct wm8350_audio_platform_data *platform_data;
--};
--
--#endif
-diff --git a/include/linux/mfd/wm8350/comparator.h b/include/linux/mfd/wm8350/comparator.h
-deleted file mode 100644
-index 250d89239528..000000000000
---- a/include/linux/mfd/wm8350/comparator.h
-+++ /dev/null
-@@ -1,171 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0-or-later */
--/*
-- * comparator.h  --  Comparator Aux ADC for Wolfson WM8350 PMIC
-- *
-- * Copyright 2007 Wolfson Microelectronics PLC
-- */
--
--#ifndef __LINUX_MFD_WM8350_COMPARATOR_H_
--#define __LINUX_MFD_WM8350_COMPARATOR_H_
--
--/*
-- * Registers
-- */
--
--#define WM8350_DIGITISER_CONTROL_1              0x90
--#define WM8350_DIGITISER_CONTROL_2              0x91
--#define WM8350_AUX1_READBACK                    0x98
--#define WM8350_AUX2_READBACK                    0x99
--#define WM8350_AUX3_READBACK                    0x9A
--#define WM8350_AUX4_READBACK                    0x9B
--#define WM8350_CHIP_TEMP_READBACK               0x9F
--#define WM8350_GENERIC_COMPARATOR_CONTROL       0xA3
--#define WM8350_GENERIC_COMPARATOR_1             0xA4
--#define WM8350_GENERIC_COMPARATOR_2             0xA5
--#define WM8350_GENERIC_COMPARATOR_3             0xA6
--#define WM8350_GENERIC_COMPARATOR_4             0xA7
--
--/*
-- * R144 (0x90) - Digitiser Control (1)
-- */
--#define WM8350_AUXADC_CTC                       0x4000
--#define WM8350_AUXADC_POLL                      0x2000
--#define WM8350_AUXADC_HIB_MODE                  0x1000
--#define WM8350_AUXADC_SEL8                      0x0080
--#define WM8350_AUXADC_SEL7                      0x0040
--#define WM8350_AUXADC_SEL6                      0x0020
--#define WM8350_AUXADC_SEL5                      0x0010
--#define WM8350_AUXADC_SEL4                      0x0008
--#define WM8350_AUXADC_SEL3                      0x0004
--#define WM8350_AUXADC_SEL2                      0x0002
--#define WM8350_AUXADC_SEL1                      0x0001
--
--/*
-- * R145 (0x91) - Digitiser Control (2)
-- */
--#define WM8350_AUXADC_MASKMODE_MASK             0x3000
--#define WM8350_AUXADC_CRATE_MASK                0x0700
--#define WM8350_AUXADC_CAL                       0x0004
--#define WM8350_AUX_RBMODE                       0x0002
--#define WM8350_AUXADC_WAIT                      0x0001
--
--/*
-- * R152 (0x98) - AUX1 Readback
-- */
--#define WM8350_AUXADC_SCALE1_MASK               0x6000
--#define WM8350_AUXADC_REF1                      0x1000
--#define WM8350_AUXADC_DATA1_MASK                0x0FFF
--
--/*
-- * R153 (0x99) - AUX2 Readback
-- */
--#define WM8350_AUXADC_SCALE2_MASK               0x6000
--#define WM8350_AUXADC_REF2                      0x1000
--#define WM8350_AUXADC_DATA2_MASK                0x0FFF
--
--/*
-- * R154 (0x9A) - AUX3 Readback
-- */
--#define WM8350_AUXADC_SCALE3_MASK               0x6000
--#define WM8350_AUXADC_REF3                      0x1000
--#define WM8350_AUXADC_DATA3_MASK                0x0FFF
--
--/*
-- * R155 (0x9B) - AUX4 Readback
-- */
--#define WM8350_AUXADC_SCALE4_MASK               0x6000
--#define WM8350_AUXADC_REF4                      0x1000
--#define WM8350_AUXADC_DATA4_MASK                0x0FFF
--
--/*
-- * R156 (0x9C) - USB Voltage Readback
-- */
--#define WM8350_AUXADC_DATA_USB_MASK             0x0FFF
--
--/*
-- * R157 (0x9D) - LINE Voltage Readback
-- */
--#define WM8350_AUXADC_DATA_LINE_MASK            0x0FFF
--
--/*
-- * R158 (0x9E) - BATT Voltage Readback
-- */
--#define WM8350_AUXADC_DATA_BATT_MASK            0x0FFF
--
--/*
-- * R159 (0x9F) - Chip Temp Readback
-- */
--#define WM8350_AUXADC_DATA_CHIPTEMP_MASK        0x0FFF
--
--/*
-- * R163 (0xA3) - Generic Comparator Control
-- */
--#define WM8350_DCMP4_ENA                        0x0008
--#define WM8350_DCMP3_ENA                        0x0004
--#define WM8350_DCMP2_ENA                        0x0002
--#define WM8350_DCMP1_ENA                        0x0001
--
--/*
-- * R164 (0xA4) - Generic comparator 1
-- */
--#define WM8350_DCMP1_SRCSEL_MASK                0xE000
--#define WM8350_DCMP1_GT                         0x1000
--#define WM8350_DCMP1_THR_MASK                   0x0FFF
--
--/*
-- * R165 (0xA5) - Generic comparator 2
-- */
--#define WM8350_DCMP2_SRCSEL_MASK                0xE000
--#define WM8350_DCMP2_GT                         0x1000
--#define WM8350_DCMP2_THR_MASK                   0x0FFF
--
--/*
-- * R166 (0xA6) - Generic comparator 3
-- */
--#define WM8350_DCMP3_SRCSEL_MASK                0xE000
--#define WM8350_DCMP3_GT                         0x1000
--#define WM8350_DCMP3_THR_MASK                   0x0FFF
--
--/*
-- * R167 (0xA7) - Generic comparator 4
-- */
--#define WM8350_DCMP4_SRCSEL_MASK                0xE000
--#define WM8350_DCMP4_GT                         0x1000
--#define WM8350_DCMP4_THR_MASK                   0x0FFF
--
--/*
-- * Interrupts.
-- */
--#define WM8350_IRQ_AUXADC_DATARDY		16
--#define WM8350_IRQ_AUXADC_DCOMP4		17
--#define WM8350_IRQ_AUXADC_DCOMP3		18
--#define WM8350_IRQ_AUXADC_DCOMP2		19
--#define WM8350_IRQ_AUXADC_DCOMP1		20
--#define WM8350_IRQ_SYS_HYST_COMP_FAIL		21
--#define WM8350_IRQ_SYS_CHIP_GT115		22
--#define WM8350_IRQ_SYS_CHIP_GT140		23
--
--/*
-- * USB/2, LINE & BATT = ((VRTC * 2) / 4095)) * 10e6 uV
-- * Where VRTC = 2.7 V
-- */
--#define WM8350_AUX_COEFF			1319
--
--#define WM8350_AUXADC_AUX1			0
--#define WM8350_AUXADC_AUX2			1
--#define WM8350_AUXADC_AUX3			2
--#define WM8350_AUXADC_AUX4			3
--#define WM8350_AUXADC_USB			4
--#define WM8350_AUXADC_LINE			5
--#define WM8350_AUXADC_BATT			6
--#define WM8350_AUXADC_TEMP			7
--
--struct wm8350;
--
--/*
-- * AUX ADC Readback
-- */
--int wm8350_read_auxadc(struct wm8350 *wm8350, int channel, int scale,
--		       int vref);
--
--#endif
-diff --git a/include/linux/mfd/wm8350/core.h b/include/linux/mfd/wm8350/core.h
-deleted file mode 100644
-index 097ef4dfcdac..000000000000
---- a/include/linux/mfd/wm8350/core.h
-+++ /dev/null
-@@ -1,692 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0-or-later */
--/*
-- * core.h  --  Core Driver for Wolfson WM8350 PMIC
-- *
-- * Copyright 2007 Wolfson Microelectronics PLC
-- */
--
--#ifndef __LINUX_MFD_WM8350_CORE_H_
--#define __LINUX_MFD_WM8350_CORE_H_
--
--#include <linux/completion.h>
 -#include <linux/errno.h>
--#include <linux/interrupt.h>
--#include <linux/mutex.h>
--#include <linux/regmap.h>
--#include <linux/types.h>
--
--#include <linux/mfd/wm8350/audio.h>
--#include <linux/mfd/wm8350/gpio.h>
--#include <linux/mfd/wm8350/pmic.h>
--#include <linux/mfd/wm8350/rtc.h>
--#include <linux/mfd/wm8350/supply.h>
--#include <linux/mfd/wm8350/wdt.h>
--
--struct device;
--struct platform_device;
--
--/*
-- * Register values.
-- */
--#define WM8350_RESET_ID                         0x00
--#define WM8350_ID                               0x01
--#define WM8350_REVISION				0x02
--#define WM8350_SYSTEM_CONTROL_1                 0x03
--#define WM8350_SYSTEM_CONTROL_2                 0x04
--#define WM8350_SYSTEM_HIBERNATE                 0x05
--#define WM8350_INTERFACE_CONTROL                0x06
--#define WM8350_POWER_MGMT_1                     0x08
--#define WM8350_POWER_MGMT_2                     0x09
--#define WM8350_POWER_MGMT_3                     0x0A
--#define WM8350_POWER_MGMT_4                     0x0B
--#define WM8350_POWER_MGMT_5                     0x0C
--#define WM8350_POWER_MGMT_6                     0x0D
--#define WM8350_POWER_MGMT_7                     0x0E
--
--#define WM8350_SYSTEM_INTERRUPTS                0x18
--#define WM8350_INT_STATUS_1                     0x19
--#define WM8350_INT_STATUS_2                     0x1A
--#define WM8350_POWER_UP_INT_STATUS              0x1B
--#define WM8350_UNDER_VOLTAGE_INT_STATUS         0x1C
--#define WM8350_OVER_CURRENT_INT_STATUS          0x1D
--#define WM8350_GPIO_INT_STATUS                  0x1E
--#define WM8350_COMPARATOR_INT_STATUS            0x1F
--#define WM8350_SYSTEM_INTERRUPTS_MASK           0x20
--#define WM8350_INT_STATUS_1_MASK                0x21
--#define WM8350_INT_STATUS_2_MASK                0x22
--#define WM8350_POWER_UP_INT_STATUS_MASK         0x23
--#define WM8350_UNDER_VOLTAGE_INT_STATUS_MASK    0x24
--#define WM8350_OVER_CURRENT_INT_STATUS_MASK     0x25
--#define WM8350_GPIO_INT_STATUS_MASK             0x26
--#define WM8350_COMPARATOR_INT_STATUS_MASK       0x27
--#define WM8350_CHARGER_OVERRIDES		0xE2
--#define WM8350_MISC_OVERRIDES			0xE3
--#define WM8350_COMPARATOR_OVERRIDES		0xE7
--#define WM8350_STATE_MACHINE_STATUS		0xE9
--
--#define WM8350_MAX_REGISTER                     0xFF
--
--#define WM8350_UNLOCK_KEY		0x0013
--#define WM8350_LOCK_KEY			0x0000
--
--/*
-- * Field Definitions.
-- */
--
--/*
-- * R0 (0x00) - Reset/ID
-- */
--#define WM8350_SW_RESET_CHIP_ID_MASK            0xFFFF
--
--/*
-- * R1 (0x01) - ID
-- */
--#define WM8350_CHIP_REV_MASK                    0x7000
--#define WM8350_CONF_STS_MASK                    0x0C00
--#define WM8350_CUST_ID_MASK                     0x00FF
--
--/*
-- * R2 (0x02) - Revision
-- */
--#define WM8350_MASK_REV_MASK			0x00FF
--
--/*
-- * R3 (0x03) - System Control 1
-- */
--#define WM8350_CHIP_ON                          0x8000
--#define WM8350_POWERCYCLE                       0x2000
--#define WM8350_VCC_FAULT_OV                     0x1000
--#define WM8350_REG_RSTB_TIME_MASK               0x0C00
--#define WM8350_BG_SLEEP                         0x0200
--#define WM8350_MEM_VALID                        0x0020
--#define WM8350_CHIP_SET_UP                      0x0010
--#define WM8350_ON_DEB_T                         0x0008
--#define WM8350_ON_POL                           0x0002
--#define WM8350_IRQ_POL                          0x0001
--
--/*
-- * R4 (0x04) - System Control 2
-- */
--#define WM8350_USB_SUSPEND_8MA                  0x8000
--#define WM8350_USB_SUSPEND                      0x4000
--#define WM8350_USB_MSTR                         0x2000
--#define WM8350_USB_MSTR_SRC                     0x1000
--#define WM8350_USB_500MA                        0x0800
--#define WM8350_USB_NOLIM                        0x0400
--
--/*
-- * R5 (0x05) - System Hibernate
-- */
--#define WM8350_HIBERNATE                        0x8000
--#define WM8350_WDOG_HIB_MODE                    0x0080
--#define WM8350_REG_HIB_STARTUP_SEQ              0x0040
--#define WM8350_REG_RESET_HIB_MODE               0x0020
--#define WM8350_RST_HIB_MODE                     0x0010
--#define WM8350_IRQ_HIB_MODE                     0x0008
--#define WM8350_MEMRST_HIB_MODE                  0x0004
--#define WM8350_PCCOMP_HIB_MODE                  0x0002
--#define WM8350_TEMPMON_HIB_MODE                 0x0001
--
--/*
-- * R6 (0x06) - Interface Control
-- */
--#define WM8350_USE_DEV_PINS                     0x8000
--#define WM8350_USE_DEV_PINS_MASK                0x8000
--#define WM8350_USE_DEV_PINS_SHIFT                   15
--#define WM8350_DEV_ADDR_MASK                    0x6000
--#define WM8350_DEV_ADDR_SHIFT                       13
--#define WM8350_CONFIG_DONE                      0x1000
--#define WM8350_CONFIG_DONE_MASK                 0x1000
--#define WM8350_CONFIG_DONE_SHIFT                    12
--#define WM8350_RECONFIG_AT_ON                   0x0800
--#define WM8350_RECONFIG_AT_ON_MASK              0x0800
--#define WM8350_RECONFIG_AT_ON_SHIFT                 11
--#define WM8350_AUTOINC                          0x0200
--#define WM8350_AUTOINC_MASK                     0x0200
--#define WM8350_AUTOINC_SHIFT                         9
--#define WM8350_ARA                              0x0100
--#define WM8350_ARA_MASK                         0x0100
--#define WM8350_ARA_SHIFT                             8
--#define WM8350_SPI_CFG                          0x0008
--#define WM8350_SPI_CFG_MASK                     0x0008
--#define WM8350_SPI_CFG_SHIFT                         3
--#define WM8350_SPI_4WIRE                        0x0004
--#define WM8350_SPI_4WIRE_MASK                   0x0004
--#define WM8350_SPI_4WIRE_SHIFT                       2
--#define WM8350_SPI_3WIRE                        0x0002
--#define WM8350_SPI_3WIRE_MASK                   0x0002
--#define WM8350_SPI_3WIRE_SHIFT                       1
--
--/* Bit values for R06 (0x06) */
--#define WM8350_USE_DEV_PINS_PRIMARY                  0
--#define WM8350_USE_DEV_PINS_DEV                      1
--
--#define WM8350_DEV_ADDR_34                           0
--#define WM8350_DEV_ADDR_36                           1
--#define WM8350_DEV_ADDR_3C                           2
--#define WM8350_DEV_ADDR_3E                           3
--
--#define WM8350_CONFIG_DONE_OFF                       0
--#define WM8350_CONFIG_DONE_DONE                      1
--
--#define WM8350_RECONFIG_AT_ON_OFF                    0
--#define WM8350_RECONFIG_AT_ON_ON                     1
--
--#define WM8350_AUTOINC_OFF                           0
--#define WM8350_AUTOINC_ON                            1
--
--#define WM8350_ARA_OFF                               0
--#define WM8350_ARA_ON                                1
--
--#define WM8350_SPI_CFG_CMOS                          0
--#define WM8350_SPI_CFG_OD                            1
--
--#define WM8350_SPI_4WIRE_3WIRE                       0
--#define WM8350_SPI_4WIRE_4WIRE                       1
--
--#define WM8350_SPI_3WIRE_I2C                         0
--#define WM8350_SPI_3WIRE_SPI                         1
--
--/*
-- * R8 (0x08) - Power mgmt (1)
-- */
--#define WM8350_CODEC_ISEL_MASK                  0xC000
--#define WM8350_VBUFEN                           0x2000
--#define WM8350_OUTPUT_DRAIN_EN                  0x0400
--#define WM8350_MIC_DET_ENA                      0x0100
--#define WM8350_BIASEN                           0x0020
--#define WM8350_MICBEN                           0x0010
--#define WM8350_VMIDEN                           0x0004
--#define WM8350_VMID_MASK                        0x0003
--#define WM8350_VMID_SHIFT                            0
--
--/*
-- * R9 (0x09) - Power mgmt (2)
-- */
--#define WM8350_IN3R_ENA                         0x0800
--#define WM8350_IN3L_ENA                         0x0400
--#define WM8350_INR_ENA                          0x0200
--#define WM8350_INL_ENA                          0x0100
--#define WM8350_MIXINR_ENA                       0x0080
--#define WM8350_MIXINL_ENA                       0x0040
--#define WM8350_OUT4_ENA                         0x0020
--#define WM8350_OUT3_ENA                         0x0010
--#define WM8350_MIXOUTR_ENA                      0x0002
--#define WM8350_MIXOUTL_ENA                      0x0001
--
--/*
-- * R10 (0x0A) - Power mgmt (3)
-- */
--#define WM8350_IN3R_TO_OUT2R                    0x0080
--#define WM8350_OUT2R_ENA                        0x0008
--#define WM8350_OUT2L_ENA                        0x0004
--#define WM8350_OUT1R_ENA                        0x0002
--#define WM8350_OUT1L_ENA                        0x0001
--
--/*
-- * R11 (0x0B) - Power mgmt (4)
-- */
--#define WM8350_SYSCLK_ENA                       0x4000
--#define WM8350_ADC_HPF_ENA                      0x2000
--#define WM8350_FLL_ENA                          0x0800
--#define WM8350_FLL_OSC_ENA                      0x0400
--#define WM8350_TOCLK_ENA                        0x0100
--#define WM8350_DACR_ENA                         0x0020
--#define WM8350_DACL_ENA                         0x0010
--#define WM8350_ADCR_ENA                         0x0008
--#define WM8350_ADCL_ENA                         0x0004
--
--/*
-- * R12 (0x0C) - Power mgmt (5)
-- */
--#define WM8350_CODEC_ENA                        0x1000
--#define WM8350_RTC_TICK_ENA                     0x0800
--#define WM8350_OSC32K_ENA                       0x0400
--#define WM8350_CHG_ENA                          0x0200
--#define WM8350_ACC_DET_ENA                      0x0100
--#define WM8350_AUXADC_ENA                       0x0080
--#define WM8350_DCMP4_ENA                        0x0008
--#define WM8350_DCMP3_ENA                        0x0004
--#define WM8350_DCMP2_ENA                        0x0002
--#define WM8350_DCMP1_ENA                        0x0001
--
--/*
-- * R13 (0x0D) - Power mgmt (6)
-- */
--#define WM8350_LS_ENA                           0x8000
--#define WM8350_LDO4_ENA                         0x0800
--#define WM8350_LDO3_ENA                         0x0400
--#define WM8350_LDO2_ENA                         0x0200
--#define WM8350_LDO1_ENA                         0x0100
--#define WM8350_DC6_ENA                          0x0020
--#define WM8350_DC5_ENA                          0x0010
--#define WM8350_DC4_ENA                          0x0008
--#define WM8350_DC3_ENA                          0x0004
--#define WM8350_DC2_ENA                          0x0002
--#define WM8350_DC1_ENA                          0x0001
--
--/*
-- * R14 (0x0E) - Power mgmt (7)
-- */
--#define WM8350_CS2_ENA                          0x0002
--#define WM8350_CS1_ENA                          0x0001
--
--/*
-- * R24 (0x18) - System Interrupts
-- */
--#define WM8350_OC_INT                           0x2000
--#define WM8350_UV_INT                           0x1000
--#define WM8350_PUTO_INT                         0x0800
--#define WM8350_CS_INT                           0x0200
--#define WM8350_EXT_INT                          0x0100
--#define WM8350_CODEC_INT                        0x0080
--#define WM8350_GP_INT                           0x0040
--#define WM8350_AUXADC_INT                       0x0020
--#define WM8350_RTC_INT                          0x0010
--#define WM8350_SYS_INT                          0x0008
--#define WM8350_CHG_INT                          0x0004
--#define WM8350_USB_INT                          0x0002
--#define WM8350_WKUP_INT                         0x0001
--
--/*
-- * R25 (0x19) - Interrupt Status 1
-- */
--#define WM8350_CHG_BAT_HOT_EINT                 0x8000
--#define WM8350_CHG_BAT_COLD_EINT                0x4000
--#define WM8350_CHG_BAT_FAIL_EINT                0x2000
--#define WM8350_CHG_TO_EINT                      0x1000
--#define WM8350_CHG_END_EINT                     0x0800
--#define WM8350_CHG_START_EINT                   0x0400
--#define WM8350_CHG_FAST_RDY_EINT                0x0200
--#define WM8350_RTC_PER_EINT                     0x0080
--#define WM8350_RTC_SEC_EINT                     0x0040
--#define WM8350_RTC_ALM_EINT                     0x0020
--#define WM8350_CHG_VBATT_LT_3P9_EINT            0x0004
--#define WM8350_CHG_VBATT_LT_3P1_EINT            0x0002
--#define WM8350_CHG_VBATT_LT_2P85_EINT           0x0001
--
--/*
-- * R26 (0x1A) - Interrupt Status 2
-- */
--#define WM8350_CS1_EINT                         0x2000
--#define WM8350_CS2_EINT                         0x1000
--#define WM8350_USB_LIMIT_EINT                   0x0400
--#define WM8350_AUXADC_DATARDY_EINT              0x0100
--#define WM8350_AUXADC_DCOMP4_EINT               0x0080
--#define WM8350_AUXADC_DCOMP3_EINT               0x0040
--#define WM8350_AUXADC_DCOMP2_EINT               0x0020
--#define WM8350_AUXADC_DCOMP1_EINT               0x0010
--#define WM8350_SYS_HYST_COMP_FAIL_EINT          0x0008
--#define WM8350_SYS_CHIP_GT115_EINT              0x0004
--#define WM8350_SYS_CHIP_GT140_EINT              0x0002
--#define WM8350_SYS_WDOG_TO_EINT                 0x0001
--
--/*
-- * R27 (0x1B) - Power Up Interrupt Status
-- */
--#define WM8350_PUTO_LDO4_EINT                   0x0800
--#define WM8350_PUTO_LDO3_EINT                   0x0400
--#define WM8350_PUTO_LDO2_EINT                   0x0200
--#define WM8350_PUTO_LDO1_EINT                   0x0100
--#define WM8350_PUTO_DC6_EINT                    0x0020
--#define WM8350_PUTO_DC5_EINT                    0x0010
--#define WM8350_PUTO_DC4_EINT                    0x0008
--#define WM8350_PUTO_DC3_EINT                    0x0004
--#define WM8350_PUTO_DC2_EINT                    0x0002
--#define WM8350_PUTO_DC1_EINT                    0x0001
--
--/*
-- * R28 (0x1C) - Under Voltage Interrupt status
-- */
--#define WM8350_UV_LDO4_EINT                     0x0800
--#define WM8350_UV_LDO3_EINT                     0x0400
--#define WM8350_UV_LDO2_EINT                     0x0200
--#define WM8350_UV_LDO1_EINT                     0x0100
--#define WM8350_UV_DC6_EINT                      0x0020
--#define WM8350_UV_DC5_EINT                      0x0010
--#define WM8350_UV_DC4_EINT                      0x0008
--#define WM8350_UV_DC3_EINT                      0x0004
--#define WM8350_UV_DC2_EINT                      0x0002
--#define WM8350_UV_DC1_EINT                      0x0001
--
--/*
-- * R29 (0x1D) - Over Current Interrupt status
-- */
--#define WM8350_OC_LS_EINT                       0x8000
--
--/*
-- * R30 (0x1E) - GPIO Interrupt Status
-- */
--#define WM8350_GP12_EINT                        0x1000
--#define WM8350_GP11_EINT                        0x0800
--#define WM8350_GP10_EINT                        0x0400
--#define WM8350_GP9_EINT                         0x0200
--#define WM8350_GP8_EINT                         0x0100
--#define WM8350_GP7_EINT                         0x0080
--#define WM8350_GP6_EINT                         0x0040
--#define WM8350_GP5_EINT                         0x0020
--#define WM8350_GP4_EINT                         0x0010
--#define WM8350_GP3_EINT                         0x0008
--#define WM8350_GP2_EINT                         0x0004
--#define WM8350_GP1_EINT                         0x0002
--#define WM8350_GP0_EINT                         0x0001
--
--/*
-- * R31 (0x1F) - Comparator Interrupt Status
-- */
--#define WM8350_EXT_USB_FB_EINT                  0x8000
--#define WM8350_EXT_WALL_FB_EINT                 0x4000
--#define WM8350_EXT_BAT_FB_EINT                  0x2000
--#define WM8350_CODEC_JCK_DET_L_EINT             0x0800
--#define WM8350_CODEC_JCK_DET_R_EINT             0x0400
--#define WM8350_CODEC_MICSCD_EINT                0x0200
--#define WM8350_CODEC_MICD_EINT                  0x0100
--#define WM8350_WKUP_OFF_STATE_EINT              0x0040
--#define WM8350_WKUP_HIB_STATE_EINT              0x0020
--#define WM8350_WKUP_CONV_FAULT_EINT             0x0010
--#define WM8350_WKUP_WDOG_RST_EINT               0x0008
--#define WM8350_WKUP_GP_PWR_ON_EINT              0x0004
--#define WM8350_WKUP_ONKEY_EINT                  0x0002
--#define WM8350_WKUP_GP_WAKEUP_EINT              0x0001
--
--/*
-- * R32 (0x20) - System Interrupts Mask
-- */
--#define WM8350_IM_OC_INT                        0x2000
--#define WM8350_IM_UV_INT                        0x1000
--#define WM8350_IM_PUTO_INT                      0x0800
--#define WM8350_IM_SPARE_INT                     0x0400
--#define WM8350_IM_CS_INT                        0x0200
--#define WM8350_IM_EXT_INT                       0x0100
--#define WM8350_IM_CODEC_INT                     0x0080
--#define WM8350_IM_GP_INT                        0x0040
--#define WM8350_IM_AUXADC_INT                    0x0020
--#define WM8350_IM_RTC_INT                       0x0010
--#define WM8350_IM_SYS_INT                       0x0008
--#define WM8350_IM_CHG_INT                       0x0004
--#define WM8350_IM_USB_INT                       0x0002
--#define WM8350_IM_WKUP_INT                      0x0001
--
--/*
-- * R33 (0x21) - Interrupt Status 1 Mask
-- */
--#define WM8350_IM_CHG_BAT_HOT_EINT              0x8000
--#define WM8350_IM_CHG_BAT_COLD_EINT             0x4000
--#define WM8350_IM_CHG_BAT_FAIL_EINT             0x2000
--#define WM8350_IM_CHG_TO_EINT                   0x1000
--#define WM8350_IM_CHG_END_EINT                  0x0800
--#define WM8350_IM_CHG_START_EINT                0x0400
--#define WM8350_IM_CHG_FAST_RDY_EINT             0x0200
--#define WM8350_IM_RTC_PER_EINT                  0x0080
--#define WM8350_IM_RTC_SEC_EINT                  0x0040
--#define WM8350_IM_RTC_ALM_EINT                  0x0020
--#define WM8350_IM_CHG_VBATT_LT_3P9_EINT         0x0004
--#define WM8350_IM_CHG_VBATT_LT_3P1_EINT         0x0002
--#define WM8350_IM_CHG_VBATT_LT_2P85_EINT        0x0001
--
--/*
-- * R34 (0x22) - Interrupt Status 2 Mask
-- */
--#define WM8350_IM_SPARE2_EINT                   0x8000
--#define WM8350_IM_SPARE1_EINT                   0x4000
--#define WM8350_IM_CS1_EINT                      0x2000
--#define WM8350_IM_CS2_EINT                      0x1000
--#define WM8350_IM_USB_LIMIT_EINT                0x0400
--#define WM8350_IM_AUXADC_DATARDY_EINT           0x0100
--#define WM8350_IM_AUXADC_DCOMP4_EINT            0x0080
--#define WM8350_IM_AUXADC_DCOMP3_EINT            0x0040
--#define WM8350_IM_AUXADC_DCOMP2_EINT            0x0020
--#define WM8350_IM_AUXADC_DCOMP1_EINT            0x0010
--#define WM8350_IM_SYS_HYST_COMP_FAIL_EINT       0x0008
--#define WM8350_IM_SYS_CHIP_GT115_EINT           0x0004
--#define WM8350_IM_SYS_CHIP_GT140_EINT           0x0002
--#define WM8350_IM_SYS_WDOG_TO_EINT              0x0001
--
--/*
-- * R35 (0x23) - Power Up Interrupt Status Mask
-- */
--#define WM8350_IM_PUTO_LDO4_EINT                0x0800
--#define WM8350_IM_PUTO_LDO3_EINT                0x0400
--#define WM8350_IM_PUTO_LDO2_EINT                0x0200
--#define WM8350_IM_PUTO_LDO1_EINT                0x0100
--#define WM8350_IM_PUTO_DC6_EINT                 0x0020
--#define WM8350_IM_PUTO_DC5_EINT                 0x0010
--#define WM8350_IM_PUTO_DC4_EINT                 0x0008
--#define WM8350_IM_PUTO_DC3_EINT                 0x0004
--#define WM8350_IM_PUTO_DC2_EINT                 0x0002
--#define WM8350_IM_PUTO_DC1_EINT                 0x0001
--
--/*
-- * R36 (0x24) - Under Voltage Interrupt status Mask
-- */
--#define WM8350_IM_UV_LDO4_EINT                  0x0800
--#define WM8350_IM_UV_LDO3_EINT                  0x0400
--#define WM8350_IM_UV_LDO2_EINT                  0x0200
--#define WM8350_IM_UV_LDO1_EINT                  0x0100
--#define WM8350_IM_UV_DC6_EINT                   0x0020
--#define WM8350_IM_UV_DC5_EINT                   0x0010
--#define WM8350_IM_UV_DC4_EINT                   0x0008
--#define WM8350_IM_UV_DC3_EINT                   0x0004
--#define WM8350_IM_UV_DC2_EINT                   0x0002
--#define WM8350_IM_UV_DC1_EINT                   0x0001
--
--/*
-- * R37 (0x25) - Over Current Interrupt status Mask
-- */
--#define WM8350_IM_OC_LS_EINT                    0x8000
--
--/*
-- * R38 (0x26) - GPIO Interrupt Status Mask
-- */
--#define WM8350_IM_GP12_EINT                     0x1000
--#define WM8350_IM_GP11_EINT                     0x0800
--#define WM8350_IM_GP10_EINT                     0x0400
--#define WM8350_IM_GP9_EINT                      0x0200
--#define WM8350_IM_GP8_EINT                      0x0100
--#define WM8350_IM_GP7_EINT                      0x0080
--#define WM8350_IM_GP6_EINT                      0x0040
--#define WM8350_IM_GP5_EINT                      0x0020
--#define WM8350_IM_GP4_EINT                      0x0010
--#define WM8350_IM_GP3_EINT                      0x0008
--#define WM8350_IM_GP2_EINT                      0x0004
--#define WM8350_IM_GP1_EINT                      0x0002
--#define WM8350_IM_GP0_EINT                      0x0001
--
--/*
-- * R39 (0x27) - Comparator Interrupt Status Mask
-- */
--#define WM8350_IM_EXT_USB_FB_EINT               0x8000
--#define WM8350_IM_EXT_WALL_FB_EINT              0x4000
--#define WM8350_IM_EXT_BAT_FB_EINT               0x2000
--#define WM8350_IM_CODEC_JCK_DET_L_EINT          0x0800
--#define WM8350_IM_CODEC_JCK_DET_R_EINT          0x0400
--#define WM8350_IM_CODEC_MICSCD_EINT             0x0200
--#define WM8350_IM_CODEC_MICD_EINT               0x0100
--#define WM8350_IM_WKUP_OFF_STATE_EINT           0x0040
--#define WM8350_IM_WKUP_HIB_STATE_EINT           0x0020
--#define WM8350_IM_WKUP_CONV_FAULT_EINT          0x0010
--#define WM8350_IM_WKUP_WDOG_RST_EINT            0x0008
--#define WM8350_IM_WKUP_GP_PWR_ON_EINT           0x0004
--#define WM8350_IM_WKUP_ONKEY_EINT               0x0002
--#define WM8350_IM_WKUP_GP_WAKEUP_EINT           0x0001
--
--/*
-- * R220 (0xDC) - RAM BIST 1
-- */
--#define WM8350_READ_STATUS                      0x0800
--#define WM8350_TSTRAM_CLK                       0x0100
--#define WM8350_TSTRAM_CLK_ENA                   0x0080
--#define WM8350_STARTSEQ                         0x0040
--#define WM8350_READ_SRC                         0x0020
--#define WM8350_COUNT_DIR                        0x0010
--#define WM8350_TSTRAM_MODE_MASK                 0x000E
--#define WM8350_TSTRAM_ENA                       0x0001
--
--/*
-- * R225 (0xE1) - DCDC/LDO status
-- */
--#define WM8350_LS_STS                           0x8000
--#define WM8350_LDO4_STS                         0x0800
--#define WM8350_LDO3_STS                         0x0400
--#define WM8350_LDO2_STS                         0x0200
--#define WM8350_LDO1_STS                         0x0100
--#define WM8350_DC6_STS                          0x0020
--#define WM8350_DC5_STS                          0x0010
--#define WM8350_DC4_STS                          0x0008
--#define WM8350_DC3_STS                          0x0004
--#define WM8350_DC2_STS                          0x0002
--#define WM8350_DC1_STS                          0x0001
--
--/*
-- * R226 (0xE2) - Charger status
-- */
--#define WM8350_CHG_BATT_HOT_OVRDE		0x8000
--#define WM8350_CHG_BATT_COLD_OVRDE		0x4000
--
--/*
-- * R227 (0xE3) - Misc Overrides
-- */
--#define WM8350_USB_LIMIT_OVRDE			0x0400
--
--/*
-- * R227 (0xE7) - Comparator Overrides
-- */
--#define WM8350_USB_FB_OVRDE			0x8000
--#define WM8350_WALL_FB_OVRDE			0x4000
--#define WM8350_BATT_FB_OVRDE			0x2000
--
--
--/*
-- * R233 (0xE9) - State Machinine Status
-- */
--#define WM8350_USB_SM_MASK			0x0700
--#define WM8350_USB_SM_SHIFT			8
--
--#define WM8350_USB_SM_100_SLV   1
--#define WM8350_USB_SM_500_SLV   5
--#define WM8350_USB_SM_STDBY_SLV 7
--
--/* WM8350 wake up conditions */
--#define WM8350_IRQ_WKUP_OFF_STATE		43
--#define WM8350_IRQ_WKUP_HIB_STATE		44
--#define WM8350_IRQ_WKUP_CONV_FAULT		45
--#define WM8350_IRQ_WKUP_WDOG_RST		46
--#define WM8350_IRQ_WKUP_GP_PWR_ON		47
--#define WM8350_IRQ_WKUP_ONKEY			48
--#define WM8350_IRQ_WKUP_GP_WAKEUP		49
--
--/* wm8350 chip revisions */
--#define WM8350_REV_E				0x4
--#define WM8350_REV_F				0x5
--#define WM8350_REV_G				0x6
--#define WM8350_REV_H				0x7
--
--#define WM8350_NUM_IRQ				63
--
--#define WM8350_NUM_IRQ_REGS 7
--
--extern const struct regmap_config wm8350_regmap;
--
--struct wm8350;
--
--struct wm8350_hwmon {
--	struct platform_device *pdev;
--	struct device *classdev;
--};
--
--struct wm8350 {
--	struct device *dev;
--
--	/* device IO */
--	struct regmap *regmap;
--	bool unlocked;
--
--	struct mutex auxadc_mutex;
--	struct completion auxadc_done;
--
--	/* Interrupt handling */
--	struct mutex irq_lock;
--	int chip_irq;
--	int irq_base;
--	u16 irq_masks[WM8350_NUM_IRQ_REGS];
--
--	/* Client devices */
--	struct wm8350_codec codec;
--	struct wm8350_gpio gpio;
--	struct wm8350_hwmon hwmon;
--	struct wm8350_pmic pmic;
--	struct wm8350_power power;
--	struct wm8350_rtc rtc;
--	struct wm8350_wdt wdt;
--};
--
--/**
-- * Data to be supplied by the platform to initialise the WM8350.
-- *
-- * @init: Function called during driver initialisation.  Should be
-- *        used by the platform to configure GPIO functions and similar.
-- * @irq_high: Set if WM8350 IRQ is active high.
-- * @irq_base: Base IRQ for genirq (not currently used).
-- * @gpio_base: Base for gpiolib.
-- */
--struct wm8350_platform_data {
--	int (*init)(struct wm8350 *wm8350);
--	int irq_high;
--	int irq_base;
--	int gpio_base;
--};
--
--
--/*
-- * WM8350 device initialisation and exit.
-- */
--int wm8350_device_init(struct wm8350 *wm8350, int irq,
--		       struct wm8350_platform_data *pdata);
--
--/*
-- * WM8350 device IO
-- */
--int wm8350_clear_bits(struct wm8350 *wm8350, u16 reg, u16 mask);
--int wm8350_set_bits(struct wm8350 *wm8350, u16 reg, u16 mask);
--u16 wm8350_reg_read(struct wm8350 *wm8350, int reg);
--int wm8350_reg_write(struct wm8350 *wm8350, int reg, u16 val);
--int wm8350_reg_lock(struct wm8350 *wm8350);
--int wm8350_reg_unlock(struct wm8350 *wm8350);
--int wm8350_block_read(struct wm8350 *wm8350, int reg, int size, u16 *dest);
--int wm8350_block_write(struct wm8350 *wm8350, int reg, int size, u16 *src);
--
--/*
-- * WM8350 internal interrupts
-- */
--static inline int wm8350_register_irq(struct wm8350 *wm8350, int irq,
--				      irq_handler_t handler,
--				      unsigned long flags,
--				      const char *name, void *data)
--{
--	if (!wm8350->irq_base)
--		return -ENODEV;
--
--	return request_threaded_irq(irq + wm8350->irq_base, NULL,
--				    handler, flags | IRQF_ONESHOT, name, data);
--}
--
--static inline void wm8350_free_irq(struct wm8350 *wm8350, int irq, void *data)
--{
--	free_irq(irq + wm8350->irq_base, data);
--}
--
--static inline void wm8350_mask_irq(struct wm8350 *wm8350, int irq)
--{
--	disable_irq(irq + wm8350->irq_base);
--}
--
--static inline void wm8350_unmask_irq(struct wm8350 *wm8350, int irq)
--{
--	enable_irq(irq + wm8350->irq_base);
--}
--
--int wm8350_irq_init(struct wm8350 *wm8350, int irq,
--		    struct wm8350_platform_data *pdata);
--int wm8350_irq_exit(struct wm8350 *wm8350);
--
--#endif
-diff --git a/include/linux/mfd/wm8350/gpio.h b/include/linux/mfd/wm8350/gpio.h
-deleted file mode 100644
-index e831b30dde3e..000000000000
---- a/include/linux/mfd/wm8350/gpio.h
-+++ /dev/null
-@@ -1,356 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0-or-later */
--/*
-- * gpio.h  --  GPIO Driver for Wolfson WM8350 PMIC
-- *
-- * Copyright 2007 Wolfson Microelectronics PLC
-- */
--
--#ifndef __LINUX_MFD_WM8350_GPIO_H_
--#define __LINUX_MFD_WM8350_GPIO_H_
--
--#include <linux/platform_device.h>
--
--/*
-- * GPIO Registers.
-- */
--#define WM8350_GPIO_DEBOUNCE                    0x80
--#define WM8350_GPIO_PIN_PULL_UP_CONTROL         0x81
--#define WM8350_GPIO_PULL_DOWN_CONTROL           0x82
--#define WM8350_GPIO_INT_MODE                    0x83
--#define WM8350_GPIO_CONTROL                     0x85
--#define WM8350_GPIO_CONFIGURATION_I_O           0x86
--#define WM8350_GPIO_PIN_POLARITY_TYPE           0x87
--#define WM8350_GPIO_FUNCTION_SELECT_1           0x8C
--#define WM8350_GPIO_FUNCTION_SELECT_2           0x8D
--#define WM8350_GPIO_FUNCTION_SELECT_3           0x8E
--#define WM8350_GPIO_FUNCTION_SELECT_4           0x8F
--#define WM8350_GPIO_LEVEL			0xE6
--
--/*
-- * GPIO Functions
-- */
--#define WM8350_GPIO0_GPIO_IN			0x0
--#define WM8350_GPIO0_GPIO_OUT			0x0
--#define WM8350_GPIO0_PWR_ON_IN			0x1
--#define WM8350_GPIO0_PWR_ON_OUT			0x1
--#define WM8350_GPIO0_LDO_EN_IN			0x2
--#define WM8350_GPIO0_VRTC_OUT			0x2
--#define WM8350_GPIO0_LPWR1_IN			0x3
--#define WM8350_GPIO0_POR_B_OUT			0x3
--
--#define WM8350_GPIO1_GPIO_IN			0x0
--#define WM8350_GPIO1_GPIO_OUT			0x0
--#define WM8350_GPIO1_PWR_ON_IN			0x1
--#define WM8350_GPIO1_DO_CONF_OUT		0x1
--#define WM8350_GPIO1_LDO_EN_IN			0x2
--#define WM8350_GPIO1_RESET_OUT			0x2
--#define WM8350_GPIO1_LPWR2_IN			0x3
--#define WM8350_GPIO1_MEMRST_OUT			0x3
--
--#define WM8350_GPIO2_GPIO_IN			0x0
--#define WM8350_GPIO2_GPIO_OUT			0x0
--#define WM8350_GPIO2_PWR_ON_IN			0x1
--#define WM8350_GPIO2_PWR_ON_OUT			0x1
--#define WM8350_GPIO2_WAKE_UP_IN			0x2
--#define WM8350_GPIO2_VRTC_OUT			0x2
--#define WM8350_GPIO2_32KHZ_IN			0x3
--#define WM8350_GPIO2_32KHZ_OUT			0x3
--
--#define WM8350_GPIO3_GPIO_IN			0x0
--#define WM8350_GPIO3_GPIO_OUT			0x0
--#define WM8350_GPIO3_PWR_ON_IN			0x1
--#define WM8350_GPIO3_P_CLK_OUT			0x1
--#define WM8350_GPIO3_LDO_EN_IN			0x2
--#define WM8350_GPIO3_VRTC_OUT			0x2
--#define WM8350_GPIO3_PWR_OFF_IN			0x3
--#define WM8350_GPIO3_32KHZ_OUT			0x3
--
--#define WM8350_GPIO4_GPIO_IN			0x0
--#define WM8350_GPIO4_GPIO_OUT			0x0
--#define WM8350_GPIO4_MR_IN			0x1
--#define WM8350_GPIO4_MEM_RST_OUT		0x1
--#define WM8350_GPIO4_FLASH_IN			0x2
--#define WM8350_GPIO4_ADA_OUT			0x2
--#define WM8350_GPIO4_HIBERNATE_IN		0x3
--#define WM8350_GPIO4_FLASH_OUT			0x3
--#define WM8350_GPIO4_MICDET_OUT			0x4
--#define WM8350_GPIO4_MICSHT_OUT			0x5
--
--#define WM8350_GPIO5_GPIO_IN			0x0
--#define WM8350_GPIO5_GPIO_OUT			0x0
--#define WM8350_GPIO5_LPWR1_IN			0x1
--#define WM8350_GPIO5_P_CLK_OUT			0x1
--#define WM8350_GPIO5_ADCLRCLK_IN		0x2
--#define WM8350_GPIO5_ADCLRCLK_OUT		0x2
--#define WM8350_GPIO5_HIBERNATE_IN		0x3
--#define WM8350_GPIO5_32KHZ_OUT			0x3
--#define WM8350_GPIO5_MICDET_OUT			0x4
--#define WM8350_GPIO5_MICSHT_OUT			0x5
--#define WM8350_GPIO5_ADA_OUT			0x6
--#define WM8350_GPIO5_OPCLK_OUT			0x7
--
--#define WM8350_GPIO6_GPIO_IN			0x0
--#define WM8350_GPIO6_GPIO_OUT			0x0
--#define WM8350_GPIO6_LPWR2_IN			0x1
--#define WM8350_GPIO6_MEMRST_OUT			0x1
--#define WM8350_GPIO6_FLASH_IN			0x2
--#define WM8350_GPIO6_ADA_OUT			0x2
--#define WM8350_GPIO6_HIBERNATE_IN		0x3
--#define WM8350_GPIO6_RTC_OUT			0x3
--#define WM8350_GPIO6_MICDET_OUT			0x4
--#define WM8350_GPIO6_MICSHT_OUT			0x5
--#define WM8350_GPIO6_ADCLRCLKB_OUT		0x6
--#define WM8350_GPIO6_SDOUT_OUT			0x7
--
--#define WM8350_GPIO7_GPIO_IN			0x0
--#define WM8350_GPIO7_GPIO_OUT			0x0
--#define WM8350_GPIO7_LPWR3_IN			0x1
--#define WM8350_GPIO7_P_CLK_OUT			0x1
--#define WM8350_GPIO7_MASK_IN			0x2
--#define WM8350_GPIO7_VCC_FAULT_OUT		0x2
--#define WM8350_GPIO7_HIBERNATE_IN		0x3
--#define WM8350_GPIO7_BATT_FAULT_OUT		0x3
--#define WM8350_GPIO7_MICDET_OUT			0x4
--#define WM8350_GPIO7_MICSHT_OUT			0x5
--#define WM8350_GPIO7_ADA_OUT			0x6
--#define WM8350_GPIO7_CSB_IN			0x7
--
--#define WM8350_GPIO8_GPIO_IN			0x0
--#define WM8350_GPIO8_GPIO_OUT			0x0
--#define WM8350_GPIO8_MR_IN			0x1
--#define WM8350_GPIO8_VCC_FAULT_OUT		0x1
--#define WM8350_GPIO8_ADCBCLK_IN			0x2
--#define WM8350_GPIO8_ADCBCLK_OUT		0x2
--#define WM8350_GPIO8_PWR_OFF_IN			0x3
--#define WM8350_GPIO8_BATT_FAULT_OUT		0x3
--#define WM8350_GPIO8_ALTSCL_IN			0xf
--
--#define WM8350_GPIO9_GPIO_IN			0x0
--#define WM8350_GPIO9_GPIO_OUT			0x0
--#define WM8350_GPIO9_HEARTBEAT_IN		0x1
--#define WM8350_GPIO9_VCC_FAULT_OUT		0x1
--#define WM8350_GPIO9_MASK_IN			0x2
--#define WM8350_GPIO9_LINE_GT_BATT_OUT		0x2
--#define WM8350_GPIO9_PWR_OFF_IN			0x3
--#define WM8350_GPIO9_BATT_FAULT_OUT		0x3
--#define WM8350_GPIO9_ALTSDA_OUT			0xf
--
--#define WM8350_GPIO10_GPIO_IN			0x0
--#define WM8350_GPIO10_GPIO_OUT			0x0
--#define WM8350_GPIO10_ISINKC_OUT		0x1
--#define WM8350_GPIO10_PWR_OFF_IN		0x2
--#define WM8350_GPIO10_LINE_GT_BATT_OUT		0x2
--#define WM8350_GPIO10_CHD_IND_IN		0x3
--
--#define WM8350_GPIO11_GPIO_IN			0x0
--#define WM8350_GPIO11_GPIO_OUT			0x0
--#define WM8350_GPIO11_ISINKD_OUT		0x1
--#define WM8350_GPIO11_WAKEUP_IN			0x2
--#define WM8350_GPIO11_LINE_GT_BATT_OUT		0x2
--#define WM8350_GPIO11_CHD_IND_IN		0x3
--
--#define WM8350_GPIO12_GPIO_IN			0x0
--#define WM8350_GPIO12_GPIO_OUT			0x0
--#define WM8350_GPIO12_ISINKE_OUT		0x1
--#define WM8350_GPIO12_LINE_GT_BATT_OUT		0x2
--#define WM8350_GPIO12_LINE_EN_OUT		0x3
--#define WM8350_GPIO12_32KHZ_OUT			0x4
--
--#define WM8350_GPIO_DIR_IN			0
--#define WM8350_GPIO_DIR_OUT			1
--#define WM8350_GPIO_ACTIVE_LOW			0
--#define WM8350_GPIO_ACTIVE_HIGH			1
--#define WM8350_GPIO_PULL_NONE			0
--#define WM8350_GPIO_PULL_UP			1
--#define WM8350_GPIO_PULL_DOWN			2
--#define WM8350_GPIO_INVERT_OFF			0
--#define WM8350_GPIO_INVERT_ON			1
--#define WM8350_GPIO_DEBOUNCE_OFF		0
--#define WM8350_GPIO_DEBOUNCE_ON			1
--
--/*
-- * R30 (0x1E) - GPIO Interrupt Status
-- */
--#define WM8350_GP12_EINT                        0x1000
--#define WM8350_GP11_EINT                        0x0800
--#define WM8350_GP10_EINT                        0x0400
--#define WM8350_GP9_EINT                         0x0200
--#define WM8350_GP8_EINT                         0x0100
--#define WM8350_GP7_EINT                         0x0080
--#define WM8350_GP6_EINT                         0x0040
--#define WM8350_GP5_EINT                         0x0020
--#define WM8350_GP4_EINT                         0x0010
--#define WM8350_GP3_EINT                         0x0008
--#define WM8350_GP2_EINT                         0x0004
--#define WM8350_GP1_EINT                         0x0002
--#define WM8350_GP0_EINT                         0x0001
--
--
--/*
-- * R128 (0x80) - GPIO Debounce
-- */
--#define WM8350_GP12_DB                          0x1000
--#define WM8350_GP11_DB                          0x0800
--#define WM8350_GP10_DB                          0x0400
--#define WM8350_GP9_DB                           0x0200
--#define WM8350_GP8_DB                           0x0100
--#define WM8350_GP7_DB                           0x0080
--#define WM8350_GP6_DB                           0x0040
--#define WM8350_GP5_DB                           0x0020
--#define WM8350_GP4_DB                           0x0010
--#define WM8350_GP3_DB                           0x0008
--#define WM8350_GP2_DB                           0x0004
--#define WM8350_GP1_DB                           0x0002
--#define WM8350_GP0_DB                           0x0001
--
--/*
-- * R129 (0x81) - GPIO Pin pull up Control
-- */
--#define WM8350_GP12_PU                          0x1000
--#define WM8350_GP11_PU                          0x0800
--#define WM8350_GP10_PU                          0x0400
--#define WM8350_GP9_PU                           0x0200
--#define WM8350_GP8_PU                           0x0100
--#define WM8350_GP7_PU                           0x0080
--#define WM8350_GP6_PU                           0x0040
--#define WM8350_GP5_PU                           0x0020
--#define WM8350_GP4_PU                           0x0010
--#define WM8350_GP3_PU                           0x0008
--#define WM8350_GP2_PU                           0x0004
--#define WM8350_GP1_PU                           0x0002
--#define WM8350_GP0_PU                           0x0001
--
--/*
-- * R130 (0x82) - GPIO Pull down Control
-- */
--#define WM8350_GP12_PD                          0x1000
--#define WM8350_GP11_PD                          0x0800
--#define WM8350_GP10_PD                          0x0400
--#define WM8350_GP9_PD                           0x0200
--#define WM8350_GP8_PD                           0x0100
--#define WM8350_GP7_PD                           0x0080
--#define WM8350_GP6_PD                           0x0040
--#define WM8350_GP5_PD                           0x0020
--#define WM8350_GP4_PD                           0x0010
--#define WM8350_GP3_PD                           0x0008
--#define WM8350_GP2_PD                           0x0004
--#define WM8350_GP1_PD                           0x0002
--#define WM8350_GP0_PD                           0x0001
--
--/*
-- * R131 (0x83) - GPIO Interrupt Mode
-- */
--#define WM8350_GP12_INTMODE                     0x1000
--#define WM8350_GP11_INTMODE                     0x0800
--#define WM8350_GP10_INTMODE                     0x0400
--#define WM8350_GP9_INTMODE                      0x0200
--#define WM8350_GP8_INTMODE                      0x0100
--#define WM8350_GP7_INTMODE                      0x0080
--#define WM8350_GP6_INTMODE                      0x0040
--#define WM8350_GP5_INTMODE                      0x0020
--#define WM8350_GP4_INTMODE                      0x0010
--#define WM8350_GP3_INTMODE                      0x0008
--#define WM8350_GP2_INTMODE                      0x0004
--#define WM8350_GP1_INTMODE                      0x0002
--#define WM8350_GP0_INTMODE                      0x0001
--
--/*
-- * R133 (0x85) - GPIO Control
-- */
--#define WM8350_GP_DBTIME_MASK                   0x00C0
--
--/*
-- * R134 (0x86) - GPIO Configuration (i/o)
-- */
--#define WM8350_GP12_DIR                         0x1000
--#define WM8350_GP11_DIR                         0x0800
--#define WM8350_GP10_DIR                         0x0400
--#define WM8350_GP9_DIR                          0x0200
--#define WM8350_GP8_DIR                          0x0100
--#define WM8350_GP7_DIR                          0x0080
--#define WM8350_GP6_DIR                          0x0040
--#define WM8350_GP5_DIR                          0x0020
--#define WM8350_GP4_DIR                          0x0010
--#define WM8350_GP3_DIR                          0x0008
--#define WM8350_GP2_DIR                          0x0004
--#define WM8350_GP1_DIR                          0x0002
--#define WM8350_GP0_DIR                          0x0001
--
--/*
-- * R135 (0x87) - GPIO Pin Polarity / Type
-- */
--#define WM8350_GP12_CFG                         0x1000
--#define WM8350_GP11_CFG                         0x0800
--#define WM8350_GP10_CFG                         0x0400
--#define WM8350_GP9_CFG                          0x0200
--#define WM8350_GP8_CFG                          0x0100
--#define WM8350_GP7_CFG                          0x0080
--#define WM8350_GP6_CFG                          0x0040
--#define WM8350_GP5_CFG                          0x0020
--#define WM8350_GP4_CFG                          0x0010
--#define WM8350_GP3_CFG                          0x0008
--#define WM8350_GP2_CFG                          0x0004
--#define WM8350_GP1_CFG                          0x0002
--#define WM8350_GP0_CFG                          0x0001
--
--/*
-- * R140 (0x8C) - GPIO Function Select 1
-- */
--#define WM8350_GP3_FN_MASK                      0xF000
--#define WM8350_GP2_FN_MASK                      0x0F00
--#define WM8350_GP1_FN_MASK                      0x00F0
--#define WM8350_GP0_FN_MASK                      0x000F
--
--/*
-- * R141 (0x8D) - GPIO Function Select 2
-- */
--#define WM8350_GP7_FN_MASK                      0xF000
--#define WM8350_GP6_FN_MASK                      0x0F00
--#define WM8350_GP5_FN_MASK                      0x00F0
--#define WM8350_GP4_FN_MASK                      0x000F
--
--/*
-- * R142 (0x8E) - GPIO Function Select 3
-- */
--#define WM8350_GP11_FN_MASK                     0xF000
--#define WM8350_GP10_FN_MASK                     0x0F00
--#define WM8350_GP9_FN_MASK                      0x00F0
--#define WM8350_GP8_FN_MASK                      0x000F
--
--/*
-- * R143 (0x8F) - GPIO Function Select 4
-- */
--#define WM8350_GP12_FN_MASK                     0x000F
--
--/*
-- * R230 (0xE6) - GPIO Pin Status
-- */
--#define WM8350_GP12_LVL                         0x1000
--#define WM8350_GP11_LVL                         0x0800
--#define WM8350_GP10_LVL                         0x0400
--#define WM8350_GP9_LVL                          0x0200
--#define WM8350_GP8_LVL                          0x0100
--#define WM8350_GP7_LVL                          0x0080
--#define WM8350_GP6_LVL                          0x0040
--#define WM8350_GP5_LVL                          0x0020
--#define WM8350_GP4_LVL                          0x0010
--#define WM8350_GP3_LVL                          0x0008
--#define WM8350_GP2_LVL                          0x0004
--#define WM8350_GP1_LVL                          0x0002
--#define WM8350_GP0_LVL                          0x0001
--
--struct wm8350;
--
--int wm8350_gpio_config(struct wm8350 *wm8350, int gpio, int dir, int func,
--		       int pol, int pull, int invert, int debounce);
--
--struct wm8350_gpio {
--	struct platform_device *pdev;
--};
--
--/*
-- * GPIO Interrupts
-- */
--#define WM8350_IRQ_GPIO(x)                      (50 + x)
--
--#endif
-diff --git a/include/linux/mfd/wm8350/pmic.h b/include/linux/mfd/wm8350/pmic.h
-deleted file mode 100644
-index 04b09a2ddb28..000000000000
---- a/include/linux/mfd/wm8350/pmic.h
-+++ /dev/null
-@@ -1,775 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0-or-later */
--/*
-- * pmic.h  --  Power Management Driver for Wolfson WM8350 PMIC
-- *
-- * Copyright 2007 Wolfson Microelectronics PLC
-- */
--
--#ifndef __LINUX_MFD_WM8350_PMIC_H
--#define __LINUX_MFD_WM8350_PMIC_H
--
--#include <linux/platform_device.h>
--#include <linux/leds.h>
--#include <linux/regulator/machine.h>
--
--/*
-- * Register values.
-- */
--
--#define WM8350_CURRENT_SINK_DRIVER_A            0xAC
--#define WM8350_CSA_FLASH_CONTROL                0xAD
--#define WM8350_CURRENT_SINK_DRIVER_B            0xAE
--#define WM8350_CSB_FLASH_CONTROL                0xAF
--#define WM8350_DCDC_LDO_REQUESTED               0xB0
--#define WM8350_DCDC_ACTIVE_OPTIONS              0xB1
--#define WM8350_DCDC_SLEEP_OPTIONS               0xB2
--#define WM8350_POWER_CHECK_COMPARATOR           0xB3
--#define WM8350_DCDC1_CONTROL                    0xB4
--#define WM8350_DCDC1_TIMEOUTS                   0xB5
--#define WM8350_DCDC1_LOW_POWER                  0xB6
--#define WM8350_DCDC2_CONTROL                    0xB7
--#define WM8350_DCDC2_TIMEOUTS                   0xB8
--#define WM8350_DCDC3_CONTROL                    0xBA
--#define WM8350_DCDC3_TIMEOUTS                   0xBB
--#define WM8350_DCDC3_LOW_POWER                  0xBC
--#define WM8350_DCDC4_CONTROL                    0xBD
--#define WM8350_DCDC4_TIMEOUTS                   0xBE
--#define WM8350_DCDC4_LOW_POWER                  0xBF
--#define WM8350_DCDC5_CONTROL                    0xC0
--#define WM8350_DCDC5_TIMEOUTS                   0xC1
--#define WM8350_DCDC6_CONTROL                    0xC3
--#define WM8350_DCDC6_TIMEOUTS                   0xC4
--#define WM8350_DCDC6_LOW_POWER                  0xC5
--#define WM8350_LIMIT_SWITCH_CONTROL             0xC7
--#define WM8350_LDO1_CONTROL                     0xC8
--#define WM8350_LDO1_TIMEOUTS                    0xC9
--#define WM8350_LDO1_LOW_POWER                   0xCA
--#define WM8350_LDO2_CONTROL                     0xCB
--#define WM8350_LDO2_TIMEOUTS                    0xCC
--#define WM8350_LDO2_LOW_POWER                   0xCD
--#define WM8350_LDO3_CONTROL                     0xCE
--#define WM8350_LDO3_TIMEOUTS                    0xCF
--#define WM8350_LDO3_LOW_POWER                   0xD0
--#define WM8350_LDO4_CONTROL                     0xD1
--#define WM8350_LDO4_TIMEOUTS                    0xD2
--#define WM8350_LDO4_LOW_POWER                   0xD3
--#define WM8350_VCC_FAULT_MASKS                  0xD7
--#define WM8350_MAIN_BANDGAP_CONTROL             0xD8
--#define WM8350_OSC_CONTROL                      0xD9
--#define WM8350_RTC_TICK_CONTROL                 0xDA
--#define WM8350_SECURITY                         0xDB
--#define WM8350_RAM_BIST_1                       0xDC
--#define WM8350_DCDC_LDO_STATUS                  0xE1
--#define WM8350_GPIO_PIN_STATUS                  0xE6
--
--#define WM8350_DCDC1_FORCE_PWM                  0xF8
--#define WM8350_DCDC3_FORCE_PWM                  0xFA
--#define WM8350_DCDC4_FORCE_PWM                  0xFB
--#define WM8350_DCDC6_FORCE_PWM                  0xFD
--
--/*
-- * R172 (0xAC) - Current Sink Driver A
-- */
--#define WM8350_CS1_HIB_MODE                     0x1000
--#define WM8350_CS1_HIB_MODE_MASK                0x1000
--#define WM8350_CS1_HIB_MODE_SHIFT                   12
--#define WM8350_CS1_ISEL_MASK                    0x003F
--#define WM8350_CS1_ISEL_SHIFT                        0
--
--/* Bit values for R172 (0xAC) */
--#define WM8350_CS1_HIB_MODE_DISABLE                  0
--#define WM8350_CS1_HIB_MODE_LEAVE                    1
--
--#define WM8350_CS1_ISEL_220M                      0x3F
--
--/*
-- * R173 (0xAD) - CSA Flash control
-- */
--#define WM8350_CS1_FLASH_MODE                   0x8000
--#define WM8350_CS1_TRIGSRC                      0x4000
--#define WM8350_CS1_DRIVE                        0x2000
--#define WM8350_CS1_FLASH_DUR_MASK               0x0300
--#define WM8350_CS1_OFF_RAMP_MASK                0x0030
--#define WM8350_CS1_ON_RAMP_MASK                 0x0003
--
--/*
-- * R174 (0xAE) - Current Sink Driver B
-- */
--#define WM8350_CS2_HIB_MODE                     0x1000
--#define WM8350_CS2_ISEL_MASK                    0x003F
--
--/*
-- * R175 (0xAF) - CSB Flash control
-- */
--#define WM8350_CS2_FLASH_MODE                   0x8000
--#define WM8350_CS2_TRIGSRC                      0x4000
--#define WM8350_CS2_DRIVE                        0x2000
--#define WM8350_CS2_FLASH_DUR_MASK               0x0300
--#define WM8350_CS2_OFF_RAMP_MASK                0x0030
--#define WM8350_CS2_ON_RAMP_MASK                 0x0003
--
--/*
-- * R176 (0xB0) - DCDC/LDO requested
-- */
--#define WM8350_LS_ENA                           0x8000
--#define WM8350_LDO4_ENA                         0x0800
--#define WM8350_LDO3_ENA                         0x0400
--#define WM8350_LDO2_ENA                         0x0200
--#define WM8350_LDO1_ENA                         0x0100
--#define WM8350_DC6_ENA                          0x0020
--#define WM8350_DC5_ENA                          0x0010
--#define WM8350_DC4_ENA                          0x0008
--#define WM8350_DC3_ENA                          0x0004
--#define WM8350_DC2_ENA                          0x0002
--#define WM8350_DC1_ENA                          0x0001
--
--/*
-- * R177 (0xB1) - DCDC Active options
-- */
--#define WM8350_PUTO_MASK                        0x3000
--#define WM8350_PWRUP_DELAY_MASK                 0x0300
--#define WM8350_DC6_ACTIVE                       0x0020
--#define WM8350_DC4_ACTIVE                       0x0008
--#define WM8350_DC3_ACTIVE                       0x0004
--#define WM8350_DC1_ACTIVE                       0x0001
--
--/*
-- * R178 (0xB2) - DCDC Sleep options
-- */
--#define WM8350_DC6_SLEEP                        0x0020
--#define WM8350_DC4_SLEEP                        0x0008
--#define WM8350_DC3_SLEEP                        0x0004
--#define WM8350_DC1_SLEEP                        0x0001
--
--/*
-- * R179 (0xB3) - Power-check comparator
-- */
--#define WM8350_PCCMP_ERRACT                     0x4000
--#define WM8350_PCCMP_RAIL                       0x0100
--#define WM8350_PCCMP_OFF_THR_MASK               0x0070
--#define WM8350_PCCMP_ON_THR_MASK                0x0007
--
--/*
-- * R180 (0xB4) - DCDC1 Control
-- */
--#define WM8350_DC1_OPFLT                        0x0400
--#define WM8350_DC1_VSEL_MASK                    0x007F
--#define WM8350_DC1_VSEL_SHIFT                        0
--
--/*
-- * R181 (0xB5) - DCDC1 Timeouts
-- */
--#define WM8350_DC1_ERRACT_MASK                  0xC000
--#define WM8350_DC1_ERRACT_SHIFT                     14
--#define WM8350_DC1_ENSLOT_MASK                  0x3C00
--#define WM8350_DC1_ENSLOT_SHIFT                     10
--#define WM8350_DC1_SDSLOT_MASK                  0x03C0
--#define WM8350_DC1_UVTO_MASK                    0x0030
--#define WM8350_DC1_SDSLOT_SHIFT                      6
--
--/* Bit values for R181 (0xB5) */
--#define WM8350_DC1_ERRACT_NONE                       0
--#define WM8350_DC1_ERRACT_SHUTDOWN_CONV              1
--#define WM8350_DC1_ERRACT_SHUTDOWN_SYS               2
--
--/*
-- * R182 (0xB6) - DCDC1 Low Power
-- */
--#define WM8350_DC1_HIB_MODE_MASK                0x7000
--#define WM8350_DC1_HIB_TRIG_MASK                0x0300
--#define WM8350_DC1_VIMG_MASK                    0x007F
--
--/*
-- * R183 (0xB7) - DCDC2 Control
-- */
--#define WM8350_DC2_MODE                         0x4000
--#define WM8350_DC2_MODE_MASK                    0x4000
--#define WM8350_DC2_MODE_SHIFT                       14
--#define WM8350_DC2_HIB_MODE                     0x1000
--#define WM8350_DC2_HIB_MODE_MASK                0x1000
--#define WM8350_DC2_HIB_MODE_SHIFT                   12
--#define WM8350_DC2_HIB_TRIG_MASK                0x0300
--#define WM8350_DC2_HIB_TRIG_SHIFT                    8
--#define WM8350_DC2_ILIM                         0x0040
--#define WM8350_DC2_ILIM_MASK                    0x0040
--#define WM8350_DC2_ILIM_SHIFT                        6
--#define WM8350_DC2_RMP_MASK                     0x0018
--#define WM8350_DC2_RMP_SHIFT                         3
--#define WM8350_DC2_FBSRC_MASK                   0x0003
--#define WM8350_DC2_FBSRC_SHIFT                       0
--
--/* Bit values for R183 (0xB7) */
--#define WM8350_DC2_MODE_BOOST                        0
--#define WM8350_DC2_MODE_SWITCH                       1
--
--#define WM8350_DC2_HIB_MODE_ACTIVE                   1
--#define WM8350_DC2_HIB_MODE_DISABLE                  0
--
--#define WM8350_DC2_HIB_TRIG_NONE                     0
--#define WM8350_DC2_HIB_TRIG_LPWR1                    1
--#define WM8350_DC2_HIB_TRIG_LPWR2                    2
--#define WM8350_DC2_HIB_TRIG_LPWR3                    3
--
--#define WM8350_DC2_ILIM_HIGH                         0
--#define WM8350_DC2_ILIM_LOW                          1
--
--#define WM8350_DC2_RMP_30V                           0
--#define WM8350_DC2_RMP_20V                           1
--#define WM8350_DC2_RMP_10V                           2
--#define WM8350_DC2_RMP_5V                            3
--
--#define WM8350_DC2_FBSRC_FB2                         0
--#define WM8350_DC2_FBSRC_ISINKA                      1
--#define WM8350_DC2_FBSRC_ISINKB                      2
--#define WM8350_DC2_FBSRC_USB                         3
--
--/*
-- * R184 (0xB8) - DCDC2 Timeouts
-- */
--#define WM8350_DC2_ERRACT_MASK                  0xC000
--#define WM8350_DC2_ERRACT_SHIFT                     14
--#define WM8350_DC2_ENSLOT_MASK                  0x3C00
--#define WM8350_DC2_ENSLOT_SHIFT                     10
--#define WM8350_DC2_SDSLOT_MASK                  0x03C0
--#define WM8350_DC2_UVTO_MASK                    0x0030
--
--/* Bit values for R184 (0xB8) */
--#define WM8350_DC2_ERRACT_NONE                       0
--#define WM8350_DC2_ERRACT_SHUTDOWN_CONV              1
--#define WM8350_DC2_ERRACT_SHUTDOWN_SYS               2
--
--/*
-- * R186 (0xBA) - DCDC3 Control
-- */
--#define WM8350_DC3_OPFLT                        0x0400
--#define WM8350_DC3_VSEL_MASK                    0x007F
--#define WM8350_DC3_VSEL_SHIFT                        0
--
--/*
-- * R187 (0xBB) - DCDC3 Timeouts
-- */
--#define WM8350_DC3_ERRACT_MASK                  0xC000
--#define WM8350_DC3_ERRACT_SHIFT                     14
--#define WM8350_DC3_ENSLOT_MASK                  0x3C00
--#define WM8350_DC3_ENSLOT_SHIFT                     10
--#define WM8350_DC3_SDSLOT_MASK                  0x03C0
--#define WM8350_DC3_UVTO_MASK                    0x0030
--#define WM8350_DC3_SDSLOT_SHIFT                      6
--
--/* Bit values for R187 (0xBB) */
--#define WM8350_DC3_ERRACT_NONE                       0
--#define WM8350_DC3_ERRACT_SHUTDOWN_CONV              1
--#define WM8350_DC3_ERRACT_SHUTDOWN_SYS               2
--/*
-- * R188 (0xBC) - DCDC3 Low Power
-- */
--#define WM8350_DC3_HIB_MODE_MASK                0x7000
--#define WM8350_DC3_HIB_TRIG_MASK                0x0300
--#define WM8350_DC3_VIMG_MASK                    0x007F
--
--/*
-- * R189 (0xBD) - DCDC4 Control
-- */
--#define WM8350_DC4_OPFLT                        0x0400
--#define WM8350_DC4_VSEL_MASK                    0x007F
--#define WM8350_DC4_VSEL_SHIFT                        0
--
--/*
-- * R190 (0xBE) - DCDC4 Timeouts
-- */
--#define WM8350_DC4_ERRACT_MASK                  0xC000
--#define WM8350_DC4_ERRACT_SHIFT                     14
--#define WM8350_DC4_ENSLOT_MASK                  0x3C00
--#define WM8350_DC4_ENSLOT_SHIFT                     10
--#define WM8350_DC4_SDSLOT_MASK                  0x03C0
--#define WM8350_DC4_UVTO_MASK                    0x0030
--#define WM8350_DC4_SDSLOT_SHIFT                      6
--
--/* Bit values for R190 (0xBE) */
--#define WM8350_DC4_ERRACT_NONE                       0
--#define WM8350_DC4_ERRACT_SHUTDOWN_CONV              1
--#define WM8350_DC4_ERRACT_SHUTDOWN_SYS               2
--
--/*
-- * R191 (0xBF) - DCDC4 Low Power
-- */
--#define WM8350_DC4_HIB_MODE_MASK                0x7000
--#define WM8350_DC4_HIB_TRIG_MASK                0x0300
--#define WM8350_DC4_VIMG_MASK                    0x007F
--
--/*
-- * R192 (0xC0) - DCDC5 Control
-- */
--#define WM8350_DC5_MODE                         0x4000
--#define WM8350_DC5_MODE_MASK                    0x4000
--#define WM8350_DC5_MODE_SHIFT                       14
--#define WM8350_DC5_HIB_MODE                     0x1000
--#define WM8350_DC5_HIB_MODE_MASK                0x1000
--#define WM8350_DC5_HIB_MODE_SHIFT                   12
--#define WM8350_DC5_HIB_TRIG_MASK                0x0300
--#define WM8350_DC5_HIB_TRIG_SHIFT                    8
--#define WM8350_DC5_ILIM                         0x0040
--#define WM8350_DC5_ILIM_MASK                    0x0040
--#define WM8350_DC5_ILIM_SHIFT                        6
--#define WM8350_DC5_RMP_MASK                     0x0018
--#define WM8350_DC5_RMP_SHIFT                         3
--#define WM8350_DC5_FBSRC_MASK                   0x0003
--#define WM8350_DC5_FBSRC_SHIFT                       0
--
--/* Bit values for R192 (0xC0) */
--#define WM8350_DC5_MODE_BOOST                        0
--#define WM8350_DC5_MODE_SWITCH                       1
--
--#define WM8350_DC5_HIB_MODE_ACTIVE                   1
--#define WM8350_DC5_HIB_MODE_DISABLE                  0
--
--#define WM8350_DC5_HIB_TRIG_NONE                     0
--#define WM8350_DC5_HIB_TRIG_LPWR1                    1
--#define WM8350_DC5_HIB_TRIG_LPWR2                    2
--#define WM8350_DC5_HIB_TRIG_LPWR3                    3
--
--#define WM8350_DC5_ILIM_HIGH                         0
--#define WM8350_DC5_ILIM_LOW                          1
--
--#define WM8350_DC5_RMP_30V                           0
--#define WM8350_DC5_RMP_20V                           1
--#define WM8350_DC5_RMP_10V                           2
--#define WM8350_DC5_RMP_5V                            3
--
--#define WM8350_DC5_FBSRC_FB2                         0
--#define WM8350_DC5_FBSRC_ISINKA                      1
--#define WM8350_DC5_FBSRC_ISINKB                      2
--#define WM8350_DC5_FBSRC_USB                         3
--
--/*
-- * R193 (0xC1) - DCDC5 Timeouts
-- */
--#define WM8350_DC5_ERRACT_MASK                  0xC000
--#define WM8350_DC5_ERRACT_SHIFT                     14
--#define WM8350_DC5_ENSLOT_MASK                  0x3C00
--#define WM8350_DC5_ENSLOT_SHIFT                     10
--#define WM8350_DC5_SDSLOT_MASK                  0x03C0
--#define WM8350_DC5_UVTO_MASK                    0x0030
--#define WM8350_DC5_SDSLOT_SHIFT                      6
--
--/* Bit values for R193 (0xC1) */
--#define WM8350_DC5_ERRACT_NONE                       0
--#define WM8350_DC5_ERRACT_SHUTDOWN_CONV              1
--#define WM8350_DC5_ERRACT_SHUTDOWN_SYS               2
--
--/*
-- * R195 (0xC3) - DCDC6 Control
-- */
--#define WM8350_DC6_OPFLT                        0x0400
--#define WM8350_DC6_VSEL_MASK                    0x007F
--#define WM8350_DC6_VSEL_SHIFT                        0
--
--/*
-- * R196 (0xC4) - DCDC6 Timeouts
-- */
--#define WM8350_DC6_ERRACT_MASK                  0xC000
--#define WM8350_DC6_ERRACT_SHIFT                     14
--#define WM8350_DC6_ENSLOT_MASK                  0x3C00
--#define WM8350_DC6_ENSLOT_SHIFT                     10
--#define WM8350_DC6_SDSLOT_MASK                  0x03C0
--#define WM8350_DC6_UVTO_MASK                    0x0030
--#define WM8350_DC6_SDSLOT_SHIFT                      6
--
--/* Bit values for R196 (0xC4) */
--#define WM8350_DC6_ERRACT_NONE                       0
--#define WM8350_DC6_ERRACT_SHUTDOWN_CONV              1
--#define WM8350_DC6_ERRACT_SHUTDOWN_SYS               2
--
--/*
-- * R197 (0xC5) - DCDC6 Low Power
-- */
--#define WM8350_DC6_HIB_MODE_MASK                0x7000
--#define WM8350_DC6_HIB_TRIG_MASK                0x0300
--#define WM8350_DC6_VIMG_MASK                    0x007F
--
--/*
-- * R199 (0xC7) - Limit Switch Control
-- */
--#define WM8350_LS_ERRACT_MASK                   0xC000
--#define WM8350_LS_ERRACT_SHIFT                      14
--#define WM8350_LS_ENSLOT_MASK                   0x3C00
--#define WM8350_LS_ENSLOT_SHIFT                      10
--#define WM8350_LS_SDSLOT_MASK                   0x03C0
--#define WM8350_LS_SDSLOT_SHIFT                       6
--#define WM8350_LS_HIB_MODE                      0x0010
--#define WM8350_LS_HIB_MODE_MASK                 0x0010
--#define WM8350_LS_HIB_MODE_SHIFT                     4
--#define WM8350_LS_HIB_PROT                      0x0002
--#define WM8350_LS_HIB_PROT_MASK                 0x0002
--#define WM8350_LS_HIB_PROT_SHIFT                     1
--#define WM8350_LS_PROT                          0x0001
--#define WM8350_LS_PROT_MASK                     0x0001
--#define WM8350_LS_PROT_SHIFT                         0
--
--/* Bit values for R199 (0xC7) */
--#define WM8350_LS_ERRACT_NONE                       0
--#define WM8350_LS_ERRACT_SHUTDOWN_CONV              1
--#define WM8350_LS_ERRACT_SHUTDOWN_SYS               2
--
--/*
-- * R200 (0xC8) - LDO1 Control
-- */
--#define WM8350_LDO1_SWI                         0x4000
--#define WM8350_LDO1_OPFLT                       0x0400
--#define WM8350_LDO1_VSEL_MASK                   0x001F
--#define WM8350_LDO1_VSEL_SHIFT                       0
--
--/*
-- * R201 (0xC9) - LDO1 Timeouts
-- */
--#define WM8350_LDO1_ERRACT_MASK                 0xC000
--#define WM8350_LDO1_ERRACT_SHIFT                    14
--#define WM8350_LDO1_ENSLOT_MASK                 0x3C00
--#define WM8350_LDO1_ENSLOT_SHIFT                    10
--#define WM8350_LDO1_SDSLOT_MASK                 0x03C0
--#define WM8350_LDO1_UVTO_MASK                   0x0030
--#define WM8350_LDO1_SDSLOT_SHIFT                     6
--
--/* Bit values for R201 (0xC9) */
--#define WM8350_LDO1_ERRACT_NONE                       0
--#define WM8350_LDO1_ERRACT_SHUTDOWN_CONV              1
--#define WM8350_LDO1_ERRACT_SHUTDOWN_SYS               2
--
--/*
-- * R202 (0xCA) - LDO1 Low Power
-- */
--#define WM8350_LDO1_HIB_MODE_MASK               0x3000
--#define WM8350_LDO1_HIB_TRIG_MASK               0x0300
--#define WM8350_LDO1_VIMG_MASK                   0x001F
--#define WM8350_LDO1_HIB_MODE_DIS		(0x1 << 12)
--
--
--/*
-- * R203 (0xCB) - LDO2 Control
-- */
--#define WM8350_LDO2_SWI                         0x4000
--#define WM8350_LDO2_OPFLT                       0x0400
--#define WM8350_LDO2_VSEL_MASK                   0x001F
--#define WM8350_LDO2_VSEL_SHIFT                       0
--
--/*
-- * R204 (0xCC) - LDO2 Timeouts
-- */
--#define WM8350_LDO2_ERRACT_MASK                 0xC000
--#define WM8350_LDO2_ERRACT_SHIFT                    14
--#define WM8350_LDO2_ENSLOT_MASK                 0x3C00
--#define WM8350_LDO2_ENSLOT_SHIFT                    10
--#define WM8350_LDO2_SDSLOT_MASK                 0x03C0
--#define WM8350_LDO2_SDSLOT_SHIFT                     6
--
--/* Bit values for R204 (0xCC) */
--#define WM8350_LDO2_ERRACT_NONE                       0
--#define WM8350_LDO2_ERRACT_SHUTDOWN_CONV              1
--#define WM8350_LDO2_ERRACT_SHUTDOWN_SYS               2
--
--/*
-- * R205 (0xCD) - LDO2 Low Power
-- */
--#define WM8350_LDO2_HIB_MODE_MASK               0x3000
--#define WM8350_LDO2_HIB_TRIG_MASK               0x0300
--#define WM8350_LDO2_VIMG_MASK                   0x001F
--
--/*
-- * R206 (0xCE) - LDO3 Control
-- */
--#define WM8350_LDO3_SWI                         0x4000
--#define WM8350_LDO3_OPFLT                       0x0400
--#define WM8350_LDO3_VSEL_MASK                   0x001F
--#define WM8350_LDO3_VSEL_SHIFT                       0
--
--/*
-- * R207 (0xCF) - LDO3 Timeouts
-- */
--#define WM8350_LDO3_ERRACT_MASK                 0xC000
--#define WM8350_LDO3_ERRACT_SHIFT                    14
--#define WM8350_LDO3_ENSLOT_MASK                 0x3C00
--#define WM8350_LDO3_ENSLOT_SHIFT                    10
--#define WM8350_LDO3_SDSLOT_MASK                 0x03C0
--#define WM8350_LDO3_UVTO_MASK                   0x0030
--#define WM8350_LDO3_SDSLOT_SHIFT                     6
--
--/* Bit values for R207 (0xCF) */
--#define WM8350_LDO3_ERRACT_NONE                       0
--#define WM8350_LDO3_ERRACT_SHUTDOWN_CONV              1
--#define WM8350_LDO3_ERRACT_SHUTDOWN_SYS               2
--
--/*
-- * R208 (0xD0) - LDO3 Low Power
-- */
--#define WM8350_LDO3_HIB_MODE_MASK               0x3000
--#define WM8350_LDO3_HIB_TRIG_MASK               0x0300
--#define WM8350_LDO3_VIMG_MASK                   0x001F
--
--/*
-- * R209 (0xD1) - LDO4 Control
-- */
--#define WM8350_LDO4_SWI                         0x4000
--#define WM8350_LDO4_OPFLT                       0x0400
--#define WM8350_LDO4_VSEL_MASK                   0x001F
--#define WM8350_LDO4_VSEL_SHIFT                       0
--
--/*
-- * R210 (0xD2) - LDO4 Timeouts
-- */
--#define WM8350_LDO4_ERRACT_MASK                 0xC000
--#define WM8350_LDO4_ERRACT_SHIFT                    14
--#define WM8350_LDO4_ENSLOT_MASK                 0x3C00
--#define WM8350_LDO4_ENSLOT_SHIFT                    10
--#define WM8350_LDO4_SDSLOT_MASK                 0x03C0
--#define WM8350_LDO4_UVTO_MASK                   0x0030
--#define WM8350_LDO4_SDSLOT_SHIFT                     6
--
--/* Bit values for R210 (0xD2) */
--#define WM8350_LDO4_ERRACT_NONE                       0
--#define WM8350_LDO4_ERRACT_SHUTDOWN_CONV              1
--#define WM8350_LDO4_ERRACT_SHUTDOWN_SYS               2
--
--/*
-- * R211 (0xD3) - LDO4 Low Power
-- */
--#define WM8350_LDO4_HIB_MODE_MASK               0x3000
--#define WM8350_LDO4_HIB_TRIG_MASK               0x0300
--#define WM8350_LDO4_VIMG_MASK                   0x001F
--
--/*
-- * R215 (0xD7) - VCC_FAULT Masks
-- */
--#define WM8350_LS_FAULT                         0x8000
--#define WM8350_LDO4_FAULT                       0x0800
--#define WM8350_LDO3_FAULT                       0x0400
--#define WM8350_LDO2_FAULT                       0x0200
--#define WM8350_LDO1_FAULT                       0x0100
--#define WM8350_DC6_FAULT                        0x0020
--#define WM8350_DC5_FAULT                        0x0010
--#define WM8350_DC4_FAULT                        0x0008
--#define WM8350_DC3_FAULT                        0x0004
--#define WM8350_DC2_FAULT                        0x0002
--#define WM8350_DC1_FAULT                        0x0001
--
--/*
-- * R216 (0xD8) - Main Bandgap Control
-- */
--#define WM8350_MBG_LOAD_FUSES                   0x8000
--#define WM8350_MBG_FUSE_WPREP                   0x4000
--#define WM8350_MBG_FUSE_WRITE                   0x2000
--#define WM8350_MBG_FUSE_TRIM_MASK               0x1F00
--#define WM8350_MBG_TRIM_SRC                     0x0020
--#define WM8350_MBG_USER_TRIM_MASK               0x001F
--
--/*
-- * R217 (0xD9) - OSC Control
-- */
--#define WM8350_OSC_LOAD_FUSES                   0x8000
--#define WM8350_OSC_FUSE_WPREP                   0x4000
--#define WM8350_OSC_FUSE_WRITE                   0x2000
--#define WM8350_OSC_FUSE_TRIM_MASK               0x0F00
--#define WM8350_OSC_TRIM_SRC                     0x0020
--#define WM8350_OSC_USER_TRIM_MASK               0x000F
--
--/*
-- * R248 (0xF8) - DCDC1 Force PWM
-- */
--#define WM8350_DCDC1_FORCE_PWM_ENA              0x0010
--
--/*
-- * R250 (0xFA) - DCDC3 Force PWM
-- */
--#define WM8350_DCDC3_FORCE_PWM_ENA              0x0010
--
--/*
-- * R251 (0xFB) - DCDC4 Force PWM
-- */
--#define WM8350_DCDC4_FORCE_PWM_ENA              0x0010
--
--/*
-- * R253 (0xFD) - DCDC1 Force PWM
-- */
--#define WM8350_DCDC6_FORCE_PWM_ENA              0x0010
--
--/*
-- * DCDC's
-- */
--#define WM8350_DCDC_1				0
--#define WM8350_DCDC_2				1
--#define WM8350_DCDC_3				2
--#define WM8350_DCDC_4				3
--#define WM8350_DCDC_5				4
--#define WM8350_DCDC_6				5
--
--/* DCDC modes */
--#define WM8350_DCDC_ACTIVE_STANDBY		0
--#define WM8350_DCDC_ACTIVE_PULSE		1
--#define WM8350_DCDC_SLEEP_NORMAL		0
--#define WM8350_DCDC_SLEEP_LOW			1
--
--/* DCDC Low power (Hibernate) mode */
--#define WM8350_DCDC_HIB_MODE_CUR		(0 << 12)
--#define WM8350_DCDC_HIB_MODE_IMAGE		(1 << 12)
--#define WM8350_DCDC_HIB_MODE_STANDBY		(2 << 12)
--#define WM8350_DCDC_HIB_MODE_LDO		(4 << 12)
--#define WM8350_DCDC_HIB_MODE_LDO_IM		(5 << 12)
--#define WM8350_DCDC_HIB_MODE_DIS		(7 << 12)
--#define WM8350_DCDC_HIB_MODE_MASK		(7 << 12)
--
--/* DCDC Low Power (Hibernate) signal */
--#define WM8350_DCDC_HIB_SIG_REG			(0 << 8)
--#define WM8350_DCDC_HIB_SIG_LPWR1		(1 << 8)
--#define WM8350_DCDC_HIB_SIG_LPWR2		(2 << 8)
--#define WM8350_DCDC_HIB_SIG_LPWR3		(3 << 8)
--
--/* LDO Low power (Hibernate) mode */
--#define WM8350_LDO_HIB_MODE_IMAGE		(0 << 0)
--#define WM8350_LDO_HIB_MODE_DIS			(1 << 0)
--
--/* LDO Low Power (Hibernate) signal */
--#define WM8350_LDO_HIB_SIG_REG			(0 << 8)
--#define WM8350_LDO_HIB_SIG_LPWR1		(1 << 8)
--#define WM8350_LDO_HIB_SIG_LPWR2		(2 << 8)
--#define WM8350_LDO_HIB_SIG_LPWR3		(3 << 8)
--
--/*
-- * LDOs
-- */
--#define WM8350_LDO_1				6
--#define WM8350_LDO_2				7
--#define WM8350_LDO_3				8
--#define WM8350_LDO_4				9
--
--/*
-- * ISINKs
-- */
--#define WM8350_ISINK_A				10
--#define WM8350_ISINK_B				11
--
--#define WM8350_ISINK_MODE_BOOST			0
--#define WM8350_ISINK_MODE_SWITCH		1
--#define WM8350_ISINK_ILIM_NORMAL		0
--#define WM8350_ISINK_ILIM_LOW			1
--
--#define WM8350_ISINK_FLASH_DISABLE		0
--#define WM8350_ISINK_FLASH_ENABLE		1
--#define WM8350_ISINK_FLASH_TRIG_BIT		0
--#define WM8350_ISINK_FLASH_TRIG_GPIO		1
--#define WM8350_ISINK_FLASH_MODE_EN		(1 << 13)
--#define WM8350_ISINK_FLASH_MODE_DIS		(0 << 13)
--#define WM8350_ISINK_FLASH_DUR_32MS		(0 << 8)
--#define WM8350_ISINK_FLASH_DUR_64MS		(1 << 8)
--#define WM8350_ISINK_FLASH_DUR_96MS		(2 << 8)
--#define WM8350_ISINK_FLASH_DUR_1024MS		(3 << 8)
--#define WM8350_ISINK_FLASH_ON_INSTANT		(0 << 0)
--#define WM8350_ISINK_FLASH_ON_0_25S		(1 << 0)
--#define WM8350_ISINK_FLASH_ON_0_50S		(2 << 0)
--#define WM8350_ISINK_FLASH_ON_1_00S		(3 << 0)
--#define WM8350_ISINK_FLASH_ON_1_95S		(1 << 0)
--#define WM8350_ISINK_FLASH_ON_3_91S		(2 << 0)
--#define WM8350_ISINK_FLASH_ON_7_80S		(3 << 0)
--#define WM8350_ISINK_FLASH_OFF_INSTANT		(0 << 4)
--#define WM8350_ISINK_FLASH_OFF_0_25S		(1 << 4)
--#define WM8350_ISINK_FLASH_OFF_0_50S		(2 << 4)
--#define WM8350_ISINK_FLASH_OFF_1_00S		(3 << 4)
--#define WM8350_ISINK_FLASH_OFF_1_95S		(1 << 4)
--#define WM8350_ISINK_FLASH_OFF_3_91S		(2 << 4)
--#define WM8350_ISINK_FLASH_OFF_7_80S		(3 << 4)
--
--/*
-- * Regulator Interrupts.
-- */
--#define WM8350_IRQ_CS1				13
--#define WM8350_IRQ_CS2				14
--#define WM8350_IRQ_UV_LDO4			25
--#define WM8350_IRQ_UV_LDO3			26
--#define WM8350_IRQ_UV_LDO2			27
--#define WM8350_IRQ_UV_LDO1			28
--#define WM8350_IRQ_UV_DC6			29
--#define WM8350_IRQ_UV_DC5			30
--#define WM8350_IRQ_UV_DC4			31
--#define WM8350_IRQ_UV_DC3			32
--#define WM8350_IRQ_UV_DC2			33
--#define WM8350_IRQ_UV_DC1			34
--#define WM8350_IRQ_OC_LS			35
--
--#define NUM_WM8350_REGULATORS			12
--
--struct wm8350;
--struct platform_device;
--struct regulator_init_data;
--
--/*
-- * WM8350 LED platform data
-- */
--struct wm8350_led_platform_data {
--	const char *name;
--	const char *default_trigger;
--	int max_uA;
--};
--
--struct wm8350_led {
--	struct platform_device *pdev;
--	struct work_struct work;
--	spinlock_t value_lock;
--	enum led_brightness value;
--	struct led_classdev cdev;
--	int max_uA_index;
--	int enabled;
--
--	struct regulator *isink;
--	struct regulator_consumer_supply isink_consumer;
--	struct regulator_init_data isink_init;
--	struct regulator *dcdc;
--	struct regulator_consumer_supply dcdc_consumer;
--	struct regulator_init_data dcdc_init;
--};
--
--struct wm8350_pmic {
--	/* Number of regulators of each type on this device */
--	int max_dcdc;
--	int max_isink;
--
--	/* ISINK to DCDC mapping */
--	int isink_A_dcdc;
--	int isink_B_dcdc;
--
--	/* hibernate configs */
--	u16 dcdc1_hib_mode;
--	u16 dcdc3_hib_mode;
--	u16 dcdc4_hib_mode;
--	u16 dcdc6_hib_mode;
--
--	/* regulator devices */
--	struct platform_device *pdev[NUM_WM8350_REGULATORS];
--
--	/* LED devices */
--	struct wm8350_led led[2];
--};
--
--int wm8350_register_regulator(struct wm8350 *wm8350, int reg,
--			      struct regulator_init_data *initdata);
--int wm8350_register_led(struct wm8350 *wm8350, int lednum, int dcdc, int isink,
--			struct wm8350_led_platform_data *pdata);
--
--/*
-- * Additional DCDC control not supported via regulator API
-- */
--int wm8350_dcdc_set_slot(struct wm8350 *wm8350, int dcdc, u16 start,
--			 u16 stop, u16 fault);
--int wm8350_dcdc25_set_mode(struct wm8350 *wm8350, int dcdc, u16 mode,
--			   u16 ilim, u16 ramp, u16 feedback);
--
--/*
-- * Additional LDO control not supported via regulator API
-- */
--int wm8350_ldo_set_slot(struct wm8350 *wm8350, int ldo, u16 start, u16 stop);
--
--/*
-- * Additional ISINK control not supported via regulator API
-- */
--int wm8350_isink_set_flash(struct wm8350 *wm8350, int isink, u16 mode,
--			   u16 trigger, u16 duration, u16 on_ramp,
--			   u16 off_ramp, u16 drive);
--
--#endif
-diff --git a/include/linux/mfd/wm8350/rtc.h b/include/linux/mfd/wm8350/rtc.h
-deleted file mode 100644
-index b2f58359b2eb..000000000000
---- a/include/linux/mfd/wm8350/rtc.h
-+++ /dev/null
-@@ -1,265 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0-or-later */
--/*
-- * rtc.h  --  RTC driver for Wolfson WM8350 PMIC
-- *
-- * Copyright 2007 Wolfson Microelectronics PLC
-- */
--
--#ifndef __LINUX_MFD_WM8350_RTC_H
--#define __LINUX_MFD_WM8350_RTC_H
--
--#include <linux/platform_device.h>
--
--/*
-- * Register values.
-- */
--#define WM8350_RTC_SECONDS_MINUTES              0x10
--#define WM8350_RTC_HOURS_DAY                    0x11
--#define WM8350_RTC_DATE_MONTH                   0x12
--#define WM8350_RTC_YEAR                         0x13
--#define WM8350_ALARM_SECONDS_MINUTES            0x14
--#define WM8350_ALARM_HOURS_DAY                  0x15
--#define WM8350_ALARM_DATE_MONTH                 0x16
--#define WM8350_RTC_TIME_CONTROL                 0x17
--
--/*
-- * R16 (0x10) - RTC Seconds/Minutes
-- */
--#define WM8350_RTC_MINS_MASK                    0x7F00
--#define WM8350_RTC_MINS_SHIFT                        8
--#define WM8350_RTC_SECS_MASK                    0x007F
--#define WM8350_RTC_SECS_SHIFT                        0
--
--/*
-- * R17 (0x11) - RTC Hours/Day
-- */
--#define WM8350_RTC_DAY_MASK                     0x0700
--#define WM8350_RTC_DAY_SHIFT                         8
--#define WM8350_RTC_HPM_MASK                     0x0020
--#define WM8350_RTC_HPM_SHIFT                         5
--#define WM8350_RTC_HRS_MASK                     0x001F
--#define WM8350_RTC_HRS_SHIFT                         0
--
--/* Bit values for R21 (0x15) */
--#define WM8350_RTC_DAY_SUN                           1
--#define WM8350_RTC_DAY_MON                           2
--#define WM8350_RTC_DAY_TUE                           3
--#define WM8350_RTC_DAY_WED                           4
--#define WM8350_RTC_DAY_THU                           5
--#define WM8350_RTC_DAY_FRI                           6
--#define WM8350_RTC_DAY_SAT                           7
--
--#define WM8350_RTC_HPM_AM                            0
--#define WM8350_RTC_HPM_PM                            1
--
--/*
-- * R18 (0x12) - RTC Date/Month
-- */
--#define WM8350_RTC_MTH_MASK                     0x1F00
--#define WM8350_RTC_MTH_SHIFT                         8
--#define WM8350_RTC_DATE_MASK                    0x003F
--#define WM8350_RTC_DATE_SHIFT                        0
--
--/* Bit values for R22 (0x16) */
--#define WM8350_RTC_MTH_JAN                           1
--#define WM8350_RTC_MTH_FEB                           2
--#define WM8350_RTC_MTH_MAR                           3
--#define WM8350_RTC_MTH_APR                           4
--#define WM8350_RTC_MTH_MAY                           5
--#define WM8350_RTC_MTH_JUN                           6
--#define WM8350_RTC_MTH_JUL                           7
--#define WM8350_RTC_MTH_AUG                           8
--#define WM8350_RTC_MTH_SEP                           9
--#define WM8350_RTC_MTH_OCT                          10
--#define WM8350_RTC_MTH_NOV                          11
--#define WM8350_RTC_MTH_DEC                          12
--#define WM8350_RTC_MTH_JAN_BCD                    0x01
--#define WM8350_RTC_MTH_FEB_BCD                    0x02
--#define WM8350_RTC_MTH_MAR_BCD                    0x03
--#define WM8350_RTC_MTH_APR_BCD                    0x04
--#define WM8350_RTC_MTH_MAY_BCD                    0x05
--#define WM8350_RTC_MTH_JUN_BCD                    0x06
--#define WM8350_RTC_MTH_JUL_BCD                    0x07
--#define WM8350_RTC_MTH_AUG_BCD                    0x08
--#define WM8350_RTC_MTH_SEP_BCD                    0x09
--#define WM8350_RTC_MTH_OCT_BCD                    0x10
--#define WM8350_RTC_MTH_NOV_BCD                    0x11
--#define WM8350_RTC_MTH_DEC_BCD                    0x12
--
--/*
-- * R19 (0x13) - RTC Year
-- */
--#define WM8350_RTC_YHUNDREDS_MASK               0x3F00
--#define WM8350_RTC_YHUNDREDS_SHIFT                   8
--#define WM8350_RTC_YUNITS_MASK                  0x00FF
--#define WM8350_RTC_YUNITS_SHIFT                      0
--
--/*
-- * R20 (0x14) - Alarm Seconds/Minutes
-- */
--#define WM8350_RTC_ALMMINS_MASK                 0x7F00
--#define WM8350_RTC_ALMMINS_SHIFT                     8
--#define WM8350_RTC_ALMSECS_MASK                 0x007F
--#define WM8350_RTC_ALMSECS_SHIFT                     0
--
--/* Bit values for R20 (0x14) */
--#define WM8350_RTC_ALMMINS_DONT_CARE                -1
--#define WM8350_RTC_ALMSECS_DONT_CARE                -1
--
--/*
-- * R21 (0x15) - Alarm Hours/Day
-- */
--#define WM8350_RTC_ALMDAY_MASK                  0x0F00
--#define WM8350_RTC_ALMDAY_SHIFT                      8
--#define WM8350_RTC_ALMHPM_MASK                  0x0020
--#define WM8350_RTC_ALMHPM_SHIFT                      5
--#define WM8350_RTC_ALMHRS_MASK                  0x001F
--#define WM8350_RTC_ALMHRS_SHIFT                      0
--
--/* Bit values for R21 (0x15) */
--#define WM8350_RTC_ALMDAY_DONT_CARE                 -1
--#define WM8350_RTC_ALMDAY_SUN                        1
--#define WM8350_RTC_ALMDAY_MON                        2
--#define WM8350_RTC_ALMDAY_TUE                        3
--#define WM8350_RTC_ALMDAY_WED                        4
--#define WM8350_RTC_ALMDAY_THU                        5
--#define WM8350_RTC_ALMDAY_FRI                        6
--#define WM8350_RTC_ALMDAY_SAT                        7
--
--#define WM8350_RTC_ALMHPM_AM                         0
--#define WM8350_RTC_ALMHPM_PM                         1
--
--#define WM8350_RTC_ALMHRS_DONT_CARE                 -1
--
--/*
-- * R22 (0x16) - Alarm Date/Month
-- */
--#define WM8350_RTC_ALMMTH_MASK                  0x1F00
--#define WM8350_RTC_ALMMTH_SHIFT                      8
--#define WM8350_RTC_ALMDATE_MASK                 0x003F
--#define WM8350_RTC_ALMDATE_SHIFT                     0
--
--/* Bit values for R22 (0x16) */
--#define WM8350_RTC_ALMDATE_DONT_CARE                -1
--
--#define WM8350_RTC_ALMMTH_DONT_CARE                 -1
--#define WM8350_RTC_ALMMTH_JAN                        1
--#define WM8350_RTC_ALMMTH_FEB                        2
--#define WM8350_RTC_ALMMTH_MAR                        3
--#define WM8350_RTC_ALMMTH_APR                        4
--#define WM8350_RTC_ALMMTH_MAY                        5
--#define WM8350_RTC_ALMMTH_JUN                        6
--#define WM8350_RTC_ALMMTH_JUL                        7
--#define WM8350_RTC_ALMMTH_AUG                        8
--#define WM8350_RTC_ALMMTH_SEP                        9
--#define WM8350_RTC_ALMMTH_OCT                       10
--#define WM8350_RTC_ALMMTH_NOV                       11
--#define WM8350_RTC_ALMMTH_DEC                       12
--#define WM8350_RTC_ALMMTH_JAN_BCD                 0x01
--#define WM8350_RTC_ALMMTH_FEB_BCD                 0x02
--#define WM8350_RTC_ALMMTH_MAR_BCD                 0x03
--#define WM8350_RTC_ALMMTH_APR_BCD                 0x04
--#define WM8350_RTC_ALMMTH_MAY_BCD                 0x05
--#define WM8350_RTC_ALMMTH_JUN_BCD                 0x06
--#define WM8350_RTC_ALMMTH_JUL_BCD                 0x07
--#define WM8350_RTC_ALMMTH_AUG_BCD                 0x08
--#define WM8350_RTC_ALMMTH_SEP_BCD                 0x09
--#define WM8350_RTC_ALMMTH_OCT_BCD                 0x10
--#define WM8350_RTC_ALMMTH_NOV_BCD                 0x11
--#define WM8350_RTC_ALMMTH_DEC_BCD                 0x12
--
--/*
-- * R23 (0x17) - RTC Time Control
-- */
--#define WM8350_RTC_BCD                          0x8000
--#define WM8350_RTC_BCD_MASK                     0x8000
--#define WM8350_RTC_BCD_SHIFT                        15
--#define WM8350_RTC_12HR                         0x4000
--#define WM8350_RTC_12HR_MASK                    0x4000
--#define WM8350_RTC_12HR_SHIFT                       14
--#define WM8350_RTC_DST                          0x2000
--#define WM8350_RTC_DST_MASK                     0x2000
--#define WM8350_RTC_DST_SHIFT                        13
--#define WM8350_RTC_SET                          0x0800
--#define WM8350_RTC_SET_MASK                     0x0800
--#define WM8350_RTC_SET_SHIFT                        11
--#define WM8350_RTC_STS                          0x0400
--#define WM8350_RTC_STS_MASK                     0x0400
--#define WM8350_RTC_STS_SHIFT                        10
--#define WM8350_RTC_ALMSET                       0x0200
--#define WM8350_RTC_ALMSET_MASK                  0x0200
--#define WM8350_RTC_ALMSET_SHIFT                      9
--#define WM8350_RTC_ALMSTS                       0x0100
--#define WM8350_RTC_ALMSTS_MASK                  0x0100
--#define WM8350_RTC_ALMSTS_SHIFT                      8
--#define WM8350_RTC_PINT                         0x0070
--#define WM8350_RTC_PINT_MASK                    0x0070
--#define WM8350_RTC_PINT_SHIFT                        4
--#define WM8350_RTC_DSW                          0x000F
--#define WM8350_RTC_DSW_MASK                     0x000F
--#define WM8350_RTC_DSW_SHIFT                         0
--
--/* Bit values for R23 (0x17) */
--#define WM8350_RTC_BCD_BINARY                        0
--#define WM8350_RTC_BCD_BCD                           1
--
--#define WM8350_RTC_12HR_24HR                         0
--#define WM8350_RTC_12HR_12HR                         1
--
--#define WM8350_RTC_DST_DISABLED                      0
--#define WM8350_RTC_DST_ENABLED                       1
--
--#define WM8350_RTC_SET_RUN                           0
--#define WM8350_RTC_SET_SET                           1
--
--#define WM8350_RTC_STS_RUNNING                       0
--#define WM8350_RTC_STS_STOPPED                       1
--
--#define WM8350_RTC_ALMSET_RUN                        0
--#define WM8350_RTC_ALMSET_SET                        1
--
--#define WM8350_RTC_ALMSTS_RUNNING                    0
--#define WM8350_RTC_ALMSTS_STOPPED                    1
--
--#define WM8350_RTC_PINT_DISABLED                     0
--#define WM8350_RTC_PINT_SECS                         1
--#define WM8350_RTC_PINT_MINS                         2
--#define WM8350_RTC_PINT_HRS                          3
--#define WM8350_RTC_PINT_DAYS                         4
--#define WM8350_RTC_PINT_MTHS                         5
--
--#define WM8350_RTC_DSW_DISABLED                      0
--#define WM8350_RTC_DSW_1HZ                           1
--#define WM8350_RTC_DSW_2HZ                           2
--#define WM8350_RTC_DSW_4HZ                           3
--#define WM8350_RTC_DSW_8HZ                           4
--#define WM8350_RTC_DSW_16HZ                          5
--#define WM8350_RTC_DSW_32HZ                          6
--#define WM8350_RTC_DSW_64HZ                          7
--#define WM8350_RTC_DSW_128HZ                         8
--#define WM8350_RTC_DSW_256HZ                         9
--#define WM8350_RTC_DSW_512HZ                        10
--#define WM8350_RTC_DSW_1024HZ                       11
--
--/*
-- * R218 (0xDA) - RTC Tick Control
-- */
--#define WM8350_RTC_TICKSTS                      0x4000
--#define WM8350_RTC_CLKSRC                       0x2000
--#define WM8350_RTC_TRIM_MASK                    0x03FF
--
--/*
-- * RTC Interrupts.
-- */
--#define WM8350_IRQ_RTC_PER			7
--#define WM8350_IRQ_RTC_SEC			8
--#define WM8350_IRQ_RTC_ALM			9
--
--struct wm8350_rtc {
--	struct platform_device *pdev;
--	struct rtc_device *rtc;
--	int alarm_enabled;      /* used over suspend/resume */
--	int update_enabled;
--};
--
--#endif
-diff --git a/include/linux/mfd/wm8350/supply.h b/include/linux/mfd/wm8350/supply.h
-deleted file mode 100644
-index d7a91e26177c..000000000000
---- a/include/linux/mfd/wm8350/supply.h
-+++ /dev/null
-@@ -1,129 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0-or-later */
--/*
-- * supply.h  --  Power Supply Driver for Wolfson WM8350 PMIC
-- *
-- * Copyright 2007 Wolfson Microelectronics PLC
-- */
--
--#ifndef __LINUX_MFD_WM8350_SUPPLY_H_
--#define __LINUX_MFD_WM8350_SUPPLY_H_
--
--#include <linux/mutex.h>
--#include <linux/power_supply.h>
--
--/*
-- * Charger registers
-- */
--#define WM8350_BATTERY_CHARGER_CONTROL_1        0xA8
--#define WM8350_BATTERY_CHARGER_CONTROL_2        0xA9
--#define WM8350_BATTERY_CHARGER_CONTROL_3        0xAA
--
--/*
-- * R168 (0xA8) - Battery Charger Control 1
-- */
--#define WM8350_CHG_ENA_R168                     0x8000
--#define WM8350_CHG_THR                          0x2000
--#define WM8350_CHG_EOC_SEL_MASK                 0x1C00
--#define WM8350_CHG_TRICKLE_TEMP_CHOKE           0x0200
--#define WM8350_CHG_TRICKLE_USB_CHOKE            0x0100
--#define WM8350_CHG_RECOVER_T                    0x0080
--#define WM8350_CHG_END_ACT                      0x0040
--#define WM8350_CHG_FAST                         0x0020
--#define WM8350_CHG_FAST_USB_THROTTLE            0x0010
--#define WM8350_CHG_NTC_MON                      0x0008
--#define WM8350_CHG_BATT_HOT_MON                 0x0004
--#define WM8350_CHG_BATT_COLD_MON                0x0002
--#define WM8350_CHG_CHIP_TEMP_MON                0x0001
--
--/*
-- * R169 (0xA9) - Battery Charger Control 2
-- */
--#define WM8350_CHG_ACTIVE                       0x8000
--#define WM8350_CHG_PAUSE                        0x4000
--#define WM8350_CHG_STS_MASK                     0x3000
--#define WM8350_CHG_TIME_MASK                    0x0F00
--#define WM8350_CHG_MASK_WALL_FB                 0x0080
--#define WM8350_CHG_TRICKLE_SEL                  0x0040
--#define WM8350_CHG_VSEL_MASK                    0x0030
--#define WM8350_CHG_ISEL_MASK                    0x000F
--#define WM8350_CHG_STS_OFF                      0x0000
--#define WM8350_CHG_STS_TRICKLE                  0x1000
--#define WM8350_CHG_STS_FAST                     0x2000
--
--/*
-- * R170 (0xAA) - Battery Charger Control 3
-- */
--#define WM8350_CHG_THROTTLE_T_MASK              0x0060
--#define WM8350_CHG_SMART                        0x0010
--#define WM8350_CHG_TIMER_ADJT_MASK              0x000F
--
--/*
-- * Charger Interrupts
-- */
--#define WM8350_IRQ_CHG_BAT_HOT			0
--#define WM8350_IRQ_CHG_BAT_COLD			1
--#define WM8350_IRQ_CHG_BAT_FAIL			2
--#define WM8350_IRQ_CHG_TO			3
--#define WM8350_IRQ_CHG_END			4
--#define WM8350_IRQ_CHG_START			5
--#define WM8350_IRQ_CHG_FAST_RDY			6
--#define WM8350_IRQ_CHG_VBATT_LT_3P9		10
--#define WM8350_IRQ_CHG_VBATT_LT_3P1		11
--#define WM8350_IRQ_CHG_VBATT_LT_2P85		12
--
--/*
-- * Charger Policy
-- */
--#define WM8350_CHG_TRICKLE_50mA			(0 << 6)
--#define WM8350_CHG_TRICKLE_100mA		(1 << 6)
--#define WM8350_CHG_4_05V			(0 << 4)
--#define WM8350_CHG_4_10V			(1 << 4)
--#define WM8350_CHG_4_15V			(2 << 4)
--#define WM8350_CHG_4_20V			(3 << 4)
--#define WM8350_CHG_FAST_LIMIT_mA(x)		((x / 50) & 0xf)
--#define WM8350_CHG_EOC_mA(x)			(((x - 10) & 0x7) << 10)
--#define WM8350_CHG_TRICKLE_3_1V			(0 << 13)
--#define WM8350_CHG_TRICKLE_3_9V			(1 << 13)
--
--/*
-- * Supply Registers.
-- */
--#define WM8350_USB_VOLTAGE_READBACK             0x9C
--#define WM8350_LINE_VOLTAGE_READBACK            0x9D
--#define WM8350_BATT_VOLTAGE_READBACK            0x9E
--
--/*
-- * Supply Interrupts.
-- */
--#define WM8350_IRQ_USB_LIMIT			15
--#define WM8350_IRQ_EXT_USB_FB			36
--#define WM8350_IRQ_EXT_WALL_FB			37
--#define WM8350_IRQ_EXT_BAT_FB			38
--
--/*
-- * Policy to control charger state machine.
-- */
--struct wm8350_charger_policy {
--
--	/* charger state machine policy  - set in machine driver */
--	int eoc_mA;		/* end of charge current (mA)  */
--	int charge_mV;		/* charge voltage */
--	int fast_limit_mA;	/* fast charge current limit */
--	int fast_limit_USB_mA;	/* USB fast charge current limit */
--	int charge_timeout;	/* charge timeout (mins) */
--	int trickle_start_mV;	/* trickle charge starts at mV */
--	int trickle_charge_mA;	/* trickle charge current */
--	int trickle_charge_USB_mA;	/* USB trickle charge current */
--};
--
--struct wm8350_power {
--	struct platform_device *pdev;
--	struct power_supply *battery;
--	struct power_supply *usb;
--	struct power_supply *ac;
--	struct wm8350_charger_policy *policy;
--
--	int rev_g_coeff;
--};
--
--#endif
-diff --git a/include/linux/mfd/wm8350/wdt.h b/include/linux/mfd/wm8350/wdt.h
-deleted file mode 100644
-index 97454aa8c436..000000000000
---- a/include/linux/mfd/wm8350/wdt.h
-+++ /dev/null
-@@ -1,24 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0-or-later */
--/*
-- * wdt.h  --  Watchdog Driver for Wolfson WM8350 PMIC
-- *
-- * Copyright 2007, 2008 Wolfson Microelectronics PLC
-- */
--
--#ifndef __LINUX_MFD_WM8350_WDT_H_
--#define __LINUX_MFD_WM8350_WDT_H_
--
--#include <linux/platform_device.h>
--
--#define WM8350_WDOG_HIB_MODE                    0x0080
--#define WM8350_WDOG_DEBUG                       0x0040
--#define WM8350_WDOG_MODE_MASK                   0x0030
--#define WM8350_WDOG_TO_MASK                     0x0007
--
--#define WM8350_IRQ_SYS_WDOG_TO			24
--
--struct wm8350_wdt {
--	struct platform_device *pdev;
--};
--
--#endif
-diff --git a/sound/soc/codecs/Kconfig b/sound/soc/codecs/Kconfig
-index 422e50ee0560..ff3a6e9c26c7 100644
---- a/sound/soc/codecs/Kconfig
-+++ b/sound/soc/codecs/Kconfig
-@@ -317,7 +317,6 @@ config SND_SOC_ALL_CODECS
- 	imply SND_SOC_WM5100
- 	imply SND_SOC_WM5102
- 	imply SND_SOC_WM5110
--	imply SND_SOC_WM8350
- 	imply SND_SOC_WM8510
- 	imply SND_SOC_WM8523
- 	imply SND_SOC_WM8524
-@@ -2551,10 +2550,6 @@ config SND_SOC_WM5110
- 	depends on MFD_WM5110 && MFD_ARIZONA
- 	select SND_SOC_WM_ADSP
- 
--config SND_SOC_WM8350
--	tristate
--	depends on MFD_WM8350
--
- config SND_SOC_WM8510
- 	tristate "Wolfson Microelectronics WM8510 CODEC"
- 	depends on SND_SOC_I2C_AND_SPI
-diff --git a/sound/soc/codecs/Makefile b/sound/soc/codecs/Makefile
-index 3fc78f3b44ba..633c1bf8dd32 100644
---- a/sound/soc/codecs/Makefile
-+++ b/sound/soc/codecs/Makefile
-@@ -374,7 +374,6 @@ snd-soc-wm2200-y := wm2200.o
- snd-soc-wm5100-y := wm5100.o wm5100-tables.o
- snd-soc-wm5102-y := wm5102.o
- snd-soc-wm5110-y := wm5110.o
--snd-soc-wm8350-y := wm8350.o
- snd-soc-wm8510-y := wm8510.o
- snd-soc-wm8523-y := wm8523.o
- snd-soc-wm8524-y := wm8524.o
-@@ -823,7 +822,6 @@ obj-$(CONFIG_SND_SOC_WM2200)	+= snd-soc-wm2200.o
- obj-$(CONFIG_SND_SOC_WM5100)	+= snd-soc-wm5100.o
- obj-$(CONFIG_SND_SOC_WM5102)	+= snd-soc-wm5102.o
- obj-$(CONFIG_SND_SOC_WM5110)	+= snd-soc-wm5110.o
--obj-$(CONFIG_SND_SOC_WM8350)	+= snd-soc-wm8350.o
- obj-$(CONFIG_SND_SOC_WM8510)	+= snd-soc-wm8510.o
- obj-$(CONFIG_SND_SOC_WM8523)	+= snd-soc-wm8523.o
- obj-$(CONFIG_SND_SOC_WM8524)	+= snd-soc-wm8524.o
-diff --git a/sound/soc/codecs/wm8350.c b/sound/soc/codecs/wm8350.c
-deleted file mode 100644
-index ad68ff1790e0..000000000000
---- a/sound/soc/codecs/wm8350.c
-+++ /dev/null
-@@ -1,1638 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-only
--/*
-- * wm8350.c -- WM8350 ALSA SoC audio driver
-- *
-- * Copyright (C) 2007-12 Wolfson Microelectronics PLC.
-- *
-- * Author: Liam Girdwood <lrg@slimlogic.co.uk>
-- */
--
--#include <linux/module.h>
--#include <linux/moduleparam.h>
--#include <linux/init.h>
+-#include <linux/smp.h>
+-#include <linux/device.h>
 -#include <linux/slab.h>
--#include <linux/delay.h>
--#include <linux/pm.h>
--#include <linux/platform_device.h>
--#include <linux/mfd/wm8350/audio.h>
--#include <linux/mfd/wm8350/core.h>
--#include <linux/regulator/consumer.h>
--#include <sound/core.h>
--#include <sound/pcm.h>
--#include <sound/pcm_params.h>
--#include <sound/soc.h>
--#include <sound/initval.h>
--#include <sound/tlv.h>
--#include <trace/events/asoc.h>
+-#include <linux/string.h>
+-#include <linux/mfd/mcp.h>
 -
--#include "wm8350.h"
 -
--#define WM8350_OUTn_0dB 0x39
+-#define to_mcp(d)		container_of(d, struct mcp, attached_device)
+-#define to_mcp_driver(d)	container_of(d, struct mcp_driver, drv)
 -
--#define WM8350_RAMP_NONE	0
--#define WM8350_RAMP_UP		1
--#define WM8350_RAMP_DOWN	2
--
--/* We only include the analogue supplies here; the digital supplies
-- * need to be available well before this driver can be probed.
-- */
--static const char *supply_names[] = {
--	"AVDD",
--	"HPVDD",
--};
--
--struct wm8350_output {
--	u16 active;
--	u16 left_vol;
--	u16 right_vol;
--	u16 ramp;
--	u16 mute;
--};
--
--struct wm8350_jack_data {
--	struct snd_soc_jack *jack;
--	struct delayed_work work;
--	int report;
--	int short_report;
--};
--
--struct wm8350_data {
--	struct wm8350 *wm8350;
--	struct wm8350_output out1;
--	struct wm8350_output out2;
--	struct wm8350_jack_data hpl;
--	struct wm8350_jack_data hpr;
--	struct wm8350_jack_data mic;
--	struct regulator_bulk_data supplies[ARRAY_SIZE(supply_names)];
--	int fll_freq_out;
--	int fll_freq_in;
--	struct delayed_work pga_work;
--};
--
--/*
-- * Ramp OUT1 PGA volume to minimise pops at stream startup and shutdown.
-- */
--static inline int wm8350_out1_ramp_step(struct wm8350_data *wm8350_data)
+-static int mcp_bus_match(struct device *dev, const struct device_driver *drv)
 -{
--	struct wm8350_output *out1 = &wm8350_data->out1;
--	struct wm8350 *wm8350 = wm8350_data->wm8350;
--	int left_complete = 0, right_complete = 0;
--	u16 reg, val;
--
--	/* left channel */
--	reg = wm8350_reg_read(wm8350, WM8350_LOUT1_VOLUME);
--	val = (reg & WM8350_OUT1L_VOL_MASK) >> WM8350_OUT1L_VOL_SHIFT;
--
--	if (out1->ramp == WM8350_RAMP_UP) {
--		/* ramp step up */
--		if (val < out1->left_vol) {
--			val++;
--			reg &= ~WM8350_OUT1L_VOL_MASK;
--			wm8350_reg_write(wm8350, WM8350_LOUT1_VOLUME,
--					 reg | (val << WM8350_OUT1L_VOL_SHIFT));
--		} else
--			left_complete = 1;
--	} else if (out1->ramp == WM8350_RAMP_DOWN) {
--		/* ramp step down */
--		if (val > 0) {
--			val--;
--			reg &= ~WM8350_OUT1L_VOL_MASK;
--			wm8350_reg_write(wm8350, WM8350_LOUT1_VOLUME,
--					 reg | (val << WM8350_OUT1L_VOL_SHIFT));
--		} else
--			left_complete = 1;
--	} else
--		return 1;
--
--	/* right channel */
--	reg = wm8350_reg_read(wm8350, WM8350_ROUT1_VOLUME);
--	val = (reg & WM8350_OUT1R_VOL_MASK) >> WM8350_OUT1R_VOL_SHIFT;
--	if (out1->ramp == WM8350_RAMP_UP) {
--		/* ramp step up */
--		if (val < out1->right_vol) {
--			val++;
--			reg &= ~WM8350_OUT1R_VOL_MASK;
--			wm8350_reg_write(wm8350, WM8350_ROUT1_VOLUME,
--					 reg | (val << WM8350_OUT1R_VOL_SHIFT));
--		} else
--			right_complete = 1;
--	} else if (out1->ramp == WM8350_RAMP_DOWN) {
--		/* ramp step down */
--		if (val > 0) {
--			val--;
--			reg &= ~WM8350_OUT1R_VOL_MASK;
--			wm8350_reg_write(wm8350, WM8350_ROUT1_VOLUME,
--					 reg | (val << WM8350_OUT1R_VOL_SHIFT));
--		} else
--			right_complete = 1;
--	}
--
--	/* only hit the update bit if either volume has changed this step */
--	if (!left_complete || !right_complete)
--		wm8350_set_bits(wm8350, WM8350_LOUT1_VOLUME, WM8350_OUT1_VU);
--
--	return left_complete & right_complete;
--}
--
--/*
-- * Ramp OUT2 PGA volume to minimise pops at stream startup and shutdown.
-- */
--static inline int wm8350_out2_ramp_step(struct wm8350_data *wm8350_data)
--{
--	struct wm8350_output *out2 = &wm8350_data->out2;
--	struct wm8350 *wm8350 = wm8350_data->wm8350;
--	int left_complete = 0, right_complete = 0;
--	u16 reg, val;
--
--	/* left channel */
--	reg = wm8350_reg_read(wm8350, WM8350_LOUT2_VOLUME);
--	val = (reg & WM8350_OUT2L_VOL_MASK) >> WM8350_OUT1L_VOL_SHIFT;
--	if (out2->ramp == WM8350_RAMP_UP) {
--		/* ramp step up */
--		if (val < out2->left_vol) {
--			val++;
--			reg &= ~WM8350_OUT2L_VOL_MASK;
--			wm8350_reg_write(wm8350, WM8350_LOUT2_VOLUME,
--					 reg | (val << WM8350_OUT1L_VOL_SHIFT));
--		} else
--			left_complete = 1;
--	} else if (out2->ramp == WM8350_RAMP_DOWN) {
--		/* ramp step down */
--		if (val > 0) {
--			val--;
--			reg &= ~WM8350_OUT2L_VOL_MASK;
--			wm8350_reg_write(wm8350, WM8350_LOUT2_VOLUME,
--					 reg | (val << WM8350_OUT1L_VOL_SHIFT));
--		} else
--			left_complete = 1;
--	} else
--		return 1;
--
--	/* right channel */
--	reg = wm8350_reg_read(wm8350, WM8350_ROUT2_VOLUME);
--	val = (reg & WM8350_OUT2R_VOL_MASK) >> WM8350_OUT1R_VOL_SHIFT;
--	if (out2->ramp == WM8350_RAMP_UP) {
--		/* ramp step up */
--		if (val < out2->right_vol) {
--			val++;
--			reg &= ~WM8350_OUT2R_VOL_MASK;
--			wm8350_reg_write(wm8350, WM8350_ROUT2_VOLUME,
--					 reg | (val << WM8350_OUT1R_VOL_SHIFT));
--		} else
--			right_complete = 1;
--	} else if (out2->ramp == WM8350_RAMP_DOWN) {
--		/* ramp step down */
--		if (val > 0) {
--			val--;
--			reg &= ~WM8350_OUT2R_VOL_MASK;
--			wm8350_reg_write(wm8350, WM8350_ROUT2_VOLUME,
--					 reg | (val << WM8350_OUT1R_VOL_SHIFT));
--		} else
--			right_complete = 1;
--	}
--
--	/* only hit the update bit if either volume has changed this step */
--	if (!left_complete || !right_complete)
--		wm8350_set_bits(wm8350, WM8350_LOUT2_VOLUME, WM8350_OUT2_VU);
--
--	return left_complete & right_complete;
--}
--
--/*
-- * This work ramps both output PGAs at stream start/stop time to
-- * minimise pop associated with DAPM power switching.
-- * It's best to enable Zero Cross when ramping occurs to minimise any
-- * zipper noises.
-- */
--static void wm8350_pga_work(struct work_struct *work)
--{
--	struct wm8350_data *wm8350_data =
--		container_of(work, struct wm8350_data, pga_work.work);
--	struct wm8350_output *out1 = &wm8350_data->out1,
--	    *out2 = &wm8350_data->out2;
--	int i, out1_complete, out2_complete;
--
--	/* do we need to ramp at all ? */
--	if (out1->ramp == WM8350_RAMP_NONE && out2->ramp == WM8350_RAMP_NONE)
--		return;
--
--	/* PGA volumes have 6 bits of resolution to ramp */
--	for (i = 0; i <= 63; i++) {
--		out1_complete = 1;
--		out2_complete = 1;
--		if (out1->ramp != WM8350_RAMP_NONE)
--			out1_complete = wm8350_out1_ramp_step(wm8350_data);
--		if (out2->ramp != WM8350_RAMP_NONE)
--			out2_complete = wm8350_out2_ramp_step(wm8350_data);
--
--		/* ramp finished ? */
--		if (out1_complete && out2_complete)
--			break;
--
--		/* we need to delay longer on the up ramp */
--		if (out1->ramp == WM8350_RAMP_UP ||
--		    out2->ramp == WM8350_RAMP_UP) {
--			/* delay is longer over 0dB as increases are larger */
--			if (i >= WM8350_OUTn_0dB)
--				schedule_timeout_interruptible(msecs_to_jiffies
--							       (2));
--			else
--				schedule_timeout_interruptible(msecs_to_jiffies
--							       (1));
--		} else
--			udelay(50);	/* doesn't matter if we delay longer */
--	}
--
--	out1->ramp = WM8350_RAMP_NONE;
--	out2->ramp = WM8350_RAMP_NONE;
--}
--
--/*
-- * WM8350 Controls
-- */
--
--static int pga_event(struct snd_soc_dapm_widget *w,
--		     struct snd_kcontrol *kcontrol, int event)
--{
--	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
--	struct wm8350_data *wm8350_data = snd_soc_component_get_drvdata(component);
--	struct wm8350_output *out;
--
--	switch (w->shift) {
--	case 0:
--	case 1:
--		out = &wm8350_data->out1;
--		break;
--	case 2:
--	case 3:
--		out = &wm8350_data->out2;
--		break;
--
--	default:
--		WARN(1, "Invalid shift %d\n", w->shift);
--		return -1;
--	}
--
--	switch (event) {
--	case SND_SOC_DAPM_POST_PMU:
--		out->ramp = WM8350_RAMP_UP;
--		out->active = 1;
--
--		schedule_delayed_work(&wm8350_data->pga_work,
--				      msecs_to_jiffies(1));
--		break;
--
--	case SND_SOC_DAPM_PRE_PMD:
--		out->ramp = WM8350_RAMP_DOWN;
--		out->active = 0;
--
--		schedule_delayed_work(&wm8350_data->pga_work,
--				      msecs_to_jiffies(1));
--		break;
--	}
--
--	return 0;
--}
--
--static int wm8350_put_volsw_2r_vu(struct snd_kcontrol *kcontrol,
--				  struct snd_ctl_elem_value *ucontrol)
--{
--	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
--	struct wm8350_data *wm8350_priv = snd_soc_component_get_drvdata(component);
--	struct wm8350_output *out = NULL;
--	struct soc_mixer_control *mc =
--		(struct soc_mixer_control *)kcontrol->private_value;
--	int ret;
--	unsigned int reg = mc->reg;
--	u16 val;
--
--	/* For OUT1 and OUT2 we shadow the values and only actually write
--	 * them out when active in order to ensure the amplifier comes on
--	 * as quietly as possible. */
--	switch (reg) {
--	case WM8350_LOUT1_VOLUME:
--		out = &wm8350_priv->out1;
--		break;
--	case WM8350_LOUT2_VOLUME:
--		out = &wm8350_priv->out2;
--		break;
--	default:
--		break;
--	}
--
--	if (out) {
--		out->left_vol = ucontrol->value.integer.value[0];
--		out->right_vol = ucontrol->value.integer.value[1];
--		if (!out->active)
--			return 1;
--	}
--
--	ret = snd_soc_put_volsw(kcontrol, ucontrol);
--	if (ret < 0)
--		return ret;
--
--	/* now hit the volume update bits (always bit 8) */
--	val = snd_soc_component_read(component, reg);
--	snd_soc_component_write(component, reg, val | WM8350_OUT1_VU);
 -	return 1;
 -}
 -
--static int wm8350_get_volsw_2r(struct snd_kcontrol *kcontrol,
--			       struct snd_ctl_elem_value *ucontrol)
+-static int mcp_bus_probe(struct device *dev)
 -{
--	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
--	struct wm8350_data *wm8350_priv = snd_soc_component_get_drvdata(component);
--	struct wm8350_output *out1 = &wm8350_priv->out1;
--	struct wm8350_output *out2 = &wm8350_priv->out2;
--	struct soc_mixer_control *mc =
--		(struct soc_mixer_control *)kcontrol->private_value;
--	unsigned int reg = mc->reg;
+-	struct mcp *mcp = to_mcp(dev);
+-	struct mcp_driver *drv = to_mcp_driver(dev->driver);
 -
--	/* If these are cached registers use the cache */
--	switch (reg) {
--	case WM8350_LOUT1_VOLUME:
--		ucontrol->value.integer.value[0] = out1->left_vol;
--		ucontrol->value.integer.value[1] = out1->right_vol;
--		return 0;
--
--	case WM8350_LOUT2_VOLUME:
--		ucontrol->value.integer.value[0] = out2->left_vol;
--		ucontrol->value.integer.value[1] = out2->right_vol;
--		return 0;
--
--	default:
--		break;
--	}
--
--	return snd_soc_get_volsw(kcontrol, ucontrol);
+-	return drv->probe(mcp);
 -}
 -
--static const char *wm8350_deemp[] = { "None", "32kHz", "44.1kHz", "48kHz" };
--static const char *wm8350_pol[] = { "Normal", "Inv R", "Inv L", "Inv L & R" };
--static const char *wm8350_dacmutem[] = { "Normal", "Soft" };
--static const char *wm8350_dacmutes[] = { "Fast", "Slow" };
--static const char *wm8350_adcfilter[] = { "None", "High Pass" };
--static const char *wm8350_adchp[] = { "44.1kHz", "8kHz", "16kHz", "32kHz" };
--static const char *wm8350_lr[] = { "Left", "Right" };
+-static void mcp_bus_remove(struct device *dev)
+-{
+-	struct mcp *mcp = to_mcp(dev);
+-	struct mcp_driver *drv = to_mcp_driver(dev->driver);
 -
--static const struct soc_enum wm8350_enum[] = {
--	SOC_ENUM_SINGLE(WM8350_DAC_CONTROL, 4, 4, wm8350_deemp),
--	SOC_ENUM_SINGLE(WM8350_DAC_CONTROL, 0, 4, wm8350_pol),
--	SOC_ENUM_SINGLE(WM8350_DAC_MUTE_VOLUME, 14, 2, wm8350_dacmutem),
--	SOC_ENUM_SINGLE(WM8350_DAC_MUTE_VOLUME, 13, 2, wm8350_dacmutes),
--	SOC_ENUM_SINGLE(WM8350_ADC_CONTROL, 15, 2, wm8350_adcfilter),
--	SOC_ENUM_SINGLE(WM8350_ADC_CONTROL, 8, 4, wm8350_adchp),
--	SOC_ENUM_SINGLE(WM8350_ADC_CONTROL, 0, 4, wm8350_pol),
--	SOC_ENUM_SINGLE(WM8350_INPUT_MIXER_VOLUME, 15, 2, wm8350_lr),
+-	drv->remove(mcp);
+-}
+-
+-static const struct bus_type mcp_bus_type = {
+-	.name		= "mcp",
+-	.match		= mcp_bus_match,
+-	.probe		= mcp_bus_probe,
+-	.remove		= mcp_bus_remove,
 -};
 -
--static DECLARE_TLV_DB_SCALE(pre_amp_tlv, -1200, 3525, 0);
--static DECLARE_TLV_DB_SCALE(out_pga_tlv, -5700, 600, 0);
--static DECLARE_TLV_DB_SCALE(dac_pcm_tlv, -7163, 36, 1);
--static DECLARE_TLV_DB_SCALE(adc_pcm_tlv, -12700, 50, 1);
--static DECLARE_TLV_DB_SCALE(out_mix_tlv, -1500, 300, 1);
--
--static const DECLARE_TLV_DB_RANGE(capture_sd_tlv,
--	0, 12, TLV_DB_SCALE_ITEM(-3600, 300, 1),
--	13, 15, TLV_DB_SCALE_ITEM(0, 0, 0)
--);
--
--static const struct snd_kcontrol_new wm8350_snd_controls[] = {
--	SOC_ENUM("Playback Deemphasis", wm8350_enum[0]),
--	SOC_ENUM("Playback DAC Inversion", wm8350_enum[1]),
--	SOC_DOUBLE_R_EXT_TLV("Playback PCM Volume",
--				WM8350_DAC_DIGITAL_VOLUME_L,
--				WM8350_DAC_DIGITAL_VOLUME_R,
--				0, 255, 0, wm8350_get_volsw_2r,
--				wm8350_put_volsw_2r_vu, dac_pcm_tlv),
--	SOC_ENUM("Playback PCM Mute Function", wm8350_enum[2]),
--	SOC_ENUM("Playback PCM Mute Speed", wm8350_enum[3]),
--	SOC_ENUM("Capture PCM Filter", wm8350_enum[4]),
--	SOC_ENUM("Capture PCM HP Filter", wm8350_enum[5]),
--	SOC_ENUM("Capture ADC Inversion", wm8350_enum[6]),
--	SOC_DOUBLE_R_EXT_TLV("Capture PCM Volume",
--				WM8350_ADC_DIGITAL_VOLUME_L,
--				WM8350_ADC_DIGITAL_VOLUME_R,
--				0, 255, 0, wm8350_get_volsw_2r,
--				wm8350_put_volsw_2r_vu, adc_pcm_tlv),
--	SOC_DOUBLE_TLV("Capture Sidetone Volume",
--		       WM8350_ADC_DIVIDER,
--		       8, 4, 15, 1, capture_sd_tlv),
--	SOC_DOUBLE_R_EXT_TLV("Capture Volume",
--				WM8350_LEFT_INPUT_VOLUME,
--				WM8350_RIGHT_INPUT_VOLUME,
--				2, 63, 0, wm8350_get_volsw_2r,
--				wm8350_put_volsw_2r_vu, pre_amp_tlv),
--	SOC_DOUBLE_R("Capture ZC Switch",
--		     WM8350_LEFT_INPUT_VOLUME,
--		     WM8350_RIGHT_INPUT_VOLUME, 13, 1, 0),
--	SOC_SINGLE_TLV("Left Input Left Sidetone Volume",
--		       WM8350_OUTPUT_LEFT_MIXER_VOLUME, 1, 7, 0, out_mix_tlv),
--	SOC_SINGLE_TLV("Left Input Right Sidetone Volume",
--		       WM8350_OUTPUT_LEFT_MIXER_VOLUME,
--		       5, 7, 0, out_mix_tlv),
--	SOC_SINGLE_TLV("Left Input Bypass Volume",
--		       WM8350_OUTPUT_LEFT_MIXER_VOLUME,
--		       9, 7, 0, out_mix_tlv),
--	SOC_SINGLE_TLV("Right Input Left Sidetone Volume",
--		       WM8350_OUTPUT_RIGHT_MIXER_VOLUME,
--		       1, 7, 0, out_mix_tlv),
--	SOC_SINGLE_TLV("Right Input Right Sidetone Volume",
--		       WM8350_OUTPUT_RIGHT_MIXER_VOLUME,
--		       5, 7, 0, out_mix_tlv),
--	SOC_SINGLE_TLV("Right Input Bypass Volume",
--		       WM8350_OUTPUT_RIGHT_MIXER_VOLUME,
--		       13, 7, 0, out_mix_tlv),
--	SOC_SINGLE("Left Input Mixer +20dB Switch",
--		   WM8350_INPUT_MIXER_VOLUME_L, 0, 1, 0),
--	SOC_SINGLE("Right Input Mixer +20dB Switch",
--		   WM8350_INPUT_MIXER_VOLUME_R, 0, 1, 0),
--	SOC_SINGLE_TLV("Out4 Capture Volume",
--		       WM8350_INPUT_MIXER_VOLUME,
--		       1, 7, 0, out_mix_tlv),
--	SOC_DOUBLE_R_EXT_TLV("Out1 Playback Volume",
--				WM8350_LOUT1_VOLUME,
--				WM8350_ROUT1_VOLUME,
--				2, 63, 0, wm8350_get_volsw_2r,
--				wm8350_put_volsw_2r_vu, out_pga_tlv),
--	SOC_DOUBLE_R("Out1 Playback ZC Switch",
--		     WM8350_LOUT1_VOLUME,
--		     WM8350_ROUT1_VOLUME, 13, 1, 0),
--	SOC_DOUBLE_R_EXT_TLV("Out2 Playback Volume",
--				WM8350_LOUT2_VOLUME,
--				WM8350_ROUT2_VOLUME,
--				2, 63, 0, wm8350_get_volsw_2r,
--				wm8350_put_volsw_2r_vu, out_pga_tlv),
--	SOC_DOUBLE_R("Out2 Playback ZC Switch", WM8350_LOUT2_VOLUME,
--		     WM8350_ROUT2_VOLUME, 13, 1, 0),
--	SOC_SINGLE("Out2 Right Invert Switch", WM8350_ROUT2_VOLUME, 10, 1, 0),
--	SOC_SINGLE_TLV("Out2 Beep Volume", WM8350_BEEP_VOLUME,
--		       5, 7, 0, out_mix_tlv),
--
--	SOC_DOUBLE_R("Out1 Playback Switch",
--		     WM8350_LOUT1_VOLUME,
--		     WM8350_ROUT1_VOLUME,
--		     14, 1, 1),
--	SOC_DOUBLE_R("Out2 Playback Switch",
--		     WM8350_LOUT2_VOLUME,
--		     WM8350_ROUT2_VOLUME,
--		     14, 1, 1),
--};
--
--/*
-- * DAPM Controls
+-/**
+- *	mcp_set_telecom_divisor - set the telecom divisor
+- *	@mcp: MCP interface structure
+- *	@div: SIB clock divisor
+- *
+- *	Set the telecom divisor on the MCP interface.  The resulting
+- *	sample rate is SIBCLOCK/div.
 - */
--
--/* Left Playback Mixer */
--static const struct snd_kcontrol_new wm8350_left_play_mixer_controls[] = {
--	SOC_DAPM_SINGLE("Playback Switch",
--			WM8350_LEFT_MIXER_CONTROL, 11, 1, 0),
--	SOC_DAPM_SINGLE("Left Bypass Switch",
--			WM8350_LEFT_MIXER_CONTROL, 2, 1, 0),
--	SOC_DAPM_SINGLE("Right Playback Switch",
--			WM8350_LEFT_MIXER_CONTROL, 12, 1, 0),
--	SOC_DAPM_SINGLE("Left Sidetone Switch",
--			WM8350_LEFT_MIXER_CONTROL, 0, 1, 0),
--	SOC_DAPM_SINGLE("Right Sidetone Switch",
--			WM8350_LEFT_MIXER_CONTROL, 1, 1, 0),
--};
--
--/* Right Playback Mixer */
--static const struct snd_kcontrol_new wm8350_right_play_mixer_controls[] = {
--	SOC_DAPM_SINGLE("Playback Switch",
--			WM8350_RIGHT_MIXER_CONTROL, 12, 1, 0),
--	SOC_DAPM_SINGLE("Right Bypass Switch",
--			WM8350_RIGHT_MIXER_CONTROL, 3, 1, 0),
--	SOC_DAPM_SINGLE("Left Playback Switch",
--			WM8350_RIGHT_MIXER_CONTROL, 11, 1, 0),
--	SOC_DAPM_SINGLE("Left Sidetone Switch",
--			WM8350_RIGHT_MIXER_CONTROL, 0, 1, 0),
--	SOC_DAPM_SINGLE("Right Sidetone Switch",
--			WM8350_RIGHT_MIXER_CONTROL, 1, 1, 0),
--};
--
--/* Out4 Mixer */
--static const struct snd_kcontrol_new wm8350_out4_mixer_controls[] = {
--	SOC_DAPM_SINGLE("Right Playback Switch",
--			WM8350_OUT4_MIXER_CONTROL, 12, 1, 0),
--	SOC_DAPM_SINGLE("Left Playback Switch",
--			WM8350_OUT4_MIXER_CONTROL, 11, 1, 0),
--	SOC_DAPM_SINGLE("Right Capture Switch",
--			WM8350_OUT4_MIXER_CONTROL, 9, 1, 0),
--	SOC_DAPM_SINGLE("Out3 Playback Switch",
--			WM8350_OUT4_MIXER_CONTROL, 2, 1, 0),
--	SOC_DAPM_SINGLE("Right Mixer Switch",
--			WM8350_OUT4_MIXER_CONTROL, 1, 1, 0),
--	SOC_DAPM_SINGLE("Left Mixer Switch",
--			WM8350_OUT4_MIXER_CONTROL, 0, 1, 0),
--};
--
--/* Out3 Mixer */
--static const struct snd_kcontrol_new wm8350_out3_mixer_controls[] = {
--	SOC_DAPM_SINGLE("Left Playback Switch",
--			WM8350_OUT3_MIXER_CONTROL, 11, 1, 0),
--	SOC_DAPM_SINGLE("Left Capture Switch",
--			WM8350_OUT3_MIXER_CONTROL, 8, 1, 0),
--	SOC_DAPM_SINGLE("Out4 Playback Switch",
--			WM8350_OUT3_MIXER_CONTROL, 3, 1, 0),
--	SOC_DAPM_SINGLE("Left Mixer Switch",
--			WM8350_OUT3_MIXER_CONTROL, 0, 1, 0),
--};
--
--/* Left Input Mixer */
--static const struct snd_kcontrol_new wm8350_left_capt_mixer_controls[] = {
--	SOC_DAPM_SINGLE_TLV("L2 Capture Volume",
--			    WM8350_INPUT_MIXER_VOLUME_L, 1, 7, 0, out_mix_tlv),
--	SOC_DAPM_SINGLE_TLV("L3 Capture Volume",
--			    WM8350_INPUT_MIXER_VOLUME_L, 9, 7, 0, out_mix_tlv),
--	SOC_DAPM_SINGLE("PGA Capture Switch",
--			WM8350_LEFT_INPUT_VOLUME, 14, 1, 1),
--};
--
--/* Right Input Mixer */
--static const struct snd_kcontrol_new wm8350_right_capt_mixer_controls[] = {
--	SOC_DAPM_SINGLE_TLV("L2 Capture Volume",
--			    WM8350_INPUT_MIXER_VOLUME_R, 5, 7, 0, out_mix_tlv),
--	SOC_DAPM_SINGLE_TLV("L3 Capture Volume",
--			    WM8350_INPUT_MIXER_VOLUME_R, 13, 7, 0, out_mix_tlv),
--	SOC_DAPM_SINGLE("PGA Capture Switch",
--			WM8350_RIGHT_INPUT_VOLUME, 14, 1, 1),
--};
--
--/* Left Mic Mixer */
--static const struct snd_kcontrol_new wm8350_left_mic_mixer_controls[] = {
--	SOC_DAPM_SINGLE("INN Capture Switch", WM8350_INPUT_CONTROL, 1, 1, 0),
--	SOC_DAPM_SINGLE("INP Capture Switch", WM8350_INPUT_CONTROL, 0, 1, 0),
--	SOC_DAPM_SINGLE("IN2 Capture Switch", WM8350_INPUT_CONTROL, 2, 1, 0),
--};
--
--/* Right Mic Mixer */
--static const struct snd_kcontrol_new wm8350_right_mic_mixer_controls[] = {
--	SOC_DAPM_SINGLE("INN Capture Switch", WM8350_INPUT_CONTROL, 9, 1, 0),
--	SOC_DAPM_SINGLE("INP Capture Switch", WM8350_INPUT_CONTROL, 8, 1, 0),
--	SOC_DAPM_SINGLE("IN2 Capture Switch", WM8350_INPUT_CONTROL, 10, 1, 0),
--};
--
--/* Beep Switch */
--static const struct snd_kcontrol_new wm8350_beep_switch_controls =
--SOC_DAPM_SINGLE("Switch", WM8350_BEEP_VOLUME, 15, 1, 1);
--
--/* Out4 Capture Mux */
--static const struct snd_kcontrol_new wm8350_out4_capture_controls =
--SOC_DAPM_ENUM("Route", wm8350_enum[7]);
--
--static const struct snd_soc_dapm_widget wm8350_dapm_widgets[] = {
--
--	SND_SOC_DAPM_PGA("IN3R PGA", WM8350_POWER_MGMT_2, 11, 0, NULL, 0),
--	SND_SOC_DAPM_PGA("IN3L PGA", WM8350_POWER_MGMT_2, 10, 0, NULL, 0),
--	SND_SOC_DAPM_PGA_E("Right Out2 PGA", WM8350_POWER_MGMT_3, 3, 0, NULL,
--			   0, pga_event,
--			   SND_SOC_DAPM_POST_PMU | SND_SOC_DAPM_PRE_PMD),
--	SND_SOC_DAPM_PGA_E("Left Out2 PGA", WM8350_POWER_MGMT_3, 2, 0, NULL, 0,
--			   pga_event,
--			   SND_SOC_DAPM_POST_PMU | SND_SOC_DAPM_PRE_PMD),
--	SND_SOC_DAPM_PGA_E("Right Out1 PGA", WM8350_POWER_MGMT_3, 1, 0, NULL,
--			   0, pga_event,
--			   SND_SOC_DAPM_POST_PMU | SND_SOC_DAPM_PRE_PMD),
--	SND_SOC_DAPM_PGA_E("Left Out1 PGA", WM8350_POWER_MGMT_3, 0, 0, NULL, 0,
--			   pga_event,
--			   SND_SOC_DAPM_POST_PMU | SND_SOC_DAPM_PRE_PMD),
--
--	SND_SOC_DAPM_MIXER("Right Capture Mixer", WM8350_POWER_MGMT_2,
--			   7, 0, &wm8350_right_capt_mixer_controls[0],
--			   ARRAY_SIZE(wm8350_right_capt_mixer_controls)),
--
--	SND_SOC_DAPM_MIXER("Left Capture Mixer", WM8350_POWER_MGMT_2,
--			   6, 0, &wm8350_left_capt_mixer_controls[0],
--			   ARRAY_SIZE(wm8350_left_capt_mixer_controls)),
--
--	SND_SOC_DAPM_MIXER("Out4 Mixer", WM8350_POWER_MGMT_2, 5, 0,
--			   &wm8350_out4_mixer_controls[0],
--			   ARRAY_SIZE(wm8350_out4_mixer_controls)),
--
--	SND_SOC_DAPM_MIXER("Out3 Mixer", WM8350_POWER_MGMT_2, 4, 0,
--			   &wm8350_out3_mixer_controls[0],
--			   ARRAY_SIZE(wm8350_out3_mixer_controls)),
--
--	SND_SOC_DAPM_MIXER("Right Playback Mixer", WM8350_POWER_MGMT_2, 1, 0,
--			   &wm8350_right_play_mixer_controls[0],
--			   ARRAY_SIZE(wm8350_right_play_mixer_controls)),
--
--	SND_SOC_DAPM_MIXER("Left Playback Mixer", WM8350_POWER_MGMT_2, 0, 0,
--			   &wm8350_left_play_mixer_controls[0],
--			   ARRAY_SIZE(wm8350_left_play_mixer_controls)),
--
--	SND_SOC_DAPM_MIXER("Left Mic Mixer", WM8350_POWER_MGMT_2, 8, 0,
--			   &wm8350_left_mic_mixer_controls[0],
--			   ARRAY_SIZE(wm8350_left_mic_mixer_controls)),
--
--	SND_SOC_DAPM_MIXER("Right Mic Mixer", WM8350_POWER_MGMT_2, 9, 0,
--			   &wm8350_right_mic_mixer_controls[0],
--			   ARRAY_SIZE(wm8350_right_mic_mixer_controls)),
--
--	/* virtual mixer for Beep and Out2R */
--	SND_SOC_DAPM_MIXER("Out2 Mixer", SND_SOC_NOPM, 0, 0, NULL, 0),
--
--	SND_SOC_DAPM_SWITCH("Beep", WM8350_POWER_MGMT_3, 7, 0,
--			    &wm8350_beep_switch_controls),
--
--	SND_SOC_DAPM_ADC("Right ADC", "Right Capture",
--			 WM8350_POWER_MGMT_4, 3, 0),
--	SND_SOC_DAPM_ADC("Left ADC", "Left Capture",
--			 WM8350_POWER_MGMT_4, 2, 0),
--	SND_SOC_DAPM_DAC("Right DAC", "Right Playback",
--			 WM8350_POWER_MGMT_4, 5, 0),
--	SND_SOC_DAPM_DAC("Left DAC", "Left Playback",
--			 WM8350_POWER_MGMT_4, 4, 0),
--
--	SND_SOC_DAPM_MICBIAS("Mic Bias", WM8350_POWER_MGMT_1, 4, 0),
--
--	SND_SOC_DAPM_MUX("Out4 Capture Channel", SND_SOC_NOPM, 0, 0,
--			 &wm8350_out4_capture_controls),
--
--	SND_SOC_DAPM_OUTPUT("OUT1R"),
--	SND_SOC_DAPM_OUTPUT("OUT1L"),
--	SND_SOC_DAPM_OUTPUT("OUT2R"),
--	SND_SOC_DAPM_OUTPUT("OUT2L"),
--	SND_SOC_DAPM_OUTPUT("OUT3"),
--	SND_SOC_DAPM_OUTPUT("OUT4"),
--
--	SND_SOC_DAPM_INPUT("IN1RN"),
--	SND_SOC_DAPM_INPUT("IN1RP"),
--	SND_SOC_DAPM_INPUT("IN2R"),
--	SND_SOC_DAPM_INPUT("IN1LP"),
--	SND_SOC_DAPM_INPUT("IN1LN"),
--	SND_SOC_DAPM_INPUT("IN2L"),
--	SND_SOC_DAPM_INPUT("IN3R"),
--	SND_SOC_DAPM_INPUT("IN3L"),
--};
--
--static const struct snd_soc_dapm_route wm8350_dapm_routes[] = {
--
--	/* left playback mixer */
--	{"Left Playback Mixer", "Playback Switch", "Left DAC"},
--	{"Left Playback Mixer", "Left Bypass Switch", "IN3L PGA"},
--	{"Left Playback Mixer", "Right Playback Switch", "Right DAC"},
--	{"Left Playback Mixer", "Left Sidetone Switch", "Left Mic Mixer"},
--	{"Left Playback Mixer", "Right Sidetone Switch", "Right Mic Mixer"},
--
--	/* right playback mixer */
--	{"Right Playback Mixer", "Playback Switch", "Right DAC"},
--	{"Right Playback Mixer", "Right Bypass Switch", "IN3R PGA"},
--	{"Right Playback Mixer", "Left Playback Switch", "Left DAC"},
--	{"Right Playback Mixer", "Left Sidetone Switch", "Left Mic Mixer"},
--	{"Right Playback Mixer", "Right Sidetone Switch", "Right Mic Mixer"},
--
--	/* out4 playback mixer */
--	{"Out4 Mixer", "Right Playback Switch", "Right DAC"},
--	{"Out4 Mixer", "Left Playback Switch", "Left DAC"},
--	{"Out4 Mixer", "Right Capture Switch", "Right Capture Mixer"},
--	{"Out4 Mixer", "Out3 Playback Switch", "Out3 Mixer"},
--	{"Out4 Mixer", "Right Mixer Switch", "Right Playback Mixer"},
--	{"Out4 Mixer", "Left Mixer Switch", "Left Playback Mixer"},
--	{"OUT4", NULL, "Out4 Mixer"},
--
--	/* out3 playback mixer */
--	{"Out3 Mixer", "Left Playback Switch", "Left DAC"},
--	{"Out3 Mixer", "Left Capture Switch", "Left Capture Mixer"},
--	{"Out3 Mixer", "Left Mixer Switch", "Left Playback Mixer"},
--	{"Out3 Mixer", "Out4 Playback Switch", "Out4 Mixer"},
--	{"OUT3", NULL, "Out3 Mixer"},
--
--	/* out2 */
--	{"Right Out2 PGA", NULL, "Right Playback Mixer"},
--	{"Left Out2 PGA", NULL, "Left Playback Mixer"},
--	{"OUT2L", NULL, "Left Out2 PGA"},
--	{"OUT2R", NULL, "Right Out2 PGA"},
--
--	/* out1 */
--	{"Right Out1 PGA", NULL, "Right Playback Mixer"},
--	{"Left Out1 PGA", NULL, "Left Playback Mixer"},
--	{"OUT1L", NULL, "Left Out1 PGA"},
--	{"OUT1R", NULL, "Right Out1 PGA"},
--
--	/* ADCs */
--	{"Left ADC", NULL, "Left Capture Mixer"},
--	{"Right ADC", NULL, "Right Capture Mixer"},
--
--	/* Left capture mixer */
--	{"Left Capture Mixer", "L2 Capture Volume", "IN2L"},
--	{"Left Capture Mixer", "L3 Capture Volume", "IN3L PGA"},
--	{"Left Capture Mixer", "PGA Capture Switch", "Left Mic Mixer"},
--	{"Left Capture Mixer", NULL, "Out4 Capture Channel"},
--
--	/* Right capture mixer */
--	{"Right Capture Mixer", "L2 Capture Volume", "IN2R"},
--	{"Right Capture Mixer", "L3 Capture Volume", "IN3R PGA"},
--	{"Right Capture Mixer", "PGA Capture Switch", "Right Mic Mixer"},
--	{"Right Capture Mixer", NULL, "Out4 Capture Channel"},
--
--	/* L3 Inputs */
--	{"IN3L PGA", NULL, "IN3L"},
--	{"IN3R PGA", NULL, "IN3R"},
--
--	/* Left Mic mixer */
--	{"Left Mic Mixer", "INN Capture Switch", "IN1LN"},
--	{"Left Mic Mixer", "INP Capture Switch", "IN1LP"},
--	{"Left Mic Mixer", "IN2 Capture Switch", "IN2L"},
--
--	/* Right Mic mixer */
--	{"Right Mic Mixer", "INN Capture Switch", "IN1RN"},
--	{"Right Mic Mixer", "INP Capture Switch", "IN1RP"},
--	{"Right Mic Mixer", "IN2 Capture Switch", "IN2R"},
--
--	/* out 4 capture */
--	{"Out4 Capture Channel", NULL, "Out4 Mixer"},
--
--	/* Beep */
--	{"Beep", NULL, "IN3R PGA"},
--};
--
--static int wm8350_set_dai_sysclk(struct snd_soc_dai *codec_dai,
--				 int clk_id, unsigned int freq, int dir)
+-void mcp_set_telecom_divisor(struct mcp *mcp, unsigned int div)
 -{
--	struct snd_soc_component *component = codec_dai->component;
--	struct wm8350_data *wm8350_data = snd_soc_component_get_drvdata(component);
--	struct wm8350 *wm8350 = wm8350_data->wm8350;
--	u16 fll_4;
+-	unsigned long flags;
 -
--	switch (clk_id) {
--	case WM8350_MCLK_SEL_MCLK:
--		wm8350_clear_bits(wm8350, WM8350_CLOCK_CONTROL_1,
--				  WM8350_MCLK_SEL);
--		break;
--	case WM8350_MCLK_SEL_PLL_MCLK:
--	case WM8350_MCLK_SEL_PLL_DAC:
--	case WM8350_MCLK_SEL_PLL_ADC:
--	case WM8350_MCLK_SEL_PLL_32K:
--		wm8350_set_bits(wm8350, WM8350_CLOCK_CONTROL_1,
--				WM8350_MCLK_SEL);
--		fll_4 = snd_soc_component_read(component, WM8350_FLL_CONTROL_4) &
--		    ~WM8350_FLL_CLK_SRC_MASK;
--		snd_soc_component_write(component, WM8350_FLL_CONTROL_4, fll_4 | clk_id);
--		break;
--	}
--
--	/* MCLK direction */
--	if (dir == SND_SOC_CLOCK_OUT)
--		wm8350_set_bits(wm8350, WM8350_CLOCK_CONTROL_2,
--				WM8350_MCLK_DIR);
--	else
--		wm8350_clear_bits(wm8350, WM8350_CLOCK_CONTROL_2,
--				  WM8350_MCLK_DIR);
--
--	return 0;
+-	spin_lock_irqsave(&mcp->lock, flags);
+-	mcp->ops->set_telecom_divisor(mcp, div);
+-	spin_unlock_irqrestore(&mcp->lock, flags);
 -}
+-EXPORT_SYMBOL(mcp_set_telecom_divisor);
 -
--static int wm8350_set_clkdiv(struct snd_soc_dai *codec_dai, int div_id, int div)
+-/**
+- *	mcp_set_audio_divisor - set the audio divisor
+- *	@mcp: MCP interface structure
+- *	@div: SIB clock divisor
+- *
+- *	Set the audio divisor on the MCP interface.
+- */
+-void mcp_set_audio_divisor(struct mcp *mcp, unsigned int div)
 -{
--	struct snd_soc_component *component = codec_dai->component;
--	u16 val;
+-	unsigned long flags;
 -
--	switch (div_id) {
--	case WM8350_ADC_CLKDIV:
--		val = snd_soc_component_read(component, WM8350_ADC_DIVIDER) &
--		    ~WM8350_ADC_CLKDIV_MASK;
--		snd_soc_component_write(component, WM8350_ADC_DIVIDER, val | div);
--		break;
--	case WM8350_DAC_CLKDIV:
--		val = snd_soc_component_read(component, WM8350_DAC_CLOCK_CONTROL) &
--		    ~WM8350_DAC_CLKDIV_MASK;
--		snd_soc_component_write(component, WM8350_DAC_CLOCK_CONTROL, val | div);
--		break;
--	case WM8350_BCLK_CLKDIV:
--		val = snd_soc_component_read(component, WM8350_CLOCK_CONTROL_1) &
--		    ~WM8350_BCLK_DIV_MASK;
--		snd_soc_component_write(component, WM8350_CLOCK_CONTROL_1, val | div);
--		break;
--	case WM8350_OPCLK_CLKDIV:
--		val = snd_soc_component_read(component, WM8350_CLOCK_CONTROL_1) &
--		    ~WM8350_OPCLK_DIV_MASK;
--		snd_soc_component_write(component, WM8350_CLOCK_CONTROL_1, val | div);
--		break;
--	case WM8350_SYS_CLKDIV:
--		val = snd_soc_component_read(component, WM8350_CLOCK_CONTROL_1) &
--		    ~WM8350_MCLK_DIV_MASK;
--		snd_soc_component_write(component, WM8350_CLOCK_CONTROL_1, val | div);
--		break;
--	case WM8350_DACLR_CLKDIV:
--		val = snd_soc_component_read(component, WM8350_DAC_LR_RATE) &
--		    ~WM8350_DACLRC_RATE_MASK;
--		snd_soc_component_write(component, WM8350_DAC_LR_RATE, val | div);
--		break;
--	case WM8350_ADCLR_CLKDIV:
--		val = snd_soc_component_read(component, WM8350_ADC_LR_RATE) &
--		    ~WM8350_ADCLRC_RATE_MASK;
--		snd_soc_component_write(component, WM8350_ADC_LR_RATE, val | div);
--		break;
--	default:
--		return -EINVAL;
--	}
--
--	return 0;
+-	spin_lock_irqsave(&mcp->lock, flags);
+-	mcp->ops->set_audio_divisor(mcp, div);
+-	spin_unlock_irqrestore(&mcp->lock, flags);
 -}
+-EXPORT_SYMBOL(mcp_set_audio_divisor);
 -
--static int wm8350_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
+-/**
+- *	mcp_reg_write - write a device register
+- *	@mcp: MCP interface structure
+- *	@reg: 4-bit register index
+- *	@val: 16-bit data value
+- *
+- *	Write a device register.  The MCP interface must be enabled
+- *	to prevent this function hanging.
+- */
+-void mcp_reg_write(struct mcp *mcp, unsigned int reg, unsigned int val)
 -{
--	struct snd_soc_component *component = codec_dai->component;
--	u16 iface = snd_soc_component_read(component, WM8350_AI_FORMATING) &
--	    ~(WM8350_AIF_BCLK_INV | WM8350_AIF_LRCLK_INV | WM8350_AIF_FMT_MASK);
--	u16 master = snd_soc_component_read(component, WM8350_AI_DAC_CONTROL) &
--	    ~WM8350_BCLK_MSTR;
--	u16 dac_lrc = snd_soc_component_read(component, WM8350_DAC_LR_RATE) &
--	    ~WM8350_DACLRC_ENA;
--	u16 adc_lrc = snd_soc_component_read(component, WM8350_ADC_LR_RATE) &
--	    ~WM8350_ADCLRC_ENA;
+-	unsigned long flags;
 -
--	/* set master/slave audio interface */
--	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
--	case SND_SOC_DAIFMT_CBP_CFP:
--		master |= WM8350_BCLK_MSTR;
--		dac_lrc |= WM8350_DACLRC_ENA;
--		adc_lrc |= WM8350_ADCLRC_ENA;
--		break;
--	case SND_SOC_DAIFMT_CBC_CFC:
--		break;
--	default:
--		return -EINVAL;
--	}
--
--	/* interface format */
--	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
--	case SND_SOC_DAIFMT_I2S:
--		iface |= 0x2 << 8;
--		break;
--	case SND_SOC_DAIFMT_RIGHT_J:
--		break;
--	case SND_SOC_DAIFMT_LEFT_J:
--		iface |= 0x1 << 8;
--		break;
--	case SND_SOC_DAIFMT_DSP_A:
--		iface |= 0x3 << 8;
--		break;
--	case SND_SOC_DAIFMT_DSP_B:
--		iface |= 0x3 << 8 | WM8350_AIF_LRCLK_INV;
--		break;
--	default:
--		return -EINVAL;
--	}
--
--	/* clock inversion */
--	switch (fmt & SND_SOC_DAIFMT_INV_MASK) {
--	case SND_SOC_DAIFMT_NB_NF:
--		break;
--	case SND_SOC_DAIFMT_IB_IF:
--		iface |= WM8350_AIF_LRCLK_INV | WM8350_AIF_BCLK_INV;
--		break;
--	case SND_SOC_DAIFMT_IB_NF:
--		iface |= WM8350_AIF_BCLK_INV;
--		break;
--	case SND_SOC_DAIFMT_NB_IF:
--		iface |= WM8350_AIF_LRCLK_INV;
--		break;
--	default:
--		return -EINVAL;
--	}
--
--	snd_soc_component_write(component, WM8350_AI_FORMATING, iface);
--	snd_soc_component_write(component, WM8350_AI_DAC_CONTROL, master);
--	snd_soc_component_write(component, WM8350_DAC_LR_RATE, dac_lrc);
--	snd_soc_component_write(component, WM8350_ADC_LR_RATE, adc_lrc);
--	return 0;
+-	spin_lock_irqsave(&mcp->lock, flags);
+-	mcp->ops->reg_write(mcp, reg, val);
+-	spin_unlock_irqrestore(&mcp->lock, flags);
 -}
+-EXPORT_SYMBOL(mcp_reg_write);
 -
--static int wm8350_pcm_hw_params(struct snd_pcm_substream *substream,
--				struct snd_pcm_hw_params *params,
--				struct snd_soc_dai *codec_dai)
+-/**
+- *	mcp_reg_read - read a device register
+- *	@mcp: MCP interface structure
+- *	@reg: 4-bit register index
+- *
+- *	Read a device register and return its value.  The MCP interface
+- *	must be enabled to prevent this function hanging.
+- */
+-unsigned int mcp_reg_read(struct mcp *mcp, unsigned int reg)
 -{
--	struct snd_soc_component *component = codec_dai->component;
--	struct wm8350_data *wm8350_data = snd_soc_component_get_drvdata(component);
--	struct wm8350 *wm8350 = wm8350_data->wm8350;
--	u16 iface = snd_soc_component_read(component, WM8350_AI_FORMATING) &
--	    ~WM8350_AIF_WL_MASK;
--
--	/* bit size */
--	switch (params_width(params)) {
--	case 16:
--		break;
--	case 20:
--		iface |= 0x1 << 10;
--		break;
--	case 24:
--		iface |= 0x2 << 10;
--		break;
--	case 32:
--		iface |= 0x3 << 10;
--		break;
--	}
--
--	snd_soc_component_write(component, WM8350_AI_FORMATING, iface);
--
--	/* The sloping stopband filter is recommended for use with
--	 * lower sample rates to improve performance.
--	 */
--	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
--		if (params_rate(params) < 24000)
--			wm8350_set_bits(wm8350, WM8350_DAC_MUTE_VOLUME,
--					WM8350_DAC_SB_FILT);
--		else
--			wm8350_clear_bits(wm8350, WM8350_DAC_MUTE_VOLUME,
--					  WM8350_DAC_SB_FILT);
--	}
--
--	return 0;
--}
--
--static int wm8350_mute(struct snd_soc_dai *dai, int mute, int direction)
--{
--	struct snd_soc_component *component = dai->component;
+-	unsigned long flags;
 -	unsigned int val;
 -
--	if (mute)
--		val = WM8350_DAC_MUTE_ENA;
--	else
--		val = 0;
+-	spin_lock_irqsave(&mcp->lock, flags);
+-	val = mcp->ops->reg_read(mcp, reg);
+-	spin_unlock_irqrestore(&mcp->lock, flags);
 -
--	snd_soc_component_update_bits(component, WM8350_DAC_MUTE, WM8350_DAC_MUTE_ENA, val);
+-	return val;
+-}
+-EXPORT_SYMBOL(mcp_reg_read);
 -
--	return 0;
+-/**
+- *	mcp_enable - enable the MCP interface
+- *	@mcp: MCP interface to enable
+- *
+- *	Enable the MCP interface.  Each call to mcp_enable will need
+- *	a corresponding call to mcp_disable to disable the interface.
+- */
+-void mcp_enable(struct mcp *mcp)
+-{
+-	unsigned long flags;
+-
+-	spin_lock_irqsave(&mcp->lock, flags);
+-	if (mcp->use_count++ == 0)
+-		mcp->ops->enable(mcp);
+-	spin_unlock_irqrestore(&mcp->lock, flags);
+-}
+-EXPORT_SYMBOL(mcp_enable);
+-
+-/**
+- *	mcp_disable - disable the MCP interface
+- *	@mcp: MCP interface to disable
+- *
+- *	Disable the MCP interface.  The MCP interface will only be
+- *	disabled once the number of calls to mcp_enable matches the
+- *	number of calls to mcp_disable.
+- */
+-void mcp_disable(struct mcp *mcp)
+-{
+-	unsigned long flags;
+-
+-	spin_lock_irqsave(&mcp->lock, flags);
+-	if (--mcp->use_count == 0)
+-		mcp->ops->disable(mcp);
+-	spin_unlock_irqrestore(&mcp->lock, flags);
+-}
+-EXPORT_SYMBOL(mcp_disable);
+-
+-static void mcp_release(struct device *dev)
+-{
+-	struct mcp *mcp = container_of(dev, struct mcp, attached_device);
+-
+-	kfree(mcp);
 -}
 -
--/* FLL divisors */
--struct _fll_div {
--	int div;		/* FLL_OUTDIV */
--	int n;
--	int k;
--	int ratio;		/* FLL_FRATIO */
+-struct mcp *mcp_host_alloc(struct device *parent, size_t size)
+-{
+-	struct mcp *mcp;
+-
+-	mcp = kzalloc(sizeof(struct mcp) + size, GFP_KERNEL);
+-	if (mcp) {
+-		spin_lock_init(&mcp->lock);
+-		device_initialize(&mcp->attached_device);
+-		mcp->attached_device.parent = parent;
+-		mcp->attached_device.bus = &mcp_bus_type;
+-		mcp->attached_device.dma_mask = parent->dma_mask;
+-		mcp->attached_device.release = mcp_release;
+-	}
+-	return mcp;
+-}
+-EXPORT_SYMBOL(mcp_host_alloc);
+-
+-int mcp_host_add(struct mcp *mcp, void *pdata)
+-{
+-	mcp->attached_device.platform_data = pdata;
+-	dev_set_name(&mcp->attached_device, "mcp0");
+-	return device_add(&mcp->attached_device);
+-}
+-EXPORT_SYMBOL(mcp_host_add);
+-
+-void mcp_host_del(struct mcp *mcp)
+-{
+-	device_del(&mcp->attached_device);
+-}
+-EXPORT_SYMBOL(mcp_host_del);
+-
+-void mcp_host_free(struct mcp *mcp)
+-{
+-	put_device(&mcp->attached_device);
+-}
+-EXPORT_SYMBOL(mcp_host_free);
+-
+-int mcp_driver_register(struct mcp_driver *mcpdrv)
+-{
+-	mcpdrv->drv.bus = &mcp_bus_type;
+-	return driver_register(&mcpdrv->drv);
+-}
+-EXPORT_SYMBOL(mcp_driver_register);
+-
+-void mcp_driver_unregister(struct mcp_driver *mcpdrv)
+-{
+-	driver_unregister(&mcpdrv->drv);
+-}
+-EXPORT_SYMBOL(mcp_driver_unregister);
+-
+-static int __init mcp_init(void)
+-{
+-	return bus_register(&mcp_bus_type);
+-}
+-
+-static void __exit mcp_exit(void)
+-{
+-	bus_unregister(&mcp_bus_type);
+-}
+-
+-module_init(mcp_init);
+-module_exit(mcp_exit);
+-
+-MODULE_AUTHOR("Russell King <rmk@arm.linux.org.uk>");
+-MODULE_DESCRIPTION("Core multimedia communications port driver");
+-MODULE_LICENSE("GPL");
+diff --git a/drivers/mfd/mcp-sa11x0.c b/drivers/mfd/mcp-sa11x0.c
+deleted file mode 100644
+index 228c4a2f4c1f..000000000000
+--- a/drivers/mfd/mcp-sa11x0.c
++++ /dev/null
+@@ -1,304 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-only
+-/*
+- *  linux/drivers/mfd/mcp-sa11x0.c
+- *
+- *  Copyright (C) 2001-2005 Russell King
+- *
+- *  SA11x0 MCP (Multimedia Communications Port) driver.
+- *
+- *  MCP read/write timeouts from Jordi Colomer, rehacked by rmk.
+- */
+-#include <linux/module.h>
+-#include <linux/io.h>
+-#include <linux/errno.h>
+-#include <linux/kernel.h>
+-#include <linux/delay.h>
+-#include <linux/spinlock.h>
+-#include <linux/platform_device.h>
+-#include <linux/pm.h>
+-#include <linux/mfd/mcp.h>
+-
+-#include <mach/hardware.h>
+-#include <asm/mach-types.h>
+-#include <linux/platform_data/mfd-mcp-sa11x0.h>
+-
+-#define DRIVER_NAME "sa11x0-mcp"
+-
+-struct mcp_sa11x0 {
+-	void __iomem	*base0;
+-	void __iomem	*base1;
+-	u32		mccr0;
+-	u32		mccr1;
 -};
 -
--/* The size in bits of the fll divide multiplied by 10
-- * to allow rounding later */
--#define FIXED_FLL_SIZE ((1 << 16) * 10)
+-/* Register offsets */
+-#define MCCR0(m)	((m)->base0 + 0x00)
+-#define MCDR0(m)	((m)->base0 + 0x08)
+-#define MCDR1(m)	((m)->base0 + 0x0c)
+-#define MCDR2(m)	((m)->base0 + 0x10)
+-#define MCSR(m)		((m)->base0 + 0x18)
+-#define MCCR1(m)	((m)->base1 + 0x00)
 -
--static inline int fll_factors(struct _fll_div *fll_div, unsigned int input,
--			      unsigned int output)
+-#define priv(mcp)	((struct mcp_sa11x0 *)mcp_priv(mcp))
+-
+-static void
+-mcp_sa11x0_set_telecom_divisor(struct mcp *mcp, unsigned int divisor)
 -{
--	u64 Kpart;
--	unsigned int t1, t2, K, Nmod;
+-	struct mcp_sa11x0 *m = priv(mcp);
 -
--	if (output >= 2815250 && output <= 3125000)
--		fll_div->div = 0x4;
--	else if (output >= 5625000 && output <= 6250000)
--		fll_div->div = 0x3;
--	else if (output >= 11250000 && output <= 12500000)
--		fll_div->div = 0x2;
--	else if (output >= 22500000 && output <= 25000000)
--		fll_div->div = 0x1;
--	else {
--		printk(KERN_ERR "wm8350: fll freq %d out of range\n", output);
--		return -EINVAL;
--	}
+-	divisor /= 32;
 -
--	if (input > 48000)
--		fll_div->ratio = 1;
--	else
--		fll_div->ratio = 8;
--
--	t1 = output * (1 << (fll_div->div + 1));
--	t2 = input * fll_div->ratio;
--
--	fll_div->n = t1 / t2;
--	Nmod = t1 % t2;
--
--	if (Nmod) {
--		Kpart = FIXED_FLL_SIZE * (long long)Nmod;
--		do_div(Kpart, t2);
--		K = Kpart & 0xFFFFFFFF;
--
--		/* Check if we need to round */
--		if ((K % 10) >= 5)
--			K += 5;
--
--		/* Move down to proper range now rounding is done */
--		K /= 10;
--		fll_div->k = K;
--	} else
--		fll_div->k = 0;
--
--	return 0;
+-	m->mccr0 &= ~0x00007f00;
+-	m->mccr0 |= divisor << 8;
+-	writel_relaxed(m->mccr0, MCCR0(m));
 -}
 -
--static int wm8350_set_fll(struct snd_soc_dai *codec_dai,
--			  int pll_id, int source, unsigned int freq_in,
--			  unsigned int freq_out)
+-static void
+-mcp_sa11x0_set_audio_divisor(struct mcp *mcp, unsigned int divisor)
 -{
--	struct snd_soc_component *component = codec_dai->component;
--	struct wm8350_data *priv = snd_soc_component_get_drvdata(component);
--	struct wm8350 *wm8350 = priv->wm8350;
--	struct _fll_div fll_div;
--	int ret = 0;
--	u16 fll_1, fll_4;
+-	struct mcp_sa11x0 *m = priv(mcp);
 -
--	if (freq_in == priv->fll_freq_in && freq_out == priv->fll_freq_out)
--		return 0;
+-	divisor /= 32;
 -
--	/* power down FLL - we need to do this for reconfiguration */
--	wm8350_clear_bits(wm8350, WM8350_POWER_MGMT_4,
--			  WM8350_FLL_ENA | WM8350_FLL_OSC_ENA);
--
--	if (freq_out == 0 || freq_in == 0)
--		return ret;
--
--	ret = fll_factors(&fll_div, freq_in, freq_out);
--	if (ret < 0)
--		return ret;
--	dev_dbg(wm8350->dev,
--		"FLL in %u FLL out %u N 0x%x K 0x%x div %d ratio %d",
--		freq_in, freq_out, fll_div.n, fll_div.k, fll_div.div,
--		fll_div.ratio);
--
--	/* set up N.K & dividers */
--	fll_1 = snd_soc_component_read(component, WM8350_FLL_CONTROL_1) &
--	    ~(WM8350_FLL_OUTDIV_MASK | WM8350_FLL_RSP_RATE_MASK | 0xc000);
--	snd_soc_component_write(component, WM8350_FLL_CONTROL_1,
--			   fll_1 | (fll_div.div << 8) | 0x50);
--	snd_soc_component_write(component, WM8350_FLL_CONTROL_2,
--			   (fll_div.ratio << 11) | (fll_div.
--						    n & WM8350_FLL_N_MASK));
--	snd_soc_component_write(component, WM8350_FLL_CONTROL_3, fll_div.k);
--	fll_4 = snd_soc_component_read(component, WM8350_FLL_CONTROL_4) &
--	    ~(WM8350_FLL_FRAC | WM8350_FLL_SLOW_LOCK_REF);
--	snd_soc_component_write(component, WM8350_FLL_CONTROL_4,
--			   fll_4 | (fll_div.k ? WM8350_FLL_FRAC : 0) |
--			   (fll_div.ratio == 8 ? WM8350_FLL_SLOW_LOCK_REF : 0));
--
--	/* power FLL on */
--	wm8350_set_bits(wm8350, WM8350_POWER_MGMT_4, WM8350_FLL_OSC_ENA);
--	wm8350_set_bits(wm8350, WM8350_POWER_MGMT_4, WM8350_FLL_ENA);
--
--	priv->fll_freq_out = freq_out;
--	priv->fll_freq_in = freq_in;
--
--	return 0;
+-	m->mccr0 &= ~0x0000007f;
+-	m->mccr0 |= divisor;
+-	writel_relaxed(m->mccr0, MCCR0(m));
 -}
 -
--static int wm8350_set_bias_level(struct snd_soc_component *component,
--				 enum snd_soc_bias_level level)
+-/*
+- * Write data to the device.  The bit should be set after 3 subframe
+- * times (each frame is 64 clocks).  We wait a maximum of 6 subframes.
+- * We really should try doing something more productive while we
+- * wait.
+- */
+-static void
+-mcp_sa11x0_write(struct mcp *mcp, unsigned int reg, unsigned int val)
 -{
--	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
--	struct wm8350_data *priv = snd_soc_component_get_drvdata(component);
--	struct wm8350 *wm8350 = priv->wm8350;
--	struct wm8350_audio_platform_data *platform =
--		wm8350->codec.platform_data;
--	u16 pm1;
--	int ret;
+-	struct mcp_sa11x0 *m = priv(mcp);
+-	int ret = -ETIME;
+-	int i;
 -
--	switch (level) {
--	case SND_SOC_BIAS_ON:
--		pm1 = wm8350_reg_read(wm8350, WM8350_POWER_MGMT_1) &
--		    ~(WM8350_VMID_MASK | WM8350_CODEC_ISEL_MASK);
--		wm8350_reg_write(wm8350, WM8350_POWER_MGMT_1,
--				 pm1 | WM8350_VMID_50K |
--				 platform->codec_current_on << 14);
--		break;
+-	writel_relaxed(reg << 17 | MCDR2_Wr | (val & 0xffff), MCDR2(m));
 -
--	case SND_SOC_BIAS_PREPARE:
--		pm1 = wm8350_reg_read(wm8350, WM8350_POWER_MGMT_1);
--		pm1 &= ~WM8350_VMID_MASK;
--		wm8350_reg_write(wm8350, WM8350_POWER_MGMT_1,
--				 pm1 | WM8350_VMID_50K);
--		break;
--
--	case SND_SOC_BIAS_STANDBY:
--		if (snd_soc_dapm_get_bias_level(dapm) == SND_SOC_BIAS_OFF) {
--			ret = regulator_bulk_enable(ARRAY_SIZE(priv->supplies),
--						    priv->supplies);
--			if (ret != 0)
--				return ret;
--
--			/* Enable the system clock */
--			wm8350_set_bits(wm8350, WM8350_POWER_MGMT_4,
--					WM8350_SYSCLK_ENA);
--
--			/* mute DAC & outputs */
--			wm8350_set_bits(wm8350, WM8350_DAC_MUTE,
--					WM8350_DAC_MUTE_ENA);
--
--			/* discharge cap memory */
--			wm8350_reg_write(wm8350, WM8350_ANTI_POP_CONTROL,
--					 platform->dis_out1 |
--					 (platform->dis_out2 << 2) |
--					 (platform->dis_out3 << 4) |
--					 (platform->dis_out4 << 6));
--
--			/* wait for discharge */
--			schedule_timeout_interruptible(msecs_to_jiffies
--						       (platform->
--							cap_discharge_msecs));
--
--			/* enable antipop */
--			wm8350_reg_write(wm8350, WM8350_ANTI_POP_CONTROL,
--					 (platform->vmid_s_curve << 8));
--
--			/* ramp up vmid */
--			wm8350_reg_write(wm8350, WM8350_POWER_MGMT_1,
--					 (platform->
--					  codec_current_charge << 14) |
--					 WM8350_VMID_5K | WM8350_VMIDEN |
--					 WM8350_VBUFEN);
--
--			/* wait for vmid */
--			schedule_timeout_interruptible(msecs_to_jiffies
--						       (platform->
--							vmid_charge_msecs));
--
--			/* turn on vmid 300k  */
--			pm1 = wm8350_reg_read(wm8350, WM8350_POWER_MGMT_1) &
--			    ~(WM8350_VMID_MASK | WM8350_CODEC_ISEL_MASK);
--			pm1 |= WM8350_VMID_300K |
--				(platform->codec_current_standby << 14);
--			wm8350_reg_write(wm8350, WM8350_POWER_MGMT_1,
--					 pm1);
--
--
--			/* enable analogue bias */
--			pm1 |= WM8350_BIASEN;
--			wm8350_reg_write(wm8350, WM8350_POWER_MGMT_1, pm1);
--
--			/* disable antipop */
--			wm8350_reg_write(wm8350, WM8350_ANTI_POP_CONTROL, 0);
--
--		} else {
--			/* turn on vmid 300k and reduce current */
--			pm1 = wm8350_reg_read(wm8350, WM8350_POWER_MGMT_1) &
--			    ~(WM8350_VMID_MASK | WM8350_CODEC_ISEL_MASK);
--			wm8350_reg_write(wm8350, WM8350_POWER_MGMT_1,
--					 pm1 | WM8350_VMID_300K |
--					 (platform->
--					  codec_current_standby << 14));
--
+-	for (i = 0; i < 2; i++) {
+-		udelay(mcp->rw_timeout);
+-		if (readl_relaxed(MCSR(m)) & MCSR_CWC) {
+-			ret = 0;
+-			break;
 -		}
--		break;
--
--	case SND_SOC_BIAS_OFF:
--
--		/* mute DAC & enable outputs */
--		wm8350_set_bits(wm8350, WM8350_DAC_MUTE, WM8350_DAC_MUTE_ENA);
--
--		wm8350_set_bits(wm8350, WM8350_POWER_MGMT_3,
--				WM8350_OUT1L_ENA | WM8350_OUT1R_ENA |
--				WM8350_OUT2L_ENA | WM8350_OUT2R_ENA);
--
--		/* enable anti pop S curve */
--		wm8350_reg_write(wm8350, WM8350_ANTI_POP_CONTROL,
--				 (platform->vmid_s_curve << 8));
--
--		/* turn off vmid  */
--		pm1 = wm8350_reg_read(wm8350, WM8350_POWER_MGMT_1) &
--		    ~WM8350_VMIDEN;
--		wm8350_reg_write(wm8350, WM8350_POWER_MGMT_1, pm1);
--
--		/* wait */
--		schedule_timeout_interruptible(msecs_to_jiffies
--					       (platform->
--						vmid_discharge_msecs));
--
--		wm8350_reg_write(wm8350, WM8350_ANTI_POP_CONTROL,
--				 (platform->vmid_s_curve << 8) |
--				 platform->dis_out1 |
--				 (platform->dis_out2 << 2) |
--				 (platform->dis_out3 << 4) |
--				 (platform->dis_out4 << 6));
--
--		/* turn off VBuf and drain */
--		pm1 = wm8350_reg_read(wm8350, WM8350_POWER_MGMT_1) &
--		    ~(WM8350_VBUFEN | WM8350_VMID_MASK);
--		wm8350_reg_write(wm8350, WM8350_POWER_MGMT_1,
--				 pm1 | WM8350_OUTPUT_DRAIN_EN);
--
--		/* wait */
--		schedule_timeout_interruptible(msecs_to_jiffies
--					       (platform->drain_msecs));
--
--		pm1 &= ~WM8350_BIASEN;
--		wm8350_reg_write(wm8350, WM8350_POWER_MGMT_1, pm1);
--
--		/* disable anti-pop */
--		wm8350_reg_write(wm8350, WM8350_ANTI_POP_CONTROL, 0);
--
--		wm8350_clear_bits(wm8350, WM8350_LOUT1_VOLUME,
--				  WM8350_OUT1L_ENA);
--		wm8350_clear_bits(wm8350, WM8350_ROUT1_VOLUME,
--				  WM8350_OUT1R_ENA);
--		wm8350_clear_bits(wm8350, WM8350_LOUT2_VOLUME,
--				  WM8350_OUT2L_ENA);
--		wm8350_clear_bits(wm8350, WM8350_ROUT2_VOLUME,
--				  WM8350_OUT2R_ENA);
--
--		/* disable clock gen */
--		wm8350_clear_bits(wm8350, WM8350_POWER_MGMT_4,
--				  WM8350_SYSCLK_ENA);
--
--		regulator_bulk_disable(ARRAY_SIZE(priv->supplies),
--				       priv->supplies);
--		break;
 -	}
--	return 0;
+-
+-	if (ret < 0)
+-		printk(KERN_WARNING "mcp: write timed out\n");
 -}
 -
--static void wm8350_hp_work(struct wm8350_data *priv,
--			   struct wm8350_jack_data *jack,
--			   u16 mask)
--{
--	struct wm8350 *wm8350 = priv->wm8350;
--	u16 reg;
--	int report;
--
--	reg = wm8350_reg_read(wm8350, WM8350_JACK_PIN_STATUS);
--	if (reg & mask)
--		report = jack->report;
--	else
--		report = 0;
--
--	snd_soc_jack_report(jack->jack, report, jack->report);
--
--}
--
--static void wm8350_hpl_work(struct work_struct *work)
--{
--	struct wm8350_data *priv =
--	    container_of(work, struct wm8350_data, hpl.work.work);
--
--	wm8350_hp_work(priv, &priv->hpl, WM8350_JACK_L_LVL);
--}
--
--static void wm8350_hpr_work(struct work_struct *work)
--{
--	struct wm8350_data *priv =
--	    container_of(work, struct wm8350_data, hpr.work.work);
--	
--	wm8350_hp_work(priv, &priv->hpr, WM8350_JACK_R_LVL);
--}
--
--static irqreturn_t wm8350_hpl_jack_handler(int irq, void *data)
--{
--	struct wm8350_data *priv = data;
--	struct wm8350 *wm8350 = priv->wm8350;
--
--#ifndef CONFIG_SND_SOC_WM8350_MODULE
--	trace_snd_soc_jack_irq("WM8350 HPL");
--#endif
--
--	if (device_may_wakeup(wm8350->dev))
--		pm_wakeup_event(wm8350->dev, 250);
--
--	queue_delayed_work(system_power_efficient_wq,
--			   &priv->hpl.work, msecs_to_jiffies(200));
--
--	return IRQ_HANDLED;
--}
--
--static irqreturn_t wm8350_hpr_jack_handler(int irq, void *data)
--{
--	struct wm8350_data *priv = data;
--	struct wm8350 *wm8350 = priv->wm8350;
--
--#ifndef CONFIG_SND_SOC_WM8350_MODULE
--	trace_snd_soc_jack_irq("WM8350 HPR");
--#endif
--
--	if (device_may_wakeup(wm8350->dev))
--		pm_wakeup_event(wm8350->dev, 250);
--
--	queue_delayed_work(system_power_efficient_wq,
--			   &priv->hpr.work, msecs_to_jiffies(200));
--
--	return IRQ_HANDLED;
--}
--
--/**
-- * wm8350_hp_jack_detect - Enable headphone jack detection.
-- *
-- * @component:  WM8350 component
-- * @which:  left or right jack detect signal
-- * @jack:   jack to report detection events on
-- * @report: value to report
-- *
-- * Enables the headphone jack detection of the WM8350.  If no report
-- * is specified then detection is disabled.
+-/*
+- * Read data from the device.  The bit should be set after 3 subframe
+- * times (each frame is 64 clocks).  We wait a maximum of 6 subframes.
+- * We really should try doing something more productive while we
+- * wait.
 - */
--int wm8350_hp_jack_detect(struct snd_soc_component *component, enum wm8350_jack which,
--			  struct snd_soc_jack *jack, int report)
+-static unsigned int
+-mcp_sa11x0_read(struct mcp *mcp, unsigned int reg)
 -{
--	struct wm8350_data *priv = snd_soc_component_get_drvdata(component);
--	struct wm8350 *wm8350 = priv->wm8350;
--	int ena;
+-	struct mcp_sa11x0 *m = priv(mcp);
+-	int ret = -ETIME;
+-	int i;
 -
--	switch (which) {
--	case WM8350_JDL:
--		priv->hpl.jack = jack;
--		priv->hpl.report = report;
--		ena = WM8350_JDL_ENA;
--		break;
+-	writel_relaxed(reg << 17 | MCDR2_Rd, MCDR2(m));
 -
--	case WM8350_JDR:
--		priv->hpr.jack = jack;
--		priv->hpr.report = report;
--		ena = WM8350_JDR_ENA;
--		break;
--
--	default:
--		return -EINVAL;
+-	for (i = 0; i < 2; i++) {
+-		udelay(mcp->rw_timeout);
+-		if (readl_relaxed(MCSR(m)) & MCSR_CRC) {
+-			ret = readl_relaxed(MCDR2(m)) & 0xffff;
+-			break;
+-		}
 -	}
 -
--	if (report) {
--		wm8350_set_bits(wm8350, WM8350_POWER_MGMT_4, WM8350_TOCLK_ENA);
--		wm8350_set_bits(wm8350, WM8350_JACK_DETECT, ena);
--	} else {
--		wm8350_clear_bits(wm8350, WM8350_JACK_DETECT, ena);
--	}
+-	if (ret < 0)
+-		printk(KERN_WARNING "mcp: read timed out\n");
 -
--	/* Sync status */
--	switch (which) {
--	case WM8350_JDL:
--		wm8350_hpl_jack_handler(0, priv);
--		break;
--	case WM8350_JDR:
--		wm8350_hpr_jack_handler(0, priv);
--		break;
--	}
--
--	return 0;
--}
--EXPORT_SYMBOL_GPL(wm8350_hp_jack_detect);
--
--static irqreturn_t wm8350_mic_handler(int irq, void *data)
--{
--	struct wm8350_data *priv = data;
--	struct wm8350 *wm8350 = priv->wm8350;
--	u16 reg;
--	int report = 0;
--
--#ifndef CONFIG_SND_SOC_WM8350_MODULE
--	trace_snd_soc_jack_irq("WM8350 mic");
--#endif
--
--	reg = wm8350_reg_read(wm8350, WM8350_JACK_PIN_STATUS);
--	if (reg & WM8350_JACK_MICSCD_LVL)
--		report |= priv->mic.short_report;
--	if (reg & WM8350_JACK_MICSD_LVL)
--		report |= priv->mic.report;
--
--	snd_soc_jack_report(priv->mic.jack, report,
--			    priv->mic.report | priv->mic.short_report);
--
--	return IRQ_HANDLED;
--}
--
--/**
-- * wm8350_mic_jack_detect - Enable microphone jack detection.
-- *
-- * @component:         WM8350 component
-- * @jack:          jack to report detection events on
-- * @detect_report: value to report when presence detected
-- * @short_report:  value to report when microphone short detected
-- *
-- * Enables the microphone jack detection of the WM8350.  If both reports
-- * are specified as zero then detection is disabled.
-- */
--int wm8350_mic_jack_detect(struct snd_soc_component *component,
--			   struct snd_soc_jack *jack,
--			   int detect_report, int short_report)
--{
--	struct wm8350_data *priv = snd_soc_component_get_drvdata(component);
--	struct wm8350 *wm8350 = priv->wm8350;
--
--	priv->mic.jack = jack;
--	priv->mic.report = detect_report;
--	priv->mic.short_report = short_report;
--
--	if (detect_report || short_report) {
--		wm8350_set_bits(wm8350, WM8350_POWER_MGMT_4, WM8350_TOCLK_ENA);
--		wm8350_set_bits(wm8350, WM8350_POWER_MGMT_1,
--				WM8350_MIC_DET_ENA);
--	} else {
--		wm8350_clear_bits(wm8350, WM8350_POWER_MGMT_1,
--				  WM8350_MIC_DET_ENA);
--	}
--
--	return 0;
--}
--EXPORT_SYMBOL_GPL(wm8350_mic_jack_detect);
--
--#define WM8350_RATES (SNDRV_PCM_RATE_8000_96000)
--
--#define WM8350_FORMATS (SNDRV_PCM_FMTBIT_S16_LE |\
--			SNDRV_PCM_FMTBIT_S20_3LE |\
--			SNDRV_PCM_FMTBIT_S24_LE)
--
--static const struct snd_soc_dai_ops wm8350_dai_ops = {
--	 .hw_params	= wm8350_pcm_hw_params,
--	 .mute_stream	= wm8350_mute,
--	 .set_fmt	= wm8350_set_dai_fmt,
--	 .set_sysclk	= wm8350_set_dai_sysclk,
--	 .set_pll	= wm8350_set_fll,
--	 .set_clkdiv	= wm8350_set_clkdiv,
--	 .no_capture_mute = 1,
--};
--
--static struct snd_soc_dai_driver wm8350_dai = {
--	.name = "wm8350-hifi",
--	.playback = {
--		.stream_name = "Playback",
--		.channels_min = 1,
--		.channels_max = 2,
--		.rates = WM8350_RATES,
--		.formats = WM8350_FORMATS,
--	},
--	.capture = {
--		 .stream_name = "Capture",
--		 .channels_min = 1,
--		 .channels_max = 2,
--		 .rates = WM8350_RATES,
--		 .formats = WM8350_FORMATS,
--	 },
--	.ops = &wm8350_dai_ops,
--};
--
--static  int wm8350_component_probe(struct snd_soc_component *component)
--{
--	struct wm8350 *wm8350 = dev_get_platdata(component->dev);
--	struct wm8350_data *priv;
--	struct wm8350_output *out1;
--	struct wm8350_output *out2;
--	int ret, i;
--
--	if (wm8350->codec.platform_data == NULL) {
--		dev_err(component->dev, "No audio platform data supplied\n");
--		return -EINVAL;
--	}
--
--	priv = devm_kzalloc(component->dev, sizeof(struct wm8350_data),
--			    GFP_KERNEL);
--	if (priv == NULL)
--		return -ENOMEM;
--
--	snd_soc_component_init_regmap(component, wm8350->regmap);
--	snd_soc_component_set_drvdata(component, priv);
--
--	priv->wm8350 = wm8350;
--
--	for (i = 0; i < ARRAY_SIZE(supply_names); i++)
--		priv->supplies[i].supply = supply_names[i];
--
--	ret = devm_regulator_bulk_get(wm8350->dev, ARRAY_SIZE(priv->supplies),
--				 priv->supplies);
--	if (ret != 0)
--		return ret;
--
--	/* Put the codec into reset if it wasn't already */
--	wm8350_clear_bits(wm8350, WM8350_POWER_MGMT_5, WM8350_CODEC_ENA);
--
--	INIT_DELAYED_WORK(&priv->pga_work, wm8350_pga_work);
--	INIT_DELAYED_WORK(&priv->hpl.work, wm8350_hpl_work);
--	INIT_DELAYED_WORK(&priv->hpr.work, wm8350_hpr_work);
--
--	/* Enable the codec */
--	wm8350_set_bits(wm8350, WM8350_POWER_MGMT_5, WM8350_CODEC_ENA);
--
--	/* Enable robust clocking mode in ADC */
--	snd_soc_component_write(component, WM8350_SECURITY, 0xa7);
--	snd_soc_component_write(component, 0xde, 0x13);
--	snd_soc_component_write(component, WM8350_SECURITY, 0);
--
--	/* read OUT1 & OUT2 volumes */
--	out1 = &priv->out1;
--	out2 = &priv->out2;
--	out1->left_vol = (wm8350_reg_read(wm8350, WM8350_LOUT1_VOLUME) &
--			  WM8350_OUT1L_VOL_MASK) >> WM8350_OUT1L_VOL_SHIFT;
--	out1->right_vol = (wm8350_reg_read(wm8350, WM8350_ROUT1_VOLUME) &
--			   WM8350_OUT1R_VOL_MASK) >> WM8350_OUT1R_VOL_SHIFT;
--	out2->left_vol = (wm8350_reg_read(wm8350, WM8350_LOUT2_VOLUME) &
--			  WM8350_OUT2L_VOL_MASK) >> WM8350_OUT1L_VOL_SHIFT;
--	out2->right_vol = (wm8350_reg_read(wm8350, WM8350_ROUT2_VOLUME) &
--			   WM8350_OUT2R_VOL_MASK) >> WM8350_OUT1R_VOL_SHIFT;
--	wm8350_reg_write(wm8350, WM8350_LOUT1_VOLUME, 0);
--	wm8350_reg_write(wm8350, WM8350_ROUT1_VOLUME, 0);
--	wm8350_reg_write(wm8350, WM8350_LOUT2_VOLUME, 0);
--	wm8350_reg_write(wm8350, WM8350_ROUT2_VOLUME, 0);
--
--	/* Latch VU bits & mute */
--	wm8350_set_bits(wm8350, WM8350_LOUT1_VOLUME,
--			WM8350_OUT1_VU | WM8350_OUT1L_MUTE);
--	wm8350_set_bits(wm8350, WM8350_LOUT2_VOLUME,
--			WM8350_OUT2_VU | WM8350_OUT2L_MUTE);
--	wm8350_set_bits(wm8350, WM8350_ROUT1_VOLUME,
--			WM8350_OUT1_VU | WM8350_OUT1R_MUTE);
--	wm8350_set_bits(wm8350, WM8350_ROUT2_VOLUME,
--			WM8350_OUT2_VU | WM8350_OUT2R_MUTE);
--
--	/* Make sure AIF tristating is disabled by default */
--	wm8350_clear_bits(wm8350, WM8350_AI_FORMATING, WM8350_AIF_TRI);
--
--	/* Make sure we've got a sane companding setup too */
--	wm8350_clear_bits(wm8350, WM8350_ADC_DAC_COMP,
--			  WM8350_DAC_COMP | WM8350_LOOPBACK);
--
--	/* Make sure jack detect is disabled to start off with */
--	wm8350_clear_bits(wm8350, WM8350_JACK_DETECT,
--			  WM8350_JDL_ENA | WM8350_JDR_ENA);
--
--	ret = wm8350_register_irq(wm8350, WM8350_IRQ_CODEC_JCK_DET_L,
--			    wm8350_hpl_jack_handler, 0, "Left jack detect",
--			    priv);
--	if (ret != 0)
--		goto err;
--
--	ret = wm8350_register_irq(wm8350, WM8350_IRQ_CODEC_JCK_DET_R,
--			    wm8350_hpr_jack_handler, 0, "Right jack detect",
--			    priv);
--	if (ret != 0)
--		goto free_jck_det_l;
--
--	ret = wm8350_register_irq(wm8350, WM8350_IRQ_CODEC_MICSCD,
--			    wm8350_mic_handler, 0, "Microphone short", priv);
--	if (ret != 0)
--		goto free_jck_det_r;
--
--	ret = wm8350_register_irq(wm8350, WM8350_IRQ_CODEC_MICD,
--			    wm8350_mic_handler, 0, "Microphone detect", priv);
--	if (ret != 0)
--		goto free_micscd;
--
--	return 0;
--
--free_micscd:
--	wm8350_free_irq(wm8350, WM8350_IRQ_CODEC_MICSCD, priv);
--free_jck_det_r:
--	wm8350_free_irq(wm8350, WM8350_IRQ_CODEC_JCK_DET_R, priv);
--free_jck_det_l:
--	wm8350_free_irq(wm8350, WM8350_IRQ_CODEC_JCK_DET_L, priv);
--err:
 -	return ret;
 -}
 -
--static void wm8350_component_remove(struct snd_soc_component *component)
+-static void mcp_sa11x0_enable(struct mcp *mcp)
 -{
--	struct wm8350_data *priv = snd_soc_component_get_drvdata(component);
--	struct wm8350 *wm8350 = dev_get_platdata(component->dev);
+-	struct mcp_sa11x0 *m = priv(mcp);
 -
--	wm8350_clear_bits(wm8350, WM8350_JACK_DETECT,
--			  WM8350_JDL_ENA | WM8350_JDR_ENA);
--	wm8350_clear_bits(wm8350, WM8350_POWER_MGMT_4, WM8350_TOCLK_ENA);
--
--	wm8350_free_irq(wm8350, WM8350_IRQ_CODEC_MICD, priv);
--	wm8350_free_irq(wm8350, WM8350_IRQ_CODEC_MICSCD, priv);
--	wm8350_free_irq(wm8350, WM8350_IRQ_CODEC_JCK_DET_L, priv);
--	wm8350_free_irq(wm8350, WM8350_IRQ_CODEC_JCK_DET_R, priv);
--
--	priv->hpl.jack = NULL;
--	priv->hpr.jack = NULL;
--	priv->mic.jack = NULL;
--
--	cancel_delayed_work_sync(&priv->hpl.work);
--	cancel_delayed_work_sync(&priv->hpr.work);
--
--	/* if there was any work waiting then we run it now and
--	 * wait for its completion */
--	flush_delayed_work(&priv->pga_work);
--
--	wm8350_clear_bits(wm8350, WM8350_POWER_MGMT_5, WM8350_CODEC_ENA);
+-	writel(-1, MCSR(m));
+-	m->mccr0 |= MCCR0_MCE;
+-	writel_relaxed(m->mccr0, MCCR0(m));
 -}
 -
--static const struct snd_soc_component_driver soc_component_dev_wm8350 = {
--	.probe			= wm8350_component_probe,
--	.remove			= wm8350_component_remove,
--	.set_bias_level		= wm8350_set_bias_level,
--	.controls		= wm8350_snd_controls,
--	.num_controls		= ARRAY_SIZE(wm8350_snd_controls),
--	.dapm_widgets		= wm8350_dapm_widgets,
--	.num_dapm_widgets	= ARRAY_SIZE(wm8350_dapm_widgets),
--	.dapm_routes		= wm8350_dapm_routes,
--	.num_dapm_routes	= ARRAY_SIZE(wm8350_dapm_routes),
--	.suspend_bias_off	= 1,
--	.idle_bias_on		= 1,
--	.use_pmdown_time	= 1,
--	.endianness		= 1,
--};
--
--static int wm8350_probe(struct platform_device *pdev)
+-static void mcp_sa11x0_disable(struct mcp *mcp)
 -{
--	return devm_snd_soc_register_component(&pdev->dev,
--			&soc_component_dev_wm8350,
--			&wm8350_dai, 1);
+-	struct mcp_sa11x0 *m = priv(mcp);
+-
+-	m->mccr0 &= ~MCCR0_MCE;
+-	writel_relaxed(m->mccr0, MCCR0(m));
 -}
 -
--static struct platform_driver wm8350_codec_driver = {
--	.driver = {
--		   .name = "wm8350-codec",
--		   },
--	.probe = wm8350_probe,
--};
--
--module_platform_driver(wm8350_codec_driver);
--
--MODULE_DESCRIPTION("ASoC WM8350 driver");
--MODULE_AUTHOR("Liam Girdwood");
--MODULE_LICENSE("GPL");
--MODULE_ALIAS("platform:wm8350-codec");
-diff --git a/sound/soc/codecs/wm8350.h b/sound/soc/codecs/wm8350.h
-deleted file mode 100644
-index a13d18c92d4b..000000000000
---- a/sound/soc/codecs/wm8350.h
-+++ /dev/null
-@@ -1,25 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0-or-later */
 -/*
-- * wm8350.h - WM8903 audio codec interface
+- * Our methods.
+- */
+-static struct mcp_ops mcp_sa11x0 = {
+-	.set_telecom_divisor	= mcp_sa11x0_set_telecom_divisor,
+-	.set_audio_divisor	= mcp_sa11x0_set_audio_divisor,
+-	.reg_write		= mcp_sa11x0_write,
+-	.reg_read		= mcp_sa11x0_read,
+-	.enable			= mcp_sa11x0_enable,
+-	.disable		= mcp_sa11x0_disable,
+-};
+-
+-static int mcp_sa11x0_probe(struct platform_device *dev)
+-{
+-	struct mcp_plat_data *data = dev_get_platdata(&dev->dev);
+-	struct resource *mem0, *mem1;
+-	struct mcp_sa11x0 *m;
+-	struct mcp *mcp;
+-	int ret;
+-
+-	if (!data)
+-		return -ENODEV;
+-
+-	mem0 = platform_get_resource(dev, IORESOURCE_MEM, 0);
+-	mem1 = platform_get_resource(dev, IORESOURCE_MEM, 1);
+-	if (!mem0 || !mem1)
+-		return -ENXIO;
+-
+-	if (!request_mem_region(mem0->start, resource_size(mem0),
+-				DRIVER_NAME)) {
+-		ret = -EBUSY;
+-		goto err_mem0;
+-	}
+-
+-	if (!request_mem_region(mem1->start, resource_size(mem1),
+-				DRIVER_NAME)) {
+-		ret = -EBUSY;
+-		goto err_mem1;
+-	}
+-
+-	mcp = mcp_host_alloc(&dev->dev, sizeof(struct mcp_sa11x0));
+-	if (!mcp) {
+-		ret = -ENOMEM;
+-		goto err_alloc;
+-	}
+-
+-	mcp->owner		= THIS_MODULE;
+-	mcp->ops		= &mcp_sa11x0;
+-	mcp->sclk_rate		= data->sclk_rate;
+-
+-	m = priv(mcp);
+-	m->mccr0 = data->mccr0 | 0x7f7f;
+-	m->mccr1 = data->mccr1;
+-
+-	m->base0 = ioremap(mem0->start, resource_size(mem0));
+-	m->base1 = ioremap(mem1->start, resource_size(mem1));
+-	if (!m->base0 || !m->base1) {
+-		ret = -ENOMEM;
+-		goto err_ioremap;
+-	}
+-
+-	platform_set_drvdata(dev, mcp);
+-
+-	/*
+-	 * Initialise device.  Note that we initially
+-	 * set the sampling rate to minimum.
+-	 */
+-	writel_relaxed(-1, MCSR(m));
+-	writel_relaxed(m->mccr1, MCCR1(m));
+-	writel_relaxed(m->mccr0, MCCR0(m));
+-
+-	/*
+-	 * Calculate the read/write timeout (us) from the bit clock
+-	 * rate.  This is the period for 3 64-bit frames.  Always
+-	 * round this time up.
+-	 */
+-	mcp->rw_timeout = DIV_ROUND_UP(64 * 3 * 1000000, mcp->sclk_rate);
+-
+-	ret = mcp_host_add(mcp, data->codec_pdata);
+-	if (ret == 0)
+-		return 0;
+-
+- err_ioremap:
+-	iounmap(m->base1);
+-	iounmap(m->base0);
+-	mcp_host_free(mcp);
+- err_alloc:
+-	release_mem_region(mem1->start, resource_size(mem1));
+- err_mem1:
+-	release_mem_region(mem0->start, resource_size(mem0));
+- err_mem0:
+-	return ret;
+-}
+-
+-static void mcp_sa11x0_remove(struct platform_device *dev)
+-{
+-	struct mcp *mcp = platform_get_drvdata(dev);
+-	struct mcp_sa11x0 *m = priv(mcp);
+-	struct resource *mem0, *mem1;
+-
+-	if (m->mccr0 & MCCR0_MCE)
+-		dev_warn(&dev->dev,
+-			 "device left active (missing disable call?)\n");
+-
+-	mem0 = platform_get_resource(dev, IORESOURCE_MEM, 0);
+-	mem1 = platform_get_resource(dev, IORESOURCE_MEM, 1);
+-
+-	mcp_host_del(mcp);
+-	iounmap(m->base1);
+-	iounmap(m->base0);
+-	mcp_host_free(mcp);
+-	release_mem_region(mem1->start, resource_size(mem1));
+-	release_mem_region(mem0->start, resource_size(mem0));
+-}
+-
+-static int mcp_sa11x0_suspend(struct device *dev)
+-{
+-	struct mcp_sa11x0 *m = priv(dev_get_drvdata(dev));
+-
+-	if (m->mccr0 & MCCR0_MCE)
+-		dev_warn(dev, "device left active (missing disable call?)\n");
+-
+-	writel(m->mccr0 & ~MCCR0_MCE, MCCR0(m));
+-
+-	return 0;
+-}
+-
+-static int mcp_sa11x0_resume(struct device *dev)
+-{
+-	struct mcp_sa11x0 *m = priv(dev_get_drvdata(dev));
+-
+-	writel_relaxed(m->mccr1, MCCR1(m));
+-	writel_relaxed(m->mccr0, MCCR0(m));
+-
+-	return 0;
+-}
+-
+-static const struct dev_pm_ops mcp_sa11x0_pm_ops = {
+-	.suspend = mcp_sa11x0_suspend,
+-	.freeze = mcp_sa11x0_suspend,
+-	.poweroff = mcp_sa11x0_suspend,
+-	.resume_noirq = mcp_sa11x0_resume,
+-	.thaw_noirq = mcp_sa11x0_resume,
+-	.restore_noirq = mcp_sa11x0_resume,
+-};
+-
+-static struct platform_driver mcp_sa11x0_driver = {
+-	.probe		= mcp_sa11x0_probe,
+-	.remove		= mcp_sa11x0_remove,
+-	.driver		= {
+-		.name	= DRIVER_NAME,
+-		.pm	= pm_sleep_ptr(&mcp_sa11x0_pm_ops),
+-	},
+-};
+-
+-/*
+- * This needs re-working
+- */
+-module_platform_driver(mcp_sa11x0_driver);
+-
+-MODULE_ALIAS("platform:" DRIVER_NAME);
+-MODULE_AUTHOR("Russell King <rmk@arm.linux.org.uk>");
+-MODULE_DESCRIPTION("SA11x0 multimedia communications port driver");
+-MODULE_LICENSE("GPL");
+diff --git a/drivers/mfd/ucb1x00-assabet.c b/drivers/mfd/ucb1x00-assabet.c
+deleted file mode 100644
+index 698f60aa9756..000000000000
+--- a/drivers/mfd/ucb1x00-assabet.c
++++ /dev/null
+@@ -1,175 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-only
+-/*
+- *  linux/drivers/mfd/ucb1x00-assabet.c
 - *
-- * Copyright 2008 Wolfson Microelectronics PLC.
+- *  Copyright (C) 2001-2003 Russell King, All Rights Reserved.
+- *
+- *  We handle the machine-specific bits of the UCB1x00 driver here.
+- */
+-#include <linux/device.h>
+-#include <linux/err.h>
+-#include <linux/fs.h>
+-#include <linux/gpio/machine.h>
+-#include <linux/gpio/property.h>
+-#include <linux/init.h>
+-#include <linux/input.h>
+-#include <linux/module.h>
+-#include <linux/platform_device.h>
+-#include <linux/proc_fs.h>
+-#include <linux/property.h>
+-#include <linux/slab.h>
+-#include <linux/mfd/ucb1x00.h>
+-
+-#define UCB1X00_ATTR(name,input)\
+-static ssize_t name##_show(struct device *dev, struct device_attribute *attr, \
+-			   char *buf)	\
+-{								\
+-	struct ucb1x00 *ucb = classdev_to_ucb1x00(dev);		\
+-	int val;						\
+-	ucb1x00_adc_enable(ucb);				\
+-	val = ucb1x00_adc_read(ucb, input, UCB_NOSYNC);		\
+-	ucb1x00_adc_disable(ucb);				\
+-	return sprintf(buf, "%d\n", val);			\
+-}								\
+-static DEVICE_ATTR_RO(name)
+-
+-UCB1X00_ATTR(vbatt, UCB_ADC_INP_AD1);
+-UCB1X00_ATTR(vcharger, UCB_ADC_INP_AD0);
+-UCB1X00_ATTR(batt_temp, UCB_ADC_INP_AD2);
+-
+-static const struct property_entry ucb1x00_gpio_keys_props[] = {
+-	PROPERTY_ENTRY_STRING("label", "ucb1x00"),
+-	PROPERTY_ENTRY_U32("poll-interval", 50),
+-	{ }
+-};
+-
+-#define UCB1X00_BTN_PROPS(_idx)						\
+-struct property_entry ucb1x00_btn##_idx##_props[] = {			\
+-	PROPERTY_ENTRY_U32("linux,code", BTN_0 + (_idx)),		\
+-	PROPERTY_ENTRY_GPIO("gpios", &ucb1x00_gpiochip_node,		\
+-			    _idx, GPIO_ACTIVE_HIGH),			\
+-	PROPERTY_ENTRY_STRING("label", "btn" #_idx),			\
+-	PROPERTY_ENTRY_BOOL("linux,can-disable"),			\
+-	{ }								\
+-}
+-
+-static const UCB1X00_BTN_PROPS(0);
+-static const UCB1X00_BTN_PROPS(1);
+-static const UCB1X00_BTN_PROPS(2);
+-static const UCB1X00_BTN_PROPS(3);
+-static const UCB1X00_BTN_PROPS(4);
+-static const UCB1X00_BTN_PROPS(5);
+-
+-static const struct property_entry * const ucb1x00_btn_props[] = {
+-	ucb1x00_btn0_props,
+-	ucb1x00_btn1_props,
+-	ucb1x00_btn2_props,
+-	ucb1x00_btn3_props,
+-	ucb1x00_btn4_props,
+-	ucb1x00_btn5_props,
+-};
+-
+-struct ucb1x00_assabet_priv {
+-	struct platform_device *pdev;
+-	struct fwnode_handle *keys_node;
+-	struct fwnode_handle *button_nodes[ARRAY_SIZE(ucb1x00_btn_props)];
+-};
+-
+-static void ucb1x00_assabet_remove_nodes(struct ucb1x00_assabet_priv *priv, int n)
+-{
+-	while (--n >= 0)
+-		fwnode_remove_software_node(priv->button_nodes[n]);
+-
+-	fwnode_remove_software_node(priv->keys_node);
+-}
+-
+-static int ucb1x00_assabet_add(struct ucb1x00_dev *dev)
+-{
+-	struct ucb1x00 *ucb = dev->ucb;
+-	struct platform_device_info pdevinfo = {
+-		.name = "gpio-keys",
+-		.id = PLATFORM_DEVID_NONE,
+-		.parent = &ucb->dev,
+-	};
+-	int ret;
+-	int i;
+-
+-	struct ucb1x00_assabet_priv *priv;
+-
+-	priv = kzalloc_obj(*priv);
+-	if (!priv)
+-		return -ENOMEM;
+-
+-	priv->keys_node = fwnode_create_software_node(ucb1x00_gpio_keys_props, NULL);
+-	if (IS_ERR(priv->keys_node)) {
+-		ret = PTR_ERR(priv->keys_node);
+-		goto err_free_priv;
+-	}
+-
+-	for (i = 0; i < ARRAY_SIZE(ucb1x00_btn_props); i++) {
+-		priv->button_nodes[i] = fwnode_create_software_node(ucb1x00_btn_props[i],
+-								    priv->keys_node);
+-		if (IS_ERR(priv->button_nodes[i])) {
+-			ret = PTR_ERR(priv->button_nodes[i]);
+-			goto err_free_buttons;
+-		}
+-	}
+-
+-	pdevinfo.fwnode = priv->keys_node;
+-
+-	priv->pdev = platform_device_register_full(&pdevinfo);
+-	ret = PTR_ERR_OR_ZERO(priv->pdev);
+-	if (ret)
+-		goto err_free_buttons;
+-
+-	device_create_file(&ucb->dev, &dev_attr_vbatt);
+-	device_create_file(&ucb->dev, &dev_attr_vcharger);
+-	device_create_file(&ucb->dev, &dev_attr_batt_temp);
+-
+-	dev->priv = priv;
+-	return 0;
+-
+-err_free_buttons:
+-	ucb1x00_assabet_remove_nodes(priv, i);
+-err_free_priv:
+-	kfree(priv);
+-	return ret;
+-}
+-
+-static void ucb1x00_assabet_remove(struct ucb1x00_dev *dev)
+-{
+-	struct ucb1x00_assabet_priv *priv = dev->priv;
+-
+-	if (!IS_ERR(priv->pdev))
+-		platform_device_unregister(priv->pdev);
+-
+-	ucb1x00_assabet_remove_nodes(priv, ARRAY_SIZE(priv->button_nodes));
+-
+-	device_remove_file(&dev->ucb->dev, &dev_attr_batt_temp);
+-	device_remove_file(&dev->ucb->dev, &dev_attr_vcharger);
+-	device_remove_file(&dev->ucb->dev, &dev_attr_vbatt);
+-
+-	kfree(priv);
+-}
+-
+-static struct ucb1x00_driver ucb1x00_assabet_driver = {
+-	.add	= ucb1x00_assabet_add,
+-	.remove	= ucb1x00_assabet_remove,
+-};
+-
+-static int __init ucb1x00_assabet_init(void)
+-{
+-	return ucb1x00_register_driver(&ucb1x00_assabet_driver);
+-}
+-
+-static void __exit ucb1x00_assabet_exit(void)
+-{
+-	ucb1x00_unregister_driver(&ucb1x00_assabet_driver);
+-}
+-
+-module_init(ucb1x00_assabet_init);
+-module_exit(ucb1x00_assabet_exit);
+-
+-MODULE_AUTHOR("Russell King <rmk@arm.linux.org.uk>");
+-MODULE_DESCRIPTION("Assabet noddy testing only example ADC driver");
+-MODULE_LICENSE("GPL");
+diff --git a/drivers/mfd/ucb1x00-core.c b/drivers/mfd/ucb1x00-core.c
+deleted file mode 100644
+index 90edf0352d05..000000000000
+--- a/drivers/mfd/ucb1x00-core.c
++++ /dev/null
+@@ -1,795 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-only
+-/*
+- *  linux/drivers/mfd/ucb1x00-core.c
+- *
+- *  Copyright (C) 2001 Russell King, All Rights Reserved.
+- *
+- *  The UCB1x00 core driver provides basic services for handling IO,
+- *  the ADC, interrupts, and accessing registers.  It is designed
+- *  such that everything goes through this layer, thereby providing
+- *  a consistent locking methodology, as well as allowing the drivers
+- *  to be used on other non-MCP-enabled hardware platforms.
+- *
+- *  Note that all locks are private to this file.  Nothing else may
+- *  touch them.
+- */
+-#include <linux/module.h>
+-#include <linux/kernel.h>
+-#include <linux/sched.h>
+-#include <linux/slab.h>
+-#include <linux/init.h>
+-#include <linux/errno.h>
+-#include <linux/interrupt.h>
+-#include <linux/irq.h>
+-#include <linux/device.h>
+-#include <linux/mutex.h>
+-#include <linux/mfd/ucb1x00.h>
+-#include <linux/pm.h>
+-#include <linux/property.h>
+-#include <linux/gpio/driver.h>
+-
+-static DEFINE_MUTEX(ucb1x00_mutex);
+-static LIST_HEAD(ucb1x00_drivers);
+-static LIST_HEAD(ucb1x00_devices);
+-
+-/**
+- *	ucb1x00_io_set_dir - set IO direction
+- *	@ucb: UCB1x00 structure describing chip
+- *	@in:  bitfield of IO pins to be set as inputs
+- *	@out: bitfield of IO pins to be set as outputs
+- *
+- *	Set the IO direction of the ten general purpose IO pins on
+- *	the UCB1x00 chip.  The @in bitfield has priority over the
+- *	@out bitfield, in that if you specify a pin as both input
+- *	and output, it will end up as an input.
+- *
+- *	ucb1x00_enable must have been called to enable the comms
+- *	before using this function.
+- *
+- *	This function takes a spinlock, disabling interrupts.
+- */
+-void ucb1x00_io_set_dir(struct ucb1x00 *ucb, unsigned int in, unsigned int out)
+-{
+-	unsigned long flags;
+-
+-	spin_lock_irqsave(&ucb->io_lock, flags);
+-	ucb->io_dir |= out;
+-	ucb->io_dir &= ~in;
+-
+-	ucb1x00_reg_write(ucb, UCB_IO_DIR, ucb->io_dir);
+-	spin_unlock_irqrestore(&ucb->io_lock, flags);
+-}
+-
+-/**
+- *	ucb1x00_io_write - set or clear IO outputs
+- *	@ucb:   UCB1x00 structure describing chip
+- *	@set:   bitfield of IO pins to set to logic '1'
+- *	@clear: bitfield of IO pins to set to logic '0'
+- *
+- *	Set the IO output state of the specified IO pins.  The value
+- *	is retained if the pins are subsequently configured as inputs.
+- *	The @clear bitfield has priority over the @set bitfield -
+- *	outputs will be cleared.
+- *
+- *	ucb1x00_enable must have been called to enable the comms
+- *	before using this function.
+- *
+- *	This function takes a spinlock, disabling interrupts.
+- */
+-void ucb1x00_io_write(struct ucb1x00 *ucb, unsigned int set, unsigned int clear)
+-{
+-	unsigned long flags;
+-
+-	spin_lock_irqsave(&ucb->io_lock, flags);
+-	ucb->io_out |= set;
+-	ucb->io_out &= ~clear;
+-
+-	ucb1x00_reg_write(ucb, UCB_IO_DATA, ucb->io_out);
+-	spin_unlock_irqrestore(&ucb->io_lock, flags);
+-}
+-
+-/**
+- *	ucb1x00_io_read - read the current state of the IO pins
+- *	@ucb: UCB1x00 structure describing chip
+- *
+- *	Return a bitfield describing the logic state of the ten
+- *	general purpose IO pins.
+- *
+- *	ucb1x00_enable must have been called to enable the comms
+- *	before using this function.
+- *
+- *	This function does not take any mutexes or spinlocks.
+- */
+-unsigned int ucb1x00_io_read(struct ucb1x00 *ucb)
+-{
+-	return ucb1x00_reg_read(ucb, UCB_IO_DATA);
+-}
+-
+-static int ucb1x00_gpio_set(struct gpio_chip *chip, unsigned int offset,
+-			    int value)
+-{
+-	struct ucb1x00 *ucb = gpiochip_get_data(chip);
+-	unsigned long flags;
+-
+-	spin_lock_irqsave(&ucb->io_lock, flags);
+-	if (value)
+-		ucb->io_out |= 1 << offset;
+-	else
+-		ucb->io_out &= ~(1 << offset);
+-
+-	ucb1x00_enable(ucb);
+-	ucb1x00_reg_write(ucb, UCB_IO_DATA, ucb->io_out);
+-	ucb1x00_disable(ucb);
+-	spin_unlock_irqrestore(&ucb->io_lock, flags);
+-
+-	return 0;
+-}
+-
+-static int ucb1x00_gpio_get(struct gpio_chip *chip, unsigned offset)
+-{
+-	struct ucb1x00 *ucb = gpiochip_get_data(chip);
+-	unsigned val;
+-
+-	ucb1x00_enable(ucb);
+-	val = ucb1x00_reg_read(ucb, UCB_IO_DATA);
+-	ucb1x00_disable(ucb);
+-
+-	return !!(val & (1 << offset));
+-}
+-
+-static int ucb1x00_gpio_direction_input(struct gpio_chip *chip, unsigned offset)
+-{
+-	struct ucb1x00 *ucb = gpiochip_get_data(chip);
+-	unsigned long flags;
+-
+-	spin_lock_irqsave(&ucb->io_lock, flags);
+-	ucb->io_dir &= ~(1 << offset);
+-	ucb1x00_enable(ucb);
+-	ucb1x00_reg_write(ucb, UCB_IO_DIR, ucb->io_dir);
+-	ucb1x00_disable(ucb);
+-	spin_unlock_irqrestore(&ucb->io_lock, flags);
+-
+-	return 0;
+-}
+-
+-static int ucb1x00_gpio_direction_output(struct gpio_chip *chip, unsigned offset
+-		, int value)
+-{
+-	struct ucb1x00 *ucb = gpiochip_get_data(chip);
+-	unsigned long flags;
+-	unsigned old, mask = 1 << offset;
+-
+-	spin_lock_irqsave(&ucb->io_lock, flags);
+-	old = ucb->io_out;
+-	if (value)
+-		ucb->io_out |= mask;
+-	else
+-		ucb->io_out &= ~mask;
+-
+-	ucb1x00_enable(ucb);
+-	if (old != ucb->io_out)
+-		ucb1x00_reg_write(ucb, UCB_IO_DATA, ucb->io_out);
+-
+-	if (!(ucb->io_dir & mask)) {
+-		ucb->io_dir |= mask;
+-		ucb1x00_reg_write(ucb, UCB_IO_DIR, ucb->io_dir);
+-	}
+-	ucb1x00_disable(ucb);
+-	spin_unlock_irqrestore(&ucb->io_lock, flags);
+-
+-	return 0;
+-}
+-
+-static int ucb1x00_to_irq(struct gpio_chip *chip, unsigned offset)
+-{
+-	struct ucb1x00 *ucb = gpiochip_get_data(chip);
+-
+-	return ucb->irq_base > 0 ? ucb->irq_base + offset : -ENXIO;
+-}
+-
+-/*
+- * UCB1300 data sheet says we must:
+- *  1. enable ADC	=> 5us (including reference startup time)
+- *  2. select input	=> 51*tsibclk  => 4.3us
+- *  3. start conversion	=> 102*tsibclk => 8.5us
+- * (tsibclk = 1/11981000)
+- * Period between SIB 128-bit frames = 10.7us
 - */
 -
--#ifndef _WM8350_H
--#define _WM8350_H
+-/**
+- *	ucb1x00_adc_enable - enable the ADC converter
+- *	@ucb: UCB1x00 structure describing chip
+- *
+- *	Enable the ucb1x00 and ADC converter on the UCB1x00 for use.
+- *	Any code wishing to use the ADC converter must call this
+- *	function prior to using it.
+- *
+- *	This function takes the ADC mutex to prevent two or more
+- *	concurrent uses, and therefore may sleep.  As a result, it
+- *	can only be called from process context, not interrupt
+- *	context.
+- *
+- *	You should release the ADC as soon as possible using
+- *	ucb1x00_adc_disable.
+- */
+-void ucb1x00_adc_enable(struct ucb1x00 *ucb)
+-{
+-	mutex_lock(&ucb->adc_mutex);
 -
--#include <sound/soc.h>
--#include <linux/mfd/wm8350/audio.h>
+-	ucb->adc_cr |= UCB_ADC_ENA;
 -
--enum wm8350_jack {
--	WM8350_JDL = 1,
--	WM8350_JDR = 2,
+-	ucb1x00_enable(ucb);
+-	ucb1x00_reg_write(ucb, UCB_ADC_CR, ucb->adc_cr);
+-}
+-
+-/**
+- *	ucb1x00_adc_read - read the specified ADC channel
+- *	@ucb: UCB1x00 structure describing chip
+- *	@adc_channel: ADC channel mask
+- *	@sync: wait for syncronisation pulse.
+- *
+- *	Start an ADC conversion and wait for the result.  Note that
+- *	synchronised ADC conversions (via the ADCSYNC pin) must wait
+- *	until the trigger is asserted and the conversion is finished.
+- *
+- *	This function currently spins waiting for the conversion to
+- *	complete (2 frames max without sync).
+- *
+- *	If called for a synchronised ADC conversion, it may sleep
+- *	with the ADC mutex held.
+- */
+-unsigned int ucb1x00_adc_read(struct ucb1x00 *ucb, int adc_channel, int sync)
+-{
+-	unsigned int val;
+-
+-	if (sync)
+-		adc_channel |= UCB_ADC_SYNC_ENA;
+-
+-	ucb1x00_reg_write(ucb, UCB_ADC_CR, ucb->adc_cr | adc_channel);
+-	ucb1x00_reg_write(ucb, UCB_ADC_CR, ucb->adc_cr | adc_channel | UCB_ADC_START);
+-
+-	for (;;) {
+-		val = ucb1x00_reg_read(ucb, UCB_ADC_DATA);
+-		if (val & UCB_ADC_DAT_VAL)
+-			break;
+-		/* yield to other processes */
+-		set_current_state(TASK_INTERRUPTIBLE);
+-		schedule_timeout(1);
+-	}
+-
+-	return UCB_ADC_DAT(val);
+-}
+-
+-/**
+- *	ucb1x00_adc_disable - disable the ADC converter
+- *	@ucb: UCB1x00 structure describing chip
+- *
+- *	Disable the ADC converter and release the ADC mutex.
+- */
+-void ucb1x00_adc_disable(struct ucb1x00 *ucb)
+-{
+-	ucb->adc_cr &= ~UCB_ADC_ENA;
+-	ucb1x00_reg_write(ucb, UCB_ADC_CR, ucb->adc_cr);
+-	ucb1x00_disable(ucb);
+-
+-	mutex_unlock(&ucb->adc_mutex);
+-}
+-
+-/*
+- * UCB1x00 Interrupt handling.
+- *
+- * The UCB1x00 can generate interrupts when the SIBCLK is stopped.
+- * Since we need to read an internal register, we must re-enable
+- * SIBCLK to talk to the chip.  We leave the clock running until
+- * we have finished processing all interrupts from the chip.
+- */
+-static void ucb1x00_irq(struct irq_desc *desc)
+-{
+-	struct ucb1x00 *ucb = irq_desc_get_handler_data(desc);
+-	unsigned int isr, i;
+-
+-	ucb1x00_enable(ucb);
+-	isr = ucb1x00_reg_read(ucb, UCB_IE_STATUS);
+-	ucb1x00_reg_write(ucb, UCB_IE_CLEAR, isr);
+-	ucb1x00_reg_write(ucb, UCB_IE_CLEAR, 0);
+-
+-	for (i = 0; i < 16 && isr; i++, isr >>= 1)
+-		if (isr & 1)
+-			generic_handle_irq(ucb->irq_base + i);
+-	ucb1x00_disable(ucb);
+-}
+-
+-static void ucb1x00_irq_update(struct ucb1x00 *ucb, unsigned mask)
+-{
+-	ucb1x00_enable(ucb);
+-	if (ucb->irq_ris_enbl & mask)
+-		ucb1x00_reg_write(ucb, UCB_IE_RIS, ucb->irq_ris_enbl &
+-				  ucb->irq_mask);
+-	if (ucb->irq_fal_enbl & mask)
+-		ucb1x00_reg_write(ucb, UCB_IE_FAL, ucb->irq_fal_enbl &
+-				  ucb->irq_mask);
+-	ucb1x00_disable(ucb);
+-}
+-
+-static void ucb1x00_irq_noop(struct irq_data *data)
+-{
+-}
+-
+-static void ucb1x00_irq_mask(struct irq_data *data)
+-{
+-	struct ucb1x00 *ucb = irq_data_get_irq_chip_data(data);
+-	unsigned mask = 1 << (data->irq - ucb->irq_base);
+-
+-	raw_spin_lock(&ucb->irq_lock);
+-	ucb->irq_mask &= ~mask;
+-	ucb1x00_irq_update(ucb, mask);
+-	raw_spin_unlock(&ucb->irq_lock);
+-}
+-
+-static void ucb1x00_irq_unmask(struct irq_data *data)
+-{
+-	struct ucb1x00 *ucb = irq_data_get_irq_chip_data(data);
+-	unsigned mask = 1 << (data->irq - ucb->irq_base);
+-
+-	raw_spin_lock(&ucb->irq_lock);
+-	ucb->irq_mask |= mask;
+-	ucb1x00_irq_update(ucb, mask);
+-	raw_spin_unlock(&ucb->irq_lock);
+-}
+-
+-static int ucb1x00_irq_set_type(struct irq_data *data, unsigned int type)
+-{
+-	struct ucb1x00 *ucb = irq_data_get_irq_chip_data(data);
+-	unsigned mask = 1 << (data->irq - ucb->irq_base);
+-
+-	raw_spin_lock(&ucb->irq_lock);
+-	if (type & IRQ_TYPE_EDGE_RISING)
+-		ucb->irq_ris_enbl |= mask;
+-	else
+-		ucb->irq_ris_enbl &= ~mask;
+-
+-	if (type & IRQ_TYPE_EDGE_FALLING)
+-		ucb->irq_fal_enbl |= mask;
+-	else
+-		ucb->irq_fal_enbl &= ~mask;
+-	if (ucb->irq_mask & mask) {
+-		ucb1x00_reg_write(ucb, UCB_IE_RIS, ucb->irq_ris_enbl &
+-				  ucb->irq_mask);
+-		ucb1x00_reg_write(ucb, UCB_IE_FAL, ucb->irq_fal_enbl &
+-				  ucb->irq_mask);
+-	}
+-	raw_spin_unlock(&ucb->irq_lock);
+-
+-	return 0;
+-}
+-
+-static int ucb1x00_irq_set_wake(struct irq_data *data, unsigned int on)
+-{
+-	struct ucb1x00 *ucb = irq_data_get_irq_chip_data(data);
+-	struct ucb1x00_plat_data *pdata = ucb->mcp->attached_device.platform_data;
+-	unsigned mask = 1 << (data->irq - ucb->irq_base);
+-
+-	if (!pdata || !pdata->can_wakeup)
+-		return -EINVAL;
+-
+-	raw_spin_lock(&ucb->irq_lock);
+-	if (on)
+-		ucb->irq_wake |= mask;
+-	else
+-		ucb->irq_wake &= ~mask;
+-	raw_spin_unlock(&ucb->irq_lock);
+-
+-	return 0;
+-}
+-
+-static struct irq_chip ucb1x00_irqchip = {
+-	.name = "ucb1x00",
+-	.irq_ack = ucb1x00_irq_noop,
+-	.irq_mask = ucb1x00_irq_mask,
+-	.irq_unmask = ucb1x00_irq_unmask,
+-	.irq_set_type = ucb1x00_irq_set_type,
+-	.irq_set_wake = ucb1x00_irq_set_wake,
 -};
 -
--int wm8350_hp_jack_detect(struct snd_soc_component *component, enum wm8350_jack which,
--			  struct snd_soc_jack *jack, int report);
--int wm8350_mic_jack_detect(struct snd_soc_component *component,
--			   struct snd_soc_jack *jack,
--			   int detect_report, int short_report);
+-static int ucb1x00_add_dev(struct ucb1x00 *ucb, struct ucb1x00_driver *drv)
+-{
+-	struct ucb1x00_dev *dev;
+-	int ret;
+-
+-	dev = kmalloc_obj(struct ucb1x00_dev);
+-	if (!dev)
+-		return -ENOMEM;
+-
+-	dev->ucb = ucb;
+-	dev->drv = drv;
+-
+-	ret = drv->add(dev);
+-	if (ret) {
+-		kfree(dev);
+-		return ret;
+-	}
+-
+-	list_add_tail(&dev->dev_node, &ucb->devs);
+-	list_add_tail(&dev->drv_node, &drv->devs);
+-
+-	return ret;
+-}
+-
+-static void ucb1x00_remove_dev(struct ucb1x00_dev *dev)
+-{
+-	dev->drv->remove(dev);
+-	list_del(&dev->dev_node);
+-	list_del(&dev->drv_node);
+-	kfree(dev);
+-}
+-
+-/*
+- * Try to probe our interrupt, rather than relying on lots of
+- * hard-coded machine dependencies.  For reference, the expected
+- * IRQ mappings are:
+- *
+- *  	Machine		Default IRQ
+- *	adsbitsy	IRQ_GPCIN4
+- *	cerf		IRQ_GPIO_UCB1200_IRQ
+- *	flexanet	IRQ_GPIO_GUI
+- *	freebird	IRQ_GPIO_FREEBIRD_UCB1300_IRQ
+- *	graphicsclient	ADS_EXT_IRQ(8)
+- *	graphicsmaster	ADS_EXT_IRQ(8)
+- *	lart		LART_IRQ_UCB1200
+- *	omnimeter	IRQ_GPIO23
+- *	pfs168		IRQ_GPIO_UCB1300_IRQ
+- *	simpad		IRQ_GPIO_UCB1300_IRQ
+- *	shannon		SHANNON_IRQ_GPIO_IRQ_CODEC
+- *	yopy		IRQ_GPIO_UCB1200_IRQ
+- */
+-static int ucb1x00_detect_irq(struct ucb1x00 *ucb)
+-{
+-	unsigned long mask;
+-
+-	mask = probe_irq_on();
+-
+-	/*
+-	 * Enable the ADC interrupt.
+-	 */
+-	ucb1x00_reg_write(ucb, UCB_IE_RIS, UCB_IE_ADC);
+-	ucb1x00_reg_write(ucb, UCB_IE_FAL, UCB_IE_ADC);
+-	ucb1x00_reg_write(ucb, UCB_IE_CLEAR, 0xffff);
+-	ucb1x00_reg_write(ucb, UCB_IE_CLEAR, 0);
+-
+-	/*
+-	 * Cause an ADC interrupt.
+-	 */
+-	ucb1x00_reg_write(ucb, UCB_ADC_CR, UCB_ADC_ENA);
+-	ucb1x00_reg_write(ucb, UCB_ADC_CR, UCB_ADC_ENA | UCB_ADC_START);
+-
+-	/*
+-	 * Wait for the conversion to complete.
+-	 */
+-	while ((ucb1x00_reg_read(ucb, UCB_ADC_DATA) & UCB_ADC_DAT_VAL) == 0);
+-	ucb1x00_reg_write(ucb, UCB_ADC_CR, 0);
+-
+-	/*
+-	 * Disable and clear interrupt.
+-	 */
+-	ucb1x00_reg_write(ucb, UCB_IE_RIS, 0);
+-	ucb1x00_reg_write(ucb, UCB_IE_FAL, 0);
+-	ucb1x00_reg_write(ucb, UCB_IE_CLEAR, 0xffff);
+-	ucb1x00_reg_write(ucb, UCB_IE_CLEAR, 0);
+-
+-	/*
+-	 * Read triggered interrupt.
+-	 */
+-	return probe_irq_off(mask);
+-}
+-
+-static void ucb1x00_release(struct device *dev)
+-{
+-	struct ucb1x00 *ucb = classdev_to_ucb1x00(dev);
+-	kfree(ucb);
+-}
+-
+-static struct class ucb1x00_class = {
+-	.name		= "ucb1x00",
+-	.dev_release	= ucb1x00_release,
+-};
+-
+-const struct software_node ucb1x00_gpiochip_node = {
+-	.name = "ucb1x00-gpio",
+-};
+-EXPORT_SYMBOL_GPL(ucb1x00_gpiochip_node);
+-
+-static int ucb1x00_probe(struct mcp *mcp)
+-{
+-	struct ucb1x00_plat_data *pdata = mcp->attached_device.platform_data;
+-	struct ucb1x00_driver *drv;
+-	struct ucb1x00 *ucb;
+-	unsigned id, i, irq_base;
+-	int ret = -ENODEV;
+-
+-	/* Tell the platform to deassert the UCB1x00 reset */
+-	if (pdata && pdata->reset)
+-		pdata->reset(UCB_RST_PROBE);
+-
+-	mcp_enable(mcp);
+-	id = mcp_reg_read(mcp, UCB_ID);
+-	mcp_disable(mcp);
+-
+-	if (id != UCB_ID_1200 && id != UCB_ID_1300 && id != UCB_ID_TC35143) {
+-		printk(KERN_WARNING "UCB1x00 ID not found: %04x\n", id);
+-		goto out;
+-	}
+-
+-	ucb = kzalloc_obj(struct ucb1x00);
+-	ret = -ENOMEM;
+-	if (!ucb)
+-		goto out;
+-
+-	device_initialize(&ucb->dev);
+-	ucb->dev.class = &ucb1x00_class;
+-	ucb->dev.parent = &mcp->attached_device;
+-	dev_set_name(&ucb->dev, "ucb1x00");
+-
+-	raw_spin_lock_init(&ucb->irq_lock);
+-	spin_lock_init(&ucb->io_lock);
+-	mutex_init(&ucb->adc_mutex);
+-
+-	ucb->id  = id;
+-	ucb->mcp = mcp;
+-
+-	ret = device_add_software_node(&ucb->dev, &ucb1x00_gpiochip_node);
+-	if (ret)
+-		goto err_swnode_add;
+-
+-	ret = device_add(&ucb->dev);
+-	if (ret)
+-		goto err_dev_add;
+-
+-	ucb1x00_enable(ucb);
+-	ucb->irq = ucb1x00_detect_irq(ucb);
+-	ucb1x00_disable(ucb);
+-	if (!ucb->irq) {
+-		dev_err(&ucb->dev, "IRQ probe failed\n");
+-		ret = -ENODEV;
+-		goto err_no_irq;
+-	}
+-
+-	ucb->gpio.base = -1;
+-	irq_base = pdata ? pdata->irq_base : 0;
+-	ucb->irq_base = irq_alloc_descs(-1, irq_base, 16, -1);
+-	if (ucb->irq_base < 0) {
+-		dev_err(&ucb->dev, "unable to allocate 16 irqs: %d\n",
+-			ucb->irq_base);
+-		ret = ucb->irq_base;
+-		goto err_irq_alloc;
+-	}
+-
+-	for (i = 0; i < 16; i++) {
+-		unsigned irq = ucb->irq_base + i;
+-
+-		irq_set_chip_and_handler(irq, &ucb1x00_irqchip, handle_edge_irq);
+-		irq_set_chip_data(irq, ucb);
+-		irq_clear_status_flags(irq, IRQ_NOREQUEST);
+-	}
+-
+-	irq_set_irq_type(ucb->irq, IRQ_TYPE_EDGE_RISING);
+-	irq_set_chained_handler_and_data(ucb->irq, ucb1x00_irq, ucb);
+-
+-	if (pdata && pdata->gpio_base) {
+-		ucb->gpio.label = dev_name(&ucb->dev);
+-		ucb->gpio.parent = &ucb->dev;
+-		ucb->gpio.owner = THIS_MODULE;
+-		ucb->gpio.base = pdata->gpio_base;
+-		ucb->gpio.ngpio = 10;
+-		ucb->gpio.set = ucb1x00_gpio_set;
+-		ucb->gpio.get = ucb1x00_gpio_get;
+-		ucb->gpio.direction_input = ucb1x00_gpio_direction_input;
+-		ucb->gpio.direction_output = ucb1x00_gpio_direction_output;
+-		ucb->gpio.to_irq = ucb1x00_to_irq;
+-		ret = gpiochip_add_data(&ucb->gpio, ucb);
+-		if (ret)
+-			goto err_gpio_add;
+-	} else
+-		dev_info(&ucb->dev, "gpio_base not set so no gpiolib support");
+-
+-	mcp_set_drvdata(mcp, ucb);
+-
+-	if (pdata)
+-		device_set_wakeup_capable(&ucb->dev, pdata->can_wakeup);
+-
+-	INIT_LIST_HEAD(&ucb->devs);
+-	mutex_lock(&ucb1x00_mutex);
+-	list_add_tail(&ucb->node, &ucb1x00_devices);
+-	list_for_each_entry(drv, &ucb1x00_drivers, node) {
+-		ucb1x00_add_dev(ucb, drv);
+-	}
+-	mutex_unlock(&ucb1x00_mutex);
+-
+-	return ret;
+-
+- err_gpio_add:
+-	irq_set_chained_handler(ucb->irq, NULL);
+- err_irq_alloc:
+-	if (ucb->irq_base > 0)
+-		irq_free_descs(ucb->irq_base, 16);
+- err_no_irq:
+-	device_del(&ucb->dev);
+- err_dev_add:
+-	device_remove_software_node(&ucb->dev);
+- err_swnode_add:
+-	put_device(&ucb->dev);
+- out:
+-	if (pdata && pdata->reset)
+-		pdata->reset(UCB_RST_PROBE_FAIL);
+-	return ret;
+-}
+-
+-static void ucb1x00_remove(struct mcp *mcp)
+-{
+-	struct ucb1x00_plat_data *pdata = mcp->attached_device.platform_data;
+-	struct ucb1x00 *ucb = mcp_get_drvdata(mcp);
+-	struct list_head *l, *n;
+-
+-	mutex_lock(&ucb1x00_mutex);
+-	list_del(&ucb->node);
+-	list_for_each_safe(l, n, &ucb->devs) {
+-		struct ucb1x00_dev *dev = list_entry(l, struct ucb1x00_dev, dev_node);
+-		ucb1x00_remove_dev(dev);
+-	}
+-	mutex_unlock(&ucb1x00_mutex);
+-
+-	if (ucb->gpio.base != -1)
+-		gpiochip_remove(&ucb->gpio);
+-
+-	irq_set_chained_handler(ucb->irq, NULL);
+-	irq_free_descs(ucb->irq_base, 16);
+-	device_del(&ucb->dev);
+-	device_remove_software_node(&ucb->dev);
+-	put_device(&ucb->dev);
+-
+-	if (pdata && pdata->reset)
+-		pdata->reset(UCB_RST_REMOVE);
+-}
+-
+-int ucb1x00_register_driver(struct ucb1x00_driver *drv)
+-{
+-	struct ucb1x00 *ucb;
+-
+-	INIT_LIST_HEAD(&drv->devs);
+-	mutex_lock(&ucb1x00_mutex);
+-	list_add_tail(&drv->node, &ucb1x00_drivers);
+-	list_for_each_entry(ucb, &ucb1x00_devices, node) {
+-		ucb1x00_add_dev(ucb, drv);
+-	}
+-	mutex_unlock(&ucb1x00_mutex);
+-	return 0;
+-}
+-
+-void ucb1x00_unregister_driver(struct ucb1x00_driver *drv)
+-{
+-	struct list_head *n, *l;
+-
+-	mutex_lock(&ucb1x00_mutex);
+-	list_del(&drv->node);
+-	list_for_each_safe(l, n, &drv->devs) {
+-		struct ucb1x00_dev *dev = list_entry(l, struct ucb1x00_dev, drv_node);
+-		ucb1x00_remove_dev(dev);
+-	}
+-	mutex_unlock(&ucb1x00_mutex);
+-}
+-
+-static int ucb1x00_suspend(struct device *dev)
+-{
+-	struct ucb1x00_plat_data *pdata = dev_get_platdata(dev);
+-	struct ucb1x00 *ucb = dev_get_drvdata(dev);
+-	struct ucb1x00_dev *udev;
+-
+-	mutex_lock(&ucb1x00_mutex);
+-	list_for_each_entry(udev, &ucb->devs, dev_node) {
+-		if (udev->drv->suspend)
+-			udev->drv->suspend(udev);
+-	}
+-	mutex_unlock(&ucb1x00_mutex);
+-
+-	if (ucb->irq_wake) {
+-		unsigned long flags;
+-
+-		raw_spin_lock_irqsave(&ucb->irq_lock, flags);
+-		ucb1x00_enable(ucb);
+-		ucb1x00_reg_write(ucb, UCB_IE_RIS, ucb->irq_ris_enbl &
+-				  ucb->irq_wake);
+-		ucb1x00_reg_write(ucb, UCB_IE_FAL, ucb->irq_fal_enbl &
+-				  ucb->irq_wake);
+-		ucb1x00_disable(ucb);
+-		raw_spin_unlock_irqrestore(&ucb->irq_lock, flags);
+-
+-		enable_irq_wake(ucb->irq);
+-	} else if (pdata && pdata->reset)
+-		pdata->reset(UCB_RST_SUSPEND);
+-
+-	return 0;
+-}
+-
+-static int ucb1x00_resume(struct device *dev)
+-{
+-	struct ucb1x00_plat_data *pdata = dev_get_platdata(dev);
+-	struct ucb1x00 *ucb = dev_get_drvdata(dev);
+-	struct ucb1x00_dev *udev;
+-
+-	if (!ucb->irq_wake && pdata && pdata->reset)
+-		pdata->reset(UCB_RST_RESUME);
+-
+-	ucb1x00_enable(ucb);
+-	ucb1x00_reg_write(ucb, UCB_IO_DATA, ucb->io_out);
+-	ucb1x00_reg_write(ucb, UCB_IO_DIR, ucb->io_dir);
+-
+-	if (ucb->irq_wake) {
+-		unsigned long flags;
+-
+-		raw_spin_lock_irqsave(&ucb->irq_lock, flags);
+-		ucb1x00_reg_write(ucb, UCB_IE_RIS, ucb->irq_ris_enbl &
+-				  ucb->irq_mask);
+-		ucb1x00_reg_write(ucb, UCB_IE_FAL, ucb->irq_fal_enbl &
+-				  ucb->irq_mask);
+-		raw_spin_unlock_irqrestore(&ucb->irq_lock, flags);
+-
+-		disable_irq_wake(ucb->irq);
+-	}
+-	ucb1x00_disable(ucb);
+-
+-	mutex_lock(&ucb1x00_mutex);
+-	list_for_each_entry(udev, &ucb->devs, dev_node) {
+-		if (udev->drv->resume)
+-			udev->drv->resume(udev);
+-	}
+-	mutex_unlock(&ucb1x00_mutex);
+-	return 0;
+-}
+-
+-static DEFINE_SIMPLE_DEV_PM_OPS(ucb1x00_pm_ops,
+-				ucb1x00_suspend, ucb1x00_resume);
+-
+-static struct mcp_driver ucb1x00_driver = {
+-	.drv		= {
+-		.name	= "ucb1x00",
+-		.owner	= THIS_MODULE,
+-		.pm	= pm_sleep_ptr(&ucb1x00_pm_ops),
+-	},
+-	.probe		= ucb1x00_probe,
+-	.remove		= ucb1x00_remove,
+-};
+-
+-static int __init ucb1x00_init(void)
+-{
+-	int ret = class_register(&ucb1x00_class);
+-	if (ret == 0) {
+-		ret = mcp_driver_register(&ucb1x00_driver);
+-		if (ret)
+-			class_unregister(&ucb1x00_class);
+-	}
+-	return ret;
+-}
+-
+-static void __exit ucb1x00_exit(void)
+-{
+-	mcp_driver_unregister(&ucb1x00_driver);
+-	class_unregister(&ucb1x00_class);
+-}
+-
+-module_init(ucb1x00_init);
+-module_exit(ucb1x00_exit);
+-
+-EXPORT_SYMBOL(ucb1x00_io_set_dir);
+-EXPORT_SYMBOL(ucb1x00_io_write);
+-EXPORT_SYMBOL(ucb1x00_io_read);
+-
+-EXPORT_SYMBOL(ucb1x00_adc_enable);
+-EXPORT_SYMBOL(ucb1x00_adc_read);
+-EXPORT_SYMBOL(ucb1x00_adc_disable);
+-
+-EXPORT_SYMBOL(ucb1x00_register_driver);
+-EXPORT_SYMBOL(ucb1x00_unregister_driver);
+-
+-MODULE_ALIAS("mcp:ucb1x00");
+-MODULE_AUTHOR("Russell King <rmk@arm.linux.org.uk>");
+-MODULE_DESCRIPTION("UCB1x00 core driver");
+-MODULE_LICENSE("GPL");
+diff --git a/drivers/mfd/ucb1x00-ts.c b/drivers/mfd/ucb1x00-ts.c
+deleted file mode 100644
+index 39fe187eea1f..000000000000
+--- a/drivers/mfd/ucb1x00-ts.c
++++ /dev/null
+@@ -1,445 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-only
+-/*
+- *  Touchscreen driver for UCB1x00-based touchscreens
+- *
+- *  Copyright (C) 2001 Russell King, All Rights Reserved.
+- *  Copyright (C) 2005 Pavel Machek
+- *
+- * 21-Jan-2002 <jco@ict.es> :
+- *
+- * Added support for synchronous A/D mode. This mode is useful to
+- * avoid noise induced in the touchpanel by the LCD, provided that
+- * the UCB1x00 has a valid LCD sync signal routed to its ADCSYNC pin.
+- * It is important to note that the signal connected to the ADCSYNC
+- * pin should provide pulses even when the LCD is blanked, otherwise
+- * a pen touch needed to unblank the LCD will never be read.
+- */
+-#include <linux/module.h>
+-#include <linux/moduleparam.h>
+-#include <linux/init.h>
+-#include <linux/interrupt.h>
+-#include <linux/sched.h>
+-#include <linux/spinlock.h>
+-#include <linux/completion.h>
+-#include <linux/delay.h>
+-#include <linux/string.h>
+-#include <linux/input.h>
+-#include <linux/device.h>
+-#include <linux/freezer.h>
+-#include <linux/slab.h>
+-#include <linux/kthread.h>
+-#include <linux/mfd/ucb1x00.h>
+-
+-#include <mach/collie.h>
+-#include <asm/mach-types.h>
+-
+-
+-
+-struct ucb1x00_ts {
+-	struct input_dev	*idev;
+-	struct ucb1x00		*ucb;
+-
+-	spinlock_t		irq_lock;
+-	unsigned		irq_disabled;
+-	wait_queue_head_t	irq_wait;
+-	struct task_struct	*rtask;
+-	u16			x_res;
+-	u16			y_res;
+-
+-	unsigned int		adcsync:1;
+-};
+-
+-static int adcsync;
+-
+-static inline void ucb1x00_ts_evt_add(struct ucb1x00_ts *ts, u16 pressure, u16 x, u16 y)
+-{
+-	struct input_dev *idev = ts->idev;
+-
+-	input_report_abs(idev, ABS_X, x);
+-	input_report_abs(idev, ABS_Y, y);
+-	input_report_abs(idev, ABS_PRESSURE, pressure);
+-	input_report_key(idev, BTN_TOUCH, 1);
+-	input_sync(idev);
+-}
+-
+-static inline void ucb1x00_ts_event_release(struct ucb1x00_ts *ts)
+-{
+-	struct input_dev *idev = ts->idev;
+-
+-	input_report_abs(idev, ABS_PRESSURE, 0);
+-	input_report_key(idev, BTN_TOUCH, 0);
+-	input_sync(idev);
+-}
+-
+-/*
+- * Switch to interrupt mode.
+- */
+-static inline void ucb1x00_ts_mode_int(struct ucb1x00_ts *ts)
+-{
+-	ucb1x00_reg_write(ts->ucb, UCB_TS_CR,
+-			UCB_TS_CR_TSMX_POW | UCB_TS_CR_TSPX_POW |
+-			UCB_TS_CR_TSMY_GND | UCB_TS_CR_TSPY_GND |
+-			UCB_TS_CR_MODE_INT);
+-}
+-
+-/*
+- * Switch to pressure mode, and read pressure.  We don't need to wait
+- * here, since both plates are being driven.
+- */
+-static inline unsigned int ucb1x00_ts_read_pressure(struct ucb1x00_ts *ts)
+-{
+-	if (machine_is_collie()) {
+-		ucb1x00_io_write(ts->ucb, COLLIE_TC35143_GPIO_TBL_CHK, 0);
+-		ucb1x00_reg_write(ts->ucb, UCB_TS_CR,
+-				  UCB_TS_CR_TSPX_POW | UCB_TS_CR_TSMX_POW |
+-				  UCB_TS_CR_MODE_POS | UCB_TS_CR_BIAS_ENA);
+-
+-		udelay(55);
+-
+-		return ucb1x00_adc_read(ts->ucb, UCB_ADC_INP_AD2, ts->adcsync);
+-	} else {
+-		ucb1x00_reg_write(ts->ucb, UCB_TS_CR,
+-				  UCB_TS_CR_TSMX_POW | UCB_TS_CR_TSPX_POW |
+-				  UCB_TS_CR_TSMY_GND | UCB_TS_CR_TSPY_GND |
+-				  UCB_TS_CR_MODE_PRES | UCB_TS_CR_BIAS_ENA);
+-
+-		return ucb1x00_adc_read(ts->ucb, UCB_ADC_INP_TSPY, ts->adcsync);
+-	}
+-}
+-
+-/*
+- * Switch to X position mode and measure Y plate.  We switch the plate
+- * configuration in pressure mode, then switch to position mode.  This
+- * gives a faster response time.  Even so, we need to wait about 55us
+- * for things to stabilise.
+- */
+-static inline unsigned int ucb1x00_ts_read_xpos(struct ucb1x00_ts *ts)
+-{
+-	if (machine_is_collie())
+-		ucb1x00_io_write(ts->ucb, 0, COLLIE_TC35143_GPIO_TBL_CHK);
+-	else {
+-		ucb1x00_reg_write(ts->ucb, UCB_TS_CR,
+-				  UCB_TS_CR_TSMX_GND | UCB_TS_CR_TSPX_POW |
+-				  UCB_TS_CR_MODE_PRES | UCB_TS_CR_BIAS_ENA);
+-		ucb1x00_reg_write(ts->ucb, UCB_TS_CR,
+-				  UCB_TS_CR_TSMX_GND | UCB_TS_CR_TSPX_POW |
+-				  UCB_TS_CR_MODE_PRES | UCB_TS_CR_BIAS_ENA);
+-	}
+-	ucb1x00_reg_write(ts->ucb, UCB_TS_CR,
+-			UCB_TS_CR_TSMX_GND | UCB_TS_CR_TSPX_POW |
+-			UCB_TS_CR_MODE_POS | UCB_TS_CR_BIAS_ENA);
+-
+-	udelay(55);
+-
+-	return ucb1x00_adc_read(ts->ucb, UCB_ADC_INP_TSPY, ts->adcsync);
+-}
+-
+-/*
+- * Switch to Y position mode and measure X plate.  We switch the plate
+- * configuration in pressure mode, then switch to position mode.  This
+- * gives a faster response time.  Even so, we need to wait about 55us
+- * for things to stabilise.
+- */
+-static inline unsigned int ucb1x00_ts_read_ypos(struct ucb1x00_ts *ts)
+-{
+-	if (machine_is_collie())
+-		ucb1x00_io_write(ts->ucb, 0, COLLIE_TC35143_GPIO_TBL_CHK);
+-	else {
+-		ucb1x00_reg_write(ts->ucb, UCB_TS_CR,
+-				  UCB_TS_CR_TSMY_GND | UCB_TS_CR_TSPY_POW |
+-				  UCB_TS_CR_MODE_PRES | UCB_TS_CR_BIAS_ENA);
+-		ucb1x00_reg_write(ts->ucb, UCB_TS_CR,
+-				  UCB_TS_CR_TSMY_GND | UCB_TS_CR_TSPY_POW |
+-				  UCB_TS_CR_MODE_PRES | UCB_TS_CR_BIAS_ENA);
+-	}
+-
+-	ucb1x00_reg_write(ts->ucb, UCB_TS_CR,
+-			UCB_TS_CR_TSMY_GND | UCB_TS_CR_TSPY_POW |
+-			UCB_TS_CR_MODE_POS | UCB_TS_CR_BIAS_ENA);
+-
+-	udelay(55);
+-
+-	return ucb1x00_adc_read(ts->ucb, UCB_ADC_INP_TSPX, ts->adcsync);
+-}
+-
+-/*
+- * Switch to X plate resistance mode.  Set MX to ground, PX to
+- * supply.  Measure current.
+- */
+-static inline unsigned int ucb1x00_ts_read_xres(struct ucb1x00_ts *ts)
+-{
+-	ucb1x00_reg_write(ts->ucb, UCB_TS_CR,
+-			UCB_TS_CR_TSMX_GND | UCB_TS_CR_TSPX_POW |
+-			UCB_TS_CR_MODE_PRES | UCB_TS_CR_BIAS_ENA);
+-	return ucb1x00_adc_read(ts->ucb, 0, ts->adcsync);
+-}
+-
+-/*
+- * Switch to Y plate resistance mode.  Set MY to ground, PY to
+- * supply.  Measure current.
+- */
+-static inline unsigned int ucb1x00_ts_read_yres(struct ucb1x00_ts *ts)
+-{
+-	ucb1x00_reg_write(ts->ucb, UCB_TS_CR,
+-			UCB_TS_CR_TSMY_GND | UCB_TS_CR_TSPY_POW |
+-			UCB_TS_CR_MODE_PRES | UCB_TS_CR_BIAS_ENA);
+-	return ucb1x00_adc_read(ts->ucb, 0, ts->adcsync);
+-}
+-
+-static inline int ucb1x00_ts_pen_down(struct ucb1x00_ts *ts)
+-{
+-	unsigned int val = ucb1x00_reg_read(ts->ucb, UCB_TS_CR);
+-
+-	if (machine_is_collie())
+-		return (!(val & (UCB_TS_CR_TSPX_LOW)));
+-	else
+-		return (val & (UCB_TS_CR_TSPX_LOW | UCB_TS_CR_TSMX_LOW));
+-}
+-
+-/*
+- * This is a RT kernel thread that handles the ADC accesses
+- * (mainly so we can use semaphores in the UCB1200 core code
+- * to serialise accesses to the ADC).
+- */
+-static int ucb1x00_thread(void *_ts)
+-{
+-	struct ucb1x00_ts *ts = _ts;
+-	DECLARE_WAITQUEUE(wait, current);
+-	bool frozen, ignore = false;
+-	int valid = 0;
+-
+-	set_freezable();
+-	add_wait_queue(&ts->irq_wait, &wait);
+-	while (!kthread_freezable_should_stop(&frozen)) {
+-		unsigned int x, y, p;
+-		signed long timeout;
+-
+-		if (frozen)
+-			ignore = true;
+-
+-		ucb1x00_adc_enable(ts->ucb);
+-
+-		x = ucb1x00_ts_read_xpos(ts);
+-		y = ucb1x00_ts_read_ypos(ts);
+-		p = ucb1x00_ts_read_pressure(ts);
+-
+-		/*
+-		 * Switch back to interrupt mode.
+-		 */
+-		ucb1x00_ts_mode_int(ts);
+-		ucb1x00_adc_disable(ts->ucb);
+-
+-		msleep(10);
+-
+-		ucb1x00_enable(ts->ucb);
+-
+-
+-		if (ucb1x00_ts_pen_down(ts)) {
+-			set_current_state(TASK_INTERRUPTIBLE);
+-
+-			spin_lock_irq(&ts->irq_lock);
+-			if (ts->irq_disabled) {
+-				ts->irq_disabled = 0;
+-				enable_irq(ts->ucb->irq_base + UCB_IRQ_TSPX);
+-			}
+-			spin_unlock_irq(&ts->irq_lock);
+-			ucb1x00_disable(ts->ucb);
+-
+-			/*
+-			 * If we spat out a valid sample set last time,
+-			 * spit out a "pen off" sample here.
+-			 */
+-			if (valid) {
+-				ucb1x00_ts_event_release(ts);
+-				valid = 0;
+-			}
+-
+-			timeout = MAX_SCHEDULE_TIMEOUT;
+-		} else {
+-			ucb1x00_disable(ts->ucb);
+-
+-			/*
+-			 * Filtering is policy.  Policy belongs in user
+-			 * space.  We therefore leave it to user space
+-			 * to do any filtering they please.
+-			 */
+-			if (!ignore) {
+-				ucb1x00_ts_evt_add(ts, p, x, y);
+-				valid = 1;
+-			}
+-
+-			set_current_state(TASK_INTERRUPTIBLE);
+-			timeout = HZ / 100;
+-		}
+-
+-		schedule_timeout(timeout);
+-	}
+-
+-	remove_wait_queue(&ts->irq_wait, &wait);
+-
+-	ts->rtask = NULL;
+-	return 0;
+-}
+-
+-/*
+- * We only detect touch screen _touches_ with this interrupt
+- * handler, and even then we just schedule our task.
+- */
+-static irqreturn_t ucb1x00_ts_irq(int irq, void *id)
+-{
+-	struct ucb1x00_ts *ts = id;
+-
+-	spin_lock(&ts->irq_lock);
+-	ts->irq_disabled = 1;
+-	disable_irq_nosync(ts->ucb->irq_base + UCB_IRQ_TSPX);
+-	spin_unlock(&ts->irq_lock);
+-	wake_up(&ts->irq_wait);
+-
+-	return IRQ_HANDLED;
+-}
+-
+-static int ucb1x00_ts_open(struct input_dev *idev)
+-{
+-	struct ucb1x00_ts *ts = input_get_drvdata(idev);
+-	unsigned long flags = 0;
+-	int ret = 0;
+-
+-	BUG_ON(ts->rtask);
+-
+-	if (machine_is_collie())
+-		flags = IRQF_TRIGGER_RISING;
+-	else
+-		flags = IRQF_TRIGGER_FALLING;
+-
+-	ts->irq_disabled = 0;
+-
+-	init_waitqueue_head(&ts->irq_wait);
+-	ret = request_irq(ts->ucb->irq_base + UCB_IRQ_TSPX, ucb1x00_ts_irq,
+-			  flags, "ucb1x00-ts", ts);
+-	if (ret < 0)
+-		goto out;
+-
+-	/*
+-	 * If we do this at all, we should allow the user to
+-	 * measure and read the X and Y resistance at any time.
+-	 */
+-	ucb1x00_adc_enable(ts->ucb);
+-	ts->x_res = ucb1x00_ts_read_xres(ts);
+-	ts->y_res = ucb1x00_ts_read_yres(ts);
+-	ucb1x00_adc_disable(ts->ucb);
+-
+-	ts->rtask = kthread_run(ucb1x00_thread, ts, "ktsd");
+-	if (!IS_ERR(ts->rtask)) {
+-		ret = 0;
+-	} else {
+-		free_irq(ts->ucb->irq_base + UCB_IRQ_TSPX, ts);
+-		ts->rtask = NULL;
+-		ret = -EFAULT;
+-	}
+-
+- out:
+-	return ret;
+-}
+-
+-/*
+- * Release touchscreen resources.  Disable IRQs.
+- */
+-static void ucb1x00_ts_close(struct input_dev *idev)
+-{
+-	struct ucb1x00_ts *ts = input_get_drvdata(idev);
+-
+-	if (ts->rtask)
+-		kthread_stop(ts->rtask);
+-
+-	ucb1x00_enable(ts->ucb);
+-	free_irq(ts->ucb->irq_base + UCB_IRQ_TSPX, ts);
+-	ucb1x00_reg_write(ts->ucb, UCB_TS_CR, 0);
+-	ucb1x00_disable(ts->ucb);
+-}
+-
+-
+-/*
+- * Initialisation.
+- */
+-static int ucb1x00_ts_add(struct ucb1x00_dev *dev)
+-{
+-	struct ucb1x00_ts *ts;
+-	struct input_dev *idev;
+-	int err;
+-
+-	ts = kzalloc_obj(struct ucb1x00_ts);
+-	idev = input_allocate_device();
+-	if (!ts || !idev) {
+-		err = -ENOMEM;
+-		goto fail;
+-	}
+-
+-	ts->ucb = dev->ucb;
+-	ts->idev = idev;
+-	ts->adcsync = adcsync ? UCB_SYNC : UCB_NOSYNC;
+-	spin_lock_init(&ts->irq_lock);
+-
+-	idev->name       = "Touchscreen panel";
+-	idev->id.product = ts->ucb->id;
+-	idev->open       = ucb1x00_ts_open;
+-	idev->close      = ucb1x00_ts_close;
+-	idev->dev.parent = &ts->ucb->dev;
+-
+-	idev->evbit[0]   = BIT_MASK(EV_ABS) | BIT_MASK(EV_KEY);
+-	idev->keybit[BIT_WORD(BTN_TOUCH)] = BIT_MASK(BTN_TOUCH);
+-
+-	input_set_drvdata(idev, ts);
+-
+-	ucb1x00_adc_enable(ts->ucb);
+-	ts->x_res = ucb1x00_ts_read_xres(ts);
+-	ts->y_res = ucb1x00_ts_read_yres(ts);
+-	ucb1x00_adc_disable(ts->ucb);
+-
+-	input_set_abs_params(idev, ABS_X, 0, ts->x_res, 0, 0);
+-	input_set_abs_params(idev, ABS_Y, 0, ts->y_res, 0, 0);
+-	input_set_abs_params(idev, ABS_PRESSURE, 0, 0, 0, 0);
+-
+-	err = input_register_device(idev);
+-	if (err)
+-		goto fail;
+-
+-	dev->priv = ts;
+-
+-	return 0;
+-
+- fail:
+-	input_free_device(idev);
+-	kfree(ts);
+-	return err;
+-}
+-
+-static void ucb1x00_ts_remove(struct ucb1x00_dev *dev)
+-{
+-	struct ucb1x00_ts *ts = dev->priv;
+-
+-	input_unregister_device(ts->idev);
+-	kfree(ts);
+-}
+-
+-static struct ucb1x00_driver ucb1x00_ts_driver = {
+-	.add		= ucb1x00_ts_add,
+-	.remove		= ucb1x00_ts_remove,
+-};
+-
+-static int __init ucb1x00_ts_init(void)
+-{
+-	return ucb1x00_register_driver(&ucb1x00_ts_driver);
+-}
+-
+-static void __exit ucb1x00_ts_exit(void)
+-{
+-	ucb1x00_unregister_driver(&ucb1x00_ts_driver);
+-}
+-
+-module_param(adcsync, int, 0444);
+-module_init(ucb1x00_ts_init);
+-module_exit(ucb1x00_ts_exit);
+-
+-MODULE_AUTHOR("Russell King <rmk@arm.linux.org.uk>");
+-MODULE_DESCRIPTION("UCB1x00 touchscreen driver");
+-MODULE_LICENSE("GPL");
+diff --git a/include/linux/mfd/mcp.h b/include/linux/mfd/mcp.h
+deleted file mode 100644
+index fd5cafc77e8a..000000000000
+--- a/include/linux/mfd/mcp.h
++++ /dev/null
+@@ -1,63 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0-only */
+-/*
+- *  linux/drivers/mfd/mcp.h
+- *
+- *  Copyright (C) 2001 Russell King, All Rights Reserved.
+- */
+-#ifndef MCP_H
+-#define MCP_H
+-
+-#include <linux/device.h>
+-
+-struct mcp_ops;
+-
+-struct mcp {
+-	struct module	*owner;
+-	struct mcp_ops	*ops;
+-	spinlock_t	lock;
+-	int		use_count;
+-	unsigned int	sclk_rate;
+-	unsigned int	rw_timeout;
+-	struct device	attached_device;
+-};
+-
+-struct mcp_ops {
+-	void		(*set_telecom_divisor)(struct mcp *, unsigned int);
+-	void		(*set_audio_divisor)(struct mcp *, unsigned int);
+-	void		(*reg_write)(struct mcp *, unsigned int, unsigned int);
+-	unsigned int	(*reg_read)(struct mcp *, unsigned int);
+-	void		(*enable)(struct mcp *);
+-	void		(*disable)(struct mcp *);
+-};
+-
+-void mcp_set_telecom_divisor(struct mcp *, unsigned int);
+-void mcp_set_audio_divisor(struct mcp *, unsigned int);
+-void mcp_reg_write(struct mcp *, unsigned int, unsigned int);
+-unsigned int mcp_reg_read(struct mcp *, unsigned int);
+-void mcp_enable(struct mcp *);
+-void mcp_disable(struct mcp *);
+-#define mcp_get_sclk_rate(mcp)	((mcp)->sclk_rate)
+-
+-struct mcp *mcp_host_alloc(struct device *, size_t);
+-int mcp_host_add(struct mcp *, void *);
+-void mcp_host_del(struct mcp *);
+-void mcp_host_free(struct mcp *);
+-
+-struct mcp_driver {
+-	struct device_driver drv;
+-	int (*probe)(struct mcp *);
+-	void (*remove)(struct mcp *);
+-};
+-
+-int mcp_driver_register(struct mcp_driver *);
+-void mcp_driver_unregister(struct mcp_driver *);
+-
+-#define mcp_get_drvdata(mcp)	dev_get_drvdata(&(mcp)->attached_device)
+-#define mcp_set_drvdata(mcp,d)	dev_set_drvdata(&(mcp)->attached_device, d)
+-
+-static inline void *mcp_priv(struct mcp *mcp)
+-{
+-	return mcp + 1;
+-}
+-
+-#endif
+diff --git a/include/linux/mfd/ucb1x00.h b/include/linux/mfd/ucb1x00.h
+deleted file mode 100644
+index 66ecad4667c9..000000000000
+--- a/include/linux/mfd/ucb1x00.h
++++ /dev/null
+@@ -1,261 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0-only */
+-/*
+- *  linux/include/mfd/ucb1x00.h
+- *
+- *  Copyright (C) 2001 Russell King, All Rights Reserved.
+- */
+-#ifndef UCB1200_H
+-#define UCB1200_H
+-
+-#include <linux/device.h>
+-#include <linux/mfd/mcp.h>
+-#include <linux/gpio/consumer.h>
+-#include <linux/gpio/driver.h>
+-#include <linux/mutex.h>
+-
+-#define UCB_IO_DATA	0x00
+-#define UCB_IO_DIR	0x01
+-
+-#define UCB_IO_0		(1 << 0)
+-#define UCB_IO_1		(1 << 1)
+-#define UCB_IO_2		(1 << 2)
+-#define UCB_IO_3		(1 << 3)
+-#define UCB_IO_4		(1 << 4)
+-#define UCB_IO_5		(1 << 5)
+-#define UCB_IO_6		(1 << 6)
+-#define UCB_IO_7		(1 << 7)
+-#define UCB_IO_8		(1 << 8)
+-#define UCB_IO_9		(1 << 9)
+-
+-#define UCB_IE_RIS	0x02
+-#define UCB_IE_FAL	0x03
+-#define UCB_IE_STATUS	0x04
+-#define UCB_IE_CLEAR	0x04
+-#define UCB_IE_ADC		(1 << 11)
+-#define UCB_IE_TSPX		(1 << 12)
+-#define UCB_IE_TSMX		(1 << 13)
+-#define UCB_IE_TCLIP		(1 << 14)
+-#define UCB_IE_ACLIP		(1 << 15)
+-
+-#define UCB_IRQ_TSPX		12
+-
+-#define UCB_TC_A	0x05
+-#define UCB_TC_A_LOOP		(1 << 7)	/* UCB1200 */
+-#define UCB_TC_A_AMPL		(1 << 7)	/* UCB1300 */
+-
+-#define UCB_TC_B	0x06
+-#define UCB_TC_B_VOICE_ENA	(1 << 3)
+-#define UCB_TC_B_CLIP		(1 << 4)
+-#define UCB_TC_B_ATT		(1 << 6)
+-#define UCB_TC_B_SIDE_ENA	(1 << 11)
+-#define UCB_TC_B_MUTE		(1 << 13)
+-#define UCB_TC_B_IN_ENA		(1 << 14)
+-#define UCB_TC_B_OUT_ENA	(1 << 15)
+-
+-#define UCB_AC_A	0x07
+-#define UCB_AC_B	0x08
+-#define UCB_AC_B_LOOP		(1 << 8)
+-#define UCB_AC_B_MUTE		(1 << 13)
+-#define UCB_AC_B_IN_ENA		(1 << 14)
+-#define UCB_AC_B_OUT_ENA	(1 << 15)
+-
+-#define UCB_TS_CR	0x09
+-#define UCB_TS_CR_TSMX_POW	(1 << 0)
+-#define UCB_TS_CR_TSPX_POW	(1 << 1)
+-#define UCB_TS_CR_TSMY_POW	(1 << 2)
+-#define UCB_TS_CR_TSPY_POW	(1 << 3)
+-#define UCB_TS_CR_TSMX_GND	(1 << 4)
+-#define UCB_TS_CR_TSPX_GND	(1 << 5)
+-#define UCB_TS_CR_TSMY_GND	(1 << 6)
+-#define UCB_TS_CR_TSPY_GND	(1 << 7)
+-#define UCB_TS_CR_MODE_INT	(0 << 8)
+-#define UCB_TS_CR_MODE_PRES	(1 << 8)
+-#define UCB_TS_CR_MODE_POS	(2 << 8)
+-#define UCB_TS_CR_BIAS_ENA	(1 << 11)
+-#define UCB_TS_CR_TSPX_LOW	(1 << 12)
+-#define UCB_TS_CR_TSMX_LOW	(1 << 13)
+-
+-#define UCB_ADC_CR	0x0a
+-#define UCB_ADC_SYNC_ENA	(1 << 0)
+-#define UCB_ADC_VREFBYP_CON	(1 << 1)
+-#define UCB_ADC_INP_TSPX	(0 << 2)
+-#define UCB_ADC_INP_TSMX	(1 << 2)
+-#define UCB_ADC_INP_TSPY	(2 << 2)
+-#define UCB_ADC_INP_TSMY	(3 << 2)
+-#define UCB_ADC_INP_AD0		(4 << 2)
+-#define UCB_ADC_INP_AD1		(5 << 2)
+-#define UCB_ADC_INP_AD2		(6 << 2)
+-#define UCB_ADC_INP_AD3		(7 << 2)
+-#define UCB_ADC_EXT_REF		(1 << 5)
+-#define UCB_ADC_START		(1 << 7)
+-#define UCB_ADC_ENA		(1 << 15)
+-
+-#define UCB_ADC_DATA	0x0b
+-#define UCB_ADC_DAT_VAL		(1 << 15)
+-#define UCB_ADC_DAT(x)		(((x) & 0x7fe0) >> 5)
+-
+-#define UCB_ID		0x0c
+-#define UCB_ID_1200		0x1004
+-#define UCB_ID_1300		0x1005
+-#define UCB_ID_TC35143          0x9712
+-
+-#define UCB_MODE	0x0d
+-#define UCB_MODE_DYN_VFLAG_ENA	(1 << 12)
+-#define UCB_MODE_AUD_OFF_CAN	(1 << 13)
+-
+-struct software_node;
+-extern const struct software_node ucb1x00_gpiochip_node;
+-
+-enum ucb1x00_reset {
+-	UCB_RST_PROBE,
+-	UCB_RST_RESUME,
+-	UCB_RST_SUSPEND,
+-	UCB_RST_REMOVE,
+-	UCB_RST_PROBE_FAIL,
+-};
+-
+-struct ucb1x00_plat_data {
+-	void			(*reset)(enum ucb1x00_reset);
+-	unsigned		irq_base;
+-	int			gpio_base;
+-	unsigned		can_wakeup;
+-};
+-
+-struct ucb1x00 {
+-	raw_spinlock_t		irq_lock;
+-	struct mcp		*mcp;
+-	unsigned int		irq;
+-	int			irq_base;
+-	struct mutex		adc_mutex;
+-	spinlock_t		io_lock;
+-	u16			id;
+-	u16			io_dir;
+-	u16			io_out;
+-	u16			adc_cr;
+-	u16			irq_fal_enbl;
+-	u16			irq_ris_enbl;
+-	u16			irq_mask;
+-	u16			irq_wake;
+-	struct device		dev;
+-	struct list_head	node;
+-	struct list_head	devs;
+-	struct gpio_chip 	gpio;
+-};
+-
+-struct ucb1x00_driver;
+-
+-struct ucb1x00_dev {
+-	struct list_head	dev_node;
+-	struct list_head	drv_node;
+-	struct ucb1x00		*ucb;
+-	struct ucb1x00_driver	*drv;
+-	void			*priv;
+-};
+-
+-struct ucb1x00_driver {
+-	struct list_head	node;
+-	struct list_head	devs;
+-	int	(*add)(struct ucb1x00_dev *dev);
+-	void	(*remove)(struct ucb1x00_dev *dev);
+-	int	(*suspend)(struct ucb1x00_dev *dev);
+-	int	(*resume)(struct ucb1x00_dev *dev);
+-};
+-
+-#define classdev_to_ucb1x00(cd)	container_of(cd, struct ucb1x00, dev)
+-
+-int ucb1x00_register_driver(struct ucb1x00_driver *);
+-void ucb1x00_unregister_driver(struct ucb1x00_driver *);
+-
+-/**
+- *	ucb1x00_clkrate - return the UCB1x00 SIB clock rate
+- *	@ucb: UCB1x00 structure describing chip
+- *
+- *	Return the SIB clock rate in Hz.
+- */
+-static inline unsigned int ucb1x00_clkrate(struct ucb1x00 *ucb)
+-{
+-	return mcp_get_sclk_rate(ucb->mcp);
+-}
+-
+-/**
+- *	ucb1x00_enable - enable the UCB1x00 SIB clock
+- *	@ucb: UCB1x00 structure describing chip
+- *
+- *	Enable the SIB clock.  This can be called multiple times.
+- */
+-static inline void ucb1x00_enable(struct ucb1x00 *ucb)
+-{
+-	mcp_enable(ucb->mcp);
+-}
+-
+-/**
+- *	ucb1x00_disable - disable the UCB1x00 SIB clock
+- *	@ucb: UCB1x00 structure describing chip
+- *
+- *	Disable the SIB clock.  The SIB clock will only be disabled
+- *	when the number of ucb1x00_enable calls match the number of
+- *	ucb1x00_disable calls.
+- */
+-static inline void ucb1x00_disable(struct ucb1x00 *ucb)
+-{
+-	mcp_disable(ucb->mcp);
+-}
+-
+-/**
+- *	ucb1x00_reg_write - write a UCB1x00 register
+- *	@ucb: UCB1x00 structure describing chip
+- *	@reg: UCB1x00 4-bit register index to write
+- *	@val: UCB1x00 16-bit value to write
+- *
+- *	Write the UCB1x00 register @reg with value @val.  The SIB
+- *	clock must be running for this function to return.
+- */
+-static inline void ucb1x00_reg_write(struct ucb1x00 *ucb, unsigned int reg, unsigned int val)
+-{
+-	mcp_reg_write(ucb->mcp, reg, val);
+-}
+-
+-/**
+- *	ucb1x00_reg_read - read a UCB1x00 register
+- *	@ucb: UCB1x00 structure describing chip
+- *	@reg: UCB1x00 4-bit register index to write
+- *
+- *	Read the UCB1x00 register @reg and return its value.  The SIB
+- *	clock must be running for this function to return.
+- */
+-static inline unsigned int ucb1x00_reg_read(struct ucb1x00 *ucb, unsigned int reg)
+-{
+-	return mcp_reg_read(ucb->mcp, reg);
+-}
+-/**
+- *	ucb1x00_set_audio_divisor - 
+- *	@ucb: UCB1x00 structure describing chip
+- *	@div: SIB clock divisor
+- */
+-static inline void ucb1x00_set_audio_divisor(struct ucb1x00 *ucb, unsigned int div)
+-{
+-	mcp_set_audio_divisor(ucb->mcp, div);
+-}
+-
+-/**
+- *	ucb1x00_set_telecom_divisor -
+- *	@ucb: UCB1x00 structure describing chip
+- *	@div: SIB clock divisor
+- */
+-static inline void ucb1x00_set_telecom_divisor(struct ucb1x00 *ucb, unsigned int div)
+-{
+-	mcp_set_telecom_divisor(ucb->mcp, div);
+-}
+-
+-void ucb1x00_io_set_dir(struct ucb1x00 *ucb, unsigned int, unsigned int);
+-void ucb1x00_io_write(struct ucb1x00 *ucb, unsigned int, unsigned int);
+-unsigned int ucb1x00_io_read(struct ucb1x00 *ucb);
+-
+-#define UCB_NOSYNC	(0)
+-#define UCB_SYNC	(1)
+-
+-unsigned int ucb1x00_adc_read(struct ucb1x00 *ucb, int adc_channel, int sync);
+-void ucb1x00_adc_enable(struct ucb1x00 *ucb);
+-void ucb1x00_adc_disable(struct ucb1x00 *ucb);
+-
+-#endif
+diff --git a/include/linux/platform_data/mfd-mcp-sa11x0.h b/include/linux/platform_data/mfd-mcp-sa11x0.h
+deleted file mode 100644
+index b589e61bbc2e..000000000000
+--- a/include/linux/platform_data/mfd-mcp-sa11x0.h
++++ /dev/null
+@@ -1,17 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0-only */
+-/*
+- *  Copyright (C) 2005 Russell King.
+- */
+-#ifndef __MFD_MCP_SA11X0_H
+-#define __MFD_MCP_SA11X0_H
+-
+-#include <linux/types.h>
+-
+-struct mcp_plat_data {
+-	u32 mccr0;
+-	u32 mccr1;
+-	unsigned int sclk_rate;
+-	void *codec_pdata;
+-};
 -
 -#endif
 -- 
