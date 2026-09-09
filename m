@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-26925-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26926-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7C98AC79FB6
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2026 13:22:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C7E62C79FAD
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2026 13:22:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hg1h54fpwz2yrr;
-	Wed, 09 Sep 2026 23:22:45 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788960165;
-	cv=none; b=a0pj1QnZaQmUa1iZceVn+hHRIVbrz0Tq2uM6oSrTGG6VWPTjFsS+Et0KcK/rE57LBHTHX4OGnwZbLEvDnsTlhD7tTy1lJbATTZAFRE1nRDvYyQ8uOhSiJfVFUNcuzIqgnNjkDcZvbbEmwt7w4dC5+hFl38fI5vGng0dKiXj6OXFWTB68F2Z3Mzp9grk/npETjbWZE0P/Ne+UBO1Sbvb7dPMJZfnhpyIm0u3kwbg71m8kf8JXdq6ZBuA8sLhuaeZVkuTPfutq5U0hQWUOeE0SjYY52Cy26CqiyswBbxzLzQ61fIzOgD8wOQ7yB4MPLkB64G3Nm+z++9KfINnGwMsUyw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hg1hD3WgJz2ysW;
+	Wed, 09 Sep 2026 23:22:52 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788960172;
+	cv=none; b=Y2gIirOaTcTUQZR888Tor3BtIw3bLMyWrhKSd4fXjIF1y9kwwAGds+pBYIFc2AgWgBFqAcSDS1Xq/Zemhw/fOrT25a/uERkuNsKJqm9RP8Oox1jOKs3PAYuMbkLJz++bNqjAOkrptzcLOPEdV7Rp7UCLVw7UzbEsYaBzlTEhMDazGCIStOxIVmQMKYq4g7bTsq+qnhoaOWJbhj4DzCx7IdYia3w8ntlNE4HvXbEhgh8Th7qo+YPz7CyL1PBxXc21PqSdGGIwR1IeKgaxCLXk+lnKAepNywnWKcO7VfJaBLW3/xNAGztafuKx3AlgenNNrN8h4DCxwicSBhvoWbezIw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788960165; c=relaxed/relaxed;
-	bh=RLj9JAvIYk4hhwXmR1Zy6vSDP+yyZsL5VLptCNd+Xu4=;
+	t=1788960172; c=relaxed/relaxed;
+	bh=ZHN9vSFA+b3YrdAtebxpzCnkbH44KZ3kWPDTkF9VLOQ=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=DT9S4Yl/JKYILmxbDi5J6mEkfxd8PRaDW6YYTeZuhR7Oav4g77p9rxKd7nrPx4PcxET2l+qjfBZG/HAzyUgO3JG0uKaSXuF+GP4ekeb7oVHXef9FyQHwYXyCQ1fTest/S8kz2Y8du3XDAR9smiCTamZKGZHvVv4CGvnkwz3E0Aw/Y8NyUYDkVcFuxHNnE6i696bBLtwAwLBoF85hoaGWZNB6xEYfhQP74hjzvvS/BodHZu/2TdvBBlWxxjiLkUcBWP5AcJYe6oSsg/iVjZNdHIs0YVm2e4EDiOb/41ZC64QigSf3CZIR9vEUfYH+238dkdKpFf/49mSoCoAmUCoCbQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=X66sx3Rg; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version:Content-Type; b=Hwyx79L/TaK+xdaf26qm7KDHY9LNH6kJsBQGnsxQBX2eWCksX3rcM+pq/otLpK/f6EEuG4JoacxXEGauHKMJV4OMhkGLY3lCHwCRm9a/cHP7BoLHbQigq6+o4CrNzx9EBeZ+i3cJZJYVj6K0CZnkRFrw7RZYAcRyiGyrQeynZahJiSM+dy2yBtWlq6cOAPa9hWEd/sOqpHQB+aS/DV6ItqKwGNofLchOdZileYcpDedAfLvRMwqRUby2pAfp9XQQ6eZK7DwpclKqe9ykWVlbWD6ngXDGJSE4bPj+phUNbX0YMh/6LV3nwSl4N4sC/bOO7v4rxBdTcO9TESg8vAbe4Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Ij/jOjRX; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=X66sx3Rg;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Ij/jOjRX;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hg1gx16Cxz2yv0
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Sep 2026 23:22:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hg1h969qMz2yx5
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Sep 2026 23:22:49 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 7950A43251;
-	Wed,  9 Sep 2026 13:22:30 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3BFD91F00A3A;
-	Wed,  9 Sep 2026 13:22:22 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id C675760239;
+	Wed,  9 Sep 2026 13:22:47 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 59E821F00A3A;
+	Wed,  9 Sep 2026 13:22:39 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788960150;
-	bh=RLj9JAvIYk4hhwXmR1Zy6vSDP+yyZsL5VLptCNd+Xu4=;
+	s=k20260515; t=1788960167;
+	bh=ZHN9vSFA+b3YrdAtebxpzCnkbH44KZ3kWPDTkF9VLOQ=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=X66sx3RgfDt6T3dCAmSe8hUNdGz9RKOB5ncKjWnr21qac+TVIT55c2Tf1V6gDTIAm
-	 I6/i/fMvWFc4YRUmh8Z3/jJIdUoZQtb5XnViO06OcQaKUnL6eSXBjFKFhCH8jn699g
-	 EqV+g8NNqwBNgWbbpzbe0dODtyNSZuKQ4dMAuFMvqdCj+1o3pP5TJjNq2kKyxUFTYL
-	 FfKVbXnQX+W5b/mvwjPccuZHSbXN0R/jIWcmzu5EW4/G0d4hh1EhOdg+nlCRsSq6j7
-	 iyCd1vwKU/raxjxNRKIIRv+IvUv5QC43Lr5ff2H5qS9rONJaqCFCIlWlvqWl4fNH71
-	 v3GlnRwP1SUvA==
+	b=Ij/jOjRXxLYZCSr5dfMD7K1dKW5t5heI9s8GqFTe0OZceyD0/p4oHaOMvNYl6T4/z
+	 TLNBHxx0uWmzLlOg/Ebl07+LjTlGi3jfzDQzY1qRvJz5u5fvDFkNQuMIMNgGmC3SrN
+	 KvToh1aRuIPXXLDTwVCPhiK8JHCenvweqf8EEUVEkgW0PJdhCA/aBZYrP6o54xWLqA
+	 UZOVkxJ3heKB6Ioou2FpKcUPcdYjygY+Tm650vr2aF3iuwgKa1o5kXBNNbQKEa72Iw
+	 86lSpzVnp4IAl24+r9/ORe8+/P1vf11g5KM/Egtaqngf59P6CKrY2sh3m9BQkCbb9c
+	 NQZwY64Yg+tTw==
 From: Arnd Bergmann <arnd@kernel.org>
 To: Lee Jones <lee@kernel.org>,
 	mfd@lists.linux.dev
@@ -86,9 +86,9 @@ Cc: linux-kernel@vger.kernel.org,
 	linux-sound@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
 	llvm@lists.linux.dev
-Subject: [PATCH 01/14] mfd: remove unused 88pm80x driver
-Date: Wed,  9 Sep 2026 15:21:38 +0200
-Message-ID: <20260909132153.1596191-2-arnd@kernel.org>
+Subject: [PATCH 03/14] mfd: remove unused si476x driver
+Date: Wed,  9 Sep 2026 15:21:40 +0200
+Message-ID: <20260909132153.1596191-4-arnd@kernel.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260909132153.1596191-1-arnd@kernel.org>
 References: <20260909132153.1596191-1-arnd@kernel.org>
@@ -105,2477 +105,5848 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
 From: Arnd Bergmann <arnd@arndb.de>
 
-This pair of drivers was originally added as companion chips for pxa/mmp
-SoCs, but the corresponding platform code was never merged, so it has
-been unused the entire time.
+The si476x driver was added in linux-3.9 without devicetree
+support, and has always failed the probe function in the
+absence of a si476x_platform_data definition.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- .../devicetree/bindings/regulator/88pm800.txt |  38 --
- drivers/input/misc/88pm80x_onkey.c            | 152 -----
- drivers/input/misc/Kconfig                    |  10 -
- drivers/input/misc/Makefile                   |   1 -
- drivers/mfd/88pm800.c                         | 619 ------------------
- drivers/mfd/88pm805.c                         | 275 --------
- drivers/mfd/88pm80x.c                         | 159 -----
- drivers/mfd/Kconfig                           |  24 -
- drivers/mfd/Makefile                          |   2 -
- drivers/regulator/88pm800-regulator.c         | 287 --------
- drivers/regulator/Kconfig                     |  10 -
- drivers/regulator/Makefile                    |   1 -
- drivers/rtc/Kconfig                           |  10 -
- drivers/rtc/Makefile                          |   1 -
- drivers/rtc/rtc-88pm80x.c                     | 340 ----------
- include/linux/mfd/88pm80x.h                   | 370 -----------
- 16 files changed, 2299 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/regulator/88pm800.txt
- delete mode 100644 drivers/input/misc/88pm80x_onkey.c
- delete mode 100644 drivers/mfd/88pm800.c
- delete mode 100644 drivers/mfd/88pm805.c
- delete mode 100644 drivers/mfd/88pm80x.c
- delete mode 100644 drivers/regulator/88pm800-regulator.c
- delete mode 100644 drivers/rtc/rtc-88pm80x.c
- delete mode 100644 include/linux/mfd/88pm80x.h
+ .../admin-guide/media/radio-cardlist.rst      |    1 -
+ Documentation/admin-guide/media/si476x.rst    |  160 --
+ .../admin-guide/media/v4l-drivers.rst         |    1 -
+ drivers/media/radio/Kconfig                   |   17 -
+ drivers/media/radio/Makefile                  |    1 -
+ drivers/media/radio/radio-si476x.c            | 1523 ----------------
+ drivers/mfd/Kconfig                           |   13 -
+ drivers/mfd/Makefile                          |    3 -
+ drivers/mfd/si476x-cmd.c                      | 1543 -----------------
+ drivers/mfd/si476x-i2c.c                      |  861 ---------
+ drivers/mfd/si476x-prop.c                     |  233 ---
+ include/linux/mfd/si476x-core.h               |  532 ------
+ include/linux/mfd/si476x-platform.h           |  256 ---
+ include/linux/mfd/si476x-reports.h            |  154 --
+ include/media/drv-intf/si476x.h               |   28 -
+ include/uapi/linux/v4l2-controls.h            |    4 +-
+ sound/soc/codecs/Kconfig                      |    5 -
+ sound/soc/codecs/Makefile                     |    2 -
+ sound/soc/codecs/si476x.c                     |  263 ---
+ sound/soc/fsl/fsl-asoc-card.c                 |    8 -
+ 20 files changed, 2 insertions(+), 5606 deletions(-)
+ delete mode 100644 Documentation/admin-guide/media/si476x.rst
+ delete mode 100644 drivers/media/radio/radio-si476x.c
+ delete mode 100644 drivers/mfd/si476x-cmd.c
+ delete mode 100644 drivers/mfd/si476x-i2c.c
+ delete mode 100644 drivers/mfd/si476x-prop.c
+ delete mode 100644 include/linux/mfd/si476x-core.h
+ delete mode 100644 include/linux/mfd/si476x-platform.h
+ delete mode 100644 include/linux/mfd/si476x-reports.h
+ delete mode 100644 include/media/drv-intf/si476x.h
+ delete mode 100644 sound/soc/codecs/si476x.c
 
-diff --git a/Documentation/devicetree/bindings/regulator/88pm800.txt b/Documentation/devicetree/bindings/regulator/88pm800.txt
+diff --git a/Documentation/admin-guide/media/radio-cardlist.rst b/Documentation/admin-guide/media/radio-cardlist.rst
+index cec724256812..244ff59fb6b2 100644
+--- a/Documentation/admin-guide/media/radio-cardlist.rst
++++ b/Documentation/admin-guide/media/radio-cardlist.rst
+@@ -23,7 +23,6 @@ radio-sf16fmr2         SF16-FMR2/SF16-FMD2 Radio
+ radio-shark            Griffin radioSHARK USB radio receiver
+ shark2                 Griffin radioSHARK2 USB radio receiver
+ radio-si470x-common    Silicon Labs Si470x FM Radio Receiver
+-radio-si476x           Silicon Laboratories Si476x I2C FM Radio
+ radio-tea5764          TEA5764 I2C FM radio
+ tef6862                TEF6862 Car Radio Enhanced Selectivity Tuner
+ radio-terratec         TerraTec ActiveRadio ISA Standalone
+diff --git a/Documentation/admin-guide/media/si476x.rst b/Documentation/admin-guide/media/si476x.rst
 deleted file mode 100644
-index e8a54c2a5821..000000000000
---- a/Documentation/devicetree/bindings/regulator/88pm800.txt
+index c8882ee9f208..000000000000
+--- a/Documentation/admin-guide/media/si476x.rst
 +++ /dev/null
-@@ -1,38 +0,0 @@
--Marvell 88PM800 regulator
+@@ -1,160 +0,0 @@
+-.. SPDX-License-Identifier: GPL-2.0
 -
--Required properties:
--- compatible: "marvell,88pm800"
--- reg: I2C slave address
--- regulators: A node that houses a sub-node for each regulator within the
--  device. Each sub-node is identified using the node's name (or the deprecated
--  regulator-compatible property if present), with valid values listed below.
--  The content of each sub-node is defined by the standard binding for
--  regulators; see regulator.txt.
+-.. include:: <isonum.txt>
 -
--The valid names for regulators are:
 -
--  buck1, buck2, buck3, buck4, buck5, ldo1, ldo2, ldo3, ldo4, ldo5, ldo6, ldo7,
--  ldo8, ldo9, ldo10, ldo11, ldo12, ldo13, ldo14, ldo15, ldo16, ldo17, ldo18, ldo19
+-The SI476x Driver
+-=================
 -
--Example:
+-Copyright |copy| 2013 Andrey Smirnov <andrew.smirnov@gmail.com>
 -
--	pmic: 88pm800@31 {
--		compatible = "marvell,88pm800";
--		reg = <0x31>;
+-TODO for the driver
+--------------------
 -
--		regulators {
--			buck1 {
--			        regulator-min-microvolt = <600000>;
--			        regulator-max-microvolt = <3950000>;
--			        regulator-boot-on;
--			        regulator-always-on;
--			};
--			ldo1 {
--			        regulator-min-microvolt = <600000>;
--			        regulator-max-microvolt = <15000000>;
--			        regulator-boot-on;
--			        regulator-always-on;
--			};
--...
--		};
--	};
-diff --git a/drivers/input/misc/88pm80x_onkey.c b/drivers/input/misc/88pm80x_onkey.c
+-- According to the SiLabs' datasheet it is possible to update the
+-  firmware of the radio chip in the run-time, thus bringing it to the
+-  most recent version. Unfortunately I couldn't find any mentioning of
+-  the said firmware update for the old chips that I tested the driver
+-  against, so for chips like that the driver only exposes the old
+-  functionality.
+-
+-
+-Parameters exposed over debugfs
+--------------------------------
+-SI476x allow user to get multiple characteristics that can be very
+-useful for EoL testing/RF performance estimation, parameters that have
+-very little to do with V4L2 subsystem. Such parameters are exposed via
+-debugfs and can be accessed via regular file I/O operations.
+-
+-The drivers exposes following files:
+-
+-* /sys/kernel/debug/<device-name>/acf
+-  This file contains ACF(Automatically Controlled Features) status
+-  information. The contents of the file is binary data of the
+-  following layout:
+-
+-  .. tabularcolumns:: |p{7ex}|p{12ex}|L|
+-
+-  =============  ==============   ====================================
+-  Offset	 Name		  Description
+-  =============  ==============   ====================================
+-  0x00		 blend_int	  Flag, set when stereo separation has
+-				  crossed below the blend threshold
+-  0x01		 hblend_int	  Flag, set when HiBlend cutoff
+-				  frequency is lower than threshold
+-  0x02		 hicut_int	  Flag, set when HiCut cutoff
+-				  frequency is lower than threshold
+-  0x03		 chbw_int	  Flag, set when channel filter
+-				  bandwidth is less than threshold
+-  0x04		 softmute_int	  Flag indicating that softmute
+-				  attenuation has increased above
+-				  softmute threshold
+-  0x05		 smute		  0 - Audio is not soft muted
+-				  1 - Audio is soft muted
+-  0x06		 smattn		  Soft mute attenuation level in dB
+-  0x07		 chbw		  Channel filter bandwidth in kHz
+-  0x08		 hicut		  HiCut cutoff frequency in units of
+-				  100Hz
+-  0x09		 hiblend	  HiBlend cutoff frequency in units
+-				  of 100 Hz
+-  0x10		 pilot		  0 - Stereo pilot is not present
+-				  1 - Stereo pilot is present
+-  0x11		 stblend	  Stereo blend in %
+-  =============  ==============   ====================================
+-
+-
+-* /sys/kernel/debug/<device-name>/rds_blckcnt
+-  This file contains statistics about RDS receptions. It's binary data
+-  has the following layout:
+-
+-  .. tabularcolumns:: |p{7ex}|p{12ex}|L|
+-
+-  =============  ==============   ====================================
+-  Offset	 Name		  Description
+-  =============  ==============   ====================================
+-  0x00		 expected	  Number of expected RDS blocks
+-  0x02		 received	  Number of received RDS blocks
+-  0x04		 uncorrectable	  Number of uncorrectable RDS blocks
+-  =============  ==============   ====================================
+-
+-* /sys/kernel/debug/<device-name>/agc
+-  This file contains information about parameters pertaining to
+-  AGC(Automatic Gain Control)
+-
+-  The layout is:
+-
+-  .. tabularcolumns:: |p{7ex}|p{12ex}|L|
+-
+-  =============  ==============   ====================================
+-  Offset	 Name		  Description
+-  =============  ==============   ====================================
+-  0x00		 mxhi		  0 - FM Mixer PD high threshold is
+-				  not tripped
+-				  1 - FM Mixer PD high threshold is
+-				  tripped
+-  0x01		 mxlo		  ditto for FM Mixer PD low
+-  0x02		 lnahi		  ditto for FM LNA PD high
+-  0x03		 lnalo		  ditto for FM LNA PD low
+-  0x04		 fmagc1		  FMAGC1 attenuator resistance
+-				  (see datasheet for more detail)
+-  0x05		 fmagc2		  ditto for FMAGC2
+-  0x06		 pgagain	  PGA gain in dB
+-  0x07		 fmwblang	  FM/WB LNA Gain in dB
+-  =============  ==============   ====================================
+-
+-* /sys/kernel/debug/<device-name>/rsq
+-  This file contains information about parameters pertaining to
+-  RSQ(Received Signal Quality)
+-
+-  The layout is:
+-
+-  .. tabularcolumns:: |p{7ex}|p{12ex}|p{60ex}|
+-
+-  =============  ==============   ====================================
+-  Offset	 Name		  Description
+-  =============  ==============   ====================================
+-  0x00		 multhint	  0 - multipath value has not crossed
+-				  the Multipath high threshold
+-				  1 - multipath value has crossed
+-				  the Multipath high threshold
+-  0x01		 multlint	  ditto for Multipath low threshold
+-  0x02		 snrhint	  0 - received signal's SNR has not
+-				  crossed high threshold
+-				  1 - received signal's SNR has
+-				  crossed high threshold
+-  0x03		 snrlint	  ditto for low threshold
+-  0x04		 rssihint	  ditto for RSSI high threshold
+-  0x05		 rssilint	  ditto for RSSI low threshold
+-  0x06		 bltf		  Flag indicating if seek command
+-				  reached/wrapped seek band limit
+-  0x07		 snr_ready	  Indicates that SNR metrics is ready
+-  0x08		 rssiready	  ditto for RSSI metrics
+-  0x09		 injside	  0 - Low-side injection is being used
+-				  1 - High-side injection is used
+-  0x10		 afcrl		  Flag indicating if AFC rails
+-  0x11		 valid		  Flag indicating if channel is valid
+-  0x12		 readfreq	  Current tuned frequency
+-  0x14		 freqoff	  Signed frequency offset in units of
+-				  2ppm
+-  0x15		 rssi		  Signed value of RSSI in dBuV
+-  0x16		 snr		  Signed RF SNR in dB
+-  0x17		 issi		  Signed Image Strength Signal
+-				  indicator
+-  0x18		 lassi		  Signed Low side adjacent Channel
+-				  Strength indicator
+-  0x19		 hassi		  ditto for High side
+-  0x20		 mult		  Multipath indicator
+-  0x21		 dev		  Frequency deviation
+-  0x24		 assi		  Adjacent channel SSI
+-  0x25		 usn		  Ultrasonic noise indicator
+-  0x26		 pilotdev	  Pilot deviation in units of 100 Hz
+-  0x27		 rdsdev		  ditto for RDS
+-  0x28		 assidev	  ditto for ASSI
+-  0x29		 strongdev	  Frequency deviation
+-  0x30		 rdspi		  RDS PI code
+-  =============  ==============   ====================================
+-
+-* /sys/kernel/debug/<device-name>/rsq_primary
+-  This file contains information about parameters pertaining to
+-  RSQ(Received Signal Quality) for primary tuner only. Layout is as
+-  the one above.
+diff --git a/Documentation/admin-guide/media/v4l-drivers.rst b/Documentation/admin-guide/media/v4l-drivers.rst
+index 4621eae9fa1e..d131146f5869 100644
+--- a/Documentation/admin-guide/media/v4l-drivers.rst
++++ b/Documentation/admin-guide/media/v4l-drivers.rst
+@@ -33,7 +33,6 @@ Video4Linux (V4L) driver-specific documentation
+ 	saa7134
+ 	si470x
+ 	si4713
+-	si476x
+ 	vimc
+ 	visl
+ 	vivid
+diff --git a/drivers/media/radio/Kconfig b/drivers/media/radio/Kconfig
+index bbbdd054ba64..7b757f34463e 100644
+--- a/drivers/media/radio/Kconfig
++++ b/drivers/media/radio/Kconfig
+@@ -79,23 +79,6 @@ config RADIO_SHARK2
+ config RADIO_SI4713
+ 	tristate "Silicon Labs Si4713 FM Radio with RDS Transmitter support"
+ 
+-config RADIO_SI476X
+-	tristate "Silicon Laboratories Si476x I2C FM Radio"
+-	depends on I2C
+-	depends on MFD_SI476X_CORE
+-	depends on SND_SOC
+-	select SND_SOC_SI476X
+-	help
+-	  Choose Y here if you have this FM radio chip.
+-
+-	  In order to control your radio card, you will need to use programs
+-	  that are compatible with the Video For Linux 2 API.  Information on
+-	  this API and pointers to "v4l2" programs may be found at
+-	  <file:Documentation/userspace-api/media/index.rst>.
+-
+-	  To compile this driver as a module, choose M here: the
+-	  module will be called radio-si476x.
+-
+ config RADIO_TEA575X
+ 	tristate
+ 
+diff --git a/drivers/media/radio/Makefile b/drivers/media/radio/Makefile
+index f54693ebdb30..ea948520382d 100644
+--- a/drivers/media/radio/Makefile
++++ b/drivers/media/radio/Makefile
+@@ -22,7 +22,6 @@ obj-$(CONFIG_RADIO_SHARK2) += shark2.o
+ obj-$(CONFIG_RADIO_SHARK) += radio-shark.o
+ obj-$(CONFIG_RADIO_SI470X) += si470x/
+ obj-$(CONFIG_RADIO_SI4713) += si4713/
+-obj-$(CONFIG_RADIO_SI476X) += radio-si476x.o
+ obj-$(CONFIG_RADIO_TEA575X) += tea575x.o
+ obj-$(CONFIG_RADIO_TEA5764) += radio-tea5764.o
+ obj-$(CONFIG_RADIO_TEF6862) += tef6862.o
+diff --git a/drivers/media/radio/radio-si476x.c b/drivers/media/radio/radio-si476x.c
 deleted file mode 100644
-index fee28e537898..000000000000
---- a/drivers/input/misc/88pm80x_onkey.c
+index bfe89782dce4..000000000000
+--- a/drivers/media/radio/radio-si476x.c
 +++ /dev/null
-@@ -1,152 +0,0 @@
+@@ -1,1523 +0,0 @@
 -// SPDX-License-Identifier: GPL-2.0-only
 -/*
-- * Marvell 88PM80x ONKEY driver
+- * drivers/media/radio/radio-si476x.c -- V4L2 driver for SI476X chips
 - *
-- * Copyright (C) 2012 Marvell International Ltd.
-- * Haojian Zhuang <haojian.zhuang@marvell.com>
-- * Qiao Zhou <zhouqiao@marvell.com>
+- * Copyright (C) 2012 Innovative Converged Devices(ICD)
+- * Copyright (C) 2013 Andrey Smirnov
+- *
+- * Author: Andrey Smirnov <andrew.smirnov@gmail.com>
 - */
 -
--#include <linux/kernel.h>
 -#include <linux/module.h>
--#include <linux/input.h>
--#include <linux/mfd/88pm80x.h>
--#include <linux/regmap.h>
+-#include <linux/delay.h>
+-#include <linux/interrupt.h>
 -#include <linux/slab.h>
+-#include <linux/atomic.h>
+-#include <linux/videodev2.h>
+-#include <linux/mutex.h>
+-#include <linux/debugfs.h>
+-#include <media/v4l2-common.h>
+-#include <media/v4l2-ioctl.h>
+-#include <media/v4l2-ctrls.h>
+-#include <media/v4l2-event.h>
+-#include <media/v4l2-device.h>
 -
--#define PM800_LONG_ONKEY_EN		(1 << 0)
--#define PM800_LONG_KEY_DELAY		(8)	/* 1 .. 16 seconds */
--#define PM800_LONKEY_PRESS_TIME		((PM800_LONG_KEY_DELAY-1) << 4)
--#define PM800_LONKEY_PRESS_TIME_MASK	(0xF0)
--#define PM800_SW_PDOWN			(1 << 5)
+-#include <media/drv-intf/si476x.h>
+-#include <linux/mfd/si476x-core.h>
 -
--struct pm80x_onkey_info {
--	struct input_dev *idev;
--	struct pm80x_chip *pm80x;
--	struct regmap *map;
--	int irq;
+-#define FM_FREQ_RANGE_LOW   64000000
+-#define FM_FREQ_RANGE_HIGH 108000000
+-
+-#define AM_FREQ_RANGE_LOW    520000
+-#define AM_FREQ_RANGE_HIGH 30000000
+-
+-#define PWRLINEFLTR (1 << 8)
+-
+-#define FREQ_MUL (10000000 / 625)
+-
+-#define SI476X_PHDIV_STATUS_LINK_LOCKED(status) (0x80 & (status))
+-
+-#define DRIVER_NAME "si476x-radio"
+-#define DRIVER_CARD "SI476x AM/FM Receiver"
+-
+-enum si476x_freq_bands {
+-	SI476X_BAND_FM,
+-	SI476X_BAND_AM,
 -};
 -
--/* 88PM80x gives us an interrupt when ONKEY is held */
--static irqreturn_t pm80x_onkey_handler(int irq, void *data)
+-static const struct v4l2_frequency_band si476x_bands[] = {
+-	[SI476X_BAND_FM] = {
+-		.type		= V4L2_TUNER_RADIO,
+-		.index		= SI476X_BAND_FM,
+-		.capability	= V4L2_TUNER_CAP_LOW
+-		| V4L2_TUNER_CAP_STEREO
+-		| V4L2_TUNER_CAP_RDS
+-		| V4L2_TUNER_CAP_RDS_BLOCK_IO
+-		| V4L2_TUNER_CAP_FREQ_BANDS,
+-		.rangelow	=  64 * FREQ_MUL,
+-		.rangehigh	= 108 * FREQ_MUL,
+-		.modulation	= V4L2_BAND_MODULATION_FM,
+-	},
+-	[SI476X_BAND_AM] = {
+-		.type		= V4L2_TUNER_RADIO,
+-		.index		= SI476X_BAND_AM,
+-		.capability	= V4L2_TUNER_CAP_LOW
+-		| V4L2_TUNER_CAP_FREQ_BANDS,
+-		.rangelow	= 0.52 * FREQ_MUL,
+-		.rangehigh	= 30 * FREQ_MUL,
+-		.modulation	= V4L2_BAND_MODULATION_AM,
+-	},
+-};
+-
+-static inline bool si476x_radio_freq_is_inside_of_the_band(u32 freq, int band)
 -{
--	struct pm80x_onkey_info *info = data;
--	int ret = 0;
--	unsigned int val;
--
--	ret = regmap_read(info->map, PM800_STATUS_1, &val);
--	if (ret < 0) {
--		dev_err(info->idev->dev.parent, "failed to read status: %d\n", ret);
--		return IRQ_NONE;
--	}
--	val &= PM800_ONKEY_STS1;
--
--	input_report_key(info->idev, KEY_POWER, val);
--	input_sync(info->idev);
--
--	return IRQ_HANDLED;
+-	return freq >= si476x_bands[band].rangelow &&
+-		freq <= si476x_bands[band].rangehigh;
 -}
 -
--static SIMPLE_DEV_PM_OPS(pm80x_onkey_pm_ops, pm80x_dev_suspend,
--			 pm80x_dev_resume);
--
--static int pm80x_onkey_probe(struct platform_device *pdev)
+-static inline bool si476x_radio_range_is_inside_of_the_band(u32 low, u32 high,
+-							    int band)
 -{
+-	return low  >= si476x_bands[band].rangelow &&
+-		high <= si476x_bands[band].rangehigh;
+-}
 -
--	struct pm80x_chip *chip = dev_get_drvdata(pdev->dev.parent);
--	struct pm80x_onkey_info *info;
--	int err;
+-static int si476x_radio_s_ctrl(struct v4l2_ctrl *ctrl);
+-static int si476x_radio_g_volatile_ctrl(struct v4l2_ctrl *ctrl);
 -
--	info = kzalloc_obj(*info);
--	if (!info)
--		return -ENOMEM;
+-enum phase_diversity_modes_idx {
+-	SI476X_IDX_PHDIV_DISABLED,
+-	SI476X_IDX_PHDIV_PRIMARY_COMBINING,
+-	SI476X_IDX_PHDIV_PRIMARY_ANTENNA,
+-	SI476X_IDX_PHDIV_SECONDARY_ANTENNA,
+-	SI476X_IDX_PHDIV_SECONDARY_COMBINING,
+-};
 -
--	info->pm80x = chip;
+-static const char * const phase_diversity_modes[] = {
+-	[SI476X_IDX_PHDIV_DISABLED]		= "Disabled",
+-	[SI476X_IDX_PHDIV_PRIMARY_COMBINING]	= "Primary with Secondary",
+-	[SI476X_IDX_PHDIV_PRIMARY_ANTENNA]	= "Primary Antenna",
+-	[SI476X_IDX_PHDIV_SECONDARY_ANTENNA]	= "Secondary Antenna",
+-	[SI476X_IDX_PHDIV_SECONDARY_COMBINING]	= "Secondary with Primary",
+-};
 -
--	info->irq = platform_get_irq(pdev, 0);
--	if (info->irq < 0) {
--		err = -EINVAL;
--		goto out;
+-static inline enum phase_diversity_modes_idx
+-si476x_phase_diversity_mode_to_idx(enum si476x_phase_diversity_mode mode)
+-{
+-	switch (mode) {
+-	default:
+-		fallthrough;
+-	case SI476X_PHDIV_DISABLED:
+-		return SI476X_IDX_PHDIV_DISABLED;
+-	case SI476X_PHDIV_PRIMARY_COMBINING:
+-		return SI476X_IDX_PHDIV_PRIMARY_COMBINING;
+-	case SI476X_PHDIV_PRIMARY_ANTENNA:
+-		return SI476X_IDX_PHDIV_PRIMARY_ANTENNA;
+-	case SI476X_PHDIV_SECONDARY_ANTENNA:
+-		return SI476X_IDX_PHDIV_SECONDARY_ANTENNA;
+-	case SI476X_PHDIV_SECONDARY_COMBINING:
+-		return SI476X_IDX_PHDIV_SECONDARY_COMBINING;
 -	}
+-}
 -
--	info->map = info->pm80x->regmap;
--	if (!info->map) {
--		dev_err(&pdev->dev, "no regmap!\n");
--		err = -EINVAL;
--		goto out;
--	}
+-static inline enum si476x_phase_diversity_mode
+-si476x_phase_diversity_idx_to_mode(enum phase_diversity_modes_idx idx)
+-{
+-	static const int idx_to_value[] = {
+-		[SI476X_IDX_PHDIV_DISABLED]		= SI476X_PHDIV_DISABLED,
+-		[SI476X_IDX_PHDIV_PRIMARY_COMBINING]	= SI476X_PHDIV_PRIMARY_COMBINING,
+-		[SI476X_IDX_PHDIV_PRIMARY_ANTENNA]	= SI476X_PHDIV_PRIMARY_ANTENNA,
+-		[SI476X_IDX_PHDIV_SECONDARY_ANTENNA]	= SI476X_PHDIV_SECONDARY_ANTENNA,
+-		[SI476X_IDX_PHDIV_SECONDARY_COMBINING]	= SI476X_PHDIV_SECONDARY_COMBINING,
+-	};
 -
--	info->idev = input_allocate_device();
--	if (!info->idev) {
--		dev_err(&pdev->dev, "Failed to allocate input dev\n");
--		err = -ENOMEM;
--		goto out;
--	}
+-	return idx_to_value[idx];
+-}
 -
--	info->idev->name = "88pm80x_on";
--	info->idev->phys = "88pm80x_on/input0";
--	info->idev->id.bustype = BUS_I2C;
--	info->idev->dev.parent = &pdev->dev;
--	info->idev->evbit[0] = BIT_MASK(EV_KEY);
--	__set_bit(KEY_POWER, info->idev->keybit);
+-static const struct v4l2_ctrl_ops si476x_ctrl_ops = {
+-	.g_volatile_ctrl	= si476x_radio_g_volatile_ctrl,
+-	.s_ctrl			= si476x_radio_s_ctrl,
+-};
 -
--	err = pm80x_request_irq(info->pm80x, info->irq, pm80x_onkey_handler,
--					    IRQF_ONESHOT, "onkey", info);
--	if (err < 0) {
--		dev_err(&pdev->dev, "Failed to request IRQ: #%d: %d\n",
--			info->irq, err);
--		goto out_reg;
--	}
 -
--	err = input_register_device(info->idev);
--	if (err) {
--		dev_err(&pdev->dev, "Can't register input device: %d\n", err);
--		goto out_irq;
--	}
+-enum si476x_ctrl_idx {
+-	SI476X_IDX_RSSI_THRESHOLD,
+-	SI476X_IDX_SNR_THRESHOLD,
+-	SI476X_IDX_MAX_TUNE_ERROR,
+-	SI476X_IDX_HARMONICS_COUNT,
+-	SI476X_IDX_DIVERSITY_MODE,
+-	SI476X_IDX_INTERCHIP_LINK,
+-};
+-static struct v4l2_ctrl_config si476x_ctrls[] = {
 -
--	platform_set_drvdata(pdev, info);
+-	/*
+-	 * SI476X during its station seeking(or tuning) process uses several
+-	 * parameters to determine if "the station" is valid:
+-	 *
+-	 *	- Signal's SNR(in dBuV) must be lower than
+-	 *	#V4L2_CID_SI476X_SNR_THRESHOLD
+-	 *	- Signal's RSSI(in dBuV) must be greater than
+-	 *	#V4L2_CID_SI476X_RSSI_THRESHOLD
+-	 *	- Signal's frequency deviation(in units of 2ppm) must not be
+-	 *	more than #V4L2_CID_SI476X_MAX_TUNE_ERROR
+-	 */
+-	[SI476X_IDX_RSSI_THRESHOLD] = {
+-		.ops	= &si476x_ctrl_ops,
+-		.id	= V4L2_CID_SI476X_RSSI_THRESHOLD,
+-		.name	= "Valid RSSI Threshold",
+-		.type	= V4L2_CTRL_TYPE_INTEGER,
+-		.min	= -128,
+-		.max	= 127,
+-		.step	= 1,
+-	},
+-	[SI476X_IDX_SNR_THRESHOLD] = {
+-		.ops	= &si476x_ctrl_ops,
+-		.id	= V4L2_CID_SI476X_SNR_THRESHOLD,
+-		.type	= V4L2_CTRL_TYPE_INTEGER,
+-		.name	= "Valid SNR Threshold",
+-		.min	= -128,
+-		.max	= 127,
+-		.step	= 1,
+-	},
+-	[SI476X_IDX_MAX_TUNE_ERROR] = {
+-		.ops	= &si476x_ctrl_ops,
+-		.id	= V4L2_CID_SI476X_MAX_TUNE_ERROR,
+-		.type	= V4L2_CTRL_TYPE_INTEGER,
+-		.name	= "Max Tune Errors",
+-		.min	= 0,
+-		.max	= 126 * 2,
+-		.step	= 2,
+-	},
 -
--	/* Enable long onkey detection */
--	regmap_update_bits(info->map, PM800_RTC_MISC4, PM800_LONG_ONKEY_EN,
--			   PM800_LONG_ONKEY_EN);
--	/* Set 8-second interval */
--	regmap_update_bits(info->map, PM800_RTC_MISC3,
--			   PM800_LONKEY_PRESS_TIME_MASK,
--			   PM800_LONKEY_PRESS_TIME);
+-	/*
+-	 * #V4L2_CID_SI476X_HARMONICS_COUNT -- number of harmonics
+-	 * built-in power-line noise supression filter is to reject
+-	 * during AM-mode operation.
+-	 */
+-	[SI476X_IDX_HARMONICS_COUNT] = {
+-		.ops	= &si476x_ctrl_ops,
+-		.id	= V4L2_CID_SI476X_HARMONICS_COUNT,
+-		.type	= V4L2_CTRL_TYPE_INTEGER,
 -
--	device_init_wakeup(&pdev->dev, 1);
+-		.name	= "Count of Harmonics to Reject",
+-		.min	= 0,
+-		.max	= 20,
+-		.step	= 1,
+-	},
+-
+-	/*
+-	 * #V4L2_CID_SI476X_DIVERSITY_MODE -- configuration which
+-	 * two tuners working in diversity mode are to work in.
+-	 *
+-	 *  - #SI476X_IDX_PHDIV_DISABLED diversity mode disabled
+-	 *  - #SI476X_IDX_PHDIV_PRIMARY_COMBINING diversity mode is
+-	 *  on, primary tuner's antenna is the main one.
+-	 *  - #SI476X_IDX_PHDIV_PRIMARY_ANTENNA diversity mode is
+-	 *  off, primary tuner's antenna is the main one.
+-	 *  - #SI476X_IDX_PHDIV_SECONDARY_ANTENNA diversity mode is
+-	 *  off, secondary tuner's antenna is the main one.
+-	 *  - #SI476X_IDX_PHDIV_SECONDARY_COMBINING diversity mode is
+-	 *  on, secondary tuner's antenna is the main one.
+-	 */
+-	[SI476X_IDX_DIVERSITY_MODE] = {
+-		.ops	= &si476x_ctrl_ops,
+-		.id	= V4L2_CID_SI476X_DIVERSITY_MODE,
+-		.type	= V4L2_CTRL_TYPE_MENU,
+-		.name	= "Phase Diversity Mode",
+-		.qmenu	= phase_diversity_modes,
+-		.min	= 0,
+-		.max	= ARRAY_SIZE(phase_diversity_modes) - 1,
+-	},
+-
+-	/*
+-	 * #V4L2_CID_SI476X_INTERCHIP_LINK -- inter-chip link in
+-	 * diversity mode indicator. Allows user to determine if two
+-	 * chips working in diversity mode have established a link
+-	 * between each other and if the system as a whole uses
+-	 * signals from both antennas to receive FM radio.
+-	 */
+-	[SI476X_IDX_INTERCHIP_LINK] = {
+-		.ops	= &si476x_ctrl_ops,
+-		.id	= V4L2_CID_SI476X_INTERCHIP_LINK,
+-		.type	= V4L2_CTRL_TYPE_BOOLEAN,
+-		.flags  = V4L2_CTRL_FLAG_READ_ONLY | V4L2_CTRL_FLAG_VOLATILE,
+-		.name	= "Inter-Chip Link",
+-		.min	= 0,
+-		.max	= 1,
+-		.step	= 1,
+-	},
+-};
+-
+-struct si476x_radio;
+-
+-/**
+- * struct si476x_radio_ops - vtable of tuner functions
+- *
+- * This table holds pointers to functions implementing particular
+- * operations depending on the mode in which the tuner chip was
+- * configured to start. If the function is not supported
+- * corresponding element is set to #NULL.
+- *
+- * @tune_freq: Tune chip to a specific frequency
+- * @seek_start: Star station seeking
+- * @rsq_status: Get Received Signal Quality(RSQ) status
+- * @rds_blckcnt: Get received RDS blocks count
+- * @phase_diversity: Change phase diversity mode of the tuner
+- * @phase_div_status: Get phase diversity mode status
+- * @acf_status: Get the status of Automatically Controlled
+- * Features(ACF)
+- * @agc_status: Get Automatic Gain Control(AGC) status
+- */
+-struct si476x_radio_ops {
+-	int (*tune_freq)(struct si476x_core *, struct si476x_tune_freq_args *);
+-	int (*seek_start)(struct si476x_core *, bool, bool);
+-	int (*rsq_status)(struct si476x_core *, struct si476x_rsq_status_args *,
+-			  struct si476x_rsq_status_report *);
+-	int (*rds_blckcnt)(struct si476x_core *, bool,
+-			   struct si476x_rds_blockcount_report *);
+-
+-	int (*phase_diversity)(struct si476x_core *,
+-			       enum si476x_phase_diversity_mode);
+-	int (*phase_div_status)(struct si476x_core *);
+-	int (*acf_status)(struct si476x_core *,
+-			  struct si476x_acf_status_report *);
+-	int (*agc_status)(struct si476x_core *,
+-			  struct si476x_agc_status_report *);
+-};
+-
+-/**
+- * struct si476x_radio - radio device
+- *
+- * @v4l2dev: Pointer to V4L2 device created by V4L2 subsystem
+- * @videodev: Pointer to video device created by V4L2 subsystem
+- * @ctrl_handler: V4L2 controls handler
+- * @core: Pointer to underlying core device
+- * @ops: Vtable of functions. See struct si476x_radio_ops for details
+- * @debugfs: pointer to &strucd dentry for debugfs
+- * @audmode: audio mode, as defined for the rxsubchans field
+- *	     at videodev2.h
+- *
+- * core structure is the radio device is being used
+- */
+-struct si476x_radio {
+-	struct v4l2_device v4l2dev;
+-	struct video_device videodev;
+-	struct v4l2_ctrl_handler ctrl_handler;
+-
+-	struct si476x_core  *core;
+-	/* This field should not be accesses unless core lock is held */
+-	const struct si476x_radio_ops *ops;
+-
+-	struct dentry	*debugfs;
+-	u32 audmode;
+-};
+-
+-static inline struct si476x_radio *
+-v4l2_ctrl_handler_to_radio(struct v4l2_ctrl_handler *d)
+-{
+-	return container_of(d, struct si476x_radio, ctrl_handler);
+-}
+-
+-/*
+- * si476x_vidioc_querycap - query device capabilities
+- */
+-static int si476x_radio_querycap(struct file *file, void *priv,
+-				 struct v4l2_capability *capability)
+-{
+-	struct si476x_radio *radio = video_drvdata(file);
+-
+-	strscpy(capability->driver, radio->v4l2dev.name,
+-		sizeof(capability->driver));
+-	strscpy(capability->card, DRIVER_CARD, sizeof(capability->card));
 -	return 0;
+-}
 -
--out_irq:
--	pm80x_free_irq(info->pm80x, info->irq, info);
--out_reg:
--	input_free_device(info->idev);
--out:
--	kfree(info);
+-static int si476x_radio_enum_freq_bands(struct file *file, void *priv,
+-					struct v4l2_frequency_band *band)
+-{
+-	int err;
+-	struct si476x_radio *radio = video_drvdata(file);
+-
+-	if (band->tuner != 0)
+-		return -EINVAL;
+-
+-	switch (radio->core->chip_id) {
+-		/* AM/FM tuners -- all bands are supported */
+-	case SI476X_CHIP_SI4761:
+-	case SI476X_CHIP_SI4764:
+-		if (band->index < ARRAY_SIZE(si476x_bands)) {
+-			*band = si476x_bands[band->index];
+-			err = 0;
+-		} else {
+-			err = -EINVAL;
+-		}
+-		break;
+-		/* FM companion tuner chips -- only FM bands are
+-		 * supported */
+-	case SI476X_CHIP_SI4768:
+-		if (band->index == SI476X_BAND_FM) {
+-			*band = si476x_bands[band->index];
+-			err = 0;
+-		} else {
+-			err = -EINVAL;
+-		}
+-		break;
+-	default:
+-		err = -EINVAL;
+-	}
+-
 -	return err;
 -}
 -
--static void pm80x_onkey_remove(struct platform_device *pdev)
+-static int si476x_radio_g_tuner(struct file *file, void *priv,
+-				struct v4l2_tuner *tuner)
 -{
--	struct pm80x_onkey_info *info = platform_get_drvdata(pdev);
+-	int err;
+-	struct si476x_rsq_status_report report;
+-	struct si476x_radio *radio = video_drvdata(file);
 -
--	pm80x_free_irq(info->pm80x, info->irq, info);
--	input_unregister_device(info->idev);
--	kfree(info);
+-	struct si476x_rsq_status_args args = {
+-		.primary	= false,
+-		.rsqack		= false,
+-		.attune		= false,
+-		.cancel		= false,
+-		.stcack		= false,
+-	};
+-
+-	if (tuner->index != 0)
+-		return -EINVAL;
+-
+-	tuner->type       = V4L2_TUNER_RADIO;
+-	tuner->capability = V4L2_TUNER_CAP_LOW /* Measure frequencies
+-						 * in multiples of
+-						 * 62.5 Hz */
+-		| V4L2_TUNER_CAP_STEREO
+-		| V4L2_TUNER_CAP_HWSEEK_BOUNDED
+-		| V4L2_TUNER_CAP_HWSEEK_WRAP
+-		| V4L2_TUNER_CAP_HWSEEK_PROG_LIM;
+-
+-	si476x_core_lock(radio->core);
+-
+-	if (si476x_core_is_a_secondary_tuner(radio->core)) {
+-		strscpy(tuner->name, "FM (secondary)", sizeof(tuner->name));
+-		tuner->rxsubchans = 0;
+-		tuner->rangelow = si476x_bands[SI476X_BAND_FM].rangelow;
+-	} else if (si476x_core_has_am(radio->core)) {
+-		if (si476x_core_is_a_primary_tuner(radio->core))
+-			strscpy(tuner->name, "AM/FM (primary)",
+-				sizeof(tuner->name));
+-		else
+-			strscpy(tuner->name, "AM/FM", sizeof(tuner->name));
+-
+-		tuner->rxsubchans = V4L2_TUNER_SUB_MONO | V4L2_TUNER_SUB_STEREO
+-			| V4L2_TUNER_SUB_RDS;
+-		tuner->capability |= V4L2_TUNER_CAP_RDS
+-			| V4L2_TUNER_CAP_RDS_BLOCK_IO
+-			| V4L2_TUNER_CAP_FREQ_BANDS;
+-
+-		tuner->rangelow = si476x_bands[SI476X_BAND_AM].rangelow;
+-	} else {
+-		strscpy(tuner->name, "FM", sizeof(tuner->name));
+-		tuner->rxsubchans = V4L2_TUNER_SUB_RDS;
+-		tuner->capability |= V4L2_TUNER_CAP_RDS
+-			| V4L2_TUNER_CAP_RDS_BLOCK_IO
+-			| V4L2_TUNER_CAP_FREQ_BANDS;
+-		tuner->rangelow = si476x_bands[SI476X_BAND_FM].rangelow;
+-	}
+-
+-	tuner->audmode = radio->audmode;
+-
+-	tuner->afc = 1;
+-	tuner->rangehigh = si476x_bands[SI476X_BAND_FM].rangehigh;
+-
+-	err = radio->ops->rsq_status(radio->core,
+-				     &args, &report);
+-	if (err < 0) {
+-		tuner->signal = 0;
+-	} else {
+-		/*
+-		 * tuner->signal value range: 0x0000 .. 0xFFFF,
+-		 * report.rssi: -128 .. 127
+-		 */
+-		tuner->signal = (report.rssi + 128) * 257;
+-	}
+-	si476x_core_unlock(radio->core);
+-
+-	return err;
 -}
 -
--static struct platform_driver pm80x_onkey_driver = {
--	.driver = {
--		   .name = "88pm80x-onkey",
--		   .pm = &pm80x_onkey_pm_ops,
--		   },
--	.probe = pm80x_onkey_probe,
--	.remove = pm80x_onkey_remove,
--};
--
--module_platform_driver(pm80x_onkey_driver);
--
--MODULE_LICENSE("GPL");
--MODULE_DESCRIPTION("Marvell 88PM80x ONKEY driver");
--MODULE_AUTHOR("Qiao Zhou <zhouqiao@marvell.com>");
--MODULE_ALIAS("platform:88pm80x-onkey");
-diff --git a/drivers/input/misc/Kconfig b/drivers/input/misc/Kconfig
-index 169768e3d5bb..013ae22311ee 100644
---- a/drivers/input/misc/Kconfig
-+++ b/drivers/input/misc/Kconfig
-@@ -23,16 +23,6 @@ config INPUT_88PM860X_ONKEY
- 	  To compile this driver as a module, choose M here: the module
- 	  will be called 88pm860x_onkey.
- 
--config INPUT_88PM80X_ONKEY
--	tristate "88PM80x ONKEY support"
--	depends on MFD_88PM800
--	help
--	  Support the ONKEY of Marvell 88PM80x PMICs as an input device
--	  reporting power button status.
--
--	  To compile this driver as a module, choose M here: the module
--	  will be called 88pm80x_onkey.
--
- config INPUT_88PM886_ONKEY
- 	tristate "Marvell 88PM886 onkey support"
- 	depends on MFD_88PM886_PMIC
-diff --git a/drivers/input/misc/Makefile b/drivers/input/misc/Makefile
-index 1339619f0769..b120799b05eb 100644
---- a/drivers/input/misc/Makefile
-+++ b/drivers/input/misc/Makefile
-@@ -6,7 +6,6 @@
- # Each configuration option enables a list of files.
- 
- obj-$(CONFIG_INPUT_88PM860X_ONKEY)	+= 88pm860x_onkey.o
--obj-$(CONFIG_INPUT_88PM80X_ONKEY)	+= 88pm80x_onkey.o
- obj-$(CONFIG_INPUT_88PM886_ONKEY)	+= 88pm886-onkey.o
- obj-$(CONFIG_INPUT_AB8500_PONKEY)	+= ab8500-ponkey.o
- obj-$(CONFIG_INPUT_AD714X)		+= ad714x.o
-diff --git a/drivers/mfd/88pm800.c b/drivers/mfd/88pm800.c
-deleted file mode 100644
-index e9941da58b18..000000000000
---- a/drivers/mfd/88pm800.c
-+++ /dev/null
-@@ -1,619 +0,0 @@
--/*
-- * Base driver for Marvell 88PM800
-- *
-- * Copyright (C) 2012 Marvell International Ltd.
-- * Haojian Zhuang <haojian.zhuang@marvell.com>
-- * Joseph(Yossi) Hanin <yhanin@marvell.com>
-- * Qiao Zhou <zhouqiao@marvell.com>
-- *
-- * This file is subject to the terms and conditions of the GNU General
-- * Public License. See the file "COPYING" in the main directory of this
-- * archive for more details.
-- *
-- * This program is distributed in the hope that it will be useful,
-- * but WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-- * GNU General Public License for more details.
-- *
-- * You should have received a copy of the GNU General Public License
-- * along with this program; if not, write to the Free Software
-- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-- */
--
--#include <linux/kernel.h>
--#include <linux/module.h>
--#include <linux/err.h>
--#include <linux/i2c.h>
--#include <linux/mfd/core.h>
--#include <linux/mfd/88pm80x.h>
--#include <linux/slab.h>
--
--/* Interrupt Registers */
--#define PM800_INT_STATUS1		(0x05)
--#define PM800_ONKEY_INT_STS1		(1 << 0)
--#define PM800_EXTON_INT_STS1		(1 << 1)
--#define PM800_CHG_INT_STS1			(1 << 2)
--#define PM800_BAT_INT_STS1			(1 << 3)
--#define PM800_RTC_INT_STS1			(1 << 4)
--#define PM800_CLASSD_OC_INT_STS1	(1 << 5)
--
--#define PM800_INT_STATUS2		(0x06)
--#define PM800_VBAT_INT_STS2		(1 << 0)
--#define PM800_VSYS_INT_STS2		(1 << 1)
--#define PM800_VCHG_INT_STS2		(1 << 2)
--#define PM800_TINT_INT_STS2		(1 << 3)
--#define PM800_GPADC0_INT_STS2	(1 << 4)
--#define PM800_TBAT_INT_STS2		(1 << 5)
--#define PM800_GPADC2_INT_STS2	(1 << 6)
--#define PM800_GPADC3_INT_STS2	(1 << 7)
--
--#define PM800_INT_STATUS3		(0x07)
--
--#define PM800_INT_STATUS4		(0x08)
--#define PM800_GPIO0_INT_STS4		(1 << 0)
--#define PM800_GPIO1_INT_STS4		(1 << 1)
--#define PM800_GPIO2_INT_STS4		(1 << 2)
--#define PM800_GPIO3_INT_STS4		(1 << 3)
--#define PM800_GPIO4_INT_STS4		(1 << 4)
--
--#define PM800_INT_ENA_1		(0x09)
--#define PM800_ONKEY_INT_ENA1		(1 << 0)
--#define PM800_EXTON_INT_ENA1		(1 << 1)
--#define PM800_CHG_INT_ENA1			(1 << 2)
--#define PM800_BAT_INT_ENA1			(1 << 3)
--#define PM800_RTC_INT_ENA1			(1 << 4)
--#define PM800_CLASSD_OC_INT_ENA1	(1 << 5)
--
--#define PM800_INT_ENA_2		(0x0A)
--#define PM800_VBAT_INT_ENA2		(1 << 0)
--#define PM800_VSYS_INT_ENA2		(1 << 1)
--#define PM800_VCHG_INT_ENA2		(1 << 2)
--#define PM800_TINT_INT_ENA2		(1 << 3)
--
--#define PM800_INT_ENA_3		(0x0B)
--#define PM800_GPADC0_INT_ENA3		(1 << 0)
--#define PM800_GPADC1_INT_ENA3		(1 << 1)
--#define PM800_GPADC2_INT_ENA3		(1 << 2)
--#define PM800_GPADC3_INT_ENA3		(1 << 3)
--#define PM800_GPADC4_INT_ENA3		(1 << 4)
--
--#define PM800_INT_ENA_4		(0x0C)
--#define PM800_GPIO0_INT_ENA4		(1 << 0)
--#define PM800_GPIO1_INT_ENA4		(1 << 1)
--#define PM800_GPIO2_INT_ENA4		(1 << 2)
--#define PM800_GPIO3_INT_ENA4		(1 << 3)
--#define PM800_GPIO4_INT_ENA4		(1 << 4)
--
--/* number of INT_ENA & INT_STATUS regs */
--#define PM800_INT_REG_NUM			(4)
--
--/* Interrupt Number in 88PM800 */
--enum {
--	PM800_IRQ_ONKEY,	/*EN1b0 *//*0 */
--	PM800_IRQ_EXTON,	/*EN1b1 */
--	PM800_IRQ_CHG,		/*EN1b2 */
--	PM800_IRQ_BAT,		/*EN1b3 */
--	PM800_IRQ_RTC,		/*EN1b4 */
--	PM800_IRQ_CLASSD,	/*EN1b5 *//*5 */
--	PM800_IRQ_VBAT,		/*EN2b0 */
--	PM800_IRQ_VSYS,		/*EN2b1 */
--	PM800_IRQ_VCHG,		/*EN2b2 */
--	PM800_IRQ_TINT,		/*EN2b3 */
--	PM800_IRQ_GPADC0,	/*EN3b0 *//*10 */
--	PM800_IRQ_GPADC1,	/*EN3b1 */
--	PM800_IRQ_GPADC2,	/*EN3b2 */
--	PM800_IRQ_GPADC3,	/*EN3b3 */
--	PM800_IRQ_GPADC4,	/*EN3b4 */
--	PM800_IRQ_GPIO0,	/*EN4b0 *//*15 */
--	PM800_IRQ_GPIO1,	/*EN4b1 */
--	PM800_IRQ_GPIO2,	/*EN4b2 */
--	PM800_IRQ_GPIO3,	/*EN4b3 */
--	PM800_IRQ_GPIO4,	/*EN4b4 *//*19 */
--	PM800_MAX_IRQ,
--};
--
--/* PM800: generation identification number */
--#define PM800_CHIP_GEN_ID_NUM	0x3
--
--static const struct i2c_device_id pm80x_id_table[] = {
--	{ "88PM800" },
--	{} /* NULL terminated */
--};
--MODULE_DEVICE_TABLE(i2c, pm80x_id_table);
--
--static const struct resource rtc_resources[] = {
--	DEFINE_RES_IRQ_NAMED(PM800_IRQ_RTC, "88pm80x-rtc"),
--};
--
--static struct mfd_cell rtc_devs[] = {
--	{
--	 .name = "88pm80x-rtc",
--	 .num_resources = ARRAY_SIZE(rtc_resources),
--	 .resources = &rtc_resources[0],
--	 .id = -1,
--	 },
--};
--
--static struct resource onkey_resources[] = {
--	DEFINE_RES_IRQ_NAMED(PM800_IRQ_ONKEY, "88pm80x-onkey"),
--};
--
--static const struct mfd_cell onkey_devs[] = {
--	{
--	 .name = "88pm80x-onkey",
--	 .num_resources = 1,
--	 .resources = &onkey_resources[0],
--	 .id = -1,
--	 },
--};
--
--static const struct mfd_cell regulator_devs[] = {
--	{
--	 .name = "88pm80x-regulator",
--	 .id = -1,
--	},
--};
--
--static const struct regmap_irq pm800_irqs[] = {
--	/* INT0 */
--	[PM800_IRQ_ONKEY] = {
--		.mask = PM800_ONKEY_INT_ENA1,
--	},
--	[PM800_IRQ_EXTON] = {
--		.mask = PM800_EXTON_INT_ENA1,
--	},
--	[PM800_IRQ_CHG] = {
--		.mask = PM800_CHG_INT_ENA1,
--	},
--	[PM800_IRQ_BAT] = {
--		.mask = PM800_BAT_INT_ENA1,
--	},
--	[PM800_IRQ_RTC] = {
--		.mask = PM800_RTC_INT_ENA1,
--	},
--	[PM800_IRQ_CLASSD] = {
--		.mask = PM800_CLASSD_OC_INT_ENA1,
--	},
--	/* INT1 */
--	[PM800_IRQ_VBAT] = {
--		.reg_offset = 1,
--		.mask = PM800_VBAT_INT_ENA2,
--	},
--	[PM800_IRQ_VSYS] = {
--		.reg_offset = 1,
--		.mask = PM800_VSYS_INT_ENA2,
--	},
--	[PM800_IRQ_VCHG] = {
--		.reg_offset = 1,
--		.mask = PM800_VCHG_INT_ENA2,
--	},
--	[PM800_IRQ_TINT] = {
--		.reg_offset = 1,
--		.mask = PM800_TINT_INT_ENA2,
--	},
--	/* INT2 */
--	[PM800_IRQ_GPADC0] = {
--		.reg_offset = 2,
--		.mask = PM800_GPADC0_INT_ENA3,
--	},
--	[PM800_IRQ_GPADC1] = {
--		.reg_offset = 2,
--		.mask = PM800_GPADC1_INT_ENA3,
--	},
--	[PM800_IRQ_GPADC2] = {
--		.reg_offset = 2,
--		.mask = PM800_GPADC2_INT_ENA3,
--	},
--	[PM800_IRQ_GPADC3] = {
--		.reg_offset = 2,
--		.mask = PM800_GPADC3_INT_ENA3,
--	},
--	[PM800_IRQ_GPADC4] = {
--		.reg_offset = 2,
--		.mask = PM800_GPADC4_INT_ENA3,
--	},
--	/* INT3 */
--	[PM800_IRQ_GPIO0] = {
--		.reg_offset = 3,
--		.mask = PM800_GPIO0_INT_ENA4,
--	},
--	[PM800_IRQ_GPIO1] = {
--		.reg_offset = 3,
--		.mask = PM800_GPIO1_INT_ENA4,
--	},
--	[PM800_IRQ_GPIO2] = {
--		.reg_offset = 3,
--		.mask = PM800_GPIO2_INT_ENA4,
--	},
--	[PM800_IRQ_GPIO3] = {
--		.reg_offset = 3,
--		.mask = PM800_GPIO3_INT_ENA4,
--	},
--	[PM800_IRQ_GPIO4] = {
--		.reg_offset = 3,
--		.mask = PM800_GPIO4_INT_ENA4,
--	},
--};
--
--static int device_gpadc_init(struct pm80x_chip *chip,
--				       struct pm80x_platform_data *pdata)
+-static int si476x_radio_s_tuner(struct file *file, void *priv,
+-				const struct v4l2_tuner *tuner)
 -{
--	struct pm80x_subchip *subchip = chip->subchip;
--	struct regmap *map = subchip->regmap_gpadc;
--	int data = 0, mask = 0, ret = 0;
+-	struct si476x_radio *radio = video_drvdata(file);
 -
--	if (!map) {
--		dev_warn(chip->dev,
--			 "Warning: gpadc regmap is not available!\n");
+-	if (tuner->index != 0)
 -		return -EINVAL;
--	}
--	/*
--	 * initialize GPADC without activating it turn on GPADC
--	 * measurments
--	 */
--	ret = regmap_update_bits(map,
--				 PM800_GPADC_MISC_CONFIG2,
--				 PM800_GPADC_MISC_GPFSM_EN,
--				 PM800_GPADC_MISC_GPFSM_EN);
--	if (ret < 0)
--		goto out;
--	/*
--	 * This function configures the ADC as requires for
--	 * CP implementation.CP does not "own" the ADC configuration
--	 * registers and relies on AP.
--	 * Reason: enable automatic ADC measurements needed
--	 * for CP to get VBAT and RF temperature readings.
--	 */
--	ret = regmap_update_bits(map, PM800_GPADC_MEAS_EN1,
--				 PM800_MEAS_EN1_VBAT, PM800_MEAS_EN1_VBAT);
--	if (ret < 0)
--		goto out;
--	ret = regmap_update_bits(map, PM800_GPADC_MEAS_EN2,
--				 (PM800_MEAS_EN2_RFTMP | PM800_MEAS_GP0_EN),
--				 (PM800_MEAS_EN2_RFTMP | PM800_MEAS_GP0_EN));
--	if (ret < 0)
--		goto out;
 -
--	/*
--	 * the defult of PM800 is GPADC operates at 100Ks/s rate
--	 * and Number of GPADC slots with active current bias prior
--	 * to GPADC sampling = 1 slot for all GPADCs set for
--	 * Temprature mesurmants
--	 */
--	mask = (PM800_GPADC_GP_BIAS_EN0 | PM800_GPADC_GP_BIAS_EN1 |
--		PM800_GPADC_GP_BIAS_EN2 | PM800_GPADC_GP_BIAS_EN3);
--
--	if (pdata && (pdata->batt_det == 0))
--		data = (PM800_GPADC_GP_BIAS_EN0 | PM800_GPADC_GP_BIAS_EN1 |
--			PM800_GPADC_GP_BIAS_EN2 | PM800_GPADC_GP_BIAS_EN3);
+-	if (tuner->audmode == V4L2_TUNER_MODE_MONO ||
+-	    tuner->audmode == V4L2_TUNER_MODE_STEREO)
+-		radio->audmode = tuner->audmode;
 -	else
--		data = (PM800_GPADC_GP_BIAS_EN0 | PM800_GPADC_GP_BIAS_EN2 |
--			PM800_GPADC_GP_BIAS_EN3);
--
--	ret = regmap_update_bits(map, PM800_GP_BIAS_ENA1, mask, data);
--	if (ret < 0)
--		goto out;
--
--	dev_info(chip->dev, "pm800 device_gpadc_init: Done\n");
--	return 0;
--
--out:
--	dev_info(chip->dev, "pm800 device_gpadc_init: Failed!\n");
--	return ret;
--}
--
--static int device_onkey_init(struct pm80x_chip *chip,
--				struct pm80x_platform_data *pdata)
--{
--	int ret;
--
--	ret = mfd_add_devices(chip->dev, 0, &onkey_devs[0],
--			      ARRAY_SIZE(onkey_devs), &onkey_resources[0], 0,
--			      NULL);
--	if (ret) {
--		dev_err(chip->dev, "Failed to add onkey subdev\n");
--		return ret;
--	}
+-		radio->audmode = V4L2_TUNER_MODE_STEREO;
 -
 -	return 0;
 -}
 -
--static int device_rtc_init(struct pm80x_chip *chip,
--				struct pm80x_platform_data *pdata)
+-static int si476x_radio_init_vtable(struct si476x_radio *radio,
+-				    enum si476x_func func)
 -{
--	int ret;
+-	static const struct si476x_radio_ops fm_ops = {
+-		.tune_freq		= si476x_core_cmd_fm_tune_freq,
+-		.seek_start		= si476x_core_cmd_fm_seek_start,
+-		.rsq_status		= si476x_core_cmd_fm_rsq_status,
+-		.rds_blckcnt		= si476x_core_cmd_fm_rds_blockcount,
+-		.phase_diversity	= si476x_core_cmd_fm_phase_diversity,
+-		.phase_div_status	= si476x_core_cmd_fm_phase_div_status,
+-		.acf_status		= si476x_core_cmd_fm_acf_status,
+-		.agc_status		= si476x_core_cmd_agc_status,
+-	};
 -
--	if (pdata) {
--		rtc_devs[0].platform_data = pdata->rtc;
--		rtc_devs[0].pdata_size =
--				pdata->rtc ? sizeof(struct pm80x_rtc_pdata) : 0;
--	}
--	ret = mfd_add_devices(chip->dev, 0, &rtc_devs[0],
--			      ARRAY_SIZE(rtc_devs), NULL, 0, NULL);
--	if (ret) {
--		dev_err(chip->dev, "Failed to add rtc subdev\n");
--		return ret;
--	}
+-	static const struct si476x_radio_ops am_ops = {
+-		.tune_freq		= si476x_core_cmd_am_tune_freq,
+-		.seek_start		= si476x_core_cmd_am_seek_start,
+-		.rsq_status		= si476x_core_cmd_am_rsq_status,
+-		.rds_blckcnt		= NULL,
+-		.phase_diversity	= NULL,
+-		.phase_div_status	= NULL,
+-		.acf_status		= si476x_core_cmd_am_acf_status,
+-		.agc_status		= NULL,
+-	};
 -
--	return 0;
--}
+-	switch (func) {
+-	case SI476X_FUNC_FM_RECEIVER:
+-		radio->ops = &fm_ops;
+-		return 0;
 -
--static int device_regulator_init(struct pm80x_chip *chip,
--					   struct pm80x_platform_data *pdata)
--{
--	int ret;
--
--	ret = mfd_add_devices(chip->dev, 0, &regulator_devs[0],
--			      ARRAY_SIZE(regulator_devs), NULL, 0, NULL);
--	if (ret) {
--		dev_err(chip->dev, "Failed to add regulator subdev\n");
--		return ret;
--	}
--
--	return 0;
--}
--
--static int device_irq_init_800(struct pm80x_chip *chip)
--{
--	struct regmap *map = chip->regmap;
--	unsigned long flags = IRQF_ONESHOT;
--	int data, mask, ret = -EINVAL;
--
--	if (!map || !chip->irq) {
--		dev_err(chip->dev, "incorrect parameters\n");
+-	case SI476X_FUNC_AM_RECEIVER:
+-		radio->ops = &am_ops;
+-		return 0;
+-	default:
+-		WARN(1, "Unexpected tuner function value\n");
 -		return -EINVAL;
 -	}
+-}
+-
+-static int si476x_radio_pretune(struct si476x_radio *radio,
+-				enum si476x_func func)
+-{
+-	int retval;
+-
+-	struct si476x_tune_freq_args args = {
+-		.zifsr		= false,
+-		.hd		= false,
+-		.injside	= SI476X_INJSIDE_AUTO,
+-		.tunemode	= SI476X_TM_VALIDATED_NORMAL_TUNE,
+-		.smoothmetrics	= SI476X_SM_INITIALIZE_AUDIO,
+-		.antcap		= 0,
+-	};
+-
+-	switch (func) {
+-	case SI476X_FUNC_FM_RECEIVER:
+-		args.freq = v4l2_to_si476x(radio->core,
+-					   92 * FREQ_MUL);
+-		retval = radio->ops->tune_freq(radio->core, &args);
+-		break;
+-	case SI476X_FUNC_AM_RECEIVER:
+-		args.freq = v4l2_to_si476x(radio->core,
+-					   0.6 * FREQ_MUL);
+-		retval = radio->ops->tune_freq(radio->core, &args);
+-		break;
+-	default:
+-		WARN(1, "Unexpected tuner function value\n");
+-		retval = -EINVAL;
+-	}
+-
+-	return retval;
+-}
+-static int si476x_radio_do_post_powerup_init(struct si476x_radio *radio,
+-					     enum si476x_func func)
+-{
+-	int err;
+-
+-	/* regcache_mark_dirty(radio->core->regmap); */
+-	err = regcache_sync_region(radio->core->regmap,
+-				   SI476X_PROP_DIGITAL_IO_INPUT_SAMPLE_RATE,
+-				   SI476X_PROP_DIGITAL_IO_OUTPUT_FORMAT);
+-	if (err < 0)
+-		return err;
+-
+-	err = regcache_sync_region(radio->core->regmap,
+-				   SI476X_PROP_AUDIO_DEEMPHASIS,
+-				   SI476X_PROP_AUDIO_PWR_LINE_FILTER);
+-	if (err < 0)
+-		return err;
+-
+-	err = regcache_sync_region(radio->core->regmap,
+-				   SI476X_PROP_INT_CTL_ENABLE,
+-				   SI476X_PROP_INT_CTL_ENABLE);
+-	if (err < 0)
+-		return err;
 -
 -	/*
--	 * irq_mode defines the way of clearing interrupt. it's read-clear by
--	 * default.
+-	 * Is there any point in restoring SNR and the like
+-	 * when switching between AM/FM?
 -	 */
--	mask =
--	    PM800_WAKEUP2_INV_INT | PM800_WAKEUP2_INT_CLEAR |
--	    PM800_WAKEUP2_INT_MASK;
+-	err = regcache_sync_region(radio->core->regmap,
+-				   SI476X_PROP_VALID_MAX_TUNE_ERROR,
+-				   SI476X_PROP_VALID_MAX_TUNE_ERROR);
+-	if (err < 0)
+-		return err;
 -
--	data = PM800_WAKEUP2_INT_CLEAR;
--	ret = regmap_update_bits(map, PM800_WAKEUP2, mask, data);
+-	err = regcache_sync_region(radio->core->regmap,
+-				   SI476X_PROP_VALID_SNR_THRESHOLD,
+-				   SI476X_PROP_VALID_RSSI_THRESHOLD);
+-	if (err < 0)
+-		return err;
 -
--	if (ret < 0)
--		goto out;
+-	if (func == SI476X_FUNC_FM_RECEIVER) {
+-		if (si476x_core_has_diversity(radio->core)) {
+-			err = si476x_core_cmd_fm_phase_diversity(radio->core,
+-								 radio->core->diversity_mode);
+-			if (err < 0)
+-				return err;
+-		}
 -
--	ret =
--	    regmap_add_irq_chip(chip->regmap, chip->irq, flags, -1,
--				chip->regmap_irq_chip, &chip->irq_data);
--
--out:
--	return ret;
--}
--
--static void device_irq_exit_800(struct pm80x_chip *chip)
--{
--	regmap_del_irq_chip(chip->irq, chip->irq_data);
--}
--
--static const struct regmap_irq_chip pm800_irq_chip = {
--	.name = "88pm800",
--	.irqs = pm800_irqs,
--	.num_irqs = ARRAY_SIZE(pm800_irqs),
--
--	.num_regs = 4,
--	.status_base = PM800_INT_STATUS1,
--	.unmask_base = PM800_INT_ENA_1,
--	.ack_base = PM800_INT_STATUS1,
--};
--
--static int pm800_pages_init(struct pm80x_chip *chip)
--{
--	struct pm80x_subchip *subchip;
--	struct i2c_client *client = chip->client;
--
--	int ret = 0;
--
--	subchip = chip->subchip;
--	if (!subchip || !subchip->power_page_addr || !subchip->gpadc_page_addr)
--		return -ENODEV;
--
--	/* PM800 block power page */
--	subchip->power_page = i2c_new_dummy_device(client->adapter,
--					    subchip->power_page_addr);
--	if (IS_ERR(subchip->power_page)) {
--		ret = PTR_ERR(subchip->power_page);
--		goto out;
+-		err = regcache_sync_region(radio->core->regmap,
+-					   SI476X_PROP_FM_RDS_INTERRUPT_SOURCE,
+-					   SI476X_PROP_FM_RDS_CONFIG);
+-		if (err < 0)
+-			return err;
 -	}
 -
--	subchip->regmap_power = devm_regmap_init_i2c(subchip->power_page,
--						     &pm80x_regmap_config);
--	if (IS_ERR(subchip->regmap_power)) {
--		ret = PTR_ERR(subchip->regmap_power);
--		dev_err(chip->dev,
--			"Failed to allocate regmap_power: %d\n", ret);
--		goto out;
--	}
+-	return si476x_radio_init_vtable(radio, func);
 -
--	i2c_set_clientdata(subchip->power_page, chip);
--
--	/* PM800 block GPADC */
--	subchip->gpadc_page = i2c_new_dummy_device(client->adapter,
--					    subchip->gpadc_page_addr);
--	if (IS_ERR(subchip->gpadc_page)) {
--		ret = PTR_ERR(subchip->gpadc_page);
--		goto out;
--	}
--
--	subchip->regmap_gpadc = devm_regmap_init_i2c(subchip->gpadc_page,
--						     &pm80x_regmap_config);
--	if (IS_ERR(subchip->regmap_gpadc)) {
--		ret = PTR_ERR(subchip->regmap_gpadc);
--		dev_err(chip->dev,
--			"Failed to allocate regmap_gpadc: %d\n", ret);
--		goto out;
--	}
--	i2c_set_clientdata(subchip->gpadc_page, chip);
--
--out:
--	return ret;
 -}
 -
--static void pm800_pages_exit(struct pm80x_chip *chip)
+-static int si476x_radio_change_func(struct si476x_radio *radio,
+-				    enum si476x_func func)
 -{
--	struct pm80x_subchip *subchip;
+-	int err;
+-	bool soft;
+-	/*
+-	 * Since power/up down is a very time consuming operation,
+-	 * try to avoid doing it if the requested mode matches the one
+-	 * the tuner is in
+-	 */
+-	if (func == radio->core->power_up_parameters.func)
+-		return 0;
 -
--	subchip = chip->subchip;
+-	soft = true;
+-	err = si476x_core_stop(radio->core, soft);
+-	if (err < 0) {
+-		/*
+-		 * OK, if the chip does not want to play nice let's
+-		 * try to reset it in more brutal way
+-		 */
+-		soft = false;
+-		err = si476x_core_stop(radio->core, soft);
+-		if (err < 0)
+-			return err;
+-	}
+-	/*
+-	  Set the desired radio tuner function
+-	 */
+-	radio->core->power_up_parameters.func = func;
 -
--	if (subchip && subchip->power_page)
--		i2c_unregister_device(subchip->power_page);
--
--	if (subchip && subchip->gpadc_page)
--		i2c_unregister_device(subchip->gpadc_page);
--}
--
--static int device_800_init(struct pm80x_chip *chip,
--				     struct pm80x_platform_data *pdata)
--{
--	int ret;
--	unsigned int val;
+-	err = si476x_core_start(radio->core, soft);
+-	if (err < 0)
+-		return err;
 -
 -	/*
--	 * alarm wake up bit will be clear in device_irq_init(),
--	 * read before that
+-	 * No need to do the rest of manipulations for the bootlader
+-	 * mode
 -	 */
--	ret = regmap_read(chip->regmap, PM800_RTC_CONTROL, &val);
--	if (ret < 0) {
--		dev_err(chip->dev, "Failed to read RTC register: %d\n", ret);
--		goto out;
--	}
--	if (val & PM800_ALARM_WAKEUP) {
--		if (pdata && pdata->rtc)
--			pdata->rtc->rtc_wakeup = 1;
--	}
+-	if (func != SI476X_FUNC_FM_RECEIVER &&
+-	    func != SI476X_FUNC_AM_RECEIVER)
+-		return err;
 -
--	ret = device_gpadc_init(chip, pdata);
--	if (ret < 0) {
--		dev_err(chip->dev, "[%s]Failed to init gpadc\n", __func__);
--		goto out;
--	}
--
--	chip->regmap_irq_chip = &pm800_irq_chip;
--
--	ret = device_irq_init_800(chip);
--	if (ret < 0) {
--		dev_err(chip->dev, "[%s]Failed to init pm800 irq\n", __func__);
--		goto out;
--	}
--
--	ret = device_onkey_init(chip, pdata);
--	if (ret) {
--		dev_err(chip->dev, "Failed to add onkey subdev\n");
--		goto out_dev;
--	}
--
--	ret = device_rtc_init(chip, pdata);
--	if (ret) {
--		dev_err(chip->dev, "Failed to add rtc subdev\n");
--		goto out;
--	}
--
--	ret = device_regulator_init(chip, pdata);
--	if (ret) {
--		dev_err(chip->dev, "Failed to add regulators subdev\n");
--		goto out;
--	}
--
--	return 0;
--out_dev:
--	mfd_remove_devices(chip->dev);
--	device_irq_exit_800(chip);
--out:
--	return ret;
+-	return si476x_radio_do_post_powerup_init(radio, func);
 -}
 -
--static int pm800_probe(struct i2c_client *client)
+-static int si476x_radio_g_frequency(struct file *file, void *priv,
+-			      struct v4l2_frequency *f)
 -{
--	int ret = 0;
--	struct pm80x_chip *chip;
--	struct pm80x_platform_data *pdata = dev_get_platdata(&client->dev);
--	struct pm80x_subchip *subchip;
+-	int err;
+-	struct si476x_radio *radio = video_drvdata(file);
 -
--	ret = pm80x_init(client);
--	if (ret) {
--		dev_err(&client->dev, "pm800_init fail\n");
--		goto out_init;
--	}
--
--	chip = i2c_get_clientdata(client);
--
--	/* init subchip for PM800 */
--	subchip =
--	    devm_kzalloc(&client->dev, sizeof(struct pm80x_subchip),
--			 GFP_KERNEL);
--	if (!subchip) {
--		ret = -ENOMEM;
--		goto err_subchip_alloc;
--	}
--
--	/* pm800 has 2 addtional pages to support power and gpadc. */
--	subchip->power_page_addr = client->addr + 1;
--	subchip->gpadc_page_addr = client->addr + 2;
--	chip->subchip = subchip;
--
--	ret = pm800_pages_init(chip);
--	if (ret) {
--		dev_err(&client->dev, "pm800_pages_init failed!\n");
--		goto err_device_init;
--	}
--
--	ret = device_800_init(chip, pdata);
--	if (ret) {
--		dev_err(chip->dev, "Failed to initialize 88pm800 devices\n");
--		goto err_device_init;
--	}
--
--	if (pdata && pdata->plat_config)
--		pdata->plat_config(chip, pdata);
--
--	return 0;
--
--err_device_init:
--	pm800_pages_exit(chip);
--err_subchip_alloc:
--	pm80x_deinit();
--out_init:
--	return ret;
--}
--
--static void pm800_remove(struct i2c_client *client)
--{
--	struct pm80x_chip *chip = i2c_get_clientdata(client);
--
--	mfd_remove_devices(chip->dev);
--	device_irq_exit_800(chip);
--
--	pm800_pages_exit(chip);
--	pm80x_deinit();
--}
--
--static struct i2c_driver pm800_driver = {
--	.driver = {
--		.name = "88PM800",
--		.pm = pm_sleep_ptr(&pm80x_pm_ops),
--		},
--	.probe = pm800_probe,
--	.remove = pm800_remove,
--	.id_table = pm80x_id_table,
--};
--
--static int __init pm800_i2c_init(void)
--{
--	return i2c_add_driver(&pm800_driver);
--}
--subsys_initcall(pm800_i2c_init);
--
--static void __exit pm800_i2c_exit(void)
--{
--	i2c_del_driver(&pm800_driver);
--}
--module_exit(pm800_i2c_exit);
--
--MODULE_DESCRIPTION("PMIC Driver for Marvell 88PM800");
--MODULE_AUTHOR("Qiao Zhou <zhouqiao@marvell.com>");
--MODULE_LICENSE("GPL");
-diff --git a/drivers/mfd/88pm805.c b/drivers/mfd/88pm805.c
-deleted file mode 100644
-index f5d6663172ee..000000000000
---- a/drivers/mfd/88pm805.c
-+++ /dev/null
-@@ -1,275 +0,0 @@
--/*
-- * Base driver for Marvell 88PM805
-- *
-- * Copyright (C) 2012 Marvell International Ltd.
-- * Haojian Zhuang <haojian.zhuang@marvell.com>
-- * Joseph(Yossi) Hanin <yhanin@marvell.com>
-- * Qiao Zhou <zhouqiao@marvell.com>
-- *
-- * This file is subject to the terms and conditions of the GNU General
-- * Public License. See the file "COPYING" in the main directory of this
-- * archive for more details.
-- *
-- * This program is distributed in the hope that it will be useful,
-- * but WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-- * GNU General Public License for more details.
-- *
-- * You should have received a copy of the GNU General Public License
-- * along with this program; if not, write to the Free Software
-- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-- */
--
--#include <linux/kernel.h>
--#include <linux/module.h>
--#include <linux/i2c.h>
--#include <linux/irq.h>
--#include <linux/mfd/core.h>
--#include <linux/mfd/88pm80x.h>
--#include <linux/slab.h>
--#include <linux/delay.h>
--
--static const struct i2c_device_id pm80x_id_table[] = {
--	{ "88PM805" },
--	{} /* NULL terminated */
--};
--MODULE_DEVICE_TABLE(i2c, pm80x_id_table);
--
--/* Interrupt Number in 88PM805 */
--enum {
--	PM805_IRQ_LDO_OFF,	/*0 */
--	PM805_IRQ_SRC_DPLL_LOCK,	/*1 */
--	PM805_IRQ_CLIP_FAULT,
--	PM805_IRQ_MIC_CONFLICT,
--	PM805_IRQ_HP2_SHRT,
--	PM805_IRQ_HP1_SHRT,	/*5 */
--	PM805_IRQ_FINE_PLL_FAULT,
--	PM805_IRQ_RAW_PLL_FAULT,
--	PM805_IRQ_VOLP_BTN_DET,
--	PM805_IRQ_VOLM_BTN_DET,
--	PM805_IRQ_SHRT_BTN_DET,	/*10 */
--	PM805_IRQ_MIC_DET,	/*11 */
--
--	PM805_MAX_IRQ,
--};
--
--static struct resource codec_resources[] = {
--	/* Headset microphone insertion or removal */
--	DEFINE_RES_IRQ_NAMED(PM805_IRQ_MIC_DET, "micin"),
--
--	/* Audio short HP1 */
--	DEFINE_RES_IRQ_NAMED(PM805_IRQ_HP1_SHRT, "audio-short1"),
--
--	/* Audio short HP2 */
--	DEFINE_RES_IRQ_NAMED(PM805_IRQ_HP2_SHRT, "audio-short2"),
--};
--
--static const struct mfd_cell codec_devs[] = {
--	{
--	 .name = "88pm80x-codec",
--	 .num_resources = ARRAY_SIZE(codec_resources),
--	 .resources = &codec_resources[0],
--	 .id = -1,
--	 },
--};
--
--static const struct regmap_irq pm805_irqs[] = {
--	/* INT0 */
--	[PM805_IRQ_LDO_OFF] = {
--		.mask = PM805_INT1_HP1_SHRT,
--	},
--	[PM805_IRQ_SRC_DPLL_LOCK] = {
--		.mask = PM805_INT1_HP2_SHRT,
--	},
--	[PM805_IRQ_CLIP_FAULT] = {
--		.mask = PM805_INT1_MIC_CONFLICT,
--	},
--	[PM805_IRQ_MIC_CONFLICT] = {
--		.mask = PM805_INT1_CLIP_FAULT,
--	},
--	[PM805_IRQ_HP2_SHRT] = {
--		.mask = PM805_INT1_LDO_OFF,
--	},
--	[PM805_IRQ_HP1_SHRT] = {
--		.mask = PM805_INT1_SRC_DPLL_LOCK,
--	},
--	/* INT1 */
--	[PM805_IRQ_FINE_PLL_FAULT] = {
--		.reg_offset = 1,
--		.mask = PM805_INT2_MIC_DET,
--	},
--	[PM805_IRQ_RAW_PLL_FAULT] = {
--		.reg_offset = 1,
--		.mask = PM805_INT2_SHRT_BTN_DET,
--	},
--	[PM805_IRQ_VOLP_BTN_DET] = {
--		.reg_offset = 1,
--		.mask = PM805_INT2_VOLM_BTN_DET,
--	},
--	[PM805_IRQ_VOLM_BTN_DET] = {
--		.reg_offset = 1,
--		.mask = PM805_INT2_VOLP_BTN_DET,
--	},
--	[PM805_IRQ_SHRT_BTN_DET] = {
--		.reg_offset = 1,
--		.mask = PM805_INT2_RAW_PLL_FAULT,
--	},
--	[PM805_IRQ_MIC_DET] = {
--		.reg_offset = 1,
--		.mask = PM805_INT2_FINE_PLL_FAULT,
--	},
--};
--
--static int device_irq_init_805(struct pm80x_chip *chip)
--{
--	struct regmap *map = chip->regmap;
--	unsigned long flags = IRQF_ONESHOT;
--	int data, mask, ret = -EINVAL;
--
--	if (!map || !chip->irq) {
--		dev_err(chip->dev, "incorrect parameters\n");
+-	if (f->tuner != 0 ||
+-	    f->type  != V4L2_TUNER_RADIO)
 -		return -EINVAL;
+-
+-	si476x_core_lock(radio->core);
+-
+-	if (radio->ops->rsq_status) {
+-		struct si476x_rsq_status_report report;
+-		struct si476x_rsq_status_args   args = {
+-			.primary	= false,
+-			.rsqack		= false,
+-			.attune		= true,
+-			.cancel		= false,
+-			.stcack		= false,
+-		};
+-
+-		err = radio->ops->rsq_status(radio->core, &args, &report);
+-		if (!err)
+-			f->frequency = si476x_to_v4l2(radio->core,
+-						      report.readfreq);
+-	} else {
+-		err = -EINVAL;
 -	}
 -
--	/*
--	 * irq_mode defines the way of clearing interrupt. it's read-clear by
--	 * default.
--	 */
--	mask =
--	    PM805_STATUS0_INT_CLEAR | PM805_STATUS0_INV_INT |
--	    PM800_STATUS0_INT_MASK;
+-	si476x_core_unlock(radio->core);
 -
--	data = PM805_STATUS0_INT_CLEAR;
--	ret = regmap_update_bits(map, PM805_INT_STATUS0, mask, data);
--	/*
--	 * PM805_INT_STATUS is under 32K clock domain, so need to
--	 * add proper delay before the next I2C register access.
--	 */
--	usleep_range(1000, 3000);
--
--	if (ret < 0)
--		goto out;
--
--	ret =
--	    regmap_add_irq_chip(chip->regmap, chip->irq, flags, -1,
--				chip->regmap_irq_chip, &chip->irq_data);
--
--out:
--	return ret;
+-	return err;
 -}
 -
--static void device_irq_exit_805(struct pm80x_chip *chip)
+-static int si476x_radio_s_frequency(struct file *file, void *priv,
+-				    const struct v4l2_frequency *f)
 -{
--	regmap_del_irq_chip(chip->irq, chip->irq_data);
--}
+-	int err;
+-	u32 freq = f->frequency;
+-	struct si476x_tune_freq_args args;
+-	struct si476x_radio *radio = video_drvdata(file);
 -
--static const struct regmap_irq_chip pm805_irq_chip = {
--	.name = "88pm805",
--	.irqs = pm805_irqs,
--	.num_irqs = ARRAY_SIZE(pm805_irqs),
+-	const u32 midrange = (si476x_bands[SI476X_BAND_AM].rangehigh +
+-			      si476x_bands[SI476X_BAND_FM].rangelow) / 2;
+-	const int band = (freq > midrange) ?
+-		SI476X_BAND_FM : SI476X_BAND_AM;
+-	const enum si476x_func func = (band == SI476X_BAND_AM) ?
+-		SI476X_FUNC_AM_RECEIVER : SI476X_FUNC_FM_RECEIVER;
 -
--	.num_regs = 2,
--	.status_base = PM805_INT_STATUS1,
--	.mask_base = PM805_INT_MASK1,
--	.ack_base = PM805_INT_STATUS1,
--};
--
--static int device_805_init(struct pm80x_chip *chip)
--{
--	int ret = 0;
--	struct regmap *map = chip->regmap;
--
--	if (!map) {
--		dev_err(chip->dev, "regmap is invalid\n");
+-	if (f->tuner != 0 ||
+-	    f->type  != V4L2_TUNER_RADIO)
 -		return -EINVAL;
+-
+-	si476x_core_lock(radio->core);
+-
+-	freq = clamp(freq,
+-		     si476x_bands[band].rangelow,
+-		     si476x_bands[band].rangehigh);
+-
+-	if (si476x_radio_freq_is_inside_of_the_band(freq,
+-						    SI476X_BAND_AM) &&
+-	    (!si476x_core_has_am(radio->core) ||
+-	     si476x_core_is_a_secondary_tuner(radio->core))) {
+-		err = -EINVAL;
+-		goto unlock;
 -	}
 -
--	chip->regmap_irq_chip = &pm805_irq_chip;
+-	err = si476x_radio_change_func(radio, func);
+-	if (err < 0)
+-		goto unlock;
 -
--	ret = device_irq_init_805(chip);
--	if (ret < 0) {
--		dev_err(chip->dev, "Failed to init pm805 irq!\n");
--		goto out_irq_init;
--	}
+-	args.zifsr		= false;
+-	args.hd			= false;
+-	args.injside		= SI476X_INJSIDE_AUTO;
+-	args.freq		= v4l2_to_si476x(radio->core, freq);
+-	args.tunemode		= SI476X_TM_VALIDATED_NORMAL_TUNE;
+-	args.smoothmetrics	= SI476X_SM_INITIALIZE_AUDIO;
+-	args.antcap		= 0;
 -
--	ret = mfd_add_devices(chip->dev, 0, &codec_devs[0],
--			      ARRAY_SIZE(codec_devs), &codec_resources[0], 0,
--			      NULL);
--	if (ret < 0) {
--		dev_err(chip->dev, "Failed to add codec subdev\n");
--		goto out_codec;
--	} else
--		dev_info(chip->dev, "[%s]:Added mfd codec_devs\n", __func__);
+-	err = radio->ops->tune_freq(radio->core, &args);
 -
--	return 0;
--
--out_codec:
--	device_irq_exit_805(chip);
--out_irq_init:
--	return ret;
+-unlock:
+-	si476x_core_unlock(radio->core);
+-	return err;
 -}
 -
--static int pm805_probe(struct i2c_client *client)
+-static int si476x_radio_s_hw_freq_seek(struct file *file, void *priv,
+-				       const struct v4l2_hw_freq_seek *seek)
 -{
--	int ret = 0;
--	struct pm80x_chip *chip;
--	struct pm80x_platform_data *pdata = dev_get_platdata(&client->dev);
+-	int err;
+-	enum si476x_func func;
+-	u32 rangelow = seek->rangelow, rangehigh = seek->rangehigh;
+-	struct si476x_radio *radio = video_drvdata(file);
 -
--	ret = pm80x_init(client);
--	if (ret) {
--		dev_err(&client->dev, "pm805_init fail!\n");
--		goto out_init;
+-	if (file->f_flags & O_NONBLOCK)
+-		return -EAGAIN;
+-
+-	if (seek->tuner != 0 ||
+-	    seek->type  != V4L2_TUNER_RADIO)
+-		return -EINVAL;
+-
+-	si476x_core_lock(radio->core);
+-
+-	if (!rangelow) {
+-		err = regmap_read(radio->core->regmap,
+-				  SI476X_PROP_SEEK_BAND_BOTTOM,
+-				  &rangelow);
+-		if (err)
+-			goto unlock;
+-		rangelow = si476x_to_v4l2(radio->core, rangelow);
+-	}
+-	if (!rangehigh) {
+-		err = regmap_read(radio->core->regmap,
+-				  SI476X_PROP_SEEK_BAND_TOP,
+-				  &rangehigh);
+-		if (err)
+-			goto unlock;
+-		rangehigh = si476x_to_v4l2(radio->core, rangehigh);
 -	}
 -
--	chip = i2c_get_clientdata(client);
--
--	ret = device_805_init(chip);
--	if (ret) {
--		dev_err(chip->dev, "Failed to initialize 88pm805 devices\n");
--		goto err_805_init;
+-	if (rangelow > rangehigh) {
+-		err = -EINVAL;
+-		goto unlock;
 -	}
 -
--	if (pdata && pdata->plat_config)
--		pdata->plat_config(chip, pdata);
+-	if (si476x_radio_range_is_inside_of_the_band(rangelow, rangehigh,
+-						     SI476X_BAND_FM)) {
+-		func = SI476X_FUNC_FM_RECEIVER;
 -
--err_805_init:
--	pm80x_deinit();
--out_init:
--	return ret;
--}
--
--static void pm805_remove(struct i2c_client *client)
--{
--	struct pm80x_chip *chip = i2c_get_clientdata(client);
--
--	mfd_remove_devices(chip->dev);
--	device_irq_exit_805(chip);
--
--	pm80x_deinit();
--}
--
--static struct i2c_driver pm805_driver = {
--	.driver = {
--		.name = "88PM805",
--		.pm = pm_sleep_ptr(&pm80x_pm_ops),
--		},
--	.probe = pm805_probe,
--	.remove = pm805_remove,
--	.id_table = pm80x_id_table,
--};
--
--static int __init pm805_i2c_init(void)
--{
--	return i2c_add_driver(&pm805_driver);
--}
--subsys_initcall(pm805_i2c_init);
--
--static void __exit pm805_i2c_exit(void)
--{
--	i2c_del_driver(&pm805_driver);
--}
--module_exit(pm805_i2c_exit);
--
--MODULE_DESCRIPTION("PMIC Driver for Marvell 88PM805");
--MODULE_AUTHOR("Qiao Zhou <zhouqiao@marvell.com>");
--MODULE_LICENSE("GPL");
-diff --git a/drivers/mfd/88pm80x.c b/drivers/mfd/88pm80x.c
-deleted file mode 100644
-index bbc1a87f0c8f..000000000000
---- a/drivers/mfd/88pm80x.c
-+++ /dev/null
-@@ -1,159 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-only
--/*
-- * I2C driver for Marvell 88PM80x
-- *
-- * Copyright (C) 2012 Marvell International Ltd.
-- * Haojian Zhuang <haojian.zhuang@marvell.com>
-- * Joseph(Yossi) Hanin <yhanin@marvell.com>
-- * Qiao Zhou <zhouqiao@marvell.com>
-- */
--#include <linux/kernel.h>
--#include <linux/module.h>
--#include <linux/i2c.h>
--#include <linux/mfd/88pm80x.h>
--#include <linux/slab.h>
--#include <linux/uaccess.h>
--#include <linux/err.h>
--
--/* 88pm80x chips have same definition for chip id register. */
--#define PM80X_CHIP_ID			(0x00)
--#define PM80X_CHIP_ID_NUM(x)		(((x) >> 5) & 0x7)
--#define PM80X_CHIP_ID_REVISION(x)	((x) & 0x1F)
--
--struct pm80x_chip_mapping {
--	unsigned int	id;
--	int		type;
--};
--
--static struct pm80x_chip_mapping chip_mapping[] = {
--	/* 88PM800 chip id number */
--	{0x3,	CHIP_PM800},
--	/* 88PM805 chip id number */
--	{0x0,	CHIP_PM805},
--	/* 88PM860 chip id number */
--	{0x4,	CHIP_PM860},
--};
--
--/*
-- * workaround: some registers needed by pm805 are defined in pm800, so
-- * need to use this global variable to maintain the relation between
-- * pm800 and pm805. would remove it after HW chip fixes the issue.
-- */
--static struct pm80x_chip *g_pm80x_chip;
--
--const struct regmap_config pm80x_regmap_config = {
--	.reg_bits = 8,
--	.val_bits = 8,
--};
--EXPORT_SYMBOL_GPL(pm80x_regmap_config);
--
--
--int pm80x_init(struct i2c_client *client)
--{
--	struct pm80x_chip *chip;
--	struct regmap *map;
--	unsigned int val;
--	int i, ret = 0;
--
--	chip =
--	    devm_kzalloc(&client->dev, sizeof(struct pm80x_chip), GFP_KERNEL);
--	if (!chip)
--		return -ENOMEM;
--
--	map = devm_regmap_init_i2c(client, &pm80x_regmap_config);
--	if (IS_ERR(map)) {
--		ret = PTR_ERR(map);
--		dev_err(&client->dev, "Failed to allocate register map: %d\n",
--			ret);
--		return ret;
+-	} else if (si476x_core_has_am(radio->core) &&
+-		   si476x_radio_range_is_inside_of_the_band(rangelow, rangehigh,
+-							    SI476X_BAND_AM)) {
+-		func = SI476X_FUNC_AM_RECEIVER;
+-	} else {
+-		err = -EINVAL;
+-		goto unlock;
 -	}
 -
--	chip->client = client;
--	chip->regmap = map;
+-	err = si476x_radio_change_func(radio, func);
+-	if (err < 0)
+-		goto unlock;
 -
--	chip->irq = client->irq;
--
--	chip->dev = &client->dev;
--	i2c_set_clientdata(chip->client, chip);
--
--	ret = regmap_read(chip->regmap, PM80X_CHIP_ID, &val);
--	if (ret < 0) {
--		dev_err(chip->dev, "Failed to read CHIP ID: %d\n", ret);
--		return ret;
+-	if (seek->rangehigh) {
+-		err = regmap_write(radio->core->regmap,
+-				   SI476X_PROP_SEEK_BAND_TOP,
+-				   v4l2_to_si476x(radio->core,
+-						  seek->rangehigh));
+-		if (err)
+-			goto unlock;
+-	}
+-	if (seek->rangelow) {
+-		err = regmap_write(radio->core->regmap,
+-				   SI476X_PROP_SEEK_BAND_BOTTOM,
+-				   v4l2_to_si476x(radio->core,
+-						  seek->rangelow));
+-		if (err)
+-			goto unlock;
+-	}
+-	if (seek->spacing) {
+-		err = regmap_write(radio->core->regmap,
+-				     SI476X_PROP_SEEK_FREQUENCY_SPACING,
+-				     v4l2_to_si476x(radio->core,
+-						    seek->spacing));
+-		if (err)
+-			goto unlock;
 -	}
 -
--	for (i = 0; i < ARRAY_SIZE(chip_mapping); i++) {
--		if (chip_mapping[i].id == PM80X_CHIP_ID_NUM(val)) {
--			chip->type = chip_mapping[i].type;
+-	err = radio->ops->seek_start(radio->core,
+-				     seek->seek_upward,
+-				     seek->wrap_around);
+-unlock:
+-	si476x_core_unlock(radio->core);
+-
+-
+-
+-	return err;
+-}
+-
+-static int si476x_radio_g_volatile_ctrl(struct v4l2_ctrl *ctrl)
+-{
+-	int retval;
+-	struct si476x_radio *radio = v4l2_ctrl_handler_to_radio(ctrl->handler);
+-
+-	si476x_core_lock(radio->core);
+-
+-	switch (ctrl->id) {
+-	case V4L2_CID_SI476X_INTERCHIP_LINK:
+-		if (si476x_core_has_diversity(radio->core)) {
+-			if (radio->ops->phase_diversity) {
+-				retval = radio->ops->phase_div_status(radio->core);
+-				if (retval < 0)
+-					break;
+-
+-				ctrl->val = !!SI476X_PHDIV_STATUS_LINK_LOCKED(retval);
+-				retval = 0;
+-				break;
+-			} else {
+-				retval = -ENOTTY;
+-				break;
+-			}
+-		}
+-		retval = -EINVAL;
+-		break;
+-	default:
+-		retval = -EINVAL;
+-		break;
+-	}
+-	si476x_core_unlock(radio->core);
+-	return retval;
+-
+-}
+-
+-static int si476x_radio_s_ctrl(struct v4l2_ctrl *ctrl)
+-{
+-	int retval;
+-	enum si476x_phase_diversity_mode mode;
+-	struct si476x_radio *radio = v4l2_ctrl_handler_to_radio(ctrl->handler);
+-
+-	si476x_core_lock(radio->core);
+-
+-	switch (ctrl->id) {
+-	case V4L2_CID_SI476X_HARMONICS_COUNT:
+-		retval = regmap_update_bits(radio->core->regmap,
+-					    SI476X_PROP_AUDIO_PWR_LINE_FILTER,
+-					    SI476X_PROP_PWR_HARMONICS_MASK,
+-					    ctrl->val);
+-		break;
+-	case V4L2_CID_POWER_LINE_FREQUENCY:
+-		switch (ctrl->val) {
+-		case V4L2_CID_POWER_LINE_FREQUENCY_DISABLED:
+-			retval = regmap_update_bits(radio->core->regmap,
+-						    SI476X_PROP_AUDIO_PWR_LINE_FILTER,
+-						    SI476X_PROP_PWR_ENABLE_MASK,
+-						    0);
+-			break;
+-		case V4L2_CID_POWER_LINE_FREQUENCY_50HZ:
+-			retval = regmap_update_bits(radio->core->regmap,
+-						    SI476X_PROP_AUDIO_PWR_LINE_FILTER,
+-						    SI476X_PROP_PWR_GRID_MASK,
+-						    SI476X_PROP_PWR_GRID_50HZ);
+-			break;
+-		case V4L2_CID_POWER_LINE_FREQUENCY_60HZ:
+-			retval = regmap_update_bits(radio->core->regmap,
+-						    SI476X_PROP_AUDIO_PWR_LINE_FILTER,
+-						    SI476X_PROP_PWR_GRID_MASK,
+-						    SI476X_PROP_PWR_GRID_60HZ);
+-			break;
+-		default:
+-			retval = -EINVAL;
 -			break;
 -		}
+-		break;
+-	case V4L2_CID_SI476X_RSSI_THRESHOLD:
+-		retval = regmap_write(radio->core->regmap,
+-				      SI476X_PROP_VALID_RSSI_THRESHOLD,
+-				      ctrl->val);
+-		break;
+-	case V4L2_CID_SI476X_SNR_THRESHOLD:
+-		retval = regmap_write(radio->core->regmap,
+-				      SI476X_PROP_VALID_SNR_THRESHOLD,
+-				      ctrl->val);
+-		break;
+-	case V4L2_CID_SI476X_MAX_TUNE_ERROR:
+-		retval = regmap_write(radio->core->regmap,
+-				      SI476X_PROP_VALID_MAX_TUNE_ERROR,
+-				      ctrl->val);
+-		break;
+-	case V4L2_CID_RDS_RECEPTION:
+-		/*
+-		 * It looks like RDS related properties are
+-		 * inaccessible when tuner is in AM mode, so cache the
+-		 * changes
+-		 */
+-		if (si476x_core_is_in_am_receiver_mode(radio->core))
+-			regcache_cache_only(radio->core->regmap, true);
+-
+-		if (ctrl->val) {
+-			retval = regmap_write(radio->core->regmap,
+-					      SI476X_PROP_FM_RDS_INTERRUPT_FIFO_COUNT,
+-					      radio->core->rds_fifo_depth);
+-			if (retval < 0)
+-				break;
+-
+-			if (radio->core->client->irq) {
+-				retval = regmap_write(radio->core->regmap,
+-						      SI476X_PROP_FM_RDS_INTERRUPT_SOURCE,
+-						      SI476X_RDSRECV);
+-				if (retval < 0)
+-					break;
+-			}
+-
+-			/* Drain RDS FIFO before enabling RDS processing */
+-			retval = si476x_core_cmd_fm_rds_status(radio->core,
+-							       false,
+-							       true,
+-							       true,
+-							       NULL);
+-			if (retval < 0)
+-				break;
+-
+-			retval = regmap_update_bits(radio->core->regmap,
+-						    SI476X_PROP_FM_RDS_CONFIG,
+-						    SI476X_PROP_RDSEN_MASK,
+-						    SI476X_PROP_RDSEN);
+-		} else {
+-			retval = regmap_update_bits(radio->core->regmap,
+-						    SI476X_PROP_FM_RDS_CONFIG,
+-						    SI476X_PROP_RDSEN_MASK,
+-						    !SI476X_PROP_RDSEN);
+-		}
+-
+-		if (si476x_core_is_in_am_receiver_mode(radio->core))
+-			regcache_cache_only(radio->core->regmap, false);
+-		break;
+-	case V4L2_CID_TUNE_DEEMPHASIS:
+-		retval = regmap_write(radio->core->regmap,
+-				      SI476X_PROP_AUDIO_DEEMPHASIS,
+-				      ctrl->val);
+-		break;
+-
+-	case V4L2_CID_SI476X_DIVERSITY_MODE:
+-		mode = si476x_phase_diversity_idx_to_mode(ctrl->val);
+-
+-		if (mode == radio->core->diversity_mode) {
+-			retval = 0;
+-			break;
+-		}
+-
+-		if (si476x_core_is_in_am_receiver_mode(radio->core)) {
+-			/*
+-			 * Diversity cannot be configured while tuner
+-			 * is in AM mode so save the changes and carry on.
+-			 */
+-			radio->core->diversity_mode = mode;
+-			retval = 0;
+-		} else {
+-			retval = radio->ops->phase_diversity(radio->core, mode);
+-			if (!retval)
+-				radio->core->diversity_mode = mode;
+-		}
+-		break;
+-
+-	default:
+-		retval = -EINVAL;
+-		break;
 -	}
 -
--	if (i == ARRAY_SIZE(chip_mapping)) {
--		dev_err(chip->dev,
--			"Failed to detect Marvell 88PM800:ChipID[0x%x]\n", val);
+-	si476x_core_unlock(radio->core);
+-
+-	return retval;
+-}
+-
+-#ifdef CONFIG_VIDEO_ADV_DEBUG
+-static int si476x_radio_g_register(struct file *file, void *fh,
+-				   struct v4l2_dbg_register *reg)
+-{
+-	int err;
+-	unsigned int value;
+-	struct si476x_radio *radio = video_drvdata(file);
+-
+-	si476x_core_lock(radio->core);
+-	reg->size = 2;
+-	err = regmap_read(radio->core->regmap,
+-			  (unsigned int)reg->reg, &value);
+-	reg->val = value;
+-	si476x_core_unlock(radio->core);
+-
+-	return err;
+-}
+-static int si476x_radio_s_register(struct file *file, void *fh,
+-				   const struct v4l2_dbg_register *reg)
+-{
+-
+-	int err;
+-	struct si476x_radio *radio = video_drvdata(file);
+-
+-	si476x_core_lock(radio->core);
+-	err = regmap_write(radio->core->regmap,
+-			   (unsigned int)reg->reg,
+-			   (unsigned int)reg->val);
+-	si476x_core_unlock(radio->core);
+-
+-	return err;
+-}
+-#endif
+-
+-static int si476x_radio_fops_open(struct file *file)
+-{
+-	struct si476x_radio *radio = video_drvdata(file);
+-	int err;
+-
+-	err = v4l2_fh_open(file);
+-	if (err)
+-		return err;
+-
+-	if (v4l2_fh_is_singular_file(file)) {
+-		si476x_core_lock(radio->core);
+-		err = si476x_core_set_power_state(radio->core,
+-						  SI476X_POWER_UP_FULL);
+-		if (err < 0)
+-			goto done;
+-
+-		err = si476x_radio_do_post_powerup_init(radio,
+-							radio->core->power_up_parameters.func);
+-		if (err < 0)
+-			goto power_down;
+-
+-		err = si476x_radio_pretune(radio,
+-					   radio->core->power_up_parameters.func);
+-		if (err < 0)
+-			goto power_down;
+-
+-		si476x_core_unlock(radio->core);
+-		/*Must be done after si476x_core_unlock to prevent a deadlock*/
+-		v4l2_ctrl_handler_setup(&radio->ctrl_handler);
+-	}
+-
+-	return err;
+-
+-power_down:
+-	si476x_core_set_power_state(radio->core,
+-				    SI476X_POWER_DOWN);
+-done:
+-	si476x_core_unlock(radio->core);
+-	v4l2_fh_release(file);
+-
+-	return err;
+-}
+-
+-static int si476x_radio_fops_release(struct file *file)
+-{
+-	struct si476x_radio *radio = video_drvdata(file);
+-
+-	if (v4l2_fh_is_singular_file(file) &&
+-	    atomic_read(&radio->core->is_alive))
+-		si476x_core_set_power_state(radio->core,
+-					    SI476X_POWER_DOWN);
+-
+-	return v4l2_fh_release(file);
+-}
+-
+-static ssize_t si476x_radio_fops_read(struct file *file, char __user *buf,
+-				      size_t count, loff_t *ppos)
+-{
+-	ssize_t      rval;
+-	size_t       fifo_len;
+-	unsigned int copied;
+-
+-	struct si476x_radio *radio = video_drvdata(file);
+-
+-	/* block if no new data available */
+-	if (kfifo_is_empty(&radio->core->rds_fifo)) {
+-		if (file->f_flags & O_NONBLOCK)
+-			return -EWOULDBLOCK;
+-
+-		rval = wait_event_interruptible(radio->core->rds_read_queue,
+-						(!kfifo_is_empty(&radio->core->rds_fifo) ||
+-						 !atomic_read(&radio->core->is_alive)));
+-		if (rval < 0)
+-			return -EINTR;
+-
+-		if (!atomic_read(&radio->core->is_alive))
+-			return -ENODEV;
+-	}
+-
+-	fifo_len = kfifo_len(&radio->core->rds_fifo);
+-
+-	if (kfifo_to_user(&radio->core->rds_fifo, buf,
+-			  min(fifo_len, count),
+-			  &copied) != 0) {
+-		dev_warn(&radio->videodev.dev,
+-			 "Error during FIFO to userspace copy\n");
+-		rval = -EIO;
+-	} else {
+-		rval = (ssize_t)copied;
+-	}
+-
+-	return rval;
+-}
+-
+-static __poll_t si476x_radio_fops_poll(struct file *file,
+-				struct poll_table_struct *pts)
+-{
+-	struct si476x_radio *radio = video_drvdata(file);
+-	__poll_t req_events = poll_requested_events(pts);
+-	__poll_t err = v4l2_ctrl_poll(file, pts);
+-
+-	if (req_events & (EPOLLIN | EPOLLRDNORM)) {
+-		if (atomic_read(&radio->core->is_alive))
+-			poll_wait(file, &radio->core->rds_read_queue, pts);
+-
+-		if (!atomic_read(&radio->core->is_alive))
+-			err = EPOLLHUP;
+-
+-		if (!kfifo_is_empty(&radio->core->rds_fifo))
+-			err = EPOLLIN | EPOLLRDNORM;
+-	}
+-
+-	return err;
+-}
+-
+-static const struct v4l2_file_operations si476x_fops = {
+-	.owner			= THIS_MODULE,
+-	.read			= si476x_radio_fops_read,
+-	.poll			= si476x_radio_fops_poll,
+-	.unlocked_ioctl		= video_ioctl2,
+-	.open			= si476x_radio_fops_open,
+-	.release		= si476x_radio_fops_release,
+-};
+-
+-
+-static const struct v4l2_ioctl_ops si4761_ioctl_ops = {
+-	.vidioc_querycap		= si476x_radio_querycap,
+-	.vidioc_g_tuner			= si476x_radio_g_tuner,
+-	.vidioc_s_tuner			= si476x_radio_s_tuner,
+-
+-	.vidioc_g_frequency		= si476x_radio_g_frequency,
+-	.vidioc_s_frequency		= si476x_radio_s_frequency,
+-	.vidioc_s_hw_freq_seek		= si476x_radio_s_hw_freq_seek,
+-	.vidioc_enum_freq_bands		= si476x_radio_enum_freq_bands,
+-
+-	.vidioc_subscribe_event		= v4l2_ctrl_subscribe_event,
+-	.vidioc_unsubscribe_event	= v4l2_event_unsubscribe,
+-
+-#ifdef CONFIG_VIDEO_ADV_DEBUG
+-	.vidioc_g_register		= si476x_radio_g_register,
+-	.vidioc_s_register		= si476x_radio_s_register,
+-#endif
+-};
+-
+-
+-static const struct video_device si476x_viddev_template = {
+-	.fops			= &si476x_fops,
+-	.name			= DRIVER_NAME,
+-	.release		= video_device_release_empty,
+-};
+-
+-
+-
+-static ssize_t si476x_radio_read_acf_blob(struct file *file,
+-					  char __user *user_buf,
+-					  size_t count, loff_t *ppos)
+-{
+-	int err;
+-	struct si476x_radio *radio = file->private_data;
+-	struct si476x_acf_status_report report;
+-
+-	si476x_core_lock(radio->core);
+-	if (radio->ops->acf_status)
+-		err = radio->ops->acf_status(radio->core, &report);
+-	else
+-		err = -ENOENT;
+-	si476x_core_unlock(radio->core);
+-
+-	if (err < 0)
+-		return err;
+-
+-	return simple_read_from_buffer(user_buf, count, ppos, &report,
+-				       sizeof(report));
+-}
+-
+-static const struct file_operations radio_acf_fops = {
+-	.open	= simple_open,
+-	.llseek = default_llseek,
+-	.read	= si476x_radio_read_acf_blob,
+-};
+-
+-static ssize_t si476x_radio_read_rds_blckcnt_blob(struct file *file,
+-						  char __user *user_buf,
+-						  size_t count, loff_t *ppos)
+-{
+-	int err;
+-	struct si476x_radio *radio = file->private_data;
+-	struct si476x_rds_blockcount_report report;
+-
+-	si476x_core_lock(radio->core);
+-	if (radio->ops->rds_blckcnt)
+-		err = radio->ops->rds_blckcnt(radio->core, true,
+-					       &report);
+-	else
+-		err = -ENOENT;
+-	si476x_core_unlock(radio->core);
+-
+-	if (err < 0)
+-		return err;
+-
+-	return simple_read_from_buffer(user_buf, count, ppos, &report,
+-				       sizeof(report));
+-}
+-
+-static const struct file_operations radio_rds_blckcnt_fops = {
+-	.open	= simple_open,
+-	.llseek = default_llseek,
+-	.read	= si476x_radio_read_rds_blckcnt_blob,
+-};
+-
+-static ssize_t si476x_radio_read_agc_blob(struct file *file,
+-					  char __user *user_buf,
+-					  size_t count, loff_t *ppos)
+-{
+-	int err;
+-	struct si476x_radio *radio = file->private_data;
+-	struct si476x_agc_status_report report;
+-
+-	si476x_core_lock(radio->core);
+-	if (radio->ops->rds_blckcnt)
+-		err = radio->ops->agc_status(radio->core, &report);
+-	else
+-		err = -ENOENT;
+-	si476x_core_unlock(radio->core);
+-
+-	if (err < 0)
+-		return err;
+-
+-	return simple_read_from_buffer(user_buf, count, ppos, &report,
+-				       sizeof(report));
+-}
+-
+-static const struct file_operations radio_agc_fops = {
+-	.open	= simple_open,
+-	.llseek = default_llseek,
+-	.read	= si476x_radio_read_agc_blob,
+-};
+-
+-static ssize_t si476x_radio_read_rsq_blob(struct file *file,
+-					  char __user *user_buf,
+-					  size_t count, loff_t *ppos)
+-{
+-	int err;
+-	struct si476x_radio *radio = file->private_data;
+-	struct si476x_rsq_status_report report;
+-	struct si476x_rsq_status_args args = {
+-		.primary	= false,
+-		.rsqack		= false,
+-		.attune		= false,
+-		.cancel		= false,
+-		.stcack		= false,
+-	};
+-
+-	si476x_core_lock(radio->core);
+-	if (radio->ops->rds_blckcnt)
+-		err = radio->ops->rsq_status(radio->core, &args, &report);
+-	else
+-		err = -ENOENT;
+-	si476x_core_unlock(radio->core);
+-
+-	if (err < 0)
+-		return err;
+-
+-	return simple_read_from_buffer(user_buf, count, ppos, &report,
+-				       sizeof(report));
+-}
+-
+-static const struct file_operations radio_rsq_fops = {
+-	.open	= simple_open,
+-	.llseek = default_llseek,
+-	.read	= si476x_radio_read_rsq_blob,
+-};
+-
+-static ssize_t si476x_radio_read_rsq_primary_blob(struct file *file,
+-						  char __user *user_buf,
+-						  size_t count, loff_t *ppos)
+-{
+-	int err;
+-	struct si476x_radio *radio = file->private_data;
+-	struct si476x_rsq_status_report report;
+-	struct si476x_rsq_status_args args = {
+-		.primary	= true,
+-		.rsqack		= false,
+-		.attune		= false,
+-		.cancel		= false,
+-		.stcack		= false,
+-	};
+-
+-	si476x_core_lock(radio->core);
+-	if (radio->ops->rds_blckcnt)
+-		err = radio->ops->rsq_status(radio->core, &args, &report);
+-	else
+-		err = -ENOENT;
+-	si476x_core_unlock(radio->core);
+-
+-	if (err < 0)
+-		return err;
+-
+-	return simple_read_from_buffer(user_buf, count, ppos, &report,
+-				       sizeof(report));
+-}
+-
+-static const struct file_operations radio_rsq_primary_fops = {
+-	.open	= simple_open,
+-	.llseek = default_llseek,
+-	.read	= si476x_radio_read_rsq_primary_blob,
+-};
+-
+-
+-static void si476x_radio_init_debugfs(struct si476x_radio *radio)
+-{
+-	radio->debugfs = debugfs_create_dir(dev_name(radio->v4l2dev.dev), NULL);
+-
+-	debugfs_create_file("acf", S_IRUGO, radio->debugfs, radio,
+-			    &radio_acf_fops);
+-
+-	debugfs_create_file("rds_blckcnt", S_IRUGO, radio->debugfs, radio,
+-			    &radio_rds_blckcnt_fops);
+-
+-	debugfs_create_file("agc", S_IRUGO, radio->debugfs, radio,
+-			    &radio_agc_fops);
+-
+-	debugfs_create_file("rsq", S_IRUGO, radio->debugfs, radio,
+-			    &radio_rsq_fops);
+-
+-	debugfs_create_file("rsq_primary", S_IRUGO, radio->debugfs, radio,
+-			    &radio_rsq_primary_fops);
+-}
+-
+-
+-static int si476x_radio_add_new_custom(struct si476x_radio *radio,
+-				       enum si476x_ctrl_idx idx)
+-{
+-	int rval;
+-	struct v4l2_ctrl *ctrl;
+-
+-	ctrl = v4l2_ctrl_new_custom(&radio->ctrl_handler,
+-				    &si476x_ctrls[idx],
+-				    NULL);
+-	rval = radio->ctrl_handler.error;
+-	if (ctrl == NULL && rval)
+-		dev_err(radio->v4l2dev.dev,
+-			"Could not initialize '%s' control %d\n",
+-			si476x_ctrls[idx].name, rval);
+-
+-	return rval;
+-}
+-
+-static int si476x_radio_probe(struct platform_device *pdev)
+-{
+-	int rval;
+-	struct si476x_radio *radio;
+-	struct v4l2_ctrl *ctrl;
+-
+-	static atomic_t instance = ATOMIC_INIT(0);
+-
+-	radio = devm_kzalloc(&pdev->dev, sizeof(*radio), GFP_KERNEL);
+-	if (!radio)
+-		return -ENOMEM;
+-
+-	radio->core = i2c_mfd_cell_to_core(&pdev->dev);
+-
+-	v4l2_device_set_name(&radio->v4l2dev, DRIVER_NAME, &instance);
+-
+-	rval = v4l2_device_register(&pdev->dev, &radio->v4l2dev);
+-	if (rval) {
+-		dev_err(&pdev->dev, "Cannot register v4l2_device.\n");
+-		return rval;
+-	}
+-
+-	memcpy(&radio->videodev, &si476x_viddev_template,
+-	       sizeof(struct video_device));
+-
+-	radio->videodev.v4l2_dev  = &radio->v4l2dev;
+-	radio->videodev.ioctl_ops = &si4761_ioctl_ops;
+-	radio->videodev.device_caps = V4L2_CAP_TUNER | V4L2_CAP_RADIO |
+-				      V4L2_CAP_HW_FREQ_SEEK;
+-
+-	si476x_core_lock(radio->core);
+-	if (!si476x_core_is_a_secondary_tuner(radio->core))
+-		radio->videodev.device_caps |= V4L2_CAP_RDS_CAPTURE |
+-					       V4L2_CAP_READWRITE;
+-	si476x_core_unlock(radio->core);
+-
+-	video_set_drvdata(&radio->videodev, radio);
+-	platform_set_drvdata(pdev, radio);
+-
+-
+-	radio->v4l2dev.ctrl_handler = &radio->ctrl_handler;
+-	v4l2_ctrl_handler_init(&radio->ctrl_handler,
+-			       1 + ARRAY_SIZE(si476x_ctrls));
+-
+-	if (si476x_core_has_am(radio->core)) {
+-		ctrl = v4l2_ctrl_new_std_menu(&radio->ctrl_handler,
+-					      &si476x_ctrl_ops,
+-					      V4L2_CID_POWER_LINE_FREQUENCY,
+-					      V4L2_CID_POWER_LINE_FREQUENCY_60HZ,
+-					      0, 0);
+-		rval = radio->ctrl_handler.error;
+-		if (ctrl == NULL && rval) {
+-			dev_err(&pdev->dev, "Could not initialize V4L2_CID_POWER_LINE_FREQUENCY control %d\n",
+-				rval);
+-			goto exit;
+-		}
+-
+-		rval = si476x_radio_add_new_custom(radio,
+-						   SI476X_IDX_HARMONICS_COUNT);
+-		if (rval < 0)
+-			goto exit;
+-	}
+-
+-	rval = si476x_radio_add_new_custom(radio, SI476X_IDX_RSSI_THRESHOLD);
+-	if (rval < 0)
+-		goto exit;
+-
+-	rval = si476x_radio_add_new_custom(radio, SI476X_IDX_SNR_THRESHOLD);
+-	if (rval < 0)
+-		goto exit;
+-
+-	rval = si476x_radio_add_new_custom(radio, SI476X_IDX_MAX_TUNE_ERROR);
+-	if (rval < 0)
+-		goto exit;
+-
+-	ctrl = v4l2_ctrl_new_std_menu(&radio->ctrl_handler,
+-				      &si476x_ctrl_ops,
+-				      V4L2_CID_TUNE_DEEMPHASIS,
+-				      V4L2_DEEMPHASIS_75_uS, 0, 0);
+-	rval = radio->ctrl_handler.error;
+-	if (ctrl == NULL && rval) {
+-		dev_err(&pdev->dev, "Could not initialize V4L2_CID_TUNE_DEEMPHASIS control %d\n",
+-			rval);
+-		goto exit;
+-	}
+-
+-	ctrl = v4l2_ctrl_new_std(&radio->ctrl_handler, &si476x_ctrl_ops,
+-				 V4L2_CID_RDS_RECEPTION,
+-				 0, 1, 1, 1);
+-	rval = radio->ctrl_handler.error;
+-	if (ctrl == NULL && rval) {
+-		dev_err(&pdev->dev, "Could not initialize V4L2_CID_RDS_RECEPTION control %d\n",
+-			rval);
+-		goto exit;
+-	}
+-
+-	if (si476x_core_has_diversity(radio->core)) {
+-		si476x_ctrls[SI476X_IDX_DIVERSITY_MODE].def =
+-			si476x_phase_diversity_mode_to_idx(radio->core->diversity_mode);
+-		rval = si476x_radio_add_new_custom(radio, SI476X_IDX_DIVERSITY_MODE);
+-		if (rval < 0)
+-			goto exit;
+-
+-		rval = si476x_radio_add_new_custom(radio, SI476X_IDX_INTERCHIP_LINK);
+-		if (rval < 0)
+-			goto exit;
+-	}
+-
+-	/* register video device */
+-	rval = video_register_device(&radio->videodev, VFL_TYPE_RADIO, -1);
+-	if (rval < 0) {
+-		dev_err(&pdev->dev, "Could not register video device\n");
+-		goto exit;
+-	}
+-
+-	si476x_radio_init_debugfs(radio);
+-
+-	return 0;
+-exit:
+-	v4l2_ctrl_handler_free(radio->videodev.ctrl_handler);
+-	v4l2_device_unregister(&radio->v4l2dev);
+-	return rval;
+-}
+-
+-static void si476x_radio_remove(struct platform_device *pdev)
+-{
+-	struct si476x_radio *radio = platform_get_drvdata(pdev);
+-
+-	v4l2_ctrl_handler_free(radio->videodev.ctrl_handler);
+-	video_unregister_device(&radio->videodev);
+-	v4l2_device_unregister(&radio->v4l2dev);
+-	debugfs_remove_recursive(radio->debugfs);
+-}
+-
+-MODULE_ALIAS("platform:si476x-radio");
+-
+-static struct platform_driver si476x_radio_driver = {
+-	.driver		= {
+-		.name	= DRIVER_NAME,
+-	},
+-	.probe		= si476x_radio_probe,
+-	.remove		= si476x_radio_remove,
+-};
+-module_platform_driver(si476x_radio_driver);
+-
+-MODULE_AUTHOR("Andrey Smirnov <andrew.smirnov@gmail.com>");
+-MODULE_DESCRIPTION("Driver for Si4761/64/68 AM/FM Radio MFD Cell");
+-MODULE_LICENSE("GPL");
+diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
+index ce0c39b50af7..b271c9f0c5fc 100644
+--- a/drivers/mfd/Kconfig
++++ b/drivers/mfd/Kconfig
+@@ -1425,19 +1425,6 @@ config MFD_SEC_I2C
+ 	  on this driver so building this as a module might require proper
+ 	  initial ramdisk or might not boot up as well in certain scenarios.
+ 
+-config MFD_SI476X_CORE
+-	tristate "Silicon Laboratories 4761/64/68 AM/FM radio."
+-	depends on I2C
+-	select MFD_CORE
+-	select REGMAP_I2C
+-	help
+-	  This is the core driver for the SI476x series of AM/FM
+-	  radio. This MFD driver connects the radio-si476x V4L2 module
+-	  and the si476x audio codec.
+-
+-	  To compile this driver as a module, choose M here: the
+-	  module will be called si476x-core.
+-
+ config MFD_SIMPLE_MFD_I2C
+ 	tristate
+ 	depends on I2C
+diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
+index a54eb18af56a..649262eb0f5c 100644
+--- a/drivers/mfd/Makefile
++++ b/drivers/mfd/Makefile
+@@ -204,9 +204,6 @@ obj-$(CONFIG_MFD_JANZ_CMODIO)	+= janz-cmodio.o
+ obj-$(CONFIG_MFD_TPS6586X)	+= tps6586x.o
+ obj-$(CONFIG_MFD_VX855)		+= vx855.o
+ 
+-si476x-core-y := si476x-cmd.o si476x-prop.o si476x-i2c.o
+-obj-$(CONFIG_MFD_SI476X_CORE)	+= si476x-core.o
+-
+ obj-$(CONFIG_MFD_CS5535)	+= cs5535-mfd.o
+ obj-$(CONFIG_MFD_OMAP_USB_HOST)	+= omap-usb-host.o omap-usb-tll.o
+ obj-$(CONFIG_MFD_PM8XXX) 	+= qcom-pm8xxx.o ssbi.o
+diff --git a/drivers/mfd/si476x-cmd.c b/drivers/mfd/si476x-cmd.c
+deleted file mode 100644
+index 58e9bea7e90a..000000000000
+--- a/drivers/mfd/si476x-cmd.c
++++ /dev/null
+@@ -1,1543 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-only
+-/*
+- * drivers/mfd/si476x-cmd.c -- Subroutines implementing command
+- * protocol of si476x series of chips
+- *
+- * Copyright (C) 2012 Innovative Converged Devices(ICD)
+- * Copyright (C) 2013 Andrey Smirnov
+- *
+- * Author: Andrey Smirnov <andrew.smirnov@gmail.com>
+- */
+-
+-#include <linux/module.h>
+-#include <linux/completion.h>
+-#include <linux/delay.h>
+-#include <linux/atomic.h>
+-#include <linux/i2c.h>
+-#include <linux/device.h>
+-#include <linux/videodev2.h>
+-
+-#include <linux/mfd/si476x-core.h>
+-
+-#include <linux/unaligned.h>
+-
+-#define msb(x)                  ((u8)((u16) x >> 8))
+-#define lsb(x)                  ((u8)((u16) x &  0x00FF))
+-
+-
+-
+-#define CMD_POWER_UP				0x01
+-#define CMD_POWER_UP_A10_NRESP			1
+-#define CMD_POWER_UP_A10_NARGS			5
+-
+-#define CMD_POWER_UP_A20_NRESP			1
+-#define CMD_POWER_UP_A20_NARGS			5
+-
+-#define POWER_UP_DELAY_MS			110
+-
+-#define CMD_POWER_DOWN				0x11
+-#define CMD_POWER_DOWN_A10_NRESP		1
+-
+-#define CMD_POWER_DOWN_A20_NRESP		1
+-#define CMD_POWER_DOWN_A20_NARGS		1
+-
+-#define CMD_FUNC_INFO				0x12
+-#define CMD_FUNC_INFO_NRESP			7
+-
+-#define CMD_SET_PROPERTY			0x13
+-#define CMD_SET_PROPERTY_NARGS			5
+-#define CMD_SET_PROPERTY_NRESP			1
+-
+-#define CMD_GET_PROPERTY			0x14
+-#define CMD_GET_PROPERTY_NARGS			3
+-#define CMD_GET_PROPERTY_NRESP			4
+-
+-#define CMD_AGC_STATUS				0x17
+-#define CMD_AGC_STATUS_NRESP_A10		2
+-#define CMD_AGC_STATUS_NRESP_A20                6
+-
+-#define PIN_CFG_BYTE(x) (0x7F & (x))
+-#define CMD_DIG_AUDIO_PIN_CFG			0x18
+-#define CMD_DIG_AUDIO_PIN_CFG_NARGS		4
+-#define CMD_DIG_AUDIO_PIN_CFG_NRESP		5
+-
+-#define CMD_ZIF_PIN_CFG				0x19
+-#define CMD_ZIF_PIN_CFG_NARGS			4
+-#define CMD_ZIF_PIN_CFG_NRESP			5
+-
+-#define CMD_IC_LINK_GPO_CTL_PIN_CFG		0x1A
+-#define CMD_IC_LINK_GPO_CTL_PIN_CFG_NARGS	4
+-#define CMD_IC_LINK_GPO_CTL_PIN_CFG_NRESP	5
+-
+-#define CMD_ANA_AUDIO_PIN_CFG			0x1B
+-#define CMD_ANA_AUDIO_PIN_CFG_NARGS		1
+-#define CMD_ANA_AUDIO_PIN_CFG_NRESP		2
+-
+-#define CMD_INTB_PIN_CFG			0x1C
+-#define CMD_INTB_PIN_CFG_NARGS			2
+-#define CMD_INTB_PIN_CFG_A10_NRESP		6
+-#define CMD_INTB_PIN_CFG_A20_NRESP		3
+-
+-#define CMD_FM_TUNE_FREQ			0x30
+-#define CMD_FM_TUNE_FREQ_A10_NARGS		5
+-#define CMD_FM_TUNE_FREQ_A20_NARGS		3
+-#define CMD_FM_TUNE_FREQ_NRESP			1
+-
+-#define CMD_FM_RSQ_STATUS			0x32
+-
+-#define CMD_FM_RSQ_STATUS_A10_NARGS		1
+-#define CMD_FM_RSQ_STATUS_A10_NRESP		17
+-#define CMD_FM_RSQ_STATUS_A30_NARGS		1
+-#define CMD_FM_RSQ_STATUS_A30_NRESP		23
+-
+-
+-#define CMD_FM_SEEK_START			0x31
+-#define CMD_FM_SEEK_START_NARGS			1
+-#define CMD_FM_SEEK_START_NRESP			1
+-
+-#define CMD_FM_RDS_STATUS			0x36
+-#define CMD_FM_RDS_STATUS_NARGS			1
+-#define CMD_FM_RDS_STATUS_NRESP			16
+-
+-#define CMD_FM_RDS_BLOCKCOUNT			0x37
+-#define CMD_FM_RDS_BLOCKCOUNT_NARGS		1
+-#define CMD_FM_RDS_BLOCKCOUNT_NRESP		8
+-
+-#define CMD_FM_PHASE_DIVERSITY			0x38
+-#define CMD_FM_PHASE_DIVERSITY_NARGS		1
+-#define CMD_FM_PHASE_DIVERSITY_NRESP		1
+-
+-#define CMD_FM_PHASE_DIV_STATUS			0x39
+-#define CMD_FM_PHASE_DIV_STATUS_NRESP		2
+-
+-#define CMD_AM_TUNE_FREQ			0x40
+-#define CMD_AM_TUNE_FREQ_NARGS			3
+-#define CMD_AM_TUNE_FREQ_NRESP			1
+-
+-#define CMD_AM_RSQ_STATUS			0x42
+-#define CMD_AM_RSQ_STATUS_NARGS			1
+-#define CMD_AM_RSQ_STATUS_NRESP			13
+-
+-#define CMD_AM_SEEK_START			0x41
+-#define CMD_AM_SEEK_START_NARGS			1
+-#define CMD_AM_SEEK_START_NRESP			1
+-
+-
+-#define CMD_AM_ACF_STATUS			0x45
+-#define CMD_AM_ACF_STATUS_NRESP			6
+-#define CMD_AM_ACF_STATUS_NARGS			1
+-
+-#define CMD_FM_ACF_STATUS			0x35
+-#define CMD_FM_ACF_STATUS_NRESP			8
+-#define CMD_FM_ACF_STATUS_NARGS			1
+-
+-#define CMD_MAX_ARGS_COUNT			(10)
+-
+-
+-enum si476x_acf_status_report_bits {
+-	SI476X_ACF_BLEND_INT	= (1 << 4),
+-	SI476X_ACF_HIBLEND_INT	= (1 << 3),
+-	SI476X_ACF_HICUT_INT	= (1 << 2),
+-	SI476X_ACF_CHBW_INT	= (1 << 1),
+-	SI476X_ACF_SOFTMUTE_INT	= (1 << 0),
+-
+-	SI476X_ACF_SMUTE	= (1 << 0),
+-	SI476X_ACF_SMATTN	= 0x1f,
+-	SI476X_ACF_PILOT	= (1 << 7),
+-	SI476X_ACF_STBLEND	= ~SI476X_ACF_PILOT,
+-};
+-
+-enum si476x_agc_status_report_bits {
+-	SI476X_AGC_MXHI		= (1 << 5),
+-	SI476X_AGC_MXLO		= (1 << 4),
+-	SI476X_AGC_LNAHI	= (1 << 3),
+-	SI476X_AGC_LNALO	= (1 << 2),
+-};
+-
+-enum si476x_errors {
+-	SI476X_ERR_BAD_COMMAND		= 0x10,
+-	SI476X_ERR_BAD_ARG1		= 0x11,
+-	SI476X_ERR_BAD_ARG2		= 0x12,
+-	SI476X_ERR_BAD_ARG3		= 0x13,
+-	SI476X_ERR_BAD_ARG4		= 0x14,
+-	SI476X_ERR_BUSY			= 0x18,
+-	SI476X_ERR_BAD_INTERNAL_MEMORY  = 0x20,
+-	SI476X_ERR_BAD_PATCH		= 0x30,
+-	SI476X_ERR_BAD_BOOT_MODE	= 0x31,
+-	SI476X_ERR_BAD_PROPERTY		= 0x40,
+-};
+-
+-static int si476x_core_parse_and_nag_about_error(struct si476x_core *core)
+-{
+-	int err;
+-	char *cause;
+-	u8 buffer[2];
+-
+-	if (core->revision != SI476X_REVISION_A10) {
+-		err = si476x_core_i2c_xfer(core, SI476X_I2C_RECV,
+-					   buffer, sizeof(buffer));
+-		if (err == sizeof(buffer)) {
+-			switch (buffer[1]) {
+-			case SI476X_ERR_BAD_COMMAND:
+-				cause = "Bad command";
+-				err = -EINVAL;
+-				break;
+-			case SI476X_ERR_BAD_ARG1:
+-				cause = "Bad argument #1";
+-				err = -EINVAL;
+-				break;
+-			case SI476X_ERR_BAD_ARG2:
+-				cause = "Bad argument #2";
+-				err = -EINVAL;
+-				break;
+-			case SI476X_ERR_BAD_ARG3:
+-				cause = "Bad argument #3";
+-				err = -EINVAL;
+-				break;
+-			case SI476X_ERR_BAD_ARG4:
+-				cause = "Bad argument #4";
+-				err = -EINVAL;
+-				break;
+-			case SI476X_ERR_BUSY:
+-				cause = "Chip is busy";
+-				err = -EBUSY;
+-				break;
+-			case SI476X_ERR_BAD_INTERNAL_MEMORY:
+-				cause = "Bad internal memory";
+-				err = -EIO;
+-				break;
+-			case SI476X_ERR_BAD_PATCH:
+-				cause = "Bad patch";
+-				err = -EINVAL;
+-				break;
+-			case SI476X_ERR_BAD_BOOT_MODE:
+-				cause = "Bad boot mode";
+-				err = -EINVAL;
+-				break;
+-			case SI476X_ERR_BAD_PROPERTY:
+-				cause = "Bad property";
+-				err = -EINVAL;
+-				break;
+-			default:
+-				cause = "Unknown";
+-				err = -EIO;
+-			}
+-
+-			dev_err(&core->client->dev,
+-				"[Chip error status]: %s\n", cause);
+-		} else {
+-			dev_err(&core->client->dev,
+-				"Failed to fetch error code\n");
+-			err = (err >= 0) ? -EIO : err;
+-		}
+-	} else {
+-		err = -EIO;
+-	}
+-
+-	return err;
+-}
+-
+-/**
+- * si476x_core_send_command() - sends a command to si476x and waits its
+- * response
+- * @core:     si476x_device structure for the device we are
+- *            communicating with
+- * @command:  command id
+- * @args:     command arguments we are sending
+- * @argn:     actual size of @args
+- * @resp:     buffer to place the expected response from the device
+- * @respn:    actual size of @resp
+- * @usecs:    amount of time to wait before reading the response (in
+- *            usecs)
+- *
+- * Function returns 0 on success and negative error code on
+- * failure
+- */
+-static int si476x_core_send_command(struct si476x_core *core,
+-				    const u8 command,
+-				    const u8 args[],
+-				    const int argn,
+-				    u8 resp[],
+-				    const int respn,
+-				    const int usecs)
+-{
+-	struct i2c_client *client = core->client;
+-	int err;
+-	u8  data[CMD_MAX_ARGS_COUNT + 1];
+-
+-	if (argn > CMD_MAX_ARGS_COUNT) {
+-		err = -ENOMEM;
+-		goto exit;
+-	}
+-
+-	if (!client->adapter) {
+-		err = -ENODEV;
+-		goto exit;
+-	}
+-
+-	/* First send the command and its arguments */
+-	data[0] = command;
+-	memcpy(&data[1], args, argn);
+-	dev_dbg(&client->dev, "Command:\n %*ph\n", argn + 1, data);
+-
+-	err = si476x_core_i2c_xfer(core, SI476X_I2C_SEND,
+-				   (char *) data, argn + 1);
+-	if (err != argn + 1) {
+-		dev_err(&core->client->dev,
+-			"Error while sending command 0x%02x\n",
+-			command);
+-		err = (err >= 0) ? -EIO : err;
+-		goto exit;
+-	}
+-	/* Set CTS to zero only after the command is send to avoid
+-	 * possible racing conditions when working in polling mode */
+-	atomic_set(&core->cts, 0);
+-
+-	/* if (unlikely(command == CMD_POWER_DOWN) */
+-	if (!wait_event_timeout(core->command,
+-				atomic_read(&core->cts),
+-				usecs_to_jiffies(usecs) + 1))
+-		dev_warn(&core->client->dev,
+-			 "(%s) [CMD 0x%02x] Answer timeout.\n",
+-			 __func__, command);
+-
+-	/*
+-	  When working in polling mode, for some reason the tuner will
+-	  report CTS bit as being set in the first status byte read,
+-	  but all the consequtive ones will return zeros until the
+-	  tuner is actually completed the POWER_UP command. To
+-	  workaround that we wait for second CTS to be reported
+-	 */
+-	if (unlikely(!core->client->irq && command == CMD_POWER_UP)) {
+-		if (!wait_event_timeout(core->command,
+-					atomic_read(&core->cts),
+-					usecs_to_jiffies(usecs) + 1))
+-			dev_warn(&core->client->dev,
+-				 "(%s) Power up took too much time.\n",
+-				 __func__);
+-	}
+-
+-	/* Then get the response */
+-	err = si476x_core_i2c_xfer(core, SI476X_I2C_RECV, resp, respn);
+-	if (err != respn) {
+-		dev_err(&core->client->dev,
+-			"Error while reading response for command 0x%02x\n",
+-			command);
+-		err = (err >= 0) ? -EIO : err;
+-		goto exit;
+-	}
+-	dev_dbg(&client->dev, "Response:\n %*ph\n", respn, resp);
+-
+-	err = 0;
+-
+-	if (resp[0] & SI476X_ERR) {
+-		dev_err(&core->client->dev,
+-			"[CMD 0x%02x] Chip set error flag\n", command);
+-		err = si476x_core_parse_and_nag_about_error(core);
+-		goto exit;
+-	}
+-
+-	if (!(resp[0] & SI476X_CTS))
+-		err = -EBUSY;
+-exit:
+-	return err;
+-}
+-
+-static int si476x_cmd_clear_stc(struct si476x_core *core)
+-{
+-	int err;
+-	struct si476x_rsq_status_args args = {
+-		.primary	= false,
+-		.rsqack		= false,
+-		.attune		= false,
+-		.cancel		= false,
+-		.stcack		= true,
+-	};
+-
+-	switch (core->power_up_parameters.func) {
+-	case SI476X_FUNC_FM_RECEIVER:
+-		err = si476x_core_cmd_fm_rsq_status(core, &args, NULL);
+-		break;
+-	case SI476X_FUNC_AM_RECEIVER:
+-		err = si476x_core_cmd_am_rsq_status(core, &args, NULL);
+-		break;
+-	default:
+-		err = -EINVAL;
+-	}
+-
+-	return err;
+-}
+-
+-static int si476x_cmd_tune_seek_freq(struct si476x_core *core,
+-				     uint8_t cmd,
+-				     const uint8_t args[], size_t argn,
+-				     uint8_t *resp, size_t respn)
+-{
+-	int err;
+-
+-
+-	atomic_set(&core->stc, 0);
+-	err = si476x_core_send_command(core, cmd, args, argn, resp, respn,
+-				       SI476X_TIMEOUT_TUNE);
+-	if (!err) {
+-		wait_event_killable(core->tuning,
+-				    atomic_read(&core->stc));
+-		si476x_cmd_clear_stc(core);
+-	}
+-
+-	return err;
+-}
+-
+-/**
+- * si476x_core_cmd_func_info() - send 'FUNC_INFO' command to the device
+- * @core: device to send the command to
+- * @info:  struct si476x_func_info to fill all the information
+- *         returned by the command
+- *
+- * The command requests the firmware and patch version for currently
+- * loaded firmware (dependent on the function of the device FM/AM/WB)
+- *
+- * Function returns 0 on success and negative error code on
+- * failure
+- */
+-int si476x_core_cmd_func_info(struct si476x_core *core,
+-			      struct si476x_func_info *info)
+-{
+-	int err;
+-	u8  resp[CMD_FUNC_INFO_NRESP];
+-
+-	err = si476x_core_send_command(core, CMD_FUNC_INFO,
+-				       NULL, 0,
+-				       resp, ARRAY_SIZE(resp),
+-				       SI476X_DEFAULT_TIMEOUT);
+-
+-	info->firmware.major    = resp[1];
+-	info->firmware.minor[0] = resp[2];
+-	info->firmware.minor[1] = resp[3];
+-
+-	info->patch_id = ((u16) resp[4] << 8) | resp[5];
+-	info->func     = resp[6];
+-
+-	return err;
+-}
+-EXPORT_SYMBOL_GPL(si476x_core_cmd_func_info);
+-
+-/**
+- * si476x_core_cmd_set_property() - send 'SET_PROPERTY' command to the device
+- * @core:    device to send the command to
+- * @property: property address
+- * @value:    property value
+- *
+- * Function returns 0 on success and negative error code on
+- * failure
+- */
+-int si476x_core_cmd_set_property(struct si476x_core *core,
+-				 u16 property, u16 value)
+-{
+-	u8       resp[CMD_SET_PROPERTY_NRESP];
+-	const u8 args[CMD_SET_PROPERTY_NARGS] = {
+-		0x00,
+-		msb(property),
+-		lsb(property),
+-		msb(value),
+-		lsb(value),
+-	};
+-
+-	return si476x_core_send_command(core, CMD_SET_PROPERTY,
+-					args, ARRAY_SIZE(args),
+-					resp, ARRAY_SIZE(resp),
+-					SI476X_DEFAULT_TIMEOUT);
+-}
+-EXPORT_SYMBOL_GPL(si476x_core_cmd_set_property);
+-
+-/**
+- * si476x_core_cmd_get_property() - send 'GET_PROPERTY' command to the device
+- * @core:    device to send the command to
+- * @property: property address
+- *
+- * Function return the value of property as u16 on success or a
+- * negative error on failure
+- */
+-int si476x_core_cmd_get_property(struct si476x_core *core, u16 property)
+-{
+-	int err;
+-	u8       resp[CMD_GET_PROPERTY_NRESP];
+-	const u8 args[CMD_GET_PROPERTY_NARGS] = {
+-		0x00,
+-		msb(property),
+-		lsb(property),
+-	};
+-
+-	err = si476x_core_send_command(core, CMD_GET_PROPERTY,
+-				       args, ARRAY_SIZE(args),
+-				       resp, ARRAY_SIZE(resp),
+-				       SI476X_DEFAULT_TIMEOUT);
+-	if (err < 0)
+-		return err;
+-	else
+-		return get_unaligned_be16(resp + 2);
+-}
+-EXPORT_SYMBOL_GPL(si476x_core_cmd_get_property);
+-
+-/**
+- * si476x_core_cmd_dig_audio_pin_cfg() - send 'DIG_AUDIO_PIN_CFG' command to
+- * the device
+- * @core: device to send the command to
+- * @dclk:  DCLK pin function configuration:
+- *	   #SI476X_DCLK_NOOP     - do not modify the behaviour
+- *         #SI476X_DCLK_TRISTATE - put the pin in tristate condition,
+- *                                 enable 1MOhm pulldown
+- *         #SI476X_DCLK_DAUDIO   - set the pin to be a part of digital
+- *                                 audio interface
+- * @dfs:   DFS pin function configuration:
+- *         #SI476X_DFS_NOOP      - do not modify the behaviour
+- *         #SI476X_DFS_TRISTATE  - put the pin in tristate condition,
+- *                             enable 1MOhm pulldown
+- *      SI476X_DFS_DAUDIO    - set the pin to be a part of digital
+- *                             audio interface
+- * @dout: - DOUT pin function configuration:
+- *      SI476X_DOUT_NOOP       - do not modify the behaviour
+- *      SI476X_DOUT_TRISTATE   - put the pin in tristate condition,
+- *                               enable 1MOhm pulldown
+- *      SI476X_DOUT_I2S_OUTPUT - set this pin to be digital out on I2S
+- *                               port 1
+- *      SI476X_DOUT_I2S_INPUT  - set this pin to be digital in on I2S
+- *                               port 1
+- * @xout: - XOUT pin function configuration:
+- *	SI476X_XOUT_NOOP        - do not modify the behaviour
+- *      SI476X_XOUT_TRISTATE    - put the pin in tristate condition,
+- *                                enable 1MOhm pulldown
+- *      SI476X_XOUT_I2S_INPUT   - set this pin to be digital in on I2S
+- *                                port 1
+- *      SI476X_XOUT_MODE_SELECT - set this pin to be the input that
+- *                                selects the mode of the I2S audio
+- *                                combiner (analog or HD)
+- *                                [SI4761/63/65/67 Only]
+- *
+- * Function returns 0 on success and negative error code on failure
+- */
+-int si476x_core_cmd_dig_audio_pin_cfg(struct  si476x_core *core,
+-				      enum si476x_dclk_config dclk,
+-				      enum si476x_dfs_config  dfs,
+-				      enum si476x_dout_config dout,
+-				      enum si476x_xout_config xout)
+-{
+-	u8       resp[CMD_DIG_AUDIO_PIN_CFG_NRESP];
+-	const u8 args[CMD_DIG_AUDIO_PIN_CFG_NARGS] = {
+-		PIN_CFG_BYTE(dclk),
+-		PIN_CFG_BYTE(dfs),
+-		PIN_CFG_BYTE(dout),
+-		PIN_CFG_BYTE(xout),
+-	};
+-
+-	return si476x_core_send_command(core, CMD_DIG_AUDIO_PIN_CFG,
+-					args, ARRAY_SIZE(args),
+-					resp, ARRAY_SIZE(resp),
+-					SI476X_DEFAULT_TIMEOUT);
+-}
+-EXPORT_SYMBOL_GPL(si476x_core_cmd_dig_audio_pin_cfg);
+-
+-/**
+- * si476x_core_cmd_zif_pin_cfg - send 'ZIF_PIN_CFG_COMMAND'
+- * @core: - device to send the command to
+- * @iqclk: - IQCL pin function configuration:
+- *       SI476X_IQCLK_NOOP     - do not modify the behaviour
+- *       SI476X_IQCLK_TRISTATE - put the pin in tristate condition,
+- *                               enable 1MOhm pulldown
+- *       SI476X_IQCLK_IQ       - set pin to be a part of I/Q interface
+- *                               in master mode
+- * @iqfs: - IQFS pin function configuration:
+- *       SI476X_IQFS_NOOP     - do not modify the behaviour
+- *       SI476X_IQFS_TRISTATE - put the pin in tristate condition,
+- *                              enable 1MOhm pulldown
+- *       SI476X_IQFS_IQ       - set pin to be a part of I/Q interface
+- *                              in master mode
+- * @iout: - IOUT pin function configuration:
+- *       SI476X_IOUT_NOOP     - do not modify the behaviour
+- *       SI476X_IOUT_TRISTATE - put the pin in tristate condition,
+- *                              enable 1MOhm pulldown
+- *       SI476X_IOUT_OUTPUT   - set pin to be I out
+- * @qout: - QOUT pin function configuration:
+- *       SI476X_QOUT_NOOP     - do not modify the behaviour
+- *       SI476X_QOUT_TRISTATE - put the pin in tristate condition,
+- *                              enable 1MOhm pulldown
+- *       SI476X_QOUT_OUTPUT   - set pin to be Q out
+- *
+- * Function returns 0 on success and negative error code on failure
+- */
+-int si476x_core_cmd_zif_pin_cfg(struct si476x_core *core,
+-				enum si476x_iqclk_config iqclk,
+-				enum si476x_iqfs_config iqfs,
+-				enum si476x_iout_config iout,
+-				enum si476x_qout_config qout)
+-{
+-	u8       resp[CMD_ZIF_PIN_CFG_NRESP];
+-	const u8 args[CMD_ZIF_PIN_CFG_NARGS] = {
+-		PIN_CFG_BYTE(iqclk),
+-		PIN_CFG_BYTE(iqfs),
+-		PIN_CFG_BYTE(iout),
+-		PIN_CFG_BYTE(qout),
+-	};
+-
+-	return si476x_core_send_command(core, CMD_ZIF_PIN_CFG,
+-					args, ARRAY_SIZE(args),
+-					resp, ARRAY_SIZE(resp),
+-					SI476X_DEFAULT_TIMEOUT);
+-}
+-EXPORT_SYMBOL_GPL(si476x_core_cmd_zif_pin_cfg);
+-
+-/**
+- * si476x_core_cmd_ic_link_gpo_ctl_pin_cfg - send
+- * 'IC_LINK_GPIO_CTL_PIN_CFG' command to the device
+- * @core: - device to send the command to
+- * @icin: - ICIN pin function configuration:
+- *      SI476X_ICIN_NOOP      - do not modify the behaviour
+- *      SI476X_ICIN_TRISTATE  - put the pin in tristate condition,
+- *                              enable 1MOhm pulldown
+- *      SI476X_ICIN_GPO1_HIGH - set pin to be an output, drive it high
+- *      SI476X_ICIN_GPO1_LOW  - set pin to be an output, drive it low
+- *      SI476X_ICIN_IC_LINK   - set the pin to be a part of Inter-Chip link
+- * @icip: - ICIP pin function configuration:
+- *      SI476X_ICIP_NOOP      - do not modify the behaviour
+- *      SI476X_ICIP_TRISTATE  - put the pin in tristate condition,
+- *                              enable 1MOhm pulldown
+- *      SI476X_ICIP_GPO1_HIGH - set pin to be an output, drive it high
+- *      SI476X_ICIP_GPO1_LOW  - set pin to be an output, drive it low
+- *      SI476X_ICIP_IC_LINK   - set the pin to be a part of Inter-Chip link
+- * @icon: - ICON pin function configuration:
+- *      SI476X_ICON_NOOP     - do not modify the behaviour
+- *      SI476X_ICON_TRISTATE - put the pin in tristate condition,
+- *                             enable 1MOhm pulldown
+- *      SI476X_ICON_I2S      - set the pin to be a part of audio
+- *                             interface in slave mode (DCLK)
+- *      SI476X_ICON_IC_LINK  - set the pin to be a part of Inter-Chip link
+- * @icop: - ICOP pin function configuration:
+- *      SI476X_ICOP_NOOP     - do not modify the behaviour
+- *      SI476X_ICOP_TRISTATE - put the pin in tristate condition,
+- *                             enable 1MOhm pulldown
+- *      SI476X_ICOP_I2S      - set the pin to be a part of audio
+- *                             interface in slave mode (DOUT)
+- *                             [Si4761/63/65/67 Only]
+- *      SI476X_ICOP_IC_LINK  - set the pin to be a part of Inter-Chip link
+- *
+- * Function returns 0 on success and negative error code on failure
+- */
+-int si476x_core_cmd_ic_link_gpo_ctl_pin_cfg(struct si476x_core *core,
+-					    enum si476x_icin_config icin,
+-					    enum si476x_icip_config icip,
+-					    enum si476x_icon_config icon,
+-					    enum si476x_icop_config icop)
+-{
+-	u8       resp[CMD_IC_LINK_GPO_CTL_PIN_CFG_NRESP];
+-	const u8 args[CMD_IC_LINK_GPO_CTL_PIN_CFG_NARGS] = {
+-		PIN_CFG_BYTE(icin),
+-		PIN_CFG_BYTE(icip),
+-		PIN_CFG_BYTE(icon),
+-		PIN_CFG_BYTE(icop),
+-	};
+-
+-	return si476x_core_send_command(core, CMD_IC_LINK_GPO_CTL_PIN_CFG,
+-					args, ARRAY_SIZE(args),
+-					resp, ARRAY_SIZE(resp),
+-					SI476X_DEFAULT_TIMEOUT);
+-}
+-EXPORT_SYMBOL_GPL(si476x_core_cmd_ic_link_gpo_ctl_pin_cfg);
+-
+-/**
+- * si476x_core_cmd_ana_audio_pin_cfg - send 'ANA_AUDIO_PIN_CFG' to the
+- * device
+- * @core: - device to send the command to
+- * @lrout: - LROUT pin function configuration:
+- *       SI476X_LROUT_NOOP     - do not modify the behaviour
+- *       SI476X_LROUT_TRISTATE - put the pin in tristate condition,
+- *                               enable 1MOhm pulldown
+- *       SI476X_LROUT_AUDIO    - set pin to be audio output
+- *       SI476X_LROUT_MPX      - set pin to be MPX output
+- *
+- * Function returns 0 on success and negative error code on failure
+- */
+-int si476x_core_cmd_ana_audio_pin_cfg(struct si476x_core *core,
+-				      enum si476x_lrout_config lrout)
+-{
+-	u8       resp[CMD_ANA_AUDIO_PIN_CFG_NRESP];
+-	const u8 args[CMD_ANA_AUDIO_PIN_CFG_NARGS] = {
+-		PIN_CFG_BYTE(lrout),
+-	};
+-
+-	return si476x_core_send_command(core, CMD_ANA_AUDIO_PIN_CFG,
+-					args, ARRAY_SIZE(args),
+-					resp, ARRAY_SIZE(resp),
+-					SI476X_DEFAULT_TIMEOUT);
+-}
+-EXPORT_SYMBOL_GPL(si476x_core_cmd_ana_audio_pin_cfg);
+-
+-
+-/**
+- * si476x_core_cmd_intb_pin_cfg_a10 - send 'INTB_PIN_CFG' command to the device
+- * @core: - device to send the command to
+- * @intb: - INTB pin function configuration:
+- *      SI476X_INTB_NOOP     - do not modify the behaviour
+- *      SI476X_INTB_TRISTATE - put the pin in tristate condition,
+- *                             enable 1MOhm pulldown
+- *      SI476X_INTB_DAUDIO   - set pin to be a part of digital
+- *                             audio interface in slave mode
+- *      SI476X_INTB_IRQ      - set pin to be an interrupt request line
+- * @a1: - A1 pin function configuration:
+- *      SI476X_A1_NOOP     - do not modify the behaviour
+- *      SI476X_A1_TRISTATE - put the pin in tristate condition,
+- *                           enable 1MOhm pulldown
+- *      SI476X_A1_IRQ      - set pin to be an interrupt request line
+- *
+- * Function returns 0 on success and negative error code on failure
+- */
+-static int si476x_core_cmd_intb_pin_cfg_a10(struct si476x_core *core,
+-					    enum si476x_intb_config intb,
+-					    enum si476x_a1_config a1)
+-{
+-	u8       resp[CMD_INTB_PIN_CFG_A10_NRESP];
+-	const u8 args[CMD_INTB_PIN_CFG_NARGS] = {
+-		PIN_CFG_BYTE(intb),
+-		PIN_CFG_BYTE(a1),
+-	};
+-
+-	return si476x_core_send_command(core, CMD_INTB_PIN_CFG,
+-					args, ARRAY_SIZE(args),
+-					resp, ARRAY_SIZE(resp),
+-					SI476X_DEFAULT_TIMEOUT);
+-}
+-
+-static int si476x_core_cmd_intb_pin_cfg_a20(struct si476x_core *core,
+-					    enum si476x_intb_config intb,
+-					    enum si476x_a1_config a1)
+-{
+-	u8       resp[CMD_INTB_PIN_CFG_A20_NRESP];
+-	const u8 args[CMD_INTB_PIN_CFG_NARGS] = {
+-		PIN_CFG_BYTE(intb),
+-		PIN_CFG_BYTE(a1),
+-	};
+-
+-	return si476x_core_send_command(core, CMD_INTB_PIN_CFG,
+-					args, ARRAY_SIZE(args),
+-					resp, ARRAY_SIZE(resp),
+-					SI476X_DEFAULT_TIMEOUT);
+-}
+-
+-
+-
+-/**
+- * si476x_core_cmd_am_rsq_status - send 'AM_RSQ_STATUS' command to the
+- * device
+- * @core:  - device to send the command to
+- * @rsqargs: - pointer to a structure containing a group of sub-args
+- *             relevant to sending the RSQ status command
+- * @report: - all signal quality information returned by the command
+- *           (if NULL then the output of the command is ignored)
+- *
+- * Function returns 0 on success and negative error code on failure
+- */
+-int si476x_core_cmd_am_rsq_status(struct si476x_core *core,
+-				  struct si476x_rsq_status_args *rsqargs,
+-				  struct si476x_rsq_status_report *report)
+-{
+-	int err;
+-	u8       resp[CMD_AM_RSQ_STATUS_NRESP];
+-	const u8 args[CMD_AM_RSQ_STATUS_NARGS] = {
+-		rsqargs->rsqack << 3 | rsqargs->attune << 2 |
+-		rsqargs->cancel << 1 | rsqargs->stcack,
+-	};
+-
+-	err = si476x_core_send_command(core, CMD_AM_RSQ_STATUS,
+-				       args, ARRAY_SIZE(args),
+-				       resp, ARRAY_SIZE(resp),
+-				       SI476X_DEFAULT_TIMEOUT);
+-	/*
+-	 * Besides getting received signal quality information this
+-	 * command can be used to just acknowledge different interrupt
+-	 * flags in those cases it is useless to copy and parse
+-	 * received data so user can pass NULL, and thus avoid
+-	 * unnecessary copying.
+-	 */
+-	if (!report)
+-		return err;
+-
+-	report->snrhint		= 0x08 & resp[1];
+-	report->snrlint		= 0x04 & resp[1];
+-	report->rssihint	= 0x02 & resp[1];
+-	report->rssilint	= 0x01 & resp[1];
+-
+-	report->bltf		= 0x80 & resp[2];
+-	report->snr_ready	= 0x20 & resp[2];
+-	report->rssiready	= 0x08 & resp[2];
+-	report->afcrl		= 0x02 & resp[2];
+-	report->valid		= 0x01 & resp[2];
+-
+-	report->readfreq	= get_unaligned_be16(resp + 3);
+-	report->freqoff		= resp[5];
+-	report->rssi		= resp[6];
+-	report->snr		= resp[7];
+-	report->lassi		= resp[9];
+-	report->hassi		= resp[10];
+-	report->mult		= resp[11];
+-	report->dev		= resp[12];
+-
+-	return err;
+-}
+-EXPORT_SYMBOL_GPL(si476x_core_cmd_am_rsq_status);
+-
+-int si476x_core_cmd_fm_acf_status(struct si476x_core *core,
+-			     struct si476x_acf_status_report *report)
+-{
+-	int err;
+-	u8       resp[CMD_FM_ACF_STATUS_NRESP];
+-	const u8 args[CMD_FM_ACF_STATUS_NARGS] = {
+-		0x0,
+-	};
+-
+-	if (!report)
+-		return -EINVAL;
+-
+-	err = si476x_core_send_command(core, CMD_FM_ACF_STATUS,
+-				       args, ARRAY_SIZE(args),
+-				       resp, ARRAY_SIZE(resp),
+-				       SI476X_DEFAULT_TIMEOUT);
+-	if (err < 0)
+-		return err;
+-
+-	report->blend_int	= resp[1] & SI476X_ACF_BLEND_INT;
+-	report->hblend_int	= resp[1] & SI476X_ACF_HIBLEND_INT;
+-	report->hicut_int	= resp[1] & SI476X_ACF_HICUT_INT;
+-	report->chbw_int	= resp[1] & SI476X_ACF_CHBW_INT;
+-	report->softmute_int	= resp[1] & SI476X_ACF_SOFTMUTE_INT;
+-	report->smute		= resp[2] & SI476X_ACF_SMUTE;
+-	report->smattn		= resp[3] & SI476X_ACF_SMATTN;
+-	report->chbw		= resp[4];
+-	report->hicut		= resp[5];
+-	report->hiblend		= resp[6];
+-	report->pilot		= resp[7] & SI476X_ACF_PILOT;
+-	report->stblend		= resp[7] & SI476X_ACF_STBLEND;
+-
+-	return err;
+-}
+-EXPORT_SYMBOL_GPL(si476x_core_cmd_fm_acf_status);
+-
+-int si476x_core_cmd_am_acf_status(struct si476x_core *core,
+-				  struct si476x_acf_status_report *report)
+-{
+-	int err;
+-	u8       resp[CMD_AM_ACF_STATUS_NRESP];
+-	const u8 args[CMD_AM_ACF_STATUS_NARGS] = {
+-		0x0,
+-	};
+-
+-	if (!report)
+-		return -EINVAL;
+-
+-	err = si476x_core_send_command(core, CMD_AM_ACF_STATUS,
+-				       args, ARRAY_SIZE(args),
+-				       resp, ARRAY_SIZE(resp),
+-				       SI476X_DEFAULT_TIMEOUT);
+-	if (err < 0)
+-		return err;
+-
+-	report->blend_int	= resp[1] & SI476X_ACF_BLEND_INT;
+-	report->hblend_int	= resp[1] & SI476X_ACF_HIBLEND_INT;
+-	report->hicut_int	= resp[1] & SI476X_ACF_HICUT_INT;
+-	report->chbw_int	= resp[1] & SI476X_ACF_CHBW_INT;
+-	report->softmute_int	= resp[1] & SI476X_ACF_SOFTMUTE_INT;
+-	report->smute		= resp[2] & SI476X_ACF_SMUTE;
+-	report->smattn		= resp[3] & SI476X_ACF_SMATTN;
+-	report->chbw		= resp[4];
+-	report->hicut		= resp[5];
+-
+-	return err;
+-}
+-EXPORT_SYMBOL_GPL(si476x_core_cmd_am_acf_status);
+-
+-
+-/**
+- * si476x_core_cmd_fm_seek_start - send 'FM_SEEK_START' command to the
+- * device
+- * @core:  - device to send the command to
+- * @seekup: - if set the direction of the search is 'up'
+- * @wrap:   - if set seek wraps when hitting band limit
+- *
+- * This function begins search for a valid station. The station is
+- * considered valid when 'FM_VALID_SNR_THRESHOLD' and
+- * 'FM_VALID_RSSI_THRESHOLD' and 'FM_VALID_MAX_TUNE_ERROR' criteria
+- * are met.
+-} *
+- * Function returns 0 on success and negative error code on failure
+- */
+-int si476x_core_cmd_fm_seek_start(struct si476x_core *core,
+-				  bool seekup, bool wrap)
+-{
+-	u8       resp[CMD_FM_SEEK_START_NRESP];
+-	const u8 args[CMD_FM_SEEK_START_NARGS] = {
+-		seekup << 3 | wrap << 2,
+-	};
+-
+-	return si476x_cmd_tune_seek_freq(core, CMD_FM_SEEK_START,
+-					 args, sizeof(args),
+-					 resp, sizeof(resp));
+-}
+-EXPORT_SYMBOL_GPL(si476x_core_cmd_fm_seek_start);
+-
+-/**
+- * si476x_core_cmd_fm_rds_status - send 'FM_RDS_STATUS' command to the
+- * device
+- * @core: - device to send the command to
+- * @status_only: - if set the data is not removed from RDSFIFO,
+- *                RDSFIFOUSED is not decremented and data in all the
+- *                rest RDS data contains the last valid info received
+- * @mtfifo: if set the command clears RDS receive FIFO
+- * @intack: if set the command clards the RDSINT bit.
+- * @report: - all signal quality information returned by the command
+- *           (if NULL then the output of the command is ignored)
+- *
+- * Function returns 0 on success and negative error code on failure
+- */
+-int si476x_core_cmd_fm_rds_status(struct si476x_core *core,
+-				  bool status_only,
+-				  bool mtfifo,
+-				  bool intack,
+-				  struct si476x_rds_status_report *report)
+-{
+-	int err;
+-	u8       resp[CMD_FM_RDS_STATUS_NRESP];
+-	const u8 args[CMD_FM_RDS_STATUS_NARGS] = {
+-		status_only << 2 | mtfifo << 1 | intack,
+-	};
+-
+-	err = si476x_core_send_command(core, CMD_FM_RDS_STATUS,
+-				       args, ARRAY_SIZE(args),
+-				       resp, ARRAY_SIZE(resp),
+-				       SI476X_DEFAULT_TIMEOUT);
+-	/*
+-	 * Besides getting RDS status information this command can be
+-	 * used to just acknowledge different interrupt flags in those
+-	 * cases it is useless to copy and parse received data so user
+-	 * can pass NULL, and thus avoid unnecessary copying.
+-	 */
+-	if (err < 0 || report == NULL)
+-		return err;
+-
+-	report->rdstpptyint	= 0x10 & resp[1];
+-	report->rdspiint	= 0x08 & resp[1];
+-	report->rdssyncint	= 0x02 & resp[1];
+-	report->rdsfifoint	= 0x01 & resp[1];
+-
+-	report->tpptyvalid	= 0x10 & resp[2];
+-	report->pivalid		= 0x08 & resp[2];
+-	report->rdssync		= 0x02 & resp[2];
+-	report->rdsfifolost	= 0x01 & resp[2];
+-
+-	report->tp		= 0x20 & resp[3];
+-	report->pty		= 0x1f & resp[3];
+-
+-	report->pi		= get_unaligned_be16(resp + 4);
+-	report->rdsfifoused	= resp[6];
+-
+-	report->ble[V4L2_RDS_BLOCK_A]	= 0xc0 & resp[7];
+-	report->ble[V4L2_RDS_BLOCK_B]	= 0x30 & resp[7];
+-	report->ble[V4L2_RDS_BLOCK_C]	= 0x0c & resp[7];
+-	report->ble[V4L2_RDS_BLOCK_D]	= 0x03 & resp[7];
+-
+-	report->rds[V4L2_RDS_BLOCK_A].block = V4L2_RDS_BLOCK_A;
+-	report->rds[V4L2_RDS_BLOCK_A].msb = resp[8];
+-	report->rds[V4L2_RDS_BLOCK_A].lsb = resp[9];
+-
+-	report->rds[V4L2_RDS_BLOCK_B].block = V4L2_RDS_BLOCK_B;
+-	report->rds[V4L2_RDS_BLOCK_B].msb = resp[10];
+-	report->rds[V4L2_RDS_BLOCK_B].lsb = resp[11];
+-
+-	report->rds[V4L2_RDS_BLOCK_C].block = V4L2_RDS_BLOCK_C;
+-	report->rds[V4L2_RDS_BLOCK_C].msb = resp[12];
+-	report->rds[V4L2_RDS_BLOCK_C].lsb = resp[13];
+-
+-	report->rds[V4L2_RDS_BLOCK_D].block = V4L2_RDS_BLOCK_D;
+-	report->rds[V4L2_RDS_BLOCK_D].msb = resp[14];
+-	report->rds[V4L2_RDS_BLOCK_D].lsb = resp[15];
+-
+-	return err;
+-}
+-EXPORT_SYMBOL_GPL(si476x_core_cmd_fm_rds_status);
+-
+-int si476x_core_cmd_fm_rds_blockcount(struct si476x_core *core,
+-				bool clear,
+-				struct si476x_rds_blockcount_report *report)
+-{
+-	int err;
+-	u8       resp[CMD_FM_RDS_BLOCKCOUNT_NRESP];
+-	const u8 args[CMD_FM_RDS_BLOCKCOUNT_NARGS] = {
+-		clear,
+-	};
+-
+-	if (!report)
+-		return -EINVAL;
+-
+-	err = si476x_core_send_command(core, CMD_FM_RDS_BLOCKCOUNT,
+-				       args, ARRAY_SIZE(args),
+-				       resp, ARRAY_SIZE(resp),
+-				       SI476X_DEFAULT_TIMEOUT);
+-
+-	if (!err) {
+-		report->expected	= get_unaligned_be16(resp + 2);
+-		report->received	= get_unaligned_be16(resp + 4);
+-		report->uncorrectable	= get_unaligned_be16(resp + 6);
+-	}
+-
+-	return err;
+-}
+-EXPORT_SYMBOL_GPL(si476x_core_cmd_fm_rds_blockcount);
+-
+-int si476x_core_cmd_fm_phase_diversity(struct si476x_core *core,
+-				       enum si476x_phase_diversity_mode mode)
+-{
+-	u8       resp[CMD_FM_PHASE_DIVERSITY_NRESP];
+-	const u8 args[CMD_FM_PHASE_DIVERSITY_NARGS] = {
+-		mode & 0x07,
+-	};
+-
+-	return si476x_core_send_command(core, CMD_FM_PHASE_DIVERSITY,
+-					args, ARRAY_SIZE(args),
+-					resp, ARRAY_SIZE(resp),
+-					SI476X_DEFAULT_TIMEOUT);
+-}
+-EXPORT_SYMBOL_GPL(si476x_core_cmd_fm_phase_diversity);
+-/**
+- * si476x_core_cmd_fm_phase_div_status() - get the phase diversity
+- * status
+- *
+- * @core: si476x device
+- *
+- * NOTE caller must hold core lock
+- *
+- * Function returns the value of the status bit in case of success and
+- * negative error code in case of failure.
+- */
+-int si476x_core_cmd_fm_phase_div_status(struct si476x_core *core)
+-{
+-	int err;
+-	u8 resp[CMD_FM_PHASE_DIV_STATUS_NRESP];
+-
+-	err = si476x_core_send_command(core, CMD_FM_PHASE_DIV_STATUS,
+-				       NULL, 0,
+-				       resp, ARRAY_SIZE(resp),
+-				       SI476X_DEFAULT_TIMEOUT);
+-
+-	return (err < 0) ? err : resp[1];
+-}
+-EXPORT_SYMBOL_GPL(si476x_core_cmd_fm_phase_div_status);
+-
+-
+-/**
+- * si476x_core_cmd_am_seek_start - send 'FM_SEEK_START' command to the
+- * device
+- * @core:  - device to send the command to
+- * @seekup: - if set the direction of the search is 'up'
+- * @wrap:   - if set seek wraps when hitting band limit
+- *
+- * This function begins search for a valid station. The station is
+- * considered valid when 'FM_VALID_SNR_THRESHOLD' and
+- * 'FM_VALID_RSSI_THRESHOLD' and 'FM_VALID_MAX_TUNE_ERROR' criteria
+- * are met.
+- *
+- * Function returns 0 on success and negative error code on failure
+- */
+-int si476x_core_cmd_am_seek_start(struct si476x_core *core,
+-				  bool seekup, bool wrap)
+-{
+-	u8       resp[CMD_AM_SEEK_START_NRESP];
+-	const u8 args[CMD_AM_SEEK_START_NARGS] = {
+-		seekup << 3 | wrap << 2,
+-	};
+-
+-	return si476x_cmd_tune_seek_freq(core,  CMD_AM_SEEK_START,
+-					 args, sizeof(args),
+-					 resp, sizeof(resp));
+-}
+-EXPORT_SYMBOL_GPL(si476x_core_cmd_am_seek_start);
+-
+-
+-
+-static int si476x_core_cmd_power_up_a10(struct si476x_core *core,
+-					struct si476x_power_up_args *puargs)
+-{
+-	u8       resp[CMD_POWER_UP_A10_NRESP];
+-	const bool intsel = (core->pinmux.a1 == SI476X_A1_IRQ);
+-	const bool ctsen  = (core->client->irq != 0);
+-	const u8 args[CMD_POWER_UP_A10_NARGS] = {
+-		0xF7,		/* Reserved, always 0xF7 */
+-		0x3F & puargs->xcload,	/* First two bits are reserved to be
+-				 * zeros */
+-		ctsen << 7 | intsel << 6 | 0x07, /* Last five bits
+-						   * are reserved to
+-						   * be written as 0x7 */
+-		puargs->func << 4 | puargs->freq,
+-		0x11,		/* Reserved, always 0x11 */
+-	};
+-
+-	return si476x_core_send_command(core, CMD_POWER_UP,
+-					args, ARRAY_SIZE(args),
+-					resp, ARRAY_SIZE(resp),
+-					SI476X_TIMEOUT_POWER_UP);
+-}
+-
+-static int si476x_core_cmd_power_up_a20(struct si476x_core *core,
+-				 struct si476x_power_up_args *puargs)
+-{
+-	u8       resp[CMD_POWER_UP_A20_NRESP];
+-	const bool intsel = (core->pinmux.a1 == SI476X_A1_IRQ);
+-	const bool ctsen  = (core->client->irq != 0);
+-	const u8 args[CMD_POWER_UP_A20_NARGS] = {
+-		puargs->ibias6x << 7 | puargs->xstart,
+-		0x3F & puargs->xcload,	/* First two bits are reserved to be
+-					 * zeros */
+-		ctsen << 7 | intsel << 6 | puargs->fastboot << 5 |
+-		puargs->xbiashc << 3 | puargs->xbias,
+-		puargs->func << 4 | puargs->freq,
+-		0x10 | puargs->xmode,
+-	};
+-
+-	return si476x_core_send_command(core, CMD_POWER_UP,
+-					args, ARRAY_SIZE(args),
+-					resp, ARRAY_SIZE(resp),
+-					SI476X_TIMEOUT_POWER_UP);
+-}
+-
+-static int si476x_core_cmd_power_down_a10(struct si476x_core *core,
+-					  struct si476x_power_down_args *pdargs)
+-{
+-	u8 resp[CMD_POWER_DOWN_A10_NRESP];
+-
+-	return si476x_core_send_command(core, CMD_POWER_DOWN,
+-					NULL, 0,
+-					resp, ARRAY_SIZE(resp),
+-					SI476X_DEFAULT_TIMEOUT);
+-}
+-
+-static int si476x_core_cmd_power_down_a20(struct si476x_core *core,
+-					  struct si476x_power_down_args *pdargs)
+-{
+-	u8 resp[CMD_POWER_DOWN_A20_NRESP];
+-	const u8 args[CMD_POWER_DOWN_A20_NARGS] = {
+-		pdargs->xosc,
+-	};
+-	return si476x_core_send_command(core, CMD_POWER_DOWN,
+-					args, ARRAY_SIZE(args),
+-					resp, ARRAY_SIZE(resp),
+-					SI476X_DEFAULT_TIMEOUT);
+-}
+-
+-static int si476x_core_cmd_am_tune_freq_a10(struct si476x_core *core,
+-					struct si476x_tune_freq_args *tuneargs)
+-{
+-
+-	const int am_freq = tuneargs->freq;
+-	u8       resp[CMD_AM_TUNE_FREQ_NRESP];
+-	const u8 args[CMD_AM_TUNE_FREQ_NARGS] = {
+-		(tuneargs->hd << 6),
+-		msb(am_freq),
+-		lsb(am_freq),
+-	};
+-
+-	return si476x_cmd_tune_seek_freq(core, CMD_AM_TUNE_FREQ, args,
+-					 sizeof(args),
+-					 resp, sizeof(resp));
+-}
+-
+-static int si476x_core_cmd_am_tune_freq_a20(struct si476x_core *core,
+-					struct si476x_tune_freq_args *tuneargs)
+-{
+-	const int am_freq = tuneargs->freq;
+-	u8       resp[CMD_AM_TUNE_FREQ_NRESP];
+-	const u8 args[CMD_AM_TUNE_FREQ_NARGS] = {
+-		(tuneargs->zifsr << 6) | (tuneargs->injside & 0x03),
+-		msb(am_freq),
+-		lsb(am_freq),
+-	};
+-
+-	return si476x_cmd_tune_seek_freq(core, CMD_AM_TUNE_FREQ,
+-					 args, sizeof(args),
+-					 resp, sizeof(resp));
+-}
+-
+-static int si476x_core_cmd_fm_rsq_status_a10(struct si476x_core *core,
+-					struct si476x_rsq_status_args *rsqargs,
+-					struct si476x_rsq_status_report *report)
+-{
+-	int err;
+-	u8       resp[CMD_FM_RSQ_STATUS_A10_NRESP];
+-	const u8 args[CMD_FM_RSQ_STATUS_A10_NARGS] = {
+-		rsqargs->rsqack << 3 | rsqargs->attune << 2 |
+-		rsqargs->cancel << 1 | rsqargs->stcack,
+-	};
+-
+-	err = si476x_core_send_command(core, CMD_FM_RSQ_STATUS,
+-				       args, ARRAY_SIZE(args),
+-				       resp, ARRAY_SIZE(resp),
+-				       SI476X_DEFAULT_TIMEOUT);
+-	/*
+-	 * Besides getting received signal quality information this
+-	 * command can be used to just acknowledge different interrupt
+-	 * flags in those cases it is useless to copy and parse
+-	 * received data so user can pass NULL, and thus avoid
+-	 * unnecessary copying.
+-	 */
+-	if (err < 0 || report == NULL)
+-		return err;
+-
+-	report->multhint	= 0x80 & resp[1];
+-	report->multlint	= 0x40 & resp[1];
+-	report->snrhint		= 0x08 & resp[1];
+-	report->snrlint		= 0x04 & resp[1];
+-	report->rssihint	= 0x02 & resp[1];
+-	report->rssilint	= 0x01 & resp[1];
+-
+-	report->bltf		= 0x80 & resp[2];
+-	report->snr_ready	= 0x20 & resp[2];
+-	report->rssiready	= 0x08 & resp[2];
+-	report->afcrl		= 0x02 & resp[2];
+-	report->valid		= 0x01 & resp[2];
+-
+-	report->readfreq	= get_unaligned_be16(resp + 3);
+-	report->freqoff		= resp[5];
+-	report->rssi		= resp[6];
+-	report->snr		= resp[7];
+-	report->lassi		= resp[9];
+-	report->hassi		= resp[10];
+-	report->mult		= resp[11];
+-	report->dev		= resp[12];
+-	report->readantcap	= get_unaligned_be16(resp + 13);
+-	report->assi		= resp[15];
+-	report->usn		= resp[16];
+-
+-	return err;
+-}
+-
+-static int si476x_core_cmd_fm_rsq_status_a20(struct si476x_core *core,
+-				     struct si476x_rsq_status_args *rsqargs,
+-				     struct si476x_rsq_status_report *report)
+-{
+-	int err;
+-	u8       resp[CMD_FM_RSQ_STATUS_A10_NRESP];
+-	const u8 args[CMD_FM_RSQ_STATUS_A30_NARGS] = {
+-		rsqargs->primary << 4 | rsqargs->rsqack << 3 |
+-		rsqargs->attune  << 2 | rsqargs->cancel << 1 |
+-		rsqargs->stcack,
+-	};
+-
+-	err = si476x_core_send_command(core, CMD_FM_RSQ_STATUS,
+-				       args, ARRAY_SIZE(args),
+-				       resp, ARRAY_SIZE(resp),
+-				       SI476X_DEFAULT_TIMEOUT);
+-	/*
+-	 * Besides getting received signal quality information this
+-	 * command can be used to just acknowledge different interrupt
+-	 * flags in those cases it is useless to copy and parse
+-	 * received data so user can pass NULL, and thus avoid
+-	 * unnecessary copying.
+-	 */
+-	if (err < 0 || report == NULL)
+-		return err;
+-
+-	report->multhint	= 0x80 & resp[1];
+-	report->multlint	= 0x40 & resp[1];
+-	report->snrhint		= 0x08 & resp[1];
+-	report->snrlint		= 0x04 & resp[1];
+-	report->rssihint	= 0x02 & resp[1];
+-	report->rssilint	= 0x01 & resp[1];
+-
+-	report->bltf		= 0x80 & resp[2];
+-	report->snr_ready	= 0x20 & resp[2];
+-	report->rssiready	= 0x08 & resp[2];
+-	report->afcrl		= 0x02 & resp[2];
+-	report->valid		= 0x01 & resp[2];
+-
+-	report->readfreq	= get_unaligned_be16(resp + 3);
+-	report->freqoff		= resp[5];
+-	report->rssi		= resp[6];
+-	report->snr		= resp[7];
+-	report->lassi		= resp[9];
+-	report->hassi		= resp[10];
+-	report->mult		= resp[11];
+-	report->dev		= resp[12];
+-	report->readantcap	= get_unaligned_be16(resp + 13);
+-	report->assi		= resp[15];
+-	report->usn		= resp[16];
+-
+-	return err;
+-}
+-
+-
+-static int si476x_core_cmd_fm_rsq_status_a30(struct si476x_core *core,
+-					struct si476x_rsq_status_args *rsqargs,
+-					struct si476x_rsq_status_report *report)
+-{
+-	int err;
+-	u8       resp[CMD_FM_RSQ_STATUS_A30_NRESP];
+-	const u8 args[CMD_FM_RSQ_STATUS_A30_NARGS] = {
+-		rsqargs->primary << 4 | rsqargs->rsqack << 3 |
+-		rsqargs->attune << 2 | rsqargs->cancel << 1 |
+-		rsqargs->stcack,
+-	};
+-
+-	err = si476x_core_send_command(core, CMD_FM_RSQ_STATUS,
+-				       args, ARRAY_SIZE(args),
+-				       resp, ARRAY_SIZE(resp),
+-				       SI476X_DEFAULT_TIMEOUT);
+-	/*
+-	 * Besides getting received signal quality information this
+-	 * command can be used to just acknowledge different interrupt
+-	 * flags in those cases it is useless to copy and parse
+-	 * received data so user can pass NULL, and thus avoid
+-	 * unnecessary copying.
+-	 */
+-	if (err < 0 || report == NULL)
+-		return err;
+-
+-	report->multhint	= 0x80 & resp[1];
+-	report->multlint	= 0x40 & resp[1];
+-	report->snrhint		= 0x08 & resp[1];
+-	report->snrlint		= 0x04 & resp[1];
+-	report->rssihint	= 0x02 & resp[1];
+-	report->rssilint	= 0x01 & resp[1];
+-
+-	report->bltf		= 0x80 & resp[2];
+-	report->snr_ready	= 0x20 & resp[2];
+-	report->rssiready	= 0x08 & resp[2];
+-	report->injside         = 0x04 & resp[2];
+-	report->afcrl		= 0x02 & resp[2];
+-	report->valid		= 0x01 & resp[2];
+-
+-	report->readfreq	= get_unaligned_be16(resp + 3);
+-	report->freqoff		= resp[5];
+-	report->rssi		= resp[6];
+-	report->snr		= resp[7];
+-	report->issi		= resp[8];
+-	report->lassi		= resp[9];
+-	report->hassi		= resp[10];
+-	report->mult		= resp[11];
+-	report->dev		= resp[12];
+-	report->readantcap	= get_unaligned_be16(resp + 13);
+-	report->assi		= resp[15];
+-	report->usn		= resp[16];
+-
+-	report->pilotdev	= resp[17];
+-	report->rdsdev		= resp[18];
+-	report->assidev		= resp[19];
+-	report->strongdev	= resp[20];
+-	report->rdspi		= get_unaligned_be16(resp + 21);
+-
+-	return err;
+-}
+-
+-static int si476x_core_cmd_fm_tune_freq_a10(struct si476x_core *core,
+-					struct si476x_tune_freq_args *tuneargs)
+-{
+-	u8       resp[CMD_FM_TUNE_FREQ_NRESP];
+-	const u8 args[CMD_FM_TUNE_FREQ_A10_NARGS] = {
+-		(tuneargs->hd << 6) | (tuneargs->tunemode << 4)
+-		| (tuneargs->smoothmetrics << 2),
+-		msb(tuneargs->freq),
+-		lsb(tuneargs->freq),
+-		msb(tuneargs->antcap),
+-		lsb(tuneargs->antcap)
+-	};
+-
+-	return si476x_cmd_tune_seek_freq(core, CMD_FM_TUNE_FREQ,
+-					 args, sizeof(args),
+-					 resp, sizeof(resp));
+-}
+-
+-static int si476x_core_cmd_fm_tune_freq_a20(struct si476x_core *core,
+-					struct si476x_tune_freq_args *tuneargs)
+-{
+-	u8       resp[CMD_FM_TUNE_FREQ_NRESP];
+-	const u8 args[CMD_FM_TUNE_FREQ_A20_NARGS] = {
+-		(tuneargs->hd << 6) | (tuneargs->tunemode << 4)
+-		|  (tuneargs->smoothmetrics << 2) | (tuneargs->injside),
+-		msb(tuneargs->freq),
+-		lsb(tuneargs->freq),
+-	};
+-
+-	return si476x_cmd_tune_seek_freq(core, CMD_FM_TUNE_FREQ,
+-					 args, sizeof(args),
+-					 resp, sizeof(resp));
+-}
+-
+-static int si476x_core_cmd_agc_status_a20(struct si476x_core *core,
+-					struct si476x_agc_status_report *report)
+-{
+-	int err;
+-	u8 resp[CMD_AGC_STATUS_NRESP_A20];
+-
+-	if (!report)
+-		return -EINVAL;
+-
+-	err = si476x_core_send_command(core, CMD_AGC_STATUS,
+-				       NULL, 0,
+-				       resp, ARRAY_SIZE(resp),
+-				       SI476X_DEFAULT_TIMEOUT);
+-	if (err < 0)
+-		return err;
+-
+-	report->mxhi		= resp[1] & SI476X_AGC_MXHI;
+-	report->mxlo		= resp[1] & SI476X_AGC_MXLO;
+-	report->lnahi		= resp[1] & SI476X_AGC_LNAHI;
+-	report->lnalo		= resp[1] & SI476X_AGC_LNALO;
+-	report->fmagc1		= resp[2];
+-	report->fmagc2		= resp[3];
+-	report->pgagain		= resp[4];
+-	report->fmwblang	= resp[5];
+-
+-	return err;
+-}
+-
+-static int si476x_core_cmd_agc_status_a10(struct si476x_core *core,
+-					struct si476x_agc_status_report *report)
+-{
+-	int err;
+-	u8 resp[CMD_AGC_STATUS_NRESP_A10];
+-
+-	if (!report)
+-		return -EINVAL;
+-
+-	err = si476x_core_send_command(core, CMD_AGC_STATUS,
+-				       NULL, 0,
+-				       resp, ARRAY_SIZE(resp),
+-				       SI476X_DEFAULT_TIMEOUT);
+-	if (err < 0)
+-		return err;
+-
+-	report->mxhi	= resp[1] & SI476X_AGC_MXHI;
+-	report->mxlo	= resp[1] & SI476X_AGC_MXLO;
+-	report->lnahi	= resp[1] & SI476X_AGC_LNAHI;
+-	report->lnalo	= resp[1] & SI476X_AGC_LNALO;
+-
+-	return err;
+-}
+-
+-typedef int (*tune_freq_func_t) (struct si476x_core *core,
+-				 struct si476x_tune_freq_args *tuneargs);
+-
+-static struct {
+-	int (*power_up)(struct si476x_core *,
+-			struct si476x_power_up_args *);
+-	int (*power_down)(struct si476x_core *,
+-			  struct si476x_power_down_args *);
+-
+-	tune_freq_func_t fm_tune_freq;
+-	tune_freq_func_t am_tune_freq;
+-
+-	int (*fm_rsq_status)(struct si476x_core *,
+-			     struct si476x_rsq_status_args *,
+-			     struct si476x_rsq_status_report *);
+-
+-	int (*agc_status)(struct si476x_core *,
+-			  struct si476x_agc_status_report *);
+-	int (*intb_pin_cfg)(struct si476x_core *core,
+-			    enum si476x_intb_config intb,
+-			    enum si476x_a1_config a1);
+-} si476x_cmds_vtable[] = {
+-	[SI476X_REVISION_A10] = {
+-		.power_up	= si476x_core_cmd_power_up_a10,
+-		.power_down	= si476x_core_cmd_power_down_a10,
+-		.fm_tune_freq	= si476x_core_cmd_fm_tune_freq_a10,
+-		.am_tune_freq	= si476x_core_cmd_am_tune_freq_a10,
+-		.fm_rsq_status	= si476x_core_cmd_fm_rsq_status_a10,
+-		.agc_status	= si476x_core_cmd_agc_status_a10,
+-		.intb_pin_cfg   = si476x_core_cmd_intb_pin_cfg_a10,
+-	},
+-	[SI476X_REVISION_A20] = {
+-		.power_up	= si476x_core_cmd_power_up_a20,
+-		.power_down	= si476x_core_cmd_power_down_a20,
+-		.fm_tune_freq	= si476x_core_cmd_fm_tune_freq_a20,
+-		.am_tune_freq	= si476x_core_cmd_am_tune_freq_a20,
+-		.fm_rsq_status	= si476x_core_cmd_fm_rsq_status_a20,
+-		.agc_status	= si476x_core_cmd_agc_status_a20,
+-		.intb_pin_cfg   = si476x_core_cmd_intb_pin_cfg_a20,
+-	},
+-	[SI476X_REVISION_A30] = {
+-		.power_up	= si476x_core_cmd_power_up_a20,
+-		.power_down	= si476x_core_cmd_power_down_a20,
+-		.fm_tune_freq	= si476x_core_cmd_fm_tune_freq_a20,
+-		.am_tune_freq	= si476x_core_cmd_am_tune_freq_a20,
+-		.fm_rsq_status	= si476x_core_cmd_fm_rsq_status_a30,
+-		.agc_status	= si476x_core_cmd_agc_status_a20,
+-		.intb_pin_cfg   = si476x_core_cmd_intb_pin_cfg_a20,
+-	},
+-};
+-
+-int si476x_core_cmd_power_up(struct si476x_core *core,
+-			     struct si476x_power_up_args *args)
+-{
+-	BUG_ON(core->revision > SI476X_REVISION_A30 ||
+-	       core->revision == -1);
+-	return si476x_cmds_vtable[core->revision].power_up(core, args);
+-}
+-EXPORT_SYMBOL_GPL(si476x_core_cmd_power_up);
+-
+-int si476x_core_cmd_power_down(struct si476x_core *core,
+-			       struct si476x_power_down_args *args)
+-{
+-	BUG_ON(core->revision > SI476X_REVISION_A30 ||
+-	       core->revision == -1);
+-	return si476x_cmds_vtable[core->revision].power_down(core, args);
+-}
+-EXPORT_SYMBOL_GPL(si476x_core_cmd_power_down);
+-
+-int si476x_core_cmd_fm_tune_freq(struct si476x_core *core,
+-				 struct si476x_tune_freq_args *args)
+-{
+-	BUG_ON(core->revision > SI476X_REVISION_A30 ||
+-	       core->revision == -1);
+-	return si476x_cmds_vtable[core->revision].fm_tune_freq(core, args);
+-}
+-EXPORT_SYMBOL_GPL(si476x_core_cmd_fm_tune_freq);
+-
+-int si476x_core_cmd_am_tune_freq(struct si476x_core *core,
+-				 struct si476x_tune_freq_args *args)
+-{
+-	BUG_ON(core->revision > SI476X_REVISION_A30 ||
+-	       core->revision == -1);
+-	return si476x_cmds_vtable[core->revision].am_tune_freq(core, args);
+-}
+-EXPORT_SYMBOL_GPL(si476x_core_cmd_am_tune_freq);
+-
+-int si476x_core_cmd_fm_rsq_status(struct si476x_core *core,
+-				  struct si476x_rsq_status_args *args,
+-				  struct si476x_rsq_status_report *report)
+-
+-{
+-	BUG_ON(core->revision > SI476X_REVISION_A30 ||
+-	       core->revision == -1);
+-	return si476x_cmds_vtable[core->revision].fm_rsq_status(core, args,
+-								report);
+-}
+-EXPORT_SYMBOL_GPL(si476x_core_cmd_fm_rsq_status);
+-
+-int si476x_core_cmd_agc_status(struct si476x_core *core,
+-				  struct si476x_agc_status_report *report)
+-
+-{
+-	BUG_ON(core->revision > SI476X_REVISION_A30 ||
+-	       core->revision == -1);
+-	return si476x_cmds_vtable[core->revision].agc_status(core, report);
+-}
+-EXPORT_SYMBOL_GPL(si476x_core_cmd_agc_status);
+-
+-int si476x_core_cmd_intb_pin_cfg(struct si476x_core *core,
+-			    enum si476x_intb_config intb,
+-			    enum si476x_a1_config a1)
+-{
+-	BUG_ON(core->revision > SI476X_REVISION_A30 ||
+-	       core->revision == -1);
+-
+-	return si476x_cmds_vtable[core->revision].intb_pin_cfg(core, intb, a1);
+-}
+-EXPORT_SYMBOL_GPL(si476x_core_cmd_intb_pin_cfg);
+-
+-MODULE_LICENSE("GPL");
+-MODULE_AUTHOR("Andrey Smirnov <andrew.smirnov@gmail.com>");
+-MODULE_DESCRIPTION("API for command exchange for si476x");
+diff --git a/drivers/mfd/si476x-i2c.c b/drivers/mfd/si476x-i2c.c
+deleted file mode 100644
+index 9bce720a0a08..000000000000
+--- a/drivers/mfd/si476x-i2c.c
++++ /dev/null
+@@ -1,861 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-only
+-/*
+- * drivers/mfd/si476x-i2c.c -- Core device driver for si476x MFD
+- * device
+- *
+- * Copyright (C) 2012 Innovative Converged Devices(ICD)
+- * Copyright (C) 2013 Andrey Smirnov
+- *
+- * Author: Andrey Smirnov <andrew.smirnov@gmail.com>
+- */
+-#include <linux/module.h>
+-
+-#include <linux/slab.h>
+-#include <linux/interrupt.h>
+-#include <linux/delay.h>
+-#include <linux/gpio/consumer.h>
+-#include <linux/regulator/consumer.h>
+-#include <linux/i2c.h>
+-#include <linux/err.h>
+-
+-#include <linux/mfd/si476x-core.h>
+-
+-#define SI476X_MAX_IO_ERRORS		10
+-#define SI476X_DRIVER_RDS_FIFO_DEPTH	128
+-
+-/**
+- * si476x_core_config_pinmux() - pin function configuration function
+- *
+- * @core: Core device structure
+- *
+- * Configure the functions of the pins of the radio chip.
+- *
+- * The function returns zero in case of success or negative error code
+- * otherwise.
+- */
+-static int si476x_core_config_pinmux(struct si476x_core *core)
+-{
+-	int err;
+-	dev_dbg(&core->client->dev, "Configuring pinmux\n");
+-	err = si476x_core_cmd_dig_audio_pin_cfg(core,
+-						core->pinmux.dclk,
+-						core->pinmux.dfs,
+-						core->pinmux.dout,
+-						core->pinmux.xout);
+-	if (err < 0) {
+-		dev_err(&core->client->dev,
+-			"Failed to configure digital audio pins(err = %d)\n",
+-			err);
+-		return err;
+-	}
+-
+-	err = si476x_core_cmd_zif_pin_cfg(core,
+-					  core->pinmux.iqclk,
+-					  core->pinmux.iqfs,
+-					  core->pinmux.iout,
+-					  core->pinmux.qout);
+-	if (err < 0) {
+-		dev_err(&core->client->dev,
+-			"Failed to configure ZIF pins(err = %d)\n",
+-			err);
+-		return err;
+-	}
+-
+-	err = si476x_core_cmd_ic_link_gpo_ctl_pin_cfg(core,
+-						      core->pinmux.icin,
+-						      core->pinmux.icip,
+-						      core->pinmux.icon,
+-						      core->pinmux.icop);
+-	if (err < 0) {
+-		dev_err(&core->client->dev,
+-			"Failed to configure IC-Link/GPO pins(err = %d)\n",
+-			err);
+-		return err;
+-	}
+-
+-	err = si476x_core_cmd_ana_audio_pin_cfg(core,
+-						core->pinmux.lrout);
+-	if (err < 0) {
+-		dev_err(&core->client->dev,
+-			"Failed to configure analog audio pins(err = %d)\n",
+-			err);
+-		return err;
+-	}
+-
+-	err = si476x_core_cmd_intb_pin_cfg(core,
+-					   core->pinmux.intb,
+-					   core->pinmux.a1);
+-	if (err < 0) {
+-		dev_err(&core->client->dev,
+-			"Failed to configure interrupt pins(err = %d)\n",
+-			err);
+-		return err;
+-	}
+-
+-	return 0;
+-}
+-
+-static inline void si476x_core_schedule_polling_work(struct si476x_core *core)
+-{
+-	schedule_delayed_work(&core->status_monitor,
+-			      usecs_to_jiffies(SI476X_STATUS_POLL_US));
+-}
+-
+-/**
+- * si476x_core_start() - early chip startup function
+- * @core: Core device structure
+- * @soft: When set, this flag forces "soft" startup, where "soft"
+- * power down is the one done by sending appropriate command instead
+- * of using reset pin of the tuner
+- *
+- * Perform required startup sequence to correctly power
+- * up the chip and perform initial configuration. It does the
+- * following sequence of actions:
+- *       1. Claims and enables the power supplies VD and VIO1 required
+- *          for I2C interface of the chip operation.
+- *       2. Waits for 100us, pulls the reset line up, enables irq,
+- *          waits for another 100us as it is specified by the
+- *          datasheet.
+- *       3. Sends 'POWER_UP' command to the device with all provided
+- *          information about power-up parameters.
+- *       4. Configures, pin multiplexor, disables digital audio and
+- *          configures interrupt sources.
+- *
+- * The function returns zero in case of success or negative error code
+- * otherwise.
+- */
+-int si476x_core_start(struct si476x_core *core, bool soft)
+-{
+-	struct i2c_client *client = core->client;
+-	int err;
+-
+-	if (!soft) {
+-		gpiod_set_value_cansleep(core->reset, 0);
+-
+-		if (client->irq)
+-			enable_irq(client->irq);
+-
+-		udelay(100);
+-
+-		if (!client->irq) {
+-			atomic_set(&core->is_alive, 1);
+-			si476x_core_schedule_polling_work(core);
+-		}
+-	} else {
+-		if (client->irq)
+-			enable_irq(client->irq);
+-		else {
+-			atomic_set(&core->is_alive, 1);
+-			si476x_core_schedule_polling_work(core);
+-		}
+-	}
+-
+-	err = si476x_core_cmd_power_up(core,
+-				       &core->power_up_parameters);
+-
+-	if (err < 0) {
+-		dev_err(&core->client->dev,
+-			"Power up failure(err = %d)\n",
+-			err);
+-		goto disable_irq;
+-	}
+-
+-	if (client->irq)
+-		atomic_set(&core->is_alive, 1);
+-
+-	err = si476x_core_config_pinmux(core);
+-	if (err < 0) {
+-		dev_err(&core->client->dev,
+-			"Failed to configure pinmux(err = %d)\n",
+-			err);
+-		goto disable_irq;
+-	}
+-
+-	if (client->irq) {
+-		err = regmap_write(core->regmap,
+-				   SI476X_PROP_INT_CTL_ENABLE,
+-				   SI476X_RDSIEN |
+-				   SI476X_STCIEN |
+-				   SI476X_CTSIEN);
+-		if (err < 0) {
+-			dev_err(&core->client->dev,
+-				"Failed to configure interrupt sources"
+-				"(err = %d)\n", err);
+-			goto disable_irq;
+-		}
+-	}
+-
+-	return 0;
+-
+-disable_irq:
+-	if (err == -ENODEV)
+-		atomic_set(&core->is_alive, 0);
+-
+-	if (client->irq)
+-		disable_irq(client->irq);
+-	else
+-		cancel_delayed_work_sync(&core->status_monitor);
+-
+-	gpiod_set_value_cansleep(core->reset, 1);
+-
+-	return err;
+-}
+-EXPORT_SYMBOL_GPL(si476x_core_start);
+-
+-/**
+- * si476x_core_stop() - chip power-down function
+- * @core: Core device structure
+- * @soft: When set, function sends a POWER_DOWN command instead of
+- * bringing reset line low
+- *
+- * Power down the chip by performing following actions:
+- * 1. Disable IRQ or stop the polling worker
+- * 2. Send the POWER_DOWN command if the power down is soft or bring
+- *    reset line low if not.
+- *
+- * The function returns zero in case of success or negative error code
+- * otherwise.
+- */
+-int si476x_core_stop(struct si476x_core *core, bool soft)
+-{
+-	int err = 0;
+-	atomic_set(&core->is_alive, 0);
+-
+-	if (soft) {
+-		/* TODO: This probably shoud be a configurable option,
+-		 * so it is possible to have the chips keep their
+-		 * oscillators running
+-		 */
+-		struct si476x_power_down_args args = {
+-			.xosc = false,
+-		};
+-		err = si476x_core_cmd_power_down(core, &args);
+-	}
+-
+-	/* We couldn't disable those before
+-	 * 'si476x_core_cmd_power_down' since we expect to get CTS
+-	 * interrupt */
+-	if (core->client->irq)
+-		disable_irq(core->client->irq);
+-	else
+-		cancel_delayed_work_sync(&core->status_monitor);
+-
+-	if (!soft)
+-		gpiod_set_value_cansleep(core->reset, 1);
+-
+-	return err;
+-}
+-EXPORT_SYMBOL_GPL(si476x_core_stop);
+-
+-/**
+- * si476x_core_set_power_state() - set the level at which the power is
+- * supplied for the chip.
+- * @core: Core device structure
+- * @next_state: enum si476x_power_state describing power state to
+- *              switch to.
+- *
+- * Switch on all the required power supplies
+- *
+- * This function returns 0 in case of suvccess and negative error code
+- * otherwise.
+- */
+-int si476x_core_set_power_state(struct si476x_core *core,
+-				enum si476x_power_state next_state)
+-{
+-	/*
+-	   It is not clear form the datasheet if it is possible to
+-	   work with device if not all power domains are operational.
+-	   So for now the power-up policy is "power-up all the things!"
+-	 */
+-	int err = 0;
+-
+-	if (core->power_state == SI476X_POWER_INCONSISTENT) {
+-		dev_err(&core->client->dev,
+-			"The device in inconsistent power state\n");
 -		return -EINVAL;
 -	}
 -
--	device_init_wakeup(&client->dev, 1);
+-	if (next_state != core->power_state) {
+-		switch (next_state) {
+-		case SI476X_POWER_UP_FULL:
+-			err = regulator_bulk_enable(ARRAY_SIZE(core->supplies),
+-						    core->supplies);
+-			if (err < 0) {
+-				core->power_state = SI476X_POWER_INCONSISTENT;
+-				break;
+-			}
+-			/*
+-			 * Startup timing diagram recommends to have a
+-			 * 100 us delay between enabling of the power
+-			 * supplies and turning the tuner on.
+-			 */
+-			udelay(100);
 -
--	/*
--	 * workaround: set g_pm80x_chip to the first probed chip. if the
--	 * second chip is probed, just point to the companion to each
--	 * other so that pm805 can access those specific register. would
--	 * remove it after HW chip fixes the issue.
--	 */
--	if (!g_pm80x_chip)
--		g_pm80x_chip = chip;
--	else {
--		chip->companion = g_pm80x_chip->client;
--		g_pm80x_chip->companion = chip->client;
+-			err = si476x_core_start(core, false);
+-			if (err < 0)
+-				goto disable_regulators;
+-
+-			core->power_state = next_state;
+-			break;
+-
+-		case SI476X_POWER_DOWN:
+-			core->power_state = next_state;
+-			err = si476x_core_stop(core, false);
+-			if (err < 0)
+-				core->power_state = SI476X_POWER_INCONSISTENT;
+-disable_regulators:
+-			err = regulator_bulk_disable(ARRAY_SIZE(core->supplies),
+-						     core->supplies);
+-			if (err < 0)
+-				core->power_state = SI476X_POWER_INCONSISTENT;
+-			break;
+-		default:
+-			BUG();
+-		}
 -	}
 -
--	return 0;
+-	return err;
 -}
--EXPORT_SYMBOL_GPL(pm80x_init);
+-EXPORT_SYMBOL_GPL(si476x_core_set_power_state);
 -
--int pm80x_deinit(void)
+-/**
+- * si476x_core_report_drainer_stop() - mark the completion of the RDS
+- * buffer drain porcess by the worker.
+- *
+- * @core: Core device structure
+- */
+-static inline void si476x_core_report_drainer_stop(struct si476x_core *core)
 -{
--	/*
--	 * workaround: clear the dependency between pm800 and pm805.
--	 * would remove it after HW chip fixes the issue.
--	 */
--	if (g_pm80x_chip->companion)
--		g_pm80x_chip->companion = NULL;
+-	mutex_lock(&core->rds_drainer_status_lock);
+-	core->rds_drainer_is_working = false;
+-	mutex_unlock(&core->rds_drainer_status_lock);
+-}
+-
+-/**
+- * si476x_core_start_rds_drainer_once() - start RDS drainer worker if
+- * ther is none working, do nothing otherwise
+- *
+- * @core: Datastructure corresponding to the chip.
+- */
+-static inline void si476x_core_start_rds_drainer_once(struct si476x_core *core)
+-{
+-	mutex_lock(&core->rds_drainer_status_lock);
+-	if (!core->rds_drainer_is_working) {
+-		core->rds_drainer_is_working = true;
+-		schedule_work(&core->rds_fifo_drainer);
+-	}
+-	mutex_unlock(&core->rds_drainer_status_lock);
+-}
+-/**
+- * si476x_core_drain_rds_fifo() - RDS buffer drainer.
+- * @work: struct work_struct being ppassed to the function by the
+- * kernel.
+- *
+- * Drain the contents of the RDS FIFO of
+- */
+-static void si476x_core_drain_rds_fifo(struct work_struct *work)
+-{
+-	int err;
+-
+-	struct si476x_core *core = container_of(work, struct si476x_core,
+-						rds_fifo_drainer);
+-
+-	struct si476x_rds_status_report report;
+-
+-	si476x_core_lock(core);
+-	err = si476x_core_cmd_fm_rds_status(core, true, false, false, &report);
+-	if (!err) {
+-		int i = report.rdsfifoused;
+-		dev_dbg(&core->client->dev,
+-			"%d elements in RDS FIFO. Draining.\n", i);
+-		for (; i > 0; --i) {
+-			err = si476x_core_cmd_fm_rds_status(core, false, false,
+-							    (i == 1), &report);
+-			if (err < 0)
+-				goto unlock;
+-
+-			kfifo_in(&core->rds_fifo, report.rds,
+-				 sizeof(report.rds));
+-			dev_dbg(&core->client->dev, "RDS data:\n %*ph\n",
+-				(int)sizeof(report.rds), report.rds);
+-		}
+-		dev_dbg(&core->client->dev, "Drrrrained!\n");
+-		wake_up_interruptible(&core->rds_read_queue);
+-	}
+-
+-unlock:
+-	si476x_core_unlock(core);
+-	si476x_core_report_drainer_stop(core);
+-}
+-
+-/**
+- * si476x_core_pronounce_dead()
+- *
+- * @core: Core device structure
+- *
+- * Mark the device as being dead and wake up all potentially waiting
+- * threads of execution.
+- *
+- */
+-static void si476x_core_pronounce_dead(struct si476x_core *core)
+-{
+-	dev_info(&core->client->dev, "Core device is dead.\n");
+-
+-	atomic_set(&core->is_alive, 0);
+-
+-	/* Wake up al possible waiting processes */
+-	wake_up_interruptible(&core->rds_read_queue);
+-
+-	atomic_set(&core->cts, 1);
+-	wake_up(&core->command);
+-
+-	atomic_set(&core->stc, 1);
+-	wake_up(&core->tuning);
+-}
+-
+-/**
+- * si476x_core_i2c_xfer()
+- *
+- * @core: Core device structure
+- * @type: Transfer type
+- * @buf: Transfer buffer for/with data
+- * @count: Transfer buffer size
+- *
+- * Perfrom and I2C transfer(either read or write) and keep a counter
+- * of I/O errors. If the error counter rises above the threshold
+- * pronounce device dead.
+- *
+- * The function returns zero on success or negative error code on
+- * failure.
+- */
+-int si476x_core_i2c_xfer(struct si476x_core *core,
+-		    enum si476x_i2c_type type,
+-		    char *buf, int count)
+-{
+-	static int io_errors_count;
+-	int err;
+-	if (type == SI476X_I2C_SEND)
+-		err = i2c_master_send(core->client, buf, count);
 -	else
--		g_pm80x_chip = NULL;
--	return 0;
--}
--EXPORT_SYMBOL_GPL(pm80x_deinit);
+-		err = i2c_master_recv(core->client, buf, count);
 -
--static int pm80x_suspend(struct device *dev)
--{
--	struct i2c_client *client = to_i2c_client(dev);
--	struct pm80x_chip *chip = i2c_get_clientdata(client);
--
--	if (chip && chip->wu_flag)
--		if (device_may_wakeup(chip->dev))
--			enable_irq_wake(chip->irq);
--
--	return 0;
--}
--
--static int pm80x_resume(struct device *dev)
--{
--	struct i2c_client *client = to_i2c_client(dev);
--	struct pm80x_chip *chip = i2c_get_clientdata(client);
--
--	if (chip && chip->wu_flag)
--		if (device_may_wakeup(chip->dev))
--			disable_irq_wake(chip->irq);
--
--	return 0;
--}
--
--EXPORT_GPL_SIMPLE_DEV_PM_OPS(pm80x_pm_ops, pm80x_suspend, pm80x_resume);
--
--MODULE_DESCRIPTION("I2C Driver for Marvell 88PM80x");
--MODULE_AUTHOR("Qiao Zhou <zhouqiao@marvell.com>");
--MODULE_LICENSE("GPL");
-diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-index e4fd4572472f..de81d2bb4917 100644
---- a/drivers/mfd/Kconfig
-+++ b/drivers/mfd/Kconfig
-@@ -858,30 +858,6 @@ config MFD_KEMPLD
- 	  This driver can also be built as a module. If so, the module
- 	  will be called kempld-core.
- 
--config MFD_88PM800
--	tristate "Marvell 88PM800"
--	depends on I2C
--	select REGMAP_I2C
--	select REGMAP_IRQ
--	select MFD_CORE
--	help
--	  This supports for Marvell 88PM800 Power Management IC.
--	  This includes the I2C driver and the core APIs _only_, you have to
--	  select individual components like voltage regulators, RTC and
--	  battery-charger under the corresponding menus.
--
--config MFD_88PM805
--	tristate "Marvell 88PM805"
--	depends on I2C
--	select REGMAP_I2C
--	select REGMAP_IRQ
--	select MFD_CORE
--	help
--	  This supports for Marvell 88PM805 Power Management IC. This includes
--	  the I2C driver and the core APIs _only_, you have to select individual
--	  components like codec device, headset/Mic device under the
--	  corresponding menus.
--
- config MFD_88PM860X
- 	bool "Marvell 88PM8606/88PM8607"
- 	depends on I2C=y
-diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
-index 72d3944b0ad8..fe7156a5187a 100644
---- a/drivers/mfd/Makefile
-+++ b/drivers/mfd/Makefile
-@@ -5,8 +5,6 @@
- 
- 88pm860x-objs			:= 88pm860x-core.o 88pm860x-i2c.o
- obj-$(CONFIG_MFD_88PM860X)	+= 88pm860x.o
--obj-$(CONFIG_MFD_88PM800)	+= 88pm800.o 88pm80x.o
--obj-$(CONFIG_MFD_88PM805)	+= 88pm805.o 88pm80x.o
- obj-$(CONFIG_MFD_88PM886_PMIC)	+= 88pm886.o
- obj-$(CONFIG_MFD_ACT8945A)	+= act8945a.o
- obj-$(CONFIG_MFD_SM501)		+= sm501.o
-diff --git a/drivers/regulator/88pm800-regulator.c b/drivers/regulator/88pm800-regulator.c
-deleted file mode 100644
-index 83e8860309dc..000000000000
---- a/drivers/regulator/88pm800-regulator.c
-+++ /dev/null
-@@ -1,287 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-only
--/*
-- * Regulators driver for Marvell 88PM800
-- *
-- * Copyright (C) 2012 Marvell International Ltd.
-- * Joseph(Yossi) Hanin <yhanin@marvell.com>
-- * Yi Zhang <yizhang@marvell.com>
-- */
--#include <linux/module.h>
--#include <linux/moduleparam.h>
--#include <linux/init.h>
--#include <linux/err.h>
--#include <linux/regmap.h>
--#include <linux/regulator/driver.h>
--#include <linux/regulator/machine.h>
--#include <linux/mfd/88pm80x.h>
--#include <linux/delay.h>
--#include <linux/io.h>
--#include <linux/of.h>
--#include <linux/regulator/of_regulator.h>
--
--/* LDO1 with DVC[0..3] */
--#define PM800_LDO1_VOUT		(0x08) /* VOUT1 */
--#define PM800_LDO1_VOUT_2	(0x09)
--#define PM800_LDO1_VOUT_3	(0x0A)
--#define PM800_LDO2_VOUT		(0x0B)
--#define PM800_LDO3_VOUT		(0x0C)
--#define PM800_LDO4_VOUT		(0x0D)
--#define PM800_LDO5_VOUT		(0x0E)
--#define PM800_LDO6_VOUT		(0x0F)
--#define PM800_LDO7_VOUT		(0x10)
--#define PM800_LDO8_VOUT		(0x11)
--#define PM800_LDO9_VOUT		(0x12)
--#define PM800_LDO10_VOUT	(0x13)
--#define PM800_LDO11_VOUT	(0x14)
--#define PM800_LDO12_VOUT	(0x15)
--#define PM800_LDO13_VOUT	(0x16)
--#define PM800_LDO14_VOUT	(0x17)
--#define PM800_LDO15_VOUT	(0x18)
--#define PM800_LDO16_VOUT	(0x19)
--#define PM800_LDO17_VOUT	(0x1A)
--#define PM800_LDO18_VOUT	(0x1B)
--#define PM800_LDO19_VOUT	(0x1C)
--
--/* BUCK1 with DVC[0..3] */
--#define PM800_BUCK1		(0x3C)
--#define PM800_BUCK1_1		(0x3D)
--#define PM800_BUCK1_2		(0x3E)
--#define PM800_BUCK1_3		(0x3F)
--#define PM800_BUCK2		(0x40)
--#define PM800_BUCK3		(0x41)
--#define PM800_BUCK4		(0x42)
--#define PM800_BUCK4_1		(0x43)
--#define PM800_BUCK4_2		(0x44)
--#define PM800_BUCK4_3		(0x45)
--#define PM800_BUCK5		(0x46)
--
--#define PM800_BUCK_ENA		(0x50)
--#define PM800_LDO_ENA1_1	(0x51)
--#define PM800_LDO_ENA1_2	(0x52)
--#define PM800_LDO_ENA1_3	(0x53)
--
--#define PM800_LDO_ENA2_1	(0x56)
--#define PM800_LDO_ENA2_2	(0x57)
--#define PM800_LDO_ENA2_3	(0x58)
--
--#define PM800_BUCK1_MISC1	(0x78)
--#define PM800_BUCK3_MISC1	(0x7E)
--#define PM800_BUCK4_MISC1	(0x81)
--#define PM800_BUCK5_MISC1	(0x84)
--
--struct pm800_regulator_info {
--	struct regulator_desc desc;
--	int max_ua;
--};
--
--/*
-- * vreg - the buck regs string.
-- * ereg - the string for the enable register.
-- * ebit - the bit number in the enable register.
-- * amax - the current
-- * Buck has 2 kinds of voltage steps. It is easy to find voltage by ranges,
-- * not the constant voltage table.
-- * n_volt - Number of available selectors
-- */
--#define PM800_BUCK(match, vreg, ereg, ebit, amax, volt_ranges, n_volt)	\
--{									\
--	.desc	= {							\
--		.name			= #vreg,			\
--		.of_match		= of_match_ptr(#match),		\
--		.regulators_node	= of_match_ptr("regulators"),	\
--		.ops			= &pm800_volt_range_ops,	\
--		.type			= REGULATOR_VOLTAGE,		\
--		.id			= PM800_ID_##vreg,		\
--		.owner			= THIS_MODULE,			\
--		.n_voltages		= n_volt,			\
--		.linear_ranges		= volt_ranges,			\
--		.n_linear_ranges	= ARRAY_SIZE(volt_ranges),	\
--		.vsel_reg		= PM800_##vreg,			\
--		.vsel_mask		= 0x7f,				\
--		.enable_reg		= PM800_##ereg,			\
--		.enable_mask		= 1 << (ebit),			\
--	},								\
--	.max_ua	= (amax),						\
--}
--
--/*
-- * vreg - the LDO regs string
-- * ereg -  the string for the enable register.
-- * ebit - the bit number in the enable register.
-- * amax - the current
-- * volt_table - the LDO voltage table
-- * For all the LDOes, there are too many ranges. Using volt_table will be
-- * simpler and faster.
-- */
--#define PM800_LDO(match, vreg, ereg, ebit, amax, ldo_volt_table)	\
--{									\
--	.desc	= {							\
--		.name			= #vreg,			\
--		.of_match		= of_match_ptr(#match),		\
--		.regulators_node	= of_match_ptr("regulators"),	\
--		.ops			= &pm800_volt_table_ops,	\
--		.type			= REGULATOR_VOLTAGE,		\
--		.id			= PM800_ID_##vreg,		\
--		.owner			= THIS_MODULE,			\
--		.n_voltages		= ARRAY_SIZE(ldo_volt_table),	\
--		.vsel_reg		= PM800_##vreg##_VOUT,		\
--		.vsel_mask		= 0xf,				\
--		.enable_reg		= PM800_##ereg,			\
--		.enable_mask		= 1 << (ebit),			\
--		.volt_table		= ldo_volt_table,		\
--	},								\
--	.max_ua	= (amax),						\
--}
--
--/* Ranges are sorted in ascending order. */
--static const struct linear_range buck1_volt_range[] = {
--	REGULATOR_LINEAR_RANGE(600000, 0, 0x4f, 12500),
--	REGULATOR_LINEAR_RANGE(1600000, 0x50, 0x54, 50000),
--};
--
--/* BUCK 2~5 have same ranges. */
--static const struct linear_range buck2_5_volt_range[] = {
--	REGULATOR_LINEAR_RANGE(600000, 0, 0x4f, 12500),
--	REGULATOR_LINEAR_RANGE(1600000, 0x50, 0x72, 50000),
--};
--
--static const unsigned int ldo1_volt_table[] = {
--	600000,  650000,  700000,  750000,  800000,  850000,  900000,  950000,
--	1000000, 1050000, 1100000, 1150000, 1200000, 1300000, 1400000, 1500000,
--};
--
--static const unsigned int ldo2_volt_table[] = {
--	1700000, 1800000, 1900000, 2000000, 2100000, 2500000, 2700000, 2800000,
--};
--
--/* LDO 3~17 have same voltage table. */
--static const unsigned int ldo3_17_volt_table[] = {
--	1200000, 1250000, 1700000, 1800000, 1850000, 1900000, 2500000, 2600000,
--	2700000, 2750000, 2800000, 2850000, 2900000, 3000000, 3100000, 3300000,
--};
--
--/* LDO 18~19 have same voltage table. */
--static const unsigned int ldo18_19_volt_table[] = {
--	1700000, 1800000, 1900000, 2500000, 2800000, 2900000, 3100000, 3300000,
--};
--
--static int pm800_get_current_limit(struct regulator_dev *rdev)
--{
--	struct pm800_regulator_info *info = rdev_get_drvdata(rdev);
--
--	return info->max_ua;
--}
--
--static const struct regulator_ops pm800_volt_range_ops = {
--	.list_voltage		= regulator_list_voltage_linear_range,
--	.map_voltage		= regulator_map_voltage_linear_range,
--	.set_voltage_sel	= regulator_set_voltage_sel_regmap,
--	.get_voltage_sel	= regulator_get_voltage_sel_regmap,
--	.enable			= regulator_enable_regmap,
--	.disable		= regulator_disable_regmap,
--	.is_enabled		= regulator_is_enabled_regmap,
--	.get_current_limit	= pm800_get_current_limit,
--};
--
--static const struct regulator_ops pm800_volt_table_ops = {
--	.list_voltage		= regulator_list_voltage_table,
--	.map_voltage		= regulator_map_voltage_iterate,
--	.set_voltage_sel	= regulator_set_voltage_sel_regmap,
--	.get_voltage_sel	= regulator_get_voltage_sel_regmap,
--	.enable			= regulator_enable_regmap,
--	.disable		= regulator_disable_regmap,
--	.is_enabled		= regulator_is_enabled_regmap,
--	.get_current_limit	= pm800_get_current_limit,
--};
--
--/* The array is indexed by id(PM800_ID_XXX) */
--static struct pm800_regulator_info pm800_regulator_info[] = {
--	PM800_BUCK(buck1, BUCK1, BUCK_ENA, 0, 3000000, buck1_volt_range, 0x55),
--	PM800_BUCK(buck2, BUCK2, BUCK_ENA, 1, 1200000, buck2_5_volt_range, 0x73),
--	PM800_BUCK(buck3, BUCK3, BUCK_ENA, 2, 1200000, buck2_5_volt_range, 0x73),
--	PM800_BUCK(buck4, BUCK4, BUCK_ENA, 3, 1200000, buck2_5_volt_range, 0x73),
--	PM800_BUCK(buck5, BUCK5, BUCK_ENA, 4, 1200000, buck2_5_volt_range, 0x73),
--
--	PM800_LDO(ldo1, LDO1, LDO_ENA1_1, 0, 200000, ldo1_volt_table),
--	PM800_LDO(ldo2, LDO2, LDO_ENA1_1, 1, 10000, ldo2_volt_table),
--	PM800_LDO(ldo3, LDO3, LDO_ENA1_1, 2, 300000, ldo3_17_volt_table),
--	PM800_LDO(ldo4, LDO4, LDO_ENA1_1, 3, 300000, ldo3_17_volt_table),
--	PM800_LDO(ldo5, LDO5, LDO_ENA1_1, 4, 300000, ldo3_17_volt_table),
--	PM800_LDO(ldo6, LDO6, LDO_ENA1_1, 5, 300000, ldo3_17_volt_table),
--	PM800_LDO(ldo7, LDO7, LDO_ENA1_1, 6, 300000, ldo3_17_volt_table),
--	PM800_LDO(ldo8, LDO8, LDO_ENA1_1, 7, 300000, ldo3_17_volt_table),
--	PM800_LDO(ldo9, LDO9, LDO_ENA1_2, 0, 300000, ldo3_17_volt_table),
--	PM800_LDO(ldo10, LDO10, LDO_ENA1_2, 1, 300000, ldo3_17_volt_table),
--	PM800_LDO(ldo11, LDO11, LDO_ENA1_2, 2, 300000, ldo3_17_volt_table),
--	PM800_LDO(ldo12, LDO12, LDO_ENA1_2, 3, 300000, ldo3_17_volt_table),
--	PM800_LDO(ldo13, LDO13, LDO_ENA1_2, 4, 300000, ldo3_17_volt_table),
--	PM800_LDO(ldo14, LDO14, LDO_ENA1_2, 5, 300000, ldo3_17_volt_table),
--	PM800_LDO(ldo15, LDO15, LDO_ENA1_2, 6, 300000, ldo3_17_volt_table),
--	PM800_LDO(ldo16, LDO16, LDO_ENA1_2, 7, 300000, ldo3_17_volt_table),
--	PM800_LDO(ldo17, LDO17, LDO_ENA1_3, 0, 300000, ldo3_17_volt_table),
--	PM800_LDO(ldo18, LDO18, LDO_ENA1_3, 1, 200000, ldo18_19_volt_table),
--	PM800_LDO(ldo19, LDO19, LDO_ENA1_3, 2, 200000, ldo18_19_volt_table),
--};
--
--static int pm800_regulator_probe(struct platform_device *pdev)
--{
--	struct pm80x_chip *chip = dev_get_drvdata(pdev->dev.parent);
--	struct pm80x_platform_data *pdata = dev_get_platdata(pdev->dev.parent);
--	struct regulator_config config = { };
--	struct regulator_init_data *init_data;
--	int i, ret;
--
--	if (pdata && pdata->num_regulators) {
--		unsigned int count = 0;
--
--		/* Check whether num_regulator is valid. */
--		for (i = 0; i < ARRAY_SIZE(pdata->regulators); i++) {
--			if (pdata->regulators[i])
--				count++;
--		}
--		if (count != pdata->num_regulators)
--			return -EINVAL;
+-	if (err < 0) {
+-		if (io_errors_count++ > SI476X_MAX_IO_ERRORS)
+-			si476x_core_pronounce_dead(core);
+-	} else {
+-		io_errors_count = 0;
 -	}
 -
--	config.dev = chip->dev;
--	config.regmap = chip->subchip->regmap_power;
--	for (i = 0; i < PM800_ID_RG_MAX; i++) {
--		struct regulator_dev *regulator;
+-	return err;
+-}
+-EXPORT_SYMBOL_GPL(si476x_core_i2c_xfer);
 -
--		if (pdata && pdata->num_regulators) {
--			init_data = pdata->regulators[i];
--			if (!init_data)
--				continue;
+-/**
+- * si476x_core_get_status()
+- * @core: Core device structure
+- *
+- * Get the status byte of the core device by berforming one byte I2C
+- * read.
+- *
+- * The function returns a status value or a negative error code on
+- * error.
+- */
+-static int si476x_core_get_status(struct si476x_core *core)
+-{
+-	u8 response;
+-	int err = si476x_core_i2c_xfer(core, SI476X_I2C_RECV,
+-				  &response, sizeof(response));
 -
--			config.init_data = init_data;
--		}
--
--		config.driver_data = &pm800_regulator_info[i];
--
--		regulator = devm_regulator_register(&pdev->dev,
--				&pm800_regulator_info[i].desc, &config);
--		if (IS_ERR(regulator)) {
--			ret = PTR_ERR(regulator);
--			dev_err(&pdev->dev, "Failed to register %s\n",
--					pm800_regulator_info[i].desc.name);
--			return ret;
--		}
--	}
--
--	return 0;
+-	return (err < 0) ? err : response;
 -}
 -
--static struct platform_driver pm800_regulator_driver = {
--	.driver		= {
--		.name	= "88pm80x-regulator",
--		.probe_type = PROBE_PREFER_ASYNCHRONOUS,
--	},
--	.probe		= pm800_regulator_probe,
--};
--
--module_platform_driver(pm800_regulator_driver);
--
--MODULE_LICENSE("GPL");
--MODULE_AUTHOR("Joseph(Yossi) Hanin <yhanin@marvell.com>");
--MODULE_DESCRIPTION("Regulator Driver for Marvell 88PM800 PMIC");
--MODULE_ALIAS("platform:88pm800-regulator");
-diff --git a/drivers/regulator/Kconfig b/drivers/regulator/Kconfig
-index 89789ac7a786..73b43dc1b3be 100644
---- a/drivers/regulator/Kconfig
-+++ b/drivers/regulator/Kconfig
-@@ -75,16 +75,6 @@ config REGULATOR_88PG86X
- 	  They provide two I2C-controlled DC/DC step-down converters with
- 	  sleep mode and separate enable pins.
- 
--config REGULATOR_88PM800
--	tristate "Marvell 88PM800 Power regulators"
--	depends on MFD_88PM800
--	help
--	  This driver supports Marvell 88PM800 voltage regulator chips.
--	  It delivers digitally programmable output,
--	  the voltage is programmed via I2C interface.
--	  It's suitable to support PXA988 chips to control VCC_MAIN and
--	  various voltages.
--
- config REGULATOR_88PM8607
- 	tristate "Marvell 88PM8607 Power regulators"
- 	depends on MFD_88PM860X=y
-diff --git a/drivers/regulator/Makefile b/drivers/regulator/Makefile
-index 5a764cec8df8..972f105567b5 100644
---- a/drivers/regulator/Makefile
-+++ b/drivers/regulator/Makefile
-@@ -12,7 +12,6 @@ obj-$(CONFIG_REGULATOR_VIRTUAL_CONSUMER) += virtual.o
- obj-$(CONFIG_REGULATOR_USERSPACE_CONSUMER) += userspace-consumer.o
- 
- obj-$(CONFIG_REGULATOR_88PG86X) += 88pg86x.o
--obj-$(CONFIG_REGULATOR_88PM800) += 88pm800-regulator.o
- obj-$(CONFIG_REGULATOR_88PM8607) += 88pm8607.o
- obj-$(CONFIG_REGULATOR_88PM886) += 88pm886-regulator.o
- obj-$(CONFIG_REGULATOR_CROS_EC) += cros-ec-regulator.o
-diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
-index 0636b9ead2c2..5674211afe91 100644
---- a/drivers/rtc/Kconfig
-+++ b/drivers/rtc/Kconfig
-@@ -172,16 +172,6 @@ config RTC_DRV_88PM860X
- 	  This driver can also be built as a module. If so, the module
- 	  will be called rtc-88pm860x.
- 
--config RTC_DRV_88PM80X
--	tristate "Marvell 88PM80x"
--	depends on MFD_88PM800
--	help
--	  If you say yes here you get support for RTC function in Marvell
--	  88PM80x chips.
--
--	  This driver can also be built as a module. If so, the module
--	  will be called rtc-88pm80x.
--
- config RTC_DRV_88PM886
- 	tristate "Marvell 88PM886 RTC driver"
- 	depends on MFD_88PM886_PMIC
-diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
-index 0347645b021f..84bb2af5849e 100644
---- a/drivers/rtc/Makefile
-+++ b/drivers/rtc/Makefile
-@@ -19,7 +19,6 @@ obj-$(CONFIG_RTC_LIB_KUNIT_TEST)	+= test_rtc_lib.o
- 
- # Keep the list ordered.
- 
--obj-$(CONFIG_RTC_DRV_88PM80X)	+= rtc-88pm80x.o
- obj-$(CONFIG_RTC_DRV_88PM860X)	+= rtc-88pm860x.o
- obj-$(CONFIG_RTC_DRV_88PM886)	+= rtc-88pm886.o
- obj-$(CONFIG_RTC_DRV_AB8500)	+= rtc-ab8500.o
-diff --git a/drivers/rtc/rtc-88pm80x.c b/drivers/rtc/rtc-88pm80x.c
-deleted file mode 100644
-index a3e52a5a708f..000000000000
---- a/drivers/rtc/rtc-88pm80x.c
-+++ /dev/null
-@@ -1,340 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0
--/*
-- * Real Time Clock driver for Marvell 88PM80x PMIC
+-/**
+- * si476x_core_get_and_signal_status() - IRQ dispatcher
+- * @core: Core device structure
 - *
-- * Copyright (c) 2012 Marvell International Ltd.
-- *  Wenzeng Chen<wzch@marvell.com>
-- *  Qiao Zhou <zhouqiao@marvell.com>
+- * Dispatch the arrived interrupt request based on the value of the
+- * status byte reported by the tuner.
+- *
 - */
--
--#include <linux/kernel.h>
--#include <linux/module.h>
--#include <linux/slab.h>
--#include <linux/regmap.h>
--#include <linux/mfd/core.h>
--#include <linux/mfd/88pm80x.h>
--#include <linux/rtc.h>
--
--#define PM800_RTC_COUNTER1		(0xD1)
--#define PM800_RTC_COUNTER2		(0xD2)
--#define PM800_RTC_COUNTER3		(0xD3)
--#define PM800_RTC_COUNTER4		(0xD4)
--#define PM800_RTC_EXPIRE1_1		(0xD5)
--#define PM800_RTC_EXPIRE1_2		(0xD6)
--#define PM800_RTC_EXPIRE1_3		(0xD7)
--#define PM800_RTC_EXPIRE1_4		(0xD8)
--#define PM800_RTC_TRIM1			(0xD9)
--#define PM800_RTC_TRIM2			(0xDA)
--#define PM800_RTC_TRIM3			(0xDB)
--#define PM800_RTC_TRIM4			(0xDC)
--#define PM800_RTC_EXPIRE2_1		(0xDD)
--#define PM800_RTC_EXPIRE2_2		(0xDE)
--#define PM800_RTC_EXPIRE2_3		(0xDF)
--#define PM800_RTC_EXPIRE2_4		(0xE0)
--
--#define PM800_POWER_DOWN_LOG1	(0xE5)
--#define PM800_POWER_DOWN_LOG2	(0xE6)
--
--struct pm80x_rtc_info {
--	struct pm80x_chip *chip;
--	struct regmap *map;
--	struct rtc_device *rtc_dev;
--	struct device *dev;
--
--	int irq;
--};
--
--static irqreturn_t rtc_update_handler(int irq, void *data)
+-static void si476x_core_get_and_signal_status(struct si476x_core *core)
 -{
--	struct pm80x_rtc_info *info = (struct pm80x_rtc_info *)data;
--	int mask;
+-	int status = si476x_core_get_status(core);
+-	if (status < 0) {
+-		dev_err(&core->client->dev, "Failed to get status\n");
+-		return;
+-	}
 -
--	mask = PM800_ALARM | PM800_ALARM_WAKEUP;
--	regmap_update_bits(info->map, PM800_RTC_CONTROL, mask | PM800_ALARM1_EN,
--			   mask);
--	rtc_update_irq(info->rtc_dev, 1, RTC_AF);
+-	if (status & SI476X_CTS) {
+-		/* Unfortunately completions could not be used for
+-		 * signalling CTS since this flag cannot be cleared
+-		 * in status byte, and therefore once it becomes true
+-		 * multiple calls to 'complete' would cause the
+-		 * commands following the current one to be completed
+-		 * before they actually are */
+-		dev_dbg(&core->client->dev, "[interrupt] CTSINT\n");
+-		atomic_set(&core->cts, 1);
+-		wake_up(&core->command);
+-	}
+-
+-	if (status & SI476X_FM_RDS_INT) {
+-		dev_dbg(&core->client->dev, "[interrupt] RDSINT\n");
+-		si476x_core_start_rds_drainer_once(core);
+-	}
+-
+-	if (status & SI476X_STC_INT) {
+-		dev_dbg(&core->client->dev, "[interrupt] STCINT\n");
+-		atomic_set(&core->stc, 1);
+-		wake_up(&core->tuning);
+-	}
+-}
+-
+-static void si476x_core_poll_loop(struct work_struct *work)
+-{
+-	struct si476x_core *core = SI476X_WORK_TO_CORE(work);
+-
+-	si476x_core_get_and_signal_status(core);
+-
+-	if (atomic_read(&core->is_alive))
+-		si476x_core_schedule_polling_work(core);
+-}
+-
+-static irqreturn_t si476x_core_interrupt(int irq, void *dev)
+-{
+-	struct si476x_core *core = dev;
+-
+-	si476x_core_get_and_signal_status(core);
+-
 -	return IRQ_HANDLED;
 -}
 -
--static int pm80x_rtc_alarm_irq_enable(struct device *dev, unsigned int enabled)
--{
--	struct pm80x_rtc_info *info = dev_get_drvdata(dev);
--
--	if (enabled)
--		regmap_update_bits(info->map, PM800_RTC_CONTROL,
--				   PM800_ALARM1_EN, PM800_ALARM1_EN);
--	else
--		regmap_update_bits(info->map, PM800_RTC_CONTROL,
--				   PM800_ALARM1_EN, 0);
--	return 0;
--}
--
--/*
-- * Calculate the next alarm time given the requested alarm time mask
-- * and the current time.
+-/**
+- * si476x_core_fwver_to_revision()
+- * @core: Core device structure
+- * @func: Selects the boot function of the device:
+- *         *_BOOTLOADER  - Boot loader
+- *         *_FM_RECEIVER - FM receiver
+- *         *_AM_RECEIVER - AM receiver
+- *         *_WB_RECEIVER - Weatherband receiver
+- * @major:  Firmware major number
+- * @minor1: Firmware first minor number
+- * @minor2: Firmware second minor number
+- *
+- * Convert a chip's firmware version number into an offset that later
+- * will be used to as offset in "vtable" of tuner functions
+- *
+- * This function returns a positive offset in case of success and a -1
+- * in case of failure.
 - */
--static void rtc_next_alarm_time(struct rtc_time *next, struct rtc_time *now,
--				struct rtc_time *alrm)
+-static int si476x_core_fwver_to_revision(struct si476x_core *core,
+-					 int func, int major,
+-					 int minor1, int minor2)
 -{
--	unsigned long next_time;
--	unsigned long now_time;
--
--	next->tm_year = now->tm_year;
--	next->tm_mon = now->tm_mon;
--	next->tm_mday = now->tm_mday;
--	next->tm_hour = alrm->tm_hour;
--	next->tm_min = alrm->tm_min;
--	next->tm_sec = alrm->tm_sec;
--
--	now_time = rtc_tm_to_time64(now);
--	next_time = rtc_tm_to_time64(next);
--
--	if (next_time < now_time) {
--		/* Advance one day */
--		next_time += 60 * 60 * 24;
--		rtc_time64_to_tm(next_time, next);
+-	switch (func) {
+-	case SI476X_FUNC_FM_RECEIVER:
+-		switch (major) {
+-		case 5:
+-			return SI476X_REVISION_A10;
+-		case 8:
+-			return SI476X_REVISION_A20;
+-		case 10:
+-			return SI476X_REVISION_A30;
+-		default:
+-			goto unknown_revision;
+-		}
+-	case SI476X_FUNC_AM_RECEIVER:
+-		switch (major) {
+-		case 5:
+-			return SI476X_REVISION_A10;
+-		case 7:
+-			return SI476X_REVISION_A20;
+-		case 9:
+-			return SI476X_REVISION_A30;
+-		default:
+-			goto unknown_revision;
+-		}
+-	case SI476X_FUNC_WB_RECEIVER:
+-		switch (major) {
+-		case 3:
+-			return SI476X_REVISION_A10;
+-		case 5:
+-			return SI476X_REVISION_A20;
+-		case 7:
+-			return SI476X_REVISION_A30;
+-		default:
+-			goto unknown_revision;
+-		}
+-	case SI476X_FUNC_BOOTLOADER:
+-	default:		/* FALLTHROUGH */
+-		BUG();
+-		return -1;
 -	}
+-
+-unknown_revision:
+-	dev_err(&core->client->dev,
+-		"Unsupported version of the firmware: %d.%d.%d, "
+-		"reverting to A10 compatible functions\n",
+-		major, minor1, minor2);
+-
+-	return SI476X_REVISION_A10;
 -}
 -
--static int pm80x_rtc_read_time(struct device *dev, struct rtc_time *tm)
+-/**
+- * si476x_core_get_revision_info()
+- * @core: Core device structure
+- *
+- * Get the firmware version number of the device. It is done in
+- * following three steps:
+- *    1. Power-up the device
+- *    2. Send the 'FUNC_INFO' command
+- *    3. Powering the device down.
+- *
+- * The function return zero on success and a negative error code on
+- * failure.
+- */
+-static int si476x_core_get_revision_info(struct si476x_core *core)
 -{
--	struct pm80x_rtc_info *info = dev_get_drvdata(dev);
--	unsigned char buf[4];
--	unsigned long ticks, base, data;
--	regmap_raw_read(info->map, PM800_RTC_EXPIRE2_1, buf, 4);
--	base = ((unsigned long)buf[3] << 24) | (buf[2] << 16) |
--		(buf[1] << 8) | buf[0];
--	dev_dbg(info->dev, "%x-%x-%x-%x\n", buf[0], buf[1], buf[2], buf[3]);
+-	int rval;
+-	struct si476x_func_info info;
 -
--	/* load 32-bit read-only counter */
--	regmap_raw_read(info->map, PM800_RTC_COUNTER1, buf, 4);
--	data = ((unsigned long)buf[3] << 24) | (buf[2] << 16) |
--		(buf[1] << 8) | buf[0];
--	ticks = base + data;
--	dev_dbg(info->dev, "get base:0x%lx, RO count:0x%lx, ticks:0x%lx\n",
--		base, data, ticks);
--	rtc_time64_to_tm(ticks, tm);
--	return 0;
+-	si476x_core_lock(core);
+-	rval = si476x_core_set_power_state(core, SI476X_POWER_UP_FULL);
+-	if (rval < 0)
+-		goto exit;
+-
+-	rval = si476x_core_cmd_func_info(core, &info);
+-	if (rval < 0)
+-		goto power_down;
+-
+-	core->revision = si476x_core_fwver_to_revision(core, info.func,
+-						       info.firmware.major,
+-						       info.firmware.minor[0],
+-						       info.firmware.minor[1]);
+-power_down:
+-	si476x_core_set_power_state(core, SI476X_POWER_DOWN);
+-exit:
+-	si476x_core_unlock(core);
+-
+-	return rval;
 -}
 -
--static int pm80x_rtc_set_time(struct device *dev, struct rtc_time *tm)
+-bool si476x_core_has_am(struct si476x_core *core)
 -{
--	struct pm80x_rtc_info *info = dev_get_drvdata(dev);
--	unsigned char buf[4];
--	unsigned long ticks, base, data;
--
--	ticks = rtc_tm_to_time64(tm);
--
--	/* load 32-bit read-only counter */
--	regmap_raw_read(info->map, PM800_RTC_COUNTER1, buf, 4);
--	data = ((unsigned long)buf[3] << 24) | (buf[2] << 16) |
--		(buf[1] << 8) | buf[0];
--	base = ticks - data;
--	dev_dbg(info->dev, "set base:0x%lx, RO count:0x%lx, ticks:0x%lx\n",
--		base, data, ticks);
--	buf[0] = base & 0xFF;
--	buf[1] = (base >> 8) & 0xFF;
--	buf[2] = (base >> 16) & 0xFF;
--	buf[3] = (base >> 24) & 0xFF;
--	regmap_raw_write(info->map, PM800_RTC_EXPIRE2_1, buf, 4);
--
--	return 0;
+-	return core->chip_id == SI476X_CHIP_SI4761 ||
+-		core->chip_id == SI476X_CHIP_SI4764;
 -}
+-EXPORT_SYMBOL_GPL(si476x_core_has_am);
 -
--static int pm80x_rtc_read_alarm(struct device *dev, struct rtc_wkalrm *alrm)
+-bool si476x_core_has_diversity(struct si476x_core *core)
 -{
--	struct pm80x_rtc_info *info = dev_get_drvdata(dev);
--	unsigned char buf[4];
--	unsigned long ticks, base, data;
--	int ret;
--
--	regmap_raw_read(info->map, PM800_RTC_EXPIRE2_1, buf, 4);
--	base = ((unsigned long)buf[3] << 24) | (buf[2] << 16) |
--		(buf[1] << 8) | buf[0];
--	dev_dbg(info->dev, "%x-%x-%x-%x\n", buf[0], buf[1], buf[2], buf[3]);
--
--	regmap_raw_read(info->map, PM800_RTC_EXPIRE1_1, buf, 4);
--	data = ((unsigned long)buf[3] << 24) | (buf[2] << 16) |
--		(buf[1] << 8) | buf[0];
--	ticks = base + data;
--	dev_dbg(info->dev, "get base:0x%lx, RO count:0x%lx, ticks:0x%lx\n",
--		base, data, ticks);
--
--	rtc_time64_to_tm(ticks, &alrm->time);
--	regmap_read(info->map, PM800_RTC_CONTROL, &ret);
--	alrm->enabled = (ret & PM800_ALARM1_EN) ? 1 : 0;
--	alrm->pending = (ret & (PM800_ALARM | PM800_ALARM_WAKEUP)) ? 1 : 0;
--	return 0;
+-	return core->chip_id == SI476X_CHIP_SI4764;
 -}
+-EXPORT_SYMBOL_GPL(si476x_core_has_diversity);
 -
--static int pm80x_rtc_set_alarm(struct device *dev, struct rtc_wkalrm *alrm)
+-bool si476x_core_is_a_secondary_tuner(struct si476x_core *core)
 -{
--	struct pm80x_rtc_info *info = dev_get_drvdata(dev);
--	struct rtc_time now_tm, alarm_tm;
--	unsigned long ticks, base, data;
--	unsigned char buf[4];
--	int mask;
+-	return si476x_core_has_diversity(core) &&
+-		(core->diversity_mode == SI476X_PHDIV_SECONDARY_ANTENNA ||
+-		 core->diversity_mode == SI476X_PHDIV_SECONDARY_COMBINING);
+-}
+-EXPORT_SYMBOL_GPL(si476x_core_is_a_secondary_tuner);
 -
--	regmap_update_bits(info->map, PM800_RTC_CONTROL, PM800_ALARM1_EN, 0);
+-bool si476x_core_is_a_primary_tuner(struct si476x_core *core)
+-{
+-	return si476x_core_has_diversity(core) &&
+-		(core->diversity_mode == SI476X_PHDIV_PRIMARY_ANTENNA ||
+-		 core->diversity_mode == SI476X_PHDIV_PRIMARY_COMBINING);
+-}
+-EXPORT_SYMBOL_GPL(si476x_core_is_a_primary_tuner);
 -
--	regmap_raw_read(info->map, PM800_RTC_EXPIRE2_1, buf, 4);
--	base = ((unsigned long)buf[3] << 24) | (buf[2] << 16) |
--		(buf[1] << 8) | buf[0];
--	dev_dbg(info->dev, "%x-%x-%x-%x\n", buf[0], buf[1], buf[2], buf[3]);
+-bool si476x_core_is_in_am_receiver_mode(struct si476x_core *core)
+-{
+-	return si476x_core_has_am(core) &&
+-		(core->power_up_parameters.func == SI476X_FUNC_AM_RECEIVER);
+-}
+-EXPORT_SYMBOL_GPL(si476x_core_is_in_am_receiver_mode);
 -
--	/* load 32-bit read-only counter */
--	regmap_raw_read(info->map, PM800_RTC_COUNTER1, buf, 4);
--	data = ((unsigned long)buf[3] << 24) | (buf[2] << 16) |
--		(buf[1] << 8) | buf[0];
--	ticks = base + data;
--	dev_dbg(info->dev, "get base:0x%lx, RO count:0x%lx, ticks:0x%lx\n",
--		base, data, ticks);
+-bool si476x_core_is_powered_up(struct si476x_core *core)
+-{
+-	return core->power_state == SI476X_POWER_UP_FULL;
+-}
+-EXPORT_SYMBOL_GPL(si476x_core_is_powered_up);
 -
--	rtc_time64_to_tm(ticks, &now_tm);
--	dev_dbg(info->dev, "%s, now time : %lu\n", __func__, ticks);
--	rtc_next_alarm_time(&alarm_tm, &now_tm, &alrm->time);
--	/* get new ticks for alarm in 24 hours */
--	ticks = rtc_tm_to_time64(&alarm_tm);
--	dev_dbg(info->dev, "%s, alarm time: %lu\n", __func__, ticks);
--	data = ticks - base;
+-static int si476x_core_probe(struct i2c_client *client)
+-{
+-	const struct i2c_device_id *id = i2c_client_get_device_id(client);
+-	int rval;
+-	struct si476x_core          *core;
+-	struct si476x_platform_data *pdata;
+-	struct mfd_cell *cell;
+-	int              cell_num;
 -
--	buf[0] = data & 0xff;
--	buf[1] = (data >> 8) & 0xff;
--	buf[2] = (data >> 16) & 0xff;
--	buf[3] = (data >> 24) & 0xff;
--	regmap_raw_write(info->map, PM800_RTC_EXPIRE1_1, buf, 4);
--	if (alrm->enabled) {
--		mask = PM800_ALARM | PM800_ALARM_WAKEUP | PM800_ALARM1_EN;
--		regmap_update_bits(info->map, PM800_RTC_CONTROL, mask, mask);
+-	core = devm_kzalloc(&client->dev, sizeof(*core), GFP_KERNEL);
+-	if (!core)
+-		return -ENOMEM;
+-
+-	core->client = client;
+-
+-	core->regmap = devm_regmap_init_si476x(core);
+-	if (IS_ERR(core->regmap)) {
+-		rval = PTR_ERR(core->regmap);
+-		dev_err(&client->dev,
+-			"Failed to allocate register map: %d\n",
+-			rval);
+-		return rval;
+-	}
+-
+-	i2c_set_clientdata(client, core);
+-
+-	atomic_set(&core->is_alive, 0);
+-	core->power_state = SI476X_POWER_DOWN;
+-
+-	core->reset = devm_gpiod_get_optional(&client->dev, "reset",
+-					      GPIOD_OUT_HIGH);
+-	if (IS_ERR(core->reset))
+-		return dev_err_probe(&client->dev, PTR_ERR(core->reset),
+-				     "error getting reset GPIO\n");
+-	gpiod_set_consumer_name(core->reset, "si476x reset");
+-
+-	pdata = dev_get_platdata(&client->dev);
+-	if (pdata) {
+-		memcpy(&core->power_up_parameters,
+-		       &pdata->power_up_parameters,
+-		       sizeof(core->power_up_parameters));
+-		core->diversity_mode = pdata->diversity_mode;
+-		memcpy(&core->pinmux, &pdata->pinmux,
+-		       sizeof(struct si476x_pinmux));
 -	} else {
--		mask = PM800_ALARM | PM800_ALARM_WAKEUP | PM800_ALARM1_EN;
--		regmap_update_bits(info->map, PM800_RTC_CONTROL, mask,
--				   PM800_ALARM | PM800_ALARM_WAKEUP);
--	}
--	return 0;
--}
--
--static const struct rtc_class_ops pm80x_rtc_ops = {
--	.read_time = pm80x_rtc_read_time,
--	.set_time = pm80x_rtc_set_time,
--	.read_alarm = pm80x_rtc_read_alarm,
--	.set_alarm = pm80x_rtc_set_alarm,
--	.alarm_irq_enable = pm80x_rtc_alarm_irq_enable,
--};
--
--#ifdef CONFIG_PM_SLEEP
--static int pm80x_rtc_suspend(struct device *dev)
--{
--	return pm80x_dev_suspend(dev);
--}
--
--static int pm80x_rtc_resume(struct device *dev)
--{
--	return pm80x_dev_resume(dev);
--}
--#endif
--
--static SIMPLE_DEV_PM_OPS(pm80x_rtc_pm_ops, pm80x_rtc_suspend, pm80x_rtc_resume);
--
--static int pm80x_rtc_probe(struct platform_device *pdev)
--{
--	struct pm80x_chip *chip = dev_get_drvdata(pdev->dev.parent);
--	struct pm80x_rtc_pdata *pdata = dev_get_platdata(&pdev->dev);
--	struct pm80x_rtc_info *info;
--	struct device_node *node = pdev->dev.of_node;
--	int ret;
--
--	if (!pdata && !node) {
--		dev_err(&pdev->dev,
--			"pm80x-rtc requires platform data or of_node\n");
+-		dev_err(&client->dev, "No platform data provided\n");
 -		return -EINVAL;
 -	}
 -
--	if (!pdata) {
--		pdata = devm_kzalloc(&pdev->dev, sizeof(*pdata), GFP_KERNEL);
--		if (!pdata) {
--			dev_err(&pdev->dev, "failed to allocate memory\n");
--			return -ENOMEM;
+-	core->supplies[0].supply = "vd";
+-	core->supplies[1].supply = "va";
+-	core->supplies[2].supply = "vio1";
+-	core->supplies[3].supply = "vio2";
+-
+-	rval = devm_regulator_bulk_get(&client->dev,
+-				       ARRAY_SIZE(core->supplies),
+-				       core->supplies);
+-	if (rval) {
+-		dev_err(&client->dev, "Failed to get all of the regulators\n");
+-		return rval;
+-	}
+-
+-	mutex_init(&core->cmd_lock);
+-	init_waitqueue_head(&core->command);
+-	init_waitqueue_head(&core->tuning);
+-
+-	rval = kfifo_alloc(&core->rds_fifo,
+-			   SI476X_DRIVER_RDS_FIFO_DEPTH *
+-			   sizeof(struct v4l2_rds_data),
+-			   GFP_KERNEL);
+-	if (rval) {
+-		dev_err(&client->dev, "Could not allocate the FIFO\n");
+-		return rval;
+-	}
+-	mutex_init(&core->rds_drainer_status_lock);
+-	init_waitqueue_head(&core->rds_read_queue);
+-	INIT_WORK(&core->rds_fifo_drainer, si476x_core_drain_rds_fifo);
+-
+-	if (client->irq) {
+-		rval = devm_request_threaded_irq(&client->dev,
+-						 client->irq, NULL,
+-						 si476x_core_interrupt,
+-						 IRQF_TRIGGER_FALLING |
+-						 IRQF_ONESHOT,
+-						 client->name, core);
+-		if (rval < 0) {
+-			dev_err(&client->dev, "Could not request IRQ %d\n",
+-				client->irq);
+-			goto free_kfifo;
 -		}
+-		disable_irq(client->irq);
+-		dev_dbg(&client->dev, "IRQ requested.\n");
+-
+-		core->rds_fifo_depth = 20;
+-	} else {
+-		INIT_DELAYED_WORK(&core->status_monitor,
+-				  si476x_core_poll_loop);
+-		dev_info(&client->dev,
+-			 "No IRQ number specified, will use polling\n");
+-
+-		core->rds_fifo_depth = 5;
 -	}
 -
--	info =
--	    devm_kzalloc(&pdev->dev, sizeof(struct pm80x_rtc_info), GFP_KERNEL);
--	if (!info)
--		return -ENOMEM;
--	info->irq = platform_get_irq(pdev, 0);
--	if (info->irq < 0) {
--		ret = -EINVAL;
--		goto out;
+-	core->chip_id = id->driver_data;
+-
+-	rval = si476x_core_get_revision_info(core);
+-	if (rval < 0) {
+-		rval = -ENODEV;
+-		goto free_kfifo;
 -	}
 -
--	info->chip = chip;
--	info->map = chip->regmap;
--	if (!info->map) {
--		dev_err(&pdev->dev, "no regmap!\n");
--		ret = -EINVAL;
--		goto out;
+-	cell_num = 0;
+-
+-	cell = &core->cells[SI476X_RADIO_CELL];
+-	cell->name = "si476x-radio";
+-	cell_num++;
+-
+-#ifdef CONFIG_SND_SOC_SI476X
+-	if ((core->chip_id == SI476X_CHIP_SI4761 ||
+-	     core->chip_id == SI476X_CHIP_SI4764)	&&
+-	    core->pinmux.dclk == SI476X_DCLK_DAUDIO     &&
+-	    core->pinmux.dfs  == SI476X_DFS_DAUDIO      &&
+-	    core->pinmux.dout == SI476X_DOUT_I2S_OUTPUT &&
+-	    core->pinmux.xout == SI476X_XOUT_TRISTATE) {
+-		cell = &core->cells[SI476X_CODEC_CELL];
+-		cell->name          = "si476x-codec";
+-		cell_num++;
 -	}
+-#endif
+-	rval = mfd_add_devices(&client->dev,
+-			       (client->adapter->nr << 8) + client->addr,
+-			       core->cells, cell_num,
+-			       NULL, 0, NULL);
+-	if (!rval)
+-		return 0;
 -
--	info->dev = &pdev->dev;
--	dev_set_drvdata(&pdev->dev, info);
--
--	info->rtc_dev = devm_rtc_allocate_device(&pdev->dev);
--	if (IS_ERR(info->rtc_dev))
--		return PTR_ERR(info->rtc_dev);
--
--	ret = pm80x_request_irq(chip, info->irq, rtc_update_handler,
--				IRQF_ONESHOT, "rtc", info);
--	if (ret < 0) {
--		dev_err(chip->dev, "Failed to request IRQ: #%d: %d\n",
--			info->irq, ret);
--		goto out;
--	}
--
--	info->rtc_dev->ops = &pm80x_rtc_ops;
--	info->rtc_dev->range_max = U32_MAX;
--
--	ret = devm_rtc_register_device(info->rtc_dev);
--	if (ret)
--		goto out_rtc;
--
--	/*
--	 * enable internal XO instead of internal 3.25MHz clock since it can
--	 * free running in PMIC power-down state.
--	 */
--	regmap_update_bits(info->map, PM800_RTC_CONTROL, PM800_RTC1_USE_XO,
--			   PM800_RTC1_USE_XO);
--
--	/* remember whether this power up is caused by PMIC RTC or not */
--	info->rtc_dev->dev.platform_data = &pdata->rtc_wakeup;
--
--	device_init_wakeup(&pdev->dev, true);
--
--	return 0;
--out_rtc:
--	pm80x_free_irq(chip, info->irq, info);
--out:
--	return ret;
+-free_kfifo:
+-	kfifo_free(&core->rds_fifo);
+-	return rval;
 -}
 -
--static void pm80x_rtc_remove(struct platform_device *pdev)
+-static void si476x_core_remove(struct i2c_client *client)
 -{
--	struct pm80x_rtc_info *info = platform_get_drvdata(pdev);
--	pm80x_free_irq(info->chip, info->irq, info);
+-	struct si476x_core *core = i2c_get_clientdata(client);
+-
+-	si476x_core_pronounce_dead(core);
+-	mfd_remove_devices(&client->dev);
+-
+-	if (client->irq)
+-		disable_irq(client->irq);
+-	else
+-		cancel_delayed_work_sync(&core->status_monitor);
+-
+-	kfifo_free(&core->rds_fifo);
 -}
 -
--static struct platform_driver pm80x_rtc_driver = {
--	.driver = {
--		   .name = "88pm80x-rtc",
--		   .pm = &pm80x_rtc_pm_ops,
--		   },
--	.probe = pm80x_rtc_probe,
--	.remove = pm80x_rtc_remove,
+-
+-static const struct i2c_device_id si476x_id[] = {
+-	{ "si4761", SI476X_CHIP_SI4761 },
+-	{ "si4764", SI476X_CHIP_SI4764 },
+-	{ "si4768", SI476X_CHIP_SI4768 },
+-	{ },
+-};
+-MODULE_DEVICE_TABLE(i2c, si476x_id);
+-
+-static struct i2c_driver si476x_core_driver = {
+-	.driver		= {
+-		.name	= "si476x-core",
+-	},
+-	.probe		= si476x_core_probe,
+-	.remove         = si476x_core_remove,
+-	.id_table       = si476x_id,
+-};
+-module_i2c_driver(si476x_core_driver);
+-
+-
+-MODULE_AUTHOR("Andrey Smirnov <andrew.smirnov@gmail.com>");
+-MODULE_DESCRIPTION("Si4761/64/68 AM/FM MFD core device driver");
+-MODULE_LICENSE("GPL");
+diff --git a/drivers/mfd/si476x-prop.c b/drivers/mfd/si476x-prop.c
+deleted file mode 100644
+index 3d5c118888b2..000000000000
+--- a/drivers/mfd/si476x-prop.c
++++ /dev/null
+@@ -1,233 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-only
+-/*
+- * drivers/mfd/si476x-prop.c -- Subroutines to access
+- * properties of si476x chips
+- *
+- * Copyright (C) 2012 Innovative Converged Devices(ICD)
+- * Copyright (C) 2013 Andrey Smirnov
+- *
+- * Author: Andrey Smirnov <andrew.smirnov@gmail.com>
+- */
+-#include <linux/module.h>
+-
+-#include <linux/mfd/si476x-core.h>
+-
+-struct si476x_property_range {
+-	u16 low, high;
 -};
 -
--module_platform_driver(pm80x_rtc_driver);
+-static bool si476x_core_element_is_in_array(u16 element,
+-					    const u16 array[],
+-					    size_t size)
+-{
+-	int i;
 -
--MODULE_LICENSE("GPL");
--MODULE_DESCRIPTION("Marvell 88PM80x RTC driver");
--MODULE_AUTHOR("Qiao Zhou <zhouqiao@marvell.com>");
--MODULE_ALIAS("platform:88pm80x-rtc");
-diff --git a/include/linux/mfd/88pm80x.h b/include/linux/mfd/88pm80x.h
+-	for (i = 0; i < size; i++)
+-		if (element == array[i])
+-			return true;
+-
+-	return false;
+-}
+-
+-static bool si476x_core_element_is_in_range(u16 element,
+-					    const struct si476x_property_range range[],
+-					    size_t size)
+-{
+-	int i;
+-
+-	for (i = 0; i < size; i++)
+-		if (element <= range[i].high && element >= range[i].low)
+-			return true;
+-
+-	return false;
+-}
+-
+-static bool si476x_core_is_valid_property_a10(struct si476x_core *core,
+-					      u16 property)
+-{
+-	static const u16 valid_properties[] = {
+-		0x0000,
+-		0x0500, 0x0501,
+-		0x0600,
+-		0x0709, 0x070C, 0x070D, 0x70E, 0x710,
+-		0x0718,
+-		0x1207, 0x1208,
+-		0x2007,
+-		0x2300,
+-	};
+-
+-	static const struct si476x_property_range valid_ranges[] = {
+-		{ 0x0200, 0x0203 },
+-		{ 0x0300, 0x0303 },
+-		{ 0x0400, 0x0404 },
+-		{ 0x0700, 0x0707 },
+-		{ 0x1100, 0x1102 },
+-		{ 0x1200, 0x1204 },
+-		{ 0x1300, 0x1306 },
+-		{ 0x2000, 0x2005 },
+-		{ 0x2100, 0x2104 },
+-		{ 0x2106, 0x2106 },
+-		{ 0x2200, 0x220E },
+-		{ 0x3100, 0x3104 },
+-		{ 0x3207, 0x320F },
+-		{ 0x3300, 0x3304 },
+-		{ 0x3500, 0x3517 },
+-		{ 0x3600, 0x3617 },
+-		{ 0x3700, 0x3717 },
+-		{ 0x4000, 0x4003 },
+-	};
+-
+-	return	si476x_core_element_is_in_range(property, valid_ranges,
+-						ARRAY_SIZE(valid_ranges)) ||
+-		si476x_core_element_is_in_array(property, valid_properties,
+-						ARRAY_SIZE(valid_properties));
+-}
+-
+-static bool si476x_core_is_valid_property_a20(struct si476x_core *core,
+-					      u16 property)
+-{
+-	static const u16 valid_properties[] = {
+-		0x071B,
+-		0x1006,
+-		0x2210,
+-		0x3401,
+-	};
+-
+-	static const struct si476x_property_range valid_ranges[] = {
+-		{ 0x2215, 0x2219 },
+-	};
+-
+-	return	si476x_core_is_valid_property_a10(core, property) ||
+-		si476x_core_element_is_in_range(property, valid_ranges,
+-						ARRAY_SIZE(valid_ranges))  ||
+-		si476x_core_element_is_in_array(property, valid_properties,
+-						ARRAY_SIZE(valid_properties));
+-}
+-
+-static bool si476x_core_is_valid_property_a30(struct si476x_core *core,
+-					      u16 property)
+-{
+-	static const u16 valid_properties[] = {
+-		0x071C, 0x071D,
+-		0x1007, 0x1008,
+-		0x220F, 0x2214,
+-		0x2301,
+-		0x3105, 0x3106,
+-		0x3402,
+-	};
+-
+-	static const struct si476x_property_range valid_ranges[] = {
+-		{ 0x0405, 0x0411 },
+-		{ 0x2008, 0x200B },
+-		{ 0x2220, 0x2223 },
+-		{ 0x3100, 0x3106 },
+-	};
+-
+-	return	si476x_core_is_valid_property_a20(core, property) ||
+-		si476x_core_element_is_in_range(property, valid_ranges,
+-						ARRAY_SIZE(valid_ranges)) ||
+-		si476x_core_element_is_in_array(property, valid_properties,
+-						ARRAY_SIZE(valid_properties));
+-}
+-
+-typedef bool (*valid_property_pred_t) (struct si476x_core *, u16);
+-
+-static bool si476x_core_is_valid_property(struct si476x_core *core,
+-					  u16 property)
+-{
+-	static const valid_property_pred_t is_valid_property[] = {
+-		[SI476X_REVISION_A10] = si476x_core_is_valid_property_a10,
+-		[SI476X_REVISION_A20] = si476x_core_is_valid_property_a20,
+-		[SI476X_REVISION_A30] = si476x_core_is_valid_property_a30,
+-	};
+-
+-	BUG_ON(core->revision > SI476X_REVISION_A30 ||
+-	       core->revision == -1);
+-	return is_valid_property[core->revision](core, property);
+-}
+-
+-
+-static bool si476x_core_is_readonly_property(struct si476x_core *core,
+-					     u16 property)
+-{
+-	BUG_ON(core->revision > SI476X_REVISION_A30 ||
+-	       core->revision == -1);
+-
+-	switch (core->revision) {
+-	case SI476X_REVISION_A10:
+-		return (property == 0x3200);
+-	case SI476X_REVISION_A20:
+-		return (property == 0x1006 ||
+-			property == 0x2210 ||
+-			property == 0x3200);
+-	case SI476X_REVISION_A30:
+-		return false;
+-	}
+-
+-	return false;
+-}
+-
+-static bool si476x_core_regmap_readable_register(struct device *dev,
+-						 unsigned int reg)
+-{
+-	struct i2c_client *client = to_i2c_client(dev);
+-	struct si476x_core *core = i2c_get_clientdata(client);
+-
+-	return si476x_core_is_valid_property(core, (u16) reg);
+-
+-}
+-
+-static bool si476x_core_regmap_writable_register(struct device *dev,
+-						 unsigned int reg)
+-{
+-	struct i2c_client *client = to_i2c_client(dev);
+-	struct si476x_core *core = i2c_get_clientdata(client);
+-
+-	return si476x_core_is_valid_property(core, (u16) reg) &&
+-		!si476x_core_is_readonly_property(core, (u16) reg);
+-}
+-
+-
+-static int si476x_core_regmap_write(void *context, unsigned int reg,
+-				    unsigned int val)
+-{
+-	return si476x_core_cmd_set_property(context, reg, val);
+-}
+-
+-static int si476x_core_regmap_read(void *context, unsigned int reg,
+-				   unsigned *val)
+-{
+-	struct si476x_core *core = context;
+-	int err;
+-
+-	err = si476x_core_cmd_get_property(core, reg);
+-	if (err < 0)
+-		return err;
+-
+-	*val = err;
+-
+-	return 0;
+-}
+-
+-
+-static const struct regmap_config si476x_regmap_config = {
+-	.reg_bits = 16,
+-	.val_bits = 16,
+-
+-	.max_register = 0x4003,
+-
+-	.writeable_reg = si476x_core_regmap_writable_register,
+-	.readable_reg = si476x_core_regmap_readable_register,
+-
+-	.reg_read = si476x_core_regmap_read,
+-	.reg_write = si476x_core_regmap_write,
+-
+-	.cache_type = REGCACHE_MAPLE,
+-};
+-
+-struct regmap *devm_regmap_init_si476x(struct si476x_core *core)
+-{
+-	return devm_regmap_init(&core->client->dev, NULL,
+-				core, &si476x_regmap_config);
+-}
+-EXPORT_SYMBOL_GPL(devm_regmap_init_si476x);
+diff --git a/include/linux/mfd/si476x-core.h b/include/linux/mfd/si476x-core.h
 deleted file mode 100644
-index 551ef1c367d6..000000000000
---- a/include/linux/mfd/88pm80x.h
+index d9e3a322134c..000000000000
+--- a/include/linux/mfd/si476x-core.h
 +++ /dev/null
-@@ -1,370 +0,0 @@
+@@ -1,532 +0,0 @@
 -/* SPDX-License-Identifier: GPL-2.0-only */
 -/*
-- * Marvell 88PM80x Interface
+- * include/media/si476x-core.h -- Common definitions for si476x core
+- * device
 - *
-- * Copyright (C) 2012 Marvell International Ltd.
-- * Qiao Zhou <zhouqiao@marvell.com>
+- * Copyright (C) 2012 Innovative Converged Devices(ICD)
+- * Copyright (C) 2013 Andrey Smirnov
+- *
+- * Author: Andrey Smirnov <andrew.smirnov@gmail.com>
 - */
 -
--#ifndef __LINUX_MFD_88PM80X_H
--#define __LINUX_MFD_88PM80X_H
+-#ifndef SI476X_CORE_H
+-#define SI476X_CORE_H
 -
--#include <linux/platform_device.h>
--#include <linux/interrupt.h>
--#include <linux/regmap.h>
+-#include <linux/kfifo.h>
 -#include <linux/atomic.h>
+-#include <linux/gpio/consumer.h>
+-#include <linux/i2c.h>
+-#include <linux/regmap.h>
+-#include <linux/mutex.h>
+-#include <linux/mfd/core.h>
+-#include <linux/videodev2.h>
+-#include <linux/regulator/consumer.h>
 -
--enum {
--	CHIP_INVALID = 0,
--	CHIP_PM800,
--	CHIP_PM805,
--	CHIP_PM860,
--	CHIP_MAX,
+-#include <linux/mfd/si476x-platform.h>
+-#include <linux/mfd/si476x-reports.h>
+-
+-/* Command Timeouts */
+-#define SI476X_DEFAULT_TIMEOUT	100000
+-#define SI476X_TIMEOUT_TUNE	700000
+-#define SI476X_TIMEOUT_POWER_UP	330000
+-#define SI476X_STATUS_POLL_US	0
+-
+-/* -------------------- si476x-i2c.c ----------------------- */
+-
+-enum si476x_freq_supported_chips {
+-	SI476X_CHIP_SI4761 = 1,
+-	SI476X_CHIP_SI4764,
+-	SI476X_CHIP_SI4768,
 -};
 -
--enum {
--	PM800_ID_BUCK1 = 0,
--	PM800_ID_BUCK2,
--	PM800_ID_BUCK3,
--	PM800_ID_BUCK4,
--	PM800_ID_BUCK5,
--
--	PM800_ID_LDO1,
--	PM800_ID_LDO2,
--	PM800_ID_LDO3,
--	PM800_ID_LDO4,
--	PM800_ID_LDO5,
--	PM800_ID_LDO6,
--	PM800_ID_LDO7,
--	PM800_ID_LDO8,
--	PM800_ID_LDO9,
--	PM800_ID_LDO10,
--	PM800_ID_LDO11,
--	PM800_ID_LDO12,
--	PM800_ID_LDO13,
--	PM800_ID_LDO14,
--	PM800_ID_LDO15,
--	PM800_ID_LDO16,
--	PM800_ID_LDO17,
--	PM800_ID_LDO18,
--	PM800_ID_LDO19,
--
--	PM800_ID_RG_MAX,
--};
--#define PM800_MAX_REGULATOR	PM800_ID_RG_MAX	/* 5 Bucks, 19 LDOs */
--#define PM800_NUM_BUCK (5)	/*5 Bucks */
--#define PM800_NUM_LDO (19)	/*19 Bucks */
--
--/* page 0 basic: slave adder 0x60 */
--
--#define PM800_STATUS_1			(0x01)
--#define PM800_ONKEY_STS1		BIT(0)
--#define PM800_EXTON_STS1		BIT(1)
--#define PM800_CHG_STS1			BIT(2)
--#define PM800_BAT_STS1			BIT(3)
--#define PM800_VBUS_STS1			BIT(4)
--#define PM800_LDO_PGOOD_STS1		BIT(5)
--#define PM800_BUCK_PGOOD_STS1		BIT(6)
--
--#define PM800_STATUS_2			(0x02)
--#define PM800_RTC_ALARM_STS2		BIT(0)
--
--/* Wakeup Registers */
--#define PM800_WAKEUP1			(0x0D)
--
--#define PM800_WAKEUP2			(0x0E)
--#define PM800_WAKEUP2_INV_INT		BIT(0)
--#define PM800_WAKEUP2_INT_CLEAR		BIT(1)
--#define PM800_WAKEUP2_INT_MASK		BIT(2)
--
--#define PM800_POWER_UP_LOG		(0x10)
--
--/* Referance and low power registers */
--#define PM800_LOW_POWER1		(0x20)
--#define PM800_LOW_POWER2		(0x21)
--#define PM800_LOW_POWER_CONFIG3		(0x22)
--#define PM800_LOW_POWER_CONFIG4		(0x23)
--
--/* GPIO register */
--#define PM800_GPIO_0_1_CNTRL		(0x30)
--#define PM800_GPIO0_VAL			BIT(0)
--#define PM800_GPIO0_GPIO_MODE(x)	(x << 1)
--#define PM800_GPIO1_VAL			BIT(4)
--#define PM800_GPIO1_GPIO_MODE(x)	(x << 5)
--
--#define PM800_GPIO_2_3_CNTRL		(0x31)
--#define PM800_GPIO2_VAL			BIT(0)
--#define PM800_GPIO2_GPIO_MODE(x)	(x << 1)
--#define PM800_GPIO3_VAL			BIT(4)
--#define PM800_GPIO3_GPIO_MODE(x)	(x << 5)
--#define PM800_GPIO3_MODE_MASK		0x1F
--#define PM800_GPIO3_HEADSET_MODE	PM800_GPIO3_GPIO_MODE(6)
--
--#define PM800_GPIO_4_CNTRL		(0x32)
--#define PM800_GPIO4_VAL			BIT(0)
--#define PM800_GPIO4_GPIO_MODE(x)	(x << 1)
--
--#define PM800_HEADSET_CNTRL		(0x38)
--#define PM800_HEADSET_DET_EN		BIT(7)
--#define PM800_HSDET_SLP			BIT(1)
--/* PWM register */
--#define PM800_PWM1			(0x40)
--#define PM800_PWM2			(0x41)
--#define PM800_PWM3			(0x42)
--#define PM800_PWM4			(0x43)
--
--/* RTC Registers */
--#define PM800_RTC_CONTROL		(0xD0)
--#define PM800_RTC_MISC1			(0xE1)
--#define PM800_RTC_MISC2			(0xE2)
--#define PM800_RTC_MISC3			(0xE3)
--#define PM800_RTC_MISC4			(0xE4)
--#define PM800_RTC_MISC5			(0xE7)
--/* bit definitions of RTC Register 1 (0xD0) */
--#define PM800_ALARM1_EN			BIT(0)
--#define PM800_ALARM_WAKEUP		BIT(4)
--#define PM800_ALARM			BIT(5)
--#define PM800_RTC1_USE_XO		BIT(7)
--
--/* Regulator Control Registers: BUCK1,BUCK5,LDO1 have DVC */
--
--/* buck registers */
--#define PM800_SLEEP_BUCK1		(0x30)
--
--/* BUCK Sleep Mode Register 1: BUCK[1..4] */
--#define PM800_BUCK_SLP1			(0x5A)
--#define PM800_BUCK1_SLP1_SHIFT		0
--#define PM800_BUCK1_SLP1_MASK		(0x3 << PM800_BUCK1_SLP1_SHIFT)
--
--/* page 2 GPADC: slave adder 0x02 */
--#define PM800_GPADC_MEAS_EN1		(0x01)
--#define PM800_MEAS_EN1_VBAT		BIT(2)
--#define PM800_GPADC_MEAS_EN2		(0x02)
--#define PM800_MEAS_EN2_RFTMP		BIT(0)
--#define PM800_MEAS_GP0_EN		BIT(2)
--#define PM800_MEAS_GP1_EN		BIT(3)
--#define PM800_MEAS_GP2_EN		BIT(4)
--#define PM800_MEAS_GP3_EN		BIT(5)
--#define PM800_MEAS_GP4_EN		BIT(6)
--
--#define PM800_GPADC_MISC_CONFIG1	(0x05)
--#define PM800_GPADC_MISC_CONFIG2	(0x06)
--#define PM800_GPADC_MISC_GPFSM_EN	BIT(0)
--#define PM800_GPADC_SLOW_MODE(x)	(x << 3)
--
--#define PM800_GPADC_MISC_CONFIG3	(0x09)
--#define PM800_GPADC_MISC_CONFIG4	(0x0A)
--
--#define PM800_GPADC_PREBIAS1		(0x0F)
--#define PM800_GPADC0_GP_PREBIAS_TIME(x)	(x << 0)
--#define PM800_GPADC_PREBIAS2		(0x10)
--
--#define PM800_GP_BIAS_ENA1		(0x14)
--#define PM800_GPADC_GP_BIAS_EN0		BIT(0)
--#define PM800_GPADC_GP_BIAS_EN1		BIT(1)
--#define PM800_GPADC_GP_BIAS_EN2		BIT(2)
--#define PM800_GPADC_GP_BIAS_EN3		BIT(3)
--
--#define PM800_GP_BIAS_OUT1		(0x15)
--#define PM800_BIAS_OUT_GP0		BIT(0)
--#define PM800_BIAS_OUT_GP1		BIT(1)
--#define PM800_BIAS_OUT_GP2		BIT(2)
--#define PM800_BIAS_OUT_GP3		BIT(3)
--
--#define PM800_GPADC0_LOW_TH		0x20
--#define PM800_GPADC1_LOW_TH		0x21
--#define PM800_GPADC2_LOW_TH		0x22
--#define PM800_GPADC3_LOW_TH		0x23
--#define PM800_GPADC4_LOW_TH		0x24
--
--#define PM800_GPADC0_UPP_TH		0x30
--#define PM800_GPADC1_UPP_TH		0x31
--#define PM800_GPADC2_UPP_TH		0x32
--#define PM800_GPADC3_UPP_TH		0x33
--#define PM800_GPADC4_UPP_TH		0x34
--
--#define PM800_VBBAT_MEAS1		0x40
--#define PM800_VBBAT_MEAS2		0x41
--#define PM800_VBAT_MEAS1		0x42
--#define PM800_VBAT_MEAS2		0x43
--#define PM800_VSYS_MEAS1		0x44
--#define PM800_VSYS_MEAS2		0x45
--#define PM800_VCHG_MEAS1		0x46
--#define PM800_VCHG_MEAS2		0x47
--#define PM800_TINT_MEAS1		0x50
--#define PM800_TINT_MEAS2		0x51
--#define PM800_PMOD_MEAS1		0x52
--#define PM800_PMOD_MEAS2		0x53
--
--#define PM800_GPADC0_MEAS1		0x54
--#define PM800_GPADC0_MEAS2		0x55
--#define PM800_GPADC1_MEAS1		0x56
--#define PM800_GPADC1_MEAS2		0x57
--#define PM800_GPADC2_MEAS1		0x58
--#define PM800_GPADC2_MEAS2		0x59
--#define PM800_GPADC3_MEAS1		0x5A
--#define PM800_GPADC3_MEAS2		0x5B
--#define PM800_GPADC4_MEAS1		0x5C
--#define PM800_GPADC4_MEAS2		0x5D
--
--#define PM800_GPADC4_AVG1		0xA8
--#define PM800_GPADC4_AVG2		0xA9
--
--/* 88PM805 Registers */
--#define PM805_MAIN_POWERUP		(0x01)
--#define PM805_INT_STATUS0		(0x02)	/* for ena/dis all interrupts */
--
--#define PM805_STATUS0_INT_CLEAR		(1 << 0)
--#define PM805_STATUS0_INV_INT		(1 << 1)
--#define PM800_STATUS0_INT_MASK		(1 << 2)
--
--#define PM805_INT_STATUS1		(0x03)
--
--#define PM805_INT1_HP1_SHRT		BIT(0)
--#define PM805_INT1_HP2_SHRT		BIT(1)
--#define PM805_INT1_MIC_CONFLICT		BIT(2)
--#define PM805_INT1_CLIP_FAULT		BIT(3)
--#define PM805_INT1_LDO_OFF		BIT(4)
--#define PM805_INT1_SRC_DPLL_LOCK	BIT(5)
--
--#define PM805_INT_STATUS2		(0x04)
--
--#define PM805_INT2_MIC_DET		BIT(0)
--#define PM805_INT2_SHRT_BTN_DET		BIT(1)
--#define PM805_INT2_VOLM_BTN_DET		BIT(2)
--#define PM805_INT2_VOLP_BTN_DET		BIT(3)
--#define PM805_INT2_RAW_PLL_FAULT	BIT(4)
--#define PM805_INT2_FINE_PLL_FAULT	BIT(5)
--
--#define PM805_INT_MASK1			(0x05)
--#define PM805_INT_MASK2			(0x06)
--#define PM805_SHRT_BTN_DET		BIT(1)
--
--/* number of status and int reg in a row */
--#define PM805_INT_REG_NUM		(2)
--
--#define PM805_MIC_DET1			(0x07)
--#define PM805_MIC_DET_EN_MIC_DET	BIT(0)
--#define PM805_MIC_DET2			(0x08)
--#define PM805_MIC_DET_STATUS1		(0x09)
--
--#define PM805_MIC_DET_STATUS3		(0x0A)
--#define PM805_AUTO_SEQ_STATUS1		(0x0B)
--#define PM805_AUTO_SEQ_STATUS2		(0x0C)
--
--#define PM805_ADC_SETTING1		(0x10)
--#define PM805_ADC_SETTING2		(0x11)
--#define PM805_ADC_SETTING3		(0x11)
--#define PM805_ADC_GAIN1			(0x12)
--#define PM805_ADC_GAIN2			(0x13)
--#define PM805_DMIC_SETTING		(0x15)
--#define PM805_DWS_SETTING		(0x16)
--#define PM805_MIC_CONFLICT_STS		(0x17)
--
--#define PM805_PDM_SETTING1		(0x20)
--#define PM805_PDM_SETTING2		(0x21)
--#define PM805_PDM_SETTING3		(0x22)
--#define PM805_PDM_CONTROL1		(0x23)
--#define PM805_PDM_CONTROL2		(0x24)
--#define PM805_PDM_CONTROL3		(0x25)
--
--#define PM805_HEADPHONE_SETTING		(0x26)
--#define PM805_HEADPHONE_GAIN_A2A	(0x27)
--#define PM805_HEADPHONE_SHORT_STATE	(0x28)
--#define PM805_EARPHONE_SETTING		(0x29)
--#define PM805_AUTO_SEQ_SETTING		(0x2A)
--
--struct pm80x_rtc_pdata {
--	int		vrtc;
--	int		rtc_wakeup;
+-enum si476x_part_revisions {
+-	SI476X_REVISION_A10 = 0,
+-	SI476X_REVISION_A20 = 1,
+-	SI476X_REVISION_A30 = 2,
 -};
 -
--struct pm80x_subchip {
--	struct i2c_client *power_page;	/* chip client for power page */
--	struct i2c_client *gpadc_page;	/* chip client for gpadc page */
--	struct regmap *regmap_power;
--	struct regmap *regmap_gpadc;
--	unsigned short power_page_addr;	/* power page I2C address */
--	unsigned short gpadc_page_addr;	/* gpadc page I2C address */
+-enum si476x_mfd_cells {
+-	SI476X_RADIO_CELL = 0,
+-	SI476X_CODEC_CELL,
+-	SI476X_MFD_CELLS,
 -};
 -
--struct pm80x_chip {
--	struct pm80x_subchip *subchip;
--	struct device *dev;
+-/**
+- * enum si476x_power_state - possible power state of the si476x
+- * device.
+- *
+- * @SI476X_POWER_DOWN: In this state all regulators are turned off
+- * and the reset line is pulled low. The device is completely
+- * inactive.
+- * @SI476X_POWER_UP_FULL: In this state all the power regulators are
+- * turned on, reset line pulled high, IRQ line is enabled(polling is
+- * active for polling use scenario) and device is turned on with
+- * POWER_UP command. The device is ready to be used.
+- * @SI476X_POWER_INCONSISTENT: This state indicates that previous
+- * power down was inconsistent, meaning some of the regulators were
+- * not turned down and thus use of the device, without power-cycling
+- * is impossible.
+- */
+-enum si476x_power_state {
+-	SI476X_POWER_DOWN		= 0,
+-	SI476X_POWER_UP_FULL		= 1,
+-	SI476X_POWER_INCONSISTENT	= 2,
+-};
+-
+-/**
+- * struct si476x_core - internal data structure representing the
+- * underlying "core" device which all the MFD cell-devices use.
+- *
+- * @client: Actual I2C client used to transfer commands to the chip.
+- * @regmap: Regmap for accessing the device registers
+- * @chip_id: Last digit of the chip model(E.g. "1" for SI4761)
+- * @cells: MFD cell devices created by this driver.
+- * @cmd_lock: Mutex used to serialize all the requests to the core
+- * device. This filed should not be used directly. Instead
+- * si476x_core_lock()/si476x_core_unlock() should be used to get
+- * exclusive access to the "core" device.
+- * @users: Active users counter(Used by the radio cell)
+- * @rds_read_queue: Wait queue used to wait for RDS data.
+- * @rds_fifo: FIFO in which all the RDS data received from the chip is
+- * placed.
+- * @rds_fifo_drainer: Worker that drains on-chip RDS FIFO.
+- * @rds_drainer_is_working: Flag used for launching only one instance
+- * of the @rds_fifo_drainer.
+- * @rds_drainer_status_lock: Lock used to guard access to the
+- * @rds_drainer_is_working variable.
+- * @command: Wait queue for wainting on the command comapletion.
+- * @cts: Clear To Send flag set upon receiving first status with CTS
+- * set.
+- * @tuning: Wait queue used for wainting for tune/seek comand
+- * completion.
+- * @stc: Similar to @cts, but for the STC bit of the status value.
+- * @power_up_parameters: Parameters used as argument for POWER_UP
+- * command when the device is started.
+- * @power_state: Current power state of the device.
+- * @supplies: Structure containing handles to all power supplies used
+- * by the device (NULL ones are ignored).
+- * @reset: GPIO connected to the RSTB pin of the chip.
+- * @pinmux: Chip's configurable pins configuration.
+- * @diversity_mode: Chips role when functioning in diversity mode.
+- * @is_alive: Chip is initialized and active.
+- * @status_monitor: Polling worker used in polling use case scenarion
+- * (when IRQ is not avalible).
+- * @revision: Chip's running firmware revision number(Used for correct
+- * command set support).
+- * @rds_fifo_depth: RDS FIFO size: 20 for IRQ mode or 5 for polling mode.
+- */
+-
+-struct si476x_core {
 -	struct i2c_client *client;
--	struct i2c_client *companion;
 -	struct regmap *regmap;
--	const struct regmap_irq_chip *regmap_irq_chip;
--	struct regmap_irq_chip_data *irq_data;
--	int type;
--	int irq;
--	int irq_mode;
--	unsigned long wu_flag;
--	spinlock_t lock;
+-	int chip_id;
+-	struct mfd_cell cells[SI476X_MFD_CELLS];
+-
+-	struct mutex cmd_lock; /* for serializing fm radio operations */
+-	atomic_t users;
+-
+-	wait_queue_head_t  rds_read_queue;
+-	struct kfifo       rds_fifo;
+-	struct work_struct rds_fifo_drainer;
+-	bool               rds_drainer_is_working;
+-	struct mutex       rds_drainer_status_lock;
+-
+-	wait_queue_head_t command;
+-	atomic_t          cts;
+-
+-	wait_queue_head_t tuning;
+-	atomic_t          stc;
+-
+-	struct si476x_power_up_args power_up_parameters;
+-
+-	enum si476x_power_state power_state;
+-
+-	struct regulator_bulk_data supplies[4];
+-
+-	struct gpio_desc *reset;
+-
+-	struct si476x_pinmux pinmux;
+-	enum si476x_phase_diversity_mode diversity_mode;
+-
+-	atomic_t is_alive;
+-
+-	struct delayed_work status_monitor;
+-#define SI476X_WORK_TO_CORE(w) container_of(to_delayed_work(w),	\
+-					    struct si476x_core,	\
+-					    status_monitor)
+-
+-	int revision;
+-
+-	int rds_fifo_depth;
 -};
 -
--struct pm80x_platform_data {
--	struct pm80x_rtc_pdata *rtc;
--	/*
--	 * For the regulator not defined, set regulators[not_defined] to be
--	 * NULL. num_regulators are the number of regulators supposed to be
--	 * initialized. If all regulators are not defined, set num_regulators
--	 * to be 0.
--	 */
--	struct regulator_init_data *regulators[PM800_ID_RG_MAX];
--	unsigned int num_regulators;
--	int irq_mode;		/* Clear interrupt by read/write(0/1) */
--	int batt_det;		/* enable/disable */
--	int (*plat_config)(struct pm80x_chip *chip,
--				struct pm80x_platform_data *pdata);
--};
--
--extern const struct dev_pm_ops pm80x_pm_ops;
--extern const struct regmap_config pm80x_regmap_config;
--
--static inline int pm80x_request_irq(struct pm80x_chip *pm80x, int irq,
--				     irq_handler_t handler, unsigned long flags,
--				     const char *name, void *data)
+-static inline struct si476x_core *i2c_mfd_cell_to_core(struct device *dev)
 -{
--	if (!pm80x->irq_data)
+-	struct i2c_client *client = to_i2c_client(dev->parent);
+-	return i2c_get_clientdata(client);
+-}
+-
+-
+-/**
+- * si476x_core_lock() - lock the core device to get an exclusive access
+- * to it.
+- * @core: Core device structure
+- */
+-static inline void si476x_core_lock(struct si476x_core *core)
+-{
+-	mutex_lock(&core->cmd_lock);
+-}
+-
+-/**
+- * si476x_core_unlock() - unlock the core device to relinquish an
+- * exclusive access to it.
+- * @core: Core device structure
+- */
+-static inline void si476x_core_unlock(struct si476x_core *core)
+-{
+-	mutex_unlock(&core->cmd_lock);
+-}
+-
+-/* *_TUNE_FREQ family of commands accept frequency in multiples of
+-    10kHz */
+-static inline u16 hz_to_si476x(struct si476x_core *core, int freq)
+-{
+-	u16 result;
+-
+-	switch (core->power_up_parameters.func) {
+-	default:
+-	case SI476X_FUNC_FM_RECEIVER:
+-		result = freq / 10000;
+-		break;
+-	case SI476X_FUNC_AM_RECEIVER:
+-		result = freq / 1000;
+-		break;
+-	}
+-
+-	return result;
+-}
+-
+-static inline int si476x_to_hz(struct si476x_core *core, u16 freq)
+-{
+-	int result;
+-
+-	switch (core->power_up_parameters.func) {
+-	default:
+-	case SI476X_FUNC_FM_RECEIVER:
+-		result = freq * 10000;
+-		break;
+-	case SI476X_FUNC_AM_RECEIVER:
+-		result = freq * 1000;
+-		break;
+-	}
+-
+-	return result;
+-}
+-
+-/* Since the V4L2_TUNER_CAP_LOW flag is supplied, V4L2 subsystem
+- * mesures frequency in 62.5 Hz units */
+-
+-static inline int hz_to_v4l2(int freq)
+-{
+-	return (freq * 10) / 625;
+-}
+-
+-static inline int v4l2_to_hz(int freq)
+-{
+-	return (freq * 625) / 10;
+-}
+-
+-static inline u16 v4l2_to_si476x(struct si476x_core *core, int freq)
+-{
+-	return hz_to_si476x(core, v4l2_to_hz(freq));
+-}
+-
+-static inline int si476x_to_v4l2(struct si476x_core *core, u16 freq)
+-{
+-	return hz_to_v4l2(si476x_to_hz(core, freq));
+-}
+-
+-
+-
+-/**
+- * struct si476x_func_info - structure containing result of the
+- * FUNC_INFO command.
+- *
+- * @firmware: Firmware version numbers.
+- * @firmware.major: Firmware major number.
+- * @firmware.minor[...]: Firmware minor numbers.
+- * @patch_id: Firmware patch level.
+- * @func: Mode tuner is working in.
+- */
+-struct si476x_func_info {
+-	struct {
+-		u8 major, minor[2];
+-	} firmware;
+-	u16 patch_id;
+-	enum si476x_func func;
+-};
+-
+-/**
+- * struct si476x_power_down_args - structure used to pass parameters
+- * to POWER_DOWN command
+- *
+- * @xosc: true - Power down, but leav oscillator running.
+- *        false - Full power down.
+- */
+-struct si476x_power_down_args {
+-	bool xosc;
+-};
+-
+-/**
+- * enum si476x_tunemode - enum representing possible tune modes for
+- * the chip.
+- * @SI476X_TM_VALIDATED_NORMAL_TUNE: Unconditionally stay on the new
+- * channel after tune, tune status is valid.
+- * @SI476X_TM_INVALIDATED_FAST_TUNE: Unconditionally stay in the new
+- * channel after tune, tune status invalid.
+- * @SI476X_TM_VALIDATED_AF_TUNE: Jump back to previous channel if
+- * metric thresholds are not met.
+- * @SI476X_TM_VALIDATED_AF_CHECK: Unconditionally jump back to the
+- * previous channel.
+- */
+-enum si476x_tunemode {
+-	SI476X_TM_VALIDATED_NORMAL_TUNE = 0,
+-	SI476X_TM_INVALIDATED_FAST_TUNE = 1,
+-	SI476X_TM_VALIDATED_AF_TUNE     = 2,
+-	SI476X_TM_VALIDATED_AF_CHECK    = 3,
+-};
+-
+-/**
+- * enum si476x_smoothmetrics - enum containing the possible setting fo
+- * audio transitioning of the chip
+- * @SI476X_SM_INITIALIZE_AUDIO: Initialize audio state to match this
+- * new channel
+- * @SI476X_SM_TRANSITION_AUDIO: Transition audio state from previous
+- * channel values to the new values
+- */
+-enum si476x_smoothmetrics {
+-	SI476X_SM_INITIALIZE_AUDIO = 0,
+-	SI476X_SM_TRANSITION_AUDIO = 1,
+-};
+-
+-/**
+- * struct si476x_rds_status_report - the structure representing the
+- * response to 'FM_RD_STATUS' command
+- * @rdstpptyint: Traffic program flag(TP) and/or program type(PTY)
+- * code has changed.
+- * @rdspiint: Program identification(PI) code has changed.
+- * @rdssyncint: RDS synchronization has changed.
+- * @rdsfifoint: RDS was received and the RDS FIFO has at least
+- * 'FM_RDS_INTERRUPT_FIFO_COUNT' elements in it.
+- * @tpptyvalid: TP flag and PTY code are valid falg.
+- * @pivalid: PI code is valid flag.
+- * @rdssync: RDS is currently synchronized.
+- * @rdsfifolost: On or more RDS groups have been lost/discarded flag.
+- * @tp: Current channel's TP flag.
+- * @pty: Current channel's PTY code.
+- * @pi: Current channel's PI code.
+- * @rdsfifoused: Number of blocks remaining in the RDS FIFO (0 if empty).
+- * @ble:
+- * @rds: RDS data descriptor
+- */
+-struct si476x_rds_status_report {
+-	bool rdstpptyint, rdspiint, rdssyncint, rdsfifoint;
+-	bool tpptyvalid, pivalid, rdssync, rdsfifolost;
+-	bool tp;
+-
+-	u8 pty;
+-	u16 pi;
+-
+-	u8 rdsfifoused;
+-	u8 ble[4];
+-
+-	struct v4l2_rds_data rds[4];
+-};
+-
+-struct si476x_rsq_status_args {
+-	bool primary;
+-	bool rsqack;
+-	bool attune;
+-	bool cancel;
+-	bool stcack;
+-};
+-
+-enum si476x_injside {
+-	SI476X_INJSIDE_AUTO	= 0,
+-	SI476X_INJSIDE_LOW	= 1,
+-	SI476X_INJSIDE_HIGH	= 2,
+-};
+-
+-struct si476x_tune_freq_args {
+-	bool zifsr;
+-	bool hd;
+-	enum si476x_injside injside;
+-	int freq;
+-	enum si476x_tunemode tunemode;
+-	enum si476x_smoothmetrics smoothmetrics;
+-	int antcap;
+-};
+-
+-int  si476x_core_stop(struct si476x_core *, bool);
+-int  si476x_core_start(struct si476x_core *, bool);
+-int  si476x_core_set_power_state(struct si476x_core *, enum si476x_power_state);
+-bool si476x_core_has_am(struct si476x_core *);
+-bool si476x_core_has_diversity(struct si476x_core *);
+-bool si476x_core_is_a_secondary_tuner(struct si476x_core *);
+-bool si476x_core_is_a_primary_tuner(struct si476x_core *);
+-bool si476x_core_is_in_am_receiver_mode(struct si476x_core *core);
+-bool si476x_core_is_powered_up(struct si476x_core *core);
+-
+-enum si476x_i2c_type {
+-	SI476X_I2C_SEND,
+-	SI476X_I2C_RECV
+-};
+-
+-int si476x_core_i2c_xfer(struct si476x_core *,
+-			 enum si476x_i2c_type,
+-			 char *, int);
+-
+-
+-/* -------------------- si476x-cmd.c ----------------------- */
+-
+-int si476x_core_cmd_func_info(struct si476x_core *, struct si476x_func_info *);
+-int si476x_core_cmd_set_property(struct si476x_core *, u16, u16);
+-int si476x_core_cmd_get_property(struct si476x_core *, u16);
+-int si476x_core_cmd_dig_audio_pin_cfg(struct si476x_core *,
+-				      enum si476x_dclk_config,
+-				      enum si476x_dfs_config,
+-				      enum si476x_dout_config,
+-				      enum si476x_xout_config);
+-int si476x_core_cmd_zif_pin_cfg(struct si476x_core *,
+-				enum si476x_iqclk_config,
+-				enum si476x_iqfs_config,
+-				enum si476x_iout_config,
+-				enum si476x_qout_config);
+-int si476x_core_cmd_ic_link_gpo_ctl_pin_cfg(struct si476x_core *,
+-					    enum si476x_icin_config,
+-					    enum si476x_icip_config,
+-					    enum si476x_icon_config,
+-					    enum si476x_icop_config);
+-int si476x_core_cmd_ana_audio_pin_cfg(struct si476x_core *,
+-				      enum si476x_lrout_config);
+-int si476x_core_cmd_intb_pin_cfg(struct si476x_core *, enum si476x_intb_config,
+-				 enum si476x_a1_config);
+-int si476x_core_cmd_fm_seek_start(struct si476x_core *, bool, bool);
+-int si476x_core_cmd_am_seek_start(struct si476x_core *, bool, bool);
+-int si476x_core_cmd_fm_rds_status(struct si476x_core *, bool, bool, bool,
+-				  struct si476x_rds_status_report *);
+-int si476x_core_cmd_fm_rds_blockcount(struct si476x_core *, bool,
+-				      struct si476x_rds_blockcount_report *);
+-int si476x_core_cmd_fm_tune_freq(struct si476x_core *,
+-				 struct si476x_tune_freq_args *);
+-int si476x_core_cmd_am_tune_freq(struct si476x_core *,
+-				 struct si476x_tune_freq_args *);
+-int si476x_core_cmd_am_rsq_status(struct si476x_core *,
+-				  struct si476x_rsq_status_args *,
+-				  struct si476x_rsq_status_report *);
+-int si476x_core_cmd_fm_rsq_status(struct si476x_core *,
+-				  struct si476x_rsq_status_args *,
+-				  struct si476x_rsq_status_report *);
+-int si476x_core_cmd_power_up(struct si476x_core *,
+-			     struct si476x_power_up_args *);
+-int si476x_core_cmd_power_down(struct si476x_core *,
+-			       struct si476x_power_down_args *);
+-int si476x_core_cmd_fm_phase_div_status(struct si476x_core *);
+-int si476x_core_cmd_fm_phase_diversity(struct si476x_core *,
+-				       enum si476x_phase_diversity_mode);
+-
+-int si476x_core_cmd_fm_acf_status(struct si476x_core *,
+-				  struct si476x_acf_status_report *);
+-int si476x_core_cmd_am_acf_status(struct si476x_core *,
+-				  struct si476x_acf_status_report *);
+-int si476x_core_cmd_agc_status(struct si476x_core *,
+-			       struct si476x_agc_status_report *);
+-
+-enum si476x_power_grid_type {
+-	SI476X_POWER_GRID_50HZ = 0,
+-	SI476X_POWER_GRID_60HZ,
+-};
+-
+-/* Properties  */
+-
+-enum si476x_interrupt_flags {
+-	SI476X_STCIEN = (1 << 0),
+-	SI476X_ACFIEN = (1 << 1),
+-	SI476X_RDSIEN = (1 << 2),
+-	SI476X_RSQIEN = (1 << 3),
+-
+-	SI476X_ERRIEN = (1 << 6),
+-	SI476X_CTSIEN = (1 << 7),
+-
+-	SI476X_STCREP = (1 << 8),
+-	SI476X_ACFREP = (1 << 9),
+-	SI476X_RDSREP = (1 << 10),
+-	SI476X_RSQREP = (1 << 11),
+-};
+-
+-enum si476x_rdsint_sources {
+-	SI476X_RDSTPPTY = (1 << 4),
+-	SI476X_RDSPI    = (1 << 3),
+-	SI476X_RDSSYNC	= (1 << 1),
+-	SI476X_RDSRECV	= (1 << 0),
+-};
+-
+-enum si476x_status_response_bits {
+-	SI476X_CTS	  = (1 << 7),
+-	SI476X_ERR	  = (1 << 6),
+-	/* Status response for WB receiver */
+-	SI476X_WB_ASQ_INT = (1 << 4),
+-	SI476X_RSQ_INT    = (1 << 3),
+-	/* Status response for FM receiver */
+-	SI476X_FM_RDS_INT = (1 << 2),
+-	SI476X_ACF_INT    = (1 << 1),
+-	SI476X_STC_INT    = (1 << 0),
+-};
+-
+-/* -------------------- si476x-prop.c ----------------------- */
+-
+-enum si476x_common_receiver_properties {
+-	SI476X_PROP_INT_CTL_ENABLE			= 0x0000,
+-	SI476X_PROP_DIGITAL_IO_INPUT_SAMPLE_RATE	= 0x0200,
+-	SI476X_PROP_DIGITAL_IO_INPUT_FORMAT		= 0x0201,
+-	SI476X_PROP_DIGITAL_IO_OUTPUT_SAMPLE_RATE	= 0x0202,
+-	SI476X_PROP_DIGITAL_IO_OUTPUT_FORMAT		= 0x0203,
+-
+-	SI476X_PROP_SEEK_BAND_BOTTOM			= 0x1100,
+-	SI476X_PROP_SEEK_BAND_TOP			= 0x1101,
+-	SI476X_PROP_SEEK_FREQUENCY_SPACING		= 0x1102,
+-
+-	SI476X_PROP_VALID_MAX_TUNE_ERROR		= 0x2000,
+-	SI476X_PROP_VALID_SNR_THRESHOLD			= 0x2003,
+-	SI476X_PROP_VALID_RSSI_THRESHOLD		= 0x2004,
+-};
+-
+-enum si476x_am_receiver_properties {
+-	SI476X_PROP_AUDIO_PWR_LINE_FILTER		= 0x0303,
+-};
+-
+-enum si476x_fm_receiver_properties {
+-	SI476X_PROP_AUDIO_DEEMPHASIS			= 0x0302,
+-
+-	SI476X_PROP_FM_RDS_INTERRUPT_SOURCE		= 0x4000,
+-	SI476X_PROP_FM_RDS_INTERRUPT_FIFO_COUNT		= 0x4001,
+-	SI476X_PROP_FM_RDS_CONFIG			= 0x4002,
+-};
+-
+-enum si476x_prop_audio_pwr_line_filter_bits {
+-	SI476X_PROP_PWR_HARMONICS_MASK	= 0x001f,
+-	SI476X_PROP_PWR_GRID_MASK	= 0x0100,
+-	SI476X_PROP_PWR_ENABLE_MASK	= 0x0200,
+-	SI476X_PROP_PWR_GRID_50HZ	= 0x0000,
+-	SI476X_PROP_PWR_GRID_60HZ	= 0x0100,
+-};
+-
+-enum si476x_prop_fm_rds_config_bits {
+-	SI476X_PROP_RDSEN_MASK	= 0x1,
+-	SI476X_PROP_RDSEN	= 0x1,
+-};
+-
+-
+-struct regmap *devm_regmap_init_si476x(struct si476x_core *);
+-
+-#endif	/* SI476X_CORE_H */
+diff --git a/include/linux/mfd/si476x-platform.h b/include/linux/mfd/si476x-platform.h
+deleted file mode 100644
+index f9e1f6b27277..000000000000
+--- a/include/linux/mfd/si476x-platform.h
++++ /dev/null
+@@ -1,256 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0-only */
+-/*
+- * include/media/si476x-platform.h -- Platform data specific definitions
+- *
+- * Copyright (C) 2013 Andrey Smirnov
+- *
+- * Author: Andrey Smirnov <andrew.smirnov@gmail.com>
+- */
+-
+-#ifndef __SI476X_PLATFORM_H__
+-#define __SI476X_PLATFORM_H__
+-
+-/* It is possible to select one of the four addresses using pins A0
+- * and A1 on SI476x */
+-#define SI476X_I2C_ADDR_1	0x60
+-#define SI476X_I2C_ADDR_2	0x61
+-#define SI476X_I2C_ADDR_3	0x62
+-#define SI476X_I2C_ADDR_4	0x63
+-
+-enum si476x_iqclk_config {
+-	SI476X_IQCLK_NOOP = 0,
+-	SI476X_IQCLK_TRISTATE = 1,
+-	SI476X_IQCLK_IQ = 21,
+-};
+-enum si476x_iqfs_config {
+-	SI476X_IQFS_NOOP = 0,
+-	SI476X_IQFS_TRISTATE = 1,
+-	SI476X_IQFS_IQ = 21,
+-};
+-enum si476x_iout_config {
+-	SI476X_IOUT_NOOP = 0,
+-	SI476X_IOUT_TRISTATE = 1,
+-	SI476X_IOUT_OUTPUT = 22,
+-};
+-enum si476x_qout_config {
+-	SI476X_QOUT_NOOP = 0,
+-	SI476X_QOUT_TRISTATE = 1,
+-	SI476X_QOUT_OUTPUT = 22,
+-};
+-
+-enum si476x_dclk_config {
+-	SI476X_DCLK_NOOP      = 0,
+-	SI476X_DCLK_TRISTATE  = 1,
+-	SI476X_DCLK_DAUDIO    = 10,
+-};
+-
+-enum si476x_dfs_config {
+-	SI476X_DFS_NOOP      = 0,
+-	SI476X_DFS_TRISTATE  = 1,
+-	SI476X_DFS_DAUDIO    = 10,
+-};
+-
+-enum si476x_dout_config {
+-	SI476X_DOUT_NOOP       = 0,
+-	SI476X_DOUT_TRISTATE   = 1,
+-	SI476X_DOUT_I2S_OUTPUT = 12,
+-	SI476X_DOUT_I2S_INPUT  = 13,
+-};
+-
+-enum si476x_xout_config {
+-	SI476X_XOUT_NOOP        = 0,
+-	SI476X_XOUT_TRISTATE    = 1,
+-	SI476X_XOUT_I2S_INPUT   = 13,
+-	SI476X_XOUT_MODE_SELECT = 23,
+-};
+-
+-enum si476x_icin_config {
+-	SI476X_ICIN_NOOP	= 0,
+-	SI476X_ICIN_TRISTATE	= 1,
+-	SI476X_ICIN_GPO1_HIGH	= 2,
+-	SI476X_ICIN_GPO1_LOW	= 3,
+-	SI476X_ICIN_IC_LINK	= 30,
+-};
+-
+-enum si476x_icip_config {
+-	SI476X_ICIP_NOOP	= 0,
+-	SI476X_ICIP_TRISTATE	= 1,
+-	SI476X_ICIP_GPO2_HIGH	= 2,
+-	SI476X_ICIP_GPO2_LOW	= 3,
+-	SI476X_ICIP_IC_LINK	= 30,
+-};
+-
+-enum si476x_icon_config {
+-	SI476X_ICON_NOOP	= 0,
+-	SI476X_ICON_TRISTATE	= 1,
+-	SI476X_ICON_I2S		= 10,
+-	SI476X_ICON_IC_LINK	= 30,
+-};
+-
+-enum si476x_icop_config {
+-	SI476X_ICOP_NOOP	= 0,
+-	SI476X_ICOP_TRISTATE	= 1,
+-	SI476X_ICOP_I2S		= 10,
+-	SI476X_ICOP_IC_LINK	= 30,
+-};
+-
+-
+-enum si476x_lrout_config {
+-	SI476X_LROUT_NOOP	= 0,
+-	SI476X_LROUT_TRISTATE	= 1,
+-	SI476X_LROUT_AUDIO	= 2,
+-	SI476X_LROUT_MPX	= 3,
+-};
+-
+-
+-enum si476x_intb_config {
+-	SI476X_INTB_NOOP     = 0,
+-	SI476X_INTB_TRISTATE = 1,
+-	SI476X_INTB_DAUDIO   = 10,
+-	SI476X_INTB_IRQ      = 40,
+-};
+-
+-enum si476x_a1_config {
+-	SI476X_A1_NOOP     = 0,
+-	SI476X_A1_TRISTATE = 1,
+-	SI476X_A1_IRQ      = 40,
+-};
+-
+-
+-struct si476x_pinmux {
+-	enum si476x_dclk_config  dclk;
+-	enum si476x_dfs_config   dfs;
+-	enum si476x_dout_config  dout;
+-	enum si476x_xout_config  xout;
+-
+-	enum si476x_iqclk_config iqclk;
+-	enum si476x_iqfs_config  iqfs;
+-	enum si476x_iout_config  iout;
+-	enum si476x_qout_config  qout;
+-
+-	enum si476x_icin_config  icin;
+-	enum si476x_icip_config  icip;
+-	enum si476x_icon_config  icon;
+-	enum si476x_icop_config  icop;
+-
+-	enum si476x_lrout_config lrout;
+-
+-	enum si476x_intb_config  intb;
+-	enum si476x_a1_config    a1;
+-};
+-
+-enum si476x_ibias6x {
+-	SI476X_IBIAS6X_OTHER			= 0,
+-	SI476X_IBIAS6X_RCVR1_NON_4MHZ_CLK	= 1,
+-};
+-
+-enum si476x_xstart {
+-	SI476X_XSTART_MULTIPLE_TUNER	= 0x11,
+-	SI476X_XSTART_NORMAL		= 0x77,
+-};
+-
+-enum si476x_freq {
+-	SI476X_FREQ_4_MHZ		= 0,
+-	SI476X_FREQ_37P209375_MHZ	= 1,
+-	SI476X_FREQ_36P4_MHZ		= 2,
+-	SI476X_FREQ_37P8_MHZ		=  3,
+-};
+-
+-enum si476x_xmode {
+-	SI476X_XMODE_CRYSTAL_RCVR1	= 1,
+-	SI476X_XMODE_EXT_CLOCK		= 2,
+-	SI476X_XMODE_CRYSTAL_RCVR2_3	= 3,
+-};
+-
+-enum si476x_xbiashc {
+-	SI476X_XBIASHC_SINGLE_RECEIVER = 0,
+-	SI476X_XBIASHC_MULTIPLE_RECEIVER = 1,
+-};
+-
+-enum si476x_xbias {
+-	SI476X_XBIAS_RCVR2_3	= 0,
+-	SI476X_XBIAS_4MHZ_RCVR1 = 3,
+-	SI476X_XBIAS_RCVR1	= 7,
+-};
+-
+-enum si476x_func {
+-	SI476X_FUNC_BOOTLOADER	= 0,
+-	SI476X_FUNC_FM_RECEIVER = 1,
+-	SI476X_FUNC_AM_RECEIVER = 2,
+-	SI476X_FUNC_WB_RECEIVER = 3,
+-};
+-
+-
+-/**
+- * @xcload: Selects the amount of additional on-chip capacitance to
+- *          be connected between XTAL1 and gnd and between XTAL2 and
+- *          GND. One half of the capacitance value shown here is the
+- *          additional load capacitance presented to the xtal. The
+- *          minimum step size is 0.277 pF. Recommended value is 0x28
+- *          but it will be layout dependent. Range is 0–0x3F i.e.
+- *          (0–16.33 pF)
+- * @ctsien: enable CTSINT(interrupt request when CTS condition
+- *          arises) when set
+- * @intsel: when set A1 pin becomes the interrupt pin; otherwise,
+- *          INTB is the interrupt pin
+- * @func:   selects the boot function of the device. I.e.
+- *          SI476X_BOOTLOADER  - Boot loader
+- *          SI476X_FM_RECEIVER - FM receiver
+- *          SI476X_AM_RECEIVER - AM receiver
+- *          SI476X_WB_RECEIVER - Weatherband receiver
+- * @freq:   oscillator's crystal frequency:
+- *          SI476X_XTAL_37P209375_MHZ - 37.209375 Mhz
+- *          SI476X_XTAL_36P4_MHZ      - 36.4 Mhz
+- *          SI476X_XTAL_37P8_MHZ      - 37.8 Mhz
+- */
+-struct si476x_power_up_args {
+-	enum si476x_ibias6x ibias6x;
+-	enum si476x_xstart  xstart;
+-	u8   xcload;
+-	bool fastboot;
+-	enum si476x_xbiashc xbiashc;
+-	enum si476x_xbias   xbias;
+-	enum si476x_func    func;
+-	enum si476x_freq    freq;
+-	enum si476x_xmode   xmode;
+-};
+-
+-
+-/**
+- * enum si476x_phase_diversity_mode - possbile phase diversity modes
+- * for SI4764/5/6/7 chips.
+- *
+- * @SI476X_PHDIV_DISABLED:		Phase diversity feature is
+- *					disabled.
+- * @SI476X_PHDIV_PRIMARY_COMBINING:	Tuner works as a primary tuner
+- *					in combination with a
+- *					secondary one.
+- * @SI476X_PHDIV_PRIMARY_ANTENNA:	Tuner works as a primary tuner
+- *					using only its own antenna.
+- * @SI476X_PHDIV_SECONDARY_ANTENNA:	Tuner works as a primary tuner
+- *					usning seconary tuner's antenna.
+- * @SI476X_PHDIV_SECONDARY_COMBINING:	Tuner works as a secondary
+- *					tuner in combination with the
+- *					primary one.
+- */
+-enum si476x_phase_diversity_mode {
+-	SI476X_PHDIV_DISABLED			= 0,
+-	SI476X_PHDIV_PRIMARY_COMBINING		= 1,
+-	SI476X_PHDIV_PRIMARY_ANTENNA		= 2,
+-	SI476X_PHDIV_SECONDARY_ANTENNA		= 3,
+-	SI476X_PHDIV_SECONDARY_COMBINING	= 5,
+-};
+-
+-
+-/*
+- * Platform dependent definition
+- */
+-struct si476x_platform_data {
+-	struct si476x_power_up_args power_up_parameters;
+-	enum si476x_phase_diversity_mode diversity_mode;
+-
+-	struct si476x_pinmux pinmux;
+-};
+-
+-
+-#endif /* __SI476X_PLATFORM_H__ */
+diff --git a/include/linux/mfd/si476x-reports.h b/include/linux/mfd/si476x-reports.h
+deleted file mode 100644
+index 93b34184699d..000000000000
+--- a/include/linux/mfd/si476x-reports.h
++++ /dev/null
+@@ -1,154 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0-only */
+-/*
+- * include/media/si476x-platform.h -- Definitions of the data formats
+- * returned by debugfs hooks
+- *
+- * Copyright (C) 2013 Andrey Smirnov
+- *
+- * Author: Andrey Smirnov <andrew.smirnov@gmail.com>
+- */
+-
+-#ifndef __SI476X_REPORTS_H__
+-#define __SI476X_REPORTS_H__
+-
+-/**
+- * struct si476x_rsq_status - structure containing received signal
+- * quality
+- * @multhint:   Multipath Detect High.
+- *              true  - Indicatedes that the value is below
+- *                      FM_RSQ_MULTIPATH_HIGH_THRESHOLD
+- *              false - Indicatedes that the value is above
+- *                      FM_RSQ_MULTIPATH_HIGH_THRESHOLD
+- * @multlint:   Multipath Detect Low.
+- *              true  - Indicatedes that the value is below
+- *                      FM_RSQ_MULTIPATH_LOW_THRESHOLD
+- *              false - Indicatedes that the value is above
+- *                      FM_RSQ_MULTIPATH_LOW_THRESHOLD
+- * @snrhint:    SNR Detect High.
+- *              true  - Indicatedes that the value is below
+- *                      FM_RSQ_SNR_HIGH_THRESHOLD
+- *              false - Indicatedes that the value is above
+- *                      FM_RSQ_SNR_HIGH_THRESHOLD
+- * @snrlint:    SNR Detect Low.
+- *              true  - Indicatedes that the value is below
+- *                      FM_RSQ_SNR_LOW_THRESHOLD
+- *              false - Indicatedes that the value is above
+- *                      FM_RSQ_SNR_LOW_THRESHOLD
+- * @rssihint:   RSSI Detect High.
+- *              true  - Indicatedes that the value is below
+- *                      FM_RSQ_RSSI_HIGH_THRESHOLD
+- *              false - Indicatedes that the value is above
+- *                      FM_RSQ_RSSI_HIGH_THRESHOLD
+- * @rssilint:   RSSI Detect Low.
+- *              true  - Indicatedes that the value is below
+- *                      FM_RSQ_RSSI_LOW_THRESHOLD
+- *              false - Indicatedes that the value is above
+- *                      FM_RSQ_RSSI_LOW_THRESHOLD
+- * @bltf:       Band Limit.
+- *              Set if seek command hits the band limit or wrapped to
+- *              the original frequency.
+- * @snr_ready:  SNR measurement in progress.
+- * @rssiready:  RSSI measurement in progress.
+- * @afcrl:      Set if FREQOFF >= MAX_TUNE_ERROR
+- * @valid:      Set if the channel is valid
+- *               rssi < FM_VALID_RSSI_THRESHOLD
+- *               snr  < FM_VALID_SNR_THRESHOLD
+- *               tune_error < FM_VALID_MAX_TUNE_ERROR
+- * @readfreq:   Current tuned frequency.
+- * @freqoff:    Signed frequency offset.
+- * @rssi:       Received Signal Strength Indicator(dBuV).
+- * @snr:        RF SNR Indicator(dB).
+- * @lassi:
+- * @hassi:      Low/High side Adjacent(100 kHz) Channel Strength Indicator
+- * @mult:       Multipath indicator
+- * @dev:        Who knows? But values may vary.
+- * @readantcap: Antenna tuning capacity value.
+- * @assi:       Adjacent Channel(+/- 200kHz) Strength Indicator
+- * @usn:        Ultrasonic Noise Inticator in -DBFS
+- */
+-struct si476x_rsq_status_report {
+-	__u8 multhint, multlint;
+-	__u8 snrhint,  snrlint;
+-	__u8 rssihint, rssilint;
+-	__u8 bltf;
+-	__u8 snr_ready;
+-	__u8 rssiready;
+-	__u8 injside;
+-	__u8 afcrl;
+-	__u8 valid;
+-
+-	__u16 readfreq;
+-	__s8  freqoff;
+-	__s8  rssi;
+-	__s8  snr;
+-	__s8  issi;
+-	__s8  lassi, hassi;
+-	__s8  mult;
+-	__u8  dev;
+-	__u16 readantcap;
+-	__s8  assi;
+-	__s8  usn;
+-
+-	__u8 pilotdev;
+-	__u8 rdsdev;
+-	__u8 assidev;
+-	__u8 strongdev;
+-	__u16 rdspi;
+-} __packed;
+-
+-/**
+- * si476x_acf_status_report - ACF report results
+- *
+- * @blend_int: If set, indicates that stereo separation has crossed
+- * below the blend threshold as set by FM_ACF_BLEND_THRESHOLD
+- * @hblend_int: If set, indicates that HiBlend cutoff frequency is
+- * lower than threshold as set by FM_ACF_HBLEND_THRESHOLD
+- * @hicut_int:  If set, indicates that HiCut cutoff frequency is lower
+- * than the threshold set by ACF_
+-
+- */
+-struct si476x_acf_status_report {
+-	__u8 blend_int;
+-	__u8 hblend_int;
+-	__u8 hicut_int;
+-	__u8 chbw_int;
+-	__u8 softmute_int;
+-	__u8 smute;
+-	__u8 smattn;
+-	__u8 chbw;
+-	__u8 hicut;
+-	__u8 hiblend;
+-	__u8 pilot;
+-	__u8 stblend;
+-} __packed;
+-
+-enum si476x_fmagc {
+-	SI476X_FMAGC_10K_OHM	= 0,
+-	SI476X_FMAGC_800_OHM	= 1,
+-	SI476X_FMAGC_400_OHM	= 2,
+-	SI476X_FMAGC_200_OHM	= 4,
+-	SI476X_FMAGC_100_OHM	= 8,
+-	SI476X_FMAGC_50_OHM	= 16,
+-	SI476X_FMAGC_25_OHM	= 32,
+-	SI476X_FMAGC_12P5_OHM	= 64,
+-	SI476X_FMAGC_6P25_OHM	= 128,
+-};
+-
+-struct si476x_agc_status_report {
+-	__u8 mxhi;
+-	__u8 mxlo;
+-	__u8 lnahi;
+-	__u8 lnalo;
+-	__u8 fmagc1;
+-	__u8 fmagc2;
+-	__u8 pgagain;
+-	__u8 fmwblang;
+-} __packed;
+-
+-struct si476x_rds_blockcount_report {
+-	__u16 expected;
+-	__u16 received;
+-	__u16 uncorrectable;
+-} __packed;
+-
+-#endif  /* __SI476X_REPORTS_H__ */
+diff --git a/include/media/drv-intf/si476x.h b/include/media/drv-intf/si476x.h
+deleted file mode 100644
+index 07f291d50b77..000000000000
+--- a/include/media/drv-intf/si476x.h
++++ /dev/null
+@@ -1,28 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0-only */
+-/*
+- * include/media/drv-intf/si476x.h -- Common definitions for si476x driver
+- *
+- * Copyright (C) 2012 Innovative Converged Devices(ICD)
+- * Copyright (C) 2013 Andrey Smirnov
+- *
+- * Author: Andrey Smirnov <andrew.smirnov@gmail.com>
+- */
+-
+-#ifndef SI476X_H
+-#define SI476X_H
+-
+-#include <linux/types.h>
+-#include <linux/videodev2.h>
+-
+-#include <linux/mfd/si476x-reports.h>
+-
+-enum si476x_ctrl_id {
+-	V4L2_CID_SI476X_RSSI_THRESHOLD	= (V4L2_CID_USER_SI476X_BASE + 1),
+-	V4L2_CID_SI476X_SNR_THRESHOLD	= (V4L2_CID_USER_SI476X_BASE + 2),
+-	V4L2_CID_SI476X_MAX_TUNE_ERROR	= (V4L2_CID_USER_SI476X_BASE + 3),
+-	V4L2_CID_SI476X_HARMONICS_COUNT	= (V4L2_CID_USER_SI476X_BASE + 4),
+-	V4L2_CID_SI476X_DIVERSITY_MODE	= (V4L2_CID_USER_SI476X_BASE + 5),
+-	V4L2_CID_SI476X_INTERCHIP_LINK	= (V4L2_CID_USER_SI476X_BASE + 6),
+-};
+-
+-#endif /* SI476X_H*/
+diff --git a/include/uapi/linux/v4l2-controls.h b/include/uapi/linux/v4l2-controls.h
+index affec0ab4781..40680bf5558d 100644
+--- a/include/uapi/linux/v4l2-controls.h
++++ b/include/uapi/linux/v4l2-controls.h
+@@ -133,8 +133,8 @@ enum v4l2_colorfx {
+ #define V4L2_CID_USER_S2255_BASE		(V4L2_CID_USER_BASE + 0x1030)
+ 
+ /*
+- * The base for the si476x driver controls. See include/media/drv-intf/si476x.h
+- * for the list of controls. Total of 16 controls is reserved for this driver
++ * Previously the base for the si476x driver controls, now removed.
++ * Total of 16 controls is reserved for this driver
+  */
+ #define V4L2_CID_USER_SI476X_BASE		(V4L2_CID_USER_BASE + 0x1040)
+ 
+diff --git a/sound/soc/codecs/Kconfig b/sound/soc/codecs/Kconfig
+index f9a47e262a77..1f7dc2c7e338 100644
+--- a/sound/soc/codecs/Kconfig
++++ b/sound/soc/codecs/Kconfig
+@@ -250,7 +250,6 @@ config SND_SOC_ALL_CODECS
+ 	imply SND_SOC_RTQ9128
+ 	imply SND_SOC_SDW_MOCKUP
+ 	imply SND_SOC_SGTL5000
+-	imply SND_SOC_SI476X
+ 	imply SND_SOC_SIMPLE_AMPLIFIER
+ 	imply SND_SOC_SIMPLE_MUX
+ 	imply SND_SOC_SMA1303
+@@ -2061,10 +2060,6 @@ config SND_SOC_SGTL5000
+ 	tristate "Freescale SGTL5000 CODEC"
+ 	depends on I2C
+ 
+-config SND_SOC_SI476X
+-	tristate
+-	depends on MFD_SI476X_CORE
+-
+ config SND_SOC_SIGMADSP
+ 	tristate
+ 	select CRC32
+diff --git a/sound/soc/codecs/Makefile b/sound/soc/codecs/Makefile
+index 3d122ace75ad..f4f20a8e112e 100644
+--- a/sound/soc/codecs/Makefile
++++ b/sound/soc/codecs/Makefile
+@@ -298,7 +298,6 @@ snd-soc-alc5632-y := alc5632.o
+ snd-soc-sigmadsp-y := sigmadsp.o
+ snd-soc-sigmadsp-i2c-y := sigmadsp-i2c.o
+ snd-soc-sigmadsp-regmap-y := sigmadsp-regmap.o
+-snd-soc-si476x-y := si476x.o
+ snd-soc-sma1303-y := sma1303.o
+ snd-soc-sma1307-y := sma1307.o
+ snd-soc-spdif-tx-y := spdif_transmitter.o
+@@ -739,7 +738,6 @@ obj-$(CONFIG_SND_SOC_SGTL5000)  += snd-soc-sgtl5000.o
+ obj-$(CONFIG_SND_SOC_SIGMADSP)	+= snd-soc-sigmadsp.o
+ obj-$(CONFIG_SND_SOC_SIGMADSP_I2C)	+= snd-soc-sigmadsp-i2c.o
+ obj-$(CONFIG_SND_SOC_SIGMADSP_REGMAP)	+= snd-soc-sigmadsp-regmap.o
+-obj-$(CONFIG_SND_SOC_SI476X)	+= snd-soc-si476x.o
+ obj-$(CONFIG_SND_SOC_SMA1303)	+= snd-soc-sma1303.o
+ obj-$(CONFIG_SND_SOC_SMA1307)	+= snd-soc-sma1307.o
+ obj-$(CONFIG_SND_SOC_SPDIF)	+= snd-soc-spdif-rx.o snd-soc-spdif-tx.o
+diff --git a/sound/soc/codecs/si476x.c b/sound/soc/codecs/si476x.c
+deleted file mode 100644
+index d87141ba8438..000000000000
+--- a/sound/soc/codecs/si476x.c
++++ /dev/null
+@@ -1,263 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-only
+-/*
+- * sound/soc/codecs/si476x.c -- Codec driver for SI476X chips
+- *
+- * Copyright (C) 2012 Innovative Converged Devices(ICD)
+- * Copyright (C) 2013 Andrey Smirnov
+- *
+- * Author: Andrey Smirnov <andrew.smirnov@gmail.com>
+- */
+-
+-#include <linux/module.h>
+-#include <linux/slab.h>
+-#include <sound/pcm.h>
+-#include <sound/pcm_params.h>
+-#include <linux/regmap.h>
+-#include <sound/soc.h>
+-#include <sound/initval.h>
+-
+-#include <linux/i2c.h>
+-
+-#include <linux/mfd/si476x-core.h>
+-
+-enum si476x_audio_registers {
+-	SI476X_DIGITAL_IO_OUTPUT_FORMAT		= 0x0203,
+-	SI476X_DIGITAL_IO_OUTPUT_SAMPLE_RATE	= 0x0202,
+-};
+-
+-enum si476x_digital_io_output_format {
+-	SI476X_DIGITAL_IO_SLOT_SIZE_SHIFT	= 11,
+-	SI476X_DIGITAL_IO_SAMPLE_SIZE_SHIFT	= 8,
+-};
+-
+-#define SI476X_DIGITAL_IO_OUTPUT_WIDTH_MASK	((0x7 << SI476X_DIGITAL_IO_SLOT_SIZE_SHIFT) | \
+-						  (0x7 << SI476X_DIGITAL_IO_SAMPLE_SIZE_SHIFT))
+-#define SI476X_DIGITAL_IO_OUTPUT_FORMAT_MASK	(0x7e)
+-
+-enum si476x_daudio_formats {
+-	SI476X_DAUDIO_MODE_I2S		= (0x0 << 1),
+-	SI476X_DAUDIO_MODE_DSP_A	= (0x6 << 1),
+-	SI476X_DAUDIO_MODE_DSP_B	= (0x7 << 1),
+-	SI476X_DAUDIO_MODE_LEFT_J	= (0x8 << 1),
+-	SI476X_DAUDIO_MODE_RIGHT_J	= (0x9 << 1),
+-
+-	SI476X_DAUDIO_MODE_IB		= (1 << 5),
+-	SI476X_DAUDIO_MODE_IF		= (1 << 6),
+-};
+-
+-enum si476x_pcm_format {
+-	SI476X_PCM_FORMAT_S8		= 2,
+-	SI476X_PCM_FORMAT_S16_LE	= 4,
+-	SI476X_PCM_FORMAT_S20_3LE	= 5,
+-	SI476X_PCM_FORMAT_S24_LE	= 6,
+-};
+-
+-static const struct snd_soc_dapm_widget si476x_dapm_widgets[] = {
+-SND_SOC_DAPM_OUTPUT("LOUT"),
+-SND_SOC_DAPM_OUTPUT("ROUT"),
+-};
+-
+-static const struct snd_soc_dapm_route si476x_dapm_routes[] = {
+-	{ "Capture", NULL, "LOUT" },
+-	{ "Capture", NULL, "ROUT" },
+-};
+-
+-static int si476x_codec_set_dai_fmt(struct snd_soc_dai *codec_dai,
+-				    unsigned int fmt)
+-{
+-	struct si476x_core *core = i2c_mfd_cell_to_core(codec_dai->dev);
+-	int err;
+-	u16 format = 0;
+-
+-	if ((fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) != SND_SOC_DAIFMT_CBC_CFC)
 -		return -EINVAL;
--	return request_threaded_irq(regmap_irq_get_virq(pm80x->irq_data, irq),
--				    NULL, handler, flags, name, data);
--}
 -
--static inline void pm80x_free_irq(struct pm80x_chip *pm80x, int irq, void *data)
--{
--	if (!pm80x->irq_data)
--		return;
--	free_irq(regmap_irq_get_virq(pm80x->irq_data, irq), data);
--}
+-	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
+-	case SND_SOC_DAIFMT_DSP_A:
+-		format |= SI476X_DAUDIO_MODE_DSP_A;
+-		break;
+-	case SND_SOC_DAIFMT_DSP_B:
+-		format |= SI476X_DAUDIO_MODE_DSP_B;
+-		break;
+-	case SND_SOC_DAIFMT_I2S:
+-		format |= SI476X_DAUDIO_MODE_I2S;
+-		break;
+-	case SND_SOC_DAIFMT_RIGHT_J:
+-		format |= SI476X_DAUDIO_MODE_RIGHT_J;
+-		break;
+-	case SND_SOC_DAIFMT_LEFT_J:
+-		format |= SI476X_DAUDIO_MODE_LEFT_J;
+-		break;
+-	default:
+-		return -EINVAL;
+-	}
 -
--#ifdef CONFIG_PM
--static inline int pm80x_dev_suspend(struct device *dev)
--{
--	struct platform_device *pdev = to_platform_device(dev);
--	struct pm80x_chip *chip = dev_get_drvdata(pdev->dev.parent);
--	int irq = platform_get_irq(pdev, 0);
+-	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
+-	case SND_SOC_DAIFMT_DSP_A:
+-	case SND_SOC_DAIFMT_DSP_B:
+-		switch (fmt & SND_SOC_DAIFMT_INV_MASK) {
+-		case SND_SOC_DAIFMT_NB_NF:
+-			break;
+-		case SND_SOC_DAIFMT_IB_NF:
+-			format |= SI476X_DAUDIO_MODE_IB;
+-			break;
+-		default:
+-			return -EINVAL;
+-		}
+-		break;
+-	case SND_SOC_DAIFMT_I2S:
+-	case SND_SOC_DAIFMT_RIGHT_J:
+-	case SND_SOC_DAIFMT_LEFT_J:
+-		switch (fmt & SND_SOC_DAIFMT_INV_MASK) {
+-		case SND_SOC_DAIFMT_NB_NF:
+-			break;
+-		case SND_SOC_DAIFMT_IB_IF:
+-			format |= SI476X_DAUDIO_MODE_IB |
+-				SI476X_DAUDIO_MODE_IF;
+-			break;
+-		case SND_SOC_DAIFMT_IB_NF:
+-			format |= SI476X_DAUDIO_MODE_IB;
+-			break;
+-		case SND_SOC_DAIFMT_NB_IF:
+-			format |= SI476X_DAUDIO_MODE_IF;
+-			break;
+-		default:
+-			return -EINVAL;
+-		}
+-		break;
+-	default:
+-		return -EINVAL;
+-	}
 -
--	if (device_may_wakeup(dev))
--		set_bit(irq, &chip->wu_flag);
+-	si476x_core_lock(core);
+-
+-	err = snd_soc_component_update_bits(codec_dai->component, SI476X_DIGITAL_IO_OUTPUT_FORMAT,
+-				  SI476X_DIGITAL_IO_OUTPUT_FORMAT_MASK,
+-				  format);
+-
+-	si476x_core_unlock(core);
+-
+-	if (err < 0) {
+-		dev_err(codec_dai->component->dev, "Failed to set output format\n");
+-		return err;
+-	}
 -
 -	return 0;
 -}
 -
--static inline int pm80x_dev_resume(struct device *dev)
+-static int si476x_codec_hw_params(struct snd_pcm_substream *substream,
+-				  struct snd_pcm_hw_params *params,
+-				  struct snd_soc_dai *dai)
 -{
--	struct platform_device *pdev = to_platform_device(dev);
--	struct pm80x_chip *chip = dev_get_drvdata(pdev->dev.parent);
--	int irq = platform_get_irq(pdev, 0);
+-	struct si476x_core *core = i2c_mfd_cell_to_core(dai->dev);
+-	int rate, width, err;
 -
--	if (device_may_wakeup(dev))
--		clear_bit(irq, &chip->wu_flag);
+-	rate = params_rate(params);
+-	if (rate < 32000 || rate > 48000) {
+-		dev_err(dai->component->dev, "Rate: %d is not supported\n", rate);
+-		return -EINVAL;
+-	}
+-
+-	switch (params_width(params)) {
+-	case 8:
+-		width = SI476X_PCM_FORMAT_S8;
+-		break;
+-	case 16:
+-		width = SI476X_PCM_FORMAT_S16_LE;
+-		break;
+-	case 20:
+-		width = SI476X_PCM_FORMAT_S20_3LE;
+-		break;
+-	case 24:
+-		width = SI476X_PCM_FORMAT_S24_LE;
+-		break;
+-	default:
+-		return -EINVAL;
+-	}
+-
+-	si476x_core_lock(core);
+-
+-	err = snd_soc_component_write(dai->component, SI476X_DIGITAL_IO_OUTPUT_SAMPLE_RATE,
+-			    rate);
+-	if (err < 0) {
+-		dev_err(dai->component->dev, "Failed to set sample rate\n");
+-		goto out;
+-	}
+-
+-	err = snd_soc_component_update_bits(dai->component, SI476X_DIGITAL_IO_OUTPUT_FORMAT,
+-				  SI476X_DIGITAL_IO_OUTPUT_WIDTH_MASK,
+-				  (width << SI476X_DIGITAL_IO_SLOT_SIZE_SHIFT) |
+-				  (width << SI476X_DIGITAL_IO_SAMPLE_SIZE_SHIFT));
+-	if (err < 0) {
+-		dev_err(dai->component->dev, "Failed to set output width\n");
+-		goto out;
+-	}
+-
+-out:
+-	si476x_core_unlock(core);
+-
+-	return err;
+-}
+-
+-static const struct snd_soc_dai_ops si476x_dai_ops = {
+-	.hw_params	= si476x_codec_hw_params,
+-	.set_fmt	= si476x_codec_set_dai_fmt,
+-};
+-
+-static struct snd_soc_dai_driver si476x_dai = {
+-	.name		= "si476x-codec",
+-	.capture	= {
+-		.stream_name	= "Capture",
+-		.channels_min	= 2,
+-		.channels_max	= 2,
+-
+-		.rates = SNDRV_PCM_RATE_32000 |
+-		SNDRV_PCM_RATE_44100 |
+-		SNDRV_PCM_RATE_48000,
+-		.formats = SNDRV_PCM_FMTBIT_S8 |
+-		SNDRV_PCM_FMTBIT_S16_LE |
+-		SNDRV_PCM_FMTBIT_S20_3LE |
+-		SNDRV_PCM_FMTBIT_S24_LE
+-	},
+-	.ops		= &si476x_dai_ops,
+-};
+-
+-static int si476x_probe(struct snd_soc_component *component)
+-{
+-	snd_soc_component_init_regmap(component,
+-				dev_get_regmap(component->dev->parent, NULL));
 -
 -	return 0;
 -}
--#endif
 -
--extern int pm80x_init(struct i2c_client *client);
--extern int pm80x_deinit(void);
--#endif /* __LINUX_MFD_88PM80X_H */
+-static const struct snd_soc_component_driver soc_component_dev_si476x = {
+-	.probe			= si476x_probe,
+-	.dapm_widgets		= si476x_dapm_widgets,
+-	.num_dapm_widgets	= ARRAY_SIZE(si476x_dapm_widgets),
+-	.dapm_routes		= si476x_dapm_routes,
+-	.num_dapm_routes	= ARRAY_SIZE(si476x_dapm_routes),
+-	.idle_bias_on		= 1,
+-	.use_pmdown_time	= 1,
+-	.endianness		= 1,
+-};
+-
+-static int si476x_platform_probe(struct platform_device *pdev)
+-{
+-	return devm_snd_soc_register_component(&pdev->dev,
+-				      &soc_component_dev_si476x,
+-				      &si476x_dai, 1);
+-}
+-
+-MODULE_ALIAS("platform:si476x-codec");
+-
+-static struct platform_driver si476x_platform_driver = {
+-	.driver		= {
+-		.name	= "si476x-codec",
+-	},
+-	.probe		= si476x_platform_probe,
+-};
+-module_platform_driver(si476x_platform_driver);
+-
+-MODULE_AUTHOR("Andrey Smirnov <andrew.smirnov@gmail.com>");
+-MODULE_DESCRIPTION("ASoC Si4761/64 codec driver");
+-MODULE_LICENSE("GPL");
+diff --git a/sound/soc/fsl/fsl-asoc-card.c b/sound/soc/fsl/fsl-asoc-card.c
+index 310ee4c282a1..ff8ae6e514ea 100644
+--- a/sound/soc/fsl/fsl-asoc-card.c
++++ b/sound/soc/fsl/fsl-asoc-card.c
+@@ -794,13 +794,6 @@ static const struct fsl_asoc_card_pdata fsl_asoc_wm8524_pdata = {
+ 	.num_dapm_routes = ARRAY_SIZE(audio_map_tx),
+ };
+ 
+-static const struct fsl_asoc_card_pdata fsl_asoc_si476x_pdata = {
+-	.codec_dai_name  = "si476x-codec",
+-	.dai_fmt         = DAI_FMT_BASE | SND_SOC_DAIFMT_CBC_CFC,
+-	.dapm_routes     = audio_map_rx,
+-	.num_dapm_routes = ARRAY_SIZE(audio_map_rx),
+-};
+-
+ static const struct fsl_asoc_card_pdata fsl_asoc_wm8958_pdata = {
+ 	.codec_dai_name  = "wm8994-aif1",
+ 	.dai_fmt         = DAI_FMT_BASE | SND_SOC_DAIFMT_CBP_CFP,
+@@ -1398,7 +1391,6 @@ static const struct of_device_id fsl_asoc_card_dt_ids[] = {
+ 	{ .compatible = "fsl,imx-audio-wm8960",         .data = &fsl_asoc_wm8960_pdata },
+ 	{ .compatible = "fsl,imx-audio-mqs",            .data = &fsl_asoc_mqs_pdata },
+ 	{ .compatible = "fsl,imx-audio-wm8524",         .data = &fsl_asoc_wm8524_pdata },
+-	{ .compatible = "fsl,imx-audio-si476x",         .data = &fsl_asoc_si476x_pdata },
+ 	{ .compatible = "fsl,imx-audio-wm8958",         .data = &fsl_asoc_wm8958_pdata },
+ 	{ .compatible = "fsl,imx-audio-nau8822",        .data = &fsl_asoc_nau8822_pdata },
+ 	{ .compatible = "fsl,imx-audio-wm8904",         .data = &fsl_asoc_wm8904_pdata },
 -- 
 2.53.0
 
