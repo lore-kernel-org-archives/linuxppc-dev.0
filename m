@@ -1,104 +1,93 @@
-Return-Path: <linuxppc-dev+bounces-27029-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27030-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 397DDC79F9F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2026 13:24:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E49B2C79F9F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2026 13:32:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hgdgk4Pmcz2yqX;
-	Thu, 10 Sep 2026 23:24:34 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=202.12.124.156
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789046674;
-	cv=none; b=oARA7nSlPc3kQ0yReenuxlrC9wzi/BQJ/khG1iUvZqJZ69e3dIacGRpIXiWXGdOcY6fobO/rRIS7jhn52zDSXSCEnmp1ZK10NlcDwem5qxgAgEZAD5hGpPE9tmJJlmwfivCFCFbTV7uoYWQZf+gMyQy3RNueffkuF+/GQnS0wDRzgx2QfIW2EL1GECqmydqkvRQJKx7i6jnHzddQRaC/eNdnAe526F//1Rcr0WH9DQX7rs6maUo6Z7ebO580Ahc4vAkWxNIDAgGqvKIKUVJ23vFZvN/vsims/to8Z3gM95e2bcziis/fuc1WVggHz0bsD8Jch5mjiPrpCd+9VEpdRA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hgdrL0K90z2yb9;
+	Thu, 10 Sep 2026 23:32:02 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::c35"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788975233;
+	cv=none; b=PasNcfowI085cNEMGEyrg5ioYw52RsBSbrmokQk0YKDk/EG/lSjPxRUID6aTXGU+HVkB/4jv7ceSmIcrIZSboeW9Dg/nhw/8JZMhEUJofJoAoXZbsEzzvI2e6KeiGHINnWS44pSL5KXqPfHxYxM9ragym6ojkuLtI/0oWX365LU3U2Ryt+FkY52SZ29LQbFrqAx77nNua3yg33RLGM+4qAJT08jDzPIPGWO/i7C3w3mLDhjrzD1Wor5ZxYqlNiZYjVvvLxXsO8PtKyCSxGtxPqZj9mc33vHOdEoFD8J0G89Lp4xjLkMXvZiKrM+yRh3ROJAEVrGy8RweW1r/+etYGg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789046674; c=relaxed/relaxed;
-	bh=pPNVfymHR2XC9ByNjrUYouH52ihzMf/+u8o83ywFdQA=;
-	h=Date:Message-Id:To:Cc:Subject:From:In-Reply-To:References:
-	 Mime-Version:Content-Type; b=gDIuy9ikPhNKoVdiLPSSRFB5kUCQjo4L30qvNXJFms7FIjXzPpkeDgKxO7MTKKV5rXuzrfK89s2+LWd2i37TYR9vKXBQveSHl2r8ZS1+8qYMY9FWFBI+oABXvtE/sC4xtzWx/z+ZyyPJ5DnVpwX3uPL7USXlFD/+5bd8GpVOvH/ySEpFeWQrxAAgyhP2LW3zUtfJFFldp7eom0hthiHXb2mocYdakqiL3TWbXthH8LkE9HRoBRmRfTQWNF4EAKTPtodlYUmlPa+HdevMd2pWWWS2Qi6TCTikrE/L3hsNsHpTM0iJJXjvaNsiK4wVax9TmYZlNQv3LOMizXrhrZBcHg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=flapping.org; dkim=pass (2048-bit key; unprotected) header.d=flapping.org header.i=@flapping.org header.a=rsa-sha256 header.s=fm3 header.b=gA7IDNQ5; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=nY6v7Fp3; dkim-atps=neutral; spf=pass (client-ip=202.12.124.156; helo=fhigh-b5-smtp.messagingengine.com; envelope-from=tomo@flapping.org; receiver=lists.ozlabs.org) smtp.mailfrom=flapping.org
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=flapping.org
+	t=1788975233; c=relaxed/relaxed;
+	bh=aRf99SMBmtl+VTLk0zBUOwJpiJLfRXga4UGT3MjWHTQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=GCYQ8Km7zrzEuFmcZGSPxuwFwXYH19qdFKKCNxhoatLoHmZhmL58SpQ97Uhj5lyFfa6fJu1Poaa+5yTkKXvRWmI9Z35eXcJR31lSrFhmC2L4N3j/FNn6b79uXCYcgCywJKjLK3GT4PfhBFjyGec22saxmqiRkYf6ERvyxwPuYlp2U5We6A/cFdyvHk5AMVQj+iVEctSZ5zdAdbQn5WFCLDyWFYAgMt0Jj1gAnt4d3ZbkQuMnzOqrVQICLdw9Dg/bEeq7YtK4dA5gl+mX1wN1f4jwMkd7g4Kb/aV5E7qZIx0SUogpxUK1bgZDKFjM3GYoUFfidrMrwzw6Vz4YLJUlTQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Ugi9W9LX; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::c35; helo=mail-oo1-xc35.google.com; envelope-from=2000jedi@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=flapping.org header.i=@flapping.org header.a=rsa-sha256 header.s=fm3 header.b=gA7IDNQ5;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=nY6v7Fp3;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Ugi9W9LX;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flapping.org (client-ip=202.12.124.156; helo=fhigh-b5-smtp.messagingengine.com; envelope-from=tomo@flapping.org; receiver=lists.ozlabs.org)
-Received: from fhigh-b5-smtp.messagingengine.com (fhigh-b5-smtp.messagingengine.com [202.12.124.156])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::c35; helo=mail-oo1-xc35.google.com; envelope-from=2000jedi@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-oo1-xc35.google.com (mail-oo1-xc35.google.com [IPv6:2607:f8b0:4864:20::c35])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hgdgg6xhxz2xRs
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2026 23:24:31 +1000 (AEST)
-Received: from phl-compute-04.internal (phl-compute-04.internal [10.202.2.44])
-	by mailfhigh.stl.internal (Postfix) with ESMTP id 755037A00BD;
-	Thu, 10 Sep 2026 09:24:28 -0400 (EDT)
-Received: from phl-frontend-03 ([10.202.2.162])
-  by phl-compute-04.internal (MEProxy); Thu, 10 Sep 2026 09:24:29 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=flapping.org; h=
-	cc:cc:content-transfer-encoding:content-type:content-type:date
-	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to; s=fm3; t=1789046668;
-	 x=1789133068; bh=pPNVfymHR2XC9ByNjrUYouH52ihzMf/+u8o83ywFdQA=; b=
-	gA7IDNQ5qcGQ9FpoVUXx9Rl3euUYNZXCVvMUXllrij8BbixGwlvEoz+9AmV/oe8F
-	klwFza6v+Hvs7i9T/PobFxsBaXSh8CpcDBbQfhD81HBahEPDTNRiXueurK9nM/Po
-	fCbADRszzAEoYA4tnSUBJfTiyPpEUGJVfqpiVuus1c8nzILjIIk6+BqdXh+88b4H
-	LTnHh0eG7dRkS48byEoYQyFw8+Chf2ptYiq2yadDL7LyRsU7iepSJhVPZranDtCL
-	vu7ZHtkVKQZ5vWU9sZCJCQh447z+hKgU6g/R2aTx4hVmfei0kdAqAP5QmrLDj+Tp
-	eiZ6RgAcdMkjLEKeXrVcaw==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding
-	:content-type:content-type:date:date:feedback-id:feedback-id
-	:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to:x-me-proxy
-	:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=1789046668; x=
-	1789133068; bh=pPNVfymHR2XC9ByNjrUYouH52ihzMf/+u8o83ywFdQA=; b=n
-	Y6v7Fp3DIuBnH4qWqWrhvgGn8EpZdyXTxR/TVEn5qpH+MBLay5FShFAcIVqrh868
-	os9oa0fPPAKtyKLOZ9H3qvO70CPLiFTXfE2/q4qO3eVN6BZQ5rZAyyyfk6pdcX1u
-	wGbfu/41czlwRjJMnwu+8FQtQ4M52XftYOe1xViiXZjUZ207rGQPFLKxkQwvN4+U
-	p10s39b0WMEwLx9XaEl5sUlhawoblXVzSnY2DlobwjdD2eYfdFcuxll7d7pxC4PL
-	/BKogLV3SXHDZjLAZrhDwY63kBkJMRutj2CnW3l1nLf62WwxNnhw40F7GxKfmpyD
-	99IsnV93FfZSImJPgWyfA==
-X-ME-Sender: <xms:iq-iau1ZCqh3xeTm8AsCTDDwXElvTfmJJ8FPc5up_wuHJVzjvusHCw>
-    <xme:iq-iaqu7-sHbm7-NYmO4UD99rGyGL7EXy2NIPADQS3IL1bz52ihG0_0XhxHiX9ql7
-    5kUH6FCyMy7smka-K_qc2gyNkGDyG0gmZW4h7O5KIW9_M4CsuxsGfx->
-X-ME-Received: <xmr:iq-iaqXxZlRXMG6Q087BNmElwkwy7c5kMjQNNG2N3bl1LoUM5cRlkWyQxQK7RJwPA3Syt0_y8nQFYmzTRdUhfIKg>
-X-ME-Proxy-Cause: dmFkZTGW95mqvfGMGPYTEqTrjHWUVhcvA5HTKwj8urM2KImtx2Iw9C8bH169hBTFRhfrF5
-    EXeXd9fEyRmAWq9C2AqmFUuIGYg/rCdWRGD5tqrtc0m9Lhzfe+klqthxkpugjTTbNWrHfM
-    wKkmWGL6lweONGEbJlksgvzcsa+Runt4ZT+UhiucVixdhhbKgwMLrxvwWBsqhNctodDxiX
-    RhKdnuGYmxMwDpUPut0kWqIpwpWh7wFiX1VHnz9y81TIP16Sm/ODsJnLE1VbX8czDGZ4cV
-    VnrFvtCSTjzb5GUj2Kwvm+WTy0Y9CC7bnCVPt9Yjp5Hb63szP80RltNxaT8GmrQ+7bzToH
-    uSAMr6O8uIM9PgHR8wHhCKsDgQsE6NyQ1Akb3s20XBOFhVNDLkBuA4DZcr370TyYkPfOJm
-    idUL8lrxcn1/Sg3PMKZS5IEdNXCiCkFwoBsMwXsuADlEPM5EpBFyRygH/ylWjEFcO8GDl8
-    onCEtXKyRX/LiKCWmfFxf1w9g3MflXjTVaKzS/1OAvttW1MtnRg/TmGkIcX2nOVWw6UZP2
-    Ei2H8MjjdY+Oh2vgIwjyANe9Y7D0h6S8wyOjp+AYfGS0gC+p57aNyKjXSSF9gwhm/tRL0y
-    kmVdqVgottQbPVU7s/CzACugOVlyd6HNA+WS9TMNI1LjAFOvUdosxnB7yOaQ
-X-ME-Proxy: <xmx:iq-iamsBE7VFp0yC1usqqOlKq6NWZOi2YZ7MMOpPyHX_T1aba7SUvQ>
-    <xmx:iq-iasMa2D8EhXge6o50AOreJAAV5d8ekGHgPXI7vUp2CxdepWUmXg>
-    <xmx:iq-ialnWx7C9_Bx9AM9fOxw6XPc4d9fM1jjtkuxlA5WQbsbeKZ1WJw>
-    <xmx:iq-iaizoz_Gdf6XyKAvKLqi5mCun_CYzbYMm4UqE_B6Y6IZ310BXgA>
-    <xmx:jK-iajLKynxfVMAs1dc03eCGD-yBdoLJ1PdVyg3mE6-cAJthBQ0IY_9c>
-Feedback-ID: i51fe4b43:Fastmail
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Thu,
- 10 Sep 2026 09:24:20 -0400 (EDT)
-Date: Thu, 10 Sep 2026 22:24:17 +0900 (JST)
-Message-Id: <20260910.222417.2048885189565815846.tomo@flapping.org>
-To: gary@garyguo.net
-Cc: mkchauras@gmail.com, maddy@linux.ibm.com, mpe@ellerman.id.au,
- npiggin@gmail.com, chleroy@kernel.org, pjw@kernel.org, palmer@dabbelt.com,
- aou@eecs.berkeley.edu, alex@ghiti.fr, ojeda@kernel.org, boqun@kernel.org,
- bjorn3_gh@protonmail.com, lossin@kernel.org, a.hindborg@kernel.org,
- aliceryhl@google.com, tmgross@umich.edu, dakr@kernel.org,
- daniel.almeida@collabora.com, tamird@kernel.org, acourbot@nvidia.com,
- work@onurozkan.dev, linkmauve@linkmauve.fr, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org,
- rust-for-linux@vger.kernel.org, tomo@flapping.org
-Subject: Re: [PATCH V3] powerpc/bug: Add ARCH_WARN_ASM and refactor
- _EMIT_BUG_ENTRY for Rust support
-From: FUJITA Tomonori <tomo@flapping.org>
-In-Reply-To: <DLBMFNHCKSJ6.1I36FDVEACEUF@garyguo.net>
-References: <20260910100801.2159785-2-mkchauras@gmail.com>
-	<DLBMFNHCKSJ6.1I36FDVEACEUF@garyguo.net>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hg7Fr2Tdsz2ywh
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2026 03:33:51 +1000 (AEST)
+Received: by mail-oo1-xc35.google.com with SMTP id 006d021491bc7-6b1c75f0049so4594337eaf.3
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Sep 2026 10:33:51 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1788975229; x=1789580029; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=aRf99SMBmtl+VTLk0zBUOwJpiJLfRXga4UGT3MjWHTQ=;
+        b=Ugi9W9LXLRaAzYukBspxNYnkWCa60l3yuts3x8k7PE34pHVb+xJLHYL+R5Op68tjXi
+         B6bIKao+8l+13yhF0DegzpCInPZ5s96UcRnwvy7BZv9vt7G/W4S/frt7cv4GWZGtC5+c
+         v3plXy1+BgVR3zar/4td/BDDdW0+owcsqcQkD6D6eoW/tI+u7DmBWFPxS99U2cFlq/p9
+         MNITlkQOWjgsOHxSzdMAr+PVbRmzvGXhl2DLB6emvUonveE/fei99YJ/BYLK1JhKbN69
+         91EaocxDOXzXsmR4FpXTf9jzZmp+sBtlJjtS4zjcTjDiI5G6pwDxomTYYR4mWriV4FcX
+         YRRA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1788975229; x=1789580029;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=aRf99SMBmtl+VTLk0zBUOwJpiJLfRXga4UGT3MjWHTQ=;
+        b=agZ2FZfhXini2dp0Duy40L/yupWkKjhtZlAXd9DEaNcvFQqDeduSL5FVyaD1VKgUzr
+         q//WdafByzVhBBOc7pRNhvY48vg7+4ufc7TUsVf1lWkgy3sq7R3Hcfasy9nWCrqwfIC9
+         R2op+xKgaZ1+ks7+kqx0f9X/ukIz/rxGbVUwefhQJocW9UyJ/Z1h3J7Ue3LqPbmV1NME
+         cP8psGC3m4Bo9muL9OF+ZW3CecgqSkaNiRK/BeqHABftaZ4k/CGwIuJdFWxxp/B7zqzi
+         cS/L+loGAwD27w+3n6S6XrYKQC/fn9MIDTiAD1sW+dKLhVEybOKnjx4G+o61P5cSohBm
+         NqKA==
+X-Forwarded-Encrypted: i=1; AKwUvBzpc64HmJhRYpHGzcWQKQ2FuLAnHHLl2e6Y4iwsnU0mGlZP71RBLzrXDakyh6BAR39SN8SpCtx495UqzgQ=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++mP2qT2Se0Ia6f4hanj54lal3DQriC8iem8cjpKAJpsNKJHbSOC
+	vyfjNphwnmErYu6t03FImH/nDVhRQ2RIwlMT+Hi/fCYP90iLIn47snSe
+X-Gm-Gg: AYBFou1xVjNdKGZur+hWzO2TcMH9X/r1UugZ4AAaOo/H1PS0+knUQXjzGBuOFXBAZKt
+	5i5rK4jYqTjlh0Z5IOMKRhMl4T1m9J21pEJXziMKEhazO0/gKfr/JczZRDihK+3w4FBXaoYsoyB
+	1mK6hszxga2A6gq5su81S5dMqk3W7Q8391U0zEcC1zwZhsUdr5afX2EXf6uZP92dvrWzsocxjnW
+	PIivzc5Iq2Gj8ZYdyxk8yvL2nkd1VL6ZWNSnIyKQkbAGISfIklkYA/MgAEiNYASMDZklWSa/FGU
+	ioQJoWY19FZwzqbWf6oyEyBS4WneGS1rdBxUdewgNZmjpqQu87bA8CDan9Uvlxkg5Be9gYQMk9o
+	V3Gz5mPiaFJZJ/2apWNKe2jHTcKlsbXHok8ZHKvpCr8FURAahdYxRJbWPRQqx1I4U/4JoPL6dIu
+	z784bDjPqnKV2w2iyLoVlJ05X9yOSPVi7FTC9u7e71Mz5DMyxB+PcD6XUwfZVqjG+VPbQ9Z2YR1
+	u5N1SDh1555qaoCgfzWc0btJlbFsbfLQHq4QCq7APjRftO9Wi/4gngPYlTKQggDqV8=
+X-Received: by 2002:a05:6820:1888:b0:6b7:46fc:1cb with SMTP id 006d021491bc7-6b746fc0236mr17849545eaf.42.1788975228770;
+        Wed, 09 Sep 2026 10:33:48 -0700 (PDT)
+Received: from memorizer.fox-kitefin.ts.net (47-163-111-11.bng01.bytw.tx.frontiernet.net. [47.163.111.11])
+        by smtp.gmail.com with ESMTPSA id 006d021491bc7-6bac11fc29bsm10396408eaf.6.2026.09.09.10.33.46
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 09 Sep 2026 10:33:47 -0700 (PDT)
+From: Yudi Yang <2000jedi@gmail.com>
+To: Tyrel Datwyler <tyreld@linux.ibm.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Bjorn Helgaas <bhelgaas@google.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <chleroy@kernel.org>,
+	Ritesh Harjani <ritesh.list@gmail.com>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>,
+	Michael Bringmann <mwb@linux.vnet.ibm.com>,
+	linux-pci@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	Yudi Yang <2000jedi@gmail.com>
+Subject: [PATCH] PCI: rpaphp: Fix stack overflows when constructing DRC names
+Date: Wed,  9 Sep 2026 12:33:00 -0500
+Message-ID: <20260909173300.1144301-1-2000jedi@gmail.com>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -111,87 +100,51 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 
-On Thu, 10 Sep 2026 13:05:27 +0100
-"Gary Guo" <gary@garyguo.net> wrote:
+The drc-name-prefix field of ibm,drc-info is supplied by firmware and
+is not limited to fit within MAX_DRC_NAME_LEN. Using sprintf() to append
+a suffix can therefore overflow the stack buffers used for DRC names.
+Use snprintf() and reject names that would be truncated.
 
-> On Thu Sep 10, 2026 at 11:08 AM BST, Mukesh Kumar Chaurasiya (IBM) wrote:
->> The Rust kernel infrastructure generates inline asm for WARN() via
->> ARCH_WARN_ASM(file, line, flags, size), expanding it through a C
->> preprocessor pass (generated_arch_warn_asm.rs.S) to produce an
->> arch-specific asm template string for use in Rust's core::arch macros.
->>
->> powerpc currently lacks ARCH_WARN_ASM and ARCH_WARN_REACHABLE, causing
->> Rust builds to fail on powerpc with
->> ```
->> error: no rules expected `ARCH_WARN_ASM`
->>    --> /home/linkmauve/dev/linux/wii/rust/kernel/generated_arch_warn_asm.rs:1:28
->>     |
->>   1 | ::kernel::concat_literals!(ARCH_WARN_ASM("{file}", "{line}", "{flags}", "{size}"))
-> 
-> I think we probably want to catch this earlier by have something like
-> 
-> #ifndef ARCH_WARN_ASM
-> #error "ARCH_WARM_ASM is not defined"
-> #endif
-> 
-> in generated_arch_warn_asm.rs.S.
+Fixes: 2fcf3ae508c2 ("hotplug/drc-info: Add code to search ibm,drc-info property")
+Cc: stable@vger.kernel.org
+Signed-off-by: Yudi Yang <2000jedi@gmail.com>
+---
+ drivers/pci/hotplug/rpaphp_core.c | 11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
 
-Good idea.
-
-One thing needs to be fixed first. arm and loongarch do not define
-ARCH_WARN_ASM. rust/kernel/bug.rs uses bindings::WARN_ON() on those
-architectures, so it never includes generated_arch_warn_asm.rs. But
-rust/Makefile still generates the file for them. With #error, their
-builds would break.
-
-I think we should add a condition to rust/Makefile to stop generating
-the file for arm and loongarch. Then #error can be unconditional.
-
-Does that sound reasonable? I can send patches.
-
-
->>  arch/powerpc/include/asm/bug.h | 36 +++++++++++++++++++---------------
->>  1 file changed, 20 insertions(+), 16 deletions(-)
->>
->> diff --git a/arch/powerpc/include/asm/bug.h b/arch/powerpc/include/asm/bug.h
->> index 0db48977c70c..df2183c35945 100644
->> --- a/arch/powerpc/include/asm/bug.h
->> +++ b/arch/powerpc/include/asm/bug.h
->> @@ -32,34 +32,38 @@
->>  #endif /* verbose */
->>  
->>  #else /* !__ASSEMBLER__ */
->> -/* _EMIT_BUG_ENTRY expects args %0,%1,%2,%3 to be FILE, LINE, flags and
->> -   sizeof(struct bug_entry), respectively */
->>  #ifdef CONFIG_DEBUG_BUGVERBOSE
->> -#define _EMIT_BUG_ENTRY				\
->> -	".section __bug_table,\"aw\"\n"		\
->> -	"2:	.4byte 1b - .\n"		\
->> -	"	.4byte %0 - .\n"		\
->> -	"	.short %1, %2\n"		\
->> -	".org 2b+%3\n"				\
->> -	".previous\n"
->> +#define _EMIT_BUG_ENTRY(label, file, line, flags)	\
->> +	".section __bug_table,\"aw\"\n"			\
->> +	"2:	.4byte " label "b - .\n"		\
-> 
-> "b" is part of the label. "1b" itself is a label and "1" is just an integer.
-> 
-> If the code uses
-> 
->     _EMIT_BUG_ENTRY(..)
->     "1: ..."
-> 
-> then the correct label would be "1f".
-
-Agreed.
-
-I think keeping the label fixed, as v2 did, would be fine too. x86,
-arm64 and riscv all hardcode it. A comment that says the caller must
-put the trap at 1: might be enough.
+diff --git a/drivers/pci/hotplug/rpaphp_core.c b/drivers/pci/hotplug/rpaphp_core.c
+index 2316de0fd198..39109a50fee6 100644
+--- a/drivers/pci/hotplug/rpaphp_core.c
++++ b/drivers/pci/hotplug/rpaphp_core.c
+@@ -252,8 +252,11 @@ static int rpaphp_check_drc_props_v2(struct device_node *dn, char *drc_name,
+ 		/* Found it */
+ 		if (my_index >= drc.drc_index_start && my_index <= drc.last_drc_index) {
+ 			int index = my_index - drc.drc_index_start;
+-			sprintf(cell_drc_name, "%s%d", drc.drc_name_prefix,
+-				drc.drc_name_suffix_start + index);
++
++			if (snprintf(cell_drc_name, sizeof(cell_drc_name), "%s%u",
++				     drc.drc_name_prefix,
++				     drc.drc_name_suffix_start + index) >= sizeof(cell_drc_name))
++				return -EINVAL;
+ 			break;
+ 		}
+ 	}
+@@ -355,7 +358,9 @@ static int rpaphp_drc_info_add_slot(struct device_node *dn)
+ 	if (!is_php_type(drc.drc_type))
+ 		return 0;
+ 
+-	sprintf(drc_name, "%s%d", drc.drc_name_prefix, drc.drc_name_suffix_start);
++	if (snprintf(drc_name, sizeof(drc_name), "%s%u", drc.drc_name_prefix,
++		     drc.drc_name_suffix_start) >= sizeof(drc_name))
++		return -EINVAL;
+ 
+ 	slot = alloc_slot_struct(dn, drc.drc_index_start, drc_name, drc.drc_power_domain);
+ 	if (!slot)
+-- 
+2.43.0
 
 
