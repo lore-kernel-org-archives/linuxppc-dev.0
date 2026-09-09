@@ -1,56 +1,55 @@
-Return-Path: <linuxppc-dev+bounces-26992-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26993-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E0F5EC79FB7
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2026 19:08:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1C1FCC79FB6
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2026 19:08:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hg9Lc1TjFz3092;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hg9Lc6jQWz30WD;
 	Thu, 10 Sep 2026 05:08:08 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788980888;
-	cv=none; b=URLYOJ93OQLVGm7dltgfa4oJ83sO7I5acnkA7QfjPxRc4PSinBZz2DpklppSwxcH4LhIs2YvUB9oX7ExsAvdecrOagq89q521dtcjhxz8i0Pin67Aq8e7uwB/wSR/lnEMMhKswKfR/Em6CPfUJEA2E3xDPpqdFP1YL7OAjObASkeiPCAxMm+LWOfBUa/Wv4eNZjUV/6LJhqJpT5kP/iWOjZJPZBoXc6+WcKDM0FYSZ4RKkNhYgiU9Cop98/ze+pVuCjIX5AGI76iW0crC1wuEd02ScbZ6khTxHNxvJK34GlGbBlRAuTC/4lDj5PT9ZXmFe4otXQL1SmWt0NdLeSDXA==
+	cv=none; b=EULxIB2+V2Yft+lu2ASeCUJcmZjuJspL0wK26EAHkiWEWfr0lmTuWzTCF8VI3HowTjK7l5yPDHQ7jaPCTeAJtA4iUxbIBQuTtHauB672elV2SAV1JbT6tTy96dliJpacV0gKbMkZiQBC8TW1GwcF9E/xazkI1C0rrLwLwUlngLr9Ur70+E0W3N5JrKf1NVXrPboZWGmoGNSCjP32IAGkkt/dMnRE6IwxNdoOmo75k5elFHoJLk/J0XMT53NvvaKhTsQaNHtXpKfV9A2q/y/4KMguBam/GgLBlva/T3cyBas81gW7TGb2gyP10IzCWxDCMNp/9nk6ALe35ypAs7yCow==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1788980888; c=relaxed/relaxed;
-	bh=1Fm65ScBm++SJ/gBh8cczOppD9BSr1YL8D/dv55xRgw=;
+	bh=KIjfh3MpmKWNqrfOYYTcVXuf2k94eIDOaTy06ub+4F4=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=FMuUrd1/nX6XcKuaglKfXrOGO6i7jkLcqNkV9iD9GgZxa4mixT5sxo6ET2pm6LnKpbb/BdNE6L8abKIFXTmc3exSYwZ98ltGu9Zt08ToINZ4ruiLWNsGagi+FBXF9s9ViYOrvboGHqVjQk0sAcybJPNDw7TwPPg5S19n98iFvqjhpRS4QdS7h1CeAiGGkMiK6g7N6fqOVD/OnufaikPgsWAIusSrECGt7LbkSlrUPhkn7CLEGLP06UK9opTHEHEcD7qcjTNwvT3HyKgxSBiszuwbqmWPqYoi1myneIWYeJUYK2Bp+zFQzGRATZmx0+BEQWRdHR9PE4A/QbWvpz9HBg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=UpDkrlqa; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=devnull+davemarq.linux.ibm.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=EuKw1g5IixmalP8gg7XiUBo0+VaxvOvXXiOGMPimIXxRjLCgZVMkeekUBh21AE5mofOawvhjvppVZuu2Sd7C1iXCkl2udfOIrRGsLFe4bhMQKJhTrFxXHqAM252lIB0FfepLRx75sWD8xoczSVXrcekmCsdQJB5HrLB0PsNOfaRBuxhiD3C6IsIXQTHEeDVPp6eZUlSjPa9L3bfX4Xi0HBRkfYewq7WOpLGG5pZ6NzTakmDNbNU+Qm5tdTmlAmGooQFrGF5B0tDwFdQdBo3aaUdUu7n/kpqS8ylbEJiFdVPUeTtkC/z2Pp1bleOTvxHgt9oxdWL4h35eoph4c6l0rA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=RfjRIknE; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=devnull+davemarq.linux.ibm.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=UpDkrlqa;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=RfjRIknE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=devnull+davemarq.linux.ibm.com@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=devnull+davemarq.linux.ibm.com@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hg9LW4CDdz2yxN
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hg9LW6Jmfz2yyJ
 	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2026 05:08:03 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 8765360202;
+	by sea.source.kernel.org (Postfix) with ESMTP id 698CC4401C;
 	Wed,  9 Sep 2026 19:08:00 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 102F6C2BCFB;
-	Wed,  9 Sep 2026 19:08:00 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id EE2D8C4AF09;
+	Wed,  9 Sep 2026 19:07:59 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1788980880;
-	bh=mFnlH7/qPv+L0T9B45mohz9x62pSXgPbs74b2lQ0Hdk=;
+	bh=zm1X29U/vKcllzl32RPS7yA8qi0SPokOMP9lYNJdA1Q=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=UpDkrlqaOjTxG1bQxA+syvZdV6zcAJP62pfqIqdHcFG+KjNVARy2+Af74NHuUQqgQ
-	 tFsi+IhP9jgKUu0bxIXHut983VefNf4UCCCn+8KT34REA5n/ir3PzGIgGjK/AhI9ei
-	 g7e4LLn3QlAHcaujhJQdadSQyCRdZ3XG/L0vw4HckDN9PrE7uPud/v3gXjeOVp0z2/
-	 z4F/YSInFX7rQFqAOa1hnyvxi0Y5b+hnfrPsHQDBo0jSQeMcpvm+jd9gI/jp4DHVW9
-	 i1zAnAq/d6+P2anMRyziIjKLMbyDyfH4X5G2DxE8uaw+FuByW0mtvPPouoHtE43KaT
-	 xH91iYoNw18ug==
+	b=RfjRIknE78IFiqPyGIxK88t+XCKf3X7KBLODQCk0PEZcClJMwMVDvro74g/BMVxid
+	 wYT8RumGVTsuaTPUcsMqZXjc/VdT8Yt9hzY5X/JHMY8dyT+aa8obl3XRrmN70erLaS
+	 PYrvRBpQF/BR+aWmqFQfuy90wmV2mffMi5RxaRQkuYTpuxEmXL7Hk0KGei2jcE1JMT
+	 4OZdrG+rNPZjxjLdVD4esDIt704FwN4+8WYpy8fMnqKhEj4eV2qQ+Pk3jdxZpCIYzJ
+	 EnskaHyQHJukTwFBt5AsK2DlUh7Ay3aOUBQFQz5rhtDwT5X8af7vXjs550U/3CuU5N
+	 mOP86ImXjbUEw==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DE385C88E40;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CCA47C79FB7;
 	Wed,  9 Sep 2026 19:07:59 +0000 (UTC)
 From: Dave Marquardt via B4 Relay <devnull+davemarq.linux.ibm.com@kernel.org>
-Date: Wed, 09 Sep 2026 14:07:58 -0500
-Subject: [PATCH v8 3/9] scsi: ibmvfc: add FPIN extended flag and async
- sub-CRQ queue handle
+Date: Wed, 09 Sep 2026 14:07:57 -0500
+Subject: [PATCH v8 2/9] scsi: ibmvfc: add NOOP command support
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -66,7 +65,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260909-ibmvfc-fpin-support-v8-3-b27183b055af@linux.ibm.com>
+Message-Id: <20260909-ibmvfc-fpin-support-v8-2-b27183b055af@linux.ibm.com>
 References: <20260909-ibmvfc-fpin-support-v8-0-b27183b055af@linux.ibm.com>
 In-Reply-To: <20260909-ibmvfc-fpin-support-v8-0-b27183b055af@linux.ibm.com>
 To: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, 
@@ -80,11 +79,11 @@ Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
  Greg Joyce <gjoyce@linux.ibm.com>, Kyle Mahlkuch <kmahlkuc@linux.ibm.com>, 
  Dave Marquardt <davemarq@linux.ibm.com>
 X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1788980878; l=1156;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1788980878; l=2910;
  i=davemarq@linux.ibm.com; s=20260216; h=from:subject:message-id;
- bh=6+Vf0PoqfDYiBtRPDVPvMbpbtiabmKU9+0zi74lACkM=;
- b=wZL86Y4MW/fnRBDZlJyyY4UdT/X/nD6f0brUZLcFM2YlQr6XJnLQNQVuKYivvf1QE5AebfEUH
- SKBLxmoBjV3DW7Hp3o3bXIKCGBaLPQGbV/mBveo1wfVKoZtuKgpGJJe
+ bh=/6eLsH9Lr0XeUeY8Iw7EQ5VPLah0UpDEqJG+hBif1nY=;
+ b=gmGftYvv+WImx24YrY7QsSxYhaKlXOF6CJcLvxPIGAadLcgumas5X9exJOR73MKco3UPa9l6Q
+ WYQGPck9TdaAH0oIOVm68F8jjwaSB/9drKRwVCveCXAKYc9HRKpfofQ
 X-Developer-Key: i=davemarq@linux.ibm.com; a=ed25519;
  pk=vy0/nfobrje6EqZxuyw6a3ZstytG8WK2vf5Y3xtGrEg=
 X-Endpoint-Received: by B4 Relay for davemarq@linux.ibm.com/20260216 with
@@ -94,38 +93,78 @@ Reply-To: davemarq@linux.ibm.com
 
 From: Dave Marquardt <davemarq@linux.ibm.com>
 
-Add IBMVFC_ASYNC_IS_FPIN_EXT flag bit (0x02) to ibmvfc_async_sub_crq.flags
-to distinguish extended FPIN events from standard ones.
+Add support for handling IBMVFC_NOOP format CRQ messages from the
+VIOS partner.
 
-Add async_sub_crq field of type ibmvfc_queue to ibmvfc_host to hold the
-queue handle for the asynchronous sub-CRQ, alongside the existing crq and
-async_crq queues.
+Advertise the client's ability to handle NOOP commands by setting the
+IBMVFC_CAN_USE_NOOP_CMD capability in ibmvfc_set_login_info().
+
+Handle and ignore IBMVFC_NOOP format messages in both ibmvfc_handle_crq()
+and ibmvfc_handle_scrq(). In both handlers, log a rate-limited error if a
+NOOP is received while in the IBMVFC_ACTIVE state without the partner
+having advertised IBMVFC_SUPPORT_NOOP_CMD.
+
+In ibmvfc_handle_scrq(), also fix a typo ("Got and invalid" -> "Got an
+invalid"), add a missing return on invalid message types, and guard
+against null event pointers before processing CRQ responses.
 
 Signed-off-by: Dave Marquardt <davemarq@linux.ibm.com>
 ---
- drivers/scsi/ibmvscsi/ibmvfc.h | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/scsi/ibmvscsi/ibmvfc-core.c | 27 +++++++++++++++++++++++++--
+ 1 file changed, 25 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/scsi/ibmvscsi/ibmvfc.h b/drivers/scsi/ibmvscsi/ibmvfc.h
-index d7a30e7a4a28..a8a063d99564 100644
---- a/drivers/scsi/ibmvscsi/ibmvfc.h
-+++ b/drivers/scsi/ibmvscsi/ibmvfc.h
-@@ -773,6 +773,7 @@ struct ibmvfc_async_sub_crq {
- 	volatile u8 valid;
- 	u8 flags;
- #define IBMVFC_ASYNC_ID_IS_ASSOC_ID	0x01
-+#define IBMVFC_ASYNC_IS_FPIN_EXT	0x02
- 	u8 link_state;
- 	u8 fpin_status;
- 	__be16 event;
-@@ -990,6 +991,7 @@ struct ibmvfc_host {
- 	mempool_t *tgt_pool;
- 	struct ibmvfc_queue crq;
- 	struct ibmvfc_queue async_crq;
-+	struct ibmvfc_queue async_sub_crq;
- 	struct ibmvfc_channels scsi_scrqs;
- 	struct ibmvfc_channels nvme_scrqs;
- 	struct ibmvfc_npiv_login login_info;
+diff --git a/drivers/scsi/ibmvscsi/ibmvfc-core.c b/drivers/scsi/ibmvscsi/ibmvfc-core.c
+index 0dde8dcf43de..c985eb3400a7 100644
+--- a/drivers/scsi/ibmvscsi/ibmvfc-core.c
++++ b/drivers/scsi/ibmvscsi/ibmvfc-core.c
+@@ -1578,7 +1578,9 @@ static void ibmvfc_set_login_info(struct ibmvfc_host *vhost)
+ 		login_info->flags |= cpu_to_be16(IBMVFC_CLIENT_MIGRATED);
+ 
+ 	login_info->max_cmds = cpu_to_be32(max_cmds);
+-	login_info->capabilities = cpu_to_be64(IBMVFC_CAN_MIGRATE | IBMVFC_CAN_SEND_VF_WWPN);
++	login_info->capabilities =
++		cpu_to_be64(IBMVFC_CAN_MIGRATE | IBMVFC_CAN_SEND_VF_WWPN |
++			    IBMVFC_CAN_USE_NOOP_CMD);
+ 
+ 	if (vhost->mq_enabled || vhost->using_channels) {
+ 		login_info->capabilities |= cpu_to_be64(IBMVFC_CAN_USE_CHANNELS);
+@@ -3693,6 +3695,14 @@ static void ibmvfc_handle_crq(struct ibmvfc_crq *crq, struct ibmvfc_host *vhost,
+ 	if (crq->format == IBMVFC_ASYNC_EVENT)
+ 		return;
+ 
++	if (crq->format == IBMVFC_NOOP) {
++		if (vhost->state == IBMVFC_ACTIVE &&
++		    !ibmvfc_check_caps(vhost, IBMVFC_SUPPORT_NOOP_CMD))
++			dev_err_ratelimited(vhost->dev,
++					    "Received unexpected NOOP command from partner\n");
++		return;
++	}
++
+ 	/* The only kind of payload CRQs we should get are responses to
+ 	 * things we send. Make sure this response is to something we
+ 	 * actually sent
+@@ -4223,7 +4233,20 @@ static void ibmvfc_handle_scrq(struct ibmvfc_crq *crq, struct ibmvfc_host *vhost
+ 	case IBMVFC_CRQ_XPORT_EVENT:
+ 		return;
+ 	default:
+-		dev_err(vhost->dev, "Got and invalid message type 0x%02x\n", crq->valid);
++		dev_err(vhost->dev, "Got an invalid message type 0x%02x\n", crq->valid);
++		return;
++	}
++
++	if (crq->format == IBMVFC_NOOP) {
++		if (vhost->state == IBMVFC_ACTIVE &&
++		    !ibmvfc_check_caps(vhost, IBMVFC_SUPPORT_NOOP_CMD))
++			dev_err_ratelimited(vhost->dev,
++					    "Received unexpected NOOP command from partner\n");
++		return;
++	}
++
++	if (unlikely(!evt)) {
++		dev_err(vhost->dev, "Received null event\n");
+ 		return;
+ 	}
+ 
 
 -- 
 2.55.0
