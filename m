@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-26931-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26932-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 84E28C79FB6
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2026 13:23:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8D5B0C79FB7
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2026 13:23:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hg1ht0h2Mz2ytJ;
-	Wed, 09 Sep 2026 23:23:26 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788960206;
-	cv=none; b=E7MvrCqRzw5vc0DWk7l4lAlBz/uKrM47ydWPOWn3UfhVYrupVmhABIYzvRvO82MABSLnj8w8qYZCDkThy9NaX58el5OCA5z1bfuUJCVnmVQJNNvvRjD9XoevGUXQT4JZHartHa3Yjq+TEMzW4oH6Sz9Mtd9kj/z/wf8xRholVhCOKmwrijfeNvQUKqXiOn1JXOIL5hnyvcdNO+oo92/OmXVkmJhNwkPHcDIMaLlrBQRffwGyt3RoinF4C2icdSA4Z7jpgQJiDAVY+cSjhmgxc6N49IXrzJtNNIXbqWU/OIMw4NhqHtmgWCMEIXenkA+IIyDAmVArzVjar8EGaEFY+Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hg1j14r6sz30gS;
+	Wed, 09 Sep 2026 23:23:33 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788960213;
+	cv=none; b=D1auQNG/21NG0jPteyJZQsYazjBNWCY+mnRHNAGIKu0IVMGZcIYMvggFRdnVkfSY+BURDOhFJveU0qhvrZ/QsLcb0B6clQRu9KDgVrczcJnuIwAGZE2t3HrRXZiHrxfCAljbZyZw1jTMIoUV7fFCVMzFoXhTBqK4yoXfS2sKbDRVCeDYmBQh65FE7ZnJE125bvPHyw5ERoNzSYrsU87WVypm5lvfliGf0ol/a6BRLOX8N9FKIE0EhDgL9PloUNgDxkgtU/At83R3fChPVcfQno3teVGqTyppiXwRGy3sQVwExgh0DGzgM2KzxZQEEttfNbJVYxDcRDMlnN9DZMtopg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788960206; c=relaxed/relaxed;
-	bh=VDCznK0NNqZ55fwDiGcTJ3eBsAhvJFIMJqTbRYLieWc=;
+	t=1788960213; c=relaxed/relaxed;
+	bh=iBwLDdkV0sGJ+KZn9/rYZCz+Ea5WOA44xoCHpPzQZhM=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=KTvke685dZzojFKzKFhtYpDO//OVgEmk32PUU0Hrynsxj1U7h2e6DG27IqvTL7qTh+9A7azblJWo5L26KzkwVL3h283AIi0MojFl86beq/b0BjNO6GVJrKtCymD/VzTP2OnwjHQVkEifV5YPPHLiYojfQIfDBMCep/wkJQVYwGZsQd8d5Pg+HuoerYxPY3mggQdVXC3U2vZ6dIlX+zwE/WwDM/mSsQjNdSnPJsreSj2wkm6flwPCOXTeO3zDi2kp5HI1DFPT+ikSIdJmo+4fV0uijLlcTq9nlRS708cuu6RMEhlA3DgkMioL01BrCZVlxqeX2HAMm28R4+SRRxnZXA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MgTElWrG; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=S+wvh0ppBYZ2KlRiMHjfyHLSeLm8vilxcGPRkLTfg5vNvt6F9r7RHIaSHouI3hE6jucSMMa2KGUmX/feeoMo8PQLWNVkQICM02A2H5kfuF36XQpR1xa5XfxEtpxpm+CXqSVn6TdozfdQpWUaVVVoFNL+h+/6LH5YAGpv57/VN9bdbJ51OCbkRL9CmUmPiMwu559+lGfAiFsYKfkcrIMY1LJDBLEF5kYvxeuoOv1IMJQSbF0K+eHDDaMGfbukLW9j3QU6w4S+I3Y3WfAWsXPZwLwOyLk4mfNvelyq69W8fKpcDp4nQLtPegbr0936iM7oMgxqpyPhSYHFZyswG9SHRw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ImlwPdT2; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MgTElWrG;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ImlwPdT2;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hg1hq4D9hz2yqd
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Sep 2026 23:23:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hg1j00j7pz2yvG
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Sep 2026 23:23:32 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 84B5F60213;
+	by tor.source.kernel.org (Postfix) with ESMTP id F031060219;
+	Wed,  9 Sep 2026 13:23:29 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AD6591F00A3F;
 	Wed,  9 Sep 2026 13:23:21 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 42BB81F00A3D;
-	Wed,  9 Sep 2026 13:23:13 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788960201;
-	bh=VDCznK0NNqZ55fwDiGcTJ3eBsAhvJFIMJqTbRYLieWc=;
+	s=k20260515; t=1788960209;
+	bh=iBwLDdkV0sGJ+KZn9/rYZCz+Ea5WOA44xoCHpPzQZhM=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=MgTElWrGrGZABLU0/KpxhlbIqz08CSpfmFYNk4bXA2OBBlNvfjLpvrK398xGN0ig2
-	 xzyfLtjjBap/hduNHpvaMyKkxhg+7pwtqMMTZNoVq2QYgTtfW2YTWjKCRxSbIVcjRq
-	 jrcpydhx4cOR1N8AOIIdlp12hytCc2t6RbcZi6F7pOJPYOl0mQ5wIlWVWFYJf65l75
-	 EQT8lxl4KdPip94grKURZJQRYuRoZJgv2QDiBm2tQ1gJh7v5JKMr5PRGCBCT/LTadY
-	 +EKEK2YZz/1YIOEzZRQGDrtYroCq8xK0QAfmbcEQDi8JYy3ek7SQZ44TpJfSL9v63b
-	 VqLt4iGkXn0sw==
+	b=ImlwPdT2AktB1xteiqmpsC4ryHbeaCHKiwPAiLsezjZ3MiKfzj2ESSI4ZbqaFCYry
+	 9YK/BCGd6yfkRp4VCmnHH/sTo7H11cjC2muIsA19Q7WjuOXzp8MXYTCcjMWkcJsTtB
+	 30FNx1w7JJqBROt7CxZ9cjgXIonMpxTpCXCmWycdU+cDNJ30AQjjiaBkCsbDxlHYQ2
+	 OlxX8R+XvyxKsIXVH5ZCL6eDF720Q/8hpef4WzB/HtHwsVcAiDXE9IFqzsOQQLXvVM
+	 HBsCoHhXNEF2+mNOnvvmrsc8TboO8rPq85KWh7nJQAKtmlUkRLSoOMlPv9YJutiTVs
+	 w/JGwsh0wdQgQ==
 From: Arnd Bergmann <arnd@kernel.org>
 To: Lee Jones <lee@kernel.org>,
 	mfd@lists.linux.dev
@@ -86,9 +86,9 @@ Cc: linux-kernel@vger.kernel.org,
 	linux-sound@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
 	llvm@lists.linux.dev
-Subject: [PATCH 07/14] mfd: remove unused lp8788 driver
-Date: Wed,  9 Sep 2026 15:21:44 +0200
-Message-ID: <20260909132153.1596191-8-arnd@kernel.org>
+Subject: [PATCH 08/14] mfd: remove unused aat2870 driver
+Date: Wed,  9 Sep 2026 15:21:45 +0200
+Message-ID: <20260909132153.1596191-9-arnd@kernel.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260909132153.1596191-1-arnd@kernel.org>
 References: <20260909132153.1596191-1-arnd@kernel.org>
@@ -109,3909 +109,1175 @@ Content-Transfer-Encoding: 8bit
 
 From: Arnd Bergmann <arnd@arndb.de>
 
-This driver was apparently never used upstream, and without devicetree
-support cannot be used by external board support.
-
-The MAINTAINER entry was already removed in 2021 as the email address
-bounced.
+This driver was apparently never used, as it has has no devicetree
+support and never had corresponding platform_data definitions.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- drivers/iio/adc/Kconfig               |   9 -
- drivers/iio/adc/Makefile              |   1 -
- drivers/iio/adc/lp8788_adc.c          | 219 --------
- drivers/leds/Kconfig                  |   7 -
- drivers/leds/Makefile                 |   1 -
- drivers/leds/leds-lp8788.c            | 171 ------
- drivers/mfd/Kconfig                   |  10 -
+ drivers/mfd/Kconfig                   |  12 -
  drivers/mfd/Makefile                  |   1 -
- drivers/mfd/lp8788-irq.c              | 194 -------
- drivers/mfd/lp8788.c                  | 246 ---------
- drivers/power/supply/Kconfig          |   8 -
- drivers/power/supply/Makefile         |   1 -
- drivers/power/supply/lp8788-charger.c | 730 --------------------------
- drivers/regulator/Kconfig             |   6 -
- drivers/regulator/Makefile            |   2 -
- drivers/regulator/lp8788-buck.c       | 541 -------------------
- drivers/regulator/lp8788-ldo.c        | 640 ----------------------
- drivers/rtc/Kconfig                   |   6 -
- drivers/rtc/rtc-lp8788.c              | 322 ------------
- drivers/video/backlight/Kconfig       |   6 -
+ drivers/mfd/aat2870-core.c            | 458 --------------------------
+ drivers/regulator/Kconfig             |   7 -
+ drivers/regulator/Makefile            |   1 -
+ drivers/regulator/aat2870-regulator.c | 201 -----------
+ drivers/video/backlight/Kconfig       |   7 -
  drivers/video/backlight/Makefile      |   1 -
- drivers/video/backlight/lp8788_bl.c   | 190 -------
- include/linux/mfd/lp8788-isink.h      |  48 --
- include/linux/mfd/lp8788.h            | 289 ----------
- 24 files changed, 3649 deletions(-)
- delete mode 100644 drivers/iio/adc/lp8788_adc.c
- delete mode 100644 drivers/leds/leds-lp8788.c
- delete mode 100644 drivers/mfd/lp8788-irq.c
- delete mode 100644 drivers/mfd/lp8788.c
- delete mode 100644 drivers/power/supply/lp8788-charger.c
- delete mode 100644 drivers/regulator/lp8788-buck.c
- delete mode 100644 drivers/regulator/lp8788-ldo.c
- delete mode 100644 drivers/rtc/rtc-lp8788.c
- delete mode 100644 drivers/video/backlight/lp8788_bl.c
- delete mode 100644 include/linux/mfd/lp8788-isink.h
- delete mode 100644 include/linux/mfd/lp8788.h
+ drivers/video/backlight/aat2870_bl.c  | 206 ------------
+ include/linux/mfd/aat2870.h           | 164 ---------
+ 10 files changed, 1058 deletions(-)
+ delete mode 100644 drivers/mfd/aat2870-core.c
+ delete mode 100644 drivers/regulator/aat2870-regulator.c
+ delete mode 100644 drivers/video/backlight/aat2870_bl.c
+ delete mode 100644 include/linux/mfd/aat2870.h
 
-diff --git a/drivers/iio/adc/Kconfig b/drivers/iio/adc/Kconfig
-index 415e519ad4eb..af9651003449 100644
---- a/drivers/iio/adc/Kconfig
-+++ b/drivers/iio/adc/Kconfig
-@@ -905,15 +905,6 @@ config IMX93_ADC
- 	  This driver can also be built as a module. If so, the module will be
- 	  called imx93_adc.
- 
--config LP8788_ADC
--	tristate "LP8788 ADC driver"
--	depends on MFD_LP8788
--	help
--	  Say yes here to build support for TI LP8788 ADC.
--
--	  To compile this driver as a module, choose M here: the module will be
--	  called lp8788_adc.
--
- config LPC18XX_ADC
- 	tristate "NXP LPC18xx ADC driver"
- 	depends on ARCH_LPC18XX || COMPILE_TEST
-diff --git a/drivers/iio/adc/Makefile b/drivers/iio/adc/Makefile
-index dcec0abb03b7..845ddf628f22 100644
---- a/drivers/iio/adc/Makefile
-+++ b/drivers/iio/adc/Makefile
-@@ -77,7 +77,6 @@ obj-$(CONFIG_INA2XX_ADC) += ina2xx-adc.o
- obj-$(CONFIG_INGENIC_ADC) += ingenic-adc.o
- obj-$(CONFIG_INTEL_DC_TI_ADC) += intel_dc_ti_adc.o
- obj-$(CONFIG_INTEL_MRFLD_ADC) += intel_mrfld_adc.o
--obj-$(CONFIG_LP8788_ADC) += lp8788_adc.o
- obj-$(CONFIG_LPC18XX_ADC) += lpc18xx_adc.o
- obj-$(CONFIG_LPC32XX_ADC) += lpc32xx_adc.o
- obj-$(CONFIG_LTC2309) += ltc2309.o
-diff --git a/drivers/iio/adc/lp8788_adc.c b/drivers/iio/adc/lp8788_adc.c
-deleted file mode 100644
-index 33bf8aef79e3..000000000000
---- a/drivers/iio/adc/lp8788_adc.c
-+++ /dev/null
-@@ -1,219 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-only
--/*
-- * TI LP8788 MFD - ADC driver
-- *
-- * Copyright 2012 Texas Instruments
-- *
-- * Author: Milo(Woogyom) Kim <milo.kim@ti.com>
-- */
--
--#include <linux/delay.h>
--#include <linux/iio/iio.h>
--#include <linux/iio/driver.h>
--#include <linux/iio/machine.h>
--#include <linux/mfd/lp8788.h>
--#include <linux/module.h>
--#include <linux/mutex.h>
--#include <linux/platform_device.h>
--#include <linux/slab.h>
--
--/* register address */
--#define LP8788_ADC_CONF			0x60
--#define LP8788_ADC_RAW			0x61
--#define LP8788_ADC_DONE			0x63
--
--#define ADC_CONV_START			1
--
--struct lp8788_adc {
--	struct lp8788 *lp;
--	const struct iio_map *map;
--	struct mutex lock;
--};
--
--static const int lp8788_scale[LPADC_MAX] = {
--	[LPADC_VBATT_5P5] = 1343101,
--	[LPADC_VIN_CHG]   = 3052503,
--	[LPADC_IBATT]     = 610500,
--	[LPADC_IC_TEMP]   = 61050,
--	[LPADC_VBATT_6P0] = 1465201,
--	[LPADC_VBATT_5P0] = 1221001,
--	[LPADC_ADC1]      = 610500,
--	[LPADC_ADC2]      = 610500,
--	[LPADC_VDD]       = 1025641,
--	[LPADC_VCOIN]     = 757020,
--	[LPADC_ADC3]      = 610500,
--	[LPADC_ADC4]      = 610500,
--};
--
--static int lp8788_get_adc_result(struct lp8788_adc *adc, enum lp8788_adc_id id,
--				int *val)
--{
--	unsigned int msb;
--	unsigned int lsb;
--	unsigned int result;
--	u8 data;
--	u8 rawdata[2];
--	int size = ARRAY_SIZE(rawdata);
--	int retry = 5;
--	int ret;
--
--	data = (id << 1) | ADC_CONV_START;
--	ret = lp8788_write_byte(adc->lp, LP8788_ADC_CONF, data);
--	if (ret)
--		goto err_io;
--
--	/* retry until adc conversion is done */
--	data = 0;
--	while (retry--) {
--		usleep_range(100, 200);
--
--		ret = lp8788_read_byte(adc->lp, LP8788_ADC_DONE, &data);
--		if (ret)
--			goto err_io;
--
--		/* conversion done */
--		if (data)
--			break;
--	}
--
--	ret = lp8788_read_multi_bytes(adc->lp, LP8788_ADC_RAW, rawdata, size);
--	if (ret)
--		goto err_io;
--
--	msb = (rawdata[0] << 4) & 0x00000ff0;
--	lsb = (rawdata[1] >> 4) & 0x0000000f;
--	result = msb | lsb;
--	*val = result;
--
--	return 0;
--
--err_io:
--	return ret;
--}
--
--static int lp8788_adc_read_raw(struct iio_dev *indio_dev,
--			struct iio_chan_spec const *chan,
--			int *val, int *val2, long mask)
--{
--	struct lp8788_adc *adc = iio_priv(indio_dev);
--	enum lp8788_adc_id id = chan->channel;
--	int ret;
--
--	mutex_lock(&adc->lock);
--
--	switch (mask) {
--	case IIO_CHAN_INFO_RAW:
--		ret = lp8788_get_adc_result(adc, id, val) ? -EIO : IIO_VAL_INT;
--		break;
--	case IIO_CHAN_INFO_SCALE:
--		*val = lp8788_scale[id] / 1000000;
--		*val2 = lp8788_scale[id] % 1000000;
--		ret = IIO_VAL_INT_PLUS_MICRO;
--		break;
--	default:
--		ret = -EINVAL;
--		break;
--	}
--
--	mutex_unlock(&adc->lock);
--
--	return ret;
--}
--
--static const struct iio_info lp8788_adc_info = {
--	.read_raw = &lp8788_adc_read_raw,
--};
--
--#define LP8788_CHAN(_id, _type) {				\
--		.type = _type,					\
--		.indexed = 1,					\
--		.channel = LPADC_##_id,				\
--		.info_mask_separate = BIT(IIO_CHAN_INFO_RAW) |	\
--			BIT(IIO_CHAN_INFO_SCALE),		\
--		.datasheet_name = #_id,				\
--}
--
--static const struct iio_chan_spec lp8788_adc_channels[] = {
--	[LPADC_VBATT_5P5] = LP8788_CHAN(VBATT_5P5, IIO_VOLTAGE),
--	[LPADC_VIN_CHG]   = LP8788_CHAN(VIN_CHG, IIO_VOLTAGE),
--	[LPADC_IBATT]     = LP8788_CHAN(IBATT, IIO_CURRENT),
--	[LPADC_IC_TEMP]   = LP8788_CHAN(IC_TEMP, IIO_TEMP),
--	[LPADC_VBATT_6P0] = LP8788_CHAN(VBATT_6P0, IIO_VOLTAGE),
--	[LPADC_VBATT_5P0] = LP8788_CHAN(VBATT_5P0, IIO_VOLTAGE),
--	[LPADC_ADC1]      = LP8788_CHAN(ADC1, IIO_VOLTAGE),
--	[LPADC_ADC2]      = LP8788_CHAN(ADC2, IIO_VOLTAGE),
--	[LPADC_VDD]       = LP8788_CHAN(VDD, IIO_VOLTAGE),
--	[LPADC_VCOIN]     = LP8788_CHAN(VCOIN, IIO_VOLTAGE),
--	[LPADC_ADC3]      = LP8788_CHAN(ADC3, IIO_VOLTAGE),
--	[LPADC_ADC4]      = LP8788_CHAN(ADC4, IIO_VOLTAGE),
--};
--
--/* default maps used by iio consumer (lp8788-charger driver) */
--static const struct iio_map lp8788_default_iio_maps[] = {
--	IIO_MAP("VBATT_5P0", "lp8788-charger", "lp8788_vbatt_5p0"),
--	IIO_MAP("ADC1", "lp8788-charger", "lp8788_adc1"),
--	{ }
--};
--
--static int lp8788_iio_map_register(struct device *dev,
--				struct iio_dev *indio_dev,
--				struct lp8788_platform_data *pdata,
--				struct lp8788_adc *adc)
--{
--	const struct iio_map *map;
--	int ret;
--
--	map = (!pdata || !pdata->adc_pdata) ?
--		lp8788_default_iio_maps : pdata->adc_pdata;
--
--	ret = devm_iio_map_array_register(dev, indio_dev, map);
--	if (ret) {
--		dev_err(&indio_dev->dev, "iio map err: %d\n", ret);
--		return ret;
--	}
--
--	adc->map = map;
--	return 0;
--}
--
--static int lp8788_adc_probe(struct platform_device *pdev)
--{
--	struct lp8788 *lp = dev_get_drvdata(pdev->dev.parent);
--	struct iio_dev *indio_dev;
--	struct lp8788_adc *adc;
--	int ret;
--
--	indio_dev = devm_iio_device_alloc(&pdev->dev, sizeof(*adc));
--	if (!indio_dev)
--		return -ENOMEM;
--
--	adc = iio_priv(indio_dev);
--	adc->lp = lp;
--
--	ret = lp8788_iio_map_register(&pdev->dev, indio_dev, lp->pdata, adc);
--	if (ret)
--		return ret;
--
--	mutex_init(&adc->lock);
--
--	indio_dev->name = pdev->name;
--	indio_dev->modes = INDIO_DIRECT_MODE;
--	indio_dev->info = &lp8788_adc_info;
--	indio_dev->channels = lp8788_adc_channels;
--	indio_dev->num_channels = ARRAY_SIZE(lp8788_adc_channels);
--
--	return devm_iio_device_register(&pdev->dev, indio_dev);
--}
--
--static struct platform_driver lp8788_adc_driver = {
--	.probe = lp8788_adc_probe,
--	.driver = {
--		.name = LP8788_DEV_ADC,
--	},
--};
--module_platform_driver(lp8788_adc_driver);
--
--MODULE_DESCRIPTION("Texas Instruments LP8788 ADC Driver");
--MODULE_AUTHOR("Milo Kim");
--MODULE_LICENSE("GPL");
--MODULE_ALIAS("platform:lp8788-adc");
-diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
-index 5aab4765d6d7..f0cd10ad6279 100644
---- a/drivers/leds/Kconfig
-+++ b/drivers/leds/Kconfig
-@@ -511,13 +511,6 @@ config LEDS_LP8501
- 	  It is similar as LP5523, but output power selection is available.
- 	  And register layout and engine program schemes are different.
- 
--config LEDS_LP8788
--	tristate "LED support for the TI LP8788 PMIC"
--	depends on LEDS_CLASS
--	depends on MFD_LP8788
--	help
--	  This option enables support for the Keyboard LEDs on the LP8788 PMIC.
--
- config LEDS_LP8860
- 	tristate "LED support for the TI LP8860 4 channel LED driver"
- 	depends on LEDS_CLASS && I2C && OF
-diff --git a/drivers/leds/Makefile b/drivers/leds/Makefile
-index 148301cf4865..63dc0b0c5a51 100644
---- a/drivers/leds/Makefile
-+++ b/drivers/leds/Makefile
-@@ -55,7 +55,6 @@ obj-$(CONFIG_LEDS_LP5562)		+= leds-lp5562.o
- obj-$(CONFIG_LEDS_LP5569)		+= leds-lp5569.o
- obj-$(CONFIG_LEDS_LP55XX_COMMON)	+= leds-lp55xx-common.o
- obj-$(CONFIG_LEDS_LP8501)		+= leds-lp8501.o
--obj-$(CONFIG_LEDS_LP8788)		+= leds-lp8788.o
- obj-$(CONFIG_LEDS_LP8860)		+= leds-lp8860.o
- obj-$(CONFIG_LEDS_LP8864)		+= leds-lp8864.o
- obj-$(CONFIG_LEDS_LT3593)		+= leds-lt3593.o
-diff --git a/drivers/leds/leds-lp8788.c b/drivers/leds/leds-lp8788.c
-deleted file mode 100644
-index 9b9525ccca15..000000000000
---- a/drivers/leds/leds-lp8788.c
-+++ /dev/null
-@@ -1,171 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-only
--/*
-- * TI LP8788 MFD - keyled driver
-- *
-- * Copyright 2012 Texas Instruments
-- *
-- * Author: Milo(Woogyom) Kim <milo.kim@ti.com>
-- */
--
--#include <linux/module.h>
--#include <linux/slab.h>
--#include <linux/err.h>
--#include <linux/platform_device.h>
--#include <linux/leds.h>
--#include <linux/mutex.h>
--#include <linux/mfd/lp8788.h>
--#include <linux/mfd/lp8788-isink.h>
--
--#define MAX_BRIGHTNESS			LP8788_ISINK_MAX_PWM
--#define DEFAULT_LED_NAME		"keyboard-backlight"
--
--struct lp8788_led {
--	struct lp8788 *lp;
--	struct mutex lock;
--	struct led_classdev led_dev;
--	enum lp8788_isink_number isink_num;
--	int on;
--};
--
--struct lp8788_led_config {
--	enum lp8788_isink_scale scale;
--	enum lp8788_isink_number num;
--	int iout;
--};
--
--static struct lp8788_led_config default_led_config = {
--	.scale = LP8788_ISINK_SCALE_100mA,
--	.num   = LP8788_ISINK_3,
--	.iout  = 0,
--};
--
--static int lp8788_led_init_device(struct lp8788_led *led,
--				struct lp8788_led_platform_data *pdata)
--{
--	struct lp8788_led_config *cfg = &default_led_config;
--	u8 addr, mask, val;
--	int ret;
--
--	if (pdata) {
--		cfg->scale = pdata->scale;
--		cfg->num = pdata->num;
--		cfg->iout = pdata->iout_code;
--	}
--
--	led->isink_num = cfg->num;
--
--	/* scale configuration */
--	addr = LP8788_ISINK_CTRL;
--	mask = 1 << (cfg->num + LP8788_ISINK_SCALE_OFFSET);
--	val = cfg->scale << (cfg->num + LP8788_ISINK_SCALE_OFFSET);
--	ret = lp8788_update_bits(led->lp, addr, mask, val);
--	if (ret)
--		return ret;
--
--	/* current configuration */
--	addr = lp8788_iout_addr[cfg->num];
--	mask = lp8788_iout_mask[cfg->num];
--	val = cfg->iout;
--
--	return lp8788_update_bits(led->lp, addr, mask, val);
--}
--
--static int lp8788_led_enable(struct lp8788_led *led,
--			enum lp8788_isink_number num, int on)
--{
--	int ret;
--
--	u8 mask = 1 << num;
--	u8 val = on << num;
--
--	ret = lp8788_update_bits(led->lp, LP8788_ISINK_CTRL, mask, val);
--	if (ret == 0)
--		led->on = on;
--
--	return ret;
--}
--
--static int lp8788_brightness_set(struct led_classdev *led_cdev,
--				enum led_brightness val)
--{
--	struct lp8788_led *led =
--			container_of(led_cdev, struct lp8788_led, led_dev);
--
--	enum lp8788_isink_number num = led->isink_num;
--	int enable, ret;
--
--	mutex_lock(&led->lock);
--
--	switch (num) {
--	case LP8788_ISINK_1:
--	case LP8788_ISINK_2:
--	case LP8788_ISINK_3:
--		ret = lp8788_write_byte(led->lp, lp8788_pwm_addr[num], val);
--		if (ret < 0)
--			goto unlock;
--		break;
--	default:
--		mutex_unlock(&led->lock);
--		return -EINVAL;
--	}
--
--	enable = (val > 0) ? 1 : 0;
--	if (enable != led->on)
--		ret = lp8788_led_enable(led, num, enable);
--unlock:
--	mutex_unlock(&led->lock);
--	return ret;
--}
--
--static int lp8788_led_probe(struct platform_device *pdev)
--{
--	struct lp8788 *lp = dev_get_drvdata(pdev->dev.parent);
--	struct lp8788_led_platform_data *led_pdata;
--	struct lp8788_led *led;
--	struct device *dev = &pdev->dev;
--	int ret;
--
--	led = devm_kzalloc(dev, sizeof(struct lp8788_led), GFP_KERNEL);
--	if (!led)
--		return -ENOMEM;
--
--	led->lp = lp;
--	led->led_dev.max_brightness = MAX_BRIGHTNESS;
--	led->led_dev.brightness_set_blocking = lp8788_brightness_set;
--
--	led_pdata = lp->pdata ? lp->pdata->led_pdata : NULL;
--
--	if (!led_pdata || !led_pdata->name)
--		led->led_dev.name = DEFAULT_LED_NAME;
--	else
--		led->led_dev.name = led_pdata->name;
--
--	mutex_init(&led->lock);
--
--	ret = lp8788_led_init_device(led, led_pdata);
--	if (ret) {
--		dev_err(dev, "led init device err: %d\n", ret);
--		return ret;
--	}
--
--	ret = devm_led_classdev_register(dev, &led->led_dev);
--	if (ret) {
--		dev_err(dev, "led register err: %d\n", ret);
--		return ret;
--	}
--
--	return 0;
--}
--
--static struct platform_driver lp8788_led_driver = {
--	.probe = lp8788_led_probe,
--	.driver = {
--		.name = LP8788_DEV_KEYLED,
--	},
--};
--module_platform_driver(lp8788_led_driver);
--
--MODULE_DESCRIPTION("Texas Instruments LP8788 Keyboard LED Driver");
--MODULE_AUTHOR("Milo Kim");
--MODULE_LICENSE("GPL");
--MODULE_ALIAS("platform:lp8788-keyled");
 diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-index fda9d7ad5743..09e400e1f4b0 100644
+index 09e400e1f4b0..b0c7df448445 100644
 --- a/drivers/mfd/Kconfig
 +++ b/drivers/mfd/Kconfig
-@@ -1603,16 +1603,6 @@ config MFD_LP3943
- 	  With these functionalities, it can be used for LED string control or
- 	  general usage such like a GPIO controller and a PWM controller.
+@@ -115,18 +115,6 @@ config MFD_AS3722
+ 	  controllers, 11 LDOs, RTC, automatic battery, temperature and
+ 	  over current monitoring, GPIOs, ADC and a watchdog.
  
--config MFD_LP8788
--	bool "TI LP8788 Power Management Unit Driver"
--	depends on I2C=y
+-config MFD_AAT2870_CORE
+-	bool "AnalogicTech AAT2870"
 -	select MFD_CORE
--	select REGMAP_I2C
--	select IRQ_DOMAIN
+-	depends on I2C=y
+-	depends on GPIOLIB || COMPILE_TEST
+-	depends on GPIOLIB_LEGACY
 -	help
--	  TI LP8788 PMU supports regulators, battery charger, RTC,
--	  ADC, backlight driver and current sinks.
+-	  If you say yes here you get support for the AAT2870.
+-	  This driver provides common support for accessing the device,
+-	  additional drivers must be enabled in order to use the
+-	  functionality of the device.
 -
- config MFD_TI_LMU
- 	tristate "TI Lighting Management Unit driver"
- 	depends on I2C
+ config MFD_AT91_USART
+ 	tristate "AT91 USART Driver"
+ 	select MFD_CORE
 diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
-index 82795e65cbe7..e3fe998c3513 100644
+index e3fe998c3513..cf3c70364538 100644
 --- a/drivers/mfd/Makefile
 +++ b/drivers/mfd/Makefile
-@@ -150,7 +150,6 @@ obj-$(CONFIG_MFD_AXP20X_I2C)	+= axp20x-i2c.o
- obj-$(CONFIG_MFD_AXP20X_RSB)	+= axp20x-rsb.o
- 
- obj-$(CONFIG_MFD_LP3943)	+= lp3943.o
--obj-$(CONFIG_MFD_LP8788)	+= lp8788.o lp8788-irq.o
- 
- obj-$(CONFIG_MFD_TI_LMU)	+= ti-lmu.o
- 
-diff --git a/drivers/mfd/lp8788-irq.c b/drivers/mfd/lp8788-irq.c
+@@ -206,7 +206,6 @@ obj-$(CONFIG_MFD_QCOM_RPM)	+= qcom_rpm.o
+ obj-$(CONFIG_MFD_SPMI_PMIC)	+= qcom-spmi-pmic.o
+ obj-$(CONFIG_TPS65911_COMPARATOR)	+= tps65911-comparator.o
+ obj-$(CONFIG_MFD_TPS65090)	+= tps65090.o
+-obj-$(CONFIG_MFD_AAT2870_CORE)	+= aat2870-core.o
+ obj-$(CONFIG_MFD_AT91_USART)	+= at91-usart.o
+ obj-$(CONFIG_MFD_ATMEL_FLEXCOM)	+= atmel-flexcom.o
+ obj-$(CONFIG_MFD_ATMEL_HLCDC)	+= atmel-hlcdc.o
+diff --git a/drivers/mfd/aat2870-core.c b/drivers/mfd/aat2870-core.c
 deleted file mode 100644
-index f62fa2d7f010..000000000000
---- a/drivers/mfd/lp8788-irq.c
+index 0d56cd6fbc6a..000000000000
+--- a/drivers/mfd/aat2870-core.c
 +++ /dev/null
-@@ -1,194 +0,0 @@
+@@ -1,458 +0,0 @@
 -// SPDX-License-Identifier: GPL-2.0-only
 -/*
-- * TI LP8788 MFD - interrupt handler
+- * linux/drivers/mfd/aat2870-core.c
 - *
-- * Copyright 2012 Texas Instruments
-- *
-- * Author: Milo(Woogyom) Kim <milo.kim@ti.com>
+- * Copyright (c) 2011, NVIDIA Corporation.
+- * Author: Jin Park <jinyoungp@nvidia.com>
 - */
 -
--#include <linux/delay.h>
--#include <linux/err.h>
--#include <linux/interrupt.h>
--#include <linux/irq.h>
--#include <linux/irqdomain.h>
--#include <linux/device.h>
--#include <linux/mfd/lp8788.h>
--#include <linux/module.h>
+-#include <linux/kernel.h>
+-#include <linux/init.h>
+-#include <linux/debugfs.h>
 -#include <linux/slab.h>
--
--/* register address */
--#define LP8788_INT_1			0x00
--#define LP8788_INTEN_1			0x03
--
--#define BASE_INTEN_ADDR			LP8788_INTEN_1
--#define SIZE_REG			8
--#define NUM_REGS			3
--
--/*
-- * struct lp8788_irq_data
-- * @lp               : used for accessing to lp8788 registers
-- * @irq_lock         : mutex for enabling/disabling the interrupt
-- * @domain           : IRQ domain for handling nested interrupt
-- * @enabled          : status of enabled interrupt
-- */
--struct lp8788_irq_data {
--	struct lp8788 *lp;
--	struct mutex irq_lock;
--	struct irq_domain *domain;
--	int enabled[LP8788_INT_MAX];
--};
--
--static inline u8 _irq_to_addr(enum lp8788_int_id id)
--{
--	return id / SIZE_REG;
--}
--
--static inline u8 _irq_to_enable_addr(enum lp8788_int_id id)
--{
--	return _irq_to_addr(id) + BASE_INTEN_ADDR;
--}
--
--static inline u8 _irq_to_mask(enum lp8788_int_id id)
--{
--	return 1 << (id % SIZE_REG);
--}
--
--static inline u8 _irq_to_val(enum lp8788_int_id id, int enable)
--{
--	return enable << (id % SIZE_REG);
--}
--
--static void lp8788_irq_enable(struct irq_data *data)
--{
--	struct lp8788_irq_data *irqd = irq_data_get_irq_chip_data(data);
--
--	irqd->enabled[data->hwirq] = 1;
--}
--
--static void lp8788_irq_disable(struct irq_data *data)
--{
--	struct lp8788_irq_data *irqd = irq_data_get_irq_chip_data(data);
--
--	irqd->enabled[data->hwirq] = 0;
--}
--
--static void lp8788_irq_bus_lock(struct irq_data *data)
--{
--	struct lp8788_irq_data *irqd = irq_data_get_irq_chip_data(data);
--
--	mutex_lock(&irqd->irq_lock);
--}
--
--static void lp8788_irq_bus_sync_unlock(struct irq_data *data)
--{
--	struct lp8788_irq_data *irqd = irq_data_get_irq_chip_data(data);
--	enum lp8788_int_id irq = data->hwirq;
--	u8 addr, mask, val;
--
--	addr = _irq_to_enable_addr(irq);
--	mask = _irq_to_mask(irq);
--	val = _irq_to_val(irq, irqd->enabled[irq]);
--
--	lp8788_update_bits(irqd->lp, addr, mask, val);
--
--	mutex_unlock(&irqd->irq_lock);
--}
--
--static struct irq_chip lp8788_irq_chip = {
--	.name			= "lp8788",
--	.irq_enable		= lp8788_irq_enable,
--	.irq_disable		= lp8788_irq_disable,
--	.irq_bus_lock		= lp8788_irq_bus_lock,
--	.irq_bus_sync_unlock	= lp8788_irq_bus_sync_unlock,
--};
--
--static irqreturn_t lp8788_irq_handler(int irq, void *ptr)
--{
--	struct lp8788_irq_data *irqd = ptr;
--	struct lp8788 *lp = irqd->lp;
--	u8 status[NUM_REGS], addr, mask;
--	bool handled = false;
--	int i;
--
--	if (lp8788_read_multi_bytes(lp, LP8788_INT_1, status, NUM_REGS))
--		return IRQ_NONE;
--
--	for (i = 0 ; i < LP8788_INT_MAX ; i++) {
--		addr = _irq_to_addr(i);
--		mask = _irq_to_mask(i);
--
--		/* reporting only if the irq is enabled */
--		if (status[addr] & mask) {
--			handle_nested_irq(irq_find_mapping(irqd->domain, i));
--			handled = true;
--		}
--	}
--
--	return handled ? IRQ_HANDLED : IRQ_NONE;
--}
--
--static int lp8788_irq_map(struct irq_domain *d, unsigned int virq,
--			irq_hw_number_t hwirq)
--{
--	struct lp8788_irq_data *irqd = d->host_data;
--	struct irq_chip *chip = &lp8788_irq_chip;
--
--	irq_set_chip_data(virq, irqd);
--	irq_set_chip_and_handler(virq, chip, handle_edge_irq);
--	irq_set_nested_thread(virq, 1);
--	irq_set_noprobe(virq);
--
--	return 0;
--}
--
--static const struct irq_domain_ops lp8788_domain_ops = {
--	.map = lp8788_irq_map,
--};
--
--int lp8788_irq_init(struct lp8788 *lp, int irq)
--{
--	struct lp8788_irq_data *irqd;
--	int ret;
--
--	if (irq <= 0) {
--		dev_warn(lp->dev, "invalid irq number: %d\n", irq);
--		return 0;
--	}
--
--	irqd = devm_kzalloc(lp->dev, sizeof(*irqd), GFP_KERNEL);
--	if (!irqd)
--		return -ENOMEM;
--
--	irqd->lp = lp;
--	irqd->domain = irq_domain_create_linear(dev_fwnode(lp->dev), LP8788_INT_MAX,
--					&lp8788_domain_ops, irqd);
--	if (!irqd->domain) {
--		dev_err(lp->dev, "failed to add irq domain err\n");
--		return -EINVAL;
--	}
--
--	lp->irqdm = irqd->domain;
--	mutex_init(&irqd->irq_lock);
--
--	ret = request_threaded_irq(irq, NULL, lp8788_irq_handler,
--				IRQF_TRIGGER_FALLING | IRQF_ONESHOT,
--				"lp8788-irq", irqd);
--	if (ret) {
--		irq_domain_remove(lp->irqdm);
--		dev_err(lp->dev, "failed to create a thread for IRQ_N\n");
--		return ret;
--	}
--
--	lp->irq = irq;
--
--	return 0;
--}
--
--void lp8788_irq_exit(struct lp8788 *lp)
--{
--	if (lp->irq)
--		free_irq(lp->irq, lp->irqdm);
--	if (lp->irqdm)
--		irq_domain_remove(lp->irqdm);
--}
-diff --git a/drivers/mfd/lp8788.c b/drivers/mfd/lp8788.c
-deleted file mode 100644
-index 32f255378f5a..000000000000
---- a/drivers/mfd/lp8788.c
-+++ /dev/null
-@@ -1,246 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-only
--/*
-- * TI LP8788 MFD - core interface
-- *
-- * Copyright 2012 Texas Instruments
-- *
-- * Author: Milo(Woogyom) Kim <milo.kim@ti.com>
-- */
--
--#include <linux/err.h>
+-#include <linux/uaccess.h>
 -#include <linux/i2c.h>
+-#include <linux/delay.h>
+-#include <linux/gpio/legacy.h>
 -#include <linux/mfd/core.h>
--#include <linux/mfd/lp8788.h>
--#include <linux/module.h>
--#include <linux/slab.h>
+-#include <linux/mfd/aat2870.h>
+-#include <linux/regulator/machine.h>
 -
--#define MAX_LP8788_REGISTERS		0xA2
+-static struct aat2870_register aat2870_regs[AAT2870_REG_NUM] = {
+-	/* readable, writeable, value */
+-	{ 0, 1, 0x00 },	/* 0x00 AAT2870_BL_CH_EN */
+-	{ 0, 1, 0x16 },	/* 0x01 AAT2870_BLM */
+-	{ 0, 1, 0x16 },	/* 0x02 AAT2870_BLS */
+-	{ 0, 1, 0x56 },	/* 0x03 AAT2870_BL1 */
+-	{ 0, 1, 0x56 },	/* 0x04 AAT2870_BL2 */
+-	{ 0, 1, 0x56 },	/* 0x05 AAT2870_BL3 */
+-	{ 0, 1, 0x56 },	/* 0x06 AAT2870_BL4 */
+-	{ 0, 1, 0x56 },	/* 0x07 AAT2870_BL5 */
+-	{ 0, 1, 0x56 },	/* 0x08 AAT2870_BL6 */
+-	{ 0, 1, 0x56 },	/* 0x09 AAT2870_BL7 */
+-	{ 0, 1, 0x56 },	/* 0x0A AAT2870_BL8 */
+-	{ 0, 1, 0x00 },	/* 0x0B AAT2870_FLR */
+-	{ 0, 1, 0x03 },	/* 0x0C AAT2870_FM */
+-	{ 0, 1, 0x03 },	/* 0x0D AAT2870_FS */
+-	{ 0, 1, 0x10 },	/* 0x0E AAT2870_ALS_CFG0 */
+-	{ 0, 1, 0x06 },	/* 0x0F AAT2870_ALS_CFG1 */
+-	{ 0, 1, 0x00 },	/* 0x10 AAT2870_ALS_CFG2 */
+-	{ 1, 0, 0x00 },	/* 0x11 AAT2870_AMB */
+-	{ 0, 1, 0x00 },	/* 0x12 AAT2870_ALS0 */
+-	{ 0, 1, 0x00 },	/* 0x13 AAT2870_ALS1 */
+-	{ 0, 1, 0x00 },	/* 0x14 AAT2870_ALS2 */
+-	{ 0, 1, 0x00 },	/* 0x15 AAT2870_ALS3 */
+-	{ 0, 1, 0x00 },	/* 0x16 AAT2870_ALS4 */
+-	{ 0, 1, 0x00 },	/* 0x17 AAT2870_ALS5 */
+-	{ 0, 1, 0x00 },	/* 0x18 AAT2870_ALS6 */
+-	{ 0, 1, 0x00 },	/* 0x19 AAT2870_ALS7 */
+-	{ 0, 1, 0x00 },	/* 0x1A AAT2870_ALS8 */
+-	{ 0, 1, 0x00 },	/* 0x1B AAT2870_ALS9 */
+-	{ 0, 1, 0x00 },	/* 0x1C AAT2870_ALSA */
+-	{ 0, 1, 0x00 },	/* 0x1D AAT2870_ALSB */
+-	{ 0, 1, 0x00 },	/* 0x1E AAT2870_ALSC */
+-	{ 0, 1, 0x00 },	/* 0x1F AAT2870_ALSD */
+-	{ 0, 1, 0x00 },	/* 0x20 AAT2870_ALSE */
+-	{ 0, 1, 0x00 },	/* 0x21 AAT2870_ALSF */
+-	{ 0, 1, 0x00 },	/* 0x22 AAT2870_SUB_SET */
+-	{ 0, 1, 0x00 },	/* 0x23 AAT2870_SUB_CTRL */
+-	{ 0, 1, 0x00 },	/* 0x24 AAT2870_LDO_AB */
+-	{ 0, 1, 0x00 },	/* 0x25 AAT2870_LDO_CD */
+-	{ 0, 1, 0x00 },	/* 0x26 AAT2870_LDO_EN */
+-};
 -
--#define MFD_DEV_SIMPLE(_name)					\
--{								\
--	.name = LP8788_DEV_##_name,				\
--}
--
--#define MFD_DEV_WITH_ID(_name, _id)				\
--{								\
--	.name = LP8788_DEV_##_name,				\
--	.id = _id,						\
--}
--
--#define MFD_DEV_WITH_RESOURCE(_name, _resource, num_resource)	\
--{								\
--	.name = LP8788_DEV_##_name,				\
--	.resources = _resource,					\
--	.num_resources = num_resource,				\
--}
--
--static const struct resource chg_irqs[] = {
--	/* Charger Interrupts */
+-static struct mfd_cell aat2870_devs[] = {
 -	{
--		.start = LP8788_INT_CHG_INPUT_STATE,
--		.end   = LP8788_INT_PRECHG_TIMEOUT,
--		.name  = LP8788_CHG_IRQ,
--		.flags = IORESOURCE_IRQ,
+-		.name = "aat2870-backlight",
+-		.id = AAT2870_ID_BL,
+-		.pdata_size = sizeof(struct aat2870_bl_platform_data),
 -	},
--	/* Power Routing Switch Interrupts */
 -	{
--		.start = LP8788_INT_ENTER_SYS_SUPPORT,
--		.end   = LP8788_INT_EXIT_SYS_SUPPORT,
--		.name  = LP8788_PRSW_IRQ,
--		.flags = IORESOURCE_IRQ,
+-		.name = "aat2870-regulator",
+-		.id = AAT2870_ID_LDOA,
+-		.pdata_size = sizeof(struct regulator_init_data),
 -	},
--	/* Battery Interrupts */
 -	{
--		.start = LP8788_INT_BATT_LOW,
--		.end   = LP8788_INT_NO_BATT,
--		.name  = LP8788_BATT_IRQ,
--		.flags = IORESOURCE_IRQ,
+-		.name = "aat2870-regulator",
+-		.id = AAT2870_ID_LDOB,
+-		.pdata_size = sizeof(struct regulator_init_data),
 -	},
--};
--
--static const struct resource rtc_irqs[] = {
 -	{
--		.start = LP8788_INT_RTC_ALARM1,
--		.end   = LP8788_INT_RTC_ALARM2,
--		.name  = LP8788_ALM_IRQ,
--		.flags = IORESOURCE_IRQ,
+-		.name = "aat2870-regulator",
+-		.id = AAT2870_ID_LDOC,
+-		.pdata_size = sizeof(struct regulator_init_data),
+-	},
+-	{
+-		.name = "aat2870-regulator",
+-		.id = AAT2870_ID_LDOD,
+-		.pdata_size = sizeof(struct regulator_init_data),
 -	},
 -};
 -
--static const struct mfd_cell lp8788_devs[] = {
--	/* 4 bucks */
--	MFD_DEV_WITH_ID(BUCK, 1),
--	MFD_DEV_WITH_ID(BUCK, 2),
--	MFD_DEV_WITH_ID(BUCK, 3),
--	MFD_DEV_WITH_ID(BUCK, 4),
--
--	/* 12 digital ldos */
--	MFD_DEV_WITH_ID(DLDO, 1),
--	MFD_DEV_WITH_ID(DLDO, 2),
--	MFD_DEV_WITH_ID(DLDO, 3),
--	MFD_DEV_WITH_ID(DLDO, 4),
--	MFD_DEV_WITH_ID(DLDO, 5),
--	MFD_DEV_WITH_ID(DLDO, 6),
--	MFD_DEV_WITH_ID(DLDO, 7),
--	MFD_DEV_WITH_ID(DLDO, 8),
--	MFD_DEV_WITH_ID(DLDO, 9),
--	MFD_DEV_WITH_ID(DLDO, 10),
--	MFD_DEV_WITH_ID(DLDO, 11),
--	MFD_DEV_WITH_ID(DLDO, 12),
--
--	/* 10 analog ldos */
--	MFD_DEV_WITH_ID(ALDO, 1),
--	MFD_DEV_WITH_ID(ALDO, 2),
--	MFD_DEV_WITH_ID(ALDO, 3),
--	MFD_DEV_WITH_ID(ALDO, 4),
--	MFD_DEV_WITH_ID(ALDO, 5),
--	MFD_DEV_WITH_ID(ALDO, 6),
--	MFD_DEV_WITH_ID(ALDO, 7),
--	MFD_DEV_WITH_ID(ALDO, 8),
--	MFD_DEV_WITH_ID(ALDO, 9),
--	MFD_DEV_WITH_ID(ALDO, 10),
--
--	/* ADC */
--	MFD_DEV_SIMPLE(ADC),
--
--	/* battery charger */
--	MFD_DEV_WITH_RESOURCE(CHARGER, chg_irqs, ARRAY_SIZE(chg_irqs)),
--
--	/* rtc */
--	MFD_DEV_WITH_RESOURCE(RTC, rtc_irqs, ARRAY_SIZE(rtc_irqs)),
--
--	/* backlight */
--	MFD_DEV_SIMPLE(BACKLIGHT),
--
--	/* current sink for vibrator */
--	MFD_DEV_SIMPLE(VIBRATOR),
--
--	/* current sink for keypad LED */
--	MFD_DEV_SIMPLE(KEYLED),
--};
--
--int lp8788_read_byte(struct lp8788 *lp, u8 reg, u8 *data)
+-static int __aat2870_read(struct aat2870_data *aat2870, u8 addr, u8 *val)
 -{
 -	int ret;
--	unsigned int val;
 -
--	ret = regmap_read(lp->regmap, reg, &val);
--	if (ret < 0) {
--		dev_err(lp->dev, "failed to read 0x%.2x\n", reg);
--		return ret;
--	}
--
--	*data = (u8)val;
--	return 0;
--}
--EXPORT_SYMBOL_GPL(lp8788_read_byte);
--
--int lp8788_read_multi_bytes(struct lp8788 *lp, u8 reg, u8 *data, size_t count)
--{
--	return regmap_bulk_read(lp->regmap, reg, data, count);
--}
--EXPORT_SYMBOL_GPL(lp8788_read_multi_bytes);
--
--int lp8788_write_byte(struct lp8788 *lp, u8 reg, u8 data)
--{
--	return regmap_write(lp->regmap, reg, data);
--}
--EXPORT_SYMBOL_GPL(lp8788_write_byte);
--
--int lp8788_update_bits(struct lp8788 *lp, u8 reg, u8 mask, u8 data)
--{
--	return regmap_update_bits(lp->regmap, reg, mask, data);
--}
--EXPORT_SYMBOL_GPL(lp8788_update_bits);
--
--static int lp8788_platform_init(struct lp8788 *lp)
--{
--	struct lp8788_platform_data *pdata = lp->pdata;
--
--	return (pdata && pdata->init_func) ? pdata->init_func(lp) : 0;
--}
--
--static const struct regmap_config lp8788_regmap_config = {
--	.reg_bits = 8,
--	.val_bits = 8,
--	.max_register = MAX_LP8788_REGISTERS,
--};
--
--static int lp8788_probe(struct i2c_client *cl)
--{
--	struct lp8788 *lp;
--	struct lp8788_platform_data *pdata = dev_get_platdata(&cl->dev);
--	int ret;
--
--	lp = devm_kzalloc(&cl->dev, sizeof(struct lp8788), GFP_KERNEL);
--	if (!lp)
--		return -ENOMEM;
--
--	lp->regmap = devm_regmap_init_i2c(cl, &lp8788_regmap_config);
--	if (IS_ERR(lp->regmap)) {
--		ret = PTR_ERR(lp->regmap);
--		dev_err(&cl->dev, "regmap init i2c err: %d\n", ret);
--		return ret;
--	}
--
--	lp->pdata = pdata;
--	lp->dev = &cl->dev;
--	i2c_set_clientdata(cl, lp);
--
--	ret = lp8788_platform_init(lp);
--	if (ret)
--		return ret;
--
--	ret = lp8788_irq_init(lp, cl->irq);
--	if (ret)
--		return ret;
--
--	ret = mfd_add_devices(lp->dev, -1, lp8788_devs,
--			      ARRAY_SIZE(lp8788_devs), NULL, 0, NULL);
--	if (ret)
--		goto err_exit_irq;
--
--	return 0;
--
--err_exit_irq:
--	lp8788_irq_exit(lp);
--	return ret;
--}
--
--static void lp8788_remove(struct i2c_client *cl)
--{
--	struct lp8788 *lp = i2c_get_clientdata(cl);
--
--	mfd_remove_devices(lp->dev);
--	lp8788_irq_exit(lp);
--}
--
--static const struct i2c_device_id lp8788_ids[] = {
--	{ "lp8788" },
--	{ }
--};
--MODULE_DEVICE_TABLE(i2c, lp8788_ids);
--
--static struct i2c_driver lp8788_driver = {
--	.driver = {
--		.name = "lp8788",
--	},
--	.probe = lp8788_probe,
--	.remove = lp8788_remove,
--	.id_table = lp8788_ids,
--};
--
--static int __init lp8788_init(void)
--{
--	return i2c_add_driver(&lp8788_driver);
--}
--subsys_initcall(lp8788_init);
--
--static void __exit lp8788_exit(void)
--{
--	i2c_del_driver(&lp8788_driver);
--}
--module_exit(lp8788_exit);
--
--MODULE_DESCRIPTION("TI LP8788 MFD Driver");
--MODULE_AUTHOR("Milo Kim");
-diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-index a492c86e879a..9bb2ac78dca9 100644
---- a/drivers/power/supply/Kconfig
-+++ b/drivers/power/supply/Kconfig
-@@ -555,14 +555,6 @@ config CHARGER_LP8727
- 	help
- 	  Say Y here to enable support for LP8727 Charger Driver.
- 
--config CHARGER_LP8788
--	tristate "TI LP8788 charger driver"
--	depends on MFD_LP8788
--	depends on LP8788_ADC
--	depends on IIO
--	help
--	  Say Y to enable support for the LP8788 linear charger.
--
- config CHARGER_GPIO
- 	tristate "GPIO charger"
- 	depends on GPIOLIB || COMPILE_TEST
-diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
-index 380546080112..76422bece94c 100644
---- a/drivers/power/supply/Makefile
-+++ b/drivers/power/supply/Makefile
-@@ -76,7 +76,6 @@ obj-$(CONFIG_CHARGER_MAX8903)	+= max8903_charger.o
- obj-$(CONFIG_CHARGER_TWL4030)	+= twl4030_charger.o
- obj-$(CONFIG_CHARGER_TWL6030)	+= twl6030_charger.o
- obj-$(CONFIG_CHARGER_LP8727)	+= lp8727_charger.o
--obj-$(CONFIG_CHARGER_LP8788)	+= lp8788-charger.o
- obj-$(CONFIG_CHARGER_GPIO)	+= gpio-charger.o
- obj-$(CONFIG_CHARGER_MANAGER)	+= charger-manager.o
- obj-$(CONFIG_CHARGER_LT3651)	+= lt3651-charger.o
-diff --git a/drivers/power/supply/lp8788-charger.c b/drivers/power/supply/lp8788-charger.c
-deleted file mode 100644
-index b8b74efc9671..000000000000
---- a/drivers/power/supply/lp8788-charger.c
-+++ /dev/null
-@@ -1,730 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-only
--/*
-- * TI LP8788 MFD - battery charger driver
-- *
-- * Copyright 2012 Texas Instruments
-- *
-- * Author: Milo(Woogyom) Kim <milo.kim@ti.com>
-- */
--
--#include <linux/err.h>
--#include <linux/iio/consumer.h>
--#include <linux/interrupt.h>
--#include <linux/irqdomain.h>
--#include <linux/mfd/lp8788.h>
--#include <linux/module.h>
--#include <linux/platform_device.h>
--#include <linux/power_supply.h>
--#include <linux/slab.h>
--#include <linux/workqueue.h>
--
--/* register address */
--#define LP8788_CHG_STATUS		0x07
--#define LP8788_CHG_IDCIN		0x13
--#define LP8788_CHG_IBATT		0x14
--#define LP8788_CHG_VTERM		0x15
--#define LP8788_CHG_EOC			0x16
--
--/* mask/shift bits */
--#define LP8788_CHG_INPUT_STATE_M	0x03	/* Addr 07h */
--#define LP8788_CHG_STATE_M		0x3C
--#define LP8788_CHG_STATE_S		2
--#define LP8788_NO_BATT_M		BIT(6)
--#define LP8788_BAD_BATT_M		BIT(7)
--#define LP8788_CHG_IBATT_M		0x1F	/* Addr 14h */
--#define LP8788_CHG_VTERM_M		0x0F	/* Addr 15h */
--#define LP8788_CHG_EOC_LEVEL_M		0x30	/* Addr 16h */
--#define LP8788_CHG_EOC_LEVEL_S		4
--#define LP8788_CHG_EOC_TIME_M		0x0E
--#define LP8788_CHG_EOC_TIME_S		1
--#define LP8788_CHG_EOC_MODE_M		BIT(0)
--
--#define LP8788_CHARGER_NAME		"charger"
--#define LP8788_BATTERY_NAME		"main_batt"
--
--#define LP8788_CHG_START		0x11
--#define LP8788_CHG_END			0x1C
--
--#define LP8788_ISEL_MAX			23
--#define LP8788_ISEL_STEP		50
--#define LP8788_VTERM_MIN		4100
--#define LP8788_VTERM_STEP		25
--#define LP8788_MAX_BATT_CAPACITY	100
--#define LP8788_MAX_CHG_IRQS		11
--
--enum lp8788_charging_state {
--	LP8788_OFF,
--	LP8788_WARM_UP,
--	LP8788_LOW_INPUT = 0x3,
--	LP8788_PRECHARGE,
--	LP8788_CC,
--	LP8788_CV,
--	LP8788_MAINTENANCE,
--	LP8788_BATTERY_FAULT,
--	LP8788_SYSTEM_SUPPORT = 0xC,
--	LP8788_HIGH_CURRENT = 0xF,
--	LP8788_MAX_CHG_STATE,
--};
--
--enum lp8788_charger_adc_sel {
--	LP8788_VBATT,
--	LP8788_BATT_TEMP,
--	LP8788_NUM_CHG_ADC,
--};
--
--enum lp8788_charger_input_state {
--	LP8788_SYSTEM_SUPPLY = 1,
--	LP8788_FULL_FUNCTION,
--};
--
--/*
-- * struct lp8788_chg_irq
-- * @which        : lp8788 interrupt id
-- * @virq         : Linux IRQ number from irq_domain
-- */
--struct lp8788_chg_irq {
--	enum lp8788_int_id which;
--	int virq;
--};
--
--/*
-- * struct lp8788_charger
-- * @lp           : used for accessing the registers of mfd lp8788 device
-- * @charger      : power supply driver for the battery charger
-- * @battery      : power supply driver for the battery
-- * @charger_work : work queue for charger input interrupts
-- * @chan         : iio channels for getting adc values
-- *                 eg) battery voltage, capacity and temperature
-- * @irqs         : charger dedicated interrupts
-- * @num_irqs     : total numbers of charger interrupts
-- * @pdata        : charger platform specific data
-- */
--struct lp8788_charger {
--	struct lp8788 *lp;
--	struct power_supply *charger;
--	struct power_supply *battery;
--	struct work_struct charger_work;
--	struct iio_channel *chan[LP8788_NUM_CHG_ADC];
--	struct lp8788_chg_irq irqs[LP8788_MAX_CHG_IRQS];
--	int num_irqs;
--	struct lp8788_charger_platform_data *pdata;
--};
--
--static char *battery_supplied_to[] = {
--	LP8788_BATTERY_NAME,
--};
--
--static enum power_supply_property lp8788_charger_prop[] = {
--	POWER_SUPPLY_PROP_ONLINE,
--	POWER_SUPPLY_PROP_CURRENT_MAX,
--};
--
--static enum power_supply_property lp8788_battery_prop[] = {
--	POWER_SUPPLY_PROP_STATUS,
--	POWER_SUPPLY_PROP_HEALTH,
--	POWER_SUPPLY_PROP_PRESENT,
--	POWER_SUPPLY_PROP_VOLTAGE_NOW,
--	POWER_SUPPLY_PROP_CAPACITY,
--	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT,
--	POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX,
--	POWER_SUPPLY_PROP_TEMP,
--};
--
--static bool lp8788_is_charger_detected(struct lp8788_charger *pchg)
--{
--	u8 data;
--
--	lp8788_read_byte(pchg->lp, LP8788_CHG_STATUS, &data);
--	data &= LP8788_CHG_INPUT_STATE_M;
--
--	return data == LP8788_SYSTEM_SUPPLY || data == LP8788_FULL_FUNCTION;
--}
--
--static int lp8788_charger_get_property(struct power_supply *psy,
--					enum power_supply_property psp,
--					union power_supply_propval *val)
--{
--	struct lp8788_charger *pchg = dev_get_drvdata(psy->dev.parent);
--	u8 read;
--
--	switch (psp) {
--	case POWER_SUPPLY_PROP_ONLINE:
--		val->intval = lp8788_is_charger_detected(pchg);
--		break;
--	case POWER_SUPPLY_PROP_CURRENT_MAX:
--		lp8788_read_byte(pchg->lp, LP8788_CHG_IDCIN, &read);
--		val->intval = LP8788_ISEL_STEP *
--				(min_t(int, read, LP8788_ISEL_MAX) + 1);
--		break;
--	default:
+-	if (addr >= AAT2870_REG_NUM) {
+-		dev_err(aat2870->dev, "Invalid address, 0x%02x\n", addr);
 -		return -EINVAL;
 -	}
 -
--	return 0;
--}
--
--static int lp8788_get_battery_status(struct lp8788_charger *pchg,
--				union power_supply_propval *val)
--{
--	enum lp8788_charging_state state;
--	u8 data;
--	int ret;
--
--	ret = lp8788_read_byte(pchg->lp, LP8788_CHG_STATUS, &data);
--	if (ret)
--		return ret;
--
--	state = (data & LP8788_CHG_STATE_M) >> LP8788_CHG_STATE_S;
--	switch (state) {
--	case LP8788_OFF:
--		val->intval = POWER_SUPPLY_STATUS_DISCHARGING;
--		break;
--	case LP8788_PRECHARGE:
--	case LP8788_CC:
--	case LP8788_CV:
--	case LP8788_HIGH_CURRENT:
--		val->intval = POWER_SUPPLY_STATUS_CHARGING;
--		break;
--	case LP8788_MAINTENANCE:
--		val->intval = POWER_SUPPLY_STATUS_FULL;
--		break;
--	default:
--		val->intval = POWER_SUPPLY_STATUS_NOT_CHARGING;
--		break;
+-	if (!aat2870->reg_cache[addr].readable) {
+-		*val = aat2870->reg_cache[addr].value;
+-		goto out;
 -	}
 -
--	return 0;
--}
--
--static int lp8788_get_battery_health(struct lp8788_charger *pchg,
--				union power_supply_propval *val)
--{
--	u8 data;
--	int ret;
--
--	ret = lp8788_read_byte(pchg->lp, LP8788_CHG_STATUS, &data);
--	if (ret)
--		return ret;
--
--	if (data & LP8788_NO_BATT_M)
--		val->intval = POWER_SUPPLY_HEALTH_UNSPEC_FAILURE;
--	else if (data & LP8788_BAD_BATT_M)
--		val->intval = POWER_SUPPLY_HEALTH_DEAD;
--	else
--		val->intval = POWER_SUPPLY_HEALTH_GOOD;
--
--	return 0;
--}
--
--static int lp8788_get_battery_present(struct lp8788_charger *pchg,
--				union power_supply_propval *val)
--{
--	u8 data;
--	int ret;
--
--	ret = lp8788_read_byte(pchg->lp, LP8788_CHG_STATUS, &data);
--	if (ret)
--		return ret;
--
--	val->intval = !(data & LP8788_NO_BATT_M);
--	return 0;
--}
--
--static int lp8788_get_vbatt_adc(struct lp8788_charger *pchg, int *result)
--{
--	struct iio_channel *channel = pchg->chan[LP8788_VBATT];
--
--	if (!channel)
--		return -EINVAL;
--
--	return iio_read_channel_processed(channel, result);
--}
--
--static int lp8788_get_battery_voltage(struct lp8788_charger *pchg,
--				union power_supply_propval *val)
--{
--	return lp8788_get_vbatt_adc(pchg, &val->intval);
--}
--
--static int lp8788_get_battery_capacity(struct lp8788_charger *pchg,
--				union power_supply_propval *val)
--{
--	struct lp8788 *lp = pchg->lp;
--	struct lp8788_charger_platform_data *pdata = pchg->pdata;
--	unsigned int max_vbatt;
--	int vbatt;
--	enum lp8788_charging_state state;
--	u8 data;
--	int ret;
--
--	if (!pdata)
--		return -EINVAL;
--
--	max_vbatt = pdata->max_vbatt_mv;
--	if (max_vbatt == 0)
--		return -EINVAL;
--
--	ret = lp8788_read_byte(lp, LP8788_CHG_STATUS, &data);
--	if (ret)
--		return ret;
--
--	state = (data & LP8788_CHG_STATE_M) >> LP8788_CHG_STATE_S;
--
--	if (state == LP8788_MAINTENANCE) {
--		val->intval = LP8788_MAX_BATT_CAPACITY;
--	} else {
--		ret = lp8788_get_vbatt_adc(pchg, &vbatt);
--		if (ret)
--			return ret;
--
--		val->intval = (vbatt * LP8788_MAX_BATT_CAPACITY) / max_vbatt;
--		val->intval = min(val->intval, LP8788_MAX_BATT_CAPACITY);
--	}
--
--	return 0;
--}
--
--static int lp8788_get_battery_temperature(struct lp8788_charger *pchg,
--				union power_supply_propval *val)
--{
--	struct iio_channel *channel = pchg->chan[LP8788_BATT_TEMP];
--	int result;
--	int ret;
--
--	if (!channel)
--		return -EINVAL;
--
--	ret = iio_read_channel_processed(channel, &result);
+-	ret = i2c_master_send(aat2870->client, &addr, 1);
 -	if (ret < 0)
--		return -EINVAL;
--
--	/* unit: 0.1 'C */
--	val->intval = result * 10;
--
--	return 0;
--}
--
--static int lp8788_get_battery_charging_current(struct lp8788_charger *pchg,
--				union power_supply_propval *val)
--{
--	u8 read;
--
--	lp8788_read_byte(pchg->lp, LP8788_CHG_IBATT, &read);
--	read &= LP8788_CHG_IBATT_M;
--	val->intval = LP8788_ISEL_STEP *
--			(min_t(int, read, LP8788_ISEL_MAX) + 1);
--
--	return 0;
--}
--
--static int lp8788_get_charging_termination_voltage(struct lp8788_charger *pchg,
--				union power_supply_propval *val)
--{
--	u8 read;
--
--	lp8788_read_byte(pchg->lp, LP8788_CHG_VTERM, &read);
--	read &= LP8788_CHG_VTERM_M;
--	val->intval = LP8788_VTERM_MIN + LP8788_VTERM_STEP * read;
--
--	return 0;
--}
--
--static int lp8788_battery_get_property(struct power_supply *psy,
--					enum power_supply_property psp,
--					union power_supply_propval *val)
--{
--	struct lp8788_charger *pchg = dev_get_drvdata(psy->dev.parent);
--
--	switch (psp) {
--	case POWER_SUPPLY_PROP_STATUS:
--		return lp8788_get_battery_status(pchg, val);
--	case POWER_SUPPLY_PROP_HEALTH:
--		return lp8788_get_battery_health(pchg, val);
--	case POWER_SUPPLY_PROP_PRESENT:
--		return lp8788_get_battery_present(pchg, val);
--	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
--		return lp8788_get_battery_voltage(pchg, val);
--	case POWER_SUPPLY_PROP_CAPACITY:
--		return lp8788_get_battery_capacity(pchg, val);
--	case POWER_SUPPLY_PROP_TEMP:
--		return lp8788_get_battery_temperature(pchg, val);
--	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT:
--		return lp8788_get_battery_charging_current(pchg, val);
--	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX:
--		return lp8788_get_charging_termination_voltage(pchg, val);
--	default:
--		return -EINVAL;
--	}
--}
--
--static inline bool lp8788_is_valid_charger_register(u8 addr)
--{
--	return addr >= LP8788_CHG_START && addr <= LP8788_CHG_END;
--}
--
--static int lp8788_update_charger_params(struct platform_device *pdev,
--					struct lp8788_charger *pchg)
--{
--	struct lp8788 *lp = pchg->lp;
--	struct lp8788_charger_platform_data *pdata = pchg->pdata;
--	struct lp8788_chg_param *param;
--	int i;
--	int ret;
--
--	if (!pdata || !pdata->chg_params) {
--		dev_info(&pdev->dev, "skip updating charger parameters\n");
--		return 0;
--	}
--
--	/* setting charging parameters */
--	for (i = 0; i < pdata->num_chg_params; i++) {
--		param = pdata->chg_params + i;
--
--		if (lp8788_is_valid_charger_register(param->addr)) {
--			ret = lp8788_write_byte(lp, param->addr, param->val);
--			if (ret)
--				return ret;
--		}
--	}
--
--	return 0;
--}
--
--static const struct power_supply_desc lp8788_psy_charger_desc = {
--	.name		= LP8788_CHARGER_NAME,
--	.type		= POWER_SUPPLY_TYPE_MAINS,
--	.properties	= lp8788_charger_prop,
--	.num_properties	= ARRAY_SIZE(lp8788_charger_prop),
--	.get_property	= lp8788_charger_get_property,
--};
--
--static const struct power_supply_desc lp8788_psy_battery_desc = {
--	.name		= LP8788_BATTERY_NAME,
--	.type		= POWER_SUPPLY_TYPE_BATTERY,
--	.properties	= lp8788_battery_prop,
--	.num_properties	= ARRAY_SIZE(lp8788_battery_prop),
--	.get_property	= lp8788_battery_get_property,
--};
--
--static void lp8788_charger_event(struct work_struct *work)
--{
--	struct lp8788_charger *pchg =
--		container_of(work, struct lp8788_charger, charger_work);
--	struct lp8788_charger_platform_data *pdata = pchg->pdata;
--	enum lp8788_charger_event event = lp8788_is_charger_detected(pchg);
--
--	pdata->charger_event(pchg->lp, event);
--}
--
--static bool lp8788_find_irq_id(struct lp8788_charger *pchg, int virq, int *id)
--{
--	bool found = false;
--	int i;
--
--	for (i = 0; i < pchg->num_irqs; i++) {
--		if (pchg->irqs[i].virq == virq) {
--			*id = pchg->irqs[i].which;
--			found = true;
--			break;
--		}
--	}
--
--	return found;
--}
--
--static irqreturn_t lp8788_charger_irq_thread(int virq, void *ptr)
--{
--	struct lp8788_charger *pchg = ptr;
--	struct lp8788_charger_platform_data *pdata = pchg->pdata;
--	int id = -1;
--
--	if (!lp8788_find_irq_id(pchg, virq, &id))
--		return IRQ_NONE;
--
--	switch (id) {
--	case LP8788_INT_CHG_INPUT_STATE:
--	case LP8788_INT_CHG_STATE:
--	case LP8788_INT_EOC:
--	case LP8788_INT_BATT_LOW:
--	case LP8788_INT_NO_BATT:
--		power_supply_changed(pchg->charger);
--		power_supply_changed(pchg->battery);
--		break;
--	default:
--		break;
--	}
--
--	/* report charger dectection event if used */
--	if (!pdata)
--		goto irq_handled;
--
--	if (pdata->charger_event && id == LP8788_INT_CHG_INPUT_STATE)
--		schedule_work(&pchg->charger_work);
--
--irq_handled:
--	return IRQ_HANDLED;
--}
--
--static int lp8788_set_irqs(struct platform_device *pdev,
--			struct lp8788_charger *pchg, const char *name)
--{
--	struct resource *r;
--	struct irq_domain *irqdm = pchg->lp->irqdm;
--	int irq_start;
--	int irq_end;
--	int virq;
--	int nr_irq;
--	int i;
--	int ret;
--
--	/* no error even if no irq resource */
--	r = platform_get_resource_byname(pdev, IORESOURCE_IRQ, name);
--	if (!r)
--		return 0;
--
--	irq_start = r->start;
--	irq_end = r->end;
--
--	for (i = irq_start; i <= irq_end; i++) {
--		nr_irq = pchg->num_irqs;
--
--		virq = irq_create_mapping(irqdm, i);
--		pchg->irqs[nr_irq].virq = virq;
--		pchg->irqs[nr_irq].which = i;
--		pchg->num_irqs++;
--
--		ret = request_threaded_irq(virq, NULL,
--					lp8788_charger_irq_thread,
--					IRQF_ONESHOT, name, pchg);
--		if (ret)
--			break;
--	}
--
--	if (i <= irq_end)
--		goto err_free_irq;
--
--	return 0;
--
--err_free_irq:
--	for (i = 0; i < pchg->num_irqs; i++)
--		free_irq(pchg->irqs[i].virq, pchg);
--	return ret;
--}
--
--static int lp8788_irq_register(struct platform_device *pdev,
--				struct lp8788_charger *pchg)
--{
--	static const char * const name[] = {
--		LP8788_CHG_IRQ, LP8788_PRSW_IRQ, LP8788_BATT_IRQ
--	};
--	int i;
--	int ret;
--
--	INIT_WORK(&pchg->charger_work, lp8788_charger_event);
--	pchg->num_irqs = 0;
--
--	for (i = 0; i < ARRAY_SIZE(name); i++) {
--		ret = lp8788_set_irqs(pdev, pchg, name[i]);
--		if (ret) {
--			dev_warn(&pdev->dev, "irq setup failed: %s\n", name[i]);
--			return ret;
--		}
--	}
--
--	if (pchg->num_irqs > LP8788_MAX_CHG_IRQS) {
--		dev_err(&pdev->dev, "invalid total number of irqs: %d\n",
--			pchg->num_irqs);
--		return -EINVAL;
--	}
--
--
--	return 0;
--}
--
--static void lp8788_irq_unregister(struct platform_device *pdev,
--				  struct lp8788_charger *pchg)
--{
--	int i;
--	int irq;
--
--	for (i = 0; i < pchg->num_irqs; i++) {
--		irq = pchg->irqs[i].virq;
--		if (!irq)
--			continue;
--
--		free_irq(irq, pchg);
--	}
--}
--
--static void lp8788_setup_adc_channel(struct device *dev,
--				struct lp8788_charger *pchg)
--{
--	struct lp8788_charger_platform_data *pdata = pchg->pdata;
--	struct iio_channel *chan;
--
--	if (!pdata)
--		return;
--
--	/* ADC channel for battery voltage */
--	chan = devm_iio_channel_get(dev, pdata->adc_vbatt);
--	pchg->chan[LP8788_VBATT] = IS_ERR(chan) ? NULL : chan;
--
--	/* ADC channel for battery temperature */
--	chan = devm_iio_channel_get(dev, pdata->adc_batt_temp);
--	pchg->chan[LP8788_BATT_TEMP] = IS_ERR(chan) ? NULL : chan;
--}
--
--static ssize_t lp8788_show_charger_status(struct device *dev,
--				struct device_attribute *attr, char *buf)
--{
--	struct lp8788_charger *pchg = dev_get_drvdata(dev);
--	enum lp8788_charging_state state;
--	static const char * const desc[LP8788_MAX_CHG_STATE] = {
--		[LP8788_OFF] = "CHARGER OFF",
--		[LP8788_WARM_UP] = "WARM UP",
--		[LP8788_LOW_INPUT] = "LOW INPUT STATE",
--		[LP8788_PRECHARGE] = "CHARGING - PRECHARGE",
--		[LP8788_CC] = "CHARGING - CC",
--		[LP8788_CV] = "CHARGING - CV",
--		[LP8788_MAINTENANCE] = "NO CHARGING - MAINTENANCE",
--		[LP8788_BATTERY_FAULT] = "BATTERY FAULT",
--		[LP8788_SYSTEM_SUPPORT] = "SYSTEM SUPPORT",
--		[LP8788_HIGH_CURRENT] = "HIGH CURRENT",
--	};
--	u8 data;
--
--	lp8788_read_byte(pchg->lp, LP8788_CHG_STATUS, &data);
--	state = (data & LP8788_CHG_STATE_M) >> LP8788_CHG_STATE_S;
--
--	return sysfs_emit(buf, "%s\n", desc[state]);
--}
--
--static ssize_t lp8788_show_eoc_time(struct device *dev,
--				struct device_attribute *attr, char *buf)
--{
--	struct lp8788_charger *pchg = dev_get_drvdata(dev);
--	static const char * const stime[] = {
--		"400ms", "5min", "10min", "15min",
--		"20min", "25min", "30min", "No timeout"
--	};
--	u8 val;
--
--	lp8788_read_byte(pchg->lp, LP8788_CHG_EOC, &val);
--	val = (val & LP8788_CHG_EOC_TIME_M) >> LP8788_CHG_EOC_TIME_S;
--
--	return sysfs_emit(buf, "End Of Charge Time: %s\n", stime[val]);
--}
--
--static ssize_t lp8788_show_eoc_level(struct device *dev,
--				struct device_attribute *attr, char *buf)
--{
--	struct lp8788_charger *pchg = dev_get_drvdata(dev);
--	static const char * const abs_level[] = {
--			"25mA", "49mA", "75mA", "98mA"
--	};
--	static const char * const relative_level[] = {
--			"5%", "10%", "15%", "20%"
--	};
--	const char *level;
--	u8 val;
--	u8 mode;
--
--	lp8788_read_byte(pchg->lp, LP8788_CHG_EOC, &val);
--
--	mode = val & LP8788_CHG_EOC_MODE_M;
--	val = (val & LP8788_CHG_EOC_LEVEL_M) >> LP8788_CHG_EOC_LEVEL_S;
--	level = mode ? abs_level[val] : relative_level[val];
--
--	return sysfs_emit(buf, "End Of Charge Level: %s\n", level);
--}
--
--static DEVICE_ATTR(charger_status, S_IRUSR, lp8788_show_charger_status, NULL);
--static DEVICE_ATTR(eoc_time, S_IRUSR, lp8788_show_eoc_time, NULL);
--static DEVICE_ATTR(eoc_level, S_IRUSR, lp8788_show_eoc_level, NULL);
--
--static struct attribute *lp8788_charger_sysfs_attrs[] = {
--	&dev_attr_charger_status.attr,
--	&dev_attr_eoc_time.attr,
--	&dev_attr_eoc_level.attr,
--	NULL,
--};
--
--ATTRIBUTE_GROUPS(lp8788_charger_sysfs);
--
--static int lp8788_psy_register(struct platform_device *pdev,
--				struct lp8788_charger *pchg)
--{
--	struct power_supply_config charger_cfg = {};
--
--	charger_cfg.attr_grp = lp8788_charger_sysfs_groups;
--	charger_cfg.supplied_to = battery_supplied_to;
--	charger_cfg.num_supplicants = ARRAY_SIZE(battery_supplied_to);
--
--	pchg->charger = devm_power_supply_register(&pdev->dev,
--						   &lp8788_psy_charger_desc,
--						   &charger_cfg);
--	if (IS_ERR(pchg->charger))
--		return -EPERM;
--
--	pchg->battery = devm_power_supply_register(&pdev->dev,
--						   &lp8788_psy_battery_desc, NULL);
--	if (IS_ERR(pchg->battery))
--		return -EPERM;
--
--	return 0;
--}
--
--static int lp8788_charger_probe(struct platform_device *pdev)
--{
--	struct lp8788 *lp = dev_get_drvdata(pdev->dev.parent);
--	struct lp8788_charger *pchg;
--	struct device *dev = &pdev->dev;
--	int ret;
--
--	pchg = devm_kzalloc(dev, sizeof(struct lp8788_charger), GFP_KERNEL);
--	if (!pchg)
--		return -ENOMEM;
--
--	pchg->lp = lp;
--	pchg->pdata = lp->pdata ? lp->pdata->chg_pdata : NULL;
--	platform_set_drvdata(pdev, pchg);
--
--	ret = lp8788_update_charger_params(pdev, pchg);
--	if (ret)
 -		return ret;
--
--	lp8788_setup_adc_channel(&pdev->dev, pchg);
--
--	ret = lp8788_psy_register(pdev, pchg);
--	if (ret)
--		return ret;
--
--	ret = lp8788_irq_register(pdev, pchg);
--	if (ret)
--		dev_warn(dev, "failed to register charger irq: %d\n", ret);
--
--	return 0;
--}
--
--static void lp8788_charger_remove(struct platform_device *pdev)
--{
--	struct lp8788_charger *pchg = platform_get_drvdata(pdev);
--
--	lp8788_irq_unregister(pdev, pchg);
--	cancel_work_sync(&pchg->charger_work);
--}
--
--static struct platform_driver lp8788_charger_driver = {
--	.probe = lp8788_charger_probe,
--	.remove = lp8788_charger_remove,
--	.driver = {
--		.name = LP8788_DEV_CHARGER,
--	},
--};
--module_platform_driver(lp8788_charger_driver);
--
--MODULE_DESCRIPTION("TI LP8788 Charger Driver");
--MODULE_AUTHOR("Milo Kim");
--MODULE_LICENSE("GPL");
--MODULE_ALIAS("platform:lp8788-charger");
--MODULE_IMPORT_NS("IIO_CONSUMER");
-diff --git a/drivers/regulator/Kconfig b/drivers/regulator/Kconfig
-index 7d587ffc0a89..4b90d1cb045c 100644
---- a/drivers/regulator/Kconfig
-+++ b/drivers/regulator/Kconfig
-@@ -555,12 +555,6 @@ config REGULATOR_LP87565
- 	  provides four step-down converters. It supports software based
- 	  voltage control for different voltage domains
- 
--config REGULATOR_LP8788
--	tristate "TI LP8788 Power Regulators"
--	depends on MFD_LP8788
--	help
--	  This driver supports LP8788 voltage regulator chip.
--
- config REGULATOR_LTC3589
- 	tristate "LTC3589 8-output voltage regulator"
- 	depends on I2C
-diff --git a/drivers/regulator/Makefile b/drivers/regulator/Makefile
-index a1344d3c3fd3..fe0f099c217b 100644
---- a/drivers/regulator/Makefile
-+++ b/drivers/regulator/Makefile
-@@ -65,8 +65,6 @@ obj-$(CONFIG_REGULATOR_LP3972) += lp3972.o
- obj-$(CONFIG_REGULATOR_LP872X) += lp872x.o
- obj-$(CONFIG_REGULATOR_LP873X) += lp873x-regulator.o
- obj-$(CONFIG_REGULATOR_LP87565) += lp87565-regulator.o
--obj-$(CONFIG_REGULATOR_LP8788) += lp8788-buck.o
--obj-$(CONFIG_REGULATOR_LP8788) += lp8788-ldo.o
- obj-$(CONFIG_REGULATOR_LP8755) += lp8755.o
- obj-$(CONFIG_REGULATOR_LTC3589) += ltc3589.o
- obj-$(CONFIG_REGULATOR_LTC3676) += ltc3676.o
-diff --git a/drivers/regulator/lp8788-buck.c b/drivers/regulator/lp8788-buck.c
-deleted file mode 100644
-index 2ade249ab6df..000000000000
---- a/drivers/regulator/lp8788-buck.c
-+++ /dev/null
-@@ -1,541 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-only
--/*
-- * TI LP8788 MFD - buck regulator driver
-- *
-- * Copyright 2012 Texas Instruments
-- *
-- * Author: Milo(Woogyom) Kim <milo.kim@ti.com>
-- */
--
--#include <linux/module.h>
--#include <linux/slab.h>
--#include <linux/err.h>
--#include <linux/platform_device.h>
--#include <linux/regulator/driver.h>
--#include <linux/mfd/lp8788.h>
--#include <linux/gpio/consumer.h>
--
--/* register address */
--#define LP8788_EN_BUCK			0x0C
--#define LP8788_BUCK_DVS_SEL		0x1D
--#define LP8788_BUCK1_VOUT0		0x1E
--#define LP8788_BUCK1_VOUT1		0x1F
--#define LP8788_BUCK1_VOUT2		0x20
--#define LP8788_BUCK1_VOUT3		0x21
--#define LP8788_BUCK2_VOUT0		0x22
--#define LP8788_BUCK2_VOUT1		0x23
--#define LP8788_BUCK2_VOUT2		0x24
--#define LP8788_BUCK2_VOUT3		0x25
--#define LP8788_BUCK3_VOUT		0x26
--#define LP8788_BUCK4_VOUT		0x27
--#define LP8788_BUCK1_TIMESTEP		0x28
--#define LP8788_BUCK_PWM			0x2D
--
--/* mask/shift bits */
--#define LP8788_EN_BUCK1_M		BIT(0)	/* Addr 0Ch */
--#define LP8788_EN_BUCK2_M		BIT(1)
--#define LP8788_EN_BUCK3_M		BIT(2)
--#define LP8788_EN_BUCK4_M		BIT(3)
--#define LP8788_BUCK1_DVS_SEL_M		0x04	/* Addr 1Dh */
--#define LP8788_BUCK1_DVS_M		0x03
--#define LP8788_BUCK1_DVS_S		0
--#define LP8788_BUCK2_DVS_SEL_M		0x40
--#define LP8788_BUCK2_DVS_M		0x30
--#define LP8788_BUCK2_DVS_S		4
--#define LP8788_BUCK1_DVS_I2C		BIT(2)
--#define LP8788_BUCK2_DVS_I2C		BIT(6)
--#define LP8788_BUCK1_DVS_PIN		(0 << 2)
--#define LP8788_BUCK2_DVS_PIN		(0 << 6)
--#define LP8788_VOUT_M			0x1F	/* Addr 1Eh ~ 27h */
--#define LP8788_STARTUP_TIME_M		0xF8	/* Addr 28h ~ 2Bh */
--#define LP8788_STARTUP_TIME_S		3
--#define LP8788_FPWM_BUCK1_M		BIT(0)	/* Addr 2Dh */
--#define LP8788_FPWM_BUCK1_S		0
--#define LP8788_FPWM_BUCK2_M		BIT(1)
--#define LP8788_FPWM_BUCK2_S		1
--#define LP8788_FPWM_BUCK3_M		BIT(2)
--#define LP8788_FPWM_BUCK3_S		2
--#define LP8788_FPWM_BUCK4_M		BIT(3)
--#define LP8788_FPWM_BUCK4_S		3
--
--#define INVALID_ADDR			0xFF
--#define LP8788_FORCE_PWM		1
--#define LP8788_AUTO_PWM			0
--#define PIN_LOW				0
--#define PIN_HIGH			1
--#define ENABLE_TIME_USEC		32
--
--#define BUCK_FPWM_MASK(x)		(1 << (x))
--#define BUCK_FPWM_SHIFT(x)		(x)
--
--enum lp8788_dvs_state {
--	DVS_LOW  = 0,
--	DVS_HIGH = 1,
--};
--
--enum lp8788_dvs_mode {
--	REGISTER,
--	EXTPIN,
--};
--
--enum lp8788_buck_id {
--	BUCK1,
--	BUCK2,
--	BUCK3,
--	BUCK4,
--};
--
--struct lp8788_buck {
--	struct lp8788 *lp;
--	struct regulator_dev *regulator;
--	void *dvs;
--	struct gpio_desc *gpio1;
--	struct gpio_desc *gpio2; /* Only used on BUCK2 */
--};
--
--/* BUCK 1 ~ 4 voltage ranges */
--static const struct linear_range buck_volt_ranges[] = {
--	REGULATOR_LINEAR_RANGE(500000, 0, 0, 0),
--	REGULATOR_LINEAR_RANGE(800000, 1, 25, 50000),
--};
--
--static void lp8788_buck1_set_dvs(struct lp8788_buck *buck)
--{
--	struct lp8788_buck1_dvs *dvs = (struct lp8788_buck1_dvs *)buck->dvs;
--	enum lp8788_dvs_state pinstate;
--
--	if (!dvs)
--		return;
--
--	pinstate = dvs->vsel == DVS_SEL_V0 ? DVS_LOW : DVS_HIGH;
--	gpiod_set_value(buck->gpio1, pinstate);
--}
--
--static void lp8788_buck2_set_dvs(struct lp8788_buck *buck)
--{
--	struct lp8788_buck2_dvs *dvs = (struct lp8788_buck2_dvs *)buck->dvs;
--	enum lp8788_dvs_state pin1, pin2;
--
--	if (!dvs)
--		return;
--
--	switch (dvs->vsel) {
--	case DVS_SEL_V0:
--		pin1 = DVS_LOW;
--		pin2 = DVS_LOW;
--		break;
--	case DVS_SEL_V1:
--		pin1 = DVS_HIGH;
--		pin2 = DVS_LOW;
--		break;
--	case DVS_SEL_V2:
--		pin1 = DVS_LOW;
--		pin2 = DVS_HIGH;
--		break;
--	case DVS_SEL_V3:
--		pin1 = DVS_HIGH;
--		pin2 = DVS_HIGH;
--		break;
--	default:
--		return;
--	}
--
--	gpiod_set_value(buck->gpio1, pin1);
--	gpiod_set_value(buck->gpio2, pin2);
--}
--
--static void lp8788_set_dvs(struct lp8788_buck *buck, enum lp8788_buck_id id)
--{
--	switch (id) {
--	case BUCK1:
--		lp8788_buck1_set_dvs(buck);
--		break;
--	case BUCK2:
--		lp8788_buck2_set_dvs(buck);
--		break;
--	default:
--		break;
--	}
--}
--
--static enum lp8788_dvs_mode
--lp8788_get_buck_dvs_ctrl_mode(struct lp8788_buck *buck, enum lp8788_buck_id id)
--{
--	u8 val, mask;
--
--	switch (id) {
--	case BUCK1:
--		mask = LP8788_BUCK1_DVS_SEL_M;
--		break;
--	case BUCK2:
--		mask = LP8788_BUCK2_DVS_SEL_M;
--		break;
--	default:
--		return REGISTER;
--	}
--
--	lp8788_read_byte(buck->lp, LP8788_BUCK_DVS_SEL, &val);
--
--	return val & mask ? REGISTER : EXTPIN;
--}
--
--static bool lp8788_is_valid_buck_addr(u8 addr)
--{
--	switch (addr) {
--	case LP8788_BUCK1_VOUT0:
--	case LP8788_BUCK1_VOUT1:
--	case LP8788_BUCK1_VOUT2:
--	case LP8788_BUCK1_VOUT3:
--	case LP8788_BUCK2_VOUT0:
--	case LP8788_BUCK2_VOUT1:
--	case LP8788_BUCK2_VOUT2:
--	case LP8788_BUCK2_VOUT3:
--		return true;
--	default:
--		return false;
--	}
--}
--
--static u8 lp8788_select_buck_vout_addr(struct lp8788_buck *buck,
--					enum lp8788_buck_id id)
--{
--	enum lp8788_dvs_mode mode = lp8788_get_buck_dvs_ctrl_mode(buck, id);
--	u8 val, idx, addr;
--	int pin1, pin2;
--
--	switch (id) {
--	case BUCK1:
--		if (mode == EXTPIN) {
--			idx = gpiod_get_value(buck->gpio1);
--		} else {
--			lp8788_read_byte(buck->lp, LP8788_BUCK_DVS_SEL, &val);
--			idx = (val & LP8788_BUCK1_DVS_M) >> LP8788_BUCK1_DVS_S;
--		}
--		addr = LP8788_BUCK1_VOUT0 + idx;
--		break;
--	case BUCK2:
--		if (mode == EXTPIN) {
--			pin1 = gpiod_get_value(buck->gpio1);
--			pin2 = gpiod_get_value(buck->gpio2);
--
--			if (pin1 == PIN_LOW && pin2 == PIN_LOW)
--				idx = 0;
--			else if (pin1 == PIN_LOW && pin2 == PIN_HIGH)
--				idx = 2;
--			else if (pin1 == PIN_HIGH && pin2 == PIN_LOW)
--				idx = 1;
--			else
--				idx = 3;
--		} else {
--			lp8788_read_byte(buck->lp, LP8788_BUCK_DVS_SEL, &val);
--			idx = (val & LP8788_BUCK2_DVS_M) >> LP8788_BUCK2_DVS_S;
--		}
--		addr = LP8788_BUCK2_VOUT0 + idx;
--		break;
--	default:
--		goto err;
--	}
--
--	return addr;
--err:
--	return INVALID_ADDR;
--}
--
--static int lp8788_buck12_set_voltage_sel(struct regulator_dev *rdev,
--					unsigned selector)
--{
--	struct lp8788_buck *buck = rdev_get_drvdata(rdev);
--	enum lp8788_buck_id id = rdev_get_id(rdev);
--	u8 addr;
--
--	if (buck->dvs)
--		lp8788_set_dvs(buck, id);
--
--	addr = lp8788_select_buck_vout_addr(buck, id);
--	if (!lp8788_is_valid_buck_addr(addr))
--		return -EINVAL;
--
--	return lp8788_update_bits(buck->lp, addr, LP8788_VOUT_M, selector);
--}
--
--static int lp8788_buck12_get_voltage_sel(struct regulator_dev *rdev)
--{
--	struct lp8788_buck *buck = rdev_get_drvdata(rdev);
--	enum lp8788_buck_id id = rdev_get_id(rdev);
--	int ret;
--	u8 val, addr;
--
--	addr = lp8788_select_buck_vout_addr(buck, id);
--	if (!lp8788_is_valid_buck_addr(addr))
--		return -EINVAL;
--
--	ret = lp8788_read_byte(buck->lp, addr, &val);
--	if (ret)
--		return ret;
--
--	return val & LP8788_VOUT_M;
--}
--
--static int lp8788_buck_enable_time(struct regulator_dev *rdev)
--{
--	struct lp8788_buck *buck = rdev_get_drvdata(rdev);
--	enum lp8788_buck_id id = rdev_get_id(rdev);
--	u8 val, addr = LP8788_BUCK1_TIMESTEP + id;
--
--	if (lp8788_read_byte(buck->lp, addr, &val))
--		return -EINVAL;
--
--	val = (val & LP8788_STARTUP_TIME_M) >> LP8788_STARTUP_TIME_S;
--
--	return ENABLE_TIME_USEC * val;
--}
--
--static int lp8788_buck_set_mode(struct regulator_dev *rdev, unsigned int mode)
--{
--	struct lp8788_buck *buck = rdev_get_drvdata(rdev);
--	enum lp8788_buck_id id = rdev_get_id(rdev);
--	u8 mask, val;
--
--	mask = BUCK_FPWM_MASK(id);
--	switch (mode) {
--	case REGULATOR_MODE_FAST:
--		val = LP8788_FORCE_PWM << BUCK_FPWM_SHIFT(id);
--		break;
--	case REGULATOR_MODE_NORMAL:
--		val = LP8788_AUTO_PWM << BUCK_FPWM_SHIFT(id);
--		break;
--	default:
--		return -EINVAL;
--	}
--
--	return lp8788_update_bits(buck->lp, LP8788_BUCK_PWM, mask, val);
--}
--
--static unsigned int lp8788_buck_get_mode(struct regulator_dev *rdev)
--{
--	struct lp8788_buck *buck = rdev_get_drvdata(rdev);
--	enum lp8788_buck_id id = rdev_get_id(rdev);
--	u8 val;
--	int ret;
--
--	ret = lp8788_read_byte(buck->lp, LP8788_BUCK_PWM, &val);
--	if (ret)
--		return ret;
--
--	return val & BUCK_FPWM_MASK(id) ?
--				REGULATOR_MODE_FAST : REGULATOR_MODE_NORMAL;
--}
--
--static const struct regulator_ops lp8788_buck12_ops = {
--	.list_voltage = regulator_list_voltage_linear_range,
--	.map_voltage = regulator_map_voltage_linear_range,
--	.set_voltage_sel = lp8788_buck12_set_voltage_sel,
--	.get_voltage_sel = lp8788_buck12_get_voltage_sel,
--	.enable = regulator_enable_regmap,
--	.disable = regulator_disable_regmap,
--	.is_enabled = regulator_is_enabled_regmap,
--	.enable_time = lp8788_buck_enable_time,
--	.set_mode = lp8788_buck_set_mode,
--	.get_mode = lp8788_buck_get_mode,
--};
--
--static const struct regulator_ops lp8788_buck34_ops = {
--	.list_voltage = regulator_list_voltage_linear_range,
--	.map_voltage = regulator_map_voltage_linear_range,
--	.set_voltage_sel = regulator_set_voltage_sel_regmap,
--	.get_voltage_sel = regulator_get_voltage_sel_regmap,
--	.enable = regulator_enable_regmap,
--	.disable = regulator_disable_regmap,
--	.is_enabled = regulator_is_enabled_regmap,
--	.enable_time = lp8788_buck_enable_time,
--	.set_mode = lp8788_buck_set_mode,
--	.get_mode = lp8788_buck_get_mode,
--};
--
--static const struct regulator_desc lp8788_buck_desc[] = {
--	{
--		.name = "buck1",
--		.id = BUCK1,
--		.ops = &lp8788_buck12_ops,
--		.n_voltages = 26,
--		.linear_ranges = buck_volt_ranges,
--		.n_linear_ranges = ARRAY_SIZE(buck_volt_ranges),
--		.type = REGULATOR_VOLTAGE,
--		.owner = THIS_MODULE,
--		.enable_reg = LP8788_EN_BUCK,
--		.enable_mask = LP8788_EN_BUCK1_M,
--	},
--	{
--		.name = "buck2",
--		.id = BUCK2,
--		.ops = &lp8788_buck12_ops,
--		.n_voltages = 26,
--		.linear_ranges = buck_volt_ranges,
--		.n_linear_ranges = ARRAY_SIZE(buck_volt_ranges),
--		.type = REGULATOR_VOLTAGE,
--		.owner = THIS_MODULE,
--		.enable_reg = LP8788_EN_BUCK,
--		.enable_mask = LP8788_EN_BUCK2_M,
--	},
--	{
--		.name = "buck3",
--		.id = BUCK3,
--		.ops = &lp8788_buck34_ops,
--		.n_voltages = 26,
--		.linear_ranges = buck_volt_ranges,
--		.n_linear_ranges = ARRAY_SIZE(buck_volt_ranges),
--		.type = REGULATOR_VOLTAGE,
--		.owner = THIS_MODULE,
--		.vsel_reg = LP8788_BUCK3_VOUT,
--		.vsel_mask = LP8788_VOUT_M,
--		.enable_reg = LP8788_EN_BUCK,
--		.enable_mask = LP8788_EN_BUCK3_M,
--	},
--	{
--		.name = "buck4",
--		.id = BUCK4,
--		.ops = &lp8788_buck34_ops,
--		.n_voltages = 26,
--		.linear_ranges = buck_volt_ranges,
--		.n_linear_ranges = ARRAY_SIZE(buck_volt_ranges),
--		.type = REGULATOR_VOLTAGE,
--		.owner = THIS_MODULE,
--		.vsel_reg = LP8788_BUCK4_VOUT,
--		.vsel_mask = LP8788_VOUT_M,
--		.enable_reg = LP8788_EN_BUCK,
--		.enable_mask = LP8788_EN_BUCK4_M,
--	},
--};
--
--static int lp8788_dvs_gpio_request(struct platform_device *pdev,
--				struct lp8788_buck *buck,
--				enum lp8788_buck_id id)
--{
--	struct lp8788_platform_data *pdata = buck->lp->pdata;
--	struct device *dev = &pdev->dev;
--
--	switch (id) {
--	case BUCK1:
--		buck->gpio1 = devm_gpiod_get(dev, "dvs", GPIOD_OUT_LOW);
--		if (IS_ERR(buck->gpio1))
--			return PTR_ERR(buck->gpio1);
--		gpiod_set_consumer_name(buck->gpio1, "LP8788_B1_DVS");
--
--		buck->dvs = pdata->buck1_dvs;
--		break;
--	case BUCK2:
--		buck->gpio1 = devm_gpiod_get_index(dev, "dvs", 0, GPIOD_OUT_LOW);
--		if (IS_ERR(buck->gpio1))
--			return PTR_ERR(buck->gpio1);
--		gpiod_set_consumer_name(buck->gpio1, "LP8788_B2_DVS1");
--
--		buck->gpio2 = devm_gpiod_get_index(dev, "dvs", 1, GPIOD_OUT_LOW);
--		if (IS_ERR(buck->gpio2))
--			return PTR_ERR(buck->gpio2);
--		gpiod_set_consumer_name(buck->gpio2, "LP8788_B2_DVS2");
--
--		buck->dvs = pdata->buck2_dvs;
--		break;
--	default:
--		break;
--	}
--
--	return 0;
--}
--
--static int lp8788_init_dvs(struct platform_device *pdev,
--			struct lp8788_buck *buck, enum lp8788_buck_id id)
--{
--	struct lp8788_platform_data *pdata = buck->lp->pdata;
--	u8 mask[] = { LP8788_BUCK1_DVS_SEL_M, LP8788_BUCK2_DVS_SEL_M };
--	u8 val[]  = { LP8788_BUCK1_DVS_PIN, LP8788_BUCK2_DVS_PIN };
--	u8 default_dvs_mode[] = { LP8788_BUCK1_DVS_I2C, LP8788_BUCK2_DVS_I2C };
--
--	/* no dvs for buck3, 4 */
--	if (id > BUCK2)
--		return 0;
--
--	/* no dvs platform data, then dvs will be selected by I2C registers */
--	if (!pdata)
--		goto set_default_dvs_mode;
--
--	if ((id == BUCK1 && !pdata->buck1_dvs) ||
--		(id == BUCK2 && !pdata->buck2_dvs))
--		goto set_default_dvs_mode;
--
--	if (lp8788_dvs_gpio_request(pdev, buck, id))
--		goto set_default_dvs_mode;
--
--	return lp8788_update_bits(buck->lp, LP8788_BUCK_DVS_SEL, mask[id],
--				val[id]);
--
--set_default_dvs_mode:
--	return lp8788_update_bits(buck->lp, LP8788_BUCK_DVS_SEL, mask[id],
--				  default_dvs_mode[id]);
--}
--
--static int lp8788_buck_probe(struct platform_device *pdev)
--{
--	struct lp8788 *lp = dev_get_drvdata(pdev->dev.parent);
--	int id = pdev->id;
--	struct lp8788_buck *buck;
--	struct regulator_config cfg = { };
--	struct regulator_dev *rdev;
--	int ret;
--
--	if (id >= LP8788_NUM_BUCKS)
--		return -EINVAL;
--
--	buck = devm_kzalloc(&pdev->dev, sizeof(struct lp8788_buck), GFP_KERNEL);
--	if (!buck)
--		return -ENOMEM;
--
--	buck->lp = lp;
--
--	ret = lp8788_init_dvs(pdev, buck, id);
--	if (ret)
--		return ret;
--
--	cfg.dev = pdev->dev.parent;
--	cfg.init_data = lp->pdata ? lp->pdata->buck_data[id] : NULL;
--	cfg.driver_data = buck;
--	cfg.regmap = lp->regmap;
--
--	rdev = devm_regulator_register(&pdev->dev, &lp8788_buck_desc[id], &cfg);
--	if (IS_ERR(rdev)) {
--		ret = PTR_ERR(rdev);
--		dev_err(&pdev->dev, "BUCK%d regulator register err = %d\n",
--				id + 1, ret);
--		return ret;
--	}
--
--	buck->regulator = rdev;
--	platform_set_drvdata(pdev, buck);
--
--	return 0;
--}
--
--static struct platform_driver lp8788_buck_driver = {
--	.probe = lp8788_buck_probe,
--	.driver = {
--		.name = LP8788_DEV_BUCK,
--		.probe_type = PROBE_PREFER_ASYNCHRONOUS,
--	},
--};
--
--static int __init lp8788_buck_init(void)
--{
--	return platform_driver_register(&lp8788_buck_driver);
--}
--subsys_initcall(lp8788_buck_init);
--
--static void __exit lp8788_buck_exit(void)
--{
--	platform_driver_unregister(&lp8788_buck_driver);
--}
--module_exit(lp8788_buck_exit);
--
--MODULE_DESCRIPTION("TI LP8788 BUCK Driver");
--MODULE_AUTHOR("Milo Kim");
--MODULE_LICENSE("GPL");
--MODULE_ALIAS("platform:lp8788-buck");
-diff --git a/drivers/regulator/lp8788-ldo.c b/drivers/regulator/lp8788-ldo.c
-deleted file mode 100644
-index 8e45b7b99556..000000000000
---- a/drivers/regulator/lp8788-ldo.c
-+++ /dev/null
-@@ -1,640 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-only
--/*
-- * TI LP8788 MFD - ldo regulator driver
-- *
-- * Copyright 2012 Texas Instruments
-- *
-- * Author: Milo(Woogyom) Kim <milo.kim@ti.com>
-- */
--
--#include <linux/module.h>
--#include <linux/slab.h>
--#include <linux/err.h>
--#include <linux/platform_device.h>
--#include <linux/regulator/driver.h>
--#include <linux/gpio/consumer.h>
--#include <linux/mfd/lp8788.h>
--
--/* register address */
--#define LP8788_EN_LDO_A			0x0D	/* DLDO 1 ~ 8 */
--#define LP8788_EN_LDO_B			0x0E	/* DLDO 9 ~ 12, ALDO 1 ~ 4 */
--#define LP8788_EN_LDO_C			0x0F	/* ALDO 5 ~ 10 */
--#define LP8788_EN_SEL			0x10
--#define LP8788_DLDO1_VOUT		0x2E
--#define LP8788_DLDO2_VOUT		0x2F
--#define LP8788_DLDO3_VOUT		0x30
--#define LP8788_DLDO4_VOUT		0x31
--#define LP8788_DLDO5_VOUT		0x32
--#define LP8788_DLDO6_VOUT		0x33
--#define LP8788_DLDO7_VOUT		0x34
--#define LP8788_DLDO8_VOUT		0x35
--#define LP8788_DLDO9_VOUT		0x36
--#define LP8788_DLDO10_VOUT		0x37
--#define LP8788_DLDO11_VOUT		0x38
--#define LP8788_DLDO12_VOUT		0x39
--#define LP8788_ALDO1_VOUT		0x3A
--#define LP8788_ALDO2_VOUT		0x3B
--#define LP8788_ALDO3_VOUT		0x3C
--#define LP8788_ALDO4_VOUT		0x3D
--#define LP8788_ALDO5_VOUT		0x3E
--#define LP8788_ALDO6_VOUT		0x3F
--#define LP8788_ALDO7_VOUT		0x40
--#define LP8788_ALDO8_VOUT		0x41
--#define LP8788_ALDO9_VOUT		0x42
--#define LP8788_ALDO10_VOUT		0x43
--#define LP8788_DLDO1_TIMESTEP		0x44
--
--/* mask/shift bits */
--#define LP8788_EN_DLDO1_M		BIT(0)	/* Addr 0Dh ~ 0Fh */
--#define LP8788_EN_DLDO2_M		BIT(1)
--#define LP8788_EN_DLDO3_M		BIT(2)
--#define LP8788_EN_DLDO4_M		BIT(3)
--#define LP8788_EN_DLDO5_M		BIT(4)
--#define LP8788_EN_DLDO6_M		BIT(5)
--#define LP8788_EN_DLDO7_M		BIT(6)
--#define LP8788_EN_DLDO8_M		BIT(7)
--#define LP8788_EN_DLDO9_M		BIT(0)
--#define LP8788_EN_DLDO10_M		BIT(1)
--#define LP8788_EN_DLDO11_M		BIT(2)
--#define LP8788_EN_DLDO12_M		BIT(3)
--#define LP8788_EN_ALDO1_M		BIT(4)
--#define LP8788_EN_ALDO2_M		BIT(5)
--#define LP8788_EN_ALDO3_M		BIT(6)
--#define LP8788_EN_ALDO4_M		BIT(7)
--#define LP8788_EN_ALDO5_M		BIT(0)
--#define LP8788_EN_ALDO6_M		BIT(1)
--#define LP8788_EN_ALDO7_M		BIT(2)
--#define LP8788_EN_ALDO8_M		BIT(3)
--#define LP8788_EN_ALDO9_M		BIT(4)
--#define LP8788_EN_ALDO10_M		BIT(5)
--#define LP8788_EN_SEL_DLDO911_M		BIT(0)	/* Addr 10h */
--#define LP8788_EN_SEL_DLDO7_M		BIT(1)
--#define LP8788_EN_SEL_ALDO7_M		BIT(2)
--#define LP8788_EN_SEL_ALDO5_M		BIT(3)
--#define LP8788_EN_SEL_ALDO234_M		BIT(4)
--#define LP8788_EN_SEL_ALDO1_M		BIT(5)
--#define LP8788_VOUT_5BIT_M		0x1F	/* Addr 2Eh ~ 43h */
--#define LP8788_VOUT_4BIT_M		0x0F
--#define LP8788_VOUT_3BIT_M		0x07
--#define LP8788_VOUT_1BIT_M		0x01
--#define LP8788_STARTUP_TIME_M		0xF8	/* Addr 44h ~ 59h */
--#define LP8788_STARTUP_TIME_S		3
--
--#define ENABLE_TIME_USEC		32
--
--enum lp8788_ldo_id {
--	DLDO1,
--	DLDO2,
--	DLDO3,
--	DLDO4,
--	DLDO5,
--	DLDO6,
--	DLDO7,
--	DLDO8,
--	DLDO9,
--	DLDO10,
--	DLDO11,
--	DLDO12,
--	ALDO1,
--	ALDO2,
--	ALDO3,
--	ALDO4,
--	ALDO5,
--	ALDO6,
--	ALDO7,
--	ALDO8,
--	ALDO9,
--	ALDO10,
--};
--
--struct lp8788_ldo {
--	struct lp8788 *lp;
--	struct regulator_desc *desc;
--	struct regulator_dev *regulator;
--	struct gpio_desc *ena_gpiod;
--};
--
--/* DLDO 1, 2, 3, 9 voltage table */
--static const int lp8788_dldo1239_vtbl[] = {
--	1800000, 1900000, 2000000, 2100000, 2200000, 2300000, 2400000, 2500000,
--	2600000, 2700000, 2800000, 2900000, 3000000, 2850000, 2850000, 2850000,
--	2850000, 2850000, 2850000, 2850000, 2850000, 2850000, 2850000, 2850000,
--	2850000, 2850000, 2850000, 2850000, 2850000, 2850000, 2850000, 2850000,
--};
--
--/* DLDO 4 voltage table */
--static const int lp8788_dldo4_vtbl[] = { 1800000, 3000000 };
--
--/* DLDO 5, 7, 8 and ALDO 6 voltage table */
--static const int lp8788_dldo578_aldo6_vtbl[] = {
--	1800000, 1900000, 2000000, 2100000, 2200000, 2300000, 2400000, 2500000,
--	2600000, 2700000, 2800000, 2900000, 3000000, 3000000, 3000000, 3000000,
--};
--
--/* DLDO 6 voltage table */
--static const int lp8788_dldo6_vtbl[] = {
--	3000000, 3100000, 3200000, 3300000, 3400000, 3500000, 3600000, 3600000,
--};
--
--/* DLDO 10, 11 voltage table */
--static const int lp8788_dldo1011_vtbl[] = {
--	1100000, 1150000, 1200000, 1250000, 1300000, 1350000, 1400000, 1450000,
--	1500000, 1500000, 1500000, 1500000, 1500000, 1500000, 1500000, 1500000,
--};
--
--/* ALDO 1 voltage table */
--static const int lp8788_aldo1_vtbl[] = { 1800000, 2850000 };
--
--/* ALDO 7 voltage table */
--static const int lp8788_aldo7_vtbl[] = {
--	1200000, 1300000, 1400000, 1500000, 1600000, 1700000, 1800000, 1800000,
--};
--
--static int lp8788_ldo_enable_time(struct regulator_dev *rdev)
--{
--	struct lp8788_ldo *ldo = rdev_get_drvdata(rdev);
--	enum lp8788_ldo_id id = rdev_get_id(rdev);
--	u8 val, addr = LP8788_DLDO1_TIMESTEP + id;
--
--	if (lp8788_read_byte(ldo->lp, addr, &val))
--		return -EINVAL;
--
--	val = (val & LP8788_STARTUP_TIME_M) >> LP8788_STARTUP_TIME_S;
--
--	return ENABLE_TIME_USEC * val;
--}
--
--static const struct regulator_ops lp8788_ldo_voltage_table_ops = {
--	.list_voltage = regulator_list_voltage_table,
--	.set_voltage_sel = regulator_set_voltage_sel_regmap,
--	.get_voltage_sel = regulator_get_voltage_sel_regmap,
--	.enable = regulator_enable_regmap,
--	.disable = regulator_disable_regmap,
--	.is_enabled = regulator_is_enabled_regmap,
--	.enable_time = lp8788_ldo_enable_time,
--};
--
--static const struct regulator_ops lp8788_ldo_voltage_fixed_ops = {
--	.list_voltage = regulator_list_voltage_linear,
--	.enable = regulator_enable_regmap,
--	.disable = regulator_disable_regmap,
--	.is_enabled = regulator_is_enabled_regmap,
--	.enable_time = lp8788_ldo_enable_time,
--};
--
--static const struct regulator_desc lp8788_dldo_desc[] = {
--	{
--		.name = "dldo1",
--		.id = DLDO1,
--		.ops = &lp8788_ldo_voltage_table_ops,
--		.n_voltages = ARRAY_SIZE(lp8788_dldo1239_vtbl),
--		.volt_table = lp8788_dldo1239_vtbl,
--		.type = REGULATOR_VOLTAGE,
--		.owner = THIS_MODULE,
--		.vsel_reg = LP8788_DLDO1_VOUT,
--		.vsel_mask = LP8788_VOUT_5BIT_M,
--		.enable_reg = LP8788_EN_LDO_A,
--		.enable_mask = LP8788_EN_DLDO1_M,
--	},
--	{
--		.name = "dldo2",
--		.id = DLDO2,
--		.ops = &lp8788_ldo_voltage_table_ops,
--		.n_voltages = ARRAY_SIZE(lp8788_dldo1239_vtbl),
--		.volt_table = lp8788_dldo1239_vtbl,
--		.type = REGULATOR_VOLTAGE,
--		.owner = THIS_MODULE,
--		.vsel_reg = LP8788_DLDO2_VOUT,
--		.vsel_mask = LP8788_VOUT_5BIT_M,
--		.enable_reg = LP8788_EN_LDO_A,
--		.enable_mask = LP8788_EN_DLDO2_M,
--	},
--	{
--		.name = "dldo3",
--		.id = DLDO3,
--		.ops = &lp8788_ldo_voltage_table_ops,
--		.n_voltages = ARRAY_SIZE(lp8788_dldo1239_vtbl),
--		.volt_table = lp8788_dldo1239_vtbl,
--		.type = REGULATOR_VOLTAGE,
--		.owner = THIS_MODULE,
--		.vsel_reg = LP8788_DLDO3_VOUT,
--		.vsel_mask = LP8788_VOUT_5BIT_M,
--		.enable_reg = LP8788_EN_LDO_A,
--		.enable_mask = LP8788_EN_DLDO3_M,
--	},
--	{
--		.name = "dldo4",
--		.id = DLDO4,
--		.ops = &lp8788_ldo_voltage_table_ops,
--		.n_voltages = ARRAY_SIZE(lp8788_dldo4_vtbl),
--		.volt_table = lp8788_dldo4_vtbl,
--		.type = REGULATOR_VOLTAGE,
--		.owner = THIS_MODULE,
--		.vsel_reg = LP8788_DLDO4_VOUT,
--		.vsel_mask = LP8788_VOUT_1BIT_M,
--		.enable_reg = LP8788_EN_LDO_A,
--		.enable_mask = LP8788_EN_DLDO4_M,
--	},
--	{
--		.name = "dldo5",
--		.id = DLDO5,
--		.ops = &lp8788_ldo_voltage_table_ops,
--		.n_voltages = ARRAY_SIZE(lp8788_dldo578_aldo6_vtbl),
--		.volt_table = lp8788_dldo578_aldo6_vtbl,
--		.type = REGULATOR_VOLTAGE,
--		.owner = THIS_MODULE,
--		.vsel_reg = LP8788_DLDO5_VOUT,
--		.vsel_mask = LP8788_VOUT_4BIT_M,
--		.enable_reg = LP8788_EN_LDO_A,
--		.enable_mask = LP8788_EN_DLDO5_M,
--	},
--	{
--		.name = "dldo6",
--		.id = DLDO6,
--		.ops = &lp8788_ldo_voltage_table_ops,
--		.n_voltages = ARRAY_SIZE(lp8788_dldo6_vtbl),
--		.volt_table = lp8788_dldo6_vtbl,
--		.type = REGULATOR_VOLTAGE,
--		.owner = THIS_MODULE,
--		.vsel_reg = LP8788_DLDO6_VOUT,
--		.vsel_mask = LP8788_VOUT_3BIT_M,
--		.enable_reg = LP8788_EN_LDO_A,
--		.enable_mask = LP8788_EN_DLDO6_M,
--	},
--	{
--		.name = "dldo7",
--		.id = DLDO7,
--		.ops = &lp8788_ldo_voltage_table_ops,
--		.n_voltages = ARRAY_SIZE(lp8788_dldo578_aldo6_vtbl),
--		.volt_table = lp8788_dldo578_aldo6_vtbl,
--		.type = REGULATOR_VOLTAGE,
--		.owner = THIS_MODULE,
--		.vsel_reg = LP8788_DLDO7_VOUT,
--		.vsel_mask = LP8788_VOUT_4BIT_M,
--		.enable_reg = LP8788_EN_LDO_A,
--		.enable_mask = LP8788_EN_DLDO7_M,
--	},
--	{
--		.name = "dldo8",
--		.id = DLDO8,
--		.ops = &lp8788_ldo_voltage_table_ops,
--		.n_voltages = ARRAY_SIZE(lp8788_dldo578_aldo6_vtbl),
--		.volt_table = lp8788_dldo578_aldo6_vtbl,
--		.type = REGULATOR_VOLTAGE,
--		.owner = THIS_MODULE,
--		.vsel_reg = LP8788_DLDO8_VOUT,
--		.vsel_mask = LP8788_VOUT_4BIT_M,
--		.enable_reg = LP8788_EN_LDO_A,
--		.enable_mask = LP8788_EN_DLDO8_M,
--	},
--	{
--		.name = "dldo9",
--		.id = DLDO9,
--		.ops = &lp8788_ldo_voltage_table_ops,
--		.n_voltages = ARRAY_SIZE(lp8788_dldo1239_vtbl),
--		.volt_table = lp8788_dldo1239_vtbl,
--		.type = REGULATOR_VOLTAGE,
--		.owner = THIS_MODULE,
--		.vsel_reg = LP8788_DLDO9_VOUT,
--		.vsel_mask = LP8788_VOUT_5BIT_M,
--		.enable_reg = LP8788_EN_LDO_B,
--		.enable_mask = LP8788_EN_DLDO9_M,
--	},
--	{
--		.name = "dldo10",
--		.id = DLDO10,
--		.ops = &lp8788_ldo_voltage_table_ops,
--		.n_voltages = ARRAY_SIZE(lp8788_dldo1011_vtbl),
--		.volt_table = lp8788_dldo1011_vtbl,
--		.type = REGULATOR_VOLTAGE,
--		.owner = THIS_MODULE,
--		.vsel_reg = LP8788_DLDO10_VOUT,
--		.vsel_mask = LP8788_VOUT_4BIT_M,
--		.enable_reg = LP8788_EN_LDO_B,
--		.enable_mask = LP8788_EN_DLDO10_M,
--	},
--	{
--		.name = "dldo11",
--		.id = DLDO11,
--		.ops = &lp8788_ldo_voltage_table_ops,
--		.n_voltages = ARRAY_SIZE(lp8788_dldo1011_vtbl),
--		.volt_table = lp8788_dldo1011_vtbl,
--		.type = REGULATOR_VOLTAGE,
--		.owner = THIS_MODULE,
--		.vsel_reg = LP8788_DLDO11_VOUT,
--		.vsel_mask = LP8788_VOUT_4BIT_M,
--		.enable_reg = LP8788_EN_LDO_B,
--		.enable_mask = LP8788_EN_DLDO11_M,
--	},
--	{
--		.name = "dldo12",
--		.id = DLDO12,
--		.ops = &lp8788_ldo_voltage_fixed_ops,
--		.n_voltages = 1,
--		.type = REGULATOR_VOLTAGE,
--		.owner = THIS_MODULE,
--		.enable_reg = LP8788_EN_LDO_B,
--		.enable_mask = LP8788_EN_DLDO12_M,
--		.min_uV = 2500000,
--	},
--};
--
--static const struct regulator_desc lp8788_aldo_desc[] = {
--	{
--		.name = "aldo1",
--		.id = ALDO1,
--		.ops = &lp8788_ldo_voltage_table_ops,
--		.n_voltages = ARRAY_SIZE(lp8788_aldo1_vtbl),
--		.volt_table = lp8788_aldo1_vtbl,
--		.type = REGULATOR_VOLTAGE,
--		.owner = THIS_MODULE,
--		.vsel_reg = LP8788_ALDO1_VOUT,
--		.vsel_mask = LP8788_VOUT_1BIT_M,
--		.enable_reg = LP8788_EN_LDO_B,
--		.enable_mask = LP8788_EN_ALDO1_M,
--	},
--	{
--		.name = "aldo2",
--		.id = ALDO2,
--		.ops = &lp8788_ldo_voltage_fixed_ops,
--		.n_voltages = 1,
--		.type = REGULATOR_VOLTAGE,
--		.owner = THIS_MODULE,
--		.enable_reg = LP8788_EN_LDO_B,
--		.enable_mask = LP8788_EN_ALDO2_M,
--		.min_uV = 2850000,
--	},
--	{
--		.name = "aldo3",
--		.id = ALDO3,
--		.ops = &lp8788_ldo_voltage_fixed_ops,
--		.n_voltages = 1,
--		.type = REGULATOR_VOLTAGE,
--		.owner = THIS_MODULE,
--		.enable_reg = LP8788_EN_LDO_B,
--		.enable_mask = LP8788_EN_ALDO3_M,
--		.min_uV = 2850000,
--	},
--	{
--		.name = "aldo4",
--		.id = ALDO4,
--		.ops = &lp8788_ldo_voltage_fixed_ops,
--		.n_voltages = 1,
--		.type = REGULATOR_VOLTAGE,
--		.owner = THIS_MODULE,
--		.enable_reg = LP8788_EN_LDO_B,
--		.enable_mask = LP8788_EN_ALDO4_M,
--		.min_uV = 2850000,
--	},
--	{
--		.name = "aldo5",
--		.id = ALDO5,
--		.ops = &lp8788_ldo_voltage_fixed_ops,
--		.n_voltages = 1,
--		.type = REGULATOR_VOLTAGE,
--		.owner = THIS_MODULE,
--		.enable_reg = LP8788_EN_LDO_C,
--		.enable_mask = LP8788_EN_ALDO5_M,
--		.min_uV = 2850000,
--	},
--	{
--		.name = "aldo6",
--		.id = ALDO6,
--		.ops = &lp8788_ldo_voltage_table_ops,
--		.n_voltages = ARRAY_SIZE(lp8788_dldo578_aldo6_vtbl),
--		.volt_table = lp8788_dldo578_aldo6_vtbl,
--		.type = REGULATOR_VOLTAGE,
--		.owner = THIS_MODULE,
--		.vsel_reg = LP8788_ALDO6_VOUT,
--		.vsel_mask = LP8788_VOUT_4BIT_M,
--		.enable_reg = LP8788_EN_LDO_C,
--		.enable_mask = LP8788_EN_ALDO6_M,
--	},
--	{
--		.name = "aldo7",
--		.id = ALDO7,
--		.ops = &lp8788_ldo_voltage_table_ops,
--		.n_voltages = ARRAY_SIZE(lp8788_aldo7_vtbl),
--		.volt_table = lp8788_aldo7_vtbl,
--		.type = REGULATOR_VOLTAGE,
--		.owner = THIS_MODULE,
--		.vsel_reg = LP8788_ALDO7_VOUT,
--		.vsel_mask = LP8788_VOUT_3BIT_M,
--		.enable_reg = LP8788_EN_LDO_C,
--		.enable_mask = LP8788_EN_ALDO7_M,
--	},
--	{
--		.name = "aldo8",
--		.id = ALDO8,
--		.ops = &lp8788_ldo_voltage_fixed_ops,
--		.n_voltages = 1,
--		.type = REGULATOR_VOLTAGE,
--		.owner = THIS_MODULE,
--		.enable_reg = LP8788_EN_LDO_C,
--		.enable_mask = LP8788_EN_ALDO8_M,
--		.min_uV = 2500000,
--	},
--	{
--		.name = "aldo9",
--		.id = ALDO9,
--		.ops = &lp8788_ldo_voltage_fixed_ops,
--		.n_voltages = 1,
--		.type = REGULATOR_VOLTAGE,
--		.owner = THIS_MODULE,
--		.enable_reg = LP8788_EN_LDO_C,
--		.enable_mask = LP8788_EN_ALDO9_M,
--		.min_uV = 2500000,
--	},
--	{
--		.name = "aldo10",
--		.id = ALDO10,
--		.ops = &lp8788_ldo_voltage_fixed_ops,
--		.n_voltages = 1,
--		.type = REGULATOR_VOLTAGE,
--		.owner = THIS_MODULE,
--		.enable_reg = LP8788_EN_LDO_C,
--		.enable_mask = LP8788_EN_ALDO10_M,
--		.min_uV = 1100000,
--	},
--};
--
--static int lp8788_config_ldo_enable_mode(struct platform_device *pdev,
--					struct lp8788_ldo *ldo,
--					enum lp8788_ldo_id id)
--{
--	struct lp8788 *lp = ldo->lp;
--	enum lp8788_ext_ldo_en_id enable_id;
--	static const u8 en_mask[] = {
--		[EN_ALDO1]   = LP8788_EN_SEL_ALDO1_M,
--		[EN_ALDO234] = LP8788_EN_SEL_ALDO234_M,
--		[EN_ALDO5]   = LP8788_EN_SEL_ALDO5_M,
--		[EN_ALDO7]   = LP8788_EN_SEL_ALDO7_M,
--		[EN_DLDO7]   = LP8788_EN_SEL_DLDO7_M,
--		[EN_DLDO911] = LP8788_EN_SEL_DLDO911_M,
--	};
--
--	switch (id) {
--	case DLDO7:
--		enable_id = EN_DLDO7;
--		break;
--	case DLDO9:
--	case DLDO11:
--		enable_id = EN_DLDO911;
--		break;
--	case ALDO1:
--		enable_id = EN_ALDO1;
--		break;
--	case ALDO2 ... ALDO4:
--		enable_id = EN_ALDO234;
--		break;
--	case ALDO5:
--		enable_id = EN_ALDO5;
--		break;
--	case ALDO7:
--		enable_id = EN_ALDO7;
--		break;
--	default:
--		return 0;
--	}
--
--	/*
--	 * Do not use devm* here: the regulator core takes over the
--	 * lifecycle management of the GPIO descriptor.
--	 * FIXME: check default mode for GPIO here: high or low?
--	 */
--	ldo->ena_gpiod = gpiod_get_index_optional(&pdev->dev,
--					       "enable",
--					       enable_id,
--					       GPIOD_OUT_HIGH |
--					       GPIOD_FLAGS_BIT_NONEXCLUSIVE);
--	if (IS_ERR(ldo->ena_gpiod))
--		return PTR_ERR(ldo->ena_gpiod);
--
--	/* if no GPIO for ldo pin, then set default enable mode */
--	if (!ldo->ena_gpiod)
--		goto set_default_ldo_enable_mode;
--
--	return 0;
--
--set_default_ldo_enable_mode:
--	return lp8788_update_bits(lp, LP8788_EN_SEL, en_mask[enable_id], 0);
--}
--
--static int lp8788_dldo_probe(struct platform_device *pdev)
--{
--	struct lp8788 *lp = dev_get_drvdata(pdev->dev.parent);
--	int id = pdev->id;
--	struct lp8788_ldo *ldo;
--	struct regulator_config cfg = { };
--	struct regulator_dev *rdev;
--	int ret;
--
--	ldo = devm_kzalloc(&pdev->dev, sizeof(struct lp8788_ldo), GFP_KERNEL);
--	if (!ldo)
--		return -ENOMEM;
--
--	ldo->lp = lp;
--	ret = lp8788_config_ldo_enable_mode(pdev, ldo, id);
--	if (ret)
--		return ret;
--
--	if (ldo->ena_gpiod)
--		cfg.ena_gpiod = ldo->ena_gpiod;
--
--	cfg.dev = pdev->dev.parent;
--	cfg.init_data = lp->pdata ? lp->pdata->dldo_data[id] : NULL;
--	cfg.driver_data = ldo;
--	cfg.regmap = lp->regmap;
--
--	rdev = devm_regulator_register(&pdev->dev, &lp8788_dldo_desc[id], &cfg);
--	if (IS_ERR(rdev)) {
--		ret = PTR_ERR(rdev);
--		dev_err(&pdev->dev, "DLDO%d regulator register err = %d\n",
--				id + 1, ret);
--		return ret;
--	}
--
--	ldo->regulator = rdev;
--	platform_set_drvdata(pdev, ldo);
--
--	return 0;
--}
--
--static struct platform_driver lp8788_dldo_driver = {
--	.probe = lp8788_dldo_probe,
--	.driver = {
--		.name = LP8788_DEV_DLDO,
--		.probe_type = PROBE_PREFER_ASYNCHRONOUS,
--	},
--};
--
--static int lp8788_aldo_probe(struct platform_device *pdev)
--{
--	struct lp8788 *lp = dev_get_drvdata(pdev->dev.parent);
--	int id = pdev->id;
--	struct lp8788_ldo *ldo;
--	struct regulator_config cfg = { };
--	struct regulator_dev *rdev;
--	int ret;
--
--	ldo = devm_kzalloc(&pdev->dev, sizeof(struct lp8788_ldo), GFP_KERNEL);
--	if (!ldo)
--		return -ENOMEM;
--
--	ldo->lp = lp;
--	ret = lp8788_config_ldo_enable_mode(pdev, ldo, id + ALDO1);
--	if (ret)
--		return ret;
--
--	if (ldo->ena_gpiod)
--		cfg.ena_gpiod = ldo->ena_gpiod;
--
--	cfg.dev = pdev->dev.parent;
--	cfg.init_data = lp->pdata ? lp->pdata->aldo_data[id] : NULL;
--	cfg.driver_data = ldo;
--	cfg.regmap = lp->regmap;
--
--	rdev = devm_regulator_register(&pdev->dev, &lp8788_aldo_desc[id], &cfg);
--	if (IS_ERR(rdev)) {
--		ret = PTR_ERR(rdev);
--		dev_err(&pdev->dev, "ALDO%d regulator register err = %d\n",
--				id + 1, ret);
--		return ret;
--	}
--
--	ldo->regulator = rdev;
--	platform_set_drvdata(pdev, ldo);
--
--	return 0;
--}
--
--static struct platform_driver lp8788_aldo_driver = {
--	.probe = lp8788_aldo_probe,
--	.driver = {
--		.name = LP8788_DEV_ALDO,
--		.probe_type = PROBE_PREFER_ASYNCHRONOUS,
--	},
--};
--
--static struct platform_driver * const drivers[] = {
--	&lp8788_dldo_driver,
--	&lp8788_aldo_driver,
--};
--
--static int __init lp8788_ldo_init(void)
--{
--	return platform_register_drivers(drivers, ARRAY_SIZE(drivers));
--}
--subsys_initcall(lp8788_ldo_init);
--
--static void __exit lp8788_ldo_exit(void)
--{
--	platform_unregister_drivers(drivers, ARRAY_SIZE(drivers));
--}
--module_exit(lp8788_ldo_exit);
--
--MODULE_DESCRIPTION("TI LP8788 LDO Driver");
--MODULE_AUTHOR("Milo Kim");
--MODULE_LICENSE("GPL");
--MODULE_ALIAS("platform:lp8788-dldo");
--MODULE_ALIAS("platform:lp8788-aldo");
-diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
-index 5674211afe91..c201948b4d5b 100644
---- a/drivers/rtc/Kconfig
-+++ b/drivers/rtc/Kconfig
-@@ -317,12 +317,6 @@ config RTC_DRV_HYM8563
- 	  This driver can also be built as a module. If so, the module
- 	  will be called rtc-hym8563.
- 
--config RTC_DRV_LP8788
--	tristate "TI LP8788 RTC driver"
--	depends on MFD_LP8788
--	help
--	  Say Y to enable support for the LP8788 RTC/ALARM driver.
--
- config RTC_DRV_MAX6900
- 	tristate "Maxim MAX6900"
- 	help
-diff --git a/drivers/rtc/rtc-lp8788.c b/drivers/rtc/rtc-lp8788.c
-deleted file mode 100644
-index 0793d70507f7..000000000000
---- a/drivers/rtc/rtc-lp8788.c
-+++ /dev/null
-@@ -1,322 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-only
--/*
-- * TI LP8788 MFD - rtc driver
-- *
-- * Copyright 2012 Texas Instruments
-- *
-- * Author: Milo(Woogyom) Kim <milo.kim@ti.com>
-- */
--
--#include <linux/err.h>
--#include <linux/irqdomain.h>
--#include <linux/mfd/lp8788.h>
--#include <linux/module.h>
--#include <linux/platform_device.h>
--#include <linux/rtc.h>
--#include <linux/slab.h>
--
--/* register address */
--#define LP8788_INTEN_3			0x05
--#define LP8788_RTC_UNLOCK		0x64
--#define LP8788_RTC_SEC			0x70
--#define LP8788_ALM1_SEC			0x77
--#define LP8788_ALM1_EN			0x7D
--#define LP8788_ALM2_SEC			0x7E
--#define LP8788_ALM2_EN			0x84
--
--/* mask/shift bits */
--#define LP8788_INT_RTC_ALM1_M		BIT(1)	/* Addr 05h */
--#define LP8788_INT_RTC_ALM1_S		1
--#define LP8788_INT_RTC_ALM2_M		BIT(2)	/* Addr 05h */
--#define LP8788_INT_RTC_ALM2_S		2
--#define LP8788_ALM_EN_M			BIT(7)	/* Addr 7Dh or 84h */
--#define LP8788_ALM_EN_S			7
--
--#define DEFAULT_ALARM_SEL		LP8788_ALARM_1
--#define LP8788_MONTH_OFFSET		1
--#define LP8788_BASE_YEAR		2000
--#define MAX_WDAY_BITS			7
--#define LP8788_WDAY_SET			1
--#define RTC_UNLOCK			0x1
--#define RTC_LATCH			0x2
--#define ALARM_IRQ_FLAG			(RTC_IRQF | RTC_AF)
--
--enum lp8788_time {
--	LPTIME_SEC,
--	LPTIME_MIN,
--	LPTIME_HOUR,
--	LPTIME_MDAY,
--	LPTIME_MON,
--	LPTIME_YEAR,
--	LPTIME_WDAY,
--	LPTIME_MAX,
--};
--
--struct lp8788_rtc {
--	struct lp8788 *lp;
--	struct rtc_device *rdev;
--	enum lp8788_alarm_sel alarm;
--	int irq;
--};
--
--static const u8 addr_alarm_sec[LP8788_ALARM_MAX] = {
--	LP8788_ALM1_SEC,
--	LP8788_ALM2_SEC,
--};
--
--static const u8 addr_alarm_en[LP8788_ALARM_MAX] = {
--	LP8788_ALM1_EN,
--	LP8788_ALM2_EN,
--};
--
--static const u8 mask_alarm_en[LP8788_ALARM_MAX] = {
--	LP8788_INT_RTC_ALM1_M,
--	LP8788_INT_RTC_ALM2_M,
--};
--
--static const u8 shift_alarm_en[LP8788_ALARM_MAX] = {
--	LP8788_INT_RTC_ALM1_S,
--	LP8788_INT_RTC_ALM2_S,
--};
--
--static int _to_tm_wday(u8 lp8788_wday)
--{
--	int i;
--
--	if (lp8788_wday == 0)
--		return 0;
--
--	/* lookup defined weekday from read register value */
--	for (i = 0; i < MAX_WDAY_BITS; i++) {
--		if ((lp8788_wday >> i) == LP8788_WDAY_SET)
--			break;
--	}
--
--	return i + 1;
--}
--
--static inline int _to_lp8788_wday(int tm_wday)
--{
--	return LP8788_WDAY_SET << (tm_wday - 1);
--}
--
--static void lp8788_rtc_unlock(struct lp8788 *lp)
--{
--	lp8788_write_byte(lp, LP8788_RTC_UNLOCK, RTC_UNLOCK);
--	lp8788_write_byte(lp, LP8788_RTC_UNLOCK, RTC_LATCH);
--}
--
--static int lp8788_rtc_read_time(struct device *dev, struct rtc_time *tm)
--{
--	struct lp8788_rtc *rtc = dev_get_drvdata(dev);
--	struct lp8788 *lp = rtc->lp;
--	u8 data[LPTIME_MAX];
--	int ret;
--
--	lp8788_rtc_unlock(lp);
--
--	ret = lp8788_read_multi_bytes(lp, LP8788_RTC_SEC, data,	LPTIME_MAX);
--	if (ret)
--		return ret;
--
--	tm->tm_sec  = data[LPTIME_SEC];
--	tm->tm_min  = data[LPTIME_MIN];
--	tm->tm_hour = data[LPTIME_HOUR];
--	tm->tm_mday = data[LPTIME_MDAY];
--	tm->tm_mon  = data[LPTIME_MON] - LP8788_MONTH_OFFSET;
--	tm->tm_year = data[LPTIME_YEAR] + LP8788_BASE_YEAR - 1900;
--	tm->tm_wday = _to_tm_wday(data[LPTIME_WDAY]);
--
--	return 0;
--}
--
--static int lp8788_rtc_set_time(struct device *dev, struct rtc_time *tm)
--{
--	struct lp8788_rtc *rtc = dev_get_drvdata(dev);
--	struct lp8788 *lp = rtc->lp;
--	u8 data[LPTIME_MAX - 1];
--	int ret, i, year;
--
--	year = tm->tm_year + 1900 - LP8788_BASE_YEAR;
--	if (year < 0) {
--		dev_err(lp->dev, "invalid year: %d\n", year);
--		return -EINVAL;
--	}
--
--	/* because rtc weekday is a readonly register, do not update */
--	data[LPTIME_SEC]  = tm->tm_sec;
--	data[LPTIME_MIN]  = tm->tm_min;
--	data[LPTIME_HOUR] = tm->tm_hour;
--	data[LPTIME_MDAY] = tm->tm_mday;
--	data[LPTIME_MON]  = tm->tm_mon + LP8788_MONTH_OFFSET;
--	data[LPTIME_YEAR] = year;
--
--	for (i = 0; i < ARRAY_SIZE(data); i++) {
--		ret = lp8788_write_byte(lp, LP8788_RTC_SEC + i, data[i]);
--		if (ret)
--			return ret;
--	}
--
--	return 0;
--}
--
--static int lp8788_read_alarm(struct device *dev, struct rtc_wkalrm *alarm)
--{
--	struct lp8788_rtc *rtc = dev_get_drvdata(dev);
--	struct lp8788 *lp = rtc->lp;
--	struct rtc_time *tm = &alarm->time;
--	u8 addr, data[LPTIME_MAX];
--	int ret;
--
--	addr = addr_alarm_sec[rtc->alarm];
--	ret = lp8788_read_multi_bytes(lp, addr, data, LPTIME_MAX);
--	if (ret)
--		return ret;
--
--	tm->tm_sec  = data[LPTIME_SEC];
--	tm->tm_min  = data[LPTIME_MIN];
--	tm->tm_hour = data[LPTIME_HOUR];
--	tm->tm_mday = data[LPTIME_MDAY];
--	tm->tm_mon  = data[LPTIME_MON] - LP8788_MONTH_OFFSET;
--	tm->tm_year = data[LPTIME_YEAR] + LP8788_BASE_YEAR - 1900;
--	tm->tm_wday = _to_tm_wday(data[LPTIME_WDAY]);
--	alarm->enabled = data[LPTIME_WDAY] & LP8788_ALM_EN_M;
--
--	return 0;
--}
--
--static int lp8788_set_alarm(struct device *dev, struct rtc_wkalrm *alarm)
--{
--	struct lp8788_rtc *rtc = dev_get_drvdata(dev);
--	struct lp8788 *lp = rtc->lp;
--	struct rtc_time *tm = &alarm->time;
--	u8 addr, data[LPTIME_MAX];
--	int ret, i, year;
--
--	year = tm->tm_year + 1900 - LP8788_BASE_YEAR;
--	if (year < 0) {
--		dev_err(lp->dev, "invalid year: %d\n", year);
--		return -EINVAL;
--	}
--
--	data[LPTIME_SEC]  = tm->tm_sec;
--	data[LPTIME_MIN]  = tm->tm_min;
--	data[LPTIME_HOUR] = tm->tm_hour;
--	data[LPTIME_MDAY] = tm->tm_mday;
--	data[LPTIME_MON]  = tm->tm_mon + LP8788_MONTH_OFFSET;
--	data[LPTIME_YEAR] = year;
--	data[LPTIME_WDAY] = _to_lp8788_wday(tm->tm_wday);
--
--	for (i = 0; i < ARRAY_SIZE(data); i++) {
--		addr = addr_alarm_sec[rtc->alarm] + i;
--		ret = lp8788_write_byte(lp, addr, data[i]);
--		if (ret)
--			return ret;
--	}
--
--	alarm->enabled = 1;
--	addr = addr_alarm_en[rtc->alarm];
--
--	return lp8788_update_bits(lp, addr, LP8788_ALM_EN_M,
--				alarm->enabled << LP8788_ALM_EN_S);
--}
--
--static int lp8788_alarm_irq_enable(struct device *dev, unsigned int enable)
--{
--	struct lp8788_rtc *rtc = dev_get_drvdata(dev);
--	struct lp8788 *lp = rtc->lp;
--	u8 mask, shift;
--
--	if (!rtc->irq)
+-	if (ret != 1)
 -		return -EIO;
 -
--	mask = mask_alarm_en[rtc->alarm];
--	shift = shift_alarm_en[rtc->alarm];
--
--	return lp8788_update_bits(lp, LP8788_INTEN_3, mask, enable << shift);
--}
--
--static const struct rtc_class_ops lp8788_rtc_ops = {
--	.read_time = lp8788_rtc_read_time,
--	.set_time = lp8788_rtc_set_time,
--	.read_alarm = lp8788_read_alarm,
--	.set_alarm = lp8788_set_alarm,
--	.alarm_irq_enable = lp8788_alarm_irq_enable,
--};
--
--static irqreturn_t lp8788_alarm_irq_handler(int irq, void *ptr)
--{
--	struct lp8788_rtc *rtc = ptr;
--
--	rtc_update_irq(rtc->rdev, 1, ALARM_IRQ_FLAG);
--	return IRQ_HANDLED;
--}
--
--static int lp8788_alarm_irq_register(struct platform_device *pdev,
--				struct lp8788_rtc *rtc)
--{
--	struct resource *r;
--	struct lp8788 *lp = rtc->lp;
--	struct irq_domain *irqdm = lp->irqdm;
--	int irq;
--
--	rtc->irq = 0;
--
--	/* even the alarm IRQ number is not specified, rtc time should work */
--	r = platform_get_resource_byname(pdev, IORESOURCE_IRQ, LP8788_ALM_IRQ);
--	if (!r)
--		return 0;
--
--	if (rtc->alarm == LP8788_ALARM_1)
--		irq = r->start;
--	else
--		irq = r->end;
--
--	rtc->irq = irq_create_mapping(irqdm, irq);
--
--	return devm_request_threaded_irq(&pdev->dev, rtc->irq, NULL,
--				lp8788_alarm_irq_handler,
--				0, LP8788_ALM_IRQ, rtc);
--}
--
--static int lp8788_rtc_probe(struct platform_device *pdev)
--{
--	struct lp8788 *lp = dev_get_drvdata(pdev->dev.parent);
--	struct lp8788_rtc *rtc;
--	struct device *dev = &pdev->dev;
--
--	rtc = devm_kzalloc(dev, sizeof(struct lp8788_rtc), GFP_KERNEL);
--	if (!rtc)
--		return -ENOMEM;
--
--	rtc->lp = lp;
--	rtc->alarm = lp->pdata ? lp->pdata->alarm_sel : DEFAULT_ALARM_SEL;
--	platform_set_drvdata(pdev, rtc);
--
--	device_init_wakeup(dev, true);
--
--	rtc->rdev = devm_rtc_device_register(dev, "lp8788_rtc",
--					&lp8788_rtc_ops, THIS_MODULE);
--	if (IS_ERR(rtc->rdev)) {
--		dev_err(dev, "can not register rtc device\n");
--		return PTR_ERR(rtc->rdev);
--	}
--
--	if (lp8788_alarm_irq_register(pdev, rtc))
--		dev_warn(lp->dev, "no rtc irq handler\n");
--
--	return 0;
--}
--
--static struct platform_driver lp8788_rtc_driver = {
--	.probe = lp8788_rtc_probe,
--	.driver = {
--		.name = LP8788_DEV_RTC,
--	},
--};
--module_platform_driver(lp8788_rtc_driver);
--
--MODULE_DESCRIPTION("Texas Instruments LP8788 RTC Driver");
--MODULE_AUTHOR("Milo Kim");
--MODULE_LICENSE("GPL");
--MODULE_ALIAS("platform:lp8788-rtc");
-diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
-index 413ed6c38b53..2c206d2713e3 100644
---- a/drivers/video/backlight/Kconfig
-+++ b/drivers/video/backlight/Kconfig
-@@ -425,12 +425,6 @@ config BACKLIGHT_LP855X
- 	  This supports TI LP8550, LP8551, LP8552, LP8553, LP8555, LP8556 and
- 	  LP8557 backlight driver.
- 
--config BACKLIGHT_LP8788
--	tristate "Backlight driver for TI LP8788 MFD"
--	depends on MFD_LP8788 && PWM
--	help
--	  This supports TI LP8788 backlight driver.
--
- config BACKLIGHT_MP3309C
- 	tristate "Backlight Driver for MPS MP3309C"
- 	depends on I2C && PWM
-diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
-index 3dc3580d82c7..0497eaa639cd 100644
---- a/drivers/video/backlight/Makefile
-+++ b/drivers/video/backlight/Makefile
-@@ -43,7 +43,6 @@ obj-$(CONFIG_BACKLIGHT_LM3630A)		+= lm3630a_bl.o
- obj-$(CONFIG_BACKLIGHT_LM3639)		+= lm3639_bl.o
- obj-$(CONFIG_BACKLIGHT_LOCOMO)		+= locomolcd.o
- obj-$(CONFIG_BACKLIGHT_LP855X)		+= lp855x_bl.o
--obj-$(CONFIG_BACKLIGHT_LP8788)		+= lp8788_bl.o
- obj-$(CONFIG_BACKLIGHT_LV5207LP)	+= lv5207lp.o
- obj-$(CONFIG_BACKLIGHT_MAX25014)	+= max25014.o
- obj-$(CONFIG_BACKLIGHT_MAX8925)		+= max8925_bl.o
-diff --git a/drivers/video/backlight/lp8788_bl.c b/drivers/video/backlight/lp8788_bl.c
-deleted file mode 100644
-index f61a64905a02..000000000000
---- a/drivers/video/backlight/lp8788_bl.c
-+++ /dev/null
-@@ -1,190 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-only
--/*
-- * TI LP8788 MFD - backlight driver
-- *
-- * Copyright 2012 Texas Instruments
-- *
-- * Author: Milo(Woogyom) Kim <milo.kim@ti.com>
-- */
--
--#include <linux/backlight.h>
--#include <linux/err.h>
--#include <linux/mfd/lp8788.h>
--#include <linux/module.h>
--#include <linux/platform_device.h>
--#include <linux/slab.h>
--
--/* Register address */
--#define LP8788_BL_CONFIG		0x96
--#define LP8788_BL_EN			BIT(0)
--#define LP8788_BL_PWM_INPUT_EN		BIT(5)
--#define LP8788_BL_FULLSCALE_SHIFT	2
--#define LP8788_BL_DIM_MODE_SHIFT	1
--#define LP8788_BL_PWM_POLARITY_SHIFT	6
--
--#define LP8788_BL_BRIGHTNESS		0x97
--
--#define LP8788_BL_RAMP			0x98
--#define LP8788_BL_RAMP_RISE_SHIFT	4
--
--#define MAX_BRIGHTNESS			127
--#define DEFAULT_BL_NAME			"lcd-backlight"
--
--struct lp8788_bl {
--	struct lp8788 *lp;
--	struct backlight_device *bl_dev;
--};
--
--static int lp8788_backlight_configure(struct lp8788_bl *bl)
--{
--	int ret;
--	u8 val;
--
--	/* Brightness ramp up/down */
--	val = (LP8788_RAMP_8192us << LP8788_BL_RAMP_RISE_SHIFT) | LP8788_RAMP_8192us;
--	ret = lp8788_write_byte(bl->lp, LP8788_BL_RAMP, val);
--	if (ret)
+-	ret = i2c_master_recv(aat2870->client, val, 1);
+-	if (ret < 0)
 -		return ret;
+-	if (ret != 1)
+-		return -EIO;
 -
--	/* Fullscale current setting */
--	val = (LP8788_FULLSCALE_1900uA << LP8788_BL_FULLSCALE_SHIFT) |
--		(LP8788_DIM_EXPONENTIAL << LP8788_BL_DIM_MODE_SHIFT);
--
--	/* Brightness control mode */
--	val |= LP8788_BL_EN;
--
--	return lp8788_write_byte(bl->lp, LP8788_BL_CONFIG, val);
--}
--
--static int lp8788_bl_update_status(struct backlight_device *bl_dev)
--{
--	struct lp8788_bl *bl = bl_get_data(bl_dev);
--
--	if (bl_dev->props.state & BL_CORE_SUSPENDED)
--		bl_dev->props.brightness = 0;
--
--	lp8788_write_byte(bl->lp, LP8788_BL_BRIGHTNESS, bl_dev->props.brightness);
--
+-out:
+-	dev_dbg(aat2870->dev, "read: addr=0x%02x, val=0x%02x\n", addr, *val);
 -	return 0;
 -}
 -
--static const struct backlight_ops lp8788_bl_ops = {
--	.options = BL_CORE_SUSPENDRESUME,
--	.update_status = lp8788_bl_update_status,
--};
--
--static int lp8788_backlight_register(struct lp8788_bl *bl)
+-static int __aat2870_write(struct aat2870_data *aat2870, u8 addr, u8 val)
 -{
--	struct backlight_device *bl_dev;
--	struct backlight_properties props;
--
--	memset(&props, 0, sizeof(struct backlight_properties));
--	props.type = BACKLIGHT_PLATFORM;
--	props.max_brightness = MAX_BRIGHTNESS;
--
--	/* Initial brightness */
--	props.brightness = 0;
--
--	/* Backlight device name */
--	bl_dev = backlight_device_register(DEFAULT_BL_NAME, bl->lp->dev, bl,
--				       &lp8788_bl_ops, &props);
--	if (IS_ERR(bl_dev))
--		return PTR_ERR(bl_dev);
--
--	bl->bl_dev = bl_dev;
--
--	return 0;
--}
--
--static void lp8788_backlight_unregister(struct lp8788_bl *bl)
--{
--	struct backlight_device *bl_dev = bl->bl_dev;
--
--	backlight_device_unregister(bl_dev);
--}
--
--static ssize_t lp8788_get_bl_ctl_mode(struct device *dev,
--				     struct device_attribute *attr, char *buf)
--{
--	const char *strmode = "Register based";
--
--	return scnprintf(buf, PAGE_SIZE, "%s\n", strmode);
--}
--
--static DEVICE_ATTR(bl_ctl_mode, S_IRUGO, lp8788_get_bl_ctl_mode, NULL);
--
--static struct attribute *lp8788_attributes[] = {
--	&dev_attr_bl_ctl_mode.attr,
--	NULL,
--};
--
--static const struct attribute_group lp8788_attr_group = {
--	.attrs = lp8788_attributes,
--};
--
--static int lp8788_backlight_probe(struct platform_device *pdev)
--{
--	struct lp8788 *lp = dev_get_drvdata(pdev->dev.parent);
--	struct lp8788_bl *bl;
+-	u8 msg[2];
 -	int ret;
 -
--	bl = devm_kzalloc(lp->dev, sizeof(struct lp8788_bl), GFP_KERNEL);
--	if (!bl)
--		return -ENOMEM;
--
--	bl->lp = lp;
--
--	platform_set_drvdata(pdev, bl);
--
--	ret = lp8788_backlight_configure(bl);
--	if (ret) {
--		dev_err(lp->dev, "backlight config err: %d\n", ret);
--		goto err_dev;
+-	if (addr >= AAT2870_REG_NUM) {
+-		dev_err(aat2870->dev, "Invalid address, 0x%02x\n", addr);
+-		return -EINVAL;
 -	}
 -
--	ret = lp8788_backlight_register(bl);
--	if (ret) {
--		dev_err(lp->dev, "register backlight err: %d\n", ret);
--		goto err_dev;
+-	if (!aat2870->reg_cache[addr].writeable) {
+-		dev_err(aat2870->dev, "Address 0x%02x is not writeable\n",
+-			addr);
+-		return -EINVAL;
 -	}
 -
--	ret = sysfs_create_group(&pdev->dev.kobj, &lp8788_attr_group);
--	if (ret) {
--		dev_err(lp->dev, "register sysfs err: %d\n", ret);
--		goto err_sysfs;
--	}
+-	msg[0] = addr;
+-	msg[1] = val;
+-	ret = i2c_master_send(aat2870->client, msg, 2);
+-	if (ret < 0)
+-		return ret;
+-	if (ret != 2)
+-		return -EIO;
 -
--	backlight_update_status(bl->bl_dev);
+-	aat2870->reg_cache[addr].value = val;
 -
+-	dev_dbg(aat2870->dev, "write: addr=0x%02x, val=0x%02x\n", addr, val);
 -	return 0;
+-}
 -
--err_sysfs:
--	lp8788_backlight_unregister(bl);
--err_dev:
+-static int aat2870_read(struct aat2870_data *aat2870, u8 addr, u8 *val)
+-{
+-	int ret;
+-
+-	mutex_lock(&aat2870->io_lock);
+-	ret = __aat2870_read(aat2870, addr, val);
+-	mutex_unlock(&aat2870->io_lock);
+-
 -	return ret;
 -}
 -
--static void lp8788_backlight_remove(struct platform_device *pdev)
+-static int aat2870_write(struct aat2870_data *aat2870, u8 addr, u8 val)
 -{
--	struct lp8788_bl *bl = platform_get_drvdata(pdev);
--	struct backlight_device *bl_dev = bl->bl_dev;
+-	int ret;
 -
--	bl_dev->props.brightness = 0;
--	backlight_update_status(bl_dev);
--	sysfs_remove_group(&pdev->dev.kobj, &lp8788_attr_group);
--	lp8788_backlight_unregister(bl);
+-	mutex_lock(&aat2870->io_lock);
+-	ret = __aat2870_write(aat2870, addr, val);
+-	mutex_unlock(&aat2870->io_lock);
+-
+-	return ret;
 -}
 -
--static struct platform_driver lp8788_bl_driver = {
--	.probe = lp8788_backlight_probe,
--	.remove = lp8788_backlight_remove,
+-static int aat2870_update(struct aat2870_data *aat2870, u8 addr, u8 mask,
+-			  u8 val)
+-{
+-	int change;
+-	u8 old_val, new_val;
+-	int ret;
+-
+-	mutex_lock(&aat2870->io_lock);
+-
+-	ret = __aat2870_read(aat2870, addr, &old_val);
+-	if (ret)
+-		goto out_unlock;
+-
+-	new_val = (old_val & ~mask) | (val & mask);
+-	change = old_val != new_val;
+-	if (change)
+-		ret = __aat2870_write(aat2870, addr, new_val);
+-
+-out_unlock:
+-	mutex_unlock(&aat2870->io_lock);
+-
+-	return ret;
+-}
+-
+-static inline void aat2870_enable(struct aat2870_data *aat2870)
+-{
+-	if (aat2870->en_pin >= 0)
+-		gpio_set_value(aat2870->en_pin, 1);
+-
+-	aat2870->is_enable = 1;
+-}
+-
+-static inline void aat2870_disable(struct aat2870_data *aat2870)
+-{
+-	if (aat2870->en_pin >= 0)
+-		gpio_set_value(aat2870->en_pin, 0);
+-
+-	aat2870->is_enable = 0;
+-}
+-
+-#ifdef CONFIG_DEBUG_FS
+-static ssize_t aat2870_dump_reg(struct aat2870_data *aat2870, char *buf)
+-{
+-	u8 addr, val;
+-	ssize_t count = 0;
+-	int ret;
+-
+-	count += sprintf(buf, "aat2870 registers\n");
+-	for (addr = 0; addr < AAT2870_REG_NUM; addr++) {
+-		count += snprintf(buf + count, PAGE_SIZE - count, "0x%02x: ", addr);
+-		if (count >= PAGE_SIZE - 1)
+-			break;
+-
+-		ret = aat2870->read(aat2870, addr, &val);
+-		if (ret == 0)
+-			count += snprintf(buf + count, PAGE_SIZE - count,
+-					  "0x%02x", val);
+-		else
+-			count += snprintf(buf + count, PAGE_SIZE - count,
+-					  "<read fail: %d>", ret);
+-
+-		if (count >= PAGE_SIZE - 1)
+-			break;
+-
+-		count += snprintf(buf + count, PAGE_SIZE - count, "\n");
+-		if (count >= PAGE_SIZE - 1)
+-			break;
+-	}
+-
+-	/* Truncate count; min() would cause a warning */
+-	if (count >= PAGE_SIZE)
+-		count = PAGE_SIZE - 1;
+-
+-	return count;
+-}
+-
+-static ssize_t aat2870_reg_read_file(struct file *file, char __user *user_buf,
+-				     size_t count, loff_t *ppos)
+-{
+-	struct aat2870_data *aat2870 = file->private_data;
+-	char *buf;
+-	ssize_t ret;
+-
+-	buf = kmalloc(PAGE_SIZE, GFP_KERNEL);
+-	if (!buf)
+-		return -ENOMEM;
+-
+-	ret = aat2870_dump_reg(aat2870, buf);
+-	if (ret >= 0)
+-		ret = simple_read_from_buffer(user_buf, count, ppos, buf, ret);
+-
+-	kfree(buf);
+-
+-	return ret;
+-}
+-
+-static ssize_t aat2870_reg_write_file(struct file *file,
+-				      const char __user *user_buf, size_t count,
+-				      loff_t *ppos)
+-{
+-	struct aat2870_data *aat2870 = file->private_data;
+-	char buf[32];
+-	ssize_t buf_size;
+-	char *start = buf;
+-	unsigned long addr, val;
+-	int ret;
+-
+-	buf_size = min(count, (size_t)(sizeof(buf)-1));
+-	if (copy_from_user(buf, user_buf, buf_size)) {
+-		dev_err(aat2870->dev, "Failed to copy from user\n");
+-		return -EFAULT;
+-	}
+-	buf[buf_size] = 0;
+-
+-	while (*start == ' ')
+-		start++;
+-
+-	ret = kstrtoul(start, 16, &addr);
+-	if (ret)
+-		return ret;
+-
+-	if (addr >= AAT2870_REG_NUM) {
+-		dev_err(aat2870->dev, "Invalid address, 0x%lx\n", addr);
+-		return -EINVAL;
+-	}
+-
+-	while (*start == ' ')
+-		start++;
+-
+-	ret = kstrtoul(start, 16, &val);
+-	if (ret)
+-		return ret;
+-
+-	ret = aat2870->write(aat2870, (u8)addr, (u8)val);
+-	if (ret)
+-		return ret;
+-
+-	return buf_size;
+-}
+-
+-static const struct file_operations aat2870_reg_fops = {
+-	.open = simple_open,
+-	.read = aat2870_reg_read_file,
+-	.write = aat2870_reg_write_file,
+-};
+-
+-static void aat2870_init_debugfs(struct aat2870_data *aat2870)
+-{
+-	debugfs_create_file("regs", 0644, aat2870->client->debugfs, aat2870,
+-			    &aat2870_reg_fops);
+-}
+-
+-#else
+-static inline void aat2870_init_debugfs(struct aat2870_data *aat2870)
+-{
+-}
+-#endif /* CONFIG_DEBUG_FS */
+-
+-static int aat2870_i2c_probe(struct i2c_client *client)
+-{
+-	struct aat2870_platform_data *pdata = dev_get_platdata(&client->dev);
+-	struct aat2870_data *aat2870;
+-	int i, j;
+-	int ret = 0;
+-
+-	aat2870 = devm_kzalloc(&client->dev, sizeof(struct aat2870_data),
+-				GFP_KERNEL);
+-	if (!aat2870)
+-		return -ENOMEM;
+-
+-	aat2870->dev = &client->dev;
+-	aat2870->client = client;
+-	i2c_set_clientdata(client, aat2870);
+-
+-	aat2870->reg_cache = aat2870_regs;
+-
+-	if (pdata->en_pin < 0)
+-		aat2870->en_pin = -1;
+-	else
+-		aat2870->en_pin = pdata->en_pin;
+-
+-	aat2870->init = pdata->init;
+-	aat2870->uninit = pdata->uninit;
+-	aat2870->read = aat2870_read;
+-	aat2870->write = aat2870_write;
+-	aat2870->update = aat2870_update;
+-
+-	mutex_init(&aat2870->io_lock);
+-
+-	if (aat2870->init)
+-		aat2870->init(aat2870);
+-
+-	if (aat2870->en_pin >= 0) {
+-		ret = devm_gpio_request_one(&client->dev, aat2870->en_pin,
+-					GPIOF_OUT_INIT_HIGH, "aat2870-en");
+-		if (ret < 0) {
+-			dev_err(&client->dev,
+-				"Failed to request GPIO %d\n", aat2870->en_pin);
+-			return ret;
+-		}
+-	}
+-
+-	aat2870_enable(aat2870);
+-
+-	for (i = 0; i < pdata->num_subdevs; i++) {
+-		for (j = 0; j < ARRAY_SIZE(aat2870_devs); j++) {
+-			if ((pdata->subdevs[i].id == aat2870_devs[j].id) &&
+-					!strcmp(pdata->subdevs[i].name,
+-						aat2870_devs[j].name)) {
+-				aat2870_devs[j].platform_data =
+-					pdata->subdevs[i].platform_data;
+-				break;
+-			}
+-		}
+-	}
+-
+-	ret = mfd_add_devices(aat2870->dev, 0, aat2870_devs,
+-			      ARRAY_SIZE(aat2870_devs), NULL, 0, NULL);
+-	if (ret != 0) {
+-		dev_err(aat2870->dev, "Failed to add subdev: %d\n", ret);
+-		goto out_disable;
+-	}
+-
+-	aat2870_init_debugfs(aat2870);
+-
+-	return 0;
+-
+-out_disable:
+-	aat2870_disable(aat2870);
+-	return ret;
+-}
+-
+-static int aat2870_i2c_suspend(struct device *dev)
+-{
+-	struct i2c_client *client = to_i2c_client(dev);
+-	struct aat2870_data *aat2870 = i2c_get_clientdata(client);
+-
+-	aat2870_disable(aat2870);
+-
+-	return 0;
+-}
+-
+-static int aat2870_i2c_resume(struct device *dev)
+-{
+-	struct i2c_client *client = to_i2c_client(dev);
+-	struct aat2870_data *aat2870 = i2c_get_clientdata(client);
+-	struct aat2870_register *reg = NULL;
+-	int i;
+-
+-	aat2870_enable(aat2870);
+-
+-	/* restore registers */
+-	for (i = 0; i < AAT2870_REG_NUM; i++) {
+-		reg = &aat2870->reg_cache[i];
+-		if (reg->writeable)
+-			aat2870->write(aat2870, i, reg->value);
+-	}
+-
+-	return 0;
+-}
+-
+-static DEFINE_SIMPLE_DEV_PM_OPS(aat2870_pm_ops, aat2870_i2c_suspend,
+-				aat2870_i2c_resume);
+-
+-static const struct i2c_device_id aat2870_i2c_id_table[] = {
+-	{ "aat2870" },
+-	{ }
+-};
+-
+-static struct i2c_driver aat2870_i2c_driver = {
 -	.driver = {
--		.name = LP8788_DEV_BACKLIGHT,
+-		.name			= "aat2870",
+-		.pm			= pm_sleep_ptr(&aat2870_pm_ops),
+-		.suppress_bind_attrs	= true,
 -	},
+-	.probe		= aat2870_i2c_probe,
+-	.id_table	= aat2870_i2c_id_table,
 -};
--module_platform_driver(lp8788_bl_driver);
 -
--MODULE_DESCRIPTION("Texas Instruments LP8788 Backlight Driver");
--MODULE_AUTHOR("Milo Kim");
--MODULE_LICENSE("GPL");
--MODULE_ALIAS("platform:lp8788-backlight");
-diff --git a/include/linux/mfd/lp8788-isink.h b/include/linux/mfd/lp8788-isink.h
+-static int __init aat2870_init(void)
+-{
+-	return i2c_add_driver(&aat2870_i2c_driver);
+-}
+-subsys_initcall(aat2870_init);
+diff --git a/drivers/regulator/Kconfig b/drivers/regulator/Kconfig
+index 4b90d1cb045c..12d883e729bc 100644
+--- a/drivers/regulator/Kconfig
++++ b/drivers/regulator/Kconfig
+@@ -132,13 +132,6 @@ config REGULATOR_ANATOP
+ 	  regulators. It is recommended that this option be
+ 	  enabled on i.MX6 platform.
+ 
+-config REGULATOR_AAT2870
+-	tristate "AnalogicTech AAT2870 Regulators"
+-	depends on MFD_AAT2870_CORE
+-	help
+-	  If you have a AnalogicTech AAT2870 say Y to enable the
+-	  regulator driver.
+-
+ config REGULATOR_AB8500
+ 	bool "ST-Ericsson AB8500 Power Regulators"
+ 	depends on AB8500_CORE
+diff --git a/drivers/regulator/Makefile b/drivers/regulator/Makefile
+index fe0f099c217b..321c6ea73ee0 100644
+--- a/drivers/regulator/Makefile
++++ b/drivers/regulator/Makefile
+@@ -16,7 +16,6 @@ obj-$(CONFIG_REGULATOR_88PM8607) += 88pm8607.o
+ obj-$(CONFIG_REGULATOR_88PM886) += 88pm886-regulator.o
+ obj-$(CONFIG_REGULATOR_CROS_EC) += cros-ec-regulator.o
+ obj-$(CONFIG_REGULATOR_CPCAP) += cpcap-regulator.o
+-obj-$(CONFIG_REGULATOR_AAT2870) += aat2870-regulator.o
+ obj-$(CONFIG_REGULATOR_AB8500)	+= ab8500-ext.o ab8500.o
+ obj-$(CONFIG_REGULATOR_ACT8865) += act8865-regulator.o
+ obj-$(CONFIG_REGULATOR_ACT8945A) += act8945a-regulator.o
+diff --git a/drivers/regulator/aat2870-regulator.c b/drivers/regulator/aat2870-regulator.c
 deleted file mode 100644
-index 464dc4c937e4..000000000000
---- a/include/linux/mfd/lp8788-isink.h
+index 970d86f2bbb8..000000000000
+--- a/drivers/regulator/aat2870-regulator.c
 +++ /dev/null
-@@ -1,48 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0-only */
+@@ -1,201 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-only
 -/*
-- * TI LP8788 MFD - common definitions for current sinks
+- * linux/drivers/regulator/aat2870-regulator.c
 - *
-- * Copyright 2012 Texas Instruments
-- *
-- * Author: Milo(Woogyom) Kim <milo.kim@ti.com>
+- * Copyright (c) 2011, NVIDIA Corporation.
+- * Author: Jin Park <jinyoungp@nvidia.com>
 - */
 -
--#ifndef __ISINK_LP8788_H__
--#define __ISINK_LP8788_H__
+-#include <linux/kernel.h>
+-#include <linux/init.h>
+-#include <linux/err.h>
+-#include <linux/module.h>
+-#include <linux/slab.h>
+-#include <linux/platform_device.h>
+-#include <linux/regulator/driver.h>
+-#include <linux/regulator/machine.h>
+-#include <linux/mfd/aat2870.h>
 -
--/* register address */
--#define LP8788_ISINK_CTRL		0x99
--#define LP8788_ISINK12_IOUT		0x9A
--#define LP8788_ISINK3_IOUT		0x9B
--#define LP8788_ISINK1_PWM		0x9C
--#define LP8788_ISINK2_PWM		0x9D
--#define LP8788_ISINK3_PWM		0x9E
+-struct aat2870_regulator {
+-	struct aat2870_data *aat2870;
+-	struct regulator_desc desc;
 -
--/* mask bits */
--#define LP8788_ISINK1_IOUT_M		0x0F	/* Addr 9Ah */
--#define LP8788_ISINK2_IOUT_M		0xF0
--#define LP8788_ISINK3_IOUT_M		0x0F	/* Addr 9Bh */
+-	u8 enable_addr;
+-	u8 enable_shift;
+-	u8 enable_mask;
 -
--/* 6 bits used for PWM code : Addr 9C ~ 9Eh */
--#define LP8788_ISINK_MAX_PWM		63
--#define LP8788_ISINK_SCALE_OFFSET	3
--
--static const u8 lp8788_iout_addr[] = {
--	LP8788_ISINK12_IOUT,
--	LP8788_ISINK12_IOUT,
--	LP8788_ISINK3_IOUT,
+-	u8 voltage_addr;
+-	u8 voltage_shift;
+-	u8 voltage_mask;
 -};
 -
--static const u8 lp8788_iout_mask[] = {
--	LP8788_ISINK1_IOUT_M,
--	LP8788_ISINK2_IOUT_M,
--	LP8788_ISINK3_IOUT_M,
--};
+-static int aat2870_ldo_set_voltage_sel(struct regulator_dev *rdev,
+-				       unsigned selector)
+-{
+-	struct aat2870_regulator *ri = rdev_get_drvdata(rdev);
+-	struct aat2870_data *aat2870 = ri->aat2870;
 -
--static const u8 lp8788_pwm_addr[] = {
--	LP8788_ISINK1_PWM,
--	LP8788_ISINK2_PWM,
--	LP8788_ISINK3_PWM,
--};
+-	return aat2870->update(aat2870, ri->voltage_addr, ri->voltage_mask,
+-			       selector << ri->voltage_shift);
+-}
 -
--#endif
-diff --git a/include/linux/mfd/lp8788.h b/include/linux/mfd/lp8788.h
-deleted file mode 100644
-index fd17bec2a33e..000000000000
---- a/include/linux/mfd/lp8788.h
-+++ /dev/null
-@@ -1,289 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0-only */
--/*
-- * TI LP8788 MFD Device
-- *
-- * Copyright 2012 Texas Instruments
-- *
-- * Author: Milo(Woogyom) Kim <milo.kim@ti.com>
-- */
--
--#ifndef __MFD_LP8788_H__
--#define __MFD_LP8788_H__
--
--#include <linux/irqdomain.h>
--#include <linux/regmap.h>
--
--#define LP8788_DEV_BUCK		"lp8788-buck"
--#define LP8788_DEV_DLDO		"lp8788-dldo"
--#define LP8788_DEV_ALDO		"lp8788-aldo"
--#define LP8788_DEV_CHARGER	"lp8788-charger"
--#define LP8788_DEV_RTC		"lp8788-rtc"
--#define LP8788_DEV_BACKLIGHT	"lp8788-backlight"
--#define LP8788_DEV_VIBRATOR	"lp8788-vibrator"
--#define LP8788_DEV_KEYLED	"lp8788-keyled"
--#define LP8788_DEV_ADC		"lp8788-adc"
--
--#define LP8788_NUM_BUCKS	4
--#define LP8788_NUM_DLDOS	12
--#define LP8788_NUM_ALDOS	10
--#define LP8788_NUM_BUCK2_DVS	2
--
--#define LP8788_CHG_IRQ		"CHG_IRQ"
--#define LP8788_PRSW_IRQ		"PRSW_IRQ"
--#define LP8788_BATT_IRQ		"BATT_IRQ"
--#define LP8788_ALM_IRQ		"ALARM_IRQ"
--
--enum lp8788_int_id {
--	/* interrup register 1 : Addr 00h */
--	LP8788_INT_TSDL,
--	LP8788_INT_TSDH,
--	LP8788_INT_UVLO,
--	LP8788_INT_FLAGMON,
--	LP8788_INT_PWRON_TIME,
--	LP8788_INT_PWRON,
--	LP8788_INT_COMP1,
--	LP8788_INT_COMP2,
--
--	/* interrupt register 2 : Addr 01h */
--	LP8788_INT_CHG_INPUT_STATE,
--	LP8788_INT_CHG_STATE,
--	LP8788_INT_EOC,
--	LP8788_INT_CHG_RESTART,
--	LP8788_INT_RESTART_TIMEOUT,
--	LP8788_INT_FULLCHG_TIMEOUT,
--	LP8788_INT_PRECHG_TIMEOUT,
--
--	/* interrupt register 3 : Addr 02h */
--	LP8788_INT_RTC_ALARM1 = 17,
--	LP8788_INT_RTC_ALARM2,
--	LP8788_INT_ENTER_SYS_SUPPORT,
--	LP8788_INT_EXIT_SYS_SUPPORT,
--	LP8788_INT_BATT_LOW,
--	LP8788_INT_NO_BATT,
--
--	LP8788_INT_MAX = 24,
--};
--
--enum lp8788_dvs_sel {
--	DVS_SEL_V0,
--	DVS_SEL_V1,
--	DVS_SEL_V2,
--	DVS_SEL_V3,
--};
--
--enum lp8788_ext_ldo_en_id {
--	EN_ALDO1,
--	EN_ALDO234,
--	EN_ALDO5,
--	EN_ALDO7,
--	EN_DLDO7,
--	EN_DLDO911,
--	EN_LDOS_MAX,
--};
--
--enum lp8788_charger_event {
--	NO_CHARGER,
--	CHARGER_DETECTED,
--};
--
--enum lp8788_bl_dim_mode {
--	LP8788_DIM_EXPONENTIAL,
--	LP8788_DIM_LINEAR,
--};
--
--enum lp8788_bl_full_scale_current {
--	LP8788_FULLSCALE_5000uA,
--	LP8788_FULLSCALE_8500uA,
--	LP8788_FULLSCALE_1200uA,
--	LP8788_FULLSCALE_1550uA,
--	LP8788_FULLSCALE_1900uA,
--	LP8788_FULLSCALE_2250uA,
--	LP8788_FULLSCALE_2600uA,
--	LP8788_FULLSCALE_2950uA,
--};
--
--enum lp8788_bl_ramp_step {
--	LP8788_RAMP_8us,
--	LP8788_RAMP_1024us,
--	LP8788_RAMP_2048us,
--	LP8788_RAMP_4096us,
--	LP8788_RAMP_8192us,
--	LP8788_RAMP_16384us,
--	LP8788_RAMP_32768us,
--	LP8788_RAMP_65538us,
--};
--
--enum lp8788_isink_scale {
--	LP8788_ISINK_SCALE_100mA,
--	LP8788_ISINK_SCALE_120mA,
--};
--
--enum lp8788_isink_number {
--	LP8788_ISINK_1,
--	LP8788_ISINK_2,
--	LP8788_ISINK_3,
--};
--
--enum lp8788_alarm_sel {
--	LP8788_ALARM_1,
--	LP8788_ALARM_2,
--	LP8788_ALARM_MAX,
--};
--
--enum lp8788_adc_id {
--	LPADC_VBATT_5P5,
--	LPADC_VIN_CHG,
--	LPADC_IBATT,
--	LPADC_IC_TEMP,
--	LPADC_VBATT_6P0,
--	LPADC_VBATT_5P0,
--	LPADC_ADC1,
--	LPADC_ADC2,
--	LPADC_VDD,
--	LPADC_VCOIN,
--	LPADC_VDD_LDO,
--	LPADC_ADC3,
--	LPADC_ADC4,
--	LPADC_MAX,
--};
--
--struct lp8788;
--
--/*
-- * lp8788_buck1_dvs
-- * @vsel         : dvs selector for buck v1 register
-- */
--struct lp8788_buck1_dvs {
--	enum lp8788_dvs_sel vsel;
--};
--
--/*
-- * lp8788_buck2_dvs
-- * @vsel         : dvs selector for buck v2 register
-- */
--struct lp8788_buck2_dvs {
--	enum lp8788_dvs_sel vsel;
--};
--
--/*
-- * struct lp8788_chg_param
-- * @addr         : charging control register address (range : 0x11 ~ 0x1C)
-- * @val          : charging parameter value
-- */
--struct lp8788_chg_param {
--	u8 addr;
+-static int aat2870_ldo_get_voltage_sel(struct regulator_dev *rdev)
+-{
+-	struct aat2870_regulator *ri = rdev_get_drvdata(rdev);
+-	struct aat2870_data *aat2870 = ri->aat2870;
 -	u8 val;
+-	int ret;
+-
+-	ret = aat2870->read(aat2870, ri->voltage_addr, &val);
+-	if (ret)
+-		return ret;
+-
+-	return (val & ri->voltage_mask) >> ri->voltage_shift;
+-}
+-
+-static int aat2870_ldo_enable(struct regulator_dev *rdev)
+-{
+-	struct aat2870_regulator *ri = rdev_get_drvdata(rdev);
+-	struct aat2870_data *aat2870 = ri->aat2870;
+-
+-	return aat2870->update(aat2870, ri->enable_addr, ri->enable_mask,
+-			       ri->enable_mask);
+-}
+-
+-static int aat2870_ldo_disable(struct regulator_dev *rdev)
+-{
+-	struct aat2870_regulator *ri = rdev_get_drvdata(rdev);
+-	struct aat2870_data *aat2870 = ri->aat2870;
+-
+-	return aat2870->update(aat2870, ri->enable_addr, ri->enable_mask, 0);
+-}
+-
+-static int aat2870_ldo_is_enabled(struct regulator_dev *rdev)
+-{
+-	struct aat2870_regulator *ri = rdev_get_drvdata(rdev);
+-	struct aat2870_data *aat2870 = ri->aat2870;
+-	u8 val;
+-	int ret;
+-
+-	ret = aat2870->read(aat2870, ri->enable_addr, &val);
+-	if (ret)
+-		return ret;
+-
+-	return val & ri->enable_mask ? 1 : 0;
+-}
+-
+-static const struct regulator_ops aat2870_ldo_ops = {
+-	.list_voltage = regulator_list_voltage_table,
+-	.map_voltage = regulator_map_voltage_ascend,
+-	.set_voltage_sel = aat2870_ldo_set_voltage_sel,
+-	.get_voltage_sel = aat2870_ldo_get_voltage_sel,
+-	.enable = aat2870_ldo_enable,
+-	.disable = aat2870_ldo_disable,
+-	.is_enabled = aat2870_ldo_is_enabled,
 -};
 -
--/*
-- * struct lp8788_charger_platform_data
-- * @adc_vbatt         : adc channel name for battery voltage
-- * @adc_batt_temp     : adc channel name for battery temperature
-- * @max_vbatt_mv      : used for calculating battery capacity
-- * @chg_params        : initial charging parameters
-- * @num_chg_params    : numbers of charging parameters
-- * @charger_event     : the charger event can be reported to the platform side
-- */
--struct lp8788_charger_platform_data {
--	const char *adc_vbatt;
--	const char *adc_batt_temp;
--	unsigned int max_vbatt_mv;
--	struct lp8788_chg_param *chg_params;
--	int num_chg_params;
--	void (*charger_event) (struct lp8788 *lp,
--				enum lp8788_charger_event event);
+-static const unsigned int aat2870_ldo_voltages[] = {
+-	1200000, 1300000, 1500000, 1600000,
+-	1800000, 2000000, 2200000, 2500000,
+-	2600000, 2700000, 2800000, 2900000,
+-	3000000, 3100000, 3200000, 3300000,
 -};
 -
--/*
-- * struct lp8788_led_platform_data
-- * @name         : led driver name. (default: "keyboard-backlight")
-- * @scale        : current scale
-- * @num          : current sink number
-- * @iout_code    : current output value (Addr 9Ah ~ 9Bh)
-- */
--struct lp8788_led_platform_data {
--	char *name;
--	enum lp8788_isink_scale scale;
--	enum lp8788_isink_number num;
--	int iout_code;
+-#define AAT2870_LDO(ids)				\
+-	{						\
+-		.desc = {				\
+-			.name = #ids,			\
+-			.id = AAT2870_ID_##ids,		\
+-			.n_voltages = ARRAY_SIZE(aat2870_ldo_voltages),	\
+-			.volt_table = aat2870_ldo_voltages, \
+-			.ops = &aat2870_ldo_ops,	\
+-			.type = REGULATOR_VOLTAGE,	\
+-			.owner = THIS_MODULE,		\
+-		},					\
+-	}
+-
+-static struct aat2870_regulator aat2870_regulators[] = {
+-	AAT2870_LDO(LDOA),
+-	AAT2870_LDO(LDOB),
+-	AAT2870_LDO(LDOC),
+-	AAT2870_LDO(LDOD),
 -};
 -
--/*
-- * struct lp8788_vib_platform_data
-- * @name         : vibrator driver name
-- * @scale        : current scale
-- * @num          : current sink number
-- * @iout_code    : current output value (Addr 9Ah ~ 9Bh)
-- * @pwm_code     : PWM code value (Addr 9Ch ~ 9Eh)
-- */
--struct lp8788_vib_platform_data {
--	char *name;
--	enum lp8788_isink_scale scale;
--	enum lp8788_isink_number num;
--	int iout_code;
--	int pwm_code;
+-static struct aat2870_regulator *aat2870_get_regulator(int id)
+-{
+-	struct aat2870_regulator *ri = NULL;
+-	int i;
+-
+-	for (i = 0; i < ARRAY_SIZE(aat2870_regulators); i++) {
+-		ri = &aat2870_regulators[i];
+-		if (ri->desc.id == id)
+-			break;
+-	}
+-
+-	if (i == ARRAY_SIZE(aat2870_regulators))
+-		return NULL;
+-
+-	ri->enable_addr = AAT2870_LDO_EN;
+-	ri->enable_shift = id - AAT2870_ID_LDOA;
+-	ri->enable_mask = 0x1 << ri->enable_shift;
+-
+-	ri->voltage_addr = (id - AAT2870_ID_LDOA) / 2 ?
+-			   AAT2870_LDO_CD : AAT2870_LDO_AB;
+-	ri->voltage_shift = (id - AAT2870_ID_LDOA) % 2 ? 0 : 4;
+-	ri->voltage_mask = 0xF << ri->voltage_shift;
+-
+-	return ri;
+-}
+-
+-static int aat2870_regulator_probe(struct platform_device *pdev)
+-{
+-	struct aat2870_regulator *ri;
+-	struct regulator_config config = { };
+-	struct regulator_dev *rdev;
+-
+-	ri = aat2870_get_regulator(pdev->id);
+-	if (!ri) {
+-		dev_err(&pdev->dev, "Invalid device ID, %d\n", pdev->id);
+-		return -EINVAL;
+-	}
+-	ri->aat2870 = dev_get_drvdata(pdev->dev.parent);
+-
+-	config.dev = &pdev->dev;
+-	config.driver_data = ri;
+-	config.init_data = dev_get_platdata(&pdev->dev);
+-
+-	rdev = devm_regulator_register(&pdev->dev, &ri->desc, &config);
+-	if (IS_ERR(rdev)) {
+-		dev_err(&pdev->dev, "Failed to register regulator %s\n",
+-			ri->desc.name);
+-		return PTR_ERR(rdev);
+-	}
+-	platform_set_drvdata(pdev, rdev);
+-
+-	return 0;
+-}
+-
+-static struct platform_driver aat2870_regulator_driver = {
+-	.driver = {
+-		.name	= "aat2870-regulator",
+-		.probe_type = PROBE_PREFER_ASYNCHRONOUS,
+-	},
+-	.probe	= aat2870_regulator_probe,
 -};
 -
+-static int __init aat2870_regulator_init(void)
+-{
+-	return platform_driver_register(&aat2870_regulator_driver);
+-}
+-subsys_initcall(aat2870_regulator_init);
+-
+-static void __exit aat2870_regulator_exit(void)
+-{
+-	platform_driver_unregister(&aat2870_regulator_driver);
+-}
+-module_exit(aat2870_regulator_exit);
+-
+-MODULE_DESCRIPTION("AnalogicTech AAT2870 Regulator");
+-MODULE_LICENSE("GPL");
+-MODULE_AUTHOR("Jin Park <jinyoungp@nvidia.com>");
+-MODULE_ALIAS("platform:aat2870-regulator");
+diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+index 2c206d2713e3..4acbac1bbb9e 100644
+--- a/drivers/video/backlight/Kconfig
++++ b/drivers/video/backlight/Kconfig
+@@ -388,13 +388,6 @@ config BACKLIGHT_88PM860X
+ 	help
+ 	  Say Y to enable the backlight driver for Marvell 88PM8606.
+ 
+-config BACKLIGHT_AAT2870
+-	tristate "AnalogicTech AAT2870 Backlight"
+-	depends on MFD_AAT2870_CORE
+-	help
+-	  If you have a AnalogicTech AAT2870 say Y to enable the
+-	  backlight driver.
+-
+ config BACKLIGHT_LM3509
+ 	tristate "Backlight Driver for LM3509"
+ 	depends on I2C
+diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
+index 0497eaa639cd..e11175bdd500 100644
+--- a/drivers/video/backlight/Makefile
++++ b/drivers/video/backlight/Makefile
+@@ -18,7 +18,6 @@ obj-$(CONFIG_LCD_TDO24M)		+= tdo24m.o
+ obj-$(CONFIG_LCD_VGG2432A4)		+= vgg2432a4.o
+ 
+ obj-$(CONFIG_BACKLIGHT_88PM860X)	+= 88pm860x_bl.o
+-obj-$(CONFIG_BACKLIGHT_AAT2870)		+= aat2870_bl.o
+ obj-$(CONFIG_BACKLIGHT_ADP8860)		+= adp8860_bl.o
+ obj-$(CONFIG_BACKLIGHT_ADP8870)		+= adp8870_bl.o
+ obj-$(CONFIG_BACKLIGHT_APPLE)		+= apple_bl.o
+diff --git a/drivers/video/backlight/aat2870_bl.c b/drivers/video/backlight/aat2870_bl.c
+deleted file mode 100644
+index 8b790df1e842..000000000000
+--- a/drivers/video/backlight/aat2870_bl.c
++++ /dev/null
+@@ -1,206 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-only
 -/*
-- * struct lp8788_platform_data
-- * @init_func    : used for initializing registers
-- *                 before mfd driver is registered
-- * @buck_data    : regulator initial data for buck
-- * @dldo_data    : regulator initial data for digital ldo
-- * @aldo_data    : regulator initial data for analog ldo
-- * @buck1_dvs    : configurations for buck1 dvs
-- * @buck2_dvs    : configurations for buck2 dvs
-- * @chg_pdata    : platform data for charger driver
-- * @alarm_sel    : rtc alarm selection (1 or 2)
-- * @led_pdata    : configurable data for led driver
-- * @vib_pdata    : configurable data for vibrator driver
-- * @adc_pdata    : iio map data for adc driver
+- * linux/drivers/video/backlight/aat2870_bl.c
+- *
+- * Copyright (c) 2011, NVIDIA Corporation.
+- * Author: Jin Park <jinyoungp@nvidia.com>
 - */
--struct lp8788_platform_data {
--	/* general system information */
--	int (*init_func) (struct lp8788 *lp);
 -
--	/* regulators */
--	struct regulator_init_data *buck_data[LP8788_NUM_BUCKS];
--	struct regulator_init_data *dldo_data[LP8788_NUM_DLDOS];
--	struct regulator_init_data *aldo_data[LP8788_NUM_ALDOS];
--	struct lp8788_buck1_dvs *buck1_dvs;
--	struct lp8788_buck2_dvs *buck2_dvs;
+-#include <linux/module.h>
+-#include <linux/kernel.h>
+-#include <linux/init.h>
+-#include <linux/platform_device.h>
+-#include <linux/mutex.h>
+-#include <linux/delay.h>
+-#include <linux/backlight.h>
+-#include <linux/mfd/aat2870.h>
 -
--	/* charger */
--	struct lp8788_charger_platform_data *chg_pdata;
+-struct aat2870_bl_driver_data {
+-	struct platform_device *pdev;
+-	struct backlight_device *bd;
 -
--	/* rtc alarm */
--	enum lp8788_alarm_sel alarm_sel;
--
--	/* current sinks */
--	struct lp8788_led_platform_data *led_pdata;
--	struct lp8788_vib_platform_data *vib_pdata;
--
--	/* adc iio map data */
--	struct iio_map *adc_pdata;
+-	int channels;
+-	int max_current;
+-	int brightness; /* current brightness */
 -};
 -
+-static inline int aat2870_brightness(struct aat2870_bl_driver_data *aat2870_bl,
+-				     int brightness)
+-{
+-	struct backlight_device *bd = aat2870_bl->bd;
+-	int val;
+-
+-	val = brightness * (aat2870_bl->max_current - 1);
+-	val /= bd->props.max_brightness;
+-
+-	return val;
+-}
+-
+-static inline int aat2870_bl_enable(struct aat2870_bl_driver_data *aat2870_bl)
+-{
+-	struct aat2870_data *aat2870
+-			= dev_get_drvdata(aat2870_bl->pdev->dev.parent);
+-
+-	return aat2870->write(aat2870, AAT2870_BL_CH_EN,
+-			      (u8)aat2870_bl->channels);
+-}
+-
+-static inline int aat2870_bl_disable(struct aat2870_bl_driver_data *aat2870_bl)
+-{
+-	struct aat2870_data *aat2870
+-			= dev_get_drvdata(aat2870_bl->pdev->dev.parent);
+-
+-	return aat2870->write(aat2870, AAT2870_BL_CH_EN, 0x0);
+-}
+-
+-static int aat2870_bl_update_status(struct backlight_device *bd)
+-{
+-	struct aat2870_bl_driver_data *aat2870_bl = bl_get_data(bd);
+-	struct aat2870_data *aat2870 =
+-			dev_get_drvdata(aat2870_bl->pdev->dev.parent);
+-	int brightness = backlight_get_brightness(bd);
+-	int ret;
+-
+-	if ((brightness < 0) || (bd->props.max_brightness < brightness)) {
+-		dev_err(&bd->dev, "invalid brightness, %d\n", brightness);
+-		return -EINVAL;
+-	}
+-
+-	dev_dbg(&bd->dev, "brightness=%d, power=%d, state=%d\n",
+-		 bd->props.brightness, bd->props.power, bd->props.state);
+-
+-	ret = aat2870->write(aat2870, AAT2870_BLM,
+-			     (u8)aat2870_brightness(aat2870_bl, brightness));
+-	if (ret < 0)
+-		return ret;
+-
+-	if (brightness == 0) {
+-		ret = aat2870_bl_disable(aat2870_bl);
+-		if (ret < 0)
+-			return ret;
+-	} else if (aat2870_bl->brightness == 0) {
+-		ret = aat2870_bl_enable(aat2870_bl);
+-		if (ret < 0)
+-			return ret;
+-	}
+-
+-	aat2870_bl->brightness = brightness;
+-
+-	return 0;
+-}
+-
+-static const struct backlight_ops aat2870_bl_ops = {
+-	.options = BL_CORE_SUSPENDRESUME,
+-	.update_status = aat2870_bl_update_status,
+-};
+-
+-static int aat2870_bl_probe(struct platform_device *pdev)
+-{
+-	struct aat2870_bl_platform_data *pdata = dev_get_platdata(&pdev->dev);
+-	struct aat2870_bl_driver_data *aat2870_bl;
+-	struct backlight_device *bd;
+-	struct backlight_properties props;
+-	int ret = 0;
+-
+-	if (!pdata) {
+-		dev_err(&pdev->dev, "No platform data\n");
+-		ret = -ENXIO;
+-		goto out;
+-	}
+-
+-	if (pdev->id != AAT2870_ID_BL) {
+-		dev_err(&pdev->dev, "Invalid device ID, %d\n", pdev->id);
+-		ret = -EINVAL;
+-		goto out;
+-	}
+-
+-	aat2870_bl = devm_kzalloc(&pdev->dev,
+-				  sizeof(struct aat2870_bl_driver_data),
+-				  GFP_KERNEL);
+-	if (!aat2870_bl) {
+-		ret = -ENOMEM;
+-		goto out;
+-	}
+-
+-	memset(&props, 0, sizeof(struct backlight_properties));
+-
+-	props.type = BACKLIGHT_RAW;
+-	bd = devm_backlight_device_register(&pdev->dev, "aat2870-backlight",
+-					&pdev->dev, aat2870_bl, &aat2870_bl_ops,
+-					&props);
+-	if (IS_ERR(bd)) {
+-		dev_err(&pdev->dev,
+-			"Failed allocate memory for backlight device\n");
+-		ret = PTR_ERR(bd);
+-		goto out;
+-	}
+-
+-	aat2870_bl->pdev = pdev;
+-	platform_set_drvdata(pdev, aat2870_bl);
+-
+-	aat2870_bl->bd = bd;
+-
+-	if (pdata->channels > 0)
+-		aat2870_bl->channels = pdata->channels;
+-	else
+-		aat2870_bl->channels = AAT2870_BL_CH_ALL;
+-
+-	if (pdata->max_current > 0)
+-		aat2870_bl->max_current = pdata->max_current;
+-	else
+-		aat2870_bl->max_current = AAT2870_CURRENT_27_9;
+-
+-	if (pdata->max_brightness > 0)
+-		bd->props.max_brightness = pdata->max_brightness;
+-	else
+-		bd->props.max_brightness = 255;
+-
+-	aat2870_bl->brightness = 0;
+-	bd->props.power = BACKLIGHT_POWER_ON;
+-	bd->props.brightness = bd->props.max_brightness;
+-
+-	ret = aat2870_bl_update_status(bd);
+-	if (ret < 0) {
+-		dev_err(&pdev->dev, "Failed to initialize\n");
+-		return ret;
+-	}
+-
+-	return 0;
+-
+-out:
+-	return ret;
+-}
+-
+-static void aat2870_bl_remove(struct platform_device *pdev)
+-{
+-	struct aat2870_bl_driver_data *aat2870_bl = platform_get_drvdata(pdev);
+-	struct backlight_device *bd = aat2870_bl->bd;
+-
+-	bd->props.power = BACKLIGHT_POWER_OFF;
+-	bd->props.brightness = 0;
+-	backlight_update_status(bd);
+-}
+-
+-static struct platform_driver aat2870_bl_driver = {
+-	.driver = {
+-		.name	= "aat2870-backlight",
+-	},
+-	.probe		= aat2870_bl_probe,
+-	.remove		= aat2870_bl_remove,
+-};
+-
+-static int __init aat2870_bl_init(void)
+-{
+-	return platform_driver_register(&aat2870_bl_driver);
+-}
+-subsys_initcall(aat2870_bl_init);
+-
+-static void __exit aat2870_bl_exit(void)
+-{
+-	platform_driver_unregister(&aat2870_bl_driver);
+-}
+-module_exit(aat2870_bl_exit);
+-
+-MODULE_DESCRIPTION("AnalogicTech AAT2870 Backlight");
+-MODULE_LICENSE("GPL");
+-MODULE_AUTHOR("Jin Park <jinyoungp@nvidia.com>");
+diff --git a/include/linux/mfd/aat2870.h b/include/linux/mfd/aat2870.h
+deleted file mode 100644
+index c7a3c53eba68..000000000000
+--- a/include/linux/mfd/aat2870.h
++++ /dev/null
+@@ -1,164 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0-only */
 -/*
-- * struct lp8788
-- * @dev          : parent device pointer
-- * @regmap       : used for i2c communcation on accessing registers
-- * @irqdm        : interrupt domain for handling nested interrupt
-- * @irq          : pin number of IRQ_N
-- * @pdata        : lp8788 platform specific data
+- * linux/include/linux/mfd/aat2870.h
+- *
+- * Copyright (c) 2011, NVIDIA Corporation.
+- * Author: Jin Park <jinyoungp@nvidia.com>
 - */
--struct lp8788 {
+-
+-#ifndef __LINUX_MFD_AAT2870_H
+-#define __LINUX_MFD_AAT2870_H
+-
+-#include <linux/debugfs.h>
+-#include <linux/i2c.h>
+-
+-/* Register offsets */
+-#define AAT2870_BL_CH_EN	0x00
+-#define AAT2870_BLM		0x01
+-#define AAT2870_BLS		0x02
+-#define AAT2870_BL1		0x03
+-#define AAT2870_BL2		0x04
+-#define AAT2870_BL3		0x05
+-#define AAT2870_BL4		0x06
+-#define AAT2870_BL5		0x07
+-#define AAT2870_BL6		0x08
+-#define AAT2870_BL7		0x09
+-#define AAT2870_BL8		0x0A
+-#define AAT2870_FLR		0x0B
+-#define AAT2870_FM		0x0C
+-#define AAT2870_FS		0x0D
+-#define AAT2870_ALS_CFG0	0x0E
+-#define AAT2870_ALS_CFG1	0x0F
+-#define AAT2870_ALS_CFG2	0x10
+-#define AAT2870_AMB		0x11
+-#define AAT2870_ALS0		0x12
+-#define AAT2870_ALS1		0x13
+-#define AAT2870_ALS2		0x14
+-#define AAT2870_ALS3		0x15
+-#define AAT2870_ALS4		0x16
+-#define AAT2870_ALS5		0x17
+-#define AAT2870_ALS6		0x18
+-#define AAT2870_ALS7		0x19
+-#define AAT2870_ALS8		0x1A
+-#define AAT2870_ALS9		0x1B
+-#define AAT2870_ALSA		0x1C
+-#define AAT2870_ALSB		0x1D
+-#define AAT2870_ALSC		0x1E
+-#define AAT2870_ALSD		0x1F
+-#define AAT2870_ALSE		0x20
+-#define AAT2870_ALSF		0x21
+-#define AAT2870_SUB_SET		0x22
+-#define AAT2870_SUB_CTRL	0x23
+-#define AAT2870_LDO_AB		0x24
+-#define AAT2870_LDO_CD		0x25
+-#define AAT2870_LDO_EN		0x26
+-#define AAT2870_REG_NUM		0x27
+-
+-/* Device IDs */
+-enum aat2870_id {
+-	AAT2870_ID_BL,
+-	AAT2870_ID_LDOA,
+-	AAT2870_ID_LDOB,
+-	AAT2870_ID_LDOC,
+-	AAT2870_ID_LDOD
+-};
+-
+-/* Backlight channels */
+-#define AAT2870_BL_CH1		0x01
+-#define AAT2870_BL_CH2		0x02
+-#define AAT2870_BL_CH3		0x04
+-#define AAT2870_BL_CH4		0x08
+-#define AAT2870_BL_CH5		0x10
+-#define AAT2870_BL_CH6		0x20
+-#define AAT2870_BL_CH7		0x40
+-#define AAT2870_BL_CH8		0x80
+-#define AAT2870_BL_CH_ALL	0xFF
+-
+-/* Backlight current magnitude (mA) */
+-enum aat2870_current {
+-	AAT2870_CURRENT_0_45 = 1,
+-	AAT2870_CURRENT_0_90,
+-	AAT2870_CURRENT_1_80,
+-	AAT2870_CURRENT_2_70,
+-	AAT2870_CURRENT_3_60,
+-	AAT2870_CURRENT_4_50,
+-	AAT2870_CURRENT_5_40,
+-	AAT2870_CURRENT_6_30,
+-	AAT2870_CURRENT_7_20,
+-	AAT2870_CURRENT_8_10,
+-	AAT2870_CURRENT_9_00,
+-	AAT2870_CURRENT_9_90,
+-	AAT2870_CURRENT_10_8,
+-	AAT2870_CURRENT_11_7,
+-	AAT2870_CURRENT_12_6,
+-	AAT2870_CURRENT_13_5,
+-	AAT2870_CURRENT_14_4,
+-	AAT2870_CURRENT_15_3,
+-	AAT2870_CURRENT_16_2,
+-	AAT2870_CURRENT_17_1,
+-	AAT2870_CURRENT_18_0,
+-	AAT2870_CURRENT_18_9,
+-	AAT2870_CURRENT_19_8,
+-	AAT2870_CURRENT_20_7,
+-	AAT2870_CURRENT_21_6,
+-	AAT2870_CURRENT_22_5,
+-	AAT2870_CURRENT_23_4,
+-	AAT2870_CURRENT_24_3,
+-	AAT2870_CURRENT_25_2,
+-	AAT2870_CURRENT_26_1,
+-	AAT2870_CURRENT_27_0,
+-	AAT2870_CURRENT_27_9
+-};
+-
+-struct aat2870_register {
+-	bool readable;
+-	bool writeable;
+-	u8 value;
+-};
+-
+-struct aat2870_data {
 -	struct device *dev;
--	struct regmap *regmap;
--	struct irq_domain *irqdm;
--	int irq;
--	struct lp8788_platform_data *pdata;
+-	struct i2c_client *client;
+-
+-	struct mutex io_lock;
+-	struct aat2870_register *reg_cache; /* register cache */
+-	int en_pin; /* enable GPIO pin (if < 0, ignore this value) */
+-	bool is_enable;
+-
+-	/* init and uninit for platform specified */
+-	int (*init)(struct aat2870_data *aat2870);
+-	void (*uninit)(struct aat2870_data *aat2870);
+-
+-	/* i2c io funcntions */
+-	int (*read)(struct aat2870_data *aat2870, u8 addr, u8 *val);
+-	int (*write)(struct aat2870_data *aat2870, u8 addr, u8 val);
+-	int (*update)(struct aat2870_data *aat2870, u8 addr, u8 mask, u8 val);
 -};
 -
--int lp8788_irq_init(struct lp8788 *lp, int chip_irq);
--void lp8788_irq_exit(struct lp8788 *lp);
--int lp8788_read_byte(struct lp8788 *lp, u8 reg, u8 *data);
--int lp8788_read_multi_bytes(struct lp8788 *lp, u8 reg, u8 *data, size_t count);
--int lp8788_write_byte(struct lp8788 *lp, u8 reg, u8 data);
--int lp8788_update_bits(struct lp8788 *lp, u8 reg, u8 mask, u8 data);
--#endif
+-struct aat2870_subdev_info {
+-	int id;
+-	const char *name;
+-	void *platform_data;
+-};
+-
+-struct aat2870_platform_data {
+-	int en_pin; /* enable GPIO pin (if < 0, ignore this value) */
+-
+-	struct aat2870_subdev_info *subdevs;
+-	int num_subdevs;
+-
+-	/* init and uninit for platform specified */
+-	int (*init)(struct aat2870_data *aat2870);
+-	void (*uninit)(struct aat2870_data *aat2870);
+-};
+-
+-struct aat2870_bl_platform_data {
+-	/* backlight channels, default is AAT2870_BL_CH_ALL */
+-	int channels;
+-	/* backlight current magnitude, default is AAT2870_CURRENT_27_9 */
+-	int max_current;
+-	/* maximum brightness, default is 255 */
+-	int max_brightness;
+-};
+-
+-#endif /* __LINUX_MFD_AAT2870_H */
 -- 
 2.53.0
 
