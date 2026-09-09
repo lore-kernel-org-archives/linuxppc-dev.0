@@ -1,73 +1,95 @@
-Return-Path: <linuxppc-dev+bounces-26869-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26870-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 33EFDC79FAD
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2026 05:46:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 73F4DC79FB7
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2026 06:00:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hfqYT32zrz2ybK;
-	Wed, 09 Sep 2026 15:46:21 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788932781;
-	cv=none; b=YefbfdmpEOb2WDZ6Mud4dkHTDnZh6dPWFThpCmPdZjXwEOBWgiz4eojTfYpohmX7qa5Mvd0HIj/HBiUb6ewqBJ2XQS7zHE1oD4P14KSXyk0/DrTUT5h/cuN1emrpdhe0k56j2+c/7cqhPEfCxYjXTTyTBCk0BrN3kWwpaG2zWB/7FiNmQ9YhbuKfP/cHf0gmEW1ozGlXHOzfIi0noQyHeOvLirvmSxq5pU0KV/CQGngg/NJhCPmoK9UrpaGb56LdlMUkxpusck0NPMQTWi1mMrz6X6SYbe5PbqqMMsoKjO/+Z/oHADULNPag8C9xIHqR/ToJC5y2OZkK0xMY6xnjJw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hfqsB5BQ3z2ygp;
+	Wed, 09 Sep 2026 15:59:58 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0a:51c0:0:12e:550::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788933598;
+	cv=none; b=kAFsLYUMfCpS7j0nkST7IEALs9IHdY+f1lo+GtUTrt7jmjE8azgmo6mEKezl5fndcZjWDEOIqBD9/Xpvm9wpnrrP3s1W280+USQdnWQVLcZ9PaVxstIv0tjlLqFZqwnE9IapyxEJkXzQ+I3V8WCdj76yuwy2VVZAvmjsumo+VVJ6Gywrz0er44jti+ohD3DYuxPdpbuzQUFZ3RcogBJi8YA6OlB8pdhlzGI5O120DM4gobLsrl1Wt5q5gBqPQD/6Z2yH2KE2TGU6peKIGsKLXqW1y04wfCh4Zo1Tg/xPDW/2a2dorZf6llT997NcpMGRF7Gjlrbrin0g2ywdbhoAnw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788932781; c=relaxed/relaxed;
-	bh=yhzONu+0ryPKsa5zh39qri01TBZaevZUnSOo80wpfeI=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=KcXB9HzCQmtpSs8u51BDyVvc34vWQUhzi8+jw05OoyL1SQ8J4wvOtoxrwGTVJO1IW4X/T6U7PGVr5sqVeFpaWVcljYHUBJt/n5I3MvF9cfExjWcd/s78gcei5jmb2cWuIAkvps5yjT3c2n8uUPhzLTjfuCkHwC3Vu3XIXV0GtecUVUgCvKfnrHGOvEf0RCw90QtmTqIn34ODU3be0iee3guullfefcSLIOIxQorcJ4o92kUNTRElIVM6UOnE568iMekJvy1ts+EYKomfpvXjUwdx3yGhWq9KX4hcphouh/heS54ePZYGxTA7VnV/HOje+Av93pFBLPWCRcfDa5gmPQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=es86Evwr; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=nnmlinux@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1788933598; c=relaxed/relaxed;
+	bh=XfBuOKvuia8jKU4jKhI6ImQ24+OP+x2lVvStL9kHB6c=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=WiRSzf1P1pBa7Zaou3CM895O47yAPcozUN24GOPG5HlVwf1gEYjsJSyYPpGySDIUv9dgragJHNoDZpN8i+GgWPz2XCs0/XSc5VceqbBh/vT6ZSossdAQOMeQLALm2fdsWRJolPkyzT0SNDSCm2XDUoqwiL4gz1zbqOmT1BnABXYTG1yP1BoVGK6bx9wH4aY1bt94xTbLx8fmp8EGeEzWNQZ2daJzfPtwhqzymADVfpCDTdwCOGhP1XFQu7eF8VTP3AkK9w8zBoV+GkBgEPb19c6uJfl79wQCAZtE7nvKc2WxXRUlqt2SFVRU8r9u7kotdjrcUKF88+LWSVI1+k45Yg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=CMEIGvTJ; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=VonGHAfq; dkim-atps=neutral; spf=pass (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=es86Evwr;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=CMEIGvTJ;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=VonGHAfq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=nnmlinux@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
+Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfqYS0H0Bz2y8c
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Sep 2026 15:46:19 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 688N1WZC2126109;
-	Wed, 9 Sep 2026 05:46:05 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=yhzONu
-	+0ryPKsa5zh39qri01TBZaevZUnSOo80wpfeI=; b=es86EvwrsLyfxN88tUQ0Xo
-	Fao6Vh5jEuo7px0c3MT/WaxuukjDIcUaYcbk0wkz58sIVVpYtqvXQR+a6K+nH6o0
-	QtsuAdrXGvqcgzAcRqClCcpDL52PUS0fVyPDctsnu/bhdSM7SPs/zykETg1S4J0d
-	UARVnrOgugdsvWhFxqZEONT+tJI4CACveSNrNsoKd3aDW6fvGeM/KBFYbJ8aNMsO
-	bkkvj18MDBliBTapYP/75xmIm3lWcsQNK0hX7cjJ05YuxGnWg/PgGCxNSCwtq+wv
-	UnAhYpjON2Ahq3PlmWp5p7hE0GVBYW+R+6lWyYBzzJs19ZJdc9rR77pBWKcbpi/Q
-	==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4ggbj8bj2k-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 09 Sep 2026 05:46:04 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6895QJvN004381;
-	Wed, 9 Sep 2026 05:46:04 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4ggwsw8k76-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 09 Sep 2026 05:46:04 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6895k0wY29032828
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 9 Sep 2026 05:46:00 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id F283C20043;
-	Wed,  9 Sep 2026 05:45:59 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3E35A2004B;
-	Wed,  9 Sep 2026 05:45:57 +0000 (GMT)
-Received: from [9.123.3.199] (unknown [9.123.3.199])
-	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed,  9 Sep 2026 05:45:57 +0000 (GMT)
-Message-ID: <880fbc4d-c068-4b43-826e-944f14632ce1@linux.ibm.com>
-Date: Wed, 9 Sep 2026 11:15:56 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfqs964Zpz2xLq
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Sep 2026 15:59:57 +1000 (AEST)
+Date: Wed, 9 Sep 2026 07:59:51 +0200
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020; t=1788933591;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=XfBuOKvuia8jKU4jKhI6ImQ24+OP+x2lVvStL9kHB6c=;
+	b=CMEIGvTJ+RpDUpaQX63YOGpF9L1xMeGi9s7P9EumAFOOXvZhDn04zc5cDcznjmEwFWcMKn
+	aV3mh9HSsioEvvDCuqmuPhxAz0EDxVz5FVZWfmObWfXRSybwQ1ZxDVQ4z0tJ5bj8HKl6QH
+	2LpCD9FeG6rAkLbfiSKloV9FiP1FFipkSzlhBo3Zplknr1ofEEQBBTOoi2c+qR7w1FFuf1
+	oLRZ1Ohqd/R7qrq1gOVWGdmCLZlvGzRsKpGh6crrwVT4V1hNIEeMZP96qZ+DAKQJ/Yh6qb
+	V/ykB9y+Wc32WJFwaNxXjYic0iDsUwgblz+2Yps3KMILiE5BRXmRKCLGA9EuDw==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020e; t=1788933591;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=XfBuOKvuia8jKU4jKhI6ImQ24+OP+x2lVvStL9kHB6c=;
+	b=VonGHAfqnQoueeh6Hl3Lomphhnqa2H/lUyc5Ke65gvgt5gNmjnE70KZBPhdx4hgXdpJF0U
+	tvpV+04d2I30q5AQ==
+From: Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
+To: Borislav Petkov <bp@alien8.de>
+Cc: Paul Walmsley <paul.walmsley@sifive.com>, 
+	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
+	Alexandre Ghiti <alex@ghiti.fr>, Nathan Chancellor <nathan@kernel.org>, 
+	Nick Desaulniers <nick.desaulniers+lkml@gmail.com>, Bill Wendling <morbo@google.com>, 
+	Justin Stitt <justinstitt@google.com>, Andy Lutomirski <luto@kernel.org>, 
+	Vincenzo Frascino <vincenzo.frascino@arm.com>, Kees Cook <kees@kernel.org>, Ingo Molnar <mingo@redhat.com>, 
+	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>, 
+	Richard Weinberger <richard@nod.at>, Anton Ivanov <anton.ivanov@cambridgegreys.com>, 
+	Johannes Berg <johannes@sipsolutions.net>, Russell King <linux@armlinux.org.uk>, 
+	Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+	Nicholas Piggin <npiggin@gmail.com>, Huacai Chen <chenhuacai@kernel.org>, 
+	WANG Xuerui <kernel@xen0n.name>, Heiko Carstens <hca@linux.ibm.com>, 
+	Vasily Gorbik <gor@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, 
+	Christian Borntraeger <borntraeger@linux.ibm.com>, Sven Schnelle <svens@linux.ibm.com>, 
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Miguel Ojeda <ojeda@kernel.org>, 
+	Alex Gaynor <alex.gaynor@gmail.com>, Gary Guo <gary@garyguo.net>, 
+	=?utf-8?B?QmrDtnJu?= Roy Baron <bjorn3_gh@protonmail.com>, Benno Lossin <lossin@kernel.org>, 
+	Andreas Hindborg <a.hindborg@kernel.org>, Alice Ryhl <aliceryhl@google.com>, 
+	Trevor Gross <tmgross@umich.edu>, Danilo Krummrich <dakr@kernel.org>, 
+	Thomas Gleixner <tglx@kernel.org>, Christophe Leroy <chleroy@kernel.org>, 
+	Boqun Feng <boqun@kernel.org>, Nicolas Schier <nsc@kernel.org>, linux-riscv@lists.infradead.org, 
+	linux-kernel@vger.kernel.org, llvm@lists.linux.dev, linux-mm@kvack.org, 
+	linux-um@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
+	linuxppc-dev@lists.ozlabs.org, loongarch@lists.linux.dev, linux-s390@vger.kernel.org, 
+	linux-mips@vger.kernel.org, rust-for-linux@vger.kernel.org, linux-kbuild@vger.kernel.org, 
+	Jan Stancek <jstancek@redhat.com>, Arnaldo Carvalho de Melo <acme@redhat.com>, 
+	Alexandre Ghiti <alexghiti@rivosinc.com>
+Subject: Re: [PATCH v5 02/24] x86/elf, um/x86/elf: Move relocation constants
+ to UAPI
+Message-ID: <20260909075156-06ff671c-ab7b-47d8-aaa3-588b570888bc@linutronix.de>
+References: <20260908-vdso-absolute-reloc-v5-0-3a93791af1cf@linutronix.de>
+ <20260908-vdso-absolute-reloc-v5-2-3a93791af1cf@linutronix.de>
+ <20260908135513.GAaqATwXHcQD7plnH-@fat_crate.local>
+ <20260908161740-0d79e592-87a6-43c5-9174-84ce1904e639@linutronix.de>
+ <20260908151238.GBaqAl5iKb64meuPJl@fat_crate.local>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,286 +103,40 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 1/5] powerpc/rtas: Handle ibm,open-errinjct return
- format
-To: Sourabh Jain <sourabhjain@linux.ibm.com>, mahesh@linux.ibm.com,
-        maddy@linux.ibm.com, mpe@ellerman.id.au, christophe.leroy@csgroup.eu,
-        oohall@gmail.com, npiggin@gmail.com, tpearson@raptorengineering.com,
-        alex@shazbot.org, "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-        sbhat@linux.ibm.com, harshpb@linux.ibm.com
-References: <20260831065441.48654-1-nnmlinux@linux.ibm.com>
- <20260831065441.48654-2-nnmlinux@linux.ibm.com>
- <1abcf248-0d93-4d2d-a3e2-867b0b3dea16@linux.ibm.com>
-Content-Language: en-US
-From: Narayana Murty N <nnmlinux@linux.ibm.com>
-In-Reply-To: <1abcf248-0d93-4d2d-a3e2-867b0b3dea16@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: Sxpf_9tZzPIwLZPmnYAuXa2c0g2yBIU9
-X-Proofpoint-ORIG-GUID: cNqMg2Xj6hXwGqV-7uRbDbIhEUt-1Dd6
-X-Authority-Analysis: v=2.4 cv=RNCD2Yi+ c=1 sm=1 tr=0 ts=6aa0f29d cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=1mVJ_uiqAAAA:8
- a=gdoT5VGXAAAA:20 a=VnNF1IyMAAAA:8 a=dHVhZm_fqcpgw13XnT0A:9 a=3ZKOabzyN94A:10
- a=QEXdDO2ut3YA:10 a=h67g7WpEjx8dfGT80pje:22 a=bA3UWDv6hWIuX7UZL3qL:22
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTA5MDA2MCBTYWx0ZWRfX4zXx3Vc6XAwP
- 1ffMtRGwIALAw4w32KSOYSEjUM1IUxbYKmHGmpJ2VD33yC42b5Q8BEOsp23yHbQxAqTqj69vE3O
- TPCZHHeQ+4p4gTK/eeQ5ND7OD8sFbjE=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTA5MDA2MCBTYWx0ZWRfX1evCUdKAF7aG
- 4EcaIzfoQ/jEw5Clfc3z/Tv+s4PTbG7bWtfgYe0RXhicWAlenG46rhD9LaTkDreAFhVAdiDwLyj
- 0PIev06jzPxpSuFxTzd9ywok8OO+Pm94hTG4aqKOtm/Fyc3sEHtGdeVuLDcbsu+gmPVhrdZIjAH
- e3UKtEWoYrOKMSQ2nYUINSnsGe4ToLrtQUa5lbBO/JsCb3E86mlf4Jsec39XKhayFoKJdAu/FcP
- vPgK6f0+8uFhif5F1UBG1MrpWCOOeNMHVwr4Eh7gLbfBfOcyWmlX7bQ96q5ewzUJ5e2kCo3l6dl
- pzf90zOWvCXptpBQguvGDj8TkDPt1B+yZ+uSbFS4sPWngu4zd0tGHXANdhhiLoPljIMSlibMC6K
- cFzfNWlaVlO2mL6wGXde4xJWYJs40nrvSHG50oxzyDSRJSwifsoA9nimi9IMmJ/13AzrTdOW6JA
- anuxNOBxy9lQaSC+zVQ==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-08_03,2026-09-08_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 lowpriorityscore=0 bulkscore=0 clxscore=1015 spamscore=0
- impostorscore=0 adultscore=0 phishscore=0 suspectscore=0 malwarescore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2609090060
+In-Reply-To: <20260908151238.GBaqAl5iKb64meuPJl@fat_crate.local>
 
-Hi Sourabh,
-
-Thanks for the detailed review.
-
-On 01/09/26 2:52 PM, Sourabh Jain wrote:
+On Tue, Sep 08, 2026 at 08:12:38AM -0700, Borislav Petkov wrote:
+> On Tue, Sep 08, 2026 at 04:26:00PM +0200, Thomas Wei�schuh wrote:
+> > The existing, generic ELF definitions are there.
+> > The ELF stuff in include/linux/ is highly specific to Linux.
 > 
-> On 31/08/26 12:24, Narayana Murty N wrote:
->> ibm,open-errinjct uses a non-standard RTAS return layout:
->>
->>    rets[0] = session token  (output parameter)
->>    rets[1] = status code
->>
->> Unlike all other RTAS functions which use:
->>
->>    rets[0] = status code
->>    rets[1..] = output parameters
->>
->> Add rtas_token_is_open_errinjct() to identify this call, and
->> rtas_status_from_args() to extract status from the correct position.
->>
->> Add an early guard in rtas_call() that rejects ibm,open-errinjct
->> invocations where nret < 2, since reading rets[1] would be out of
->> bounds:
->>
->>    if (rtas_token_is_open_errinjct(token) && nret < 2) {
->>            WARN_ON_ONCE(1);
->>            return RTAS_INVALID_PARAMETER;
->>    }
->>
->> Adjust the output-copy loop so that for ibm,open-errinjct:
->>
->>    return value = rets[1]   (status)
->>    outputs[0]   = rets[0]   (session token)
->>
->> For all other functions the existing convention is preserved:
->>
->>    return value = rets[0]   (status)
->>    outputs[0..] = rets[1..] (non-status outputs)
->>
->> Move the "/* A -1 return code... */" comment immediately before the
->> ret == -1 check so it documents the check it guards.
->>
->> Also fix sys_rtas() last-error status detection: ibm,open-errinjct
->> places status at rets[1], so the -1 sentinel check must use rets[1]
->> for that function rather than always using rets[0].
->>
->> Reference: OpenPOWER PAPR documentation
->>             https://files.openpower.foundation/s/XFgfMaqLMD5Bcm8
->> Signed-off-by: Narayana Murty N <nnmlinux@linux.ibm.com>
->> ---
->>   arch/powerpc/kernel/rtas.c | 78 +++++++++++++++++++++++++++++++++-----
->>   1 file changed, 68 insertions(+), 10 deletions(-)
->>
->> diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
->> index 8d81c1e7a8db..7131870655c6 100644
->> --- a/arch/powerpc/kernel/rtas.c
->> +++ b/arch/powerpc/kernel/rtas.c
->> @@ -1117,6 +1117,28 @@ static bool token_is_restricted_errinjct(s32 
->> token)
->>              token == rtas_function_token(RTAS_FN_IBM_ERRINJCT);
->>   }
->> +/*
->> + * ibm,open-errinjct uses a non-standard return layout:
->> + *   rets[0] = session token  (output parameter)
->> + *   rets[1] = status code
->> + *
->> + * All other RTAS functions use the standard layout:
->> + *   rets[0] = status code
->> + *   rets[1..] = output parameters
->> + */
->> +static inline bool rtas_token_is_open_errinjct(int token)
->> +{
->> +    return token == rtas_function_token(RTAS_FN_IBM_OPEN_ERRINJCT);
->> +}
->> +
->> +static int rtas_status_from_args(int token, struct rtas_args *args, 
->> int nret)
->> +{
->> +    if (rtas_token_is_open_errinjct(token))
->> +        return be32_to_cpu(args->rets[1]);
->> +
->> +    return nret > 0 ? be32_to_cpu(args->rets[0]) : 0;
->> +}
->> +
->>   /**
->>    * rtas_call() - Invoke an RTAS firmware function.
->>    * @token: Identifies the function being invoked.
->> @@ -1198,6 +1220,16 @@ int rtas_call(int token, int nargs, int nret, 
->> int *outputs, ...)
->>               return -1;
->>       }
->> +    /*
->> +     * ibm,open-errinjct returns rets[0]=session_token, rets[1]=status.
->> +     * We need nret >= 2 to read status from rets[1].  Reject early if
->> +     * the caller forgot to account for the extra return cell.
->> +     */
->> +    if (rtas_token_is_open_errinjct(token) && nret < 2) {
->> +        WARN_ON_ONCE(1);
->> +        return RTAS_INVALID_PARAMETER;
-> 
-> Nit: I would prefer -EINVAL instead. RTAS_INVALID_PARAMETER is RTAS 
-> error code but here kernel is validating the parameter so I think - 
-> EINVAL would be better.
-I agree this is a kernel-side validation before entering RTAS, but for
-rtas_call() I think keeping RTAS_INVALID_PARAMETER is safer.
+> And putting them in UAPI casts them in stone. I wouldn't want to maintain them
+> forever if not necessary.
 
-The return value from rtas_call() is normally interpreted by callers as 
-an RTAS status code. If we return -EINVAL from rtas_call(), the caller 
-may still treat it as an RTAS return value. Since this is an invalid 
-RTAS call layout for ibm,open-errinjct, I would prefer to keep the 
-return value as RTAS_INVALID_PARAMETER in rtas_call().
+These names and numbers are defined by the architectures' ELF specifications.
+They are already cast in stone. For example see Table 4.9 of [0].
+Changing them would break compilers, linkers, loaders and more or less every
+existing ELF binary.
 
->> +    }
->> +
->>       if ((mfmsr() & (MSR_IR|MSR_DR)) != (MSR_IR|MSR_DR)) {
->>           WARN_ON_ONCE(1);
->>           return -1;
->> @@ -1213,15 +1245,33 @@ int rtas_call(int token, int nargs, int nret, 
->> int *outputs, ...)
->>       va_rtas_call_unlocked(args, token, nargs, nret, list);
->>       va_end(list);
->> +    ret = rtas_status_from_args(token, args, nret);
->> +
->>       /* A -1 return code indicates that the last command couldn't
->> -       be completed due to a hardware error. */
->> -    if (be32_to_cpu(args->rets[0]) == -1)
->> +     * be completed due to a hardware error.
->> +     */
->> +    if (ret == -1)
->>           buff_copy = __fetch_rtas_last_error(NULL);
->> -    if (nret > 1 && outputs != NULL)
->> -        for (i = 0; i < nret-1; ++i)
->> -            outputs[i] = be32_to_cpu(args->rets[i + 1]);
->> -    ret = (nret > 0) ? be32_to_cpu(args->rets[0]) : 0;
->> +    /*
->> +     * Copy non-status outputs to the caller's buffer.
->> +     *
->> +     * For ibm,open-errinjct the layout is:
->> +     *   rets[0] = session token  -> outputs[0]
->> +     *   rets[1] = status         (returned, not copied)
->> +     *
->> +     * For all other RTAS functions:
->> +     *   rets[0] = status         (returned, not copied)
->> +     *   rets[1..nret-1] -> outputs[0..nret-2]
->> +     */
->> +    if (outputs != NULL) {
->> +        if (rtas_token_is_open_errinjct(token)) {
->> +            outputs[0] = be32_to_cpu(args->rets[0]);
->> +        } else if (nret > 1) {
->> +            for (i = 0; i < nret - 1; ++i)
->> +                outputs[i] = be32_to_cpu(args->rets[i + 1]);
->> +        }
->> +    }
->>       lockdep_unpin_lock(&rtas_lock, cookie);
->>       raw_spin_unlock_irqrestore(&rtas_lock, flags);
->> @@ -1942,10 +1992,18 @@ SYSCALL_DEFINE1(rtas, struct rtas_args __user 
->> *, uargs)
->>       do_enter_rtas(&rtas_args);
->>       args = rtas_args;
->> -    /* A -1 return code indicates that the last command couldn't
->> -       be completed due to a hardware error. */
->> -    if (be32_to_cpu(args.rets[0]) == -1)
->> -        errbuf = __fetch_rtas_last_error(buff_copy);
->> +    /*
->> +     * A -1 return code indicates that the last command couldn't
->> +     * be completed due to a hardware error.  ibm,open-errinjct
->> +     * places status at rets[1] rather than rets[0]; check the
->> +     * correct position for the -1 sentinel.
->> +     */
->> +    {
->> +        __be32 status_cell = (token == 
->> rtas_function_token(RTAS_FN_IBM_OPEN_ERRINJCT) &&
->> +                      nret >= 2) ? args.rets[1] : args.rets[0];
->> +        if (be32_to_cpu(status_cell) == -1)
->> +            errbuf = __fetch_rtas_last_error(buff_copy);
+> > Also later in the patchset I want to expose the definitions to the
+> > tools/ build. Exposing generic UAPI definitions to tools/ is a much
+> > easier sell than include/linux/.
 > 
-> Do we know what happens when the ibm,open-errinjct RTAS call is made
-> with nret < 2?
+> tools/ *copies* kernel headers on a "they're needed" basis. No need to put
+> anything in UAPI for that.
 > 
-> The reason I’m asking is that, even with the above changes,
-> args.rets[0] is used as the return code if the ibm,open-errinjct call
-> is made with nret < 2.
-> 
-> I like the approach you took in rtas_call() of pre-validating nret for
-> the ibm,open-errinjct RTAS call and returning early if it is less than
-> 2. I think we can use a similar approach here as well. If we do that,
-> the above code changes will be much cleaner. In that case, we don't
-> have to figure out how RTAS processes ibm,open-errinjct with nret < 2.
-> 
-> The only concern I have is that this change would alter the system
-> call behavior. Right now, the kernel accepts nret < 2 for
-> ibm,open-errinjct and makes the RTAS call, but with the above suggested
-> change, the kernel would return early if nret < 2.
-> 
-> The prominent user of this system call is librtas, which passes
-> nret = 2 for ibm,open-errinjct:
-> 
-> https://github.com/ibm-power-utilities/librtas/blob/ 
-> d321a1f5ae3d528ba027fc748d1cc1123dd4ae29/librtas_src/syscall_calls.c#L488
-> 
-> Also, as per PAPR, users are supposed to pass nret = 2 for this RTAS
-> call. So I think it should be fine to validate nret in sys_rtas for
-> ibm,open-errinjct and return early if it is found to be less than 2.
-> 
-> Since this is a change in system call behavior, I want to be a
-> little cautious. So, I’d like to hear your thoughts and would also
-> like to know what others think about making the above change.
-> 
-Agreed.
+> It's even written down: tools/include/uapi/README
 
-For ibm,open-errinjct, rets[0] is the session token and rets[1] is the
-status. So when nret < 2, we should not fall back to rets[0], because 
-that can interpret a session token as a status code.
+That is the documentation for the tools UAPI headers.
 
-I will add an early validation in sys_rtas() before entering RTAS for 
-this case and return -EINVAL there, since sys_rtas() is the userspace 
-syscall boundary.
+Also we already have other, closely related, ELF constants in the UAPI,
+see {,tools/}include/uapi/linux/elf{,-em}.h.
 
-So the split will be:
-rtas_call(): return RTAS_INVALID_PARAMETER for invalid RTAS return layout
+[0] https://gitlab.com/x86-psABIs/x86-64-ABI/-/jobs/artifacts/master/raw/x86-64-ABI/abi.pdf?job=build
 
-sys_rtas(): return -EINVAL for invalid userspace syscall arguments
 
-This should not affect the valid librtas path, since librtas already 
-passes nret = 2 for ibm,open-errinjct, as required by PAPR.
-
-Thanks,
-Narayana
-
-> Thanks, Sourabh Jain
->> +    }
->>       lockdep_unpin_lock(&rtas_lock, cookie);
->>       raw_spin_unlock_irqrestore(&rtas_lock, flags);
-> 
-
+Thomas
 
