@@ -1,89 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-26872-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26873-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00E37C79F8C
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2026 06:09:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 14A9DC79F8C
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2026 06:18:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hfr3q4m26z2ygp;
-	Wed, 09 Sep 2026 16:09:11 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0a:51c0:0:12e:550::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788934151;
-	cv=none; b=V7qBV3ApXX4+4J43XxITa3y45gsJYzMImHUwHyUYoqCEc6ggTR1gyVNue2Xc/k/R3oTqz12hJbmZj2vAZ92l6vMu4D/qsIo1rPwIJ/gM4Kmc8a3zuFtr+K1EWGjiciPucHvhCksW1F/JHb+VLJ0IJUbtdiQRgIgPpGIyrnTmHDzJlVgiMdez3m0DYERykf6V1OQH9VH8Y5sZb7yu/540aOt/3IhZHOIgXHmML3BU1QCqxcwOr4eiiDg5TGjM06g0HUFDXgJbk9w7J4sL6829aUNPsV89RNPrq0l5+dhLchqOBxZ4nWif7O7tC2gpzOqnfrW6XB9ft9faLW8Xbw+y2A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hfrGZ4DvPz2y2J;
+	Wed, 09 Sep 2026 16:18:30 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788934710;
+	cv=none; b=Q0eFwXwkg4MHt2FZEI5c6SWe8dMyvZF9hDTyxkNaH13XWlvQX5tBRbLCyqdpaoCSQCYuSjqCxPJ/oprOAmyuguTjiRYQKF4yL3BIwLqUxEA5yCH9tTGTrBz7KPpQtzJBuMtn+TdBABg9nwQ5bFfBlJAl4U6lH08ZvoJihnLchBVLJb5V+dXM86ok/giCYE0mwG5bDCABHL2WCpObkLAU5qWLAdUXyMqDGgwVvRkG6ITTQvmuRjUPq8Tki9rAiCMU283JJxZk5VU78nq/mj9RcNH0stkb+00P4uQq3R8uNPU70a76/c7wJO5OrERj7jRErZZrBaL3Pamvgt9oNEI1tg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788934151; c=relaxed/relaxed;
-	bh=Fsx+E+IxhTgqrNd5fDNEdWA4P4WjUu/zI9gxcY2gf1k=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Ru1P7Uwq55lNZUHZPbJOuWWGyZfCp9TznCqaWzRKryJJIlP2LTyLJtnifM5M/HpvEXUo57+jtFRdnkIGwQTu2BVqP/ch+KvooirZKjON1zHmDAWSASDgZdxmpgxEOAO8nGUKYtB8D0Go92Ikem+1gwE5qz2lAwM63aMfmmmI8Yrwv0sMzegX0wBJOe8FdZZBznyQQNIatf/7lessu7EADXbTtjmcUCtZD9LCkWMb56cYh2THHe3nB1vcYZm4EQOMCV1eVZqAjvk8bcS+CUrXyFQFy8FzyChHP1oZrMHucv316Ge2gSgrXpeh7XbuJ5zRlILFJvwz+t7JyoN5ollRSA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=Ba8CFyue; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=fAJ6G75L; dkim-atps=neutral; spf=pass (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
+	t=1788934710; c=relaxed/relaxed;
+	bh=rInJq93q8bp86+FABX6sKwnqHmHaaP7HxP4K2/hdR9o=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=cfV6tcw1loijpVbIY57oTd/trOi5x+d6odWvbKXsXzeYY5gE6WWSMU01ZLE5HoAUH1KravTEhT06JY4HLeeat64jxbmIilFPYCKpyiTs1Doj7W7CWr78XBOWAcn/FjaK+7n+u0uY3KBLSQpRaCnYtt+xpvOsUj+b/O06lO+NjAv+5VGT1fYcjx0X5olvMiQr0zh+2gji+xkDH6JvWeBPfcT2vWjc162ywdAOyH1SsChKBHo0RKGHRz/Pq+CJDKTjINv7F/7nClpGkbrxpbH3vh/S7gXu/+SesxxX+iAbl9VHlNmr0ZYl5NDSCg0vtdAhjdaCZudu6IfCJaW/zpT67Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rUWXvh4z; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=Ba8CFyue;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=fAJ6G75L;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rUWXvh4z;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfr3p69kdz2y2J
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Sep 2026 16:09:10 +1000 (AEST)
-Date: Wed, 9 Sep 2026 08:09:07 +0200
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1788934147;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Fsx+E+IxhTgqrNd5fDNEdWA4P4WjUu/zI9gxcY2gf1k=;
-	b=Ba8CFyueZIBv0OelbgTnQd8Liev5J1UqmQNZMlTvb9O8KcOJJTdoaB2ThyVqE1f8eVdkpB
-	wTE4Lfz5SmplS9gum8fRJfjedlxYamdPBHVJ2zN0PmVQ/fAuza+eRyHTaqNl21luZW5FSV
-	7mSECa3gWtr+fP2KkXm6iC1JdfB5MAxu3Qk/bZ7DsXkgsNE6bOUj/o8lxR1BIYweICcdVu
-	Fm6yt/eraobBg9c2pGNyeS88edKZbZQw3VCce9fTmXPsolJkOwKGjp5YqUwJX6x49ccs+s
-	3BERlZcIkDcJWAolf/r7TyPPNGX94YB/SldI2jSo7Dc4KeV5buIEb4c2Lh26vA==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1788934147;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Fsx+E+IxhTgqrNd5fDNEdWA4P4WjUu/zI9gxcY2gf1k=;
-	b=fAJ6G75LaW8nnqqa43BRDYqlP7QW6Q+nfq2qssYjtogHzBntGBNA7rR18bMVBCUfwB7vq4
-	TycChAiSqeQsMbBw==
-From: Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: Paul Walmsley <paul.walmsley@sifive.com>, 
-	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
-	Alexandre Ghiti <alex@ghiti.fr>, Nathan Chancellor <nathan@kernel.org>, 
-	Nick Desaulniers <nick.desaulniers+lkml@gmail.com>, Bill Wendling <morbo@google.com>, 
-	Justin Stitt <justinstitt@google.com>, Andy Lutomirski <luto@kernel.org>, 
-	Vincenzo Frascino <vincenzo.frascino@arm.com>, Kees Cook <kees@kernel.org>, Ingo Molnar <mingo@redhat.com>, 
-	Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, 
-	"H. Peter Anvin" <hpa@zytor.com>, Richard Weinberger <richard@nod.at>, 
-	Anton Ivanov <anton.ivanov@cambridgegreys.com>, Johannes Berg <johannes@sipsolutions.net>, 
-	Russell King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, 
-	Will Deacon <will@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
-	Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>, 
-	Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
-	Alexander Gordeev <agordeev@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, 
-	Sven Schnelle <svens@linux.ibm.com>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
-	Miguel Ojeda <ojeda@kernel.org>, Alex Gaynor <alex.gaynor@gmail.com>, Gary Guo <gary@garyguo.net>, 
-	=?utf-8?B?QmrDtnJu?= Roy Baron <bjorn3_gh@protonmail.com>, Benno Lossin <lossin@kernel.org>, 
-	Andreas Hindborg <a.hindborg@kernel.org>, Alice Ryhl <aliceryhl@google.com>, 
-	Trevor Gross <tmgross@umich.edu>, Danilo Krummrich <dakr@kernel.org>, 
-	Thomas Gleixner <tglx@kernel.org>, Boqun Feng <boqun@kernel.org>, Nicolas Schier <nsc@kernel.org>, 
-	linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, llvm@lists.linux.dev, 
-	linux-mm@kvack.org, linux-um@lists.infradead.org, 
-	linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, loongarch@lists.linux.dev, 
-	linux-s390@vger.kernel.org, linux-mips@vger.kernel.org, rust-for-linux@vger.kernel.org, 
-	linux-kbuild@vger.kernel.org, Jan Stancek <jstancek@redhat.com>, 
-	Arnaldo Carvalho de Melo <acme@redhat.com>, Alexandre Ghiti <alexghiti@rivosinc.com>
-Subject: Re: [PATCH v5 17/24] powerpc/vdso: Enable the vdsocheck tool
-Message-ID: <20260909080124-ef171c1a-83ff-486b-b632-8613011a5a97@linutronix.de>
-References: <20260908-vdso-absolute-reloc-v5-0-3a93791af1cf@linutronix.de>
- <20260908-vdso-absolute-reloc-v5-17-3a93791af1cf@linutronix.de>
- <7c9f6ec3-5886-41ea-8803-d81019321d29@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfrGY2FGbz2xYh
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Sep 2026 16:18:28 +1000 (AEST)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 688N1VxT2126097;
+	Wed, 9 Sep 2026 06:18:17 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=rInJq9
+	3q8bp86+FABX6sKwnqHmHaaP7HxP4K2/hdR9o=; b=rUWXvh4z0Y2zDVBkG8nkQO
+	mYdQgZEzA31Qonr5vRxwBuJ+r2YGK0j0N+bTuRLOBJc14wuXdzchMIYAbxdxPRhr
+	d4ufvHd+ygI/DC2ZwPno6z8dzKipq0fQjoevrrdoX0IUKBunQWmc45oPYNwsoXBV
+	ZVUwJZwi2q/7OmiqFrf4JjNSzOl85nJXyodBzO/HtaRCoVi9eFzuFkcTUt9wHsiU
+	uGm0jV6CoemMuCOSI82VpMEzhcgWpFYErDdWqbAQUnNLkW8RuVes1fRJTFU+cZcs
+	VDJIC3C4d/DKmMvoh8pGprYtVmYQpvY64sS/iY2gaaiKxFrJdkzI4TWCS5Sf74ow
+	==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4ggbj8bpvx-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 09 Sep 2026 06:18:17 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6896BFRG029551;
+	Wed, 9 Sep 2026 06:18:16 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4ggxdk0mn8-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 09 Sep 2026 06:18:16 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6896IEPu13500860
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 9 Sep 2026 06:18:14 GMT
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 3247B20043;
+	Wed,  9 Sep 2026 06:18:14 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 12E0720040;
+	Wed,  9 Sep 2026 06:18:12 +0000 (GMT)
+Received: from Linuxdev.ibmuc.com (unknown [9.43.64.17])
+	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed,  9 Sep 2026 06:18:11 +0000 (GMT)
+From: Madhavan Srinivasan <maddy@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org
+Subject: Re: [PATCH] MAINTAINERS: powerpc: Add Ritesh and Shrikanth
+Date: Wed,  9 Sep 2026 11:48:10 +0530
+Message-ID: <178893459274.174069.12728922895140522776.b4-ty@linux.ibm.com>
+X-Mailer: git-send-email 2.55.0
+In-Reply-To: <20260818035037.613186-1-maddy@linux.ibm.com>
+References: <20260818035037.613186-1-maddy@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -97,45 +88,47 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <7c9f6ec3-5886-41ea-8803-d81019321d29@kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-GUID: ae_OdZWfHO4aNoVzteDDXH_4ZeJmVHO-
+X-Proofpoint-ORIG-GUID: tzpsSlO_Nd0AriJ0UCBw35j1N3FUq8P9
+X-Authority-Analysis: v=2.4 cv=RNCD2Yi+ c=1 sm=1 tr=0 ts=6aa0fa29 cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+ a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VwQbUJbxAAAA:8
+ a=Lqsuioe8rBiY4fJThLcA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTA5MDA2NiBTYWx0ZWRfX3FDQZcFW8g3c
+ pspN4YKhCIETh9Pub3IbcHN/G55xFC4JTZ/vTMPSmURUVgtalv8naILBtBR/nNVylzVCD3lVjwU
+ YVPxxETqn3x+INg2cN/ndcfwFrEjX9I=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTA5MDA2NiBTYWx0ZWRfX6xH0Ty4qCkxr
+ RLW4tfA/AD3Oittfj8CEG1f8bnCJ1FTh4RLbipJj/WCYPvCfNagCb1e6i2shkTl20Xqz/YvvK50
+ KS7/mLBQZRiQVNR/vR9WL6YCHZntrMkTsitdAEVTv4OOrqhcINHPDgJJoJ7/lcofGoOS6D/zLg/
+ wHRaV7bN0RTkP22dv5fw0vVjyWBYUAa5hezboaqzid8NpncsK408sz6CCBcLvqp7o6NetEMNbES
+ qalzsWwkof+obSpWkqkQ7TILaTHhO0r6lOm+OoPIzl/IuAouYvujnHAXWP/hEO2xepIV011Q9lY
+ 6Hx3Dt62RO8+wrWukZoV61W+CnUzwhS5V3DHK+CGB7xXkCGl+NdyMiBPXm8nOvUgd6udCkFZiTN
+ V+KfPUSq2gNqW6uPsivLOYvfoOTUqxUn3yJqqu87K/s/x4iL9/Z26YW/h5WAP+8u3zeDS8OLpVS
+ XOwZo6UQWdREoAjjH4Q==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-08_03,2026-09-08_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 lowpriorityscore=0 bulkscore=0 clxscore=1015 spamscore=0
+ impostorscore=0 adultscore=0 phishscore=0 suspectscore=0 malwarescore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2609090066
 
-On Tue, Sep 08, 2026 at 04:41:09PM +0200, Christophe Leroy (CS GROUP) wrote:
-(...)
-
-> > diff --git a/arch/powerpc/kernel/vdso/Makefile b/arch/powerpc/kernel/vdso/Makefile
-> > index 368759f81708..ca20b91b4373 100644
-> > --- a/arch/powerpc/kernel/vdso/Makefile
-> > +++ b/arch/powerpc/kernel/vdso/Makefile
-> > @@ -81,9 +81,9 @@ targets += vdso64.lds
-> >   CPPFLAGS_vdso64.lds += -P -C
-> >   # link rule for the .so file, .lds has to be first
-> > -$(obj)/vdso32.so.dbg: $(obj)/vdso32.lds $(obj-vdso32) $(obj)/vgettimeofday-32.o $(obj)/vgetrandom-32.o $(obj)/crtsavres-32.o FORCE
-> > +$(obj)/vdso32.so.dbg: $(obj)/vdso32.lds $(obj-vdso32) $(obj)/vgettimeofday-32.o $(obj)/vgetrandom-32.o $(obj)/crtsavres-32.o $(vdsocheck) FORCE
-> >   	$(call if_changed,vdso32ld_and_check)
-> > -$(obj)/vdso64.so.dbg: $(obj)/vdso64.lds $(obj-vdso64) $(obj)/vgettimeofday-64.o $(obj)/vgetrandom-64.o FORCE
-> > +$(obj)/vdso64.so.dbg: $(obj)/vdso64.lds $(obj-vdso64) $(obj)/vgettimeofday-64.o $(obj)/vgetrandom-64.o $(vdsocheck) FORCE
-> >   	$(call if_changed,vdso64ld_and_check)
-> >   # assembly rules for the .S files
-> > diff --git a/lib/vdso/check/vdsocheck.rs b/lib/vdso/check/vdsocheck.rs
-> > index e45a1fbc6829..429bdcd65818 100644
-> > --- a/lib/vdso/check/vdsocheck.rs
-> > +++ b/lib/vdso/check/vdsocheck.rs
-> > @@ -69,6 +69,33 @@ fn allowed_relocations_for_machine(machine: u16) -> Option<AllowedRelocations<'s
-> >               ..Default::default()
-> >           }
-> >           .into(),
-> > +        bindings::EM_PPC => AllowedRelocations {
-> > +            in_object_file: &[
-> > +                bindings::R_PPC_REL24,
+On Tue, 18 Aug 2026 09:20:37 +0530, Madhavan Srinivasan wrote:
+> Ritesh and Shrikanth has been helping in the powerpc mailing list
+> patch reviews, adding them as reviewers.
 > 
-> Not sure this is correct, see commit 42ed6d56ade2 ("powerpc/vdso: Block
-> R_PPC_REL24 relocations")
+> 
 
-(...)
+Applied to powerpc/fixes.
 
-The mentioned commit prevents the relocation in the final vDSO,
-while my patch allows it in the intermediate object files.
-In the final vDSO no relocations are accepted whatsovever.
+[1/1] MAINTAINERS: powerpc: Add Ritesh and Shrikanth
+      https://git.kernel.org/powerpc/c/45a5f7285f835adb3b74c9344c09a7bd2c4fb664
+
+cheers
 
