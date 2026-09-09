@@ -1,80 +1,144 @@
-Return-Path: <linuxppc-dev+bounces-26906-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26907-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 08AD6C79F8C
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2026 09:13:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3D0CEC79F8C
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2026 09:15:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hfw7w3gMWz2yql;
-	Wed, 09 Sep 2026 19:13:00 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788945180;
-	cv=none; b=BsdJov7SashR7k4gL+if+zkFknR9l9Vk9jO5ZhwMeU7B+XxQg+9kWeOLe56Mj2ca2CFWjhgEMxkYyeZKxKytuftYkPr0E1dxbmgizx7APpGXfbKpGhMTTCJsc3gTHCvBIfwM7qnaeqBYV0uoNUmV9a+N9aGOl1WqG0Non+x2H/vrDV89rE3Z1jiBup9hqP2NXYvVlvNqu+Q5vu8Ok2BmsRqBgiz7g5CilH/IswhSeP9UijtyH/aldhfkPP40V45E7ocQkxKYfoS+psbQ58vBCxIAJTtZc6meCFal97OIH9spAp0J44H6+SyKIlrSihrOn7pCGOefkG+0yyKliUfI1Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hfwC24xzTz2yps;
+	Wed, 09 Sep 2026 19:15:42 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788945342;
+	cv=none; b=Mke1kweRBOWOdSJacaOo/yBZCbnLjD+KFjmvM20oPh+Pt9BwZjeyMbHNDEVEvxof9liMmsSq4UMsohqm7BWZ5KsF+CTpDIlp1eMQLosYHTkhjQD1VB2fQS/q7AgmpkGu3hfpjlk1bsW0kSqJ+QZI97Y0dW3O8HPeaOLiJUnDZaypZ91bljgjrsV9xHWCbGwLecqN+0o7zkT74gett4Xiimu+0GNtZvimmHjUTzL7iScY/L/eVbU2uzmt8YlBN7GJvwgInlQg/o3nwwDS5OU2ui2M/L+1aBFMt4JFp42b+blpMeuNOOl5eulSPBXyRRJhGt8OnQn/ga0Xj+9PuIxALg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788945180; c=relaxed/relaxed;
-	bh=aL44NMlEmnP0cOhxvq016XuarvBF4/7Bfud/MccEELs=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=OHcZNHUtX+hb/X/7zKESykMjWHhlpQu61Lo9ukZoS8yJbVCFYM7ycJ2O0YfDYP3margLRpY6/jlWh/Hm+OYUjRJgj+o0lNRKjkCZ7hoeyH0ZvkKybTaHqqRc12ZEpqzQJMswozqjfAuvdo/lg+LDXfr/Nkxs/G5ZukDsblthH7OqSOlFHeibrQg78NnqutFLSKbptFA0rfmo9w4j6VWnaThethhpwR/UVph1FH9oK6ci8FETwQqS60Hlr3n77wJEnhdDbInTMXlkQ7o+lOOnJQOHRF6fGttuT7+0U/HxaFKP8iif4FamjgAyYbbXHpgeRHkXlo5ZiQ8a7s8yB8eDnw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JLI8ZcmE; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1788945342; c=relaxed/relaxed;
+	bh=WMLhSTvOXcO1Feh9yCp+cQisLkpmflOTkHs5UzK+oYo=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=VxG9qoMY+4MMxFyOvaGx1Reuc1cWWQbp4msIK+dCdYmI8VsggbWQOK1wpJWOmhObM8pYol3r15b6vuw74LUTUaw4d6jBlBRWNS8/gkFe+WDVq6wZX40K293Rj93B4LrX59dhkYkf4pI7ApcloDcEDLljiBzAggsnQtwYkQ/+L/0Jz2VuAJT9vdRRXKXTC1EqRUnxH/iEDPaRm6VlZdZHUQpY9CPaexxqzlV7j2MeKVkktZMw3VY0BQtm/8cdBKe4jpQZfS24OK1W8GVamioEwWhE+ie2QKS6/QHqFG1dSkb0APi1RoUTD2h4apn6NcmIcJEQjpTf9mAnpVUOWpuJwQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ZBusIWCN; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=kas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JLI8ZcmE;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ZBusIWCN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=kas@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfw7v1mNZz2yqf
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Sep 2026 19:12:58 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 688N1mKu1116891;
-	Wed, 9 Sep 2026 09:12:34 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=aL44NMlEmnP0cOhxvq016XuarvBF4/7Bfud/MccEE
-	Ls=; b=JLI8ZcmEUnlHAI30T7UZWnIfFOs3J+QnZZBcCJ2wIoQIR4lJDHo6ugDem
-	O0AfgPGGNDvI4Hpo85r3ZxBlgX6bwi4UiAgLHt4CU29dQRL7Ocf65iPQWuFdzcn/
-	yLhN0aNCpTyVpikxP58dWrkc9ni5Azc/4S3lDuZaOp/e00ncJE0eZXENyuLRvhiL
-	VfI30NB+2+gclFBrXwK1s7VKqgD0yl3EiYWw9mCVZyACiI/zH6FGRwSOBjkywFNi
-	ojeyLVWYP/ELXXadUkyo4kIbMdUzEYan0RFgKY5gv1WyaD2rfDTTbdYjJkQWCHq0
-	CzMoOAbAsNeZ/LR0YngpTOAFMjriQ==
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4ggbjrvhn9-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 09 Sep 2026 09:12:33 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6899BHDo002988;
-	Wed, 9 Sep 2026 09:12:32 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4ggxwh9ann-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 09 Sep 2026 09:12:32 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6899CSUJ35455376
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 9 Sep 2026 09:12:28 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9068F20043;
-	Wed,  9 Sep 2026 09:12:28 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B613D2004F;
-	Wed,  9 Sep 2026 09:12:25 +0000 (GMT)
-Received: from dhcp-9-123-0-173.bl1-in.ibm.com (unknown [9.123.0.173])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed,  9 Sep 2026 09:12:25 +0000 (GMT)
-From: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
-        chleroy@kernel.org, mkchauras@linux.ibm.com, mkchauras@gmail.com,
-        sshegde@linux.ibm.com, ruanjinjie@huawei.com, ritesh.list@gmail.com,
-        riteshh@linux.ibm.com, venkat88@linux.ibm.com,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH v2] powerpc/interrupt: Use early_radix_enabled() in NMI real-mode guard
-Date: Wed,  9 Sep 2026 14:42:19 +0530
-Message-ID: <20260909091219.55380-1-venkat88@linux.ibm.com>
-X-Mailer: git-send-email 2.45.2
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfwC16GJlz2yln
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Sep 2026 19:15:41 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 0181C43FF1;
+	Wed,  9 Sep 2026 09:15:39 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 663111F00A3A;
+	Wed,  9 Sep 2026 09:15:33 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1788945338;
+	bh=WMLhSTvOXcO1Feh9yCp+cQisLkpmflOTkHs5UzK+oYo=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=ZBusIWCN+P7dXWHhpmFPOV+S3a+1WBjFc8E4Dla9jSlpOPp0YbEw6Gx5JHAhXq1Ox
+	 TiXg3EpXaAP3k3Pqd9Bz6g1XDxpukb7hScIRCbuFYzAAE9ZeXJgPoRSVLVkd47S8yV
+	 cEgXNJ1BLsteLJG71EFtqgP+7iaieY3+NWjdNpOGfkkQUJzaIqlJ1vr6zii6vaegQU
+	 11zvE33JYF4jAV9m2u1wr+7He/fca+pF80kLQfVQ3aC0AhY7C8DBeR6W0KU4HxftdB
+	 CCPlCymrV0JBKBDoYpHbQGkRz8Nvr39d75+CK9q07cmkNuNrc20M//BPHgZMDCN7fz
+	 6sjd1+/lSbqjg==
+Received: from phl-compute-02.internal (phl-compute-02.internal [10.202.2.42])
+	by mailfauth.ams.internal (Postfix) with ESMTP id 8E752198003A;
+	Wed,  9 Sep 2026 05:15:16 -0400 (EDT)
+Received: from phl-frontend-04 ([10.202.2.163])
+  by phl-compute-02.internal (MEProxy); Wed, 09 Sep 2026 05:15:32 -0400
+X-ME-Sender: <xms:pCOhapxWpL0GHjdR-LbSmt6pcF7cQoj_8cQ33xSeM7XCtFENM-sJEw>
+    <xme:pCOharWahP24PRQXVvE8eeNQnV55db4J_vp16cj_Z8GibP0d05qa3LF6G7CXPobAn
+    HafKDVhWfjWxnJEZOfi_ZDCv10ZgG4I_C318m3ajUCuz5cvYfve_vGy>
+X-ME-Received: <xmr:pCOhat43rLqB-KpS4v-iRR2MbmJvziGj4K3533xcWcE-RHBMlP2xBju_wd0>
+X-ME-Proxy-Cause: dmFkZTFpC8WONluUuvc7dpKb99eg92DQ33MSjEt2sNv2fC237wiMixhMca33e2LldrnTRH
+    U75C+KLC/q/LoK5zKzpXIyjFwS1b+E/++uY5aiYodIxAbg9BZ6O3CC6cd1SXYaFEulw8KR
+    jAI6ffm11DtQZdknyCWUWVFfuLXw2xt2y4TrUuW5CEhhTR/K3eTVLpp8QK1B0crMmfDXeu
+    uwu487939XxAxC04N1S97FZttc+sKd0M0bqZu5+zU/yY2Z2X+w/t7eOM75eiUIDwrFyGW9
+    VO3+XGBW9eUcOQwzMaEf6se6jBI4E1kU1BTvjozT7XN+z/WzRNjCEoYCcDV/y4SRQAjlN1
+    UJij+//6ITDtj0vpJtsxh3nZgt0K5pHTh0hy5Hu48Cov+xYJKliDjhUO5TEvuCAqjsq3SO
+    OxyGdCaNbHBZZb7IXgcT+pITOfdPxsCPlJyBoTr8Le9pMNL/ZTHnXi+/DIJXF17DMcWZIh
+    YM5LVoGds+47feWKyzGfEzTv1rFYfFtyh3h/v0wuQgBr2xOdBApwONTAMblqFbOLbUS27j
+    NPYBYul31i/zyEEbO83Lgkbp30doOoaMXPcKhFs3Rw8N2hrubUNjgoPgAP5Spz0uSYcxe2
+    FDFitH4FhEvRxWxK0irW8E1NKmcImw4MXKQVOJjCI5K3tVhOemySCLVfbAmA
+X-ME-Proxy: <xmx:pCOhajUqd18ClRcyZhFPHIYrAAp0-S3k_bVdXd6KZXOebWFu8gPWvw>
+    <xmx:pCOhaj7UC-S4UPOWxzOF-A3gNv5YI2PWLCUOMVoriXtNaMxfx7RKrw>
+    <xmx:pCOhaqmC_kf4Hp2GOeEHEjH5DxULoNK2H7t84K4BezfXKcQz_belGg>
+    <xmx:pCOhalZ7HrNwAby95sPa7N21RVub9YHPEGD6aBYbpelxVLHh1XK2sw>
+    <xmx:pCOhauEse5Mk8Ax8FZCi-GcbyLxH-H4DbMf7YweCkQjDO4jCkVmia0fm>
+Feedback-ID: i10464835:Fastmail
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Wed,
+ 9 Sep 2026 05:15:14 -0400 (EDT)
+Date: Wed, 9 Sep 2026 10:15:13 +0100
+From: Kiryl Shutsemau <kas@kernel.org>
+To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+ 	David Hildenbrand <david@kernel.org>, Zi Yan <ziy@nvidia.com>,
+ 	Baolin Wang <baolin.wang@linux.alibaba.com>,
+ "Liam R. Howlett" <liam@infradead.org>,
+ 	Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>,
+ Dev Jain <dev.jain@arm.com>, 	Barry Song <baohua@kernel.org>,
+ Lance Yang <lance.yang@linux.dev>, 	Usama Arif <usama.arif@linux.dev>,
+ Guo Ren <guoren@kernel.org>, Brian Cain <bcain@kernel.org>,
+ 	Geert Uytterhoeven <geert@linux-m68k.org>,
+ Dinh Nguyen <dinguyen@kernel.org>,
+ 	Simon Schuster <schuster.simon@siemens-energy.com>,
+ Jonas Bonn <jonas@southpole.se>,
+ 	Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+ Stafford Horne <shorne@gmail.com>,
+ 	Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Rich Felker <dalias@libc.org>,
+ 	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+ Paul Walmsley <pjw@kernel.org>, 	Palmer Dabbelt <palmer@dabbelt.com>,
+ Albert Ou <aou@eecs.berkeley.edu>, 	Alexandre Ghiti <alex@ghiti.fr>,
+ Russell King <linux@armlinux.org.uk>, 	Vineet Gupta <vgupta@kernel.org>,
+ Michal Simek <monstr@monstr.eu>, Chris Zankel <chris@zankel.net>,
+ 	Max Filippov <jcmvbkbc@gmail.com>, Will Deacon <will@kernel.org>,
+ 	"Aneesh Kumar K.V" <aneesh.kumar@kernel.org>,
+ Nick Piggin <npiggin@gmail.com>, 	Peter Zijlstra <peterz@infradead.org>,
+ "David S. Miller" <davem@davemloft.net>,
+ 	Andreas Larsson <andreas@gaisler.com>,
+ Richard Henderson <richard.henderson@linaro.org>,
+ 	Matt Turner <mattst88@gmail.com>, Magnus Lindholm <linmag7@gmail.com>,
+ 	Catalin Marinas <catalin.marinas@arm.com>,
+ Mark Rutland <mark.rutland@arm.com>,
+ 	Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>,
+ 	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+ 	Helge Deller <deller@gmx.de>, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ 	Michael Ellerman <mpe@ellerman.id.au>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ 	Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
+ 	Alexander Gordeev <agordeev@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ 	Sven Schnelle <svens@linux.ibm.com>,
+ Richard Weinberger <richard@nod.at>,
+ 	Anton Ivanov <anton.ivanov@cambridgegreys.com>,
+ Johannes Berg <johannes@sipsolutions.net>,
+ 	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>,
+ 	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+ "H. Peter Anvin" <hpa@zytor.com>, 	Arnd Bergmann <arnd@arndb.de>,
+ Vlastimil Babka <vbabka@kernel.org>, 	Mike Rapoport <rppt@kernel.org>,
+ Suren Baghdasaryan <surenb@google.com>, 	Michal Hocko <mhocko@suse.com>,
+ Jason Gunthorpe <jgg@ziepe.ca>, 	John Hubbard <jhubbard@nvidia.com>,
+ Peter Xu <peterx@redhat.com>, linux-mm@kvack.org,
+ 	linux-kernel@vger.kernel.org, linux-csky@vger.kernel.org,
+ linux-hexagon@vger.kernel.org, 	linux-m68k@lists.linux-m68k.org,
+ linux-openrisc@vger.kernel.org, linux-sh@vger.kernel.org,
+ 	linux-riscv@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
+ 	linux-snps-arc@lists.infradead.org, linux-arch@vger.kernel.org,
+ sparclinux@vger.kernel.org, 	linux-alpha@vger.kernel.org,
+ loongarch@lists.linux.dev, linux-mips@vger.kernel.org,
+ 	linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, 	linux-um@lists.infradead.org,
+ Hugh Dickins <hughd@google.com>, Qi Zheng <qi.zheng@linux.dev>
+Subject: Re: [PATCH v2 11/12] mm: make userland page table freeing RCU-safe
+Message-ID: <aqEivRP0LmJZcgEx@thinkstation>
+References: <20260908-rcu-pagetable-freeing-v2-0-1f60b64e878e@kernel.org>
+ <20260908-rcu-pagetable-freeing-v2-11-1f60b64e878e@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,92 +152,68 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=E7T9Y6dl c=1 sm=1 tr=0 ts=6aa12301 cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
- a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=V8glGbnc2Ofi9Qvn3v5h:22 a=VnNF1IyMAAAA:8 a=pGLkceISAAAA:8
- a=892i79BrHumYIT41z2MA:9
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTA5MDEwMCBTYWx0ZWRfX4N+xm7YWwftk
- 31QcUHydXjC+aq3sbf3J0vlKbwIQHxRFcIXpjLJnGERWukPVjk6fhoE36ccNtFwDn9er1S8QpTB
- ugKqeS/p572it2L5UVJ4v6IOger4L7k=
-X-Proofpoint-ORIG-GUID: YuZCjM40QeBJpw_CYZ7QTbsLfznDubbG
-X-Proofpoint-GUID: 31FHbtT2ZcS-8dmLjpFXMBCuNG81LI0t
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTA5MDEwMCBTYWx0ZWRfX9dcMqGGHI+ts
- zMgZV7u+j7vrTid4sBc0GpkG7lcvgsWGv2mhExAfOeL4ecQZ93uTLmVAfC9tWD8wVM6oiP0HCX7
- d7wrxnqfMQaGJjFfTI2iptnaAi0ZiznDtGmWwgSgUla7PIQBReT//SH0ym10Cvr3D51/MBAMu07
- Mt7tuJ8x954ySPrELUhni/BwFdBHqCzIeByPuzfnzz+EfMhA/G1TQf01R8qfHuCq50ummYFBi3S
- /lKCNS1kJYAmLWR+dazOR26y+onIFtY5kCTWwuuQr2Z2THtzoCnS62DbtBA6RsE7SGdkI6DF1ix
- CvUlAZASc+86QdS5dPoQtnVWgzO1EaqtIj0exaZ84R3cJVPEM6EuW9rffVRYA1pTVm183ILuioV
- F61PzDW6WcQpr5655A+aZXhtKkZzS9cMy6xNAKBtnV8JBVf4YeuZo/DmqCZ9nQxp0hujF7IEXQm
- 1Ptyb1ZDD2fkZqhkOCA==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-08_03,2026-09-08_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 phishscore=0 spamscore=0 suspectscore=0 priorityscore=1501
- bulkscore=0 impostorscore=0 malwarescore=0 lowpriorityscore=0 adultscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2609090100
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260908-rcu-pagetable-freeing-v2-11-1f60b64e878e@kernel.org>
 
-radix_enabled() uses a jump label which is only valid after
-mmu_feature_keys_init() is called. Before that point, on a pSeries
-hash guest, early_check_vec5() clears MMU_FTR_TYPE_RADIX in
-cur_cpu_spec->mmu_features but the jump label has not yet been patched,
-so radix_enabled() incorrectly returns true.
+On Tue, Sep 08, 2026 at 01:32:20PM +0100, Lorenzo Stoakes (ARM) wrote:
+> Now every architecture has been converted to support
+> CONFIG_MMU_GATHER_RCU_TABLE_FREE, this configuration option no longer makes
+> any sense to keep around.
+> 
+> Therefore remove it, and remove all the dead code that existed for
+> !CONFIG_MMU_GATHER_RCU_TABLE_FREE architectures previously.
+> 
+> Additionally, CONFIG_MMU_GATHER_TABLE_FREE is no longer necessary, as all
+> architectures instead use CONFIG_HAVE_ARCH_TLB_REMOVE_TABLE when a custom
+> __tlb_remove_table() is required, so remove this too.
+> 
+> A number of architectures only enabled CONFIG_MMU_GATHER_RCU_TABLE_FREE if
+> CONFIG_MMU was set, however the mmu_gather logic only actually does
+> something meaningful if CONFIG_MMU is set (mmu_gather.c is only compiled in
+> this case, for instance).
+> 
+> As a result, there's no need to gate any of this logic on CONFIG_MMU
+> explicitly.
+> 
+> CONFIG_PT_RECLAIM however does have a strict dependency on CONFIG_MMU, so
+> make this dependency explicit.
+> 
+> Additionally, correct comments to remove references to non-RCU page table
+> gathering and make it clear that this is not 'semi-RCU', nor has it been
+> since commit 1fb3d8c20bfa ("mm/mmu_gather: replace IPI with
+> synchronize_rcu() when batch allocation fails").
+> 
+> With this change in place the kernel policy is now that all page tables are
 
-Replace radix_enabled() with early_radix_enabled() which does a plain
-bitmask check against cur_cpu_spec->mmu_features and is correct at all
-times, including before jump label initialization.
+You missed s/all/userspace/ from v1.
 
-Add the missing #include <asm/mmu.h> since early_radix_enabled() is
-declared there.
+> freed after an RCU grace period, and thus it is now safe to unconditionally
+> perform page table walks under RCU, safe in the knowledge that page tables
+> will not be freed underneath the walker.
 
-Fixes: 8d0e21012743 ("powerpc/mce: Avoid nmi_enter/exit in real mode on pseries hash")
-Signed-off-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Reviewed-by: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
----
-v2:
- - Added Fixes: tag referencing commit 8d0e21012743.
- - Included <asm/mmu.h> in alphabetical order.
- - Added Reviewed-by tag from Mukesh.
 
- arch/powerpc/include/asm/interrupt.h | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+> @@ -151,24 +148,15 @@
+>   *  This might be useful if your architecture has size specific TLB
+>   *  invalidation instructions.
+>   *
+> - *  MMU_GATHER_TABLE_FREE
+> - *
+> - *  This provides tlb_remove_table(), to be used instead of tlb_remove_page()
+> - *  for page directores (__p*_free_tlb()).
+> - *
+> - *  Useful if your architecture has non-page page directories.
+> + *  Page directories (__p*_free_tlb()) are always freed via tlb_remove_table(),
+> + *  after an RCU grace period (see mm/mmu_gather.c).
+>   *
+> - *  When used, an architecture is expected to provide __tlb_remove_table() or
+> - *  use the generic __tlb_remove_table(), which does the actual freeing of these
+> - *  pages.
+> + * This serialises against software page-table walkers, including architectures
+> + * which do not use IPIs for remote TLB invalidates.
 
-diff --git a/arch/powerpc/include/asm/interrupt.h b/arch/powerpc/include/asm/interrupt.h
-index 1b45a49e9bed..355f6bbf9894 100644
---- a/arch/powerpc/include/asm/interrupt.h
-+++ b/arch/powerpc/include/asm/interrupt.h
-@@ -70,6 +70,7 @@
- #include <linux/irq-entry-common.h>
- 
- #include <asm/kprobes.h>
-+#include <asm/mmu.h>
- #include <asm/runlatch.h>
- 
- #ifdef CONFIG_PPC_IRQ_SOFT_MASK_DEBUG
-@@ -290,7 +291,7 @@ interrupt_handler long func(struct pt_regs *regs)			\
- 		state = irqentry_nmi_enter(regs);			\
- 	} else if (IS_ENABLED(CONFIG_PPC_BOOK3S_64) &&			\
- 		   firmware_has_feature(FW_FEATURE_LPAR) &&		\
--		   !radix_enabled()) {					\
-+		   !early_radix_enabled()) {				\
- 		/* no nmi_entry for a pseries hash guest		\
- 		 * taking a real mode exception */			\
- 	} else if (IS_ENABLED(CONFIG_KASAN)) {				\
-@@ -307,7 +308,7 @@ interrupt_handler long func(struct pt_regs *regs)			\
- 		irqentry_nmi_exit(regs, state);				\
- 	} else if (IS_ENABLED(CONFIG_PPC_BOOK3S_64) &&			\
- 		   firmware_has_feature(FW_FEATURE_LPAR) &&		\
--		   !radix_enabled()) {					\
-+		   !early_radix_enabled()) {				\
- 		/* no nmi_exit for a pseries hash guest			\
- 		 * taking a real mode exception */			\
- 	} else if (IS_ENABLED(CONFIG_KASAN)) {				\
+Indentation is broken.
+
 -- 
-2.45.2
-
+  Kiryl Shutsemau / Kirill A. Shutemov
 
