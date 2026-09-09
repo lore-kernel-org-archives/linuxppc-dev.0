@@ -1,90 +1,78 @@
-Return-Path: <linuxppc-dev+bounces-27027-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27028-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 297EFC79FB9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2026 13:19:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 092A5C79F9F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2026 13:24:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hgdZ81PFcz2xjM;
-	Thu, 10 Sep 2026 23:19:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:34::10"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789042428;
-	cv=none; b=OIfH7WfAmXWXTQEpffAMbl7a42xWdhE8VkrWaBlwBrKPVeLOlaI50vWwYLR+YqN3GAwcP7Dkfs+BDciSFLur1BB68ZlR/AnbA6HAxipQX8XFdv3U4mqVt9izER9/o3JI7Bodeavg30KsSOc2zCym1pLjNhKlEIc719Hrz8DoQE+fOQ9rchv6EpqxFd09IASdaRjkFaVOeluqgCOknIC2jTzs3e/wuk4caotbwetIOE5Z4u+WQaUQSX3ah1PdN22vK7oBbaHoa+hVTzQTLQ+Y/LrS0phWg0Ps326j9dUGPSyjgLTiw+8aIncaCFNaZiM8x/6jYhpLniLecXXfl7ou2A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hgdgd238rz2xqM;
+	Thu, 10 Sep 2026 23:24:29 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::52d"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788978563;
+	cv=none; b=GLwfGDiTiCdm24yt+tmS+VOt+Qi0FldbDXKdt/oZkMqkWocsFM/oZdBdLLz6FjYmUwFqGYt3gZbmo7S9kwjbsIBh8dWNOMbAAuFJEs0c6CF3gJANU/WY0ii7pUhEeQOOuIqm7QdH5Xxn8AZK19szGZERC9QNNPog+dNK0/vXHOjb7X8u2qwoofQj9inJ8nnzIdLkani5Q/AAnoKVSN4p1+e2Z13rM/Pm+fWis0GapBuJxYuFNJABlsVBbovDsCH9EbGvEWvOnS1VxL2ygtnZmJg7l2uy6V+ugZ1qo0jKFPcyuVHcJFQt0mCaUwdSyyUjRfxJgGlIKHPeqVY//cnfng==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789042428; c=relaxed/relaxed;
-	bh=4hqhe5nL5m8h0oyKqgGFnsjXQH8e2lSBQ7XG7ZTQ+wA=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=LpnG4wLKZZZdrFv3S+qpCMK+OltlQcqaSe2DUva2p/xn8bb2PaUnO3ZeLkNJ3QYz5lfBkCpbXB9kB6Mdt2yGtfdBCGAsOXN1LLteSghbKuwB4/zSX+zbFtLCRXObXnZf7cHdfRkK3vMjdrkn4ofK/H17fxQhqeKJSQO+zf6uWpDLmRDaRxU6x0x+jCA+yiFPoEWQX6u5ig/kV8BAobLEfdJ6KDadfC0LkNYrmhi5gRbDw16N5RE0k8s4Pv/gwsLlRFF2BHrnvH+meMq27oqfAsd6tIAJwv7oJZKCJANwLndI/MFVqPPcdyIuZBz8+LYNksQ6q+RaYH5MkmNN1fdUEA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=NdQvJCBR; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:34::10; helo=mail-qk2-x10.google.com; envelope-from=adrianox@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1788978563; c=relaxed/relaxed;
+	bh=1oUEgD/rN41C0bVeA3gI1cpMDgX5748s/d/3oZ5kHgc=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Cc:Subject:From:To:
+	 References:In-Reply-To; b=efojiLFJPAC2NiLf0Eb+ThUbYtiP06OA3WrC2wjzXWPm0OEu7dhohBMgppQBxEBIlde0X4Nxv6ROMmX3PmqG8nyg/i5pA2yGVWvXLzXP19iI2yqSxQ/tS5Velc/w9/sYqE4Ph2NW4fpmouo3rQtxIAvy9TDxieckIcOHWPpjdRcnabh6IlFs3Jzh7qUVX8mNTbyrHnWHA5U1OGnjzRpdWyIlcbVpVXPnqD8kH0rzKwZc1lye/OdTaUDeMF5VkiZbxmxl60KveZa/O/3ZYHpYCG/MewwMW1Ig6yOaKYM6SRsdqynnreWi4Pk+zvGddBRMTgx4v2izS/6Sdq+wxuJW+A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=etsalapatis.com; dkim=pass (2048-bit key; unprotected) header.d=etsalapatis-com.20251104.gappssmtp.com header.i=@etsalapatis-com.20251104.gappssmtp.com header.a=rsa-sha256 header.s=20251104 header.b=TNGb5vk8; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::52d; helo=mail-pg1-x52d.google.com; envelope-from=emil@etsalapatis.com; receiver=lists.ozlabs.org) smtp.mailfrom=etsalapatis.com
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=etsalapatis.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=NdQvJCBR;
+	dkim=pass (2048-bit key; unprotected) header.d=etsalapatis-com.20251104.gappssmtp.com header.i=@etsalapatis-com.20251104.gappssmtp.com header.a=rsa-sha256 header.s=20251104 header.b=TNGb5vk8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:34::10; helo=mail-qk2-x10.google.com; envelope-from=adrianox@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-qk2-x10.google.com (mail-qk2-x10.google.com [IPv6:2607:f8b0:4864:34::10])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=etsalapatis.com (client-ip=2607:f8b0:4864:20::52d; helo=mail-pg1-x52d.google.com; envelope-from=emil@etsalapatis.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x52d.google.com (mail-pg1-x52d.google.com [IPv6:2607:f8b0:4864:20::52d])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hgc636b1Gz2xGr
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2026 22:13:47 +1000 (AEST)
-Received: by mail-qk2-x10.google.com with SMTP id af79cd13be357-93910c3e6b1so123294485a.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2026 05:13:47 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hg8Tr2D4Fz2yvh
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2026 04:29:18 +1000 (AEST)
+Received: by mail-pg1-x52d.google.com with SMTP id 41be03b00d2f7-cc4aa18f9afso464347a12.3
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Sep 2026 11:29:18 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789042425; x=1789647225; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=4hqhe5nL5m8h0oyKqgGFnsjXQH8e2lSBQ7XG7ZTQ+wA=;
-        b=NdQvJCBRt2wVZEnZXVQamMu/9RkL/Ibyxfk0lQAnb07NcTCQFnv4NUvR2jsbB32xz+
-         lM/hz1VnMbzyRB9V691HqJdnXuv58m41nkqHz+ZaKjPt+LtRpua0UVxHxLLRzUpcoOmh
-         +z+InBkn1ijqCRIZbHzbyhvjeL5WUlmTlx1jKYUVS657ZcC4hf0dV6f1WvzjEdtJfT9U
-         55VLy5ylyjnlM/+KixjdaAmIEzrhTmzhkD8CEh2glIW3DIStF/4syEaMmi9Ct9jtcgX/
-         b1+/hatrGeyAHycCzxDguULIJI2hk0aV8G4gkRMSCfJWYS41sCjYK+m7MwQSRO+IQ6J7
-         4JoQ==
+        d=etsalapatis-com.20251104.gappssmtp.com; s=20251104; t=1788978555; x=1789583355; darn=lists.ozlabs.org;
+        h=in-reply-to:references:to:from:subject:cc:message-id:date
+         :content-type:content-transfer-encoding:mime-version:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=1oUEgD/rN41C0bVeA3gI1cpMDgX5748s/d/3oZ5kHgc=;
+        b=TNGb5vk80R1KIC4uzBHln9Zc7wfWBHd53XwRmv7fWCGVXWK+Fzny25NyZ6N1zHxHJE
+         e//D+Kc1hKfxIjiuDi+xF4Jd6wmujJPDbbNYmZ2W1xH1LnB71gvZcm7vXta4rAygVFf4
+         Duw4FeFL+LG09ytVOxvj1gjWT4Gq8/mVbuhS3SP9lA1HRWeP1j9Bg/8cqFZtG9M278PD
+         GHBe3zdKaF9r8vylEk5S4FnUcQiqZ+TM8oh++Hjy4XpaU73uKXKPtjZbbOTNmXIOtFmw
+         1weLykZnXN6qyM1nZ4BV6hK0NlUJuFFFl43IO1e/KjwM7ikkqbNAQtZ0XOUwKU4fPo1G
+         0Q8Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1789042425; x=1789647225;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=4hqhe5nL5m8h0oyKqgGFnsjXQH8e2lSBQ7XG7ZTQ+wA=;
-        b=rD5CJNW4iW0x0XEe5J5C0grSiO703BIvifayWjoD8ZWcxwR695+GhSLAC1MpglSymT
-         Fb1LzjUr0b9Yn6v5mVSdastThaOtl/GYd6SX0C54CsPE9svKpZuAhdV8lPjZk9h5cTC/
-         eP9DNRSmg6s3qhu9QG3tDUq3FV945v/+J4Jxbi4Q7caUZJgZiQbPhIVkT+NLdlUUs1uu
-         6MeRXWx/LxwWXVvGLCuouwDm+5TD3+hpeq18wCcZj/9ftwYwZ/9oLblIQcFkzRz6kbXV
-         K0dSMMtyA3S2se+Lx3N0PviWwhQRx14rtjrmZ53oLn9OumSfAp3/fDvfHGXksp+H2hMr
-         2O0A==
-X-Forwarded-Encrypted: i=1; AKwUvBx+Rgz1AQsDY1OUs8cqh+I7WdtUpMBxJyNiYlFiXK5gD8KLXu5e1Y0urDSuLd+L8wLWpWhzX5vBIj+fWlE=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++m7PUU973/kiwo1W6HRVSuyr4N9SFiwNFfyWLgC6h/GM2ytUeXM
-	8m0XjKNKg+OjGq6Y/681FyMZabaVswem07d9uEWWaph+UT8N0aj990q0
-X-Gm-Gg: AYBFou0SLeIQGem5btys9CmVzbmyGXSyvbHTLNXX7fhu0qDJfqF6rTF7RLd/gyltoa1
-	WEdwEsCGGcgUvqNsX1lWNOPE9IOxie0Kgfb4LICUT6laI08aPoyBG6jDKA/1LnCKFX/hUWTpGS+
-	UK7SnFwZgXMp16DZMZ7RJzKQ1HH+xU6GJfBKI2yOjA5slSPsE6DnEeGx+0WPZdKAl692PCf49iR
-	G0SoW/8lxfBrEwZ1obPDd3YVeeR10/yP6stRjXeXf3O3y1ReZbPJuk2rp1sNQrZlDDKNGXClp7J
-	A1azVbVIXIe3ZaLSCqG22E2M7GrR+cpSeWfd2ALlbMu8oziIYvkStUVnIjWeQl0JovLCkh0l5Mh
-	meZ7yu0MDtVLKyhlhmzy+msCG8JPNsBQxCH9RBPKl7hEWPUQQBUS5oJ3xPfRlMnrD+cQ3T0OaDF
-	UX/3TIzfb4GpYIHF9NEXPcf5aIlr/5k7XVgA4rMqhm09kXtS6KDLJU7uehb05mILGH9OnYtvoG
-X-Received: by 2002:a05:620a:608b:b0:939:934b:dd61 with SMTP id af79cd13be357-939d7fa9584mr459351885a.22.1789042424724;
-        Thu, 10 Sep 2026 05:13:44 -0700 (PDT)
-Received: from adriano.lan ([2803:9810:3d22:1608:a801:3f8c:3321:84a0])
-        by smtp.gmail.com with ESMTPSA id af79cd13be357-9397fbe31c6sm1691021085a.46.2026.09.10.05.13.40
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 10 Sep 2026 05:13:43 -0700 (PDT)
-From: Adriano Cordova <adrianox@gmail.com>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Tyrel Datwyler <tyreld@linux.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <chleroy@kernel.org>,
-	Bjorn Helgaas <bhelgaas@google.com>,
-	Linas Vepstas <linas@austin.ibm.com>,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-pci@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Adriano Cordova <adrianox@gmail.com>
-Subject: [PATCH] PCI: rpaphp: report first slot registration error
-Date: Thu, 10 Sep 2026 09:13:30 -0300
-Message-ID: <20260910121330.339150-1-adrianox@gmail.com>
-X-Mailer: git-send-email 2.51.0
+        d=1e100.net; s=20251104; t=1788978555; x=1789583355;
+        h=in-reply-to:references:to:from:subject:cc:message-id:date
+         :content-type:content-transfer-encoding:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=1oUEgD/rN41C0bVeA3gI1cpMDgX5748s/d/3oZ5kHgc=;
+        b=lsfhxU+5Fzhlpqs6/f+Wj1LAKEiQLXXc4z3c3didlYpfuRwbVck8ef2KtDjnZkuJrj
+         GvfzSjoLkLhKq2frJ8VVcCym1w0fqszy19c8kWPYko6LkH6n2dC1L60UPFISRDud8z8Q
+         HtsGbljJOZTep92c8FMtjYkg1dNHVWHuyuA3w7griCUcRPn6jKpGXCjfcTJZgtBu3dYZ
+         YxdTfxjFBrUOQPWKmY+QPDapBHUOw7mASxKz8QH6627BvamjgUIu13PFehVUQFjt/hE5
+         BlnP5d9E7oezVc82njvEdUsZpeC4FaH5Q7J1/Iik0LI1OjOBPq2MRz2XIDiLeD0vLbW3
+         vMJQ==
+X-Forwarded-Encrypted: i=1; AKwUvBwAQJELaMumhsS1lIi6yz9SvJVKYzfVhR/83N19kq+nzgheoRr04ImdX72YSyY4S871bPSimOUhlprsiRU=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++kVDgjlep9hw/F8S9SsQ0FdQPigQHE+8Erx/B8NxFCPT1naNY6Q
+	PLRBQ7G409PSiDhul5Log3u6yRNQico/Jobm4wKW9wEvUy1aCv0fTt8/6F4c2R0M6zc=
+X-Gm-Gg: AYBFou3zq8X5STBpkF8jwBkH7XhpxXDWcy4TU404rSfJo42KT56haD9Bhi/h+ko341/
+	XwlALKQu8kiyJG+1JuWSPDK/wKgUHYjDRGWjN9PDYlJaa53rr6Ol0iDXFcxGxXuPVweXKeIoWSN
+	LFY1Z2Y1L8O/quCeuV26Tt6qv6F7p8W2I5feLaxRQY5TsuiyrWZUdRgztyWlFtRNs0iiYLcFZ0/
+	jkugafjfs8yhqNDbbqqAeUpSbbkC5aaSDIDGRkwVZy4WsROcUxLWYPa8MUMz5wjnX9dlJUCun6u
+	bRsdmf5ejfaJVbBLMaRiK9MDrm7JtnRR2lazqR3gO8yUnTAJeKlaFBAxxPcXhSvodOWIvX0pJu2
+	vJLbrg3VFdpxj9gLI1pB1a6JnICJA1Sra2thn3hKALgyoYew2McUiJStPoLQLHVupTPN4GKCvdA
+	0u0BnIlWYy9dLks6C8//yOzWFEdPTvN2cBCf72wSBM2NlVbWw+j+wRjZHBOBV5dsZgXc03f7Dac
+	vvPkX/0DXLob9ZFDZNN+aIIEMXc
+X-Received: by 2002:a17:90b:264e:b0:398:9bd1:3215 with SMTP id 98e67ed59e1d1-39b262e28cdmr58011908a91.22.1788978554953;
+        Wed, 09 Sep 2026 11:29:14 -0700 (PDT)
+Received: from localhost (107-190-31-17.cpe.teksavvy.com. [107.190.31.17])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-39cfa5b2fffsm1727085a91.4.2026.09.09.11.29.13
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 09 Sep 2026 11:29:14 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -97,57 +85,80 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Wed, 09 Sep 2026 14:29:12 -0400
+Message-Id: <DLAZYXG7B54C.23SY9Z6V3JRT1@etsalapatis.com>
+Cc: <bpf@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+ <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-kselftest@vger.kernel.org>, <sparclinux@vger.kernel.org>
+Subject: Re: [PATCH bpf-next v4 0/7] bpf: fix typos and repeated words in
+ comments
+From: "Emil Tsalapatis" <emil@etsalapatis.com>
+To: "Hemanth Selam" <hemanth.selam@gmail.com>, "Alexei Starovoitov"
+ <ast@kernel.org>, "Daniel Borkmann" <daniel@iogearbox.net>, "Andrii
+ Nakryiko" <andrii@kernel.org>, "Eduard Zingerman" <eddyz87@gmail.com>,
+ "Kumar Kartikeya Dwivedi" <memxor@gmail.com>, "Martin KaFai Lau"
+ <martin.lau@linux.dev>, "Song Liu" <song@kernel.org>, "Yonghong Song"
+ <yonghong.song@linux.dev>, "Jiri Olsa" <jolsa@kernel.org>, "Emil
+ Tsalapatis" <emil@etsalapatis.com>, "Ihor Solodrai"
+ <ihor.solodrai@linux.dev>, "Russell King" <linux@armlinux.org.uk>,
+ "Puranjay Mohan" <puranjay@kernel.org>, "John Fastabend"
+ <john.fastabend@gmail.com>, "Hari Bathini" <hbathini@linux.ibm.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, "Naveen N Rao"
+ <naveen@kernel.org>, "Madhavan Srinivasan" <maddy@linux.ibm.com>, "Michael
+ Ellerman" <mpe@ellerman.id.au>, "Nicholas Piggin" <npiggin@gmail.com>,
+ "Shuah Khan" <shuah@kernel.org>, "David S. Miller" <davem@davemloft.net>,
+ "Andreas Larsson" <andreas@gaisler.com>
+X-Mailer: aerc 0.21.0-0-g5549850facc2
+References: <20260908054853.13820-1-hemanth.selam@gmail.com>
+In-Reply-To: <20260908054853.13820-1-hemanth.selam@gmail.com>
 
-rpaphp_drc_add_slot() overwrites retval on every loop iteration, so a
-failure to register a slot is lost if a later slot registers
-successfully and the function returns success.
+On Tue Sep 8, 2026 at 1:48 AM EDT, Hemanth Selam wrote:
+> Fix misspellings and repeated words in comments, found with
+> scripts/checkpatch.pl using the misspelling list in scripts/spelling.txt.
+> Comments only, no code changes.
+>
+> Changes since v3:
+>  - rebased onto bpf-next.  CI reported a conflict on v3 and asked for a
+>    rebase and resubmit; the tree has moved on since and the series
+>    applies cleanly again.  The patches are otherwise identical to v3.
+>
+> Changes since v2:
+>  - moved from mainline to bpf-next, which resolved the earlier conflict
+>    in stream.c where the typo had already been fixed upstream.
+>  - renamed the selftests patches to the selftests/bpf: prefix used by the
+>    rest of that directory, as CI suggested.
+>
+> Hemanth Selam (7):
+>   ARM: net: fix typo "arithmatic" in comment
+>   bpf: fix typos in comments
+>   powerpc: net: fix typo "upto" in comments
+>   selftests/bpf: fix typos in comments
+>   sparc: net: fix typo "evalute" in comment
+>   libbpf: Fix typos in comments
+>   selftests/bpf: fix repeated words in comments
 
-Track the first error and return it, while still attempting to register
-the remaining slots.
+NACK, this kind of churn for no measurable gain is not productive.
 
-Signed-off-by: Adriano Cordova <adrianox@gmail.com>
----
- drivers/pci/hotplug/rpaphp_core.c | 11 +++++++----
- 1 file changed, 7 insertions(+), 4 deletions(-)
+pw-bot: cr
 
-diff --git a/drivers/pci/hotplug/rpaphp_core.c b/drivers/pci/hotplug/rpaphp_core.c
-index 2316de0fd198..af7241d526cf 100644
---- a/drivers/pci/hotplug/rpaphp_core.c
-+++ b/drivers/pci/hotplug/rpaphp_core.c
-@@ -376,6 +376,7 @@ static int rpaphp_drc_add_slot(struct device_node *dn)
- {
- 	struct slot *slot;
- 	int retval = 0;
-+	int first_error = 0;
- 	int i;
- 	const __be32 *indexes, *names, *types, *power_domains;
- 	char *name, *type;
-@@ -407,16 +408,18 @@ static int rpaphp_drc_add_slot(struct device_node *dn)
- 		if (!retval)
- 			retval = rpaphp_register_slot(slot);
- 
--		if (retval)
-+		if (retval) {
-+			if (!first_error)
-+				first_error = retval;
- 			dealloc_slot_struct(slot);
-+		}
- 
- 		name += strlen(name) + 1;
- 		type += strlen(type) + 1;
- 	}
--	dbg("%s - Exit: rc[%d]\n", __func__, retval);
-+	dbg("%s - Exit: rc[%d]\n", __func__, first_error);
- 
--	/* XXX FIXME: reports a failure only if last entry in loop failed */
--	return retval;
-+	return first_error;
- }
- 
- /**
--- 
-2.51.0
+>
+>  arch/arm/net/bpf_jit_32.c                                    | 2 +-
+>  arch/powerpc/net/bpf_jit_comp32.c                            | 2 +-
+>  arch/powerpc/net/bpf_jit_comp64.c                            | 4 ++--
+>  arch/sparc/net/bpf_jit_asm_32.S                              | 2 +-
+>  include/linux/filter.h                                       | 4 ++--
+>  kernel/bpf/reuseport_array.c                                 | 2 +-
+>  tools/lib/bpf/btf.c                                          | 4 ++--
+>  tools/lib/bpf/usdt.c                                         | 2 +-
+>  tools/testing/selftests/bpf/libarena/src/asan.bpf.c          | 2 +-
+>  tools/testing/selftests/bpf/prog_tests/lwt_seg6local.c       | 2 +-
+>  tools/testing/selftests/bpf/prog_tests/task_local_data.h     | 2 +-
+>  tools/testing/selftests/bpf/progs/freplace_unreliable_prog.c | 2 +-
+>  tools/testing/selftests/bpf/progs/iters.c                    | 2 +-
+>  tools/testing/selftests/bpf/progs/verifier_var_off.c         | 2 +-
+>  14 files changed, 17 insertions(+), 17 deletions(-)
 
 
