@@ -1,77 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-26908-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26909-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9EA5DC79FB6
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2026 09:24:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D1224C79FAD
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2026 09:26:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hfwPY2Yh2z2ypw;
-	Wed, 09 Sep 2026 19:24:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hfwRT2f3tz2yqT;
+	Wed, 09 Sep 2026 19:26:29 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788945889;
-	cv=none; b=G0powAsBO+7TLpnwY/X66N5u2RB6yrTrRMQjEGoYkUlQaLVUzHNNSN/PTecQ3sUIsuYAo+HIWsKsagCCRV3KagDWlkN/zAESRKp6c73VyS02G2Py689yt6g1Dx3B9mS55Bo7NYhOf4/vTH3kC98SbILEWIAd8HNtMxeIvCIocqdzOTaemRd0Sj9A0TSTVVK0BTQyEcM2Bpu2X2uVdrxkSm/xDFPFVqpPmfTXzLgMGgPH7WfHwOre8onoSukhLVYkp6Foe27C5bQQihnWgMRVbAgrwRvJ8BwvIFSMxukPO6X1ooQKOWVc1ONdi5wHBSvbumWuPfqgT1Tj7cyCA35hUg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788945989;
+	cv=none; b=PjtJlwdETeuOjhPZ0r68cojSu85Eh/8tlwO/AyLeJYDIa9h1+xMHKdDgSmrrPvV6FXSZheXAfAf19rnHXwIuje8s+LJgHgPVAwZHaDZkG0te4wb1SIPlLWolSTUYVQ61a1OxdeF/ZAQhHnybHktQsEtHTDzRiMv+9RHqAQ3/dGaYuxjNiCvPAJW01bR/BmRUp5b/RhSTMXRGulbgpi8nYrkqpFvMlCJzhw/LqBgzKLq1vctgyjZxwLr4h2fRzmbxTNbDh03ITnHo0KDEEZIhLJ4f55XUVJRXUzP3kjlk5xWs1uAYxd0l9PzADH6klZKznwQiFWYiPhN1OfKq+SR6Zw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788945889; c=relaxed/relaxed;
-	bh=nfrCF2g2kP9K2twlNtCkjBDUEX8FE2jfXjcc77olkz4=;
+	t=1788945989; c=relaxed/relaxed;
+	bh=YX/JSkYghr9nrINIMWcFmmh29g3GmX1nU9kCwJO/qRo=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=lqcOVqA74czcu6YwK/Vo1cZFNkALjsNmq79RD4mxq+qtgsVITiGKDimTGJiTR7wOGPGduflgtwSCqHDDmYcHQw4mc92k10FM8W1czqiGI9Z6GaWWmwgIb2SYNcaalmpFRbd1X5d94n10qcgyo9X+j3hXralrhX7CD1tvNxNise2Mz3edR6SNOGZWzp4PuOtPsf1fKyFFar2zbiidiYSz8BwkOwyzzM3IUW9voRjSWjwu2Uq18Krykl+jESG75xDO2mED2M/DuS2XZcNdC4amLmEjHYuc0Nyjeyh+uEJedgxqzcBAc2aVq0Cy8ggI8hssUadlzZ6Q1q3ofuV2sgyCPA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WPCpNNRd; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=kas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=T7Z06sOqnUUmXF++Aco/0cOAo0IUQc8hIUEukOljs1yQqDCkskf1DmjTcaVsNT4O1myl/i74hRORTXjR4q9w6rjrZkwsDbSvwl2D2mSDpvelXV5gQktBqFmeLItm+2/2b8SKtUfce3H6r0xU4ojHq7fMLoTNDRfoYVNJ0lmNRATy6ApnKvvAN5gwXhvdEeyiAhlPnoDFX3W7x1RyLZHPESzeiwpAmZqUIsSCeliCBmUPXaucEg0hoRP8h2YCRUknjjt7eiindAdQ3a/om3X877Q/YpGCdMXm6ia2KpyabicT+cMfJJw2HMsMDWaD5G/mjUmdxnVCZrFRDZ+Ps/Yd5g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=D5QHzY8z; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=kas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WPCpNNRd;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=D5QHzY8z;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=kas@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfwPX36lTz2yps
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Sep 2026 19:24:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hfwRS4D7cz2ypw
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Sep 2026 19:26:28 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id AFE6F43901;
-	Wed,  9 Sep 2026 09:24:46 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4B3641F00A3D;
-	Wed,  9 Sep 2026 09:24:41 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id EA41E4340C;
+	Wed,  9 Sep 2026 09:26:26 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2FB7B1F00A3D;
+	Wed,  9 Sep 2026 09:26:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788945886;
-	bh=nfrCF2g2kP9K2twlNtCkjBDUEX8FE2jfXjcc77olkz4=;
+	s=k20260515; t=1788945986;
+	bh=YX/JSkYghr9nrINIMWcFmmh29g3GmX1nU9kCwJO/qRo=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=WPCpNNRdqmAOzJKeAhJyM/qgdzFD5BDME+mzm/D0LYvQ35AZoE4IRpxt25A1WsWHU
-	 sdtDrJ2SzE2rLe+38qA+kIZiPHpWx7DG5zabqjD8m1sFFCGh28tbh/24A8lpUJIFJA
-	 90PNWxQUDtx1JhX6wZlw2KH++f/ocL2mGqqXk69QhjvNpTik/9nRjZtzYlg1RJ/Zvl
-	 2+czxp/V1dBm2oQ0APDu3O2qm08FKwHORszxVq5qWcLy82Dh04OpvMPiPUpaNhJR8+
-	 k+H4+6SF+XD0j+iaWt0h1ot8PSJlBtASdm2va8Gh1AI1D+S801KAs3R2kItf6C9Obz
-	 Kas5gMq8eNKdQ==
-Received: from phl-compute-05.internal (phl-compute-05.internal [10.202.2.45])
-	by mailfauth.ams.internal (Postfix) with ESMTP id 068B4198003A;
-	Wed,  9 Sep 2026 05:24:24 -0400 (EDT)
-Received: from phl-frontend-03 ([10.202.2.162])
-  by phl-compute-05.internal (MEProxy); Wed, 09 Sep 2026 05:24:39 -0400
-X-ME-Sender: <xms:yCWhagjYqM8NelhkAwJe6-ToA6Pzkvu6YtUuREipYL8qYrOUVJyZgA>
-    <xme:yCWhahcYpVlF2jXB-c-ousju5AbfDlLNpcEkn0zv2-Bjj7RPxt0_wkhT2Cf8-Pnij
-    cSAWf2i6zi5CzYjAj4myvtoY3SVxZH49D0dZWTUPSHvSeZS42olVEH5>
-X-ME-Received: <xmr:yCWhangpq_Xwfwy2xpDLszI3Y5M-fiq-dcyxthWV1UYxPh0xCcAL_3OGJTU>
-X-ME-Proxy-Cause: dmFkZTFezydZ8FO8du2voecZC8AJNWBjGdsMbkEpRuZb1pJQCW8oQ/07jIMET6eEJr7fJk
-    jK9b6/RVqplj/hwhlVFzNnuocUhGgqg++Dch+Fm39jov+euRCynPx3rDxn0l47uIcRTbRe
-    l+xEzXbGBcRtTkTfbYEXOMv4wH/lwQzt9buwKydCbN0FMAoNRBVHjKw/0cNgJBZE1BhGh1
-    JIXdKXcVftccaMtpxVBgo74J6jWGt3VGDg3iw3wOFkhLBvYixt8JDYpFgoMYQzIsuuDFfO
-    TmxjKB4+9FqzGw50TIvRfIkKnb0q9Uf+9J1G9dVByYDZGVfHLSHUlaveJL4gG3BOiwlNKu
-    W94uMmoQw8nCimvgXUVlZxRFenvsExaDrMIxjkEpClNVWT8tTK0cUg3hfPedKUKzNTSxyw
-    PQo3wSULgn+sr5Li/cuB2N6JbBdIRHieJsLH5DmSrr71RvsAofAw1M8uaPgyS5jmndiHxA
-    zgS7f4oYsB34Klb9A5GIOP450BEQMbKt+S+wq27jxTPVFVkAOI0leIfTeRPDSAMJ/S5Cvj
-    F+Dp6/7hHUv6nzA8YtErGhpxUI3elZWjTSI/dwCeUc77iE929sk0qwionLasDve2qpQnkr
-    zdh7bJtqaOjuGUMpQqo0lzAFv6JNtn6CdttnT8jAZQyBSC+9JMBThNfmCvrw
-X-ME-Proxy: <xmx:yCWhalvo38zscZUuzJiw__SF5Cd_YDtR8z07XGTBNrbfYO5Cja9FfQ>
-    <xmx:yCWhaiC0jOQX0tYTam7Zn1UWsfu1g3GdKzOlHCzy4BasscJ1cL77Fg>
-    <xmx:yCWhauPWpiwQW3Rbs1815_1XTbFTmY2R-MnEDNPuvSylJB8Tsj4RsQ>
-    <xmx:yCWhagXzxSKsQG2dZ9P7Q4ciV-MKMH6LZvuOOY606G4QQG_ATA2T-w>
-    <xmx:yCWhagVlhDnkLY1TVIAZHeCxMfQiuASa1ZoQzqTmswaPwqncjPDP919B>
+	b=D5QHzY8zxVSrWlON2fnQhU2DQoZchub7p168QA6c6jIVWyTY9Mf9ENGtTN7i+08d9
+	 gFA8Gt7Z2R1tK10L2hCQcw9m4+W3tNW1ot14z1klVtv9eJKgN/ky5sl2qTSXROUyso
+	 7tyisRlE9LRjc7cTFBYCs/7SsyG+bBOp5ko3lbxfFuf5bxfGt3N0fLFVvI33lNUuZ9
+	 FHgSdjika+pdNaliIkODWk8n1BeXKjt6nOF2NnyXwnQ/3CjYBWeag+s0g+EVigT1Pw
+	 4y/+QF9E3OHZqslWLleDQ9UTCFNl1PR5BHfVilkGOr4YRN6UYFsslyr7P935XeBajk
+	 eZGfigDrtM8WA==
+Received: from phl-compute-03.internal (phl-compute-03.internal [10.202.2.43])
+	by mailfauth.ams.internal (Postfix) with ESMTP id 36DE6198003A;
+	Wed,  9 Sep 2026 05:26:06 -0400 (EDT)
+Received: from phl-frontend-04 ([10.202.2.163])
+  by phl-compute-03.internal (MEProxy); Wed, 09 Sep 2026 05:26:20 -0400
+X-ME-Sender: <xms:LSahakXWIT_tvMZpAA4tisSYzPACPbNz90sUvrKt6CnZT7f0bznCEQ>
+    <xme:LSahag53DfWVoWKflreXJqLcFkpU92hBAWTzNjRTqAW2ze0rgIAhIsSChKIn5Ti_6
+    KANr8G0vz3pvYzhqK6VUilcolUQhOTSLzW4l2jvSqWcWV7i5Wr00qmD>
+X-ME-Received: <xmr:LSahajm1t3WFULvmjgrvyoRWrSpX6TH6JtiTt4jZbvxEM0QXBcnMCsVPuQM>
+X-ME-Proxy-Cause: dmFkZTG4Xf5HQCh02zpqVvbKCxDxzvOSSyHgHOP3uMLvoamU0KCtlJg5G7fmz9Cf9LwJ4+
+    u43d35HyzgT45XS4YAKZHukESCUbAy6ZShLloStMpjHT/y6x5XvWA6PxDLOyWt9+ikMKjc
+    zETlWFHuSZ8ORVsn+jAlUAvv2EBzWWsscPi4QFgDlrLa3yw68FIjtTKVaZqM0eJSg/GuFG
+    PATxH5LCPqzMkEKCwvoxWevBpaE5KCPic5zvLKY5EIapHD6v0GUJQwsC7esq16fDb0nPXf
+    16/0Hsa4P7Gc/AUvOZ0A8A9rcDB4OFqVFmJGna/qdlpcowZ2nVhVucQOP/2UhdOWkjcsJG
+    bn5bMQWMV42DveAl7CVcZkwPb5GLbvc1Cf0IzGc9irZASBEiK3FCaxRyq1M73CWs3bmbiy
+    ff8K3sgP/N5TIqIlCpWMeIHRSWHEI6dt3xf82VJDupYGSlhNmr9yqFk6w/2dorxNJoWXbf
+    YgPEiAWDmBrJh7NfpaNcz3nd9MaiqYGNbDW6RIkrAkS9QWCGiiWtJzvkou0Tm89GVe3kCZ
+    2dXCb88A9l1toZ6Oe2eQbItaBH+l/shJecWdB3aE/wGnes1LHEntmse3E+X5e88WLWEJXk
+    LTYzE9igbNTFH2Vdd7kfG0gwnEhXZFP9DLJvxDWPIoXNnK4NDvajy5q5fhuA
+X-ME-Proxy: <xmx:LSahaqZiJgtSP1S1SXg4ApLr7vjawzMbaok1DlQFBAfjnNWf23YTSQ>
+    <xmx:LSahavGJasYuwmK-LtmlKjypYyuDUaWGs252xt1j5xv93UHUhE-04w>
+    <xmx:LSahavvD36JEO0uwWjWHHIu5-ZNg6oK3QNWBiPqsc3XTl13vJahNcQ>
+    <xmx:LSahasNhB-3rvAirGtHcE-v5Ps2Pehi66hIVbkaqldNeNCBRdVfH3w>
+    <xmx:LSahan07FiGk0MNCDzy03CWVja0Qnj4KqABWoK0gdzZFR-lpCNl87xrf>
 Feedback-ID: i10464835:Fastmail
 Received: by mail.messagingengine.com (Postfix) with ESMTPA; Wed,
- 9 Sep 2026 05:24:22 -0400 (EDT)
-Date: Wed, 9 Sep 2026 10:24:21 +0100
+ 9 Sep 2026 05:26:03 -0400 (EDT)
+Date: Wed, 9 Sep 2026 10:26:03 +0100
 From: Kiryl Shutsemau <kas@kernel.org>
 To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
@@ -135,11 +135,9 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
  	linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-s390@vger.kernel.org, 	linux-um@lists.infradead.org,
  Hugh Dickins <hughd@google.com>, Qi Zheng <qi.zheng@linux.dev>
-Subject: Re: [PATCH v2 12/12] mm: change the contract for free_pgtables(),
- update docs
-Message-ID: <aqEkfKww9XDq15ZF@thinkstation>
+Subject: Re: [PATCH v2 00/12] mm: make userland page table freeing RCU-safe
+Message-ID: <aqEl9zv8M_o1yW62@thinkstation>
 References: <20260908-rcu-pagetable-freeing-v2-0-1f60b64e878e@kernel.org>
- <20260908-rcu-pagetable-freeing-v2-12-1f60b64e878e@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -155,83 +153,17 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260908-rcu-pagetable-freeing-v2-12-1f60b64e878e@kernel.org>
+In-Reply-To: <20260908-rcu-pagetable-freeing-v2-0-1f60b64e878e@kernel.org>
 
-On Tue, Sep 08, 2026 at 01:32:21PM +0100, Lorenzo Stoakes (ARM) wrote:
-> Now that page tables are freed after an RCU grace period, it is safe for
-> read-only page table walkers to walk page table ranges that are being
-> concurrently torn down, provided the mm is kept alive via mmgrab().
-> 
-> It is however unsafe for writers to do so, as they must obtain an
-> appropriate lock to do so safely.
-> 
-> Update the pte_offset_map_lock()'s comment block to reflect this.
-> 
-> Similarly update the process addresses documentation.
-> 
-> Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
-> ---
->  Documentation/mm/process_addrs.rst |  6 ++++++
->  mm/pgtable-generic.c               | 15 +++++++++++----
->  2 files changed, 17 insertions(+), 4 deletions(-)
-> 
-> diff --git a/Documentation/mm/process_addrs.rst b/Documentation/mm/process_addrs.rst
-> index a7296f251799..1e65b139f355 100644
-> --- a/Documentation/mm/process_addrs.rst
-> +++ b/Documentation/mm/process_addrs.rst
-> @@ -537,6 +537,12 @@ We establish basic locking rules when interacting with page tables:
->  * When changing a page table entry the page table lock for that page table
->    **must** be held, except if you can safely assume nobody can access the page
->    tables concurrently (such as on invocation of :c:func:`!free_pgtables`).
-> +* Page tables may be *walked* under RCU alone, as page tables are freed only
-> +  after an RCU grace period has elapsed. However, any entry found must be
-> +  revalidated after the page table lock is taken (such as the
-> +  :c:func:`!pmd_same` recheck performed by :c:func:`!pte_offset_map_lock`)
-> +  before it is acted upon. Changing an entry always requires the page table
-> +  lock.
+On Tue, Sep 08, 2026 at 01:32:09PM +0100, Lorenzo Stoakes (ARM) wrote:
+> The majority of architectures in the kernel defer page table freeing until
+> an RCU grace period has elapsed, this series converts all remaining
+> architectures to do so too and eliminates CONFIG_MMU_GATHER_RCU_TABLE_FREE
+> altogether.
 
-This says the PTL plus a recheck is enough to act on the entry. It is
-not: free_pte_range() clears the PMD without the PTL, so pmd_same() can
-pass and the table is torn down right after. That is the case we settled
-on for the pte_offset_map_lock() comment, and the two now disagree.
+Apart from few nitpicks, the patchset looks good to me:
 
-Something like "Changing an entry requires the page table lock and one
-of the locks that excludes teardown (mmap or VMA lock)" would match the
-comment.
-
->  * Reads from and writes to page table entries must be *appropriately*
->    atomic. See the section on atomicity below for details.
->  * Populating previously empty entries requires that the mmap or VMA locks are
-> diff --git a/mm/pgtable-generic.c b/mm/pgtable-generic.c
-> index b91b1a98029c..a127e3e8f9b9 100644
-> --- a/mm/pgtable-generic.c
-> +++ b/mm/pgtable-generic.c
-> @@ -385,10 +385,17 @@ pte_t *pte_offset_map_rw_nolock(struct mm_struct *mm, pmd_t *pmd,
->   * Note: "RO" / "RW" expresses the intended semantics, not that the *kmap* will
->   * be read-only/read-write protected.
->   *
-> - * Note that free_pgtables(), used after unmapping detached vmas, or when
-> - * exiting the whole mm, does not take page table lock before freeing a page
-> - * table, and may not use RCU at all: "outsiders" like khugepaged should avoid
-> - * pte_offset_map() and co once the vma is detached from mm or mm_users is zero.
-> + * Note that free_pgtables(), used after unmapping detached vmas or when exiting
-> + * the whole mm, does not take a page table lock before freeing a page table.
-> + *
-> + * As page table freeing itself is RCU-safe, page table readers can safely run
-> + * concurrently with page table teardown.
-> + *
-> + * However, writers CANNOT as, without a lock being held, nothing prevents
-> + * concurrent teardown.
-> + *
-> + * Also note that the PGD itself is freed at mmdrop() time, not under RCU - so
-> + * the walker must keep the mm alive either by pinning the mm or the VMA.
->   */
->  pte_t *pte_offset_map_lock(struct mm_struct *mm, pmd_t *pmd,
->  			   unsigned long addr, spinlock_t **ptlp)
-> 
-> -- 
-> 2.55.0
-> 
+Acked-by: Kiryl Shutsemau (Meta) <kas@kernel.org>
 
 -- 
   Kiryl Shutsemau / Kirill A. Shutemov
