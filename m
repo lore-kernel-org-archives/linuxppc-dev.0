@@ -1,98 +1,90 @@
-Return-Path: <linuxppc-dev+bounces-26986-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26987-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8650AC79FBD
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2026 16:44:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6150DC79FB7
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2026 16:54:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hg69B0KfLz2yty;
-	Thu, 10 Sep 2026 02:44:46 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788972286;
-	cv=none; b=d5N+oWCTt1+ZWd8gp1JBp1HrUjCJJycQVQLTDmVN8EzTLI0ztvMgDccAfnIO4EubSbaUtF0tedjKC3PLxsclHmWCw/NOMRLQ3JcO+vBQjcEVwPQgbdKoHNw9uL3fIiNI3xhNrfyDVFSq5fmhwos96aGZo5SQHrUGmc/LkrO5UtDIxtXTNFEKgGKaFUqAEYF9+IWWNituCH2BWCrhAdGemZdlRb/1CQRgDZQMmacg/jYaKEhjoJ6I+wMq4GDTSDgmkph0TFSMlu9TdHYwJtTqL+oAepYjgPWg6qWoQdyItSZunaQ9DiLKr9UTt+YDzSfWs7BUUpypAuHZwQTw0WWjfA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hg6Mx4r06z2ywv;
+	Thu, 10 Sep 2026 02:54:05 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::429"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788972845;
+	cv=none; b=ORKgbdWmdgXOTLovv+G2vyLnDx+b3Lh2/u6CxrvDIevEd5mlNRpdPSxRmQGa72Ig5QJ2LDTRtDyApeasFBD/TNWR0S4bh0QNFtFPAwRmZmJxXMgMNcW3Z0jDwn5+ZoiauZxVwD5jM2JGOI+gzYmPRatEWcq91aVgEir0dKbQop0iZuQ0IhTG+7FqrXevO27MV/hZ8iDXNPDt7mxFoMtkTw4pzaA21HfuHlvErrzGp9ArZjpQcU0PdFzdWJChtctv+0W0cXCmWtcLn/8kn8as2102xthbsdAx94HW3M+pm3ZXJea3QqH/WFh5/HMbcgkStrYkOEqH2erj+qGNZvjXxw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788972286; c=relaxed/relaxed;
-	bh=Bapc0YSkMfnvYk3VlSbyVwcwaxlxEF/qdP5fqXt2FVU=;
+	t=1788972845; c=relaxed/relaxed;
+	bh=ciwSeHWBadqQx6YZVRZm2djgvhH+b+XMn6UtqaKUvdE=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=kIXUxfhkRpR8qFtCnAwcQ3HiTGS+Nz98gu9WLpgmZLCw9OoeexWNKP3JA7RJvnR8bHvRx87Cd841/FctY8c646Y2pKQSD+tKoLkMhpEU3Fkzyd/QVzgi/xpdrSkGr+0ro5hsISnW7bNx04k5Ls7AlcnXUCv/SrCzM+vNIWTwEtKEZqa0o0GNUMbFqGG1/fPkzmU4WcCXRr49dsXKdGWU08F50DWcz1Kc/GO9rDc7IfGkpsTU7grpi8jR4CbT3ctu53efpuBikHft90SeKEpNn2B5/DL5JEDjI1Cahp7O8PN371odrUlcAc3Hf237I5EuQSEgHIKpe2USnXn18SeKVA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=SvkfUBrj; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=U5M47BphHuh14QqdR/5ZPVcgjP0WEB5aJ36VCQQG6uIgMnPFwAxdwvL7jndJT/df1Rgdh1rzG5dM6pVPKYR6O/OMYRuXU/0jjJsytQskKjl3a02XOYBUYzYSAbPvRGfEow41zDmLRNbJD1jc/I9j60XNJyhFecEF767hl10fWdJ5egRjWBSmrgN3GdcgZRFSavtob3C2fk686fmajTwTqH/JmB6Eopo80BMqEtHsEahI323msLO8fxxDkWy8G7PZzsVZioEt37GixKs9HwU8C0Lg+67i8aDQ7BfzL2odhgjAdbzY7GHkrF8egU0xPhw5HWEvwCaF81EkxyP5JAF/Ew==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Y+2LIRwK; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::429; helo=mail-pf1-x429.google.com; envelope-from=dmitry.torokhov@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=SvkfUBrj;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Y+2LIRwK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::429; helo=mail-pf1-x429.google.com; envelope-from=dmitry.torokhov@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x429.google.com (mail-pf1-x429.google.com [IPv6:2607:f8b0:4864:20::429])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hg69914TRz2yth
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2026 02:44:45 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id A729F60202;
-	Wed,  9 Sep 2026 16:44:41 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id F14881F000FF;
-	Wed,  9 Sep 2026 16:44:19 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788972281;
-	bh=Bapc0YSkMfnvYk3VlSbyVwcwaxlxEF/qdP5fqXt2FVU=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=SvkfUBrj+qqUCItjJr4thxIOtrO+WmcNQus9iN7o7fjn21Kjri7ciOsZZbXojK8eq
-	 ebmrsmEhjQ8lMe6NScH5NJJVO7FkHjSrPlMJAzs9SeDQJIL0euxfAANelWLDPoYw1X
-	 CcSIvP/FGlOivDpnH/QksUP428gC7WgcKMjXSRAyqMHuiTJd6wYCdFyF9iWecTST2l
-	 DPfn0SayJdOumRm8EjJ0YaCf7wOVn5AtF52jH/K7lyYBUkf1LvlE8O39pf5s+r01dw
-	 hpz3MZmyVQYZqDR+4GQ6n1zp4Q8/XwEUokZ3xCVu0XLtYHfY7rf+QXRgnY7M4GG9HF
-	 fN2FuuSzCKwhQ==
-Date: Wed, 9 Sep 2026 17:44:16 +0100
-From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-To: Kiryl Shutsemau <kas@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, 
-	David Hildenbrand <david@kernel.org>, Zi Yan <ziy@nvidia.com>, 
-	Baolin Wang <baolin.wang@linux.alibaba.com>, "Liam R. Howlett" <liam@infradead.org>, 
-	Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, 
-	Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, 
-	Usama Arif <usama.arif@linux.dev>, Guo Ren <guoren@kernel.org>, Brian Cain <bcain@kernel.org>, 
-	Geert Uytterhoeven <geert@linux-m68k.org>, Dinh Nguyen <dinguyen@kernel.org>, 
-	Simon Schuster <schuster.simon@siemens-energy.com>, Jonas Bonn <jonas@southpole.se>, 
-	Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, Stafford Horne <shorne@gmail.com>, 
-	Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, 
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Paul Walmsley <pjw@kernel.org>, 
-	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
-	Alexandre Ghiti <alex@ghiti.fr>, Russell King <linux@armlinux.org.uk>, 
-	Vineet Gupta <vgupta@kernel.org>, Michal Simek <monstr@monstr.eu>, Chris Zankel <chris@zankel.net>, 
-	Max Filippov <jcmvbkbc@gmail.com>, Will Deacon <will@kernel.org>, 
-	"Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nick Piggin <npiggin@gmail.com>, 
-	Peter Zijlstra <peterz@infradead.org>, "David S. Miller" <davem@davemloft.net>, 
-	Andreas Larsson <andreas@gaisler.com>, Richard Henderson <richard.henderson@linaro.org>, 
-	Matt Turner <mattst88@gmail.com>, Magnus Lindholm <linmag7@gmail.com>, 
-	Catalin Marinas <catalin.marinas@arm.com>, Mark Rutland <mark.rutland@arm.com>, 
-	Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>, 
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>, "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, 
-	Helge Deller <deller@gmx.de>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Michael Ellerman <mpe@ellerman.id.au>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
-	Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
-	Alexander Gordeev <agordeev@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, 
-	Sven Schnelle <svens@linux.ibm.com>, Richard Weinberger <richard@nod.at>, 
-	Anton Ivanov <anton.ivanov@cambridgegreys.com>, Johannes Berg <johannes@sipsolutions.net>, 
-	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
-	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>, 
-	Arnd Bergmann <arnd@arndb.de>, Vlastimil Babka <vbabka@kernel.org>, 
-	Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, 
-	Michal Hocko <mhocko@suse.com>, Jason Gunthorpe <jgg@ziepe.ca>, 
-	John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, linux-mm@kvack.org, 
-	linux-kernel@vger.kernel.org, linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org, 
-	linux-m68k@lists.linux-m68k.org, linux-openrisc@vger.kernel.org, linux-sh@vger.kernel.org, 
-	linux-riscv@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
-	linux-snps-arc@lists.infradead.org, linux-arch@vger.kernel.org, sparclinux@vger.kernel.org, 
-	linux-alpha@vger.kernel.org, loongarch@lists.linux.dev, linux-mips@vger.kernel.org, 
-	linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, 
-	linux-um@lists.infradead.org, Hugh Dickins <hughd@google.com>, Qi Zheng <qi.zheng@linux.dev>
-Subject: Re: [PATCH v2 11/12] mm: make userland page table freeing RCU-safe
-Message-ID: <aqGMqVxJCWbZePmW@gremlin>
-References: <20260908-rcu-pagetable-freeing-v2-0-1f60b64e878e@kernel.org>
- <20260908-rcu-pagetable-freeing-v2-11-1f60b64e878e@kernel.org>
- <aqEivRP0LmJZcgEx@thinkstation>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hg6Mw3MHyz2yvK
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2026 02:54:04 +1000 (AEST)
+Received: by mail-pf1-x429.google.com with SMTP id d2e1a72fcca58-8558c0b26a8so4391129b3a.3
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Sep 2026 09:54:03 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1788972841; x=1789577641; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=ciwSeHWBadqQx6YZVRZm2djgvhH+b+XMn6UtqaKUvdE=;
+        b=Y+2LIRwKn/7PqiSxO2J9b7aLjushfMd8dwSKVBqKM+rxAiHbsfooUJGnJvV55yqJ2n
+         YVzEWmE0jo1sw8x+BEuV39rHzBu8JiQuL2YnXzDNoyiAPNtYKqsZdLKvxW6BR+IegZWr
+         W4AtfRt3EZKHfUvSH93tskRaGNhui/uIqLbyPi6vHtC98RjbaHr/ngKOZ+NelK0VHDRz
+         zPlwUJuGhZI4roFKeC6nLwTTPoFRjY0rvL67H6Z+xzGIO9KWbGIIskOSywu+t2NQVr5H
+         iGTMepA9HdyYwpSvXONfMxi6STGjzsMvhRDh/NvrrZdFhCnHX2o5SQXDlkht4Fday1Fy
+         pcTg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1788972841; x=1789577641;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=ciwSeHWBadqQx6YZVRZm2djgvhH+b+XMn6UtqaKUvdE=;
+        b=Kc12mWF23x5ZWkLWVn3tIDaqR6np+J+tveznrwNu7+FOLLLEt3oLklKtpjcapHr6TV
+         Jk5qY2vYjJ79+r6RREHShlkEgP+DS/ferQuRV2S+jiBsRKJRB+1YseItSebT58dynIXH
+         QMzz2IOHPv6sNeuRCbl6idtTmCPvH47t+Kh9J9LGJvpzEelyVJkm/ngKzDw5nP21JHpA
+         H7vRxGLLdSL+G3c9ForXG4Ri05x5mK/EQ4Dhc8ecbdZ83V8p8PqQHVfmEZk5zwQbsY7K
+         lXMiYlTiu61QkHl4jN0kVOwyv83NK8XY8+U5WkEQk9pTEH1YDZe0lyouWXAmTdjyNvQa
+         kQCQ==
+X-Forwarded-Encrypted: i=1; AKwUvBxED6qJbEDUwCR5rtLdk2cFBt9nk87R3V7uuz+5yJLOZgfIQhgR54HfS7/OPziqK3tfq+i7F0zBWuBcu7s=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++lPEor9mQ1ZyUlNlVoPRifD4ox2e53SST6syUr1Y1s/LaC4OZw9
+	xRHVACYNukGFGz/x1DZWqdYksZFGGZKPuVtHz3hFpZGDM22/W1ZfzpLR
+X-Gm-Gg: AYBFou2enKAtkgVtXwuOwXg/DdGI3Z/Xop5tcMZwyphLEYBzOoO5oyPZiCfhgFK3w6w
+	HOrTj7BOKzbBhpeYkt7iPhL2MuEJaGPiYBf12jNZECEcMb658/vwHUSdtD2Hf5c/LcP4bowsDJ4
+	5/X6Uy3RmWdy3k+suJP2mp4xXBNaOyLbBM8rZNUyEEUOhs4zGYXIdZW6nYOkVAzUQX2cLOLoj6X
+	g598FKGAglQ9Zs9q2EFuNKJhz/toBlPy0KG4vkEhE2iXirXwf7VDvJ7hpK2l5dLRsanUs9naq+s
+	Tti4fm3poxzSnzjYK+nfG3HSXB3VVv2L9kvordrzILbxJjtSIuEwLujN8HPtzGUK947Gu/GIs1X
+	YNQMGuV3cjjsB9DNwbrnwx1DnBz/DXk5+KLbAwzW6l0PgJM0PqAXFul32K0ohzmmCEqMTSEkLwR
+	JNRlJ1kggi6i+rYrnupWK32P5xP1EJ0BngrByBAQq4lz8oS3sRPXHLz/SIOp5D+BM027MmfIt0G
+	izdXM/nfxPOjH1gqNcVZQRA5iv2ULg88pK6P+7SR8E1t3K5pcs=
+X-Received: by 2002:a05:6a20:4311:b0:3be:b0b3:3962 with SMTP id adf61e73a8af0-3da39d147ebmr54252434637.9.1788972841349;
+        Wed, 09 Sep 2026 09:54:01 -0700 (PDT)
+Received: from google.com ([2a00:79e0:2ebe:8:2d43:5153:5c50:643e])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3342af0bc08sm45655113eec.17.2026.09.09.09.53.59
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 09 Sep 2026 09:54:00 -0700 (PDT)
+Date: Wed, 9 Sep 2026 09:53:57 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	Michael Ellerman <mpe@ellerman.id.au>
+Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	linux-kernel@vger.kernel.org, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Nicholas Piggin <npiggin@gmail.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Subject: Re: [PATCH v2 0/3] powerpc: 512x: Convert ADS7845 touchscreen on
+ PDM360NG to device tree
+Message-ID: <aqGJQwB81hODuSIc@google.com>
+References: <20260719-ads7846-pdm360ng-v2-0-1198bd108502@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -108,78 +100,41 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <aqEivRP0LmJZcgEx@thinkstation>
+In-Reply-To: <20260719-ads7846-pdm360ng-v2-0-1198bd108502@gmail.com>
 
-On Wed, Sep 09, 2026 at 10:15:13AM +0100, Kiryl Shutsemau wrote:
-> On Tue, Sep 08, 2026 at 01:32:20PM +0100, Lorenzo Stoakes (ARM) wrote:
-> > Now every architecture has been converted to support
-> > CONFIG_MMU_GATHER_RCU_TABLE_FREE, this configuration option no longer makes
-> > any sense to keep around.
-> >
-> > Therefore remove it, and remove all the dead code that existed for
-> > !CONFIG_MMU_GATHER_RCU_TABLE_FREE architectures previously.
-> >
-> > Additionally, CONFIG_MMU_GATHER_TABLE_FREE is no longer necessary, as all
-> > architectures instead use CONFIG_HAVE_ARCH_TLB_REMOVE_TABLE when a custom
-> > __tlb_remove_table() is required, so remove this too.
-> >
-> > A number of architectures only enabled CONFIG_MMU_GATHER_RCU_TABLE_FREE if
-> > CONFIG_MMU was set, however the mmu_gather logic only actually does
-> > something meaningful if CONFIG_MMU is set (mmu_gather.c is only compiled in
-> > this case, for instance).
-> >
-> > As a result, there's no need to gate any of this logic on CONFIG_MMU
-> > explicitly.
-> >
-> > CONFIG_PT_RECLAIM however does have a strict dependency on CONFIG_MMU, so
-> > make this dependency explicit.
-> >
-> > Additionally, correct comments to remove references to non-RCU page table
-> > gathering and make it clear that this is not 'semi-RCU', nor has it been
-> > since commit 1fb3d8c20bfa ("mm/mmu_gather: replace IPI with
-> > synchronize_rcu() when batch allocation fails").
-> >
-> > With this change in place the kernel policy is now that all page tables are
->
-> You missed s/all/userspace/ from v1.
+On Sun, Jul 19, 2026 at 10:37:15PM -0700, Dmitry Torokhov wrote:
+> The reason for this series is to remove support for platform data in the
+> ads7846 touchscreen driver, as pdm360ng is the last user of legacy
+> platform data in the kernel for this driver.
+> 
+> This series converts the ADS7845 touchscreen on the PDM360NG board to use
+> Device Tree bindings instead of legacy platform data callbacks:
+> 
+> - Move GPIO controller capabilities into mpc5121.dtsi so all MPC5121
+>   boards inherit proper controller definitions, and remove redundant
+>   local declarations from ac14xx.dts
+> 
+> - Update pdm360ng.dts to use "ti,ads7845" with pendown-gpio and
+>   interrupt-parent referencing gpio_pic
+> 
+> - Add "ifm,pdm360ng" to mpc512x_generic.c and delete obsolete
+>   pdm360ng.c.
+> 
+> This change has been discussed in '24 but I just got around to
+> implementing this:
+> 
+> https://lore.kernel.org/r/ZoNHLjmSvCN12vU5@google.com/
+> 
+> Note that this should compile but I have not tried this on real
+> hardware.
 
-Hmm I thought I got this... will fix on respin!
+Michael, Madhavan,
 
->
-> > freed after an RCU grace period, and thus it is now safe to unconditionally
-> > perform page table walks under RCU, safe in the knowledge that page tables
-> > will not be freed underneath the walker.
->
->
-> > @@ -151,24 +148,15 @@
-> >   *  This might be useful if your architecture has size specific TLB
-> >   *  invalidation instructions.
-> >   *
-> > - *  MMU_GATHER_TABLE_FREE
-> > - *
-> > - *  This provides tlb_remove_table(), to be used instead of tlb_remove_page()
-> > - *  for page directores (__p*_free_tlb()).
-> > - *
-> > - *  Useful if your architecture has non-page page directories.
-> > + *  Page directories (__p*_free_tlb()) are always freed via tlb_remove_table(),
-> > + *  after an RCU grace period (see mm/mmu_gather.c).
-> >   *
-> > - *  When used, an architecture is expected to provide __tlb_remove_table() or
-> > - *  use the generic __tlb_remove_table(), which does the actual freeing of these
-> > - *  pages.
-> > + * This serialises against software page-table walkers, including architectures
-> > + * which do not use IPIs for remote TLB invalidates.
->
-> Indentation is broken.
+Can this be merged or maybe you want me to make some changes? I'd like
+to finish cleaning up ads7846...
 
-Ugh I thought I fixed this before I respun too, doh!
+Thanks.
 
-Will fix.
-
->
-> --
->   Kiryl Shutsemau / Kirill A. Shutemov
-
---
-Cheers, Lorenzo
+-- 
+Dmitry
 
