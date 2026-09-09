@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-26926-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26927-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C7E62C79FAD
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2026 13:22:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C5C64C79FB6
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2026 13:23:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hg1hD3WgJz2ysW;
-	Wed, 09 Sep 2026 23:22:52 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788960172;
-	cv=none; b=Y2gIirOaTcTUQZR888Tor3BtIw3bLMyWrhKSd4fXjIF1y9kwwAGds+pBYIFc2AgWgBFqAcSDS1Xq/Zemhw/fOrT25a/uERkuNsKJqm9RP8Oox1jOKs3PAYuMbkLJz++bNqjAOkrptzcLOPEdV7Rp7UCLVw7UzbEsYaBzlTEhMDazGCIStOxIVmQMKYq4g7bTsq+qnhoaOWJbhj4DzCx7IdYia3w8ntlNE4HvXbEhgh8Th7qo+YPz7CyL1PBxXc21PqSdGGIwR1IeKgaxCLXk+lnKAepNywnWKcO7VfJaBLW3/xNAGztafuKx3AlgenNNrN8h4DCxwicSBhvoWbezIw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hg1hN6flyz2yyx;
+	Wed, 09 Sep 2026 23:23:00 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788960180;
+	cv=none; b=Kg0d2N9EgfKEI9/AAW4T/abqy1KQ8vz/lXhTV8qp7MvWaBbj+h8SIFJYa+K7cmXAZ3vIhokH6auUo2vIKitueU9WrMmsEaNd/h0+vYIJi9NbTbFk+Tq6kr2Urn8huF5+MoLv6kY0faL6IKDS2J5CH+xvOQC020SDeQ1tyADm8fTwuPwqxH/eEIV0UN0uM3z7snPC9YDpV/TVody1Wjh4eIeFIXmMp5RBy5BUE8I6iCM6U7DiK8/A+QKGKryuYkMNDkS6kDrDngN9pkX3Slkpf9ZyCqcn0zXTbuyTM1gjEXoMmdzv0F7SzNuXKhrCXJhMfC1L7LPfk+ke9h+gh9J59A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788960172; c=relaxed/relaxed;
-	bh=ZHN9vSFA+b3YrdAtebxpzCnkbH44KZ3kWPDTkF9VLOQ=;
+	t=1788960180; c=relaxed/relaxed;
+	bh=aqKiCslHbiIUUHWRWjajHsUIptSaeo1iBALYM4jli9I=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=Hwyx79L/TaK+xdaf26qm7KDHY9LNH6kJsBQGnsxQBX2eWCksX3rcM+pq/otLpK/f6EEuG4JoacxXEGauHKMJV4OMhkGLY3lCHwCRm9a/cHP7BoLHbQigq6+o4CrNzx9EBeZ+i3cJZJYVj6K0CZnkRFrw7RZYAcRyiGyrQeynZahJiSM+dy2yBtWlq6cOAPa9hWEd/sOqpHQB+aS/DV6ItqKwGNofLchOdZileYcpDedAfLvRMwqRUby2pAfp9XQQ6eZK7DwpclKqe9ykWVlbWD6ngXDGJSE4bPj+phUNbX0YMh/6LV3nwSl4N4sC/bOO7v4rxBdTcO9TESg8vAbe4Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Ij/jOjRX; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=CdHeJTfnypIeRVDCP1qsRAVcJwKQweiPRyvWlTsqvh7kYIqZwqAt8sYLG0hx3ExUPJuVgnK6AW4s3Mkb0FeBtBG6inr8l/qzJiRNjCRt7N1x3Xef5A54GBISzO+qbRfB40k4yOrJHhfNSQiDmUf3kG/0s8NJF7GaC18jBbEUMfXTz+nh9OmnHOjruWaRXp9ALXwGF78BBUCJIzrLwVgNo7huYCfqk0VYx2qrYvfZ7VOx7ko2+ppO02CLxTztRrZ+cwVzakLXjyRpOduw8utulTVMOzJSl2ghpCTQhz0vekSAFMLsNOSF5nanzaMKcCXVO/dTQUAz8s/HCBx0N0vpRg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nfRj7YZO; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Ij/jOjRX;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nfRj7YZO;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hg1h969qMz2yx5
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Sep 2026 23:22:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hg1hL2Nryz2ytJ
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Sep 2026 23:22:58 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id C675760239;
+	by tor.source.kernel.org (Postfix) with ESMTP id 3A5CD6022C;
+	Wed,  9 Sep 2026 13:22:56 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F40E11F00A3F;
 	Wed,  9 Sep 2026 13:22:47 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 59E821F00A3A;
-	Wed,  9 Sep 2026 13:22:39 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788960167;
-	bh=ZHN9vSFA+b3YrdAtebxpzCnkbH44KZ3kWPDTkF9VLOQ=;
+	s=k20260515; t=1788960175;
+	bh=aqKiCslHbiIUUHWRWjajHsUIptSaeo1iBALYM4jli9I=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=Ij/jOjRXxLYZCSr5dfMD7K1dKW5t5heI9s8GqFTe0OZceyD0/p4oHaOMvNYl6T4/z
-	 TLNBHxx0uWmzLlOg/Ebl07+LjTlGi3jfzDQzY1qRvJz5u5fvDFkNQuMIMNgGmC3SrN
-	 KvToh1aRuIPXXLDTwVCPhiK8JHCenvweqf8EEUVEkgW0PJdhCA/aBZYrP6o54xWLqA
-	 UZOVkxJ3heKB6Ioou2FpKcUPcdYjygY+Tm650vr2aF3iuwgKa1o5kXBNNbQKEa72Iw
-	 86lSpzVnp4IAl24+r9/ORe8+/P1vf11g5KM/Egtaqngf59P6CKrY2sh3m9BQkCbb9c
-	 NQZwY64Yg+tTw==
+	b=nfRj7YZO1MqrEy8e7ckqtWRMa0ElwMWjWLOKYmiWY+uPMtM2ZvdMkEt9CzljXB8c/
+	 6HImNDfZ/POcpwsP/9GeT4PEWihv9COJptjYW7tnFhZyoSecWpwsxu4c95HDoc0DuZ
+	 x4BmTu7d46aK2hwK1fxCJJ33r2ttba+9hDOdMJXIPvZ4Uu38UxbJNUbK6/I9gvOtX/
+	 YdXTeuQRoZkkGe1bp4KMYfEC9AmAFXtMtZaZxknsX8Flnh30GIdiUU79GJXuV9Gjz3
+	 pBVXS03SdWR3I21GK5eNtmcpW36N3tdAMbsYbnHF2cHJQ7yws6K1BnOcZj/b2DF6NQ
+	 5UXxukJRyGAvQ==
 From: Arnd Bergmann <arnd@kernel.org>
 To: Lee Jones <lee@kernel.org>,
 	mfd@lists.linux.dev
@@ -86,9 +86,9 @@ Cc: linux-kernel@vger.kernel.org,
 	linux-sound@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
 	llvm@lists.linux.dev
-Subject: [PATCH 03/14] mfd: remove unused si476x driver
-Date: Wed,  9 Sep 2026 15:21:40 +0200
-Message-ID: <20260909132153.1596191-4-arnd@kernel.org>
+Subject: [PATCH 04/14] mfd: remove unused wm8400 driver
+Date: Wed,  9 Sep 2026 15:21:41 +0200
+Message-ID: <20260909132153.1596191-5-arnd@kernel.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260909132153.1596191-1-arnd@kernel.org>
 References: <20260909132153.1596191-1-arnd@kernel.org>
@@ -105,5848 +105,4160 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
 From: Arnd Bergmann <arnd@arndb.de>
 
-The si476x driver was added in linux-3.9 without devicetree
-support, and has always failed the probe function in the
-absence of a si476x_platform_data definition.
+This driver requires a platform_data definition, which does not exist
+in the kernel.
+
+According to Mark Brown, the hardware supported by this driver was never
+shipped in production.
+
+Since this is clearly unused, remove it.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- .../admin-guide/media/radio-cardlist.rst      |    1 -
- Documentation/admin-guide/media/si476x.rst    |  160 --
- .../admin-guide/media/v4l-drivers.rst         |    1 -
- drivers/media/radio/Kconfig                   |   17 -
- drivers/media/radio/Makefile                  |    1 -
- drivers/media/radio/radio-si476x.c            | 1523 ----------------
- drivers/mfd/Kconfig                           |   13 -
- drivers/mfd/Makefile                          |    3 -
- drivers/mfd/si476x-cmd.c                      | 1543 -----------------
- drivers/mfd/si476x-i2c.c                      |  861 ---------
- drivers/mfd/si476x-prop.c                     |  233 ---
- include/linux/mfd/si476x-core.h               |  532 ------
- include/linux/mfd/si476x-platform.h           |  256 ---
- include/linux/mfd/si476x-reports.h            |  154 --
- include/media/drv-intf/si476x.h               |   28 -
- include/uapi/linux/v4l2-controls.h            |    4 +-
- sound/soc/codecs/Kconfig                      |    5 -
- sound/soc/codecs/Makefile                     |    2 -
- sound/soc/codecs/si476x.c                     |  263 ---
- sound/soc/fsl/fsl-asoc-card.c                 |    8 -
- 20 files changed, 2 insertions(+), 5606 deletions(-)
- delete mode 100644 Documentation/admin-guide/media/si476x.rst
- delete mode 100644 drivers/media/radio/radio-si476x.c
- delete mode 100644 drivers/mfd/si476x-cmd.c
- delete mode 100644 drivers/mfd/si476x-i2c.c
- delete mode 100644 drivers/mfd/si476x-prop.c
- delete mode 100644 include/linux/mfd/si476x-core.h
- delete mode 100644 include/linux/mfd/si476x-platform.h
- delete mode 100644 include/linux/mfd/si476x-reports.h
- delete mode 100644 include/media/drv-intf/si476x.h
- delete mode 100644 sound/soc/codecs/si476x.c
+ MAINTAINERS                          |    1 -
+ drivers/mfd/Kconfig                  |   11 -
+ drivers/mfd/Makefile                 |    1 -
+ drivers/mfd/wm8400-core.c            |  163 ----
+ drivers/regulator/Kconfig            |    7 -
+ drivers/regulator/Makefile           |    1 -
+ drivers/regulator/wm8400-regulator.c |  276 ------
+ include/linux/mfd/wm8400-audio.h     | 1174 ----------------------
+ include/linux/mfd/wm8400-private.h   |  913 -----------------
+ include/linux/mfd/wm8400.h           |   27 -
+ sound/soc/codecs/Kconfig             |    6 -
+ sound/soc/codecs/Makefile            |    2 -
+ sound/soc/codecs/wm8400.c            | 1348 --------------------------
+ sound/soc/codecs/wm8400.h            |   54 --
+ 14 files changed, 3984 deletions(-)
+ delete mode 100644 drivers/mfd/wm8400-core.c
+ delete mode 100644 drivers/regulator/wm8400-regulator.c
+ delete mode 100644 include/linux/mfd/wm8400-audio.h
+ delete mode 100644 include/linux/mfd/wm8400-private.h
+ delete mode 100644 include/linux/mfd/wm8400.h
+ delete mode 100644 sound/soc/codecs/wm8400.c
+ delete mode 100644 sound/soc/codecs/wm8400.h
 
-diff --git a/Documentation/admin-guide/media/radio-cardlist.rst b/Documentation/admin-guide/media/radio-cardlist.rst
-index cec724256812..244ff59fb6b2 100644
---- a/Documentation/admin-guide/media/radio-cardlist.rst
-+++ b/Documentation/admin-guide/media/radio-cardlist.rst
-@@ -23,7 +23,6 @@ radio-sf16fmr2         SF16-FMR2/SF16-FMD2 Radio
- radio-shark            Griffin radioSHARK USB radio receiver
- shark2                 Griffin radioSHARK2 USB radio receiver
- radio-si470x-common    Silicon Labs Si470x FM Radio Receiver
--radio-si476x           Silicon Laboratories Si476x I2C FM Radio
- radio-tea5764          TEA5764 I2C FM radio
- tef6862                TEF6862 Car Radio Enhanced Selectivity Tuner
- radio-terratec         TerraTec ActiveRadio ISA Standalone
-diff --git a/Documentation/admin-guide/media/si476x.rst b/Documentation/admin-guide/media/si476x.rst
-deleted file mode 100644
-index c8882ee9f208..000000000000
---- a/Documentation/admin-guide/media/si476x.rst
-+++ /dev/null
-@@ -1,160 +0,0 @@
--.. SPDX-License-Identifier: GPL-2.0
--
--.. include:: <isonum.txt>
--
--
--The SI476x Driver
--=================
--
--Copyright |copy| 2013 Andrey Smirnov <andrew.smirnov@gmail.com>
--
--TODO for the driver
---------------------
--
--- According to the SiLabs' datasheet it is possible to update the
--  firmware of the radio chip in the run-time, thus bringing it to the
--  most recent version. Unfortunately I couldn't find any mentioning of
--  the said firmware update for the old chips that I tested the driver
--  against, so for chips like that the driver only exposes the old
--  functionality.
--
--
--Parameters exposed over debugfs
---------------------------------
--SI476x allow user to get multiple characteristics that can be very
--useful for EoL testing/RF performance estimation, parameters that have
--very little to do with V4L2 subsystem. Such parameters are exposed via
--debugfs and can be accessed via regular file I/O operations.
--
--The drivers exposes following files:
--
--* /sys/kernel/debug/<device-name>/acf
--  This file contains ACF(Automatically Controlled Features) status
--  information. The contents of the file is binary data of the
--  following layout:
--
--  .. tabularcolumns:: |p{7ex}|p{12ex}|L|
--
--  =============  ==============   ====================================
--  Offset	 Name		  Description
--  =============  ==============   ====================================
--  0x00		 blend_int	  Flag, set when stereo separation has
--				  crossed below the blend threshold
--  0x01		 hblend_int	  Flag, set when HiBlend cutoff
--				  frequency is lower than threshold
--  0x02		 hicut_int	  Flag, set when HiCut cutoff
--				  frequency is lower than threshold
--  0x03		 chbw_int	  Flag, set when channel filter
--				  bandwidth is less than threshold
--  0x04		 softmute_int	  Flag indicating that softmute
--				  attenuation has increased above
--				  softmute threshold
--  0x05		 smute		  0 - Audio is not soft muted
--				  1 - Audio is soft muted
--  0x06		 smattn		  Soft mute attenuation level in dB
--  0x07		 chbw		  Channel filter bandwidth in kHz
--  0x08		 hicut		  HiCut cutoff frequency in units of
--				  100Hz
--  0x09		 hiblend	  HiBlend cutoff frequency in units
--				  of 100 Hz
--  0x10		 pilot		  0 - Stereo pilot is not present
--				  1 - Stereo pilot is present
--  0x11		 stblend	  Stereo blend in %
--  =============  ==============   ====================================
--
--
--* /sys/kernel/debug/<device-name>/rds_blckcnt
--  This file contains statistics about RDS receptions. It's binary data
--  has the following layout:
--
--  .. tabularcolumns:: |p{7ex}|p{12ex}|L|
--
--  =============  ==============   ====================================
--  Offset	 Name		  Description
--  =============  ==============   ====================================
--  0x00		 expected	  Number of expected RDS blocks
--  0x02		 received	  Number of received RDS blocks
--  0x04		 uncorrectable	  Number of uncorrectable RDS blocks
--  =============  ==============   ====================================
--
--* /sys/kernel/debug/<device-name>/agc
--  This file contains information about parameters pertaining to
--  AGC(Automatic Gain Control)
--
--  The layout is:
--
--  .. tabularcolumns:: |p{7ex}|p{12ex}|L|
--
--  =============  ==============   ====================================
--  Offset	 Name		  Description
--  =============  ==============   ====================================
--  0x00		 mxhi		  0 - FM Mixer PD high threshold is
--				  not tripped
--				  1 - FM Mixer PD high threshold is
--				  tripped
--  0x01		 mxlo		  ditto for FM Mixer PD low
--  0x02		 lnahi		  ditto for FM LNA PD high
--  0x03		 lnalo		  ditto for FM LNA PD low
--  0x04		 fmagc1		  FMAGC1 attenuator resistance
--				  (see datasheet for more detail)
--  0x05		 fmagc2		  ditto for FMAGC2
--  0x06		 pgagain	  PGA gain in dB
--  0x07		 fmwblang	  FM/WB LNA Gain in dB
--  =============  ==============   ====================================
--
--* /sys/kernel/debug/<device-name>/rsq
--  This file contains information about parameters pertaining to
--  RSQ(Received Signal Quality)
--
--  The layout is:
--
--  .. tabularcolumns:: |p{7ex}|p{12ex}|p{60ex}|
--
--  =============  ==============   ====================================
--  Offset	 Name		  Description
--  =============  ==============   ====================================
--  0x00		 multhint	  0 - multipath value has not crossed
--				  the Multipath high threshold
--				  1 - multipath value has crossed
--				  the Multipath high threshold
--  0x01		 multlint	  ditto for Multipath low threshold
--  0x02		 snrhint	  0 - received signal's SNR has not
--				  crossed high threshold
--				  1 - received signal's SNR has
--				  crossed high threshold
--  0x03		 snrlint	  ditto for low threshold
--  0x04		 rssihint	  ditto for RSSI high threshold
--  0x05		 rssilint	  ditto for RSSI low threshold
--  0x06		 bltf		  Flag indicating if seek command
--				  reached/wrapped seek band limit
--  0x07		 snr_ready	  Indicates that SNR metrics is ready
--  0x08		 rssiready	  ditto for RSSI metrics
--  0x09		 injside	  0 - Low-side injection is being used
--				  1 - High-side injection is used
--  0x10		 afcrl		  Flag indicating if AFC rails
--  0x11		 valid		  Flag indicating if channel is valid
--  0x12		 readfreq	  Current tuned frequency
--  0x14		 freqoff	  Signed frequency offset in units of
--				  2ppm
--  0x15		 rssi		  Signed value of RSSI in dBuV
--  0x16		 snr		  Signed RF SNR in dB
--  0x17		 issi		  Signed Image Strength Signal
--				  indicator
--  0x18		 lassi		  Signed Low side adjacent Channel
--				  Strength indicator
--  0x19		 hassi		  ditto for High side
--  0x20		 mult		  Multipath indicator
--  0x21		 dev		  Frequency deviation
--  0x24		 assi		  Adjacent channel SSI
--  0x25		 usn		  Ultrasonic noise indicator
--  0x26		 pilotdev	  Pilot deviation in units of 100 Hz
--  0x27		 rdsdev		  ditto for RDS
--  0x28		 assidev	  ditto for ASSI
--  0x29		 strongdev	  Frequency deviation
--  0x30		 rdspi		  RDS PI code
--  =============  ==============   ====================================
--
--* /sys/kernel/debug/<device-name>/rsq_primary
--  This file contains information about parameters pertaining to
--  RSQ(Received Signal Quality) for primary tuner only. Layout is as
--  the one above.
-diff --git a/Documentation/admin-guide/media/v4l-drivers.rst b/Documentation/admin-guide/media/v4l-drivers.rst
-index 4621eae9fa1e..d131146f5869 100644
---- a/Documentation/admin-guide/media/v4l-drivers.rst
-+++ b/Documentation/admin-guide/media/v4l-drivers.rst
-@@ -33,7 +33,6 @@ Video4Linux (V4L) driver-specific documentation
- 	saa7134
- 	si470x
- 	si4713
--	si476x
- 	vimc
- 	visl
- 	vivid
-diff --git a/drivers/media/radio/Kconfig b/drivers/media/radio/Kconfig
-index bbbdd054ba64..7b757f34463e 100644
---- a/drivers/media/radio/Kconfig
-+++ b/drivers/media/radio/Kconfig
-@@ -79,23 +79,6 @@ config RADIO_SHARK2
- config RADIO_SI4713
- 	tristate "Silicon Labs Si4713 FM Radio with RDS Transmitter support"
- 
--config RADIO_SI476X
--	tristate "Silicon Laboratories Si476x I2C FM Radio"
--	depends on I2C
--	depends on MFD_SI476X_CORE
--	depends on SND_SOC
--	select SND_SOC_SI476X
--	help
--	  Choose Y here if you have this FM radio chip.
--
--	  In order to control your radio card, you will need to use programs
--	  that are compatible with the Video For Linux 2 API.  Information on
--	  this API and pointers to "v4l2" programs may be found at
--	  <file:Documentation/userspace-api/media/index.rst>.
--
--	  To compile this driver as a module, choose M here: the
--	  module will be called radio-si476x.
--
- config RADIO_TEA575X
- 	tristate
- 
-diff --git a/drivers/media/radio/Makefile b/drivers/media/radio/Makefile
-index f54693ebdb30..ea948520382d 100644
---- a/drivers/media/radio/Makefile
-+++ b/drivers/media/radio/Makefile
-@@ -22,7 +22,6 @@ obj-$(CONFIG_RADIO_SHARK2) += shark2.o
- obj-$(CONFIG_RADIO_SHARK) += radio-shark.o
- obj-$(CONFIG_RADIO_SI470X) += si470x/
- obj-$(CONFIG_RADIO_SI4713) += si4713/
--obj-$(CONFIG_RADIO_SI476X) += radio-si476x.o
- obj-$(CONFIG_RADIO_TEA575X) += tea575x.o
- obj-$(CONFIG_RADIO_TEA5764) += radio-tea5764.o
- obj-$(CONFIG_RADIO_TEF6862) += tef6862.o
-diff --git a/drivers/media/radio/radio-si476x.c b/drivers/media/radio/radio-si476x.c
-deleted file mode 100644
-index bfe89782dce4..000000000000
---- a/drivers/media/radio/radio-si476x.c
-+++ /dev/null
-@@ -1,1523 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-only
--/*
-- * drivers/media/radio/radio-si476x.c -- V4L2 driver for SI476X chips
-- *
-- * Copyright (C) 2012 Innovative Converged Devices(ICD)
-- * Copyright (C) 2013 Andrey Smirnov
-- *
-- * Author: Andrey Smirnov <andrew.smirnov@gmail.com>
-- */
--
--#include <linux/module.h>
--#include <linux/delay.h>
--#include <linux/interrupt.h>
--#include <linux/slab.h>
--#include <linux/atomic.h>
--#include <linux/videodev2.h>
--#include <linux/mutex.h>
--#include <linux/debugfs.h>
--#include <media/v4l2-common.h>
--#include <media/v4l2-ioctl.h>
--#include <media/v4l2-ctrls.h>
--#include <media/v4l2-event.h>
--#include <media/v4l2-device.h>
--
--#include <media/drv-intf/si476x.h>
--#include <linux/mfd/si476x-core.h>
--
--#define FM_FREQ_RANGE_LOW   64000000
--#define FM_FREQ_RANGE_HIGH 108000000
--
--#define AM_FREQ_RANGE_LOW    520000
--#define AM_FREQ_RANGE_HIGH 30000000
--
--#define PWRLINEFLTR (1 << 8)
--
--#define FREQ_MUL (10000000 / 625)
--
--#define SI476X_PHDIV_STATUS_LINK_LOCKED(status) (0x80 & (status))
--
--#define DRIVER_NAME "si476x-radio"
--#define DRIVER_CARD "SI476x AM/FM Receiver"
--
--enum si476x_freq_bands {
--	SI476X_BAND_FM,
--	SI476X_BAND_AM,
--};
--
--static const struct v4l2_frequency_band si476x_bands[] = {
--	[SI476X_BAND_FM] = {
--		.type		= V4L2_TUNER_RADIO,
--		.index		= SI476X_BAND_FM,
--		.capability	= V4L2_TUNER_CAP_LOW
--		| V4L2_TUNER_CAP_STEREO
--		| V4L2_TUNER_CAP_RDS
--		| V4L2_TUNER_CAP_RDS_BLOCK_IO
--		| V4L2_TUNER_CAP_FREQ_BANDS,
--		.rangelow	=  64 * FREQ_MUL,
--		.rangehigh	= 108 * FREQ_MUL,
--		.modulation	= V4L2_BAND_MODULATION_FM,
--	},
--	[SI476X_BAND_AM] = {
--		.type		= V4L2_TUNER_RADIO,
--		.index		= SI476X_BAND_AM,
--		.capability	= V4L2_TUNER_CAP_LOW
--		| V4L2_TUNER_CAP_FREQ_BANDS,
--		.rangelow	= 0.52 * FREQ_MUL,
--		.rangehigh	= 30 * FREQ_MUL,
--		.modulation	= V4L2_BAND_MODULATION_AM,
--	},
--};
--
--static inline bool si476x_radio_freq_is_inside_of_the_band(u32 freq, int band)
--{
--	return freq >= si476x_bands[band].rangelow &&
--		freq <= si476x_bands[band].rangehigh;
--}
--
--static inline bool si476x_radio_range_is_inside_of_the_band(u32 low, u32 high,
--							    int band)
--{
--	return low  >= si476x_bands[band].rangelow &&
--		high <= si476x_bands[band].rangehigh;
--}
--
--static int si476x_radio_s_ctrl(struct v4l2_ctrl *ctrl);
--static int si476x_radio_g_volatile_ctrl(struct v4l2_ctrl *ctrl);
--
--enum phase_diversity_modes_idx {
--	SI476X_IDX_PHDIV_DISABLED,
--	SI476X_IDX_PHDIV_PRIMARY_COMBINING,
--	SI476X_IDX_PHDIV_PRIMARY_ANTENNA,
--	SI476X_IDX_PHDIV_SECONDARY_ANTENNA,
--	SI476X_IDX_PHDIV_SECONDARY_COMBINING,
--};
--
--static const char * const phase_diversity_modes[] = {
--	[SI476X_IDX_PHDIV_DISABLED]		= "Disabled",
--	[SI476X_IDX_PHDIV_PRIMARY_COMBINING]	= "Primary with Secondary",
--	[SI476X_IDX_PHDIV_PRIMARY_ANTENNA]	= "Primary Antenna",
--	[SI476X_IDX_PHDIV_SECONDARY_ANTENNA]	= "Secondary Antenna",
--	[SI476X_IDX_PHDIV_SECONDARY_COMBINING]	= "Secondary with Primary",
--};
--
--static inline enum phase_diversity_modes_idx
--si476x_phase_diversity_mode_to_idx(enum si476x_phase_diversity_mode mode)
--{
--	switch (mode) {
--	default:
--		fallthrough;
--	case SI476X_PHDIV_DISABLED:
--		return SI476X_IDX_PHDIV_DISABLED;
--	case SI476X_PHDIV_PRIMARY_COMBINING:
--		return SI476X_IDX_PHDIV_PRIMARY_COMBINING;
--	case SI476X_PHDIV_PRIMARY_ANTENNA:
--		return SI476X_IDX_PHDIV_PRIMARY_ANTENNA;
--	case SI476X_PHDIV_SECONDARY_ANTENNA:
--		return SI476X_IDX_PHDIV_SECONDARY_ANTENNA;
--	case SI476X_PHDIV_SECONDARY_COMBINING:
--		return SI476X_IDX_PHDIV_SECONDARY_COMBINING;
--	}
--}
--
--static inline enum si476x_phase_diversity_mode
--si476x_phase_diversity_idx_to_mode(enum phase_diversity_modes_idx idx)
--{
--	static const int idx_to_value[] = {
--		[SI476X_IDX_PHDIV_DISABLED]		= SI476X_PHDIV_DISABLED,
--		[SI476X_IDX_PHDIV_PRIMARY_COMBINING]	= SI476X_PHDIV_PRIMARY_COMBINING,
--		[SI476X_IDX_PHDIV_PRIMARY_ANTENNA]	= SI476X_PHDIV_PRIMARY_ANTENNA,
--		[SI476X_IDX_PHDIV_SECONDARY_ANTENNA]	= SI476X_PHDIV_SECONDARY_ANTENNA,
--		[SI476X_IDX_PHDIV_SECONDARY_COMBINING]	= SI476X_PHDIV_SECONDARY_COMBINING,
--	};
--
--	return idx_to_value[idx];
--}
--
--static const struct v4l2_ctrl_ops si476x_ctrl_ops = {
--	.g_volatile_ctrl	= si476x_radio_g_volatile_ctrl,
--	.s_ctrl			= si476x_radio_s_ctrl,
--};
--
--
--enum si476x_ctrl_idx {
--	SI476X_IDX_RSSI_THRESHOLD,
--	SI476X_IDX_SNR_THRESHOLD,
--	SI476X_IDX_MAX_TUNE_ERROR,
--	SI476X_IDX_HARMONICS_COUNT,
--	SI476X_IDX_DIVERSITY_MODE,
--	SI476X_IDX_INTERCHIP_LINK,
--};
--static struct v4l2_ctrl_config si476x_ctrls[] = {
--
--	/*
--	 * SI476X during its station seeking(or tuning) process uses several
--	 * parameters to determine if "the station" is valid:
--	 *
--	 *	- Signal's SNR(in dBuV) must be lower than
--	 *	#V4L2_CID_SI476X_SNR_THRESHOLD
--	 *	- Signal's RSSI(in dBuV) must be greater than
--	 *	#V4L2_CID_SI476X_RSSI_THRESHOLD
--	 *	- Signal's frequency deviation(in units of 2ppm) must not be
--	 *	more than #V4L2_CID_SI476X_MAX_TUNE_ERROR
--	 */
--	[SI476X_IDX_RSSI_THRESHOLD] = {
--		.ops	= &si476x_ctrl_ops,
--		.id	= V4L2_CID_SI476X_RSSI_THRESHOLD,
--		.name	= "Valid RSSI Threshold",
--		.type	= V4L2_CTRL_TYPE_INTEGER,
--		.min	= -128,
--		.max	= 127,
--		.step	= 1,
--	},
--	[SI476X_IDX_SNR_THRESHOLD] = {
--		.ops	= &si476x_ctrl_ops,
--		.id	= V4L2_CID_SI476X_SNR_THRESHOLD,
--		.type	= V4L2_CTRL_TYPE_INTEGER,
--		.name	= "Valid SNR Threshold",
--		.min	= -128,
--		.max	= 127,
--		.step	= 1,
--	},
--	[SI476X_IDX_MAX_TUNE_ERROR] = {
--		.ops	= &si476x_ctrl_ops,
--		.id	= V4L2_CID_SI476X_MAX_TUNE_ERROR,
--		.type	= V4L2_CTRL_TYPE_INTEGER,
--		.name	= "Max Tune Errors",
--		.min	= 0,
--		.max	= 126 * 2,
--		.step	= 2,
--	},
--
--	/*
--	 * #V4L2_CID_SI476X_HARMONICS_COUNT -- number of harmonics
--	 * built-in power-line noise supression filter is to reject
--	 * during AM-mode operation.
--	 */
--	[SI476X_IDX_HARMONICS_COUNT] = {
--		.ops	= &si476x_ctrl_ops,
--		.id	= V4L2_CID_SI476X_HARMONICS_COUNT,
--		.type	= V4L2_CTRL_TYPE_INTEGER,
--
--		.name	= "Count of Harmonics to Reject",
--		.min	= 0,
--		.max	= 20,
--		.step	= 1,
--	},
--
--	/*
--	 * #V4L2_CID_SI476X_DIVERSITY_MODE -- configuration which
--	 * two tuners working in diversity mode are to work in.
--	 *
--	 *  - #SI476X_IDX_PHDIV_DISABLED diversity mode disabled
--	 *  - #SI476X_IDX_PHDIV_PRIMARY_COMBINING diversity mode is
--	 *  on, primary tuner's antenna is the main one.
--	 *  - #SI476X_IDX_PHDIV_PRIMARY_ANTENNA diversity mode is
--	 *  off, primary tuner's antenna is the main one.
--	 *  - #SI476X_IDX_PHDIV_SECONDARY_ANTENNA diversity mode is
--	 *  off, secondary tuner's antenna is the main one.
--	 *  - #SI476X_IDX_PHDIV_SECONDARY_COMBINING diversity mode is
--	 *  on, secondary tuner's antenna is the main one.
--	 */
--	[SI476X_IDX_DIVERSITY_MODE] = {
--		.ops	= &si476x_ctrl_ops,
--		.id	= V4L2_CID_SI476X_DIVERSITY_MODE,
--		.type	= V4L2_CTRL_TYPE_MENU,
--		.name	= "Phase Diversity Mode",
--		.qmenu	= phase_diversity_modes,
--		.min	= 0,
--		.max	= ARRAY_SIZE(phase_diversity_modes) - 1,
--	},
--
--	/*
--	 * #V4L2_CID_SI476X_INTERCHIP_LINK -- inter-chip link in
--	 * diversity mode indicator. Allows user to determine if two
--	 * chips working in diversity mode have established a link
--	 * between each other and if the system as a whole uses
--	 * signals from both antennas to receive FM radio.
--	 */
--	[SI476X_IDX_INTERCHIP_LINK] = {
--		.ops	= &si476x_ctrl_ops,
--		.id	= V4L2_CID_SI476X_INTERCHIP_LINK,
--		.type	= V4L2_CTRL_TYPE_BOOLEAN,
--		.flags  = V4L2_CTRL_FLAG_READ_ONLY | V4L2_CTRL_FLAG_VOLATILE,
--		.name	= "Inter-Chip Link",
--		.min	= 0,
--		.max	= 1,
--		.step	= 1,
--	},
--};
--
--struct si476x_radio;
--
--/**
-- * struct si476x_radio_ops - vtable of tuner functions
-- *
-- * This table holds pointers to functions implementing particular
-- * operations depending on the mode in which the tuner chip was
-- * configured to start. If the function is not supported
-- * corresponding element is set to #NULL.
-- *
-- * @tune_freq: Tune chip to a specific frequency
-- * @seek_start: Star station seeking
-- * @rsq_status: Get Received Signal Quality(RSQ) status
-- * @rds_blckcnt: Get received RDS blocks count
-- * @phase_diversity: Change phase diversity mode of the tuner
-- * @phase_div_status: Get phase diversity mode status
-- * @acf_status: Get the status of Automatically Controlled
-- * Features(ACF)
-- * @agc_status: Get Automatic Gain Control(AGC) status
-- */
--struct si476x_radio_ops {
--	int (*tune_freq)(struct si476x_core *, struct si476x_tune_freq_args *);
--	int (*seek_start)(struct si476x_core *, bool, bool);
--	int (*rsq_status)(struct si476x_core *, struct si476x_rsq_status_args *,
--			  struct si476x_rsq_status_report *);
--	int (*rds_blckcnt)(struct si476x_core *, bool,
--			   struct si476x_rds_blockcount_report *);
--
--	int (*phase_diversity)(struct si476x_core *,
--			       enum si476x_phase_diversity_mode);
--	int (*phase_div_status)(struct si476x_core *);
--	int (*acf_status)(struct si476x_core *,
--			  struct si476x_acf_status_report *);
--	int (*agc_status)(struct si476x_core *,
--			  struct si476x_agc_status_report *);
--};
--
--/**
-- * struct si476x_radio - radio device
-- *
-- * @v4l2dev: Pointer to V4L2 device created by V4L2 subsystem
-- * @videodev: Pointer to video device created by V4L2 subsystem
-- * @ctrl_handler: V4L2 controls handler
-- * @core: Pointer to underlying core device
-- * @ops: Vtable of functions. See struct si476x_radio_ops for details
-- * @debugfs: pointer to &strucd dentry for debugfs
-- * @audmode: audio mode, as defined for the rxsubchans field
-- *	     at videodev2.h
-- *
-- * core structure is the radio device is being used
-- */
--struct si476x_radio {
--	struct v4l2_device v4l2dev;
--	struct video_device videodev;
--	struct v4l2_ctrl_handler ctrl_handler;
--
--	struct si476x_core  *core;
--	/* This field should not be accesses unless core lock is held */
--	const struct si476x_radio_ops *ops;
--
--	struct dentry	*debugfs;
--	u32 audmode;
--};
--
--static inline struct si476x_radio *
--v4l2_ctrl_handler_to_radio(struct v4l2_ctrl_handler *d)
--{
--	return container_of(d, struct si476x_radio, ctrl_handler);
--}
--
--/*
-- * si476x_vidioc_querycap - query device capabilities
-- */
--static int si476x_radio_querycap(struct file *file, void *priv,
--				 struct v4l2_capability *capability)
--{
--	struct si476x_radio *radio = video_drvdata(file);
--
--	strscpy(capability->driver, radio->v4l2dev.name,
--		sizeof(capability->driver));
--	strscpy(capability->card, DRIVER_CARD, sizeof(capability->card));
--	return 0;
--}
--
--static int si476x_radio_enum_freq_bands(struct file *file, void *priv,
--					struct v4l2_frequency_band *band)
--{
--	int err;
--	struct si476x_radio *radio = video_drvdata(file);
--
--	if (band->tuner != 0)
--		return -EINVAL;
--
--	switch (radio->core->chip_id) {
--		/* AM/FM tuners -- all bands are supported */
--	case SI476X_CHIP_SI4761:
--	case SI476X_CHIP_SI4764:
--		if (band->index < ARRAY_SIZE(si476x_bands)) {
--			*band = si476x_bands[band->index];
--			err = 0;
--		} else {
--			err = -EINVAL;
--		}
--		break;
--		/* FM companion tuner chips -- only FM bands are
--		 * supported */
--	case SI476X_CHIP_SI4768:
--		if (band->index == SI476X_BAND_FM) {
--			*band = si476x_bands[band->index];
--			err = 0;
--		} else {
--			err = -EINVAL;
--		}
--		break;
--	default:
--		err = -EINVAL;
--	}
--
--	return err;
--}
--
--static int si476x_radio_g_tuner(struct file *file, void *priv,
--				struct v4l2_tuner *tuner)
--{
--	int err;
--	struct si476x_rsq_status_report report;
--	struct si476x_radio *radio = video_drvdata(file);
--
--	struct si476x_rsq_status_args args = {
--		.primary	= false,
--		.rsqack		= false,
--		.attune		= false,
--		.cancel		= false,
--		.stcack		= false,
--	};
--
--	if (tuner->index != 0)
--		return -EINVAL;
--
--	tuner->type       = V4L2_TUNER_RADIO;
--	tuner->capability = V4L2_TUNER_CAP_LOW /* Measure frequencies
--						 * in multiples of
--						 * 62.5 Hz */
--		| V4L2_TUNER_CAP_STEREO
--		| V4L2_TUNER_CAP_HWSEEK_BOUNDED
--		| V4L2_TUNER_CAP_HWSEEK_WRAP
--		| V4L2_TUNER_CAP_HWSEEK_PROG_LIM;
--
--	si476x_core_lock(radio->core);
--
--	if (si476x_core_is_a_secondary_tuner(radio->core)) {
--		strscpy(tuner->name, "FM (secondary)", sizeof(tuner->name));
--		tuner->rxsubchans = 0;
--		tuner->rangelow = si476x_bands[SI476X_BAND_FM].rangelow;
--	} else if (si476x_core_has_am(radio->core)) {
--		if (si476x_core_is_a_primary_tuner(radio->core))
--			strscpy(tuner->name, "AM/FM (primary)",
--				sizeof(tuner->name));
--		else
--			strscpy(tuner->name, "AM/FM", sizeof(tuner->name));
--
--		tuner->rxsubchans = V4L2_TUNER_SUB_MONO | V4L2_TUNER_SUB_STEREO
--			| V4L2_TUNER_SUB_RDS;
--		tuner->capability |= V4L2_TUNER_CAP_RDS
--			| V4L2_TUNER_CAP_RDS_BLOCK_IO
--			| V4L2_TUNER_CAP_FREQ_BANDS;
--
--		tuner->rangelow = si476x_bands[SI476X_BAND_AM].rangelow;
--	} else {
--		strscpy(tuner->name, "FM", sizeof(tuner->name));
--		tuner->rxsubchans = V4L2_TUNER_SUB_RDS;
--		tuner->capability |= V4L2_TUNER_CAP_RDS
--			| V4L2_TUNER_CAP_RDS_BLOCK_IO
--			| V4L2_TUNER_CAP_FREQ_BANDS;
--		tuner->rangelow = si476x_bands[SI476X_BAND_FM].rangelow;
--	}
--
--	tuner->audmode = radio->audmode;
--
--	tuner->afc = 1;
--	tuner->rangehigh = si476x_bands[SI476X_BAND_FM].rangehigh;
--
--	err = radio->ops->rsq_status(radio->core,
--				     &args, &report);
--	if (err < 0) {
--		tuner->signal = 0;
--	} else {
--		/*
--		 * tuner->signal value range: 0x0000 .. 0xFFFF,
--		 * report.rssi: -128 .. 127
--		 */
--		tuner->signal = (report.rssi + 128) * 257;
--	}
--	si476x_core_unlock(radio->core);
--
--	return err;
--}
--
--static int si476x_radio_s_tuner(struct file *file, void *priv,
--				const struct v4l2_tuner *tuner)
--{
--	struct si476x_radio *radio = video_drvdata(file);
--
--	if (tuner->index != 0)
--		return -EINVAL;
--
--	if (tuner->audmode == V4L2_TUNER_MODE_MONO ||
--	    tuner->audmode == V4L2_TUNER_MODE_STEREO)
--		radio->audmode = tuner->audmode;
--	else
--		radio->audmode = V4L2_TUNER_MODE_STEREO;
--
--	return 0;
--}
--
--static int si476x_radio_init_vtable(struct si476x_radio *radio,
--				    enum si476x_func func)
--{
--	static const struct si476x_radio_ops fm_ops = {
--		.tune_freq		= si476x_core_cmd_fm_tune_freq,
--		.seek_start		= si476x_core_cmd_fm_seek_start,
--		.rsq_status		= si476x_core_cmd_fm_rsq_status,
--		.rds_blckcnt		= si476x_core_cmd_fm_rds_blockcount,
--		.phase_diversity	= si476x_core_cmd_fm_phase_diversity,
--		.phase_div_status	= si476x_core_cmd_fm_phase_div_status,
--		.acf_status		= si476x_core_cmd_fm_acf_status,
--		.agc_status		= si476x_core_cmd_agc_status,
--	};
--
--	static const struct si476x_radio_ops am_ops = {
--		.tune_freq		= si476x_core_cmd_am_tune_freq,
--		.seek_start		= si476x_core_cmd_am_seek_start,
--		.rsq_status		= si476x_core_cmd_am_rsq_status,
--		.rds_blckcnt		= NULL,
--		.phase_diversity	= NULL,
--		.phase_div_status	= NULL,
--		.acf_status		= si476x_core_cmd_am_acf_status,
--		.agc_status		= NULL,
--	};
--
--	switch (func) {
--	case SI476X_FUNC_FM_RECEIVER:
--		radio->ops = &fm_ops;
--		return 0;
--
--	case SI476X_FUNC_AM_RECEIVER:
--		radio->ops = &am_ops;
--		return 0;
--	default:
--		WARN(1, "Unexpected tuner function value\n");
--		return -EINVAL;
--	}
--}
--
--static int si476x_radio_pretune(struct si476x_radio *radio,
--				enum si476x_func func)
--{
--	int retval;
--
--	struct si476x_tune_freq_args args = {
--		.zifsr		= false,
--		.hd		= false,
--		.injside	= SI476X_INJSIDE_AUTO,
--		.tunemode	= SI476X_TM_VALIDATED_NORMAL_TUNE,
--		.smoothmetrics	= SI476X_SM_INITIALIZE_AUDIO,
--		.antcap		= 0,
--	};
--
--	switch (func) {
--	case SI476X_FUNC_FM_RECEIVER:
--		args.freq = v4l2_to_si476x(radio->core,
--					   92 * FREQ_MUL);
--		retval = radio->ops->tune_freq(radio->core, &args);
--		break;
--	case SI476X_FUNC_AM_RECEIVER:
--		args.freq = v4l2_to_si476x(radio->core,
--					   0.6 * FREQ_MUL);
--		retval = radio->ops->tune_freq(radio->core, &args);
--		break;
--	default:
--		WARN(1, "Unexpected tuner function value\n");
--		retval = -EINVAL;
--	}
--
--	return retval;
--}
--static int si476x_radio_do_post_powerup_init(struct si476x_radio *radio,
--					     enum si476x_func func)
--{
--	int err;
--
--	/* regcache_mark_dirty(radio->core->regmap); */
--	err = regcache_sync_region(radio->core->regmap,
--				   SI476X_PROP_DIGITAL_IO_INPUT_SAMPLE_RATE,
--				   SI476X_PROP_DIGITAL_IO_OUTPUT_FORMAT);
--	if (err < 0)
--		return err;
--
--	err = regcache_sync_region(radio->core->regmap,
--				   SI476X_PROP_AUDIO_DEEMPHASIS,
--				   SI476X_PROP_AUDIO_PWR_LINE_FILTER);
--	if (err < 0)
--		return err;
--
--	err = regcache_sync_region(radio->core->regmap,
--				   SI476X_PROP_INT_CTL_ENABLE,
--				   SI476X_PROP_INT_CTL_ENABLE);
--	if (err < 0)
--		return err;
--
--	/*
--	 * Is there any point in restoring SNR and the like
--	 * when switching between AM/FM?
--	 */
--	err = regcache_sync_region(radio->core->regmap,
--				   SI476X_PROP_VALID_MAX_TUNE_ERROR,
--				   SI476X_PROP_VALID_MAX_TUNE_ERROR);
--	if (err < 0)
--		return err;
--
--	err = regcache_sync_region(radio->core->regmap,
--				   SI476X_PROP_VALID_SNR_THRESHOLD,
--				   SI476X_PROP_VALID_RSSI_THRESHOLD);
--	if (err < 0)
--		return err;
--
--	if (func == SI476X_FUNC_FM_RECEIVER) {
--		if (si476x_core_has_diversity(radio->core)) {
--			err = si476x_core_cmd_fm_phase_diversity(radio->core,
--								 radio->core->diversity_mode);
--			if (err < 0)
--				return err;
--		}
--
--		err = regcache_sync_region(radio->core->regmap,
--					   SI476X_PROP_FM_RDS_INTERRUPT_SOURCE,
--					   SI476X_PROP_FM_RDS_CONFIG);
--		if (err < 0)
--			return err;
--	}
--
--	return si476x_radio_init_vtable(radio, func);
--
--}
--
--static int si476x_radio_change_func(struct si476x_radio *radio,
--				    enum si476x_func func)
--{
--	int err;
--	bool soft;
--	/*
--	 * Since power/up down is a very time consuming operation,
--	 * try to avoid doing it if the requested mode matches the one
--	 * the tuner is in
--	 */
--	if (func == radio->core->power_up_parameters.func)
--		return 0;
--
--	soft = true;
--	err = si476x_core_stop(radio->core, soft);
--	if (err < 0) {
--		/*
--		 * OK, if the chip does not want to play nice let's
--		 * try to reset it in more brutal way
--		 */
--		soft = false;
--		err = si476x_core_stop(radio->core, soft);
--		if (err < 0)
--			return err;
--	}
--	/*
--	  Set the desired radio tuner function
--	 */
--	radio->core->power_up_parameters.func = func;
--
--	err = si476x_core_start(radio->core, soft);
--	if (err < 0)
--		return err;
--
--	/*
--	 * No need to do the rest of manipulations for the bootlader
--	 * mode
--	 */
--	if (func != SI476X_FUNC_FM_RECEIVER &&
--	    func != SI476X_FUNC_AM_RECEIVER)
--		return err;
--
--	return si476x_radio_do_post_powerup_init(radio, func);
--}
--
--static int si476x_radio_g_frequency(struct file *file, void *priv,
--			      struct v4l2_frequency *f)
--{
--	int err;
--	struct si476x_radio *radio = video_drvdata(file);
--
--	if (f->tuner != 0 ||
--	    f->type  != V4L2_TUNER_RADIO)
--		return -EINVAL;
--
--	si476x_core_lock(radio->core);
--
--	if (radio->ops->rsq_status) {
--		struct si476x_rsq_status_report report;
--		struct si476x_rsq_status_args   args = {
--			.primary	= false,
--			.rsqack		= false,
--			.attune		= true,
--			.cancel		= false,
--			.stcack		= false,
--		};
--
--		err = radio->ops->rsq_status(radio->core, &args, &report);
--		if (!err)
--			f->frequency = si476x_to_v4l2(radio->core,
--						      report.readfreq);
--	} else {
--		err = -EINVAL;
--	}
--
--	si476x_core_unlock(radio->core);
--
--	return err;
--}
--
--static int si476x_radio_s_frequency(struct file *file, void *priv,
--				    const struct v4l2_frequency *f)
--{
--	int err;
--	u32 freq = f->frequency;
--	struct si476x_tune_freq_args args;
--	struct si476x_radio *radio = video_drvdata(file);
--
--	const u32 midrange = (si476x_bands[SI476X_BAND_AM].rangehigh +
--			      si476x_bands[SI476X_BAND_FM].rangelow) / 2;
--	const int band = (freq > midrange) ?
--		SI476X_BAND_FM : SI476X_BAND_AM;
--	const enum si476x_func func = (band == SI476X_BAND_AM) ?
--		SI476X_FUNC_AM_RECEIVER : SI476X_FUNC_FM_RECEIVER;
--
--	if (f->tuner != 0 ||
--	    f->type  != V4L2_TUNER_RADIO)
--		return -EINVAL;
--
--	si476x_core_lock(radio->core);
--
--	freq = clamp(freq,
--		     si476x_bands[band].rangelow,
--		     si476x_bands[band].rangehigh);
--
--	if (si476x_radio_freq_is_inside_of_the_band(freq,
--						    SI476X_BAND_AM) &&
--	    (!si476x_core_has_am(radio->core) ||
--	     si476x_core_is_a_secondary_tuner(radio->core))) {
--		err = -EINVAL;
--		goto unlock;
--	}
--
--	err = si476x_radio_change_func(radio, func);
--	if (err < 0)
--		goto unlock;
--
--	args.zifsr		= false;
--	args.hd			= false;
--	args.injside		= SI476X_INJSIDE_AUTO;
--	args.freq		= v4l2_to_si476x(radio->core, freq);
--	args.tunemode		= SI476X_TM_VALIDATED_NORMAL_TUNE;
--	args.smoothmetrics	= SI476X_SM_INITIALIZE_AUDIO;
--	args.antcap		= 0;
--
--	err = radio->ops->tune_freq(radio->core, &args);
--
--unlock:
--	si476x_core_unlock(radio->core);
--	return err;
--}
--
--static int si476x_radio_s_hw_freq_seek(struct file *file, void *priv,
--				       const struct v4l2_hw_freq_seek *seek)
--{
--	int err;
--	enum si476x_func func;
--	u32 rangelow = seek->rangelow, rangehigh = seek->rangehigh;
--	struct si476x_radio *radio = video_drvdata(file);
--
--	if (file->f_flags & O_NONBLOCK)
--		return -EAGAIN;
--
--	if (seek->tuner != 0 ||
--	    seek->type  != V4L2_TUNER_RADIO)
--		return -EINVAL;
--
--	si476x_core_lock(radio->core);
--
--	if (!rangelow) {
--		err = regmap_read(radio->core->regmap,
--				  SI476X_PROP_SEEK_BAND_BOTTOM,
--				  &rangelow);
--		if (err)
--			goto unlock;
--		rangelow = si476x_to_v4l2(radio->core, rangelow);
--	}
--	if (!rangehigh) {
--		err = regmap_read(radio->core->regmap,
--				  SI476X_PROP_SEEK_BAND_TOP,
--				  &rangehigh);
--		if (err)
--			goto unlock;
--		rangehigh = si476x_to_v4l2(radio->core, rangehigh);
--	}
--
--	if (rangelow > rangehigh) {
--		err = -EINVAL;
--		goto unlock;
--	}
--
--	if (si476x_radio_range_is_inside_of_the_band(rangelow, rangehigh,
--						     SI476X_BAND_FM)) {
--		func = SI476X_FUNC_FM_RECEIVER;
--
--	} else if (si476x_core_has_am(radio->core) &&
--		   si476x_radio_range_is_inside_of_the_band(rangelow, rangehigh,
--							    SI476X_BAND_AM)) {
--		func = SI476X_FUNC_AM_RECEIVER;
--	} else {
--		err = -EINVAL;
--		goto unlock;
--	}
--
--	err = si476x_radio_change_func(radio, func);
--	if (err < 0)
--		goto unlock;
--
--	if (seek->rangehigh) {
--		err = regmap_write(radio->core->regmap,
--				   SI476X_PROP_SEEK_BAND_TOP,
--				   v4l2_to_si476x(radio->core,
--						  seek->rangehigh));
--		if (err)
--			goto unlock;
--	}
--	if (seek->rangelow) {
--		err = regmap_write(radio->core->regmap,
--				   SI476X_PROP_SEEK_BAND_BOTTOM,
--				   v4l2_to_si476x(radio->core,
--						  seek->rangelow));
--		if (err)
--			goto unlock;
--	}
--	if (seek->spacing) {
--		err = regmap_write(radio->core->regmap,
--				     SI476X_PROP_SEEK_FREQUENCY_SPACING,
--				     v4l2_to_si476x(radio->core,
--						    seek->spacing));
--		if (err)
--			goto unlock;
--	}
--
--	err = radio->ops->seek_start(radio->core,
--				     seek->seek_upward,
--				     seek->wrap_around);
--unlock:
--	si476x_core_unlock(radio->core);
--
--
--
--	return err;
--}
--
--static int si476x_radio_g_volatile_ctrl(struct v4l2_ctrl *ctrl)
--{
--	int retval;
--	struct si476x_radio *radio = v4l2_ctrl_handler_to_radio(ctrl->handler);
--
--	si476x_core_lock(radio->core);
--
--	switch (ctrl->id) {
--	case V4L2_CID_SI476X_INTERCHIP_LINK:
--		if (si476x_core_has_diversity(radio->core)) {
--			if (radio->ops->phase_diversity) {
--				retval = radio->ops->phase_div_status(radio->core);
--				if (retval < 0)
--					break;
--
--				ctrl->val = !!SI476X_PHDIV_STATUS_LINK_LOCKED(retval);
--				retval = 0;
--				break;
--			} else {
--				retval = -ENOTTY;
--				break;
--			}
--		}
--		retval = -EINVAL;
--		break;
--	default:
--		retval = -EINVAL;
--		break;
--	}
--	si476x_core_unlock(radio->core);
--	return retval;
--
--}
--
--static int si476x_radio_s_ctrl(struct v4l2_ctrl *ctrl)
--{
--	int retval;
--	enum si476x_phase_diversity_mode mode;
--	struct si476x_radio *radio = v4l2_ctrl_handler_to_radio(ctrl->handler);
--
--	si476x_core_lock(radio->core);
--
--	switch (ctrl->id) {
--	case V4L2_CID_SI476X_HARMONICS_COUNT:
--		retval = regmap_update_bits(radio->core->regmap,
--					    SI476X_PROP_AUDIO_PWR_LINE_FILTER,
--					    SI476X_PROP_PWR_HARMONICS_MASK,
--					    ctrl->val);
--		break;
--	case V4L2_CID_POWER_LINE_FREQUENCY:
--		switch (ctrl->val) {
--		case V4L2_CID_POWER_LINE_FREQUENCY_DISABLED:
--			retval = regmap_update_bits(radio->core->regmap,
--						    SI476X_PROP_AUDIO_PWR_LINE_FILTER,
--						    SI476X_PROP_PWR_ENABLE_MASK,
--						    0);
--			break;
--		case V4L2_CID_POWER_LINE_FREQUENCY_50HZ:
--			retval = regmap_update_bits(radio->core->regmap,
--						    SI476X_PROP_AUDIO_PWR_LINE_FILTER,
--						    SI476X_PROP_PWR_GRID_MASK,
--						    SI476X_PROP_PWR_GRID_50HZ);
--			break;
--		case V4L2_CID_POWER_LINE_FREQUENCY_60HZ:
--			retval = regmap_update_bits(radio->core->regmap,
--						    SI476X_PROP_AUDIO_PWR_LINE_FILTER,
--						    SI476X_PROP_PWR_GRID_MASK,
--						    SI476X_PROP_PWR_GRID_60HZ);
--			break;
--		default:
--			retval = -EINVAL;
--			break;
--		}
--		break;
--	case V4L2_CID_SI476X_RSSI_THRESHOLD:
--		retval = regmap_write(radio->core->regmap,
--				      SI476X_PROP_VALID_RSSI_THRESHOLD,
--				      ctrl->val);
--		break;
--	case V4L2_CID_SI476X_SNR_THRESHOLD:
--		retval = regmap_write(radio->core->regmap,
--				      SI476X_PROP_VALID_SNR_THRESHOLD,
--				      ctrl->val);
--		break;
--	case V4L2_CID_SI476X_MAX_TUNE_ERROR:
--		retval = regmap_write(radio->core->regmap,
--				      SI476X_PROP_VALID_MAX_TUNE_ERROR,
--				      ctrl->val);
--		break;
--	case V4L2_CID_RDS_RECEPTION:
--		/*
--		 * It looks like RDS related properties are
--		 * inaccessible when tuner is in AM mode, so cache the
--		 * changes
--		 */
--		if (si476x_core_is_in_am_receiver_mode(radio->core))
--			regcache_cache_only(radio->core->regmap, true);
--
--		if (ctrl->val) {
--			retval = regmap_write(radio->core->regmap,
--					      SI476X_PROP_FM_RDS_INTERRUPT_FIFO_COUNT,
--					      radio->core->rds_fifo_depth);
--			if (retval < 0)
--				break;
--
--			if (radio->core->client->irq) {
--				retval = regmap_write(radio->core->regmap,
--						      SI476X_PROP_FM_RDS_INTERRUPT_SOURCE,
--						      SI476X_RDSRECV);
--				if (retval < 0)
--					break;
--			}
--
--			/* Drain RDS FIFO before enabling RDS processing */
--			retval = si476x_core_cmd_fm_rds_status(radio->core,
--							       false,
--							       true,
--							       true,
--							       NULL);
--			if (retval < 0)
--				break;
--
--			retval = regmap_update_bits(radio->core->regmap,
--						    SI476X_PROP_FM_RDS_CONFIG,
--						    SI476X_PROP_RDSEN_MASK,
--						    SI476X_PROP_RDSEN);
--		} else {
--			retval = regmap_update_bits(radio->core->regmap,
--						    SI476X_PROP_FM_RDS_CONFIG,
--						    SI476X_PROP_RDSEN_MASK,
--						    !SI476X_PROP_RDSEN);
--		}
--
--		if (si476x_core_is_in_am_receiver_mode(radio->core))
--			regcache_cache_only(radio->core->regmap, false);
--		break;
--	case V4L2_CID_TUNE_DEEMPHASIS:
--		retval = regmap_write(radio->core->regmap,
--				      SI476X_PROP_AUDIO_DEEMPHASIS,
--				      ctrl->val);
--		break;
--
--	case V4L2_CID_SI476X_DIVERSITY_MODE:
--		mode = si476x_phase_diversity_idx_to_mode(ctrl->val);
--
--		if (mode == radio->core->diversity_mode) {
--			retval = 0;
--			break;
--		}
--
--		if (si476x_core_is_in_am_receiver_mode(radio->core)) {
--			/*
--			 * Diversity cannot be configured while tuner
--			 * is in AM mode so save the changes and carry on.
--			 */
--			radio->core->diversity_mode = mode;
--			retval = 0;
--		} else {
--			retval = radio->ops->phase_diversity(radio->core, mode);
--			if (!retval)
--				radio->core->diversity_mode = mode;
--		}
--		break;
--
--	default:
--		retval = -EINVAL;
--		break;
--	}
--
--	si476x_core_unlock(radio->core);
--
--	return retval;
--}
--
--#ifdef CONFIG_VIDEO_ADV_DEBUG
--static int si476x_radio_g_register(struct file *file, void *fh,
--				   struct v4l2_dbg_register *reg)
--{
--	int err;
--	unsigned int value;
--	struct si476x_radio *radio = video_drvdata(file);
--
--	si476x_core_lock(radio->core);
--	reg->size = 2;
--	err = regmap_read(radio->core->regmap,
--			  (unsigned int)reg->reg, &value);
--	reg->val = value;
--	si476x_core_unlock(radio->core);
--
--	return err;
--}
--static int si476x_radio_s_register(struct file *file, void *fh,
--				   const struct v4l2_dbg_register *reg)
--{
--
--	int err;
--	struct si476x_radio *radio = video_drvdata(file);
--
--	si476x_core_lock(radio->core);
--	err = regmap_write(radio->core->regmap,
--			   (unsigned int)reg->reg,
--			   (unsigned int)reg->val);
--	si476x_core_unlock(radio->core);
--
--	return err;
--}
--#endif
--
--static int si476x_radio_fops_open(struct file *file)
--{
--	struct si476x_radio *radio = video_drvdata(file);
--	int err;
--
--	err = v4l2_fh_open(file);
--	if (err)
--		return err;
--
--	if (v4l2_fh_is_singular_file(file)) {
--		si476x_core_lock(radio->core);
--		err = si476x_core_set_power_state(radio->core,
--						  SI476X_POWER_UP_FULL);
--		if (err < 0)
--			goto done;
--
--		err = si476x_radio_do_post_powerup_init(radio,
--							radio->core->power_up_parameters.func);
--		if (err < 0)
--			goto power_down;
--
--		err = si476x_radio_pretune(radio,
--					   radio->core->power_up_parameters.func);
--		if (err < 0)
--			goto power_down;
--
--		si476x_core_unlock(radio->core);
--		/*Must be done after si476x_core_unlock to prevent a deadlock*/
--		v4l2_ctrl_handler_setup(&radio->ctrl_handler);
--	}
--
--	return err;
--
--power_down:
--	si476x_core_set_power_state(radio->core,
--				    SI476X_POWER_DOWN);
--done:
--	si476x_core_unlock(radio->core);
--	v4l2_fh_release(file);
--
--	return err;
--}
--
--static int si476x_radio_fops_release(struct file *file)
--{
--	struct si476x_radio *radio = video_drvdata(file);
--
--	if (v4l2_fh_is_singular_file(file) &&
--	    atomic_read(&radio->core->is_alive))
--		si476x_core_set_power_state(radio->core,
--					    SI476X_POWER_DOWN);
--
--	return v4l2_fh_release(file);
--}
--
--static ssize_t si476x_radio_fops_read(struct file *file, char __user *buf,
--				      size_t count, loff_t *ppos)
--{
--	ssize_t      rval;
--	size_t       fifo_len;
--	unsigned int copied;
--
--	struct si476x_radio *radio = video_drvdata(file);
--
--	/* block if no new data available */
--	if (kfifo_is_empty(&radio->core->rds_fifo)) {
--		if (file->f_flags & O_NONBLOCK)
--			return -EWOULDBLOCK;
--
--		rval = wait_event_interruptible(radio->core->rds_read_queue,
--						(!kfifo_is_empty(&radio->core->rds_fifo) ||
--						 !atomic_read(&radio->core->is_alive)));
--		if (rval < 0)
--			return -EINTR;
--
--		if (!atomic_read(&radio->core->is_alive))
--			return -ENODEV;
--	}
--
--	fifo_len = kfifo_len(&radio->core->rds_fifo);
--
--	if (kfifo_to_user(&radio->core->rds_fifo, buf,
--			  min(fifo_len, count),
--			  &copied) != 0) {
--		dev_warn(&radio->videodev.dev,
--			 "Error during FIFO to userspace copy\n");
--		rval = -EIO;
--	} else {
--		rval = (ssize_t)copied;
--	}
--
--	return rval;
--}
--
--static __poll_t si476x_radio_fops_poll(struct file *file,
--				struct poll_table_struct *pts)
--{
--	struct si476x_radio *radio = video_drvdata(file);
--	__poll_t req_events = poll_requested_events(pts);
--	__poll_t err = v4l2_ctrl_poll(file, pts);
--
--	if (req_events & (EPOLLIN | EPOLLRDNORM)) {
--		if (atomic_read(&radio->core->is_alive))
--			poll_wait(file, &radio->core->rds_read_queue, pts);
--
--		if (!atomic_read(&radio->core->is_alive))
--			err = EPOLLHUP;
--
--		if (!kfifo_is_empty(&radio->core->rds_fifo))
--			err = EPOLLIN | EPOLLRDNORM;
--	}
--
--	return err;
--}
--
--static const struct v4l2_file_operations si476x_fops = {
--	.owner			= THIS_MODULE,
--	.read			= si476x_radio_fops_read,
--	.poll			= si476x_radio_fops_poll,
--	.unlocked_ioctl		= video_ioctl2,
--	.open			= si476x_radio_fops_open,
--	.release		= si476x_radio_fops_release,
--};
--
--
--static const struct v4l2_ioctl_ops si4761_ioctl_ops = {
--	.vidioc_querycap		= si476x_radio_querycap,
--	.vidioc_g_tuner			= si476x_radio_g_tuner,
--	.vidioc_s_tuner			= si476x_radio_s_tuner,
--
--	.vidioc_g_frequency		= si476x_radio_g_frequency,
--	.vidioc_s_frequency		= si476x_radio_s_frequency,
--	.vidioc_s_hw_freq_seek		= si476x_radio_s_hw_freq_seek,
--	.vidioc_enum_freq_bands		= si476x_radio_enum_freq_bands,
--
--	.vidioc_subscribe_event		= v4l2_ctrl_subscribe_event,
--	.vidioc_unsubscribe_event	= v4l2_event_unsubscribe,
--
--#ifdef CONFIG_VIDEO_ADV_DEBUG
--	.vidioc_g_register		= si476x_radio_g_register,
--	.vidioc_s_register		= si476x_radio_s_register,
--#endif
--};
--
--
--static const struct video_device si476x_viddev_template = {
--	.fops			= &si476x_fops,
--	.name			= DRIVER_NAME,
--	.release		= video_device_release_empty,
--};
--
--
--
--static ssize_t si476x_radio_read_acf_blob(struct file *file,
--					  char __user *user_buf,
--					  size_t count, loff_t *ppos)
--{
--	int err;
--	struct si476x_radio *radio = file->private_data;
--	struct si476x_acf_status_report report;
--
--	si476x_core_lock(radio->core);
--	if (radio->ops->acf_status)
--		err = radio->ops->acf_status(radio->core, &report);
--	else
--		err = -ENOENT;
--	si476x_core_unlock(radio->core);
--
--	if (err < 0)
--		return err;
--
--	return simple_read_from_buffer(user_buf, count, ppos, &report,
--				       sizeof(report));
--}
--
--static const struct file_operations radio_acf_fops = {
--	.open	= simple_open,
--	.llseek = default_llseek,
--	.read	= si476x_radio_read_acf_blob,
--};
--
--static ssize_t si476x_radio_read_rds_blckcnt_blob(struct file *file,
--						  char __user *user_buf,
--						  size_t count, loff_t *ppos)
--{
--	int err;
--	struct si476x_radio *radio = file->private_data;
--	struct si476x_rds_blockcount_report report;
--
--	si476x_core_lock(radio->core);
--	if (radio->ops->rds_blckcnt)
--		err = radio->ops->rds_blckcnt(radio->core, true,
--					       &report);
--	else
--		err = -ENOENT;
--	si476x_core_unlock(radio->core);
--
--	if (err < 0)
--		return err;
--
--	return simple_read_from_buffer(user_buf, count, ppos, &report,
--				       sizeof(report));
--}
--
--static const struct file_operations radio_rds_blckcnt_fops = {
--	.open	= simple_open,
--	.llseek = default_llseek,
--	.read	= si476x_radio_read_rds_blckcnt_blob,
--};
--
--static ssize_t si476x_radio_read_agc_blob(struct file *file,
--					  char __user *user_buf,
--					  size_t count, loff_t *ppos)
--{
--	int err;
--	struct si476x_radio *radio = file->private_data;
--	struct si476x_agc_status_report report;
--
--	si476x_core_lock(radio->core);
--	if (radio->ops->rds_blckcnt)
--		err = radio->ops->agc_status(radio->core, &report);
--	else
--		err = -ENOENT;
--	si476x_core_unlock(radio->core);
--
--	if (err < 0)
--		return err;
--
--	return simple_read_from_buffer(user_buf, count, ppos, &report,
--				       sizeof(report));
--}
--
--static const struct file_operations radio_agc_fops = {
--	.open	= simple_open,
--	.llseek = default_llseek,
--	.read	= si476x_radio_read_agc_blob,
--};
--
--static ssize_t si476x_radio_read_rsq_blob(struct file *file,
--					  char __user *user_buf,
--					  size_t count, loff_t *ppos)
--{
--	int err;
--	struct si476x_radio *radio = file->private_data;
--	struct si476x_rsq_status_report report;
--	struct si476x_rsq_status_args args = {
--		.primary	= false,
--		.rsqack		= false,
--		.attune		= false,
--		.cancel		= false,
--		.stcack		= false,
--	};
--
--	si476x_core_lock(radio->core);
--	if (radio->ops->rds_blckcnt)
--		err = radio->ops->rsq_status(radio->core, &args, &report);
--	else
--		err = -ENOENT;
--	si476x_core_unlock(radio->core);
--
--	if (err < 0)
--		return err;
--
--	return simple_read_from_buffer(user_buf, count, ppos, &report,
--				       sizeof(report));
--}
--
--static const struct file_operations radio_rsq_fops = {
--	.open	= simple_open,
--	.llseek = default_llseek,
--	.read	= si476x_radio_read_rsq_blob,
--};
--
--static ssize_t si476x_radio_read_rsq_primary_blob(struct file *file,
--						  char __user *user_buf,
--						  size_t count, loff_t *ppos)
--{
--	int err;
--	struct si476x_radio *radio = file->private_data;
--	struct si476x_rsq_status_report report;
--	struct si476x_rsq_status_args args = {
--		.primary	= true,
--		.rsqack		= false,
--		.attune		= false,
--		.cancel		= false,
--		.stcack		= false,
--	};
--
--	si476x_core_lock(radio->core);
--	if (radio->ops->rds_blckcnt)
--		err = radio->ops->rsq_status(radio->core, &args, &report);
--	else
--		err = -ENOENT;
--	si476x_core_unlock(radio->core);
--
--	if (err < 0)
--		return err;
--
--	return simple_read_from_buffer(user_buf, count, ppos, &report,
--				       sizeof(report));
--}
--
--static const struct file_operations radio_rsq_primary_fops = {
--	.open	= simple_open,
--	.llseek = default_llseek,
--	.read	= si476x_radio_read_rsq_primary_blob,
--};
--
--
--static void si476x_radio_init_debugfs(struct si476x_radio *radio)
--{
--	radio->debugfs = debugfs_create_dir(dev_name(radio->v4l2dev.dev), NULL);
--
--	debugfs_create_file("acf", S_IRUGO, radio->debugfs, radio,
--			    &radio_acf_fops);
--
--	debugfs_create_file("rds_blckcnt", S_IRUGO, radio->debugfs, radio,
--			    &radio_rds_blckcnt_fops);
--
--	debugfs_create_file("agc", S_IRUGO, radio->debugfs, radio,
--			    &radio_agc_fops);
--
--	debugfs_create_file("rsq", S_IRUGO, radio->debugfs, radio,
--			    &radio_rsq_fops);
--
--	debugfs_create_file("rsq_primary", S_IRUGO, radio->debugfs, radio,
--			    &radio_rsq_primary_fops);
--}
--
--
--static int si476x_radio_add_new_custom(struct si476x_radio *radio,
--				       enum si476x_ctrl_idx idx)
--{
--	int rval;
--	struct v4l2_ctrl *ctrl;
--
--	ctrl = v4l2_ctrl_new_custom(&radio->ctrl_handler,
--				    &si476x_ctrls[idx],
--				    NULL);
--	rval = radio->ctrl_handler.error;
--	if (ctrl == NULL && rval)
--		dev_err(radio->v4l2dev.dev,
--			"Could not initialize '%s' control %d\n",
--			si476x_ctrls[idx].name, rval);
--
--	return rval;
--}
--
--static int si476x_radio_probe(struct platform_device *pdev)
--{
--	int rval;
--	struct si476x_radio *radio;
--	struct v4l2_ctrl *ctrl;
--
--	static atomic_t instance = ATOMIC_INIT(0);
--
--	radio = devm_kzalloc(&pdev->dev, sizeof(*radio), GFP_KERNEL);
--	if (!radio)
--		return -ENOMEM;
--
--	radio->core = i2c_mfd_cell_to_core(&pdev->dev);
--
--	v4l2_device_set_name(&radio->v4l2dev, DRIVER_NAME, &instance);
--
--	rval = v4l2_device_register(&pdev->dev, &radio->v4l2dev);
--	if (rval) {
--		dev_err(&pdev->dev, "Cannot register v4l2_device.\n");
--		return rval;
--	}
--
--	memcpy(&radio->videodev, &si476x_viddev_template,
--	       sizeof(struct video_device));
--
--	radio->videodev.v4l2_dev  = &radio->v4l2dev;
--	radio->videodev.ioctl_ops = &si4761_ioctl_ops;
--	radio->videodev.device_caps = V4L2_CAP_TUNER | V4L2_CAP_RADIO |
--				      V4L2_CAP_HW_FREQ_SEEK;
--
--	si476x_core_lock(radio->core);
--	if (!si476x_core_is_a_secondary_tuner(radio->core))
--		radio->videodev.device_caps |= V4L2_CAP_RDS_CAPTURE |
--					       V4L2_CAP_READWRITE;
--	si476x_core_unlock(radio->core);
--
--	video_set_drvdata(&radio->videodev, radio);
--	platform_set_drvdata(pdev, radio);
--
--
--	radio->v4l2dev.ctrl_handler = &radio->ctrl_handler;
--	v4l2_ctrl_handler_init(&radio->ctrl_handler,
--			       1 + ARRAY_SIZE(si476x_ctrls));
--
--	if (si476x_core_has_am(radio->core)) {
--		ctrl = v4l2_ctrl_new_std_menu(&radio->ctrl_handler,
--					      &si476x_ctrl_ops,
--					      V4L2_CID_POWER_LINE_FREQUENCY,
--					      V4L2_CID_POWER_LINE_FREQUENCY_60HZ,
--					      0, 0);
--		rval = radio->ctrl_handler.error;
--		if (ctrl == NULL && rval) {
--			dev_err(&pdev->dev, "Could not initialize V4L2_CID_POWER_LINE_FREQUENCY control %d\n",
--				rval);
--			goto exit;
--		}
--
--		rval = si476x_radio_add_new_custom(radio,
--						   SI476X_IDX_HARMONICS_COUNT);
--		if (rval < 0)
--			goto exit;
--	}
--
--	rval = si476x_radio_add_new_custom(radio, SI476X_IDX_RSSI_THRESHOLD);
--	if (rval < 0)
--		goto exit;
--
--	rval = si476x_radio_add_new_custom(radio, SI476X_IDX_SNR_THRESHOLD);
--	if (rval < 0)
--		goto exit;
--
--	rval = si476x_radio_add_new_custom(radio, SI476X_IDX_MAX_TUNE_ERROR);
--	if (rval < 0)
--		goto exit;
--
--	ctrl = v4l2_ctrl_new_std_menu(&radio->ctrl_handler,
--				      &si476x_ctrl_ops,
--				      V4L2_CID_TUNE_DEEMPHASIS,
--				      V4L2_DEEMPHASIS_75_uS, 0, 0);
--	rval = radio->ctrl_handler.error;
--	if (ctrl == NULL && rval) {
--		dev_err(&pdev->dev, "Could not initialize V4L2_CID_TUNE_DEEMPHASIS control %d\n",
--			rval);
--		goto exit;
--	}
--
--	ctrl = v4l2_ctrl_new_std(&radio->ctrl_handler, &si476x_ctrl_ops,
--				 V4L2_CID_RDS_RECEPTION,
--				 0, 1, 1, 1);
--	rval = radio->ctrl_handler.error;
--	if (ctrl == NULL && rval) {
--		dev_err(&pdev->dev, "Could not initialize V4L2_CID_RDS_RECEPTION control %d\n",
--			rval);
--		goto exit;
--	}
--
--	if (si476x_core_has_diversity(radio->core)) {
--		si476x_ctrls[SI476X_IDX_DIVERSITY_MODE].def =
--			si476x_phase_diversity_mode_to_idx(radio->core->diversity_mode);
--		rval = si476x_radio_add_new_custom(radio, SI476X_IDX_DIVERSITY_MODE);
--		if (rval < 0)
--			goto exit;
--
--		rval = si476x_radio_add_new_custom(radio, SI476X_IDX_INTERCHIP_LINK);
--		if (rval < 0)
--			goto exit;
--	}
--
--	/* register video device */
--	rval = video_register_device(&radio->videodev, VFL_TYPE_RADIO, -1);
--	if (rval < 0) {
--		dev_err(&pdev->dev, "Could not register video device\n");
--		goto exit;
--	}
--
--	si476x_radio_init_debugfs(radio);
--
--	return 0;
--exit:
--	v4l2_ctrl_handler_free(radio->videodev.ctrl_handler);
--	v4l2_device_unregister(&radio->v4l2dev);
--	return rval;
--}
--
--static void si476x_radio_remove(struct platform_device *pdev)
--{
--	struct si476x_radio *radio = platform_get_drvdata(pdev);
--
--	v4l2_ctrl_handler_free(radio->videodev.ctrl_handler);
--	video_unregister_device(&radio->videodev);
--	v4l2_device_unregister(&radio->v4l2dev);
--	debugfs_remove_recursive(radio->debugfs);
--}
--
--MODULE_ALIAS("platform:si476x-radio");
--
--static struct platform_driver si476x_radio_driver = {
--	.driver		= {
--		.name	= DRIVER_NAME,
--	},
--	.probe		= si476x_radio_probe,
--	.remove		= si476x_radio_remove,
--};
--module_platform_driver(si476x_radio_driver);
--
--MODULE_AUTHOR("Andrey Smirnov <andrew.smirnov@gmail.com>");
--MODULE_DESCRIPTION("Driver for Si4761/64/68 AM/FM Radio MFD Cell");
--MODULE_LICENSE("GPL");
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 2f5a5c053439..c5e2140cdac0 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -29398,7 +29398,6 @@ F:	drivers/watchdog/wm83*_wdt.c
+ F:	include/linux/mfd/arizona/
+ F:	include/linux/mfd/wm831x/
+ F:	include/linux/mfd/wm8350/
+-F:	include/linux/mfd/wm8400*
+ F:	include/linux/regulator/arizona*
+ F:	include/linux/wm97xx.h
+ F:	include/sound/wm????.h
 diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-index ce0c39b50af7..b271c9f0c5fc 100644
+index b271c9f0c5fc..2b621a77619c 100644
 --- a/drivers/mfd/Kconfig
 +++ b/drivers/mfd/Kconfig
-@@ -1425,19 +1425,6 @@ config MFD_SEC_I2C
- 	  on this driver so building this as a module might require proper
- 	  initial ramdisk or might not boot up as well in certain scenarios.
+@@ -2068,17 +2068,6 @@ config MFD_WM8998
+ 	help
+ 	  Support for Wolfson Microelectronics WM8998 low power audio SoC
  
--config MFD_SI476X_CORE
--	tristate "Silicon Laboratories 4761/64/68 AM/FM radio."
--	depends on I2C
+-config MFD_WM8400
+-	bool "Wolfson Microelectronics WM8400"
 -	select MFD_CORE
+-	depends on I2C=y
 -	select REGMAP_I2C
 -	help
--	  This is the core driver for the SI476x series of AM/FM
--	  radio. This MFD driver connects the radio-si476x V4L2 module
--	  and the si476x audio codec.
+-	  Support for the Wolfson Microelecronics WM8400 PMIC and audio
+-	  CODEC.  This driver provides common support for accessing
+-	  the device, additional drivers must be enabled in order to use
+-	  the functionality of the device.
 -
--	  To compile this driver as a module, choose M here: the
--	  module will be called si476x-core.
--
- config MFD_SIMPLE_MFD_I2C
- 	tristate
- 	depends on I2C
+ config MFD_WM831X
+ 	bool
+ 
 diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
-index a54eb18af56a..649262eb0f5c 100644
+index 649262eb0f5c..36f0ab039b77 100644
 --- a/drivers/mfd/Makefile
 +++ b/drivers/mfd/Makefile
-@@ -204,9 +204,6 @@ obj-$(CONFIG_MFD_JANZ_CMODIO)	+= janz-cmodio.o
- obj-$(CONFIG_MFD_TPS6586X)	+= tps6586x.o
- obj-$(CONFIG_MFD_VX855)		+= vx855.o
- 
--si476x-core-y := si476x-cmd.o si476x-prop.o si476x-i2c.o
--obj-$(CONFIG_MFD_SI476X_CORE)	+= si476x-core.o
--
- obj-$(CONFIG_MFD_CS5535)	+= cs5535-mfd.o
- obj-$(CONFIG_MFD_OMAP_USB_HOST)	+= omap-usb-host.o omap-usb-tll.o
- obj-$(CONFIG_MFD_PM8XXX) 	+= qcom-pm8xxx.o ssbi.o
-diff --git a/drivers/mfd/si476x-cmd.c b/drivers/mfd/si476x-cmd.c
+@@ -55,7 +55,6 @@ ifeq ($(CONFIG_MFD_CS47L24),y)
+ arizona-objs			+= cs47l24-tables.o
+ endif
+ obj-$(CONFIG_MFD_WCD934X)	+= wcd934x.o
+-obj-$(CONFIG_MFD_WM8400)	+= wm8400-core.o
+ wm831x-objs			:= wm831x-core.o wm831x-irq.o wm831x-otp.o
+ wm831x-objs			+= wm831x-auxadc.o
+ obj-$(CONFIG_MFD_WM831X)	+= wm831x.o
+diff --git a/drivers/mfd/wm8400-core.c b/drivers/mfd/wm8400-core.c
 deleted file mode 100644
-index 58e9bea7e90a..000000000000
---- a/drivers/mfd/si476x-cmd.c
+index 8ecfe878a5ba..000000000000
+--- a/drivers/mfd/wm8400-core.c
 +++ /dev/null
-@@ -1,1543 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-only
+@@ -1,163 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-or-later
 -/*
-- * drivers/mfd/si476x-cmd.c -- Subroutines implementing command
-- * protocol of si476x series of chips
+- * Core driver for WM8400.
 - *
-- * Copyright (C) 2012 Innovative Converged Devices(ICD)
-- * Copyright (C) 2013 Andrey Smirnov
+- * Copyright 2008 Wolfson Microelectronics PLC.
 - *
-- * Author: Andrey Smirnov <andrew.smirnov@gmail.com>
+- * Author: Mark Brown <broonie@opensource.wolfsonmicro.com>
 - */
 -
--#include <linux/module.h>
--#include <linux/completion.h>
--#include <linux/delay.h>
--#include <linux/atomic.h>
--#include <linux/i2c.h>
--#include <linux/device.h>
--#include <linux/videodev2.h>
--
--#include <linux/mfd/si476x-core.h>
--
--#include <linux/unaligned.h>
--
--#define msb(x)                  ((u8)((u16) x >> 8))
--#define lsb(x)                  ((u8)((u16) x &  0x00FF))
--
--
--
--#define CMD_POWER_UP				0x01
--#define CMD_POWER_UP_A10_NRESP			1
--#define CMD_POWER_UP_A10_NARGS			5
--
--#define CMD_POWER_UP_A20_NRESP			1
--#define CMD_POWER_UP_A20_NARGS			5
--
--#define POWER_UP_DELAY_MS			110
--
--#define CMD_POWER_DOWN				0x11
--#define CMD_POWER_DOWN_A10_NRESP		1
--
--#define CMD_POWER_DOWN_A20_NRESP		1
--#define CMD_POWER_DOWN_A20_NARGS		1
--
--#define CMD_FUNC_INFO				0x12
--#define CMD_FUNC_INFO_NRESP			7
--
--#define CMD_SET_PROPERTY			0x13
--#define CMD_SET_PROPERTY_NARGS			5
--#define CMD_SET_PROPERTY_NRESP			1
--
--#define CMD_GET_PROPERTY			0x14
--#define CMD_GET_PROPERTY_NARGS			3
--#define CMD_GET_PROPERTY_NRESP			4
--
--#define CMD_AGC_STATUS				0x17
--#define CMD_AGC_STATUS_NRESP_A10		2
--#define CMD_AGC_STATUS_NRESP_A20                6
--
--#define PIN_CFG_BYTE(x) (0x7F & (x))
--#define CMD_DIG_AUDIO_PIN_CFG			0x18
--#define CMD_DIG_AUDIO_PIN_CFG_NARGS		4
--#define CMD_DIG_AUDIO_PIN_CFG_NRESP		5
--
--#define CMD_ZIF_PIN_CFG				0x19
--#define CMD_ZIF_PIN_CFG_NARGS			4
--#define CMD_ZIF_PIN_CFG_NRESP			5
--
--#define CMD_IC_LINK_GPO_CTL_PIN_CFG		0x1A
--#define CMD_IC_LINK_GPO_CTL_PIN_CFG_NARGS	4
--#define CMD_IC_LINK_GPO_CTL_PIN_CFG_NRESP	5
--
--#define CMD_ANA_AUDIO_PIN_CFG			0x1B
--#define CMD_ANA_AUDIO_PIN_CFG_NARGS		1
--#define CMD_ANA_AUDIO_PIN_CFG_NRESP		2
--
--#define CMD_INTB_PIN_CFG			0x1C
--#define CMD_INTB_PIN_CFG_NARGS			2
--#define CMD_INTB_PIN_CFG_A10_NRESP		6
--#define CMD_INTB_PIN_CFG_A20_NRESP		3
--
--#define CMD_FM_TUNE_FREQ			0x30
--#define CMD_FM_TUNE_FREQ_A10_NARGS		5
--#define CMD_FM_TUNE_FREQ_A20_NARGS		3
--#define CMD_FM_TUNE_FREQ_NRESP			1
--
--#define CMD_FM_RSQ_STATUS			0x32
--
--#define CMD_FM_RSQ_STATUS_A10_NARGS		1
--#define CMD_FM_RSQ_STATUS_A10_NRESP		17
--#define CMD_FM_RSQ_STATUS_A30_NARGS		1
--#define CMD_FM_RSQ_STATUS_A30_NRESP		23
--
--
--#define CMD_FM_SEEK_START			0x31
--#define CMD_FM_SEEK_START_NARGS			1
--#define CMD_FM_SEEK_START_NRESP			1
--
--#define CMD_FM_RDS_STATUS			0x36
--#define CMD_FM_RDS_STATUS_NARGS			1
--#define CMD_FM_RDS_STATUS_NRESP			16
--
--#define CMD_FM_RDS_BLOCKCOUNT			0x37
--#define CMD_FM_RDS_BLOCKCOUNT_NARGS		1
--#define CMD_FM_RDS_BLOCKCOUNT_NRESP		8
--
--#define CMD_FM_PHASE_DIVERSITY			0x38
--#define CMD_FM_PHASE_DIVERSITY_NARGS		1
--#define CMD_FM_PHASE_DIVERSITY_NRESP		1
--
--#define CMD_FM_PHASE_DIV_STATUS			0x39
--#define CMD_FM_PHASE_DIV_STATUS_NRESP		2
--
--#define CMD_AM_TUNE_FREQ			0x40
--#define CMD_AM_TUNE_FREQ_NARGS			3
--#define CMD_AM_TUNE_FREQ_NRESP			1
--
--#define CMD_AM_RSQ_STATUS			0x42
--#define CMD_AM_RSQ_STATUS_NARGS			1
--#define CMD_AM_RSQ_STATUS_NRESP			13
--
--#define CMD_AM_SEEK_START			0x41
--#define CMD_AM_SEEK_START_NARGS			1
--#define CMD_AM_SEEK_START_NRESP			1
--
--
--#define CMD_AM_ACF_STATUS			0x45
--#define CMD_AM_ACF_STATUS_NRESP			6
--#define CMD_AM_ACF_STATUS_NARGS			1
--
--#define CMD_FM_ACF_STATUS			0x35
--#define CMD_FM_ACF_STATUS_NRESP			8
--#define CMD_FM_ACF_STATUS_NARGS			1
--
--#define CMD_MAX_ARGS_COUNT			(10)
--
--
--enum si476x_acf_status_report_bits {
--	SI476X_ACF_BLEND_INT	= (1 << 4),
--	SI476X_ACF_HIBLEND_INT	= (1 << 3),
--	SI476X_ACF_HICUT_INT	= (1 << 2),
--	SI476X_ACF_CHBW_INT	= (1 << 1),
--	SI476X_ACF_SOFTMUTE_INT	= (1 << 0),
--
--	SI476X_ACF_SMUTE	= (1 << 0),
--	SI476X_ACF_SMATTN	= 0x1f,
--	SI476X_ACF_PILOT	= (1 << 7),
--	SI476X_ACF_STBLEND	= ~SI476X_ACF_PILOT,
--};
--
--enum si476x_agc_status_report_bits {
--	SI476X_AGC_MXHI		= (1 << 5),
--	SI476X_AGC_MXLO		= (1 << 4),
--	SI476X_AGC_LNAHI	= (1 << 3),
--	SI476X_AGC_LNALO	= (1 << 2),
--};
--
--enum si476x_errors {
--	SI476X_ERR_BAD_COMMAND		= 0x10,
--	SI476X_ERR_BAD_ARG1		= 0x11,
--	SI476X_ERR_BAD_ARG2		= 0x12,
--	SI476X_ERR_BAD_ARG3		= 0x13,
--	SI476X_ERR_BAD_ARG4		= 0x14,
--	SI476X_ERR_BUSY			= 0x18,
--	SI476X_ERR_BAD_INTERNAL_MEMORY  = 0x20,
--	SI476X_ERR_BAD_PATCH		= 0x30,
--	SI476X_ERR_BAD_BOOT_MODE	= 0x31,
--	SI476X_ERR_BAD_PROPERTY		= 0x40,
--};
--
--static int si476x_core_parse_and_nag_about_error(struct si476x_core *core)
--{
--	int err;
--	char *cause;
--	u8 buffer[2];
--
--	if (core->revision != SI476X_REVISION_A10) {
--		err = si476x_core_i2c_xfer(core, SI476X_I2C_RECV,
--					   buffer, sizeof(buffer));
--		if (err == sizeof(buffer)) {
--			switch (buffer[1]) {
--			case SI476X_ERR_BAD_COMMAND:
--				cause = "Bad command";
--				err = -EINVAL;
--				break;
--			case SI476X_ERR_BAD_ARG1:
--				cause = "Bad argument #1";
--				err = -EINVAL;
--				break;
--			case SI476X_ERR_BAD_ARG2:
--				cause = "Bad argument #2";
--				err = -EINVAL;
--				break;
--			case SI476X_ERR_BAD_ARG3:
--				cause = "Bad argument #3";
--				err = -EINVAL;
--				break;
--			case SI476X_ERR_BAD_ARG4:
--				cause = "Bad argument #4";
--				err = -EINVAL;
--				break;
--			case SI476X_ERR_BUSY:
--				cause = "Chip is busy";
--				err = -EBUSY;
--				break;
--			case SI476X_ERR_BAD_INTERNAL_MEMORY:
--				cause = "Bad internal memory";
--				err = -EIO;
--				break;
--			case SI476X_ERR_BAD_PATCH:
--				cause = "Bad patch";
--				err = -EINVAL;
--				break;
--			case SI476X_ERR_BAD_BOOT_MODE:
--				cause = "Bad boot mode";
--				err = -EINVAL;
--				break;
--			case SI476X_ERR_BAD_PROPERTY:
--				cause = "Bad property";
--				err = -EINVAL;
--				break;
--			default:
--				cause = "Unknown";
--				err = -EIO;
--			}
--
--			dev_err(&core->client->dev,
--				"[Chip error status]: %s\n", cause);
--		} else {
--			dev_err(&core->client->dev,
--				"Failed to fetch error code\n");
--			err = (err >= 0) ? -EIO : err;
--		}
--	} else {
--		err = -EIO;
--	}
--
--	return err;
--}
--
--/**
-- * si476x_core_send_command() - sends a command to si476x and waits its
-- * response
-- * @core:     si476x_device structure for the device we are
-- *            communicating with
-- * @command:  command id
-- * @args:     command arguments we are sending
-- * @argn:     actual size of @args
-- * @resp:     buffer to place the expected response from the device
-- * @respn:    actual size of @resp
-- * @usecs:    amount of time to wait before reading the response (in
-- *            usecs)
-- *
-- * Function returns 0 on success and negative error code on
-- * failure
-- */
--static int si476x_core_send_command(struct si476x_core *core,
--				    const u8 command,
--				    const u8 args[],
--				    const int argn,
--				    u8 resp[],
--				    const int respn,
--				    const int usecs)
--{
--	struct i2c_client *client = core->client;
--	int err;
--	u8  data[CMD_MAX_ARGS_COUNT + 1];
--
--	if (argn > CMD_MAX_ARGS_COUNT) {
--		err = -ENOMEM;
--		goto exit;
--	}
--
--	if (!client->adapter) {
--		err = -ENODEV;
--		goto exit;
--	}
--
--	/* First send the command and its arguments */
--	data[0] = command;
--	memcpy(&data[1], args, argn);
--	dev_dbg(&client->dev, "Command:\n %*ph\n", argn + 1, data);
--
--	err = si476x_core_i2c_xfer(core, SI476X_I2C_SEND,
--				   (char *) data, argn + 1);
--	if (err != argn + 1) {
--		dev_err(&core->client->dev,
--			"Error while sending command 0x%02x\n",
--			command);
--		err = (err >= 0) ? -EIO : err;
--		goto exit;
--	}
--	/* Set CTS to zero only after the command is send to avoid
--	 * possible racing conditions when working in polling mode */
--	atomic_set(&core->cts, 0);
--
--	/* if (unlikely(command == CMD_POWER_DOWN) */
--	if (!wait_event_timeout(core->command,
--				atomic_read(&core->cts),
--				usecs_to_jiffies(usecs) + 1))
--		dev_warn(&core->client->dev,
--			 "(%s) [CMD 0x%02x] Answer timeout.\n",
--			 __func__, command);
--
--	/*
--	  When working in polling mode, for some reason the tuner will
--	  report CTS bit as being set in the first status byte read,
--	  but all the consequtive ones will return zeros until the
--	  tuner is actually completed the POWER_UP command. To
--	  workaround that we wait for second CTS to be reported
--	 */
--	if (unlikely(!core->client->irq && command == CMD_POWER_UP)) {
--		if (!wait_event_timeout(core->command,
--					atomic_read(&core->cts),
--					usecs_to_jiffies(usecs) + 1))
--			dev_warn(&core->client->dev,
--				 "(%s) Power up took too much time.\n",
--				 __func__);
--	}
--
--	/* Then get the response */
--	err = si476x_core_i2c_xfer(core, SI476X_I2C_RECV, resp, respn);
--	if (err != respn) {
--		dev_err(&core->client->dev,
--			"Error while reading response for command 0x%02x\n",
--			command);
--		err = (err >= 0) ? -EIO : err;
--		goto exit;
--	}
--	dev_dbg(&client->dev, "Response:\n %*ph\n", respn, resp);
--
--	err = 0;
--
--	if (resp[0] & SI476X_ERR) {
--		dev_err(&core->client->dev,
--			"[CMD 0x%02x] Chip set error flag\n", command);
--		err = si476x_core_parse_and_nag_about_error(core);
--		goto exit;
--	}
--
--	if (!(resp[0] & SI476X_CTS))
--		err = -EBUSY;
--exit:
--	return err;
--}
--
--static int si476x_cmd_clear_stc(struct si476x_core *core)
--{
--	int err;
--	struct si476x_rsq_status_args args = {
--		.primary	= false,
--		.rsqack		= false,
--		.attune		= false,
--		.cancel		= false,
--		.stcack		= true,
--	};
--
--	switch (core->power_up_parameters.func) {
--	case SI476X_FUNC_FM_RECEIVER:
--		err = si476x_core_cmd_fm_rsq_status(core, &args, NULL);
--		break;
--	case SI476X_FUNC_AM_RECEIVER:
--		err = si476x_core_cmd_am_rsq_status(core, &args, NULL);
--		break;
--	default:
--		err = -EINVAL;
--	}
--
--	return err;
--}
--
--static int si476x_cmd_tune_seek_freq(struct si476x_core *core,
--				     uint8_t cmd,
--				     const uint8_t args[], size_t argn,
--				     uint8_t *resp, size_t respn)
--{
--	int err;
--
--
--	atomic_set(&core->stc, 0);
--	err = si476x_core_send_command(core, cmd, args, argn, resp, respn,
--				       SI476X_TIMEOUT_TUNE);
--	if (!err) {
--		wait_event_killable(core->tuning,
--				    atomic_read(&core->stc));
--		si476x_cmd_clear_stc(core);
--	}
--
--	return err;
--}
--
--/**
-- * si476x_core_cmd_func_info() - send 'FUNC_INFO' command to the device
-- * @core: device to send the command to
-- * @info:  struct si476x_func_info to fill all the information
-- *         returned by the command
-- *
-- * The command requests the firmware and patch version for currently
-- * loaded firmware (dependent on the function of the device FM/AM/WB)
-- *
-- * Function returns 0 on success and negative error code on
-- * failure
-- */
--int si476x_core_cmd_func_info(struct si476x_core *core,
--			      struct si476x_func_info *info)
--{
--	int err;
--	u8  resp[CMD_FUNC_INFO_NRESP];
--
--	err = si476x_core_send_command(core, CMD_FUNC_INFO,
--				       NULL, 0,
--				       resp, ARRAY_SIZE(resp),
--				       SI476X_DEFAULT_TIMEOUT);
--
--	info->firmware.major    = resp[1];
--	info->firmware.minor[0] = resp[2];
--	info->firmware.minor[1] = resp[3];
--
--	info->patch_id = ((u16) resp[4] << 8) | resp[5];
--	info->func     = resp[6];
--
--	return err;
--}
--EXPORT_SYMBOL_GPL(si476x_core_cmd_func_info);
--
--/**
-- * si476x_core_cmd_set_property() - send 'SET_PROPERTY' command to the device
-- * @core:    device to send the command to
-- * @property: property address
-- * @value:    property value
-- *
-- * Function returns 0 on success and negative error code on
-- * failure
-- */
--int si476x_core_cmd_set_property(struct si476x_core *core,
--				 u16 property, u16 value)
--{
--	u8       resp[CMD_SET_PROPERTY_NRESP];
--	const u8 args[CMD_SET_PROPERTY_NARGS] = {
--		0x00,
--		msb(property),
--		lsb(property),
--		msb(value),
--		lsb(value),
--	};
--
--	return si476x_core_send_command(core, CMD_SET_PROPERTY,
--					args, ARRAY_SIZE(args),
--					resp, ARRAY_SIZE(resp),
--					SI476X_DEFAULT_TIMEOUT);
--}
--EXPORT_SYMBOL_GPL(si476x_core_cmd_set_property);
--
--/**
-- * si476x_core_cmd_get_property() - send 'GET_PROPERTY' command to the device
-- * @core:    device to send the command to
-- * @property: property address
-- *
-- * Function return the value of property as u16 on success or a
-- * negative error on failure
-- */
--int si476x_core_cmd_get_property(struct si476x_core *core, u16 property)
--{
--	int err;
--	u8       resp[CMD_GET_PROPERTY_NRESP];
--	const u8 args[CMD_GET_PROPERTY_NARGS] = {
--		0x00,
--		msb(property),
--		lsb(property),
--	};
--
--	err = si476x_core_send_command(core, CMD_GET_PROPERTY,
--				       args, ARRAY_SIZE(args),
--				       resp, ARRAY_SIZE(resp),
--				       SI476X_DEFAULT_TIMEOUT);
--	if (err < 0)
--		return err;
--	else
--		return get_unaligned_be16(resp + 2);
--}
--EXPORT_SYMBOL_GPL(si476x_core_cmd_get_property);
--
--/**
-- * si476x_core_cmd_dig_audio_pin_cfg() - send 'DIG_AUDIO_PIN_CFG' command to
-- * the device
-- * @core: device to send the command to
-- * @dclk:  DCLK pin function configuration:
-- *	   #SI476X_DCLK_NOOP     - do not modify the behaviour
-- *         #SI476X_DCLK_TRISTATE - put the pin in tristate condition,
-- *                                 enable 1MOhm pulldown
-- *         #SI476X_DCLK_DAUDIO   - set the pin to be a part of digital
-- *                                 audio interface
-- * @dfs:   DFS pin function configuration:
-- *         #SI476X_DFS_NOOP      - do not modify the behaviour
-- *         #SI476X_DFS_TRISTATE  - put the pin in tristate condition,
-- *                             enable 1MOhm pulldown
-- *      SI476X_DFS_DAUDIO    - set the pin to be a part of digital
-- *                             audio interface
-- * @dout: - DOUT pin function configuration:
-- *      SI476X_DOUT_NOOP       - do not modify the behaviour
-- *      SI476X_DOUT_TRISTATE   - put the pin in tristate condition,
-- *                               enable 1MOhm pulldown
-- *      SI476X_DOUT_I2S_OUTPUT - set this pin to be digital out on I2S
-- *                               port 1
-- *      SI476X_DOUT_I2S_INPUT  - set this pin to be digital in on I2S
-- *                               port 1
-- * @xout: - XOUT pin function configuration:
-- *	SI476X_XOUT_NOOP        - do not modify the behaviour
-- *      SI476X_XOUT_TRISTATE    - put the pin in tristate condition,
-- *                                enable 1MOhm pulldown
-- *      SI476X_XOUT_I2S_INPUT   - set this pin to be digital in on I2S
-- *                                port 1
-- *      SI476X_XOUT_MODE_SELECT - set this pin to be the input that
-- *                                selects the mode of the I2S audio
-- *                                combiner (analog or HD)
-- *                                [SI4761/63/65/67 Only]
-- *
-- * Function returns 0 on success and negative error code on failure
-- */
--int si476x_core_cmd_dig_audio_pin_cfg(struct  si476x_core *core,
--				      enum si476x_dclk_config dclk,
--				      enum si476x_dfs_config  dfs,
--				      enum si476x_dout_config dout,
--				      enum si476x_xout_config xout)
--{
--	u8       resp[CMD_DIG_AUDIO_PIN_CFG_NRESP];
--	const u8 args[CMD_DIG_AUDIO_PIN_CFG_NARGS] = {
--		PIN_CFG_BYTE(dclk),
--		PIN_CFG_BYTE(dfs),
--		PIN_CFG_BYTE(dout),
--		PIN_CFG_BYTE(xout),
--	};
--
--	return si476x_core_send_command(core, CMD_DIG_AUDIO_PIN_CFG,
--					args, ARRAY_SIZE(args),
--					resp, ARRAY_SIZE(resp),
--					SI476X_DEFAULT_TIMEOUT);
--}
--EXPORT_SYMBOL_GPL(si476x_core_cmd_dig_audio_pin_cfg);
--
--/**
-- * si476x_core_cmd_zif_pin_cfg - send 'ZIF_PIN_CFG_COMMAND'
-- * @core: - device to send the command to
-- * @iqclk: - IQCL pin function configuration:
-- *       SI476X_IQCLK_NOOP     - do not modify the behaviour
-- *       SI476X_IQCLK_TRISTATE - put the pin in tristate condition,
-- *                               enable 1MOhm pulldown
-- *       SI476X_IQCLK_IQ       - set pin to be a part of I/Q interface
-- *                               in master mode
-- * @iqfs: - IQFS pin function configuration:
-- *       SI476X_IQFS_NOOP     - do not modify the behaviour
-- *       SI476X_IQFS_TRISTATE - put the pin in tristate condition,
-- *                              enable 1MOhm pulldown
-- *       SI476X_IQFS_IQ       - set pin to be a part of I/Q interface
-- *                              in master mode
-- * @iout: - IOUT pin function configuration:
-- *       SI476X_IOUT_NOOP     - do not modify the behaviour
-- *       SI476X_IOUT_TRISTATE - put the pin in tristate condition,
-- *                              enable 1MOhm pulldown
-- *       SI476X_IOUT_OUTPUT   - set pin to be I out
-- * @qout: - QOUT pin function configuration:
-- *       SI476X_QOUT_NOOP     - do not modify the behaviour
-- *       SI476X_QOUT_TRISTATE - put the pin in tristate condition,
-- *                              enable 1MOhm pulldown
-- *       SI476X_QOUT_OUTPUT   - set pin to be Q out
-- *
-- * Function returns 0 on success and negative error code on failure
-- */
--int si476x_core_cmd_zif_pin_cfg(struct si476x_core *core,
--				enum si476x_iqclk_config iqclk,
--				enum si476x_iqfs_config iqfs,
--				enum si476x_iout_config iout,
--				enum si476x_qout_config qout)
--{
--	u8       resp[CMD_ZIF_PIN_CFG_NRESP];
--	const u8 args[CMD_ZIF_PIN_CFG_NARGS] = {
--		PIN_CFG_BYTE(iqclk),
--		PIN_CFG_BYTE(iqfs),
--		PIN_CFG_BYTE(iout),
--		PIN_CFG_BYTE(qout),
--	};
--
--	return si476x_core_send_command(core, CMD_ZIF_PIN_CFG,
--					args, ARRAY_SIZE(args),
--					resp, ARRAY_SIZE(resp),
--					SI476X_DEFAULT_TIMEOUT);
--}
--EXPORT_SYMBOL_GPL(si476x_core_cmd_zif_pin_cfg);
--
--/**
-- * si476x_core_cmd_ic_link_gpo_ctl_pin_cfg - send
-- * 'IC_LINK_GPIO_CTL_PIN_CFG' command to the device
-- * @core: - device to send the command to
-- * @icin: - ICIN pin function configuration:
-- *      SI476X_ICIN_NOOP      - do not modify the behaviour
-- *      SI476X_ICIN_TRISTATE  - put the pin in tristate condition,
-- *                              enable 1MOhm pulldown
-- *      SI476X_ICIN_GPO1_HIGH - set pin to be an output, drive it high
-- *      SI476X_ICIN_GPO1_LOW  - set pin to be an output, drive it low
-- *      SI476X_ICIN_IC_LINK   - set the pin to be a part of Inter-Chip link
-- * @icip: - ICIP pin function configuration:
-- *      SI476X_ICIP_NOOP      - do not modify the behaviour
-- *      SI476X_ICIP_TRISTATE  - put the pin in tristate condition,
-- *                              enable 1MOhm pulldown
-- *      SI476X_ICIP_GPO1_HIGH - set pin to be an output, drive it high
-- *      SI476X_ICIP_GPO1_LOW  - set pin to be an output, drive it low
-- *      SI476X_ICIP_IC_LINK   - set the pin to be a part of Inter-Chip link
-- * @icon: - ICON pin function configuration:
-- *      SI476X_ICON_NOOP     - do not modify the behaviour
-- *      SI476X_ICON_TRISTATE - put the pin in tristate condition,
-- *                             enable 1MOhm pulldown
-- *      SI476X_ICON_I2S      - set the pin to be a part of audio
-- *                             interface in slave mode (DCLK)
-- *      SI476X_ICON_IC_LINK  - set the pin to be a part of Inter-Chip link
-- * @icop: - ICOP pin function configuration:
-- *      SI476X_ICOP_NOOP     - do not modify the behaviour
-- *      SI476X_ICOP_TRISTATE - put the pin in tristate condition,
-- *                             enable 1MOhm pulldown
-- *      SI476X_ICOP_I2S      - set the pin to be a part of audio
-- *                             interface in slave mode (DOUT)
-- *                             [Si4761/63/65/67 Only]
-- *      SI476X_ICOP_IC_LINK  - set the pin to be a part of Inter-Chip link
-- *
-- * Function returns 0 on success and negative error code on failure
-- */
--int si476x_core_cmd_ic_link_gpo_ctl_pin_cfg(struct si476x_core *core,
--					    enum si476x_icin_config icin,
--					    enum si476x_icip_config icip,
--					    enum si476x_icon_config icon,
--					    enum si476x_icop_config icop)
--{
--	u8       resp[CMD_IC_LINK_GPO_CTL_PIN_CFG_NRESP];
--	const u8 args[CMD_IC_LINK_GPO_CTL_PIN_CFG_NARGS] = {
--		PIN_CFG_BYTE(icin),
--		PIN_CFG_BYTE(icip),
--		PIN_CFG_BYTE(icon),
--		PIN_CFG_BYTE(icop),
--	};
--
--	return si476x_core_send_command(core, CMD_IC_LINK_GPO_CTL_PIN_CFG,
--					args, ARRAY_SIZE(args),
--					resp, ARRAY_SIZE(resp),
--					SI476X_DEFAULT_TIMEOUT);
--}
--EXPORT_SYMBOL_GPL(si476x_core_cmd_ic_link_gpo_ctl_pin_cfg);
--
--/**
-- * si476x_core_cmd_ana_audio_pin_cfg - send 'ANA_AUDIO_PIN_CFG' to the
-- * device
-- * @core: - device to send the command to
-- * @lrout: - LROUT pin function configuration:
-- *       SI476X_LROUT_NOOP     - do not modify the behaviour
-- *       SI476X_LROUT_TRISTATE - put the pin in tristate condition,
-- *                               enable 1MOhm pulldown
-- *       SI476X_LROUT_AUDIO    - set pin to be audio output
-- *       SI476X_LROUT_MPX      - set pin to be MPX output
-- *
-- * Function returns 0 on success and negative error code on failure
-- */
--int si476x_core_cmd_ana_audio_pin_cfg(struct si476x_core *core,
--				      enum si476x_lrout_config lrout)
--{
--	u8       resp[CMD_ANA_AUDIO_PIN_CFG_NRESP];
--	const u8 args[CMD_ANA_AUDIO_PIN_CFG_NARGS] = {
--		PIN_CFG_BYTE(lrout),
--	};
--
--	return si476x_core_send_command(core, CMD_ANA_AUDIO_PIN_CFG,
--					args, ARRAY_SIZE(args),
--					resp, ARRAY_SIZE(resp),
--					SI476X_DEFAULT_TIMEOUT);
--}
--EXPORT_SYMBOL_GPL(si476x_core_cmd_ana_audio_pin_cfg);
--
--
--/**
-- * si476x_core_cmd_intb_pin_cfg_a10 - send 'INTB_PIN_CFG' command to the device
-- * @core: - device to send the command to
-- * @intb: - INTB pin function configuration:
-- *      SI476X_INTB_NOOP     - do not modify the behaviour
-- *      SI476X_INTB_TRISTATE - put the pin in tristate condition,
-- *                             enable 1MOhm pulldown
-- *      SI476X_INTB_DAUDIO   - set pin to be a part of digital
-- *                             audio interface in slave mode
-- *      SI476X_INTB_IRQ      - set pin to be an interrupt request line
-- * @a1: - A1 pin function configuration:
-- *      SI476X_A1_NOOP     - do not modify the behaviour
-- *      SI476X_A1_TRISTATE - put the pin in tristate condition,
-- *                           enable 1MOhm pulldown
-- *      SI476X_A1_IRQ      - set pin to be an interrupt request line
-- *
-- * Function returns 0 on success and negative error code on failure
-- */
--static int si476x_core_cmd_intb_pin_cfg_a10(struct si476x_core *core,
--					    enum si476x_intb_config intb,
--					    enum si476x_a1_config a1)
--{
--	u8       resp[CMD_INTB_PIN_CFG_A10_NRESP];
--	const u8 args[CMD_INTB_PIN_CFG_NARGS] = {
--		PIN_CFG_BYTE(intb),
--		PIN_CFG_BYTE(a1),
--	};
--
--	return si476x_core_send_command(core, CMD_INTB_PIN_CFG,
--					args, ARRAY_SIZE(args),
--					resp, ARRAY_SIZE(resp),
--					SI476X_DEFAULT_TIMEOUT);
--}
--
--static int si476x_core_cmd_intb_pin_cfg_a20(struct si476x_core *core,
--					    enum si476x_intb_config intb,
--					    enum si476x_a1_config a1)
--{
--	u8       resp[CMD_INTB_PIN_CFG_A20_NRESP];
--	const u8 args[CMD_INTB_PIN_CFG_NARGS] = {
--		PIN_CFG_BYTE(intb),
--		PIN_CFG_BYTE(a1),
--	};
--
--	return si476x_core_send_command(core, CMD_INTB_PIN_CFG,
--					args, ARRAY_SIZE(args),
--					resp, ARRAY_SIZE(resp),
--					SI476X_DEFAULT_TIMEOUT);
--}
--
--
--
--/**
-- * si476x_core_cmd_am_rsq_status - send 'AM_RSQ_STATUS' command to the
-- * device
-- * @core:  - device to send the command to
-- * @rsqargs: - pointer to a structure containing a group of sub-args
-- *             relevant to sending the RSQ status command
-- * @report: - all signal quality information returned by the command
-- *           (if NULL then the output of the command is ignored)
-- *
-- * Function returns 0 on success and negative error code on failure
-- */
--int si476x_core_cmd_am_rsq_status(struct si476x_core *core,
--				  struct si476x_rsq_status_args *rsqargs,
--				  struct si476x_rsq_status_report *report)
--{
--	int err;
--	u8       resp[CMD_AM_RSQ_STATUS_NRESP];
--	const u8 args[CMD_AM_RSQ_STATUS_NARGS] = {
--		rsqargs->rsqack << 3 | rsqargs->attune << 2 |
--		rsqargs->cancel << 1 | rsqargs->stcack,
--	};
--
--	err = si476x_core_send_command(core, CMD_AM_RSQ_STATUS,
--				       args, ARRAY_SIZE(args),
--				       resp, ARRAY_SIZE(resp),
--				       SI476X_DEFAULT_TIMEOUT);
--	/*
--	 * Besides getting received signal quality information this
--	 * command can be used to just acknowledge different interrupt
--	 * flags in those cases it is useless to copy and parse
--	 * received data so user can pass NULL, and thus avoid
--	 * unnecessary copying.
--	 */
--	if (!report)
--		return err;
--
--	report->snrhint		= 0x08 & resp[1];
--	report->snrlint		= 0x04 & resp[1];
--	report->rssihint	= 0x02 & resp[1];
--	report->rssilint	= 0x01 & resp[1];
--
--	report->bltf		= 0x80 & resp[2];
--	report->snr_ready	= 0x20 & resp[2];
--	report->rssiready	= 0x08 & resp[2];
--	report->afcrl		= 0x02 & resp[2];
--	report->valid		= 0x01 & resp[2];
--
--	report->readfreq	= get_unaligned_be16(resp + 3);
--	report->freqoff		= resp[5];
--	report->rssi		= resp[6];
--	report->snr		= resp[7];
--	report->lassi		= resp[9];
--	report->hassi		= resp[10];
--	report->mult		= resp[11];
--	report->dev		= resp[12];
--
--	return err;
--}
--EXPORT_SYMBOL_GPL(si476x_core_cmd_am_rsq_status);
--
--int si476x_core_cmd_fm_acf_status(struct si476x_core *core,
--			     struct si476x_acf_status_report *report)
--{
--	int err;
--	u8       resp[CMD_FM_ACF_STATUS_NRESP];
--	const u8 args[CMD_FM_ACF_STATUS_NARGS] = {
--		0x0,
--	};
--
--	if (!report)
--		return -EINVAL;
--
--	err = si476x_core_send_command(core, CMD_FM_ACF_STATUS,
--				       args, ARRAY_SIZE(args),
--				       resp, ARRAY_SIZE(resp),
--				       SI476X_DEFAULT_TIMEOUT);
--	if (err < 0)
--		return err;
--
--	report->blend_int	= resp[1] & SI476X_ACF_BLEND_INT;
--	report->hblend_int	= resp[1] & SI476X_ACF_HIBLEND_INT;
--	report->hicut_int	= resp[1] & SI476X_ACF_HICUT_INT;
--	report->chbw_int	= resp[1] & SI476X_ACF_CHBW_INT;
--	report->softmute_int	= resp[1] & SI476X_ACF_SOFTMUTE_INT;
--	report->smute		= resp[2] & SI476X_ACF_SMUTE;
--	report->smattn		= resp[3] & SI476X_ACF_SMATTN;
--	report->chbw		= resp[4];
--	report->hicut		= resp[5];
--	report->hiblend		= resp[6];
--	report->pilot		= resp[7] & SI476X_ACF_PILOT;
--	report->stblend		= resp[7] & SI476X_ACF_STBLEND;
--
--	return err;
--}
--EXPORT_SYMBOL_GPL(si476x_core_cmd_fm_acf_status);
--
--int si476x_core_cmd_am_acf_status(struct si476x_core *core,
--				  struct si476x_acf_status_report *report)
--{
--	int err;
--	u8       resp[CMD_AM_ACF_STATUS_NRESP];
--	const u8 args[CMD_AM_ACF_STATUS_NARGS] = {
--		0x0,
--	};
--
--	if (!report)
--		return -EINVAL;
--
--	err = si476x_core_send_command(core, CMD_AM_ACF_STATUS,
--				       args, ARRAY_SIZE(args),
--				       resp, ARRAY_SIZE(resp),
--				       SI476X_DEFAULT_TIMEOUT);
--	if (err < 0)
--		return err;
--
--	report->blend_int	= resp[1] & SI476X_ACF_BLEND_INT;
--	report->hblend_int	= resp[1] & SI476X_ACF_HIBLEND_INT;
--	report->hicut_int	= resp[1] & SI476X_ACF_HICUT_INT;
--	report->chbw_int	= resp[1] & SI476X_ACF_CHBW_INT;
--	report->softmute_int	= resp[1] & SI476X_ACF_SOFTMUTE_INT;
--	report->smute		= resp[2] & SI476X_ACF_SMUTE;
--	report->smattn		= resp[3] & SI476X_ACF_SMATTN;
--	report->chbw		= resp[4];
--	report->hicut		= resp[5];
--
--	return err;
--}
--EXPORT_SYMBOL_GPL(si476x_core_cmd_am_acf_status);
--
--
--/**
-- * si476x_core_cmd_fm_seek_start - send 'FM_SEEK_START' command to the
-- * device
-- * @core:  - device to send the command to
-- * @seekup: - if set the direction of the search is 'up'
-- * @wrap:   - if set seek wraps when hitting band limit
-- *
-- * This function begins search for a valid station. The station is
-- * considered valid when 'FM_VALID_SNR_THRESHOLD' and
-- * 'FM_VALID_RSSI_THRESHOLD' and 'FM_VALID_MAX_TUNE_ERROR' criteria
-- * are met.
--} *
-- * Function returns 0 on success and negative error code on failure
-- */
--int si476x_core_cmd_fm_seek_start(struct si476x_core *core,
--				  bool seekup, bool wrap)
--{
--	u8       resp[CMD_FM_SEEK_START_NRESP];
--	const u8 args[CMD_FM_SEEK_START_NARGS] = {
--		seekup << 3 | wrap << 2,
--	};
--
--	return si476x_cmd_tune_seek_freq(core, CMD_FM_SEEK_START,
--					 args, sizeof(args),
--					 resp, sizeof(resp));
--}
--EXPORT_SYMBOL_GPL(si476x_core_cmd_fm_seek_start);
--
--/**
-- * si476x_core_cmd_fm_rds_status - send 'FM_RDS_STATUS' command to the
-- * device
-- * @core: - device to send the command to
-- * @status_only: - if set the data is not removed from RDSFIFO,
-- *                RDSFIFOUSED is not decremented and data in all the
-- *                rest RDS data contains the last valid info received
-- * @mtfifo: if set the command clears RDS receive FIFO
-- * @intack: if set the command clards the RDSINT bit.
-- * @report: - all signal quality information returned by the command
-- *           (if NULL then the output of the command is ignored)
-- *
-- * Function returns 0 on success and negative error code on failure
-- */
--int si476x_core_cmd_fm_rds_status(struct si476x_core *core,
--				  bool status_only,
--				  bool mtfifo,
--				  bool intack,
--				  struct si476x_rds_status_report *report)
--{
--	int err;
--	u8       resp[CMD_FM_RDS_STATUS_NRESP];
--	const u8 args[CMD_FM_RDS_STATUS_NARGS] = {
--		status_only << 2 | mtfifo << 1 | intack,
--	};
--
--	err = si476x_core_send_command(core, CMD_FM_RDS_STATUS,
--				       args, ARRAY_SIZE(args),
--				       resp, ARRAY_SIZE(resp),
--				       SI476X_DEFAULT_TIMEOUT);
--	/*
--	 * Besides getting RDS status information this command can be
--	 * used to just acknowledge different interrupt flags in those
--	 * cases it is useless to copy and parse received data so user
--	 * can pass NULL, and thus avoid unnecessary copying.
--	 */
--	if (err < 0 || report == NULL)
--		return err;
--
--	report->rdstpptyint	= 0x10 & resp[1];
--	report->rdspiint	= 0x08 & resp[1];
--	report->rdssyncint	= 0x02 & resp[1];
--	report->rdsfifoint	= 0x01 & resp[1];
--
--	report->tpptyvalid	= 0x10 & resp[2];
--	report->pivalid		= 0x08 & resp[2];
--	report->rdssync		= 0x02 & resp[2];
--	report->rdsfifolost	= 0x01 & resp[2];
--
--	report->tp		= 0x20 & resp[3];
--	report->pty		= 0x1f & resp[3];
--
--	report->pi		= get_unaligned_be16(resp + 4);
--	report->rdsfifoused	= resp[6];
--
--	report->ble[V4L2_RDS_BLOCK_A]	= 0xc0 & resp[7];
--	report->ble[V4L2_RDS_BLOCK_B]	= 0x30 & resp[7];
--	report->ble[V4L2_RDS_BLOCK_C]	= 0x0c & resp[7];
--	report->ble[V4L2_RDS_BLOCK_D]	= 0x03 & resp[7];
--
--	report->rds[V4L2_RDS_BLOCK_A].block = V4L2_RDS_BLOCK_A;
--	report->rds[V4L2_RDS_BLOCK_A].msb = resp[8];
--	report->rds[V4L2_RDS_BLOCK_A].lsb = resp[9];
--
--	report->rds[V4L2_RDS_BLOCK_B].block = V4L2_RDS_BLOCK_B;
--	report->rds[V4L2_RDS_BLOCK_B].msb = resp[10];
--	report->rds[V4L2_RDS_BLOCK_B].lsb = resp[11];
--
--	report->rds[V4L2_RDS_BLOCK_C].block = V4L2_RDS_BLOCK_C;
--	report->rds[V4L2_RDS_BLOCK_C].msb = resp[12];
--	report->rds[V4L2_RDS_BLOCK_C].lsb = resp[13];
--
--	report->rds[V4L2_RDS_BLOCK_D].block = V4L2_RDS_BLOCK_D;
--	report->rds[V4L2_RDS_BLOCK_D].msb = resp[14];
--	report->rds[V4L2_RDS_BLOCK_D].lsb = resp[15];
--
--	return err;
--}
--EXPORT_SYMBOL_GPL(si476x_core_cmd_fm_rds_status);
--
--int si476x_core_cmd_fm_rds_blockcount(struct si476x_core *core,
--				bool clear,
--				struct si476x_rds_blockcount_report *report)
--{
--	int err;
--	u8       resp[CMD_FM_RDS_BLOCKCOUNT_NRESP];
--	const u8 args[CMD_FM_RDS_BLOCKCOUNT_NARGS] = {
--		clear,
--	};
--
--	if (!report)
--		return -EINVAL;
--
--	err = si476x_core_send_command(core, CMD_FM_RDS_BLOCKCOUNT,
--				       args, ARRAY_SIZE(args),
--				       resp, ARRAY_SIZE(resp),
--				       SI476X_DEFAULT_TIMEOUT);
--
--	if (!err) {
--		report->expected	= get_unaligned_be16(resp + 2);
--		report->received	= get_unaligned_be16(resp + 4);
--		report->uncorrectable	= get_unaligned_be16(resp + 6);
--	}
--
--	return err;
--}
--EXPORT_SYMBOL_GPL(si476x_core_cmd_fm_rds_blockcount);
--
--int si476x_core_cmd_fm_phase_diversity(struct si476x_core *core,
--				       enum si476x_phase_diversity_mode mode)
--{
--	u8       resp[CMD_FM_PHASE_DIVERSITY_NRESP];
--	const u8 args[CMD_FM_PHASE_DIVERSITY_NARGS] = {
--		mode & 0x07,
--	};
--
--	return si476x_core_send_command(core, CMD_FM_PHASE_DIVERSITY,
--					args, ARRAY_SIZE(args),
--					resp, ARRAY_SIZE(resp),
--					SI476X_DEFAULT_TIMEOUT);
--}
--EXPORT_SYMBOL_GPL(si476x_core_cmd_fm_phase_diversity);
--/**
-- * si476x_core_cmd_fm_phase_div_status() - get the phase diversity
-- * status
-- *
-- * @core: si476x device
-- *
-- * NOTE caller must hold core lock
-- *
-- * Function returns the value of the status bit in case of success and
-- * negative error code in case of failure.
-- */
--int si476x_core_cmd_fm_phase_div_status(struct si476x_core *core)
--{
--	int err;
--	u8 resp[CMD_FM_PHASE_DIV_STATUS_NRESP];
--
--	err = si476x_core_send_command(core, CMD_FM_PHASE_DIV_STATUS,
--				       NULL, 0,
--				       resp, ARRAY_SIZE(resp),
--				       SI476X_DEFAULT_TIMEOUT);
--
--	return (err < 0) ? err : resp[1];
--}
--EXPORT_SYMBOL_GPL(si476x_core_cmd_fm_phase_div_status);
--
--
--/**
-- * si476x_core_cmd_am_seek_start - send 'FM_SEEK_START' command to the
-- * device
-- * @core:  - device to send the command to
-- * @seekup: - if set the direction of the search is 'up'
-- * @wrap:   - if set seek wraps when hitting band limit
-- *
-- * This function begins search for a valid station. The station is
-- * considered valid when 'FM_VALID_SNR_THRESHOLD' and
-- * 'FM_VALID_RSSI_THRESHOLD' and 'FM_VALID_MAX_TUNE_ERROR' criteria
-- * are met.
-- *
-- * Function returns 0 on success and negative error code on failure
-- */
--int si476x_core_cmd_am_seek_start(struct si476x_core *core,
--				  bool seekup, bool wrap)
--{
--	u8       resp[CMD_AM_SEEK_START_NRESP];
--	const u8 args[CMD_AM_SEEK_START_NARGS] = {
--		seekup << 3 | wrap << 2,
--	};
--
--	return si476x_cmd_tune_seek_freq(core,  CMD_AM_SEEK_START,
--					 args, sizeof(args),
--					 resp, sizeof(resp));
--}
--EXPORT_SYMBOL_GPL(si476x_core_cmd_am_seek_start);
--
--
--
--static int si476x_core_cmd_power_up_a10(struct si476x_core *core,
--					struct si476x_power_up_args *puargs)
--{
--	u8       resp[CMD_POWER_UP_A10_NRESP];
--	const bool intsel = (core->pinmux.a1 == SI476X_A1_IRQ);
--	const bool ctsen  = (core->client->irq != 0);
--	const u8 args[CMD_POWER_UP_A10_NARGS] = {
--		0xF7,		/* Reserved, always 0xF7 */
--		0x3F & puargs->xcload,	/* First two bits are reserved to be
--				 * zeros */
--		ctsen << 7 | intsel << 6 | 0x07, /* Last five bits
--						   * are reserved to
--						   * be written as 0x7 */
--		puargs->func << 4 | puargs->freq,
--		0x11,		/* Reserved, always 0x11 */
--	};
--
--	return si476x_core_send_command(core, CMD_POWER_UP,
--					args, ARRAY_SIZE(args),
--					resp, ARRAY_SIZE(resp),
--					SI476X_TIMEOUT_POWER_UP);
--}
--
--static int si476x_core_cmd_power_up_a20(struct si476x_core *core,
--				 struct si476x_power_up_args *puargs)
--{
--	u8       resp[CMD_POWER_UP_A20_NRESP];
--	const bool intsel = (core->pinmux.a1 == SI476X_A1_IRQ);
--	const bool ctsen  = (core->client->irq != 0);
--	const u8 args[CMD_POWER_UP_A20_NARGS] = {
--		puargs->ibias6x << 7 | puargs->xstart,
--		0x3F & puargs->xcload,	/* First two bits are reserved to be
--					 * zeros */
--		ctsen << 7 | intsel << 6 | puargs->fastboot << 5 |
--		puargs->xbiashc << 3 | puargs->xbias,
--		puargs->func << 4 | puargs->freq,
--		0x10 | puargs->xmode,
--	};
--
--	return si476x_core_send_command(core, CMD_POWER_UP,
--					args, ARRAY_SIZE(args),
--					resp, ARRAY_SIZE(resp),
--					SI476X_TIMEOUT_POWER_UP);
--}
--
--static int si476x_core_cmd_power_down_a10(struct si476x_core *core,
--					  struct si476x_power_down_args *pdargs)
--{
--	u8 resp[CMD_POWER_DOWN_A10_NRESP];
--
--	return si476x_core_send_command(core, CMD_POWER_DOWN,
--					NULL, 0,
--					resp, ARRAY_SIZE(resp),
--					SI476X_DEFAULT_TIMEOUT);
--}
--
--static int si476x_core_cmd_power_down_a20(struct si476x_core *core,
--					  struct si476x_power_down_args *pdargs)
--{
--	u8 resp[CMD_POWER_DOWN_A20_NRESP];
--	const u8 args[CMD_POWER_DOWN_A20_NARGS] = {
--		pdargs->xosc,
--	};
--	return si476x_core_send_command(core, CMD_POWER_DOWN,
--					args, ARRAY_SIZE(args),
--					resp, ARRAY_SIZE(resp),
--					SI476X_DEFAULT_TIMEOUT);
--}
--
--static int si476x_core_cmd_am_tune_freq_a10(struct si476x_core *core,
--					struct si476x_tune_freq_args *tuneargs)
--{
--
--	const int am_freq = tuneargs->freq;
--	u8       resp[CMD_AM_TUNE_FREQ_NRESP];
--	const u8 args[CMD_AM_TUNE_FREQ_NARGS] = {
--		(tuneargs->hd << 6),
--		msb(am_freq),
--		lsb(am_freq),
--	};
--
--	return si476x_cmd_tune_seek_freq(core, CMD_AM_TUNE_FREQ, args,
--					 sizeof(args),
--					 resp, sizeof(resp));
--}
--
--static int si476x_core_cmd_am_tune_freq_a20(struct si476x_core *core,
--					struct si476x_tune_freq_args *tuneargs)
--{
--	const int am_freq = tuneargs->freq;
--	u8       resp[CMD_AM_TUNE_FREQ_NRESP];
--	const u8 args[CMD_AM_TUNE_FREQ_NARGS] = {
--		(tuneargs->zifsr << 6) | (tuneargs->injside & 0x03),
--		msb(am_freq),
--		lsb(am_freq),
--	};
--
--	return si476x_cmd_tune_seek_freq(core, CMD_AM_TUNE_FREQ,
--					 args, sizeof(args),
--					 resp, sizeof(resp));
--}
--
--static int si476x_core_cmd_fm_rsq_status_a10(struct si476x_core *core,
--					struct si476x_rsq_status_args *rsqargs,
--					struct si476x_rsq_status_report *report)
--{
--	int err;
--	u8       resp[CMD_FM_RSQ_STATUS_A10_NRESP];
--	const u8 args[CMD_FM_RSQ_STATUS_A10_NARGS] = {
--		rsqargs->rsqack << 3 | rsqargs->attune << 2 |
--		rsqargs->cancel << 1 | rsqargs->stcack,
--	};
--
--	err = si476x_core_send_command(core, CMD_FM_RSQ_STATUS,
--				       args, ARRAY_SIZE(args),
--				       resp, ARRAY_SIZE(resp),
--				       SI476X_DEFAULT_TIMEOUT);
--	/*
--	 * Besides getting received signal quality information this
--	 * command can be used to just acknowledge different interrupt
--	 * flags in those cases it is useless to copy and parse
--	 * received data so user can pass NULL, and thus avoid
--	 * unnecessary copying.
--	 */
--	if (err < 0 || report == NULL)
--		return err;
--
--	report->multhint	= 0x80 & resp[1];
--	report->multlint	= 0x40 & resp[1];
--	report->snrhint		= 0x08 & resp[1];
--	report->snrlint		= 0x04 & resp[1];
--	report->rssihint	= 0x02 & resp[1];
--	report->rssilint	= 0x01 & resp[1];
--
--	report->bltf		= 0x80 & resp[2];
--	report->snr_ready	= 0x20 & resp[2];
--	report->rssiready	= 0x08 & resp[2];
--	report->afcrl		= 0x02 & resp[2];
--	report->valid		= 0x01 & resp[2];
--
--	report->readfreq	= get_unaligned_be16(resp + 3);
--	report->freqoff		= resp[5];
--	report->rssi		= resp[6];
--	report->snr		= resp[7];
--	report->lassi		= resp[9];
--	report->hassi		= resp[10];
--	report->mult		= resp[11];
--	report->dev		= resp[12];
--	report->readantcap	= get_unaligned_be16(resp + 13);
--	report->assi		= resp[15];
--	report->usn		= resp[16];
--
--	return err;
--}
--
--static int si476x_core_cmd_fm_rsq_status_a20(struct si476x_core *core,
--				     struct si476x_rsq_status_args *rsqargs,
--				     struct si476x_rsq_status_report *report)
--{
--	int err;
--	u8       resp[CMD_FM_RSQ_STATUS_A10_NRESP];
--	const u8 args[CMD_FM_RSQ_STATUS_A30_NARGS] = {
--		rsqargs->primary << 4 | rsqargs->rsqack << 3 |
--		rsqargs->attune  << 2 | rsqargs->cancel << 1 |
--		rsqargs->stcack,
--	};
--
--	err = si476x_core_send_command(core, CMD_FM_RSQ_STATUS,
--				       args, ARRAY_SIZE(args),
--				       resp, ARRAY_SIZE(resp),
--				       SI476X_DEFAULT_TIMEOUT);
--	/*
--	 * Besides getting received signal quality information this
--	 * command can be used to just acknowledge different interrupt
--	 * flags in those cases it is useless to copy and parse
--	 * received data so user can pass NULL, and thus avoid
--	 * unnecessary copying.
--	 */
--	if (err < 0 || report == NULL)
--		return err;
--
--	report->multhint	= 0x80 & resp[1];
--	report->multlint	= 0x40 & resp[1];
--	report->snrhint		= 0x08 & resp[1];
--	report->snrlint		= 0x04 & resp[1];
--	report->rssihint	= 0x02 & resp[1];
--	report->rssilint	= 0x01 & resp[1];
--
--	report->bltf		= 0x80 & resp[2];
--	report->snr_ready	= 0x20 & resp[2];
--	report->rssiready	= 0x08 & resp[2];
--	report->afcrl		= 0x02 & resp[2];
--	report->valid		= 0x01 & resp[2];
--
--	report->readfreq	= get_unaligned_be16(resp + 3);
--	report->freqoff		= resp[5];
--	report->rssi		= resp[6];
--	report->snr		= resp[7];
--	report->lassi		= resp[9];
--	report->hassi		= resp[10];
--	report->mult		= resp[11];
--	report->dev		= resp[12];
--	report->readantcap	= get_unaligned_be16(resp + 13);
--	report->assi		= resp[15];
--	report->usn		= resp[16];
--
--	return err;
--}
--
--
--static int si476x_core_cmd_fm_rsq_status_a30(struct si476x_core *core,
--					struct si476x_rsq_status_args *rsqargs,
--					struct si476x_rsq_status_report *report)
--{
--	int err;
--	u8       resp[CMD_FM_RSQ_STATUS_A30_NRESP];
--	const u8 args[CMD_FM_RSQ_STATUS_A30_NARGS] = {
--		rsqargs->primary << 4 | rsqargs->rsqack << 3 |
--		rsqargs->attune << 2 | rsqargs->cancel << 1 |
--		rsqargs->stcack,
--	};
--
--	err = si476x_core_send_command(core, CMD_FM_RSQ_STATUS,
--				       args, ARRAY_SIZE(args),
--				       resp, ARRAY_SIZE(resp),
--				       SI476X_DEFAULT_TIMEOUT);
--	/*
--	 * Besides getting received signal quality information this
--	 * command can be used to just acknowledge different interrupt
--	 * flags in those cases it is useless to copy and parse
--	 * received data so user can pass NULL, and thus avoid
--	 * unnecessary copying.
--	 */
--	if (err < 0 || report == NULL)
--		return err;
--
--	report->multhint	= 0x80 & resp[1];
--	report->multlint	= 0x40 & resp[1];
--	report->snrhint		= 0x08 & resp[1];
--	report->snrlint		= 0x04 & resp[1];
--	report->rssihint	= 0x02 & resp[1];
--	report->rssilint	= 0x01 & resp[1];
--
--	report->bltf		= 0x80 & resp[2];
--	report->snr_ready	= 0x20 & resp[2];
--	report->rssiready	= 0x08 & resp[2];
--	report->injside         = 0x04 & resp[2];
--	report->afcrl		= 0x02 & resp[2];
--	report->valid		= 0x01 & resp[2];
--
--	report->readfreq	= get_unaligned_be16(resp + 3);
--	report->freqoff		= resp[5];
--	report->rssi		= resp[6];
--	report->snr		= resp[7];
--	report->issi		= resp[8];
--	report->lassi		= resp[9];
--	report->hassi		= resp[10];
--	report->mult		= resp[11];
--	report->dev		= resp[12];
--	report->readantcap	= get_unaligned_be16(resp + 13);
--	report->assi		= resp[15];
--	report->usn		= resp[16];
--
--	report->pilotdev	= resp[17];
--	report->rdsdev		= resp[18];
--	report->assidev		= resp[19];
--	report->strongdev	= resp[20];
--	report->rdspi		= get_unaligned_be16(resp + 21);
--
--	return err;
--}
--
--static int si476x_core_cmd_fm_tune_freq_a10(struct si476x_core *core,
--					struct si476x_tune_freq_args *tuneargs)
--{
--	u8       resp[CMD_FM_TUNE_FREQ_NRESP];
--	const u8 args[CMD_FM_TUNE_FREQ_A10_NARGS] = {
--		(tuneargs->hd << 6) | (tuneargs->tunemode << 4)
--		| (tuneargs->smoothmetrics << 2),
--		msb(tuneargs->freq),
--		lsb(tuneargs->freq),
--		msb(tuneargs->antcap),
--		lsb(tuneargs->antcap)
--	};
--
--	return si476x_cmd_tune_seek_freq(core, CMD_FM_TUNE_FREQ,
--					 args, sizeof(args),
--					 resp, sizeof(resp));
--}
--
--static int si476x_core_cmd_fm_tune_freq_a20(struct si476x_core *core,
--					struct si476x_tune_freq_args *tuneargs)
--{
--	u8       resp[CMD_FM_TUNE_FREQ_NRESP];
--	const u8 args[CMD_FM_TUNE_FREQ_A20_NARGS] = {
--		(tuneargs->hd << 6) | (tuneargs->tunemode << 4)
--		|  (tuneargs->smoothmetrics << 2) | (tuneargs->injside),
--		msb(tuneargs->freq),
--		lsb(tuneargs->freq),
--	};
--
--	return si476x_cmd_tune_seek_freq(core, CMD_FM_TUNE_FREQ,
--					 args, sizeof(args),
--					 resp, sizeof(resp));
--}
--
--static int si476x_core_cmd_agc_status_a20(struct si476x_core *core,
--					struct si476x_agc_status_report *report)
--{
--	int err;
--	u8 resp[CMD_AGC_STATUS_NRESP_A20];
--
--	if (!report)
--		return -EINVAL;
--
--	err = si476x_core_send_command(core, CMD_AGC_STATUS,
--				       NULL, 0,
--				       resp, ARRAY_SIZE(resp),
--				       SI476X_DEFAULT_TIMEOUT);
--	if (err < 0)
--		return err;
--
--	report->mxhi		= resp[1] & SI476X_AGC_MXHI;
--	report->mxlo		= resp[1] & SI476X_AGC_MXLO;
--	report->lnahi		= resp[1] & SI476X_AGC_LNAHI;
--	report->lnalo		= resp[1] & SI476X_AGC_LNALO;
--	report->fmagc1		= resp[2];
--	report->fmagc2		= resp[3];
--	report->pgagain		= resp[4];
--	report->fmwblang	= resp[5];
--
--	return err;
--}
--
--static int si476x_core_cmd_agc_status_a10(struct si476x_core *core,
--					struct si476x_agc_status_report *report)
--{
--	int err;
--	u8 resp[CMD_AGC_STATUS_NRESP_A10];
--
--	if (!report)
--		return -EINVAL;
--
--	err = si476x_core_send_command(core, CMD_AGC_STATUS,
--				       NULL, 0,
--				       resp, ARRAY_SIZE(resp),
--				       SI476X_DEFAULT_TIMEOUT);
--	if (err < 0)
--		return err;
--
--	report->mxhi	= resp[1] & SI476X_AGC_MXHI;
--	report->mxlo	= resp[1] & SI476X_AGC_MXLO;
--	report->lnahi	= resp[1] & SI476X_AGC_LNAHI;
--	report->lnalo	= resp[1] & SI476X_AGC_LNALO;
--
--	return err;
--}
--
--typedef int (*tune_freq_func_t) (struct si476x_core *core,
--				 struct si476x_tune_freq_args *tuneargs);
--
--static struct {
--	int (*power_up)(struct si476x_core *,
--			struct si476x_power_up_args *);
--	int (*power_down)(struct si476x_core *,
--			  struct si476x_power_down_args *);
--
--	tune_freq_func_t fm_tune_freq;
--	tune_freq_func_t am_tune_freq;
--
--	int (*fm_rsq_status)(struct si476x_core *,
--			     struct si476x_rsq_status_args *,
--			     struct si476x_rsq_status_report *);
--
--	int (*agc_status)(struct si476x_core *,
--			  struct si476x_agc_status_report *);
--	int (*intb_pin_cfg)(struct si476x_core *core,
--			    enum si476x_intb_config intb,
--			    enum si476x_a1_config a1);
--} si476x_cmds_vtable[] = {
--	[SI476X_REVISION_A10] = {
--		.power_up	= si476x_core_cmd_power_up_a10,
--		.power_down	= si476x_core_cmd_power_down_a10,
--		.fm_tune_freq	= si476x_core_cmd_fm_tune_freq_a10,
--		.am_tune_freq	= si476x_core_cmd_am_tune_freq_a10,
--		.fm_rsq_status	= si476x_core_cmd_fm_rsq_status_a10,
--		.agc_status	= si476x_core_cmd_agc_status_a10,
--		.intb_pin_cfg   = si476x_core_cmd_intb_pin_cfg_a10,
--	},
--	[SI476X_REVISION_A20] = {
--		.power_up	= si476x_core_cmd_power_up_a20,
--		.power_down	= si476x_core_cmd_power_down_a20,
--		.fm_tune_freq	= si476x_core_cmd_fm_tune_freq_a20,
--		.am_tune_freq	= si476x_core_cmd_am_tune_freq_a20,
--		.fm_rsq_status	= si476x_core_cmd_fm_rsq_status_a20,
--		.agc_status	= si476x_core_cmd_agc_status_a20,
--		.intb_pin_cfg   = si476x_core_cmd_intb_pin_cfg_a20,
--	},
--	[SI476X_REVISION_A30] = {
--		.power_up	= si476x_core_cmd_power_up_a20,
--		.power_down	= si476x_core_cmd_power_down_a20,
--		.fm_tune_freq	= si476x_core_cmd_fm_tune_freq_a20,
--		.am_tune_freq	= si476x_core_cmd_am_tune_freq_a20,
--		.fm_rsq_status	= si476x_core_cmd_fm_rsq_status_a30,
--		.agc_status	= si476x_core_cmd_agc_status_a20,
--		.intb_pin_cfg   = si476x_core_cmd_intb_pin_cfg_a20,
--	},
--};
--
--int si476x_core_cmd_power_up(struct si476x_core *core,
--			     struct si476x_power_up_args *args)
--{
--	BUG_ON(core->revision > SI476X_REVISION_A30 ||
--	       core->revision == -1);
--	return si476x_cmds_vtable[core->revision].power_up(core, args);
--}
--EXPORT_SYMBOL_GPL(si476x_core_cmd_power_up);
--
--int si476x_core_cmd_power_down(struct si476x_core *core,
--			       struct si476x_power_down_args *args)
--{
--	BUG_ON(core->revision > SI476X_REVISION_A30 ||
--	       core->revision == -1);
--	return si476x_cmds_vtable[core->revision].power_down(core, args);
--}
--EXPORT_SYMBOL_GPL(si476x_core_cmd_power_down);
--
--int si476x_core_cmd_fm_tune_freq(struct si476x_core *core,
--				 struct si476x_tune_freq_args *args)
--{
--	BUG_ON(core->revision > SI476X_REVISION_A30 ||
--	       core->revision == -1);
--	return si476x_cmds_vtable[core->revision].fm_tune_freq(core, args);
--}
--EXPORT_SYMBOL_GPL(si476x_core_cmd_fm_tune_freq);
--
--int si476x_core_cmd_am_tune_freq(struct si476x_core *core,
--				 struct si476x_tune_freq_args *args)
--{
--	BUG_ON(core->revision > SI476X_REVISION_A30 ||
--	       core->revision == -1);
--	return si476x_cmds_vtable[core->revision].am_tune_freq(core, args);
--}
--EXPORT_SYMBOL_GPL(si476x_core_cmd_am_tune_freq);
--
--int si476x_core_cmd_fm_rsq_status(struct si476x_core *core,
--				  struct si476x_rsq_status_args *args,
--				  struct si476x_rsq_status_report *report)
--
--{
--	BUG_ON(core->revision > SI476X_REVISION_A30 ||
--	       core->revision == -1);
--	return si476x_cmds_vtable[core->revision].fm_rsq_status(core, args,
--								report);
--}
--EXPORT_SYMBOL_GPL(si476x_core_cmd_fm_rsq_status);
--
--int si476x_core_cmd_agc_status(struct si476x_core *core,
--				  struct si476x_agc_status_report *report)
--
--{
--	BUG_ON(core->revision > SI476X_REVISION_A30 ||
--	       core->revision == -1);
--	return si476x_cmds_vtable[core->revision].agc_status(core, report);
--}
--EXPORT_SYMBOL_GPL(si476x_core_cmd_agc_status);
--
--int si476x_core_cmd_intb_pin_cfg(struct si476x_core *core,
--			    enum si476x_intb_config intb,
--			    enum si476x_a1_config a1)
--{
--	BUG_ON(core->revision > SI476X_REVISION_A30 ||
--	       core->revision == -1);
--
--	return si476x_cmds_vtable[core->revision].intb_pin_cfg(core, intb, a1);
--}
--EXPORT_SYMBOL_GPL(si476x_core_cmd_intb_pin_cfg);
--
--MODULE_LICENSE("GPL");
--MODULE_AUTHOR("Andrey Smirnov <andrew.smirnov@gmail.com>");
--MODULE_DESCRIPTION("API for command exchange for si476x");
-diff --git a/drivers/mfd/si476x-i2c.c b/drivers/mfd/si476x-i2c.c
-deleted file mode 100644
-index 9bce720a0a08..000000000000
---- a/drivers/mfd/si476x-i2c.c
-+++ /dev/null
-@@ -1,861 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-only
--/*
-- * drivers/mfd/si476x-i2c.c -- Core device driver for si476x MFD
-- * device
-- *
-- * Copyright (C) 2012 Innovative Converged Devices(ICD)
-- * Copyright (C) 2013 Andrey Smirnov
-- *
-- * Author: Andrey Smirnov <andrew.smirnov@gmail.com>
-- */
--#include <linux/module.h>
--
--#include <linux/slab.h>
--#include <linux/interrupt.h>
--#include <linux/delay.h>
--#include <linux/gpio/consumer.h>
--#include <linux/regulator/consumer.h>
--#include <linux/i2c.h>
+-#include <linux/init.h>
+-#include <linux/bug.h>
 -#include <linux/err.h>
+-#include <linux/i2c.h>
+-#include <linux/kernel.h>
+-#include <linux/mfd/core.h>
+-#include <linux/mfd/wm8400-private.h>
+-#include <linux/mfd/wm8400-audio.h>
+-#include <linux/regmap.h>
+-#include <linux/slab.h>
 -
--#include <linux/mfd/si476x-core.h>
--
--#define SI476X_MAX_IO_ERRORS		10
--#define SI476X_DRIVER_RDS_FIFO_DEPTH	128
--
--/**
-- * si476x_core_config_pinmux() - pin function configuration function
-- *
-- * @core: Core device structure
-- *
-- * Configure the functions of the pins of the radio chip.
-- *
-- * The function returns zero in case of success or negative error code
-- * otherwise.
-- */
--static int si476x_core_config_pinmux(struct si476x_core *core)
+-static bool wm8400_volatile(struct device *dev, unsigned int reg)
 -{
--	int err;
--	dev_dbg(&core->client->dev, "Configuring pinmux\n");
--	err = si476x_core_cmd_dig_audio_pin_cfg(core,
--						core->pinmux.dclk,
--						core->pinmux.dfs,
--						core->pinmux.dout,
--						core->pinmux.xout);
--	if (err < 0) {
--		dev_err(&core->client->dev,
--			"Failed to configure digital audio pins(err = %d)\n",
--			err);
--		return err;
--	}
--
--	err = si476x_core_cmd_zif_pin_cfg(core,
--					  core->pinmux.iqclk,
--					  core->pinmux.iqfs,
--					  core->pinmux.iout,
--					  core->pinmux.qout);
--	if (err < 0) {
--		dev_err(&core->client->dev,
--			"Failed to configure ZIF pins(err = %d)\n",
--			err);
--		return err;
--	}
--
--	err = si476x_core_cmd_ic_link_gpo_ctl_pin_cfg(core,
--						      core->pinmux.icin,
--						      core->pinmux.icip,
--						      core->pinmux.icon,
--						      core->pinmux.icop);
--	if (err < 0) {
--		dev_err(&core->client->dev,
--			"Failed to configure IC-Link/GPO pins(err = %d)\n",
--			err);
--		return err;
--	}
--
--	err = si476x_core_cmd_ana_audio_pin_cfg(core,
--						core->pinmux.lrout);
--	if (err < 0) {
--		dev_err(&core->client->dev,
--			"Failed to configure analog audio pins(err = %d)\n",
--			err);
--		return err;
--	}
--
--	err = si476x_core_cmd_intb_pin_cfg(core,
--					   core->pinmux.intb,
--					   core->pinmux.a1);
--	if (err < 0) {
--		dev_err(&core->client->dev,
--			"Failed to configure interrupt pins(err = %d)\n",
--			err);
--		return err;
--	}
--
--	return 0;
--}
--
--static inline void si476x_core_schedule_polling_work(struct si476x_core *core)
--{
--	schedule_delayed_work(&core->status_monitor,
--			      usecs_to_jiffies(SI476X_STATUS_POLL_US));
--}
--
--/**
-- * si476x_core_start() - early chip startup function
-- * @core: Core device structure
-- * @soft: When set, this flag forces "soft" startup, where "soft"
-- * power down is the one done by sending appropriate command instead
-- * of using reset pin of the tuner
-- *
-- * Perform required startup sequence to correctly power
-- * up the chip and perform initial configuration. It does the
-- * following sequence of actions:
-- *       1. Claims and enables the power supplies VD and VIO1 required
-- *          for I2C interface of the chip operation.
-- *       2. Waits for 100us, pulls the reset line up, enables irq,
-- *          waits for another 100us as it is specified by the
-- *          datasheet.
-- *       3. Sends 'POWER_UP' command to the device with all provided
-- *          information about power-up parameters.
-- *       4. Configures, pin multiplexor, disables digital audio and
-- *          configures interrupt sources.
-- *
-- * The function returns zero in case of success or negative error code
-- * otherwise.
-- */
--int si476x_core_start(struct si476x_core *core, bool soft)
--{
--	struct i2c_client *client = core->client;
--	int err;
--
--	if (!soft) {
--		gpiod_set_value_cansleep(core->reset, 0);
--
--		if (client->irq)
--			enable_irq(client->irq);
--
--		udelay(100);
--
--		if (!client->irq) {
--			atomic_set(&core->is_alive, 1);
--			si476x_core_schedule_polling_work(core);
--		}
--	} else {
--		if (client->irq)
--			enable_irq(client->irq);
--		else {
--			atomic_set(&core->is_alive, 1);
--			si476x_core_schedule_polling_work(core);
--		}
--	}
--
--	err = si476x_core_cmd_power_up(core,
--				       &core->power_up_parameters);
--
--	if (err < 0) {
--		dev_err(&core->client->dev,
--			"Power up failure(err = %d)\n",
--			err);
--		goto disable_irq;
--	}
--
--	if (client->irq)
--		atomic_set(&core->is_alive, 1);
--
--	err = si476x_core_config_pinmux(core);
--	if (err < 0) {
--		dev_err(&core->client->dev,
--			"Failed to configure pinmux(err = %d)\n",
--			err);
--		goto disable_irq;
--	}
--
--	if (client->irq) {
--		err = regmap_write(core->regmap,
--				   SI476X_PROP_INT_CTL_ENABLE,
--				   SI476X_RDSIEN |
--				   SI476X_STCIEN |
--				   SI476X_CTSIEN);
--		if (err < 0) {
--			dev_err(&core->client->dev,
--				"Failed to configure interrupt sources"
--				"(err = %d)\n", err);
--			goto disable_irq;
--		}
--	}
--
--	return 0;
--
--disable_irq:
--	if (err == -ENODEV)
--		atomic_set(&core->is_alive, 0);
--
--	if (client->irq)
--		disable_irq(client->irq);
--	else
--		cancel_delayed_work_sync(&core->status_monitor);
--
--	gpiod_set_value_cansleep(core->reset, 1);
--
--	return err;
--}
--EXPORT_SYMBOL_GPL(si476x_core_start);
--
--/**
-- * si476x_core_stop() - chip power-down function
-- * @core: Core device structure
-- * @soft: When set, function sends a POWER_DOWN command instead of
-- * bringing reset line low
-- *
-- * Power down the chip by performing following actions:
-- * 1. Disable IRQ or stop the polling worker
-- * 2. Send the POWER_DOWN command if the power down is soft or bring
-- *    reset line low if not.
-- *
-- * The function returns zero in case of success or negative error code
-- * otherwise.
-- */
--int si476x_core_stop(struct si476x_core *core, bool soft)
--{
--	int err = 0;
--	atomic_set(&core->is_alive, 0);
--
--	if (soft) {
--		/* TODO: This probably shoud be a configurable option,
--		 * so it is possible to have the chips keep their
--		 * oscillators running
--		 */
--		struct si476x_power_down_args args = {
--			.xosc = false,
--		};
--		err = si476x_core_cmd_power_down(core, &args);
--	}
--
--	/* We couldn't disable those before
--	 * 'si476x_core_cmd_power_down' since we expect to get CTS
--	 * interrupt */
--	if (core->client->irq)
--		disable_irq(core->client->irq);
--	else
--		cancel_delayed_work_sync(&core->status_monitor);
--
--	if (!soft)
--		gpiod_set_value_cansleep(core->reset, 1);
--
--	return err;
--}
--EXPORT_SYMBOL_GPL(si476x_core_stop);
--
--/**
-- * si476x_core_set_power_state() - set the level at which the power is
-- * supplied for the chip.
-- * @core: Core device structure
-- * @next_state: enum si476x_power_state describing power state to
-- *              switch to.
-- *
-- * Switch on all the required power supplies
-- *
-- * This function returns 0 in case of suvccess and negative error code
-- * otherwise.
-- */
--int si476x_core_set_power_state(struct si476x_core *core,
--				enum si476x_power_state next_state)
--{
--	/*
--	   It is not clear form the datasheet if it is possible to
--	   work with device if not all power domains are operational.
--	   So for now the power-up policy is "power-up all the things!"
--	 */
--	int err = 0;
--
--	if (core->power_state == SI476X_POWER_INCONSISTENT) {
--		dev_err(&core->client->dev,
--			"The device in inconsistent power state\n");
--		return -EINVAL;
--	}
--
--	if (next_state != core->power_state) {
--		switch (next_state) {
--		case SI476X_POWER_UP_FULL:
--			err = regulator_bulk_enable(ARRAY_SIZE(core->supplies),
--						    core->supplies);
--			if (err < 0) {
--				core->power_state = SI476X_POWER_INCONSISTENT;
--				break;
--			}
--			/*
--			 * Startup timing diagram recommends to have a
--			 * 100 us delay between enabling of the power
--			 * supplies and turning the tuner on.
--			 */
--			udelay(100);
--
--			err = si476x_core_start(core, false);
--			if (err < 0)
--				goto disable_regulators;
--
--			core->power_state = next_state;
--			break;
--
--		case SI476X_POWER_DOWN:
--			core->power_state = next_state;
--			err = si476x_core_stop(core, false);
--			if (err < 0)
--				core->power_state = SI476X_POWER_INCONSISTENT;
--disable_regulators:
--			err = regulator_bulk_disable(ARRAY_SIZE(core->supplies),
--						     core->supplies);
--			if (err < 0)
--				core->power_state = SI476X_POWER_INCONSISTENT;
--			break;
--		default:
--			BUG();
--		}
--	}
--
--	return err;
--}
--EXPORT_SYMBOL_GPL(si476x_core_set_power_state);
--
--/**
-- * si476x_core_report_drainer_stop() - mark the completion of the RDS
-- * buffer drain porcess by the worker.
-- *
-- * @core: Core device structure
-- */
--static inline void si476x_core_report_drainer_stop(struct si476x_core *core)
--{
--	mutex_lock(&core->rds_drainer_status_lock);
--	core->rds_drainer_is_working = false;
--	mutex_unlock(&core->rds_drainer_status_lock);
--}
--
--/**
-- * si476x_core_start_rds_drainer_once() - start RDS drainer worker if
-- * ther is none working, do nothing otherwise
-- *
-- * @core: Datastructure corresponding to the chip.
-- */
--static inline void si476x_core_start_rds_drainer_once(struct si476x_core *core)
--{
--	mutex_lock(&core->rds_drainer_status_lock);
--	if (!core->rds_drainer_is_working) {
--		core->rds_drainer_is_working = true;
--		schedule_work(&core->rds_fifo_drainer);
--	}
--	mutex_unlock(&core->rds_drainer_status_lock);
--}
--/**
-- * si476x_core_drain_rds_fifo() - RDS buffer drainer.
-- * @work: struct work_struct being ppassed to the function by the
-- * kernel.
-- *
-- * Drain the contents of the RDS FIFO of
-- */
--static void si476x_core_drain_rds_fifo(struct work_struct *work)
--{
--	int err;
--
--	struct si476x_core *core = container_of(work, struct si476x_core,
--						rds_fifo_drainer);
--
--	struct si476x_rds_status_report report;
--
--	si476x_core_lock(core);
--	err = si476x_core_cmd_fm_rds_status(core, true, false, false, &report);
--	if (!err) {
--		int i = report.rdsfifoused;
--		dev_dbg(&core->client->dev,
--			"%d elements in RDS FIFO. Draining.\n", i);
--		for (; i > 0; --i) {
--			err = si476x_core_cmd_fm_rds_status(core, false, false,
--							    (i == 1), &report);
--			if (err < 0)
--				goto unlock;
--
--			kfifo_in(&core->rds_fifo, report.rds,
--				 sizeof(report.rds));
--			dev_dbg(&core->client->dev, "RDS data:\n %*ph\n",
--				(int)sizeof(report.rds), report.rds);
--		}
--		dev_dbg(&core->client->dev, "Drrrrained!\n");
--		wake_up_interruptible(&core->rds_read_queue);
--	}
--
--unlock:
--	si476x_core_unlock(core);
--	si476x_core_report_drainer_stop(core);
--}
--
--/**
-- * si476x_core_pronounce_dead()
-- *
-- * @core: Core device structure
-- *
-- * Mark the device as being dead and wake up all potentially waiting
-- * threads of execution.
-- *
-- */
--static void si476x_core_pronounce_dead(struct si476x_core *core)
--{
--	dev_info(&core->client->dev, "Core device is dead.\n");
--
--	atomic_set(&core->is_alive, 0);
--
--	/* Wake up al possible waiting processes */
--	wake_up_interruptible(&core->rds_read_queue);
--
--	atomic_set(&core->cts, 1);
--	wake_up(&core->command);
--
--	atomic_set(&core->stc, 1);
--	wake_up(&core->tuning);
--}
--
--/**
-- * si476x_core_i2c_xfer()
-- *
-- * @core: Core device structure
-- * @type: Transfer type
-- * @buf: Transfer buffer for/with data
-- * @count: Transfer buffer size
-- *
-- * Perfrom and I2C transfer(either read or write) and keep a counter
-- * of I/O errors. If the error counter rises above the threshold
-- * pronounce device dead.
-- *
-- * The function returns zero on success or negative error code on
-- * failure.
-- */
--int si476x_core_i2c_xfer(struct si476x_core *core,
--		    enum si476x_i2c_type type,
--		    char *buf, int count)
--{
--	static int io_errors_count;
--	int err;
--	if (type == SI476X_I2C_SEND)
--		err = i2c_master_send(core->client, buf, count);
--	else
--		err = i2c_master_recv(core->client, buf, count);
--
--	if (err < 0) {
--		if (io_errors_count++ > SI476X_MAX_IO_ERRORS)
--			si476x_core_pronounce_dead(core);
--	} else {
--		io_errors_count = 0;
--	}
--
--	return err;
--}
--EXPORT_SYMBOL_GPL(si476x_core_i2c_xfer);
--
--/**
-- * si476x_core_get_status()
-- * @core: Core device structure
-- *
-- * Get the status byte of the core device by berforming one byte I2C
-- * read.
-- *
-- * The function returns a status value or a negative error code on
-- * error.
-- */
--static int si476x_core_get_status(struct si476x_core *core)
--{
--	u8 response;
--	int err = si476x_core_i2c_xfer(core, SI476X_I2C_RECV,
--				  &response, sizeof(response));
--
--	return (err < 0) ? err : response;
--}
--
--/**
-- * si476x_core_get_and_signal_status() - IRQ dispatcher
-- * @core: Core device structure
-- *
-- * Dispatch the arrived interrupt request based on the value of the
-- * status byte reported by the tuner.
-- *
-- */
--static void si476x_core_get_and_signal_status(struct si476x_core *core)
--{
--	int status = si476x_core_get_status(core);
--	if (status < 0) {
--		dev_err(&core->client->dev, "Failed to get status\n");
--		return;
--	}
--
--	if (status & SI476X_CTS) {
--		/* Unfortunately completions could not be used for
--		 * signalling CTS since this flag cannot be cleared
--		 * in status byte, and therefore once it becomes true
--		 * multiple calls to 'complete' would cause the
--		 * commands following the current one to be completed
--		 * before they actually are */
--		dev_dbg(&core->client->dev, "[interrupt] CTSINT\n");
--		atomic_set(&core->cts, 1);
--		wake_up(&core->command);
--	}
--
--	if (status & SI476X_FM_RDS_INT) {
--		dev_dbg(&core->client->dev, "[interrupt] RDSINT\n");
--		si476x_core_start_rds_drainer_once(core);
--	}
--
--	if (status & SI476X_STC_INT) {
--		dev_dbg(&core->client->dev, "[interrupt] STCINT\n");
--		atomic_set(&core->stc, 1);
--		wake_up(&core->tuning);
--	}
--}
--
--static void si476x_core_poll_loop(struct work_struct *work)
--{
--	struct si476x_core *core = SI476X_WORK_TO_CORE(work);
--
--	si476x_core_get_and_signal_status(core);
--
--	if (atomic_read(&core->is_alive))
--		si476x_core_schedule_polling_work(core);
--}
--
--static irqreturn_t si476x_core_interrupt(int irq, void *dev)
--{
--	struct si476x_core *core = dev;
--
--	si476x_core_get_and_signal_status(core);
--
--	return IRQ_HANDLED;
--}
--
--/**
-- * si476x_core_fwver_to_revision()
-- * @core: Core device structure
-- * @func: Selects the boot function of the device:
-- *         *_BOOTLOADER  - Boot loader
-- *         *_FM_RECEIVER - FM receiver
-- *         *_AM_RECEIVER - AM receiver
-- *         *_WB_RECEIVER - Weatherband receiver
-- * @major:  Firmware major number
-- * @minor1: Firmware first minor number
-- * @minor2: Firmware second minor number
-- *
-- * Convert a chip's firmware version number into an offset that later
-- * will be used to as offset in "vtable" of tuner functions
-- *
-- * This function returns a positive offset in case of success and a -1
-- * in case of failure.
-- */
--static int si476x_core_fwver_to_revision(struct si476x_core *core,
--					 int func, int major,
--					 int minor1, int minor2)
--{
--	switch (func) {
--	case SI476X_FUNC_FM_RECEIVER:
--		switch (major) {
--		case 5:
--			return SI476X_REVISION_A10;
--		case 8:
--			return SI476X_REVISION_A20;
--		case 10:
--			return SI476X_REVISION_A30;
--		default:
--			goto unknown_revision;
--		}
--	case SI476X_FUNC_AM_RECEIVER:
--		switch (major) {
--		case 5:
--			return SI476X_REVISION_A10;
--		case 7:
--			return SI476X_REVISION_A20;
--		case 9:
--			return SI476X_REVISION_A30;
--		default:
--			goto unknown_revision;
--		}
--	case SI476X_FUNC_WB_RECEIVER:
--		switch (major) {
--		case 3:
--			return SI476X_REVISION_A10;
--		case 5:
--			return SI476X_REVISION_A20;
--		case 7:
--			return SI476X_REVISION_A30;
--		default:
--			goto unknown_revision;
--		}
--	case SI476X_FUNC_BOOTLOADER:
--	default:		/* FALLTHROUGH */
--		BUG();
--		return -1;
--	}
--
--unknown_revision:
--	dev_err(&core->client->dev,
--		"Unsupported version of the firmware: %d.%d.%d, "
--		"reverting to A10 compatible functions\n",
--		major, minor1, minor2);
--
--	return SI476X_REVISION_A10;
--}
--
--/**
-- * si476x_core_get_revision_info()
-- * @core: Core device structure
-- *
-- * Get the firmware version number of the device. It is done in
-- * following three steps:
-- *    1. Power-up the device
-- *    2. Send the 'FUNC_INFO' command
-- *    3. Powering the device down.
-- *
-- * The function return zero on success and a negative error code on
-- * failure.
-- */
--static int si476x_core_get_revision_info(struct si476x_core *core)
--{
--	int rval;
--	struct si476x_func_info info;
--
--	si476x_core_lock(core);
--	rval = si476x_core_set_power_state(core, SI476X_POWER_UP_FULL);
--	if (rval < 0)
--		goto exit;
--
--	rval = si476x_core_cmd_func_info(core, &info);
--	if (rval < 0)
--		goto power_down;
--
--	core->revision = si476x_core_fwver_to_revision(core, info.func,
--						       info.firmware.major,
--						       info.firmware.minor[0],
--						       info.firmware.minor[1]);
--power_down:
--	si476x_core_set_power_state(core, SI476X_POWER_DOWN);
--exit:
--	si476x_core_unlock(core);
--
--	return rval;
--}
--
--bool si476x_core_has_am(struct si476x_core *core)
--{
--	return core->chip_id == SI476X_CHIP_SI4761 ||
--		core->chip_id == SI476X_CHIP_SI4764;
--}
--EXPORT_SYMBOL_GPL(si476x_core_has_am);
--
--bool si476x_core_has_diversity(struct si476x_core *core)
--{
--	return core->chip_id == SI476X_CHIP_SI4764;
--}
--EXPORT_SYMBOL_GPL(si476x_core_has_diversity);
--
--bool si476x_core_is_a_secondary_tuner(struct si476x_core *core)
--{
--	return si476x_core_has_diversity(core) &&
--		(core->diversity_mode == SI476X_PHDIV_SECONDARY_ANTENNA ||
--		 core->diversity_mode == SI476X_PHDIV_SECONDARY_COMBINING);
--}
--EXPORT_SYMBOL_GPL(si476x_core_is_a_secondary_tuner);
--
--bool si476x_core_is_a_primary_tuner(struct si476x_core *core)
--{
--	return si476x_core_has_diversity(core) &&
--		(core->diversity_mode == SI476X_PHDIV_PRIMARY_ANTENNA ||
--		 core->diversity_mode == SI476X_PHDIV_PRIMARY_COMBINING);
--}
--EXPORT_SYMBOL_GPL(si476x_core_is_a_primary_tuner);
--
--bool si476x_core_is_in_am_receiver_mode(struct si476x_core *core)
--{
--	return si476x_core_has_am(core) &&
--		(core->power_up_parameters.func == SI476X_FUNC_AM_RECEIVER);
--}
--EXPORT_SYMBOL_GPL(si476x_core_is_in_am_receiver_mode);
--
--bool si476x_core_is_powered_up(struct si476x_core *core)
--{
--	return core->power_state == SI476X_POWER_UP_FULL;
--}
--EXPORT_SYMBOL_GPL(si476x_core_is_powered_up);
--
--static int si476x_core_probe(struct i2c_client *client)
--{
--	const struct i2c_device_id *id = i2c_client_get_device_id(client);
--	int rval;
--	struct si476x_core          *core;
--	struct si476x_platform_data *pdata;
--	struct mfd_cell *cell;
--	int              cell_num;
--
--	core = devm_kzalloc(&client->dev, sizeof(*core), GFP_KERNEL);
--	if (!core)
--		return -ENOMEM;
--
--	core->client = client;
--
--	core->regmap = devm_regmap_init_si476x(core);
--	if (IS_ERR(core->regmap)) {
--		rval = PTR_ERR(core->regmap);
--		dev_err(&client->dev,
--			"Failed to allocate register map: %d\n",
--			rval);
--		return rval;
--	}
--
--	i2c_set_clientdata(client, core);
--
--	atomic_set(&core->is_alive, 0);
--	core->power_state = SI476X_POWER_DOWN;
--
--	core->reset = devm_gpiod_get_optional(&client->dev, "reset",
--					      GPIOD_OUT_HIGH);
--	if (IS_ERR(core->reset))
--		return dev_err_probe(&client->dev, PTR_ERR(core->reset),
--				     "error getting reset GPIO\n");
--	gpiod_set_consumer_name(core->reset, "si476x reset");
--
--	pdata = dev_get_platdata(&client->dev);
--	if (pdata) {
--		memcpy(&core->power_up_parameters,
--		       &pdata->power_up_parameters,
--		       sizeof(core->power_up_parameters));
--		core->diversity_mode = pdata->diversity_mode;
--		memcpy(&core->pinmux, &pdata->pinmux,
--		       sizeof(struct si476x_pinmux));
--	} else {
--		dev_err(&client->dev, "No platform data provided\n");
--		return -EINVAL;
--	}
--
--	core->supplies[0].supply = "vd";
--	core->supplies[1].supply = "va";
--	core->supplies[2].supply = "vio1";
--	core->supplies[3].supply = "vio2";
--
--	rval = devm_regulator_bulk_get(&client->dev,
--				       ARRAY_SIZE(core->supplies),
--				       core->supplies);
--	if (rval) {
--		dev_err(&client->dev, "Failed to get all of the regulators\n");
--		return rval;
--	}
--
--	mutex_init(&core->cmd_lock);
--	init_waitqueue_head(&core->command);
--	init_waitqueue_head(&core->tuning);
--
--	rval = kfifo_alloc(&core->rds_fifo,
--			   SI476X_DRIVER_RDS_FIFO_DEPTH *
--			   sizeof(struct v4l2_rds_data),
--			   GFP_KERNEL);
--	if (rval) {
--		dev_err(&client->dev, "Could not allocate the FIFO\n");
--		return rval;
--	}
--	mutex_init(&core->rds_drainer_status_lock);
--	init_waitqueue_head(&core->rds_read_queue);
--	INIT_WORK(&core->rds_fifo_drainer, si476x_core_drain_rds_fifo);
--
--	if (client->irq) {
--		rval = devm_request_threaded_irq(&client->dev,
--						 client->irq, NULL,
--						 si476x_core_interrupt,
--						 IRQF_TRIGGER_FALLING |
--						 IRQF_ONESHOT,
--						 client->name, core);
--		if (rval < 0) {
--			dev_err(&client->dev, "Could not request IRQ %d\n",
--				client->irq);
--			goto free_kfifo;
--		}
--		disable_irq(client->irq);
--		dev_dbg(&client->dev, "IRQ requested.\n");
--
--		core->rds_fifo_depth = 20;
--	} else {
--		INIT_DELAYED_WORK(&core->status_monitor,
--				  si476x_core_poll_loop);
--		dev_info(&client->dev,
--			 "No IRQ number specified, will use polling\n");
--
--		core->rds_fifo_depth = 5;
--	}
--
--	core->chip_id = id->driver_data;
--
--	rval = si476x_core_get_revision_info(core);
--	if (rval < 0) {
--		rval = -ENODEV;
--		goto free_kfifo;
--	}
--
--	cell_num = 0;
--
--	cell = &core->cells[SI476X_RADIO_CELL];
--	cell->name = "si476x-radio";
--	cell_num++;
--
--#ifdef CONFIG_SND_SOC_SI476X
--	if ((core->chip_id == SI476X_CHIP_SI4761 ||
--	     core->chip_id == SI476X_CHIP_SI4764)	&&
--	    core->pinmux.dclk == SI476X_DCLK_DAUDIO     &&
--	    core->pinmux.dfs  == SI476X_DFS_DAUDIO      &&
--	    core->pinmux.dout == SI476X_DOUT_I2S_OUTPUT &&
--	    core->pinmux.xout == SI476X_XOUT_TRISTATE) {
--		cell = &core->cells[SI476X_CODEC_CELL];
--		cell->name          = "si476x-codec";
--		cell_num++;
--	}
--#endif
--	rval = mfd_add_devices(&client->dev,
--			       (client->adapter->nr << 8) + client->addr,
--			       core->cells, cell_num,
--			       NULL, 0, NULL);
--	if (!rval)
--		return 0;
--
--free_kfifo:
--	kfifo_free(&core->rds_fifo);
--	return rval;
--}
--
--static void si476x_core_remove(struct i2c_client *client)
--{
--	struct si476x_core *core = i2c_get_clientdata(client);
--
--	si476x_core_pronounce_dead(core);
--	mfd_remove_devices(&client->dev);
--
--	if (client->irq)
--		disable_irq(client->irq);
--	else
--		cancel_delayed_work_sync(&core->status_monitor);
--
--	kfifo_free(&core->rds_fifo);
--}
--
--
--static const struct i2c_device_id si476x_id[] = {
--	{ "si4761", SI476X_CHIP_SI4761 },
--	{ "si4764", SI476X_CHIP_SI4764 },
--	{ "si4768", SI476X_CHIP_SI4768 },
--	{ },
--};
--MODULE_DEVICE_TABLE(i2c, si476x_id);
--
--static struct i2c_driver si476x_core_driver = {
--	.driver		= {
--		.name	= "si476x-core",
--	},
--	.probe		= si476x_core_probe,
--	.remove         = si476x_core_remove,
--	.id_table       = si476x_id,
--};
--module_i2c_driver(si476x_core_driver);
--
--
--MODULE_AUTHOR("Andrey Smirnov <andrew.smirnov@gmail.com>");
--MODULE_DESCRIPTION("Si4761/64/68 AM/FM MFD core device driver");
--MODULE_LICENSE("GPL");
-diff --git a/drivers/mfd/si476x-prop.c b/drivers/mfd/si476x-prop.c
-deleted file mode 100644
-index 3d5c118888b2..000000000000
---- a/drivers/mfd/si476x-prop.c
-+++ /dev/null
-@@ -1,233 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-only
--/*
-- * drivers/mfd/si476x-prop.c -- Subroutines to access
-- * properties of si476x chips
-- *
-- * Copyright (C) 2012 Innovative Converged Devices(ICD)
-- * Copyright (C) 2013 Andrey Smirnov
-- *
-- * Author: Andrey Smirnov <andrew.smirnov@gmail.com>
-- */
--#include <linux/module.h>
--
--#include <linux/mfd/si476x-core.h>
--
--struct si476x_property_range {
--	u16 low, high;
--};
--
--static bool si476x_core_element_is_in_array(u16 element,
--					    const u16 array[],
--					    size_t size)
--{
--	int i;
--
--	for (i = 0; i < size; i++)
--		if (element == array[i])
--			return true;
--
--	return false;
--}
--
--static bool si476x_core_element_is_in_range(u16 element,
--					    const struct si476x_property_range range[],
--					    size_t size)
--{
--	int i;
--
--	for (i = 0; i < size; i++)
--		if (element <= range[i].high && element >= range[i].low)
--			return true;
--
--	return false;
--}
--
--static bool si476x_core_is_valid_property_a10(struct si476x_core *core,
--					      u16 property)
--{
--	static const u16 valid_properties[] = {
--		0x0000,
--		0x0500, 0x0501,
--		0x0600,
--		0x0709, 0x070C, 0x070D, 0x70E, 0x710,
--		0x0718,
--		0x1207, 0x1208,
--		0x2007,
--		0x2300,
--	};
--
--	static const struct si476x_property_range valid_ranges[] = {
--		{ 0x0200, 0x0203 },
--		{ 0x0300, 0x0303 },
--		{ 0x0400, 0x0404 },
--		{ 0x0700, 0x0707 },
--		{ 0x1100, 0x1102 },
--		{ 0x1200, 0x1204 },
--		{ 0x1300, 0x1306 },
--		{ 0x2000, 0x2005 },
--		{ 0x2100, 0x2104 },
--		{ 0x2106, 0x2106 },
--		{ 0x2200, 0x220E },
--		{ 0x3100, 0x3104 },
--		{ 0x3207, 0x320F },
--		{ 0x3300, 0x3304 },
--		{ 0x3500, 0x3517 },
--		{ 0x3600, 0x3617 },
--		{ 0x3700, 0x3717 },
--		{ 0x4000, 0x4003 },
--	};
--
--	return	si476x_core_element_is_in_range(property, valid_ranges,
--						ARRAY_SIZE(valid_ranges)) ||
--		si476x_core_element_is_in_array(property, valid_properties,
--						ARRAY_SIZE(valid_properties));
--}
--
--static bool si476x_core_is_valid_property_a20(struct si476x_core *core,
--					      u16 property)
--{
--	static const u16 valid_properties[] = {
--		0x071B,
--		0x1006,
--		0x2210,
--		0x3401,
--	};
--
--	static const struct si476x_property_range valid_ranges[] = {
--		{ 0x2215, 0x2219 },
--	};
--
--	return	si476x_core_is_valid_property_a10(core, property) ||
--		si476x_core_element_is_in_range(property, valid_ranges,
--						ARRAY_SIZE(valid_ranges))  ||
--		si476x_core_element_is_in_array(property, valid_properties,
--						ARRAY_SIZE(valid_properties));
--}
--
--static bool si476x_core_is_valid_property_a30(struct si476x_core *core,
--					      u16 property)
--{
--	static const u16 valid_properties[] = {
--		0x071C, 0x071D,
--		0x1007, 0x1008,
--		0x220F, 0x2214,
--		0x2301,
--		0x3105, 0x3106,
--		0x3402,
--	};
--
--	static const struct si476x_property_range valid_ranges[] = {
--		{ 0x0405, 0x0411 },
--		{ 0x2008, 0x200B },
--		{ 0x2220, 0x2223 },
--		{ 0x3100, 0x3106 },
--	};
--
--	return	si476x_core_is_valid_property_a20(core, property) ||
--		si476x_core_element_is_in_range(property, valid_ranges,
--						ARRAY_SIZE(valid_ranges)) ||
--		si476x_core_element_is_in_array(property, valid_properties,
--						ARRAY_SIZE(valid_properties));
--}
--
--typedef bool (*valid_property_pred_t) (struct si476x_core *, u16);
--
--static bool si476x_core_is_valid_property(struct si476x_core *core,
--					  u16 property)
--{
--	static const valid_property_pred_t is_valid_property[] = {
--		[SI476X_REVISION_A10] = si476x_core_is_valid_property_a10,
--		[SI476X_REVISION_A20] = si476x_core_is_valid_property_a20,
--		[SI476X_REVISION_A30] = si476x_core_is_valid_property_a30,
--	};
--
--	BUG_ON(core->revision > SI476X_REVISION_A30 ||
--	       core->revision == -1);
--	return is_valid_property[core->revision](core, property);
--}
--
--
--static bool si476x_core_is_readonly_property(struct si476x_core *core,
--					     u16 property)
--{
--	BUG_ON(core->revision > SI476X_REVISION_A30 ||
--	       core->revision == -1);
--
--	switch (core->revision) {
--	case SI476X_REVISION_A10:
--		return (property == 0x3200);
--	case SI476X_REVISION_A20:
--		return (property == 0x1006 ||
--			property == 0x2210 ||
--			property == 0x3200);
--	case SI476X_REVISION_A30:
+-	switch (reg) {
+-	case WM8400_INTERRUPT_STATUS_1:
+-	case WM8400_INTERRUPT_LEVELS:
+-	case WM8400_SHUTDOWN_REASON:
+-		return true;
+-	default:
 -		return false;
 -	}
--
--	return false;
 -}
 -
--static bool si476x_core_regmap_readable_register(struct device *dev,
--						 unsigned int reg)
+-static int wm8400_register_codec(struct wm8400 *wm8400)
 -{
--	struct i2c_client *client = to_i2c_client(dev);
--	struct si476x_core *core = i2c_get_clientdata(client);
+-	const struct mfd_cell cell = {
+-		.name = "wm8400-codec",
+-		.platform_data = wm8400,
+-		.pdata_size = sizeof(*wm8400),
+-	};
 -
--	return si476x_core_is_valid_property(core, (u16) reg);
--
+-	return devm_mfd_add_devices(wm8400->dev, -1, &cell, 1, NULL, 0, NULL);
 -}
 -
--static bool si476x_core_regmap_writable_register(struct device *dev,
--						 unsigned int reg)
+-/*
+- * wm8400_init - Generic initialisation
+- *
+- * The WM8400 can be configured as either an I2C or SPI device.  Probe
+- * functions for each bus set up the accessors then call into this to
+- * set up the device itself.
+- */
+-static int wm8400_init(struct wm8400 *wm8400,
+-		       struct wm8400_platform_data *pdata)
 -{
--	struct i2c_client *client = to_i2c_client(dev);
--	struct si476x_core *core = i2c_get_clientdata(client);
+-	unsigned int reg;
+-	int ret;
 -
--	return si476x_core_is_valid_property(core, (u16) reg) &&
--		!si476x_core_is_readonly_property(core, (u16) reg);
--}
+-	/* Check that this is actually a WM8400 */
+-	ret = regmap_read(wm8400->regmap, WM8400_RESET_ID, &reg);
+-	if (ret != 0) {
+-		dev_err(wm8400->dev, "Chip ID register read failed\n");
+-		return -EIO;
+-	}
+-	if (reg != 0x6172) {
+-		dev_err(wm8400->dev, "Device is not a WM8400, ID is %x\n",
+-			reg);
+-		return -ENODEV;
+-	}
 -
+-	ret = regmap_read(wm8400->regmap, WM8400_ID, &reg);
+-	if (ret != 0) {
+-		dev_err(wm8400->dev, "ID register read failed: %d\n", ret);
+-		return ret;
+-	}
+-	reg = (reg & WM8400_CHIP_REV_MASK) >> WM8400_CHIP_REV_SHIFT;
+-	dev_info(wm8400->dev, "WM8400 revision %x\n", reg);
 -
--static int si476x_core_regmap_write(void *context, unsigned int reg,
--				    unsigned int val)
--{
--	return si476x_core_cmd_set_property(context, reg, val);
--}
+-	ret = wm8400_register_codec(wm8400);
+-	if (ret != 0) {
+-		dev_err(wm8400->dev, "Failed to register codec\n");
+-		return ret;
+-	}
 -
--static int si476x_core_regmap_read(void *context, unsigned int reg,
--				   unsigned *val)
--{
--	struct si476x_core *core = context;
--	int err;
--
--	err = si476x_core_cmd_get_property(core, reg);
--	if (err < 0)
--		return err;
--
--	*val = err;
+-	if (pdata && pdata->platform_init) {
+-		ret = pdata->platform_init(wm8400->dev);
+-		if (ret != 0) {
+-			dev_err(wm8400->dev, "Platform init failed: %d\n",
+-				ret);
+-			return ret;
+-		}
+-	} else
+-		dev_warn(wm8400->dev, "No platform initialisation supplied\n");
 -
 -	return 0;
 -}
 -
--
--static const struct regmap_config si476x_regmap_config = {
--	.reg_bits = 16,
+-static const struct regmap_config wm8400_regmap_config = {
+-	.reg_bits = 8,
 -	.val_bits = 16,
+-	.max_register = WM8400_REGISTER_COUNT - 1,
 -
--	.max_register = 0x4003,
--
--	.writeable_reg = si476x_core_regmap_writable_register,
--	.readable_reg = si476x_core_regmap_readable_register,
--
--	.reg_read = si476x_core_regmap_read,
--	.reg_write = si476x_core_regmap_write,
+-	.volatile_reg = wm8400_volatile,
 -
 -	.cache_type = REGCACHE_MAPLE,
 -};
 -
--struct regmap *devm_regmap_init_si476x(struct si476x_core *core)
+-/**
+- * wm8400_reset_codec_reg_cache - Reset cached codec registers to
+- * their default values.
+- *
+- * @wm8400: pointer to local driver data structure
+- */
+-void wm8400_reset_codec_reg_cache(struct wm8400 *wm8400)
 -{
--	return devm_regmap_init(&core->client->dev, NULL,
--				core, &si476x_regmap_config);
+-	regmap_reinit_cache(wm8400->regmap, &wm8400_regmap_config);
 -}
--EXPORT_SYMBOL_GPL(devm_regmap_init_si476x);
-diff --git a/include/linux/mfd/si476x-core.h b/include/linux/mfd/si476x-core.h
+-EXPORT_SYMBOL_GPL(wm8400_reset_codec_reg_cache);
+-
+-#if IS_ENABLED(CONFIG_I2C)
+-static int wm8400_i2c_probe(struct i2c_client *i2c)
+-{
+-	struct wm8400 *wm8400;
+-
+-	wm8400 = devm_kzalloc(&i2c->dev, sizeof(struct wm8400), GFP_KERNEL);
+-	if (!wm8400)
+-		return -ENOMEM;
+-
+-	wm8400->regmap = devm_regmap_init_i2c(i2c, &wm8400_regmap_config);
+-	if (IS_ERR(wm8400->regmap))
+-		return PTR_ERR(wm8400->regmap);
+-
+-	wm8400->dev = &i2c->dev;
+-	i2c_set_clientdata(i2c, wm8400);
+-
+-	return wm8400_init(wm8400, dev_get_platdata(&i2c->dev));
+-}
+-
+-static const struct i2c_device_id wm8400_i2c_id[] = {
+-       { "wm8400" },
+-       { }
+-};
+-
+-static struct i2c_driver wm8400_i2c_driver = {
+-	.driver = {
+-		.name = "WM8400",
+-	},
+-	.probe = wm8400_i2c_probe,
+-	.id_table = wm8400_i2c_id,
+-};
+-#endif
+-
+-static int __init wm8400_driver_init(void)
+-{
+-	int ret = -ENODEV;
+-
+-#if IS_ENABLED(CONFIG_I2C)
+-	ret = i2c_add_driver(&wm8400_i2c_driver);
+-	if (ret != 0)
+-		pr_err("Failed to register I2C driver: %d\n", ret);
+-#endif
+-
+-	return ret;
+-}
+-subsys_initcall(wm8400_driver_init);
+diff --git a/drivers/regulator/Kconfig b/drivers/regulator/Kconfig
+index 73b43dc1b3be..4869a1d5041b 100644
+--- a/drivers/regulator/Kconfig
++++ b/drivers/regulator/Kconfig
+@@ -1862,13 +1862,6 @@ config REGULATOR_WM8350
+ 	  This driver provides support for the voltage and current regulators
+ 	  of the WM8350 AudioPlus PMIC.
+ 
+-config REGULATOR_WM8400
+-	tristate "Wolfson Microelectronics WM8400 AudioPlus PMIC"
+-	depends on MFD_WM8400
+-	help
+-	  This driver provides support for the voltage regulators of the
+-	  WM8400 AudioPlus PMIC.
+-
+ config REGULATOR_WM8994
+ 	tristate "Wolfson Microelectronics WM8994 CODEC"
+ 	depends on MFD_WM8994
+diff --git a/drivers/regulator/Makefile b/drivers/regulator/Makefile
+index 972f105567b5..86b5afcc974e 100644
+--- a/drivers/regulator/Makefile
++++ b/drivers/regulator/Makefile
+@@ -215,7 +215,6 @@ obj-$(CONFIG_REGULATOR_WM831X) += wm831x-dcdc.o
+ obj-$(CONFIG_REGULATOR_WM831X) += wm831x-isink.o
+ obj-$(CONFIG_REGULATOR_WM831X) += wm831x-ldo.o
+ obj-$(CONFIG_REGULATOR_WM8350) += wm8350-regulator.o
+-obj-$(CONFIG_REGULATOR_WM8400) += wm8400-regulator.o
+ obj-$(CONFIG_REGULATOR_WM8994) += wm8994-regulator.o
+ 
+ ccflags-$(CONFIG_REGULATOR_DEBUG) += -DDEBUG
+diff --git a/drivers/regulator/wm8400-regulator.c b/drivers/regulator/wm8400-regulator.c
 deleted file mode 100644
-index d9e3a322134c..000000000000
---- a/include/linux/mfd/si476x-core.h
+index fb3ca7956d00..000000000000
+--- a/drivers/regulator/wm8400-regulator.c
 +++ /dev/null
-@@ -1,532 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0-only */
+@@ -1,276 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0+
+-//
+-// Regulator support for WM8400
+-//
+-// Copyright 2008 Wolfson Microelectronics PLC.
+-//
+-// Author: Mark Brown <broonie@opensource.wolfsonmicro.com>
+-
+-#include <linux/bug.h>
+-#include <linux/err.h>
+-#include <linux/kernel.h>
+-#include <linux/module.h>
+-#include <linux/regulator/driver.h>
+-#include <linux/mfd/wm8400-private.h>
+-
+-static const struct linear_range wm8400_ldo_ranges[] = {
+-	REGULATOR_LINEAR_RANGE(900000, 0, 14, 50000),
+-	REGULATOR_LINEAR_RANGE(1700000, 15, 31, 100000),
+-};
+-
+-static const struct regulator_ops wm8400_ldo_ops = {
+-	.is_enabled = regulator_is_enabled_regmap,
+-	.enable = regulator_enable_regmap,
+-	.disable = regulator_disable_regmap,
+-	.list_voltage = regulator_list_voltage_linear_range,
+-	.get_voltage_sel = regulator_get_voltage_sel_regmap,
+-	.set_voltage_sel = regulator_set_voltage_sel_regmap,
+-	.map_voltage = regulator_map_voltage_linear_range,
+-};
+-
+-static unsigned int wm8400_dcdc_get_mode(struct regulator_dev *dev)
+-{
+-	struct regmap *rmap = rdev_get_regmap(dev);
+-	int offset = (rdev_get_id(dev) - WM8400_DCDC1) * 2;
+-	u16 data[2];
+-	int ret;
+-
+-	ret = regmap_bulk_read(rmap, WM8400_DCDC1_CONTROL_1 + offset, data, 2);
+-	if (ret != 0)
+-		return 0;
+-
+-	/* Datasheet: hibernate */
+-	if (data[0] & WM8400_DC1_SLEEP)
+-		return REGULATOR_MODE_STANDBY;
+-
+-	/* Datasheet: standby */
+-	if (!(data[0] & WM8400_DC1_ACTIVE))
+-		return REGULATOR_MODE_IDLE;
+-
+-	/* Datasheet: active with or without force PWM */
+-	if (data[1] & WM8400_DC1_FRC_PWM)
+-		return REGULATOR_MODE_FAST;
+-	else
+-		return REGULATOR_MODE_NORMAL;
+-}
+-
+-static int wm8400_dcdc_set_mode(struct regulator_dev *dev, unsigned int mode)
+-{
+-	struct regmap *rmap = rdev_get_regmap(dev);
+-	int offset = (rdev_get_id(dev) - WM8400_DCDC1) * 2;
+-	int ret;
+-
+-	switch (mode) {
+-	case REGULATOR_MODE_FAST:
+-		/* Datasheet: active with force PWM */
+-		ret = regmap_update_bits(rmap, WM8400_DCDC1_CONTROL_2 + offset,
+-				      WM8400_DC1_FRC_PWM, WM8400_DC1_FRC_PWM);
+-		if (ret != 0)
+-			return ret;
+-
+-		return regmap_update_bits(rmap, WM8400_DCDC1_CONTROL_1 + offset,
+-				       WM8400_DC1_ACTIVE | WM8400_DC1_SLEEP,
+-				       WM8400_DC1_ACTIVE);
+-
+-	case REGULATOR_MODE_NORMAL:
+-		/* Datasheet: active */
+-		ret = regmap_update_bits(rmap, WM8400_DCDC1_CONTROL_2 + offset,
+-				      WM8400_DC1_FRC_PWM, 0);
+-		if (ret != 0)
+-			return ret;
+-
+-		return regmap_update_bits(rmap, WM8400_DCDC1_CONTROL_1 + offset,
+-				       WM8400_DC1_ACTIVE | WM8400_DC1_SLEEP,
+-				       WM8400_DC1_ACTIVE);
+-
+-	case REGULATOR_MODE_IDLE:
+-		/* Datasheet: standby */
+-		return regmap_update_bits(rmap, WM8400_DCDC1_CONTROL_1 + offset,
+-				       WM8400_DC1_ACTIVE | WM8400_DC1_SLEEP, 0);
+-	default:
+-		return -EINVAL;
+-	}
+-}
+-
+-static unsigned int wm8400_dcdc_get_optimum_mode(struct regulator_dev *dev,
+-						 int input_uV, int output_uV,
+-						 int load_uA)
+-{
+-	return REGULATOR_MODE_NORMAL;
+-}
+-
+-static const struct regulator_ops wm8400_dcdc_ops = {
+-	.is_enabled = regulator_is_enabled_regmap,
+-	.enable = regulator_enable_regmap,
+-	.disable = regulator_disable_regmap,
+-	.list_voltage = regulator_list_voltage_linear,
+-	.map_voltage = regulator_map_voltage_linear,
+-	.get_voltage_sel = regulator_get_voltage_sel_regmap,
+-	.set_voltage_sel = regulator_set_voltage_sel_regmap,
+-	.get_mode = wm8400_dcdc_get_mode,
+-	.set_mode = wm8400_dcdc_set_mode,
+-	.get_optimum_mode = wm8400_dcdc_get_optimum_mode,
+-};
+-
+-static const struct regulator_desc regulators[] = {
+-	{
+-		.name = "LDO1",
+-		.id = WM8400_LDO1,
+-		.ops = &wm8400_ldo_ops,
+-		.enable_reg = WM8400_LDO1_CONTROL,
+-		.enable_mask = WM8400_LDO1_ENA,
+-		.n_voltages = WM8400_LDO1_VSEL_MASK + 1,
+-		.linear_ranges = wm8400_ldo_ranges,
+-		.n_linear_ranges = ARRAY_SIZE(wm8400_ldo_ranges),
+-		.vsel_reg = WM8400_LDO1_CONTROL,
+-		.vsel_mask = WM8400_LDO1_VSEL_MASK,
+-		.type = REGULATOR_VOLTAGE,
+-		.owner = THIS_MODULE,
+-	},
+-	{
+-		.name = "LDO2",
+-		.id = WM8400_LDO2,
+-		.ops = &wm8400_ldo_ops,
+-		.enable_reg = WM8400_LDO2_CONTROL,
+-		.enable_mask = WM8400_LDO2_ENA,
+-		.n_voltages = WM8400_LDO2_VSEL_MASK + 1,
+-		.linear_ranges = wm8400_ldo_ranges,
+-		.n_linear_ranges = ARRAY_SIZE(wm8400_ldo_ranges),
+-		.type = REGULATOR_VOLTAGE,
+-		.vsel_reg = WM8400_LDO2_CONTROL,
+-		.vsel_mask = WM8400_LDO2_VSEL_MASK,
+-		.owner = THIS_MODULE,
+-	},
+-	{
+-		.name = "LDO3",
+-		.id = WM8400_LDO3,
+-		.ops = &wm8400_ldo_ops,
+-		.enable_reg = WM8400_LDO3_CONTROL,
+-		.enable_mask = WM8400_LDO3_ENA,
+-		.n_voltages = WM8400_LDO3_VSEL_MASK + 1,
+-		.linear_ranges = wm8400_ldo_ranges,
+-		.n_linear_ranges = ARRAY_SIZE(wm8400_ldo_ranges),
+-		.vsel_reg = WM8400_LDO3_CONTROL,
+-		.vsel_mask = WM8400_LDO3_VSEL_MASK,
+-		.type = REGULATOR_VOLTAGE,
+-		.owner = THIS_MODULE,
+-	},
+-	{
+-		.name = "LDO4",
+-		.id = WM8400_LDO4,
+-		.ops = &wm8400_ldo_ops,
+-		.enable_reg = WM8400_LDO4_CONTROL,
+-		.enable_mask = WM8400_LDO4_ENA,
+-		.n_voltages = WM8400_LDO4_VSEL_MASK + 1,
+-		.linear_ranges = wm8400_ldo_ranges,
+-		.n_linear_ranges = ARRAY_SIZE(wm8400_ldo_ranges),
+-		.vsel_reg = WM8400_LDO4_CONTROL,
+-		.vsel_mask = WM8400_LDO4_VSEL_MASK,
+-		.type = REGULATOR_VOLTAGE,
+-		.owner = THIS_MODULE,
+-	},
+-	{
+-		.name = "DCDC1",
+-		.id = WM8400_DCDC1,
+-		.ops = &wm8400_dcdc_ops,
+-		.enable_reg = WM8400_DCDC1_CONTROL_1,
+-		.enable_mask = WM8400_DC1_ENA_MASK,
+-		.n_voltages = WM8400_DC1_VSEL_MASK + 1,
+-		.vsel_reg = WM8400_DCDC1_CONTROL_1,
+-		.vsel_mask = WM8400_DC1_VSEL_MASK,
+-		.min_uV = 850000,
+-		.uV_step = 25000,
+-		.type = REGULATOR_VOLTAGE,
+-		.owner = THIS_MODULE,
+-	},
+-	{
+-		.name = "DCDC2",
+-		.id = WM8400_DCDC2,
+-		.ops = &wm8400_dcdc_ops,
+-		.enable_reg = WM8400_DCDC2_CONTROL_1,
+-		.enable_mask = WM8400_DC2_ENA_MASK,
+-		.n_voltages = WM8400_DC2_VSEL_MASK + 1,
+-		.vsel_reg = WM8400_DCDC2_CONTROL_1,
+-		.vsel_mask = WM8400_DC2_VSEL_MASK,
+-		.min_uV = 850000,
+-		.uV_step = 25000,
+-		.type = REGULATOR_VOLTAGE,
+-		.owner = THIS_MODULE,
+-	},
+-};
+-
+-static int wm8400_regulator_probe(struct platform_device *pdev)
+-{
+-	struct wm8400 *wm8400 = container_of(pdev, struct wm8400, regulators[pdev->id]);
+-	struct regulator_config config = { };
+-	struct regulator_dev *rdev;
+-
+-	config.dev = &pdev->dev;
+-	config.init_data = dev_get_platdata(&pdev->dev);
+-	config.driver_data = wm8400;
+-	config.regmap = wm8400->regmap;
+-
+-	rdev = devm_regulator_register(&pdev->dev, &regulators[pdev->id],
+-				       &config);
+-	if (IS_ERR(rdev))
+-		return PTR_ERR(rdev);
+-
+-	platform_set_drvdata(pdev, rdev);
+-
+-	return 0;
+-}
+-
+-static struct platform_driver wm8400_regulator_driver = {
+-	.driver = {
+-		.name = "wm8400-regulator",
+-		.probe_type = PROBE_PREFER_ASYNCHRONOUS,
+-	},
+-	.probe = wm8400_regulator_probe,
+-};
+-
+-/**
+- * wm8400_register_regulator - enable software control of a WM8400 regulator
+- *
+- * This function enables software control of a WM8400 regulator via
+- * the regulator API.  It is intended to be called from the
+- * platform_init() callback of the WM8400 MFD driver.
+- *
+- * @dev:      The WM8400 device to operate on.
+- * @reg:      The regulator to control.
+- * @initdata: Regulator initdata for the regulator.
+- */
+-int wm8400_register_regulator(struct device *dev, int reg,
+-			      struct regulator_init_data *initdata)
+-{
+-	struct wm8400 *wm8400 = dev_get_drvdata(dev);
+-
+-	if (wm8400->regulators[reg].name)
+-		return -EBUSY;
+-
+-	initdata->driver_data = wm8400;
+-
+-	wm8400->regulators[reg].name = "wm8400-regulator";
+-	wm8400->regulators[reg].id = reg;
+-	wm8400->regulators[reg].dev.parent = dev;
+-	wm8400->regulators[reg].dev.platform_data = initdata;
+-
+-	return platform_device_register(&wm8400->regulators[reg]);
+-}
+-EXPORT_SYMBOL_GPL(wm8400_register_regulator);
+-
+-static int __init wm8400_regulator_init(void)
+-{
+-	return platform_driver_register(&wm8400_regulator_driver);
+-}
+-subsys_initcall(wm8400_regulator_init);
+-
+-static void __exit wm8400_regulator_exit(void)
+-{
+-	platform_driver_unregister(&wm8400_regulator_driver);
+-}
+-module_exit(wm8400_regulator_exit);
+-
+-MODULE_AUTHOR("Mark Brown <broonie@opensource.wolfsonmicro.com>");
+-MODULE_DESCRIPTION("WM8400 regulator driver");
+-MODULE_LICENSE("GPL");
+-MODULE_ALIAS("platform:wm8400-regulator");
+diff --git a/include/linux/mfd/wm8400-audio.h b/include/linux/mfd/wm8400-audio.h
+deleted file mode 100644
+index d47bdcc7a765..000000000000
+--- a/include/linux/mfd/wm8400-audio.h
++++ /dev/null
+@@ -1,1174 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0-or-later */
 -/*
-- * include/media/si476x-core.h -- Common definitions for si476x core
-- * device
+- * wm8400 private definitions for audio
 - *
-- * Copyright (C) 2012 Innovative Converged Devices(ICD)
-- * Copyright (C) 2013 Andrey Smirnov
-- *
-- * Author: Andrey Smirnov <andrew.smirnov@gmail.com>
+- * Copyright 2008 Wolfson Microelectronics plc
 - */
 -
--#ifndef SI476X_CORE_H
--#define SI476X_CORE_H
+-#ifndef __LINUX_MFD_WM8400_AUDIO_H
+-#define __LINUX_MFD_WM8400_AUDIO_H
 -
--#include <linux/kfifo.h>
--#include <linux/atomic.h>
--#include <linux/gpio/consumer.h>
--#include <linux/i2c.h>
--#include <linux/regmap.h>
+-#include <linux/mfd/wm8400-audio.h>
+-
+-/*
+- * R2 (0x02) - Power Management (1)
+- */
+-#define WM8400_CODEC_ENA                        0x8000  /* CODEC_ENA */
+-#define WM8400_CODEC_ENA_MASK                   0x8000  /* CODEC_ENA */
+-#define WM8400_CODEC_ENA_SHIFT                      15  /* CODEC_ENA */
+-#define WM8400_CODEC_ENA_WIDTH                       1  /* CODEC_ENA */
+-#define WM8400_SYSCLK_ENA                       0x4000  /* SYSCLK_ENA */
+-#define WM8400_SYSCLK_ENA_MASK                  0x4000  /* SYSCLK_ENA */
+-#define WM8400_SYSCLK_ENA_SHIFT                     14  /* SYSCLK_ENA */
+-#define WM8400_SYSCLK_ENA_WIDTH                      1  /* SYSCLK_ENA */
+-#define WM8400_SPK_MIX_ENA                      0x2000  /* SPK_MIX_ENA */
+-#define WM8400_SPK_MIX_ENA_MASK                 0x2000  /* SPK_MIX_ENA */
+-#define WM8400_SPK_MIX_ENA_SHIFT                    13  /* SPK_MIX_ENA */
+-#define WM8400_SPK_MIX_ENA_WIDTH                     1  /* SPK_MIX_ENA */
+-#define WM8400_SPK_ENA                          0x1000  /* SPK_ENA */
+-#define WM8400_SPK_ENA_MASK                     0x1000  /* SPK_ENA */
+-#define WM8400_SPK_ENA_SHIFT                        12  /* SPK_ENA */
+-#define WM8400_SPK_ENA_WIDTH                         1  /* SPK_ENA */
+-#define WM8400_OUT3_ENA                         0x0800  /* OUT3_ENA */
+-#define WM8400_OUT3_ENA_MASK                    0x0800  /* OUT3_ENA */
+-#define WM8400_OUT3_ENA_SHIFT                       11  /* OUT3_ENA */
+-#define WM8400_OUT3_ENA_WIDTH                        1  /* OUT3_ENA */
+-#define WM8400_OUT4_ENA                         0x0400  /* OUT4_ENA */
+-#define WM8400_OUT4_ENA_MASK                    0x0400  /* OUT4_ENA */
+-#define WM8400_OUT4_ENA_SHIFT                       10  /* OUT4_ENA */
+-#define WM8400_OUT4_ENA_WIDTH                        1  /* OUT4_ENA */
+-#define WM8400_LOUT_ENA                         0x0200  /* LOUT_ENA */
+-#define WM8400_LOUT_ENA_MASK                    0x0200  /* LOUT_ENA */
+-#define WM8400_LOUT_ENA_SHIFT                        9  /* LOUT_ENA */
+-#define WM8400_LOUT_ENA_WIDTH                        1  /* LOUT_ENA */
+-#define WM8400_ROUT_ENA                         0x0100  /* ROUT_ENA */
+-#define WM8400_ROUT_ENA_MASK                    0x0100  /* ROUT_ENA */
+-#define WM8400_ROUT_ENA_SHIFT                        8  /* ROUT_ENA */
+-#define WM8400_ROUT_ENA_WIDTH                        1  /* ROUT_ENA */
+-#define WM8400_MIC1BIAS_ENA                     0x0010  /* MIC1BIAS_ENA */
+-#define WM8400_MIC1BIAS_ENA_MASK                0x0010  /* MIC1BIAS_ENA */
+-#define WM8400_MIC1BIAS_ENA_SHIFT                    4  /* MIC1BIAS_ENA */
+-#define WM8400_MIC1BIAS_ENA_WIDTH                    1  /* MIC1BIAS_ENA */
+-#define WM8400_VMID_MODE_MASK                   0x0006  /* VMID_MODE - [2:1] */
+-#define WM8400_VMID_MODE_SHIFT                       1  /* VMID_MODE - [2:1] */
+-#define WM8400_VMID_MODE_WIDTH                       2  /* VMID_MODE - [2:1] */
+-#define WM8400_VREF_ENA                         0x0001  /* VREF_ENA */
+-#define WM8400_VREF_ENA_MASK                    0x0001  /* VREF_ENA */
+-#define WM8400_VREF_ENA_SHIFT                        0  /* VREF_ENA */
+-#define WM8400_VREF_ENA_WIDTH                        1  /* VREF_ENA */
+-
+-/*
+- * R3 (0x03) - Power Management (2)
+- */
+-#define WM8400_FLL_ENA                          0x8000  /* FLL_ENA */
+-#define WM8400_FLL_ENA_MASK                     0x8000  /* FLL_ENA */
+-#define WM8400_FLL_ENA_SHIFT                        15  /* FLL_ENA */
+-#define WM8400_FLL_ENA_WIDTH                         1  /* FLL_ENA */
+-#define WM8400_TSHUT_ENA                        0x4000  /* TSHUT_ENA */
+-#define WM8400_TSHUT_ENA_MASK                   0x4000  /* TSHUT_ENA */
+-#define WM8400_TSHUT_ENA_SHIFT                      14  /* TSHUT_ENA */
+-#define WM8400_TSHUT_ENA_WIDTH                       1  /* TSHUT_ENA */
+-#define WM8400_TSHUT_OPDIS                      0x2000  /* TSHUT_OPDIS */
+-#define WM8400_TSHUT_OPDIS_MASK                 0x2000  /* TSHUT_OPDIS */
+-#define WM8400_TSHUT_OPDIS_SHIFT                    13  /* TSHUT_OPDIS */
+-#define WM8400_TSHUT_OPDIS_WIDTH                     1  /* TSHUT_OPDIS */
+-#define WM8400_OPCLK_ENA                        0x0800  /* OPCLK_ENA */
+-#define WM8400_OPCLK_ENA_MASK                   0x0800  /* OPCLK_ENA */
+-#define WM8400_OPCLK_ENA_SHIFT                      11  /* OPCLK_ENA */
+-#define WM8400_OPCLK_ENA_WIDTH                       1  /* OPCLK_ENA */
+-#define WM8400_AINL_ENA                         0x0200  /* AINL_ENA */
+-#define WM8400_AINL_ENA_MASK                    0x0200  /* AINL_ENA */
+-#define WM8400_AINL_ENA_SHIFT                        9  /* AINL_ENA */
+-#define WM8400_AINL_ENA_WIDTH                        1  /* AINL_ENA */
+-#define WM8400_AINR_ENA                         0x0100  /* AINR_ENA */
+-#define WM8400_AINR_ENA_MASK                    0x0100  /* AINR_ENA */
+-#define WM8400_AINR_ENA_SHIFT                        8  /* AINR_ENA */
+-#define WM8400_AINR_ENA_WIDTH                        1  /* AINR_ENA */
+-#define WM8400_LIN34_ENA                        0x0080  /* LIN34_ENA */
+-#define WM8400_LIN34_ENA_MASK                   0x0080  /* LIN34_ENA */
+-#define WM8400_LIN34_ENA_SHIFT                       7  /* LIN34_ENA */
+-#define WM8400_LIN34_ENA_WIDTH                       1  /* LIN34_ENA */
+-#define WM8400_LIN12_ENA                        0x0040  /* LIN12_ENA */
+-#define WM8400_LIN12_ENA_MASK                   0x0040  /* LIN12_ENA */
+-#define WM8400_LIN12_ENA_SHIFT                       6  /* LIN12_ENA */
+-#define WM8400_LIN12_ENA_WIDTH                       1  /* LIN12_ENA */
+-#define WM8400_RIN34_ENA                        0x0020  /* RIN34_ENA */
+-#define WM8400_RIN34_ENA_MASK                   0x0020  /* RIN34_ENA */
+-#define WM8400_RIN34_ENA_SHIFT                       5  /* RIN34_ENA */
+-#define WM8400_RIN34_ENA_WIDTH                       1  /* RIN34_ENA */
+-#define WM8400_RIN12_ENA                        0x0010  /* RIN12_ENA */
+-#define WM8400_RIN12_ENA_MASK                   0x0010  /* RIN12_ENA */
+-#define WM8400_RIN12_ENA_SHIFT                       4  /* RIN12_ENA */
+-#define WM8400_RIN12_ENA_WIDTH                       1  /* RIN12_ENA */
+-#define WM8400_ADCL_ENA                         0x0002  /* ADCL_ENA */
+-#define WM8400_ADCL_ENA_MASK                    0x0002  /* ADCL_ENA */
+-#define WM8400_ADCL_ENA_SHIFT                        1  /* ADCL_ENA */
+-#define WM8400_ADCL_ENA_WIDTH                        1  /* ADCL_ENA */
+-#define WM8400_ADCR_ENA                         0x0001  /* ADCR_ENA */
+-#define WM8400_ADCR_ENA_MASK                    0x0001  /* ADCR_ENA */
+-#define WM8400_ADCR_ENA_SHIFT                        0  /* ADCR_ENA */
+-#define WM8400_ADCR_ENA_WIDTH                        1  /* ADCR_ENA */
+-
+-/*
+- * R4 (0x04) - Power Management (3)
+- */
+-#define WM8400_LON_ENA                          0x2000  /* LON_ENA */
+-#define WM8400_LON_ENA_MASK                     0x2000  /* LON_ENA */
+-#define WM8400_LON_ENA_SHIFT                        13  /* LON_ENA */
+-#define WM8400_LON_ENA_WIDTH                         1  /* LON_ENA */
+-#define WM8400_LOP_ENA                          0x1000  /* LOP_ENA */
+-#define WM8400_LOP_ENA_MASK                     0x1000  /* LOP_ENA */
+-#define WM8400_LOP_ENA_SHIFT                        12  /* LOP_ENA */
+-#define WM8400_LOP_ENA_WIDTH                         1  /* LOP_ENA */
+-#define WM8400_RON_ENA                          0x0800  /* RON_ENA */
+-#define WM8400_RON_ENA_MASK                     0x0800  /* RON_ENA */
+-#define WM8400_RON_ENA_SHIFT                        11  /* RON_ENA */
+-#define WM8400_RON_ENA_WIDTH                         1  /* RON_ENA */
+-#define WM8400_ROP_ENA                          0x0400  /* ROP_ENA */
+-#define WM8400_ROP_ENA_MASK                     0x0400  /* ROP_ENA */
+-#define WM8400_ROP_ENA_SHIFT                        10  /* ROP_ENA */
+-#define WM8400_ROP_ENA_WIDTH                         1  /* ROP_ENA */
+-#define WM8400_LOPGA_ENA                        0x0080  /* LOPGA_ENA */
+-#define WM8400_LOPGA_ENA_MASK                   0x0080  /* LOPGA_ENA */
+-#define WM8400_LOPGA_ENA_SHIFT                       7  /* LOPGA_ENA */
+-#define WM8400_LOPGA_ENA_WIDTH                       1  /* LOPGA_ENA */
+-#define WM8400_ROPGA_ENA                        0x0040  /* ROPGA_ENA */
+-#define WM8400_ROPGA_ENA_MASK                   0x0040  /* ROPGA_ENA */
+-#define WM8400_ROPGA_ENA_SHIFT                       6  /* ROPGA_ENA */
+-#define WM8400_ROPGA_ENA_WIDTH                       1  /* ROPGA_ENA */
+-#define WM8400_LOMIX_ENA                        0x0020  /* LOMIX_ENA */
+-#define WM8400_LOMIX_ENA_MASK                   0x0020  /* LOMIX_ENA */
+-#define WM8400_LOMIX_ENA_SHIFT                       5  /* LOMIX_ENA */
+-#define WM8400_LOMIX_ENA_WIDTH                       1  /* LOMIX_ENA */
+-#define WM8400_ROMIX_ENA                        0x0010  /* ROMIX_ENA */
+-#define WM8400_ROMIX_ENA_MASK                   0x0010  /* ROMIX_ENA */
+-#define WM8400_ROMIX_ENA_SHIFT                       4  /* ROMIX_ENA */
+-#define WM8400_ROMIX_ENA_WIDTH                       1  /* ROMIX_ENA */
+-#define WM8400_DACL_ENA                         0x0002  /* DACL_ENA */
+-#define WM8400_DACL_ENA_MASK                    0x0002  /* DACL_ENA */
+-#define WM8400_DACL_ENA_SHIFT                        1  /* DACL_ENA */
+-#define WM8400_DACL_ENA_WIDTH                        1  /* DACL_ENA */
+-#define WM8400_DACR_ENA                         0x0001  /* DACR_ENA */
+-#define WM8400_DACR_ENA_MASK                    0x0001  /* DACR_ENA */
+-#define WM8400_DACR_ENA_SHIFT                        0  /* DACR_ENA */
+-#define WM8400_DACR_ENA_WIDTH                        1  /* DACR_ENA */
+-
+-/*
+- * R5 (0x05) - Audio Interface (1)
+- */
+-#define WM8400_AIFADCL_SRC                      0x8000  /* AIFADCL_SRC */
+-#define WM8400_AIFADCL_SRC_MASK                 0x8000  /* AIFADCL_SRC */
+-#define WM8400_AIFADCL_SRC_SHIFT                    15  /* AIFADCL_SRC */
+-#define WM8400_AIFADCL_SRC_WIDTH                     1  /* AIFADCL_SRC */
+-#define WM8400_AIFADCR_SRC                      0x4000  /* AIFADCR_SRC */
+-#define WM8400_AIFADCR_SRC_MASK                 0x4000  /* AIFADCR_SRC */
+-#define WM8400_AIFADCR_SRC_SHIFT                    14  /* AIFADCR_SRC */
+-#define WM8400_AIFADCR_SRC_WIDTH                     1  /* AIFADCR_SRC */
+-#define WM8400_AIFADC_TDM                       0x2000  /* AIFADC_TDM */
+-#define WM8400_AIFADC_TDM_MASK                  0x2000  /* AIFADC_TDM */
+-#define WM8400_AIFADC_TDM_SHIFT                     13  /* AIFADC_TDM */
+-#define WM8400_AIFADC_TDM_WIDTH                      1  /* AIFADC_TDM */
+-#define WM8400_AIFADC_TDM_CHAN                  0x1000  /* AIFADC_TDM_CHAN */
+-#define WM8400_AIFADC_TDM_CHAN_MASK             0x1000  /* AIFADC_TDM_CHAN */
+-#define WM8400_AIFADC_TDM_CHAN_SHIFT                12  /* AIFADC_TDM_CHAN */
+-#define WM8400_AIFADC_TDM_CHAN_WIDTH                 1  /* AIFADC_TDM_CHAN */
+-#define WM8400_AIF_BCLK_INV                     0x0100  /* AIF_BCLK_INV */
+-#define WM8400_AIF_BCLK_INV_MASK                0x0100  /* AIF_BCLK_INV */
+-#define WM8400_AIF_BCLK_INV_SHIFT                    8  /* AIF_BCLK_INV */
+-#define WM8400_AIF_BCLK_INV_WIDTH                    1  /* AIF_BCLK_INV */
+-#define WM8400_AIF_LRCLK_INV                    0x0080  /* AIF_LRCLK_INV */
+-#define WM8400_AIF_LRCLK_INV_MASK               0x0080  /* AIF_LRCLK_INV */
+-#define WM8400_AIF_LRCLK_INV_SHIFT                   7  /* AIF_LRCLK_INV */
+-#define WM8400_AIF_LRCLK_INV_WIDTH                   1  /* AIF_LRCLK_INV */
+-#define WM8400_AIF_WL_MASK                      0x0060  /* AIF_WL - [6:5] */
+-#define WM8400_AIF_WL_SHIFT                          5  /* AIF_WL - [6:5] */
+-#define WM8400_AIF_WL_WIDTH                          2  /* AIF_WL - [6:5] */
+-#define WM8400_AIF_WL_16BITS			(0 << 5)
+-#define WM8400_AIF_WL_20BITS			(1 << 5)
+-#define WM8400_AIF_WL_24BITS			(2 << 5)
+-#define WM8400_AIF_WL_32BITS			(3 << 5)
+-#define WM8400_AIF_FMT_MASK                     0x0018  /* AIF_FMT - [4:3] */
+-#define WM8400_AIF_FMT_SHIFT                         3  /* AIF_FMT - [4:3] */
+-#define WM8400_AIF_FMT_WIDTH                         2  /* AIF_FMT - [4:3] */
+-#define WM8400_AIF_FMT_RIGHTJ			(0 << 3)
+-#define WM8400_AIF_FMT_LEFTJ			(1 << 3)
+-#define WM8400_AIF_FMT_I2S			(2 << 3)
+-#define WM8400_AIF_FMT_DSP			(3 << 3)
+-
+-/*
+- * R6 (0x06) - Audio Interface (2)
+- */
+-#define WM8400_DACL_SRC                         0x8000  /* DACL_SRC */
+-#define WM8400_DACL_SRC_MASK                    0x8000  /* DACL_SRC */
+-#define WM8400_DACL_SRC_SHIFT                       15  /* DACL_SRC */
+-#define WM8400_DACL_SRC_WIDTH                        1  /* DACL_SRC */
+-#define WM8400_DACR_SRC                         0x4000  /* DACR_SRC */
+-#define WM8400_DACR_SRC_MASK                    0x4000  /* DACR_SRC */
+-#define WM8400_DACR_SRC_SHIFT                       14  /* DACR_SRC */
+-#define WM8400_DACR_SRC_WIDTH                        1  /* DACR_SRC */
+-#define WM8400_AIFDAC_TDM                       0x2000  /* AIFDAC_TDM */
+-#define WM8400_AIFDAC_TDM_MASK                  0x2000  /* AIFDAC_TDM */
+-#define WM8400_AIFDAC_TDM_SHIFT                     13  /* AIFDAC_TDM */
+-#define WM8400_AIFDAC_TDM_WIDTH                      1  /* AIFDAC_TDM */
+-#define WM8400_AIFDAC_TDM_CHAN                  0x1000  /* AIFDAC_TDM_CHAN */
+-#define WM8400_AIFDAC_TDM_CHAN_MASK             0x1000  /* AIFDAC_TDM_CHAN */
+-#define WM8400_AIFDAC_TDM_CHAN_SHIFT                12  /* AIFDAC_TDM_CHAN */
+-#define WM8400_AIFDAC_TDM_CHAN_WIDTH                 1  /* AIFDAC_TDM_CHAN */
+-#define WM8400_DAC_BOOST_MASK                   0x0C00  /* DAC_BOOST - [11:10] */
+-#define WM8400_DAC_BOOST_SHIFT                      10  /* DAC_BOOST - [11:10] */
+-#define WM8400_DAC_BOOST_WIDTH                       2  /* DAC_BOOST - [11:10] */
+-#define WM8400_DAC_COMP                         0x0010  /* DAC_COMP */
+-#define WM8400_DAC_COMP_MASK                    0x0010  /* DAC_COMP */
+-#define WM8400_DAC_COMP_SHIFT                        4  /* DAC_COMP */
+-#define WM8400_DAC_COMP_WIDTH                        1  /* DAC_COMP */
+-#define WM8400_DAC_COMPMODE                     0x0008  /* DAC_COMPMODE */
+-#define WM8400_DAC_COMPMODE_MASK                0x0008  /* DAC_COMPMODE */
+-#define WM8400_DAC_COMPMODE_SHIFT                    3  /* DAC_COMPMODE */
+-#define WM8400_DAC_COMPMODE_WIDTH                    1  /* DAC_COMPMODE */
+-#define WM8400_ADC_COMP                         0x0004  /* ADC_COMP */
+-#define WM8400_ADC_COMP_MASK                    0x0004  /* ADC_COMP */
+-#define WM8400_ADC_COMP_SHIFT                        2  /* ADC_COMP */
+-#define WM8400_ADC_COMP_WIDTH                        1  /* ADC_COMP */
+-#define WM8400_ADC_COMPMODE                     0x0002  /* ADC_COMPMODE */
+-#define WM8400_ADC_COMPMODE_MASK                0x0002  /* ADC_COMPMODE */
+-#define WM8400_ADC_COMPMODE_SHIFT                    1  /* ADC_COMPMODE */
+-#define WM8400_ADC_COMPMODE_WIDTH                    1  /* ADC_COMPMODE */
+-#define WM8400_LOOPBACK                         0x0001  /* LOOPBACK */
+-#define WM8400_LOOPBACK_MASK                    0x0001  /* LOOPBACK */
+-#define WM8400_LOOPBACK_SHIFT                        0  /* LOOPBACK */
+-#define WM8400_LOOPBACK_WIDTH                        1  /* LOOPBACK */
+-
+-/*
+- * R7 (0x07) - Clocking (1)
+- */
+-#define WM8400_TOCLK_RATE                       0x8000  /* TOCLK_RATE */
+-#define WM8400_TOCLK_RATE_MASK                  0x8000  /* TOCLK_RATE */
+-#define WM8400_TOCLK_RATE_SHIFT                     15  /* TOCLK_RATE */
+-#define WM8400_TOCLK_RATE_WIDTH                      1  /* TOCLK_RATE */
+-#define WM8400_TOCLK_ENA                        0x4000  /* TOCLK_ENA */
+-#define WM8400_TOCLK_ENA_MASK                   0x4000  /* TOCLK_ENA */
+-#define WM8400_TOCLK_ENA_SHIFT                      14  /* TOCLK_ENA */
+-#define WM8400_TOCLK_ENA_WIDTH                       1  /* TOCLK_ENA */
+-#define WM8400_OPCLKDIV_MASK                    0x1E00  /* OPCLKDIV - [12:9] */
+-#define WM8400_OPCLKDIV_SHIFT                        9  /* OPCLKDIV - [12:9] */
+-#define WM8400_OPCLKDIV_WIDTH                        4  /* OPCLKDIV - [12:9] */
+-#define WM8400_DCLKDIV_MASK                     0x01C0  /* DCLKDIV - [8:6] */
+-#define WM8400_DCLKDIV_SHIFT                         6  /* DCLKDIV - [8:6] */
+-#define WM8400_DCLKDIV_WIDTH                         3  /* DCLKDIV - [8:6] */
+-#define WM8400_BCLK_DIV_MASK                    0x001E  /* BCLK_DIV - [4:1] */
+-#define WM8400_BCLK_DIV_SHIFT                        1  /* BCLK_DIV - [4:1] */
+-#define WM8400_BCLK_DIV_WIDTH                        4  /* BCLK_DIV - [4:1] */
+-
+-/*
+- * R8 (0x08) - Clocking (2)
+- */
+-#define WM8400_MCLK_SRC                         0x8000  /* MCLK_SRC */
+-#define WM8400_MCLK_SRC_MASK                    0x8000  /* MCLK_SRC */
+-#define WM8400_MCLK_SRC_SHIFT                       15  /* MCLK_SRC */
+-#define WM8400_MCLK_SRC_WIDTH                        1  /* MCLK_SRC */
+-#define WM8400_SYSCLK_SRC                       0x4000  /* SYSCLK_SRC */
+-#define WM8400_SYSCLK_SRC_MASK                  0x4000  /* SYSCLK_SRC */
+-#define WM8400_SYSCLK_SRC_SHIFT                     14  /* SYSCLK_SRC */
+-#define WM8400_SYSCLK_SRC_WIDTH                      1  /* SYSCLK_SRC */
+-#define WM8400_CLK_FORCE                        0x2000  /* CLK_FORCE */
+-#define WM8400_CLK_FORCE_MASK                   0x2000  /* CLK_FORCE */
+-#define WM8400_CLK_FORCE_SHIFT                      13  /* CLK_FORCE */
+-#define WM8400_CLK_FORCE_WIDTH                       1  /* CLK_FORCE */
+-#define WM8400_MCLK_DIV_MASK                    0x1800  /* MCLK_DIV - [12:11] */
+-#define WM8400_MCLK_DIV_SHIFT                       11  /* MCLK_DIV - [12:11] */
+-#define WM8400_MCLK_DIV_WIDTH                        2  /* MCLK_DIV - [12:11] */
+-#define WM8400_MCLK_INV                         0x0400  /* MCLK_INV */
+-#define WM8400_MCLK_INV_MASK                    0x0400  /* MCLK_INV */
+-#define WM8400_MCLK_INV_SHIFT                       10  /* MCLK_INV */
+-#define WM8400_MCLK_INV_WIDTH                        1  /* MCLK_INV */
+-#define WM8400_ADC_CLKDIV_MASK                  0x00E0  /* ADC_CLKDIV - [7:5] */
+-#define WM8400_ADC_CLKDIV_SHIFT                      5  /* ADC_CLKDIV - [7:5] */
+-#define WM8400_ADC_CLKDIV_WIDTH                      3  /* ADC_CLKDIV - [7:5] */
+-#define WM8400_DAC_CLKDIV_MASK                  0x001C  /* DAC_CLKDIV - [4:2] */
+-#define WM8400_DAC_CLKDIV_SHIFT                      2  /* DAC_CLKDIV - [4:2] */
+-#define WM8400_DAC_CLKDIV_WIDTH                      3  /* DAC_CLKDIV - [4:2] */
+-
+-/*
+- * R9 (0x09) - Audio Interface (3)
+- */
+-#define WM8400_AIF_MSTR1                        0x8000  /* AIF_MSTR1 */
+-#define WM8400_AIF_MSTR1_MASK                   0x8000  /* AIF_MSTR1 */
+-#define WM8400_AIF_MSTR1_SHIFT                      15  /* AIF_MSTR1 */
+-#define WM8400_AIF_MSTR1_WIDTH                       1  /* AIF_MSTR1 */
+-#define WM8400_AIF_MSTR2                        0x4000  /* AIF_MSTR2 */
+-#define WM8400_AIF_MSTR2_MASK                   0x4000  /* AIF_MSTR2 */
+-#define WM8400_AIF_MSTR2_SHIFT                      14  /* AIF_MSTR2 */
+-#define WM8400_AIF_MSTR2_WIDTH                       1  /* AIF_MSTR2 */
+-#define WM8400_AIF_SEL                          0x2000  /* AIF_SEL */
+-#define WM8400_AIF_SEL_MASK                     0x2000  /* AIF_SEL */
+-#define WM8400_AIF_SEL_SHIFT                        13  /* AIF_SEL */
+-#define WM8400_AIF_SEL_WIDTH                         1  /* AIF_SEL */
+-#define WM8400_ADCLRC_DIR                       0x0800  /* ADCLRC_DIR */
+-#define WM8400_ADCLRC_DIR_MASK                  0x0800  /* ADCLRC_DIR */
+-#define WM8400_ADCLRC_DIR_SHIFT                     11  /* ADCLRC_DIR */
+-#define WM8400_ADCLRC_DIR_WIDTH                      1  /* ADCLRC_DIR */
+-#define WM8400_ADCLRC_RATE_MASK                 0x07FF  /* ADCLRC_RATE - [10:0] */
+-#define WM8400_ADCLRC_RATE_SHIFT                     0  /* ADCLRC_RATE - [10:0] */
+-#define WM8400_ADCLRC_RATE_WIDTH                    11  /* ADCLRC_RATE - [10:0] */
+-
+-/*
+- * R10 (0x0A) - Audio Interface (4)
+- */
+-#define WM8400_ALRCGPIO1                        0x8000  /* ALRCGPIO1 */
+-#define WM8400_ALRCGPIO1_MASK                   0x8000  /* ALRCGPIO1 */
+-#define WM8400_ALRCGPIO1_SHIFT                      15  /* ALRCGPIO1 */
+-#define WM8400_ALRCGPIO1_WIDTH                       1  /* ALRCGPIO1 */
+-#define WM8400_ALRCBGPIO6                       0x4000  /* ALRCBGPIO6 */
+-#define WM8400_ALRCBGPIO6_MASK                  0x4000  /* ALRCBGPIO6 */
+-#define WM8400_ALRCBGPIO6_SHIFT                     14  /* ALRCBGPIO6 */
+-#define WM8400_ALRCBGPIO6_WIDTH                      1  /* ALRCBGPIO6 */
+-#define WM8400_AIF_TRIS                         0x2000  /* AIF_TRIS */
+-#define WM8400_AIF_TRIS_MASK                    0x2000  /* AIF_TRIS */
+-#define WM8400_AIF_TRIS_SHIFT                       13  /* AIF_TRIS */
+-#define WM8400_AIF_TRIS_WIDTH                        1  /* AIF_TRIS */
+-#define WM8400_DACLRC_DIR                       0x0800  /* DACLRC_DIR */
+-#define WM8400_DACLRC_DIR_MASK                  0x0800  /* DACLRC_DIR */
+-#define WM8400_DACLRC_DIR_SHIFT                     11  /* DACLRC_DIR */
+-#define WM8400_DACLRC_DIR_WIDTH                      1  /* DACLRC_DIR */
+-#define WM8400_DACLRC_RATE_MASK                 0x07FF  /* DACLRC_RATE - [10:0] */
+-#define WM8400_DACLRC_RATE_SHIFT                     0  /* DACLRC_RATE - [10:0] */
+-#define WM8400_DACLRC_RATE_WIDTH                    11  /* DACLRC_RATE - [10:0] */
+-
+-/*
+- * R11 (0x0B) - DAC CTRL
+- */
+-#define WM8400_DAC_SDMCLK_RATE                  0x2000  /* DAC_SDMCLK_RATE */
+-#define WM8400_DAC_SDMCLK_RATE_MASK             0x2000  /* DAC_SDMCLK_RATE */
+-#define WM8400_DAC_SDMCLK_RATE_SHIFT                13  /* DAC_SDMCLK_RATE */
+-#define WM8400_DAC_SDMCLK_RATE_WIDTH                 1  /* DAC_SDMCLK_RATE */
+-#define WM8400_AIF_LRCLKRATE                    0x0400  /* AIF_LRCLKRATE */
+-#define WM8400_AIF_LRCLKRATE_MASK               0x0400  /* AIF_LRCLKRATE */
+-#define WM8400_AIF_LRCLKRATE_SHIFT                  10  /* AIF_LRCLKRATE */
+-#define WM8400_AIF_LRCLKRATE_WIDTH                   1  /* AIF_LRCLKRATE */
+-#define WM8400_DAC_MONO                         0x0200  /* DAC_MONO */
+-#define WM8400_DAC_MONO_MASK                    0x0200  /* DAC_MONO */
+-#define WM8400_DAC_MONO_SHIFT                        9  /* DAC_MONO */
+-#define WM8400_DAC_MONO_WIDTH                        1  /* DAC_MONO */
+-#define WM8400_DAC_SB_FILT                      0x0100  /* DAC_SB_FILT */
+-#define WM8400_DAC_SB_FILT_MASK                 0x0100  /* DAC_SB_FILT */
+-#define WM8400_DAC_SB_FILT_SHIFT                     8  /* DAC_SB_FILT */
+-#define WM8400_DAC_SB_FILT_WIDTH                     1  /* DAC_SB_FILT */
+-#define WM8400_DAC_MUTERATE                     0x0080  /* DAC_MUTERATE */
+-#define WM8400_DAC_MUTERATE_MASK                0x0080  /* DAC_MUTERATE */
+-#define WM8400_DAC_MUTERATE_SHIFT                    7  /* DAC_MUTERATE */
+-#define WM8400_DAC_MUTERATE_WIDTH                    1  /* DAC_MUTERATE */
+-#define WM8400_DAC_MUTEMODE                     0x0040  /* DAC_MUTEMODE */
+-#define WM8400_DAC_MUTEMODE_MASK                0x0040  /* DAC_MUTEMODE */
+-#define WM8400_DAC_MUTEMODE_SHIFT                    6  /* DAC_MUTEMODE */
+-#define WM8400_DAC_MUTEMODE_WIDTH                    1  /* DAC_MUTEMODE */
+-#define WM8400_DEEMP_MASK                       0x0030  /* DEEMP - [5:4] */
+-#define WM8400_DEEMP_SHIFT                           4  /* DEEMP - [5:4] */
+-#define WM8400_DEEMP_WIDTH                           2  /* DEEMP - [5:4] */
+-#define WM8400_DAC_MUTE                         0x0004  /* DAC_MUTE */
+-#define WM8400_DAC_MUTE_MASK                    0x0004  /* DAC_MUTE */
+-#define WM8400_DAC_MUTE_SHIFT                        2  /* DAC_MUTE */
+-#define WM8400_DAC_MUTE_WIDTH                        1  /* DAC_MUTE */
+-#define WM8400_DACL_DATINV                      0x0002  /* DACL_DATINV */
+-#define WM8400_DACL_DATINV_MASK                 0x0002  /* DACL_DATINV */
+-#define WM8400_DACL_DATINV_SHIFT                     1  /* DACL_DATINV */
+-#define WM8400_DACL_DATINV_WIDTH                     1  /* DACL_DATINV */
+-#define WM8400_DACR_DATINV                      0x0001  /* DACR_DATINV */
+-#define WM8400_DACR_DATINV_MASK                 0x0001  /* DACR_DATINV */
+-#define WM8400_DACR_DATINV_SHIFT                     0  /* DACR_DATINV */
+-#define WM8400_DACR_DATINV_WIDTH                     1  /* DACR_DATINV */
+-
+-/*
+- * R12 (0x0C) - Left DAC Digital Volume
+- */
+-#define WM8400_DAC_VU                           0x0100  /* DAC_VU */
+-#define WM8400_DAC_VU_MASK                      0x0100  /* DAC_VU */
+-#define WM8400_DAC_VU_SHIFT                          8  /* DAC_VU */
+-#define WM8400_DAC_VU_WIDTH                          1  /* DAC_VU */
+-#define WM8400_DACL_VOL_MASK                    0x00FF  /* DACL_VOL - [7:0] */
+-#define WM8400_DACL_VOL_SHIFT                        0  /* DACL_VOL - [7:0] */
+-#define WM8400_DACL_VOL_WIDTH                        8  /* DACL_VOL - [7:0] */
+-
+-/*
+- * R13 (0x0D) - Right DAC Digital Volume
+- */
+-#define WM8400_DAC_VU                           0x0100  /* DAC_VU */
+-#define WM8400_DAC_VU_MASK                      0x0100  /* DAC_VU */
+-#define WM8400_DAC_VU_SHIFT                          8  /* DAC_VU */
+-#define WM8400_DAC_VU_WIDTH                          1  /* DAC_VU */
+-#define WM8400_DACR_VOL_MASK                    0x00FF  /* DACR_VOL - [7:0] */
+-#define WM8400_DACR_VOL_SHIFT                        0  /* DACR_VOL - [7:0] */
+-#define WM8400_DACR_VOL_WIDTH                        8  /* DACR_VOL - [7:0] */
+-
+-/*
+- * R14 (0x0E) - Digital Side Tone
+- */
+-#define WM8400_ADCL_DAC_SVOL_MASK               0x1E00  /*   ADCL_DAC_SVOL - [12:9] */
+-#define WM8400_ADCL_DAC_SVOL_SHIFT                   9  /*   ADCL_DAC_SVOL - [12:9] */
+-#define WM8400_ADCL_DAC_SVOL_WIDTH                   4  /*   ADCL_DAC_SVOL - [12:9] */
+-#define WM8400_ADCR_DAC_SVOL_MASK               0x01E0  /* ADCR_DAC_SVOL - [8:5] */
+-#define WM8400_ADCR_DAC_SVOL_SHIFT                   5  /* ADCR_DAC_SVOL - [8:5] */
+-#define WM8400_ADCR_DAC_SVOL_WIDTH                   4  /* ADCR_DAC_SVOL - [8:5] */
+-#define WM8400_ADC_TO_DACL_MASK                 0x000C  /* ADC_TO_DACL - [3:2] */
+-#define WM8400_ADC_TO_DACL_SHIFT                     2  /* ADC_TO_DACL - [3:2] */
+-#define WM8400_ADC_TO_DACL_WIDTH                     2  /* ADC_TO_DACL - [3:2] */
+-#define WM8400_ADC_TO_DACR_MASK                 0x0003  /* ADC_TO_DACR - [1:0] */
+-#define WM8400_ADC_TO_DACR_SHIFT                     0  /* ADC_TO_DACR - [1:0] */
+-#define WM8400_ADC_TO_DACR_WIDTH                     2  /* ADC_TO_DACR - [1:0] */
+-
+-/*
+- * R15 (0x0F) - ADC CTRL
+- */
+-#define WM8400_ADC_HPF_ENA                      0x0100  /* ADC_HPF_ENA */
+-#define WM8400_ADC_HPF_ENA_MASK                 0x0100  /* ADC_HPF_ENA */
+-#define WM8400_ADC_HPF_ENA_SHIFT                     8  /* ADC_HPF_ENA */
+-#define WM8400_ADC_HPF_ENA_WIDTH                     1  /* ADC_HPF_ENA */
+-#define WM8400_ADC_HPF_CUT_MASK                 0x0060  /* ADC_HPF_CUT - [6:5] */
+-#define WM8400_ADC_HPF_CUT_SHIFT                     5  /* ADC_HPF_CUT - [6:5] */
+-#define WM8400_ADC_HPF_CUT_WIDTH                     2  /* ADC_HPF_CUT - [6:5] */
+-#define WM8400_ADCL_DATINV                      0x0002  /* ADCL_DATINV */
+-#define WM8400_ADCL_DATINV_MASK                 0x0002  /* ADCL_DATINV */
+-#define WM8400_ADCL_DATINV_SHIFT                     1  /* ADCL_DATINV */
+-#define WM8400_ADCL_DATINV_WIDTH                     1  /* ADCL_DATINV */
+-#define WM8400_ADCR_DATINV                      0x0001  /* ADCR_DATINV */
+-#define WM8400_ADCR_DATINV_MASK                 0x0001  /* ADCR_DATINV */
+-#define WM8400_ADCR_DATINV_SHIFT                     0  /* ADCR_DATINV */
+-#define WM8400_ADCR_DATINV_WIDTH                     1  /* ADCR_DATINV */
+-
+-/*
+- * R16 (0x10) - Left ADC Digital Volume
+- */
+-#define WM8400_ADC_VU                           0x0100  /* ADC_VU */
+-#define WM8400_ADC_VU_MASK                      0x0100  /* ADC_VU */
+-#define WM8400_ADC_VU_SHIFT                          8  /* ADC_VU */
+-#define WM8400_ADC_VU_WIDTH                          1  /* ADC_VU */
+-#define WM8400_ADCL_VOL_MASK                    0x00FF  /* ADCL_VOL - [7:0] */
+-#define WM8400_ADCL_VOL_SHIFT                        0  /* ADCL_VOL - [7:0] */
+-#define WM8400_ADCL_VOL_WIDTH                        8  /* ADCL_VOL - [7:0] */
+-
+-/*
+- * R17 (0x11) - Right ADC Digital Volume
+- */
+-#define WM8400_ADC_VU                           0x0100  /* ADC_VU */
+-#define WM8400_ADC_VU_MASK                      0x0100  /* ADC_VU */
+-#define WM8400_ADC_VU_SHIFT                          8  /* ADC_VU */
+-#define WM8400_ADC_VU_WIDTH                          1  /* ADC_VU */
+-#define WM8400_ADCR_VOL_MASK                    0x00FF  /* ADCR_VOL - [7:0] */
+-#define WM8400_ADCR_VOL_SHIFT                        0  /* ADCR_VOL - [7:0] */
+-#define WM8400_ADCR_VOL_WIDTH                        8  /* ADCR_VOL - [7:0] */
+-
+-/*
+- * R24 (0x18) - Left Line Input 1&2 Volume
+- */
+-#define WM8400_IPVU                             0x0100  /* IPVU */
+-#define WM8400_IPVU_MASK                        0x0100  /* IPVU */
+-#define WM8400_IPVU_SHIFT                            8  /* IPVU */
+-#define WM8400_IPVU_WIDTH                            1  /* IPVU */
+-#define WM8400_LI12MUTE                         0x0080  /* LI12MUTE */
+-#define WM8400_LI12MUTE_MASK                    0x0080  /* LI12MUTE */
+-#define WM8400_LI12MUTE_SHIFT                        7  /* LI12MUTE */
+-#define WM8400_LI12MUTE_WIDTH                        1  /* LI12MUTE */
+-#define WM8400_LI12ZC                           0x0040  /* LI12ZC */
+-#define WM8400_LI12ZC_MASK                      0x0040  /* LI12ZC */
+-#define WM8400_LI12ZC_SHIFT                          6  /* LI12ZC */
+-#define WM8400_LI12ZC_WIDTH                          1  /* LI12ZC */
+-#define WM8400_LIN12VOL_MASK                    0x001F  /* LIN12VOL - [4:0] */
+-#define WM8400_LIN12VOL_SHIFT                        0  /* LIN12VOL - [4:0] */
+-#define WM8400_LIN12VOL_WIDTH                        5  /* LIN12VOL - [4:0] */
+-
+-/*
+- * R25 (0x19) - Left Line Input 3&4 Volume
+- */
+-#define WM8400_IPVU                             0x0100  /* IPVU */
+-#define WM8400_IPVU_MASK                        0x0100  /* IPVU */
+-#define WM8400_IPVU_SHIFT                            8  /* IPVU */
+-#define WM8400_IPVU_WIDTH                            1  /* IPVU */
+-#define WM8400_LI34MUTE                         0x0080  /* LI34MUTE */
+-#define WM8400_LI34MUTE_MASK                    0x0080  /* LI34MUTE */
+-#define WM8400_LI34MUTE_SHIFT                        7  /* LI34MUTE */
+-#define WM8400_LI34MUTE_WIDTH                        1  /* LI34MUTE */
+-#define WM8400_LI34ZC                           0x0040  /* LI34ZC */
+-#define WM8400_LI34ZC_MASK                      0x0040  /* LI34ZC */
+-#define WM8400_LI34ZC_SHIFT                          6  /* LI34ZC */
+-#define WM8400_LI34ZC_WIDTH                          1  /* LI34ZC */
+-#define WM8400_LIN34VOL_MASK                    0x001F  /* LIN34VOL - [4:0] */
+-#define WM8400_LIN34VOL_SHIFT                        0  /* LIN34VOL - [4:0] */
+-#define WM8400_LIN34VOL_WIDTH                        5  /* LIN34VOL - [4:0] */
+-
+-/*
+- * R26 (0x1A) - Right Line Input 1&2 Volume
+- */
+-#define WM8400_IPVU                             0x0100  /* IPVU */
+-#define WM8400_IPVU_MASK                        0x0100  /* IPVU */
+-#define WM8400_IPVU_SHIFT                            8  /* IPVU */
+-#define WM8400_IPVU_WIDTH                            1  /* IPVU */
+-#define WM8400_RI12MUTE                         0x0080  /* RI12MUTE */
+-#define WM8400_RI12MUTE_MASK                    0x0080  /* RI12MUTE */
+-#define WM8400_RI12MUTE_SHIFT                        7  /* RI12MUTE */
+-#define WM8400_RI12MUTE_WIDTH                        1  /* RI12MUTE */
+-#define WM8400_RI12ZC                           0x0040  /* RI12ZC */
+-#define WM8400_RI12ZC_MASK                      0x0040  /* RI12ZC */
+-#define WM8400_RI12ZC_SHIFT                          6  /* RI12ZC */
+-#define WM8400_RI12ZC_WIDTH                          1  /* RI12ZC */
+-#define WM8400_RIN12VOL_MASK                    0x001F  /* RIN12VOL - [4:0] */
+-#define WM8400_RIN12VOL_SHIFT                        0  /* RIN12VOL - [4:0] */
+-#define WM8400_RIN12VOL_WIDTH                        5  /* RIN12VOL - [4:0] */
+-
+-/*
+- * R27 (0x1B) - Right Line Input 3&4 Volume
+- */
+-#define WM8400_IPVU                             0x0100  /* IPVU */
+-#define WM8400_IPVU_MASK                        0x0100  /* IPVU */
+-#define WM8400_IPVU_SHIFT                            8  /* IPVU */
+-#define WM8400_IPVU_WIDTH                            1  /* IPVU */
+-#define WM8400_RI34MUTE                         0x0080  /* RI34MUTE */
+-#define WM8400_RI34MUTE_MASK                    0x0080  /* RI34MUTE */
+-#define WM8400_RI34MUTE_SHIFT                        7  /* RI34MUTE */
+-#define WM8400_RI34MUTE_WIDTH                        1  /* RI34MUTE */
+-#define WM8400_RI34ZC                           0x0040  /* RI34ZC */
+-#define WM8400_RI34ZC_MASK                      0x0040  /* RI34ZC */
+-#define WM8400_RI34ZC_SHIFT                          6  /* RI34ZC */
+-#define WM8400_RI34ZC_WIDTH                          1  /* RI34ZC */
+-#define WM8400_RIN34VOL_MASK                    0x001F  /* RIN34VOL - [4:0] */
+-#define WM8400_RIN34VOL_SHIFT                        0  /* RIN34VOL - [4:0] */
+-#define WM8400_RIN34VOL_WIDTH                        5  /* RIN34VOL - [4:0] */
+-
+-/*
+- * R28 (0x1C) - Left Output Volume
+- */
+-#define WM8400_OPVU                             0x0100  /* OPVU */
+-#define WM8400_OPVU_MASK                        0x0100  /* OPVU */
+-#define WM8400_OPVU_SHIFT                            8  /* OPVU */
+-#define WM8400_OPVU_WIDTH                            1  /* OPVU */
+-#define WM8400_LOZC                             0x0080  /* LOZC */
+-#define WM8400_LOZC_MASK                        0x0080  /* LOZC */
+-#define WM8400_LOZC_SHIFT                            7  /* LOZC */
+-#define WM8400_LOZC_WIDTH                            1  /* LOZC */
+-#define WM8400_LOUTVOL_MASK                     0x007F  /* LOUTVOL - [6:0] */
+-#define WM8400_LOUTVOL_SHIFT                         0  /* LOUTVOL - [6:0] */
+-#define WM8400_LOUTVOL_WIDTH                         7  /* LOUTVOL - [6:0] */
+-
+-/*
+- * R29 (0x1D) - Right Output Volume
+- */
+-#define WM8400_OPVU                             0x0100  /* OPVU */
+-#define WM8400_OPVU_MASK                        0x0100  /* OPVU */
+-#define WM8400_OPVU_SHIFT                            8  /* OPVU */
+-#define WM8400_OPVU_WIDTH                            1  /* OPVU */
+-#define WM8400_ROZC                             0x0080  /* ROZC */
+-#define WM8400_ROZC_MASK                        0x0080  /* ROZC */
+-#define WM8400_ROZC_SHIFT                            7  /* ROZC */
+-#define WM8400_ROZC_WIDTH                            1  /* ROZC */
+-#define WM8400_ROUTVOL_MASK                     0x007F  /* ROUTVOL - [6:0] */
+-#define WM8400_ROUTVOL_SHIFT                         0  /* ROUTVOL - [6:0] */
+-#define WM8400_ROUTVOL_WIDTH                         7  /* ROUTVOL - [6:0] */
+-
+-/*
+- * R30 (0x1E) - Line Outputs Volume
+- */
+-#define WM8400_LONMUTE                          0x0040  /* LONMUTE */
+-#define WM8400_LONMUTE_MASK                     0x0040  /* LONMUTE */
+-#define WM8400_LONMUTE_SHIFT                         6  /* LONMUTE */
+-#define WM8400_LONMUTE_WIDTH                         1  /* LONMUTE */
+-#define WM8400_LOPMUTE                          0x0020  /* LOPMUTE */
+-#define WM8400_LOPMUTE_MASK                     0x0020  /* LOPMUTE */
+-#define WM8400_LOPMUTE_SHIFT                         5  /* LOPMUTE */
+-#define WM8400_LOPMUTE_WIDTH                         1  /* LOPMUTE */
+-#define WM8400_LOATTN                           0x0010  /* LOATTN */
+-#define WM8400_LOATTN_MASK                      0x0010  /* LOATTN */
+-#define WM8400_LOATTN_SHIFT                          4  /* LOATTN */
+-#define WM8400_LOATTN_WIDTH                          1  /* LOATTN */
+-#define WM8400_RONMUTE                          0x0004  /* RONMUTE */
+-#define WM8400_RONMUTE_MASK                     0x0004  /* RONMUTE */
+-#define WM8400_RONMUTE_SHIFT                         2  /* RONMUTE */
+-#define WM8400_RONMUTE_WIDTH                         1  /* RONMUTE */
+-#define WM8400_ROPMUTE                          0x0002  /* ROPMUTE */
+-#define WM8400_ROPMUTE_MASK                     0x0002  /* ROPMUTE */
+-#define WM8400_ROPMUTE_SHIFT                         1  /* ROPMUTE */
+-#define WM8400_ROPMUTE_WIDTH                         1  /* ROPMUTE */
+-#define WM8400_ROATTN                           0x0001  /* ROATTN */
+-#define WM8400_ROATTN_MASK                      0x0001  /* ROATTN */
+-#define WM8400_ROATTN_SHIFT                          0  /* ROATTN */
+-#define WM8400_ROATTN_WIDTH                          1  /* ROATTN */
+-
+-/*
+- * R31 (0x1F) - Out3/4 Volume
+- */
+-#define WM8400_OUT3MUTE                         0x0020  /* OUT3MUTE */
+-#define WM8400_OUT3MUTE_MASK                    0x0020  /* OUT3MUTE */
+-#define WM8400_OUT3MUTE_SHIFT                        5  /* OUT3MUTE */
+-#define WM8400_OUT3MUTE_WIDTH                        1  /* OUT3MUTE */
+-#define WM8400_OUT3ATTN                         0x0010  /* OUT3ATTN */
+-#define WM8400_OUT3ATTN_MASK                    0x0010  /* OUT3ATTN */
+-#define WM8400_OUT3ATTN_SHIFT                        4  /* OUT3ATTN */
+-#define WM8400_OUT3ATTN_WIDTH                        1  /* OUT3ATTN */
+-#define WM8400_OUT4MUTE                         0x0002  /* OUT4MUTE */
+-#define WM8400_OUT4MUTE_MASK                    0x0002  /* OUT4MUTE */
+-#define WM8400_OUT4MUTE_SHIFT                        1  /* OUT4MUTE */
+-#define WM8400_OUT4MUTE_WIDTH                        1  /* OUT4MUTE */
+-#define WM8400_OUT4ATTN                         0x0001  /* OUT4ATTN */
+-#define WM8400_OUT4ATTN_MASK                    0x0001  /* OUT4ATTN */
+-#define WM8400_OUT4ATTN_SHIFT                        0  /* OUT4ATTN */
+-#define WM8400_OUT4ATTN_WIDTH                        1  /* OUT4ATTN */
+-
+-/*
+- * R32 (0x20) - Left OPGA Volume
+- */
+-#define WM8400_OPVU                             0x0100  /* OPVU */
+-#define WM8400_OPVU_MASK                        0x0100  /* OPVU */
+-#define WM8400_OPVU_SHIFT                            8  /* OPVU */
+-#define WM8400_OPVU_WIDTH                            1  /* OPVU */
+-#define WM8400_LOPGAZC                          0x0080  /* LOPGAZC */
+-#define WM8400_LOPGAZC_MASK                     0x0080  /* LOPGAZC */
+-#define WM8400_LOPGAZC_SHIFT                         7  /* LOPGAZC */
+-#define WM8400_LOPGAZC_WIDTH                         1  /* LOPGAZC */
+-#define WM8400_LOPGAVOL_MASK                    0x007F  /* LOPGAVOL - [6:0] */
+-#define WM8400_LOPGAVOL_SHIFT                        0  /* LOPGAVOL - [6:0] */
+-#define WM8400_LOPGAVOL_WIDTH                        7  /* LOPGAVOL - [6:0] */
+-
+-/*
+- * R33 (0x21) - Right OPGA Volume
+- */
+-#define WM8400_OPVU                             0x0100  /* OPVU */
+-#define WM8400_OPVU_MASK                        0x0100  /* OPVU */
+-#define WM8400_OPVU_SHIFT                            8  /* OPVU */
+-#define WM8400_OPVU_WIDTH                            1  /* OPVU */
+-#define WM8400_ROPGAZC                          0x0080  /* ROPGAZC */
+-#define WM8400_ROPGAZC_MASK                     0x0080  /* ROPGAZC */
+-#define WM8400_ROPGAZC_SHIFT                         7  /* ROPGAZC */
+-#define WM8400_ROPGAZC_WIDTH                         1  /* ROPGAZC */
+-#define WM8400_ROPGAVOL_MASK                    0x007F  /* ROPGAVOL - [6:0] */
+-#define WM8400_ROPGAVOL_SHIFT                        0  /* ROPGAVOL - [6:0] */
+-#define WM8400_ROPGAVOL_WIDTH                        7  /* ROPGAVOL - [6:0] */
+-
+-/*
+- * R34 (0x22) - Speaker Volume
+- */
+-#define WM8400_SPKATTN_MASK                     0x0003  /* SPKATTN - [1:0] */
+-#define WM8400_SPKATTN_SHIFT                         0  /* SPKATTN - [1:0] */
+-#define WM8400_SPKATTN_WIDTH                         2  /* SPKATTN - [1:0] */
+-
+-/*
+- * R35 (0x23) - ClassD1
+- */
+-#define WM8400_CDMODE                           0x0100  /* CDMODE */
+-#define WM8400_CDMODE_MASK                      0x0100  /* CDMODE */
+-#define WM8400_CDMODE_SHIFT                          8  /* CDMODE */
+-#define WM8400_CDMODE_WIDTH                          1  /* CDMODE */
+-#define WM8400_CLASSD_CLK_SEL                   0x0080  /* CLASSD_CLK_SEL */
+-#define WM8400_CLASSD_CLK_SEL_MASK              0x0080  /* CLASSD_CLK_SEL */
+-#define WM8400_CLASSD_CLK_SEL_SHIFT                  7  /* CLASSD_CLK_SEL */
+-#define WM8400_CLASSD_CLK_SEL_WIDTH                  1  /* CLASSD_CLK_SEL */
+-#define WM8400_CD_SRCTRL                        0x0040  /* CD_SRCTRL */
+-#define WM8400_CD_SRCTRL_MASK                   0x0040  /* CD_SRCTRL */
+-#define WM8400_CD_SRCTRL_SHIFT                       6  /* CD_SRCTRL */
+-#define WM8400_CD_SRCTRL_WIDTH                       1  /* CD_SRCTRL */
+-#define WM8400_SPKNOPOP                         0x0020  /* SPKNOPOP */
+-#define WM8400_SPKNOPOP_MASK                    0x0020  /* SPKNOPOP */
+-#define WM8400_SPKNOPOP_SHIFT                        5  /* SPKNOPOP */
+-#define WM8400_SPKNOPOP_WIDTH                        1  /* SPKNOPOP */
+-#define WM8400_DBLERATE                         0x0010  /* DBLERATE */
+-#define WM8400_DBLERATE_MASK                    0x0010  /* DBLERATE */
+-#define WM8400_DBLERATE_SHIFT                        4  /* DBLERATE */
+-#define WM8400_DBLERATE_WIDTH                        1  /* DBLERATE */
+-#define WM8400_LOOPTEST                         0x0008  /* LOOPTEST */
+-#define WM8400_LOOPTEST_MASK                    0x0008  /* LOOPTEST */
+-#define WM8400_LOOPTEST_SHIFT                        3  /* LOOPTEST */
+-#define WM8400_LOOPTEST_WIDTH                        1  /* LOOPTEST */
+-#define WM8400_HALFABBIAS                       0x0004  /* HALFABBIAS */
+-#define WM8400_HALFABBIAS_MASK                  0x0004  /* HALFABBIAS */
+-#define WM8400_HALFABBIAS_SHIFT                      2  /* HALFABBIAS */
+-#define WM8400_HALFABBIAS_WIDTH                      1  /* HALFABBIAS */
+-#define WM8400_TRIDEL_MASK                      0x0003  /* TRIDEL - [1:0] */
+-#define WM8400_TRIDEL_SHIFT                          0  /* TRIDEL - [1:0] */
+-#define WM8400_TRIDEL_WIDTH                          2  /* TRIDEL - [1:0] */
+-
+-/*
+- * R37 (0x25) - ClassD3
+- */
+-#define WM8400_DCGAIN_MASK                      0x0038  /* DCGAIN - [5:3] */
+-#define WM8400_DCGAIN_SHIFT                          3  /* DCGAIN - [5:3] */
+-#define WM8400_DCGAIN_WIDTH                          3  /* DCGAIN - [5:3] */
+-#define WM8400_ACGAIN_MASK                      0x0007  /* ACGAIN - [2:0] */
+-#define WM8400_ACGAIN_SHIFT                          0  /* ACGAIN - [2:0] */
+-#define WM8400_ACGAIN_WIDTH                          3  /* ACGAIN - [2:0] */
+-
+-/*
+- * R39 (0x27) - Input Mixer1
+- */
+-#define WM8400_AINLMODE_MASK                    0x000C  /* AINLMODE - [3:2] */
+-#define WM8400_AINLMODE_SHIFT                        2  /* AINLMODE - [3:2] */
+-#define WM8400_AINLMODE_WIDTH                        2  /* AINLMODE - [3:2] */
+-#define WM8400_AINRMODE_MASK                    0x0003  /* AINRMODE - [1:0] */
+-#define WM8400_AINRMODE_SHIFT                        0  /* AINRMODE - [1:0] */
+-#define WM8400_AINRMODE_WIDTH                        2  /* AINRMODE - [1:0] */
+-
+-/*
+- * R40 (0x28) - Input Mixer2
+- */
+-#define WM8400_LMP4                             0x0080  /* LMP4 */
+-#define WM8400_LMP4_MASK                        0x0080  /* LMP4 */
+-#define WM8400_LMP4_SHIFT                            7  /* LMP4 */
+-#define WM8400_LMP4_WIDTH                            1  /* LMP4 */
+-#define WM8400_LMN3                             0x0040  /* LMN3 */
+-#define WM8400_LMN3_MASK                        0x0040  /* LMN3 */
+-#define WM8400_LMN3_SHIFT                            6  /* LMN3 */
+-#define WM8400_LMN3_WIDTH                            1  /* LMN3 */
+-#define WM8400_LMP2                             0x0020  /* LMP2 */
+-#define WM8400_LMP2_MASK                        0x0020  /* LMP2 */
+-#define WM8400_LMP2_SHIFT                            5  /* LMP2 */
+-#define WM8400_LMP2_WIDTH                            1  /* LMP2 */
+-#define WM8400_LMN1                             0x0010  /* LMN1 */
+-#define WM8400_LMN1_MASK                        0x0010  /* LMN1 */
+-#define WM8400_LMN1_SHIFT                            4  /* LMN1 */
+-#define WM8400_LMN1_WIDTH                            1  /* LMN1 */
+-#define WM8400_RMP4                             0x0008  /* RMP4 */
+-#define WM8400_RMP4_MASK                        0x0008  /* RMP4 */
+-#define WM8400_RMP4_SHIFT                            3  /* RMP4 */
+-#define WM8400_RMP4_WIDTH                            1  /* RMP4 */
+-#define WM8400_RMN3                             0x0004  /* RMN3 */
+-#define WM8400_RMN3_MASK                        0x0004  /* RMN3 */
+-#define WM8400_RMN3_SHIFT                            2  /* RMN3 */
+-#define WM8400_RMN3_WIDTH                            1  /* RMN3 */
+-#define WM8400_RMP2                             0x0002  /* RMP2 */
+-#define WM8400_RMP2_MASK                        0x0002  /* RMP2 */
+-#define WM8400_RMP2_SHIFT                            1  /* RMP2 */
+-#define WM8400_RMP2_WIDTH                            1  /* RMP2 */
+-#define WM8400_RMN1                             0x0001  /* RMN1 */
+-#define WM8400_RMN1_MASK                        0x0001  /* RMN1 */
+-#define WM8400_RMN1_SHIFT                            0  /* RMN1 */
+-#define WM8400_RMN1_WIDTH                            1  /* RMN1 */
+-
+-/*
+- * R41 (0x29) - Input Mixer3
+- */
+-#define WM8400_L34MNB                           0x0100  /* L34MNB */
+-#define WM8400_L34MNB_MASK                      0x0100  /* L34MNB */
+-#define WM8400_L34MNB_SHIFT                          8  /* L34MNB */
+-#define WM8400_L34MNB_WIDTH                          1  /* L34MNB */
+-#define WM8400_L34MNBST                         0x0080  /* L34MNBST */
+-#define WM8400_L34MNBST_MASK                    0x0080  /* L34MNBST */
+-#define WM8400_L34MNBST_SHIFT                        7  /* L34MNBST */
+-#define WM8400_L34MNBST_WIDTH                        1  /* L34MNBST */
+-#define WM8400_L12MNB                           0x0020  /* L12MNB */
+-#define WM8400_L12MNB_MASK                      0x0020  /* L12MNB */
+-#define WM8400_L12MNB_SHIFT                          5  /* L12MNB */
+-#define WM8400_L12MNB_WIDTH                          1  /* L12MNB */
+-#define WM8400_L12MNBST                         0x0010  /* L12MNBST */
+-#define WM8400_L12MNBST_MASK                    0x0010  /* L12MNBST */
+-#define WM8400_L12MNBST_SHIFT                        4  /* L12MNBST */
+-#define WM8400_L12MNBST_WIDTH                        1  /* L12MNBST */
+-#define WM8400_LDBVOL_MASK                      0x0007  /* LDBVOL - [2:0] */
+-#define WM8400_LDBVOL_SHIFT                          0  /* LDBVOL - [2:0] */
+-#define WM8400_LDBVOL_WIDTH                          3  /* LDBVOL - [2:0] */
+-
+-/*
+- * R42 (0x2A) - Input Mixer4
+- */
+-#define WM8400_R34MNB                           0x0100  /* R34MNB */
+-#define WM8400_R34MNB_MASK                      0x0100  /* R34MNB */
+-#define WM8400_R34MNB_SHIFT                          8  /* R34MNB */
+-#define WM8400_R34MNB_WIDTH                          1  /* R34MNB */
+-#define WM8400_R34MNBST                         0x0080  /* R34MNBST */
+-#define WM8400_R34MNBST_MASK                    0x0080  /* R34MNBST */
+-#define WM8400_R34MNBST_SHIFT                        7  /* R34MNBST */
+-#define WM8400_R34MNBST_WIDTH                        1  /* R34MNBST */
+-#define WM8400_R12MNB                           0x0020  /* R12MNB */
+-#define WM8400_R12MNB_MASK                      0x0020  /* R12MNB */
+-#define WM8400_R12MNB_SHIFT                          5  /* R12MNB */
+-#define WM8400_R12MNB_WIDTH                          1  /* R12MNB */
+-#define WM8400_R12MNBST                         0x0010  /* R12MNBST */
+-#define WM8400_R12MNBST_MASK                    0x0010  /* R12MNBST */
+-#define WM8400_R12MNBST_SHIFT                        4  /* R12MNBST */
+-#define WM8400_R12MNBST_WIDTH                        1  /* R12MNBST */
+-#define WM8400_RDBVOL_MASK                      0x0007  /* RDBVOL - [2:0] */
+-#define WM8400_RDBVOL_SHIFT                          0  /* RDBVOL - [2:0] */
+-#define WM8400_RDBVOL_WIDTH                          3  /* RDBVOL - [2:0] */
+-
+-/*
+- * R43 (0x2B) - Input Mixer5
+- */
+-#define WM8400_LI2BVOL_MASK                     0x01C0  /* LI2BVOL - [8:6] */
+-#define WM8400_LI2BVOL_SHIFT                         6  /* LI2BVOL - [8:6] */
+-#define WM8400_LI2BVOL_WIDTH                         3  /* LI2BVOL - [8:6] */
+-#define WM8400_LR4BVOL_MASK                     0x0038  /* LR4BVOL - [5:3] */
+-#define WM8400_LR4BVOL_SHIFT                         3  /* LR4BVOL - [5:3] */
+-#define WM8400_LR4BVOL_WIDTH                         3  /* LR4BVOL - [5:3] */
+-#define WM8400_LL4BVOL_MASK                     0x0007  /* LL4BVOL - [2:0] */
+-#define WM8400_LL4BVOL_SHIFT                         0  /* LL4BVOL - [2:0] */
+-#define WM8400_LL4BVOL_WIDTH                         3  /* LL4BVOL - [2:0] */
+-
+-/*
+- * R44 (0x2C) - Input Mixer6
+- */
+-#define WM8400_RI2BVOL_MASK                     0x01C0  /* RI2BVOL - [8:6] */
+-#define WM8400_RI2BVOL_SHIFT                         6  /* RI2BVOL - [8:6] */
+-#define WM8400_RI2BVOL_WIDTH                         3  /* RI2BVOL - [8:6] */
+-#define WM8400_RL4BVOL_MASK                     0x0038  /* RL4BVOL - [5:3] */
+-#define WM8400_RL4BVOL_SHIFT                         3  /* RL4BVOL - [5:3] */
+-#define WM8400_RL4BVOL_WIDTH                         3  /* RL4BVOL - [5:3] */
+-#define WM8400_RR4BVOL_MASK                     0x0007  /* RR4BVOL - [2:0] */
+-#define WM8400_RR4BVOL_SHIFT                         0  /* RR4BVOL - [2:0] */
+-#define WM8400_RR4BVOL_WIDTH                         3  /* RR4BVOL - [2:0] */
+-
+-/*
+- * R45 (0x2D) - Output Mixer1
+- */
+-#define WM8400_LRBLO                            0x0080  /* LRBLO */
+-#define WM8400_LRBLO_MASK                       0x0080  /* LRBLO */
+-#define WM8400_LRBLO_SHIFT                           7  /* LRBLO */
+-#define WM8400_LRBLO_WIDTH                           1  /* LRBLO */
+-#define WM8400_LLBLO                            0x0040  /* LLBLO */
+-#define WM8400_LLBLO_MASK                       0x0040  /* LLBLO */
+-#define WM8400_LLBLO_SHIFT                           6  /* LLBLO */
+-#define WM8400_LLBLO_WIDTH                           1  /* LLBLO */
+-#define WM8400_LRI3LO                           0x0020  /* LRI3LO */
+-#define WM8400_LRI3LO_MASK                      0x0020  /* LRI3LO */
+-#define WM8400_LRI3LO_SHIFT                          5  /* LRI3LO */
+-#define WM8400_LRI3LO_WIDTH                          1  /* LRI3LO */
+-#define WM8400_LLI3LO                           0x0010  /* LLI3LO */
+-#define WM8400_LLI3LO_MASK                      0x0010  /* LLI3LO */
+-#define WM8400_LLI3LO_SHIFT                          4  /* LLI3LO */
+-#define WM8400_LLI3LO_WIDTH                          1  /* LLI3LO */
+-#define WM8400_LR12LO                           0x0008  /* LR12LO */
+-#define WM8400_LR12LO_MASK                      0x0008  /* LR12LO */
+-#define WM8400_LR12LO_SHIFT                          3  /* LR12LO */
+-#define WM8400_LR12LO_WIDTH                          1  /* LR12LO */
+-#define WM8400_LL12LO                           0x0004  /* LL12LO */
+-#define WM8400_LL12LO_MASK                      0x0004  /* LL12LO */
+-#define WM8400_LL12LO_SHIFT                          2  /* LL12LO */
+-#define WM8400_LL12LO_WIDTH                          1  /* LL12LO */
+-#define WM8400_LDLO                             0x0001  /* LDLO */
+-#define WM8400_LDLO_MASK                        0x0001  /* LDLO */
+-#define WM8400_LDLO_SHIFT                            0  /* LDLO */
+-#define WM8400_LDLO_WIDTH                            1  /* LDLO */
+-
+-/*
+- * R46 (0x2E) - Output Mixer2
+- */
+-#define WM8400_RLBRO                            0x0080  /* RLBRO */
+-#define WM8400_RLBRO_MASK                       0x0080  /* RLBRO */
+-#define WM8400_RLBRO_SHIFT                           7  /* RLBRO */
+-#define WM8400_RLBRO_WIDTH                           1  /* RLBRO */
+-#define WM8400_RRBRO                            0x0040  /* RRBRO */
+-#define WM8400_RRBRO_MASK                       0x0040  /* RRBRO */
+-#define WM8400_RRBRO_SHIFT                           6  /* RRBRO */
+-#define WM8400_RRBRO_WIDTH                           1  /* RRBRO */
+-#define WM8400_RLI3RO                           0x0020  /* RLI3RO */
+-#define WM8400_RLI3RO_MASK                      0x0020  /* RLI3RO */
+-#define WM8400_RLI3RO_SHIFT                          5  /* RLI3RO */
+-#define WM8400_RLI3RO_WIDTH                          1  /* RLI3RO */
+-#define WM8400_RRI3RO                           0x0010  /* RRI3RO */
+-#define WM8400_RRI3RO_MASK                      0x0010  /* RRI3RO */
+-#define WM8400_RRI3RO_SHIFT                          4  /* RRI3RO */
+-#define WM8400_RRI3RO_WIDTH                          1  /* RRI3RO */
+-#define WM8400_RL12RO                           0x0008  /* RL12RO */
+-#define WM8400_RL12RO_MASK                      0x0008  /* RL12RO */
+-#define WM8400_RL12RO_SHIFT                          3  /* RL12RO */
+-#define WM8400_RL12RO_WIDTH                          1  /* RL12RO */
+-#define WM8400_RR12RO                           0x0004  /* RR12RO */
+-#define WM8400_RR12RO_MASK                      0x0004  /* RR12RO */
+-#define WM8400_RR12RO_SHIFT                          2  /* RR12RO */
+-#define WM8400_RR12RO_WIDTH                          1  /* RR12RO */
+-#define WM8400_RDRO                             0x0001  /* RDRO */
+-#define WM8400_RDRO_MASK                        0x0001  /* RDRO */
+-#define WM8400_RDRO_SHIFT                            0  /* RDRO */
+-#define WM8400_RDRO_WIDTH                            1  /* RDRO */
+-
+-/*
+- * R47 (0x2F) - Output Mixer3
+- */
+-#define WM8400_LLI3LOVOL_MASK                   0x01C0  /* LLI3LOVOL - [8:6] */
+-#define WM8400_LLI3LOVOL_SHIFT                       6  /* LLI3LOVOL - [8:6] */
+-#define WM8400_LLI3LOVOL_WIDTH                       3  /* LLI3LOVOL - [8:6] */
+-#define WM8400_LR12LOVOL_MASK                   0x0038  /* LR12LOVOL - [5:3] */
+-#define WM8400_LR12LOVOL_SHIFT                       3  /* LR12LOVOL - [5:3] */
+-#define WM8400_LR12LOVOL_WIDTH                       3  /* LR12LOVOL - [5:3] */
+-#define WM8400_LL12LOVOL_MASK                   0x0007  /* LL12LOVOL - [2:0] */
+-#define WM8400_LL12LOVOL_SHIFT                       0  /* LL12LOVOL - [2:0] */
+-#define WM8400_LL12LOVOL_WIDTH                       3  /* LL12LOVOL - [2:0] */
+-
+-/*
+- * R48 (0x30) - Output Mixer4
+- */
+-#define WM8400_RRI3ROVOL_MASK                   0x01C0  /* RRI3ROVOL - [8:6] */
+-#define WM8400_RRI3ROVOL_SHIFT                       6  /* RRI3ROVOL - [8:6] */
+-#define WM8400_RRI3ROVOL_WIDTH                       3  /* RRI3ROVOL - [8:6] */
+-#define WM8400_RL12ROVOL_MASK                   0x0038  /* RL12ROVOL - [5:3] */
+-#define WM8400_RL12ROVOL_SHIFT                       3  /* RL12ROVOL - [5:3] */
+-#define WM8400_RL12ROVOL_WIDTH                       3  /* RL12ROVOL - [5:3] */
+-#define WM8400_RR12ROVOL_MASK                   0x0007  /* RR12ROVOL - [2:0] */
+-#define WM8400_RR12ROVOL_SHIFT                       0  /* RR12ROVOL - [2:0] */
+-#define WM8400_RR12ROVOL_WIDTH                       3  /* RR12ROVOL - [2:0] */
+-
+-/*
+- * R49 (0x31) - Output Mixer5
+- */
+-#define WM8400_LRI3LOVOL_MASK                   0x01C0  /* LRI3LOVOL - [8:6] */
+-#define WM8400_LRI3LOVOL_SHIFT                       6  /* LRI3LOVOL - [8:6] */
+-#define WM8400_LRI3LOVOL_WIDTH                       3  /* LRI3LOVOL - [8:6] */
+-#define WM8400_LRBLOVOL_MASK                    0x0038  /* LRBLOVOL - [5:3] */
+-#define WM8400_LRBLOVOL_SHIFT                        3  /* LRBLOVOL - [5:3] */
+-#define WM8400_LRBLOVOL_WIDTH                        3  /* LRBLOVOL - [5:3] */
+-#define WM8400_LLBLOVOL_MASK                    0x0007  /* LLBLOVOL - [2:0] */
+-#define WM8400_LLBLOVOL_SHIFT                        0  /* LLBLOVOL - [2:0] */
+-#define WM8400_LLBLOVOL_WIDTH                        3  /* LLBLOVOL - [2:0] */
+-
+-/*
+- * R50 (0x32) - Output Mixer6
+- */
+-#define WM8400_RLI3ROVOL_MASK                   0x01C0  /* RLI3ROVOL - [8:6] */
+-#define WM8400_RLI3ROVOL_SHIFT                       6  /* RLI3ROVOL - [8:6] */
+-#define WM8400_RLI3ROVOL_WIDTH                       3  /* RLI3ROVOL - [8:6] */
+-#define WM8400_RLBROVOL_MASK                    0x0038  /* RLBROVOL - [5:3] */
+-#define WM8400_RLBROVOL_SHIFT                        3  /* RLBROVOL - [5:3] */
+-#define WM8400_RLBROVOL_WIDTH                        3  /* RLBROVOL - [5:3] */
+-#define WM8400_RRBROVOL_MASK                    0x0007  /* RRBROVOL - [2:0] */
+-#define WM8400_RRBROVOL_SHIFT                        0  /* RRBROVOL - [2:0] */
+-#define WM8400_RRBROVOL_WIDTH                        3  /* RRBROVOL - [2:0] */
+-
+-/*
+- * R51 (0x33) - Out3/4 Mixer
+- */
+-#define WM8400_VSEL_MASK                        0x0180  /* VSEL - [8:7] */
+-#define WM8400_VSEL_SHIFT                            7  /* VSEL - [8:7] */
+-#define WM8400_VSEL_WIDTH                            2  /* VSEL - [8:7] */
+-#define WM8400_LI4O3                            0x0020  /* LI4O3 */
+-#define WM8400_LI4O3_MASK                       0x0020  /* LI4O3 */
+-#define WM8400_LI4O3_SHIFT                           5  /* LI4O3 */
+-#define WM8400_LI4O3_WIDTH                           1  /* LI4O3 */
+-#define WM8400_LPGAO3                           0x0010  /* LPGAO3 */
+-#define WM8400_LPGAO3_MASK                      0x0010  /* LPGAO3 */
+-#define WM8400_LPGAO3_SHIFT                          4  /* LPGAO3 */
+-#define WM8400_LPGAO3_WIDTH                          1  /* LPGAO3 */
+-#define WM8400_RI4O4                            0x0002  /* RI4O4 */
+-#define WM8400_RI4O4_MASK                       0x0002  /* RI4O4 */
+-#define WM8400_RI4O4_SHIFT                           1  /* RI4O4 */
+-#define WM8400_RI4O4_WIDTH                           1  /* RI4O4 */
+-#define WM8400_RPGAO4                           0x0001  /* RPGAO4 */
+-#define WM8400_RPGAO4_MASK                      0x0001  /* RPGAO4 */
+-#define WM8400_RPGAO4_SHIFT                          0  /* RPGAO4 */
+-#define WM8400_RPGAO4_WIDTH                          1  /* RPGAO4 */
+-
+-/*
+- * R52 (0x34) - Line Mixer1
+- */
+-#define WM8400_LLOPGALON                        0x0040  /* LLOPGALON */
+-#define WM8400_LLOPGALON_MASK                   0x0040  /* LLOPGALON */
+-#define WM8400_LLOPGALON_SHIFT                       6  /* LLOPGALON */
+-#define WM8400_LLOPGALON_WIDTH                       1  /* LLOPGALON */
+-#define WM8400_LROPGALON                        0x0020  /* LROPGALON */
+-#define WM8400_LROPGALON_MASK                   0x0020  /* LROPGALON */
+-#define WM8400_LROPGALON_SHIFT                       5  /* LROPGALON */
+-#define WM8400_LROPGALON_WIDTH                       1  /* LROPGALON */
+-#define WM8400_LOPLON                           0x0010  /* LOPLON */
+-#define WM8400_LOPLON_MASK                      0x0010  /* LOPLON */
+-#define WM8400_LOPLON_SHIFT                          4  /* LOPLON */
+-#define WM8400_LOPLON_WIDTH                          1  /* LOPLON */
+-#define WM8400_LR12LOP                          0x0004  /* LR12LOP */
+-#define WM8400_LR12LOP_MASK                     0x0004  /* LR12LOP */
+-#define WM8400_LR12LOP_SHIFT                         2  /* LR12LOP */
+-#define WM8400_LR12LOP_WIDTH                         1  /* LR12LOP */
+-#define WM8400_LL12LOP                          0x0002  /* LL12LOP */
+-#define WM8400_LL12LOP_MASK                     0x0002  /* LL12LOP */
+-#define WM8400_LL12LOP_SHIFT                         1  /* LL12LOP */
+-#define WM8400_LL12LOP_WIDTH                         1  /* LL12LOP */
+-#define WM8400_LLOPGALOP                        0x0001  /* LLOPGALOP */
+-#define WM8400_LLOPGALOP_MASK                   0x0001  /* LLOPGALOP */
+-#define WM8400_LLOPGALOP_SHIFT                       0  /* LLOPGALOP */
+-#define WM8400_LLOPGALOP_WIDTH                       1  /* LLOPGALOP */
+-
+-/*
+- * R53 (0x35) - Line Mixer2
+- */
+-#define WM8400_RROPGARON                        0x0040  /* RROPGARON */
+-#define WM8400_RROPGARON_MASK                   0x0040  /* RROPGARON */
+-#define WM8400_RROPGARON_SHIFT                       6  /* RROPGARON */
+-#define WM8400_RROPGARON_WIDTH                       1  /* RROPGARON */
+-#define WM8400_RLOPGARON                        0x0020  /* RLOPGARON */
+-#define WM8400_RLOPGARON_MASK                   0x0020  /* RLOPGARON */
+-#define WM8400_RLOPGARON_SHIFT                       5  /* RLOPGARON */
+-#define WM8400_RLOPGARON_WIDTH                       1  /* RLOPGARON */
+-#define WM8400_ROPRON                           0x0010  /* ROPRON */
+-#define WM8400_ROPRON_MASK                      0x0010  /* ROPRON */
+-#define WM8400_ROPRON_SHIFT                          4  /* ROPRON */
+-#define WM8400_ROPRON_WIDTH                          1  /* ROPRON */
+-#define WM8400_RL12ROP                          0x0004  /* RL12ROP */
+-#define WM8400_RL12ROP_MASK                     0x0004  /* RL12ROP */
+-#define WM8400_RL12ROP_SHIFT                         2  /* RL12ROP */
+-#define WM8400_RL12ROP_WIDTH                         1  /* RL12ROP */
+-#define WM8400_RR12ROP                          0x0002  /* RR12ROP */
+-#define WM8400_RR12ROP_MASK                     0x0002  /* RR12ROP */
+-#define WM8400_RR12ROP_SHIFT                         1  /* RR12ROP */
+-#define WM8400_RR12ROP_WIDTH                         1  /* RR12ROP */
+-#define WM8400_RROPGAROP                        0x0001  /* RROPGAROP */
+-#define WM8400_RROPGAROP_MASK                   0x0001  /* RROPGAROP */
+-#define WM8400_RROPGAROP_SHIFT                       0  /* RROPGAROP */
+-#define WM8400_RROPGAROP_WIDTH                       1  /* RROPGAROP */
+-
+-/*
+- * R54 (0x36) - Speaker Mixer
+- */
+-#define WM8400_LB2SPK                           0x0080  /* LB2SPK */
+-#define WM8400_LB2SPK_MASK                      0x0080  /* LB2SPK */
+-#define WM8400_LB2SPK_SHIFT                          7  /* LB2SPK */
+-#define WM8400_LB2SPK_WIDTH                          1  /* LB2SPK */
+-#define WM8400_RB2SPK                           0x0040  /* RB2SPK */
+-#define WM8400_RB2SPK_MASK                      0x0040  /* RB2SPK */
+-#define WM8400_RB2SPK_SHIFT                          6  /* RB2SPK */
+-#define WM8400_RB2SPK_WIDTH                          1  /* RB2SPK */
+-#define WM8400_LI2SPK                           0x0020  /* LI2SPK */
+-#define WM8400_LI2SPK_MASK                      0x0020  /* LI2SPK */
+-#define WM8400_LI2SPK_SHIFT                          5  /* LI2SPK */
+-#define WM8400_LI2SPK_WIDTH                          1  /* LI2SPK */
+-#define WM8400_RI2SPK                           0x0010  /* RI2SPK */
+-#define WM8400_RI2SPK_MASK                      0x0010  /* RI2SPK */
+-#define WM8400_RI2SPK_SHIFT                          4  /* RI2SPK */
+-#define WM8400_RI2SPK_WIDTH                          1  /* RI2SPK */
+-#define WM8400_LOPGASPK                         0x0008  /* LOPGASPK */
+-#define WM8400_LOPGASPK_MASK                    0x0008  /* LOPGASPK */
+-#define WM8400_LOPGASPK_SHIFT                        3  /* LOPGASPK */
+-#define WM8400_LOPGASPK_WIDTH                        1  /* LOPGASPK */
+-#define WM8400_ROPGASPK                         0x0004  /* ROPGASPK */
+-#define WM8400_ROPGASPK_MASK                    0x0004  /* ROPGASPK */
+-#define WM8400_ROPGASPK_SHIFT                        2  /* ROPGASPK */
+-#define WM8400_ROPGASPK_WIDTH                        1  /* ROPGASPK */
+-#define WM8400_LDSPK                            0x0002  /* LDSPK */
+-#define WM8400_LDSPK_MASK                       0x0002  /* LDSPK */
+-#define WM8400_LDSPK_SHIFT                           1  /* LDSPK */
+-#define WM8400_LDSPK_WIDTH                           1  /* LDSPK */
+-#define WM8400_RDSPK                            0x0001  /* RDSPK */
+-#define WM8400_RDSPK_MASK                       0x0001  /* RDSPK */
+-#define WM8400_RDSPK_SHIFT                           0  /* RDSPK */
+-#define WM8400_RDSPK_WIDTH                           1  /* RDSPK */
+-
+-/*
+- * R55 (0x37) - Additional Control
+- */
+-#define WM8400_VROI                             0x0001  /* VROI */
+-#define WM8400_VROI_MASK                        0x0001  /* VROI */
+-#define WM8400_VROI_SHIFT                            0  /* VROI */
+-#define WM8400_VROI_WIDTH                            1  /* VROI */
+-
+-/*
+- * R56 (0x38) - AntiPOP1
+- */
+-#define WM8400_DIS_LLINE                        0x0020  /* DIS_LLINE */
+-#define WM8400_DIS_LLINE_MASK                   0x0020  /* DIS_LLINE */
+-#define WM8400_DIS_LLINE_SHIFT                       5  /* DIS_LLINE */
+-#define WM8400_DIS_LLINE_WIDTH                       1  /* DIS_LLINE */
+-#define WM8400_DIS_RLINE                        0x0010  /* DIS_RLINE */
+-#define WM8400_DIS_RLINE_MASK                   0x0010  /* DIS_RLINE */
+-#define WM8400_DIS_RLINE_SHIFT                       4  /* DIS_RLINE */
+-#define WM8400_DIS_RLINE_WIDTH                       1  /* DIS_RLINE */
+-#define WM8400_DIS_OUT3                         0x0008  /* DIS_OUT3 */
+-#define WM8400_DIS_OUT3_MASK                    0x0008  /* DIS_OUT3 */
+-#define WM8400_DIS_OUT3_SHIFT                        3  /* DIS_OUT3 */
+-#define WM8400_DIS_OUT3_WIDTH                        1  /* DIS_OUT3 */
+-#define WM8400_DIS_OUT4                         0x0004  /* DIS_OUT4 */
+-#define WM8400_DIS_OUT4_MASK                    0x0004  /* DIS_OUT4 */
+-#define WM8400_DIS_OUT4_SHIFT                        2  /* DIS_OUT4 */
+-#define WM8400_DIS_OUT4_WIDTH                        1  /* DIS_OUT4 */
+-#define WM8400_DIS_LOUT                         0x0002  /* DIS_LOUT */
+-#define WM8400_DIS_LOUT_MASK                    0x0002  /* DIS_LOUT */
+-#define WM8400_DIS_LOUT_SHIFT                        1  /* DIS_LOUT */
+-#define WM8400_DIS_LOUT_WIDTH                        1  /* DIS_LOUT */
+-#define WM8400_DIS_ROUT                         0x0001  /* DIS_ROUT */
+-#define WM8400_DIS_ROUT_MASK                    0x0001  /* DIS_ROUT */
+-#define WM8400_DIS_ROUT_SHIFT                        0  /* DIS_ROUT */
+-#define WM8400_DIS_ROUT_WIDTH                        1  /* DIS_ROUT */
+-
+-/*
+- * R57 (0x39) - AntiPOP2
+- */
+-#define WM8400_SOFTST                           0x0040  /* SOFTST */
+-#define WM8400_SOFTST_MASK                      0x0040  /* SOFTST */
+-#define WM8400_SOFTST_SHIFT                          6  /* SOFTST */
+-#define WM8400_SOFTST_WIDTH                          1  /* SOFTST */
+-#define WM8400_BUFIOEN                          0x0008  /* BUFIOEN */
+-#define WM8400_BUFIOEN_MASK                     0x0008  /* BUFIOEN */
+-#define WM8400_BUFIOEN_SHIFT                         3  /* BUFIOEN */
+-#define WM8400_BUFIOEN_WIDTH                         1  /* BUFIOEN */
+-#define WM8400_BUFDCOPEN                        0x0004  /* BUFDCOPEN */
+-#define WM8400_BUFDCOPEN_MASK                   0x0004  /* BUFDCOPEN */
+-#define WM8400_BUFDCOPEN_SHIFT                       2  /* BUFDCOPEN */
+-#define WM8400_BUFDCOPEN_WIDTH                       1  /* BUFDCOPEN */
+-#define WM8400_POBCTRL                          0x0002  /* POBCTRL */
+-#define WM8400_POBCTRL_MASK                     0x0002  /* POBCTRL */
+-#define WM8400_POBCTRL_SHIFT                         1  /* POBCTRL */
+-#define WM8400_POBCTRL_WIDTH                         1  /* POBCTRL */
+-#define WM8400_VMIDTOG                          0x0001  /* VMIDTOG */
+-#define WM8400_VMIDTOG_MASK                     0x0001  /* VMIDTOG */
+-#define WM8400_VMIDTOG_SHIFT                         0  /* VMIDTOG */
+-#define WM8400_VMIDTOG_WIDTH                         1  /* VMIDTOG */
+-
+-/*
+- * R58 (0x3A) - MICBIAS
+- */
+-#define WM8400_MCDSCTH_MASK                     0x00C0  /* MCDSCTH - [7:6] */
+-#define WM8400_MCDSCTH_SHIFT                         6  /* MCDSCTH - [7:6] */
+-#define WM8400_MCDSCTH_WIDTH                         2  /* MCDSCTH - [7:6] */
+-#define WM8400_MCDTHR_MASK                      0x0038  /* MCDTHR - [5:3] */
+-#define WM8400_MCDTHR_SHIFT                          3  /* MCDTHR - [5:3] */
+-#define WM8400_MCDTHR_WIDTH                          3  /* MCDTHR - [5:3] */
+-#define WM8400_MCD                              0x0004  /* MCD */
+-#define WM8400_MCD_MASK                         0x0004  /* MCD */
+-#define WM8400_MCD_SHIFT                             2  /* MCD */
+-#define WM8400_MCD_WIDTH                             1  /* MCD */
+-#define WM8400_MBSEL                            0x0001  /* MBSEL */
+-#define WM8400_MBSEL_MASK                       0x0001  /* MBSEL */
+-#define WM8400_MBSEL_SHIFT                           0  /* MBSEL */
+-#define WM8400_MBSEL_WIDTH                           1  /* MBSEL */
+-
+-/*
+- * R60 (0x3C) - FLL Control 1
+- */
+-#define WM8400_FLL_REF_FREQ                     0x1000  /* FLL_REF_FREQ */
+-#define WM8400_FLL_REF_FREQ_MASK                0x1000  /* FLL_REF_FREQ */
+-#define WM8400_FLL_REF_FREQ_SHIFT                   12  /* FLL_REF_FREQ */
+-#define WM8400_FLL_REF_FREQ_WIDTH                    1  /* FLL_REF_FREQ */
+-#define WM8400_FLL_CLK_SRC_MASK                 0x0C00  /* FLL_CLK_SRC - [11:10] */
+-#define WM8400_FLL_CLK_SRC_SHIFT                    10  /* FLL_CLK_SRC - [11:10] */
+-#define WM8400_FLL_CLK_SRC_WIDTH                     2  /* FLL_CLK_SRC - [11:10] */
+-#define WM8400_FLL_FRAC                         0x0200  /* FLL_FRAC */
+-#define WM8400_FLL_FRAC_MASK                    0x0200  /* FLL_FRAC */
+-#define WM8400_FLL_FRAC_SHIFT                        9  /* FLL_FRAC */
+-#define WM8400_FLL_FRAC_WIDTH                        1  /* FLL_FRAC */
+-#define WM8400_FLL_OSC_ENA                      0x0100  /* FLL_OSC_ENA */
+-#define WM8400_FLL_OSC_ENA_MASK                 0x0100  /* FLL_OSC_ENA */
+-#define WM8400_FLL_OSC_ENA_SHIFT                     8  /* FLL_OSC_ENA */
+-#define WM8400_FLL_OSC_ENA_WIDTH                     1  /* FLL_OSC_ENA */
+-#define WM8400_FLL_CTRL_RATE_MASK               0x00E0  /* FLL_CTRL_RATE - [7:5] */
+-#define WM8400_FLL_CTRL_RATE_SHIFT                   5  /* FLL_CTRL_RATE - [7:5] */
+-#define WM8400_FLL_CTRL_RATE_WIDTH                   3  /* FLL_CTRL_RATE - [7:5] */
+-#define WM8400_FLL_FRATIO_MASK                  0x001F  /* FLL_FRATIO - [4:0] */
+-#define WM8400_FLL_FRATIO_SHIFT                      0  /* FLL_FRATIO - [4:0] */
+-#define WM8400_FLL_FRATIO_WIDTH                      5  /* FLL_FRATIO - [4:0] */
+-
+-/*
+- * R61 (0x3D) - FLL Control 2
+- */
+-#define WM8400_FLL_K_MASK                       0xFFFF  /* FLL_K - [15:0] */
+-#define WM8400_FLL_K_SHIFT                           0  /* FLL_K - [15:0] */
+-#define WM8400_FLL_K_WIDTH                          16  /* FLL_K - [15:0] */
+-
+-/*
+- * R62 (0x3E) - FLL Control 3
+- */
+-#define WM8400_FLL_N_MASK                       0x03FF  /* FLL_N - [9:0] */
+-#define WM8400_FLL_N_SHIFT                           0  /* FLL_N - [9:0] */
+-#define WM8400_FLL_N_WIDTH                          10  /* FLL_N - [9:0] */
+-
+-/*
+- * R63 (0x3F) - FLL Control 4
+- */
+-#define WM8400_FLL_TRK_GAIN_MASK                0x0078  /* FLL_TRK_GAIN - [6:3] */
+-#define WM8400_FLL_TRK_GAIN_SHIFT                    3  /* FLL_TRK_GAIN - [6:3] */
+-#define WM8400_FLL_TRK_GAIN_WIDTH                    4  /* FLL_TRK_GAIN - [6:3] */
+-#define WM8400_FLL_OUTDIV_MASK                  0x0007  /* FLL_OUTDIV - [2:0] */
+-#define WM8400_FLL_OUTDIV_SHIFT                      0  /* FLL_OUTDIV - [2:0] */
+-#define WM8400_FLL_OUTDIV_WIDTH                      3  /* FLL_OUTDIV - [2:0] */
+-
+-struct wm8400;
+-void wm8400_reset_codec_reg_cache(struct wm8400 *wm8400);
+-
+-#endif
+diff --git a/include/linux/mfd/wm8400-private.h b/include/linux/mfd/wm8400-private.h
+deleted file mode 100644
+index bc8c2ca6dc70..000000000000
+--- a/include/linux/mfd/wm8400-private.h
++++ /dev/null
+@@ -1,913 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0-or-later */
+-/*
+- * wm8400 private definitions.
+- *
+- * Copyright 2008 Wolfson Microelectronics plc
+- */
+-
+-#ifndef __LINUX_MFD_WM8400_PRIV_H
+-#define __LINUX_MFD_WM8400_PRIV_H
+-
+-#include <linux/mfd/wm8400.h>
 -#include <linux/mutex.h>
--#include <linux/mfd/core.h>
--#include <linux/videodev2.h>
--#include <linux/regulator/consumer.h>
+-#include <linux/platform_device.h>
+-#include <linux/regmap.h>
 -
--#include <linux/mfd/si476x-platform.h>
--#include <linux/mfd/si476x-reports.h>
+-#define WM8400_REGISTER_COUNT 0x55
 -
--/* Command Timeouts */
--#define SI476X_DEFAULT_TIMEOUT	100000
--#define SI476X_TIMEOUT_TUNE	700000
--#define SI476X_TIMEOUT_POWER_UP	330000
--#define SI476X_STATUS_POLL_US	0
--
--/* -------------------- si476x-i2c.c ----------------------- */
--
--enum si476x_freq_supported_chips {
--	SI476X_CHIP_SI4761 = 1,
--	SI476X_CHIP_SI4764,
--	SI476X_CHIP_SI4768,
--};
--
--enum si476x_part_revisions {
--	SI476X_REVISION_A10 = 0,
--	SI476X_REVISION_A20 = 1,
--	SI476X_REVISION_A30 = 2,
--};
--
--enum si476x_mfd_cells {
--	SI476X_RADIO_CELL = 0,
--	SI476X_CODEC_CELL,
--	SI476X_MFD_CELLS,
--};
--
--/**
-- * enum si476x_power_state - possible power state of the si476x
-- * device.
-- *
-- * @SI476X_POWER_DOWN: In this state all regulators are turned off
-- * and the reset line is pulled low. The device is completely
-- * inactive.
-- * @SI476X_POWER_UP_FULL: In this state all the power regulators are
-- * turned on, reset line pulled high, IRQ line is enabled(polling is
-- * active for polling use scenario) and device is turned on with
-- * POWER_UP command. The device is ready to be used.
-- * @SI476X_POWER_INCONSISTENT: This state indicates that previous
-- * power down was inconsistent, meaning some of the regulators were
-- * not turned down and thus use of the device, without power-cycling
-- * is impossible.
-- */
--enum si476x_power_state {
--	SI476X_POWER_DOWN		= 0,
--	SI476X_POWER_UP_FULL		= 1,
--	SI476X_POWER_INCONSISTENT	= 2,
--};
--
--/**
-- * struct si476x_core - internal data structure representing the
-- * underlying "core" device which all the MFD cell-devices use.
-- *
-- * @client: Actual I2C client used to transfer commands to the chip.
-- * @regmap: Regmap for accessing the device registers
-- * @chip_id: Last digit of the chip model(E.g. "1" for SI4761)
-- * @cells: MFD cell devices created by this driver.
-- * @cmd_lock: Mutex used to serialize all the requests to the core
-- * device. This filed should not be used directly. Instead
-- * si476x_core_lock()/si476x_core_unlock() should be used to get
-- * exclusive access to the "core" device.
-- * @users: Active users counter(Used by the radio cell)
-- * @rds_read_queue: Wait queue used to wait for RDS data.
-- * @rds_fifo: FIFO in which all the RDS data received from the chip is
-- * placed.
-- * @rds_fifo_drainer: Worker that drains on-chip RDS FIFO.
-- * @rds_drainer_is_working: Flag used for launching only one instance
-- * of the @rds_fifo_drainer.
-- * @rds_drainer_status_lock: Lock used to guard access to the
-- * @rds_drainer_is_working variable.
-- * @command: Wait queue for wainting on the command comapletion.
-- * @cts: Clear To Send flag set upon receiving first status with CTS
-- * set.
-- * @tuning: Wait queue used for wainting for tune/seek comand
-- * completion.
-- * @stc: Similar to @cts, but for the STC bit of the status value.
-- * @power_up_parameters: Parameters used as argument for POWER_UP
-- * command when the device is started.
-- * @power_state: Current power state of the device.
-- * @supplies: Structure containing handles to all power supplies used
-- * by the device (NULL ones are ignored).
-- * @reset: GPIO connected to the RSTB pin of the chip.
-- * @pinmux: Chip's configurable pins configuration.
-- * @diversity_mode: Chips role when functioning in diversity mode.
-- * @is_alive: Chip is initialized and active.
-- * @status_monitor: Polling worker used in polling use case scenarion
-- * (when IRQ is not avalible).
-- * @revision: Chip's running firmware revision number(Used for correct
-- * command set support).
-- * @rds_fifo_depth: RDS FIFO size: 20 for IRQ mode or 5 for polling mode.
-- */
--
--struct si476x_core {
--	struct i2c_client *client;
+-struct wm8400 {
+-	struct device *dev;
 -	struct regmap *regmap;
--	int chip_id;
--	struct mfd_cell cells[SI476X_MFD_CELLS];
 -
--	struct mutex cmd_lock; /* for serializing fm radio operations */
--	atomic_t users;
--
--	wait_queue_head_t  rds_read_queue;
--	struct kfifo       rds_fifo;
--	struct work_struct rds_fifo_drainer;
--	bool               rds_drainer_is_working;
--	struct mutex       rds_drainer_status_lock;
--
--	wait_queue_head_t command;
--	atomic_t          cts;
--
--	wait_queue_head_t tuning;
--	atomic_t          stc;
--
--	struct si476x_power_up_args power_up_parameters;
--
--	enum si476x_power_state power_state;
--
--	struct regulator_bulk_data supplies[4];
--
--	struct gpio_desc *reset;
--
--	struct si476x_pinmux pinmux;
--	enum si476x_phase_diversity_mode diversity_mode;
--
--	atomic_t is_alive;
--
--	struct delayed_work status_monitor;
--#define SI476X_WORK_TO_CORE(w) container_of(to_delayed_work(w),	\
--					    struct si476x_core,	\
--					    status_monitor)
--
--	int revision;
--
--	int rds_fifo_depth;
+-	struct platform_device regulators[6];
 -};
 -
--static inline struct si476x_core *i2c_mfd_cell_to_core(struct device *dev)
--{
--	struct i2c_client *client = to_i2c_client(dev->parent);
--	return i2c_get_clientdata(client);
--}
--
--
--/**
-- * si476x_core_lock() - lock the core device to get an exclusive access
-- * to it.
-- * @core: Core device structure
+-/*
+- * Register values.
 - */
--static inline void si476x_core_lock(struct si476x_core *core)
--{
--	mutex_lock(&core->cmd_lock);
--}
+-#define WM8400_RESET_ID                         0x00
+-#define WM8400_ID                               0x01
+-#define WM8400_POWER_MANAGEMENT_1               0x02
+-#define WM8400_POWER_MANAGEMENT_2               0x03
+-#define WM8400_POWER_MANAGEMENT_3               0x04
+-#define WM8400_AUDIO_INTERFACE_1                0x05
+-#define WM8400_AUDIO_INTERFACE_2                0x06
+-#define WM8400_CLOCKING_1                       0x07
+-#define WM8400_CLOCKING_2                       0x08
+-#define WM8400_AUDIO_INTERFACE_3                0x09
+-#define WM8400_AUDIO_INTERFACE_4                0x0A
+-#define WM8400_DAC_CTRL                         0x0B
+-#define WM8400_LEFT_DAC_DIGITAL_VOLUME          0x0C
+-#define WM8400_RIGHT_DAC_DIGITAL_VOLUME         0x0D
+-#define WM8400_DIGITAL_SIDE_TONE                0x0E
+-#define WM8400_ADC_CTRL                         0x0F
+-#define WM8400_LEFT_ADC_DIGITAL_VOLUME          0x10
+-#define WM8400_RIGHT_ADC_DIGITAL_VOLUME         0x11
+-#define WM8400_GPIO_CTRL_1                      0x12
+-#define WM8400_GPIO1_GPIO2                      0x13
+-#define WM8400_GPIO3_GPIO4                      0x14
+-#define WM8400_GPIO5_GPIO6                      0x15
+-#define WM8400_GPIOCTRL_2                       0x16
+-#define WM8400_GPIO_POL                         0x17
+-#define WM8400_LEFT_LINE_INPUT_1_2_VOLUME       0x18
+-#define WM8400_LEFT_LINE_INPUT_3_4_VOLUME       0x19
+-#define WM8400_RIGHT_LINE_INPUT_1_2_VOLUME      0x1A
+-#define WM8400_RIGHT_LINE_INPUT_3_4_VOLUME      0x1B
+-#define WM8400_LEFT_OUTPUT_VOLUME               0x1C
+-#define WM8400_RIGHT_OUTPUT_VOLUME              0x1D
+-#define WM8400_LINE_OUTPUTS_VOLUME              0x1E
+-#define WM8400_OUT3_4_VOLUME                    0x1F
+-#define WM8400_LEFT_OPGA_VOLUME                 0x20
+-#define WM8400_RIGHT_OPGA_VOLUME                0x21
+-#define WM8400_SPEAKER_VOLUME                   0x22
+-#define WM8400_CLASSD1                          0x23
+-#define WM8400_CLASSD3                          0x25
+-#define WM8400_INPUT_MIXER1                     0x27
+-#define WM8400_INPUT_MIXER2                     0x28
+-#define WM8400_INPUT_MIXER3                     0x29
+-#define WM8400_INPUT_MIXER4                     0x2A
+-#define WM8400_INPUT_MIXER5                     0x2B
+-#define WM8400_INPUT_MIXER6                     0x2C
+-#define WM8400_OUTPUT_MIXER1                    0x2D
+-#define WM8400_OUTPUT_MIXER2                    0x2E
+-#define WM8400_OUTPUT_MIXER3                    0x2F
+-#define WM8400_OUTPUT_MIXER4                    0x30
+-#define WM8400_OUTPUT_MIXER5                    0x31
+-#define WM8400_OUTPUT_MIXER6                    0x32
+-#define WM8400_OUT3_4_MIXER                     0x33
+-#define WM8400_LINE_MIXER1                      0x34
+-#define WM8400_LINE_MIXER2                      0x35
+-#define WM8400_SPEAKER_MIXER                    0x36
+-#define WM8400_ADDITIONAL_CONTROL               0x37
+-#define WM8400_ANTIPOP1                         0x38
+-#define WM8400_ANTIPOP2                         0x39
+-#define WM8400_MICBIAS                          0x3A
+-#define WM8400_FLL_CONTROL_1                    0x3C
+-#define WM8400_FLL_CONTROL_2                    0x3D
+-#define WM8400_FLL_CONTROL_3                    0x3E
+-#define WM8400_FLL_CONTROL_4                    0x3F
+-#define WM8400_LDO1_CONTROL                     0x41
+-#define WM8400_LDO2_CONTROL                     0x42
+-#define WM8400_LDO3_CONTROL                     0x43
+-#define WM8400_LDO4_CONTROL                     0x44
+-#define WM8400_DCDC1_CONTROL_1                  0x46
+-#define WM8400_DCDC1_CONTROL_2                  0x47
+-#define WM8400_DCDC2_CONTROL_1                  0x48
+-#define WM8400_DCDC2_CONTROL_2                  0x49
+-#define WM8400_INTERFACE                        0x4B
+-#define WM8400_PM_GENERAL                       0x4C
+-#define WM8400_PM_SHUTDOWN_CONTROL              0x4E
+-#define WM8400_INTERRUPT_STATUS_1               0x4F
+-#define WM8400_INTERRUPT_STATUS_1_MASK          0x50
+-#define WM8400_INTERRUPT_LEVELS                 0x51
+-#define WM8400_SHUTDOWN_REASON                  0x52
+-#define WM8400_LINE_CIRCUITS                    0x54
 -
--/**
-- * si476x_core_unlock() - unlock the core device to relinquish an
-- * exclusive access to it.
-- * @core: Core device structure
+-/*
+- * Field Definitions.
 - */
--static inline void si476x_core_unlock(struct si476x_core *core)
--{
--	mutex_unlock(&core->cmd_lock);
--}
 -
--/* *_TUNE_FREQ family of commands accept frequency in multiples of
--    10kHz */
--static inline u16 hz_to_si476x(struct si476x_core *core, int freq)
--{
--	u16 result;
--
--	switch (core->power_up_parameters.func) {
--	default:
--	case SI476X_FUNC_FM_RECEIVER:
--		result = freq / 10000;
--		break;
--	case SI476X_FUNC_AM_RECEIVER:
--		result = freq / 1000;
--		break;
--	}
--
--	return result;
--}
--
--static inline int si476x_to_hz(struct si476x_core *core, u16 freq)
--{
--	int result;
--
--	switch (core->power_up_parameters.func) {
--	default:
--	case SI476X_FUNC_FM_RECEIVER:
--		result = freq * 10000;
--		break;
--	case SI476X_FUNC_AM_RECEIVER:
--		result = freq * 1000;
--		break;
--	}
--
--	return result;
--}
--
--/* Since the V4L2_TUNER_CAP_LOW flag is supplied, V4L2 subsystem
-- * mesures frequency in 62.5 Hz units */
--
--static inline int hz_to_v4l2(int freq)
--{
--	return (freq * 10) / 625;
--}
--
--static inline int v4l2_to_hz(int freq)
--{
--	return (freq * 625) / 10;
--}
--
--static inline u16 v4l2_to_si476x(struct si476x_core *core, int freq)
--{
--	return hz_to_si476x(core, v4l2_to_hz(freq));
--}
--
--static inline int si476x_to_v4l2(struct si476x_core *core, u16 freq)
--{
--	return hz_to_v4l2(si476x_to_hz(core, freq));
--}
--
--
--
--/**
-- * struct si476x_func_info - structure containing result of the
-- * FUNC_INFO command.
-- *
-- * @firmware: Firmware version numbers.
-- * @firmware.major: Firmware major number.
-- * @firmware.minor[...]: Firmware minor numbers.
-- * @patch_id: Firmware patch level.
-- * @func: Mode tuner is working in.
+-/*
+- * R0 (0x00) - Reset/ID
 - */
--struct si476x_func_info {
--	struct {
--		u8 major, minor[2];
--	} firmware;
--	u16 patch_id;
--	enum si476x_func func;
--};
+-#define WM8400_SW_RESET_CHIP_ID_MASK            0xFFFF  /* SW_RESET/CHIP_ID - [15:0] */
+-#define WM8400_SW_RESET_CHIP_ID_SHIFT                0  /* SW_RESET/CHIP_ID - [15:0] */
+-#define WM8400_SW_RESET_CHIP_ID_WIDTH               16  /* SW_RESET/CHIP_ID - [15:0] */
 -
--/**
-- * struct si476x_power_down_args - structure used to pass parameters
-- * to POWER_DOWN command
-- *
-- * @xosc: true - Power down, but leav oscillator running.
-- *        false - Full power down.
+-/*
+- * R1 (0x01) - ID
 - */
--struct si476x_power_down_args {
--	bool xosc;
--};
+-#define WM8400_CHIP_REV_MASK                    0x7000  /* CHIP_REV - [14:12] */
+-#define WM8400_CHIP_REV_SHIFT                       12  /* CHIP_REV - [14:12] */
+-#define WM8400_CHIP_REV_WIDTH                        3  /* CHIP_REV - [14:12] */
 -
--/**
-- * enum si476x_tunemode - enum representing possible tune modes for
-- * the chip.
-- * @SI476X_TM_VALIDATED_NORMAL_TUNE: Unconditionally stay on the new
-- * channel after tune, tune status is valid.
-- * @SI476X_TM_INVALIDATED_FAST_TUNE: Unconditionally stay in the new
-- * channel after tune, tune status invalid.
-- * @SI476X_TM_VALIDATED_AF_TUNE: Jump back to previous channel if
-- * metric thresholds are not met.
-- * @SI476X_TM_VALIDATED_AF_CHECK: Unconditionally jump back to the
-- * previous channel.
+-/*
+- * R18 (0x12) - GPIO CTRL 1
 - */
--enum si476x_tunemode {
--	SI476X_TM_VALIDATED_NORMAL_TUNE = 0,
--	SI476X_TM_INVALIDATED_FAST_TUNE = 1,
--	SI476X_TM_VALIDATED_AF_TUNE     = 2,
--	SI476X_TM_VALIDATED_AF_CHECK    = 3,
--};
+-#define WM8400_IRQ                              0x1000  /* IRQ */
+-#define WM8400_IRQ_MASK                         0x1000  /* IRQ */
+-#define WM8400_IRQ_SHIFT                            12  /* IRQ */
+-#define WM8400_IRQ_WIDTH                             1  /* IRQ */
+-#define WM8400_TEMPOK                           0x0800  /* TEMPOK */
+-#define WM8400_TEMPOK_MASK                      0x0800  /* TEMPOK */
+-#define WM8400_TEMPOK_SHIFT                         11  /* TEMPOK */
+-#define WM8400_TEMPOK_WIDTH                          1  /* TEMPOK */
+-#define WM8400_MIC1SHRT                         0x0400  /* MIC1SHRT */
+-#define WM8400_MIC1SHRT_MASK                    0x0400  /* MIC1SHRT */
+-#define WM8400_MIC1SHRT_SHIFT                       10  /* MIC1SHRT */
+-#define WM8400_MIC1SHRT_WIDTH                        1  /* MIC1SHRT */
+-#define WM8400_MIC1DET                          0x0200  /* MIC1DET */
+-#define WM8400_MIC1DET_MASK                     0x0200  /* MIC1DET */
+-#define WM8400_MIC1DET_SHIFT                         9  /* MIC1DET */
+-#define WM8400_MIC1DET_WIDTH                         1  /* MIC1DET */
+-#define WM8400_FLL_LCK                          0x0100  /* FLL_LCK */
+-#define WM8400_FLL_LCK_MASK                     0x0100  /* FLL_LCK */
+-#define WM8400_FLL_LCK_SHIFT                         8  /* FLL_LCK */
+-#define WM8400_FLL_LCK_WIDTH                         1  /* FLL_LCK */
+-#define WM8400_GPIO_STATUS_MASK                 0x00FF  /* GPIO_STATUS - [7:0] */
+-#define WM8400_GPIO_STATUS_SHIFT                     0  /* GPIO_STATUS - [7:0] */
+-#define WM8400_GPIO_STATUS_WIDTH                     8  /* GPIO_STATUS - [7:0] */
 -
--/**
-- * enum si476x_smoothmetrics - enum containing the possible setting fo
-- * audio transitioning of the chip
-- * @SI476X_SM_INITIALIZE_AUDIO: Initialize audio state to match this
-- * new channel
-- * @SI476X_SM_TRANSITION_AUDIO: Transition audio state from previous
-- * channel values to the new values
+-/*
+- * R19 (0x13) - GPIO1 & GPIO2
 - */
--enum si476x_smoothmetrics {
--	SI476X_SM_INITIALIZE_AUDIO = 0,
--	SI476X_SM_TRANSITION_AUDIO = 1,
--};
+-#define WM8400_GPIO2_DEB_ENA                    0x8000  /* GPIO2_DEB_ENA */
+-#define WM8400_GPIO2_DEB_ENA_MASK               0x8000  /* GPIO2_DEB_ENA */
+-#define WM8400_GPIO2_DEB_ENA_SHIFT                  15  /* GPIO2_DEB_ENA */
+-#define WM8400_GPIO2_DEB_ENA_WIDTH                   1  /* GPIO2_DEB_ENA */
+-#define WM8400_GPIO2_IRQ_ENA                    0x4000  /* GPIO2_IRQ_ENA */
+-#define WM8400_GPIO2_IRQ_ENA_MASK               0x4000  /* GPIO2_IRQ_ENA */
+-#define WM8400_GPIO2_IRQ_ENA_SHIFT                  14  /* GPIO2_IRQ_ENA */
+-#define WM8400_GPIO2_IRQ_ENA_WIDTH                   1  /* GPIO2_IRQ_ENA */
+-#define WM8400_GPIO2_PU                         0x2000  /* GPIO2_PU */
+-#define WM8400_GPIO2_PU_MASK                    0x2000  /* GPIO2_PU */
+-#define WM8400_GPIO2_PU_SHIFT                       13  /* GPIO2_PU */
+-#define WM8400_GPIO2_PU_WIDTH                        1  /* GPIO2_PU */
+-#define WM8400_GPIO2_PD                         0x1000  /* GPIO2_PD */
+-#define WM8400_GPIO2_PD_MASK                    0x1000  /* GPIO2_PD */
+-#define WM8400_GPIO2_PD_SHIFT                       12  /* GPIO2_PD */
+-#define WM8400_GPIO2_PD_WIDTH                        1  /* GPIO2_PD */
+-#define WM8400_GPIO2_SEL_MASK                   0x0F00  /* GPIO2_SEL - [11:8] */
+-#define WM8400_GPIO2_SEL_SHIFT                       8  /* GPIO2_SEL - [11:8] */
+-#define WM8400_GPIO2_SEL_WIDTH                       4  /* GPIO2_SEL - [11:8] */
+-#define WM8400_GPIO1_DEB_ENA                    0x0080  /* GPIO1_DEB_ENA */
+-#define WM8400_GPIO1_DEB_ENA_MASK               0x0080  /* GPIO1_DEB_ENA */
+-#define WM8400_GPIO1_DEB_ENA_SHIFT                   7  /* GPIO1_DEB_ENA */
+-#define WM8400_GPIO1_DEB_ENA_WIDTH                   1  /* GPIO1_DEB_ENA */
+-#define WM8400_GPIO1_IRQ_ENA                    0x0040  /* GPIO1_IRQ_ENA */
+-#define WM8400_GPIO1_IRQ_ENA_MASK               0x0040  /* GPIO1_IRQ_ENA */
+-#define WM8400_GPIO1_IRQ_ENA_SHIFT                   6  /* GPIO1_IRQ_ENA */
+-#define WM8400_GPIO1_IRQ_ENA_WIDTH                   1  /* GPIO1_IRQ_ENA */
+-#define WM8400_GPIO1_PU                         0x0020  /* GPIO1_PU */
+-#define WM8400_GPIO1_PU_MASK                    0x0020  /* GPIO1_PU */
+-#define WM8400_GPIO1_PU_SHIFT                        5  /* GPIO1_PU */
+-#define WM8400_GPIO1_PU_WIDTH                        1  /* GPIO1_PU */
+-#define WM8400_GPIO1_PD                         0x0010  /* GPIO1_PD */
+-#define WM8400_GPIO1_PD_MASK                    0x0010  /* GPIO1_PD */
+-#define WM8400_GPIO1_PD_SHIFT                        4  /* GPIO1_PD */
+-#define WM8400_GPIO1_PD_WIDTH                        1  /* GPIO1_PD */
+-#define WM8400_GPIO1_SEL_MASK                   0x000F  /* GPIO1_SEL - [3:0] */
+-#define WM8400_GPIO1_SEL_SHIFT                       0  /* GPIO1_SEL - [3:0] */
+-#define WM8400_GPIO1_SEL_WIDTH                       4  /* GPIO1_SEL - [3:0] */
 -
--/**
-- * struct si476x_rds_status_report - the structure representing the
-- * response to 'FM_RD_STATUS' command
-- * @rdstpptyint: Traffic program flag(TP) and/or program type(PTY)
-- * code has changed.
-- * @rdspiint: Program identification(PI) code has changed.
-- * @rdssyncint: RDS synchronization has changed.
-- * @rdsfifoint: RDS was received and the RDS FIFO has at least
-- * 'FM_RDS_INTERRUPT_FIFO_COUNT' elements in it.
-- * @tpptyvalid: TP flag and PTY code are valid falg.
-- * @pivalid: PI code is valid flag.
-- * @rdssync: RDS is currently synchronized.
-- * @rdsfifolost: On or more RDS groups have been lost/discarded flag.
-- * @tp: Current channel's TP flag.
-- * @pty: Current channel's PTY code.
-- * @pi: Current channel's PI code.
-- * @rdsfifoused: Number of blocks remaining in the RDS FIFO (0 if empty).
-- * @ble:
-- * @rds: RDS data descriptor
+-/*
+- * R20 (0x14) - GPIO3 & GPIO4
 - */
--struct si476x_rds_status_report {
--	bool rdstpptyint, rdspiint, rdssyncint, rdsfifoint;
--	bool tpptyvalid, pivalid, rdssync, rdsfifolost;
--	bool tp;
+-#define WM8400_GPIO4_DEB_ENA                    0x8000  /* GPIO4_DEB_ENA */
+-#define WM8400_GPIO4_DEB_ENA_MASK               0x8000  /* GPIO4_DEB_ENA */
+-#define WM8400_GPIO4_DEB_ENA_SHIFT                  15  /* GPIO4_DEB_ENA */
+-#define WM8400_GPIO4_DEB_ENA_WIDTH                   1  /* GPIO4_DEB_ENA */
+-#define WM8400_GPIO4_IRQ_ENA                    0x4000  /* GPIO4_IRQ_ENA */
+-#define WM8400_GPIO4_IRQ_ENA_MASK               0x4000  /* GPIO4_IRQ_ENA */
+-#define WM8400_GPIO4_IRQ_ENA_SHIFT                  14  /* GPIO4_IRQ_ENA */
+-#define WM8400_GPIO4_IRQ_ENA_WIDTH                   1  /* GPIO4_IRQ_ENA */
+-#define WM8400_GPIO4_PU                         0x2000  /* GPIO4_PU */
+-#define WM8400_GPIO4_PU_MASK                    0x2000  /* GPIO4_PU */
+-#define WM8400_GPIO4_PU_SHIFT                       13  /* GPIO4_PU */
+-#define WM8400_GPIO4_PU_WIDTH                        1  /* GPIO4_PU */
+-#define WM8400_GPIO4_PD                         0x1000  /* GPIO4_PD */
+-#define WM8400_GPIO4_PD_MASK                    0x1000  /* GPIO4_PD */
+-#define WM8400_GPIO4_PD_SHIFT                       12  /* GPIO4_PD */
+-#define WM8400_GPIO4_PD_WIDTH                        1  /* GPIO4_PD */
+-#define WM8400_GPIO4_SEL_MASK                   0x0F00  /* GPIO4_SEL - [11:8] */
+-#define WM8400_GPIO4_SEL_SHIFT                       8  /* GPIO4_SEL - [11:8] */
+-#define WM8400_GPIO4_SEL_WIDTH                       4  /* GPIO4_SEL - [11:8] */
+-#define WM8400_GPIO3_DEB_ENA                    0x0080  /* GPIO3_DEB_ENA */
+-#define WM8400_GPIO3_DEB_ENA_MASK               0x0080  /* GPIO3_DEB_ENA */
+-#define WM8400_GPIO3_DEB_ENA_SHIFT                   7  /* GPIO3_DEB_ENA */
+-#define WM8400_GPIO3_DEB_ENA_WIDTH                   1  /* GPIO3_DEB_ENA */
+-#define WM8400_GPIO3_IRQ_ENA                    0x0040  /* GPIO3_IRQ_ENA */
+-#define WM8400_GPIO3_IRQ_ENA_MASK               0x0040  /* GPIO3_IRQ_ENA */
+-#define WM8400_GPIO3_IRQ_ENA_SHIFT                   6  /* GPIO3_IRQ_ENA */
+-#define WM8400_GPIO3_IRQ_ENA_WIDTH                   1  /* GPIO3_IRQ_ENA */
+-#define WM8400_GPIO3_PU                         0x0020  /* GPIO3_PU */
+-#define WM8400_GPIO3_PU_MASK                    0x0020  /* GPIO3_PU */
+-#define WM8400_GPIO3_PU_SHIFT                        5  /* GPIO3_PU */
+-#define WM8400_GPIO3_PU_WIDTH                        1  /* GPIO3_PU */
+-#define WM8400_GPIO3_PD                         0x0010  /* GPIO3_PD */
+-#define WM8400_GPIO3_PD_MASK                    0x0010  /* GPIO3_PD */
+-#define WM8400_GPIO3_PD_SHIFT                        4  /* GPIO3_PD */
+-#define WM8400_GPIO3_PD_WIDTH                        1  /* GPIO3_PD */
+-#define WM8400_GPIO3_SEL_MASK                   0x000F  /* GPIO3_SEL - [3:0] */
+-#define WM8400_GPIO3_SEL_SHIFT                       0  /* GPIO3_SEL - [3:0] */
+-#define WM8400_GPIO3_SEL_WIDTH                       4  /* GPIO3_SEL - [3:0] */
 -
--	u8 pty;
--	u16 pi;
+-/*
+- * R21 (0x15) - GPIO5 & GPIO6
+- */
+-#define WM8400_GPIO6_DEB_ENA                    0x8000  /* GPIO6_DEB_ENA */
+-#define WM8400_GPIO6_DEB_ENA_MASK               0x8000  /* GPIO6_DEB_ENA */
+-#define WM8400_GPIO6_DEB_ENA_SHIFT                  15  /* GPIO6_DEB_ENA */
+-#define WM8400_GPIO6_DEB_ENA_WIDTH                   1  /* GPIO6_DEB_ENA */
+-#define WM8400_GPIO6_IRQ_ENA                    0x4000  /* GPIO6_IRQ_ENA */
+-#define WM8400_GPIO6_IRQ_ENA_MASK               0x4000  /* GPIO6_IRQ_ENA */
+-#define WM8400_GPIO6_IRQ_ENA_SHIFT                  14  /* GPIO6_IRQ_ENA */
+-#define WM8400_GPIO6_IRQ_ENA_WIDTH                   1  /* GPIO6_IRQ_ENA */
+-#define WM8400_GPIO6_PU                         0x2000  /* GPIO6_PU */
+-#define WM8400_GPIO6_PU_MASK                    0x2000  /* GPIO6_PU */
+-#define WM8400_GPIO6_PU_SHIFT                       13  /* GPIO6_PU */
+-#define WM8400_GPIO6_PU_WIDTH                        1  /* GPIO6_PU */
+-#define WM8400_GPIO6_PD                         0x1000  /* GPIO6_PD */
+-#define WM8400_GPIO6_PD_MASK                    0x1000  /* GPIO6_PD */
+-#define WM8400_GPIO6_PD_SHIFT                       12  /* GPIO6_PD */
+-#define WM8400_GPIO6_PD_WIDTH                        1  /* GPIO6_PD */
+-#define WM8400_GPIO6_SEL_MASK                   0x0F00  /* GPIO6_SEL - [11:8] */
+-#define WM8400_GPIO6_SEL_SHIFT                       8  /* GPIO6_SEL - [11:8] */
+-#define WM8400_GPIO6_SEL_WIDTH                       4  /* GPIO6_SEL - [11:8] */
+-#define WM8400_GPIO5_DEB_ENA                    0x0080  /* GPIO5_DEB_ENA */
+-#define WM8400_GPIO5_DEB_ENA_MASK               0x0080  /* GPIO5_DEB_ENA */
+-#define WM8400_GPIO5_DEB_ENA_SHIFT                   7  /* GPIO5_DEB_ENA */
+-#define WM8400_GPIO5_DEB_ENA_WIDTH                   1  /* GPIO5_DEB_ENA */
+-#define WM8400_GPIO5_IRQ_ENA                    0x0040  /* GPIO5_IRQ_ENA */
+-#define WM8400_GPIO5_IRQ_ENA_MASK               0x0040  /* GPIO5_IRQ_ENA */
+-#define WM8400_GPIO5_IRQ_ENA_SHIFT                   6  /* GPIO5_IRQ_ENA */
+-#define WM8400_GPIO5_IRQ_ENA_WIDTH                   1  /* GPIO5_IRQ_ENA */
+-#define WM8400_GPIO5_PU                         0x0020  /* GPIO5_PU */
+-#define WM8400_GPIO5_PU_MASK                    0x0020  /* GPIO5_PU */
+-#define WM8400_GPIO5_PU_SHIFT                        5  /* GPIO5_PU */
+-#define WM8400_GPIO5_PU_WIDTH                        1  /* GPIO5_PU */
+-#define WM8400_GPIO5_PD                         0x0010  /* GPIO5_PD */
+-#define WM8400_GPIO5_PD_MASK                    0x0010  /* GPIO5_PD */
+-#define WM8400_GPIO5_PD_SHIFT                        4  /* GPIO5_PD */
+-#define WM8400_GPIO5_PD_WIDTH                        1  /* GPIO5_PD */
+-#define WM8400_GPIO5_SEL_MASK                   0x000F  /* GPIO5_SEL - [3:0] */
+-#define WM8400_GPIO5_SEL_SHIFT                       0  /* GPIO5_SEL - [3:0] */
+-#define WM8400_GPIO5_SEL_WIDTH                       4  /* GPIO5_SEL - [3:0] */
 -
--	u8 rdsfifoused;
--	u8 ble[4];
+-/*
+- * R22 (0x16) - GPIOCTRL 2
+- */
+-#define WM8400_TEMPOK_IRQ_ENA                   0x0800  /* TEMPOK_IRQ_ENA */
+-#define WM8400_TEMPOK_IRQ_ENA_MASK              0x0800  /* TEMPOK_IRQ_ENA */
+-#define WM8400_TEMPOK_IRQ_ENA_SHIFT                 11  /* TEMPOK_IRQ_ENA */
+-#define WM8400_TEMPOK_IRQ_ENA_WIDTH                  1  /* TEMPOK_IRQ_ENA */
+-#define WM8400_MIC1SHRT_IRQ_ENA                 0x0400  /* MIC1SHRT_IRQ_ENA */
+-#define WM8400_MIC1SHRT_IRQ_ENA_MASK            0x0400  /* MIC1SHRT_IRQ_ENA */
+-#define WM8400_MIC1SHRT_IRQ_ENA_SHIFT               10  /* MIC1SHRT_IRQ_ENA */
+-#define WM8400_MIC1SHRT_IRQ_ENA_WIDTH                1  /* MIC1SHRT_IRQ_ENA */
+-#define WM8400_MIC1DET_IRQ_ENA                  0x0200  /* MIC1DET_IRQ_ENA */
+-#define WM8400_MIC1DET_IRQ_ENA_MASK             0x0200  /* MIC1DET_IRQ_ENA */
+-#define WM8400_MIC1DET_IRQ_ENA_SHIFT                 9  /* MIC1DET_IRQ_ENA */
+-#define WM8400_MIC1DET_IRQ_ENA_WIDTH                 1  /* MIC1DET_IRQ_ENA */
+-#define WM8400_FLL_LCK_IRQ_ENA                  0x0100  /* FLL_LCK_IRQ_ENA */
+-#define WM8400_FLL_LCK_IRQ_ENA_MASK             0x0100  /* FLL_LCK_IRQ_ENA */
+-#define WM8400_FLL_LCK_IRQ_ENA_SHIFT                 8  /* FLL_LCK_IRQ_ENA */
+-#define WM8400_FLL_LCK_IRQ_ENA_WIDTH                 1  /* FLL_LCK_IRQ_ENA */
+-#define WM8400_GPI8_DEB_ENA                     0x0080  /* GPI8_DEB_ENA */
+-#define WM8400_GPI8_DEB_ENA_MASK                0x0080  /* GPI8_DEB_ENA */
+-#define WM8400_GPI8_DEB_ENA_SHIFT                    7  /* GPI8_DEB_ENA */
+-#define WM8400_GPI8_DEB_ENA_WIDTH                    1  /* GPI8_DEB_ENA */
+-#define WM8400_GPI8_IRQ_ENA                     0x0040  /* GPI8_IRQ_ENA */
+-#define WM8400_GPI8_IRQ_ENA_MASK                0x0040  /* GPI8_IRQ_ENA */
+-#define WM8400_GPI8_IRQ_ENA_SHIFT                    6  /* GPI8_IRQ_ENA */
+-#define WM8400_GPI8_IRQ_ENA_WIDTH                    1  /* GPI8_IRQ_ENA */
+-#define WM8400_GPI8_ENA                         0x0010  /* GPI8_ENA */
+-#define WM8400_GPI8_ENA_MASK                    0x0010  /* GPI8_ENA */
+-#define WM8400_GPI8_ENA_SHIFT                        4  /* GPI8_ENA */
+-#define WM8400_GPI8_ENA_WIDTH                        1  /* GPI8_ENA */
+-#define WM8400_GPI7_DEB_ENA                     0x0008  /* GPI7_DEB_ENA */
+-#define WM8400_GPI7_DEB_ENA_MASK                0x0008  /* GPI7_DEB_ENA */
+-#define WM8400_GPI7_DEB_ENA_SHIFT                    3  /* GPI7_DEB_ENA */
+-#define WM8400_GPI7_DEB_ENA_WIDTH                    1  /* GPI7_DEB_ENA */
+-#define WM8400_GPI7_IRQ_ENA                     0x0004  /* GPI7_IRQ_ENA */
+-#define WM8400_GPI7_IRQ_ENA_MASK                0x0004  /* GPI7_IRQ_ENA */
+-#define WM8400_GPI7_IRQ_ENA_SHIFT                    2  /* GPI7_IRQ_ENA */
+-#define WM8400_GPI7_IRQ_ENA_WIDTH                    1  /* GPI7_IRQ_ENA */
+-#define WM8400_GPI7_ENA                         0x0001  /* GPI7_ENA */
+-#define WM8400_GPI7_ENA_MASK                    0x0001  /* GPI7_ENA */
+-#define WM8400_GPI7_ENA_SHIFT                        0  /* GPI7_ENA */
+-#define WM8400_GPI7_ENA_WIDTH                        1  /* GPI7_ENA */
 -
--	struct v4l2_rds_data rds[4];
--};
+-/*
+- * R23 (0x17) - GPIO_POL
+- */
+-#define WM8400_IRQ_INV                          0x1000  /* IRQ_INV */
+-#define WM8400_IRQ_INV_MASK                     0x1000  /* IRQ_INV */
+-#define WM8400_IRQ_INV_SHIFT                        12  /* IRQ_INV */
+-#define WM8400_IRQ_INV_WIDTH                         1  /* IRQ_INV */
+-#define WM8400_TEMPOK_POL                       0x0800  /* TEMPOK_POL */
+-#define WM8400_TEMPOK_POL_MASK                  0x0800  /* TEMPOK_POL */
+-#define WM8400_TEMPOK_POL_SHIFT                     11  /* TEMPOK_POL */
+-#define WM8400_TEMPOK_POL_WIDTH                      1  /* TEMPOK_POL */
+-#define WM8400_MIC1SHRT_POL                     0x0400  /* MIC1SHRT_POL */
+-#define WM8400_MIC1SHRT_POL_MASK                0x0400  /* MIC1SHRT_POL */
+-#define WM8400_MIC1SHRT_POL_SHIFT                   10  /* MIC1SHRT_POL */
+-#define WM8400_MIC1SHRT_POL_WIDTH                    1  /* MIC1SHRT_POL */
+-#define WM8400_MIC1DET_POL                      0x0200  /* MIC1DET_POL */
+-#define WM8400_MIC1DET_POL_MASK                 0x0200  /* MIC1DET_POL */
+-#define WM8400_MIC1DET_POL_SHIFT                     9  /* MIC1DET_POL */
+-#define WM8400_MIC1DET_POL_WIDTH                     1  /* MIC1DET_POL */
+-#define WM8400_FLL_LCK_POL                      0x0100  /* FLL_LCK_POL */
+-#define WM8400_FLL_LCK_POL_MASK                 0x0100  /* FLL_LCK_POL */
+-#define WM8400_FLL_LCK_POL_SHIFT                     8  /* FLL_LCK_POL */
+-#define WM8400_FLL_LCK_POL_WIDTH                     1  /* FLL_LCK_POL */
+-#define WM8400_GPIO_POL_MASK                    0x00FF  /* GPIO_POL - [7:0] */
+-#define WM8400_GPIO_POL_SHIFT                        0  /* GPIO_POL - [7:0] */
+-#define WM8400_GPIO_POL_WIDTH                        8  /* GPIO_POL - [7:0] */
 -
--struct si476x_rsq_status_args {
--	bool primary;
--	bool rsqack;
--	bool attune;
--	bool cancel;
--	bool stcack;
--};
+-/*
+- * R65 (0x41) - LDO 1 Control
+- */
+-#define WM8400_LDO1_ENA                         0x8000  /* LDO1_ENA */
+-#define WM8400_LDO1_ENA_MASK                    0x8000  /* LDO1_ENA */
+-#define WM8400_LDO1_ENA_SHIFT                       15  /* LDO1_ENA */
+-#define WM8400_LDO1_ENA_WIDTH                        1  /* LDO1_ENA */
+-#define WM8400_LDO1_SWI                         0x4000  /* LDO1_SWI */
+-#define WM8400_LDO1_SWI_MASK                    0x4000  /* LDO1_SWI */
+-#define WM8400_LDO1_SWI_SHIFT                       14  /* LDO1_SWI */
+-#define WM8400_LDO1_SWI_WIDTH                        1  /* LDO1_SWI */
+-#define WM8400_LDO1_OPFLT                       0x1000  /* LDO1_OPFLT */
+-#define WM8400_LDO1_OPFLT_MASK                  0x1000  /* LDO1_OPFLT */
+-#define WM8400_LDO1_OPFLT_SHIFT                     12  /* LDO1_OPFLT */
+-#define WM8400_LDO1_OPFLT_WIDTH                      1  /* LDO1_OPFLT */
+-#define WM8400_LDO1_ERRACT                      0x0800  /* LDO1_ERRACT */
+-#define WM8400_LDO1_ERRACT_MASK                 0x0800  /* LDO1_ERRACT */
+-#define WM8400_LDO1_ERRACT_SHIFT                    11  /* LDO1_ERRACT */
+-#define WM8400_LDO1_ERRACT_WIDTH                     1  /* LDO1_ERRACT */
+-#define WM8400_LDO1_HIB_MODE                    0x0400  /* LDO1_HIB_MODE */
+-#define WM8400_LDO1_HIB_MODE_MASK               0x0400  /* LDO1_HIB_MODE */
+-#define WM8400_LDO1_HIB_MODE_SHIFT                  10  /* LDO1_HIB_MODE */
+-#define WM8400_LDO1_HIB_MODE_WIDTH                   1  /* LDO1_HIB_MODE */
+-#define WM8400_LDO1_VIMG_MASK                   0x03E0  /* LDO1_VIMG - [9:5] */
+-#define WM8400_LDO1_VIMG_SHIFT                       5  /* LDO1_VIMG - [9:5] */
+-#define WM8400_LDO1_VIMG_WIDTH                       5  /* LDO1_VIMG - [9:5] */
+-#define WM8400_LDO1_VSEL_MASK                   0x001F  /* LDO1_VSEL - [4:0] */
+-#define WM8400_LDO1_VSEL_SHIFT                       0  /* LDO1_VSEL - [4:0] */
+-#define WM8400_LDO1_VSEL_WIDTH                       5  /* LDO1_VSEL - [4:0] */
 -
--enum si476x_injside {
--	SI476X_INJSIDE_AUTO	= 0,
--	SI476X_INJSIDE_LOW	= 1,
--	SI476X_INJSIDE_HIGH	= 2,
--};
+-/*
+- * R66 (0x42) - LDO 2 Control
+- */
+-#define WM8400_LDO2_ENA                         0x8000  /* LDO2_ENA */
+-#define WM8400_LDO2_ENA_MASK                    0x8000  /* LDO2_ENA */
+-#define WM8400_LDO2_ENA_SHIFT                       15  /* LDO2_ENA */
+-#define WM8400_LDO2_ENA_WIDTH                        1  /* LDO2_ENA */
+-#define WM8400_LDO2_SWI                         0x4000  /* LDO2_SWI */
+-#define WM8400_LDO2_SWI_MASK                    0x4000  /* LDO2_SWI */
+-#define WM8400_LDO2_SWI_SHIFT                       14  /* LDO2_SWI */
+-#define WM8400_LDO2_SWI_WIDTH                        1  /* LDO2_SWI */
+-#define WM8400_LDO2_OPFLT                       0x1000  /* LDO2_OPFLT */
+-#define WM8400_LDO2_OPFLT_MASK                  0x1000  /* LDO2_OPFLT */
+-#define WM8400_LDO2_OPFLT_SHIFT                     12  /* LDO2_OPFLT */
+-#define WM8400_LDO2_OPFLT_WIDTH                      1  /* LDO2_OPFLT */
+-#define WM8400_LDO2_ERRACT                      0x0800  /* LDO2_ERRACT */
+-#define WM8400_LDO2_ERRACT_MASK                 0x0800  /* LDO2_ERRACT */
+-#define WM8400_LDO2_ERRACT_SHIFT                    11  /* LDO2_ERRACT */
+-#define WM8400_LDO2_ERRACT_WIDTH                     1  /* LDO2_ERRACT */
+-#define WM8400_LDO2_HIB_MODE                    0x0400  /* LDO2_HIB_MODE */
+-#define WM8400_LDO2_HIB_MODE_MASK               0x0400  /* LDO2_HIB_MODE */
+-#define WM8400_LDO2_HIB_MODE_SHIFT                  10  /* LDO2_HIB_MODE */
+-#define WM8400_LDO2_HIB_MODE_WIDTH                   1  /* LDO2_HIB_MODE */
+-#define WM8400_LDO2_VIMG_MASK                   0x03E0  /* LDO2_VIMG - [9:5] */
+-#define WM8400_LDO2_VIMG_SHIFT                       5  /* LDO2_VIMG - [9:5] */
+-#define WM8400_LDO2_VIMG_WIDTH                       5  /* LDO2_VIMG - [9:5] */
+-#define WM8400_LDO2_VSEL_MASK                   0x001F  /* LDO2_VSEL - [4:0] */
+-#define WM8400_LDO2_VSEL_SHIFT                       0  /* LDO2_VSEL - [4:0] */
+-#define WM8400_LDO2_VSEL_WIDTH                       5  /* LDO2_VSEL - [4:0] */
 -
--struct si476x_tune_freq_args {
--	bool zifsr;
--	bool hd;
--	enum si476x_injside injside;
--	int freq;
--	enum si476x_tunemode tunemode;
--	enum si476x_smoothmetrics smoothmetrics;
--	int antcap;
--};
+-/*
+- * R67 (0x43) - LDO 3 Control
+- */
+-#define WM8400_LDO3_ENA                         0x8000  /* LDO3_ENA */
+-#define WM8400_LDO3_ENA_MASK                    0x8000  /* LDO3_ENA */
+-#define WM8400_LDO3_ENA_SHIFT                       15  /* LDO3_ENA */
+-#define WM8400_LDO3_ENA_WIDTH                        1  /* LDO3_ENA */
+-#define WM8400_LDO3_SWI                         0x4000  /* LDO3_SWI */
+-#define WM8400_LDO3_SWI_MASK                    0x4000  /* LDO3_SWI */
+-#define WM8400_LDO3_SWI_SHIFT                       14  /* LDO3_SWI */
+-#define WM8400_LDO3_SWI_WIDTH                        1  /* LDO3_SWI */
+-#define WM8400_LDO3_OPFLT                       0x1000  /* LDO3_OPFLT */
+-#define WM8400_LDO3_OPFLT_MASK                  0x1000  /* LDO3_OPFLT */
+-#define WM8400_LDO3_OPFLT_SHIFT                     12  /* LDO3_OPFLT */
+-#define WM8400_LDO3_OPFLT_WIDTH                      1  /* LDO3_OPFLT */
+-#define WM8400_LDO3_ERRACT                      0x0800  /* LDO3_ERRACT */
+-#define WM8400_LDO3_ERRACT_MASK                 0x0800  /* LDO3_ERRACT */
+-#define WM8400_LDO3_ERRACT_SHIFT                    11  /* LDO3_ERRACT */
+-#define WM8400_LDO3_ERRACT_WIDTH                     1  /* LDO3_ERRACT */
+-#define WM8400_LDO3_HIB_MODE                    0x0400  /* LDO3_HIB_MODE */
+-#define WM8400_LDO3_HIB_MODE_MASK               0x0400  /* LDO3_HIB_MODE */
+-#define WM8400_LDO3_HIB_MODE_SHIFT                  10  /* LDO3_HIB_MODE */
+-#define WM8400_LDO3_HIB_MODE_WIDTH                   1  /* LDO3_HIB_MODE */
+-#define WM8400_LDO3_VIMG_MASK                   0x03E0  /* LDO3_VIMG - [9:5] */
+-#define WM8400_LDO3_VIMG_SHIFT                       5  /* LDO3_VIMG - [9:5] */
+-#define WM8400_LDO3_VIMG_WIDTH                       5  /* LDO3_VIMG - [9:5] */
+-#define WM8400_LDO3_VSEL_MASK                   0x001F  /* LDO3_VSEL - [4:0] */
+-#define WM8400_LDO3_VSEL_SHIFT                       0  /* LDO3_VSEL - [4:0] */
+-#define WM8400_LDO3_VSEL_WIDTH                       5  /* LDO3_VSEL - [4:0] */
 -
--int  si476x_core_stop(struct si476x_core *, bool);
--int  si476x_core_start(struct si476x_core *, bool);
--int  si476x_core_set_power_state(struct si476x_core *, enum si476x_power_state);
--bool si476x_core_has_am(struct si476x_core *);
--bool si476x_core_has_diversity(struct si476x_core *);
--bool si476x_core_is_a_secondary_tuner(struct si476x_core *);
--bool si476x_core_is_a_primary_tuner(struct si476x_core *);
--bool si476x_core_is_in_am_receiver_mode(struct si476x_core *core);
--bool si476x_core_is_powered_up(struct si476x_core *core);
+-/*
+- * R68 (0x44) - LDO 4 Control
+- */
+-#define WM8400_LDO4_ENA                         0x8000  /* LDO4_ENA */
+-#define WM8400_LDO4_ENA_MASK                    0x8000  /* LDO4_ENA */
+-#define WM8400_LDO4_ENA_SHIFT                       15  /* LDO4_ENA */
+-#define WM8400_LDO4_ENA_WIDTH                        1  /* LDO4_ENA */
+-#define WM8400_LDO4_SWI                         0x4000  /* LDO4_SWI */
+-#define WM8400_LDO4_SWI_MASK                    0x4000  /* LDO4_SWI */
+-#define WM8400_LDO4_SWI_SHIFT                       14  /* LDO4_SWI */
+-#define WM8400_LDO4_SWI_WIDTH                        1  /* LDO4_SWI */
+-#define WM8400_LDO4_OPFLT                       0x1000  /* LDO4_OPFLT */
+-#define WM8400_LDO4_OPFLT_MASK                  0x1000  /* LDO4_OPFLT */
+-#define WM8400_LDO4_OPFLT_SHIFT                     12  /* LDO4_OPFLT */
+-#define WM8400_LDO4_OPFLT_WIDTH                      1  /* LDO4_OPFLT */
+-#define WM8400_LDO4_ERRACT                      0x0800  /* LDO4_ERRACT */
+-#define WM8400_LDO4_ERRACT_MASK                 0x0800  /* LDO4_ERRACT */
+-#define WM8400_LDO4_ERRACT_SHIFT                    11  /* LDO4_ERRACT */
+-#define WM8400_LDO4_ERRACT_WIDTH                     1  /* LDO4_ERRACT */
+-#define WM8400_LDO4_HIB_MODE                    0x0400  /* LDO4_HIB_MODE */
+-#define WM8400_LDO4_HIB_MODE_MASK               0x0400  /* LDO4_HIB_MODE */
+-#define WM8400_LDO4_HIB_MODE_SHIFT                  10  /* LDO4_HIB_MODE */
+-#define WM8400_LDO4_HIB_MODE_WIDTH                   1  /* LDO4_HIB_MODE */
+-#define WM8400_LDO4_VIMG_MASK                   0x03E0  /* LDO4_VIMG - [9:5] */
+-#define WM8400_LDO4_VIMG_SHIFT                       5  /* LDO4_VIMG - [9:5] */
+-#define WM8400_LDO4_VIMG_WIDTH                       5  /* LDO4_VIMG - [9:5] */
+-#define WM8400_LDO4_VSEL_MASK                   0x001F  /* LDO4_VSEL - [4:0] */
+-#define WM8400_LDO4_VSEL_SHIFT                       0  /* LDO4_VSEL - [4:0] */
+-#define WM8400_LDO4_VSEL_WIDTH                       5  /* LDO4_VSEL - [4:0] */
 -
--enum si476x_i2c_type {
--	SI476X_I2C_SEND,
--	SI476X_I2C_RECV
--};
+-/*
+- * R70 (0x46) - DCDC1 Control 1
+- */
+-#define WM8400_DC1_ENA                          0x8000  /* DC1_ENA */
+-#define WM8400_DC1_ENA_MASK                     0x8000  /* DC1_ENA */
+-#define WM8400_DC1_ENA_SHIFT                        15  /* DC1_ENA */
+-#define WM8400_DC1_ENA_WIDTH                         1  /* DC1_ENA */
+-#define WM8400_DC1_ACTIVE                       0x4000  /* DC1_ACTIVE */
+-#define WM8400_DC1_ACTIVE_MASK                  0x4000  /* DC1_ACTIVE */
+-#define WM8400_DC1_ACTIVE_SHIFT                     14  /* DC1_ACTIVE */
+-#define WM8400_DC1_ACTIVE_WIDTH                      1  /* DC1_ACTIVE */
+-#define WM8400_DC1_SLEEP                        0x2000  /* DC1_SLEEP */
+-#define WM8400_DC1_SLEEP_MASK                   0x2000  /* DC1_SLEEP */
+-#define WM8400_DC1_SLEEP_SHIFT                      13  /* DC1_SLEEP */
+-#define WM8400_DC1_SLEEP_WIDTH                       1  /* DC1_SLEEP */
+-#define WM8400_DC1_OPFLT                        0x1000  /* DC1_OPFLT */
+-#define WM8400_DC1_OPFLT_MASK                   0x1000  /* DC1_OPFLT */
+-#define WM8400_DC1_OPFLT_SHIFT                      12  /* DC1_OPFLT */
+-#define WM8400_DC1_OPFLT_WIDTH                       1  /* DC1_OPFLT */
+-#define WM8400_DC1_ERRACT                       0x0800  /* DC1_ERRACT */
+-#define WM8400_DC1_ERRACT_MASK                  0x0800  /* DC1_ERRACT */
+-#define WM8400_DC1_ERRACT_SHIFT                     11  /* DC1_ERRACT */
+-#define WM8400_DC1_ERRACT_WIDTH                      1  /* DC1_ERRACT */
+-#define WM8400_DC1_HIB_MODE                     0x0400  /* DC1_HIB_MODE */
+-#define WM8400_DC1_HIB_MODE_MASK                0x0400  /* DC1_HIB_MODE */
+-#define WM8400_DC1_HIB_MODE_SHIFT                   10  /* DC1_HIB_MODE */
+-#define WM8400_DC1_HIB_MODE_WIDTH                    1  /* DC1_HIB_MODE */
+-#define WM8400_DC1_SOFTST_MASK                  0x0300  /* DC1_SOFTST - [9:8] */
+-#define WM8400_DC1_SOFTST_SHIFT                      8  /* DC1_SOFTST - [9:8] */
+-#define WM8400_DC1_SOFTST_WIDTH                      2  /* DC1_SOFTST - [9:8] */
+-#define WM8400_DC1_OV_PROT                      0x0080  /* DC1_OV_PROT */
+-#define WM8400_DC1_OV_PROT_MASK                 0x0080  /* DC1_OV_PROT */
+-#define WM8400_DC1_OV_PROT_SHIFT                     7  /* DC1_OV_PROT */
+-#define WM8400_DC1_OV_PROT_WIDTH                     1  /* DC1_OV_PROT */
+-#define WM8400_DC1_VSEL_MASK                    0x007F  /* DC1_VSEL - [6:0] */
+-#define WM8400_DC1_VSEL_SHIFT                        0  /* DC1_VSEL - [6:0] */
+-#define WM8400_DC1_VSEL_WIDTH                        7  /* DC1_VSEL - [6:0] */
 -
--int si476x_core_i2c_xfer(struct si476x_core *,
--			 enum si476x_i2c_type,
--			 char *, int);
+-/*
+- * R71 (0x47) - DCDC1 Control 2
+- */
+-#define WM8400_DC1_FRC_PWM                      0x2000  /* DC1_FRC_PWM */
+-#define WM8400_DC1_FRC_PWM_MASK                 0x2000  /* DC1_FRC_PWM */
+-#define WM8400_DC1_FRC_PWM_SHIFT                    13  /* DC1_FRC_PWM */
+-#define WM8400_DC1_FRC_PWM_WIDTH                     1  /* DC1_FRC_PWM */
+-#define WM8400_DC1_STBY_LIM_MASK                0x0300  /* DC1_STBY_LIM - [9:8] */
+-#define WM8400_DC1_STBY_LIM_SHIFT                    8  /* DC1_STBY_LIM - [9:8] */
+-#define WM8400_DC1_STBY_LIM_WIDTH                    2  /* DC1_STBY_LIM - [9:8] */
+-#define WM8400_DC1_ACT_LIM                      0x0080  /* DC1_ACT_LIM */
+-#define WM8400_DC1_ACT_LIM_MASK                 0x0080  /* DC1_ACT_LIM */
+-#define WM8400_DC1_ACT_LIM_SHIFT                     7  /* DC1_ACT_LIM */
+-#define WM8400_DC1_ACT_LIM_WIDTH                     1  /* DC1_ACT_LIM */
+-#define WM8400_DC1_VIMG_MASK                    0x007F  /* DC1_VIMG - [6:0] */
+-#define WM8400_DC1_VIMG_SHIFT                        0  /* DC1_VIMG - [6:0] */
+-#define WM8400_DC1_VIMG_WIDTH                        7  /* DC1_VIMG - [6:0] */
 -
+-/*
+- * R72 (0x48) - DCDC2 Control 1
+- */
+-#define WM8400_DC2_ENA                          0x8000  /* DC2_ENA */
+-#define WM8400_DC2_ENA_MASK                     0x8000  /* DC2_ENA */
+-#define WM8400_DC2_ENA_SHIFT                        15  /* DC2_ENA */
+-#define WM8400_DC2_ENA_WIDTH                         1  /* DC2_ENA */
+-#define WM8400_DC2_ACTIVE                       0x4000  /* DC2_ACTIVE */
+-#define WM8400_DC2_ACTIVE_MASK                  0x4000  /* DC2_ACTIVE */
+-#define WM8400_DC2_ACTIVE_SHIFT                     14  /* DC2_ACTIVE */
+-#define WM8400_DC2_ACTIVE_WIDTH                      1  /* DC2_ACTIVE */
+-#define WM8400_DC2_SLEEP                        0x2000  /* DC2_SLEEP */
+-#define WM8400_DC2_SLEEP_MASK                   0x2000  /* DC2_SLEEP */
+-#define WM8400_DC2_SLEEP_SHIFT                      13  /* DC2_SLEEP */
+-#define WM8400_DC2_SLEEP_WIDTH                       1  /* DC2_SLEEP */
+-#define WM8400_DC2_OPFLT                        0x1000  /* DC2_OPFLT */
+-#define WM8400_DC2_OPFLT_MASK                   0x1000  /* DC2_OPFLT */
+-#define WM8400_DC2_OPFLT_SHIFT                      12  /* DC2_OPFLT */
+-#define WM8400_DC2_OPFLT_WIDTH                       1  /* DC2_OPFLT */
+-#define WM8400_DC2_ERRACT                       0x0800  /* DC2_ERRACT */
+-#define WM8400_DC2_ERRACT_MASK                  0x0800  /* DC2_ERRACT */
+-#define WM8400_DC2_ERRACT_SHIFT                     11  /* DC2_ERRACT */
+-#define WM8400_DC2_ERRACT_WIDTH                      1  /* DC2_ERRACT */
+-#define WM8400_DC2_HIB_MODE                     0x0400  /* DC2_HIB_MODE */
+-#define WM8400_DC2_HIB_MODE_MASK                0x0400  /* DC2_HIB_MODE */
+-#define WM8400_DC2_HIB_MODE_SHIFT                   10  /* DC2_HIB_MODE */
+-#define WM8400_DC2_HIB_MODE_WIDTH                    1  /* DC2_HIB_MODE */
+-#define WM8400_DC2_SOFTST_MASK                  0x0300  /* DC2_SOFTST - [9:8] */
+-#define WM8400_DC2_SOFTST_SHIFT                      8  /* DC2_SOFTST - [9:8] */
+-#define WM8400_DC2_SOFTST_WIDTH                      2  /* DC2_SOFTST - [9:8] */
+-#define WM8400_DC2_OV_PROT                      0x0080  /* DC2_OV_PROT */
+-#define WM8400_DC2_OV_PROT_MASK                 0x0080  /* DC2_OV_PROT */
+-#define WM8400_DC2_OV_PROT_SHIFT                     7  /* DC2_OV_PROT */
+-#define WM8400_DC2_OV_PROT_WIDTH                     1  /* DC2_OV_PROT */
+-#define WM8400_DC2_VSEL_MASK                    0x007F  /* DC2_VSEL - [6:0] */
+-#define WM8400_DC2_VSEL_SHIFT                        0  /* DC2_VSEL - [6:0] */
+-#define WM8400_DC2_VSEL_WIDTH                        7  /* DC2_VSEL - [6:0] */
 -
--/* -------------------- si476x-cmd.c ----------------------- */
+-/*
+- * R73 (0x49) - DCDC2 Control 2
+- */
+-#define WM8400_DC2_FRC_PWM                      0x2000  /* DC2_FRC_PWM */
+-#define WM8400_DC2_FRC_PWM_MASK                 0x2000  /* DC2_FRC_PWM */
+-#define WM8400_DC2_FRC_PWM_SHIFT                    13  /* DC2_FRC_PWM */
+-#define WM8400_DC2_FRC_PWM_WIDTH                     1  /* DC2_FRC_PWM */
+-#define WM8400_DC2_STBY_LIM_MASK                0x0300  /* DC2_STBY_LIM - [9:8] */
+-#define WM8400_DC2_STBY_LIM_SHIFT                    8  /* DC2_STBY_LIM - [9:8] */
+-#define WM8400_DC2_STBY_LIM_WIDTH                    2  /* DC2_STBY_LIM - [9:8] */
+-#define WM8400_DC2_ACT_LIM                      0x0080  /* DC2_ACT_LIM */
+-#define WM8400_DC2_ACT_LIM_MASK                 0x0080  /* DC2_ACT_LIM */
+-#define WM8400_DC2_ACT_LIM_SHIFT                     7  /* DC2_ACT_LIM */
+-#define WM8400_DC2_ACT_LIM_WIDTH                     1  /* DC2_ACT_LIM */
+-#define WM8400_DC2_VIMG_MASK                    0x007F  /* DC2_VIMG - [6:0] */
+-#define WM8400_DC2_VIMG_SHIFT                        0  /* DC2_VIMG - [6:0] */
+-#define WM8400_DC2_VIMG_WIDTH                        7  /* DC2_VIMG - [6:0] */
 -
--int si476x_core_cmd_func_info(struct si476x_core *, struct si476x_func_info *);
--int si476x_core_cmd_set_property(struct si476x_core *, u16, u16);
--int si476x_core_cmd_get_property(struct si476x_core *, u16);
--int si476x_core_cmd_dig_audio_pin_cfg(struct si476x_core *,
--				      enum si476x_dclk_config,
--				      enum si476x_dfs_config,
--				      enum si476x_dout_config,
--				      enum si476x_xout_config);
--int si476x_core_cmd_zif_pin_cfg(struct si476x_core *,
--				enum si476x_iqclk_config,
--				enum si476x_iqfs_config,
--				enum si476x_iout_config,
--				enum si476x_qout_config);
--int si476x_core_cmd_ic_link_gpo_ctl_pin_cfg(struct si476x_core *,
--					    enum si476x_icin_config,
--					    enum si476x_icip_config,
--					    enum si476x_icon_config,
--					    enum si476x_icop_config);
--int si476x_core_cmd_ana_audio_pin_cfg(struct si476x_core *,
--				      enum si476x_lrout_config);
--int si476x_core_cmd_intb_pin_cfg(struct si476x_core *, enum si476x_intb_config,
--				 enum si476x_a1_config);
--int si476x_core_cmd_fm_seek_start(struct si476x_core *, bool, bool);
--int si476x_core_cmd_am_seek_start(struct si476x_core *, bool, bool);
--int si476x_core_cmd_fm_rds_status(struct si476x_core *, bool, bool, bool,
--				  struct si476x_rds_status_report *);
--int si476x_core_cmd_fm_rds_blockcount(struct si476x_core *, bool,
--				      struct si476x_rds_blockcount_report *);
--int si476x_core_cmd_fm_tune_freq(struct si476x_core *,
--				 struct si476x_tune_freq_args *);
--int si476x_core_cmd_am_tune_freq(struct si476x_core *,
--				 struct si476x_tune_freq_args *);
--int si476x_core_cmd_am_rsq_status(struct si476x_core *,
--				  struct si476x_rsq_status_args *,
--				  struct si476x_rsq_status_report *);
--int si476x_core_cmd_fm_rsq_status(struct si476x_core *,
--				  struct si476x_rsq_status_args *,
--				  struct si476x_rsq_status_report *);
--int si476x_core_cmd_power_up(struct si476x_core *,
--			     struct si476x_power_up_args *);
--int si476x_core_cmd_power_down(struct si476x_core *,
--			       struct si476x_power_down_args *);
--int si476x_core_cmd_fm_phase_div_status(struct si476x_core *);
--int si476x_core_cmd_fm_phase_diversity(struct si476x_core *,
--				       enum si476x_phase_diversity_mode);
+-/*
+- * R75 (0x4B) - Interface
+- */
+-#define WM8400_AUTOINC                          0x0008  /* AUTOINC */
+-#define WM8400_AUTOINC_MASK                     0x0008  /* AUTOINC */
+-#define WM8400_AUTOINC_SHIFT                         3  /* AUTOINC */
+-#define WM8400_AUTOINC_WIDTH                         1  /* AUTOINC */
+-#define WM8400_ARA_ENA                          0x0004  /* ARA_ENA */
+-#define WM8400_ARA_ENA_MASK                     0x0004  /* ARA_ENA */
+-#define WM8400_ARA_ENA_SHIFT                         2  /* ARA_ENA */
+-#define WM8400_ARA_ENA_WIDTH                         1  /* ARA_ENA */
+-#define WM8400_SPI_CFG                          0x0002  /* SPI_CFG */
+-#define WM8400_SPI_CFG_MASK                     0x0002  /* SPI_CFG */
+-#define WM8400_SPI_CFG_SHIFT                         1  /* SPI_CFG */
+-#define WM8400_SPI_CFG_WIDTH                         1  /* SPI_CFG */
 -
--int si476x_core_cmd_fm_acf_status(struct si476x_core *,
--				  struct si476x_acf_status_report *);
--int si476x_core_cmd_am_acf_status(struct si476x_core *,
--				  struct si476x_acf_status_report *);
--int si476x_core_cmd_agc_status(struct si476x_core *,
--			       struct si476x_agc_status_report *);
+-/*
+- * R76 (0x4C) - PM GENERAL
+- */
+-#define WM8400_CODEC_SOFTST                     0x8000  /* CODEC_SOFTST */
+-#define WM8400_CODEC_SOFTST_MASK                0x8000  /* CODEC_SOFTST */
+-#define WM8400_CODEC_SOFTST_SHIFT                   15  /* CODEC_SOFTST */
+-#define WM8400_CODEC_SOFTST_WIDTH                    1  /* CODEC_SOFTST */
+-#define WM8400_CODEC_SOFTSD                     0x4000  /* CODEC_SOFTSD */
+-#define WM8400_CODEC_SOFTSD_MASK                0x4000  /* CODEC_SOFTSD */
+-#define WM8400_CODEC_SOFTSD_SHIFT                   14  /* CODEC_SOFTSD */
+-#define WM8400_CODEC_SOFTSD_WIDTH                    1  /* CODEC_SOFTSD */
+-#define WM8400_CHIP_SOFTSD                      0x2000  /* CHIP_SOFTSD */
+-#define WM8400_CHIP_SOFTSD_MASK                 0x2000  /* CHIP_SOFTSD */
+-#define WM8400_CHIP_SOFTSD_SHIFT                    13  /* CHIP_SOFTSD */
+-#define WM8400_CHIP_SOFTSD_WIDTH                     1  /* CHIP_SOFTSD */
+-#define WM8400_DSLEEP1_POL                      0x0008  /* DSLEEP1_POL */
+-#define WM8400_DSLEEP1_POL_MASK                 0x0008  /* DSLEEP1_POL */
+-#define WM8400_DSLEEP1_POL_SHIFT                     3  /* DSLEEP1_POL */
+-#define WM8400_DSLEEP1_POL_WIDTH                     1  /* DSLEEP1_POL */
+-#define WM8400_DSLEEP2_POL                      0x0004  /* DSLEEP2_POL */
+-#define WM8400_DSLEEP2_POL_MASK                 0x0004  /* DSLEEP2_POL */
+-#define WM8400_DSLEEP2_POL_SHIFT                     2  /* DSLEEP2_POL */
+-#define WM8400_DSLEEP2_POL_WIDTH                     1  /* DSLEEP2_POL */
+-#define WM8400_PWR_STATE_MASK                   0x0003  /* PWR_STATE - [1:0] */
+-#define WM8400_PWR_STATE_SHIFT                       0  /* PWR_STATE - [1:0] */
+-#define WM8400_PWR_STATE_WIDTH                       2  /* PWR_STATE - [1:0] */
 -
--enum si476x_power_grid_type {
--	SI476X_POWER_GRID_50HZ = 0,
--	SI476X_POWER_GRID_60HZ,
--};
+-/*
+- * R78 (0x4E) - PM Shutdown Control
+- */
+-#define WM8400_CHIP_GT150_ERRACT                0x0200  /* CHIP_GT150_ERRACT */
+-#define WM8400_CHIP_GT150_ERRACT_MASK           0x0200  /* CHIP_GT150_ERRACT */
+-#define WM8400_CHIP_GT150_ERRACT_SHIFT               9  /* CHIP_GT150_ERRACT */
+-#define WM8400_CHIP_GT150_ERRACT_WIDTH               1  /* CHIP_GT150_ERRACT */
+-#define WM8400_CHIP_GT115_ERRACT                0x0100  /* CHIP_GT115_ERRACT */
+-#define WM8400_CHIP_GT115_ERRACT_MASK           0x0100  /* CHIP_GT115_ERRACT */
+-#define WM8400_CHIP_GT115_ERRACT_SHIFT               8  /* CHIP_GT115_ERRACT */
+-#define WM8400_CHIP_GT115_ERRACT_WIDTH               1  /* CHIP_GT115_ERRACT */
+-#define WM8400_LINE_CMP_ERRACT                  0x0080  /* LINE_CMP_ERRACT */
+-#define WM8400_LINE_CMP_ERRACT_MASK             0x0080  /* LINE_CMP_ERRACT */
+-#define WM8400_LINE_CMP_ERRACT_SHIFT                 7  /* LINE_CMP_ERRACT */
+-#define WM8400_LINE_CMP_ERRACT_WIDTH                 1  /* LINE_CMP_ERRACT */
+-#define WM8400_UVLO_ERRACT                      0x0040  /* UVLO_ERRACT */
+-#define WM8400_UVLO_ERRACT_MASK                 0x0040  /* UVLO_ERRACT */
+-#define WM8400_UVLO_ERRACT_SHIFT                     6  /* UVLO_ERRACT */
+-#define WM8400_UVLO_ERRACT_WIDTH                     1  /* UVLO_ERRACT */
 -
--/* Properties  */
+-/*
+- * R79 (0x4F) - Interrupt Status 1
+- */
+-#define WM8400_MICD_CINT                        0x8000  /* MICD_CINT */
+-#define WM8400_MICD_CINT_MASK                   0x8000  /* MICD_CINT */
+-#define WM8400_MICD_CINT_SHIFT                      15  /* MICD_CINT */
+-#define WM8400_MICD_CINT_WIDTH                       1  /* MICD_CINT */
+-#define WM8400_MICSCD_CINT                      0x4000  /* MICSCD_CINT */
+-#define WM8400_MICSCD_CINT_MASK                 0x4000  /* MICSCD_CINT */
+-#define WM8400_MICSCD_CINT_SHIFT                    14  /* MICSCD_CINT */
+-#define WM8400_MICSCD_CINT_WIDTH                     1  /* MICSCD_CINT */
+-#define WM8400_JDL_CINT                         0x2000  /* JDL_CINT */
+-#define WM8400_JDL_CINT_MASK                    0x2000  /* JDL_CINT */
+-#define WM8400_JDL_CINT_SHIFT                       13  /* JDL_CINT */
+-#define WM8400_JDL_CINT_WIDTH                        1  /* JDL_CINT */
+-#define WM8400_JDR_CINT                         0x1000  /* JDR_CINT */
+-#define WM8400_JDR_CINT_MASK                    0x1000  /* JDR_CINT */
+-#define WM8400_JDR_CINT_SHIFT                       12  /* JDR_CINT */
+-#define WM8400_JDR_CINT_WIDTH                        1  /* JDR_CINT */
+-#define WM8400_CODEC_SEQ_END_EINT               0x0800  /* CODEC_SEQ_END_EINT */
+-#define WM8400_CODEC_SEQ_END_EINT_MASK          0x0800  /* CODEC_SEQ_END_EINT */
+-#define WM8400_CODEC_SEQ_END_EINT_SHIFT             11  /* CODEC_SEQ_END_EINT */
+-#define WM8400_CODEC_SEQ_END_EINT_WIDTH              1  /* CODEC_SEQ_END_EINT */
+-#define WM8400_CDEL_TO_EINT                     0x0400  /* CDEL_TO_EINT */
+-#define WM8400_CDEL_TO_EINT_MASK                0x0400  /* CDEL_TO_EINT */
+-#define WM8400_CDEL_TO_EINT_SHIFT                   10  /* CDEL_TO_EINT */
+-#define WM8400_CDEL_TO_EINT_WIDTH                    1  /* CDEL_TO_EINT */
+-#define WM8400_CHIP_GT150_EINT                  0x0200  /* CHIP_GT150_EINT */
+-#define WM8400_CHIP_GT150_EINT_MASK             0x0200  /* CHIP_GT150_EINT */
+-#define WM8400_CHIP_GT150_EINT_SHIFT                 9  /* CHIP_GT150_EINT */
+-#define WM8400_CHIP_GT150_EINT_WIDTH                 1  /* CHIP_GT150_EINT */
+-#define WM8400_CHIP_GT115_EINT                  0x0100  /* CHIP_GT115_EINT */
+-#define WM8400_CHIP_GT115_EINT_MASK             0x0100  /* CHIP_GT115_EINT */
+-#define WM8400_CHIP_GT115_EINT_SHIFT                 8  /* CHIP_GT115_EINT */
+-#define WM8400_CHIP_GT115_EINT_WIDTH                 1  /* CHIP_GT115_EINT */
+-#define WM8400_LINE_CMP_EINT                    0x0080  /* LINE_CMP_EINT */
+-#define WM8400_LINE_CMP_EINT_MASK               0x0080  /* LINE_CMP_EINT */
+-#define WM8400_LINE_CMP_EINT_SHIFT                   7  /* LINE_CMP_EINT */
+-#define WM8400_LINE_CMP_EINT_WIDTH                   1  /* LINE_CMP_EINT */
+-#define WM8400_UVLO_EINT                        0x0040  /* UVLO_EINT */
+-#define WM8400_UVLO_EINT_MASK                   0x0040  /* UVLO_EINT */
+-#define WM8400_UVLO_EINT_SHIFT                       6  /* UVLO_EINT */
+-#define WM8400_UVLO_EINT_WIDTH                       1  /* UVLO_EINT */
+-#define WM8400_DC2_UV_EINT                      0x0020  /* DC2_UV_EINT */
+-#define WM8400_DC2_UV_EINT_MASK                 0x0020  /* DC2_UV_EINT */
+-#define WM8400_DC2_UV_EINT_SHIFT                     5  /* DC2_UV_EINT */
+-#define WM8400_DC2_UV_EINT_WIDTH                     1  /* DC2_UV_EINT */
+-#define WM8400_DC1_UV_EINT                      0x0010  /* DC1_UV_EINT */
+-#define WM8400_DC1_UV_EINT_MASK                 0x0010  /* DC1_UV_EINT */
+-#define WM8400_DC1_UV_EINT_SHIFT                     4  /* DC1_UV_EINT */
+-#define WM8400_DC1_UV_EINT_WIDTH                     1  /* DC1_UV_EINT */
+-#define WM8400_LDO4_UV_EINT                     0x0008  /* LDO4_UV_EINT */
+-#define WM8400_LDO4_UV_EINT_MASK                0x0008  /* LDO4_UV_EINT */
+-#define WM8400_LDO4_UV_EINT_SHIFT                    3  /* LDO4_UV_EINT */
+-#define WM8400_LDO4_UV_EINT_WIDTH                    1  /* LDO4_UV_EINT */
+-#define WM8400_LDO3_UV_EINT                     0x0004  /* LDO3_UV_EINT */
+-#define WM8400_LDO3_UV_EINT_MASK                0x0004  /* LDO3_UV_EINT */
+-#define WM8400_LDO3_UV_EINT_SHIFT                    2  /* LDO3_UV_EINT */
+-#define WM8400_LDO3_UV_EINT_WIDTH                    1  /* LDO3_UV_EINT */
+-#define WM8400_LDO2_UV_EINT                     0x0002  /* LDO2_UV_EINT */
+-#define WM8400_LDO2_UV_EINT_MASK                0x0002  /* LDO2_UV_EINT */
+-#define WM8400_LDO2_UV_EINT_SHIFT                    1  /* LDO2_UV_EINT */
+-#define WM8400_LDO2_UV_EINT_WIDTH                    1  /* LDO2_UV_EINT */
+-#define WM8400_LDO1_UV_EINT                     0x0001  /* LDO1_UV_EINT */
+-#define WM8400_LDO1_UV_EINT_MASK                0x0001  /* LDO1_UV_EINT */
+-#define WM8400_LDO1_UV_EINT_SHIFT                    0  /* LDO1_UV_EINT */
+-#define WM8400_LDO1_UV_EINT_WIDTH                    1  /* LDO1_UV_EINT */
 -
--enum si476x_interrupt_flags {
--	SI476X_STCIEN = (1 << 0),
--	SI476X_ACFIEN = (1 << 1),
--	SI476X_RDSIEN = (1 << 2),
--	SI476X_RSQIEN = (1 << 3),
+-/*
+- * R80 (0x50) - Interrupt Status 1 Mask
+- */
+-#define WM8400_IM_MICD_CINT                     0x8000  /* IM_MICD_CINT */
+-#define WM8400_IM_MICD_CINT_MASK                0x8000  /* IM_MICD_CINT */
+-#define WM8400_IM_MICD_CINT_SHIFT                   15  /* IM_MICD_CINT */
+-#define WM8400_IM_MICD_CINT_WIDTH                    1  /* IM_MICD_CINT */
+-#define WM8400_IM_MICSCD_CINT                   0x4000  /* IM_MICSCD_CINT */
+-#define WM8400_IM_MICSCD_CINT_MASK              0x4000  /* IM_MICSCD_CINT */
+-#define WM8400_IM_MICSCD_CINT_SHIFT                 14  /* IM_MICSCD_CINT */
+-#define WM8400_IM_MICSCD_CINT_WIDTH                  1  /* IM_MICSCD_CINT */
+-#define WM8400_IM_JDL_CINT                      0x2000  /* IM_JDL_CINT */
+-#define WM8400_IM_JDL_CINT_MASK                 0x2000  /* IM_JDL_CINT */
+-#define WM8400_IM_JDL_CINT_SHIFT                    13  /* IM_JDL_CINT */
+-#define WM8400_IM_JDL_CINT_WIDTH                     1  /* IM_JDL_CINT */
+-#define WM8400_IM_JDR_CINT                      0x1000  /* IM_JDR_CINT */
+-#define WM8400_IM_JDR_CINT_MASK                 0x1000  /* IM_JDR_CINT */
+-#define WM8400_IM_JDR_CINT_SHIFT                    12  /* IM_JDR_CINT */
+-#define WM8400_IM_JDR_CINT_WIDTH                     1  /* IM_JDR_CINT */
+-#define WM8400_IM_CODEC_SEQ_END_EINT            0x0800  /* IM_CODEC_SEQ_END_EINT */
+-#define WM8400_IM_CODEC_SEQ_END_EINT_MASK       0x0800  /* IM_CODEC_SEQ_END_EINT */
+-#define WM8400_IM_CODEC_SEQ_END_EINT_SHIFT          11  /* IM_CODEC_SEQ_END_EINT */
+-#define WM8400_IM_CODEC_SEQ_END_EINT_WIDTH           1  /* IM_CODEC_SEQ_END_EINT */
+-#define WM8400_IM_CDEL_TO_EINT                  0x0400  /* IM_CDEL_TO_EINT */
+-#define WM8400_IM_CDEL_TO_EINT_MASK             0x0400  /* IM_CDEL_TO_EINT */
+-#define WM8400_IM_CDEL_TO_EINT_SHIFT                10  /* IM_CDEL_TO_EINT */
+-#define WM8400_IM_CDEL_TO_EINT_WIDTH                 1  /* IM_CDEL_TO_EINT */
+-#define WM8400_IM_CHIP_GT150_EINT               0x0200  /* IM_CHIP_GT150_EINT */
+-#define WM8400_IM_CHIP_GT150_EINT_MASK          0x0200  /* IM_CHIP_GT150_EINT */
+-#define WM8400_IM_CHIP_GT150_EINT_SHIFT              9  /* IM_CHIP_GT150_EINT */
+-#define WM8400_IM_CHIP_GT150_EINT_WIDTH              1  /* IM_CHIP_GT150_EINT */
+-#define WM8400_IM_CHIP_GT115_EINT               0x0100  /* IM_CHIP_GT115_EINT */
+-#define WM8400_IM_CHIP_GT115_EINT_MASK          0x0100  /* IM_CHIP_GT115_EINT */
+-#define WM8400_IM_CHIP_GT115_EINT_SHIFT              8  /* IM_CHIP_GT115_EINT */
+-#define WM8400_IM_CHIP_GT115_EINT_WIDTH              1  /* IM_CHIP_GT115_EINT */
+-#define WM8400_IM_LINE_CMP_EINT                 0x0080  /* IM_LINE_CMP_EINT */
+-#define WM8400_IM_LINE_CMP_EINT_MASK            0x0080  /* IM_LINE_CMP_EINT */
+-#define WM8400_IM_LINE_CMP_EINT_SHIFT                7  /* IM_LINE_CMP_EINT */
+-#define WM8400_IM_LINE_CMP_EINT_WIDTH                1  /* IM_LINE_CMP_EINT */
+-#define WM8400_IM_UVLO_EINT                     0x0040  /* IM_UVLO_EINT */
+-#define WM8400_IM_UVLO_EINT_MASK                0x0040  /* IM_UVLO_EINT */
+-#define WM8400_IM_UVLO_EINT_SHIFT                    6  /* IM_UVLO_EINT */
+-#define WM8400_IM_UVLO_EINT_WIDTH                    1  /* IM_UVLO_EINT */
+-#define WM8400_IM_DC2_UV_EINT                   0x0020  /* IM_DC2_UV_EINT */
+-#define WM8400_IM_DC2_UV_EINT_MASK              0x0020  /* IM_DC2_UV_EINT */
+-#define WM8400_IM_DC2_UV_EINT_SHIFT                  5  /* IM_DC2_UV_EINT */
+-#define WM8400_IM_DC2_UV_EINT_WIDTH                  1  /* IM_DC2_UV_EINT */
+-#define WM8400_IM_DC1_UV_EINT                   0x0010  /* IM_DC1_UV_EINT */
+-#define WM8400_IM_DC1_UV_EINT_MASK              0x0010  /* IM_DC1_UV_EINT */
+-#define WM8400_IM_DC1_UV_EINT_SHIFT                  4  /* IM_DC1_UV_EINT */
+-#define WM8400_IM_DC1_UV_EINT_WIDTH                  1  /* IM_DC1_UV_EINT */
+-#define WM8400_IM_LDO4_UV_EINT                  0x0008  /* IM_LDO4_UV_EINT */
+-#define WM8400_IM_LDO4_UV_EINT_MASK             0x0008  /* IM_LDO4_UV_EINT */
+-#define WM8400_IM_LDO4_UV_EINT_SHIFT                 3  /* IM_LDO4_UV_EINT */
+-#define WM8400_IM_LDO4_UV_EINT_WIDTH                 1  /* IM_LDO4_UV_EINT */
+-#define WM8400_IM_LDO3_UV_EINT                  0x0004  /* IM_LDO3_UV_EINT */
+-#define WM8400_IM_LDO3_UV_EINT_MASK             0x0004  /* IM_LDO3_UV_EINT */
+-#define WM8400_IM_LDO3_UV_EINT_SHIFT                 2  /* IM_LDO3_UV_EINT */
+-#define WM8400_IM_LDO3_UV_EINT_WIDTH                 1  /* IM_LDO3_UV_EINT */
+-#define WM8400_IM_LDO2_UV_EINT                  0x0002  /* IM_LDO2_UV_EINT */
+-#define WM8400_IM_LDO2_UV_EINT_MASK             0x0002  /* IM_LDO2_UV_EINT */
+-#define WM8400_IM_LDO2_UV_EINT_SHIFT                 1  /* IM_LDO2_UV_EINT */
+-#define WM8400_IM_LDO2_UV_EINT_WIDTH                 1  /* IM_LDO2_UV_EINT */
+-#define WM8400_IM_LDO1_UV_EINT                  0x0001  /* IM_LDO1_UV_EINT */
+-#define WM8400_IM_LDO1_UV_EINT_MASK             0x0001  /* IM_LDO1_UV_EINT */
+-#define WM8400_IM_LDO1_UV_EINT_SHIFT                 0  /* IM_LDO1_UV_EINT */
+-#define WM8400_IM_LDO1_UV_EINT_WIDTH                 1  /* IM_LDO1_UV_EINT */
 -
--	SI476X_ERRIEN = (1 << 6),
--	SI476X_CTSIEN = (1 << 7),
+-/*
+- * R81 (0x51) - Interrupt Levels
+- */
+-#define WM8400_MICD_LVL                         0x8000  /* MICD_LVL */
+-#define WM8400_MICD_LVL_MASK                    0x8000  /* MICD_LVL */
+-#define WM8400_MICD_LVL_SHIFT                       15  /* MICD_LVL */
+-#define WM8400_MICD_LVL_WIDTH                        1  /* MICD_LVL */
+-#define WM8400_MICSCD_LVL                       0x4000  /* MICSCD_LVL */
+-#define WM8400_MICSCD_LVL_MASK                  0x4000  /* MICSCD_LVL */
+-#define WM8400_MICSCD_LVL_SHIFT                     14  /* MICSCD_LVL */
+-#define WM8400_MICSCD_LVL_WIDTH                      1  /* MICSCD_LVL */
+-#define WM8400_JDL_LVL                          0x2000  /* JDL_LVL */
+-#define WM8400_JDL_LVL_MASK                     0x2000  /* JDL_LVL */
+-#define WM8400_JDL_LVL_SHIFT                        13  /* JDL_LVL */
+-#define WM8400_JDL_LVL_WIDTH                         1  /* JDL_LVL */
+-#define WM8400_JDR_LVL                          0x1000  /* JDR_LVL */
+-#define WM8400_JDR_LVL_MASK                     0x1000  /* JDR_LVL */
+-#define WM8400_JDR_LVL_SHIFT                        12  /* JDR_LVL */
+-#define WM8400_JDR_LVL_WIDTH                         1  /* JDR_LVL */
+-#define WM8400_CODEC_SEQ_END_LVL                0x0800  /* CODEC_SEQ_END_LVL */
+-#define WM8400_CODEC_SEQ_END_LVL_MASK           0x0800  /* CODEC_SEQ_END_LVL */
+-#define WM8400_CODEC_SEQ_END_LVL_SHIFT              11  /* CODEC_SEQ_END_LVL */
+-#define WM8400_CODEC_SEQ_END_LVL_WIDTH               1  /* CODEC_SEQ_END_LVL */
+-#define WM8400_CDEL_TO_LVL                      0x0400  /* CDEL_TO_LVL */
+-#define WM8400_CDEL_TO_LVL_MASK                 0x0400  /* CDEL_TO_LVL */
+-#define WM8400_CDEL_TO_LVL_SHIFT                    10  /* CDEL_TO_LVL */
+-#define WM8400_CDEL_TO_LVL_WIDTH                     1  /* CDEL_TO_LVL */
+-#define WM8400_CHIP_GT150_LVL                   0x0200  /* CHIP_GT150_LVL */
+-#define WM8400_CHIP_GT150_LVL_MASK              0x0200  /* CHIP_GT150_LVL */
+-#define WM8400_CHIP_GT150_LVL_SHIFT                  9  /* CHIP_GT150_LVL */
+-#define WM8400_CHIP_GT150_LVL_WIDTH                  1  /* CHIP_GT150_LVL */
+-#define WM8400_CHIP_GT115_LVL                   0x0100  /* CHIP_GT115_LVL */
+-#define WM8400_CHIP_GT115_LVL_MASK              0x0100  /* CHIP_GT115_LVL */
+-#define WM8400_CHIP_GT115_LVL_SHIFT                  8  /* CHIP_GT115_LVL */
+-#define WM8400_CHIP_GT115_LVL_WIDTH                  1  /* CHIP_GT115_LVL */
+-#define WM8400_LINE_CMP_LVL                     0x0080  /* LINE_CMP_LVL */
+-#define WM8400_LINE_CMP_LVL_MASK                0x0080  /* LINE_CMP_LVL */
+-#define WM8400_LINE_CMP_LVL_SHIFT                    7  /* LINE_CMP_LVL */
+-#define WM8400_LINE_CMP_LVL_WIDTH                    1  /* LINE_CMP_LVL */
+-#define WM8400_UVLO_LVL                         0x0040  /* UVLO_LVL */
+-#define WM8400_UVLO_LVL_MASK                    0x0040  /* UVLO_LVL */
+-#define WM8400_UVLO_LVL_SHIFT                        6  /* UVLO_LVL */
+-#define WM8400_UVLO_LVL_WIDTH                        1  /* UVLO_LVL */
+-#define WM8400_DC2_UV_LVL                       0x0020  /* DC2_UV_LVL */
+-#define WM8400_DC2_UV_LVL_MASK                  0x0020  /* DC2_UV_LVL */
+-#define WM8400_DC2_UV_LVL_SHIFT                      5  /* DC2_UV_LVL */
+-#define WM8400_DC2_UV_LVL_WIDTH                      1  /* DC2_UV_LVL */
+-#define WM8400_DC1_UV_LVL                       0x0010  /* DC1_UV_LVL */
+-#define WM8400_DC1_UV_LVL_MASK                  0x0010  /* DC1_UV_LVL */
+-#define WM8400_DC1_UV_LVL_SHIFT                      4  /* DC1_UV_LVL */
+-#define WM8400_DC1_UV_LVL_WIDTH                      1  /* DC1_UV_LVL */
+-#define WM8400_LDO4_UV_LVL                      0x0008  /* LDO4_UV_LVL */
+-#define WM8400_LDO4_UV_LVL_MASK                 0x0008  /* LDO4_UV_LVL */
+-#define WM8400_LDO4_UV_LVL_SHIFT                     3  /* LDO4_UV_LVL */
+-#define WM8400_LDO4_UV_LVL_WIDTH                     1  /* LDO4_UV_LVL */
+-#define WM8400_LDO3_UV_LVL                      0x0004  /* LDO3_UV_LVL */
+-#define WM8400_LDO3_UV_LVL_MASK                 0x0004  /* LDO3_UV_LVL */
+-#define WM8400_LDO3_UV_LVL_SHIFT                     2  /* LDO3_UV_LVL */
+-#define WM8400_LDO3_UV_LVL_WIDTH                     1  /* LDO3_UV_LVL */
+-#define WM8400_LDO2_UV_LVL                      0x0002  /* LDO2_UV_LVL */
+-#define WM8400_LDO2_UV_LVL_MASK                 0x0002  /* LDO2_UV_LVL */
+-#define WM8400_LDO2_UV_LVL_SHIFT                     1  /* LDO2_UV_LVL */
+-#define WM8400_LDO2_UV_LVL_WIDTH                     1  /* LDO2_UV_LVL */
+-#define WM8400_LDO1_UV_LVL                      0x0001  /* LDO1_UV_LVL */
+-#define WM8400_LDO1_UV_LVL_MASK                 0x0001  /* LDO1_UV_LVL */
+-#define WM8400_LDO1_UV_LVL_SHIFT                     0  /* LDO1_UV_LVL */
+-#define WM8400_LDO1_UV_LVL_WIDTH                     1  /* LDO1_UV_LVL */
 -
--	SI476X_STCREP = (1 << 8),
--	SI476X_ACFREP = (1 << 9),
--	SI476X_RDSREP = (1 << 10),
--	SI476X_RSQREP = (1 << 11),
--};
+-/*
+- * R82 (0x52) - Shutdown Reason
+- */
+-#define WM8400_SDR_CHIP_SOFTSD                  0x2000  /* SDR_CHIP_SOFTSD */
+-#define WM8400_SDR_CHIP_SOFTSD_MASK             0x2000  /* SDR_CHIP_SOFTSD */
+-#define WM8400_SDR_CHIP_SOFTSD_SHIFT                13  /* SDR_CHIP_SOFTSD */
+-#define WM8400_SDR_CHIP_SOFTSD_WIDTH                 1  /* SDR_CHIP_SOFTSD */
+-#define WM8400_SDR_NPDN                         0x0800  /* SDR_NPDN */
+-#define WM8400_SDR_NPDN_MASK                    0x0800  /* SDR_NPDN */
+-#define WM8400_SDR_NPDN_SHIFT                       11  /* SDR_NPDN */
+-#define WM8400_SDR_NPDN_WIDTH                        1  /* SDR_NPDN */
+-#define WM8400_SDR_CHIP_GT150                   0x0200  /* SDR_CHIP_GT150 */
+-#define WM8400_SDR_CHIP_GT150_MASK              0x0200  /* SDR_CHIP_GT150 */
+-#define WM8400_SDR_CHIP_GT150_SHIFT                  9  /* SDR_CHIP_GT150 */
+-#define WM8400_SDR_CHIP_GT150_WIDTH                  1  /* SDR_CHIP_GT150 */
+-#define WM8400_SDR_CHIP_GT115                   0x0100  /* SDR_CHIP_GT115 */
+-#define WM8400_SDR_CHIP_GT115_MASK              0x0100  /* SDR_CHIP_GT115 */
+-#define WM8400_SDR_CHIP_GT115_SHIFT                  8  /* SDR_CHIP_GT115 */
+-#define WM8400_SDR_CHIP_GT115_WIDTH                  1  /* SDR_CHIP_GT115 */
+-#define WM8400_SDR_LINE_CMP                     0x0080  /* SDR_LINE_CMP */
+-#define WM8400_SDR_LINE_CMP_MASK                0x0080  /* SDR_LINE_CMP */
+-#define WM8400_SDR_LINE_CMP_SHIFT                    7  /* SDR_LINE_CMP */
+-#define WM8400_SDR_LINE_CMP_WIDTH                    1  /* SDR_LINE_CMP */
+-#define WM8400_SDR_UVLO                         0x0040  /* SDR_UVLO */
+-#define WM8400_SDR_UVLO_MASK                    0x0040  /* SDR_UVLO */
+-#define WM8400_SDR_UVLO_SHIFT                        6  /* SDR_UVLO */
+-#define WM8400_SDR_UVLO_WIDTH                        1  /* SDR_UVLO */
+-#define WM8400_SDR_DC2_UV                       0x0020  /* SDR_DC2_UV */
+-#define WM8400_SDR_DC2_UV_MASK                  0x0020  /* SDR_DC2_UV */
+-#define WM8400_SDR_DC2_UV_SHIFT                      5  /* SDR_DC2_UV */
+-#define WM8400_SDR_DC2_UV_WIDTH                      1  /* SDR_DC2_UV */
+-#define WM8400_SDR_DC1_UV                       0x0010  /* SDR_DC1_UV */
+-#define WM8400_SDR_DC1_UV_MASK                  0x0010  /* SDR_DC1_UV */
+-#define WM8400_SDR_DC1_UV_SHIFT                      4  /* SDR_DC1_UV */
+-#define WM8400_SDR_DC1_UV_WIDTH                      1  /* SDR_DC1_UV */
+-#define WM8400_SDR_LDO4_UV                      0x0008  /* SDR_LDO4_UV */
+-#define WM8400_SDR_LDO4_UV_MASK                 0x0008  /* SDR_LDO4_UV */
+-#define WM8400_SDR_LDO4_UV_SHIFT                     3  /* SDR_LDO4_UV */
+-#define WM8400_SDR_LDO4_UV_WIDTH                     1  /* SDR_LDO4_UV */
+-#define WM8400_SDR_LDO3_UV                      0x0004  /* SDR_LDO3_UV */
+-#define WM8400_SDR_LDO3_UV_MASK                 0x0004  /* SDR_LDO3_UV */
+-#define WM8400_SDR_LDO3_UV_SHIFT                     2  /* SDR_LDO3_UV */
+-#define WM8400_SDR_LDO3_UV_WIDTH                     1  /* SDR_LDO3_UV */
+-#define WM8400_SDR_LDO2_UV                      0x0002  /* SDR_LDO2_UV */
+-#define WM8400_SDR_LDO2_UV_MASK                 0x0002  /* SDR_LDO2_UV */
+-#define WM8400_SDR_LDO2_UV_SHIFT                     1  /* SDR_LDO2_UV */
+-#define WM8400_SDR_LDO2_UV_WIDTH                     1  /* SDR_LDO2_UV */
+-#define WM8400_SDR_LDO1_UV                      0x0001  /* SDR_LDO1_UV */
+-#define WM8400_SDR_LDO1_UV_MASK                 0x0001  /* SDR_LDO1_UV */
+-#define WM8400_SDR_LDO1_UV_SHIFT                     0  /* SDR_LDO1_UV */
+-#define WM8400_SDR_LDO1_UV_WIDTH                     1  /* SDR_LDO1_UV */
 -
--enum si476x_rdsint_sources {
--	SI476X_RDSTPPTY = (1 << 4),
--	SI476X_RDSPI    = (1 << 3),
--	SI476X_RDSSYNC	= (1 << 1),
--	SI476X_RDSRECV	= (1 << 0),
--};
+-/*
+- * R84 (0x54) - Line Circuits
+- */
+-#define WM8400_BG_LINE_COMP                     0x8000  /* BG_LINE_COMP */
+-#define WM8400_BG_LINE_COMP_MASK                0x8000  /* BG_LINE_COMP */
+-#define WM8400_BG_LINE_COMP_SHIFT                   15  /* BG_LINE_COMP */
+-#define WM8400_BG_LINE_COMP_WIDTH                    1  /* BG_LINE_COMP */
+-#define WM8400_LINE_CMP_VTHI_MASK               0x00F0  /* LINE_CMP_VTHI - [7:4] */
+-#define WM8400_LINE_CMP_VTHI_SHIFT                   4  /* LINE_CMP_VTHI - [7:4] */
+-#define WM8400_LINE_CMP_VTHI_WIDTH                   4  /* LINE_CMP_VTHI - [7:4] */
+-#define WM8400_LINE_CMP_VTHD_MASK               0x000F  /* LINE_CMP_VTHD - [3:0] */
+-#define WM8400_LINE_CMP_VTHD_SHIFT                   0  /* LINE_CMP_VTHD - [3:0] */
+-#define WM8400_LINE_CMP_VTHD_WIDTH                   4  /* LINE_CMP_VTHD - [3:0] */
 -
--enum si476x_status_response_bits {
--	SI476X_CTS	  = (1 << 7),
--	SI476X_ERR	  = (1 << 6),
--	/* Status response for WB receiver */
--	SI476X_WB_ASQ_INT = (1 << 4),
--	SI476X_RSQ_INT    = (1 << 3),
--	/* Status response for FM receiver */
--	SI476X_FM_RDS_INT = (1 << 2),
--	SI476X_ACF_INT    = (1 << 1),
--	SI476X_STC_INT    = (1 << 0),
--};
--
--/* -------------------- si476x-prop.c ----------------------- */
--
--enum si476x_common_receiver_properties {
--	SI476X_PROP_INT_CTL_ENABLE			= 0x0000,
--	SI476X_PROP_DIGITAL_IO_INPUT_SAMPLE_RATE	= 0x0200,
--	SI476X_PROP_DIGITAL_IO_INPUT_FORMAT		= 0x0201,
--	SI476X_PROP_DIGITAL_IO_OUTPUT_SAMPLE_RATE	= 0x0202,
--	SI476X_PROP_DIGITAL_IO_OUTPUT_FORMAT		= 0x0203,
--
--	SI476X_PROP_SEEK_BAND_BOTTOM			= 0x1100,
--	SI476X_PROP_SEEK_BAND_TOP			= 0x1101,
--	SI476X_PROP_SEEK_FREQUENCY_SPACING		= 0x1102,
--
--	SI476X_PROP_VALID_MAX_TUNE_ERROR		= 0x2000,
--	SI476X_PROP_VALID_SNR_THRESHOLD			= 0x2003,
--	SI476X_PROP_VALID_RSSI_THRESHOLD		= 0x2004,
--};
--
--enum si476x_am_receiver_properties {
--	SI476X_PROP_AUDIO_PWR_LINE_FILTER		= 0x0303,
--};
--
--enum si476x_fm_receiver_properties {
--	SI476X_PROP_AUDIO_DEEMPHASIS			= 0x0302,
--
--	SI476X_PROP_FM_RDS_INTERRUPT_SOURCE		= 0x4000,
--	SI476X_PROP_FM_RDS_INTERRUPT_FIFO_COUNT		= 0x4001,
--	SI476X_PROP_FM_RDS_CONFIG			= 0x4002,
--};
--
--enum si476x_prop_audio_pwr_line_filter_bits {
--	SI476X_PROP_PWR_HARMONICS_MASK	= 0x001f,
--	SI476X_PROP_PWR_GRID_MASK	= 0x0100,
--	SI476X_PROP_PWR_ENABLE_MASK	= 0x0200,
--	SI476X_PROP_PWR_GRID_50HZ	= 0x0000,
--	SI476X_PROP_PWR_GRID_60HZ	= 0x0100,
--};
--
--enum si476x_prop_fm_rds_config_bits {
--	SI476X_PROP_RDSEN_MASK	= 0x1,
--	SI476X_PROP_RDSEN	= 0x1,
--};
--
--
--struct regmap *devm_regmap_init_si476x(struct si476x_core *);
--
--#endif	/* SI476X_CORE_H */
-diff --git a/include/linux/mfd/si476x-platform.h b/include/linux/mfd/si476x-platform.h
+-#endif
+diff --git a/include/linux/mfd/wm8400.h b/include/linux/mfd/wm8400.h
 deleted file mode 100644
-index f9e1f6b27277..000000000000
---- a/include/linux/mfd/si476x-platform.h
+index a812d89e7cb3..000000000000
+--- a/include/linux/mfd/wm8400.h
 +++ /dev/null
-@@ -1,256 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0-only */
+@@ -1,27 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0-or-later */
 -/*
-- * include/media/si476x-platform.h -- Platform data specific definitions
+- * wm8400 client interface
 - *
-- * Copyright (C) 2013 Andrey Smirnov
-- *
-- * Author: Andrey Smirnov <andrew.smirnov@gmail.com>
+- * Copyright 2008 Wolfson Microelectronics plc
 - */
 -
--#ifndef __SI476X_PLATFORM_H__
--#define __SI476X_PLATFORM_H__
+-#ifndef __LINUX_MFD_WM8400_H
+-#define __LINUX_MFD_WM8400_H
 -
--/* It is possible to select one of the four addresses using pins A0
-- * and A1 on SI476x */
--#define SI476X_I2C_ADDR_1	0x60
--#define SI476X_I2C_ADDR_2	0x61
--#define SI476X_I2C_ADDR_3	0x62
--#define SI476X_I2C_ADDR_4	0x63
+-#include <linux/regulator/machine.h>
 -
--enum si476x_iqclk_config {
--	SI476X_IQCLK_NOOP = 0,
--	SI476X_IQCLK_TRISTATE = 1,
--	SI476X_IQCLK_IQ = 21,
--};
--enum si476x_iqfs_config {
--	SI476X_IQFS_NOOP = 0,
--	SI476X_IQFS_TRISTATE = 1,
--	SI476X_IQFS_IQ = 21,
--};
--enum si476x_iout_config {
--	SI476X_IOUT_NOOP = 0,
--	SI476X_IOUT_TRISTATE = 1,
--	SI476X_IOUT_OUTPUT = 22,
--};
--enum si476x_qout_config {
--	SI476X_QOUT_NOOP = 0,
--	SI476X_QOUT_TRISTATE = 1,
--	SI476X_QOUT_OUTPUT = 22,
+-#define WM8400_LDO1  0
+-#define WM8400_LDO2  1
+-#define WM8400_LDO3  2
+-#define WM8400_LDO4  3
+-#define WM8400_DCDC1 4
+-#define WM8400_DCDC2 5
+-
+-struct wm8400_platform_data {
+-	int (*platform_init)(struct device *dev);
 -};
 -
--enum si476x_dclk_config {
--	SI476X_DCLK_NOOP      = 0,
--	SI476X_DCLK_TRISTATE  = 1,
--	SI476X_DCLK_DAUDIO    = 10,
--};
+-int wm8400_register_regulator(struct device *dev, int reg,
+-			      struct regulator_init_data *initdata);
 -
--enum si476x_dfs_config {
--	SI476X_DFS_NOOP      = 0,
--	SI476X_DFS_TRISTATE  = 1,
--	SI476X_DFS_DAUDIO    = 10,
--};
--
--enum si476x_dout_config {
--	SI476X_DOUT_NOOP       = 0,
--	SI476X_DOUT_TRISTATE   = 1,
--	SI476X_DOUT_I2S_OUTPUT = 12,
--	SI476X_DOUT_I2S_INPUT  = 13,
--};
--
--enum si476x_xout_config {
--	SI476X_XOUT_NOOP        = 0,
--	SI476X_XOUT_TRISTATE    = 1,
--	SI476X_XOUT_I2S_INPUT   = 13,
--	SI476X_XOUT_MODE_SELECT = 23,
--};
--
--enum si476x_icin_config {
--	SI476X_ICIN_NOOP	= 0,
--	SI476X_ICIN_TRISTATE	= 1,
--	SI476X_ICIN_GPO1_HIGH	= 2,
--	SI476X_ICIN_GPO1_LOW	= 3,
--	SI476X_ICIN_IC_LINK	= 30,
--};
--
--enum si476x_icip_config {
--	SI476X_ICIP_NOOP	= 0,
--	SI476X_ICIP_TRISTATE	= 1,
--	SI476X_ICIP_GPO2_HIGH	= 2,
--	SI476X_ICIP_GPO2_LOW	= 3,
--	SI476X_ICIP_IC_LINK	= 30,
--};
--
--enum si476x_icon_config {
--	SI476X_ICON_NOOP	= 0,
--	SI476X_ICON_TRISTATE	= 1,
--	SI476X_ICON_I2S		= 10,
--	SI476X_ICON_IC_LINK	= 30,
--};
--
--enum si476x_icop_config {
--	SI476X_ICOP_NOOP	= 0,
--	SI476X_ICOP_TRISTATE	= 1,
--	SI476X_ICOP_I2S		= 10,
--	SI476X_ICOP_IC_LINK	= 30,
--};
--
--
--enum si476x_lrout_config {
--	SI476X_LROUT_NOOP	= 0,
--	SI476X_LROUT_TRISTATE	= 1,
--	SI476X_LROUT_AUDIO	= 2,
--	SI476X_LROUT_MPX	= 3,
--};
--
--
--enum si476x_intb_config {
--	SI476X_INTB_NOOP     = 0,
--	SI476X_INTB_TRISTATE = 1,
--	SI476X_INTB_DAUDIO   = 10,
--	SI476X_INTB_IRQ      = 40,
--};
--
--enum si476x_a1_config {
--	SI476X_A1_NOOP     = 0,
--	SI476X_A1_TRISTATE = 1,
--	SI476X_A1_IRQ      = 40,
--};
--
--
--struct si476x_pinmux {
--	enum si476x_dclk_config  dclk;
--	enum si476x_dfs_config   dfs;
--	enum si476x_dout_config  dout;
--	enum si476x_xout_config  xout;
--
--	enum si476x_iqclk_config iqclk;
--	enum si476x_iqfs_config  iqfs;
--	enum si476x_iout_config  iout;
--	enum si476x_qout_config  qout;
--
--	enum si476x_icin_config  icin;
--	enum si476x_icip_config  icip;
--	enum si476x_icon_config  icon;
--	enum si476x_icop_config  icop;
--
--	enum si476x_lrout_config lrout;
--
--	enum si476x_intb_config  intb;
--	enum si476x_a1_config    a1;
--};
--
--enum si476x_ibias6x {
--	SI476X_IBIAS6X_OTHER			= 0,
--	SI476X_IBIAS6X_RCVR1_NON_4MHZ_CLK	= 1,
--};
--
--enum si476x_xstart {
--	SI476X_XSTART_MULTIPLE_TUNER	= 0x11,
--	SI476X_XSTART_NORMAL		= 0x77,
--};
--
--enum si476x_freq {
--	SI476X_FREQ_4_MHZ		= 0,
--	SI476X_FREQ_37P209375_MHZ	= 1,
--	SI476X_FREQ_36P4_MHZ		= 2,
--	SI476X_FREQ_37P8_MHZ		=  3,
--};
--
--enum si476x_xmode {
--	SI476X_XMODE_CRYSTAL_RCVR1	= 1,
--	SI476X_XMODE_EXT_CLOCK		= 2,
--	SI476X_XMODE_CRYSTAL_RCVR2_3	= 3,
--};
--
--enum si476x_xbiashc {
--	SI476X_XBIASHC_SINGLE_RECEIVER = 0,
--	SI476X_XBIASHC_MULTIPLE_RECEIVER = 1,
--};
--
--enum si476x_xbias {
--	SI476X_XBIAS_RCVR2_3	= 0,
--	SI476X_XBIAS_4MHZ_RCVR1 = 3,
--	SI476X_XBIAS_RCVR1	= 7,
--};
--
--enum si476x_func {
--	SI476X_FUNC_BOOTLOADER	= 0,
--	SI476X_FUNC_FM_RECEIVER = 1,
--	SI476X_FUNC_AM_RECEIVER = 2,
--	SI476X_FUNC_WB_RECEIVER = 3,
--};
--
--
--/**
-- * @xcload: Selects the amount of additional on-chip capacitance to
-- *          be connected between XTAL1 and gnd and between XTAL2 and
-- *          GND. One half of the capacitance value shown here is the
-- *          additional load capacitance presented to the xtal. The
-- *          minimum step size is 0.277 pF. Recommended value is 0x28
-- *          but it will be layout dependent. Range is 0–0x3F i.e.
-- *          (0–16.33 pF)
-- * @ctsien: enable CTSINT(interrupt request when CTS condition
-- *          arises) when set
-- * @intsel: when set A1 pin becomes the interrupt pin; otherwise,
-- *          INTB is the interrupt pin
-- * @func:   selects the boot function of the device. I.e.
-- *          SI476X_BOOTLOADER  - Boot loader
-- *          SI476X_FM_RECEIVER - FM receiver
-- *          SI476X_AM_RECEIVER - AM receiver
-- *          SI476X_WB_RECEIVER - Weatherband receiver
-- * @freq:   oscillator's crystal frequency:
-- *          SI476X_XTAL_37P209375_MHZ - 37.209375 Mhz
-- *          SI476X_XTAL_36P4_MHZ      - 36.4 Mhz
-- *          SI476X_XTAL_37P8_MHZ      - 37.8 Mhz
-- */
--struct si476x_power_up_args {
--	enum si476x_ibias6x ibias6x;
--	enum si476x_xstart  xstart;
--	u8   xcload;
--	bool fastboot;
--	enum si476x_xbiashc xbiashc;
--	enum si476x_xbias   xbias;
--	enum si476x_func    func;
--	enum si476x_freq    freq;
--	enum si476x_xmode   xmode;
--};
--
--
--/**
-- * enum si476x_phase_diversity_mode - possbile phase diversity modes
-- * for SI4764/5/6/7 chips.
-- *
-- * @SI476X_PHDIV_DISABLED:		Phase diversity feature is
-- *					disabled.
-- * @SI476X_PHDIV_PRIMARY_COMBINING:	Tuner works as a primary tuner
-- *					in combination with a
-- *					secondary one.
-- * @SI476X_PHDIV_PRIMARY_ANTENNA:	Tuner works as a primary tuner
-- *					using only its own antenna.
-- * @SI476X_PHDIV_SECONDARY_ANTENNA:	Tuner works as a primary tuner
-- *					usning seconary tuner's antenna.
-- * @SI476X_PHDIV_SECONDARY_COMBINING:	Tuner works as a secondary
-- *					tuner in combination with the
-- *					primary one.
-- */
--enum si476x_phase_diversity_mode {
--	SI476X_PHDIV_DISABLED			= 0,
--	SI476X_PHDIV_PRIMARY_COMBINING		= 1,
--	SI476X_PHDIV_PRIMARY_ANTENNA		= 2,
--	SI476X_PHDIV_SECONDARY_ANTENNA		= 3,
--	SI476X_PHDIV_SECONDARY_COMBINING	= 5,
--};
--
--
--/*
-- * Platform dependent definition
-- */
--struct si476x_platform_data {
--	struct si476x_power_up_args power_up_parameters;
--	enum si476x_phase_diversity_mode diversity_mode;
--
--	struct si476x_pinmux pinmux;
--};
--
--
--#endif /* __SI476X_PLATFORM_H__ */
-diff --git a/include/linux/mfd/si476x-reports.h b/include/linux/mfd/si476x-reports.h
-deleted file mode 100644
-index 93b34184699d..000000000000
---- a/include/linux/mfd/si476x-reports.h
-+++ /dev/null
-@@ -1,154 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0-only */
--/*
-- * include/media/si476x-platform.h -- Definitions of the data formats
-- * returned by debugfs hooks
-- *
-- * Copyright (C) 2013 Andrey Smirnov
-- *
-- * Author: Andrey Smirnov <andrew.smirnov@gmail.com>
-- */
--
--#ifndef __SI476X_REPORTS_H__
--#define __SI476X_REPORTS_H__
--
--/**
-- * struct si476x_rsq_status - structure containing received signal
-- * quality
-- * @multhint:   Multipath Detect High.
-- *              true  - Indicatedes that the value is below
-- *                      FM_RSQ_MULTIPATH_HIGH_THRESHOLD
-- *              false - Indicatedes that the value is above
-- *                      FM_RSQ_MULTIPATH_HIGH_THRESHOLD
-- * @multlint:   Multipath Detect Low.
-- *              true  - Indicatedes that the value is below
-- *                      FM_RSQ_MULTIPATH_LOW_THRESHOLD
-- *              false - Indicatedes that the value is above
-- *                      FM_RSQ_MULTIPATH_LOW_THRESHOLD
-- * @snrhint:    SNR Detect High.
-- *              true  - Indicatedes that the value is below
-- *                      FM_RSQ_SNR_HIGH_THRESHOLD
-- *              false - Indicatedes that the value is above
-- *                      FM_RSQ_SNR_HIGH_THRESHOLD
-- * @snrlint:    SNR Detect Low.
-- *              true  - Indicatedes that the value is below
-- *                      FM_RSQ_SNR_LOW_THRESHOLD
-- *              false - Indicatedes that the value is above
-- *                      FM_RSQ_SNR_LOW_THRESHOLD
-- * @rssihint:   RSSI Detect High.
-- *              true  - Indicatedes that the value is below
-- *                      FM_RSQ_RSSI_HIGH_THRESHOLD
-- *              false - Indicatedes that the value is above
-- *                      FM_RSQ_RSSI_HIGH_THRESHOLD
-- * @rssilint:   RSSI Detect Low.
-- *              true  - Indicatedes that the value is below
-- *                      FM_RSQ_RSSI_LOW_THRESHOLD
-- *              false - Indicatedes that the value is above
-- *                      FM_RSQ_RSSI_LOW_THRESHOLD
-- * @bltf:       Band Limit.
-- *              Set if seek command hits the band limit or wrapped to
-- *              the original frequency.
-- * @snr_ready:  SNR measurement in progress.
-- * @rssiready:  RSSI measurement in progress.
-- * @afcrl:      Set if FREQOFF >= MAX_TUNE_ERROR
-- * @valid:      Set if the channel is valid
-- *               rssi < FM_VALID_RSSI_THRESHOLD
-- *               snr  < FM_VALID_SNR_THRESHOLD
-- *               tune_error < FM_VALID_MAX_TUNE_ERROR
-- * @readfreq:   Current tuned frequency.
-- * @freqoff:    Signed frequency offset.
-- * @rssi:       Received Signal Strength Indicator(dBuV).
-- * @snr:        RF SNR Indicator(dB).
-- * @lassi:
-- * @hassi:      Low/High side Adjacent(100 kHz) Channel Strength Indicator
-- * @mult:       Multipath indicator
-- * @dev:        Who knows? But values may vary.
-- * @readantcap: Antenna tuning capacity value.
-- * @assi:       Adjacent Channel(+/- 200kHz) Strength Indicator
-- * @usn:        Ultrasonic Noise Inticator in -DBFS
-- */
--struct si476x_rsq_status_report {
--	__u8 multhint, multlint;
--	__u8 snrhint,  snrlint;
--	__u8 rssihint, rssilint;
--	__u8 bltf;
--	__u8 snr_ready;
--	__u8 rssiready;
--	__u8 injside;
--	__u8 afcrl;
--	__u8 valid;
--
--	__u16 readfreq;
--	__s8  freqoff;
--	__s8  rssi;
--	__s8  snr;
--	__s8  issi;
--	__s8  lassi, hassi;
--	__s8  mult;
--	__u8  dev;
--	__u16 readantcap;
--	__s8  assi;
--	__s8  usn;
--
--	__u8 pilotdev;
--	__u8 rdsdev;
--	__u8 assidev;
--	__u8 strongdev;
--	__u16 rdspi;
--} __packed;
--
--/**
-- * si476x_acf_status_report - ACF report results
-- *
-- * @blend_int: If set, indicates that stereo separation has crossed
-- * below the blend threshold as set by FM_ACF_BLEND_THRESHOLD
-- * @hblend_int: If set, indicates that HiBlend cutoff frequency is
-- * lower than threshold as set by FM_ACF_HBLEND_THRESHOLD
-- * @hicut_int:  If set, indicates that HiCut cutoff frequency is lower
-- * than the threshold set by ACF_
--
-- */
--struct si476x_acf_status_report {
--	__u8 blend_int;
--	__u8 hblend_int;
--	__u8 hicut_int;
--	__u8 chbw_int;
--	__u8 softmute_int;
--	__u8 smute;
--	__u8 smattn;
--	__u8 chbw;
--	__u8 hicut;
--	__u8 hiblend;
--	__u8 pilot;
--	__u8 stblend;
--} __packed;
--
--enum si476x_fmagc {
--	SI476X_FMAGC_10K_OHM	= 0,
--	SI476X_FMAGC_800_OHM	= 1,
--	SI476X_FMAGC_400_OHM	= 2,
--	SI476X_FMAGC_200_OHM	= 4,
--	SI476X_FMAGC_100_OHM	= 8,
--	SI476X_FMAGC_50_OHM	= 16,
--	SI476X_FMAGC_25_OHM	= 32,
--	SI476X_FMAGC_12P5_OHM	= 64,
--	SI476X_FMAGC_6P25_OHM	= 128,
--};
--
--struct si476x_agc_status_report {
--	__u8 mxhi;
--	__u8 mxlo;
--	__u8 lnahi;
--	__u8 lnalo;
--	__u8 fmagc1;
--	__u8 fmagc2;
--	__u8 pgagain;
--	__u8 fmwblang;
--} __packed;
--
--struct si476x_rds_blockcount_report {
--	__u16 expected;
--	__u16 received;
--	__u16 uncorrectable;
--} __packed;
--
--#endif  /* __SI476X_REPORTS_H__ */
-diff --git a/include/media/drv-intf/si476x.h b/include/media/drv-intf/si476x.h
-deleted file mode 100644
-index 07f291d50b77..000000000000
---- a/include/media/drv-intf/si476x.h
-+++ /dev/null
-@@ -1,28 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0-only */
--/*
-- * include/media/drv-intf/si476x.h -- Common definitions for si476x driver
-- *
-- * Copyright (C) 2012 Innovative Converged Devices(ICD)
-- * Copyright (C) 2013 Andrey Smirnov
-- *
-- * Author: Andrey Smirnov <andrew.smirnov@gmail.com>
-- */
--
--#ifndef SI476X_H
--#define SI476X_H
--
--#include <linux/types.h>
--#include <linux/videodev2.h>
--
--#include <linux/mfd/si476x-reports.h>
--
--enum si476x_ctrl_id {
--	V4L2_CID_SI476X_RSSI_THRESHOLD	= (V4L2_CID_USER_SI476X_BASE + 1),
--	V4L2_CID_SI476X_SNR_THRESHOLD	= (V4L2_CID_USER_SI476X_BASE + 2),
--	V4L2_CID_SI476X_MAX_TUNE_ERROR	= (V4L2_CID_USER_SI476X_BASE + 3),
--	V4L2_CID_SI476X_HARMONICS_COUNT	= (V4L2_CID_USER_SI476X_BASE + 4),
--	V4L2_CID_SI476X_DIVERSITY_MODE	= (V4L2_CID_USER_SI476X_BASE + 5),
--	V4L2_CID_SI476X_INTERCHIP_LINK	= (V4L2_CID_USER_SI476X_BASE + 6),
--};
--
--#endif /* SI476X_H*/
-diff --git a/include/uapi/linux/v4l2-controls.h b/include/uapi/linux/v4l2-controls.h
-index affec0ab4781..40680bf5558d 100644
---- a/include/uapi/linux/v4l2-controls.h
-+++ b/include/uapi/linux/v4l2-controls.h
-@@ -133,8 +133,8 @@ enum v4l2_colorfx {
- #define V4L2_CID_USER_S2255_BASE		(V4L2_CID_USER_BASE + 0x1030)
- 
- /*
-- * The base for the si476x driver controls. See include/media/drv-intf/si476x.h
-- * for the list of controls. Total of 16 controls is reserved for this driver
-+ * Previously the base for the si476x driver controls, now removed.
-+ * Total of 16 controls is reserved for this driver
-  */
- #define V4L2_CID_USER_SI476X_BASE		(V4L2_CID_USER_BASE + 0x1040)
- 
+-#endif
 diff --git a/sound/soc/codecs/Kconfig b/sound/soc/codecs/Kconfig
-index f9a47e262a77..1f7dc2c7e338 100644
+index 1f7dc2c7e338..422e50ee0560 100644
 --- a/sound/soc/codecs/Kconfig
 +++ b/sound/soc/codecs/Kconfig
-@@ -250,7 +250,6 @@ config SND_SOC_ALL_CODECS
- 	imply SND_SOC_RTQ9128
- 	imply SND_SOC_SDW_MOCKUP
- 	imply SND_SOC_SGTL5000
--	imply SND_SOC_SI476X
- 	imply SND_SOC_SIMPLE_AMPLIFIER
- 	imply SND_SOC_SIMPLE_MUX
- 	imply SND_SOC_SMA1303
-@@ -2061,10 +2060,6 @@ config SND_SOC_SGTL5000
- 	tristate "Freescale SGTL5000 CODEC"
- 	depends on I2C
- 
--config SND_SOC_SI476X
--	tristate
--	depends on MFD_SI476X_CORE
--
- config SND_SOC_SIGMADSP
+@@ -318,7 +318,6 @@ config SND_SOC_ALL_CODECS
+ 	imply SND_SOC_WM5102
+ 	imply SND_SOC_WM5110
+ 	imply SND_SOC_WM8350
+-	imply SND_SOC_WM8400
+ 	imply SND_SOC_WM8510
+ 	imply SND_SOC_WM8523
+ 	imply SND_SOC_WM8524
+@@ -2556,11 +2555,6 @@ config SND_SOC_WM8350
  	tristate
- 	select CRC32
+ 	depends on MFD_WM8350
+ 
+-config SND_SOC_WM8400
+-	tristate
+-	# FIXME nothing selects SND_SOC_WM8400??
+-	depends on MFD_WM8400
+-
+ config SND_SOC_WM8510
+ 	tristate "Wolfson Microelectronics WM8510 CODEC"
+ 	depends on SND_SOC_I2C_AND_SPI
 diff --git a/sound/soc/codecs/Makefile b/sound/soc/codecs/Makefile
-index 3d122ace75ad..f4f20a8e112e 100644
+index f4f20a8e112e..3fc78f3b44ba 100644
 --- a/sound/soc/codecs/Makefile
 +++ b/sound/soc/codecs/Makefile
-@@ -298,7 +298,6 @@ snd-soc-alc5632-y := alc5632.o
- snd-soc-sigmadsp-y := sigmadsp.o
- snd-soc-sigmadsp-i2c-y := sigmadsp-i2c.o
- snd-soc-sigmadsp-regmap-y := sigmadsp-regmap.o
--snd-soc-si476x-y := si476x.o
- snd-soc-sma1303-y := sma1303.o
- snd-soc-sma1307-y := sma1307.o
- snd-soc-spdif-tx-y := spdif_transmitter.o
-@@ -739,7 +738,6 @@ obj-$(CONFIG_SND_SOC_SGTL5000)  += snd-soc-sgtl5000.o
- obj-$(CONFIG_SND_SOC_SIGMADSP)	+= snd-soc-sigmadsp.o
- obj-$(CONFIG_SND_SOC_SIGMADSP_I2C)	+= snd-soc-sigmadsp-i2c.o
- obj-$(CONFIG_SND_SOC_SIGMADSP_REGMAP)	+= snd-soc-sigmadsp-regmap.o
--obj-$(CONFIG_SND_SOC_SI476X)	+= snd-soc-si476x.o
- obj-$(CONFIG_SND_SOC_SMA1303)	+= snd-soc-sma1303.o
- obj-$(CONFIG_SND_SOC_SMA1307)	+= snd-soc-sma1307.o
- obj-$(CONFIG_SND_SOC_SPDIF)	+= snd-soc-spdif-rx.o snd-soc-spdif-tx.o
-diff --git a/sound/soc/codecs/si476x.c b/sound/soc/codecs/si476x.c
+@@ -375,7 +375,6 @@ snd-soc-wm5100-y := wm5100.o wm5100-tables.o
+ snd-soc-wm5102-y := wm5102.o
+ snd-soc-wm5110-y := wm5110.o
+ snd-soc-wm8350-y := wm8350.o
+-snd-soc-wm8400-y := wm8400.o
+ snd-soc-wm8510-y := wm8510.o
+ snd-soc-wm8523-y := wm8523.o
+ snd-soc-wm8524-y := wm8524.o
+@@ -825,7 +824,6 @@ obj-$(CONFIG_SND_SOC_WM5100)	+= snd-soc-wm5100.o
+ obj-$(CONFIG_SND_SOC_WM5102)	+= snd-soc-wm5102.o
+ obj-$(CONFIG_SND_SOC_WM5110)	+= snd-soc-wm5110.o
+ obj-$(CONFIG_SND_SOC_WM8350)	+= snd-soc-wm8350.o
+-obj-$(CONFIG_SND_SOC_WM8400)	+= snd-soc-wm8400.o
+ obj-$(CONFIG_SND_SOC_WM8510)	+= snd-soc-wm8510.o
+ obj-$(CONFIG_SND_SOC_WM8523)	+= snd-soc-wm8523.o
+ obj-$(CONFIG_SND_SOC_WM8524)	+= snd-soc-wm8524.o
+diff --git a/sound/soc/codecs/wm8400.c b/sound/soc/codecs/wm8400.c
 deleted file mode 100644
-index d87141ba8438..000000000000
---- a/sound/soc/codecs/si476x.c
+index 0eecc8657a38..000000000000
+--- a/sound/soc/codecs/wm8400.c
 +++ /dev/null
-@@ -1,263 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-only
+@@ -1,1348 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-or-later
 -/*
-- * sound/soc/codecs/si476x.c -- Codec driver for SI476X chips
+- * wm8400.c  --  WM8400 ALSA Soc Audio driver
 - *
-- * Copyright (C) 2012 Innovative Converged Devices(ICD)
-- * Copyright (C) 2013 Andrey Smirnov
-- *
-- * Author: Andrey Smirnov <andrew.smirnov@gmail.com>
+- * Copyright 2008-11 Wolfson Microelectronics PLC.
+- * Author: Mark Brown <broonie@opensource.wolfsonmicro.com>
 - */
 -
 -#include <linux/module.h>
+-#include <linux/moduleparam.h>
+-#include <linux/kernel.h>
 -#include <linux/slab.h>
+-#include <linux/init.h>
+-#include <linux/delay.h>
+-#include <linux/pm.h>
+-#include <linux/platform_device.h>
+-#include <linux/regulator/consumer.h>
+-#include <linux/mfd/wm8400-audio.h>
+-#include <linux/mfd/wm8400-private.h>
+-#include <linux/mfd/core.h>
+-#include <sound/core.h>
 -#include <sound/pcm.h>
 -#include <sound/pcm_params.h>
--#include <linux/regmap.h>
 -#include <sound/soc.h>
 -#include <sound/initval.h>
+-#include <sound/tlv.h>
 -
--#include <linux/i2c.h>
+-#include "wm8400.h"
 -
--#include <linux/mfd/si476x-core.h>
--
--enum si476x_audio_registers {
--	SI476X_DIGITAL_IO_OUTPUT_FORMAT		= 0x0203,
--	SI476X_DIGITAL_IO_OUTPUT_SAMPLE_RATE	= 0x0202,
+-static struct regulator_bulk_data power[] = {
+-	{
+-		.supply = "I2S1VDD",
+-	},
+-	{
+-		.supply = "I2S2VDD",
+-	},
+-	{
+-		.supply = "DCVDD",
+-	},
+-	{
+-		.supply = "AVDD",
+-	},
+-	{
+-		.supply = "FLLVDD",
+-	},
+-	{
+-		.supply = "HPVDD",
+-	},
+-	{
+-		.supply = "SPKVDD",
+-	},
 -};
 -
--enum si476x_digital_io_output_format {
--	SI476X_DIGITAL_IO_SLOT_SIZE_SHIFT	= 11,
--	SI476X_DIGITAL_IO_SAMPLE_SIZE_SHIFT	= 8,
+-/* codec private data */
+-struct wm8400_priv {
+-	struct wm8400 *wm8400;
+-	u16 fake_register;
+-	unsigned int sysclk;
+-	unsigned int pcmclk;
+-	int fll_in, fll_out;
 -};
 -
--#define SI476X_DIGITAL_IO_OUTPUT_WIDTH_MASK	((0x7 << SI476X_DIGITAL_IO_SLOT_SIZE_SHIFT) | \
--						  (0x7 << SI476X_DIGITAL_IO_SAMPLE_SIZE_SHIFT))
--#define SI476X_DIGITAL_IO_OUTPUT_FORMAT_MASK	(0x7e)
--
--enum si476x_daudio_formats {
--	SI476X_DAUDIO_MODE_I2S		= (0x0 << 1),
--	SI476X_DAUDIO_MODE_DSP_A	= (0x6 << 1),
--	SI476X_DAUDIO_MODE_DSP_B	= (0x7 << 1),
--	SI476X_DAUDIO_MODE_LEFT_J	= (0x8 << 1),
--	SI476X_DAUDIO_MODE_RIGHT_J	= (0x9 << 1),
--
--	SI476X_DAUDIO_MODE_IB		= (1 << 5),
--	SI476X_DAUDIO_MODE_IF		= (1 << 6),
--};
--
--enum si476x_pcm_format {
--	SI476X_PCM_FORMAT_S8		= 2,
--	SI476X_PCM_FORMAT_S16_LE	= 4,
--	SI476X_PCM_FORMAT_S20_3LE	= 5,
--	SI476X_PCM_FORMAT_S24_LE	= 6,
--};
--
--static const struct snd_soc_dapm_widget si476x_dapm_widgets[] = {
--SND_SOC_DAPM_OUTPUT("LOUT"),
--SND_SOC_DAPM_OUTPUT("ROUT"),
--};
--
--static const struct snd_soc_dapm_route si476x_dapm_routes[] = {
--	{ "Capture", NULL, "LOUT" },
--	{ "Capture", NULL, "ROUT" },
--};
--
--static int si476x_codec_set_dai_fmt(struct snd_soc_dai *codec_dai,
--				    unsigned int fmt)
+-static void wm8400_component_reset(struct snd_soc_component *component)
 -{
--	struct si476x_core *core = i2c_mfd_cell_to_core(codec_dai->dev);
--	int err;
--	u16 format = 0;
+-	struct wm8400_priv *wm8400 = snd_soc_component_get_drvdata(component);
 -
--	if ((fmt & SND_SOC_DAIFMT_CLOCK_PROVIDER_MASK) != SND_SOC_DAIFMT_CBC_CFC)
--		return -EINVAL;
+-	wm8400_reset_codec_reg_cache(wm8400->wm8400);
+-}
 -
--	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
--	case SND_SOC_DAIFMT_DSP_A:
--		format |= SI476X_DAUDIO_MODE_DSP_A;
+-static const DECLARE_TLV_DB_SCALE(in_pga_tlv, -1650, 3000, 0);
+-
+-static const DECLARE_TLV_DB_SCALE(out_mix_tlv, -2100, 0, 0);
+-
+-static const DECLARE_TLV_DB_SCALE(out_pga_tlv, -7300, 600, 0);
+-
+-static const DECLARE_TLV_DB_SCALE(out_dac_tlv, -7163, 0, 0);
+-
+-static const DECLARE_TLV_DB_SCALE(in_adc_tlv, -7163, 1763, 0);
+-
+-static const DECLARE_TLV_DB_SCALE(out_sidetone_tlv, -3600, 0, 0);
+-
+-static int wm8400_outpga_put_volsw_vu(struct snd_kcontrol *kcontrol,
+-        struct snd_ctl_elem_value *ucontrol)
+-{
+-	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
+-	struct soc_mixer_control *mc =
+-		(struct soc_mixer_control *)kcontrol->private_value;
+-	int reg = mc->reg;
+-        int ret;
+-        u16 val;
+-
+-        ret = snd_soc_put_volsw(kcontrol, ucontrol);
+-        if (ret < 0)
+-                return ret;
+-
+-        /* now hit the volume update bits (always bit 8) */
+-	val = snd_soc_component_read(component, reg);
+-        return snd_soc_component_write(component, reg, val | 0x0100);
+-}
+-
+-#define WM8400_OUTPGA_SINGLE_R_TLV(xname, reg, shift, max, invert, tlv_array) \
+-	SOC_SINGLE_EXT_TLV(xname, reg, shift, max, invert, \
+-		snd_soc_get_volsw, wm8400_outpga_put_volsw_vu, tlv_array)
+-
+-
+-static const char *wm8400_digital_sidetone[] =
+-	{"None", "Left ADC", "Right ADC", "Reserved"};
+-
+-static SOC_ENUM_SINGLE_DECL(wm8400_left_digital_sidetone_enum,
+-			    WM8400_DIGITAL_SIDE_TONE,
+-			    WM8400_ADC_TO_DACL_SHIFT,
+-			    wm8400_digital_sidetone);
+-
+-static SOC_ENUM_SINGLE_DECL(wm8400_right_digital_sidetone_enum,
+-			    WM8400_DIGITAL_SIDE_TONE,
+-			    WM8400_ADC_TO_DACR_SHIFT,
+-			    wm8400_digital_sidetone);
+-
+-static const char *wm8400_adcmode[] =
+-	{"Hi-fi mode", "Voice mode 1", "Voice mode 2", "Voice mode 3"};
+-
+-static SOC_ENUM_SINGLE_DECL(wm8400_right_adcmode_enum,
+-			    WM8400_ADC_CTRL,
+-			    WM8400_ADC_HPF_CUT_SHIFT,
+-			    wm8400_adcmode);
+-
+-static const struct snd_kcontrol_new wm8400_snd_controls[] = {
+-/* INMIXL */
+-SOC_SINGLE("LIN12 PGA Boost", WM8400_INPUT_MIXER3, WM8400_L12MNBST_SHIFT,
+-	   1, 0),
+-SOC_SINGLE("LIN34 PGA Boost", WM8400_INPUT_MIXER3, WM8400_L34MNBST_SHIFT,
+-	   1, 0),
+-/* INMIXR */
+-SOC_SINGLE("RIN12 PGA Boost", WM8400_INPUT_MIXER3, WM8400_R12MNBST_SHIFT,
+-	   1, 0),
+-SOC_SINGLE("RIN34 PGA Boost", WM8400_INPUT_MIXER3, WM8400_R34MNBST_SHIFT,
+-	   1, 0),
+-
+-/* LOMIX */
+-SOC_SINGLE_TLV("LOMIX LIN3 Bypass Volume", WM8400_OUTPUT_MIXER3,
+-	WM8400_LLI3LOVOL_SHIFT, 7, 0, out_mix_tlv),
+-SOC_SINGLE_TLV("LOMIX RIN12 PGA Bypass Volume", WM8400_OUTPUT_MIXER3,
+-	WM8400_LR12LOVOL_SHIFT, 7, 0, out_mix_tlv),
+-SOC_SINGLE_TLV("LOMIX LIN12 PGA Bypass Volume", WM8400_OUTPUT_MIXER3,
+-	WM8400_LL12LOVOL_SHIFT, 7, 0, out_mix_tlv),
+-SOC_SINGLE_TLV("LOMIX RIN3 Bypass Volume", WM8400_OUTPUT_MIXER5,
+-	WM8400_LRI3LOVOL_SHIFT, 7, 0, out_mix_tlv),
+-SOC_SINGLE_TLV("LOMIX AINRMUX Bypass Volume", WM8400_OUTPUT_MIXER5,
+-	WM8400_LRBLOVOL_SHIFT, 7, 0, out_mix_tlv),
+-SOC_SINGLE_TLV("LOMIX AINLMUX Bypass Volume", WM8400_OUTPUT_MIXER5,
+-	WM8400_LRBLOVOL_SHIFT, 7, 0, out_mix_tlv),
+-
+-/* ROMIX */
+-SOC_SINGLE_TLV("ROMIX RIN3 Bypass Volume", WM8400_OUTPUT_MIXER4,
+-	WM8400_RRI3ROVOL_SHIFT, 7, 0, out_mix_tlv),
+-SOC_SINGLE_TLV("ROMIX LIN12 PGA Bypass Volume", WM8400_OUTPUT_MIXER4,
+-	WM8400_RL12ROVOL_SHIFT, 7, 0, out_mix_tlv),
+-SOC_SINGLE_TLV("ROMIX RIN12 PGA Bypass Volume", WM8400_OUTPUT_MIXER4,
+-	WM8400_RR12ROVOL_SHIFT, 7, 0, out_mix_tlv),
+-SOC_SINGLE_TLV("ROMIX LIN3 Bypass Volume", WM8400_OUTPUT_MIXER6,
+-	WM8400_RLI3ROVOL_SHIFT, 7, 0, out_mix_tlv),
+-SOC_SINGLE_TLV("ROMIX AINLMUX Bypass Volume", WM8400_OUTPUT_MIXER6,
+-	WM8400_RLBROVOL_SHIFT, 7, 0, out_mix_tlv),
+-SOC_SINGLE_TLV("ROMIX AINRMUX Bypass Volume", WM8400_OUTPUT_MIXER6,
+-	WM8400_RRBROVOL_SHIFT, 7, 0, out_mix_tlv),
+-
+-/* LOUT */
+-WM8400_OUTPGA_SINGLE_R_TLV("LOUT Volume", WM8400_LEFT_OUTPUT_VOLUME,
+-	WM8400_LOUTVOL_SHIFT, WM8400_LOUTVOL_MASK, 0, out_pga_tlv),
+-SOC_SINGLE("LOUT ZC", WM8400_LEFT_OUTPUT_VOLUME, WM8400_LOZC_SHIFT, 1, 0),
+-
+-/* ROUT */
+-WM8400_OUTPGA_SINGLE_R_TLV("ROUT Volume", WM8400_RIGHT_OUTPUT_VOLUME,
+-	WM8400_ROUTVOL_SHIFT, WM8400_ROUTVOL_MASK, 0, out_pga_tlv),
+-SOC_SINGLE("ROUT ZC", WM8400_RIGHT_OUTPUT_VOLUME, WM8400_ROZC_SHIFT, 1, 0),
+-
+-/* LOPGA */
+-WM8400_OUTPGA_SINGLE_R_TLV("LOPGA Volume", WM8400_LEFT_OPGA_VOLUME,
+-	WM8400_LOPGAVOL_SHIFT, WM8400_LOPGAVOL_MASK, 0, out_pga_tlv),
+-SOC_SINGLE("LOPGA ZC Switch", WM8400_LEFT_OPGA_VOLUME,
+-	WM8400_LOPGAZC_SHIFT, 1, 0),
+-
+-/* ROPGA */
+-WM8400_OUTPGA_SINGLE_R_TLV("ROPGA Volume", WM8400_RIGHT_OPGA_VOLUME,
+-	WM8400_ROPGAVOL_SHIFT, WM8400_ROPGAVOL_MASK, 0, out_pga_tlv),
+-SOC_SINGLE("ROPGA ZC Switch", WM8400_RIGHT_OPGA_VOLUME,
+-	WM8400_ROPGAZC_SHIFT, 1, 0),
+-
+-SOC_SINGLE("LON Mute Switch", WM8400_LINE_OUTPUTS_VOLUME,
+-	WM8400_LONMUTE_SHIFT, 1, 0),
+-SOC_SINGLE("LOP Mute Switch", WM8400_LINE_OUTPUTS_VOLUME,
+-	WM8400_LOPMUTE_SHIFT, 1, 0),
+-SOC_SINGLE("LOP Attenuation Switch", WM8400_LINE_OUTPUTS_VOLUME,
+-	WM8400_LOATTN_SHIFT, 1, 0),
+-SOC_SINGLE("RON Mute Switch", WM8400_LINE_OUTPUTS_VOLUME,
+-	WM8400_RONMUTE_SHIFT, 1, 0),
+-SOC_SINGLE("ROP Mute Switch", WM8400_LINE_OUTPUTS_VOLUME,
+-	WM8400_ROPMUTE_SHIFT, 1, 0),
+-SOC_SINGLE("ROP Attenuation Switch", WM8400_LINE_OUTPUTS_VOLUME,
+-	WM8400_ROATTN_SHIFT, 1, 0),
+-
+-SOC_SINGLE("OUT3 Mute Switch", WM8400_OUT3_4_VOLUME,
+-	WM8400_OUT3MUTE_SHIFT, 1, 0),
+-SOC_SINGLE("OUT3 Attenuation Switch", WM8400_OUT3_4_VOLUME,
+-	WM8400_OUT3ATTN_SHIFT, 1, 0),
+-
+-SOC_SINGLE("OUT4 Mute Switch", WM8400_OUT3_4_VOLUME,
+-	WM8400_OUT4MUTE_SHIFT, 1, 0),
+-SOC_SINGLE("OUT4 Attenuation Switch", WM8400_OUT3_4_VOLUME,
+-	WM8400_OUT4ATTN_SHIFT, 1, 0),
+-
+-SOC_SINGLE("Speaker Mode Switch", WM8400_CLASSD1,
+-	WM8400_CDMODE_SHIFT, 1, 0),
+-
+-SOC_SINGLE("Speaker Output Attenuation Volume", WM8400_SPEAKER_VOLUME,
+-	WM8400_SPKATTN_SHIFT, WM8400_SPKATTN_MASK, 0),
+-SOC_SINGLE("Speaker DC Boost Volume", WM8400_CLASSD3,
+-	WM8400_DCGAIN_SHIFT, 6, 0),
+-SOC_SINGLE("Speaker AC Boost Volume", WM8400_CLASSD3,
+-	WM8400_ACGAIN_SHIFT, 6, 0),
+-
+-WM8400_OUTPGA_SINGLE_R_TLV("Left DAC Digital Volume",
+-	WM8400_LEFT_DAC_DIGITAL_VOLUME, WM8400_DACL_VOL_SHIFT,
+-	127, 0, out_dac_tlv),
+-
+-WM8400_OUTPGA_SINGLE_R_TLV("Right DAC Digital Volume",
+-	WM8400_RIGHT_DAC_DIGITAL_VOLUME, WM8400_DACR_VOL_SHIFT,
+-	127, 0, out_dac_tlv),
+-
+-SOC_ENUM("Left Digital Sidetone", wm8400_left_digital_sidetone_enum),
+-SOC_ENUM("Right Digital Sidetone", wm8400_right_digital_sidetone_enum),
+-
+-SOC_SINGLE_TLV("Left Digital Sidetone Volume", WM8400_DIGITAL_SIDE_TONE,
+-	WM8400_ADCL_DAC_SVOL_SHIFT, 15, 0, out_sidetone_tlv),
+-SOC_SINGLE_TLV("Right Digital Sidetone Volume", WM8400_DIGITAL_SIDE_TONE,
+-	WM8400_ADCR_DAC_SVOL_SHIFT, 15, 0, out_sidetone_tlv),
+-
+-SOC_SINGLE("ADC Digital High Pass Filter Switch", WM8400_ADC_CTRL,
+-	WM8400_ADC_HPF_ENA_SHIFT, 1, 0),
+-
+-SOC_ENUM("ADC HPF Mode", wm8400_right_adcmode_enum),
+-
+-WM8400_OUTPGA_SINGLE_R_TLV("Left ADC Digital Volume",
+-	WM8400_LEFT_ADC_DIGITAL_VOLUME,
+-	WM8400_ADCL_VOL_SHIFT,
+-	WM8400_ADCL_VOL_MASK,
+-	0,
+-	in_adc_tlv),
+-
+-WM8400_OUTPGA_SINGLE_R_TLV("Right ADC Digital Volume",
+-	WM8400_RIGHT_ADC_DIGITAL_VOLUME,
+-	WM8400_ADCR_VOL_SHIFT,
+-	WM8400_ADCR_VOL_MASK,
+-	0,
+-	in_adc_tlv),
+-
+-WM8400_OUTPGA_SINGLE_R_TLV("LIN12 Volume",
+-	WM8400_LEFT_LINE_INPUT_1_2_VOLUME,
+-	WM8400_LIN12VOL_SHIFT,
+-	WM8400_LIN12VOL_MASK,
+-	0,
+-	in_pga_tlv),
+-
+-SOC_SINGLE("LIN12 ZC Switch", WM8400_LEFT_LINE_INPUT_1_2_VOLUME,
+-	WM8400_LI12ZC_SHIFT, 1, 0),
+-
+-SOC_SINGLE("LIN12 Mute Switch", WM8400_LEFT_LINE_INPUT_1_2_VOLUME,
+-	WM8400_LI12MUTE_SHIFT, 1, 0),
+-
+-WM8400_OUTPGA_SINGLE_R_TLV("LIN34 Volume",
+-	WM8400_LEFT_LINE_INPUT_3_4_VOLUME,
+-	WM8400_LIN34VOL_SHIFT,
+-	WM8400_LIN34VOL_MASK,
+-	0,
+-	in_pga_tlv),
+-
+-SOC_SINGLE("LIN34 ZC Switch", WM8400_LEFT_LINE_INPUT_3_4_VOLUME,
+-	WM8400_LI34ZC_SHIFT, 1, 0),
+-
+-SOC_SINGLE("LIN34 Mute Switch", WM8400_LEFT_LINE_INPUT_3_4_VOLUME,
+-	WM8400_LI34MUTE_SHIFT, 1, 0),
+-
+-WM8400_OUTPGA_SINGLE_R_TLV("RIN12 Volume",
+-	WM8400_RIGHT_LINE_INPUT_1_2_VOLUME,
+-	WM8400_RIN12VOL_SHIFT,
+-	WM8400_RIN12VOL_MASK,
+-	0,
+-	in_pga_tlv),
+-
+-SOC_SINGLE("RIN12 ZC Switch", WM8400_RIGHT_LINE_INPUT_1_2_VOLUME,
+-	WM8400_RI12ZC_SHIFT, 1, 0),
+-
+-SOC_SINGLE("RIN12 Mute Switch", WM8400_RIGHT_LINE_INPUT_1_2_VOLUME,
+-	WM8400_RI12MUTE_SHIFT, 1, 0),
+-
+-WM8400_OUTPGA_SINGLE_R_TLV("RIN34 Volume",
+-	WM8400_RIGHT_LINE_INPUT_3_4_VOLUME,
+-	WM8400_RIN34VOL_SHIFT,
+-	WM8400_RIN34VOL_MASK,
+-	0,
+-	in_pga_tlv),
+-
+-SOC_SINGLE("RIN34 ZC Switch", WM8400_RIGHT_LINE_INPUT_3_4_VOLUME,
+-	WM8400_RI34ZC_SHIFT, 1, 0),
+-
+-SOC_SINGLE("RIN34 Mute Switch", WM8400_RIGHT_LINE_INPUT_3_4_VOLUME,
+-	WM8400_RI34MUTE_SHIFT, 1, 0),
+-
+-};
+-
+-/*
+- * _DAPM_ Controls
+- */
+-
+-static int outmixer_event (struct snd_soc_dapm_widget *w,
+-	struct snd_kcontrol * kcontrol, int event)
+-{
+-	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+-	struct soc_mixer_control *mc =
+-		(struct soc_mixer_control *)kcontrol->private_value;
+-	struct wm8400_priv *wm8400 = snd_soc_component_get_drvdata(component);
+-	u32 reg_shift = mc->shift;
+-	int ret = 0;
+-	u16 reg;
+-
+-	switch (reg_shift) {
+-	case WM8400_SPEAKER_MIXER | (WM8400_LDSPK << 8) :
+-		reg = snd_soc_component_read(component, WM8400_OUTPUT_MIXER1);
+-		if (reg & WM8400_LDLO) {
+-			dev_warn(wm8400->wm8400->dev,
+-			"Cannot set as Output Mixer 1 LDLO Set\n");
+-			ret = -1;
+-		}
 -		break;
--	case SND_SOC_DAIFMT_DSP_B:
--		format |= SI476X_DAUDIO_MODE_DSP_B;
+-	case WM8400_SPEAKER_MIXER | (WM8400_RDSPK << 8):
+-		reg = snd_soc_component_read(component, WM8400_OUTPUT_MIXER2);
+-		if (reg & WM8400_RDRO) {
+-			dev_warn(wm8400->wm8400->dev,
+-			"Cannot set as Output Mixer 2 RDRO Set\n");
+-			ret = -1;
+-		}
 -		break;
--	case SND_SOC_DAIFMT_I2S:
--		format |= SI476X_DAUDIO_MODE_I2S;
+-	case WM8400_OUTPUT_MIXER1 | (WM8400_LDLO << 8):
+-		reg = snd_soc_component_read(component, WM8400_SPEAKER_MIXER);
+-		if (reg & WM8400_LDSPK) {
+-			dev_warn(wm8400->wm8400->dev,
+-			"Cannot set as Speaker Mixer LDSPK Set\n");
+-			ret = -1;
+-		}
 -		break;
--	case SND_SOC_DAIFMT_RIGHT_J:
--		format |= SI476X_DAUDIO_MODE_RIGHT_J;
+-	case WM8400_OUTPUT_MIXER2 | (WM8400_RDRO << 8):
+-		reg = snd_soc_component_read(component, WM8400_SPEAKER_MIXER);
+-		if (reg & WM8400_RDSPK) {
+-			dev_warn(wm8400->wm8400->dev,
+-			"Cannot set as Speaker Mixer RDSPK Set\n");
+-			ret = -1;
+-		}
 -		break;
--	case SND_SOC_DAIFMT_LEFT_J:
--		format |= SI476X_DAUDIO_MODE_LEFT_J;
+-	}
+-
+-	return ret;
+-}
+-
+-/* INMIX dB values */
+-static const DECLARE_TLV_DB_SCALE(in_mix_tlv, -1200, 600, 0);
+-
+-/* Left In PGA Connections */
+-static const struct snd_kcontrol_new wm8400_dapm_lin12_pga_controls[] = {
+-SOC_DAPM_SINGLE("LIN1 Switch", WM8400_INPUT_MIXER2, WM8400_LMN1_SHIFT, 1, 0),
+-SOC_DAPM_SINGLE("LIN2 Switch", WM8400_INPUT_MIXER2, WM8400_LMP2_SHIFT, 1, 0),
+-};
+-
+-static const struct snd_kcontrol_new wm8400_dapm_lin34_pga_controls[] = {
+-SOC_DAPM_SINGLE("LIN3 Switch", WM8400_INPUT_MIXER2, WM8400_LMN3_SHIFT, 1, 0),
+-SOC_DAPM_SINGLE("LIN4 Switch", WM8400_INPUT_MIXER2, WM8400_LMP4_SHIFT, 1, 0),
+-};
+-
+-/* Right In PGA Connections */
+-static const struct snd_kcontrol_new wm8400_dapm_rin12_pga_controls[] = {
+-SOC_DAPM_SINGLE("RIN1 Switch", WM8400_INPUT_MIXER2, WM8400_RMN1_SHIFT, 1, 0),
+-SOC_DAPM_SINGLE("RIN2 Switch", WM8400_INPUT_MIXER2, WM8400_RMP2_SHIFT, 1, 0),
+-};
+-
+-static const struct snd_kcontrol_new wm8400_dapm_rin34_pga_controls[] = {
+-SOC_DAPM_SINGLE("RIN3 Switch", WM8400_INPUT_MIXER2, WM8400_RMN3_SHIFT, 1, 0),
+-SOC_DAPM_SINGLE("RIN4 Switch", WM8400_INPUT_MIXER2, WM8400_RMP4_SHIFT, 1, 0),
+-};
+-
+-/* INMIXL */
+-static const struct snd_kcontrol_new wm8400_dapm_inmixl_controls[] = {
+-SOC_DAPM_SINGLE_TLV("Record Left Volume", WM8400_INPUT_MIXER3,
+-	WM8400_LDBVOL_SHIFT, WM8400_LDBVOL_MASK, 0, in_mix_tlv),
+-SOC_DAPM_SINGLE_TLV("LIN2 Volume", WM8400_INPUT_MIXER5, WM8400_LI2BVOL_SHIFT,
+-	7, 0, in_mix_tlv),
+-SOC_DAPM_SINGLE("LINPGA12 Switch", WM8400_INPUT_MIXER3, WM8400_L12MNB_SHIFT,
+-		1, 0),
+-SOC_DAPM_SINGLE("LINPGA34 Switch", WM8400_INPUT_MIXER3, WM8400_L34MNB_SHIFT,
+-		1, 0),
+-};
+-
+-/* INMIXR */
+-static const struct snd_kcontrol_new wm8400_dapm_inmixr_controls[] = {
+-SOC_DAPM_SINGLE_TLV("Record Right Volume", WM8400_INPUT_MIXER4,
+-	WM8400_RDBVOL_SHIFT, WM8400_RDBVOL_MASK, 0, in_mix_tlv),
+-SOC_DAPM_SINGLE_TLV("RIN2 Volume", WM8400_INPUT_MIXER6, WM8400_RI2BVOL_SHIFT,
+-	7, 0, in_mix_tlv),
+-SOC_DAPM_SINGLE("RINPGA12 Switch", WM8400_INPUT_MIXER3, WM8400_L12MNB_SHIFT,
+-	1, 0),
+-SOC_DAPM_SINGLE("RINPGA34 Switch", WM8400_INPUT_MIXER3, WM8400_L34MNB_SHIFT,
+-	1, 0),
+-};
+-
+-/* AINLMUX */
+-static const char *wm8400_ainlmux[] =
+-	{"INMIXL Mix", "RXVOICE Mix", "DIFFINL Mix"};
+-
+-static SOC_ENUM_SINGLE_DECL(wm8400_ainlmux_enum,
+-			    WM8400_INPUT_MIXER1,
+-			    WM8400_AINLMODE_SHIFT,
+-			    wm8400_ainlmux);
+-
+-static const struct snd_kcontrol_new wm8400_dapm_ainlmux_controls =
+-SOC_DAPM_ENUM("Route", wm8400_ainlmux_enum);
+-
+-/* DIFFINL */
+-
+-/* AINRMUX */
+-static const char *wm8400_ainrmux[] =
+-	{"INMIXR Mix", "RXVOICE Mix", "DIFFINR Mix"};
+-
+-static SOC_ENUM_SINGLE_DECL(wm8400_ainrmux_enum,
+-			    WM8400_INPUT_MIXER1,
+-			    WM8400_AINRMODE_SHIFT,
+-			    wm8400_ainrmux);
+-
+-static const struct snd_kcontrol_new wm8400_dapm_ainrmux_controls =
+-SOC_DAPM_ENUM("Route", wm8400_ainrmux_enum);
+-
+-/* LOMIX */
+-static const struct snd_kcontrol_new wm8400_dapm_lomix_controls[] = {
+-SOC_DAPM_SINGLE("LOMIX Right ADC Bypass Switch", WM8400_OUTPUT_MIXER1,
+-	WM8400_LRBLO_SHIFT, 1, 0),
+-SOC_DAPM_SINGLE("LOMIX Left ADC Bypass Switch", WM8400_OUTPUT_MIXER1,
+-	WM8400_LLBLO_SHIFT, 1, 0),
+-SOC_DAPM_SINGLE("LOMIX RIN3 Bypass Switch", WM8400_OUTPUT_MIXER1,
+-	WM8400_LRI3LO_SHIFT, 1, 0),
+-SOC_DAPM_SINGLE("LOMIX LIN3 Bypass Switch", WM8400_OUTPUT_MIXER1,
+-	WM8400_LLI3LO_SHIFT, 1, 0),
+-SOC_DAPM_SINGLE("LOMIX RIN12 PGA Bypass Switch", WM8400_OUTPUT_MIXER1,
+-	WM8400_LR12LO_SHIFT, 1, 0),
+-SOC_DAPM_SINGLE("LOMIX LIN12 PGA Bypass Switch", WM8400_OUTPUT_MIXER1,
+-	WM8400_LL12LO_SHIFT, 1, 0),
+-SOC_DAPM_SINGLE("LOMIX Left DAC Switch", WM8400_OUTPUT_MIXER1,
+-	WM8400_LDLO_SHIFT, 1, 0),
+-};
+-
+-/* ROMIX */
+-static const struct snd_kcontrol_new wm8400_dapm_romix_controls[] = {
+-SOC_DAPM_SINGLE("ROMIX Left ADC Bypass Switch", WM8400_OUTPUT_MIXER2,
+-	WM8400_RLBRO_SHIFT, 1, 0),
+-SOC_DAPM_SINGLE("ROMIX Right ADC Bypass Switch", WM8400_OUTPUT_MIXER2,
+-	WM8400_RRBRO_SHIFT, 1, 0),
+-SOC_DAPM_SINGLE("ROMIX LIN3 Bypass Switch", WM8400_OUTPUT_MIXER2,
+-	WM8400_RLI3RO_SHIFT, 1, 0),
+-SOC_DAPM_SINGLE("ROMIX RIN3 Bypass Switch", WM8400_OUTPUT_MIXER2,
+-	WM8400_RRI3RO_SHIFT, 1, 0),
+-SOC_DAPM_SINGLE("ROMIX LIN12 PGA Bypass Switch", WM8400_OUTPUT_MIXER2,
+-	WM8400_RL12RO_SHIFT, 1, 0),
+-SOC_DAPM_SINGLE("ROMIX RIN12 PGA Bypass Switch", WM8400_OUTPUT_MIXER2,
+-	WM8400_RR12RO_SHIFT, 1, 0),
+-SOC_DAPM_SINGLE("ROMIX Right DAC Switch", WM8400_OUTPUT_MIXER2,
+-	WM8400_RDRO_SHIFT, 1, 0),
+-};
+-
+-/* LONMIX */
+-static const struct snd_kcontrol_new wm8400_dapm_lonmix_controls[] = {
+-SOC_DAPM_SINGLE("LONMIX Left Mixer PGA Switch", WM8400_LINE_MIXER1,
+-	WM8400_LLOPGALON_SHIFT, 1, 0),
+-SOC_DAPM_SINGLE("LONMIX Right Mixer PGA Switch", WM8400_LINE_MIXER1,
+-	WM8400_LROPGALON_SHIFT, 1, 0),
+-SOC_DAPM_SINGLE("LONMIX Inverted LOP Switch", WM8400_LINE_MIXER1,
+-	WM8400_LOPLON_SHIFT, 1, 0),
+-};
+-
+-/* LOPMIX */
+-static const struct snd_kcontrol_new wm8400_dapm_lopmix_controls[] = {
+-SOC_DAPM_SINGLE("LOPMIX Right Mic Bypass Switch", WM8400_LINE_MIXER1,
+-	WM8400_LR12LOP_SHIFT, 1, 0),
+-SOC_DAPM_SINGLE("LOPMIX Left Mic Bypass Switch", WM8400_LINE_MIXER1,
+-	WM8400_LL12LOP_SHIFT, 1, 0),
+-SOC_DAPM_SINGLE("LOPMIX Left Mixer PGA Switch", WM8400_LINE_MIXER1,
+-	WM8400_LLOPGALOP_SHIFT, 1, 0),
+-};
+-
+-/* RONMIX */
+-static const struct snd_kcontrol_new wm8400_dapm_ronmix_controls[] = {
+-SOC_DAPM_SINGLE("RONMIX Right Mixer PGA Switch", WM8400_LINE_MIXER2,
+-	WM8400_RROPGARON_SHIFT, 1, 0),
+-SOC_DAPM_SINGLE("RONMIX Left Mixer PGA Switch", WM8400_LINE_MIXER2,
+-	WM8400_RLOPGARON_SHIFT, 1, 0),
+-SOC_DAPM_SINGLE("RONMIX Inverted ROP Switch", WM8400_LINE_MIXER2,
+-	WM8400_ROPRON_SHIFT, 1, 0),
+-};
+-
+-/* ROPMIX */
+-static const struct snd_kcontrol_new wm8400_dapm_ropmix_controls[] = {
+-SOC_DAPM_SINGLE("ROPMIX Left Mic Bypass Switch", WM8400_LINE_MIXER2,
+-	WM8400_RL12ROP_SHIFT, 1, 0),
+-SOC_DAPM_SINGLE("ROPMIX Right Mic Bypass Switch", WM8400_LINE_MIXER2,
+-	WM8400_RR12ROP_SHIFT, 1, 0),
+-SOC_DAPM_SINGLE("ROPMIX Right Mixer PGA Switch", WM8400_LINE_MIXER2,
+-	WM8400_RROPGAROP_SHIFT, 1, 0),
+-};
+-
+-/* OUT3MIX */
+-static const struct snd_kcontrol_new wm8400_dapm_out3mix_controls[] = {
+-SOC_DAPM_SINGLE("OUT3MIX LIN4/RXP Bypass Switch", WM8400_OUT3_4_MIXER,
+-	WM8400_LI4O3_SHIFT, 1, 0),
+-SOC_DAPM_SINGLE("OUT3MIX Left Out PGA Switch", WM8400_OUT3_4_MIXER,
+-	WM8400_LPGAO3_SHIFT, 1, 0),
+-};
+-
+-/* OUT4MIX */
+-static const struct snd_kcontrol_new wm8400_dapm_out4mix_controls[] = {
+-SOC_DAPM_SINGLE("OUT4MIX Right Out PGA Switch", WM8400_OUT3_4_MIXER,
+-	WM8400_RPGAO4_SHIFT, 1, 0),
+-SOC_DAPM_SINGLE("OUT4MIX RIN4/RXP Bypass Switch", WM8400_OUT3_4_MIXER,
+-	WM8400_RI4O4_SHIFT, 1, 0),
+-};
+-
+-/* SPKMIX */
+-static const struct snd_kcontrol_new wm8400_dapm_spkmix_controls[] = {
+-SOC_DAPM_SINGLE("SPKMIX LIN2 Bypass Switch", WM8400_SPEAKER_MIXER,
+-	WM8400_LI2SPK_SHIFT, 1, 0),
+-SOC_DAPM_SINGLE("SPKMIX LADC Bypass Switch", WM8400_SPEAKER_MIXER,
+-	WM8400_LB2SPK_SHIFT, 1, 0),
+-SOC_DAPM_SINGLE("SPKMIX Left Mixer PGA Switch", WM8400_SPEAKER_MIXER,
+-	WM8400_LOPGASPK_SHIFT, 1, 0),
+-SOC_DAPM_SINGLE("SPKMIX Left DAC Switch", WM8400_SPEAKER_MIXER,
+-	WM8400_LDSPK_SHIFT, 1, 0),
+-SOC_DAPM_SINGLE("SPKMIX Right DAC Switch", WM8400_SPEAKER_MIXER,
+-	WM8400_RDSPK_SHIFT, 1, 0),
+-SOC_DAPM_SINGLE("SPKMIX Right Mixer PGA Switch", WM8400_SPEAKER_MIXER,
+-	WM8400_ROPGASPK_SHIFT, 1, 0),
+-SOC_DAPM_SINGLE("SPKMIX RADC Bypass Switch", WM8400_SPEAKER_MIXER,
+-	WM8400_RL12ROP_SHIFT, 1, 0),
+-SOC_DAPM_SINGLE("SPKMIX RIN2 Bypass Switch", WM8400_SPEAKER_MIXER,
+-	WM8400_RI2SPK_SHIFT, 1, 0),
+-};
+-
+-static const struct snd_soc_dapm_widget wm8400_dapm_widgets[] = {
+-/* Input Side */
+-/* Input Lines */
+-SND_SOC_DAPM_INPUT("LIN1"),
+-SND_SOC_DAPM_INPUT("LIN2"),
+-SND_SOC_DAPM_INPUT("LIN3"),
+-SND_SOC_DAPM_INPUT("LIN4/RXN"),
+-SND_SOC_DAPM_INPUT("RIN3"),
+-SND_SOC_DAPM_INPUT("RIN4/RXP"),
+-SND_SOC_DAPM_INPUT("RIN1"),
+-SND_SOC_DAPM_INPUT("RIN2"),
+-SND_SOC_DAPM_INPUT("Internal ADC Source"),
+-
+-/* DACs */
+-SND_SOC_DAPM_ADC("Left ADC", "Left Capture", WM8400_POWER_MANAGEMENT_2,
+-	WM8400_ADCL_ENA_SHIFT, 0),
+-SND_SOC_DAPM_ADC("Right ADC", "Right Capture", WM8400_POWER_MANAGEMENT_2,
+-	WM8400_ADCR_ENA_SHIFT, 0),
+-
+-/* Input PGAs */
+-SND_SOC_DAPM_MIXER("LIN12 PGA", WM8400_POWER_MANAGEMENT_2,
+-		   WM8400_LIN12_ENA_SHIFT,
+-		   0, &wm8400_dapm_lin12_pga_controls[0],
+-		   ARRAY_SIZE(wm8400_dapm_lin12_pga_controls)),
+-SND_SOC_DAPM_MIXER("LIN34 PGA", WM8400_POWER_MANAGEMENT_2,
+-		   WM8400_LIN34_ENA_SHIFT,
+-		   0, &wm8400_dapm_lin34_pga_controls[0],
+-		   ARRAY_SIZE(wm8400_dapm_lin34_pga_controls)),
+-SND_SOC_DAPM_MIXER("RIN12 PGA", WM8400_POWER_MANAGEMENT_2,
+-		   WM8400_RIN12_ENA_SHIFT,
+-		   0, &wm8400_dapm_rin12_pga_controls[0],
+-		   ARRAY_SIZE(wm8400_dapm_rin12_pga_controls)),
+-SND_SOC_DAPM_MIXER("RIN34 PGA", WM8400_POWER_MANAGEMENT_2,
+-		   WM8400_RIN34_ENA_SHIFT,
+-		   0, &wm8400_dapm_rin34_pga_controls[0],
+-		   ARRAY_SIZE(wm8400_dapm_rin34_pga_controls)),
+-
+-SND_SOC_DAPM_SUPPLY("INL", WM8400_POWER_MANAGEMENT_2, WM8400_AINL_ENA_SHIFT,
+-		    0, NULL, 0),
+-SND_SOC_DAPM_SUPPLY("INR", WM8400_POWER_MANAGEMENT_2, WM8400_AINR_ENA_SHIFT,
+-		    0, NULL, 0),
+-
+-/* INMIXL */
+-SND_SOC_DAPM_MIXER("INMIXL", SND_SOC_NOPM, 0, 0,
+-	&wm8400_dapm_inmixl_controls[0],
+-	ARRAY_SIZE(wm8400_dapm_inmixl_controls)),
+-
+-/* AINLMUX */
+-SND_SOC_DAPM_MUX("AILNMUX", SND_SOC_NOPM, 0, 0, &wm8400_dapm_ainlmux_controls),
+-
+-/* INMIXR */
+-SND_SOC_DAPM_MIXER("INMIXR", SND_SOC_NOPM, 0, 0,
+-	&wm8400_dapm_inmixr_controls[0],
+-	ARRAY_SIZE(wm8400_dapm_inmixr_controls)),
+-
+-/* AINRMUX */
+-SND_SOC_DAPM_MUX("AIRNMUX", SND_SOC_NOPM, 0, 0, &wm8400_dapm_ainrmux_controls),
+-
+-/* Output Side */
+-/* DACs */
+-SND_SOC_DAPM_DAC("Left DAC", "Left Playback", WM8400_POWER_MANAGEMENT_3,
+-	WM8400_DACL_ENA_SHIFT, 0),
+-SND_SOC_DAPM_DAC("Right DAC", "Right Playback", WM8400_POWER_MANAGEMENT_3,
+-	WM8400_DACR_ENA_SHIFT, 0),
+-
+-/* LOMIX */
+-SND_SOC_DAPM_MIXER_E("LOMIX", WM8400_POWER_MANAGEMENT_3,
+-		     WM8400_LOMIX_ENA_SHIFT,
+-		     0, &wm8400_dapm_lomix_controls[0],
+-		     ARRAY_SIZE(wm8400_dapm_lomix_controls),
+-		     outmixer_event, SND_SOC_DAPM_PRE_REG),
+-
+-/* LONMIX */
+-SND_SOC_DAPM_MIXER("LONMIX", WM8400_POWER_MANAGEMENT_3, WM8400_LON_ENA_SHIFT,
+-		   0, &wm8400_dapm_lonmix_controls[0],
+-		   ARRAY_SIZE(wm8400_dapm_lonmix_controls)),
+-
+-/* LOPMIX */
+-SND_SOC_DAPM_MIXER("LOPMIX", WM8400_POWER_MANAGEMENT_3, WM8400_LOP_ENA_SHIFT,
+-		   0, &wm8400_dapm_lopmix_controls[0],
+-		   ARRAY_SIZE(wm8400_dapm_lopmix_controls)),
+-
+-/* OUT3MIX */
+-SND_SOC_DAPM_MIXER("OUT3MIX", WM8400_POWER_MANAGEMENT_1, WM8400_OUT3_ENA_SHIFT,
+-		   0, &wm8400_dapm_out3mix_controls[0],
+-		   ARRAY_SIZE(wm8400_dapm_out3mix_controls)),
+-
+-/* SPKMIX */
+-SND_SOC_DAPM_MIXER_E("SPKMIX", WM8400_POWER_MANAGEMENT_1, WM8400_SPK_ENA_SHIFT,
+-		     0, &wm8400_dapm_spkmix_controls[0],
+-		     ARRAY_SIZE(wm8400_dapm_spkmix_controls), outmixer_event,
+-		     SND_SOC_DAPM_PRE_REG),
+-
+-/* OUT4MIX */
+-SND_SOC_DAPM_MIXER("OUT4MIX", WM8400_POWER_MANAGEMENT_1, WM8400_OUT4_ENA_SHIFT,
+-	0, &wm8400_dapm_out4mix_controls[0],
+-	ARRAY_SIZE(wm8400_dapm_out4mix_controls)),
+-
+-/* ROPMIX */
+-SND_SOC_DAPM_MIXER("ROPMIX", WM8400_POWER_MANAGEMENT_3, WM8400_ROP_ENA_SHIFT,
+-		   0, &wm8400_dapm_ropmix_controls[0],
+-		   ARRAY_SIZE(wm8400_dapm_ropmix_controls)),
+-
+-/* RONMIX */
+-SND_SOC_DAPM_MIXER("RONMIX", WM8400_POWER_MANAGEMENT_3, WM8400_RON_ENA_SHIFT,
+-		   0, &wm8400_dapm_ronmix_controls[0],
+-		   ARRAY_SIZE(wm8400_dapm_ronmix_controls)),
+-
+-/* ROMIX */
+-SND_SOC_DAPM_MIXER_E("ROMIX", WM8400_POWER_MANAGEMENT_3,
+-		     WM8400_ROMIX_ENA_SHIFT,
+-		     0, &wm8400_dapm_romix_controls[0],
+-		     ARRAY_SIZE(wm8400_dapm_romix_controls),
+-		     outmixer_event, SND_SOC_DAPM_PRE_REG),
+-
+-/* LOUT PGA */
+-SND_SOC_DAPM_PGA("LOUT PGA", WM8400_POWER_MANAGEMENT_1, WM8400_LOUT_ENA_SHIFT,
+-		 0, NULL, 0),
+-
+-/* ROUT PGA */
+-SND_SOC_DAPM_PGA("ROUT PGA", WM8400_POWER_MANAGEMENT_1, WM8400_ROUT_ENA_SHIFT,
+-		 0, NULL, 0),
+-
+-/* LOPGA */
+-SND_SOC_DAPM_PGA("LOPGA", WM8400_POWER_MANAGEMENT_3, WM8400_LOPGA_ENA_SHIFT, 0,
+-	NULL, 0),
+-
+-/* ROPGA */
+-SND_SOC_DAPM_PGA("ROPGA", WM8400_POWER_MANAGEMENT_3, WM8400_ROPGA_ENA_SHIFT, 0,
+-	NULL, 0),
+-
+-/* MICBIAS */
+-SND_SOC_DAPM_SUPPLY("MICBIAS", WM8400_POWER_MANAGEMENT_1,
+-		    WM8400_MIC1BIAS_ENA_SHIFT, 0, NULL, 0),
+-
+-SND_SOC_DAPM_OUTPUT("LON"),
+-SND_SOC_DAPM_OUTPUT("LOP"),
+-SND_SOC_DAPM_OUTPUT("OUT3"),
+-SND_SOC_DAPM_OUTPUT("LOUT"),
+-SND_SOC_DAPM_OUTPUT("SPKN"),
+-SND_SOC_DAPM_OUTPUT("SPKP"),
+-SND_SOC_DAPM_OUTPUT("ROUT"),
+-SND_SOC_DAPM_OUTPUT("OUT4"),
+-SND_SOC_DAPM_OUTPUT("ROP"),
+-SND_SOC_DAPM_OUTPUT("RON"),
+-
+-SND_SOC_DAPM_OUTPUT("Internal DAC Sink"),
+-};
+-
+-static const struct snd_soc_dapm_route wm8400_dapm_routes[] = {
+-	/* Make DACs turn on when playing even if not mixed into any outputs */
+-	{"Internal DAC Sink", NULL, "Left DAC"},
+-	{"Internal DAC Sink", NULL, "Right DAC"},
+-
+-	/* Make ADCs turn on when recording
+-	 * even if not mixed from any inputs */
+-	{"Left ADC", NULL, "Internal ADC Source"},
+-	{"Right ADC", NULL, "Internal ADC Source"},
+-
+-	/* Input Side */
+-	/* LIN12 PGA */
+-	{"LIN12 PGA", "LIN1 Switch", "LIN1"},
+-	{"LIN12 PGA", "LIN2 Switch", "LIN2"},
+-	/* LIN34 PGA */
+-	{"LIN34 PGA", "LIN3 Switch", "LIN3"},
+-	{"LIN34 PGA", "LIN4 Switch", "LIN4/RXN"},
+-	/* INMIXL */
+-	{"INMIXL", NULL, "INL"},
+-	{"INMIXL", "Record Left Volume", "LOMIX"},
+-	{"INMIXL", "LIN2 Volume", "LIN2"},
+-	{"INMIXL", "LINPGA12 Switch", "LIN12 PGA"},
+-	{"INMIXL", "LINPGA34 Switch", "LIN34 PGA"},
+-	/* AILNMUX */
+-	{"AILNMUX", NULL, "INL"},
+-	{"AILNMUX", "INMIXL Mix", "INMIXL"},
+-	{"AILNMUX", "DIFFINL Mix", "LIN12 PGA"},
+-	{"AILNMUX", "DIFFINL Mix", "LIN34 PGA"},
+-	{"AILNMUX", "RXVOICE Mix", "LIN4/RXN"},
+-	{"AILNMUX", "RXVOICE Mix", "RIN4/RXP"},
+-	/* ADC */
+-	{"Left ADC", NULL, "AILNMUX"},
+-
+-	/* RIN12 PGA */
+-	{"RIN12 PGA", "RIN1 Switch", "RIN1"},
+-	{"RIN12 PGA", "RIN2 Switch", "RIN2"},
+-	/* RIN34 PGA */
+-	{"RIN34 PGA", "RIN3 Switch", "RIN3"},
+-	{"RIN34 PGA", "RIN4 Switch", "RIN4/RXP"},
+-	/* INMIXR */
+-	{"INMIXR", NULL, "INR"},
+-	{"INMIXR", "Record Right Volume", "ROMIX"},
+-	{"INMIXR", "RIN2 Volume", "RIN2"},
+-	{"INMIXR", "RINPGA12 Switch", "RIN12 PGA"},
+-	{"INMIXR", "RINPGA34 Switch", "RIN34 PGA"},
+-	/* AIRNMUX */
+-	{"AIRNMUX", NULL, "INR"},
+-	{"AIRNMUX", "INMIXR Mix", "INMIXR"},
+-	{"AIRNMUX", "DIFFINR Mix", "RIN12 PGA"},
+-	{"AIRNMUX", "DIFFINR Mix", "RIN34 PGA"},
+-	{"AIRNMUX", "RXVOICE Mix", "LIN4/RXN"},
+-	{"AIRNMUX", "RXVOICE Mix", "RIN4/RXP"},
+-	/* ADC */
+-	{"Right ADC", NULL, "AIRNMUX"},
+-
+-	/* LOMIX */
+-	{"LOMIX", "LOMIX RIN3 Bypass Switch", "RIN3"},
+-	{"LOMIX", "LOMIX LIN3 Bypass Switch", "LIN3"},
+-	{"LOMIX", "LOMIX LIN12 PGA Bypass Switch", "LIN12 PGA"},
+-	{"LOMIX", "LOMIX RIN12 PGA Bypass Switch", "RIN12 PGA"},
+-	{"LOMIX", "LOMIX Right ADC Bypass Switch", "AIRNMUX"},
+-	{"LOMIX", "LOMIX Left ADC Bypass Switch", "AILNMUX"},
+-	{"LOMIX", "LOMIX Left DAC Switch", "Left DAC"},
+-
+-	/* ROMIX */
+-	{"ROMIX", "ROMIX RIN3 Bypass Switch", "RIN3"},
+-	{"ROMIX", "ROMIX LIN3 Bypass Switch", "LIN3"},
+-	{"ROMIX", "ROMIX LIN12 PGA Bypass Switch", "LIN12 PGA"},
+-	{"ROMIX", "ROMIX RIN12 PGA Bypass Switch", "RIN12 PGA"},
+-	{"ROMIX", "ROMIX Right ADC Bypass Switch", "AIRNMUX"},
+-	{"ROMIX", "ROMIX Left ADC Bypass Switch", "AILNMUX"},
+-	{"ROMIX", "ROMIX Right DAC Switch", "Right DAC"},
+-
+-	/* SPKMIX */
+-	{"SPKMIX", "SPKMIX LIN2 Bypass Switch", "LIN2"},
+-	{"SPKMIX", "SPKMIX RIN2 Bypass Switch", "RIN2"},
+-	{"SPKMIX", "SPKMIX LADC Bypass Switch", "AILNMUX"},
+-	{"SPKMIX", "SPKMIX RADC Bypass Switch", "AIRNMUX"},
+-	{"SPKMIX", "SPKMIX Left Mixer PGA Switch", "LOPGA"},
+-	{"SPKMIX", "SPKMIX Right Mixer PGA Switch", "ROPGA"},
+-	{"SPKMIX", "SPKMIX Right DAC Switch", "Right DAC"},
+-	{"SPKMIX", "SPKMIX Left DAC Switch", "Right DAC"},
+-
+-	/* LONMIX */
+-	{"LONMIX", "LONMIX Left Mixer PGA Switch", "LOPGA"},
+-	{"LONMIX", "LONMIX Right Mixer PGA Switch", "ROPGA"},
+-	{"LONMIX", "LONMIX Inverted LOP Switch", "LOPMIX"},
+-
+-	/* LOPMIX */
+-	{"LOPMIX", "LOPMIX Right Mic Bypass Switch", "RIN12 PGA"},
+-	{"LOPMIX", "LOPMIX Left Mic Bypass Switch", "LIN12 PGA"},
+-	{"LOPMIX", "LOPMIX Left Mixer PGA Switch", "LOPGA"},
+-
+-	/* OUT3MIX */
+-	{"OUT3MIX", "OUT3MIX LIN4/RXP Bypass Switch", "LIN4/RXN"},
+-	{"OUT3MIX", "OUT3MIX Left Out PGA Switch", "LOPGA"},
+-
+-	/* OUT4MIX */
+-	{"OUT4MIX", "OUT4MIX Right Out PGA Switch", "ROPGA"},
+-	{"OUT4MIX", "OUT4MIX RIN4/RXP Bypass Switch", "RIN4/RXP"},
+-
+-	/* RONMIX */
+-	{"RONMIX", "RONMIX Right Mixer PGA Switch", "ROPGA"},
+-	{"RONMIX", "RONMIX Left Mixer PGA Switch", "LOPGA"},
+-	{"RONMIX", "RONMIX Inverted ROP Switch", "ROPMIX"},
+-
+-	/* ROPMIX */
+-	{"ROPMIX", "ROPMIX Left Mic Bypass Switch", "LIN12 PGA"},
+-	{"ROPMIX", "ROPMIX Right Mic Bypass Switch", "RIN12 PGA"},
+-	{"ROPMIX", "ROPMIX Right Mixer PGA Switch", "ROPGA"},
+-
+-	/* Out Mixer PGAs */
+-	{"LOPGA", NULL, "LOMIX"},
+-	{"ROPGA", NULL, "ROMIX"},
+-
+-	{"LOUT PGA", NULL, "LOMIX"},
+-	{"ROUT PGA", NULL, "ROMIX"},
+-
+-	/* Output Pins */
+-	{"LON", NULL, "LONMIX"},
+-	{"LOP", NULL, "LOPMIX"},
+-	{"OUT3", NULL, "OUT3MIX"},
+-	{"LOUT", NULL, "LOUT PGA"},
+-	{"SPKN", NULL, "SPKMIX"},
+-	{"ROUT", NULL, "ROUT PGA"},
+-	{"OUT4", NULL, "OUT4MIX"},
+-	{"ROP", NULL, "ROPMIX"},
+-	{"RON", NULL, "RONMIX"},
+-};
+-
+-/*
+- * Clock after FLL and dividers
+- */
+-static int wm8400_set_dai_sysclk(struct snd_soc_dai *codec_dai,
+-		int clk_id, unsigned int freq, int dir)
+-{
+-	struct snd_soc_component *component = codec_dai->component;
+-	struct wm8400_priv *wm8400 = snd_soc_component_get_drvdata(component);
+-
+-	wm8400->sysclk = freq;
+-	return 0;
+-}
+-
+-struct fll_factors {
+-	u16 n;
+-	u16 k;
+-	u16 outdiv;
+-	u16 fratio;
+-	u16 freq_ref;
+-};
+-
+-#define FIXED_FLL_SIZE ((1 << 16) * 10)
+-
+-static int fll_factors(struct wm8400_priv *wm8400, struct fll_factors *factors,
+-		       unsigned int Fref, unsigned int Fout)
+-{
+-	u64 Kpart;
+-	unsigned int K, Nmod, target;
+-
+-	factors->outdiv = 2;
+-	while (Fout * factors->outdiv <  90000000 ||
+-	       Fout * factors->outdiv > 100000000) {
+-		factors->outdiv *= 2;
+-		if (factors->outdiv > 32) {
+-			dev_err(wm8400->wm8400->dev,
+-				"Unsupported FLL output frequency %uHz\n",
+-				Fout);
+-			return -EINVAL;
+-		}
+-	}
+-	target = Fout * factors->outdiv;
+-	factors->outdiv = factors->outdiv >> 2;
+-
+-	if (Fref < 48000)
+-		factors->freq_ref = 1;
+-	else
+-		factors->freq_ref = 0;
+-
+-	if (Fref < 1000000)
+-		factors->fratio = 9;
+-	else
+-		factors->fratio = 0;
+-
+-	/* Ensure we have a fractional part */
+-	do {
+-		if (Fref < 1000000)
+-			factors->fratio--;
+-		else
+-			factors->fratio++;
+-
+-		if (factors->fratio < 1 || factors->fratio > 8) {
+-			dev_err(wm8400->wm8400->dev,
+-				"Unable to calculate FRATIO\n");
+-			return -EINVAL;
+-		}
+-
+-		factors->n = target / (Fref * factors->fratio);
+-		Nmod = target % (Fref * factors->fratio);
+-	} while (Nmod == 0);
+-
+-	/* Calculate fractional part - scale up so we can round. */
+-	Kpart = FIXED_FLL_SIZE * (long long)Nmod;
+-
+-	do_div(Kpart, (Fref * factors->fratio));
+-
+-	K = Kpart & 0xFFFFFFFF;
+-
+-	if ((K % 10) >= 5)
+-		K += 5;
+-
+-	/* Move down to proper range now rounding is done */
+-	factors->k = K / 10;
+-
+-	dev_dbg(wm8400->wm8400->dev,
+-		"FLL: Fref=%u Fout=%u N=%x K=%x, FRATIO=%x OUTDIV=%x\n",
+-		Fref, Fout,
+-		factors->n, factors->k, factors->fratio, factors->outdiv);
+-
+-	return 0;
+-}
+-
+-static int wm8400_set_dai_pll(struct snd_soc_dai *codec_dai, int pll_id,
+-			      int source, unsigned int freq_in,
+-			      unsigned int freq_out)
+-{
+-	struct snd_soc_component *component = codec_dai->component;
+-	struct wm8400_priv *wm8400 = snd_soc_component_get_drvdata(component);
+-	struct fll_factors factors;
+-	int ret;
+-	u16 reg;
+-
+-	if (freq_in == wm8400->fll_in && freq_out == wm8400->fll_out)
+-		return 0;
+-
+-	if (freq_out) {
+-		ret = fll_factors(wm8400, &factors, freq_in, freq_out);
+-		if (ret != 0)
+-			return ret;
+-	} else {
+-		/* Bodge GCC 4.4.0 uninitialised variable warning - it
+-		 * doesn't seem capable of working out that we exit if
+-		 * freq_out is 0 before any of the uses. */
+-		memset(&factors, 0, sizeof(factors));
+-	}
+-
+-	wm8400->fll_out = freq_out;
+-	wm8400->fll_in = freq_in;
+-
+-	/* We *must* disable the FLL before any changes */
+-	reg = snd_soc_component_read(component, WM8400_POWER_MANAGEMENT_2);
+-	reg &= ~WM8400_FLL_ENA;
+-	snd_soc_component_write(component, WM8400_POWER_MANAGEMENT_2, reg);
+-
+-	reg = snd_soc_component_read(component, WM8400_FLL_CONTROL_1);
+-	reg &= ~WM8400_FLL_OSC_ENA;
+-	snd_soc_component_write(component, WM8400_FLL_CONTROL_1, reg);
+-
+-	if (!freq_out)
+-		return 0;
+-
+-	reg &= ~(WM8400_FLL_REF_FREQ | WM8400_FLL_FRATIO_MASK);
+-	reg |= WM8400_FLL_FRAC | factors.fratio;
+-	reg |= factors.freq_ref << WM8400_FLL_REF_FREQ_SHIFT;
+-	snd_soc_component_write(component, WM8400_FLL_CONTROL_1, reg);
+-
+-	snd_soc_component_write(component, WM8400_FLL_CONTROL_2, factors.k);
+-	snd_soc_component_write(component, WM8400_FLL_CONTROL_3, factors.n);
+-
+-	reg = snd_soc_component_read(component, WM8400_FLL_CONTROL_4);
+-	reg &= ~WM8400_FLL_OUTDIV_MASK;
+-	reg |= factors.outdiv;
+-	snd_soc_component_write(component, WM8400_FLL_CONTROL_4, reg);
+-
+-	return 0;
+-}
+-
+-/*
+- * Sets ADC and Voice DAC format.
+- */
+-static int wm8400_set_dai_fmt(struct snd_soc_dai *codec_dai,
+-		unsigned int fmt)
+-{
+-	struct snd_soc_component *component = codec_dai->component;
+-	u16 audio1, audio3;
+-
+-	audio1 = snd_soc_component_read(component, WM8400_AUDIO_INTERFACE_1);
+-	audio3 = snd_soc_component_read(component, WM8400_AUDIO_INTERFACE_3);
+-
+-	/* set master/slave audio interface */
+-	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
+-	case SND_SOC_DAIFMT_CBC_CFC:
+-		audio3 &= ~WM8400_AIF_MSTR1;
+-		break;
+-	case SND_SOC_DAIFMT_CBP_CFP:
+-		audio3 |= WM8400_AIF_MSTR1;
 -		break;
 -	default:
 -		return -EINVAL;
 -	}
 -
+-	audio1 &= ~WM8400_AIF_FMT_MASK;
+-
+-	/* interface format */
 -	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
--	case SND_SOC_DAIFMT_DSP_A:
--	case SND_SOC_DAIFMT_DSP_B:
--		switch (fmt & SND_SOC_DAIFMT_INV_MASK) {
--		case SND_SOC_DAIFMT_NB_NF:
--			break;
--		case SND_SOC_DAIFMT_IB_NF:
--			format |= SI476X_DAUDIO_MODE_IB;
--			break;
--		default:
--			return -EINVAL;
--		}
--		break;
 -	case SND_SOC_DAIFMT_I2S:
+-		audio1 |= WM8400_AIF_FMT_I2S;
+-		audio1 &= ~WM8400_AIF_LRCLK_INV;
+-		break;
 -	case SND_SOC_DAIFMT_RIGHT_J:
+-		audio1 |= WM8400_AIF_FMT_RIGHTJ;
+-		audio1 &= ~WM8400_AIF_LRCLK_INV;
+-		break;
 -	case SND_SOC_DAIFMT_LEFT_J:
--		switch (fmt & SND_SOC_DAIFMT_INV_MASK) {
--		case SND_SOC_DAIFMT_NB_NF:
--			break;
--		case SND_SOC_DAIFMT_IB_IF:
--			format |= SI476X_DAUDIO_MODE_IB |
--				SI476X_DAUDIO_MODE_IF;
--			break;
--		case SND_SOC_DAIFMT_IB_NF:
--			format |= SI476X_DAUDIO_MODE_IB;
--			break;
--		case SND_SOC_DAIFMT_NB_IF:
--			format |= SI476X_DAUDIO_MODE_IF;
--			break;
--		default:
--			return -EINVAL;
--		}
+-		audio1 |= WM8400_AIF_FMT_LEFTJ;
+-		audio1 &= ~WM8400_AIF_LRCLK_INV;
+-		break;
+-	case SND_SOC_DAIFMT_DSP_A:
+-		audio1 |= WM8400_AIF_FMT_DSP;
+-		audio1 &= ~WM8400_AIF_LRCLK_INV;
+-		break;
+-	case SND_SOC_DAIFMT_DSP_B:
+-		audio1 |= WM8400_AIF_FMT_DSP | WM8400_AIF_LRCLK_INV;
 -		break;
 -	default:
 -		return -EINVAL;
 -	}
 -
--	si476x_core_lock(core);
+-	snd_soc_component_write(component, WM8400_AUDIO_INTERFACE_1, audio1);
+-	snd_soc_component_write(component, WM8400_AUDIO_INTERFACE_3, audio3);
+-	return 0;
+-}
 -
--	err = snd_soc_component_update_bits(codec_dai->component, SI476X_DIGITAL_IO_OUTPUT_FORMAT,
--				  SI476X_DIGITAL_IO_OUTPUT_FORMAT_MASK,
--				  format);
+-static int wm8400_set_dai_clkdiv(struct snd_soc_dai *codec_dai,
+-		int div_id, int div)
+-{
+-	struct snd_soc_component *component = codec_dai->component;
+-	u16 reg;
 -
--	si476x_core_unlock(core);
--
--	if (err < 0) {
--		dev_err(codec_dai->component->dev, "Failed to set output format\n");
--		return err;
+-	switch (div_id) {
+-	case WM8400_MCLK_DIV:
+-		reg = snd_soc_component_read(component, WM8400_CLOCKING_2) &
+-			~WM8400_MCLK_DIV_MASK;
+-		snd_soc_component_write(component, WM8400_CLOCKING_2, reg | div);
+-		break;
+-	case WM8400_DACCLK_DIV:
+-		reg = snd_soc_component_read(component, WM8400_CLOCKING_2) &
+-			~WM8400_DAC_CLKDIV_MASK;
+-		snd_soc_component_write(component, WM8400_CLOCKING_2, reg | div);
+-		break;
+-	case WM8400_ADCCLK_DIV:
+-		reg = snd_soc_component_read(component, WM8400_CLOCKING_2) &
+-			~WM8400_ADC_CLKDIV_MASK;
+-		snd_soc_component_write(component, WM8400_CLOCKING_2, reg | div);
+-		break;
+-	case WM8400_BCLK_DIV:
+-		reg = snd_soc_component_read(component, WM8400_CLOCKING_1) &
+-			~WM8400_BCLK_DIV_MASK;
+-		snd_soc_component_write(component, WM8400_CLOCKING_1, reg | div);
+-		break;
+-	default:
+-		return -EINVAL;
 -	}
 -
 -	return 0;
 -}
 -
--static int si476x_codec_hw_params(struct snd_pcm_substream *substream,
--				  struct snd_pcm_hw_params *params,
--				  struct snd_soc_dai *dai)
+-/*
+- * Set PCM DAI bit size and sample rate.
+- */
+-static int wm8400_hw_params(struct snd_pcm_substream *substream,
+-	struct snd_pcm_hw_params *params,
+-	struct snd_soc_dai *dai)
 -{
--	struct si476x_core *core = i2c_mfd_cell_to_core(dai->dev);
--	int rate, width, err;
+-	struct snd_soc_component *component = dai->component;
+-	u16 audio1 = snd_soc_component_read(component, WM8400_AUDIO_INTERFACE_1);
 -
--	rate = params_rate(params);
--	if (rate < 32000 || rate > 48000) {
--		dev_err(dai->component->dev, "Rate: %d is not supported\n", rate);
--		return -EINVAL;
--	}
--
+-	audio1 &= ~WM8400_AIF_WL_MASK;
+-	/* bit size */
 -	switch (params_width(params)) {
--	case 8:
--		width = SI476X_PCM_FORMAT_S8;
--		break;
 -	case 16:
--		width = SI476X_PCM_FORMAT_S16_LE;
 -		break;
 -	case 20:
--		width = SI476X_PCM_FORMAT_S20_3LE;
+-		audio1 |= WM8400_AIF_WL_20BITS;
 -		break;
 -	case 24:
--		width = SI476X_PCM_FORMAT_S24_LE;
+-		audio1 |= WM8400_AIF_WL_24BITS;
 -		break;
--	default:
--		return -EINVAL;
+-	case 32:
+-		audio1 |= WM8400_AIF_WL_32BITS;
+-		break;
 -	}
 -
--	si476x_core_lock(core);
--
--	err = snd_soc_component_write(dai->component, SI476X_DIGITAL_IO_OUTPUT_SAMPLE_RATE,
--			    rate);
--	if (err < 0) {
--		dev_err(dai->component->dev, "Failed to set sample rate\n");
--		goto out;
--	}
--
--	err = snd_soc_component_update_bits(dai->component, SI476X_DIGITAL_IO_OUTPUT_FORMAT,
--				  SI476X_DIGITAL_IO_OUTPUT_WIDTH_MASK,
--				  (width << SI476X_DIGITAL_IO_SLOT_SIZE_SHIFT) |
--				  (width << SI476X_DIGITAL_IO_SAMPLE_SIZE_SHIFT));
--	if (err < 0) {
--		dev_err(dai->component->dev, "Failed to set output width\n");
--		goto out;
--	}
--
--out:
--	si476x_core_unlock(core);
--
--	return err;
+-	snd_soc_component_write(component, WM8400_AUDIO_INTERFACE_1, audio1);
+-	return 0;
 -}
 -
--static const struct snd_soc_dai_ops si476x_dai_ops = {
--	.hw_params	= si476x_codec_hw_params,
--	.set_fmt	= si476x_codec_set_dai_fmt,
--};
--
--static struct snd_soc_dai_driver si476x_dai = {
--	.name		= "si476x-codec",
--	.capture	= {
--		.stream_name	= "Capture",
--		.channels_min	= 2,
--		.channels_max	= 2,
--
--		.rates = SNDRV_PCM_RATE_32000 |
--		SNDRV_PCM_RATE_44100 |
--		SNDRV_PCM_RATE_48000,
--		.formats = SNDRV_PCM_FMTBIT_S8 |
--		SNDRV_PCM_FMTBIT_S16_LE |
--		SNDRV_PCM_FMTBIT_S20_3LE |
--		SNDRV_PCM_FMTBIT_S24_LE
--	},
--	.ops		= &si476x_dai_ops,
--};
--
--static int si476x_probe(struct snd_soc_component *component)
+-static int wm8400_mute(struct snd_soc_dai *dai, int mute, int direction)
 -{
--	snd_soc_component_init_regmap(component,
--				dev_get_regmap(component->dev->parent, NULL));
+-	struct snd_soc_component *component = dai->component;
+-	u16 val = snd_soc_component_read(component, WM8400_DAC_CTRL) & ~WM8400_DAC_MUTE;
+-
+-	if (mute)
+-		snd_soc_component_write(component, WM8400_DAC_CTRL, val | WM8400_DAC_MUTE);
+-	else
+-		snd_soc_component_write(component, WM8400_DAC_CTRL, val);
 -
 -	return 0;
 -}
 -
--static const struct snd_soc_component_driver soc_component_dev_si476x = {
--	.probe			= si476x_probe,
--	.dapm_widgets		= si476x_dapm_widgets,
--	.num_dapm_widgets	= ARRAY_SIZE(si476x_dapm_widgets),
--	.dapm_routes		= si476x_dapm_routes,
--	.num_dapm_routes	= ARRAY_SIZE(si476x_dapm_routes),
+-/* TODO: set bias for best performance at standby */
+-static int wm8400_set_bias_level(struct snd_soc_component *component,
+-				 enum snd_soc_bias_level level)
+-{
+-	struct wm8400_priv *wm8400 = snd_soc_component_get_drvdata(component);
+-	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(component);
+-	u16 val;
+-	int ret;
+-
+-	switch (level) {
+-	case SND_SOC_BIAS_ON:
+-		break;
+-
+-	case SND_SOC_BIAS_PREPARE:
+-		/* VMID=2*50k */
+-		val = snd_soc_component_read(component, WM8400_POWER_MANAGEMENT_1) &
+-			~WM8400_VMID_MODE_MASK;
+-		snd_soc_component_write(component, WM8400_POWER_MANAGEMENT_1, val | 0x2);
+-		break;
+-
+-	case SND_SOC_BIAS_STANDBY:
+-		if (snd_soc_dapm_get_bias_level(dapm) == SND_SOC_BIAS_OFF) {
+-			ret = regulator_bulk_enable(ARRAY_SIZE(power),
+-						    &power[0]);
+-			if (ret != 0) {
+-				dev_err(wm8400->wm8400->dev,
+-					"Failed to enable regulators: %d\n",
+-					ret);
+-				return ret;
+-			}
+-
+-			snd_soc_component_write(component, WM8400_POWER_MANAGEMENT_1,
+-				     WM8400_CODEC_ENA | WM8400_SYSCLK_ENA);
+-
+-			/* Enable POBCTRL, SOFT_ST, VMIDTOG and BUFDCOPEN */
+-			snd_soc_component_write(component, WM8400_ANTIPOP2, WM8400_SOFTST |
+-				     WM8400_BUFDCOPEN | WM8400_POBCTRL);
+-
+-			msleep(50);
+-
+-			/* Enable VREF & VMID at 2x50k */
+-			val = snd_soc_component_read(component, WM8400_POWER_MANAGEMENT_1);
+-			val |= 0x2 | WM8400_VREF_ENA;
+-			snd_soc_component_write(component, WM8400_POWER_MANAGEMENT_1, val);
+-
+-			/* Enable BUFIOEN */
+-			snd_soc_component_write(component, WM8400_ANTIPOP2, WM8400_SOFTST |
+-				     WM8400_BUFDCOPEN | WM8400_POBCTRL |
+-				     WM8400_BUFIOEN);
+-
+-			/* disable POBCTRL, SOFT_ST and BUFDCOPEN */
+-			snd_soc_component_write(component, WM8400_ANTIPOP2, WM8400_BUFIOEN);
+-		}
+-
+-		/* VMID=2*300k */
+-		val = snd_soc_component_read(component, WM8400_POWER_MANAGEMENT_1) &
+-			~WM8400_VMID_MODE_MASK;
+-		snd_soc_component_write(component, WM8400_POWER_MANAGEMENT_1, val | 0x4);
+-		break;
+-
+-	case SND_SOC_BIAS_OFF:
+-		/* Enable POBCTRL and SOFT_ST */
+-		snd_soc_component_write(component, WM8400_ANTIPOP2, WM8400_SOFTST |
+-			WM8400_POBCTRL | WM8400_BUFIOEN);
+-
+-		/* Enable POBCTRL, SOFT_ST and BUFDCOPEN */
+-		snd_soc_component_write(component, WM8400_ANTIPOP2, WM8400_SOFTST |
+-			WM8400_BUFDCOPEN | WM8400_POBCTRL |
+-			WM8400_BUFIOEN);
+-
+-		/* mute DAC */
+-		val = snd_soc_component_read(component, WM8400_DAC_CTRL);
+-		snd_soc_component_write(component, WM8400_DAC_CTRL, val | WM8400_DAC_MUTE);
+-
+-		/* Enable any disabled outputs */
+-		val = snd_soc_component_read(component, WM8400_POWER_MANAGEMENT_1);
+-		val |= WM8400_SPK_ENA | WM8400_OUT3_ENA |
+-			WM8400_OUT4_ENA | WM8400_LOUT_ENA |
+-			WM8400_ROUT_ENA;
+-		snd_soc_component_write(component, WM8400_POWER_MANAGEMENT_1, val);
+-
+-		/* Disable VMID */
+-		val &= ~WM8400_VMID_MODE_MASK;
+-		snd_soc_component_write(component, WM8400_POWER_MANAGEMENT_1, val);
+-
+-		msleep(300);
+-
+-		/* Enable all output discharge bits */
+-		snd_soc_component_write(component, WM8400_ANTIPOP1, WM8400_DIS_LLINE |
+-			WM8400_DIS_RLINE | WM8400_DIS_OUT3 |
+-			WM8400_DIS_OUT4 | WM8400_DIS_LOUT |
+-			WM8400_DIS_ROUT);
+-
+-		/* Disable VREF */
+-		val &= ~WM8400_VREF_ENA;
+-		snd_soc_component_write(component, WM8400_POWER_MANAGEMENT_1, val);
+-
+-		/* disable POBCTRL, SOFT_ST and BUFDCOPEN */
+-		snd_soc_component_write(component, WM8400_ANTIPOP2, 0x0);
+-
+-		ret = regulator_bulk_disable(ARRAY_SIZE(power),
+-					     &power[0]);
+-		if (ret != 0)
+-			return ret;
+-
+-		break;
+-	}
+-
+-	return 0;
+-}
+-
+-#define WM8400_RATES SNDRV_PCM_RATE_8000_96000
+-
+-#define WM8400_FORMATS (SNDRV_PCM_FMTBIT_S16_LE | SNDRV_PCM_FMTBIT_S20_3LE |\
+-	SNDRV_PCM_FMTBIT_S24_LE)
+-
+-static const struct snd_soc_dai_ops wm8400_dai_ops = {
+-	.hw_params = wm8400_hw_params,
+-	.mute_stream = wm8400_mute,
+-	.set_fmt = wm8400_set_dai_fmt,
+-	.set_clkdiv = wm8400_set_dai_clkdiv,
+-	.set_sysclk = wm8400_set_dai_sysclk,
+-	.set_pll = wm8400_set_dai_pll,
+-	.no_capture_mute = 1,
+-};
+-
+-/*
+- * The WM8400 supports 2 different and mutually exclusive DAI
+- * configurations.
+- *
+- * 1. ADC/DAC on Primary Interface
+- * 2. ADC on Primary Interface/DAC on secondary
+- */
+-static struct snd_soc_dai_driver wm8400_dai = {
+-/* ADC/DAC on primary */
+-	.name = "wm8400-hifi",
+-	.playback = {
+-		.stream_name = "Playback",
+-		.channels_min = 1,
+-		.channels_max = 2,
+-		.rates = WM8400_RATES,
+-		.formats = WM8400_FORMATS,
+-	},
+-	.capture = {
+-		.stream_name = "Capture",
+-		.channels_min = 1,
+-		.channels_max = 2,
+-		.rates = WM8400_RATES,
+-		.formats = WM8400_FORMATS,
+-	},
+-	.ops = &wm8400_dai_ops,
+-};
+-
+-static int wm8400_component_probe(struct snd_soc_component *component)
+-{
+-	struct wm8400 *wm8400 = dev_get_platdata(component->dev);
+-	struct wm8400_priv *priv;
+-	int ret;
+-	u16 reg;
+-
+-	priv = devm_kzalloc(component->dev, sizeof(struct wm8400_priv),
+-			    GFP_KERNEL);
+-	if (priv == NULL)
+-		return -ENOMEM;
+-
+-	snd_soc_component_init_regmap(component, wm8400->regmap);
+-	snd_soc_component_set_drvdata(component, priv);
+-	priv->wm8400 = wm8400;
+-
+-	ret = devm_regulator_bulk_get(wm8400->dev,
+-				 ARRAY_SIZE(power), &power[0]);
+-	if (ret != 0) {
+-		dev_err(component->dev, "Failed to get regulators: %d\n", ret);
+-		return ret;
+-	}
+-
+-	wm8400_component_reset(component);
+-
+-	reg = snd_soc_component_read(component, WM8400_POWER_MANAGEMENT_1);
+-	snd_soc_component_write(component, WM8400_POWER_MANAGEMENT_1, reg | WM8400_CODEC_ENA);
+-
+-	/* Latch volume update bits */
+-	reg = snd_soc_component_read(component, WM8400_LEFT_LINE_INPUT_1_2_VOLUME);
+-	snd_soc_component_write(component, WM8400_LEFT_LINE_INPUT_1_2_VOLUME,
+-		     reg & WM8400_IPVU);
+-	reg = snd_soc_component_read(component, WM8400_RIGHT_LINE_INPUT_1_2_VOLUME);
+-	snd_soc_component_write(component, WM8400_RIGHT_LINE_INPUT_1_2_VOLUME,
+-		     reg & WM8400_IPVU);
+-
+-	snd_soc_component_write(component, WM8400_LEFT_OUTPUT_VOLUME, 0x50 | (1<<8));
+-	snd_soc_component_write(component, WM8400_RIGHT_OUTPUT_VOLUME, 0x50 | (1<<8));
+-
+-	return 0;
+-}
+-
+-static void  wm8400_component_remove(struct snd_soc_component *component)
+-{
+-	u16 reg;
+-
+-	reg = snd_soc_component_read(component, WM8400_POWER_MANAGEMENT_1);
+-	snd_soc_component_write(component, WM8400_POWER_MANAGEMENT_1,
+-		     reg & (~WM8400_CODEC_ENA));
+-}
+-
+-static const struct snd_soc_component_driver soc_component_dev_wm8400 = {
+-	.probe			= wm8400_component_probe,
+-	.remove			= wm8400_component_remove,
+-	.set_bias_level		= wm8400_set_bias_level,
+-	.controls		= wm8400_snd_controls,
+-	.num_controls		= ARRAY_SIZE(wm8400_snd_controls),
+-	.dapm_widgets		= wm8400_dapm_widgets,
+-	.num_dapm_widgets	= ARRAY_SIZE(wm8400_dapm_widgets),
+-	.dapm_routes		= wm8400_dapm_routes,
+-	.num_dapm_routes	= ARRAY_SIZE(wm8400_dapm_routes),
+-	.suspend_bias_off	= 1,
 -	.idle_bias_on		= 1,
 -	.use_pmdown_time	= 1,
 -	.endianness		= 1,
 -};
 -
--static int si476x_platform_probe(struct platform_device *pdev)
+-static int wm8400_probe(struct platform_device *pdev)
 -{
 -	return devm_snd_soc_register_component(&pdev->dev,
--				      &soc_component_dev_si476x,
--				      &si476x_dai, 1);
+-			&soc_component_dev_wm8400,
+-			&wm8400_dai, 1);
 -}
 -
--MODULE_ALIAS("platform:si476x-codec");
--
--static struct platform_driver si476x_platform_driver = {
--	.driver		= {
--		.name	= "si476x-codec",
--	},
--	.probe		= si476x_platform_probe,
+-static struct platform_driver wm8400_codec_driver = {
+-	.driver = {
+-		   .name = "wm8400-codec",
+-		   },
+-	.probe = wm8400_probe,
 -};
--module_platform_driver(si476x_platform_driver);
 -
--MODULE_AUTHOR("Andrey Smirnov <andrew.smirnov@gmail.com>");
--MODULE_DESCRIPTION("ASoC Si4761/64 codec driver");
+-module_platform_driver(wm8400_codec_driver);
+-
+-MODULE_DESCRIPTION("ASoC WM8400 driver");
+-MODULE_AUTHOR("Mark Brown");
 -MODULE_LICENSE("GPL");
-diff --git a/sound/soc/fsl/fsl-asoc-card.c b/sound/soc/fsl/fsl-asoc-card.c
-index 310ee4c282a1..ff8ae6e514ea 100644
---- a/sound/soc/fsl/fsl-asoc-card.c
-+++ b/sound/soc/fsl/fsl-asoc-card.c
-@@ -794,13 +794,6 @@ static const struct fsl_asoc_card_pdata fsl_asoc_wm8524_pdata = {
- 	.num_dapm_routes = ARRAY_SIZE(audio_map_tx),
- };
- 
--static const struct fsl_asoc_card_pdata fsl_asoc_si476x_pdata = {
--	.codec_dai_name  = "si476x-codec",
--	.dai_fmt         = DAI_FMT_BASE | SND_SOC_DAIFMT_CBC_CFC,
--	.dapm_routes     = audio_map_rx,
--	.num_dapm_routes = ARRAY_SIZE(audio_map_rx),
--};
+-MODULE_ALIAS("platform:wm8400-codec");
+diff --git a/sound/soc/codecs/wm8400.h b/sound/soc/codecs/wm8400.h
+deleted file mode 100644
+index 9e7bd4f767e7..000000000000
+--- a/sound/soc/codecs/wm8400.h
++++ /dev/null
+@@ -1,54 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0-or-later */
+-/*
+- * wm8400.h  --  audio driver for WM8400
+- *
+- * Copyright 2008 Wolfson Microelectronics PLC.
+- * Author: Mark Brown <broonie@opensource.wolfsonmicro.com>
+- */
 -
- static const struct fsl_asoc_card_pdata fsl_asoc_wm8958_pdata = {
- 	.codec_dai_name  = "wm8994-aif1",
- 	.dai_fmt         = DAI_FMT_BASE | SND_SOC_DAIFMT_CBP_CFP,
-@@ -1398,7 +1391,6 @@ static const struct of_device_id fsl_asoc_card_dt_ids[] = {
- 	{ .compatible = "fsl,imx-audio-wm8960",         .data = &fsl_asoc_wm8960_pdata },
- 	{ .compatible = "fsl,imx-audio-mqs",            .data = &fsl_asoc_mqs_pdata },
- 	{ .compatible = "fsl,imx-audio-wm8524",         .data = &fsl_asoc_wm8524_pdata },
--	{ .compatible = "fsl,imx-audio-si476x",         .data = &fsl_asoc_si476x_pdata },
- 	{ .compatible = "fsl,imx-audio-wm8958",         .data = &fsl_asoc_wm8958_pdata },
- 	{ .compatible = "fsl,imx-audio-nau8822",        .data = &fsl_asoc_nau8822_pdata },
- 	{ .compatible = "fsl,imx-audio-wm8904",         .data = &fsl_asoc_wm8904_pdata },
+-#ifndef _WM8400_CODEC_H
+-#define _WM8400_CODEC_H
+-
+-#define WM8400_MCLK_DIV 0
+-#define WM8400_DACCLK_DIV 1
+-#define WM8400_ADCCLK_DIV 2
+-#define WM8400_BCLK_DIV 3
+-
+-#define WM8400_MCLK_DIV_1 0x400
+-#define WM8400_MCLK_DIV_2 0x800
+-
+-#define WM8400_DAC_CLKDIV_1    0x00
+-#define WM8400_DAC_CLKDIV_1_5  0x04
+-#define WM8400_DAC_CLKDIV_2    0x08
+-#define WM8400_DAC_CLKDIV_3    0x0c
+-#define WM8400_DAC_CLKDIV_4    0x10
+-#define WM8400_DAC_CLKDIV_5_5  0x14
+-#define WM8400_DAC_CLKDIV_6    0x18
+-
+-#define WM8400_ADC_CLKDIV_1    0x00
+-#define WM8400_ADC_CLKDIV_1_5  0x20
+-#define WM8400_ADC_CLKDIV_2    0x40
+-#define WM8400_ADC_CLKDIV_3    0x60
+-#define WM8400_ADC_CLKDIV_4    0x80
+-#define WM8400_ADC_CLKDIV_5_5  0xa0
+-#define WM8400_ADC_CLKDIV_6    0xc0
+-
+-
+-#define WM8400_BCLK_DIV_1                       (0x0 << 1)
+-#define WM8400_BCLK_DIV_1_5                     (0x1 << 1)
+-#define WM8400_BCLK_DIV_2                       (0x2 << 1)
+-#define WM8400_BCLK_DIV_3                       (0x3 << 1)
+-#define WM8400_BCLK_DIV_4                       (0x4 << 1)
+-#define WM8400_BCLK_DIV_5_5                     (0x5 << 1)
+-#define WM8400_BCLK_DIV_6                       (0x6 << 1)
+-#define WM8400_BCLK_DIV_8                       (0x7 << 1)
+-#define WM8400_BCLK_DIV_11                      (0x8 << 1)
+-#define WM8400_BCLK_DIV_12                      (0x9 << 1)
+-#define WM8400_BCLK_DIV_16                      (0xA << 1)
+-#define WM8400_BCLK_DIV_22                      (0xB << 1)
+-#define WM8400_BCLK_DIV_24                      (0xC << 1)
+-#define WM8400_BCLK_DIV_32                      (0xD << 1)
+-#define WM8400_BCLK_DIV_44                      (0xE << 1)
+-#define WM8400_BCLK_DIV_48                      (0xF << 1)
+-
+-#endif
 -- 
 2.53.0
 
