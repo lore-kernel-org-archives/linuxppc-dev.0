@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-26928-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26930-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 13555C79FBF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2026 13:23:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A57CEC79FBE
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2026 13:23:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hg1hZ4pYJz2yth;
-	Wed, 09 Sep 2026 23:23:10 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788960190;
-	cv=none; b=efQ5yYKhV2KiebCZc/peXb9FJy+/WLlTQ/6816O7SoQPGGNEJlF1aQ2r6eIcC+jlfFyoHSjv/zGJHMaRgLIq9Gs156tiliX0YpB0cLpP9th9bDl2NCInLvS33KrX73m6ce2SRvhwaFnXcgSlupDg1GB6yJ3MH3Qb/iejh8ZrfJVmmL4M6MvVbQUqcpPGKKI0C/MdHi7NL4Bhqu7bitpqWBKD47Svdh3g0hcYm5ZPRO0M+XL+W5mrkqqcV9LOzEuVatGoqjtGtifl7Vp+vJTSik0BRiMtSwOykpBvPinNFZWj5J5Q4K2yPFZIMUPpEjeFYKqdW1pigJT+/7EF4O1nVA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hg1hj4FLDz2ytx;
+	Wed, 09 Sep 2026 23:23:17 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788960197;
+	cv=none; b=CfgCtAnytKlGgIaieRuKYxlKi9pEE6u8AIJRPYfXRPL58+59LUh274EpxzYBBF9GmUajWXWInDrPHpchONX6h3QKXY5mB4nmphAyHGjq0B81w+aDg3UPhl3I8gWDPHxSNsFutxOKsmJnZReQYyub+IiDSYlAZXWFKSfVeuVUgk28dvDduWBJenYkfrA9mGL0Zmy0i3z0w6i7x1s8WH7+ZI4IoaU2Zz617Xa1ZEmMJD8XLW32Yp0qEaVnw56ZpQPW8j+p1bf1/pZQ+MqyUO+bzzzm/DFRiZATuPSt32LeqceNTXviJvJMvUCvuEu57K5HXIXm+HCVOGX+4Xojj4fGig==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788960190; c=relaxed/relaxed;
-	bh=5M/ZyONg7YqyTq0oJuJrrswfof23+2KRGmIuMGVHTGA=;
+	t=1788960197; c=relaxed/relaxed;
+	bh=dyjKpiFdd7qow6743A52LrPpjhddYZz0iA/sauK4rRk=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=AAsPBkZY0Vp8MX9ml8l6PiyVpMmnlmtQrHngotGn2BT8ByR53JGhVdymF6Bb5TGq93DpefpIy810Zp9jOV8AxmdyJOM2KMNMtixjyb76OfY+oX9qEbtgp0RxiOFb25lz+L8vZu1ES4y8xAr39lys+CCV0ZeOJstwcOneR9tb7No71eWmM1KNO2pXWrMzGNuLpUZwCmVxYhFxpOhnvOEMtxebhEYcya+TFZBnwd65DCEb4vuH3pRpEPIXJVaJw9E1tl8txY2swkZ+5TyezUxQtnDXr2ZDlJ6GkuNARlQQ8+OohbbmJg2gWXtf7761PUyce8OBhSp47THzgoiQdbXckA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Yhg3hdAI; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=NF8Al/Fv0Q6G239rZq5h7jrvl3ZqEI7h16Zx/PH7Oxo94L4UXcYIQg+Cfm/XiRAgdl9aUW6KOYD7YhrLqxVSys9ukFgWEALpr7PF5YrcSYADl1yM3vGMYu7y/qFKgmq2ljNoW9ycaNzOpJjug9WgWt8H0cGuY8M9zWAcAEgpwBLBOWk/9stcKwL6l5vVkFw/BraJ3/dS6VJ8u7Jd+/FvjhXXH1lxMYpdQ/bR9T1EEwDraaXemfZfSiJBjk7CqR3bndIEH1toI6IMFYJODkTr9Qq7KuohreRFmtkHLHUr285pdBk/oJEtutEJkYIL7ceXb7QeGkJ2hHBbYeNwsabiSQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XA6KA7dr; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Yhg3hdAI;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XA6KA7dr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hg1hV1zmlz2ytJ
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Sep 2026 23:23:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hg1hg0knCz2ytJ
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Sep 2026 23:23:15 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 72F8641FBC;
+	by tor.source.kernel.org (Postfix) with ESMTP id 1508460214;
+	Wed,  9 Sep 2026 13:23:13 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CEEA61F00A3A;
 	Wed,  9 Sep 2026 13:23:04 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 656001F00ACA;
-	Wed,  9 Sep 2026 13:22:56 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788960184;
-	bh=5M/ZyONg7YqyTq0oJuJrrswfof23+2KRGmIuMGVHTGA=;
+	s=k20260515; t=1788960192;
+	bh=dyjKpiFdd7qow6743A52LrPpjhddYZz0iA/sauK4rRk=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=Yhg3hdAI0jDDmk0EhyaXGTaNVBYLyGGjHv745DBGpFB4z8R+QN3qfHrZ0/4SQELHt
-	 gdn2oxziemo7yjqUpFFsTy2KVnTiBb47NrOn3AqLRaLWbvj1dFB5HMIXaOBKVFn+iM
-	 pPkUE29vb+EM57M9lEHGHjwvcW4xfc+st/IM/aiwFGwS3RqX64hshXW+xUPnvfvR/d
-	 RvHBBwb4MFs8BsJytWNBy/qp2ODnKBLYLw4qAFej0cCxjsHbF82yilZ0CMj1+ya/ba
-	 cTQ//nLaB76d4M+MnFM1s+R6EvLWiwjG5e7N77T2dTDzNudrpFzH7u4Op0vv8Ue5jv
-	 CeoPI1164Dolg==
+	b=XA6KA7drEe9OLkgcd0At3525IWBG8dOfo1vgNzZ9beG6pu3d9dD6bPL8t1zEIfuPC
+	 LSZKfX391MTGk7dkaNN9neQb85WgY8Cs3f9BxI6cPYkDAdcwyBRxmzNT4N2m823srO
+	 5NRfx96pxo/7QlxcV1LsoFv/KhEdhMpqgpT4/4LQ+EOa2o0yjV4jzBwAibEgSvoQe4
+	 X7CNwfJmR6BQtma2GKttvI4NkzWSOpIvAT8eJi6EuyYmE9NQr9GDnwbAMrcwEHKNkQ
+	 AdWvlFpkdljB80PNybr7vezhqIUD7iGJ6I+5rBRqkuycO/OWsIBAvzIMCMAIymr9g5
+	 JSZ9J6TLrVL8w==
 From: Arnd Bergmann <arnd@kernel.org>
 To: Lee Jones <lee@kernel.org>,
 	mfd@lists.linux.dev
@@ -86,9 +86,9 @@ Cc: linux-kernel@vger.kernel.org,
 	linux-sound@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
 	llvm@lists.linux.dev
-Subject: [PATCH 05/14] mfd: remove unused adp5520 driver
-Date: Wed,  9 Sep 2026 15:21:42 +0200
-Message-ID: <20260909132153.1596191-6-arnd@kernel.org>
+Subject: [PATCH 06/14] mfd: remove unused da903x driver
+Date: Wed,  9 Sep 2026 15:21:43 +0200
+Message-ID: <20260909132153.1596191-7-arnd@kernel.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260909132153.1596191-1-arnd@kernel.org>
 References: <20260909132153.1596191-1-arnd@kernel.org>
@@ -109,564 +109,499 @@ Content-Transfer-Encoding: 8bit
 
 From: Arnd Bergmann <arnd@arndb.de>
 
-This driver requires the use of platform_data definitions rather than
-devicetree, but that was last used on the blackfin architecture in
-2018 and nothing could have used it upstream since.
+This driver was used on a handful of ARM/PXA boards until those
+got removed a few years ago. Without devicetree support, there is
+no way to use them upstream.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- .../ABI/testing/sysfs-class-backlight         |  11 -
- MAINTAINERS                                   |  11 -
- drivers/gpio/Kconfig                          |   7 -
- drivers/gpio/Makefile                         |   1 -
- drivers/gpio/gpio-adp5520.c                   | 169 --------
- drivers/input/keyboard/Kconfig                |  10 -
- drivers/input/keyboard/Makefile               |   1 -
- drivers/input/keyboard/adp5520-keys.c         | 191 ---------
- drivers/leds/Kconfig                          |  11 -
- drivers/leds/Makefile                         |   1 -
- drivers/leds/leds-adp5520.c                   | 195 ---------
- drivers/mfd/Kconfig                           |  10 -
- drivers/mfd/Makefile                          |   1 -
- drivers/mfd/adp5520.c                         | 346 ----------------
- drivers/video/backlight/Kconfig               |  10 -
- drivers/video/backlight/Makefile              |   1 -
- drivers/video/backlight/adp5520_bl.c          | 385 ------------------
- include/linux/mfd/adp5520.h                   | 298 --------------
- 18 files changed, 1659 deletions(-)
- delete mode 100644 drivers/gpio/gpio-adp5520.c
- delete mode 100644 drivers/input/keyboard/adp5520-keys.c
- delete mode 100644 drivers/leds/leds-adp5520.c
- delete mode 100644 drivers/mfd/adp5520.c
- delete mode 100644 drivers/video/backlight/adp5520_bl.c
- delete mode 100644 include/linux/mfd/adp5520.h
+ MAINTAINERS                           |   1 -
+ drivers/input/touchscreen/Kconfig     |  13 -
+ drivers/input/touchscreen/Makefile    |   1 -
+ drivers/input/touchscreen/da9034-ts.c | 365 ----------------
+ drivers/leds/Kconfig                  |   8 -
+ drivers/leds/Makefile                 |   1 -
+ drivers/leds/leds-da903x.c            | 145 -------
+ drivers/mfd/Kconfig                   |  11 -
+ drivers/mfd/Makefile                  |   2 -
+ drivers/mfd/da903x.c                  | 565 -------------------------
+ drivers/power/supply/Kconfig          |   7 -
+ drivers/power/supply/Makefile         |   1 -
+ drivers/power/supply/da9030_battery.c | 581 --------------------------
+ drivers/regulator/Kconfig             |   8 -
+ drivers/regulator/Makefile            |   1 -
+ drivers/regulator/da903x-regulator.c  | 495 ----------------------
+ drivers/video/backlight/Kconfig       |   7 -
+ drivers/video/backlight/Makefile      |   1 -
+ drivers/video/backlight/da903x_bl.c   | 160 -------
+ 19 files changed, 2373 deletions(-)
+ delete mode 100644 drivers/input/touchscreen/da9034-ts.c
+ delete mode 100644 drivers/leds/leds-da903x.c
+ delete mode 100644 drivers/mfd/da903x.c
+ delete mode 100644 drivers/power/supply/da9030_battery.c
+ delete mode 100644 drivers/regulator/da903x-regulator.c
+ delete mode 100644 drivers/video/backlight/da903x_bl.c
 
-diff --git a/Documentation/ABI/testing/sysfs-class-backlight b/Documentation/ABI/testing/sysfs-class-backlight
-index c453646b06e2..b73d66942fbb 100644
---- a/Documentation/ABI/testing/sysfs-class-backlight
-+++ b/Documentation/ABI/testing/sysfs-class-backlight
-@@ -97,17 +97,6 @@ Description:
- 
- 		The <ambient light zone> is device-driver specific:
- 
--		For ADP5520 and ADP5501, <ambient light zone> can be:
--
--		===========  ================================================
--		Ambient      sysfs entry
--		light zone
--		===========  ================================================
--		daylight     /sys/class/backlight/<backlight>/daylight_max
--		office       /sys/class/backlight/<backlight>/office_max
--		dark         /sys/class/backlight/<backlight>/dark_max
--		===========  ================================================
--
- 		For ADP8860, <ambient light zone> can be:
- 
- 		===========  ================================================
 diff --git a/MAINTAINERS b/MAINTAINERS
-index c5e2140cdac0..86df3fadba87 100644
+index 86df3fadba87..360655cce7d1 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -550,17 +550,6 @@ F:	Documentation/devicetree/bindings/media/i2c/adi,adp1653.txt
- F:	drivers/media/i2c/adp1653.c
- F:	include/media/i2c/adp1653.h
- 
--ADP5520 BACKLIGHT DRIVER WITH IO EXPANDER (ADP5520/ADP5501)
--M:	Michael Hennerich <michael.hennerich@analog.com>
--S:	Supported
--W:	http://wiki.analog.com/ADP5520
--W:	https://ez.analog.com/linux-software-drivers
--F:	drivers/gpio/gpio-adp5520.c
--F:	drivers/input/keyboard/adp5520-keys.c
--F:	drivers/leds/leds-adp5520.c
--F:	drivers/mfd/adp5520.c
--F:	drivers/video/backlight/adp5520_bl.c
--
- ADP5585 GPIO EXPANDER, PWM AND KEYPAD CONTROLLER DRIVER
- M:	Laurent Pinchart <laurent.pinchart@ideasonboard.com>
- L:	linux-gpio@vger.kernel.org
-diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
-index aef0db9fe101..98b9931c59ff 100644
---- a/drivers/gpio/Kconfig
-+++ b/drivers/gpio/Kconfig
-@@ -1325,13 +1325,6 @@ endmenu
- 
- menu "MFD GPIO expanders"
- 
--config GPIO_ADP5520
--	tristate "GPIO Support for ADP5520 PMIC"
--	depends on PMIC_ADP5520
--	help
--	  This option enables support for on-chip GPIO found
--	  on Analog Devices ADP5520 PMICs.
--
- config GPIO_ADP5585
- 	tristate "GPIO Support for ADP5585"
- 	depends on MFD_ADP5585
-diff --git a/drivers/gpio/Makefile b/drivers/gpio/Makefile
-index 2e3a14688b59..1fafd15d3fa6 100644
---- a/drivers/gpio/Makefile
-+++ b/drivers/gpio/Makefile
-@@ -28,7 +28,6 @@ obj-$(CONFIG_GPIO_104_IDIO_16)		+= gpio-104-idio-16.o
- obj-$(CONFIG_GPIO_74X164)		+= gpio-74x164.o
- obj-$(CONFIG_GPIO_74XX_MMIO)		+= gpio-74xx-mmio.o
- obj-$(CONFIG_GPIO_ADNP)			+= gpio-adnp.o
--obj-$(CONFIG_GPIO_ADP5520)		+= gpio-adp5520.o
- obj-$(CONFIG_GPIO_ADP5585)		+= gpio-adp5585.o
- obj-$(CONFIG_GPIO_AGGREGATOR)		+= gpio-aggregator.o
- obj-$(CONFIG_GPIO_ALTERA_A10SR)		+= gpio-altera-a10sr.o
-diff --git a/drivers/gpio/gpio-adp5520.c b/drivers/gpio/gpio-adp5520.c
-deleted file mode 100644
-index 6305c8b7dc05..000000000000
---- a/drivers/gpio/gpio-adp5520.c
-+++ /dev/null
-@@ -1,169 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-or-later
--/*
-- * GPIO driver for Analog Devices ADP5520 MFD PMICs
-- *
-- * Copyright 2009 Analog Devices Inc.
-- */
--
--#include <linux/module.h>
--#include <linux/slab.h>
--#include <linux/kernel.h>
--#include <linux/init.h>
--#include <linux/platform_device.h>
--#include <linux/mfd/adp5520.h>
--#include <linux/gpio/driver.h>
--
--struct adp5520_gpio {
--	struct device *master;
--	struct gpio_chip gpio_chip;
--	unsigned char lut[ADP5520_MAXGPIOS];
--	unsigned long output;
--};
--
--static int adp5520_gpio_get_value(struct gpio_chip *chip, unsigned off)
--{
--	struct adp5520_gpio *dev;
--	uint8_t reg_val;
--
--	dev = gpiochip_get_data(chip);
--
--	/*
--	 * There are dedicated registers for GPIO IN/OUT.
--	 * Make sure we return the right value, even when configured as output
--	 */
--
--	if (test_bit(off, &dev->output))
--		adp5520_read(dev->master, ADP5520_GPIO_OUT, &reg_val);
--	else
--		adp5520_read(dev->master, ADP5520_GPIO_IN, &reg_val);
--
--	return !!(reg_val & dev->lut[off]);
--}
--
--static int adp5520_gpio_set_value(struct gpio_chip *chip,
--				  unsigned int off, int val)
--{
--	struct adp5520_gpio *dev;
--	dev = gpiochip_get_data(chip);
--
--	if (val)
--		return adp5520_set_bits(dev->master, ADP5520_GPIO_OUT,
--					dev->lut[off]);
--	else
--		return adp5520_clr_bits(dev->master, ADP5520_GPIO_OUT,
--					dev->lut[off]);
--}
--
--static int adp5520_gpio_direction_input(struct gpio_chip *chip, unsigned off)
--{
--	struct adp5520_gpio *dev;
--	dev = gpiochip_get_data(chip);
--
--	clear_bit(off, &dev->output);
--
--	return adp5520_clr_bits(dev->master, ADP5520_GPIO_CFG_2,
--				dev->lut[off]);
--}
--
--static int adp5520_gpio_direction_output(struct gpio_chip *chip,
--		unsigned off, int val)
--{
--	struct adp5520_gpio *dev;
--	int ret = 0;
--	dev = gpiochip_get_data(chip);
--
--	set_bit(off, &dev->output);
--
--	if (val)
--		ret |= adp5520_set_bits(dev->master, ADP5520_GPIO_OUT,
--					dev->lut[off]);
--	else
--		ret |= adp5520_clr_bits(dev->master, ADP5520_GPIO_OUT,
--					dev->lut[off]);
--
--	ret |= adp5520_set_bits(dev->master, ADP5520_GPIO_CFG_2,
--					dev->lut[off]);
--
--	return ret;
--}
--
--static int adp5520_gpio_probe(struct platform_device *pdev)
--{
--	struct adp5520_gpio_platform_data *pdata = dev_get_platdata(&pdev->dev);
--	struct adp5520_gpio *dev;
--	struct gpio_chip *gc;
--	int ret, i, gpios;
--	unsigned char ctl_mask = 0;
--
--	if (pdata == NULL) {
--		dev_err(&pdev->dev, "missing platform data\n");
--		return -ENODEV;
--	}
--
--	if (pdev->id != ID_ADP5520) {
--		dev_err(&pdev->dev, "only ADP5520 supports GPIO\n");
--		return -ENODEV;
--	}
--
--	dev = devm_kzalloc(&pdev->dev, sizeof(*dev), GFP_KERNEL);
--	if (dev == NULL)
--		return -ENOMEM;
--
--	dev->master = pdev->dev.parent;
--
--	for (gpios = 0, i = 0; i < ADP5520_MAXGPIOS; i++)
--		if (pdata->gpio_en_mask & (1 << i))
--			dev->lut[gpios++] = 1 << i;
--
--	if (gpios < 1)
--		return -EINVAL;
--
--	gc = &dev->gpio_chip;
--	gc->direction_input  = adp5520_gpio_direction_input;
--	gc->direction_output = adp5520_gpio_direction_output;
--	gc->get = adp5520_gpio_get_value;
--	gc->set = adp5520_gpio_set_value;
--	gc->can_sleep = true;
--
--	gc->base = pdata->gpio_start;
--	gc->ngpio = gpios;
--	gc->label = pdev->name;
--	gc->owner = THIS_MODULE;
--
--	ret = adp5520_clr_bits(dev->master, ADP5520_GPIO_CFG_1,
--		pdata->gpio_en_mask);
--
--	if (pdata->gpio_en_mask & ADP5520_GPIO_C3)
--		ctl_mask |= ADP5520_C3_MODE;
--
--	if (pdata->gpio_en_mask & ADP5520_GPIO_R3)
--		ctl_mask |= ADP5520_R3_MODE;
--
--	if (ctl_mask)
--		ret = adp5520_set_bits(dev->master, ADP5520_LED_CONTROL,
--			ctl_mask);
--
--	ret |= adp5520_set_bits(dev->master, ADP5520_GPIO_PULLUP,
--		pdata->gpio_pullup_mask);
--
--	if (ret) {
--		dev_err(&pdev->dev, "failed to write\n");
--		return ret;
--	}
--
--	return devm_gpiochip_add_data(&pdev->dev, &dev->gpio_chip, dev);
--}
--
--static struct platform_driver adp5520_gpio_driver = {
--	.driver	= {
--		.name	= "adp5520-gpio",
--	},
--	.probe		= adp5520_gpio_probe,
--};
--
--module_platform_driver(adp5520_gpio_driver);
--
--MODULE_AUTHOR("Michael Hennerich <michael.hennerich@analog.com>");
--MODULE_DESCRIPTION("GPIO ADP5520 Driver");
--MODULE_LICENSE("GPL");
--MODULE_ALIAS("platform:adp5520-gpio");
-diff --git a/drivers/input/keyboard/Kconfig b/drivers/input/keyboard/Kconfig
-index d8c64f333462..ec3fe4632d8d 100644
---- a/drivers/input/keyboard/Kconfig
-+++ b/drivers/input/keyboard/Kconfig
-@@ -27,16 +27,6 @@ config KEYBOARD_ADC
+@@ -7509,7 +7509,6 @@ F:	drivers/input/misc/da72??.[ch]
+ F:	drivers/input/misc/da90??_onkey.c
+ F:	drivers/input/touchscreen/da9052_tsi.c
+ F:	drivers/leds/leds-da90??.c
+-F:	drivers/mfd/da903x.c
+ F:	drivers/mfd/da90??-*.c
+ F:	drivers/mfd/da91??-*.c
+ F:	drivers/pinctrl/pinctrl-da90??.c
+diff --git a/drivers/input/touchscreen/Kconfig b/drivers/input/touchscreen/Kconfig
+index 9b9ae8ac3f7f..80bffbead88b 100644
+--- a/drivers/input/touchscreen/Kconfig
++++ b/drivers/input/touchscreen/Kconfig
+@@ -282,19 +282,6 @@ config TOUCHSCREEN_CYTTSP5
  	  To compile this driver as a module, choose M here: the
- 	  module will be called adc_keys.
+ 	  module will be called cyttsp5.
  
--config KEYBOARD_ADP5520
--	tristate "Keypad Support for ADP5520 PMIC"
--	depends on PMIC_ADP5520
+-config TOUCHSCREEN_DA9034
+-	tristate "Touchscreen support for Dialog Semiconductor DA9034"
+-	depends on PMIC_DA903X
+-	default y
 -	help
--	  This option enables support for the keypad scan matrix
--	  on Analog Devices ADP5520 PMICs.
+-	  Say Y here to enable the support for the touchscreen found
+-	  on Dialog Semiconductor DA9034 PMIC.
 -
--	  To compile this driver as a module, choose M here: the module will
--	  be called adp5520-keys.
+-	  If unsure, say N.
 -
- config KEYBOARD_ADP5585
- 	tristate "ADP558x keypad support"
- 	depends on MFD_ADP5585
-diff --git a/drivers/input/keyboard/Makefile b/drivers/input/keyboard/Makefile
-index 60bb7baf802f..c1a443c64962 100644
---- a/drivers/input/keyboard/Makefile
-+++ b/drivers/input/keyboard/Makefile
-@@ -6,7 +6,6 @@
- # Each configuration option enables a list of files.
- 
- obj-$(CONFIG_KEYBOARD_ADC)		+= adc-keys.o
--obj-$(CONFIG_KEYBOARD_ADP5520)		+= adp5520-keys.o
- obj-$(CONFIG_KEYBOARD_ADP5585)		+= adp5585-keys.o
- obj-$(CONFIG_KEYBOARD_ADP5588)		+= adp5588-keys.o
- obj-$(CONFIG_KEYBOARD_AMIGA)		+= amikbd.o
-diff --git a/drivers/input/keyboard/adp5520-keys.c b/drivers/input/keyboard/adp5520-keys.c
+-	  To compile this driver as a module, choose M here: the
+-	  module will be called da9034-ts.
+-
+ config TOUCHSCREEN_DA9052
+ 	tristate "Dialog DA9052/DA9053 TSI"
+ 	depends on PMIC_DA9052
+diff --git a/drivers/input/touchscreen/Makefile b/drivers/input/touchscreen/Makefile
+index bfd9de83389d..31ebdce6d09f 100644
+--- a/drivers/input/touchscreen/Makefile
++++ b/drivers/input/touchscreen/Makefile
+@@ -29,7 +29,6 @@ obj-$(CONFIG_TOUCHSCREEN_CYTTSP_CORE)	+= cyttsp_core.o
+ obj-$(CONFIG_TOUCHSCREEN_CYTTSP_I2C)	+= cyttsp_i2c.o
+ obj-$(CONFIG_TOUCHSCREEN_CYTTSP_SPI)	+= cyttsp_spi.o
+ obj-$(CONFIG_TOUCHSCREEN_CYTTSP5)	+= cyttsp5.o
+-obj-$(CONFIG_TOUCHSCREEN_DA9034)	+= da9034-ts.o
+ obj-$(CONFIG_TOUCHSCREEN_DA9052)	+= da9052_tsi.o
+ obj-$(CONFIG_TOUCHSCREEN_DYNAPRO)	+= dynapro.o
+ obj-$(CONFIG_TOUCHSCREEN_EDT_FT5X06)	+= edt-ft5x06.o
+diff --git a/drivers/input/touchscreen/da9034-ts.c b/drivers/input/touchscreen/da9034-ts.c
 deleted file mode 100644
-index 980d739e45b8..000000000000
---- a/drivers/input/keyboard/adp5520-keys.c
+index 2943f6a58388..000000000000
+--- a/drivers/input/touchscreen/da9034-ts.c
 +++ /dev/null
-@@ -1,191 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-or-later
+@@ -1,365 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-only
 -/*
-- * Keypad driver for Analog Devices ADP5520 MFD PMICs
+- * Touchscreen driver for Dialog Semiconductor DA9034
 - *
-- * Copyright 2009 Analog Devices Inc.
+- * Copyright (C) 2006-2008 Marvell International Ltd.
+- *	Fengwei Yin <fengwei.yin@marvell.com>
+- *	Bin Yang  <bin.yang@marvell.com>
+- *	Eric Miao <eric.miao@marvell.com>
 - */
 -
 -#include <linux/module.h>
 -#include <linux/kernel.h>
+-#include <linux/delay.h>
 -#include <linux/platform_device.h>
 -#include <linux/input.h>
--#include <linux/mfd/adp5520.h>
+-#include <linux/workqueue.h>
+-#include <linux/mfd/da903x.h>
 -#include <linux/slab.h>
--#include <linux/device.h>
 -
--struct adp5520_keys {
--	struct input_dev *input;
--	struct notifier_block notifier;
--	struct device *master;
--	unsigned short keycode[ADP5520_KEYMAPSIZE];
+-#define DA9034_MANUAL_CTRL	0x50
+-#define DA9034_LDO_ADC_EN	(1 << 4)
+-
+-#define DA9034_AUTO_CTRL1	0x51
+-
+-#define DA9034_AUTO_CTRL2	0x52
+-#define DA9034_AUTO_TSI_EN	(1 << 3)
+-#define DA9034_PEN_DETECT	(1 << 4)
+-
+-#define DA9034_TSI_CTRL1	0x53
+-#define DA9034_TSI_CTRL2	0x54
+-#define DA9034_TSI_X_MSB	0x6c
+-#define DA9034_TSI_Y_MSB	0x6d
+-#define DA9034_TSI_XY_LSB	0x6e
+-
+-enum {
+-	STATE_IDLE,	/* wait for pendown */
+-	STATE_BUSY,	/* TSI busy sampling */
+-	STATE_STOP,	/* sample available */
+-	STATE_WAIT,	/* Wait to start next sample */
 -};
 -
--static void adp5520_keys_report_event(struct adp5520_keys *dev,
--					unsigned short keymask, int value)
+-enum {
+-	EVENT_PEN_DOWN,
+-	EVENT_PEN_UP,
+-	EVENT_TSI_READY,
+-	EVENT_TIMEDOUT,
+-};
+-
+-struct da9034_touch {
+-	struct device		*da9034_dev;
+-	struct input_dev	*input_dev;
+-
+-	struct delayed_work	tsi_work;
+-	struct notifier_block	notifier;
+-
+-	int	state;
+-
+-	int	interval_ms;
+-	int	x_inverted;
+-	int	y_inverted;
+-
+-	int	last_x;
+-	int	last_y;
+-};
+-
+-static inline int is_pen_down(struct da9034_touch *touch)
 -{
--	int i;
--
--	for (i = 0; i < ADP5520_MAXKEYS; i++)
--		if (keymask & (1 << i))
--			input_report_key(dev->input, dev->keycode[i], value);
--
--	input_sync(dev->input);
+-	return da903x_query_status(touch->da9034_dev, DA9034_STATUS_PEN_DOWN);
 -}
 -
--static int adp5520_keys_notifier(struct notifier_block *nb,
+-static inline int detect_pen_down(struct da9034_touch *touch, int on)
+-{
+-	if (on)
+-		return da903x_set_bits(touch->da9034_dev,
+-				DA9034_AUTO_CTRL2, DA9034_PEN_DETECT);
+-	else
+-		return da903x_clr_bits(touch->da9034_dev,
+-				DA9034_AUTO_CTRL2, DA9034_PEN_DETECT);
+-}
+-
+-static int read_tsi(struct da9034_touch *touch)
+-{
+-	uint8_t _x, _y, _v;
+-	int ret;
+-
+-	ret = da903x_read(touch->da9034_dev, DA9034_TSI_X_MSB, &_x);
+-	if (ret)
+-		return ret;
+-
+-	ret = da903x_read(touch->da9034_dev, DA9034_TSI_Y_MSB, &_y);
+-	if (ret)
+-		return ret;
+-
+-	ret = da903x_read(touch->da9034_dev, DA9034_TSI_XY_LSB, &_v);
+-	if (ret)
+-		return ret;
+-
+-	touch->last_x = ((_x << 2) & 0x3fc) | (_v & 0x3);
+-	touch->last_y = ((_y << 2) & 0x3fc) | ((_v & 0xc) >> 2);
+-
+-	return 0;
+-}
+-
+-static inline int start_tsi(struct da9034_touch *touch)
+-{
+-	return da903x_set_bits(touch->da9034_dev,
+-			DA9034_AUTO_CTRL2, DA9034_AUTO_TSI_EN);
+-}
+-
+-static inline int stop_tsi(struct da9034_touch *touch)
+-{
+-	return da903x_clr_bits(touch->da9034_dev,
+-			DA9034_AUTO_CTRL2, DA9034_AUTO_TSI_EN);
+-}
+-
+-static inline void report_pen_down(struct da9034_touch *touch)
+-{
+-	int x = touch->last_x;
+-	int y = touch->last_y;
+-
+-	x &= 0xfff;
+-	if (touch->x_inverted)
+-		x = 1024 - x;
+-	y &= 0xfff;
+-	if (touch->y_inverted)
+-		y = 1024 - y;
+-
+-	input_report_abs(touch->input_dev, ABS_X, x);
+-	input_report_abs(touch->input_dev, ABS_Y, y);
+-	input_report_key(touch->input_dev, BTN_TOUCH, 1);
+-
+-	input_sync(touch->input_dev);
+-}
+-
+-static inline void report_pen_up(struct da9034_touch *touch)
+-{
+-	input_report_key(touch->input_dev, BTN_TOUCH, 0);
+-	input_sync(touch->input_dev);
+-}
+-
+-static void da9034_event_handler(struct da9034_touch *touch, int event)
+-{
+-	int err;
+-
+-	switch (touch->state) {
+-	case STATE_IDLE:
+-		if (event != EVENT_PEN_DOWN)
+-			break;
+-
+-		/* Enable auto measurement of the TSI, this will
+-		 * automatically disable pen down detection
+-		 */
+-		err = start_tsi(touch);
+-		if (err)
+-			goto err_reset;
+-
+-		touch->state = STATE_BUSY;
+-		break;
+-
+-	case STATE_BUSY:
+-		if (event != EVENT_TSI_READY)
+-			break;
+-
+-		err = read_tsi(touch);
+-		if (err)
+-			goto err_reset;
+-
+-		/* Disable auto measurement of the TSI, so that
+-		 * pen down status will be available
+-		 */
+-		err = stop_tsi(touch);
+-		if (err)
+-			goto err_reset;
+-
+-		touch->state = STATE_STOP;
+-
+-		/* FIXME: PEN_{UP/DOWN} events are expected to be
+-		 * available by stopping TSI, but this is found not
+-		 * always true, delay and simulate such an event
+-		 * here is more reliable
+-		 */
+-		mdelay(1);
+-		da9034_event_handler(touch,
+-				     is_pen_down(touch) ? EVENT_PEN_DOWN :
+-							  EVENT_PEN_UP);
+-		break;
+-
+-	case STATE_STOP:
+-		if (event == EVENT_PEN_DOWN) {
+-			report_pen_down(touch);
+-			schedule_delayed_work(&touch->tsi_work,
+-				msecs_to_jiffies(touch->interval_ms));
+-			touch->state = STATE_WAIT;
+-		}
+-
+-		if (event == EVENT_PEN_UP) {
+-			report_pen_up(touch);
+-			touch->state = STATE_IDLE;
+-		}
+-		break;
+-
+-	case STATE_WAIT:
+-		if (event != EVENT_TIMEDOUT)
+-			break;
+-
+-		if (is_pen_down(touch)) {
+-			start_tsi(touch);
+-			touch->state = STATE_BUSY;
+-		} else {
+-			report_pen_up(touch);
+-			touch->state = STATE_IDLE;
+-		}
+-		break;
+-	}
+-	return;
+-
+-err_reset:
+-	touch->state = STATE_IDLE;
+-	stop_tsi(touch);
+-	detect_pen_down(touch, 1);
+-}
+-
+-static void da9034_tsi_work(struct work_struct *work)
+-{
+-	struct da9034_touch *touch =
+-		container_of(work, struct da9034_touch, tsi_work.work);
+-
+-	da9034_event_handler(touch, EVENT_TIMEDOUT);
+-}
+-
+-static int da9034_touch_notifier(struct notifier_block *nb,
 -				 unsigned long event, void *data)
 -{
--	struct adp5520_keys *dev;
--	uint8_t reg_val_lo, reg_val_hi;
--	unsigned short keymask;
+-	struct da9034_touch *touch =
+-		container_of(nb, struct da9034_touch, notifier);
 -
--	dev = container_of(nb, struct adp5520_keys, notifier);
+-	if (event & DA9034_EVENT_TSI_READY)
+-		da9034_event_handler(touch, EVENT_TSI_READY);
 -
--	if (event & ADP5520_KP_INT) {
--		adp5520_read(dev->master, ADP5520_KP_INT_STAT_1, &reg_val_lo);
--		adp5520_read(dev->master, ADP5520_KP_INT_STAT_2, &reg_val_hi);
--
--		keymask = (reg_val_hi << 8) | reg_val_lo;
--		/* Read twice to clear */
--		adp5520_read(dev->master, ADP5520_KP_INT_STAT_1, &reg_val_lo);
--		adp5520_read(dev->master, ADP5520_KP_INT_STAT_2, &reg_val_hi);
--		keymask |= (reg_val_hi << 8) | reg_val_lo;
--		adp5520_keys_report_event(dev, keymask, 1);
--	}
--
--	if (event & ADP5520_KR_INT) {
--		adp5520_read(dev->master, ADP5520_KR_INT_STAT_1, &reg_val_lo);
--		adp5520_read(dev->master, ADP5520_KR_INT_STAT_2, &reg_val_hi);
--
--		keymask = (reg_val_hi << 8) | reg_val_lo;
--		/* Read twice to clear */
--		adp5520_read(dev->master, ADP5520_KR_INT_STAT_1, &reg_val_lo);
--		adp5520_read(dev->master, ADP5520_KR_INT_STAT_2, &reg_val_hi);
--		keymask |= (reg_val_hi << 8) | reg_val_lo;
--		adp5520_keys_report_event(dev, keymask, 0);
--	}
+-	if ((event & DA9034_EVENT_PEN_DOWN) && touch->state == STATE_IDLE)
+-		da9034_event_handler(touch, EVENT_PEN_DOWN);
 -
 -	return 0;
 -}
 -
--static int adp5520_keys_probe(struct platform_device *pdev)
+-static int da9034_touch_open(struct input_dev *dev)
 -{
--	struct adp5520_keys_platform_data *pdata = dev_get_platdata(&pdev->dev);
--	struct input_dev *input;
--	struct adp5520_keys *dev;
--	int ret, i;
--	unsigned char en_mask, ctl_mask = 0;
+-	struct da9034_touch *touch = input_get_drvdata(dev);
+-	int ret;
 -
--	if (pdev->id != ID_ADP5520) {
--		dev_err(&pdev->dev, "only ADP5520 supports Keypad\n");
--		return -EINVAL;
--	}
+-	ret = da903x_register_notifier(touch->da9034_dev, &touch->notifier,
+-			DA9034_EVENT_PEN_DOWN | DA9034_EVENT_TSI_READY);
+-	if (ret)
+-		return -EBUSY;
 -
--	if (!pdata) {
--		dev_err(&pdev->dev, "missing platform data\n");
--		return -EINVAL;
--	}
--
--	if (!(pdata->rows_en_mask && pdata->cols_en_mask))
--		return -EINVAL;
--
--	dev = devm_kzalloc(&pdev->dev, sizeof(*dev), GFP_KERNEL);
--	if (!dev) {
--		dev_err(&pdev->dev, "failed to alloc memory\n");
--		return -ENOMEM;
--	}
--
--	input = devm_input_allocate_device(&pdev->dev);
--	if (!input)
--		return -ENOMEM;
--
--	dev->master = pdev->dev.parent;
--	dev->input = input;
--
--	input->name = pdev->name;
--	input->phys = "adp5520-keys/input0";
--	input->dev.parent = &pdev->dev;
--
--	input->id.bustype = BUS_I2C;
--	input->id.vendor = 0x0001;
--	input->id.product = 0x5520;
--	input->id.version = 0x0001;
--
--	input->keycodesize = sizeof(dev->keycode[0]);
--	input->keycodemax = pdata->keymapsize;
--	input->keycode = dev->keycode;
--
--	memcpy(dev->keycode, pdata->keymap,
--		pdata->keymapsize * input->keycodesize);
--
--	/* setup input device */
--	__set_bit(EV_KEY, input->evbit);
--
--	if (pdata->repeat)
--		__set_bit(EV_REP, input->evbit);
--
--	for (i = 0; i < input->keycodemax; i++)
--		__set_bit(dev->keycode[i], input->keybit);
--	__clear_bit(KEY_RESERVED, input->keybit);
--
--	ret = input_register_device(input);
--	if (ret) {
--		dev_err(&pdev->dev, "unable to register input device\n");
+-	/* Enable ADC LDO */
+-	ret = da903x_set_bits(touch->da9034_dev,
+-			DA9034_MANUAL_CTRL, DA9034_LDO_ADC_EN);
+-	if (ret)
 -		return ret;
--	}
 -
--	en_mask = pdata->rows_en_mask | pdata->cols_en_mask;
--
--	ret = adp5520_set_bits(dev->master, ADP5520_GPIO_CFG_1, en_mask);
--
--	if (en_mask & ADP5520_COL_C3)
--		ctl_mask |= ADP5520_C3_MODE;
--
--	if (en_mask & ADP5520_ROW_R3)
--		ctl_mask |= ADP5520_R3_MODE;
--
--	if (ctl_mask)
--		ret |= adp5520_set_bits(dev->master, ADP5520_LED_CONTROL,
--			ctl_mask);
--
--	ret |= adp5520_set_bits(dev->master, ADP5520_GPIO_PULLUP,
--		pdata->rows_en_mask);
--
--	if (ret) {
--		dev_err(&pdev->dev, "failed to write\n");
--		return -EIO;
--	}
--
--	dev->notifier.notifier_call = adp5520_keys_notifier;
--	ret = adp5520_register_notifier(dev->master, &dev->notifier,
--			ADP5520_KP_IEN | ADP5520_KR_IEN);
--	if (ret) {
--		dev_err(&pdev->dev, "failed to register notifier\n");
+-	/* TSI_DELAY: 3 slots, TSI_SKIP: 3 slots */
+-	ret = da903x_write(touch->da9034_dev, DA9034_TSI_CTRL1, 0x1b);
+-	if (ret)
 -		return ret;
--	}
 -
--	platform_set_drvdata(pdev, dev);
+-	ret = da903x_write(touch->da9034_dev, DA9034_TSI_CTRL2, 0x00);
+-	if (ret)
+-		return ret;
+-
+-	touch->state = STATE_IDLE;
+-	detect_pen_down(touch, 1);
+-
 -	return 0;
 -}
 -
--static void adp5520_keys_remove(struct platform_device *pdev)
+-static void da9034_touch_close(struct input_dev *dev)
 -{
--	struct adp5520_keys *dev = platform_get_drvdata(pdev);
+-	struct da9034_touch *touch = input_get_drvdata(dev);
 -
--	adp5520_unregister_notifier(dev->master, &dev->notifier,
--				ADP5520_KP_IEN | ADP5520_KR_IEN);
+-	da903x_unregister_notifier(touch->da9034_dev, &touch->notifier,
+-			DA9034_EVENT_PEN_DOWN | DA9034_EVENT_TSI_READY);
+-
+-	cancel_delayed_work_sync(&touch->tsi_work);
+-
+-	touch->state = STATE_IDLE;
+-	stop_tsi(touch);
+-	detect_pen_down(touch, 0);
+-
+-	/* Disable ADC LDO */
+-	da903x_clr_bits(touch->da9034_dev,
+-			DA9034_MANUAL_CTRL, DA9034_LDO_ADC_EN);
 -}
 -
--static struct platform_driver adp5520_keys_driver = {
+-
+-static int da9034_touch_probe(struct platform_device *pdev)
+-{
+-	struct da9034_touch_pdata *pdata = dev_get_platdata(&pdev->dev);
+-	struct da9034_touch *touch;
+-	struct input_dev *input_dev;
+-	int error;
+-
+-	touch = devm_kzalloc(&pdev->dev, sizeof(struct da9034_touch),
+-			     GFP_KERNEL);
+-	if (!touch) {
+-		dev_err(&pdev->dev, "failed to allocate driver data\n");
+-		return -ENOMEM;
+-	}
+-
+-	touch->da9034_dev = pdev->dev.parent;
+-
+-	if (pdata) {
+-		touch->interval_ms	= pdata->interval_ms;
+-		touch->x_inverted	= pdata->x_inverted;
+-		touch->y_inverted	= pdata->y_inverted;
+-	} else {
+-		/* fallback into default */
+-		touch->interval_ms	= 10;
+-	}
+-
+-	INIT_DELAYED_WORK(&touch->tsi_work, da9034_tsi_work);
+-	touch->notifier.notifier_call = da9034_touch_notifier;
+-
+-	input_dev = devm_input_allocate_device(&pdev->dev);
+-	if (!input_dev) {
+-		dev_err(&pdev->dev, "failed to allocate input device\n");
+-		return -ENOMEM;
+-	}
+-
+-	input_dev->name		= pdev->name;
+-	input_dev->open		= da9034_touch_open;
+-	input_dev->close	= da9034_touch_close;
+-	input_dev->dev.parent	= &pdev->dev;
+-
+-	__set_bit(EV_ABS, input_dev->evbit);
+-	__set_bit(ABS_X, input_dev->absbit);
+-	__set_bit(ABS_Y, input_dev->absbit);
+-	input_set_abs_params(input_dev, ABS_X, 0, 1023, 0, 0);
+-	input_set_abs_params(input_dev, ABS_Y, 0, 1023, 0, 0);
+-
+-	__set_bit(EV_KEY, input_dev->evbit);
+-	__set_bit(BTN_TOUCH, input_dev->keybit);
+-
+-	touch->input_dev = input_dev;
+-	input_set_drvdata(input_dev, touch);
+-
+-	error = input_register_device(input_dev);
+-	if (error)
+-		return error;
+-
+-	return 0;
+-}
+-
+-static struct platform_driver da9034_touch_driver = {
 -	.driver	= {
--		.name	= "adp5520-keys",
+-		.name	= "da9034-touch",
 -	},
--	.probe		= adp5520_keys_probe,
--	.remove		= adp5520_keys_remove,
+-	.probe		= da9034_touch_probe,
 -};
--module_platform_driver(adp5520_keys_driver);
+-module_platform_driver(da9034_touch_driver);
 -
--MODULE_AUTHOR("Michael Hennerich <hennerich@blackfin.uclinux.org>");
--MODULE_DESCRIPTION("Keys ADP5520 Driver");
+-MODULE_DESCRIPTION("Touchscreen driver for Dialog Semiconductor DA9034");
+-MODULE_AUTHOR("Eric Miao <eric.miao@marvell.com>, Bin Yang <bin.yang@marvell.com>");
 -MODULE_LICENSE("GPL");
--MODULE_ALIAS("platform:adp5520-keys");
+-MODULE_ALIAS("platform:da9034-touch");
 diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
-index d0d3182236be..5d6fc2a06016 100644
+index 5d6fc2a06016..5aab4765d6d7 100644
 --- a/drivers/leds/Kconfig
 +++ b/drivers/leds/Kconfig
-@@ -718,17 +718,6 @@ config LEDS_LT3593
- 	  LT3593 controller. This controller uses a special one-wire pulse
- 	  coding protocol to set the brightness.
+@@ -638,14 +638,6 @@ config LEDS_WM8350
+ 	  This option enables support for LEDs driven by the Wolfson
+ 	  Microelectronics WM8350 AudioPlus PMIC.
  
--config LEDS_ADP5520
--	tristate "LED Support for ADP5520/ADP5501 PMIC"
+-config LEDS_DA903X
+-	tristate "LED Support for DA9030/DA9034 PMIC"
 -	depends on LEDS_CLASS
--	depends on PMIC_ADP5520
+-	depends on PMIC_DA903X
 -	help
 -	  This option enables support for on-chip LED drivers found
--	  on Analog Devices ADP5520/ADP5501 PMICs.
+-	  on Dialog Semiconductor DA9030/DA9034 PMICs.
 -
--	  To compile this driver as a module, choose M here: the module will
--	  be called leds-adp5520.
--
- config LEDS_MAX5970
- 	tristate "LED Support for Maxim 5970"
+ config LEDS_DA9052
+ 	tristate "Dialog DA9052/DA9053 LEDS"
  	depends on LEDS_CLASS
 diff --git a/drivers/leds/Makefile b/drivers/leds/Makefile
-index a68244bd50fb..96deebbca9d5 100644
+index 96deebbca9d5..148301cf4865 100644
 --- a/drivers/leds/Makefile
 +++ b/drivers/leds/Makefile
-@@ -11,7 +11,6 @@ obj-$(CONFIG_LEDS_KUNIT_TEST)		+= led-test.o
- # LED Platform Drivers (keep this sorted, M-| sort)
- obj-$(CONFIG_LEDS_88PM860X)		+= leds-88pm860x.o
- obj-$(CONFIG_LEDS_ACER_A500)		+= leds-acer-a500.o
--obj-$(CONFIG_LEDS_ADP5520)		+= leds-adp5520.o
- obj-$(CONFIG_LEDS_AN30259A)		+= leds-an30259a.o
- obj-$(CONFIG_LEDS_APU)			+= leds-apu.o
- obj-$(CONFIG_LEDS_ARIEL)		+= leds-ariel.o
-diff --git a/drivers/leds/leds-adp5520.c b/drivers/leds/leds-adp5520.c
+@@ -28,7 +28,6 @@ obj-$(CONFIG_LEDS_COBALT_QUBE)		+= leds-cobalt-qube.o
+ obj-$(CONFIG_LEDS_COBALT_RAQ)		+= leds-cobalt-raq.o
+ obj-$(CONFIG_LEDS_CPCAP)		+= leds-cpcap.o
+ obj-$(CONFIG_LEDS_CROS_EC)		+= leds-cros_ec.o
+-obj-$(CONFIG_LEDS_DA903X)		+= leds-da903x.o
+ obj-$(CONFIG_LEDS_DA9052)		+= leds-da9052.o
+ obj-$(CONFIG_LEDS_GPIO)			+= leds-gpio.o
+ obj-$(CONFIG_LEDS_GPIO_REGISTER)	+= leds-gpio-register.o
+diff --git a/drivers/leds/leds-da903x.c b/drivers/leds/leds-da903x.c
 deleted file mode 100644
-index 13e5bc80e56e..000000000000
---- a/drivers/leds/leds-adp5520.c
+index 71209b3c8f1e..000000000000
+--- a/drivers/leds/leds-da903x.c
 +++ /dev/null
-@@ -1,195 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-or-later
+@@ -1,145 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-only
 -/*
-- * LEDs driver for Analog Devices ADP5520/ADP5501 MFD PMICs
+- * LEDs driver for Dialog Semiconductor DA9030/DA9034
 - *
-- * Copyright 2009 Analog Devices Inc.
-- *
-- * Loosely derived from leds-da903x:
 - * Copyright (C) 2008 Compulab, Ltd.
 - *	Mike Rapoport <mike@compulab.co.il>
 - *
@@ -678,235 +613,181 @@ index 13e5bc80e56e..000000000000
 -#include <linux/kernel.h>
 -#include <linux/platform_device.h>
 -#include <linux/leds.h>
--#include <linux/mfd/adp5520.h>
+-#include <linux/mfd/da903x.h>
 -#include <linux/slab.h>
 -
--struct adp5520_led {
+-#define DA9030_LED1_CONTROL	0x20
+-#define DA9030_LED2_CONTROL	0x21
+-#define DA9030_LED3_CONTROL	0x22
+-#define DA9030_LED4_CONTROL	0x23
+-#define DA9030_LEDPC_CONTROL	0x24
+-#define DA9030_MISC_CONTROL_A	0x26	/* Vibrator Control */
+-
+-#define DA9034_LED1_CONTROL	0x35
+-#define DA9034_LED2_CONTROL	0x36
+-#define DA9034_VIBRA		0x40
+-
+-struct da903x_led {
 -	struct led_classdev	cdev;
 -	struct device		*master;
 -	int			id;
 -	int			flags;
 -};
 -
--static int adp5520_led_set(struct led_classdev *led_cdev,
+-#define DA9030_LED_OFFSET(id)	((id) - DA9030_ID_LED_1)
+-#define DA9034_LED_OFFSET(id)	((id) - DA9034_ID_LED_1)
+-
+-static int da903x_led_set(struct led_classdev *led_cdev,
 -			   enum led_brightness value)
 -{
--	struct adp5520_led *led;
--
--	led = container_of(led_cdev, struct adp5520_led, cdev);
--	return adp5520_write(led->master, ADP5520_LED1_CURRENT + led->id - 1,
--			 value >> 2);
--}
--
--static int adp5520_led_setup(struct adp5520_led *led)
--{
--	struct device *dev = led->master;
--	int flags = led->flags;
--	int ret = 0;
+-	struct da903x_led *led =
+-			container_of(led_cdev, struct da903x_led, cdev);
+-	uint8_t val;
+-	int offset, ret = -EINVAL;
 -
 -	switch (led->id) {
--	case FLAG_ID_ADP5520_LED1_ADP5501_LED0:
--		ret |= adp5520_set_bits(dev, ADP5520_LED_TIME,
--					(flags >> ADP5520_FLAG_OFFT_SHIFT) &
--					ADP5520_FLAG_OFFT_MASK);
--		ret |= adp5520_set_bits(dev, ADP5520_LED_CONTROL,
--					ADP5520_LED1_EN);
+-	case DA9030_ID_LED_1:
+-	case DA9030_ID_LED_2:
+-	case DA9030_ID_LED_3:
+-	case DA9030_ID_LED_4:
+-	case DA9030_ID_LED_PC:
+-		offset = DA9030_LED_OFFSET(led->id);
+-		val = led->flags & ~0x87;
+-		val |= value ? 0x80 : 0; /* EN bit */
+-		val |= (0x7 - (value >> 5)) & 0x7; /* PWM<2:0> */
+-		ret = da903x_write(led->master, DA9030_LED1_CONTROL + offset,
+-				   val);
 -		break;
--	case FLAG_ID_ADP5520_LED2_ADP5501_LED1:
--		ret |= adp5520_set_bits(dev,  ADP5520_LED_TIME,
--					((flags >> ADP5520_FLAG_OFFT_SHIFT) &
--					ADP5520_FLAG_OFFT_MASK) << 2);
--		ret |= adp5520_clr_bits(dev, ADP5520_LED_CONTROL,
--					 ADP5520_R3_MODE);
--		ret |= adp5520_set_bits(dev, ADP5520_LED_CONTROL,
--					ADP5520_LED2_EN);
+-	case DA9030_ID_VIBRA:
+-		val = led->flags & ~0x80;
+-		val |= value ? 0x80 : 0; /* EN bit */
+-		ret = da903x_write(led->master, DA9030_MISC_CONTROL_A, val);
 -		break;
--	case FLAG_ID_ADP5520_LED3_ADP5501_LED2:
--		ret |= adp5520_set_bits(dev,  ADP5520_LED_TIME,
--					((flags >> ADP5520_FLAG_OFFT_SHIFT) &
--					ADP5520_FLAG_OFFT_MASK) << 4);
--		ret |= adp5520_clr_bits(dev, ADP5520_LED_CONTROL,
--					ADP5520_C3_MODE);
--		ret |= adp5520_set_bits(dev, ADP5520_LED_CONTROL,
--					ADP5520_LED3_EN);
+-	case DA9034_ID_LED_1:
+-	case DA9034_ID_LED_2:
+-		offset = DA9034_LED_OFFSET(led->id);
+-		val = (value * 0x5f / LED_FULL) & 0x7f;
+-		val |= (led->flags & DA9034_LED_RAMP) ? 0x80 : 0;
+-		ret = da903x_write(led->master, DA9034_LED1_CONTROL + offset,
+-				   val);
+-		break;
+-	case DA9034_ID_VIBRA:
+-		val = value & 0xfe;
+-		ret = da903x_write(led->master, DA9034_VIBRA, val);
 -		break;
 -	}
 -
 -	return ret;
 -}
 -
--static int adp5520_led_prepare(struct platform_device *pdev)
+-static int da903x_led_probe(struct platform_device *pdev)
 -{
--	struct adp5520_leds_platform_data *pdata = dev_get_platdata(&pdev->dev);
--	struct device *dev = pdev->dev.parent;
--	int ret = 0;
+-	struct led_info *pdata = dev_get_platdata(&pdev->dev);
+-	struct da903x_led *led;
+-	int id, ret;
 -
--	ret |= adp5520_write(dev, ADP5520_LED1_CURRENT, 0);
--	ret |= adp5520_write(dev, ADP5520_LED2_CURRENT, 0);
--	ret |= adp5520_write(dev, ADP5520_LED3_CURRENT, 0);
--	ret |= adp5520_write(dev, ADP5520_LED_TIME, pdata->led_on_time << 6);
--	ret |= adp5520_write(dev, ADP5520_LED_FADE, FADE_VAL(pdata->fade_in,
--		 pdata->fade_out));
+-	if (pdata == NULL)
+-		return 0;
 -
--	return ret;
--}
+-	id = pdev->id;
 -
--static int adp5520_led_probe(struct platform_device *pdev)
--{
--	struct adp5520_leds_platform_data *pdata = dev_get_platdata(&pdev->dev);
--	struct adp5520_led *led, *led_dat;
--	struct led_info *cur_led;
--	int ret, i;
--
--	if (pdata == NULL) {
--		dev_err(&pdev->dev, "missing platform data\n");
--		return -ENODEV;
+-	if (!((id >= DA9030_ID_LED_1 && id <= DA9030_ID_VIBRA) ||
+-	      (id >= DA9034_ID_LED_1 && id <= DA9034_ID_VIBRA))) {
+-		dev_err(&pdev->dev, "invalid LED ID (%d) specified\n", id);
+-		return -EINVAL;
 -	}
 -
--	if (pdata->num_leds > ADP5520_01_MAXLEDS) {
--		dev_err(&pdev->dev, "can't handle more than %d LEDS\n",
--				 ADP5520_01_MAXLEDS);
--		return -EFAULT;
--	}
--
--	led = devm_kcalloc(&pdev->dev, pdata->num_leds, sizeof(*led),
--				GFP_KERNEL);
+-	led = devm_kzalloc(&pdev->dev, sizeof(struct da903x_led), GFP_KERNEL);
 -	if (!led)
 -		return -ENOMEM;
 -
--	ret = adp5520_led_prepare(pdev);
+-	led->cdev.name = pdata->name;
+-	led->cdev.default_trigger = pdata->default_trigger;
+-	led->cdev.brightness_set_blocking = da903x_led_set;
+-	led->cdev.brightness = LED_OFF;
+-
+-	led->id = id;
+-	led->flags = pdata->flags;
+-	led->master = pdev->dev.parent;
+-
+-	ret = led_classdev_register(led->master, &led->cdev);
 -	if (ret) {
--		dev_err(&pdev->dev, "failed to write\n");
+-		dev_err(&pdev->dev, "failed to register LED %d\n", id);
 -		return ret;
 -	}
 -
--	for (i = 0; i < pdata->num_leds; ++i) {
--		cur_led = &pdata->leds[i];
--		led_dat = &led[i];
--
--		led_dat->cdev.name = cur_led->name;
--		led_dat->cdev.default_trigger = cur_led->default_trigger;
--		led_dat->cdev.brightness_set_blocking = adp5520_led_set;
--		led_dat->cdev.brightness = LED_OFF;
--
--		if (cur_led->flags & ADP5520_FLAG_LED_MASK)
--			led_dat->flags = cur_led->flags;
--		else
--			led_dat->flags = i + 1;
--
--		led_dat->id = led_dat->flags & ADP5520_FLAG_LED_MASK;
--
--		led_dat->master = pdev->dev.parent;
--
--		ret = led_classdev_register(led_dat->master, &led_dat->cdev);
--		if (ret) {
--			dev_err(&pdev->dev, "failed to register LED %d\n",
--				led_dat->id);
--			goto err;
--		}
--
--		ret = adp5520_led_setup(led_dat);
--		if (ret) {
--			dev_err(&pdev->dev, "failed to write\n");
--			i++;
--			goto err;
--		}
--	}
--
 -	platform_set_drvdata(pdev, led);
+-
 -	return 0;
--
--err:
--	if (i > 0) {
--		for (i = i - 1; i >= 0; i--)
--			led_classdev_unregister(&led[i].cdev);
--	}
--
--	return ret;
 -}
 -
--static void adp5520_led_remove(struct platform_device *pdev)
+-static void da903x_led_remove(struct platform_device *pdev)
 -{
--	struct adp5520_leds_platform_data *pdata = dev_get_platdata(&pdev->dev);
--	struct adp5520_led *led;
--	int i;
+-	struct da903x_led *led = platform_get_drvdata(pdev);
 -
--	led = platform_get_drvdata(pdev);
--
--	adp5520_clr_bits(led->master, ADP5520_LED_CONTROL,
--		 ADP5520_LED1_EN | ADP5520_LED2_EN | ADP5520_LED3_EN);
--
--	for (i = 0; i < pdata->num_leds; i++) {
--		led_classdev_unregister(&led[i].cdev);
--	}
+-	led_classdev_unregister(&led->cdev);
 -}
 -
--static struct platform_driver adp5520_led_driver = {
+-static struct platform_driver da903x_led_driver = {
 -	.driver	= {
--		.name	= "adp5520-led",
+-		.name	= "da903x-led",
 -	},
--	.probe		= adp5520_led_probe,
--	.remove		= adp5520_led_remove,
+-	.probe		= da903x_led_probe,
+-	.remove		= da903x_led_remove,
 -};
 -
--module_platform_driver(adp5520_led_driver);
+-module_platform_driver(da903x_led_driver);
 -
--MODULE_AUTHOR("Michael Hennerich <hennerich@blackfin.uclinux.org>");
--MODULE_DESCRIPTION("LEDS ADP5520(01) Driver");
+-MODULE_DESCRIPTION("LEDs driver for Dialog Semiconductor DA9030/DA9034");
+-MODULE_AUTHOR("Eric Miao <eric.miao@marvell.com>");
+-MODULE_AUTHOR("Mike Rapoport <mike@compulab.co.il>");
 -MODULE_LICENSE("GPL");
--MODULE_ALIAS("platform:adp5520-led");
+-MODULE_ALIAS("platform:da903x-led");
 diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-index 2b621a77619c..5126bae8e61f 100644
+index 5126bae8e61f..fda9d7ad5743 100644
 --- a/drivers/mfd/Kconfig
 +++ b/drivers/mfd/Kconfig
-@@ -115,16 +115,6 @@ config MFD_AS3722
- 	  controllers, 11 LDOs, RTC, automatic battery, temperature and
- 	  over current monitoring, GPIOs, ADC and a watchdog.
+@@ -408,17 +408,6 @@ config MFD_TN48M_CPLD
+ 	  for the SFP slots as well as power supply related information.
+ 	  SFP support depends on the GPIO driver being selected.
  
--config PMIC_ADP5520
--	bool "Analog Devices ADP5520/01 MFD PMIC Core Support"
+-config PMIC_DA903X
+-	bool "Dialog Semiconductor DA9030/DA9034 PMIC Support"
 -	depends on I2C=y
 -	help
--	  Say yes here to add support for Analog Devices ADP5520 and ADP5501,
--	  Multifunction Power Management IC. This includes
+-	  Say yes here to add support for Dialog Semiconductor DA9030 (a.k.a
+-	  ARAVA) and DA9034 (a.k.a MICCO), these are Power Management IC
+-	  usually found on PXA processors-based platforms. This includes
 -	  the I2C driver and the core APIs _only_, you have to select
--	  individual components like LCD backlight, LEDs, GPIOs and Kepad
--	  under the corresponding menus.
+-	  individual components like LCD backlight, voltage regulators,
+-	  LEDs and battery-charger under the corresponding menus.
 -
- config MFD_AAT2870_CORE
- 	bool "AnalogicTech AAT2870"
+ config PMIC_DA9052
+ 	bool
  	select MFD_CORE
 diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
-index 36f0ab039b77..a6cc4fcc3e1d 100644
+index a6cc4fcc3e1d..82795e65cbe7 100644
 --- a/drivers/mfd/Makefile
 +++ b/drivers/mfd/Makefile
-@@ -193,7 +193,6 @@ obj-$(CONFIG_MFD_DB8500_PRCMU)	+= db8500-prcmu.o
- # ab8500-core need to come after db8500-prcmu (which provides the channel)
- obj-$(CONFIG_AB8500_CORE)	+= ab8500-core.o ab8500-sysctrl.o
- obj-$(CONFIG_MFD_TIMBERDALE)    += timberdale.o
--obj-$(CONFIG_PMIC_ADP5520)	+= adp5520.o
- obj-$(CONFIG_MFD_ADP5585)	+= adp5585.o
- obj-$(CONFIG_MFD_KEMPLD)	+= kempld-core.o
- obj-$(CONFIG_MFD_INTEL_QUARK_I2C_GPIO)	+= intel_quark_i2c_gpio.o
-diff --git a/drivers/mfd/adp5520.c b/drivers/mfd/adp5520.c
+@@ -139,8 +139,6 @@ ifeq ($(CONFIG_SA1100_ASSABET),y)
+ obj-$(CONFIG_MCP_UCB1200)	+= ucb1x00-assabet.o
+ endif
+ 
+-obj-$(CONFIG_PMIC_DA903X)	+= da903x.o
+-
+ obj-$(CONFIG_PMIC_DA9052)	+= da9052-irq.o
+ obj-$(CONFIG_PMIC_DA9052)	+= da9052-core.o
+ obj-$(CONFIG_MFD_DA9052_SPI)	+= da9052-spi.o
+diff --git a/drivers/mfd/da903x.c b/drivers/mfd/da903x.c
 deleted file mode 100644
-index bd6f4965ebc8..000000000000
---- a/drivers/mfd/adp5520.c
+index e86b39de3303..000000000000
+--- a/drivers/mfd/da903x.c
 +++ /dev/null
-@@ -1,346 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-or-later
+@@ -1,565 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-only
 -/*
-- * Base driver for Analog Devices ADP5520/ADP5501 MFD PMICs
-- * LCD Backlight: drivers/video/backlight/adp5520_bl
-- * LEDs		: drivers/led/leds-adp5520
-- * GPIO		: drivers/gpio/adp5520-gpio (ADP5520 only)
-- * Keys		: drivers/input/keyboard/adp5520-keys (ADP5520 only)
+- * Base driver for Dialog Semiconductor DA9030/DA9034
 - *
-- * Copyright 2009 Analog Devices Inc.
-- *
-- * Author: Michael Hennerich <michael.hennerich@analog.com>
-- *
-- * Derived from da903x:
 - * Copyright (C) 2008 Compulab, Ltd.
 - *	Mike Rapoport <mike@compulab.co.il>
 - *
@@ -915,27 +796,65 @@ index bd6f4965ebc8..000000000000
 - */
 -
 -#include <linux/kernel.h>
--#include <linux/init.h>
--#include <linux/platform_device.h>
--#include <linux/slab.h>
+-#include <linux/module.h>
 -#include <linux/interrupt.h>
--#include <linux/irq.h>
--#include <linux/err.h>
+-#include <linux/platform_device.h>
 -#include <linux/i2c.h>
+-#include <linux/mfd/da903x.h>
+-#include <linux/slab.h>
 -
--#include <linux/mfd/adp5520.h>
+-#define DA9030_CHIP_ID		0x00
+-#define DA9030_EVENT_A		0x01
+-#define DA9030_EVENT_B		0x02
+-#define DA9030_EVENT_C		0x03
+-#define DA9030_STATUS		0x04
+-#define DA9030_IRQ_MASK_A	0x05
+-#define DA9030_IRQ_MASK_B	0x06
+-#define DA9030_IRQ_MASK_C	0x07
+-#define DA9030_SYS_CTRL_A	0x08
+-#define DA9030_SYS_CTRL_B	0x09
+-#define DA9030_FAULT_LOG	0x0a
 -
--struct adp5520_chip {
--	struct i2c_client *client;
--	struct device *dev;
--	struct mutex lock;
--	struct blocking_notifier_head notifier_list;
--	int irq;
--	unsigned long id;
--	uint8_t mode;
+-#define DA9034_CHIP_ID		0x00
+-#define DA9034_EVENT_A		0x01
+-#define DA9034_EVENT_B		0x02
+-#define DA9034_EVENT_C		0x03
+-#define DA9034_EVENT_D		0x04
+-#define DA9034_STATUS_A		0x05
+-#define DA9034_STATUS_B		0x06
+-#define DA9034_IRQ_MASK_A	0x07
+-#define DA9034_IRQ_MASK_B	0x08
+-#define DA9034_IRQ_MASK_C	0x09
+-#define DA9034_IRQ_MASK_D	0x0a
+-#define DA9034_SYS_CTRL_A	0x0b
+-#define DA9034_SYS_CTRL_B	0x0c
+-#define DA9034_FAULT_LOG	0x0d
+-
+-struct da903x_chip;
+-
+-struct da903x_chip_ops {
+-	int	(*init_chip)(struct da903x_chip *);
+-	int	(*unmask_events)(struct da903x_chip *, unsigned int events);
+-	int	(*mask_events)(struct da903x_chip *, unsigned int events);
+-	int	(*read_events)(struct da903x_chip *, unsigned int *events);
+-	int	(*read_status)(struct da903x_chip *, unsigned int *status);
 -};
 -
--static int __adp5520_read(struct i2c_client *client,
+-struct da903x_chip {
+-	struct i2c_client	*client;
+-	struct device		*dev;
+-	const struct da903x_chip_ops *ops;
+-
+-	int			type;
+-	uint32_t		events_mask;
+-
+-	struct mutex		lock;
+-	struct work_struct	irq_work;
+-
+-	struct blocking_notifier_head notifier_list;
+-};
+-
+-static inline int __da903x_read(struct i2c_client *client,
 -				int reg, uint8_t *val)
 -{
 -	int ret;
@@ -950,7 +869,20 @@ index bd6f4965ebc8..000000000000
 -	return 0;
 -}
 -
--static int __adp5520_write(struct i2c_client *client,
+-static inline int __da903x_reads(struct i2c_client *client, int reg,
+-				 int len, uint8_t *val)
+-{
+-	int ret;
+-
+-	ret = i2c_smbus_read_i2c_block_data(client, reg, len, val);
+-	if (ret < 0) {
+-		dev_err(&client->dev, "failed reading from 0x%02x\n", reg);
+-		return ret;
+-	}
+-	return 0;
+-}
+-
+-static inline int __da903x_write(struct i2c_client *client,
 -				 int reg, uint8_t val)
 -{
 -	int ret;
@@ -964,130 +896,340 @@ index bd6f4965ebc8..000000000000
 -	return 0;
 -}
 -
--static int __adp5520_ack_bits(struct i2c_client *client, int reg,
--			      uint8_t bit_mask)
+-static inline int __da903x_writes(struct i2c_client *client, int reg,
+-				  int len, uint8_t *val)
 -{
--	struct adp5520_chip *chip = i2c_get_clientdata(client);
--	uint8_t reg_val;
 -	int ret;
 -
--	mutex_lock(&chip->lock);
--
--	ret = __adp5520_read(client, reg, &reg_val);
--
--	if (!ret) {
--		reg_val |= bit_mask;
--		ret = __adp5520_write(client, reg, reg_val);
+-	ret = i2c_smbus_write_i2c_block_data(client, reg, len, val);
+-	if (ret < 0) {
+-		dev_err(&client->dev, "failed writings to 0x%02x\n", reg);
+-		return ret;
 -	}
--
--	mutex_unlock(&chip->lock);
--	return ret;
+-	return 0;
 -}
 -
--int adp5520_write(struct device *dev, int reg, uint8_t val)
--{
--	return __adp5520_write(to_i2c_client(dev), reg, val);
--}
--EXPORT_SYMBOL_GPL(adp5520_write);
--
--int adp5520_read(struct device *dev, int reg, uint8_t *val)
--{
--	return __adp5520_read(to_i2c_client(dev), reg, val);
--}
--EXPORT_SYMBOL_GPL(adp5520_read);
--
--int adp5520_set_bits(struct device *dev, int reg, uint8_t bit_mask)
--{
--	struct adp5520_chip *chip = dev_get_drvdata(dev);
--	uint8_t reg_val;
--	int ret;
--
--	mutex_lock(&chip->lock);
--
--	ret = __adp5520_read(chip->client, reg, &reg_val);
--
--	if (!ret && ((reg_val & bit_mask) != bit_mask)) {
--		reg_val |= bit_mask;
--		ret = __adp5520_write(chip->client, reg, reg_val);
--	}
--
--	mutex_unlock(&chip->lock);
--	return ret;
--}
--EXPORT_SYMBOL_GPL(adp5520_set_bits);
--
--int adp5520_clr_bits(struct device *dev, int reg, uint8_t bit_mask)
--{
--	struct adp5520_chip *chip = dev_get_drvdata(dev);
--	uint8_t reg_val;
--	int ret;
--
--	mutex_lock(&chip->lock);
--
--	ret = __adp5520_read(chip->client, reg, &reg_val);
--
--	if (!ret && (reg_val & bit_mask)) {
--		reg_val &= ~bit_mask;
--		ret = __adp5520_write(chip->client, reg, reg_val);
--	}
--
--	mutex_unlock(&chip->lock);
--	return ret;
--}
--EXPORT_SYMBOL_GPL(adp5520_clr_bits);
--
--int adp5520_register_notifier(struct device *dev, struct notifier_block *nb,
+-int da903x_register_notifier(struct device *dev, struct notifier_block *nb,
 -				unsigned int events)
 -{
--	struct adp5520_chip *chip = dev_get_drvdata(dev);
+-	struct da903x_chip *chip = dev_get_drvdata(dev);
 -
--	if (chip->irq) {
--		adp5520_set_bits(chip->dev, ADP5520_INTERRUPT_ENABLE,
--			events & (ADP5520_KP_IEN | ADP5520_KR_IEN |
--			ADP5520_OVP_IEN | ADP5520_CMPR_IEN));
--
--		return blocking_notifier_chain_register(&chip->notifier_list,
--			 nb);
--	}
--
--	return -ENODEV;
+-	chip->ops->unmask_events(chip, events);
+-	return blocking_notifier_chain_register(&chip->notifier_list, nb);
 -}
--EXPORT_SYMBOL_GPL(adp5520_register_notifier);
+-EXPORT_SYMBOL_GPL(da903x_register_notifier);
 -
--int adp5520_unregister_notifier(struct device *dev, struct notifier_block *nb,
+-int da903x_unregister_notifier(struct device *dev, struct notifier_block *nb,
 -				unsigned int events)
 -{
--	struct adp5520_chip *chip = dev_get_drvdata(dev);
+-	struct da903x_chip *chip = dev_get_drvdata(dev);
 -
--	adp5520_clr_bits(chip->dev, ADP5520_INTERRUPT_ENABLE,
--		events & (ADP5520_KP_IEN | ADP5520_KR_IEN |
--		ADP5520_OVP_IEN | ADP5520_CMPR_IEN));
--
+-	chip->ops->mask_events(chip, events);
 -	return blocking_notifier_chain_unregister(&chip->notifier_list, nb);
 -}
--EXPORT_SYMBOL_GPL(adp5520_unregister_notifier);
+-EXPORT_SYMBOL_GPL(da903x_unregister_notifier);
 -
--static irqreturn_t adp5520_irq_thread(int irq, void *data)
+-int da903x_write(struct device *dev, int reg, uint8_t val)
 -{
--	struct adp5520_chip *chip = data;
--	unsigned int events;
--	uint8_t reg_val;
--	int ret;
+-	return __da903x_write(to_i2c_client(dev), reg, val);
+-}
+-EXPORT_SYMBOL_GPL(da903x_write);
 -
--	ret = __adp5520_read(chip->client, ADP5520_MODE_STATUS, &reg_val);
+-int da903x_writes(struct device *dev, int reg, int len, uint8_t *val)
+-{
+-	return __da903x_writes(to_i2c_client(dev), reg, len, val);
+-}
+-EXPORT_SYMBOL_GPL(da903x_writes);
+-
+-int da903x_read(struct device *dev, int reg, uint8_t *val)
+-{
+-	return __da903x_read(to_i2c_client(dev), reg, val);
+-}
+-EXPORT_SYMBOL_GPL(da903x_read);
+-
+-int da903x_reads(struct device *dev, int reg, int len, uint8_t *val)
+-{
+-	return __da903x_reads(to_i2c_client(dev), reg, len, val);
+-}
+-EXPORT_SYMBOL_GPL(da903x_reads);
+-
+-int da903x_set_bits(struct device *dev, int reg, uint8_t bit_mask)
+-{
+-	struct da903x_chip *chip = dev_get_drvdata(dev);
+-	uint8_t reg_val;
+-	int ret = 0;
+-
+-	mutex_lock(&chip->lock);
+-
+-	ret = __da903x_read(chip->client, reg, &reg_val);
 -	if (ret)
 -		goto out;
 -
--	events =  reg_val & (ADP5520_OVP_INT | ADP5520_CMPR_INT |
--		ADP5520_GPI_INT | ADP5520_KR_INT | ADP5520_KP_INT);
--
--	blocking_notifier_call_chain(&chip->notifier_list, events, NULL);
--	/* ACK, Sticky bits are W1C */
--	__adp5520_ack_bits(chip->client, ADP5520_MODE_STATUS, events);
--
+-	if ((reg_val & bit_mask) != bit_mask) {
+-		reg_val |= bit_mask;
+-		ret = __da903x_write(chip->client, reg, reg_val);
+-	}
 -out:
+-	mutex_unlock(&chip->lock);
+-	return ret;
+-}
+-EXPORT_SYMBOL_GPL(da903x_set_bits);
+-
+-int da903x_clr_bits(struct device *dev, int reg, uint8_t bit_mask)
+-{
+-	struct da903x_chip *chip = dev_get_drvdata(dev);
+-	uint8_t reg_val;
+-	int ret = 0;
+-
+-	mutex_lock(&chip->lock);
+-
+-	ret = __da903x_read(chip->client, reg, &reg_val);
+-	if (ret)
+-		goto out;
+-
+-	if (reg_val & bit_mask) {
+-		reg_val &= ~bit_mask;
+-		ret = __da903x_write(chip->client, reg, reg_val);
+-	}
+-out:
+-	mutex_unlock(&chip->lock);
+-	return ret;
+-}
+-EXPORT_SYMBOL_GPL(da903x_clr_bits);
+-
+-int da903x_update(struct device *dev, int reg, uint8_t val, uint8_t mask)
+-{
+-	struct da903x_chip *chip = dev_get_drvdata(dev);
+-	uint8_t reg_val;
+-	int ret = 0;
+-
+-	mutex_lock(&chip->lock);
+-
+-	ret = __da903x_read(chip->client, reg, &reg_val);
+-	if (ret)
+-		goto out;
+-
+-	if ((reg_val & mask) != val) {
+-		reg_val = (reg_val & ~mask) | val;
+-		ret = __da903x_write(chip->client, reg, reg_val);
+-	}
+-out:
+-	mutex_unlock(&chip->lock);
+-	return ret;
+-}
+-EXPORT_SYMBOL_GPL(da903x_update);
+-
+-int da903x_query_status(struct device *dev, unsigned int sbits)
+-{
+-	struct da903x_chip *chip = dev_get_drvdata(dev);
+-	unsigned int status = 0;
+-
+-	chip->ops->read_status(chip, &status);
+-	return ((status & sbits) == sbits);
+-}
+-EXPORT_SYMBOL(da903x_query_status);
+-
+-static int da9030_init_chip(struct da903x_chip *chip)
+-{
+-	uint8_t chip_id;
+-	int err;
+-
+-	err = __da903x_read(chip->client, DA9030_CHIP_ID, &chip_id);
+-	if (err)
+-		return err;
+-
+-	err = __da903x_write(chip->client, DA9030_SYS_CTRL_A, 0xE8);
+-	if (err)
+-		return err;
+-
+-	dev_info(chip->dev, "DA9030 (CHIP ID: 0x%02x) detected\n", chip_id);
+-	return 0;
+-}
+-
+-static int da9030_unmask_events(struct da903x_chip *chip, unsigned int events)
+-{
+-	uint8_t v[3];
+-
+-	chip->events_mask &= ~events;
+-
+-	v[0] = (chip->events_mask & 0xff);
+-	v[1] = (chip->events_mask >> 8) & 0xff;
+-	v[2] = (chip->events_mask >> 16) & 0xff;
+-
+-	return __da903x_writes(chip->client, DA9030_IRQ_MASK_A, 3, v);
+-}
+-
+-static int da9030_mask_events(struct da903x_chip *chip, unsigned int events)
+-{
+-	uint8_t v[3];
+-
+-	chip->events_mask |= events;
+-
+-	v[0] = (chip->events_mask & 0xff);
+-	v[1] = (chip->events_mask >> 8) & 0xff;
+-	v[2] = (chip->events_mask >> 16) & 0xff;
+-
+-	return __da903x_writes(chip->client, DA9030_IRQ_MASK_A, 3, v);
+-}
+-
+-static int da9030_read_events(struct da903x_chip *chip, unsigned int *events)
+-{
+-	uint8_t v[3] = {0, 0, 0};
+-	int ret;
+-
+-	ret = __da903x_reads(chip->client, DA9030_EVENT_A, 3, v);
+-	if (ret < 0)
+-		return ret;
+-
+-	*events = (v[2] << 16) | (v[1] << 8) | v[0];
+-	return 0;
+-}
+-
+-static int da9030_read_status(struct da903x_chip *chip, unsigned int *status)
+-{
+-	return __da903x_read(chip->client, DA9030_STATUS, (uint8_t *)status);
+-}
+-
+-static int da9034_init_chip(struct da903x_chip *chip)
+-{
+-	uint8_t chip_id;
+-	int err;
+-
+-	err = __da903x_read(chip->client, DA9034_CHIP_ID, &chip_id);
+-	if (err)
+-		return err;
+-
+-	err = __da903x_write(chip->client, DA9034_SYS_CTRL_A, 0xE8);
+-	if (err)
+-		return err;
+-
+-	/* avoid SRAM power off during sleep*/
+-	__da903x_write(chip->client, 0x10, 0x07);
+-	__da903x_write(chip->client, 0x11, 0xff);
+-	__da903x_write(chip->client, 0x12, 0xff);
+-
+-	/* Enable the ONKEY power down functionality */
+-	__da903x_write(chip->client, DA9034_SYS_CTRL_B, 0x20);
+-	__da903x_write(chip->client, DA9034_SYS_CTRL_A, 0x60);
+-
+-	/* workaround to make LEDs work */
+-	__da903x_write(chip->client, 0x90, 0x01);
+-	__da903x_write(chip->client, 0xB0, 0x08);
+-
+-	/* make ADTV1 and SDTV1 effective */
+-	__da903x_write(chip->client, 0x20, 0x00);
+-
+-	dev_info(chip->dev, "DA9034 (CHIP ID: 0x%02x) detected\n", chip_id);
+-	return 0;
+-}
+-
+-static int da9034_unmask_events(struct da903x_chip *chip, unsigned int events)
+-{
+-	uint8_t v[4];
+-
+-	chip->events_mask &= ~events;
+-
+-	v[0] = (chip->events_mask & 0xff);
+-	v[1] = (chip->events_mask >> 8) & 0xff;
+-	v[2] = (chip->events_mask >> 16) & 0xff;
+-	v[3] = (chip->events_mask >> 24) & 0xff;
+-
+-	return __da903x_writes(chip->client, DA9034_IRQ_MASK_A, 4, v);
+-}
+-
+-static int da9034_mask_events(struct da903x_chip *chip, unsigned int events)
+-{
+-	uint8_t v[4];
+-
+-	chip->events_mask |= events;
+-
+-	v[0] = (chip->events_mask & 0xff);
+-	v[1] = (chip->events_mask >> 8) & 0xff;
+-	v[2] = (chip->events_mask >> 16) & 0xff;
+-	v[3] = (chip->events_mask >> 24) & 0xff;
+-
+-	return __da903x_writes(chip->client, DA9034_IRQ_MASK_A, 4, v);
+-}
+-
+-static int da9034_read_events(struct da903x_chip *chip, unsigned int *events)
+-{
+-	uint8_t v[4] = {0, 0, 0, 0};
+-	int ret;
+-
+-	ret = __da903x_reads(chip->client, DA9034_EVENT_A, 4, v);
+-	if (ret < 0)
+-		return ret;
+-
+-	*events = (v[3] << 24) | (v[2] << 16) | (v[1] << 8) | v[0];
+-	return 0;
+-}
+-
+-static int da9034_read_status(struct da903x_chip *chip, unsigned int *status)
+-{
+-	uint8_t v[2] = {0, 0};
+-	int ret = 0;
+-
+-	ret = __da903x_reads(chip->client, DA9034_STATUS_A, 2, v);
+-	if (ret)
+-		return ret;
+-
+-	*status = (v[1] << 8) | v[0];
+-	return 0;
+-}
+-
+-static void da903x_irq_work(struct work_struct *work)
+-{
+-	struct da903x_chip *chip =
+-		container_of(work, struct da903x_chip, irq_work);
+-	unsigned int events = 0;
+-
+-	while (1) {
+-		if (chip->ops->read_events(chip, &events))
+-			break;
+-
+-		events &= ~chip->events_mask;
+-		if (events == 0)
+-			break;
+-
+-		blocking_notifier_call_chain(
+-				&chip->notifier_list, events, NULL);
+-	}
+-	enable_irq(chip->client->irq);
+-}
+-
+-static irqreturn_t da903x_irq_handler(int irq, void *data)
+-{
+-	struct da903x_chip *chip = data;
+-
+-	disable_irq_nosync(irq);
+-	(void)schedule_work(&chip->irq_work);
+-
 -	return IRQ_HANDLED;
 -}
+-
+-static const struct da903x_chip_ops da903x_ops[] = {
+-	[0] = {
+-		.init_chip	= da9030_init_chip,
+-		.unmask_events	= da9030_unmask_events,
+-		.mask_events	= da9030_mask_events,
+-		.read_events	= da9030_read_events,
+-		.read_status	= da9030_read_status,
+-	},
+-	[1] = {
+-		.init_chip	= da9034_init_chip,
+-		.unmask_events	= da9034_unmask_events,
+-		.mask_events	= da9034_mask_events,
+-		.read_events	= da9034_read_events,
+-		.read_status	= da9034_read_status,
+-	}
+-};
+-
+-static const struct i2c_device_id da903x_id_table[] = {
+-	{ "da9030", 0 },
+-	{ "da9034", 1 },
+-	{ },
+-};
+-MODULE_DEVICE_TABLE(i2c, da903x_id_table);
 -
 -static int __remove_subdev(struct device *dev, void *unused)
 -{
@@ -1095,879 +1237,1463 @@ index bd6f4965ebc8..000000000000
 -	return 0;
 -}
 -
--static int adp5520_remove_subdevs(struct adp5520_chip *chip)
+-static int da903x_remove_subdevs(struct da903x_chip *chip)
 -{
 -	return device_for_each_child(chip->dev, NULL, __remove_subdev);
 -}
 -
--static int adp5520_probe(struct i2c_client *client)
+-static int da903x_add_subdevs(struct da903x_chip *chip,
+-					struct da903x_platform_data *pdata)
 -{
--	const struct i2c_device_id *id = i2c_client_get_device_id(client);
--	struct adp5520_platform_data *pdata = dev_get_platdata(&client->dev);
+-	struct da903x_subdev_info *subdev;
 -	struct platform_device *pdev;
--	struct adp5520_chip *chip;
--	int ret;
+-	int i, ret = 0;
 -
--	if (!i2c_check_functionality(client->adapter,
--					I2C_FUNC_SMBUS_BYTE_DATA)) {
--		dev_err(&client->dev, "SMBUS Word Data not Supported\n");
--		return -EIO;
--	}
+-	for (i = 0; i < pdata->num_subdevs; i++) {
+-		subdev = &pdata->subdevs[i];
 -
--	if (pdata == NULL) {
--		dev_err(&client->dev, "missing platform data\n");
--		return -ENODEV;
--	}
+-		pdev = platform_device_alloc(subdev->name, subdev->id);
+-		if (!pdev) {
+-			ret = -ENOMEM;
+-			goto failed;
+-		}
 -
--	chip = devm_kzalloc(&client->dev, sizeof(*chip), GFP_KERNEL);
--	if (!chip)
--		return -ENOMEM;
+-		pdev->dev.parent = chip->dev;
+-		pdev->dev.platform_data = subdev->platform_data;
 -
--	i2c_set_clientdata(client, chip);
--	chip->client = client;
--
--	chip->dev = &client->dev;
--	chip->irq = client->irq;
--	chip->id = id->driver_data;
--	mutex_init(&chip->lock);
--
--	if (chip->irq) {
--		BLOCKING_INIT_NOTIFIER_HEAD(&chip->notifier_list);
--
--		ret = request_threaded_irq(chip->irq, NULL, adp5520_irq_thread,
--				IRQF_TRIGGER_LOW | IRQF_ONESHOT,
--				"adp5520", chip);
+-		ret = platform_device_add(pdev);
 -		if (ret) {
--			dev_err(&client->dev, "failed to request irq %d\n",
--					chip->irq);
--			return ret;
+-			platform_device_put(pdev);
+-			goto failed;
 -		}
 -	}
--
--	ret = adp5520_write(chip->dev, ADP5520_MODE_STATUS, ADP5520_nSTNBY);
--	if (ret) {
--		dev_err(&client->dev, "failed to write\n");
--		goto out_free_irq;
--	}
--
--	if (pdata->keys) {
--		pdev = platform_device_register_data(chip->dev, "adp5520-keys",
--				chip->id, pdata->keys, sizeof(*pdata->keys));
--		if (IS_ERR(pdev)) {
--			ret = PTR_ERR(pdev);
--			goto out_remove_subdevs;
--		}
--	}
--
--	if (pdata->gpio) {
--		pdev = platform_device_register_data(chip->dev, "adp5520-gpio",
--				chip->id, pdata->gpio, sizeof(*pdata->gpio));
--		if (IS_ERR(pdev)) {
--			ret = PTR_ERR(pdev);
--			goto out_remove_subdevs;
--		}
--	}
--
--	if (pdata->leds) {
--		pdev = platform_device_register_data(chip->dev, "adp5520-led",
--				chip->id, pdata->leds, sizeof(*pdata->leds));
--		if (IS_ERR(pdev)) {
--			ret = PTR_ERR(pdev);
--			goto out_remove_subdevs;
--		}
--	}
--
--	if (pdata->backlight) {
--		pdev = platform_device_register_data(chip->dev,
--						"adp5520-backlight",
--						chip->id,
--						pdata->backlight,
--						sizeof(*pdata->backlight));
--		if (IS_ERR(pdev)) {
--			ret = PTR_ERR(pdev);
--			goto out_remove_subdevs;
--		}
--	}
--
 -	return 0;
 -
--out_remove_subdevs:
--	adp5520_remove_subdevs(chip);
--
--out_free_irq:
--	if (chip->irq)
--		free_irq(chip->irq, chip);
--
+-failed:
+-	da903x_remove_subdevs(chip);
 -	return ret;
 -}
 -
--static int adp5520_suspend(struct device *dev)
+-static int da903x_probe(struct i2c_client *client)
 -{
--	struct i2c_client *client = to_i2c_client(dev);
--	struct adp5520_chip *chip = dev_get_drvdata(&client->dev);
+-	const struct i2c_device_id *id = i2c_client_get_device_id(client);
+-	struct da903x_platform_data *pdata = dev_get_platdata(&client->dev);
+-	struct da903x_chip *chip;
+-	unsigned int tmp;
+-	int ret;
 -
--	adp5520_read(chip->dev, ADP5520_MODE_STATUS, &chip->mode);
--	/* All other bits are W1C */
--	chip->mode &= ADP5520_BL_EN | ADP5520_DIM_EN | ADP5520_nSTNBY;
--	adp5520_write(chip->dev, ADP5520_MODE_STATUS, 0);
--	return 0;
+-	chip = devm_kzalloc(&client->dev, sizeof(struct da903x_chip),
+-				GFP_KERNEL);
+-	if (chip == NULL)
+-		return -ENOMEM;
+-
+-	chip->client = client;
+-	chip->dev = &client->dev;
+-	chip->ops = &da903x_ops[id->driver_data];
+-
+-	mutex_init(&chip->lock);
+-	INIT_WORK(&chip->irq_work, da903x_irq_work);
+-	BLOCKING_INIT_NOTIFIER_HEAD(&chip->notifier_list);
+-
+-	i2c_set_clientdata(client, chip);
+-
+-	ret = chip->ops->init_chip(chip);
+-	if (ret)
+-		return ret;
+-
+-	/* mask and clear all IRQs */
+-	chip->events_mask = 0xffffffff;
+-	chip->ops->mask_events(chip, chip->events_mask);
+-	chip->ops->read_events(chip, &tmp);
+-
+-	ret = devm_request_irq(&client->dev, client->irq, da903x_irq_handler,
+-			IRQF_TRIGGER_FALLING,
+-			"da903x", chip);
+-	if (ret) {
+-		dev_err(&client->dev, "failed to request irq %d\n",
+-				client->irq);
+-		return ret;
+-	}
+-
+-	return da903x_add_subdevs(chip, pdata);
 -}
 -
--static int adp5520_resume(struct device *dev)
+-static void da903x_remove(struct i2c_client *client)
 -{
--	struct i2c_client *client = to_i2c_client(dev);
--	struct adp5520_chip *chip = dev_get_drvdata(&client->dev);
+-	struct da903x_chip *chip = i2c_get_clientdata(client);
 -
--	adp5520_write(chip->dev, ADP5520_MODE_STATUS, chip->mode);
--	return 0;
+-	da903x_remove_subdevs(chip);
 -}
 -
--static DEFINE_SIMPLE_DEV_PM_OPS(adp5520_pm, adp5520_suspend, adp5520_resume);
--
--static const struct i2c_device_id adp5520_id[] = {
--	{ "pmic-adp5520", ID_ADP5520 },
--	{ "pmic-adp5501", ID_ADP5501 },
--	{ }
--};
--
--static struct i2c_driver adp5520_driver = {
--	.driver = {
--		.name			= "adp5520",
--		.pm			= pm_sleep_ptr(&adp5520_pm),
--		.suppress_bind_attrs	= true,
+-static struct i2c_driver da903x_driver = {
+-	.driver	= {
+-		.name	= "da903x",
 -	},
--	.probe		= adp5520_probe,
--	.id_table	= adp5520_id,
+-	.probe		= da903x_probe,
+-	.remove		= da903x_remove,
+-	.id_table	= da903x_id_table,
 -};
--builtin_i2c_driver(adp5520_driver);
+-
+-static int __init da903x_init(void)
+-{
+-	return i2c_add_driver(&da903x_driver);
+-}
+-subsys_initcall(da903x_init);
+-
+-static void __exit da903x_exit(void)
+-{
+-	i2c_del_driver(&da903x_driver);
+-}
+-module_exit(da903x_exit);
+-
+-MODULE_DESCRIPTION("PMIC Driver for Dialog Semiconductor DA9034");
+-MODULE_AUTHOR("Eric Miao <eric.miao@marvell.com>");
+-MODULE_AUTHOR("Mike Rapoport <mike@compulab.co.il>");
+diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
+index b89ef40df7f8..a492c86e879a 100644
+--- a/drivers/power/supply/Kconfig
++++ b/drivers/power/supply/Kconfig
+@@ -345,13 +345,6 @@ config BATTERY_BQ27XXX_DT_UPDATES_NVM
+ 	  general-purpose kernels, as this can cause misconfiguration of a
+ 	  smart battery with embedded NVM/flash.
+ 
+-config BATTERY_DA9030
+-	tristate "DA9030 battery driver"
+-	depends on PMIC_DA903X
+-	help
+-	  Say Y here to enable support for batteries charger integrated into
+-	  DA9030 PMIC.
+-
+ config BATTERY_DA9052
+ 	tristate "Dialog DA9052 Battery"
+ 	depends on PMIC_DA9052
+diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
+index f3c0d1006c1a..380546080112 100644
+--- a/drivers/power/supply/Makefile
++++ b/drivers/power/supply/Makefile
+@@ -52,7 +52,6 @@ obj-$(CONFIG_MANAGER_SBS)	+= sbs-manager.o
+ obj-$(CONFIG_BATTERY_BQ27XXX)	+= bq27xxx_battery.o
+ obj-$(CONFIG_BATTERY_BQ27XXX_I2C) += bq27xxx_battery_i2c.o
+ obj-$(CONFIG_BATTERY_BQ27XXX_HDQ) += bq27xxx_battery_hdq.o
+-obj-$(CONFIG_BATTERY_DA9030)	+= da9030_battery.o
+ obj-$(CONFIG_BATTERY_DA9052)	+= da9052-battery.o
+ obj-$(CONFIG_CHARGER_DA9150)	+= da9150-charger.o
+ obj-$(CONFIG_BATTERY_DA9150)	+= da9150-fg.o
+diff --git a/drivers/power/supply/da9030_battery.c b/drivers/power/supply/da9030_battery.c
+deleted file mode 100644
+index d25279c26030..000000000000
+--- a/drivers/power/supply/da9030_battery.c
++++ /dev/null
+@@ -1,581 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-only
+-/*
+- * Battery charger driver for Dialog Semiconductor DA9030
+- *
+- * Copyright (C) 2008 Compulab, Ltd.
+- * 	Mike Rapoport <mike@compulab.co.il>
+- */
+-
+-#include <linux/kernel.h>
+-#include <linux/slab.h>
+-#include <linux/init.h>
+-#include <linux/types.h>
+-#include <linux/device.h>
+-#include <linux/workqueue.h>
+-#include <linux/module.h>
+-#include <linux/platform_device.h>
+-#include <linux/power_supply.h>
+-#include <linux/string_choices.h>
+-#include <linux/mfd/da903x.h>
+-
+-#include <linux/debugfs.h>
+-#include <linux/seq_file.h>
+-#include <linux/notifier.h>
+-
+-#define DA9030_FAULT_LOG		0x0a
+-#define DA9030_FAULT_LOG_OVER_TEMP	(1 << 7)
+-#define DA9030_FAULT_LOG_VBAT_OVER	(1 << 4)
+-
+-#define DA9030_CHARGE_CONTROL		0x28
+-#define DA9030_CHRG_CHARGER_ENABLE	(1 << 7)
+-
+-#define DA9030_ADC_MAN_CONTROL		0x30
+-#define DA9030_ADC_TBATREF_ENABLE	(1 << 5)
+-#define DA9030_ADC_LDO_INT_ENABLE	(1 << 4)
+-
+-#define DA9030_ADC_AUTO_CONTROL		0x31
+-#define DA9030_ADC_TBAT_ENABLE		(1 << 5)
+-#define DA9030_ADC_VBAT_IN_TXON		(1 << 4)
+-#define DA9030_ADC_VCH_ENABLE		(1 << 3)
+-#define DA9030_ADC_ICH_ENABLE		(1 << 2)
+-#define DA9030_ADC_VBAT_ENABLE		(1 << 1)
+-#define DA9030_ADC_AUTO_SLEEP_ENABLE	(1 << 0)
+-
+-#define DA9030_VBATMON		0x32
+-#define DA9030_VBATMONTXON	0x33
+-#define DA9030_TBATHIGHP	0x34
+-#define DA9030_TBATHIGHN	0x35
+-#define DA9030_TBATLOW		0x36
+-
+-#define DA9030_VBAT_RES		0x41
+-#define DA9030_VBATMIN_RES	0x42
+-#define DA9030_VBATMINTXON_RES	0x43
+-#define DA9030_ICHMAX_RES	0x44
+-#define DA9030_ICHMIN_RES	0x45
+-#define DA9030_ICHAVERAGE_RES	0x46
+-#define DA9030_VCHMAX_RES	0x47
+-#define DA9030_VCHMIN_RES	0x48
+-#define DA9030_TBAT_RES		0x49
+-
+-struct da9030_adc_res {
+-	uint8_t vbat_res;
+-	uint8_t vbatmin_res;
+-	uint8_t vbatmintxon;
+-	uint8_t ichmax_res;
+-	uint8_t ichmin_res;
+-	uint8_t ichaverage_res;
+-	uint8_t vchmax_res;
+-	uint8_t vchmin_res;
+-	uint8_t tbat_res;
+-	uint8_t adc_in4_res;
+-	uint8_t adc_in5_res;
+-};
+-
+-struct da9030_battery_thresholds {
+-	int tbat_low;
+-	int tbat_high;
+-	int tbat_restart;
+-
+-	int vbat_low;
+-	int vbat_crit;
+-	int vbat_charge_start;
+-	int vbat_charge_stop;
+-	int vbat_charge_restart;
+-
+-	int vcharge_min;
+-	int vcharge_max;
+-};
+-
+-struct da9030_charger {
+-	struct power_supply *psy;
+-	struct power_supply_desc psy_desc;
+-
+-	struct device *master;
+-
+-	struct da9030_adc_res adc;
+-	struct delayed_work work;
+-	unsigned int interval;
+-
+-	struct power_supply_info *battery_info;
+-
+-	struct da9030_battery_thresholds thresholds;
+-
+-	unsigned int charge_milliamp;
+-	unsigned int charge_millivolt;
+-
+-	/* charger status */
+-	bool chdet;
+-	uint8_t fault;
+-	int mA;
+-	int mV;
+-	bool is_on;
+-
+-	struct notifier_block nb;
+-
+-	/* platform callbacks for battery low and critical events */
+-	void (*battery_low)(void);
+-	void (*battery_critical)(void);
+-
+-	struct dentry *debug_file;
+-};
+-
+-static inline int da9030_reg_to_mV(int reg)
+-{
+-	return ((reg * 2650) >> 8) + 2650;
+-}
+-
+-static inline int da9030_millivolt_to_reg(int mV)
+-{
+-	return ((mV - 2650) << 8) / 2650;
+-}
+-
+-static inline int da9030_reg_to_mA(int reg)
+-{
+-	return ((reg * 24000) >> 8) / 15;
+-}
+-
+-#ifdef CONFIG_DEBUG_FS
+-static int bat_debug_show(struct seq_file *s, void *data)
+-{
+-	struct da9030_charger *charger = s->private;
+-
+-	seq_printf(s, "charger is %s\n", str_on_off(charger->is_on));
+-	if (charger->chdet) {
+-		seq_printf(s, "iset = %dmA, vset = %dmV\n",
+-			   charger->mA, charger->mV);
+-	}
+-
+-	seq_printf(s, "vbat_res = %d (%dmV)\n",
+-		   charger->adc.vbat_res,
+-		   da9030_reg_to_mV(charger->adc.vbat_res));
+-	seq_printf(s, "vbatmin_res = %d (%dmV)\n",
+-		   charger->adc.vbatmin_res,
+-		   da9030_reg_to_mV(charger->adc.vbatmin_res));
+-	seq_printf(s, "vbatmintxon = %d (%dmV)\n",
+-		   charger->adc.vbatmintxon,
+-		   da9030_reg_to_mV(charger->adc.vbatmintxon));
+-	seq_printf(s, "ichmax_res = %d (%dmA)\n",
+-		   charger->adc.ichmax_res,
+-		   da9030_reg_to_mV(charger->adc.ichmax_res));
+-	seq_printf(s, "ichmin_res = %d (%dmA)\n",
+-		   charger->adc.ichmin_res,
+-		   da9030_reg_to_mA(charger->adc.ichmin_res));
+-	seq_printf(s, "ichaverage_res = %d (%dmA)\n",
+-		   charger->adc.ichaverage_res,
+-		   da9030_reg_to_mA(charger->adc.ichaverage_res));
+-	seq_printf(s, "vchmax_res = %d (%dmV)\n",
+-		   charger->adc.vchmax_res,
+-		   da9030_reg_to_mA(charger->adc.vchmax_res));
+-	seq_printf(s, "vchmin_res = %d (%dmV)\n",
+-		   charger->adc.vchmin_res,
+-		   da9030_reg_to_mV(charger->adc.vchmin_res));
+-
+-	return 0;
+-}
+-
+-DEFINE_SHOW_ATTRIBUTE(bat_debug);
+-
+-static struct dentry *da9030_bat_create_debugfs(struct da9030_charger *charger)
+-{
+-	charger->debug_file = debugfs_create_file("charger", 0666, NULL,
+-						  charger, &bat_debug_fops);
+-	return charger->debug_file;
+-}
+-
+-static void da9030_bat_remove_debugfs(struct da9030_charger *charger)
+-{
+-	debugfs_remove(charger->debug_file);
+-}
+-#else
+-static inline struct dentry *da9030_bat_create_debugfs(struct da9030_charger *charger)
+-{
+-	return NULL;
+-}
+-static inline void da9030_bat_remove_debugfs(struct da9030_charger *charger)
+-{
+-}
+-#endif
+-
+-static inline void da9030_read_adc(struct da9030_charger *charger,
+-				   struct da9030_adc_res *adc)
+-{
+-	da903x_reads(charger->master, DA9030_VBAT_RES,
+-		     sizeof(*adc), (uint8_t *)adc);
+-}
+-
+-static void da9030_charger_update_state(struct da9030_charger *charger)
+-{
+-	uint8_t val;
+-
+-	da903x_read(charger->master, DA9030_CHARGE_CONTROL, &val);
+-	charger->is_on = (val & DA9030_CHRG_CHARGER_ENABLE) ? 1 : 0;
+-	charger->mA = ((val >> 3) & 0xf) * 100;
+-	charger->mV = (val & 0x7) * 50 + 4000;
+-
+-	da9030_read_adc(charger, &charger->adc);
+-	da903x_read(charger->master, DA9030_FAULT_LOG, &charger->fault);
+-	charger->chdet = da903x_query_status(charger->master,
+-						     DA9030_STATUS_CHDET);
+-}
+-
+-static void da9030_set_charge(struct da9030_charger *charger, int on)
+-{
+-	uint8_t val;
+-
+-	if (on) {
+-		val = DA9030_CHRG_CHARGER_ENABLE;
+-		val |= (charger->charge_milliamp / 100) << 3;
+-		val |= (charger->charge_millivolt - 4000) / 50;
+-		charger->is_on = 1;
+-	} else {
+-		val = 0;
+-		charger->is_on = 0;
+-	}
+-
+-	da903x_write(charger->master, DA9030_CHARGE_CONTROL, val);
+-
+-	power_supply_changed(charger->psy);
+-}
+-
+-static void da9030_charger_check_state(struct da9030_charger *charger)
+-{
+-	da9030_charger_update_state(charger);
+-
+-	/* we wake or boot with external power on */
+-	if (!charger->is_on) {
+-		if ((charger->chdet) &&
+-		    (charger->adc.vbat_res <
+-		     charger->thresholds.vbat_charge_start)) {
+-			da9030_set_charge(charger, 1);
+-		}
+-	} else {
+-		/* Charger has been pulled out */
+-		if (!charger->chdet) {
+-			da9030_set_charge(charger, 0);
+-			return;
+-		}
+-
+-		if (charger->adc.vbat_res >=
+-		    charger->thresholds.vbat_charge_stop) {
+-			da9030_set_charge(charger, 0);
+-			da903x_write(charger->master, DA9030_VBATMON,
+-				       charger->thresholds.vbat_charge_restart);
+-		} else if (charger->adc.vbat_res >
+-			   charger->thresholds.vbat_low) {
+-			/* we are charging and passed LOW_THRESH,
+-			   so upate DA9030 VBAT threshold
+-			 */
+-			da903x_write(charger->master, DA9030_VBATMON,
+-				     charger->thresholds.vbat_low);
+-		}
+-		if (charger->adc.vchmax_res > charger->thresholds.vcharge_max ||
+-		    charger->adc.vchmin_res < charger->thresholds.vcharge_min ||
+-		    /* Temperature readings are negative */
+-		    charger->adc.tbat_res < charger->thresholds.tbat_high ||
+-		    charger->adc.tbat_res > charger->thresholds.tbat_low) {
+-			/* disable charger */
+-			da9030_set_charge(charger, 0);
+-		}
+-	}
+-}
+-
+-static void da9030_charging_monitor(struct work_struct *work)
+-{
+-	struct da9030_charger *charger;
+-
+-	charger = container_of(work, struct da9030_charger, work.work);
+-
+-	da9030_charger_check_state(charger);
+-
+-	/* reschedule for the next time */
+-	schedule_delayed_work(&charger->work, charger->interval);
+-}
+-
+-static enum power_supply_property da9030_battery_props[] = {
+-	POWER_SUPPLY_PROP_MODEL_NAME,
+-	POWER_SUPPLY_PROP_STATUS,
+-	POWER_SUPPLY_PROP_HEALTH,
+-	POWER_SUPPLY_PROP_TECHNOLOGY,
+-	POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN,
+-	POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN,
+-	POWER_SUPPLY_PROP_VOLTAGE_NOW,
+-	POWER_SUPPLY_PROP_CURRENT_AVG,
+-};
+-
+-static void da9030_battery_check_status(struct da9030_charger *charger,
+-				    union power_supply_propval *val)
+-{
+-	if (charger->chdet) {
+-		if (charger->is_on)
+-			val->intval = POWER_SUPPLY_STATUS_CHARGING;
+-		else
+-			val->intval = POWER_SUPPLY_STATUS_NOT_CHARGING;
+-	} else {
+-		val->intval = POWER_SUPPLY_STATUS_DISCHARGING;
+-	}
+-}
+-
+-static void da9030_battery_check_health(struct da9030_charger *charger,
+-				    union power_supply_propval *val)
+-{
+-	if (charger->fault & DA9030_FAULT_LOG_OVER_TEMP)
+-		val->intval = POWER_SUPPLY_HEALTH_OVERHEAT;
+-	else if (charger->fault & DA9030_FAULT_LOG_VBAT_OVER)
+-		val->intval = POWER_SUPPLY_HEALTH_OVERVOLTAGE;
+-	else
+-		val->intval = POWER_SUPPLY_HEALTH_GOOD;
+-}
+-
+-static int da9030_battery_get_property(struct power_supply *psy,
+-				   enum power_supply_property psp,
+-				   union power_supply_propval *val)
+-{
+-	struct da9030_charger *charger = power_supply_get_drvdata(psy);
+-
+-	switch (psp) {
+-	case POWER_SUPPLY_PROP_STATUS:
+-		da9030_battery_check_status(charger, val);
+-		break;
+-	case POWER_SUPPLY_PROP_HEALTH:
+-		da9030_battery_check_health(charger, val);
+-		break;
+-	case POWER_SUPPLY_PROP_TECHNOLOGY:
+-		val->intval = charger->battery_info->technology;
+-		break;
+-	case POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN:
+-		val->intval = charger->battery_info->voltage_max_design;
+-		break;
+-	case POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN:
+-		val->intval = charger->battery_info->voltage_min_design;
+-		break;
+-	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
+-		val->intval = da9030_reg_to_mV(charger->adc.vbat_res) * 1000;
+-		break;
+-	case POWER_SUPPLY_PROP_CURRENT_AVG:
+-		val->intval =
+-			da9030_reg_to_mA(charger->adc.ichaverage_res) * 1000;
+-		break;
+-	case POWER_SUPPLY_PROP_MODEL_NAME:
+-		val->strval = charger->battery_info->name;
+-		break;
+-	default:
+-		break;
+-	}
+-
+-	return 0;
+-}
+-
+-static void da9030_battery_vbat_event(struct da9030_charger *charger)
+-{
+-	da9030_read_adc(charger, &charger->adc);
+-
+-	if (charger->is_on)
+-		return;
+-
+-	if (charger->adc.vbat_res < charger->thresholds.vbat_low) {
+-		/* set VBAT threshold for critical */
+-		da903x_write(charger->master, DA9030_VBATMON,
+-			     charger->thresholds.vbat_crit);
+-		if (charger->battery_low)
+-			charger->battery_low();
+-	} else if (charger->adc.vbat_res <
+-		   charger->thresholds.vbat_crit) {
+-		/* notify the system of battery critical */
+-		if (charger->battery_critical)
+-			charger->battery_critical();
+-	}
+-}
+-
+-static int da9030_battery_event(struct notifier_block *nb, unsigned long event,
+-				void *data)
+-{
+-	struct da9030_charger *charger =
+-		container_of(nb, struct da9030_charger, nb);
+-
+-	switch (event) {
+-	case DA9030_EVENT_CHDET:
+-		cancel_delayed_work_sync(&charger->work);
+-		schedule_work(&charger->work.work);
+-		break;
+-	case DA9030_EVENT_VBATMON:
+-		da9030_battery_vbat_event(charger);
+-		break;
+-	case DA9030_EVENT_CHIOVER:
+-	case DA9030_EVENT_TBAT:
+-		da9030_set_charge(charger, 0);
+-		break;
+-	}
+-
+-	return 0;
+-}
+-
+-static void da9030_battery_convert_thresholds(struct da9030_charger *charger,
+-					      struct da9030_battery_info *pdata)
+-{
+-	charger->thresholds.tbat_low = pdata->tbat_low;
+-	charger->thresholds.tbat_high = pdata->tbat_high;
+-	charger->thresholds.tbat_restart  = pdata->tbat_restart;
+-
+-	charger->thresholds.vbat_low =
+-		da9030_millivolt_to_reg(pdata->vbat_low);
+-	charger->thresholds.vbat_crit =
+-		da9030_millivolt_to_reg(pdata->vbat_crit);
+-	charger->thresholds.vbat_charge_start =
+-		da9030_millivolt_to_reg(pdata->vbat_charge_start);
+-	charger->thresholds.vbat_charge_stop =
+-		da9030_millivolt_to_reg(pdata->vbat_charge_stop);
+-	charger->thresholds.vbat_charge_restart =
+-		da9030_millivolt_to_reg(pdata->vbat_charge_restart);
+-
+-	charger->thresholds.vcharge_min =
+-		da9030_millivolt_to_reg(pdata->vcharge_min);
+-	charger->thresholds.vcharge_max =
+-		da9030_millivolt_to_reg(pdata->vcharge_max);
+-}
+-
+-static void da9030_battery_setup_psy(struct da9030_charger *charger)
+-{
+-	struct power_supply_desc *psy_desc = &charger->psy_desc;
+-	struct power_supply_info *info = charger->battery_info;
+-
+-	psy_desc->name = info->name;
+-	psy_desc->use_for_apm = info->use_for_apm;
+-	psy_desc->type = POWER_SUPPLY_TYPE_BATTERY;
+-	psy_desc->get_property = da9030_battery_get_property;
+-
+-	psy_desc->properties = da9030_battery_props;
+-	psy_desc->num_properties = ARRAY_SIZE(da9030_battery_props);
+-};
+-
+-static int da9030_battery_charger_init(struct da9030_charger *charger)
+-{
+-	char v[5];
+-	int ret;
+-
+-	v[0] = v[1] = charger->thresholds.vbat_low;
+-	v[2] = charger->thresholds.tbat_high;
+-	v[3] = charger->thresholds.tbat_restart;
+-	v[4] = charger->thresholds.tbat_low;
+-
+-	ret = da903x_writes(charger->master, DA9030_VBATMON, 5, v);
+-	if (ret)
+-		return ret;
+-
+-	/*
+-	 * Enable reference voltage supply for ADC from the LDO_INTERNAL
+-	 * regulator. Must be set before ADC measurements can be made.
+-	 */
+-	ret = da903x_write(charger->master, DA9030_ADC_MAN_CONTROL,
+-			   DA9030_ADC_LDO_INT_ENABLE |
+-			   DA9030_ADC_TBATREF_ENABLE);
+-	if (ret)
+-		return ret;
+-
+-	/* enable auto ADC measurements */
+-	return da903x_write(charger->master, DA9030_ADC_AUTO_CONTROL,
+-			    DA9030_ADC_TBAT_ENABLE | DA9030_ADC_VBAT_IN_TXON |
+-			    DA9030_ADC_VCH_ENABLE | DA9030_ADC_ICH_ENABLE |
+-			    DA9030_ADC_VBAT_ENABLE |
+-			    DA9030_ADC_AUTO_SLEEP_ENABLE);
+-}
+-
+-static int da9030_battery_probe(struct platform_device *pdev)
+-{
+-	struct da9030_charger *charger;
+-	struct power_supply_config psy_cfg = {};
+-	struct da9030_battery_info *pdata = pdev->dev.platform_data;
+-	int ret;
+-
+-	if (pdata == NULL)
+-		return -EINVAL;
+-
+-	if (pdata->charge_milliamp >= 1500 ||
+-	    pdata->charge_millivolt < 4000 ||
+-	    pdata->charge_millivolt > 4350)
+-		return -EINVAL;
+-
+-	charger = devm_kzalloc(&pdev->dev, sizeof(*charger), GFP_KERNEL);
+-	if (charger == NULL)
+-		return -ENOMEM;
+-
+-	charger->master = pdev->dev.parent;
+-
+-	/* 10 seconds between monitor runs unless platform defines other
+-	   interval */
+-	charger->interval = secs_to_jiffies(pdata->batmon_interval ? : 10);
+-
+-	charger->charge_milliamp = pdata->charge_milliamp;
+-	charger->charge_millivolt = pdata->charge_millivolt;
+-	charger->battery_info = pdata->battery_info;
+-	charger->battery_low = pdata->battery_low;
+-	charger->battery_critical = pdata->battery_critical;
+-
+-	da9030_battery_convert_thresholds(charger, pdata);
+-
+-	ret = da9030_battery_charger_init(charger);
+-	if (ret)
+-		goto err_charger_init;
+-
+-	INIT_DELAYED_WORK(&charger->work, da9030_charging_monitor);
+-	schedule_delayed_work(&charger->work, charger->interval);
+-
+-	charger->nb.notifier_call = da9030_battery_event;
+-	ret = da903x_register_notifier(charger->master, &charger->nb,
+-				       DA9030_EVENT_CHDET |
+-				       DA9030_EVENT_VBATMON |
+-				       DA9030_EVENT_CHIOVER |
+-				       DA9030_EVENT_TBAT);
+-	if (ret)
+-		goto err_notifier;
+-
+-	da9030_battery_setup_psy(charger);
+-	psy_cfg.drv_data = charger;
+-	charger->psy = devm_power_supply_register(&pdev->dev,
+-						  &charger->psy_desc,
+-						  &psy_cfg);
+-	if (IS_ERR(charger->psy)) {
+-		ret = PTR_ERR(charger->psy);
+-		goto err_ps_register;
+-	}
+-
+-	charger->debug_file = da9030_bat_create_debugfs(charger);
+-	platform_set_drvdata(pdev, charger);
+-	return 0;
+-
+-err_ps_register:
+-	da903x_unregister_notifier(charger->master, &charger->nb,
+-				   DA9030_EVENT_CHDET | DA9030_EVENT_VBATMON |
+-				   DA9030_EVENT_CHIOVER | DA9030_EVENT_TBAT);
+-err_notifier:
+-	cancel_delayed_work(&charger->work);
+-
+-err_charger_init:
+-	return ret;
+-}
+-
+-static void da9030_battery_remove(struct platform_device *dev)
+-{
+-	struct da9030_charger *charger = platform_get_drvdata(dev);
+-
+-	da9030_bat_remove_debugfs(charger);
+-
+-	da903x_unregister_notifier(charger->master, &charger->nb,
+-				   DA9030_EVENT_CHDET | DA9030_EVENT_VBATMON |
+-				   DA9030_EVENT_CHIOVER | DA9030_EVENT_TBAT);
+-	cancel_delayed_work_sync(&charger->work);
+-	da9030_set_charge(charger, 0);
+-}
+-
+-static struct platform_driver da903x_battery_driver = {
+-	.driver	= {
+-		.name	= "da903x-battery",
+-	},
+-	.probe = da9030_battery_probe,
+-	.remove = da9030_battery_remove,
+-};
+-
+-module_platform_driver(da903x_battery_driver);
+-
+-MODULE_DESCRIPTION("DA9030 battery charger driver");
+-MODULE_AUTHOR("Mike Rapoport, CompuLab");
+-MODULE_LICENSE("GPL");
+diff --git a/drivers/regulator/Kconfig b/drivers/regulator/Kconfig
+index 4869a1d5041b..7d587ffc0a89 100644
+--- a/drivers/regulator/Kconfig
++++ b/drivers/regulator/Kconfig
+@@ -312,14 +312,6 @@ config REGULATOR_CROS_EC
+ 	  This driver can also be built as a module. If so, the module
+ 	  will be called cros-ec-regulator.
+ 
+-config REGULATOR_DA903X
+-	tristate "Dialog Semiconductor DA9030/DA9034 regulators"
+-	depends on PMIC_DA903X
+-	depends on !CC_IS_CLANG # https://llvm.org/pr38789
+-	help
+-	  Say y here to support the BUCKs and LDOs regulators found on
+-	  Dialog Semiconductor DA9030/DA9034 PMIC.
+-
+ config REGULATOR_DA9052
+ 	tristate "Dialog Semiconductor DA9052/DA9053 regulators"
+ 	depends on PMIC_DA9052
+diff --git a/drivers/regulator/Makefile b/drivers/regulator/Makefile
+index 86b5afcc974e..a1344d3c3fd3 100644
+--- a/drivers/regulator/Makefile
++++ b/drivers/regulator/Makefile
+@@ -38,7 +38,6 @@ obj-$(CONFIG_REGULATOR_BD718XX) += bd718x7-regulator.o
+ obj-$(CONFIG_REGULATOR_BD9571MWV) += bd9571mwv-regulator.o
+ obj-$(CONFIG_REGULATOR_BD957XMUF) += bd9576-regulator.o
+ obj-$(CONFIG_REGULATOR_BQ257XX) += bq257xx-regulator.o
+-obj-$(CONFIG_REGULATOR_DA903X)	+= da903x-regulator.o
+ obj-$(CONFIG_REGULATOR_BD96801) += bd96801-regulator.o
+ obj-$(CONFIG_REGULATOR_DA9052)	+= da9052-regulator.o
+ obj-$(CONFIG_REGULATOR_DA9055)	+= da9055-regulator.o
+diff --git a/drivers/regulator/da903x-regulator.c b/drivers/regulator/da903x-regulator.c
+deleted file mode 100644
+index 2f85897183b3..000000000000
+--- a/drivers/regulator/da903x-regulator.c
++++ /dev/null
+@@ -1,495 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0
+-//
+-// Regulators driver for Dialog Semiconductor DA903x
+-//
+-// Copyright (C) 2006-2008 Marvell International Ltd.
+-// Copyright (C) 2008 Compulab Ltd.
+-
+-#include <linux/kernel.h>
+-#include <linux/init.h>
+-#include <linux/err.h>
+-#include <linux/module.h>
+-#include <linux/platform_device.h>
+-#include <linux/regulator/driver.h>
+-#include <linux/regulator/machine.h>
+-#include <linux/mfd/da903x.h>
+-
+-/* DA9030 Registers */
+-#define DA9030_INVAL		(-1)
+-#define DA9030_LDO1011		(0x10)
+-#define DA9030_LDO15		(0x11)
+-#define DA9030_LDO1416		(0x12)
+-#define DA9030_LDO1819		(0x13)
+-#define DA9030_LDO17		(0x14)
+-#define DA9030_BUCK2DVM1	(0x15)
+-#define DA9030_BUCK2DVM2	(0x16)
+-#define DA9030_RCTL11		(0x17)
+-#define DA9030_RCTL21		(0x18)
+-#define DA9030_LDO1		(0x90)
+-#define DA9030_LDO23		(0x91)
+-#define DA9030_LDO45		(0x92)
+-#define DA9030_LDO6		(0x93)
+-#define DA9030_LDO78		(0x94)
+-#define DA9030_LDO912		(0x95)
+-#define DA9030_BUCK		(0x96)
+-#define DA9030_RCTL12		(0x97)
+-#define DA9030_RCTL22		(0x98)
+-#define DA9030_LDO_UNLOCK	(0xa0)
+-#define DA9030_LDO_UNLOCK_MASK	(0xe0)
+-#define DA9034_OVER1		(0x10)
+-
+-/* DA9034 Registers */
+-#define DA9034_INVAL		(-1)
+-#define DA9034_OVER2		(0x11)
+-#define DA9034_OVER3		(0x12)
+-#define DA9034_LDO643		(0x13)
+-#define DA9034_LDO987		(0x14)
+-#define DA9034_LDO1110		(0x15)
+-#define DA9034_LDO1312		(0x16)
+-#define DA9034_LDO1514		(0x17)
+-#define DA9034_VCC1		(0x20)
+-#define DA9034_ADTV1		(0x23)
+-#define DA9034_ADTV2		(0x24)
+-#define DA9034_AVRC		(0x25)
+-#define DA9034_CDTV1		(0x26)
+-#define DA9034_CDTV2		(0x27)
+-#define DA9034_CVRC		(0x28)
+-#define DA9034_SDTV1		(0x29)
+-#define DA9034_SDTV2		(0x2a)
+-#define DA9034_SVRC		(0x2b)
+-#define DA9034_MDTV1		(0x32)
+-#define DA9034_MDTV2		(0x33)
+-#define DA9034_MVRC		(0x34)
+-
+-/* DA9035 Registers. DA9034 Registers are compatible to DA9035. */
+-#define DA9035_OVER3		(0x12)
+-#define DA9035_VCC2		(0x1f)
+-#define DA9035_3DTV1		(0x2c)
+-#define DA9035_3DTV2		(0x2d)
+-#define DA9035_3VRC		(0x2e)
+-#define DA9035_AUTOSKIP		(0x2f)
+-
+-struct da903x_regulator_info {
+-	struct regulator_desc desc;
+-
+-	int	max_uV;
+-	int	vol_reg;
+-	int	vol_shift;
+-	int	vol_nbits;
+-	int	update_reg;
+-	int	update_bit;
+-	int	enable_reg;
+-	int	enable_bit;
+-};
+-
+-static inline struct device *to_da903x_dev(struct regulator_dev *rdev)
+-{
+-	return rdev_get_dev(rdev)->parent->parent;
+-}
+-
+-static inline int check_range(struct da903x_regulator_info *info,
+-				int min_uV, int max_uV)
+-{
+-	if (min_uV < info->desc.min_uV || min_uV > info->max_uV)
+-		return -EINVAL;
+-
+-	return 0;
+-}
+-
+-/* DA9030/DA9034 common operations */
+-static int da903x_set_voltage_sel(struct regulator_dev *rdev, unsigned selector)
+-{
+-	struct da903x_regulator_info *info = rdev_get_drvdata(rdev);
+-	struct device *da9034_dev = to_da903x_dev(rdev);
+-	uint8_t val, mask;
+-
+-	if (rdev->desc->n_voltages == 1)
+-		return -EINVAL;
+-
+-	val = selector << info->vol_shift;
+-	mask = ((1 << info->vol_nbits) - 1)  << info->vol_shift;
+-
+-	return da903x_update(da9034_dev, info->vol_reg, val, mask);
+-}
+-
+-static int da903x_get_voltage_sel(struct regulator_dev *rdev)
+-{
+-	struct da903x_regulator_info *info = rdev_get_drvdata(rdev);
+-	struct device *da9034_dev = to_da903x_dev(rdev);
+-	uint8_t val, mask;
+-	int ret;
+-
+-	if (rdev->desc->n_voltages == 1)
+-		return 0;
+-
+-	ret = da903x_read(da9034_dev, info->vol_reg, &val);
+-	if (ret)
+-		return ret;
+-
+-	mask = ((1 << info->vol_nbits) - 1)  << info->vol_shift;
+-	val = (val & mask) >> info->vol_shift;
+-
+-	return val;
+-}
+-
+-static int da903x_enable(struct regulator_dev *rdev)
+-{
+-	struct da903x_regulator_info *info = rdev_get_drvdata(rdev);
+-	struct device *da9034_dev = to_da903x_dev(rdev);
+-
+-	return da903x_set_bits(da9034_dev, info->enable_reg,
+-					1 << info->enable_bit);
+-}
+-
+-static int da903x_disable(struct regulator_dev *rdev)
+-{
+-	struct da903x_regulator_info *info = rdev_get_drvdata(rdev);
+-	struct device *da9034_dev = to_da903x_dev(rdev);
+-
+-	return da903x_clr_bits(da9034_dev, info->enable_reg,
+-					1 << info->enable_bit);
+-}
+-
+-static int da903x_is_enabled(struct regulator_dev *rdev)
+-{
+-	struct da903x_regulator_info *info = rdev_get_drvdata(rdev);
+-	struct device *da9034_dev = to_da903x_dev(rdev);
+-	uint8_t reg_val;
+-	int ret;
+-
+-	ret = da903x_read(da9034_dev, info->enable_reg, &reg_val);
+-	if (ret)
+-		return ret;
+-
+-	return !!(reg_val & (1 << info->enable_bit));
+-}
+-
+-/* DA9030 specific operations */
+-static int da9030_set_ldo1_15_voltage_sel(struct regulator_dev *rdev,
+-					  unsigned selector)
+-{
+-	struct da903x_regulator_info *info = rdev_get_drvdata(rdev);
+-	struct device *da903x_dev = to_da903x_dev(rdev);
+-	uint8_t val, mask;
+-	int ret;
+-
+-	val = selector << info->vol_shift;
+-	mask = ((1 << info->vol_nbits) - 1)  << info->vol_shift;
+-	val |= DA9030_LDO_UNLOCK; /* have to set UNLOCK bits */
+-	mask |= DA9030_LDO_UNLOCK_MASK;
+-
+-	/* write twice */
+-	ret = da903x_update(da903x_dev, info->vol_reg, val, mask);
+-	if (ret)
+-		return ret;
+-
+-	return da903x_update(da903x_dev, info->vol_reg, val, mask);
+-}
+-
+-static int da9030_map_ldo14_voltage(struct regulator_dev *rdev,
+-				    int min_uV, int max_uV)
+-{
+-	struct da903x_regulator_info *info = rdev_get_drvdata(rdev);
+-	int thresh, sel;
+-
+-	if (check_range(info, min_uV, max_uV)) {
+-		pr_err("invalid voltage range (%d, %d) uV\n", min_uV, max_uV);
+-		return -EINVAL;
+-	}
+-
+-	thresh = (info->max_uV + info->desc.min_uV) / 2;
+-	if (min_uV < thresh) {
+-		sel = DIV_ROUND_UP(thresh - min_uV, info->desc.uV_step);
+-		sel |= 0x4;
+-	} else {
+-		sel = DIV_ROUND_UP(min_uV - thresh, info->desc.uV_step);
+-	}
+-
+-	return sel;
+-}
+-
+-static int da9030_list_ldo14_voltage(struct regulator_dev *rdev,
+-				     unsigned selector)
+-{
+-	struct da903x_regulator_info *info = rdev_get_drvdata(rdev);
+-	int volt;
+-
+-	if (selector & 0x4)
+-		volt = rdev->desc->min_uV +
+-		       rdev->desc->uV_step * (3 - (selector & ~0x4));
+-	else
+-		volt = (info->max_uV + rdev->desc->min_uV) / 2 +
+-		       rdev->desc->uV_step * (selector & ~0x4);
+-
+-	if (volt > info->max_uV)
+-		return -EINVAL;
+-
+-	return volt;
+-}
+-
+-/* DA9034 specific operations */
+-static int da9034_set_dvc_voltage_sel(struct regulator_dev *rdev,
+-				      unsigned selector)
+-{
+-	struct da903x_regulator_info *info = rdev_get_drvdata(rdev);
+-	struct device *da9034_dev = to_da903x_dev(rdev);
+-	uint8_t val, mask;
+-	int ret;
+-
+-	val = selector << info->vol_shift;
+-	mask = ((1 << info->vol_nbits) - 1)  << info->vol_shift;
+-
+-	ret = da903x_update(da9034_dev, info->vol_reg, val, mask);
+-	if (ret)
+-		return ret;
+-
+-	ret = da903x_set_bits(da9034_dev, info->update_reg,
+-					1 << info->update_bit);
+-	return ret;
+-}
+-
+-static const struct linear_range da9034_ldo12_ranges[] = {
+-	REGULATOR_LINEAR_RANGE(1700000, 0, 7, 50000),
+-	REGULATOR_LINEAR_RANGE(2700000, 8, 15, 50000),
+-};
+-
+-static const struct regulator_ops da903x_regulator_ldo_ops = {
+-	.set_voltage_sel = da903x_set_voltage_sel,
+-	.get_voltage_sel = da903x_get_voltage_sel,
+-	.list_voltage	= regulator_list_voltage_linear,
+-	.map_voltage	= regulator_map_voltage_linear,
+-	.enable		= da903x_enable,
+-	.disable	= da903x_disable,
+-	.is_enabled	= da903x_is_enabled,
+-};
+-
+-/* NOTE: this is dedicated for the insane DA9030 LDO14 */
+-static const struct regulator_ops da9030_regulator_ldo14_ops = {
+-	.set_voltage_sel = da903x_set_voltage_sel,
+-	.get_voltage_sel = da903x_get_voltage_sel,
+-	.list_voltage	= da9030_list_ldo14_voltage,
+-	.map_voltage	= da9030_map_ldo14_voltage,
+-	.enable		= da903x_enable,
+-	.disable	= da903x_disable,
+-	.is_enabled	= da903x_is_enabled,
+-};
+-
+-/* NOTE: this is dedicated for the DA9030 LDO1 and LDO15 that have locks  */
+-static const struct regulator_ops da9030_regulator_ldo1_15_ops = {
+-	.set_voltage_sel = da9030_set_ldo1_15_voltage_sel,
+-	.get_voltage_sel = da903x_get_voltage_sel,
+-	.list_voltage	= regulator_list_voltage_linear,
+-	.map_voltage	= regulator_map_voltage_linear,
+-	.enable		= da903x_enable,
+-	.disable	= da903x_disable,
+-	.is_enabled	= da903x_is_enabled,
+-};
+-
+-static const struct regulator_ops da9034_regulator_dvc_ops = {
+-	.set_voltage_sel = da9034_set_dvc_voltage_sel,
+-	.get_voltage_sel = da903x_get_voltage_sel,
+-	.list_voltage	= regulator_list_voltage_linear,
+-	.map_voltage	= regulator_map_voltage_linear,
+-	.enable		= da903x_enable,
+-	.disable	= da903x_disable,
+-	.is_enabled	= da903x_is_enabled,
+-};
+-
+-/* NOTE: this is dedicated for the insane LDO12 */
+-static const struct regulator_ops da9034_regulator_ldo12_ops = {
+-	.set_voltage_sel = da903x_set_voltage_sel,
+-	.get_voltage_sel = da903x_get_voltage_sel,
+-	.list_voltage	= regulator_list_voltage_linear_range,
+-	.map_voltage	= regulator_map_voltage_linear_range,
+-	.enable		= da903x_enable,
+-	.disable	= da903x_disable,
+-	.is_enabled	= da903x_is_enabled,
+-};
+-
+-#define DA903x_LDO(_pmic, _id, min, max, step, vreg, shift, nbits, ereg, ebit)	\
+-{									\
+-	.desc	= {							\
+-		.name	= "LDO" #_id,					\
+-		.ops	= &da903x_regulator_ldo_ops,			\
+-		.type	= REGULATOR_VOLTAGE,				\
+-		.id	= _pmic##_ID_LDO##_id,				\
+-		.n_voltages = (step) ? ((max - min) / step + 1) : 1,	\
+-		.owner	= THIS_MODULE,					\
+-		.min_uV	 = (min) * 1000,				\
+-		.uV_step = (step) * 1000,				\
+-	},								\
+-	.max_uV		= (max) * 1000,					\
+-	.vol_reg	= _pmic##_##vreg,				\
+-	.vol_shift	= (shift),					\
+-	.vol_nbits	= (nbits),					\
+-	.enable_reg	= _pmic##_##ereg,				\
+-	.enable_bit	= (ebit),					\
+-}
+-
+-#define DA903x_DVC(_pmic, _id, min, max, step, vreg, nbits, ureg, ubit, ereg, ebit) \
+-{									\
+-	.desc	= {							\
+-		.name	= #_id,						\
+-		.ops	= &da9034_regulator_dvc_ops,			\
+-		.type	= REGULATOR_VOLTAGE,				\
+-		.id	= _pmic##_ID_##_id,				\
+-		.n_voltages = (step) ? ((max - min) / step + 1) : 1,	\
+-		.owner	= THIS_MODULE,					\
+-		.min_uV = (min) * 1000,					\
+-		.uV_step = (step) * 1000,				\
+-	},								\
+-	.max_uV		= (max) * 1000,					\
+-	.vol_reg	= _pmic##_##vreg,				\
+-	.vol_shift	= (0),						\
+-	.vol_nbits	= (nbits),					\
+-	.update_reg	= _pmic##_##ureg,				\
+-	.update_bit	= (ubit),					\
+-	.enable_reg	= _pmic##_##ereg,				\
+-	.enable_bit	= (ebit),					\
+-}
+-
+-#define DA9034_LDO(_id, min, max, step, vreg, shift, nbits, ereg, ebit)	\
+-	DA903x_LDO(DA9034, _id, min, max, step, vreg, shift, nbits, ereg, ebit)
+-
+-#define DA9030_LDO(_id, min, max, step, vreg, shift, nbits, ereg, ebit)	\
+-	DA903x_LDO(DA9030, _id, min, max, step, vreg, shift, nbits, ereg, ebit)
+-
+-#define DA9030_DVC(_id, min, max, step, vreg, nbits, ureg, ubit, ereg, ebit) \
+-	DA903x_DVC(DA9030, _id, min, max, step, vreg, nbits, ureg, ubit, \
+-		   ereg, ebit)
+-
+-#define DA9034_DVC(_id, min, max, step, vreg, nbits, ureg, ubit, ereg, ebit) \
+-	DA903x_DVC(DA9034, _id, min, max, step, vreg, nbits, ureg, ubit, \
+-		   ereg, ebit)
+-
+-#define DA9035_DVC(_id, min, max, step, vreg, nbits, ureg, ubit, ereg, ebit) \
+-	DA903x_DVC(DA9035, _id, min, max, step, vreg, nbits, ureg, ubit, \
+-		   ereg, ebit)
+-
+-static struct da903x_regulator_info da903x_regulator_info[] = {
+-	/* DA9030 */
+-	DA9030_DVC(BUCK2, 850, 1625, 25, BUCK2DVM1, 5, BUCK2DVM1, 7, RCTL11, 0),
+-
+-	DA9030_LDO( 1, 1200, 3200, 100,    LDO1, 0, 5, RCTL12, 1),
+-	DA9030_LDO( 2, 1800, 3200, 100,   LDO23, 0, 4, RCTL12, 2),
+-	DA9030_LDO( 3, 1800, 3200, 100,   LDO23, 4, 4, RCTL12, 3),
+-	DA9030_LDO( 4, 1800, 3200, 100,   LDO45, 0, 4, RCTL12, 4),
+-	DA9030_LDO( 5, 1800, 3200, 100,   LDO45, 4, 4, RCTL12, 5),
+-	DA9030_LDO( 6, 1800, 3200, 100,    LDO6, 0, 4, RCTL12, 6),
+-	DA9030_LDO( 7, 1800, 3200, 100,   LDO78, 0, 4, RCTL12, 7),
+-	DA9030_LDO( 8, 1800, 3200, 100,   LDO78, 4, 4, RCTL22, 0),
+-	DA9030_LDO( 9, 1800, 3200, 100,  LDO912, 0, 4, RCTL22, 1),
+-	DA9030_LDO(10, 1800, 3200, 100, LDO1011, 0, 4, RCTL22, 2),
+-	DA9030_LDO(11, 1800, 3200, 100, LDO1011, 4, 4, RCTL22, 3),
+-	DA9030_LDO(12, 1800, 3200, 100,  LDO912, 4, 4, RCTL22, 4),
+-	DA9030_LDO(14, 2760, 2940,  30, LDO1416, 0, 3, RCTL11, 4),
+-	DA9030_LDO(15, 1100, 2650,  50,	  LDO15, 0, 5, RCTL11, 5),
+-	DA9030_LDO(16, 1100, 2650,  50, LDO1416, 3, 5, RCTL11, 6),
+-	DA9030_LDO(17, 1800, 3200, 100,   LDO17, 0, 4, RCTL11, 7),
+-	DA9030_LDO(18, 1800, 3200, 100, LDO1819, 0, 4, RCTL21, 2),
+-	DA9030_LDO(19, 1800, 3200, 100, LDO1819, 4, 4, RCTL21, 1),
+-	DA9030_LDO(13, 2100, 2100, 0, INVAL, 0, 0, RCTL11, 3), /* fixed @2.1V */
+-
+-	/* DA9034 */
+-	DA9034_DVC(BUCK1, 725, 1500, 25, ADTV2, 5, VCC1, 0, OVER1, 0),
+-	DA9034_DVC(BUCK2, 725, 1500, 25, CDTV2, 5, VCC1, 2, OVER1, 1),
+-	DA9034_DVC(LDO2,  725, 1500, 25, SDTV2, 5, VCC1, 4, OVER1, 2),
+-	DA9034_DVC(LDO1, 1700, 2075, 25, MDTV1, 4, VCC1, 6, OVER3, 4),
+-
+-	DA9034_LDO( 3, 1800, 3300, 100,  LDO643, 0, 4, OVER3, 5),
+-	DA9034_LDO( 4, 1800, 2900,1100,  LDO643, 4, 1, OVER3, 6),
+-	DA9034_LDO( 6, 2500, 2850,  50,  LDO643, 5, 3, OVER2, 0),
+-	DA9034_LDO( 7, 2700, 3050,  50,  LDO987, 0, 3, OVER2, 1),
+-	DA9034_LDO( 8, 2700, 2850,  50,  LDO987, 3, 2, OVER2, 2),
+-	DA9034_LDO( 9, 2700, 3050,  50,  LDO987, 5, 3, OVER2, 3),
+-	DA9034_LDO(10, 2700, 3050,  50, LDO1110, 0, 3, OVER2, 4),
+-	DA9034_LDO(11, 1800, 3300, 100, LDO1110, 4, 4, OVER2, 5),
+-	DA9034_LDO(12, 1700, 3050,  50, LDO1312, 0, 4, OVER3, 6),
+-	DA9034_LDO(13, 1800, 3300, 100, LDO1312, 4, 4, OVER2, 7),
+-	DA9034_LDO(14, 1800, 3300, 100, LDO1514, 0, 4, OVER3, 0),
+-	DA9034_LDO(15, 1800, 3300, 100, LDO1514, 4, 4, OVER3, 1),
+-	DA9034_LDO(5, 3100, 3100, 0, INVAL, 0, 0, OVER3, 7), /* fixed @3.1V */
+-
+-	/* DA9035 */
+-	DA9035_DVC(BUCK3, 1800, 2200, 100, 3DTV1, 3, VCC2, 0, OVER3, 3),
+-};
+-
+-static inline struct da903x_regulator_info *find_regulator_info(int id)
+-{
+-	struct da903x_regulator_info *ri;
+-	int i;
+-
+-	for (i = 0; i < ARRAY_SIZE(da903x_regulator_info); i++) {
+-		ri = &da903x_regulator_info[i];
+-		if (ri->desc.id == id)
+-			return ri;
+-	}
+-	return NULL;
+-}
+-
+-static int da903x_regulator_probe(struct platform_device *pdev)
+-{
+-	struct da903x_regulator_info *ri = NULL;
+-	struct regulator_dev *rdev;
+-	struct regulator_config config = { };
+-
+-	ri = find_regulator_info(pdev->id);
+-	if (ri == NULL) {
+-		dev_err(&pdev->dev, "invalid regulator ID specified\n");
+-		return -EINVAL;
+-	}
+-
+-	/* Workaround for the weird LDO12 voltage setting */
+-	if (ri->desc.id == DA9034_ID_LDO12) {
+-		ri->desc.ops = &da9034_regulator_ldo12_ops;
+-		ri->desc.n_voltages = 16;
+-		ri->desc.linear_ranges = da9034_ldo12_ranges;
+-		ri->desc.n_linear_ranges = ARRAY_SIZE(da9034_ldo12_ranges);
+-	}
+-
+-	if (ri->desc.id == DA9030_ID_LDO14)
+-		ri->desc.ops = &da9030_regulator_ldo14_ops;
+-
+-	if (ri->desc.id == DA9030_ID_LDO1 || ri->desc.id == DA9030_ID_LDO15)
+-		ri->desc.ops = &da9030_regulator_ldo1_15_ops;
+-
+-	config.dev = &pdev->dev;
+-	config.init_data = dev_get_platdata(&pdev->dev);
+-	config.driver_data = ri;
+-
+-	rdev = devm_regulator_register(&pdev->dev, &ri->desc, &config);
+-	if (IS_ERR(rdev)) {
+-		dev_err(&pdev->dev, "failed to register regulator %s\n",
+-				ri->desc.name);
+-		return PTR_ERR(rdev);
+-	}
+-
+-	platform_set_drvdata(pdev, rdev);
+-	return 0;
+-}
+-
+-static struct platform_driver da903x_regulator_driver = {
+-	.driver	= {
+-		.name	= "da903x-regulator",
+-		.probe_type = PROBE_PREFER_ASYNCHRONOUS,
+-	},
+-	.probe		= da903x_regulator_probe,
+-};
+-
+-static int __init da903x_regulator_init(void)
+-{
+-	return platform_driver_register(&da903x_regulator_driver);
+-}
+-subsys_initcall(da903x_regulator_init);
+-
+-static void __exit da903x_regulator_exit(void)
+-{
+-	platform_driver_unregister(&da903x_regulator_driver);
+-}
+-module_exit(da903x_regulator_exit);
+-
+-MODULE_LICENSE("GPL");
+-MODULE_AUTHOR("Eric Miao <eric.miao@marvell.com>"
+-	      "Mike Rapoport <mike@compulab.co.il>");
+-MODULE_DESCRIPTION("Regulator Driver for Dialog Semiconductor DA903X PMIC");
+-MODULE_ALIAS("platform:da903x-regulator");
 diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
-index dbf4ca23a9b6..63e5059563b4 100644
+index 63e5059563b4..413ed6c38b53 100644
 --- a/drivers/video/backlight/Kconfig
 +++ b/drivers/video/backlight/Kconfig
-@@ -365,16 +365,6 @@ config BACKLIGHT_WM831X
- 	  If you have a backlight driven by the ISINK and DCDC of a
- 	  WM831x PMIC say y to enable the backlight driver for it.
+@@ -277,13 +277,6 @@ config BACKLIGHT_CGBC
+ 	  backlight subsystem. It communicates with the board controller to
+ 	  adjust LCD backlight using PWM signals.
  
--config BACKLIGHT_ADP5520
--	tristate "Backlight Driver for ADP5520/ADP5501 using WLED"
--	depends on PMIC_ADP5520
+-config BACKLIGHT_DA903X
+-	tristate "Backlight Driver for DA9030/DA9034 using WLED"
+-	depends on PMIC_DA903X
 -	help
--	  If you have a LCD backlight connected to the BST/BL_SNK output of
--	  ADP5520 or ADP5501, say Y here to enable this driver.
+-	  If you have a LCD backlight connected to the WLED output of DA9030
+-	  or DA9034 WLED output, say Y here to enable this driver.
 -
--	  To compile this driver as a module, choose M here: the module will
--	  be called adp5520_bl.
--
- config BACKLIGHT_ADP8860
- 	tristate "Backlight Driver for ADP8860/ADP8861/ADP8863 using WLED"
- 	depends on I2C
+ config BACKLIGHT_DA9052
+ 	tristate "Dialog DA9052/DA9053 WLED"
+ 	depends on PMIC_DA9052
 diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
-index 34469711c6cd..1a6bef13430b 100644
+index 1a6bef13430b..3dc3580d82c7 100644
 --- a/drivers/video/backlight/Makefile
 +++ b/drivers/video/backlight/Makefile
-@@ -19,7 +19,6 @@ obj-$(CONFIG_LCD_VGG2432A4)		+= vgg2432a4.o
- 
- obj-$(CONFIG_BACKLIGHT_88PM860X)	+= 88pm860x_bl.o
- obj-$(CONFIG_BACKLIGHT_AAT2870)		+= aat2870_bl.o
--obj-$(CONFIG_BACKLIGHT_ADP5520)		+= adp5520_bl.o
- obj-$(CONFIG_BACKLIGHT_ADP8860)		+= adp8860_bl.o
- obj-$(CONFIG_BACKLIGHT_ADP8870)		+= adp8870_bl.o
- obj-$(CONFIG_BACKLIGHT_APPLE)		+= apple_bl.o
-diff --git a/drivers/video/backlight/adp5520_bl.c b/drivers/video/backlight/adp5520_bl.c
+@@ -28,7 +28,6 @@ obj-$(CONFIG_BACKLIGHT_AW99706)		+= aw99706.o
+ obj-$(CONFIG_BACKLIGHT_BD6107)		+= bd6107.o
+ obj-$(CONFIG_BACKLIGHT_CGBC)		+= cgbc_bl.o
+ obj-$(CONFIG_BACKLIGHT_CLASS_DEVICE)	+= backlight.o
+-obj-$(CONFIG_BACKLIGHT_DA903X)		+= da903x_bl.o
+ obj-$(CONFIG_BACKLIGHT_DA9052)		+= da9052_bl.o
+ obj-$(CONFIG_BACKLIGHT_EP93XX)		+= ep93xx_bl.o
+ obj-$(CONFIG_BACKLIGHT_GPIO)		+= gpio_backlight.o
+diff --git a/drivers/video/backlight/da903x_bl.c b/drivers/video/backlight/da903x_bl.c
 deleted file mode 100644
-index 81c40d355aae..000000000000
---- a/drivers/video/backlight/adp5520_bl.c
+index 81ff42bec0ad..000000000000
+--- a/drivers/video/backlight/da903x_bl.c
 +++ /dev/null
-@@ -1,385 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-or-later
+@@ -1,160 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-only
 -/*
-- * Backlight driver for Analog Devices ADP5520/ADP5501 MFD PMICs
+- * Backlight driver for Dialog Semiconductor DA9030/DA9034
 - *
-- * Copyright 2009 Analog Devices Inc.
+- * Copyright (C) 2008 Compulab, Ltd.
+- *	Mike Rapoport <mike@compulab.co.il>
+- *
+- * Copyright (C) 2006-2008 Marvell International Ltd.
+- *	Eric Miao <eric.miao@marvell.com>
 - */
 -
 -#include <linux/kernel.h>
 -#include <linux/init.h>
 -#include <linux/platform_device.h>
 -#include <linux/backlight.h>
--#include <linux/mfd/adp5520.h>
+-#include <linux/mfd/da903x.h>
 -#include <linux/slab.h>
 -#include <linux/module.h>
 -
--struct adp5520_bl {
--	struct device *master;
--	struct adp5520_backlight_platform_data *pdata;
--	struct mutex lock;
--	unsigned long cached_daylight_max;
+-#define DA9030_WLED_CONTROL	0x25
+-#define DA9030_WLED_CP_EN	(1 << 6)
+-#define DA9030_WLED_TRIM(x)	((x) & 0x7)
+-
+-#define DA9034_WLED_CONTROL1	0x3C
+-#define DA9034_WLED_CONTROL2	0x3D
+-#define DA9034_WLED_ISET(x)	((x) & 0x1f)
+-
+-#define DA9034_WLED_BOOST_EN	(1 << 5)
+-
+-#define DA9030_MAX_BRIGHTNESS	7
+-#define DA9034_MAX_BRIGHTNESS	0x7f
+-
+-struct da903x_backlight_data {
+-	struct device *da903x_dev;
 -	int id;
 -	int current_brightness;
 -};
 -
--static int adp5520_bl_set(struct backlight_device *bl, int brightness)
+-static int da903x_backlight_set(struct backlight_device *bl, int brightness)
 -{
--	struct adp5520_bl *data = bl_get_data(bl);
--	struct device *master = data->master;
+-	struct da903x_backlight_data *data = bl_get_data(bl);
+-	struct device *dev = data->da903x_dev;
+-	uint8_t val;
 -	int ret = 0;
 -
--	if (data->pdata->en_ambl_sens) {
--		if ((brightness > 0) && (brightness < ADP5020_MAX_BRIGHTNESS)) {
--			/* Disable Ambient Light auto adjust */
--			ret |= adp5520_clr_bits(master, ADP5520_BL_CONTROL,
--					ADP5520_BL_AUTO_ADJ);
--			ret |= adp5520_write(master, ADP5520_DAYLIGHT_MAX,
--					brightness);
--		} else {
--			/*
--			 * MAX_BRIGHTNESS -> Enable Ambient Light auto adjust
--			 * restore daylight l3 sysfs brightness
--			 */
--			ret |= adp5520_write(master, ADP5520_DAYLIGHT_MAX,
--					 data->cached_daylight_max);
--			ret |= adp5520_set_bits(master, ADP5520_BL_CONTROL,
--					 ADP5520_BL_AUTO_ADJ);
--		}
--	} else {
--		ret |= adp5520_write(master, ADP5520_DAYLIGHT_MAX, brightness);
+-	switch (data->id) {
+-	case DA9034_ID_WLED:
+-		ret = da903x_update(dev, DA9034_WLED_CONTROL1,
+-				brightness, 0x7f);
+-		if (ret)
+-			return ret;
+-
+-		if (data->current_brightness && brightness == 0)
+-			ret = da903x_clr_bits(dev,
+-					DA9034_WLED_CONTROL2,
+-					DA9034_WLED_BOOST_EN);
+-
+-		if (data->current_brightness == 0 && brightness)
+-			ret = da903x_set_bits(dev,
+-					DA9034_WLED_CONTROL2,
+-					DA9034_WLED_BOOST_EN);
+-		break;
+-	case DA9030_ID_WLED:
+-		val = DA9030_WLED_TRIM(brightness);
+-		val |= brightness ? DA9030_WLED_CP_EN : 0;
+-		ret = da903x_write(dev, DA9030_WLED_CONTROL, val);
+-		break;
 -	}
 -
--	if (data->current_brightness && brightness == 0)
--		ret |= adp5520_set_bits(master,
--				ADP5520_MODE_STATUS, ADP5520_DIM_EN);
--	else if (data->current_brightness == 0 && brightness)
--		ret |= adp5520_clr_bits(master,
--				ADP5520_MODE_STATUS, ADP5520_DIM_EN);
--
--	if (!ret)
--		data->current_brightness = brightness;
--
--	return ret;
--}
--
--static int adp5520_bl_update_status(struct backlight_device *bl)
--{
--	return adp5520_bl_set(bl, backlight_get_brightness(bl));
--}
--
--static int adp5520_bl_get_brightness(struct backlight_device *bl)
--{
--	struct adp5520_bl *data = bl_get_data(bl);
--	int error;
--	uint8_t reg_val;
--
--	error = adp5520_read(data->master, ADP5520_BL_VALUE, &reg_val);
--
--	return error ? data->current_brightness : reg_val;
--}
--
--static const struct backlight_ops adp5520_bl_ops = {
--	.update_status	= adp5520_bl_update_status,
--	.get_brightness	= adp5520_bl_get_brightness,
--};
--
--static int adp5520_bl_setup(struct backlight_device *bl)
--{
--	struct adp5520_bl *data = bl_get_data(bl);
--	struct device *master = data->master;
--	struct adp5520_backlight_platform_data *pdata = data->pdata;
--	int ret = 0;
--
--	ret |= adp5520_write(master, ADP5520_DAYLIGHT_MAX,
--				pdata->l1_daylight_max);
--	ret |= adp5520_write(master, ADP5520_DAYLIGHT_DIM,
--				pdata->l1_daylight_dim);
--
--	if (pdata->en_ambl_sens) {
--		data->cached_daylight_max = pdata->l1_daylight_max;
--		ret |= adp5520_write(master, ADP5520_OFFICE_MAX,
--				pdata->l2_office_max);
--		ret |= adp5520_write(master, ADP5520_OFFICE_DIM,
--				pdata->l2_office_dim);
--		ret |= adp5520_write(master, ADP5520_DARK_MAX,
--				pdata->l3_dark_max);
--		ret |= adp5520_write(master, ADP5520_DARK_DIM,
--				pdata->l3_dark_dim);
--		ret |= adp5520_write(master, ADP5520_L2_TRIP,
--				pdata->l2_trip);
--		ret |= adp5520_write(master, ADP5520_L2_HYS,
--				pdata->l2_hyst);
--		ret |= adp5520_write(master, ADP5520_L3_TRIP,
--				 pdata->l3_trip);
--		ret |= adp5520_write(master, ADP5520_L3_HYS,
--				pdata->l3_hyst);
--		ret |= adp5520_write(master, ADP5520_ALS_CMPR_CFG,
--				ALS_CMPR_CFG_VAL(pdata->abml_filt,
--				ADP5520_L3_EN));
--	}
--
--	ret |= adp5520_write(master, ADP5520_BL_CONTROL,
--			BL_CTRL_VAL(pdata->fade_led_law,
--					pdata->en_ambl_sens));
--
--	ret |= adp5520_write(master, ADP5520_BL_FADE, FADE_VAL(pdata->fade_in,
--			pdata->fade_out));
--
--	ret |= adp5520_set_bits(master, ADP5520_MODE_STATUS,
--			ADP5520_BL_EN | ADP5520_DIM_EN);
--
--	return ret;
--}
--
--static ssize_t adp5520_show(struct device *dev, char *buf, int reg)
--{
--	struct adp5520_bl *data = dev_get_drvdata(dev);
--	int ret;
--	uint8_t reg_val;
--
--	mutex_lock(&data->lock);
--	ret = adp5520_read(data->master, reg, &reg_val);
--	mutex_unlock(&data->lock);
--
--	if (ret < 0)
--		return ret;
--
--	return sprintf(buf, "%u\n", reg_val);
--}
--
--static ssize_t adp5520_store(struct device *dev, const char *buf,
--			 size_t count, int reg)
--{
--	struct adp5520_bl *data = dev_get_drvdata(dev);
--	unsigned long val;
--	int ret;
--
--	ret = kstrtoul(buf, 10, &val);
 -	if (ret)
 -		return ret;
 -
--	mutex_lock(&data->lock);
--	adp5520_write(data->master, reg, val);
--	mutex_unlock(&data->lock);
--
--	return count;
+-	data->current_brightness = brightness;
+-	return 0;
 -}
 -
--static ssize_t adp5520_bl_dark_max_show(struct device *dev,
--			struct device_attribute *attr, char *buf)
+-static int da903x_backlight_update_status(struct backlight_device *bl)
 -{
--	return adp5520_show(dev, buf, ADP5520_DARK_MAX);
+-	return da903x_backlight_set(bl, backlight_get_brightness(bl));
 -}
 -
--static ssize_t adp5520_bl_dark_max_store(struct device *dev,
--			struct device_attribute *attr,
--			const char *buf, size_t count)
+-static int da903x_backlight_get_brightness(struct backlight_device *bl)
 -{
--	return adp5520_store(dev, buf, count, ADP5520_DARK_MAX);
--}
--static DEVICE_ATTR(dark_max, 0664, adp5520_bl_dark_max_show,
--			adp5520_bl_dark_max_store);
+-	struct da903x_backlight_data *data = bl_get_data(bl);
 -
--static ssize_t adp5520_bl_office_max_show(struct device *dev,
--			struct device_attribute *attr, char *buf)
--{
--	return adp5520_show(dev, buf, ADP5520_OFFICE_MAX);
+-	return data->current_brightness;
 -}
 -
--static ssize_t adp5520_bl_office_max_store(struct device *dev,
--			struct device_attribute *attr,
--			const char *buf, size_t count)
--{
--	return adp5520_store(dev, buf, count, ADP5520_OFFICE_MAX);
--}
--static DEVICE_ATTR(office_max, 0664, adp5520_bl_office_max_show,
--			adp5520_bl_office_max_store);
--
--static ssize_t adp5520_bl_daylight_max_show(struct device *dev,
--			struct device_attribute *attr, char *buf)
--{
--	return adp5520_show(dev, buf, ADP5520_DAYLIGHT_MAX);
--}
--
--static ssize_t adp5520_bl_daylight_max_store(struct device *dev,
--			struct device_attribute *attr,
--			const char *buf, size_t count)
--{
--	struct adp5520_bl *data = dev_get_drvdata(dev);
--	int ret;
--
--	ret = kstrtoul(buf, 10, &data->cached_daylight_max);
--	if (ret < 0)
--		return ret;
--
--	return adp5520_store(dev, buf, count, ADP5520_DAYLIGHT_MAX);
--}
--static DEVICE_ATTR(daylight_max, 0664, adp5520_bl_daylight_max_show,
--			adp5520_bl_daylight_max_store);
--
--static ssize_t adp5520_bl_dark_dim_show(struct device *dev,
--			struct device_attribute *attr, char *buf)
--{
--	return adp5520_show(dev, buf, ADP5520_DARK_DIM);
--}
--
--static ssize_t adp5520_bl_dark_dim_store(struct device *dev,
--			struct device_attribute *attr,
--			const char *buf, size_t count)
--{
--	return adp5520_store(dev, buf, count, ADP5520_DARK_DIM);
--}
--static DEVICE_ATTR(dark_dim, 0664, adp5520_bl_dark_dim_show,
--			adp5520_bl_dark_dim_store);
--
--static ssize_t adp5520_bl_office_dim_show(struct device *dev,
--			struct device_attribute *attr, char *buf)
--{
--	return adp5520_show(dev, buf, ADP5520_OFFICE_DIM);
--}
--
--static ssize_t adp5520_bl_office_dim_store(struct device *dev,
--			struct device_attribute *attr,
--			const char *buf, size_t count)
--{
--	return adp5520_store(dev, buf, count, ADP5520_OFFICE_DIM);
--}
--static DEVICE_ATTR(office_dim, 0664, adp5520_bl_office_dim_show,
--			adp5520_bl_office_dim_store);
--
--static ssize_t adp5520_bl_daylight_dim_show(struct device *dev,
--			struct device_attribute *attr, char *buf)
--{
--	return adp5520_show(dev, buf, ADP5520_DAYLIGHT_DIM);
--}
--
--static ssize_t adp5520_bl_daylight_dim_store(struct device *dev,
--			struct device_attribute *attr,
--			const char *buf, size_t count)
--{
--	return adp5520_store(dev, buf, count, ADP5520_DAYLIGHT_DIM);
--}
--static DEVICE_ATTR(daylight_dim, 0664, adp5520_bl_daylight_dim_show,
--			adp5520_bl_daylight_dim_store);
--
--static struct attribute *adp5520_bl_attributes[] = {
--	&dev_attr_dark_max.attr,
--	&dev_attr_dark_dim.attr,
--	&dev_attr_office_max.attr,
--	&dev_attr_office_dim.attr,
--	&dev_attr_daylight_max.attr,
--	&dev_attr_daylight_dim.attr,
--	NULL
+-static const struct backlight_ops da903x_backlight_ops = {
+-	.options	= BL_CORE_SUSPENDRESUME,
+-	.update_status	= da903x_backlight_update_status,
+-	.get_brightness	= da903x_backlight_get_brightness,
 -};
 -
--static const struct attribute_group adp5520_bl_attr_group = {
--	.attrs = adp5520_bl_attributes,
--};
--
--static int adp5520_bl_probe(struct platform_device *pdev)
+-static int da903x_backlight_probe(struct platform_device *pdev)
 -{
--	struct backlight_properties props;
+-	struct da9034_backlight_pdata *pdata = dev_get_platdata(&pdev->dev);
+-	struct da903x_backlight_data *data;
 -	struct backlight_device *bl;
--	struct adp5520_bl *data;
--	int ret = 0;
+-	struct backlight_properties props;
+-	int max_brightness;
 -
 -	data = devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
 -	if (data == NULL)
 -		return -ENOMEM;
 -
--	data->master = pdev->dev.parent;
--	data->pdata = dev_get_platdata(&pdev->dev);
--
--	if (data->pdata  == NULL) {
--		dev_err(&pdev->dev, "missing platform data\n");
--		return -ENODEV;
+-	switch (pdev->id) {
+-	case DA9030_ID_WLED:
+-		max_brightness = DA9030_MAX_BRIGHTNESS;
+-		break;
+-	case DA9034_ID_WLED:
+-		max_brightness = DA9034_MAX_BRIGHTNESS;
+-		break;
+-	default:
+-		dev_err(&pdev->dev, "invalid backlight device ID(%d)\n",
+-				pdev->id);
+-		return -EINVAL;
 -	}
 -
 -	data->id = pdev->id;
+-	data->da903x_dev = pdev->dev.parent;
 -	data->current_brightness = 0;
 -
--	mutex_init(&data->lock);
+-	/* adjust the WLED output current */
+-	if (pdata)
+-		da903x_write(data->da903x_dev, DA9034_WLED_CONTROL2,
+-				DA9034_WLED_ISET(pdata->output_current));
 -
--	memset(&props, 0, sizeof(struct backlight_properties));
+-	memset(&props, 0, sizeof(props));
 -	props.type = BACKLIGHT_RAW;
--	props.max_brightness = ADP5020_MAX_BRIGHTNESS;
+-	props.max_brightness = max_brightness;
 -	bl = devm_backlight_device_register(&pdev->dev, pdev->name,
--					data->master, data, &adp5520_bl_ops,
--					&props);
+-					data->da903x_dev, data,
+-					&da903x_backlight_ops, &props);
 -	if (IS_ERR(bl)) {
 -		dev_err(&pdev->dev, "failed to register backlight\n");
 -		return PTR_ERR(bl);
 -	}
 -
--	bl->props.brightness = ADP5020_MAX_BRIGHTNESS;
--	if (data->pdata->en_ambl_sens)
--		ret = sysfs_create_group(&bl->dev.kobj,
--			&adp5520_bl_attr_group);
--
--	if (ret) {
--		dev_err(&pdev->dev, "failed to register sysfs\n");
--		return ret;
--	}
+-	bl->props.brightness = max_brightness;
 -
 -	platform_set_drvdata(pdev, bl);
--	ret = adp5520_bl_setup(bl);
--	if (ret) {
--		dev_err(&pdev->dev, "failed to setup\n");
--		if (data->pdata->en_ambl_sens)
--			sysfs_remove_group(&bl->dev.kobj,
--					&adp5520_bl_attr_group);
--		return ret;
--	}
--
--	backlight_update_status(bl);
--
--	return 0;
--}
--
--static void adp5520_bl_remove(struct platform_device *pdev)
--{
--	struct backlight_device *bl = platform_get_drvdata(pdev);
--	struct adp5520_bl *data = bl_get_data(bl);
--
--	adp5520_clr_bits(data->master, ADP5520_MODE_STATUS, ADP5520_BL_EN);
--
--	if (data->pdata->en_ambl_sens)
--		sysfs_remove_group(&bl->dev.kobj,
--				&adp5520_bl_attr_group);
--}
--
--#ifdef CONFIG_PM_SLEEP
--static int adp5520_bl_suspend(struct device *dev)
--{
--	struct backlight_device *bl = dev_get_drvdata(dev);
--
--	return adp5520_bl_set(bl, 0);
--}
--
--static int adp5520_bl_resume(struct device *dev)
--{
--	struct backlight_device *bl = dev_get_drvdata(dev);
--
 -	backlight_update_status(bl);
 -	return 0;
 -}
--#endif
 -
--static SIMPLE_DEV_PM_OPS(adp5520_bl_pm_ops, adp5520_bl_suspend,
--			adp5520_bl_resume);
--
--static struct platform_driver adp5520_bl_driver = {
+-static struct platform_driver da903x_backlight_driver = {
 -	.driver		= {
--		.name	= "adp5520-backlight",
--		.pm	= &adp5520_bl_pm_ops,
+-		.name	= "da903x-backlight",
 -	},
--	.probe		= adp5520_bl_probe,
--	.remove		= adp5520_bl_remove,
+-	.probe		= da903x_backlight_probe,
 -};
 -
--module_platform_driver(adp5520_bl_driver);
+-module_platform_driver(da903x_backlight_driver);
 -
--MODULE_AUTHOR("Michael Hennerich <michael.hennerich@analog.com>");
--MODULE_DESCRIPTION("ADP5520(01) Backlight Driver");
+-MODULE_DESCRIPTION("Backlight Driver for Dialog Semiconductor DA9030/DA9034");
+-MODULE_AUTHOR("Eric Miao <eric.miao@marvell.com>");
+-MODULE_AUTHOR("Mike Rapoport <mike@compulab.co.il>");
 -MODULE_LICENSE("GPL");
--MODULE_ALIAS("platform:adp5520-backlight");
-diff --git a/include/linux/mfd/adp5520.h b/include/linux/mfd/adp5520.h
-deleted file mode 100644
-index 9a14f80ec4ad..000000000000
---- a/include/linux/mfd/adp5520.h
-+++ /dev/null
-@@ -1,298 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0-or-later */
--/*
-- * Definitions and platform data for Analog Devices
-- * ADP5520/ADP5501 MFD PMICs (Backlight, LED, GPIO and Keys)
-- *
-- * Copyright 2009 Analog Devices Inc.
-- */
--
--
--#ifndef __LINUX_MFD_ADP5520_H
--#define __LINUX_MFD_ADP5520_H
--
--#define ID_ADP5520		5520
--#define ID_ADP5501		5501
--
--/*
-- * ADP5520/ADP5501 Register Map
-- */
--
--#define ADP5520_MODE_STATUS 		0x00
--#define ADP5520_INTERRUPT_ENABLE 	0x01
--#define ADP5520_BL_CONTROL 		0x02
--#define ADP5520_BL_TIME 		0x03
--#define ADP5520_BL_FADE 		0x04
--#define ADP5520_DAYLIGHT_MAX 		0x05
--#define ADP5520_DAYLIGHT_DIM 		0x06
--#define ADP5520_OFFICE_MAX 		0x07
--#define ADP5520_OFFICE_DIM 		0x08
--#define ADP5520_DARK_MAX 		0x09
--#define ADP5520_DARK_DIM 		0x0A
--#define ADP5520_BL_VALUE 		0x0B
--#define ADP5520_ALS_CMPR_CFG 		0x0C
--#define ADP5520_L2_TRIP 		0x0D
--#define ADP5520_L2_HYS 			0x0E
--#define ADP5520_L3_TRIP 		0x0F
--#define ADP5520_L3_HYS 			0x10
--#define ADP5520_LED_CONTROL 		0x11
--#define ADP5520_LED_TIME 		0x12
--#define ADP5520_LED_FADE 		0x13
--#define ADP5520_LED1_CURRENT 		0x14
--#define ADP5520_LED2_CURRENT 		0x15
--#define ADP5520_LED3_CURRENT 		0x16
--
--/*
-- * ADP5520 Register Map
-- */
--
--#define ADP5520_GPIO_CFG_1 		0x17
--#define ADP5520_GPIO_CFG_2 		0x18
--#define ADP5520_GPIO_IN 		0x19
--#define ADP5520_GPIO_OUT 		0x1A
--#define ADP5520_GPIO_INT_EN 		0x1B
--#define ADP5520_GPIO_INT_STAT 		0x1C
--#define ADP5520_GPIO_INT_LVL 		0x1D
--#define ADP5520_GPIO_DEBOUNCE 		0x1E
--#define ADP5520_GPIO_PULLUP 		0x1F
--#define ADP5520_KP_INT_STAT_1 		0x20
--#define ADP5520_KP_INT_STAT_2 		0x21
--#define ADP5520_KR_INT_STAT_1 		0x22
--#define ADP5520_KR_INT_STAT_2 		0x23
--#define ADP5520_KEY_STAT_1 		0x24
--#define ADP5520_KEY_STAT_2 		0x25
--
--/*
-- * MODE_STATUS bits
-- */
--
--#define ADP5520_nSTNBY		(1 << 7)
--#define ADP5520_BL_EN           (1 << 6)
--#define ADP5520_DIM_EN          (1 << 5)
--#define ADP5520_OVP_INT         (1 << 4)
--#define ADP5520_CMPR_INT        (1 << 3)
--#define ADP5520_GPI_INT         (1 << 2)
--#define ADP5520_KR_INT          (1 << 1)
--#define ADP5520_KP_INT          (1 << 0)
--
--/*
-- * INTERRUPT_ENABLE bits
-- */
--
--#define ADP5520_AUTO_LD_EN      (1 << 4)
--#define ADP5520_CMPR_IEN        (1 << 3)
--#define ADP5520_OVP_IEN         (1 << 2)
--#define ADP5520_KR_IEN          (1 << 1)
--#define ADP5520_KP_IEN          (1 << 0)
--
--/*
-- * BL_CONTROL bits
-- */
--
--#define ADP5520_BL_LVL          ((x) << 5)
--#define ADP5520_BL_LAW          ((x) << 4)
--#define ADP5520_BL_AUTO_ADJ     (1 << 3)
--#define ADP5520_OVP_EN          (1 << 2)
--#define ADP5520_FOVR            (1 << 1)
--#define ADP5520_KP_BL_EN        (1 << 0)
--
--/*
-- * ALS_CMPR_CFG bits
-- */
--
--#define ADP5520_L3_OUT		(1 << 3)
--#define ADP5520_L2_OUT		(1 << 2)
--#define ADP5520_L3_EN		(1 << 1)
--
--#define ADP5020_MAX_BRIGHTNESS	0x7F
--
--#define FADE_VAL(in, out)	((0xF & (in)) | ((0xF & (out)) << 4))
--#define BL_CTRL_VAL(law, auto)	(((1 & (auto)) << 3) | ((0x3 & (law)) << 4))
--#define ALS_CMPR_CFG_VAL(filt, l3_en)	(((0x7 & filt) << 5) | l3_en)
--
--/*
-- * LEDs subdevice bits and masks
-- */
--
--#define ADP5520_01_MAXLEDS 3
--
--#define ADP5520_FLAG_LED_MASK 		0x3
--#define ADP5520_FLAG_OFFT_SHIFT 	8
--#define ADP5520_FLAG_OFFT_MASK 		0x3
--
--#define ADP5520_R3_MODE		(1 << 5)
--#define ADP5520_C3_MODE		(1 << 4)
--#define ADP5520_LED_LAW		(1 << 3)
--#define ADP5520_LED3_EN		(1 << 2)
--#define ADP5520_LED2_EN		(1 << 1)
--#define ADP5520_LED1_EN		(1 << 0)
--
--/*
-- * GPIO subdevice bits and masks
-- */
--
--#define ADP5520_MAXGPIOS	8
--
--#define ADP5520_GPIO_C3		(1 << 7)	/* LED2 or GPIO7 aka C3 */
--#define ADP5520_GPIO_C2		(1 << 6)
--#define ADP5520_GPIO_C1		(1 << 5)
--#define ADP5520_GPIO_C0		(1 << 4)
--#define ADP5520_GPIO_R3		(1 << 3)	/* LED3 or GPIO3 aka R3 */
--#define ADP5520_GPIO_R2		(1 << 2)
--#define ADP5520_GPIO_R1		(1 << 1)
--#define ADP5520_GPIO_R0		(1 << 0)
--
--struct adp5520_gpio_platform_data {
--	unsigned gpio_start;
--	u8 gpio_en_mask;
--	u8 gpio_pullup_mask;
--};
--
--/*
-- * Keypad subdevice bits and masks
-- */
--
--#define ADP5520_MAXKEYS	16
--
--#define ADP5520_COL_C3 		(1 << 7)	/* LED2 or GPIO7 aka C3 */
--#define ADP5520_COL_C2		(1 << 6)
--#define ADP5520_COL_C1		(1 << 5)
--#define ADP5520_COL_C0		(1 << 4)
--#define ADP5520_ROW_R3		(1 << 3)	/* LED3 or GPIO3 aka R3 */
--#define ADP5520_ROW_R2		(1 << 2)
--#define ADP5520_ROW_R1		(1 << 1)
--#define ADP5520_ROW_R0		(1 << 0)
--
--#define ADP5520_KEY(row, col) (col + row * 4)
--#define ADP5520_KEYMAPSIZE	ADP5520_MAXKEYS
--
--struct adp5520_keys_platform_data {
--	int rows_en_mask;		/* Number of rows */
--	int cols_en_mask;		/* Number of columns */
--	const unsigned short *keymap;	/* Pointer to keymap */
--	unsigned short keymapsize;	/* Keymap size */
--	unsigned repeat:1;		/* Enable key repeat */
--};
--
--
--/*
-- * LEDs subdevice platform data
-- */
--
--#define FLAG_ID_ADP5520_LED1_ADP5501_LED0 	1	/* ADP5520 PIN ILED */
--#define FLAG_ID_ADP5520_LED2_ADP5501_LED1 	2	/* ADP5520 PIN C3 */
--#define FLAG_ID_ADP5520_LED3_ADP5501_LED2 	3	/* ADP5520 PIN R3 */
--
--#define ADP5520_LED_DIS_BLINK	(0 << ADP5520_FLAG_OFFT_SHIFT)
--#define ADP5520_LED_OFFT_600ms	(1 << ADP5520_FLAG_OFFT_SHIFT)
--#define ADP5520_LED_OFFT_800ms	(2 << ADP5520_FLAG_OFFT_SHIFT)
--#define ADP5520_LED_OFFT_1200ms	(3 << ADP5520_FLAG_OFFT_SHIFT)
--
--#define ADP5520_LED_ONT_200ms	0
--#define ADP5520_LED_ONT_600ms	1
--#define ADP5520_LED_ONT_800ms	2
--#define ADP5520_LED_ONT_1200ms	3
--
--struct adp5520_leds_platform_data {
--	int num_leds;
--	struct led_info	*leds;
--	u8 fade_in;		/* Backlight Fade-In Timer */
--	u8 fade_out;		/* Backlight Fade-Out Timer */
--	u8 led_on_time;
--};
--
--/*
-- * Backlight subdevice platform data
-- */
--
--#define ADP5520_FADE_T_DIS	0	/* Fade Timer Disabled */
--#define ADP5520_FADE_T_300ms	1	/* 0.3 Sec */
--#define ADP5520_FADE_T_600ms	2
--#define ADP5520_FADE_T_900ms	3
--#define ADP5520_FADE_T_1200ms	4
--#define ADP5520_FADE_T_1500ms	5
--#define ADP5520_FADE_T_1800ms	6
--#define ADP5520_FADE_T_2100ms	7
--#define ADP5520_FADE_T_2400ms	8
--#define ADP5520_FADE_T_2700ms	9
--#define ADP5520_FADE_T_3000ms	10
--#define ADP5520_FADE_T_3500ms	11
--#define ADP5520_FADE_T_4000ms	12
--#define ADP5520_FADE_T_4500ms	13
--#define ADP5520_FADE_T_5000ms	14
--#define ADP5520_FADE_T_5500ms	15	/* 5.5 Sec */
--
--#define ADP5520_BL_LAW_LINEAR 	0
--#define ADP5520_BL_LAW_SQUARE 	1
--#define ADP5520_BL_LAW_CUBIC1 	2
--#define ADP5520_BL_LAW_CUBIC2 	3
--
--#define ADP5520_BL_AMBL_FILT_80ms 	0	/* Light sensor filter time */
--#define ADP5520_BL_AMBL_FILT_160ms 	1
--#define ADP5520_BL_AMBL_FILT_320ms 	2
--#define ADP5520_BL_AMBL_FILT_640ms 	3
--#define ADP5520_BL_AMBL_FILT_1280ms 	4
--#define ADP5520_BL_AMBL_FILT_2560ms 	5
--#define ADP5520_BL_AMBL_FILT_5120ms 	6
--#define ADP5520_BL_AMBL_FILT_10240ms 	7	/* 10.24 sec */
--
--	/*
--	 * Blacklight current 0..30mA
--	 */
--#define ADP5520_BL_CUR_mA(I)		((I * 127) / 30)
--
--	/*
--	 * L2 comparator current 0..1000uA
--	 */
--#define ADP5520_L2_COMP_CURR_uA(I)	((I * 255) / 1000)
--
--	/*
--	 * L3 comparator current 0..127uA
--	 */
--#define ADP5520_L3_COMP_CURR_uA(I)	((I * 255) / 127)
--
--struct adp5520_backlight_platform_data {
--	u8 fade_in;		/* Backlight Fade-In Timer */
--	u8 fade_out;		/* Backlight Fade-Out Timer */
--	u8 fade_led_law;	/* fade-on/fade-off transfer characteristic */
--
--	u8 en_ambl_sens;	/* 1 = enable ambient light sensor */
--	u8 abml_filt;		/* Light sensor filter time */
--	u8 l1_daylight_max;	/* use BL_CUR_mA(I) 0 <= I <= 30 mA */
--	u8 l1_daylight_dim;	/* typ = 0, use BL_CUR_mA(I) 0 <= I <= 30 mA */
--	u8 l2_office_max;	/* use BL_CUR_mA(I) 0 <= I <= 30 mA */
--	u8 l2_office_dim;	/* typ = 0, use BL_CUR_mA(I) 0 <= I <= 30 mA */
--	u8 l3_dark_max;		/* use BL_CUR_mA(I) 0 <= I <= 30 mA */
--	u8 l3_dark_dim;		/* typ = 0, use BL_CUR_mA(I) 0 <= I <= 30 mA */
--	u8 l2_trip;		/* use L2_COMP_CURR_uA(I) 0 <= I <= 1000 uA */
--	u8 l2_hyst;		/* use L2_COMP_CURR_uA(I) 0 <= I <= 1000 uA */
--	u8 l3_trip;		/* use L3_COMP_CURR_uA(I) 0 <= I <= 127 uA */
--	u8 l3_hyst;		/* use L3_COMP_CURR_uA(I) 0 <= I <= 127 uA */
--};
--
--/*
-- * MFD chip platform data
-- */
--
--struct adp5520_platform_data {
--	struct adp5520_keys_platform_data *keys;
--	struct adp5520_gpio_platform_data *gpio;
--	struct adp5520_leds_platform_data *leds;
--	struct adp5520_backlight_platform_data *backlight;
--};
--
--/*
-- * MFD chip functions
-- */
--
--extern int adp5520_read(struct device *dev, int reg, uint8_t *val);
--extern int adp5520_write(struct device *dev, int reg, u8 val);
--extern int adp5520_clr_bits(struct device *dev, int reg, uint8_t bit_mask);
--extern int adp5520_set_bits(struct device *dev, int reg, uint8_t bit_mask);
--
--extern int adp5520_register_notifier(struct device *dev,
--		 struct notifier_block *nb, unsigned int events);
--
--extern int adp5520_unregister_notifier(struct device *dev,
--		struct notifier_block *nb, unsigned int events);
--
--#endif /* __LINUX_MFD_ADP5520_H */
+-MODULE_ALIAS("platform:da903x-backlight");
 -- 
 2.53.0
 
