@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-26933-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-26934-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 39B9DC79FAD
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2026 13:23:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C3CA2C79FB7
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2026 13:24:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hg1jN4msqz2yvG;
-	Wed, 09 Sep 2026 23:23:52 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788960232;
-	cv=none; b=hzWWqrCmjqpjAEuXWtE8DaiYsQMHEP/a7S4gqzewbLYcMkpO96IbUXgMm2e+GbnDXktSr3YKCWrGRFe98Br0euwN0MDE594es7mHNz3oAQM5xsHIy3zdWTvJTQDrCXww6hT7L661yN/ghTp2PD2xxtM/JnAU5MZv68v/6lTxv1DS1mfTpjwKB+L/hHT6OALlXOsv14EUMetBqba7cRkykGDFi/crU/NZ3Ms1Z+HboF7MoFSv39+N7CgHObtJ0fKX05fPD9MDxSZ2Tf0A8ucSo3T2UszfkUaq6+ltAySLwz3IDbiHwSHj0aV4P5UIPybNXAAwIVCrA1bjnjDnEApXOg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hg1jP60b9z3bjL;
+	Wed, 09 Sep 2026 23:23:53 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788960233;
+	cv=none; b=iCue/A12f4MqLa7ExWCLx4eJFYSd0Jv1PgYkjGMENmeep/xn1naHiLmbZr9I1DXxSMSQWG1+jcIPA+5RlUhGxKehLlNyPPQhWYLdO8yz7FLTEEU5Z+rC6BKIm1HukFcoiZ4UvMPTURSyEo4diZGNjegVoH92eK42W1g+yF8ToPVheK1Bs0wYWrSgqfJE5BvzJ0i4pnXDzrjXcMqJ3SFKSTQRRSvxn5VcFk7SfYaH9e46XmE6tH2J0e+5dI0INvWy6tYEK7FWRI+vZZmHBTcGbm3VVX6vICm3or9Wmlb10ZAHOed+XGiZldZOKRSpWWwIxCBvwEAO3plC+0WPHs7q3w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788960232; c=relaxed/relaxed;
-	bh=Rzqj9n9ksmFbc/J8Q4xJvrVQ5z2IsqWrXw7zLxE+N3A=;
+	t=1788960233; c=relaxed/relaxed;
+	bh=1qoOc7gtnkGvenngoPvkysqsE/ScnFZ2Rj1iCl13Sxo=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=i5/Sb7ajWxWqJgpfhR8qc3inSw31ZXmFqhoW0LhWy7JcIYCZiUe+njoaifNbZnc5MCemW3gGnav3dMXns9NiSLXriyVpU7ART0oDvE68C28mlnQUg7zgh8Wq58XCBhnrlPKiqpxobSRi57GXgWaykcxzxT+dJsmOXv3p+nSUAaS/MghdFdTW6fGoArEnnq7Q5AOlUl+b5D2R4ojyUmCh9bZ2W9QONZjFag5FTiM0kAhYu3QV1UwpxTRFdStw6ua/4GSGs8PYLRncm2SM9oICOU+wby0wHvyx6aQNEnnXkU3SMtQQzqFFLcPlRfctyfyL6OKigY6lJjOgYn7p90sqmQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=OmmFcvSg; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=mL1hD79bjv7NAUCSFuakRraHAMdkzjnSEaWqG+YTCDor68BSFo+nZSupiSwE4xBNSwk1RSDHp0sN6O5d8U6hmLOKKgz4h9DheooDJRWGbk7fK+pmVLTgMa0gGK5n2pu5jk42EwKcyVPS0CDFN6jEurTndYC7So/4kMyXTHPAbDasU8o6QRDUIK9mJw1BkFuB8SIMGnOljcUwQFbKUc0e7SIo+Im4cZjd/KGm0NGdmaNzWsaSsMJjVJjjBfYpibHhHDEouv0Oyl5EhIj8XE47fgYDzsW6kA2pSGNMvEuP2qluh6jTEHvwsypwKSOfKd02cT72EQV8KoPPbP0li1vdsA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=afU4Z+4b; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=OmmFcvSg;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=afU4Z+4b;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hg1jJ6v4mz2yqf
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Sep 2026 23:23:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hg1j95l4cz2yrf
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Sep 2026 23:23:41 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id EF65E60237;
-	Wed,  9 Sep 2026 13:23:46 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A46DE1F00A3A;
+	by sea.source.kernel.org (Postfix) with ESMTP id 4A03541444;
 	Wed,  9 Sep 2026 13:23:38 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2F04C1F00A3E;
+	Wed,  9 Sep 2026 13:23:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788960226;
-	bh=Rzqj9n9ksmFbc/J8Q4xJvrVQ5z2IsqWrXw7zLxE+N3A=;
+	s=k20260515; t=1788960218;
+	bh=1qoOc7gtnkGvenngoPvkysqsE/ScnFZ2Rj1iCl13Sxo=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=OmmFcvSgOFU1+pKyl8+XWfB/vmc70tmASxMPKANKt5lqbG3zO6xSTC/Yx5fppIkXd
-	 2aRvzVX5uFoGccjw/RMJ5USJsvUaBasCAReZ3nY15y35A5qZz//VyG3zDi7JONsknq
-	 F/W5FBSuv5t1grV/l2pL0R9AMbX6IOb7e7yNHYcEWFSBbMstgNbmbw9qJ71Jp6Jzz2
-	 7Z8RYFE4Zj9GXVQJFT2lH7xo+xdSOTfZwc0Yskps7h7fMOnCBFEBaN+a5V5xnbXkg3
-	 phzKE9UiaX9y+tmHE6nye3CXCo4eyx9H4XzQyz1kYyqOt6R4M7iSqxIbTBttKBxbTk
-	 Xp0xEg8PVwQbQ==
+	b=afU4Z+4bYjnmJUGqBLOfDY2EU3+6JtjBHF/JBWReVV747TD4tWqp8b7/D1quuc/DO
+	 ytAMQUABdjXsLYGYIHoTcLt+pW9R0h/wN3xrysNmk2Jbgh4U4PrHIMjOlvvIUQ8UBw
+	 qlW0eBN0AhPqgTddjnXrX7KG2A6khwX6JoGzIb7a1V7ocQVZFwDLDcx3oIQ/5xO70y
+	 X7IWvAVzkhMyrJ7rghVnF9angaB6xl4aEAA6ADH4nWRHqPb8IjHvBwXhIo7Ourde8r
+	 PZObQxs2mi2Z3tXEGcjxmw4IFQiZzRSqk8qS8Y2baOvM7o4k90oBQkjCasJ/iGL9MD
+	 zGm13+nbcqcMw==
 From: Arnd Bergmann <arnd@kernel.org>
 To: Lee Jones <lee@kernel.org>,
 	mfd@lists.linux.dev
@@ -86,9 +86,9 @@ Cc: linux-kernel@vger.kernel.org,
 	linux-sound@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
 	llvm@lists.linux.dev
-Subject: [PATCH 10/14] mfd: remove unused rc5t583 driver
-Date: Wed,  9 Sep 2026 15:21:47 +0200
-Message-ID: <20260909132153.1596191-11-arnd@kernel.org>
+Subject: [PATCH 09/14] mfd: remove unused lm3533 driver
+Date: Wed,  9 Sep 2026 15:21:46 +0200
+Message-ID: <20260909132153.1596191-10-arnd@kernel.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260909132153.1596191-1-arnd@kernel.org>
 References: <20260909132153.1596191-1-arnd@kernel.org>
@@ -109,1697 +109,3187 @@ Content-Transfer-Encoding: 8bit
 
 From: Arnd Bergmann <arnd@arndb.de>
 
-Ricoh RC5T583 support was added in 2012, but no upstream code ever
-defined the corresponding platform_data, and there is no devicetree
-support, so this is all dead code.
+This driver has apparently never had any users, as it does not support
+devicetree probing, and no lm3533_platform_data definition ever
+existed upstream.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- drivers/mfd/Kconfig                   |  14 -
- drivers/mfd/Makefile                  |   1 -
- drivers/mfd/rc5t583-irq.c             | 383 --------------------------
- drivers/mfd/rc5t583.c                 | 299 --------------------
- drivers/regulator/Kconfig             |  10 -
- drivers/regulator/Makefile            |   1 -
- drivers/regulator/rc5t583-regulator.c | 171 ------------
- drivers/rtc/Kconfig                   |  10 -
- drivers/rtc/Makefile                  |   1 -
- drivers/rtc/rtc-rc5t583.c             | 312 ---------------------
- include/linux/mfd/rc5t583.h           | 369 -------------------------
- 11 files changed, 1571 deletions(-)
- delete mode 100644 drivers/mfd/rc5t583-irq.c
- delete mode 100644 drivers/mfd/rc5t583.c
- delete mode 100644 drivers/regulator/rc5t583-regulator.c
- delete mode 100644 drivers/rtc/rtc-rc5t583.c
- delete mode 100644 include/linux/mfd/rc5t583.h
+ drivers/iio/light/Kconfig           |  17 -
+ drivers/iio/light/Makefile          |   1 -
+ drivers/iio/light/lm3533-als.c      | 922 ----------------------------
+ drivers/leds/Kconfig                |  13 -
+ drivers/leds/Makefile               |   1 -
+ drivers/leds/leds-lm3533.c          | 755 -----------------------
+ drivers/mfd/Kconfig                 |  13 -
+ drivers/mfd/Makefile                |   1 -
+ drivers/mfd/lm3533-core.c           | 635 -------------------
+ drivers/mfd/lm3533-ctrlbank.c       | 162 -----
+ drivers/video/backlight/Kconfig     |  11 -
+ drivers/video/backlight/Makefile    |   1 -
+ drivers/video/backlight/lm3533_bl.c | 398 ------------
+ include/linux/mfd/lm3533.h          |  99 ---
+ 14 files changed, 3029 deletions(-)
+ delete mode 100644 drivers/iio/light/lm3533-als.c
+ delete mode 100644 drivers/leds/leds-lm3533.c
+ delete mode 100644 drivers/mfd/lm3533-core.c
+ delete mode 100644 drivers/mfd/lm3533-ctrlbank.c
+ delete mode 100644 drivers/video/backlight/lm3533_bl.c
+ delete mode 100644 include/linux/mfd/lm3533.h
 
+diff --git a/drivers/iio/light/Kconfig b/drivers/iio/light/Kconfig
+index f23bbce12c72..afef3d25e6ed 100644
+--- a/drivers/iio/light/Kconfig
++++ b/drivers/iio/light/Kconfig
+@@ -394,23 +394,6 @@ config RPR0521
+ 	  To compile this driver as a module, choose M here:
+ 	  the module will be called rpr0521.
+ 
+-config SENSORS_LM3533
+-	tristate "LM3533 ambient light sensor"
+-	depends on MFD_LM3533
+-	help
+-	  If you say yes here you get support for the ambient light sensor
+-	  interface on National Semiconductor / TI LM3533 Lighting Power
+-	  chips.
+-
+-	  The sensor interface can be used to control the LEDs and backlights
+-	  of the chip through defining five light zones and three sets of
+-	  corresponding output-current values.
+-
+-	  The driver provides raw and mean adc readings along with the current
+-	  light zone through sysfs. A threshold event can be generated on zone
+-	  changes. The ALS-control output values can be set per zone for the
+-	  three current output channels.
+-
+ config LTR390
+ 	tristate "LTR-390UV-01 ambient light and UV sensor"
+ 	depends on I2C
+diff --git a/drivers/iio/light/Makefile b/drivers/iio/light/Makefile
+index 64e354c49ed8..7b9de7c83999 100644
+--- a/drivers/iio/light/Makefile
++++ b/drivers/iio/light/Makefile
+@@ -35,7 +35,6 @@ obj-$(CONFIG_SENSORS_ISL29028)	+= isl29028.o
+ obj-$(CONFIG_ISL29125)		+= isl29125.o
+ obj-$(CONFIG_ISL76682)		+= isl76682.o
+ obj-$(CONFIG_JSA1212)		+= jsa1212.o
+-obj-$(CONFIG_SENSORS_LM3533)	+= lm3533-als.o
+ obj-$(CONFIG_LTR390)		+= ltr390.o
+ obj-$(CONFIG_LTR501)		+= ltr501.o
+ obj-$(CONFIG_LTRF216A)		+= ltrf216a.o
+diff --git a/drivers/iio/light/lm3533-als.c b/drivers/iio/light/lm3533-als.c
+deleted file mode 100644
+index 99f0b903018c..000000000000
+--- a/drivers/iio/light/lm3533-als.c
++++ /dev/null
+@@ -1,922 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-or-later
+-/*
+- * lm3533-als.c -- LM3533 Ambient Light Sensor driver
+- *
+- * Copyright (C) 2011-2012 Texas Instruments
+- *
+- * Author: Johan Hovold <jhovold@gmail.com>
+- */
+-
+-#include <linux/atomic.h>
+-#include <linux/fs.h>
+-#include <linux/interrupt.h>
+-#include <linux/io.h>
+-#include <linux/iio/events.h>
+-#include <linux/iio/iio.h>
+-#include <linux/module.h>
+-#include <linux/mutex.h>
+-#include <linux/mfd/core.h>
+-#include <linux/platform_device.h>
+-#include <linux/slab.h>
+-#include <linux/uaccess.h>
+-
+-#include <linux/mfd/lm3533.h>
+-
+-
+-#define LM3533_ALS_RESISTOR_MIN			1
+-#define LM3533_ALS_RESISTOR_MAX			127
+-#define LM3533_ALS_CHANNEL_CURRENT_MAX		2
+-#define LM3533_ALS_THRESH_MAX			3
+-#define LM3533_ALS_ZONE_MAX			4
+-
+-#define LM3533_REG_ALS_RESISTOR_SELECT		0x30
+-#define LM3533_REG_ALS_CONF			0x31
+-#define LM3533_REG_ALS_ZONE_INFO		0x34
+-#define LM3533_REG_ALS_READ_ADC_RAW		0x37
+-#define LM3533_REG_ALS_READ_ADC_AVERAGE		0x38
+-#define LM3533_REG_ALS_BOUNDARY_BASE		0x50
+-#define LM3533_REG_ALS_TARGET_BASE		0x60
+-
+-#define LM3533_ALS_ENABLE_MASK			0x01
+-#define LM3533_ALS_INPUT_MODE_MASK		0x02
+-#define LM3533_ALS_INT_ENABLE_MASK		0x01
+-
+-#define LM3533_ALS_ZONE_SHIFT			2
+-#define LM3533_ALS_ZONE_MASK			0x1c
+-
+-#define LM3533_ALS_FLAG_INT_ENABLED		1
+-
+-
+-struct lm3533_als {
+-	struct lm3533 *lm3533;
+-	struct platform_device *pdev;
+-
+-	unsigned long flags;
+-	int irq;
+-
+-	atomic_t zone;
+-	struct mutex thresh_mutex;
+-};
+-
+-
+-static int lm3533_als_get_adc(struct iio_dev *indio_dev, bool average,
+-								int *adc)
+-{
+-	struct lm3533_als *als = iio_priv(indio_dev);
+-	u8 reg;
+-	u8 val;
+-	int ret;
+-
+-	if (average)
+-		reg = LM3533_REG_ALS_READ_ADC_AVERAGE;
+-	else
+-		reg = LM3533_REG_ALS_READ_ADC_RAW;
+-
+-	ret = lm3533_read(als->lm3533, reg, &val);
+-	if (ret) {
+-		dev_err(&indio_dev->dev, "failed to read adc\n");
+-		return ret;
+-	}
+-
+-	*adc = val;
+-
+-	return 0;
+-}
+-
+-static int _lm3533_als_get_zone(struct iio_dev *indio_dev, u8 *zone)
+-{
+-	struct lm3533_als *als = iio_priv(indio_dev);
+-	u8 val;
+-	int ret;
+-
+-	ret = lm3533_read(als->lm3533, LM3533_REG_ALS_ZONE_INFO, &val);
+-	if (ret) {
+-		dev_err(&indio_dev->dev, "failed to read zone\n");
+-		return ret;
+-	}
+-
+-	val = (val & LM3533_ALS_ZONE_MASK) >> LM3533_ALS_ZONE_SHIFT;
+-	*zone = min_t(u8, val, LM3533_ALS_ZONE_MAX);
+-
+-	return 0;
+-}
+-
+-static int lm3533_als_get_zone(struct iio_dev *indio_dev, u8 *zone)
+-{
+-	struct lm3533_als *als = iio_priv(indio_dev);
+-	int ret;
+-
+-	if (test_bit(LM3533_ALS_FLAG_INT_ENABLED, &als->flags)) {
+-		*zone = atomic_read(&als->zone);
+-	} else {
+-		ret = _lm3533_als_get_zone(indio_dev, zone);
+-		if (ret)
+-			return ret;
+-	}
+-
+-	return 0;
+-}
+-
+-/*
+- * channel	output channel 0..2
+- * zone		zone 0..4
+- */
+-static inline u8 lm3533_als_get_target_reg(unsigned channel, unsigned zone)
+-{
+-	return LM3533_REG_ALS_TARGET_BASE + 5 * channel + zone;
+-}
+-
+-static int lm3533_als_get_target(struct iio_dev *indio_dev, unsigned channel,
+-							unsigned zone, u8 *val)
+-{
+-	struct lm3533_als *als = iio_priv(indio_dev);
+-	u8 reg;
+-	int ret;
+-
+-	if (channel > LM3533_ALS_CHANNEL_CURRENT_MAX)
+-		return -EINVAL;
+-
+-	if (zone > LM3533_ALS_ZONE_MAX)
+-		return -EINVAL;
+-
+-	reg = lm3533_als_get_target_reg(channel, zone);
+-	ret = lm3533_read(als->lm3533, reg, val);
+-	if (ret)
+-		dev_err(&indio_dev->dev, "failed to get target current\n");
+-
+-	return ret;
+-}
+-
+-static int lm3533_als_set_target(struct iio_dev *indio_dev, unsigned channel,
+-							unsigned zone, u8 val)
+-{
+-	struct lm3533_als *als = iio_priv(indio_dev);
+-	u8 reg;
+-	int ret;
+-
+-	if (channel > LM3533_ALS_CHANNEL_CURRENT_MAX)
+-		return -EINVAL;
+-
+-	if (zone > LM3533_ALS_ZONE_MAX)
+-		return -EINVAL;
+-
+-	reg = lm3533_als_get_target_reg(channel, zone);
+-	ret = lm3533_write(als->lm3533, reg, val);
+-	if (ret)
+-		dev_err(&indio_dev->dev, "failed to set target current\n");
+-
+-	return ret;
+-}
+-
+-static int lm3533_als_get_current(struct iio_dev *indio_dev, unsigned channel,
+-								int *val)
+-{
+-	u8 zone;
+-	u8 target;
+-	int ret;
+-
+-	ret = lm3533_als_get_zone(indio_dev, &zone);
+-	if (ret)
+-		return ret;
+-
+-	ret = lm3533_als_get_target(indio_dev, channel, zone, &target);
+-	if (ret)
+-		return ret;
+-
+-	*val = target;
+-
+-	return 0;
+-}
+-
+-static int lm3533_als_read_raw(struct iio_dev *indio_dev,
+-				struct iio_chan_spec const *chan,
+-				int *val, int *val2, long mask)
+-{
+-	int ret;
+-
+-	switch (mask) {
+-	case IIO_CHAN_INFO_RAW:
+-		switch (chan->type) {
+-		case IIO_LIGHT:
+-			ret = lm3533_als_get_adc(indio_dev, false, val);
+-			break;
+-		case IIO_CURRENT:
+-			ret = lm3533_als_get_current(indio_dev, chan->channel,
+-									val);
+-			break;
+-		default:
+-			return -EINVAL;
+-		}
+-		break;
+-	case IIO_CHAN_INFO_AVERAGE_RAW:
+-		ret = lm3533_als_get_adc(indio_dev, true, val);
+-		break;
+-	default:
+-		return -EINVAL;
+-	}
+-
+-	if (ret)
+-		return ret;
+-
+-	return IIO_VAL_INT;
+-}
+-
+-#define CHANNEL_CURRENT(_channel)					\
+-	{								\
+-		.type		= IIO_CURRENT,				\
+-		.channel	= _channel,				\
+-		.indexed	= true,					\
+-		.output		= true,					\
+-		.info_mask_separate = BIT(IIO_CHAN_INFO_RAW),		\
+-	}
+-
+-static const struct iio_chan_spec lm3533_als_channels[] = {
+-	{
+-		.type		= IIO_LIGHT,
+-		.channel	= 0,
+-		.indexed	= true,
+-		.info_mask_separate = BIT(IIO_CHAN_INFO_AVERAGE_RAW) |
+-				   BIT(IIO_CHAN_INFO_RAW),
+-	},
+-	CHANNEL_CURRENT(0),
+-	CHANNEL_CURRENT(1),
+-	CHANNEL_CURRENT(2),
+-};
+-
+-static irqreturn_t lm3533_als_isr(int irq, void *dev_id)
+-{
+-
+-	struct iio_dev *indio_dev = dev_id;
+-	struct lm3533_als *als = iio_priv(indio_dev);
+-	u8 zone;
+-	int ret;
+-
+-	/* Clear interrupt by reading the ALS zone register. */
+-	ret = _lm3533_als_get_zone(indio_dev, &zone);
+-	if (ret)
+-		goto out;
+-
+-	atomic_set(&als->zone, zone);
+-
+-	iio_push_event(indio_dev,
+-		       IIO_UNMOD_EVENT_CODE(IIO_LIGHT,
+-					    0,
+-					    IIO_EV_TYPE_THRESH,
+-					    IIO_EV_DIR_EITHER),
+-		       iio_get_time_ns(indio_dev));
+-out:
+-	return IRQ_HANDLED;
+-}
+-
+-static int lm3533_als_set_int_mode(struct iio_dev *indio_dev, int enable)
+-{
+-	struct lm3533_als *als = iio_priv(indio_dev);
+-	u8 mask = LM3533_ALS_INT_ENABLE_MASK;
+-	u8 val;
+-	int ret;
+-
+-	if (enable)
+-		val = mask;
+-	else
+-		val = 0;
+-
+-	ret = lm3533_update(als->lm3533, LM3533_REG_ALS_ZONE_INFO, val, mask);
+-	if (ret) {
+-		dev_err(&indio_dev->dev, "failed to set int mode %d\n",
+-								enable);
+-		return ret;
+-	}
+-
+-	return 0;
+-}
+-
+-static int lm3533_als_get_int_mode(struct iio_dev *indio_dev, int *enable)
+-{
+-	struct lm3533_als *als = iio_priv(indio_dev);
+-	u8 mask = LM3533_ALS_INT_ENABLE_MASK;
+-	u8 val;
+-	int ret;
+-
+-	ret = lm3533_read(als->lm3533, LM3533_REG_ALS_ZONE_INFO, &val);
+-	if (ret) {
+-		dev_err(&indio_dev->dev, "failed to get int mode\n");
+-		return ret;
+-	}
+-
+-	*enable = !!(val & mask);
+-
+-	return 0;
+-}
+-
+-static inline u8 lm3533_als_get_threshold_reg(unsigned nr, bool raising)
+-{
+-	u8 offset = !raising;
+-
+-	return LM3533_REG_ALS_BOUNDARY_BASE + 2 * nr + offset;
+-}
+-
+-static int lm3533_als_get_threshold(struct iio_dev *indio_dev, unsigned nr,
+-							bool raising, u8 *val)
+-{
+-	struct lm3533_als *als = iio_priv(indio_dev);
+-	u8 reg;
+-	int ret;
+-
+-	if (nr > LM3533_ALS_THRESH_MAX)
+-		return -EINVAL;
+-
+-	reg = lm3533_als_get_threshold_reg(nr, raising);
+-	ret = lm3533_read(als->lm3533, reg, val);
+-	if (ret)
+-		dev_err(&indio_dev->dev, "failed to get threshold\n");
+-
+-	return ret;
+-}
+-
+-static int lm3533_als_set_threshold(struct iio_dev *indio_dev, unsigned nr,
+-							bool raising, u8 val)
+-{
+-	struct lm3533_als *als = iio_priv(indio_dev);
+-	u8 val2;
+-	u8 reg, reg2;
+-	int ret;
+-
+-	if (nr > LM3533_ALS_THRESH_MAX)
+-		return -EINVAL;
+-
+-	reg = lm3533_als_get_threshold_reg(nr, raising);
+-	reg2 = lm3533_als_get_threshold_reg(nr, !raising);
+-
+-	mutex_lock(&als->thresh_mutex);
+-	ret = lm3533_read(als->lm3533, reg2, &val2);
+-	if (ret) {
+-		dev_err(&indio_dev->dev, "failed to get threshold\n");
+-		goto out;
+-	}
+-	/*
+-	 * This device does not allow negative hysteresis (in fact, it uses
+-	 * whichever value is smaller as the lower bound) so we need to make
+-	 * sure that thresh_falling <= thresh_raising.
+-	 */
+-	if ((raising && (val < val2)) || (!raising && (val > val2))) {
+-		ret = -EINVAL;
+-		goto out;
+-	}
+-
+-	ret = lm3533_write(als->lm3533, reg, val);
+-	if (ret) {
+-		dev_err(&indio_dev->dev, "failed to set threshold\n");
+-		goto out;
+-	}
+-out:
+-	mutex_unlock(&als->thresh_mutex);
+-
+-	return ret;
+-}
+-
+-static int lm3533_als_get_hysteresis(struct iio_dev *indio_dev, unsigned nr,
+-								u8 *val)
+-{
+-	struct lm3533_als *als = iio_priv(indio_dev);
+-	u8 falling;
+-	u8 raising;
+-	int ret;
+-
+-	if (nr > LM3533_ALS_THRESH_MAX)
+-		return -EINVAL;
+-
+-	mutex_lock(&als->thresh_mutex);
+-	ret = lm3533_als_get_threshold(indio_dev, nr, false, &falling);
+-	if (ret)
+-		goto out;
+-	ret = lm3533_als_get_threshold(indio_dev, nr, true, &raising);
+-	if (ret)
+-		goto out;
+-
+-	*val = raising - falling;
+-out:
+-	mutex_unlock(&als->thresh_mutex);
+-
+-	return ret;
+-}
+-
+-static ssize_t show_thresh_either_en(struct device *dev,
+-					struct device_attribute *attr,
+-					char *buf)
+-{
+-	struct iio_dev *indio_dev = dev_to_iio_dev(dev);
+-	struct lm3533_als *als = iio_priv(indio_dev);
+-	int enable;
+-	int ret;
+-
+-	if (als->irq) {
+-		ret = lm3533_als_get_int_mode(indio_dev, &enable);
+-		if (ret)
+-			return ret;
+-	} else {
+-		enable = 0;
+-	}
+-
+-	return sysfs_emit(buf, "%u\n", enable);
+-}
+-
+-static ssize_t store_thresh_either_en(struct device *dev,
+-					struct device_attribute *attr,
+-					const char *buf, size_t len)
+-{
+-	struct iio_dev *indio_dev = dev_to_iio_dev(dev);
+-	struct lm3533_als *als = iio_priv(indio_dev);
+-	unsigned long enable;
+-	bool int_enabled;
+-	u8 zone;
+-	int ret;
+-
+-	if (!als->irq)
+-		return -EBUSY;
+-
+-	if (kstrtoul(buf, 0, &enable))
+-		return -EINVAL;
+-
+-	int_enabled = test_bit(LM3533_ALS_FLAG_INT_ENABLED, &als->flags);
+-
+-	if (enable && !int_enabled) {
+-		ret = lm3533_als_get_zone(indio_dev, &zone);
+-		if (ret)
+-			return ret;
+-
+-		atomic_set(&als->zone, zone);
+-
+-		set_bit(LM3533_ALS_FLAG_INT_ENABLED, &als->flags);
+-	}
+-
+-	ret = lm3533_als_set_int_mode(indio_dev, enable);
+-	if (ret) {
+-		if (!int_enabled)
+-			clear_bit(LM3533_ALS_FLAG_INT_ENABLED, &als->flags);
+-
+-		return ret;
+-	}
+-
+-	if (!enable)
+-		clear_bit(LM3533_ALS_FLAG_INT_ENABLED, &als->flags);
+-
+-	return len;
+-}
+-
+-static ssize_t show_zone(struct device *dev,
+-				struct device_attribute *attr, char *buf)
+-{
+-	struct iio_dev *indio_dev = dev_to_iio_dev(dev);
+-	u8 zone;
+-	int ret;
+-
+-	ret = lm3533_als_get_zone(indio_dev, &zone);
+-	if (ret)
+-		return ret;
+-
+-	return sysfs_emit(buf, "%u\n", zone);
+-}
+-
+-enum lm3533_als_attribute_type {
+-	LM3533_ATTR_TYPE_HYSTERESIS,
+-	LM3533_ATTR_TYPE_TARGET,
+-	LM3533_ATTR_TYPE_THRESH_FALLING,
+-	LM3533_ATTR_TYPE_THRESH_RAISING,
+-};
+-
+-struct lm3533_als_attribute {
+-	struct device_attribute dev_attr;
+-	enum lm3533_als_attribute_type type;
+-	u8 val1;
+-	u8 val2;
+-};
+-
+-static inline struct lm3533_als_attribute *
+-to_lm3533_als_attr(struct device_attribute *attr)
+-{
+-	return container_of(attr, struct lm3533_als_attribute, dev_attr);
+-}
+-
+-static ssize_t show_als_attr(struct device *dev,
+-					struct device_attribute *attr,
+-					char *buf)
+-{
+-	struct iio_dev *indio_dev = dev_to_iio_dev(dev);
+-	struct lm3533_als_attribute *als_attr = to_lm3533_als_attr(attr);
+-	u8 val;
+-	int ret;
+-
+-	switch (als_attr->type) {
+-	case LM3533_ATTR_TYPE_HYSTERESIS:
+-		ret = lm3533_als_get_hysteresis(indio_dev, als_attr->val1,
+-									&val);
+-		break;
+-	case LM3533_ATTR_TYPE_TARGET:
+-		ret = lm3533_als_get_target(indio_dev, als_attr->val1,
+-							als_attr->val2, &val);
+-		break;
+-	case LM3533_ATTR_TYPE_THRESH_FALLING:
+-		ret = lm3533_als_get_threshold(indio_dev, als_attr->val1,
+-								false, &val);
+-		break;
+-	case LM3533_ATTR_TYPE_THRESH_RAISING:
+-		ret = lm3533_als_get_threshold(indio_dev, als_attr->val1,
+-								true, &val);
+-		break;
+-	default:
+-		ret = -ENXIO;
+-	}
+-
+-	if (ret)
+-		return ret;
+-
+-	return sysfs_emit(buf, "%u\n", val);
+-}
+-
+-static ssize_t store_als_attr(struct device *dev,
+-					struct device_attribute *attr,
+-					const char *buf, size_t len)
+-{
+-	struct iio_dev *indio_dev = dev_to_iio_dev(dev);
+-	struct lm3533_als_attribute *als_attr = to_lm3533_als_attr(attr);
+-	u8 val;
+-	int ret;
+-
+-	if (kstrtou8(buf, 0, &val))
+-		return -EINVAL;
+-
+-	switch (als_attr->type) {
+-	case LM3533_ATTR_TYPE_TARGET:
+-		ret = lm3533_als_set_target(indio_dev, als_attr->val1,
+-							als_attr->val2, val);
+-		break;
+-	case LM3533_ATTR_TYPE_THRESH_FALLING:
+-		ret = lm3533_als_set_threshold(indio_dev, als_attr->val1,
+-								false, val);
+-		break;
+-	case LM3533_ATTR_TYPE_THRESH_RAISING:
+-		ret = lm3533_als_set_threshold(indio_dev, als_attr->val1,
+-								true, val);
+-		break;
+-	default:
+-		ret = -ENXIO;
+-	}
+-
+-	if (ret)
+-		return ret;
+-
+-	return len;
+-}
+-
+-#define ALS_ATTR(_name, _mode, _show, _store, _type, _val1, _val2)	\
+-	{ .dev_attr	= __ATTR(_name, _mode, _show, _store),		\
+-	  .type		= _type,					\
+-	  .val1		= _val1,					\
+-	  .val2		= _val2 }
+-
+-#define LM3533_ALS_ATTR(_name, _mode, _show, _store, _type, _val1, _val2) \
+-	struct lm3533_als_attribute lm3533_als_attr_##_name =		  \
+-		ALS_ATTR(_name, _mode, _show, _store, _type, _val1, _val2)
+-
+-#define ALS_TARGET_ATTR_RW(_channel, _zone)				\
+-	LM3533_ALS_ATTR(out_current##_channel##_current##_zone##_raw,	\
+-				S_IRUGO | S_IWUSR,			\
+-				show_als_attr, store_als_attr,		\
+-				LM3533_ATTR_TYPE_TARGET, _channel, _zone)
+-/*
+- * ALS output current values (ALS mapper targets)
+- *
+- * out_current[0-2]_current[0-4]_raw		0-255
+- */
+-static ALS_TARGET_ATTR_RW(0, 0);
+-static ALS_TARGET_ATTR_RW(0, 1);
+-static ALS_TARGET_ATTR_RW(0, 2);
+-static ALS_TARGET_ATTR_RW(0, 3);
+-static ALS_TARGET_ATTR_RW(0, 4);
+-
+-static ALS_TARGET_ATTR_RW(1, 0);
+-static ALS_TARGET_ATTR_RW(1, 1);
+-static ALS_TARGET_ATTR_RW(1, 2);
+-static ALS_TARGET_ATTR_RW(1, 3);
+-static ALS_TARGET_ATTR_RW(1, 4);
+-
+-static ALS_TARGET_ATTR_RW(2, 0);
+-static ALS_TARGET_ATTR_RW(2, 1);
+-static ALS_TARGET_ATTR_RW(2, 2);
+-static ALS_TARGET_ATTR_RW(2, 3);
+-static ALS_TARGET_ATTR_RW(2, 4);
+-
+-#define ALS_THRESH_FALLING_ATTR_RW(_nr)					\
+-	LM3533_ALS_ATTR(in_illuminance0_thresh##_nr##_falling_value,	\
+-			S_IRUGO | S_IWUSR,				\
+-			show_als_attr, store_als_attr,		\
+-			LM3533_ATTR_TYPE_THRESH_FALLING, _nr, 0)
+-
+-#define ALS_THRESH_RAISING_ATTR_RW(_nr)					\
+-	LM3533_ALS_ATTR(in_illuminance0_thresh##_nr##_raising_value,	\
+-			S_IRUGO | S_IWUSR,				\
+-			show_als_attr, store_als_attr,			\
+-			LM3533_ATTR_TYPE_THRESH_RAISING, _nr, 0)
+-/*
+- * ALS Zone thresholds (boundaries)
+- *
+- * in_illuminance0_thresh[0-3]_falling_value	0-255
+- * in_illuminance0_thresh[0-3]_raising_value	0-255
+- */
+-static ALS_THRESH_FALLING_ATTR_RW(0);
+-static ALS_THRESH_FALLING_ATTR_RW(1);
+-static ALS_THRESH_FALLING_ATTR_RW(2);
+-static ALS_THRESH_FALLING_ATTR_RW(3);
+-
+-static ALS_THRESH_RAISING_ATTR_RW(0);
+-static ALS_THRESH_RAISING_ATTR_RW(1);
+-static ALS_THRESH_RAISING_ATTR_RW(2);
+-static ALS_THRESH_RAISING_ATTR_RW(3);
+-
+-#define ALS_HYSTERESIS_ATTR_RO(_nr)					\
+-	LM3533_ALS_ATTR(in_illuminance0_thresh##_nr##_hysteresis,	\
+-			S_IRUGO, show_als_attr, NULL,			\
+-			LM3533_ATTR_TYPE_HYSTERESIS, _nr, 0)
+-/*
+- * ALS Zone threshold hysteresis
+- *
+- * threshY_hysteresis = threshY_raising - threshY_falling
+- *
+- * in_illuminance0_thresh[0-3]_hysteresis	0-255
+- * in_illuminance0_thresh[0-3]_hysteresis	0-255
+- */
+-static ALS_HYSTERESIS_ATTR_RO(0);
+-static ALS_HYSTERESIS_ATTR_RO(1);
+-static ALS_HYSTERESIS_ATTR_RO(2);
+-static ALS_HYSTERESIS_ATTR_RO(3);
+-
+-#define ILLUMINANCE_ATTR_RO(_name) \
+-	DEVICE_ATTR(in_illuminance0_##_name, S_IRUGO, show_##_name, NULL)
+-#define ILLUMINANCE_ATTR_RW(_name) \
+-	DEVICE_ATTR(in_illuminance0_##_name, S_IRUGO | S_IWUSR, \
+-						show_##_name, store_##_name)
+-/*
+- * ALS Zone threshold-event enable
+- *
+- * in_illuminance0_thresh_either_en		0,1
+- */
+-static ILLUMINANCE_ATTR_RW(thresh_either_en);
+-
+-/*
+- * ALS Current Zone
+- *
+- * in_illuminance0_zone		0-4
+- */
+-static ILLUMINANCE_ATTR_RO(zone);
+-
+-static struct attribute *lm3533_als_event_attributes[] = {
+-	&dev_attr_in_illuminance0_thresh_either_en.attr,
+-	&lm3533_als_attr_in_illuminance0_thresh0_falling_value.dev_attr.attr,
+-	&lm3533_als_attr_in_illuminance0_thresh0_hysteresis.dev_attr.attr,
+-	&lm3533_als_attr_in_illuminance0_thresh0_raising_value.dev_attr.attr,
+-	&lm3533_als_attr_in_illuminance0_thresh1_falling_value.dev_attr.attr,
+-	&lm3533_als_attr_in_illuminance0_thresh1_hysteresis.dev_attr.attr,
+-	&lm3533_als_attr_in_illuminance0_thresh1_raising_value.dev_attr.attr,
+-	&lm3533_als_attr_in_illuminance0_thresh2_falling_value.dev_attr.attr,
+-	&lm3533_als_attr_in_illuminance0_thresh2_hysteresis.dev_attr.attr,
+-	&lm3533_als_attr_in_illuminance0_thresh2_raising_value.dev_attr.attr,
+-	&lm3533_als_attr_in_illuminance0_thresh3_falling_value.dev_attr.attr,
+-	&lm3533_als_attr_in_illuminance0_thresh3_hysteresis.dev_attr.attr,
+-	&lm3533_als_attr_in_illuminance0_thresh3_raising_value.dev_attr.attr,
+-	NULL
+-};
+-
+-static const struct attribute_group lm3533_als_event_attribute_group = {
+-	.attrs = lm3533_als_event_attributes
+-};
+-
+-static struct attribute *lm3533_als_attributes[] = {
+-	&dev_attr_in_illuminance0_zone.attr,
+-	&lm3533_als_attr_out_current0_current0_raw.dev_attr.attr,
+-	&lm3533_als_attr_out_current0_current1_raw.dev_attr.attr,
+-	&lm3533_als_attr_out_current0_current2_raw.dev_attr.attr,
+-	&lm3533_als_attr_out_current0_current3_raw.dev_attr.attr,
+-	&lm3533_als_attr_out_current0_current4_raw.dev_attr.attr,
+-	&lm3533_als_attr_out_current1_current0_raw.dev_attr.attr,
+-	&lm3533_als_attr_out_current1_current1_raw.dev_attr.attr,
+-	&lm3533_als_attr_out_current1_current2_raw.dev_attr.attr,
+-	&lm3533_als_attr_out_current1_current3_raw.dev_attr.attr,
+-	&lm3533_als_attr_out_current1_current4_raw.dev_attr.attr,
+-	&lm3533_als_attr_out_current2_current0_raw.dev_attr.attr,
+-	&lm3533_als_attr_out_current2_current1_raw.dev_attr.attr,
+-	&lm3533_als_attr_out_current2_current2_raw.dev_attr.attr,
+-	&lm3533_als_attr_out_current2_current3_raw.dev_attr.attr,
+-	&lm3533_als_attr_out_current2_current4_raw.dev_attr.attr,
+-	NULL
+-};
+-
+-static const struct attribute_group lm3533_als_attribute_group = {
+-	.attrs = lm3533_als_attributes
+-};
+-
+-static int lm3533_als_set_input_mode(struct lm3533_als *als, bool pwm_mode)
+-{
+-	u8 mask = LM3533_ALS_INPUT_MODE_MASK;
+-	u8 val;
+-	int ret;
+-
+-	if (pwm_mode)
+-		val = mask;	/* pwm input */
+-	else
+-		val = 0;	/* analog input */
+-
+-	ret = lm3533_update(als->lm3533, LM3533_REG_ALS_CONF, val, mask);
+-	if (ret) {
+-		dev_err(&als->pdev->dev, "failed to set input mode %d\n",
+-								pwm_mode);
+-		return ret;
+-	}
+-
+-	return 0;
+-}
+-
+-static int lm3533_als_set_resistor(struct lm3533_als *als, u8 val)
+-{
+-	int ret;
+-
+-	if (val < LM3533_ALS_RESISTOR_MIN || val > LM3533_ALS_RESISTOR_MAX) {
+-		dev_err(&als->pdev->dev, "invalid resistor value\n");
+-		return -EINVAL;
+-	}
+-
+-	ret = lm3533_write(als->lm3533, LM3533_REG_ALS_RESISTOR_SELECT, val);
+-	if (ret) {
+-		dev_err(&als->pdev->dev, "failed to set resistor\n");
+-		return ret;
+-	}
+-
+-	return 0;
+-}
+-
+-static int lm3533_als_setup(struct lm3533_als *als,
+-			    const struct lm3533_als_platform_data *pdata)
+-{
+-	int ret;
+-
+-	ret = lm3533_als_set_input_mode(als, pdata->pwm_mode);
+-	if (ret)
+-		return ret;
+-
+-	/* ALS input is always high impedance in PWM-mode. */
+-	if (!pdata->pwm_mode) {
+-		ret = lm3533_als_set_resistor(als, pdata->r_select);
+-		if (ret)
+-			return ret;
+-	}
+-
+-	return 0;
+-}
+-
+-static int lm3533_als_setup_irq(struct lm3533_als *als, void *dev)
+-{
+-	u8 mask = LM3533_ALS_INT_ENABLE_MASK;
+-	int ret;
+-
+-	/* Make sure interrupts are disabled. */
+-	ret = lm3533_update(als->lm3533, LM3533_REG_ALS_ZONE_INFO, 0, mask);
+-	if (ret) {
+-		dev_err(&als->pdev->dev, "failed to disable interrupts\n");
+-		return ret;
+-	}
+-
+-	ret = request_threaded_irq(als->irq, NULL, lm3533_als_isr,
+-					IRQF_TRIGGER_LOW | IRQF_ONESHOT,
+-					dev_name(&als->pdev->dev), dev);
+-	if (ret) {
+-		dev_err(&als->pdev->dev, "failed to request irq %d\n",
+-								als->irq);
+-		return ret;
+-	}
+-
+-	return 0;
+-}
+-
+-static int lm3533_als_enable(struct lm3533_als *als)
+-{
+-	u8 mask = LM3533_ALS_ENABLE_MASK;
+-	int ret;
+-
+-	ret = lm3533_update(als->lm3533, LM3533_REG_ALS_CONF, mask, mask);
+-	if (ret)
+-		dev_err(&als->pdev->dev, "failed to enable ALS\n");
+-
+-	return ret;
+-}
+-
+-static int lm3533_als_disable(struct lm3533_als *als)
+-{
+-	u8 mask = LM3533_ALS_ENABLE_MASK;
+-	int ret;
+-
+-	ret = lm3533_update(als->lm3533, LM3533_REG_ALS_CONF, 0, mask);
+-	if (ret)
+-		dev_err(&als->pdev->dev, "failed to disable ALS\n");
+-
+-	return ret;
+-}
+-
+-static const struct iio_info lm3533_als_info = {
+-	.attrs		= &lm3533_als_attribute_group,
+-	.event_attrs	= &lm3533_als_event_attribute_group,
+-	.read_raw	= &lm3533_als_read_raw,
+-};
+-
+-static int lm3533_als_probe(struct platform_device *pdev)
+-{
+-	const struct lm3533_als_platform_data *pdata;
+-	struct lm3533 *lm3533;
+-	struct lm3533_als *als;
+-	struct iio_dev *indio_dev;
+-	int ret;
+-
+-	lm3533 = dev_get_drvdata(pdev->dev.parent);
+-	if (!lm3533)
+-		return -EINVAL;
+-
+-	pdata = dev_get_platdata(&pdev->dev);
+-	if (!pdata) {
+-		dev_err(&pdev->dev, "no platform data\n");
+-		return -EINVAL;
+-	}
+-
+-	indio_dev = devm_iio_device_alloc(&pdev->dev, sizeof(*als));
+-	if (!indio_dev)
+-		return -ENOMEM;
+-
+-	indio_dev->info = &lm3533_als_info;
+-	indio_dev->channels = lm3533_als_channels;
+-	indio_dev->num_channels = ARRAY_SIZE(lm3533_als_channels);
+-	indio_dev->name = dev_name(&pdev->dev);
+-	iio_device_set_parent(indio_dev, pdev->dev.parent);
+-	indio_dev->modes = INDIO_DIRECT_MODE;
+-
+-	als = iio_priv(indio_dev);
+-	als->lm3533 = lm3533;
+-	als->pdev = pdev;
+-	als->irq = lm3533->irq;
+-	atomic_set(&als->zone, 0);
+-	mutex_init(&als->thresh_mutex);
+-
+-	platform_set_drvdata(pdev, indio_dev);
+-
+-	if (als->irq) {
+-		ret = lm3533_als_setup_irq(als, indio_dev);
+-		if (ret)
+-			return ret;
+-	}
+-
+-	ret = lm3533_als_setup(als, pdata);
+-	if (ret)
+-		goto err_free_irq;
+-
+-	ret = lm3533_als_enable(als);
+-	if (ret)
+-		goto err_free_irq;
+-
+-	ret = iio_device_register(indio_dev);
+-	if (ret) {
+-		dev_err(&pdev->dev, "failed to register ALS\n");
+-		goto err_disable;
+-	}
+-
+-	return 0;
+-
+-err_disable:
+-	lm3533_als_disable(als);
+-err_free_irq:
+-	if (als->irq)
+-		free_irq(als->irq, indio_dev);
+-
+-	return ret;
+-}
+-
+-static void lm3533_als_remove(struct platform_device *pdev)
+-{
+-	struct iio_dev *indio_dev = platform_get_drvdata(pdev);
+-	struct lm3533_als *als = iio_priv(indio_dev);
+-
+-	lm3533_als_set_int_mode(indio_dev, false);
+-	iio_device_unregister(indio_dev);
+-	lm3533_als_disable(als);
+-	if (als->irq)
+-		free_irq(als->irq, indio_dev);
+-}
+-
+-static struct platform_driver lm3533_als_driver = {
+-	.driver	= {
+-		.name	= "lm3533-als",
+-	},
+-	.probe		= lm3533_als_probe,
+-	.remove		= lm3533_als_remove,
+-};
+-module_platform_driver(lm3533_als_driver);
+-
+-MODULE_AUTHOR("Johan Hovold <jhovold@gmail.com>");
+-MODULE_DESCRIPTION("LM3533 Ambient Light Sensor driver");
+-MODULE_LICENSE("GPL");
+-MODULE_ALIAS("platform:lm3533-als");
+diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
+index f0cd10ad6279..1a0663a6501c 100644
+--- a/drivers/leds/Kconfig
++++ b/drivers/leds/Kconfig
+@@ -262,19 +262,6 @@ config LEDS_LM3532
+ 	  controlled manually or using PWM input or using ambient
+ 	  light automatically.
+ 
+-config LEDS_LM3533
+-	tristate "LED support for LM3533"
+-	depends on LEDS_CLASS
+-	depends on MFD_LM3533
+-	help
+-	  This option enables support for the LEDs on National Semiconductor /
+-	  TI LM3533 Lighting Power chips.
+-
+-	  The LEDs can be controlled directly, through PWM input, or by the
+-	  ambient-light-sensor interface. The chip supports
+-	  hardware-accelerated blinking with maximum on and off periods of 9.8
+-	  and 77 seconds respectively.
+-
+ config LEDS_LM3642
+ 	tristate "LED support for LM3642 Chip"
+ 	depends on LEDS_CLASS && I2C
+diff --git a/drivers/leds/Makefile b/drivers/leds/Makefile
+index 63dc0b0c5a51..b989803bedb9 100644
+--- a/drivers/leds/Makefile
++++ b/drivers/leds/Makefile
+@@ -39,7 +39,6 @@ obj-$(CONFIG_LEDS_IS31FL319X)		+= leds-is31fl319x.o
+ obj-$(CONFIG_LEDS_IS31FL32XX)		+= leds-is31fl32xx.o
+ obj-$(CONFIG_LEDS_LM3530)		+= leds-lm3530.o
+ obj-$(CONFIG_LEDS_LM3532)		+= leds-lm3532.o
+-obj-$(CONFIG_LEDS_LM3533)		+= leds-lm3533.o
+ obj-$(CONFIG_LEDS_LM355x)		+= leds-lm355x.o
+ obj-$(CONFIG_LEDS_LM36274)		+= leds-lm36274.o
+ obj-$(CONFIG_LEDS_LM3642)		+= leds-lm3642.o
+diff --git a/drivers/leds/leds-lm3533.c b/drivers/leds/leds-lm3533.c
+deleted file mode 100644
+index 45795f2a1042..000000000000
+--- a/drivers/leds/leds-lm3533.c
++++ /dev/null
+@@ -1,755 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-or-later
+-/*
+- * leds-lm3533.c -- LM3533 LED driver
+- *
+- * Copyright (C) 2011-2012 Texas Instruments
+- *
+- * Author: Johan Hovold <jhovold@gmail.com>
+- */
+-
+-#include <linux/module.h>
+-#include <linux/leds.h>
+-#include <linux/mfd/core.h>
+-#include <linux/mutex.h>
+-#include <linux/platform_device.h>
+-#include <linux/slab.h>
+-
+-#include <linux/mfd/lm3533.h>
+-
+-
+-#define LM3533_LVCTRLBANK_MIN		2
+-#define LM3533_LVCTRLBANK_MAX		5
+-#define LM3533_LVCTRLBANK_COUNT		4
+-#define LM3533_RISEFALLTIME_MAX		7
+-#define LM3533_ALS_CHANNEL_LV_MIN	1
+-#define LM3533_ALS_CHANNEL_LV_MAX	2
+-
+-#define LM3533_REG_CTRLBANK_BCONF_BASE		0x1b
+-#define LM3533_REG_PATTERN_ENABLE		0x28
+-#define LM3533_REG_PATTERN_LOW_TIME_BASE	0x71
+-#define LM3533_REG_PATTERN_HIGH_TIME_BASE	0x72
+-#define LM3533_REG_PATTERN_RISETIME_BASE	0x74
+-#define LM3533_REG_PATTERN_FALLTIME_BASE	0x75
+-
+-#define LM3533_REG_PATTERN_STEP			0x10
+-
+-#define LM3533_REG_CTRLBANK_BCONF_MAPPING_MASK		0x04
+-#define LM3533_REG_CTRLBANK_BCONF_ALS_EN_MASK		0x02
+-#define LM3533_REG_CTRLBANK_BCONF_ALS_CHANNEL_MASK	0x01
+-
+-#define LM3533_LED_FLAG_PATTERN_ENABLE		1
+-
+-
+-struct lm3533_led {
+-	struct lm3533 *lm3533;
+-	struct lm3533_ctrlbank cb;
+-	struct led_classdev cdev;
+-	int id;
+-
+-	struct mutex mutex;
+-	unsigned long flags;
+-};
+-
+-
+-static inline struct lm3533_led *to_lm3533_led(struct led_classdev *cdev)
+-{
+-	return container_of(cdev, struct lm3533_led, cdev);
+-}
+-
+-static inline int lm3533_led_get_ctrlbank_id(struct lm3533_led *led)
+-{
+-	return led->id + 2;
+-}
+-
+-static inline u8 lm3533_led_get_lv_reg(struct lm3533_led *led, u8 base)
+-{
+-	return base + led->id;
+-}
+-
+-static inline u8 lm3533_led_get_pattern(struct lm3533_led *led)
+-{
+-	return led->id;
+-}
+-
+-static inline u8 lm3533_led_get_pattern_reg(struct lm3533_led *led,
+-								u8 base)
+-{
+-	return base + lm3533_led_get_pattern(led) * LM3533_REG_PATTERN_STEP;
+-}
+-
+-static int lm3533_led_pattern_enable(struct lm3533_led *led, int enable)
+-{
+-	u8 mask;
+-	u8 val;
+-	int pattern;
+-	int state;
+-	int ret = 0;
+-
+-	dev_dbg(led->cdev.dev, "%s - %d\n", __func__, enable);
+-
+-	mutex_lock(&led->mutex);
+-
+-	state = test_bit(LM3533_LED_FLAG_PATTERN_ENABLE, &led->flags);
+-	if ((enable && state) || (!enable && !state))
+-		goto out;
+-
+-	pattern = lm3533_led_get_pattern(led);
+-	mask = 1 << (2 * pattern);
+-
+-	if (enable)
+-		val = mask;
+-	else
+-		val = 0;
+-
+-	ret = lm3533_update(led->lm3533, LM3533_REG_PATTERN_ENABLE, val, mask);
+-	if (ret) {
+-		dev_err(led->cdev.dev, "failed to enable pattern %d (%d)\n",
+-							pattern, enable);
+-		goto out;
+-	}
+-
+-	__change_bit(LM3533_LED_FLAG_PATTERN_ENABLE, &led->flags);
+-out:
+-	mutex_unlock(&led->mutex);
+-
+-	return ret;
+-}
+-
+-static int lm3533_led_set(struct led_classdev *cdev,
+-						enum led_brightness value)
+-{
+-	struct lm3533_led *led = to_lm3533_led(cdev);
+-
+-	dev_dbg(led->cdev.dev, "%s - %d\n", __func__, value);
+-
+-	if (value == 0)
+-		lm3533_led_pattern_enable(led, 0);	/* disable blink */
+-
+-	return lm3533_ctrlbank_set_brightness(&led->cb, value);
+-}
+-
+-static enum led_brightness lm3533_led_get(struct led_classdev *cdev)
+-{
+-	struct lm3533_led *led = to_lm3533_led(cdev);
+-	u8 val;
+-	int ret;
+-
+-	ret = lm3533_ctrlbank_get_brightness(&led->cb, &val);
+-	if (ret)
+-		return ret;
+-
+-	dev_dbg(led->cdev.dev, "%s - %u\n", __func__, val);
+-
+-	return val;
+-}
+-
+-/* Pattern generator defines (delays in us). */
+-#define LM3533_LED_DELAY1_VMIN	0x00
+-#define LM3533_LED_DELAY2_VMIN	0x3d
+-#define LM3533_LED_DELAY3_VMIN	0x80
+-
+-#define LM3533_LED_DELAY1_VMAX	(LM3533_LED_DELAY2_VMIN - 1)
+-#define LM3533_LED_DELAY2_VMAX	(LM3533_LED_DELAY3_VMIN - 1)
+-#define LM3533_LED_DELAY3_VMAX	0xff
+-
+-#define LM3533_LED_DELAY1_TMIN	16384U
+-#define LM3533_LED_DELAY2_TMIN	1130496U
+-#define LM3533_LED_DELAY3_TMIN	10305536U
+-
+-#define LM3533_LED_DELAY1_TMAX	999424U
+-#define LM3533_LED_DELAY2_TMAX	9781248U
+-#define LM3533_LED_DELAY3_TMAX	76890112U
+-
+-/* t_step = (t_max - t_min) / (v_max - v_min) */
+-#define LM3533_LED_DELAY1_TSTEP	16384
+-#define LM3533_LED_DELAY2_TSTEP	131072
+-#define LM3533_LED_DELAY3_TSTEP	524288
+-
+-/* Delay limits for hardware accelerated blinking (in ms). */
+-#define LM3533_LED_DELAY_ON_MAX \
+-	((LM3533_LED_DELAY2_TMAX + LM3533_LED_DELAY2_TSTEP / 2) / 1000)
+-#define LM3533_LED_DELAY_OFF_MAX \
+-	((LM3533_LED_DELAY3_TMAX + LM3533_LED_DELAY3_TSTEP / 2) / 1000)
+-
+-/*
+- * Returns linear map of *t from [t_min,t_max] to [v_min,v_max] with a step
+- * size of t_step, where
+- *
+- *	t_step = (t_max - t_min) / (v_max - v_min)
+- *
+- * and updates *t to reflect the mapped value.
+- */
+-static u8 time_to_val(unsigned *t, unsigned t_min, unsigned t_step,
+-							u8 v_min, u8 v_max)
+-{
+-	unsigned val;
+-
+-	val = (*t + t_step / 2 - t_min) / t_step + v_min;
+-
+-	*t = t_step * (val - v_min) + t_min;
+-
+-	return (u8)val;
+-}
+-
+-/*
+- * Returns time code corresponding to *delay (in ms) and updates *delay to
+- * reflect actual hardware delay.
+- *
+- * Hardware supports 256 discrete delay times, divided into three groups with
+- * the following ranges and step-sizes:
+- *
+- *	[   16,   999]	[0x00, 0x3e]	step  16 ms
+- *	[ 1130,  9781]	[0x3d, 0x7f]	step 131 ms
+- *	[10306, 76890]	[0x80, 0xff]	step 524 ms
+- *
+- * Note that delay group 3 is only available for delay_off.
+- */
+-static u8 lm3533_led_get_hw_delay(unsigned *delay)
+-{
+-	unsigned t;
+-	u8 val;
+-
+-	t = *delay * 1000;
+-
+-	if (t >= (LM3533_LED_DELAY2_TMAX + LM3533_LED_DELAY3_TMIN) / 2) {
+-		t = clamp(t, LM3533_LED_DELAY3_TMIN, LM3533_LED_DELAY3_TMAX);
+-		val = time_to_val(&t,	LM3533_LED_DELAY3_TMIN,
+-					LM3533_LED_DELAY3_TSTEP,
+-					LM3533_LED_DELAY3_VMIN,
+-					LM3533_LED_DELAY3_VMAX);
+-	} else if (t >= (LM3533_LED_DELAY1_TMAX + LM3533_LED_DELAY2_TMIN) / 2) {
+-		t = clamp(t, LM3533_LED_DELAY2_TMIN, LM3533_LED_DELAY2_TMAX);
+-		val = time_to_val(&t,	LM3533_LED_DELAY2_TMIN,
+-					LM3533_LED_DELAY2_TSTEP,
+-					LM3533_LED_DELAY2_VMIN,
+-					LM3533_LED_DELAY2_VMAX);
+-	} else {
+-		t = clamp(t, LM3533_LED_DELAY1_TMIN, LM3533_LED_DELAY1_TMAX);
+-		val = time_to_val(&t,	LM3533_LED_DELAY1_TMIN,
+-					LM3533_LED_DELAY1_TSTEP,
+-					LM3533_LED_DELAY1_VMIN,
+-					LM3533_LED_DELAY1_VMAX);
+-	}
+-
+-	*delay = (t + 500) / 1000;
+-
+-	return val;
+-}
+-
+-/*
+- * Set delay register base to *delay (in ms) and update *delay to reflect
+- * actual hardware delay used.
+- */
+-static u8 lm3533_led_delay_set(struct lm3533_led *led, u8 base,
+-							unsigned long *delay)
+-{
+-	unsigned t;
+-	u8 val;
+-	u8 reg;
+-	int ret;
+-
+-	t = (unsigned)*delay;
+-
+-	/* Delay group 3 is only available for low time (delay off). */
+-	if (base != LM3533_REG_PATTERN_LOW_TIME_BASE)
+-		t = min(t, LM3533_LED_DELAY2_TMAX / 1000);
+-
+-	val = lm3533_led_get_hw_delay(&t);
+-
+-	dev_dbg(led->cdev.dev, "%s - %lu: %u (0x%02x)\n", __func__,
+-							*delay, t, val);
+-	reg = lm3533_led_get_pattern_reg(led, base);
+-	ret = lm3533_write(led->lm3533, reg, val);
+-	if (ret)
+-		dev_err(led->cdev.dev, "failed to set delay (%02x)\n", reg);
+-
+-	*delay = t;
+-
+-	return ret;
+-}
+-
+-static int lm3533_led_delay_on_set(struct lm3533_led *led, unsigned long *t)
+-{
+-	return lm3533_led_delay_set(led, LM3533_REG_PATTERN_HIGH_TIME_BASE, t);
+-}
+-
+-static int lm3533_led_delay_off_set(struct lm3533_led *led, unsigned long *t)
+-{
+-	return lm3533_led_delay_set(led, LM3533_REG_PATTERN_LOW_TIME_BASE, t);
+-}
+-
+-static int lm3533_led_blink_set(struct led_classdev *cdev,
+-				unsigned long *delay_on,
+-				unsigned long *delay_off)
+-{
+-	struct lm3533_led *led = to_lm3533_led(cdev);
+-	int ret;
+-
+-	dev_dbg(led->cdev.dev, "%s - on = %lu, off = %lu\n", __func__,
+-							*delay_on, *delay_off);
+-
+-	if (*delay_on > LM3533_LED_DELAY_ON_MAX ||
+-					*delay_off > LM3533_LED_DELAY_OFF_MAX)
+-		return -EINVAL;
+-
+-	if (*delay_on == 0 && *delay_off == 0) {
+-		*delay_on = 500;
+-		*delay_off = 500;
+-	}
+-
+-	ret = lm3533_led_delay_on_set(led, delay_on);
+-	if (ret)
+-		return ret;
+-
+-	ret = lm3533_led_delay_off_set(led, delay_off);
+-	if (ret)
+-		return ret;
+-
+-	return lm3533_led_pattern_enable(led, 1);
+-}
+-
+-static ssize_t show_id(struct device *dev,
+-				struct device_attribute *attr, char *buf)
+-{
+-	struct led_classdev *led_cdev = dev_get_drvdata(dev);
+-	struct lm3533_led *led = to_lm3533_led(led_cdev);
+-
+-	return sysfs_emit(buf, "%d\n", led->id);
+-}
+-
+-/*
+- * Pattern generator rise/fall times:
+- *
+- *   0 - 2048 us (default)
+- *   1 - 262 ms
+- *   2 - 524 ms
+- *   3 - 1.049 s
+- *   4 - 2.097 s
+- *   5 - 4.194 s
+- *   6 - 8.389 s
+- *   7 - 16.78 s
+- */
+-static ssize_t show_risefalltime(struct device *dev,
+-					struct device_attribute *attr,
+-					char *buf, u8 base)
+-{
+-	struct led_classdev *led_cdev = dev_get_drvdata(dev);
+-	struct lm3533_led *led = to_lm3533_led(led_cdev);
+-	ssize_t ret;
+-	u8 reg;
+-	u8 val;
+-
+-	reg = lm3533_led_get_pattern_reg(led, base);
+-	ret = lm3533_read(led->lm3533, reg, &val);
+-	if (ret)
+-		return ret;
+-
+-	return sysfs_emit(buf, "%x\n", val);
+-}
+-
+-static ssize_t show_risetime(struct device *dev,
+-				struct device_attribute *attr, char *buf)
+-{
+-	return show_risefalltime(dev, attr, buf,
+-					LM3533_REG_PATTERN_RISETIME_BASE);
+-}
+-
+-static ssize_t show_falltime(struct device *dev,
+-				struct device_attribute *attr, char *buf)
+-{
+-	return show_risefalltime(dev, attr, buf,
+-					LM3533_REG_PATTERN_FALLTIME_BASE);
+-}
+-
+-static ssize_t store_risefalltime(struct device *dev,
+-					struct device_attribute *attr,
+-					const char *buf, size_t len, u8 base)
+-{
+-	struct led_classdev *led_cdev = dev_get_drvdata(dev);
+-	struct lm3533_led *led = to_lm3533_led(led_cdev);
+-	u8 val;
+-	u8 reg;
+-	int ret;
+-
+-	if (kstrtou8(buf, 0, &val) || val > LM3533_RISEFALLTIME_MAX)
+-		return -EINVAL;
+-
+-	reg = lm3533_led_get_pattern_reg(led, base);
+-	ret = lm3533_write(led->lm3533, reg, val);
+-	if (ret)
+-		return ret;
+-
+-	return len;
+-}
+-
+-static ssize_t store_risetime(struct device *dev,
+-					struct device_attribute *attr,
+-					const char *buf, size_t len)
+-{
+-	return store_risefalltime(dev, attr, buf, len,
+-					LM3533_REG_PATTERN_RISETIME_BASE);
+-}
+-
+-static ssize_t store_falltime(struct device *dev,
+-					struct device_attribute *attr,
+-					const char *buf, size_t len)
+-{
+-	return store_risefalltime(dev, attr, buf, len,
+-					LM3533_REG_PATTERN_FALLTIME_BASE);
+-}
+-
+-static ssize_t show_als_channel(struct device *dev,
+-				struct device_attribute *attr, char *buf)
+-{
+-	struct led_classdev *led_cdev = dev_get_drvdata(dev);
+-	struct lm3533_led *led = to_lm3533_led(led_cdev);
+-	unsigned channel;
+-	u8 reg;
+-	u8 val;
+-	int ret;
+-
+-	reg = lm3533_led_get_lv_reg(led, LM3533_REG_CTRLBANK_BCONF_BASE);
+-	ret = lm3533_read(led->lm3533, reg, &val);
+-	if (ret)
+-		return ret;
+-
+-	channel = (val & LM3533_REG_CTRLBANK_BCONF_ALS_CHANNEL_MASK) + 1;
+-
+-	return sysfs_emit(buf, "%u\n", channel);
+-}
+-
+-static ssize_t store_als_channel(struct device *dev,
+-					struct device_attribute *attr,
+-					const char *buf, size_t len)
+-{
+-	struct led_classdev *led_cdev = dev_get_drvdata(dev);
+-	struct lm3533_led *led = to_lm3533_led(led_cdev);
+-	unsigned channel;
+-	u8 reg;
+-	u8 val;
+-	u8 mask;
+-	int ret;
+-
+-	if (kstrtouint(buf, 0, &channel))
+-		return -EINVAL;
+-
+-	if (channel < LM3533_ALS_CHANNEL_LV_MIN ||
+-					channel > LM3533_ALS_CHANNEL_LV_MAX)
+-		return -EINVAL;
+-
+-	reg = lm3533_led_get_lv_reg(led, LM3533_REG_CTRLBANK_BCONF_BASE);
+-	mask = LM3533_REG_CTRLBANK_BCONF_ALS_CHANNEL_MASK;
+-	val = channel - 1;
+-
+-	ret = lm3533_update(led->lm3533, reg, val, mask);
+-	if (ret)
+-		return ret;
+-
+-	return len;
+-}
+-
+-static ssize_t show_als_en(struct device *dev,
+-				struct device_attribute *attr, char *buf)
+-{
+-	struct led_classdev *led_cdev = dev_get_drvdata(dev);
+-	struct lm3533_led *led = to_lm3533_led(led_cdev);
+-	bool enable;
+-	u8 reg;
+-	u8 val;
+-	int ret;
+-
+-	reg = lm3533_led_get_lv_reg(led, LM3533_REG_CTRLBANK_BCONF_BASE);
+-	ret = lm3533_read(led->lm3533, reg, &val);
+-	if (ret)
+-		return ret;
+-
+-	enable = val & LM3533_REG_CTRLBANK_BCONF_ALS_EN_MASK;
+-
+-	return sysfs_emit(buf, "%d\n", enable);
+-}
+-
+-static ssize_t store_als_en(struct device *dev,
+-					struct device_attribute *attr,
+-					const char *buf, size_t len)
+-{
+-	struct led_classdev *led_cdev = dev_get_drvdata(dev);
+-	struct lm3533_led *led = to_lm3533_led(led_cdev);
+-	unsigned enable;
+-	u8 reg;
+-	u8 mask;
+-	u8 val;
+-	int ret;
+-
+-	if (kstrtouint(buf, 0, &enable))
+-		return -EINVAL;
+-
+-	reg = lm3533_led_get_lv_reg(led, LM3533_REG_CTRLBANK_BCONF_BASE);
+-	mask = LM3533_REG_CTRLBANK_BCONF_ALS_EN_MASK;
+-
+-	if (enable)
+-		val = mask;
+-	else
+-		val = 0;
+-
+-	ret = lm3533_update(led->lm3533, reg, val, mask);
+-	if (ret)
+-		return ret;
+-
+-	return len;
+-}
+-
+-static ssize_t show_linear(struct device *dev,
+-				struct device_attribute *attr, char *buf)
+-{
+-	struct led_classdev *led_cdev = dev_get_drvdata(dev);
+-	struct lm3533_led *led = to_lm3533_led(led_cdev);
+-	u8 reg;
+-	u8 val;
+-	int linear;
+-	int ret;
+-
+-	reg = lm3533_led_get_lv_reg(led, LM3533_REG_CTRLBANK_BCONF_BASE);
+-	ret = lm3533_read(led->lm3533, reg, &val);
+-	if (ret)
+-		return ret;
+-
+-	if (val & LM3533_REG_CTRLBANK_BCONF_MAPPING_MASK)
+-		linear = 1;
+-	else
+-		linear = 0;
+-
+-	return sysfs_emit(buf, "%x\n", linear);
+-}
+-
+-static ssize_t store_linear(struct device *dev,
+-					struct device_attribute *attr,
+-					const char *buf, size_t len)
+-{
+-	struct led_classdev *led_cdev = dev_get_drvdata(dev);
+-	struct lm3533_led *led = to_lm3533_led(led_cdev);
+-	unsigned long linear;
+-	u8 reg;
+-	u8 mask;
+-	u8 val;
+-	int ret;
+-
+-	if (kstrtoul(buf, 0, &linear))
+-		return -EINVAL;
+-
+-	reg = lm3533_led_get_lv_reg(led, LM3533_REG_CTRLBANK_BCONF_BASE);
+-	mask = LM3533_REG_CTRLBANK_BCONF_MAPPING_MASK;
+-
+-	if (linear)
+-		val = mask;
+-	else
+-		val = 0;
+-
+-	ret = lm3533_update(led->lm3533, reg, val, mask);
+-	if (ret)
+-		return ret;
+-
+-	return len;
+-}
+-
+-static ssize_t show_pwm(struct device *dev,
+-					struct device_attribute *attr,
+-					char *buf)
+-{
+-	struct led_classdev *led_cdev = dev_get_drvdata(dev);
+-	struct lm3533_led *led = to_lm3533_led(led_cdev);
+-	u8 val;
+-	int ret;
+-
+-	ret = lm3533_ctrlbank_get_pwm(&led->cb, &val);
+-	if (ret)
+-		return ret;
+-
+-	return sysfs_emit(buf, "%u\n", val);
+-}
+-
+-static ssize_t store_pwm(struct device *dev,
+-					struct device_attribute *attr,
+-					const char *buf, size_t len)
+-{
+-	struct led_classdev *led_cdev = dev_get_drvdata(dev);
+-	struct lm3533_led *led = to_lm3533_led(led_cdev);
+-	u8 val;
+-	int ret;
+-
+-	if (kstrtou8(buf, 0, &val))
+-		return -EINVAL;
+-
+-	ret = lm3533_ctrlbank_set_pwm(&led->cb, val);
+-	if (ret)
+-		return ret;
+-
+-	return len;
+-}
+-
+-static LM3533_ATTR_RW(als_channel);
+-static LM3533_ATTR_RW(als_en);
+-static LM3533_ATTR_RW(falltime);
+-static LM3533_ATTR_RO(id);
+-static LM3533_ATTR_RW(linear);
+-static LM3533_ATTR_RW(pwm);
+-static LM3533_ATTR_RW(risetime);
+-
+-static struct attribute *lm3533_led_attributes[] = {
+-	&dev_attr_als_channel.attr,
+-	&dev_attr_als_en.attr,
+-	&dev_attr_falltime.attr,
+-	&dev_attr_id.attr,
+-	&dev_attr_linear.attr,
+-	&dev_attr_pwm.attr,
+-	&dev_attr_risetime.attr,
+-	NULL,
+-};
+-
+-static umode_t lm3533_led_attr_is_visible(struct kobject *kobj,
+-					     struct attribute *attr, int n)
+-{
+-	struct device *dev = kobj_to_dev(kobj);
+-	struct led_classdev *led_cdev = dev_get_drvdata(dev);
+-	struct lm3533_led *led = to_lm3533_led(led_cdev);
+-	umode_t mode = attr->mode;
+-
+-	if (attr == &dev_attr_als_channel.attr ||
+-					attr == &dev_attr_als_en.attr) {
+-		if (!led->lm3533->have_als)
+-			mode = 0;
+-	}
+-
+-	return mode;
+-};
+-
+-static const struct attribute_group lm3533_led_attribute_group = {
+-	.is_visible	= lm3533_led_attr_is_visible,
+-	.attrs		= lm3533_led_attributes
+-};
+-
+-static const struct attribute_group *lm3533_led_attribute_groups[] = {
+-	&lm3533_led_attribute_group,
+-	NULL
+-};
+-
+-static int lm3533_led_setup(struct lm3533_led *led,
+-					struct lm3533_led_platform_data *pdata)
+-{
+-	int ret;
+-
+-	ret = lm3533_ctrlbank_set_max_current(&led->cb, pdata->max_current);
+-	if (ret)
+-		return ret;
+-
+-	return lm3533_ctrlbank_set_pwm(&led->cb, pdata->pwm);
+-}
+-
+-static int lm3533_led_probe(struct platform_device *pdev)
+-{
+-	struct lm3533 *lm3533;
+-	struct lm3533_led_platform_data *pdata;
+-	struct lm3533_led *led;
+-	int ret;
+-
+-	dev_dbg(&pdev->dev, "%s\n", __func__);
+-
+-	lm3533 = dev_get_drvdata(pdev->dev.parent);
+-	if (!lm3533)
+-		return -EINVAL;
+-
+-	pdata = dev_get_platdata(&pdev->dev);
+-	if (!pdata) {
+-		dev_err(&pdev->dev, "no platform data\n");
+-		return -EINVAL;
+-	}
+-
+-	if (pdev->id < 0 || pdev->id >= LM3533_LVCTRLBANK_COUNT) {
+-		dev_err(&pdev->dev, "illegal LED id %d\n", pdev->id);
+-		return -EINVAL;
+-	}
+-
+-	led = devm_kzalloc(&pdev->dev, sizeof(*led), GFP_KERNEL);
+-	if (!led)
+-		return -ENOMEM;
+-
+-	led->lm3533 = lm3533;
+-	led->cdev.name = pdata->name;
+-	led->cdev.default_trigger = pdata->default_trigger;
+-	led->cdev.brightness_set_blocking = lm3533_led_set;
+-	led->cdev.brightness_get = lm3533_led_get;
+-	led->cdev.blink_set = lm3533_led_blink_set;
+-	led->cdev.brightness = LED_OFF;
+-	led->cdev.groups = lm3533_led_attribute_groups;
+-	led->id = pdev->id;
+-
+-	mutex_init(&led->mutex);
+-
+-	/* The class framework makes a callback to get brightness during
+-	 * registration so use parent device (for error reporting) until
+-	 * registered.
+-	 */
+-	led->cb.lm3533 = lm3533;
+-	led->cb.id = lm3533_led_get_ctrlbank_id(led);
+-	led->cb.dev = lm3533->dev;
+-
+-	platform_set_drvdata(pdev, led);
+-
+-	ret = led_classdev_register(pdev->dev.parent, &led->cdev);
+-	if (ret) {
+-		dev_err(&pdev->dev, "failed to register LED %d\n", pdev->id);
+-		return ret;
+-	}
+-
+-	led->cb.dev = led->cdev.dev;
+-
+-	ret = lm3533_led_setup(led, pdata);
+-	if (ret)
+-		goto err_deregister;
+-
+-	ret = lm3533_ctrlbank_enable(&led->cb);
+-	if (ret)
+-		goto err_deregister;
+-
+-	return 0;
+-
+-err_deregister:
+-	led_classdev_unregister(&led->cdev);
+-
+-	return ret;
+-}
+-
+-static void lm3533_led_remove(struct platform_device *pdev)
+-{
+-	struct lm3533_led *led = platform_get_drvdata(pdev);
+-
+-	dev_dbg(&pdev->dev, "%s\n", __func__);
+-
+-	lm3533_ctrlbank_disable(&led->cb);
+-	led_classdev_unregister(&led->cdev);
+-}
+-
+-static void lm3533_led_shutdown(struct platform_device *pdev)
+-{
+-
+-	struct lm3533_led *led = platform_get_drvdata(pdev);
+-
+-	dev_dbg(&pdev->dev, "%s\n", __func__);
+-
+-	lm3533_ctrlbank_disable(&led->cb);
+-	lm3533_led_set(&led->cdev, LED_OFF);		/* disable blink */
+-}
+-
+-static struct platform_driver lm3533_led_driver = {
+-	.driver = {
+-		.name = "lm3533-leds",
+-	},
+-	.probe		= lm3533_led_probe,
+-	.remove		= lm3533_led_remove,
+-	.shutdown	= lm3533_led_shutdown,
+-};
+-module_platform_driver(lm3533_led_driver);
+-
+-MODULE_AUTHOR("Johan Hovold <jhovold@gmail.com>");
+-MODULE_DESCRIPTION("LM3533 LED driver");
+-MODULE_LICENSE("GPL");
+-MODULE_ALIAS("platform:lm3533-leds");
 diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-index 2cb2efafa8a4..fbcc45d2b0c4 100644
+index b0c7df448445..2cb2efafa8a4 100644
 --- a/drivers/mfd/Kconfig
 +++ b/drivers/mfd/Kconfig
-@@ -1291,20 +1291,6 @@ config MFD_RT5120
- 	  is targeted at providing the CPU voltage, memory, I/O and peripheral
- 	  power rails in home entertainment devices.
+@@ -1917,19 +1917,6 @@ config MENELAUS
+ 	  and other features that are often used in portable devices like
+ 	  cell phones and PDAs.
  
--config MFD_RC5T583
--	bool "Ricoh RC5T583 Power Management system device"
--	depends on I2C=y
+-config MFD_LM3533
+-	tristate "TI/National Semiconductor LM3533 Lighting Power chip"
+-	depends on I2C
 -	select MFD_CORE
 -	select REGMAP_I2C
 -	help
--	  Select this option to get support for the RICOH583 Power
--	  Management system device.
--	  This driver provides common support for accessing the device
--	  through i2c interface. The device supports multiple sub-devices
--	  like GPIO, interrupts, RTC, LDO and DCDC regulators, onkey.
--	  Additional drivers must be enabled in order to use the
--	  different functionality of the device.
+-	  Say yes here to enable support for National Semiconductor / TI
+-	  LM3533 Lighting Power chips.
 -
- config MFD_RK8XX
- 	tristate
+-	  This driver provides common support for accessing the device;
+-	  additional drivers must be enabled in order to use the LED,
+-	  backlight or ambient-light-sensor functionality of the device.
+-
+ config MFD_TIMBERDALE
+ 	tristate "Timberdale FPGA"
  	select MFD_CORE
 diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
-index 8bd4c3e218bb..7aaad5855681 100644
+index cf3c70364538..8bd4c3e218bb 100644
 --- a/drivers/mfd/Makefile
 +++ b/drivers/mfd/Makefile
-@@ -217,7 +217,6 @@ obj-$(CONFIG_MFD_INTEL_PMC_BXT)	+= intel_pmc_bxt.o
- obj-$(CONFIG_MFD_PALMAS)	+= palmas.o
- obj-$(CONFIG_MFD_VIPERBOARD)    += viperboard.o
- obj-$(CONFIG_MFD_NTXEC)		+= ntxec.o
--obj-$(CONFIG_MFD_RC5T583)	+= rc5t583.o rc5t583-irq.o
- obj-$(CONFIG_MFD_RK8XX)		+= rk8xx-core.o
- obj-$(CONFIG_MFD_RK8XX_I2C)	+= rk8xx-i2c.o
- obj-$(CONFIG_MFD_RK8XX_SPI)	+= rk8xx-spi.o
-diff --git a/drivers/mfd/rc5t583-irq.c b/drivers/mfd/rc5t583-irq.c
+@@ -227,7 +227,6 @@ obj-$(CONFIG_MFD_SEC_CORE)	+= sec-core.o
+ obj-$(CONFIG_MFD_SEC_ACPM)	+= sec-acpm.o
+ obj-$(CONFIG_MFD_SEC_I2C)	+= sec-i2c.o
+ obj-$(CONFIG_MFD_SYSCON)	+= syscon.o
+-obj-$(CONFIG_MFD_LM3533)	+= lm3533-core.o lm3533-ctrlbank.o
+ obj-$(CONFIG_MFD_VEXPRESS_SYSREG)	+= vexpress-sysreg.o
+ obj-$(CONFIG_MFD_RETU)		+= retu-mfd.o
+ obj-$(CONFIG_MFD_AS3711)	+= as3711.o
+diff --git a/drivers/mfd/lm3533-core.c b/drivers/mfd/lm3533-core.c
 deleted file mode 100644
-index 97f52b671520..000000000000
---- a/drivers/mfd/rc5t583-irq.c
+index 0a2409d00b2e..000000000000
+--- a/drivers/mfd/lm3533-core.c
 +++ /dev/null
-@@ -1,383 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-only
+@@ -1,635 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-or-later
 -/*
-- * Interrupt driver for RICOH583 power management chip.
+- * lm3533-core.c -- LM3533 Core
 - *
-- * Copyright (c) 2011-2012, NVIDIA CORPORATION.  All rights reserved.
-- * Author: Laxman dewangan <ldewangan@nvidia.com>
+- * Copyright (C) 2011-2012 Texas Instruments
 - *
-- * based on code
-- *      Copyright (C) 2011 RICOH COMPANY,LTD
+- * Author: Johan Hovold <jhovold@gmail.com>
 - */
--#include <linux/device.h>
--#include <linux/interrupt.h>
--#include <linux/irq.h>
--#include <linux/mfd/rc5t583.h>
 -
--enum int_type {
--	SYS_INT  = 0x1,
--	DCDC_INT = 0x2,
--	RTC_INT  = 0x4,
--	ADC_INT  = 0x8,
--	GPIO_INT = 0x10,
--};
--
--static int gpedge_add[] = {
--	RC5T583_GPIO_GPEDGE2,
--	RC5T583_GPIO_GPEDGE2
--};
--
--static int irq_en_add[] = {
--	RC5T583_INT_EN_SYS1,
--	RC5T583_INT_EN_SYS2,
--	RC5T583_INT_EN_DCDC,
--	RC5T583_INT_EN_RTC,
--	RC5T583_INT_EN_ADC1,
--	RC5T583_INT_EN_ADC2,
--	RC5T583_INT_EN_ADC3,
--	RC5T583_GPIO_EN_INT
--};
--
--static int irq_mon_add[] = {
--	RC5T583_INT_MON_SYS1,
--	RC5T583_INT_MON_SYS2,
--	RC5T583_INT_MON_DCDC,
--	RC5T583_INT_MON_RTC,
--	RC5T583_INT_IR_ADCL,
--	RC5T583_INT_IR_ADCH,
--	RC5T583_INT_IR_ADCEND,
--	RC5T583_INT_IR_GPIOF,
--	RC5T583_INT_IR_GPIOR
--};
--
--static int irq_clr_add[] = {
--	RC5T583_INT_IR_SYS1,
--	RC5T583_INT_IR_SYS2,
--	RC5T583_INT_IR_DCDC,
--	RC5T583_INT_IR_RTC,
--	RC5T583_INT_IR_ADCL,
--	RC5T583_INT_IR_ADCH,
--	RC5T583_INT_IR_ADCEND,
--	RC5T583_INT_IR_GPIOF,
--	RC5T583_INT_IR_GPIOR
--};
--
--static int main_int_type[] = {
--	SYS_INT,
--	SYS_INT,
--	DCDC_INT,
--	RTC_INT,
--	ADC_INT,
--	ADC_INT,
--	ADC_INT,
--	GPIO_INT,
--	GPIO_INT,
--};
--
--struct rc5t583_irq_data {
--	u8	int_type;
--	u8	master_bit;
--	u8	int_en_bit;
--	u8	mask_reg_index;
--	int	grp_index;
--};
--
--#define RC5T583_IRQ(_int_type, _master_bit, _grp_index, \
--			_int_bit, _mask_ind)		\
--	{						\
--		.int_type	= _int_type,		\
--		.master_bit	= _master_bit,		\
--		.grp_index	= _grp_index,		\
--		.int_en_bit	= _int_bit,		\
--		.mask_reg_index	= _mask_ind,		\
--	}
--
--static const struct rc5t583_irq_data rc5t583_irqs[RC5T583_MAX_IRQS] = {
--	[RC5T583_IRQ_ONKEY]		= RC5T583_IRQ(SYS_INT,  0, 0, 0, 0),
--	[RC5T583_IRQ_ACOK]		= RC5T583_IRQ(SYS_INT,  0, 1, 1, 0),
--	[RC5T583_IRQ_LIDOPEN]		= RC5T583_IRQ(SYS_INT,  0, 2, 2, 0),
--	[RC5T583_IRQ_PREOT]		= RC5T583_IRQ(SYS_INT,  0, 3, 3, 0),
--	[RC5T583_IRQ_CLKSTP]		= RC5T583_IRQ(SYS_INT,  0, 4, 4, 0),
--	[RC5T583_IRQ_ONKEY_OFF]		= RC5T583_IRQ(SYS_INT,  0, 5, 5, 0),
--	[RC5T583_IRQ_WD]		= RC5T583_IRQ(SYS_INT,  0, 7, 7, 0),
--	[RC5T583_IRQ_EN_PWRREQ1]	= RC5T583_IRQ(SYS_INT,  0, 8, 0, 1),
--	[RC5T583_IRQ_EN_PWRREQ2]	= RC5T583_IRQ(SYS_INT,  0, 9, 1, 1),
--	[RC5T583_IRQ_PRE_VINDET]	= RC5T583_IRQ(SYS_INT,  0, 10, 2, 1),
--
--	[RC5T583_IRQ_DC0LIM]		= RC5T583_IRQ(DCDC_INT, 1, 0, 0, 2),
--	[RC5T583_IRQ_DC1LIM]		= RC5T583_IRQ(DCDC_INT, 1, 1, 1, 2),
--	[RC5T583_IRQ_DC2LIM]		= RC5T583_IRQ(DCDC_INT, 1, 2, 2, 2),
--	[RC5T583_IRQ_DC3LIM]		= RC5T583_IRQ(DCDC_INT, 1, 3, 3, 2),
--
--	[RC5T583_IRQ_CTC]		= RC5T583_IRQ(RTC_INT,  2, 0, 0, 3),
--	[RC5T583_IRQ_YALE]		= RC5T583_IRQ(RTC_INT,  2, 5, 5, 3),
--	[RC5T583_IRQ_DALE]		= RC5T583_IRQ(RTC_INT,  2, 6, 6, 3),
--	[RC5T583_IRQ_WALE]		= RC5T583_IRQ(RTC_INT,  2, 7, 7, 3),
--
--	[RC5T583_IRQ_AIN1L]		= RC5T583_IRQ(ADC_INT,  3, 0, 0, 4),
--	[RC5T583_IRQ_AIN2L]		= RC5T583_IRQ(ADC_INT,  3, 1, 1, 4),
--	[RC5T583_IRQ_AIN3L]		= RC5T583_IRQ(ADC_INT,  3, 2, 2, 4),
--	[RC5T583_IRQ_VBATL]		= RC5T583_IRQ(ADC_INT,  3, 3, 3, 4),
--	[RC5T583_IRQ_VIN3L]		= RC5T583_IRQ(ADC_INT,  3, 4, 4, 4),
--	[RC5T583_IRQ_VIN8L]		= RC5T583_IRQ(ADC_INT,  3, 5, 5, 4),
--	[RC5T583_IRQ_AIN1H]		= RC5T583_IRQ(ADC_INT,  3, 6, 0, 5),
--	[RC5T583_IRQ_AIN2H]		= RC5T583_IRQ(ADC_INT,  3, 7, 1, 5),
--	[RC5T583_IRQ_AIN3H]		= RC5T583_IRQ(ADC_INT,  3, 8, 2, 5),
--	[RC5T583_IRQ_VBATH]		= RC5T583_IRQ(ADC_INT,  3, 9, 3, 5),
--	[RC5T583_IRQ_VIN3H]		= RC5T583_IRQ(ADC_INT,  3, 10, 4, 5),
--	[RC5T583_IRQ_VIN8H]		= RC5T583_IRQ(ADC_INT,  3, 11, 5, 5),
--	[RC5T583_IRQ_ADCEND]		= RC5T583_IRQ(ADC_INT,  3, 12, 0, 6),
--
--	[RC5T583_IRQ_GPIO0]		= RC5T583_IRQ(GPIO_INT, 4, 0, 0, 7),
--	[RC5T583_IRQ_GPIO1]		= RC5T583_IRQ(GPIO_INT, 4, 1, 1, 7),
--	[RC5T583_IRQ_GPIO2]		= RC5T583_IRQ(GPIO_INT, 4, 2, 2, 7),
--	[RC5T583_IRQ_GPIO3]		= RC5T583_IRQ(GPIO_INT, 4, 3, 3, 7),
--	[RC5T583_IRQ_GPIO4]		= RC5T583_IRQ(GPIO_INT, 4, 4, 4, 7),
--	[RC5T583_IRQ_GPIO5]		= RC5T583_IRQ(GPIO_INT, 4, 5, 5, 7),
--	[RC5T583_IRQ_GPIO6]		= RC5T583_IRQ(GPIO_INT, 4, 6, 6, 7),
--	[RC5T583_IRQ_GPIO7]		= RC5T583_IRQ(GPIO_INT, 4, 7, 7, 7),
--};
--
--static void rc5t583_irq_lock(struct irq_data *irq_data)
--{
--	struct rc5t583 *rc5t583 = irq_data_get_irq_chip_data(irq_data);
--	mutex_lock(&rc5t583->irq_lock);
--}
--
--static void rc5t583_irq_unmask(struct irq_data *irq_data)
--{
--	struct rc5t583 *rc5t583 = irq_data_get_irq_chip_data(irq_data);
--	unsigned int __irq = irq_data->irq - rc5t583->irq_base;
--	const struct rc5t583_irq_data *data = &rc5t583_irqs[__irq];
--
--	rc5t583->group_irq_en[data->grp_index] |= 1 << data->grp_index;
--	rc5t583->intc_inten_reg |= 1 << data->master_bit;
--	rc5t583->irq_en_reg[data->mask_reg_index] |= 1 << data->int_en_bit;
--}
--
--static void rc5t583_irq_mask(struct irq_data *irq_data)
--{
--	struct rc5t583 *rc5t583 = irq_data_get_irq_chip_data(irq_data);
--	unsigned int __irq = irq_data->irq - rc5t583->irq_base;
--	const struct rc5t583_irq_data *data = &rc5t583_irqs[__irq];
--
--	rc5t583->group_irq_en[data->grp_index] &= ~(1 << data->grp_index);
--	if (!rc5t583->group_irq_en[data->grp_index])
--		rc5t583->intc_inten_reg &= ~(1 << data->master_bit);
--
--	rc5t583->irq_en_reg[data->mask_reg_index] &= ~(1 << data->int_en_bit);
--}
--
--static int rc5t583_irq_set_type(struct irq_data *irq_data, unsigned int type)
--{
--	struct rc5t583 *rc5t583 = irq_data_get_irq_chip_data(irq_data);
--	unsigned int __irq = irq_data->irq - rc5t583->irq_base;
--	const struct rc5t583_irq_data *data = &rc5t583_irqs[__irq];
--	int val = 0;
--	int gpedge_index;
--	int gpedge_bit_pos;
--
--	/* Supporting only trigger level inetrrupt */
--	if ((data->int_type & GPIO_INT) && (type & IRQ_TYPE_EDGE_BOTH)) {
--		gpedge_index = data->int_en_bit / 4;
--		gpedge_bit_pos = data->int_en_bit % 4;
--
--		if (type & IRQ_TYPE_EDGE_FALLING)
--			val |= 0x2;
--
--		if (type & IRQ_TYPE_EDGE_RISING)
--			val |= 0x1;
--
--		rc5t583->gpedge_reg[gpedge_index] &= ~(3 << gpedge_bit_pos);
--		rc5t583->gpedge_reg[gpedge_index] |= (val << gpedge_bit_pos);
--		rc5t583_irq_unmask(irq_data);
--		return 0;
--	}
--	return -EINVAL;
--}
--
--static void rc5t583_irq_sync_unlock(struct irq_data *irq_data)
--{
--	struct rc5t583 *rc5t583 = irq_data_get_irq_chip_data(irq_data);
--	int i;
--	int ret;
--
--	for (i = 0; i < ARRAY_SIZE(rc5t583->gpedge_reg); i++) {
--		ret = rc5t583_write(rc5t583->dev, gpedge_add[i],
--				rc5t583->gpedge_reg[i]);
--		if (ret < 0)
--			dev_warn(rc5t583->dev,
--				"Error in writing reg 0x%02x error: %d\n",
--				gpedge_add[i], ret);
--	}
--
--	for (i = 0; i < ARRAY_SIZE(rc5t583->irq_en_reg); i++) {
--		ret = rc5t583_write(rc5t583->dev, irq_en_add[i],
--					rc5t583->irq_en_reg[i]);
--		if (ret < 0)
--			dev_warn(rc5t583->dev,
--				"Error in writing reg 0x%02x error: %d\n",
--				irq_en_add[i], ret);
--	}
--
--	ret = rc5t583_write(rc5t583->dev, RC5T583_INTC_INTEN,
--				rc5t583->intc_inten_reg);
--	if (ret < 0)
--		dev_warn(rc5t583->dev,
--			"Error in writing reg 0x%02x error: %d\n",
--			RC5T583_INTC_INTEN, ret);
--
--	mutex_unlock(&rc5t583->irq_lock);
--}
--
--static int rc5t583_irq_set_wake(struct irq_data *irq_data, unsigned int on)
--{
--	struct rc5t583 *rc5t583 = irq_data_get_irq_chip_data(irq_data);
--	return irq_set_irq_wake(rc5t583->chip_irq, on);
--}
--
--static irqreturn_t rc5t583_irq(int irq, void *data)
--{
--	struct rc5t583 *rc5t583 = data;
--	uint8_t int_sts[RC5T583_MAX_INTERRUPT_MASK_REGS];
--	uint8_t master_int = 0;
--	int i;
--	int ret;
--	unsigned int rtc_int_sts = 0;
--
--	/* Clear the status */
--	for (i = 0; i < RC5T583_MAX_INTERRUPT_MASK_REGS; i++)
--		int_sts[i] = 0;
--
--	ret  = rc5t583_read(rc5t583->dev, RC5T583_INTC_INTMON, &master_int);
--	if (ret < 0) {
--		dev_err(rc5t583->dev,
--			"Error in reading reg 0x%02x error: %d\n",
--			RC5T583_INTC_INTMON, ret);
--		return IRQ_HANDLED;
--	}
--
--	for (i = 0; i < RC5T583_MAX_INTERRUPT_MASK_REGS; ++i) {
--		if (!(master_int & main_int_type[i]))
--			continue;
--
--		ret = rc5t583_read(rc5t583->dev, irq_mon_add[i], &int_sts[i]);
--		if (ret < 0) {
--			dev_warn(rc5t583->dev,
--				"Error in reading reg 0x%02x error: %d\n",
--				irq_mon_add[i], ret);
--			int_sts[i] = 0;
--			continue;
--		}
--
--		if (main_int_type[i] & RTC_INT) {
--			rtc_int_sts = 0;
--			if (int_sts[i] & 0x1)
--				rtc_int_sts |= BIT(6);
--			if (int_sts[i] & 0x2)
--				rtc_int_sts |= BIT(7);
--			if (int_sts[i] & 0x4)
--				rtc_int_sts |= BIT(0);
--			if (int_sts[i] & 0x8)
--				rtc_int_sts |= BIT(5);
--		}
--
--		ret = rc5t583_write(rc5t583->dev, irq_clr_add[i],
--				~int_sts[i]);
--		if (ret < 0)
--			dev_warn(rc5t583->dev,
--				"Error in reading reg 0x%02x error: %d\n",
--				irq_clr_add[i], ret);
--
--		if (main_int_type[i] & RTC_INT)
--			int_sts[i] = rtc_int_sts;
--	}
--
--	/* Merge gpio interrupts for rising and falling case*/
--	int_sts[7] |= int_sts[8];
--
--	/* Call interrupt handler if enabled */
--	for (i = 0; i < RC5T583_MAX_IRQS; ++i) {
--		const struct rc5t583_irq_data *data = &rc5t583_irqs[i];
--		if ((int_sts[data->mask_reg_index] & (1 << data->int_en_bit)) &&
--			(rc5t583->group_irq_en[data->master_bit] &
--					(1 << data->grp_index)))
--			handle_nested_irq(rc5t583->irq_base + i);
--	}
--
--	return IRQ_HANDLED;
--}
--
--static struct irq_chip rc5t583_irq_chip = {
--	.name = "rc5t583-irq",
--	.irq_mask = rc5t583_irq_mask,
--	.irq_unmask = rc5t583_irq_unmask,
--	.irq_bus_lock = rc5t583_irq_lock,
--	.irq_bus_sync_unlock = rc5t583_irq_sync_unlock,
--	.irq_set_type = rc5t583_irq_set_type,
--	.irq_set_wake = pm_sleep_ptr(rc5t583_irq_set_wake),
--};
--
--int rc5t583_irq_init(struct rc5t583 *rc5t583, int irq, int irq_base)
--{
--	int i, ret;
--
--	if (!irq_base) {
--		dev_warn(rc5t583->dev, "No interrupt support on IRQ base\n");
--		return -EINVAL;
--	}
--
--	mutex_init(&rc5t583->irq_lock);
--
--	/* Initailize all int register to 0 */
--	for (i = 0; i < RC5T583_MAX_INTERRUPT_EN_REGS; i++)  {
--		ret = rc5t583_write(rc5t583->dev, irq_en_add[i],
--				rc5t583->irq_en_reg[i]);
--		if (ret < 0)
--			dev_warn(rc5t583->dev,
--				"Error in writing reg 0x%02x error: %d\n",
--				irq_en_add[i], ret);
--	}
--
--	for (i = 0; i < RC5T583_MAX_GPEDGE_REG; i++)  {
--		ret = rc5t583_write(rc5t583->dev, gpedge_add[i],
--				rc5t583->gpedge_reg[i]);
--		if (ret < 0)
--			dev_warn(rc5t583->dev,
--				"Error in writing reg 0x%02x error: %d\n",
--				gpedge_add[i], ret);
--	}
--
--	ret = rc5t583_write(rc5t583->dev, RC5T583_INTC_INTEN, 0x0);
--	if (ret < 0)
--		dev_warn(rc5t583->dev,
--			"Error in writing reg 0x%02x error: %d\n",
--			RC5T583_INTC_INTEN, ret);
--
--	/* Clear all interrupts in case they woke up active. */
--	for (i = 0; i < RC5T583_MAX_INTERRUPT_MASK_REGS; i++)  {
--		ret = rc5t583_write(rc5t583->dev, irq_clr_add[i], 0);
--		if (ret < 0)
--			dev_warn(rc5t583->dev,
--				"Error in writing reg 0x%02x error: %d\n",
--				irq_clr_add[i], ret);
--	}
--
--	rc5t583->irq_base = irq_base;
--	rc5t583->chip_irq = irq;
--
--	for (i = 0; i < RC5T583_MAX_IRQS; i++) {
--		int __irq = i + rc5t583->irq_base;
--		irq_set_chip_data(__irq, rc5t583);
--		irq_set_chip_and_handler(__irq, &rc5t583_irq_chip,
--					 handle_simple_irq);
--		irq_set_nested_thread(__irq, 1);
--		irq_clear_status_flags(__irq, IRQ_NOREQUEST);
--	}
--
--	ret = devm_request_threaded_irq(rc5t583->dev, irq, NULL, rc5t583_irq,
--					IRQF_ONESHOT, "rc5t583", rc5t583);
--	if (ret < 0)
--		dev_err(rc5t583->dev,
--			"Error in registering interrupt error: %d\n", ret);
--	return ret;
--}
-diff --git a/drivers/mfd/rc5t583.c b/drivers/mfd/rc5t583.c
-deleted file mode 100644
-index 2c0e8e9630f7..000000000000
---- a/drivers/mfd/rc5t583.c
-+++ /dev/null
-@@ -1,299 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-only
--/*
-- * Core driver access RC5T583 power management chip.
-- *
-- * Copyright (c) 2011-2012, NVIDIA CORPORATION.  All rights reserved.
-- * Author: Laxman dewangan <ldewangan@nvidia.com>
-- *
-- * Based on code
-- *	Copyright (C) 2011 RICOH COMPANY,LTD
-- */
--#include <linux/interrupt.h>
--#include <linux/irq.h>
--#include <linux/kernel.h>
+-#include <linux/module.h>
 -#include <linux/init.h>
+-#include <linux/kernel.h>
 -#include <linux/err.h>
--#include <linux/slab.h>
+-#include <linux/gpio/consumer.h>
 -#include <linux/i2c.h>
 -#include <linux/mfd/core.h>
--#include <linux/mfd/rc5t583.h>
 -#include <linux/regmap.h>
--
--#define RICOH_ONOFFSEL_REG	0x10
--#define RICOH_SWCTL_REG		0x5E
--
--struct deepsleep_control_data {
--	u8 reg_add;
--	u8 ds_pos_bit;
--};
--
--#define DEEPSLEEP_INIT(_id, _reg, _pos)		\
--	{					\
--		.reg_add = RC5T583_##_reg,	\
--		.ds_pos_bit = _pos,		\
--	}
--
--static struct deepsleep_control_data deepsleep_data[] = {
--	DEEPSLEEP_INIT(DC0, SLPSEQ1, 0),
--	DEEPSLEEP_INIT(DC1, SLPSEQ1, 4),
--	DEEPSLEEP_INIT(DC2, SLPSEQ2, 0),
--	DEEPSLEEP_INIT(DC3, SLPSEQ2, 4),
--	DEEPSLEEP_INIT(LDO0, SLPSEQ3, 0),
--	DEEPSLEEP_INIT(LDO1, SLPSEQ3, 4),
--	DEEPSLEEP_INIT(LDO2, SLPSEQ4, 0),
--	DEEPSLEEP_INIT(LDO3, SLPSEQ4, 4),
--	DEEPSLEEP_INIT(LDO4, SLPSEQ5, 0),
--	DEEPSLEEP_INIT(LDO5, SLPSEQ5, 4),
--	DEEPSLEEP_INIT(LDO6, SLPSEQ6, 0),
--	DEEPSLEEP_INIT(LDO7, SLPSEQ6, 4),
--	DEEPSLEEP_INIT(LDO8, SLPSEQ7, 0),
--	DEEPSLEEP_INIT(LDO9, SLPSEQ7, 4),
--	DEEPSLEEP_INIT(PSO0, SLPSEQ8, 0),
--	DEEPSLEEP_INIT(PSO1, SLPSEQ8, 4),
--	DEEPSLEEP_INIT(PSO2, SLPSEQ9, 0),
--	DEEPSLEEP_INIT(PSO3, SLPSEQ9, 4),
--	DEEPSLEEP_INIT(PSO4, SLPSEQ10, 0),
--	DEEPSLEEP_INIT(PSO5, SLPSEQ10, 4),
--	DEEPSLEEP_INIT(PSO6, SLPSEQ11, 0),
--	DEEPSLEEP_INIT(PSO7, SLPSEQ11, 4),
--};
--
--#define EXT_PWR_REQ		\
--	(RC5T583_EXT_PWRREQ1_CONTROL | RC5T583_EXT_PWRREQ2_CONTROL)
--
--static const struct mfd_cell rc5t583_subdevs[] = {
--	{.name = "rc5t583-gpio",},
--	{.name = "rc5t583-regulator",},
--	{.name = "rc5t583-rtc",      },
--	{.name = "rc5t583-key",      }
--};
--
--static int __rc5t583_set_ext_pwrreq1_control(struct device *dev,
--	int id, int ext_pwr, int slots)
--{
--	int ret;
--	uint8_t sleepseq_val = 0;
--	unsigned int en_bit;
--	unsigned int slot_bit;
--
--	if (id == RC5T583_DS_DC0) {
--		dev_err(dev, "PWRREQ1 is invalid control for rail %d\n", id);
--		return -EINVAL;
--	}
--
--	en_bit = deepsleep_data[id].ds_pos_bit;
--	slot_bit = en_bit + 1;
--	ret = rc5t583_read(dev, deepsleep_data[id].reg_add, &sleepseq_val);
--	if (ret < 0) {
--		dev_err(dev, "Error in reading reg 0x%x\n",
--				deepsleep_data[id].reg_add);
--		return ret;
--	}
--
--	sleepseq_val &= ~(0xF << en_bit);
--	sleepseq_val |= BIT(en_bit);
--	sleepseq_val |= ((slots & 0x7) << slot_bit);
--	ret = rc5t583_set_bits(dev, RICOH_ONOFFSEL_REG, BIT(1));
--	if (ret < 0) {
--		dev_err(dev, "Error in updating the 0x%02x register\n",
--				RICOH_ONOFFSEL_REG);
--		return ret;
--	}
--
--	ret = rc5t583_write(dev, deepsleep_data[id].reg_add, sleepseq_val);
--	if (ret < 0) {
--		dev_err(dev, "Error in writing reg 0x%x\n",
--				deepsleep_data[id].reg_add);
--		return ret;
--	}
--
--	if (id == RC5T583_DS_LDO4) {
--		ret = rc5t583_write(dev, RICOH_SWCTL_REG, 0x1);
--		if (ret < 0)
--			dev_err(dev, "Error in writing reg 0x%x\n",
--				RICOH_SWCTL_REG);
--	}
--	return ret;
--}
--
--static int __rc5t583_set_ext_pwrreq2_control(struct device *dev,
--	int id, int ext_pwr)
--{
--	int ret;
--
--	if (id != RC5T583_DS_DC0) {
--		dev_err(dev, "PWRREQ2 is invalid control for rail %d\n", id);
--		return -EINVAL;
--	}
--
--	ret = rc5t583_set_bits(dev, RICOH_ONOFFSEL_REG, BIT(2));
--	if (ret < 0)
--		dev_err(dev, "Error in updating the ONOFFSEL 0x10 register\n");
--	return ret;
--}
--
--int rc5t583_ext_power_req_config(struct device *dev, int ds_id,
--	int ext_pwr_req, int deepsleep_slot_nr)
--{
--	if ((ext_pwr_req & EXT_PWR_REQ) == EXT_PWR_REQ)
--		return -EINVAL;
--
--	if (ext_pwr_req & RC5T583_EXT_PWRREQ1_CONTROL)
--		return __rc5t583_set_ext_pwrreq1_control(dev, ds_id,
--				ext_pwr_req, deepsleep_slot_nr);
--
--	if (ext_pwr_req & RC5T583_EXT_PWRREQ2_CONTROL)
--		return __rc5t583_set_ext_pwrreq2_control(dev,
--			ds_id, ext_pwr_req);
--	return 0;
--}
--EXPORT_SYMBOL(rc5t583_ext_power_req_config);
--
--static int rc5t583_clear_ext_power_req(struct rc5t583 *rc5t583,
--	struct rc5t583_platform_data *pdata)
--{
--	int ret;
--	int i;
--	uint8_t on_off_val = 0;
--
--	/*  Clear ONOFFSEL register */
--	if (pdata->enable_shutdown)
--		on_off_val = 0x1;
--
--	ret = rc5t583_write(rc5t583->dev, RICOH_ONOFFSEL_REG, on_off_val);
--	if (ret < 0)
--		dev_warn(rc5t583->dev, "Error in writing reg %d error: %d\n",
--					RICOH_ONOFFSEL_REG, ret);
--
--	ret = rc5t583_write(rc5t583->dev, RICOH_SWCTL_REG, 0x0);
--	if (ret < 0)
--		dev_warn(rc5t583->dev, "Error in writing reg %d error: %d\n",
--					RICOH_SWCTL_REG, ret);
--
--	/* Clear sleep sequence register */
--	for (i = RC5T583_SLPSEQ1; i <= RC5T583_SLPSEQ11; ++i) {
--		ret = rc5t583_write(rc5t583->dev, i, 0x0);
--		if (ret < 0)
--			dev_warn(rc5t583->dev,
--				"Error in writing reg 0x%02x error: %d\n",
--				i, ret);
--	}
--	return 0;
--}
--
--static bool volatile_reg(struct device *dev, unsigned int reg)
--{
--	/* Enable caching in interrupt registers */
--	switch (reg) {
--	case RC5T583_INT_EN_SYS1:
--	case RC5T583_INT_EN_SYS2:
--	case RC5T583_INT_EN_DCDC:
--	case RC5T583_INT_EN_RTC:
--	case RC5T583_INT_EN_ADC1:
--	case RC5T583_INT_EN_ADC2:
--	case RC5T583_INT_EN_ADC3:
--	case RC5T583_GPIO_GPEDGE1:
--	case RC5T583_GPIO_GPEDGE2:
--	case RC5T583_GPIO_EN_INT:
--		return false;
--
--	case RC5T583_GPIO_MON_IOIN:
--		/* This is gpio input register */
--		return true;
--
--	default:
--		/* Enable caching in gpio registers */
--		if ((reg >= RC5T583_GPIO_IOSEL) &&
--				(reg <= RC5T583_GPIO_GPOFUNC))
--			return false;
--
--		/* Enable caching in sleep seq registers */
--		if ((reg >= RC5T583_SLPSEQ1) && (reg <= RC5T583_SLPSEQ11))
--			return false;
--
--		/* Enable caching of regulator registers */
--		if ((reg >= RC5T583_REG_DC0CTL) && (reg <= RC5T583_REG_SR3CTL))
--			return false;
--		if ((reg >= RC5T583_REG_LDOEN1) &&
--					(reg <= RC5T583_REG_LDO9DAC_DS))
--			return false;
--
--		break;
--	}
--
--	return true;
--}
--
--static const struct regmap_config rc5t583_regmap_config = {
--	.reg_bits = 8,
--	.val_bits = 8,
--	.volatile_reg = volatile_reg,
--	.max_register = RC5T583_MAX_REG,
--	.num_reg_defaults_raw = RC5T583_NUM_REGS,
--	.cache_type = REGCACHE_MAPLE,
--};
--
--static int rc5t583_i2c_probe(struct i2c_client *i2c)
--{
--	struct rc5t583 *rc5t583;
--	struct rc5t583_platform_data *pdata = dev_get_platdata(&i2c->dev);
--	int ret;
--
--	if (!pdata) {
--		dev_err(&i2c->dev, "Err: Platform data not found\n");
--		return -EINVAL;
--	}
--
--	rc5t583 = devm_kzalloc(&i2c->dev, sizeof(*rc5t583), GFP_KERNEL);
--	if (!rc5t583)
--		return -ENOMEM;
--
--	rc5t583->dev = &i2c->dev;
--	i2c_set_clientdata(i2c, rc5t583);
--
--	rc5t583->regmap = devm_regmap_init_i2c(i2c, &rc5t583_regmap_config);
--	if (IS_ERR(rc5t583->regmap)) {
--		ret = PTR_ERR(rc5t583->regmap);
--		dev_err(&i2c->dev, "regmap initialization failed: %d\n", ret);
--		return ret;
--	}
--
--	ret = rc5t583_clear_ext_power_req(rc5t583, pdata);
--	if (ret < 0)
--		return ret;
--
--	if (i2c->irq) {
--		ret = rc5t583_irq_init(rc5t583, i2c->irq, pdata->irq_base);
--		/* Still continue with warning, if irq init fails */
--		if (ret)
--			dev_warn(&i2c->dev, "IRQ init failed: %d\n", ret);
--	}
--
--	ret = devm_mfd_add_devices(rc5t583->dev, -1, rc5t583_subdevs,
--				   ARRAY_SIZE(rc5t583_subdevs), NULL, 0, NULL);
--	if (ret) {
--		dev_err(&i2c->dev, "add mfd devices failed: %d\n", ret);
--		return ret;
--	}
--
--	return 0;
--}
--
--static const struct i2c_device_id rc5t583_i2c_id[] = {
--	{.name = "rc5t583", .driver_data = 0},
--	{}
--};
--
--static struct i2c_driver rc5t583_i2c_driver = {
--	.driver = {
--		   .name = "rc5t583",
--		   },
--	.probe = rc5t583_i2c_probe,
--	.id_table = rc5t583_i2c_id,
--};
--
--static int __init rc5t583_i2c_init(void)
--{
--	return i2c_add_driver(&rc5t583_i2c_driver);
--}
--subsys_initcall(rc5t583_i2c_init);
-diff --git a/drivers/regulator/Kconfig b/drivers/regulator/Kconfig
-index 12d883e729bc..2d5eb954d122 100644
---- a/drivers/regulator/Kconfig
-+++ b/drivers/regulator/Kconfig
-@@ -1214,16 +1214,6 @@ config REGULATOR_RASPBERRYPI_TOUCHSCREEN_V2
- 	  unit. The regulator is used to enable power to the display and to
- 	  control backlight PWM.
- 
--config REGULATOR_RC5T583
--	tristate "RICOH RC5T583 Power regulators"
--	depends on MFD_RC5T583
--	help
--	  Select this option to enable the power regulator of RICOH
--	  PMIC RC5T583.
--	  This driver supports the control of different power rails of device
--	  through regulator interface. The device supports multiple DCDC/LDO
--	  outputs which can be controlled by i2c communication.
--
- config REGULATOR_RK808
- 	tristate "Rockchip RK805/RK808/RK809/RK817/RK818 Power regulators"
- 	depends on MFD_RK8XX
-diff --git a/drivers/regulator/Makefile b/drivers/regulator/Makefile
-index 321c6ea73ee0..861f86c30c73 100644
---- a/drivers/regulator/Makefile
-+++ b/drivers/regulator/Makefile
-@@ -140,7 +140,6 @@ obj-$(CONFIG_REGULATOR_PBIAS) += pbias-regulator.o
- obj-$(CONFIG_REGULATOR_RAA215300) += raa215300.o
- obj-$(CONFIG_REGULATOR_RASPBERRYPI_TOUCHSCREEN_ATTINY)  += rpi-panel-attiny-regulator.o
- obj-$(CONFIG_REGULATOR_RASPBERRYPI_TOUCHSCREEN_V2)  += rpi-panel-v2-regulator.o
--obj-$(CONFIG_REGULATOR_RC5T583)  += rc5t583-regulator.o
- obj-$(CONFIG_REGULATOR_RK808)   += rk808-regulator.o
- obj-$(CONFIG_REGULATOR_RN5T618) += rn5t618-regulator.o
- obj-$(CONFIG_REGULATOR_ROHM)	+= rohm-regulator.o
-diff --git a/drivers/regulator/rc5t583-regulator.c b/drivers/regulator/rc5t583-regulator.c
-deleted file mode 100644
-index a25a141e86c4..000000000000
---- a/drivers/regulator/rc5t583-regulator.c
-+++ /dev/null
-@@ -1,171 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-only
--/*
-- * Regulator driver for RICOH RC5T583 power management chip.
-- *
-- * Copyright (c) 2011-2012, NVIDIA CORPORATION.  All rights reserved.
-- * Author: Laxman dewangan <ldewangan@nvidia.com>
-- *
-- * based on code
-- *      Copyright (C) 2011 RICOH COMPANY,LTD
-- */
--
--#include <linux/module.h>
--#include <linux/init.h>
+-#include <linux/seq_file.h>
 -#include <linux/slab.h>
--#include <linux/err.h>
--#include <linux/platform_device.h>
--#include <linux/regulator/driver.h>
--#include <linux/regulator/machine.h>
--#include <linux/mfd/rc5t583.h>
+-#include <linux/uaccess.h>
 -
--struct rc5t583_regulator_info {
--	int			deepsleep_id;
+-#include <linux/mfd/lm3533.h>
 -
--	/* Regulator register address.*/
--	uint8_t			reg_disc_reg;
--	uint8_t			disc_bit;
--	uint8_t			deepsleep_reg;
 -
--	/* Regulator specific turn-on delay  and voltage settling time*/
--	int			enable_uv_per_us;
+-#define LM3533_BOOST_OVP_MASK		0x06
+-#define LM3533_BOOST_OVP_SHIFT		1
 -
--	/* Used by regulator core */
--	struct regulator_desc	desc;
+-#define LM3533_BOOST_FREQ_MASK		0x01
+-#define LM3533_BOOST_FREQ_SHIFT		0
+-
+-#define LM3533_BL_ID_MASK		1
+-#define LM3533_LED_ID_MASK		3
+-#define LM3533_BL_ID_MAX		1
+-#define LM3533_LED_ID_MAX		3
+-
+-#define LM3533_HVLED_ID_MAX		2
+-#define LM3533_LVLED_ID_MAX		5
+-
+-#define LM3533_REG_OUTPUT_CONF1		0x10
+-#define LM3533_REG_OUTPUT_CONF2		0x11
+-#define LM3533_REG_BOOST_PWM		0x2c
+-
+-#define LM3533_REG_MAX			0xb2
+-
+-
+-static struct mfd_cell lm3533_als_devs[] = {
+-	{
+-		.name	= "lm3533-als",
+-		.id	= -1,
+-	},
 -};
 -
--static int rc5t583_regulator_enable_time(struct regulator_dev *rdev)
+-static struct mfd_cell lm3533_bl_devs[] = {
+-	{
+-		.name	= "lm3533-backlight",
+-		.id	= 0,
+-	},
+-	{
+-		.name	= "lm3533-backlight",
+-		.id	= 1,
+-	},
+-};
+-
+-static struct mfd_cell lm3533_led_devs[] = {
+-	{
+-		.name	= "lm3533-leds",
+-		.id	= 0,
+-	},
+-	{
+-		.name	= "lm3533-leds",
+-		.id	= 1,
+-	},
+-	{
+-		.name	= "lm3533-leds",
+-		.id	= 2,
+-	},
+-	{
+-		.name	= "lm3533-leds",
+-		.id	= 3,
+-	},
+-};
+-
+-int lm3533_read(struct lm3533 *lm3533, u8 reg, u8 *val)
 -{
--	struct rc5t583_regulator_info *reg_info = rdev_get_drvdata(rdev);
--	int vsel = regulator_get_voltage_sel_regmap(rdev);
--	int curr_uV = regulator_list_voltage_linear(rdev, vsel);
--
--	return DIV_ROUND_UP(curr_uV, reg_info->enable_uv_per_us);
--}
--
--static const struct regulator_ops rc5t583_ops = {
--	.is_enabled		= regulator_is_enabled_regmap,
--	.enable			= regulator_enable_regmap,
--	.disable		= regulator_disable_regmap,
--	.enable_time		= rc5t583_regulator_enable_time,
--	.get_voltage_sel	= regulator_get_voltage_sel_regmap,
--	.set_voltage_sel	= regulator_set_voltage_sel_regmap,
--	.list_voltage		= regulator_list_voltage_linear,
--	.map_voltage		= regulator_map_voltage_linear,
--	.set_voltage_time_sel	= regulator_set_voltage_time_sel,
--};
--
--#define RC5T583_REG(_id, _en_reg, _en_bit, _disc_reg, _disc_bit, \
--		_vout_mask, _min_mv, _max_mv, _step_uV, _enable_mv) \
--{								\
--	.reg_disc_reg	= RC5T583_REG_##_disc_reg,		\
--	.disc_bit	= _disc_bit,				\
--	.deepsleep_reg	= RC5T583_REG_##_id##DAC_DS,		\
--	.enable_uv_per_us = _enable_mv * 1000,			\
--	.deepsleep_id	= RC5T583_DS_##_id,			\
--	.desc = {						\
--		.name = "rc5t583-regulator-"#_id,		\
--		.id = RC5T583_REGULATOR_##_id,			\
--		.n_voltages = (_max_mv - _min_mv) * 1000 / _step_uV + 1, \
--		.ops = &rc5t583_ops,				\
--		.type = REGULATOR_VOLTAGE,			\
--		.owner = THIS_MODULE,				\
--		.vsel_reg = RC5T583_REG_##_id##DAC,		\
--		.vsel_mask = _vout_mask,			\
--		.enable_reg = RC5T583_REG_##_en_reg,		\
--		.enable_mask = BIT(_en_bit),			\
--		.min_uV	= _min_mv * 1000,			\
--		.uV_step = _step_uV,				\
--		.ramp_delay = 40 * 1000,			\
--	},							\
--}
--
--static struct rc5t583_regulator_info rc5t583_reg_info[RC5T583_REGULATOR_MAX] = {
--	RC5T583_REG(DC0, DC0CTL, 0, DC0CTL, 1, 0x7F, 700, 1500, 12500, 4),
--	RC5T583_REG(DC1, DC1CTL, 0, DC1CTL, 1, 0x7F, 700, 1500, 12500, 14),
--	RC5T583_REG(DC2, DC2CTL, 0, DC2CTL, 1, 0x7F, 900, 2400, 12500, 14),
--	RC5T583_REG(DC3, DC3CTL, 0, DC3CTL, 1, 0x7F, 900, 2400, 12500, 14),
--	RC5T583_REG(LDO0, LDOEN2, 0, LDODIS2, 0, 0x7F, 900, 3400, 25000, 160),
--	RC5T583_REG(LDO1, LDOEN2, 1, LDODIS2, 1, 0x7F, 900, 3400, 25000, 160),
--	RC5T583_REG(LDO2, LDOEN2, 2, LDODIS2, 2, 0x7F, 900, 3400, 25000, 160),
--	RC5T583_REG(LDO3, LDOEN2, 3, LDODIS2, 3, 0x7F, 900, 3400, 25000, 160),
--	RC5T583_REG(LDO4, LDOEN2, 4, LDODIS2, 4, 0x3F, 750, 1500, 12500, 133),
--	RC5T583_REG(LDO5, LDOEN2, 5, LDODIS2, 5, 0x7F, 900, 3400, 25000, 267),
--	RC5T583_REG(LDO6, LDOEN2, 6, LDODIS2, 6, 0x7F, 900, 3400, 25000, 133),
--	RC5T583_REG(LDO7, LDOEN2, 7, LDODIS2, 7, 0x7F, 900, 3400, 25000, 233),
--	RC5T583_REG(LDO8, LDOEN1, 0, LDODIS1, 0, 0x7F, 900, 3400, 25000, 233),
--	RC5T583_REG(LDO9, LDOEN1, 1, LDODIS1, 1, 0x7F, 900, 3400, 25000, 133),
--};
--
--static int rc5t583_regulator_probe(struct platform_device *pdev)
--{
--	struct rc5t583 *rc5t583 = dev_get_drvdata(pdev->dev.parent);
--	struct rc5t583_platform_data *pdata = dev_get_platdata(rc5t583->dev);
--	struct regulator_config config = { };
--	struct regulator_dev *rdev;
--	struct rc5t583_regulator_info *ri;
+-	int tmp;
 -	int ret;
--	int id;
+-
+-	ret = regmap_read(lm3533->regmap, reg, &tmp);
+-	if (ret < 0) {
+-		dev_err(lm3533->dev, "failed to read register %02x: %d\n",
+-								reg, ret);
+-		return ret;
+-	}
+-
+-	*val = tmp;
+-
+-	dev_dbg(lm3533->dev, "read [%02x]: %02x\n", reg, *val);
+-
+-	return ret;
+-}
+-EXPORT_SYMBOL_GPL(lm3533_read);
+-
+-int lm3533_write(struct lm3533 *lm3533, u8 reg, u8 val)
+-{
+-	int ret;
+-
+-	dev_dbg(lm3533->dev, "write [%02x]: %02x\n", reg, val);
+-
+-	ret = regmap_write(lm3533->regmap, reg, val);
+-	if (ret < 0) {
+-		dev_err(lm3533->dev, "failed to write register %02x: %d\n",
+-								reg, ret);
+-	}
+-
+-	return ret;
+-}
+-EXPORT_SYMBOL_GPL(lm3533_write);
+-
+-int lm3533_update(struct lm3533 *lm3533, u8 reg, u8 val, u8 mask)
+-{
+-	int ret;
+-
+-	dev_dbg(lm3533->dev, "update [%02x]: %02x/%02x\n", reg, val, mask);
+-
+-	ret = regmap_update_bits(lm3533->regmap, reg, mask, val);
+-	if (ret < 0) {
+-		dev_err(lm3533->dev, "failed to update register %02x: %d\n",
+-								reg, ret);
+-	}
+-
+-	return ret;
+-}
+-EXPORT_SYMBOL_GPL(lm3533_update);
+-
+-static int lm3533_set_boost_freq(struct lm3533 *lm3533,
+-						enum lm3533_boost_freq freq)
+-{
+-	int ret;
+-
+-	ret = lm3533_update(lm3533, LM3533_REG_BOOST_PWM,
+-					freq << LM3533_BOOST_FREQ_SHIFT,
+-					LM3533_BOOST_FREQ_MASK);
+-	if (ret)
+-		dev_err(lm3533->dev, "failed to set boost frequency\n");
+-
+-	return ret;
+-}
+-
+-
+-static int lm3533_set_boost_ovp(struct lm3533 *lm3533,
+-						enum lm3533_boost_ovp ovp)
+-{
+-	int ret;
+-
+-	ret = lm3533_update(lm3533, LM3533_REG_BOOST_PWM,
+-					ovp << LM3533_BOOST_OVP_SHIFT,
+-					LM3533_BOOST_OVP_MASK);
+-	if (ret)
+-		dev_err(lm3533->dev, "failed to set boost ovp\n");
+-
+-	return ret;
+-}
+-
+-/*
+- * HVLED output config -- output hvled controlled by backlight bl
+- */
+-static int lm3533_set_hvled_config(struct lm3533 *lm3533, u8 hvled, u8 bl)
+-{
+-	u8 val;
+-	u8 mask;
+-	int shift;
+-	int ret;
+-
+-	if (hvled == 0 || hvled > LM3533_HVLED_ID_MAX)
+-		return -EINVAL;
+-
+-	if (bl > LM3533_BL_ID_MAX)
+-		return -EINVAL;
+-
+-	shift = hvled - 1;
+-	mask = LM3533_BL_ID_MASK << shift;
+-	val = bl << shift;
+-
+-	ret = lm3533_update(lm3533, LM3533_REG_OUTPUT_CONF1, val, mask);
+-	if (ret)
+-		dev_err(lm3533->dev, "failed to set hvled config\n");
+-
+-	return ret;
+-}
+-
+-/*
+- * LVLED output config -- output lvled controlled by LED led
+- */
+-static int lm3533_set_lvled_config(struct lm3533 *lm3533, u8 lvled, u8 led)
+-{
+-	u8 reg;
+-	u8 val;
+-	u8 mask;
+-	int shift;
+-	int ret;
+-
+-	if (lvled == 0 || lvled > LM3533_LVLED_ID_MAX)
+-		return -EINVAL;
+-
+-	if (led > LM3533_LED_ID_MAX)
+-		return -EINVAL;
+-
+-	if (lvled < 4) {
+-		reg = LM3533_REG_OUTPUT_CONF1;
+-		shift = 2 * lvled;
+-	} else {
+-		reg = LM3533_REG_OUTPUT_CONF2;
+-		shift = 2 * (lvled - 4);
+-	}
+-
+-	mask = LM3533_LED_ID_MASK << shift;
+-	val = led << shift;
+-
+-	ret = lm3533_update(lm3533, reg, val, mask);
+-	if (ret)
+-		dev_err(lm3533->dev, "failed to set lvled config\n");
+-
+-	return ret;
+-}
+-
+-static void lm3533_enable(struct lm3533 *lm3533)
+-{
+-	gpiod_set_value(lm3533->hwen, 1);
+-}
+-
+-static void lm3533_disable(struct lm3533 *lm3533)
+-{
+-	gpiod_set_value(lm3533->hwen, 0);
+-}
+-
+-enum lm3533_attribute_type {
+-	LM3533_ATTR_TYPE_BACKLIGHT,
+-	LM3533_ATTR_TYPE_LED,
+-};
+-
+-struct lm3533_device_attribute {
+-	struct device_attribute dev_attr;
+-	enum lm3533_attribute_type type;
+-	union {
+-		struct {
+-			u8 id;
+-		} output;
+-	} u;
+-};
+-
+-#define to_lm3533_dev_attr(_attr) \
+-	container_of(_attr, struct lm3533_device_attribute, dev_attr)
+-
+-static ssize_t show_output(struct device *dev,
+-				struct device_attribute *attr, char *buf)
+-{
+-	struct lm3533 *lm3533 = dev_get_drvdata(dev);
+-	struct lm3533_device_attribute *lattr = to_lm3533_dev_attr(attr);
+-	int id = lattr->u.output.id;
+-	u8 reg;
+-	u8 val;
+-	u8 mask;
+-	int shift;
+-	int ret;
+-
+-	if (lattr->type == LM3533_ATTR_TYPE_BACKLIGHT) {
+-		reg = LM3533_REG_OUTPUT_CONF1;
+-		shift = id - 1;
+-		mask = LM3533_BL_ID_MASK << shift;
+-	} else {
+-		if (id < 4) {
+-			reg = LM3533_REG_OUTPUT_CONF1;
+-			shift = 2 * id;
+-		} else {
+-			reg = LM3533_REG_OUTPUT_CONF2;
+-			shift = 2 * (id - 4);
+-		}
+-		mask = LM3533_LED_ID_MASK << shift;
+-	}
+-
+-	ret = lm3533_read(lm3533, reg, &val);
+-	if (ret)
+-		return ret;
+-
+-	val = (val & mask) >> shift;
+-
+-	return sysfs_emit(buf, "%u\n", val);
+-}
+-
+-static ssize_t store_output(struct device *dev,
+-					struct device_attribute *attr,
+-					const char *buf, size_t len)
+-{
+-	struct lm3533 *lm3533 = dev_get_drvdata(dev);
+-	struct lm3533_device_attribute *lattr = to_lm3533_dev_attr(attr);
+-	int id = lattr->u.output.id;
+-	u8 val;
+-	int ret;
+-
+-	if (kstrtou8(buf, 0, &val))
+-		return -EINVAL;
+-
+-	if (lattr->type == LM3533_ATTR_TYPE_BACKLIGHT)
+-		ret = lm3533_set_hvled_config(lm3533, id, val);
+-	else
+-		ret = lm3533_set_lvled_config(lm3533, id, val);
+-
+-	if (ret)
+-		return ret;
+-
+-	return len;
+-}
+-
+-#define LM3533_OUTPUT_ATTR(_name, _mode, _show, _store, _type, _id) \
+-	struct lm3533_device_attribute lm3533_dev_attr_##_name = \
+-		{ .dev_attr	= __ATTR(_name, _mode, _show, _store), \
+-		  .type		= _type, \
+-		  .u.output	= { .id = _id }, }
+-
+-#define LM3533_OUTPUT_ATTR_RW(_name, _type, _id) \
+-	LM3533_OUTPUT_ATTR(output_##_name, S_IRUGO | S_IWUSR, \
+-					show_output, store_output, _type, _id)
+-
+-#define LM3533_OUTPUT_HVLED_ATTR_RW(_nr) \
+-	LM3533_OUTPUT_ATTR_RW(hvled##_nr, LM3533_ATTR_TYPE_BACKLIGHT, _nr)
+-#define LM3533_OUTPUT_LVLED_ATTR_RW(_nr) \
+-	LM3533_OUTPUT_ATTR_RW(lvled##_nr, LM3533_ATTR_TYPE_LED, _nr)
+-/*
+- * Output config:
+- *
+- * output_hvled<nr>	0-1
+- * output_lvled<nr>	0-3
+- */
+-static LM3533_OUTPUT_HVLED_ATTR_RW(1);
+-static LM3533_OUTPUT_HVLED_ATTR_RW(2);
+-static LM3533_OUTPUT_LVLED_ATTR_RW(1);
+-static LM3533_OUTPUT_LVLED_ATTR_RW(2);
+-static LM3533_OUTPUT_LVLED_ATTR_RW(3);
+-static LM3533_OUTPUT_LVLED_ATTR_RW(4);
+-static LM3533_OUTPUT_LVLED_ATTR_RW(5);
+-
+-static struct attribute *lm3533_attributes[] = {
+-	&lm3533_dev_attr_output_hvled1.dev_attr.attr,
+-	&lm3533_dev_attr_output_hvled2.dev_attr.attr,
+-	&lm3533_dev_attr_output_lvled1.dev_attr.attr,
+-	&lm3533_dev_attr_output_lvled2.dev_attr.attr,
+-	&lm3533_dev_attr_output_lvled3.dev_attr.attr,
+-	&lm3533_dev_attr_output_lvled4.dev_attr.attr,
+-	&lm3533_dev_attr_output_lvled5.dev_attr.attr,
+-	NULL,
+-};
+-
+-#define to_dev_attr(_attr) \
+-	container_of(_attr, struct device_attribute, attr)
+-
+-static umode_t lm3533_attr_is_visible(struct kobject *kobj,
+-					     struct attribute *attr, int n)
+-{
+-	struct device *dev = kobj_to_dev(kobj);
+-	struct lm3533 *lm3533 = dev_get_drvdata(dev);
+-	struct device_attribute *dattr = to_dev_attr(attr);
+-	struct lm3533_device_attribute *lattr = to_lm3533_dev_attr(dattr);
+-	enum lm3533_attribute_type type = lattr->type;
+-	umode_t mode = attr->mode;
+-
+-	if (!lm3533->have_backlights && type == LM3533_ATTR_TYPE_BACKLIGHT)
+-		mode = 0;
+-	else if (!lm3533->have_leds && type == LM3533_ATTR_TYPE_LED)
+-		mode = 0;
+-
+-	return mode;
+-};
+-
+-static struct attribute_group lm3533_attribute_group = {
+-	.is_visible	= lm3533_attr_is_visible,
+-	.attrs		= lm3533_attributes
+-};
+-
+-static int lm3533_device_als_init(struct lm3533 *lm3533)
+-{
+-	struct lm3533_platform_data *pdata = dev_get_platdata(lm3533->dev);
+-	int ret;
+-
+-	if (!pdata->als)
+-		return 0;
+-
+-	lm3533_als_devs[0].platform_data = pdata->als;
+-	lm3533_als_devs[0].pdata_size = sizeof(*pdata->als);
+-
+-	ret = mfd_add_devices(lm3533->dev, 0, lm3533_als_devs, 1, NULL,
+-			      0, NULL);
+-	if (ret) {
+-		dev_err(lm3533->dev, "failed to add ALS device\n");
+-		return ret;
+-	}
+-
+-	lm3533->have_als = 1;
+-
+-	return 0;
+-}
+-
+-static int lm3533_device_bl_init(struct lm3533 *lm3533)
+-{
+-	struct lm3533_platform_data *pdata = dev_get_platdata(lm3533->dev);
+-	int i;
+-	int ret;
+-
+-	if (!pdata->backlights || pdata->num_backlights == 0)
+-		return 0;
+-
+-	if (pdata->num_backlights > ARRAY_SIZE(lm3533_bl_devs))
+-		pdata->num_backlights = ARRAY_SIZE(lm3533_bl_devs);
+-
+-	for (i = 0; i < pdata->num_backlights; ++i) {
+-		lm3533_bl_devs[i].platform_data = &pdata->backlights[i];
+-		lm3533_bl_devs[i].pdata_size = sizeof(pdata->backlights[i]);
+-	}
+-
+-	ret = mfd_add_devices(lm3533->dev, 0, lm3533_bl_devs,
+-			      pdata->num_backlights, NULL, 0, NULL);
+-	if (ret) {
+-		dev_err(lm3533->dev, "failed to add backlight devices\n");
+-		return ret;
+-	}
+-
+-	lm3533->have_backlights = 1;
+-
+-	return 0;
+-}
+-
+-static int lm3533_device_led_init(struct lm3533 *lm3533)
+-{
+-	struct lm3533_platform_data *pdata = dev_get_platdata(lm3533->dev);
+-	int i;
+-	int ret;
+-
+-	if (!pdata->leds || pdata->num_leds == 0)
+-		return 0;
+-
+-	if (pdata->num_leds > ARRAY_SIZE(lm3533_led_devs))
+-		pdata->num_leds = ARRAY_SIZE(lm3533_led_devs);
+-
+-	for (i = 0; i < pdata->num_leds; ++i) {
+-		lm3533_led_devs[i].platform_data = &pdata->leds[i];
+-		lm3533_led_devs[i].pdata_size = sizeof(pdata->leds[i]);
+-	}
+-
+-	ret = mfd_add_devices(lm3533->dev, 0, lm3533_led_devs,
+-			      pdata->num_leds, NULL, 0, NULL);
+-	if (ret) {
+-		dev_err(lm3533->dev, "failed to add LED devices\n");
+-		return ret;
+-	}
+-
+-	lm3533->have_leds = 1;
+-
+-	return 0;
+-}
+-
+-static int lm3533_device_setup(struct lm3533 *lm3533,
+-					struct lm3533_platform_data *pdata)
+-{
+-	int ret;
+-
+-	ret = lm3533_set_boost_freq(lm3533, pdata->boost_freq);
+-	if (ret)
+-		return ret;
+-
+-	return lm3533_set_boost_ovp(lm3533, pdata->boost_ovp);
+-}
+-
+-static int lm3533_device_init(struct lm3533 *lm3533)
+-{
+-	struct lm3533_platform_data *pdata = dev_get_platdata(lm3533->dev);
+-	int ret;
+-
+-	dev_dbg(lm3533->dev, "%s\n", __func__);
 -
 -	if (!pdata) {
--		dev_err(&pdev->dev, "No platform data, exiting...\n");
--		return -ENODEV;
+-		dev_err(lm3533->dev, "no platform data\n");
+-		return -EINVAL;
 -	}
 -
--	for (id = 0; id < RC5T583_REGULATOR_MAX; ++id) {
--		ri = &rc5t583_reg_info[id];
+-	lm3533->hwen = devm_gpiod_get(lm3533->dev, NULL, GPIOD_OUT_LOW);
+-	if (IS_ERR(lm3533->hwen))
+-		return dev_err_probe(lm3533->dev, PTR_ERR(lm3533->hwen), "failed to request HWEN GPIO\n");
+-	gpiod_set_consumer_name(lm3533->hwen, "lm3533-hwen");
 -
--		if (ri->deepsleep_id == RC5T583_DS_NONE)
--			goto skip_ext_pwr_config;
+-	lm3533_enable(lm3533);
 -
--		ret = rc5t583_ext_power_req_config(rc5t583->dev,
--				ri->deepsleep_id,
--				pdata->regulator_ext_pwr_control[id],
--				pdata->regulator_deepsleep_slot[id]);
--		/*
--		 * Configuring external control is not a major issue,
--		 * just give warning.
--		 */
--		if (ret < 0)
--			dev_warn(&pdev->dev,
--				"Failed to configure ext control %d\n", id);
+-	ret = lm3533_device_setup(lm3533, pdata);
+-	if (ret)
+-		goto err_disable;
 -
--skip_ext_pwr_config:
--		config.dev = &pdev->dev;
--		config.init_data = pdata->reg_init_data[id];
--		config.driver_data = ri;
--		config.regmap = rc5t583->regmap;
+-	lm3533_device_als_init(lm3533);
+-	lm3533_device_bl_init(lm3533);
+-	lm3533_device_led_init(lm3533);
 -
--		rdev = devm_regulator_register(&pdev->dev, &ri->desc, &config);
--		if (IS_ERR(rdev)) {
--			dev_err(&pdev->dev, "Failed to register regulator %s\n",
--						ri->desc.name);
--			return PTR_ERR(rdev);
--		}
+-	ret = sysfs_create_group(&lm3533->dev->kobj, &lm3533_attribute_group);
+-	if (ret < 0) {
+-		dev_err(lm3533->dev, "failed to create sysfs attributes\n");
+-		goto err_unregister;
 -	}
+-
 -	return 0;
+-
+-err_unregister:
+-	mfd_remove_devices(lm3533->dev);
+-err_disable:
+-	lm3533_disable(lm3533);
+-
+-	return ret;
 -}
 -
--static struct platform_driver rc5t583_regulator_driver = {
--	.driver	= {
--		.name	= "rc5t583-regulator",
--		.probe_type = PROBE_PREFER_ASYNCHRONOUS,
--	},
--	.probe		= rc5t583_regulator_probe,
+-static void lm3533_device_exit(struct lm3533 *lm3533)
+-{
+-	dev_dbg(lm3533->dev, "%s\n", __func__);
+-
+-	sysfs_remove_group(&lm3533->dev->kobj, &lm3533_attribute_group);
+-
+-	mfd_remove_devices(lm3533->dev);
+-	lm3533_disable(lm3533);
+-}
+-
+-static bool lm3533_readable_register(struct device *dev, unsigned int reg)
+-{
+-	switch (reg) {
+-	case 0x10 ... 0x2c:
+-	case 0x30 ... 0x38:
+-	case 0x40 ... 0x45:
+-	case 0x50 ... 0x57:
+-	case 0x60 ... 0x6e:
+-	case 0x70 ... 0x75:
+-	case 0x80 ... 0x85:
+-	case 0x90 ... 0x95:
+-	case 0xa0 ... 0xa5:
+-	case 0xb0 ... 0xb2:
+-		return true;
+-	default:
+-		return false;
+-	}
+-}
+-
+-static bool lm3533_volatile_register(struct device *dev, unsigned int reg)
+-{
+-	switch (reg) {
+-	case 0x34 ... 0x36:	/* zone */
+-	case 0x37 ... 0x38:	/* adc */
+-	case 0xb0 ... 0xb1:	/* fault */
+-		return true;
+-	default:
+-		return false;
+-	}
+-}
+-
+-static bool lm3533_precious_register(struct device *dev, unsigned int reg)
+-{
+-	switch (reg) {
+-	case 0x34:		/* zone */
+-		return true;
+-	default:
+-		return false;
+-	}
+-}
+-
+-static const struct regmap_config regmap_config = {
+-	.reg_bits	= 8,
+-	.val_bits	= 8,
+-	.max_register	= LM3533_REG_MAX,
+-	.readable_reg	= lm3533_readable_register,
+-	.volatile_reg	= lm3533_volatile_register,
+-	.precious_reg	= lm3533_precious_register,
 -};
 -
--static int __init rc5t583_regulator_init(void)
+-static int lm3533_i2c_probe(struct i2c_client *i2c)
 -{
--	return platform_driver_register(&rc5t583_regulator_driver);
--}
--subsys_initcall(rc5t583_regulator_init);
+-	struct lm3533 *lm3533;
 -
--static void __exit rc5t583_regulator_exit(void)
--{
--	platform_driver_unregister(&rc5t583_regulator_driver);
--}
--module_exit(rc5t583_regulator_exit);
+-	dev_dbg(&i2c->dev, "%s\n", __func__);
 -
--MODULE_AUTHOR("Laxman Dewangan <ldewangan@nvidia.com>");
--MODULE_DESCRIPTION("RC5T583 regulator driver");
--MODULE_ALIAS("platform:rc5t583-regulator");
--MODULE_LICENSE("GPL v2");
-diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
-index c201948b4d5b..c71398368f6d 100644
---- a/drivers/rtc/Kconfig
-+++ b/drivers/rtc/Kconfig
-@@ -630,16 +630,6 @@ config RTC_DRV_TPS65910
- 	  This driver can also be built as a module. If so, the module
- 	  will be called rtc-tps65910.
- 
--config RTC_DRV_RC5T583
--	tristate "RICOH 5T583 RTC driver"
--	depends on MFD_RC5T583
--	help
--	  If you say yes here you get support for the RTC on the
--	  RICOH 5T583 chips.
--
--	  This driver can also be built as a module. If so, the module
--	  will be called rtc-rc5t583.
--
- config RTC_DRV_RC5T619
- 	tristate "RICOH RC5T619 RTC driver"
- 	depends on MFD_RN5T618
-diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
-index 84bb2af5849e..b8fc1a17d27f 100644
---- a/drivers/rtc/Makefile
-+++ b/drivers/rtc/Makefile
-@@ -143,7 +143,6 @@ obj-$(CONFIG_RTC_DRV_PS3)	+= rtc-ps3.o
- obj-$(CONFIG_RTC_DRV_PXA)	+= rtc-pxa.o
- obj-$(CONFIG_RTC_DRV_R7301)	+= rtc-r7301.o
- obj-$(CONFIG_RTC_DRV_R9701)	+= rtc-r9701.o
--obj-$(CONFIG_RTC_DRV_RC5T583)	+= rtc-rc5t583.o
- obj-$(CONFIG_RTC_DRV_RC5T619)	+= rtc-rc5t619.o
- obj-$(CONFIG_RTC_DRV_RK808)	+= rtc-rk808.o
- obj-$(CONFIG_RTC_DRV_RP5C01)	+= rtc-rp5c01.o
-diff --git a/drivers/rtc/rtc-rc5t583.c b/drivers/rtc/rtc-rc5t583.c
-deleted file mode 100644
-index 8ba9cda74acf..000000000000
---- a/drivers/rtc/rtc-rc5t583.c
-+++ /dev/null
-@@ -1,312 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-only
--/*
-- * rtc-rc5t583.c -- RICOH RC5T583 Real Time Clock
-- *
-- * Copyright (c) 2012, NVIDIA CORPORATION.  All rights reserved.
-- * Author: Venu Byravarasu <vbyravarasu@nvidia.com>
-- */
--
--#include <linux/kernel.h>
--#include <linux/errno.h>
--#include <linux/init.h>
--#include <linux/module.h>
--#include <linux/types.h>
--#include <linux/rtc.h>
--#include <linux/bcd.h>
--#include <linux/platform_device.h>
--#include <linux/interrupt.h>
--#include <linux/mfd/rc5t583.h>
--
--struct rc5t583_rtc {
--	struct rtc_device	*rtc;
--	/* To store the list of enabled interrupts, during system suspend */
--	u32 irqen;
--};
--
--/* Total number of RTC registers needed to set time*/
--#define NUM_TIME_REGS	(RC5T583_RTC_YEAR - RC5T583_RTC_SEC + 1)
--
--/* Total number of RTC registers needed to set Y-Alarm*/
--#define NUM_YAL_REGS	(RC5T583_RTC_AY_YEAR - RC5T583_RTC_AY_MIN + 1)
--
--/* Set Y-Alarm interrupt */
--#define SET_YAL BIT(5)
--
--/* Get Y-Alarm interrupt status*/
--#define GET_YAL_STATUS BIT(3)
--
--static int rc5t583_rtc_alarm_irq_enable(struct device *dev, unsigned enabled)
--{
--	struct rc5t583 *rc5t583 = dev_get_drvdata(dev->parent);
--	u8 val;
--
--	/* Set Y-Alarm, based on 'enabled' */
--	val = enabled ? SET_YAL : 0;
--
--	return regmap_update_bits(rc5t583->regmap, RC5T583_RTC_CTL1, SET_YAL,
--		val);
--}
--
--/*
-- * Gets current rc5t583 RTC time and date parameters.
-- *
-- * The RTC's time/alarm representation is not what gmtime(3) requires
-- * Linux to use:
-- *
-- *  - Months are 1..12 vs Linux 0-11
-- *  - Years are 0..99 vs Linux 1900..N (we assume 21st century)
-- */
--static int rc5t583_rtc_read_time(struct device *dev, struct rtc_time *tm)
--{
--	struct rc5t583 *rc5t583 = dev_get_drvdata(dev->parent);
--	u8 rtc_data[NUM_TIME_REGS];
--	int ret;
--
--	ret = regmap_bulk_read(rc5t583->regmap, RC5T583_RTC_SEC, rtc_data,
--		NUM_TIME_REGS);
--	if (ret < 0) {
--		dev_err(dev, "RTC read time failed with err:%d\n", ret);
--		return ret;
--	}
--
--	tm->tm_sec = bcd2bin(rtc_data[0]);
--	tm->tm_min = bcd2bin(rtc_data[1]);
--	tm->tm_hour = bcd2bin(rtc_data[2]);
--	tm->tm_wday = bcd2bin(rtc_data[3]);
--	tm->tm_mday = bcd2bin(rtc_data[4]);
--	tm->tm_mon = bcd2bin(rtc_data[5]) - 1;
--	tm->tm_year = bcd2bin(rtc_data[6]) + 100;
--
--	return ret;
--}
--
--static int rc5t583_rtc_set_time(struct device *dev, struct rtc_time *tm)
--{
--	struct rc5t583 *rc5t583 = dev_get_drvdata(dev->parent);
--	unsigned char rtc_data[NUM_TIME_REGS];
--	int ret;
--
--	rtc_data[0] = bin2bcd(tm->tm_sec);
--	rtc_data[1] = bin2bcd(tm->tm_min);
--	rtc_data[2] = bin2bcd(tm->tm_hour);
--	rtc_data[3] = bin2bcd(tm->tm_wday);
--	rtc_data[4] = bin2bcd(tm->tm_mday);
--	rtc_data[5] = bin2bcd(tm->tm_mon + 1);
--	rtc_data[6] = bin2bcd(tm->tm_year - 100);
--
--	ret = regmap_bulk_write(rc5t583->regmap, RC5T583_RTC_SEC, rtc_data,
--		NUM_TIME_REGS);
--	if (ret < 0) {
--		dev_err(dev, "RTC set time failed with error %d\n", ret);
--		return ret;
--	}
--
--	return ret;
--}
--
--static int rc5t583_rtc_read_alarm(struct device *dev, struct rtc_wkalrm *alm)
--{
--	struct rc5t583 *rc5t583 = dev_get_drvdata(dev->parent);
--	unsigned char alarm_data[NUM_YAL_REGS];
--	u32 interrupt_enable;
--	int ret;
--
--	ret = regmap_bulk_read(rc5t583->regmap, RC5T583_RTC_AY_MIN, alarm_data,
--		NUM_YAL_REGS);
--	if (ret < 0) {
--		dev_err(dev, "rtc_read_alarm error %d\n", ret);
--		return ret;
--	}
--
--	alm->time.tm_sec = 0;
--	alm->time.tm_min = bcd2bin(alarm_data[0]);
--	alm->time.tm_hour = bcd2bin(alarm_data[1]);
--	alm->time.tm_mday = bcd2bin(alarm_data[2]);
--	alm->time.tm_mon = bcd2bin(alarm_data[3]) - 1;
--	alm->time.tm_year = bcd2bin(alarm_data[4]) + 100;
--
--	ret = regmap_read(rc5t583->regmap, RC5T583_RTC_CTL1, &interrupt_enable);
--	if (ret < 0)
--		return ret;
--
--	/* check if YALE is set */
--	if (interrupt_enable & SET_YAL)
--		alm->enabled = 1;
--
--	return ret;
--}
--
--static int rc5t583_rtc_set_alarm(struct device *dev, struct rtc_wkalrm *alm)
--{
--	struct rc5t583 *rc5t583 = dev_get_drvdata(dev->parent);
--	unsigned char alarm_data[NUM_YAL_REGS];
--	int ret;
--
--	ret = rc5t583_rtc_alarm_irq_enable(dev, 0);
--	if (ret)
--		return ret;
--
--	alarm_data[0] = bin2bcd(alm->time.tm_min);
--	alarm_data[1] = bin2bcd(alm->time.tm_hour);
--	alarm_data[2] = bin2bcd(alm->time.tm_mday);
--	alarm_data[3] = bin2bcd(alm->time.tm_mon + 1);
--	alarm_data[4] = bin2bcd(alm->time.tm_year - 100);
--
--	ret = regmap_bulk_write(rc5t583->regmap, RC5T583_RTC_AY_MIN, alarm_data,
--		NUM_YAL_REGS);
--	if (ret) {
--		dev_err(dev, "rtc_set_alarm error %d\n", ret);
--		return ret;
--	}
--
--	if (alm->enabled)
--		ret = rc5t583_rtc_alarm_irq_enable(dev, 1);
--
--	return ret;
--}
--
--static irqreturn_t rc5t583_rtc_interrupt(int irq, void *rtc)
--{
--	struct device *dev = rtc;
--	struct rc5t583 *rc5t583 = dev_get_drvdata(dev->parent);
--	struct rc5t583_rtc *rc5t583_rtc = dev_get_drvdata(dev);
--	unsigned long events = 0;
--	int ret;
--	u32 rtc_reg;
--
--	ret = regmap_read(rc5t583->regmap, RC5T583_RTC_CTL2, &rtc_reg);
--	if (ret < 0)
--		return IRQ_NONE;
--
--	if (rtc_reg & GET_YAL_STATUS) {
--		events = RTC_IRQF | RTC_AF;
--		/* clear pending Y-alarm interrupt bit */
--		rtc_reg &= ~GET_YAL_STATUS;
--	}
--
--	ret = regmap_write(rc5t583->regmap, RC5T583_RTC_CTL2, rtc_reg);
--	if (ret)
--		return IRQ_NONE;
--
--	/* Notify RTC core on event */
--	rtc_update_irq(rc5t583_rtc->rtc, 1, events);
--
--	return IRQ_HANDLED;
--}
--
--static const struct rtc_class_ops rc5t583_rtc_ops = {
--	.read_time	= rc5t583_rtc_read_time,
--	.set_time	= rc5t583_rtc_set_time,
--	.read_alarm	= rc5t583_rtc_read_alarm,
--	.set_alarm	= rc5t583_rtc_set_alarm,
--	.alarm_irq_enable = rc5t583_rtc_alarm_irq_enable,
--};
--
--static int rc5t583_rtc_probe(struct platform_device *pdev)
--{
--	struct rc5t583 *rc5t583 = dev_get_drvdata(pdev->dev.parent);
--	struct rc5t583_rtc *ricoh_rtc;
--	struct rc5t583_platform_data *pmic_plat_data;
--	int ret;
--	int irq;
--
--	ricoh_rtc = devm_kzalloc(&pdev->dev, sizeof(struct rc5t583_rtc),
--			GFP_KERNEL);
--	if (!ricoh_rtc)
+-	lm3533 = devm_kzalloc(&i2c->dev, sizeof(*lm3533), GFP_KERNEL);
+-	if (!lm3533)
 -		return -ENOMEM;
 -
--	platform_set_drvdata(pdev, ricoh_rtc);
+-	i2c_set_clientdata(i2c, lm3533);
 -
--	/* Clear pending interrupts */
--	ret = regmap_write(rc5t583->regmap, RC5T583_RTC_CTL2, 0);
--	if (ret < 0)
--		return ret;
+-	lm3533->regmap = devm_regmap_init_i2c(i2c, &regmap_config);
+-	if (IS_ERR(lm3533->regmap))
+-		return PTR_ERR(lm3533->regmap);
 -
--	/* clear RTC Adjust register */
--	ret = regmap_write(rc5t583->regmap, RC5T583_RTC_ADJ, 0);
--	if (ret < 0) {
--		dev_err(&pdev->dev, "unable to program rtc_adjust reg\n");
--		return -EBUSY;
--	}
+-	lm3533->dev = &i2c->dev;
+-	lm3533->irq = i2c->irq;
 -
--	pmic_plat_data = dev_get_platdata(rc5t583->dev);
--	irq = pmic_plat_data->irq_base;
--	if (irq <= 0) {
--		dev_warn(&pdev->dev, "Wake up is not possible as irq = %d\n",
--			irq);
--		return ret;
--	}
--
--	irq += RC5T583_IRQ_YALE;
--	ret = devm_request_threaded_irq(&pdev->dev, irq, NULL,
--		rc5t583_rtc_interrupt, IRQF_TRIGGER_LOW,
--		"rtc-rc5t583", &pdev->dev);
--	if (ret < 0) {
--		dev_err(&pdev->dev, "IRQ is not free.\n");
--		return ret;
--	}
--	device_init_wakeup(&pdev->dev, true);
--
--	ricoh_rtc->rtc = devm_rtc_device_register(&pdev->dev, pdev->name,
--		&rc5t583_rtc_ops, THIS_MODULE);
--	if (IS_ERR(ricoh_rtc->rtc)) {
--		ret = PTR_ERR(ricoh_rtc->rtc);
--		dev_err(&pdev->dev, "RTC device register: err %d\n", ret);
--		return ret;
--	}
--
--	return 0;
+-	return lm3533_device_init(lm3533);
 -}
 -
--/*
-- * Disable rc5t583 RTC interrupts.
-- * Sets status flag to free.
-- */
--static void rc5t583_rtc_remove(struct platform_device *pdev)
+-static void lm3533_i2c_remove(struct i2c_client *i2c)
 -{
--	struct rc5t583_rtc *rc5t583_rtc = platform_get_drvdata(pdev);
+-	struct lm3533 *lm3533 = i2c_get_clientdata(i2c);
 -
--	rc5t583_rtc_alarm_irq_enable(&rc5t583_rtc->rtc->dev, 0);
+-	dev_dbg(&i2c->dev, "%s\n", __func__);
+-
+-	lm3533_device_exit(lm3533);
+-}
+-
+-static const struct i2c_device_id lm3533_i2c_ids[] = {
+-	{ "lm3533" },
+-	{ }
+-};
+-MODULE_DEVICE_TABLE(i2c, lm3533_i2c_ids);
+-
+-static struct i2c_driver lm3533_i2c_driver = {
+-	.driver = {
+-		   .name = "lm3533",
+-	},
+-	.id_table	= lm3533_i2c_ids,
+-	.probe		= lm3533_i2c_probe,
+-	.remove		= lm3533_i2c_remove,
+-};
+-
+-static int __init lm3533_i2c_init(void)
+-{
+-	return i2c_add_driver(&lm3533_i2c_driver);
+-}
+-subsys_initcall(lm3533_i2c_init);
+-
+-static void __exit lm3533_i2c_exit(void)
+-{
+-	i2c_del_driver(&lm3533_i2c_driver);
+-}
+-module_exit(lm3533_i2c_exit);
+-
+-MODULE_AUTHOR("Johan Hovold <jhovold@gmail.com>");
+-MODULE_DESCRIPTION("LM3533 Core");
+-MODULE_LICENSE("GPL");
+diff --git a/drivers/mfd/lm3533-ctrlbank.c b/drivers/mfd/lm3533-ctrlbank.c
+deleted file mode 100644
+index 2537dfade51c..000000000000
+--- a/drivers/mfd/lm3533-ctrlbank.c
++++ /dev/null
+@@ -1,162 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-or-later
+-/*
+- * lm3533-ctrlbank.c -- LM3533 Generic Control Bank interface
+- *
+- * Copyright (C) 2011-2012 Texas Instruments
+- *
+- * Author: Johan Hovold <jhovold@gmail.com>
+- */
+-
+-#include <linux/device.h>
+-#include <linux/module.h>
+-
+-#include <linux/mfd/lm3533.h>
+-
+-
+-#define LM3533_MAX_CURRENT_MIN		5000
+-#define LM3533_MAX_CURRENT_MAX		29800
+-#define LM3533_MAX_CURRENT_STEP		800
+-
+-#define LM3533_PWM_MAX			0x3f
+-
+-#define LM3533_REG_PWM_BASE		0x14
+-#define LM3533_REG_MAX_CURRENT_BASE	0x1f
+-#define LM3533_REG_CTRLBANK_ENABLE	0x27
+-#define LM3533_REG_BRIGHTNESS_BASE	0x40
+-
+-
+-static inline u8 lm3533_ctrlbank_get_reg(struct lm3533_ctrlbank *cb, u8 base)
+-{
+-	return base + cb->id;
+-}
+-
+-int lm3533_ctrlbank_enable(struct lm3533_ctrlbank *cb)
+-{
+-	u8 mask;
+-	int ret;
+-
+-	dev_dbg(cb->dev, "%s - %d\n", __func__, cb->id);
+-
+-	mask = 1 << cb->id;
+-	ret = lm3533_update(cb->lm3533, LM3533_REG_CTRLBANK_ENABLE,
+-								mask, mask);
+-	if (ret)
+-		dev_err(cb->dev, "failed to enable ctrlbank %d\n", cb->id);
+-
+-	return ret;
+-}
+-EXPORT_SYMBOL_GPL(lm3533_ctrlbank_enable);
+-
+-int lm3533_ctrlbank_disable(struct lm3533_ctrlbank *cb)
+-{
+-	u8 mask;
+-	int ret;
+-
+-	dev_dbg(cb->dev, "%s - %d\n", __func__, cb->id);
+-
+-	mask = 1 << cb->id;
+-	ret = lm3533_update(cb->lm3533, LM3533_REG_CTRLBANK_ENABLE, 0, mask);
+-	if (ret)
+-		dev_err(cb->dev, "failed to disable ctrlbank %d\n", cb->id);
+-
+-	return ret;
+-}
+-EXPORT_SYMBOL_GPL(lm3533_ctrlbank_disable);
+-
+-/*
+- * Full-scale current.
+- *
+- * imax		5000 - 29800 uA (800 uA step)
+- */
+-int lm3533_ctrlbank_set_max_current(struct lm3533_ctrlbank *cb, u16 imax)
+-{
+-	u8 reg;
+-	u8 val;
+-	int ret;
+-
+-	if (imax < LM3533_MAX_CURRENT_MIN || imax > LM3533_MAX_CURRENT_MAX)
+-		return -EINVAL;
+-
+-	val = (imax - LM3533_MAX_CURRENT_MIN) / LM3533_MAX_CURRENT_STEP;
+-
+-	reg = lm3533_ctrlbank_get_reg(cb, LM3533_REG_MAX_CURRENT_BASE);
+-	ret = lm3533_write(cb->lm3533, reg, val);
+-	if (ret)
+-		dev_err(cb->dev, "failed to set max current\n");
+-
+-	return ret;
+-}
+-EXPORT_SYMBOL_GPL(lm3533_ctrlbank_set_max_current);
+-
+-int lm3533_ctrlbank_set_brightness(struct lm3533_ctrlbank *cb, u8 val)
+-{
+-	u8 reg;
+-	int ret;
+-
+-	reg = lm3533_ctrlbank_get_reg(cb, LM3533_REG_BRIGHTNESS_BASE);
+-	ret = lm3533_write(cb->lm3533, reg, val);
+-	if (ret)
+-		dev_err(cb->dev, "failed to set brightness\n");
+-
+-	return ret;
+-}
+-EXPORT_SYMBOL_GPL(lm3533_ctrlbank_set_brightness);
+-
+-int lm3533_ctrlbank_get_brightness(struct lm3533_ctrlbank *cb, u8 *val)
+-{
+-	u8 reg;
+-	int ret;
+-
+-	reg = lm3533_ctrlbank_get_reg(cb, LM3533_REG_BRIGHTNESS_BASE);
+-	ret = lm3533_read(cb->lm3533, reg, val);
+-	if (ret)
+-		dev_err(cb->dev, "failed to get brightness\n");
+-
+-	return ret;
+-}
+-EXPORT_SYMBOL_GPL(lm3533_ctrlbank_get_brightness);
+-
+-/*
+- * PWM-input control mask:
+- *
+- *   bit 5 - PWM-input enabled in Zone 4
+- *   bit 4 - PWM-input enabled in Zone 3
+- *   bit 3 - PWM-input enabled in Zone 2
+- *   bit 2 - PWM-input enabled in Zone 1
+- *   bit 1 - PWM-input enabled in Zone 0
+- *   bit 0 - PWM-input enabled
+- */
+-int lm3533_ctrlbank_set_pwm(struct lm3533_ctrlbank *cb, u8 val)
+-{
+-	u8 reg;
+-	int ret;
+-
+-	if (val > LM3533_PWM_MAX)
+-		return -EINVAL;
+-
+-	reg = lm3533_ctrlbank_get_reg(cb, LM3533_REG_PWM_BASE);
+-	ret = lm3533_write(cb->lm3533, reg, val);
+-	if (ret)
+-		dev_err(cb->dev, "failed to set PWM mask\n");
+-
+-	return ret;
+-}
+-EXPORT_SYMBOL_GPL(lm3533_ctrlbank_set_pwm);
+-
+-int lm3533_ctrlbank_get_pwm(struct lm3533_ctrlbank *cb, u8 *val)
+-{
+-	u8 reg;
+-	int ret;
+-
+-	reg = lm3533_ctrlbank_get_reg(cb, LM3533_REG_PWM_BASE);
+-	ret = lm3533_read(cb->lm3533, reg, val);
+-	if (ret)
+-		dev_err(cb->dev, "failed to get PWM mask\n");
+-
+-	return ret;
+-}
+-EXPORT_SYMBOL_GPL(lm3533_ctrlbank_get_pwm);
+-
+-MODULE_AUTHOR("Johan Hovold <jhovold@gmail.com>");
+-MODULE_DESCRIPTION("LM3533 Control Bank interface");
+-MODULE_LICENSE("GPL");
+diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+index 4acbac1bbb9e..bd88c88d7cf2 100644
+--- a/drivers/video/backlight/Kconfig
++++ b/drivers/video/backlight/Kconfig
+@@ -215,17 +215,6 @@ config BACKLIGHT_SY7758
+ 	  Say Y to enable the backlight driver for the Silergy SY7758
+ 	  backlight controller found in Ayaneo Pocket S2.
+ 
+-config BACKLIGHT_LM3533
+-	tristate "Backlight Driver for LM3533"
+-	depends on MFD_LM3533
+-	help
+-	  Say Y to enable the backlight driver for National Semiconductor / TI
+-	  LM3533 Lighting Power chips.
+-
+-	  The backlights can be controlled directly, through PWM input, or by
+-	  the ambient-light-sensor interface. The chip supports 256 brightness
+-	  levels.
+-
+ config BACKLIGHT_LOCOMO
+ 	tristate "Sharp LOCOMO LCD/Backlight Driver"
+ 	depends on SHARP_LOCOMO
+diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
+index e11175bdd500..d98e60664af6 100644
+--- a/drivers/video/backlight/Makefile
++++ b/drivers/video/backlight/Makefile
+@@ -37,7 +37,6 @@ obj-$(CONFIG_BACKLIGHT_KTD253)		+= ktd253-backlight.o
+ obj-$(CONFIG_BACKLIGHT_KTD2801)		+= ktd2801-backlight.o
+ obj-$(CONFIG_BACKLIGHT_KTZ8866)		+= ktz8866.o
+ obj-$(CONFIG_BACKLIGHT_LM3509)		+= lm3509_bl.o
+-obj-$(CONFIG_BACKLIGHT_LM3533)		+= lm3533_bl.o
+ obj-$(CONFIG_BACKLIGHT_LM3630A)		+= lm3630a_bl.o
+ obj-$(CONFIG_BACKLIGHT_LM3639)		+= lm3639_bl.o
+ obj-$(CONFIG_BACKLIGHT_LOCOMO)		+= locomolcd.o
+diff --git a/drivers/video/backlight/lm3533_bl.c b/drivers/video/backlight/lm3533_bl.c
+deleted file mode 100644
+index babfd3ceec86..000000000000
+--- a/drivers/video/backlight/lm3533_bl.c
++++ /dev/null
+@@ -1,398 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-or-later
+-/*
+- * lm3533-bl.c -- LM3533 Backlight driver
+- *
+- * Copyright (C) 2011-2012 Texas Instruments
+- *
+- * Author: Johan Hovold <jhovold@gmail.com>
+- */
+-
+-#include <linux/module.h>
+-#include <linux/init.h>
+-#include <linux/platform_device.h>
+-#include <linux/backlight.h>
+-#include <linux/slab.h>
+-
+-#include <linux/mfd/lm3533.h>
+-
+-
+-#define LM3533_HVCTRLBANK_COUNT		2
+-#define LM3533_BL_MAX_BRIGHTNESS	255
+-
+-#define LM3533_REG_CTRLBANK_AB_BCONF	0x1a
+-
+-
+-struct lm3533_bl {
+-	struct lm3533 *lm3533;
+-	struct lm3533_ctrlbank cb;
+-	struct backlight_device *bd;
+-	int id;
+-};
+-
+-
+-static inline int lm3533_bl_get_ctrlbank_id(struct lm3533_bl *bl)
+-{
+-	return bl->id;
+-}
+-
+-static int lm3533_bl_update_status(struct backlight_device *bd)
+-{
+-	struct lm3533_bl *bl = bl_get_data(bd);
+-
+-	return lm3533_ctrlbank_set_brightness(&bl->cb, backlight_get_brightness(bd));
+-}
+-
+-static int lm3533_bl_get_brightness(struct backlight_device *bd)
+-{
+-	struct lm3533_bl *bl = bl_get_data(bd);
+-	u8 val;
+-	int ret;
+-
+-	ret = lm3533_ctrlbank_get_brightness(&bl->cb, &val);
+-	if (ret)
+-		return ret;
+-
+-	return val;
+-}
+-
+-static const struct backlight_ops lm3533_bl_ops = {
+-	.get_brightness	= lm3533_bl_get_brightness,
+-	.update_status	= lm3533_bl_update_status,
+-};
+-
+-static ssize_t show_id(struct device *dev,
+-				struct device_attribute *attr, char *buf)
+-{
+-	struct lm3533_bl *bl = dev_get_drvdata(dev);
+-
+-	return scnprintf(buf, PAGE_SIZE, "%d\n", bl->id);
+-}
+-
+-static ssize_t show_als_channel(struct device *dev,
+-				struct device_attribute *attr, char *buf)
+-{
+-	struct lm3533_bl *bl = dev_get_drvdata(dev);
+-	unsigned channel = lm3533_bl_get_ctrlbank_id(bl);
+-
+-	return scnprintf(buf, PAGE_SIZE, "%u\n", channel);
+-}
+-
+-static ssize_t show_als_en(struct device *dev,
+-				struct device_attribute *attr, char *buf)
+-{
+-	struct lm3533_bl *bl = dev_get_drvdata(dev);
+-	int ctrlbank = lm3533_bl_get_ctrlbank_id(bl);
+-	u8 val;
+-	u8 mask;
+-	bool enable;
+-	int ret;
+-
+-	ret = lm3533_read(bl->lm3533, LM3533_REG_CTRLBANK_AB_BCONF, &val);
+-	if (ret)
+-		return ret;
+-
+-	mask = 1 << (2 * ctrlbank);
+-	enable = val & mask;
+-
+-	return scnprintf(buf, PAGE_SIZE, "%d\n", enable);
+-}
+-
+-static ssize_t store_als_en(struct device *dev,
+-					struct device_attribute *attr,
+-					const char *buf, size_t len)
+-{
+-	struct lm3533_bl *bl = dev_get_drvdata(dev);
+-	int ctrlbank = lm3533_bl_get_ctrlbank_id(bl);
+-	int enable;
+-	u8 val;
+-	u8 mask;
+-	int ret;
+-
+-	if (kstrtoint(buf, 0, &enable))
+-		return -EINVAL;
+-
+-	mask = 1 << (2 * ctrlbank);
+-
+-	if (enable)
+-		val = mask;
+-	else
+-		val = 0;
+-
+-	ret = lm3533_update(bl->lm3533, LM3533_REG_CTRLBANK_AB_BCONF, val,
+-									mask);
+-	if (ret)
+-		return ret;
+-
+-	return len;
+-}
+-
+-static ssize_t show_linear(struct device *dev,
+-				struct device_attribute *attr, char *buf)
+-{
+-	struct lm3533_bl *bl = dev_get_drvdata(dev);
+-	u8 val;
+-	u8 mask;
+-	int linear;
+-	int ret;
+-
+-	ret = lm3533_read(bl->lm3533, LM3533_REG_CTRLBANK_AB_BCONF, &val);
+-	if (ret)
+-		return ret;
+-
+-	mask = 1 << (2 * lm3533_bl_get_ctrlbank_id(bl) + 1);
+-
+-	if (val & mask)
+-		linear = 1;
+-	else
+-		linear = 0;
+-
+-	return scnprintf(buf, PAGE_SIZE, "%x\n", linear);
+-}
+-
+-static ssize_t store_linear(struct device *dev,
+-					struct device_attribute *attr,
+-					const char *buf, size_t len)
+-{
+-	struct lm3533_bl *bl = dev_get_drvdata(dev);
+-	unsigned long linear;
+-	u8 mask;
+-	u8 val;
+-	int ret;
+-
+-	if (kstrtoul(buf, 0, &linear))
+-		return -EINVAL;
+-
+-	mask = 1 << (2 * lm3533_bl_get_ctrlbank_id(bl) + 1);
+-
+-	if (linear)
+-		val = mask;
+-	else
+-		val = 0;
+-
+-	ret = lm3533_update(bl->lm3533, LM3533_REG_CTRLBANK_AB_BCONF, val,
+-									mask);
+-	if (ret)
+-		return ret;
+-
+-	return len;
+-}
+-
+-static ssize_t show_pwm(struct device *dev,
+-					struct device_attribute *attr,
+-					char *buf)
+-{
+-	struct lm3533_bl *bl = dev_get_drvdata(dev);
+-	u8 val;
+-	int ret;
+-
+-	ret = lm3533_ctrlbank_get_pwm(&bl->cb, &val);
+-	if (ret)
+-		return ret;
+-
+-	return scnprintf(buf, PAGE_SIZE, "%u\n", val);
+-}
+-
+-static ssize_t store_pwm(struct device *dev,
+-					struct device_attribute *attr,
+-					const char *buf, size_t len)
+-{
+-	struct lm3533_bl *bl = dev_get_drvdata(dev);
+-	u8 val;
+-	int ret;
+-
+-	if (kstrtou8(buf, 0, &val))
+-		return -EINVAL;
+-
+-	ret = lm3533_ctrlbank_set_pwm(&bl->cb, val);
+-	if (ret)
+-		return ret;
+-
+-	return len;
+-}
+-
+-static LM3533_ATTR_RO(als_channel);
+-static LM3533_ATTR_RW(als_en);
+-static LM3533_ATTR_RO(id);
+-static LM3533_ATTR_RW(linear);
+-static LM3533_ATTR_RW(pwm);
+-
+-static struct attribute *lm3533_bl_attributes[] = {
+-	&dev_attr_als_channel.attr,
+-	&dev_attr_als_en.attr,
+-	&dev_attr_id.attr,
+-	&dev_attr_linear.attr,
+-	&dev_attr_pwm.attr,
+-	NULL,
+-};
+-
+-static umode_t lm3533_bl_attr_is_visible(struct kobject *kobj,
+-					     struct attribute *attr, int n)
+-{
+-	struct device *dev = kobj_to_dev(kobj);
+-	struct lm3533_bl *bl = dev_get_drvdata(dev);
+-	umode_t mode = attr->mode;
+-
+-	if (attr == &dev_attr_als_channel.attr ||
+-					attr == &dev_attr_als_en.attr) {
+-		if (!bl->lm3533->have_als)
+-			mode = 0;
+-	}
+-
+-	return mode;
+-};
+-
+-static struct attribute_group lm3533_bl_attribute_group = {
+-	.is_visible	= lm3533_bl_attr_is_visible,
+-	.attrs		= lm3533_bl_attributes
+-};
+-
+-static int lm3533_bl_setup(struct lm3533_bl *bl,
+-					struct lm3533_bl_platform_data *pdata)
+-{
+-	int ret;
+-
+-	ret = lm3533_ctrlbank_set_max_current(&bl->cb, pdata->max_current);
+-	if (ret)
+-		return ret;
+-
+-	return lm3533_ctrlbank_set_pwm(&bl->cb, pdata->pwm);
+-}
+-
+-static int lm3533_bl_probe(struct platform_device *pdev)
+-{
+-	struct lm3533 *lm3533;
+-	struct lm3533_bl_platform_data *pdata;
+-	struct lm3533_bl *bl;
+-	struct backlight_device *bd;
+-	struct backlight_properties props;
+-	int ret;
+-
+-	dev_dbg(&pdev->dev, "%s\n", __func__);
+-
+-	lm3533 = dev_get_drvdata(pdev->dev.parent);
+-	if (!lm3533)
+-		return -EINVAL;
+-
+-	pdata = dev_get_platdata(&pdev->dev);
+-	if (!pdata) {
+-		dev_err(&pdev->dev, "no platform data\n");
+-		return -EINVAL;
+-	}
+-
+-	if (pdev->id < 0 || pdev->id >= LM3533_HVCTRLBANK_COUNT) {
+-		dev_err(&pdev->dev, "illegal backlight id %d\n", pdev->id);
+-		return -EINVAL;
+-	}
+-
+-	bl = devm_kzalloc(&pdev->dev, sizeof(*bl), GFP_KERNEL);
+-	if (!bl)
+-		return -ENOMEM;
+-
+-	bl->lm3533 = lm3533;
+-	bl->id = pdev->id;
+-
+-	bl->cb.lm3533 = lm3533;
+-	bl->cb.id = lm3533_bl_get_ctrlbank_id(bl);
+-	bl->cb.dev = NULL;			/* until registered */
+-
+-	memset(&props, 0, sizeof(props));
+-	props.type = BACKLIGHT_RAW;
+-	props.max_brightness = LM3533_BL_MAX_BRIGHTNESS;
+-	props.brightness = pdata->default_brightness;
+-	bd = devm_backlight_device_register(&pdev->dev, pdata->name,
+-					pdev->dev.parent, bl, &lm3533_bl_ops,
+-					&props);
+-	if (IS_ERR(bd)) {
+-		dev_err(&pdev->dev, "failed to register backlight device\n");
+-		return PTR_ERR(bd);
+-	}
+-
+-	bl->bd = bd;
+-	bl->cb.dev = &bl->bd->dev;
+-
+-	platform_set_drvdata(pdev, bl);
+-
+-	ret = sysfs_create_group(&bd->dev.kobj, &lm3533_bl_attribute_group);
+-	if (ret < 0) {
+-		dev_err(&pdev->dev, "failed to create sysfs attributes\n");
+-		return ret;
+-	}
+-
+-	backlight_update_status(bd);
+-
+-	ret = lm3533_bl_setup(bl, pdata);
+-	if (ret)
+-		goto err_sysfs_remove;
+-
+-	ret = lm3533_ctrlbank_enable(&bl->cb);
+-	if (ret)
+-		goto err_sysfs_remove;
+-
+-	return 0;
+-
+-err_sysfs_remove:
+-	sysfs_remove_group(&bd->dev.kobj, &lm3533_bl_attribute_group);
+-
+-	return ret;
+-}
+-
+-static void lm3533_bl_remove(struct platform_device *pdev)
+-{
+-	struct lm3533_bl *bl = platform_get_drvdata(pdev);
+-	struct backlight_device *bd = bl->bd;
+-
+-	dev_dbg(&bd->dev, "%s\n", __func__);
+-
+-	bd->props.power = BACKLIGHT_POWER_OFF;
+-	bd->props.brightness = 0;
+-
+-	lm3533_ctrlbank_disable(&bl->cb);
+-	sysfs_remove_group(&bd->dev.kobj, &lm3533_bl_attribute_group);
 -}
 -
 -#ifdef CONFIG_PM_SLEEP
--static int rc5t583_rtc_suspend(struct device *dev)
+-static int lm3533_bl_suspend(struct device *dev)
 -{
--	struct rc5t583 *rc5t583 = dev_get_drvdata(dev->parent);
--	struct rc5t583_rtc *rc5t583_rtc = dev_get_drvdata(dev);
--	int ret;
+-	struct lm3533_bl *bl = dev_get_drvdata(dev);
 -
--	/* Store current list of enabled interrupts*/
--	ret = regmap_read(rc5t583->regmap, RC5T583_RTC_CTL1,
--		&rc5t583_rtc->irqen);
--	return ret;
+-	dev_dbg(dev, "%s\n", __func__);
+-
+-	return lm3533_ctrlbank_disable(&bl->cb);
 -}
 -
--static int rc5t583_rtc_resume(struct device *dev)
+-static int lm3533_bl_resume(struct device *dev)
 -{
--	struct rc5t583 *rc5t583 = dev_get_drvdata(dev->parent);
--	struct rc5t583_rtc *rc5t583_rtc = dev_get_drvdata(dev);
+-	struct lm3533_bl *bl = dev_get_drvdata(dev);
 -
--	/* Restore list of enabled interrupts before suspend */
--	return regmap_write(rc5t583->regmap, RC5T583_RTC_CTL1,
--		rc5t583_rtc->irqen);
+-	dev_dbg(dev, "%s\n", __func__);
+-
+-	return lm3533_ctrlbank_enable(&bl->cb);
 -}
 -#endif
 -
--static SIMPLE_DEV_PM_OPS(rc5t583_rtc_pm_ops, rc5t583_rtc_suspend,
--			rc5t583_rtc_resume);
+-static SIMPLE_DEV_PM_OPS(lm3533_bl_pm_ops, lm3533_bl_suspend, lm3533_bl_resume);
 -
--static struct platform_driver rc5t583_rtc_driver = {
--	.probe		= rc5t583_rtc_probe,
--	.remove		= rc5t583_rtc_remove,
--	.driver		= {
--		.name	= "rtc-rc5t583",
--		.pm	= &rc5t583_rtc_pm_ops,
+-static void lm3533_bl_shutdown(struct platform_device *pdev)
+-{
+-	struct lm3533_bl *bl = platform_get_drvdata(pdev);
+-
+-	dev_dbg(&pdev->dev, "%s\n", __func__);
+-
+-	lm3533_ctrlbank_disable(&bl->cb);
+-}
+-
+-static struct platform_driver lm3533_bl_driver = {
+-	.driver = {
+-		.name	= "lm3533-backlight",
+-		.pm	= &lm3533_bl_pm_ops,
 -	},
+-	.probe		= lm3533_bl_probe,
+-	.remove		= lm3533_bl_remove,
+-	.shutdown	= lm3533_bl_shutdown,
 -};
+-module_platform_driver(lm3533_bl_driver);
 -
--module_platform_driver(rc5t583_rtc_driver);
--MODULE_ALIAS("platform:rtc-rc5t583");
--MODULE_AUTHOR("Venu Byravarasu <vbyravarasu@nvidia.com>");
--MODULE_DESCRIPTION("RICOH 5T583 RTC driver");
--MODULE_LICENSE("GPL v2");
-diff --git a/include/linux/mfd/rc5t583.h b/include/linux/mfd/rc5t583.h
+-MODULE_AUTHOR("Johan Hovold <jhovold@gmail.com>");
+-MODULE_DESCRIPTION("LM3533 Backlight driver");
+-MODULE_LICENSE("GPL");
+-MODULE_ALIAS("platform:lm3533-backlight");
+diff --git a/include/linux/mfd/lm3533.h b/include/linux/mfd/lm3533.h
 deleted file mode 100644
-index 4f220146cc02..000000000000
---- a/include/linux/mfd/rc5t583.h
+index 69059a7a2ce5..000000000000
+--- a/include/linux/mfd/lm3533.h
 +++ /dev/null
-@@ -1,369 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0-only */
+@@ -1,99 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0-or-later */
 -/*
-- * Core driver interface to access RICOH_RC5T583 power management chip.
+- * lm3533.h -- LM3533 interface
 - *
-- * Copyright (c) 2011-2012, NVIDIA CORPORATION.  All rights reserved.
-- * Author: Laxman dewangan <ldewangan@nvidia.com>
+- * Copyright (C) 2011-2012 Texas Instruments
 - *
-- * Based on code
-- *      Copyright (C) 2011 RICOH COMPANY,LTD
+- * Author: Johan Hovold <jhovold@gmail.com>
 - */
 -
--#ifndef __LINUX_MFD_RC5T583_H
--#define __LINUX_MFD_RC5T583_H
+-#ifndef __LINUX_MFD_LM3533_H
+-#define __LINUX_MFD_LM3533_H
 -
--#include <linux/mutex.h>
--#include <linux/types.h>
--#include <linux/regmap.h>
+-#define LM3533_ATTR_RO(_name) \
+-	DEVICE_ATTR(_name, S_IRUGO, show_##_name, NULL)
+-#define LM3533_ATTR_RW(_name) \
+-	DEVICE_ATTR(_name, S_IRUGO | S_IWUSR , show_##_name, store_##_name)
 -
--/* Maximum number of main interrupts */
--#define MAX_MAIN_INTERRUPT		5
--#define RC5T583_MAX_GPEDGE_REG		2
--#define RC5T583_MAX_INTERRUPT_EN_REGS	8
--#define RC5T583_MAX_INTERRUPT_MASK_REGS	9
+-struct device;
+-struct gpio_desc;
+-struct regmap;
 -
--/* Interrupt enable register */
--#define RC5T583_INT_EN_SYS1	0x19
--#define RC5T583_INT_EN_SYS2	0x1D
--#define RC5T583_INT_EN_DCDC	0x41
--#define RC5T583_INT_EN_RTC	0xED
--#define RC5T583_INT_EN_ADC1	0x90
--#define RC5T583_INT_EN_ADC2	0x91
--#define RC5T583_INT_EN_ADC3	0x92
+-struct lm3533 {
+-	struct device *dev;
 -
--/* Interrupt status registers (monitor regs in Ricoh)*/
--#define RC5T583_INTC_INTPOL	0xAD
--#define RC5T583_INTC_INTEN	0xAE
--#define RC5T583_INTC_INTMON	0xAF
+-	struct regmap *regmap;
 -
--#define RC5T583_INT_MON_GRP	0xAF
--#define RC5T583_INT_MON_SYS1	0x1B
--#define RC5T583_INT_MON_SYS2	0x1F
--#define RC5T583_INT_MON_DCDC	0x43
--#define RC5T583_INT_MON_RTC	0xEE
+-	struct gpio_desc *hwen;
+-	int irq;
 -
--/* Interrupt clearing registers */
--#define RC5T583_INT_IR_SYS1	0x1A
--#define RC5T583_INT_IR_SYS2	0x1E
--#define RC5T583_INT_IR_DCDC	0x42
--#define RC5T583_INT_IR_RTC	0xEE
--#define RC5T583_INT_IR_ADCL	0x94
--#define RC5T583_INT_IR_ADCH	0x95
--#define RC5T583_INT_IR_ADCEND	0x96
--#define RC5T583_INT_IR_GPIOR	0xA9
--#define RC5T583_INT_IR_GPIOF	0xAA
--
--/* Sleep sequence registers */
--#define RC5T583_SLPSEQ1		0x21
--#define RC5T583_SLPSEQ2		0x22
--#define RC5T583_SLPSEQ3		0x23
--#define RC5T583_SLPSEQ4		0x24
--#define RC5T583_SLPSEQ5		0x25
--#define RC5T583_SLPSEQ6		0x26
--#define RC5T583_SLPSEQ7		0x27
--#define RC5T583_SLPSEQ8		0x28
--#define RC5T583_SLPSEQ9		0x29
--#define RC5T583_SLPSEQ10	0x2A
--#define RC5T583_SLPSEQ11	0x2B
--
--/* Regulator registers */
--#define RC5T583_REG_DC0CTL	0x30
--#define RC5T583_REG_DC0DAC	0x31
--#define RC5T583_REG_DC0LATCTL	0x32
--#define RC5T583_REG_SR0CTL	0x33
--
--#define RC5T583_REG_DC1CTL	0x34
--#define RC5T583_REG_DC1DAC	0x35
--#define RC5T583_REG_DC1LATCTL	0x36
--#define RC5T583_REG_SR1CTL	0x37
--
--#define RC5T583_REG_DC2CTL	0x38
--#define RC5T583_REG_DC2DAC	0x39
--#define RC5T583_REG_DC2LATCTL	0x3A
--#define RC5T583_REG_SR2CTL	0x3B
--
--#define RC5T583_REG_DC3CTL	0x3C
--#define RC5T583_REG_DC3DAC	0x3D
--#define RC5T583_REG_DC3LATCTL	0x3E
--#define RC5T583_REG_SR3CTL	0x3F
--
--
--#define RC5T583_REG_LDOEN1	0x50
--#define RC5T583_REG_LDOEN2	0x51
--#define RC5T583_REG_LDODIS1	0x52
--#define RC5T583_REG_LDODIS2	0x53
--
--#define RC5T583_REG_LDO0DAC	0x54
--#define RC5T583_REG_LDO1DAC	0x55
--#define RC5T583_REG_LDO2DAC	0x56
--#define RC5T583_REG_LDO3DAC	0x57
--#define RC5T583_REG_LDO4DAC	0x58
--#define RC5T583_REG_LDO5DAC	0x59
--#define RC5T583_REG_LDO6DAC	0x5A
--#define RC5T583_REG_LDO7DAC	0x5B
--#define RC5T583_REG_LDO8DAC	0x5C
--#define RC5T583_REG_LDO9DAC	0x5D
--
--#define RC5T583_REG_DC0DAC_DS	0x60
--#define RC5T583_REG_DC1DAC_DS	0x61
--#define RC5T583_REG_DC2DAC_DS	0x62
--#define RC5T583_REG_DC3DAC_DS	0x63
--
--#define RC5T583_REG_LDO0DAC_DS	0x64
--#define RC5T583_REG_LDO1DAC_DS	0x65
--#define RC5T583_REG_LDO2DAC_DS	0x66
--#define RC5T583_REG_LDO3DAC_DS	0x67
--#define RC5T583_REG_LDO4DAC_DS	0x68
--#define RC5T583_REG_LDO5DAC_DS	0x69
--#define RC5T583_REG_LDO6DAC_DS	0x6A
--#define RC5T583_REG_LDO7DAC_DS	0x6B
--#define RC5T583_REG_LDO8DAC_DS	0x6C
--#define RC5T583_REG_LDO9DAC_DS	0x6D
--
--/* GPIO register base address */
--#define RC5T583_GPIO_IOSEL	0xA0
--#define RC5T583_GPIO_PDEN	0xA1
--#define RC5T583_GPIO_IOOUT	0xA2
--#define RC5T583_GPIO_PGSEL	0xA3
--#define RC5T583_GPIO_GPINV	0xA4
--#define RC5T583_GPIO_GPDEB	0xA5
--#define RC5T583_GPIO_GPEDGE1	0xA6
--#define RC5T583_GPIO_GPEDGE2	0xA7
--#define RC5T583_GPIO_EN_INT	0xA8
--#define RC5T583_GPIO_MON_IOIN	0xAB
--#define RC5T583_GPIO_GPOFUNC	0xAC
--
--/* RTC registers */
--#define RC5T583_RTC_SEC		0xE0
--#define RC5T583_RTC_MIN		0xE1
--#define RC5T583_RTC_HOUR	0xE2
--#define RC5T583_RTC_WDAY	0xE3
--#define RC5T583_RTC_DAY		0xE4
--#define RC5T583_RTC_MONTH	0xE5
--#define RC5T583_RTC_YEAR	0xE6
--#define RC5T583_RTC_ADJ		0xE7
--#define RC5T583_RTC_AW_MIN	0xE8
--#define RC5T583_RTC_AW_HOUR	0xE9
--#define RC5T583_RTC_AW_WEEK	0xEA
--#define RC5T583_RTC_AD_MIN	0xEB
--#define RC5T583_RTC_AD_HOUR	0xEC
--#define RC5T583_RTC_CTL1	0xED
--#define RC5T583_RTC_CTL2	0xEE
--#define RC5T583_RTC_AY_MIN	0xF0
--#define RC5T583_RTC_AY_HOUR	0xF1
--#define RC5T583_RTC_AY_DAY	0xF2
--#define RC5T583_RTC_AY_MONTH 0xF3
--#define RC5T583_RTC_AY_YEAR	0xF4
--
--#define RC5T583_MAX_REG		0xF7
--#define RC5T583_NUM_REGS	(RC5T583_MAX_REG + 1)
--
--/* RICOH_RC5T583 IRQ definitions */
--enum {
--	RC5T583_IRQ_ONKEY,
--	RC5T583_IRQ_ACOK,
--	RC5T583_IRQ_LIDOPEN,
--	RC5T583_IRQ_PREOT,
--	RC5T583_IRQ_CLKSTP,
--	RC5T583_IRQ_ONKEY_OFF,
--	RC5T583_IRQ_WD,
--	RC5T583_IRQ_EN_PWRREQ1,
--	RC5T583_IRQ_EN_PWRREQ2,
--	RC5T583_IRQ_PRE_VINDET,
--
--	RC5T583_IRQ_DC0LIM,
--	RC5T583_IRQ_DC1LIM,
--	RC5T583_IRQ_DC2LIM,
--	RC5T583_IRQ_DC3LIM,
--
--	RC5T583_IRQ_CTC,
--	RC5T583_IRQ_YALE,
--	RC5T583_IRQ_DALE,
--	RC5T583_IRQ_WALE,
--
--	RC5T583_IRQ_AIN1L,
--	RC5T583_IRQ_AIN2L,
--	RC5T583_IRQ_AIN3L,
--	RC5T583_IRQ_VBATL,
--	RC5T583_IRQ_VIN3L,
--	RC5T583_IRQ_VIN8L,
--	RC5T583_IRQ_AIN1H,
--	RC5T583_IRQ_AIN2H,
--	RC5T583_IRQ_AIN3H,
--	RC5T583_IRQ_VBATH,
--	RC5T583_IRQ_VIN3H,
--	RC5T583_IRQ_VIN8H,
--	RC5T583_IRQ_ADCEND,
--
--	RC5T583_IRQ_GPIO0,
--	RC5T583_IRQ_GPIO1,
--	RC5T583_IRQ_GPIO2,
--	RC5T583_IRQ_GPIO3,
--	RC5T583_IRQ_GPIO4,
--	RC5T583_IRQ_GPIO5,
--	RC5T583_IRQ_GPIO6,
--	RC5T583_IRQ_GPIO7,
--
--	/* Should be last entry */
--	RC5T583_MAX_IRQS,
+-	unsigned have_als:1;
+-	unsigned have_backlights:1;
+-	unsigned have_leds:1;
 -};
 -
--/* Ricoh583 gpio definitions */
--enum {
--	RC5T583_GPIO0,
--	RC5T583_GPIO1,
--	RC5T583_GPIO2,
--	RC5T583_GPIO3,
--	RC5T583_GPIO4,
--	RC5T583_GPIO5,
--	RC5T583_GPIO6,
--	RC5T583_GPIO7,
--
--	/* Should be last entry */
--	RC5T583_MAX_GPIO,
+-struct lm3533_ctrlbank {
+-	struct lm3533 *lm3533;
+-	struct device *dev;
+-	int id;
 -};
 -
--enum {
--	RC5T583_DS_NONE,
--	RC5T583_DS_DC0,
--	RC5T583_DS_DC1,
--	RC5T583_DS_DC2,
--	RC5T583_DS_DC3,
--	RC5T583_DS_LDO0,
--	RC5T583_DS_LDO1,
--	RC5T583_DS_LDO2,
--	RC5T583_DS_LDO3,
--	RC5T583_DS_LDO4,
--	RC5T583_DS_LDO5,
--	RC5T583_DS_LDO6,
--	RC5T583_DS_LDO7,
--	RC5T583_DS_LDO8,
--	RC5T583_DS_LDO9,
--	RC5T583_DS_PSO0,
--	RC5T583_DS_PSO1,
--	RC5T583_DS_PSO2,
--	RC5T583_DS_PSO3,
--	RC5T583_DS_PSO4,
--	RC5T583_DS_PSO5,
--	RC5T583_DS_PSO6,
--	RC5T583_DS_PSO7,
--
--	/* Should be last entry */
--	RC5T583_DS_MAX,
+-struct lm3533_als_platform_data {
+-	unsigned pwm_mode:1;		/* PWM input mode (default analog) */
+-	u8 r_select;			/* 1 - 127 (ignored in PWM-mode) */
 -};
 -
--/*
-- * Ricoh pmic RC5T583 supports sleep through two external controls.
-- * The output of gpios and regulator can be enable/disable through
-- * this external signals.
-- */
--enum {
--	RC5T583_EXT_PWRREQ1_CONTROL = 0x1,
--	RC5T583_EXT_PWRREQ2_CONTROL = 0x2,
+-struct lm3533_bl_platform_data {
+-	char *name;
+-	u16 max_current;		/* 5000 - 29800 uA (800 uA step) */
+-	u8 default_brightness;		/* 0 - 255 */
+-	u8 pwm;				/* 0 - 0x3f */
 -};
 -
--enum {
--	RC5T583_REGULATOR_DC0,
--	RC5T583_REGULATOR_DC1,
--	RC5T583_REGULATOR_DC2,
--	RC5T583_REGULATOR_DC3,
--	RC5T583_REGULATOR_LDO0,
--	RC5T583_REGULATOR_LDO1,
--	RC5T583_REGULATOR_LDO2,
--	RC5T583_REGULATOR_LDO3,
--	RC5T583_REGULATOR_LDO4,
--	RC5T583_REGULATOR_LDO5,
--	RC5T583_REGULATOR_LDO6,
--	RC5T583_REGULATOR_LDO7,
--	RC5T583_REGULATOR_LDO8,
--	RC5T583_REGULATOR_LDO9,
--
--	/* Should be last entry */
--	RC5T583_REGULATOR_MAX,
+-struct lm3533_led_platform_data {
+-	char *name;
+-	const char *default_trigger;
+-	u16 max_current;		/* 5000 - 29800 uA (800 uA step) */
+-	u8 pwm;				/* 0 - 0x3f */
 -};
 -
--struct rc5t583 {
--	struct device	*dev;
--	struct regmap	*regmap;
--	int		chip_irq;
--	int		irq_base;
--	struct mutex	irq_lock;
--	unsigned long	group_irq_en[MAX_MAIN_INTERRUPT];
--
--	/* For main interrupt bits in INTC */
--	uint8_t		intc_inten_reg;
--
--	/* For group interrupt bits and address */
--	uint8_t		irq_en_reg[RC5T583_MAX_INTERRUPT_EN_REGS];
--
--	/* For gpio edge */
--	uint8_t		gpedge_reg[RC5T583_MAX_GPEDGE_REG];
+-enum lm3533_boost_freq {
+-	LM3533_BOOST_FREQ_500KHZ,
+-	LM3533_BOOST_FREQ_1000KHZ,
 -};
 -
--/*
-- * rc5t583_platform_data: Platform data for ricoh rc5t583 pmu.
-- * The board specific data is provided through this structure.
-- * @irq_base: Irq base number on which this device registers their interrupts.
-- * @gpio_base: GPIO base from which gpio of this device will start.
-- * @enable_shutdown: Enable shutdown through the input pin "shutdown".
-- * @regulator_deepsleep_slot: The slot number on which device goes to sleep
-- *		in device sleep mode.
-- * @regulator_ext_pwr_control: External power request regulator control. The
-- *		regulator output enable/disable is controlled by the external
-- *		power request input state.
-- * @reg_init_data: Regulator init data.
-- */
--
--struct rc5t583_platform_data {
--	int		irq_base;
--	int		gpio_base;
--	bool		enable_shutdown;
--	int		regulator_deepsleep_slot[RC5T583_REGULATOR_MAX];
--	unsigned long	regulator_ext_pwr_control[RC5T583_REGULATOR_MAX];
--	struct regulator_init_data *reg_init_data[RC5T583_REGULATOR_MAX];
+-enum lm3533_boost_ovp {
+-	LM3533_BOOST_OVP_16V,
+-	LM3533_BOOST_OVP_24V,
+-	LM3533_BOOST_OVP_32V,
+-	LM3533_BOOST_OVP_40V,
 -};
 -
--static inline int rc5t583_write(struct device *dev, uint8_t reg, uint8_t val)
--{
--	struct rc5t583 *rc5t583 = dev_get_drvdata(dev);
--	return regmap_write(rc5t583->regmap, reg, val);
--}
+-struct lm3533_platform_data {
+-	enum lm3533_boost_ovp boost_ovp;
+-	enum lm3533_boost_freq boost_freq;
 -
--static inline int rc5t583_read(struct device *dev, uint8_t reg, uint8_t *val)
--{
--	struct rc5t583 *rc5t583 = dev_get_drvdata(dev);
--	unsigned int ival;
--	int ret;
--	ret = regmap_read(rc5t583->regmap, reg, &ival);
--	if (!ret)
--		*val = (uint8_t)ival;
--	return ret;
--}
+-	struct lm3533_als_platform_data *als;
 -
--static inline int rc5t583_set_bits(struct device *dev, unsigned int reg,
--			unsigned int bit_mask)
--{
--	struct rc5t583 *rc5t583 = dev_get_drvdata(dev);
--	return regmap_update_bits(rc5t583->regmap, reg, bit_mask, bit_mask);
--}
+-	struct lm3533_bl_platform_data *backlights;
+-	int num_backlights;
 -
--static inline int rc5t583_clear_bits(struct device *dev, unsigned int reg,
--			unsigned int bit_mask)
--{
--	struct rc5t583 *rc5t583 = dev_get_drvdata(dev);
--	return regmap_update_bits(rc5t583->regmap, reg, bit_mask, 0);
--}
+-	struct lm3533_led_platform_data *leds;
+-	int num_leds;
+-};
 -
--static inline int rc5t583_update(struct device *dev, unsigned int reg,
--		unsigned int val, unsigned int mask)
--{
--	struct rc5t583 *rc5t583 = dev_get_drvdata(dev);
--	return regmap_update_bits(rc5t583->regmap, reg, mask, val);
--}
+-extern int lm3533_ctrlbank_enable(struct lm3533_ctrlbank *cb);
+-extern int lm3533_ctrlbank_disable(struct lm3533_ctrlbank *cb);
 -
--int rc5t583_ext_power_req_config(struct device *dev, int deepsleep_id,
--	int ext_pwr_req, int deepsleep_slot_nr);
--int rc5t583_irq_init(struct rc5t583 *rc5t583, int irq, int irq_base);
--int rc5t583_irq_exit(struct rc5t583 *rc5t583);
+-extern int lm3533_ctrlbank_set_brightness(struct lm3533_ctrlbank *cb, u8 val);
+-extern int lm3533_ctrlbank_get_brightness(struct lm3533_ctrlbank *cb, u8 *val);
+-extern int lm3533_ctrlbank_set_max_current(struct lm3533_ctrlbank *cb,
+-								u16 imax);
+-extern int lm3533_ctrlbank_set_pwm(struct lm3533_ctrlbank *cb, u8 val);
+-extern int lm3533_ctrlbank_get_pwm(struct lm3533_ctrlbank *cb, u8 *val);
 -
--#endif
+-extern int lm3533_read(struct lm3533 *lm3533, u8 reg, u8 *val);
+-extern int lm3533_write(struct lm3533 *lm3533, u8 reg, u8 val);
+-extern int lm3533_update(struct lm3533 *lm3533, u8 reg, u8 val, u8 mask);
+-
+-#endif	/* __LINUX_MFD_LM3533_H */
 -- 
 2.53.0
 
