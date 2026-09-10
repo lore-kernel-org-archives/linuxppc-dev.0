@@ -1,108 +1,98 @@
-Return-Path: <linuxppc-dev+bounces-27018-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27019-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B704C79F9F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2026 10:09:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 27EEDC79FB9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2026 10:31:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hgYLl6Zvsz2xGr;
-	Thu, 10 Sep 2026 20:09:35 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::529"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789034975;
-	cv=none; b=TLCcCSHmacZiu5tFMLVxLnrRSGskpUjwwLr1p15jtmzygyphitmzBh9qipvHB7hfxp1HNLon3IaQtrHYy8N3J68C6RLvIFj4rexJ8d3fMtk11You7VYuQKUksYwgAmJtMTa/ZZcrCsbs9vfoaLLdgu9Bx0Oa/oL6hJ4y3aYD8o1rnnZheiftbKq3pkfWOJeYE23rpIdqOfuNVMgxfTbFgK/ehLYaYAwlWfuk0kfz/8MTGbiPx+1oDDtkDRCElLu70TYagSKg3AvEovkelh2EMOHg+Aq8sxch5FO/hA2XPWO/Q56C7O9id2yoOs/nb9sDPJm+z1dMZUCyK64CTr9xyQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hgYqv743Xz2xLq;
+	Thu, 10 Sep 2026 20:31:23 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a07:de40:b251:101:10:150:64:1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789036283;
+	cv=none; b=aZ6kCBgBoOTh4NLbElRraKGbgwaw6CjlWxVAvjlfi0jclLyp7f0+dXvOm8T5lSX8/a/A3wJdQjE+04M9xy2RleO8Q49i7vaI3VROKVdbqp7opdY7XzKhAvrVPvSC1+7EbysOtiCh3K3oM6Qsdws3DKmg5/vTwctxb/n6TzT344qm+tgvcMkaHTkFTuaA/CO5RH2LlCQjArPtdcg2DJyppLGWr4H7sxrhuaw7K15AA680I1zCEanYekrx8I9+UyXkOBYJxQe16CPl3NEyaM7pVl+MEovIH9EX/QBA/AUOrSvLxi3KGx7uLHJmhiZfGKR4xw0ZKxEoez54CuJn2Lx0pg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789034975; c=relaxed/relaxed;
-	bh=v5leu8y8+SZGo99Bk+YLh7ZmObofNLoxXT8B8pxE/vs=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=eO7azlWszqE6p8cOJqUJ8XylROZL8873e1IEU9N9/DaIQk8sI74vIufbjNZEitrK0x/NF9KhDiM14WfCAwxDcGJR4GFPAihsrru6AyQQAB+9YWQhU6D8IaeNFSydVKXhOUV00l9ObjHGWnJefdDzBRLivtkYvCiXJWjofnim/73QmtXoxcX0NxZZSCbG4gaxHlu5liKq3FR3jptyd0hZYYKp+/wpGvdTbTKHTdGzlKZG2v8/ntPWXr83MrV6WgYAIEuJjh0hzm+qod+22ZxfIQmxHm9JTYvXJ1jxAxqkWzq75nj+7ESOaSvFEiQ2U19UqavMh8lkZJJ3ZsTiC/JqTg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Rhkr4UC1; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::529; helo=mail-pg1-x529.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1789036283; c=relaxed/relaxed;
+	bh=LlPmEgT7AmXIh8g8t518MArDyXQcqXJCyhWDk9MliDw=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=k5AtsvyJSQtJnCAxHn6XB49pvjznY1XtMhTfuaDke/R2kla4VbMJCv6PMadIbtXi2hr9oeOpTwBEbEM/BOIVw0Z7tAzHnJGSG0gHm8eCB80JQa8R+Ay/odhqbq0IkqCFiaUER6tTA9MEfrUDYiTCb8H+X2QuicW72M20cjmF7HuASbL9gpVJuPnZ9PeJSdj84kzf2NmjWXjT4tdaX0PzP50BXHnpPzU62X1WJl6M2vgojXF0mWT3RW2gKK/IM2H+766EwzN0EPuR3tOy75EDP2gQaQ0R8sm5b9oXVTJeB/9+RFLd7cBFFct8XYtvch2KnWySR378v/yaSLbx0r9Kwg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=iko0ayLB; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=hwichaPg; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=AtMYCFtw; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=97aPAL4L; dkim-atps=neutral; spf=pass (client-ip=2a07:de40:b251:101:10:150:64:1; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Rhkr4UC1;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=iko0ayLB;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=hwichaPg;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=AtMYCFtw;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=97aPAL4L;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::529; helo=mail-pg1-x529.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x529.google.com (mail-pg1-x529.google.com [IPv6:2607:f8b0:4864:20::529])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2a07:de40:b251:101:10:150:64:1; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2a07:de40:b251:101:10:150:64:1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hgYLk4STLz2xBK
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2026 20:09:33 +1000 (AEST)
-Received: by mail-pg1-x529.google.com with SMTP id 41be03b00d2f7-cc4be0e5351so138943a12.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2026 03:09:33 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789034970; x=1789639770; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=v5leu8y8+SZGo99Bk+YLh7ZmObofNLoxXT8B8pxE/vs=;
-        b=Rhkr4UC1LaeJm6M7gZcltBBZdexfmTUfd87QRJUa+R6OG9CpWJB245mpHAIaexRbWQ
-         ZZkd9PYVJm8Qsl7bOBFpI9iU/LVC4UAZvm+CTbEvdHMDLUZJfHQjxo2YesF0O0OyrtF7
-         D1Yk92Ulej2ETTjKw/aAn1dmVTw4WK17Wo9RmGwEDQwibVuAnT3X23ut7yVrWDvpSelH
-         4o2C5mGYqX+6C4EeM2oQVDFHfR+Fy9lin2APLG/WFJDyIITS4C8XPpA5bagBjLw7ikcT
-         74xXFrxlzH/apQhT2zilvdKsvKBqo2R3bjQhFLqJmZL3FH2Mkg6yeLhKW2YUrOxdGgGn
-         QFoA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1789034970; x=1789639770;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=v5leu8y8+SZGo99Bk+YLh7ZmObofNLoxXT8B8pxE/vs=;
-        b=mT39B0y4mDkaLDXGVZ+vbM/j6ENq+nSnPsb5zKXDqyZJ73yS9S3umGTE/I7e5ep40v
-         rbole6Ir+7kcwLNDX6mHjZEgbhF+2yl0pUtcK70jTidK1I227oF9DZ8fml9Ozxn1KEeD
-         MQdkyZcewSE9MiEJ7IPqYxdgQPwna6faPqXElWpxBZsISzNgzRqdWfjCbQWS074jhEug
-         JEgHR9+RgvQIr+qr+c59zm+CibZIBWqOyRxdwSCe8dY1oP+lkMcn+bGmrOUD1MmBihPE
-         rcql/heH1AJo1z8TYQHWpsP1BhtZH9v+zUp/gr4q2dos6n+YVd+Ko19ZRNmY6yG8B7mH
-         hGPg==
-X-Forwarded-Encrypted: i=1; AKwUvBzT1w3GRNRq0C33bhv0MY/D1xf1+VXq6zRYIJ3T02sbeD3KWwXw2QD8hPJotBcDQvOfcz3hRXFCzRloTeg=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++nM1IA4dUn2VKXZyyP6eP4P07QWWjpzHk4Eaekb1pZEDTKVfGWz
-	1BeI4CrPYpgtlnKrCy6Qe5C2n6sBfMHb/5JZrzyrzqaBTSIQX7PBIg3g
-X-Gm-Gg: AYBFou2XD70VuR0dAuPch8eq1Ftu9eyUiWOGkbybpaVE/Kor0erB/PANy26BVS1vliM
-	V69v+0+/QDpE5B98RORffrsIBqZssKxRQ4iToXWnH7nEsCslbeX3N4MDlPW5KGEN2bUCMe4VSZD
-	P5iKgaztpahrXkJDE0csJ5MFURE6gBb66diMVBQabN+394EFB5IJcnfr4AZOHjdn1ZBaMLebsyW
-	OlhZsltlmLx1UA9Z69qJ/Gs1NdPuLK+91lWRH1A7I+d88L8F4X7rPjyo52gmqsCNx9WW9OEQikb
-	NHSMeZDPbk9kCXqtJgOJf17QgGmyDQkshX2LeZLKrxqpPjXG9qZq1n42G1TIyhzQ1WJ58xO1wgl
-	69aXwrd6pfCz767/8XVveWCS+mLgmcspKyIdsXs8Jyqvq6X23FWjmLMIeK6qz5vLNps3scRpyaH
-	s1yRLiqPN8z5bPcUk7CoQ4Qq5Y4sy2jNM37qWA+1yRNRoBQbFQD3O4QTx7zNP6hMFjmjUIVymB/
-	oyPsbIHrlRi6QdAOTgOeBB4kCHVsOpVkhuLvThogYwyEGOxM0/QhyDLZsgr213R
-X-Received: by 2002:a17:90b:33c1:b0:398:9bd1:3214 with SMTP id 98e67ed59e1d1-39b262dfa81mr56515343a91.21.1789034970472;
-        Thu, 10 Sep 2026 03:09:30 -0700 (PDT)
-Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.bl1-in.ibm.com ([129.41.58.4])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-39bae60b23csm3460207a91.0.2026.09.10.03.09.20
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 10 Sep 2026 03:09:29 -0700 (PDT)
-From: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
-To: maddy@linux.ibm.com,
-	mpe@ellerman.id.au,
-	npiggin@gmail.com,
-	chleroy@kernel.org,
-	pjw@kernel.org,
-	palmer@dabbelt.com,
-	aou@eecs.berkeley.edu,
-	alex@ghiti.fr,
-	ojeda@kernel.org,
-	boqun@kernel.org,
-	gary@garyguo.net,
-	bjorn3_gh@protonmail.com,
-	lossin@kernel.org,
-	a.hindborg@kernel.org,
-	aliceryhl@google.com,
-	tmgross@umich.edu,
-	dakr@kernel.org,
-	daniel.almeida@collabora.com,
-	tamird@kernel.org,
-	acourbot@nvidia.com,
-	work@onurozkan.dev,
-	mkchauras@gmail.com,
-	linkmauve@linkmauve.fr,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	linux-riscv@lists.infradead.org,
-	rust-for-linux@vger.kernel.org
-Cc: FUJITA Tomonori <tomo@flapping.org>
-Subject: [PATCH V3] powerpc/bug: Add ARCH_WARN_ASM and refactor _EMIT_BUG_ENTRY for Rust support
-Date: Thu, 10 Sep 2026 15:38:02 +0530
-Message-ID: <20260910100801.2159785-2-mkchauras@gmail.com>
-X-Mailer: git-send-email 2.55.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hgYqt5c8Mz2xGr
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2026 20:31:22 +1000 (AEST)
+Received: from kunlun.suse.cz (unknown [IPv6:2a07:de40:b306:2000::2])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id D4C9B21B72;
+	Thu, 10 Sep 2026 10:31:10 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1789036275; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=LlPmEgT7AmXIh8g8t518MArDyXQcqXJCyhWDk9MliDw=;
+	b=iko0ayLB2D5gQwl3U/HDkgg3kv6J7PWdkNV24Qt4eSqj+sDxQripEqTgNtOU/A9SL/CMEc
+	+0fl1ADBjbWJ2EvehJejq7q+6+iNRINgQ1Y7288M6QG5TdZ/NbELYOTPISKDxNCaVHetIL
+	z6cXWUvcDZ3UETKljgYmLvAYGMgAUGU=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1789036275;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=LlPmEgT7AmXIh8g8t518MArDyXQcqXJCyhWDk9MliDw=;
+	b=hwichaPgL+KO8LADSiggZgKVfRbLI3nUYJLlY3mu8QSB8/ImDNTVXUWFLSZVmpURoofAiD
+	B3sN/1dLjnQ7V3AQ==
+Authentication-Results: smtp-out1.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=AtMYCFtw;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=97aPAL4L
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1789036270; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=LlPmEgT7AmXIh8g8t518MArDyXQcqXJCyhWDk9MliDw=;
+	b=AtMYCFtwc8xPCfah36A+xhxeHxXKvigXGc48DpK3XDsisPevwZ+TGxAMfYFqLTssAkQPPK
+	gs+xEp5snkYSLasioK/rExNy61ANztYQLYEKcMAFw0jeAr0kgbuG3clN9YcjlVM7q2pXgm
+	GaEAjsUoPadT6STViFH5lFFzXohTvpY=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1789036270;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=LlPmEgT7AmXIh8g8t518MArDyXQcqXJCyhWDk9MliDw=;
+	b=97aPAL4LeiH3xeNFAdZXMjk7MEGhz0kLgASjdIFqr/uCS+tagGzPcqXjxKEC6xZdIgZmaG
+	ZmzLz9HeDcOx1/AA==
+Date: Thu, 10 Sep 2026 12:31:09 +0200
+From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
+To: Christian Zigotzky <chzigotzky@xenosoft.de>
+Cc: Shrikanth Hegde <sshegde@linux.ibm.com>,
+	Christophe Leroy <chleroy@kernel.org>,
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	kvm-ppc@vger.kernel.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Peter Zijlstra <peterz@infradead.org>,
+	"R.T.Dickinson" <rtd2@xtra.co.nz>, hypexed@yahoo.com.au,
+	mad skateman <madskateman@gmail.com>,
+	Christian Zigotzky <info@xenosoft.de>
+Subject: Re: [Linux PPC] Disable PREEMPT
+Message-ID: <aqKG7dPFeytFLOjX@kunlun.suse.cz>
+References: <ap568I8bQAmSKWj5@kunlun.suse.cz>
+ <1D6F66F5-E181-4814-A7E5-E52A678D37A2@xenosoft.de>
+ <aqJwL4N9h3cOWLIW@kunlun.suse.cz>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -116,148 +106,79 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <aqJwL4N9h3cOWLIW@kunlun.suse.cz>
+X-Spamd-Bar: ++++++++++++
+X-Rspamd-Queue-Id: D4C9B21B72
+X-Rspamd-Action: add header
+X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
+X-Spamd-Result: default: False [12.71 / 50.00];
+	SPAM_FLAG(5.00)[];
+	NEURAL_SPAM_LONG(3.50)[1.000];
+	BAYES_HAM(-3.00)[100.00%];
+	HFILTER_HOSTNAME_UNKNOWN(2.50)[];
+	RDNS_NONE(2.00)[];
+	ONCE_RECEIVED(1.20)[];
+	HFILTER_HELO_IP_A(1.00)[kunlun.suse.cz];
+	R_MIXED_CHARSET(0.63)[subject];
+	HFILTER_HELO_NORES_A_OR_MX(0.30)[kunlun.suse.cz];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	NEURAL_HAM_SHORT(-0.11)[-0.548];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	MIME_TRACE(0.00)[0:+];
+	ARC_NA(0.00)[];
+	FREEMAIL_ENVRCPT(0.00)[xtra.co.nz,yahoo.com.au,gmail.com];
+	DKIM_TRACE(0.00)[suse.de:+];
+	TO_DN_SOME(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	FREEMAIL_CC(0.00)[linux.ibm.com,kernel.org,lists.ozlabs.org,vger.kernel.org,infradead.org,xtra.co.nz,yahoo.com.au,gmail.com,xenosoft.de];
+	DNSWL_BLOCKED(0.00)[2a07:de40:b306:2000::2:from];
+	RCVD_COUNT_ZERO(0.00)[0];
+	RCPT_COUNT_SEVEN(0.00)[11];
+	MISSING_XM_UA(0.00)[];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:dkim,suse.de:email]
+X-Spam: Yes
 
-The Rust kernel infrastructure generates inline asm for WARN() via
-ARCH_WARN_ASM(file, line, flags, size), expanding it through a C
-preprocessor pass (generated_arch_warn_asm.rs.S) to produce an
-arch-specific asm template string for use in Rust's core::arch macros.
+On Thu, Sep 10, 2026 at 10:54:07AM +0200, Michal Suchánek wrote:
+> On Mon, Sep 07, 2026 at 01:32:18PM +0200, Christian Zigotzky wrote:
+> > On 07 September 2026 at 10:51 am, Michal Suchánek <msuchanek@suse.de> wrote:
+> > 
+> > There is the obvious question which I did not notice answered in this
+> > thread: Did you set up sysrq and/or kdump and find out where the kernel
+> > is stuck?
+> > 
+> > Thanks
+> > 
+> > Michal
+> > 
+> > - - -
+> > 
+> > I think I need kexec for kdump due to the system freezing after activating of KVM HV. Unfortunately kexec doesn’t work on my machines.
+> > 
+> > Further information: https://github.com/chzigotzky/kernels/releases/tag/Kexec
+> 
+> So there is some bug with kexec initialization on your platform.
 
-powerpc currently lacks ARCH_WARN_ASM and ARCH_WARN_REACHABLE, causing
-Rust builds to fail on powerpc with
-```
-error: no rules expected `ARCH_WARN_ASM`
-   --> /home/linkmauve/dev/linux/wii/rust/kernel/generated_arch_warn_asm.rs:1:28
-    |
-  1 | ::kernel::concat_literals!(ARCH_WARN_ASM("{file}", "{line}", "{flags}", "{size}"))
-    |                            ^^^^^^^^^^^^^ no rules expected this token in macro call
-    |
-   ::: ../rust/kernel/lib.rs:279:1
-    |
-279 | macro_rules! concat_literals {
-    | ---------------------------- when calling this macro
-    |
-    = note: while trying to match sequence start
+Right, you are missing this part:
+https://github.com/torvalds/linux/blob/50d05c7c76c96b90462f24debacca971d2e86713/arch/powerpc/kexec/core.c#L205
 
-error: no rules expected `ARCH_WARN_REACHABLE`
-   --> /home/linkmauve/dev/linux/wii/rust/kernel/generated_arch_reachable_asm.rs:1:28
-    |
-  1 | ::kernel::concat_literals!(ARCH_WARN_REACHABLE)
-    |                            ^^^^^^^^^^^^^^^^^^^ no rules expected this token in macro call
-    |
-   ::: ../rust/kernel/lib.rs:279:1
-    |
-279 | macro_rules! concat_literals {
-    | ---------------------------- when calling this macro
-    |
-    = note: while trying to match sequence start
+Maybe it needs to be called from your platform code or something.
 
-error: aborting due to 2 previous errors
-```
+Thanks
 
-To add ARCH_WARN_ASM, _EMIT_BUG_ENTRY first needs to be refactored.
-The old definition was a bare macro with no parameters, relying on
-positional asm operand references (%0-%3), hardcoding the backward
-reference to local label 1b, and including .org/.previous directives
-inline. That made it impossible to compose as a plain string outside of
-an asm operand context, and left an invisible contract that callers must
-always emit their trap at label 1:.
+Michal
 
-Refactor _EMIT_BUG_ENTRY to take explicit (label, file, line, flags)
-string arguments via string concatenation. This removes the dependency
-on asm operand numbering and makes the trap label an explicit argument,
-so the caller's intent is visible at the call site and a future caller
-using a different label cannot silently produce a wrong bug table entry.
-
-Move the .org and .previous directives out of _EMIT_BUG_ENTRY and into
-each call site, so BUG_ENTRY() can still pass sizeof(struct bug_entry)
-as an asm operand while ARCH_WARN_ASM can supply its own size string
-independently.
-
-Add ARCH_WARN_REACHABLE as an empty define, matching the arm64
-convention, indicating that no additional reachability annotation is
-needed after a WARN on powerpc.
-
-This brings powerpc into line with x86, arm64, s390, and riscv, all of
-which already define ARCH_WARN_ASM and ARCH_WARN_REACHABLE.
-
-Reported-by: FUJITA Tomonori <tomo@flapping.org>
-Closes: https://lore.kernel.org/all/anG67Q6Y59kDqh-c@desktop
-Fixes: 73b741adb264 ("rust: Add PowerPC support")
-Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
----
-Changelog:
-V2 -> V3:
- - Add label argument in _EMIT_BUG_ENTRY
-V2: https://lore.kernel.org/all/20260910071252.1950488-2-mkchauras@gmail.com
-
-V1 -> V2:
-- commit message now has error, fixes tag and closes tag
-V1: https://lore.kernel.org/all/20260819084825.969116-1-mkchauras@gmail.com
-
- arch/powerpc/include/asm/bug.h | 36 +++++++++++++++++++---------------
- 1 file changed, 20 insertions(+), 16 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/bug.h b/arch/powerpc/include/asm/bug.h
-index 0db48977c70c..df2183c35945 100644
---- a/arch/powerpc/include/asm/bug.h
-+++ b/arch/powerpc/include/asm/bug.h
-@@ -32,34 +32,38 @@
- #endif /* verbose */
- 
- #else /* !__ASSEMBLER__ */
--/* _EMIT_BUG_ENTRY expects args %0,%1,%2,%3 to be FILE, LINE, flags and
--   sizeof(struct bug_entry), respectively */
- #ifdef CONFIG_DEBUG_BUGVERBOSE
--#define _EMIT_BUG_ENTRY				\
--	".section __bug_table,\"aw\"\n"		\
--	"2:	.4byte 1b - .\n"		\
--	"	.4byte %0 - .\n"		\
--	"	.short %1, %2\n"		\
--	".org 2b+%3\n"				\
--	".previous\n"
-+#define _EMIT_BUG_ENTRY(label, file, line, flags)	\
-+	".section __bug_table,\"aw\"\n"			\
-+	"2:	.4byte " label "b - .\n"		\
-+	"	.4byte " file " - .\n"			\
-+	"	.short " line ", " flags "\n"
- #else
--#define _EMIT_BUG_ENTRY				\
--	".section __bug_table,\"aw\"\n"		\
--	"2:	.4byte 1b - .\n"		\
--	"	.short %2\n"			\
--	".org 2b+%3\n"				\
--	".previous\n"
-+#define _EMIT_BUG_ENTRY(label, file, line, flags)	\
-+	".section __bug_table,\"aw\"\n"			\
-+	"2:	.4byte " label "b - .\n"		\
-+	"	.short " flags "\n"
- #endif
- 
- #define BUG_ENTRY(cond_str, insn, flags, ...)		\
- 	__asm__ __volatile__(				\
- 		"1:	" insn "\n"			\
--		_EMIT_BUG_ENTRY				\
-+		_EMIT_BUG_ENTRY("1", "%0", "%1", "%2")	\
-+		".org 2b+%3\n"				\
-+		".previous\n"				\
- 		: : "i" (WARN_CONDITION_STR(cond_str) __FILE__), "i" (__LINE__),	\
- 		  "i" (flags),				\
- 		  "i" (sizeof(struct bug_entry)),	\
- 		  ##__VA_ARGS__)
- 
-+#define ARCH_WARN_ASM(file, line, flags, size)		\
-+		"1:	twi 31, 0, 0\n"			\
-+		_EMIT_BUG_ENTRY("1", file, line, flags)	\
-+		".org 2b+" size "\n"			\
-+		".previous\n"
-+
-+#define ARCH_WARN_REACHABLE
-+
- /*
-  * BUG_ON() and WARN_ON() do their best to cooperate with compile-time
-  * optimisations. However depending on the complexity of the condition
--- 
-2.55.0
-
+> 
+> Sysrg for dumping stacks to console might still work.
+> 
+> Thanks
+> 
+> Michal
+> 
 
