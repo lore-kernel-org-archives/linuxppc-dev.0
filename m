@@ -1,82 +1,89 @@
-Return-Path: <linuxppc-dev+bounces-27039-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27040-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 000E1C79FBB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2026 19:31:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C20A4C79FBB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2026 19:55:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hgnqd2chCz2yrD;
-	Fri, 11 Sep 2026 05:31:57 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:3b::10"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789068717;
-	cv=none; b=lsm0b71kw7cnVCZT7Sv9IjArSQG0/omq1XGqb9MLWHguZIPdTz1Y+FoxHBr2ArhnWLJDI6AJhzqMtbZxzIEg+BNdAcv9Ysyjh3RLr72Qjy8EpcMq0taJ8C4Y+bwsSkYCVUPOWzcLI78ALhH90gFqEScAC/H2w3v8FVFrHATqRK3XOFeKfvQfwkLqKOF+YC+2ukPFIus034X1l9GoKlRR0G8GHaYQHU277gMxiz3stT12xIkx+ypG57CnrLePLYxGpEXWFuorlV8HTRU5kCBBAXbKcluJjrAV6kKuz+pQGE3S2T8ruw4cH/vbHB8dwgYhT6NeCYuUvP4gYQWLyv187g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hgpLW6lBMz2yrD;
+	Fri, 11 Sep 2026 05:55:15 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789070115;
+	cv=none; b=FREr2PxBZrTPfZO2EsdL/SFiCP/6tMsiFoUOKabAfDjU6ooZpiVtbw2oYNWWMv5LkZwyuMfMGIyWyXN4jz40WRzGL+N8+ckPE13G0itB6Z6SjOLKlyrH+E2IWP/CDN4miho+bw8CmAtyc6uOJ3DfJwSdIqdp5MilBMSuXTkZ5dPmFUxoMmLG+V/ci43+fZ0otnCCM7w/T1YsiGf/10UcchFFu8n8BYnh9g+7bdGBct1wJKT5VAgMlQki8GQpRPtogX+OuesoZMfB9uP5RIJM9Zj3COKajF8YhdIdgEfAZEWhASbIb27Fg4/kS/Fpd4YekxKgLzin/pX+IZTNL0PShQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789068717; c=relaxed/relaxed;
-	bh=gEdV5Xs8ER2iH6ECRgXfLV1Fk4a++1FtqWHfmbg9CiM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=k6oIrNqIrno6uHrbGu5GMtSYcGz0z68STbfD90TIBU5k7mAXbZMoBcHtTGA/T0Hn7jhfrcJgjhN9nwrnG02rFFDriOOOx9SpZ+raDED6D8pDacvqzi4BLw9hSam1qrwX1hFth9gAXSSxdb11M2xKj1l32yi2Jiou3rz0+aR1xjpSSl5eEDt8nxGUmCkQr5qiRYbUSJX9fKWc8D3sXxEHZ5Ehl14kXHFe3IVQU9pch7xMe5rQrA+IsftwNtwc1sy20UlqmxMFxKLBgv8vnrEu034t7bn0kSUYa3ETQTlmqidVFfi0/mCOfJixuJFypqHVz8a2SRiUCYhQb94jJPqsyw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=roeck-us.net; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=JC+qRSZr; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:3b::10; helo=mail-pz2-x10.google.com; envelope-from=groeck7@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=roeck-us.net
+	t=1789070115; c=relaxed/relaxed;
+	bh=0DO/R6xXAH6j9OJ0/UerSJTCrEzNPtfjRy5UVMaTrOk=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=HJW/KWUlR7rnnX4I5cgrBLd0M6cqzOYXZdudOrSCKC8qKxNuGCVGpTIxW2/onncmlBOseNjXiGPVudRdsLsYo9adDiGBiU68Ui541bYQ7AcCyfkVZMD5Aui9ttz777/m9g7lbbFcxLZOKJBJDjqAekXKD6iVOQe3YLL43fEHhMLK1ytT6lWevKbrYcXcfOVuGqNq+cNH1M3JxAB3dEnSYKNzfZ3ixAqbmgAbW+HuEa8A8hwcMDALM/zFskLD9j9l0vZZTrPas+4CiKSdFHWp/nL08zLBn/KsUM2AV3OMCPJFpIRqr3YvUkxWhY291knUvjOt+m6DATHavaIefA41Jw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=eDhECpiF; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=LoK9/HwF; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=jhladky@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=JC+qRSZr;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=eDhECpiF;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=LoK9/HwF;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:3b::10; helo=mail-pz2-x10.google.com; envelope-from=groeck7@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pz2-x10.google.com (mail-pz2-x10.google.com [IPv6:2607:f8b0:4864:3b::10])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=jhladky@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hgnqb4HJnz2yr9
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2026 05:31:55 +1000 (AEST)
-Received: by mail-pz2-x10.google.com with SMTP id d2e1a72fcca58-8693af0d7c4so70637b3a.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2026 12:31:55 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789068712; x=1789673512; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:in-reply-to:autocrypt:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:sender:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=gEdV5Xs8ER2iH6ECRgXfLV1Fk4a++1FtqWHfmbg9CiM=;
-        b=JC+qRSZr35muHDYZyv4IaCLD58s5+Xu/0y/0pK3ZwboQo5xGdFtdv/Pnr754fGOAlp
-         8q1k8OuwzIWNi/YpgP8ioGYVIToZFnWX+BowyvqO4UwKZrBEhNA0vGY3CCcco3Se6pN1
-         iw6DfxJIThG3zAXXSazR0aHjCJBQCMzoyrdw1xeDgfFzI933/+uh7X4t0X5ePZGPJTo5
-         EZNUD+eF+4Dumu1xpkhWVbWE58H/L3cOEoXeEHl9nwyPXBY6+lTz8JweXsHL/upBrMQR
-         7DJq+ph5A2Tk4ZnCTZ9C/I3r29cYQugl+075VpShx0pm57uN326clNaj+sfmHcYfAhs6
-         qh4Q==
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hgpLV3CvNz2yr9
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2026 05:55:12 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1789070108;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=0DO/R6xXAH6j9OJ0/UerSJTCrEzNPtfjRy5UVMaTrOk=;
+	b=eDhECpiFsVTei56lXut0S2EcTO7MTbXxPWRtek8VtvJ+//WL+m6i1YGgvdnvPxuxtz02Xm
+	TIXDhlgEtYA+B5+7Q4YiDHmMSSe8bwTuZx7VoDIF8zQ0iMYO45ACyx6QzZlEtzcv8Wrmnv
+	4G1hqeU8UB2PDBITW4QgUivGTVRVE7o=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1789070109;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=0DO/R6xXAH6j9OJ0/UerSJTCrEzNPtfjRy5UVMaTrOk=;
+	b=LoK9/HwFFiftRbUh1IBNgrVu5YcDyfzTQ4r3eXLnEwuGyYtKKrfTIM1DBqNByGRkDezpZc
+	DipH23VCvY9HwmHev6p0T8IfqhS6P9vqL77VOX5id9I3rXQHv2jpGBHNhCjjqATKEijjQ5
+	UmxxATLGmLM/uBa1b2P8yr6beA2G+I0=
+Received: from mail-vk1-f198.google.com (mail-vk1-f198.google.com
+ [209.85.221.198]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-394-6oLbjbgzMmenxEn7qWdAPA-1; Thu, 10 Sep 2026 15:55:07 -0400
+X-MC-Unique: 6oLbjbgzMmenxEn7qWdAPA-1
+X-Mimecast-MFC-AGG-ID: 6oLbjbgzMmenxEn7qWdAPA_1789070107
+Received: by mail-vk1-f198.google.com with SMTP id 71dfb90a1353d-5c82cf2652dso100535e0c.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2026 12:55:07 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1789068712; x=1789673512;
-        h=content-transfer-encoding:content-type:in-reply-to:autocrypt:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:sender:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=gEdV5Xs8ER2iH6ECRgXfLV1Fk4a++1FtqWHfmbg9CiM=;
-        b=L4Uy4rPfZDg6Gw1e5Ktot741Hm0+8MWa/px+rG1eCigxWYaqKTenBCfmd9OYR7QaHU
-         II8e0Z1B7wLceCzN+CoxVrn2oLQ7ReHgM/613WRjDaINSG69orxVJpy91mwJAA7HxEfp
-         mspHDH/BL6NmMB+GgDSQhNSXwq5+8/sxOUTAf1FoTMVYeFbsPW+9FdKxW4nFG/pKhMz3
-         etysrzgzoM40KjKhYxDoVRifeg6Oy2YAgUsYS7Ya0+5A7LwGCdtuYn5ikCmTkLrd+Bk9
-         8bYkoLuuzECI/X7rlvQWL3QCZgwJlydVfRYfX5KaHg75aHCXDLWZOIi+I8syulrolImS
-         Zs/g==
-X-Forwarded-Encrypted: i=1; AKwUvBwyufpbebeauaOPEdfmG5ejZJNcaDFfPMKlzJDOnz9aEREaiEs2PKksZ2FEwupOm7r+7aw9P070TI6i+Y4=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++mTQmBz+dEOtTFqa00AuFtpfhZN5FmkHjtzQR46aGmweEYMUiDd
-	e17C2cmG9AeLUVazkFf6VfMvFH2elvtm4SrptzhR1kO626/JTZMEXGFr
-X-Gm-Gg: AYBFou28GKrCTVNf/LunxR4n4IMlvPnJVufZqyoTDhXrldv6kMwCBrneUCxxm+/Yyui
-	E6a/0+Wru2PrRHeqhrWmdWo4hJ4UxrLs6uO8iiHWgM+KN1UCRLonQo6EAQhe5etpcC95RntSBTA
-	5/Jcx8GCNRf+8NDMdHZlWsTwsmm21mun9PukQRs6BkkwhjpwHK0PVF31Y3tfBMgXjriHb6xv0bi
-	ucZQhGKrq2Hj26mMYU9PdvlVf3eef4ZcCVaWkuSv5n2OhVMT0oso36Im4UDuSesPLjXFlug4ria
-	rdYYl1DhPg/3BOkTEl/rObPc17KTs8PuR/DpUGkRQn8E2/zfBGhaBNguqqm+1vWQ0d0wl0i4t+e
-	wMs5m9jsKwIWzois1nm5JPuslCHi8EWH0nEfLAbYONQMShGY+jmdAnU4h8q74Np8pCcwd64r/jN
-	WPox+7v9JHYQxDWB9TIMXWLXFx1W+zaqBgD4ZA8uKF9pk4b3qG1IVm4HqZuulnRALdyILGuRWHm
-	psWEIkCsAIfYe51AylwaKkcLw3xxIHBy28bA2y6iafsnj5W
-X-Received: by 2002:a05:6a00:ba8d:b0:857:72ba:ff0f with SMTP id d2e1a72fcca58-86b34efaaebmr529838b3a.23.1789068712105;
-        Thu, 10 Sep 2026 12:31:52 -0700 (PDT)
-Received: from ?IPV6:2600:1700:e321:62f0:da43:aeff:fecc:bfd5? ([2600:1700:e321:62f0:da43:aeff:fecc:bfd5])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-86b2a5c052csm79353b3a.58.2026.09.10.12.31.49
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 10 Sep 2026 12:31:51 -0700 (PDT)
-Sender: Guenter Roeck <groeck7@gmail.com>
-Message-ID: <c5fd98fc-2cfb-434a-8a81-3bf589049670@roeck-us.net>
-Date: Thu, 10 Sep 2026 12:31:49 -0700
+        d=1e100.net; s=20251104; t=1789070107; x=1789674907;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=0DO/R6xXAH6j9OJ0/UerSJTCrEzNPtfjRy5UVMaTrOk=;
+        b=ldXxeQ5OzrtKuSOT0Ei6c56uhdbqB0SyqILAj+P0eu6U8UtYJqYM7pTi6DTtdrV+DX
+         QIzLh9onPk+ZhDX8YfDZoiOjZtph3+57M58+qniKd5YzpzIxVGNV0dFZ4EmTGoPz1l6d
+         96Q2iv4PoeJQ/cZN2wbMeh/T4eYpKW4xgaroxLRzlD9Tx4JnmI2laKRHSdYwmr2+Um4G
+         wxnu/jJpAqCZVaAK5KJ2VIzujVpydImmwonJd6Nibg0w9/EpTLFGLIrL5fv9mXUwl8ou
+         ne6GQjWxHeJmuPTw8zp9nea83XKOqv9VqWdUS76u8nlUFktLxRCQjeuijfBnBivLy3EI
+         3rcg==
+X-Forwarded-Encrypted: i=1; AKwUvBxxxnm+FmKgBd/Em/eEqFmFefxk1z3iNJwg3u7iul9t9N0d67GTCOrWActQYSWandGPxn5VZ6ZssLsrwag=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++mN38/1woTYfFFrWoYCaIVi752EbPFKm2qnJL8MlOyGJpPdIpTL
+	F+LwrFOl1xwABjGV4xletRsDicV2biJeOAtCfCzURIvvuQQaBV+qwpmUWSV51+yQZX8KirCkXkW
+	iZgHb7ctTV+pNbXB+eoYxw8RJbuCp0z/e4qZ0TXzB4U/xTkWurEMmoOW53+3kFYw/5d/96VFj5i
+	wKxEsnraOorhttq9u7q2WLa/AOvlUyDVR9lxEvv1IT0w==
+X-Gm-Gg: AYBFou1lz9GapASjgemEh6QflN74mykeyxltYUan34ViKfPkANcxDcULihxZ/7rboXj
+	xjPsVDCCw8tOvwNfGGuVR4tSnXRLht1dWGaxdXU6F/R+OYF2Yc0wbhclyclUN/fGyTFKzAZqK40
+	Unac/asItHDA+EvN4C1zabQrI+FcdHo+rfVwpDkAOqvRASE42V2bmWuu8=
+X-Received: by 2002:a05:6122:3783:b0:5c8:44fa:7230 with SMTP id 71dfb90a1353d-5c845f4e527mr2491876e0c.2.1789070106649;
+        Thu, 10 Sep 2026 12:55:06 -0700 (PDT)
+X-Received: by 2002:a05:6122:3783:b0:5c8:44fa:7230 with SMTP id
+ 71dfb90a1353d-5c845f4e527mr2491530e0c.2.1789070101357; Thu, 10 Sep 2026
+ 12:55:01 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,118 +97,270 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 08/14] mfd: remove unused aat2870 driver
-To: Arnd Bergmann <arnd@arndb.de>, Svyatoslav Ryhel <clamor95@gmail.com>,
- Arnd Bergmann <arnd@kernel.org>
-Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>,
- Bartosz Golaszewski <brgl@kernel.org>, Mark Brown <broonie@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>, Daniel Thompson <danielt@kernel.org>,
- Helge Deller <deller@gmx.de>, devicetree@vger.kernel.org,
- Dmitry Torokhov <dmitry.torokhov@gmail.com>,
- dri-devel@lists.freedesktop.org, Jonathan Cameron <jic23@kernel.org>,
- Jingoo Han <jingoohan1@gmail.com>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Lee Jones <lee@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>,
- Linus Walleij <linusw@kernel.org>, linux-arm-kernel@lists.infradead.org,
- linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org,
- "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
- linux-hwmon@vger.kernel.org, linux-iio@vger.kernel.org,
- linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-leds@vger.kernel.org, linux-media@vger.kernel.org,
- linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org,
- linux-sound@vger.kernel.org, linux-watchdog@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, llvm@lists.linux.dev,
- Mauro Carvalho Chehab <mchehab@kernel.org>, mfd@lists.linux.dev,
- Michael Hennerich <michael.hennerich@analog.com>,
- patches@opensource.cirrus.com, Pavel Machek <pavel@kernel.org>,
- Rob Herring <robh@kernel.org>, Sebastian Reichel <sre@kernel.org>,
- Support Opensource <support.opensource@diasemi.com>
-References: <CAPVz0n0ryOns2sCJE_jFana9MVzwEj1QZuPEa8FNhGbHXnMB+A@mail.gmail.com>
- <11652e5e-053e-45b0-98a0-0c1cb2aeedc4@app.fastmail.com>
- <7a92a79e-e22a-4e34-9f11-4086b88f62cc@roeck-us.net>
- <e33b42dc-1561-4819-b028-b13af9e7115b@app.fastmail.com>
-Content-Language: en-US
-From: Guenter Roeck <linux@roeck-us.net>
-Autocrypt: addr=linux@roeck-us.net; keydata=
- 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
- np3900V20aS7eD9K8GTU0TGC1pyz6IVJwIE=
-In-Reply-To: <e33b42dc-1561-4819-b028-b13af9e7115b@app.fastmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+References: <20260427122742.210074-1-mkchauras@gmail.com> <CAE4VaGACd2es4NPQyhbR9pMEoGiTVBSE7Lw7x9VOb1Qbpvc6nw@mail.gmail.com>
+ <amsapeQ2Kp6rwPpF@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+ <CAE4VaGB_EhbWq8_X6FLtOx2MqoP7JEkOKkKSjKB7N--tt-sCeA@mail.gmail.com>
+ <aqAMpawvpB7g1XdK@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com> <CAE4VaGBCmA0+28G=V_Qs37cR2GKYDUTGQWW_uRe0qvEp5io3qQ@mail.gmail.com>
+In-Reply-To: <CAE4VaGBCmA0+28G=V_Qs37cR2GKYDUTGQWW_uRe0qvEp5io3qQ@mail.gmail.com>
+From: Jirka Hladky <jhladky@redhat.com>
+Date: Thu, 10 Sep 2026 21:54:49 +0200
+X-Gm-Features: AcwNN1UINjTjrqytywWbMHNREErasxxlK8PN4pC_cq8M5jPiGNRwYTV8xfJ4kOE
+Message-ID: <CAE4VaGCp7A7NuBC9Hwgzs5xg3bGBuRiDC8PRCu+yXnUZEXmt-g@mail.gmail.com>
+Subject: Re: [PATCH v5 0/8] Generic IRQ entry/exit support for powerpc
+To: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
+	chleroy@kernel.org, ryabinin.a.a@gmail.com, glider@google.com, 
+	andreyknvl@gmail.com, dvyukov@google.com, vincenzo.frascino@arm.com, 
+	oleg@redhat.com, kees@kernel.org, luto@amacapital.net, wad@chromium.org, 
+	mchauras@linux.ibm.com, sshegde@linux.ibm.com, thuth@redhat.com, 
+	ruanjinjie@huawei.com, akpm@linux-foundation.org, macro@orcam.me.uk, 
+	ldv@strace.io, charlie@rivosinc.com, deller@gmx.de, kevin.brodsky@arm.com, 
+	ritesh.list@gmail.com, yeoreum.yun@arm.com, agordeev@linux.ibm.com, 
+	segher@kernel.crashing.org, mark.rutland@arm.com, ryan.roberts@arm.com, 
+	pmladek@suse.com, feng.tang@linux.alibaba.com, peterz@infradead.org, 
+	kan.liang@linux.intel.com, linuxppc-dev@lists.ozlabs.org, 
+	linux-kernel@vger.kernel.org, kasan-dev@googlegroups.com
+X-Mimecast-Spam-Score: 0
+X-Mimecast-MFC-PROC-ID: mVtX9W2y5gxlSbAYMocyi8VQcRaOkFOHvo5WKOd6dcs_1789070107
+X-Mimecast-Originator: redhat.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 9/10/26 12:15, Arnd Bergmann wrote:
-> On Thu, Sep 10, 2026, at 20:38, Guenter Roeck wrote:
->>>
->> ...
->>> drivers/hwmon/ds620.c
->>> drivers/hwmon/f75375s.c
->>> drivers/hwmon/max1111.c
->>> drivers/hwmon/max197.c
->>
->> I missed the rationale for removing those, but then I don't really
->> mind either. I guess we'll hear if someone still uses any of those
->> drivers/chips.
-> 
-> None of these have devicetree support, and they are not usable
-> with any of the remaining board files.
-> 
->  From what I found:
-> 
-> - da620 apparently never had any users upstream, though it does
->    not require platform data and is theoretically usable with
->    an external dtb
-> - f75375s was only used on iop32x (long gone)
-> - max197 was used on x86/elan/ts5500, which is still in the
->    tree but cannot be enabled anymore because it is a 486 class SoC.
->    I have sent a separate patch to remove that platform
-> - max1111 was used on spitz, which is on its way out for 7.4.
-> 
+Hi Mukesh,
 
-As I said, I don't have any issues with removing them. Note though
-that the ds620 driver (like many other hwmon drivers) does not require
-devicetree or platform data to work just fine.
+Following up on the ppc64le SELinux/kill() regression - it doesn't reproduc=
+e
+with proper multi-iteration sampling. stress-ng --kill has ~30%
+run-to-run variance
+on our LPARs. Part of the variance comes from LPARs being much less
+isolated than I'd assumed - we saw contention bleed across LPARs on the sam=
+e
+physical server, even between "Dedicated" partitions. With 15 iterations pe=
+r
+config, 7.1 and 7.2-rc4 are statistically even (within ~3%) across enforcin=
+g/
+permissive/disabled, confirmed on a second, physically separate LPAR (7.1 v=
+s
+7.2-rc6). This matches what you said - you couldn't reproduce it either.
 
-Thanks,
-Guenter
+I also built 7.2-rc4 from source with your proposed
+rcu_ct_kernel_exit_qs() patch and re-ran the same sweep - it shows no
+consistent effect vs. stock 7.2-rc4 (differences within the same noise
+band), which is consistent with there being no real regression here for it
+to address.
+
+Sorry for the false alarm, and thank you for the patch and for taking the
+time to look into this - I don't think it's needed for this issue, though
+it may still be a reasonable efficiency improvement on its own merits (it
+does avoid the unconditional rcu_preempt_deferred_qs() call on the common
+fast path). I'll update the internal RHEL tracking ticket (RHEL-216740) to
+reflect that this doesn't reproduce.
+
+Thank you!
+Jirka
+
+
+On Tue, Sep 8, 2026 at 6:01=E2=80=AFPM Jirka Hladky <jhladky@redhat.com> wr=
+ote:
+>
+> Hi Mukesh,
+>
+> Re: policy details -  I'm running an ELN kernel on RHEL-10.2, with SELinu=
+x
+> in enforcing mode using the default (targeted) policy, nothing custom
+> or hardened on top of it. Let me know if you need anything more specific
+> (policy version, booleans, etc.) and I'll pull it.
+>
+> Re: the rcu_ct_kernel_exit_qs() diff =E2=80=94 thanks, that guard against=
+ the
+> unconditional rcu_preempt_deferred_qs() call lines up well with what I
+> was seeing on the RCU-barrier side. I'll apply it on top of 7.2 on
+> POWER10 box and re-run the stress-ng --kill numbers
+> (enforcing/permissive/disabled) to see how much of the SELinux tax it
+> recovers. No need to prepare anything separately.
+>
+> I'm OOO tomorrow, but I'll get to this by the end of the week and report
+> back with results.
+>
+> Thanks
+> Jirka
+>
+>
+> On Tue, Sep 8, 2026 at 3:26=E2=80=AFPM Mukesh Kumar Chaurasiya
+> <mkchauras@gmail.com> wrote:
+> >
+> > On Thu, Jul 30, 2026 at 01:24:46PM +0200, Jirka Hladky wrote:
+> > > On Thu, Jul 30, 2026 at 11:36=E2=80=AFAM Mukesh Kumar Chaurasiya
+> > > <mkchauras@gmail.com> wrote:
+> > > >
+> > > > On Mon, Jul 27, 2026 at 11:41:07AM +0200, Jirka Hladky wrote:
+> > > > > Hi Mukesh, Shrikanth, Madhavan,
+> > > > >
+> > > > > I'm seeing a ~19% throughput regression on ppc64le (POWER10) in
+> > > > > syscall-heavy workloads between kernel 7.1 and 7.2-rc4, which I'v=
+e
+> > > > > narrowed down to the GENERIC_ENTRY enablement for powerpc (commit
+> > > > > bee25f97ad24 "powerpc: Enable GENERIC_ENTRY feature").
+> > > > >
+> > > > > The regression manifests specifically when SELinux is enabled. Re=
+gression
+> > > > > disappears with selinux=3D0. With SELinux disabled, 7.2 is actual=
+ly
+> > > > > slightly *faster* than 7.1.
+> > > > >
+> > > > > Test: stress-ng --kill 1 -t 23 (single-thread kill() syscall loop=
+)
+> > > > > Machine: IBM,9080-HEX POWER10, 8 vCPUs (1 core SMT-8), 64 GiB
+> > > > >
+> > > > > Results (bogo-ops/sec, higher is better):
+> > > > >
+> > > > > Kernel   Enforcing   Permissive   Disabled    SELinux tax
+> > > > > ------   ---------   ----------   --------    -----------
+> > > > > 7.1      69,107      70,248       93,566      -26.1%
+> > > > > 7.2-rc4  56,247      59,075       99,240      -43.3%
+> > > > > Delta    -18.6%      -15.9%       +6.1%
+> > > > >
+> > > > > Key observations:
+> > > > > - SELinux permissive ~ enforcing on both kernels (overhead is in =
+the
+> > > > >   code path, not policy evaluation)
+> > > > > - SELinux disabled: 7.2 is 6% faster than 7.1 -- the generic entr=
+y
+> > > > >   path itself is not slower for the base syscall
+> > > > > - The SELinux "tax" nearly doubles from 26% to 43% between 7.1->7=
+.2
+> > > > > - No changes to security/selinux/avc.c between v7.1 and v7.2-rc4
+> > > > >
+> > > > > The kill() hot path (sys_kill -> check_kill_permission -> securit=
+y_task_kill
+> > > > > -> selinux_task_kill -> avc_has_perm -> avc_lookup) wraps every A=
+VC lookup
+> > > > > in rcu_read_lock()/rcu_read_unlock(). On ppc64le with PREEMPT_RCU=
+, each
+> > > > > pair requires lwsync/isync barriers. I suspect the generic entry =
+path
+> > > > > changes something in how context tracking, tracing, or RCU intera=
+cts
+> > > > > with the syscall fast path that amplifies the per-call RCU cost.
+> > > > >
+> > > > > Note: this is on top of a separate ~36% regression from 6.12->7.1=
+ caused
+> > > > > by HAVE_PREEMPT_DYNAMIC_KEY enabling CONFIG_PREEMPT_RCU on ppc64l=
+e
+> > > > > (commit 6ad7751537e8), which I reported separately on the v4 thre=
+ad.
+> > > > >
+> > > > > Thank you
+> > > > > Jirka
+> > > > [...]
+> > > > Hey Jirka,
+> > > >
+> > > > Thanks for reporting this.
+> > > > I'll take a look.
+> > > >
+> > > > Thanks,
+> > > > Mukesh
+> > > >
+> > >
+> > > Thank you, Mukesh! I'm happy to run additional tests on the POWER10 m=
+achine
+> > > if you have patches to try or specific experiments you'd like me to d=
+o.
+> > >
+> > > Jirka
+> > >
+> >
+> > can you try this with the below diff?
+> >
+> > diff --git a/include/linux/rcutiny.h b/include/linux/rcutiny.h
+> > index e56ded733b1b..dcad641eb2c2 100644
+> > --- a/include/linux/rcutiny.h
+> > +++ b/include/linux/rcutiny.h
+> > @@ -120,6 +120,7 @@ static inline bool rcu_preempt_need_deferred_qs(str=
+uct task_struct *t)
+> >         return false;
+> >  }
+> >  static inline void rcu_preempt_deferred_qs(struct task_struct *t) { }
+> > +static inline void rcu_ct_kernel_exit_qs(void) { }
+> >  void rcu_scheduler_starting(void);
+> >  static inline void rcu_end_inkernel_boot(void) { }
+> >  static inline bool rcu_inkernel_boot_has_ended(void) { return true; }
+> > diff --git a/include/linux/rcutree.h b/include/linux/rcutree.h
+> > index 16a04202888b..d623f2a7d3fc 100644
+> > --- a/include/linux/rcutree.h
+> > +++ b/include/linux/rcutree.h
+> > @@ -87,6 +87,7 @@ static inline void rcu_irq_exit_check_preempt(void) {=
+ }
+> >
+> >  struct task_struct;
+> >  void rcu_preempt_deferred_qs(struct task_struct *t);
+> > +void rcu_ct_kernel_exit_qs(void);
+> >
+> >  void exit_rcu(void);
+> >
+> > diff --git a/kernel/context_tracking.c b/kernel/context_tracking.c
+> > index a743e7ffa6c0..011018214c6d 100644
+> > --- a/kernel/context_tracking.c
+> > +++ b/kernel/context_tracking.c
+> > @@ -118,7 +118,7 @@ static void noinstr ct_kernel_exit(bool user, int o=
+ffset)
+> >         lockdep_assert_irqs_disabled();
+> >         trace_rcu_watching(TPS("End"), ct_nesting(), 0, ct_rcu_watching=
+());
+> >         WARN_ON_ONCE(IS_ENABLED(CONFIG_RCU_EQS_DEBUG) && !user && !is_i=
+dle_task(current));
+> > -       rcu_preempt_deferred_qs(current);
+> > +       rcu_ct_kernel_exit_qs();
+> >
+> >         // instrumentation for the noinstr ct_kernel_exit_state()
+> >         instrument_atomic_write(&ct->state, sizeof(ct->state));
+> > diff --git a/kernel/rcu/tree.c b/kernel/rcu/tree.c
+> > index 96848fc1f02b..c23478f70c17 100644
+> > --- a/kernel/rcu/tree.c
+> > +++ b/kernel/rcu/tree.c
+> > @@ -368,6 +368,25 @@ notrace void rcu_momentary_eqs(void)
+> >  }
+> >  EXPORT_SYMBOL_GPL(rcu_momentary_eqs);
+> >
+> > +/**
+> > + * rcu_ct_kernel_exit_qs - report deferred QS on syscall/exception exi=
+t if needed
+> > + *
+> > + * Called from ct_kernel_exit() on every return to userspace.  Guards =
+the
+> > + * rcu_preempt_deferred_qs() call with rcu_preempt_need_deferred_qs() =
+so that
+> > + * on the common fast path -- where nothing is deferred -- we avoid th=
+e
+> > + * cache-line traffic on current->rcu_read_unlock_special that the unc=
+onditional
+> > + * call causes.  This is particularly significant on weakly-ordered ar=
+chitectures
+> > + * (e.g. ppc64le) where rcu_read_lock/unlock issue lwsync/isync barrie=
+rs and
+> > + * already touch that cache line in the syscall body.
+> > + *
+> > + * Follows the same pattern used by rcu_flavor_sched_clock_irq().
+> > + */
+> > +notrace void rcu_ct_kernel_exit_qs(void)
+> > +{
+> > +       if (rcu_preempt_need_deferred_qs(current))
+> > +               rcu_preempt_deferred_qs(current);
+> > +}
+> > +
+> >  /**
+> >   * rcu_is_cpu_rrupt_from_idle - see if 'interrupted' from idle
+> >   *
+> >
+> >
+>
+>
+> --
+> -Jirka
+
+
+
+--=20
+-Jirka
 
 
