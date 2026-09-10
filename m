@@ -1,78 +1,104 @@
-Return-Path: <linuxppc-dev+bounces-27028-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27029-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 092A5C79F9F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2026 13:24:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 397DDC79F9F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2026 13:24:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hgdgd238rz2xqM;
-	Thu, 10 Sep 2026 23:24:29 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::52d"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788978563;
-	cv=none; b=GLwfGDiTiCdm24yt+tmS+VOt+Qi0FldbDXKdt/oZkMqkWocsFM/oZdBdLLz6FjYmUwFqGYt3gZbmo7S9kwjbsIBh8dWNOMbAAuFJEs0c6CF3gJANU/WY0ii7pUhEeQOOuIqm7QdH5Xxn8AZK19szGZERC9QNNPog+dNK0/vXHOjb7X8u2qwoofQj9inJ8nnzIdLkani5Q/AAnoKVSN4p1+e2Z13rM/Pm+fWis0GapBuJxYuFNJABlsVBbovDsCH9EbGvEWvOnS1VxL2ygtnZmJg7l2uy6V+ugZ1qo0jKFPcyuVHcJFQt0mCaUwdSyyUjRfxJgGlIKHPeqVY//cnfng==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hgdgk4Pmcz2yqX;
+	Thu, 10 Sep 2026 23:24:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=202.12.124.156
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789046674;
+	cv=none; b=oARA7nSlPc3kQ0yReenuxlrC9wzi/BQJ/khG1iUvZqJZ69e3dIacGRpIXiWXGdOcY6fobO/rRIS7jhn52zDSXSCEnmp1ZK10NlcDwem5qxgAgEZAD5hGpPE9tmJJlmwfivCFCFbTV7uoYWQZf+gMyQy3RNueffkuF+/GQnS0wDRzgx2QfIW2EL1GECqmydqkvRQJKx7i6jnHzddQRaC/eNdnAe526F//1Rcr0WH9DQX7rs6maUo6Z7ebO580Ahc4vAkWxNIDAgGqvKIKUVJ23vFZvN/vsims/to8Z3gM95e2bcziis/fuc1WVggHz0bsD8Jch5mjiPrpCd+9VEpdRA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788978563; c=relaxed/relaxed;
-	bh=1oUEgD/rN41C0bVeA3gI1cpMDgX5748s/d/3oZ5kHgc=;
-	h=Mime-Version:Content-Type:Date:Message-Id:Cc:Subject:From:To:
-	 References:In-Reply-To; b=efojiLFJPAC2NiLf0Eb+ThUbYtiP06OA3WrC2wjzXWPm0OEu7dhohBMgppQBxEBIlde0X4Nxv6ROMmX3PmqG8nyg/i5pA2yGVWvXLzXP19iI2yqSxQ/tS5Velc/w9/sYqE4Ph2NW4fpmouo3rQtxIAvy9TDxieckIcOHWPpjdRcnabh6IlFs3Jzh7qUVX8mNTbyrHnWHA5U1OGnjzRpdWyIlcbVpVXPnqD8kH0rzKwZc1lye/OdTaUDeMF5VkiZbxmxl60KveZa/O/3ZYHpYCG/MewwMW1Ig6yOaKYM6SRsdqynnreWi4Pk+zvGddBRMTgx4v2izS/6Sdq+wxuJW+A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=etsalapatis.com; dkim=pass (2048-bit key; unprotected) header.d=etsalapatis-com.20251104.gappssmtp.com header.i=@etsalapatis-com.20251104.gappssmtp.com header.a=rsa-sha256 header.s=20251104 header.b=TNGb5vk8; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::52d; helo=mail-pg1-x52d.google.com; envelope-from=emil@etsalapatis.com; receiver=lists.ozlabs.org) smtp.mailfrom=etsalapatis.com
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=etsalapatis.com
+	t=1789046674; c=relaxed/relaxed;
+	bh=pPNVfymHR2XC9ByNjrUYouH52ihzMf/+u8o83ywFdQA=;
+	h=Date:Message-Id:To:Cc:Subject:From:In-Reply-To:References:
+	 Mime-Version:Content-Type; b=gDIuy9ikPhNKoVdiLPSSRFB5kUCQjo4L30qvNXJFms7FIjXzPpkeDgKxO7MTKKV5rXuzrfK89s2+LWd2i37TYR9vKXBQveSHl2r8ZS1+8qYMY9FWFBI+oABXvtE/sC4xtzWx/z+ZyyPJ5DnVpwX3uPL7USXlFD/+5bd8GpVOvH/ySEpFeWQrxAAgyhP2LW3zUtfJFFldp7eom0hthiHXb2mocYdakqiL3TWbXthH8LkE9HRoBRmRfTQWNF4EAKTPtodlYUmlPa+HdevMd2pWWWS2Qi6TCTikrE/L3hsNsHpTM0iJJXjvaNsiK4wVax9TmYZlNQv3LOMizXrhrZBcHg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=flapping.org; dkim=pass (2048-bit key; unprotected) header.d=flapping.org header.i=@flapping.org header.a=rsa-sha256 header.s=fm3 header.b=gA7IDNQ5; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=nY6v7Fp3; dkim-atps=neutral; spf=pass (client-ip=202.12.124.156; helo=fhigh-b5-smtp.messagingengine.com; envelope-from=tomo@flapping.org; receiver=lists.ozlabs.org) smtp.mailfrom=flapping.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=flapping.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=etsalapatis-com.20251104.gappssmtp.com header.i=@etsalapatis-com.20251104.gappssmtp.com header.a=rsa-sha256 header.s=20251104 header.b=TNGb5vk8;
+	dkim=pass (2048-bit key; unprotected) header.d=flapping.org header.i=@flapping.org header.a=rsa-sha256 header.s=fm3 header.b=gA7IDNQ5;
+	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=nY6v7Fp3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=etsalapatis.com (client-ip=2607:f8b0:4864:20::52d; helo=mail-pg1-x52d.google.com; envelope-from=emil@etsalapatis.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x52d.google.com (mail-pg1-x52d.google.com [IPv6:2607:f8b0:4864:20::52d])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flapping.org (client-ip=202.12.124.156; helo=fhigh-b5-smtp.messagingengine.com; envelope-from=tomo@flapping.org; receiver=lists.ozlabs.org)
+Received: from fhigh-b5-smtp.messagingengine.com (fhigh-b5-smtp.messagingengine.com [202.12.124.156])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hg8Tr2D4Fz2yvh
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2026 04:29:18 +1000 (AEST)
-Received: by mail-pg1-x52d.google.com with SMTP id 41be03b00d2f7-cc4aa18f9afso464347a12.3
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Sep 2026 11:29:18 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=etsalapatis-com.20251104.gappssmtp.com; s=20251104; t=1788978555; x=1789583355; darn=lists.ozlabs.org;
-        h=in-reply-to:references:to:from:subject:cc:message-id:date
-         :content-type:content-transfer-encoding:mime-version:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=1oUEgD/rN41C0bVeA3gI1cpMDgX5748s/d/3oZ5kHgc=;
-        b=TNGb5vk80R1KIC4uzBHln9Zc7wfWBHd53XwRmv7fWCGVXWK+Fzny25NyZ6N1zHxHJE
-         e//D+Kc1hKfxIjiuDi+xF4Jd6wmujJPDbbNYmZ2W1xH1LnB71gvZcm7vXta4rAygVFf4
-         Duw4FeFL+LG09ytVOxvj1gjWT4Gq8/mVbuhS3SP9lA1HRWeP1j9Bg/8cqFZtG9M278PD
-         GHBe3zdKaF9r8vylEk5S4FnUcQiqZ+TM8oh++Hjy4XpaU73uKXKPtjZbbOTNmXIOtFmw
-         1weLykZnXN6qyM1nZ4BV6hK0NlUJuFFFl43IO1e/KjwM7ikkqbNAQtZ0XOUwKU4fPo1G
-         0Q8Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788978555; x=1789583355;
-        h=in-reply-to:references:to:from:subject:cc:message-id:date
-         :content-type:content-transfer-encoding:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=1oUEgD/rN41C0bVeA3gI1cpMDgX5748s/d/3oZ5kHgc=;
-        b=lsfhxU+5Fzhlpqs6/f+Wj1LAKEiQLXXc4z3c3didlYpfuRwbVck8ef2KtDjnZkuJrj
-         GvfzSjoLkLhKq2frJ8VVcCym1w0fqszy19c8kWPYko6LkH6n2dC1L60UPFISRDud8z8Q
-         HtsGbljJOZTep92c8FMtjYkg1dNHVWHuyuA3w7griCUcRPn6jKpGXCjfcTJZgtBu3dYZ
-         YxdTfxjFBrUOQPWKmY+QPDapBHUOw7mASxKz8QH6627BvamjgUIu13PFehVUQFjt/hE5
-         BlnP5d9E7oezVc82njvEdUsZpeC4FaH5Q7J1/Iik0LI1OjOBPq2MRz2XIDiLeD0vLbW3
-         vMJQ==
-X-Forwarded-Encrypted: i=1; AKwUvBwAQJELaMumhsS1lIi6yz9SvJVKYzfVhR/83N19kq+nzgheoRr04ImdX72YSyY4S871bPSimOUhlprsiRU=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++kVDgjlep9hw/F8S9SsQ0FdQPigQHE+8Erx/B8NxFCPT1naNY6Q
-	PLRBQ7G409PSiDhul5Log3u6yRNQico/Jobm4wKW9wEvUy1aCv0fTt8/6F4c2R0M6zc=
-X-Gm-Gg: AYBFou3zq8X5STBpkF8jwBkH7XhpxXDWcy4TU404rSfJo42KT56haD9Bhi/h+ko341/
-	XwlALKQu8kiyJG+1JuWSPDK/wKgUHYjDRGWjN9PDYlJaa53rr6Ol0iDXFcxGxXuPVweXKeIoWSN
-	LFY1Z2Y1L8O/quCeuV26Tt6qv6F7p8W2I5feLaxRQY5TsuiyrWZUdRgztyWlFtRNs0iiYLcFZ0/
-	jkugafjfs8yhqNDbbqqAeUpSbbkC5aaSDIDGRkwVZy4WsROcUxLWYPa8MUMz5wjnX9dlJUCun6u
-	bRsdmf5ejfaJVbBLMaRiK9MDrm7JtnRR2lazqR3gO8yUnTAJeKlaFBAxxPcXhSvodOWIvX0pJu2
-	vJLbrg3VFdpxj9gLI1pB1a6JnICJA1Sra2thn3hKALgyoYew2McUiJStPoLQLHVupTPN4GKCvdA
-	0u0BnIlWYy9dLks6C8//yOzWFEdPTvN2cBCf72wSBM2NlVbWw+j+wRjZHBOBV5dsZgXc03f7Dac
-	vvPkX/0DXLob9ZFDZNN+aIIEMXc
-X-Received: by 2002:a17:90b:264e:b0:398:9bd1:3215 with SMTP id 98e67ed59e1d1-39b262e28cdmr58011908a91.22.1788978554953;
-        Wed, 09 Sep 2026 11:29:14 -0700 (PDT)
-Received: from localhost (107-190-31-17.cpe.teksavvy.com. [107.190.31.17])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-39cfa5b2fffsm1727085a91.4.2026.09.09.11.29.13
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 09 Sep 2026 11:29:14 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hgdgg6xhxz2xRs
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2026 23:24:31 +1000 (AEST)
+Received: from phl-compute-04.internal (phl-compute-04.internal [10.202.2.44])
+	by mailfhigh.stl.internal (Postfix) with ESMTP id 755037A00BD;
+	Thu, 10 Sep 2026 09:24:28 -0400 (EDT)
+Received: from phl-frontend-03 ([10.202.2.162])
+  by phl-compute-04.internal (MEProxy); Thu, 10 Sep 2026 09:24:29 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=flapping.org; h=
+	cc:cc:content-transfer-encoding:content-type:content-type:date
+	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to; s=fm3; t=1789046668;
+	 x=1789133068; bh=pPNVfymHR2XC9ByNjrUYouH52ihzMf/+u8o83ywFdQA=; b=
+	gA7IDNQ5qcGQ9FpoVUXx9Rl3euUYNZXCVvMUXllrij8BbixGwlvEoz+9AmV/oe8F
+	klwFza6v+Hvs7i9T/PobFxsBaXSh8CpcDBbQfhD81HBahEPDTNRiXueurK9nM/Po
+	fCbADRszzAEoYA4tnSUBJfTiyPpEUGJVfqpiVuus1c8nzILjIIk6+BqdXh+88b4H
+	LTnHh0eG7dRkS48byEoYQyFw8+Chf2ptYiq2yadDL7LyRsU7iepSJhVPZranDtCL
+	vu7ZHtkVKQZ5vWU9sZCJCQh447z+hKgU6g/R2aTx4hVmfei0kdAqAP5QmrLDj+Tp
+	eiZ6RgAcdMkjLEKeXrVcaw==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:content-type:date:date:feedback-id:feedback-id
+	:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to:x-me-proxy
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=1789046668; x=
+	1789133068; bh=pPNVfymHR2XC9ByNjrUYouH52ihzMf/+u8o83ywFdQA=; b=n
+	Y6v7Fp3DIuBnH4qWqWrhvgGn8EpZdyXTxR/TVEn5qpH+MBLay5FShFAcIVqrh868
+	os9oa0fPPAKtyKLOZ9H3qvO70CPLiFTXfE2/q4qO3eVN6BZQ5rZAyyyfk6pdcX1u
+	wGbfu/41czlwRjJMnwu+8FQtQ4M52XftYOe1xViiXZjUZ207rGQPFLKxkQwvN4+U
+	p10s39b0WMEwLx9XaEl5sUlhawoblXVzSnY2DlobwjdD2eYfdFcuxll7d7pxC4PL
+	/BKogLV3SXHDZjLAZrhDwY63kBkJMRutj2CnW3l1nLf62WwxNnhw40F7GxKfmpyD
+	99IsnV93FfZSImJPgWyfA==
+X-ME-Sender: <xms:iq-iau1ZCqh3xeTm8AsCTDDwXElvTfmJJ8FPc5up_wuHJVzjvusHCw>
+    <xme:iq-iaqu7-sHbm7-NYmO4UD99rGyGL7EXy2NIPADQS3IL1bz52ihG0_0XhxHiX9ql7
+    5kUH6FCyMy7smka-K_qc2gyNkGDyG0gmZW4h7O5KIW9_M4CsuxsGfx->
+X-ME-Received: <xmr:iq-iaqXxZlRXMG6Q087BNmElwkwy7c5kMjQNNG2N3bl1LoUM5cRlkWyQxQK7RJwPA3Syt0_y8nQFYmzTRdUhfIKg>
+X-ME-Proxy-Cause: dmFkZTGW95mqvfGMGPYTEqTrjHWUVhcvA5HTKwj8urM2KImtx2Iw9C8bH169hBTFRhfrF5
+    EXeXd9fEyRmAWq9C2AqmFUuIGYg/rCdWRGD5tqrtc0m9Lhzfe+klqthxkpugjTTbNWrHfM
+    wKkmWGL6lweONGEbJlksgvzcsa+Runt4ZT+UhiucVixdhhbKgwMLrxvwWBsqhNctodDxiX
+    RhKdnuGYmxMwDpUPut0kWqIpwpWh7wFiX1VHnz9y81TIP16Sm/ODsJnLE1VbX8czDGZ4cV
+    VnrFvtCSTjzb5GUj2Kwvm+WTy0Y9CC7bnCVPt9Yjp5Hb63szP80RltNxaT8GmrQ+7bzToH
+    uSAMr6O8uIM9PgHR8wHhCKsDgQsE6NyQ1Akb3s20XBOFhVNDLkBuA4DZcr370TyYkPfOJm
+    idUL8lrxcn1/Sg3PMKZS5IEdNXCiCkFwoBsMwXsuADlEPM5EpBFyRygH/ylWjEFcO8GDl8
+    onCEtXKyRX/LiKCWmfFxf1w9g3MflXjTVaKzS/1OAvttW1MtnRg/TmGkIcX2nOVWw6UZP2
+    Ei2H8MjjdY+Oh2vgIwjyANe9Y7D0h6S8wyOjp+AYfGS0gC+p57aNyKjXSSF9gwhm/tRL0y
+    kmVdqVgottQbPVU7s/CzACugOVlyd6HNA+WS9TMNI1LjAFOvUdosxnB7yOaQ
+X-ME-Proxy: <xmx:iq-iamsBE7VFp0yC1usqqOlKq6NWZOi2YZ7MMOpPyHX_T1aba7SUvQ>
+    <xmx:iq-iasMa2D8EhXge6o50AOreJAAV5d8ekGHgPXI7vUp2CxdepWUmXg>
+    <xmx:iq-ialnWx7C9_Bx9AM9fOxw6XPc4d9fM1jjtkuxlA5WQbsbeKZ1WJw>
+    <xmx:iq-iaizoz_Gdf6XyKAvKLqi5mCun_CYzbYMm4UqE_B6Y6IZ310BXgA>
+    <xmx:jK-iajLKynxfVMAs1dc03eCGD-yBdoLJ1PdVyg3mE6-cAJthBQ0IY_9c>
+Feedback-ID: i51fe4b43:Fastmail
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Thu,
+ 10 Sep 2026 09:24:20 -0400 (EDT)
+Date: Thu, 10 Sep 2026 22:24:17 +0900 (JST)
+Message-Id: <20260910.222417.2048885189565815846.tomo@flapping.org>
+To: gary@garyguo.net
+Cc: mkchauras@gmail.com, maddy@linux.ibm.com, mpe@ellerman.id.au,
+ npiggin@gmail.com, chleroy@kernel.org, pjw@kernel.org, palmer@dabbelt.com,
+ aou@eecs.berkeley.edu, alex@ghiti.fr, ojeda@kernel.org, boqun@kernel.org,
+ bjorn3_gh@protonmail.com, lossin@kernel.org, a.hindborg@kernel.org,
+ aliceryhl@google.com, tmgross@umich.edu, dakr@kernel.org,
+ daniel.almeida@collabora.com, tamird@kernel.org, acourbot@nvidia.com,
+ work@onurozkan.dev, linkmauve@linkmauve.fr, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org,
+ rust-for-linux@vger.kernel.org, tomo@flapping.org
+Subject: Re: [PATCH V3] powerpc/bug: Add ARCH_WARN_ASM and refactor
+ _EMIT_BUG_ENTRY for Rust support
+From: FUJITA Tomonori <tomo@flapping.org>
+In-Reply-To: <DLBMFNHCKSJ6.1I36FDVEACEUF@garyguo.net>
+References: <20260910100801.2159785-2-mkchauras@gmail.com>
+	<DLBMFNHCKSJ6.1I36FDVEACEUF@garyguo.net>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -86,79 +112,86 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Wed, 09 Sep 2026 14:29:12 -0400
-Message-Id: <DLAZYXG7B54C.23SY9Z6V3JRT1@etsalapatis.com>
-Cc: <bpf@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
- <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-kselftest@vger.kernel.org>, <sparclinux@vger.kernel.org>
-Subject: Re: [PATCH bpf-next v4 0/7] bpf: fix typos and repeated words in
- comments
-From: "Emil Tsalapatis" <emil@etsalapatis.com>
-To: "Hemanth Selam" <hemanth.selam@gmail.com>, "Alexei Starovoitov"
- <ast@kernel.org>, "Daniel Borkmann" <daniel@iogearbox.net>, "Andrii
- Nakryiko" <andrii@kernel.org>, "Eduard Zingerman" <eddyz87@gmail.com>,
- "Kumar Kartikeya Dwivedi" <memxor@gmail.com>, "Martin KaFai Lau"
- <martin.lau@linux.dev>, "Song Liu" <song@kernel.org>, "Yonghong Song"
- <yonghong.song@linux.dev>, "Jiri Olsa" <jolsa@kernel.org>, "Emil
- Tsalapatis" <emil@etsalapatis.com>, "Ihor Solodrai"
- <ihor.solodrai@linux.dev>, "Russell King" <linux@armlinux.org.uk>,
- "Puranjay Mohan" <puranjay@kernel.org>, "John Fastabend"
- <john.fastabend@gmail.com>, "Hari Bathini" <hbathini@linux.ibm.com>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, "Naveen N Rao"
- <naveen@kernel.org>, "Madhavan Srinivasan" <maddy@linux.ibm.com>, "Michael
- Ellerman" <mpe@ellerman.id.au>, "Nicholas Piggin" <npiggin@gmail.com>,
- "Shuah Khan" <shuah@kernel.org>, "David S. Miller" <davem@davemloft.net>,
- "Andreas Larsson" <andreas@gaisler.com>
-X-Mailer: aerc 0.21.0-0-g5549850facc2
-References: <20260908054853.13820-1-hemanth.selam@gmail.com>
-In-Reply-To: <20260908054853.13820-1-hemanth.selam@gmail.com>
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
-On Tue Sep 8, 2026 at 1:48 AM EDT, Hemanth Selam wrote:
-> Fix misspellings and repeated words in comments, found with
-> scripts/checkpatch.pl using the misspelling list in scripts/spelling.txt.
-> Comments only, no code changes.
->
-> Changes since v3:
->  - rebased onto bpf-next.  CI reported a conflict on v3 and asked for a
->    rebase and resubmit; the tree has moved on since and the series
->    applies cleanly again.  The patches are otherwise identical to v3.
->
-> Changes since v2:
->  - moved from mainline to bpf-next, which resolved the earlier conflict
->    in stream.c where the typo had already been fixed upstream.
->  - renamed the selftests patches to the selftests/bpf: prefix used by the
->    rest of that directory, as CI suggested.
->
-> Hemanth Selam (7):
->   ARM: net: fix typo "arithmatic" in comment
->   bpf: fix typos in comments
->   powerpc: net: fix typo "upto" in comments
->   selftests/bpf: fix typos in comments
->   sparc: net: fix typo "evalute" in comment
->   libbpf: Fix typos in comments
->   selftests/bpf: fix repeated words in comments
+On Thu, 10 Sep 2026 13:05:27 +0100
+"Gary Guo" <gary@garyguo.net> wrote:
 
-NACK, this kind of churn for no measurable gain is not productive.
+> On Thu Sep 10, 2026 at 11:08 AM BST, Mukesh Kumar Chaurasiya (IBM) wrote:
+>> The Rust kernel infrastructure generates inline asm for WARN() via
+>> ARCH_WARN_ASM(file, line, flags, size), expanding it through a C
+>> preprocessor pass (generated_arch_warn_asm.rs.S) to produce an
+>> arch-specific asm template string for use in Rust's core::arch macros.
+>>
+>> powerpc currently lacks ARCH_WARN_ASM and ARCH_WARN_REACHABLE, causing
+>> Rust builds to fail on powerpc with
+>> ```
+>> error: no rules expected `ARCH_WARN_ASM`
+>>    --> /home/linkmauve/dev/linux/wii/rust/kernel/generated_arch_warn_asm.rs:1:28
+>>     |
+>>   1 | ::kernel::concat_literals!(ARCH_WARN_ASM("{file}", "{line}", "{flags}", "{size}"))
+> 
+> I think we probably want to catch this earlier by have something like
+> 
+> #ifndef ARCH_WARN_ASM
+> #error "ARCH_WARM_ASM is not defined"
+> #endif
+> 
+> in generated_arch_warn_asm.rs.S.
 
-pw-bot: cr
+Good idea.
 
->
->  arch/arm/net/bpf_jit_32.c                                    | 2 +-
->  arch/powerpc/net/bpf_jit_comp32.c                            | 2 +-
->  arch/powerpc/net/bpf_jit_comp64.c                            | 4 ++--
->  arch/sparc/net/bpf_jit_asm_32.S                              | 2 +-
->  include/linux/filter.h                                       | 4 ++--
->  kernel/bpf/reuseport_array.c                                 | 2 +-
->  tools/lib/bpf/btf.c                                          | 4 ++--
->  tools/lib/bpf/usdt.c                                         | 2 +-
->  tools/testing/selftests/bpf/libarena/src/asan.bpf.c          | 2 +-
->  tools/testing/selftests/bpf/prog_tests/lwt_seg6local.c       | 2 +-
->  tools/testing/selftests/bpf/prog_tests/task_local_data.h     | 2 +-
->  tools/testing/selftests/bpf/progs/freplace_unreliable_prog.c | 2 +-
->  tools/testing/selftests/bpf/progs/iters.c                    | 2 +-
->  tools/testing/selftests/bpf/progs/verifier_var_off.c         | 2 +-
->  14 files changed, 17 insertions(+), 17 deletions(-)
+One thing needs to be fixed first. arm and loongarch do not define
+ARCH_WARN_ASM. rust/kernel/bug.rs uses bindings::WARN_ON() on those
+architectures, so it never includes generated_arch_warn_asm.rs. But
+rust/Makefile still generates the file for them. With #error, their
+builds would break.
+
+I think we should add a condition to rust/Makefile to stop generating
+the file for arm and loongarch. Then #error can be unconditional.
+
+Does that sound reasonable? I can send patches.
+
+
+>>  arch/powerpc/include/asm/bug.h | 36 +++++++++++++++++++---------------
+>>  1 file changed, 20 insertions(+), 16 deletions(-)
+>>
+>> diff --git a/arch/powerpc/include/asm/bug.h b/arch/powerpc/include/asm/bug.h
+>> index 0db48977c70c..df2183c35945 100644
+>> --- a/arch/powerpc/include/asm/bug.h
+>> +++ b/arch/powerpc/include/asm/bug.h
+>> @@ -32,34 +32,38 @@
+>>  #endif /* verbose */
+>>  
+>>  #else /* !__ASSEMBLER__ */
+>> -/* _EMIT_BUG_ENTRY expects args %0,%1,%2,%3 to be FILE, LINE, flags and
+>> -   sizeof(struct bug_entry), respectively */
+>>  #ifdef CONFIG_DEBUG_BUGVERBOSE
+>> -#define _EMIT_BUG_ENTRY				\
+>> -	".section __bug_table,\"aw\"\n"		\
+>> -	"2:	.4byte 1b - .\n"		\
+>> -	"	.4byte %0 - .\n"		\
+>> -	"	.short %1, %2\n"		\
+>> -	".org 2b+%3\n"				\
+>> -	".previous\n"
+>> +#define _EMIT_BUG_ENTRY(label, file, line, flags)	\
+>> +	".section __bug_table,\"aw\"\n"			\
+>> +	"2:	.4byte " label "b - .\n"		\
+> 
+> "b" is part of the label. "1b" itself is a label and "1" is just an integer.
+> 
+> If the code uses
+> 
+>     _EMIT_BUG_ENTRY(..)
+>     "1: ..."
+> 
+> then the correct label would be "1f".
+
+Agreed.
+
+I think keeping the label fixed, as v2 did, would be fine too. x86,
+arm64 and riscv all hardcode it. A comment that says the caller must
+put the trap at 1: might be enough.
 
 
