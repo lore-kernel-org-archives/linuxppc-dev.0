@@ -1,51 +1,231 @@
-Return-Path: <linuxppc-dev+bounces-27033-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27034-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A98A7C79FB9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2026 15:09:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D4453C79F9F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2026 16:15:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hgh0D6gc0z2xlJ;
-	Fri, 11 Sep 2026 01:09:00 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789052940;
-	cv=none; b=KRxI3CVmMpQuNmql5KohmKHFuAbZF8V7hd9K5V9ywcC2gv/f4gFQKuHyc1XXQNN1tcJq1X86nmokGLqtrWstx3cO+wSa2TQ6oajSOeg7lr8B/747EMON2usfkMFjbUFKqfr51MHAQYQ1aZ4ptXpcpPcOjQVFnCR6838iViQ2VFB/BDP+Q5jwPvE+PjrXQOiZQSvWz3qoICvXP/BIdLIljeJTvvSaVVnuwMkghkkTY/TpOrh2hwi67Tcl44UQnes4B9KOSY3geDkQVFXtz/fXp5xHpVkWwm5fbxkkwTqA4K4HrQpDrJjmyWGbq9Wu+H2NHCydY+2NwmV0AJVMUUHthA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hgjSk0G2Bz2xmh;
+	Fri, 11 Sep 2026 02:15:18 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.130
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789056917;
+	cv=none; b=f/9tnsCIv6+Ljjo8WmUA5+z1SvZPNzheGjZs2sWeEDRl1thkbMTFLeWcYurIMQ3TaZ7Sxc/KVj2+pVSFWSUdfsRg74XAeMzcpQmJZtBzeRRo4gwFGzUNjzgb6TsCyyTacXYJCH7YKP5kE6b/8PwFOdQXkvwtvGrMP+/efWb6GADba9b5XffkLsEeoJIq5APga1MpZ+F1cp9AXb7RLrHGRzuQ+VHHfuKnCDrCzFYWaMmtBBYC0YOHPcjrfPSuE8Y0qJbL+pVTCEtznSfieuNfcgZHBT0+IVcgtLjGVSHzK57HILmbTpP4j2KckvM9wzbouCORrEViyYAQDZJMuos3CQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789052940; c=relaxed/relaxed;
-	bh=mQXXn4qhJ4aChLx2QAED5a/xeQKG/2zmtNcuT7UoMHE=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=IZnnL8lnR7L56pqFjXO81MtdqkQNWDvOAsdE9lemweIU0AQ/wVz22f+QTiF+hS92oMx0+nKDfGDUADlKRo+MYHBdDgPibniCS+AFP/BiJ5TmZm+c10CjlmBt5hNOKKzV5N9ArXOdJnVsBABIXuxhkQ/ydmhTD1xYewtmrRGumHbZeIxW4cD7zZgp73dh8AerxpXLm+ISMcLZ0mJCRxvomyeXLNvpjqUsQGiqPfcsXAFR2Q9KH1D89bsKhqHmgpY1tvI9Th49UI+xnDZ1iAF/MO/uDfJv1J6OaatLz0rUlOaGvR98Jo7/6YCsw1EMfvdRcoS+YRlxpSqxmypVNkNFpg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Fw0TDgul; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1789056917; c=relaxed/relaxed;
+	bh=1BRmfG56H5zmUlLl5HniRsrUYDdv+UxK+dNlQeMPFvk=;
+	h=Date:Message-ID:From:To:Cc:Subject:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=OlXishfpSfveHLy/uabdlPGvHNM/Qbjo1LrB/3kSRWOD4hWBCbZQWA5IgkVohYvvdrq9eXDUNT1WPbbeYoOJ+fMY5ZS5tIu2xMDvqoTaa5oZ7k9gbR5HCQMPUd/R6uFIkOFQU6sIL8npNMe0mLMNBbHlaRmh29NpBiEzip2xoKC6Zz8w4c9Th3fe7pOAoZKGZcOl7vkaM7gUIn7/kurCn2IsoLo5SQfbqvKCJhP9wGJ7ztQHtPp39lmHoO8xBocGcGMYntdm5+Cw7K2g1HQQSLShDPqAfR1T3vtNC5mGw77GbkRI9VozlIETqrFVBdmuNCGa8e3VcNixR7oJMm2NoA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=KwaVR830; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=Y2KOBCiA; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=SSkNdt0y; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=f8NVEtsk; dkim-atps=neutral; spf=pass (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=tiwai@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Fw0TDgul;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=KwaVR830;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=Y2KOBCiA;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=SSkNdt0y;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=f8NVEtsk;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=tiwai@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hgh0C4mfDz2xkr
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2026 01:08:59 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id B917F412C3;
-	Thu, 10 Sep 2026 15:08:56 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9A17E1F000FF;
-	Thu, 10 Sep 2026 15:08:50 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789052936;
-	bh=mQXXn4qhJ4aChLx2QAED5a/xeQKG/2zmtNcuT7UoMHE=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=Fw0TDgulMnT8zjUzucAUywAXhKdwFptF1XubEt8K4TOL0zMtDRw6xCMEnhSlhL6WV
-	 dt4zgR+488zDolV+m0gKYVeqJ2WNZ/aTuJvlmQOilF+7/2UffuW4IzPCo2ylc69wb8
-	 V2FfTr+KbdcTZMqJi0jxVOVr6OHMFLWpzHRT0x8Pr0s1HE6rH85HvN1GTe9VPUW63k
-	 KdYwTdNWsrmT4iidxQk6++iVr+EWhDoi8IhC2kSD3vrN5fXKgS2RlL6AG9Glryw47s
-	 H4Eo6Aspwu4IYhQ7hF5gPFM88yD9bEnE3Tvcbg6bb1vKMtVf5B/E84Rkoq+BakHPr8
-	 FrozPsKSM4smw==
-Message-ID: <ffd8e0c3-0d78-46ee-9ab1-59dbfe0b6d27@kernel.org>
-Date: Thu, 10 Sep 2026 17:08:48 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hgjSh4d52z2xlJ
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2026 02:15:16 +1000 (AEST)
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id DE64E2198D;
+	Thu, 10 Sep 2026 16:15:04 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1789056909; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=1BRmfG56H5zmUlLl5HniRsrUYDdv+UxK+dNlQeMPFvk=;
+	b=KwaVR83038tEY0UY9Duk1VEc71qo6WCRjE1S3O0gvKvuRCHG42+lMQg4Pv852Z53umQGu9
+	VjGqLOb8QDmQNHY+2pNnRCnchni2H/fLzJXN2LYO/8zb7Dml+uH7yZSNc2VlGsdDCBFr9Y
+	l0PoG4YOAdgBCejTL9J/aXLrVyXMWP8=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1789056909;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=1BRmfG56H5zmUlLl5HniRsrUYDdv+UxK+dNlQeMPFvk=;
+	b=Y2KOBCiAAtdbnR/fQhgCwIyKQWjWRx5/MHZPkKS6JrT5lfmwIstj6yrNTcNtSkn1IjAs+v
+	GHOsOOnR5zkk3ABw==
+Authentication-Results: smtp-out1.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=SSkNdt0y;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=f8NVEtsk
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1789056904; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=1BRmfG56H5zmUlLl5HniRsrUYDdv+UxK+dNlQeMPFvk=;
+	b=SSkNdt0yW3GN3tzraY4wrF2jv2x3+drRXWKiGRungajUk2k0YXNbLn5Jv1YL59Qvvucb2O
+	83+J8HAnRYoAZaOT6ItAtFTSuMTjA4HRl87EyCKKX4D/avW5hOH5AItmaXn8F2wEhWT2/G
+	QirfirGABUJoW7pZPiRpw9/G8O5kGxM=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1789056904;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=1BRmfG56H5zmUlLl5HniRsrUYDdv+UxK+dNlQeMPFvk=;
+	b=f8NVEtskkiiUWUL6F4auh9OnOU8pXQdeF2/pdQRRP5fwIvlOb4C4AeuTUScKje5DYuJ3Be
+	SlZ8aiM57gvPBsDg==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 917381326D;
+	Thu, 10 Sep 2026 16:15:01 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id oqY5IoXXompKQQAAD6G6ig
+	(envelope-from <tiwai@suse.de>); Thu, 10 Sep 2026 16:15:01 +0000
+Date: Thu, 10 Sep 2026 18:15:01 +0200
+Message-ID: <87qzj1jd6i.wl-tiwai@suse.de>
+From: Takashi Iwai <tiwai@suse.de>
+To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+	"Liam R. Howlett" <liam@infradead.org>,
+	Vlastimil Babka <vbabka@kernel.org>,
+	Jann Horn <jannh@google.com>,
+	Pedro Falcato <pfalcato@suse.de>,
+	David Hildenbrand <david@kernel.org>,
+	Mike Rapoport <rppt@kernel.org>,
+	Suren Baghdasaryan <surenb@google.com>,
+	Michal Hocko <mhocko@suse.com>,
+	Jonathan Corbet <corbet@lwn.net>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>,
+	Jason Gunthorpe <jgg@ziepe.ca>,
+	Leon Romanovsky <leon@kernel.org>,
+	Paul Moore <paul@paul-moore.com>,
+	Stephen Smalley <stephen.smalley.work@gmail.com>,
+	Jaroslav Kysela <perex@perex.cz>,
+	Takashi Iwai <tiwai@suse.com>,
+	Alexei Starovoitov <ast@kernel.org>,
+	Daniel Borkmann <daniel@iogearbox.net>,
+	Andrii Nakryiko <andrii@kernel.org>,
+	Eduard Zingerman <eddyz87@gmail.com>,
+	Kumar Kartikeya Dwivedi <memxor@gmail.com>,
+	Zi Yan <ziy@nvidia.com>,
+	Baolin Wang <baolin.wang@linux.alibaba.com>,
+	Nico Pache <nico.pache@linux.dev>,
+	Ryan Roberts <ryan.roberts@arm.com>,
+	Dev Jain <dev.jain@arm.com>,
+	Barry Song <baohua@kernel.org>,
+	Lance Yang <lance.yang@linux.dev>,
+	Usama Arif <usama.arif@linux.dev>,
+	Kiryl Shutsemau <kas@kernel.org>,
+	Doug Gilbert <dgilbert@interlog.com>,
+	"James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+	"Martin K. Petersen" <mkp@kernel.org>,
+	Jaya Kumar <jayalk@intworks.biz>,
+	Simona Vetter <simona@ffwll.ch>,
+	Helge Deller <deller@gmx.de>,
+	Sebastian Reichel <sre@kernel.org>,
+	John Hubbard <jhubbard@nvidia.com>,
+	Peter Xu <peterx@redhat.com>,
+	Masami Hiramatsu <mhiramat@kernel.org>,
+	Oleg Nesterov <oleg@redhat.com>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Thomas Gleixner <tglx@kernel.org>,
+	Ingo Molnar <mingo@redhat.com>,
+	Borislav Petkov <bp@alien8.de>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	x86@kernel.org,
+	Arnaldo Carvalho de Melo <acme@kernel.org>,
+	Namhyung Kim <namhyung@kernel.org>,
+	Mark Rutland <mark.rutland@arm.com>,
+	Rik van Riel <riel@surriel.com>,
+	Harry Yoo <harry@kernel.org>,
+	Juri Lelli <juri.lelli@redhat.com>,
+	Vincent Guittot <vincent.guittot@linaro.org>,
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+	Maxime Ripard <mripard@kernel.org>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	David Airlie <airlied@gmail.com>,
+	Will Deacon <will@kernel.org>,
+	"Aneesh Kumar K.V" <aneesh.kumar@kernel.org>,
+	Nick Piggin <npiggin@gmail.com>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Muchun Song <muchun.song@linux.dev>,
+	Oscar Salvador <osalvador@suse.de>,
+	"Matthew Wilcox (Oracle)" <willy@infradead.org>,
+	Jan Kara <jack@suse.cz>,
+	Marc Zyngier <maz@kernel.org>,
+	Oliver Upton <oupton@kernel.org>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Anup Patel <anup@brainfault.org>,
+	Paul Walmsley <pjw@kernel.org>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Janosch Frank <frankja@linux.ibm.com>,
+	Claudio Imbrenda <imbrenda@linux.ibm.com>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	"David S. Miller" <davem@davemloft.net>,
+	Andreas Larsson <andreas@gaisler.com>,
+	Alexander Viro <viro@zeniv.linux.org.uk>,
+	Christian Brauner <brauner@kernel.org>,
+	Matthew Brost <matthew.brost@intel.com>,
+	Joshua Hahn <joshua.hahnjy@gmail.com>,
+	Rakie Kim <rakie.kim@sk.com>,
+	Byungchul Park <byungchul@sk.com>,
+	Gregory Price <gourry@gourry.net>,
+	Ying Huang <ying.huang@linux.alibaba.com>,
+	Alistair Popple <apopple@nvidia.com>,
+	Chris Li <chrisl@kernel.org>,
+	Kairui Song <kasong@tencent.com>,
+	Kemeng Shi <shikemeng@huaweicloud.com>,
+	Nhat Pham <nphamcs@gmail.com>,
+	Baoquan He <baoquan.he@linux.dev>,
+	Youngjun Park <youngjun.park@lge.com>,
+	Johannes Weiner <hannes@cmpxchg.org>,
+	Qi Zheng <qi.zheng@linux.dev>,
+	Shakeel Butt <shakeel.butt@linux.dev>,
+	Axel Rasmussen <axelrasmussen@google.com>,
+	Yuanchu Xie <yuanchu@google.com>,
+	Wei Xu <weixugc@google.com>,
+	Xu Xin <xu.xin16@zte.com.cn>,
+	Chengming Zhou <chengming.zhou@linux.dev>,
+	Michal Hocko <mhocko@kernel.org>,
+	Miklos Szeredi <miklos@szeredi.hu>,
+	linux-mm@kvack.org,
+	linux-kernel@vger.kernel.org,
+	linux-doc@vger.kernel.org,
+	linux-usb@vger.kernel.org,
+	linux-rdma@vger.kernel.org,
+	selinux@vger.kernel.org,
+	linux-sound@vger.kernel.org,
+	bpf@vger.kernel.org,
+	linux-scsi@vger.kernel.org,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-trace-kernel@vger.kernel.org,
+	linux-perf-users@vger.kernel.org,
+	linux-arch@vger.kernel.org,
+	linux-fsdevel@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	kvmarm@lists.linux.dev,
+	linuxppc-dev@lists.ozlabs.org,
+	kvm@vger.kernel.org,
+	kvm-riscv@lists.infradead.org,
+	linux-riscv@lists.infradead.org,
+	linux-s390@vger.kernel.org,
+	sparclinux@vger.kernel.org,
+	fuse-devel@lists.linux.dev
+Subject: Re: [PATCH 12/39] ALSA: pcm: use vm_insert_page() to map PCM status page
+In-Reply-To: <20260908-b4-mmap-prepare-vma-flag-sanify-v1-12-dacf19cce22b@kernel.org>
+References: <20260908-b4-mmap-prepare-vma-flag-sanify-v1-0-dacf19cce22b@kernel.org>
+	<20260908-b4-mmap-prepare-vma-flag-sanify-v1-12-dacf19cce22b@kernel.org>
+User-Agent: Wanderlust/2.15.9 (Almost Unreal) Emacs/30.2 Mule/6.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,182 +238,69 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH V3] powerpc/bug: Add ARCH_WARN_ASM and refactor
- _EMIT_BUG_ENTRY for Rust support
-To: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>,
- maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, pjw@kernel.org,
- palmer@dabbelt.com, aou@eecs.berkeley.edu, alex@ghiti.fr, ojeda@kernel.org,
- boqun@kernel.org, gary@garyguo.net, bjorn3_gh@protonmail.com,
- lossin@kernel.org, a.hindborg@kernel.org, aliceryhl@google.com,
- tmgross@umich.edu, dakr@kernel.org, daniel.almeida@collabora.com,
- tamird@kernel.org, acourbot@nvidia.com, work@onurozkan.dev,
- linkmauve@linkmauve.fr, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org,
- rust-for-linux@vger.kernel.org
-Cc: FUJITA Tomonori <tomo@flapping.org>
-References: <20260910100801.2159785-2-mkchauras@gmail.com>
-Content-Language: fr-FR
-From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-In-Reply-To: <20260910100801.2159785-2-mkchauras@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+MIME-Version: 1.0 (generated by SEMI-EPG 1.14.7 - "Harue")
+Content-Type: text/plain; charset=US-ASCII
+X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
+X-Rspamd-Queue-Id: DE64E2198D
+X-Rspamd-Action: no action
+X-Spamd-Bar: /
+X-Spamd-Result: default: False [-0.01 / 50.00];
+	BAYES_HAM(-3.00)[99.99%];
+	FORGED_RECIPIENTS(2.00)[m:liam@infradead.org,m:jannh@google.com,m:pfalcato@suse.de,m:surenb@google.com,m:mhocko@suse.com,m:dennis.dalessandro@cornelisnetworks.com,m:jgg@ziepe.ca,m:stephen.smalley.work@gmail.com,m:perex@perex.cz,m:tiwai@suse.com,m:daniel@iogearbox.net,m:eddyz87@gmail.com,m:memxor@gmail.com,m:ryan.roberts@arm.com,m:dev.jain@arm.com,m:dgilbert@interlog.com,m:James.Bottomley@HansenPartnership.com,m:jayalk@intworks.biz,m:simona@ffwll.ch,m:deller@gmx.de,m:peterx@redhat.com,m:oleg@redhat.com,m:peterz@infradead.org,m:mingo@redhat.com,m:bp@alien8.de,m:mark.rutland@arm.com,m:riel@surriel.com,m:juri.lelli@redhat.com,m:tzimmermann@suse.de,m:airlied@gmail.com,m:npiggin@gmail.com,m:arnd@arndb.de,m:osalvador@suse.de,m:willy@infradead.org,m:jack@suse.cz,m:catalin.marinas@arm.com,m:anup@brainfault.org,m:palmer@dabbelt.com,m:aou@eecs.berkeley.edu,m:davem@davemloft.net,m:andreas@gaisler.com,m:viro@zeniv.linux.org.uk,m:matthew.brost@intel.com,m:joshua.hahnjy@gmail.com,m:rakie.kim@sk.co
+ m,m:byungchul@sk.com,m:gourry@gourry.net,m:kasong@tencent.com,m:shikemeng@huaweicloud.com,m:nphamcs@gmail.com,s:linux-mm@kvack.org,s:youngjun.park@lge.com,s:baoquan.he@linux.dev,s:chengming.zhou@linux.dev,s:qi.zheng@linux.dev,s:shakeel.butt@linux.dev,s:dri-devel@lists.freedesktop.org,s:kvm-riscv@lists.infradead.org,s:linux-arm-kernel@lists.infradead.org,s:linux-riscv@lists.infradead.org,s:fuse-devel@lists.linux.dev,s:kvmarm@lists.linux.dev,s:linuxppc-dev@lists.ozlabs.org];
+	SUSPICIOUS_RECIPS(1.50)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	MID_CONTAINS_FROM(1.00)[];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	FROM_HAS_DN(0.00)[];
+	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	MIME_TRACE(0.00)[0:+];
+	ARC_NA(0.00)[];
+	FREEMAIL_CC(0.00)[linux-foundation.org,infradead.org,kernel.org,google.com,suse.de,suse.com,lwn.net,linuxfoundation.org,cornelisnetworks.com,ziepe.ca,paul-moore.com,gmail.com,perex.cz,iogearbox.net,nvidia.com,linux.alibaba.com,linux.dev,arm.com,interlog.com,HansenPartnership.com,intworks.biz,ffwll.ch,gmx.de,redhat.com,alien8.de,linux.intel.com,surriel.com,linaro.org,arndb.de,suse.cz,linux.ibm.com,brainfault.org,dabbelt.com,eecs.berkeley.edu,davemloft.net,gaisler.com,zeniv.linux.org.uk,intel.com,sk.com,gourry.net,tencent.com,huaweicloud.com,lge.com,cmpxchg.org,zte.com.cn,szeredi.hu,kvack.org,vger.kernel.org,lists.freedesktop.org,lists.infradead.org,lists.linux.dev,lists.ozlabs.org];
+	DKIM_TRACE(0.00)[suse.de:+];
+	TO_DN_SOME(0.00)[];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	DNSWL_BLOCKED(0.00)[2a07:de40:b281:106:10:150:64:167:received];
+	RCVD_COUNT_TWO(0.00)[2];
+	FROM_EQ_ENVFROM(0.00)[];
+	RCVD_TLS_ALL(0.00)[];
+	RCPT_COUNT_GT_50(0.00)[135];
+	TAGGED_RCPT(0.00)[];
+	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
+	R_RATELIMIT(0.00)[to_ip_from(RLcf4qxihs3rkxkk14mdaty954)];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo,suse.de:dkim,suse.de:email,suse.de:mid]
+
+On Tue, 08 Sep 2026 22:01:16 +0200,
+Lorenzo Stoakes (ARM) wrote:
+> 
+> There's no need to keep a fault handler around for this, instead map on
+> mmap.
+> 
+> While we're here, rename area to vma to be consistent.
+> 
+> This correctly makes the mapping a mixed map mapping.
+> 
+> This works towards establishing the invariant that only PFN mapped or mixed
+> map mappings may clear the VM_MAYWRITE flag. The status page mapping clears
+> VM_MAYWRITE, so it must be kernel-owned; the control page mapping remains
+> writable and is left fault-based.
+> 
+> The assumption is made that the struct pcm_mmap_status structure is at most
+> a page in size, which is asserted as a build bug.
+> 
+> This is safe to assume, as the size of the structure is 56 bytes at most.
+> 
+> Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+
+Acked-by: Takashi Iwai <tiwai@suse.de>
 
 
+thanks,
 
-Le 10/09/2026 à 12:08, Mukesh Kumar Chaurasiya (IBM) a écrit :
-> The Rust kernel infrastructure generates inline asm for WARN() via
-> ARCH_WARN_ASM(file, line, flags, size), expanding it through a C
-> preprocessor pass (generated_arch_warn_asm.rs.S) to produce an
-> arch-specific asm template string for use in Rust's core::arch macros.
-> 
-> powerpc currently lacks ARCH_WARN_ASM and ARCH_WARN_REACHABLE, causing
-> Rust builds to fail on powerpc with
-> ```
-> error: no rules expected `ARCH_WARN_ASM`
->     --> /home/linkmauve/dev/linux/wii/rust/kernel/generated_arch_warn_asm.rs:1:28
->      |
->    1 | ::kernel::concat_literals!(ARCH_WARN_ASM("{file}", "{line}", "{flags}", "{size}"))
->      |                            ^^^^^^^^^^^^^ no rules expected this token in macro call
->      |
->     ::: ../rust/kernel/lib.rs:279:1
->      |
-> 279 | macro_rules! concat_literals {
->      | ---------------------------- when calling this macro
->      |
->      = note: while trying to match sequence start
-> 
-> error: no rules expected `ARCH_WARN_REACHABLE`
->     --> /home/linkmauve/dev/linux/wii/rust/kernel/generated_arch_reachable_asm.rs:1:28
->      |
->    1 | ::kernel::concat_literals!(ARCH_WARN_REACHABLE)
->      |                            ^^^^^^^^^^^^^^^^^^^ no rules expected this token in macro call
->      |
->     ::: ../rust/kernel/lib.rs:279:1
->      |
-> 279 | macro_rules! concat_literals {
->      | ---------------------------- when calling this macro
->      |
->      = note: while trying to match sequence start
-> 
-> error: aborting due to 2 previous errors
-> ```
-> 
-> To add ARCH_WARN_ASM, _EMIT_BUG_ENTRY first needs to be refactored.
-> The old definition was a bare macro with no parameters, relying on
-> positional asm operand references (%0-%3), hardcoding the backward
-> reference to local label 1b, and including .org/.previous directives
-> inline. That made it impossible to compose as a plain string outside of
-> an asm operand context, and left an invisible contract that callers must
-> always emit their trap at label 1:.
-> 
-> Refactor _EMIT_BUG_ENTRY to take explicit (label, file, line, flags)
-> string arguments via string concatenation. This removes the dependency
-> on asm operand numbering and makes the trap label an explicit argument,
-> so the caller's intent is visible at the call site and a future caller
-> using a different label cannot silently produce a wrong bug table entry.
-> 
-> Move the .org and .previous directives out of _EMIT_BUG_ENTRY and into
-> each call site, so BUG_ENTRY() can still pass sizeof(struct bug_entry)
-> as an asm operand while ARCH_WARN_ASM can supply its own size string
-> independently.
-> 
-> Add ARCH_WARN_REACHABLE as an empty define, matching the arm64
-> convention, indicating that no additional reachability annotation is
-> needed after a WARN on powerpc.
-> 
-> This brings powerpc into line with x86, arm64, s390, and riscv, all of
-> which already define ARCH_WARN_ASM and ARCH_WARN_REACHABLE.
-> 
-> Reported-by: FUJITA Tomonori <tomo@flapping.org>
-> Closes: https://lore.kernel.org/all/anG67Q6Y59kDqh-c@desktop
-> Fixes: 73b741adb264 ("rust: Add PowerPC support")
-> Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
-> ---
-> Changelog:
-> V2 -> V3:
->   - Add label argument in _EMIT_BUG_ENTRY
-> V2: https://lore.kernel.org/all/20260910071252.1950488-2-mkchauras@gmail.com
-> 
-> V1 -> V2:
-> - commit message now has error, fixes tag and closes tag
-> V1: https://lore.kernel.org/all/20260819084825.969116-1-mkchauras@gmail.com
-> 
->   arch/powerpc/include/asm/bug.h | 36 +++++++++++++++++++---------------
->   1 file changed, 20 insertions(+), 16 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/bug.h b/arch/powerpc/include/asm/bug.h
-> index 0db48977c70c..df2183c35945 100644
-> --- a/arch/powerpc/include/asm/bug.h
-> +++ b/arch/powerpc/include/asm/bug.h
-> @@ -32,34 +32,38 @@
->   #endif /* verbose */
->   
->   #else /* !__ASSEMBLER__ */
-> -/* _EMIT_BUG_ENTRY expects args %0,%1,%2,%3 to be FILE, LINE, flags and
-> -   sizeof(struct bug_entry), respectively */
->   #ifdef CONFIG_DEBUG_BUGVERBOSE
-> -#define _EMIT_BUG_ENTRY				\
-> -	".section __bug_table,\"aw\"\n"		\
-> -	"2:	.4byte 1b - .\n"		\
-> -	"	.4byte %0 - .\n"		\
-> -	"	.short %1, %2\n"		\
-> -	".org 2b+%3\n"				\
-> -	".previous\n"
-> +#define _EMIT_BUG_ENTRY(label, file, line, flags)	\
-> +	".section __bug_table,\"aw\"\n"			\
-> +	"2:	.4byte " label "b - .\n"		\
-
-Ah, you left the b here. The label is 1b which mean "the first 1: you 
-find going backward". Could as well be "1f" instead meaning "the first 
-1: you find going forward".
-
-So I think you should use 1b or 1f as the label, not just 1.
-
-I would also try to use #label to stringigy the label in order to avoid 
-having to put the arguments into quotes (untested), same for other ones.
-
-Cdlt
-Christophe
-
-> +	"	.4byte " file " - .\n"			\
-> +	"	.short " line ", " flags "\n"
->   #else
-> -#define _EMIT_BUG_ENTRY				\
-> -	".section __bug_table,\"aw\"\n"		\
-> -	"2:	.4byte 1b - .\n"		\
-> -	"	.short %2\n"			\
-> -	".org 2b+%3\n"				\
-> -	".previous\n"
-> +#define _EMIT_BUG_ENTRY(label, file, line, flags)	\
-> +	".section __bug_table,\"aw\"\n"			\
-> +	"2:	.4byte " label "b - .\n"		\
-> +	"	.short " flags "\n"
->   #endif
->   
->   #define BUG_ENTRY(cond_str, insn, flags, ...)		\
->   	__asm__ __volatile__(				\
->   		"1:	" insn "\n"			\
-> -		_EMIT_BUG_ENTRY				\
-> +		_EMIT_BUG_ENTRY("1", "%0", "%1", "%2")	\
-> +		".org 2b+%3\n"				\
-> +		".previous\n"				\
->   		: : "i" (WARN_CONDITION_STR(cond_str) __FILE__), "i" (__LINE__),	\
->   		  "i" (flags),				\
->   		  "i" (sizeof(struct bug_entry)),	\
->   		  ##__VA_ARGS__)
->   
-> +#define ARCH_WARN_ASM(file, line, flags, size)		\
-> +		"1:	twi 31, 0, 0\n"			\
-> +		_EMIT_BUG_ENTRY("1", file, line, flags)	\
-> +		".org 2b+" size "\n"			\
-> +		".previous\n"
-> +
-> +#define ARCH_WARN_REACHABLE
-> +
->   /*
->    * BUG_ON() and WARN_ON() do their best to cooperate with compile-time
->    * optimisations. However depending on the complexity of the condition
-
+Takashi
 
