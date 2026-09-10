@@ -1,87 +1,89 @@
-Return-Path: <linuxppc-dev+bounces-27031-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27032-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 67141C79F9F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2026 14:14:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8BFA2C79F9F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2026 14:53:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hgfmy6GvBz2xjM;
-	Fri, 11 Sep 2026 00:14:10 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789049650;
-	cv=none; b=oQ12T6W1xEjT90TXH9fNF7x0ruv96JrUjbhezMfsfW92tr/364zFaKPYZyMcfCpl9+K2rNK5G/Q0kFJdAUwtsMHKc0mJvdB8cY7QVpYPAi534JlZGj5NymPUs6VwbvzS3RQdR2YdTQMKnUhBlGRNwecyCQG5KkRCp9xF2kdtGV4BM3YaUkRB4Ax4A2Mn9MfTuy82tOOVK9euKdwQ4AnLOcbP0XMjTehDTuMvPLugogy+gRHYSTT+cxHTnYx5ZE+wqOoNsjMUyW8HKmOCIDM//67MK16BwRtkwTw/ELxbUGtc/8PbcrEcC9XuyRoa3DQA0L3SzDd+xrOlrdH0BPTDbw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hggf84z8qz2xlJ;
+	Fri, 11 Sep 2026 00:53:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789050692;
+	cv=none; b=XhFCpL3gedc2AwV9jRcMgpkxZp78HJ91g32KM+guZeuPT1VwU/cmOJX3izRLjgUhVmNmURx/TBboCPG5/uhkVx0RLdjV0wFrkG68pYNwCtj6At03rtrlZeCZqKQ2ZN0zcL5S0LAKhbx/9AM2omY/42hUyGr3OHCAs7q8LBwtRUefVfBKLdlsMPOgdQRvRkitFV3D514KrZqBa9Ffg5rBUXdTm1wWBspm33zq4nYmLTJyh98BhkuKM7sA1GPBAL2gF8uwRL2Of+sFsImk1TlDiQYWFy8RlcW8oiNtxU8FfMfMU3wRiO2FJbY4dse0XkU1GDBt3yg0onRTzx4BNGQIgg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789049650; c=relaxed/relaxed;
-	bh=Rsa+09XshQBqt7KTDIU4LcA8wjLUXgeN7I6YUPic3UE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=A3R/aF9cK07I+Vce6vCFTCfxjVyxP2iXmvP1j5ek+6PK1ffKXiv5QfoRGwGuEvu6Nspn+aY4WasO4EPeyO34Q/t8tfer+hZYQdtE7NHNu6wqEWEVjfmhooH6ZrkMMVXcWXvquxtZ0NW32W4tL0glcrSvsDBhL1x1kQ9JWLb4FA/XBKbyHWrk/x1ZdHTtMaiQKobNrvW5fGCAV1cilNk3QNl1ycp7Ofh3suNZVadTZoqDKF+39LjRYhwyDXm8XJ+DutwpyC7FNEkd9SMjZmuCzn7t/tvGzhomus+IkCALhHV+XTirIkPefJ9vw9n9BUvnQOCaxYkEVQG52Zy6rHf0dg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=s1bpGVeK; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1789050692; c=relaxed/relaxed;
+	bh=8oOYydPLSmmKf+EQ0HkeEap1hYLbva2q5CM0ECTUT/E=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:content-type; b=ZSkMfF1wzQeMGNlKRjshyWY3+pbFW/wXIocNYQQDMNKvWGT7fovRUFztOfw1V2Me9k5OFS8tFnwCHAPSUDGEfuamXPd1oZCc7syscxlUcobU6gVOue4Jqjr7ML4bUeKCftSWl8joyvcti2x7GaHyvZqyxV/KjBJcxVu00EqXvyTK8ATotL8JIOJED42l3/SnTGNOvoV321HXHGz1IpjTxmy7g0Zd5YcZ+eLMFMom4EaZI3VG46ZVwZNsFljDvCMdWdx7560ImF65sq3IhER9jCfvQgjfMJVGKcrCjAAISzX9mAPAtutf91OLlbybtXQe4fpiv6qTmd3s6DiUFFCFFA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ZfPcDL2x; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ZfPcDL2x; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=atomasov@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=s1bpGVeK;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ZfPcDL2x;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ZfPcDL2x;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=atomasov@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hgfmy1J7sz2xRs
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2026 00:14:09 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68ACVQ4k1017565;
-	Thu, 10 Sep 2026 14:13:59 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=Rsa+09
-	XshQBqt7KTDIU4LcA8wjLUXgeN7I6YUPic3UE=; b=s1bpGVeKIHCAIsOQ244fhy
-	3aYYKpAjVo0mejHL5QN2bZNUeyeniAEdR87tUIT7rwlVqOXaSDLeEOjx2Pbh+ESJ
-	Xx+C+JohjyHuRtRmc4aKny/LB2iNpw/NxXEdKfhRwmiScTktMWTq7gHpgMuiAFcj
-	LHeurv0bZJvgmg982oLTjXTIxuZMUEWUD/B61pNgT3aODnjeMUec5zK1FmYi3t+h
-	+/xamNHp4pyrjnzYQWuq2f6CB1m2khHECuK/9nQgRS8Sqe67FJFi8VU7x9BV+uRy
-	sOHsDNuIJFcAB8ts4DIHakXHCqfp75Js5c6y3kPS3LEZt62o5scEM3aLc/2JE2Qw
-	==
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gkd8n52ea-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Thu, 10 Sep 2026 14:13:59 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68ADAVaq044169;
-	Thu, 10 Sep 2026 14:13:58 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4gkvtf8d8t-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 10 Sep 2026 14:13:58 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68AEDuHu52887898
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 10 Sep 2026 14:13:56 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 0F42720043;
-	Thu, 10 Sep 2026 14:13:56 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 6484020040;
-	Thu, 10 Sep 2026 14:13:54 +0000 (GMT)
-Received: from fedora (unknown [9.5.7.39])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Thu, 10 Sep 2026 14:13:54 +0000 (GMT)
-Date: Thu, 10 Sep 2026 19:51:39 +0530
-From: Amit Machhiwal <amachhiw@linux.ibm.com>
-To: Karl Mehltretter <kmehltretter@gmail.com>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Jordan Niethe <jniethe5@gmail.com>, linuxppc-dev@lists.ozlabs.org,
-        kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] KVM: PPC: Fix guest state buffer kernel-doc names and
- parameters
-Message-ID: <20260910195045.996cb331-f4-amachhiw@linux.ibm.com>
-Mail-Followup-To: Karl Mehltretter <kmehltretter@gmail.com>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, 
-	Michael Ellerman <mpe@ellerman.id.au>, Jordan Niethe <jniethe5@gmail.com>, 
-	linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20260910033655.16127-1-kmehltretter@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hgg8z0485z2xWV
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2026 00:31:28 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1789050685;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=8oOYydPLSmmKf+EQ0HkeEap1hYLbva2q5CM0ECTUT/E=;
+	b=ZfPcDL2xHRi9Wzl1bStIrA0w6wmHvZNstDkpa3YczXVTjoaTRo7oRcQOn5BXraZU9cerRr
+	jD/P4lzJF28iCncQ8mXoFBbq1mRiRKL5qF5OCz97hrqwgwWPMKwzZp2pUEQoyq+cnklhtj
+	iYcMghW0oLXdlIML7xYphZSXMNqm43Y=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1789050685;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=8oOYydPLSmmKf+EQ0HkeEap1hYLbva2q5CM0ECTUT/E=;
+	b=ZfPcDL2xHRi9Wzl1bStIrA0w6wmHvZNstDkpa3YczXVTjoaTRo7oRcQOn5BXraZU9cerRr
+	jD/P4lzJF28iCncQ8mXoFBbq1mRiRKL5qF5OCz97hrqwgwWPMKwzZp2pUEQoyq+cnklhtj
+	iYcMghW0oLXdlIML7xYphZSXMNqm43Y=
+Received: from mx-prod-mc-03.mail-002.prod.us-west-2.aws.redhat.com
+ (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
+ relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-55-O8Ypl9fJPM6L4atbQS4teA-1; Thu,
+ 10 Sep 2026 10:31:19 -0400
+X-MC-Unique: O8Ypl9fJPM6L4atbQS4teA-1
+X-Mimecast-MFC-AGG-ID: O8Ypl9fJPM6L4atbQS4teA_1789050676
+Received: from mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.17])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mx-prod-mc-03.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 29AB51955DC5;
+	Thu, 10 Sep 2026 14:31:16 +0000 (UTC)
+Received: from atomasov-mac.redhat.corp (headnet03.pony-001.prod.iad2.dc.redhat.com [10.2.32.114])
+	by mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 5C4891955F19;
+	Thu, 10 Sep 2026 14:31:12 +0000 (UTC)
+From: Adrian Tomasov <atomasov@redhat.com>
+To: Eric Dumazet <edumazet@google.com>,
+	kernel test robot <oliver.sang@intel.com>
+Cc: Adrian Tomasov <atomasov@redhat.com>,
+	Jason Xing <kerneljasonxing@gmail.com>,
+	Kuniyuki Iwashima <kuniyu@google.com>,
+	Paolo Abeni <pabeni@redhat.com>,
+	Luke Yang <luyang@redhat.com>,
+	netdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	oe-lkp@lists.linux.dev,
+	lkp@intel.com,
+	linuxppc-dev@lists.ozlabs.org
+Subject: Re: [linus:master] [net] 5628f3fe3b: sockperf.throughput.UDP.msg_per_sec 20.1% regression
+Date: Thu, 10 Sep 2026 16:30:40 +0200
+Message-ID: <20260910143041.18106-1-atomasov@redhat.com>
+In-Reply-To: <202512112119.5b9829a-lkp@intel.com>
+References: <202512112119.5b9829a-lkp@intel.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -95,148 +97,102 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+X-Scanned-By: MIMEDefang 3.0 on 10.30.177.17
+X-Mimecast-MFC-PROC-ID: VJSYG-Tpjj9JsbjFfxQq6PvhErlwYGTe9TMYm82p0qs_1789050676
+X-Mimecast-Originator: redhat.com
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260910033655.16127-1-kmehltretter@gmail.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=NMVAaE6g c=1 sm=1 tr=0 ts=6aa2bb27 cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
- a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=pGLkceISAAAA:8
- a=VnNF1IyMAAAA:8 a=yPVLcobRgUjX84E6IAMA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-GUID: J-dMCcHPRX6nTUw6TjgMFsEGwK3oj0ut
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTEwMDE2OSBTYWx0ZWRfX04YIj3PSJDwq
- RCLzvLTxLEk94vfEWWmk9+1WPi6AkxRV8dBRWX6ZZXAj7wsZzKeW0Kd0ovYhiqu7NbnxA/7nDim
- 7Ms7xvVkByMKRy/pnjb4qoWhE76SQYKyKxG1KvyzBy7uQqxVyci0BBNaihEm8FcsdjT2TnN/Ma+
- /m/DJ4wlifhh0xWyY4dCdu//KsJTqNiRh1hah/iHCVCC6Kk4mjR6NDIkkcD3gwNvfTAnR7Ld2a4
- zR4dg+27VjlUKaDBc9IftpXMRBdrHdd9RdINL6ds5na0zAFTYD9G3uhlYrgkSb6cpfW4OQzR6aH
- GiL+wJIMcdyv25LiuA1XQoWduuhhwjtzTFydeFFc9JhDjZrHrvr/pmfu85TpBUY8WNmrzq9siWC
- i4cpgQgpuaYLHxO3BrUct6/5Zlpybyb368F9TzOjIkT4WkhBBYRtYyITQ7IWNX8RDT7FPjOegmv
- kGgdSR54Rmhp1p5aYLg==
-X-Proofpoint-ORIG-GUID: rwg0wXi8uBU91HmEltVOagbEFNv1f0Dv
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTEwMDE2OSBTYWx0ZWRfX0XnZOaffguB6
- jj9xE44WgyDH1CUjulw9PIvKwROWpRrjKgeztW1SJ6djVQqlkY4OtQR3GuQHc8Jjfrqj6G4GqBz
- SG/EutO39/hDio6+52TzFO004Qm9Pz4=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-10_04,2026-09-09_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 bulkscore=0 clxscore=1015 malwarescore=0 lowpriorityscore=0
- priorityscore=1501 adultscore=0 suspectscore=0 impostorscore=0 phishscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609100169
+content-type: text/plain; charset="US-ASCII"; x-default=true
 
-On 2026/09/10 05:36 AM, Karl Mehltretter wrote:
-> Several guest state buffer comments use copied function or parameter
-> names. In particular, kvmppc_gsm_for_each() describes a parser and an
-> element argument, although it takes a message and yields IDs.
-> kvmppc_gsm_include_all() also describes an ID argument it does not take.
-> 
-> Match the headings and parameter descriptions to their declarations,
-> and describe the parser argument and vector output with their actual
-> roles.
-> 
-> Fixes: 6ccbbc33f06a ("KVM: PPC: Add helper library for Guest State Buffers")
-> Assisted-by: LLM
-> Signed-off-by: Karl Mehltretter <kmehltretter@gmail.com>
-> ---
->  arch/powerpc/include/asm/guest-state-buffer.h | 17 ++++++++---------
->  1 file changed, 8 insertions(+), 9 deletions(-)
+On Thu, Dec 11, 2025, kernel test robot <oliver.sang@intel.com> wrote:
+> kernel test robot noticed a 20.1% regression of
+> sockperf.throughput.UDP.msg_per_sec on:
+> commit: 5628f3fe3b16 ("net: add NUMA awareness to skb_attempt_defer_free()")
 
-The kernel-doc fixes are all accurate — heading names, parameter names, and
-parameter lists now match their declarations. In particular, the
-kvmppc_gsm_for_each / kvmppc_gsm_include_all / kvmppc_gsm_reset /
-kvmppc_gsb_receive_datum / kvmppc_gsb_send_datum corrections are a clear
-improvement over the copy-paste state left by the original commit.
+We independently reproduced this on a second architecture, ppc64le (POWER10),
+and can add data that both confirms the commit and shows what amplifies it.
 
-Reviewed-by: Amit Machhiwal <amachhiw@linux.ibm.com>
+Commit: 5628f3fe3b16 ("net: add NUMA awareness to skb_attempt_defer_free()")
+Parent: 844c9db7f7f5 ("net: use llist for sd->defer_list")
 
-> 
-> diff --git a/arch/powerpc/include/asm/guest-state-buffer.h b/arch/powerpc/include/asm/guest-state-buffer.h
-> index acd61eb36d59..95d50ec7f2a9 100644
-> --- a/arch/powerpc/include/asm/guest-state-buffer.h
-> +++ b/arch/powerpc/include/asm/guest-state-buffer.h
-> @@ -224,7 +224,7 @@ struct kvmppc_gs_buff_info {
->  
->  /**
->   * struct kvmppc_gs_header - serialized guest state buffer header
-> - * @nelem: count of guest state elements in the buffer
-> + * @nelems: count of guest state elements in the buffer
->   * @data: start of the stream of elements in the buffer
->   */
->  struct kvmppc_gs_header {
-> @@ -779,6 +779,7 @@ static inline u64 kvmppc_gse_get_u64(const struct kvmppc_gs_elem *gse)
->  /**
->   * kvmppc_gse_get_vector128() - return the data of a vector element
->   * @gse: guest state element
-> + * @v: output vector in host endianness
->   */
->  static inline void kvmppc_gse_get_vector128(const struct kvmppc_gs_elem *gse,
->  					    vector128 *v)
-> @@ -849,7 +850,7 @@ struct kvmppc_gs_elem *kvmppc_gsp_lookup(struct kvmppc_gs_parser *gsp,
->  /**
->   * kvmppc_gsp_for_each - iterate the <guest state IDs, guest state element>
->   * pairs
-> - * @gsp: guest state buffer bitmap
-> + * @gsp: guest state parser
->   * @iden: current guest state ID
->   * @gse: guest state element
->   */
-> @@ -866,9 +867,8 @@ struct kvmppc_gs_elem *kvmppc_gsp_lookup(struct kvmppc_gs_parser *gsp,
->  /**
->   * kvmppc_gsm_for_each - iterate the guest state IDs included in a guest state
->   * message
-> - * @gsp: guest state buffer bitmap
-> + * @gsm: guest state message
->   * @iden: current guest state ID
-> - * @gse: guest state element
->   */
->  #define kvmppc_gsm_for_each(gsm, iden)                            \
->  	for (iden = kvmppc_gsbm_next(&gsm->bitmap, 0); iden != 0; \
-> @@ -908,10 +908,9 @@ static inline bool kvmppc_gsm_includes(struct kvmppc_gs_msg *gsm, u16 iden)
->  }
->  
->  /**
-> - * kvmppc_gsm_includes - indicate all guest state IDs should be included when
-> + * kvmppc_gsm_include_all - indicate all guest state IDs should be included when
->   * serializing
->   * @gsm: guest state message
-> - * @iden: guest state ID
->   */
->  static inline void kvmppc_gsm_include_all(struct kvmppc_gs_msg *gsm)
->  {
-> @@ -919,7 +918,7 @@ static inline void kvmppc_gsm_include_all(struct kvmppc_gs_msg *gsm)
->  }
->  
->  /**
-> - * kvmppc_gsm_include - clear the guest state IDs that should be included when
-> + * kvmppc_gsm_reset - clear the guest state IDs that should be included when
->   * serializing
->   * @gsm: guest state message
->   */
-> @@ -958,7 +957,7 @@ static inline int kvmppc_gsb_receive_data(struct kvmppc_gs_buff *gsb,
->  }
->  
->  /**
-> - * kvmppc_gsb_recv - receive a single guest state ID
-> + * kvmppc_gsb_receive_datum - receive a single guest state ID
->   * @gsb: guest state buffer
->   * @gsm: guest state message
->   * @iden: guest state identity
-> @@ -998,7 +997,7 @@ static inline int kvmppc_gsb_send_data(struct kvmppc_gs_buff *gsb,
->  }
->  
->  /**
-> - * kvmppc_gsb_recv - send a single guest state ID
-> + * kvmppc_gsb_send_datum - send a single guest state ID
->   * @gsb: guest state buffer
->   * @gsm: guest state message
->   * @iden: guest state identity
-> 
-> base-commit: 50d05c7c76c96b90462f24debacca971d2e86713
-> -- 
-> 2.39.5 (Apple Git-154)
-> 
+Two factors govern the magnitude, and your x86 report and our ppc64le data
+agree once both are considered:
+
+(a) How much of the workload runs the net_rx softirq deferred-free path.
+    Tight loopback UDP (sockperf, iperf3 loopback) is softirq-dominated and is
+    hit hard. A real-NIC test bounded by other costs is barely affected.
+
+(b) How many *possible* NUMA nodes skb_defer_free_flush() now walks. The new
+    for_each_node() loop iterates node_possible_map; on a POWER10 LPAR that is
+    0..31 (32 possible) with only 1 node online, so 31 of every 32 iterations
+    touch a cold, always-empty per-node list on every softirq RX pass. This
+    shows up as _find_next_bit(): ~2.76% on POWER10 vs <1% in your x86 profile.
+
+--- Data point 1: stress-ng UDP, isolated commit A/B (POWER10) ---
+
+POWER10, 8 CPUs, 62 GiB, NUMA 1 online / 32 possible. Two upstream v7.2-rc4
+kernels, same compiler (gcc 16.1.1) and config; the only difference is the
+presence of 5628f3fe3b16. stress-ng 0.19.03, --udp 1 -t 23, 3 runs,
+bogo-ops/sec (higher is better):
+
+    Kernel                        Avg       Delta
+    v7.2-rc4 + revert (good)      265145    baseline
+    v7.2-rc4 stock   (bad)        204854    -22.7%
+
+perf (stock vs revert): skb_defer_free_flush 2.75% -> 0%, _find_next_bit
+2.76% -> 0% -- both eliminated by the revert; consistent with your x86 profile
+(skb_defer_free_flush 0 -> ~4.1%, _find_next_bit -> ~1%).
+
+--- Data point 2: iperf3 UDP loopback A/B (POWER10, second host) ---
+
+Independent reproduction on another POWER10 host (32 possible / 1 online),
+iperf3 -u -b 0 -l 16k -t 20, both ends pinned to the online node, 5 runs,
+Gbit/s (higher is better):
+
+    Kernel (has 5628f3fe3b16?)    median    mean
+    no  (6.12-based)              6.34      6.31    baseline
+    yes (7.1-based)              4.85      4.88    -22.7%
+
+(These two kernels differ in base version, so this delta is not a single-commit
+isolation on its own -- Data point 1 is the clean isolation. Both land at
+-22.7%, matching your 20.1% sockperf figure.)
+
+--- Data point 3: workload dependence (real-NIC vs loopback) ---
+
+The same commit-vs-parent A/B measured with a *real NIC* iperf3 UDP stream
+(200G, 3 reboots/kernel) on a 2-possible-node ppc64le host shows only -2.6%
+(7515.8 -> 7313.8 Mb/s, zero overlap across reboots). Where the deferred-free
+softirq path is a small fraction of the work, the regression is small -- the
+mechanism is the same, the exposure differs. This also matches our observation
+that a same-CPU-heavy stress-ng udp run barely triggers the cross-CPU
+skb_attempt_defer_free() path and shows ~no change.
+
+--- On Jason's question ---
+
+On Sun, Dec 14, 2025, Jason Xing <kerneljasonxing@gmail.com> wrote:
+> from what I've known, commit e20dfbad8aab2 and commit 21664814b89e altogether
+> can lead to a similar regression ... could you also launch some experiments
+> just around those two commits?
+
+On POWER10 our isolation is a direct A/B of 5628f3fe3b16 against its parent
+844c9db7f7f5 with identical compiler and config (Data point 1), and a full
+revert of only 5628f3fe3b16 recovers the throughput and removes
+skb_defer_free_flush()/_find_next_bit() from the profile. So on this hardware
+the regression is attributable to 5628f3fe3b16 specifically; e20dfbad8aab2 and
+21664814b89e are not in the delta. Happy to test those two separately if useful.
+
+--- Suggested fix ---
+
+Use for_each_online_node() instead of for_each_node() in skb_defer_free_flush()
+(and cap what skb_attempt_defer_free() populates accordingly), reducing the loop
+from N_possible to N_online -- 32 -> 1 on these POWER10 LPARs. We can build and
+benchmark a candidate patch on the POWER10 hosts and report back on this thread.
+If a fix is posted, the appropriate tags are:
+
+    Reported-by: kernel test robot <oliver.sang@intel.com>
+    Closes: https://lore.kernel.org/oe-lkp/202512112119.5b9829a-lkp@intel.com
+
+Thanks,
+Adrian Tomasov
+Red Hat -- Kernel Performance QE
+
 
