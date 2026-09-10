@@ -1,124 +1,90 @@
-Return-Path: <linuxppc-dev+bounces-27004-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27005-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 96961C79FB7
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2026 19:48:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1C2E9C79FB7
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2026 03:37:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hgBFT2H1dz302T;
-	Thu, 10 Sep 2026 05:48:45 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=65.109.113.108
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788983325;
-	cv=none; b=dnEK7aV8pmrrHQwVX47BpvlxT0EpsFTfzmJFGDNLZXygB3v13sXUDA36gDLbu7RUy+C0QFDw3FYHGCVxX+bg979Rdt7JbckHWwW2r+WiPYXNu+WIEiNdGJrHo7dqJ15Z5uThs/iEcPEItswWNswYXbS3hB1LT9Qw81QznFDHeR/FzAFSI2w79rzomgRSkX9UUeEz2KDyng+b/fMk4qj13H7nFnpaSrWo9ENJPYYk/sO0ZUiAp6BIY+uuJNSREhiAm3xtBqG9HEbU/PfD8eojC5k3vZe28wKxFB3VxTMUcVT4Oq1+HG/JMWPj/rs18jvUJ+vPjVD259GcivKg7wqg+g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hgNdx2D7pz2xmh;
+	Thu, 10 Sep 2026 13:37:09 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::434"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789011429;
+	cv=none; b=cRcSDo+gWkEWL2/vfPaY5+ElydSJ4zkc4DjPJciYGUMlkM17iQLyd/wINozE0Dw9ZE5XWtqP3sKiB4kZOOmlzBDkUJFI3KKgC9tl2HxZ69JQRWJ+1PZMKMrzpUcd+XltyfF7bJdmdLYSnz1Ld+pI49Xb70bshr9Q41v4ZrHhLeCWwL9EjUUZbw6FftWcNLBe6htr9O7hnGJHIrjYAkAtJFLdMRl5/0qP/a5xuBRHeh6BJ0pcZj3jP6tgL0oQ0FbeVHTJ3rAzc0Cc3ka9v36BO67Ptp1T4ITb/cT9Zz2Lna5uYSiR/q7ADzJ4+ddCLlUFqHyrtGHq/Yc2C0MOP3gTYQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788983325; c=relaxed/relaxed;
-	bh=J47hfMemV3x17DwbT77P3iNi200v7sArNBFyj4FIEqg=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=f1NfG+UklSj0PRsxS6UHp+FHkBBbx5nJUKW3Um5JKreln57RPfoVE3Dwryc1Kuy7jIkgWsqgUAgNlCJczg3jGN0y+VCBD4mH01LJcg+fb+jaUbP3ho4z2sYvFGA6wmXpTJHf2Aco3d5VriKXYn74yRXpjgiPH2x0ywyQ0T5vFLNI1KPtp1beMk09K4ZG2W/dYbqIDtO4zQ3Q7v8D8YaUrfLwH2w7/kfCclIR+mfuJ7c9aCNDS1Urk9kM4mJc+gvRuWUMnsV1ZOUPrWYqsAa9Hc2xQrlNreeJgazc2g5zGUNvRI8RRTrsIulmgpr2O5E/204SLTlbu6RASgim2Cw7wQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=alien8.de; dkim=pass (4096-bit key; unprotected) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256 header.s=alien8 header.b=dwPEQtMe; dkim-atps=neutral; spf=pass (client-ip=65.109.113.108; helo=mail.alien8.de; envelope-from=bp@alien8.de; receiver=lists.ozlabs.org) smtp.mailfrom=alien8.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=alien8.de
+	t=1789011429; c=relaxed/relaxed;
+	bh=C8ZWMEFHQbcH0tt4vDOyvt6b0NrgibIrdXJYwFIp6tM=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=L/gup58dDgttPgL5kLgZL49+PoLrawy1IrDCf7gncnZoKY7vKbhCso/Dvzv6ueWrdoKP+cZ2bDr9pfp0NvC/0p4lylIr+4rklPWf09pJ172bXxL++xZANoZd0bxvzOECrUjLETxIPE5YeBQEvWj3PHYWsNX8lMuV2xGDUhUPtscTHzmI8rVKWiU/ZqRlri/BEYXUGmUNhRg13r/r2NQabcpiN4CtcXqUBpUvFF9SQUFmoKbwyVWIfPHz9WzXqQ3H1Wd0rw7N+HncRf2Fv9JJfmpOugHWL6s1Ssjh0Bied366nOOTK4sREaLYVmp/HtITa7mBlT2yKarjq+G2gEOWSA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=khyn6Ffi; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::434; helo=mail-wr1-x434.google.com; envelope-from=kmehltretter@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (4096-bit key; unprotected) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256 header.s=alien8 header.b=dwPEQtMe;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=khyn6Ffi;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=alien8.de (client-ip=65.109.113.108; helo=mail.alien8.de; envelope-from=bp@alien8.de; receiver=lists.ozlabs.org)
-Received: from mail.alien8.de (mail.alien8.de [65.109.113.108])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::434; helo=mail-wr1-x434.google.com; envelope-from=kmehltretter@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-wr1-x434.google.com (mail-wr1-x434.google.com [IPv6:2a00:1450:4864:20::434])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hgBFR2pXqz3000
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2026 05:48:42 +1000 (AEST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by mail.alien8.de (SuperMail on ZX Spectrum 128k) with ESMTP id 3887A40E02C3;
-	Wed,  9 Sep 2026 19:48:36 +0000 (UTC)
-X-Virus-Scanned: Debian amavisd-new at mail.alien8.de
-Authentication-Results: mail.alien8.de (amavisd-new); dkim=pass (4096-bit key)
-	header.d=alien8.de
-Received: from mail.alien8.de ([127.0.0.1])
-	by localhost (mail.alien8.de [127.0.0.1]) (amavisd-new, port 10026)
-	with ESMTP id bnu2s_xtow5o; Wed,  9 Sep 2026 19:48:26 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=alien8;
-	t=1788983306; bh=J47hfMemV3x17DwbT77P3iNi200v7sArNBFyj4FIEqg=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=dwPEQtMeNA/0X4YLMHgzSgsrJEReG+/8XquiXTEMnDnzYNtgPhOSI1ZuSGGmf+uhU
-	 V5oLCoI78r3zgomqpkBhYGGK+og2znQrV4khKuBGPQqxLpck4AnonixUBFFT+OQ9pO
-	 XoUFWUpeutEqUWw6qWZlF4MSezuaZDbfmEkEMesoxESuMOiVSVBIpvn/lv+oZivGlF
-	 NbJK5pOApwMB2U2u72e0KDAnjAnnVYBqW7hqQCjgkPVGWIyW67likuKOr8KL2iCigy
-	 wfxOcixBxel6j9y0nGeCklkkuo9SS7BzFZrMmfwjY0x8ZNHxCfzFe8nm3kMfbW2SkQ
-	 hVt6NGm6loU4cNhNTVlWkweLsqiDVWKEfmcR69gNzENXWQF+DAqzhl1dooy8yRdyQ8
-	 hzYMVbv7DEaFBzo345o2SdVnqq8Hbvr6zEs3Jz+soHKZ00hNuarCPD8kKht9ZWHhDX
-	 K6qLog8avAPiAmQEstoo2bUscQYMRoJj1G/FpwnavifIGACdSvVBx3KQXFGuPZFI6C
-	 LW+eR2FIosDuuKNbgs+V1Q5Aiz3ngAXwHI3OctVEHffGJL4rAUmbrTcA7D2mTokDP5
-	 cDqR90QAouoVLFeoaPRexpBIoBjUfItvei9H8egAwCVgnmg67MgfJgP2vnIu6Np7cO
-	 rVr0gT+x4+ZZPc8QFps0Hbqg=
-Received: from stx.tnic (unknown [IPv6:2600:1700:38ca:c00::42])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature ECDSA (P-256) server-digest SHA256)
-	(No client certificate requested)
-	by mail.alien8.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id 0329240E01ED;
-	Wed,  9 Sep 2026 19:47:23 +0000 (UTC)
-Date: Wed, 9 Sep 2026 12:47:20 -0700
-From: Borislav Petkov <bp@alien8.de>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>,
-	Paul Walmsley <paul.walmsley@sifive.com>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
-	Nathan Chancellor <nathan@kernel.org>,
-	Nick Desaulniers <nick.desaulniers+lkml@gmail.com>,
-	Bill Wendling <morbo@google.com>,
-	Justin Stitt <justinstitt@google.com>,
-	Andy Lutomirski <luto@kernel.org>,
-	Vincenzo Frascino <vincenzo.frascino@arm.com>,
-	Kees Cook <kees@kernel.org>, Ingo Molnar <mingo@redhat.com>,
-	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
-	Richard Weinberger <richard@nod.at>,
-	Anton Ivanov <anton.ivanov@cambridgegreys.com>,
-	Johannes Berg <johannes@sipsolutions.net>,
-	Russell King <linux@armlinux.org.uk>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Will Deacon <will@kernel.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hgNdv0bq7z2xYg
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2026 13:37:05 +1000 (AEST)
+Received: by mail-wr1-x434.google.com with SMTP id ffacd0b85a97d-482f2ee53e7so4794036f8f.1
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Sep 2026 20:37:05 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1789011422; x=1789616222; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=C8ZWMEFHQbcH0tt4vDOyvt6b0NrgibIrdXJYwFIp6tM=;
+        b=khyn6Ffi/D0MRDEGuxJbqOGtoLJxpEo4I0HbyOt41TckCKE2TQrjoNcHp1TjXMxwFZ
+         U/4IclkOSPZ15kV5TOExv+yxnI+oFNrpAKb3EJQk+NV8+NJLmE5KBQogk0Xy1d6FTmFw
+         UEZhiybZH0/Un6aP312oiBV+qprttpoEbBcUlP7OPGwPRkMaFBWU2QDXeZ69or3jjdOL
+         NYWp2Aah2f+e5QViICsFpPLFyUV3anspwkHkDQiJGAQCoWWIJ2RGnWnSu/S968iO4FRU
+         yMe5I4/9gpKtFNUnIwi9mr5xLbmRD/fexgNZSGwulXDkXe2YHdJW9beTDC4uFM0b63fM
+         fSNw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1789011422; x=1789616222;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=C8ZWMEFHQbcH0tt4vDOyvt6b0NrgibIrdXJYwFIp6tM=;
+        b=qo8yte0qyU9br5QJvfiwXyNbf/uXm36mdaBtiR5wXtfUrOME7G7Ve9H1wMibGpLG/5
+         cqB8hBx10lUi4/qSJgF09kzHv1oWE4l+qi9q9MnqaVN4BAlpHMNEoVTdbk9k0Psfhr6K
+         7197jzFeHvASNk3xFINqotbMqXxOk0go2uRsWbQJcOwvutXvPmlDGhMdbUqhSRZOL40B
+         rEqKQjBXN9Z9RDk6vwOA1GuIW42L1/LmPaYCwGoV3BCDudkaYGku8o0gFQqN1GSMRkYp
+         SE5HMe6ExjaxJwBy66zaFbmHWlwws8tCOKAqUFEqj+SEfihshn0cyX28hv/MVVOiG3e9
+         3jWw==
+X-Forwarded-Encrypted: i=1; AKwUvBwuLeF+yik0Mv+wiML3hAaMz5fLqMmbgsLA0yMsarGq7BKmjJrzbQxHC3S9BRcQORTSZZ8cC38ilu43bCY=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++leGEFsozn8GvdDDM+Q/GAYl0PEuyv5s6Svr8fppLuV5xdNBep3
+	ibhD98JNWf3mMbXPNC64Mx3LFHPEp8scCJkgvz+h98251gTYK3BUet3w
+X-Gm-Gg: AYBFou2lf/Jh7KgWNpsN0asTieEq2G1T63Qs5zSBl9e8WZXi0bRCQMWYvQFe+/l3zA6
+	r6ROwdKzbv+6zEr2JWKxhUdZAmPYm1aDqdzzMdbVUBf/qh2MVIHiyXI+psVAoUb2+ZjSae/6816
+	REfxlEXTonxMSr5WN0/SkcNg/JYQGXfAfw4H7KIZxY+bR7rsvqDOHDFIaAEE9BhBfmlSvNg1VwL
+	PbDvB60GPOJrMYNNh+yZwV57Bf2f2++7E+6TLGipGqD6G50P1tkzLFXh6R/2i6F3OtDHjfz6FkU
+	O8/okpLCq952mYyuYv02xjUFw1wYGqbhAJ86PhD4JtB0I4mxl3uplIfcVADBR9+3BMikvCg5C4Z
+	IKEbe7lCLuOG7Dj6Rva2nhMF5XEXVi8odhmQDSjacm/q/Uzx5VL2OnDR2mYp1ui3T7+FLm9MRT0
+	FKfQNo2UFsD8ghSJ+r7RPBnLLCWOGWmVMPdQ+FlCc0N5nu6YcZXkBihVoFUPv6i0TaSA6eGmC1w
+	gDOAbgdGkmxVN8FaKcBNMfRctBEIYINVYgLX6hGuJ2pGr51JFJhe5qi/mZyjwSGU1N0I3K0zuLC
+	D9VXOZsv9GA5Xcoey418qU9gDSGaXg3J9z6Mxhz/oLeqOI7h7XOgm2hq3j7cXQqovbuRG2Jp2gi
+	NPECwgkIdNg==
+X-Received: by 2002:a05:600c:4e16:b0:49c:fc6c:bdfc with SMTP id 5b1f17b1804b1-49cfc6cc01bmr341548035e9.19.1789011422051;
+        Wed, 09 Sep 2026 20:37:02 -0700 (PDT)
+Received: from localhost.localdomain (dynamic-2a02-3100-b3d9-b901-0402-5aad-0ef4-88ac.310.pool.telefonica.de. [2a02:3100:b3d9:b901:402:5aad:ef4:88ac])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49d26b726f9sm34506475e9.0.2026.09.09.20.37.01
+        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
+        Wed, 09 Sep 2026 20:37:01 -0700 (PDT)
+From: Karl Mehltretter <kmehltretter@gmail.com>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Karl Mehltretter <kmehltretter@gmail.com>,
 	Nicholas Piggin <npiggin@gmail.com>,
-	Huacai Chen <chenhuacai@kernel.org>,
-	WANG Xuerui <kernel@xen0n.name>, Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	Miguel Ojeda <ojeda@kernel.org>,
-	Alex Gaynor <alex.gaynor@gmail.com>, Gary Guo <gary@garyguo.net>,
-	=?utf-8?B?QmrDtnJu?= Roy Baron <bjorn3_gh@protonmail.com>,
-	Benno Lossin <lossin@kernel.org>,
-	Andreas Hindborg <a.hindborg@kernel.org>,
-	Alice Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>,
-	Danilo Krummrich <dakr@kernel.org>,
-	Thomas Gleixner <tglx@kernel.org>,
-	Christophe Leroy <chleroy@kernel.org>,
-	Boqun Feng <boqun@kernel.org>, Nicolas Schier <nsc@kernel.org>,
-	linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
-	llvm@lists.linux.dev, linux-mm@kvack.org,
-	linux-um@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
-	linuxppc-dev@lists.ozlabs.org, loongarch@lists.linux.dev,
-	linux-s390@vger.kernel.org, linux-mips@vger.kernel.org,
-	rust-for-linux@vger.kernel.org, linux-kbuild@vger.kernel.org,
-	Jan Stancek <jstancek@redhat.com>,
-	Arnaldo Carvalho de Melo <acme@redhat.com>,
-	Alexandre Ghiti <alexghiti@rivosinc.com>
-Subject: Re: [PATCH v5 02/24] x86/elf, um/x86/elf: Move relocation constants
- to UAPI
-Message-ID: <20260909194720.GCaqG3yPjDmwKikdIQ@fat_crate.local>
-References: <20260908-vdso-absolute-reloc-v5-0-3a93791af1cf@linutronix.de>
- <20260908-vdso-absolute-reloc-v5-2-3a93791af1cf@linutronix.de>
- <20260908135513.GAaqATwXHcQD7plnH-@fat_crate.local>
- <20260908161740-0d79e592-87a6-43c5-9174-84ce1904e639@linutronix.de>
- <20260908151238.GBaqAl5iKb64meuPJl@fat_crate.local>
- <20260909075156-06ff671c-ab7b-47d8-aaa3-588b570888bc@linutronix.de>
- <20260909144930.GAaqFx-mjH3-u6jLjw@fat_crate.local>
- <F9786718-8378-443D-A21E-77E057B62BB2@zytor.com>
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Jordan Niethe <jniethe5@gmail.com>,
+	linuxppc-dev@lists.ozlabs.org,
+	kvm@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] KVM: PPC: Fix guest state buffer kernel-doc names and parameters
+Date: Thu, 10 Sep 2026 05:36:55 +0200
+Message-Id: <20260910033655.16127-1-kmehltretter@gmail.com>
+X-Mailer: git-send-email 2.39.5 (Apple Git-154)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -132,22 +98,107 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <F9786718-8378-443D-A21E-77E057B62BB2@zytor.com>
+Content-Transfer-Encoding: 8bit
 
-On Wed, Sep 09, 2026 at 12:27:30PM -0700, H. Peter Anvin wrote:
-> I do believe there are *some* headers that would be reasonably to export to
-> tools/ beyond what it is in uapi; a major reason for that is that the tools
-> are suffering from a crazy level of internal inconsistency right now. 
+Several guest state buffer comments use copied function or parameter
+names. In particular, kvmppc_gsm_for_each() describes a parser and an
+element argument, although it takes a message and yields IDs.
+kvmppc_gsm_include_all() also describes an ID argument it does not take.
 
-Well, as long as it stays "internal" I don't mind.
+Match the headings and parameter descriptions to their declarations,
+and describe the parser argument and vector output with their actual
+roles.
 
-What I do mind is this unnecessary and senseless exposure of headers.
+Fixes: 6ccbbc33f06a ("KVM: PPC: Add helper library for Guest State Buffers")
+Assisted-by: LLM
+Signed-off-by: Karl Mehltretter <kmehltretter@gmail.com>
+---
+ arch/powerpc/include/asm/guest-state-buffer.h | 17 ++++++++---------
+ 1 file changed, 8 insertions(+), 9 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/guest-state-buffer.h b/arch/powerpc/include/asm/guest-state-buffer.h
+index acd61eb36d59..95d50ec7f2a9 100644
+--- a/arch/powerpc/include/asm/guest-state-buffer.h
++++ b/arch/powerpc/include/asm/guest-state-buffer.h
+@@ -224,7 +224,7 @@ struct kvmppc_gs_buff_info {
+ 
+ /**
+  * struct kvmppc_gs_header - serialized guest state buffer header
+- * @nelem: count of guest state elements in the buffer
++ * @nelems: count of guest state elements in the buffer
+  * @data: start of the stream of elements in the buffer
+  */
+ struct kvmppc_gs_header {
+@@ -779,6 +779,7 @@ static inline u64 kvmppc_gse_get_u64(const struct kvmppc_gs_elem *gse)
+ /**
+  * kvmppc_gse_get_vector128() - return the data of a vector element
+  * @gse: guest state element
++ * @v: output vector in host endianness
+  */
+ static inline void kvmppc_gse_get_vector128(const struct kvmppc_gs_elem *gse,
+ 					    vector128 *v)
+@@ -849,7 +850,7 @@ struct kvmppc_gs_elem *kvmppc_gsp_lookup(struct kvmppc_gs_parser *gsp,
+ /**
+  * kvmppc_gsp_for_each - iterate the <guest state IDs, guest state element>
+  * pairs
+- * @gsp: guest state buffer bitmap
++ * @gsp: guest state parser
+  * @iden: current guest state ID
+  * @gse: guest state element
+  */
+@@ -866,9 +867,8 @@ struct kvmppc_gs_elem *kvmppc_gsp_lookup(struct kvmppc_gs_parser *gsp,
+ /**
+  * kvmppc_gsm_for_each - iterate the guest state IDs included in a guest state
+  * message
+- * @gsp: guest state buffer bitmap
++ * @gsm: guest state message
+  * @iden: current guest state ID
+- * @gse: guest state element
+  */
+ #define kvmppc_gsm_for_each(gsm, iden)                            \
+ 	for (iden = kvmppc_gsbm_next(&gsm->bitmap, 0); iden != 0; \
+@@ -908,10 +908,9 @@ static inline bool kvmppc_gsm_includes(struct kvmppc_gs_msg *gsm, u16 iden)
+ }
+ 
+ /**
+- * kvmppc_gsm_includes - indicate all guest state IDs should be included when
++ * kvmppc_gsm_include_all - indicate all guest state IDs should be included when
+  * serializing
+  * @gsm: guest state message
+- * @iden: guest state ID
+  */
+ static inline void kvmppc_gsm_include_all(struct kvmppc_gs_msg *gsm)
+ {
+@@ -919,7 +918,7 @@ static inline void kvmppc_gsm_include_all(struct kvmppc_gs_msg *gsm)
+ }
+ 
+ /**
+- * kvmppc_gsm_include - clear the guest state IDs that should be included when
++ * kvmppc_gsm_reset - clear the guest state IDs that should be included when
+  * serializing
+  * @gsm: guest state message
+  */
+@@ -958,7 +957,7 @@ static inline int kvmppc_gsb_receive_data(struct kvmppc_gs_buff *gsb,
+ }
+ 
+ /**
+- * kvmppc_gsb_recv - receive a single guest state ID
++ * kvmppc_gsb_receive_datum - receive a single guest state ID
+  * @gsb: guest state buffer
+  * @gsm: guest state message
+  * @iden: guest state identity
+@@ -998,7 +997,7 @@ static inline int kvmppc_gsb_send_data(struct kvmppc_gs_buff *gsb,
+ }
+ 
+ /**
+- * kvmppc_gsb_recv - send a single guest state ID
++ * kvmppc_gsb_send_datum - send a single guest state ID
+  * @gsb: guest state buffer
+  * @gsm: guest state message
+  * @iden: guest state identity
+
+base-commit: 50d05c7c76c96b90462f24debacca971d2e86713
 -- 
-Regards/Gruss,
-    Boris.
+2.39.5 (Apple Git-154)
 
-https://people.kernel.org/tglx/notes-about-netiquette
 
