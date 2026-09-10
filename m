@@ -1,76 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-27043-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27044-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EF92CC88E41
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2026 20:28:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B5A04C88E41
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2026 20:46:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hgq5J2gjNz2yrF;
-	Fri, 11 Sep 2026 06:28:52 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::632"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789072132;
-	cv=none; b=oz30hVLHu/yZiPuhKAKzrDWdKvo4h/yz4Ml4nNuHDdx7/mZUk2JA47k6CulP0K16J4zxEsN4pjNsGZGbn8GRW+juXT3bGf+my3WFDVOF40iIFgYuODMTFbzVCrrQyt78C0hZU5Hxd7ShX0BAgScMni+MOgdn2WEkEJW744PVeaVNadNL/6Hj4hlnt2STp7jxcYiSwrujwKdWKtQ7xigK7XPpMUvHOkigwuS8CcqJb/WgTN6xqnQZ0ScpXbiY+uN5zsBoXI/z68YLrery/LCMgXO+3pJ1g4nSutxCQcf7D8+gQE8GUM0ILIU/zcs4IeKZW2TaWnsPbtkGF04HGcr4Jw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hgqTg53xZz2yFK;
+	Fri, 11 Sep 2026 06:46:31 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1029"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789073191;
+	cv=none; b=nHtv/WMOJk9fTdB9RpEGbpVbQFA3PfQg+h/Ojs4bcoYHDOOItc1OpQdhzhNB2sNAnYZQ86PpGyD7Jk7nw6cq7/AKbxm9gV+hvg/VxKZz066c6A2lnVMJs6BDxSvbqFdsL3Yl+QeBK+wA2ft4jAIX0i1Ug3+jCVU191x3CSznnlqNPkTVv/H9wGgiVSWz8AAzwvJU/QWO9ZX7ontCvtP+P5YLPnB4hsfBv3fhyIeNm39aG7TtnFKYqpbfvgaTHXOVLjRtYC+rOjAa72AEcWRTEjsaBYjE4zJ9yln6A137sBN+8wQk9UNV8vpnRBikrleP3VYPOOJuW1AFnIM4YRf8UQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789072132; c=relaxed/relaxed;
-	bh=Aa3oYV4B3MU/10qO4ouQXqPc/oc+sYQCXCIbQhucJYo=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=d69ks36DzOwP9VgsbOsM7TTIdW1PM8Ccb8GqFZtNrnsZVPScVo2dRQ6eh/Fgv7PqSCvFjyGRYXpYUIPvx32yaTrl9O3iUWIg6GMv2O7FLLkYHxvW6lzD6iYDhFrzZtd038CSwSHfqaVL8ErRs0tzoxQII9u6ymUYa0n4DzPRn/RxzQkUxL6BZabHUIWghH2GIFTKusC7ZY/Z+f7eycLhLRxOs5dd8Fqk2t72w1sI9EhyNWslx7bzZvgbBmDRQmRT+nC6UtSlMusyQnWF6RbsJ+/WnKwkVBhUcr0FgsvMvBdqMgbREaCun4vU+QiG49wub5p6TabPVQX3AK6BYIf4ww==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=brTjGj9C; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::632; helo=mail-pl1-x632.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1789073191; c=relaxed/relaxed;
+	bh=D5NzLm00d+6PWFDYExUVxG0yq7opmcUTWEJmvWiRjsQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=msB4MGylPKa7hmCzlsdBAk4qeaJoj4T2S2kwokgBgrwL2KYLmx59yeA6N3LXwLj34mKhd7acgCXLZmQP/1RNLsxpmXkZNBxz31iEbU8Y56aZ5QYIOAuapJdVhz3ogakqpz1talGcy2BdQBWcK6VE5Tpt3m+bcGKWoxQ+k43bHr6yVTPo3ZbzXo0Rfk/GxmZf96w5OfDdZxTwX8LDoA+nECdB+yIWv1I1NYEWdnrjwVOHjWkTZNf8Irfs80Dq8ClsI34ue9CTFN9MvSSgFAdpg3vJ0Aj2/iNPofILWtsNUDXkZI3j2A2CtIYYyQBxnVcv+7RaI6Fco4bmJxqVIlxkAg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=oKT9J1fT; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1029; helo=mail-pj1-x1029.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=brTjGj9C;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=oKT9J1fT;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::632; helo=mail-pl1-x632.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x632.google.com (mail-pl1-x632.google.com [IPv6:2607:f8b0:4864:20::632])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1029; helo=mail-pj1-x1029.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x1029.google.com (mail-pj1-x1029.google.com [IPv6:2607:f8b0:4864:20::1029])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hgq5H46vnz2yrD
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2026 06:28:51 +1000 (AEST)
-Received: by mail-pl1-x632.google.com with SMTP id d9443c01a7336-2d71d1cc8b2so1061845ad.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2026 13:28:51 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hgqTf024bz2yDs
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2026 06:46:29 +1000 (AEST)
+Received: by mail-pj1-x1029.google.com with SMTP id 98e67ed59e1d1-3990fe066ebso147568a91.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2026 13:46:29 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789072129; x=1789676929; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1789073187; x=1789677987; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=Aa3oYV4B3MU/10qO4ouQXqPc/oc+sYQCXCIbQhucJYo=;
-        b=brTjGj9CXYEm9uYldSBms/2DHPoWQ7gjXIuIMDGivseIcvS5a1SPCM3AERRmCcmtcf
-         a8blDeQoq4YnOV4AgWyNSDaFY3LLD3NYAK29aBMpJTfGnkGy16mfacrbv5y04xVebloX
-         XVdLI3aeXjjWmCbd//5iI5Nv/nPKZXy2pkUe7nI/5XGdN0srByNnFKwn17oeh7eQSIDI
-         e3kC8vRpqkDNkLjwCQlLUzE0jgVMbXyEUo9bakuZU5Ho9dUzPpTfWCRjvHmGlEH3DCnV
-         zM24dgOukODNm0gB6FyqF360fuegrsZ2wSnWCFCX63oaZblrwxwJ/1L2MyUU+rmXTn3C
-         3D+Q==
+        bh=D5NzLm00d+6PWFDYExUVxG0yq7opmcUTWEJmvWiRjsQ=;
+        b=oKT9J1fTwVegb9TrKeXeTBJYF3MbsHZL5eocFEubv2pkwc73IrAAsrHD9VT+itQcib
+         yQZTonxFmGqC/uRoC8EquYMSWdMYpx3K50ezP5QqhYpjLOAKgJKICGCkPbEKecj2DLE6
+         uMf06ZcjyUM+9wVvM3UpGQNMtNExEU1IKsNhQim6H2JxK6IcfltIeOAx8yWgJMk4+a5k
+         2UeWMgYnoZCbL34jhSWW8FQ5c+l1NcNR4S4Un7R4zsB2g7HOk3bJXwpioTVdh1Pw4azi
+         i317RRf8YMVoS9ZCgPZH9dshhEdgGzIFNX7a63WpKSZOMCaAbyI8KerwMIrLJJtmrdOQ
+         f9Yg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1789072129; x=1789676929;
+        d=1e100.net; s=20251104; t=1789073187; x=1789677987;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=Aa3oYV4B3MU/10qO4ouQXqPc/oc+sYQCXCIbQhucJYo=;
-        b=WRV9i5mAglGNo7GEFf+voPXiKtw5OmtY76bBhGUQmiLkhVBL5Hgh5V+edGLkddQkIi
-         /g7lhS+4taNRUyX5+W5TNK+qXl/uxj5S1PAR4+qlduY67SrGez3IbpRRqECR+GCRIKBv
-         5smRf6/4gP9p6R7xOABbiKBEVkhypnD2saq1neUF8nSl+WO7u7Igpy25KkBmggduAWp1
-         zjxAJvw8H1RgEvktiEqLm1tde/wgzrZW4aEwgWg5jYM4XVdchRER2Hl5K8o/S+E23AFD
-         NqXRbiiMNQtjkoaDU1Vnlk9BgO8MmMjdzoQcWTo+pFleB/GkppshcWPHXm6Ocv/rxe5t
-         vckQ==
-X-Forwarded-Encrypted: i=1; AKwUvBz4v3UqAiNyTfO3/se0ZOSvl+r9MtJ377YRNmMsYeU+vEOWuHe8zeIdW/yKEbPtjF/Nh+tP641m15uHr3s=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++n9N8C/VyC7XjDoDliqBxutdRwZeFjmUedpeYQcJvq+2L8kpM26
-	UeBO75R8xacVCu9aP3iz9Hn/Mwru8XAQT7uwm+wEU3+NWa+41Ib8Pz7fI+62Kg==
-X-Gm-Gg: AYBFou3MZHFYx5dxDhowhPsRVX/9tb/aLXhq2U+oGZRPt8r2mQzG+yPINoB+JP1wk78
-	N0E5WohEpYVHI25gnjSogUjtOyKZEwZ2lEvk3/6XUUTNMdXwop7PL27zPtft9GkXdPo0MjgMRMe
-	pCUIwm7If/4ktvstFehyZTyVpndrrWp3tR9felfxNOsoYqUYUo3J/p4AqpMA5XQ/QJ6m/iVeVZr
-	z9wb2WxLYQm+bli+oqC0xVrKn6k80QFqt5SxCCt0UfuN/VqzAv3/oAXTXgt0bNxxVxAdfkhj5pD
-	FGF8t1C/8Tv2SSw4WvLy+o6H85iDHA+v6XifxCBdDeyQcbsPmImvcg86riQofYMr+P0UOKDxYRP
-	Uwd9aVqSFjx3mtkLE6yKH4MKE/uSlxWEfddUM9p44Eep1pN+T3nuSJ8UsaKgAxx0JXuzs61NUlw
-	1b1CNzWfGK5FwMIgIPl8ENQcxlDLsGzL8AFrgFak0UssaA/3uk1Uhsh2Ucut+2zhczgi5hrL4pE
-	I0iFkv4rGuv9FDTGFAkakwA+jAkxkqBryHKrxWAM4yI4s0dNS+oVEviUAXy+VCK0bvWoPvs5K7E
-	a/tu7aexAPsuzSpyx46H3s9jlIEZwgS/ezEe9XyEwVXohB4n
-X-Received: by 2002:a17:903:1a4d:b0:2d9:2149:57c0 with SMTP id d9443c01a7336-2dd2a56f3e4mr20652425ad.22.1789072128998;
-        Thu, 10 Sep 2026 13:28:48 -0700 (PDT)
+        bh=D5NzLm00d+6PWFDYExUVxG0yq7opmcUTWEJmvWiRjsQ=;
+        b=p8U6Vz4z+RGVfTZ/Us61GNZttPmEU+eN6RXADmNFvSLhmBtsnOtwoI3QShYpc3qCaj
+         hM5jKSEJu0aBcIz6e45fGeSVge+RwyFgBkj29D1APz9ShRkMzpLlSMCPumadVEjuanjE
+         q7F2Sh7hFosWuusCkIYef7/fkoDaOqMWV8To4HBMdUp3AmpaS2wr2XOFMpmzJh0ReEDT
+         ewG4FqknJyTKbvKO9Ebv1gEOKIPeu1tOupMBiiXqWi9afUc7R6g+ew0OhBjMNVAW0SRU
+         OWWq5ZTJxtWFiVe4N+71e1kO07NwTTmrFNQMuts3QzB1h0I0uZrXtkAv4xuZP6A8QegJ
+         V32g==
+X-Forwarded-Encrypted: i=1; AKwUvByecmbMUorQES9qDN4osWAi5wdcPNtXR1Jt0Y3G3k+WknxF8pdKpvDLgD3nEoOArcvtUytoqf/jxvNm/go=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++msZ4H5Pp0nSjkptw0N9wol28SrhhhQdhxH2zDiBVQgdxB0/lZr
+	IqoXvyDQqETjROIQ0FrHXnGyBje4rhm1Ce7TYN2CWO1ghB/dG3rBMCp+
+X-Gm-Gg: AYBFou1Gu0jdrqsWlskIeyY9tZu4S1JRRM6hCkSYfJPrb92kv+SUWJv5ftCkJ1cnzB3
+	kTxnMP3T+0sEWIs68K1kcc34TeBF8DzhwpMIAdk8H9/mWuqSqFnEi8hX6MwKP65TI0tcrEnBLv+
+	pbBE08w1CtJPpSOpMsttfqC0WAe0IU2EqFYX07gN2l59zlxtQBq5buCHuGzdNdMB9nodUAwBmYP
+	Olgy4Ejaun8Oc6nkYOWAMIXutXdjt36nYUhE673tHRcQjoAMAjDJhA3BCzxxLoiE7UJBF/Q56wz
+	SS0Ag8sIVTdifRyhXhqmtPffzBFbejsS8md6RSlXLatjfJ/tt0EmMiZP+c/ZiUIiQpOpLMs0YiM
+	EjZqc43t9noLOx3+YpaL5vrT0HRds6lwFxRd2lxsarTPOQLQZjFsWXBuN+txnXsKmEfmmqe5vLX
+	s7wFsPB6sRpeD35Dool/TsPAnriWUrddKaPOxel/I9FirKgo7Sruy5MOeQP3jaBySQJ70cB3VpI
+	iDnLHfTfVo//SJFlr98KwdZG1CMLCWfIfskoCwLaROb0KZYRJyyCblR7ejK4Y1shdzKmU7YNy46
+	qXBE76SBDK+xJYZlyXBc8LU/wWwH7xMJTGU6RCaDg9AZb8+new==
+X-Received: by 2002:a17:90b:3c89:b0:398:ba9e:75ff with SMTP id 98e67ed59e1d1-39d9c35047emr828915a91.21.1789073187174;
+        Thu, 10 Sep 2026 13:46:27 -0700 (PDT)
 Received: from ryzen.lan ([2601:644:8000:7a86::e35])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2dd2ceb4024sm1430895ad.33.2026.09.10.13.28.47
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-39d950913a6sm1261016a91.6.2026.09.10.13.46.26
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 10 Sep 2026 13:28:47 -0700 (PDT)
+        Thu, 10 Sep 2026 13:46:26 -0700 (PDT)
 From: Rosen Penev <rosenp@gmail.com>
 To: dmaengine@vger.kernel.org
 Cc: Zhang Wei <zw@zh-kernel.org>,
@@ -78,9 +78,9 @@ Cc: Zhang Wei <zw@zh-kernel.org>,
 	Frank Li <Frank.Li@kernel.org>,
 	linuxppc-dev@lists.ozlabs.org (open list:FREESCALE DMA DRIVER),
 	linux-kernel@vger.kernel.org (open list)
-Subject: [PATCHv2] dmaengine: fsldma: kill tasklet before removing channel
-Date: Thu, 10 Sep 2026 13:28:46 -0700
-Message-ID: <20260910202846.48941-1-rosenp@gmail.com>
+Subject: [PATCHv2] dmaengine: fsldma: convert to platform_get_irq_optional()
+Date: Thu, 10 Sep 2026 13:46:25 -0700
+Message-ID: <20260910204625.55367-1-rosenp@gmail.com>
 X-Mailer: git-send-email 2.55.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -97,30 +97,68 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Add tasklet_kill() in fsl_dma_chan_remove() to prevent a race where the
-tasklet is scheduled by the IRQ handler and runs after the channel has been
-freed.
+Replace the per-controller irq_of_parse_and_map() call with
+platform_get_irq_optional(). The controller IRQ is optional when absent
+and the driver falls back to per-channel IRQs. The corresponding
+irq_dispose_mapping() calls in the probe error path and remove function
+are removed.
+
+Moved before anything else in order to handle -EPROBE_DEFER and to avoid
+doing extra work. Simplifies the if statements as well.
 
 Assisted-by: opencode:big-pickle
 Signed-off-by: Rosen Penev <rosenp@gmail.com>
-Reviewed-by: Frank Li <Frank.Li@nxp.com>
 ---
- v2: split from series and wrap at 75 characters
- drivers/dma/fsldma.c | 1 +
- 1 file changed, 1 insertion(+)
+ v2: move to the front of probe.
+ drivers/dma/fsldma.c | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-index 6ce0e5668dc2..5eca8ab23564 100644
+index fb19c60540be..9ee8ae1aaf40 100644
 --- a/drivers/dma/fsldma.c
 +++ b/drivers/dma/fsldma.c
-@@ -1207,6 +1207,7 @@ static int fsl_dma_chan_probe(struct fsldma_device *fdev,
+@@ -1224,8 +1224,13 @@ static int fsldma_of_probe(struct platform_device *op)
+ 	struct fsldma_device *fdev;
+ 	struct device_node *child;
+ 	unsigned int i;
++	int irq;
+ 	int err;
  
- static void fsl_dma_chan_remove(struct fsldma_chan *chan)
- {
-+	tasklet_kill(&chan->tasklet);
- 	irq_dispose_mapping(chan->irq);
- 	list_del(&chan->common.device_node);
- 	iounmap(chan->regs);
++	irq = platform_get_irq_optional(op, 0);
++	if (irq == -EPROBE_DEFER)
++		return irq;
++
+ 	fdev = kzalloc_obj(*fdev);
+ 	if (!fdev) {
+ 		err = -ENOMEM;
+@@ -1246,7 +1251,9 @@ static int fsldma_of_probe(struct platform_device *op)
+ 	}
+ 
+ 	/* map the channel IRQ if it exists, but don't hookup the handler yet */
+-	fdev->irq = irq_of_parse_and_map(op->dev.of_node, 0);
++	fdev->irq = irq;
++	if (fdev->irq < 0)
++		fdev->irq = 0;
+ 
+ 	dma_cap_set(DMA_MEMCPY, fdev->common.cap_mask);
+ 	dma_cap_set(DMA_SLAVE, fdev->common.cap_mask);
+@@ -1308,7 +1315,7 @@ static int fsldma_of_probe(struct platform_device *op)
+ 		if (fdev->chan[i])
+ 			fsl_dma_chan_remove(fdev->chan[i]);
+ 	}
+-	irq_dispose_mapping(fdev->irq);
++out_iounmap:
+ 	iounmap(fdev->regs);
+ out_free:
+ 	kfree(fdev);
+@@ -1330,7 +1337,6 @@ static void fsldma_of_remove(struct platform_device *op)
+ 		if (fdev->chan[i])
+ 			fsl_dma_chan_remove(fdev->chan[i]);
+ 	}
+-	irq_dispose_mapping(fdev->irq);
+ 
+ 	iounmap(fdev->regs);
+ 	kfree(fdev);
 -- 
 2.55.0
 
