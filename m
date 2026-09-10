@@ -1,93 +1,87 @@
-Return-Path: <linuxppc-dev+bounces-27030-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27031-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E49B2C79F9F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2026 13:32:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 67141C79F9F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2026 14:14:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hgdrL0K90z2yb9;
-	Thu, 10 Sep 2026 23:32:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::c35"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788975233;
-	cv=none; b=PasNcfowI085cNEMGEyrg5ioYw52RsBSbrmokQk0YKDk/EG/lSjPxRUID6aTXGU+HVkB/4jv7ceSmIcrIZSboeW9Dg/nhw/8JZMhEUJofJoAoXZbsEzzvI2e6KeiGHINnWS44pSL5KXqPfHxYxM9ragym6ojkuLtI/0oWX365LU3U2Ryt+FkY52SZ29LQbFrqAx77nNua3yg33RLGM+4qAJT08jDzPIPGWO/i7C3w3mLDhjrzD1Wor5ZxYqlNiZYjVvvLxXsO8PtKyCSxGtxPqZj9mc33vHOdEoFD8J0G89Lp4xjLkMXvZiKrM+yRh3ROJAEVrGy8RweW1r/+etYGg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hgfmy6GvBz2xjM;
+	Fri, 11 Sep 2026 00:14:10 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789049650;
+	cv=none; b=oQ12T6W1xEjT90TXH9fNF7x0ruv96JrUjbhezMfsfW92tr/364zFaKPYZyMcfCpl9+K2rNK5G/Q0kFJdAUwtsMHKc0mJvdB8cY7QVpYPAi534JlZGj5NymPUs6VwbvzS3RQdR2YdTQMKnUhBlGRNwecyCQG5KkRCp9xF2kdtGV4BM3YaUkRB4Ax4A2Mn9MfTuy82tOOVK9euKdwQ4AnLOcbP0XMjTehDTuMvPLugogy+gRHYSTT+cxHTnYx5ZE+wqOoNsjMUyW8HKmOCIDM//67MK16BwRtkwTw/ELxbUGtc/8PbcrEcC9XuyRoa3DQA0L3SzDd+xrOlrdH0BPTDbw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788975233; c=relaxed/relaxed;
-	bh=aRf99SMBmtl+VTLk0zBUOwJpiJLfRXga4UGT3MjWHTQ=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=GCYQ8Km7zrzEuFmcZGSPxuwFwXYH19qdFKKCNxhoatLoHmZhmL58SpQ97Uhj5lyFfa6fJu1Poaa+5yTkKXvRWmI9Z35eXcJR31lSrFhmC2L4N3j/FNn6b79uXCYcgCywJKjLK3GT4PfhBFjyGec22saxmqiRkYf6ERvyxwPuYlp2U5We6A/cFdyvHk5AMVQj+iVEctSZ5zdAdbQn5WFCLDyWFYAgMt0Jj1gAnt4d3ZbkQuMnzOqrVQICLdw9Dg/bEeq7YtK4dA5gl+mX1wN1f4jwMkd7g4Kb/aV5E7qZIx0SUogpxUK1bgZDKFjM3GYoUFfidrMrwzw6Vz4YLJUlTQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Ugi9W9LX; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::c35; helo=mail-oo1-xc35.google.com; envelope-from=2000jedi@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1789049650; c=relaxed/relaxed;
+	bh=Rsa+09XshQBqt7KTDIU4LcA8wjLUXgeN7I6YUPic3UE=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=A3R/aF9cK07I+Vce6vCFTCfxjVyxP2iXmvP1j5ek+6PK1ffKXiv5QfoRGwGuEvu6Nspn+aY4WasO4EPeyO34Q/t8tfer+hZYQdtE7NHNu6wqEWEVjfmhooH6ZrkMMVXcWXvquxtZ0NW32W4tL0glcrSvsDBhL1x1kQ9JWLb4FA/XBKbyHWrk/x1ZdHTtMaiQKobNrvW5fGCAV1cilNk3QNl1ycp7Ofh3suNZVadTZoqDKF+39LjRYhwyDXm8XJ+DutwpyC7FNEkd9SMjZmuCzn7t/tvGzhomus+IkCALhHV+XTirIkPefJ9vw9n9BUvnQOCaxYkEVQG52Zy6rHf0dg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=s1bpGVeK; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Ugi9W9LX;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=s1bpGVeK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::c35; helo=mail-oo1-xc35.google.com; envelope-from=2000jedi@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-oo1-xc35.google.com (mail-oo1-xc35.google.com [IPv6:2607:f8b0:4864:20::c35])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hg7Fr2Tdsz2ywh
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2026 03:33:51 +1000 (AEST)
-Received: by mail-oo1-xc35.google.com with SMTP id 006d021491bc7-6b1c75f0049so4594337eaf.3
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Sep 2026 10:33:51 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1788975229; x=1789580029; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=aRf99SMBmtl+VTLk0zBUOwJpiJLfRXga4UGT3MjWHTQ=;
-        b=Ugi9W9LXLRaAzYukBspxNYnkWCa60l3yuts3x8k7PE34pHVb+xJLHYL+R5Op68tjXi
-         B6bIKao+8l+13yhF0DegzpCInPZ5s96UcRnwvy7BZv9vt7G/W4S/frt7cv4GWZGtC5+c
-         v3plXy1+BgVR3zar/4td/BDDdW0+owcsqcQkD6D6eoW/tI+u7DmBWFPxS99U2cFlq/p9
-         MNITlkQOWjgsOHxSzdMAr+PVbRmzvGXhl2DLB6emvUonveE/fei99YJ/BYLK1JhKbN69
-         91EaocxDOXzXsmR4FpXTf9jzZmp+sBtlJjtS4zjcTjDiI5G6pwDxomTYYR4mWriV4FcX
-         YRRA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788975229; x=1789580029;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=aRf99SMBmtl+VTLk0zBUOwJpiJLfRXga4UGT3MjWHTQ=;
-        b=agZ2FZfhXini2dp0Duy40L/yupWkKjhtZlAXd9DEaNcvFQqDeduSL5FVyaD1VKgUzr
-         q//WdafByzVhBBOc7pRNhvY48vg7+4ufc7TUsVf1lWkgy3sq7R3Hcfasy9nWCrqwfIC9
-         R2op+xKgaZ1+ks7+kqx0f9X/ukIz/rxGbVUwefhQJocW9UyJ/Z1h3J7Ue3LqPbmV1NME
-         cP8psGC3m4Bo9muL9OF+ZW3CecgqSkaNiRK/BeqHABftaZ4k/CGwIuJdFWxxp/B7zqzi
-         cS/L+loGAwD27w+3n6S6XrYKQC/fn9MIDTiAD1sW+dKLhVEybOKnjx4G+o61P5cSohBm
-         NqKA==
-X-Forwarded-Encrypted: i=1; AKwUvBzpc64HmJhRYpHGzcWQKQ2FuLAnHHLl2e6Y4iwsnU0mGlZP71RBLzrXDakyh6BAR39SN8SpCtx495UqzgQ=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++mP2qT2Se0Ia6f4hanj54lal3DQriC8iem8cjpKAJpsNKJHbSOC
-	vyfjNphwnmErYu6t03FImH/nDVhRQ2RIwlMT+Hi/fCYP90iLIn47snSe
-X-Gm-Gg: AYBFou1xVjNdKGZur+hWzO2TcMH9X/r1UugZ4AAaOo/H1PS0+knUQXjzGBuOFXBAZKt
-	5i5rK4jYqTjlh0Z5IOMKRhMl4T1m9J21pEJXziMKEhazO0/gKfr/JczZRDihK+3w4FBXaoYsoyB
-	1mK6hszxga2A6gq5su81S5dMqk3W7Q8391U0zEcC1zwZhsUdr5afX2EXf6uZP92dvrWzsocxjnW
-	PIivzc5Iq2Gj8ZYdyxk8yvL2nkd1VL6ZWNSnIyKQkbAGISfIklkYA/MgAEiNYASMDZklWSa/FGU
-	ioQJoWY19FZwzqbWf6oyEyBS4WneGS1rdBxUdewgNZmjpqQu87bA8CDan9Uvlxkg5Be9gYQMk9o
-	V3Gz5mPiaFJZJ/2apWNKe2jHTcKlsbXHok8ZHKvpCr8FURAahdYxRJbWPRQqx1I4U/4JoPL6dIu
-	z784bDjPqnKV2w2iyLoVlJ05X9yOSPVi7FTC9u7e71Mz5DMyxB+PcD6XUwfZVqjG+VPbQ9Z2YR1
-	u5N1SDh1555qaoCgfzWc0btJlbFsbfLQHq4QCq7APjRftO9Wi/4gngPYlTKQggDqV8=
-X-Received: by 2002:a05:6820:1888:b0:6b7:46fc:1cb with SMTP id 006d021491bc7-6b746fc0236mr17849545eaf.42.1788975228770;
-        Wed, 09 Sep 2026 10:33:48 -0700 (PDT)
-Received: from memorizer.fox-kitefin.ts.net (47-163-111-11.bng01.bytw.tx.frontiernet.net. [47.163.111.11])
-        by smtp.gmail.com with ESMTPSA id 006d021491bc7-6bac11fc29bsm10396408eaf.6.2026.09.09.10.33.46
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 09 Sep 2026 10:33:47 -0700 (PDT)
-From: Yudi Yang <2000jedi@gmail.com>
-To: Tyrel Datwyler <tyreld@linux.ibm.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Bjorn Helgaas <bhelgaas@google.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <chleroy@kernel.org>,
-	Ritesh Harjani <ritesh.list@gmail.com>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	Michael Bringmann <mwb@linux.vnet.ibm.com>,
-	linux-pci@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	Yudi Yang <2000jedi@gmail.com>
-Subject: [PATCH] PCI: rpaphp: Fix stack overflows when constructing DRC names
-Date: Wed,  9 Sep 2026 12:33:00 -0500
-Message-ID: <20260909173300.1144301-1-2000jedi@gmail.com>
-X-Mailer: git-send-email 2.43.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hgfmy1J7sz2xRs
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2026 00:14:09 +1000 (AEST)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68ACVQ4k1017565;
+	Thu, 10 Sep 2026 14:13:59 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=Rsa+09
+	XshQBqt7KTDIU4LcA8wjLUXgeN7I6YUPic3UE=; b=s1bpGVeKIHCAIsOQ244fhy
+	3aYYKpAjVo0mejHL5QN2bZNUeyeniAEdR87tUIT7rwlVqOXaSDLeEOjx2Pbh+ESJ
+	Xx+C+JohjyHuRtRmc4aKny/LB2iNpw/NxXEdKfhRwmiScTktMWTq7gHpgMuiAFcj
+	LHeurv0bZJvgmg982oLTjXTIxuZMUEWUD/B61pNgT3aODnjeMUec5zK1FmYi3t+h
+	+/xamNHp4pyrjnzYQWuq2f6CB1m2khHECuK/9nQgRS8Sqe67FJFi8VU7x9BV+uRy
+	sOHsDNuIJFcAB8ts4DIHakXHCqfp75Js5c6y3kPS3LEZt62o5scEM3aLc/2JE2Qw
+	==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gkd8n52ea-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Thu, 10 Sep 2026 14:13:59 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68ADAVaq044169;
+	Thu, 10 Sep 2026 14:13:58 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4gkvtf8d8t-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 10 Sep 2026 14:13:58 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68AEDuHu52887898
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 10 Sep 2026 14:13:56 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 0F42720043;
+	Thu, 10 Sep 2026 14:13:56 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 6484020040;
+	Thu, 10 Sep 2026 14:13:54 +0000 (GMT)
+Received: from fedora (unknown [9.5.7.39])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Thu, 10 Sep 2026 14:13:54 +0000 (GMT)
+Date: Thu, 10 Sep 2026 19:51:39 +0530
+From: Amit Machhiwal <amachhiw@linux.ibm.com>
+To: Karl Mehltretter <kmehltretter@gmail.com>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Jordan Niethe <jniethe5@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+        kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] KVM: PPC: Fix guest state buffer kernel-doc names and
+ parameters
+Message-ID: <20260910195045.996cb331-f4-amachhiw@linux.ibm.com>
+Mail-Followup-To: Karl Mehltretter <kmehltretter@gmail.com>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, 
+	Michael Ellerman <mpe@ellerman.id.au>, Jordan Niethe <jniethe5@gmail.com>, 
+	linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20260910033655.16127-1-kmehltretter@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -101,50 +95,148 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <20260910033655.16127-1-kmehltretter@gmail.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=NMVAaE6g c=1 sm=1 tr=0 ts=6aa2bb27 cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+ a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=pGLkceISAAAA:8
+ a=VnNF1IyMAAAA:8 a=yPVLcobRgUjX84E6IAMA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: J-dMCcHPRX6nTUw6TjgMFsEGwK3oj0ut
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTEwMDE2OSBTYWx0ZWRfX04YIj3PSJDwq
+ RCLzvLTxLEk94vfEWWmk9+1WPi6AkxRV8dBRWX6ZZXAj7wsZzKeW0Kd0ovYhiqu7NbnxA/7nDim
+ 7Ms7xvVkByMKRy/pnjb4qoWhE76SQYKyKxG1KvyzBy7uQqxVyci0BBNaihEm8FcsdjT2TnN/Ma+
+ /m/DJ4wlifhh0xWyY4dCdu//KsJTqNiRh1hah/iHCVCC6Kk4mjR6NDIkkcD3gwNvfTAnR7Ld2a4
+ zR4dg+27VjlUKaDBc9IftpXMRBdrHdd9RdINL6ds5na0zAFTYD9G3uhlYrgkSb6cpfW4OQzR6aH
+ GiL+wJIMcdyv25LiuA1XQoWduuhhwjtzTFydeFFc9JhDjZrHrvr/pmfu85TpBUY8WNmrzq9siWC
+ i4cpgQgpuaYLHxO3BrUct6/5Zlpybyb368F9TzOjIkT4WkhBBYRtYyITQ7IWNX8RDT7FPjOegmv
+ kGgdSR54Rmhp1p5aYLg==
+X-Proofpoint-ORIG-GUID: rwg0wXi8uBU91HmEltVOagbEFNv1f0Dv
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTEwMDE2OSBTYWx0ZWRfX0XnZOaffguB6
+ jj9xE44WgyDH1CUjulw9PIvKwROWpRrjKgeztW1SJ6djVQqlkY4OtQR3GuQHc8Jjfrqj6G4GqBz
+ SG/EutO39/hDio6+52TzFO004Qm9Pz4=
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-10_04,2026-09-09_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 bulkscore=0 clxscore=1015 malwarescore=0 lowpriorityscore=0
+ priorityscore=1501 adultscore=0 suspectscore=0 impostorscore=0 phishscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609100169
 
-The drc-name-prefix field of ibm,drc-info is supplied by firmware and
-is not limited to fit within MAX_DRC_NAME_LEN. Using sprintf() to append
-a suffix can therefore overflow the stack buffers used for DRC names.
-Use snprintf() and reject names that would be truncated.
+On 2026/09/10 05:36 AM, Karl Mehltretter wrote:
+> Several guest state buffer comments use copied function or parameter
+> names. In particular, kvmppc_gsm_for_each() describes a parser and an
+> element argument, although it takes a message and yields IDs.
+> kvmppc_gsm_include_all() also describes an ID argument it does not take.
+> 
+> Match the headings and parameter descriptions to their declarations,
+> and describe the parser argument and vector output with their actual
+> roles.
+> 
+> Fixes: 6ccbbc33f06a ("KVM: PPC: Add helper library for Guest State Buffers")
+> Assisted-by: LLM
+> Signed-off-by: Karl Mehltretter <kmehltretter@gmail.com>
+> ---
+>  arch/powerpc/include/asm/guest-state-buffer.h | 17 ++++++++---------
+>  1 file changed, 8 insertions(+), 9 deletions(-)
 
-Fixes: 2fcf3ae508c2 ("hotplug/drc-info: Add code to search ibm,drc-info property")
-Cc: stable@vger.kernel.org
-Signed-off-by: Yudi Yang <2000jedi@gmail.com>
----
- drivers/pci/hotplug/rpaphp_core.c | 11 ++++++++---
- 1 file changed, 8 insertions(+), 3 deletions(-)
+The kernel-doc fixes are all accurate — heading names, parameter names, and
+parameter lists now match their declarations. In particular, the
+kvmppc_gsm_for_each / kvmppc_gsm_include_all / kvmppc_gsm_reset /
+kvmppc_gsb_receive_datum / kvmppc_gsb_send_datum corrections are a clear
+improvement over the copy-paste state left by the original commit.
 
-diff --git a/drivers/pci/hotplug/rpaphp_core.c b/drivers/pci/hotplug/rpaphp_core.c
-index 2316de0fd198..39109a50fee6 100644
---- a/drivers/pci/hotplug/rpaphp_core.c
-+++ b/drivers/pci/hotplug/rpaphp_core.c
-@@ -252,8 +252,11 @@ static int rpaphp_check_drc_props_v2(struct device_node *dn, char *drc_name,
- 		/* Found it */
- 		if (my_index >= drc.drc_index_start && my_index <= drc.last_drc_index) {
- 			int index = my_index - drc.drc_index_start;
--			sprintf(cell_drc_name, "%s%d", drc.drc_name_prefix,
--				drc.drc_name_suffix_start + index);
-+
-+			if (snprintf(cell_drc_name, sizeof(cell_drc_name), "%s%u",
-+				     drc.drc_name_prefix,
-+				     drc.drc_name_suffix_start + index) >= sizeof(cell_drc_name))
-+				return -EINVAL;
- 			break;
- 		}
- 	}
-@@ -355,7 +358,9 @@ static int rpaphp_drc_info_add_slot(struct device_node *dn)
- 	if (!is_php_type(drc.drc_type))
- 		return 0;
- 
--	sprintf(drc_name, "%s%d", drc.drc_name_prefix, drc.drc_name_suffix_start);
-+	if (snprintf(drc_name, sizeof(drc_name), "%s%u", drc.drc_name_prefix,
-+		     drc.drc_name_suffix_start) >= sizeof(drc_name))
-+		return -EINVAL;
- 
- 	slot = alloc_slot_struct(dn, drc.drc_index_start, drc_name, drc.drc_power_domain);
- 	if (!slot)
--- 
-2.43.0
+Reviewed-by: Amit Machhiwal <amachhiw@linux.ibm.com>
 
+> 
+> diff --git a/arch/powerpc/include/asm/guest-state-buffer.h b/arch/powerpc/include/asm/guest-state-buffer.h
+> index acd61eb36d59..95d50ec7f2a9 100644
+> --- a/arch/powerpc/include/asm/guest-state-buffer.h
+> +++ b/arch/powerpc/include/asm/guest-state-buffer.h
+> @@ -224,7 +224,7 @@ struct kvmppc_gs_buff_info {
+>  
+>  /**
+>   * struct kvmppc_gs_header - serialized guest state buffer header
+> - * @nelem: count of guest state elements in the buffer
+> + * @nelems: count of guest state elements in the buffer
+>   * @data: start of the stream of elements in the buffer
+>   */
+>  struct kvmppc_gs_header {
+> @@ -779,6 +779,7 @@ static inline u64 kvmppc_gse_get_u64(const struct kvmppc_gs_elem *gse)
+>  /**
+>   * kvmppc_gse_get_vector128() - return the data of a vector element
+>   * @gse: guest state element
+> + * @v: output vector in host endianness
+>   */
+>  static inline void kvmppc_gse_get_vector128(const struct kvmppc_gs_elem *gse,
+>  					    vector128 *v)
+> @@ -849,7 +850,7 @@ struct kvmppc_gs_elem *kvmppc_gsp_lookup(struct kvmppc_gs_parser *gsp,
+>  /**
+>   * kvmppc_gsp_for_each - iterate the <guest state IDs, guest state element>
+>   * pairs
+> - * @gsp: guest state buffer bitmap
+> + * @gsp: guest state parser
+>   * @iden: current guest state ID
+>   * @gse: guest state element
+>   */
+> @@ -866,9 +867,8 @@ struct kvmppc_gs_elem *kvmppc_gsp_lookup(struct kvmppc_gs_parser *gsp,
+>  /**
+>   * kvmppc_gsm_for_each - iterate the guest state IDs included in a guest state
+>   * message
+> - * @gsp: guest state buffer bitmap
+> + * @gsm: guest state message
+>   * @iden: current guest state ID
+> - * @gse: guest state element
+>   */
+>  #define kvmppc_gsm_for_each(gsm, iden)                            \
+>  	for (iden = kvmppc_gsbm_next(&gsm->bitmap, 0); iden != 0; \
+> @@ -908,10 +908,9 @@ static inline bool kvmppc_gsm_includes(struct kvmppc_gs_msg *gsm, u16 iden)
+>  }
+>  
+>  /**
+> - * kvmppc_gsm_includes - indicate all guest state IDs should be included when
+> + * kvmppc_gsm_include_all - indicate all guest state IDs should be included when
+>   * serializing
+>   * @gsm: guest state message
+> - * @iden: guest state ID
+>   */
+>  static inline void kvmppc_gsm_include_all(struct kvmppc_gs_msg *gsm)
+>  {
+> @@ -919,7 +918,7 @@ static inline void kvmppc_gsm_include_all(struct kvmppc_gs_msg *gsm)
+>  }
+>  
+>  /**
+> - * kvmppc_gsm_include - clear the guest state IDs that should be included when
+> + * kvmppc_gsm_reset - clear the guest state IDs that should be included when
+>   * serializing
+>   * @gsm: guest state message
+>   */
+> @@ -958,7 +957,7 @@ static inline int kvmppc_gsb_receive_data(struct kvmppc_gs_buff *gsb,
+>  }
+>  
+>  /**
+> - * kvmppc_gsb_recv - receive a single guest state ID
+> + * kvmppc_gsb_receive_datum - receive a single guest state ID
+>   * @gsb: guest state buffer
+>   * @gsm: guest state message
+>   * @iden: guest state identity
+> @@ -998,7 +997,7 @@ static inline int kvmppc_gsb_send_data(struct kvmppc_gs_buff *gsb,
+>  }
+>  
+>  /**
+> - * kvmppc_gsb_recv - send a single guest state ID
+> + * kvmppc_gsb_send_datum - send a single guest state ID
+>   * @gsb: guest state buffer
+>   * @gsm: guest state message
+>   * @iden: guest state identity
+> 
+> base-commit: 50d05c7c76c96b90462f24debacca971d2e86713
+> -- 
+> 2.39.5 (Apple Git-154)
+> 
 
