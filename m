@@ -1,53 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-27123-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27124-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 128EFC88E4D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Sep 2026 12:36:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A73A5C88E4D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Sep 2026 12:56:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hhDYs387Lz2ygK;
-	Fri, 11 Sep 2026 22:36:33 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789130193;
-	cv=none; b=E7onA+oAAoyWNxwhMyaCJqA2kKBfTgzJf25eXOZiy1PoUmRlTXI7AlR48ZLmV9mcvlUF4MELVqOVMshQkLlcl9UubaBydMCrKhYdmFc1nUytMbuQN9d3H0aXP29+Htzz8jsb3a+58Kzw7FKE43VrvUGUoE3aY3zODC/ikv5pxh6/hrI+2GZZ63E5Phyh0ou7tJRB8+40Tz2thXNFYT897w/EBqhdwNAwZSbx+F+f0iU77qVBv1gihcLrHMCnBaeaqKmyLIRpUoBUpQ8/8f8UxDi8g/hKt8wow7BgX9Mh5tgEe4gWNmfbzk6pQhVUnwAikYoarwwnQfDC9VsVSbnphA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hhF0m2RqCz2yd7;
+	Fri, 11 Sep 2026 22:56:24 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789131384;
+	cv=none; b=V4XbZKEd6DLWqNGQn4+3MvR/agXyCLcf0lQhqjGPdzNj3BS40ialgzwBdLLOoOV6WpawdJoKFYqQ5DnUnKDePZ92CewTXToxsxVa7MTI4FCzWGcQy/KDUQwktjOyU9BMgOr9XDWDTWDdykyorV6ROjoAvdbzo0aEwhGVKroAvP0pgoIeOzyKVSz7up8mov2r4FeTpQsoRe+ZOihLPXftnhLEaofqSOZv5zvT+lJ9Bi5qASMGwHHMKwXQHK3c8MZTW4o8d7qelYF6tfbowLwD4ik1S5s9gi8rtdA3g8Ocy1JOfcnOboXIUyF4+saECeUQs6cvZMzeeW9lLackQ5XMDA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789130193; c=relaxed/relaxed;
-	bh=kYtmQzWImh1FZ8UPN3pnnVay1G/L6DByR/Zk2VvQLck=;
-	h=Subject:To:Cc:From:Date:In-Reply-To:Message-ID:MIME-Version:
-	 Content-Type; b=PZCJ1V2fDu2nCh1qBY/bIbwPMdQaMuf4YeTIpGgMG2QyPdRiY4xiyWO1fV96FPYfuHkk9HenNGrFi6w3FZBsNBRRwMA4tMKwnWPmDPyDk1ojDhZhWPpY3fsDHR57fc59dBvePHLn4R4A9a4gmqxx0dFj/WB26SPlmUwLhKH0ewqlVTmstcNK7BRXew3V4DaP1d3+GKfGfqzblprVmBLuLgcCjFGUIW8jdEmwdqTtBchU3BP2pIzly8vdMmns0MO9fFKZhtxDnn29k3gpGm6B1kaVFOeqL33P+u2Gh2DEZAmEFFYY39T+BYv89nuO5OEbKleFkhPXxenhYI+t7KfcdQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=iloosSm7; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linuxfoundation.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
+	t=1789131384; c=relaxed/relaxed;
+	bh=8mLdXXtYOLbU2LNLcwLfYPs4HhYEoNhpXum+MalzHXI=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=FnGvEt6awU1i8MztFRggYjcnI4EBru2tz/+ld52O30YNv72u4o4WUFaeGo536QNKFoxjCk8AF9OhmfamC7HWT+eALtTOgocFoXiAsa9ylO0wg8EaugNUDELIcV8ZgSmznRTtYU5NAIQ/ZGHXrDrBcqpZabNxzNTwgK2eOQZJi2JC7K6EazUrRmSe1Sly1oVgBiLbH+NZx+2Jke4Pzhlh5G5815TT5EBcqX9qSokmEhpnl1JCJ6i2hQoFjibd21+iZiJon4jbup+igXwAyw00+xeQs99zvGmhC3gL0zJu4GDr4t5IAbSWmkIpFlrtg+zN2DcXMXAAdGeODuFPflyaGg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=GR1t8r6U; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=iloosSm7;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=GR1t8r6U;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hhDYr0Dgmz2xpv
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2026 22:36:31 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 3BF1A60A57;
-	Fri, 11 Sep 2026 12:36:28 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 298A51F000FF;
-	Fri, 11 Sep 2026 12:36:26 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linuxfoundation.org;
-	s=korg; t=1789130187;
-	bh=kYtmQzWImh1FZ8UPN3pnnVay1G/L6DByR/Zk2VvQLck=;
-	h=Subject:To:Cc:From:Date:In-Reply-To;
-	b=iloosSm75n+QS7sZBsoBU9YTx2hIzAAFm0VAj3gwvXe4ZbJzJJOq0uogX6K4RYAuq
-	 ePUqZO7tON04UQa4mHcpxyMLu70TdnnlPYWND9pWr2QPAs1df9EaEn0jmnKTRPqkFU
-	 MsakJrHep+Op20yJfyQGqmNsgNdwdEpj1dUQRpFc=
-Subject: Patch "PCI: Introduce PCI_SLOT_PLACEHOLDER constant for slot_nr placeholder value" has been added to the 6.18-stable tree
-To: alifm@linux.ibm.com,bhelgaas@google.com,gregkh@linuxfoundation.org,linuxppc-dev@lists.ozlabs.org,maddy@linux.ibm.com,sashal@kernel.org,tyreld@linux.ibm.com
-Cc: <stable-commits@vger.kernel.org>
-From: <gregkh@linuxfoundation.org>
-Date: Fri, 11 Sep 2026 14:32:51 +0200
-In-Reply-To: <20260909141434.2391408-1-sashal@kernel.org>
-Message-ID: <2026091151-lustfully-haphazard-d38a@gregkh>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hhF0l1Ylpz2xpv
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2026 22:56:22 +1000 (AEST)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68BB1pgl1460590;
+	Fri, 11 Sep 2026 12:56:20 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=8mLdXX
+	tYOLbU2LNLcwLfYPs4HhYEoNhpXum+MalzHXI=; b=GR1t8r6UDAbMnaWagmD7Op
+	GUY0E/q/pHoVczOU5ndD6Fs2iaxzcmfwnHU13ilUG2ZNt7Wth0o1LTgZUE+HcKY1
+	rog/nT9yCWhOc4cWHxS6bQBuvaPsNwVAMQ5eyjEj1HSoqBoAXeeBXTg78G/LbXas
+	otsXKoK6TLIG4FgtSU97xblZATjV18Vw8OiO2iOZM7t/MEG6QrjSANj9RncvtBlD
+	S4NZSXUnx977/C/Xm1PQX0XPyKfE3EOUYqAPnAvpljtQlimTZE+vexgU7mzR0hsI
+	bVVK2iZXKduKNQYXANoA6/5cH9vxqaeKNnzIyI/WiHXLF3dBxAnHt8FW7UGvAXUQ
+	==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gkd8sbeqa-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Fri, 11 Sep 2026 12:56:19 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68BCo3B01676368;
+	Fri, 11 Sep 2026 12:56:19 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gkvmhpdkm-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 11 Sep 2026 12:56:18 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68BCuFxF48038210
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 11 Sep 2026 12:56:15 GMT
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 1E7182004D;
+	Fri, 11 Sep 2026 12:56:15 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 55D8420043;
+	Fri, 11 Sep 2026 12:56:13 +0000 (GMT)
+Received: from [9.43.53.28] (unknown [9.43.53.28])
+	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 11 Sep 2026 12:56:13 +0000 (GMT)
+Message-ID: <17f3fd18-835a-4b83-81bb-2b4046ed37f7@linux.ibm.com>
+Date: Fri, 11 Sep 2026 18:26:12 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -61,310 +81,218 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ANSI_X3.4-1968
+User-Agent: Mozilla Thunderbird
+Subject: Re: [mainline]ppc64le: NULL pointer dereference in
+ sparse_init_subsection_map when crash is triggered with FADUMP enabled
+To: Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Ritesh Harjani <riteshh@linux.ibm.com>,
+        Hari Bathini <hbathini@linux.ibm.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+References: <d352c3fa-e584-461d-ac95-1ac6dfb4b589@linux.ibm.com>
+Content-Language: en-US
+From: Sourabh Jain <sourabhjain@linux.ibm.com>
+In-Reply-To: <d352c3fa-e584-461d-ac95-1ac6dfb4b589@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-stable: commit
-X-Patchwork-Hint: ignore 
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: Vdu-Mf0jQmjk8VhcSOIs28MnfLYn8BAW
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTExMDE3NiBTYWx0ZWRfXwiFX73mDSfOJ
+ Q9rA90ZDlOoqdMeniy0V+SwA4lrmkcwi4hRox3VdtKHYhvpd7q8Y+rlTdx4Qnhe4xMU5QUcUqlx
+ ewWyOV2cnc/PZYB2XbMgypINWNrL3ejrrlity6hjVpDT52EX4/k4IHdqSOVWW0VHU4fw54ncBl3
+ Ix2RkITIWfbsMP8dd+Mawr1lWm9dOqcnq4U/v7Q7m4ch8wr30qu/FU8UuW0J4WG9p/80OH5z6PA
+ 8Dwq6fHF2aylH7dHGGjCl1ptYgNZIkDlzokrSidU9CO65/O3j8sK6OOfYTMXq0Fvg51URa/m6tV
+ FHLBeybxgAtjtM9bROzCqi31I5xKEDRysi3cltxP47ero6XQiOFqubTIWavjxuwkeXFKju0+cKS
+ Xw6rOl/lcKNNoUfGVW2RucBwSV13Sla25ReXPC5njpthYgrOvMWxOlb7mKdYjCQXk7QJgPqnaER
+ 7qhcL60Uc04XBMUAG4A==
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTExMDE3NiBTYWx0ZWRfX3ruOC80VlEpA
+ y70yH5R+H+yaJn2SyvPM2S0rJHuKXZwk9iU49VMQ3DuTTdSR+7/CqAhMMjdCpOpPAp3AC45Z1JX
+ sxn2buKdIJrvvG1PgKGZbyuKP6E8PtY=
+X-Authority-Analysis: v=2.4 cv=MpXHeGae c=1 sm=1 tr=0 ts=6aa3fa73 cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VnNF1IyMAAAA:8
+ a=L0S9ROj4nagv5cYX7DEA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: Vdu-Mf0jQmjk8VhcSOIs28MnfLYn8BAW
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-11_04,2026-09-09_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 suspectscore=0 priorityscore=1501 clxscore=1015 impostorscore=0
+ adultscore=0 spamscore=0 lowpriorityscore=0 bulkscore=0 malwarescore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609110176
+
+Hello,
+
+Here is the root cause analysis of this issue:
+
+The issue is caused by the FADump kernel running out of memory (OOM)
+during early boot. Since the OOM occurs very early, the corresponding
+OOM trace is not printed or observed. The kernel then hits a NULL pointer
+dereference because the component whose memory allocation failed does not
+handle the allocation failure correctly and allows the kernel to continue
+booting. When the kernel later accesses the memory assuming the allocation
+succeeded, it results in a NULL pointer dereference.
+
+The component whose allocation failed due to OOM is sparse:
+
+[    0.000000] sparse_init_nid: node[0] memory map backing failed. Some 
+memory will not be available.  <--- allocation failed
+<snip...>
+[    0.000000] Early memory node ranges
+[    0.000000]   node   0: [mem 0x0000000000000000-0x0000000effffffff]
+[    0.000000] BUG: Kernel NULL pointer dereference on read at 
+0x00000010                              <----- kernel hitting error
+
+This gap - where the kernel continues booting even after a memory allocation
+for a critical data structure fails in the sparse component - has already
+been identified and fixed upstream:
+
+commit b3ef855262928c5e80e881895694891164c13fc8
+Author: Muchun Song <muchun.song@linux.dev>
+Date:   Fri Jun 12 11:58:50 2026 +0800
+
+     mm/sparse: panic on memmap and usemap allocation failure
 
 
-This is a note to let you know that I've just added the patch titled
+If you reproduce the same scenario with this commit included, you'll instead
+hit the following panic:
 
-    PCI: Introduce PCI_SLOT_PLACEHOLDER constant for slot_nr placeholder value
+[    0.000000] Initmem setup node 0 [mem 
+0x0000000000000000-0x00000063ffffffff]
+[    0.000000] Kernel panic - not syncing: Failed to allocate memmap for 
+section 15619
+[    0.000000] CPU: 0 UID: 0 PID: 0 Comm: swapper Not tainted 7.3.0-rc1+ 
+#1 PREEMPT(undef)
+[    0.000000] Hardware name: IBM,9105-22A Power11 (architected) 
+0x820200 0xf000007 of:IBM,FW1110.00 (RB1110_048) hv:phyp pSeries
+[    0.000000] Call Trace:
+[    0.000000] [c000000002d4fd50] [c0000000012b56f8] 
+dump_stack_lvl+0xd8/0xf0 (unreliable)
+[    0.000000] [c000000002d4fd80] [c000000000212d58] vpanic+0x50c/0x550
+[    0.000000] [c000000002d4fe20] [c000000000212dd8] 
+do_panic_on_target_cpu+0x0/0x28
+[    0.000000] [c000000002d4fe40] [c00000000206d83c] 
+sparse_init_nid+0x274/0x278
+[    0.000000] [c000000002d4fed0] [c00000000206da08] sparse_init+0x1c8/0x290
+[    0.000000] [c000000002d4ff20] [c000000002061c5c] 
+mm_core_init_early+0x30/0x44
+[    0.000000] [c000000002d4ff40] [c000000002005f90] start_kernel+0x90/0x608
+[    0.000000] [c000000002d4ffe0] [c00000000000e788] 
+start_here_common+0x1c/0x20
+[    0.000000] Rebooting in 10 seconds..
 
-to the 6.18-stable tree which can be found at:
-    http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
+The above commit does not resolve the reported issue; it only makes the
+failure easier to understand.
 
-The filename of the patch is:
-     pci-introduce-pci_slot_placeholder-constant-for-slot_nr-placeholder-value.patch
-and it can be found in the queue-6.18 subdirectory.
+Increasing the crashkernel reservation should resolve the issue for this
+configuration. I recommend increasing it by 2G or more.
 
-If you, or anyone else, feels it should not be added to the stable tree,
-please let <stable@vger.kernel.org> know about it.
+The configured crashkernel value follows the recommendation, but the
+recommended value is not sufficient for this particular configuration
+because it uses a 4K page size. With 4K pages, the sparse and similar
+per-page/per-section allocations require more memory than with 64K pages.
+This is why the issue is not observed with the same configuration using a
+64K page size.
 
+I’m exploring ways to reduce FADump’s memory footprint by limiting
+per-page/per-section allocations to memory actually used by FADump.
+Until then, please increase the crashkernel size to avoid this issue.
 
-From stable+bounces-319952-greg=kroah.com@vger.kernel.org Wed Sep  9 17:30:11 2026
-From: Sasha Levin <sashal@kernel.org>
-Date: Wed,  9 Sep 2026 10:14:33 -0400
-Subject: PCI: Introduce PCI_SLOT_PLACEHOLDER constant for slot_nr placeholder value
-To: stable@vger.kernel.org
-Cc: Farhan Ali <alifm@linux.ibm.com>, Bjorn Helgaas <bhelgaas@google.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, Tyrel Datwyler <tyreld@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, Sasha Levin <sashal@kernel.org>
-Message-ID: <20260909141434.2391408-1-sashal@kernel.org>
+- Sourabh Jain
 
-From: Farhan Ali <alifm@linux.ibm.com>
+On 23/04/26 17:53, Venkat Rao Bagalkote wrote:
+> Hello,
+>
+> IBM CI has observed a kernel crash when testing FADUMP on ppc64le.
+> i.e., when a crash is explicitly triggered while FADUMP is active.
+>
+> System details:
+> --------------
+> Architecture      : ppc64le
+> Platform          : IBM Power11 (pSeries)
+> Machine           : 9080-HEX
+> Firmware          : FW1110.01 (NH1110_069)
+> MMU               : Radix
+> Kernel            : 7.0.0+
+> Boot mode         : FADUMP enabled
+>
+> Upstream kernel version: 7.0.0+
+> Upstream kernel commit-id: 2e68039281932e6dc37718a1ea7cbb8e2cda42e6
+>
+> kexec-tools 2.0.32.git
+> makedumpfile: version 1.7.9 (released on 20 Apr 2026)
+>
+>
+> Attached is the .config file.
+>
+> Crash Logs:
+>
+> [    0.000000] BUG: Kernel NULL pointer dereference on read at 0x00000010
+> [    0.000000] Faulting instruction address: 0xc000000000aba3d0
+> [    0.000000] Oops: Kernel access of bad area, sig: 7 [#1]
+> [    0.000000] LE PAGE_SIZE=4K MMU=Radix  SMP NR_CPUS=8192 NUMA pSeries
+> [    0.000000] Modules linked in:
+> [    0.000000] CPU: 0 UID: 0 PID: 0 Comm: swapper Not tainted 7.0.0+ 
+> #1 PREEMPT(undef)
+> [    0.000000] Hardware name: IBM,9080-HEX Power11 (architected) 
+> 0x820200 0xf000007 of:IBM,FW1110.01 (NH1110_069) hv:phyp pSeries
+> [    0.000000] NIP:  c000000000aba3d0 LR: c000000000708c38 CTR: 
+> 0000000000000000
+> [    0.000000] REGS: c000000002d6fb10 TRAP: 0300   Not tainted (7.0.0+)
+> [    0.000000] MSR:  8000000000001033 <SF,ME,IR,DR,RI,LE> CR: 
+> 44000248  XER: 20040001
+> [    0.000000] CFAR: c000000000aba41c DAR: 0000000000000010 DSISR: 
+> 00080000 IRQMASK: 1
+> [    0.000000] GPR00: c0000000020548b8 c000000002d6fdb0 
+> c000000001a9a100 0000000000000010
+> [    0.000000] GPR04: 0000000000000000 0000000000000008 
+> c000000002d6fcc8 0000000000000000
+> [    0.000000] GPR08: ffffffffffffffff ffffffffffffffff 
+> 0000000000000008 ffffffffffffffc8
+> [    0.000000] GPR12: c000000002b30cd0 c00000000307a000 
+> 0000000000000000 0000000000000000
+> [    0.000000] GPR16: 0000000000000000 0000000000000000 
+> 0000000000000000 0000000000000000
+> [    0.000000] GPR20: 0000000000c00000 0000000000000008 
+> 0000000000000000 0000000000306000
+> [    0.000000] GPR24: 0000000000000eff 0000000000000bfa 
+> c000000001461398 c000000001891c58
+> [    0.000000] GPR28: c000000002d44230 c000000002d44268 
+> 0000000000bfa000 0000000000001000
+> [    0.000000] NIP [c000000000aba3d0] __bitmap_set+0x90/0xe0
+> [    0.000000] LR [c000000000708c38] subsection_mask_set+0x38/0x50
+> [    0.000000] Call Trace:
+> [    0.000000] [c000000002d6fdb0] [c000000002744280] 
+> init_task+0x0/0x1d80 (unreliable)
+> [    0.000000] [c000000002d6fdd0] [c0000000020548b8] 
+> sparse_init_subsection_map+0xac/0x138
+> [    0.000000] [c000000002d6fe80] [c00000000204aa8c] 
+> free_area_init+0x258/0x4f4
+> [    0.000000] [c000000002d6ff50] [c000000002004f5c] 
+> start_kernel+0x98/0x5fc
+> [    0.000000] [c000000002d6ffe0] [c00000000000e998] 
+> start_here_common+0x1c/0x20
+> [    0.000000] Code: f92afff8 4200ffe4 55893032 38630008 798c18e8 
+> 7d295850 7c636214 7d2907b4 2c290000 4d820020 7d452214 3920ffff 
+> <e8e30000> 7d4a00d0 554a06be 7d295436
+> [    0.000000] ---[ end trace 0000000000000000 ]---
+> [    0.000000]
+> [    0.000000] Kernel panic - not syncing: Fatal exception
+>
+>
+> If you happen to fix this, please add below tag.
+>
+>
+> Reported-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+>
+>
+> Regards,
+>
+> Venkat.
+>
+>
 
-[ Upstream commit c243e6c470c4695965cc8287767925bc1d9a7867 ]
-
-Introduce a constant for placeholder value and update the kerneldoc for
-pci_create_slot() to reference PCI_SLOT_PLACEHOLDER instead of -1
-throughout. No functional change.
-
-Suggested-by: Bjorn Helgaas <bhelgaas@google.com>
-Signed-off-by: Farhan Ali <alifm@linux.ibm.com>
-Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Tyrel Datwyler <tyreld@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Link: https://patch.msgid.link/20260805165518.794-2-alifm@linux.ibm.com
-
-Stable backport: this tree predates 102c8b26b54e ("PCI: Allow all bus
-devices to use the same slot"). Include its PCI_SLOT_ALL_DEVICES definition,
-slot-number documentation, and core matching/address handling so that
-subsequent commit dcc5bec09e23 ("PCI: Allow per function PCI slots to fix
-slot reset on s390") applies without conflicts. Keep the PCIe hotplug
-callers unchanged; enabling bus-wide slots there is outside this dependency.
-
-Retain the stable tree's kzalloc() and ATTRIBUTE_GROUPS() implementations.
-The placeholder conversion covers both PowerPC hotplug callers and the
-PCI core. All code changes stay within existing functions.
-
-Stable-dep-of: dcc5bec09e23 ("PCI: Allow per function PCI slots to fix slot reset on s390")
-Signed-off-by: Sasha Levin <sashal@kernel.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
----
- drivers/pci/hotplug/pnv_php.c     |    2 -
- drivers/pci/hotplug/rpaphp_slot.c |    2 -
- drivers/pci/slot.c                |   50 ++++++++++++++++++++++++++++----------
- include/linux/pci.h               |   13 +++++++++
- 4 files changed, 51 insertions(+), 16 deletions(-)
-
---- a/drivers/pci/hotplug/pnv_php.c
-+++ b/drivers/pci/hotplug/pnv_php.c
-@@ -813,7 +813,7 @@ static struct pnv_php_slot *pnv_php_allo
- 	if (dn->child && PCI_DN(dn->child))
- 		php_slot->slot_no = PCI_SLOT(PCI_DN(dn->child)->devfn);
- 	else
--		php_slot->slot_no = -1;   /* Placeholder slot */
-+		php_slot->slot_no = PCI_SLOT_PLACEHOLDER;   /* Placeholder slot */
- 
- 	kref_init(&php_slot->kref);
- 	php_slot->state	                = PNV_PHP_STATE_INITIALIZED;
---- a/drivers/pci/hotplug/rpaphp_slot.c
-+++ b/drivers/pci/hotplug/rpaphp_slot.c
-@@ -85,7 +85,7 @@ int rpaphp_register_slot(struct slot *sl
- 	struct device_node *child;
- 	u32 my_index;
- 	int retval;
--	int slotno = -1;
-+	int slotno = PCI_SLOT_PLACEHOLDER;
- 
- 	dbg("%s registering slot:path[%pOF] index[%x], name[%s] pdomain[%x] type[%d]\n",
- 		__func__, slot->dn, slot->index, slot->name,
---- a/drivers/pci/slot.c
-+++ b/drivers/pci/slot.c
-@@ -37,11 +37,20 @@ static const struct sysfs_ops pci_slot_s
- 
- static ssize_t address_read_file(struct pci_slot *slot, char *buf)
- {
--	if (slot->number == 0xff)
-+	if (slot->number == PCI_SLOT_PLACEHOLDER)
- 		return sysfs_emit(buf, "%04x:%02x\n",
- 				  pci_domain_nr(slot->bus),
- 				  slot->bus->number);
- 
-+	/*
-+	 * Preserve legacy ABI expectations that hotplug drivers that manage
-+	 * multiple devices per slot emit 0 for the device number.
-+	 */
-+	if (slot->number == PCI_SLOT_ALL_DEVICES)
-+		return sysfs_emit(buf, "%04x:%02x:00\n",
-+				  pci_domain_nr(slot->bus),
-+				  slot->bus->number);
-+
- 	return sysfs_emit(buf, "%04x:%02x:%02x\n",
- 			  pci_domain_nr(slot->bus),
- 			  slot->bus->number,
-@@ -73,7 +82,8 @@ static void pci_slot_release(struct kobj
- 
- 	down_read(&pci_bus_sem);
- 	list_for_each_entry(dev, &slot->bus->devices, bus_list)
--		if (PCI_SLOT(dev->devfn) == slot->number)
-+		if (slot->number == PCI_SLOT_ALL_DEVICES ||
-+		    PCI_SLOT(dev->devfn) == slot->number)
- 			dev->slot = NULL;
- 	up_read(&pci_bus_sem);
- 
-@@ -166,7 +176,8 @@ void pci_dev_assign_slot(struct pci_dev
- 
- 	mutex_lock(&pci_slot_mutex);
- 	list_for_each_entry(slot, &dev->bus->slots, list)
--		if (PCI_SLOT(dev->devfn) == slot->number)
-+		if (slot->number == PCI_SLOT_ALL_DEVICES ||
-+		    PCI_SLOT(dev->devfn) == slot->number)
- 			dev->slot = slot;
- 	mutex_unlock(&pci_slot_mutex);
- }
-@@ -188,7 +199,8 @@ static struct pci_slot *get_slot(struct
- /**
-  * pci_create_slot - create or increment refcount for physical PCI slot
-  * @parent: struct pci_bus of parent bridge
-- * @slot_nr: PCI_SLOT(pci_dev->devfn) or -1 for placeholder
-+ * @slot_nr: PCI_SLOT(pci_dev->devfn), PCI_SLOT_PLACEHOLDER for placeholder, or
-+ *	PCI_SLOT_ALL_DEVICES
-  * @name: user visible string presented in /sys/bus/pci/slots/<name>
-  * @hotplug: set if caller is hotplug driver, NULL otherwise
-  *
-@@ -213,15 +225,26 @@ static struct pci_slot *get_slot(struct
-  * In most cases, @pci_bus, @slot_nr will be sufficient to uniquely identify
-  * a slot. There is one notable exception - pSeries (rpaphp), where the
-  * @slot_nr cannot be determined until a device is actually inserted into
-- * the slot. In this scenario, the caller may pass -1 for @slot_nr.
-+ * the slot. In this scenario, the caller may pass PCI_SLOT_PLACEHOLDER for @slot_nr.
-  *
-  * The following semantics are imposed when the caller passes @slot_nr ==
-- * -1. First, we no longer check for an existing %struct pci_slot, as there
-- * may be many slots with @slot_nr of -1.  The other change in semantics is
-- * user-visible, which is the 'address' parameter presented in sysfs will
-- * consist solely of a dddd:bb tuple, where dddd is the PCI domain of the
-- * %struct pci_bus and bb is the bus number. In other words, the devfn of
-- * the 'placeholder' slot will not be displayed.
-+ * PCI_SLOT_PLACEHOLDER. First, we no longer check for an existing %struct
-+ * pci_slot, as there may be many slots with @slot_nr of
-+ * PCI_SLOT_PLACEHOLDER. The other change in semantics is user-visible,
-+ * which is the 'address' parameter presented in sysfs will consist solely
-+ * of a dddd:bb tuple, where dddd is the PCI domain of the %struct pci_bus
-+ * and bb is the bus number. In other words, the devfn of the 'placeholder'
-+ * slot will not be displayed.
-+ *
-+ * Bus-wide slots:
-+ * For PCIe hotplug, the physical slot encompasses the entire secondary
-+ * bus, not just a single device number. If the device supports ARI and ARI
-+ * Forwarding is enabled in the upstream bridge, a multi-function device
-+ * may include functions that appear to have several different device
-+ * numbers, i.e., PCI_SLOT() values.  Pass @slot_nr == PCI_SLOT_ALL_DEVICES
-+ * to create a slot that matches all devices on the bus. Unlike placeholder
-+ * slots, bus-wide slots go through normal slot lookup and reuse existing
-+ * slots if present.
-  */
- struct pci_slot *pci_create_slot(struct pci_bus *parent, int slot_nr,
- 				 const char *name,
-@@ -234,7 +257,7 @@ struct pci_slot *pci_create_slot(struct
- 
- 	mutex_lock(&pci_slot_mutex);
- 
--	if (slot_nr == -1)
-+	if (slot_nr == PCI_SLOT_PLACEHOLDER)
- 		goto placeholder;
- 
- 	/*
-@@ -285,7 +308,8 @@ placeholder:
- 
- 	down_read(&pci_bus_sem);
- 	list_for_each_entry(dev, &parent->devices, bus_list)
--		if (PCI_SLOT(dev->devfn) == slot_nr)
-+		if (slot_nr == PCI_SLOT_ALL_DEVICES ||
-+		    PCI_SLOT(dev->devfn) == slot_nr)
- 			dev->slot = slot;
- 	up_read(&pci_bus_sem);
- 
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -72,12 +72,23 @@
- /* return bus from PCI devid = ((u16)bus_number) << 8) | devfn */
- #define PCI_BUS_NUM(x) (((x) >> 8) & 0xff)
- 
-+/*
-+ * PCI_SLOT_ALL_DEVICES indicates a slot that covers all devices on the bus.
-+ * Used for PCIe hotplug where the physical slot is the entire secondary bus,
-+ * and, if ARI Forwarding is enabled, functions may appear to be on multiple
-+ * devices.
-+ */
-+#define PCI_SLOT_ALL_DEVICES	0xfe
-+
-+/* Used to identify a slot as a placeholder */
-+#define PCI_SLOT_PLACEHOLDER	0xff
-+
- /* pci_slot represents a physical slot */
- struct pci_slot {
- 	struct pci_bus		*bus;		/* Bus this slot is on */
- 	struct list_head	list;		/* Node in list of slots */
- 	struct hotplug_slot	*hotplug;	/* Hotplug info (move here) */
--	unsigned char		number;		/* PCI_SLOT(pci_dev->devfn) */
-+	unsigned char		number;		/* Device nr, or PCI_SLOT_ALL_DEVICES */
- 	struct kobject		kobj;
- };
- 
-
-
-Patches currently in stable-queue which might be from sashal@kernel.org are
-
-queue-6.18/i2c-qcom-cci-fix-autosuspend-cleanup.patch
-queue-6.18/ring-buffer-show-persistent-buffer-dropped-events-in-trace_pipe-file.patch
-queue-6.18/nvdimm-virtio_pmem-refcount-requests-for-token-lifetime.patch
-queue-6.18/i3c-master-fix-recursive-locking-during-device-registration.patch
-queue-6.18/mm-damon-sysfs-read-ops_id-only-once-in-damon_sysfs_.patch
-queue-6.18/dma-buf-dma-heap-don-t-publish-fd-before-copy_to_user-succeeds.patch
-queue-6.18/tracing-probes-fix-anon_stack-check-for-unnamed-bitfields-in-btf_find_struct_member.patch
-queue-6.18/futex-optimize-futex-hash-bucket-access-patterns.patch
-queue-6.18/tracing-take-trace_array-reference-when-opening-options-file.patch
-queue-6.18/mm-secretmem-properly-account-locked-pages.patch
-queue-6.18/compiler_types-move-lock-checking-attributes-to-compiler-context-analysis.h.patch
-queue-6.18/io_uring-add-wrapper-type-for-io_req_tw_func_t-arg.patch
-queue-6.18/platform-x86-int1092-fix-potential-memory-leak-in-sar_probe.patch
-queue-6.18/platform-x86-hp-wmi-add-support-for-omen-max-16-ak0xxx-8dd6.patch
-queue-6.18/fs-ntfs3-fix-slab-out-of-bounds-write-in-ni_create_attr_list.patch
-queue-6.18/alsa-fcp-do-not-copy-out-an-uninitialised-init-response.patch
-queue-6.18/accel-amdxdna-return-early-from-a-zero-length-flush.patch
-queue-6.18/nvdimm-preserve-flush-callback-enomem.patch
-queue-6.18/tracing-make-printk_trace-global-for-tracing-system.patch
-queue-6.18/udf-move-udf_map_block-up.patch
-queue-6.18/pci-allow-per-function-pci-slots-to-fix-slot-reset-on-s390.patch
-queue-6.18/i3c-master-fix-device_register-error-path.patch
-queue-6.18/mtd-rawnand-pl353-add-message-about-ecc-mode.patch
-queue-6.18/nvme-fold-nvme_config_discard-into-nvme_update_disk_info.patch
-queue-6.18/nvdimm-virtio_pmem-use-read_once-write_once-for-wait-flags.patch
-queue-6.18/io_uring-waitid-avoid-siginfo-copy-during-ring-teardown.patch
-queue-6.18/wifi-rtw89-pci-add-.shutdown-callback-to-stop-rfkill-polling-on-reboot.patch
-queue-6.18/net-mlx5e-shampo-always-calculate-page-size.patch
-queue-6.18/perf-core-fix-deadlock-in-perf_mmap-failure-path.patch
-queue-6.18/usb-cdnsp-fix-wakeup-from-s3-after-controller-context-loss.patch
-queue-6.18/staging-sm750fb-fix-mono-image-source-stride-mismatch-in-lynxfb_ops_imageblit.patch
-queue-6.18/nvdimm-virtio_pmem-always-wake-enospc-waiters.patch
-queue-6.18/mm-huge_memory-transfer-the-pmd-dirty-bit-to-the-folio-on-zap.patch
-queue-6.18/batman-adv-fix-tx-priority-extraction-for-batadv_for.patch
-queue-6.18/platform-x86-intel_sar-check-acpi_handle-against-null.patch
-queue-6.18/tracing-probes-fix-btf-kflag-check-for-anonymous-struct-member-access.patch
-queue-6.18/mtd-rawnand-pl353-make-sure-we-use-the-monolithic-helpers-for-raw-accesses.patch
-queue-6.18/i3c-master-do-not-treat-master-device-as-a-duplicate-target.patch
-queue-6.18/platform-x86-isst-validate-max-level-for-set-feature.patch
-queue-6.18/asoc-tegra-fix-the-mixer-enable-default-value.patch
-queue-6.18/ring-buffer-allow-splice-reads-on-static-buffers.patch
-queue-6.18/i2c-qcom-cci-remove-overcautious-disable_irq-calls.patch
-queue-6.18/drm-amd-display-scale-custom-brightness-curve-from-f.patch
-queue-6.18/fs-ntfs3-fix-kmsan-uninit-value-in-ni_create_attr_list.patch
-queue-6.18/io_uring-waitid-have-io_waitid_complete-remove-wait-queue-entry.patch
-queue-6.18/nvme-skip-the-zoned-limits-update-if-the-zone-info-query-failed.patch
-queue-6.18/futex-provide-rt_mutex_.-_schedule-equivalents-for-futex-scheduling.patch
-queue-6.18/net-mlx5e-xsk-fix-unlocked-writing-to-icosq.patch
-queue-6.18/asoc-tegra210_mixer-sort-the-register-default-table.patch
-queue-6.18/tracing-clean-up-use-of-trace_create_maxlat_file.patch
-queue-6.18/pci-introduce-pci_slot_placeholder-constant-for-slot_nr-placeholder-value.patch
-queue-6.18/alsa-usb-audio-relax-__free-variable-declarations.patch
-queue-6.18/platform-x86-amd-pmc-fix-msg_port-restoration-in-amd_stb_debugfs_open_v2.patch
-queue-6.18/io_uring-waitid-honor-task_work-cancellation.patch
-queue-6.18/batman-adv-bla-avoid-crc-corruption-due-to-parallel-.patch
-queue-6.18/batman-adv-dat-atomically-update-mac-addresses.patch
-queue-6.18/ftrace-take-trace_array-reference-before-accessing-its-ftrace_ops.patch
-queue-6.18/platform-x86-isst-check-for-admin-capability-for-write-commands.patch
-queue-6.18/misc-fastrpc-don-t-publish-fd-before-copy_to_user-succeeds.patch
-queue-6.18/i2c-qcom-cci-do-not-check-return-value-of-cci_init.patch
-queue-6.18/iio-light-apds9306-fix-pm-reference-leak-in-apds9306_read_data.patch
-queue-6.18/mm-fix-incorrect-vm_flags-usage-when-checking-allowable-orders-for-tmpfs.patch
-queue-6.18/udf-fix-data-loss-when-converting-inline-inodes-to-out-of-line.patch
-queue-6.18/i3c-master-fix-use-after-free-of-master-this.patch
-queue-6.18/tracing-probes-ignore-id-update-from-btf_type_skip_modifiers.patch
-queue-6.18/clk-qcom-fix-test_ctl_hi-field-for-default_evo-plls.patch
-queue-6.18/mm-mremap-reset-unfaulted-vma-page-offset-for-mremap_dontunmap.patch
-queue-6.18/pm-runtime-wrapper-macros-for-acquire-acquire_err.patch
-queue-6.18/net-mlx5e-do-not-hw-gro-coalesce-small-frames.patch
-queue-6.18/staging-rtl8723bs-fix-oob-read-in-rtw_restruct_wmm_ie.patch
-queue-6.18/perf-x86-intel-remove-anythread_deprecated-bit-from-perf_capabilities.patch
-queue-6.18/nvdimm-pmem-keep-preflush-before-data-writes.patch
-queue-6.18/io_uring-only-call-io_should_terminate_tw-once-for-ctx.patch
-queue-6.18/io_uring-unify-task_work-cancelation-checks.patch
-queue-6.18/drm-amd-display-fix-backlight-max_brightness-to-matc.patch
-queue-6.18/wifi-mt76-mt7996-bound-the-device-eeprom-address-before-the-efuse-copy.patch
-queue-6.18/perf-fix-use-after-free-when-perf-mmap-revival-races-with-the-last-munmap.patch
-queue-6.18/nvdimm-virtio_pmem-stop-allocating-child-flush-bio.patch
-queue-6.18/staging-rtl8723bs-fix-spacing-around-operators.patch
-queue-6.18/usb-gadget-f_mass_storage-fix-null-pointer-dereference-in-fsg_common_set_num_buffers.patch
 
