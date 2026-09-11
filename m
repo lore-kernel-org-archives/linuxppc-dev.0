@@ -1,73 +1,93 @@
-Return-Path: <linuxppc-dev+bounces-27143-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27144-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 24752C88E53
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Sep 2026 17:09:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1D016C88E4D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Sep 2026 17:40:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hhLd56vk0z2ypW;
-	Sat, 12 Sep 2026 03:09:45 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789146585;
-	cv=none; b=Fg+EC0ZLSKmm78pB4yeI8cMGGgdpcR+Om6bT/eZFP62ZJ/+3Ayg4aT9ZdMSlDxRlbeF4mkv9bG9XAQJ3P47MR9lBauIIXOJ9vkmyfoH0Z5kX/w/ddKrnFIcqhbaLwaAVUdYLSJ9TSXETlrn49UHPpfNb8GNWKMLNt6m7TX/mnBVlXmR4U3Iruagwq0lqkMHKoSeaUUGWgecGO37JkymCNBZnrlWRu4+yaCDXQu5tLV/e3+c+lmhek0VWEFoxChJNlzFtZ4Ihofccz7OuPwVXzdp7mG7jVvKSVYbHS6TzE/tqvsTlyNfsupTVA62Kegv2N1dXgB6fHv2Y5XTSK8k/uw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hhMJ52XG7z2ygK;
+	Sat, 12 Sep 2026 03:40:05 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::429"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789148405;
+	cv=none; b=A8zRKNPQq6zG79rAHqZdNj+PDV4wnYwUHkYWarRmbRLlqtJo//pd6dCfZD6goATfOQHN5VBU6qH62p9z6g0pGGetcgsEFf0AzthXdvwTBwpZ9uC7E34Q7Pn0tlAe+lu1o0QpTn/Cs1kIY4g+kTx7N5MOhqzwIMIHMXj1LOkJap0UC3+liEjDiJmUvOpeoibn8wiK+DpBeTJw6AM/TOJNlNTQjFkWTcltmwtJgfMU9b1KrD85W/g6mJlVb0l34PalRmDfLGtPtp2XXYWCO+PwxXlDjpYvlZAd4zz3Cmu+Gof+rQfkYTD4iewmnnnhBweI2JrEQg9nZpW784HLocF15g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789146585; c=relaxed/relaxed;
-	bh=lKgwG1Kwds6pceD1MsUcXpTwjFZ9Cxamm2HzFxDq8xc=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=KwYLbzRHWi5dn4S2mKmF8pS8lW/UYuLL0uR2YPXXBa/YBO69x4jo7uOPol+SRwFUIt9bTJnRVmfCzNH9LsujxGovY7GZfBJQZLaJwQh3H3wQP1WVWkOcnD/8rHIHJ0oqGi5Q3A8QMVhFZVJjdU1b7wjgCNBjuPS0QDtEIKIqh99OrUwBuGAOUzl2FG8rb8KtVLUxMg2YT00p6ZvYAqfSO28lCwbNHj6NZtxPLlWfgujfsH2sRbRLj9NWoG+DxfOgGZ8of3Udl0PJUQ0qWt6sqyqUJHHXFFXEaQkFAFLHHqTwXCTt0ARYGVQRCDHq2ZwyiXwv3AepJJ3G6+V8A3TSvQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=SjE/J4xu; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1789148405; c=relaxed/relaxed;
+	bh=wl3IKortcFpGKddT3RAr007iJEhPfwcrwYUS/tqDJm4=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=JRik7VdbH2w2XUajAz/T2szv96Dh32K9Ap2JEUKf6HbUdXzRuqzIwXhrx2gxu+LG6ZlmiDMmkY/DUMu3nD2PiT6wYfhSG8XNKlUB38v0NL5DhSM7bSG8oe6ShpKsbWluZDNPZc6BwAG31Qun4RAIJkwYumJHefB6PBfkf9P48AIOK/TxXgaHea73p1ZVBHyqd0OxspL0TX17g1+ZuoNP7IW8v2Vo1twsXYC1cnYj1YJMKA+o8LUHIvLg9tN1QMKAX4K/5nHv0fU2LsrrfpoDdJq5B2Z4BS0laX+Ra9gnZVUo0Oie2Kza30WtXjgOnbW9ou4zckm/GL2YZg06IBjwyQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=d7FoBvv8; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::429; helo=mail-pf1-x429.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=SjE/J4xu;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=d7FoBvv8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::429; helo=mail-pf1-x429.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x429.google.com (mail-pf1-x429.google.com [IPv6:2607:f8b0:4864:20::429])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hhLd46XW3z2ygK
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Sep 2026 03:09:44 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68BF1XnI235555;
-	Fri, 11 Sep 2026 17:09:22 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=lKgwG1
-	Kwds6pceD1MsUcXpTwjFZ9Cxamm2HzFxDq8xc=; b=SjE/J4xuMtRZe4+JoUu7/V
-	FMnZMSiLHQDu5VdQRhyhoHHRv4T5Glgm1UkbQtK1zi33P8rFFafQSRNjyZrRG17J
-	OZwEpNNX98PP3LfdmZzh2IZAHRybJ7Z7hGM15fEl45OuJ7hIPLFvEfmKo7yTxuph
-	dntlUbYCt7fADjsaTfPBNC5eXVxdUlQ9pqU0CVte2B+e8FVs12VFnM4P9A6EOorO
-	4PaTi/zah80Up99Kr+pSFS9KPpxajgvvv6n8k19/v0CJPrjTdQy+CQJ9Q2EtQHwb
-	vzZlWXcxeplpctdD4bvDw4Y3cuhASfPzdqWKAn/73hThVZLXKvF5IF++ofLOXE0g
-	==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gkd8ncxbh-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Fri, 11 Sep 2026 17:09:21 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68BEo7WA1808711;
-	Fri, 11 Sep 2026 17:09:20 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gkvq2yknd-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 11 Sep 2026 17:09:20 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68BH9G6K52494600
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 11 Sep 2026 17:09:17 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id CC8F52004B;
-	Fri, 11 Sep 2026 17:09:16 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A448420043;
-	Fri, 11 Sep 2026 17:09:11 +0000 (GMT)
-Received: from [9.39.18.14] (unknown [9.39.18.14])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 11 Sep 2026 17:09:11 +0000 (GMT)
-Message-ID: <baeb1ae4-7c0f-4e4e-8fc5-09367cb7c4e9@linux.ibm.com>
-Date: Fri, 11 Sep 2026 22:39:10 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hhMJ36gGMz2xpv
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Sep 2026 03:40:02 +1000 (AEST)
+Received: by mail-pf1-x429.google.com with SMTP id d2e1a72fcca58-852c481415fso1503225b3a.3
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2026 10:40:02 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1789148400; x=1789753200; darn=lists.ozlabs.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :content-type:mime-version:references:message-id:subject:cc:to:from
+         :date:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=wl3IKortcFpGKddT3RAr007iJEhPfwcrwYUS/tqDJm4=;
+        b=d7FoBvv8onm0Tpm3QKiOnU+I7b+NLD9ITYCXl5lVG6E1bajN3//03OOA5WEl3sv+Bj
+         rC6d3DvMVvSAM6jTKAXJSZSWVtcU7K5Su0ZbwgsYtTCfo+X/MmS0c03skpgDBHMoorFH
+         shE/sj1pmqt+g3cYTXW9/Jr/B0uMrcYxR1viIBeZqQryu6Ug96MtfZstHCgfIMC/jPud
+         ok8isgdWR3k2ZtGpkXvftafdRcdbEwfUxVScrEDmAcOHFBlNDjE3cL/t5Sa94m/1/RwQ
+         aF06/H3O9pNlf2NxgOxYfCaVs1kOM31NvcQMVRmbdWul0HCNyfOGhBAqCNoQvErkezzE
+         6MOQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1789148400; x=1789753200;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :content-type:mime-version:references:message-id:subject:cc:to:from
+         :date:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=wl3IKortcFpGKddT3RAr007iJEhPfwcrwYUS/tqDJm4=;
+        b=ZUfiW166ygdQ0DuWhKq9Wekh5F38XuYp3gXkI6YZrQPAfzBComqgWyRnBrqHGj/BvC
+         AsYjLi9K9TENHrxi9LF96wG3ydJo6SX8kOIogZ0V97F1mqYWvcCQaBfgPUvcflsiDb0q
+         VjA2a65W9HK7oLE/+eJgVcCgnFJx8U/SW7mnh5cBLiT6I0CspNauA7VjpNTFrwwvGwL0
+         69Oc5hTL1mRTo4VRuKBrH46j4U8p1mWhgjFxNis/Wu8vBErsadxBe+Z/HBMZ0WtMBXwF
+         qIZde/Cg0tMElKLYvnICJPCMiqoBc3wQ88BmkOFMMPVncNXx1Jop0HTv5+AoeXCgolSA
+         BMDw==
+X-Forwarded-Encrypted: i=1; AKwUvBxcRWQq9777Ia5j0LaN5TgHvx4BnjfFcV24j2lkvaXfLEZKooOOCmggpdKGEkSbYTZz33Ve1rbi4NujdGU=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++lrHteccLSuAekCs5LT03lgjYJiaoeXwRAHGWQGey8AhFn0FHvH
+	1moGGXNBvP+7I6lHShAyqrBSBlLmHBhVhOuSJuEkYxTlMgxMHpDpl61c
+X-Gm-Gg: AYBFou17+jGujTrc1rc9Iu5K5r4nFah+8ZIxLFuwuDurefoyIL5wakF7O/tGwJYLzqQ
+	ZLZ+qiHfJumoBbzyu2uGP/FkkIFqY0J6FkgRNbuB09l6+0OeqibanoJs9SCFQmr7rX8ppnQLkhf
+	HEmcs5nIFEUlYYvyqetWeLOnqHGJSQSg3IZ+fRUMvHm249ol64tGG2V/qTjOX3l9tn76FBhiKCf
+	xQqqIXXsuXGha1e41+RMTBsyIZ2zcpaqrJ8AuGKTCZ4K+QVRRa1+Sb1DPz0zZKK4FfDwSGkDx8J
+	sI9ArrdVppFRj62wfkupUStDEGUL/ixLzpA77LY67PS2iOjIfV4Lx8QJBFs89CztXeb8pG4sxa+
+	m1hS8mH10NRq3PlNFboi2Z6glVu56I4BCPF5rptZkpGTxjWMzO77bEa5imPlpqlV46/1qgPElXn
+	0ipP/cLixABnVfuV4CKzXqlt0FLiYE9pkjzIB2hB8whA3jr8JZ/MAdaBidMW9Kz0JaHXybzJe7v
+	U4nHREOqjOcdXxN+HG2kEBTqMB4uj+iAd5W3CGzVFEXTA==
+X-Received: by 2002:a05:6a00:28c3:b0:848:62ab:7b7 with SMTP id d2e1a72fcca58-86b3011a6efmr8754763b3a.16.1789148399726;
+        Fri, 11 Sep 2026 10:39:59 -0700 (PDT)
+Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([106.51.165.23])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-86b29bb9ecesm1428361b3a.43.2026.09.11.10.39.51
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 11 Sep 2026 10:39:59 -0700 (PDT)
+Date: Fri, 11 Sep 2026 23:09:48 +0530
+From: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
+To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
+	ryabinin.a.a@gmail.com, glider@google.com, andreyknvl@gmail.com, dvyukov@google.com, 
+	vincenzo.frascino@arm.com, pjw@kernel.org, palmer@dabbelt.com, aou@eecs.berkeley.edu, 
+	alex@ghiti.fr, kees@kernel.org, amachhiw@linux.ibm.com, ritesh.list@gmail.com, 
+	robh@kernel.org, sayalip@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, 
+	linux-kernel@vger.kernel.org, kasan-dev@googlegroups.com, linux-riscv@lists.infradead.org, 
+	linux-hardening@vger.kernel.org, Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+Subject: Re: [PATCH] powerpc/kasan: require memintrinsic prefix support for
+ KASAN
+Message-ID: <aqOrCdvUB5lFjNsS@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+References: <20260908064948.999530-1-mkchauras@gmail.com>
+ <b3b1fa5a-c836-447f-a658-ad66183c23c5@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,203 +101,126 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [Linux PPC] Disable PREEMPT
-To: =?UTF-8?Q?Michal_Such=C3=A1nek?= <msuchanek@suse.de>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        Michael Ellerman <mpe@ellerman.id.au>
-Cc: harshpb@linux.ibm.com, Gautam Menghani <gautam@linux.ibm.com>,
-        amachhiw@linux.ibm.com, Christian Zigotzky <chzigotzky@xenosoft.de>,
-        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-        "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        "R.T.Dickinson" <rtd2@xtra.co.nz>, hypexed@yahoo.com.au,
-        mad skateman <madskateman@gmail.com>,
-        Christian Zigotzky <info@xenosoft.de>, nnmlinux@linux.ibm.com,
-        Samir M <samir@linux.ibm.com>,
-        Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-References: <8c6f2510-1dc5-4c45-9288-6b9c8f9b6b24@kernel.org>
- <aplDm-byYL79laYG@kunlun.suse.cz>
- <9a58d944-405c-4519-852e-8fa04c22c2db@linux.ibm.com>
- <aplZNFMJUkfs-BFs@kunlun.suse.cz>
- <5ed38c3e-4aaa-4a91-9eda-e31d09b44abc@linux.ibm.com>
- <app0zGv9bvtL4nHm@kunlun.suse.cz>
- <4eef1f0b-0c02-4377-b950-43c3b120865a@linux.ibm.com>
- <aqJxcWC1dWKITCav@kunlun.suse.cz>
- <393117bc-094e-4c47-b061-f255f5bff937@linux.ibm.com>
- <aqKUhHb9UTfVq4As@kunlun.suse.cz> <aqKfsVArHHaIK6M9@kunlun.suse.cz>
-Content-Language: en-US
-From: Shrikanth Hegde <sshegde@linux.ibm.com>
-In-Reply-To: <aqKfsVArHHaIK6M9@kunlun.suse.cz>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=NMVAaE6g c=1 sm=1 tr=0 ts=6aa435c2 cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=VLc2VSdLAAAA:20
- a=VwQbUJbxAAAA:8 a=pGLkceISAAAA:8 a=UnJG9Kv-_lNK3tyJmKwA:9 a=3ZKOabzyN94A:10
- a=QEXdDO2ut3YA:10 a=bA3UWDv6hWIuX7UZL3qL:22
-X-Proofpoint-GUID: rYgrNJH_2eNU-oIEzKGwczCd-_0DKhTs
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTExMDIzOCBTYWx0ZWRfXwFSDZlc7aKTo
- QY4r4kaifQXhbPz1mhsfEBkKvDsQj6FcxnyRSB92bhD0FHA/x9lTu093GmUcemFiZG66yFziEoe
- EliufTI2mIZgOQWokRug6JWeLc6jQdtl4GFxky90Xm10pi5PIBUMdGC3kdQQihsQkRwFV0ecdLh
- cX6GxSONUVSW7/Q+m2/F5CkARE48vDK4bVJ94lBJMVT68e0GlzjSTBMdE/4fwpRQyaHGlUrgcbu
- dD/CDxH+J3i34Wka8ExZRvnTInWJxNgS8MSOFWj1qf8gP+/Glvvz5OQR/rvW0rORsVJZq+UeKNM
- yqQj86IdBfkCc0m9FrPdYAWneUPkcC9kFavqpD2Bw51SEC4ipL+49vDyBGxoL0hOuIFfsOBNM/A
- ONvFGrpsihcWKKrciSdQAZ4gJ7qbjrLltq0teYlUXc6wStJr9Ri528KtBjM8pzIzv7imJ9MT3Sc
- r0oogHIR++PDGJRwryw==
-X-Proofpoint-ORIG-GUID: QTP_TfbHqzirFHtrQW5RH79sGT4T4ZE_
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTExMDIzOCBTYWx0ZWRfXzCHeoB8j4VnM
- ynvFq9sObr8bxK0ZVBGumaGdz55PU61zJP88hiDpEypDAMrTRet5xSB1BdWfB7mQ7rmsSjTdEFY
- 1j4XKouhybdlneirMgozomvTMRFkTWY=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-11_05,2026-09-11_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 bulkscore=0 clxscore=1015 malwarescore=0 lowpriorityscore=0
- priorityscore=1501 adultscore=0 suspectscore=0 impostorscore=0 phishscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609110238
+In-Reply-To: <b3b1fa5a-c836-447f-a658-ad66183c23c5@kernel.org>
 
-Hi Michal,
+On Tue, Sep 08, 2026 at 11:59:14AM +0200, Christophe Leroy (CS GROUP) wrote:
+> 
+>
+[...]
+> > --- a/arch/powerpc/include/asm/kasan.h
+> > +++ b/arch/powerpc/include/asm/kasan.h
+> > @@ -2,20 +2,17 @@
+> >   #ifndef __ASM_KASAN_H
+> >   #define __ASM_KASAN_H
+> > -#if defined(CONFIG_KASAN) && !defined(CONFIG_CC_HAS_KASAN_MEMINTRINSIC_PREFIX)
+> > -#define _GLOBAL_KASAN(fn)			\
+> > -	_GLOBAL(fn);				\
+> > -	_GLOBAL(__##fn)
+> > -#define _GLOBAL_TOC_KASAN(fn)			\
+> > -	_GLOBAL_TOC(fn);			\
+> > -	_GLOBAL_TOC(__##fn)
+> > -#define EXPORT_SYMBOL_KASAN(fn)			\
+> > -	EXPORT_SYMBOL(__##fn)
+> > -#else /* CONFIG_KASAN && !CONFIG_CC_HAS_KASAN_MEMINTRINSIC_PREFIX */
+> > +/*
+> > + * powerpc requires CC_HAS_KASAN_MEMINTRINSIC_PREFIX whenever KASAN is
+> > + * enabled (see PPC_CC_HAS_KASAN_MEMINTRINSIC_PREFIX in arch/powerpc/Kconfig),
+> > + * so the compiler always emits __asan_mem*() at instrumented call sites and
+> > + * bare mem*() inside __no_sanitize_address / noinstr code.  The old dual
+> > + * entry-point trick (_GLOBAL_KASAN emitting both memset and __memset) is
+> > + * therefore never needed.
+> > + */
+> 
+> This explanation belongs to the commit message not to the source code.
+> 
+Hey Christophe,
 
-On 9/10/26 5:46 PM, Michal Suchánek wrote:
-> On Thu, Sep 10, 2026 at 01:29:08PM +0200, Michal Suchánek wrote:
->> On Thu, Sep 10, 2026 at 04:11:20PM +0530, Shrikanth Hegde wrote:
->>>
->>>
->>> On 9/10/26 2:29 PM, Michal Suchánek wrote:
->>>> On Fri, Sep 04, 2026 at 02:34:21PM +0530, Shrikanth Hegde wrote:
->>>>>
->>>>>
->>>>> On 9/4/26 1:05 PM, Michal Suchánek wrote:
->>>>>> On Thu, Sep 03, 2026 at 10:52:59PM +0530, Shrikanth Hegde wrote:
->>>>>>>
->>>>>>>>> If possible run against current upstream and share the results.
->>>>>>>>
->>>>>>>> https://github.com/openSUSE/kernel-source/blob/6824496d1801f73def615dca8794202eeb7b0d86/config/ppc64le/default
->>>>>>>>
->>>>>>>> [  472.091531][ T6181] Kernel panic - not syncing: stack-protector: Kernel stack is corrupted in: kvmhv_run_single_vcpu+0x19d4/0x1b50 [kvm_hv]
->>>>>>>> [  472.091598][ T6181] CPU: 29 UID: 107 PID: 6181 Comm: CPU 112/KVM Not tainted 7.2.2-5.g6824496-default #1 PREEMPT(full) openSUSE Tumbleweed (unreleased)  61871a5f06863b4006f5ef27cd9f18e8a7a2edad
->>>>>>>> [  472.091612][ T6181] Hardware name: IBM,9824-42A Power11 (architected) 0x820200 0xf000007 of:IBM,FW1110.20 (OB1110_130) hv:phyp pSeries
->>>>>>>> [  472.091624][ T6181] Call Trace:
->>>>>>>> [  472.091630][ T6181] [c00000000fdfb680] [c00000000134ce90] dump_stack_lvl+0x84/0xc0 (unreliable)
->>>>>>>> [  472.091653][ T6181] [c00000000fdfb6b0] [c00000000022e7c8] vpanic+0x324/0x5e4
->>>>>>>> [  472.091666][ T6181] [c00000000fdfb760] [c00000000022eac4] do_panic_on_target_cpu+0x0/0x2c
->>>>>>>> [  472.091677][ T6181] [c00000000fdfb780] [c0000000013c1ff8] __stack_chk_fail+0x48/0x60
->>>>>>>> [  472.091689][ T6181] [c00000000fdfb7f0] [c00800001aae219c] kvmhv_run_single_vcpu+0x19d4/0x1b50 [kvm_hv]
->>>>>>>> [  472.091712][ T6181] [c00000000fdfb940] [c00800001aae24b4] kvmppc_vcpu_run_hv+0x19c/0x12f0 [kvm_hv]
->>>>>>>> [  472.091732][ T6181] [c00000000fdfba10] [c00800001aeeed18] kvmppc_vcpu_run+0x30/0x48 [kvm]
->>>>>>>> [  472.091779][ T6181] [c00000000fdfba30] [c00800001aee9ef4] kvm_arch_vcpu_ioctl_run+0x35c/0x4a0 [kvm]
->>>>>>>> [  472.091813][ T6181] [c00000000fdfbac0] [c00800001aedaac4] kvm_vcpu_ioctl+0x1ac/0xad8 [kvm]
->>>>>>>> [  472.091844][ T6181] [c00000000fdfbca0] [c0000000007f1244] sys_ioctl+0x374/0x1060
->>>>>>>> [  472.091857][ T6181] [c00000000fdfbdb0] [c00000000002f7f8] system_call_exception+0x188/0x430
->>>>>>>> [  472.091871][ T6181] [c00000000fdfbe50] [c00000000000cfdc] system_call_vectored_common+0x15c/0x2ec
->>>>>>>> [  472.091886][ T6181] ---- interrupt: 3000 at 0x7fffb5565fac
->>>>>>>> [  472.091896][ T6181] NIP:  00007fffb5565fac LR: 00007fffb5565fac CTR: 0000000000000000
->>>>>>>> [  472.091904][ T6181] REGS: c00000000fdfbe80 TRAP: 3000   Not tainted  (7.2.2-5.g6824496-default)
->>>>>>>> [  472.091911][ T6181] MSR:  800000000280f033 <SF,VEC,VSX,EE,PR,FP,ME,IR,DR,RI,LE>  CR: 42044402  XER: 00000000
->>>>>>>> [  472.091938][ T6181] IRQMASK: 0
->>>>>>>> [  472.091938][ T6181] GPR00: 0000000000000036 00007fbfa77ed7a0 00007fffb5677100 00000000000000fa
->>>>>>>> [  472.091938][ T6181] GPR04: 000000002000ae80 0000000000000000 0000000000000000 0000000000000000
->>>>>>>> [  472.091938][ T6181] GPR08: 00000000000000fa 0000000000000000 0000000000000000 0000000000000000
->>>>>>>> [  472.091938][ T6181] GPR12: 0000000000000000 00007fbfa77f5ec0 000000014676f000 00007fbfa77ee7c0
->>>>>>>> [  472.091938][ T6181] GPR16: 000000014674e8d0 00007fbfa77eeec0 00007fbfa77eeec0 fffffffffffffff7
->>>>>>>> [  472.091938][ T6181] GPR20: 00007fffb71210d0 0000000000000001 00007fbfa77eeec0 0000000000000000
->>>>>>>> [  472.091938][ T6181] GPR24: 00007fbfa77ed8e8 0000000105971428 000000002000ae80 0000000105f77a70
->>>>>>>> [  472.091938][ T6181] GPR28: 0000000000000000 0000000000000000 000000002000ae80 000000014674f000
->>>>>>>> [  472.092020][ T6181] NIP [00007fffb5565fac] 0x7fffb5565fac
->>>>>>>> [  472.092027][ T6181] LR [00007fffb5565fac] 0x7fffb5565fac
->>>>>>>> [  472.092033][ T6181] ---- interrupt: 3000
->>>>>>>> [  472.098256][ T6181] pstore: backend (nvram) writing error (-1)
->>>>>>>>
->>>>>>>> This is the host, cannot run the kernel as guest because it fails to boot most
->>>>>>>> of the time inside KVM.
->>>>>>>>
->>>>>>>>>
->>>>>>>>>> Nonethless, there are quite a few platforms. Originally no preemption
->>>>>>>>>> was the only option, and that's the reason why many people run that.
->>>>>>>>>> It's the conservative, known working option. And that's the reason a lot
->>>>>>>>>> of platfrom code does not get tested with more aggressive preemtion
->>>>>>>>>> models, and never gets fixed to work with them.
->>>>>>>>>>
->>>>>>>>>
->>>>>>>>> Full preemption has been there for many years!.
->>>>>>>>
->>>>>>>> Possible for years, forced only recently.
->>>>>>>>
->>>>>>>>> Lazy is not that aggressive compared to that.
->>>>>>>>>
->>>>>>>>>> Simply disabling the no preemtion option does not make the platform code
->>>>>>>>>> ready.
->>>>>>>>>>
->>>>>>>>>
->>>>>>>>> Let's understand your crash case. Let's see where it is going wrong. I am suspecting
->>>>>>>>> it is some wrong usage of preemption api rather than arch can't support preemption.
->>>>>>>>
->>>>>>>> Very likely some wrong use of the preemption API by the arch code, or no
->>>>>>>> use where it should have been used. It did not matter so long as people
->>>>>>>> could run their no preempt configs and ignore the problem.
->>>>>>>>
->>>>>>>> Thanks
->>>>>>>
->>>>>>>
->>>>>>> Friendly LLM analysis says preemption is enabled too early and before
->>>>>>> completing kvmppc_handle_exit_hv() / kvmppc_handle_nested_exit()
->>>>>>>
->>>>>>> Below is ONLY a speculation and completely UNTESTED.
->>>>>>> Maybe worth a try.
->>>>>>
->>>>>> The patch is munged by the e-mail client, and it causes immediate
->>>>>> voluntary preemprion in rcu critical section and hard lockup on starting
->>>>>> a KVM VM.
->>>>>>
->>>>>> Also it would be sort of bad news if it worked because that would be
->>>>>> specific to book3s KVM HV and would not help with the KVM HV from the
->>>>>> original report which likely is not book3s, nor with KVM PR.
->>>>>>
->>>>>
->>>>> Thanks for trying. We will try a local repro and look into it why stack is
->>>>> getting corrupted.
->>>>
+Sure i'll move this and rest ahead.
 
-As we discussed offlist, samir helped to run a similar test on his machine, and he didn't
-run into issue so far. we will try more.
+[...]
+> > diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+> > index 6f6801da9dc1..44115f904c2c 100644
+> > --- a/arch/powerpc/kernel/cputable.c
+> > +++ b/arch/powerpc/kernel/cputable.c
+> > @@ -36,8 +36,8 @@ void __init set_cur_cpu_spec(struct cpu_spec *s)
+> >   	t = PTRRELOC(t);
+> >   	/*
+> > -	 * use memcpy() instead of *t = *s so that GCC replaces it
+> > -	 * by __memcpy() when KASAN is active
+> > +	 * use memcpy() instead of *t = *s so that the compiler replaces it
+> > +	 * by __asan_memcpy() when KASAN is active
+> >   	 */
+> 
+> Does the initial problem still exist with the new __asan_memcpy() approach ?
+> If not the comment should be removed.
+> 
+Hey Christophe,
 
-I am just wondering what different in your case?
-By any chance we are running into below one? Can you check your gcc version?
+Thanks for pointing it out, i took a deeper look into this, here's my
+understanding on it.
 
-https://lore.kernel.org/all/CAABZP2z=xu+07-y5fqFLidZz1VpSgrSwXa1mFHPb=b3Ezr3OtA@mail.gmail.com/
+On PowerPC during very early boot the kernel is loaded by the
+bootloader/firmware at some physical address, but the kernel was linked
+expecting it to run at KERNELBASE(virtual address like
+0xc000000000000000). The MMU mapping that makes that virtual address
+valid hasn't been set up yet. So far for a window of early boot, code is
+executing at the physical load address while all symbol addresses in the
+binary refer to the virtual linked address. reloc_offset() computes the
+gap between these two and PTRRELOC applies it to any pointer.
 
-Maybe CONFIG_DEBUG_PREEMPT worth a try to if it shows up anything.
+So PTRRELOC(&the_cpu_spec) gives the physical address where the struct
+actually lives in memory right now, not where the linker thinks it lives.
 
->>>> There is also stack corruption when idling. At this point the machine is
->>>> stuck half-dead and would not go through with the panic, it requires
->>>> dump from the hyprvisor side to capture this.
->>>>
->>>> Thanks
->>>>
->>>> Michal
->>>>
->>>
->>>
->>> is this on host with kvm running or this is without kvm running anything?
->>
->> Difficult to say after the fact. Given running KVM VMs is crashing with
->> this kernel most likely no VM was running.
->>
->>>
->>> Do you see corruption if you don't have kvm module loaded?
->>
->> Difficult to say, this takes hours to days to reproduce, and the module
->> is normally loaded by default. I can blacklist it to make sure it does
->> not get loaded.
->>
-We might need exact vmlinux and if possible vmcore to see the paca saving into
-specific register or why it could possibly go wrong.
+Why *t = *s would be wrong?
 
-Michael, Christophe, anything rings a bell? What might be going wrong here?
+In set_cur_cpu_spec:
+
+struct cpu_spec *t = &the_cpu_spec;  // linked (virtual) address
+t = PTRRELOC(t);                     // physical address — where it actually is
+memcpy(t, s, sizeof(*t));            // copy into the right place
+
+If you wrote *t = *s instead, the compiler generates a struct assignment.
+For a large struct like cpu_spec, GCC is free to implement that however
+it likes — including emitting a call to memcpy(). But crucially, a 
+compiler-generated memcpy call resolves through the GOT/PLT or direct
+symbol — which points to the linked virtual address of memcpy, not the
+physical address. At this point in boot, calling through the wrong
+address would jump to garbage or an unmapped page.
+
+memcpy(t, s, sizeof(*t)) written explicitly is different: t is already
+the corrected physical address, s points into the cpu_specs table which
+has also been PTRRELOC'd. The explicit call goes through the normal
+early-boot call mechanism which is safe.
+
+The original comment said:
+
+"use memcpy() instead of *t = *s so that GCC replaces it by __memcpy()
+when KASAN is active"
+
+This was added because under the old KASAN scheme
+(!CC_HAS_KASAN_MEMINTRINSIC_PREFIX), KASAN overrode the memset/memcpy
+linker symbols globally with C wrappers that called kasan_check_range().
+If the compiler turned *t = *s into an implicit memcpy(), that would hit
+the KASAN wrapper — calling kasan_check_range() at a point in early boot
+where the KASAN shadow isn't mapped yet, causing a crash.
+
+Writing memcpy(t, s, sizeof(*t)) explicitly made GCC emit __memcpy()
+(the raw assembly alias exposed by _GLOBAL_KASAN) instead of the
+KASAN-wrapped memcpy(), bypassing the shadow check.
+
+That was the secondary reason. The primary reason that t is a
+PTRRELOC-adjusted physical pointer and the copy must go through it
+correctly was never stated.
+
+So the KASAN comment is not required but i think we still need to state
+why memcpy is required. For PTRRELOC adjustment, comment should reflect
+that.
+
+I'll update the comment and commit message and send out a new version.
+
+Regards,
+Mukesh
 
