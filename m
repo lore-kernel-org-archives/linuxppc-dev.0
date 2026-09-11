@@ -1,70 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-27115-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27116-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3B349C79FA1
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Sep 2026 07:04:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B3932C88E45
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Sep 2026 07:25:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hh5CC4m5dz2yjN;
-	Fri, 11 Sep 2026 17:04:55 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::548"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789110295;
-	cv=none; b=ZbJV3j+vO0IbIU5Mrp/JqZFDRBrpiZTfZqP828yYm4Bk3puREt4YMXBVy+YZI+1vAaS775lXn0fHSpCrw4GXpE6Q59Pwx8hd+FQOEesJHbuvbpdzW2Vklpdy/X2mcBjTZys+XbVxv3DFkkTzCJdcexqm0tcJUlhJiZJMt0HS9n+2uOIRLqXH6FbfHZVHDSGqsH/k4bhaJ3G8VI+py/DGI4Ze2JNcyVFqUW/KakNABn0Vpjb6biqlENFu69qsd9ULUZkQZFTI/qV21eqX80RJrK30TOg6hgxKFxamWealMmUdfuWYzt/c2V/KWAZankMQcqKd9C0eJ8+hxNsL4PsNKA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hh5fW15DTz2ygK;
+	Fri, 11 Sep 2026 17:25:07 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789111507;
+	cv=none; b=n/TGuTUtCgqIcrjpAjbA/PpyFlisMeCLjQUHlirXV+tDuWDbXxe4nyVX9z1Mg7Ar+lRw73+0eXfLvTmTFuXY/jhOz42eriL6B8VgSYncNibrh2IZXb0YqycWX4lk4TnSXALMNnydB1pdvFbYHbmax88bw4aCBNvPjiWJkUqfDCJDKHLkRx66I66Q+Hk5ndigmjA0MrIlFiY3LcAsB1ukuh2s454zMGldF/afrGvkl9gTuFJcgcwJBvo3Dpr/CYXYJquVTyg+ItjWfypJrBktqiZ3L1OmH/Nz0oziCCzZdq0WeL3GOLl2kcNuZQc37/wHA4YjH66JLbraj0CPtRNrRQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789110295; c=relaxed/relaxed;
-	bh=Mupi7f/R8vSLK7yP3tvVdaLvmeD/LZPxEKzcTyfibm0=;
-	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=dBgxecKbD/oG3OO0+xyJoPXS2Ap+XyryKmjPi4idz9ErrAxvYvSp1S2J7yT0BTDHC+S0MzIhHmLzFalZgRf00/zub3Hgdh0uFprh19X9l1VP5tSByRV4hlHFgL14VaqZCrqOeZTVLmtLnm9f2nYFP1Y3KI7ysWTfFRUQ9DHRXm7pmiIjtelans1j0YuZtCPAd4bWmyWwBDPewkuYRM4QzSh2uEuXlMhFufMjLZZBVx74+Oo9FD5D2cc1/BLAPVlmsi0e5ZKO4O8GmeDtm1ivXQtz2gVVHuACh9uyoubGEFVrUhZqwqRXrBq/bbLlrSWKWjIKPHczq/ThSq9HW9acuw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=aQSGkEQm; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::548; helo=mail-pg1-x548.google.com; envelope-from=3eaijagukdew025p2u22uzs.q20zw18b33q-rs9zw676.2dzop6.25u@flex--morbo.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--morbo.bounces.google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	t=1789111507; c=relaxed/relaxed;
+	bh=BH+kR55l7q2T4yQ9SIaFXw37h9ozVxD3HhYmGKf8G4g=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=n13m3blhTYCTpFHeHc/F8bSiWx0t8WtrMsxn9yg7AJ7V5btUgMLvAdjRrO8zaSdgoRucmMoZBP/vxODet2KWjOOkUoEZy9qUEE6/Mz/bX0j2iNkm5RDg1IRuwX6Ox8+tQQMr0Z3efPtoJS24pWWWy50tGQ82cKm0V6OZMvxXx+lZZLdlE6EJY0143sTIIrzxRtW+aEW0w1FCLyVLVp/AfKHPXzQNcASUWa+OVkKS8XPZdQBlUyhKx/hs2IoYaU31wed006cetGoOFlnD0W+fq/z9mjOKA0wCh2ZBs3d6/wKNPai9PEo9A5lSoJ9POj77uGir8cnNFPTEhO43SiYFKQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ANl9844t; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=aQSGkEQm;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ANl9844t;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--morbo.bounces.google.com (client-ip=2607:f8b0:4864:20::548; helo=mail-pg1-x548.google.com; envelope-from=3eaijagukdew025p2u22uzs.q20zw18b33q-rs9zw676.2dzop6.25u@flex--morbo.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x548.google.com (mail-pg1-x548.google.com [IPv6:2607:f8b0:4864:20::548])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hh5CB1KPXz2yd7
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2026 17:04:53 +1000 (AEST)
-Received: by mail-pg1-x548.google.com with SMTP id 41be03b00d2f7-cc1b8088202so608060a12.3
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2026 00:04:53 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1789110290; x=1789715090; darn=lists.ozlabs.org;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=Mupi7f/R8vSLK7yP3tvVdaLvmeD/LZPxEKzcTyfibm0=;
-        b=aQSGkEQm6gOhqyUBkcGkO5EtyB3FYh+GXNi65H31CXbT1ETKGE1vDXUEi0AOePOLrf
-         QmyhcSyvAylc6PRUpHRihiW/YMfI5n1AqC74EXtANXeYeBvF5T546zqznI3pEs6nJui6
-         peuzA41oCDMSjQe3QYsDd77gPpFEPHTTxKhlQ2dMp6qsveKq5zEMJOux8NJC43s4ohs4
-         6BLFBJ1o0P2Z3XhlXHyrn69LRVwTHPSbq2gY2gyS2OVQOSC7g/IljLOtJK+v+FwAXwF8
-         5ZQ2dAiCtpn70uhkiNorLrbVqVkuW9jgjsP5LZgjBaEf36YGf95xCgPvCxtJtQ64FCCI
-         TCVg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1789110290; x=1789715090;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=Mupi7f/R8vSLK7yP3tvVdaLvmeD/LZPxEKzcTyfibm0=;
-        b=bAsCfvqWB1AsybUGL2LunyvKMxD91qFwoCzNTJI4niy7tV18fHfDkKDhgD56wt3AEN
-         6X0yamY52OX7OEOKV8f4Nulib2s4ZrW45Cq6iRYcrWve+iYDmTDwyODk5x1FcFHRCE9D
-         Zc01dfl0QH80oXVNWDVzx/XmnzxkHw42t0RZIaHZq7YbPtSZKSf543U+o6zwzbk3Shf1
-         4Tnk+Piw0nLdo/1Wc0FcygdYoRU+1WxbpEaCIhwfmSWMMRlpbNNU1ChRzDDNmSTYcIk8
-         BxYPyCeoQU4Tl8/eZIQEWIaiu85Z2cpJnBooMcfYS7YgJ0WW89pN/BJq6ZPMKz0iI0cx
-         E2uQ==
-X-Forwarded-Encrypted: i=1; AKwUvByT19X0FUsoBo6iuiexrR+v3+5DkriYHcyrYM3+PMiBq7F5VtZpQk/2855lh1AToVq/+gIMiOL27euOsc0=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++nbqapDvS7ANFVhahtUZGAexMMCzgdsS0YqLzB+KImAQLscvHYf
-	MaIz3oPY7HONB6d7uMH04fv3VyyhpVtd8ssNQl3CqsLXN0PiUMCEtRlkByiaEYAOjus/UIcwteS
-	i
-X-Received: from plri7.prod.google.com ([2002:a17:903:32c7:b0:2dd:334f:920d])
- (user=morbo job=prod-delivery.src-stubby-dispatcher) by 2002:a17:902:cccd:b0:2d8:d4d3:da50
- with SMTP id d9443c01a7336-2dd2a471a7fmr72805325ad.20.1789110289759; Fri, 11
- Sep 2026 00:04:49 -0700 (PDT)
-Date: Fri, 11 Sep 2026 07:03:45 +0000
-In-Reply-To: <20260911070346.801948-1-morbo@google.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hh5fV19vzz2yd7
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2026 17:25:06 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id DAF0542A07;
+	Fri, 11 Sep 2026 07:25:01 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 93D7E1F000FF;
+	Fri, 11 Sep 2026 07:25:00 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1789111501;
+	bh=BH+kR55l7q2T4yQ9SIaFXw37h9ozVxD3HhYmGKf8G4g=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=ANl9844tOuE5AoQGY+DjaIFqCkPogFuzPNdfQWqulQ1ewcXnDBgt4NdOoaAxooGZH
+	 otw3WqXN/dfJ1pNs0X0yevkODFTPh3pxA9BwxVVkBA1iktQgUJQewif5xVbMODOWQG
+	 p/mWIch3ra5WH3jLHFaw3cWT0YrPLRjUedj8sYvbwLEFVFwspXynmHIaliKaD8MzHM
+	 Xaf5Qs18Xas8eGIznU7yaUWvc+9ptKBerpjAHFGKEw0DHIqd0hSZcM1yyqzMhkH095
+	 IUQbqVg1ph51dt/CUhqYAMrmXLp66EUw6RS72Jj/2UD9lzJLKJvRcTkZjvnML1Ja+L
+	 dkfqQ0ihw0QKA==
+Date: Fri, 11 Sep 2026 09:24:57 +0200
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Arnd Bergmann <arnd@kernel.org>
+Cc: Lee Jones <lee@kernel.org>, mfd@lists.linux.dev, 
+	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	Arnd Bergmann <arnd@arndb.de>, Daniel Thompson <danielt@kernel.org>, 
+	Jingoo Han <jingoohan1@gmail.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, 
+	Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Guenter Roeck <linux@roeck-us.net>, Linus Walleij <linusw@kernel.org>, 
+	Bartosz Golaszewski <brgl@kernel.org>, Jonathan Cameron <jic23@kernel.org>, 
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>, Pavel Machek <pavel@kernel.org>, 
+	Michael Hennerich <michael.hennerich@analog.com>, Support Opensource <support.opensource@diasemi.com>, 
+	Sebastian Reichel <sre@kernel.org>, Alexandre Belloni <alexandre.belloni@bootlin.com>, 
+	Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org, linux-doc@vger.kernel.org, 
+	linux-media@vger.kernel.org, devicetree@vger.kernel.org, linux-hwmon@vger.kernel.org, 
+	patches@opensource.cirrus.com, linux-watchdog@vger.kernel.org, linux-gpio@vger.kernel.org, 
+	linux-iio@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, 
+	linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, linux-fbdev@vger.kernel.org, 
+	linux-sound@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, llvm@lists.linux.dev
+Subject: Re: [PATCH 01/14] mfd: remove unused 88pm80x driver
+Message-ID: <20260911-righteous-arboreal-angelfish-3bcbdf@quoll>
+References: <20260909132153.1596191-1-arnd@kernel.org>
+ <20260909132153.1596191-2-arnd@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -77,60 +80,25 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0
-References: <20260911070346.801948-1-morbo@google.com>
-X-Mailer: git-send-email 2.55.0.1032.g73a4cd73de-goog
-Message-ID: <20260911070346.801948-8-morbo@google.com>
-Subject: [PATCH 7/7] powerpc/word-at-a-time: Instrument load_unaligned_zeropad()
-From: Bill Wendling <morbo@google.com>
-To: linux-kernel@vger.kernel.org
-Cc: Bill Wendling <morbo@google.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, 
-	Shrikanth Hegde <sshegde@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20260909132153.1596191-2-arnd@kernel.org>
 
-Convert powerpc to the arch_load_unaligned_zeropad() /
-load_unaligned_zeropad() split introduced for x86 earlier in this
-series, so KASAN/KCSAN also see reads through load_unaligned_zeropad()
-on this architecture.
+On Wed, Sep 09, 2026 at 03:21:38PM +0200, Arnd Bergmann wrote:
+> From: Arnd Bergmann <arnd@arndb.de>
+> 
+> This pair of drivers was originally added as companion chips for pxa/mmp
+> SoCs, but the corresponding platform code was never merged, so it has
+> been unused the entire time.
+> 
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+>  .../devicetree/bindings/regulator/88pm800.txt |  38 --
 
-Assisted-by: Claude:claude-sonnet-5
-Signed-off-by: Bill Wendling <morbo@google.com>
----
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-Cc: Shrikanth Hegde <sshegde@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org
----
- arch/powerpc/include/asm/word-at-a-time.h | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 
-diff --git a/arch/powerpc/include/asm/word-at-a-time.h b/arch/powerpc/include/asm/word-at-a-time.h
-index 54653a863414..9a09620ca776 100644
---- a/arch/powerpc/include/asm/word-at-a-time.h
-+++ b/arch/powerpc/include/asm/word-at-a-time.h
-@@ -164,7 +164,7 @@ static inline unsigned long prep_zero_mask(unsigned long a, unsigned long bits,
- #define FIXUP_SECTION ".fixup"
- #endif
- 
--static inline unsigned long load_unaligned_zeropad(const void *addr)
-+static inline unsigned long arch_load_unaligned_zeropad(const void *addr)
- {
- 	unsigned long ret, offset, tmp;
- 
-@@ -203,4 +203,6 @@ static inline unsigned long load_unaligned_zeropad(const void *addr)
- 
- #undef FIXUP_SECTION
- 
-+#include <asm-generic/word-at-a-time-instrumented.h>
-+
- #endif /* _ASM_WORD_AT_A_TIME_H */
--- 
-2.47.3
+Best regards,
+Krzysztof
 
 
