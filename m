@@ -1,107 +1,52 @@
-Return-Path: <linuxppc-dev+bounces-27147-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27148-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E6F28C88E53
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Sep 2026 18:06:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2F3A1C88E4D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Sep 2026 19:38:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hhMv12q0Zz2y2L;
-	Sat, 12 Sep 2026 04:06:53 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:39::10"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789150013;
-	cv=none; b=Qx/WmFV/qEScg3b9HboBtzaeFUoYCYQd85NlmzJ2QbWs9/CXehZ0iUeFKrICA4h22Lpaz6LTy8BlIUhrwW3tLVbjRLSLHQEMgORDcWR+mNnxqHec2oU2T8Gx8QTMAjai8jFG0rMJ/hQjP/G29s84t+JtUqM5PhQzWgHia3CES2A1cOdhqEMzhyxjSGpOnIMTAluQrX7VhSrZ4kxsdFfVdO5XhgDP5t0JUoARwPfAPGnzfVkXQd3wL0BbxhBmh+8/30jUm8tnipSIoAFAQmSTPVTVf53sAVf4ohZYgfBn6K7BBX8kJ9a69R2o8H07T1RYBOzCeWMYCvfumDXtSeIaZA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hhPwF2MLpz2y2L;
+	Sat, 12 Sep 2026 05:38:05 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789155485;
+	cv=none; b=jOYGOFDn9nNJ2LPwWGgYDysOo2z/x4VRwN2BLKDsAluluIC4GbzZEXhK9aXxGqd3HH6MzGQIkW2b7/7j0kAKwbD9ATLgCUzU3mvqc2U1NI35FvXInGnGe/MTwZjvMIPr2tMBshLy0SrmBFURhliBlFqeS0wmfmPbaBSIUQGg+siucIPwlGczRLKDIlyIxa+ZGggzs2823qI+IxnmjQ2hPRihiSVD3EvouBsm2EtMkNmwjhf4w6ugcnPcCKsptb7uWryStWV9k5LsnWHQkMoSm3AuxU6zPYl5/qUIFpePn07AzrWUu84/WiSb93too2PHZ+I+LGhif3uS8XFtzyX7ng==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789150013; c=relaxed/relaxed;
-	bh=Jo2uzj/N171DScFnL7iq1Y1nF9wLs6WiaF8JUd+T4Ro=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=C+SY7EneqFEwX0u1MtMYwqQBvEnO0/H2ahVKZuBmms4qQW/MyPEDSea5pp1DVltBbL6/1qSSyZfqCmDehRlogihgFdyoySB6Du//KN30Rlp2ELKAs/1sjrHZXkad/lkYG6hSfzpDpCb8NdlD6Zhko4kiRWwaAOYiQH4DGlrZVdL/TPEDVTL3XvVAzemXyXusAKKBTisuiVDKN5nMvqmvwYF4SFCbpjairrVKeQftfszfezYK6k7GcJuGs/NVoUP6pl6YZNvpMiaYOX0HUpGUUCKXSUtDg3QHQ53scuKE++yWgSf0NZNZCIv5UJFYMUjKoenP/+zcXTebwvKE53rQuw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=nstGylMh; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:39::10; helo=mail-pj2-x10.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1789155485; c=relaxed/relaxed;
+	bh=hf37vYyW20dEN/lTmhv9TGUfmK0JZbnALvXs9gFdpBw=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=oOy9ObQnuuMKP+ltrnNC/9EvnDFYL/rKXpGyra8wCJDgQMQUGZuypy7htjTSMbvpQ87LK9IqNE0TUKRrFN0nwkNoG+8AF7Tp13IL0YSkl6sqHWFJMhAwcTweBR5P1w12GxdUmtFWrPvlFipYjuUDu3nC4Y8jjNVCR+igccRRyD6+GRIvqw/NOr7m6NnrFF+vz70kob5OY/t1fCDqcssDRE5DhrGvhObfYuTPFclaPlh09T5heiWXyCHDhw5gdmhXNEPgLgyD9ddRapCaJ8zCcGDPb0fF+ZzcS25gnEQ++M6T5kHY53k7so8c3HeJueOqM36Nkb06WPIaJVL/XIrxQw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QMj0IEmZ; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=nstGylMh;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QMj0IEmZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:39::10; helo=mail-pj2-x10.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj2-x10.google.com (mail-pj2-x10.google.com [IPv6:2607:f8b0:4864:39::10])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hhMv025Jgz2xpv
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Sep 2026 04:06:50 +1000 (AEST)
-Received: by mail-pj2-x10.google.com with SMTP id 98e67ed59e1d1-398c066106cso48935a91.1
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2026 11:06:50 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789150007; x=1789754807; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=Jo2uzj/N171DScFnL7iq1Y1nF9wLs6WiaF8JUd+T4Ro=;
-        b=nstGylMhecheW8LIHiy1o2Lj9eZHKwI+Su/LrYI2sNyyeHg4jOWkSaOK3tWyi5Xq7r
-         fsN0tTPodT7DkdU1e46avk7SX6Ck4XkD40e1YpoenW0FTuP7zcwCyA1FFcO4/OAd/Pxv
-         pHsm2/C1zIQ8nr66wg9+Qn9/3oRByXXYs04UYM8FAX5N0Jz5pFupr6BHYwiXj3CA7xs7
-         BBNR/SdDZllsWFqPCjDCmZvFW4FTXYuynZCO+hVoGn14brTHiX1grU+Q8i8TzK+DscTb
-         os1uv/+z+6V+7nnEQ0/tp8ipIZH69uvaB7t+p0WOKT3SssZCk+p13dQXnN7ovnOTcpdg
-         6WEw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1789150007; x=1789754807;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=Jo2uzj/N171DScFnL7iq1Y1nF9wLs6WiaF8JUd+T4Ro=;
-        b=NYcVgLe6wwD4Y4dAhjNNepsj837h9AWN1WveSJXl8C5B/OHA40FgNzw5wTG7G9lUyL
-         rXZkqNcIx6gdII1mFMQ5U83JB7kJvNhdVKc18yM8QxUBgBs35EuCf/CJQHWPLwxr+qKX
-         5MB9Nt2yDeFgJInkVHrN6v3tikOf1Yo8GgiZxAZMOXd5wGVht2jhPLy65DbQOpXsnUGk
-         NBCoHGs9/9+Sz4EVrRWyuXWcgO2r/FZPSoyrvCS8ITnA1Ple0t81BF09HFdAiTi+S5to
-         LDszMxHnq3y1gpoXsY28vlr673XLKp+xmO67RXnum7gK6E0gE244WLBu3GVDOISTJcm5
-         pgnQ==
-X-Forwarded-Encrypted: i=1; AKwUvBzeHjdWqrRqw6Oqe5vybMTmJ87cW42QhbepyvHTcw8Hpy+x/lf63O4LfUzQHiyzjidd0C7fVEsTLLHZfJ0=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++lsF014g4XDtjr1KvRTdIaZSNl64oZTtTpbA5s/ypzBq/AFPDLg
-	UBcJy/NwqmQVXGRb0BDpOKGCiY2Ogoaae9THR7W7Ba5zVfL/ccma0eQl
-X-Gm-Gg: AYBFou2d/cs5FJP9c59SpVcZgpO2r8v83e2rHyeCQNrSdpItCJVpuPQ/yXB7iQIkuOM
-	I+9AXMazMgTyKjeNpPVlnZTxykxk+J6wJbftqjUAgfB713tj4UPM6yd7yvcePROZJe4GYOWcFbV
-	K3Pfhxf2zKiZ0QayOOCLGv1t/X4dczdFf1Xq+i79aPtEgoY2+xwWlP6J2Sq8IADX2U7gEZcg6Gi
-	86QoKglm52qy+tUxMfe09xvI6Kt7xjfZ+96rQRSWnCGCWgvXhAaiTiytcQOuEbEiWxRSsxhBuWN
-	ApFjc1GAoSP5uCF52ZwRXdl2coqBOaBJLkiOzQVI9OoVA4Uf2/V0iYaGZq0M1S6+H28yyYF8ZXR
-	RwgCVLGS+9nH2kMGwXHEfBu+xAvn1LehQ308//lKLzW484pXFbQuqMCtXaxdP5W2wz1lcQlcd5Q
-	vtw1sg3FhvPpd6UXYQgvmWoe9b0DyDyaNeD1+czuRX1oIC8bpoURRdpGtnQ7oxeUhwLAsOHrhM2
-	N/nphHUlIAZcRdg5E9kgAgjDA3p/3MCK4N7nd6UOWLZqVfvKGI=
-X-Received: by 2002:a17:90b:4fc9:b0:37f:e326:6557 with SMTP id 98e67ed59e1d1-39d9bbfc338mr9687313a91.4.1789150006816;
-        Fri, 11 Sep 2026 11:06:46 -0700 (PDT)
-Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com.com ([106.51.165.23])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-14365b759d0sm8806721c88.7.2026.09.11.11.06.37
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 11 Sep 2026 11:06:46 -0700 (PDT)
-From: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
-To: maddy@linux.ibm.com,
-	mpe@ellerman.id.au,
-	npiggin@gmail.com,
-	chleroy@kernel.org,
-	ryabinin.a.a@gmail.com,
-	glider@google.com,
-	andreyknvl@gmail.com,
-	dvyukov@google.com,
-	vincenzo.frascino@arm.com,
-	pjw@kernel.org,
-	palmer@dabbelt.com,
-	aou@eecs.berkeley.edu,
-	alex@ghiti.fr,
-	kees@kernel.org,
-	mkchauras@gmail.com,
-	ritesh.list@gmail.com,
-	amachhiw@linux.ibm.com,
-	mahesh@linux.ibm.com,
-	nikhilks@linux.ibm.com,
-	robh@kernel.org,
-	sayalip@linux.ibm.com,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	kasan-dev@googlegroups.com,
-	linux-riscv@lists.infradead.org,
-	linux-hardening@vger.kernel.org
-Cc: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Subject: [PATCH V2] powerpc/kasan: require memintrinsic prefix support for KASAN
-Date: Fri, 11 Sep 2026 23:35:37 +0530
-Message-ID: <20260911180536.3234640-2-mkchauras@gmail.com>
-X-Mailer: git-send-email 2.55.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hhPwC11Q0z2xfB
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Sep 2026 05:38:03 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 675C560202;
+	Fri, 11 Sep 2026 19:37:59 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B04931F000FF;
+	Fri, 11 Sep 2026 19:37:39 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1789155479;
+	bh=hf37vYyW20dEN/lTmhv9TGUfmK0JZbnALvXs9gFdpBw=;
+	h=From:Subject:Date:To:Cc;
+	b=QMj0IEmZBrk/GKZIX9T/5F97jvb2O2L3q/ovTsXYfnZD8Kw/Q4X2c/SRae5A1roMB
+	 28QBr7EzVgZ+FMH+N0105ht5veE+OmSQcB+etn1rvALVTOjYICRsC4wfdvbMKkGmXk
+	 IDDsJFMcnzupqWm/s46BVVqKm5NUrjfVX+FlcdHwCGemk/f/9ktInqmxM7GH3q1pBO
+	 4Y6a15+wknntdtHfMGhulc3/6cw7Y0PmAQfyPVrkiYWHIU4ksi5tpPVXEdNb8uAQT5
+	 bSlXL/WAnt7QsoOSjBOFnWqFI8TVUT91h/EcwR6DumY/+ZsRIWVbdSdjLLA8eyFmua
+	 N34D69zmfbleQ==
+From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
+Subject: [PATCH v3 00/12] mm: make userland page table freeing RCU-safe
+Date: Fri, 11 Sep 2026 20:36:47 +0100
+Message-Id: <20260911-rcu-pagetable-freeing-v3-0-7b8c86103821@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -115,257 +60,272 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/3WN0Q6CIBhGX8VxHQ1QibrqPVoXQL9IOXSgrOZ89
+ 0Bv6sLLs33fOTMK4C0EdClm5CHaYHuXoDwUSLfSGcD2kRgxwjgRJcVeT3iQBkapOsCNB7DOYFE
+ prkCUBBhB6Tt4aOx79d7uG4dJPUGPWZYXrQ1j7z9rONK82xpnsteIFBNcVzWXgmrBKLu+wDvoj
+ r03KEci+9WIPQ1LGtpwongF4iTgT7Msyxf4nPnyFAEAAA==
+X-Change-ID: 20260831-rcu-pagetable-freeing-84b6be830e20
+To: Andrew Morton <akpm@linux-foundation.org>, 
+ David Hildenbrand <david@kernel.org>, Zi Yan <ziy@nvidia.com>, 
+ Baolin Wang <baolin.wang@linux.alibaba.com>, 
+ "Liam R. Howlett" <liam@infradead.org>, Nico Pache <nico.pache@linux.dev>, 
+ Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, 
+ Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, 
+ Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, 
+ Guo Ren <guoren@kernel.org>, Brian Cain <bcain@kernel.org>, 
+ Geert Uytterhoeven <geert@linux-m68k.org>, 
+ Dinh Nguyen <dinguyen@kernel.org>, 
+ Simon Schuster <schuster.simon@siemens-energy.com>, 
+ Jonas Bonn <jonas@southpole.se>, 
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, 
+ Stafford Horne <shorne@gmail.com>, 
+ Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, 
+ John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, 
+ Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, 
+ Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>, 
+ Russell King <linux@armlinux.org.uk>, Vineet Gupta <vgupta@kernel.org>, 
+ Michal Simek <monstr@monstr.eu>, Chris Zankel <chris@zankel.net>, 
+ Max Filippov <jcmvbkbc@gmail.com>, Will Deacon <will@kernel.org>, 
+ "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, 
+ Nick Piggin <npiggin@gmail.com>, Peter Zijlstra <peterz@infradead.org>, 
+ "David S. Miller" <davem@davemloft.net>, 
+ Andreas Larsson <andreas@gaisler.com>, 
+ Richard Henderson <richard.henderson@linaro.org>, 
+ Matt Turner <mattst88@gmail.com>, Magnus Lindholm <linmag7@gmail.com>, 
+ Catalin Marinas <catalin.marinas@arm.com>, 
+ Mark Rutland <mark.rutland@arm.com>, Huacai Chen <chenhuacai@kernel.org>, 
+ WANG Xuerui <kernel@xen0n.name>, 
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, 
+ Helge Deller <deller@gmx.de>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+ Michael Ellerman <mpe@ellerman.id.au>, 
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
+ Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
+ Alexander Gordeev <agordeev@linux.ibm.com>, 
+ Christian Borntraeger <borntraeger@linux.ibm.com>, 
+ Sven Schnelle <svens@linux.ibm.com>, Richard Weinberger <richard@nod.at>, 
+ Anton Ivanov <anton.ivanov@cambridgegreys.com>, 
+ Johannes Berg <johannes@sipsolutions.net>, 
+ Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, 
+ Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, 
+ x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>, 
+ Arnd Bergmann <arnd@arndb.de>, Vlastimil Babka <vbabka@kernel.org>, 
+ Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, 
+ Michal Hocko <mhocko@suse.com>, Jason Gunthorpe <jgg@ziepe.ca>, 
+ John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, 
+ linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org, 
+ linux-m68k@lists.linux-m68k.org, linux-openrisc@vger.kernel.org, 
+ linux-sh@vger.kernel.org, linux-riscv@lists.infradead.org, 
+ linux-arm-kernel@lists.infradead.org, linux-snps-arc@lists.infradead.org, 
+ linux-arch@vger.kernel.org, sparclinux@vger.kernel.org, 
+ linux-alpha@vger.kernel.org, loongarch@lists.linux.dev, 
+ linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org, 
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, 
+ linux-um@lists.infradead.org, Hugh Dickins <hughd@google.com>, 
+ Qi Zheng <qi.zheng@linux.dev>, "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=openpgp-sha256; l=8719; i=ljs@kernel.org;
+ h=from:subject:message-id; bh=RrPlKuSegKczbWHtvSwqv948LdW8VcCW3xiwS2H9cjE=;
+ b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLKWRDS6HNB+eMojqSzYMqTy97EfC96GXVurd+BWnXFOs
+ YFurChrRykLgxgXg6yYIsvzL+L7g0TC5nVe8HeDmcPKBDKEgYtTACZy04yR4eXy/5OeRddUTr4e
+ UzjHYfv9Tb8tVs4SvW79e7nZ7wJxDTeGf+ozOy+pmWdGsn85oKkiuH+J1yU/27uT2AqkFj5b+Zg
+ tkhUA
+X-Developer-Key: i=ljs@kernel.org; a=openpgp;
+ fpr=E7F417BF5214569E89D04F46CF9DCD8A81E27F14
 
-powerpc unconditionally selects GENERIC_ENTRY. The GENERIC_ENTRY
-infrastructure relies on the compiler emitting __asan_mem*() calls at
-instrumented mem*() sites rather than plain memset/memcpy/memmove, so
-that entry/exit paths calling those functions are not instrumented.
+The majority of architectures in the kernel defer page table freeing until
+an RCU grace period has elapsed, this series converts all remaining
+architectures to do so too and eliminates CONFIG_MMU_GATHER_RCU_TABLE_FREE
+altogether.
 
-This assumption is encoded in two places:
+This is important because it enables safe lockless page table walking under
+RCU alone.
 
-  mm/kasan/shadow.c:
-    #if !defined(CONFIG_CC_HAS_KASAN_MEMINTRINSIC_PREFIX) &&
-        !defined(CONFIG_GENERIC_ENTRY)
+Doing so allows for reduced lock contention, avoids lock ordering concerns
+and enables fast, efficient and correct page table walking as a result.
 
-  include/linux/fortify-string.h:
-    #if !defined(CONFIG_CC_HAS_KASAN_MEMINTRINSIC_PREFIX) &&
-        !defined(CONFIG_GENERIC_ENTRY)
+Additionally it removes a bunch of code and architecture-specific behaviour
+which is always a beneficial thing to do.
 
-When GENERIC_ENTRY is set, both guards suppress the C wrappers for
-memset/memcpy/memmove and the __underlying_mem*() redirections. This
-is only safe when the compiler supports the prefixed __asan_mem*()
-intrinsics. On older toolchains (e.g. GCC 9) that lack this support,
-plain mem*() calls from instrumented code fall through to the raw
-assembly implementations in mem_64.S / copy_32.S, completely bypassing
-the KASAN shadow check.
+There has been much recent work on this:
 
-Other arches with GENERIC_ENTRY (x86, s390, loongarch, riscv) do not
-hit this because their CI toolchains are always new enough to support
-the prefix flag.
+* In 2023 Hugh Dickins RCU-deferred khugepaged page table retraction in
+  commit 13cf577e6b66 ("mm/pgtable: add pte_free_defer() for pgtable as
+  page").
 
-Background: the !GENERIC_ENTRY guard was introduced by commit 69d4c0d32186
-("entry, kasan, x86: Disallow overriding mem*() functions", Peter Zijlstra,
-Jan 2023). The root problem is that the KASAN C wrappers override the
-linker symbol memset/memcpy/memmove globally, so any call from noinstr or
-__no_sanitize_address code (e.g. irqentry_enter/irqentry_exit) would still
-reach the KASAN shadow-check wrapper -- at a point where KASAN invariants
-may not hold. The compiler prefix approach (Marco Elver, Feb 2023,
-commit 51287dcb00cc) solves this by having the compiler emit __asan_memset
-at instrumented call sites and bare memset inside __no_sanitize_address
-functions, splitting the decision at code-generation time rather than at
-link time.
+* Qi Zheng has done most of the work that made this possible starting with
+  the critical commit 718b13861d22 ("x86: mm: free page table pages by RCU
+  instead of semi RCU").
 
-A manual C-level override cannot replicate this split: a single linker
-symbol cannot be made to resolve differently depending on the caller.
+* Qi then went on to convert a large number of architectures in commit
+  e3ecf7c7d082 ("mm: pgtable: convert some architectures to use
+  tlb_remove_ptdesc()"), commit 44b079583f7d ("alpha: mm: enable
+  MMU_GATHER_RCU_TABLE_FREE") and the series to which it belongs.
 
-x86 also placed its raw memset/memcpy/memmove implementations in
-.noinstr.text (same commit, 69d4c0d32186), which is the other half of
-the fix: noinstr callers hit the raw assembly directly, safely bypassing
-KASAN. PowerPC has not done this. Placing mem_64.S / memcpy_64.S /
-copy_32.S implementations in .noinstr.text would be the complementary
-long-term fix that could re-enable KASAN on older toolchains, but it
-requires care around linker stub overflow on large PPC64 kernels (the
-same reason powerpc uses NOKPROBE_SYMBOL rather than noinstr for its
-interrupt handlers -- see the comment in asm/interrupt.h). That work
-is left as a follow-up.
+* Qi then introduced the important CONFIG_HAVE_ARCH_TLB_REMOVE_TABLE
+  option in commit 086498aed3f6 ("mm: convert __HAVE_ARCH_TLB_REMOVE_TABLE
+  to CONFIG_HAVE_ARCH_TLB_REMOVE_TABLE config").
 
-For now, introduce PPC_CC_HAS_KASAN_MEMINTRINSIC_PREFIX, an arch-local
-compiler probe that mirrors the same check as CC_HAS_KASAN_MEMINTRINSIC_PREFIX
-in lib/Kconfig.kasan but lives outside the 'if KASAN' block to avoid a
-recursive dependency (CC_HAS_KASAN_MEMINTRINSIC_PREFIX depends on KASAN
-which depends on HAVE_ARCH_KASAN). Gate the three HAVE_ARCH_KASAN selects
-on this new symbol so that KASAN is not offered as a config option on
-toolchains that cannot support it correctly with GENERIC_ENTRY.
+* Finally, and critically, Lance Yang then converted the batch allocation
+  fallback case to be RCU-safe in commit 1fb3d8c20bfa ("mm/mmu_gather:
+  replace IPI with synchronize_rcu() when batch allocation fails").
 
-Since KASAN on powerpc now unconditionally implies
-CC_HAS_KASAN_MEMINTRINSIC_PREFIX, the old !CC_HAS_KASAN_MEMINTRINSIC_PREFIX
-code paths in asm/kasan.h and asm/string.h are dead. Clean them up:
+The work I do here is only possible due to the work Hugh, Qi, Lance and
+others have done previously.
 
-- asm/kasan.h: remove the dual-entry-point variant of _GLOBAL_KASAN /
-  _GLOBAL_TOC_KASAN / EXPORT_SYMBOL_KASAN that emitted both memset and
-  __memset as entry points to the same assembly. These aliases were only
-  needed so the C KASAN wrappers in shadow.c could call __memset() to
-  reach raw memory ops; with the compiler prefix approach those wrappers
-  are not used for mem* on powerpc.
+An initial task this series addresses is to zap deposited page tables after
+an RCU grace period. Not doing so is currently safe, but for page table
+walkers relying on RCU alone, it would not be.
 
-- asm/string.h: remove the separate __memset/__memcpy/__memmove symbol
-  declarations and the memset/memcpy/memmove macro redirections for
-  uninstrumented files that were needed on old toolchains. Simplify the
-  CONFIG_KASAN block to just the three #define aliases (still used by
-  shadow.c as raw backends to bypass KASAN checking).
+The changes are largely mechanical - the majority of arches already have
+the machinery required to support CONFIG_MMU_GATHER_RCU_TABLE_FREE and
+simply needed configuration changes or small implementation changes to
+switch over.
 
-- cputable.c, prom_init.c: the original comments said "use memcpy() so
-  GCC emits __memcpy() under KASAN". The real reason is that these run
-  pre-relocation: the destination pointer is PTRRELOC-adjusted to its
-  current physical address, and the kernel is loaded at a different
-  address than it was linked at. A struct assignment (*t = *s) may cause
-  the compiler to emit an implicit memcpy() call that resolves through
-  the unrelocated virtual symbol address -- before the MMU mapping is set
-  up -- jumping to garbage. An explicit memcpy(t, ...) uses the already-
-  corrected pointer and is safe. Update the comments accordingly.
+However some arches required extra attention - sh-X2, m68k-motorola and
+sparc32.
 
-Reported-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Closes: https://lore.kernel.org/all/96dae110-f79b-4e54-8a9b-514369019b5d@linux.ibm.com
-Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
+sh-X2 allocates PMDs from the slab allocator and PTEs as normal. Therefore
+CONFIG_HAVE_ARCH_TLB_REMOVE_TABLE is set to customise page table freeing
+and the LSB is used to encode which page table level is used, with
+__tlb_remove_table() doing the right thing depending on this.
+
+This pattern is repeated for m68k-motorola and sparc32 to account for
+different page table levels. In each case, the page tables are aligned such
+that sufficient bits are available in each case for encoding this
+information.
+
+m68k-motorola required the biggest change - since RCU page table freeing
+uses call_rcu(), this means page table freeing can arise from softirq
+context.
+
+This was fixed with an IRQ-safe spin lock used in both get_pointer_table()
+and free_pointer_table().
+
+As part of this change, the logic for allocation of a new pointer table was
+separated out into add_pointer_table() to make the locking more obviously
+correct.
+
+Finally, sparc32 was similar to m68k-motorola in that locking was required,
+however this was already implemented via a spinlock, and only had to be
+updated to be IRQ-safe.
+
+Additionally, the nocache pool's bit_map lock was updated to be IRQ-safe
+for softirq frees.
+
+Separately, the PTE path can't take mm->page_table_lock from softirq (no mm
+there), which is fine because the page reference count transitions are
+atomic and fully ordered.
+
+The series finally removes CONFIG_MMU_GATHER_RCU_TABLE_FREE and all related
+configurations and code that supported !CONFIG_MMU_GATHER_RCU_TABLE_FREE.
+
+As a result, page table walks can now be performed safely under RCU without
+any risk of page tables being freed underneath a walker.
+
+However, this is the only guarantee that this work provides - page table
+walkers must still ensure that page table entries are as expected
+throughout.
+
+All changes have been build tested. As most of the conversions are simply
+utilising existing mechanics that are known to work, this suffices for most
+cases.
+
+However those arches where significant changes have been made -
+m68k-motorola, sparc32 and sh-X2 - have been tested further.
+
+For each of these a boot test and stress test has been performed - fork 400
+children, each mmap()'ing 2 MiB and touching every page then partially
+munmap()'ing then exiting to trigger as much page table freeing as
+possible.
+
+All were found to be working correctly.
+
+Note that sparc32 LEON SMP is not emulated, Andreas - do you have a means
+of testing this?
+
+v3:
+* Added Kiryl's tag to series (thanks! :)
+* Corrected commit message, comment indentation in 11/12 as per Kiryl.
+* Corrected 12/12 documentation as per Kiryl.
+
+v2:
+* Updated commit message to reflect CONFIG_MMU dependency for xtensa as per
+  Suren.
+* Updated 12/12 to correctly describe the new contract re: readers/writes
+  as per Kiryl. Also fixed up typos there as per Kiryl, Suren and slightly
+  reworded for clarity, and updated commit message to reflect.
+* Updated 11/12 to reflect the fact the change is for userland only as per
+  Kiryl, also added a note about write locks similarly to 12/12.
+* Fixed bug as reported by sashiko for the sparc32 change (10/12) - the
+  refcounts are insufficient on their own, so replace the page_table_lock
+  altogether with an IRQ-safe spinlock.
+https://lore.kernel.org/r/20260908-rcu-pagetable-freeing-v2-0-1f60b64e878e@kernel.org
+
+v1:
+https://patch.msgid.link/20260901-rcu-pagetable-freeing-v1-0-5456a81c8212@kernel.org
+
+Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 ---
-Changelog:
+Lorenzo Stoakes (ARM) (12):
+      mm/huge_memory: zap deposited page tables after an RCU grace period
+      mm: enable MMU_GATHER_RCU_TABLE_FREE for most 2-level architectures
+      mm: enable MMU_GATHER_RCU_TABLE_FREE for MMU riscv
+      mm: enable MMU_GATHER_RCU_TABLE_FREE for MMU arm
+      mm: enable MMU_GATHER_RCU_TABLE_FREE for arc, microblaze, xtensa
+      mm: enable MMU_GATHER_RCU_TABLE_FREE for sparc64
+      mm: enable MMU_GATHER_RCU_TABLE_FREE for m68k-coldfire
+      mm: enable MMU_GATHER_RCU_TABLE_FREE for sh-X2
+      mm: enable MMU_GATHER_RCU_TABLE_FREE for m68k-motorola
+      mm: enable MMU_GATHER_RCU_TABLE_FREE for sparc32
+      mm: make userland page table freeing RCU-safe
+      mm: change the contract for free_pgtables(), update docs
 
-V1 -> V2:
-	- Comments reworded
-	- Commit message reworded
-V1: https://lore.kernel.org/all/20260908064948.999530-1-mkchauras@gmail.com
+ Documentation/mm/process_addrs.rst       |   6 ++
+ arch/Kconfig                             |   8 --
+ arch/alpha/Kconfig                       |   1 -
+ arch/arc/include/asm/pgalloc.h           |   6 +-
+ arch/arm/Kconfig                         |   1 -
+ arch/arm64/Kconfig                       |   1 -
+ arch/loongarch/Kconfig                   |   1 -
+ arch/m68k/Kconfig                        |   1 +
+ arch/m68k/include/asm/mcf_pgalloc.h      |   5 +-
+ arch/m68k/include/asm/motorola_pgalloc.h |   9 ++-
+ arch/m68k/mm/motorola.c                  | 121 ++++++++++++++++++++-----------
+ arch/microblaze/include/asm/pgalloc.h    |   2 +-
+ arch/mips/Kconfig                        |   1 -
+ arch/parisc/Kconfig                      |   1 -
+ arch/powerpc/Kconfig                     |   1 -
+ arch/riscv/Kconfig                       |   1 -
+ arch/s390/Kconfig                        |   1 -
+ arch/sh/Kconfig                          |   1 +
+ arch/sh/include/asm/pgalloc.h            |   6 +-
+ arch/sh/mm/pgtable.c                     |  20 +++++
+ arch/sparc/Kconfig                       |   4 +-
+ arch/sparc/include/asm/pgalloc_32.h      |   7 +-
+ arch/sparc/include/asm/pgalloc_64.h      |   8 --
+ arch/sparc/include/asm/tlb_64.h          |   2 -
+ arch/sparc/lib/bitext.c                  |  14 ++--
+ arch/sparc/mm/srmmu.c                    |  32 ++++++--
+ arch/um/Kconfig                          |   1 -
+ arch/x86/Kconfig                         |   1 -
+ arch/xtensa/include/asm/tlb.h            |   2 +-
+ include/asm-generic/tlb.h                |  66 +++--------------
+ mm/Kconfig                               |   2 +-
+ mm/gup.c                                 |   5 +-
+ mm/huge_memory.c                         |   2 +-
+ mm/mmu_gather.c                          |  30 ++------
+ mm/pgtable-generic.c                     |  15 +++-
+ 35 files changed, 194 insertions(+), 191 deletions(-)
+---
+base-commit: 88297631d4d42f6004cb39c0ba3da7d2d10a616f
+change-id: 20260831-rcu-pagetable-freeing-84b6be830e20
 
- arch/powerpc/Kconfig              | 10 +++++++---
- arch/powerpc/include/asm/kasan.h  | 11 -----------
- arch/powerpc/include/asm/string.h | 21 +--------------------
- arch/powerpc/kernel/cputable.c    | 14 +++++++++++---
- arch/powerpc/kernel/prom_init.c   | 10 ++++++----
- 5 files changed, 25 insertions(+), 41 deletions(-)
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 2580e27e4328..b27ed9739eea 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -7,6 +7,10 @@ config CC_HAS_ELFV2
- config CC_HAS_PREFIXED
- 	def_bool PPC64 && $(cc-option, -mcpu=power10 -mprefixed)
- 
-+config PPC_CC_HAS_KASAN_MEMINTRINSIC_PREFIX
-+	def_bool (CC_IS_CLANG && $(cc-option,-fsanitize=kernel-address -mllvm -asan-kernel-mem-intrinsic-prefix=1)) || \
-+		 (CC_IS_GCC && $(cc-option,-fsanitize=kernel-address --param asan-kernel-mem-intrinsic-prefix=1))
-+
- config CC_HAS_PCREL
- 	# Clang has a bug (https://github.com/llvm/llvm-project/issues/62372)
- 	# where pcrel code is not generated if -msoft-float, -mno-altivec, or
-@@ -220,9 +224,9 @@ config PPC
- 	select HAVE_ARCH_HUGE_VMAP		if PPC_RADIX_MMU || PPC_8xx
- 	select HAVE_ARCH_JUMP_LABEL
- 	select HAVE_ARCH_JUMP_LABEL_RELATIVE
--	select HAVE_ARCH_KASAN			if PPC32 && PAGE_SHIFT <= 14
--	select HAVE_ARCH_KASAN			if PPC_RADIX_MMU
--	select HAVE_ARCH_KASAN			if PPC_BOOK3E_64
-+	select HAVE_ARCH_KASAN			if PPC32 && PAGE_SHIFT <= 14 && PPC_CC_HAS_KASAN_MEMINTRINSIC_PREFIX
-+	select HAVE_ARCH_KASAN			if PPC_RADIX_MMU && PPC_CC_HAS_KASAN_MEMINTRINSIC_PREFIX
-+	select HAVE_ARCH_KASAN			if PPC_BOOK3E_64 && PPC_CC_HAS_KASAN_MEMINTRINSIC_PREFIX
- 	select HAVE_ARCH_KASAN_VMALLOC		if HAVE_ARCH_KASAN
- 	select HAVE_ARCH_KCSAN
- 	select HAVE_ARCH_KFENCE			if ARCH_SUPPORTS_DEBUG_PAGEALLOC
-diff --git a/arch/powerpc/include/asm/kasan.h b/arch/powerpc/include/asm/kasan.h
-index a690e7da53c2..d62756b87ba4 100644
---- a/arch/powerpc/include/asm/kasan.h
-+++ b/arch/powerpc/include/asm/kasan.h
-@@ -2,20 +2,9 @@
- #ifndef __ASM_KASAN_H
- #define __ASM_KASAN_H
- 
--#if defined(CONFIG_KASAN) && !defined(CONFIG_CC_HAS_KASAN_MEMINTRINSIC_PREFIX)
--#define _GLOBAL_KASAN(fn)			\
--	_GLOBAL(fn);				\
--	_GLOBAL(__##fn)
--#define _GLOBAL_TOC_KASAN(fn)			\
--	_GLOBAL_TOC(fn);			\
--	_GLOBAL_TOC(__##fn)
--#define EXPORT_SYMBOL_KASAN(fn)			\
--	EXPORT_SYMBOL(__##fn)
--#else /* CONFIG_KASAN && !CONFIG_CC_HAS_KASAN_MEMINTRINSIC_PREFIX */
- #define _GLOBAL_KASAN(fn)	_GLOBAL(fn)
- #define _GLOBAL_TOC_KASAN(fn)	_GLOBAL_TOC(fn)
- #define EXPORT_SYMBOL_KASAN(fn)
--#endif /* CONFIG_KASAN && !CONFIG_CC_HAS_KASAN_MEMINTRINSIC_PREFIX */
- 
- #ifndef __ASSEMBLER__
- 
-diff --git a/arch/powerpc/include/asm/string.h b/arch/powerpc/include/asm/string.h
-index 1981bd4036b5..72b5c93a2b84 100644
---- a/arch/powerpc/include/asm/string.h
-+++ b/arch/powerpc/include/asm/string.h
-@@ -29,29 +29,10 @@ extern void * memchr(const void *,int,__kernel_size_t);
- void memcpy_flushcache(void *dest, const void *src, size_t size);
- 
- #ifdef CONFIG_KASAN
--/* __mem variants are used by KASAN to implement instrumented meminstrinsics. */
--#ifdef CONFIG_CC_HAS_KASAN_MEMINTRINSIC_PREFIX
-+/* Used by mm/kasan/shadow.c as raw backends to bypass KASAN checking. */
- #define __memset memset
- #define __memcpy memcpy
- #define __memmove memmove
--#else /* CONFIG_CC_HAS_KASAN_MEMINTRINSIC_PREFIX */
--void *__memset(void *s, int c, __kernel_size_t count);
--void *__memcpy(void *to, const void *from, __kernel_size_t n);
--void *__memmove(void *to, const void *from, __kernel_size_t n);
--#ifndef __SANITIZE_ADDRESS__
--/*
-- * For files that are not instrumented (e.g. mm/slub.c) we
-- * should use not instrumented version of mem* functions.
-- */
--#define memcpy(dst, src, len) __memcpy(dst, src, len)
--#define memmove(dst, src, len) __memmove(dst, src, len)
--#define memset(s, c, n) __memset(s, c, n)
--
--#ifndef __NO_FORTIFY
--#define __NO_FORTIFY /* FORTIFY_SOURCE uses __builtin_memcpy, etc. */
--#endif
--#endif /* !__SANITIZE_ADDRESS__ */
--#endif /* CONFIG_CC_HAS_KASAN_MEMINTRINSIC_PREFIX */
- #endif /* CONFIG_KASAN */
- 
- #ifdef CONFIG_PPC64
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index 6f6801da9dc1..233b5c650d1e 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -36,8 +36,12 @@ void __init set_cur_cpu_spec(struct cpu_spec *s)
- 
- 	t = PTRRELOC(t);
- 	/*
--	 * use memcpy() instead of *t = *s so that GCC replaces it
--	 * by __memcpy() when KASAN is active
-+	 * Use memcpy() instead of *t = *s because t is a PTRRELOC-adjusted
-+	 * pointer and this code runs before the MMU mapping is established.
-+	 * A struct assignment is a compiler-generated aggregate copy whose
-+	 * implementation is not under our control in relocation-sensitive code;
-+	 * memcpy() ensures the adjusted pointer is explicitly passed to the
-+	 * copy routine.
- 	 */
- 	memcpy(t, s, sizeof(*t));
- 
-@@ -55,7 +59,11 @@ static struct cpu_spec * __init setup_cpu_spec(unsigned long offset,
- 
- 	/*
- 	 * Copy everything, then do fixups. Use memcpy() instead of *t = *s
--	 * so that GCC replaces it by __memcpy() when KASAN is active
-+	 * because t is a PTRRELOC-adjusted pointer and this code runs before
-+	 * the MMU mapping is established. A struct assignment is a
-+	 * compiler-generated aggregate copy whose implementation is not under
-+	 * our control in relocation-sensitive code; memcpy() ensures the
-+	 * adjusted pointer is explicitly passed to the copy routine.
- 	 */
- 	memcpy(t, s, sizeof(*t));
- 
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index eb9f556b0937..d6d7f1ede319 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -1363,10 +1363,12 @@ static void __init prom_check_platform_support(void)
- 				       "ibm,arch-vec-5-platform-support");
- 
- 	/*
--	 * First copy the architecture vec template
--	 *
--	 * use memcpy() instead of *vec = *vec_template so that GCC replaces it
--	 * by __memcpy() when KASAN is active
-+	 * First copy the architecture vec template. Use memcpy() instead of
-+	 * a struct assignment because this code runs before the MMU mapping
-+	 * is established. A struct assignment is a compiler-generated
-+	 * aggregate copy whose implementation is not under our control in
-+	 * relocation-sensitive code; memcpy() ensures the adjusted pointer
-+	 * is explicitly passed to the copy routine.
- 	 */
- 	memcpy(&ibm_architecture_vec, &ibm_architecture_vec_template,
- 	       sizeof(ibm_architecture_vec));
+Best regards,
 -- 
-2.55.0
+Lorenzo Stoakes (ARM) <ljs@kernel.org>
 
 
