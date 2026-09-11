@@ -1,94 +1,79 @@
-Return-Path: <linuxppc-dev+bounces-27128-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27129-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 77417C88E50
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Sep 2026 13:32:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2C943C88E50
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Sep 2026 13:35:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hhFpG5jXNz2ypw;
-	Fri, 11 Sep 2026 23:32:22 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:39::10"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789104290;
-	cv=none; b=YkRAyV9KBqTJKCpFZUuRZl7ZunX3RjrPi9hfsxYWe8sCXdrEXdk6XM09BRSYA8gsMOosZgu76o70KPSRrzDRRJkl/rzMe6X/u646J6jhbJsYotvowHA/82BplT0R9J8InNjd/svV9lzTNR2vbiQPr2WNK77qm5L1ITzJy3gHO969df//40MEkHP5CFH1q7ymz1LbMWHRiSHMTPnCxBoCCuj0o6WiLqZpwARHS8OmioM8HmIZE3k9OTM+bGsP2MWfVgnGjASbXCkctdL3zQZa4EHpgPzD5meYK7K/ScQlzIaLzLTqYWl8XF2A/ngUwvt829uQHBgCGnlFKebUNTpMrA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hhFtK6GLlz2ynZ;
+	Fri, 11 Sep 2026 23:35:53 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=52.12.53.23
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789128702;
+	cv=none; b=QsC4qBOt1MzCFwP7AnfLWpkU2VOjCqWHuPW4X/PfiiNnePJqC+XUITzRZYntPXJQ0taICLQNJEQyUNtINfalLfWEYlrzZgsoiSXBeBmACQMSnrF3EwchaKLZ3tn9JpIedY6LEpNXs2H3LThU+V+rasZSao9eFoJlTLE9hDHlzrNyvpl+Br07WTb3r/vx06ngiq4yAq6Ah4scAir1j675UXKY+qc0B5qHWhlH/o2mGPSgT7eStyuLOP1JhUYBjF1LsPE7VlJF+7kgQHm9KB1j0hlf2vLULUVdknJhSo58VPTX91nIKZTBw/ta0eIWuBIqmWclCHKSEdT03pgvtWfNXA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789104290; c=relaxed/relaxed;
-	bh=WPT5/AHY7+piJs39GlSgVXX0zmrz48MGY79/VqTO0Wo=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=OYw9EpNpEB9JAEG0rWKsECpLjRSaI+QlYy9vUlGIbYKUrqYlswWZOu5y+q/GY5bdHN8M0wW6+NfGHPRMqfkk7ezRs8lBmvtzZmCfx9zzNW0PS3nHhVV4CdGEQo+ziljimGxLYh1OJeTq2BVinRLf9xbdhv1G8M9bIFa1BUlB/X2OC7kjLGJX1+7XcwS4bF0rID9WD6L056k5hcUZjW/MajQ7UTFg2GMBomQeoJrB5lCvxFMf8x5NLE1fDmmuyvN5S0mjAI2fQHWEe+FpPB1EOtbVtNqolKh1PoPRAA3HzTyf/hZ50uNJ8r5lO+GWkWMNKlZKMeUfrQIjVOBwjVYa0g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=TNmpP1Fn; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:39::10; helo=mail-pj2-x10.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1789128702; c=relaxed/relaxed;
+	bh=Ml2JWjYntelWabTiBlCGxkKliemYNE3sdK+c2VYPaA0=;
+	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=iwwczjgVRyhd/Jk70QCSgQp1TynKHT6l5uXhxO+myQqdvsJwOHDXIJ3d+EJh27pWuv5Z4XHRzL24Y2vfB/Pz3BMJM/8KvQ5/4FY4PzI3c4oy9jPJWx9HoqLxhhs4WUNp8qx6Fpa9WrORU7gyPreEbzFdpOKJeQe0jFUErAwWt8IMwUs60qOPfe/9ACPYjS5zEs7uO1vxGY9NdgKIMBwTZe6uhSI4Em8K9mlBKRw7LyPVuwbLehpx9qDPHRj4HzJfL948YxZdddewZMZ7RPp/5BMpL41T4vK/8bP5A6Z6WtQJQu4ERBoENCnVfTZu/1WoC+6IaRq6TiCUAbJf0jNlOQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amazon.de; dkim=pass (2048-bit key; unprotected) header.d=amazon.de header.i=@amazon.de header.a=rsa-sha256 header.s=amazoncorp2 header.b=sYpFXaim; dkim-atps=neutral; spf=pass (client-ip=52.12.53.23; helo=pdx-out-010.esa.us-west-2.outbound.mail-perimeter.amazon.com; envelope-from=prvs=707927bfc=sakacpav@amazon.de; receiver=lists.ozlabs.org) smtp.mailfrom=amazon.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amazon.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=TNmpP1Fn;
+	dkim=pass (2048-bit key; unprotected) header.d=amazon.de header.i=@amazon.de header.a=rsa-sha256 header.s=amazoncorp2 header.b=sYpFXaim;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:39::10; helo=mail-pj2-x10.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj2-x10.google.com (mail-pj2-x10.google.com [IPv6:2607:f8b0:4864:39::10])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=amazon.de (client-ip=52.12.53.23; helo=pdx-out-010.esa.us-west-2.outbound.mail-perimeter.amazon.com; envelope-from=prvs=707927bfc=sakacpav@amazon.de; receiver=lists.ozlabs.org)
+Received: from pdx-out-010.esa.us-west-2.outbound.mail-perimeter.amazon.com (pdx-out-010.esa.us-west-2.outbound.mail-perimeter.amazon.com [52.12.53.23])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hh2zj2p1vz2xpv
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2026 15:24:49 +1000 (AEST)
-Received: by mail-pj2-x10.google.com with SMTP id 98e67ed59e1d1-396ccc02279so512090a91.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2026 22:24:49 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hhD173Zpbz2xBK
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2026 22:11:38 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789104287; x=1789709087; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=WPT5/AHY7+piJs39GlSgVXX0zmrz48MGY79/VqTO0Wo=;
-        b=TNmpP1FnVZXRMdZ+1GQIXsMup+/86h/rBXfZyEAIOqnVxiWGA4rLP4UZVGOoo456Je
-         lx4yNSyBVA7z5YyH679/ObNOXdCTBAM9RiLnTCGstiHeFp66vxUa+7xnGzvLX8jpiJxZ
-         n2fuCQoTL1MC43nMJBJC17kc8X45f9EVE9SUF9F3b5FSB8xzNuAwLVf3r/tPwIf1R9vv
-         +AdxM0gSxKgK/Sjp4wLhPtTCnQ7eo9kJ4Jb0m1pT+33+PsSCys3K6ZruOp6Uch68+984
-         KbcnrnfToDATxnqMcDUGxreIrjHyWSpKXCD4RSrZTNeBOlFoTrvqskIsspN+wmTEl8xm
-         ARiw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1789104287; x=1789709087;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=WPT5/AHY7+piJs39GlSgVXX0zmrz48MGY79/VqTO0Wo=;
-        b=Q+Ja22O7ryK10xq+PU52RVHjF5lgfLZUaQ6BS8/Hv0dCBkhXvSOwi9H9AUH6XKmBFd
-         FJG2ZtjJGfFxdrnyYZsMRqfgSTGNnyFRHnhCo4Phx3GQhec0Ha9ntpKfa9VYQYj1KR7d
-         Pza8oRo2SaQDXdLLHf24rWvNmlS6XgldN0ecrzR9D0Xz8tMmUiZ8jILN/+mPuYfxrhV5
-         25uNz5bGvHR4g+zGllrxRgUaDQc4+nYHAtzfSdduAdLo71aYHjnhFuECk3Hlw0nTj1VD
-         8tCEzHclT6++ctccgTj80N++f46/5dH8xn8ikwosOk299yCSA7DMO2rAA+2VOmcDF1FH
-         aAFg==
-X-Forwarded-Encrypted: i=1; AKwUvBxoqJvXgsKHBS/6xQ+IA5EFzcm6T9OaUTeCy/o/AG2ZEGPVfK13HHB2qxChjJvQg5cpv8T+yPCF7xRLgkE=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++lL7CQB3L+jc7VY/7ZHbzdRP5OF10RIP6OCD8usiq54jZfR+tLF
-	HtsFOvd3jWXKERz+9hplHWnE50sTwqDTTg9do/tMMm1IzHBzsh334o6w
-X-Gm-Gg: AYBFou1sOuS0oiUSF9oiIF2Da/Ku1VZBTt0gR6HwuHFV9kwGhY5EG/9ANvHznI1AImF
-	D9vNCxucpmo1mzDIBssAkOm5IVnI4NopCpC+UtUG5OdwaYq70OEOg4qogRlG+MOoyE4qIEPfKSn
-	FIC+SaKUxK3g9hVtxAtVy2gDABbBnCNCa/KrbW0HKRnRg3HyiPXaZCYg5TOhL+VsY09v8cDlMm4
-	94a81nYgnysH7EWzskt8jZ6R7uDABBTPcSUNkDKljvlBri0ccYr1P62XGrMqUmTxWPpGLWVlDub
-	cTSzEn6plE0jgsQv4Vmhp0iEfSmy9KA63hRkoVx+GMGXKws8UW7mQdrDJ7H8/Dw4xNL6p4MrJ2B
-	x27S+sj5XkV8r+joSKdrBcLhd7IOkBeWo0vaLTHjpOv7MBFDGoIZiLL1oBL0prfEZvHt0y0vqmQ
-	8NOrImK6sgBgVMEgxgNIXQkgAAHIP/QxTTXH2f0CbxviB5QJgYwJGJadzEJD6B39+Nhgaadgk3D
-	69tZkbGtQ9KSVefVNlhFZhTkk0vtbUJ0/yhczvCVNpM/g==
-X-Received: by 2002:a17:90b:3906:b0:398:9bd4:d12 with SMTP id 98e67ed59e1d1-39d9c3727b3mr3899237a91.17.1789104287013;
-        Thu, 10 Sep 2026 22:24:47 -0700 (PDT)
-Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([106.51.165.23])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-14365ba71cesm3416735c88.13.2026.09.10.22.24.38
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 10 Sep 2026 22:24:46 -0700 (PDT)
-Date: Fri, 11 Sep 2026 10:54:35 +0530
-From: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
-To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
-	pjw@kernel.org, palmer@dabbelt.com, aou@eecs.berkeley.edu, alex@ghiti.fr, 
-	ojeda@kernel.org, boqun@kernel.org, gary@garyguo.net, bjorn3_gh@protonmail.com, 
-	lossin@kernel.org, a.hindborg@kernel.org, aliceryhl@google.com, tmgross@umich.edu, 
-	dakr@kernel.org, daniel.almeida@collabora.com, tamird@kernel.org, 
-	acourbot@nvidia.com, work@onurozkan.dev, linkmauve@linkmauve.fr, 
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org, 
-	rust-for-linux@vger.kernel.org, FUJITA Tomonori <tomo@flapping.org>
-Subject: Re: [PATCH V3] powerpc/bug: Add ARCH_WARN_ASM and refactor
- _EMIT_BUG_ENTRY for Rust support
-Message-ID: <aqOP8C7ahcxCng7L@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-References: <20260910100801.2159785-2-mkchauras@gmail.com>
- <ffd8e0c3-0d78-46ee-9ab1-59dbfe0b6d27@kernel.org>
+  d=amazon.de; i=@amazon.de; q=dns/txt; s=amazoncorp2;
+  t=1789128699; x=1820664699;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=Ml2JWjYntelWabTiBlCGxkKliemYNE3sdK+c2VYPaA0=;
+  b=sYpFXaimDrRfUAw6NL5FBQAv1sxZkPDed/WBVCRsty4jHQZDA+EWOvaf
+   JWLzGx3HHzVYaCOHIdjPREdC4v614lFoSxjqvW6kzI0VZQHW6pgtojeV1
+   Nx6qlMKdNxFQK+LFxCkFxPB4ofxEqJiMF7mcXBjcw1oagiOvMaDXYNMN4
+   /q4Ivp+YtnUecOddHvxnv48mUuwSlma92ecHQRHUaXpQ5nNJFDv9pUUKU
+   AZx6rS4htT4N560x/og1PbH9LklGdiIF9Lj+xKpn38wYjNtLuPPb82Ayr
+   Lk0V5r6bF8nS0SKjPVAjAcy6/BD8lwTaDryT/0CTkBQ/Bq2FnNqAMFXB7
+   g==;
+X-CSE-ConnectionGUID: spETKBKOR1+n5MPsEfCwHQ==
+X-CSE-MsgGUID: aREx7AWGQfGT3DpWEAxfcw==
+X-IronPort-AV: E=Sophos;i="6.27,97,1787011200"; 
+   d="scan'208";a="28292838"
+Received: from ip-10-5-0-115.us-west-2.compute.internal (HELO smtpout.naws.us-west-2.prod.farcaster.email.amazon.dev) ([10.5.0.115])
+  by internal-pdx-out-010.esa.us-west-2.outbound.mail-perimeter.amazon.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Sep 2026 12:11:33 +0000
+Received: from EX19MTAUWC001.ant.amazon.com [205.251.233.53:31083]
+ by smtpin.naws.us-west-2.prod.farcaster.email.amazon.dev [10.0.22.113:2525] with esmtp (Farcaster)
+ id d36685e2-4f05-4292-b5fc-d844b9844549; Fri, 11 Sep 2026 12:11:32 +0000 (UTC)
+X-Farcaster-Flow-ID: d36685e2-4f05-4292-b5fc-d844b9844549
+Received: from EX19D001UWA001.ant.amazon.com (10.13.138.214) by
+ EX19MTAUWC001.ant.amazon.com (10.250.64.174) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id 15.2.2562.45;
+ Fri, 11 Sep 2026 12:11:32 +0000
+Received: from dev-dsk-sakacpav-1a-480d1124.eu-west-1.amazon.com
+ (172.19.96.155) by EX19D001UWA001.ant.amazon.com (10.13.138.214) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id 15.2.2562.46; Fri, 11 Sep 2026
+ 12:11:29 +0000
+From: Pavol Sakac <sakacpav@amazon.de>
+To: Bjorn Helgaas <bhelgaas@google.com>
+CC: <linux-pci@vger.kernel.org>, <linux-kernel@vger.kernel.org>, David Matlack
+	<dmatlack@google.com>, =?UTF-8?q?Ilpo=20J=C3=A4rvinen?=
+	<ilpo.jarvinen@linux.intel.com>, =?UTF-8?q?Krzysztof=20Wilczy=C5=84ski?=
+	<kwilczynski@kernel.org>, Kees Cook <kees@kernel.org>, Madhavan Srinivasan
+	<maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin
+	<npiggin@gmail.com>, Christophe Leroy <chleroy@kernel.org>,
+	<linuxppc-dev@lists.ozlabs.org>, Niklas Schnelle <schnelle@linux.ibm.com>,
+	Benjamin Block <bblock@linux.ibm.com>, Lukas Wunner <lukas@wunner.de>, "Ionut
+ Nechita" <ionut.nechita@windriver.com>, <nh-open-source@amazon.com>
+Subject: [RFC PATCH 0/8] PCI/IOV: Initialize virtual functions in parallel
+Date: Fri, 11 Sep 2026 14:11:13 +0200
+Message-ID: <20260911-vfopt-s1-v1-0-693271dc0226@amazon.de>
+X-Mailer: git-send-email 2.47.3
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -102,46 +87,107 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ffd8e0c3-0d78-46ee-9ab1-59dbfe0b6d27@kernel.org>
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [172.19.96.155]
+X-ClientProxiedBy: EX19D037UWC001.ant.amazon.com (10.13.139.197) To
+ EX19D001UWA001.ant.amazon.com (10.13.138.214)
 
-On Thu, Sep 10, 2026 at 05:08:48PM +0200, Christophe Leroy (CS GROUP) wrote:
-> 
-[...]
-> > -/* _EMIT_BUG_ENTRY expects args %0,%1,%2,%3 to be FILE, LINE, flags and
-> > -   sizeof(struct bug_entry), respectively */
-> >   #ifdef CONFIG_DEBUG_BUGVERBOSE
-> > -#define _EMIT_BUG_ENTRY				\
-> > -	".section __bug_table,\"aw\"\n"		\
-> > -	"2:	.4byte 1b - .\n"		\
-> > -	"	.4byte %0 - .\n"		\
-> > -	"	.short %1, %2\n"		\
-> > -	".org 2b+%3\n"				\
-> > -	".previous\n"
-> > +#define _EMIT_BUG_ENTRY(label, file, line, flags)	\
-> > +	".section __bug_table,\"aw\"\n"			\
-> > +	"2:	.4byte " label "b - .\n"		\
-> 
-> Ah, you left the b here. The label is 1b which mean "the first 1: you find
-> going backward". Could as well be "1f" instead meaning "the first 1: you
-> find going forward".
-> 
-> So I think you should use 1b or 1f as the label, not just 1.
-Hey Christophe,
+In the context of kexec-based live update (LUO) used with
+datacenter-level hardware for hosting virtualized instances, once
+SR-IOV enablement is put in the hot path it becomes a downtime
+bottleneck on modern hardware with 100s-1000s of VFs per PF, and begs
+for optimization.
 
-Thanks for the clear explanation, this helps a lot.
-> 
-> I would also try to use #label to stringigy the label in order to avoid
-> having to put the arguments into quotes (untested), same for other ones.
-> 
-Ohk, letme try that.
+This series (S1) introduces parallel VF initialization to put stress on
+all participating subsystems; the 4 subsequent series then attack and
+optimize the serialization bottlenecks one by one, with the primary
+objective of reducing initialization time to a minimum.
 
-> Cdlt
-> Christophe
-> 
+On real hardware - a large dual-socket arm64 Neoverse V2 server with
+thousands of VFs - the five series together cut SR-IOV initialization
+by 65%. Due to HW/SW combination, the iommu_probe_device_lock residual
+is not present. This series alone accounts for less than 5% of that,
+so the reduction comes from the four series that follow removing the
+serialization that keeps the parallelism from paying off.
 
-Regards,
-Mukesh
-[...]
+Lock statistics and SR-IOV init time for 4x PF (NVMe, 255 VFs each)
+enabled serially, using the public reproducer described below:
+
+  lock_stat:
+  Lock                     wait: Before     After   contentions: Before   After
+  iommu_probe_device_lock          0 ms  25507 ms                     0    1143
+  &root->kernfs_rwsem             18 ms    942 ms                  3117   93208
+  &vfio.group_lock                 0 ms    425 ms                     0     497
+
+  Stage                 SR-IOV init time:
+  S0 (baseline)         3027 ms
+  S1 (this series)       999 ms
+
+Reproducer:
+
+Runs an x86_64 QEMU/KVM guest with all PCI config space accesses routed
+through ECAM, avoiding pci_config_lock, which otherwise serializes the
+legacy port-I/O (0xCF8/0xCFC) accesses used for config offsets below
+0x100. Guest topology: 48 vCPUs (2 sockets x 24 cores, one thread per
+core, pinned 1:1 to host physical cores) and 2 NUMA nodes. After boot it
+enables SR-IOV on 4 PFs sequentially (sriov_numvfs, 255 VFs each) and
+measures init time on a kernel built without CONFIG_LOCK_STAT, then
+separately collects /proc/lock_stat data on a kernel built with
+CONFIG_LOCK_STAT=y.
+
+In all series, I lean primarily on lock_stat numbers to defend the
+improvements. In the reproducer, the residual iommu_probe_device_lock
+dominates the window and masks the later series' wall-time gains;
+reducing that lock further is out of scope for this set, but the
+dominant residual source is named in S2 and can be followed up in the
+future.
+
+Looking for feedback on the overall design shape of the optimizations.
+
+The full set of series building on top of this one:
+- S2 iommu_probe_device_lock optimization:
+  https://lore.kernel.org/r/20260911-vfopt-s2-v1-0-fff3db7e01c2@amazon.de
+- S3 driver core: cut per-node lock traffic in bulk device
+  registration (kernfs_rwsem write-taken once per node instead of
+  twice, batched inode IDs, indexed glue dirs):
+  https://lore.kernel.org/r/20260911-vfopt-s3-v1-0-66e3602f76f7@amazon.de
+- S4 vfio: create the group chardev outside vfio.group_lock,
+  eliminating its contention:
+  https://lore.kernel.org/r/20260911-vfopt-s4-v1-0-98ba1d2ef7ab@amazon.de
+- S5 remove the kernfs_rwsem bottleneck by staged sysfs registration:
+  an opted-in device's whole subtree is published in one write hold
+  instead of one per node:
+  https://lore.kernel.org/r/20260911-vfopt-s5-v1-0-fa4cacdb6ca8@amazon.de
+
+This set of series replaces a previous attempt to optimize VF init:
+https://lore.kernel.org/lkml/20260702174033.32116-1-sakacpav@amazon.de/
+
+The reproducer is available as a docker image that orchestrates
+builds in a QEMU guest and prints results as a table (x86_64 Linux
+host with /dev/kvm assumed):
+
+  docker run --device /dev/kvm ghcr.io/pavsa/linux-parallel-sriov-vf-init-bench:7.3-base
+
+Pavol Sakac (8):
+  PCI/IOV: Split virtfn bus handling out of pci_iov_add_virtfn()
+  PCI/IOV: Create virtfn buses up front in sriov_add_vfs()
+  PCI/PM: Convert pci_bridge_d3_update() recursion to iteration
+  PCI/PM: Serialize pci_bridge_d3_update()
+  powerpc/pci: Serialize pcibios_bus_add_device()
+  PCI/IOV: Let sriov_add_vfs() own the failure unwind
+  PCI/IOV: Initialize virtual functions in parallel
+  PCI: Probe inline from node-local workqueue workers
+
+ arch/powerpc/kernel/pci-common.c |  14 ++-
+ drivers/pci/iov.c                | 189 +++++++++++++++++++++++++++----
+ drivers/pci/pci-driver.c         |  18 ++-
+ drivers/pci/pci.c                |  87 +++++++++-----
+ 4 files changed, 252 insertions(+), 56 deletions(-)
+
+
+base-commit: cee9395acd8043be0644b25c34bfa86623f2b935
+-- 
+2.47.3
+
 
