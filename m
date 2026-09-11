@@ -1,77 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-27083-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27084-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F3723C79FA1
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Sep 2026 04:49:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B8ABC88E41
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Sep 2026 04:49:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hh2Bp37kKz2yd7;
-	Fri, 11 Sep 2026 14:49:22 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::635"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789102162;
-	cv=none; b=bpC9bGtWNHkDDYdW/My9cdtayc0Yk1ZejMQa6crd+ZTLQ16ac6KeLsEQwI+HldF4BqdpqlJbz23Zzxr9orwIe5uaE4j1sXJWV2+3sAH2CfyqtSIZmECkCrQkNat6zI6RaS2uHyX4fhDpdSy6X4n+LHPZKYG4G6GOXukCSDfPD6AvIiQc+nD9xIPnr9u/UUal4GXEGoxTaCfZBzkS1yDRJwvzibykZIVM5XK4sqq7S1XeF7tw7RgPpo5E1WzBJD0vb1n/Rh4N9J8lb1WF7zaSE5wdP73KWnz0qg/xvqTcivEgre6Chg3HcFO4bjwsy//nh9x7LmK7EftoN9QA3I5nig==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hh2Bv5z2Wz2yqx;
+	Fri, 11 Sep 2026 14:49:27 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1034"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789102167;
+	cv=none; b=mPbsvcsLpRY1pf0T1/Vrqbml3MWWBJ3CIeG7bhkEKju6bCBLiriBugOouxCmX/xXRoYjZUbFZ6LHfRZblRtUohnFu2rfhRBjc+GU1I/B4SWZuYUPVDxM+6f26Ke9G783HnMSJ1Y6DElIMLma0fgMzJMGc0/KrBfMW0W0rtk/jnioG7gDL/tBsA2AzA1t/gLvfYtjAKoPFQBotYrH66V4Bp8JVbJLSIRZYsV7wsbk8TUahC9+QBo8V4eTVa9DDZW594qnITmMOgJcOLZoPQgds1ww//VbcMGrF6MeXXchhTky5A/Yb7igRt6KqrnW8mBvcGedpPOHY6Xwkiv0370G6A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789102162; c=relaxed/relaxed;
-	bh=ShzPxubAIgCFioqA8zTb5jVlls4ez8Ik0Yod6CKj41U=;
+	t=1789102167; c=relaxed/relaxed;
+	bh=w4tObarZqWzLfPDYSwGxwQwAXuFMWWhRAhqBOMQynsA=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=eGYjXXmIUp9kQ2Y2WFrkX0VRbU++nDsrIrq+vv0D4FU7vDWHtVoDOBG9gCpbXbrD6BH7tiQyzN6A9mdNRxzNjlTnPF4fHgtlYIHw6/vGCa01RJfYMZZ+H8Qv/ZzXfWL3iIT8PFVWFEK69YRSIhADlfH/+G6tuo5zGKarH6fCJ3nYL+PVNuR2FbLldXty0ZO7+yLK3oU78AeIVJiGLh4kf19hOFRvi8jC7IYps4OH93q6J+dF1d7M2cZ9Zm2kW44VhanDaGf+s2KOk++Ob8LhISHv0CXrr1Vg/8clcImzyGduIaVU6tNF00rfydhjwfNddhsQeWbdEWLK8ShNglTWvA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ecHnRXkk; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::635; helo=mail-pl1-x635.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version; b=Fop2yXHbQdrsATDy+AYe8FTG2iYMJgKqKRygJb9gATrk22c4dPydEd6O69S3wsT9k2x8o4ywWlsAsdbzs1ysTFqhF2igAa1652aH3XkXSOsBhbsfohvlX1BUPaHuXKHcVNDD6MXccAflmomVpgDO2ZjFK3EQk3ZeER7k15HyG0x/RexYvmc57u3z8dX4d8lJg2Hb1SaRhv/9XfXp3k2FhmDk8VjKDkynrrj5cmTqVQgLIziFuP3C0weoU9s9SvNK2U9WBh7FMz0lQeL3dCMoWCmld8/bL7zeXDlonLKYpiUFtFyYzDx/l87kG2+WElbEqOmFxFocqH2N417qbYruJA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=sW4kReFG; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1034; helo=mail-pj1-x1034.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ecHnRXkk;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=sW4kReFG;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::635; helo=mail-pl1-x635.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x635.google.com (mail-pl1-x635.google.com [IPv6:2607:f8b0:4864:20::635])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1034; helo=mail-pj1-x1034.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x1034.google.com (mail-pj1-x1034.google.com [IPv6:2607:f8b0:4864:20::1034])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hh2Bn4pFgz2yqx
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2026 14:49:21 +1000 (AEST)
-Received: by mail-pl1-x635.google.com with SMTP id d9443c01a7336-2caced6038eso5784045ad.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2026 21:49:21 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hh2Bv0Htkz2ygK
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2026 14:49:26 +1000 (AEST)
+Received: by mail-pj1-x1034.google.com with SMTP id 98e67ed59e1d1-3964dfb5b9aso612726a91.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2026 21:49:26 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789102159; x=1789706959; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1789102165; x=1789706965; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=ShzPxubAIgCFioqA8zTb5jVlls4ez8Ik0Yod6CKj41U=;
-        b=ecHnRXkkNU/cPyB/mms+RBdw1F7JrRtWW6weMPsKq8wE4rpAQzTIR/dI4DmrKCgEqj
-         Sb2mSe2+1yZsSV2+IjgHOfTsNxuzN8r0QHdVsi9ALMMYjQiSvqpjZSAF+9vsUhTiLg8H
-         mqMacYP4g0fb/gRT9bhO8RDrnn7FiWgzCE1yWJkeEWDIo7bUcCaHXuRFF3ahGRuSytA7
-         Mzll3uUO7tWRKVtqtzPXwc9NocEbfxr/giY+ezrBV4FNTJmTZidBWx2V14TWW56HctQF
-         Wlx5Lzw/3qSUs5caumyI6CYOAQr70W9EThKZyWSaUohov6DGJ2nFxpA4s1qiESmnj414
-         rTRg==
+        bh=w4tObarZqWzLfPDYSwGxwQwAXuFMWWhRAhqBOMQynsA=;
+        b=sW4kReFG4pc0Vp5lWeXQFZ9unPFHtU3/e7tkGC21etpYzq4Gl29LADFtQhZdbftEmR
+         XLKK1qz/x+I0CpmWzYyn+pofAco0CgbClM04YCBNVjfjn2eIJiUJEuJTks5U8ayfMiY4
+         ozmGaf2noqsRp8eCM5jejsfQwooXL/tkgIrS7GOApTwts180uCEGJhf/CF+Ftpkf6nZK
+         c6ia8693AU7uW3yX2MtIqSb+c9f2hDfNSmv5F9AOQ9FXklFse8IZ6lJei9aQxWHrvtes
+         eFMrgER4MSp3Il8cxGy7be9Gguv1HOoiIvl7tTBcY+3aJXPigTytyMd8kNcvUtm3Mll2
+         VFfw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1789102159; x=1789706959;
+        d=1e100.net; s=20251104; t=1789102165; x=1789706965;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=ShzPxubAIgCFioqA8zTb5jVlls4ez8Ik0Yod6CKj41U=;
-        b=JQx+b47hySGHqGgE+qyPKYYhq5xe0Qh8Vj6cclsN/HQOYXNg0YfgS/E7HXxn5ijaLe
-         90LhL/9huGR2ef+A5Sam3O9Odxqu021xqVtdSNvGdQ48ipug1+1RpFPWLSN77r5aviOZ
-         s2REO9lmSOaG6GJXaXvU9hnF8agFc9RXPYXwPM4SWZ1gb5EbkF6UyWNhh/+WIV9mHkT0
-         71B83QohZ0om/4eRL4Vld3BXVzzdY2BGS2kYHfJiAsES4yyV3lieBOgnHbhod7PflLzF
-         AnvNCMqicidXCsyBWSC90LBisRyc0CP5eqeYgF6+rYyRVkrXMP+/gyRTNPo+VcYfLrHy
-         8wyg==
-X-Forwarded-Encrypted: i=1; AKwUvBxSgWZm4xbtwy4HeUq3kfh9TosbRxpClBWvN9o6LEPKbwaht7y5XUav2Bsj7spTPcUPA6EfvxSYY99W82s=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++mNd2fNIe3SH8EzvGElMsCZLmM6lzaNV+4pRNs86/RGcz6tHWWV
-	RR1iw1V/3ti2ZWj3wVb0Q+8TqKepOztInHDQSxqoJex2Xk6kLfCaBAat
-X-Gm-Gg: AYBFou2ASK5CBMn5B5Dh4kvJEI8sA0whJ/zh2KLfQdgUhBaR3P5j7lZDWELnm7lhVBm
-	5oE4rF8WbeIZRl6h9LEyrU3krEv/2tOBQLcL4M6xBoP7N0+l42K4PmaLbmMtSO+uTLI1uiiTAz0
-	1Qd8msJIhcvEjYrQCu7QuEKIBzwHmm4xbSj8HH7Lb6MVclgdoL5Wno6/EuTFNs3lXv/JxMaPHpj
-	2SZTjg/q/eOsnHoXWvtRpWoRY8R37ZdQ2Fr/p5AnJ62nsBwyy5LtjTD7emvUPXT4ve0cbdwTKcs
-	rtwjQ/oD6LIz8G+bMtsLGcJzJW/iDMutXrJ90+lUxKEGIuPgwbdMSdNwrbsy6ZwKT5QKdG2zVjL
-	2LuMtlU9s/5fi4BEDyxmzD8IHMzoub4ueOEdfoIOZzIXDd8mvijSYyIaXvqID7fD2lq2JlTgfFj
-	AWvcrcNLz8721TbQw4p6FtV4mZAOeoeRvibdJA5/w9Fku0nEF9l2NvV7GAm4kIbLKwkRfx6nrYu
-	Cdmfqocy5Wt8c2xW76vhpNZMR3Rdp6hmD6cl0TCmGNnxNy9wFFI1lijcklEwAQArHZlXmlp
-X-Received: by 2002:a17:903:f83:b0:2d9:2ff6:246e with SMTP id d9443c01a7336-2dd0eecb344mr80244625ad.23.1789102159392;
-        Thu, 10 Sep 2026 21:49:19 -0700 (PDT)
+        bh=w4tObarZqWzLfPDYSwGxwQwAXuFMWWhRAhqBOMQynsA=;
+        b=XMCAMXVHcE5A1SgDhxe9lPDJVUdifd6nVCHOvkLotxcDOzPeO97gN2OgOVWQ495Gap
+         bSsq6KgCtuEkOFkn+YEpQgsxf93m8pwjgZzKAqdDRybot0XeSU0Hh8vpikQHRJAzD/UD
+         KZKx8c8bpDPY3Q8NJ1FDiukZU+74vk9p/i9vs60C162G0CL2LDD9I9uLBwOb2zfLfaQJ
+         vigRv6BA8U2ZZCx5XoQFEsgQJyMGe4LEXnTg52ktpXR+teiIdvRGltXsRS+MIsAo6xKj
+         2GGcN7qHGy6IVSZQF+8FzvGud9ShnfuNtZT4RRdlqRbq21Rl6LQoPk2+A8twqKpLseCh
+         Kuiw==
+X-Forwarded-Encrypted: i=1; AKwUvBwo7pRBesSSLVPqmfhG9+g07Bf8go+p8DgZVDMo+wjo/3P8iuWgaRf9gVeDTLLcHs8bmyc54iI5p8+jONA=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++k87TYgYZUHDVeqqGYTbaTr7s3u5n2rz/xXq4NTrJzU98YiGYlg
+	HRo2hWKJ+zxNhyXlOLOrPnSsDQVxYUBnMiLPYbzocvvRLFXFYhgO1kzp
+X-Gm-Gg: AYBFou03v5h+Np/L4izfTxU7KOmgMTNdRM/8g9ZkZD3mRgj/NN0YvBUKQrqP46RXxN6
+	CzjiurR6qbRWfXwkJWsPO1HCDN5yvFtg7bIOmyS6lbXE2wlMbcKXvFwhRvHnw400mViycilenDp
+	zmnTG3BV2i4KeJRQyVH0b+78Uhb1pyWMa6UBt2bGfVAx/FFp8un002t0eLUzo379t6y6TA/Z3Tu
+	eAC/leF5OUnJC1oQc7oUez0jn2J1BgcrCF/uiMEiwyVPPC9+xCbp085POr72Q/undVikI+ne20n
+	TISaFzOMDlayHq7pA/cLCQTqzM8TbV8h0NUkNe4BeJFi7YsxIuDfW9h+z67h8dbVErJ9lBAOvVI
+	D+1zmcNkex8VoGaybOKQcIFFpiCBFfp2qANVh4IypwOrttdf7GBGNuQxiR8Xa/twyseklDlNQfv
+	I+bKKHBM73/VPzRdSL9l5AG/hwP+PtZMs6UUs/puapjbjZfwuWVb3rdZp2d0fQrshYYDPUkSgok
+	0hJgYxZM2UzgfdTr2Wmn10ezVJtlH0qM1/9Adm3rXjk+64z7AQeyrTCpUG4vV0=
+X-Received: by 2002:a17:90b:384c:b0:38d:b36e:9813 with SMTP id 98e67ed59e1d1-39d9bed82a2mr3634401a91.11.1789102164649;
+        Thu, 10 Sep 2026 21:49:24 -0700 (PDT)
 Received: from pve-server.rlab ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-33ba4f1e434sm2883077eec.22.2026.09.10.21.49.14
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-33ba4f1e434sm2883077eec.22.2026.09.10.21.49.19
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 10 Sep 2026 21:49:18 -0700 (PDT)
+        Thu, 10 Sep 2026 21:49:24 -0700 (PDT)
 From: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
 To: kvm@vger.kernel.org
 Cc: Sean Christopherson <seanjc@google.com>,
@@ -87,9 +87,9 @@ Cc: Sean Christopherson <seanjc@google.com>,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org,
 	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-Subject: [PATCH v4 2/3] KVM: selftests: Enable kvm_create_max_vcpus test for powerpc
-Date: Fri, 11 Sep 2026 10:18:53 +0530
-Message-Id: <506a93b99fedcdeda87bb4a9dc520c358b7acebb.1789097569.git.ritesh.list@gmail.com>
+Subject: [PATCH v4 3/3] KVM: selftests: Don't limit LE dirty-bitmap bitops to s390x
+Date: Fri, 11 Sep 2026 10:18:54 +0530
+Message-Id: <98cc49bb43ebc45c14cdfd596a4e64b07d2e1f08.1789097569.git.ritesh.list@gmail.com>
 X-Mailer: git-send-email 2.39.5
 In-Reply-To: <cover.1789097569.git.ritesh.list@gmail.com>
 References: <cover.1789097569.git.ritesh.list@gmail.com>
@@ -108,42 +108,52 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-powerpc's maximum permitted vCPU ID depends on the VM's SMT mode, and
-the maximum reported by KVM_CAP_MAX_VCPU_ID exceeds a simple non-SMT
-VM's limit.
+dirty_log_test already has BITOP_LE_SWIZZLE helpers, but they were
+compiled in only for s390x, so every other big-endian host used native
+test_bit().
 
-The powerpc KVM selftest port uses non-SMT VMs, so add a workaround
-to the kvm_create_max_vcpus test case to limit vCPU IDs to
-KVM_CAP_MAX_VCPUS on powerpc.
-This patch allows us to skip the vCPU ID test when running on PowerPC
-with SMT support, in which case system topology is encoded into the vCPU
-ID, and so a VM can't use the full advertised vCPU ID range without
-crafting a valid platform specific topology.
+The test fails on big-endian powerpc because it treated dirty host pages
+as clean (because of the endianness issue)
 
-Suggested-by: Sean Christopherson <seanjc@google.com>
+w/o the fix the test fails with:
+  Clear page 1 value (1) >= iteration (1)
+
+Fixes: a049a377164c ("KVM: selftests: Enable dirty_log_test on s390x")
 Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 ---
- tools/testing/selftests/kvm/kvm_create_max_vcpus.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ tools/testing/selftests/kvm/dirty_log_test.c | 12 ++++--------
+ 1 file changed, 4 insertions(+), 8 deletions(-)
 
-diff --git a/tools/testing/selftests/kvm/kvm_create_max_vcpus.c b/tools/testing/selftests/kvm/kvm_create_max_vcpus.c
-index c5310736ed06..59ddc3757943 100644
---- a/tools/testing/selftests/kvm/kvm_create_max_vcpus.c
-+++ b/tools/testing/selftests/kvm/kvm_create_max_vcpus.c
-@@ -58,7 +58,13 @@ int main(int argc, char *argv[])
+diff --git a/tools/testing/selftests/kvm/dirty_log_test.c b/tools/testing/selftests/kvm/dirty_log_test.c
+index af5eb0334a74..8189eaac713c 100644
+--- a/tools/testing/selftests/kvm/dirty_log_test.c
++++ b/tools/testing/selftests/kvm/dirty_log_test.c
+@@ -44,8 +44,11 @@
+ #define TEST_MIN_WRITES_PER_ITERATION	0x100
 
- 	test_vcpu_creation(0, kvm_max_vcpus);
+ /* Dirty bitmaps are always little endian, so we need to swap on big endian */
+-#if defined(__s390x__)
++#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+ # define BITOP_LE_SWIZZLE	((BITS_PER_LONG-1) & ~0x7)
++#else
++# define BITOP_LE_SWIZZLE	0
++#endif
+ # define test_bit_le(nr, addr) \
+ 	test_bit((nr) ^ BITOP_LE_SWIZZLE, addr)
+ # define __set_bit_le(nr, addr) \
+@@ -56,13 +59,6 @@
+ 	__test_and_set_bit((nr) ^ BITOP_LE_SWIZZLE, addr)
+ # define __test_and_clear_bit_le(nr, addr) \
+ 	__test_and_clear_bit((nr) ^ BITOP_LE_SWIZZLE, addr)
+-#else
+-# define test_bit_le			test_bit
+-# define __set_bit_le			__set_bit
+-# define __clear_bit_le			__clear_bit
+-# define __test_and_set_bit_le		__test_and_set_bit
+-# define __test_and_clear_bit_le	__test_and_clear_bit
+-#endif
 
--	if (kvm_max_vcpu_id > kvm_max_vcpus)
-+	/*
-+	 * Skip the vCPU ID test when running on PowerPC with SMT support, in
-+	 * which case system topology is encoded into the vCPU ID, and so a VM
-+	 * can't use the full advertised vCPU ID range without crafting a valid
-+	 * platform specific topology.
-+	 */
-+	if (kvm_max_vcpu_id > kvm_max_vcpus && !kvm_check_cap(KVM_CAP_PPC_SMT))
- 		test_vcpu_creation(
- 			kvm_max_vcpu_id - kvm_max_vcpus, kvm_max_vcpus);
+ #define TEST_DIRTY_RING_COUNT		65536
 
 --
 2.39.5
