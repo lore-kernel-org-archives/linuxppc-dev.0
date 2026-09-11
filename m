@@ -1,53 +1,89 @@
-Return-Path: <linuxppc-dev+bounces-27160-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27161-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 509B4C88E53
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Sep 2026 19:41:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9B9DCC88E4D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Sep 2026 20:54:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hhQ0j6WqHz2yqT;
-	Sat, 12 Sep 2026 05:41:57 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789155717;
-	cv=none; b=eJGS4MMNS1Irk/lGwpVUQQwbT1HCXCoR9/oqrx03HlutyhkKW/3YXVhucUeKQZR8T73iJN33oaNf7peXOGl0gzTfnSE4TCWGVnCVTJqtaq3/l/IQ9/BvpJ4kR8Qagxa6LzMUk8zWU7E8iUGYzh1mao7pql1zKh8awd402CRwy6rc3vVxCN6JTfESFwDxcBRGLp96gB2SpFSZdvx0UKbndHMNYRqcEdvStkaaUUEOgGr+HI2M07csUYNdfEH131iavW99S1cFo2n5Y2pg4qCPvhLSjJ48KKs0Ry43aG7spoe7q0AuY/8bV5cDosLsrL8FxawsNXz6mTPN/tUuONhKZw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hhRcs6HPWz2y2L;
+	Sat, 12 Sep 2026 06:54:53 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789160093;
+	cv=none; b=jp2EdrGLqP5joNGCOsSBE4kgdFkRwBNixxYVCmUt3//ubM/w+zC1PoAtLf2A2EAa3yYDtDGeyNtud7NI9hQK2f1798NOtlB1C7fe9SONN9vWVuYmzo0Hqf+M05UxqtNLwH9AcYleHo49tScngdYKXWrVGc0XHxtYgYr3GRCXiBJnugWvLd8xLao+pzuWJ/ymvg+ON3brhP6lVdHQ2pmOyZR0b83I1/xxJaO7cyHFCZgplyLap5Bl3h3finnpcUd9eQhcMSP4O6izuQcRzGK4NohVBCrNw4dCCfwBZo708czgSdmuPy+Ll3RrRq3/sxa23Hu4JZLksB7JnXSplpcoxQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789155717; c=relaxed/relaxed;
-	bh=M7feebBV+4w0SqCnHHPUA0WnsaaqlXi4RbYO862HspA=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=cFzmd40voqPrix7EUzfawBjJjccfoirdLKc9d+CTvqsBMxMXOXz67IKbJvzMeNk9C+5iDmk2jeg8vyd0atOcC9cJMmYmH9ckFu5xSMA98LIIsX6mD+CJjt3lWDcItGKaSBv1rM+3DBRF0X4+bxO4qUt3nSbKy3Oq6cri85ShwR+i5HkzrGVbxoyAVvw1utPIa8VKWVVmu3Jbepeg8V1yAxaWOk3XTJuxHuMqnd4QENQjjJNH4OKu7qjk9LheWwCvzM693liNhX0swJf+ru8o841e1REUIoURDBCHp/IX6aOH5ndY4m8TMGjGPYzmWbnkgvJEoWb8p+mqhoXWdOXrRw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=b5hZkxPe; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1789160093; c=relaxed/relaxed;
+	bh=FlPA41J6GidnJ18HqQ+NEvzxuLHO13RlGgnl+HX9oI8=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=EArRfWIUwpQiuZCANmG66q9Up7+TnjW5STZfID5cZZP6gGIqkeQ/EesNlSSg8p1SKbecz6pvoJum6Oz8Lt9ADQGWm6Oi73jkVzlNvIocnQmKnrL8+xI5M8qcw3BWTnSxRgGCxdN8FLbHGBqbaz9RHCcUuv59WrWtn+pnNS/whZNQrvU9ULYQyH7NF2eT2fZtqWvoxCtBP/eOR7rD6jIFTFnH57OALBGW/E6l70rl+bXo+dAYZyu164aeI7xkkGm8zvCAPCOTXzDiczG29wMDAawt8jGqvR3uDTTamLI/g6PKuTv4qhfrvBpsccW9ZYa3Gb87nglko+fjqUGlkvOPAg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=dFIQCiH0; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=dFIQCiH0; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=jhladky@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=b5hZkxPe;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=dFIQCiH0;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=dFIQCiH0;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=jhladky@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hhQ0j03gfz2yqL
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Sep 2026 05:41:56 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 1245E60202;
-	Fri, 11 Sep 2026 19:41:55 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AE6EE1F00893;
-	Fri, 11 Sep 2026 19:41:35 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789155714;
-	bh=M7feebBV+4w0SqCnHHPUA0WnsaaqlXi4RbYO862HspA=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=b5hZkxPeby4ytfMTJauKfEirdwvu+obLbvn3xWPzZcr0wBfX3w+c2kujWFIcDpY9n
-	 25FLBvyf42J+UZUzQbo4EoU7R+DQKAdV1weZ0+5Qm1djVUXn5MsNCrmeyoRpAkTbTJ
-	 siMNDnCxo7ntKpAO1aUHoIFfJkSGnCkmDedyGaQ3sl0jd3SZvqvmObc3YM/xNBonZf
-	 k+LnB3mpReS5jSnuryAr5mgkoBDh+B/eY8XbcD0SZAWiMwiGHobrF0ybz9sq0aO3oR
-	 P9ZtVpQUF5BFr3CO4oSylZnpjSWQo66V0pbELQZm+VUzxOw02NQkviAWzBGK9gChxZ
-	 3WaZrJuQhS4QQ==
-From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Date: Fri, 11 Sep 2026 20:36:59 +0100
-Subject: [PATCH v3 12/12] mm: change the contract for free_pgtables(),
- update docs
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hhRcr2wBpz2xpv
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Sep 2026 06:54:49 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1789160086;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=FlPA41J6GidnJ18HqQ+NEvzxuLHO13RlGgnl+HX9oI8=;
+	b=dFIQCiH0EkJqwno7nPD6kVUVJmMsLURNicpmhNqmSZp7022Wq2+2GoKOHEC+xaY8guPnqD
+	ViNRHUkMWMYvA1+4n70utp25jAvYMgCZEo7JRem6OldxOZoB/DO1jQZCCmcIjdwwRYRRtU
+	U1/dpmK471+3+8mdJXpwbNT54BgYzmE=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1789160086;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=FlPA41J6GidnJ18HqQ+NEvzxuLHO13RlGgnl+HX9oI8=;
+	b=dFIQCiH0EkJqwno7nPD6kVUVJmMsLURNicpmhNqmSZp7022Wq2+2GoKOHEC+xaY8guPnqD
+	ViNRHUkMWMYvA1+4n70utp25jAvYMgCZEo7JRem6OldxOZoB/DO1jQZCCmcIjdwwRYRRtU
+	U1/dpmK471+3+8mdJXpwbNT54BgYzmE=
+Received: from mail-vk1-f200.google.com (mail-vk1-f200.google.com
+ [209.85.221.200]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-684-K1QZ_c2wNa2RYQmj8QvJVA-1; Fri, 11 Sep 2026 16:54:44 -0400
+X-MC-Unique: K1QZ_c2wNa2RYQmj8QvJVA-1
+X-Mimecast-MFC-AGG-ID: K1QZ_c2wNa2RYQmj8QvJVA_1789160084
+Received: by mail-vk1-f200.google.com with SMTP id 71dfb90a1353d-5c82f879767so1425052e0c.3
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2026 13:54:44 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1789160084; x=1789764884;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=FlPA41J6GidnJ18HqQ+NEvzxuLHO13RlGgnl+HX9oI8=;
+        b=m1nHbGgWv+mXZ071xVQWFPILQbCJOcmo6aLaQ+D6VHg7AQGQKSXDLbgSrIG66sXx/C
+         j/ugWl8oaqUV/2jQM4QxyJq1CzSOkVJ1S4tXCLBpEYn/Td8BlLQ6aY6RFtg2IJY4824J
+         kvceAN/LjPqCxkFwf5Ef3uEW21ntoeNw4llVl3RVLwzsVKl18OSMP5KrukID9dKKMHz9
+         QpSPFxN1wKhvCX/WNBfRIbFIJ66bPIQYAu3Srw3p7dXmZg1CvYm7RqkOTHTB7agndWPJ
+         8CflRXsSuMNbTAqi1ys5H6R/OXDz7UR6xXxuaey7T+C+QSGWIY54XhquGYbPt0ZkdF+x
+         axLw==
+X-Forwarded-Encrypted: i=1; AKwUvBygra/nTXE7fLHyLdLAjRi4MZptcYZREnk0rz2RlQzOxQ+GLDuWAqNRkne7hGHVGjVIOvOO4CTYq3nZa+4=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++nHs23o4+M4lP7Y34zthsECUimYLHH+TBMZS98sSjz4LW5o9mMT
+	mHLyUOc7P0olOmo4bmIjJ23DCph7rsBtuvtUaIyKpVWX8arzzzIHYIAMkFkllCNJyQgs+cqcaRg
+	gWkxEEPsLlFb6NWhChHmvVUyygCTb0yzIeOG6v4lQPb7fKzS9c2mnxgsxVo7ntokAnvKpfZRCgc
+	xrPnqxg2qFY0A7ndJUQkeF+Xkw8ZjkyKsJLgQFT7t/nQ==
+X-Gm-Gg: AYBFou1UTi75+ROZHTXHPQW1c5NNTYYZzBzWD74XnDyeSntYdiSntafODIP2ToaySms
+	VOGorOBfP9r3iIQ1ByKH9cpP14hoyw1+9MLXxLzFv5ktcfNnzRRx3vq8vixVFf3fETr3kKQaBYR
+	BEvk2s2CDK+6g7nfoAv0v9oD5BVLHIKXGkbbtYgyDAne2ubz1mEEEEYrhL
+X-Received: by 2002:a05:6122:f05:b0:5bf:d3cd:3d64 with SMTP id 71dfb90a1353d-5c845d7f9ffmr9989582e0c.0.1789160084083;
+        Fri, 11 Sep 2026 13:54:44 -0700 (PDT)
+X-Received: by 2002:a05:6122:f05:b0:5bf:d3cd:3d64 with SMTP id
+ 71dfb90a1353d-5c845d7f9ffmr9989568e0c.0.1789160083744; Fri, 11 Sep 2026
+ 13:54:43 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -61,143 +97,58 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260911-rcu-pagetable-freeing-v3-12-7b8c86103821@kernel.org>
-References: <20260911-rcu-pagetable-freeing-v3-0-7b8c86103821@kernel.org>
-In-Reply-To: <20260911-rcu-pagetable-freeing-v3-0-7b8c86103821@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>, 
- David Hildenbrand <david@kernel.org>, Zi Yan <ziy@nvidia.com>, 
- Baolin Wang <baolin.wang@linux.alibaba.com>, 
- "Liam R. Howlett" <liam@infradead.org>, Nico Pache <nico.pache@linux.dev>, 
- Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, 
- Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, 
- Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, 
- Guo Ren <guoren@kernel.org>, Brian Cain <bcain@kernel.org>, 
- Geert Uytterhoeven <geert@linux-m68k.org>, 
- Dinh Nguyen <dinguyen@kernel.org>, 
- Simon Schuster <schuster.simon@siemens-energy.com>, 
- Jonas Bonn <jonas@southpole.se>, 
- Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, 
- Stafford Horne <shorne@gmail.com>, 
- Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, 
- John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, 
- Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, 
- Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>, 
- Russell King <linux@armlinux.org.uk>, Vineet Gupta <vgupta@kernel.org>, 
- Michal Simek <monstr@monstr.eu>, Chris Zankel <chris@zankel.net>, 
- Max Filippov <jcmvbkbc@gmail.com>, Will Deacon <will@kernel.org>, 
- "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, 
- Nick Piggin <npiggin@gmail.com>, Peter Zijlstra <peterz@infradead.org>, 
- "David S. Miller" <davem@davemloft.net>, 
- Andreas Larsson <andreas@gaisler.com>, 
- Richard Henderson <richard.henderson@linaro.org>, 
- Matt Turner <mattst88@gmail.com>, Magnus Lindholm <linmag7@gmail.com>, 
- Catalin Marinas <catalin.marinas@arm.com>, 
- Mark Rutland <mark.rutland@arm.com>, Huacai Chen <chenhuacai@kernel.org>, 
- WANG Xuerui <kernel@xen0n.name>, 
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, 
- Helge Deller <deller@gmx.de>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
- Michael Ellerman <mpe@ellerman.id.au>, 
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
- Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
- Alexander Gordeev <agordeev@linux.ibm.com>, 
- Christian Borntraeger <borntraeger@linux.ibm.com>, 
- Sven Schnelle <svens@linux.ibm.com>, Richard Weinberger <richard@nod.at>, 
- Anton Ivanov <anton.ivanov@cambridgegreys.com>, 
- Johannes Berg <johannes@sipsolutions.net>, 
- Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, 
- Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, 
- x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>, 
- Arnd Bergmann <arnd@arndb.de>, Vlastimil Babka <vbabka@kernel.org>, 
- Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, 
- Michal Hocko <mhocko@suse.com>, Jason Gunthorpe <jgg@ziepe.ca>, 
- John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, 
- linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org, 
- linux-m68k@lists.linux-m68k.org, linux-openrisc@vger.kernel.org, 
- linux-sh@vger.kernel.org, linux-riscv@lists.infradead.org, 
- linux-arm-kernel@lists.infradead.org, linux-snps-arc@lists.infradead.org, 
- linux-arch@vger.kernel.org, sparclinux@vger.kernel.org, 
- linux-alpha@vger.kernel.org, loongarch@lists.linux.dev, 
- linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org, 
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, 
- linux-um@lists.infradead.org, Hugh Dickins <hughd@google.com>, 
- Qi Zheng <qi.zheng@linux.dev>, "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3290; i=ljs@kernel.org;
- h=from:subject:message-id; bh=d4o8BvEhvbpmkAFDsmC7e/OS16AthPkW67coZubsUt0=;
- b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLKWRDRfPca+K1Qt69Vu3RSVu8e9Ur+x7Hbg6r6kKjhjQ
- tW2Xw17OkpZGMS4GGTFFFmefxHfHyQSNq/zgr8bzBxWJpAhDFycAjCRtYKMDKtcrE7Oe/bdKdOw
- QVRKubxP/maw6+Z2i5NRMyQLnn/8n8DIcLLhht/b1oOGNt4zuvVbs+/8t5WS4NfTdnZawiPYtGc
- JEwA=
-X-Developer-Key: i=ljs@kernel.org; a=openpgp;
- fpr=E7F417BF5214569E89D04F46CF9DCD8A81E27F14
+References: <CAE4VaGACd2es4NPQyhbR9pMEoGiTVBSE7Lw7x9VOb1Qbpvc6nw@mail.gmail.com>
+ <amsapeQ2Kp6rwPpF@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+ <CAE4VaGB_EhbWq8_X6FLtOx2MqoP7JEkOKkKSjKB7N--tt-sCeA@mail.gmail.com>
+ <aqAMpawvpB7g1XdK@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+ <CAE4VaGBCmA0+28G=V_Qs37cR2GKYDUTGQWW_uRe0qvEp5io3qQ@mail.gmail.com>
+ <CAE4VaGCp7A7NuBC9Hwgzs5xg3bGBuRiDC8PRCu+yXnUZEXmt-g@mail.gmail.com>
+ <CAE4VaGATCET9F4XXS2oj47aNEZx3HN__Zp1CH4+ASec6BjhjGA@mail.gmail.com>
+ <aqONPHH8B_z_GpT2@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+ <CAE4VaGDJy-EzD_iHeb+AQOYi9LZN1dB9OXjf7FtVWM=LWrWVTg@mail.gmail.com>
+ <CAE4VaGAq1PugOAomUnJ4vEtmHzKPt5m6VJ21wErdOf19G8UPWw@mail.gmail.com> <aqRB8aSzbeQ-UcYY@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+In-Reply-To: <aqRB8aSzbeQ-UcYY@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+From: Jirka Hladky <jhladky@redhat.com>
+Date: Fri, 11 Sep 2026 22:54:31 +0200
+X-Gm-Features: AcwNN1VnXyX6goxTYVa2E2ck7PdO3F14PO76Zg2Rek1nXQVAwJIE2cqMc_bw6SU
+Message-ID: <CAE4VaGA42zWqhqXfzzkCfN_F__Dh+QQyCX3CvmDx0Wx4u3VzqQ@mail.gmail.com>
+Subject: Re: [PATCH v5 0/8] Generic IRQ entry/exit support for powerpc
+To: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
+	chleroy@kernel.org, ryabinin.a.a@gmail.com, glider@google.com, 
+	andreyknvl@gmail.com, dvyukov@google.com, vincenzo.frascino@arm.com, 
+	oleg@redhat.com, kees@kernel.org, luto@amacapital.net, wad@chromium.org, 
+	mchauras@linux.ibm.com, sshegde@linux.ibm.com, thuth@redhat.com, 
+	ruanjinjie@huawei.com, akpm@linux-foundation.org, macro@orcam.me.uk, 
+	ldv@strace.io, charlie@rivosinc.com, deller@gmx.de, kevin.brodsky@arm.com, 
+	ritesh.list@gmail.com, yeoreum.yun@arm.com, agordeev@linux.ibm.com, 
+	segher@kernel.crashing.org, mark.rutland@arm.com, ryan.roberts@arm.com, 
+	pmladek@suse.com, feng.tang@linux.alibaba.com, peterz@infradead.org, 
+	kan.liang@linux.intel.com, linuxppc-dev@lists.ozlabs.org, 
+	linux-kernel@vger.kernel.org, kasan-dev@googlegroups.com
+X-Mimecast-Spam-Score: 0
+X-Mimecast-MFC-PROC-ID: NOtZkF8IjE212uz1Fc_ei7D3rGeY8d9JsLXlgFY2XTk_1789160084
+X-Mimecast-Originator: redhat.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Now that page tables are freed after an RCU grace period, it is safe for
-read-only page table walkers to walk page table ranges that are being
-concurrently torn down, provided the mm is kept alive via mmgrab().
+On Fri, Sep 11, 2026 at 8:02=E2=80=AFPM Mukesh Kumar Chaurasiya
+<mkchauras@gmail.com> wrote:
+>
+> Hey Jirka,
+>
+> Thanks for the verification. I think that's all i wanted. I would send
+> out a patch for this soon. Thanks for all the support.
+>
+> Regards,
+> Mukesh
+> [...]
+>
 
-It is however unsafe for writers to do so, as they must obtain an
-appropriate lock to do so safely.
+Thank you, Mukesh!
 
-Update the pte_offset_map_lock()'s comment block to reflect this.
 
-Similarly update the process addresses documentation.
-
-Acked-by: Kiryl Shutsemau (Meta) <kas@kernel.org>
-Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
----
- Documentation/mm/process_addrs.rst |  6 ++++++
- mm/pgtable-generic.c               | 15 +++++++++++----
- 2 files changed, 17 insertions(+), 4 deletions(-)
-
-diff --git a/Documentation/mm/process_addrs.rst b/Documentation/mm/process_addrs.rst
-index a7296f251799..b1f4f44d75eb 100644
---- a/Documentation/mm/process_addrs.rst
-+++ b/Documentation/mm/process_addrs.rst
-@@ -537,6 +537,12 @@ We establish basic locking rules when interacting with page tables:
- * When changing a page table entry the page table lock for that page table
-   **must** be held, except if you can safely assume nobody can access the page
-   tables concurrently (such as on invocation of :c:func:`!free_pgtables`).
-+* Page tables may be *walked* under RCU alone, as page tables are freed only
-+  after an RCU grace period has elapsed. However, any entry found must be
-+  revalidated after the page table lock is taken (such as the
-+  :c:func:`!pmd_same` recheck performed by :c:func:`!pte_offset_map_lock`)
-+  before it is acted upon. Changing an entry requires the page table
-+  lock and one of the locks that excludes teardown (mmap or VMA lock).
- * Reads from and writes to page table entries must be *appropriately*
-   atomic. See the section on atomicity below for details.
- * Populating previously empty entries requires that the mmap or VMA locks are
-diff --git a/mm/pgtable-generic.c b/mm/pgtable-generic.c
-index b91b1a98029c..a127e3e8f9b9 100644
---- a/mm/pgtable-generic.c
-+++ b/mm/pgtable-generic.c
-@@ -385,10 +385,17 @@ pte_t *pte_offset_map_rw_nolock(struct mm_struct *mm, pmd_t *pmd,
-  * Note: "RO" / "RW" expresses the intended semantics, not that the *kmap* will
-  * be read-only/read-write protected.
-  *
-- * Note that free_pgtables(), used after unmapping detached vmas, or when
-- * exiting the whole mm, does not take page table lock before freeing a page
-- * table, and may not use RCU at all: "outsiders" like khugepaged should avoid
-- * pte_offset_map() and co once the vma is detached from mm or mm_users is zero.
-+ * Note that free_pgtables(), used after unmapping detached vmas or when exiting
-+ * the whole mm, does not take a page table lock before freeing a page table.
-+ *
-+ * As page table freeing itself is RCU-safe, page table readers can safely run
-+ * concurrently with page table teardown.
-+ *
-+ * However, writers CANNOT as, without a lock being held, nothing prevents
-+ * concurrent teardown.
-+ *
-+ * Also note that the PGD itself is freed at mmdrop() time, not under RCU - so
-+ * the walker must keep the mm alive either by pinning the mm or the VMA.
-  */
- pte_t *pte_offset_map_lock(struct mm_struct *mm, pmd_t *pmd,
- 			   unsigned long addr, spinlock_t **ptlp)
-
--- 
-2.55.0
+--=20
+-Jirka
 
 
