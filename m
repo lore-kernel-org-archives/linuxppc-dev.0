@@ -1,93 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-27120-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27121-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D97DCC88E4D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Sep 2026 11:06:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 050F3C88E4C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Sep 2026 11:25:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hhBYV2YhFz2yFj;
-	Fri, 11 Sep 2026 21:06:06 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.131
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789124766;
-	cv=none; b=l0dPZnktjWccLJJlHuOoBAYjAVxrNBxkAvRh2buvWeqHUGb55sBkYhZEwJIkQCAtHJ69JUn47O6fpBR7dJr450jfB9VIM5Jfeuz3OQOlEvWbHcY8SlQIKY0Rwtra8gnobLQ6ZlFBYST2G0aPFMhHU196/9aFOv7JRs3wqtLFkq7Q8tAh2z1rdfIMqq41vY7kAYDFL8+YVnTvw6v0ym7rcFK8efzt9/EqZl5mxqJGKG/7g/VYmrf3n46K0TTmWaygOL4IF8vLqQjQf2Q0YQQKw5bKcfnu+7iBNiFWNOa2hBod4AJEpQ1DgiaLAAaxhHBI9a7z8TUU4NGv0uXJlkHxhw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hhBzf4y72z2yFj;
+	Fri, 11 Sep 2026 21:25:18 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789125918;
+	cv=none; b=agSFVmpt0Vmg93iJoafwKdvHyANTWq+okCIuydO1lehn4sPJF2tQ6rodtTQ7GK31LRMc+LNpWJnlJZCbhHmxMqYVoZuriCOJz5VxS1rgq6f/r8LHHYFKCymqqk5rQE193RYOjN+TGqlM5tlktAAgDZ0GzvfRmXWWr+b19OWLjOCUPJn36HusW+/rikFZ7zgoG0i5/AZbVTur/0IndsixXCI2n71u9QYL96B7lI/Ya24SDyMxJg26rrh31tKlGyE9yp8KgYBF7wAFDj011pQB9AXnxgAYNxqjmxxoHkuK/hA7XydHcsbUJ1fVDW3z5imCZvP4Ix9JDpaFt3PfzfiHOA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789124766; c=relaxed/relaxed;
-	bh=mCvWKSyOXghSRjrUIO25WhTluktNhI1ZIzrUisSCzog=;
+	t=1789125918; c=relaxed/relaxed;
+	bh=8MEA0ImrHfJyzFxVjlcZl2076irTIK5Yuh8p0/MpTlI=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=OevGTSzY9rTOQ5FpLAGb0DmEa2cQaaVdkTHrhmagPaVvI5Q723uh1iGb8908yejgbUoYj0qoog3o2QJKBAEvKJSoagE36kGDNq6ww5faJd9IFVXqzvtYixEgtrnxJVV/Eb49KI3ELYCfzbi3vG+HSrbOEBgpgJqdok2rLqF3Y1hVACAfkN4VTteKBsgB2tN9jFxkhfoLc4iS0hJLVTQu+/3I3i6mJ8qLM5b0RSSBxngyX+d5czeU8vtvLGSI7rn5Rzs44AYxjjE8t8lgZapSJPm+xN/0JHZSpGCGCNZUfAx9xl8/O7ylDRb9VBxQk/San2AICqe4K3uEFjthu8EfPQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=mwIigjyH; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=b+7SUHz3; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=M6mKBOHb; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=Bkf9+hFx; dkim-atps=neutral; spf=pass (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
+	 In-Reply-To:Content-Type; b=Cr76sZva9CSeeRu8bM1ldsU86RvFszedTHFLNEHvOVW07YVxEvECm/rJRN+5mCt1JSSj8a2+NgMDrV9vt9ANErTN+yoG2UxHdH/s1/8CtEw1D3F0JO5YaAyXf3He5UphW96P6G8/f6t6RWIp/zSS2D4EwbQXTYAX/iBzS6/hZYfup2DItoe+fHuI+kMNE4yav/UgZ3ti4qNKiNML+81yInUXPB7lEdRuFAsWHcw2vNrUayQuyNbmDYItMhd+umel4XWi2hP7UKs23piuWj9BfBIgzV8ENC3fn2dKyHQhpmS02lcen6RLgCfz3mtJ6xj9eZ/YZtYsarmU5HzmfTR6HA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jswDA/9p; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=mwIigjyH;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=b+7SUHz3;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=M6mKBOHb;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=Bkf9+hFx;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jswDA/9p;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hhBYR30msz2xpv
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2026 21:06:02 +1000 (AEST)
-Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id E75961F8BB;
-	Fri, 11 Sep 2026 11:05:50 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1789124755; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=mCvWKSyOXghSRjrUIO25WhTluktNhI1ZIzrUisSCzog=;
-	b=mwIigjyH85mOyKyDVXiVISSPm5WD3X0MP0365zfajWOkcWSuPmB2ARy/C5YHIzZl3SzDbc
-	mexaobbpaHz9iWGcTvThfd3zMOtaWRmJiSjzZdg8xpZbcyM68ZMswW5SZPVvyxE5Mk7Slc
-	/YYukJn/1TLBc8A1dWlsFiL2rvGZo4E=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1789124755;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=mCvWKSyOXghSRjrUIO25WhTluktNhI1ZIzrUisSCzog=;
-	b=b+7SUHz3bESEaqJoCQKVGmpl3KrUrunJsFD9TELjfIDfQGfJXAJcfCB1Y/yJszE2SdjUyI
-	hA5MPiO3ytWkRLDQ==
-Authentication-Results: smtp-out2.suse.de;
-	none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1789124750; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=mCvWKSyOXghSRjrUIO25WhTluktNhI1ZIzrUisSCzog=;
-	b=M6mKBOHbiTWHmrq4OaTeygTN+927bG8HXBCzz3Y4jYZpN6W2TIiMwt5mhZdYJylNuC/eiN
-	276E04tyvopmopDYC/DjhTeHmHxTFJuP6nRvia45UtqLQRXbvqIOWCXqMt6H3llZgBfxVy
-	F5cdouDM8VEETMkpv1vrbWcWH10Fe/o=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1789124750;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=mCvWKSyOXghSRjrUIO25WhTluktNhI1ZIzrUisSCzog=;
-	b=Bkf9+hFx/ERl6em/gPGKeoPFenHrChRVNOZRCzaiyvdKpzPFysgsyvTYq0CeN+eOGKeIpz
-	kWOLNVOPOZL3xYAw==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 7C59E132D3;
-	Fri, 11 Sep 2026 11:05:47 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id Qc6PFovgo2rzKAAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Fri, 11 Sep 2026 11:05:47 +0000
-Message-ID: <d8683667-55d5-4d77-9dcb-19e49b3dc3c6@suse.de>
-Date: Fri, 11 Sep 2026 13:05:46 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hhBzd04p9z2y32
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2026 21:25:15 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68BB1akD456837;
+	Fri, 11 Sep 2026 11:25:09 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=8MEA0I
+	mrHfJyzFxVjlcZl2076irTIK5Yuh8p0/MpTlI=; b=jswDA/9p1eHoCmOqxcZb/P
+	q63CyADYl8uFvM4774oU4XvZO1hRiTT+oWxMZ+ezA3yM4zW1A51WODOXo4wN9VUK
+	zUWKg9hNQN7PY0hEJA2NzVirsRinIo5ivdywEA2sCUyxAKXObz59uwq87ILpo9V4
+	pwXiEarN43vRtWXcHIPFQbCICqWMXoUcamCjBAKCzJa36wjkXlp7k0pvfoeVhW7J
+	CYQY1rKc/FBE/xvmfOCITVkpepiP3TQiT8GYkhKmgDXMYye3sM2VCdvjkI3GRGEK
+	BO7m/hB4GzVTXXQ1EfhSU1seMAzn5PT/TOYRD7KNXb9RAVmEeVF890B/tzCWaoKA
+	==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gkd8qb1jd-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Fri, 11 Sep 2026 11:25:09 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68BAo4NU1478005;
+	Fri, 11 Sep 2026 11:25:09 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4gkvvrdxy7-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 11 Sep 2026 11:25:08 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68BBP4Uw52363610
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 11 Sep 2026 11:25:04 GMT
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id B21DB2004B;
+	Fri, 11 Sep 2026 11:25:04 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id BF46320040;
+	Fri, 11 Sep 2026 11:25:02 +0000 (GMT)
+Received: from [9.43.53.28] (unknown [9.43.53.28])
+	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 11 Sep 2026 11:25:02 +0000 (GMT)
+Message-ID: <e4f2768a-ff45-4654-9557-a5284c788418@linux.ibm.com>
+Date: Fri, 11 Sep 2026 16:55:01 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -102,216 +82,281 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 18/39] fbdev: defio: assert FBINFO_VIRTFB, drop VM_IO, add
- VM_MIXEDMAP
-To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- "Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>,
- Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>,
- David Hildenbrand <david@kernel.org>, Mike Rapoport <rppt@kernel.org>,
- Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>,
- Jonathan Corbet <corbet@lwn.net>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>,
- Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>,
- Paul Moore <paul@paul-moore.com>,
- Stephen Smalley <stephen.smalley.work@gmail.com>,
- Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
- Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>,
- Andrii Nakryiko <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>,
- Kumar Kartikeya Dwivedi <memxor@gmail.com>, Zi Yan <ziy@nvidia.com>,
- Baolin Wang <baolin.wang@linux.alibaba.com>,
- Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>,
- Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>,
- Lance Yang <lance.yang@linux.dev>, Usama Arif <usama.arif@linux.dev>,
- Kiryl Shutsemau <kas@kernel.org>, Doug Gilbert <dgilbert@interlog.com>,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
- "Martin K. Petersen" <mkp@kernel.org>, Jaya Kumar <jayalk@intworks.biz>,
- Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>,
- Sebastian Reichel <sre@kernel.org>, John Hubbard <jhubbard@nvidia.com>,
- Peter Xu <peterx@redhat.com>, Masami Hiramatsu <mhiramat@kernel.org>,
- Oleg Nesterov <oleg@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
- Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
- Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>,
- x86@kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>,
- Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
- Rik van Riel <riel@surriel.com>, Harry Yoo <harry@kernel.org>,
- Juri Lelli <juri.lelli@redhat.com>,
- Vincent Guittot <vincent.guittot@linaro.org>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Maxime Ripard <mripard@kernel.org>, David Airlie <airlied@gmail.com>,
- Will Deacon <will@kernel.org>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>,
- Nick Piggin <npiggin@gmail.com>, Arnd Bergmann <arnd@arndb.de>,
- Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>,
- "Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>,
- Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Madhavan Srinivasan <maddy@linux.ibm.com>, Anup Patel <anup@brainfault.org>,
- Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
- Albert Ou <aou@eecs.berkeley.edu>,
- Christian Borntraeger <borntraeger@linux.ibm.com>,
- Janosch Frank <frankja@linux.ibm.com>,
- Claudio Imbrenda <imbrenda@linux.ibm.com>,
- Alexander Gordeev <agordeev@linux.ibm.com>,
- Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
- Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
- "David S. Miller" <davem@davemloft.net>,
- Andreas Larsson <andreas@gaisler.com>,
- Alexander Viro <viro@zeniv.linux.org.uk>,
- Christian Brauner <brauner@kernel.org>,
- Matthew Brost <matthew.brost@intel.com>,
- Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>,
- Byungchul Park <byungchul@sk.com>, Gregory Price <gourry@gourry.net>,
- Ying Huang <ying.huang@linux.alibaba.com>,
- Alistair Popple <apopple@nvidia.com>, Chris Li <chrisl@kernel.org>,
- Kairui Song <kasong@tencent.com>, Kemeng Shi <shikemeng@huaweicloud.com>,
- Nhat Pham <nphamcs@gmail.com>, Baoquan He <baoquan.he@linux.dev>,
- Youngjun Park <youngjun.park@lge.com>, Johannes Weiner <hannes@cmpxchg.org>,
- Qi Zheng <qi.zheng@linux.dev>, Shakeel Butt <shakeel.butt@linux.dev>,
- Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>,
- Wei Xu <weixugc@google.com>, Xu Xin <xu.xin16@zte.com.cn>,
- Chengming Zhou <chengming.zhou@linux.dev>, Michal Hocko <mhocko@kernel.org>,
- Miklos Szeredi <miklos@szeredi.hu>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- linux-doc@vger.kernel.org, linux-usb@vger.kernel.org,
- linux-rdma@vger.kernel.org, selinux@vger.kernel.org,
- linux-sound@vger.kernel.org, bpf@vger.kernel.org,
- linux-scsi@vger.kernel.org, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-trace-kernel@vger.kernel.org,
- linux-perf-users@vger.kernel.org, linux-arch@vger.kernel.org,
- linux-fsdevel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
- kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
- linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
- fuse-devel@lists.linux.dev
-References: <20260908-b4-mmap-prepare-vma-flag-sanify-v1-0-dacf19cce22b@kernel.org>
- <20260908-b4-mmap-prepare-vma-flag-sanify-v1-18-dacf19cce22b@kernel.org>
+Subject: Re: [mainline]kdump fails to save vmcore when crash is manually
+ triggered
+To: Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Ritesh Harjani <riteshh@linux.ibm.com>,
+        Hari Bathini <hbathini@linux.ibm.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+        Christophe Leroy <christophe.leroy@csgroup.eu>
+References: <c6b26023-c629-4f09-a449-dffeaba06082@linux.ibm.com>
 Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <20260908-b4-mmap-prepare-vma-flag-sanify-v1-18-dacf19cce22b@kernel.org>
+From: Sourabh Jain <sourabhjain@linux.ibm.com>
+In-Reply-To: <c6b26023-c629-4f09-a449-dffeaba06082@linux.ibm.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Spamd-Result: default: False [-0.80 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	FORGED_RECIPIENTS(2.00)[m:liam@infradead.org,m:jannh@google.com,m:pfalcato@suse.de,m:surenb@google.com,m:mhocko@suse.com,m:dennis.dalessandro@cornelisnetworks.com,m:jgg@ziepe.ca,m:stephen.smalley.work@gmail.com,m:perex@perex.cz,m:tiwai@suse.com,m:daniel@iogearbox.net,m:eddyz87@gmail.com,m:memxor@gmail.com,m:ryan.roberts@arm.com,m:dev.jain@arm.com,m:dgilbert@interlog.com,m:James.Bottomley@HansenPartnership.com,m:jayalk@intworks.biz,m:simona@ffwll.ch,m:deller@gmx.de,m:peterx@redhat.com,m:oleg@redhat.com,m:peterz@infradead.org,m:mingo@redhat.com,m:bp@alien8.de,m:mark.rutland@arm.com,m:riel@surriel.com,m:juri.lelli@redhat.com,m:airlied@gmail.com,m:npiggin@gmail.com,m:arnd@arndb.de,m:osalvador@suse.de,m:willy@infradead.org,m:jack@suse.cz,m:catalin.marinas@arm.com,m:anup@brainfault.org,m:palmer@dabbelt.com,m:aou@eecs.berkeley.edu,m:davem@davemloft.net,m:andreas@gaisler.com,m:viro@zeniv.linux.org.uk,m:matthew.brost@intel.com,m:joshua.hahnjy@gmail.com,m:rakie.kim@sk.com,m:byungchul@sk.com,m
- :gourry@gourry.net,m:kasong@tencent.com,m:shikemeng@huaweicloud.com,m:nphamcs@gmail.com,s:linux-mm@kvack.org,s:youngjun.park@lge.com,s:chengming.zhou@linux.dev,s:qi.zheng@linux.dev,s:shakeel.butt@linux.dev,s:dri-devel@lists.freedesktop.org,s:kvm-riscv@lists.infradead.org,s:linux-arm-kernel@lists.infradead.org,s:linux-riscv@lists.infradead.org,s:fuse-devel@lists.linux.dev,s:kvmarm@lists.linux.dev,s:linuxppc-dev@lists.ozlabs.org];
-	SUSPICIOUS_RECIPS(1.50)[];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	NEURAL_HAM_SHORT(-0.20)[-0.998];
-	MIME_GOOD(-0.10)[text/plain];
-	MIME_TRACE(0.00)[0:+];
-	TAGGED_RCPT(0.00)[];
-	TO_DN_SOME(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	URIBL_BLOCKED(0.00)[suse.com:url,suse.de:mid,suse.de:email,imap1.dmz-prg2.suse.org:helo];
-	ARC_NA(0.00)[];
-	FREEMAIL_TO(0.00)[kernel.org,linux-foundation.org,infradead.org,google.com,suse.de,suse.com,lwn.net,linuxfoundation.org,cornelisnetworks.com,ziepe.ca,paul-moore.com,gmail.com,perex.cz,iogearbox.net,nvidia.com,linux.alibaba.com,linux.dev,arm.com,interlog.com,HansenPartnership.com,intworks.biz,ffwll.ch,gmx.de,redhat.com,alien8.de,linux.intel.com,surriel.com,linaro.org,arndb.de,suse.cz,linux.ibm.com,brainfault.org,dabbelt.com,eecs.berkeley.edu,davemloft.net,gaisler.com,zeniv.linux.org.uk,intel.com,sk.com,gourry.net,tencent.com,huaweicloud.com,lge.com,cmpxchg.org,zte.com.cn,szeredi.hu];
-	RCVD_TLS_ALL(0.00)[];
-	MID_RHS_MATCH_FROM(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	R_RATELIMIT(0.00)[to_ip_from(RL3ijnbkbqi8cy7pgpqkbn6f4y)];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	RCPT_COUNT_GT_50(0.00)[134];
-	RCVD_COUNT_TWO(0.00)[2];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.com:url,imap1.dmz-prg2.suse.org:helo,suse.de:mid,suse.de:email]
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: RLqjSO-hph7nLnzv45xJkiTbXhmrQ2vT
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTExMDE1NSBTYWx0ZWRfX4RfSrtvIZye8
+ x7Yquo5CxrQphHJwwZiHpCL1mC/aIsDqd8xCW7/vPx7m3Yyj6CV0nVN5HeaoMvKLb4INJ//yYnh
+ L1N7UE/MRAWVA8zf3OMxoxt2fRbfYpk=
+X-Authority-Analysis: v=2.4 cv=E/dYNqdl c=1 sm=1 tr=0 ts=6aa3e515 cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+ a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=Zwj9PYTxAAAA:20
+ a=VnNF1IyMAAAA:8 a=X8FTyEh_R9LiEri5cKoA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=bA3UWDv6hWIuX7UZL3qL:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTExMDE1NSBTYWx0ZWRfX/i7x0NjJAaCB
+ Y6slHIx1Ug4RVqHNgjwN0nqJN0kdSy2Ej2zfeDwBRFNgtOVAMnRNzrs4l8uQ0UPmzcWgGyaAQVw
+ 2edIdmBjNBeGx5w/7fEwSyzjAdQk7YoodNnsStWP/fcPoqmh3yhnB4jWtTr8kftX5j93iI648I7
+ fSDEsLZiTKswxFH5pNu0VFbrOyFyjyfOGSYlHcVkd0/aLcpNiaL4RbiTaKmNypIDZ+bTLgnlfy8
+ 26CVXKxKjedj9xrAfUZyvpm9HZQtgUbIyDF1kf0zmfuMnF+CfSJkoWssnoxvkh1Oi+u3sBGdR9w
+ M5gDt0J35HlUB/bDe0BJQI6Z4q4XyUKTAVJ0+qWcgvGFlpGONxKHuodtavooMSGXWNn1jNuFjBq
+ FQX8Y7EysWIuR5uQnj2Gev96pFLxm8tgXqR6LcH64X+Cn0rgmOlwsB8Lv5KiN29KfXnwTMSRfAp
+ /yu7Z+1wVgOGeewwu7Q==
+X-Proofpoint-GUID: RLqjSO-hph7nLnzv45xJkiTbXhmrQ2vT
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-11_04,2026-09-09_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 suspectscore=0 spamscore=0 bulkscore=0 clxscore=1015
+ impostorscore=0 phishscore=0 adultscore=0 lowpriorityscore=0 malwarescore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609110155
 
+Hello,
 
+I root-caused the issue. The issue is with the makedumpfile virtual-to-
+physical address translation function when using a 4K page size.
 
-Am 08.09.26 um 22:01 schrieb Lorenzo Stoakes (ARM):
-> Currently all drivers which use defio allocate system memory. All of them
-> also set FBINFO_VIRTFB, other than ssd1307fb, however this driver allocates
-> system RAM, so simply failed to set this flag when it ought to.
+While performing the virtual-to-physical address translation for
+0xc00c000018000000, makedumpfile reads only one page (4K) at the PGD level:
+
+code snippet of ppc64_vtop_level4()/makedumpfile.c
+https://github.com/makedumpfile/makedumpfile/blob/505d15bcc65462c49572f077a75998c6ee8ff7dc/arch/ppc64.c#L400
+```
+         [...]
+     level4 = (ulong *)inf    level4 = (ulong *)info->kernel_pgd;
+     pgdir = (ulong *)((ulong *)level4 + PGD_OFFSET_L4(vaddr));
+     if (!readmem(VADDR, PAGEBASE(level4), info->page_buf, PAGESIZE())) {
+         ERRMSG("Can't read PGD page: 0x%llx\n", PAGEBASE(level4));
+         return NOT_PADDR;
+     }
+     pgd_pte = swap64(ULONG((info->page_buf + PAGEOFFSET(pgdir))), swap);
+         [...]
+```
+
+Whereas the PGD table for the current kernel can be up to 64K in size:
+
+64K = 8192 entries × 8 bytes
+
+Since makedumpfile reads only 4KB (PAGESIZE) from the PGD base address, it
+only gets 512 PGD entries.
+
+The correct entry for the vmemmap address `0xc00c000018000000` is 6144.
+
+The above logic is also true for the memory map address read fail 
+reported in the
+original report, which is `c00c000020000000`.
+
+Note: This failure is observed only with a 4K page size because, with a
+64K page size, `makedumpfile` reads all 8192 entries since the page is
+aligned with the table size. 64K = 8192 entries × 8 bytes.
+
+I will fix this issue in makedumpfile tool. Thanks for the report.
+
+- Sourabh Jain
+
+On 23/04/26 17:29, Venkat Rao Bagalkote wrote:
+> Hello!!
 >
-> This patch sets FBINFO_VIRTFB on ssd1307fb probe, then drops setting VM_IO
-> in fb_deferred_io_mmap() and instead requires FBINFO_VIRTFB to be set,
-> erroring out with a kernel warning if not.
+> IBM CI has reported vmcore save failures when kdump is tested by 
+> triggering a kernel crash via sysrq.
 >
-> The logic requires a page from the driver and since commit 1ecbc7dd2902
-> ("fbdev/deferred-io: Always call get_page() for framebuffer pages") has
-> always required it to be refcounted, so this was implicitly already the
-> case.
 >
-> Finally this patch sets VM_MIXEDMAP, as the logic is mapping
-> kernel-allocated memory so this is appropriate.
+> Below are the kernel and tool details:
 >
-> Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
-
-Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
-
-> ---
->   drivers/video/fbdev/core/fb_defio.c | 6 +++---
->   drivers/video/fbdev/ssd1307fb.c     | 2 ++
->   2 files changed, 5 insertions(+), 3 deletions(-)
+> Upstream kernel version: 7.0.0+
+> Upstream kernel commit-id: 2e68039281932e6dc37718a1ea7cbb8e2cda42e6
 >
-> diff --git a/drivers/video/fbdev/core/fb_defio.c b/drivers/video/fbdev/core/fb_defio.c
-> index fd00b86e1ae6..fb359ecc3966 100644
-> --- a/drivers/video/fbdev/core/fb_defio.c
-> +++ b/drivers/video/fbdev/core/fb_defio.c
-> @@ -366,13 +366,13 @@ int fb_deferred_io_mmap(struct fb_info *info, struct vm_area_struct *vma)
->   {
->   	vma->vm_page_prot = pgprot_decrypted(vma->vm_page_prot);
->   
-> +	if (WARN_ON_ONCE(!(info->flags & FBINFO_VIRTFB)))
-> +		return -EINVAL;
->   	if (!try_module_get(THIS_MODULE))
->   		return -EINVAL;
->   
->   	vma->vm_ops = &fb_deferred_io_vm_ops;
-> -	vm_flags_set(vma, VM_DONTEXPAND | VM_DONTDUMP);
-> -	if (!(info->flags & FBINFO_VIRTFB))
-> -		vm_flags_set(vma, VM_IO);
-> +	vm_flags_set(vma, VM_MIXEDMAP | VM_DONTEXPAND | VM_DONTDUMP);
->   	vma->vm_private_data = info->fbdefio_state;
->   
->   	fb_deferred_io_state_get(info->fbdefio_state); /* released in vma->vm_ops->close() */
-> diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
-> index c4fdecafd856..958514a35433 100644
-> --- a/drivers/video/fbdev/ssd1307fb.c
-> +++ b/drivers/video/fbdev/ssd1307fb.c
-> @@ -763,6 +763,8 @@ static int ssd1307fb_probe(struct i2c_client *client)
->   	info->fix.smem_start = __pa(vmem);
->   	info->fix.smem_len = vmem_size;
->   
-> +	info->flags = FBINFO_VIRTFB;
-> +
->   	fb_deferred_io_init(info);
->   
->   	i2c_set_clientdata(client, info);
+> kexec-tools 2.0.32.git
+> makedumpfile: version 1.7.9 (released on 20 Apr 2026)
 >
-
--- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
-GF: Jochen Jaser, Andrew McDonald, (HRB 36809, AG Nürnberg)
-
+>
+> Error:
+>
+> While booting to crash kernel, I see below continous prints in console 
+> logs:
+>
+>
+> [    0.037177] vmcore: Warning: Zero PT_NOTE entries found
+> [    0.037181] vmcore: Warning: Zero PT_NOTE entries found
+> [    0.037184] vmcore: Warning: Zero PT_NOTE entries found
+> [    0.037186] vmcore: Warning: Zero PT_NOTE entries found
+>
+>
+> And During vmcore collection, I see below error.
+>
+>
+> [    9.948432] systemd[1]: Starting kdump-capture.service - Kdump 
+> Vmcore Save Service...
+>          Starting [0;1;39mkdump-capture.service[0m - Kdump Vmcore 
+> Save Service...
+>
+> [    9.992306] kdump[408]: [0;1;38:5:185mKdump is using the default 
+> log level(3).[0m
+> [   10.158555] kdump[526]: saving to 
+> /sysroot/var/crash/127.0.0.1-2026-04-23-06:06:27/
+> [   10.164060] kdump[531]: saving vmcore-dmesg.txt to 
+> /sysroot/var/crash/127.0.0.1-2026-04-23-06:06:27/
+> [   10.198598] kdump[537]: saving vmcore-dmesg.txt complete
+> [   10.200376] kdump[539]: saving vmcore
+>
+> Checking for memory holes                         : [  0.0 %] /
+> Checking for memory holes                         : [100.0 %] |
+> Excluding unnecessary pages                       : [  6.3 %] \       
+>       WARNING: Invalid free page order: pfn=5a45fc, order=64424509439, 
+> max order=12
+> WARNING: Invalid free page order: pfn=621a02, 
+> order=2166518513861132288, max order=12
+> WARNING: Invalid free page order: pfn=6697b3, 
+> order=6706141453275365419, max order=12
+> WARNING: Invalid free page order: pfn=669b5d, order=69335804542976, 
+> max order=12
+> WARNING: Invalid free page order: pfn=66c5a8, 
+> order=14125543804861677568, max order=12
+> WARNING: Invalid free page order: pfn=66c661, order=845524441759747, 
+> max order=12
+> WARNING: Invalid free page order: pfn=67dadc, 
+> order=17224182427472101376, max order=12
+> WARNING: Invalid free page order: pfn=682b38, 
+> order=3103260797896228864, max order=12
+> WARNING: Invalid free page order: pfn=682efa, 
+> order=14269216714183933953, max order=12
+> WARNING: Invalid free page order: pfn=682efe, order=134217728, max 
+> order=12
+> WARNING: Invalid free page order: pfn=68c0a0, 
+> order=3031209642551148544, max order=12
+> WARNING: Invalid free page order: pfn=69709d, 
+> order=17296239995740225536, max order=12
+> WARNING: Invalid free page order: pfn=6aa909, 
+> order=2166511968028983296, max order=12
+> WARNING: Invalid free page order: pfn=6ae921, 
+> order=6273236509957029888, max order=12
+> WARNING: Invalid free page order: pfn=6c1456, 
+> order=17296239987150290944, max order=12
+> WARNING: Invalid free page order: pfn=6c35a4, 
+> order=14197601399000268800, max order=12
+> WARNING: Invalid free page order: pfn=6c5de2, 
+> order=2166511933669244928, max order=12
+> WARNING: Invalid free page order: pfn=6d58da, 
+> order=17296239987150290944, max order=12
+> WARNING: Invalid free page order: pfn=6d7987, 
+> order=14557325072076374016, max order=12
+> WARNING: Invalid free page order: pfn=6dbb95, 
+> order=17944838645085110272, max order=12
+> WARNING: Invalid free page order: pfn=709d7d, 
+> order=6273234623090655232, max order=12
+> WARNING: Invalid free page order: pfn=709e11, 
+> order=3031203148023726080, max order=12
+> WARNING: Invalid free page order: pfn=70c02f, 
+> order=6705580187335000064, max order=12
+> WARNING: Invalid free page order: pfn=715384, 
+> order=14990794317172375552, max order=12
+> WARNING: Invalid free page order: pfn=715aef, 
+> order=5048255524311662592, max order=12
+> WARNING: Invalid free page order: pfn=71a51e, 
+> order=6199767839173706752, max order=12
+> WARNING: Invalid free page order: pfn=71aab5, 
+> order=5048255524311662592, max order=12
+> WARNING: Invalid free page order: pfn=732e19, order=28147502510048512, 
+> max order=12
+> WARNING: Invalid free page order: pfn=739896, 
+> order=17296239987150290944, max order=12
+> WARNING: Invalid free page order: pfn=73b956, 
+> order=17296239991445258240, max order=12
+> WARNING: Invalid free page order: pfn=73e043, 
+> order=2166511933669244928, max order=12
+> WARNING: Invalid free page order: pfn=740049, 
+> order=6705582074453032960, max order=12
+> WARNING: Invalid free page order: pfn=760109, 
+> order=6345294104196284416, max order=12
+> WARNING: Invalid free page order: pfn=760260, 
+> order=2166511968028983296, max order=12
+> WARNING: Invalid free page order: pfn=774eb8, 
+> order=3103267236521967616, max order=12
+> WARNING: Invalid free page order: pfn=77949f, 
+> order=3103260802191196160, max order=12
+> WARNING: Invalid free page order: pfn=784ac6, order=1971974104455872, 
+> max order=12
+> WARNING: Invalid free page order: pfn=785196, 
+> order=2166518513861132288, max order=12
+> WARNING: Invalid free page order: pfn=790654, 
+> order=14557325072177037312, max order=12
+> WARNING: Invalid free page order: pfn=792cbe, 
+> order=13837309858646983424, max order=12
+> WARNING: Invalid free page order: pfn=792dbe, 
+> order=13837309859722035968, max order=12
+> WARNING: Invalid free page order: pfn=793779, 
+> order=15351363758810792960, max order=12
+> WARNING: Invalid free page order: pfn=7963af, 
+> order=2166511933669244928, max order=12
+> WARNING: Invalid free page order: pfn=7bda8a, 
+> order=13837313428760297472, max order=12
+> WARNING: Invalid free page order: pfn=7bfbfa, 
+> order=14269094696377647104, max order=12
+> WARNING: Invalid free page order: pfn=7c8498, 
+> order=18088873534452400128, max order=12
+> WARNING: Invalid free page order: pfn=7d4bf7, order=1441792, max order=12
+> WARNING: Invalid free page order: pfn=7db498, 
+> order=18088873534452400128, max order=12
+> WARNING: Invalid free page order: pfn=7dba0d, 
+> order=6345292217329909760, max order=12
+> WARNING: Invalid free page order: pfn=7dc618, 
+> order=3319440018652528640, max order=12
+> WARNING: Invalid free page order: pfn=7e8788, 
+> order=1113619897082537567, max order=12
+> readpage_elf: Attempt to read non-existent page at 0x20000000.
+> readmem: type_addr: 0, addr:c00c000020000000, size:32768
+> __exclude_unnecessary_pages: Can't read the buffer of struct page.
+> create_2nd_bitmap: Can't exclude unnecessary pages.
+>
+> makedumpfile Failed.
+> [   10.687238] kdump[542]: [0;1;31msaving vmcore failed, exitcode:1[0m
+> [   10.689073] kdump[544]: [0;1;31msaving vmcore failed[0m
+> [   10.699975] kdump[549]: saving the /run/initramfs/kexec-dmesg.log 
+> to /sysroot/var/crash/127.0.0.1-2026-04-23-06:06:27///
+> [   10.701749] systemd[1]: [0;1;39mkdump-capture.service: Main 
+> process exited, code=exited, status=1/FAILURE[0m
+> [   10.701933] systemd[1]: [0;1;38:5:185mkdump-capture.service: 
+> Failed with result 'exit-code'.[0m
+> [[0;1;31mFAILED[0m] Failed to start 
+> [0;1;39mkdump-capture.service[0m - Kdump Vmcore Save Service.
+>
+> [   10.702090] systemd[1]: [0;1;31mFailed to start 
+> kdump-capture.service - Kdump Vmcore Save Service.[0m
+> See 'systemctl status kdump-capture.service' for details.
+>
+> [   10.702249] systemd[1]: Startup finished in 3.351s (kernel) + 0 
+> (initrd) + 7.350s (userspace) = 10.702s.
+> [   10.702388] systemd[1]: kdump-capture.service: Triggering 
+> OnFailure= dependencies.
+> [   10.703543] systemd[1]: Stopped target timers.target - Timer Units.
+>
+>
+>
+> If you happen to fix, this please add below tag.
+>
+>
+> Reported-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+>
+>
+> Regards,
+>
+> Venkat.
+>
+>
 
 
