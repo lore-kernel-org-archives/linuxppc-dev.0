@@ -1,87 +1,86 @@
-Return-Path: <linuxppc-dev+bounces-27162-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27163-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A4FF0C88E50
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Sep 2026 21:59:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E8B44C88E4D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Sep 2026 22:04:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hhT3K4n3mz2y2b;
-	Sat, 12 Sep 2026 07:59:25 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:34::11"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789163965;
-	cv=none; b=Gj3NOavfUm769no6eKeV/UJx2dsvMwfcCzRRaDKsMr8uttYmFNEyCC8AndrEihHfKcKOmuM7swJaNk6nrx46qfgNAme8xvYvSnh927WN8B8ZtzhmBNc0QR6a8fezgOe23FYS7OJTvNY1Gw4f0rp+VGqiYm9TqWkycCmOW+UMwPR/XiK97y98MnFc5xJZQxgVxmgU6Wtk+CEkpR12xPFoPxTNSjjZ6ACuYviTZIbcHcE1pSf/Ey9w57GwjGjazm6WU5AHejQ7vxNqHzDVJPR7yJo/wsDO57ybMY7W0VwFi81T57roAPb764eQXOWKfK5z+LPRgsIxP7nWoDPrycnqOA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hhT9T1RvBz2xLg;
+	Sat, 12 Sep 2026 08:04:45 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:3b::10"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789164285;
+	cv=none; b=SEA8ZKjxCLJtaG9cQdGPNzdsA6f/aTmGu9rIkfkHbI5I5B10vi/oyfOF7ZFf6ZaWe0uy0A7+Q+4SzVRiUghmSfBSP8mSW+yv2VIjPSCvQdbyxC4WOLr+IXtnPoiBmfSD34iwk9pPGdcvsEHQ3FdauYUsgk927H09SDtMtfTStegrSH/F+cIbmcl/N37c4ulGi07fJZteoppptkNqXYSQh2GiVnvZsIZj7b8juwiehKPJOJqhJrtfEpxdskoWtRSIB08gCgngpv9ZmzFVQCFGiD/iTnKysQt23gnzgAnDvxt8ShBLJBgto5N2HdE1PdTm/Y8ZRNV0BQRWPLc7rWXUpw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789163965; c=relaxed/relaxed;
-	bh=2LPrONMbj0bwp/GdYN4yOukwx8bvXQe9ntAGUumY47s=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=eNxjcPgWbbzhsaw1qmbAQZVG71zaa7mMy3fS/AoIPxn4xM+vLL9+ksK5NiiEBYXQdsF6iiQeLB/nSEtICiEGrg3Gjrj5xF4phl8VqGHgXpaBFg1jkcWTbHY2jj7xQ3HmW/sSmiMGTkBlCDF07KtbwPFC3duEV6QYUUVhcNWVJf+GJ+35bCR0tpCLNr+icThcJU67fLE8r37cV+KkXtvnFKnnq0RoBUXw7+ik2TnsD00LY9Uwkssn2rwbnzWAUzsq6QJn26dAwVwJ8oW+nLOwSn4pT85lswW/yRGdS6NB6y3gJNUHm1OI/ti6c+OcFPOL3YvM0SBa6YS8ePKmsE65qQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=MYsrf62g; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:34::11; helo=mail-qk2-x11.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1789164285; c=relaxed/relaxed;
+	bh=FA7/TxcROHvx3mFEUwRb/G8HDiCsuFllSkpMG3B1Mr0=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=hzS4p9Rw/h9+gKtniWMtAarO/+3yU6uid8bbb96sqNzgqOQkjG6aSmztxlFyQ4rJzxVgf813c4MSlsbM05IYep8RI9NXxfUskeLs7h2/anW1LzOr9Cjvv4UfV4oxmIr5S/afM38mdjtohQKzr4JaWjK8z3yI+k0iIL+SSquTO+KsqGYK9fd5OdFzlmNnSvJ5NzmstiN87O4J3ouy38ygEBMNdMiw56A4J30Wwf1kgHIOKtkkOVamSQLfDyq67FHk/6J19KhIaPJmEcB2EtM/BbbAd1hvMF6USHYEvSuy3bg4BtMHwFqTgiIOVMckUj2FfFd1m+jJzxRSMizxAFLKAg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Gi+sqh7y; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:3b::10; helo=mail-pz2-x10.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=MYsrf62g;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Gi+sqh7y;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:34::11; helo=mail-qk2-x11.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-qk2-x11.google.com (mail-qk2-x11.google.com [IPv6:2607:f8b0:4864:34::11])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:3b::10; helo=mail-pz2-x10.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pz2-x10.google.com (mail-pz2-x10.google.com [IPv6:2607:f8b0:4864:3b::10])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hhT3H64gnz2y2R
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Sep 2026 07:59:22 +1000 (AEST)
-Received: by mail-qk2-x11.google.com with SMTP id d75a77b69052e-52fb76c9deeso522171cf.1
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2026 14:59:22 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hhT9S2t2Qz2xLf
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Sep 2026 08:04:43 +1000 (AEST)
+Received: by mail-pz2-x10.google.com with SMTP id 41be03b00d2f7-cc4ae61629fso288619a12.2
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2026 15:04:43 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789163959; x=1789768759; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1789164281; x=1789769081; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=2LPrONMbj0bwp/GdYN4yOukwx8bvXQe9ntAGUumY47s=;
-        b=MYsrf62gfjJ3rbBIqEAfC/lP3FQUCHhzeIwA0CPJEhI8DO7fzQVqLNtq46jRCTMmrs
-         nDLPDunBPxQ4qDpd5jIcg99yhro2M7QCUVPImsyNzHjMokRZ9m8m5rhzeRyKx+rvQ6TF
-         CRL+GM7ozrdcSx4YItx1gaKQU5VxAC+hSfsiqqGlKIe8D3H4pj0bUWtV1LFYTF4oZEQQ
-         LYciw+IoDkyGeBzlo3PwIfIGhI/L5l4BcOCopVKZry+ZiNYwKHTCjpTaOoGu8BleR6LJ
-         0N8YstFG4n7St8FqGQAPzFoD20uDyNP1fMQe6hlWL1PX15ouPETCBC1j6tkPK26cPs5K
-         ydzw==
+        bh=FA7/TxcROHvx3mFEUwRb/G8HDiCsuFllSkpMG3B1Mr0=;
+        b=Gi+sqh7yEER5oya43XeNltHlfvapupvXOQi1YfrF4Amd4Q81IEunvh9uNbW8gT0mER
+         3TLs+r1/gsKPkqQ0bxthNGSGzrnWXsNqjPRzH7sskfXrhMV5oOWQfD6A9NMBsBJviEaK
+         rzcKiHhtM+osYWImaKFXnkCbMEpQ9Z6VBUgSyVrJO4JzeN7KWcHdBnoYL9nRhL+owvJ6
+         2RG4ECm67X/IWmrf+O6LJuXE2UHust5Fl9CCnJozag4iEpn4Bm3L6AlNuvWh0rNjZc9+
+         8U51e55ynA/VL3+mwSHelh/kp/oA7epWt9GHCSzQv2KhNJZXNM85mM0vdqUoP3IljY68
+         dl9A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1789163959; x=1789768759;
+        d=1e100.net; s=20251104; t=1789164281; x=1789769081;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=2LPrONMbj0bwp/GdYN4yOukwx8bvXQe9ntAGUumY47s=;
-        b=Jr/n6yAASybLXDEYV5LxbvIzxMrOcnbLJah7XwZZ9hvSXXZwLdyVVKqTIaw9NIgIjQ
-         VMTw4qszDMVJblYMbkWcv1ZOAXj7cGPl3Y84I9AArz5i+5Te+K3B89qBtcWvUzz3EGER
-         OX8NOOiSWFVBROTfMFgHLPnrVW512KVN6/XXNLU0OBaZ7hYFUay+0TPOJRfRrwgJbFPs
-         PkQ1tLv0dPLi674fO4VY3Z/hV77o/RYt7BImZIq/sZkOY4D6hhoQJ1bAcPgfWP2EKGMe
-         HrUhPXQHNKZsWrWAwgqJswVIgELleqd2D1dAyjYbbzvS+VemxnP6pRsshTMjneIXn4r5
-         Xrfw==
-X-Forwarded-Encrypted: i=1; AKwUvBwnAR8wP2z8AVYyOrBphJrY79Hplu/WoM6rFcfKkClX/R8W4LGJOM9xenMOQb/j4Fuyh3XTzxhs7Wtq9e0=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++kwX126CyA6VSd+BukbXaPbg8wYsR3zHlTTS78n9pfm9pC3JM3E
-	8YZ0g7P5CGfUIZp2y3rjInG78HFB+6xL0VoWq+cFpU87gbkNXG+a2xfT
-X-Gm-Gg: AYBFou0v4dB5DpJP9Tuf2AVkaY7WXNApomTJkImpGxMU0dEcQnqsvDA6oszJUO8s6Fu
-	x4UsEyUFC3BMO6FrZpWx4Zb4JPrw88x9k6ruVE+4RrgbcJO+wJdfUXZwDmTk33spulrk2bXCeH/
-	2JESYIySfVlQ1SILC01UylPd7qedvwOBmAe8XlZ8VqAgWkxetJkOUL868sbOivku05vBUsyVggV
-	4pJkT4rwgD16i25c3qZRiAX3li8OW0MMcSAnI4Jd6vPG+RR7d2w9C5hjYG4JBA4S0FAgh7AwxJ9
-	2gYzpRusgKseulJEWDegpbsDNKGht2bu1ihlS/qw9IyNPHPixyfU4FJo/YP7dxJYq5Mi0pbpwut
-	BdOBjCUIlkU6aIsiuR1M06wsxscIqiQxZ6s1CzvqrlxiFo9jUG3WvpNIF+ZERWrrDGWcodV3vQJ
-	sV0aisXzWiI225cgpJ4L0h2bgwCVrJfYpfuGhOV+a88NigrnUewnDsg3TPIsd3I6mTMwbRHbZDB
-	tITXYwfYc4yYLF67Sl5NQcT7ZwDurcDSo2JW5zQDL+jEgDSFUteLHmpwqn8vSLWpxduZhZiiyNQ
-	Gk+sIJXFx4FpacCJzp04MuQiWN1JIFK+PQNW+Vj/+mifN4ak3RJKctn2OCo=
-X-Received: by 2002:a05:622a:4814:b0:52c:dde9:5cd5 with SMTP id d75a77b69052e-530e7edb01emr1223561cf.21.1789163959026;
-        Fri, 11 Sep 2026 14:59:19 -0700 (PDT)
+        bh=FA7/TxcROHvx3mFEUwRb/G8HDiCsuFllSkpMG3B1Mr0=;
+        b=ik60F6J3JjJK5yL9L9zXSVjDk4NCdCCGXmlqUSh0CPTb9y77a9jLEYC90SBG8bjzaS
+         IHwHSbriUKv+tahMC+YHcjO/z9qkgCdgAw1ZTvLM9I3ufYHn5n2vkd7GmNGJm5/K72pJ
+         Aq6JXFPH8m36LJ8J0CKj9OxIaBhYvkNzTGfAqJ5J6SbtMJ3eBrJkVgDMAl/yzaQRqWrz
+         1LfkvxvviAkKMqoO/MI8Jv4ZuX1VGT7a67AqhLAu9QDgzztHauDtMkoqkFZh+k23/oTb
+         rYd4oEzvw77pDsmhbK1rzw8+zQA0uAxiKugKWtXndXY/A13SLSyPS7cHTxa8jwV2DYX/
+         +OwQ==
+X-Forwarded-Encrypted: i=1; AKwUvBwyE1VP+d2HOrvn99+Vd3Zor/tFxQbm2RlXAqKO4p5EwZrb4t8J4FwdVBry5QTxvBpMTIraMAfRhvewmlQ=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++mJV2fo0VMjLRf6tg6A8UctUYNDPWlpPwmQO4htSVXISbdw9GuF
+	QyqbTUSaUkBc0TGQ4E5TW+4xlb87pjrrqpNAmySAqXn4SXlHwGa/pM6o
+X-Gm-Gg: AYBFou3SOghOmN7jRUM9uI0W1tyXgLg5g05BIXXxydQ+urW3aEdSzlXbFMLzaRtsfFu
+	ir4JGWm2JywgFLVhl92C++S5f0uK3iKQ7KpNi7ncDrBgl8RVG6xey3DI0LoGWAT7HXz1Qo7EQKZ
+	V7gUe2RxEg9R+7qQF7chqmDFblgKTx/R332n6EAB20GiHcr+HJt0/tnuMXPvT/K/C6OxqMlHh/0
+	6ufpOF1t8YM6JV3PhOsd6AAbhZITyoa7RNWddW+hmodElT3zf/5RuNiJCkzyLnyYXHc2X0vZURa
+	2jDlgVZzF8x61IoKd3m9K2O7AswiUEEmL2AS7pOP22eBZmCpp6SzMsafDafRX6j/SReb0dRf7Lt
+	c6T33POZuqMcc6KucFs9aogt5UWOKIpHXe/C8pNgRhnh392OM9cb8fc4mRiJu7uWE/5RCACIRG2
+	ojMT1zW3EMR/Y21/lSXpNHL5pubTSwo//BsvnqmRXQw8buN76gbB9bTaFhxh4Nd9MFemT0W4+gd
+	A3ushSR2higgT/fD9XzjvDO1yChGYMgfMhGSDU7R+dycP3GXRWklWD2Pj7npNWz/n4WhlW+BCkI
+	dPaxt3FSukWjX91IlKAsSCDUM9OY81Nw8DnBJEwtoz7bxF/w
+X-Received: by 2002:a17:90b:4fc9:b0:37f:e326:6557 with SMTP id 98e67ed59e1d1-39d9bbfc338mr10845124a91.4.1789164281193;
+        Fri, 11 Sep 2026 15:04:41 -0700 (PDT)
 Received: from ryzen.lan ([2601:644:8000:7a86::e35])
-        by smtp.gmail.com with ESMTPSA id d75a77b69052e-530e64da059sm2568531cf.24.2026.09.11.14.59.15
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-39d994cc978sm6554980a91.9.2026.09.11.15.04.40
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 11 Sep 2026 14:59:17 -0700 (PDT)
+        Fri, 11 Sep 2026 15:04:40 -0700 (PDT)
 From: Rosen Penev <rosenp@gmail.com>
 To: dmaengine@vger.kernel.org
-Cc: Vinod Koul <vkoul@kernel.org>,
+Cc: Zhang Wei <zw@zh-kernel.org>,
+	Vinod Koul <vkoul@kernel.org>,
 	Frank Li <Frank.Li@kernel.org>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	linux-kernel@vger.kernel.org (open list),
-	linuxppc-dev@lists.ozlabs.org (open list:FREESCALE SOC DRIVERS),
-	linux-arm-kernel@lists.infradead.org (moderated list:FREESCALE SOC DRIVERS)
-Subject: [PATCH] dmaengine: bestcomm: make gen_bd init helpers static
-Date: Fri, 11 Sep 2026 14:59:14 -0700
-Message-ID: <20260911215914.175851-1-rosenp@gmail.com>
+	linuxppc-dev@lists.ozlabs.org (open list:FREESCALE DMA DRIVER),
+	linux-kernel@vger.kernel.org (open list)
+Subject: [PATCHv3] dmaengine: fsldma: convert to platform_get_irq_optional()
+Date: Fri, 11 Sep 2026 15:04:39 -0700
+Message-ID: <20260911220439.177474-1-rosenp@gmail.com>
 X-Mailer: git-send-email 2.55.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -98,83 +97,68 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-bcom_gen_bd_rx_init() and bcom_gen_bd_tx_init() are only called from
-the PSC wrapper functions in gen_bd.c, so make them static, drop
-their now-unneeded exports, and remove the corresponding header
-declarations.  The reset and release variants stay exported because
-sound/soc/fsl/mpc5200_dma.c calls them from a separate module.
+Replace the per-controller irq_of_parse_and_map() call with
+platform_get_irq_optional(). The controller IRQ is optional when absent
+and the driver falls back to per-channel IRQs. The corresponding
+irq_dispose_mapping() calls in the probe error path and remove function
+are removed.
+
+Moved before anything else in order to handle -EPROBE_DEFER and to avoid
+doing extra work. Simplifies the if statements as well.
 
 Assisted-by: LLM
 Signed-off-by: Rosen Penev <rosenp@gmail.com>
 ---
- drivers/dma/bestcomm/gen_bd.c       | 6 ++----
- include/linux/fsl/bestcomm/gen_bd.h | 8 --------
- 2 files changed, 2 insertions(+), 12 deletions(-)
+ v3: fix build error from the move
+ v2: move to the front of probe.
+ drivers/dma/fsldma.c | 11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/dma/bestcomm/gen_bd.c b/drivers/dma/bestcomm/gen_bd.c
-index 61b5746e1a97..b5093f7445cb 100644
---- a/drivers/dma/bestcomm/gen_bd.c
-+++ b/drivers/dma/bestcomm/gen_bd.c
-@@ -81,7 +81,7 @@ struct bcom_gen_bd_priv {
- /* Task support code                                                        */
- /* ======================================================================== */
+diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+index fb19c60540be..6db2c4d284c9 100644
+--- a/drivers/dma/fsldma.c
++++ b/drivers/dma/fsldma.c
+@@ -1224,8 +1224,13 @@ static int fsldma_of_probe(struct platform_device *op)
+ 	struct fsldma_device *fdev;
+ 	struct device_node *child;
+ 	unsigned int i;
++	int irq;
+ 	int err;
  
--struct bcom_task *
-+static struct bcom_task *
- bcom_gen_bd_rx_init(int queue_len, phys_addr_t fifo,
- 			int initiator, int ipr, int maxbufsize)
- {
-@@ -108,7 +108,6 @@ bcom_gen_bd_rx_init(int queue_len, phys_addr_t fifo,
++	irq = platform_get_irq_optional(op, 0);
++	if (irq == -EPROBE_DEFER)
++		return irq;
++
+ 	fdev = kzalloc_obj(*fdev);
+ 	if (!fdev) {
+ 		err = -ENOMEM;
+@@ -1246,7 +1251,9 @@ static int fsldma_of_probe(struct platform_device *op)
+ 	}
  
- 	return tsk;
- }
--EXPORT_SYMBOL_GPL(bcom_gen_bd_rx_init);
+ 	/* map the channel IRQ if it exists, but don't hookup the handler yet */
+-	fdev->irq = irq_of_parse_and_map(op->dev.of_node, 0);
++	fdev->irq = irq;
++	if (fdev->irq < 0)
++		fdev->irq = 0;
  
- int
- bcom_gen_bd_rx_reset(struct bcom_task *tsk)
-@@ -166,7 +165,7 @@ bcom_gen_bd_rx_release(struct bcom_task *tsk)
- EXPORT_SYMBOL_GPL(bcom_gen_bd_rx_release);
+ 	dma_cap_set(DMA_MEMCPY, fdev->common.cap_mask);
+ 	dma_cap_set(DMA_SLAVE, fdev->common.cap_mask);
+@@ -1308,7 +1315,6 @@ static int fsldma_of_probe(struct platform_device *op)
+ 		if (fdev->chan[i])
+ 			fsl_dma_chan_remove(fdev->chan[i]);
+ 	}
+-	irq_dispose_mapping(fdev->irq);
+ 	iounmap(fdev->regs);
+ out_free:
+ 	kfree(fdev);
+@@ -1330,7 +1336,6 @@ static void fsldma_of_remove(struct platform_device *op)
+ 		if (fdev->chan[i])
+ 			fsl_dma_chan_remove(fdev->chan[i]);
+ 	}
+-	irq_dispose_mapping(fdev->irq);
  
- 
--extern struct bcom_task *
-+static struct bcom_task *
- bcom_gen_bd_tx_init(int queue_len, phys_addr_t fifo,
- 			int initiator, int ipr)
- {
-@@ -192,7 +191,6 @@ bcom_gen_bd_tx_init(int queue_len, phys_addr_t fifo,
- 
- 	return tsk;
- }
--EXPORT_SYMBOL_GPL(bcom_gen_bd_tx_init);
- 
- int
- bcom_gen_bd_tx_reset(struct bcom_task *tsk)
-diff --git a/include/linux/fsl/bestcomm/gen_bd.h b/include/linux/fsl/bestcomm/gen_bd.h
-index aeb312a1cd00..7253d308d77a 100644
---- a/include/linux/fsl/bestcomm/gen_bd.h
-+++ b/include/linux/fsl/bestcomm/gen_bd.h
-@@ -16,10 +16,6 @@ struct bcom_gen_bd {
- };
- 
- 
--extern struct bcom_task *
--bcom_gen_bd_rx_init(int queue_len, phys_addr_t fifo,
--			int initiator, int ipr, int maxbufsize);
--
- extern int
- bcom_gen_bd_rx_reset(struct bcom_task *tsk);
- 
-@@ -27,10 +23,6 @@ extern void
- bcom_gen_bd_rx_release(struct bcom_task *tsk);
- 
- 
--extern struct bcom_task *
--bcom_gen_bd_tx_init(int queue_len, phys_addr_t fifo,
--			int initiator, int ipr);
--
- extern int
- bcom_gen_bd_tx_reset(struct bcom_task *tsk);
- 
+ 	iounmap(fdev->regs);
+ 	kfree(fdev);
 -- 
 2.55.0
 
