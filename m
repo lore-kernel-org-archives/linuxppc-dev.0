@@ -1,65 +1,65 @@
-Return-Path: <linuxppc-dev+bounces-27132-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27133-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 52DB6C88E50
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Sep 2026 13:37:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 33FADC88E4D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Sep 2026 13:37:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hhFvg6DJSz2yqL;
-	Fri, 11 Sep 2026 23:37:03 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=52.12.53.23
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789129806;
-	cv=none; b=JywSi6FXjsp0sd3Nx/pOPgYildpbAZ+9E7/5z6CvUCKMyCFP8Gy4bwReuIWFXBXaLWGt3lEQs7j+esCmu1Oo9Df1TccEmrqJgIq71r27DdaxRKvCMCP69SdyHwim6gtKlDiwILqQV7h8bcRGkKf9wififuGvhHm97Kd+UZWGB4ia3+2YSMyBQC6vDUY1Z3lhutHE7ZLTGMSAL8/uwd0IuqlglAc88APJg/KbrmX8A1Z/y97XNkyug9MZHWh/to/2p5FiQv4r+4rkoJWrOe73etUauCGdJUXoO58O8LoZvjLWhsixiGK3OllAeM0WLFIuROzh2HlHmr+MzBjcJ0W40Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hhFvp3556z2yqf;
+	Fri, 11 Sep 2026 23:37:10 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=44.246.77.92
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789129863;
+	cv=none; b=WZLfvgFMZJ3SwLe705WWK33U9vpA1tZYqPgRPKOnDNS9QzTEFz21L1oM/e5MBxkyHGDK5ZMW2hnaFePSkDGdh4xLvUuYnCPzMKojTytsW04LWO8n4GrWNlUwoCrKgrAaBVUaPyKirE5t2bgSdqetT6HG1jHJ4b5rlwmadhRegARcmd/H2QdvbDtVALXREkllWU/ymgsJvg+K86aa2a6KQNwVd5shUdQAry9sNTs2zp1xlcSvxl4vIh2sZwvfoZgJ1K8EanlgiGQ7b9PtI5SsheXZqpFnrfSrYhrqFUwY9EFHyuB4V0Y09Sv7uZmcBOYffVWQpAw8121+jSz2DYpJjA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789129806; c=relaxed/relaxed;
-	bh=76//lFNoD73PWgho8H4Yagi2iOr5lIAS/w2o2f0iL7E=;
+	t=1789129863; c=relaxed/relaxed;
+	bh=opd+WPzQfIayk9e7GEeBv5N8aZ9REoyrAqKoAc96BV4=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=HHHRC1CdRnue5G2RwOPSCqaXiF8emDwi2fJ56znFYVySyjnU2ipF7WJAcZGfeFU8meKSM1TP2cSEbOFNGU0n+vMV2abja9mOnKaI3j1vGBttjrtD9KGDIb7f6nvhsgztvNcNlxsJzE26DmGqTSJz3HA8GfTR0qQk6rXmARX8ygBsxURZjxcmiPsXmwXs7Nrcx/J9912NzTwchQbBuPtH3UHBIULa+hDdWg4lxA0jrm1cY7GkY+7zfPhsK33KhRNGI/MkTm1Yv5AUjzgfTuxw0uWqatcibIElV7Xt2flV2DRZTY3NOgVXDGpIgm/pWAFmdh1YnSL99dPMv8kzLoL1iw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amazon.de; dkim=pass (2048-bit key; unprotected) header.d=amazon.de header.i=@amazon.de header.a=rsa-sha256 header.s=amazoncorp2 header.b=goybNU4J; dkim-atps=neutral; spf=pass (client-ip=52.12.53.23; helo=pdx-out-010.esa.us-west-2.outbound.mail-perimeter.amazon.com; envelope-from=prvs=707927bfc=sakacpav@amazon.de; receiver=lists.ozlabs.org) smtp.mailfrom=amazon.de
+	 MIME-Version:Content-Type; b=jViJvfIYpVsXqL1wbUWTsYPry1QT7f5P/iX057CQ0c5a56C8JdHBeRJp5vm/xReT4L66W3NLQhmlQw25hQ5uv2p0D1xjq/+VAwsTOg/8EwSGjy6KioKRz5xGFAJQ26FrCY3UlzX1S7DLRCjXERCmasuCzMN3dDDdUSOy3AgVkktTVaw5k6WXMqx7yAbEssYYu6iOklkxyLPR8d4rb9BDLs1G5T2aKlC/+bxTStMlP96F1OoDDCAopax5qXUIPKAFJEXEfNbg60Ub9I3vjPKxak4M7jIu5zUmXFbYyX54gJWYQYtg1pgpTk5XlJzaTa/sshbEhbb/3t34HbRQm73wRA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amazon.de; dkim=pass (2048-bit key; unprotected) header.d=amazon.de header.i=@amazon.de header.a=rsa-sha256 header.s=amazoncorp2 header.b=bDWkz4jc; dkim-atps=neutral; spf=pass (client-ip=44.246.77.92; helo=pdx-out-004.esa.us-west-2.outbound.mail-perimeter.amazon.com; envelope-from=prvs=707927bfc=sakacpav@amazon.de; receiver=lists.ozlabs.org) smtp.mailfrom=amazon.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amazon.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=amazon.de header.i=@amazon.de header.a=rsa-sha256 header.s=amazoncorp2 header.b=goybNU4J;
+	dkim=pass (2048-bit key; unprotected) header.d=amazon.de header.i=@amazon.de header.a=rsa-sha256 header.s=amazoncorp2 header.b=bDWkz4jc;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=amazon.de (client-ip=52.12.53.23; helo=pdx-out-010.esa.us-west-2.outbound.mail-perimeter.amazon.com; envelope-from=prvs=707927bfc=sakacpav@amazon.de; receiver=lists.ozlabs.org)
-Received: from pdx-out-010.esa.us-west-2.outbound.mail-perimeter.amazon.com (pdx-out-010.esa.us-west-2.outbound.mail-perimeter.amazon.com [52.12.53.23])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=amazon.de (client-ip=44.246.77.92; helo=pdx-out-004.esa.us-west-2.outbound.mail-perimeter.amazon.com; envelope-from=prvs=707927bfc=sakacpav@amazon.de; receiver=lists.ozlabs.org)
+Received: from pdx-out-004.esa.us-west-2.outbound.mail-perimeter.amazon.com (pdx-out-004.esa.us-west-2.outbound.mail-perimeter.amazon.com [44.246.77.92])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hhDQP581jz2xpv
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2026 22:30:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hhDRV4GZ8z2xpv
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2026 22:31:02 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
   d=amazon.de; i=@amazon.de; q=dns/txt; s=amazoncorp2;
-  t=1789129805; x=1820665805;
+  t=1789129862; x=1820665862;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=76//lFNoD73PWgho8H4Yagi2iOr5lIAS/w2o2f0iL7E=;
-  b=goybNU4JXvSARFdDDoeSkR31fh8TqnFEZYMN9WW1upRdaX5lIhWnYBi9
-   PSH0812p8jfEogtjAhNaY9XgDfjtWbghBvNL2LM8ULzGvVxaTWSsd4Ogi
-   MHzsJOXeWu7rbqsqBdBbUi6tFskMbwboLhWarQu7/KEmTOyybTAH2FKOz
-   7rTY6bVm7RuXEpzVS9gSLghiaIfpDfLRdPZR6YK5U7MlYRBaXnsnqBs4h
-   qwaaiXFwZg8D3t+P60vTU3Qcyc/nzIUBDWY0d4fdMGd350jiA2BzqNHjx
-   1MRUPNK2JUew2CceGu1P0WwLrl+n/pnDTOAgRPCd7a6lInVpaaJr6jlJW
-   Q==;
-X-CSE-ConnectionGUID: ZRF+sWN8SxyaluaZFeHopg==
-X-CSE-MsgGUID: pjbUDy3lSES4SHUcYAZPSA==
+  bh=opd+WPzQfIayk9e7GEeBv5N8aZ9REoyrAqKoAc96BV4=;
+  b=bDWkz4jcwcILRDMsOKNEsv+/PYH2lRLJhkQOMJINpjisi4oYs7cs3Ehb
+   tmm0sye9hur5Leikl+JTWjsPePqFhe0SwedytG+fpz/EUGnBgr1XRsgwc
+   8IR7MhQgS//ZDxegqe1lyyb1fVx7PiqSM+cWnCY0CvO+GDiRZIyJGCBvV
+   lTP+JQpZixhYpkvq1qZ1CSAAVEWnNgvi0wQILm5UtGu9pqGJME8anwxez
+   YSZ/hcEfkXEGYLnAlAQhK1QBOSybmMOZdx5mZ+GSO2OZ0ThDQMSnTNxlW
+   tuVopcWpcH0WAhsVfbpAk/VvvGugA7qVwsn6FSdY1+nAWmFAd/tRldWcS
+   g==;
+X-CSE-ConnectionGUID: MWmo8yIbQ/yVZfLriKnhlg==
+X-CSE-MsgGUID: OkrTFEs5SgCvU9PUbqh1zA==
 X-IronPort-AV: E=Sophos;i="6.27,97,1787011200"; 
-   d="scan'208";a="28293784"
-Received: from ip-10-5-9-48.us-west-2.compute.internal (HELO smtpout.naws.us-west-2.prod.farcaster.email.amazon.dev) ([10.5.9.48])
-  by internal-pdx-out-010.esa.us-west-2.outbound.mail-perimeter.amazon.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Sep 2026 12:30:03 +0000
-Received: from EX19MTAUWB001.ant.amazon.com [205.251.233.104:15106]
+   d="scan'208";a="28418067"
+Received: from ip-10-5-12-219.us-west-2.compute.internal (HELO smtpout.naws.us-west-2.prod.farcaster.email.amazon.dev) ([10.5.12.219])
+  by internal-pdx-out-004.esa.us-west-2.outbound.mail-perimeter.amazon.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Sep 2026 12:30:57 +0000
+Received: from EX19MTAUWC002.ant.amazon.com [205.251.233.51:21145]
  by smtpin.naws.us-west-2.prod.farcaster.email.amazon.dev [10.0.62.198:2525] with esmtp (Farcaster)
- id 0ebb7c56-e5f4-4c1a-a205-8c4760150ebb; Fri, 11 Sep 2026 12:30:03 +0000 (UTC)
-X-Farcaster-Flow-ID: 0ebb7c56-e5f4-4c1a-a205-8c4760150ebb
+ id 53f93df2-f4cc-426b-a8bf-346efb1e2633; Fri, 11 Sep 2026 12:30:57 +0000 (UTC)
+X-Farcaster-Flow-ID: 53f93df2-f4cc-426b-a8bf-346efb1e2633
 Received: from EX19D001UWA001.ant.amazon.com (10.13.138.214) by
- EX19MTAUWB001.ant.amazon.com (10.250.64.248) with Microsoft SMTP Server
+ EX19MTAUWC002.ant.amazon.com (10.250.64.143) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id 15.2.2562.45;
- Fri, 11 Sep 2026 12:30:02 +0000
+ Fri, 11 Sep 2026 12:30:57 +0000
 Received: from dev-dsk-sakacpav-1a-480d1124.eu-west-1.amazon.com
  (172.19.96.155) by EX19D001UWA001.ant.amazon.com (10.13.138.214) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id 15.2.2562.46; Fri, 11 Sep 2026
- 12:30:00 +0000
+ 12:30:54 +0000
 From: Pavol Sakac <sakacpav@amazon.de>
 To: Bjorn Helgaas <bhelgaas@google.com>
 CC: <linux-pci@vger.kernel.org>, <linux-kernel@vger.kernel.org>, David Matlack
@@ -71,9 +71,9 @@ CC: <linux-pci@vger.kernel.org>, <linux-kernel@vger.kernel.org>, David Matlack
 	<linuxppc-dev@lists.ozlabs.org>, Niklas Schnelle <schnelle@linux.ibm.com>,
 	Benjamin Block <bblock@linux.ibm.com>, Lukas Wunner <lukas@wunner.de>, "Ionut
  Nechita" <ionut.nechita@windriver.com>, <nh-open-source@amazon.com>
-Subject: [RFC PATCH 3/8] PCI/PM: Convert pci_bridge_d3_update() recursion to iteration
-Date: Fri, 11 Sep 2026 14:29:58 +0200
-Message-ID: <20260911122958.88717-1-sakacpav@amazon.de>
+Subject: [RFC PATCH 4/8] PCI/PM: Serialize pci_bridge_d3_update()
+Date: Fri, 11 Sep 2026 14:30:52 +0200
+Message-ID: <20260911123052.94884-1-sakacpav@amazon.de>
 X-Mailer: git-send-email 2.47.3
 In-Reply-To: <20260911-vfopt-s1-v1-0-693271dc0226@amazon.de>
 References: <20260911-vfopt-s1-v1-0-693271dc0226@amazon.de>
@@ -93,114 +93,110 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
 X-Originating-IP: [172.19.96.155]
-X-ClientProxiedBy: EX19D035UWA003.ant.amazon.com (10.13.139.86) To
+X-ClientProxiedBy: EX19D037UWC001.ant.amazon.com (10.13.139.197) To
  EX19D001UWA001.ant.amazon.com (10.13.138.214)
 
-pci_bridge_d3_update() propagates a bridge_d3 change to upstream bridges
-by tail recursion: when a bridge's bridge_d3 value changes, the function
-calls itself with that bridge as the new device.
+pci_bridge_d3_update() does an unlocked read-modify-write of
+bridge->bridge_d3, and its callers are not mutually serialized: the
+d3cold_allowed sysfs write and the driver-context D3cold helpers hold
+neither pci_rescan_remove_lock nor device_lock. A concurrent write can
+lose an update and leave bridge_d3 stale, costing a wrong D3cold decision
+rather than memory safety. An upcoming change runs pci_bus_add_device()
+for sibling VFs concurrently, making sibling additions concurrent callers
+too, so this must land first.
 
-Convert the tail recursion into an iterative loop. Each level recomputes
-"remove" and d3cold_ok exactly as the recursive call did for its own
-device, and the early returns become loop exits. No functional change
-intended.
+Add a mutex around the whole update, taken once for the propagation
+loop. A device with no D3cold-capable port above it returns before the
+mutex, so the common add is not funneled through a global lock, and the
+loop re-evaluates both conditions under it. The mutex serializes the
+updaters against each other only; the d3cold_allowed store itself still
+writes an adjacent bit of the same word unlocked, a pre-existing
+exposure this change neither widens nor closes. The resulting order is
+pci_rescan_remove_lock, device_lock(any) -> pci_bridge_d3_lock ->
+pci_bus_sem (read), so pci_bridge_d3_lock must never be acquired while
+holding pci_bus_sem and no pci_walk_bus() callback may call into this
+path.
 
-An upcoming change serializes this update with a mutex; the iterative
-form lets that mutex be taken once per external call instead of once per
-bridge level.
+The race dates back to commit 9d26d3a8f1b0 ("PCI: Put PCIe ports into
+D3 during suspend"), is theoretical with no known report, and so
+carries no Fixes: tag and no stable designation; it claims no measured
+performance contribution.
 
 Assisted-by: LLM
 Signed-off-by: Pavol Sakac <sakacpav@amazon.de>
 ---
- drivers/pci/pci.c | 67 +++++++++++++++++++++++++----------------------
- 1 file changed, 35 insertions(+), 32 deletions(-)
+ drivers/pci/pci.c | 26 ++++++++++++++++++++++++++
+ 1 file changed, 26 insertions(+)
 
 diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index b2879a6be5f8..c62a315c0b4c 100644
+index c62a315c0b4c..b2a159ef125b 100644
 --- a/drivers/pci/pci.c
 +++ b/drivers/pci/pci.c
-@@ -3104,46 +3104,49 @@ static int pci_dev_check_d3cold(struct pci_dev *dev, void *data)
+@@ -3095,17 +3095,36 @@ static int pci_dev_check_d3cold(struct pci_dev *dev, void *data)
+ }
+ 
+ /*
++ * Serializes pci_bridge_d3_update()'s bridge_d3 read-modify-writes and
++ * their upstream propagation.  Ordering: pci_rescan_remove_lock,
++ * device_lock(any) -> pci_bridge_d3_lock -> pci_bus_sem (read); no
++ * pci_walk_bus() callback may call into this path.
++ */
++static DEFINE_MUTEX(pci_bridge_d3_lock);
++
++/**
+  * pci_bridge_d3_update - Update bridge D3 capabilities
+  * @dev: PCI device which is changed
+  *
+  * Update upstream bridge PM capabilities accordingly depending on if the
+  * device PM configuration was changed or the device is being removed.  The
+  * change is also propagated upstream.
++ *
++ * Context: Process context. Takes and releases pci_bridge_d3_lock.
   */
  void pci_bridge_d3_update(struct pci_dev *dev)
  {
--	bool remove = !device_is_registered(&dev->dev);
  	struct pci_dev *bridge;
--	bool d3cold_ok = true;
  
--	bridge = pci_upstream_bridge(dev);
--	if (!bridge || !pci_bridge_d3_possible(bridge))
--		return;
-+	while ((bridge = pci_upstream_bridge(dev)) &&
-+	       pci_bridge_d3_possible(bridge)) {
-+		bool remove = !device_is_registered(&dev->dev);
-+		bool d3cold_ok = true;
- 
--	/*
--	 * If D3 is currently allowed for the bridge, removing one of its
--	 * children won't change that.
--	 */
--	if (remove && bridge->bridge_d3)
--		return;
-+		/*
-+		 * If D3 is currently allowed for the bridge, removing one of
-+		 * its children won't change that.
-+		 */
-+		if (remove && bridge->bridge_d3)
-+			break;
- 
--	/*
--	 * If D3 is currently allowed for the bridge and a child is added or
--	 * changed, disallowance of D3 can only be caused by that child, so
--	 * we only need to check that single device, not any of its siblings.
--	 *
--	 * If D3 is currently not allowed for the bridge, checking the device
--	 * first may allow us to skip checking its siblings.
--	 */
--	if (!remove)
--		pci_dev_check_d3cold(dev, &d3cold_ok);
-+		/*
-+		 * If D3 is currently allowed for the bridge and a child is
-+		 * added or changed, disallowance of D3 can only be caused by
-+		 * that child, so we only need to check that single device,
-+		 * not any of its siblings.
-+		 *
-+		 * If D3 is currently not allowed for the bridge, checking the
-+		 * device first may allow us to skip checking its siblings.
-+		 */
-+		if (!remove)
-+			pci_dev_check_d3cold(dev, &d3cold_ok);
- 
--	/*
--	 * If D3 is currently not allowed for the bridge, this may be caused
--	 * either by the device being changed/removed or any of its siblings,
--	 * so we need to go through all children to find out if one of them
--	 * continues to block D3.
--	 */
--	if (d3cold_ok && !bridge->bridge_d3)
--		pci_walk_bus(bridge->subordinate, pci_dev_check_d3cold,
--			     &d3cold_ok);
-+		/*
-+		 * If D3 is currently not allowed for the bridge, this may be
-+		 * caused either by the device being changed/removed or any of
-+		 * its siblings, so we need to go through all children to find
-+		 * out if one of them continues to block D3.
-+		 */
-+		if (d3cold_ok && !bridge->bridge_d3)
-+			pci_walk_bus(bridge->subordinate, pci_dev_check_d3cold,
-+				     &d3cold_ok);
++	/*
++	 * Unlocked fast path; the loop condition re-evaluates both checks
++	 * under the lock.
++	 */
++	bridge = pci_upstream_bridge(dev);
++	if (!bridge || !pci_bridge_d3_possible(bridge))
++		return;
 +
-+		if (bridge->bridge_d3 == d3cold_ok)
-+			break;
- 
--	if (bridge->bridge_d3 != d3cold_ok) {
- 		bridge->bridge_d3 = d3cold_ok;
-+
++	mutex_lock(&pci_bridge_d3_lock);
+ 	while ((bridge = pci_upstream_bridge(dev)) &&
+ 	       pci_bridge_d3_possible(bridge)) {
+ 		bool remove = !device_is_registered(&dev->dev);
+@@ -3148,6 +3167,7 @@ void pci_bridge_d3_update(struct pci_dev *dev)
  		/* Propagate change to upstream bridges */
--		pci_bridge_d3_update(bridge);
-+		dev = bridge;
+ 		dev = bridge;
  	}
++	mutex_unlock(&pci_bridge_d3_lock);
  }
  
+ /**
+@@ -3157,6 +3177,9 @@ void pci_bridge_d3_update(struct pci_dev *dev)
+  * This function can be used in drivers to enable D3cold from the device
+  * they handle.  It also updates upstream PCI bridge PM capabilities
+  * accordingly.
++ *
++ * Context: Process context. Takes and releases pci_bridge_d3_lock;
++ * must not be called from a pci_walk_bus() callback.
+  */
+ void pci_d3cold_enable(struct pci_dev *dev)
+ {
+@@ -3174,6 +3197,9 @@ EXPORT_SYMBOL_GPL(pci_d3cold_enable);
+  * This function can be used in drivers to disable D3cold from the device
+  * they handle.  It also updates upstream PCI bridge PM capabilities
+  * accordingly.
++ *
++ * Context: Process context. Takes and releases pci_bridge_d3_lock;
++ * must not be called from a pci_walk_bus() callback.
+  */
+ void pci_d3cold_disable(struct pci_dev *dev)
+ {
 -- 
 2.47.3
 
