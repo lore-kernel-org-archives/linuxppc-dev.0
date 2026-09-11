@@ -1,100 +1,78 @@
-Return-Path: <linuxppc-dev+bounces-27058-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27059-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B9242C88E41
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2026 23:55:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5F77DC88E41
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Sep 2026 02:08:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hgvft0bLRz2yvT;
-	Fri, 11 Sep 2026 09:54:46 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::835"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789084486;
-	cv=none; b=bTNLLFqw5HSjQlm+hb5n3g5lQ/CQfr6bDogmuQYSQMJLXLzhYfWojf42J+QydHBvcXm6mpUb6kMvqd82BriNe5k7e13rL6/n+dq0D+ftnAyHEUYNnB8a4D3KyjAd4gD9BSGIumNOCQxGA0PdNrC47wgI4f4RKPSMqnbG4NvexsdHrTEK4hCaKePAiC4WbHQ29De85YhrGHyCyZ9EYNhyY3GR+50O19UvU8vpmnuRKQrgP+dotwNHCIl57jegu7XrWjXv0DhiKzNbchlsSql2zpMn6NZoJWBB6kzvlNfpSbiFCXozx7S3UO9kKxMeMpWY5TTV7AA+UzUvPW+ZWHVpDQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hgyd5270kz2y2b;
+	Fri, 11 Sep 2026 12:08:25 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789092505;
+	cv=none; b=K8v1y7Idv/Dup10i8K6bstwUXDUjNyiz7ddf87zZirMcVk3x/JFJpbut85yJsVsNW7s3UVPkC8dTUWE5Ye5xkaxmStTDa0sQ6KGHHW6mK8EmI1DZDc67fE0+29sHCbq45glMAY723lZXJpXsVkXH23xdWbZwUnU+Yf+rv8YeWLEMgw4hR1YqkhCnWoyF3zs8c1J73c0odBu8PE+F937y82z0rmTJKqDYrQnTFylbxDUr0zrzjC9W2uAS0cNBuBTu5VRCzmhjecsPcfpQxpXYb3VbwwEuaIJuIQxgJ452iYdD5mUVwYonSmNJtCpl3VKfntk/n8+pYCZOWhAubE8w9A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789084486; c=relaxed/relaxed;
-	bh=aXOUF/0dKfcL9nM72QWKoaIot6Ph6ib6YvMRCU6EYeU=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=EEsn6wMPGdmqYLaNbTCdD3KAptZPpduE6gbAhR5bpN6mSWFB9DUSl+SF28Pev32P76dd7Yc0+kQtxVkJC7cce7tc0SULjvCtTArn4+0k0xCZbapYFcOAvwrsScwyhrLYCrcAofFOFVFl3IgHpxfmlZ8v5AzAQVNPQeiSqHLD2Baom6oqgMVXOEyavqzUDgf8WAr6wA8gXOLDtNcrpmaoh2w0aXM+Vh6ot2P11pviXqMph2L+dJeD5qqOCSlzZ+hmogo3rdcWap0Q7vQ4/yb5dj1IzuN6E09IvrKUV4IO83WtZBWTA3c4iS1DQ0MV7rRnHmTf7500+9k8Xk518m/X3A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Zwc9QgW7; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::835; helo=mail-qt1-x835.google.com; envelope-from=mhun512@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1789092505; c=relaxed/relaxed;
+	bh=fX329TkfZvDAeS3NAfrFYW51BJASDixWlQBJrIcZvtI=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=effTSUOoS/GKXf+aurRq6H5895pthh0iEELtEPmMfs+w5tl6Q+DAXTetYk9xxpcybSOW86ICRbN1iHdotniYPzuBtleR+g6PfkQEDD4NaImOJCCe0J4QshWzASXuZJAgHqECVuzRVrW32IFv6AupYjiWbtlIviPSdoFka+HKtl9IIlRhBdsN4FONawGqxvEMNQbb9ckH6CsZ354aw4rwteNNkcI3O/NotXfnR8VothAM7C7x40NQ0OAkeVBPLWZjwhcSujGOZEUr8ZbTIllDS9+HJO6fwdmeTebw9IufrPaCBjgneHGdEp4AG9Ez6F4nFopm+eFUHrob7V0MkABBMA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=hQzKW4+K; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Zwc9QgW7;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=hQzKW4+K;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::835; helo=mail-qt1-x835.google.com; envelope-from=mhun512@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-qt1-x835.google.com (mail-qt1-x835.google.com [IPv6:2607:f8b0:4864:20::835])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hgvfs2hgpz2y71
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2026 09:54:45 +1000 (AEST)
-Received: by mail-qt1-x835.google.com with SMTP id d75a77b69052e-51bfe810293so4499001cf.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2026 16:54:45 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789084483; x=1789689283; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=aXOUF/0dKfcL9nM72QWKoaIot6Ph6ib6YvMRCU6EYeU=;
-        b=Zwc9QgW7qnOFUk+SyF/EmiN3kNZKUD4wRVqimtxJh/rflUCzN2KT7qhawjKlqNtyZL
-         TQ99UKG9WPxj8StNViyGtl6QZzkmjtLkGlmDl4RiQtZcM12Bgmcvtdbtkv7yaJPFWe6g
-         vuTfGcoS88Bk+fQvMAb+UzH8PfJ++h0daCy6tYYUOZyCPZFfoYQYqhIrMjbewTu10J++
-         gVibb40IGdsHVw3Q5I3pqXxAuki9120YhUr4NTDZGYbyaSJJusl4tVTmkHHzTXUogpYF
-         lfrXSf3PWEAB40o52txJLHwWFFjIz1ja+rzkyODfLRLcj1/6usS9HmsU1zSVyvFwbUX8
-         HJLA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1789084483; x=1789689283;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=aXOUF/0dKfcL9nM72QWKoaIot6Ph6ib6YvMRCU6EYeU=;
-        b=GBsRgpBr8id8qCUVqCOuOIAKKz54iy3mdykojo7J5NEjJGaiaFpJPO6MDpoVh95Fmx
-         ikHboWmLXm12mdnDc9TtafO4gDo2UBEKsKyNLXrZth7tOvNjUyKg1M+OAY9YPTJM/5LP
-         Cw1EYhSL+SD0t23REKAi5k0t54YVg4ALZiNhEHtNYMn0L4xqWw9ZOVfkElV320BoPRND
-         5vl+RhLi6m7GRygICrUQDU5PrJIGvmApcOI+b9BWBcnc4p9R3+PkOITE+P+Tr1AmwQm2
-         xN8fuN5qI0Z88TphOpbdNIkOjKbUlJWH/Cz3b9MiYUwnSY4BiH02BW8zBKyWSW0kT5pa
-         JOhg==
-X-Forwarded-Encrypted: i=1; AKwUvBwMHUPqVEzaMdBMyzPWul988za9m+IPG8ECnMg8uuteotmSMFtQTDqKKrxBt0wVtpTVf5TGolW1OPayX0E=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++lP3ELit9DoAmc0ROGpbnrYaRjo48dHw05fsWMN8UqFcTZ2jg00
-	JdOzVNBbOQoiUIBHY01i3tb7inflHHJ6Bg0JtYU7N0zMuAW5YHrTIG0=
-X-Gm-Gg: AYBFou2qe4NfOJWLsFQselz0SEiqVUH34CiT2Nb81LlbOiXlhZIysycwODmfIAD2/Qh
-	21M4khS0D88CoZu+9ofhRztUsyed51TUu0DJkzUsr5RGZhoxJJoyJYnqIT64eZl6TxWbfBZ6BnB
-	Zeb/U2HyzYNJBPXAQlv6WekhlWCjqqcFaYm4NA73jlUtpltnl5yBvAUUaETleWrJtmIXDs5SNoJ
-	obIo/35l99QnRWYUXGGDbSs9Gx0+//2+3bI3JEUKIdLJUmfQBu7Rdjhfhutu6sUKxfY36j1raL+
-	J9I1j0tJNXFlSatNeCNVtQAffvPySUnA/pH5Q3OfHr2Q7+Uj5ZpcXVknTKYx9zxVkKUEAGNTsBo
-	+72B1VLat164FpX4u9FTt0nL/VHWkCuCkLLpAQx1KFhBb7BfUDx78bPJyiIIvkqdssZmRMq2zUe
-	0ZNZnbRE/YiKOfw9bchdfkPL3MhlUu4BQFwtbuwGaC+oSGkbdeTsKxZEk0QZwL/VjnVROhFkZuv
-	AKg+hT+1FsrdYgApokh7Cd97N9j13uXZAoB0ngZ1wYSheAyMmNaDsjMpwwg2nQJ6Z2sWdQAl2pU
-	h03PTohdiAGcaJ/RiKavdAxSEuBmnA83kaQmkcZkGsGw9w==
-X-Received: by 2002:a05:622a:1a96:b0:52f:ab8f:43dd with SMTP id d75a77b69052e-530c871239amr28491771cf.38.1789084478245;
-        Thu, 10 Sep 2026 16:54:38 -0700 (PDT)
-Received: from localhost.localdomain ([104.39.73.78])
-        by smtp.gmail.com with ESMTPSA id d75a77b69052e-530ca48912csm6100771cf.13.2026.09.10.16.54.36
-        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Thu, 10 Sep 2026 16:54:37 -0700 (PDT)
-From: Myeonghun Pak <mhun512@gmail.com>
-To: Zhao Qiang <qiang.zhao@nxp.com>
-Cc: Krzysztof Halasa <khc@pm.waw.pl>,
-	Andrew Lunn <andrew+netdev@lunn.ch>,
-	"David S. Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@google.com>,
-	Jakub Kicinski <kuba@kernel.org>,
-	Paolo Abeni <pabeni@redhat.com>,
-	Simon Horman <horms@kernel.org>,
-	Alexandra Diupina <adiupina@astralinux.ru>,
-	Christophe Leroy <chleroy@kernel.org>,
-	Ijae Kim <ae878000@gmail.com>,
-	netdev@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: [PATCH net v3 3/4] net: wan: hdlc: close active devices before protocol detach
-Date: Thu, 10 Sep 2026 19:54:29 -0400
-Message-ID: <f5f0519e82a7b8bbf314dc137470f7cf931e320b.1788128904.git.mhun512@gmail.com>
-X-Mailer: git-send-email 2.50.1
-In-Reply-To: <cover.1788128904.git.mhun512@gmail.com>
-References: <cover.1788128904.git.mhun512@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hgyd355qbz2xGr
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2026 12:08:23 +1000 (AEST)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68B12QVf348208;
+	Fri, 11 Sep 2026 02:08:19 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=pp1; bh=fX329TkfZvDAeS3NAfrFYW51BJAS
+	DixWlQBJrIcZvtI=; b=hQzKW4+KA0Lso1DbuWQXEa0gGMDc42n8gKqBRcpwm8QN
+	12saHORKJfKD6vMjUzEmj3dN3jpmvs67WVpeOlXPsYOoV6OsMTFcXjOAU99EGKOH
+	z66v0F3hdxJeYadOH+/I498QH3FntI1bkYFDWzQcAVF91iCCaHGUekA95tu1BH2L
+	iIMvXzIoIngfPpRu0L9JW4eeeotXwvuWAMWRbsoRcwrg77dhDR7jLkTRwP+rL+qG
+	9UglSimRr25+UtL3eZxvz0qN635v6IMXA9NK0b4FoZ9O8Gk9w8XV2MnSmhqB4Qgm
+	0jzlxVZoZ3hzLgdS7wpFUa+2vr8uOlgQqz/hf1i2Ew==
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gkd8t0p5b-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Fri, 11 Sep 2026 02:08:19 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 68B150Bb900639;
+	Fri, 11 Sep 2026 02:08:18 GMT
+Received: from smtprelay04.dal12v.mail.ibm.com ([172.16.1.6])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gkvnrkukk-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 11 Sep 2026 02:08:18 +0000 (GMT)
+Received: from smtpav04.dal12v.mail.ibm.com (smtpav04.dal12v.mail.ibm.com [10.241.53.103])
+	by smtprelay04.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68B28Hik60948976
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 11 Sep 2026 02:08:17 GMT
+Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 9CF0058056;
+	Fri, 11 Sep 2026 02:08:17 +0000 (GMT)
+Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id F3F4D58052;
+	Fri, 11 Sep 2026 02:08:16 +0000 (GMT)
+Received: from li-4c4c4544-0054-3910-8039-c3c04f423534.ibm.com.com (unknown [9.61.103.123])
+	by smtpav04.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 11 Sep 2026 02:08:16 +0000 (GMT)
+From: Tyrel Datwyler <tyreld@linux.ibm.com>
+To: james.bottomley@hansenpartnership.com, martin.petersen@oracle.com
+Cc: linux-scsi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        linux-kernel@vger.kernel.org, brking@linux.ibm.com,
+        davemarq@linux.ibm.com, Tyrel Datwyler <tyreld@linux.ibm.com>
+Subject: [PATCH v8 0/9] scsi: ibmvfc: make ibmvfc support FPIN messages
+Date: Thu, 10 Sep 2026 19:08:06 -0700
+Message-ID: <20260909-ibmvfc-fpin-support-v8-0-b27183b055af@linux.ibm.com>
+X-Mailer: git-send-email 2.55.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -108,50 +86,187 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTExMDAyNCBTYWx0ZWRfXxTCFxXQG1WeW
+ swmqdQXdOzjpBemZIlBXDAJw5v7ZpR28mcI6XhD0W8ID84/nK9Jytmz66cLousplvCVkKiqe7gL
+ 8T2OlIn/yqkWCrqiUhJ/Qgo73BvqoZ4=
+X-Proofpoint-ORIG-GUID: CprZPG3IInOSMqOhjTWwBw54xxxcVQqW
+X-Proofpoint-GUID: CprZPG3IInOSMqOhjTWwBw54xxxcVQqW
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTExMDAyNCBTYWx0ZWRfX2sFDZfmCoCwG
+ kiH/XXHGNzwhzs7P/LfRHIimRPxFkhZxbbFXVywGOTASUKVjoYgLBZtL/hbx7BmD25rO4sGo9Nt
+ F1MHKvtfQ8Y2r+P0d63ItbzWKo/PvVijoldwyTax5NhK0guV12c8IdxBH0FB1oJyuEG39vKA59a
+ +e01QvSc1usKjqVT7C5dQYO+l51TFaApRCjkTbv556GCvQuq8aMcjE1//qkLj2STX+J5RJh3OGH
+ U9ShZPQdMj8H7oLWq7UWIjw7RTkf01f86nXrOC4jwgLhGPA0rd2aNlYIE1DLPejNViT/KPjuISq
+ j9A5nOYhp+3VJGw28hefcuweiPDLwkramVtH7drvo5PcVr/JtUgzqrx0INanGeZ6pwzMtoHl817
+ +pzgcrIR8LqhAcaAJm8vaeUBUiphK6hYLOyq15Q8pOQj6BbrQqHPopSHQEF9zb8YrsLL4DlM4AW
+ Tm4FvqamjX+Uiq1v6Dg==
+X-Authority-Analysis: v=2.4 cv=PIGaavqC c=1 sm=1 tr=0 ts=6aa36293 cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+ a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=VwQbUJbxAAAA:8
+ a=VnNF1IyMAAAA:8 a=bC-a23v3AAAA:8 a=bLk-5xynAAAA:8 a=pGLkceISAAAA:8
+ a=voM4FWlXAAAA:8 a=5GWuvAQmnGDQSWin3f0A:9 a=QEXdDO2ut3YA:10
+ a=FO4_E8m0qiDe52t0p3_H:22 a=zSyb8xVVt2t83sZkrLMb:22 a=IC2XNlieTeVoXbcui8wp:22
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-11_01,2026-09-09_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 priorityscore=1501 bulkscore=0 adultscore=0 suspectscore=0
+ lowpriorityscore=0 impostorscore=0 clxscore=1015 spamscore=0 malwarescore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609110024
+Message-ID: <20260911020806.cSDWsQqBa8ldRvP38xQbZTf7GRVWL2_Ez8vLUCD9wVY@z>
 
-Commit ff3516442768 ("WAN: HDLC: Detach protocol before unregistering
-device") moved protocol detach ahead of netdev unregister so detach could
-still use its state. However, detach_hdlc_protocol() calls
-hdlc_setup_dev(), which clears IFF_UP. unregister_netdevice() then sees an
-already-down device and skips ndo_stop, leaving an active HDLC device
-running while its driver releases resources.
+From: Dave Marquardt <davemarq@linux.ibm.com>
 
-Close the device under RTNL while its protocol is still attached, then
-keep the existing detach-before-unregister order. This runs the hardware
-stop callback and the protocol close callback before their state is
-released.
+This patch series adds FPIN (fabric performance impact notification)
+support to the ibmvfc (IBM Virtual Fibre Channel) driver. This comes
+in three flavors:
 
-Audit all current users: c101, n2, pc300too, pci200syn, wanxl,
-ixp4xx_hss, fsl_qmc_hdlc and farsync unregister before releasing the
-resources used by their close callbacks. The farsync probe unwind can
-disable interrupts and free its RX DMA buffer first, but fst_close() does
-not use that buffer or require interrupts; the card is also in FST_RESET,
-so fst_closeport() does not access the port hardware.
+- basic, to recognize existing FPIN messages from the virtual I/O
+  server (VIOS) (patch 1)
+- full, supporting additional FPIN information and using its own
+  asynchronous sub-queue and interrupt (patches 3-8)
+- extended, supporting FC-LS-5 (patch 9)
 
-Fixes: ff3516442768 ("WAN: HDLC: Detach protocol before unregistering device")
-Cc: stable@vger.kernel.org
-Reported-by: Jakub Kicinski <kuba@kernel.org>
-Link: https://lore.kernel.org/r/20260806020541.2011936-2-kuba@kernel.org
-Co-developed-by: Ijae Kim <ae878000@gmail.com>
-Signed-off-by: Ijae Kim <ae878000@gmail.com>
-Signed-off-by: Myeonghun Pak <mhun512@gmail.com>
+Full and extended FPIN support requires a new asynchronous sub-queue
+with its own interrupt. The asynchronous sub-queue support requires
+ibmvfc to also support a new IBMVFC_NOOP command, which the driver
+recognizes and ignores (patch 2).
+
+The asynchronous sub-queue work is split across four patches: patch 3
+defines the necessary data structures, patch 5 adds the interrupt and
+drain routines for the queue, patch 6 extends channel registration and
+deregistration to accommodate the new queue, and patch 7 fixes IRQ
+cleanup on registration failure. Patch 8 wires everything together,
+registering the async sub-queue during channel initialization and
+advertising support to VIOS during NPIV login.
+
+All three modes convert an incoming FPIN message from VIOS to an FC
+extended link service message, in some cases using default values for
+information not provided by the VIOS FPIN message but expected in the
+FC ELS message. This FC ELS message is passed to fc_host_rcv_fpin for
+updating statistics and sending the information upstream by netlink
+multicast, where it may be read by listeners including the DM
+multipath daemon "multipathd."
+
+Signed-off-by: Dave Marquardt <davemarq@linux.ibm.com>
+Signed-off-by: Tyrel Datwyler <tyreld@linux.ibm.com>
 ---
- drivers/net/wan/hdlc.c | 1 +
- 1 file changed, 1 insertion(+)
+Changes in v9:
+- Fix ibmvfc_find_target() to check for either a valid rport or nvme_remote_port 
+  so nvme targets are not silently dropped (patch 1)
+- Restore xxx_host_remove() ordering and destroy async work queue prior to these
+  calls. Check that the host is not offline prior to enqueuing new async work
+  (patch 1)
+- Link to v8: https://lore.kernel.org/linux-scsi/20260909-ibmvfc-fpin-support-v8-0-b27183b055af@linux.ibm.com
 
-diff --git a/drivers/net/wan/hdlc.c b/drivers/net/wan/hdlc.c
-index cbed10b1d862e..a38f90d3006ed 100644
---- a/drivers/net/wan/hdlc.c
-+++ b/drivers/net/wan/hdlc.c
-@@ -263,6 +263,7 @@ EXPORT_SYMBOL(alloc_hdlcdev);
- void unregister_hdlc_device(struct net_device *dev)
- {
- 	rtnl_lock();
-+	dev_close(dev);
- 	detach_hdlc_protocol(dev);
- 	unregister_netdevice(dev);
- 	rtnl_unlock();
--- 
-2.47.1
+Changes in v8:
+- Split patch 6 into two patches: extend channel registration/deregistration
+  for async subq (patch 6), and clear sub-CRQ IRQ on registration failure
+  and guard teardown (patch 7)
+- Fixed NULL dereference in ibmvfc_deregister_channel() when called on
+  an unallocated queue: guard memset() behind scrq->msgs.handle check
+- Fixed variable-shadowing bug in ibmvfc_register_channel() error path
+  where H_FREE_SUB_CRQ hcall result clobbered the return code
+- Deregister and re-register async sub-CRQ in ibmvfc_reenable_crq_queue()
+  and ibmvfc_reset_crq() alongside SCSI channel queues
+- Link to v7: https://patch.msgid.link/20260831-ibmvfc-fpin-support-v7-0-77d0b9809080@linux.ibm.com
+
+Changes in v7:
+- Removed CRQ valid bit clearing to callers of ibmvfc_handle_async in
+  all cases
+- Added validity checks that IBMVFC_ASYNC_ID_IS_ASSOC_ID is clear
+  before using node_name
+- Fixed error path cleanup in ibmvfc_init_sub_crqs
+- Deregister and reregister async sub-CRQ in CRQ reset and reenable
+  code.
+- Moved work queue destruction after sub CRQs teardown in ibmvfc_remove
+- Modified async event handling code to use a tagged union rather than
+  void *.
+- Use WQ_UNBOUND rather than WQ_PERCPU for fpin workqueue, as FPIN
+  events should be rare. Hold q_lock only in
+  ibmvfc_drain_async_subq(), like ibmvfc_drain_sub_crq().
+- Hardened KUnit tests to use host_lock and kref.
+- Link to v6: https://patch.msgid.link/20260817-ibmvfc-fpin-support-v6-0-62a2d525e70d@linux.ibm.com
+
+Changes in v6:
+- Use alloc_workqueue rather than devm_alloc_workqueue, and add
+  explicit destroy_workqueue calls
+- Moved ibmvfc_find_target into patch 1
+- Link to v5: https://patch.msgid.link/20260806-ibmvfc-fpin-support-v5-0-13fd6f8a8f8b@linux.ibm.com
+
+Changes in v5:
+- Incorporate changes for NVME-over-FC.
+- Removed now redundant fabric login patch.
+- Link to v4: https://patch.msgid.link/20260710-ibmvfc-fpin-support-v4-0-ef031ac19520@linux.ibm.com
+
+Changes in v4:
+- Refactored channel registration
+- Check whether async work queue is allocated before using or freeing
+- Fixed work queue allocation/destruction
+- Skip basic KUnit test when there are no ibmvfc devices available
+- Fix target not found condition in ibmvfc_process_async_work
+- Link to v3: https://patch.msgid.link/20260702-ibmvfc-fpin-support-v3-0-d95b9747cf88@linux.ibm.com
+
+Changes in v3:
+- Fixed latent bug, exposed by VFC_NOOP, related to dataless CRQs and events
+- Fixed FPIN TLV descriptor length calculations
+- Use safe list walker to walk targets in ibmvfc_process_async_work
+- Added write memory barriers after clearing CRQ valid field
+- Use per-vhost work queue for FPIN work
+- Link to v2: https://patch.msgid.link/20260608-ibmvfc-fpin-support-v2-0-d41f540fba5c@linux.ibm.com
+
+Highlights of changes in v2:
+- Refactored mostly common FPIN conversion routines and async event
+  processing into single routines with wrappers for differences.
+- Moved FPIN processing to a work queue to avoid conflicts with
+  fc_host_fpin_rcv and memory allocation
+- Set descriptor sizes correctly
+- Use target WWPN for basic FPIN descriptor
+- Split patch 4 into 3 patches, for definition, allocation, and use of
+  the asynchronous sub-queue for events
+- Link to v1: https://patch.msgid.link/20260408-ibmvfc-fpin-support-v1-0-52b06c464e03@linux.ibm.com
+
+To: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
+To: "Martin K. Petersen" <mkp@kernel.org>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>
+To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+To: Tyrel Datwyler <tyreld@linux.ibm.com>
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-scsi@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+
+---
+Dave Marquardt (9):
+      scsi: ibmvfc: add basic FPIN support
+      scsi: ibmvfc: add NOOP command support
+      scsi: ibmvfc: add FPIN extended flag and async sub-CRQ queue handle
+      scsi: ibmvfc: extend async event handlers for async sub-CRQ events
+      scsi: ibmvfc: add interrupt routine for asynchronous sub CRQ
+      scsi: ibmvfc: extend channel reg/dereg helpers for async sub-CRQ
+      scsi: ibmvfc: fix IRQ leak and guard deregister on channel reg failure
+      scsi: ibmvfc: register and use asynchronous sub CRQ for events
+      scsi: ibmvfc: handle extended FPIN events
+
+ drivers/scsi/Kconfig                 |  10 +
+ drivers/scsi/ibmvscsi/Makefile       |   1 +
+ drivers/scsi/ibmvscsi/ibmvfc-core.c  | 726 ++++++++++++++++++++++++++++++++---
+ drivers/scsi/ibmvscsi/ibmvfc.h       |  63 +++
+ drivers/scsi/ibmvscsi/ibmvfc_kunit.c | 408 ++++++++++++++++++++
+ 5 files changed, 1144 insertions(+), 64 deletions(-)
+---
+base-commit: 12e67eb89eb2b9516685c744d3f7de0a2d1bd701
+change-id: 20260407-ibmvfc-fpin-support-b9b575cd2da1
+
+Best regards,
+--  
+Dave Marquardt <davemarq@linux.ibm.com>
+
+
+
 
