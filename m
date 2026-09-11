@@ -1,89 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-27122-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27123-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 87FDCC88E50
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Sep 2026 12:25:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 128EFC88E4D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Sep 2026 12:36:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hhDJf1mMKz2yfD;
-	Fri, 11 Sep 2026 22:25:06 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789129506;
-	cv=none; b=BntN7u/LdeplYh9zABaAamDnU7OhCd87iY0a87Fd4UbCW6MJqd71kP80hjSUlD3pnAX2Vbnigd9iCLpgZFKQgfP/Jr/HsC1+lIdqFK2GWd8O+JmwThKYwkHasD9q1MnCgYcLZNUD8lNFhd1J9beOZm5wRXa2dt6sOJ2tDYBSsBKR+r146l7RHDocI3RdhggfvizKyoZMg44P9A5CdkEo0ot1H9BMbham1cQBiJdfyeboi98XkLJgco6OCmrgGBsdPlGvnqPMUCyH85THwjjeAekBfFZGEvAqoktWuHYr4AwYf4WjezdWloFqLApCK5Vb7jAXSdAeXkNNZb1pJARE2g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hhDYs387Lz2ygK;
+	Fri, 11 Sep 2026 22:36:33 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789130193;
+	cv=none; b=E7onA+oAAoyWNxwhMyaCJqA2kKBfTgzJf25eXOZiy1PoUmRlTXI7AlR48ZLmV9mcvlUF4MELVqOVMshQkLlcl9UubaBydMCrKhYdmFc1nUytMbuQN9d3H0aXP29+Htzz8jsb3a+58Kzw7FKE43VrvUGUoE3aY3zODC/ikv5pxh6/hrI+2GZZ63E5Phyh0ou7tJRB8+40Tz2thXNFYT897w/EBqhdwNAwZSbx+F+f0iU77qVBv1gihcLrHMCnBaeaqKmyLIRpUoBUpQ8/8f8UxDi8g/hKt8wow7BgX9Mh5tgEe4gWNmfbzk6pQhVUnwAikYoarwwnQfDC9VsVSbnphA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789129506; c=relaxed/relaxed;
-	bh=Gdz/j6t6cf9YGXTeqcb04DA8yT9v4sG/YjJhKbnHLLg=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=iC14xXzrq/PqLGVh9ReBjP90pqTmzG7hTLom6vErTZ8/rTjlLuWT88cz8YVC2P+mI6lfpFAcDAKRllrFbC5ZBZ9YeD7Cz05WXPRHPGXZ0RaQzPCBpmvbIpD06CCkstIUanp0HOacngczkLSiMk3Q4cUfeIQ8NpzvNyw2jPvPrzZMivPqJFiV1tqHIviaWQYagYLLOqfPb8Xj7CJshkm/WLt7/eeKVsTaimKHuqlyoOXGlUag1+KDS63gX7DwkGz0YILY41YnxgcWV7ZSwELlkb9GkU+pxAtPL4V/EQ5pO89pHZ8KI7qGwL3MkTog2UzZFqPP8jxNynkgYyTNl5i8Dw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=FionlYLa; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=FionlYLa; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=jhladky@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+	t=1789130193; c=relaxed/relaxed;
+	bh=kYtmQzWImh1FZ8UPN3pnnVay1G/L6DByR/Zk2VvQLck=;
+	h=Subject:To:Cc:From:Date:In-Reply-To:Message-ID:MIME-Version:
+	 Content-Type; b=PZCJ1V2fDu2nCh1qBY/bIbwPMdQaMuf4YeTIpGgMG2QyPdRiY4xiyWO1fV96FPYfuHkk9HenNGrFi6w3FZBsNBRRwMA4tMKwnWPmDPyDk1ojDhZhWPpY3fsDHR57fc59dBvePHLn4R4A9a4gmqxx0dFj/WB26SPlmUwLhKH0ewqlVTmstcNK7BRXew3V4DaP1d3+GKfGfqzblprVmBLuLgcCjFGUIW8jdEmwdqTtBchU3BP2pIzly8vdMmns0MO9fFKZhtxDnn29k3gpGm6B1kaVFOeqL33P+u2Gh2DEZAmEFFYY39T+BYv89nuO5OEbKleFkhPXxenhYI+t7KfcdQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=iloosSm7; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linuxfoundation.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=FionlYLa;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=FionlYLa;
+	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=iloosSm7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=jhladky@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hhDJd0CkBz2xpv
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2026 22:25:03 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1789129499;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Gdz/j6t6cf9YGXTeqcb04DA8yT9v4sG/YjJhKbnHLLg=;
-	b=FionlYLairhOuEOkMtE78FtbXlQVrwWHRl1si4qsUTz5QLbzpz+9M3kzApqNtazAvMRi+G
-	+Ln4SOQKFV1+9drAlZr9KiMalU+bg6z4loL3pmbHI19OLlJhoFp6pIR6t1eSBqoXtZdYM5
-	Rfx2H8ec0VOrej3qwEuB7GcUG2GbJJs=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1789129499;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Gdz/j6t6cf9YGXTeqcb04DA8yT9v4sG/YjJhKbnHLLg=;
-	b=FionlYLairhOuEOkMtE78FtbXlQVrwWHRl1si4qsUTz5QLbzpz+9M3kzApqNtazAvMRi+G
-	+Ln4SOQKFV1+9drAlZr9KiMalU+bg6z4loL3pmbHI19OLlJhoFp6pIR6t1eSBqoXtZdYM5
-	Rfx2H8ec0VOrej3qwEuB7GcUG2GbJJs=
-Received: from mail-vk1-f197.google.com (mail-vk1-f197.google.com
- [209.85.221.197]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-330-IX5nMGywMZG3RHAQ8b4rmw-1; Fri, 11 Sep 2026 08:24:57 -0400
-X-MC-Unique: IX5nMGywMZG3RHAQ8b4rmw-1
-X-Mimecast-MFC-AGG-ID: IX5nMGywMZG3RHAQ8b4rmw_1789129497
-Received: by mail-vk1-f197.google.com with SMTP id 71dfb90a1353d-5c7d5444845so1004996e0c.2
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2026 05:24:57 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1789129497; x=1789734297;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=Gdz/j6t6cf9YGXTeqcb04DA8yT9v4sG/YjJhKbnHLLg=;
-        b=T+ryrvmnWz0IEjGKAvabCNuLfu+ZmcX9H47h7B0LwQ32IkAmx2O5rbknnnnHdmP0KL
-         85p3f0gNS45dvdGYEcGZV5Hx6Y6oLV+IgdhcXctaD3hqjFrhuclzv1XhXy0J6AsIEEAL
-         ABiXzDYWutECbbDk+odA0WaiXeO6jS6GLHk9ASs006Edaq9zPFj1rBCXe+4bMu8sM15Z
-         wPoZcNCU0dA3r3Gosa5xrcUg97KxB78DMV5wBrAasKBYn9bVBgQS2LcYnpebyXFh6oUO
-         t7gdDx/1+PPPneh35nvEM75CCODECQ3cXW82w1OLo8YjpqWKBM1wkkrSXSiTKeOj50sj
-         rXyg==
-X-Forwarded-Encrypted: i=1; AKwUvBwHnTfwnn+LZZVKdMLSzuw1Ilz+i2zuEjIFH3wqFGaH81JRzjN8O1lz/3lsNLQizAXlzPCy6tvIIXPExG4=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++miXJHiTsL29A3/sbnj86uE/MYHq00QnOypEuSN9PN/pYYzXYI+
-	QFOB+AHC863hkwT/8vaqeRSyKyTBm0tyDsWjACxqfN4aJsrJV7rhoPUhPtFZnnrBKrS4aVB9FRe
-	dM64XHVtD8x9V4zSfjk2vni/FJsoFBFrIBGlLo03XKcn0Y4m9PcXLGqJob21m2G6sXsnxPFgYar
-	9w5sdECpehBdKpV2k0kmEPryVaTwYnIGJ8pKC9pQxEbw==
-X-Gm-Gg: AYBFou2+IKIF6A7A9BEV1g7FZesaML/1uIgK2+w/YnwzHEZn+H/WNL6MDn1sMrBFEk/
-	IWX6Hcqs5brV4Jr/ihCs3GijUz220fYWZWsbK0QBsutZwuwdmLNZWb4hJhWWxvzndp6B9cF3qGZ
-	mu/l5UYRRn7ODzVfhtr2+OAiAqWHuS3witpWpqatxWmcQRlanrxCd1FSAn
-X-Received: by 2002:a05:6122:c8f:b0:5c8:2852:36cc with SMTP id 71dfb90a1353d-5c846277c7dmr4489668e0c.4.1789129496798;
-        Fri, 11 Sep 2026 05:24:56 -0700 (PDT)
-X-Received: by 2002:a05:6122:c8f:b0:5c8:2852:36cc with SMTP id
- 71dfb90a1353d-5c846277c7dmr4489546e0c.4.1789129496213; Fri, 11 Sep 2026
- 05:24:56 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hhDYr0Dgmz2xpv
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2026 22:36:31 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 3BF1A60A57;
+	Fri, 11 Sep 2026 12:36:28 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 298A51F000FF;
+	Fri, 11 Sep 2026 12:36:26 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linuxfoundation.org;
+	s=korg; t=1789130187;
+	bh=kYtmQzWImh1FZ8UPN3pnnVay1G/L6DByR/Zk2VvQLck=;
+	h=Subject:To:Cc:From:Date:In-Reply-To;
+	b=iloosSm75n+QS7sZBsoBU9YTx2hIzAAFm0VAj3gwvXe4ZbJzJJOq0uogX6K4RYAuq
+	 ePUqZO7tON04UQa4mHcpxyMLu70TdnnlPYWND9pWr2QPAs1df9EaEn0jmnKTRPqkFU
+	 MsakJrHep+Op20yJfyQGqmNsgNdwdEpj1dUQRpFc=
+Subject: Patch "PCI: Introduce PCI_SLOT_PLACEHOLDER constant for slot_nr placeholder value" has been added to the 6.18-stable tree
+To: alifm@linux.ibm.com,bhelgaas@google.com,gregkh@linuxfoundation.org,linuxppc-dev@lists.ozlabs.org,maddy@linux.ibm.com,sashal@kernel.org,tyreld@linux.ibm.com
+Cc: <stable-commits@vger.kernel.org>
+From: <gregkh@linuxfoundation.org>
+Date: Fri, 11 Sep 2026 14:32:51 +0200
+In-Reply-To: <20260909141434.2391408-1-sashal@kernel.org>
+Message-ID: <2026091151-lustfully-haphazard-d38a@gregkh>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -97,140 +61,310 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260427122742.210074-1-mkchauras@gmail.com> <CAE4VaGACd2es4NPQyhbR9pMEoGiTVBSE7Lw7x9VOb1Qbpvc6nw@mail.gmail.com>
- <amsapeQ2Kp6rwPpF@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
- <CAE4VaGB_EhbWq8_X6FLtOx2MqoP7JEkOKkKSjKB7N--tt-sCeA@mail.gmail.com>
- <aqAMpawvpB7g1XdK@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
- <CAE4VaGBCmA0+28G=V_Qs37cR2GKYDUTGQWW_uRe0qvEp5io3qQ@mail.gmail.com>
- <CAE4VaGCp7A7NuBC9Hwgzs5xg3bGBuRiDC8PRCu+yXnUZEXmt-g@mail.gmail.com>
- <CAE4VaGATCET9F4XXS2oj47aNEZx3HN__Zp1CH4+ASec6BjhjGA@mail.gmail.com>
- <aqONPHH8B_z_GpT2@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com> <CAE4VaGDJy-EzD_iHeb+AQOYi9LZN1dB9OXjf7FtVWM=LWrWVTg@mail.gmail.com>
-In-Reply-To: <CAE4VaGDJy-EzD_iHeb+AQOYi9LZN1dB9OXjf7FtVWM=LWrWVTg@mail.gmail.com>
-From: Jirka Hladky <jhladky@redhat.com>
-Date: Fri, 11 Sep 2026 14:24:44 +0200
-X-Gm-Features: AcwNN1UBPJUphjsK3F5m5iBYyNxwhuRRcIIn2aRlO6YBN2SUHiGkks7JLbwpMK8
-Message-ID: <CAE4VaGAq1PugOAomUnJ4vEtmHzKPt5m6VJ21wErdOf19G8UPWw@mail.gmail.com>
-Subject: Re: [PATCH v5 0/8] Generic IRQ entry/exit support for powerpc
-To: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
-Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
-	chleroy@kernel.org, ryabinin.a.a@gmail.com, glider@google.com, 
-	andreyknvl@gmail.com, dvyukov@google.com, vincenzo.frascino@arm.com, 
-	oleg@redhat.com, kees@kernel.org, luto@amacapital.net, wad@chromium.org, 
-	mchauras@linux.ibm.com, sshegde@linux.ibm.com, thuth@redhat.com, 
-	ruanjinjie@huawei.com, akpm@linux-foundation.org, macro@orcam.me.uk, 
-	ldv@strace.io, charlie@rivosinc.com, deller@gmx.de, kevin.brodsky@arm.com, 
-	ritesh.list@gmail.com, yeoreum.yun@arm.com, agordeev@linux.ibm.com, 
-	segher@kernel.crashing.org, mark.rutland@arm.com, ryan.roberts@arm.com, 
-	pmladek@suse.com, feng.tang@linux.alibaba.com, peterz@infradead.org, 
-	kan.liang@linux.intel.com, linuxppc-dev@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org, kasan-dev@googlegroups.com
-X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: SGFL2-Uv0JiLdBWntM2w5YDgCDy6i-_6ypF2p130FhU_1789129497
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-Hi Mukesh,
-
-I built 7.2-rc4 from source with your proposed rcu_ct_kernel_exit_qs()
-patch and re-ran the same sweep - it shows minor improvements vs. stock
-7.2-rc4
-
-Full results, median bogo-ops/sec over 15 runs each:
-
-  Mode          7.1        7.2-rc4     7.2-rc4+patch
-  Enforcing     68,275     70,154      71,585
-  Permissive    68,082     67,166      68,705
-  Disabled      99,654     100,510     101,016
-
-The patch vs. stock 7.2-rc4 differences (+4.8%/+0.9%/+1.3%) are hard
-to distinquish
-from run-to-run noise we've been seeing on this hardware, but they are
-consistent.
-
-I think it's a useful efficiency improvement on its own merits, as it
-does avoid the unconditional rcu_preempt_deferred_qs() call on the common
-fast path. Even with only small performance gains, the change looks correct
-and low-risk to me, and I'd like to see it land in mainline. Let me
-know if there's
-anything else you'd like me to test before you post it, or if it's
-already queued up
-separately from this thread.
-
-Thank you!
-Jirka
+Content-Type: text/plain; charset=ANSI_X3.4-1968
+Content-Transfer-Encoding: 8bit
+X-stable: commit
+X-Patchwork-Hint: ignore 
 
 
-On Fri, Sep 11, 2026 at 12:54=E2=80=AFPM Jirka Hladky <jhladky@redhat.com> =
-wrote:
->
-> Hi Mukesh,
->
-> I built 7.2-rc4 from source with your proposed rcu_ct_kernel_exit_qs()
-> patch and re-ran the same sweep - it shows minor improvements vs. stock
-> 7.2-rc4
->
-> Full results, median bogo-ops/sec over 15 runs each:
->
->   Mode          7.1        7.2-rc4     7.2-rc4+patch
->   Enforcing     68,275     70,154      71,585
->   Permissive    68,082     67,166      68,705
->   Disabled      99,654     100,510     101,016
->
-> The patch vs. stock 7.2-rc4 differences (+4.8%/+0.9%/+1.3%) are hard to d=
-istinquish
-> from run-to-run noise we've been seeing on this hardware, but they are co=
-nsistent.
->
-> I think it's a useful efficiency improvement on its own merits, as it
-> does avoid the unconditional rcu_preempt_deferred_qs() call on the common
-> fast path. Even with only small performance gains, the change looks corre=
-ct
-> and low-risk to me, and I'd like to see it land in mainline. Let me know =
-if there's
-> anything else you'd like me to test before you post it, or if it's alread=
-y queued up
-> separately from this thread.
->
-> Thank you!
-> Jirka
->
-> On Fri, Sep 11, 2026 at 7:12=E2=80=AFAM Mukesh Kumar Chaurasiya <mkchaura=
-s@gmail.com> wrote:
->>
->> On Thu, Sep 10, 2026 at 09:58:59PM +0200, Jirka Hladky wrote:
->> > Oh, I forgot to add the actual results from the LPAR:
->> >
->> > Model name:                  POWER10 (architected), altivec supported
->> > Model:                     2.0 (pvr 0080 0200)
->> > Type                                         : Dedicated
->> > Mode                                         : Capped
->> > Entitled Capacity                            : 1.00
->> > Memory Mode                                  : Dedicated
->> >
->> > Results (median bogo-ops/sec, N=3D15 per cell):
->> >   Mode          7.1        7.2-rc4      Delta
->> >   Enforcing     68,275     70,154       +2.7%
->> >   Permissive    68,082     67,166       -1.3%
->> >   Disabled      99,654     100,510      +0.9%
->> >
->> [...]
->> Hey Jirka,
->>
->> Thanks for confirming. Also with the diff I shared, did you see any
->> difference in the performance.
->>
->> Regards,
->> Mukesh
->>
->
->
-> --
-> -Jirka
+This is a note to let you know that I've just added the patch titled
+
+    PCI: Introduce PCI_SLOT_PLACEHOLDER constant for slot_nr placeholder value
+
+to the 6.18-stable tree which can be found at:
+    http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
+
+The filename of the patch is:
+     pci-introduce-pci_slot_placeholder-constant-for-slot_nr-placeholder-value.patch
+and it can be found in the queue-6.18 subdirectory.
+
+If you, or anyone else, feels it should not be added to the stable tree,
+please let <stable@vger.kernel.org> know about it.
 
 
+From stable+bounces-319952-greg=kroah.com@vger.kernel.org Wed Sep  9 17:30:11 2026
+From: Sasha Levin <sashal@kernel.org>
+Date: Wed,  9 Sep 2026 10:14:33 -0400
+Subject: PCI: Introduce PCI_SLOT_PLACEHOLDER constant for slot_nr placeholder value
+To: stable@vger.kernel.org
+Cc: Farhan Ali <alifm@linux.ibm.com>, Bjorn Helgaas <bhelgaas@google.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, Tyrel Datwyler <tyreld@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, Sasha Levin <sashal@kernel.org>
+Message-ID: <20260909141434.2391408-1-sashal@kernel.org>
 
---=20
--Jirka
+From: Farhan Ali <alifm@linux.ibm.com>
 
+[ Upstream commit c243e6c470c4695965cc8287767925bc1d9a7867 ]
+
+Introduce a constant for placeholder value and update the kerneldoc for
+pci_create_slot() to reference PCI_SLOT_PLACEHOLDER instead of -1
+throughout. No functional change.
+
+Suggested-by: Bjorn Helgaas <bhelgaas@google.com>
+Signed-off-by: Farhan Ali <alifm@linux.ibm.com>
+Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Tyrel Datwyler <tyreld@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Link: https://patch.msgid.link/20260805165518.794-2-alifm@linux.ibm.com
+
+Stable backport: this tree predates 102c8b26b54e ("PCI: Allow all bus
+devices to use the same slot"). Include its PCI_SLOT_ALL_DEVICES definition,
+slot-number documentation, and core matching/address handling so that
+subsequent commit dcc5bec09e23 ("PCI: Allow per function PCI slots to fix
+slot reset on s390") applies without conflicts. Keep the PCIe hotplug
+callers unchanged; enabling bus-wide slots there is outside this dependency.
+
+Retain the stable tree's kzalloc() and ATTRIBUTE_GROUPS() implementations.
+The placeholder conversion covers both PowerPC hotplug callers and the
+PCI core. All code changes stay within existing functions.
+
+Stable-dep-of: dcc5bec09e23 ("PCI: Allow per function PCI slots to fix slot reset on s390")
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
+ drivers/pci/hotplug/pnv_php.c     |    2 -
+ drivers/pci/hotplug/rpaphp_slot.c |    2 -
+ drivers/pci/slot.c                |   50 ++++++++++++++++++++++++++++----------
+ include/linux/pci.h               |   13 +++++++++
+ 4 files changed, 51 insertions(+), 16 deletions(-)
+
+--- a/drivers/pci/hotplug/pnv_php.c
++++ b/drivers/pci/hotplug/pnv_php.c
+@@ -813,7 +813,7 @@ static struct pnv_php_slot *pnv_php_allo
+ 	if (dn->child && PCI_DN(dn->child))
+ 		php_slot->slot_no = PCI_SLOT(PCI_DN(dn->child)->devfn);
+ 	else
+-		php_slot->slot_no = -1;   /* Placeholder slot */
++		php_slot->slot_no = PCI_SLOT_PLACEHOLDER;   /* Placeholder slot */
+ 
+ 	kref_init(&php_slot->kref);
+ 	php_slot->state	                = PNV_PHP_STATE_INITIALIZED;
+--- a/drivers/pci/hotplug/rpaphp_slot.c
++++ b/drivers/pci/hotplug/rpaphp_slot.c
+@@ -85,7 +85,7 @@ int rpaphp_register_slot(struct slot *sl
+ 	struct device_node *child;
+ 	u32 my_index;
+ 	int retval;
+-	int slotno = -1;
++	int slotno = PCI_SLOT_PLACEHOLDER;
+ 
+ 	dbg("%s registering slot:path[%pOF] index[%x], name[%s] pdomain[%x] type[%d]\n",
+ 		__func__, slot->dn, slot->index, slot->name,
+--- a/drivers/pci/slot.c
++++ b/drivers/pci/slot.c
+@@ -37,11 +37,20 @@ static const struct sysfs_ops pci_slot_s
+ 
+ static ssize_t address_read_file(struct pci_slot *slot, char *buf)
+ {
+-	if (slot->number == 0xff)
++	if (slot->number == PCI_SLOT_PLACEHOLDER)
+ 		return sysfs_emit(buf, "%04x:%02x\n",
+ 				  pci_domain_nr(slot->bus),
+ 				  slot->bus->number);
+ 
++	/*
++	 * Preserve legacy ABI expectations that hotplug drivers that manage
++	 * multiple devices per slot emit 0 for the device number.
++	 */
++	if (slot->number == PCI_SLOT_ALL_DEVICES)
++		return sysfs_emit(buf, "%04x:%02x:00\n",
++				  pci_domain_nr(slot->bus),
++				  slot->bus->number);
++
+ 	return sysfs_emit(buf, "%04x:%02x:%02x\n",
+ 			  pci_domain_nr(slot->bus),
+ 			  slot->bus->number,
+@@ -73,7 +82,8 @@ static void pci_slot_release(struct kobj
+ 
+ 	down_read(&pci_bus_sem);
+ 	list_for_each_entry(dev, &slot->bus->devices, bus_list)
+-		if (PCI_SLOT(dev->devfn) == slot->number)
++		if (slot->number == PCI_SLOT_ALL_DEVICES ||
++		    PCI_SLOT(dev->devfn) == slot->number)
+ 			dev->slot = NULL;
+ 	up_read(&pci_bus_sem);
+ 
+@@ -166,7 +176,8 @@ void pci_dev_assign_slot(struct pci_dev
+ 
+ 	mutex_lock(&pci_slot_mutex);
+ 	list_for_each_entry(slot, &dev->bus->slots, list)
+-		if (PCI_SLOT(dev->devfn) == slot->number)
++		if (slot->number == PCI_SLOT_ALL_DEVICES ||
++		    PCI_SLOT(dev->devfn) == slot->number)
+ 			dev->slot = slot;
+ 	mutex_unlock(&pci_slot_mutex);
+ }
+@@ -188,7 +199,8 @@ static struct pci_slot *get_slot(struct
+ /**
+  * pci_create_slot - create or increment refcount for physical PCI slot
+  * @parent: struct pci_bus of parent bridge
+- * @slot_nr: PCI_SLOT(pci_dev->devfn) or -1 for placeholder
++ * @slot_nr: PCI_SLOT(pci_dev->devfn), PCI_SLOT_PLACEHOLDER for placeholder, or
++ *	PCI_SLOT_ALL_DEVICES
+  * @name: user visible string presented in /sys/bus/pci/slots/<name>
+  * @hotplug: set if caller is hotplug driver, NULL otherwise
+  *
+@@ -213,15 +225,26 @@ static struct pci_slot *get_slot(struct
+  * In most cases, @pci_bus, @slot_nr will be sufficient to uniquely identify
+  * a slot. There is one notable exception - pSeries (rpaphp), where the
+  * @slot_nr cannot be determined until a device is actually inserted into
+- * the slot. In this scenario, the caller may pass -1 for @slot_nr.
++ * the slot. In this scenario, the caller may pass PCI_SLOT_PLACEHOLDER for @slot_nr.
+  *
+  * The following semantics are imposed when the caller passes @slot_nr ==
+- * -1. First, we no longer check for an existing %struct pci_slot, as there
+- * may be many slots with @slot_nr of -1.  The other change in semantics is
+- * user-visible, which is the 'address' parameter presented in sysfs will
+- * consist solely of a dddd:bb tuple, where dddd is the PCI domain of the
+- * %struct pci_bus and bb is the bus number. In other words, the devfn of
+- * the 'placeholder' slot will not be displayed.
++ * PCI_SLOT_PLACEHOLDER. First, we no longer check for an existing %struct
++ * pci_slot, as there may be many slots with @slot_nr of
++ * PCI_SLOT_PLACEHOLDER. The other change in semantics is user-visible,
++ * which is the 'address' parameter presented in sysfs will consist solely
++ * of a dddd:bb tuple, where dddd is the PCI domain of the %struct pci_bus
++ * and bb is the bus number. In other words, the devfn of the 'placeholder'
++ * slot will not be displayed.
++ *
++ * Bus-wide slots:
++ * For PCIe hotplug, the physical slot encompasses the entire secondary
++ * bus, not just a single device number. If the device supports ARI and ARI
++ * Forwarding is enabled in the upstream bridge, a multi-function device
++ * may include functions that appear to have several different device
++ * numbers, i.e., PCI_SLOT() values.  Pass @slot_nr == PCI_SLOT_ALL_DEVICES
++ * to create a slot that matches all devices on the bus. Unlike placeholder
++ * slots, bus-wide slots go through normal slot lookup and reuse existing
++ * slots if present.
+  */
+ struct pci_slot *pci_create_slot(struct pci_bus *parent, int slot_nr,
+ 				 const char *name,
+@@ -234,7 +257,7 @@ struct pci_slot *pci_create_slot(struct
+ 
+ 	mutex_lock(&pci_slot_mutex);
+ 
+-	if (slot_nr == -1)
++	if (slot_nr == PCI_SLOT_PLACEHOLDER)
+ 		goto placeholder;
+ 
+ 	/*
+@@ -285,7 +308,8 @@ placeholder:
+ 
+ 	down_read(&pci_bus_sem);
+ 	list_for_each_entry(dev, &parent->devices, bus_list)
+-		if (PCI_SLOT(dev->devfn) == slot_nr)
++		if (slot_nr == PCI_SLOT_ALL_DEVICES ||
++		    PCI_SLOT(dev->devfn) == slot_nr)
+ 			dev->slot = slot;
+ 	up_read(&pci_bus_sem);
+ 
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -72,12 +72,23 @@
+ /* return bus from PCI devid = ((u16)bus_number) << 8) | devfn */
+ #define PCI_BUS_NUM(x) (((x) >> 8) & 0xff)
+ 
++/*
++ * PCI_SLOT_ALL_DEVICES indicates a slot that covers all devices on the bus.
++ * Used for PCIe hotplug where the physical slot is the entire secondary bus,
++ * and, if ARI Forwarding is enabled, functions may appear to be on multiple
++ * devices.
++ */
++#define PCI_SLOT_ALL_DEVICES	0xfe
++
++/* Used to identify a slot as a placeholder */
++#define PCI_SLOT_PLACEHOLDER	0xff
++
+ /* pci_slot represents a physical slot */
+ struct pci_slot {
+ 	struct pci_bus		*bus;		/* Bus this slot is on */
+ 	struct list_head	list;		/* Node in list of slots */
+ 	struct hotplug_slot	*hotplug;	/* Hotplug info (move here) */
+-	unsigned char		number;		/* PCI_SLOT(pci_dev->devfn) */
++	unsigned char		number;		/* Device nr, or PCI_SLOT_ALL_DEVICES */
+ 	struct kobject		kobj;
+ };
+ 
+
+
+Patches currently in stable-queue which might be from sashal@kernel.org are
+
+queue-6.18/i2c-qcom-cci-fix-autosuspend-cleanup.patch
+queue-6.18/ring-buffer-show-persistent-buffer-dropped-events-in-trace_pipe-file.patch
+queue-6.18/nvdimm-virtio_pmem-refcount-requests-for-token-lifetime.patch
+queue-6.18/i3c-master-fix-recursive-locking-during-device-registration.patch
+queue-6.18/mm-damon-sysfs-read-ops_id-only-once-in-damon_sysfs_.patch
+queue-6.18/dma-buf-dma-heap-don-t-publish-fd-before-copy_to_user-succeeds.patch
+queue-6.18/tracing-probes-fix-anon_stack-check-for-unnamed-bitfields-in-btf_find_struct_member.patch
+queue-6.18/futex-optimize-futex-hash-bucket-access-patterns.patch
+queue-6.18/tracing-take-trace_array-reference-when-opening-options-file.patch
+queue-6.18/mm-secretmem-properly-account-locked-pages.patch
+queue-6.18/compiler_types-move-lock-checking-attributes-to-compiler-context-analysis.h.patch
+queue-6.18/io_uring-add-wrapper-type-for-io_req_tw_func_t-arg.patch
+queue-6.18/platform-x86-int1092-fix-potential-memory-leak-in-sar_probe.patch
+queue-6.18/platform-x86-hp-wmi-add-support-for-omen-max-16-ak0xxx-8dd6.patch
+queue-6.18/fs-ntfs3-fix-slab-out-of-bounds-write-in-ni_create_attr_list.patch
+queue-6.18/alsa-fcp-do-not-copy-out-an-uninitialised-init-response.patch
+queue-6.18/accel-amdxdna-return-early-from-a-zero-length-flush.patch
+queue-6.18/nvdimm-preserve-flush-callback-enomem.patch
+queue-6.18/tracing-make-printk_trace-global-for-tracing-system.patch
+queue-6.18/udf-move-udf_map_block-up.patch
+queue-6.18/pci-allow-per-function-pci-slots-to-fix-slot-reset-on-s390.patch
+queue-6.18/i3c-master-fix-device_register-error-path.patch
+queue-6.18/mtd-rawnand-pl353-add-message-about-ecc-mode.patch
+queue-6.18/nvme-fold-nvme_config_discard-into-nvme_update_disk_info.patch
+queue-6.18/nvdimm-virtio_pmem-use-read_once-write_once-for-wait-flags.patch
+queue-6.18/io_uring-waitid-avoid-siginfo-copy-during-ring-teardown.patch
+queue-6.18/wifi-rtw89-pci-add-.shutdown-callback-to-stop-rfkill-polling-on-reboot.patch
+queue-6.18/net-mlx5e-shampo-always-calculate-page-size.patch
+queue-6.18/perf-core-fix-deadlock-in-perf_mmap-failure-path.patch
+queue-6.18/usb-cdnsp-fix-wakeup-from-s3-after-controller-context-loss.patch
+queue-6.18/staging-sm750fb-fix-mono-image-source-stride-mismatch-in-lynxfb_ops_imageblit.patch
+queue-6.18/nvdimm-virtio_pmem-always-wake-enospc-waiters.patch
+queue-6.18/mm-huge_memory-transfer-the-pmd-dirty-bit-to-the-folio-on-zap.patch
+queue-6.18/batman-adv-fix-tx-priority-extraction-for-batadv_for.patch
+queue-6.18/platform-x86-intel_sar-check-acpi_handle-against-null.patch
+queue-6.18/tracing-probes-fix-btf-kflag-check-for-anonymous-struct-member-access.patch
+queue-6.18/mtd-rawnand-pl353-make-sure-we-use-the-monolithic-helpers-for-raw-accesses.patch
+queue-6.18/i3c-master-do-not-treat-master-device-as-a-duplicate-target.patch
+queue-6.18/platform-x86-isst-validate-max-level-for-set-feature.patch
+queue-6.18/asoc-tegra-fix-the-mixer-enable-default-value.patch
+queue-6.18/ring-buffer-allow-splice-reads-on-static-buffers.patch
+queue-6.18/i2c-qcom-cci-remove-overcautious-disable_irq-calls.patch
+queue-6.18/drm-amd-display-scale-custom-brightness-curve-from-f.patch
+queue-6.18/fs-ntfs3-fix-kmsan-uninit-value-in-ni_create_attr_list.patch
+queue-6.18/io_uring-waitid-have-io_waitid_complete-remove-wait-queue-entry.patch
+queue-6.18/nvme-skip-the-zoned-limits-update-if-the-zone-info-query-failed.patch
+queue-6.18/futex-provide-rt_mutex_.-_schedule-equivalents-for-futex-scheduling.patch
+queue-6.18/net-mlx5e-xsk-fix-unlocked-writing-to-icosq.patch
+queue-6.18/asoc-tegra210_mixer-sort-the-register-default-table.patch
+queue-6.18/tracing-clean-up-use-of-trace_create_maxlat_file.patch
+queue-6.18/pci-introduce-pci_slot_placeholder-constant-for-slot_nr-placeholder-value.patch
+queue-6.18/alsa-usb-audio-relax-__free-variable-declarations.patch
+queue-6.18/platform-x86-amd-pmc-fix-msg_port-restoration-in-amd_stb_debugfs_open_v2.patch
+queue-6.18/io_uring-waitid-honor-task_work-cancellation.patch
+queue-6.18/batman-adv-bla-avoid-crc-corruption-due-to-parallel-.patch
+queue-6.18/batman-adv-dat-atomically-update-mac-addresses.patch
+queue-6.18/ftrace-take-trace_array-reference-before-accessing-its-ftrace_ops.patch
+queue-6.18/platform-x86-isst-check-for-admin-capability-for-write-commands.patch
+queue-6.18/misc-fastrpc-don-t-publish-fd-before-copy_to_user-succeeds.patch
+queue-6.18/i2c-qcom-cci-do-not-check-return-value-of-cci_init.patch
+queue-6.18/iio-light-apds9306-fix-pm-reference-leak-in-apds9306_read_data.patch
+queue-6.18/mm-fix-incorrect-vm_flags-usage-when-checking-allowable-orders-for-tmpfs.patch
+queue-6.18/udf-fix-data-loss-when-converting-inline-inodes-to-out-of-line.patch
+queue-6.18/i3c-master-fix-use-after-free-of-master-this.patch
+queue-6.18/tracing-probes-ignore-id-update-from-btf_type_skip_modifiers.patch
+queue-6.18/clk-qcom-fix-test_ctl_hi-field-for-default_evo-plls.patch
+queue-6.18/mm-mremap-reset-unfaulted-vma-page-offset-for-mremap_dontunmap.patch
+queue-6.18/pm-runtime-wrapper-macros-for-acquire-acquire_err.patch
+queue-6.18/net-mlx5e-do-not-hw-gro-coalesce-small-frames.patch
+queue-6.18/staging-rtl8723bs-fix-oob-read-in-rtw_restruct_wmm_ie.patch
+queue-6.18/perf-x86-intel-remove-anythread_deprecated-bit-from-perf_capabilities.patch
+queue-6.18/nvdimm-pmem-keep-preflush-before-data-writes.patch
+queue-6.18/io_uring-only-call-io_should_terminate_tw-once-for-ctx.patch
+queue-6.18/io_uring-unify-task_work-cancelation-checks.patch
+queue-6.18/drm-amd-display-fix-backlight-max_brightness-to-matc.patch
+queue-6.18/wifi-mt76-mt7996-bound-the-device-eeprom-address-before-the-efuse-copy.patch
+queue-6.18/perf-fix-use-after-free-when-perf-mmap-revival-races-with-the-last-munmap.patch
+queue-6.18/nvdimm-virtio_pmem-stop-allocating-child-flush-bio.patch
+queue-6.18/staging-rtl8723bs-fix-spacing-around-operators.patch
+queue-6.18/usb-gadget-f_mass_storage-fix-null-pointer-dereference-in-fsg_common_set_num_buffers.patch
 
