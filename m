@@ -1,76 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-27086-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27087-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DACB4C88E41
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Sep 2026 04:57:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C5D6BC88E41
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Sep 2026 04:57:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hh2Mn6lqwz2yr1;
-	Fri, 11 Sep 2026 14:57:09 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::529"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789102629;
-	cv=none; b=UcxTphjk3h0fotslasJBIJjVJWvBJWlBIYAC+/SVQxHXj/tOhgOWTKYCPc1mgDB24dSjpKwbMVmd3sL2wg3GCaoucmNNzSsYxlBeG93lA7Ydi677PLySVEY44CTues+4V66+usohtBNheRaf5q26htZxGs7dOmIwc3Mn0jM6oNy7q0DEZv1eF4aJ3RIGH6Uy222cQiup0sYhN4WAUY6hV8F5r4QexBisnthPFATobemvcg5Gbuu8F4h1QrChOEhBmGatCCQ07VheWJW9RlobjYPg5R2gG+IduwaMpgN2MHV2uVN2xYjuQUUXGtcB3LBVEA9pl4OuZrTYM7flckLk5g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hh2Mt63KGz2yd7;
+	Fri, 11 Sep 2026 14:57:14 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::436"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789102634;
+	cv=none; b=dV4dRBv8Zgn5wdr7F7nSqFhH7YTxfLRdtcbcKDvxxMvBJkFK69Zuve65iN2LULxWLuXmyjXEm6eEwMmOXU/BF2OmoCcNAcMwnxZxgZszabhQfgJ+A2jgd+Xow5PHDWngMYNLyfkpeP3PPn5RixofeGCChF0tdIo73anWC98g2hlblP7055amyqzGGGHBjI0lkGobenq1k14gRC3XY7Hi6LxAgaHaC15SBKpTLmdaamDit3Qsvom+Gx0G/KEO/KxHaDRi3OsA8nRLUvvrVrSlDgMIeVthoWjfBmocTjVqQluNWANJB6JEfgJZPmNjQ0PHwPBVSGxJNFTDvItFQF0oPw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789102629; c=relaxed/relaxed;
-	bh=WmpZZXMsdqMV2V4eNDvwbvfcyiTszzMT6zcGXuns9Y8=;
+	t=1789102634; c=relaxed/relaxed;
+	bh=3vP8L0nOQBMaqyTnSGV2kxiWzOWPb5E1yklPGYnOA60=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=DrwkNGyTUHf9SqDwcVFkgYiuP52QQu2FLZH8NidNGSrrAThDuS10ziXtpk+1GpRC88L+82uBt6kXu3rUdQUuE1C6THcUwPHrcQveNUWYvOHbOUXwj+g6FeZB6orzHGSognJlLo0Txo6nBQBN0OuRpquyv6BRKA2FTpD5PNo0oyBg/wwjv68PzGze61WrY45yDW9M8Kc8ckGAWmhxtcYHVG5gygToLDMfsirC/Qnn++Ev8jZjZ5pQVFzX19lc2tai5FNHu1UX7fWMlZXErZxafKx02ZU9USGc+dJR6OkO+iibymBObdLX57ngWev1WuJ+AEDpS/czSkZ0Z9pGcvR2zg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ZT0BQ6Am; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::529; helo=mail-pg1-x529.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version; b=JJKfeyckBgCuZFpZ2o6GYJdsbghf++8lqDJRvIUo/ovn7mCfGcDLYyK9AEMDa5B2GNj2bJKHM7p65VLseL4L3qtVW5s3N55yKr7XBJ5A6CS7mbnRGC7GOYE5Hwwue7xmhxvztzsmYYuNUG0B3CoeSaPIW7OYJQLc8QMI7Kn4xamiUVyL3SsGXsBDge2OnsTSZbzOp9Z4+aMw5x17kQzW/ec+0Fyd2SKVTfkff3kv8xzB3qq5Rt1N0Jd10hTn0ZnwpXamW/joM52PrbjtKLstX/aeTdRdWbNLd6rM0FQKC77wSPEudYeKKrV5SKGochqlZrEA+1O8ajYAqilnuMIQwQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=iEKcLt5L; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::436; helo=mail-pf1-x436.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ZT0BQ6Am;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=iEKcLt5L;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::529; helo=mail-pg1-x529.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x529.google.com (mail-pg1-x529.google.com [IPv6:2607:f8b0:4864:20::529])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::436; helo=mail-pf1-x436.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x436.google.com (mail-pf1-x436.google.com [IPv6:2607:f8b0:4864:20::436])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hh2Mn27Hqz2yFj
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2026 14:57:09 +1000 (AEST)
-Received: by mail-pg1-x529.google.com with SMTP id 41be03b00d2f7-cc4c1210748so424922a12.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2026 21:57:09 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hh2Mt1H4wz2yFj
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2026 14:57:14 +1000 (AEST)
+Received: by mail-pf1-x436.google.com with SMTP id d2e1a72fcca58-869ac301739so352038b3a.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2026 21:57:13 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789102627; x=1789707427; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1789102632; x=1789707432; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=WmpZZXMsdqMV2V4eNDvwbvfcyiTszzMT6zcGXuns9Y8=;
-        b=ZT0BQ6AmRfjEiudH05eGXcN4MdrrnzMHISjidXnVJ3z0AK55TfWMjlEKjM39xQlFJL
-         LQJW31w3I1y/9+gzHsaJlqdd5ay4e28+wO+rFsOtsQ2UQ1AUDJydaAG33mCxbmsGkfXa
-         M1IftEUr1pnmybe1Qr10Yq3cmPwWCTWMjRY/v26xnYNrTrCkDpVzJPoNLAIV6X8Z8qwz
-         5uhpRnKlfOyFgTQwVPqZZRI+ZFrB07Mb77R2hqTrJloKPjMg4yVCFWbSEHEh8QDzHOz4
-         Zve+YdyzZx1VN0YZkNkcZAlmnurYNGjpGeXEzsqkEn9ey59f+S6MrgyDPdyqMT1L/pLu
-         J23w==
+        bh=3vP8L0nOQBMaqyTnSGV2kxiWzOWPb5E1yklPGYnOA60=;
+        b=iEKcLt5L3TcJKLnEMjbP192Fuox/RJPCt3OZoIxiDTuE3ik+CJkwklJah/titswwL+
+         0KB1JAOMhHpNsZCBECsr6KGllvU0BiUijvQgLgr1EQsOLqYvqgGzYb4aXlz1r7T1SsO9
+         azyJwLX9oPIun0KYl+W6J00KYa6WZARiD6I4QEBL0UmuyRABHqu/fNnFM6IG23Lob/jF
+         fm2gCeVAVWI1SLdJKsXWxcXr9JfhncXl4pJAeUhbypupmHlBR2Robyq1Ha9lrIY6Wb9l
+         ykOFKEpBqw+FgwwumB2b66spf2pLKSXhCb7/0LhJUnEZTjEIEJ6zcxyUfXUAec45f4eO
+         C19A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1789102627; x=1789707427;
+        d=1e100.net; s=20251104; t=1789102632; x=1789707432;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=WmpZZXMsdqMV2V4eNDvwbvfcyiTszzMT6zcGXuns9Y8=;
-        b=dXMCKXWxA61mTq4PfePkGqoBL+oqsYfLJXMG1yyXoZlU8bdrPJ7Ifc4uRFdb8uuLAw
-         olzs0nTprZymYiIH5DQAEpAqKaClzLHubdEfCtQmGL61KzWDwCfKx90cOlzJgPj076H5
-         iJFevH5RkX6lTK2ommU3ZiO8Z729YPr9b1dxl27yo5EDK+tEml2QWT3bRDgYYCimeDp0
-         IK4PbfVq+b4gb57vBEErIVX1HyrZGFGL9d10Wsfp0JzMxGKXjbu1RCt+JNeMw8SN/uMg
-         yM4OpRBtuo9mIaIf6XtQY7BCQKEkVpO+Bw+sWhzJYyqMVy6/7f8x04nqFhnitytMzk9o
-         9p9w==
-X-Gm-Message-State: AFuF++kHVBFCdwhiNfTOvbya/LphXzG29hnS0O/DVhlK/1j1i8U+iNdj
-	PsNo+EM/uV/DXtv0RVrKfYu5mC0KiMjcCevNgJsAloz0H7t2tLKyB8PFhdq80yMd
-X-Gm-Gg: AYBFou26aIdCwuWa8Qj2Ocf9jsmnLXXxFkiaNVeQN0eWwdEMGbea62eWbM89/Q2cGSh
-	15ptg6nfRBc0G9m/vb6ipsSrpINu4kBWw5GFuGYcJwl0/Vitg2AQHUFrewgjs09Pfxd25wti+SV
-	UbRQ9W1PLCcZrtYY9ReRnj4Dajrb2NRKJMpLTa37uS+l0MMEzAj3wAZLoK8bls+hU2ArkCKafgf
-	yBYz3VW3z2/FcQ3pz6IY6o6AS7BIytsCPWZdjOrP/+TG5wPWVO9y7QMETsb13Xl3UdtyS9VyWVo
-	XrQMS+v1yoxVeQoCt24ODo0wAFdsCj6BP9K2oakEAy174/pfvTyEAbHOrTxcp+Bx3+kZplKWJOV
-	O+1kMhz+q4EAk4ldcGCVNH+gHzndUVGfTxtNecELvMmEoTGZcvK7CxvyhuqGHS1v5tO6GhRdHUC
-	6vnYHOSRWewkyw9tTDNpPCNU3c1FHMN2V4kikredN2uxGEzGguFWvx1Sz3+SwkVUKei9+VqYEAT
-	IP3d9h4Fk5ef3+7R/APi+8Luhn0nF66OKZngRF5GlSMSNutY2k0LkSh/c45P9qmHUJY+4vt
-X-Received: by 2002:a05:6a21:e0a6:b0:3d2:89db:1688 with SMTP id adf61e73a8af0-3daecffe61cmr4643073637.2.1789102626978;
-        Thu, 10 Sep 2026 21:57:06 -0700 (PDT)
+        bh=3vP8L0nOQBMaqyTnSGV2kxiWzOWPb5E1yklPGYnOA60=;
+        b=K270rjgl7QhNok159z55h+/ki7q5Uvkrki3DdmjgoV+Bn8uPHF+x+A5PUAu3E8N+Hq
+         WCJdRzB7kKZRHttXz2HIXyCq+nBaQioMDr2AB633lDnOtzlS2sldY2O/EtKECLNgqxgk
+         aWT1ozRNOIlmkDzuV+CDV7TYWfJ/BvTZc4tI+CxAKEv/8ALgDdvjuU4eq9K4yMYEvLEV
+         tr+V11q88xZ0DeigAwlrDwROiIYAM3c+zU95ozrGY0I/QQrrOth2zfLI+U0k12/9G/Xo
+         Wm8EA9VSSFbx8c67cl+QKarAxycOGiSVnl+36vp/6nhEKkWqR+bUl8v6wqMYgBRppdJS
+         RYgA==
+X-Gm-Message-State: AFuF++nbbRQVeBPVNqp8Wp1Pi9V7tzaHo/rU4d8SDEhUsFvNFgGeXoU+
+	YsEQpb/RpE1X9BBotDuUJo0mH+YI2GX+G0cpBIlzJOOBgIqP9PDzIdsvDHQ+fEqw
+X-Gm-Gg: AYBFou3+/Zjz1wgctPm/6PjuaZxyH+31xHoelEhf2X2i0af83FWyE7cnB+u5LnrQuew
+	lWm0PRtysZsuHmW7+scQmnQXAPAC1g8ogHn7FAU31DATD4jqOeEzEHGl3rE42e1ggJFlCxGSjSz
+	0ux4xtEFW1swcplRrGf18gkl+BOiSn6UYcF39oBXbGl2MaIPrLJngbN/1+KEe2dL+3zCDwrrIgX
+	JF8qUK1o3ahaYdC4rUUCyvbcxCBFUwtqgqxJ1fAnYicEDmiSuXH0SWLLdgaWe9sLXkOENnROIi+
+	bws77JJMeID8XCDHrHAwdlvgAXb7Z/STYrsyzAvJqjqM0+pmOD22Nl4GkJ3WrN7NcMkdkwDauO8
+	VWRtksbWS9n3INct3V8yZ1eYK3d/C0NXrz4+RHy1voXUlTHNNgEvCPPC10bqhANWbrCR/TQC9B2
+	D+moARFSndzGA/jOrmalSCFIz320jxHmRsL4zoIAUBVZ/aI7cAUaZMWrFNkPcB7QBY6VGYwqhVD
+	9mt5m/tA9W8R101EdZoSMqfR1dcTPXzQUnCjT5ZkWBJqhmCZm3ICPvJ/VKmpw4=
+X-Received: by 2002:a05:6a21:15cf:b0:3be:b0b3:3962 with SMTP id adf61e73a8af0-3daed1c1f53mr4438486637.9.1789102631764;
+        Thu, 10 Sep 2026 21:57:11 -0700 (PDT)
 Received: from pve-server.rlab ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-33ba4e9a3casm2837953eec.12.2026.09.10.21.57.02
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-33ba4e9a3casm2837953eec.12.2026.09.10.21.57.07
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 10 Sep 2026 21:57:05 -0700 (PDT)
+        Thu, 10 Sep 2026 21:57:10 -0700 (PDT)
 From: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Michael Ellerman <mpe@ellerman.id.au>,
@@ -83,9 +83,9 @@ Cc: Michael Ellerman <mpe@ellerman.id.au>,
 	linux-kernel@vger.kernel.org,
 	kvm@vger.kernel.org,
 	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-Subject: [RFC 1/3] KVM: PPC: Book3S HV: Read EX_DSISR as a 32-bit field on guest exit
-Date: Fri, 11 Sep 2026 10:26:45 +0530
-Message-Id: <5433192a9121d1006c01c98ab56aca4b42519454.1789099725.git.ritesh.list@gmail.com>
+Subject: [RFC 2/3] KVM: PPC: Book3S: Don't call __ffs() on an empty pending_exceptions bitmap
+Date: Fri, 11 Sep 2026 10:26:46 +0530
+Message-Id: <3578c377329d39a4a9063c24496d2ac4c31a169d.1789099725.git.ritesh.list@gmail.com>
 X-Mailer: git-send-email 2.39.5
 In-Reply-To: <cover.1789099725.git.ritesh.list@gmail.com>
 References: <cover.1789099725.git.ritesh.list@gmail.com>
@@ -104,74 +104,53 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-kvmhv_vcpu_entry_p9() recovers the guest fault state from the paca
-exception save area with
+This problem was caught when running KVM PPC selftests on big-endian.
+__ffs() doc clearly says:
+  "Undefined if no bit exists, so code should check against 0 first"
 
-	vcpu->arch.fault_dsisr = exsave[EX_DSISR/sizeof(u64)];
+This cause KVM to deliever an arbitary interrupt to the guest and was
+causing guest to hang up while running these selftests.
 
-but EX_DSISR is not a doubleword. It is a 32-bit field at offset 48 that
-shares a doubleword with EX_CCR at offset 52 and the exception entry in
-exceptions-64s.S stores it accordingly. For e.g.
-
-	stw	r10,IAREA+EX_DSISR(r13)
-
-This issue was caught when running kvm selftests on big-endian, where
-this read would land in the high half and the truncation yields EX_CCR
-instead - KVM acts on the guest's condition register as if it were
-HDSISR.
-
-The result is that every HDSI on a big-endian host is evaluated against a
-bogus fault status i.e. it fails with below error:
-
-	KVM: Got radix HV page fault with DSISR=84004840
-
-Let's fix this by reading this field at it's natural width.
-
-Fixes: 89d35b239101 ("KVM: PPC: Book3S HV P9: Implement the rest of the P9 path in C")
 Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 ---
- arch/powerpc/kvm/book3s_hv_p9_entry.c | 13 +++++++++++--
- 1 file changed, 11 insertions(+), 2 deletions(-)
+ arch/powerpc/kvm/book3s.c | 22 ++++++++++++----------
+ 1 file changed, 12 insertions(+), 10 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s_hv_p9_entry.c b/arch/powerpc/kvm/book3s_hv_p9_entry.c
-index 34bc0a8a1288..16aa8582b888 100644
---- a/arch/powerpc/kvm/book3s_hv_p9_entry.c
-+++ b/arch/powerpc/kvm/book3s_hv_p9_entry.c
-@@ -529,6 +529,15 @@ unsigned long kvmppc_msr_hard_disable_set_facilities(struct kvm_vcpu *vcpu, unsi
- }
- EXPORT_SYMBOL_GPL(kvmppc_msr_hard_disable_set_facilities);
- 
-+/*
-+ * EX_DSISR is a 32-bit field that shares a doubleword with EX_CCR.
-+ * Small helper for reading it back at its natural width.
-+ */
-+static u32 exsave_dsisr(u64 *exsave)
-+{
-+	return *(u32 *)((void *)exsave + EX_DSISR);
-+}
-+
- int kvmhv_vcpu_entry_p9(struct kvm_vcpu *vcpu, u64 time_limit, unsigned long lpcr, u64 *tb)
- {
- 	struct p9_host_os_sprs host_os_sprs;
-@@ -770,7 +779,7 @@ int kvmhv_vcpu_entry_p9(struct kvm_vcpu *vcpu, u64 time_limit, unsigned long lpc
- 
- 	if (unlikely(trap == BOOK3S_INTERRUPT_MACHINE_CHECK)) {
- 		vcpu->arch.fault_dar = exsave[EX_DAR/sizeof(u64)];
--		vcpu->arch.fault_dsisr = exsave[EX_DSISR/sizeof(u64)];
-+		vcpu->arch.fault_dsisr = exsave_dsisr(exsave);
- 		kvmppc_realmode_machine_check(vcpu);
- 
- 	} else if (unlikely(trap == BOOK3S_INTERRUPT_HMI)) {
-@@ -781,7 +790,7 @@ int kvmhv_vcpu_entry_p9(struct kvm_vcpu *vcpu, u64 time_limit, unsigned long lpc
- 
- 	} else if (trap == BOOK3S_INTERRUPT_H_DATA_STORAGE) {
- 		vcpu->arch.fault_dar = exsave[EX_DAR/sizeof(u64)];
--		vcpu->arch.fault_dsisr = exsave[EX_DSISR/sizeof(u64)];
-+		vcpu->arch.fault_dsisr = exsave_dsisr(exsave);
- 		vcpu->arch.fault_gpa = mfspr(SPRN_ASDR);
- 
- 	} else if (trap == BOOK3S_INTERRUPT_H_INST_STORAGE) {
--- 
+diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
+index 2efbe05caed7..e4152e9a0d96 100644
+--- a/arch/powerpc/kvm/book3s.c
++++ b/arch/powerpc/kvm/book3s.c
+@@ -401,17 +401,19 @@ int kvmppc_core_prepare_to_enter(struct kvm_vcpu *vcpu)
+ 	if (vcpu->arch.pending_exceptions)
+ 		printk(KERN_EMERG "KVM: Check pending: %lx\n", vcpu->arch.pending_exceptions);
+ #endif
+-	priority = __ffs(*pending);
+-	while (priority < BOOK3S_IRQPRIO_MAX) {
+-		if (kvmppc_book3s_irqprio_deliver(vcpu, priority) &&
+-		    clear_irqprio(vcpu, priority)) {
+-			clear_bit(priority, &vcpu->arch.pending_exceptions);
+-			break;
+-		}
++	if (*pending) {
++		priority = __ffs(*pending);
++		while (priority < BOOK3S_IRQPRIO_MAX) {
++			if (kvmppc_book3s_irqprio_deliver(vcpu, priority) &&
++			    clear_irqprio(vcpu, priority)) {
++				clear_bit(priority, &vcpu->arch.pending_exceptions);
++				break;
++			}
+
+-		priority = find_next_bit(pending,
+-					 BITS_PER_BYTE * sizeof(*pending),
+-					 priority + 1);
++			priority = find_next_bit(pending,
++						 BITS_PER_BYTE * sizeof(*pending),
++						 priority + 1);
++		}
+ 	}
+
+ 	/* Tell the guest about our interrupt status */
+--
 2.39.5
 
 
