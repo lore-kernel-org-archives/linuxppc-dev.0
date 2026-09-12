@@ -1,66 +1,69 @@
-Return-Path: <linuxppc-dev+bounces-27175-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27176-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0B000C88E59
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Sep 2026 15:17:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 69F9FC88E56
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Sep 2026 16:02:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hhw584gXKz2ygp;
-	Sun, 13 Sep 2026 01:17:32 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789226252;
-	cv=none; b=oroCtolehXLdbAH0V3hWiQ+knvL0mT/rfoq5PpJdZZVzqJwcQ5RD25tyr9eFfMfjhlkXWT3RamFfdbMs3lPpjzwhpholJA5pZS6FRGiLnfdL51RDnyNQ4hUoWztuIuhJ/ltOIfnRubur8MHdfCBOZ4evH1YXnip0aMROT16utqujLyr0acegylpphZ5p3+IquJc2Yxvvj+soH2Yi8Lt3A/2XUdOfyZA2mqKqRBwBSo4wgtZ3RWJQuFZDg8IpimaVGgdMDJPEBFM2giFPsNM5IQYiJU4jqrSdSiPYPGAFaBOCU/JIY57Ary9AsBhRRXaOaQ/rnqsh6prbV4xcsIn6QQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hhx5S2YYsz2yYd;
+	Sun, 13 Sep 2026 02:02:52 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789228972;
+	cv=none; b=PEp63u2k3gAtmnmZUCk8w7lUbyET7tjTK1csKXLAbG/76IFw4O/UyZle4bPNIXn/narXjEypvT6vpzpGw4p9H3sDySK5yneas2C6Q5H0rpNStVY2S4l3f+SczS0qI75vlZrDjnV+Bmg9PNLA51pJ1Xty1RIlnfdD1qWpor39K67fsgChaVUkGlvGTlrADJtAHOMUFT/ccq+huIpT8o67Fha1PJOh8luk8rsZD4eIFR4OR1QicMMVH/emytHhQlHXdeWWJNzjiolQc9l3SR8X/uejrEB1zjfe7vsQbwNo9hXvTuUOacwwR87jr27X0e3tKvBDYRG+S5V42qbdYl1qVg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789226252; c=relaxed/relaxed;
-	bh=lto7jgAgpRNpr8dUDCGeD6PixlreSfcwTjjLcpd+ft0=;
-	h=Subject:From:In-Reply-To:References:Message-Id:Date:To:Cc; b=Yov3Nlf38l/1Ft6VH3DQxkDCpVAxprdrdPahK5T61BCbRgvQ2IPh2i0q781xXt3FhLbQmnyNNlNy1GgBo6td/T/D/VmQeDVH0qodLPU1RGpBhiDgFuG/XIlwiFwcFCKcXUI4xYRwl/nv/dljJVEW5bg4gP55jALSFBPCTRlrg9lHCckabtdSDJTgQCciBUcf7pQ/jDIFkawj6/ZdJo5qpnqQo774wrjxLHSoR8UI4EmwuAQyak5jaYWManQ3awBCYMezx5zYg2DMwtSCCZK8nVXBw1tKXoXy8LH4jlc8ApDGX0Ujq14g8fy1Ay4NS5GIvIgQy04WoHDfAp+l1BOejA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nyUl9g7U; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=pr-tracker-bot@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1789228972; c=relaxed/relaxed;
+	bh=lTCdta7tqo18hZwWAZEXcR+HjTit0+vU2+AYaLl5MMY=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=PQFZ3H8+D/ZigWqPpFTYWIwR4S3BU4gz/754wWaFrIG1aM7Aq5hR6mXXS8Dn2jfLqutlhmZjZU/27VPywyedw5SABs6QQfAo+3acQdHN8pyGejwTAimnH8MN6glCu9TkubnZTVZKegCRV4WtXMEPEVFejxRErgBCCFALZU1QD3Xf3E+61qUw6zC4Mo9X3B/JmnwR80JfYfS0YMpF8Gv23Qih2KyU2Un+i8k9FYoy6jGFf/HBSuO4cvEi8rCLOh3mv8RCt9WADVr4f1zvV8qmSmv6rZxV9ckscAwFr7kDAFWyj5G3rHlMWtpKVzhCijTshG7Ydeoo8ex2eI4DOkX0LQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=uhzmuwkj; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linuxfoundation.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nyUl9g7U;
+	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=uhzmuwkj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=pr-tracker-bot@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hhw576Vz9z2y8c
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Sep 2026 01:17:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hhx5R317qz2xlJ
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Sep 2026 02:02:50 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 981DC60237;
-	Sat, 12 Sep 2026 15:17:28 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4CB6E1F00898;
-	Sat, 12 Sep 2026 15:17:28 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789226248;
-	bh=lto7jgAgpRNpr8dUDCGeD6PixlreSfcwTjjLcpd+ft0=;
-	h=Subject:From:In-Reply-To:References:Date:To:Cc;
-	b=nyUl9g7U5EzWaPuVCjUCCso79OPZY31KJmFqiOLAE7E1QCOgF1ZIPGJB6FVT+1lFX
-	 01VoitH6aJMTmpeASIRMYJjtcuRQgy38qkwWf3+/1fhaT/jrqfAvhZzEyyU19alz0P
-	 zGzX8NN12ZkubLfj+NS4qmjfNMKCwXNxMQnCM4i9tA4ID7BnXYSuQ9dxQaZ4foTiMx
-	 ro/q53LZ689UBo8VPbRQJ5iKpMHMzSkqR5Hrrw3t0iUhALElbuxmvDaYWqS5guE1gL
-	 3bXVkj0Xs9m1oagiGPAsS7IYXePbx4C6ToF+Ou1opFl9/Ya/EM/22Ylk3Nr/mkHsM9
-	 BRTjVU1HloFcA==
-Received: from [10.30.226.235] (localhost [IPv6:::1])
-	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id D0C8B380820D;
-	Sat, 12 Sep 2026 15:16:25 +0000 (UTC)
-Subject: Re: [GIT PULL] Please pull powerpc/linux.git powerpc-7.3-3 tag
-From: pr-tracker-bot@kernel.org
-In-Reply-To: <96c01d5a-3000-4921-9775-025f9c4c2908@linux.ibm.com>
-References: <96c01d5a-3000-4921-9775-025f9c4c2908@linux.ibm.com>
-X-PR-Tracked-List-Id: <linuxppc-dev.lists.ozlabs.org>
-X-PR-Tracked-Message-Id: <96c01d5a-3000-4921-9775-025f9c4c2908@linux.ibm.com>
-X-PR-Tracked-Remote: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-7.3-3
-X-PR-Tracked-Commit-Id: 9e5c53d75c560a058abef0e4338c5e3e52cb432a
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: 52311be52f66f1a3c71bc808d156482feb1eb79f
-Message-Id: <178922618447.3511661.5005092280380751370.pr-tracker-bot@kernel.org>
-Date: Sat, 12 Sep 2026 15:16:24 +0000
-To: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, aboorvad@linux.ibm.com, atrajeev@linux.ibm.com, chentao@kylinos.cn, christophe.leroy@csgroup.eu, leixiang@kylinos.cn, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, michail.tatas@gmail.com, mpe@ellerman.id.au, naveen@kernel.org, npiggin@gmail.com, sourabhjain@linux.ibm.com, thibault.ferrante@canonical.com, yanlonglong@kylinos.cn
+	by sea.source.kernel.org (Postfix) with ESMTP id 3F184414E3;
+	Sat, 12 Sep 2026 16:02:48 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 297271F000FF;
+	Sat, 12 Sep 2026 16:02:47 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linuxfoundation.org;
+	s=korg; t=1789228968;
+	bh=lTCdta7tqo18hZwWAZEXcR+HjTit0+vU2+AYaLl5MMY=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=uhzmuwkjcR4Cn1VGp0NG1Iq762w0jhbauMQ2ioj6k7vfHjaP+Y29MNV2q7w5nR4TY
+	 7dulHslt6JTshFGE7CsDPWNvstl65P0xfgEOmNYhmLnUYgXEvVXMFwDejA0ZG65eqr
+	 HRNQXecsSV5uDbUpWAQqC9GkGvMpMsBspOgrsyFo=
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: stable@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	patches@lists.linux.dev,
+	Athira Rajeev <atrajeev@linux.vnet.ibm.com>,
+	Ian Rogers <irogers@google.com>,
+	Disha Goel <disgoel@linux.vnet.ibm.com>,
+	Jiri Olsa <jolsa@kernel.org>,
+	Kajol Jain <kjain@linux.ibm.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Namhyung Kim <namhyung@kernel.org>,
+	linuxppc-dev@lists.ozlabs.org,
+	Arnaldo Carvalho de Melo <acme@redhat.com>,
+	Sasha Levin <sashal@kernel.org>
+Subject: [PATCH 6.1 0493/1191] perf tests stat_bpf_counters: Fix usage of == to address shellcheck warning
+Date: Sat, 12 Sep 2026 08:53:41 +0200
+Message-ID: <20260912065559.304319358@linuxfoundation.org>
+X-Mailer: git-send-email 2.55.0
+In-Reply-To: <20260912065548.086904252@linuxfoundation.org>
+References: <20260912065548.086904252@linuxfoundation.org>
+User-Agent: quilt/0.69
+X-stable: review
+X-Patchwork-Hint: ignore
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -73,17 +76,69 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 
-The pull request you sent on Sat, 12 Sep 2026 11:40:34 +0530:
+6.1-stable review patch.  If anyone has any objections, please let me know.
 
-> https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-7.3-3
+------------------
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/52311be52f66f1a3c71bc808d156482feb1eb79f
+From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
 
-Thank you!
+[ Upstream commit d10eedd87bb3e7678c3a0f77a5cfe7150a318ee2 ]
 
+Running shellcheck on stat_bpf_counter.sh generates below
+warning:
+
+   In tests/shell/stat_bpf_counters.sh line 34:
+   if [ "$base_cycles" == "<not" ]; then
+                       ^-- SC3014 (warning): In POSIX sh, == in place of = is undefined.
+
+   In tests/shell/stat_bpf_counters.sh line 39:
+   if [ "$bpf_cycles" == "<not" ]; then
+                      ^-- SC3014 (warning): In POSIX sh, == in place of = is undefined.
+
+Fix this by using "=" instead of "==" to work for
+all shells.
+
+Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+Acked-by: Ian Rogers <irogers@google.com>
+Cc: Disha Goel <disgoel@linux.vnet.ibm.com>
+Cc: Jiri Olsa <jolsa@kernel.org>
+Cc: Kajol Jain <kjain@linux.ibm.com>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Namhyung Kim <namhyung@kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Link: https://lore.kernel.org/r/20230709182800.53002-10-atrajeev@linux.vnet.ibm.com
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+Stable-dep-of: b02027776ac5 ("perf tests: Fix flakiness in BPF counters test on hybrid systems")
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ tools/perf/tests/shell/stat_bpf_counters.sh | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/tools/perf/tests/shell/stat_bpf_counters.sh b/tools/perf/tests/shell/stat_bpf_counters.sh
+index 6bf24b85294c7..a87bb2814b4c6 100755
+--- a/tools/perf/tests/shell/stat_bpf_counters.sh
++++ b/tools/perf/tests/shell/stat_bpf_counters.sh
+@@ -31,12 +31,12 @@ if ! perf stat -e cycles --bpf-counters true > /dev/null 2>&1; then
+ fi
+ 
+ base_cycles=$(perf stat --no-big-num -e cycles -- perf bench sched messaging -g 1 -l 100 -t 2>&1 | awk '/cycles/ {print $1}')
+-if [ "$base_cycles" == "<not" ]; then
++if [ "$base_cycles" = "<not" ]; then
+ 	echo "Skipping: cycles event not counted"
+ 	exit 2
+ fi
+ bpf_cycles=$(perf stat --no-big-num --bpf-counters -e cycles -- perf bench sched messaging -g 1 -l 100 -t 2>&1 | awk '/cycles/ {print $1}')
+-if [ "$bpf_cycles" == "<not" ]; then
++if [ "$bpf_cycles" = "<not" ]; then
+ 	echo "Failed: cycles not counted with --bpf-counters"
+ 	exit 1
+ fi
 -- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/prtracker.html
+2.53.0
+
+
+
 
