@@ -1,51 +1,89 @@
-Return-Path: <linuxppc-dev+bounces-27178-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27179-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E5C43C88E59
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Sep 2026 17:35:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9D5ACC88E59
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Sep 2026 18:00:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hhz8d6vZ0z2yDr;
-	Sun, 13 Sep 2026 03:35:45 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789234545;
-	cv=none; b=LIVa+Pa2IAwZw3IoRPnWPoNneJo9Mll0qBSE6CxY/b+dm+Xlxjqnnidseee4IGdmh+9hAe9JEASRK6TjlY4lNhkZPd2ahydxLCBu2zI07iYtDRRT4affHLjbVNWTIXSEEz+Tl870VS8dfNXaxsC00/lx6MlEqb4zBuedFaw6nwVY56/725Rg5K05HO5D/J1+fDcJMQ2FhYN/AGnQHISuZEifkEzcceVK4oT9bVPseRjDhWbQan/iozg/By6QzrzdOiXmne/7MjgltXoEeoW2KsDIKIZ8r3k4YTS+anpkD/itbUnyxhivBf1GUR6EezeKqpnwJDVJB69yAv7lluCayA==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789234545; c=relaxed/relaxed;
-	bh=FEe2Rz/fJk3PRB8Q54ex0lMJG3zWYPZcQ6tk6AJ+7bM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=HUnZJQwIs3u1oj+4AGPj0lpKgkrvzfLlqrvIQCXkNMbrNEhT2yuKBwJ/XuJOljOmXdSIo/wtYvCYfgDpRiJfvhZsSGutW6sqZBlAZAhUAhQ24pYQo1fTFo5goTmDntIrS4zM15/xUusL3NMY6EA2i0XA5JdWZIOjfHlp61pxOZLC9QW4qnztgq0jfyItFxlOjdGKMqB4bmuRpCqdTCvfcl15oCYolgslCTAvZOj9CRMVEvyXEJXiO8PxCzKnrZrjCrQWKp8pvvhCnSfTNX1IwjinTcCPLHJ24x9JcBFAODcCEQSQ9wWDyd7fN/p8BwckA2LtWtRr1/ibRxzJlM6ZpA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ZnOqyl6v; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hhzhc6WNZz2y2h;
+	Sun, 13 Sep 2026 04:00:00 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c205::5" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789236000;
+	cv=pass; b=UhIpunkTMUEf+sD6TFTiCb3lMRRlOqz5uxk0I2/AcrTCCPJWSoQhUcOyBlVDMDgflWQztRc3URHeF0xmF952YfSeJeGRcbUH9TofVKAYJ+1LGN/ZzpbV8aQJpn1i8oXHd0RQejPEubSRtkxQCrSqK9uyOKkFzZQLPdl5bUDrv7HNjvKIVdlTj3cCoehcWKIP+LLdtfjQ0CxMcsulsiciaIzT81dOW6Tpc49L7hAj8ilvqde4TOty64L2ol7N1obbFliWekOFXEhFwfzwV92tS2Fggeza65GkJV7aG4MjwiV/204I5XHqqPZw8nFPEcvgFDNl9ba+rusmf3+3y20Ygw==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1789236000; c=relaxed/relaxed;
+	bh=TpZaSBpqqdInkP76WycFaNhWlegAp/IWv2/2dBrerZU=;
+	h=Content-Type:Date:Message-Id:From:To:Cc:Subject:References:
+	 In-Reply-To:MIME-Version; b=EIt3tSDDP3fIfXmyYCdQ3988yN/GgS2+9orIahIOrzK+zzagxJXUeVPk8bjO3c3kE3q19bD+z5/ON3OMpLod4Z/BUDBMPuM98Dn+RuJ176PJ+Ky164+E847787r4zuqCDpbGmji1IyVsD7ptk7wcjpGD2wLF33ud60Jk1uQ+ty280XRaiFLplXWuIhstjbWisLK4/OnsNXHHuJPC8wfMRqDDepy5xVrYI1JJAQyMBLqnCGgqicjZqqiLktaCqbXZZa0XQ80I1py0TY5ectFHP2LeMrSEkSVWFfPiLKPLtKnBtG0EYXVYrLH2e+eFPhAhvkk03/xpt8IesZZS96cJUw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=garyguo.net; dkim=pass (1024-bit key; unprotected) header.d=garyguo.net header.i=@garyguo.net header.a=rsa-sha256 header.s=selector1 header.b=refhPzqd; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c205::5; helo=lo0p265cu003.outbound.protection.outlook.com; envelope-from=gary@garyguo.net; receiver=lists.ozlabs.org) smtp.mailfrom=garyguo.net
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=garyguo.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ZnOqyl6v;
+	dkim=pass (1024-bit key; unprotected) header.d=garyguo.net header.i=@garyguo.net header.a=rsa-sha256 header.s=selector1 header.b=refhPzqd;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=garyguo.net (client-ip=2a01:111:f403:c205::5; helo=lo0p265cu003.outbound.protection.outlook.com; envelope-from=gary@garyguo.net; receiver=lists.ozlabs.org)
+Received: from LO0P265CU003.outbound.protection.outlook.com (mail-uksouthazlp170120005.outbound.protection.outlook.com [IPv6:2a01:111:f403:c205::5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hhz8c62MQz2xqM
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Sep 2026 03:35:44 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 3A5DC43577;
-	Sat, 12 Sep 2026 17:35:42 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A62881F000FF;
-	Sat, 12 Sep 2026 17:35:35 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789234542;
-	bh=FEe2Rz/fJk3PRB8Q54ex0lMJG3zWYPZcQ6tk6AJ+7bM=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=ZnOqyl6v9PbbDHzpeQJgveszxX+jf5S3lSl4fMfQ4GjvBrx4cJuFGj+sWIOoWuEPr
-	 fn4KU2Tgfa4EbJ5rfAPuwcFZy2b2kbA0GrJyVRgCp1QkusaINVsMg6kHErg5XT0sR1
-	 9xKSCUyr099vOGbZGSg0TRO/oKJctUIHx70GYg4bLfhh114E4UGedrqfOD9phAMOk8
-	 /AuO8o+L27Jpex/YN3LQ38a+bI7Mg35se0vL5D1LHbEJcz/mWObblcJ9mxX9vbBZqB
-	 f64Jr7q2qjcUE8udHCH7EADU5/TSqzhwKnK4rKnc+ahgFBKTXn6ivAsOZp4kzsyJ8G
-	 oN6kJadLFLLSw==
-Message-ID: <2dedc7a9-95f5-4a7f-8d38-6b9351db402f@kernel.org>
-Date: Sat, 12 Sep 2026 19:35:32 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hhzhZ0sfZz2xqM
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Sep 2026 03:59:57 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=RNVY6nPr0yNDYQNxlCyHrgMckZ7Ug+XEKwPQl/sJGI3AYKQgrW5bY4CXIqMdnfoWqOmnyEA7Ga/AfCARjWf8pbO4chkc/9MzZ+kFnEMBqz0KHG5NArm4FtZt67TFBfJNklHbkLKMsamAy4ptD1Px5vb74N3NjbLdgs/iKuZP/CClBQKIB8S4LNeeuX2hZYQgpu6C9Ne2TgcB28wSpet5xllg+MtMuuaf1RVGPqNnFZNEd8jzx0HOVZLSeAWp4wqmHvMEboy4Wk+pbDbOTQLXzk48m56tHt4Sw/m/MTv7VTSiVO5jLI3NCrlhZZBt/nEqGy5xgxDn/c8dO/ZNVY7dRA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=TpZaSBpqqdInkP76WycFaNhWlegAp/IWv2/2dBrerZU=;
+ b=ne54jPuCTk39V7ctEZadCw+4AQnlGFKI4wwrrhDCoipFQF8BQ9jobnSj0a/szbETEHwTI8+RwKQ2XhYVsqm6ShJw3L4XxE8KWJdB7SxKlUc+RwE09YTI4RtXJUl7BFnJklDQaOdyiK+lKH1cwhISveMyHgDTebc3b7NXOX0jgXGI/PkCOPLGi3V/jEKIT3tDtTMEy8WYIZHYZ1cOAVMxY4lSGhXP8EpaAq7r1QCZom4yw5SWnPzW/uft5brXcdmvASwTK0nJ0BscTY7BYuBSNJNVhXGe5q/MxH1QAejy1Sp/9oe4E5iYbpqVERSNLjKo9DRKz0xXjP1IZE1eesCJAA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=garyguo.net; dmarc=pass action=none header.from=garyguo.net;
+ dkim=pass header.d=garyguo.net; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=garyguo.net;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=TpZaSBpqqdInkP76WycFaNhWlegAp/IWv2/2dBrerZU=;
+ b=refhPzqd62pMQpGUuoDjGkhljXUiz/FdVI9zSrLWPYxy5fCsc2jZTi6/86BMAzHXfxOHN+5vJKUAifu8oAV+bmB/odsoV+j+Vqpsg/0jFSIrkJnEFWxPoWHJTh0wZisAagv/QbZYCkXvXULv7sISydjQtxgNYZt0mysQSQLkK30=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=garyguo.net;
+Received: from LOAP265MB8560.GBRP265.PROD.OUTLOOK.COM (2603:10a6:600:4ab::19)
+ by LO0P265MB6725.GBRP265.PROD.OUTLOOK.COM (2603:10a6:600:30b::14) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.406.11; Sat, 12 Sep
+ 2026 17:59:31 +0000
+Received: from LOAP265MB8560.GBRP265.PROD.OUTLOOK.COM
+ ([fe80::f60b:1537:68d7:4fc1]) by LOAP265MB8560.GBRP265.PROD.OUTLOOK.COM
+ ([fe80::f60b:1537:68d7:4fc1%4]) with mapi id 15.21.0406.007; Sat, 12 Sep 2026
+ 17:59:31 +0000
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Sat, 12 Sep 2026 18:59:30 +0100
+Message-Id: <DLDJ7TNEH9MS.2I386V2SZ5QDR@garyguo.net>
+From: "Gary Guo" <gary@garyguo.net>
+To: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>,
+ <maddy@linux.ibm.com>, <mpe@ellerman.id.au>, <npiggin@gmail.com>,
+ <chleroy@kernel.org>, <ojeda@kernel.org>, <boqun@kernel.org>,
+ <gary@garyguo.net>, <bjorn3_gh@protonmail.com>, <lossin@kernel.org>,
+ <a.hindborg@kernel.org>, <aliceryhl@google.com>, <tmgross@umich.edu>,
+ <dakr@kernel.org>, <daniel.almeida@collabora.com>, <tamird@kernel.org>,
+ <acourbot@nvidia.com>, <work@onurozkan.dev>, <pjw@kernel.org>,
+ <palmer@dabbelt.com>, <aou@eecs.berkeley.edu>, <alex@ghiti.fr>,
+ <nathan@kernel.org>, <ndesaulniers@google.com>, <morbo@google.com>,
+ <justinstitt@google.com>, <ynorov@nvidia.com>, <ecourtney@nvidia.com>,
+ <joelagnelf@nvidia.com>, <fujita.tomonori@gmail.com>,
+ <linkmauve@linkmauve.fr>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-kernel@vger.kernel.org>, <rust-for-linux@vger.kernel.org>,
+ <linux-riscv@lists.infradead.org>, <llvm@lists.linux.dev>
+Cc: "FUJITA Tomonori" <tomo@flapping.org>
+Subject: Re: [PATCH v4 1/2] powerpc/bug: Add ARCH_WARN_ASM and refactor
+ _EMIT_BUG_ENTRY for Rust support
+X-Mailer: aerc 0.22.0
+References: <20260912065902.24017-1-mkchauras@gmail.com>
+ <20260912065902.24017-2-mkchauras@gmail.com>
+In-Reply-To: <20260912065902.24017-2-mkchauras@gmail.com>
+X-ClientProxiedBy: LO4P265CA0170.GBRP265.PROD.OUTLOOK.COM
+ (2603:10a6:600:312::9) To LOAP265MB8560.GBRP265.PROD.OUTLOOK.COM
+ (2603:10a6:600:4ab::19)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,208 +97,227 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] powerpc/kasan: require memintrinsic prefix support for
- KASAN
-To: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
-Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
- ryabinin.a.a@gmail.com, glider@google.com, andreyknvl@gmail.com,
- dvyukov@google.com, vincenzo.frascino@arm.com, pjw@kernel.org,
- palmer@dabbelt.com, aou@eecs.berkeley.edu, alex@ghiti.fr, kees@kernel.org,
- amachhiw@linux.ibm.com, ritesh.list@gmail.com, robh@kernel.org,
- sayalip@linux.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, kasan-dev@googlegroups.com,
- linux-riscv@lists.infradead.org, linux-hardening@vger.kernel.org,
- Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-References: <20260908064948.999530-1-mkchauras@gmail.com>
- <b3b1fa5a-c836-447f-a658-ad66183c23c5@kernel.org>
- <aqOrCdvUB5lFjNsS@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-Content-Language: fr-FR
-From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-In-Reply-To: <aqOrCdvUB5lFjNsS@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: LOAP265MB8560:EE_|LO0P265MB6725:EE_
+X-MS-Office365-Filtering-Correlation-Id: 7fde31b3-115b-483f-72e2-08df10f798d3
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|23010399003|7416014|376014|1800799024|366016|10070799003|6133799003|22082099003|18002099003|3023799007|921020|4143699003|10067099003|56012099006|5023799004;
+X-Microsoft-Antispam-Message-Info:
+	UCgY0M/oJpvkE7hTNrPIhOZr9foUrzP1S7zF6WHbhZTwYHONCJqP37XY72EWlhCn/ko59/j5ZWHRVj1fDiBKksrFOrroV3aLk8b1iYTOtq8I1ux+oz/4LkME179ky7qUQGMkxDeApLxmuheDrQm4ILlR6dZT3fIi9X7XhIHsBzxXVDUSrIgGdVo/DbcqTlXmH3nFCoQlnzUzUVZ6SYKRutmTlh7BbGejqKaNyQp8JMmqOwkGPD9ys6o3oyDwvq7ByoIUJeIzDcpkVWqYKtJiiFcOEGxEe9L3GZz8lLufhnX4MtV3ujvf350eK2A+GVzkqEfwMeKV1zHPLCBJ2fmhBBDg0wEWA0qIieiUeUmg86NXB9Rd4BAnmAyGr+1LurcYuyoy9MAGW4IOPt8LxnSgxPFiQDjkikKR/PD6209Uj9rwtry5URxExNk88KU6XRcLoxvCNxiWhrA7gXRRQQFTbJ7PDYfGq4GyNJLHEER2QbXd9uHUbv+Ox7PrMxTUh1ryPpiIcTVYU7O1D2Hl45Phajz3jjxMSzm5pB2a/EmFo9wRvc1bA836yqL5+bzrmRrwZDh13fwWIpDTdCfoES3YSv2cMGbIl+GmZSHbpRiM4VQxc02IAAJIYwujs/vxln/D7qzJKjgHlhAlXLIRImXrOmHLVOp3daoQaRQtpchF7IoE9b8Hhf4F5U7txsBGyu5x5Wf4+CcCj0WdpGph8MnuxQ==
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LOAP265MB8560.GBRP265.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(7416014)(376014)(1800799024)(366016)(10070799003)(6133799003)(22082099003)(18002099003)(3023799007)(921020)(4143699003)(10067099003)(56012099006)(5023799004);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?cnYybFgvMGl3V3Bwd1FpY1ZMeFRDK1FPaUJJdm91azRBUEpScDNWdGZFdTFo?=
+ =?utf-8?B?ODl6K25BMmRCb2ZRVStiN3I0dEU4ekhYTWV0dzZPYklWeitPNy9RSmVFdHRB?=
+ =?utf-8?B?OU5KbnBWcUNLSEVhREJpS21uWHExbXdPaG5sb21zTlBKSmJweTJFR0lrMTZJ?=
+ =?utf-8?B?cUNnR0MwcHVxWXJ4MytwakpHVHpUN09NZ29jK2dySW1HcDRlSVlIZFQ1czI0?=
+ =?utf-8?B?QU8xY2c3T09FODN1U2dTRlJJNXFMbkRudjhyUGJnSENJM2JGeEJqenhWNkJW?=
+ =?utf-8?B?Zm16M3p2VUV0Tjhyc0ZBVzNFSjM0Z3dBMmpFWDZzc2UzVldLZnJmRlhteXZW?=
+ =?utf-8?B?Qnk2MTlzbVlTQnk4TzNpQ0wyUzcwR1F0Tm9CdWVydjRpclBoeWtGMUtJbGFp?=
+ =?utf-8?B?WmN5NDBMWVh6NXRyZy8vRnZBMkhuUDRvUHFDV21wNS9RVTZDWkNxOWpQY0RE?=
+ =?utf-8?B?TERtNExmb29CRVdHa1F3TUJ4eTNTSXVtMEsrNmVqRm02M2RraUMyVko5RVB6?=
+ =?utf-8?B?UDlXUUV0bFc2cThibkJsUEs5QWZHUXo4aTQ4WXNldFpTMUwvRXkvSXI1UjhH?=
+ =?utf-8?B?Ujkrdkg4VXZ4VlROL2xXUExuNmU5eHpzSnhhK1Z2L3FXVW1JWEtqczBKK3Z6?=
+ =?utf-8?B?RXBYRXFEWFFrTE1JaUZ2VjJmY0lqU25FSUNEMHYrSGc3RTh6b1pYRDRIUjBI?=
+ =?utf-8?B?WXBxQzBYMERXSHIvL3dVZkF4amVpRXl0L0Fwa2pGVXUzUU5TTGlxVVpWTkdU?=
+ =?utf-8?B?T2NoK0xtOTlILzhjS0lJRE9HQ09ubFBXckFlYVVDYzlwY1JpdGRYbU10Qzdq?=
+ =?utf-8?B?enlGQ01nV3p2cnNDdzJFSGJTcDhwRDYzQUN5MFZJL3JrbWhhMDUxak1uUDcw?=
+ =?utf-8?B?NjB4RklwV3dhdkhCY1VQVmI0WW0rc2l3b29BUkZCUVpIVVhpRVpLWm5UeDln?=
+ =?utf-8?B?WHNnZTNmZURXQkJKRVN2Nk9ZSFAzNXdzVERRVWhuZ1dQR20vYzhNQnBEamhP?=
+ =?utf-8?B?bzRIRWplUWx1b1U3KzJTV2ZMUkFPRElVOW5UdGhoajV5UlhuSEYycTF1K3V0?=
+ =?utf-8?B?WVllWXpYcndoZUkzdXBIT2dSa2ZWcjgwMWM2QzJpWnFTeFRxYkt4WDNyY3A3?=
+ =?utf-8?B?bnIycCtoMzVYcTV2Y25Keit2NSs5VTcxU0tIWmN5Z2dPUlVyTXhFNTFYRzZ1?=
+ =?utf-8?B?Z2x5eU1ScFd6dXBCOHZYNjU1MDc1OEd2S3I5RnVpVFdvbTNxdUtBdjBqVWEw?=
+ =?utf-8?B?NkpDVnorVlErdXRHYUFjcDRpSFNIOTQ1VlpMa29jZVl2dWtGQjVsaDl3dE5y?=
+ =?utf-8?B?ZzlNMmlGTDMvQjJRQ3lLNUIzYUpiYlVDNnZhUExPTENmRmRGZTg4a1NjWFpi?=
+ =?utf-8?B?bm8xaXRiWHgxZ2VmdUtuV21SMnN0ZGtHY2FnRW5adXB2RW1UVm4rSkcwMmJw?=
+ =?utf-8?B?K0xibVhoOUtWZVR0TWxVYVI3cWxxVGNCdGhvaDdrSE1KaXNQWXducEhWb3ZK?=
+ =?utf-8?B?OE5LMkhuNjdGVHJSV0pQZ1ViZWdUYVZtbWRGYW0xRHhmZWhWRkFMZWFRL1BQ?=
+ =?utf-8?B?cnBrVUU5d3htVVNLcEtpQnpOdVFaSEdsN3BKMDhOdjVwRTVnRFBwUXpnL0lv?=
+ =?utf-8?B?TUY2L0RaSWp4MUhseWozczEzRVZnbDFZOEplOHNoUjZQbWFpeTFMMmdhMmlE?=
+ =?utf-8?B?RzA4WXJaWExlNG52UmkxSXhXSW04WUw1Wm42OFB3S2pPQXVHUkdvWGdEV1hT?=
+ =?utf-8?B?TmpFYk1wVFdKd01NWVBGT09wdmFPbDd5U3ZnN2FUN0Z6VktiQjArbjZuWWcz?=
+ =?utf-8?B?R1lsaEV3dDZyaVdaSDBmV2pteTNkdGpDUHU0dVMwRkpXWUhTK2FuZFhxTTdI?=
+ =?utf-8?B?VlY2TDF4bjRBdXB2VTVia1A3YzExNzZyUzd0UFRFRlZweFhKSzgwUjFkeThn?=
+ =?utf-8?B?ZU9hZk1kTjArTjc5Uk9JM0d1SnMxQStobkszd1VMM1pVUlp2SkFPRUFRZFla?=
+ =?utf-8?B?QzlsSWN0M1gySE9YQzNHckExazMwSGRjeHhJVnpkMWZYdE5PaEZjS1ZlMHpy?=
+ =?utf-8?B?eXk5S0lpZDJhdHRNYXdsSDYzVTlyaUZtUXFjWWZVMmcvL0JIZTMxbkFpeE1Z?=
+ =?utf-8?B?cllVV0wvUC9RUUxDOXR2ZnhoL2wyUGcxZ0krMHNaUmNRdU1vSTMybkdNV0NI?=
+ =?utf-8?B?UVNvMkRaN0UzdFhldVdsZWxOb2ZkaFRwOFhDa3MwTEFPV1loa1NPS090dnI0?=
+ =?utf-8?B?SkpYM051a3JCbVVOQlRQOGpkVDhxQ21EblFzdUppWWpvRnZVZlNkZVdla1JK?=
+ =?utf-8?B?NFh5dmNHY3Y2UmNWVjZ2czdBUHZRd2JHRVR6VG9mbUFNY2tqRjQwZz09?=
+X-OriginatorOrg: garyguo.net
+X-MS-Exchange-CrossTenant-Network-Message-Id: 7fde31b3-115b-483f-72e2-08df10f798d3
+X-MS-Exchange-CrossTenant-AuthSource: LOAP265MB8560.GBRP265.PROD.OUTLOOK.COM
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 12 Sep 2026 17:59:31.7599
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: bbc898ad-b10f-4e10-8552-d9377b823d45
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: vdOQpLW1kmP6kt/S+emz+U1u6tgoy0LSR3GXswATjY9+68+88dW0JVQMNUZpY02XJzcdr9wgEHe0yPagaOG4sg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: LO0P265MB6725
 
-Hi Mukesh,
+On Sat Sep 12, 2026 at 7:59 AM BST, Mukesh Kumar Chaurasiya (IBM) wrote:
+> The Rust kernel infrastructure generates inline asm for WARN() via
+> ARCH_WARN_ASM(file, line, flags, size), expanding it through a C
+> preprocessor pass (generated_arch_warn_asm.rs.S) to produce an
+> arch-specific asm template string for use in Rust's core::arch macros.
+>
+> powerpc currently lacks ARCH_WARN_ASM and ARCH_WARN_REACHABLE, causing
+> Rust builds to fail on powerpc with
+> ```
+> error: no rules expected `ARCH_WARN_ASM`
+>    --> /home/linkmauve/dev/linux/wii/rust/kernel/generated_arch_warn_asm.=
+rs:1:28
+>     |
+>   1 | ::kernel::concat_literals!(ARCH_WARN_ASM("{file}", "{line}", "{flag=
+s}", "{size}"))
+>     |                            ^^^^^^^^^^^^^ no rules expected this tok=
+en in macro call
+>     |
+>    ::: ../rust/kernel/lib.rs:279:1
+>     |
+> 279 | macro_rules! concat_literals {
+>     | ---------------------------- when calling this macro
+>     |
+>     =3D note: while trying to match sequence start
+>
+> error: no rules expected `ARCH_WARN_REACHABLE`
+>    --> /home/linkmauve/dev/linux/wii/rust/kernel/generated_arch_reachable=
+_asm.rs:1:28
+>     |
+>   1 | ::kernel::concat_literals!(ARCH_WARN_REACHABLE)
+>     |                            ^^^^^^^^^^^^^^^^^^^ no rules expected th=
+is token in macro call
+>     |
+>    ::: ../rust/kernel/lib.rs:279:1
+>     |
+> 279 | macro_rules! concat_literals {
+>     | ---------------------------- when calling this macro
+>     |
+>     =3D note: while trying to match sequence start
+>
+> error: aborting due to 2 previous errors
+> ```
+>
+> To add ARCH_WARN_ASM, _EMIT_BUG_ENTRY first needs to be refactored.
+> The old definition was a bare macro with no parameters, relying on
+> positional asm operand references (%0-%3), hardcoding the backward
+> reference to local label 1b, and including .org/.previous directives
+> inline. That made it impossible to compose as a plain string outside of
+> an asm operand context, and left an invisible contract that callers must
+> always emit their trap at label 1:.
+>
+> Refactor _EMIT_BUG_ENTRY to take explicit (label, file, line, flags)
+> string arguments via string concatenation. This removes the dependency
+> on asm operand numbering and makes the trap label an explicit argument,
+> so the caller's intent is visible at the call site and a future caller
+> using a different label cannot silently produce a wrong bug table entry.
+>
+> Move the .org and .previous directives out of _EMIT_BUG_ENTRY and into
+> each call site, so BUG_ENTRY() can still pass sizeof(struct bug_entry)
+> as an asm operand while ARCH_WARN_ASM can supply its own size string
+> independently.
+>
+> Add ARCH_WARN_REACHABLE as an empty define, matching the arm64
+> convention, indicating that no additional reachability annotation is
+> needed after a WARN on powerpc.
+>
+> This brings powerpc into line with x86, arm64, s390, and riscv, all of
+> which already define ARCH_WARN_ASM and ARCH_WARN_REACHABLE.
+>
+> Reported-by: FUJITA Tomonori <tomo@flapping.org>
+> Closes: https://lore.kernel.org/all/anG67Q6Y59kDqh-c@desktop
+> Fixes: 73b741adb264 ("rust: Add PowerPC support")
+> Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
+> ---
+>  arch/powerpc/include/asm/bug.h | 36 +++++++++++++++++++---------------
+>  1 file changed, 20 insertions(+), 16 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/bug.h b/arch/powerpc/include/asm/bu=
+g.h
+> index 0db48977c70c..6f0f652d9348 100644
+> --- a/arch/powerpc/include/asm/bug.h
+> +++ b/arch/powerpc/include/asm/bug.h
+> @@ -32,34 +32,38 @@
+>  #endif /* verbose */
+> =20
+>  #else /* !__ASSEMBLER__ */
+> -/* _EMIT_BUG_ENTRY expects args %0,%1,%2,%3 to be FILE, LINE, flags and
+> -   sizeof(struct bug_entry), respectively */
+>  #ifdef CONFIG_DEBUG_BUGVERBOSE
+> -#define _EMIT_BUG_ENTRY				\
+> -	".section __bug_table,\"aw\"\n"		\
+> -	"2:	.4byte 1b - .\n"		\
+> -	"	.4byte %0 - .\n"		\
+> -	"	.short %1, %2\n"		\
+> -	".org 2b+%3\n"				\
+> -	".previous\n"
+> +#define _EMIT_BUG_ENTRY(label, file, line, flags)	\
+> +	".section __bug_table,\"aw\"\n"			\
+> +	"2:	.4byte " #label " - .\n"		\
+> +	"	.4byte " file " - .\n"			\
+> +	"	.short " line ", " flags "\n"
+>  #else
+> -#define _EMIT_BUG_ENTRY				\
+> -	".section __bug_table,\"aw\"\n"		\
+> -	"2:	.4byte 1b - .\n"		\
+> -	"	.short %2\n"			\
+> -	".org 2b+%3\n"				\
+> -	".previous\n"
+> +#define _EMIT_BUG_ENTRY(label, file, line, flags)	\
+> +	".section __bug_table,\"aw\"\n"			\
+> +	"2:	.4byte " #label " - .\n"		\
+> +	"	.short " flags "\n"
+>  #endif
+> =20
+>  #define BUG_ENTRY(cond_str, insn, flags, ...)		\
+>  	__asm__ __volatile__(				\
+>  		"1:	" insn "\n"			\
+> -		_EMIT_BUG_ENTRY				\
+> +		_EMIT_BUG_ENTRY(1b, "%0", "%1", "%2")	\
+> +		".org 2b+%3\n"				\
+> +		".previous\n"				\
+>  		: : "i" (WARN_CONDITION_STR(cond_str) __FILE__), "i" (__LINE__),	\
+>  		  "i" (flags),				\
+>  		  "i" (sizeof(struct bug_entry)),	\
+>  		  ##__VA_ARGS__)
+> =20
+> +#define ARCH_WARN_ASM(file, line, flags, size)		\
+> +		"1:	twi 31, 0, 0\n"			\
+> +		_EMIT_BUG_ENTRY(1b, file, line, flags)	\
+> +		".org 2b+" size "\n"			\
 
-Le 11/09/2026 à 19:39, Mukesh Kumar Chaurasiya a écrit :
-> 
-> [...]
->>> diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
->>> index 6f6801da9dc1..44115f904c2c 100644
->>> --- a/arch/powerpc/kernel/cputable.c
->>> +++ b/arch/powerpc/kernel/cputable.c
->>> @@ -36,8 +36,8 @@ void __init set_cur_cpu_spec(struct cpu_spec *s)
->>>    	t = PTRRELOC(t);
->>>    	/*
->>> -	 * use memcpy() instead of *t = *s so that GCC replaces it
->>> -	 * by __memcpy() when KASAN is active
->>> +	 * use memcpy() instead of *t = *s so that the compiler replaces it
->>> +	 * by __asan_memcpy() when KASAN is active
->>>    	 */
->>
->> Does the initial problem still exist with the new __asan_memcpy() approach ?
->> If not the comment should be removed.
->>
-> Hey Christophe,
-> 
-> Thanks for pointing it out, i took a deeper look into this, here's my
-> understanding on it.
-> 
-> On PowerPC during very early boot the kernel is loaded by the
-> bootloader/firmware at some physical address, but the kernel was linked
-> expecting it to run at KERNELBASE(virtual address like
-> 0xc000000000000000). The MMU mapping that makes that virtual address
-> valid hasn't been set up yet. So far for a window of early boot, code is
-> executing at the physical load address while all symbol addresses in the
-> binary refer to the virtual linked address. reloc_offset() computes the
-> gap between these two and PTRRELOC applies it to any pointer.
-> 
-> So PTRRELOC(&the_cpu_spec) gives the physical address where the struct
-> actually lives in memory right now, not where the linker thinks it lives.
-> 
-> Why *t = *s would be wrong?
-> 
-> In set_cur_cpu_spec:
-> 
-> struct cpu_spec *t = &the_cpu_spec;  // linked (virtual) address
-> t = PTRRELOC(t);                     // physical address — where it actually is
-> memcpy(t, s, sizeof(*t));            // copy into the right place
-> 
-> If you wrote *t = *s instead, the compiler generates a struct assignment.
-> For a large struct like cpu_spec, GCC is free to implement that however
-> it likes — including emitting a call to memcpy(). But crucially, a
-> compiler-generated memcpy call resolves through the GOT/PLT or direct
-> symbol — which points to the linked virtual address of memcpy, not the
-> physical address. At this point in boot, calling through the wrong
-> address would jump to garbage or an unmapped page.
-> 
-> memcpy(t, s, sizeof(*t)) written explicitly is different: t is already
-> the corrected physical address, s points into the cpu_specs table which
-> has also been PTRRELOC'd. The explicit call goes through the normal
-> early-boot call mechanism which is safe.
-> 
-> The original comment said:
-> 
-> "use memcpy() instead of *t = *s so that GCC replaces it by __memcpy()
-> when KASAN is active"
-> 
-> This was added because under the old KASAN scheme
-> (!CC_HAS_KASAN_MEMINTRINSIC_PREFIX), KASAN overrode the memset/memcpy
-> linker symbols globally with C wrappers that called kasan_check_range().
-> If the compiler turned *t = *s into an implicit memcpy(), that would hit
-> the KASAN wrapper — calling kasan_check_range() at a point in early boot
-> where the KASAN shadow isn't mapped yet, causing a crash.
-> 
-> Writing memcpy(t, s, sizeof(*t)) explicitly made GCC emit __memcpy()
-> (the raw assembly alias exposed by _GLOBAL_KASAN) instead of the
-> KASAN-wrapped memcpy(), bypassing the shadow check.
-> 
-> That was the secondary reason. The primary reason that t is a
-> PTRRELOC-adjusted physical pointer and the copy must go through it
-> correctly was never stated.
-> 
-> So the KASAN comment is not required but i think we still need to state
-> why memcpy is required. For PTRRELOC adjustment, comment should reflect
-> that.
-> 
-> I'll update the comment and commit message and send out a new version.
+From the current implementation it looks like making "1b" a parameter doesn=
+'t
+really help anything. The fact that it internally rely on `2:` as label is =
+still
+hardcoded.
 
-Explanation based on kernel v5.10
+I think you should either make the label custom too, so you write
 
-The problem was not linked to PTRRELOC, the t = PTRRELOC(t) followed by 
-*t = *s works well in term of adressing, regardless of whether 
-CONFIG_KASAN is enabled or not.
+    "1:	twi 31, 0, 0\n"	\
+    _EMIT_BUG_ENTRY(2, 1b, file, line, flags) \
+    ".org 2b+" size "\n" \
 
-The problem is that with *t = *s, gcc emits a call to memcpy(). When 
-CONFIG_KASAN is enabled, memcpy() is instrumented. But we don't want 
-cputable.o instrumented as we have KASAN_SANITIZE_cputable.o := n in 
-Makefile.
+Or you should just hardcode "2" and "1b" and document them.
 
-In asm/string.h we have:
+This stucks in mid-way and is arguably worse than either option.
 
-#if defined(CONFIG_KASAN) && !defined(__SANITIZE_ADDRESS__)
-/*
-  * For files that are not instrumented (e.g. mm/slub.c) we
-  * should use not instrumented version of mem* functions.
-  */
-#define memcpy(dst, src, len) __memcpy(dst, src, len)
-#define memmove(dst, src, len) __memmove(dst, src, len)
-#define memset(s, c, n) __memset(s, c, n)
+Best,
+Gary
 
-Because in non-instrumented files like cputable.o we want memcpy() to be 
-replaced at buildtime by __memcpy() to skip KASAN instrumentation. But 
-this is resolved by pre-processing, and pre-processor doesn't know that 
-the compiler will emit a call to memcpy().
+> +		".previous\n"
+> +
+> +#define ARCH_WARN_REACHABLE
+> +
+>  /*
+>   * BUG_ON() and WARN_ON() do their best to cooperate with compile-time
+>   * optimisations. However depending on the complexity of the condition
 
-By replacing *t = *s by the memcpy(), the pre-processor replaces 
-memcpy() by __memcpy() when CONFIG_KASAN is enabled.
 
-See the difference:
-
-This is v5.10
-
-00000000 <set_cur_cpu_spec>:
-    0:	94 21 ff e0 	stwu    r1,-32(r1)
-    4:	7c 69 1b 78 	mr      r9,r3
-    8:	bf c1 00 18 	stmw    r30,24(r1)
-    c:	3f e0 00 00 	lis     r31,0
-			e: R_PPC_ADDR16_HA	.data..read_mostly
-   10:	3b ff 00 00 	addi    r31,r31,0
-			12: R_PPC_ADDR16_LO	.data..read_mostly
-   14:	7c 08 02 a6 	mflr    r0
-   18:	7d 3e 4b 78 	mr      r30,r9
-   1c:	7f e3 fb 78 	mr      r3,r31
-   20:	90 01 00 24 	stw     r0,36(r1)
-   24:	48 00 00 01 	bl      24 <set_cur_cpu_spec+0x24>
-			24: R_PPC_REL24	add_reloc_offset
-   28:	7f c4 f3 78 	mr      r4,r30
-   2c:	38 a0 00 58 	li      r5,88
-   30:	48 00 00 01 	bl      30 <set_cur_cpu_spec+0x30>
-			30: R_PPC_REL24	__memcpy
-   34:	38 7f 00 58 	addi    r3,r31,88
-   38:	48 00 00 01 	bl      38 <set_cur_cpu_spec+0x38>
-			38: R_PPC_REL24	add_reloc_offset
-   3c:	93 e3 00 00 	stw     r31,0(r3)
-   40:	80 01 00 24 	lwz     r0,36(r1)
-   44:	83 c1 00 18 	lwz     r30,24(r1)
-   48:	83 e1 00 1c 	lwz     r31,28(r1)
-   4c:	7c 08 03 a6 	mtlr    r0
-   50:	38 21 00 20 	addi    r1,r1,32
-   54:	4e 80 00 20 	blr
-
-This is v5.10 with commit adcf59187e270 reverted:
-
-00000000 <set_cur_cpu_spec>:
-    0:	94 21 ff e0 	stwu    r1,-32(r1)
-    4:	7c 69 1b 78 	mr      r9,r3
-    8:	bf c1 00 18 	stmw    r30,24(r1)
-    c:	3f e0 00 00 	lis     r31,0
-			e: R_PPC_ADDR16_HA	.data..read_mostly
-   10:	3b ff 00 00 	addi    r31,r31,0
-			12: R_PPC_ADDR16_LO	.data..read_mostly
-   14:	7c 08 02 a6 	mflr    r0
-   18:	7d 3e 4b 78 	mr      r30,r9
-   1c:	7f e3 fb 78 	mr      r3,r31
-   20:	90 01 00 24 	stw     r0,36(r1)
-   24:	48 00 00 01 	bl      24 <set_cur_cpu_spec+0x24>
-			24: R_PPC_REL24	add_reloc_offset
-   28:	7f c4 f3 78 	mr      r4,r30
-   2c:	38 a0 00 58 	li      r5,88
-   30:	48 00 00 01 	bl      30 <set_cur_cpu_spec+0x30>
-			30: R_PPC_REL24	memcpy
-   34:	38 7f 00 58 	addi    r3,r31,88
-   38:	48 00 00 01 	bl      38 <set_cur_cpu_spec+0x38>
-			38: R_PPC_REL24	add_reloc_offset
-   3c:	93 e3 00 00 	stw     r31,0(r3)
-   40:	80 01 00 24 	lwz     r0,36(r1)
-   44:	83 c1 00 18 	lwz     r30,24(r1)
-   48:	83 e1 00 1c 	lwz     r31,28(r1)
-   4c:	7c 08 03 a6 	mtlr    r0
-   50:	38 21 00 20 	addi    r1,r1,32
-   54:	4e 80 00 20 	blr
-
-So my question is ? Do we still have this issue nowadays ?
-
-Christophe
 
