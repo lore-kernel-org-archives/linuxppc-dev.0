@@ -1,121 +1,87 @@
-Return-Path: <linuxppc-dev+bounces-27169-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-27170-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CB4F9C79FB6
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Sep 2026 06:59:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D345DC88E4D
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Sep 2026 08:16:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hhj2r0xGFz2yqT;
-	Sat, 12 Sep 2026 16:59:48 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1031"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789196388;
-	cv=none; b=WGSEnLwTY8CiWmnsS8RObAN/1qV/KlL7Ah+Hvdy9YSrBPk4tcR4Ij9961Js4aK4ZT/JNmyDzeMNbPvZwVIu1uI54u7qWoKAgtVXx94CUTS1cRaRUWTrlqx/4vRibquMvY8h4C+6HbwXi0pPNkR1lXToI0MwCERsHFnCyQMBme6Ti+cJ0HxqtYF3bh58HAVAReluy6JoVe3deUKBdJyVQAhVeAmJlD3iZ5MgWkWUQXDS96zRFbwH5pEb6cPEICAtFmjWRtulDve/lqKwGn+3VJ+2syhxdIKrzGRj7Q5+T+eHBTzXWNwAX5HP0aeEjhVjUnwrQLEltNoPZ9jQPIIUEPQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hhklT0jVZz2xft;
+	Sat, 12 Sep 2026 18:16:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=103.168.172.142
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789200997;
+	cv=none; b=NTYfboCQZg11mrIUz1Zxw8TVx2BjbSvNBUDwm8ZbjhTauF8hRixM9CJTA+B7Cez6GZ81Zx50mBG8+XnpQUv3r8+3/grBM8HJNMLEKxZXYVBBYEBLIlOzk6ORa+7En8upJIj++LWOMtpcDIVgE5FDXpQ/n6+BK+0T2vJ+8QWtUCCT0zFIctY5dWre+/7dxRTI1pEql0aOXsv3MPHwSjnHCFh/L5FN4d6LRY70hHpxpITKE3cWW1tdrxK/KHrE1LSi+L3cBwk4fsfk4Kl5aYKex99C+PCZAr+PtaJp6/3iek/SQiVcWte/xeLz+69+ylSUSm3U+qwaZzYXCwHi6B4mhw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789196388; c=relaxed/relaxed;
-	bh=sQBQeHY/m2oxf/tBIxLoCVyblcJokzqcMJJjpX+vwvU=;
-	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=E4A91RKicvjhgddJ4wRyOCPFNI6rBxtxCf7pbZZbTNCUaSJTQGwDUI9MMZGblmDFDS/W+ZnrpjyHOEL1o43Yq+FaXeFJVwF8xYjyc+IATmTzgW16KeRe0sAikdl86fHyVf3i82w3vXNGIff7ASg7bIIrPl/cIBZo6+feIYLyAgX9p0xr2Qohab+b4Pc8COgjSSxWnviE5pH8ls3amtzWeVID8p+fAnpXxr70ZgMRQJjZ0T32y1ZQpBy84wZvdzN9OZLD/bF8LbY/Z/fw/ZNeO3N0MB5GbD9ZbcNs8jNYhta6mdevLTa7crcaI2X6PSYDw9CJzFwLnjqb6Sr+ZOIxmA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=LI8vz4Z6; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1031; helo=mail-pj1-x1031.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1789200997; c=relaxed/relaxed;
+	bh=f3qwWyqi3bNUqorYQGcKxNjQwJcXGV0fC7D1AqFX08M=;
+	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
+	 Subject:Content-Type; b=D9J1XmqosSPaAgRClEapGLBw0s63s3OEAP/O1vMa3EKRZ1eDZQGoFngZzKWa7C+oXTs4P7NBIyB30WIVN3YgpnIuqliHPc1HI8gF2mVUFcHWZEva40SV2uo3StVIUBnIksX/33kcI5OSLYHy4v0pPFw1GSoXtym6zFpxIy3BbiUp5lN/D+lj/vnJS46zN+zbACakX/6Da2j8qGWEIAvRRVAjUgx8Cz7sVl5cQbN11V828tKOjM2tW7TukfeAHOK9Rua/zWUb//jVT7MDVZE5cVomCpK71SuPlwfHc13m7+66NqRXSj+OU0cFBV8kMv+iPEj0fueu6Rh9UGUzJDb+FA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de; dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm3 header.b=Lrt/fM48; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=lxb01r0k; dkim-atps=neutral; spf=pass (client-ip=103.168.172.142; helo=flow-a7-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org) smtp.mailfrom=arndb.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=LI8vz4Z6;
+	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm3 header.b=Lrt/fM48;
+	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=lxb01r0k;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1031; helo=mail-pj1-x1031.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x1031.google.com (mail-pj1-x1031.google.com [IPv6:2607:f8b0:4864:20::1031])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=103.168.172.142; helo=flow-a7-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org)
+X-Greylist: delayed 561 seconds by postgrey-1.37 at boromir; Sat, 12 Sep 2026 18:16:33 AEST
+Received: from flow-a7-smtp.messagingengine.com (flow-a7-smtp.messagingengine.com [103.168.172.142])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hhj2q18Fhz2yln
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Sep 2026 16:59:46 +1000 (AEST)
-Received: by mail-pj1-x1031.google.com with SMTP id 98e67ed59e1d1-3990fe066ebso1412818a91.1
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2026 23:59:46 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789196385; x=1789801185; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:date:subject:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=sQBQeHY/m2oxf/tBIxLoCVyblcJokzqcMJJjpX+vwvU=;
-        b=LI8vz4Z6OJsOfZawCniixw/28Edo8mPMBhFaF67m72fFAoGTwVh1RmNQjLclgohKBh
-         3qNhCzaY6DHycq364J5Zqc6SpZMgLWopwKOOIAHVVXV3HUoBM6kLP4hDwtMVp8ksFQ+9
-         ZAbQURlAXhyvoKjCjCr6Q3kJ+gceYYyi218vptq3gUUNHTSQB1eOF5Qw8XspKtK2ALH6
-         ocXAGaHA6xna/4T+cdXLMgdGoT20VlAVfNodB+vO/PB2Xy8AjegG+T7g3eImmLnmv7LS
-         toNiSqJkzftM2roTIQPVlnE7PRwh9U7myeQxcjkpp+ibQlg+jA9RSHILSxGdsSuUybJv
-         ntGg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1789196385; x=1789801185;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:date:subject:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=sQBQeHY/m2oxf/tBIxLoCVyblcJokzqcMJJjpX+vwvU=;
-        b=TDhsA13seNzVWWVKHQ3rY7y9vEt1tOgw1uewnF8tvlCroz+N0otHqv1HvESSl9ANgT
-         SjDwvCXBFqPMgegH7AayWgikM9J05n1frQg6eU7RhPTL5cswm1xmCIsUOw/0vI0rwxuP
-         QBofOy2TFTpM5r0Dp+5aBVGoqJyZ9cTQXbbKcWUnct5KxzuXiyK8LXtvzs3sxA6uGu15
-         sy4/cDjVsp46nApJPUzHXDbCVGFbmo/3jPxdhfMYO5LZKXnQ8t0AP9S6UlXsBIDxThcG
-         rnMiWK+QDvlhOgJEsG3xAwda12VXjwmEwCUL31iPxeElrzzczGY81jEqUVtywGqsVkyH
-         bYIw==
-X-Forwarded-Encrypted: i=1; AKwUvBzfh9ztg+kvljJIVjcv6ifm2bA6KiXRW1vxvAzajYmmtLSpRbsEbhVDkJ3QbcYMgoTjkRgh6AXpJzz6Ttk=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++mYkZ25brw4VcPI+UYkP0xEz/YbnhpS+yX+Qhx5YDAaqZ/JgcPB
-	V50mDDVbINKlUGdR34i+6ezhdg8cJ/vOp81U0kJIdXRbKAV/q9f5UL8L
-X-Gm-Gg: AYBFou2u2wHszopQCwqeLLuX3mY+dYqH/7zweF4otVWVa2tPAy0YuRSErnBsFZZDOw9
-	5nGofElSBo2CuY2/yKHq4V9MV397qRG3VniCkt0TdAsNIstvKNvx8pJtKbjApEkgYdN5hgfHLmu
-	7o2ra7GZqKO6ZdcNi5iWWLYLSJ1uCltlOovDqHZdVHtUTchoMLoFPLdifcuBTvk1QV6psztUJfb
-	/RPnAB7NjGZ5ni/K5gwqkBfUowMHTIPoYlgR35pwwQoI2A5N6PCyWlOy2RZ5WuqNPXofTHvbr6y
-	vND+IgnR8TXWVrPZDs73GEe/3MsWolcH/q9E4A3ya7KyPR2+B4byhM7hmagH4vWV8DDfbhCEUZd
-	2tAGaLMNmLVjsiITIOAEa6zCfx/Uah5JM7cYAC+QbyGlMTBXMC90U0SQixIDLMzRHK4d1tomqEA
-	gYxtX9DU2Uvjw+zsC2PQzRHMALfAQcdypbVbiIQuOk5TnxKJeeOuw8agcoE8YtlMUh5JVVvAJqc
-	tWCFPgR+JKiPvLGCB56BIJ4gp/kvJELROjFsJU5Kv0l0w==
-X-Received: by 2002:a17:90b:2689:b0:38d:ddc2:7ccb with SMTP id 98e67ed59e1d1-39d9bbc81damr13190186a91.1.1789196384673;
-        Fri, 11 Sep 2026 23:59:44 -0700 (PDT)
-Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([106.51.165.23])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-14365b78d59sm10777777c88.8.2026.09.11.23.59.32
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 11 Sep 2026 23:59:44 -0700 (PDT)
-From: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
-To: maddy@linux.ibm.com,
-	mpe@ellerman.id.au,
-	npiggin@gmail.com,
-	chleroy@kernel.org,
-	ojeda@kernel.org,
-	boqun@kernel.org,
-	gary@garyguo.net,
-	bjorn3_gh@protonmail.com,
-	lossin@kernel.org,
-	a.hindborg@kernel.org,
-	aliceryhl@google.com,
-	tmgross@umich.edu,
-	dakr@kernel.org,
-	daniel.almeida@collabora.com,
-	tamird@kernel.org,
-	acourbot@nvidia.com,
-	work@onurozkan.dev,
-	pjw@kernel.org,
-	palmer@dabbelt.com,
-	aou@eecs.berkeley.edu,
-	alex@ghiti.fr,
-	nathan@kernel.org,
-	ndesaulniers@google.com,
-	morbo@google.com,
-	justinstitt@google.com,
-	mkchauras@gmail.com,
-	ynorov@nvidia.com,
-	ecourtney@nvidia.com,
-	joelagnelf@nvidia.com,
-	fujita.tomonori@gmail.com,
-	linkmauve@linkmauve.fr,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	rust-for-linux@vger.kernel.org,
-	linux-riscv@lists.infradead.org,
-	llvm@lists.linux.dev
-Subject: [PATCH v4 2/2] rust: kernel: Add KUnit tests for powerpc ARCH_WARN_ASM bug table emission
-Date: Sat, 12 Sep 2026 12:29:02 +0530
-Message-ID: <20260912065902.24017-3-mkchauras@gmail.com>
-X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20260912065902.24017-1-mkchauras@gmail.com>
-References: <20260912065902.24017-1-mkchauras@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hhklP59KSz2xdb
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Sep 2026 18:16:33 +1000 (AEST)
+Received: from ams-compute-02.internal (ams-compute-02.internal [10.64.2.62])
+	by mailflow.phl.internal (Postfix) with ESMTP id 0C6721380082;
+	Sat, 12 Sep 2026 04:07:02 -0400 (EDT)
+Received: from ams-imap-03 ([10.64.2.23])
+  by ams-compute-02.internal (MEProxy); Sat, 12 Sep 2026 04:07:06 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+	:cc:content-transfer-encoding:content-type:content-type:date
+	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to; s=fm3; t=1789200422;
+	 x=1789207622; bh=f3qwWyqi3bNUqorYQGcKxNjQwJcXGV0fC7D1AqFX08M=; b=
+	Lrt/fM48uvxyR5iY147Dg1TLUxzhC6V9WeE9G4Nf2xS4+pkFwVgvQlPsZgX1ObsY
+	hxNwAbimSrgLpG19RfvyiSqHjWyUKu/DrU6GHqrd1Ny3X/qxb2V7PLMrwMTGxJ5J
+	hxhHSDw6DzkOfUQoTLd/xCPLr0ZkyiUbbdsArhbOLbeDBOETI9bYaulAFEdBhhYB
+	8yV92Rxc4ba4CNFpTlX1DQ8hmsjEd2RUFxoF2+d6ai2JCK/3mEz0yCBKDLCy0kT7
+	MblYeZafK+CpuQ2/h4Xvl/E08vAxOSUkiRJzXlUswU1dssfWm8A/JrDq84M4L8cU
+	2hzmROIQ1QhHapZ/aclkGQ==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:content-type:date:date:feedback-id:feedback-id
+	:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to:x-me-proxy
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=1789200422; x=
+	1789207622; bh=f3qwWyqi3bNUqorYQGcKxNjQwJcXGV0fC7D1AqFX08M=; b=l
+	xb01r0kwHfIHCGkG23JDkVT0OR6WYaawzrtFN7BXJBAVCJeq1Uh+/e7Gg8JYmtXF
+	1LCmYWrVh+aXxK5P/aKoegaKad7yStYYhFa5ivwWliqhk6EY7BLZYTcIbQ4z6YAP
+	OgbD33qflDx3/fBJ5dTlkLlHBZs9X0dE/P17DVw8jlpi5mFAJYYwLaUHyVeXRB3f
+	CdBLMEWG4iHPdsLf2rroVuXg2vYAKidKUSvaUd82yVymPftKPUW6ojD1IN5haV6W
+	RHa8fD3MVF0wRBMz5082rQG2m7E0jTrMHkEZvxZ3XxwrNqgA6EB6PgmjTdxzlq1x
+	xsRPvrz6z+1EwtsZYC6DQ==
+X-ME-Sender: <xms:GwilaiM9DoEGXPS-5POglj3Fs3UX9dKSgEcrGATNpDMJPGNSuR9zRA>
+    <xme:GwilarxN0E-D3ujq0LTikzEohK71z4qj5L4kuPdseBnDwMgcrWtIyG72C2_JeVM5A
+    FBrlFgdq3_j6q1S6Y1dTCO0Qo2bNHyHI3LXOfX-aFV8Bj-yyr6y6g>
+X-ME-Proxy-Cause: dmFkZTEnMfHZeL1bdmK0cMv43Ykw4Ux5EmKrIdL01M3dqOuqJ2lE5s/Zf8fR7tEIJo0kPv
+    zWtV+y0PrEAHOjaSKsxSLCyqEt7BsSvRONex+NaaPtPqORZ63NRy+Js06kSKO6B4kHMOw6
+    X66YzjTgLq7T2dVQ/Wy+z0mQ4yQi6eeqwM+Ha0y0Pecb27IXKwT7AyfrUjOgPW/ax0pbxm
+    431ZmN3/a8b+CFj03gZG/0GqmMDdPzw9zIGPXhsnXYuTl1E61xnGM14GRGmIYVt0/4ruFj
+    bJzQHDqH1XLMGaU36Dad0/cx0LiIfSRIILMzpeOL+9wHlFYdYe8pNXSPkjqQSck9kl74XP
+    aCzd84oPX17C7TH8ROIK4AlY8as07h/xF1/mi69Tj3lPRbQOBi9KqgToWBN9+IbxAFo0Bl
+    O91jo3tZhjZHGmsdRT5I8CZPH49W4wppnyIMbWnJORO8mrIahMZ6pRtbPa974ykxYGKMc0
+    xa2sGvHlvvuBThI5t8oyZDRmkUDZCxhbR0R3u3jVuF2XW3z+rnrLNhMoF4j2qzzk8B1zZz
+    lJPY/WsxQGZwEdKj8dXZcU/q8nWTM5JBnCaWjr2cJoG1Wha/0dH3WyaH3eGu7Az0Ec7QPm
+    5/9iLK7Gy3Htywzk5qwWNhjRQMpdbPa/lgeqDfBz1ZWNbrYIda+j3gvZ7Xqg
+X-ME-Proxy: <xmx:IAilakYs_TJapqNKc7Bl7_t1LCTdqWksnA1ncYoY1SxGbgOkM5mR3g>
+    <xmx:IAilamUNZ9SPghoBE-fNuCRW3yvOkVXSEolaLNroFm67Oxs_i5V_HA>
+    <xmx:IAilakGOzLYoRVy5sbiYSRPFTKbqOoOKrzwo-FEclMQe4BRLcwxJkQ>
+    <xmx:IAilajCG69PBf_6_2kGV2BfXz2ckOvpTnN8WdA2x9XjMv6PH7RVuBQ>
+    <xmx:JgilasFp5Sb1z50QC1Sew28jzpy_7_aNbHZVZSIJDSN67XqZa69ERdel>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.ams.internal (Postfix, from userid 501)
+	id 549A532A007E; Sat, 12 Sep 2026 04:06:51 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -129,259 +95,76 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+X-ThreadId: AK-jVwBtQCQR
+Date: Sat, 12 Sep 2026 10:05:45 +0200
+From: "Arnd Bergmann" <arnd@arndb.de>
+To: "Svyatoslav Ryhel" <clamor95@gmail.com>
+Cc: "Arnd Bergmann" <arnd@kernel.org>,
+ "Alexandre Belloni" <alexandre.belloni@bootlin.com>,
+ "Bartosz Golaszewski" <brgl@kernel.org>,
+ "Mark Brown" <broonie@kernel.org>, "Conor Dooley" <conor+dt@kernel.org>,
+ "Daniel Thompson" <danielt@kernel.org>, "Helge Deller" <deller@gmx.de>,
+ devicetree@vger.kernel.org,
+ "Dmitry Torokhov" <dmitry.torokhov@gmail.com>,
+ dri-devel@lists.freedesktop.org, "Jonathan Cameron" <jic23@kernel.org>,
+ "Jingoo Han" <jingoohan1@gmail.com>,
+ "Krzysztof Kozlowski" <krzk+dt@kernel.org>, "Lee Jones" <lee@kernel.org>,
+ "Liam Girdwood" <lgirdwood@gmail.com>,
+ "Linus Walleij" <linusw@kernel.org>,
+ linux-arm-kernel@lists.infradead.org, linux-doc@vger.kernel.org,
+ linux-fbdev@vger.kernel.org,
+ "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
+ linux-hwmon@vger.kernel.org, linux-iio@vger.kernel.org,
+ linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-leds@vger.kernel.org, linux-media@vger.kernel.org,
+ linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org,
+ linux-sound@vger.kernel.org, linux-watchdog@vger.kernel.org,
+ "Guenter Roeck" <linux@roeck-us.net>, linuxppc-dev@lists.ozlabs.org,
+ llvm@lists.linux.dev, "Mauro Carvalho Chehab" <mchehab@kernel.org>,
+ mfd@lists.linux.dev, "Michael Hennerich" <michael.hennerich@analog.com>,
+ patches@opensource.cirrus.com, "Pavel Machek" <pavel@kernel.org>,
+ "Rob Herring" <robh@kernel.org>, "Sebastian Reichel" <sre@kernel.org>,
+ "Support Opensource" <support.opensource@diasemi.com>
+Message-Id: <937fb2c0-e910-4ab6-8599-ff5ea67fd9c3@app.fastmail.com>
+In-Reply-To: 
+ <CAPVz0n0pBxP2J=5DN+k+ut0HRnTmsU64orXwxa19G0+WAxN-zg@mail.gmail.com>
+References: 
+ <CAPVz0n0ryOns2sCJE_jFana9MVzwEj1QZuPEa8FNhGbHXnMB+A@mail.gmail.com>
+ <11652e5e-053e-45b0-98a0-0c1cb2aeedc4@app.fastmail.com>
+ <CAPVz0n0pBxP2J=5DN+k+ut0HRnTmsU64orXwxa19G0+WAxN-zg@mail.gmail.com>
+Subject: Re: [PATCH 08/14] mfd: remove unused aat2870 driver
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-Verify that the __bug_table entry emitted by ARCH_WARN_ASM has a correct
-bug_addr displacement — i.e. the '1b' label reference in _EMIT_BUG_ENTRY
-resolves to the trap instruction — by calling find_bug() with the exact
-virtual address of the twi instruction, mirroring what the real powerpc
-trap handler does.
+On Sat, Sep 12, 2026, at 08:42, Svyatoslav Ryhel wrote:
+> =D1=87=D1=82, 10 =D0=B2=D0=B5=D1=80. 2026=E2=80=AF=D1=80. =D0=BE 21:15=
+ Arnd Bergmann <arnd@arndb.de> =D0=BF=D0=B8=D1=88=D0=B5:
 
-The trap address is captured at link time via a .dc.a 1b relocation placed
-in .data by the global_asm! block. global_asm! is used instead of asm!
-because LLVM eliminates asm! blocks in dead branches; global_asm! is
-file-scope and always emitted. BUG_KUNIT_TRAP_ADDR is defined as a .global
-symbol directly on the .dc.a word so the linker relocation lands on it —
-a Rust static initialized to zero would end up in BSS where relocations are
-not applied.
+>> drivers/leds/leds-lm3530.c
+>> drivers/leds/leds-lm3532.c
+>
+> LM3532 has full OF support and is functional, it just does not have
+> device tree users yet. I have a device using it - Motorola Atrix 4G
+> (Tegra 2 based).
+>
+> Here is commit removing LM3532
+> https://git.kernel.org/pub/scm/linux/kernel/git/soc/soc.git/commit/?id=
+=3D46a6457870825d8b782d350fdc7e27c540734d41
+> Here are my patches bringing up Motorola Atrix 4G support
+> https://lore.kernel.org/lkml/20260721100245.444623-3-clamor95@gmail.co=
+m/
 
-.dc.a emits a pointer-width word (4 bytes on ppc32, 8 bytes on ppc64),
-so BUG_KUNIT_TRAP_ADDR is declared as usize on the Rust side, making the
-tests correct on both ppc32 and ppc64. The global_asm! block is split into
-two cfg-gated variants (CONFIG_PPC64 / !CONFIG_PPC64) to select the right
-.balign since concat!() only accepts literals.
+Ah, perfect: this is actually one of two drivers that I independently
+noticed as a false positive while writing the commit logs, and I
+dropped the changes in the update I pushed the branch yesterday.
 
-Five tests are included in the rust_kernel_bug_powerpc suite:
+In fact, I saw that there are three other upstream dts files using
+this driver. In general, I assumed that anything with a DT binding
+has users, with the exception of the devices inside of a removed
+SoC and a few PMIC chips that were tightly linked to a removed SoC
+from the same manufacturer.
 
-  bug_entry_found         - find_bug() returns non-NULL for the trap address,
-                            proving the bug_addr displacement is correct
-  bug_entry_is_warning    - the emitted entry has BUGFLAG_WARNING set
-  bug_entry_file          - bug_get_file_line() returns the correct source
-                            file (requires CONFIG_DEBUG_BUGVERBOSE)
-  bug_entry_line          - the recorded line number is non-zero, confirming
-                            the {line} operand was substituted correctly
-                            (requires CONFIG_DEBUG_BUGVERBOSE)
-  bug_entry_addr_is_in_text - kernel_text_address() confirms the trap address
-                            lies in kernel text, not data or zero
+Thanks a lot for checking the list!
 
-The suite is named rust_kernel_bug_powerpc and the Kconfig option
-CONFIG_RUST_BUG_POWERPC_KUNIT_TEST depends on PPC && GENERIC_BUG,
-covering both ppc32 and ppc64.
-
-Tested on ppc64le pSeries: pass:5 fail:0 skip:0.
-Tested on ppc32 QEMU mac99 G4: pass:5 fail:0 skip:0.
-Tested on ppc64le QEMU pseries: pass:5 fail:0 skip:0.
-
-Assisted-by: LLM
-Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
----
- rust/kernel/Kconfig.test |  13 +++
- rust/kernel/bug.rs       | 171 +++++++++++++++++++++++++++++++++++++++
- 2 files changed, 184 insertions(+)
-
-diff --git a/rust/kernel/Kconfig.test b/rust/kernel/Kconfig.test
-index e6a5c7a795f0..5a82f0812c89 100644
---- a/rust/kernel/Kconfig.test
-+++ b/rust/kernel/Kconfig.test
-@@ -83,4 +83,17 @@ config RUST_BITFIELD_KUNIT_TEST
- 
- 	  If unsure, say N.
- 
-+config RUST_BUG_POWERPC_KUNIT_TEST
-+	bool "KUnit tests for powerpc ARCH_WARN_ASM bug table emission" if !KUNIT_ALL_TESTS
-+	depends on PPC && GENERIC_BUG
-+	default KUNIT_ALL_TESTS
-+	help
-+	  This option enables KUnit tests that verify ARCH_WARN_ASM emits a
-+	  correct __bug_table entry on powerpc (both ppc32 and ppc64): the
-+	  bug_addr displacement must resolve back to the trap instruction so
-+	  that find_bug() can locate the entry — exactly as the real trap
-+	  handler does.
-+
-+	  If unsure, say N.
-+
- endif
-diff --git a/rust/kernel/bug.rs b/rust/kernel/bug.rs
-index 3566f0234ca4..da43e62ddcdd 100644
---- a/rust/kernel/bug.rs
-+++ b/rust/kernel/bug.rs
-@@ -152,3 +152,174 @@ macro_rules! warn_on {
-         cond
-     }};
- }
-+
-+// Test-only constants and file static referenced by the global_asm block below.
-+//
-+// global_asm! is file-scope and always emitted — LLVM cannot eliminate it,
-+// unlike asm! inside a function which is subject to dead-code removal.
-+//
-+// BUG_KUNIT_TRAP_ADDR is declared as a .global symbol entirely inside the
-+// global_asm! block so the .dc.a 1b relocation lands directly on it.
-+// A Rust static initialized to zero would end up in BSS; the linker does
-+// not apply relocations to BSS, so the address would stay zero at runtime.
-+#[cfg(CONFIG_RUST_BUG_POWERPC_KUNIT_TEST)]
-+mod test_statics {
-+    use crate::bindings::{bug_entry, BUGFLAG_WARNING, TAINT_WARN};
-+
-+    pub(super) const FLAGS: u32 = BUGFLAG_WARNING | (TAINT_WARN << 8);
-+    pub(super) const SIZE: usize = core::mem::size_of::<bug_entry>();
-+    pub(super) const LINE: u32 = line!();
-+
-+    // Null-terminated source file name — the assembler references this symbol
-+    // for the verbose file pointer in __bug_table, same as warn_flags!.
-+    const _FILE: &[u8] = file!().as_bytes();
-+    #[no_mangle]
-+    pub(super) static BUG_KUNIT_FILE: [u8; _FILE.len() + 1] = {
-+        let mut bytes = [0u8; _FILE.len() + 1];
-+        let mut i = 0;
-+        while i < _FILE.len() {
-+            bytes[i] = _FILE[i];
-+            i += 1;
-+        }
-+        bytes
-+    };
-+}
-+
-+// Emit ARCH_WARN_ASM at file scope and capture the trap address.
-+//
-+// BUG_KUNIT_TRAP_ADDR is defined as a .global symbol right on top of the
-+// .dc.a 1b directive so the linker resolves the relocation directly into
-+// that symbol's storage — no BSS, no zero-init problem.
-+// .dc.a emits a pointer-width word (4 bytes on ppc32, 8 bytes on ppc64),
-+// matching the usize declaration on the Rust side.
-+#[cfg(all(CONFIG_RUST_BUG_POWERPC_KUNIT_TEST, CONFIG_PPC64))]
-+::core::arch::global_asm!(
-+    concat!(
-+        include!(concat!(env!("OBJTREE"), "/rust/kernel/generated_arch_warn_asm.rs")),
-+        ".pushsection .data\n\t",
-+        ".balign 8\n\t",
-+        ".global BUG_KUNIT_TRAP_ADDR\n\t",
-+        "BUG_KUNIT_TRAP_ADDR:\n\t",
-+        ".dc.a 1b\n\t",
-+        ".popsection\n",
-+    ),
-+    file  = sym test_statics::BUG_KUNIT_FILE,
-+    line  = const test_statics::LINE,
-+    flags = const test_statics::FLAGS,
-+    size  = const test_statics::SIZE,
-+);
-+
-+#[cfg(all(CONFIG_RUST_BUG_POWERPC_KUNIT_TEST, not(CONFIG_PPC64)))]
-+::core::arch::global_asm!(
-+    concat!(
-+        include!(concat!(env!("OBJTREE"), "/rust/kernel/generated_arch_warn_asm.rs")),
-+        ".pushsection .data\n\t",
-+        ".balign 4\n\t",
-+        ".global BUG_KUNIT_TRAP_ADDR\n\t",
-+        "BUG_KUNIT_TRAP_ADDR:\n\t",
-+        ".dc.a 1b\n\t",
-+        ".popsection\n",
-+    ),
-+    file  = sym test_statics::BUG_KUNIT_FILE,
-+    line  = const test_statics::LINE,
-+    flags = const test_statics::FLAGS,
-+    size  = const test_statics::SIZE,
-+);
-+
-+#[cfg(CONFIG_RUST_BUG_POWERPC_KUNIT_TEST)]
-+#[::kernel::macros::kunit_tests(rust_kernel_bug_powerpc)]
-+mod tests {
-+    use crate::bindings;
-+
-+    fn trap_addr() -> usize {
-+        // BUG_KUNIT_TRAP_ADDR is a .global symbol defined in the global_asm!
-+        // block above, placed in .data at the exact .dc.a 1b relocation word.
-+        // The linker resolves it to the virtual address of the twi instruction
-+        // before any Rust code runs, so reading it here is always safe.
-+        extern "C" {
-+            // .dc.a emits a pointer-width word: 4 bytes on ppc32, 8 on ppc64.
-+            // usize matches the native pointer width on both.
-+            static BUG_KUNIT_TRAP_ADDR: usize;
-+        }
-+        // SAFETY: read-only after link time, no concurrent mutation possible.
-+        unsafe { BUG_KUNIT_TRAP_ADDR }
-+    }
-+
-+    /// The `__bug_table` entry emitted by `ARCH_WARN_ASM` must be locatable
-+    /// via `find_bug()` using the trap instruction's address.  A NULL result
-+    /// means the `1b` label reference in `_EMIT_BUG_ENTRY` resolved to the
-+    /// wrong address and the real trap handler would not recognise the site.
-+    #[test]
-+    fn bug_entry_found() {
-+        // Non-zero proves the .dc.a relocation was resolved by the linker.
-+        assert!(trap_addr() != 0);
-+
-+        // SAFETY: find_bug() is always safe to call with any address; it
-+        // simply walks __bug_table and returns NULL if nothing matches.
-+        let entry = unsafe { bindings::find_bug(trap_addr()) };
-+        // Non-NULL proves the bug_addr displacement in _EMIT_BUG_ENTRY is correct.
-+        assert!(!entry.is_null());
-+    }
-+
-+    /// The emitted entry must be flagged as a warning (not a hard BUG).
-+    #[test]
-+    fn bug_entry_is_warning() {
-+        assert!(trap_addr() != 0);
-+        let entry = unsafe { bindings::find_bug(trap_addr()) };
-+        assert!(!entry.is_null());
-+        // SAFETY: entry is non-null and points to a valid bug_entry.
-+        let flags = unsafe { (*entry).flags } as u32;
-+        assert!(flags & bindings::BUGFLAG_WARNING != 0);
-+    }
-+
-+    /// With `CONFIG_DEBUG_BUGVERBOSE` the entry must record a non-null file
-+    /// pointer pointing back into this source file.
-+    #[test]
-+    #[cfg(CONFIG_DEBUG_BUGVERBOSE)]
-+    fn bug_entry_file() {
-+        use core::ffi::CStr;
-+
-+        assert!(trap_addr() != 0);
-+        let entry = unsafe { bindings::find_bug(trap_addr()) };
-+        assert!(!entry.is_null());
-+
-+        let mut file_ptr: *const core::ffi::c_char = core::ptr::null();
-+        let mut line: u32 = 0;
-+        // SAFETY: entry is non-null and valid; file_ptr and line are local
-+        // variables passed as out-parameters.
-+        unsafe { bindings::bug_get_file_line(entry, &mut file_ptr, &mut line) };
-+
-+        assert!(!file_ptr.is_null());
-+        // SAFETY: file_ptr is a null-terminated C string from BUG_KUNIT_FILE.
-+        let file_str = unsafe { CStr::from_ptr(file_ptr) }.to_str().unwrap_or("");
-+        assert!(file_str.contains("bug"));
-+    }
-+
-+    /// With `CONFIG_DEBUG_BUGVERBOSE` the recorded line number must be
-+    /// non-zero (a zero line would mean the asm operand was not substituted).
-+    #[test]
-+    #[cfg(CONFIG_DEBUG_BUGVERBOSE)]
-+    fn bug_entry_line() {
-+        assert!(trap_addr() != 0);
-+        let entry = unsafe { bindings::find_bug(trap_addr()) };
-+        assert!(!entry.is_null());
-+
-+        let mut file_ptr: *const core::ffi::c_char = core::ptr::null();
-+        let mut line: u32 = 0;
-+        // SAFETY: entry is non-null and valid.
-+        unsafe { bindings::bug_get_file_line(entry, &mut file_ptr, &mut line) };
-+
-+        assert!(line != 0);
-+    }
-+
-+    /// The trap address stored in `__bug_table` must lie within the kernel
-+    /// text segment.  If the label reference in `_EMIT_BUG_ENTRY` resolved
-+    /// to data or zero, `kernel_text_address()` would return false.
-+    #[test]
-+    fn bug_entry_addr_is_in_text() {
-+        assert!(trap_addr() != 0);
-+        // SAFETY: kernel_text_address() is always safe to call with any addr.
-+        let in_text = unsafe { bindings::kernel_text_address(trap_addr()) };
-+        assert!(in_text != 0);
-+    }
-+}
--- 
-2.55.0
-
+      Arnd
 
